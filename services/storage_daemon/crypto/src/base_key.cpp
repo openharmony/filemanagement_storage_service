@@ -221,8 +221,8 @@ bool BaseKey::DoStoreKey()
     if (!SaveKeyBlob(keyInfo.keyDesc, "alias")) {
         return false;
     }
-    if (!GenerateAndSaveKeyBlob(keyContext_.nonce, "nonce", CRYPTO_KEY_NONCE_SIZE)) {
-        LOGE("GenerateAndSaveKeyBlob nonce failed");
+    if (!GenerateAndSaveKeyBlob(keyContext_.secDiscard, "sec_discard", CRYPTO_KEY_SECDISC_SIZE)) {
+        LOGE("GenerateAndSaveKeyBlob sec_discard failed");
         return false;
     }
     if (userAuth_.secret != "" && !GenerateAndSaveKeyBlob(keyContext_.salt, "salt", CRYPTO_KEY_SALT_SIZE)) {
@@ -261,7 +261,7 @@ bool BaseKey::RestoreKey()
         keyInfo.keyDesc.Clear();
         return false;
     }
-    if (!LoadKeyBlob(keyContext_.nonce, "nonce", CRYPTO_KEY_NONCE_SIZE)) {
+    if (!LoadKeyBlob(keyContext_.secDiscard, "sec_discard", CRYPTO_KEY_SECDISC_SIZE)) {
         keyContext_.encrypted.Clear();
         keyInfo.keyDesc.Clear();
         return false;

@@ -23,7 +23,7 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-constexpr uint32_t CRYPTO_KEY_NONCE_SIZE = 16384;
+constexpr uint32_t CRYPTO_KEY_SECDISC_SIZE = 16384;
 constexpr uint32_t CRYPTO_KEY_SALT_SIZE = 16;
 constexpr uint32_t CRYPTO_KEY_ALIAS_SIZE = 8;
 constexpr uint32_t CRYPTO_AES_256_LEN = 256;
@@ -34,7 +34,7 @@ static const std::string CRYPTO_NAME_PREFIXES[] = {"ext4", "f2fs", "fscrypt"};
 struct KeyBlob {
     bool Alloc(uint32_t len)
     {
-        if (len > CRYPTO_KEY_NONCE_SIZE) {
+        if (len > CRYPTO_KEY_SECDISC_SIZE) {
             return false;
         }
         data = std::make_unique<uint8_t[]>(len);
@@ -50,7 +50,7 @@ struct KeyBlob {
     }
     bool IsEmpty() const
     {
-        return size == 0 || data == nullptr;
+        return size == 0 || data.get() == nullptr;
     }
     std::string ToString() const
     {
@@ -76,9 +76,11 @@ struct KeyInfo {
 
 struct KeyContext {
     std::string version;
-    KeyBlob nonce;
+    KeyBlob secDiscard;
     KeyBlob salt; // used when have password
     KeyBlob encrypted;
+    KeyBlob nonce;
+    KeyBlob aad;
 };
 
 struct EncryptMode {

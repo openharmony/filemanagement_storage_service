@@ -27,7 +27,7 @@ public:
     static bool DeleteKey(const KeyBlob &keyAlias);
 
     static bool EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo &key);
-    static bool DecryptKey(const KeyContext &ctx, const UserAuth &auth, KeyInfo &key);
+    static bool DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key);
 };
 } // namespace StorageDaemon
 } // namespace OHOS

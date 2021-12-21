@@ -66,9 +66,9 @@ HWTEST_F(CryptoKeyTest, basekey_init, TestSize.Level1)
     EXPECT_EQ(true, deKey.InitKey());
 
     EXPECT_EQ(OHOS::StorageDaemon::FS_AES_256_XTS_KEY_SIZE, deKey.keyInfo.key.size);
-    EXPECT_NE(nullptr, deKey.keyInfo.key.data);
+    EXPECT_NE(nullptr, deKey.keyInfo.key.data.get());
     EXPECT_EQ(OHOS::StorageDaemon::CRYPTO_KEY_ALIAS_SIZE, deKey.keyInfo.keyDesc.size);
-    EXPECT_NE(nullptr, deKey.keyInfo.keyDesc.data);
+    EXPECT_NE(nullptr, deKey.keyInfo.keyDesc.data.get());
 }
 
 /**
@@ -90,11 +90,13 @@ HWTEST_F(CryptoKeyTest, basekey_store, TestSize.Level1)
     OHOS::LoadBufferFromFile(testKeyPath + "/alias", buf);
     EXPECT_EQ(OHOS::StorageDaemon::CRYPTO_KEY_ALIAS_SIZE, buf.size());
 
-    EXPECT_EQ(true, OHOS::FileExists(testKeyPath + "/nonce"));
-    OHOS::LoadBufferFromFile(testKeyPath + "/nonce", buf);
-    EXPECT_EQ(OHOS::StorageDaemon::CRYPTO_KEY_NONCE_SIZE, buf.size());
+    EXPECT_EQ(true, OHOS::FileExists(testKeyPath + "/sec_discard"));
+    OHOS::LoadBufferFromFile(testKeyPath + "/sec_discard", buf);
+    EXPECT_EQ(OHOS::StorageDaemon::CRYPTO_KEY_SECDISC_SIZE, buf.size());
 
     EXPECT_EQ(true, OHOS::FileExists(testKeyPath + "/encrypted"));
+    OHOS::LoadBufferFromFile(testKeyPath + "/encrypted", buf);
+    EXPECT_EQ(80U, buf.size());
 }
 
 /**
@@ -110,9 +112,9 @@ HWTEST_F(CryptoKeyTest, basekey_restore, TestSize.Level1)
     EXPECT_EQ(true, deKey.RestoreKey());
 
     EXPECT_EQ(OHOS::StorageDaemon::FS_AES_256_XTS_KEY_SIZE, deKey.keyInfo.key.size);
-    EXPECT_NE(nullptr, deKey.keyInfo.key.data);
+    EXPECT_NE(nullptr, deKey.keyInfo.key.data.get());
     EXPECT_EQ(OHOS::StorageDaemon::CRYPTO_KEY_ALIAS_SIZE, deKey.keyInfo.keyDesc.size);
-    EXPECT_NE(nullptr, deKey.keyInfo.keyDesc.data);
+    EXPECT_NE(nullptr, deKey.keyInfo.keyDesc.data.get());
 }
 
 /**

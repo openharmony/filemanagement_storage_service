@@ -157,7 +157,7 @@ static KeyBlob Stretch(const std::string &secret, const KeyBlob &salt)
     return res;
 }
 
-static HksParamSet *GenHksParam(const KeyContext &ctx, const UserAuth &auth, const bool isEncrypt)
+static HksParamSet *GenHksParam(KeyContext &ctx, const UserAuth &auth, const bool isEncrypt)
 {
     HksParamSet *paramSet = nullptr;
     struct HksParam encryptParam[] = {
@@ -181,28 +181,28 @@ static HksParamSet *GenHksParam(const KeyContext &ctx, const UserAuth &auth, con
         return nullptr;
     }
 
-    KeyBlob nonce = HashAndClip("NONCE SHA512 prefix", ctx.nonce, HKS_AE_NONCE_LEN);
-    if (nonce.IsEmpty()) {
+    ctx.nonce = HashAndClip("NONCE SHA512 prefix", ctx.secDiscard, HKS_AE_NONCE_LEN);
+    if (ctx.nonce.IsEmpty()) {
         HksFreeParamSet(&paramSet);
         return nullptr;
     }
-    KeyBlob aad = HashAndClip("AAD SHA512 prefix", Stretch(auth.secret, ctx.salt), CRYPTO_AES_AAD_LEN);
-    if (aad.IsEmpty()) {
+    ctx.aad = HashAndClip("AAD SHA512 prefix", Stretch(auth.secret, ctx.salt), CRYPTO_AES_AAD_LEN);
+    if (ctx.aad.IsEmpty()) {
         HksFreeParamSet(&paramSet);
         return nullptr;
     }
-    LOGI("nonce len:%{public}d, data(hex):%{public}s", nonce.size, nonce.ToString().c_str());
-    LOGI("aad len:%{public}d, data(hex):%{public}s", aad.size, aad.ToString().c_str());
+    LOGI("nonce len:%{public}d, data(hex):%{public}s", ctx.nonce.size, ctx.nonce.ToString().c_str());
+    LOGI("aad len:%{public}d, data(hex):%{public}s", ctx.aad.size, ctx.aad.ToString().c_str());
 
     // pass the token here
     struct HksParam addParam[] = {
         { .tag = HKS_TAG_NONCE,
           .blob =
-            { nonce.size, nonce.data.get() }
+            { ctx.nonce.size, ctx.nonce.data.get() }
         },
         { .tag = HKS_TAG_ASSOCIATED_DATA,
           .blob =
-            { aad.size, aad.data.get() }
+            { ctx.aad.size, ctx.aad.data.get() }
         }
     };
     ret = HksAddParams(paramSet, addParam, HKS_ARRAY_SIZE(addParam));
@@ -244,6 +244,7 @@ bool HuksMaster::EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo
         .size = ctx.encrypted.size,
         .data = ctx.encrypted.data.get(),
     };
+    LOGI("alias len:%{public}d, data(hex):%{public}s", key.keyDesc.size, key.keyDesc.ToString().c_str());
     auto ret = HksEncrypt(&hksAlias, paramSet, &hksRawKey, &hksEncrypted);
     if (ret != HKS_SUCCESS) {
         LOGE("HksEncrypt failed ret %{public}d", ret);
@@ -258,7 +259,7 @@ bool HuksMaster::EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo
     return true;
 }
 
-bool HuksMaster::DecryptKey(const KeyContext &ctx, const UserAuth &auth, KeyInfo &key)
+bool HuksMaster::DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key)
 {
     LOGD("enter");
     if (key.keyDesc.IsEmpty()) {
@@ -288,6 +289,7 @@ bool HuksMaster::DecryptKey(const KeyContext &ctx, const UserAuth &auth, KeyInfo
         .size = key.key.size,
         .data = key.key.data.get(),
     };
+    LOGI("alias len:%{public}d, data(hex):%{public}s", key.keyDesc.size, key.keyDesc.ToString().c_str());
     auto ret = HksDecrypt(&hksAlias, paramSet, &hksEncrypted, &hksRawKey);
     if (ret != HKS_SUCCESS) {
         LOGE("HksDecrypt failed ret %{public}d", ret);
