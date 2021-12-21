@@ -11,6 +11,7 @@
       ],
       "test_list": [
         "//foundation/storage/storage_manager/services/storage_daemon/user/test:user_unit_test"
+        "//foundation/storage/storage_manager/services/storage_daemon/crypto/test:moduletest"
       ],
       "inner_kits": [
         {

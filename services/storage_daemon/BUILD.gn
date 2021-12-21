@@ -49,6 +49,8 @@ ohos_executable("storage_daemon") {
 
   deps = [
     "//utils/native/base:utils",
+    "crypto:libsdcrypto",
+    "crypto:sdc",
   ]
 
   external_deps = [
