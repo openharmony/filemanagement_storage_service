@@ -37,7 +37,7 @@ public:
     int InitGlobalUserKeys(void);
     int CreateUserKeys(unsigned int user, bool isSave);
     int DeleteUserKeys(unsigned int user);
-    int UpdateUserAuth(unsigned int user, const std::string &token, const std::string &secert);
+    int UpdateUserAuth(unsigned int user, const std::string &token);
     int ActiveUserKey(unsigned int user);
     int InActiveUserKey(unsigned int user);
     int UpdateKeyContext(unsigned int user);

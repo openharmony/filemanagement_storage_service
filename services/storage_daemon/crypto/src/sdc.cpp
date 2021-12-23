@@ -51,8 +51,7 @@ static void HandleFileCrypt(const std::string &cmd, const std::vector<std::strin
         manager->DeleteUserKeys(userId);
     } else if (cmd == "update_user_auth") {
         std::string token = "";
-        std::string secret = "";
-        manager->UpdateUserAuth(userId, token, secret);
+        manager->UpdateUserAuth(userId, token);
     } else if (cmd == "active_user_key") {
         manager->ActiveUserKey(userId);
     } else if (cmd == "inactive_user_key") {

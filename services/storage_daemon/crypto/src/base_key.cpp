@@ -32,7 +32,7 @@
 namespace OHOS {
 namespace StorageDaemon {
 static bool g_isHuksMasterInit = false;
-BaseKey::BaseKey(std::string dir, UserAuth auth) : dir_(dir), userAuth_(auth)
+BaseKey::BaseKey(std::string dir) : dir_(dir)
 {
     if (!g_isHuksMasterInit && HuksMaster::Init() == 0) {
         g_isHuksMasterInit = true;
@@ -193,12 +193,12 @@ bool BaseKey::GenerateKeyDesc()
     return true;
 }
 
-bool BaseKey::StoreKey()
+bool BaseKey::StoreKey(const UserAuth &auth)
 {
     LOGD("enter");
     std::string originalDir = dir_;
     dir_ += ".tmp";
-    if (DoStoreKey()) {
+    if (DoStoreKey(auth)) {
         /*
          * if originalDir
          * del original alias of key, and alias should be different.
@@ -215,7 +215,7 @@ bool BaseKey::StoreKey()
     return true;
 }
 
-bool BaseKey::DoStoreKey()
+bool BaseKey::DoStoreKey(const UserAuth &auth)
 {
     OHOS::ForceCreateDirectory(dir_);
     if (!SaveKeyBlob(keyInfo.keyDesc, "alias")) {
@@ -225,11 +225,7 @@ bool BaseKey::DoStoreKey()
         LOGE("GenerateAndSaveKeyBlob sec_discard failed");
         return false;
     }
-    if (userAuth_.secret != "" && !GenerateAndSaveKeyBlob(keyContext_.salt, "salt", CRYPTO_KEY_SALT_SIZE)) {
-        LOGE("GenerateAndSaveKeyBlob salt failed");
-        return false;
-    }
-    if (!EncryptKey()) {
+    if (!EncryptKey(auth)) {
         return false;
     }
     if (!SaveKeyBlob(keyContext_.encrypted, "encrypted")) {
@@ -240,15 +236,15 @@ bool BaseKey::DoStoreKey()
     return true;
 }
 
-bool BaseKey::EncryptKey()
+bool BaseKey::EncryptKey(const UserAuth &auth)
 {
-    if (!HuksMaster::EncryptKey(keyContext_, userAuth_, keyInfo)) {
+    if (!HuksMaster::EncryptKey(keyContext_, auth, keyInfo)) {
         return false;
     }
     return true;
 }
 
-bool BaseKey::RestoreKey()
+bool BaseKey::RestoreKey(const UserAuth &auth)
 {
     LOGD("enter");
     if (!LoadKeyBlob(keyContext_.encrypted, "encrypted")) {
@@ -266,16 +262,13 @@ bool BaseKey::RestoreKey()
         keyInfo.keyDesc.Clear();
         return false;
     }
-    if (!LoadKeyBlob(keyContext_.salt, "salt", CRYPTO_KEY_SALT_SIZE)) {
-        LOGI("no salt param, maybe no secret");
-    }
-    return DecryptKey();
+    return DecryptKey(auth);
 }
 
-bool BaseKey::DecryptKey()
+bool BaseKey::DecryptKey(const UserAuth &auth)
 {
     LOGD("enter");
-    if (!HuksMaster::DecryptKey(keyContext_, userAuth_, keyInfo)) {
+    if (!HuksMaster::DecryptKey(keyContext_, auth, keyInfo)) {
         return false;
     }
 

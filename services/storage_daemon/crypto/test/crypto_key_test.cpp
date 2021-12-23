@@ -30,7 +30,7 @@ public:
     void TearDown();
 
     std::string testKeyPath { "/data/test/sys_de" };
-    OHOS::StorageDaemon::UserAuth emptyUserAuth { "", "" };
+    OHOS::StorageDaemon::UserAuth emptyUserAuth { "" };
 };
 
 void CryptoKeyTest::SetUpTestCase(void)
@@ -61,7 +61,7 @@ void CryptoKeyTest::TearDown(void)
  */
 HWTEST_F(CryptoKeyTest, basekey_init, TestSize.Level1)
 {
-    OHOS::StorageDaemon::BaseKey deKey(testKeyPath, emptyUserAuth);
+    OHOS::StorageDaemon::BaseKey deKey(testKeyPath);
 
     EXPECT_EQ(true, deKey.InitKey());
 
@@ -81,10 +81,10 @@ HWTEST_F(CryptoKeyTest, basekey_store, TestSize.Level1)
 {
     std::vector<char> buf {};
     OHOS::ForceRemoveDirectory(testKeyPath);
-    OHOS::StorageDaemon::BaseKey deKey(testKeyPath, emptyUserAuth);
+    OHOS::StorageDaemon::BaseKey deKey(testKeyPath);
 
     EXPECT_EQ(true, deKey.InitKey());
-    EXPECT_EQ(true, deKey.StoreKey());
+    EXPECT_EQ(true, deKey.StoreKey(emptyUserAuth));
 
     EXPECT_EQ(true, OHOS::FileExists(testKeyPath + "/alias"));
     OHOS::LoadBufferFromFile(testKeyPath + "/alias", buf);
@@ -107,9 +107,9 @@ HWTEST_F(CryptoKeyTest, basekey_store, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, basekey_restore, TestSize.Level1)
 {
-    OHOS::StorageDaemon::BaseKey deKey(testKeyPath, emptyUserAuth);
+    OHOS::StorageDaemon::BaseKey deKey(testKeyPath);
 
-    EXPECT_EQ(true, deKey.RestoreKey());
+    EXPECT_EQ(true, deKey.RestoreKey(emptyUserAuth));
 
     EXPECT_EQ(OHOS::StorageDaemon::FS_AES_256_XTS_KEY_SIZE, deKey.keyInfo.key.size);
     EXPECT_NE(nullptr, deKey.keyInfo.key.data.get());
@@ -125,9 +125,9 @@ HWTEST_F(CryptoKeyTest, basekey_restore, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, basekey_install, TestSize.Level1)
 {
-    OHOS::StorageDaemon::BaseKey deKey(testKeyPath, emptyUserAuth);
+    OHOS::StorageDaemon::BaseKey deKey(testKeyPath);
 
-    EXPECT_EQ(true, deKey.RestoreKey());
+    EXPECT_EQ(true, deKey.RestoreKey(emptyUserAuth));
     EXPECT_EQ(false, deKey.keyInfo.key.IsEmpty());
 
     EXPECT_EQ(true, deKey.ActiveKey());
@@ -141,9 +141,9 @@ HWTEST_F(CryptoKeyTest, basekey_install, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, basekey_clear, TestSize.Level1)
 {
-    OHOS::StorageDaemon::BaseKey deKey(testKeyPath, emptyUserAuth);
+    OHOS::StorageDaemon::BaseKey deKey(testKeyPath);
 
-    EXPECT_EQ(true, deKey.RestoreKey());
+    EXPECT_EQ(true, deKey.RestoreKey(emptyUserAuth));
     EXPECT_EQ(false, deKey.keyInfo.key.IsEmpty());
 
     EXPECT_EQ(true, deKey.ClearKey());

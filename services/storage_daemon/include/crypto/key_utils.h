@@ -24,7 +24,6 @@
 namespace OHOS {
 namespace StorageDaemon {
 constexpr uint32_t CRYPTO_KEY_SECDISC_SIZE = 16384;
-constexpr uint32_t CRYPTO_KEY_SALT_SIZE = 16;
 constexpr uint32_t CRYPTO_KEY_ALIAS_SIZE = 8;
 constexpr uint32_t CRYPTO_AES_256_LEN = 256;
 constexpr uint32_t CRYPTO_AES_AAD_LEN = 16;
@@ -77,7 +76,7 @@ struct KeyInfo {
 struct KeyContext {
     std::string version;
     KeyBlob secDiscard;
-    KeyBlob salt; // used when have password
+    // salt, stretch of secret
     KeyBlob encrypted;
     KeyBlob nonce;
     KeyBlob aad;
@@ -90,7 +89,7 @@ struct EncryptMode {
 
 struct UserAuth {
     std::string token;
-    std::string secret;
+    // secret
 };
 } // namespace StorageDaemon
 } // namespace OHOS

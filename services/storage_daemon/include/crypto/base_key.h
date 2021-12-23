@@ -24,32 +24,31 @@ namespace StorageDaemon {
 class BaseKey {
 public:
     BaseKey() = delete;
-    BaseKey(std::string dir, UserAuth auth);
+    BaseKey(std::string dir);
     ~BaseKey() = default;
 
     bool InitKey();
-    bool StoreKey();
-    bool RestoreKey();
+    bool StoreKey(const UserAuth &auth);
+    bool RestoreKey(const UserAuth &auth);
     bool ActiveKey();
     bool ClearKey();
 
     KeyInfo keyInfo;
 
 private:
-    bool DoStoreKey();
+    bool DoStoreKey(const UserAuth &auth);
     bool GenerateKeyBlob(KeyBlob &blob, const uint32_t size);
     bool SaveKeyBlob(const KeyBlob &blob, const std::string &name);
     bool GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &name, const uint32_t size);
     bool LoadKeyBlob(KeyBlob &blob, const std::string &name, const uint32_t size);
     bool GenerateKeyDesc();
-    bool EncryptKey();
-    bool DecryptKey();
+    bool EncryptKey(const UserAuth &auth);
+    bool DecryptKey(const UserAuth &auth);
 
     std::unique_ptr<char[]> GetRandomBytes(uint32_t size);
 
     std::string dir_ {};
     KeyContext keyContext_ {};
-    UserAuth userAuth_ {};
 };
 } // namespace StorageDaemon
 } // namespace OHOS

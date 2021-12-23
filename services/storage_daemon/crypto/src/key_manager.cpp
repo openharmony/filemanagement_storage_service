@@ -24,20 +24,19 @@
 namespace OHOS {
 namespace StorageDaemon {
 const UserAuth NULL_KEY_AUTH = {
-    .token = "",
-    .secret = ""
+    .token = ""
 };
 
 int KeyManager::GenerateDeviceKey(const std::string &dir)
 {
-    globalEl1Key_ = std::make_unique<BaseKey>(dir, NULL_KEY_AUTH);
+    globalEl1Key_ = std::make_unique<BaseKey>(dir);
 
     if (globalEl1Key_->InitKey() == false) {
         LOGE("global security key init failed");
         return -EFAULT;
     }
 
-    if (globalEl1Key_->StoreKey() == false) {
+    if (globalEl1Key_->StoreKey(NULL_KEY_AUTH) == false) {
         LOGE("global security key store failed");
         return -EFAULT;
     }
@@ -77,7 +76,7 @@ int KeyManager::DeleteUserKeys(unsigned int user)
     return 0;
 }
 
-int KeyManager::UpdateUserAuth(unsigned int user, const std::string &token, const std::string &secert)
+int KeyManager::UpdateUserAuth(unsigned int user, const std::string &token)
 {
     LOGD("start, user:%{public}d", user);
     return 0;

@@ -142,20 +142,6 @@ static KeyBlob HashAndClip(const std::string &prefix, const KeyBlob &payload, co
     return res;
 }
 
-static KeyBlob Stretch(const std::string &secret, const KeyBlob &salt)
-{
-    (void)salt;
-    KeyBlob res;
-    res.Alloc(secret.length());
-    auto err = memcpy_s(res.data.get(), res.size, secret.data(), secret.length());
-    if (err) {
-        LOGE("memcpy failed ret %{public}d", err);
-        res.Clear();
-    }
-    // openssl scrypt = HksDeriveKey?
-    // 如果secret已经是合成密钥了，可以直接用
-    return res;
-}
 
 static HksParamSet *GenHksParam(KeyContext &ctx, const UserAuth &auth, const bool isEncrypt)
 {
@@ -186,7 +172,7 @@ static HksParamSet *GenHksParam(KeyContext &ctx, const UserAuth &auth, const boo
         HksFreeParamSet(&paramSet);
         return nullptr;
     }
-    ctx.aad = HashAndClip("AAD SHA512 prefix", Stretch(auth.secret, ctx.salt), CRYPTO_AES_AAD_LEN);
+    ctx.aad = HashAndClip("AAD SHA512 prefix", ctx.secDiscard, CRYPTO_AES_AAD_LEN);
     if (ctx.aad.IsEmpty()) {
         HksFreeParamSet(&paramSet);
         return nullptr;
