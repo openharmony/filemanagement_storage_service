@@ -23,12 +23,13 @@ namespace OHOS {
 namespace StorageDaemon {
 key_serial_t KeyCtrl::AddKey(const std::string &type, const std::string &description, const key_serial_t ringId)
 {
-    return syscall(__NR_add_key, type.data(), description.data(), nullptr, 0, ringId);
+    return syscall(__NR_add_key, type.c_str(), description.c_str(), nullptr, 0, ringId);
 }
 key_serial_t KeyCtrl::AddKey(const std::string &type, const std::string &description, fscrypt_key &fsKey,
     const key_serial_t ringId)
 {
-    return syscall(__NR_add_key, type.data(), description.data(), static_cast<void *>(&fsKey), sizeof(fsKey), ringId);
+    return syscall(__NR_add_key, type.c_str(), description.c_str(), static_cast<void *>(&fsKey), sizeof(fsKey),
+        ringId);
 }
 
 key_serial_t KeyCtrl::GetKeyring(key_serial_t id, int create)

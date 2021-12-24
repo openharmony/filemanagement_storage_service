@@ -238,10 +238,10 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
 
 bool BaseKey::EncryptKey(const UserAuth &auth)
 {
-    if (!HuksMaster::EncryptKey(keyContext_, auth, keyInfo)) {
-        return false;
-    }
-    return true;
+    auto ret = HuksMaster::EncryptKey(keyContext_, auth, keyInfo);
+    keyContext_.nonce.Clear();
+    keyContext_.aad.Clear();
+    return ret;
 }
 
 bool BaseKey::RestoreKey(const UserAuth &auth)
@@ -267,14 +267,13 @@ bool BaseKey::RestoreKey(const UserAuth &auth)
 
 bool BaseKey::DecryptKey(const UserAuth &auth)
 {
-    LOGD("enter");
-    if (!HuksMaster::DecryptKey(keyContext_, auth, keyInfo)) {
-        return false;
-    }
+    auto ret = HuksMaster::DecryptKey(keyContext_, auth, keyInfo);
+    keyContext_.nonce.Clear();
+    keyContext_.aad.Clear();
 
     // TO BE DELETED
-    LOGD("success. rawkey len:%{public}d, data(hex):%{public}s", keyInfo.key.size, keyInfo.key.ToString().c_str());
-    return true;
+    LOGD("rawkey len:%{public}d, data(hex):%{public}s", keyInfo.key.size, keyInfo.key.ToString().c_str());
+    return ret;
 }
 
 bool BaseKey::ActiveKey()
@@ -301,15 +300,14 @@ bool BaseKey::ActiveKey()
     key_serial_t krid = KeyCtrl::Search(KEY_SPEC_SESSION_KEYRING, "keyring", "fscrypt", 0);
     if (krid == -1) {
         LOGI("no session keyring for fscrypt");
-        key_serial_t keyring = KeyCtrl::AddKey("keyring", "fscrypt", KEY_SPEC_SESSION_KEYRING);
-        if (keyring == -1) {
+        krid = KeyCtrl::AddKey("keyring", "fscrypt", KEY_SPEC_SESSION_KEYRING);
+        if (krid == -1) {
             LOGE("failed to add session keyring");
             return false;
         }
-        krid = KeyCtrl::Search(KEY_SPEC_SESSION_KEYRING, "keyring", "fscrypt", 0);
     }
     for (auto prefix : CRYPTO_NAME_PREFIXES) {
-        std::string keyref = prefix + keyInfo.keyDesc.ToString();
+        std::string keyref = prefix + ":" + keyInfo.keyDesc.ToString();
         key_serial_t ks =
             KeyCtrl::AddKey("logon", keyref, fskey, krid);
         if (ks == -1) {
@@ -318,7 +316,7 @@ bool BaseKey::ActiveKey()
                 errno);
         }
     }
-
+    keyInfo.key.Clear();
     LOGD("success");
     return true;
 }
@@ -338,7 +336,7 @@ bool BaseKey::ClearKey()
         return false;
     }
     for (auto prefix : CRYPTO_NAME_PREFIXES) {
-        std::string keyref = prefix + keyInfo.keyDesc.ToString();
+        std::string keyref = prefix + ":" + keyInfo.keyDesc.ToString();
         key_serial_t ks = KeyCtrl::Search(krid, "logon", keyref, 0);
         if (KeyCtrl::Unlink(ks, krid) != 0) {
             LOGE("Failed to unlink key with serial %{public}d ref %{public}s", krid, keyref.c_str());

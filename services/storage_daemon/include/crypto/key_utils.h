@@ -76,7 +76,7 @@ struct KeyInfo {
 struct KeyContext {
     std::string version;
     KeyBlob secDiscard;
-    // salt, stretch of secret
+    KeyBlob alias;
     KeyBlob encrypted;
     KeyBlob nonce;
     KeyBlob aad;
@@ -89,7 +89,7 @@ struct EncryptMode {
 
 struct UserAuth {
     std::string token;
-    // secret
+    // synthetic
 };
 } // namespace StorageDaemon
 } // namespace OHOS

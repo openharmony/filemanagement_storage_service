@@ -131,6 +131,8 @@ HWTEST_F(CryptoKeyTest, basekey_install, TestSize.Level1)
     EXPECT_EQ(false, deKey.keyInfo.key.IsEmpty());
 
     EXPECT_EQ(true, deKey.ActiveKey());
+    // raw key should be erase after install to kernel.
+    EXPECT_EQ(true, deKey.keyInfo.key.IsEmpty());
 }
 
 /**
@@ -148,5 +150,6 @@ HWTEST_F(CryptoKeyTest, basekey_clear, TestSize.Level1)
 
     EXPECT_EQ(true, deKey.ClearKey());
     EXPECT_EQ(true, deKey.keyInfo.key.IsEmpty());
+    EXPECT_EQ(true, deKey.keyInfo.keyDesc.IsEmpty());
     EXPECT_EQ(false, OHOS::FileExists(testKeyPath));
 }
