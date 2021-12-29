@@ -34,7 +34,7 @@ namespace StorageDaemon {
 static bool g_isHuksMasterInit = false;
 BaseKey::BaseKey(std::string dir) : dir_(dir)
 {
-    if (!g_isHuksMasterInit && HuksMaster::Init() == 0) {
+    if (!g_isHuksMasterInit && (HuksMaster::Init() == 0)) {
         g_isHuksMasterInit = true;
     }
 }
@@ -43,7 +43,7 @@ static bool ReadRandom(const KeyBlob &blob)
 {
     size_t bytes = blob.size;
     uint8_t *buf = blob.data.get();
-    static const int maxRandomRetryCount = 16;
+    static constexpr int MAX_RANDOM_RETRY = 16;
     if (access("/dev/random", F_OK) != 0) {
         LOGE("fail to access random dev ");
         return false;
@@ -58,7 +58,7 @@ static bool ReadRandom(const KeyBlob &blob)
         ssize_t x = read(fd, buf, bytes);
         if (x <= 0) {
             LOGI("read failed errno %{public}d", errno);
-            if (readFail++ > maxRandomRetryCount) {
+            if (readFail++ > MAX_RANDOM_RETRY) {
                 break;
             }
         } else {
@@ -74,11 +74,11 @@ static bool ReadRandom(const KeyBlob &blob)
 bool BaseKey::InitKey()
 {
     LOGD("enter");
-    if (!keyInfo.key.IsEmpty()) {
+    if (!keyInfo_.key.IsEmpty()) {
         LOGE("key is not empty");
         return false;
     }
-    if (!GenerateKeyBlob(keyInfo.key, FS_AES_256_XTS_KEY_SIZE)) {
+    if (!GenerateKeyBlob(keyInfo_.key, FS_AES_256_XTS_KEY_SIZE)) {
         LOGE("GenerateKeyBlob failed");
         return false;
     }
@@ -86,13 +86,13 @@ bool BaseKey::InitKey()
         LOGE("GenerateKeyDesc failed");
         return false;
     }
-    if (!HuksMaster::GenerateKey(keyInfo.keyDesc)) {
+    if (!HuksMaster::GenerateKey(keyInfo_.keyDesc)) {
         LOGE("HuksMaster::GenerateKey failed");
         return false;
     }
 
     // TO BE DELETED
-    LOGD("success. rawkey len:%{public}d, data(hex):%{public}s", keyInfo.key.size, keyInfo.key.ToString().c_str());
+    LOGD("success. rawkey len:%{public}d, data(hex):%{private}s", keyInfo_.key.size, keyInfo_.key.ToString().c_str());
     return true;
 }
 
@@ -149,7 +149,7 @@ bool BaseKey::LoadKeyBlob(KeyBlob &blob, const std::string &name, const uint32_t
     file.seekg(0, std::ios::end);
     uint32_t length = file.tellg();
     // zero size means use the file length.
-    if (size != 0 && length != size) {
+    if ((size != 0) && (length != size)) {
         LOGE("file:%{public}s size error, real len %{public}d !=  expected %{public}d", name.c_str(), length, size);
         return false;
     }
@@ -167,14 +167,14 @@ bool BaseKey::LoadKeyBlob(KeyBlob &blob, const std::string &name, const uint32_t
 
 bool BaseKey::GenerateKeyDesc()
 {
-    if (keyInfo.key.IsEmpty()) {
+    if (keyInfo_.key.IsEmpty()) {
         LOGE("key is empty");
         return false;
     }
     SHA512_CTX c;
 
     SHA512_Init(&c);
-    SHA512_Update(&c, keyInfo.key.data.get(), keyInfo.key.size);
+    SHA512_Update(&c, keyInfo_.key.data.get(), keyInfo_.key.size);
     uint8_t keyRef1[SHA512_DIGEST_LENGTH] = { 0 };
     SHA512_Final(keyRef1, &c);
 
@@ -184,8 +184,8 @@ bool BaseKey::GenerateKeyDesc()
     SHA512_Final(keyRef2, &c);
 
     static_assert(SHA512_DIGEST_LENGTH >= CRYPTO_KEY_ALIAS_SIZE, "Hash too short for descriptor");
-    keyInfo.keyDesc.Alloc(CRYPTO_KEY_ALIAS_SIZE);
-    auto err = memcpy_s(keyInfo.keyDesc.data.get(), keyInfo.keyDesc.size, keyRef2, CRYPTO_KEY_ALIAS_SIZE);
+    keyInfo_.keyDesc.Alloc(CRYPTO_KEY_ALIAS_SIZE);
+    auto err = memcpy_s(keyInfo_.keyDesc.data.get(), keyInfo_.keyDesc.size, keyRef2, CRYPTO_KEY_ALIAS_SIZE);
     if (err) {
         LOGE("memcpy failed ret %{public}d", err);
         return false;
@@ -218,7 +218,7 @@ bool BaseKey::StoreKey(const UserAuth &auth)
 bool BaseKey::DoStoreKey(const UserAuth &auth)
 {
     OHOS::ForceCreateDirectory(dir_);
-    if (!SaveKeyBlob(keyInfo.keyDesc, "alias")) {
+    if (!SaveKeyBlob(keyInfo_.keyDesc, "alias")) {
         return false;
     }
     if (!GenerateAndSaveKeyBlob(keyContext_.secDiscard, "sec_discard", CRYPTO_KEY_SECDISC_SIZE)) {
@@ -231,14 +231,14 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
     if (!SaveKeyBlob(keyContext_.encrypted, "encrypted")) {
         return false;
     }
-    LOGD("encrypted len:%{public}d, data(hex):%{public}s", keyContext_.encrypted.size,
+    LOGD("encrypted len:%{public}d, data(hex):%{private}s", keyContext_.encrypted.size,
         keyContext_.encrypted.ToString().c_str());
     return true;
 }
 
 bool BaseKey::EncryptKey(const UserAuth &auth)
 {
-    auto ret = HuksMaster::EncryptKey(keyContext_, auth, keyInfo);
+    auto ret = HuksMaster::EncryptKey(keyContext_, auth, keyInfo_);
     keyContext_.nonce.Clear();
     keyContext_.aad.Clear();
     return ret;
@@ -250,16 +250,16 @@ bool BaseKey::RestoreKey(const UserAuth &auth)
     if (!LoadKeyBlob(keyContext_.encrypted, "encrypted")) {
         return false;
     }
-    LOGD("encrypted len:%{public}d, data(hex):%{public}s", keyContext_.encrypted.size,
+    LOGD("encrypted len:%{public}d, data(hex):%{private}s", keyContext_.encrypted.size,
         keyContext_.encrypted.ToString().c_str());
 
-    if (!LoadKeyBlob(keyInfo.keyDesc, "alias", CRYPTO_KEY_ALIAS_SIZE)) {
-        keyInfo.keyDesc.Clear();
+    if (!LoadKeyBlob(keyInfo_.keyDesc, "alias", CRYPTO_KEY_ALIAS_SIZE)) {
+        keyInfo_.keyDesc.Clear();
         return false;
     }
     if (!LoadKeyBlob(keyContext_.secDiscard, "sec_discard", CRYPTO_KEY_SECDISC_SIZE)) {
         keyContext_.encrypted.Clear();
-        keyInfo.keyDesc.Clear();
+        keyInfo_.keyDesc.Clear();
         return false;
     }
     return DecryptKey(auth);
@@ -267,31 +267,31 @@ bool BaseKey::RestoreKey(const UserAuth &auth)
 
 bool BaseKey::DecryptKey(const UserAuth &auth)
 {
-    auto ret = HuksMaster::DecryptKey(keyContext_, auth, keyInfo);
+    auto ret = HuksMaster::DecryptKey(keyContext_, auth, keyInfo_);
     keyContext_.nonce.Clear();
     keyContext_.aad.Clear();
 
     // TO BE DELETED
-    LOGD("rawkey len:%{public}d, data(hex):%{public}s", keyInfo.key.size, keyInfo.key.ToString().c_str());
+    LOGD("rawkey len:%{public}d, data(hex):%{private}s", keyInfo_.key.size, keyInfo_.key.ToString().c_str());
     return ret;
 }
 
 bool BaseKey::ActiveKey()
 {
     LOGD("enter");
-    if (keyInfo.keyDesc.IsEmpty()) {
+    if (keyInfo_.keyDesc.IsEmpty()) {
         LOGE("keyDesc is null");
         return false;
     }
-    if (keyInfo.key.IsEmpty()) {
+    if (keyInfo_.key.IsEmpty()) {
         LOGE("rawkey is null");
         return false;
     }
 
     fscrypt_key fskey;
     fskey.mode = FS_ENCRYPTION_MODE_AES_256_XTS;
-    fskey.size = keyInfo.key.size;
-    auto err = memcpy_s(fskey.raw, FS_MAX_KEY_SIZE, keyInfo.key.data.get(), keyInfo.key.size);
+    fskey.size = keyInfo_.key.size;
+    auto err = memcpy_s(fskey.raw, FS_MAX_KEY_SIZE, keyInfo_.key.data.get(), keyInfo_.key.size);
     if (err) {
         LOGE("memcpy failed ret %{public}d", err);
         return false;
@@ -307,7 +307,7 @@ bool BaseKey::ActiveKey()
         }
     }
     for (auto prefix : CRYPTO_NAME_PREFIXES) {
-        std::string keyref = prefix + ":" + keyInfo.keyDesc.ToString();
+        std::string keyref = prefix + ":" + keyInfo_.keyDesc.ToString();
         key_serial_t ks =
             KeyCtrl::AddKey("logon", keyref, fskey, krid);
         if (ks == -1) {
@@ -316,7 +316,7 @@ bool BaseKey::ActiveKey()
                 errno);
         }
     }
-    keyInfo.key.Clear();
+    keyInfo_.key.Clear();
     LOGD("success");
     return true;
 }
@@ -324,11 +324,11 @@ bool BaseKey::ActiveKey()
 bool BaseKey::ClearKey()
 {
     LOGD("enter");
-    if (keyInfo.keyDesc.IsEmpty()) {
+    if (keyInfo_.keyDesc.IsEmpty()) {
         LOGE("keyDesc is null, key not installed?");
         return false;
     }
-    HuksMaster::DeleteKey(keyInfo.keyDesc);
+    HuksMaster::DeleteKey(keyInfo_.keyDesc);
 
     key_serial_t krid = KeyCtrl::Search(KEY_SPEC_SESSION_KEYRING, "keyring", "fscrypt", 0);
     if (krid == -1) {
@@ -336,7 +336,7 @@ bool BaseKey::ClearKey()
         return false;
     }
     for (auto prefix : CRYPTO_NAME_PREFIXES) {
-        std::string keyref = prefix + ":" + keyInfo.keyDesc.ToString();
+        std::string keyref = prefix + ":" + keyInfo_.keyDesc.ToString();
         key_serial_t ks = KeyCtrl::Search(krid, "logon", keyref, 0);
         if (KeyCtrl::Unlink(ks, krid) != 0) {
             LOGE("Failed to unlink key with serial %{public}d ref %{public}s", krid, keyref.c_str());
@@ -344,8 +344,8 @@ bool BaseKey::ClearKey()
     }
 
     OHOS::ForceRemoveDirectory(dir_);
-    keyInfo.key.Clear();
-    keyInfo.keyDesc.Clear();
+    keyInfo_.key.Clear();
+    keyInfo_.keyDesc.Clear();
     LOGD("success");
     return true;
 }

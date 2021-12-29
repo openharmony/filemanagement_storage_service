@@ -39,6 +39,10 @@ public:
     virtual int32_t PrepareUserDirs(int32_t userId, uint32_t flags) override;
     virtual int32_t DestroyUserDirs(int32_t userId, uint32_t flags) override;
 
+    // fscrypt api
+    virtual int32_t InitGlobalKey(void) override;
+    virtual int32_t InitGlobalUserKeys(void) override;
+
 private:
     std::mutex mutex_;
 };

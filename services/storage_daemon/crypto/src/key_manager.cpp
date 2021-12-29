@@ -54,13 +54,13 @@ int KeyManager::GenerateDeviceKey(const std::string &dir)
 
 int KeyManager::InitGlobalDeviceKey(void)
 {
-    LOGD("start");
+    LOGD("InitGlobalDeviceKey::start");
     return 0;
 }
 
 int KeyManager::InitGlobalUserKeys(void)
 {
-    LOGD("start");
+    LOGD("InitGlobalUserKeys start");
     return 0;
 }
 

@@ -36,7 +36,9 @@ public:
         PREPARE_USER_DIRS,
         DESTROY_USER_DIRS,
         START_USER,
-        STOP_USER
+        STOP_USER,
+        INIT_GLOBAL_KEY,
+        INIT_GLOBAL_USER_KEYS,
     };
 
     enum {
@@ -57,6 +59,10 @@ public:
     virtual int32_t StopUser(int32_t userId) = 0;
     virtual int32_t PrepareUserDirs(int32_t userId, uint32_t flags) = 0;
     virtual int32_t DestroyUserDirs(int32_t userId, uint32_t flags) = 0;
+
+    // fscrypt api
+    virtual int32_t InitGlobalKey(void) = 0;
+    virtual int32_t InitGlobalUserKeys(void) = 0;
 
     DECLARE_INTERFACE_DESCRIPTOR(u"ohos.StorageDaemon");
 };

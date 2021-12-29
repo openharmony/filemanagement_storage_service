@@ -65,10 +65,10 @@ HWTEST_F(CryptoKeyTest, basekey_init, TestSize.Level1)
 
     EXPECT_EQ(true, deKey.InitKey());
 
-    EXPECT_EQ(OHOS::StorageDaemon::FS_AES_256_XTS_KEY_SIZE, deKey.keyInfo.key.size);
-    EXPECT_NE(nullptr, deKey.keyInfo.key.data.get());
-    EXPECT_EQ(OHOS::StorageDaemon::CRYPTO_KEY_ALIAS_SIZE, deKey.keyInfo.keyDesc.size);
-    EXPECT_NE(nullptr, deKey.keyInfo.keyDesc.data.get());
+    EXPECT_EQ(OHOS::StorageDaemon::FS_AES_256_XTS_KEY_SIZE, deKey.keyInfo_.key.size);
+    EXPECT_NE(nullptr, deKey.keyInfo_.key.data.get());
+    EXPECT_EQ(OHOS::StorageDaemon::CRYPTO_KEY_ALIAS_SIZE, deKey.keyInfo_.keyDesc.size);
+    EXPECT_NE(nullptr, deKey.keyInfo_.keyDesc.data.get());
 }
 
 /**
@@ -111,10 +111,10 @@ HWTEST_F(CryptoKeyTest, basekey_restore, TestSize.Level1)
 
     EXPECT_EQ(true, deKey.RestoreKey(emptyUserAuth));
 
-    EXPECT_EQ(OHOS::StorageDaemon::FS_AES_256_XTS_KEY_SIZE, deKey.keyInfo.key.size);
-    EXPECT_NE(nullptr, deKey.keyInfo.key.data.get());
-    EXPECT_EQ(OHOS::StorageDaemon::CRYPTO_KEY_ALIAS_SIZE, deKey.keyInfo.keyDesc.size);
-    EXPECT_NE(nullptr, deKey.keyInfo.keyDesc.data.get());
+    EXPECT_EQ(OHOS::StorageDaemon::FS_AES_256_XTS_KEY_SIZE, deKey.keyInfo_.key.size);
+    EXPECT_NE(nullptr, deKey.keyInfo_.key.data.get());
+    EXPECT_EQ(OHOS::StorageDaemon::CRYPTO_KEY_ALIAS_SIZE, deKey.keyInfo_.keyDesc.size);
+    EXPECT_NE(nullptr, deKey.keyInfo_.keyDesc.data.get());
 }
 
 /**
@@ -128,11 +128,11 @@ HWTEST_F(CryptoKeyTest, basekey_install, TestSize.Level1)
     OHOS::StorageDaemon::BaseKey deKey(testKeyPath);
 
     EXPECT_EQ(true, deKey.RestoreKey(emptyUserAuth));
-    EXPECT_EQ(false, deKey.keyInfo.key.IsEmpty());
+    EXPECT_EQ(false, deKey.keyInfo_.key.IsEmpty());
 
     EXPECT_EQ(true, deKey.ActiveKey());
     // raw key should be erase after install to kernel.
-    EXPECT_EQ(true, deKey.keyInfo.key.IsEmpty());
+    EXPECT_EQ(true, deKey.keyInfo_.key.IsEmpty());
 }
 
 /**
@@ -146,10 +146,10 @@ HWTEST_F(CryptoKeyTest, basekey_clear, TestSize.Level1)
     OHOS::StorageDaemon::BaseKey deKey(testKeyPath);
 
     EXPECT_EQ(true, deKey.RestoreKey(emptyUserAuth));
-    EXPECT_EQ(false, deKey.keyInfo.key.IsEmpty());
+    EXPECT_EQ(false, deKey.keyInfo_.key.IsEmpty());
 
     EXPECT_EQ(true, deKey.ClearKey());
-    EXPECT_EQ(true, deKey.keyInfo.key.IsEmpty());
-    EXPECT_EQ(true, deKey.keyInfo.keyDesc.IsEmpty());
+    EXPECT_EQ(true, deKey.keyInfo_.key.IsEmpty());
+    EXPECT_EQ(true, deKey.keyInfo_.keyDesc.IsEmpty());
     EXPECT_EQ(false, OHOS::FileExists(testKeyPath));
 }

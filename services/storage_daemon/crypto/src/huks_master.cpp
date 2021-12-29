@@ -177,8 +177,8 @@ static HksParamSet *GenHksParam(KeyContext &ctx, const UserAuth &auth, const boo
         HksFreeParamSet(&paramSet);
         return nullptr;
     }
-    LOGI("nonce len:%{public}d, data(hex):%{public}s", ctx.nonce.size, ctx.nonce.ToString().c_str());
-    LOGI("aad len:%{public}d, data(hex):%{public}s", ctx.aad.size, ctx.aad.ToString().c_str());
+    LOGD("nonce len:%{public}d, data(hex):%{private}s", ctx.nonce.size, ctx.nonce.ToString().c_str());
+    LOGD("aad len:%{public}d, data(hex):%{private}s", ctx.aad.size, ctx.aad.ToString().c_str());
 
     // pass the token here
     struct HksParam addParam[] = {

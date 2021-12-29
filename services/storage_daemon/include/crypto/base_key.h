@@ -33,7 +33,7 @@ public:
     bool ActiveKey();
     bool ClearKey();
 
-    KeyInfo keyInfo;
+    KeyInfo keyInfo_;
 
 private:
     bool DoStoreKey(const UserAuth &auth);
