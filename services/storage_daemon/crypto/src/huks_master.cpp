@@ -142,7 +142,6 @@ static KeyBlob HashAndClip(const std::string &prefix, const KeyBlob &payload, co
     return res;
 }
 
-
 static HksParamSet *GenHksParam(KeyContext &ctx, const UserAuth &auth, const bool isEncrypt)
 {
     HksParamSet *paramSet = nullptr;

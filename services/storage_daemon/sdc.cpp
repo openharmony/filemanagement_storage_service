@@ -22,16 +22,16 @@
 
 static void HandleFileCrypt(const std::string &cmd, const std::vector<std::string> &args)
 {
-    LOGI("HandleFileCrypt::cmd: %s", cmd.c_str());
-    if (cmd == "initglobalkey") {
-        // sdc filecrypt initglobalkey /data
+    LOGI("fscrypt cmd: %s", cmd.c_str());
+    if (cmd == "init_global_key") {
+        // sdc filecrypt init_global_key /data
         int32_t ret = OHOS::StorageDaemon::StorageDaemonClient::InitGlobalKey();
         if (ret) {
             LOGE("Init global Key failed");
             return;
         }
-    } else if (cmd == "initmainuser") {
-        // sdc filecrypt initglobalkey /data
+    } else if (cmd == "init_main_user") {
+        // sdc filecrypt init_main_user
         int32_t ret = OHOS::StorageDaemon::StorageDaemonClient::InitGlobalUserKeys();
         if (ret) {
             LOGE("Init global user keys failed");
@@ -45,7 +45,14 @@ int main(int argc, char **argv)
     LOGI("sdc start");
     std::vector<std::string> args(argv, argv + argc);
 
+    if (argc < 2) {
+        LOGE("usage: sdc <subsystem> [cmd]");
+        return 0;
+    }
+
     if (args[1] == "filecrypt") {
         HandleFileCrypt(args[2], args); // no.2 param is the cmd
     }
+
+    return 0;
 }
