@@ -32,6 +32,9 @@ public:
     bool RestoreKey(const UserAuth &auth);
     bool ActiveKey();
     bool ClearKey();
+    // ------ fscrypt v2 ------
+    bool ActiveKeyV2(const std::string &mnt);
+    bool ClearKeyV2(const std::string &mnt);
 
     KeyInfo keyInfo_;
 

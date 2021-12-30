@@ -53,6 +53,7 @@ void CryptoKeyTest::TearDown(void)
     // input testcase teardown step，teardown invoked after each testcases
 }
 
+#if 0
 /**
  * @tc.name: basekey_init
  * @tc.desc: Verify the InitKey function.
@@ -152,4 +153,22 @@ HWTEST_F(CryptoKeyTest, basekey_clear, TestSize.Level1)
     EXPECT_EQ(true, deKey.keyInfo_.key.IsEmpty());
     EXPECT_EQ(true, deKey.keyInfo_.keyDesc.IsEmpty());
     EXPECT_EQ(false, OHOS::FileExists(testKeyPath));
+}
+#endif
+/**
+ * @tc.name: basekey_fscrypt_v2
+ * @tc.desc: Verify the fscrypt V2 active and clear function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK0BP
+ */
+HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2, TestSize.Level1)
+{
+    OHOS::StorageDaemon::BaseKey deKey(testKeyPath);
+
+    EXPECT_EQ(true, deKey.InitKey());
+    EXPECT_EQ(true, deKey.StoreKey(emptyUserAuth));
+
+    EXPECT_EQ(true, deKey.ActiveKeyV2("/data/lqh/mnt"));
+    EXPECT_EQ(true, OHOS::FileExists(testKeyPath + "/kid"));
+    EXPECT_EQ(true, deKey.ClearKeyV2("/data/lqh/mnt"));
 }

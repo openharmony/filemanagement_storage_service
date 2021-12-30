@@ -72,6 +72,7 @@ struct KeyBlob {
 struct KeyInfo {
     KeyBlob key;
     KeyBlob keyDesc;
+    KeyBlob keyId;
 };
 
 struct KeyContext {

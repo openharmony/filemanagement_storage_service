@@ -45,6 +45,7 @@ public:
     static bool RemoveKey(const std::string &mnt, fscrypt_remove_key_arg &arg);
     static bool GetKeyStatus(const std::string &mnt, fscrypt_get_key_status_arg &arg);
 
+    static bool SetPolicy(const std::string &path, fscrypt_policy_v1 &policy);
     static bool SetPolicy(const std::string &path, fscrypt_policy_v2 &policy);
     static bool GetPolicy(const std::string &path, fscrypt_get_policy_ex_arg &options);
 };

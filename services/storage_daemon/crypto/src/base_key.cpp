@@ -309,5 +309,76 @@ bool BaseKey::ClearKey()
     LOGD("success");
     return true;
 }
+
+bool BaseKey::ActiveKeyV2(const std::string& mnt)
+{
+    LOGD("enter");
+    if (keyInfo_.key.IsEmpty()) {
+        LOGE("rawkey is null");
+        return false;
+    }
+
+    auto buf = std::make_unique<char[]>(sizeof(fscrypt_add_key_arg) + FSCRYPT_MAX_KEY_SIZE);
+    auto arg = reinterpret_cast<fscrypt_add_key_arg *>(buf.get());
+    memset_s(arg, sizeof(fscrypt_add_key_arg) + FSCRYPT_MAX_KEY_SIZE, 0, sizeof(fscrypt_add_key_arg) + FSCRYPT_MAX_KEY_SIZE);
+    arg->key_spec.type = FSCRYPT_KEY_SPEC_TYPE_IDENTIFIER;
+    arg->raw_size = keyInfo_.key.size;
+    auto err = memcpy_s(arg->raw, FSCRYPT_MAX_KEY_SIZE, keyInfo_.key.data.get(), keyInfo_.key.size);
+    if (err) {
+        LOGE("memcpy failed ret %{public}d", err);
+        return false;
+    }
+
+    auto ret = KeyCtrl::InstallKey(mnt, *arg);
+    if (ret == false) {
+        return false;
+    }
+    keyInfo_.keyId.Alloc(FSCRYPT_KEY_IDENTIFIER_SIZE);
+    (void)memcpy_s(keyInfo_.keyId.data.get(), FSCRYPT_KEY_IDENTIFIER_SIZE, arg->key_spec.u.identifier,
+        FSCRYPT_KEY_IDENTIFIER_SIZE);
+
+    LOGD("success. kid len:%{public}d, data(hex):%{private}s", keyInfo_.keyId.size, keyInfo_.keyId.ToString().c_str());
+    if (!SaveKeyBlob(keyInfo_.keyId, "kid")) {
+        // do some cleanup
+        return false;
+    }
+
+    LOGD("success");
+    return true;
+}
+
+bool BaseKey::ClearKeyV2(const std::string& mnt)
+{
+    LOGD("enter");
+    if (keyInfo_.keyId.size != FSCRYPT_KEY_IDENTIFIER_SIZE) {
+        LOGE("keyId is invalid");
+        return false;
+    }
+
+    fscrypt_remove_key_arg arg;
+    memset_s(&arg, sizeof(arg), 0, sizeof(arg));
+    arg.key_spec.type = FSCRYPT_KEY_SPEC_TYPE_IDENTIFIER;
+    (void)memcpy_s(arg.key_spec.u.identifier, FSCRYPT_KEY_IDENTIFIER_SIZE, keyInfo_.keyId.data.get(),
+        keyInfo_.keyId.size);
+
+    auto ret = KeyCtrl::RemoveKey(mnt, arg);
+    if (ret == false) {
+        return false;
+    }
+    if (arg.removal_status_flags & FSCRYPT_KEY_REMOVAL_STATUS_FLAG_OTHER_USERS) {
+        LOGE("Other users still have this key added");
+    } else if (arg.removal_status_flags & FSCRYPT_KEY_REMOVAL_STATUS_FLAG_FILES_BUSY) {
+        LOGE("Some files using this key are still in-use");
+    } else {
+        LOGD("RemoveKey success");
+    }
+
+    OHOS::ForceRemoveDirectory(dir_);
+    keyInfo_.key.Clear();
+    keyInfo_.keyDesc.Clear();
+
+    return true;
+}
+
 } // namespace StorageDaemon
 } // namespace OHOS
