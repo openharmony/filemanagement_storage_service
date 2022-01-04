@@ -36,19 +36,35 @@ void StorageManager::OnStop()
     LOGI("StorageManager::Onstop Done");
 }
 
-int32_t StorageManager::OnUserCreate(int32_t userId)
+int32_t StorageManager::PrepareAddUser(int32_t userId)
 {
-    LOGI("StorageManager::OnUserCreate start, userId: %{public}d", userId);
+    LOGI("StorageManager::PrepareAddUser start, userId: %{public}d", userId);
     std::shared_ptr<MultiUserManagerService> userManager = DelayedSingleton<MultiUserManagerService>::GetInstance();
-    int32_t err = userManager->OnUserCreate(userId);
+    int32_t err = userManager->PrepareAddUser(userId);
     return err;
 }
 
-int32_t StorageManager::OnUserDelete(int32_t userId)
+int32_t StorageManager::RemoveUser(int32_t userId)
 {
-    LOGI("StorageManger::OnUserDelete start, userId: %{public}d", userId);
+    LOGI("StorageManger::RemoveUser start, userId: %{public}d", userId);
     std::shared_ptr<MultiUserManagerService> userManager = DelayedSingleton<MultiUserManagerService>::GetInstance();
-    int32_t err = userManager->OnUserDelete(userId);
+    int32_t err = userManager->RemoveUser(userId);
+    return err;
+}
+
+int32_t StorageManager::PrepareStartUser(int32_t userId)
+{
+    LOGI("StorageManger::PrepareStartUser start, userId: %{public}d", userId);
+    std::shared_ptr<MultiUserManagerService> userManager = DelayedSingleton<MultiUserManagerService>::GetInstance();
+    int32_t err = userManager->PrepareStartUser(userId);
+    return err;
+}
+
+int32_t StorageManager::StopUser(int32_t userId)
+{
+    LOGI("StorageManger::StopUser start, userId: %{public}d", userId);
+    std::shared_ptr<MultiUserManagerService> userManager = DelayedSingleton<MultiUserManagerService>::GetInstance();
+    int32_t err = userManager->StopUser(userId);
     return err;
 }
 }

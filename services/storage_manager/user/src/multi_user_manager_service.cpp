@@ -31,23 +31,40 @@ MultiUserManagerService::~MultiUserManagerService()
     LOGI("DEBUG ~MultiUserManagerService destructer ~");    
 }
 
-int32_t MultiUserManagerService::OnUserCreate(int32_t userId) const
+int32_t MultiUserManagerService::PrepareAddUser(int32_t userId) const
 {
-    LOGI("MultiUserManagerService_create, userId:%{public}d", userId);
+    LOGI("MultiUserManagerService::PrepareAddUser, userId:%{public}d", userId);
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t err = sdCommunication->OnUserCreate(userId);
+    int32_t err = sdCommunication->PrepareAddUser(userId);
     return err;
 }
 
-int32_t MultiUserManagerService::OnUserDelete(int32_t userId) const
+int32_t MultiUserManagerService::RemoveUser(int32_t userId) const
 {
-    LOGI("MultiUserManagerService_Delete, userId:%{public}d", userId);
+    LOGI("MultiUserManagerService::RemoveUser, userId:%{public}d", userId);
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t err = sdCommunication->OnUserDelete(userId);
+    int32_t err = sdCommunication->RemoveUser(userId);
     return err;
 }
 
+int32_t MultiUserManagerService::PrepareStartUser(int32_t userId) const
+{
+    LOGI("MultiUserManagerService::PrepareStartUser, userId:%{public}d", userId);
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t err = sdCommunication->PrepareStartUser(userId);
+    return err;
+}
+
+int32_t MultiUserManagerService::StopUser(int32_t userId) const
+{
+    LOGI("MultiUserManagerService::StopUser, userId:%{public}d", userId);
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t err = sdCommunication->StopUser(userId);
+    return err;
+}
 } // StorageManager
 } // OHOS

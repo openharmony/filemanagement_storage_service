@@ -30,8 +30,10 @@ class StorageDaemonCommunication : public NoCopyable {
 public:
     int32_t Connect();
 
-    int32_t OnUserCreate(int32_t userId);
-    int32_t OnUserDelete(int32_t userId);
+    int32_t PrepareAddUser(int32_t userId);
+    int32_t RemoveUser(int32_t userId);
+    int32_t PrepareStartUser(int32_t userId);
+    int32_t StopUser(int32_t userId);
 
 private:
     sptr<OHOS::StorageDaemon::IStorageDaemon> storageDaemon_;

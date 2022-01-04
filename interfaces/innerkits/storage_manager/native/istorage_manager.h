@@ -23,12 +23,16 @@ namespace StorageManager {
 
 class IStorageManager : public IRemoteBroker {
 public:
-    virtual int32_t OnUserCreate(int32_t UserId) = 0;
-    virtual int32_t OnUserDelete(int32_t UserId) = 0;
+    virtual int32_t PrepareAddUser(int32_t userId) = 0;
+    virtual int32_t RemoveUser(int32_t userId) = 0;
+    virtual int32_t PrepareStartUser(int32_t userId) = 0;
+    virtual int32_t StopUser(int32_t userId) = 0;
 
     enum {
-        ON_USER_CREATE = 1,
-        ON_USER_DELETE
+        PREPARE_ADD_USER = 1,
+        REMOVE_USER,
+        PREPARE_START_USER,
+        STOP_USER
     };
 
     DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.StorageManager.IStorageManager");

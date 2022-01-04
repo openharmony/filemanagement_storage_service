@@ -20,43 +20,85 @@
 namespace OHOS {
 namespace StorageManager {
 
-int32_t StorageManagerProxy::OnUserCreate(int32_t userId)
+int32_t StorageManagerProxy::PrepareAddUser(int32_t userId)
 {   
-    LOGI("StorageManagerProxy::OnUserCreate, userId:%{public}d", userId);
+    LOGI("StorageManagerProxy::PrepareAddUser, userId:%{public}d", userId);
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
-        LOGE("StorageManagerProxy::OnUserCreate, WriteInterfaceToken failed");
+        LOGE("StorageManagerProxy::PrepareAddUser, WriteInterfaceToken failed");
         return E_IPC_ERROR;
     }
     if (!data.WriteInt32(userId)) {
-        LOGE("StorageManagerProxy::OnUserCreate, WriteInt32 failed");
+        LOGE("StorageManagerProxy::PrepareAddUser, WriteInt32 failed");
         return E_IPC_ERROR;
     }
-    int err = Remote()->SendRequest(ON_USER_CREATE, data, reply, option);
+    int err = Remote()->SendRequest(PREPARE_ADD_USER, data, reply, option);
     if (err != E_OK) {
-        LOGE("StorageManagerProxy::OnUserCreate, SendRequest failed");
+        LOGE("StorageManagerProxy::PrepareAddUser, SendRequest failed");
         return E_IPC_ERROR;
     }
     return reply.ReadUint32();
 }
     
-int32_t StorageManagerProxy::OnUserDelete(int32_t userId)
+int32_t StorageManagerProxy::RemoveUser(int32_t userId)
 {
-    LOGI("StorageManagerProxy::OnUserDelete, userId:%{public}d", userId);
+    LOGI("StorageManagerProxy::RemoveUser, userId:%{public}d", userId);
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
-        LOGE("StorageManagerProxy::OnUserDelete, WriteInterfaceToken failed");
+        LOGE("StorageManagerProxy::RemoveUser, WriteInterfaceToken failed");
         return E_IPC_ERROR;
     }
     if (!data.WriteInt32(userId)) {
-        LOGE("StorageManagerProxy::OnUserDelete, WriteInt32 failed");
+        LOGE("StorageManagerProxy::RemoveUser, WriteInt32 failed");
         return E_IPC_ERROR;
     }
-    int err = Remote()->SendRequest(ON_USER_DELETE, data, reply, option);
+    int err = Remote()->SendRequest(REMOVE_USER, data, reply, option);
     if (err != E_OK) {
-        LOGE("StorageManagerProxy::OnUserDelete, SendRequest failed");
+        LOGE("StorageManagerProxy::RemoveUser, SendRequest failed");
+        return E_IPC_ERROR;
+    }
+    return reply.ReadUint32();
+}
+
+int32_t StorageManagerProxy::PrepareStartUser(int32_t userId)
+{
+    LOGI("StorageManagerProxy::PrepareStartUser, userId:%{public}d", userId);
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("StorageManagerProxy::PrepareStartUser, WriteInterfaceToken failed");
+        return E_IPC_ERROR;
+    }
+    if (!data.WriteInt32(userId)) {
+        LOGE("StorageManagerProxy::PrepareStartUser, WriteInt32 failed");
+        return E_IPC_ERROR;
+    }
+    int err = Remote()->SendRequest(PREPARE_START_USER, data, reply, option);
+    if (err != E_OK) {
+        LOGE("StorageManagerProxy::PrepareStartUser, SendRequest failed");
+        return E_IPC_ERROR;
+    }
+    return reply.ReadUint32();
+}
+
+int32_t StorageManagerProxy::StopUser(int32_t userId)
+{
+    LOGI("StorageManagerProxy::StopUser, userId:%{public}d", userId);
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("StorageManagerProxy::StopUser, WriteInterfaceToken failed");
+        return E_IPC_ERROR;
+    }
+    if (!data.WriteInt32(userId)) {
+        LOGE("StorageManagerProxy::StopUser, WriteInt32 failed");
+        return E_IPC_ERROR;
+    }
+    int err = Remote()->SendRequest(STOP_USER, data, reply, option);
+    if (err != E_OK) {
+        LOGE("StorageManagerProxy::StopUser, SendRequest failed");
         return E_IPC_ERROR;
     }
     return reply.ReadUint32();
