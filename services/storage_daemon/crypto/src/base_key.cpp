@@ -303,7 +303,7 @@ bool BaseKey::ClearKey()
         }
     }
 
-    OHOS::ForceRemoveDirectory(dir_);
+    // rmdir by the caller
     keyInfo_.key.Clear();
     keyInfo_.keyDesc.Clear();
     LOGD("success");
@@ -351,7 +351,7 @@ bool BaseKey::ClearKeyV2(const std::string& mnt)
 {
     LOGD("enter");
     if (keyInfo_.keyId.size != FSCRYPT_KEY_IDENTIFIER_SIZE) {
-        LOGE("keyId is invalid");
+        LOGE("keyId is invalid, %{public}d", keyInfo_.keyId.size);
         return false;
     }
 
@@ -373,9 +373,10 @@ bool BaseKey::ClearKeyV2(const std::string& mnt)
         LOGD("RemoveKey success");
     }
 
-    OHOS::ForceRemoveDirectory(dir_);
+    // rmdir by the caller
     keyInfo_.key.Clear();
     keyInfo_.keyDesc.Clear();
+    keyInfo_.keyId.Clear();
 
     return true;
 }

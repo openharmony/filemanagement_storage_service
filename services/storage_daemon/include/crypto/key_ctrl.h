@@ -58,14 +58,14 @@ struct CryptoOptions {
     bool useHwWrappedKey { false };
 };
 
-static const auto CONTENTS_MODES = std::map<std::string, int> {
+static const auto CONTENTS_MODES = std::map<std::string, uint8_t> {
     {"aes-256-xts", FSCRYPT_MODE_AES_256_XTS},
     {"software", FSCRYPT_MODE_AES_256_XTS},
     {"adiantum", FSCRYPT_MODE_ADIANTUM},
     // {"ice", FSCRYPT_MODE_PRIVATE}
 };
 
-static const auto FILENAME_MODES = std::map<std::string, int> {
+static const auto FILENAME_MODES = std::map<std::string, uint8_t> {
     {"aes-256-cts", FSCRYPT_MODE_AES_256_CTS},
     // {"aes-256-heh", FSCRYPT_MODE_AES_256_HEH}
     {"adiantum", FSCRYPT_MODE_ADIANTUM},
