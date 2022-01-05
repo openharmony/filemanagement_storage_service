@@ -83,13 +83,13 @@ int32_t StorageDaemon::StopUser(int32_t userId)
 
 int32_t StorageDaemon::InitGlobalKey(void)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(keyMutex_);
     return KeyManager::GetInstance()->InitGlobalDeviceKey();
 }
 
 int32_t StorageDaemon::InitGlobalUserKeys(void)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(keyMutex_);
     return KeyManager::GetInstance()->InitGlobalUserKeys();
 }
 

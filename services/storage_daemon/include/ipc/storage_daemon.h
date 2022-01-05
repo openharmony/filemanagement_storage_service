@@ -45,6 +45,7 @@ public:
 
 private:
     std::mutex mutex_;
+    std::mutex keyMutex_;
 };
 } // StorageDaemon
 } // OHOS
