@@ -17,6 +17,7 @@
 
 #include <string>
 #include <iostream>
+#include <algorithm>
 #include <unistd.h>
 #include <openssl/sha.h>
 
@@ -31,12 +32,37 @@ bool HuksMaster::Init()
     return HksInitialize();
 }
 
+static bool GenerateRandomKeyLoop(KeyBlob &rawKey)
+{
+    LOGD("enter");
+    uint32_t offset = 0;
+    while (offset < rawKey.size) {
+        LOGD("off %{public}d", offset);
+        HksBlob hksKey = {
+            .size = std::min(rawKey.size - offset, static_cast<uint32_t>(HKS_MAX_RANDOM_LEN)),
+            .data = rawKey.data.get() + offset,
+        };
+        auto ret = HksGenerateRandom(nullptr, &hksKey);
+        if (ret != HKS_SUCCESS) {
+            LOGE("HksGenerateRandom failed ret %{public}d", ret);
+            return false;
+        }
+        offset += HKS_MAX_RANDOM_LEN;
+    }
+    return true;
+}
+
 bool HuksMaster::GenerateRandomKey(KeyBlob &rawKey)
 {
     LOGD("enter");
-    if (rawKey.IsEmpty() || rawKey.size > HKS_MAX_RANDOM_LEN) {
+    if (rawKey.IsEmpty()) {
+        LOGE("bad key size %{public}d", rawKey.size);
         return false;
     }
+    if (rawKey.size > HKS_MAX_RANDOM_LEN) {
+        return GenerateRandomKeyLoop(rawKey);
+    }
+
     HksBlob hksKey = {
         .size = rawKey.size,
         .data = rawKey.data.get(),

@@ -39,38 +39,6 @@ BaseKey::BaseKey(std::string dir, uint8_t keyLen) : dir_(dir), keyLen_(keyLen)
     }
 }
 
-static bool ReadRandom(const KeyBlob &blob)
-{
-    size_t bytes = blob.size;
-    uint8_t *buf = blob.data.get();
-    static constexpr int MAX_RANDOM_RETRY = 16;
-    if (access("/dev/random", F_OK) != 0) {
-        LOGE("fail to access random dev ");
-        return false;
-    }
-    int fd = TEMP_FAILURE_RETRY(open("/dev/random", O_RDONLY));
-    if (fd == -1) {
-        LOGE("open random failed errno %{public}d", errno);
-        return false;
-    }
-    int readFail = 0;
-    while (bytes > 0) {
-        ssize_t x = read(fd, buf, bytes);
-        if (x <= 0) {
-            LOGI("read failed errno %{public}d", errno);
-            if (readFail++ > MAX_RANDOM_RETRY) {
-                break;
-            }
-        } else {
-            bytes -= x;
-            buf += x;
-            readFail = 0;
-        }
-    }
-    close(fd);
-    return bytes == 0;
-}
-
 bool BaseKey::InitKey()
 {
     LOGD("enter");
@@ -102,11 +70,8 @@ bool BaseKey::GenerateKeyBlob(KeyBlob &blob, const uint32_t size)
         return false;
     }
     if (!HuksMaster::GenerateRandomKey(blob)) {
-        if (!ReadRandom(blob)) {
-            LOGE("ReadRandom failed");
-            blob.Clear();
-            return false;
-        }
+        blob.Clear();
+        return false;
     }
     return true;
 }
