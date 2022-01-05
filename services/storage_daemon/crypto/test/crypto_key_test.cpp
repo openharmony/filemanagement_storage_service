@@ -34,8 +34,8 @@ public:
     OHOS::StorageDaemon::UserAuth emptyUserAuth { "" };
 };
 
-std::string toEncryptMnt("/data/lqh/mnt");
-std::string toEncryptDir("/data/lqh/mnt/test_crypto");
+std::string toEncryptMnt("/data");
+std::string toEncryptDir("/data/test/crypto_dir");
 std::string testKeyPath("/data/test/sys_de");
 OHOS::StorageDaemon::BaseKey deKey {testKeyPath};
 void CryptoKeyTest::SetUpTestCase(void)
@@ -195,10 +195,10 @@ HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_policy_set, TestSize.Level1)
     OHOS::ForceCreateDirectory(toEncryptDir);
     EXPECT_EQ(true, OHOS::StorageDaemon::KeyCtrl::SetPolicy(toEncryptDir, arg));
 
-    sleep(10);
-
-    EXPECT_EQ(true, deKey.ClearKeyV2(toEncryptMnt));
-    // EXPECT_EQ(true, deKey.ClearKeyV2(toEncryptMnt));
+    OHOS::ForceCreateDirectory(toEncryptDir + "/test_dir");
+    OHOS::SaveStringToFile(toEncryptDir + "/test_file1", "hello, world!\n");
+    OHOS::SaveStringToFile(toEncryptDir + "/test_file2", "AA");
+    sleep(1);
 }
 
 /**
@@ -212,7 +212,53 @@ HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_policy_get, TestSize.Level1)
     struct fscrypt_get_policy_ex_arg arg;
     memset_s(&arg, sizeof(arg), 0, sizeof(arg));
     arg.policy_size = sizeof(arg.policy);
-    std::cout << "policy_size=" << arg.policy_size << std::endl;
     EXPECT_EQ(true, OHOS::StorageDaemon::KeyCtrl::GetPolicy(toEncryptDir, arg));
     EXPECT_EQ(FSCRYPT_POLICY_V2, arg.policy.version);
+
+    memset_s(&arg, sizeof(arg), 0, sizeof(arg));
+    arg.policy_size = sizeof(arg.policy);
+    EXPECT_EQ(true, OHOS::StorageDaemon::KeyCtrl::GetPolicy(toEncryptDir + "/test_dir", arg));
+    EXPECT_EQ(FSCRYPT_POLICY_V2, arg.policy.version);
+}
+
+/**
+ * @tc.name: basekey_fscrypt_v2_policy_clear
+ * @tc.desc: Verify the fscrypt V2 clear key function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK0BP
+ */
+HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_policy_clear, TestSize.Level1)
+{
+    EXPECT_EQ(true, deKey.ClearKeyV2(toEncryptMnt));
+    EXPECT_EQ(false, OHOS::FileExists(toEncryptDir + "/test_dir"));
+    EXPECT_EQ(false, OHOS::FileExists(toEncryptDir + "/test_file1"));
+    EXPECT_EQ(false, OHOS::FileExists(toEncryptDir + "/test_file2"));
+}
+/**
+ * @tc.name: basekey_fscrypt_v2_policy_restore
+ * @tc.desc: Verify the fscrypt V2 restore and decrypt.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK0BP
+ */
+HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_policy_restore, TestSize.Level1)
+{
+    EXPECT_EQ(true, deKey.RestoreKey(emptyUserAuth));
+    // the ext4 disk with `mke2fs -O encrypt` mounted for test
+    EXPECT_EQ(true, deKey.ActiveKeyV2(toEncryptMnt));
+
+    struct fscrypt_policy_v2 arg = {.version = FSCRYPT_POLICY_V2};
+    memcpy_s(arg.master_key_identifier, FSCRYPT_KEY_IDENTIFIER_SIZE, deKey.keyInfo_.keyId.data.get(), deKey.keyInfo_.keyId.size);
+    arg.contents_encryption_mode = OHOS::StorageDaemon::CONTENTS_MODES.at("aes-256-xts");
+    arg.filenames_encryption_mode = OHOS::StorageDaemon::FILENAME_MODES.at("aes-256-cts");
+    arg.flags = FSCRYPT_POLICY_FLAGS_PAD_32;
+    // Default to maximum zero-padding to leak less info about filename lengths.
+    EXPECT_EQ(true, OHOS::StorageDaemon::KeyCtrl::SetPolicy(toEncryptDir, arg));
+
+
+    EXPECT_EQ(true, OHOS::FileExists(toEncryptDir + "/test_dir"));
+    EXPECT_EQ(true, OHOS::FileExists(toEncryptDir + "/test_file1"));
+    EXPECT_EQ(true, OHOS::FileExists(toEncryptDir + "/test_file2"));
+
+    EXPECT_EQ(true, deKey.ClearKeyV2(toEncryptMnt));
+    // EXPECT_EQ(true, deKey.ClearKeyV2(toEncryptMnt));
 }
