@@ -24,7 +24,7 @@ namespace StorageDaemon {
 class BaseKey {
 public:
     BaseKey() = delete;
-    BaseKey(std::string dir);
+    BaseKey(std::string dir, uint8_t keyLen = CRYPTO_AES_256_XTS_KEY_SIZE);
     ~BaseKey() = default;
 
     bool InitKey();
@@ -49,6 +49,7 @@ private:
 
     std::string dir_ {};
     KeyContext keyContext_ {};
+    uint8_t keyLen_ {};
 };
 } // namespace StorageDaemon
 } // namespace OHOS

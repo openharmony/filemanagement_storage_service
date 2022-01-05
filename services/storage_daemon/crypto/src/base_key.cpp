@@ -32,7 +32,7 @@
 namespace OHOS {
 namespace StorageDaemon {
 static bool g_isHuksMasterInit = false;
-BaseKey::BaseKey(std::string dir) : dir_(dir)
+BaseKey::BaseKey(std::string dir, uint8_t keyLen) : dir_(dir), keyLen_(keyLen)
 {
     if (!g_isHuksMasterInit && (HuksMaster::Init() == 0)) {
         g_isHuksMasterInit = true;
@@ -78,7 +78,7 @@ bool BaseKey::InitKey()
         LOGE("key is not empty");
         return false;
     }
-    if (!GenerateKeyBlob(keyInfo_.key, FS_AES_256_XTS_KEY_SIZE)) {
+    if (!GenerateKeyBlob(keyInfo_.key, keyLen_)) {
         LOGE("GenerateKeyBlob failed");
         return false;
     }

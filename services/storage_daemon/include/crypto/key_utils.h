@@ -27,7 +27,7 @@ constexpr uint32_t CRYPTO_KEY_SECDISC_SIZE = 16384;
 constexpr uint32_t CRYPTO_KEY_ALIAS_SIZE = 8;
 constexpr uint32_t CRYPTO_AES_256_LEN = 256;
 constexpr uint32_t CRYPTO_AES_AAD_LEN = 16;
-constexpr uint32_t FS_AES_256_XTS_KEY_SIZE = 64;
+constexpr uint32_t CRYPTO_AES_256_XTS_KEY_SIZE = 64;
 static const std::string CRYPTO_NAME_PREFIXES[] = {"ext4", "f2fs", "fscrypt"};
 
 struct KeyBlob {
@@ -55,6 +55,7 @@ struct KeyBlob {
     {
         std::string hex;
         const char *hexMap = "0123456789abcdef";
+        static_assert(sizeof(data[0]) == sizeof(char));
         for (size_t i = 0; i < size; i++) {
             hex = hex + hexMap[(data[i] & 0xF0) >> 4] + hexMap[data[i] & 0x0F]; // higher 4 bits
         }

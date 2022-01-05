@@ -65,7 +65,7 @@ HWTEST_F(CryptoKeyTest, basekey_init, TestSize.Level1)
 
     EXPECT_EQ(true, deKey.InitKey());
 
-    EXPECT_EQ(OHOS::StorageDaemon::FS_AES_256_XTS_KEY_SIZE, deKey.keyInfo_.key.size);
+    EXPECT_EQ(OHOS::StorageDaemon::CRYPTO_AES_256_XTS_KEY_SIZE, deKey.keyInfo_.key.size);
     EXPECT_NE(nullptr, deKey.keyInfo_.key.data.get());
     EXPECT_EQ(OHOS::StorageDaemon::CRYPTO_KEY_ALIAS_SIZE, deKey.keyInfo_.keyDesc.size);
     EXPECT_NE(nullptr, deKey.keyInfo_.keyDesc.data.get());
@@ -111,7 +111,7 @@ HWTEST_F(CryptoKeyTest, basekey_restore, TestSize.Level1)
 
     EXPECT_EQ(true, deKey.RestoreKey(emptyUserAuth));
 
-    EXPECT_EQ(OHOS::StorageDaemon::FS_AES_256_XTS_KEY_SIZE, deKey.keyInfo_.key.size);
+    EXPECT_EQ(OHOS::StorageDaemon::CRYPTO_AES_256_XTS_KEY_SIZE, deKey.keyInfo_.key.size);
     EXPECT_NE(nullptr, deKey.keyInfo_.key.data.get());
     EXPECT_EQ(OHOS::StorageDaemon::CRYPTO_KEY_ALIAS_SIZE, deKey.keyInfo_.keyDesc.size);
     EXPECT_NE(nullptr, deKey.keyInfo_.keyDesc.data.get());
