@@ -16,14 +16,14 @@
 #ifndef STORAGE_DAEMON_CILENT_H
 #define STORAGE_DAEMON_CILENT_H
 
+#include <mutex>
+#include <iostream>
+#include <sys/types.h>
+
 #include "iremote_proxy.h"
 #include "ipc/istorage_daemon.h"
 #include "ipc/storage_daemon.h"
 #include "ipc/storage_daemon_proxy.h"
-
-#include <mutex>
-#include <iostream>
-#include <sys/types.h>
 
 namespace OHOS {
 namespace StorageDaemon {

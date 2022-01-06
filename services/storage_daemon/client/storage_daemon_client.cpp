@@ -31,7 +31,7 @@ sptr<IStorageDaemon> StorageDaemonClient::GetStorageDaemonProxy(void)
         return nullptr;
     }
 
-    sptr<IRemoteObject> object = samgr->GetSystemAbility(OHOS::STORAGE_STORAGE_DAEMON_SA_ID);
+    sptr<IRemoteObject> object = samgr->GetSystemAbility(OHOS::STORAGE_MANAGER_DAEMON_ID);
     if (object == nullptr) {
         LOGE("storage daemon client samgr ablity empty error");
         return nullptr;

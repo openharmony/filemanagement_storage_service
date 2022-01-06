@@ -24,10 +24,9 @@
 #include <sys/stat.h>
 
 #include "directory_ex.h"
-
+#include "utils/log.h"
 #include "huks_master.h"
 #include "key_ctrl.h"
-#include "utils/log.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -59,8 +58,6 @@ bool BaseKey::InitKey()
         return false;
     }
 
-    // TO BE DELETED
-    LOGD("success. rawkey len:%{public}d, data(hex):%{private}s", keyInfo_.key.size, keyInfo_.key.ToString().c_str());
     return true;
 }
 
@@ -236,8 +233,6 @@ bool BaseKey::DecryptKey(const UserAuth &auth)
     keyContext_.nonce.Clear();
     keyContext_.aad.Clear();
 
-    // TO BE DELETED
-    LOGD("rawkey len:%{public}d, data(hex):%{private}s", keyInfo_.key.size, keyInfo_.key.ToString().c_str());
     return ret;
 }
 
