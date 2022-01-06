@@ -31,8 +31,6 @@ public:
         CHECK,
         FORMAT,
 
-        ADD_USER,
-        REMOVE_USER,
         PREPARE_USER_DIRS,
         DESTROY_USER_DIRS,
         START_USER,
@@ -51,8 +49,6 @@ public:
     virtual int32_t Check(std::string volId) = 0;
     virtual int32_t Format(std::string voldId) = 0;
 
-    virtual int32_t AddUser(int32_t userId) = 0;
-    virtual int32_t RemoveUser(int32_t userId) = 0;
     virtual int32_t StartUser(int32_t userId) = 0;
     virtual int32_t StopUser(int32_t userId) = 0;
     virtual int32_t PrepareUserDirs(int32_t userId, uint32_t flags) = 0;

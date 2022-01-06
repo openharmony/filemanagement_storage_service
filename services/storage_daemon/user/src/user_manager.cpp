@@ -28,6 +28,25 @@ namespace StorageDaemon {
 constexpr int32_t UMOUNT_RETRY_TIMES = 3;
 UserManager* UserManager::instance_ = nullptr;
 
+UserManager::UserManager()
+    : rootDirVec_{
+        {"/data/app/%s/%d", 0711, OID_ROOT, OID_ROOT},
+        {"/data/service/%s/%d", 0711, OID_ROOT, OID_ROOT},
+        {"/data/chipset/%s/%d", 0711, OID_ROOT, OID_ROOT}
+    },
+    subDirVec_{
+        {"/data/app/%s/%d/base", 0711, OID_ROOT, OID_ROOT},
+        {"/data/app/%s/%d/database", 0711, OID_ROOT, OID_ROOT}
+    },
+    hmdfsDirVec_{
+        {"/data/service/el2/%d/hmdfs", 0711, OID_SYSTEM, OID_SYSTEM},
+        {"/data/service/el2/%d/hmdfs/files", 0711, OID_SYSTEM, OID_SYSTEM},
+        {"/data/service/el2/%d/hmdfs/data", 0711, OID_SYSTEM, OID_SYSTEM},
+        {"/storage/media/%d", 0711, OID_ROOT, OID_ROOT},
+        {"/storage/media/%d/local", 0711, OID_ROOT, OID_ROOT}
+    }
+{}
+
 UserManager* UserManager::Instance()
 {
     if (instance_ == nullptr) {
@@ -37,74 +56,18 @@ UserManager* UserManager::Instance()
     return instance_;
 }
 
-int32_t UserManager::CheckUserState(int32_t userId, UserState state)
-{
-    auto iterator = users_.find(userId);
-    if (iterator == users_.end()) {
-        LOGE("the user %{public}d doesn't exist", userId);
-        return E_NON_EXIST;
-    }
-
-    UserInfo& user = iterator->second;
-    if (user.GetState() != state) {
-        LOGE("the user's state %{public}d is invalid", user.GetState());
-        return E_USER_STATE;
-    }
-
-    return E_OK;
-}
-
-inline void UserManager::SetUserState(int32_t userId, UserState state)
-{
-    // because of mutex lock, user must exist without checking
-    users_.at(userId).SetState(state);
-}
-
-int32_t UserManager::AddUser(int32_t userId)
-{
-    LOGI("add user %{public}d", userId);
-
-    if (users_.count(userId) != 0) {
-        LOGE("The user %{public}d has existed", userId);
-        return E_EXIST;
-    }
-    users_.insert({ userId, UserInfo(userId, USER_CREAT) });
-
-    return E_OK;
-}
-
-int32_t UserManager::RemoveUser(int32_t userId)
-{
-    LOGI("remove user %{public}d", userId);
-
-    int32_t err = E_OK;
-    if ((err = CheckUserState(userId, USER_CREAT)) != E_OK) {
-        return err;
-    }
-
-    users_.erase(userId);
-
-    return E_OK;
-}
-
 int32_t UserManager::StartUser(int32_t userId)
 {
     LOGI("start user %{public}d", userId);
 
-    int32_t err = E_OK;
-    if ((err =CheckUserState(userId, USER_PREPARE)) != E_OK) {
-        return err;
-    }
+    // get syspara: hmdfs
 
-    err = Mount(StringPrintf(hmdfsSource_.c_str(), userId),
-                        StringPrintf(hmdfsTarget_.c_str(), userId),
-                        nullptr, MS_BIND, nullptr);
-    if (err) {
+    if ((Mount(StringPrintf(hmdfsSource_.c_str(), userId),
+               StringPrintf(hmdfsTarget_.c_str(), userId),
+               nullptr, MS_BIND, nullptr))) {
         LOGE("failed to mount, err %{public}d", errno);
         return E_MOUNT;
     }
-
-    SetUserState(userId, USER_START);
 
     return E_OK;
 }
@@ -113,14 +76,11 @@ int32_t UserManager::StopUser(int32_t userId)
 {
     LOGI("stop user %{public}d", userId);
 
-    int32_t err = E_OK;
-    if ((err = CheckUserState(userId, USER_START)) != E_OK) {
-        return err;
-    }
+    // get syspara: hmdfs
 
     int32_t count = 0;
     while (count < UMOUNT_RETRY_TIMES) {
-        err = UMount(StringPrintf(hmdfsTarget_.c_str(), userId));
+        int32_t err = UMount(StringPrintf(hmdfsTarget_.c_str(), userId));
         if (err == E_OK) {
             break;
         } else if (errno == EBUSY) {
@@ -132,8 +92,6 @@ int32_t UserManager::StopUser(int32_t userId)
         }
     }
 
-    SetUserState(userId, USER_PREPARE);
-
     return E_OK;
 }
 
@@ -142,27 +100,28 @@ int32_t UserManager::PrepareUserDirs(int32_t userId, uint32_t flags)
     LOGI("prepare user dirs for %{public}d, flags %{public}u", userId, flags);
 
     int32_t err = E_OK;
-    if ((err = CheckUserState(userId, USER_CREAT)) != E_OK) {
-        return err;
-    }
 
     if (flags & IStorageDaemon::CRYPTO_FLAG_EL1) {
-        if (!PrepareUserEl1Dirs(userId)) {
-            LOGE("failed to prepare user el1 dirs for userid %{public}d", userId);
-            return E_PREPARE_DIR;
+        err = PrepareDirsFromIdAndLevel(userId, el1_);
+        if (err != E_OK) {
+            return err;
         }
     }
 
     if (flags & IStorageDaemon::CRYPTO_FLAG_EL2) {
-        if (!PrepareUserEl2Dirs(userId)) {
-            LOGE("failed to prepare user el2 dirs for userid %{public}d", userId);
-            return E_PREPARE_DIR;
+        err = PrepareDirsFromIdAndLevel(userId, el2_);
+        if (err != E_OK) {
+            return err;
         }
     }
 
-    SetUserState(userId, USER_PREPARE);
+    // get syspara: hmdfs
+    err = PrepareHmdfsDirs(userId);
+    if (err != E_OK) {
+        return err;
+    }
 
-    return err;
+    return E_OK;
 }
 
 int32_t UserManager::DestroyUserDirs(int32_t userId, uint32_t flags)
@@ -170,82 +129,94 @@ int32_t UserManager::DestroyUserDirs(int32_t userId, uint32_t flags)
     LOGI("destroy user dirs for %{public}d, flags %{public}u", userId, flags);
 
     int32_t err = E_OK;
-    if ((err = CheckUserState(userId, USER_PREPARE)) != E_OK) {
-        return err;
-    }
 
     if (flags & IStorageDaemon::CRYPTO_FLAG_EL1) {
-        if (!DestroyUserEl1Dirs(userId)) {
-            LOGE("failed to destroy user el1 dirs for userid %{public}d", userId);
-            err = E_DESTROY_DIR;
-        }
+        err = DestroyDirsFromIdAndLevel(userId, el1_);
     }
 
     if (flags & IStorageDaemon::CRYPTO_FLAG_EL2) {
-        if (!DestroyUserEl2Dirs(userId)) {
-            LOGE("failed to destroy user el2 dirs for userid %{public}d", userId);
-            err = E_DESTROY_DIR;
-        }
+        err = DestroyDirsFromIdAndLevel(userId, el2_);
     }
 
-    SetUserState(userId, USER_CREAT);
+    // get syspara: hmdfs
+    err = DestroyHmdfsDirs(userId);
 
     return err;
 }
 
-inline bool PrepareUserDirsFromVec(int32_t userId, std::vector<DirInfo> dirVec)
+inline bool PrepareDirsFromVec(int32_t userId, const std::string &level, const std::vector<DirInfo> &vec)
 {
-    for (DirInfo &dir : dirVec) {
-        if (!PrepareDir(StringPrintf(dir.path.c_str(), userId), dir.mode, dir.uid, dir.gid)) {
-                return false;
+    for (const DirInfo &dir : vec) {
+        if (!PrepareDir(StringPrintf(dir.path.c_str(), level.c_str(), userId), dir.mode, dir.uid, dir.gid)) {
+            return false;
         }
     }
 
     return true;
 }
 
-inline bool DestroyUserDirsFromVec(int32_t userId, std::vector<DirInfo> dirVec)
+inline bool DestroyDirsFromVec(int32_t userId, const std::string &level, const std::vector<DirInfo> &vec)
 {
-    bool ret = true;
+    bool err = true;
 
-    for (DirInfo &dir : dirVec) {
+    for (const DirInfo &dir : vec) {
         if (IsEndWith(dir.path.c_str(), "%d")) {
-            ret &= RmDirRecurse(StringPrintf(dir.path.c_str(), userId));
+            err &= RmDirRecurse(StringPrintf(dir.path.c_str(), level.c_str(), userId));
         }
     }
 
-    return ret;
+    return err;
 }
 
-bool UserManager::PrepareUserEl1Dirs(int32_t userId)
+int32_t UserManager::PrepareDirsFromIdAndLevel(int32_t userId, const std::string &level)
 {
-    return PrepareUserDirsFromVec(userId, el1DirVec_);
+    if (!PrepareDirsFromVec(userId, level, rootDirVec_)) {
+        LOGE("failed to prepare %{public}s root dirs for userid %{public}d", level.c_str(), userId);
+        return E_PREPARE_DIR;
+    }
+
+    // set policy here
+
+    if (!PrepareDirsFromVec(userId, level, subDirVec_)) {
+        LOGE("failed to prepare %{public}s sub dirs for userid %{public}d", level.c_str(), userId);
+        return E_PREPARE_DIR;
+    }
+
+    return E_OK;
 }
 
-bool UserManager::PrepareUserEl2Dirs(int32_t userId)
+int32_t UserManager::DestroyDirsFromIdAndLevel(int32_t userId, const std::string &level)
 {
-    return PrepareUserDirsFromVec(userId, el2DirVec_) && PrepareUserHmdfsDirs(userId);
+    if (!DestroyDirsFromVec(userId, level, rootDirVec_)) {
+        LOGE("failed to destroy %{public}s dirs for userid %{public}d", level.c_str(), userId);
+        return E_DESTROY_DIR;
+    }
+
+    return E_OK;
 }
 
-bool UserManager::PrepareUserHmdfsDirs(int32_t userId)
+int32_t UserManager::PrepareHmdfsDirs(int32_t userId)
 {
-    return PrepareUserDirsFromVec(userId, hmdfsDirVec_);
+    for (const DirInfo &dir : hmdfsDirVec_) {
+        if (!PrepareDir(StringPrintf(dir.path.c_str(), userId), dir.mode, dir.uid, dir.gid)) {
+            return E_PREPARE_DIR;
+        }
+    }
+
+    return E_OK;
 }
 
-bool UserManager::DestroyUserEl1Dirs(int32_t userId)
+int32_t UserManager::DestroyHmdfsDirs(int32_t userId)
 {
-    return DestroyUserDirsFromVec(userId, el1DirVec_);
-}
+    bool err = true;
 
-bool UserManager::DestroyUserEl2Dirs(int32_t userId)
-{
-    return DestroyUserDirsFromVec(userId, hmdfsDirVec_) && DestroyUserDirsFromVec(userId, el2DirVec_);
-}
+    for (const DirInfo &dir : hmdfsDirVec_) {
+        if (IsEndWith(dir.path.c_str(), "%d")) {
+            err &= RmDirRecurse(StringPrintf(dir.path.c_str(), userId));
+        }
+    }
 
-bool UserManager::DestroyUserHmdfsDirs(int32_t userId)
-{
-    return DestroyUserDirsFromVec(userId, hmdfsDirVec_);
+    return err ? E_OK : E_DESTROY_DIR;
 }
-
 } // StorageDaemon
 } // OHOS

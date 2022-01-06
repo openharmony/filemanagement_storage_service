@@ -34,8 +34,6 @@ private:
     int32_t HandleCheck(MessageParcel &data, MessageParcel &reply);
     int32_t HandleFormat(MessageParcel &data, MessageParcel &reply);
 
-    int32_t HandleAddUser(MessageParcel &data, MessageParcel &reply);
-    int32_t HandleRemoveUser(MessageParcel &data, MessageParcel &reply);
     int32_t HandleStartUser(MessageParcel &data, MessageParcel &reply);
     int32_t HandleStopUser(MessageParcel &data, MessageParcel &reply);
     int32_t HandlePrepareUserDirs(MessageParcel &data, MessageParcel &reply);

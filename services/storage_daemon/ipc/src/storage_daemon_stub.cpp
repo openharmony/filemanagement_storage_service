@@ -32,12 +32,6 @@ int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
         case SHUTDOWN:
             err = HandleShutdown();
             break;
-        case ADD_USER:
-            err = HandleAddUser(data, reply);
-            break;
-        case REMOVE_USER:
-            err = HandleRemoveUser(data, reply);
-            break;
         case PREPARE_USER_DIRS:
             err = HandlePrepareUserDirs(data, reply);
             break;
@@ -83,28 +77,6 @@ int32_t StorageDaemonStub::HandleCheck(MessageParcel &data, MessageParcel &reply
 
 int32_t StorageDaemonStub::HandleFormat(MessageParcel &data, MessageParcel &reply)
 {
-    return E_OK;
-}
-
-int32_t StorageDaemonStub::HandleAddUser(MessageParcel &data, MessageParcel &reply)
-{
-    int32_t userId = data.ReadInt32();
-
-    int err = AddUser(userId);
-    if (!reply.WriteUint32(err)) {
-        return  E_IPC_ERROR;
-    }
-    return E_OK;
-}
-
-int32_t StorageDaemonStub::HandleRemoveUser(MessageParcel &data, MessageParcel &reply)
-{
-    int32_t userId = data.ReadInt32();
-
-    int err = RemoveUser(userId);
-    if (!reply.WriteUint32(err)) {
-        return  E_IPC_ERROR;
-    }
     return E_OK;
 }
 

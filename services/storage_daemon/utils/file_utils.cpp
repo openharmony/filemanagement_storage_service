@@ -107,6 +107,10 @@ bool RmDirRecurse(const std::string &path)
 
     DIR *dir = opendir(path.c_str());
     if (!dir) {
+        if (errno == ENOENT) {
+            return true;
+        }
+
         LOGE("failed to open dir %{public}s, errno %{public}d", path.c_str(), errno);
         return false;
     }

@@ -18,10 +18,8 @@
 
 #include <string>
 #include <vector>
-#include <unordered_map> 
 #include <sys/types.h>
 #include <nocopyable.h>
-#include "user/user_info.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -39,46 +37,28 @@ class UserManager final {
 public:
     virtual ~UserManager() = default;
     static UserManager* Instance();
-    int32_t AddUser(int32_t userId);
-    int32_t RemoveUser(int32_t userId);
     int32_t PrepareUserDirs(int32_t userId, uint32_t flags);
     int32_t DestroyUserDirs(int32_t userId, uint32_t flags);
     int32_t StartUser(int32_t userId);
     int32_t StopUser(int32_t userId);
 
 private:
-    UserManager() = default;
-    bool PrepareUserEl1Dirs(int32_t userId);
-    bool PrepareUserEl2Dirs(int32_t userId);
-    bool PrepareUserHmdfsDirs(int32_t userId);
-    bool DestroyUserEl1Dirs(int32_t userId);
-    bool DestroyUserEl2Dirs(int32_t userId);
-    bool DestroyUserHmdfsDirs(int32_t userId);
-    int32_t CheckUserState(int32_t userId, UserState state);
-    void SetUserState(int32_t userId, UserState state);
+    UserManager();
+    int32_t PrepareDirsFromIdAndLevel(int32_t userId, const std::string &level);
+    int32_t DestroyDirsFromIdAndLevel(int32_t userId, const std::string &level);
+    int32_t PrepareHmdfsDirs(int32_t userId);
+    int32_t DestroyHmdfsDirs(int32_t userId);
+
     DISALLOW_COPY_AND_MOVE(UserManager);
 
     static UserManager* instance_;
-    std::unordered_map<int32_t, UserInfo> users_;
-
-    const std::vector<DirInfo> el1DirVec_ = {
-        {"/data/app/el1/%d", 0711, OID_ROOT, OID_ROOT},
-        {"/data/service/el1/%d", 0711, OID_ROOT, OID_ROOT},
-        {"/data/vendor/el1/%d", 0711, OID_ROOT, OID_ROOT}
-    };
-    const std::vector<DirInfo> el2DirVec_ = {
-        {"/data/app/el2/%d", 0711, OID_ROOT, OID_ROOT},
-        {"/data/service/el2/%d", 0711, OID_ROOT, OID_ROOT},
-        {"/data/vendor/el2/%d", 0711, OID_ROOT, OID_ROOT}
-    };
-    const std::vector<DirInfo> hmdfsDirVec_ = {
-        {"/data/service/el2/%d/hmdfs", 0711, OID_SYSTEM, OID_SYSTEM},
-        {"/data/service/el2/%d/hmdfs/files", 0711, OID_SYSTEM, OID_SYSTEM},
-        {"/storage/media/%d", 0711, OID_ROOT, OID_ROOT},
-        {"/storage/media/%d/local", 0711, OID_ROOT, OID_ROOT}
-    };
+    const std::vector<DirInfo> rootDirVec_;
+    const std::vector<DirInfo> subDirVec_;
+    const std::vector<DirInfo> hmdfsDirVec_;
     const std::string hmdfsSource_ = "/data/service/el2/%d/hmdfs/files";
     const std::string hmdfsTarget_ = "/storage/media/%d/local";
+    const std::string el1_ = "el1";
+    const std::string el2_ = "el2";
 };
 } // STORAGE_DAEMON
 } // OHOS

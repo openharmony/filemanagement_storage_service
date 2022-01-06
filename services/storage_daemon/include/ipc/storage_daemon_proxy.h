@@ -31,8 +31,6 @@ public:
     virtual int32_t Check(std::string volId) override;
     virtual int32_t Format(std::string voldId) override;
 
-    virtual int32_t AddUser(int32_t userId) override;
-    virtual int32_t RemoveUser(int32_t userId) override;
     virtual int32_t StartUser(int32_t userId) override;
     virtual int32_t StopUser(int32_t userId) override;
     virtual int32_t PrepareUserDirs(int32_t userId, uint32_t flags) override;
