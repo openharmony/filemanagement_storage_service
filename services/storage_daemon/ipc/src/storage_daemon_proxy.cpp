@@ -132,5 +132,37 @@ int32_t StorageDaemonProxy::StopUser(int32_t userId)
     return reply.ReadUint32();
 }
 
+int32_t StorageDaemonProxy::InitGlobalKey(void)
+{
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
+        return E_IPC_ERROR;
+    }
+
+    int err = Remote()->SendRequest(INIT_GLOBAL_KEY, data, reply, option);
+    if (err != E_OK) {
+        return E_IPC_ERROR;
+    }
+
+    return reply.ReadUint32();
+}
+
+int32_t StorageDaemonProxy::InitGlobalUserKeys(void)
+{
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
+        return E_IPC_ERROR;
+    }
+
+    int err = Remote()->SendRequest(INIT_GLOBAL_USER_KEYS, data, reply, option);
+    if (err != E_OK) {
+        return E_IPC_ERROR;
+    }
+
+    return reply.ReadUint32();
+}
+
 } // StorageDaemon
 } // OHOS

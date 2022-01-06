@@ -44,6 +44,12 @@ int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
         case STOP_USER:
             err = HandleStopUser(data, reply);
             break;
+        case INIT_GLOBAL_KEY:
+            err = HandleInitGlobalKey(data, reply);
+            break;
+        case INIT_GLOBAL_USER_KEYS:
+            err = HandleInitGlobalUserKeys(data, reply);
+            break;
         default: {
             LOGI(" use IPCObjectStub default OnRemoteRequest");
             err = IPCObjectStub::OnRemoteRequest(code, data, reply, option);
@@ -122,6 +128,26 @@ int32_t StorageDaemonStub::HandleStopUser(MessageParcel &data, MessageParcel &re
 
     int32_t err = StopUser(userId);
     if (!reply.WriteInt32(err)) {
+        return E_IPC_ERROR;
+    }
+
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleInitGlobalKey(MessageParcel &data, MessageParcel &reply)
+{
+    int err = InitGlobalKey();
+    if (reply.WriteInt32(err)){
+        return E_IPC_ERROR;
+    }
+
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleInitGlobalUserKeys(MessageParcel &data, MessageParcel &reply)
+{
+    int err = InitGlobalUserKeys();
+    if (reply.WriteInt32(err)){
         return E_IPC_ERROR;
     }
 

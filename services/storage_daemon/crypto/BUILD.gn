@@ -1,0 +1,61 @@
+# Copyright (c) 2021 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+import("//build/ohos.gni")
+
+## build sm execute bin file
+config("storage_daemon_crypto_config") {
+  visibility = [ ":*" ]
+
+  include_dirs = [
+    "../include",
+    "../include/crypto",
+    "//third_party/openssl/include/openssl",
+    "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
+    "//utils/system/safwk/native/include",
+    "//utils/native/base/include",
+    "//third_party/openssl/include",
+  ]
+
+  cflags = [
+    "-g3",
+    "-Wall"
+  ]
+}
+
+config("crypto_public_config") {
+  include_dirs = [
+    "//third_party/openssl/include/openssl",
+    "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
+  ]
+}
+
+ohos_static_library("libsdcrypto") {
+  sources = [
+    "src/key_ctrl.cpp",
+    "src/base_key.cpp",
+    "src/huks_master.cpp",
+    "src/key_manager.cpp",
+  ]
+
+  public_deps = [ "//utils/native/base:utils" ]
+  public_configs = [ ":crypto_public_config" ]
+  external_deps = [
+    "hiviewdfx_hilog_native:libhilog",
+    "huks:libhukssdk",
+  ]
+
+  configs = [ ":storage_daemon_crypto_config" ]
+
+  subsystem_name = "storage_manager"
+  part_name = "storage_standard"
+}

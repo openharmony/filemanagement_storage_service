@@ -35,6 +35,11 @@ public:
     virtual int32_t StopUser(int32_t userId) override;
     virtual int32_t PrepareUserDirs(int32_t userId, uint32_t flags) override;
     virtual int32_t DestroyUserDirs(int32_t userId, uint32_t flags) override;
+
+    // fscrypt api
+    virtual int32_t InitGlobalKey(void) override;
+    virtual int32_t InitGlobalUserKeys(void) override;
+
 private:
     static inline BrokerDelegator<StorageDaemonProxy> delegator_;
 };

@@ -16,6 +16,7 @@
 #include "ipc/storage_daemon.h"
 #include "user/user_manager.h"
 #include "utils/errno.h"
+#include "crypto/key_manager.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -66,6 +67,18 @@ int32_t StorageDaemon::StopUser(int32_t userId)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     return UserManager::Instance()->StopUser(userId);
+}
+
+int32_t StorageDaemon::InitGlobalKey(void)
+{
+    std::lock_guard<std::mutex> lock(keyMutex_);
+    return KeyManager::GetInstance()->InitGlobalDeviceKey();
+}
+
+int32_t StorageDaemon::InitGlobalUserKeys(void)
+{
+    std::lock_guard<std::mutex> lock(keyMutex_);
+    return KeyManager::GetInstance()->InitGlobalUserKeys();
 }
 
 } // StorageDaemon

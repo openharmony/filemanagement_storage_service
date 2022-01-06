@@ -49,7 +49,48 @@ ohos_executable("storage_daemon") {
 
   deps = [
     "//utils/native/base:utils",
+    "crypto:libsdcrypto",
+    ":sdc"
   ]
+
+  external_deps = [
+    "hiviewdfx_hilog_native:libhilog",
+    "ipc:ipc_core",
+    "samgr_standard:samgr_proxy"
+  ]
+
+  subsystem_name = "storage_manager"
+  part_name = "storage_standard"
+  install_enable = true
+}
+
+config("sdc_config") {
+  include_dirs = [
+    "include",
+    "//utils/native/base/include",
+    "//foundation/distributedschedule/samgr/interfaces/innerkits/samgr_proxy/include",
+    "//utils/system/safwk/native/include",
+    "//foundation/communication/ipc/interfaces/innerkits/ipc_core/include/",
+    "client/include",
+  ]
+}
+
+ohos_executable("sdc") {
+  sources = [
+    "ipc/src/storage_daemon_proxy.cpp",
+    "client/storage_daemon_client.cpp",
+    "sdc.cpp"
+  ]
+
+  configs = [
+    ":sdc_config"
+  ]
+
+  deps = [
+    "crypto:libsdcrypto",
+  ]
+
+  public_deps = [ "//utils/native/base:utils" ]
 
   external_deps = [
     "hiviewdfx_hilog_native:libhilog",

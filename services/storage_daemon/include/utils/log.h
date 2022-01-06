@@ -24,10 +24,10 @@
 namespace OHOS {
 namespace StorageDaemon {
 
-static constexpr OHOS::HiviewDFX::HiLogLabel LOG_LABEL = { LOG_CORE, LOG_DOMAIN, "StorageDaemon" };
+constexpr OHOS::HiviewDFX::HiLogLabel LOG_LABEL = { LOG_CORE, LOG_DOMAIN, "StorageDaemon" };
 
 #define PRINT_LOG(Level, fmt, ...) \
-    HiviewDFX::HiLog::Level(LOG_LABEL, "[%{public}s:%{public}d] " fmt, \
+    OHOS::HiviewDFX::HiLog::Level(OHOS::StorageDaemon::LOG_LABEL, "[%{public}s:%{public}d] " fmt, \
                             __FUNCTION__, __LINE__, ##__VA_ARGS__)
 
 #define LOGD(fmt, ...) PRINT_LOG(Debug, fmt, ##__VA_ARGS__)
