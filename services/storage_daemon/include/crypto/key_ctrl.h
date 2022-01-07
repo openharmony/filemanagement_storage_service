@@ -27,7 +27,7 @@ namespace StorageDaemon {
 using key_serial_t = int;
 class KeyCtrl {
 public:
-    // ------ fscrypt v1 ------
+    // ------ fscrypt legacy ------
     static key_serial_t AddKey(const std::string &type, const std::string &description, const key_serial_t ringId);
     static key_serial_t AddKey(const std::string &type, const std::string &description, fscrypt_key &fsKey,
         const key_serial_t ringId);
@@ -48,6 +48,8 @@ public:
     static bool SetPolicy(const std::string &path, fscrypt_policy_v1 &policy);
     static bool SetPolicy(const std::string &path, fscrypt_policy_v2 &policy);
     static bool GetPolicy(const std::string &path, fscrypt_get_policy_ex_arg &options);
+
+    static bool LoadAndSetPolicy(const std::string &policy, const std::string &toEncrypt);
 };
 
 struct CryptoOptions {

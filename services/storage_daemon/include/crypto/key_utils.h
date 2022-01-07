@@ -43,7 +43,9 @@ struct KeyBlob {
     }
     void Clear()
     {
-        memset_s(data.get(), size, 0, size);
+        if (data != nullptr && size != 0) {
+            (void)memset_s(data.get(), size, 0, size);
+        }
         size = 0;
         data.reset(nullptr);
     }
@@ -71,12 +73,13 @@ struct KeyBlob {
 
 struct KeyInfo {
     KeyBlob key;
+    // the legacy interface use key_spec.u.descriptor
     KeyBlob keyDesc;
+    // the v2 interface use the key_spec.u.identifier
     KeyBlob keyId;
 };
 
 struct KeyContext {
-    std::string version;
     KeyBlob secDiscard;
     KeyBlob alias;
     KeyBlob encrypted;
@@ -84,9 +87,12 @@ struct KeyContext {
     KeyBlob aad;
 };
 
-struct EncryptMode {
+struct EncryptPolicy {
+    std::string version;
     std::string fileName;
     std::string content;
+    int flags;
+    bool hwWrappedKey;
 };
 
 struct UserAuth {
