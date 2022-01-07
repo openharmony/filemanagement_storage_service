@@ -19,7 +19,6 @@
 namespace OHOS {
 namespace StorageDaemon {
 class VolumeInfo {
-
 };
 } // STORAGE_DAEMON
 } // OHOS

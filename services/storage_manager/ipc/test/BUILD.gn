@@ -18,32 +18,28 @@ ohos_unittest("storage_manager_proxy_test") {
 
   sources = [
     "//foundation/filemanagement/storage_service/services/storage_manager/ipc/src/storage_manager_proxy.cpp",
-    "storage_manager_proxy_test.cpp"
+    "storage_manager_proxy_test.cpp",
   ]
 
   include_dirs = [
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
     "include",
     "//utils/system/safwk/native/include",
-    "//utils/native/base/include"
+    "//utils/native/base/include",
   ]
 
-  deps = [
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "//third_party/googletest:gtest_main" ]
 
   external_deps = [
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
     "safwk:system_ability_fwk",
     "samgr_standard:samgr_proxy",
-    "storage_standard:storage_manager_sa_proxy"
+    "storage_standard:storage_manager_sa_proxy",
   ]
 }
 
 group("proxy_test") {
   testonly = true
-  deps = [ 
-    ":storage_manager_proxy_test"
-  ]
+  deps = [ ":storage_manager_proxy_test" ]
 }

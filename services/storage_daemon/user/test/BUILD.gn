@@ -13,22 +13,39 @@
 
 import("//build/test.gni")
 
+ROOT_DIR = "//foundation/filemanagement/storage_service/services/storage_daemon"
+
 ohos_unittest("user_manager_test") {
   module_out_path = "filemanagement/storage_service/storage_daemon"
 
-  include_dirs = [ "//foundation/filemanagement/storage_service/services/storage_daemon/include" ]
-
-  sources = [
-    "//foundation/filemanagement/storage_service/services/storage_daemon/user/src/user_manager.cpp",
-    "unittest/user_manager_test.cpp",
+  include_dirs = [
+    "$ROOT_DIR/include",
+    "$ROOT_DIR/utils",
+    "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
+    "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
   ]
 
-  deps = [ "//third_party/googletest:gtest_main" ]
+  sources = [
+    "$ROOT_DIR/user/src/user_manager.cpp",
+    "$ROOT_DIR/user/test/user_manager_test.cpp",
+    "$ROOT_DIR/utils/file_utils.cpp",
+    "$ROOT_DIR/utils/string_utils.cpp",
+    "$ROOT_DIR/utils/test/common/help_utils.cpp",
+  ]
 
-  external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
+  deps = [
+    "$ROOT_DIR/crypto:libsdcrypto",
+    "//third_party/googletest:gtest_main",
+    "//utils/native/base:utils",
+  ]
+
+  external_deps = [
+    "hiviewdfx_hilog_native:libhilog",
+    "ipc:ipc_core",
+  ]
 }
 
-group("user_unit_test") {
+group("storage_daemon_user_test") {
   testonly = true
   deps = [ ":user_manager_test" ]
 }

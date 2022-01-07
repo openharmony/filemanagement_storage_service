@@ -37,7 +37,7 @@ ohos_moduletest("CryptoSubTest") {
   deps += [ "../../crypto:libsdcrypto" ]
 }
 
-group("moduletest") {
+group("crypto_test") {
   testonly = true
   deps = [ ":CryptoSubTest" ]
 }

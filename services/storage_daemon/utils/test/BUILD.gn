@@ -1,4 +1,4 @@
-# Copyright (C) 2021 Huawei Device Co., Ltd.
+# Copyright (c) 2021 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -13,21 +13,19 @@
 
 import("//build/test.gni")
 
-ohos_unittest("storage_daemon_communication_test") {
-  module_out_path = "storage_manager/storage_manager"
-
-  sources = [
-    "//foundation/filemanagement/storage_service/services/storage_daemon/ipc/src/storage_daemon_proxy.cpp",
-    "//foundation/filemanagement/storage_service/services/storage_manager/storage_daemon_communication/src/storage_daemon_communication.cpp",
-    "storage_daemon_communication_test.cpp",
-  ]
+ohos_unittest("file_utils_test") {
+  module_out_path = "storage_manager/storage_daemon"
 
   include_dirs = [
     "//foundation/filemanagement/storage_service/services/storage_daemon/include",
-    "//foundation/filemanagement/storage_service/services/storage_manager/include",
-    "include",
-    "//utils/system/safwk/native/include",
-    "//utils/native/base/include",
+    "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
+    "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
+  ]
+
+  sources = [
+    "../file_utils.cpp",
+    "common/help_utils.cpp",
+    "file_utils_test.cpp",
   ]
 
   deps = [
@@ -38,12 +36,10 @@ ohos_unittest("storage_daemon_communication_test") {
   external_deps = [
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
-    "safwk:system_ability_fwk",
-    "samgr_standard:samgr_proxy",
   ]
 }
 
-group("communication_test") {
+group("storage_daemon_utils_test") {
   testonly = true
-  deps = [ ":storage_daemon_communication_test" ]
+  deps = [ ":file_utils_test" ]
 }

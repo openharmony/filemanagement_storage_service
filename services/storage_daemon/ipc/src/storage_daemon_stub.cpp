@@ -110,6 +110,7 @@ int32_t StorageDaemonStub::HandlePrepareUserDirs(MessageParcel &data, MessagePar
     if (!reply.WriteUint32(err)) {
         return  E_IPC_ERROR;
     }
+
     return E_OK;
 }
 
@@ -122,6 +123,7 @@ int32_t StorageDaemonStub::HandleDestroyUserDirs(MessageParcel &data, MessagePar
     if (!reply.WriteUint32(err)) {
         return  E_IPC_ERROR;
     }
+
     return E_OK;
 }
 

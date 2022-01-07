@@ -21,7 +21,6 @@
 namespace OHOS {
 namespace StorageDaemon {
 class ExternalVolumeInfo : public VolumeInfo {
-
 };
 } // STORAGE_DAEMON
 } // OHOS

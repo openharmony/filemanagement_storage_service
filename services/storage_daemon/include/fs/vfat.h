@@ -19,7 +19,6 @@
 namespace OHOS {
 namespace StorageDaemon {
 class Vfat {
-
 };
 } // STORAGE_DAEMON
 } // OHOS

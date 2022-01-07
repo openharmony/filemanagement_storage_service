@@ -14,22 +14,24 @@
  */
 
 #include "utils/string_utils.h"
-#include <stdio.h>
-#include <stdarg.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdarg>
+#include <cstring>
+#include "securec.h"
 
 using namespace std;
 
 namespace OHOS {
-namespace StorageDaemon{
+namespace StorageDaemon {
 constexpr int32_t BUFF_SIZE = 1024;
-std::string StringPrintf(const char *format, ...) {
+std::string StringPrintf(const char *format, ...)
+{
     va_list ap;
     va_start(ap, format);
 
     std::string result;
     char buf[BUFF_SIZE] = {0};
-    int count = vsnprintf(buf, BUFF_SIZE, format, ap);
+    int count = vsnprintf_s(buf, BUFF_SIZE - 1, BUFF_SIZE - 1, format, ap);
     if (count >= 0 && count < BUFF_SIZE) {
         result.append(buf, count);
     }

@@ -17,10 +17,10 @@ ohos_unittest("multi_user_manager_service_test") {
   module_out_path = "storage_manager/storage_manager"
 
   sources = [
-    "//foundation/filemanagement/storage_service/services/storage_manager/user/src/multi_user_manager_service.cpp",
-    "//foundation/filemanagement/storage_service/services/storage_manager/storage_daemon_communication/src/storage_daemon_communication.cpp",
     "//foundation/filemanagement/storage_service/services/storage_daemon/ipc/src/storage_daemon_proxy.cpp",
-    "multi_user_manager_service_test.cpp"
+    "//foundation/filemanagement/storage_service/services/storage_manager/storage_daemon_communication/src/storage_daemon_communication.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/user/src/multi_user_manager_service.cpp",
+    "multi_user_manager_service_test.cpp",
   ]
 
   include_dirs = [
@@ -28,31 +28,27 @@ ohos_unittest("multi_user_manager_service_test") {
     "//foundation/filemanagement/storage_service/services/storage_daemon/include",
     "include",
     "//utils/system/safwk/native/include",
-    "//utils/native/base/include"
+    "//utils/native/base/include",
   ]
 
-  defines = [
-    "ACCOUNT_LOG_TAG = \"STORAGE_MANAGER\""
-  ]
+  defines = [ "ACCOUNT_LOG_TAG = \"STORAGE_MANAGER\"" ]
 
   deps = [
+    "//base/account/os_account/frameworks/common:libaccount_common",
     "//third_party/googletest:gtest_main",
     "//utils/native/base:utils",
-    "//base/account/os_account/frameworks/common:libaccount_common"
   ]
 
   external_deps = [
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
+    "os_account_standard:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr_standard:samgr_proxy",
-    "os_account_standard:os_account_innerkits"
   ]
 }
 
 group("manager_service_test") {
   testonly = true
-  deps = [
-    ":multi_user_manager_service_test"
-  ]
+  deps = [ ":multi_user_manager_service_test" ]
 }

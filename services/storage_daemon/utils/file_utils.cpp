@@ -14,9 +14,9 @@
  */
 
 #include "utils/file_utils.h"
-#include <errno.h>
+#include <cerrno>
 #include <unistd.h>
-#include <string.h>
+#include <cstring>
 #include <dirent.h>
 #include <sys/stat.h>
 #include "utils/errno.h"
