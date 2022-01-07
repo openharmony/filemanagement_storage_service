@@ -29,8 +29,6 @@ namespace OHOS {
 namespace StorageDaemon {
 class StorageDaemonClient {
 public:
-    static int32_t AddUser(int32_t userId);
-    static int32_t RemoveUser(int32_t userId);
     static int32_t StartUser(int32_t userId);
     static int32_t StopUser(int32_t userId);
     static int32_t PrepareUserDirs(int32_t userId, u_int32_t flags);

@@ -40,28 +40,6 @@ sptr<IStorageDaemon> StorageDaemonClient::GetStorageDaemonProxy(void)
     return iface_cast<IStorageDaemon>(object);
 }
 
-int32_t StorageDaemonClient::AddUser(int32_t userId)
-{
-    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
-    if (client == nullptr) {
-        LOGE("get storage daemon service failed");
-        return -EAGAIN;
-    }
-
-    return client->AddUser(userId);
-}
-
-int32_t StorageDaemonClient::RemoveUser(int32_t userId)
-{
-    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
-    if (client == nullptr) {
-        LOGE("get storage daemon service failed");
-        return -EAGAIN;
-    }
-
-    return client->RemoveUser(userId);
-}
-
 int32_t StorageDaemonClient::StartUser(int32_t userId)
 {
     sptr<IStorageDaemon> client = GetStorageDaemonProxy();
