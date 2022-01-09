@@ -32,7 +32,9 @@ public:
     int32_t RemoveUser(int32_t userId) override;
     int32_t PrepareStartUser(int32_t userId) override;
     int32_t StopUser(int32_t userId) override;
-
+    int64_t GetFreeSizeOfVolume(std::string volumeUuid) override;
+    int64_t GetTotalSizeOfVolume(std::string volumeUuid) override;
+    std::vector<int64_t> GetBundleStats(std::string uuid, std::string pkgName) override;
 private:
     static inline BrokerDelegator<StorageManagerProxy> delegator_;
 };
