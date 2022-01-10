@@ -87,14 +87,6 @@ struct KeyContext {
     KeyBlob aad;
 };
 
-struct EncryptPolicy {
-    std::string version;
-    std::string fileName;
-    std::string content;
-    int flags;
-    bool hwWrappedKey;
-};
-
 struct UserAuth {
     std::string token;
     // synthetic

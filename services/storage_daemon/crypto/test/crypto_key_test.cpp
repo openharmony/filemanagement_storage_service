@@ -14,7 +14,6 @@
  */
 #include <vector>
 #include <string>
-#include <iostream>
 #include <gtest/gtest.h>
 
 #include "base_key.h"
@@ -38,6 +37,7 @@ std::string toEncryptMnt("/data");
 std::string toEncryptDirLegacy("/data/test/crypto_dir_legacy");
 std::string toEncryptDir("/data/test/crypto_dir");
 std::string testKeyPath("/data/test/sys_de");
+std::string policyPath("/data/test/policy");
 OHOS::StorageDaemon::BaseKey deKey {testKeyPath};
 void CryptoKeyTest::SetUpTestCase(void)
 {
@@ -180,7 +180,6 @@ HWTEST_F(CryptoKeyTest, basekey_fscrypt_v1_policy_set, TestSize.Level1)
     EXPECT_EQ(true, OHOS::ForceCreateDirectory(toEncryptDirLegacy + "/test_dir"));
     EXPECT_EQ(true, OHOS::SaveStringToFile(toEncryptDirLegacy + "/test_file1", "hello, world!\n"));
     EXPECT_EQ(true, OHOS::SaveStringToFile(toEncryptDirLegacy + "/test_file2", "AA"));
-    sleep(1);
 }
 
 /**
@@ -264,7 +263,6 @@ HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_policy_set, TestSize.Level1)
     EXPECT_EQ(true, OHOS::ForceCreateDirectory(toEncryptDir + "/test_dir"));
     EXPECT_EQ(true, OHOS::SaveStringToFile(toEncryptDir + "/test_file1", "hello, world!\n"));
     EXPECT_EQ(true, OHOS::SaveStringToFile(toEncryptDir + "/test_file2", "AA"));
-    sleep(1);
 }
 
 /**
@@ -296,6 +294,7 @@ HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_policy_get, TestSize.Level1)
 HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_policy_clear, TestSize.Level1)
 {
     EXPECT_EQ(true, deKey.ClearKey(toEncryptMnt));
+    // When the v2 policy removed, the files are encrypted.
     EXPECT_EQ(false, OHOS::FileExists(toEncryptDir + "/test_dir"));
     EXPECT_EQ(false, OHOS::FileExists(toEncryptDir + "/test_file1"));
     EXPECT_EQ(false, OHOS::FileExists(toEncryptDir + "/test_file2"));
@@ -328,3 +327,58 @@ HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_policy_restore, TestSize.Level1)
     EXPECT_EQ(true, deKey.ClearKey(toEncryptMnt));
 }
 
+/**
+ * @tc.name: basekey_fscrypt_v2_load_and_set_policy_default
+ * @tc.desc: Verify the KeyCtrl::LoadAndSetPolicy function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK0BP
+ */
+HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_load_and_set_policy_default, TestSize.Level1)
+{
+    EXPECT_EQ(true, deKey.InitKey());
+    // the ext4 disk with `mke2fs -O encrypt` mounted for test
+    EXPECT_EQ(true, deKey.StoreKey(emptyUserAuth));
+    EXPECT_EQ(true, deKey.ActiveKey(toEncryptMnt));
+
+    OHOS::ForceRemoveDirectory(toEncryptDir);
+    OHOS::ForceCreateDirectory(toEncryptDir);
+    OHOS::ForceRemoveDirectory(policyPath);
+    EXPECT_EQ(true, OHOS::StorageDaemon::KeyCtrl::LoadAndSetPolicy(testKeyPath + "/kid", policyPath, toEncryptDir));
+
+    EXPECT_EQ(true, OHOS::ForceCreateDirectory(toEncryptDir + "/test_dir"));
+    EXPECT_EQ(true, OHOS::SaveStringToFile(toEncryptDir + "/test_file1", "hello, world!\n"));
+    EXPECT_EQ(true, OHOS::SaveStringToFile(toEncryptDir + "/test_file2", "AA"));
+    EXPECT_EQ(true, OHOS::SaveStringToFile(toEncryptDir + "/1111111111111111111111111111111111111111111111111", "AA"));
+
+    EXPECT_EQ(true, deKey.ClearKey(toEncryptMnt));
+}
+
+/**
+ * @tc.name: basekey_fscrypt_v2_load_and_set_policy_from_file
+ * @tc.desc: Verify the fscrypt V2 setpolicy function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK0BP
+ */
+HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_load_and_set_policy_from_file, TestSize.Level1)
+{
+    EXPECT_EQ(true, deKey.InitKey());
+    // the ext4 disk with `mke2fs -O encrypt` mounted for test
+    EXPECT_EQ(true, deKey.StoreKey(emptyUserAuth));
+    EXPECT_EQ(true, deKey.ActiveKey(toEncryptMnt));
+
+    OHOS::ForceRemoveDirectory(toEncryptDir);
+    OHOS::ForceCreateDirectory(toEncryptDir);
+    OHOS::ForceCreateDirectory(policyPath);
+    // the `aes-128-cts/aes-128-cbc` need the CONFIG_CRYPTO_ESSIV, not enabled yet
+    EXPECT_EQ(true, OHOS::SaveStringToFile(policyPath + "/filename", "aes-256-cts"));
+    EXPECT_EQ(true, OHOS::SaveStringToFile(policyPath + "/content", "aes-256-xts"));
+    EXPECT_EQ(true, OHOS::SaveStringToFile(policyPath + "/flags", "padding-8"));
+    EXPECT_EQ(true, OHOS::StorageDaemon::KeyCtrl::LoadAndSetPolicy(testKeyPath + "/kid", policyPath, toEncryptDir));
+
+    EXPECT_EQ(true, OHOS::ForceCreateDirectory(toEncryptDir + "/test_dir"));
+    EXPECT_EQ(true, OHOS::SaveStringToFile(toEncryptDir + "/test_file1", "hello, world!\n"));
+    EXPECT_EQ(true, OHOS::SaveStringToFile(toEncryptDir + "/test_file2", "AA"));
+    EXPECT_EQ(true, OHOS::SaveStringToFile(toEncryptDir + "/1111111111111111111111111111111111111111111111111", "AA"));
+
+    EXPECT_EQ(true, deKey.ClearKey(toEncryptMnt));
+}

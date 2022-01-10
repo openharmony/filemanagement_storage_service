@@ -37,6 +37,14 @@ public:
     bool ClearKey(const std::string &mnt = "/data");
 
     KeyInfo keyInfo_;
+    std::string GetDir() const
+    {
+        return dir_;
+    }
+    std::string GetKeyIdDir() const
+    {
+        return dir_ + "/kid";
+    }
 
 private:
     bool DoStoreKey(const UserAuth &auth);
