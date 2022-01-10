@@ -30,6 +30,8 @@ private:
     int GetCurrentUserId();
     const std::vector<std::string> dataDir = {"app", "local", "distributed", "database", "cache"};
     const int DEFAULT_USER_ID = 100;
+    enum BUNDLE_STATS {APP = 0, LOCAL, DISTRIBUTED, DATABASE, CACHE};
+    enum BUNDLE_STATS_RESULT {APPSIZE = 0, CACHESIZE, DATASIZE};
 public:
     std::vector<int64_t> GetBundleStats(std::string uuid, std::string pkgName);
 };

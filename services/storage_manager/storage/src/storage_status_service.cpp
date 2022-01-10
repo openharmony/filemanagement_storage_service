@@ -42,7 +42,7 @@ vector<int64_t> StorageStatusService::GetBundleStats(std::string uuid, std::stri
     int userId = GetCurrentUserId();
     LOGI("StorageStatusService::userId is:%d", userId);
     vector<int64_t> bundleStats;
-    AppExecFwk::InstalldClient::GetInstance()->GetBundleStats(pkgName, userId, bundleStats); // 错误码的定义要再对齐一下
+    AppExecFwk::InstalldClient::GetInstance()->GetBundleStats(pkgName, userId, bundleStats);
     if (bundleStats.size() != dataDir.size() ) {
         LOGE("StorageStatusService::An error occurred in querying bundle stats.");
         return result;
@@ -53,10 +53,11 @@ vector<int64_t> StorageStatusService::GetBundleStats(std::string uuid, std::stri
             bundleStats[i] = 0;
         }
     }
-    result[0] = bundleStats[0]; //魔鬼数字？
-    result[1] = bundleStats[1] + bundleStats[2] + bundleStats[3];
-    result[2] = bundleStats[4];
-    LOGI("StorageStatusService result: result[0]:%lld, result[1]:%lld, result[2]:%lld", result[0], result[1], result[2]);
+    result[APPSIZE] = bundleStats[APP];
+    result[CACHESIZE] = bundleStats[CACHE];
+    result[DATASIZE] = bundleStats[LOCAL] + bundleStats[DISTRIBUTED] + bundleStats[DATABASE];
+    LOGI("StorageStatusService result: APPSIZE:%lld, CACHESIZE:%lld, DATASIZE:%lld", result[APPSIZE],
+        result[CACHESIZE], result[DATASIZE]);
     return result;
 }
 } // StorageManager

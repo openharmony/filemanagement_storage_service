@@ -21,11 +21,10 @@ using namespace std;
 
 namespace OHOS {
 namespace StorageManager {
-
 StorageTotalStatusService::StorageTotalStatusService() {}
 StorageTotalStatusService::~StorageTotalStatusService(){}
 
-int64_t StorageTotalStatusService::GetFreeSizeOfVolume(string volumeUuid) { //确保根目录下的查询方式无误
+int64_t StorageTotalStatusService::GetFreeSizeOfVolume(string volumeUuid) {
     struct statvfs diskInfo;
     int ret = statvfs("/", &diskInfo);
     if (ret != E_OK) {
