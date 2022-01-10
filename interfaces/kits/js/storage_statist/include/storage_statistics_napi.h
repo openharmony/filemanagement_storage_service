@@ -13,19 +13,13 @@
  * limitations under the License.
  */
 
-#ifndef STORAGESTATUS_N_EXPORTER_H
-#define STORAGESTATUS_N_EXPORTER_H
+#ifndef STORAGESTATUS_NAPI_H
+#define STORAGESTATUS_NAPI_H
 
-#include "common/napi/n_exporter.h"
-#include "storage_manager_connect.h"
+#include "napi/native_api.h"
 
 namespace OHOS {
 namespace StorageManager {
-namespace ModuleStorageStatus {
-napi_value GetTotalSizeOfVolume(napi_env env, napi_callback_info info);
-napi_value GetFreeSizeOfVolume(napi_env env, napi_callback_info info);
-napi_value GetBundleStat(napi_env env, napi_callback_info info);
-} // namespace ModuleStorageStatus
-} // namespace DistributedFS
+} // namespace StorageManager
 } // namespace OHOS
-#endif // STORAGESTATUS_N_EXPORTER_H
+#endif // STORAGESTATUS_NAPI_H

@@ -34,8 +34,8 @@ ohos_shared_library("storagestatistics") {
 
   sources = [
     "//foundation/storage/storage_manager/services/storage_manager/kits_impl/src/storage_manager_connect.cpp",
-    "//foundation/storage/storage_manager/services/storage_manager/kits_impl/src/storagestatus_n_exporter.cpp",
-    "//foundation/storage/storage_manager/services/storage_manager/kits_impl/src/storagestatus_napi.cpp",
+    "//foundation/storage/storage_manager/services/storage_manager/kits_impl/src/storage_statistics_n_exporter.cpp",
+    "//foundation/storage/storage_manager/services/storage_manager/kits_impl/src/storage_statistics_napi.cpp",
   ]
 
   deps = [

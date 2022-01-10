@@ -13,7 +13,8 @@
  * limitations under the License.
  */
 
-#include "storagestatus_n_exporter.h"
+#include "storage_statistics_n_exporter.h"
+#include "storage_statistics_napi.h"
 #include "storage_manager_connect.h"
 
 #include <tuple>
@@ -33,7 +34,7 @@ using namespace OHOS::DistributedFS;
 
 namespace OHOS {
 namespace StorageManager {
-namespace ModuleStorageStatus {
+
 napi_value GetTotalSizeOfVolume(napi_env env, napi_callback_info info)
 {
     NFuncArg funcArg(env, info);
@@ -53,7 +54,7 @@ napi_value GetTotalSizeOfVolume(napi_env env, napi_callback_info info)
     auto resultSize = std::make_shared<int64_t>();
     std::string uuidString(uuid.get());
     auto cbExec = [uuidString, resultSize](napi_env env) -> UniError {
-        *resultSize = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetTotalSizeOfVolume(uuidString);
+        *resultSize = DelayedSingleton<StorageManager::StorageManagerConnect>::GetInstance()->GetTotalSizeOfVolume(uuidString);
         return UniError(ERRNO_NOERR);
     };
 
@@ -95,7 +96,7 @@ napi_value GetFreeSizeOfVolume(napi_env env, napi_callback_info info)
     auto resultSize = std::make_shared<int64_t>();
     std::string uuidString(uuid.get());
     auto cbExec = [uuidString, resultSize](napi_env env) -> UniError {
-        *resultSize = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetFreeSizeOfVolume(uuidString);
+        *resultSize = DelayedSingleton<StorageManager::StorageManagerConnect>::GetInstance()->GetFreeSizeOfVolume(uuidString);
         return UniError(ERRNO_NOERR);
     };
     auto cbComplete = [resultSize](napi_env env, UniError err) -> NVal {
@@ -141,7 +142,7 @@ napi_value GetBundleStat(napi_env env, napi_callback_info info)
     std::string uuidString(uuid.get());
     std::string nameString(name.get());
     auto cbExec = [uuidString, nameString, bundleStats](napi_env env) -> UniError {
-        *bundleStats = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetBundleStats(uuidString, nameString);
+        *bundleStats = DelayedSingleton<StorageManager::StorageManagerConnect>::GetInstance()->GetBundleStats(uuidString, nameString);
         return UniError(ERRNO_NOERR);
     };
     auto cbComplete = [bundleStats](napi_env env, UniError err) -> NVal { 
@@ -153,9 +154,8 @@ napi_value GetBundleStat(napi_env env, napi_callback_info info)
             UniError(EINVAL).ThrowErr(env, "vector size error");
             return bundleObject;
         }
-        //NVal bundleObject = NVal::CreateObject(env);
         bundleObject.AddProp("appSize", NVal::CreateInt64(env, (*bundleStats)[0]).val_);
-        bundleObject.AddProp("appCach", NVal::CreateInt64(env, (*bundleStats)[1]).val_);
+        bundleObject.AddProp("cacheSize", NVal::CreateInt64(env, (*bundleStats)[1]).val_);
         bundleObject.AddProp("dataSize", NVal::CreateInt64(env, (*bundleStats)[2]).val_);
         return bundleObject;
     };
@@ -169,6 +169,5 @@ napi_value GetBundleStat(napi_env env, napi_callback_info info)
     }
     return NVal::CreateUndefined(env).val_;
 }
-} // namespace ModuleStorageStatus
-} // namespace DistributedFS
+} // namespace StorageManager
 } // namespace OHOS

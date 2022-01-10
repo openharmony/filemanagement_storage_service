@@ -16,16 +16,15 @@
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 
-#include "storagestatus_n_exporter.h"
-#include "storagestatus_napi.h"
+#include "storage_statistics_n_exporter.h"
+#include "storage_statistics_napi.h"
 
 namespace OHOS {
 namespace StorageManager {
-namespace ModuleStorageStatus {
 /***********************************************
  * Module export and register
  ***********************************************/
-napi_value StorageStatusExport(napi_env env, napi_value exports)
+napi_value StorageStatisticsExport(napi_env env, napi_value exports)
 {
     static napi_property_descriptor desc[] = {
         DECLARE_NAPI_FUNCTION("getTotalSizeOfVolume", GetTotalSizeOfVolume),
@@ -36,7 +35,6 @@ napi_value StorageStatusExport(napi_env env, napi_value exports)
     return exports;
 }
 
-NAPI_MODULE(storagestatus, StorageStatusExport)
-} // namespace ModuleStorageStatus
-} // namespace DistributedFS
+NAPI_MODULE(storagestatistics, StorageStatisticsExport)
+} // namespace StorageManager
 } // namespace OHOS       
