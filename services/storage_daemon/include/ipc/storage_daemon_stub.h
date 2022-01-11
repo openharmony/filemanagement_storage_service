@@ -42,6 +42,8 @@ private:
     // fscrypt api
     int32_t HandleInitGlobalKey(MessageParcel &data, MessageParcel &reply);
     int32_t HandleInitGlobalUserKeys(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleGenerateUserKeys(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleDeleteUserKeys(MessageParcel &data, MessageParcel &reply);
 };
 } // StorageDaemon
 } // OHOS

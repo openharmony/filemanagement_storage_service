@@ -50,6 +50,11 @@ int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
         case INIT_GLOBAL_USER_KEYS:
             err = HandleInitGlobalUserKeys(data, reply);
             break;
+        case CREATE_USER_KEYS:
+            err = HandleGenerateUserKeys(data, reply);
+            break;
+        case DELETE_USER_KEYS:
+            err = HandleDeleteUserKeys(data, reply);
         default: {
             LOGI(" use IPCObjectStub default OnRemoteRequest");
             err = IPCObjectStub::OnRemoteRequest(code, data, reply, option);
@@ -137,7 +142,7 @@ int32_t StorageDaemonStub::HandleStopUser(MessageParcel &data, MessageParcel &re
 int32_t StorageDaemonStub::HandleInitGlobalKey(MessageParcel &data, MessageParcel &reply)
 {
     int err = InitGlobalKey();
-    if (reply.WriteInt32(err)){
+    if (!reply.WriteInt32(err)){
         return E_IPC_ERROR;
     }
 
@@ -147,12 +152,34 @@ int32_t StorageDaemonStub::HandleInitGlobalKey(MessageParcel &data, MessageParce
 int32_t StorageDaemonStub::HandleInitGlobalUserKeys(MessageParcel &data, MessageParcel &reply)
 {
     int err = InitGlobalUserKeys();
-    if (reply.WriteInt32(err)){
+    if (!reply.WriteInt32(err)){
         return E_IPC_ERROR;
     }
 
     return E_OK;
 }
 
+int32_t StorageDaemonStub::HandleGenerateUserKeys(MessageParcel &data, MessageParcel &reply)
+{
+    uint32_t userId = data.ReadUint32();
+    uint32_t flags = data.ReadUint32();
+    int err = GenerateUserKeys(userId, flags);
+    if (!reply.WriteInt32(err)) {
+        return E_IPC_ERROR;
+    }
+
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleDeleteUserKeys(MessageParcel &data, MessageParcel &reply)
+{
+    uint32_t userId = data.ReadUint32();
+    int err = DeleteUserKeys(userId);
+    if (!reply.WriteInt32(err)) {
+        return E_IPC_ERROR;
+    }
+
+    return E_OK;
+}
 } // StorageDaemon
 } // OHOS

@@ -21,6 +21,7 @@
 #include <sys/stat.h>
 #include "utils/errno.h"
 #include "utils/log.h"
+#include "string_ex.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -55,6 +56,18 @@ int32_t Mount(const std::string &source, const std::string &target, const char *
 int32_t UMount(const std::string &path)
 {
     return TEMP_FAILURE_RETRY(umount(path.c_str()));
+}
+
+bool IsDir(const std::string &path)
+{
+    // check whether the path exists
+    struct stat st;
+    int ret = TEMP_FAILURE_RETRY(lstat(path.c_str(), &st));
+    if (ret) {
+        return false;
+    }
+
+    return S_ISDIR(st.st_mode);
 }
 
 // On success, true is returned.  On error, false is returned, and errno is set appropriately.
@@ -141,6 +154,63 @@ bool RmDirRecurse(const std::string &path)
     }
 
     return true;
+}
+
+bool StringToUint32(const std::string &str, uint32_t &num)
+{
+    if (str.empty()) {
+        return false;
+    }
+    if (!IsNumericStr(str)) {
+        LOGE("Not numeric entry");
+        return false;
+    }
+
+    int value;
+    if (!StrToInt(str, value)) {
+        LOGE("String to int convert failed");
+        return false;
+    }
+    num = static_cast<uint32_t>(value);
+
+    return true;
+}
+
+void ReadDigitDir(const std::string &path, std::vector<FileList> &dirInfo)
+{
+    struct stat st;
+    int ret = TEMP_FAILURE_RETRY(lstat(path.c_str(), &st));
+    if (ret != 0 || ((st.st_mode & S_IFDIR) != S_IFDIR)) {
+        LOGE("path is not dir");
+        return;
+    }
+
+    DIR *dir = opendir(path.c_str());
+    if (!dir) {
+        LOGE("failed to open dir %{public}s, errno %{public}d", path.c_str(), errno);
+        return;
+    }
+
+    for (struct dirent *ent = readdir(dir); ent != nullptr; ent = readdir(dir)) {
+        if ((ent->d_type != DT_DIR) ||
+            (strcmp(ent->d_name, ".") == 0) ||
+            (strcmp(ent->d_name, "..") == 0)) {
+            continue;
+        }
+
+        uint32_t userId;
+        std::string name(ent->d_name);
+        if (StringToUint32(name, userId) == false) {
+            continue;
+        }
+        FileList entry = {
+            .userId = userId,
+            .path = path + "/" + name
+        };
+        dirInfo.push_back(entry);
+    }
+
+    closedir(dir);
 }
 } // STORAGE_DAEMON
 } // OHOS

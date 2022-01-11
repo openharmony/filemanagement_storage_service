@@ -15,6 +15,7 @@
 
 #include "ipc/storage_daemon_proxy.h"
 #include "utils/errno.h"
+#include "utils/log.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -152,6 +153,7 @@ int32_t StorageDaemonProxy::InitGlobalUserKeys(void)
 {
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
+    LOGI("start");
     if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
         return E_IPC_ERROR;
     }
@@ -162,6 +164,51 @@ int32_t StorageDaemonProxy::InitGlobalUserKeys(void)
     }
 
     return reply.ReadUint32();
+}
+
+int32_t StorageDaemonProxy::GenerateUserKeys(uint32_t userId, uint32_t flags)
+{
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+
+    LOGI("start");
+    if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
+        return E_IPC_ERROR;
+    }
+
+    if(!data.WriteUint32(userId)) {
+        return E_IPC_ERROR;
+    }
+    if (!data.WriteUint32(flags)) {
+        return E_IPC_ERROR;
+    }
+
+    int err = Remote()->SendRequest(CREATE_USER_KEYS, data, reply, option);
+    if (err != E_OK) {
+        return E_IPC_ERROR;
+    }
+
+    return reply.ReadUint32();
+}
+
+int32_t StorageDaemonProxy::DeleteUserKeys(uint32_t userId)
+{
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+
+    if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
+        return E_IPC_ERROR;
+    }
+
+    if (!data.WriteUint32(userId)) {
+        return E_IPC_ERROR;
+    }
+    int err = Remote()->SendRequest(DELETE_USER_KEYS, data, reply, option);
+    if (err != E_OK) {
+        return E_IPC_ERROR;
+    }
+
+    return reply.ReadInt32();
 }
 
 } // StorageDaemon

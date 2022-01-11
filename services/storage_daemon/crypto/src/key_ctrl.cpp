@@ -134,7 +134,7 @@ bool KeyCtrl::GetPolicy(const std::string &path, fscrypt_get_policy_ex_arg &poli
 static bool ParseOption(const std::map<std::string, uint8_t> &policy, const std::string &defaultStr, uint8_t &value)
 {
     if (policy.find(defaultStr) != policy.end()) {
-        LOGE("use default: %{public}s", defaultStr.c_str());
+        LOGI("use default: %{public}s", defaultStr.c_str());
         value = policy.at(defaultStr);
         return true;
     }
@@ -160,6 +160,7 @@ bool KeyCtrl::LoadAndSetPolicy(const std::string &keyIdPath, const std::string &
     if (!ParseOption(FILENAME_MODES, DEFAULT_POLICY.fileName, arg.filenames_encryption_mode) ||
         !ParseOption(CONTENTS_MODES, DEFAULT_POLICY.content, arg.contents_encryption_mode) ||
         !ParseOption(POLICY_FLAGS, DEFAULT_POLICY.flags, arg.flags)) {
+        LOGE("parse option failed");
         return false;
     }
     return KeyCtrl::SetPolicy(toEncrypt, arg);

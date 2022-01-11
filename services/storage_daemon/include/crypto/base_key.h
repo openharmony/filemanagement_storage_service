@@ -41,7 +41,7 @@ public:
     {
         return dir_;
     }
-    std::string GetKeyIdDir() const
+    std::string GetKeyIdPath() const
     {
         return dir_ + "/kid";
     }

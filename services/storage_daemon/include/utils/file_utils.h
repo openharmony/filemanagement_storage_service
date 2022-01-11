@@ -17,17 +17,29 @@
 
 #include <stdint.h>
 #include <string>
+#include <vector>
+#include <iostream>
+#include <sstream>
 #include <sys/types.h>
 #include <sys/mount.h>
 
 namespace OHOS {
 namespace StorageDaemon {
+struct FileList {
+    uint32_t userId;
+    std::string path;
+};
+
+int32_t MkDir(const std::string &path, mode_t mode);
+bool IsDir(const std::string &path);
 bool PrepareDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid);
 bool DestroyDir(const std::string &path);
 bool RmDirRecurse(const std::string &path);
 int32_t Mount(const std::string &source, const std::string &target, const char *type,
               unsigned long flags, const void *data);
 int32_t UMount(const std::string &path);
+void ReadDigitDir(const std::string &path, std::vector<FileList> &dirInfo);
+bool StringToUint32(const std::string &str, uint32_t &num);
 }
 }
 
