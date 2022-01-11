@@ -41,6 +41,7 @@ std::string policyPath("/data/test/policy");
 OHOS::StorageDaemon::BaseKey deKey {testKeyPath};
 void CryptoKeyTest::SetUpTestCase(void)
 {
+    OHOS::RemoveFile(policyPath);
     // input testsuit setup step，setup invoked before all testcases
 }
 
@@ -368,11 +369,8 @@ HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_load_and_set_policy_from_file, TestSi
 
     OHOS::ForceRemoveDirectory(toEncryptDir);
     OHOS::ForceCreateDirectory(toEncryptDir);
-    OHOS::ForceCreateDirectory(policyPath);
-    // the `aes-128-cts/aes-128-cbc` need the CONFIG_CRYPTO_ESSIV, not enabled yet
-    EXPECT_EQ(true, OHOS::SaveStringToFile(policyPath + "/filename", "aes-256-cts"));
-    EXPECT_EQ(true, OHOS::SaveStringToFile(policyPath + "/content", "aes-256-xts"));
-    EXPECT_EQ(true, OHOS::SaveStringToFile(policyPath + "/flags", "padding-8"));
+    // the `aes-128-cts/aes-128-cbc` need the CONFIG_CRYPTO_ESSIV, and the policy from file not finished yet
+    EXPECT_EQ(true, OHOS::SaveStringToFile(policyPath, "v2;aes-256-cts;aes-256-xts;padding-8"));
     EXPECT_EQ(true, OHOS::StorageDaemon::KeyCtrl::LoadAndSetPolicy(testKeyPath + "/kid", policyPath, toEncryptDir));
 
     EXPECT_EQ(true, OHOS::ForceCreateDirectory(toEncryptDir + "/test_dir"));

@@ -27,6 +27,7 @@
 #include "utils/log.h"
 #include "securec.h"
 #include "file_ex.h"
+#include "string_ex.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -130,17 +131,10 @@ bool KeyCtrl::GetPolicy(const std::string &path, fscrypt_get_policy_ex_arg &poli
     return FsIoctl(path, FS_IOC_GET_ENCRYPTION_POLICY_EX, reinterpret_cast<void *>(&policy));
 }
 
-static bool LoadPolicyOrDefault(const std::string &fromFile, const std::map<std::string, uint8_t> &policy,
-    const std::string &defaultStr, uint8_t &value)
+static bool ParseOption(const std::map<std::string, uint8_t> &policy, const std::string &defaultStr, uint8_t &value)
 {
-    std::string loaded = "";
-    if (OHOS::LoadStringFromFile(fromFile, loaded) && (policy.find(loaded) != policy.end())) {
-        value = policy.at(loaded);
-        LOGD("read policy %{public}s from file %{public}s", loaded.c_str(), fromFile.c_str());
-        return true;
-    }
     if (policy.find(defaultStr) != policy.end()) {
-        LOGE("bad policy %{public}s from file %{public}s, use default: %{public}s", loaded.c_str(), fromFile.c_str(), defaultStr.c_str());
+        LOGE("use default: %{public}s", defaultStr.c_str());
         value = policy.at(defaultStr);
         return true;
     }
@@ -149,29 +143,25 @@ static bool LoadPolicyOrDefault(const std::string &fromFile, const std::map<std:
     return false;
 }
 
-bool KeyCtrl::LoadAndSetPolicy(const std::string &keyIdPath, const std::string &policyDir, const std::string &toEncrypt)
+bool KeyCtrl::LoadAndSetPolicy(const std::string &keyIdPath, const std::string &policyFile, const std::string &toEncrypt)
 {
     LOGD("enter");
-    // std::string version;
-    // if (OHOS::LoadStringFromFile(policyDir + "/version", version) && (policy.version != DEFAULT_POLICY.version)) {
-    //     LOGE("bad version %{public}s, only support version 2 now.", version.c_str());
-    //     return false;
-    // }
-
     std::string keyId;
     if (OHOS::LoadStringFromFile(keyIdPath, keyId) == false || keyId.length() != FSCRYPT_KEY_IDENTIFIER_SIZE) {
         LOGE("bad kid file content, length=%{public}d", keyId.length());
         return false;
     }
 
+    // Add parsing options from the policy file, now using default.
+    (void)policyFile;
+
     struct fscrypt_policy_v2 arg = {.version = FSCRYPT_POLICY_V2};
     (void)memcpy_s(arg.master_key_identifier, FSCRYPT_KEY_IDENTIFIER_SIZE, keyId.data(), keyId.length());
-    if (!LoadPolicyOrDefault(policyDir + "/filename", FILENAME_MODES, DEFAULT_POLICY.fileName, arg.filenames_encryption_mode) ||
-        !LoadPolicyOrDefault(policyDir + "/content", CONTENTS_MODES, DEFAULT_POLICY.content, arg.contents_encryption_mode) ||
-        !LoadPolicyOrDefault(policyDir + "/flags", POLICY_FLAGS, DEFAULT_POLICY.flags, arg.flags)) {
+    if (!ParseOption(FILENAME_MODES, DEFAULT_POLICY.fileName, arg.filenames_encryption_mode) ||
+        !ParseOption(CONTENTS_MODES, DEFAULT_POLICY.content, arg.contents_encryption_mode) ||
+        !ParseOption(POLICY_FLAGS, DEFAULT_POLICY.flags, arg.flags)) {
         return false;
     }
-
     return KeyCtrl::SetPolicy(toEncrypt, arg);
 }
 } // namespace StorageDaemon

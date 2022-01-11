@@ -49,7 +49,7 @@ public:
     static bool SetPolicy(const std::string &path, fscrypt_policy_v2 &policy);
     static bool GetPolicy(const std::string &path, fscrypt_get_policy_ex_arg &options);
 
-    static bool LoadAndSetPolicy(const std::string &keyIdPath, const std::string &policyDir, const std::string &toEncrypt);
+    static bool LoadAndSetPolicy(const std::string &keyIdPath, const std::string &policyFile, const std::string &toEncrypt);
 };
 
 struct EncryptPolicy {
