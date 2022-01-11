@@ -110,11 +110,18 @@ bool KeyCtrl::GetKeyStatus(const std::string &mnt, fscrypt_get_key_status_arg &a
     return FsIoctl(mnt, FS_IOC_GET_ENCRYPTION_KEY_STATUS, reinterpret_cast<void *>(&arg));
 }
 
+bool KeyCtrl::SetPolicy(const std::string &path, fscrypt_policy_v1 &policy)
+{
+    LOGD("enter");
+    return FsIoctl(path, FS_IOC_SET_ENCRYPTION_POLICY, reinterpret_cast<void *>(&policy));
+}
+
 bool KeyCtrl::SetPolicy(const std::string &path, fscrypt_policy_v2 &policy)
 {
     LOGD("enter");
     return FsIoctl(path, FS_IOC_SET_ENCRYPTION_POLICY, reinterpret_cast<void *>(&policy));
 }
+
 bool KeyCtrl::GetPolicy(const std::string &path, fscrypt_get_policy_ex_arg &policy)
 {
     LOGD("enter");
