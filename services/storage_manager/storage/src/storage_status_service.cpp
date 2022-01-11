@@ -28,13 +28,16 @@ StorageStatusService::StorageStatusService() {}
 StorageStatusService::~StorageStatusService() {}
 
 int StorageStatusService::GetCurrentUserId() {
-    AccountSA::OsAccountInfo osAccountInfo;
-    if (AccountSA::OsAccountManager::QueryCurrentOsAccount(osAccountInfo) != E_OK) {
-        LOGE("StorageStatusService::An error occurred in querying current os account.");
-        return DEFAULT_USER_ID;
-    } else {
-        return osAccountInfo.GetLocalId();
+    vector<AccountSA::OsAccountInfo> osAccountInfos;
+    if (AccountSA::OsAccountManager::QueryAllCreatedOsAccounts(osAccountInfos) == E_OK) {
+        for (int i = 0; i < osAccountInfos.size(); i++) {
+            if (osAccountInfos[i].GetIsActived()) {
+                return osAccountInfos[i].GetLocalId();
+            }
+        }
     }
+    LOGE("StorageStatusService::An error occurred in querying current os account.");
+    return DEFAULT_USER_ID;
 }
 
 vector<int64_t> StorageStatusService::GetBundleStats(std::string uuid, std::string pkgName) {
@@ -42,8 +45,8 @@ vector<int64_t> StorageStatusService::GetBundleStats(std::string uuid, std::stri
     int userId = GetCurrentUserId();
     LOGI("StorageStatusService::userId is:%d", userId);
     vector<int64_t> bundleStats;
-    AppExecFwk::InstalldClient::GetInstance()->GetBundleStats(pkgName, userId, bundleStats);
-    if (bundleStats.size() != dataDir.size() ) {
+    int errorcode = AppExecFwk::InstalldClient::GetInstance()->GetBundleStats(pkgName, userId, bundleStats);
+    if (bundleStats.size() != dataDir.size() || errorcode != E_OK) {
         LOGE("StorageStatusService::An error occurred in querying bundle stats.");
         return result;
     }

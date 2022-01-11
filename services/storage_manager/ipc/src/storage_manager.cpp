@@ -80,7 +80,7 @@ int64_t StorageManager::GetFreeSizeOfVolume(std::string volumeUuid)
 
 int64_t StorageManager::GetTotalSizeOfVolume(std::string volumeUuid)
 {
-    LOGI("StorageManger::getFreeSizeOfVolume start, volumeUuid: %{public}s", volumeUuid.c_str());
+    LOGI("StorageManger::getTotalSizeOfVolume start, volumeUuid: %{public}s", volumeUuid.c_str());
     int64_t result = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetTotalSizeOfVolume(volumeUuid);
     return result;
 }

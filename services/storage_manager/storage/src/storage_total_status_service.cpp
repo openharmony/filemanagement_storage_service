@@ -40,8 +40,8 @@ int64_t StorageTotalStatusService::GetTotalSizeOfVolume(string volumeUuid) {
     if (ret != E_OK) {
         return E_ERR;
     }
-    int64_t freeSize = diskInfo.f_bsize * diskInfo.f_blocks;
-    return freeSize;
+    int64_t totalSize = diskInfo.f_bsize * diskInfo.f_blocks;
+    return totalSize;
 }
 } // StorageManager
 } // OHOS
