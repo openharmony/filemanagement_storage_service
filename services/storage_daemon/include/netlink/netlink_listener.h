@@ -12,14 +12,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #ifndef OHOS_STORAGE_DAEMON_NETLINK_LISTENER_H
 #define OHOS_STORAGE_DAEMON_NETLINK_LISTENER_H
+
+#include <memory>
+#include <thread>
+
+#include <poll.h>
+
+#include "ipc/storage_daemon.h"
 
 namespace OHOS {
 namespace StorageDaemon {
 class NetlinkListener {
+public:
+    NetlinkListener(int32_t socket);
+    int32_t StartListener();
+    int32_t StopListener();
 
+protected:
+    virtual void OnEvent(char *msg) = 0;
+
+private:
+    int32_t socketFd_;
+    int32_t socketPipe_[2];
+    std::unique_ptr<std::thread> socketThread_;
+    void RecvUeventMsg();
+    int32_t ReadMsg(int32_t fd_count, struct pollfd ufds[2]);
+    void RunListener();
+    static void* EventProcess(void*);
 };
 } // STORAGE_DAEMON
 } // OHOS

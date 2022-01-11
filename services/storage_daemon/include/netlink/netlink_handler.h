@@ -16,10 +16,19 @@
 #ifndef OHOS_STORAGE_DAEMON_NETLINK_HANDLER_H
 #define OHOS_STORAGE_DAEMON_NETLINK_HANDLER_H
 
+#include "netlink_listener.h"
+
 namespace OHOS {
 namespace StorageDaemon {
-class NetlinkHandler {
+class NetlinkHandler : public NetlinkListener {
+public:
+    explicit NetlinkHandler(int32_t listenerSocket);
+    virtual ~NetlinkHandler() = default;
+    int32_t Start();
+    int32_t Stop();
 
+protected:
+    virtual void OnEvent(char *msg);
 };
 } // STORAGE_DAEMON
 } // OHOS

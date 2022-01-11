@@ -18,15 +18,21 @@
 
 #include <nocopyable.h>
 
+#include "netlink_handler.h"
+
 namespace OHOS {
 namespace StorageDaemon {
 class NetlinkManager final {
 public:
-    virtual ~NetlinkManager();
+    static NetlinkManager* Instance();
+    int32_t Start();
+    int32_t Stop();
 
 private:
-    NetlinkManager();
-    DISABLE_COPY_ASSIGN_MOVE(NetlinkManager);
+    static NetlinkManager* instance_;
+    int32_t socketFd_;
+    NetlinkHandler *nlHandler_;
+    NetlinkManager() = default;
 };
 } // STORAGE_DAEMON
 } // OHOS
