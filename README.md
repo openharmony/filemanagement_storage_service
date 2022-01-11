@@ -34,8 +34,7 @@
 
 ## 约束
 
-接口支持情况：
-storage_daemon所有接口仅支持storage_manager服务进行调用。
+接口支持情况：storage_daemon所有接口仅支持storage_manager服务进行调用。
 
 ## 相关仓
 [多用户管理](http:////gitee.com/openharmony/account_os_account)  
