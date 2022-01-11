@@ -37,9 +37,6 @@
 接口支持情况：
 storage_daemon所有接口仅支持storage_manager服务进行调用。
 
-## 使用说明
-接口仅限内部使用，暂无相关使用说明。
-
 ## 相关仓
 [多用户管理](http:////gitee.com/openharmony/account_os_account)  
 [包管理](http://gitee.com/openharmony/appexecfwk_standard)
