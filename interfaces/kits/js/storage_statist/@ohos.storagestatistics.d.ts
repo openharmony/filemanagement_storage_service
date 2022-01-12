@@ -28,23 +28,29 @@ declare namespace StorageStatistics {
    *
    * @since 8
    */
-  function GetTotalSizeOfVolume(volumeUuid: string, callback: AsyncCallback<number>): void;
-  function GetTotalSizeOfVolume(volumeUuid: string): Promise<number>;
+  function getTotalSizeOfVolume(volumeUuid: string, callback: AsyncCallback<number>): void;
+  function getTotalSizeOfVolume(volumeUuid: string): Promise<number>;
   /**
    * Get the free size Of volume.
    * 
    * @since 8
    */
-  function GetFreeSizeOfVolume(volumeUuid: string, callback: AsyncCallback<number>): void;
-  function GetFreeSizeOfVolume(volumeUuid: string): Promise<number>;
+  function getFreeSizeOfVolume(volumeUuid: string, callback: AsyncCallback<number>): void;
+  function getFreeSizeOfVolume(volumeUuid: string): Promise<number>;
 
  /**
    * Get the bundlestat 
    * 
    * @since 8
    */
-  function GetBundleStat(volumeUuid: string, packageName: string,  callback: AsyncCallback<number>): void;
-  function GetBundleStat(volumeUuid: string, packageName: string): Promise<number>;
+
+ export interface BundleStats {
+  appSize: number;
+  appCach: number;
+  dataSize: number;
+}
+  function getBundleStat(volumeUuid: string, packageName: string,  callback: AsyncCallback<BundleStats>): void;
+  function getBundleStat(volumeUuid: string, packageName: string): Promise<BundleStats>;
 
 }
 
