@@ -24,7 +24,7 @@
 namespace OHOS {
 namespace StorageDaemon {
 constexpr uint32_t CRYPTO_KEY_SECDISC_SIZE = 16384;
-constexpr uint32_t CRYPTO_KEY_ALIAS_SIZE = 8;
+constexpr uint32_t CRYPTO_KEY_ALIAS_SIZE = 16;
 constexpr uint32_t CRYPTO_AES_256_LEN = 256;
 constexpr uint32_t CRYPTO_AES_AAD_LEN = 16;
 constexpr uint32_t CRYPTO_AES_256_XTS_KEY_SIZE = 64;
@@ -71,8 +71,14 @@ struct KeyBlob {
     std::unique_ptr<uint8_t[]> data { nullptr };
 };
 
+enum {
+    FSCRYPT_V1 = 1,
+    FSCRYPT_V2 = 2,
+};
+
 struct KeyInfo {
     KeyBlob key;
+    uint8_t version { 0 };
     // the legacy interface use key_spec.u.descriptor
     KeyBlob keyDesc;
     // the v2 interface use the key_spec.u.identifier

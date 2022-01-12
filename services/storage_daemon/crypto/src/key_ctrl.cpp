@@ -113,13 +113,7 @@ bool KeyCtrl::GetKeyStatus(const std::string &mnt, fscrypt_get_key_status_arg &a
     return FsIoctl(mnt, FS_IOC_GET_ENCRYPTION_KEY_STATUS, reinterpret_cast<void *>(&arg));
 }
 
-bool KeyCtrl::SetPolicy(const std::string &path, fscrypt_policy_v1 &policy)
-{
-    LOGD("enter");
-    return FsIoctl(path, FS_IOC_SET_ENCRYPTION_POLICY, reinterpret_cast<void *>(&policy));
-}
-
-bool KeyCtrl::SetPolicy(const std::string &path, fscrypt_policy_v2 &policy)
+bool KeyCtrl::SetPolicy(const std::string &path, FscryptPolicy &policy)
 {
     LOGD("enter");
     return FsIoctl(path, FS_IOC_SET_ENCRYPTION_POLICY, reinterpret_cast<void *>(&policy));
@@ -143,27 +137,64 @@ static bool ParseOption(const std::map<std::string, uint8_t> &policy, const std:
     return false;
 }
 
-bool KeyCtrl::LoadAndSetPolicy(const std::string &keyIdPath, const std::string &policyFile, const std::string &toEncrypt)
+static bool SetPolicyLegacy(const std::string &keyDescPath, const std::string &toEncrypt, FscryptPolicy &arg)
 {
-    LOGD("enter");
+    std::string keyDesc;
+    if (OHOS::LoadStringFromFile(keyDescPath, keyDesc) == false || keyDesc.length() != FSCRYPT_KEY_DESCRIPTOR_SIZE) {
+        LOGE("bad key_desc file content, length=%{public}d", keyDesc.length());
+        return false;
+    }
+
+    arg.v1.version = FSCRYPT_POLICY_V1;
+    (void)memcpy_s(arg.v1.master_key_descriptor, FSCRYPT_KEY_DESCRIPTOR_SIZE, keyDesc.data(), keyDesc.length());
+    return KeyCtrl::SetPolicy(toEncrypt, arg);
+}
+
+static bool SetPolicyV2(const std::string &keyIdPath, const std::string &toEncrypt, FscryptPolicy &arg)
+{
     std::string keyId;
     if (OHOS::LoadStringFromFile(keyIdPath, keyId) == false || keyId.length() != FSCRYPT_KEY_IDENTIFIER_SIZE) {
-        LOGE("bad kid file content, length=%{public}u", static_cast<uint32_t>(keyId.length()));
+        LOGE("bad key_id file content, length=%{public}u", static_cast<uint32_t>(keyId.length()));
+        return false;
+    }
+
+    arg.v2.version = FSCRYPT_POLICY_V2;
+    (void)memcpy_s(arg.v2.master_key_identifier, FSCRYPT_KEY_IDENTIFIER_SIZE, keyId.data(), keyId.length());
+    return KeyCtrl::SetPolicy(toEncrypt, arg);
+}
+
+bool KeyCtrl::LoadAndSetPolicy(const std::string &keyPath, const std::string &policyFile, const std::string &toEncrypt)
+{
+    LOGD("enter");
+
+    union FscryptPolicy arg;
+    (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
+    // the modes and flags shares the same offset in the struct, 
+    if (!ParseOption(FILENAME_MODES, DEFAULT_POLICY.fileName, arg.v1.filenames_encryption_mode) ||
+        !ParseOption(CONTENTS_MODES, DEFAULT_POLICY.content, arg.v1.contents_encryption_mode) ||
+        !ParseOption(POLICY_FLAGS, DEFAULT_POLICY.flags, arg.v1.flags)) {
         return false;
     }
 
     // Add parsing options from the policy file, now using default.
     (void)policyFile;
 
-    struct fscrypt_policy_v2 arg = {.version = FSCRYPT_POLICY_V2};
-    (void)memcpy_s(arg.master_key_identifier, FSCRYPT_KEY_IDENTIFIER_SIZE, keyId.data(), keyId.length());
-    if (!ParseOption(FILENAME_MODES, DEFAULT_POLICY.fileName, arg.filenames_encryption_mode) ||
-        !ParseOption(CONTENTS_MODES, DEFAULT_POLICY.content, arg.contents_encryption_mode) ||
-        !ParseOption(POLICY_FLAGS, DEFAULT_POLICY.flags, arg.flags)) {
-        LOGE("parse option failed");
+    std::string buf{};
+    if (OHOS::LoadStringFromFile(keyPath + "/version", buf)) {
+        if (buf == "1") {
+            return SetPolicyLegacy(keyPath + "/key_desc", toEncrypt, arg);
+        } else if (buf == "2") {
+            return SetPolicyV2(keyPath + "/key_id", toEncrypt, arg);
+        } else {
+            LOGE("bad version file : %{public}s", buf.c_str());
+            return false;
+        }
+    } else {
+        LOGE("fail to read the version file.");
         return false;
     }
-    return KeyCtrl::SetPolicy(toEncrypt, arg);
 }
+
+
 } // namespace StorageDaemon
 } // namespace OHOS

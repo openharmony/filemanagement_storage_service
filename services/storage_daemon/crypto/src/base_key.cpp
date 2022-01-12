@@ -24,6 +24,8 @@
 #include <sys/stat.h>
 
 #include "directory_ex.h"
+#include "string_ex.h"
+#include "file_ex.h"
 #include "utils/log.h"
 #include "huks_master.h"
 #include "key_ctrl.h"
@@ -38,7 +40,7 @@ BaseKey::BaseKey(std::string dir, uint8_t keyLen) : dir_(dir), keyLen_(keyLen)
     }
 }
 
-bool BaseKey::InitKey()
+bool BaseKey::InitKey(uint8_t version)
 {
     LOGD("enter");
     if (!keyInfo_.key.IsEmpty()) {
@@ -55,6 +57,7 @@ bool BaseKey::InitKey()
         return false;
     }
 
+    keyInfo_.version = version;
     return true;
 }
 
@@ -142,9 +145,9 @@ bool BaseKey::GenerateKeyDesc()
     uint8_t keyRef2[SHA512_DIGEST_LENGTH] = { 0 };
     SHA512_Final(keyRef2, &c);
 
-    static_assert(SHA512_DIGEST_LENGTH >= CRYPTO_KEY_ALIAS_SIZE, "Hash too short for descriptor");
-    keyInfo_.keyDesc.Alloc(CRYPTO_KEY_ALIAS_SIZE);
-    auto err = memcpy_s(keyInfo_.keyDesc.data.get(), keyInfo_.keyDesc.size, keyRef2, CRYPTO_KEY_ALIAS_SIZE);
+    static_assert(SHA512_DIGEST_LENGTH >= CRYPTO_KEY_DESC_SIZE, "Hash too short for descriptor");
+    keyInfo_.keyDesc.Alloc(CRYPTO_KEY_DESC_SIZE);
+    auto err = memcpy_s(keyInfo_.keyDesc.data.get(), keyInfo_.keyDesc.size, keyRef2, CRYPTO_KEY_DESC_SIZE);
     if (err) {
         LOGE("memcpy failed ret %{public}d", err);
         return false;
@@ -179,15 +182,13 @@ bool BaseKey::StoreKey(const UserAuth &auth)
 bool BaseKey::DoStoreKey(const UserAuth &auth)
 {
     OHOS::ForceCreateDirectory(dir_);
-    if (!GenerateKeyBlob(keyContext_.alias, CRYPTO_KEY_ALIAS_SIZE)) {
-        LOGE("GenerateKeyBlob alias failed");
+    OHOS::SaveStringToFile(dir_ + "/version", std::to_string(keyInfo_.version));
+    if (!GenerateAndSaveKeyBlob(keyContext_.alias, "alias", CRYPTO_KEY_ALIAS_SIZE)) {
+        LOGE("GenerateAndSaveKeyBlob alias failed");
         return false;
     }
     if (!HuksMaster::GenerateKey(keyContext_.alias)) {
         LOGE("HuksMaster::GenerateKey failed");
-        return false;
-    }
-    if (!SaveKeyBlob(keyContext_.alias, "alias")) {
         return false;
     }
     if (!GenerateAndSaveKeyBlob(keyContext_.secDiscard, "sec_discard", CRYPTO_KEY_SECDISC_SIZE)) {
@@ -214,12 +215,18 @@ bool BaseKey::EncryptKey(const UserAuth &auth)
 bool BaseKey::RestoreKey(const UserAuth &auth)
 {
     LOGD("enter");
+    std::string buf;
+    int ver = 0;
+    if (OHOS::LoadStringFromFile(dir_ + "/version", buf) && (buf == "1" || buf == "2") && OHOS::StrToInt(buf, ver)) {
+        keyInfo_.version = static_cast<uint8_t>(ver);
+    } else {
+        LOGE("RestoreKey fail. bad version");
+        return false;
+    }
+
     if (!LoadKeyBlob(keyContext_.encrypted, "encrypted")) {
         return false;
     }
-    LOGD("encrypted len:%{public}d, data(hex):%{private}s", keyContext_.encrypted.size,
-        keyContext_.encrypted.ToString().c_str());
-
     if (!LoadKeyBlob(keyContext_.alias, "alias", CRYPTO_KEY_ALIAS_SIZE)) {
         keyContext_.alias.Clear();
         return false;
@@ -242,6 +249,30 @@ bool BaseKey::DecryptKey(const UserAuth &auth)
         return false;
     }
     return ret;
+}
+
+bool BaseKey::ActiveKey(const std::string& mnt)
+{
+    if (keyInfo_.version == FSCRYPT_V1) {
+        return ActiveKeyLegacy();
+    } else if (keyInfo_.version == FSCRYPT_V2) {
+        return ActiveKeyV2(mnt);
+    }
+
+    LOGE("ActiveKey fail. bad keyinfo.version %{public}d", keyInfo_.version);
+    return false;
+}
+
+bool BaseKey::ClearKey(const std::string& mnt)
+{
+    if (keyInfo_.version == FSCRYPT_V1) {
+        return ClearKeyLegacy();
+    } else if (keyInfo_.version == FSCRYPT_V2) {
+        return ClearKeyV2(mnt);
+    }
+
+    LOGE("ClearKey fail. bad keyinfo.version %{public}d", keyInfo_.version);
+    return false;
 }
 
 // The legacy kernel interface, add the key to kernel keyring.
@@ -285,6 +316,9 @@ bool BaseKey::ActiveKeyLegacy()
                 errno);
         }
     }
+    if (!SaveKeyBlob(keyInfo_.keyDesc, "key_desc")) {
+        return false;
+    }
     keyInfo_.key.Clear();
     LOGD("success");
     return true;
@@ -324,7 +358,7 @@ bool BaseKey::ClearKeyLegacy()
 }
 
 // v2 interface, use keyId as the later setpolicy param.
-bool BaseKey::ActiveKey(const std::string& mnt)
+bool BaseKey::ActiveKeyV2(const std::string& mnt)
 {
     LOGD("enter");
     if (keyInfo_.key.IsEmpty()) {
@@ -352,8 +386,8 @@ bool BaseKey::ActiveKey(const std::string& mnt)
     keyInfo_.keyId.Alloc(FSCRYPT_KEY_IDENTIFIER_SIZE);
     (void)memcpy_s(keyInfo_.keyId.data.get(), FSCRYPT_KEY_IDENTIFIER_SIZE, arg->key_spec.u.identifier,
         FSCRYPT_KEY_IDENTIFIER_SIZE);
-    LOGD("success. kid len:%{public}d, data(hex):%{private}s", keyInfo_.keyId.size, keyInfo_.keyId.ToString().c_str());
-    if (!SaveKeyBlob(keyInfo_.keyId, "kid")) {
+    LOGD("success. key_id len:%{public}d, data(hex):%{private}s", keyInfo_.keyId.size, keyInfo_.keyId.ToString().c_str());
+    if (!SaveKeyBlob(keyInfo_.keyId, "key_id")) {
         // do some cleanup
         return false;
     }
@@ -364,7 +398,7 @@ bool BaseKey::ActiveKey(const std::string& mnt)
 }
 
 // rmdir after it if needed.
-bool BaseKey::ClearKey(const std::string& mnt)
+bool BaseKey::ClearKeyV2(const std::string& mnt)
 {
     LOGD("enter");
     if (keyInfo_.keyId.size != FSCRYPT_KEY_IDENTIFIER_SIZE) {

@@ -27,12 +27,10 @@ public:
     BaseKey(std::string dir, uint8_t keyLen = CRYPTO_AES_256_XTS_KEY_SIZE);
     ~BaseKey() = default;
 
-    bool InitKey();
+    // for openharmony kernel 5.10+, prefer using the FSCRYPT_V2.
+    bool InitKey(uint8_t version = FSCRYPT_V1);
     bool StoreKey(const UserAuth &auth);
     bool RestoreKey(const UserAuth &auth);
-    bool ActiveKeyLegacy();
-    bool ClearKeyLegacy();
-    // ------ fscrypt v2 ------
     bool ActiveKey(const std::string &mnt = "/data");
     bool ClearKey(const std::string &mnt = "/data");
 
@@ -47,6 +45,12 @@ public:
     }
 
 private:
+    bool ActiveKeyLegacy();
+    bool ClearKeyLegacy();
+    // fscrypt v2 api need the mountpoint path where the key install into.
+    bool ActiveKeyV2(const std::string &mnt);
+    bool ClearKeyV2(const std::string &mnt);
+
     bool DoStoreKey(const UserAuth &auth);
     bool GenerateKeyBlob(KeyBlob &blob, const uint32_t size);
     bool SaveKeyBlob(const KeyBlob &blob, const std::string &name);

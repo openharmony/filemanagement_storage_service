@@ -25,6 +25,13 @@
 namespace OHOS {
 namespace StorageDaemon {
 using key_serial_t = int;
+constexpr uint32_t CRYPTO_KEY_DESC_SIZE = FSCRYPT_KEY_DESCRIPTOR_SIZE;
+
+union FscryptPolicy{
+    fscrypt_policy_v1 v1;
+    fscrypt_policy_v2 v2;
+};
+
 class KeyCtrl {
 public:
     // ------ fscrypt legacy ------
@@ -45,11 +52,12 @@ public:
     static bool RemoveKey(const std::string &mnt, fscrypt_remove_key_arg &arg);
     static bool GetKeyStatus(const std::string &mnt, fscrypt_get_key_status_arg &arg);
 
-    static bool SetPolicy(const std::string &path, fscrypt_policy_v1 &policy);
-    static bool SetPolicy(const std::string &path, fscrypt_policy_v2 &policy);
+    static bool SetPolicy(const std::string &path, FscryptPolicy &policy);
     static bool GetPolicy(const std::string &path, fscrypt_get_policy_ex_arg &options);
 
-    static bool LoadAndSetPolicy(const std::string &keyIdPath, const std::string &policyFile, const std::string &toEncrypt);
+    static bool LoadAndSetPolicy(const std::string &keyPath, const std::string &policyFile,
+        const std::string &toEncrypt);
+
 };
 
 struct EncryptPolicy {
