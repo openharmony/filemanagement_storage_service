@@ -23,7 +23,7 @@
 
 ## 目录
 ```
-/foundation/storage/storage_manager
+/foundation/storage/storage_services
 │── interface                   // 接口声明
 │  ├── innerkits                // 对内接口声明
 │  └── kits                     // 对外接口声明
