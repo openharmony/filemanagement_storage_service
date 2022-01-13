@@ -23,7 +23,6 @@
 
 namespace OHOS {
 namespace StorageManager {
-
 StorageDaemonCommunication::StorageDaemonCommunication() 
 {
     LOGI("DEBUG StorageDaemonCommunication constructer");
@@ -68,7 +67,7 @@ int32_t StorageDaemonCommunication::PrepareAddUser(int32_t userId)
         LOGE("StorageDaemonCommunication::PrepareAddUser connect failed");
         return E_IPC_ERROR;
     }
-    return storageDaemon_->PrepareUserDirs(userId, 3);
+    return storageDaemon_->PrepareUserDirs(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
 }
 
 int32_t StorageDaemonCommunication::RemoveUser(int32_t userId) 
@@ -78,7 +77,7 @@ int32_t StorageDaemonCommunication::RemoveUser(int32_t userId)
         LOGE("StorageDaemonCommunication::RemoveUser connect failed");
         return E_IPC_ERROR;
     } 
-    return storageDaemon_->DestroyUserDirs(userId, 3);
+    return storageDaemon_->DestroyUserDirs(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
 }
 
 int32_t StorageDaemonCommunication::PrepareStartUser(int32_t userId) 

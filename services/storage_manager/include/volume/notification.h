@@ -18,9 +18,7 @@
 
 namespace OHOS {
 namespace StorageManager {
-
 class Notification {
-
 };
 } // StorageManager
 } // OHOS

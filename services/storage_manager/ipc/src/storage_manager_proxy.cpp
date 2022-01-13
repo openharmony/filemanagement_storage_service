@@ -19,7 +19,6 @@
 
 namespace OHOS {
 namespace StorageManager {
-
 int32_t StorageManagerProxy::PrepareAddUser(int32_t userId)
 {   
     LOGI("StorageManagerProxy::PrepareAddUser, userId:%{public}d", userId);

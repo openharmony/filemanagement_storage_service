@@ -21,12 +21,11 @@
 
 namespace OHOS {
 namespace StorageManager {
-
 class StorageManagerStub : public IRemoteStub<IStorageManager> {
-public: 
+public:
     int32_t OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option) override;
 
-private: 
+private:
     int32_t HandlePrepareAddUser(MessageParcel &data, MessageParcel &reply);
     int32_t HandleRemoveUser(MessageParcel &data, MessageParcel &reply);
     int32_t HandlePrepareStartUser(MessageParcel &data, MessageParcel &reply);

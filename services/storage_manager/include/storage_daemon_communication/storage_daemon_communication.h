@@ -23,11 +23,14 @@
 
 namespace OHOS {
 namespace StorageManager {
-
 class StorageDaemonCommunication : public NoCopyable {
     DECLARE_DELAYED_SINGLETON(StorageDaemonCommunication);
 
 public:
+    enum {
+        CRYPTO_FLAG_EL1 = 1,
+        CRYPTO_FLAG_EL2,
+    };
     int32_t Connect();
 
     int32_t PrepareAddUser(int32_t userId);

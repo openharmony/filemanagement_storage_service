@@ -37,7 +37,8 @@ ohos_shared_library("storage_manager") {
 
     deps = [
         "../../interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
-        "//utils/native/base:utils"
+        "//utils/native/base:utils",
+        "//base/account/os_account/frameworks/common:libaccount_common"
     ]
 
     external_deps = [
@@ -45,6 +46,7 @@ ohos_shared_library("storage_manager") {
         "safwk:system_ability_fwk",
         "ipc:ipc_core",
         "samgr_standard:samgr_proxy",
+        "os_account_standard:os_account_innerkits"
     ]
 
     subsystem_name = "storage_manager"

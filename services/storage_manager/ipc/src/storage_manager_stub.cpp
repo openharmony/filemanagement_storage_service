@@ -19,7 +19,6 @@
 
 namespace OHOS {
 namespace StorageManager {
-
 int32_t StorageManagerStub::OnRemoteRequest(uint32_t code, 
     MessageParcel &data, MessageParcel &reply, MessageOption &option)
 {

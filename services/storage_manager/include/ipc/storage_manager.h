@@ -22,7 +22,6 @@
 
 namespace OHOS {
 namespace StorageManager {
-
 class StorageManager : public SystemAbility, public StorageManagerStub {
     DECLARE_SYSTEM_ABILITY(StorageManager)
 public:

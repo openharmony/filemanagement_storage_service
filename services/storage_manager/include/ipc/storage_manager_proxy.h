@@ -21,9 +21,8 @@
 
 namespace OHOS {
 namespace StorageManager {
-
 class StorageManagerProxy : public IRemoteProxy<IStorageManager> {
-public: 
+public:
     explicit StorageManagerProxy(const sptr<IRemoteObject>& impl)
         : IRemoteProxy<IStorageManager>(impl) {}
     ~StorageManagerProxy() override{}

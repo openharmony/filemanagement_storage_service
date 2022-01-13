@@ -31,6 +31,7 @@ enum ErrNo {
     E_DESTROY_DIR = 8,         // failed to destroy dir
     E_MOUNT,        // mount error
     E_UMOUNT,       // umount error
+    E_USERID_RANGE, // id out or range
 };
 }
 }
