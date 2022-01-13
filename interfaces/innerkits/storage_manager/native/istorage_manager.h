@@ -26,12 +26,18 @@ public:
     virtual int32_t RemoveUser(int32_t userId) = 0;
     virtual int32_t PrepareStartUser(int32_t userId) = 0;
     virtual int32_t StopUser(int32_t userId) = 0;
+    virtual int64_t GetFreeSizeOfVolume(std::string volumeUuid) = 0;
+    virtual int64_t GetTotalSizeOfVolume(std::string volumeUuid) = 0;
+    virtual std::vector<int64_t> GetBundleStats(std::string uuid, std::string pkgName) = 0;
 
     enum {
         PREPARE_ADD_USER = 1,
         REMOVE_USER,
         PREPARE_START_USER,
-        STOP_USER
+        STOP_USER,
+        GET_TOTAL,
+        GET_FREE,
+        GET_BUNDLE_STATUS
     };
 
     DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.StorageManager.IStorageManager");

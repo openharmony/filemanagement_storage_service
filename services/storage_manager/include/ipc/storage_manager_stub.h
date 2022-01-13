@@ -30,6 +30,9 @@ private:
     int32_t HandleRemoveUser(MessageParcel &data, MessageParcel &reply);
     int32_t HandlePrepareStartUser(MessageParcel &data, MessageParcel &reply);
     int32_t HandleStopUser(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleGetTotal(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleGetFree(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleGetBundleStatus(MessageParcel &data, MessageParcel &reply);
 };
 } // StorageManager
 } // OHOS

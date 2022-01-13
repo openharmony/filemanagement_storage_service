@@ -7,7 +7,8 @@
         "//foundation/storage/storage_manager/services/storage_daemon:storage_daemon_cfg",
         "//foundation/storage/storage_manager/services/storage_manager/sa_profile:storage_manager_sa_profile",
         "//foundation/storage/storage_manager/services/storage_manager/sa_profile:storage_manager_cfg",
-        "//foundation/storage/storage_manager/services/storage_manager:storage_manager"
+        "//foundation/storage/storage_manager/services/storage_manager:storage_manager",
+        "//foundation/storage/storage_manager/interfaces/kits/js/storage_statist:storage_js"
       ],
       "test_list": [
         "//foundation/storage/storage_manager/services/storage_daemon/user/test:user_unit_test",

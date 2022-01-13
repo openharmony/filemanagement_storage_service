@@ -41,6 +41,15 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
         case STOP_USER: 
             HandleStopUser(data, reply); 
             break;
+        case GET_TOTAL: 
+            HandleGetTotal(data, reply); 
+            break;
+        case GET_FREE: 
+            HandleGetFree(data, reply); 
+            break;
+        case GET_BUNDLE_STATUS: 
+            HandleGetBundleStatus(data, reply); 
+            break;
         default: {
             LOGI("use IPCObjectStub default OnRemoteRequest");
             err = IPCObjectStub::OnRemoteRequest(code, data, reply, option);
@@ -94,6 +103,40 @@ int32_t StorageManagerStub::HandleStopUser(MessageParcel &data, MessageParcel &r
     if (!reply.WriteUint32(err)) {
         LOGE("StorageManagerStub::HandleStopUser call StopUser failed");
         return E_IPC_ERROR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleGetTotal(MessageParcel &data, MessageParcel &reply)
+{
+    LOGE("StorageManagerStub::HandleGetTotal Begin.");
+    std::string volumeId = data.ReadString();
+    int64_t totalSize = GetTotalSizeOfVolume(volumeId);
+    if (!reply.WriteInt64(totalSize)) {
+        LOGE("StorageManagerStub::HandleGetTotal call OnUserDelete failed");
+        return  E_IPC_ERROR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleGetFree(MessageParcel &data, MessageParcel &reply)
+{
+    std::string volumeId = data.ReadString();
+    int64_t freeSize = GetFreeSizeOfVolume(volumeId);
+    if (!reply.WriteInt64(freeSize)) {
+        LOGE("StorageManagerStub::HandleGetFree call OnUserDelete failed");
+        return  E_IPC_ERROR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleGetBundleStatus(MessageParcel &data, MessageParcel &reply)
+{
+    std::string uuid = data.ReadString();
+    std::string pkgName = data.ReadString();
+    std::vector<int64_t> bundleStats = GetBundleStats(uuid, pkgName);
+    if (!reply.WriteInt64Vector(bundleStats)) {
+        return  E_IPC_ERROR;
     }
     return E_OK;
 }

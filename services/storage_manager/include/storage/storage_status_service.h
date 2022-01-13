@@ -13,9 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef OHOS_STORAGE_MANAGER_STORAGE_TOTAL_STATUS_SERVICE_H
-#define OHOS_STORAGE_MANAGER_STORAGE_TOTAL_STATUS_SERVICE_H
-
+#ifndef OHOS_STORAGE_MANAGER_STORAGE_STATUS_SERVICE_H
+#define OHOS_STORAGE_MANAGER_STORAGE_STATUS_SERVICE_H
 #include <vector>
 #include <nocopyable.h>
 #include <singleton.h>
@@ -23,14 +22,20 @@
 
 namespace OHOS {
 namespace StorageManager {
-class StorageTotalStatusService : public NoCopyable {
-    DECLARE_DELAYED_SINGLETON(StorageTotalStatusService);
+
+class StorageStatusService : public NoCopyable  {
+    DECLARE_DELAYED_SINGLETON(StorageStatusService);
+
+private:
+    int GetCurrentUserId();
+    const std::vector<std::string> dataDir = {"app", "local", "distributed", "database", "cache"};
+    const int DEFAULT_USER_ID = 100;
+    enum BUNDLE_STATS {APP = 0, LOCAL, DISTRIBUTED, DATABASE, CACHE};
+    enum BUNDLE_STATS_RESULT {APPSIZE = 0, CACHESIZE, DATASIZE};
 public:
-    int64_t GetFreeSizeOfVolume(std::string volumeUuid);
-    int64_t GetTotalSizeOfVolume(std::string volumeUuid);
+    std::vector<int64_t> GetBundleStats(std::string uuid, std::string pkgName);
 };
 } // StorageManager
 } // OHOS
 
-#endif // OHOS_STORAGE_MANAGER_STORAGE_TOTAL_STATUS_SERVICE_H
-
+#endif // OHOS_STORAGE_MANAGER_STORAGE_STATUS_SERVICE_H
