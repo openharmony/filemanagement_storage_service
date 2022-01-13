@@ -33,7 +33,7 @@ enum {
     FSCRYPT_V2 = 2,
 };
 
-union FscryptPolicy{
+union FscryptPolicy {
     fscrypt_policy_v1 v1;
     fscrypt_policy_v2 v2;
 };
@@ -102,7 +102,6 @@ static const auto POLICY_FLAGS = std::map<std::string, uint8_t> {
     {"padding-32", FSCRYPT_POLICY_FLAGS_PAD_32},
     {"direct-key", FSCRYPT_POLICY_FLAG_DIRECT_KEY}, // use with adiantum
 };
-
 } // namespace StorageDaemon
 } // namespace OHOS
 

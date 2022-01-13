@@ -17,7 +17,7 @@
 #include <vector>
 #include <map>
 #include <sys/syscall.h>
-#include <errno.h>
+#include <cerrno>
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
@@ -179,7 +179,7 @@ bool KeyCtrl::LoadAndSetPolicy(const std::string &keyPath, const std::string &po
     // Add parsing options from the policy file, now using default.
     (void)policyFile;
 
-    std::string buf{};
+    std::string buf;
     if (OHOS::LoadStringFromFile(keyPath + "/version", buf)) {
         if (buf == "1") {
             return SetPolicyLegacy(keyPath + "/key_desc", toEncrypt, arg);
@@ -250,6 +250,5 @@ uint8_t KeyCtrl::GetEncryptedVersion(const std::string &dir)
     }
     return FSCRYPT_INVALID;
 }
-
 } // namespace StorageDaemon
 } // namespace OHOS

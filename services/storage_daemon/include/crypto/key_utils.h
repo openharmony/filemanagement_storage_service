@@ -71,7 +71,6 @@ struct KeyBlob {
     std::unique_ptr<uint8_t[]> data { nullptr };
 };
 
-
 struct KeyInfo {
     uint8_t version { 0 };
     KeyBlob key;

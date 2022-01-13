@@ -22,7 +22,6 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-
 sptr<IStorageDaemon> StorageDaemonClient::GetStorageDaemonProxy(void)
 {
     auto samgr = OHOS::SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();

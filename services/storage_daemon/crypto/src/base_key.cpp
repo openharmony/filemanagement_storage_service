@@ -371,7 +371,8 @@ bool BaseKey::ActiveKeyV2(const std::string& mnt)
 
     auto buf = std::make_unique<char[]>(sizeof(fscrypt_add_key_arg) + FSCRYPT_MAX_KEY_SIZE);
     auto arg = reinterpret_cast<fscrypt_add_key_arg *>(buf.get());
-    memset_s(arg, sizeof(fscrypt_add_key_arg) + FSCRYPT_MAX_KEY_SIZE, 0, sizeof(fscrypt_add_key_arg) + FSCRYPT_MAX_KEY_SIZE);
+    (void)memset_s(arg, sizeof(fscrypt_add_key_arg) + FSCRYPT_MAX_KEY_SIZE, 0, sizeof(fscrypt_add_key_arg) +
+        FSCRYPT_MAX_KEY_SIZE);
     arg->key_spec.type = FSCRYPT_KEY_SPEC_TYPE_IDENTIFIER;
     arg->raw_size = keyInfo_.key.size;
     auto err = memcpy_s(arg->raw, FSCRYPT_MAX_KEY_SIZE, keyInfo_.key.data.get(), keyInfo_.key.size);
@@ -389,7 +390,8 @@ bool BaseKey::ActiveKeyV2(const std::string& mnt)
     keyInfo_.keyId.Alloc(FSCRYPT_KEY_IDENTIFIER_SIZE);
     (void)memcpy_s(keyInfo_.keyId.data.get(), FSCRYPT_KEY_IDENTIFIER_SIZE, arg->key_spec.u.identifier,
         FSCRYPT_KEY_IDENTIFIER_SIZE);
-    LOGD("success. key_id len:%{public}d, data(hex):%{private}s", keyInfo_.keyId.size, keyInfo_.keyId.ToString().c_str());
+    LOGD("success. key_id len:%{public}d, data(hex):%{private}s", keyInfo_.keyId.size,
+        keyInfo_.keyId.ToString().c_str());
     if (!SaveKeyBlob(keyInfo_.keyId, "key_id")) {
         // do some cleanup
         return false;
@@ -433,6 +435,5 @@ bool BaseKey::ClearKeyV2(const std::string& mnt)
 
     return true;
 }
-
 } // namespace StorageDaemon
 } // namespace OHOS
