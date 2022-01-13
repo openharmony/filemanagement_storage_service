@@ -37,6 +37,8 @@ public:
         STOP_USER,
         INIT_GLOBAL_KEY,
         INIT_GLOBAL_USER_KEYS,
+        CREATE_USER_KEYS,
+        DELETE_USER_KEYS,
     };
 
     enum {
@@ -59,6 +61,8 @@ public:
     // fscrypt api
     virtual int32_t InitGlobalKey(void) = 0;
     virtual int32_t InitGlobalUserKeys(void) = 0;
+    virtual int32_t GenerateUserKeys(uint32_t userId, uint32_t flags) = 0;
+    virtual int32_t DeleteUserKeys(uint32_t userId) = 0;
 
     DECLARE_INTERFACE_DESCRIPTOR(u"ohos.StorageDaemon");
 };

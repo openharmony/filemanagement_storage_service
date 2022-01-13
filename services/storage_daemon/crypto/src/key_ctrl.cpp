@@ -25,6 +25,9 @@
 #include <linux/keyctl.h>
 
 #include "utils/log.h"
+#include "securec.h"
+#include "file_ex.h"
+#include "string_ex.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -128,5 +131,39 @@ bool KeyCtrl::GetPolicy(const std::string &path, fscrypt_get_policy_ex_arg &poli
     return FsIoctl(path, FS_IOC_GET_ENCRYPTION_POLICY_EX, reinterpret_cast<void *>(&policy));
 }
 
+static bool ParseOption(const std::map<std::string, uint8_t> &policy, const std::string &defaultStr, uint8_t &value)
+{
+    if (policy.find(defaultStr) != policy.end()) {
+        LOGI("use default: %{public}s", defaultStr.c_str());
+        value = policy.at(defaultStr);
+        return true;
+    }
+
+    LOGE("bad default policy: %{public}s, value not filled!", defaultStr.c_str());
+    return false;
+}
+
+bool KeyCtrl::LoadAndSetPolicy(const std::string &keyIdPath, const std::string &policyFile, const std::string &toEncrypt)
+{
+    LOGD("enter");
+    std::string keyId;
+    if (OHOS::LoadStringFromFile(keyIdPath, keyId) == false || keyId.length() != FSCRYPT_KEY_IDENTIFIER_SIZE) {
+        LOGE("bad kid file content, length=%{public}d", keyId.length());
+        return false;
+    }
+
+    // Add parsing options from the policy file, now using default.
+    (void)policyFile;
+
+    struct fscrypt_policy_v2 arg = {.version = FSCRYPT_POLICY_V2};
+    (void)memcpy_s(arg.master_key_identifier, FSCRYPT_KEY_IDENTIFIER_SIZE, keyId.data(), keyId.length());
+    if (!ParseOption(FILENAME_MODES, DEFAULT_POLICY.fileName, arg.filenames_encryption_mode) ||
+        !ParseOption(CONTENTS_MODES, DEFAULT_POLICY.content, arg.contents_encryption_mode) ||
+        !ParseOption(POLICY_FLAGS, DEFAULT_POLICY.flags, arg.flags)) {
+        LOGE("parse option failed");
+        return false;
+    }
+    return KeyCtrl::SetPolicy(toEncrypt, arg);
+}
 } // namespace StorageDaemon
 } // namespace OHOS

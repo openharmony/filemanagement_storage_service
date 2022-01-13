@@ -17,6 +17,7 @@
 #include "user/user_manager.h"
 #include "utils/errno.h"
 #include "crypto/key_manager.h"
+#include "utils/log.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -71,15 +72,28 @@ int32_t StorageDaemon::StopUser(int32_t userId)
 
 int32_t StorageDaemon::InitGlobalKey(void)
 {
-    std::lock_guard<std::mutex> lock(keyMutex_);
     return KeyManager::GetInstance()->InitGlobalDeviceKey();
 }
 
 int32_t StorageDaemon::InitGlobalUserKeys(void)
 {
-    std::lock_guard<std::mutex> lock(keyMutex_);
-    return KeyManager::GetInstance()->InitGlobalUserKeys();
+    int ret = KeyManager::GetInstance()->InitGlobalUserKeys();
+    if (ret) {
+        LOGE("Init global users els failed");
+        return ret;
+    }
+    std::lock_guard<std::mutex> lock(mutex_);
+    return UserManager::Instance()->PrepareUserDirs(GLOBAL_USER_ID, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
 }
 
+int32_t StorageDaemon::GenerateUserKeys(uint32_t userId, uint32_t flags)
+{
+    return KeyManager::GetInstance()->GenerateUserKeys(userId, flags);
+}
+
+int32_t StorageDaemon::DeleteUserKeys(uint32_t userId)
+{
+    return KeyManager::GetInstance()->DeleteUserKeys(userId);
+}
 } // StorageDaemon
 } // OHOS

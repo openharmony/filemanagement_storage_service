@@ -35,6 +35,8 @@ public:
     static int32_t DestroyUserDirs(int32_t userId, u_int32_t flags);
     static int32_t InitGlobalKey(void);
     static int32_t InitGlobalUserKeys(void);
+    static int32_t GenerateUserKeys(uint32_t userId, uint32_t flags);
+    static int32_t DeleteUserKeys(uint32_t userId);
 
 private:
     static sptr<IStorageDaemon> GetStorageDaemonProxy(void);

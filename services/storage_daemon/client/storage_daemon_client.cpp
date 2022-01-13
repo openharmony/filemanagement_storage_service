@@ -106,5 +106,26 @@ int32_t StorageDaemonClient::InitGlobalUserKeys(void)
     return client->InitGlobalUserKeys();
 }
 
+int32_t StorageDaemonClient::GenerateUserKeys(uint32_t userId, uint32_t flags)
+{
+    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
+    if (client == nullptr) {
+        LOGE("get storage daemon service failed");
+        return -EAGAIN;
+    }
+
+    return client->GenerateUserKeys(userId, flags);
+}
+
+int32_t StorageDaemonClient::DeleteUserKeys(uint32_t userId)
+{
+    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
+    if (client == nullptr) {
+        LOGE("get storage daemon service failed");
+        return -EAGAIN;
+    }
+
+    return client->DeleteUserKeys(userId);
+}
 }
 }

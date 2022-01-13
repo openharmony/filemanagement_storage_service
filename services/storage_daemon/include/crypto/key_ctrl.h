@@ -49,28 +49,43 @@ public:
     static bool SetPolicy(const std::string &path, fscrypt_policy_v2 &policy);
     static bool GetPolicy(const std::string &path, fscrypt_get_policy_ex_arg &options);
 
-    static bool LoadAndSetPolicy(const std::string &policy, const std::string &toEncrypt);
+    static bool LoadAndSetPolicy(const std::string &keyIdPath, const std::string &policyFile, const std::string &toEncrypt);
 };
 
-struct CryptoOptions {
-    int version { 0 };
-    int contentsMode { 0 };
-    int filenamesMode { 0 };
-    int flags { 0 };
-    bool useHwWrappedKey { false };
+struct EncryptPolicy {
+    std::string version;
+    std::string fileName;
+    std::string content;
+    std::string flags;
+    bool hwWrappedKey;
+};
+
+static const EncryptPolicy DEFAULT_POLICY = {
+    .version = "2",
+    .fileName = "aes-256-cts",
+    .content = "aes-256-xts",
+    .flags = "padding-32",
+    .hwWrappedKey = false,
 };
 
 static const auto CONTENTS_MODES = std::map<std::string, uint8_t> {
     {"aes-256-xts", FSCRYPT_MODE_AES_256_XTS},
-    {"software", FSCRYPT_MODE_AES_256_XTS},
+    {"aes-128-cbc", FSCRYPT_MODE_AES_128_CBC},
     {"adiantum", FSCRYPT_MODE_ADIANTUM},
-    // {"ice", FSCRYPT_MODE_PRIVATE}
 };
 
 static const auto FILENAME_MODES = std::map<std::string, uint8_t> {
     {"aes-256-cts", FSCRYPT_MODE_AES_256_CTS},
-    // {"aes-256-heh", FSCRYPT_MODE_AES_256_HEH}
+    {"aes-128-cts", FSCRYPT_MODE_AES_128_CTS},
     {"adiantum", FSCRYPT_MODE_ADIANTUM},
+};
+
+static const auto POLICY_FLAGS = std::map<std::string, uint8_t> {
+    {"padding-4", FSCRYPT_POLICY_FLAGS_PAD_4},
+    {"padding-8", FSCRYPT_POLICY_FLAGS_PAD_8},
+    {"padding-16", FSCRYPT_POLICY_FLAGS_PAD_16},
+    {"padding-32", FSCRYPT_POLICY_FLAGS_PAD_32},
+    {"direct-key", FSCRYPT_POLICY_FLAG_DIRECT_KEY}, // use with adiantum
 };
 
 } // namespace StorageDaemon

@@ -79,6 +79,7 @@ ohos_executable("sdc") {
   sources = [
     "ipc/src/storage_daemon_proxy.cpp",
     "client/storage_daemon_client.cpp",
+    "utils/file_utils.cpp",
     "sdc.cpp"
   ]
 

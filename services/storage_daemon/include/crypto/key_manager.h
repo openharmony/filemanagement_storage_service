@@ -23,9 +23,16 @@
 
 #include "key_utils.h"
 #include "base_key.h"
+#include "utils/file_utils.h"
 
 namespace OHOS {
 namespace StorageDaemon {
+constexpr uint32_t GLOBAL_USER_ID = 0;
+enum KeyType {
+    EL1_KEY = 1,
+    EL2_KEY = 2,
+};
+
 class KeyManager {
 public:
     static KeyManager *GetInstance(void)
@@ -35,14 +42,14 @@ public:
     }
     int InitGlobalDeviceKey(void);
     int InitGlobalUserKeys(void);
-    int CreateUserKeys(unsigned int user, bool isSave);
+    int GenerateUserKeys(unsigned int user, uint32_t flags);
     int DeleteUserKeys(unsigned int user);
-    int UpdateUserAuth(unsigned int user, const std::string &token);
-    int ActiveUserKey(unsigned int user);
-    int InActiveUserKey(unsigned int user);
-    int UpdateKeyContext(unsigned int user);
-    std::string GetKeyDesc(unsigned int user);
-    int PrepareUserSpace(unsigned int user);
+    int UpdateUserAuth(unsigned int user, const std::string &token, const std::string &composePwd);
+    int ActiveUserKey(unsigned int user, const std::string &token,
+                      const std::string &secret);
+    int InActiveUserKey(unsigned int user, KeyType type);
+    int SetDirectoryElPolicy(unsigned int user, KeyType type,
+                             const std::vector<FileList> &vec);
 
 private:
     KeyManager()
@@ -50,11 +57,18 @@ private:
         hasGlobalDeviceKey_ = false;
     }
     ~KeyManager() {}
-    int GenerateDeviceKey(const std::string &dir);
+    int GenerateAndInstallDeviceKey(const std::string &dir);
+    int RestoreDeviceKey(const std::string &dir);
+    int GenerateAndInstallUserKey(uint32_t userId, const std::string &dir, const UserAuth &auth, KeyType type);
+    int RestoreUserKey(uint32_t userId, const std::string &dir, const UserAuth &auth, KeyType type);
+    int LoadAllUsersEl1Key(void);
+    int InitUserElkeyStorageDir(void);
+    bool HasElkey(uint32_t userId, KeyType type);
+    void DoDeleteUserKeys(unsigned int user);
 
-    std::map<unsigned int, std::unique_ptr<BaseKey>> userEl1Key_;
-    std::map<unsigned int, std::unique_ptr<BaseKey>> userEl2Key_;
-    std::unique_ptr<BaseKey> globalEl1Key_ { nullptr };
+    std::map<unsigned int, std::shared_ptr<BaseKey>> userEl1Key_;
+    std::map<unsigned int, std::shared_ptr<BaseKey>> userEl2Key_;
+    std::shared_ptr<BaseKey> globalEl1Key_ { nullptr };
 
     std::mutex keyMutex_;
     bool hasGlobalDeviceKey_;

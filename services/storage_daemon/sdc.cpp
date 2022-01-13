@@ -18,11 +18,12 @@
 #include <vector>
 
 #include "utils/log.h"
+#include "utils/file_utils.h"
 #include "storage_daemon_client.h"
 
 static void HandleFileCrypt(const std::string &cmd, const std::vector<std::string> &args)
 {
-    LOGI("fscrypt cmd: %s", cmd.c_str());
+    LOGI("fscrypt cmd: %{public}s", cmd.c_str());
     if (cmd == "init_global_key") {
         // sdc filecrypt init_global_key /data
         int32_t ret = OHOS::StorageDaemon::StorageDaemonClient::InitGlobalKey();
@@ -35,6 +36,56 @@ static void HandleFileCrypt(const std::string &cmd, const std::vector<std::strin
         int32_t ret = OHOS::StorageDaemon::StorageDaemonClient::InitGlobalUserKeys();
         if (ret) {
             LOGE("Init global user keys failed");
+            return;
+        }
+    } else if (cmd == "generate_user_keys") {
+        // sdc filecrypt generate_user_keys userId flag
+        if (args.size() < 5) {
+            LOGE("Parameter nums is less than 5, please retry");
+            return;
+        }
+        uint32_t userId, flags;
+        if ((OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) ||
+            (OHOS::StorageDaemon::StringToUint32(args[4], flags) == false)) {
+            LOGE("Parameter input error, please retry");
+            return;
+        }
+        int32_t ret = OHOS::StorageDaemon::StorageDaemonClient::GenerateUserKeys(userId, flags);
+        if (ret) {
+            LOGE("Create user %{public}u el error", userId);
+            return;
+        }
+    } else if (cmd == "prepare_user_storage") {
+        // sdc filecrypt prepare_user_storage userId flag
+        if (args.size() < 5) {
+            LOGE("Parameter nums is less than 5, please retry");
+            return;
+        }
+        uint32_t userId, flags;
+        if ((OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) ||
+            (OHOS::StorageDaemon::StringToUint32(args[4], flags) == false)) {
+            LOGE("Parameter input error, please retry");
+            return;
+        }
+        int32_t ret = OHOS::StorageDaemon::StorageDaemonClient::PrepareUserDirs(userId, flags);
+        if (ret) {
+            LOGE("Prepare user %{public}u storage error", userId);
+            return;
+        }
+    } else if (cmd == "delete_user_keys") {
+        // sdc filecrypt delete_user_keys userId
+        if (args.size() < 4) {
+            LOGE("Parameter nums is less than 4, please retry");
+            return;
+        }
+        uint32_t userId;
+        if (OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) {
+            LOGE("Parameter input error, please retry");
+            return;
+        }
+        int ret = OHOS::StorageDaemon::StorageDaemonClient::DeleteUserKeys(userId);
+        if (ret) {
+            LOGE("Delete user %{public}u key error", userId);
             return;
         }
     }

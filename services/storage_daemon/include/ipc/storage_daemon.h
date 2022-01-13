@@ -37,13 +37,14 @@ public:
     virtual int32_t PrepareUserDirs(int32_t userId, uint32_t flags) override;
     virtual int32_t DestroyUserDirs(int32_t userId, uint32_t flags) override;
 
-    // fscrypt api
+    // fscrypt api, add fs mutex in KeyManager
     virtual int32_t InitGlobalKey(void) override;
     virtual int32_t InitGlobalUserKeys(void) override;
+    virtual int32_t GenerateUserKeys(uint32_t userId, uint32_t flags) override;
+    virtual int32_t DeleteUserKeys(uint32_t userId) override;
 
 private:
     std::mutex mutex_;
-    std::mutex keyMutex_;
 };
 } // StorageDaemon
 } // OHOS

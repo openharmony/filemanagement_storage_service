@@ -20,6 +20,7 @@
 #include "utils/string_utils.h"
 #include "utils/log.h"
 #include "ipc/istorage_daemon.h"
+#include "crypto/key_manager.h"
 
 using namespace std;
 
@@ -113,12 +114,13 @@ int32_t UserManager::PrepareUserDirs(int32_t userId, uint32_t flags)
         if (err != E_OK) {
             return err;
         }
-    }
 
-    // get syspara: hmdfs
-    err = PrepareHmdfsDirs(userId);
-    if (err != E_OK) {
-        return err;
+        // get syspara: hmdfs
+        err = PrepareHmdfsDirs(userId);
+        if (err != E_OK) {
+            LOGE("Prepare hmdfs dir error");
+            return err;
+        }
     }
 
     return E_OK;
@@ -176,6 +178,24 @@ int32_t UserManager::PrepareDirsFromIdAndLevel(int32_t userId, const std::string
     }
 
     // set policy here
+    std::vector<FileList> list;
+    for (auto item : rootDirVec_) {
+        FileList temp;
+        temp.userId = userId;
+        temp.path = StringPrintf(item.path.c_str(), level.c_str(), userId);
+        list.push_back(temp);
+    }
+    if (level == el1_) {
+        if (KeyManager::GetInstance()->SetDirectoryElPolicy(userId, EL1_KEY, list)) {
+            LOGE("Set user dir el1 policy error");
+            return E_SET_POLICY;
+        }
+    } else if (level == el2_) {
+        if (KeyManager::GetInstance()->SetDirectoryElPolicy(userId, EL2_KEY, list)) {
+            LOGE("Set user dir el1 policy error");
+            return E_SET_POLICY;
+        }
+    }
 
     if (!PrepareDirsFromVec(userId, level, subDirVec_)) {
         LOGE("failed to prepare %{public}s sub dirs for userid %{public}d", level.c_str(), userId);
