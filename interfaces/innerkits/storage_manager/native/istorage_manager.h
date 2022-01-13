@@ -20,7 +20,6 @@
 
 namespace OHOS {
 namespace StorageManager {
-
 class IStorageManager : public IRemoteBroker {
 public:
     virtual int32_t PrepareAddUser(int32_t userId) = 0;

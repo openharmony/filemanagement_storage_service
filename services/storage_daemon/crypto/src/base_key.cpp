@@ -46,15 +46,12 @@ bool BaseKey::InitKey()
         return false;
     }
     if (!GenerateKeyBlob(keyInfo_.key, keyLen_)) {
-        LOGE("GenerateKeyBlob failed");
+        LOGE("GenerateKeyBlob raw key failed");
         return false;
     }
     if (!GenerateKeyDesc()) {
         LOGE("GenerateKeyDesc failed");
-        return false;
-    }
-    if (!HuksMaster::GenerateKey(keyInfo_.keyDesc)) {
-        LOGE("HuksMaster::GenerateKey failed");
+        keyInfo_.key.Clear();
         return false;
     }
 
@@ -172,6 +169,8 @@ bool BaseKey::StoreKey(const UserAuth &auth)
             dir_ = originalDir;
             return false;
         }
+    } else {
+        OHOS::ForceRemoveDirectory(dir_);
     }
     dir_ = originalDir;
     return true;
@@ -180,7 +179,15 @@ bool BaseKey::StoreKey(const UserAuth &auth)
 bool BaseKey::DoStoreKey(const UserAuth &auth)
 {
     OHOS::ForceCreateDirectory(dir_);
-    if (!SaveKeyBlob(keyInfo_.keyDesc, "alias")) {
+    if (!GenerateKeyBlob(keyContext_.alias, CRYPTO_KEY_ALIAS_SIZE)) {
+        LOGE("GenerateKeyBlob alias failed");
+        return false;
+    }
+    if (!HuksMaster::GenerateKey(keyContext_.alias)) {
+        LOGE("HuksMaster::GenerateKey failed");
+        return false;
+    }
+    if (!SaveKeyBlob(keyContext_.alias, "alias")) {
         return false;
     }
     if (!GenerateAndSaveKeyBlob(keyContext_.secDiscard, "sec_discard", CRYPTO_KEY_SECDISC_SIZE)) {
@@ -193,8 +200,6 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
     if (!SaveKeyBlob(keyContext_.encrypted, "encrypted")) {
         return false;
     }
-    LOGD("encrypted len:%{public}d, data(hex):%{private}s", keyContext_.encrypted.size,
-        keyContext_.encrypted.ToString().c_str());
     return true;
 }
 
@@ -215,13 +220,13 @@ bool BaseKey::RestoreKey(const UserAuth &auth)
     LOGD("encrypted len:%{public}d, data(hex):%{private}s", keyContext_.encrypted.size,
         keyContext_.encrypted.ToString().c_str());
 
-    if (!LoadKeyBlob(keyInfo_.keyDesc, "alias", CRYPTO_KEY_ALIAS_SIZE)) {
-        keyInfo_.keyDesc.Clear();
+    if (!LoadKeyBlob(keyContext_.alias, "alias", CRYPTO_KEY_ALIAS_SIZE)) {
+        keyContext_.alias.Clear();
         return false;
     }
     if (!LoadKeyBlob(keyContext_.secDiscard, "sec_discard", CRYPTO_KEY_SECDISC_SIZE)) {
         keyContext_.encrypted.Clear();
-        keyInfo_.keyDesc.Clear();
+        keyContext_.alias.Clear();
         return false;
     }
     return DecryptKey(auth);
@@ -232,11 +237,15 @@ bool BaseKey::DecryptKey(const UserAuth &auth)
     auto ret = HuksMaster::DecryptKey(keyContext_, auth, keyInfo_);
     keyContext_.nonce.Clear();
     keyContext_.aad.Clear();
-
+    if (ret && !GenerateKeyDesc()) {
+        LOGE("GenerateKeyDesc failed");
+        return false;
+    }
     return ret;
 }
 
-bool BaseKey::ActiveKey()
+// The legacy kernel interface, add the key to kernel keyring.
+bool BaseKey::ActiveKeyLegacy()
 {
     LOGD("enter");
     if (keyInfo_.keyDesc.IsEmpty()) {
@@ -281,14 +290,19 @@ bool BaseKey::ActiveKey()
     return true;
 }
 
-bool BaseKey::ClearKey()
+// rmdir after it if needed.
+bool BaseKey::ClearKeyLegacy()
 {
     LOGD("enter");
     if (keyInfo_.keyDesc.IsEmpty()) {
         LOGE("keyDesc is null, key not installed?");
         return false;
     }
-    HuksMaster::DeleteKey(keyInfo_.keyDesc);
+    if (keyContext_.alias.IsEmpty()) {
+        LOGE("alias is null");
+        return false;
+    }
+    HuksMaster::DeleteKey(keyContext_.alias);
 
     key_serial_t krid = KeyCtrl::Search(KEY_SPEC_SESSION_KEYRING, "keyring", "fscrypt", 0);
     if (krid == -1) {
@@ -303,11 +317,84 @@ bool BaseKey::ClearKey()
         }
     }
 
-    OHOS::ForceRemoveDirectory(dir_);
     keyInfo_.key.Clear();
     keyInfo_.keyDesc.Clear();
     LOGD("success");
     return true;
 }
+
+// v2 interface, use keyId as the later setpolicy param.
+bool BaseKey::ActiveKey(const std::string& mnt)
+{
+    LOGD("enter");
+    if (keyInfo_.key.IsEmpty()) {
+        LOGE("rawkey is null");
+        return false;
+    }
+
+    auto buf = std::make_unique<char[]>(sizeof(fscrypt_add_key_arg) + FSCRYPT_MAX_KEY_SIZE);
+    auto arg = reinterpret_cast<fscrypt_add_key_arg *>(buf.get());
+    memset_s(arg, sizeof(fscrypt_add_key_arg) + FSCRYPT_MAX_KEY_SIZE, 0, sizeof(fscrypt_add_key_arg) + FSCRYPT_MAX_KEY_SIZE);
+    arg->key_spec.type = FSCRYPT_KEY_SPEC_TYPE_IDENTIFIER;
+    arg->raw_size = keyInfo_.key.size;
+    auto err = memcpy_s(arg->raw, FSCRYPT_MAX_KEY_SIZE, keyInfo_.key.data.get(), keyInfo_.key.size);
+    if (err) {
+        LOGE("memcpy failed ret %{public}d", err);
+        return false;
+    }
+
+    auto ret = KeyCtrl::InstallKey(mnt, *arg);
+    if (ret == false) {
+        LOGE("InstallKey failed");
+        return false;
+    }
+
+    keyInfo_.keyId.Alloc(FSCRYPT_KEY_IDENTIFIER_SIZE);
+    (void)memcpy_s(keyInfo_.keyId.data.get(), FSCRYPT_KEY_IDENTIFIER_SIZE, arg->key_spec.u.identifier,
+        FSCRYPT_KEY_IDENTIFIER_SIZE);
+    LOGD("success. kid len:%{public}d, data(hex):%{private}s", keyInfo_.keyId.size, keyInfo_.keyId.ToString().c_str());
+    if (!SaveKeyBlob(keyInfo_.keyId, "kid")) {
+        // do some cleanup
+        return false;
+    }
+
+    keyInfo_.key.Clear();
+    LOGD("success");
+    return true;
+}
+
+// rmdir after it if needed.
+bool BaseKey::ClearKey(const std::string& mnt)
+{
+    LOGD("enter");
+    if (keyInfo_.keyId.size != FSCRYPT_KEY_IDENTIFIER_SIZE) {
+        LOGE("keyId is invalid, %{public}d", keyInfo_.keyId.size);
+        return false;
+    }
+
+    fscrypt_remove_key_arg arg;
+    memset_s(&arg, sizeof(arg), 0, sizeof(arg));
+    arg.key_spec.type = FSCRYPT_KEY_SPEC_TYPE_IDENTIFIER;
+    (void)memcpy_s(arg.key_spec.u.identifier, FSCRYPT_KEY_IDENTIFIER_SIZE, keyInfo_.keyId.data.get(),
+        keyInfo_.keyId.size);
+
+    auto ret = KeyCtrl::RemoveKey(mnt, arg);
+    if (ret == false) {
+        return false;
+    }
+    if (arg.removal_status_flags & FSCRYPT_KEY_REMOVAL_STATUS_FLAG_OTHER_USERS) {
+        LOGE("Other users still have this key added");
+    } else if (arg.removal_status_flags & FSCRYPT_KEY_REMOVAL_STATUS_FLAG_FILES_BUSY) {
+        LOGE("Some files using this key are still in-use");
+    } else {
+        LOGD("RemoveKey success");
+    }
+
+    keyInfo_.keyDesc.Clear();
+    keyInfo_.keyId.Clear();
+
+    return true;
+}
+
 } // namespace StorageDaemon
 } // namespace OHOS

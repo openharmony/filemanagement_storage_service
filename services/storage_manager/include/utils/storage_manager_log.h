@@ -17,12 +17,11 @@
 #include "hilog/log.h"
 
 #ifndef LOG_DOMAIN
-#define LOG_DOMAIN 0    // TODO tmp value 0, need request unique LOG_DOMAIN
+#define LOG_DOMAIN 0
 #endif
 
 namespace OHOS {
 namespace StorageManager {
-
 static constexpr OHOS::HiviewDFX::HiLogLabel LOG_LABEL = { LOG_CORE, LOG_DOMAIN, "StorageManager" };
 
 #define PRINT_LOG(Level, fmt, ...) \

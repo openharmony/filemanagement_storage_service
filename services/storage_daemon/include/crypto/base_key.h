@@ -30,8 +30,11 @@ public:
     bool InitKey();
     bool StoreKey(const UserAuth &auth);
     bool RestoreKey(const UserAuth &auth);
-    bool ActiveKey();
-    bool ClearKey();
+    bool ActiveKeyLegacy();
+    bool ClearKeyLegacy();
+    // ------ fscrypt v2 ------
+    bool ActiveKey(const std::string &mnt = "/data");
+    bool ClearKey(const std::string &mnt = "/data");
 
     KeyInfo keyInfo_;
 
