@@ -46,7 +46,7 @@ int KeyManager::GenerateAndInstallDeviceKey(const std::string &dir)
         return -ENOMEM;
     }
 
-    if (globalEl1Key_->InitKey() == false) {
+    if (globalEl1Key_->InitKey(FSCRYPT_V2) == false) {
         globalEl1Key_ = nullptr;
         LOGE("global security key init failed");
         return -EFAULT;
@@ -85,7 +85,7 @@ int KeyManager::RestoreDeviceKey(const std::string &dir)
         return -ENOMEM;
     }
 
-    if (globalEl1Key_->InitKey() == false) {
+    if (globalEl1Key_->InitKey(FSCRYPT_V2) == false) {
         globalEl1Key_ = nullptr;
         LOGE("global security key init failed");
         return -EFAULT;
@@ -150,7 +150,7 @@ int KeyManager::GenerateAndInstallUserKey(uint32_t userId, const std::string &di
         return -ENOMEM;
     }
 
-    if (elKey->InitKey() == false) {
+    if (elKey->InitKey(FSCRYPT_V2) == false) {
         LOGE("global security key init failed");
         return -EFAULT;
     }
@@ -191,7 +191,7 @@ int KeyManager::RestoreUserKey(uint32_t userId, const std::string &dir, const Us
         return -ENOMEM;
     }
 
-    if (elKey->InitKey() == false) {
+    if (elKey->InitKey(FSCRYPT_V2) == false) {
         LOGE("global security key init failed");
         return -EFAULT;
     }
@@ -432,7 +432,7 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::string &token,
     }
 
     std::shared_ptr<BaseKey> elKey = std::make_shared<BaseKey>(keyDir);
-    if (elKey->InitKey() == false) {
+    if (elKey->InitKey(FSCRYPT_V2) == false) {
         LOGE("Init el failed");
         return -EFAULT;
     }
@@ -478,20 +478,20 @@ int KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type,
                                      const std::vector<FileList> &vec)
 {
     LOGI("start");
-    std::string kidPath;
+    std::string keyPath;
     std::lock_guard<std::mutex> lock(keyMutex_);
     if (type == EL1_KEY) {
         if (userEl1Key_.find(user) == userEl1Key_.end()) {
             LOGE("Have not found user %{public}u el1 key", user);
             return -EINVAL;
         }
-        kidPath = userEl1Key_[user]->GetKeyIdPath();
+        keyPath = userEl1Key_[user]->GetDir();
     } else if (type == EL2_KEY) {
         if (userEl2Key_.find(user) == userEl2Key_.end()) {
             LOGE("Have not found user %{public}u el2 key", user);
             return -EINVAL;
         }
-        kidPath = userEl2Key_[user]->GetKeyIdPath();
+        keyPath = userEl2Key_[user]->GetDir();
     } else {
         LOGD("Not specify el flags, no need to crypt");
         return 0;
@@ -499,7 +499,7 @@ int KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type,
 
     std::string policy = "";
     for (auto item : vec) {
-        if(KeyCtrl::LoadAndSetPolicy(kidPath, policy, item.path) == false) {
+        if(KeyCtrl::LoadAndSetPolicy(keyPath, policy, item.path) == false) {
             LOGE("Set directory el policy error!");
             return -EFAULT;
         }

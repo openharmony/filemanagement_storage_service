@@ -29,7 +29,7 @@ public:
     ~BaseKey() = default;
 
     // for openharmony kernel 5.10+, prefer using the FSCRYPT_V2.
-    bool InitKey(uint8_t version = FSCRYPT_INVALID);
+    bool InitKey(uint8_t version);
     bool StoreKey(const UserAuth &auth);
     bool RestoreKey(const UserAuth &auth);
     bool ActiveKey(const std::string &mnt = "/data");
@@ -39,10 +39,6 @@ public:
     std::string GetDir() const
     {
         return dir_;
-    }
-    std::string GetKeyIdPath() const
-    {
-        return dir_ + "/kid";
     }
 
 private:

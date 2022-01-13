@@ -73,8 +73,8 @@ struct KeyBlob {
 
 
 struct KeyInfo {
-    KeyBlob key;
     uint8_t version { 0 };
+    KeyBlob key;
     // the legacy interface use key_spec.u.descriptor
     KeyBlob keyDesc;
     // the v2 interface use the key_spec.u.identifier
