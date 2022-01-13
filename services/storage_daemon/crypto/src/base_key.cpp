@@ -28,7 +28,6 @@
 #include "file_ex.h"
 #include "utils/log.h"
 #include "huks_master.h"
-#include "key_ctrl.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -43,6 +42,10 @@ BaseKey::BaseKey(std::string dir, uint8_t keyLen) : dir_(dir), keyLen_(keyLen)
 bool BaseKey::InitKey(uint8_t version)
 {
     LOGD("enter");
+    if (version == FSCRYPT_INVALID || version > KeyCtrl::GetFscryptVersion()) {
+        LOGE("invalid version %{public}d", version);
+        return false;
+    }
     if (!keyInfo_.key.IsEmpty()) {
         LOGE("key is not empty");
         return false;

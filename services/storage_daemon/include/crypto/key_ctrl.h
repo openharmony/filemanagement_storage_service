@@ -27,6 +27,12 @@ namespace StorageDaemon {
 using key_serial_t = int;
 constexpr uint32_t CRYPTO_KEY_DESC_SIZE = FSCRYPT_KEY_DESCRIPTOR_SIZE;
 
+enum {
+    FSCRYPT_INVALID = 0,
+    FSCRYPT_V1 = 1,
+    FSCRYPT_V2 = 2,
+};
+
 union FscryptPolicy{
     fscrypt_policy_v1 v1;
     fscrypt_policy_v2 v2;
@@ -54,10 +60,11 @@ public:
 
     static bool SetPolicy(const std::string &path, FscryptPolicy &policy);
     static bool GetPolicy(const std::string &path, fscrypt_get_policy_ex_arg &options);
-
     static bool LoadAndSetPolicy(const std::string &keyPath, const std::string &policyFile,
         const std::string &toEncrypt);
 
+    static uint8_t GetFscryptVersion(const std::string &mnt = "/data");
+    static uint8_t GetEncryptedVersion(const std::string &dir);
 };
 
 struct EncryptPolicy {

@@ -18,6 +18,7 @@
 #include <string>
 
 #include "key_utils.h"
+#include "key_ctrl.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -28,7 +29,7 @@ public:
     ~BaseKey() = default;
 
     // for openharmony kernel 5.10+, prefer using the FSCRYPT_V2.
-    bool InitKey(uint8_t version = FSCRYPT_V1);
+    bool InitKey(uint8_t version = FSCRYPT_INVALID);
     bool StoreKey(const UserAuth &auth);
     bool RestoreKey(const UserAuth &auth);
     bool ActiveKey(const std::string &mnt = "/data");

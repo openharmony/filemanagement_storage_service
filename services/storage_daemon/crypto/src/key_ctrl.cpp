@@ -80,7 +80,7 @@ long KeyCtrl::GetSecurity(key_serial_t id, std::string &buffer)
 
 bool FsIoctl(const std::string &mnt, unsigned long cmd, void *arg)
 {
-    int fd = open(mnt.c_str(), O_RDONLY | O_CLOEXEC);
+    int fd = open(mnt.c_str(), O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
     if (fd < 0) {
         LOGE("open %{public}s failed, errno:%{public}d", mnt.c_str(), errno);
         return false;
@@ -167,9 +167,9 @@ bool KeyCtrl::LoadAndSetPolicy(const std::string &keyPath, const std::string &po
 {
     LOGD("enter");
 
-    union FscryptPolicy arg;
+    FscryptPolicy arg;
     (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
-    // the modes and flags shares the same offset in the struct, 
+    // the modes and flags shares the same offset in the struct
     if (!ParseOption(FILENAME_MODES, DEFAULT_POLICY.fileName, arg.v1.filenames_encryption_mode) ||
         !ParseOption(CONTENTS_MODES, DEFAULT_POLICY.content, arg.v1.contents_encryption_mode) ||
         !ParseOption(POLICY_FLAGS, DEFAULT_POLICY.flags, arg.v1.flags)) {
@@ -195,6 +195,61 @@ bool KeyCtrl::LoadAndSetPolicy(const std::string &keyPath, const std::string &po
     }
 }
 
+static bool IsKernelSupportFscryptV2(const std::string &mnt)
+{
+    int fd = open(mnt.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+    if (fd < 0) {
+        LOGE("open %{public}s failed, errno: %{public}d", mnt.c_str(), errno);
+        return false;
+    }
+
+    errno = 0;
+    (void)ioctl(fd, FS_IOC_ADD_ENCRYPTION_KEY, nullptr);
+    close(fd);
+    if (errno == ENOTTY) {
+        LOGI("Kernel doesn't support FS_IOC_ADD_ENCRYPTION_KEY.");
+        return false;
+    }
+    if (errno == EFAULT) {
+        LOGI("Kernel is support FS_IOC_ADD_ENCRYPTION_KEY.");
+        return true;
+    }
+    LOGW("Unexpected errno: %{public}d", errno);
+    return false;
+}
+
+uint8_t KeyCtrl::GetFscryptVersion(const std::string &mnt)
+{
+    static uint8_t version = IsKernelSupportFscryptV2(mnt) ? FSCRYPT_V2 : FSCRYPT_V1;
+    return version;
+}
+
+uint8_t KeyCtrl::GetEncryptedVersion(const std::string &dir)
+{
+    int fd = open(dir.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+    if (fd < 0) {
+        LOGE("open %{public}s failed, errno:%{public}d", dir.c_str(), errno);
+        return FSCRYPT_INVALID;
+    }
+
+    fscrypt_policy_v1 policy;
+    if (ioctl(fd, FS_IOC_GET_ENCRYPTION_POLICY, &policy) == 0) {
+        LOGI("%{public}s is encrypted with v1 policy", dir.c_str());
+        close(fd);
+        return FSCRYPT_V1;
+    }
+    close(fd);
+
+    if (errno == EINVAL) {
+        LOGI("%{public}s is encrypted with v2 policy", dir.c_str());
+        return FSCRYPT_V2;
+    } else if (errno == ENODATA) {
+        LOGI("%{public}s is not encrypted", dir.c_str());
+    } else {
+        LOGE("%{public}s unexpected errno: %{public}d", dir.c_str(), errno);
+    }
+    return FSCRYPT_INVALID;
+}
 
 } // namespace StorageDaemon
 } // namespace OHOS

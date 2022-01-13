@@ -71,10 +71,6 @@ struct KeyBlob {
     std::unique_ptr<uint8_t[]> data { nullptr };
 };
 
-enum {
-    FSCRYPT_V1 = 1,
-    FSCRYPT_V2 = 2,
-};
 
 struct KeyInfo {
     KeyBlob key;

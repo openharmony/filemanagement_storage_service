@@ -238,6 +238,11 @@ HWTEST_F(CryptoKeyTest, basekey_fscrypt_v1_policy_clear, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_key, TestSize.Level1)
 {
+    // skipped when kernel not support v2
+    if (OHOS::StorageDaemon::KeyCtrl::GetFscryptVersion() == OHOS::StorageDaemon::FSCRYPT_V1) {
+        return;
+    }
+
     EXPECT_TRUE(g_testKey.InitKey(OHOS::StorageDaemon::FSCRYPT_V2));
     EXPECT_TRUE(g_testKey.StoreKey(emptyUserAuth));
 
@@ -261,6 +266,11 @@ HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_key, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_policy_set, TestSize.Level1)
 {
+    // skipped when kernel not support v2
+    if (OHOS::StorageDaemon::KeyCtrl::GetFscryptVersion() == OHOS::StorageDaemon::FSCRYPT_V1) {
+        return;
+    }
+
     EXPECT_TRUE(g_testKey.RestoreKey(emptyUserAuth));
     EXPECT_EQ(OHOS::StorageDaemon::FSCRYPT_V2, g_testKey.keyInfo_.version);
     EXPECT_TRUE(g_testKey.ActiveKey(TEST_MNT));
@@ -291,6 +301,11 @@ HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_policy_set, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_policy_get, TestSize.Level1)
 {
+    // skipped when kernel not support v2
+    if (OHOS::StorageDaemon::KeyCtrl::GetFscryptVersion() == OHOS::StorageDaemon::FSCRYPT_V1) {
+        return;
+    }
+
     struct fscrypt_get_policy_ex_arg arg;
     memset_s(&arg, sizeof(arg), 0, sizeof(arg));
     arg.policy_size = sizeof(arg.policy);
@@ -311,6 +326,11 @@ HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_policy_get, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_policy_clear, TestSize.Level1)
 {
+    // skipped when kernel not support v2
+    if (OHOS::StorageDaemon::KeyCtrl::GetFscryptVersion() == OHOS::StorageDaemon::FSCRYPT_V1) {
+        return;
+    }
+
     EXPECT_TRUE(g_testKey.ClearKey(TEST_MNT));
     // When the v2 policy removed, the files are encrypted.
     EXPECT_FALSE(OHOS::FileExists(TEST_CRYPTO_DIR_V2 + "/test_dir"));
@@ -326,6 +346,11 @@ HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_policy_clear, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_policy_restore, TestSize.Level1)
 {
+    // skipped when kernel not support v2
+    if (OHOS::StorageDaemon::KeyCtrl::GetFscryptVersion() == OHOS::StorageDaemon::FSCRYPT_V1) {
+        return;
+    }
+
     EXPECT_TRUE(g_testKey.RestoreKey(emptyUserAuth));
     EXPECT_EQ(OHOS::StorageDaemon::FSCRYPT_V2, g_testKey.keyInfo_.version);
     EXPECT_TRUE(g_testKey.ActiveKey(TEST_MNT));
@@ -353,6 +378,11 @@ HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_policy_restore, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_load_and_set_policy_default, TestSize.Level1)
 {
+    // skipped when kernel not support v2
+    if (OHOS::StorageDaemon::KeyCtrl::GetFscryptVersion() == OHOS::StorageDaemon::FSCRYPT_V1) {
+        return;
+    }
+
     EXPECT_TRUE(g_testKey.InitKey(OHOS::StorageDaemon::FSCRYPT_V2));
     EXPECT_TRUE(g_testKey.StoreKey(emptyUserAuth));
     EXPECT_TRUE(g_testKey.ActiveKey(TEST_MNT));
