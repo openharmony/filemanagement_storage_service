@@ -24,7 +24,6 @@
 
 namespace OHOS {
 namespace StorageManager {
-
 REGISTER_SYSTEM_ABILITY_BY_ID(StorageManager, STORAGE_MANAGER_MANAGER_ID, true);
 
 void StorageManager::OnStart()

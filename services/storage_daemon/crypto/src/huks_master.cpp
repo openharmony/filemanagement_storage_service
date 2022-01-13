@@ -226,8 +226,8 @@ static HksParamSet *GenHksParam(KeyContext &ctx, const UserAuth &auth, const boo
 bool HuksMaster::EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo &key)
 {
     LOGD("enter");
-    if (key.keyDesc.IsEmpty()) {
-        LOGE("bad keyAlias input, size %{public}d", key.keyDesc.size);
+    if (ctx.alias.IsEmpty()) {
+        LOGE("bad keyAlias input, size %{public}d", ctx.alias.size);
         return false;
     }
     if (key.key.IsEmpty()) {
@@ -241,8 +241,8 @@ bool HuksMaster::EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo
     }
 
     HksBlob hksAlias = {
-        .size = key.keyDesc.size,
-        .data = key.keyDesc.data.get(),
+        .size = ctx.alias.size,
+        .data = ctx.alias.data.get(),
     };
     HksBlob hksRawKey = {
         .size = key.key.size,
@@ -253,7 +253,7 @@ bool HuksMaster::EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo
         .size = ctx.encrypted.size,
         .data = ctx.encrypted.data.get(),
     };
-    LOGI("alias len:%{public}d, data(hex):%{public}s", key.keyDesc.size, key.keyDesc.ToString().c_str());
+    LOGI("alias len:%{public}d, data(hex):%{public}s", ctx.alias.size, ctx.alias.ToString().c_str());
     auto ret = HksEncrypt(&hksAlias, paramSet, &hksRawKey, &hksEncrypted);
     if (ret != HKS_SUCCESS) {
         LOGE("HksEncrypt failed ret %{public}d", ret);
@@ -271,8 +271,8 @@ bool HuksMaster::EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo
 bool HuksMaster::DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key)
 {
     LOGD("enter");
-    if (key.keyDesc.IsEmpty()) {
-        LOGE("bad keyAlias input, size %{public}d", key.keyDesc.size);
+    if (ctx.alias.IsEmpty()) {
+        LOGE("bad keyAlias input, size %{public}d", ctx.alias.size);
         return false;
     }
     if (ctx.encrypted.IsEmpty()) {
@@ -286,8 +286,8 @@ bool HuksMaster::DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key)
     }
 
     HksBlob hksAlias = {
-        .size = key.keyDesc.size,
-        .data = key.keyDesc.data.get(),
+        .size = ctx.alias.size,
+        .data = ctx.alias.data.get(),
     };
     HksBlob hksEncrypted = {
         .size = ctx.encrypted.size,
@@ -298,7 +298,7 @@ bool HuksMaster::DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key)
         .size = key.key.size,
         .data = key.key.data.get(),
     };
-    LOGI("alias len:%{public}d, data(hex):%{public}s", key.keyDesc.size, key.keyDesc.ToString().c_str());
+    LOGI("alias len:%{public}d, data(hex):%{public}s", ctx.alias.size, ctx.alias.ToString().c_str());
     auto ret = HksDecrypt(&hksAlias, paramSet, &hksEncrypted, &hksRawKey);
     if (ret != HKS_SUCCESS) {
         LOGE("HksDecrypt failed ret %{public}d", ret);

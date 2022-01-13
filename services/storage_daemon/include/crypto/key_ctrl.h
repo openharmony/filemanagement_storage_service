@@ -27,7 +27,7 @@ namespace StorageDaemon {
 using key_serial_t = int;
 class KeyCtrl {
 public:
-    // ------ fscrypt v1 ------
+    // ------ fscrypt legacy ------
     static key_serial_t AddKey(const std::string &type, const std::string &description, const key_serial_t ringId);
     static key_serial_t AddKey(const std::string &type, const std::string &description, fscrypt_key &fsKey,
         const key_serial_t ringId);
@@ -45,8 +45,11 @@ public:
     static bool RemoveKey(const std::string &mnt, fscrypt_remove_key_arg &arg);
     static bool GetKeyStatus(const std::string &mnt, fscrypt_get_key_status_arg &arg);
 
+    static bool SetPolicy(const std::string &path, fscrypt_policy_v1 &policy);
     static bool SetPolicy(const std::string &path, fscrypt_policy_v2 &policy);
     static bool GetPolicy(const std::string &path, fscrypt_get_policy_ex_arg &options);
+
+    static bool LoadAndSetPolicy(const std::string &policy, const std::string &toEncrypt);
 };
 
 struct CryptoOptions {
@@ -57,14 +60,14 @@ struct CryptoOptions {
     bool useHwWrappedKey { false };
 };
 
-static const auto CONTENTS_MODES = std::map<std::string, int> {
+static const auto CONTENTS_MODES = std::map<std::string, uint8_t> {
     {"aes-256-xts", FSCRYPT_MODE_AES_256_XTS},
     {"software", FSCRYPT_MODE_AES_256_XTS},
     {"adiantum", FSCRYPT_MODE_ADIANTUM},
     // {"ice", FSCRYPT_MODE_PRIVATE}
 };
 
-static const auto FILENAME_MODES = std::map<std::string, int> {
+static const auto FILENAME_MODES = std::map<std::string, uint8_t> {
     {"aes-256-cts", FSCRYPT_MODE_AES_256_CTS},
     // {"aes-256-heh", FSCRYPT_MODE_AES_256_HEH}
     {"adiantum", FSCRYPT_MODE_ADIANTUM},

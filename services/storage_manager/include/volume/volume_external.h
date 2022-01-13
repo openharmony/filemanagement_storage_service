@@ -20,9 +20,7 @@
 
 namespace OHOS {
 namespace StorageManager {
-
 class VolumeExternal : public VolumeCore {
-
 };
 } // OHOS
 } // StorageManager
