@@ -26,21 +26,27 @@ StorageTotalStatusService::~StorageTotalStatusService(){}
 
 int64_t StorageTotalStatusService::GetFreeSizeOfVolume(string volumeUuid) {
     struct statvfs diskInfo;
-    int ret = statvfs("/", &diskInfo);
-    if (ret != E_OK) {
-        return E_ERR;
+    int64_t freeSize = 0;
+    for (string path : mountDir) {
+        int ret = statvfs("/", &diskInfo);
+        if (ret != E_OK) {
+            continue;
+        }
+        freeSize = (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_bfree;
     }
-    int64_t freeSize = (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_bfree;
     return freeSize;
 }
 
 int64_t StorageTotalStatusService::GetTotalSizeOfVolume(string volumeUuid) {
     struct statvfs diskInfo;
-    int ret = statvfs("/", &diskInfo);
-    if (ret != E_OK) {
-        return E_ERR;
+    int64_t totalSize = 0;
+    for (string path : mountDir) {
+        int ret = statvfs("/", &diskInfo);
+        if (ret != E_OK) {
+            continue;
+        }
+        totalSize = (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_blocks;
     }
-    int64_t totalSize = (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_blocks;
     return totalSize;
 }
 } // StorageManager
