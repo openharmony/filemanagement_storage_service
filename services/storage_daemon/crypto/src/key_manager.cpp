@@ -454,7 +454,7 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::string &token,
     return 0;
 }
 
-int KeyManager::InActiveUserKey(unsigned int user, KeyType type)
+int KeyManager::InActiveUserKey(unsigned int user)
 {
     LOGI("start");
     std::lock_guard<std::mutex> lock(keyMutex_);

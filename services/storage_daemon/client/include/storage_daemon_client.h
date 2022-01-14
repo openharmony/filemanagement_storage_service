@@ -31,12 +31,15 @@ class StorageDaemonClient {
 public:
     static int32_t StartUser(int32_t userId);
     static int32_t StopUser(int32_t userId);
-    static int32_t PrepareUserDirs(int32_t userId, u_int32_t flags);
-    static int32_t DestroyUserDirs(int32_t userId, u_int32_t flags);
+    static int32_t PrepareUserSpace(uint32_t userId, const std::string &volumId, uint32_t flags);
+    static int32_t DestroyUserSpace(uint32_t userId, const std::string &volumId, uint32_t flags);
     static int32_t InitGlobalKey(void);
     static int32_t InitGlobalUserKeys(void);
     static int32_t GenerateUserKeys(uint32_t userId, uint32_t flags);
     static int32_t DeleteUserKeys(uint32_t userId);
+    static int32_t UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret);
+    static int32_t ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret);
+    static int32_t InactiveUserKey(uint32_t userId);
 
 private:
     static sptr<IStorageDaemon> GetStorageDaemonProxy(void);

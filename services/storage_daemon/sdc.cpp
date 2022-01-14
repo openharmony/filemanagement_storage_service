@@ -55,8 +55,8 @@ static void HandleFileCrypt(const std::string &cmd, const std::vector<std::strin
             LOGE("Create user %{public}u el error", userId);
             return;
         }
-    } else if (cmd == "prepare_user_storage") {
-        // sdc filecrypt prepare_user_storage userId flag
+    } else if (cmd == "prepare_user_space") {
+        // sdc filecrypt prepare_user_space userId flag
         if (args.size() < 5) {
             LOGE("Parameter nums is less than 5, please retry");
             return;
@@ -67,7 +67,8 @@ static void HandleFileCrypt(const std::string &cmd, const std::vector<std::strin
             LOGE("Parameter input error, please retry");
             return;
         }
-        int32_t ret = OHOS::StorageDaemon::StorageDaemonClient::PrepareUserDirs(userId, flags);
+        std::string volumId = "";
+        int32_t ret = OHOS::StorageDaemon::StorageDaemonClient::PrepareUserSpace(userId, volumId, flags);
         if (ret) {
             LOGE("Prepare user %{public}u storage error", userId);
             return;
@@ -88,6 +89,76 @@ static void HandleFileCrypt(const std::string &cmd, const std::vector<std::strin
             LOGE("Delete user %{public}u key error", userId);
             return;
         }
+    } else if (cmd == "destory_user_space") {
+         // sdc filecrypt destory_user_space userId flags
+        if (args.size() < 5) {
+            LOGE("Parameter nums is less than 4, please retry");
+            return;
+        }
+        uint32_t userId, flags;
+        if (OHOS::StorageDaemon::StringToUint32(args[3], userId) == false ||
+            OHOS::StorageDaemon::StringToUint32(args[4], flags) == false) {
+            LOGE("Parameter input error, please retry");
+            return;
+        }
+        std::string volumId = "";
+        int ret = OHOS::StorageDaemon::StorageDaemonClient::DestroyUserSpace(userId, volumId, flags);
+        if (ret) {
+            LOGE("Destroy user %{public}u space error", userId);
+            return;
+        }
+    } else if (cmd == "update_user_auth") {
+         // sdc filecrypt update_user_auth userId token secret
+        if (args.size() < 6) {
+            LOGE("Parameter nums is less than 4, please retry");
+            return;
+        }
+        uint32_t userId;
+        if (OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) {
+            LOGE("Parameter input error, please retry");
+            return;
+        }
+        std::string token = args[4];
+        std::string secret = args[5];
+        int ret = OHOS::StorageDaemon::StorageDaemonClient::UpdateUserAuth(userId, token, secret);
+        if (ret) {
+            LOGE("Update user %{public}u auth error", userId);
+            return;
+        }
+    } else if (cmd == "active_user_key") {
+         // sdc filecrypt active_user_key userId token secret
+        if (args.size() < 6) {
+            LOGE("Parameter nums is less than 4, please retry");
+            return;
+        }
+        uint32_t userId;
+        if (OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) {
+            LOGE("Parameter input error, please retry");
+            return;
+        }
+        std::string token = args[4];
+        std::string secret = args[5];
+        int ret = OHOS::StorageDaemon::StorageDaemonClient::ActiveUserKey(userId, token, secret);
+        if (ret) {
+            LOGE("Active user %{public}u key error", userId);
+            return;
+        }        
+    } else if (cmd == "inactive_user_key") {
+         // sdc filecrypt inactive_user_key userId
+        if (args.size() < 4) {
+            LOGE("Parameter nums is less than 4, please retry");
+            return;
+        }
+        uint32_t userId;
+        if (OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) {
+            LOGE("Parameter input error, please retry");
+            return;
+        }
+        int ret = OHOS::StorageDaemon::StorageDaemonClient::InactiveUserKey(userId);
+        if (ret) {
+            LOGE("Inactive user %{public}u key error", userId);
+            return;
+        }          
     }
 }
 
@@ -104,6 +175,7 @@ int main(int argc, char **argv)
     if (args[1] == "filecrypt") {
         HandleFileCrypt(args[2], args); // no.2 param is the cmd
     }
+    LOGI("sdc end");
 
     return 0;
 }

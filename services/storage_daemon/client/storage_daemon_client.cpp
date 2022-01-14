@@ -62,7 +62,7 @@ int32_t StorageDaemonClient::StopUser(int32_t userId)
     return client->StopUser(userId);
 }
 
-int32_t StorageDaemonClient::PrepareUserDirs(int32_t userId, u_int32_t flags)
+int32_t StorageDaemonClient::PrepareUserSpace(uint32_t userId, const std::string &volumId, uint32_t flags)
 {
     sptr<IStorageDaemon> client = GetStorageDaemonProxy();
     if (client == nullptr) {
@@ -73,7 +73,7 @@ int32_t StorageDaemonClient::PrepareUserDirs(int32_t userId, u_int32_t flags)
     return client->PrepareUserDirs(userId, flags);
 }
 
-int32_t StorageDaemonClient::DestroyUserDirs(int32_t userId, u_int32_t flags)
+int32_t StorageDaemonClient::DestroyUserSpace(uint32_t userId, const std::string &volumId, uint32_t flags)
 {
     sptr<IStorageDaemon> client = GetStorageDaemonProxy();
     if (client == nullptr) {
@@ -126,6 +126,39 @@ int32_t StorageDaemonClient::DeleteUserKeys(uint32_t userId)
     }
 
     return client->DeleteUserKeys(userId);
+}
+
+int32_t StorageDaemonClient::UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret)
+{
+    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
+    if (client == nullptr) {
+        LOGE("get storage daemon service failed");
+        return -EAGAIN;
+    }
+
+    return client->UpdateUserAuth(userId, auth, compSecret);
+}
+
+int32_t StorageDaemonClient::ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret)
+{
+    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
+    if (client == nullptr) {
+        LOGE("get storage daemon service failed");
+        return -EAGAIN;
+    }
+
+    return client->ActiveUserKey(userId, auth, compSecret);
+}
+
+int32_t StorageDaemonClient::InactiveUserKey(uint32_t userId)
+{
+    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
+    if (client == nullptr) {
+        LOGE("get storage daemon service failed");
+        return -EAGAIN;
+    }
+
+    return client->InactiveUserKey(userId);
 }
 }
 }

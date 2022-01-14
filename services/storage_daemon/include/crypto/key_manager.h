@@ -47,7 +47,7 @@ public:
     int UpdateUserAuth(unsigned int user, const std::string &token, const std::string &composePwd);
     int ActiveUserKey(unsigned int user, const std::string &token,
                       const std::string &secret);
-    int InActiveUserKey(unsigned int user, KeyType type);
+    int InActiveUserKey(unsigned int user);
     int SetDirectoryElPolicy(unsigned int user, KeyType type,
                              const std::vector<FileList> &vec);
 
