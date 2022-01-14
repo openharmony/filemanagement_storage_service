@@ -1,41 +1,36 @@
-# 存储管理服务
+# storage_storage_manager
 
-## 简介
-存储管理服务提供外置存储卡挂载管理、文件加解密、磁盘和卷的查询与管理、用户目录管理和空间统计等功能，为系统和应用提供基础的存储查询、管理能力。
+#### Description
+{**When you're done, you can delete the content in this README and update the file with details for others getting started with your repository**}
 
- **图1**  存储管理服务子系统架构图 
-![部件上下文](figures/arch.jpg)  
+#### Software Architecture
+Software architecture description
 
- **部件描述：** 
+#### Installation
 
-|  **部件名称**   | **简介**                                 |
-|  -------------  | ---------------------------------------- |
-| storage_api      | 为应用提供一套查询、管理存储和用户的接口API。 |
-| storage_manager  | 提供卷、磁盘的相关查询能力和管理能力，多用户数据目录管理接口及以应用或用户为维度的存储空间统计查询能力。 |
-| storage_daemon   | 提供分区挂载能力，与内核层的交互能力、设备上下线监听能力及目录加解密能力。|
+1.  xxxx
+2.  xxxx
+3.  xxxx
 
- **外部依赖描述：** 
-|  **部件名称**   | **简介**                                 |
-|  -------------  | ---------------------------------------- |
-| 多用户管理      | 负责管理用户，并调用storage_manager提供的能力管理相应用户的数据目录。 |
-| 包管理          | 负责提供包的管理功能。为storage_manager提供指定用户、指定包名对应的空间大小。 |
-| FileManagerService            | 负责提供对文件的管理功能。需要storage_manager提供的卷信息。 |
+#### Instructions
 
-## 目录
-```
-/foundation/storage/storage_services
-│── interface                   // 接口声明
-│  ├── innerkits                // 对内接口声明
-│  └── kits                     // 对外接口声明
-│── services                    // 服务实现
-│  ├── storage_manager          // 非常驻manager服务实现
-│  └── storage_daemon           // 常驻daemon服务实现
-```
+1.  xxxx
+2.  xxxx
+3.  xxxx
 
-## 约束
+#### Contribution
 
-接口支持情况：storage_daemon所有接口仅支持storage_manager服务进行调用。
+1.  Fork the repository
+2.  Create Feat_xxx branch
+3.  Commit your code
+4.  Create Pull Request
 
-## 相关仓
-[多用户管理](http:////gitee.com/openharmony/account_os_account)  
-[包管理](http://gitee.com/openharmony/appexecfwk_standard)
+
+#### Gitee Feature
+
+1.  You can use Readme\_XXX.md to support different languages, such as Readme\_en.md, Readme\_zh.md
+2.  Gitee blog [blog.gitee.com](https://blog.gitee.com)
+3.  Explore open source project [https://gitee.com/explore](https://gitee.com/explore)
+4.  The most valuable open source project [GVP](https://gitee.com/gvp)
+5.  The manual of Gitee [https://gitee.com/help](https://gitee.com/help)
+6.  The most popular members  [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
