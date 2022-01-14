@@ -13,8 +13,10 @@
  * limitations under the License.
  */
 
-#include <sys/statvfs.h>
 #include "storage/storage_total_status_service.h"
+
+#include <sys/statvfs.h>
+
 #include "utils/storage_manager_errno.h"
 
 using namespace std;
@@ -24,7 +26,8 @@ namespace StorageManager {
 StorageTotalStatusService::StorageTotalStatusService() {}
 StorageTotalStatusService::~StorageTotalStatusService(){}
 
-int64_t StorageTotalStatusService::GetFreeSizeOfVolume(string volumeUuid) {
+int64_t StorageTotalStatusService::GetFreeSizeOfVolume(string volumeUuid)
+{
     struct statvfs diskInfo;
     int64_t freeSize = 0;
     for (string path : mountDir) {
@@ -37,7 +40,8 @@ int64_t StorageTotalStatusService::GetFreeSizeOfVolume(string volumeUuid) {
     return freeSize;
 }
 
-int64_t StorageTotalStatusService::GetTotalSizeOfVolume(string volumeUuid) {
+int64_t StorageTotalStatusService::GetTotalSizeOfVolume(string volumeUuid)
+{
     struct statvfs diskInfo;
     int64_t totalSize = 0;
     for (string path : mountDir) {

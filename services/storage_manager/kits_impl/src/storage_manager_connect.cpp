@@ -13,12 +13,14 @@
  * limitations under the License.
  */
 
+#include "storage_manager_connect.h"
+
 #include <iservice_registry.h>
+#include <system_ability_definition.h>
+
 #include "storage/storage_status_service.h"
 #include "utils/storage_manager_errno.h"
 #include "utils/storage_manager_log.h"
-#include <system_ability_definition.h>
-#include "storage_manager_connect.h"
 #include "ipc/storage_manager_proxy.h"
 #include "ipc/storage_manager.h"
 
@@ -26,7 +28,6 @@ using namespace std;
 
 namespace OHOS {
 namespace StorageManager {
-
 StorageManagerConnect::StorageManagerConnect() {}
 StorageManagerConnect::~StorageManagerConnect() {}
 
@@ -52,7 +53,8 @@ int32_t StorageManagerConnect::Connect()
     return E_OK; 
 }
 
-vector<int64_t> StorageManagerConnect::GetBundleStats(string uuid, string pkgName) {
+vector<int64_t> StorageManagerConnect::GetBundleStats(string uuid, string pkgName)
+{
     vector<int64_t> result = {};
     if (Connect() != E_OK) {
         LOGE("StorageManagerConnect::GetBundleStats:Connect error");
@@ -61,7 +63,8 @@ vector<int64_t> StorageManagerConnect::GetBundleStats(string uuid, string pkgNam
     return storageManager_->GetBundleStats(uuid, pkgName);
 }
 
-int64_t StorageManagerConnect::GetFreeSizeOfVolume(string volumeUuid) {
+int64_t StorageManagerConnect::GetFreeSizeOfVolume(string volumeUuid)
+{
     if (Connect() != E_OK) {
         LOGE("StorageManagerConnect::GetFreeSizeOfVolume:Connect error");
         return 0;
@@ -69,7 +72,8 @@ int64_t StorageManagerConnect::GetFreeSizeOfVolume(string volumeUuid) {
     return storageManager_->GetFreeSizeOfVolume(volumeUuid);
 }
 
-int64_t StorageManagerConnect::GetTotalSizeOfVolume(string volumeUuid) {
+int64_t StorageManagerConnect::GetTotalSizeOfVolume(string volumeUuid)
+{
     if (Connect() != E_OK) {
         LOGE("StorageManagerConnect::GetTotalSizeOfVolume:Connect error");
         return 0;
@@ -77,4 +81,4 @@ int64_t StorageManagerConnect::GetTotalSizeOfVolume(string volumeUuid) {
     return storageManager_->GetTotalSizeOfVolume(volumeUuid);
 }
 } // StorageManager
-} //OHOS
+} // OHOS

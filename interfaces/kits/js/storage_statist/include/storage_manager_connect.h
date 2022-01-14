@@ -18,12 +18,12 @@
 
 #include <nocopyable.h>
 #include <singleton.h>
+
 #include "system_ability.h"
 #include "istorage_manager.h"
 
 namespace OHOS {
 namespace StorageManager {
-
 class StorageManagerConnect : public NoCopyable {
     DECLARE_DELAYED_SINGLETON(StorageManagerConnect);
 public:

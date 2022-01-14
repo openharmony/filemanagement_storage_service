@@ -14,10 +14,9 @@
  */
 
 #include "storage_statistics_n_exporter.h"
-#include "storage_statistics_napi.h"
-#include "storage_manager_connect.h"
 
 #include <tuple>
+#include <singleton.h>
 
 #include "common/napi/n_class.h"
 #include "common/napi/n_func_arg.h"
@@ -26,15 +25,14 @@
 #include "common/napi/n_async/n_async_work_callback.h"
 #include "common/napi/n_async/n_async_work_promise.h"
 
+#include "storage_statistics_napi.h"
+#include "storage_manager_connect.h"
 #include "utils/storage_manager_log.h"
-
-#include <singleton.h>
 
 using namespace OHOS::DistributedFS;
 
 namespace OHOS {
 namespace StorageManager {
-
 napi_value GetTotalSizeOfVolume(napi_env env, napi_callback_info info)
 {
     NFuncArg funcArg(env, info);
@@ -54,7 +52,7 @@ napi_value GetTotalSizeOfVolume(napi_env env, napi_callback_info info)
     auto resultSize = std::make_shared<int64_t>();
     std::string uuidString(uuid.get());
     auto cbExec = [uuidString, resultSize](napi_env env) -> UniError {
-        *resultSize = DelayedSingleton<StorageManager::StorageManagerConnect>::GetInstance()->GetTotalSizeOfVolume(uuidString);
+        *resultSize = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetTotalSizeOfVolume(uuidString);
         return UniError(ERRNO_NOERR);
     };
 
@@ -96,7 +94,7 @@ napi_value GetFreeSizeOfVolume(napi_env env, napi_callback_info info)
     auto resultSize = std::make_shared<int64_t>();
     std::string uuidString(uuid.get());
     auto cbExec = [uuidString, resultSize](napi_env env) -> UniError {
-        *resultSize = DelayedSingleton<StorageManager::StorageManagerConnect>::GetInstance()->GetFreeSizeOfVolume(uuidString);
+        *resultSize = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetFreeSizeOfVolume(uuidString);
         return UniError(ERRNO_NOERR);
     };
     auto cbComplete = [resultSize](napi_env env, UniError err) -> NVal {
@@ -142,7 +140,7 @@ napi_value GetBundleStat(napi_env env, napi_callback_info info)
     std::string uuidString(uuid.get());
     std::string nameString(name.get());
     auto cbExec = [uuidString, nameString, bundleStats](napi_env env) -> UniError {
-        *bundleStats = DelayedSingleton<StorageManager::StorageManagerConnect>::GetInstance()->GetBundleStats(uuidString, nameString);
+        *bundleStats = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetBundleStats(uuidString, nameString);
         return UniError(ERRNO_NOERR);
     };
     auto cbComplete = [bundleStats](napi_env env, UniError err) -> NVal { 
@@ -150,13 +148,13 @@ napi_value GetBundleStat(napi_env env, napi_callback_info info)
             return { env, err.GetNapiErr(env) };
         }
         NVal bundleObject = NVal::CreateObject(env);
-        if ((*bundleStats).size() != 3) {
+        if ((*bundleStats).size() != 3) { // 3 is the fixed size of bundle stats.
             UniError(EINVAL).ThrowErr(env, "vector size error");
             return bundleObject;
         }
-        bundleObject.AddProp("appSize", NVal::CreateInt64(env, (*bundleStats)[0]).val_);
-        bundleObject.AddProp("cacheSize", NVal::CreateInt64(env, (*bundleStats)[1]).val_);
-        bundleObject.AddProp("dataSize", NVal::CreateInt64(env, (*bundleStats)[2]).val_);
+        bundleObject.AddProp("appSize", NVal::CreateInt64(env, (*bundleStats)[0]).val_); // 0 is the index of app size
+        bundleObject.AddProp("cacheSize", NVal::CreateInt64(env, (*bundleStats)[1]).val_); // 1 is the index of cache size
+        bundleObject.AddProp("dataSize", NVal::CreateInt64(env, (*bundleStats)[2]).val_); // 2 is the index of data size
         return bundleObject;
     };
     std::string procedureName = "GetBundleStat";
