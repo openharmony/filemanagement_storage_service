@@ -179,20 +179,31 @@ bool KeyCtrl::LoadAndSetPolicy(const std::string &keyPath, const std::string &po
     // Add parsing options from the policy file, now using default.
     (void)policyFile;
 
-    std::string buf;
-    if (OHOS::LoadStringFromFile(keyPath + "/version", buf)) {
-        if (buf == "1") {
-            return SetPolicyLegacy(keyPath + "/key_desc", toEncrypt, arg);
-        } else if (buf == "2") {
-            return SetPolicyV2(keyPath + "/key_id", toEncrypt, arg);
-        } else {
-            LOGE("bad version file : %{public}s", buf.c_str());
-            return false;
-        }
-    } else {
-        LOGE("fail to read the version file.");
-        return false;
+    auto ver = LoadVersion(keyPath);
+    if (ver == FSCRYPT_V1) {
+        return SetPolicyLegacy(keyPath + "/key_desc", toEncrypt, arg);
+    } else if (ver == FSCRYPT_V2) {
+        return SetPolicyV2(keyPath + "/key_id", toEncrypt, arg);
     }
+    LOGE("SetPolicy fail, unknown version");
+    return false;
+}
+
+uint8_t KeyCtrl::LoadVersion(const std::string &keyPath)
+{
+    std::string buf;
+    int ver = 0;
+    if (!OHOS::LoadStringFromFile(keyPath + "/version", buf)) {
+        LOGE("load version file failed");
+        return FSCRYPT_INVALID;
+    }
+    if (IsNumericStr(buf) && StrToInt(buf, ver) && (ver == FSCRYPT_V1 || ver == FSCRYPT_V2)) {
+        LOGD("version %{public}d loaded", ver);
+        return ver;
+    }
+
+    LOGE("bad version content: %{public}s", buf.c_str());
+    return FSCRYPT_INVALID;
 }
 
 static bool IsKernelSupportFscryptV2(const std::string &mnt)

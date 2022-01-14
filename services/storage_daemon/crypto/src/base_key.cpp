@@ -218,14 +218,12 @@ bool BaseKey::EncryptKey(const UserAuth &auth)
 bool BaseKey::RestoreKey(const UserAuth &auth)
 {
     LOGD("enter");
-    std::string buf;
-    int ver = 0;
-    if (OHOS::LoadStringFromFile(dir_ + "/version", buf) && (buf == "1" || buf == "2") && OHOS::StrToInt(buf, ver)) {
-        keyInfo_.version = static_cast<uint8_t>(ver);
-    } else {
+    auto ver = KeyCtrl::LoadVersion(dir_);
+    if (ver == FSCRYPT_INVALID) {
         LOGE("RestoreKey fail. bad version");
         return false;
     }
+    keyInfo_.version = static_cast<uint8_t>(ver);
 
     if (!LoadKeyBlob(keyContext_.encrypted, "encrypted")) {
         return false;

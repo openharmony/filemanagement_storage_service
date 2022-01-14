@@ -62,6 +62,7 @@ public:
     static bool GetPolicy(const std::string &path, fscrypt_get_policy_ex_arg &options);
     static bool LoadAndSetPolicy(const std::string &keyPath, const std::string &policyFile,
         const std::string &toEncrypt);
+    static uint8_t LoadVersion(const std::string &keyPath);
 
     static uint8_t GetFscryptVersion(const std::string &mnt = "/data");
     static uint8_t GetEncryptedVersion(const std::string &dir);

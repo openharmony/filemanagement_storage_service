@@ -82,10 +82,15 @@ HWTEST_F(CryptoKeyTest, basekey_init, TestSize.Level1)
     testKey.keyInfo_.key.Clear();
     testKey.keyInfo_.keyDesc.Clear();
 
-    EXPECT_TRUE(testKey.InitKey(OHOS::StorageDaemon::FSCRYPT_V2));
-    EXPECT_EQ(OHOS::StorageDaemon::FSCRYPT_V2, testKey.keyInfo_.version);
-    testKey.keyInfo_.key.Clear();
-    testKey.keyInfo_.keyDesc.Clear();
+    // On kernel not support the v2, InitKey with v2 should fail.
+    if (OHOS::StorageDaemon::KeyCtrl::GetFscryptVersion() == OHOS::StorageDaemon::FSCRYPT_V1) {
+        EXPECT_FALSE(testKey.InitKey(OHOS::StorageDaemon::FSCRYPT_V2));
+    } else {
+        EXPECT_TRUE(testKey.InitKey(OHOS::StorageDaemon::FSCRYPT_V2));
+        EXPECT_EQ(OHOS::StorageDaemon::FSCRYPT_V2, testKey.keyInfo_.version);
+        testKey.keyInfo_.key.Clear();
+        testKey.keyInfo_.keyDesc.Clear();
+    }
 }
 
 /**
