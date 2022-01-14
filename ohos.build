@@ -1,27 +1,27 @@
 {
-  "subsystem": "storage_manager",
+  "subsystem": "filemanagement",
   "parts": {
     "storage_standard": {
       "module_list": [
-        "//foundation/storage/storage_manager/services/storage_daemon:storage_daemon",
-        "//foundation/storage/storage_manager/services/storage_daemon:storage_daemon_cfg",
-        "//foundation/storage/storage_manager/services/storage_manager/sa_profile:storage_manager_sa_profile",
-        "//foundation/storage/storage_manager/services/storage_manager/sa_profile:storage_manager_cfg",
-        "//foundation/storage/storage_manager/services/storage_manager:storage_manager",
-        "//foundation/storage/storage_manager/interfaces/kits/js/storage_statist:storage_js"
+        "//foundation/filemanagement/storage_service/services/storage_daemon:storage_daemon",
+        "//foundation/filemanagement/storage_service/services/storage_daemon:storage_daemon_cfg",
+        "//foundation/filemanagement/storage_service/services/storage_manager/sa_profile:storage_manager_sa_profile",
+        "//foundation/filemanagement/storage_service/services/storage_manager/sa_profile:storage_manager_cfg",
+        "//foundation/filemanagement/storage_service/services/storage_manager:storage_manager",
+        "//foundation/filemanagement/storage_service/interfaces/kits/js/storage_statist:storage_js"
       ],
       "test_list": [
-        "//foundation/storage/storage_manager/services/storage_daemon/user/test:user_unit_test",
-        "//foundation/storage/storage_manager/services/storage_daemon/crypto/test:moduletest"
+        "//foundation/filemanagement/storage_service/services/storage_daemon/user/test:user_unit_test",
+        "//foundation/filemanagement/storage_service/services/storage_daemon/crypto/test:moduletest"
       ],
       "inner_kits": [
         {
-          "name": "//foundation/storage/storage_manager/interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
+          "name": "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
           "header": {
             "header_files": [
               "istorage_manager.h"
             ],
-            "header_base": "//foundation/storage/storage_manager/interfaces/innerkits/storage_manager/native"
+            "header_base": "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native"
           }
         }
       ]

@@ -44,5 +44,5 @@ ohos_shared_library("storage_manager_sa_proxy") {
   ]
 
   part_name = "storage_standard"
-  subsystem_name = "storage_manager"
+  subsystem_name = "filemanagement"
 }

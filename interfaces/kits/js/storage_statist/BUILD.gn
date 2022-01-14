@@ -20,22 +20,22 @@ js_declaration("storagestatistics_js") {
 
 ohos_shared_library("storagestatistics") {
   relative_install_dir = "module"
-  subsystem_name = "storage_manager"
+  subsystem_name = "filemanagement"
   part_name = "storage_standard"
 
   include_dirs = [
     "include",
-    "//foundation/storage/storage_manager/services/storage_manager/include",
+    "//foundation/filemanagement/storage_service/services/storage_manager/include",
     "//utils/system/safwk/native/include",
     "//utils/native/base/include",
     "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js/src/",
-    "//foundation/storage/storage_manager/interfaces/innerkits/storage_manager/native",
+    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
   ]
 
   sources = [
-    "//foundation/storage/storage_manager/services/storage_manager/kits_impl/src/storage_manager_connect.cpp",
-    "//foundation/storage/storage_manager/services/storage_manager/kits_impl/src/storage_statistics_n_exporter.cpp",
-    "//foundation/storage/storage_manager/services/storage_manager/kits_impl/src/storage_statistics_napi.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/kits_impl/src/storage_manager_connect.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/kits_impl/src/storage_statistics_n_exporter.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/kits_impl/src/storage_statistics_napi.cpp",
   ]
 
   deps = [
@@ -43,8 +43,8 @@ ohos_shared_library("storagestatistics") {
     "//foundation/ace/napi:ace_napi",
     "//utils/native/base:utils",
     "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js:statfs",
-    "//foundation/storage/storage_manager/services/storage_manager:storage_manager",
-    "//foundation/storage/storage_manager/interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
+    "//foundation/filemanagement/storage_service/services/storage_manager:storage_manager",
+    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
     "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js:fileio",
   ]
 

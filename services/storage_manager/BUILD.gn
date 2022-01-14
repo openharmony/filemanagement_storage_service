@@ -55,7 +55,7 @@ ohos_shared_library("storage_manager") {
         "appexecfwk_standard:appexecfwk_base",
     ]
 
-    subsystem_name = "storage_manager"
+    subsystem_name = "filemanagement"
     part_name = "storage_standard"
     install_enable = true
 }
