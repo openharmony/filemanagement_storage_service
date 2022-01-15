@@ -95,5 +95,20 @@ int32_t StorageDaemon::DeleteUserKeys(uint32_t userId)
 {
     return KeyManager::GetInstance()->DeleteUserKeys(userId);
 }
+
+int32_t StorageDaemon::UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret)
+{
+    return KeyManager::GetInstance()->UpdateUserAuth(userId, auth,compSecret);
+}
+
+int32_t StorageDaemon::ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret)
+{
+    return KeyManager::GetInstance()->ActiveUserKey(userId, auth, compSecret);
+}
+
+int32_t StorageDaemon::InactiveUserKey(uint32_t userId)
+{
+    return KeyManager::GetInstance()->InActiveUserKey(userId);
+}
 } // StorageDaemon
 } // OHOS

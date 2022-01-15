@@ -55,6 +55,16 @@ int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
             break;
         case DELETE_USER_KEYS:
             err = HandleDeleteUserKeys(data, reply);
+            break;
+        case UPDATE_USER_AUTH:
+            err = HandleUpdateUserAuth(data, reply);
+            break;
+        case ACTIVE_USER_KEY:
+            err = HandleActiveUserKey(data, reply);
+            break;
+        case INACTIVE_USER_KEY:
+            err = HandleInactiveUserKey(data, reply);
+            break;
         default: {
             LOGI(" use IPCObjectStub default OnRemoteRequest");
             err = IPCObjectStub::OnRemoteRequest(code, data, reply, option);
@@ -175,6 +185,43 @@ int32_t StorageDaemonStub::HandleDeleteUserKeys(MessageParcel &data, MessageParc
 {
     uint32_t userId = data.ReadUint32();
     int err = DeleteUserKeys(userId);
+    if (!reply.WriteInt32(err)) {
+        return E_IPC_ERROR;
+    }
+
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleUpdateUserAuth(MessageParcel &data, MessageParcel &reply)
+{
+    uint32_t userId = data.ReadUint32();
+    std::string auth = "";
+    std::string secret = "";
+    int err = UpdateUserAuth(userId, auth, secret);
+    if (!reply.WriteInt32(err)) {
+        return E_IPC_ERROR;
+    }
+
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleActiveUserKey(MessageParcel &data, MessageParcel &reply)
+{
+    uint32_t userId = data.ReadUint32();
+    std::string auth = "";
+    std::string secret = "";
+    int err = ActiveUserKey(userId, auth, secret);
+    if (!reply.WriteInt32(err)) {
+        return E_IPC_ERROR;
+    }
+
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleInactiveUserKey(MessageParcel &data, MessageParcel &reply)
+{
+    uint32_t userId = data.ReadUint32();
+    int err = InactiveUserKey(userId);
     if (!reply.WriteInt32(err)) {
         return E_IPC_ERROR;
     }

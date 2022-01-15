@@ -41,6 +41,9 @@ public:
     virtual int32_t InitGlobalUserKeys(void) override;
     virtual int32_t GenerateUserKeys(uint32_t userId, uint32_t flags) override;
     virtual int32_t DeleteUserKeys(uint32_t userId) override;
+    virtual int32_t UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret) override;
+    virtual int32_t ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret) override;
+    virtual int32_t InactiveUserKey(uint32_t userId) override;
 
 private:
     static inline BrokerDelegator<StorageDaemonProxy> delegator_;
