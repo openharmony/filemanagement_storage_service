@@ -20,23 +20,23 @@ config("public_config") {
 config("private_config") {
   include_dirs = [
     "../../../../services/storage_manager/include",
-    "../../../../services/storage_daemon/include"
+    "../../../../services/storage_daemon/include",
   ]
 }
 
 ohos_shared_library("storage_manager_sa_proxy") {
   sources = [
+    "../../../../services/storage_daemon/ipc/src/storage_daemon_proxy.cpp",
     "../../../../services/storage_manager/ipc/src/storage_manager_proxy.cpp",
-    "../../../../services/storage_daemon/ipc/src/storage_daemon_proxy.cpp"
   ]
 
   configs = [ ":private_config" ]
   public_configs = [ ":public_config" ]
 
-  external_deps = [ 
+  external_deps = [
+    "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
     "safwk:system_ability_fwk",
-    "hiviewdfx_hilog_native:libhilog",
   ]
   public_deps = [
     "//foundation/communication/ipc/interfaces/innerkits/ipc_core:ipc_core",
@@ -44,5 +44,5 @@ ohos_shared_library("storage_manager_sa_proxy") {
   ]
 
   part_name = "storage_standard"
-  subsystem_name = "storage_manager"
+  subsystem_name = "filemanagement"
 }

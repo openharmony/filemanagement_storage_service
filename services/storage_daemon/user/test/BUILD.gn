@@ -14,29 +14,21 @@
 import("//build/test.gni")
 
 ohos_unittest("user_manager_test") {
-  module_out_path = "storage_manager/storage_daemon"
+  module_out_path = "filemanagement/storage_service/storage_daemon"
 
-  include_dirs = [
-    "//foundation/storage_manager/services/storage_daemon/include",
-  ]
+  include_dirs = [ "//foundation/filemanagement/storage_service/services/storage_daemon/include" ]
 
   sources = [
+    "//foundation/filemanagement/storage_service/services/storage_daemon/user/src/user_manager.cpp",
     "unittest/user_manager_test.cpp",
-    "//foundation/storage_manager/services/storage_daemon/user/src/user_manager.cpp",
   ]
 
-  deps = [
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "//third_party/googletest:gtest_main" ]
 
-  external_deps = [
-    "hiviewdfx_hilog_native:libhilog",
-  ]
+  external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
 }
 
 group("user_unit_test") {
   testonly = true
-  deps = [
-    ":user_manager_test",
-  ]
+  deps = [ ":user_manager_test" ]
 }
