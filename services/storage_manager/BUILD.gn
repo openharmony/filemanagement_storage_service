@@ -15,47 +15,45 @@ import("//build/ohos.gni")
 import("//build/ohos/sa_profile/sa_profile.gni")
 
 config("storage_manager_config") {
-    include_dirs = [
-        "include",
-        "../../interfaces/innerkits/storage_manager/native",
-        "//utils/system/safwk/native/include",
-        "//utils/native/base/include",
-        "../storage_daemon/include",
-        "//foundation/appexecfwk/standard/services/bundlemgr/include",
-    ]
+  include_dirs = [
+    "include",
+    "../../interfaces/innerkits/storage_manager/native",
+    "//utils/system/safwk/native/include",
+    "//utils/native/base/include",
+    "../storage_daemon/include",
+    "//foundation/appexecfwk/standard/services/bundlemgr/include",
+  ]
 }
 
 ohos_shared_library("storage_manager") {
-    sources = [
-        "ipc/src/storage_manager.cpp",
-        "ipc/src/storage_manager_stub.cpp",
-        
-        "user/src/multi_user_manager_service.cpp",
-        "storage_daemon_communication/src/storage_daemon_communication.cpp",
+  sources = [
+    "ipc/src/storage_manager.cpp",
+    "ipc/src/storage_manager_stub.cpp",
+    "storage/src/storage_status_service.cpp",
+    "storage/src/storage_total_status_service.cpp",
+    "storage_daemon_communication/src/storage_daemon_communication.cpp",
+    "user/src/multi_user_manager_service.cpp",
+  ]
 
-        "storage/src/storage_status_service.cpp",
-        "storage/src/storage_total_status_service.cpp"
-    ]
+  configs = [ ":storage_manager_config" ]
 
-    configs = [ ":storage_manager_config"]
+  deps = [
+    "../../interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
+    "//base/account/os_account/frameworks/common:libaccount_common",
+    "//foundation/appexecfwk/standard/services/bundlemgr:libbms",
+    "//utils/native/base:utils",
+  ]
 
-    deps = [
-        "../../interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
-        "//utils/native/base:utils",
-         "//foundation/appexecfwk/standard/services/bundlemgr:libbms",
-        "//base/account/os_account/frameworks/common:libaccount_common"
-    ]
+  external_deps = [
+    "appexecfwk_standard:appexecfwk_base",
+    "hiviewdfx_hilog_native:libhilog",
+    "ipc:ipc_core",
+    "os_account_standard:os_account_innerkits",
+    "safwk:system_ability_fwk",
+    "samgr_standard:samgr_proxy",
+  ]
 
-    external_deps = [
-        "hiviewdfx_hilog_native:libhilog",
-        "safwk:system_ability_fwk",
-        "ipc:ipc_core",
-        "samgr_standard:samgr_proxy",
-        "os_account_standard:os_account_innerkits",
-        "appexecfwk_standard:appexecfwk_base",
-    ]
-
-    subsystem_name = "filemanagement"
-    part_name = "storage_standard"
-    install_enable = true
+  subsystem_name = "filemanagement"
+  part_name = "storage_standard"
+  install_enable = true
 }

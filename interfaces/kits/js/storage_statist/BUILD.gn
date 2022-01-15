@@ -41,11 +41,11 @@ ohos_shared_library("storagestatistics") {
   deps = [
     "//foundation/aafwk/standard/frameworks/kits/ability/native:abilitykit_native",
     "//foundation/ace/napi:ace_napi",
-    "//utils/native/base:utils",
-    "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js:statfs",
-    "//foundation/filemanagement/storage_service/services/storage_manager:storage_manager",
-    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
     "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js:fileio",
+    "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js:statfs",
+    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
+    "//foundation/filemanagement/storage_service/services/storage_manager:storage_manager",
+    "//utils/native/base:utils",
   ]
 
   external_deps = [
@@ -56,13 +56,13 @@ ohos_shared_library("storagestatistics") {
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
     "safwk:system_ability_fwk",
-    "samgr_standard:samgr_proxy"
+    "samgr_standard:samgr_proxy",
   ]
 }
 
 group("storage_js") {
   deps = [
     ":storagestatistics",
-    ":storagestatistics_js"
+    ":storagestatistics_js",
   ]
 }

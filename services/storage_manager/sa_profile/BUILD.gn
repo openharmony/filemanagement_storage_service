@@ -24,4 +24,3 @@ ohos_prebuilt_etc("storage_manager_cfg") {
   part_name = "storage_standard"
   subsystem_name = "filemanagement"
 }
-

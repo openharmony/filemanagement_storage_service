@@ -20,13 +20,14 @@ ohos_prebuilt_etc("storage_daemon_cfg") {
   part_name = "storage_standard"
   subsystem_name = "filemanagement"
 }
+
 ## Install storage_daemon.cfg to /system/etc/init/storage_daemon.cfg }}}
 
 config("storage_daemon_config") {
   include_dirs = [
     "include",
     "//utils/native/base/include",
-    "//foundation/distributedschedule/samgr/interfaces/innerkits/samgr_proxy/include"
+    "//foundation/distributedschedule/samgr/interfaces/innerkits/samgr_proxy/include",
   ]
 }
 
@@ -34,29 +35,24 @@ ohos_executable("storage_daemon") {
   sources = [
     "ipc/src/storage_daemon.cpp",
     "ipc/src/storage_daemon_stub.cpp",
-
+    "main.cpp",
     "user/src/user_manager.cpp",
-
     "utils/file_utils.cpp",
     "utils/string_utils.cpp",
-
-    "main.cpp",
   ]
 
-  configs = [
-    ":storage_daemon_config"
-  ]
+  configs = [ ":storage_daemon_config" ]
 
   deps = [
-    "//utils/native/base:utils",
+    ":sdc",
     "crypto:libsdcrypto",
-    ":sdc"
+    "//utils/native/base:utils",
   ]
 
   external_deps = [
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
-    "samgr_standard:samgr_proxy"
+    "samgr_standard:samgr_proxy",
   ]
 
   subsystem_name = "filemanagement"
@@ -77,26 +73,22 @@ config("sdc_config") {
 
 ohos_executable("sdc") {
   sources = [
-    "ipc/src/storage_daemon_proxy.cpp",
     "client/storage_daemon_client.cpp",
+    "ipc/src/storage_daemon_proxy.cpp",
+    "sdc.cpp",
     "utils/file_utils.cpp",
-    "sdc.cpp"
   ]
 
-  configs = [
-    ":sdc_config"
-  ]
+  configs = [ ":sdc_config" ]
 
-  deps = [
-    "crypto:libsdcrypto",
-  ]
+  deps = [ "crypto:libsdcrypto" ]
 
   public_deps = [ "//utils/native/base:utils" ]
 
   external_deps = [
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
-    "samgr_standard:samgr_proxy"
+    "samgr_standard:samgr_proxy",
   ]
 
   subsystem_name = "filemanagement"

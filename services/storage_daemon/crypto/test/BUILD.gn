@@ -16,7 +16,6 @@ module_output_path = "storage_standard/crypto"
 
 config("module_private_config") {
   visibility = [ ":*" ]
-
 }
 
 ohos_moduletest("CryptoSubTest") {
@@ -40,5 +39,5 @@ ohos_moduletest("CryptoSubTest") {
 
 group("moduletest") {
   testonly = true
-  deps = [":CryptoSubTest"]
+  deps = [ ":CryptoSubTest" ]
 }

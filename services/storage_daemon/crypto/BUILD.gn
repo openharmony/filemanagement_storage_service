@@ -28,7 +28,7 @@ config("storage_daemon_crypto_config") {
 
   cflags = [
     "-g3",
-    "-Wall"
+    "-Wall",
   ]
 }
 
@@ -41,9 +41,9 @@ config("crypto_public_config") {
 
 ohos_static_library("libsdcrypto") {
   sources = [
-    "src/key_ctrl.cpp",
     "src/base_key.cpp",
     "src/huks_master.cpp",
+    "src/key_ctrl.cpp",
     "src/key_manager.cpp",
   ]
 
