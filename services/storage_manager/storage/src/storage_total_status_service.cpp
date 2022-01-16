@@ -31,7 +31,7 @@ int64_t StorageTotalStatusService::GetFreeSizeOfVolume(string volumeUuid)
     struct statvfs diskInfo;
     int64_t freeSize = 0;
     for (string path : mountDir) {
-        int ret = statvfs(path, &diskInfo);
+        int ret = statvfs(path.c_str(), &diskInfo);
         if (ret != E_OK) {
             continue;
         }
@@ -45,7 +45,7 @@ int64_t StorageTotalStatusService::GetTotalSizeOfVolume(string volumeUuid)
     struct statvfs diskInfo;
     int64_t totalSize = 0;
     for (string path : mountDir) {
-        int ret = statvfs(path, &diskInfo);
+        int ret = statvfs(path.c_str(), &diskInfo);
         if (ret != E_OK) {
             continue;
         }

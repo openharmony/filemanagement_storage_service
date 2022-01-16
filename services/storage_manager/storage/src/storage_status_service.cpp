@@ -17,6 +17,7 @@
 
 #include "installd_client.h"
 #include "os_account_manager.h"
+#include "os_account_constants.h"
 
 #include "utils/storage_manager_errno.h"
 #include "utils/storage_manager_log.h"
@@ -47,7 +48,7 @@ vector<int64_t> StorageStatusService::GetBundleStats(std::string uuid, std::stri
     vector<int64_t> result = {0, 0, 0};
     int userId = GetCurrentUserId();
     LOGI("StorageStatusService::userId is:%d", userId);
-    if (userId < 0 || userId > 999) {
+    if (userId < AccountSA::Constants::STANDARD_TYPE || userId > AccountSA::Constants::MAX_USER_ID) {
         LOGI("StorageStatusService::Invaild userId.");
         return result;
     }
