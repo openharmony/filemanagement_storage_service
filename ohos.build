@@ -13,11 +13,9 @@
         "//third_party/f2fs-tools:f2fs-tools",
         "//third_party/fsck_msdos:fsck_msdos",
         "//third_party/newfs_msdos:newfs_msdos",
-        "//third_party/ntfs-3g:ntfsprogs",
         "//third_party/ntfs-3g:ntfsprogs"
       ],
       "test_list": [
-        "//foundation/filemanagement/storage_service/services/storage_daemon/user/test:user_unit_test",
         "//foundation/filemanagement/storage_service/services/storage_daemon/crypto/test:moduletest"
       ],
       "inner_kits": [
