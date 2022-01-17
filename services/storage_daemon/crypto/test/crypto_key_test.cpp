@@ -212,16 +212,14 @@ HWTEST_F(CryptoKeyTest, basekey_fscrypt_v1_policy_set, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, basekey_fscrypt_v1_policy_get, TestSize.Level1)
 {
-    struct fscrypt_get_policy_ex_arg arg;
+    struct fscrypt_policy arg;
     memset_s(&arg, sizeof(arg), 0, sizeof(arg));
-    arg.policy_size = sizeof(arg.policy);
     EXPECT_TRUE(OHOS::StorageDaemon::KeyCtrl::GetPolicy(TEST_DIR_LEGACY, arg));
-    EXPECT_EQ(FSCRYPT_POLICY_V1, arg.policy.version);
+    EXPECT_EQ(FSCRYPT_POLICY_V1, arg.version);
 
     memset_s(&arg, sizeof(arg), 0, sizeof(arg));
-    arg.policy_size = sizeof(arg.policy);
     EXPECT_TRUE(OHOS::StorageDaemon::KeyCtrl::GetPolicy(TEST_DIR_LEGACY + "/test_dir", arg));
-    EXPECT_EQ(FSCRYPT_POLICY_V1, arg.policy.version);
+    EXPECT_EQ(FSCRYPT_POLICY_V1, arg.version);
 }
 
 /**
@@ -234,8 +232,11 @@ HWTEST_F(CryptoKeyTest, basekey_fscrypt_v1_policy_clear, TestSize.Level1)
 {
     EXPECT_TRUE(g_testKey.ClearKey());
 
-    // the encrypted dir was readonly now, and can be seen encrypted after reboot.
-    EXPECT_FALSE(OHOS::ForceCreateDirectory(TEST_DIR_LEGACY + "/test_dir1"));
+    if (OHOS::StorageDaemon::KeyCtrl::GetFscryptVersion() == OHOS::StorageDaemon::FSCRYPT_V2) {
+        // the encrypted dir was readonly on kernel 5.10, and can be seen encrypted after reboot.
+        EXPECT_FALSE(OHOS::ForceCreateDirectory(TEST_DIR_LEGACY + "/test_dir1"));
+        EXPECT_FALSE(OHOS::SaveStringToFile(TEST_DIR_V2 + "/test_file2", "AAA"));
+    }
 }
 
 /**

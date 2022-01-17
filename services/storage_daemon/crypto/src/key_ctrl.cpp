@@ -119,6 +119,12 @@ bool KeyCtrl::SetPolicy(const std::string &path, FscryptPolicy &policy)
     return FsIoctl(path, FS_IOC_SET_ENCRYPTION_POLICY, reinterpret_cast<void *>(&policy));
 }
 
+bool KeyCtrl::GetPolicy(const std::string &path, fscrypt_policy &policy)
+{
+    LOGD("enter");
+    return FsIoctl(path, FS_IOC_GET_ENCRYPTION_POLICY, reinterpret_cast<void *>(&policy));
+}
+
 bool KeyCtrl::GetPolicy(const std::string &path, fscrypt_get_policy_ex_arg &policy)
 {
     LOGD("enter");

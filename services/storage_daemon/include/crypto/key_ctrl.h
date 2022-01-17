@@ -59,7 +59,8 @@ public:
     static bool GetKeyStatus(const std::string &mnt, fscrypt_get_key_status_arg &arg);
 
     static bool SetPolicy(const std::string &path, FscryptPolicy &policy);
-    static bool GetPolicy(const std::string &path, fscrypt_get_policy_ex_arg &options);
+    static bool GetPolicy(const std::string &path, fscrypt_policy &policy);
+    static bool GetPolicy(const std::string &path, fscrypt_get_policy_ex_arg &policy);
     static bool LoadAndSetPolicy(const std::string &keyPath, const std::string &policyFile,
         const std::string &toEncrypt);
     static uint8_t LoadVersion(const std::string &keyPath);
