@@ -206,33 +206,29 @@ uint8_t KeyCtrl::LoadVersion(const std::string &keyPath)
     return FSCRYPT_INVALID;
 }
 
-static bool IsKernelSupportFscryptV2(const std::string &mnt)
+uint8_t KeyCtrl::GetFscryptVersion(const std::string &mnt)
 {
     int fd = open(mnt.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
     if (fd < 0) {
         LOGE("open %{public}s failed, errno: %{public}d", mnt.c_str(), errno);
-        return false;
+        return FSCRYPT_INVALID;
     }
 
     errno = 0;
     (void)ioctl(fd, FS_IOC_ADD_ENCRYPTION_KEY, nullptr);
     close(fd);
-    if (errno == ENOTTY) {
-        LOGI("Kernel doesn't support FS_IOC_ADD_ENCRYPTION_KEY.");
-        return false;
-    }
-    if (errno == EFAULT) {
-        LOGI("Kernel is support FS_IOC_ADD_ENCRYPTION_KEY.");
-        return true;
+    if (errno == EOPNOTSUPP) {
+        LOGE("Kernel doesn't support fscrypt v1 or v2.");
+        return FSCRYPT_INVALID;
+    } else if (errno == ENOTTY) {
+        LOGE("Kernel doesn't support fscrypt v2, pls use v1.");
+        return FSCRYPT_V1;
+    } else if (errno == EFAULT) {
+        LOGI("Kernel is support fscrypt v2.");
+        return FSCRYPT_V2;
     }
     LOGW("Unexpected errno: %{public}d", errno);
-    return false;
-}
-
-uint8_t KeyCtrl::GetFscryptVersion(const std::string &mnt)
-{
-    static uint8_t version = IsKernelSupportFscryptV2(mnt) ? FSCRYPT_V2 : FSCRYPT_V1;
-    return version;
+    return FSCRYPT_INVALID;
 }
 
 uint8_t KeyCtrl::GetEncryptedVersion(const std::string &dir)
