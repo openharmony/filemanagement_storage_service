@@ -35,7 +35,7 @@ int64_t StorageTotalStatusService::GetFreeSizeOfVolume(string volumeUuid)
         if (ret != E_OK) {
             continue;
         }
-        freeSize = (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_bfree;
+        freeSize = freeSize + (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_bfree;
     }
     return freeSize;
 }
@@ -49,7 +49,7 @@ int64_t StorageTotalStatusService::GetTotalSizeOfVolume(string volumeUuid)
         if (ret != E_OK) {
             continue;
         }
-        totalSize = (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_blocks;
+        totalSize = totalSize + (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_blocks;
     }
     return totalSize;
 }
