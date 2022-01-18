@@ -48,7 +48,7 @@ vector<int64_t> StorageStatusService::GetBundleStats(std::string uuid, std::stri
     vector<int64_t> result = {0, 0, 0};
     int userId = GetCurrentUserId();
     LOGI("StorageStatusService::userId is:%d", userId);
-    if (userId < AccountSA::Constants::STANDARD_TYPE || userId > AccountSA::Constants::MAX_USER_ID) {
+    if (userId < 0 || userId > AccountSA::Constants::MAX_USER_ID) {
         LOGI("StorageStatusService::Invaild userId.");
         return result;
     }
