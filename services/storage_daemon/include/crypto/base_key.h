@@ -28,13 +28,12 @@ public:
     BaseKey(std::string dir, uint8_t keyLen = CRYPTO_AES_256_XTS_KEY_SIZE);
     ~BaseKey() = default;
 
-    // for openharmony kernel 5.10+, prefer using the FSCRYPT_V2.
-    bool InitKey(uint8_t version);
+    bool InitKey();
     bool StoreKey(const UserAuth &auth);
     bool RestoreKey(const UserAuth &auth);
-    bool ActiveKey(const std::string &mnt = "/data");
-    bool InactiveKey(const std::string &mnt = "/data");
-    bool ClearKey();
+    virtual bool ActiveKey(const std::string &mnt = "/data") = 0;
+    virtual bool InactiveKey(const std::string &mnt = "/data") = 0;
+    bool ClearKey(const std::string &mnt = "/data");
 
     KeyInfo keyInfo_;
     std::string GetDir() const
@@ -42,26 +41,20 @@ public:
         return dir_;
     }
 
-private:
-    bool ActiveKeyLegacy();
-    bool InactiveKeyLegacy();
-    // fscrypt v2 api need the mountpoint path where the key install into.
-    bool ActiveKeyV2(const std::string &mnt);
-    bool InactiveKeyV2(const std::string &mnt);
-
-    bool DoStoreKey(const UserAuth &auth);
-    bool GenerateKeyBlob(KeyBlob &blob, const uint32_t size);
+protected:
     bool SaveKeyBlob(const KeyBlob &blob, const std::string &name);
+
+private:
+    bool DoStoreKey(const UserAuth &auth);
     bool GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &name, const uint32_t size);
+    bool GenerateKeyBlob(KeyBlob &blob, const uint32_t size);
     bool LoadKeyBlob(KeyBlob &blob, const std::string &name, const uint32_t size);
-    bool GenerateKeyDesc();
     bool EncryptKey(const UserAuth &auth);
     bool DecryptKey(const UserAuth &auth);
+    bool RemoveAlias();
 
-    std::unique_ptr<char[]> GetRandomBytes(uint32_t size);
-
-    std::string dir_ {};
     KeyContext keyContext_ {};
+    std::string dir_ {};
     uint8_t keyLen_ {};
 };
 } // namespace StorageDaemon

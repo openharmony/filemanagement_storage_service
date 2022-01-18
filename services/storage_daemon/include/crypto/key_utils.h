@@ -38,7 +38,7 @@ struct KeyBlob {
         }
         data = std::make_unique<uint8_t[]>(len);
         size = len;
-        memset_s(data.get(), size, 0, size);
+        (void)memset_s(data.get(), size, 0, size);
         return true;
     }
     void Clear()

@@ -212,7 +212,7 @@ uint8_t KeyCtrl::LoadVersion(const std::string &keyPath)
     return FSCRYPT_INVALID;
 }
 
-uint8_t KeyCtrl::GetFscryptVersion(const std::string &mnt)
+static uint8_t CheckKernelFscrypt(const std::string &mnt)
 {
     int fd = open(mnt.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
     if (fd < 0) {
@@ -235,6 +235,12 @@ uint8_t KeyCtrl::GetFscryptVersion(const std::string &mnt)
     }
     LOGW("Unexpected errno: %{public}d", errno);
     return FSCRYPT_INVALID;
+}
+
+uint8_t KeyCtrl::GetFscryptVersion(const std::string &mnt)
+{
+    static auto version = CheckKernelFscrypt(mnt);
+    return version;
 }
 
 uint8_t KeyCtrl::GetEncryptedVersion(const std::string &dir)

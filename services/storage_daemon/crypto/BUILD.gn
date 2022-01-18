@@ -45,6 +45,8 @@ ohos_static_library("libsdcrypto") {
     "src/huks_master.cpp",
     "src/key_ctrl.cpp",
     "src/key_manager.cpp",
+    "src/fscrypt_key_v1.cpp",
+    "src/fscrypt_key_v2.cpp",
   ]
 
   public_deps = [ "//utils/native/base:utils" ]

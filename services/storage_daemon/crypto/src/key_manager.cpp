@@ -20,7 +20,7 @@
 #include "file_ex.h"
 #include "utils/log.h"
 #include "utils/errno.h"
-#include "key_ctrl.h"
+#include "fscrypt_key_v2.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -40,13 +40,13 @@ const std::string USER_EL2_DIR = FSCRYPT_EL_DIR + "/el2";
 int KeyManager::GenerateAndInstallDeviceKey(const std::string &dir)
 {
     LOGI("enter");
-    globalEl1Key_ = std::make_shared<BaseKey>(dir);
+    globalEl1Key_ = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>(dir));
     if (globalEl1Key_ == nullptr) {
         LOGE("No memory for device el1 key");
         return -ENOMEM;
     }
 
-    if (globalEl1Key_->InitKey(FSCRYPT_V2) == false) {
+    if (globalEl1Key_->InitKey() == false) {
         globalEl1Key_ = nullptr;
         LOGE("global security key init failed");
         return -EFAULT;
@@ -79,13 +79,13 @@ int KeyManager::RestoreDeviceKey(const std::string &dir)
         return 0;
     }
 
-    globalEl1Key_ = std::make_shared<BaseKey>(dir);
+    globalEl1Key_ = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>(dir));
     if (globalEl1Key_ == nullptr) {
         LOGE("No memory for device el1 key");
         return -ENOMEM;
     }
 
-    if (globalEl1Key_->InitKey(FSCRYPT_V2) == false) {
+    if (globalEl1Key_->InitKey() == false) {
         globalEl1Key_ = nullptr;
         LOGE("global security key init failed");
         return -EFAULT;
@@ -144,13 +144,13 @@ int KeyManager::GenerateAndInstallUserKey(uint32_t userId, const std::string &di
         return 0;
     }
 
-    std::shared_ptr<BaseKey> elKey = std::make_shared<BaseKey>(dir);
+    std::shared_ptr<BaseKey> elKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>(dir));
     if (elKey == nullptr) {
         LOGE("No memory for device el1 key");
         return -ENOMEM;
     }
 
-    if (elKey->InitKey(FSCRYPT_V2) == false) {
+    if (elKey->InitKey() == false) {
         LOGE("global security key init failed");
         return -EFAULT;
     }
@@ -185,13 +185,13 @@ int KeyManager::RestoreUserKey(uint32_t userId, const std::string &dir, const Us
         return 0;
     }
 
-    std::shared_ptr<BaseKey> elKey = std::make_shared<BaseKey>(dir);
+    auto elKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>(dir));
     if (elKey == nullptr) {
         LOGE("No memory for device el1 key");
         return -ENOMEM;
     }
 
-    if (elKey->InitKey(FSCRYPT_V2) == false) {
+    if (elKey->InitKey() == false) {
         LOGE("global security key init failed");
         return -EFAULT;
     }
@@ -431,8 +431,8 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::string &token,
         return -ENOENT;
     }
 
-    std::shared_ptr<BaseKey> elKey = std::make_shared<BaseKey>(keyDir);
-    if (elKey->InitKey(FSCRYPT_V2) == false) {
+    std::shared_ptr<BaseKey> elKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>(keyDir));
+    if (elKey->InitKey() == false) {
         LOGE("Init el failed");
         return -EFAULT;
     }
