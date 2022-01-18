@@ -264,15 +264,21 @@ bool BaseKey::ActiveKey(const std::string& mnt)
     return false;
 }
 
-bool BaseKey::ClearKey(const std::string& mnt)
+bool BaseKey::ClearKey()
+{
+    // rmdir and remove huks keyalias
+    return InactiveKey();
+}
+
+bool BaseKey::InactiveKey(const std::string& mnt)
 {
     if (keyInfo_.version == FSCRYPT_V1) {
-        return ClearKeyLegacy();
+        return InactiveKeyLegacy();
     } else if (keyInfo_.version == FSCRYPT_V2) {
-        return ClearKeyV2(mnt);
+        return InactiveKeyV2(mnt);
     }
 
-    LOGE("ClearKey fail. bad keyinfo.version %{public}d", keyInfo_.version);
+    LOGE("InactiveKey fail. bad keyinfo.version %{public}d", keyInfo_.version);
     return false;
 }
 
@@ -326,7 +332,7 @@ bool BaseKey::ActiveKeyLegacy()
 }
 
 // rmdir after it if needed.
-bool BaseKey::ClearKeyLegacy()
+bool BaseKey::InactiveKeyLegacy()
 {
     LOGD("enter");
     if (keyInfo_.keyDesc.IsEmpty()) {
@@ -401,7 +407,7 @@ bool BaseKey::ActiveKeyV2(const std::string& mnt)
 }
 
 // rmdir after it if needed.
-bool BaseKey::ClearKeyV2(const std::string& mnt)
+bool BaseKey::InactiveKeyV2(const std::string& mnt)
 {
     LOGD("enter");
     if (keyInfo_.keyId.size != FSCRYPT_KEY_IDENTIFIER_SIZE) {

@@ -33,7 +33,8 @@ public:
     bool StoreKey(const UserAuth &auth);
     bool RestoreKey(const UserAuth &auth);
     bool ActiveKey(const std::string &mnt = "/data");
-    bool ClearKey(const std::string &mnt = "/data");
+    bool InactiveKey(const std::string &mnt = "/data");
+    bool ClearKey();
 
     KeyInfo keyInfo_;
     std::string GetDir() const
@@ -43,10 +44,10 @@ public:
 
 private:
     bool ActiveKeyLegacy();
-    bool ClearKeyLegacy();
+    bool InactiveKeyLegacy();
     // fscrypt v2 api need the mountpoint path where the key install into.
     bool ActiveKeyV2(const std::string &mnt);
-    bool ClearKeyV2(const std::string &mnt);
+    bool InactiveKeyV2(const std::string &mnt);
 
     bool DoStoreKey(const UserAuth &auth);
     bool GenerateKeyBlob(KeyBlob &blob, const uint32_t size);
