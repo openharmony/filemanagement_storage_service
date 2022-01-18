@@ -204,12 +204,15 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
     if (!SaveKeyBlob(keyContext_.encrypted, "encrypted")) {
         return false;
     }
+    keyContext_.encrypted.Clear();
     return true;
 }
 
 bool BaseKey::EncryptKey(const UserAuth &auth)
 {
     auto ret = HuksMaster::EncryptKey(keyContext_, auth, keyInfo_);
+    keyContext_.alias.Clear();
+    keyContext_.secDiscard.Clear();
     keyContext_.nonce.Clear();
     keyContext_.aad.Clear();
     return ret;
@@ -243,6 +246,9 @@ bool BaseKey::RestoreKey(const UserAuth &auth)
 bool BaseKey::DecryptKey(const UserAuth &auth)
 {
     auto ret = HuksMaster::DecryptKey(keyContext_, auth, keyInfo_);
+    keyContext_.encrypted.Clear();
+    keyContext_.alias.Clear();
+    keyContext_.secDiscard.Clear();
     keyContext_.nonce.Clear();
     keyContext_.aad.Clear();
     if (ret && !GenerateKeyDesc()) {
