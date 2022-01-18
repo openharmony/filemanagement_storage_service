@@ -148,7 +148,7 @@ bool KeyCtrl::LoadAndSetPolicy(const std::string &keyIdPath, const std::string &
     LOGD("enter");
     std::string keyId;
     if (OHOS::LoadStringFromFile(keyIdPath, keyId) == false || keyId.length() != FSCRYPT_KEY_IDENTIFIER_SIZE) {
-        LOGE("bad kid file content, length=%{public}d", keyId.length());
+        LOGE("bad kid file content, length=%{public}u", static_cast<uint32_t>(keyId.length()));
         return false;
     }
 

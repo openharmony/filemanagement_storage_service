@@ -368,7 +368,7 @@ bool BaseKey::ClearKey(const std::string& mnt)
 {
     LOGD("enter");
     if (keyInfo_.keyId.size != FSCRYPT_KEY_IDENTIFIER_SIZE) {
-        LOGE("keyId is invalid, %{public}d", keyInfo_.keyId.size);
+        LOGE("keyId is invalid, %{public}u", keyInfo_.keyId.size);
         return false;
     }
 
