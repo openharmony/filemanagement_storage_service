@@ -153,8 +153,8 @@ napi_value GetBundleStat(napi_env env, napi_callback_info info)
             return bundleObject;
         }
         bundleObject.AddProp("appSize", NVal::CreateInt64(env, (*bundleStats)[0]).val_); // 0 is the index of app size
-        bundleObject.AddProp("cacheSize",
-	    NVal::CreateInt64(env, (*bundleStats)[1]).val_); // 1 is the index of cache size
+        bundleObject.AddProp("cacheSize", NVal::CreateInt64(env,
+            (*bundleStats)[1]).val_); // 1 is the index of cache size
         bundleObject.AddProp("dataSize", NVal::CreateInt64(env, (*bundleStats)[2]).val_); // 2 is the index of data size
         return bundleObject;
     };
