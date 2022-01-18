@@ -12,6 +12,7 @@
         "//third_party/exfat-utils:exfat-utils",
         "//third_party/f2fs-tools:f2fs-tools",
         "//third_party/fsck_msdos:fsck_msdos",
+        "//third_party/gptfdisk:sgdisk",
         "//third_party/newfs_msdos:newfs_msdos",
         "//third_party/ntfs-3g:ntfsprogs"
       ],
