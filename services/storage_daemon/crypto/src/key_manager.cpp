@@ -482,14 +482,14 @@ int KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type,
     std::lock_guard<std::mutex> lock(keyMutex_);
     if (type == EL1_KEY) {
         if (userEl1Key_.find(user) == userEl1Key_.end()) {
-            LOGE("Have not found user %{public}u el1 key", user);
-            return -EINVAL;
+            LOGD("Have not found user %{public}u el1 key, not enable el1", user);
+            return 0;
         }
         kidPath = userEl1Key_[user]->GetKeyIdPath();
     } else if (type == EL2_KEY) {
         if (userEl2Key_.find(user) == userEl2Key_.end()) {
-            LOGE("Have not found user %{public}u el2 key", user);
-            return -EINVAL;
+            LOGD("Have not found user %{public}u el2 key, not enable el2", user);
+            return 0;
         }
         kidPath = userEl2Key_[user]->GetKeyIdPath();
     } else {
