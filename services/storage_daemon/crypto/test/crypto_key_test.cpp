@@ -194,12 +194,6 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_active, TestSize.Level1)
     EXPECT_TRUE(g_testKeyV1.RestoreKey(emptyUserAuth));
     EXPECT_FALSE(g_testKeyV1.keyInfo_.key.IsEmpty());
     EXPECT_EQ(FSCRYPT_V1, g_testKeyV1.keyInfo_.version);
-    // these context should be erased, because of no more usage.
-    // EXPECT_TRUE(g_testKeyV1.keyContext_.encrypted.IsEmpty());
-    // EXPECT_TRUE(g_testKeyV1.keyContext_.alias.IsEmpty());
-    // EXPECT_TRUE(g_testKeyV1.keyContext_.secDiscard.IsEmpty());
-    // EXPECT_TRUE(g_testKeyV1.keyContext_.nonce.IsEmpty());
-    // EXPECT_TRUE(g_testKeyV1.keyContext_.aad.IsEmpty());
 
     EXPECT_TRUE(g_testKeyV1.ActiveKey());
     // raw key should be erase after install to kernel.

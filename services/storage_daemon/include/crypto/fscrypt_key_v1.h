@@ -19,7 +19,7 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-class FscryptKeyV1 final : public BaseKey{
+class FscryptKeyV1 final : public BaseKey {
 public:
     FscryptKeyV1() = delete;
     FscryptKeyV1(std::string dir, uint8_t keyLen = CRYPTO_AES_256_XTS_KEY_SIZE) : BaseKey(dir, keyLen)

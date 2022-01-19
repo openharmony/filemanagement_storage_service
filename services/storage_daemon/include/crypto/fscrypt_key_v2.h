@@ -20,7 +20,7 @@
 namespace OHOS {
 namespace StorageDaemon {
 // for openharmony kernel 5.10+, prefer using the the FSCRYPT_V2.
-class FscryptKeyV2 final : public BaseKey{
+class FscryptKeyV2 final : public BaseKey {
 public:
     FscryptKeyV2() = delete;
     FscryptKeyV2(std::string dir, uint8_t keyLen = CRYPTO_AES_256_XTS_KEY_SIZE) : BaseKey(dir, keyLen)
