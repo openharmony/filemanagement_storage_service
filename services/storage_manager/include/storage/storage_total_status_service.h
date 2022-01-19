@@ -25,9 +25,14 @@ namespace OHOS {
 namespace StorageManager {
 class StorageTotalStatusService : public NoCopyable {
     DECLARE_DELAYED_SINGLETON(StorageTotalStatusService);
+
 public:
     int64_t GetFreeSizeOfVolume(std::string volumeUuid);
     int64_t GetTotalSizeOfVolume(std::string volumeUuid);
+private:
+    const std::vector<std::string> mountDir = {"/debug_ramdisk", "/patch_hw",
+        "/metadata", "/", "/cust", "/hw_product", "/odm", "/preas", "/vendor",
+        "/vendor/modem/modem_driver", "/data"};
 };
 } // StorageManager
 } // OHOS

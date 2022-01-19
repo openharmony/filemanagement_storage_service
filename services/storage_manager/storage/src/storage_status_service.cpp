@@ -14,20 +14,23 @@
  */
 
 #include "storage/storage_status_service.h"
-#include "utils/storage_manager_errno.h"
-#include "utils/storage_manager_log.h"
+
 #include "installd_client.h"
 #include "os_account_manager.h"
+#include "os_account_constants.h"
+
+#include "utils/storage_manager_errno.h"
+#include "utils/storage_manager_log.h"
 
 using namespace std;
 
 namespace OHOS {
 namespace StorageManager {
-
 StorageStatusService::StorageStatusService() {}
 StorageStatusService::~StorageStatusService() {}
 
-int StorageStatusService::GetCurrentUserId() {
+int StorageStatusService::GetCurrentUserId()
+{
     vector<AccountSA::OsAccountInfo> osAccountInfos;
     if (AccountSA::OsAccountManager::QueryAllCreatedOsAccounts(osAccountInfos) == E_OK) {
         for (int i = 0; i < osAccountInfos.size(); i++) {
@@ -40,10 +43,15 @@ int StorageStatusService::GetCurrentUserId() {
     return DEFAULT_USER_ID;
 }
 
-vector<int64_t> StorageStatusService::GetBundleStats(std::string uuid, std::string pkgName) {
-    vector<int64_t> result = {0,0,0};
+vector<int64_t> StorageStatusService::GetBundleStats(std::string uuid, std::string pkgName)
+{
+    vector<int64_t> result = {0, 0, 0};
     int userId = GetCurrentUserId();
     LOGI("StorageStatusService::userId is:%d", userId);
+    if (userId < 0 || userId > AccountSA::Constants::MAX_USER_ID) {
+        LOGI("StorageStatusService::Invaild userId.");
+        return result;
+    }
     vector<int64_t> bundleStats;
     int errorcode = AppExecFwk::InstalldClient::GetInstance()->GetBundleStats(pkgName, userId, bundleStats);
     if (bundleStats.size() != dataDir.size() || errorcode != E_OK) {
