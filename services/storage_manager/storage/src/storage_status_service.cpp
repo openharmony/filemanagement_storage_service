@@ -67,8 +67,6 @@ vector<int64_t> StorageStatusService::GetBundleStats(std::string uuid, std::stri
     result[APPSIZE] = bundleStats[APP];
     result[CACHESIZE] = bundleStats[CACHE];
     result[DATASIZE] = bundleStats[LOCAL] + bundleStats[DISTRIBUTED] + bundleStats[DATABASE];
-    LOGI("StorageStatusService result: APPSIZE:%lld, CACHESIZE:%lld, DATASIZE:%lld", result[APPSIZE],
-        result[CACHESIZE], result[DATASIZE]);
     return result;
 }
 } // StorageManager
