@@ -187,9 +187,9 @@ bool KeyCtrl::LoadAndSetPolicy(const std::string &keyPath, const std::string &po
 
     auto ver = LoadVersion(keyPath);
     if (ver == FSCRYPT_V1) {
-        return SetPolicyLegacy(keyPath + "/key_desc", toEncrypt, arg);
+        return SetPolicyLegacy(keyPath + PATH_KEYDESC, toEncrypt, arg);
     } else if (ver == FSCRYPT_V2) {
-        return SetPolicyV2(keyPath + "/key_id", toEncrypt, arg);
+        return SetPolicyV2(keyPath + PATH_KEYID, toEncrypt, arg);
     }
     LOGE("SetPolicy fail, unknown version");
     return false;
@@ -199,7 +199,7 @@ uint8_t KeyCtrl::LoadVersion(const std::string &keyPath)
 {
     std::string buf;
     int ver = 0;
-    if (!OHOS::LoadStringFromFile(keyPath + "/version", buf)) {
+    if (!OHOS::LoadStringFromFile(keyPath + PATH_VERSION, buf)) {
         LOGE("load version file failed");
         return FSCRYPT_INVALID;
     }

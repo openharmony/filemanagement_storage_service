@@ -57,7 +57,7 @@ bool FscryptKeyV1::ActiveKey(const std::string &mnt)
                 errno);
         }
     }
-    if (!SaveKeyBlob(keyInfo_.keyDesc, "key_desc")) {
+    if (!SaveKeyBlob(keyInfo_.keyDesc, PATH_KEYDESC)) {
         return false;
     }
     keyInfo_.key.Clear();

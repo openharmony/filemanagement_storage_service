@@ -31,9 +31,9 @@ public:
     bool InitKey();
     bool StoreKey(const UserAuth &auth);
     bool RestoreKey(const UserAuth &auth);
-    virtual bool ActiveKey(const std::string &mnt = "/data") = 0;
-    virtual bool InactiveKey(const std::string &mnt = "/data") = 0;
-    bool ClearKey(const std::string &mnt = "/data");
+    virtual bool ActiveKey(const std::string &mnt = MNT_DATA) = 0;
+    virtual bool InactiveKey(const std::string &mnt = MNT_DATA) = 0;
+    bool ClearKey(const std::string &mnt = MNT_DATA);
 
     KeyInfo keyInfo_;
     std::string GetDir() const

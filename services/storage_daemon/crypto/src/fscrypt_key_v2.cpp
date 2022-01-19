@@ -44,17 +44,15 @@ bool FscryptKeyV2::ActiveKey(const std::string &mnt)
         LOGE("InstallKey failed");
         return false;
     }
-
     keyInfo_.keyId.Alloc(FSCRYPT_KEY_IDENTIFIER_SIZE);
     (void)memcpy_s(keyInfo_.keyId.data.get(), FSCRYPT_KEY_IDENTIFIER_SIZE, arg->key_spec.u.identifier,
         FSCRYPT_KEY_IDENTIFIER_SIZE);
+
     LOGD("success. key_id len:%{public}d, data(hex):%{private}s", keyInfo_.keyId.size,
         keyInfo_.keyId.ToString().c_str());
-    if (!SaveKeyBlob(keyInfo_.keyId, "key_id")) {
-        // do some cleanup
+    if (!SaveKeyBlob(keyInfo_.keyId, PATH_KEYID)) {
         return false;
     }
-
     keyInfo_.key.Clear();
     LOGD("success");
     return true;

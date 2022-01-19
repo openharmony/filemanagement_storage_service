@@ -26,6 +26,13 @@ namespace OHOS {
 namespace StorageDaemon {
 using key_serial_t = int;
 constexpr uint32_t CRYPTO_KEY_DESC_SIZE = FSCRYPT_KEY_DESCRIPTOR_SIZE;
+static const std::string MNT_DATA = "/data";
+static const std::string PATH_VERSION = "/version";
+static const std::string PATH_ALIAS = "/alias";
+static const std::string PATH_SECDISC = "/sec_discard";
+static const std::string PATH_ENCRYPTED = "/encrypted";
+static const std::string PATH_KEYID = "/key_id";
+static const std::string PATH_KEYDESC = "/key_desc";
 
 enum {
     FSCRYPT_INVALID = 0,
@@ -65,7 +72,7 @@ public:
         const std::string &toEncrypt);
     static uint8_t LoadVersion(const std::string &keyPath);
 
-    static uint8_t GetFscryptVersion(const std::string &mnt = "/data");
+    static uint8_t GetFscryptVersion(const std::string &mnt);
     static uint8_t GetEncryptedVersion(const std::string &dir);
 };
 

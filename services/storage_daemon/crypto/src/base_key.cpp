@@ -41,7 +41,7 @@ BaseKey::BaseKey(std::string dir, uint8_t keyLen) : dir_(dir), keyLen_(keyLen)
 bool BaseKey::InitKey()
 {
     LOGD("enter");
-    if (keyInfo_.version == FSCRYPT_INVALID || keyInfo_.version > KeyCtrl::GetFscryptVersion()) {
+    if (keyInfo_.version == FSCRYPT_INVALID || keyInfo_.version > KeyCtrl::GetFscryptVersion(MNT_DATA)) {
         LOGE("invalid version %{public}u", keyInfo_.version);
         return false;
     }
@@ -74,7 +74,7 @@ bool BaseKey::SaveKeyBlob(const KeyBlob &blob, const std::string &name)
     if (blob.IsEmpty()) {
         return false;
     }
-    std::string path = dir_ + "/" + name;
+    std::string path = dir_ + name;
     std::ofstream file(path, std::ios::binary);
     if (file.fail()) {
         LOGE("path:%{public}s fail", path.c_str());
@@ -96,7 +96,7 @@ bool BaseKey::GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &name, con
 bool BaseKey::LoadKeyBlob(KeyBlob &blob, const std::string &name, const uint32_t size = 0)
 {
     LOGD("enter %{public}s, size=%{public}d", name.c_str(), size);
-    std::string path = dir_ + "/" + name;
+    std::string path = dir_ + name;
     std::ifstream file(path, std::ios::binary);
     if (file.fail()) {
         LOGE("path:%{public}s fail", path.c_str());
@@ -149,8 +149,8 @@ bool BaseKey::StoreKey(const UserAuth &auth)
 bool BaseKey::DoStoreKey(const UserAuth &auth)
 {
     OHOS::ForceCreateDirectory(dir_);
-    OHOS::SaveStringToFile(dir_ + "/version", std::to_string(keyInfo_.version));
-    if (!GenerateAndSaveKeyBlob(keyContext_.alias, "alias", CRYPTO_KEY_ALIAS_SIZE)) {
+    OHOS::SaveStringToFile(dir_ + PATH_VERSION, std::to_string(keyInfo_.version));
+    if (!GenerateAndSaveKeyBlob(keyContext_.alias, PATH_ALIAS, CRYPTO_KEY_ALIAS_SIZE)) {
         LOGE("GenerateAndSaveKeyBlob alias failed");
         return false;
     }
@@ -158,14 +158,14 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
         LOGE("HuksMaster::GenerateKey failed");
         return false;
     }
-    if (!GenerateAndSaveKeyBlob(keyContext_.secDiscard, "sec_discard", CRYPTO_KEY_SECDISC_SIZE)) {
+    if (!GenerateAndSaveKeyBlob(keyContext_.secDiscard, PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
         LOGE("GenerateAndSaveKeyBlob sec_discard failed");
         return false;
     }
     if (!EncryptKey(auth)) {
         return false;
     }
-    if (!SaveKeyBlob(keyContext_.encrypted, "encrypted")) {
+    if (!SaveKeyBlob(keyContext_.encrypted, PATH_ENCRYPTED)) {
         return false;
     }
     keyContext_.encrypted.Clear();
@@ -191,14 +191,14 @@ bool BaseKey::RestoreKey(const UserAuth &auth)
         return false;
     }
 
-    if (!LoadKeyBlob(keyContext_.encrypted, "encrypted")) {
+    if (!LoadKeyBlob(keyContext_.encrypted, PATH_ENCRYPTED)) {
         return false;
     }
-    if (!LoadKeyBlob(keyContext_.alias, "alias", CRYPTO_KEY_ALIAS_SIZE)) {
+    if (!LoadKeyBlob(keyContext_.alias, PATH_ALIAS, CRYPTO_KEY_ALIAS_SIZE)) {
         keyContext_.alias.Clear();
         return false;
     }
-    if (!LoadKeyBlob(keyContext_.secDiscard, "sec_discard", CRYPTO_KEY_SECDISC_SIZE)) {
+    if (!LoadKeyBlob(keyContext_.secDiscard, PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
         keyContext_.encrypted.Clear();
         keyContext_.alias.Clear();
         return false;
@@ -220,7 +220,7 @@ bool BaseKey::DecryptKey(const UserAuth &auth)
 bool BaseKey::RemoveAlias()
 {
     KeyBlob alias {};
-    return LoadKeyBlob(alias, "alias", CRYPTO_KEY_ALIAS_SIZE) && HuksMaster::DeleteKey(alias);
+    return LoadKeyBlob(alias, PATH_ALIAS, CRYPTO_KEY_ALIAS_SIZE) && HuksMaster::DeleteKey(alias);
 }
 
 bool BaseKey::ClearKey(const std::string &mnt)

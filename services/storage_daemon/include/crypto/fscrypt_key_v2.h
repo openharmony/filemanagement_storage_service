@@ -29,8 +29,8 @@ public:
     }
     ~FscryptKeyV2() = default;
 
-    bool ActiveKey(const std::string &mnt = "/data");
-    bool InactiveKey(const std::string &mnt = "/data");
+    bool ActiveKey(const std::string &mnt = MNT_DATA);
+    bool InactiveKey(const std::string &mnt = MNT_DATA);
 };
 } // namespace StorageDaemon
 } // namespace OHOS
