@@ -14,8 +14,8 @@
  */
 
 #include "ipc/storage_manager_proxy.h"
-#include "utils/storage_manager_errno.h"
-#include "utils/storage_manager_log.h"
+#include "storage_service_errno.h"
+#include "storage_service_log.h"
 
 namespace OHOS {
 namespace StorageManager {

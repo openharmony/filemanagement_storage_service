@@ -17,7 +17,7 @@
 
 #include "gmock/gmock.h"
 #include "ipc/storage_daemon_stub.h"
-#include "utils/errno.h"
+#include "storage_service_errno.h"
 
 namespace OHOS {
 namespace StorageDaemon {

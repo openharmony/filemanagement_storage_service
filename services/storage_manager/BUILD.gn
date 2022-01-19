@@ -21,6 +21,7 @@ config("storage_manager_config") {
     "//utils/system/safwk/native/include",
     "//utils/native/base/include",
     "../storage_daemon/include",
+    "//foundation/filemanagement/storage_service/utils/include",
     "//foundation/appexecfwk/standard/services/bundlemgr/include",
   ]
 }

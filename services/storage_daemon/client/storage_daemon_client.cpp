@@ -14,7 +14,7 @@
  */
 #include "storage_daemon_client.h"
 
-#include "utils/log.h"
+#include "storage_service_log.h"
 #include "iremote_proxy.h"
 #include "iremote_object.h"
 #include "iservice_registry.h"

@@ -12,11 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef STORAGE_DAEMON_UTILS_ERRNO_H
-#define STORAGE_DAEMON_UTILS_ERRNO_H
+#ifndef STORAGE_SERVICE_UTILS_ERRNO_H
+#define STORAGE_SERVICE_UTILS_ERRNO_H
 
 namespace OHOS {
-namespace StorageDaemon {
 constexpr int32_t E_ERR = -1;
 
 enum ErrNo {
@@ -32,8 +31,8 @@ enum ErrNo {
     E_MOUNT,        // mount error
     E_UMOUNT,       // umount error
     E_SET_POLICY,
+    E_USERID_RANGE, // id out or range
 };
 }
-}
 
-#endif // STORAGE_DAEMON_UTILS_ERRNO_H
+#endif // STORAGE_SERVICE_UTILS_ERRNO_H

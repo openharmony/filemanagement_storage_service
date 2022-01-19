@@ -18,7 +18,7 @@
 #include "ipc/istorage_daemon.h"
 #include "ipc/storage_daemon_proxy.h"
 #include "storage_daemon_service_mock.h"
-#include "utils/errno.h"
+#include "storage_service_errno.h"
 
 namespace OHOS {
 namespace StorageDaemon {

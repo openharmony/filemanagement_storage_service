@@ -19,8 +19,9 @@ config("public_config") {
 
 config("private_config") {
   include_dirs = [
-    "../../../../services/storage_manager/include",
-    "../../../../services/storage_daemon/include",
+    "//foundation/filemanagement/storage_service/services/storage_manager/include",
+    "//foundation/filemanagement/storage_service/services/storage_daemon/include",
+    "//foundation/filemanagement/storage_service/utils/include"
   ]
 }
 

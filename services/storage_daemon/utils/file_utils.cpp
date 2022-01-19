@@ -19,8 +19,8 @@
 #include <cstring>
 #include <dirent.h>
 #include <sys/stat.h>
-#include "utils/errno.h"
-#include "utils/log.h"
+#include "storage_service_errno.h"
+#include "storage_service_log.h"
 #include "string_ex.h"
 
 namespace OHOS {

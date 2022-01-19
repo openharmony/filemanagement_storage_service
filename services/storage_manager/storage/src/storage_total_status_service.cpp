@@ -14,10 +14,7 @@
  */
 
 #include "storage/storage_total_status_service.h"
-
-#include <sys/statvfs.h>
-
-#include "utils/storage_manager_errno.h"
+#include "storage_service_errno.h"
 
 using namespace std;
 

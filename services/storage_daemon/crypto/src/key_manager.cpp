@@ -18,9 +18,10 @@
 
 #include "directory_ex.h"
 #include "file_ex.h"
-#include "utils/log.h"
-#include "utils/errno.h"
 #include "fscrypt_key_v2.h"
+#include "storage_service_log.h"
+#include "storage_service_errno.h"
+#include "key_ctrl.h"
 
 namespace OHOS {
 namespace StorageDaemon {

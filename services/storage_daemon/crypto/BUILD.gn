@@ -19,6 +19,7 @@ config("storage_daemon_crypto_config") {
   include_dirs = [
     "../include",
     "../include/crypto",
+    "//foundation/filemanagement/storage_service/utils/include",
     "//third_party/openssl/include/openssl",
     "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
     "//utils/system/safwk/native/include",

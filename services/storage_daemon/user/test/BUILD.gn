@@ -23,6 +23,7 @@ ohos_unittest("user_manager_test") {
     "$ROOT_DIR/utils",
     "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
     "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
+    "//foundation/filemanagement/storage_service/utils/include"
   ]
 
   sources = [

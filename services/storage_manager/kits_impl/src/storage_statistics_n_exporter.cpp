@@ -25,9 +25,7 @@
 #include "common/napi/n_async/n_async_work_callback.h"
 #include "common/napi/n_async/n_async_work_promise.h"
 
-#include "storage_statistics_napi.h"
-#include "storage_manager_connect.h"
-#include "utils/storage_manager_log.h"
+#include "storage_service_log.h"
 
 using namespace OHOS::DistributedFS;
 
