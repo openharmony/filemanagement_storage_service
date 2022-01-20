@@ -46,7 +46,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Connect_0000, test
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t result;
-    if (sdCommunication != nullptr){
+    if (sdCommunication != nullptr) {
         result = sdCommunication->Connect();
     }
     EXPECT_EQ(result, 0);
@@ -69,7 +69,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_PrepareAddUser_000
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t userId = 101;
     int32_t result;
-    if (sdCommunication != nullptr){
+    if (sdCommunication != nullptr) {
         result = sdCommunication->PrepareAddUser(userId);
     }
     EXPECT_EQ(result, 0);
@@ -93,7 +93,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_RemoveUser_0000, t
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t userId = 102;
     int32_t result;
-    if (sdCommunication != nullptr){
+    if (sdCommunication != nullptr) {
         sdCommunication->PrepareAddUser(userId);
         result = sdCommunication->RemoveUser(userId);
     }
@@ -117,7 +117,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_PrepareStartUser_0
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t userId = 104;
     int32_t result;
-    if (sdCommunication != nullptr){
+    if (sdCommunication != nullptr) {
         sdCommunication->PrepareAddUser(userId);
         result = sdCommunication->PrepareStartUser(userId);
     }
@@ -143,7 +143,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_StopUser_0000, tes
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t userId = 106;
     int32_t result;
-    if (sdCommunication != nullptr){
+    if (sdCommunication != nullptr) {
         sdCommunication->PrepareAddUser(userId);
         sdCommunication->PrepareStartUser(userId);
         result = sdCommunication->StopUser(userId);

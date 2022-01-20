@@ -15,6 +15,8 @@
 #ifndef STORAGE_SERVICE_UTILS_ERRNO_H
 #define STORAGE_SERVICE_UTILS_ERRNO_H
 
+#include <sys/types.h>
+
 namespace OHOS {
 constexpr int32_t E_ERR = -1;
 

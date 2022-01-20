@@ -46,7 +46,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareAddUser_0000, 
     std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
     int32_t userId = 101;
     int32_t result;
-    if (service != nullptr){
+    if (service != nullptr) {
         result = service->PrepareAddUser(userId);
     }
     EXPECT_EQ(result, 0);
@@ -69,7 +69,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareAddUser_0001, 
     std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
     int32_t userId = -1;
     int32_t result;
-    if (service != nullptr){
+    if (service != nullptr) {
         result = service->PrepareAddUser(userId);
     }
     EXPECT_NE(result, 0);
@@ -92,7 +92,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareAddUser_0002, 
     std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
     int32_t userId = 10000;
     int32_t result;
-    if (service != nullptr){
+    if (service != nullptr) {
         result = service->PrepareAddUser(userId);
     }
     EXPECT_NE(result, 0);
@@ -115,7 +115,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareAddUser_0003, 
     std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
     int32_t userId = 102;
     int32_t result;
-    if (service != nullptr){
+    if (service != nullptr) {
         service->PrepareAddUser(userId);
         result = service->PrepareAddUser(userId);
     }
@@ -139,7 +139,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_RemoveUser_0000, test
     std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
     int32_t userId = 103;
     int32_t result;
-    if (service != nullptr){
+    if (service != nullptr) {
         service->PrepareAddUser(userId);
         result = service->RemoveUser(userId);
     }
@@ -162,7 +162,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_RemoveUser_0001, test
     std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
     int32_t userId = 104;
     int32_t result;
-    if (service != nullptr){
+    if (service != nullptr) {
         result = service->RemoveUser(userId);
     }
     EXPECT_NE(result, 0);
@@ -184,7 +184,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_RemoveUser_0002, test
     std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
     int32_t userId = -2;
     int32_t result;
-    if (service != nullptr){
+    if (service != nullptr) {
         service->PrepareAddUser(userId);
         result = service->RemoveUser(userId);
     }
@@ -207,7 +207,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareStartUser_0000
     std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
     int32_t userId = 105;
     int32_t result;
-    if (service != nullptr){
+    if (service != nullptr) {
         service->PrepareAddUser(userId);
         result = service->PrepareStartUser(userId);
     }
@@ -232,7 +232,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareStartUser_0001
     std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
     int32_t userId = 106;
     int32_t result;
-    if (service != nullptr){
+    if (service != nullptr) {
         result = service->PrepareStartUser(userId);
     }
     EXPECT_NE(result, 0);
@@ -254,7 +254,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareStartUser_0002
     std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
     int32_t userId = -4;
     int32_t result;
-    if (service != nullptr){
+    if (service != nullptr) {
         service->PrepareAddUser(userId);
         result = service->PrepareStartUser(userId);
     }
@@ -277,7 +277,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareStartUser_0003
     std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
     int32_t userId = 107;
     int32_t result;
-    if (service != nullptr){
+    if (service != nullptr) {
         service->PrepareAddUser(userId);
         service->PrepareStartUser(userId);
         result = service->PrepareStartUser(userId);
@@ -303,7 +303,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_StopUser_0000, testin
     std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
     int32_t userId = 108;
     int32_t result;
-    if (service != nullptr){
+    if (service != nullptr) {
         service->PrepareAddUser(userId);
         service->PrepareStartUser(userId);
         result = service->StopUser(userId);
@@ -328,7 +328,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_StopUser_0001, testin
     std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
     int32_t userId = 109;
     int32_t result;
-    if (service != nullptr){
+    if (service != nullptr) {
         result = service->StopUser(userId);
     }
     EXPECT_NE(result, 0);
@@ -350,7 +350,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_StopUser_0002, testin
     std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
     int32_t userId = -6;
     int32_t result;
-    if (service != nullptr){
+    if (service != nullptr) {
         service->PrepareAddUser(userId);
         service->PrepareStartUser(userId);
         result = service->StopUser(userId);
@@ -374,7 +374,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_StopUser_0003, testin
     std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
     int32_t userId = 110;
     int32_t result;
-    if (service != nullptr){
+    if (service != nullptr) {
         service->PrepareAddUser(userId);
         result = service->StopUser(userId);
     }

@@ -18,7 +18,7 @@
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
 #include "netlink/netlink_manager.h"
-#include "utils/log.h"
+#include "storage_service_log.h"
 
 using namespace OHOS;
 

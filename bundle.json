@@ -64,7 +64,13 @@
               }
         ],
         "test": [
-            "//foundation/filemanagement/storage_service/services/storage_daemon/crypto/test:moduletest"
+            "//foundation/filemanagement/storage_service/services/storage_daemon/crypto/test:crypto_test",
+            "//foundation/filemanagement/storage_service/services/storage_daemon/ipc/test:storage_daemon_ipc_test",
+            "//foundation/filemanagement/storage_service/services/storage_daemon/user/test:storage_daemon_user_test",
+            "//foundation/filemanagement/storage_service/services/storage_daemon/utils/test:storage_daemon_utils_test",
+            "//foundation/filemanagement/storage_service/services/storage_manager/ipc/test:proxy_test",
+            "//foundation/filemanagement/storage_service/services/storage_manager/storage_daemon_communication/test:communication_test",
+            "//foundation/filemanagement/storage_service/services/storage_manager/user/test:manager_service_test"
         ]
       }
     }

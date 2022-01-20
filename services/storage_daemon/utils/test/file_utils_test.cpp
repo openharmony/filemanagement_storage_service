@@ -18,11 +18,14 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "common/help_utils.h"
 #include "gtest/gtest.h"
-#include "utils/errno.h"
+
+#include "storage_service_log.h"
+#include "storage_service_errno.h"
+
+#include "common/help_utils.h"
 #include "utils/file_utils.h"
-#include "utils/log.h"
+
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -52,20 +55,20 @@ public:
 
 void FileUtilsTest::SetUp(void)
 {
-    StorageTest::RmDirRecurse(PATH_CHMOD);
-    StorageTest::RmDirRecurse(PATH_CHOWN);
-    StorageTest::RmDirRecurse(PATH_MKDIR);
-    StorageTest::RmDirRecurse(PATH_RMDIR);
-    StorageTest::RmDirRecurse(PATH_MOUNT);
+    StorageTest::StorageTestUtils::RmDirRecurse(PATH_CHMOD);
+    StorageTest::StorageTestUtils::RmDirRecurse(PATH_CHOWN);
+    StorageTest::StorageTestUtils::RmDirRecurse(PATH_MKDIR);
+    StorageTest::StorageTestUtils::RmDirRecurse(PATH_RMDIR);
+    StorageTest::StorageTestUtils::RmDirRecurse(PATH_MOUNT);
 }
 
 void FileUtilsTest::TearDown(void)
 {
-    StorageTest::RmDirRecurse(PATH_CHMOD);
-    StorageTest::RmDirRecurse(PATH_CHOWN);
-    StorageTest::RmDirRecurse(PATH_MKDIR);
-    StorageTest::RmDirRecurse(PATH_RMDIR);
-    StorageTest::RmDirRecurse(PATH_MOUNT);
+    StorageTest::StorageTestUtils::RmDirRecurse(PATH_CHMOD);
+    StorageTest::StorageTestUtils::RmDirRecurse(PATH_CHOWN);
+    StorageTest::StorageTestUtils::RmDirRecurse(PATH_MKDIR);
+    StorageTest::StorageTestUtils::RmDirRecurse(PATH_RMDIR);
+    StorageTest::StorageTestUtils::RmDirRecurse(PATH_MOUNT);
 }
 
 /**
@@ -78,7 +81,7 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_ChMod_001, TestSize.Level1)
     GTEST_LOG_(INFO) << "FileUtilsTest_ChMod_001 start";
 
     mode_t mode = 0660;
-    bool bRet = StorageTest::MkDir(PATH_CHMOD, mode);
+    bool bRet = StorageTest::StorageTestUtils::MkDir(PATH_CHMOD, mode);
     ASSERT_TRUE(bRet);
     struct stat st;
     int32_t ret = lstat(PATH_CHMOD.c_str(), &st);
@@ -106,9 +109,9 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_ChOwn_001, TestSize.Level1)
     GTEST_LOG_(INFO) << "FileUtilsTest_ChOwn_001 start";
 
     mode_t mode = 0660;
-    bool bRet = StorageTest::MkDir(PATH_CHOWN, mode);
+    bool bRet = StorageTest::StorageTestUtils::MkDir(PATH_CHOWN, mode);
     ASSERT_TRUE(bRet);
-    ASSERT_TRUE(StorageTest::CheckDir(PATH_CHOWN));
+    ASSERT_TRUE(StorageTest::StorageTestUtils::CheckDir(PATH_CHOWN));
 
     uid_t uid = 00;
     gid_t gid = 01;
@@ -146,7 +149,7 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_MkDir_001, TestSize.Level1)
     mode_t mode = 0771;
     int32_t ret = MkDir(PATH_MKDIR.c_str(), mode);
     ASSERT_TRUE(ret == E_OK);
-    ASSERT_TRUE(StorageTest::CheckDir(PATH_MKDIR)) << "check the dir";
+    ASSERT_TRUE(StorageTest::StorageTestUtils::CheckDir(PATH_MKDIR)) << "check the dir";
 
     struct stat st;
     ret = lstat(PATH_MKDIR.c_str(), &st);
@@ -166,13 +169,13 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_RmDir_001, TestSize.Level1)
     GTEST_LOG_(INFO) << "FileUtilsTest_RmDir_001 start";
 
     mode_t mode = 0771;
-    bool bRet = StorageTest::MkDir(PATH_RMDIR, mode);
+    bool bRet = StorageTest::StorageTestUtils::MkDir(PATH_RMDIR, mode);
     ASSERT_TRUE(bRet);
-    ASSERT_TRUE(StorageTest::CheckDir(PATH_RMDIR));
+    ASSERT_TRUE(StorageTest::StorageTestUtils::CheckDir(PATH_RMDIR));
 
     int32_t ret = RmDir(PATH_RMDIR);
     ASSERT_TRUE(ret == E_OK);
-    EXPECT_TRUE(false == StorageTest::CheckDir(PATH_RMDIR));
+    EXPECT_TRUE(false == StorageTest::StorageTestUtils::CheckDir(PATH_RMDIR));
 
     GTEST_LOG_(INFO) << "FileUtilsTest_RmDir_001 end";
 }
@@ -208,7 +211,7 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_PrepareDir_002, TestSize.Level1)
     GTEST_LOG_(INFO) << "FileUtilsTest_PrepareDir_002 start";
 
     mode_t mode = 0664;
-    StorageTest::MkDir(PATH_MKDIR, mode);
+    StorageTest::StorageTestUtils::MkDir(PATH_MKDIR, mode);
 
     mode = 0771;
     uid_t uid = 00;

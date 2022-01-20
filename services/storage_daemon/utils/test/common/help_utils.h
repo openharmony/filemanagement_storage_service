@@ -16,8 +16,8 @@
 #define HELP_UTILS_H
 
 #include <string>
-#include <sys/types.h>
 #include <vector>
+#include <sys/types.h>
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -29,25 +29,35 @@ struct Dir {
     gid_t gid;
 };
 
-extern const int32_t USER_ID1;
-extern const int32_t USER_ID2;
-extern const int32_t USER_ID3;
-extern const int32_t USER_ID4;
-extern const int32_t USER_ID5;
-extern std::vector<Dir> g_rootDirs;
-extern std::vector<Dir> g_subDirs;
-extern std::vector<Dir> g_hmdfsDirs;
-extern const std::string HMDFS_SOURCE;
-extern const std::string HMDFS_TARGET;
+class StorageTestUtils {
+public:
+    static const uid_t OID_ROOT;
+    static const uid_t OID_SYSTEM;
 
-bool CheckMount(const std::string& dstPath);
-bool CheckDir(const std::string &path);
-bool CheckUserDir(int32_t userId, uint32_t flags);
-bool CreateFile(const std::string &path);
-bool RmDirRecurse(const std::string &path);
-void RmDir(const int32_t userId);
-bool MkDir(const std::string &path, mode_t mode);
-void ClearTestResource();
+    static const int32_t USER_ID1;
+    static const int32_t USER_ID2;
+    static const int32_t USER_ID3;
+    static const int32_t USER_ID4;
+    static const int32_t USER_ID5;
+    static const mode_t MODE;
+
+    static const std::vector<Dir> g_rootDirs;
+    static const std::vector<Dir> g_subDirs;
+
+    static const std::vector<Dir> g_hmdfsDirs;
+
+    static const std::string HMDFS_SOURCE;
+    static const std::string HMDFS_TARGET;
+
+    static bool CheckMount(const std::string& dstPath);
+    static bool CheckDir(const std::string &path);
+    static bool CheckUserDir(int32_t userId, uint32_t flags);
+    static bool CreateFile(const std::string &path);
+    static bool RmDirRecurse(const std::string &path);
+    static void RmDir(const int32_t userId);
+    static bool MkDir(const std::string &path, mode_t mode);
+    static void ClearTestResource();
+};
 } // StorageTest
 } // STORAGE_DAEMON
 } // OHOS

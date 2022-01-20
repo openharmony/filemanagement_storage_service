@@ -21,8 +21,6 @@
 #include "storage/storage_status_service.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include <system_ability_definition.h>
-#include "storage_manager_connect.h"
 #include "ipc/storage_manager_proxy.h"
 #include "ipc/storage_manager.h"
 

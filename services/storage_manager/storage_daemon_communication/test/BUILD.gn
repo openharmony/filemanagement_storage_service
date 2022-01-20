@@ -25,6 +25,7 @@ ohos_unittest("storage_daemon_communication_test") {
   include_dirs = [
     "//foundation/filemanagement/storage_service/services/storage_daemon/include",
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
+    "//foundation/filemanagement/storage_service/utils/include",
     "include",
     "//utils/system/safwk/native/include",
     "//utils/native/base/include",

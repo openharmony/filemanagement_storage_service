@@ -25,7 +25,8 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/utils",
     "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
     "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
-    "//foundation/filemanagement/storage_service/utils/include"
+    "//foundation/filemanagement/storage_service/utils/include",
+    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include"
   ]
 
   sources = [
@@ -35,6 +36,7 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/user/src/user_manager.cpp",
     "$ROOT_DIR/utils/file_utils.cpp",
     "$ROOT_DIR/utils/string_utils.cpp",
+    "$ROOT_DIR/utils/mount_argument_utils.cpp",
     "$ROOT_DIR/utils/test/common/help_utils.cpp",
   ]
 
@@ -47,6 +49,7 @@ ohos_unittest("storage_daemon_test") {
   external_deps = [
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
+    "startup_l2:syspara",
   ]
 }
 
@@ -55,7 +58,9 @@ ohos_unittest("storage_daemon_proxy_test") {
 
   include_dirs = [
     "$ROOT_DIR/include",
+    "//foundation/filemanagement/storage_service/utils/include",
     "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
+    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include"
   ]
 
   sources = [
@@ -83,8 +88,10 @@ ohos_unittest("storage_daemon_stub_test") {
   include_dirs = [
     "$ROOT_DIR/include",
     "$ROOT_DIR/ipc/test/",
+    "//foundation/filemanagement/storage_service/utils/include",
     "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
     "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
+    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include"
   ]
 
   sources = [
@@ -93,6 +100,7 @@ ohos_unittest("storage_daemon_stub_test") {
     "$ROOT_DIR/ipc/src/storage_daemon_stub.cpp",
     "$ROOT_DIR/ipc/test/storage_daemon_stub_test.cpp",
     "$ROOT_DIR/user/src/user_manager.cpp",
+    "$ROOT_DIR/utils/mount_argument_utils.cpp",
     "$ROOT_DIR/utils/file_utils.cpp",
   ]
 
@@ -107,6 +115,7 @@ ohos_unittest("storage_daemon_stub_test") {
     "ipc:ipc_core",
     "safwk:system_ability_fwk",
     "samgr_standard:samgr_proxy",
+    "startup_l2:syspara",
   ]
 }
 

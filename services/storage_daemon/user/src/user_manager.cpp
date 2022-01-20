@@ -235,14 +235,9 @@ int32_t UserManager::DestroyUserDirs(int32_t userId, uint32_t flags)
         err = DestroyDirsFromIdAndLevel(userId, el2_);
         ret = (err != E_OK) ? err : ret;
 
-<<<<<<< HEAD
-    err = DestroyHmdfsDirs(userId);
-=======
-        // get syspara: hmdfs
         err = DestroyHmdfsDirs(userId);
         ret = (err != E_OK) ? err : ret;
     }
->>>>>>> add test cases && code style fix
 
     return ret;
 }

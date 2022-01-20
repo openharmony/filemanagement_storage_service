@@ -20,6 +20,7 @@ ohos_unittest("file_utils_test") {
     "//foundation/filemanagement/storage_service/services/storage_daemon/include",
     "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
     "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
+    "//foundation/filemanagement/storage_service/utils/include",
   ]
 
   sources = [

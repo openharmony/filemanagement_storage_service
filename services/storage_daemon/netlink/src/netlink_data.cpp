@@ -15,8 +15,8 @@
 #include "netlink/netlink_data.h"
 
 #include "ipc/storage_daemon.h"
-#include "utils/errno.h"
-#include "utils/log.h"
+#include "storage_service_errno.h"
+#include "storage_service_log.h"
 
 constexpr int ACTION_PRE_LEN = 7;
 constexpr int DEVPATH_PRE_LEN = 8;

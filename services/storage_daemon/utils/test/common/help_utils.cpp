@@ -14,14 +14,13 @@
  */
 #include "help_utils.h"
 
+#include <cerrno>
+#include <unistd.h>
 #include <dirent.h>
-#include <errno.h>
 #include <fcntl.h>
 #include <mntent.h>
-#include <string.h>
 #include <sys/mount.h>
 #include <sys/stat.h>
-#include <unistd.h>
 
 #include "ipc/istorage_daemon.h"
 #include "user/user_manager.h"
@@ -30,25 +29,28 @@
 namespace OHOS {
 namespace StorageDaemon {
 namespace StorageTest {
-const int32_t USER_ID1 = 70001;
-const int32_t USER_ID2 = 70002;
-const int32_t USER_ID3 = 70003;
-const int32_t USER_ID4 = 70004;
-const int32_t USER_ID5 = 70005;
-const mode_t MODE = 0711;
+const uid_t StorageTestUtils::OID_ROOT = 0;
+const uid_t StorageTestUtils::OID_SYSTEM = 1000;
 
-std::vector<Dir> g_rootDirs = {
+const int32_t StorageTestUtils::USER_ID1 = 70001;
+const int32_t StorageTestUtils::USER_ID2 = 70002;
+const int32_t StorageTestUtils::USER_ID3 = 70003;
+const int32_t StorageTestUtils::USER_ID4 = 70004;
+const int32_t StorageTestUtils::USER_ID5 = 70005;
+const mode_t StorageTestUtils::MODE = 0711;
+
+const std::vector<Dir> StorageTestUtils::g_rootDirs = {
     {"/data/app/%s/%d", 0711, OID_ROOT, OID_ROOT},
     {"/data/service/%s/%d", 0711, OID_ROOT, OID_ROOT},
     {"/data/chipset/%s/%d", 0711, OID_ROOT, OID_ROOT}
 };
 
-std::vector<Dir> g_subDirs = {
+const std::vector<Dir> StorageTestUtils::g_subDirs = {
     {"/data/app/%s/%d/base", 0711, OID_ROOT, OID_ROOT},
     {"/data/app/%s/%d/database", 0711, OID_ROOT, OID_ROOT}
 };
 
-std::vector<Dir> g_hmdfsDirs = {
+const std::vector<Dir> StorageTestUtils::g_hmdfsDirs = {
     {"/data/service/el2/%d/hmdfs", 0711, OID_SYSTEM, OID_SYSTEM},
     {"/data/service/el2/%d/hmdfs/files", 0711, OID_SYSTEM, OID_SYSTEM},
     {"/data/service/el2/%d/hmdfs/data", 0711, OID_SYSTEM, OID_SYSTEM},
@@ -56,10 +58,10 @@ std::vector<Dir> g_hmdfsDirs = {
     {"/storage/media/%d/local", 0711, OID_ROOT, OID_ROOT}
 };
 
-const std::string HMDFS_SOURCE = "/data/service/el2/%d/hmdfs/files";
-const std::string HMDFS_TARGET = "/storage/media/%d/local";
+const std::string StorageTestUtils::HMDFS_SOURCE = "/data/service/el2/%d/hmdfs/files";
+const std::string StorageTestUtils::HMDFS_TARGET = "/storage/media/%d/local";
 
-bool CheckMount(const std::string& dstPath)
+bool StorageTestUtils::CheckMount(const std::string& dstPath)
 {
     const std::string fileName = "/proc/mounts";
     FILE *mntFile;
@@ -80,7 +82,7 @@ bool CheckMount(const std::string& dstPath)
     return false;
 }
 
-bool CheckDir(const std::string &path)
+bool StorageTestUtils::CheckDir(const std::string &path)
 {
     struct stat st;
     if (lstat(path.c_str(), &st) != 0) {
@@ -89,11 +91,11 @@ bool CheckDir(const std::string &path)
     return S_ISDIR(st.st_mode) == 1;
 }
 
-bool CheckUserDir(int32_t userId, uint32_t flags)
+bool StorageTestUtils::CheckUserDir(int32_t userId, uint32_t flags)
 {
-    for (Dir &dir : g_rootDirs) {
+    for (const Dir &dir : g_rootDirs) {
         std::string path(dir.path);
-        path.replace(path.find("%d"), 2, std::to_string(userId));
+        path.replace(path.find("%d"), strlen("%d"), std::to_string(userId));
 
         if (flags & IStorageDaemon::CRYPTO_FLAG_EL1) {
             std::string realPath(path);
@@ -111,7 +113,7 @@ bool CheckUserDir(int32_t userId, uint32_t flags)
         }
     }
 
-    for (Dir &dir : g_subDirs) {
+    for (const Dir &dir : g_subDirs) {
         if (flags & IStorageDaemon::CRYPTO_FLAG_EL1) {
             std::string path(dir.path);
             path.replace(path.find("%d"), strlen("%d"), std::to_string(userId));
@@ -131,7 +133,7 @@ bool CheckUserDir(int32_t userId, uint32_t flags)
         }
     }
 
-    for (Dir &dir : g_hmdfsDirs) {
+    for (const Dir &dir : g_hmdfsDirs) {
         std::string path(dir.path);
         path.replace(path.find("%d"), strlen("%d"), std::to_string(userId));
         if (CheckDir(path) == false) {
@@ -141,7 +143,7 @@ bool CheckUserDir(int32_t userId, uint32_t flags)
     return true;
 }
 
-bool CreateFile(const std::string &path)
+bool StorageTestUtils::CreateFile(const std::string &path)
 {
     RmDirRecurse(path);
     int fd = open(path.c_str(), O_RDWR | O_CREAT | O_TRUNC, MODE);
@@ -152,7 +154,7 @@ bool CreateFile(const std::string &path)
     return true;
 }
 
-bool MkDir(const std::string &path, mode_t mode)
+bool StorageTestUtils::MkDir(const std::string &path, mode_t mode)
 {
     if (access(path.c_str(), 0) == 0) {
         if (rmdir(path.c_str()) != 0) {
@@ -168,7 +170,7 @@ bool MkDir(const std::string &path, mode_t mode)
     return true;
 }
 
-bool RmDirRecurse(const std::string &path)
+bool StorageTestUtils::RmDirRecurse(const std::string &path)
 {
     struct stat st;
     if (lstat(path.c_str(), &st) != 0) {
@@ -212,7 +214,7 @@ bool RmDirRecurse(const std::string &path)
     return true;
 }
 
-void RmDir(const int32_t userId)
+void StorageTestUtils::RmDir(const int32_t userId)
 {
     std::vector<std::string> paths = {
         "/data/app/el1/",
@@ -230,7 +232,7 @@ void RmDir(const int32_t userId)
     }
 }
 
-void ClearTestResource()
+void StorageTestUtils::ClearTestResource()
 {
     int32_t userIds[] = {
         USER_ID1,

@@ -18,7 +18,7 @@
 #include <cstdarg>
 #include <cstring>
 #include "securec.h"
-#include "utils/log.h"
+#include "storage_service_log.h"
 
 using namespace std;
 
@@ -34,7 +34,7 @@ std::string StringPrintf(const char *format, ...)
     char buf[BUFF_SIZE] = {0};
     std::string result;
 
-    int count = vsnprintf_s(buf, BUFF_SIZE, BUFF_SIZE, format, ap_backup);
+    int count = vsnprintf_s(buf, sizeof(buf), sizeof(buf), format, ap_backup);
     if (count < 0) {
         LOGE("vsnprintf_s error, errno %{public}d", errno);
     } else if (count >= 0 && count < BUFF_SIZE) {
