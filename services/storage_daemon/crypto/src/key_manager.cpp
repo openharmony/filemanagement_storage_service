@@ -92,14 +92,12 @@ int KeyManager::RestoreDeviceKey(const std::string &dir)
     }
 
     if (globalEl1Key_->RestoreKey(NULL_KEY_AUTH) == false) {
-        globalEl1Key_->ClearKey();
         globalEl1Key_ = nullptr;
         LOGE("global security key store failed");
         return -EFAULT;
     }
 
     if (globalEl1Key_->ActiveKey() == false) {
-        globalEl1Key_->ClearKey();
         globalEl1Key_ = nullptr;
         LOGE("global security key active failed");
         return -EFAULT;
@@ -197,13 +195,11 @@ int KeyManager::RestoreUserKey(uint32_t userId, const std::string &dir, const Us
     }
 
     if (elKey->RestoreKey(auth) == false) {
-        elKey->ClearKey();
         LOGE("global security key store failed");
         return -EFAULT;
     }
 
     if (elKey->ActiveKey() == false) {
-        elKey->ClearKey();
         LOGE("global security key active failed");
         return -EFAULT;
     }
@@ -364,8 +360,6 @@ void KeyManager::DoDeleteUserKeys(unsigned int user)
     if (it != userEl1Key_.end()) {
         auto elKey = it->second;
         elKey->ClearKey();
-        std::string path = elKey->GetDir();
-        RmDirRecurse(path);
         userEl1Key_.erase(user);
     }
 
@@ -373,8 +367,6 @@ void KeyManager::DoDeleteUserKeys(unsigned int user)
     if (it != userEl2Key_.end()) {
         auto elKey = it->second;
         elKey->ClearKey();
-        std::string path = elKey->GetDir();
-        RmDirRecurse(path);
         userEl2Key_.erase(user);
     }
 }
@@ -463,7 +455,7 @@ int KeyManager::InActiveUserKey(unsigned int user)
         return -ENOENT;
     }
     auto elKey = userEl2Key_[user];
-    if (elKey->ClearKey() == false) {
+    if (elKey->InactiveKey() == false) {
             LOGE("Clear user %{public}u key failed", user);
             return -EFAULT;
     }

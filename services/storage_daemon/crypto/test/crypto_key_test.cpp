@@ -222,7 +222,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_clear, TestSize.Level1)
  * @tc.name: fscrypt_key_v1_policy_set
  * @tc.desc: Verify the fscrypt V1 KeyCtrl::SetPolicy function.
  * @tc.type: FUNC
- * @tc.require: AR000GK0BP
+ * @tc.require: AR000GK0BO
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_policy_set, TestSize.Level1)
 {
@@ -251,7 +251,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_policy_set, TestSize.Level1)
  * @tc.name: fscrypt_key_v1_policy_get
  * @tc.desc: Verify the fscrypt V1 KeyCtrl::GetPolicy function.
  * @tc.type: FUNC
- * @tc.require: AR000GK0BP
+ * @tc.require: AR000GK0BO
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_policy_get, TestSize.Level1)
 {
@@ -269,7 +269,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_policy_get, TestSize.Level1)
  * @tc.name: fscrypt_key_v1_policy_clear
  * @tc.desc: Verify the ClearKey key function.
  * @tc.type: FUNC
- * @tc.require: AR000GK0BP
+ * @tc.require: AR000GK0BO
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_policy_clear, TestSize.Level1)
 {
@@ -312,7 +312,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_active, TestSize.Level1)
  * @tc.name: fscrypt_key_v2_policy_set
  * @tc.desc: Verify the fscrypt V2 setpolicy function.
  * @tc.type: FUNC
- * @tc.require: AR000GK0BP
+ * @tc.require: AR000GK0BO
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_set, TestSize.Level1)
 {
@@ -343,7 +343,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_set, TestSize.Level1)
  * @tc.name: fscrypt_key_v2_policy_get
  * @tc.desc: Verify the fscrypt V2 getpolicy function.
  * @tc.type: FUNC
- * @tc.require: AR000GK0BP
+ * @tc.require: AR000GK0BO
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_get, TestSize.Level1)
 {
@@ -413,7 +413,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_restore, TestSize.Level1)
  * @tc.name: fscrypt_key_v2_load_and_set_policy_default
  * @tc.desc: Verify the KeyCtrl::LoadAndSetPolicy function.
  * @tc.type: FUNC
- * @tc.require: AR000GK0BP
+ * @tc.require: AR000GK0BO
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_default, TestSize.Level1)
 {
@@ -442,7 +442,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_default, TestSize.Lev
  * @tc.name: fscrypt_key_v1_load_and_set_policy_default
  * @tc.desc: Verify the fscrypt V1 setpolicy function.
  * @tc.type: FUNC
- * @tc.require: AR000GK0BP
+ * @tc.require: AR000GK0BO
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_load_and_set_policy_default, TestSize.Level1)
 {

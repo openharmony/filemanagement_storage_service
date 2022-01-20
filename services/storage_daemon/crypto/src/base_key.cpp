@@ -226,7 +226,8 @@ bool BaseKey::RemoveAlias()
 bool BaseKey::ClearKey(const std::string &mnt)
 {
     InactiveKey(mnt);
-    return RemoveAlias() && OHOS::ForceRemoveDirectory(dir_);
+    RemoveAlias();
+    return OHOS::ForceRemoveDirectory(dir_);
     // use F2FS_IOC_SEC_TRIM_FILE
 }
 
