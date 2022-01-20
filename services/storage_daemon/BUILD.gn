@@ -43,10 +43,14 @@ ohos_executable("storage_daemon") {
     "netlink/src/netlink_listener.cpp",
     "netlink/src/netlink_manager.cpp",
     "user/src/mount_manager.cpp",
+    "disk/src/disk_config.cpp",
+    "disk/src/disk_manager.cpp",
+    "disk/src/disk_info.cpp",
     "user/src/user_manager.cpp",
     "utils/file_utils.cpp",
     "utils/mount_argument_utils.cpp",
     "utils/string_utils.cpp",
+    "utils/disk_utils.cpp",
   ]
 
   configs = [ ":storage_daemon_config" ]

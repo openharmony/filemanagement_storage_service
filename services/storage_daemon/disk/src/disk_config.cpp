@@ -12,36 +12,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "netlink/netlink_handler.h"
 
-#include "netlink/netlink_data.h"
-#include "storage_service_errno.h"
-#include "storage_service_log.h"
-#include "disk/disk_manager.h"
+#include "disk/disk_config.h"
+
+#include <fnmatch.h>
+#include <string.h>
 
 namespace OHOS {
 namespace StorageDaemon {
-NetlinkHandler::NetlinkHandler(int32_t socket) : NetlinkListener(socket) {}
 
-int32_t NetlinkHandler::Start()
+DiskConfig::DiskConfig(const std::string &sysPattern, const std::string &label, int flag)
 {
-    return this->StartListener();
+    sysPattern_ = sysPattern;
+    label_ = label;
+    flag_ = flag;
 }
 
-int32_t NetlinkHandler::Stop()
+DiskConfig::~DiskConfig()
 {
-    return this->StopListener();
 }
 
-void NetlinkHandler::OnEvent(char *msg)
+bool DiskConfig::IsMatch(std::string &sysPattern)
 {
-    auto nlData = std::make_unique<NetlinkData>();
-
-    nlData->Decode(msg);
-    if (strcmp(nlData->GetSubsystem().c_str(), "block") == 0) {
-	DiskManager::Instance()->HandleDiskEvent(nlData.get());
-    }
+    return !fnmatch(sysPattern_.c_str(), sysPattern.c_str(), 0);
 }
 
-} // StorageDaemon
-} // OHOS
+int DiskConfig::GetFlag() const
+{
+    return flag_;
+}
+
+} // namespace STORAGE_DAEMON
+} // namespace OHOS

@@ -14,10 +14,14 @@
  */
 
 #include "utils/string_utils.h"
+
 #include <cstdio>
 #include <cstdarg>
 #include <cstring>
+#include <vector>
+
 #include "securec.h"
+
 #include "storage_service_log.h"
 
 using namespace std;
@@ -58,5 +62,24 @@ std::string StringPrintf(const char *format, ...)
 
     return result;
 }
+
+std::vector<std::string> SplitLine(std::string &line, std::string &token)
+{
+    std::vector<std::string> result;
+    char *l = new char[line.length() + 1];
+    char *t = new char[token.length() + 1];
+    strcpy(l, line.c_str());
+    strcpy(t, token.c_str());
+
+    char *tmp = strtok(l, t);
+    while(tmp) {
+        std::string subStr = tmp;
+        result.push_back(subStr);
+        tmp = strtok(NULL, t);
+    }
+
+    return result;
+}
+
 } // namespace StorageDaemon
 } // namespace OHOS

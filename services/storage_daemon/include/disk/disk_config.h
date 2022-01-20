@@ -12,23 +12,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef STORAGE_DAEMON_UTILS_STRING_UTILS_H
-#define STORAGE_DAEMON_UTILS_STRING_UTILS_H
+
+#ifndef OHOS_STORAGE_DAEMON_DISK_CONFIG_H
+#define OHOS_STORAGE_DAEMON_DISK_CONFIG_H
 
 #include <string>
-#include <sys/types.h>
 
 namespace OHOS {
 namespace StorageDaemon {
-std::string StringPrintf(const char *format, ...);
 
-inline bool IsEndWith(const std::string &str, const std::string &end)
-{
-    return str.size() >= end.size() && str.substr(str.size() - end.size()) == end;
-}
+class DiskConfig {
+    public:
+       DiskConfig(const std::string &sysPattern, const std::string &lable, int flag);
+       ~DiskConfig();
+       bool IsMatch(std::string &sysPattern);
+       int GetFlag() const;
+    private:
+        std::string sysPattern_;
+        std::string label_;
+        int flag_;
+};
 
-std::vector<std::string> SplitLine(std::string &line, std::string &token);
-}
-}
+} // namespace STORAGE_DAEMON
+} // namespace OHOS
 
-#endif // STORAGE_DAEMON_UTILS_STRING_UTILS_H
+#endif // OHOS_STORAGE_DAEMON_DISK_CONFIG_H

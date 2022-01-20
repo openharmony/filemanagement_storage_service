@@ -14,14 +14,22 @@
  */
 
 #include "utils/file_utils.h"
-#include <cerrno>
+
+#include <errno.h>
+#include <fstream>
 #include <unistd.h>
 #include <cstring>
 #include <dirent.h>
+#include <stdlib.h>
+
 #include <sys/stat.h>
+#include <sys/wait.h>
+#include <sys/types.h>
+
+#include "string_ex.h"
+
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "string_ex.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -245,6 +253,85 @@ void ReadDigitDir(const std::string &path, std::vector<FileList> &dirInfo)
     }
 
     closedir(dir);
+}
+
+bool ReadFile(std::string path, std::string *str)
+{
+    std::ifstream infile;
+    int cnt = 0;
+    infile.open(path.c_str());
+    if (!infile) {
+        LOGE("Cannot open file");
+        return false;
+    }
+
+    while (1) {
+        std::string subStr;
+        infile >> subStr;
+        if (subStr == "") {
+            break;
+        }
+        cnt++;
+        *str = *str + subStr + '\n';
+    }
+
+    infile.close();
+    return cnt == 0 ? false : true;
+}
+
+static std::vector<char *> FromatCmd(std::vector<std::string> &cmd)
+{
+    std::vector<char *>res;
+
+    for (auto line : cmd) {
+        res.push_back(line.data());
+    }
+    return res;
+}
+
+int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
+{
+    int pipe_fd[2];
+    pid_t pid;
+    int status;
+    auto args = FromatCmd(cmd);
+
+    if (pipe(pipe_fd) < 0) {
+        LOGE("creat pipe failed");
+        return E_ERR;
+    }
+
+    pid = fork();
+    if (pid == -1) {
+        LOGE("fork failed");
+        return E_ERR;
+    } else if (pid == 0) {
+        close(pipe_fd[0]);
+        if (dup2(pipe_fd[1], STDOUT_FILENO) == -1) {
+            LOGE("dup2 failed");
+            exit(1);
+        }
+        close(pipe_fd[1]);
+        execvp(args[0], const_cast<char **>(args.data()));
+        exit(0);
+    } else {
+        close(pipe_fd[1]);
+        if (output) {
+            char buf[1024] = { 0 };
+            output->clear();
+            while (read(pipe_fd[0], buf, 1023) > 0) {
+                output->push_back(buf);
+            }
+            return E_OK;
+        }
+
+        waitpid(pid, &status, 0);
+        if (!WIFEXITED(status)) {
+            LOGE("Process exits abnormally");
+            return E_ERR;
+        }
+    }
+    return E_OK;
 }
 } // STORAGE_DAEMON
 } // OHOS
