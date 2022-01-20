@@ -36,6 +36,14 @@ config("storage_daemon_config") {
   ]
 }
 
+## Install config.txt to /system/etc/init/config.txt {{{
+ohos_prebuilt_etc("storage_daemon_disk_config") {
+  source = "config.txt"
+  relative_install_dir = "init"
+  part_name = "storage_standard"
+  subsystem_name = "filemanagement"
+}
+
 ohos_executable("storage_daemon") {
   sources = [
     "ipc/src/storage_daemon.cpp",

@@ -18,6 +18,8 @@
 #include <fnmatch.h>
 #include <string.h>
 
+#include "storage_service_log.h"
+
 namespace OHOS {
 namespace StorageDaemon {
 
@@ -34,6 +36,9 @@ DiskConfig::~DiskConfig()
 
 bool DiskConfig::IsMatch(std::string &sysPattern)
 {
+    LOGI("config sysPattern %{public}s", sysPattern_.c_str());
+    LOGI("device sysPattern %{public}s", sysPattern.c_str());
+
     return !fnmatch(sysPattern_.c_str(), sysPattern.c_str(), 0);
 }
 

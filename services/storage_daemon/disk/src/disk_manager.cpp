@@ -39,14 +39,6 @@ DiskManager* DiskManager::Instance()
     return instance_;
 }
 
-DiskManager::DiskManager()
-{
-    LOGI("Create DiskManager");
-
-    auto tmpConfig = std::make_shared<DiskConfig>(std::string("/devices/platform/*"),std::string("disk"), 0);
-    diskConfig_.push_back(tmpConfig);
-}
-
 DiskManager::~DiskManager()
 {
     LOGI("Destroy DiskManager");
@@ -59,25 +51,16 @@ void DiskManager::HandleDiskEvent(NetlinkData *data)
     std::string devPath = data->GetDevpath();
     std::string devType = data->GetParam("DEVTYPE");
 
-    LOGI("GetAction %{public}d", data->GetAction());
-    LOGI("GetDevpath %{public}s", data->GetDevpath().c_str());
-    LOGI("GetSyspath %{public}s", data->GetSyspath().c_str());
-    LOGI("GetSubsystem %{public}s", data->GetSubsystem().c_str());
-    LOGI("GetParam MAJOR %{public}s", data->GetParam("MAJOR").c_str());
-    LOGI("GetParam MINOR %{public}s", data->GetParam("MINOR").c_str());
-    LOGI("GetParam DEVNAME %{public}s", data->GetParam("DEVNAME").c_str());
-    LOGI("GetParam DEVTYPE %{public}s", data->GetParam("DEVTYPE").c_str());
-    LOGI("GetParam SEQNUM %{public}s", data->GetParam("SEQNUM").c_str());
-
-    LOGI("Disk type is %{public}s", devType.c_str());
     if (devType != "disk") {
         return;
     }
     unsigned int major = std::stoi(data->GetParam("MAJOR"));
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
+
     switch(data->GetAction()) {
         case NetlinkData::Actions::ADD: {
+            LOGI("diskConfig_ size %{public}d", diskConfig_.size());
             for (auto config : diskConfig_) {
                 if(config->IsMatch(devPath)) {
                     int flag = config->GetFlag();
@@ -146,7 +129,6 @@ void DiskManager::DestoryDisk(dev_t device)
             if (ret != E_OK) {
                 LOGI("Notify Disk Destroyed failed");
             }
-
             i = disk_.erase(i);
         } else {
             i++;
@@ -188,6 +170,5 @@ int32_t DiskManager::HandlePartition(std::string diskId, int32_t type)
 
     return ret;
 }
-
 } // namespace STORAGE_DAEMON
 } // namespace OHOS

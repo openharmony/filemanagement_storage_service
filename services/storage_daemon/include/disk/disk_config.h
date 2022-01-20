@@ -22,15 +22,15 @@ namespace OHOS {
 namespace StorageDaemon {
 
 class DiskConfig {
-    public:
-       DiskConfig(const std::string &sysPattern, const std::string &lable, int flag);
-       ~DiskConfig();
-       bool IsMatch(std::string &sysPattern);
-       int GetFlag() const;
-    private:
-        std::string sysPattern_;
-        std::string label_;
-        int flag_;
+public:
+    DiskConfig(const std::string &sysPattern, const std::string &lable, int flag);
+    ~DiskConfig();
+    bool IsMatch(std::string &sysPattern);
+    int GetFlag() const;
+private:
+    std::string sysPattern_;
+    std::string label_;
+    int flag_;
 };
 
 } // namespace STORAGE_DAEMON

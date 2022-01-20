@@ -27,6 +27,7 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 
+
 #include "string_ex.h"
 
 #include "storage_service_errno.h"
@@ -280,13 +281,17 @@ bool ReadFile(std::string path, std::string *str)
     return cnt == 0 ? false : true;
 }
 
-static std::vector<char *> FromatCmd(std::vector<std::string> &cmd)
+static std::vector<char*> FromatCmd(std::vector<std::string> &cmd)
 {
-    std::vector<char *>res;
+    std::vector<char*>res;
+    res.reserve(cmd.size() + 1);
 
-    for (auto line : cmd) {
-        res.push_back(line.data());
+    for (auto& line : cmd) {
+        LOGI("cmd %{public}s", line.c_str());
+        res.emplace_back(const_cast<char*>(line.c_str()));
     }
+    res.emplace_back(nullptr);
+
     return res;
 }
 

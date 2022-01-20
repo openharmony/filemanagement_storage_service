@@ -23,14 +23,15 @@
 #include "utils/string_utils.h"
 #include "utils/disk_utils.h"
 #include "utils/file_utils.h"
+#include "volume/volume_manager.h"
 
 namespace OHOS {
 namespace StorageDaemon {
 
 const std::string sgdiskPath = "/system/bin/sgdisk";
-const std::string sgdiskDumpCmd = " --ohos-dump";
-const std::string sgdiskZapCmd = " --zap-all";
-const std::string sgdiskPartCmd = " --new=0:0:-0 --typeconde=0:0c00 --gpttombr=1";
+const std::string sgdiskDumpCmd = "--ohos-dump";
+const std::string sgdiskZapCmd = "--zap-all";
+const std::string sgdiskPartCmd = "--new=0:0:-0 --typeconde=0:0c00 --gpttombr=1";
 
 DiskInfo::DiskInfo(std::string sysPath, std::string devPath, dev_t device, int flag)
 {
@@ -153,7 +154,7 @@ int DiskInfo::ReadMetadata()
             return E_ERR;
         }
         vendor_ = str;
-	LOGI("Read metadata %{public}s", path.c_str());
+    LOGI("Read metadata %{public}s", path.c_str());
     }
     return E_OK;
 }
@@ -168,6 +169,8 @@ int DiskInfo::ReadPartition()
 
     std::vector<std::string> cmd;
     std::vector<std::string> output;
+    std::vector<std::string> lines;
+
     int res;
 
     cmd.push_back(sgdiskPath);
@@ -178,10 +181,16 @@ int DiskInfo::ReadPartition()
         LOGE("get %{private}s partition failed", devPath_.c_str());
         return res;
     }
+    std::string bufToken = "\n";
+    for (auto &buf : output) {
+        auto split = SplitLine(buf, bufToken);
+	    for(auto &tmp : split)
+            lines.push_back(tmp);
+    }
 
-    std::string lineToken = " \t\n";
+    std::string lineToken = "\t";
     status = sScan;
-    for (auto &line : output) {
+    for (auto &line : lines) {
         auto split = SplitLine(line, lineToken);
         auto it = split.begin();
         if (it == split.end()) {
@@ -208,7 +217,9 @@ int DiskInfo::ReadPartition()
 int DiskInfo::CreateVolume(dev_t dev)
 {
     //auto volume = VolumeManager::Instance();
-    //std::string volumeId = volume->Create(GetId(), dev);
+
+    //LOGI("Read metadata %{public}llu", dev);
+    //std::string volumeId = volume->CreateVolume(GetId(), dev);
     //volumeId_.push_back(volumeId);
     return E_OK;
 }

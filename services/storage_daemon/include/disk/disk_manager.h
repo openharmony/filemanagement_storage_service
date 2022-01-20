@@ -45,7 +45,7 @@ public:
     void ReplayUevent();
 
 private:
-    DiskManager();
+    DiskManager() = default;
 
     std::mutex lock_;
     std::list<std::shared_ptr<DiskInfo>> disk_;

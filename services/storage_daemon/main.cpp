@@ -13,7 +13,13 @@
  * limitations under the License.
  */
 
+#include <fstream>
+
 #include "system_ability_definition.h"
+
+#include "disk/disk_config.h"
+#include "disk/disk_info.h"
+#include "disk/disk_manager.h"
 #include "ipc/storage_daemon.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
@@ -22,6 +28,60 @@
 #include "storage_service_log.h"
 
 using namespace OHOS;
+
+const int configParamNum = 6;
+
+static bool ParasConfig(StorageDaemon::DiskManager *dm)
+{
+    std::ifstream infile;
+    infile.open("/system/etc/init/config.txt");
+    if (!infile) {
+        LOGE("Cannot open config");
+        return false;
+    }
+
+    while (infile) {
+        std::string line;
+        std::getline(infile, line);
+        if (line.empty()) {
+            LOGI("Param config complete");
+            break;
+        }
+
+        std::string token = " ";
+        auto split = StorageDaemon::SplitLine(line, token);
+        if (split.size() != configParamNum) {
+            LOGE("Invalids config line: number of parameters is incorrect");
+            continue;
+        }
+
+        auto it = split.begin();
+        if (*it != "sysPattern") {
+            LOGE("Invalids config line: no sysPattern");
+            continue;
+        }
+
+        auto sysPattern = *(++it);
+        if (*(++it) != "label") {
+            LOGE("Invalids config line: no label");
+            continue;
+        }
+
+        auto label = *(++it);
+        if (*(++it) != "flag") {
+            LOGE("Invalids config line: no flag");
+            continue;
+        }
+
+        it++;
+        int flag = std::atoi((*it).c_str());
+        auto diskConfig =  std::make_shared<StorageDaemon::DiskConfig>(sysPattern, label, flag);
+        dm->AddDiskConfig(diskConfig);
+    }
+
+    infile.close();
+    return true;
+}
 
 int main()
 {
@@ -33,6 +93,17 @@ int main()
 
     if (nm->Start()) {
         LOGE("Unable to start NetlinkManager");
+        return -1;
+    }
+
+    StorageDaemon::DiskManager *dm = StorageDaemon::DiskManager::Instance();
+    if (!dm) {
+        LOGE("Unable to create DiskManger");
+        return -1;
+    }
+
+    if (!ParasConfig(dm)) {
+        LOGE("Paras config failed");
         return -1;
     }
 

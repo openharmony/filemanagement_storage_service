@@ -39,7 +39,7 @@ void NetlinkHandler::OnEvent(char *msg)
 
     nlData->Decode(msg);
     if (strcmp(nlData->GetSubsystem().c_str(), "block") == 0) {
-	DiskManager::Instance()->HandleDiskEvent(nlData.get());
+        DiskManager::Instance()->HandleDiskEvent(nlData.get());
     }
 }
 
