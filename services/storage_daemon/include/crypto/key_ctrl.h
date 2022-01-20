@@ -25,6 +25,26 @@
 namespace OHOS {
 namespace StorageDaemon {
 using key_serial_t = int;
+constexpr uint32_t CRYPTO_KEY_DESC_SIZE = FSCRYPT_KEY_DESCRIPTOR_SIZE;
+static const std::string MNT_DATA = "/data";
+static const std::string PATH_VERSION = "/version";
+static const std::string PATH_ALIAS = "/alias";
+static const std::string PATH_SECDISC = "/sec_discard";
+static const std::string PATH_ENCRYPTED = "/encrypted";
+static const std::string PATH_KEYID = "/key_id";
+static const std::string PATH_KEYDESC = "/key_desc";
+
+enum {
+    FSCRYPT_INVALID = 0,
+    FSCRYPT_V1 = 1,
+    FSCRYPT_V2 = 2,
+};
+
+union FscryptPolicy {
+    fscrypt_policy_v1 v1;
+    fscrypt_policy_v2 v2;
+};
+
 class KeyCtrl {
 public:
     // ------ fscrypt legacy ------
@@ -45,11 +65,15 @@ public:
     static bool RemoveKey(const std::string &mnt, fscrypt_remove_key_arg &arg);
     static bool GetKeyStatus(const std::string &mnt, fscrypt_get_key_status_arg &arg);
 
-    static bool SetPolicy(const std::string &path, fscrypt_policy_v1 &policy);
-    static bool SetPolicy(const std::string &path, fscrypt_policy_v2 &policy);
-    static bool GetPolicy(const std::string &path, fscrypt_get_policy_ex_arg &options);
+    static bool SetPolicy(const std::string &path, FscryptPolicy &policy);
+    static bool GetPolicy(const std::string &path, fscrypt_policy &policy);
+    static bool GetPolicy(const std::string &path, fscrypt_get_policy_ex_arg &policy);
+    static bool LoadAndSetPolicy(const std::string &keyPath, const std::string &policyFile,
+        const std::string &toEncrypt);
+    static uint8_t LoadVersion(const std::string &keyPath);
 
-    static bool LoadAndSetPolicy(const std::string &keyIdPath, const std::string &policyFile, const std::string &toEncrypt);
+    static uint8_t GetFscryptVersion(const std::string &mnt);
+    static uint8_t GetEncryptedVersion(const std::string &dir);
 };
 
 struct EncryptPolicy {
@@ -87,7 +111,6 @@ static const auto POLICY_FLAGS = std::map<std::string, uint8_t> {
     {"padding-32", FSCRYPT_POLICY_FLAGS_PAD_32},
     {"direct-key", FSCRYPT_POLICY_FLAG_DIRECT_KEY}, // use with adiantum
 };
-
 } // namespace StorageDaemon
 } // namespace OHOS
 

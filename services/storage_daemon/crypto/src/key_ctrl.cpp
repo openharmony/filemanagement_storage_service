@@ -17,7 +17,7 @@
 #include <vector>
 #include <map>
 #include <sys/syscall.h>
-#include <errno.h>
+#include <cerrno>
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
@@ -80,7 +80,7 @@ long KeyCtrl::GetSecurity(key_serial_t id, std::string &buffer)
 
 bool FsIoctl(const std::string &mnt, unsigned long cmd, void *arg)
 {
-    int fd = open(mnt.c_str(), O_RDONLY | O_CLOEXEC);
+    int fd = open(mnt.c_str(), O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
     if (fd < 0) {
         LOGE("open %{public}s failed, errno:%{public}d", mnt.c_str(), errno);
         return false;
@@ -113,16 +113,16 @@ bool KeyCtrl::GetKeyStatus(const std::string &mnt, fscrypt_get_key_status_arg &a
     return FsIoctl(mnt, FS_IOC_GET_ENCRYPTION_KEY_STATUS, reinterpret_cast<void *>(&arg));
 }
 
-bool KeyCtrl::SetPolicy(const std::string &path, fscrypt_policy_v1 &policy)
+bool KeyCtrl::SetPolicy(const std::string &path, FscryptPolicy &policy)
 {
     LOGD("enter");
     return FsIoctl(path, FS_IOC_SET_ENCRYPTION_POLICY, reinterpret_cast<void *>(&policy));
 }
 
-bool KeyCtrl::SetPolicy(const std::string &path, fscrypt_policy_v2 &policy)
+bool KeyCtrl::GetPolicy(const std::string &path, fscrypt_policy &policy)
 {
     LOGD("enter");
-    return FsIoctl(path, FS_IOC_SET_ENCRYPTION_POLICY, reinterpret_cast<void *>(&policy));
+    return FsIoctl(path, FS_IOC_GET_ENCRYPTION_POLICY, reinterpret_cast<void *>(&policy));
 }
 
 bool KeyCtrl::GetPolicy(const std::string &path, fscrypt_get_policy_ex_arg &policy)
@@ -143,27 +143,131 @@ static bool ParseOption(const std::map<std::string, uint8_t> &policy, const std:
     return false;
 }
 
-bool KeyCtrl::LoadAndSetPolicy(const std::string &keyIdPath, const std::string &policyFile, const std::string &toEncrypt)
+static bool SetPolicyLegacy(const std::string &keyDescPath, const std::string &toEncrypt, FscryptPolicy &arg)
 {
-    LOGD("enter");
+    std::string keyDesc;
+    if (OHOS::LoadStringFromFile(keyDescPath, keyDesc) == false || keyDesc.length() != FSCRYPT_KEY_DESCRIPTOR_SIZE) {
+        LOGE("bad key_desc file content, length=%{public}d", keyDesc.length());
+        return false;
+    }
+
+    arg.v1.version = FSCRYPT_POLICY_V1;
+    (void)memcpy_s(arg.v1.master_key_descriptor, FSCRYPT_KEY_DESCRIPTOR_SIZE, keyDesc.data(), keyDesc.length());
+    return KeyCtrl::SetPolicy(toEncrypt, arg);
+}
+
+static bool SetPolicyV2(const std::string &keyIdPath, const std::string &toEncrypt, FscryptPolicy &arg)
+{
     std::string keyId;
     if (OHOS::LoadStringFromFile(keyIdPath, keyId) == false || keyId.length() != FSCRYPT_KEY_IDENTIFIER_SIZE) {
-        LOGE("bad kid file content, length=%{public}u", static_cast<uint32_t>(keyId.length()));
+        LOGE("bad key_id file content, length=%{public}u", static_cast<uint32_t>(keyId.length()));
+        return false;
+    }
+
+    arg.v2.version = FSCRYPT_POLICY_V2;
+    (void)memcpy_s(arg.v2.master_key_identifier, FSCRYPT_KEY_IDENTIFIER_SIZE, keyId.data(), keyId.length());
+    return KeyCtrl::SetPolicy(toEncrypt, arg);
+}
+
+bool KeyCtrl::LoadAndSetPolicy(const std::string &keyPath, const std::string &policyFile, const std::string &toEncrypt)
+{
+    LOGD("enter");
+
+    FscryptPolicy arg;
+    (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
+    // the modes and flags shares the same offset in the struct
+    if (!ParseOption(FILENAME_MODES, DEFAULT_POLICY.fileName, arg.v1.filenames_encryption_mode) ||
+        !ParseOption(CONTENTS_MODES, DEFAULT_POLICY.content, arg.v1.contents_encryption_mode) ||
+        !ParseOption(POLICY_FLAGS, DEFAULT_POLICY.flags, arg.v1.flags)) {
         return false;
     }
 
     // Add parsing options from the policy file, now using default.
     (void)policyFile;
 
-    struct fscrypt_policy_v2 arg = {.version = FSCRYPT_POLICY_V2};
-    (void)memcpy_s(arg.master_key_identifier, FSCRYPT_KEY_IDENTIFIER_SIZE, keyId.data(), keyId.length());
-    if (!ParseOption(FILENAME_MODES, DEFAULT_POLICY.fileName, arg.filenames_encryption_mode) ||
-        !ParseOption(CONTENTS_MODES, DEFAULT_POLICY.content, arg.contents_encryption_mode) ||
-        !ParseOption(POLICY_FLAGS, DEFAULT_POLICY.flags, arg.flags)) {
-        LOGE("parse option failed");
-        return false;
+    auto ver = LoadVersion(keyPath);
+    if (ver == FSCRYPT_V1) {
+        return SetPolicyLegacy(keyPath + PATH_KEYDESC, toEncrypt, arg);
+    } else if (ver == FSCRYPT_V2) {
+        return SetPolicyV2(keyPath + PATH_KEYID, toEncrypt, arg);
     }
-    return KeyCtrl::SetPolicy(toEncrypt, arg);
+    LOGE("SetPolicy fail, unknown version");
+    return false;
+}
+
+uint8_t KeyCtrl::LoadVersion(const std::string &keyPath)
+{
+    std::string buf;
+    int ver = 0;
+    if (!OHOS::LoadStringFromFile(keyPath + PATH_VERSION, buf)) {
+        LOGE("load version file failed");
+        return FSCRYPT_INVALID;
+    }
+    if (IsNumericStr(buf) && StrToInt(buf, ver) && (ver == FSCRYPT_V1 || ver == FSCRYPT_V2)) {
+        LOGD("version %{public}d loaded", ver);
+        return ver;
+    }
+
+    LOGE("bad version content: %{public}s", buf.c_str());
+    return FSCRYPT_INVALID;
+}
+
+static uint8_t CheckKernelFscrypt(const std::string &mnt)
+{
+    int fd = open(mnt.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+    if (fd < 0) {
+        LOGE("open %{public}s failed, errno: %{public}d", mnt.c_str(), errno);
+        return FSCRYPT_INVALID;
+    }
+
+    errno = 0;
+    (void)ioctl(fd, FS_IOC_ADD_ENCRYPTION_KEY, nullptr);
+    close(fd);
+    if (errno == EOPNOTSUPP) {
+        LOGE("Kernel doesn't support fscrypt v1 or v2.");
+        return FSCRYPT_INVALID;
+    } else if (errno == ENOTTY) {
+        LOGE("Kernel doesn't support fscrypt v2, pls use v1.");
+        return FSCRYPT_V1;
+    } else if (errno == EFAULT) {
+        LOGI("Kernel is support fscrypt v2.");
+        return FSCRYPT_V2;
+    }
+    LOGW("Unexpected errno: %{public}d", errno);
+    return FSCRYPT_INVALID;
+}
+
+uint8_t KeyCtrl::GetFscryptVersion(const std::string &mnt)
+{
+    static auto version = CheckKernelFscrypt(mnt);
+    return version;
+}
+
+uint8_t KeyCtrl::GetEncryptedVersion(const std::string &dir)
+{
+    int fd = open(dir.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+    if (fd < 0) {
+        LOGE("open %{public}s failed, errno:%{public}d", dir.c_str(), errno);
+        return FSCRYPT_INVALID;
+    }
+
+    fscrypt_policy_v1 policy;
+    if (ioctl(fd, FS_IOC_GET_ENCRYPTION_POLICY, &policy) == 0) {
+        LOGI("%{public}s is encrypted with v1 policy", dir.c_str());
+        close(fd);
+        return FSCRYPT_V1;
+    }
+    close(fd);
+
+    if (errno == EINVAL) {
+        LOGI("%{public}s is encrypted with v2 policy", dir.c_str());
+        return FSCRYPT_V2;
+    } else if (errno == ENODATA) {
+        LOGI("%{public}s is not encrypted", dir.c_str());
+    } else {
+        LOGE("%{public}s unexpected errno: %{public}d", dir.c_str(), errno);
+    }
+    return FSCRYPT_INVALID;
 }
 } // namespace StorageDaemon
 } // namespace OHOS

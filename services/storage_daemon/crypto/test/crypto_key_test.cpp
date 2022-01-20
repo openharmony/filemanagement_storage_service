@@ -16,13 +16,25 @@
 #include <string>
 #include <gtest/gtest.h>
 
-#include "base_key.h"
-#include "key_ctrl.h"
 #include "file_ex.h"
 #include "directory_ex.h"
 #include "securec.h"
+#include "fscrypt_key_v1.h"
+#include "fscrypt_key_v2.h"
+#include "key_ctrl.h"
 
 using namespace testing::ext;
+using namespace OHOS::StorageDaemon;
+
+namespace {
+const std::string TEST_MNT = "/data";
+const std::string TEST_DIR_LEGACY = "/data/test/crypto_dir_legacy";
+const std::string TEST_DIR_V2 = "/data/test/crypto_dir";
+const std::string TEST_KEYPATH = "/data/test/keypath";
+const std::string TEST_POLICY = "/data/test/policy";
+FscryptKeyV1 g_testKeyV1 {TEST_KEYPATH};
+FscryptKeyV2 g_testKeyV2 {TEST_KEYPATH};
+}
 
 class CryptoKeyTest : public testing::Test {
 public:
@@ -30,18 +42,11 @@ public:
     static void TearDownTestCase(void);
     void SetUp();
     void TearDown();
-    OHOS::StorageDaemon::UserAuth emptyUserAuth { "" };
+    UserAuth emptyUserAuth { "" };
 };
 
-std::string toEncryptMnt("/data");
-std::string toEncryptDirLegacy("/data/test/crypto_dir_legacy");
-std::string toEncryptDir("/data/test/crypto_dir");
-std::string testKeyPath("/data/test/sys_de");
-std::string policyPath("/data/test/policy");
-OHOS::StorageDaemon::BaseKey deKey {testKeyPath};
 void CryptoKeyTest::SetUpTestCase(void)
 {
-    OHOS::RemoveFile(policyPath);
     // input testsuit setup step，setup invoked before all testcases
 }
 
@@ -61,322 +66,398 @@ void CryptoKeyTest::TearDown(void)
 }
 
 /**
- * @tc.name: basekey_init
+ * @tc.name: fscrypt_key_v1_init
  * @tc.desc: Verify the InitKey function.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
-HWTEST_F(CryptoKeyTest, basekey_init, TestSize.Level1)
+HWTEST_F(CryptoKeyTest, fscrypt_key_v1_init, TestSize.Level1)
 {
-    OHOS::StorageDaemon::BaseKey deKey(testKeyPath);
+    EXPECT_TRUE(g_testKeyV1.InitKey());
 
-    EXPECT_EQ(true, deKey.InitKey());
-
-    EXPECT_EQ(OHOS::StorageDaemon::CRYPTO_AES_256_XTS_KEY_SIZE, deKey.keyInfo_.key.size);
-    EXPECT_NE(nullptr, deKey.keyInfo_.key.data.get());
-    EXPECT_EQ(OHOS::StorageDaemon::CRYPTO_KEY_ALIAS_SIZE, deKey.keyInfo_.keyDesc.size);
-    EXPECT_NE(nullptr, deKey.keyInfo_.keyDesc.data.get());
-
-    deKey.keyInfo_.key.Clear();
-    deKey.keyInfo_.keyDesc.Clear();
+    EXPECT_EQ(FSCRYPT_V1, g_testKeyV1.keyInfo_.version);
+    EXPECT_EQ(CRYPTO_AES_256_XTS_KEY_SIZE, g_testKeyV1.keyInfo_.key.size);
+    EXPECT_NE(nullptr, g_testKeyV1.keyInfo_.key.data.get());
+    g_testKeyV1.keyInfo_.key.Clear();
 }
 
 /**
- * @tc.name: basekey_store
+ * @tc.name: fscrypt_key_v2_init
+ * @tc.desc: Verify the InitKey function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK0BP
+ */
+HWTEST_F(CryptoKeyTest, fscrypt_key_v2_init, TestSize.Level1)
+{
+    if (KeyCtrl::GetFscryptVersion(TEST_MNT) == FSCRYPT_V1) {
+        // On kernel donnot support fscrypt_v2, the InitKey() should fail.
+        EXPECT_FALSE(g_testKeyV2.InitKey());
+    } else {
+        EXPECT_TRUE(g_testKeyV2.InitKey());
+        EXPECT_EQ(FSCRYPT_V2, g_testKeyV2.keyInfo_.version);
+        EXPECT_EQ(CRYPTO_AES_256_XTS_KEY_SIZE, g_testKeyV2.keyInfo_.key.size);
+        EXPECT_NE(nullptr, g_testKeyV2.keyInfo_.key.data.get());
+        g_testKeyV2.keyInfo_.key.Clear();
+    }
+}
+
+/**
+ * @tc.name: fscrypt_key_v1_store
  * @tc.desc: Verify the StoreKey function.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
-HWTEST_F(CryptoKeyTest, basekey_store, TestSize.Level1)
+HWTEST_F(CryptoKeyTest, fscrypt_key_v1_store, TestSize.Level1)
 {
-    std::vector<char> buf {};
-    OHOS::ForceRemoveDirectory(testKeyPath);
+    std::string buf {};
+    OHOS::ForceRemoveDirectory(TEST_KEYPATH);
 
-    EXPECT_EQ(true, deKey.InitKey());
-    EXPECT_EQ(true, deKey.StoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV1.InitKey());
+    EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
 
-    EXPECT_EQ(true, OHOS::FileExists(testKeyPath + "/alias"));
-    OHOS::LoadBufferFromFile(testKeyPath + "/alias", buf);
-    EXPECT_EQ(OHOS::StorageDaemon::CRYPTO_KEY_ALIAS_SIZE, buf.size());
+    EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + "/alias"));
+    OHOS::LoadStringFromFile(TEST_KEYPATH + "/alias", buf);
+    EXPECT_EQ(CRYPTO_KEY_ALIAS_SIZE, buf.size());
 
-    EXPECT_EQ(true, OHOS::FileExists(testKeyPath + "/sec_discard"));
-    OHOS::LoadBufferFromFile(testKeyPath + "/sec_discard", buf);
-    EXPECT_EQ(OHOS::StorageDaemon::CRYPTO_KEY_SECDISC_SIZE, buf.size());
+    EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + "/sec_discard"));
+    OHOS::LoadStringFromFile(TEST_KEYPATH + "/sec_discard", buf);
+    EXPECT_EQ(CRYPTO_KEY_SECDISC_SIZE, buf.size());
 
-    EXPECT_EQ(true, OHOS::FileExists(testKeyPath + "/encrypted"));
-    OHOS::LoadBufferFromFile(testKeyPath + "/encrypted", buf);
+    EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + PATH_ENCRYPTED));
+    OHOS::LoadStringFromFile(TEST_KEYPATH + PATH_ENCRYPTED, buf);
+    // the plaintext of 64 bytes, encrypted to 80 bytes size by huks.
     EXPECT_EQ(80U, buf.size());
+
+    OHOS::LoadStringFromFile(TEST_KEYPATH + PATH_VERSION, buf);
+    EXPECT_EQ(1U, buf.length());
+    EXPECT_EQ('1', buf[0]);
 }
 
 /**
- * @tc.name: basekey_restore
+ * @tc.name: fscrypt_key_v2_store
+ * @tc.desc: Verify the StoreKey function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK0BP
+ */
+HWTEST_F(CryptoKeyTest, fscrypt_key_v2_store, TestSize.Level1)
+{
+    std::string buf {};
+    OHOS::ForceRemoveDirectory(TEST_KEYPATH);
+
+    EXPECT_TRUE(g_testKeyV2.InitKey());
+    EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
+
+    OHOS::LoadStringFromFile(TEST_KEYPATH + PATH_VERSION, buf);
+    EXPECT_EQ(1U, buf.length());
+    EXPECT_EQ('2', buf[0]);
+}
+
+/**
+ * @tc.name: fscrypt_key_v1_restore_fail_wrong_version
  * @tc.desc: Verify the RestoreKey function.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
-HWTEST_F(CryptoKeyTest, basekey_restore, TestSize.Level1)
+HWTEST_F(CryptoKeyTest, fscrypt_key_v1_restore_fail_wrong_version, TestSize.Level1)
 {
-    EXPECT_EQ(true, deKey.RestoreKey(emptyUserAuth));
-
-    EXPECT_EQ(OHOS::StorageDaemon::CRYPTO_AES_256_XTS_KEY_SIZE, deKey.keyInfo_.key.size);
-    EXPECT_NE(nullptr, deKey.keyInfo_.key.data.get());
-    EXPECT_EQ(OHOS::StorageDaemon::CRYPTO_KEY_ALIAS_SIZE, deKey.keyInfo_.keyDesc.size);
-    EXPECT_NE(nullptr, deKey.keyInfo_.keyDesc.data.get());
+    g_testKeyV1.keyInfo_.key.Clear();
+    // the version loaded is v2, not expected v1.
+    EXPECT_FALSE(g_testKeyV1.RestoreKey(emptyUserAuth));
 }
 
 /**
- * @tc.name: basekey_install
- * @tc.desc: Verify the ActiveKeyLegacy function.
+ * @tc.name: fscrypt_key_v1_restore
+ * @tc.desc: Verify the RestoreKey function.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
-HWTEST_F(CryptoKeyTest, basekey_install, TestSize.Level1)
+HWTEST_F(CryptoKeyTest, fscrypt_key_v1_restore, TestSize.Level1)
 {
-    EXPECT_EQ(true, deKey.RestoreKey(emptyUserAuth));
-    EXPECT_EQ(false, deKey.keyInfo_.key.IsEmpty());
+    g_testKeyV1.keyInfo_.key.Clear();
+    EXPECT_TRUE(g_testKeyV1.InitKey());
+    EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV1.RestoreKey(emptyUserAuth));
 
-    EXPECT_EQ(true, deKey.ActiveKeyLegacy());
+    EXPECT_EQ(CRYPTO_AES_256_XTS_KEY_SIZE, g_testKeyV1.keyInfo_.key.size);
+    EXPECT_NE(nullptr, g_testKeyV1.keyInfo_.key.data.get());
+    EXPECT_EQ(FSCRYPT_V1, g_testKeyV1.keyInfo_.version);
+}
+
+/**
+ * @tc.name: fscrypt_key_v1_active
+ * @tc.desc: Verify the ActiveKey function of v1 key.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK0BP
+ */
+HWTEST_F(CryptoKeyTest, fscrypt_key_v1_active, TestSize.Level1)
+{
+    EXPECT_TRUE(g_testKeyV1.RestoreKey(emptyUserAuth));
+    EXPECT_FALSE(g_testKeyV1.keyInfo_.key.IsEmpty());
+    EXPECT_EQ(FSCRYPT_V1, g_testKeyV1.keyInfo_.version);
+
+    EXPECT_TRUE(g_testKeyV1.ActiveKey());
     // raw key should be erase after install to kernel.
-    EXPECT_EQ(true, deKey.keyInfo_.key.IsEmpty());
+    EXPECT_TRUE(g_testKeyV1.keyInfo_.key.IsEmpty());
+    EXPECT_TRUE(g_testKeyV1.keyInfo_.keyId.IsEmpty());
+    // key desc saved in memory for later clear key.
+    EXPECT_FALSE(g_testKeyV1.keyInfo_.keyDesc.IsEmpty());
+
+    // v1 key installed, and key_desc was saved on disk.
+    EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + PATH_KEYDESC));
 }
 
 /**
- * @tc.name: basekey_clear
- * @tc.desc: Verify the ClearKeyLegacy function.
+ * @tc.name: fscrypt_key_v1_clear
+ * @tc.desc: Verify the ClearKey function.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
-HWTEST_F(CryptoKeyTest, basekey_clear, TestSize.Level1)
+HWTEST_F(CryptoKeyTest, fscrypt_key_v1_clear, TestSize.Level1)
 {
-    EXPECT_EQ(true, deKey.RestoreKey(emptyUserAuth));
-    EXPECT_EQ(false, deKey.keyInfo_.key.IsEmpty());
-
-    EXPECT_EQ(true, deKey.ClearKeyLegacy());
-    EXPECT_EQ(true, deKey.keyInfo_.key.IsEmpty());
-    EXPECT_EQ(true, deKey.keyInfo_.keyDesc.IsEmpty());
+    EXPECT_TRUE(g_testKeyV1.ClearKey());
+    EXPECT_TRUE(g_testKeyV1.keyInfo_.key.IsEmpty());
 }
 
 /**
- * @tc.name: basekey_fscrypt_v1_policy_set
- * @tc.desc: Verify the fscrypt V1 setpolicy function.
+ * @tc.name: fscrypt_key_v1_policy_set
+ * @tc.desc: Verify the fscrypt V1 KeyCtrl::SetPolicy function.
  * @tc.type: FUNC
- * @tc.require: AR000GK0BP
+ * @tc.require: AR000GK0BO
  */
-HWTEST_F(CryptoKeyTest, basekey_fscrypt_v1_policy_set, TestSize.Level1)
+HWTEST_F(CryptoKeyTest, fscrypt_key_v1_policy_set, TestSize.Level1)
 {
-    EXPECT_EQ(true, deKey.InitKey());
-    EXPECT_EQ(true, deKey.StoreKey(emptyUserAuth));
-    EXPECT_EQ(true, deKey.ActiveKeyLegacy());
+    EXPECT_TRUE(g_testKeyV1.InitKey());
+    EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV1.ActiveKey());
 
-    struct fscrypt_policy_v1 arg = {.version = FSCRYPT_POLICY_V1};
-    memcpy_s(arg.master_key_descriptor, FSCRYPT_KEY_DESCRIPTOR_SIZE, deKey.keyInfo_.keyDesc.data.get(), deKey.keyInfo_.keyDesc.size);
-    arg.contents_encryption_mode = OHOS::StorageDaemon::CONTENTS_MODES.at("aes-256-xts");
-    arg.filenames_encryption_mode = OHOS::StorageDaemon::FILENAME_MODES.at("aes-256-cts");
-    arg.flags = FSCRYPT_POLICY_FLAGS_PAD_32;
+    FscryptPolicy arg;
+    arg.v1.version = FSCRYPT_POLICY_V1;
+    memcpy_s(arg.v1.master_key_descriptor, FSCRYPT_KEY_DESCRIPTOR_SIZE, g_testKeyV1.keyInfo_.keyDesc.data.get(),
+        g_testKeyV1.keyInfo_.keyDesc.size);
+    arg.v1.contents_encryption_mode = CONTENTS_MODES.at("aes-256-xts");
+    arg.v1.filenames_encryption_mode = FILENAME_MODES.at("aes-256-cts");
+    arg.v1.flags = FSCRYPT_POLICY_FLAGS_PAD_32;
     // Default to maximum zero-padding to leak less info about filename lengths.
-    OHOS::ForceRemoveDirectory(toEncryptDirLegacy);
-    EXPECT_EQ(true, OHOS::ForceCreateDirectory(toEncryptDirLegacy));
-    EXPECT_EQ(true, OHOS::StorageDaemon::KeyCtrl::SetPolicy(toEncryptDirLegacy, arg));
+    OHOS::ForceRemoveDirectory(TEST_DIR_LEGACY);
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(TEST_DIR_LEGACY));
+    EXPECT_TRUE(KeyCtrl::SetPolicy(TEST_DIR_LEGACY, arg));
 
-    EXPECT_EQ(true, OHOS::ForceCreateDirectory(toEncryptDirLegacy + "/test_dir"));
-    EXPECT_EQ(true, OHOS::SaveStringToFile(toEncryptDirLegacy + "/test_file1", "hello, world!\n"));
-    EXPECT_EQ(true, OHOS::SaveStringToFile(toEncryptDirLegacy + "/test_file2", "AA"));
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(TEST_DIR_LEGACY + "/test_dir"));
+    EXPECT_TRUE(OHOS::SaveStringToFile(TEST_DIR_LEGACY + "/test_file1", "hello, world!\n"));
+    EXPECT_TRUE(OHOS::SaveStringToFile(TEST_DIR_LEGACY + "/test_file2", "AA"));
 }
 
 /**
- * @tc.name: basekey_fscrypt_v1_policy_get
- * @tc.desc: Verify the fscrypt V1 getpolicy function.
+ * @tc.name: fscrypt_key_v1_policy_get
+ * @tc.desc: Verify the fscrypt V1 KeyCtrl::GetPolicy function.
  * @tc.type: FUNC
- * @tc.require: AR000GK0BP
+ * @tc.require: AR000GK0BO
  */
-HWTEST_F(CryptoKeyTest, basekey_fscrypt_v1_policy_get, TestSize.Level1)
+HWTEST_F(CryptoKeyTest, fscrypt_key_v1_policy_get, TestSize.Level1)
 {
-    struct fscrypt_get_policy_ex_arg arg;
+    struct fscrypt_policy arg;
     memset_s(&arg, sizeof(arg), 0, sizeof(arg));
-    arg.policy_size = sizeof(arg.policy);
-    EXPECT_EQ(true, OHOS::StorageDaemon::KeyCtrl::GetPolicy(toEncryptDirLegacy, arg));
-    EXPECT_EQ(FSCRYPT_POLICY_V1, arg.policy.version);
+    EXPECT_TRUE(KeyCtrl::GetPolicy(TEST_DIR_LEGACY, arg));
+    EXPECT_EQ(FSCRYPT_POLICY_V1, arg.version);
 
     memset_s(&arg, sizeof(arg), 0, sizeof(arg));
-    arg.policy_size = sizeof(arg.policy);
-    EXPECT_EQ(true, OHOS::StorageDaemon::KeyCtrl::GetPolicy(toEncryptDirLegacy + "/test_dir", arg));
-    EXPECT_EQ(FSCRYPT_POLICY_V1, arg.policy.version);
+    EXPECT_TRUE(KeyCtrl::GetPolicy(TEST_DIR_LEGACY + "/test_dir", arg));
+    EXPECT_EQ(FSCRYPT_POLICY_V1, arg.version);
 }
 
 /**
- * @tc.name: basekey_fscrypt_v1_policy_clear
- * @tc.desc: Verify the ClearKeyLegacy key function.
+ * @tc.name: fscrypt_key_v1_policy_clear
+ * @tc.desc: Verify the ClearKey key function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK0BO
+ */
+HWTEST_F(CryptoKeyTest, fscrypt_key_v1_policy_clear, TestSize.Level1)
+{
+    EXPECT_TRUE(g_testKeyV1.ClearKey());
+
+    if (KeyCtrl::GetFscryptVersion(TEST_MNT) == FSCRYPT_V2) {
+        // the encrypted v1 policy dirs are readonly on kernel 5.10.
+        EXPECT_FALSE(OHOS::ForceCreateDirectory(TEST_DIR_LEGACY + "/test_dir1"));
+        EXPECT_FALSE(OHOS::SaveStringToFile(TEST_DIR_V2 + "/test_file2", "AAA"));
+    }
+    // earlier kernels may have different behaviour.
+}
+
+/**
+ * @tc.name: fscrypt_key_v2_active
+ * @tc.desc: Verify the fscrypt V2 active function.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
-HWTEST_F(CryptoKeyTest, basekey_fscrypt_v1_policy_clear, TestSize.Level1)
+HWTEST_F(CryptoKeyTest, fscrypt_key_v2_active, TestSize.Level1)
 {
-    EXPECT_EQ(true, deKey.ClearKeyLegacy());
+    // skipped when kernel not support v2
+    if (KeyCtrl::GetFscryptVersion(TEST_MNT) == FSCRYPT_V1) {
+        return;
+    }
 
-    // the encrypted dir was readonly now, and can be seen encrypted after reboot.
-    EXPECT_EQ(false, OHOS::ForceCreateDirectory(toEncryptDirLegacy + "/test_dir1"));
+    g_testKeyV2.keyInfo_.key.Clear();
+    EXPECT_TRUE(g_testKeyV2.InitKey());
+    EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV2.ActiveKey());
+
+    // raw key should be erase after install to kernel.
+    EXPECT_TRUE(g_testKeyV2.keyInfo_.key.IsEmpty());
+    EXPECT_TRUE(g_testKeyV2.keyInfo_.keyDesc.IsEmpty());
+    EXPECT_EQ(static_cast<unsigned int>(FSCRYPT_KEY_IDENTIFIER_SIZE), g_testKeyV2.keyInfo_.keyId.size);
+    EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + PATH_KEYID));
 }
 
 /**
- * @tc.name: basekey_fscrypt_v2_key
- * @tc.desc: Verify the fscrypt V2 active and clear function.
- * @tc.type: FUNC
- * @tc.require: AR000GK0BP
- */
-HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_key, TestSize.Level1)
-{
-    EXPECT_EQ(true, deKey.InitKey());
-    EXPECT_EQ(true, deKey.StoreKey(emptyUserAuth));
-    EXPECT_EQ(true, deKey.ActiveKey(toEncryptMnt));
-
-    EXPECT_EQ(static_cast<unsigned int>(FSCRYPT_KEY_IDENTIFIER_SIZE), deKey.keyInfo_.keyId.size);
-    EXPECT_EQ(true, OHOS::FileExists(testKeyPath + "/kid"));
-
-    EXPECT_EQ(true, deKey.ClearKey(toEncryptMnt));
-}
-
-/**
- * @tc.name: basekey_fscrypt_v2_policy_set
+ * @tc.name: fscrypt_key_v2_policy_set
  * @tc.desc: Verify the fscrypt V2 setpolicy function.
  * @tc.type: FUNC
- * @tc.require: AR000GK0BP
+ * @tc.require: AR000GK0BO
  */
-HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_policy_set, TestSize.Level1)
+HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_set, TestSize.Level1)
 {
-    EXPECT_EQ(true, deKey.InitKey());
-    // the ext4 disk with `mke2fs -O encrypt` mounted for test
-    EXPECT_EQ(true, deKey.StoreKey(emptyUserAuth));
-    EXPECT_EQ(true, deKey.ActiveKey(toEncryptMnt));
+    // skipped when kernel not support v2
+    if (KeyCtrl::GetFscryptVersion(TEST_MNT) == FSCRYPT_V1) {
+        return;
+    }
 
-    // raw key should be erase after install to kernel.
-    EXPECT_EQ(true, deKey.keyInfo_.key.IsEmpty());
-
-    struct fscrypt_policy_v2 arg = {.version = FSCRYPT_POLICY_V2};
-    memcpy_s(arg.master_key_identifier, FSCRYPT_KEY_IDENTIFIER_SIZE, deKey.keyInfo_.keyId.data.get(), deKey.keyInfo_.keyId.size);
-    arg.contents_encryption_mode = OHOS::StorageDaemon::CONTENTS_MODES.at("aes-256-xts");
-    arg.filenames_encryption_mode = OHOS::StorageDaemon::FILENAME_MODES.at("aes-256-cts");
-    arg.flags = FSCRYPT_POLICY_FLAGS_PAD_32;
+    EXPECT_EQ(FSCRYPT_V2, g_testKeyV2.keyInfo_.version);
+    FscryptPolicy arg;
+    arg.v2.version = FSCRYPT_POLICY_V2;
+    memcpy_s(arg.v2.master_key_identifier, FSCRYPT_KEY_IDENTIFIER_SIZE, g_testKeyV2.keyInfo_.keyId.data.get(),
+        g_testKeyV2.keyInfo_.keyId.size);
+    arg.v2.contents_encryption_mode = CONTENTS_MODES.at("aes-256-xts");
+    arg.v2.filenames_encryption_mode = FILENAME_MODES.at("aes-256-cts");
+    arg.v2.flags = FSCRYPT_POLICY_FLAGS_PAD_32;
     // Default to maximum zero-padding to leak less info about filename lengths.
-    OHOS::ForceRemoveDirectory(toEncryptDir);
-    EXPECT_EQ(true, OHOS::ForceCreateDirectory(toEncryptDir));
-    EXPECT_EQ(true, OHOS::StorageDaemon::KeyCtrl::SetPolicy(toEncryptDir, arg));
+    OHOS::ForceRemoveDirectory(TEST_DIR_V2);
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(TEST_DIR_V2));
+    EXPECT_TRUE(KeyCtrl::SetPolicy(TEST_DIR_V2, arg));
 
-    EXPECT_EQ(true, OHOS::ForceCreateDirectory(toEncryptDir + "/test_dir"));
-    EXPECT_EQ(true, OHOS::SaveStringToFile(toEncryptDir + "/test_file1", "hello, world!\n"));
-    EXPECT_EQ(true, OHOS::SaveStringToFile(toEncryptDir + "/test_file2", "AA"));
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(TEST_DIR_V2 + "/test_dir"));
+    EXPECT_TRUE(OHOS::SaveStringToFile(TEST_DIR_V2 + "/test_file1", "hello, world!\n"));
+    EXPECT_TRUE(OHOS::SaveStringToFile(TEST_DIR_V2 + "/test_file2", "AA"));
 }
 
 /**
- * @tc.name: basekey_fscrypt_v2_policy_get
+ * @tc.name: fscrypt_key_v2_policy_get
  * @tc.desc: Verify the fscrypt V2 getpolicy function.
  * @tc.type: FUNC
- * @tc.require: AR000GK0BP
+ * @tc.require: AR000GK0BO
  */
-HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_policy_get, TestSize.Level1)
+HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_get, TestSize.Level1)
 {
+    // skipped when kernel not support v2
+    if (KeyCtrl::GetFscryptVersion(TEST_MNT) == FSCRYPT_V1) {
+        return;
+    }
+
     struct fscrypt_get_policy_ex_arg arg;
     memset_s(&arg, sizeof(arg), 0, sizeof(arg));
     arg.policy_size = sizeof(arg.policy);
-    EXPECT_EQ(true, OHOS::StorageDaemon::KeyCtrl::GetPolicy(toEncryptDir, arg));
+    EXPECT_TRUE(KeyCtrl::GetPolicy(TEST_DIR_V2, arg));
     EXPECT_EQ(FSCRYPT_POLICY_V2, arg.policy.version);
 
     memset_s(&arg, sizeof(arg), 0, sizeof(arg));
     arg.policy_size = sizeof(arg.policy);
-    EXPECT_EQ(true, OHOS::StorageDaemon::KeyCtrl::GetPolicy(toEncryptDir + "/test_dir", arg));
+    EXPECT_TRUE(KeyCtrl::GetPolicy(TEST_DIR_V2 + "/test_dir", arg));
     EXPECT_EQ(FSCRYPT_POLICY_V2, arg.policy.version);
 }
 
 /**
- * @tc.name: basekey_fscrypt_v2_policy_clear
- * @tc.desc: Verify the fscrypt V2 clear key function.
+ * @tc.name: fscrypt_key_v2_policy_inactive
+ * @tc.desc: Verify the fscrypt V2 inactive key function.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
-HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_policy_clear, TestSize.Level1)
+HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_inactive, TestSize.Level1)
 {
-    EXPECT_EQ(true, deKey.ClearKey(toEncryptMnt));
+    // skipped when kernel not support v2
+    if (KeyCtrl::GetFscryptVersion(TEST_MNT) == FSCRYPT_V1) {
+        return;
+    }
+
+    EXPECT_TRUE(g_testKeyV2.InactiveKey());
     // When the v2 policy removed, the files are encrypted.
-    EXPECT_EQ(false, OHOS::FileExists(toEncryptDir + "/test_dir"));
-    EXPECT_EQ(false, OHOS::FileExists(toEncryptDir + "/test_file1"));
-    EXPECT_EQ(false, OHOS::FileExists(toEncryptDir + "/test_file2"));
+    EXPECT_FALSE(OHOS::FileExists(TEST_DIR_V2 + "/test_dir"));
+    EXPECT_FALSE(OHOS::FileExists(TEST_DIR_V2 + "/test_file1"));
+    EXPECT_FALSE(OHOS::FileExists(TEST_DIR_V2 + "/test_file2"));
 }
 
 /**
- * @tc.name: basekey_fscrypt_v2_policy_restore
+ * @tc.name: fscrypt_key_v2_policy_restore
  * @tc.desc: Verify the fscrypt V2 restore and decrypt.
  * @tc.type: FUNC
  * @tc.require: AR000GK0BP
  */
-HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_policy_restore, TestSize.Level1)
+HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_restore, TestSize.Level1)
 {
-    EXPECT_EQ(true, deKey.RestoreKey(emptyUserAuth));
-    // the ext4 disk with `mke2fs -O encrypt` mounted for test
-    EXPECT_EQ(true, deKey.ActiveKey(toEncryptMnt));
+    // skipped when kernel not support v2
+    if (KeyCtrl::GetFscryptVersion(TEST_MNT) == FSCRYPT_V1) {
+        return;
+    }
 
-    struct fscrypt_policy_v2 arg = {.version = FSCRYPT_POLICY_V2};
-    memcpy_s(arg.master_key_identifier, FSCRYPT_KEY_IDENTIFIER_SIZE, deKey.keyInfo_.keyId.data.get(), deKey.keyInfo_.keyId.size);
-    arg.contents_encryption_mode = OHOS::StorageDaemon::CONTENTS_MODES.at("aes-256-xts");
-    arg.filenames_encryption_mode = OHOS::StorageDaemon::FILENAME_MODES.at("aes-256-cts");
-    arg.flags = FSCRYPT_POLICY_FLAGS_PAD_32;
-    // Default to maximum zero-padding to leak less info about filename lengths.
-    EXPECT_EQ(true, OHOS::StorageDaemon::KeyCtrl::SetPolicy(toEncryptDir, arg));
+    EXPECT_TRUE(g_testKeyV2.RestoreKey(emptyUserAuth));
+    EXPECT_EQ(FSCRYPT_V2, g_testKeyV2.keyInfo_.version);
+    EXPECT_TRUE(g_testKeyV2.ActiveKey());
 
-    EXPECT_EQ(true, OHOS::FileExists(toEncryptDir + "/test_dir"));
-    EXPECT_EQ(true, OHOS::FileExists(toEncryptDir + "/test_file1"));
-    EXPECT_EQ(true, OHOS::FileExists(toEncryptDir + "/test_file2"));
+    // the files is decrypted now
+    EXPECT_TRUE(OHOS::FileExists(TEST_DIR_V2 + "/test_dir"));
+    EXPECT_TRUE(OHOS::FileExists(TEST_DIR_V2 + "/test_file1"));
+    EXPECT_TRUE(OHOS::FileExists(TEST_DIR_V2 + "/test_file2"));
 
-    EXPECT_EQ(true, deKey.ClearKey(toEncryptMnt));
+    EXPECT_TRUE(g_testKeyV2.ClearKey());
 }
 
 /**
- * @tc.name: basekey_fscrypt_v2_load_and_set_policy_default
+ * @tc.name: fscrypt_key_v2_load_and_set_policy_default
  * @tc.desc: Verify the KeyCtrl::LoadAndSetPolicy function.
  * @tc.type: FUNC
- * @tc.require: AR000GK0BP
+ * @tc.require: AR000GK0BO
  */
-HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_load_and_set_policy_default, TestSize.Level1)
+HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_default, TestSize.Level1)
 {
-    EXPECT_EQ(true, deKey.InitKey());
-    // the ext4 disk with `mke2fs -O encrypt` mounted for test
-    EXPECT_EQ(true, deKey.StoreKey(emptyUserAuth));
-    EXPECT_EQ(true, deKey.ActiveKey(toEncryptMnt));
+    // skipped when kernel not support v2
+    if (KeyCtrl::GetFscryptVersion(TEST_MNT) == FSCRYPT_V1) {
+        return;
+    }
 
-    OHOS::ForceRemoveDirectory(toEncryptDir);
-    OHOS::ForceCreateDirectory(toEncryptDir);
-    OHOS::ForceRemoveDirectory(policyPath);
-    EXPECT_EQ(true, OHOS::StorageDaemon::KeyCtrl::LoadAndSetPolicy(testKeyPath + "/kid", policyPath, toEncryptDir));
+    EXPECT_TRUE(g_testKeyV2.InitKey());
+    EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV2.ActiveKey());
 
-    EXPECT_EQ(true, OHOS::ForceCreateDirectory(toEncryptDir + "/test_dir"));
-    EXPECT_EQ(true, OHOS::SaveStringToFile(toEncryptDir + "/test_file1", "hello, world!\n"));
-    EXPECT_EQ(true, OHOS::SaveStringToFile(toEncryptDir + "/test_file2", "AA"));
-    EXPECT_EQ(true, OHOS::SaveStringToFile(toEncryptDir + "/1111111111111111111111111111111111111111111111111", "AA"));
+    OHOS::ForceRemoveDirectory(TEST_DIR_V2);
+    OHOS::ForceCreateDirectory(TEST_DIR_V2);
+    EXPECT_TRUE(KeyCtrl::LoadAndSetPolicy(g_testKeyV2.GetDir(), "", TEST_DIR_V2));
 
-    EXPECT_EQ(true, deKey.ClearKey(toEncryptMnt));
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(TEST_DIR_V2 + "/test_dir"));
+    EXPECT_TRUE(OHOS::SaveStringToFile(TEST_DIR_V2 + "/test_file1", "hello, world!\n"));
+    EXPECT_TRUE(OHOS::SaveStringToFile(TEST_DIR_V2 + "/test_file2", "AA"));
+    EXPECT_TRUE(OHOS::SaveStringToFile(TEST_DIR_V2 + "/111111111111111111111111111111111111111111111111", "AA"));
+
+    EXPECT_TRUE(g_testKeyV2.ClearKey());
 }
 
 /**
- * @tc.name: basekey_fscrypt_v2_load_and_set_policy_from_file
- * @tc.desc: Verify the fscrypt V2 setpolicy function.
+ * @tc.name: fscrypt_key_v1_load_and_set_policy_default
+ * @tc.desc: Verify the fscrypt V1 setpolicy function.
  * @tc.type: FUNC
- * @tc.require: AR000GK0BP
+ * @tc.require: AR000GK0BO
  */
-HWTEST_F(CryptoKeyTest, basekey_fscrypt_v2_load_and_set_policy_from_file, TestSize.Level1)
+HWTEST_F(CryptoKeyTest, fscrypt_key_v1_load_and_set_policy_default, TestSize.Level1)
 {
-    EXPECT_EQ(true, deKey.InitKey());
-    // the ext4 disk with `mke2fs -O encrypt` mounted for test
-    EXPECT_EQ(true, deKey.StoreKey(emptyUserAuth));
-    EXPECT_EQ(true, deKey.ActiveKey(toEncryptMnt));
+    EXPECT_TRUE(g_testKeyV1.InitKey());
+    EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV1.ActiveKey());
 
-    OHOS::ForceRemoveDirectory(toEncryptDir);
-    OHOS::ForceCreateDirectory(toEncryptDir);
-    // the `aes-128-cts/aes-128-cbc` need the CONFIG_CRYPTO_ESSIV, and the policy from file not finished yet
-    EXPECT_EQ(true, OHOS::SaveStringToFile(policyPath, "v2;aes-256-cts;aes-256-xts;padding-8"));
-    EXPECT_EQ(true, OHOS::StorageDaemon::KeyCtrl::LoadAndSetPolicy(testKeyPath + "/kid", policyPath, toEncryptDir));
+    OHOS::ForceRemoveDirectory(TEST_DIR_LEGACY);
+    OHOS::ForceCreateDirectory(TEST_DIR_LEGACY);
+    EXPECT_TRUE(KeyCtrl::LoadAndSetPolicy(g_testKeyV1.GetDir(), "", TEST_DIR_LEGACY));
 
-    EXPECT_EQ(true, OHOS::ForceCreateDirectory(toEncryptDir + "/test_dir"));
-    EXPECT_EQ(true, OHOS::SaveStringToFile(toEncryptDir + "/test_file1", "hello, world!\n"));
-    EXPECT_EQ(true, OHOS::SaveStringToFile(toEncryptDir + "/test_file2", "AA"));
-    EXPECT_EQ(true, OHOS::SaveStringToFile(toEncryptDir + "/1111111111111111111111111111111111111111111111111", "AA"));
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(TEST_DIR_LEGACY + "/test_dir"));
+    EXPECT_TRUE(OHOS::SaveStringToFile(TEST_DIR_LEGACY + "/test_file1", "hello, world!\n"));
+    EXPECT_TRUE(OHOS::SaveStringToFile(TEST_DIR_LEGACY + "/test_file2", "AA"));
+    EXPECT_TRUE(OHOS::SaveStringToFile(TEST_DIR_LEGACY + "/111111111111111111111111111111111111111111111111", "AA"));
 
-    EXPECT_EQ(true, deKey.ClearKey(toEncryptMnt));
+    EXPECT_TRUE(g_testKeyV1.ClearKey());
 }

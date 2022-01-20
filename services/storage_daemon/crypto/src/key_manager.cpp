@@ -20,7 +20,7 @@
 #include "file_ex.h"
 #include "utils/log.h"
 #include "utils/errno.h"
-#include "key_ctrl.h"
+#include "fscrypt_key_v2.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -40,7 +40,7 @@ const std::string USER_EL2_DIR = FSCRYPT_EL_DIR + "/el2";
 int KeyManager::GenerateAndInstallDeviceKey(const std::string &dir)
 {
     LOGI("enter");
-    globalEl1Key_ = std::make_shared<BaseKey>(dir);
+    globalEl1Key_ = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>(dir));
     if (globalEl1Key_ == nullptr) {
         LOGE("No memory for device el1 key");
         return -ENOMEM;
@@ -79,7 +79,7 @@ int KeyManager::RestoreDeviceKey(const std::string &dir)
         return 0;
     }
 
-    globalEl1Key_ = std::make_shared<BaseKey>(dir);
+    globalEl1Key_ = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>(dir));
     if (globalEl1Key_ == nullptr) {
         LOGE("No memory for device el1 key");
         return -ENOMEM;
@@ -92,14 +92,12 @@ int KeyManager::RestoreDeviceKey(const std::string &dir)
     }
 
     if (globalEl1Key_->RestoreKey(NULL_KEY_AUTH) == false) {
-        globalEl1Key_->ClearKey();
         globalEl1Key_ = nullptr;
         LOGE("global security key store failed");
         return -EFAULT;
     }
 
     if (globalEl1Key_->ActiveKey() == false) {
-        globalEl1Key_->ClearKey();
         globalEl1Key_ = nullptr;
         LOGE("global security key active failed");
         return -EFAULT;
@@ -144,7 +142,7 @@ int KeyManager::GenerateAndInstallUserKey(uint32_t userId, const std::string &di
         return 0;
     }
 
-    std::shared_ptr<BaseKey> elKey = std::make_shared<BaseKey>(dir);
+    std::shared_ptr<BaseKey> elKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>(dir));
     if (elKey == nullptr) {
         LOGE("No memory for device el1 key");
         return -ENOMEM;
@@ -185,7 +183,7 @@ int KeyManager::RestoreUserKey(uint32_t userId, const std::string &dir, const Us
         return 0;
     }
 
-    std::shared_ptr<BaseKey> elKey = std::make_shared<BaseKey>(dir);
+    auto elKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>(dir));
     if (elKey == nullptr) {
         LOGE("No memory for device el1 key");
         return -ENOMEM;
@@ -197,13 +195,11 @@ int KeyManager::RestoreUserKey(uint32_t userId, const std::string &dir, const Us
     }
 
     if (elKey->RestoreKey(auth) == false) {
-        elKey->ClearKey();
         LOGE("global security key store failed");
         return -EFAULT;
     }
 
     if (elKey->ActiveKey() == false) {
-        elKey->ClearKey();
         LOGE("global security key active failed");
         return -EFAULT;
     }
@@ -364,8 +360,6 @@ void KeyManager::DoDeleteUserKeys(unsigned int user)
     if (it != userEl1Key_.end()) {
         auto elKey = it->second;
         elKey->ClearKey();
-        std::string path = elKey->GetDir();
-        RmDirRecurse(path);
         userEl1Key_.erase(user);
     }
 
@@ -373,8 +367,6 @@ void KeyManager::DoDeleteUserKeys(unsigned int user)
     if (it != userEl2Key_.end()) {
         auto elKey = it->second;
         elKey->ClearKey();
-        std::string path = elKey->GetDir();
-        RmDirRecurse(path);
         userEl2Key_.erase(user);
     }
 }
@@ -431,7 +423,7 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::string &token,
         return -ENOENT;
     }
 
-    std::shared_ptr<BaseKey> elKey = std::make_shared<BaseKey>(keyDir);
+    std::shared_ptr<BaseKey> elKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>(keyDir));
     if (elKey->InitKey() == false) {
         LOGE("Init el failed");
         return -EFAULT;
@@ -463,7 +455,7 @@ int KeyManager::InActiveUserKey(unsigned int user)
         return -ENOENT;
     }
     auto elKey = userEl2Key_[user];
-    if (elKey->ClearKey() == false) {
+    if (elKey->InactiveKey() == false) {
             LOGE("Clear user %{public}u key failed", user);
             return -EFAULT;
     }
@@ -478,20 +470,20 @@ int KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type,
                                      const std::vector<FileList> &vec)
 {
     LOGI("start");
-    std::string kidPath;
+    std::string keyPath;
     std::lock_guard<std::mutex> lock(keyMutex_);
     if (type == EL1_KEY) {
         if (userEl1Key_.find(user) == userEl1Key_.end()) {
             LOGD("Have not found user %{public}u el1 key, not enable el1", user);
             return 0;
         }
-        kidPath = userEl1Key_[user]->GetKeyIdPath();
+        keyPath = userEl1Key_[user]->GetDir();
     } else if (type == EL2_KEY) {
         if (userEl2Key_.find(user) == userEl2Key_.end()) {
             LOGD("Have not found user %{public}u el2 key, not enable el2", user);
             return 0;
         }
-        kidPath = userEl2Key_[user]->GetKeyIdPath();
+        keyPath = userEl2Key_[user]->GetDir();
     } else {
         LOGD("Not specify el flags, no need to crypt");
         return 0;
@@ -499,7 +491,7 @@ int KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type,
 
     std::string policy = "";
     for (auto item : vec) {
-        if(KeyCtrl::LoadAndSetPolicy(kidPath, policy, item.path) == false) {
+        if (KeyCtrl::LoadAndSetPolicy(keyPath, policy, item.path) == false) {
             LOGE("Set directory el policy error!");
             return -EFAULT;
         }

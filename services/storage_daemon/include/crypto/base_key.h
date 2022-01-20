@@ -18,6 +18,7 @@
 #include <string>
 
 #include "key_utils.h"
+#include "key_ctrl.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -30,36 +31,30 @@ public:
     bool InitKey();
     bool StoreKey(const UserAuth &auth);
     bool RestoreKey(const UserAuth &auth);
-    bool ActiveKeyLegacy();
-    bool ClearKeyLegacy();
-    // ------ fscrypt v2 ------
-    bool ActiveKey(const std::string &mnt = "/data");
-    bool ClearKey(const std::string &mnt = "/data");
+    virtual bool ActiveKey(const std::string &mnt = MNT_DATA) = 0;
+    virtual bool InactiveKey(const std::string &mnt = MNT_DATA) = 0;
+    bool ClearKey(const std::string &mnt = MNT_DATA);
 
     KeyInfo keyInfo_;
     std::string GetDir() const
     {
         return dir_;
     }
-    std::string GetKeyIdPath() const
-    {
-        return dir_ + "/kid";
-    }
+
+protected:
+    bool SaveKeyBlob(const KeyBlob &blob, const std::string &name);
 
 private:
     bool DoStoreKey(const UserAuth &auth);
-    bool GenerateKeyBlob(KeyBlob &blob, const uint32_t size);
-    bool SaveKeyBlob(const KeyBlob &blob, const std::string &name);
     bool GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &name, const uint32_t size);
+    bool GenerateKeyBlob(KeyBlob &blob, const uint32_t size);
     bool LoadKeyBlob(KeyBlob &blob, const std::string &name, const uint32_t size);
-    bool GenerateKeyDesc();
     bool EncryptKey(const UserAuth &auth);
     bool DecryptKey(const UserAuth &auth);
+    bool RemoveAlias();
 
-    std::unique_ptr<char[]> GetRandomBytes(uint32_t size);
-
-    std::string dir_ {};
     KeyContext keyContext_ {};
+    std::string dir_ {};
     uint8_t keyLen_ {};
 };
 } // namespace StorageDaemon

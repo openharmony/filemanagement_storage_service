@@ -176,7 +176,7 @@ int32_t StorageDaemonProxy::GenerateUserKeys(uint32_t userId, uint32_t flags)
         return E_IPC_ERROR;
     }
 
-    if(!data.WriteUint32(userId)) {
+    if (!data.WriteUint32(userId)) {
         return E_IPC_ERROR;
     }
     if (!data.WriteUint32(flags)) {
