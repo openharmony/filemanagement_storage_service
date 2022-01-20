@@ -147,7 +147,7 @@ static bool SetPolicyLegacy(const std::string &keyDescPath, const std::string &t
 {
     std::string keyDesc;
     if (OHOS::LoadStringFromFile(keyDescPath, keyDesc) == false || keyDesc.length() != FSCRYPT_KEY_DESCRIPTOR_SIZE) {
-        LOGE("bad key_desc file content, length=%{public}d", keyDesc.length());
+        LOGE("bad key_desc file content, length=%{public}u", static_cast<uint32_t>(keyDesc.length()));
         return false;
     }
 
