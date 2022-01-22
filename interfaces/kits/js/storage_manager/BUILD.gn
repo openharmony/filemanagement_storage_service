@@ -84,13 +84,18 @@ ohos_shared_library("volumemanager") {
     "//utils/native/base/include",
     "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js/src/",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
-    "//foundation/filemanagement/storage_service/utils/include",
+    "//foundation/filemanagement/storage_service/services/common/include",
   ]
 
   sources = [
     "//foundation/filemanagement/storage_service/services/storage_manager/kits_impl/src/storage_manager_connect.cpp",
     "//foundation/filemanagement/storage_service/services/storage_manager/kits_impl/src/volumemanager_n_exporter.cpp",
     "//foundation/filemanagement/storage_service/services/storage_manager/kits_impl/src/volumemanager_napi.cpp",
+  ]
+
+  defines = [
+    "STORAGE_LOG_TAG = \"STORAGE_MANAGER\"",
+    "LOG_DOMAIN = 0xD004300",
   ]
 
   deps = [

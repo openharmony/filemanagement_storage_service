@@ -58,7 +58,7 @@ private:
     std::string subSystem_;
     std::string devPath_;
     std::vector<std::string> params_;
-    Actions action_ = Actions::UNKNOWN;;
+    Actions action_ = Actions::UNKNOWN;
 };
 } // STORAGE_DAEMON
 } // OHOS
