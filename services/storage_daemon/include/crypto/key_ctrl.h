@@ -27,6 +27,7 @@ namespace StorageDaemon {
 using key_serial_t = int;
 constexpr uint32_t CRYPTO_KEY_DESC_SIZE = FSCRYPT_KEY_DESCRIPTOR_SIZE;
 static const std::string MNT_DATA = "/data";
+static const std::string PATH_LATEST = "/latest";
 static const std::string PATH_VERSION = "/version";
 static const std::string PATH_ALIAS = "/alias";
 static const std::string PATH_SECDISC = "/sec_discard";

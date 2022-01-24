@@ -30,6 +30,7 @@ public:
 
     bool InitKey();
     bool StoreKey(const UserAuth &auth);
+    bool UpdateKey();
     bool RestoreKey(const UserAuth &auth);
     virtual bool ActiveKey(const std::string &mnt = MNT_DATA) = 0;
     virtual bool InactiveKey(const std::string &mnt = MNT_DATA) = 0;
@@ -51,7 +52,8 @@ private:
     bool LoadKeyBlob(KeyBlob &blob, const std::string &name, const uint32_t size);
     bool EncryptKey(const UserAuth &auth);
     bool DecryptKey(const UserAuth &auth);
-    bool RemoveAlias();
+    bool RemoveAlias(const std::string& dir);
+    std::string GetCandidateDir() const;
 
     KeyContext keyContext_ {};
     std::string dir_ {};

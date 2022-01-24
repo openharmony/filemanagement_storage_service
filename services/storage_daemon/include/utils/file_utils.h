@@ -39,6 +39,7 @@ int32_t Mount(const std::string &source, const std::string &target, const char *
               unsigned long flags, const void *data);
 int32_t UMount(const std::string &path);
 int32_t UMount2(const std::string &path, int flag);
+void GetSubDirs(const std::string &path, std::vector<std::string> &dirList);
 void ReadDigitDir(const std::string &path, std::vector<FileList> &dirInfo);
 bool StringToUint32(const std::string &str, uint32_t &num);
 }

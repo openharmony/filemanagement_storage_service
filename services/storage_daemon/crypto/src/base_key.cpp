@@ -14,19 +14,26 @@
  */
 #include "base_key.h"
 
-#include <unistd.h>
 #include <fcntl.h>
-#include <string>
-#include <iostream>
 #include <fstream>
-#include <sys/types.h>
+#include <iostream>
+#include <string>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "directory_ex.h"
-#include "string_ex.h"
 #include "file_ex.h"
-#include "storage_service_log.h"
 #include "huks_master.h"
+#include "storage_service_log.h"
+#include "string_ex.h"
+#include "utils/file_utils.h"
+
+namespace {
+const std::string PATH_LATEST_BACKUP = "/latest_bak";
+const std::string PATH_KEY_VERSION = "/version_";
+const std::string PATH_KEY_TEMP = "/temp";
+}
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -70,11 +77,11 @@ bool BaseKey::GenerateKeyBlob(KeyBlob &blob, const uint32_t size)
 
 bool BaseKey::SaveKeyBlob(const KeyBlob &blob, const std::string &name)
 {
-    LOGD("enter %{public}s, size=%{public}d", name.c_str(), blob.size);
     if (blob.IsEmpty()) {
         return false;
     }
     std::string path = dir_ + name;
+    LOGD("enter %{public}s, size=%{public}d", path.c_str(), blob.size);
     std::ofstream file(path, std::ios::binary);
     if (file.fail()) {
         LOGE("path:%{public}s fail", path.c_str());
@@ -95,8 +102,8 @@ bool BaseKey::GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &name, con
 
 bool BaseKey::LoadKeyBlob(KeyBlob &blob, const std::string &name, const uint32_t size = 0)
 {
-    LOGD("enter %{public}s, size=%{public}d", name.c_str(), size);
     std::string path = dir_ + name;
+    LOGD("enter %{public}s, size=%{public}d", path.c_str(), size);
     std::ifstream file(path, std::ios::binary);
     if (file.fail()) {
         LOGE("path:%{public}s fail", path.c_str());
@@ -122,35 +129,47 @@ bool BaseKey::LoadKeyBlob(KeyBlob &blob, const std::string &name, const uint32_t
     return true;
 }
 
+// Get next available version_xx dir to save key files.
+std::string BaseKey::GetCandidateDir() const
+{
+    auto prefix = PATH_KEY_VERSION.substr(1); // skip the first slash
+    std::vector<std::string> files;
+    GetSubDirs(dir_, files);
+    int candidate = 0;
+    for (const auto &it: files) {
+        if (it.rfind(prefix) == 0) {
+            std::string str = it.substr(prefix.length());
+            int ver;
+            if (IsNumericStr(str) && StrToInt(str, ver) && ver >= candidate) {
+                candidate = ver + 1;
+            }
+        }
+    }
+    LOGD("candidate key version is %{public}d", candidate);
+    return dir_ + PATH_KEY_VERSION + std::to_string(candidate);
+}
+
 bool BaseKey::StoreKey(const UserAuth &auth)
 {
     LOGD("enter");
-    bool ret = false;
-    std::string originalDir = dir_;
-    dir_ += ".tmp";
     if (DoStoreKey(auth)) {
-        /*
-         * if originalDir
-         * del original alias of key, and alias should be different.
-         */
-        OHOS::ForceRemoveDirectory(originalDir);
-        if (rename(dir_.c_str(), originalDir.c_str()) != 0) {
-            LOGE("rename fail return %{public}d", errno);
-        } else {
-            LOGD("rename success");
-            ret = true;
+        // rename keypath/temp/ to keypath/version_xx/
+        if (rename(std::string(dir_ + PATH_KEY_TEMP).c_str(), GetCandidateDir().c_str()) == 0) {
+            return true;
         }
+        LOGE("rename fail return %{public}d", errno);
+    } else {
+        LOGE("DoStoreKey fail");
     }
-    OHOS::ForceRemoveDirectory(dir_);
-    dir_ = originalDir;
-    return ret;
+    return false;
 }
 
+// All key files are saved under keypath/temp/.
 bool BaseKey::DoStoreKey(const UserAuth &auth)
 {
-    OHOS::ForceCreateDirectory(dir_);
-    OHOS::SaveStringToFile(dir_ + PATH_VERSION, std::to_string(keyInfo_.version));
-    if (!GenerateAndSaveKeyBlob(keyContext_.alias, PATH_ALIAS, CRYPTO_KEY_ALIAS_SIZE)) {
+    OHOS::ForceCreateDirectory(dir_ + PATH_KEY_TEMP);
+    OHOS::SaveStringToFile(dir_ + PATH_KEY_TEMP + PATH_VERSION, std::to_string(keyInfo_.version));
+    if (!GenerateAndSaveKeyBlob(keyContext_.alias, PATH_KEY_TEMP + PATH_ALIAS, CRYPTO_KEY_ALIAS_SIZE)) {
         LOGE("GenerateAndSaveKeyBlob alias failed");
         return false;
     }
@@ -158,17 +177,73 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
         LOGE("HuksMaster::GenerateKey failed");
         return false;
     }
-    if (!GenerateAndSaveKeyBlob(keyContext_.secDiscard, PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
+    if (!GenerateAndSaveKeyBlob(keyContext_.secDiscard, PATH_KEY_TEMP + PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
         LOGE("GenerateAndSaveKeyBlob sec_discard failed");
         return false;
     }
     if (!EncryptKey(auth)) {
         return false;
     }
-    if (!SaveKeyBlob(keyContext_.encrypted, PATH_ENCRYPTED)) {
+    if (!SaveKeyBlob(keyContext_.encrypted, PATH_KEY_TEMP + PATH_ENCRYPTED)) {
         return false;
     }
     keyContext_.encrypted.Clear();
+    return true;
+}
+
+// update the latest and cleanup the version_xx.
+bool BaseKey::UpdateKey()
+{
+    LOGD("enter");
+    auto prefix = PATH_KEY_VERSION.substr(1); // skip the first slash
+
+    // get the candidate version dir
+    std::vector<std::string> files;
+    GetSubDirs(dir_, files);
+    std::string candidate {};
+    for (const auto &it: files) {
+        if (it.rfind(prefix) == 0 && it > candidate) {
+            candidate = it;
+        }
+    }
+
+    // rename latest -> latest.bak
+    bool hasLatest = IsDir(dir_ + PATH_LATEST);
+    if (hasLatest) {
+        OHOS::ForceRemoveDirectory(dir_ + PATH_LATEST_BACKUP);
+        if (rename(std::string(dir_ + PATH_LATEST).c_str(),
+                   std::string(dir_ + PATH_LATEST_BACKUP).c_str()) != 0) {
+            LOGE("backup the latest fail errno:%{public}d", errno);
+        }
+        LOGD("backup the latest success");
+    }
+
+    // rename {candidate} -> latest
+    OHOS::ForceRemoveDirectory(dir_ + PATH_LATEST);
+    if (rename(std::string(dir_ + "/" + candidate).c_str(), std::string(dir_ + PATH_LATEST).c_str()) != 0) {
+        LOGE("rename candidate to latest fail return %{public}d", errno);
+        if (hasLatest) {
+            // rename latest.bak -> latest
+            if (rename(std::string(dir_ + PATH_LATEST).c_str(),
+                       std::string(dir_ + PATH_LATEST_BACKUP).c_str()) != 0) {
+                LOGE("restore the latest_backup fail errno:%{public}d", errno);
+            } else {
+                LOGD("restore the latest_backup success");
+            }
+        }
+        return false;
+    }
+    LOGD("rename candidate %{public}s to latest success", candidate.c_str());
+
+    // cleanup latest.bak and version_*
+    GetSubDirs(dir_, files);
+    for (const auto &it: files) {
+        if (it != PATH_LATEST.substr(1)) {
+            RemoveAlias("/" + it);
+            OHOS::ForceRemoveDirectory(dir_ + "/" + it);
+        }
+    }
+
     return true;
 }
 
@@ -191,14 +266,14 @@ bool BaseKey::RestoreKey(const UserAuth &auth)
         return false;
     }
 
-    if (!LoadKeyBlob(keyContext_.encrypted, PATH_ENCRYPTED)) {
+    if (!LoadKeyBlob(keyContext_.encrypted, PATH_LATEST + PATH_ENCRYPTED)) {
         return false;
     }
-    if (!LoadKeyBlob(keyContext_.alias, PATH_ALIAS, CRYPTO_KEY_ALIAS_SIZE)) {
+    if (!LoadKeyBlob(keyContext_.alias, PATH_LATEST + PATH_ALIAS, CRYPTO_KEY_ALIAS_SIZE)) {
         keyContext_.alias.Clear();
         return false;
     }
-    if (!LoadKeyBlob(keyContext_.secDiscard, PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
+    if (!LoadKeyBlob(keyContext_.secDiscard, PATH_LATEST + PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
         keyContext_.encrypted.Clear();
         keyContext_.alias.Clear();
         return false;
@@ -217,16 +292,23 @@ bool BaseKey::DecryptKey(const UserAuth &auth)
     return ret;
 }
 
-bool BaseKey::RemoveAlias()
+bool BaseKey::RemoveAlias(const std::string &dir)
 {
     KeyBlob alias {};
-    return LoadKeyBlob(alias, PATH_ALIAS, CRYPTO_KEY_ALIAS_SIZE) && HuksMaster::DeleteKey(alias);
+    return LoadKeyBlob(alias, dir + PATH_ALIAS, CRYPTO_KEY_ALIAS_SIZE) && HuksMaster::DeleteKey(alias);
 }
 
 bool BaseKey::ClearKey(const std::string &mnt)
 {
     InactiveKey(mnt);
-    RemoveAlias();
+
+    // remove all key alias of all versions
+    std::vector<std::string> files;
+    GetSubDirs(dir_, files);
+    for (const auto &it : files) {
+        RemoveAlias("/" + it);
+    }
+
     return OHOS::ForceRemoveDirectory(dir_);
     // use F2FS_IOC_SEC_TRIM_FILE
 }

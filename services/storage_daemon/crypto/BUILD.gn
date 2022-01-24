@@ -42,6 +42,7 @@ config("crypto_public_config") {
 
 ohos_static_library("libsdcrypto") {
   sources = [
+    "../utils/file_utils.cpp",
     "src/base_key.cpp",
     "src/fscrypt_key_v1.cpp",
     "src/fscrypt_key_v2.cpp",

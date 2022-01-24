@@ -37,7 +37,6 @@ static bool GenerateRandomKeyLoop(KeyBlob &rawKey)
     LOGD("enter");
     uint32_t offset = 0;
     while (offset < rawKey.size) {
-        LOGD("off %{public}d", offset);
         HksBlob hksKey = {
             .size = std::min(rawKey.size - offset, static_cast<uint32_t>(HKS_MAX_RANDOM_LEN)),
             .data = rawKey.data.get() + offset,
