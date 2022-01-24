@@ -78,10 +78,8 @@ bool FscryptKeyV2::InactiveKey(const std::string &mnt)
     }
     if (arg.removal_status_flags & FSCRYPT_KEY_REMOVAL_STATUS_FLAG_OTHER_USERS) {
         LOGE("Other users still have this key added");
-        return false;
     } else if (arg.removal_status_flags & FSCRYPT_KEY_REMOVAL_STATUS_FLAG_FILES_BUSY) {
         LOGE("Some files using this key are still in-use");
-        return false;
     }
 
     LOGD("success");

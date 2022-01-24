@@ -456,8 +456,8 @@ int KeyManager::InActiveUserKey(unsigned int user)
     }
     auto elKey = userEl2Key_[user];
     if (elKey->InactiveKey() == false) {
-            LOGE("Clear user %{public}u key failed", user);
-            return -EFAULT;
+        LOGE("Clear user %{public}u key failed", user);
+        return -EFAULT;
     }
 
     userEl2Key_.erase(user);
