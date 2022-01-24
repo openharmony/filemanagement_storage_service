@@ -45,7 +45,7 @@ ohos_shared_library("storage_manager") {
   ]
 
   external_deps = [
-    "appexecfwk_standard:appexecfwk_base",
+    "bundle_framework:appexecfwk_base",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
     "os_account_standard:os_account_innerkits",
