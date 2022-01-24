@@ -81,7 +81,7 @@ ohos_executable("sdc") {
 
   configs = [ ":sdc_config" ]
 
-  deps = [ "crypto:libsdcrypto" ]
+  deps = []
 
   public_deps = [ "//utils/native/base:utils" ]
 
