@@ -125,6 +125,7 @@ bool BaseKey::LoadKeyBlob(KeyBlob &blob, const std::string &name, const uint32_t
 bool BaseKey::StoreKey(const UserAuth &auth)
 {
     LOGD("enter");
+    bool ret = false;
     std::string originalDir = dir_;
     dir_ += ".tmp";
     if (DoStoreKey(auth)) {
@@ -135,15 +136,14 @@ bool BaseKey::StoreKey(const UserAuth &auth)
         OHOS::ForceRemoveDirectory(originalDir);
         if (rename(dir_.c_str(), originalDir.c_str()) != 0) {
             LOGE("rename fail return %{public}d", errno);
-            OHOS::ForceRemoveDirectory(dir_);
-            dir_ = originalDir;
-            return false;
+        } else {
+            LOGD("rename success");
+            ret = true;
         }
-    } else {
-        OHOS::ForceRemoveDirectory(dir_);
     }
+    OHOS::ForceRemoveDirectory(dir_);
     dir_ = originalDir;
-    return true;
+    return ret;
 }
 
 bool BaseKey::DoStoreKey(const UserAuth &auth)
