@@ -16,10 +16,49 @@
 #ifndef OHOS_STORAGE_DAEMON_NETLINK_DATA_H
 #define OHOS_STORAGE_DAEMON_NETLINK_DATA_H
 
+#include <map>
+#include <string>
+#include <vector>
+
 namespace OHOS {
 namespace StorageDaemon {
 class NetlinkData {
+public:
+    enum Actions {
+        ADD,
+        REMOVE,
+        CHANGE,
+        MOVE,
+        ONLINE,
+        OFFLINE,
+        BIND,
+        UNBIND,
+        UNKNOWN,
+    };
+    std::map<std::string, Actions> actionMaps = {
+        {"add", Actions::ADD},
+        {"remove", Actions::REMOVE},
+        {"move", Actions::MOVE},
+        {"change", Actions::CHANGE},
+        {"online", Actions::ONLINE},
+        {"offline", Actions::OFFLINE},
+        {"bind", Actions::BIND},
+        {"unbind", Actions::UNBIND}
+    };
 
+    std::string GetSyspath();
+    std::string GetDevpath();
+    std::string GetSubsystem();
+    Actions GetAction();
+    const std::string GetParam(const std::string paramName);
+    void Decode(const char *msg);
+
+private:
+    std::string sysPath_;
+    std::string subSystem_;
+    std::string devPath_;
+    std::vector<std::string> params_;
+    Actions action_ = Actions::UNKNOWN;;
 };
 } // STORAGE_DAEMON
 } // OHOS

@@ -16,12 +16,25 @@
 #include "ipc/storage_daemon.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
+#include "netlink/netlink_manager.h"
+#include "utils/log.h"
 
 using namespace OHOS;
 
 int main()
 {
     int said = 5002;
+
+    StorageDaemon::NetlinkManager *nm = StorageDaemon::NetlinkManager::Instance();
+    if (!nm) {
+        LOGE("Unable to create NetlinkManager");
+        return -1;
+    };
+
+    if (nm->Start()) {
+        LOGE("Unable to start NetlinkManager");
+        return -1;
+    }
 
     do {
         auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
