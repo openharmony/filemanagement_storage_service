@@ -1,0 +1,71 @@
+{
+    "name": "@ohos/storage_standard",
+    "description": "Storage service provides basic storage inquiry and management for the system and apps.",
+    "version": "3.1",
+    "license": "Apache License 2.0",
+    "publishAs": "code-segment",
+    "segment": {
+      "destPath": "foundation/filemanagement/storage_service"
+    },
+    "dirs": {},
+    "scripts": {},
+    "component": {
+      "name": "storage_standard",
+      "subsystem": "filemanagement",
+      "syscap": [],
+      "features": [],
+      "adapted_system_type": ["standard"],
+      "rom": "",
+      "ram": "",
+      "deps": {
+        "components": [
+            "bundle_framework",
+            "hiviewdfx_hilog_native",
+            "ipc",
+            "os_account_standard",
+            "safwk",
+            "samgr_standard",
+            "ability_runtime",
+            "huks"
+        ],
+        "third_party": [
+          "exfat-utils",
+          "f2fs-tools",
+          "fsck_msdos",
+          "gptfdisk",
+          "newfs_msdos",
+          "ntfs-3g"
+        ]
+      },
+      "build": {
+        "sub_component": [
+            "//foundation/filemanagement/storage_service/services/storage_daemon:storage_daemon",
+            "//foundation/filemanagement/storage_service/services/storage_daemon:storage_daemon_cfg",
+            "//foundation/filemanagement/storage_service/services/storage_manager/sa_profile:storage_manager_sa_profile",
+            "//foundation/filemanagement/storage_service/services/storage_manager/sa_profile:storage_manager_cfg",
+            "//foundation/filemanagement/storage_service/services/storage_manager:storage_manager",
+            "//foundation/filemanagement/storage_service/interfaces/kits/js/storage_statist:storage_js",
+            "//third_party/exfat-utils:exfat-utils",
+            "//third_party/f2fs-tools:f2fs-tools",
+            "//third_party/fsck_msdos:fsck_msdos",
+            "//third_party/gptfdisk:sgdisk",
+            "//third_party/newfs_msdos:newfs_msdos",
+            "//third_party/ntfs-3g:ntfsprogs"
+        ],
+        "inner_kits": [
+            {
+                "name": "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
+                "header": {
+                  "header_files": [
+                    "istorage_manager.h"
+                  ],
+                  "header_base": "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native"
+                }
+              }
+        ],
+        "test": [
+            "//foundation/filemanagement/storage_service/services/storage_daemon/crypto/test:moduletest"
+        ]
+      }
+    }
+  }
