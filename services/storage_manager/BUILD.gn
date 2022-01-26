@@ -54,6 +54,6 @@ ohos_shared_library("storage_manager") {
   ]
 
   subsystem_name = "filemanagement"
-  part_name = "storage_standard"
+  part_name = "storage_service"
   install_enable = true
 }

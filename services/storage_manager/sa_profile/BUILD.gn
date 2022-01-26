@@ -15,12 +15,12 @@ import("//build/ohos/sa_profile/sa_profile.gni")
 
 ohos_sa_profile("storage_manager_sa_profile") {
   sources = [ "5003.xml" ]
-  part_name = "storage_standard"
+  part_name = "storage_service"
 }
 
 ohos_prebuilt_etc("storage_manager_cfg") {
   source = "../storage_manager.cfg"
   relative_install_dir = "init"
-  part_name = "storage_standard"
+  part_name = "storage_service"
   subsystem_name = "filemanagement"
 }

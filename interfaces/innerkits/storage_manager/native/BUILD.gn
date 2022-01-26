@@ -43,6 +43,6 @@ ohos_shared_library("storage_manager_sa_proxy") {
     "//utils/native/base:utils",
   ]
 
-  part_name = "storage_standard"
+  part_name = "storage_service"
   subsystem_name = "filemanagement"
 }
