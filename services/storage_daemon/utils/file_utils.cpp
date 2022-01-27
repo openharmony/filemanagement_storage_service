@@ -58,6 +58,11 @@ int32_t UMount(const std::string &path)
     return TEMP_FAILURE_RETRY(umount(path.c_str()));
 }
 
+int32_t UMount2(const std::string &path, int flag)
+{
+    return TEMP_FAILURE_RETRY(umount2(path.c_str(), flag));
+}
+
 bool IsDir(const std::string &path)
 {
     // check whether the path exists

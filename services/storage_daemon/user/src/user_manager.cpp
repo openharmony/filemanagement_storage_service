@@ -19,8 +19,11 @@
 #include "utils/file_utils.h"
 #include "utils/string_utils.h"
 #include "utils/log.h"
+#include "utils/mount_argument_utils.h"
 #include "ipc/istorage_daemon.h"
 #include "crypto/key_manager.h"
+#include "parameter.h"
+#include <sys/mount.h>
 
 using namespace std;
 
@@ -29,6 +32,8 @@ namespace StorageDaemon {
 constexpr int32_t UMOUNT_RETRY_TIMES = 3;
 UserManager* UserManager::instance_ = nullptr;
 
+const std::string HMDFS_SYS_CAP = "const.distributed_file_property.enabled";
+const int32_t HMDFS_VAL_LEN = 6;
 UserManager::UserManager()
     : rootDirVec_{
         {"/data/app/%s/%d", 0711, OID_ROOT, OID_ROOT},
@@ -41,10 +46,19 @@ UserManager::UserManager()
     },
     hmdfsDirVec_{
         {"/data/service/el2/%d/hmdfs", 0711, OID_SYSTEM, OID_SYSTEM},
-        {"/data/service/el2/%d/hmdfs/files", 0711, OID_SYSTEM, OID_SYSTEM},
-        {"/data/service/el2/%d/hmdfs/data", 0711, OID_SYSTEM, OID_SYSTEM},
+        {"/data/service/el2/%d/hmdfs/identical_account", 0711, OID_SYSTEM, OID_SYSTEM},
+        {"/data/service/el2/%d/hmdfs/identical_account/files", 0711, OID_SYSTEM, OID_SYSTEM},
+        {"/data/service/el2/%d/hmdfs/identical_account/data", 0711, OID_SYSTEM, OID_SYSTEM},
+        {"/data/service/el2/%d/hmdfs/identical_account/cache", 0711, OID_SYSTEM, OID_SYSTEM},
+        {"/data/service/el2/%d/hmdfs/auth_groups", 0711, OID_SYSTEM, OID_SYSTEM},
+        {"/data/service/el2/%d/hmdfs/auth_groups/files", 0711, OID_SYSTEM, OID_SYSTEM},
+        {"/data/service/el2/%d/hmdfs/auth_groups/data", 0711, OID_SYSTEM, OID_SYSTEM},
+        {"/data/service/el2/%d/hmdfs/auth_groups/cache", 0711, OID_SYSTEM, OID_SYSTEM},
         {"/storage/media/%d", 0711, OID_ROOT, OID_ROOT},
-        {"/storage/media/%d/local", 0711, OID_ROOT, OID_ROOT}
+        {"/storage/media/%d/local", 0711, OID_ROOT, OID_ROOT},
+        {"/mnt/hmdfs/%d/", 0711, OID_ROOT, OID_ROOT},
+        {"/mnt/hmdfs/%d/identical_account", 0711, OID_ROOT, OID_ROOT},
+        {"/mnt/hmdfs/%d/auth_groups", 0711, OID_ROOT, OID_ROOT},
     }
 {}
 
@@ -57,17 +71,82 @@ UserManager* UserManager::Instance()
     return instance_;
 }
 
+int32_t UserManager::HmdfsMount(int32_t userId)
+{
+    Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, true));
+    int ret = Mount(StringPrintf(hmdfsSrc_.c_str(), userId),
+                    StringPrintf(hmdfsDest_.c_str(), userId),
+                    "hmdfs", hmdfsMntArgs.GetFlags(), hmdfsMntArgs.OptionsToString().c_str());
+    if (ret == -1 && errno != EEXIST && errno != EBUSY) {
+        LOGE("failed to mount hmdfs, err %{public}d", errno);
+        return E_MOUNT;
+    }
+
+    Utils::MountArgument hmdfsAuthMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, false));
+    ret = Mount(StringPrintf(hmdfAuthSrc_.c_str(), userId),
+                StringPrintf(hmdfsAuthDest_.c_str(), userId),
+                "hmdfs", hmdfsAuthMntArgs.GetFlags(), hmdfsAuthMntArgs.OptionsToString().c_str());
+    if (ret == -1 && errno != EEXIST && errno != EBUSY) {
+        LOGE("failed to mount auth group hmdfs, err %{public}d", errno);
+        return E_MOUNT;
+    }
+
+    // bind mount
+    ret = Mount(StringPrintf((hmdfsDest_ + "device_view/").c_str(), userId),
+          StringPrintf(ComDataDir_.c_str(), userId),
+          nullptr, MS_BIND, nullptr);
+    if (ret == -1 && errno != EEXIST && errno != EBUSY) {
+        LOGE("failed to bind mount, err %{public}d", errno);
+        return E_MOUNT;
+    }
+
+    return E_OK;
+}
+
+int32_t UserManager::HmdfsUnMount(int32_t userId)
+{
+    int32_t err = E_OK;
+    // un bind mount
+    err = UMount(StringPrintf(ComDataDir_.c_str(), userId));
+    if (err != E_OK) {
+        LOGE("failed to un bind mount, errno %{public}d, ComDataDir_ dst %{public}s",
+            err, StringPrintf(ComDataDir_.c_str(), userId).c_str());
+    }
+
+    Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, true));
+    err = UMount2(hmdfsMntArgs.GetFullDst().c_str(), MNT_DETACH);
+    if (err != E_OK) {
+        LOGE("identical account hmdfs umount failed, errno %{public}d, hmdfs dst %{public}s",
+            err, hmdfsMntArgs.GetFullDst().c_str());
+    }
+
+    Utils::MountArgument hmdfsAuthMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, false));
+    err += UMount2(hmdfsAuthMntArgs.GetFullDst().c_str(), MNT_DETACH);
+    if (err != E_OK) {
+        LOGE("umount auth hmdfs, errno %{public}d, auth hmdfs dst %{public}s",
+            err, hmdfsAuthMntArgs.GetFullDst().c_str());
+    }
+
+    return err;
+}
 int32_t UserManager::StartUser(int32_t userId)
 {
     LOGI("start user %{public}d", userId);
 
-    // get syspara: hmdfs
-
-    if ((Mount(StringPrintf(hmdfsSource_.c_str(), userId),
-               StringPrintf(hmdfsTarget_.c_str(), userId),
-               nullptr, MS_BIND, nullptr))) {
-        LOGE("failed to mount, err %{public}d", errno);
-        return E_MOUNT;
+    char hmdfsEnable[HMDFS_VAL_LEN + 1] = {"false"};
+    int ret = GetParameter(HMDFS_SYS_CAP.c_str(), "", hmdfsEnable, HMDFS_VAL_LEN);
+    LOGI("GetParameter hmdfsEnable %{public}s, ret %{public}d", hmdfsEnable, ret);
+    if (strcmp(hmdfsEnable, "true") != 0) {
+        if ((Mount(StringPrintf((hmdfsSrc_ + "files/").c_str(), userId),
+                StringPrintf((ComDataDir_ + "local/").c_str(), userId),
+                nullptr, MS_BIND, nullptr))) {
+            LOGE("failed to bind mount, err %{public}d", errno);
+            return E_MOUNT;
+        }
+    } else {
+        if (HmdfsMount(userId) != E_OK) {
+            return E_MOUNT;
+        }
     }
 
     return E_OK;
@@ -77,11 +156,16 @@ int32_t UserManager::StopUser(int32_t userId)
 {
     LOGI("stop user %{public}d", userId);
 
-    // get syspara: hmdfs
-
     int32_t count = 0;
+    char hmdfsEnable[HMDFS_VAL_LEN + 1] = {"false"};
+    GetParameter(HMDFS_SYS_CAP.c_str(), "", hmdfsEnable, HMDFS_VAL_LEN);
     while (count < UMOUNT_RETRY_TIMES) {
-        int32_t err = UMount(StringPrintf(hmdfsTarget_.c_str(), userId));
+        int32_t err = E_OK;
+        if (strcmp(hmdfsEnable, "true") != 0) {
+            err = UMount(StringPrintf((ComDataDir_ + "local/").c_str(), userId));
+        } else {
+            err = HmdfsUnMount(userId);
+        }
         if (err == E_OK) {
             break;
         } else if (errno == EBUSY) {
@@ -115,7 +199,6 @@ int32_t UserManager::PrepareUserDirs(int32_t userId, uint32_t flags)
             return err;
         }
 
-        // get syspara: hmdfs
         err = PrepareHmdfsDirs(userId);
         if (err != E_OK) {
             LOGE("Prepare hmdfs dir error");
@@ -140,7 +223,6 @@ int32_t UserManager::DestroyUserDirs(int32_t userId, uint32_t flags)
         err = DestroyDirsFromIdAndLevel(userId, el2_);
     }
 
-    // get syspara: hmdfs
     err = DestroyHmdfsDirs(userId);
 
     return err;

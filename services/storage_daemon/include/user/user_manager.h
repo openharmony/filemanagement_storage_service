@@ -48,6 +48,8 @@ private:
     int32_t DestroyDirsFromIdAndLevel(int32_t userId, const std::string &level);
     int32_t PrepareHmdfsDirs(int32_t userId);
     int32_t DestroyHmdfsDirs(int32_t userId);
+    int32_t HmdfsMount(int32_t userId);
+    int32_t HmdfsUnMount(int32_t userId);
 
     DISALLOW_COPY_AND_MOVE(UserManager);
 
@@ -55,8 +57,11 @@ private:
     const std::vector<DirInfo> rootDirVec_;
     const std::vector<DirInfo> subDirVec_;
     const std::vector<DirInfo> hmdfsDirVec_;
-    const std::string hmdfsSource_ = "/data/service/el2/%d/hmdfs/files";
-    const std::string hmdfsTarget_ = "/storage/media/%d/local";
+    const std::string hmdfsSrc_ = "/data/service/el2/%d/hmdfs/identical_account/";
+    const std::string hmdfsDest_ = "/mnt/hmdfs/%d/identical_account/";
+    const std::string ComDataDir_ = "/storage/media/%d/";
+    const std::string hmdfAuthSrc_ = "/data/service/el2/%d/hmdfs/auth_groups/";
+    const std::string hmdfsAuthDest_ = "/mnt/hmdfs/%d/auth_groups/";
     const std::string el1_ = "el1";
     const std::string el2_ = "el2";
 };
