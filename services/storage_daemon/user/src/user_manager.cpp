@@ -46,23 +46,23 @@ UserManager::UserManager()
     },
     hmdfsDirVec_{
         {"/data/service/el2/%d/hmdfs", 0711, OID_SYSTEM, OID_SYSTEM},
-        {"/data/service/el2/%d/hmdfs/identical_account", 0711, OID_SYSTEM, OID_SYSTEM},
-        {"/data/service/el2/%d/hmdfs/identical_account/files", 0711, OID_SYSTEM, OID_SYSTEM},
-        {"/data/service/el2/%d/hmdfs/identical_account/data", 0711, OID_SYSTEM, OID_SYSTEM},
-        {"/data/service/el2/%d/hmdfs/identical_account/cache", 0711, OID_SYSTEM, OID_SYSTEM},
-        {"/data/service/el2/%d/hmdfs/auth_groups", 0711, OID_SYSTEM, OID_SYSTEM},
-        {"/data/service/el2/%d/hmdfs/auth_groups/files", 0711, OID_SYSTEM, OID_SYSTEM},
-        {"/data/service/el2/%d/hmdfs/auth_groups/data", 0711, OID_SYSTEM, OID_SYSTEM},
-        {"/data/service/el2/%d/hmdfs/auth_groups/cache", 0711, OID_SYSTEM, OID_SYSTEM},
+        {"/data/service/el2/%d/hmdfs/account", 0711, OID_SYSTEM, OID_SYSTEM},
+        {"/data/service/el2/%d/hmdfs/account/files", 0711, OID_SYSTEM, OID_SYSTEM},
+        {"/data/service/el2/%d/hmdfs/account/data", 0711, OID_SYSTEM, OID_SYSTEM},
+        {"/data/service/el2/%d/hmdfs/account/cache", 0711, OID_SYSTEM, OID_SYSTEM},
+        {"/data/service/el2/%d/hmdfs/non_account", 0711, OID_SYSTEM, OID_SYSTEM},
+        {"/data/service/el2/%d/hmdfs/non_account/files", 0711, OID_SYSTEM, OID_SYSTEM},
+        {"/data/service/el2/%d/hmdfs/non_account/data", 0711, OID_SYSTEM, OID_SYSTEM},
+        {"/data/service/el2/%d/hmdfs/non_account/cache", 0711, OID_SYSTEM, OID_SYSTEM},
         {"/storage/media/%d", 0711, OID_ROOT, OID_ROOT},
         {"/storage/media/%d/local", 0711, OID_ROOT, OID_ROOT},
         {"/mnt/hmdfs/%d/", 0711, OID_ROOT, OID_ROOT},
-        {"/mnt/hmdfs/%d/identical_account", 0711, OID_ROOT, OID_ROOT},
-        {"/mnt/hmdfs/%d/auth_groups", 0711, OID_ROOT, OID_ROOT},
+        {"/mnt/hmdfs/%d/account", 0711, OID_ROOT, OID_ROOT},
+        {"/mnt/hmdfs/%d/non_account", 0711, OID_ROOT, OID_ROOT},
     }
 {}
 
-std::shared_ptr<UserManager> UserManager::Instance()
+std::shared_ptr<UserManager> UserManager::GetInstance()
 {
     static std::once_flag onceFlag;
     std::call_once(onceFlag, [&] () mutable{
@@ -130,27 +130,45 @@ int32_t UserManager::HmdfsUnMount(int32_t userId)
 
     return err;
 }
+
+bool UserManager::SupportHmdfs()
+{
+    char hmdfsEnable[HMDFS_VAL_LEN + 1] = {"false"};
+    int ret = GetParameter(HMDFS_SYS_CAP.c_str(), "", hmdfsEnable, HMDFS_VAL_LEN);
+    LOGI("GetParameter hmdfsEnable %{public}s, ret %{public}d", hmdfsEnable, ret);
+    if (strcmp(hmdfsEnable, "true") == 0) {
+        return true;
+    }
+    return false;
+}
+
+int32_t UserManager::LocalMount(int32_t userId)
+{
+    if (Mount(StringPrintf((hmdfsSrc_ + "files/").c_str(), userId),
+                StringPrintf((ComDataDir_ + "local/").c_str(), userId),
+                nullptr, MS_BIND, nullptr)) {
+        LOGE("failed to bind mount, err %{public}d", errno);
+        return E_MOUNT;
+    }
+    return E_OK;
+}
+
 int32_t UserManager::StartUser(int32_t userId)
 {
     LOGI("start user %{public}d", userId);
 
-    char hmdfsEnable[HMDFS_VAL_LEN + 1] = {"false"};
-    int ret = GetParameter(HMDFS_SYS_CAP.c_str(), "", hmdfsEnable, HMDFS_VAL_LEN);
-    LOGI("GetParameter hmdfsEnable %{public}s, ret %{public}d", hmdfsEnable, ret);
-    if (strcmp(hmdfsEnable, "true") != 0) {
-        if ((Mount(StringPrintf((hmdfsSrc_ + "files/").c_str(), userId),
-                StringPrintf((ComDataDir_ + "local/").c_str(), userId),
-                nullptr, MS_BIND, nullptr))) {
-            LOGE("failed to bind mount, err %{public}d", errno);
-            return E_MOUNT;
-        }
+    if (!SupportHmdfs()) {
+        return LocalMount(userId);
     } else {
-        if (HmdfsMount(userId) != E_OK) {
-            return E_MOUNT;
-        }
+        return HmdfsMount(userId);
     }
 
     return E_OK;
+}
+
+int32_t UserManager::LocalUnMount(int32_t userId)
+{
+    return UMount(StringPrintf((ComDataDir_ + "local/").c_str(), userId));
 }
 
 int32_t UserManager::StopUser(int32_t userId)
@@ -158,12 +176,10 @@ int32_t UserManager::StopUser(int32_t userId)
     LOGI("stop user %{public}d", userId);
 
     int32_t count = 0;
-    char hmdfsEnable[HMDFS_VAL_LEN + 1] = {"false"};
-    GetParameter(HMDFS_SYS_CAP.c_str(), "", hmdfsEnable, HMDFS_VAL_LEN);
     while (count < UMOUNT_RETRY_TIMES) {
         int32_t err = E_OK;
-        if (strcmp(hmdfsEnable, "true") != 0) {
-            err = UMount(StringPrintf((ComDataDir_ + "local/").c_str(), userId));
+        if (!SupportHmdfs()) {
+            err = LocalUnMount(userId);
         } else {
             err = HmdfsUnMount(userId);
         }

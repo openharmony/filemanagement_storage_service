@@ -48,26 +48,22 @@ int32_t StorageDaemon::Format(std::string voldId)
 
 int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
-    return UserManager::Instance()->PrepareUserDirs(userId, flags);
+    return UserManager::GetInstance()->PrepareUserDirs(userId, flags);
 }
 
 int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
-    return UserManager::Instance()->DestroyUserDirs(userId, flags);
+    return UserManager::GetInstance()->DestroyUserDirs(userId, flags);
 }
 
 int32_t StorageDaemon::StartUser(int32_t userId)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
-    return UserManager::Instance()->StartUser(userId);
+    return UserManager::GetInstance()->StartUser(userId);
 }
 
 int32_t StorageDaemon::StopUser(int32_t userId)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
-    return UserManager::Instance()->StopUser(userId);
+    return UserManager::GetInstance()->StopUser(userId);
 }
 
 int32_t StorageDaemon::InitGlobalKey(void)
@@ -82,8 +78,7 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
         LOGE("Init global users els failed");
         return ret;
     }
-    std::lock_guard<std::mutex> lock(mutex_);
-    return UserManager::Instance()->PrepareUserDirs(GLOBAL_USER_ID, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
+    return UserManager::GetInstance()->PrepareUserDirs(GLOBAL_USER_ID, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
 }
 
 int32_t StorageDaemon::GenerateUserKeys(uint32_t userId, uint32_t flags)

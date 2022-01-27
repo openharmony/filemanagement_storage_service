@@ -37,7 +37,7 @@ class UserManager final {
 public:
     UserManager();
     virtual ~UserManager() = default;
-    static std::shared_ptr<UserManager> Instance();
+    static std::shared_ptr<UserManager> GetInstance();
     int32_t PrepareUserDirs(int32_t userId, uint32_t flags);
     int32_t DestroyUserDirs(int32_t userId, uint32_t flags);
     int32_t StartUser(int32_t userId);
@@ -50,6 +50,9 @@ private:
     int32_t DestroyHmdfsDirs(int32_t userId);
     int32_t HmdfsMount(int32_t userId);
     int32_t HmdfsUnMount(int32_t userId);
+    bool SupportHmdfs();
+    int32_t LocalMount(int32_t userId);
+    int32_t LocalUnMount(int32_t userId);
 
     DISALLOW_COPY_AND_MOVE(UserManager);
 
@@ -57,11 +60,11 @@ private:
     const std::vector<DirInfo> rootDirVec_;
     const std::vector<DirInfo> subDirVec_;
     const std::vector<DirInfo> hmdfsDirVec_;
-    const std::string hmdfsSrc_ = "/data/service/el2/%d/hmdfs/identical_account/";
-    const std::string hmdfsDest_ = "/mnt/hmdfs/%d/identical_account/";
+    const std::string hmdfsSrc_ = "/data/service/el2/%d/hmdfs/account/";
+    const std::string hmdfsDest_ = "/mnt/hmdfs/%d/account/";
     const std::string ComDataDir_ = "/storage/media/%d/";
-    const std::string hmdfAuthSrc_ = "/data/service/el2/%d/hmdfs/auth_groups/";
-    const std::string hmdfsAuthDest_ = "/mnt/hmdfs/%d/auth_groups/";
+    const std::string hmdfAuthSrc_ = "/data/service/el2/%d/hmdfs/non_account/";
+    const std::string hmdfsAuthDest_ = "/mnt/hmdfs/%d/non_account/";
     const std::string el1_ = "el1";
     const std::string el2_ = "el2";
 };
