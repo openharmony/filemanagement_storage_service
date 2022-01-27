@@ -53,12 +53,14 @@ UserManager::UserManager()
         {"/data/service/el2/%d/hmdfs/non_account", 0711, OID_SYSTEM, OID_SYSTEM},
         {"/data/service/el2/%d/hmdfs/non_account/files", 0711, OID_SYSTEM, OID_SYSTEM},
         {"/data/service/el2/%d/hmdfs/non_account/data", 0711, OID_SYSTEM, OID_SYSTEM},
-        {"/data/service/el2/%d/hmdfs/non_account/cache", 0711, OID_SYSTEM, OID_SYSTEM},
+        {"/data/service/el2/%d/hmdfs/non_account/cache", 0711, OID_SYSTEM, OID_SYSTEM}
+    },
+    virtualDir_{
         {"/storage/media/%d", 0711, OID_ROOT, OID_ROOT},
         {"/storage/media/%d/local", 0711, OID_ROOT, OID_ROOT},
         {"/mnt/hmdfs/%d/", 0711, OID_ROOT, OID_ROOT},
         {"/mnt/hmdfs/%d/account", 0711, OID_ROOT, OID_ROOT},
-        {"/mnt/hmdfs/%d/non_account", 0711, OID_ROOT, OID_ROOT},
+        {"/mnt/hmdfs/%d/non_account", 0711, OID_ROOT, OID_ROOT}
     }
 {}
 
@@ -156,6 +158,10 @@ int32_t UserManager::LocalMount(int32_t userId)
 int32_t UserManager::StartUser(int32_t userId)
 {
     LOGI("start user %{public}d", userId);
+    if (CreateVirtualDirs(userId) != E_OK) {
+        LOGE("create hmdfs virtual dir error");
+        return E_PREPARE_DIR;
+    }
 
     if (!SupportHmdfs()) {
         return LocalMount(userId);
@@ -317,6 +323,17 @@ int32_t UserManager::DestroyDirsFromIdAndLevel(int32_t userId, const std::string
 int32_t UserManager::PrepareHmdfsDirs(int32_t userId)
 {
     for (const DirInfo &dir : hmdfsDirVec_) {
+        if (!PrepareDir(StringPrintf(dir.path.c_str(), userId), dir.mode, dir.uid, dir.gid)) {
+            return E_PREPARE_DIR;
+        }
+    }
+
+    return E_OK;
+}
+
+int32_t UserManager::CreateVirtualDirs(int32_t userId)
+{
+    for (const DirInfo &dir : virtualDir_) {
         if (!PrepareDir(StringPrintf(dir.path.c_str(), userId), dir.mode, dir.uid, dir.gid)) {
             return E_PREPARE_DIR;
         }
