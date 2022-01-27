@@ -50,7 +50,7 @@ bool FscryptKeyV2::ActiveKey(const std::string &mnt)
 
     LOGD("success. key_id len:%{public}d, data(hex):%{private}s", keyInfo_.keyId.size,
         keyInfo_.keyId.ToString().c_str());
-    if (!SaveKeyBlob(keyInfo_.keyId, PATH_KEYID)) {
+    if (!SaveKeyBlob(keyInfo_.keyId, dir_ + PATH_KEYID)) {
         return false;
     }
     keyInfo_.key.Clear();

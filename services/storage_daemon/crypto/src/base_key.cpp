@@ -75,12 +75,11 @@ bool BaseKey::GenerateKeyBlob(KeyBlob &blob, const uint32_t size)
     return true;
 }
 
-bool BaseKey::SaveKeyBlob(const KeyBlob &blob, const std::string &name)
+bool BaseKey::SaveKeyBlob(const KeyBlob &blob, const std::string &path)
 {
     if (blob.IsEmpty()) {
         return false;
     }
-    std::string path = dir_ + name;
     LOGD("enter %{public}s, size=%{public}d", path.c_str(), blob.size);
     std::ofstream file(path, std::ios::binary);
     if (file.fail()) {
@@ -92,17 +91,16 @@ bool BaseKey::SaveKeyBlob(const KeyBlob &blob, const std::string &name)
     return true;
 }
 
-bool BaseKey::GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &name, const uint32_t size)
+bool BaseKey::GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size)
 {
     if (!GenerateKeyBlob(blob, size)) {
         return false;
     }
-    return SaveKeyBlob(blob, name);
+    return SaveKeyBlob(blob, path);
 }
 
-bool BaseKey::LoadKeyBlob(KeyBlob &blob, const std::string &name, const uint32_t size = 0)
+bool BaseKey::LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size = 0)
 {
-    std::string path = dir_ + name;
     LOGD("enter %{public}s, size=%{public}d", path.c_str(), size);
     std::ifstream file(path, std::ios::binary);
     if (file.fail()) {
@@ -114,7 +112,7 @@ bool BaseKey::LoadKeyBlob(KeyBlob &blob, const std::string &name, const uint32_t
     uint32_t length = file.tellg();
     // zero size means use the file length.
     if ((size != 0) && (length != size)) {
-        LOGE("file:%{public}s size error, real len %{public}d !=  expected %{public}d", name.c_str(), length, size);
+        LOGE("file:%{public}s size error, real len %{public}d not expected %{public}d", path.c_str(), length, size);
         return false;
     }
     if (!blob.Alloc(length)) {
@@ -129,24 +127,42 @@ bool BaseKey::LoadKeyBlob(KeyBlob &blob, const std::string &name, const uint32_t
     return true;
 }
 
-// Get next available version_xx dir to save key files.
-std::string BaseKey::GetCandidateDir() const
+int BaseKey::GetCandidateVersion() const
 {
     auto prefix = PATH_KEY_VERSION.substr(1); // skip the first slash
     std::vector<std::string> files;
     GetSubDirs(dir_, files);
-    int candidate = 0;
+    int candidate = -1;
     for (const auto &it: files) {
         if (it.rfind(prefix) == 0) {
             std::string str = it.substr(prefix.length());
             int ver;
             if (IsNumericStr(str) && StrToInt(str, ver) && ver >= candidate) {
-                candidate = ver + 1;
+                candidate = ver;
             }
         }
     }
     LOGD("candidate key version is %{public}d", candidate);
+    return candidate;
+}
+
+// Get last version_xx dir to load key files.
+std::string BaseKey::GetCandidateDir() const
+{
+    auto candidate = GetCandidateVersion();
+    // candidate is -1 means no version_xx dir.
+    if (candidate == -1) {
+        return "";
+    }
+
     return dir_ + PATH_KEY_VERSION + std::to_string(candidate);
+}
+
+// Get next available version_xx dir to save key files.
+std::string BaseKey::GetNextCandidateDir() const
+{
+    auto candidate = GetCandidateVersion();
+    return dir_ + PATH_KEY_VERSION + std::to_string(candidate + 1);
 }
 
 bool BaseKey::StoreKey(const UserAuth &auth)
@@ -154,7 +170,9 @@ bool BaseKey::StoreKey(const UserAuth &auth)
     LOGD("enter");
     if (DoStoreKey(auth)) {
         // rename keypath/temp/ to keypath/version_xx/
-        if (rename(std::string(dir_ + PATH_KEY_TEMP).c_str(), GetCandidateDir().c_str()) == 0) {
+        auto candidate = GetNextCandidateDir();
+        OHOS::ForceRemoveDirectory(candidate);
+        if (rename(std::string(dir_ + PATH_KEY_TEMP).c_str(), candidate.c_str()) == 0) {
             return true;
         }
         LOGE("rename fail return %{public}d", errno);
@@ -167,9 +185,12 @@ bool BaseKey::StoreKey(const UserAuth &auth)
 // All key files are saved under keypath/temp/.
 bool BaseKey::DoStoreKey(const UserAuth &auth)
 {
-    OHOS::ForceCreateDirectory(dir_ + PATH_KEY_TEMP);
-    OHOS::SaveStringToFile(dir_ + PATH_KEY_TEMP + PATH_VERSION, std::to_string(keyInfo_.version));
-    if (!GenerateAndSaveKeyBlob(keyContext_.alias, PATH_KEY_TEMP + PATH_ALIAS, CRYPTO_KEY_ALIAS_SIZE)) {
+    std::string pathTemp = dir_ + PATH_KEY_TEMP;
+    OHOS::ForceRemoveDirectory(pathTemp);
+    OHOS::ForceCreateDirectory(pathTemp);
+
+    OHOS::SaveStringToFile(dir_ + PATH_FSCRYPT_VER, std::to_string(keyInfo_.version));
+    if (!GenerateAndSaveKeyBlob(keyContext_.alias, pathTemp + PATH_ALIAS, CRYPTO_KEY_ALIAS_SIZE)) {
         LOGE("GenerateAndSaveKeyBlob alias failed");
         return false;
     }
@@ -177,14 +198,14 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
         LOGE("HuksMaster::GenerateKey failed");
         return false;
     }
-    if (!GenerateAndSaveKeyBlob(keyContext_.secDiscard, PATH_KEY_TEMP + PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
+    if (!GenerateAndSaveKeyBlob(keyContext_.secDiscard, pathTemp + PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
         LOGE("GenerateAndSaveKeyBlob sec_discard failed");
         return false;
     }
     if (!EncryptKey(auth)) {
         return false;
     }
-    if (!SaveKeyBlob(keyContext_.encrypted, PATH_KEY_TEMP + PATH_ENCRYPTED)) {
+    if (!SaveKeyBlob(keyContext_.encrypted, pathTemp + PATH_ENCRYPTED)) {
         return false;
     }
     keyContext_.encrypted.Clear();
@@ -192,19 +213,13 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
 }
 
 // update the latest and cleanup the version_xx.
-bool BaseKey::UpdateKey()
+bool BaseKey::UpdateKey(const std::string &keypath)
 {
     LOGD("enter");
-    auto prefix = PATH_KEY_VERSION.substr(1); // skip the first slash
-
-    // get the candidate version dir
-    std::vector<std::string> files;
-    GetSubDirs(dir_, files);
-    std::string candidate {};
-    for (const auto &it: files) {
-        if (it.rfind(prefix) == 0 && it > candidate) {
-            candidate = it;
-        }
+    auto candidate = keypath.empty() ? GetCandidateDir() : keypath;
+    if (candidate.empty()) {
+        LOGE("no candidate dir");
+        return false;
     }
 
     // rename latest -> latest.bak
@@ -220,15 +235,15 @@ bool BaseKey::UpdateKey()
 
     // rename {candidate} -> latest
     OHOS::ForceRemoveDirectory(dir_ + PATH_LATEST);
-    if (rename(std::string(dir_ + "/" + candidate).c_str(), std::string(dir_ + PATH_LATEST).c_str()) != 0) {
+    if (rename(candidate.c_str(), std::string(dir_ + PATH_LATEST).c_str()) != 0) {
         LOGE("rename candidate to latest fail return %{public}d", errno);
         if (hasLatest) {
             // rename latest.bak -> latest
-            if (rename(std::string(dir_ + PATH_LATEST).c_str(),
-                       std::string(dir_ + PATH_LATEST_BACKUP).c_str()) != 0) {
+            if (rename(std::string(dir_ + PATH_LATEST_BACKUP).c_str(),
+                       std::string(dir_ + PATH_LATEST).c_str()) != 0) {
                 LOGE("restore the latest_backup fail errno:%{public}d", errno);
             } else {
-                LOGD("restore the latest_backup success");
+                LOGI("restore the latest_backup success");
             }
         }
         return false;
@@ -236,6 +251,7 @@ bool BaseKey::UpdateKey()
     LOGD("rename candidate %{public}s to latest success", candidate.c_str());
 
     // cleanup latest.bak and version_*
+    std::vector<std::string> files;
     GetSubDirs(dir_, files);
     for (const auto &it: files) {
         if (it != PATH_LATEST.substr(1)) {
@@ -260,20 +276,55 @@ bool BaseKey::EncryptKey(const UserAuth &auth)
 bool BaseKey::RestoreKey(const UserAuth &auth)
 {
     LOGD("enter");
+    auto candidate = GetCandidateDir();
+    if (candidate.empty()) {
+        // no candidate dir, just restore from the latest
+        return DoRestoreKey(auth, dir_ + PATH_LATEST);
+    }
+
+    if (DoRestoreKey(auth, candidate)) {
+        // update the latest with the candidate
+        UpdateKey();
+        return true;
+    } else {
+        LOGE("DoRestoreKey with %{public}s failed", candidate.c_str());
+        // try to restore from other versions
+        std::vector<std::string> files;
+        GetSubDirs(dir_, files);
+        // sort descreasely
+        std::sort(files.begin(), files.end(), [](const std::string &a, const std::string &b) {
+            return a > b;
+        });
+        for (const auto &it: files) {
+            if (it != candidate) {
+                if (DoRestoreKey(auth, dir_ + "/" + it)) {
+                    UpdateKey(it);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    return true;
+}
+
+bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
+{
+    LOGD("enter");
     auto ver = KeyCtrl::LoadVersion(dir_);
     if (ver == FSCRYPT_INVALID || ver != keyInfo_.version) {
         LOGE("RestoreKey fail. bad version loaded %{public}u not expected %{public}u", ver, keyInfo_.version);
         return false;
     }
 
-    if (!LoadKeyBlob(keyContext_.encrypted, PATH_LATEST + PATH_ENCRYPTED)) {
+    if (!LoadKeyBlob(keyContext_.encrypted, path + PATH_ENCRYPTED)) {
         return false;
     }
-    if (!LoadKeyBlob(keyContext_.alias, PATH_LATEST + PATH_ALIAS, CRYPTO_KEY_ALIAS_SIZE)) {
+    if (!LoadKeyBlob(keyContext_.alias, path + PATH_ALIAS, CRYPTO_KEY_ALIAS_SIZE)) {
         keyContext_.alias.Clear();
         return false;
     }
-    if (!LoadKeyBlob(keyContext_.secDiscard, PATH_LATEST + PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
+    if (!LoadKeyBlob(keyContext_.secDiscard, path + PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
         keyContext_.encrypted.Clear();
         keyContext_.alias.Clear();
         return false;

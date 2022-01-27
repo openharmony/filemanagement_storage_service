@@ -131,7 +131,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_store, TestSize.Level1)
     // the plaintext of 64 bytes, encrypted to 80 bytes size by huks.
     EXPECT_EQ(80U, buf.size());
 
-    OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_VERSION, buf);
+    OHOS::LoadStringFromFile(TEST_KEYPATH + PATH_FSCRYPT_VER, buf);
     EXPECT_EQ(1U, buf.length());
     EXPECT_EQ('1', buf[0]);
 }
@@ -162,7 +162,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_store, TestSize.Level1)
     // the plaintext of 64 bytes, encrypted to 80 bytes size by huks.
     EXPECT_EQ(80U, buf.size());
 
-    OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION1 + PATH_VERSION, buf);
+    OHOS::LoadStringFromFile(TEST_KEYPATH + PATH_FSCRYPT_VER, buf);
     EXPECT_EQ(1U, buf.length());
     EXPECT_EQ('2', buf[0]);
 }
@@ -183,7 +183,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_update, TestSize.Level1)
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_ALIAS));
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_SECDISC));
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_ENCRYPTED));
-    OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_VERSION, buf);
+    OHOS::LoadStringFromFile(TEST_KEYPATH + PATH_FSCRYPT_VER, buf);
     EXPECT_EQ(1U, buf.length());
     EXPECT_EQ('2', buf[0]);
 }
@@ -253,6 +253,9 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_clear, TestSize.Level1)
 {
     EXPECT_TRUE(g_testKeyV1.ClearKey());
     EXPECT_TRUE(g_testKeyV1.keyInfo_.key.IsEmpty());
+    EXPECT_FALSE(OHOS::FileExists(TEST_KEYPATH + PATH_KEYDESC));
+    EXPECT_FALSE(OHOS::FileExists(TEST_KEYPATH + PATH_FSCRYPT_VER));
+    EXPECT_FALSE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_ALIAS));
 }
 
 
@@ -266,7 +269,6 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_policy_set, TestSize.Level1)
 {
     EXPECT_TRUE(g_testKeyV1.InitKey());
     EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
-    EXPECT_TRUE(g_testKeyV1.UpdateKey());
     EXPECT_TRUE(g_testKeyV1.ActiveKey());
 
     FscryptPolicy arg;
@@ -338,7 +340,6 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_active, TestSize.Level1)
     g_testKeyV2.ClearKey();
     EXPECT_TRUE(g_testKeyV2.InitKey());
     EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
-    EXPECT_TRUE(g_testKeyV2.UpdateKey());
     EXPECT_TRUE(g_testKeyV2.ActiveKey());
 
     // raw key should be erase after install to kernel.
@@ -465,7 +466,6 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_default, TestSize.Lev
     g_testKeyV2.ClearKey();
     EXPECT_TRUE(g_testKeyV2.InitKey());
     EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
-    EXPECT_TRUE(g_testKeyV2.UpdateKey());
     EXPECT_TRUE(g_testKeyV2.ActiveKey());
 
     OHOS::ForceRemoveDirectory(TEST_DIR_V2);
@@ -490,7 +490,6 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_load_and_set_policy_default, TestSize.Lev
 {
     EXPECT_TRUE(g_testKeyV1.InitKey());
     EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
-    EXPECT_TRUE(g_testKeyV1.UpdateKey());
     EXPECT_TRUE(g_testKeyV1.ActiveKey());
 
     OHOS::ForceRemoveDirectory(TEST_DIR_LEGACY);

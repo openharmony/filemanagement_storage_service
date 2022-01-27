@@ -208,7 +208,7 @@ uint8_t KeyCtrl::LoadVersion(const std::string &keyPath)
 {
     std::string buf;
     int ver = 0;
-    auto path = keyPath + PATH_LATEST + PATH_VERSION;
+    auto path = keyPath + PATH_FSCRYPT_VER;
     if (!OHOS::LoadStringFromFile(path, buf)) {
         LOGE("load version from %{public}s failed", path.c_str());
         return FSCRYPT_INVALID;
