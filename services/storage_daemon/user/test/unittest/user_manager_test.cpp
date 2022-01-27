@@ -56,7 +56,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_Instance_001, TestSize
 {
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_Instance_001 start";
 
-    UserManager* userManager = UserManager::Instance();
+    std::shared_ptr<UserManager> userManager = UserManager::Instance();
     EXPECT_NE(userManager, nullptr);
 
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_Instance_001 end";
@@ -72,9 +72,9 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_Instance_002, TestSize
 {
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_Instance_002 start";
 
-    UserManager* userManagerFirst = UserManager::Instance();
+    std::shared_ptr<UserManager> userManagerFirst = UserManager::Instance();
     EXPECT_NE(userManagerFirst, nullptr);
-    UserManager* userManagerSecond = UserManager::Instance();
+    std::shared_ptr<UserManager> userManagerSecond = UserManager::Instance();
     EXPECT_NE(userManagerSecond, nullptr);
 
     EXPECT_EQ(userManagerFirst, userManagerSecond);
@@ -92,7 +92,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_AddUser_001, TestSize.
 {
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_AddUser_001 start";
 
-    UserManager* userManager = UserManager::Instance();
+    std::shared_ptr<UserManager> userManager = UserManager::Instance();
     EXPECT_NE(userManager, nullptr);
     int32_t ret = userManager->AddUser(USER_ID1);
     EXPECT_EQ(E_OK, ret);
@@ -110,7 +110,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_AddUser_002, TestSize.
 {
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_AddUser_002 start";
 
-    UserManager* userManager = UserManager::Instance();
+    std::shared_ptr<UserManager> userManager = UserManager::Instance();
     EXPECT_NE(userManager, nullptr);
     int32_t ret = userManager->AddUser(USER_ID1);
     EXPECT_NE(E_OK, ret);
@@ -128,7 +128,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_RemoveUser_001, TestSi
 {
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_RemoveUser_001 start";
 
-    UserManager* userManager = UserManager::Instance();
+    std::shared_ptr<UserManager> userManager = UserManager::Instance();
     EXPECT_NE(userManager, nullptr);
 
     userManager->AddUser(USER_ID2);

@@ -30,7 +30,7 @@ using namespace std;
 namespace OHOS {
 namespace StorageDaemon {
 constexpr int32_t UMOUNT_RETRY_TIMES = 3;
-UserManager* UserManager::instance_ = nullptr;
+std::shared_ptr<UserManager> UserManager::instance_ = nullptr;
 
 const std::string HMDFS_SYS_CAP = "const.distributed_file_property.enabled";
 const int32_t HMDFS_VAL_LEN = 6;
@@ -62,11 +62,12 @@ UserManager::UserManager()
     }
 {}
 
-UserManager* UserManager::Instance()
+std::shared_ptr<UserManager> UserManager::Instance()
 {
-    if (instance_ == nullptr) {
-        instance_ = new UserManager();
-    }
+    static std::once_flag onceFlag;
+    std::call_once(onceFlag, [&] () mutable{
+        instance_ = std::make_shared<UserManager>();
+    });
 
     return instance_;
 }

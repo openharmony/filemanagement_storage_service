@@ -35,15 +35,15 @@ constexpr uid_t OID_SYSTEM = 1000;
 
 class UserManager final {
 public:
+    UserManager();
     virtual ~UserManager() = default;
-    static UserManager* Instance();
+    static std::shared_ptr<UserManager> Instance();
     int32_t PrepareUserDirs(int32_t userId, uint32_t flags);
     int32_t DestroyUserDirs(int32_t userId, uint32_t flags);
     int32_t StartUser(int32_t userId);
     int32_t StopUser(int32_t userId);
 
 private:
-    UserManager();
     int32_t PrepareDirsFromIdAndLevel(int32_t userId, const std::string &level);
     int32_t DestroyDirsFromIdAndLevel(int32_t userId, const std::string &level);
     int32_t PrepareHmdfsDirs(int32_t userId);
@@ -53,7 +53,7 @@ private:
 
     DISALLOW_COPY_AND_MOVE(UserManager);
 
-    static UserManager* instance_;
+    static std::shared_ptr<UserManager> instance_;
     const std::vector<DirInfo> rootDirVec_;
     const std::vector<DirInfo> subDirVec_;
     const std::vector<DirInfo> hmdfsDirVec_;
