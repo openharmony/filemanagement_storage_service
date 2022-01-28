@@ -33,7 +33,9 @@ const std::string TEST_DIR_V2 = "/data/test/crypto_dir";
 const std::string TEST_KEYPATH = "/data/test/keypath";
 const std::string TEST_KEYDIR_VERSION0 = "/version_0";
 const std::string TEST_KEYDIR_VERSION1 = "/version_1";
+const std::string TEST_KEYDIR_VERSION2 = "/version_2";
 const std::string TEST_KEYDIR_LATEST = "/latest";
+const std::string TEST_KEYDIR_LATEST_BACKUP = "/latest_bak";
 const std::string TEST_POLICY = "/data/test/policy";
 FscryptKeyV1 g_testKeyV1 {TEST_KEYPATH};
 FscryptKeyV2 g_testKeyV2 {TEST_KEYPATH};
@@ -113,7 +115,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_init, TestSize.Level1)
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_store, TestSize.Level1)
 {
     std::string buf {};
-    OHOS::ForceRemoveDirectory(TEST_KEYPATH);
+    g_testKeyV1.ClearKey();
 
     EXPECT_TRUE(g_testKeyV1.InitKey());
     EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
@@ -502,4 +504,74 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_load_and_set_policy_default, TestSize.Lev
     EXPECT_TRUE(OHOS::SaveStringToFile(TEST_DIR_LEGACY + "/111111111111111111111111111111111111111111111111", "AA"));
 
     EXPECT_TRUE(g_testKeyV1.ClearKey());
+}
+
+/**
+ * @tc.name: fscrypt_key_storekey_version_test_1
+ * @tc.desc: Verify the fscrypt storekey function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK0BO
+ */
+HWTEST_F(CryptoKeyTest, fscrypt_key_storekey_version_test_1, TestSize.Level1)
+{
+    EXPECT_TRUE(g_testKeyV2.InitKey());
+
+    // storekey to version 0
+    EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
+    EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_ALIAS));
+    std::string aliasV0;
+    EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_ALIAS, aliasV0));
+
+    // storekey to version 1
+    EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
+    EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION1 + PATH_ALIAS));
+    std::string aliasV1;
+    EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION1 + PATH_ALIAS, aliasV1));
+    EXPECT_NE(aliasV0, aliasV1);
+
+    // storekey to version 2
+    EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
+    EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION2 + PATH_ALIAS));
+    std::string aliasV2;
+    EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION2 + PATH_ALIAS, aliasV2));
+    EXPECT_NE(aliasV1, aliasV2);
+
+    // updatekey will rename version 2 to latest
+    EXPECT_TRUE(g_testKeyV2.UpdateKey());
+    EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_ALIAS));
+    EXPECT_FALSE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_LATEST_BACKUP + PATH_ALIAS));
+    std::string aliasLatest;
+    EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_ALIAS, aliasLatest));
+    EXPECT_EQ(aliasLatest, aliasV2);
+}
+
+/**
+ * @tc.name: fscrypt_key_storekey_version_test_2
+ * @tc.desc: Verify the fscrypt storekey function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK0BO
+ */
+HWTEST_F(CryptoKeyTest, fscrypt_key_storekey_version_test_2, TestSize.Level1)
+{
+    EXPECT_TRUE(g_testKeyV2.RestoreKey(emptyUserAuth));
+
+    // storekey to version 0
+    EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
+    EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_ALIAS));
+    std::string aliasV0;
+    EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_ALIAS, aliasV0));
+
+    // storekey to version 1
+    EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
+    EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION1 + PATH_ALIAS));
+    std::string aliasV1;
+    EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION1 + PATH_ALIAS, aliasV1));
+
+    // restorekey will decrypt from versions and rename first success one to latest
+    EXPECT_TRUE(g_testKeyV2.RestoreKey(emptyUserAuth));
+    EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_ALIAS));
+    EXPECT_FALSE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_LATEST_BACKUP + PATH_ALIAS));
+    std::string aliasLatest;
+    EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_ALIAS, aliasLatest));
+    EXPECT_EQ(aliasLatest, aliasV1);
 }

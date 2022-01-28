@@ -54,7 +54,7 @@ private:
     static bool LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size);
     bool EncryptKey(const UserAuth &auth);
     bool DecryptKey(const UserAuth &auth);
-    bool RemoveAlias(const std::string& dir);
+    bool RemoveAlias(const std::string& keypath);
     int GetCandidateVersion() const;
     std::string GetCandidateDir() const;
     std::string GetNextCandidateDir() const;

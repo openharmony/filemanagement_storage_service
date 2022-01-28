@@ -255,7 +255,7 @@ bool BaseKey::UpdateKey(const std::string &keypath)
     GetSubDirs(dir_, files);
     for (const auto &it: files) {
         if (it != PATH_LATEST.substr(1)) {
-            RemoveAlias("/" + it);
+            RemoveAlias(dir_ + "/" + it);
             OHOS::ForceRemoveDirectory(dir_ + "/" + it);
         }
     }
@@ -343,10 +343,11 @@ bool BaseKey::DecryptKey(const UserAuth &auth)
     return ret;
 }
 
-bool BaseKey::RemoveAlias(const std::string &dir)
+bool BaseKey::RemoveAlias(const std::string &keypath)
 {
     KeyBlob alias {};
-    return LoadKeyBlob(alias, dir + PATH_ALIAS, CRYPTO_KEY_ALIAS_SIZE) && HuksMaster::DeleteKey(alias);
+    return LoadKeyBlob(alias, keypath + PATH_ALIAS, CRYPTO_KEY_ALIAS_SIZE) &&
+           HuksMaster::DeleteKey(alias);
 }
 
 bool BaseKey::ClearKey(const std::string &mnt)
@@ -357,7 +358,7 @@ bool BaseKey::ClearKey(const std::string &mnt)
     std::vector<std::string> files;
     GetSubDirs(dir_, files);
     for (const auto &it : files) {
-        RemoveAlias("/" + it);
+        RemoveAlias(dir_ + "/" + it);
     }
 
     return OHOS::ForceRemoveDirectory(dir_);
