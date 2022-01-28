@@ -31,9 +31,9 @@ string MountArgument::GetFullSrc() const
 {
     stringstream ss;
     if (sameAccount_ == true) {
-        ss << DATA_POINT  << userId_ << "/hmdfs/account/";
+        ss << DATA_POINT << userId_ << "/hmdfs/account/";
     } else {
-        ss << DATA_POINT << userId_ << "/hmdfs/non_account/" ;
+        ss << DATA_POINT << userId_ << "/hmdfs/non_account/";
     }
 
     return ss.str();
@@ -43,9 +43,9 @@ string MountArgument::GetFullDst() const
 {
     stringstream ss;
     if (sameAccount_ == true) {
-        ss << BASE_MOUNT_POINT  << userId_ << "/account/";
+        ss << BASE_MOUNT_POINT << userId_ << "/account/";
     } else {
-        ss << BASE_MOUNT_POINT << userId_ << "/non_account/" ;
+        ss << BASE_MOUNT_POINT << userId_ << "/non_account/";
     }
 
     return ss.str();
@@ -55,9 +55,9 @@ string MountArgument::GetCachePath() const
 {
     stringstream ss;
     if (sameAccount_ == true) {
-        ss << DATA_POINT  << userId_ << "/hmdfs/account/cache/";
+        ss << DATA_POINT << userId_ << "/hmdfs/account/cache/";
     } else {
-        ss << DATA_POINT << userId_ << "/hmdfs/non_account/cache/" ;
+        ss << DATA_POINT << userId_ << "/hmdfs/non_account/cache/";
     }
 
     return ss.str();

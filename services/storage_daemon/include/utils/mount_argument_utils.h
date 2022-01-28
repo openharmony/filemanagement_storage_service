@@ -48,4 +48,3 @@ public:
 } // namespace StorageDaemon
 } // namespace OHOS
 #endif // UTILS_MOUNT_ARGUMENT_H
-

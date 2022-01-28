@@ -13,16 +13,16 @@
  * limitations under the License.
  */
 
+#include "crypto/key_manager.h"
+#include "ipc/istorage_daemon.h"
+#include "parameter.h"
 #include "user/user_manager.h"
-#include <stdlib.h>
 #include "utils/errno.h"
 #include "utils/file_utils.h"
-#include "utils/string_utils.h"
 #include "utils/log.h"
 #include "utils/mount_argument_utils.h"
-#include "ipc/istorage_daemon.h"
-#include "crypto/key_manager.h"
-#include "parameter.h"
+#include "utils/string_utils.h"
+#include <stdlib.h>
 #include <sys/mount.h>
 
 using namespace std;
@@ -35,41 +35,32 @@ std::shared_ptr<UserManager> UserManager::instance_ = nullptr;
 const std::string HMDFS_SYS_CAP = "const.distributed_file_property.enabled";
 const int32_t HMDFS_VAL_LEN = 6;
 UserManager::UserManager()
-    : rootDirVec_{
-        {"/data/app/%s/%d", 0711, OID_ROOT, OID_ROOT},
-        {"/data/service/%s/%d", 0711, OID_ROOT, OID_ROOT},
-        {"/data/chipset/%s/%d", 0711, OID_ROOT, OID_ROOT}
-    },
-    subDirVec_{
-        {"/data/app/%s/%d/base", 0711, OID_ROOT, OID_ROOT},
-        {"/data/app/%s/%d/database", 0711, OID_ROOT, OID_ROOT}
-    },
-    hmdfsDirVec_{
-        {"/data/service/el2/%d/hmdfs", 0711, OID_SYSTEM, OID_SYSTEM},
-        {"/data/service/el2/%d/hmdfs/account", 0711, OID_SYSTEM, OID_SYSTEM},
-        {"/data/service/el2/%d/hmdfs/account/files", 0711, OID_SYSTEM, OID_SYSTEM},
-        {"/data/service/el2/%d/hmdfs/account/data", 0711, OID_SYSTEM, OID_SYSTEM},
-        {"/data/service/el2/%d/hmdfs/account/cache", 0711, OID_SYSTEM, OID_SYSTEM},
-        {"/data/service/el2/%d/hmdfs/non_account", 0711, OID_SYSTEM, OID_SYSTEM},
-        {"/data/service/el2/%d/hmdfs/non_account/files", 0711, OID_SYSTEM, OID_SYSTEM},
-        {"/data/service/el2/%d/hmdfs/non_account/data", 0711, OID_SYSTEM, OID_SYSTEM},
-        {"/data/service/el2/%d/hmdfs/non_account/cache", 0711, OID_SYSTEM, OID_SYSTEM}
-    },
-    virtualDir_{
-        {"/storage/media/%d", 0711, OID_ROOT, OID_ROOT},
-        {"/storage/media/%d/local", 0711, OID_ROOT, OID_ROOT},
-        {"/mnt/hmdfs/%d/", 0711, OID_ROOT, OID_ROOT},
-        {"/mnt/hmdfs/%d/account", 0711, OID_ROOT, OID_ROOT},
-        {"/mnt/hmdfs/%d/non_account", 0711, OID_ROOT, OID_ROOT}
-    }
-{}
+    : rootDirVec_{{"/data/app/%s/%d", 0711, OID_ROOT, OID_ROOT},
+                  {"/data/service/%s/%d", 0711, OID_ROOT, OID_ROOT},
+                  {"/data/chipset/%s/%d", 0711, OID_ROOT, OID_ROOT}},
+      subDirVec_{{"/data/app/%s/%d/base", 0711, OID_ROOT, OID_ROOT},
+                 {"/data/app/%s/%d/database", 0711, OID_ROOT, OID_ROOT}},
+      hmdfsDirVec_{{"/data/service/el2/%d/hmdfs", 0711, OID_SYSTEM, OID_SYSTEM},
+                   {"/data/service/el2/%d/hmdfs/account", 0711, OID_SYSTEM, OID_SYSTEM},
+                   {"/data/service/el2/%d/hmdfs/account/files", 0711, OID_SYSTEM, OID_SYSTEM},
+                   {"/data/service/el2/%d/hmdfs/account/data", 0711, OID_SYSTEM, OID_SYSTEM},
+                   {"/data/service/el2/%d/hmdfs/account/cache", 0711, OID_SYSTEM, OID_SYSTEM},
+                   {"/data/service/el2/%d/hmdfs/non_account", 0711, OID_SYSTEM, OID_SYSTEM},
+                   {"/data/service/el2/%d/hmdfs/non_account/files", 0711, OID_SYSTEM, OID_SYSTEM},
+                   {"/data/service/el2/%d/hmdfs/non_account/data", 0711, OID_SYSTEM, OID_SYSTEM},
+                   {"/data/service/el2/%d/hmdfs/non_account/cache", 0711, OID_SYSTEM, OID_SYSTEM}},
+      virtualDir_{{"/storage/media/%d", 0711, OID_ROOT, OID_ROOT},
+                  {"/storage/media/%d/local", 0711, OID_ROOT, OID_ROOT},
+                  {"/mnt/hmdfs/%d/", 0711, OID_ROOT, OID_ROOT},
+                  {"/mnt/hmdfs/%d/account", 0711, OID_ROOT, OID_ROOT},
+                  {"/mnt/hmdfs/%d/non_account", 0711, OID_ROOT, OID_ROOT}}
+{
+}
 
 std::shared_ptr<UserManager> UserManager::GetInstance()
 {
     static std::once_flag onceFlag;
-    std::call_once(onceFlag, [&] () mutable{
-        instance_ = std::make_shared<UserManager>();
-    });
+    std::call_once(onceFlag, [&]() mutable { instance_ = std::make_shared<UserManager>(); });
 
     return instance_;
 }
@@ -77,27 +68,24 @@ std::shared_ptr<UserManager> UserManager::GetInstance()
 int32_t UserManager::HmdfsMount(int32_t userId)
 {
     Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, true));
-    int ret = Mount(StringPrintf(hmdfsSrc_.c_str(), userId),
-                    StringPrintf(hmdfsDest_.c_str(), userId),
-                    "hmdfs", hmdfsMntArgs.GetFlags(), hmdfsMntArgs.OptionsToString().c_str());
+    int ret = Mount(StringPrintf(hmdfsSrc_.c_str(), userId), StringPrintf(hmdfsDest_.c_str(), userId), "hmdfs",
+                    hmdfsMntArgs.GetFlags(), hmdfsMntArgs.OptionsToString().c_str());
     if (ret == -1 && errno != EEXIST && errno != EBUSY) {
         LOGE("failed to mount hmdfs, err %{public}d", errno);
         return E_MOUNT;
     }
 
     Utils::MountArgument hmdfsAuthMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, false));
-    ret = Mount(StringPrintf(hmdfAuthSrc_.c_str(), userId),
-                StringPrintf(hmdfsAuthDest_.c_str(), userId),
-                "hmdfs", hmdfsAuthMntArgs.GetFlags(), hmdfsAuthMntArgs.OptionsToString().c_str());
+    ret = Mount(StringPrintf(hmdfAuthSrc_.c_str(), userId), StringPrintf(hmdfsAuthDest_.c_str(), userId), "hmdfs",
+                hmdfsAuthMntArgs.GetFlags(), hmdfsAuthMntArgs.OptionsToString().c_str());
     if (ret == -1 && errno != EEXIST && errno != EBUSY) {
         LOGE("failed to mount auth group hmdfs, err %{public}d", errno);
         return E_MOUNT;
     }
 
     // bind mount
-    ret = Mount(StringPrintf((hmdfsDest_ + "device_view/").c_str(), userId),
-          StringPrintf(ComDataDir_.c_str(), userId),
-          nullptr, MS_BIND, nullptr);
+    ret = Mount(StringPrintf((hmdfsDest_ + "device_view/").c_str(), userId), StringPrintf(ComDataDir_.c_str(), userId),
+                nullptr, MS_BIND, nullptr);
     if (ret == -1 && errno != EEXIST && errno != EBUSY) {
         LOGE("failed to bind mount, err %{public}d", errno);
         return E_MOUNT;
@@ -112,22 +100,22 @@ int32_t UserManager::HmdfsUnMount(int32_t userId)
     // un bind mount
     err = UMount(StringPrintf(ComDataDir_.c_str(), userId));
     if (err != E_OK) {
-        LOGE("failed to un bind mount, errno %{public}d, ComDataDir_ dst %{public}s",
-            err, StringPrintf(ComDataDir_.c_str(), userId).c_str());
+        LOGE("failed to un bind mount, errno %{public}d, ComDataDir_ dst %{public}s", err,
+             StringPrintf(ComDataDir_.c_str(), userId).c_str());
     }
 
     Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, true));
     err = UMount2(hmdfsMntArgs.GetFullDst().c_str(), MNT_DETACH);
     if (err != E_OK) {
-        LOGE("identical account hmdfs umount failed, errno %{public}d, hmdfs dst %{public}s",
-            err, hmdfsMntArgs.GetFullDst().c_str());
+        LOGE("identical account hmdfs umount failed, errno %{public}d, hmdfs dst %{public}s", err,
+             hmdfsMntArgs.GetFullDst().c_str());
     }
 
     Utils::MountArgument hmdfsAuthMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, false));
     err += UMount2(hmdfsAuthMntArgs.GetFullDst().c_str(), MNT_DETACH);
     if (err != E_OK) {
-        LOGE("umount auth hmdfs, errno %{public}d, auth hmdfs dst %{public}s",
-            err, hmdfsAuthMntArgs.GetFullDst().c_str());
+        LOGE("umount auth hmdfs, errno %{public}d, auth hmdfs dst %{public}s", err,
+             hmdfsAuthMntArgs.GetFullDst().c_str());
     }
 
     return err;
@@ -147,8 +135,7 @@ bool UserManager::SupportHmdfs()
 int32_t UserManager::LocalMount(int32_t userId)
 {
     if (Mount(StringPrintf((hmdfsSrc_ + "files/").c_str(), userId),
-                StringPrintf((ComDataDir_ + "local/").c_str(), userId),
-                nullptr, MS_BIND, nullptr)) {
+              StringPrintf((ComDataDir_ + "local/").c_str(), userId), nullptr, MS_BIND, nullptr)) {
         LOGE("failed to bind mount, err %{public}d", errno);
         return E_MOUNT;
     }
@@ -354,5 +341,5 @@ int32_t UserManager::DestroyHmdfsDirs(int32_t userId)
 
     return err ? E_OK : E_DESTROY_DIR;
 }
-} // StorageDaemon
-} // OHOS
+} // namespace StorageDaemon
+} // namespace OHOS
