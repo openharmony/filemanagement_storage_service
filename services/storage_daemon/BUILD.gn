@@ -17,7 +17,7 @@ import("//build/ohos.gni")
 ohos_prebuilt_etc("storage_daemon_cfg") {
   source = "storage_daemon.cfg"
   relative_install_dir = "init"
-  part_name = "storage_standard"
+  part_name = "storage_service"
   subsystem_name = "filemanagement"
 }
 
@@ -63,7 +63,7 @@ ohos_executable("storage_daemon") {
   ]
 
   subsystem_name = "filemanagement"
-  part_name = "storage_standard"
+  part_name = "storage_service"
   install_enable = true
 }
 
@@ -99,6 +99,6 @@ ohos_executable("sdc") {
   ]
 
   subsystem_name = "filemanagement"
-  part_name = "storage_standard"
+  part_name = "storage_service"
   install_enable = true
 }

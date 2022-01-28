@@ -14,14 +14,14 @@
 import("//build/ohos.gni")
 
 js_declaration("storagestatistics_js") {
-  part_name = "storage_standard"
+  part_name = "storage_service"
   sources = [ "./@ohos.storagestatistics.d.ts" ]
 }
 
 ohos_shared_library("storagestatistics") {
   relative_install_dir = "module"
   subsystem_name = "filemanagement"
-  part_name = "storage_standard"
+  part_name = "storage_service"
 
   include_dirs = [
     "include",

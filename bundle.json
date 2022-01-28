@@ -1,5 +1,5 @@
 {
-    "name": "@ohos/storage_standard",
+    "name": "@ohos/storage_service",
     "description": "Storage service provides basic storage inquiry and management for the system and apps.",
     "version": "3.1",
     "license": "Apache License 2.0",
@@ -10,7 +10,7 @@
     "dirs": {},
     "scripts": {},
     "component": {
-      "name": "storage_standard",
+      "name": "storage_service",
       "subsystem": "filemanagement",
       "syscap": [],
       "features": [],
