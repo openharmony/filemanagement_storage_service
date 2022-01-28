@@ -101,7 +101,6 @@ MountArgument MountArgumentDescriptors::Alpha(int userId, bool sameAccount)
     };
     return mountArgument;
 }
-
 } // namespace Utils
 } // namespace StorageDaemon
 } // namespace OHOS

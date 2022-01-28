@@ -13,10 +13,10 @@
  * limitations under the License.
  */
 
+#include "user/user_manager.h"
 #include "crypto/key_manager.h"
 #include "ipc/istorage_daemon.h"
 #include "parameter.h"
-#include "user/user_manager.h"
 #include "utils/errno.h"
 #include "utils/file_utils.h"
 #include "utils/log.h"
