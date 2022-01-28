@@ -94,7 +94,7 @@ int KeyManager::RestoreDeviceKey(const std::string &dir)
 
     if (globalEl1Key_->RestoreKey(NULL_KEY_AUTH) == false) {
         globalEl1Key_ = nullptr;
-        LOGE("global security key store failed");
+        LOGE("global security key restore failed");
         return -EFAULT;
     }
 
@@ -150,19 +150,19 @@ int KeyManager::GenerateAndInstallUserKey(uint32_t userId, const std::string &di
     }
 
     if (elKey->InitKey() == false) {
-        LOGE("global security key init failed");
+        LOGE("user security key init failed");
         return -EFAULT;
     }
 
     if (elKey->StoreKey(auth) == false) {
         elKey->ClearKey();
-        LOGE("global security key store failed");
+        LOGE("user security key store failed");
         return -EFAULT;
     }
 
     if (elKey->ActiveKey() == false) {
         elKey->ClearKey();
-        LOGE("global security key active failed");
+        LOGE("user security key active failed");
         return -EFAULT;
     }
 
@@ -191,17 +191,17 @@ int KeyManager::RestoreUserKey(uint32_t userId, const std::string &dir, const Us
     }
 
     if (elKey->InitKey() == false) {
-        LOGE("global security key init failed");
+        LOGE("user security key init failed");
         return -EFAULT;
     }
 
     if (elKey->RestoreKey(auth) == false) {
-        LOGE("global security key store failed");
+        LOGE("user security key restore failed");
         return -EFAULT;
     }
 
     if (elKey->ActiveKey() == false) {
-        LOGE("global security key active failed");
+        LOGE("user security key active failed");
         return -EFAULT;
     }
 
@@ -243,7 +243,6 @@ int KeyManager::LoadAllUsersEl1Key(void)
     for (auto item : dirInfo) {
         if (RestoreUserKey(item.userId, item.path, NULL_KEY_AUTH, EL1_KEY) != 0) {
             LOGE("user %{public}u el1 key restore error", item.userId);
-            return -EFAULT;
         }
     }
 

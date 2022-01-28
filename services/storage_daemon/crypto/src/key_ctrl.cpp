@@ -31,6 +31,15 @@
 
 namespace OHOS {
 namespace StorageDaemon {
+enum FscryptOptionTurn {
+    FSCRYPT_VERSION_NUM = 0,
+    FSCRYPT_FILE_NAME,
+    FSCRYPT_FILE_CONTENT,
+    FSCRYPT_PADDING,
+    FSCRYPT_MAX_PARAMETERS
+};
+struct EncryptPolicy g_policyOption;
+
 key_serial_t KeyCtrl::AddKey(const std::string &type, const std::string &description, const key_serial_t ringId)
 {
     return syscall(__NR_add_key, type.c_str(), description.c_str(), nullptr, 0, ringId);
@@ -268,6 +277,39 @@ uint8_t KeyCtrl::GetEncryptedVersion(const std::string &dir)
         LOGE("%{public}s unexpected errno: %{public}d", dir.c_str(), errno);
     }
     return FSCRYPT_INVALID;
+}
+
+int32_t KeyCtrl::InitFscryptPolicy(const std::string &config)
+{
+    LOGI("fscrypt config:%{public}s", config.c_str());
+    g_policyOption = DEFAULT_POLICY;
+    if (config.empty()) {
+        LOGE("fscrypt config is empty");
+        return -EFAULT;
+    }
+    std::vector<std::string> strs;
+    std::string sep = ":";
+    SplitStr(config, sep, strs, false, false);
+    if (strs.size() != FSCRYPT_OPTIONS_TABLE.size() ||
+        strs.size() != static_cast<size_t>(FSCRYPT_MAX_PARAMETERS)) {
+        LOGE("input fscrypt config error");
+        return -EFAULT;
+    }
+
+    for (size_t index = 0; index < strs.size(); index++) {
+        auto item = FSCRYPT_OPTIONS_TABLE[index];
+        if (item.find(strs[index]) == item.end()) {
+            LOGE("input fscrypt %{public}s option error", strs[index].c_str());
+            return -EFAULT;
+        }
+    }
+    g_policyOption.version = strs[FSCRYPT_VERSION_NUM];
+    g_policyOption.fileName = strs[FSCRYPT_FILE_NAME];
+    g_policyOption.content = strs[FSCRYPT_FILE_CONTENT];
+    g_policyOption.flags = strs[FSCRYPT_PADDING];
+    LOGI("fscrypt policy init success");
+
+    return 0;
 }
 } // namespace StorageDaemon
 } // namespace OHOS

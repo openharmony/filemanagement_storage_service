@@ -158,7 +158,17 @@ static void HandleFileCrypt(const std::string &cmd, const std::vector<std::strin
         if (ret) {
             LOGE("Inactive user %{public}u key error", userId);
             return;
-        }          
+        }
+    } else if (cmd == "enable") {
+        if (args.size() < 4) { // para.4: sdc filecrypt enable xxx
+            LOGE("Parameter nums is less than 4, please retry");
+            return;
+        }
+        int ret = OHOS::StorageDaemon::StorageDaemonClient::FscryptEnable(args[3]); // para.3: fscrypt options
+        if (ret) {
+            LOGE("Fscrypt enabled failed");
+            return;
+        }
     }
 }
 
