@@ -19,7 +19,6 @@
 #include <unordered_map>
 #include <singleton.h>
 #include <nocopyable.h>
-#include "user_info.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -31,11 +30,7 @@ public:
     int32_t PrepareStartUser(int32_t userId);
     int32_t StopUser(int32_t userId);
 private:
-    std::unordered_map<int32_t, UserInfo> users_;
-
     int32_t CheckUserIdRange(int32_t userId);
-    int32_t CheckUserState(int32_t userId, UserState state);
-    void SetUserState(int32_t userId, UserState state);
 };  
 } // StorageManager
 } // OHOS
