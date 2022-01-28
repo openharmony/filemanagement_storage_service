@@ -22,7 +22,7 @@
 #include "utils/log.h"
 #include "utils/mount_argument_utils.h"
 #include "utils/string_utils.h"
-#include <stdlib.h>
+#include <cstdlib>
 #include <sys/mount.h>
 
 using namespace std;
