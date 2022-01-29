@@ -29,15 +29,15 @@
 #include "file_ex.h"
 #include "string_ex.h"
 
+namespace {
+constexpr uint32_t INDEX_FSCRYPT_VERSION = 0;
+constexpr uint32_t INDEX_FSCRYPT_FILENAME = 1;
+constexpr uint32_t INDEX_FSCRYPT_CONTENT = 2;
+constexpr uint32_t INDEX_FSCRYPT_FLAGS = 3;
+}
+
 namespace OHOS {
 namespace StorageDaemon {
-enum FscryptOptionTurn {
-    FSCRYPT_VERSION_NUM = 0,
-    FSCRYPT_FILE_NAME,
-    FSCRYPT_FILE_CONTENT,
-    FSCRYPT_PADDING,
-    FSCRYPT_MAX_PARAMETERS
-};
 struct EncryptPolicy g_policyOption;
 
 key_serial_t KeyCtrl::AddKey(const std::string &type, const std::string &description, const key_serial_t ringId)
@@ -290,8 +290,7 @@ int32_t KeyCtrl::InitFscryptPolicy(const std::string &config)
     std::vector<std::string> strs;
     std::string sep = ":";
     SplitStr(config, sep, strs, false, false);
-    if (strs.size() != FSCRYPT_OPTIONS_TABLE.size() ||
-        strs.size() != static_cast<size_t>(FSCRYPT_MAX_PARAMETERS)) {
+    if (strs.size() != FSCRYPT_OPTIONS_TABLE.size()) {
         LOGE("input fscrypt config error");
         return -EFAULT;
     }
@@ -303,10 +302,10 @@ int32_t KeyCtrl::InitFscryptPolicy(const std::string &config)
             return -EFAULT;
         }
     }
-    g_policyOption.version = strs[FSCRYPT_VERSION_NUM];
-    g_policyOption.fileName = strs[FSCRYPT_FILE_NAME];
-    g_policyOption.content = strs[FSCRYPT_FILE_CONTENT];
-    g_policyOption.flags = strs[FSCRYPT_PADDING];
+    g_policyOption.version = strs[INDEX_FSCRYPT_VERSION];
+    g_policyOption.fileName = strs[INDEX_FSCRYPT_FILENAME];
+    g_policyOption.content = strs[INDEX_FSCRYPT_CONTENT];
+    g_policyOption.flags = strs[INDEX_FSCRYPT_FLAGS];
     LOGI("fscrypt policy init success");
 
     return 0;

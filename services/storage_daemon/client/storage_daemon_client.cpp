@@ -14,30 +14,29 @@
  */
 #include "storage_daemon_client.h"
 
-#include <ctime>
 #include <chrono>
+#include <ctime>
 #include <thread>
 
-#include "storage_service_log.h"
-#include "iremote_proxy.h"
 #include "iremote_object.h"
+#include "iremote_proxy.h"
 #include "iservice_registry.h"
+#include "storage_service_log.h"
 #include "system_ability_definition.h"
 
-namespace OHOS {
-namespace StorageDaemon {
-enum ServiceFlag {
-    HUKS_SERVICE_SHIFT = 0,
-    STORAGE_DAEMON_SFIFT,
-    SERVICE_MAX_SHIFT,
-};
+namespace {
+constexpr uint32_t HUKS_SERVICE_SHIFT = 0;
+constexpr uint32_t STORAGE_DAEMON_SFIFT = 1;
 constexpr uint32_t CHECK_SERVICE_TIMES = 1000;
 constexpr uint32_t SLEEP_TIME_PRE_CHECK = 10; // 10ms
 constexpr uint32_t HUKS_SERVICE_FLAG = (1 << HUKS_SERVICE_SHIFT);
 constexpr uint32_t STORAGE_SERVICE_FLAG = (1 << STORAGE_DAEMON_SFIFT);
-constexpr int32_t HULK_SERVICE_SAID = 3510;
+constexpr int32_t HUKS_SERVICE_SAID = 3510;
 constexpr int32_t STORAGE_DAEMON_SAID = OHOS::STORAGE_MANAGER_DAEMON_ID;
+}
 
+namespace OHOS {
+namespace StorageDaemon {
 sptr<IStorageDaemon> StorageDaemonClient::GetStorageDaemonProxy(void)
 {
     auto samgr = OHOS::SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
@@ -67,7 +66,7 @@ bool StorageDaemonClient::CheckServiceStatus(uint32_t serviceFlags)
     bool exist = false;
     if ((serviceFlags & HUKS_SERVICE_FLAG) == HUKS_SERVICE_FLAG) {
         for (uint32_t i = 0; i < CHECK_SERVICE_TIMES; i++) {
-            auto object = samgr->CheckSystemAbility(HULK_SERVICE_SAID, exist);
+            auto object = samgr->CheckSystemAbility(HUKS_SERVICE_SAID, exist);
             if (object != nullptr) {
                 break;
             }
@@ -278,12 +277,11 @@ int32_t StorageDaemonClient::FscryptEnable(const std::string &fscryptOptions)
 {
     int ret = OHOS::StorageDaemon::KeyCtrl::InitFscryptPolicy(fscryptOptions);
     if (ret) {
-        LOGE("Init fscrypt policy failed");
+        LOGE("Init fscrypt policy failed ret %{public}d", ret);
         return ret;
     }
-    LOGI("FscryptEnable:options =  %{public}s", fscryptOptions.c_str());
 
     return 0;
 }
-}
-}
+} // namespace StorageDaemon
+} // namespace OHOS

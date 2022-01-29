@@ -13,13 +13,13 @@
  * limitations under the License.
  */
 
-#include <string>
 #include <iostream>
+#include <string>
 #include <vector>
 
+#include "storage_daemon_client.h"
 #include "storage_service_log.h"
 #include "utils/file_utils.h"
-#include "storage_daemon_client.h"
 
 static void HandleFileCrypt(const std::string &cmd, const std::vector<std::string> &args)
 {
@@ -28,14 +28,14 @@ static void HandleFileCrypt(const std::string &cmd, const std::vector<std::strin
         // sdc filecrypt init_global_key /data
         int32_t ret = OHOS::StorageDaemon::StorageDaemonClient::InitGlobalKey();
         if (ret) {
-            LOGE("Init global Key failed");
+            LOGE("Init global Key failed ret %{public}d", ret);
             return;
         }
     } else if (cmd == "init_main_user") {
         // sdc filecrypt init_main_user
         int32_t ret = OHOS::StorageDaemon::StorageDaemonClient::InitGlobalUserKeys();
         if (ret) {
-            LOGE("Init global user keys failed");
+            LOGE("Init global user keys failed ret %{public}d", ret);
             return;
         }
     } else if (cmd == "generate_user_keys") {
@@ -52,7 +52,7 @@ static void HandleFileCrypt(const std::string &cmd, const std::vector<std::strin
         }
         int32_t ret = OHOS::StorageDaemon::StorageDaemonClient::GenerateUserKeys(userId, flags);
         if (ret) {
-            LOGE("Create user %{public}u el error", userId);
+            LOGE("Create user %{public}u el failed ret %{public}d", userId, ret);
             return;
         }
     } else if (cmd == "prepare_user_space") {
@@ -70,7 +70,7 @@ static void HandleFileCrypt(const std::string &cmd, const std::vector<std::strin
         std::string volumId = "";
         int32_t ret = OHOS::StorageDaemon::StorageDaemonClient::PrepareUserSpace(userId, volumId, flags);
         if (ret) {
-            LOGE("Prepare user %{public}u storage error", userId);
+            LOGE("Prepare user %{public}u storage failed ret %{public}d", userId, ret);
             return;
         }
     } else if (cmd == "delete_user_keys") {
@@ -86,11 +86,11 @@ static void HandleFileCrypt(const std::string &cmd, const std::vector<std::strin
         }
         int ret = OHOS::StorageDaemon::StorageDaemonClient::DeleteUserKeys(userId);
         if (ret) {
-            LOGE("Delete user %{public}u key error", userId);
+            LOGE("Delete user %{public}u key failed ret %{public}d", userId, ret);
             return;
         }
     } else if (cmd == "destory_user_space") {
-         // sdc filecrypt destory_user_space userId flags
+        // sdc filecrypt destory_user_space userId flags
         if (args.size() < 5) {
             LOGE("Parameter nums is less than 4, please retry");
             return;
@@ -104,11 +104,11 @@ static void HandleFileCrypt(const std::string &cmd, const std::vector<std::strin
         std::string volumId = "";
         int ret = OHOS::StorageDaemon::StorageDaemonClient::DestroyUserSpace(userId, volumId, flags);
         if (ret) {
-            LOGE("Destroy user %{public}u space error", userId);
+            LOGE("Destroy user %{public}u space failed ret %{public}d", userId, ret);
             return;
         }
     } else if (cmd == "update_user_auth") {
-         // sdc filecrypt update_user_auth userId token secret
+        // sdc filecrypt update_user_auth userId token secret
         if (args.size() < 6) {
             LOGE("Parameter nums is less than 4, please retry");
             return;
@@ -122,11 +122,11 @@ static void HandleFileCrypt(const std::string &cmd, const std::vector<std::strin
         std::string secret = args[5];
         int ret = OHOS::StorageDaemon::StorageDaemonClient::UpdateUserAuth(userId, token, secret);
         if (ret) {
-            LOGE("Update user %{public}u auth error", userId);
+            LOGE("Update user %{public}u auth failed ret %{public}d", userId, ret);
             return;
         }
     } else if (cmd == "active_user_key") {
-         // sdc filecrypt active_user_key userId token secret
+        // sdc filecrypt active_user_key userId token secret
         if (args.size() < 6) {
             LOGE("Parameter nums is less than 4, please retry");
             return;
@@ -140,11 +140,11 @@ static void HandleFileCrypt(const std::string &cmd, const std::vector<std::strin
         std::string secret = args[5];
         int ret = OHOS::StorageDaemon::StorageDaemonClient::ActiveUserKey(userId, token, secret);
         if (ret) {
-            LOGE("Active user %{public}u key error", userId);
+            LOGE("Active user %{public}u key failed ret %{public}d", userId, ret);
             return;
-        }        
+        }
     } else if (cmd == "inactive_user_key") {
-         // sdc filecrypt inactive_user_key userId
+        // sdc filecrypt inactive_user_key userId
         if (args.size() < 4) {
             LOGE("Parameter nums is less than 4, please retry");
             return;
@@ -156,7 +156,7 @@ static void HandleFileCrypt(const std::string &cmd, const std::vector<std::strin
         }
         int ret = OHOS::StorageDaemon::StorageDaemonClient::InactiveUserKey(userId);
         if (ret) {
-            LOGE("Inactive user %{public}u key error", userId);
+            LOGE("Inactive user %{public}u key failed %{public}d", userId, ret);
             return;
         }
     } else if (cmd == "enable") {
@@ -166,7 +166,7 @@ static void HandleFileCrypt(const std::string &cmd, const std::vector<std::strin
         }
         int ret = OHOS::StorageDaemon::StorageDaemonClient::FscryptEnable(args[3]); // para.3: fscrypt options
         if (ret) {
-            LOGE("Fscrypt enabled failed");
+            LOGE("Fscrypt enable failed %{public}d", ret);
             return;
         }
     }
