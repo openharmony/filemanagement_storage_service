@@ -24,7 +24,7 @@
 #include <linux/fs.h>
 #include <linux/keyctl.h>
 
-#include "utils/log.h"
+#include "storage_service_log.h"
 #include "securec.h"
 #include "file_ex.h"
 #include "string_ex.h"

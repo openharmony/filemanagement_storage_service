@@ -19,7 +19,6 @@
 namespace OHOS {
 namespace StorageDaemon {
 class Exfat {
-
 };
 } // STORAGE_DAEMON
 } // OHOS

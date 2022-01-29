@@ -14,8 +14,8 @@
  */
 
 #include "ipc/storage_daemon_proxy.h"
-#include "utils/errno.h"
-#include "utils/log.h"
+#include "storage_service_errno.h"
+#include "storage_service_log.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -26,6 +26,7 @@ int32_t StorageDaemonProxy::Shutdown()
 {
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
+
     if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
         return E_IPC_ERROR;
     }
@@ -57,6 +58,7 @@ int32_t StorageDaemonProxy::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
+
     if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
         return E_IPC_ERROR;
     }
@@ -64,13 +66,16 @@ int32_t StorageDaemonProxy::PrepareUserDirs(int32_t userId, uint32_t flags)
     if (!data.WriteInt32(userId)) {
         return E_IPC_ERROR;
     }
+
     if (!data.WriteUint32(flags)) {
         return E_IPC_ERROR;
     }
+
     int err = Remote()->SendRequest(PREPARE_USER_DIRS, data, reply, option);
     if (err != E_OK) {
         return E_IPC_ERROR;
     }
+
     return reply.ReadUint32();
 }
 
@@ -78,6 +83,7 @@ int32_t StorageDaemonProxy::DestroyUserDirs(int32_t userId, uint32_t flags)
 {
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
+
     if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
         return E_IPC_ERROR;
     }
@@ -85,13 +91,16 @@ int32_t StorageDaemonProxy::DestroyUserDirs(int32_t userId, uint32_t flags)
     if (!data.WriteInt32(userId)) {
         return E_IPC_ERROR;
     }
+
     if (!data.WriteUint32(flags)) {
         return E_IPC_ERROR;
     }
+
     int err = Remote()->SendRequest(DESTROY_USER_DIRS, data, reply, option);
     if (err != E_OK) {
         return E_IPC_ERROR;
     }
+
     return reply.ReadUint32();
 }
 
@@ -99,6 +108,7 @@ int32_t StorageDaemonProxy::StartUser(int32_t userId)
 {
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
+
     if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
         return E_IPC_ERROR;
     }
@@ -106,6 +116,7 @@ int32_t StorageDaemonProxy::StartUser(int32_t userId)
     if (!data.WriteInt32(userId)) {
         return E_IPC_ERROR;
     }
+
     int err = Remote()->SendRequest(START_USER, data, reply, option);
     if (err != E_OK) {
         return E_IPC_ERROR;
@@ -118,6 +129,7 @@ int32_t StorageDaemonProxy::StopUser(int32_t userId)
 {
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
+
     if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
         return E_IPC_ERROR;
     }
@@ -125,6 +137,7 @@ int32_t StorageDaemonProxy::StopUser(int32_t userId)
     if (!data.WriteInt32(userId)) {
         return E_IPC_ERROR;
     }
+
     int err = Remote()->SendRequest(STOP_USER, data, reply, option);
     if (err != E_OK) {
         return E_IPC_ERROR;

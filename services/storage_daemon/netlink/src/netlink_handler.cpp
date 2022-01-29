@@ -15,8 +15,8 @@
 #include "netlink/netlink_handler.h"
 
 #include "netlink/netlink_data.h"
-#include "utils/errno.h"
-#include "utils/log.h"
+#include "storage_service_errno.h"
+#include "storage_service_log.h"
 
 namespace OHOS {
 namespace StorageDaemon {

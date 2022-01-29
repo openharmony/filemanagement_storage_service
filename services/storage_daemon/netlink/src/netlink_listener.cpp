@@ -24,8 +24,8 @@
 #include <linux/netlink.h>
 
 #include "securec.h"
-#include "utils/errno.h"
-#include "utils/log.h"
+#include "storage_service_errno.h"
+#include "storage_service_log.h"
 
 constexpr int POLL_IDLE_TIME = 1000;
 constexpr int UEVENT_MSG_LEN = 1024;

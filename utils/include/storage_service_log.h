@@ -12,22 +12,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef STORAGE_DAEMON_UTILS_LOG_H
-#define STORAGE_DAEMON_UTILS_LOG_H
+#ifndef STORAGE_SERVICE_UTILS_LOG_H
+#define STORAGE_SERVICE_UTILS_LOG_H
 
 #include "hilog/log.h"
 
 #ifndef LOG_DOMAIN
-#define LOG_DOMAIN 0
+#define LOG_DOMAIN 0xD004300
 #endif
 
 namespace OHOS {
-namespace StorageDaemon {
-
-constexpr OHOS::HiviewDFX::HiLogLabel LOG_LABEL = { LOG_CORE, LOG_DOMAIN, "StorageDaemon" };
+static constexpr OHOS::HiviewDFX::HiLogLabel LOG_LABEL = { LOG_CORE, LOG_DOMAIN, "StorageService" };
 
 #define PRINT_LOG(Level, fmt, ...) \
-    OHOS::HiviewDFX::HiLog::Level(OHOS::StorageDaemon::LOG_LABEL, "[%{public}s:%{public}d] " fmt, \
+    OHOS::HiviewDFX::HiLog::Level(OHOS::LOG_LABEL, "[%{public}s:%{public}d] " fmt, \
                             __FUNCTION__, __LINE__, ##__VA_ARGS__)
 
 #define LOGD(fmt, ...) PRINT_LOG(Debug, fmt, ##__VA_ARGS__)
@@ -35,7 +33,6 @@ constexpr OHOS::HiviewDFX::HiLogLabel LOG_LABEL = { LOG_CORE, LOG_DOMAIN, "Stora
 #define LOGW(fmt, ...) PRINT_LOG(Warn, fmt, ##__VA_ARGS__)
 #define LOGE(fmt, ...) PRINT_LOG(Error, fmt, ##__VA_ARGS__)
 #define LOGF(fmt, ...) PRINT_LOG(Fatal, fmt, ##__VA_ARGS__)
-} // StorageDaemon
 } // OHOS
 
-#endif // STORAGE_DAEMON_UTILS_LOG_H
+#endif // STORAGE_SERVICE_UTILS_LOG_H

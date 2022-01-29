@@ -14,16 +14,16 @@
  */
 
 #include "user/user_manager.h"
+#include <cstdlib>
+#include <sys/mount.h>
 #include "crypto/key_manager.h"
 #include "ipc/istorage_daemon.h"
 #include "parameter.h"
-#include "utils/errno.h"
+#include "storage_service_errno.h"
 #include "utils/file_utils.h"
-#include "utils/log.h"
+#include "storage_service_log.h"
 #include "utils/mount_argument_utils.h"
 #include "utils/string_utils.h"
-#include <cstdlib>
-#include <sys/mount.h>
 
 using namespace std;
 
@@ -223,19 +223,23 @@ int32_t UserManager::DestroyUserDirs(int32_t userId, uint32_t flags)
 {
     LOGI("destroy user dirs for %{public}d, flags %{public}u", userId, flags);
 
-    int32_t err = E_OK;
+    int32_t ret = E_OK;
+    int32_t err;
 
     if (flags & IStorageDaemon::CRYPTO_FLAG_EL1) {
         err = DestroyDirsFromIdAndLevel(userId, el1_);
+        ret = (err != E_OK) ? err : ret;
     }
 
     if (flags & IStorageDaemon::CRYPTO_FLAG_EL2) {
         err = DestroyDirsFromIdAndLevel(userId, el2_);
+        ret = (err != E_OK) ? err : ret;
+
+        err = DestroyHmdfsDirs(userId);
+        ret = (err != E_OK) ? err : ret;
     }
 
-    err = DestroyHmdfsDirs(userId);
-
-    return err;
+    return ret;
 }
 
 inline bool PrepareDirsFromVec(int32_t userId, const std::string &level, const std::vector<DirInfo> &vec)

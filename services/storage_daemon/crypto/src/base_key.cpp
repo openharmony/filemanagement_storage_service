@@ -25,7 +25,7 @@
 #include "directory_ex.h"
 #include "string_ex.h"
 #include "file_ex.h"
-#include "utils/log.h"
+#include "storage_service_log.h"
 #include "huks_master.h"
 
 namespace OHOS {

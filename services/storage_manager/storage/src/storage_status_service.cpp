@@ -14,13 +14,11 @@
  */
 
 #include "storage/storage_status_service.h"
-
+#include "storage_service_errno.h"
+#include "storage_service_log.h"
 #include "installd_client.h"
 #include "os_account_manager.h"
 #include "os_account_constants.h"
-
-#include "utils/storage_manager_errno.h"
-#include "utils/storage_manager_log.h"
 
 using namespace std;
 

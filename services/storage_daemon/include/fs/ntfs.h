@@ -19,7 +19,6 @@
 namespace OHOS {
 namespace StorageDaemon {
 class Ntfs {
-
 };
 } // STORAGE_DAEMON
 } // OHOS

@@ -14,13 +14,13 @@
  */
 
 #include "utils/file_utils.h"
-#include <errno.h>
+#include <cerrno>
 #include <unistd.h>
-#include <string.h>
+#include <cstring>
 #include <dirent.h>
 #include <sys/stat.h>
-#include "utils/errno.h"
-#include "utils/log.h"
+#include "storage_service_errno.h"
+#include "storage_service_log.h"
 #include "string_ex.h"
 
 namespace OHOS {

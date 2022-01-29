@@ -14,13 +14,13 @@
  */
 
 #include "ipc/storage_manager.h"
+#include <singleton.h>
 #include "system_ability_definition.h"
-#include "utils/storage_manager_log.h"
-#include "utils/storage_manager_errno.h"
+#include "storage_service_log.h"
+#include "storage_service_errno.h"
 #include "user/multi_user_manager_service.h"
 #include <storage/storage_status_service.h>
 #include <storage/storage_total_status_service.h>
-#include <singleton.h>
 
 namespace OHOS {
 namespace StorageManager {

@@ -27,7 +27,7 @@
 
 #include "storage_statistics_napi.h"
 #include "storage_manager_connect.h"
-#include "utils/storage_manager_log.h"
+#include "storage_service_log.h"
 
 using namespace OHOS::DistributedFS;
 

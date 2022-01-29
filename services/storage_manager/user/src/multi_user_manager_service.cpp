@@ -16,8 +16,8 @@
 #include "user/multi_user_manager_service.h"
 #include "os_account_constants.h"
 #include "storage_daemon_communication/storage_daemon_communication.h"
-#include "utils/storage_manager_log.h"
-#include "utils/storage_manager_errno.h"
+#include "storage_service_log.h"
+#include "storage_service_errno.h"
 
 namespace OHOS {
 namespace StorageManager {

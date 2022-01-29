@@ -13,18 +13,17 @@
  * limitations under the License.
  */
 
+#include "system_ability_definition.h"
 #include "ipc/storage_daemon.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
 #include "netlink/netlink_manager.h"
-#include "utils/log.h"
+#include "storage_service_log.h"
 
 using namespace OHOS;
 
 int main()
 {
-    int said = 5002;
-
     StorageDaemon::NetlinkManager *nm = StorageDaemon::NetlinkManager::Instance();
     if (!nm) {
         LOGE("Unable to create NetlinkManager");
@@ -40,7 +39,7 @@ int main()
         auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
         if (samgr != nullptr) {
             sptr<StorageDaemon::StorageDaemon> sd = new StorageDaemon::StorageDaemon();
-            samgr->AddSystemAbility(said, sd);
+            samgr->AddSystemAbility(STORAGE_MANAGER_DAEMON_ID, sd);
             break;
         }
     } while (true);

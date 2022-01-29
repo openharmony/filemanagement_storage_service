@@ -23,7 +23,7 @@
 
 #include "hks_api.h"
 #include "hks_param.h"
-#include "utils/log.h"
+#include "storage_service_log.h"
 
 namespace OHOS {
 namespace StorageDaemon {

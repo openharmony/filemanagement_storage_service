@@ -22,8 +22,8 @@
 #include <sys/socket.h>
 #include <linux/netlink.h>
 
-#include "utils/errno.h"
-#include "utils/log.h"
+#include "storage_service_errno.h"
+#include "storage_service_log.h"
 #include "securec.h"
 
 namespace OHOS {

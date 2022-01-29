@@ -15,8 +15,8 @@
 #include "storage_daemon_communication/storage_daemon_communication.h"
 #include <system_ability_definition.h>
 #include <iservice_registry.h>
-#include "utils/storage_manager_log.h"
-#include "utils/storage_manager_errno.h"
+#include "storage_service_log.h"
+#include "storage_service_errno.h"
 #include "ipc/istorage_daemon.h"
 #include "ipc/storage_daemon.h"
 #include "ipc/storage_daemon_proxy.h"

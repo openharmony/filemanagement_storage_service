@@ -17,7 +17,7 @@
 #include <iostream>
 #include <vector>
 
-#include "utils/log.h"
+#include "storage_service_log.h"
 #include "utils/file_utils.h"
 #include "storage_daemon_client.h"
 

@@ -29,6 +29,7 @@ config("storage_daemon_config") {
     "//utils/native/base/include",
     "//foundation/distributedschedule/samgr/interfaces/innerkits/samgr_proxy/include",
     "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include",
+    "//foundation/filemanagement/storage_service/utils/include",
   ]
 }
 
@@ -70,6 +71,7 @@ ohos_executable("storage_daemon") {
 config("sdc_config") {
   include_dirs = [
     "include",
+    "//foundation/filemanagement/storage_service/utils/include",
     "//utils/native/base/include",
     "//foundation/distributedschedule/samgr/interfaces/innerkits/samgr_proxy/include",
     "//utils/system/safwk/native/include",

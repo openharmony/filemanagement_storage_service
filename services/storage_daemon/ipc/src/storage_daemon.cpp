@@ -15,9 +15,9 @@
 
 #include "ipc/storage_daemon.h"
 #include "user/user_manager.h"
-#include "utils/errno.h"
+#include "storage_service_errno.h"
 #include "crypto/key_manager.h"
-#include "utils/log.h"
+#include "storage_service_log.h"
 
 namespace OHOS {
 namespace StorageDaemon {
