@@ -24,15 +24,15 @@ ohos_unittest("user_manager_test") {
     "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
     "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
     "//foundation/filemanagement/storage_service/utils/include",
-    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include"
+    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include",
   ]
 
   sources = [
     "$ROOT_DIR/user/src/user_manager.cpp",
     "$ROOT_DIR/user/test/user_manager_test.cpp",
     "$ROOT_DIR/utils/file_utils.cpp",
-    "$ROOT_DIR/utils/string_utils.cpp",
     "$ROOT_DIR/utils/mount_argument_utils.cpp",
+    "$ROOT_DIR/utils/string_utils.cpp",
     "$ROOT_DIR/utils/test/common/help_utils.cpp",
   ]
 

@@ -75,6 +75,7 @@ void FileUtilsTest::TearDown(void)
  * @tc.name: FileUtilsTest_ChMod_001
  * @tc.desc: Verify the ChMod function.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(FileUtilsTest, FileUtilsTest_ChMod_001, TestSize.Level1)
 {
@@ -103,6 +104,7 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_ChMod_001, TestSize.Level1)
  * @tc.name: FileUtilsTest_ChOwn_001
  * @tc.desc: Verify the ChOwn function.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(FileUtilsTest, FileUtilsTest_ChOwn_001, TestSize.Level1)
 {
@@ -141,6 +143,7 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_ChOwn_001, TestSize.Level1)
  * @tc.name: FileUtilsTest_MkDir_001
  * @tc.desc: Verify the MkDir function.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(FileUtilsTest, FileUtilsTest_MkDir_001, TestSize.Level1)
 {
@@ -163,6 +166,7 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_MkDir_001, TestSize.Level1)
  * @tc.name: FileUtilsTest_RmDir_001
  * @tc.desc: Verify the RmDir function.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(FileUtilsTest, FileUtilsTest_RmDir_001, TestSize.Level1)
 {
@@ -184,6 +188,7 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_RmDir_001, TestSize.Level1)
  * @tc.name: FileUtilsTest_PrepareDir_001
  * @tc.desc: Verify the PrepareDir function.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(FileUtilsTest, FileUtilsTest_PrepareDir_001, TestSize.Level1)
 {
@@ -205,6 +210,7 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_PrepareDir_001, TestSize.Level1)
  * @tc.name: FileUtilsTest_PrepareDir_002
  * @tc.desc: Verify the PrepareDir function.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(FileUtilsTest, FileUtilsTest_PrepareDir_002, TestSize.Level1)
 {
@@ -233,6 +239,7 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_PrepareDir_002, TestSize.Level1)
  * @tc.name: FileUtilsTest_PrepareDir_003
  * @tc.desc: Verify the PrepareDir function.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(FileUtilsTest, FileUtilsTest_PrepareDir_003, TestSize.Level1)
 {

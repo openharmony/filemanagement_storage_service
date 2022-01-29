@@ -49,6 +49,7 @@ void StorageDaemonProxyTest::SetUp()
  * @tc.name: StorageDaemonProxyTest_Shutdown_001
  * @tc.desc: Verify the Shutdown function.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_Shutdown_001, TestSize.Level1)
 {
@@ -69,6 +70,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_Shutdown_001, TestSize.L
  * @tc.name: StorageDaemonProxyTest_PrepareUserDirs_001
  * @tc.desc: Verify the PrepareUserDirs function.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_PrepareUserDirs_001, TestSize.Level1)
 {
@@ -89,6 +91,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_PrepareUserDirs_001, Tes
  * @tc.name: StorageDaemonProxyTest_DestroyUserDirs_001
  * @tc.desc: Verify the DestroyUserDirs function.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_DestroyUserDirs_001, TestSize.Level1)
 {
@@ -109,6 +112,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_DestroyUserDirs_001, Tes
  * @tc.name: StorageDaemonProxyTest_StartUser_001
  * @tc.desc: Verify the StartUser function.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_StartUser_001, TestSize.Level1)
 {
@@ -129,6 +133,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_StartUser_001, TestSize.
  * @tc.name: StorageDaemonProxyTest_StopUser_001
  * @tc.desc: Verify the StopUser function.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_StopUser_001, TestSize.Level1)
 {

@@ -46,6 +46,7 @@ public:
  * @tc.name: Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_001
  * @tc.desc: Verify the OnRemoteRequest function with error descriptor.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_001, TestSize.Level1)
 {
@@ -69,6 +70,7 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRe
  * @tc.name: Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_002
  * @tc.desc: Verify the OnRemoteRequest function with error code.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_002, TestSize.Level1)
 {
@@ -93,6 +95,7 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRe
  * @tc.name: Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_003
  * @tc.desc: Verify the OnRemoteRequest function.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_003, TestSize.Level1)
 {
@@ -139,6 +142,7 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRe
  * @tc.name: Storage_Manager_StorageDaemonTest_HandlePrepareUserDirs_001
  * @tc.desc: Verify the HandlePrepareUserDirs function.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonTest_HandlePrepareUserDirs_001, TestSize.Level1)
 {
@@ -169,6 +173,7 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonTest_HandlePrepareU
  * @tc.name: Storage_Manager_StorageDaemonTest_HandleDestroyUserDirs_001
  * @tc.desc: Verify the HandleDestroyUserDirs function.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonTest_HandleDestroyUserDirs_001, TestSize.Level1)
 {
@@ -199,6 +204,7 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonTest_HandleDestroyU
  * @tc.name: Storage_Manager_StorageDaemonTest_HandleStartUser_001
  * @tc.desc: Verify the HandleStartUser function.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonTest_HandleStartUser_001, TestSize.Level1)
 {
@@ -229,6 +235,7 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonTest_HandleStartUse
  * @tc.name: Storage_Manager_StorageDaemonTest_HandleStopUser_001
  * @tc.desc: Verify the HandleStopUser function.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonTest_HandleStopUser_001, TestSize.Level1)
 {

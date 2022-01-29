@@ -16,7 +16,7 @@ import("//build/test.gni")
 ROOT_DIR = "//foundation/filemanagement/storage_service/services/storage_daemon"
 
 ohos_unittest("storage_daemon_test") {
-  module_out_path = "storage_manager/storage_daemon"
+  module_out_path = "filemanagement/storage_service/storage_daemon"
 
   cflags_cc = [ "-Wno-unused-const-variable" ]
 
@@ -26,7 +26,7 @@ ohos_unittest("storage_daemon_test") {
     "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
     "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
     "//foundation/filemanagement/storage_service/utils/include",
-    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include"
+    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include",
   ]
 
   sources = [
@@ -35,8 +35,8 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/ipc/test/storage_daemon_test.cpp",
     "$ROOT_DIR/user/src/user_manager.cpp",
     "$ROOT_DIR/utils/file_utils.cpp",
-    "$ROOT_DIR/utils/string_utils.cpp",
     "$ROOT_DIR/utils/mount_argument_utils.cpp",
+    "$ROOT_DIR/utils/string_utils.cpp",
     "$ROOT_DIR/utils/test/common/help_utils.cpp",
   ]
 
@@ -54,13 +54,13 @@ ohos_unittest("storage_daemon_test") {
 }
 
 ohos_unittest("storage_daemon_proxy_test") {
-  module_out_path = "storage_manager/storage_daemon"
+  module_out_path = "filemanagement/storage_service/storage_daemon"
 
   include_dirs = [
     "$ROOT_DIR/include",
     "//foundation/filemanagement/storage_service/utils/include",
     "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
-    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include"
+    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include",
   ]
 
   sources = [
@@ -83,7 +83,7 @@ ohos_unittest("storage_daemon_proxy_test") {
 }
 
 ohos_unittest("storage_daemon_stub_test") {
-  module_out_path = "storage_manager/storage_daemon"
+  module_out_path = "filemanagement/storage_service/storage_daemon"
 
   include_dirs = [
     "$ROOT_DIR/include",
@@ -91,7 +91,7 @@ ohos_unittest("storage_daemon_stub_test") {
     "//foundation/filemanagement/storage_service/utils/include",
     "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
     "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
-    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include"
+    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include",
   ]
 
   sources = [
@@ -100,8 +100,8 @@ ohos_unittest("storage_daemon_stub_test") {
     "$ROOT_DIR/ipc/src/storage_daemon_stub.cpp",
     "$ROOT_DIR/ipc/test/storage_daemon_stub_test.cpp",
     "$ROOT_DIR/user/src/user_manager.cpp",
-    "$ROOT_DIR/utils/mount_argument_utils.cpp",
     "$ROOT_DIR/utils/file_utils.cpp",
+    "$ROOT_DIR/utils/mount_argument_utils.cpp",
   ]
 
   deps = [

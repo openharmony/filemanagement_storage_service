@@ -84,6 +84,7 @@ void StorageDaemonTest::TearDown(void)
  * @tc.name: Storage_Manager_StorageDaemonTest_PrepareUserDirs_001
  * @tc.desc: check PrepareUserDirs when the el1 path exists but is not dir.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_PrepareUserDirs_001, TestSize.Level1)
 {
@@ -108,6 +109,7 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_PrepareUserDirs_00
  * @tc.name: Storage_Manager_StorageDaemonTest_PrepareUserDirs_002
  * @tc.desc: check PrepareUserDirs when the flags is incorrect.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_PrepareUserDirs_002, TestSize.Level1)
 {
@@ -126,6 +128,7 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_PrepareUserDirs_00
  * @tc.name: Storage_Manager_StorageDaemonTest_PrepareUserDirs_003
  * @tc.desc: Verify the PrepareUserDirs function when args are normal.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_PrepareUserDirs_003, TestSize.Level1)
 {
@@ -146,6 +149,7 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_PrepareUserDirs_00
  * @tc.name: Storage_Manager_StorageDaemonTest_StartUser_001
  * @tc.desc: check StartUser when user's dirs are not prepare.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_StartUser_001, TestSize.Level1)
 {
@@ -163,6 +167,7 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_StartUser_001, Tes
  * @tc.name: Storage_Manager_StorageDaemonTest_StartUser_002
  * @tc.desc: check the StartUser function when args are normal
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_StartUser_002, TestSize.Level1)
 {
@@ -190,6 +195,7 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_StartUser_002, Tes
  * @tc.name: Storage_Manager_StorageDaemonTest_DestroyUserDirs_001
  * @tc.desc: Verify the DestroyUserDirs function.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_DestroyUserDirs_001, TestSize.Level1)
 {
@@ -214,6 +220,7 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_DestroyUserDirs_00
  * @tc.name: Storage_Manager_StorageDaemonTest_StopUser_001
  * @tc.desc: check the StopUser function when dir does not exist.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_StopUser_001, TestSize.Level1)
 {
@@ -231,6 +238,7 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_StopUser_001, Test
  * @tc.name: Storage_Manager_StorageDaemonTest_StopUser_002
  * @tc.desc: check the StopUser function when dir is not mount.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_StopUser_002, TestSize.Level1)
 {
@@ -252,6 +260,7 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_StopUser_002, Test
  * @tc.name: Storage_Manager_StorageDaemonTest_StopUser_003
  * @tc.desc: check the StopUser function normal
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_StopUser_003, TestSize.Level1)
 {

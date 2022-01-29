@@ -71,6 +71,7 @@ void UserManagerTest::TearDown()
  * @tc.name: Storage_Manager_UserManagerTest_Instance_001
  * @tc.desc: Verify the Instance function.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_Instance_001, TestSize.Level1)
 {
@@ -86,7 +87,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_Instance_001, TestSize
  * @tc.name: Storage_Manager_UserManagerTest_Instance_002
  * @tc.desc: Verify the Instance function.
  * @tc.type: FUNC
- * @tc.require: Issue Number
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_Instance_002, TestSize.Level1)
 {
@@ -106,6 +107,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_Instance_002, TestSize
  * @tc.name: Storage_Manager_UserManagerTest_PrepareUserDirs_001
  * @tc.desc: func PrepareUserDirs when the el1 path exist but is not dir.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirs_001, TestSize.Level1)
 {
@@ -131,6 +133,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirs_001, T
  * @tc.name: Storage_Manager_UserManagerTest_PrepareUserDirs_002
  * @tc.desc: func PrepareUserDirs when the flags is incorrect.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirs_002, TestSize.Level1)
 {
@@ -156,6 +159,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirs_002, T
  * @tc.name: Storage_Manager_UserManagerTest_PrepareUserDirs_003
  * @tc.desc: check PrepareUserDirs when args are normal
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirs_003, TestSize.Level1)
 {
@@ -177,6 +181,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirs_003, T
  * @tc.name: Storage_Manager_UserManagerTest_StartUser_001
  * @tc.desc: check the StartUser function when args are normal.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StartUser_001, TestSize.Level1)
 {
@@ -205,6 +210,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StartUser_001, TestSiz
  * @tc.name: Storage_Manager_UserManagerTest_StartUser_002
  * @tc.desc: check StartUser function when user's dirs are not prepare.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StartUser_002, TestSize.Level1)
 {
@@ -223,6 +229,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StartUser_002, TestSiz
  * @tc.name: Storage_Manager_UserManagerTest_DestroyUserDirs_001
  * @tc.desc: check DestroyUserDirs function
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_DestroyUserDirs_001, TestSize.Level1)
 {
@@ -248,6 +255,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_DestroyUserDirs_001, T
  * @tc.name: Storage_Manager_UserManagerTest_StopUser_001
  * @tc.desc: check the StopUser function when dir does not exist.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StopUser_001, TestSize.Level1)
 {
@@ -266,6 +274,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StopUser_001, TestSize
  * @tc.name: Storage_Manager_UserManagerTest_StopUser_002
  * @tc.desc: check the StopUser function when dir is not mount.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StopUser_002, TestSize.Level1)
 {
@@ -288,6 +297,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StopUser_002, TestSize
  * @tc.name: Storage_Manager_UserManagerTest_StopUser_003
  * @tc.desc: check the StopUser function when args are normal.
  * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
  */
 HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StopUser_003, TestSize.Level1)
 {
