@@ -33,7 +33,7 @@ config("storage_daemon_config") {
     "//foundation/distributedschedule/safwk/interfaces/innerkits/safwk",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
     "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include",
-    "//foundation/filemanagement/storage_service/utils/include",
+    "//foundation/filemanagement/storage_service/services/common/include",
   ]
 }
 
@@ -74,6 +74,11 @@ ohos_executable("storage_daemon") {
     "volume/src/volume_manager.cpp",
   ]
 
+  defines = [
+    "STORAGE_LOG_TAG = \"STORAGE_DAEMON\"",
+    "LOG_DOMAIN = 0xD004301",
+  ]
+
   configs = [ ":storage_daemon_config" ]
 
   deps = [
@@ -97,7 +102,7 @@ ohos_executable("storage_daemon") {
 config("sdc_config") {
   include_dirs = [
     "include",
-    "//foundation/filemanagement/storage_service/utils/include",
+    "//foundation/filemanagement/storage_service/services/common/include",
     "//utils/native/base/include",
     "//foundation/distributedschedule/samgr/interfaces/innerkits/samgr_proxy/include",
     "//utils/system/safwk/native/include",
@@ -120,6 +125,11 @@ ohos_executable("sdc") {
     "ipc/src/storage_daemon_proxy.cpp",
     "sdc.cpp",
     "utils/file_utils.cpp",
+  ]
+
+  defines = [
+    "STORAGE_LOG_TAG = \"STORAGE_DAEMON\"",
+    "LOG_DOMAIN = 0xD004301",
   ]
 
   configs = [ ":sdc_config" ]

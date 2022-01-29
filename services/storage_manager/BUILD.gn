@@ -21,7 +21,7 @@ config("storage_manager_config") {
     "//utils/system/safwk/native/include",
     "//utils/native/base/include",
     "../storage_daemon/include",
-    "//foundation/filemanagement/storage_service/utils/include",
+    "//foundation/filemanagement/storage_service/services/common/include",
     "//foundation/appexecfwk/standard/services/bundlemgr/include",
     "//foundation/aafwk/standard/interfaces/innerkits/base/include/ohos/aafwk/base",
   ]
@@ -40,6 +40,11 @@ ohos_shared_library("storage_manager") {
     "user/src/multi_user_manager_service.cpp",
     "volume/src/notification.cpp",
     "volume/src/volume_manager_service.cpp",
+  ]
+
+  defines = [
+    "STORAGE_LOG_TAG = \"STORAGE_MANAGER\"",
+    "LOG_DOMAIN = 0xD004300",
   ]
 
   configs = [ ":storage_manager_config" ]

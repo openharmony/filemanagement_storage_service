@@ -16,11 +16,16 @@ import("//build/test.gni")
 ohos_unittest("file_utils_test") {
   module_out_path = "filemanagement/storage_service/storage_daemon"
 
+  defines = [
+    "STORAGE_LOG_TAG = \"STORAGE_DAEMON\"",
+    "LOG_DOMAIN = 0xD004301",
+  ]
+
   include_dirs = [
     "//foundation/filemanagement/storage_service/services/storage_daemon/include",
     "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
     "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
-    "//foundation/filemanagement/storage_service/utils/include",
+    "//foundation/filemanagement/storage_service/services/common/include",
   ]
 
   sources = [

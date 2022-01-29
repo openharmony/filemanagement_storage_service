@@ -16,6 +16,10 @@ import("//build/test.gni")
 ohos_unittest("storage_daemon_communication_test") {
   module_out_path = "storage_manager/storage_manager"
 
+  defines = [
+    "STORAGE_LOG_TAG = \"STORAGE_MANAGER\"",
+    "LOG_DOMAIN = 0xD004300",
+  ]
   sources = [
     "//foundation/filemanagement/storage_service/services/storage_daemon/ipc/src/storage_daemon_proxy.cpp",
     "//foundation/filemanagement/storage_service/services/storage_manager/storage_daemon_communication/src/storage_daemon_communication.cpp",
@@ -25,7 +29,7 @@ ohos_unittest("storage_daemon_communication_test") {
   include_dirs = [
     "//foundation/filemanagement/storage_service/services/storage_daemon/include",
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
-    "//foundation/filemanagement/storage_service/utils/include",
+    "//foundation/filemanagement/storage_service/services/common/include",
     "include",
     "//utils/system/safwk/native/include",
     "//utils/native/base/include",

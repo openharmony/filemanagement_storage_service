@@ -19,7 +19,7 @@ config("storage_daemon_crypto_config") {
   include_dirs = [
     "../include",
     "../include/crypto",
-    "//foundation/filemanagement/storage_service/utils/include",
+    "//foundation/filemanagement/storage_service/services/common/include",
     "//third_party/openssl/include/openssl",
     "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
     "//utils/system/safwk/native/include",
@@ -49,6 +49,11 @@ ohos_static_library("libsdcrypto") {
     "src/huks_master.cpp",
     "src/key_ctrl.cpp",
     "src/key_manager.cpp",
+  ]
+
+  defines = [
+    "STORAGE_LOG_TAG = \"STORAGE_DAEMON\"",
+    "LOG_DOMAIN = 0xD004301",
   ]
 
   public_deps = [

@@ -21,7 +21,7 @@ config("private_config") {
   include_dirs = [
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
     "//foundation/filemanagement/storage_service/services/storage_daemon/include",
-    "//foundation/filemanagement/storage_service/utils/include",
+    "//foundation/filemanagement/storage_service/services/common/include",
   ]
 }
 
@@ -32,6 +32,11 @@ ohos_shared_library("storage_manager_sa_proxy") {
     "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/volume_core.cpp",
     "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/volume_external.cpp",
     "//foundation/filemanagement/storage_service/services/storage_manager/ipc/src/storage_manager_proxy.cpp",
+  ]
+
+  defines = [
+    "STORAGE_LOG_TAG = \"STORAGE_MANAGER\"",
+    "LOG_DOMAIN = 0xD004300",
   ]
 
   configs = [ ":private_config" ]
