@@ -23,12 +23,12 @@ namespace OHOS {
 namespace StorageManager {
 MultiUserManagerService::MultiUserManagerService()
 {
-    LOGI("DEBUG MultiUserManagerService constructer");    
+    LOGI("DEBUG MultiUserManagerService constructer");
 }
 
 MultiUserManagerService::~MultiUserManagerService()
 {
-    LOGI("DEBUG ~MultiUserManagerService destructer ~");    
+    LOGI("DEBUG ~MultiUserManagerService destructer ~");
 }
 
 int32_t MultiUserManagerService::CheckUserIdRange(int32_t userId)
@@ -40,28 +40,6 @@ int32_t MultiUserManagerService::CheckUserIdRange(int32_t userId)
     return E_OK;
 }
 
-int32_t MultiUserManagerService::CheckUserState(int32_t userId, UserState state)
-{   
-    auto iterator = users_.find(userId);
-    if (iterator == users_.end()) {
-        LOGE("MultiUserManagerService: the user %{public}d doesn't exist", userId);
-        return E_NON_EXIST;
-    }
-
-    UserInfo& user = iterator->second;
-    if (user.GetState() != state) {
-        LOGE("MultiUserManagerService: the user's state %{public}d is invalid", user.GetState());
-        return E_USER_STATE;
-    }
-
-    return E_OK;
-}
-
-inline void MultiUserManagerService::SetUserState(int32_t userId, UserState state)
-{
-    users_.at(userId).SetState(state);
-}
-
 int32_t MultiUserManagerService::PrepareAddUser(int32_t userId)
 {
     LOGI("MultiUserManagerService::PrepareAddUser, userId:%{public}d", userId);
@@ -70,15 +48,9 @@ int32_t MultiUserManagerService::PrepareAddUser(int32_t userId)
         LOGE("MultiUserManagerService::PrepareAddUser userId %{public}d out of range", userId);
         return err;
     }
-    auto iterator = users_.find(userId);
-    if (iterator != users_.end()) {
-        LOGE("MultiUserManagerService: the user %{public}d already exists", userId);
-        return E_EXIST;
-    }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->PrepareAddUser(userId);
-    users_.insert({ userId, UserInfo(userId, USER_CREATE)});
     return err;
 }
 
@@ -90,14 +62,9 @@ int32_t MultiUserManagerService::RemoveUser(int32_t userId)
         LOGE("MultiUserManagerService::RemoveUser userId %{public}d out of range", userId);
         return err;
     }
-    err = CheckUserState(userId, USER_CREATE);
-    if (err != E_OK) {
-        return err;
-    }    
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->RemoveUser(userId);
-    users_.erase(userId);
     return err;
 }
 
@@ -109,14 +76,9 @@ int32_t MultiUserManagerService::PrepareStartUser(int32_t userId)
         LOGE("MultiUserManagerService::PrepareStartUser userId %{public}d out of range", userId);
         return err;
     }
-    err = CheckUserState(userId, USER_CREATE);
-    if (err != E_OK) {
-        return err;
-    }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->PrepareStartUser(userId);
-    SetUserState(userId, USER_START);
     return err;
 }
 
@@ -128,14 +90,9 @@ int32_t MultiUserManagerService::StopUser(int32_t userId)
         LOGE("MultiUserManagerService::StopUser userId %{public}d out of range", userId);
         return err;
     }
-    err = CheckUserState(userId, USER_START);
-    if (err != E_OK) {
-        return err;
-    }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->StopUser(userId);
-    SetUserState(userId, USER_CREATE);
     return err;
 }
 } // StorageManager
