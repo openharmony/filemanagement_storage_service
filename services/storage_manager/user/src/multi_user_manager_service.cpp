@@ -23,12 +23,12 @@ namespace OHOS {
 namespace StorageManager {
 MultiUserManagerService::MultiUserManagerService()
 {
-    LOGI("DEBUG MultiUserManagerService constructer");    
+    LOGI("DEBUG MultiUserManagerService constructer");
 }
 
 MultiUserManagerService::~MultiUserManagerService()
 {
-    LOGI("DEBUG ~MultiUserManagerService destructer ~");    
+    LOGI("DEBUG ~MultiUserManagerService destructer ~");
 }
 
 int32_t MultiUserManagerService::CheckUserIdRange(int32_t userId)

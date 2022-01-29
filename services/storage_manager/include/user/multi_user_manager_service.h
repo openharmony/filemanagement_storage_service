@@ -31,7 +31,7 @@ public:
     int32_t StopUser(int32_t userId);
 private:
     int32_t CheckUserIdRange(int32_t userId);
-};  
+};
 } // StorageManager
 } // OHOS
 
