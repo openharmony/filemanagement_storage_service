@@ -25,16 +25,13 @@ using namespace std;
 namespace {
 static const std::string DATA_POINT = "/data/service/el2/";
 static const std::string BASE_MOUNT_POINT = "/mnt/hmdfs/";
+static const std::string COMM_DATA_POINT = "/storage/media/";
 } // namespace
 
 string MountArgument::GetFullSrc() const
 {
     stringstream ss;
-    if (sameAccount_ == true) {
-        ss << DATA_POINT << userId_ << "/hmdfs/account/";
-    } else {
-        ss << DATA_POINT << userId_ << "/hmdfs/non_account/";
-    }
+    ss << DATA_POINT << userId_ << "/hmdfs/" << relativePath_;
 
     return ss.str();
 }
@@ -42,11 +39,15 @@ string MountArgument::GetFullSrc() const
 string MountArgument::GetFullDst() const
 {
     stringstream ss;
-    if (sameAccount_ == true) {
-        ss << BASE_MOUNT_POINT << userId_ << "/account/";
-    } else {
-        ss << BASE_MOUNT_POINT << userId_ << "/non_account/";
-    }
+    ss << BASE_MOUNT_POINT << userId_ << "/" << relativePath_;
+
+    return ss.str();
+}
+
+string MountArgument::GetCommFullPath() const
+{
+    stringstream ss;
+    ss << COMM_DATA_POINT << userId_ << "/";
 
     return ss.str();
 }
@@ -54,11 +55,7 @@ string MountArgument::GetFullDst() const
 string MountArgument::GetCachePath() const
 {
     stringstream ss;
-    if (sameAccount_ == true) {
-        ss << DATA_POINT << userId_ << "/hmdfs/account/cache/";
-    } else {
-        ss << DATA_POINT << userId_ << "/hmdfs/non_account/cache/";
-    }
+    ss << DATA_POINT << userId_ << "/hmdfs/" << relativePath_ << "/cache/";
 
     return ss.str();
 }
@@ -87,17 +84,16 @@ unsigned long MountArgument::GetFlags() const
     return MS_NODEV;
 }
 
-MountArgument MountArgumentDescriptors::Alpha(int userId, bool sameAccount)
+MountArgument MountArgumentDescriptors::Alpha(int userId, string relativePath)
 {
     MountArgument mountArgument = {
-        .sameAccount_ = sameAccount,
         .userId_ = userId,
         .needInitDir_ = true,
         .useCache_ = true,
         .enableMergeView_ = true,
         .enableFixupOwnerShip_ = false,
         .enableOfflineStash_ = true,
-        .externalFS_ = false,
+        .relativePath_ = relativePath,
     };
     return mountArgument;
 }

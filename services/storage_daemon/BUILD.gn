@@ -42,6 +42,7 @@ ohos_executable("storage_daemon") {
     "netlink/src/netlink_handler.cpp",
     "netlink/src/netlink_listener.cpp",
     "netlink/src/netlink_manager.cpp",
+    "user/src/mount_manager.cpp",
     "user/src/user_manager.cpp",
     "utils/file_utils.cpp",
     "utils/mount_argument_utils.cpp",
