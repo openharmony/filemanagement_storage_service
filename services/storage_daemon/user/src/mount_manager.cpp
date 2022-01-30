@@ -14,16 +14,16 @@
  */
 
 #include "user/mount_manager.h"
-#include "crypto/key_manager.h"
-#include "ipc/istorage_daemon.h"
-#include "parameter.h"
-#include "utils/errno.h"
-#include "utils/file_utils.h"
-#include "utils/log.h"
-#include "utils/mount_argument_utils.h"
-#include "utils/string_utils.h"
 #include <cstdlib>
 #include <sys/mount.h>
+#include "ipc/istorage_daemon.h"
+#include "parameter.h"
+#include "storage_service_errno.h"
+#include "storage_service_log.h"
+#include "utils/file_utils.h"
+#include "utils/mount_argument_utils.h"
+#include "utils/string_utils.h"
+
 
 namespace OHOS {
 namespace StorageDaemon {

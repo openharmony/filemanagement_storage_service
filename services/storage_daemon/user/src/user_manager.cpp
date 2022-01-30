@@ -15,14 +15,11 @@
 
 #include "user/user_manager.h"
 #include <cstdlib>
-#include <sys/mount.h>
 #include "crypto/key_manager.h"
 #include "ipc/istorage_daemon.h"
-#include "parameter.h"
 #include "storage_service_errno.h"
 #include "utils/file_utils.h"
 #include "storage_service_log.h"
-#include "utils/mount_argument_utils.h"
 #include "utils/string_utils.h"
 
 using namespace std;
