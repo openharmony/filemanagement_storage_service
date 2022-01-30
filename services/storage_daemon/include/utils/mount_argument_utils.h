@@ -22,7 +22,6 @@ namespace OHOS {
 namespace StorageDaemon {
 namespace Utils {
 struct MountArgument final {
-    bool sameAccount_{ true };
     int userId_{ 0 };
     bool needInitDir_{ false };
     bool useCache_{ false };
@@ -30,11 +29,11 @@ struct MountArgument final {
     bool enableMergeView_{ false };
     bool enableFixupOwnerShip_{ false };
     bool enableOfflineStash_{ true };
-    bool externalFS_{ false };
-    std::string packageName_;
+    std::string relativePath_;
 
     std::string GetFullSrc() const;
     std::string GetFullDst() const;
+    std::string GetCommFullPath() const;
     std::string GetCachePath() const;
     std::string OptionsToString() const;
     unsigned long GetFlags() const;
@@ -42,7 +41,7 @@ struct MountArgument final {
 
 struct MountArgumentDescriptors final {
 public:
-    static MountArgument Alpha(int userId, bool sameAccount);
+    static MountArgument Alpha(int userId, std::string relativePath);
 };
 } // namespace Utils
 } // namespace StorageDaemon

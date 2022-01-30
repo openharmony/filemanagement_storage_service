@@ -28,6 +28,7 @@ ohos_unittest("user_manager_test") {
   ]
 
   sources = [
+    "$ROOT_DIR/user/src/mount_manager.cpp",
     "$ROOT_DIR/user/src/user_manager.cpp",
     "$ROOT_DIR/user/test/user_manager_test.cpp",
     "$ROOT_DIR/utils/file_utils.cpp",

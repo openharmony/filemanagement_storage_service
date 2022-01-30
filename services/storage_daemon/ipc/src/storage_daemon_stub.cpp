@@ -27,6 +27,7 @@ int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
         return E_PERMISSION_DENIED;
     }
 
+    LOGI("recv remote request code %{public}d", code);
     int err = E_OK;
     switch (code) {
         case SHUTDOWN:
