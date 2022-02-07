@@ -45,6 +45,7 @@ MountManager::MountManager()
                    {"/data/service/el2/%d/hmdfs/non_account/cache", 0711, OID_SYSTEM, OID_SYSTEM}},
       virtualDir_{{"/storage/media/%d", 0711, OID_ROOT, OID_ROOT},
                   {"/storage/media/%d/local", 0711, OID_ROOT, OID_ROOT},
+                  {"/mnt/hmdfs/", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/%d/", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/%d/account", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/%d/non_account", 0711, OID_ROOT, OID_ROOT}}
