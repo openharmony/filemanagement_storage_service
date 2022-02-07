@@ -168,28 +168,40 @@ std::string BaseKey::GetNextCandidateDir() const
 bool BaseKey::StoreKey(const UserAuth &auth)
 {
     LOGD("enter");
+    auto pathTemp = dir_ + PATH_KEY_TEMP;
     if (DoStoreKey(auth)) {
         // rename keypath/temp/ to keypath/version_xx/
         auto candidate = GetNextCandidateDir();
-        OHOS::ForceRemoveDirectory(candidate);
-        if (rename(std::string(dir_ + PATH_KEY_TEMP).c_str(), candidate.c_str()) == 0) {
+        LOGD("rename %{public}s to %{public}s", pathTemp.c_str(), candidate.c_str());
+        if (rename(pathTemp.c_str(), candidate.c_str()) == 0) {
             return true;
         }
-        LOGE("rename fail return %{public}d", errno);
+        LOGE("rename fail return %{public}d, cleanup the temp dir", errno);
     } else {
-        LOGE("DoStoreKey fail");
+        LOGE("DoStoreKey fail, cleanup the temp dir");
     }
+    RemoveAlias(pathTemp);
+    OHOS::ForceRemoveDirectory(pathTemp);
     return false;
 }
 
-// All key files are saved under keypath/temp/.
+// All key files are saved under keypath/temp/ in this function.
 bool BaseKey::DoStoreKey(const UserAuth &auth)
 {
-    std::string pathTemp = dir_ + PATH_KEY_TEMP;
-    OHOS::ForceRemoveDirectory(pathTemp);
+    auto pathTemp = dir_ + PATH_KEY_TEMP;
     OHOS::ForceCreateDirectory(pathTemp);
 
-    OHOS::SaveStringToFile(dir_ + PATH_FSCRYPT_VER, std::to_string(keyInfo_.version));
+    auto pathVersion = dir_ + PATH_FSCRYPT_VER;
+    std::string version;
+    if (OHOS::LoadStringFromFile(pathVersion, version) && version != std::to_string(keyInfo_.version)) {
+        LOGE("version already exist %{public}s, not expected %{public}d", version.c_str(), keyInfo_.version);
+        return false;
+    }
+    if (OHOS::SaveStringToFile(pathVersion, std::to_string(keyInfo_.version)) == false) {
+        LOGE("save version fail");
+        return false;
+    }
+
     if (!GenerateAndSaveKeyBlob(keyContext_.alias, pathTemp + PATH_ALIAS, CRYPTO_KEY_ALIAS_SIZE)) {
         LOGE("GenerateAndSaveKeyBlob alias failed");
         return false;

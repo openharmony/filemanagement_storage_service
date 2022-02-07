@@ -121,19 +121,20 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_store, TestSize.Level1)
     EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
 
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_ALIAS));
-    OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_ALIAS, buf);
+    EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_ALIAS, buf));
     EXPECT_EQ(CRYPTO_KEY_ALIAS_SIZE, buf.size());
 
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SECDISC));
-    OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SECDISC, buf);
+    EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SECDISC, buf));
     EXPECT_EQ(CRYPTO_KEY_SECDISC_SIZE, buf.size());
 
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_ENCRYPTED));
-    OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_ENCRYPTED, buf);
+    EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_ENCRYPTED, buf));
     // the plaintext of 64 bytes, encrypted to 80 bytes size by huks.
     EXPECT_EQ(80U, buf.size());
 
-    OHOS::LoadStringFromFile(TEST_KEYPATH + PATH_FSCRYPT_VER, buf);
+    EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + PATH_FSCRYPT_VER));
+    EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + PATH_FSCRYPT_VER, buf));
     EXPECT_EQ(1U, buf.length());
     EXPECT_EQ('1', buf[0]);
 }
@@ -147,22 +148,18 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_store, TestSize.Level1)
 HWTEST_F(CryptoKeyTest, fscrypt_key_v2_store, TestSize.Level1)
 {
     std::string buf {};
+    g_testKeyV1.ClearKey();
 
     EXPECT_TRUE(g_testKeyV2.InitKey());
     EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
 
+    EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_ALIAS));
+    EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SECDISC));
+    EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_ENCRYPTED));
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION1 + PATH_ALIAS));
-    OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION1 + PATH_ALIAS, buf);
-    EXPECT_EQ(CRYPTO_KEY_ALIAS_SIZE, buf.size());
-
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION1 + PATH_SECDISC));
-    OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION1 + PATH_SECDISC, buf);
-    EXPECT_EQ(CRYPTO_KEY_SECDISC_SIZE, buf.size());
-
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION1 + PATH_ENCRYPTED));
-    OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION1 + PATH_ENCRYPTED, buf);
-    // the plaintext of 64 bytes, encrypted to 80 bytes size by huks.
-    EXPECT_EQ(80U, buf.size());
 
     OHOS::LoadStringFromFile(TEST_KEYPATH + PATH_FSCRYPT_VER, buf);
     EXPECT_EQ(1U, buf.length());
@@ -212,6 +209,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_restore_fail_wrong_version, TestSize.Leve
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_restore, TestSize.Level1)
 {
     g_testKeyV1.keyInfo_.key.Clear();
+    g_testKeyV1.ClearKey();
     EXPECT_TRUE(g_testKeyV1.InitKey());
     EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
     EXPECT_TRUE(g_testKeyV1.UpdateKey());
