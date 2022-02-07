@@ -224,7 +224,7 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
     return true;
 }
 
-// update the latest and cleanup the version_xx.
+// update the latest and do cleanups.
 bool BaseKey::UpdateKey(const std::string &keypath)
 {
     LOGD("enter");
@@ -234,25 +234,27 @@ bool BaseKey::UpdateKey(const std::string &keypath)
         return false;
     }
 
-    // rename latest -> latest.bak
+    // backup the latest
+    std::string pathLatest = dir_ + PATH_LATEST;
+    std::string pathLatestBak = dir_ + PATH_LATEST_BACKUP;
     bool hasLatest = IsDir(dir_ + PATH_LATEST);
     if (hasLatest) {
-        OHOS::ForceRemoveDirectory(dir_ + PATH_LATEST_BACKUP);
-        if (rename(std::string(dir_ + PATH_LATEST).c_str(),
-                   std::string(dir_ + PATH_LATEST_BACKUP).c_str()) != 0) {
+        OHOS::ForceRemoveDirectory(pathLatestBak);
+        if (rename(pathLatest.c_str(),
+                   pathLatestBak.c_str()) != 0) {
             LOGE("backup the latest fail errno:%{public}d", errno);
         }
         LOGD("backup the latest success");
     }
 
-    // rename {candidate} -> latest
+    // rename {candidate} to latest
     OHOS::ForceRemoveDirectory(dir_ + PATH_LATEST);
-    if (rename(candidate.c_str(), std::string(dir_ + PATH_LATEST).c_str()) != 0) {
+    if (rename(candidate.c_str(), pathLatest.c_str()) != 0) {
         LOGE("rename candidate to latest fail return %{public}d", errno);
         if (hasLatest) {
-            // rename latest.bak -> latest
-            if (rename(std::string(dir_ + PATH_LATEST_BACKUP).c_str(),
-                       std::string(dir_ + PATH_LATEST).c_str()) != 0) {
+            // revert from the backup
+            if (rename(pathLatestBak.c_str(),
+                       pathLatest.c_str()) != 0) {
                 LOGE("restore the latest_backup fail errno:%{public}d", errno);
             } else {
                 LOGI("restore the latest_backup success");
@@ -262,7 +264,7 @@ bool BaseKey::UpdateKey(const std::string &keypath)
     }
     LOGD("rename candidate %{public}s to latest success", candidate.c_str());
 
-    // cleanup latest.bak and version_*
+    // cleanup backup and other versions
     std::vector<std::string> files;
     GetSubDirs(dir_, files);
     for (const auto &it: files) {
@@ -298,31 +300,35 @@ bool BaseKey::RestoreKey(const UserAuth &auth)
         // update the latest with the candidate
         UpdateKey();
         return true;
-    } else {
-        LOGE("DoRestoreKey with %{public}s failed", candidate.c_str());
-        // try to restore from other versions
-        std::vector<std::string> files;
-        GetSubDirs(dir_, files);
-        // sort descreasely
-        std::sort(files.begin(), files.end(), [](const std::string &a, const std::string &b) {
-            return a > b;
-        });
-        for (const auto &it: files) {
-            if (it != candidate) {
-                if (DoRestoreKey(auth, dir_ + "/" + it)) {
-                    UpdateKey(it);
-                    return true;
-                }
+    }
+
+    LOGE("DoRestoreKey with %{public}s failed", candidate.c_str());
+    // try to restore from other versions
+    std::vector<std::string> files;
+    GetSubDirs(dir_, files);
+    std::sort(files.begin(), files.end(), [&](const std::string &a, const std::string &b) {
+        if (a.length() != b.length() ||
+            a.length() < PATH_KEY_VERSION.length() ||
+            b.length() < PATH_KEY_VERSION.length()) {
+            return a.length() > b.length();
+        }
+        // make sure a.length() >= PATH_KEY_VERSION.length() && b.length() >= PATH_KEY_VERSION.length()
+        return std::stoi(a.substr(PATH_KEY_VERSION.size() - 1)) > std::stoi(b.substr(PATH_KEY_VERSION.size() - 1));
+    });
+    for (const auto &it: files) {
+        if (it != candidate) {
+            if (DoRestoreKey(auth, dir_ + "/" + it)) {
+                UpdateKey(it);
+                return true;
             }
         }
-        return false;
     }
-    return true;
+    return false;
 }
 
 bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
 {
-    LOGD("enter");
+    LOGD("enter, path = %{public}s", path.c_str());
     auto ver = KeyCtrl::LoadVersion(dir_);
     if (ver == FSCRYPT_INVALID || ver != keyInfo_.version) {
         LOGE("RestoreKey fail. bad version loaded %{public}u not expected %{public}u", ver, keyInfo_.version);
@@ -357,6 +363,7 @@ bool BaseKey::DecryptKey(const UserAuth &auth)
 
 bool BaseKey::RemoveAlias(const std::string &keypath)
 {
+    LOGD("enter, keypath = %{public}s", keypath.c_str());
     KeyBlob alias {};
     return LoadKeyBlob(alias, keypath + PATH_ALIAS, CRYPTO_KEY_ALIAS_SIZE) &&
            HuksMaster::DeleteKey(alias);
@@ -364,6 +371,7 @@ bool BaseKey::RemoveAlias(const std::string &keypath)
 
 bool BaseKey::ClearKey(const std::string &mnt)
 {
+    LOGD("enter, dir_ = %{public}s", dir_.c_str());
     InactiveKey(mnt);
 
     // remove all key alias of all versions
