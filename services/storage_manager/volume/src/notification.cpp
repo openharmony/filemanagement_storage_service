@@ -19,6 +19,7 @@
 #include "common_event_data.h"
 #include "common_event_manager.h"
 #include "common_event_support.h"
+#include "int_wrapper.h"
 #include "string_wrapper.h"
 #include "storage_service_log.h"
 namespace OHOS {
@@ -33,6 +34,7 @@ void Notification::NotifyVolumeChange(int32_t notifyCode, std::string id, std::s
     AAFwk::WantParams wantParams;
     wantParams.SetParam("id", AAFwk::String::Box(id));
     wantParams.SetParam("diskId", AAFwk::String::Box(diskId));
+    wantParams.SetParam("notifyCode", AAFwk::Integer::Box(notifyCode));
     switch (notifyCode) {
         case VOLUME_REMOVED:
             LOGI("notifycode: VOLUME_REMOVED");
