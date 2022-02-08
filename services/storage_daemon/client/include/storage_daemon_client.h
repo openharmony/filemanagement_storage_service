@@ -18,8 +18,10 @@
 
 #include <mutex>
 #include <iostream>
+#include <vector>
 #include <sys/types.h>
 
+#include "crypto/key_ctrl.h"
 #include "iremote_proxy.h"
 #include "ipc/istorage_daemon.h"
 #include "ipc/storage_daemon.h"
@@ -40,9 +42,11 @@ public:
     static int32_t UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret);
     static int32_t ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret);
     static int32_t InactiveUserKey(uint32_t userId);
+    static int32_t FscryptEnable(const std::string &fscryptOptions);
 
 private:
     static sptr<IStorageDaemon> GetStorageDaemonProxy(void);
+    static bool CheckServiceStatus(uint32_t serviceFlags);
 };
 } // StorageDaemon
 } // OHOS

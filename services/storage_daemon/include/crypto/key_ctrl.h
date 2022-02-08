@@ -74,6 +74,7 @@ public:
 
     static uint8_t GetFscryptVersion(const std::string &mnt);
     static uint8_t GetEncryptedVersion(const std::string &dir);
+    static int32_t InitFscryptPolicy(const std::string &config);
 };
 
 struct EncryptPolicy {
@@ -81,7 +82,7 @@ struct EncryptPolicy {
     std::string fileName;
     std::string content;
     std::string flags;
-    bool hwWrappedKey;
+    bool hwWrappedKey { false };
 };
 
 static const EncryptPolicy DEFAULT_POLICY = {
@@ -90,6 +91,11 @@ static const EncryptPolicy DEFAULT_POLICY = {
     .content = "aes-256-xts",
     .flags = "padding-32",
     .hwWrappedKey = false,
+};
+
+static const auto ALL_VERSION = std::map<std::string, uint8_t> {
+    {"1", FSCRYPT_V1},
+    {"2", FSCRYPT_V2},
 };
 
 static const auto CONTENTS_MODES = std::map<std::string, uint8_t> {
@@ -110,6 +116,13 @@ static const auto POLICY_FLAGS = std::map<std::string, uint8_t> {
     {"padding-16", FSCRYPT_POLICY_FLAGS_PAD_16},
     {"padding-32", FSCRYPT_POLICY_FLAGS_PAD_32},
     {"direct-key", FSCRYPT_POLICY_FLAG_DIRECT_KEY}, // use with adiantum
+};
+
+static const auto FSCRYPT_OPTIONS_TABLE = std::vector<std::map<std::string, uint8_t>> {
+    ALL_VERSION,
+    FILENAME_MODES,
+    CONTENTS_MODES,
+    POLICY_FLAGS,
 };
 } // namespace StorageDaemon
 } // namespace OHOS
