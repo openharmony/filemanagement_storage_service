@@ -20,7 +20,7 @@
 namespace OHOS {
 namespace StorageDaemon {
 int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
-    MessageParcel &reply, MessageOption &option)
+                                           MessageParcel &reply, MessageOption &option)
 {
     auto remoteDescriptor = data.ReadInterfaceToken();
     if (GetDescriptor() != remoteDescriptor) {
@@ -32,6 +32,21 @@ int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
     switch (code) {
         case SHUTDOWN:
             err = HandleShutdown();
+            break;
+        case CHECK:
+            err = HandleCheck(data, reply);
+            break;
+        case MOUNT:
+            err = HandleMount(data, reply);
+            break;
+        case UMOUNT:
+            err =HandleUMount(data, reply);
+            break;
+        case PARTITION:
+            err = HandlePartition(data, reply);
+            break;
+        case FORMAT:
+            err = HandleFormat(data, reply);
             break;
         case PREPARE_USER_DIRS:
             err = HandlePrepareUserDirs(data, reply);
@@ -84,21 +99,63 @@ int32_t StorageDaemonStub::HandleShutdown()
 
 int32_t StorageDaemonStub::HandleMount(MessageParcel &data, MessageParcel &reply)
 {
+    std::string volId = data.ReadString();
+    uint32_t flags = data.ReadUint32();
+
+    int err = Mount(volId, flags);
+    if (!reply.WriteInt32(err)) {
+        return  E_IPC_ERROR;
+    }
+
     return E_OK;
 }
 
 int32_t StorageDaemonStub::HandleUMount(MessageParcel &data, MessageParcel &reply)
 {
+    std::string volId = data.ReadString();
+
+    int err = UMount(volId);
+    if (!reply.WriteInt32(err)) {
+        return  E_IPC_ERROR;
+    }
+
     return E_OK;
 }
 
 int32_t StorageDaemonStub::HandleCheck(MessageParcel &data, MessageParcel &reply)
 {
+    std::string volId = data.ReadString();
+
+    int err = Check(volId);
+    if (!reply.WriteInt32(err)) {
+        return  E_IPC_ERROR;
+    }
+
     return E_OK;
 }
 
 int32_t StorageDaemonStub::HandleFormat(MessageParcel &data, MessageParcel &reply)
 {
+    std::string volId = data.ReadString();
+
+    int err = Format(volId);
+    if (!reply.WriteInt32(err)) {
+        return  E_IPC_ERROR;
+    }
+
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandlePartition(MessageParcel &data, MessageParcel &reply)
+{
+    std::string volId = data.ReadString();
+    int32_t type = data.ReadInt32();
+
+    int err = Partition(volId, type);
+    if (!reply.WriteInt32(err)) {
+        return  E_IPC_ERROR;
+    }
+
     return E_OK;
 }
 
@@ -108,7 +165,7 @@ int32_t StorageDaemonStub::HandlePrepareUserDirs(MessageParcel &data, MessagePar
     uint32_t flags = data.ReadUint32();
 
     int err = PrepareUserDirs(userId, flags);
-    if (!reply.WriteUint32(err)) {
+    if (!reply.WriteInt32(err)) {
         return  E_IPC_ERROR;
     }
 
@@ -121,7 +178,7 @@ int32_t StorageDaemonStub::HandleDestroyUserDirs(MessageParcel &data, MessagePar
     uint32_t flags = data.ReadUint32();
 
     int err = DestroyUserDirs(userId, flags);
-    if (!reply.WriteUint32(err)) {
+    if (!reply.WriteInt32(err)) {
         return  E_IPC_ERROR;
     }
 
@@ -176,6 +233,7 @@ int32_t StorageDaemonStub::HandleGenerateUserKeys(MessageParcel &data, MessagePa
 {
     uint32_t userId = data.ReadUint32();
     uint32_t flags = data.ReadUint32();
+
     int err = GenerateUserKeys(userId, flags);
     if (!reply.WriteInt32(err)) {
         return E_IPC_ERROR;
@@ -187,6 +245,7 @@ int32_t StorageDaemonStub::HandleGenerateUserKeys(MessageParcel &data, MessagePa
 int32_t StorageDaemonStub::HandleDeleteUserKeys(MessageParcel &data, MessageParcel &reply)
 {
     uint32_t userId = data.ReadUint32();
+
     int err = DeleteUserKeys(userId);
     if (!reply.WriteInt32(err)) {
         return E_IPC_ERROR;
@@ -200,6 +259,7 @@ int32_t StorageDaemonStub::HandleUpdateUserAuth(MessageParcel &data, MessageParc
     uint32_t userId = data.ReadUint32();
     std::string auth = "";
     std::string secret = "";
+
     int err = UpdateUserAuth(userId, auth, secret);
     if (!reply.WriteInt32(err)) {
         return E_IPC_ERROR;
@@ -213,6 +273,7 @@ int32_t StorageDaemonStub::HandleActiveUserKey(MessageParcel &data, MessageParce
     uint32_t userId = data.ReadUint32();
     std::string auth = "";
     std::string secret = "";
+
     int err = ActiveUserKey(userId, auth, secret);
     if (!reply.WriteInt32(err)) {
         return E_IPC_ERROR;
@@ -224,6 +285,7 @@ int32_t StorageDaemonStub::HandleActiveUserKey(MessageParcel &data, MessageParce
 int32_t StorageDaemonStub::HandleInactiveUserKey(MessageParcel &data, MessageParcel &reply)
 {
     uint32_t userId = data.ReadUint32();
+
     int err = InactiveUserKey(userId);
     if (!reply.WriteInt32(err)) {
         return E_IPC_ERROR;

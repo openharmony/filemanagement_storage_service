@@ -46,6 +46,10 @@ public:
     dev_t GetDevice() const;
     std::string GetId() const;
     std::string GetDevPath() const;
+    uint64_t GetDevDSize() const;
+    std::string GetSysPath() const;
+    std::string GetDevVendor() const;
+    int GetDevFlag() const;
 
 private:
     std::string id_;

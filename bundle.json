@@ -50,7 +50,8 @@
             "//third_party/fsck_msdos:fsck_msdos",
             "//third_party/gptfdisk:sgdisk",
             "//third_party/newfs_msdos:newfs_msdos",
-            "//third_party/ntfs-3g:ntfsprogs"
+            "//third_party/ntfs-3g:ntfsprogs",
+            "//third_party/e2fsprogs/misc:blkid"
         ],
         "inner_kits": [
             {

@@ -18,6 +18,7 @@
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
 #include "netlink/netlink_manager.h"
+#include "disk/disk_manager.h"
 #include "storage_service_log.h"
 
 using namespace OHOS;
@@ -43,6 +44,8 @@ int main()
             break;
         }
     } while (true);
+
+    StorageDaemon::DiskManager::Instance()->ReplayUevent();
 
     IPCSkeleton::JoinWorkThread();
 

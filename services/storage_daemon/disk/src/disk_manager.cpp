@@ -21,7 +21,9 @@
 
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "ipc/storage_manager_client.h"
 #include "utils/string_utils.h"
+#include "utils/file_utils.h"
 #include "utils/disk_utils.h"
 
 namespace OHOS {
@@ -57,6 +59,17 @@ void DiskManager::HandleDiskEvent(NetlinkData *data)
     std::string devPath = data->GetDevpath();
     std::string devType = data->GetParam("DEVTYPE");
 
+    LOGI("GetAction %{public}d", data->GetAction());
+    LOGI("GetDevpath %{public}s", data->GetDevpath().c_str());
+    LOGI("GetSyspath %{public}s", data->GetSyspath().c_str());
+    LOGI("GetSubsystem %{public}s", data->GetSubsystem().c_str());
+    LOGI("GetParam MAJOR %{public}s", data->GetParam("MAJOR").c_str());
+    LOGI("GetParam MINOR %{public}s", data->GetParam("MINOR").c_str());
+    LOGI("GetParam DEVNAME %{public}s", data->GetParam("DEVNAME").c_str());
+    LOGI("GetParam DEVTYPE %{public}s", data->GetParam("DEVTYPE").c_str());
+    LOGI("GetParam SEQNUM %{public}s", data->GetParam("SEQNUM").c_str());
+
+    LOGI("Disk type is %{public}s", devType.c_str());
     if (devType != "disk") {
         return;
     }
@@ -100,8 +113,15 @@ void DiskManager::HandleDiskEvent(NetlinkData *data)
 
 void DiskManager::CreateDisk(std::shared_ptr<DiskInfo> &diskInfo)
 {
+    int ret;
     diskInfo->Create();
     disk_.push_back(diskInfo);
+
+    StorageManagerClient client;
+    ret = client.NotifyDiskCreated(diskInfo);
+    if (ret != E_OK) {
+        LOGI("Notify Disk Destroyed failed");
+    }
 }
 
 void DiskManager::ChangeDisk(dev_t device)
@@ -116,9 +136,17 @@ void DiskManager::ChangeDisk(dev_t device)
 
 void DiskManager::DestoryDisk(dev_t device)
 {
+    int ret;
+
     for (auto i = disk_.begin(); i != disk_.end();) {
         if ((*i)->GetDevice() == device) {
             (*i)->Destroy();
+            StorageManagerClient client;
+            ret = client.NotifyDiskDestroyed((*i)->GetId());
+            if (ret != E_OK) {
+                LOGI("Notify Disk Destroyed failed");
+            }
+
             i = disk_.erase(i);
         } else {
             i++;
@@ -140,6 +168,25 @@ void DiskManager::AddDiskConfig(std::shared_ptr<DiskConfig> &diskConfig)
 {
     std::lock_guard<std::mutex> lock(lock_);
     diskConfig_.push_back(diskConfig);
+}
+
+void DiskManager::ReplayUevent()
+{
+    TraverseDirUevent(sysBlockPath_, true);
+}
+
+int32_t DiskManager::HandlePartition(std::string diskId, int32_t type)
+{
+    int32_t ret = E_NON_EXIST;
+
+    for (auto i = disk_.begin(); i != disk_.end();) {
+        if ((*i)->GetId() == diskId) {
+            ret = (*i)->Partition();
+            break;
+        }
+    }
+
+    return ret;
 }
 
 } // namespace STORAGE_DAEMON

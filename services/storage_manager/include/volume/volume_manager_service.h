@@ -32,7 +32,7 @@ public:
     void OnVolumeCreated(VolumeCore vc);
     void OnVolumeMounted(std::string volumeId, int32_t fsType, std::string fsUuid,
         std::string path, std::string description);
-    void OnVolumeDestoryed(std::string volumeId);
+    void OnVolumeDestroyed(std::string volumeId);
     std::vector<VolumeExternal> GetAllVolumes();
     std::shared_ptr<VolumeExternal> GetVolumeByUuid(std::string volumeUuid);
 private:

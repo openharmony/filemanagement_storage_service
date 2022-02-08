@@ -44,10 +44,10 @@ namespace StorageManager {
         Mount(volumePtr->GetId());
     }
 
-    void VolumeManagerService::OnVolumeDestoryed(string volumeId)
+    void VolumeManagerService::OnVolumeDestroyed(string volumeId)
     {
         if (!volumeMap_.Contains(volumeId)) {
-            LOGE("VolumeManagerService::OnVolumeDestoryed volumeId %{public}s not exists", volumeId.c_str());
+            LOGE("VolumeManagerService::OnVolumeDestroyed volumeId %{public}s not exists", volumeId.c_str());
             return;
         }
         std::shared_ptr<VolumeExternal> volumePtr = volumeMap_[volumeId];

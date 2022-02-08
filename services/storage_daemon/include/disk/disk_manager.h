@@ -19,6 +19,7 @@
 #include <list>
 #include <memory>
 #include <mutex>
+#include <cstring>
 #include <nocopyable.h>
 
 #include <sys/types.h>
@@ -39,15 +40,21 @@ public:
     void ChangeDisk(dev_t device);
     std::shared_ptr<DiskInfo> GetDisk(dev_t device);
     void HandleDiskEvent(NetlinkData *data);
+    int32_t HandlePartition(std::string diskId, int32_t type);
     void AddDiskConfig(std::shared_ptr<DiskConfig> &diskConfig);
+    void ReplayUevent();
 
 private:
     DiskManager();
+
     std::mutex lock_;
     std::list<std::shared_ptr<DiskInfo>> disk_;
     std::list<std::shared_ptr<DiskConfig>> diskConfig_;
     static DiskManager* instance_;
+
     DISALLOW_COPY_AND_MOVE(DiskManager);
+
+    const std::string sysBlockPath_ = "/sys/block";
 };
 } // STORAGE_DAEMON
 } // OHOS

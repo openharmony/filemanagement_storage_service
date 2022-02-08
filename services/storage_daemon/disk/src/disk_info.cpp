@@ -34,7 +34,6 @@ const std::string sgdiskPartCmd = " --new=0:0:-0 --typeconde=0:0c00 --gpttombr=1
 
 DiskInfo::DiskInfo(std::string sysPath, std::string devPath, dev_t device, int flag)
 {
-    
     id_ = StringPrintf("disk-%d-%d", major(device), minor(device));
     sysPath_ = sysPath;
     eventPath_ = devPath;
@@ -57,6 +56,26 @@ std::string DiskInfo::GetId() const
 std::string DiskInfo::GetDevPath() const
 {
     return devPath_;
+}
+
+uint64_t DiskInfo::GetDevDSize() const
+{
+    return size_;
+}
+
+std::string DiskInfo::GetSysPath() const
+{
+    return sysPath_;
+}
+
+std::string DiskInfo::GetDevVendor() const
+{
+    return vendor_;
+}
+
+int DiskInfo::GetDevFlag() const
+{
+    return flags_;
 }
 
 DiskInfo::~DiskInfo()

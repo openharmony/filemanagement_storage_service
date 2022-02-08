@@ -21,6 +21,7 @@
 #include <cstring>
 #include <dirent.h>
 #include <stdlib.h>
+#include <fcntl.h>
 
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -332,6 +333,40 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
         }
     }
     return E_OK;
+}
+
+void TraverseDirUevent(const std::string &path, bool flag)
+{
+    DIR *dir = opendir(path.c_str());
+    if (dir == nullptr) {
+        return;
+    }
+
+    int dirFd = dirfd(dir);
+    int fd = openat(dirFd, "uevent", O_WRONLY | O_CLOEXEC);
+    if (fd >= 0) {
+        write(fd, "add\n", 4);
+        close(fd);
+    }
+
+    for (struct dirent *ent = readdir(dir); ent != nullptr; ent = readdir(dir)) {
+        if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0) {
+            continue;
+        }
+
+        if (ent->d_type != DT_DIR && !flag) {
+            continue;
+        }
+        
+        // fd = openat(dirFd, ent->d_name, O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+        // if (fd < 0) {
+        //     continue;
+        // }
+
+        TraverseDirUevent(path + "/" + ent->d_name, false);
+    }
+
+    closedir(dir);
 }
 } // STORAGE_DAEMON
 } // OHOS

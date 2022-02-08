@@ -44,6 +44,7 @@ void ReadDigitDir(const std::string &path, std::vector<FileList> &dirInfo);
 bool StringToUint32(const std::string &str, uint32_t &num);
 bool ReadFile(std::string path, std::string *str);
 int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output = nullptr);
+void TraverseDirUevent(const std::string &path, bool flag);
 }
 }
 

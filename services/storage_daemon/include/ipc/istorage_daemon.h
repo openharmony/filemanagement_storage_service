@@ -30,11 +30,13 @@ public:
         UMOUNT,
         CHECK,
         FORMAT,
+        PARTITION,
 
         PREPARE_USER_DIRS,
         DESTROY_USER_DIRS,
         START_USER,
         STOP_USER,
+
         INIT_GLOBAL_KEY,
         INIT_GLOBAL_USER_KEYS,
         CREATE_USER_KEYS,
@@ -55,6 +57,7 @@ public:
     virtual int32_t UMount(std::string volId) = 0;
     virtual int32_t Check(std::string volId) = 0;
     virtual int32_t Format(std::string voldId) = 0;
+    virtual int32_t Partition(std::string diskId, int32_t type) = 0;
 
     virtual int32_t StartUser(int32_t userId) = 0;
     virtual int32_t StopUser(int32_t userId) = 0;
