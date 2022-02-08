@@ -29,26 +29,56 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
     
     int err = 0;
     switch (code) {
-        case PREPARE_ADD_USER: 
-            HandlePrepareAddUser(data, reply); 
+        case PREPARE_ADD_USER:
+            HandlePrepareAddUser(data, reply);
             break;
-        case REMOVE_USER: 
-            HandleRemoveUser(data, reply); 
+        case REMOVE_USER:
+            HandleRemoveUser(data, reply);
             break;
-        case PREPARE_START_USER: 
-            HandlePrepareStartUser(data, reply); 
+        case PREPARE_START_USER:
+            HandlePrepareStartUser(data, reply);
             break;
-        case STOP_USER: 
-            HandleStopUser(data, reply); 
+        case STOP_USER:
+            HandleStopUser(data, reply);
             break;
-        case GET_TOTAL: 
-            HandleGetTotal(data, reply); 
+        case GET_TOTAL:
+            HandleGetTotal(data, reply);
             break;
-        case GET_FREE: 
-            HandleGetFree(data, reply); 
+        case GET_FREE:
+            HandleGetFree(data, reply);
             break;
-        case GET_BUNDLE_STATUS: 
-            HandleGetBundleStatus(data, reply); 
+        case GET_BUNDLE_STATUS:
+            HandleGetBundleStatus(data, reply);
+            break;
+        case NOTIFY_VOLUME_CREATED:
+            HandleNotifyVolumeCreated(data, reply);
+            break;
+        case NOTIFY_VOLUME_MOUNTED:
+            HandleNotifyVolumeMounted(data, reply);
+            break;
+        case NOTIFY_VOLUME_DESTORYED:
+            HandleNotifyVolumeDestoryed(data, reply);
+            break;
+        case MOUNT:
+            HandleMount(data, reply);
+            break;
+        case UNMOUNT:
+            HandleUnmount(data, reply);
+            break;
+        case GET_ALL_VOLUMES:
+            HandleGetAllVolumes(data, reply);
+            break;
+        case NOTIFY_DISK_CREATED:
+            HandleNotifyDiskCreated(data, reply);
+            break;
+        case NOTIFY_DISK_DESTROYED:
+            HandleNotifyDiskDestroyed(data, reply);
+            break;
+        case PARTITION:
+            HandlePartition(data, reply);
+            break;
+        case GET_ALL_DISKS:
+            HandleGetAllDisks(data, reply);
             break;
         default: {
             LOGI("use IPCObjectStub default OnRemoteRequest");
@@ -137,6 +167,131 @@ int32_t StorageManagerStub::HandleGetBundleStatus(MessageParcel &data, MessagePa
     std::vector<int64_t> bundleStats = GetBundleStats(uuid, pkgName);
     if (!reply.WriteInt64Vector(bundleStats)) {
         return  E_IPC_ERROR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleGetAllVolumes(MessageParcel &data, MessageParcel &reply)
+{
+    LOGE("StorageManagerStub::HandleGetAllVolumes Begin.");
+    std::vector<VolumeExternal> ve = GetAllVolumes();
+    int size = ve.size();
+    if (size == 0) {
+        LOGE("StorageManagerStub::No volume.");
+        if (!reply.WriteUint32(0)) {
+            return  E_IPC_ERROR;
+        }
+        return E_OK;
+    }
+    if (!reply.WriteUint32(ve.size())) {
+        return  E_IPC_ERROR;
+    }
+    for (int i = 0; i < size; i++) {
+        if (!ve[i].Marshalling(reply)) {
+            return  E_IPC_ERROR;
+        }
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleNotifyVolumeCreated(MessageParcel &data, MessageParcel &reply)
+{
+    std::unique_ptr<VolumeCore> vc = VolumeCore::Unmarshalling(data);
+    NotifyVolumeCreated(*vc);
+    LOGI("StorageManagerStub::HandleNotifyVolumeCreated");
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleNotifyVolumeMounted(MessageParcel &data, MessageParcel &reply)
+{
+    std::string volumeId = data.ReadString();
+    int32_t fsType = data.ReadInt32();
+    std::string fsUuid = data.ReadString();
+    std::string path = data.ReadString();
+    std::string description = data.ReadString();
+    NotifyVolumeMounted(volumeId, fsType, fsUuid, path, description);
+    LOGI("StorageManagerStub::HandleNotifyVolumeMounted");
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleNotifyVolumeDestoryed(MessageParcel &data, MessageParcel &reply)
+{
+    std::string volumeId = data.ReadString();
+    NotifyVolumeDestoryed(volumeId);
+    LOGI("StorageManagerStub::HandleNotifyVolumeDestoryed");
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleMount(MessageParcel &data, MessageParcel &reply)
+{
+    LOGE("StorageManagerStub::HandleMount Begin.");
+    std::string volumeId = data.ReadString();
+    int err = Mount(volumeId);
+    if (!reply.WriteUint32(err)) {
+        LOGE("StorageManagerStub::HandleMount call Mount failed");
+        return  E_IPC_ERROR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleUnmount(MessageParcel &data, MessageParcel &reply)
+{
+    LOGE("StorageManagerStub::HandleUnmount Begin.");
+    std::string volumeId = data.ReadString();
+    int err = Unmount(volumeId);
+    if (!reply.WriteUint32(err)) {
+        LOGE("StorageManagerStub::HandleUnmount call Mount failed");
+        return  E_IPC_ERROR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleNotifyDiskCreated(MessageParcel &data, MessageParcel &reply)
+{
+    auto disk = Disk::Unmarshalling(data);
+    LOGI("zwd, %{public}s", disk->GetDiskId().c_str());
+    NotifyDiskCreated(*disk);
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleNotifyDiskDestroyed(MessageParcel &data, MessageParcel &reply)
+{
+    std::string diskId = data.ReadString();
+    NotifyDiskDestroyed(diskId);
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandlePartition(MessageParcel &data, MessageParcel &reply)
+{
+    std::string diskId = data.ReadString();
+    int32_t type = data.ReadInt32();
+    int err = Partition(diskId, type);
+    if (!reply.WriteUint32(err)) {
+        LOGE("StorageManagerStub::HandlePartition call Partition failed");
+        return E_IPC_ERROR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleGetAllDisks(MessageParcel &data, MessageParcel &reply)
+{
+    LOGE("StorageManagerStub::HandleGetAllDisk Begin.");
+    std::vector<Disk> disks = GetAllDisks();
+    int size = disks.size();
+    if (size == 0) {
+        LOGE("StorageManagerStub::No Disk.");
+        if (!reply.WriteUint32(0)) {
+            return  E_IPC_ERROR;
+        }
+        return E_OK;
+    }
+    if (!reply.WriteUint32(disks.size())) {
+        return  E_IPC_ERROR;
+    }
+    for (int i = 0; i < size; i++) {
+        if (!disks[i].Marshalling(reply)) {
+            return  E_IPC_ERROR;
+        }
     }
     return E_OK;
 }

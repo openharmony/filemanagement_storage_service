@@ -14,13 +14,16 @@
  */
 
 #include "ipc/storage_manager.h"
+#include <storage/storage_status_service.h>
+#include <storage/storage_total_status_service.h>
 #include <singleton.h>
 #include "system_ability_definition.h"
 #include "storage_service_log.h"
 #include "storage_service_errno.h"
 #include "user/multi_user_manager_service.h"
-#include <storage/storage_status_service.h>
-#include <storage/storage_total_status_service.h>
+#include "volume/volume_manager_service.h"
+#include "disk/disk_manager_service.h"
+
 
 namespace OHOS {
 namespace StorageManager {
@@ -88,6 +91,75 @@ std::vector<int64_t> StorageManager::GetBundleStats(std::string uuid, std::strin
 {
     LOGI("StorageManger::getBundleStats start, pkgName: %{public}s", pkgName.c_str());
     std::vector<int64_t> result = DelayedSingleton<StorageStatusService>::GetInstance()->GetBundleStats(uuid, pkgName);
+    return result;
+}
+
+void StorageManager::NotifyVolumeCreated(VolumeCore vc)
+{
+    LOGI("StorageManger::NotifyVolumeCreated start, volumeId: %{public}s", vc.GetId().c_str());
+    DelayedSingleton<VolumeManagerService>::GetInstance()->OnVolumeCreated(vc);
+}
+
+void StorageManager::NotifyVolumeMounted(std::string volumeId, int32_t fsType, std::string fsUuid,
+    std::string path, std::string description)
+{
+    LOGI("StorageManger::NotifyVolumeMounted start");
+    DelayedSingleton<VolumeManagerService>::GetInstance()->OnVolumeMounted(volumeId, fsType, fsUuid, path, description);
+}
+
+void StorageManager::NotifyVolumeDestoryed(std::string volumeId)
+{
+    LOGI("StorageManger::NotifyVolumeDestoryed start");
+    DelayedSingleton<VolumeManagerService>::GetInstance()->OnVolumeDestoryed(volumeId);
+}
+
+int32_t StorageManager::Mount(std::string volumeId)
+{
+    LOGI("StorageManger::Mount start");
+    int result = DelayedSingleton<VolumeManagerService>::GetInstance()->Mount(volumeId);
+    return result;
+}
+
+int32_t StorageManager::Unmount(std::string volumeId)
+{
+    LOGI("StorageManger::Unmount start");
+    int result = DelayedSingleton<VolumeManagerService>::GetInstance()->Unmount(volumeId);
+    return result;
+}
+
+std::vector<VolumeExternal> StorageManager::GetAllVolumes()
+{
+    LOGI("StorageManger::GetAllVolumes start");
+    std::vector<VolumeExternal> result = DelayedSingleton<VolumeManagerService>::GetInstance()->GetAllVolumes();
+    return result;
+}
+
+void StorageManager::NotifyDiskCreated(Disk disk)
+{
+    LOGI("StorageManager::NotifyDiskCreated start, diskId: %{public}s", disk.GetDiskId().c_str());
+    std::shared_ptr<DiskManagerService> diskManager = DelayedSingleton<DiskManagerService>::GetInstance();
+    diskManager->OnDiskCreated(disk);
+}
+
+void StorageManager::NotifyDiskDestroyed(std::string diskId)
+{
+    LOGI("StorageManager::NotifyDiskDestroyed start, diskId: %{public}s", diskId.c_str());
+    std::shared_ptr<DiskManagerService> diskManager = DelayedSingleton<DiskManagerService>::GetInstance();
+    diskManager->OnDiskDestroyed(diskId);
+}
+
+int32_t StorageManager::Partition(std::string diskId, int32_t type)
+{
+    LOGI("StorageManager::Partition start, diskId: %{public}s", diskId.c_str());
+    std::shared_ptr<DiskManagerService> diskManager = DelayedSingleton<DiskManagerService>::GetInstance();
+    int32_t err = diskManager->Partition(diskId, type);
+    return err;
+}
+
+std::vector<Disk> StorageManager::GetAllDisks()
+{
+    LOGI("StorageManger::GetAllDisks start");
+    std::vector<Disk> result = DelayedSingleton<DiskManagerService>::GetInstance()->GetAllDisks();
     return result;
 }
 }

@@ -99,5 +99,46 @@ int32_t StorageDaemonCommunication::StopUser(int32_t userId)
     }
     return storageDaemon_->StopUser(userId);
 }
+
+int32_t StorageDaemonCommunication::Mount(std::string volumeId, int32_t flag)
+{
+    LOGI("StorageDaemonCommunication::mount start");
+    if (Connect() != E_OK) {
+        LOGE("StorageDaemonCommunication::mount connect failed");
+        return E_IPC_ERROR;
+    }
+    return storageDaemon_->Mount(volumeId, flag);
+}
+
+int32_t StorageDaemonCommunication::Unmount(std::string volumeId)
+{
+    LOGI("StorageDaemonCommunication::unmount start");
+    if (Connect() != E_OK) {
+        LOGE("StorageDaemonCommunication::unmount connect failed");
+        return E_IPC_ERROR;
+    }
+    return storageDaemon_->UMount(volumeId);
+}
+
+int32_t StorageDaemonCommunication::Check(std::string volumeId)
+{
+    LOGI("StorageDaemonCommunication::check start");
+    if (Connect() != E_OK) {
+        LOGE("StorageDaemonCommunication::check connect failed");
+        return E_IPC_ERROR;
+    }
+    return storageDaemon_->Check(volumeId);
+    return E_OK;
+}
+
+int32_t StorageDaemonCommunication::Partition(std::string diskId, int32_t type)
+{
+    LOGI("StorageDaemonCommunication::Partition start");
+    if (Connect() != E_OK) {
+        LOGE("StorageDaemonCommunication::Partition connect failed");
+        return E_IPC_ERROR;
+    }
+    return E_OK;
+}
 } // StorageManager
 } // OHOS

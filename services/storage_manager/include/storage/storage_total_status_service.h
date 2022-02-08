@@ -30,6 +30,7 @@ public:
     int64_t GetFreeSizeOfVolume(std::string volumeUuid);
     int64_t GetTotalSizeOfVolume(std::string volumeUuid);
 private:
+    std::string GetVolumePath(std::string volumeUuid);
     const std::vector<std::string> mountDir = {"/debug_ramdisk", "/patch_hw",
         "/metadata", "/", "/cust", "/hw_product", "/odm", "/preas", "/vendor",
         "/vendor/modem/modem_driver", "/data"};

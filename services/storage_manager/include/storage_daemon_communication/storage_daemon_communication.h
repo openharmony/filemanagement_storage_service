@@ -38,6 +38,10 @@ public:
     int32_t PrepareStartUser(int32_t userId);
     int32_t StopUser(int32_t userId);
 
+    int32_t Mount(std::string volumeId, int32_t flag);
+    int32_t Unmount(std::string volumeId);
+    int32_t Check(std::string volumeId);
+    int32_t Partition(std::string diskId, int32_t type);
 private:
     sptr<OHOS::StorageDaemon::IStorageDaemon> storageDaemon_;
 };

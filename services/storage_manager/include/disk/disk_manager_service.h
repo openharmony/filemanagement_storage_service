@@ -16,9 +16,24 @@
 #ifndef OHOS_STORAGE_MANAGER_DISK_MANAGER_SERVICE_H
 #define OHOS_STORAGE_MANAGER_DISK_MANAGER_SERVICE_H
 
+#include <unordered_map>
+#include <singleton.h>
+#include <nocopyable.h>
+#include "disk.h"
+#include "utils/storage_rl_map.h"
+
 namespace OHOS {
 namespace StorageManager {
-class DiskManagerService {
+class DiskManagerService final : public NoCopyable {
+    DECLARE_DELAYED_SINGLETON(DiskManagerService);
+public:
+    std::shared_ptr<Disk> GetDiskById(std::string diskId);
+    int32_t Partition(std::string diskId, int32_t type);
+    void OnDiskCreated(Disk disk);
+    void OnDiskDestroyed(std::string diskId);
+    std::vector<Disk> GetAllDisks();
+private:
+    StorageRlMap<std::string, std::shared_ptr<Disk>> diskMap_;
 };
 } // StorageManager
 } // OHOS

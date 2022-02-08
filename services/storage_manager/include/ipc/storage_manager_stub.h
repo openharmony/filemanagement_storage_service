@@ -33,6 +33,16 @@ private:
     int32_t HandleGetTotal(MessageParcel &data, MessageParcel &reply);
     int32_t HandleGetFree(MessageParcel &data, MessageParcel &reply);
     int32_t HandleGetBundleStatus(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleNotifyVolumeCreated(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleNotifyVolumeMounted(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleNotifyVolumeDestoryed(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleMount(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleUnmount(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleGetAllVolumes(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleNotifyDiskCreated(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleNotifyDiskDestroyed(MessageParcel &data, MessageParcel &reply);
+    int32_t HandlePartition(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleGetAllDisks(MessageParcel &data, MessageParcel &reply);
 };
 } // StorageManager
 } // OHOS
