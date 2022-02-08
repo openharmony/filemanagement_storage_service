@@ -19,7 +19,7 @@
 
 namespace OHOS {
 namespace StorageManager {
-int32_t StorageManagerStub::OnRemoteRequest(uint32_t code, 
+int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
     MessageParcel &data, MessageParcel &reply, MessageOption &option)
 {
     auto remoteDescriptor = data.ReadInterfaceToken();
