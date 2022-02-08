@@ -21,6 +21,7 @@
 
 #include "system_ability.h"
 #include "istorage_manager.h"
+#include "volume_external.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -31,6 +32,9 @@ public:
     std::vector<int64_t> GetBundleStats(std::string uuid, std::string pkgName);
     int64_t GetFreeSizeOfVolume(std::string volumeUuid);
     int64_t GetTotalSizeOfVolume(std::string volumeUuid);
+    bool Mount(std::string volumeId);
+    bool Unmount(std::string volumeId);
+    std::vector<VolumeExternal> GetAllVolumes();
 private:
     sptr<StorageManager::IStorageManager> storageManager_ = nullptr;
 };

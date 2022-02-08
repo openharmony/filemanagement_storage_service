@@ -52,6 +52,59 @@ ohos_shared_library("storagestatistics") {
   external_deps = [
     "ability_runtime:ability_manager",
     "ability_runtime:app_manager",
+    "ability_runtime:base",
+    "ability_runtime:want",
+    "ability_runtime:want",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "hiviewdfx_hilog_native:libhilog",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
+    "samgr_standard:samgr_proxy",
+  ]
+}
+
+js_declaration("volumemanager_js") {
+  part_name = "storage_service"
+  sources = [ "./@ohos.volumemanager.d.ts" ]
+}
+
+ohos_shared_library("volumemanager") {
+  relative_install_dir = "module"
+  subsystem_name = "filemanagement"
+  part_name = "storage_service"
+
+  include_dirs = [
+    "include",
+    "//foundation/filemanagement/storage_service/services/storage_manager/include",
+    "//utils/system/safwk/native/include",
+    "//utils/native/base/include",
+    "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js/src/",
+    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
+    "//foundation/filemanagement/storage_service/utils/include",
+  ]
+
+  sources = [
+    "//foundation/filemanagement/storage_service/services/storage_manager/kits_impl/src/storage_manager_connect.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/kits_impl/src/volumemanager_n_exporter.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/kits_impl/src/volumemanager_napi.cpp",
+  ]
+
+  deps = [
+    "//foundation/aafwk/standard/frameworks/kits/ability/native:abilitykit_native",
+    "//foundation/ace/napi:ace_napi",
+    "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js:fileio",
+    "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js:statfs",
+    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
+    "//foundation/filemanagement/storage_service/services/storage_manager:storage_manager",
+    "//utils/native/base:utils",
+  ]
+
+  external_deps = [
+    "ability_runtime:ability_manager",
+    "ability_runtime:app_manager",
+    "ability_runtime:base",
+    "ability_runtime:want",
     "ability_runtime:want",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
@@ -66,5 +119,7 @@ group("storage_js") {
   deps = [
     ":storagestatistics",
     ":storagestatistics_js",
+    ":volumemanager",
+    ":volumemanager_js",
   ]
 }
