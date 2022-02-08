@@ -364,17 +364,16 @@ void StorageManagerProxy::NotifyVolumeMounted(std::string volumeId, int32_t fsTy
 }
 void StorageManagerProxy::NotifyVolumeDestroyed(std::string volumeId)
 {
-    LOGI("StorageManagerProxy::NotifyVolumeDestoryed, volumeId:%{public}s", volumeId.c_str());
+    LOGI("StorageManagerProxy::NotifyVolumedestroyed, volumeId:%{public}s", volumeId.c_str());
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
-        LOGE("StorageManagerProxy::NotifyVolumeDestoryed, WriteInterfaceToken failed");
-
+        LOGE("StorageManagerProxy::NotifyVolumedestroyed, WriteInterfaceToken failed");
         return;
     }
 
     if (!data.WriteString(volumeId)) {
-        LOGE("StorageManagerProxy::NotifyVolumeDestroyed, WriteInterfaceToken failed");
+        LOGE("StorageManagerProxy::NotifyVolumedestroyed, WriteInterfaceToken failed");
         return;
     }
     int err = Remote()->SendRequest(NOTIFY_VOLUME_DESTROYED, data, reply, option);

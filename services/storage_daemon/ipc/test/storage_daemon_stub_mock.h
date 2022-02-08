@@ -29,6 +29,7 @@ public:
     MOCK_METHOD1(UMount, int32_t(std::string));
     MOCK_METHOD1(Check, int32_t(std::string));
     MOCK_METHOD1(Format, int32_t(std::string));
+    MOCK_METHOD2(Partition, int32_t(std::string, int32_t));
 
     MOCK_METHOD1(StartUser, int32_t(int32_t));
     MOCK_METHOD1(StopUser, int32_t(int32_t));

@@ -51,6 +51,17 @@ void DiskManager::HandleDiskEvent(NetlinkData *data)
     std::string devPath = data->GetDevpath();
     std::string devType = data->GetParam("DEVTYPE");
 
+    LOGI("GetAction %{public}d", data->GetAction());
+    LOGI("GetDevpath %{public}s", data->GetDevpath().c_str());
+    LOGI("GetSyspath %{public}s", data->GetSyspath().c_str());
+    LOGI("GetSubsystem %{public}s", data->GetSubsystem().c_str());
+    LOGI("GetParam MAJOR %{public}s", data->GetParam("MAJOR").c_str());
+    LOGI("GetParam MINOR %{public}s", data->GetParam("MINOR").c_str());
+    LOGI("GetParam DEVNAME %{public}s", data->GetParam("DEVNAME").c_str());
+    LOGI("GetParam DEVTYPE %{public}s", data->GetParam("DEVTYPE").c_str());
+    LOGI("GetParam SEQNUM %{public}s", data->GetParam("SEQNUM").c_str());
+
+    LOGI("Disk type is %{public}s", devType.c_str());
     if (devType != "disk") {
         return;
     }

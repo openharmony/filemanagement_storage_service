@@ -59,6 +59,11 @@ public:
         return E_OK;
     }
 
+    virtual int32_t Partition(std::string diskId, int32_t type) override
+    {
+        return E_OK;
+    }
+
     virtual int32_t StartUser(int32_t userId) override
     {
         return E_OK;

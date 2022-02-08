@@ -105,20 +105,5 @@ int32_t StorageManagerClient::NotifyVolumeDestroyed(VolumeInfo volumeInfo)
 
     return E_OK;
 }
-
-int32_t StorageManagerClient::GetAllDisks()
-{
-    if (GetClient() != E_OK) {
-        return E_IPC_ERROR;
-    }
-
-    std::vector<StorageManager::Disk> ret = storageManager_->GetAllDisks();
-
-    for (auto i : ret) {
-        LOGI("diskId: %{public}s, sizeb: %{public}lld, syspath: %{public}s, vendor: %{public}s, flag: %{public}d",i.GetDiskId().c_str(), i.GetSizeBytes(), i.GetSysPath().c_str(), i.GetVendor().c_str(), i.GetFlag());
-    }
-
-    return E_OK;
-}
 } // StorageDaemon
 } // OHOS

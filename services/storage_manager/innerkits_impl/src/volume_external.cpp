@@ -18,7 +18,6 @@
 #include "disk.h"
 #include "disk/disk_manager_service.h"
 
-
 namespace OHOS {
 namespace StorageManager {
 VolumeExternal::VolumeExternal() {}

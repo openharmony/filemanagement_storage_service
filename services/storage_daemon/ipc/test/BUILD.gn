@@ -23,6 +23,9 @@ ohos_unittest("storage_daemon_test") {
   include_dirs = [
     "$ROOT_DIR/include",
     "$ROOT_DIR/utils",
+    "$ROOT_DIR/../storage_manager/include",
+    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
+    "//foundation/distributedschedule/safwk/interfaces/innerkits/safwk",
     "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
     "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
     "//foundation/filemanagement/storage_service/utils/include",
@@ -39,6 +42,9 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/utils/mount_argument_utils.cpp",
     "$ROOT_DIR/utils/string_utils.cpp",
     "$ROOT_DIR/utils/test/common/help_utils.cpp",
+    "$ROOT_DIR/disk/src/disk_config.cpp",
+    "$ROOT_DIR/disk/src/disk_manager.cpp",
+    "$ROOT_DIR/disk/src/disk_info.cpp",
   ]
 
   deps = [

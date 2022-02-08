@@ -25,6 +25,7 @@
 #include "iservice_registry.h"
 #include "netlink/netlink_manager.h"
 #include "disk/disk_manager.h"
+#include "utils/string_utils.h"
 #include "storage_service_log.h"
 
 using namespace OHOS;

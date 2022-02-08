@@ -34,9 +34,6 @@ public:
     int32_t NotifyVolumeMounted(VolumeInfo volumeInfo);
     int32_t NotifyVolumeDestroyed(VolumeInfo volumeInfo);
 
-    int32_t GetAllDisks();
-
-
 private:
     DISALLOW_COPY_AND_MOVE(StorageManagerClient);
 
