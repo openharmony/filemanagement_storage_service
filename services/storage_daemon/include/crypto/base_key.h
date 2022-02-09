@@ -30,6 +30,7 @@ public:
 
     bool InitKey();
     bool StoreKey(const UserAuth &auth);
+    bool UpdateKey(const std::string &keypath = "");
     bool RestoreKey(const UserAuth &auth);
     virtual bool ActiveKey(const std::string &mnt = MNT_DATA) = 0;
     virtual bool InactiveKey(const std::string &mnt = MNT_DATA) = 0;
@@ -42,19 +43,23 @@ public:
     }
 
 protected:
-    bool SaveKeyBlob(const KeyBlob &blob, const std::string &name);
+    static bool SaveKeyBlob(const KeyBlob &blob, const std::string &path);
+    std::string dir_ {};
 
 private:
     bool DoStoreKey(const UserAuth &auth);
-    bool GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &name, const uint32_t size);
-    bool GenerateKeyBlob(KeyBlob &blob, const uint32_t size);
-    bool LoadKeyBlob(KeyBlob &blob, const std::string &name, const uint32_t size);
+    bool DoRestoreKey(const UserAuth &auth, const std::string &keypath);
+    static bool GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size);
+    static bool GenerateKeyBlob(KeyBlob &blob, const uint32_t size);
+    static bool LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size);
     bool EncryptKey(const UserAuth &auth);
     bool DecryptKey(const UserAuth &auth);
-    bool RemoveAlias();
+    bool RemoveAlias(const std::string& keypath);
+    int GetCandidateVersion() const;
+    std::string GetCandidateDir() const;
+    std::string GetNextCandidateDir() const;
 
     KeyContext keyContext_ {};
-    std::string dir_ {};
     uint8_t keyLen_ {};
 };
 } // namespace StorageDaemon

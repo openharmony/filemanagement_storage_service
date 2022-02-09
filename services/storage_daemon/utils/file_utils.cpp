@@ -181,6 +181,35 @@ bool StringToUint32(const std::string &str, uint32_t &num)
     return true;
 }
 
+void GetSubDirs(const std::string &path, std::vector<std::string> &dirList)
+{
+    dirList.clear();
+
+    struct stat st;
+    int ret = TEMP_FAILURE_RETRY(lstat(path.c_str(), &st));
+    if (ret != 0 || ((st.st_mode & S_IFDIR) != S_IFDIR)) {
+        LOGE("path is not dir");
+        return;
+    }
+
+    DIR *dir = opendir(path.c_str());
+    if (!dir) {
+        LOGE("failed to open dir %{public}s, errno %{public}d", path.c_str(), errno);
+        return;
+    }
+
+    for (struct dirent *ent = readdir(dir); ent != nullptr; ent = readdir(dir)) {
+        if ((ent->d_type != DT_DIR) ||
+            (strcmp(ent->d_name, ".") == 0) ||
+            (strcmp(ent->d_name, "..") == 0)) {
+            continue;
+        }
+        dirList.push_back(ent->d_name);
+    }
+
+    closedir(dir);
+}
+
 void ReadDigitDir(const std::string &path, std::vector<FileList> &dirInfo)
 {
     struct stat st;
