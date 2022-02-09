@@ -80,5 +80,41 @@ int64_t StorageManagerConnect::GetTotalSizeOfVolume(string volumeUuid)
     }
     return storageManager_->GetTotalSizeOfVolume(volumeUuid);
 }
+
+bool StorageManagerConnect::Mount(std::string volumeId)
+{
+    if (Connect() != E_OK) {
+        LOGE("StorageManagerConnect::Mount:Connect error");
+        return E_IPC_ERROR;
+    }
+    if (storageManager_->Mount(volumeId) == E_OK) {
+        LOGE("StorageManagerConnect::Mount:success");
+        return true;
+    }
+    return false;
+}
+
+bool StorageManagerConnect::Unmount(std::string volumeId)
+{
+    if (Connect() != E_OK) {
+        LOGE("StorageManagerConnect::Unmount:Connect error");
+        return E_IPC_ERROR;
+    }
+    if (storageManager_->Unmount(volumeId) == E_OK) {
+        LOGE("StorageManagerConnect::Unmount:success");
+        return true;
+    }
+    return false;
+}
+
+std::vector<VolumeExternal> StorageManagerConnect::GetAllVolumes()
+{
+    vector<VolumeExternal> result = {};
+    if (Connect() != E_OK) {
+        LOGE("StorageManagerConnect::GetTotalSizeOfVolume:Connect error");
+        return result;
+    }
+    return storageManager_->GetAllVolumes();
+}
 } // StorageManager
 } // OHOS

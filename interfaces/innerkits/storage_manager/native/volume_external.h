@@ -14,13 +14,34 @@
  */
 
 #ifndef OHOS_STORAGE_MANAGER_VOLUME_EXTERNAL_H
-#define OHOS_STORAGE_MANAGER_VLOUME_EXTERNAL_H
+#define OHOS_STORAGE_MANAGER_VOLUME_EXTERNAL_H
 
 #include "volume_core.h"
 
 namespace OHOS {
 namespace StorageManager {
 class VolumeExternal : public VolumeCore {
+public:
+    VolumeExternal();
+    VolumeExternal(VolumeCore vc);
+
+    void SetFsType(int32_t fsType);
+    void SetFsUuid(std::string fsUuid);
+    void SetPath(std::string path);
+    void SetDescription(std::string description);
+    int32_t GetFsType();
+    std::string GetUuid();
+    std::string GetPath();
+    std::string GetDescription();
+    void Reset();
+
+    bool Marshalling(Parcel &parcel) const override;
+    static std::unique_ptr<VolumeExternal> Unmarshalling(Parcel &parcel);
+private:
+    int32_t fsType_;
+    std::string fsUuid_;
+    std::string path_;
+    std::string description_;
 };
 } // OHOS
 } // StorageManager

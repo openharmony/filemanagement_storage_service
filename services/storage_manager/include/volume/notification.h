@@ -16,9 +16,23 @@
 #ifndef OHOS_STORAGE_MANAGER_NOTIFICATION_H
 #define OHOS_STORAGE_MANAGER_NOTIFICATION_H
 
+#include <singleton.h>
+#include <nocopyable.h>
+
 namespace OHOS {
 namespace StorageManager {
-class Notification {
+enum {
+    VOLUME_REMOVED,
+    VOLUME_UNMOUNTED,
+    VOLUME_MOUNTED,
+    VOLUME_BAD_REMOVAL,
+    VOLUME_EJECT
+};
+class Notification final : public NoCopyable {
+    DECLARE_DELAYED_SINGLETON(Notification);
+public:
+    void NotifyVolumeChange(int32_t notifyCode, std::string id, std::string diskId,
+        std::string fsUuid, std::string path);
 };
 } // StorageManager
 } // OHOS

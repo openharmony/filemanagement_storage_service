@@ -44,7 +44,7 @@
             "//foundation/filemanagement/storage_service/services/storage_manager/sa_profile:storage_manager_sa_profile",
             "//foundation/filemanagement/storage_service/services/storage_manager/sa_profile:storage_manager_cfg",
             "//foundation/filemanagement/storage_service/services/storage_manager:storage_manager",
-            "//foundation/filemanagement/storage_service/interfaces/kits/js/storage_statist:storage_js",
+            "//foundation/filemanagement/storage_service/interfaces/kits/js/storage_manager:storage_js",
             "//third_party/exfat-utils:exfat-utils",
             "//third_party/f2fs-tools:f2fs-tools",
             "//third_party/fsck_msdos:fsck_msdos",

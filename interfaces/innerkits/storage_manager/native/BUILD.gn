@@ -27,8 +27,11 @@ config("private_config") {
 
 ohos_shared_library("storage_manager_sa_proxy") {
   sources = [
-    "../../../../services/storage_daemon/ipc/src/storage_daemon_proxy.cpp",
-    "../../../../services/storage_manager/ipc/src/storage_manager_proxy.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_daemon/ipc/src/storage_daemon_proxy.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/disk.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/volume_core.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/volume_external.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/ipc/src/storage_manager_proxy.cpp",
   ]
 
   configs = [ ":private_config" ]

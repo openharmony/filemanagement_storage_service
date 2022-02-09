@@ -39,6 +39,21 @@ public:
     int64_t GetFreeSizeOfVolume(std::string volumeUuid) override;
     int64_t GetTotalSizeOfVolume(std::string volumeUuid) override;
     std::vector<int64_t> GetBundleStats(std::string uuid, std::string pkgName) override;
+
+    void NotifyVolumeCreated(VolumeCore vc) override;
+    void NotifyVolumeMounted(std::string volumeId, int32_t fsType, std::string fsUuid,
+        std::string path, std::string description) override;
+    void NotifyVolumeDestoryed(std::string volumeId) override;
+
+    int32_t Mount(std::string volumeId) override;
+    int32_t Unmount(std::string volumeId) override;
+
+    std::vector<VolumeExternal> GetAllVolumes()override;
+    
+    void NotifyDiskCreated(Disk disk) override;
+    void NotifyDiskDestroyed(std::string diskId) override;
+    int32_t Partition(std::string diskId, int32_t type) override;
+    std::vector<Disk> GetAllDisks() override;
 private:
     StorageManager();
     static sptr<StorageManager> instance_;

@@ -23,17 +23,21 @@ config("storage_manager_config") {
     "../storage_daemon/include",
     "//foundation/filemanagement/storage_service/utils/include",
     "//foundation/appexecfwk/standard/services/bundlemgr/include",
+    "//foundation/aafwk/standard/interfaces/innerkits/base/include/ohos/aafwk/base",
   ]
 }
 
 ohos_shared_library("storage_manager") {
   sources = [
+    "disk/src/disk_manager_service.cpp",
     "ipc/src/storage_manager.cpp",
     "ipc/src/storage_manager_stub.cpp",
     "storage/src/storage_status_service.cpp",
     "storage/src/storage_total_status_service.cpp",
     "storage_daemon_communication/src/storage_daemon_communication.cpp",
     "user/src/multi_user_manager_service.cpp",
+    "volume/src/notification.cpp",
+    "volume/src/volume_manager_service.cpp",
   ]
 
   configs = [ ":storage_manager_config" ]
@@ -46,7 +50,10 @@ ohos_shared_library("storage_manager") {
   ]
 
   external_deps = [
+    "ability_runtime:base",
+    "ability_runtime:want",
     "bundle_framework:appexecfwk_base",
+    "ces_standard:cesfwk_innerkits",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
     "os_account_standard:os_account_innerkits",

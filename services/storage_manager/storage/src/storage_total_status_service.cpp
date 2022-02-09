@@ -14,7 +14,10 @@
  */
 
 #include <sys/statvfs.h>
+#include <singleton.h>
+#include "volume/volume_manager_service.h"
 #include "storage_service_errno.h"
+#include "storage_service_log.h"
 #include "storage/storage_total_status_service.h"
 
 using namespace std;
@@ -24,31 +27,44 @@ namespace StorageManager {
 StorageTotalStatusService::StorageTotalStatusService() {}
 StorageTotalStatusService::~StorageTotalStatusService(){}
 
+std::string StorageTotalStatusService::GetVolumePath(std::string volumeUuid)
+{
+    auto volumePtr = DelayedSingleton<VolumeManagerService>::GetInstance()->GetVolumeByUuid(volumeUuid);
+    if (volumePtr == nullptr) {
+        LOGI("StorageTotalStatusService::GetVolumePath fail.");
+        return "";
+    }
+    return volumePtr->GetPath();
+}
+
 int64_t StorageTotalStatusService::GetFreeSizeOfVolume(string volumeUuid)
 {
-    struct statvfs diskInfo;
-    int64_t freeSize = 0;
-    for (string path : mountDir) {
-        int ret = statvfs(path.c_str(), &diskInfo);
-        if (ret != E_OK) {
-            continue;
-        }
-        freeSize = freeSize + (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_bfree;
+    string path = GetVolumePath(volumeUuid);
+    LOGI("StorageTotalStatusService::GetFreeSizeOfVolume path is %{public}s", path.c_str());
+    if (path == "") {
+        return E_ERR;
     }
+    struct statvfs diskInfo;
+    int ret = statvfs(path.c_str(), &diskInfo);
+    if (ret != E_OK) {
+            return E_ERR;
+    }
+    int64_t freeSize = (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_bfree;
     return freeSize;
 }
 
 int64_t StorageTotalStatusService::GetTotalSizeOfVolume(string volumeUuid)
 {
-    struct statvfs diskInfo;
-    int64_t totalSize = 0;
-    for (string path : mountDir) {
-        int ret = statvfs(path.c_str(), &diskInfo);
-        if (ret != E_OK) {
-            continue;
-        }
-        totalSize = totalSize + (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_blocks;
+    string path = GetVolumePath(volumeUuid);
+    if (path == "") {
+        return E_ERR;
     }
+    struct statvfs diskInfo;
+    int ret = statvfs(path.c_str(), &diskInfo);
+    if (ret != E_OK) {
+            return E_ERR;
+    }
+    int64_t totalSize =  (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_blocks;
     return totalSize;
 }
 } // StorageManager

@@ -29,12 +29,10 @@ StorageStatusService::~StorageStatusService() {}
 
 int StorageStatusService::GetCurrentUserId()
 {
-    vector<AccountSA::OsAccountInfo> osAccountInfos;
-    if (AccountSA::OsAccountManager::QueryAllCreatedOsAccounts(osAccountInfos) == E_OK) {
-        for (int i = 0; i < osAccountInfos.size(); i++) {
-            if (osAccountInfos[i].GetIsActived()) {
-                return osAccountInfos[i].GetLocalId();
-            }
+    vector<int> osAccountInfos;
+    if (AccountSA::OsAccountManager::QueryActiveOsAccountIds(osAccountInfos) == E_OK) {
+        if (osAccountInfos.size() > 0) {
+            return osAccountInfos[0];
         }
     }
     LOGE("StorageStatusService::An error occurred in querying current os account.");

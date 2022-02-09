@@ -173,6 +173,246 @@ std::vector<int64_t> StorageManagerProxy::GetBundleStats(std::string uuid, std::
     }
     return val;
 }
+
+void StorageManagerProxy::NotifyVolumeCreated(VolumeCore vc)
+{
+    LOGI("StorageManagerProxy::NotifyVolumeCreated, volumeUuid:%{public}s", vc.GetId().c_str());
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("StorageManagerProxy::NotifyVolumeCreated, WriteInterfaceToken failed");
+        return;
+    }
+
+    vc.Marshalling(data);
+    int err = Remote()->SendRequest(NOTIFY_VOLUME_CREATED, data, reply, option);
+    if (err != E_OK) {
+        LOGE("StorageManagerProxy::NotifyVolumeCreated, SendRequest failed");
+    }
+}
+
+void StorageManagerProxy::NotifyVolumeMounted(std::string volumeId, int32_t fsType, std::string fsUuid,
+    std::string path, std::string description)
+{
+    LOGI("StorageManagerProxy::NotifyVolumeMounted, volumeUuid:%{public}s", volumeId.c_str());
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("StorageManagerProxy::NotifyVolumeMounted, WriteInterfaceToken failed");
+        return;
+    }
+
+    if (!data.WriteString(volumeId)) {
+        LOGE("StorageManagerProxy::NotifyVolumeMounted, WriteInterfaceToken failed");
+        return;
+    }
+
+    if (!data.WriteInt32(fsType)) {
+        LOGE("StorageManagerProxy::NotifyVolumeMounted, WriteInterfaceToken failed");
+        return;
+    }
+
+    if (!data.WriteString(fsUuid)) {
+        LOGE("StorageManagerProxy::NotifyVolumeMounted, WriteInterfaceToken failed");
+        return;
+    }
+
+    if (!data.WriteString(path)) {
+        LOGE("StorageManagerProxy::NotifyVolumeMounted, WriteInterfaceToken failed");
+        return;
+    }
+
+    if (!data.WriteString(description)) {
+        LOGE("StorageManagerProxy::NotifyVolumeMounted, WriteInterfaceToken failed");
+        return;
+    }
+
+    int err = Remote()->SendRequest(NOTIFY_VOLUME_MOUNTED, data, reply, option);
+    if (err != E_OK) {
+        LOGE("StorageManagerProxy::NotifyVolumeMounted, SendRequest failed");
+    }
+}
+void StorageManagerProxy::NotifyVolumeDestoryed(std::string volumeId)
+{
+    LOGI("StorageManagerProxy::NotifyVolumeDestoryed, volumeId:%{public}s", volumeId.c_str());
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("StorageManagerProxy::NotifyVolumeDestoryed, WriteInterfaceToken failed");
+        return;
+    }
+
+    if (!data.WriteString(volumeId)) {
+        LOGE("StorageManagerProxy::NotifyVolumeDestoryed, WriteInterfaceToken failed");
+        return;
+    }
+    int err = Remote()->SendRequest(NOTIFY_VOLUME_DESTORYED, data, reply, option);
+    if (err != E_OK) {
+        LOGE("StorageManagerProxy::NotifyVolumeDestoryed, SendRequest failed");
+    }
+}
+
+int32_t StorageManagerProxy::Mount(std::string volumeId)
+{
+    LOGI("StorageManagerProxy::Mount, volumeId:%{public}s", volumeId.c_str());
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("StorageManagerProxy::Mount, WriteInterfaceToken failed");
+        return E_IPC_ERROR;
+    }
+
+    if (!data.WriteString(volumeId)) {
+        LOGE("StorageManagerProxy::Mount, WriteInterfaceToken failed");
+        return E_IPC_ERROR;
+    }
+    int err = Remote()->SendRequest(MOUNT, data, reply, option);
+    if (err != E_OK) {
+        LOGE("StorageManagerProxy::Mount, SendRequest failed");
+        return E_IPC_ERROR;
+    }
+    return reply.ReadInt32();
+}
+
+int32_t StorageManagerProxy::Unmount(std::string volumeId)
+{
+    LOGI("StorageManagerProxy::Unmount, volumeId:%{public}s", volumeId.c_str());
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("StorageManagerProxy::Unmount, WriteInterfaceToken failed");
+        return E_IPC_ERROR;
+    }
+
+    if (!data.WriteString(volumeId)) {
+        LOGE("StorageManagerProxy::Unmount, WriteInterfaceToken failed");
+        return E_IPC_ERROR;
+    }
+    int err = Remote()->SendRequest(UNMOUNT, data, reply, option);
+    if (err != E_OK) {
+        LOGE("StorageManagerProxy::Unmount, SendRequest failed");
+        return E_IPC_ERROR;
+    }
+    return reply.ReadInt32();
+}
+
+std::vector<VolumeExternal> StorageManagerProxy::GetAllVolumes()
+{
+    std::vector<VolumeExternal> result = {};
+    LOGI("StorageManagerProxy::GetAllVolumes");
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("StorageManagerProxy::GetAllVolumes, WriteInterfaceToken failed");
+        return result;
+    }
+
+    int err = Remote()->SendRequest(GET_ALL_VOLUMES, data, reply, option);
+    if (err != E_OK) {
+        LOGE("StorageManagerProxy::GetAllVolumes, SendRequest failed");
+        return result;
+    }
+    int size = reply.ReadUint32();
+    if (size == 0) {
+        return result;
+    }
+    for (int i = 0; i < size; i++) {
+        std::unique_ptr<VolumeExternal> ve = VolumeExternal::Unmarshalling(reply);
+        LOGI("StorageManagerProxy::GetAllVolumes push %{public}s", ve->GetId().c_str());
+        result.push_back(*ve);
+    }
+    return result;
+}
+
+void StorageManagerProxy::NotifyDiskCreated(Disk disk)
+{
+    LOGI("StorageManagerProxy::NotifyDiskCreate, diskId:%{public}s", disk.GetDiskId().c_str());
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("StorageManagerProxy::NotifyDiskCreate, WriteInterfaceToken failed");
+        return;
+    }
+    disk.Marshalling(data);
+    int err = Remote()->SendRequest(NOTIFY_DISK_CREATED, data, reply, option);
+    if (err != E_OK) {
+        LOGE("StorageManagerProxy::NotifyDiskCreate, SendRequest failed");
+        return;
+    }
+}
+
+void StorageManagerProxy::NotifyDiskDestroyed(std::string diskId)
+{
+    LOGI("StorageManagerProxy::NotifyDiskDestroyed, diskId:%{public}s", diskId.c_str());
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("StorageManagerProxy::NotifyDiskDestroyed, WriteInterfaceToken failed");
+        return;
+    }
+    if (!data.WriteString(diskId)) {
+        LOGE("StorageManagerProxy::NotifyDiskDestroyed, WriteString failed");
+        return;
+    }
+    int err = Remote()->SendRequest(NOTIFY_DISK_DESTROYED, data, reply, option);
+    if (err != E_OK) {
+        LOGE("StorageManagerProxy::NotifyDiskDestroyed, SendRequest failed");
+        return;
+    }
+}
+
+int32_t StorageManagerProxy::Partition(std::string diskId, int32_t type)
+{
+    LOGI("StorageManagerProxy::Partition, diskId:%{public}s", diskId.c_str());
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("StorageManagerProxy::Partition, WriteInterfaceToken failed");
+        return E_IPC_ERROR;
+    }
+    if (!data.WriteString(diskId)) {
+        LOGE("StorageManagerProxy::Partition, WriteString failed");
+        return E_IPC_ERROR;
+    }
+    if (!data.WriteInt32(type)) {
+        LOGE("StorageManagerProxy::Partition WriteInt32 failed");
+        return E_IPC_ERROR;
+    }
+    int err = Remote()->SendRequest(PARTITION, data, reply, option);
+    if (err != E_OK) {
+        LOGE("StorageManagerProxy::Partition, SendRequest failed");
+        return E_IPC_ERROR;
+    }
+    return reply.ReadInt32();
+}
+
+std::vector<Disk> StorageManagerProxy::GetAllDisks()
+{
+    LOGI("StorageManagerProxy::GetAllDisks");
+    std::vector<Disk> result = {};
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("StorageManagerProxy::GetAllDisks, WriteInterfaceToken failed");
+        return result;
+    }
+
+    int err = Remote()->SendRequest(GET_ALL_DISKS, data, reply, option);
+    if (err != E_OK) {
+        LOGE("StorageManagerProxy::GetAllDisks, SendRequest failed");
+        return result;
+    }
+    int size = reply.ReadUint32();
+    if (size == 0) {
+        return result;
+    }
+    for (int i = 0; i < size; i++) {
+        std::unique_ptr<Disk> disk = Disk::Unmarshalling(reply);
+        LOGI("StorageManagerProxy::GetAllDisks push %{public}s", disk->GetDiskId().c_str());
+        result.push_back(*disk);
+    }
+    return result;
+}
 } // StorageManager
 } // OHOS
 

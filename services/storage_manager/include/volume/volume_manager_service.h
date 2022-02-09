@@ -16,9 +16,30 @@
 #ifndef OHOS_STORAGE_MANAGER_VOLUME_MANAGER_SERVICE_H
 #define OHOS_STORAGE_MANAGER_VOLUME_MANAGER_SERVICE_H
 
+#include <singleton.h>
+#include <nocopyable.h>
+#include "volume_core.h"
+#include "volume_external.h"
+#include "utils/storage_rl_map.h"
+
 namespace OHOS {
 namespace StorageManager {
-class VolumeManagerService {
+class VolumeManagerService : public NoCopyable {
+    DECLARE_DELAYED_SINGLETON(VolumeManagerService);
+public:
+    int32_t Mount(std::string volumeId);
+    int32_t Unmount(std::string volumeId);
+    void OnVolumeCreated(VolumeCore vc);
+    void OnVolumeMounted(std::string volumeId, int32_t fsType, std::string fsUuid,
+        std::string path, std::string description);
+    void OnVolumeDestoryed(std::string volumeId);
+    std::vector<VolumeExternal> GetAllVolumes();
+    std::shared_ptr<VolumeExternal> GetVolumeByUuid(std::string volumeUuid);
+private:
+    StorageRlMap<std::string, std::shared_ptr<VolumeExternal>> volumeMap_;
+    void VolumeStateNotify(int32_t state, std::string volumeId,
+        std::string diskId, std::string fsUuid, std::string path);
+    int32_t Check(std::string volumeId);
 }; 
 } // StorageManager
 } // OHOS
