@@ -83,10 +83,13 @@ bool BaseKey::SaveKeyBlob(const KeyBlob &blob, const std::string &path)
     LOGD("enter %{public}s, size=%{public}d", path.c_str(), blob.size);
     std::ofstream file(path, std::ios::binary);
     if (file.fail()) {
-        LOGE("path:%{public}s fail", path.c_str());
+        LOGE("open %{public}s failed, errno %{public}d", path.c_str(), errno);
         return false;
     }
-    file.write(reinterpret_cast<char *>(blob.data.get()), blob.size);
+    if (file.write(reinterpret_cast<char *>(blob.data.get()), blob.size).fail()) {
+        LOGE("write %{public}s failed, errno %{public}d", path.c_str(), errno);
+        return false;
+    }
     file.flush();
     return true;
 }
@@ -104,7 +107,7 @@ bool BaseKey::LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t
     LOGD("enter %{public}s, size=%{public}d", path.c_str(), size);
     std::ifstream file(path, std::ios::binary);
     if (file.fail()) {
-        LOGE("path:%{public}s fail", path.c_str());
+        LOGE("open %{public}s failed, errno %{public}d", path.c_str(), errno);
         return false;
     }
 
@@ -120,8 +123,8 @@ bool BaseKey::LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t
     }
 
     file.seekg(0, std::ios::beg);
-    if (!file.read(reinterpret_cast<char *>(blob.data.get()), length)) {
-        LOGE("read fail"); // print what?
+    if (file.read(reinterpret_cast<char *>(blob.data.get()), length).fail()) {
+        LOGE("read %{public}s failed, errno %{public}d", path.c_str(), errno);
         return false;
     }
     return true;
@@ -198,7 +201,7 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
         return false;
     }
     if (OHOS::SaveStringToFile(pathVersion, std::to_string(keyInfo_.version)) == false) {
-        LOGE("save version fail");
+        LOGE("save version failed, errno:%{public}d", errno);
         return false;
     }
 
