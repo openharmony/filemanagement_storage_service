@@ -22,6 +22,7 @@
 #include "int_wrapper.h"
 #include "string_wrapper.h"
 #include "storage_service_log.h"
+#include "volume_core.h"
 namespace OHOS {
 namespace StorageManager {
 Notification::Notification() {}
@@ -34,29 +35,31 @@ void Notification::NotifyVolumeChange(int32_t notifyCode, std::string id, std::s
     AAFwk::WantParams wantParams;
     wantParams.SetParam("id", AAFwk::String::Box(id));
     wantParams.SetParam("diskId", AAFwk::String::Box(diskId));
-    wantParams.SetParam("notifyCode", AAFwk::Integer::Box(notifyCode));
     switch (notifyCode) {
         case VOLUME_REMOVED:
             LOGI("notifycode: VOLUME_REMOVED");
-            want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_DISK_REMOVED);
+            want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_VOLUME_REMOVED);
             break;
         case VOLUME_UNMOUNTED:
             LOGI("notifycode: VOLUME_UNMOUNTED");
-            want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_DISK_UNMOUNTED);
+            wantParams.SetParam("volumeState", AAFwk::Integer::Box(UNMOUNTED));
+            want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_VOLUME_UNMOUNTED);
             break;
         case VOLUME_MOUNTED:
             LOGI("notifycode: VOLUME_MOUNTED");
+            wantParams.SetParam("volumeState", AAFwk::Integer::Box(MOUNTED));
             wantParams.SetParam("fsUuid", AAFwk::String::Box(fsUuid));
             wantParams.SetParam("path", AAFwk::String::Box(path));
-            want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_DISK_MOUNTED);
+            want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_VOLUME_MOUNTED);
             break;
         case VOLUME_BAD_REMOVAL:
             LOGI("notifycode: VOLUME_BAD_REMOVAL");
-            want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_DISK_BAD_REMOVAL);
+            want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_VOLUME_BAD_REMOVAL);
             break;
         case VOLUME_EJECT:
             LOGI("notifycode: VOLUME_EJECT");
-            want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_DISK_EJECT);
+            wantParams.SetParam("volumeState", AAFwk::Integer::Box(EJECTING));
+            want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_VOLUME_EJECT);
             break;
         default: {
             break;
