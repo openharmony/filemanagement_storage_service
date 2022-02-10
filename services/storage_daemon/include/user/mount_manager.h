@@ -32,6 +32,7 @@ struct DirInfo {
 
 constexpr uid_t OID_ROOT = 0;
 constexpr uid_t OID_SYSTEM = 1000;
+constexpr uid_t OID_USER_DATA_RW = 1008;
 
 class MountManager final {
 public:

@@ -43,8 +43,8 @@ MountManager::MountManager()
                    {"/data/service/el2/%d/hmdfs/non_account/files", 0711, OID_SYSTEM, OID_SYSTEM},
                    {"/data/service/el2/%d/hmdfs/non_account/data", 0711, OID_SYSTEM, OID_SYSTEM},
                    {"/data/service/el2/%d/hmdfs/non_account/cache", 0711, OID_SYSTEM, OID_SYSTEM}},
-      virtualDir_{{"/storage/media/%d", 0711, OID_ROOT, OID_ROOT},
-                  {"/storage/media/%d/local", 0711, OID_ROOT, OID_ROOT},
+      virtualDir_{{"/storage/media/%d", 0771, OID_USER_DATA_RW, OID_USER_DATA_RW},
+                  {"/storage/media/%d/local", 0771, OID_USER_DATA_RW, OID_USER_DATA_RW},
                   {"/mnt/hmdfs/", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/%d/", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/%d/account", 0711, OID_ROOT, OID_ROOT},
@@ -156,7 +156,7 @@ bool MountManager::SupportHmdfs()
 int32_t MountManager::LocalMount(int32_t userId)
 {
     Utils::MountArgument LocalMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, "account"));
-    if (Mount(LocalMntArgs.GetFullSrc() + "/files/", LocalMntArgs.GetCommFullPath() + "local/",
+    if (Mount(LocalMntArgs.GetFullSrc(), LocalMntArgs.GetCommFullPath() + "local/",
               nullptr, MS_BIND, nullptr)) {
         LOGE("failed to bind mount, err %{public}d", errno);
         return E_MOUNT;
