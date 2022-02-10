@@ -29,7 +29,7 @@ public:
     virtual int32_t Mount(std::string volId, uint32_t flags) override;
     virtual int32_t UMount(std::string volId) override;
     virtual int32_t Check(std::string volId) override;
-    virtual int32_t Format(std::string voldId) override;
+    virtual int32_t Format(std::string volId, std::string fsType) override;
     virtual int32_t Partition(std::string diskId, int32_t type) override;
 
     virtual int32_t StartUser(int32_t userId) override;

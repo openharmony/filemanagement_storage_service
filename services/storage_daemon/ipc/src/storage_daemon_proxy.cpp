@@ -98,7 +98,7 @@ int32_t StorageDaemonProxy::Check(std::string volId)
     return reply.ReadInt32();
 }
 
-int32_t StorageDaemonProxy::Format(std::string voldId)
+int32_t StorageDaemonProxy::Format(std::string volId, std::string fsType)
 {
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -106,7 +106,11 @@ int32_t StorageDaemonProxy::Format(std::string voldId)
         return E_IPC_ERROR;
     }
 
-    if (!data.WriteString(voldId)) {
+    if (!data.WriteString(volId)) {
+        return E_IPC_ERROR;
+    }
+
+    if (!data.WriteString(fsType)) {
         return E_IPC_ERROR;
     }
 

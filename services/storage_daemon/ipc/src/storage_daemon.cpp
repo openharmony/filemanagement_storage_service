@@ -16,6 +16,7 @@
 #include "ipc/storage_daemon.h"
 #include "user/user_manager.h"
 #include "disk/disk_manager.h"
+#include "volume/volume_manager.h"
 #include "storage_service_errno.h"
 #include "crypto/key_manager.h"
 #include "storage_service_log.h"
@@ -30,25 +31,25 @@ int32_t StorageDaemon::Shutdown()
 int32_t StorageDaemon::Mount(std::string volId, uint32_t flags)
 {
     LOGI("Handle Mount");
-    return E_OK;
+    return VolumeManager::Instance()->Mount(volId, flags);
 }
 
 int32_t StorageDaemon::UMount(std::string volId)
 {
     LOGI("Handle UMount");
-    return E_OK;
+    return VolumeManager::Instance()->UMount(volId);
 }
 
 int32_t StorageDaemon::Check(std::string volId)
 {
     LOGI("Handle Check");
-    return E_OK;
+    return VolumeManager::Instance()->Check(volId);
 }
 
-int32_t StorageDaemon::Format(std::string voldId)
+int32_t StorageDaemon::Format(std::string volId, std::string fsType)
 {
     LOGI("Handle Format");
-    return E_OK;
+    return VolumeManager::Instance()->Format(volId, fsType);
 }
 
 int32_t StorageDaemon::Partition(std::string diskId, int32_t type)

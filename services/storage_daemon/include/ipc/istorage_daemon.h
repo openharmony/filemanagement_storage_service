@@ -56,7 +56,7 @@ public:
     virtual int32_t Mount(std::string volId, uint32_t flags) = 0;
     virtual int32_t UMount(std::string volId) = 0;
     virtual int32_t Check(std::string volId) = 0;
-    virtual int32_t Format(std::string voldId) = 0;
+    virtual int32_t Format(std::string volId, std::string fsType) = 0;
     virtual int32_t Partition(std::string diskId, int32_t type) = 0;
 
     virtual int32_t StartUser(int32_t userId) = 0;
