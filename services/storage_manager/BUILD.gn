@@ -43,6 +43,7 @@ ohos_shared_library("storage_manager") {
   configs = [ ":storage_manager_config" ]
 
   deps = [
+    ":smc",
     "../../interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
     "//base/account/os_account/frameworks/common:libaccount_common",
     "//foundation/appexecfwk/standard/services/bundlemgr:libbms",
@@ -54,6 +55,47 @@ ohos_shared_library("storage_manager") {
     "ability_runtime:want",
     "bundle_framework:appexecfwk_base",
     "ces_standard:cesfwk_innerkits",
+    "hiviewdfx_hilog_native:libhilog",
+    "ipc:ipc_core",
+    "os_account_standard:os_account_innerkits",
+    "safwk:system_ability_fwk",
+    "samgr_standard:samgr_proxy",
+  ]
+
+  subsystem_name = "filemanagement"
+  part_name = "storage_service"
+  install_enable = true
+}
+
+config("smc_config") {
+  include_dirs = [
+    "include",
+    "../storage_daemon/include",
+    "../../interfaces/innerkits/storage_manager/native",
+    "//utils/system/safwk/native/include",
+    "//utils/native/base/include",
+    "//foundation/filemanagement/storage_service/utils/include",
+    "//foundation/appexecfwk/standard/services/bundlemgr/include",
+    "//foundation/distributedschedule/samgr/interfaces/innerkits/samgr_proxy/include",
+  ]
+}
+ohos_executable("smc") {
+  sources = [
+    "client/storage_manager_client.cpp",
+    "ipc/src/storage_manager_proxy.cpp",
+    "smc.cpp",
+    "../storage_daemon/utils/file_utils.cpp",
+    "innerkits_impl/src/volume_core.cpp",
+    "innerkits_impl/src/volume_external.cpp",
+    "innerkits_impl/src/disk.cpp",
+  ]
+
+  configs = [ ":smc_config" ]
+
+  public_deps = [ "//utils/native/base:utils" ]
+
+  external_deps = [
+    "bundle_framework:appexecfwk_base",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
     "os_account_standard:os_account_innerkits",

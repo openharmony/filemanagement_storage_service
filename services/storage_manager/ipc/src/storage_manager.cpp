@@ -162,5 +162,45 @@ std::vector<Disk> StorageManager::GetAllDisks()
     std::vector<Disk> result = DelayedSingleton<DiskManagerService>::GetInstance()->GetAllDisks();
     return result;
 }
+
+int32_t StorageManager::GenerateUserKeys(uint32_t userId, uint32_t flags)
+{
+    LOGI("UserId: %{public}u, flags:  %{public}u", userId, flags);
+    std::shared_ptr<MultiUserManagerService> userManager = DelayedSingleton<MultiUserManagerService>::GetInstance();
+    int32_t err = userManager->GenerateUserKeys(userId, flags);
+    return err;
+}
+
+int32_t StorageManager::DeleteUserKeys(uint32_t userId)
+{
+    LOGI("UserId: %{public}u", userId);
+    std::shared_ptr<MultiUserManagerService> userManager = DelayedSingleton<MultiUserManagerService>::GetInstance();
+    int32_t err = userManager->DeleteUserKeys(userId);
+    return err;
+}
+
+int32_t StorageManager::UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret)
+{
+    LOGI("UserId: %{public}u", userId);
+    std::shared_ptr<MultiUserManagerService> userManager = DelayedSingleton<MultiUserManagerService>::GetInstance();
+    int32_t err = userManager->UpdateUserAuth(userId, auth, compSecret);
+    return err;
+}
+
+int32_t StorageManager::ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret)
+{
+    LOGI("UserId: %{public}u", userId);
+    std::shared_ptr<MultiUserManagerService> userManager = DelayedSingleton<MultiUserManagerService>::GetInstance();
+    int32_t err = userManager->ActiveUserKey(userId, auth, compSecret);
+    return err;
+}
+
+int32_t StorageManager::InactiveUserKey(uint32_t userId)
+{
+    LOGI("UserId: %{public}u", userId);
+    std::shared_ptr<MultiUserManagerService> userManager = DelayedSingleton<MultiUserManagerService>::GetInstance();
+    int32_t err = userManager->InactiveUserKey(userId);
+    return err;
+}
 }
 }

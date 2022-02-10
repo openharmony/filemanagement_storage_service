@@ -29,6 +29,13 @@ public:
     int32_t RemoveUser(int32_t userId);
     int32_t PrepareStartUser(int32_t userId);
     int32_t StopUser(int32_t userId);
+
+    // fscrypt api
+    int32_t GenerateUserKeys(uint32_t userId, uint32_t flags);
+    int32_t DeleteUserKeys(uint32_t userId);
+    int32_t UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret);
+    int32_t ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret);
+    int32_t InactiveUserKey(uint32_t userId);
 private:
     int32_t CheckUserIdRange(int32_t userId);
 };

@@ -42,6 +42,14 @@ public:
     int32_t Unmount(std::string volumeId);
     int32_t Check(std::string volumeId);
     int32_t Partition(std::string diskId, int32_t type);
+
+    // fscrypt api
+    int32_t GenerateUserKeys(uint32_t userId, uint32_t flags);
+    int32_t DeleteUserKeys(uint32_t userId);
+    int32_t UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret);
+    int32_t ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret);
+    int32_t InactiveUserKey(uint32_t userId);
+
 private:
     sptr<OHOS::StorageDaemon::IStorageDaemon> storageDaemon_;
 };

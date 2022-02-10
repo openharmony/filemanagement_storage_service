@@ -103,6 +103,136 @@ int32_t StorageManagerProxy::StopUser(int32_t userId)
     return reply.ReadUint32();
 }
 
+int32_t StorageManagerProxy::GenerateUserKeys(uint32_t userId, uint32_t flags)
+{
+    LOGI("user ID: %{public}u, flags: %{public}u", userId, flags);
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("WriteInterfaceToken failed");
+        return E_IPC_ERROR;
+    }
+    if (!data.WriteUint32(userId)) {
+        LOGE("Write user ID failed");
+        return E_IPC_ERROR;
+    }
+    if (!data.WriteUint32(flags)) {
+        LOGE("Write key flags failed");
+        return E_IPC_ERROR;
+    }
+    int err = Remote()->SendRequest(CREATE_USER_KEYS, data, reply, option);
+    if (err != E_OK) {
+        LOGE("SendRequest failed");
+        return E_IPC_ERROR;
+    }
+
+    return reply.ReadInt32();
+}
+
+int32_t StorageManagerProxy::DeleteUserKeys(uint32_t userId)
+{
+    LOGI("user ID: %{public}u", userId);
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("WriteInterfaceToken failed");
+        return E_IPC_ERROR;
+    }
+    if (!data.WriteUint32(userId)) {
+        LOGE("Write user ID failed");
+        return E_IPC_ERROR;
+    }
+    int err = Remote()->SendRequest(DELETE_USER_KEYS, data, reply, option);
+    if (err != E_OK) {
+        LOGE("SendRequest failed");
+        return E_IPC_ERROR;
+    }
+
+    return reply.ReadInt32();
+}
+
+int32_t StorageManagerProxy::UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret)
+{
+    LOGI("user ID: %{public}u", userId);
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("WriteInterfaceToken failed");
+        return E_IPC_ERROR;
+    }
+    if (!data.WriteUint32(userId)) {
+        LOGE("Write user ID failed");
+        return E_IPC_ERROR;
+    }
+    if (!data.WriteString(auth)) {
+        LOGE("Write user auth failed");
+        return E_IPC_ERROR;
+    }
+    if (!data.WriteString(compSecret)) {
+        LOGE("Write user secret failed");
+        return E_IPC_ERROR;
+    }
+    int err = Remote()->SendRequest(UPDATE_USER_AUTH, data, reply, option);
+    if (err != E_OK) {
+        LOGE("SendRequest failed");
+        return E_IPC_ERROR;
+    }
+
+    return reply.ReadInt32();
+}
+
+int32_t StorageManagerProxy::ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret)
+{
+    LOGI("user ID: %{public}u", userId);
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("WriteInterfaceToken failed");
+        return E_IPC_ERROR;
+    }
+    if (!data.WriteUint32(userId)) {
+        LOGE("Write user ID failed");
+        return E_IPC_ERROR;
+    }
+    if (!data.WriteString(auth)) {
+        LOGE("Write user auth failed");
+        return E_IPC_ERROR;
+    }
+    if (!data.WriteString(compSecret)) {
+        LOGE("Write user secret failed");
+        return E_IPC_ERROR;
+    }
+    int err = Remote()->SendRequest(ACTIVE_USER_KEY, data, reply, option);
+    if (err != E_OK) {
+        LOGE("SendRequest failed");
+        return E_IPC_ERROR;
+    }
+
+    return reply.ReadInt32();
+}
+
+int32_t StorageManagerProxy::InactiveUserKey(uint32_t userId)
+{
+    LOGI("user ID: %{public}u", userId);
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("WriteInterfaceToken failed");
+        return E_IPC_ERROR;
+    }
+    if (!data.WriteUint32(userId)) {
+        LOGE("Write user ID failed");
+        return E_IPC_ERROR;
+    }
+    int err = Remote()->SendRequest(INACTIVE_USER_KEY, data, reply, option);
+    if (err != E_OK) {
+        LOGE("SendRequest failed");
+        return E_IPC_ERROR;
+    }
+
+    return reply.ReadInt32();
+}
+
 int64_t StorageManagerProxy::GetFreeSizeOfVolume(std::string volumeUuid)
 {
     LOGI("StorageManagerProxy::GetFreeSizeOfVolume, volumeUuid:%{public}s", volumeUuid.c_str());

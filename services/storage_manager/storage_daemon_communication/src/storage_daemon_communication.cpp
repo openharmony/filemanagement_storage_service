@@ -140,5 +140,55 @@ int32_t StorageDaemonCommunication::Partition(std::string diskId, int32_t type)
     }
     return E_OK;
 }
+
+int32_t StorageDaemonCommunication::GenerateUserKeys(uint32_t userId, uint32_t flags)
+{
+    LOGI("enter");
+    if (Connect() != E_OK) {
+        LOGE("Connect failed");
+        return E_IPC_ERROR;
+    }
+    return storageDaemon_->GenerateUserKeys(userId, flags);
+}
+
+int32_t StorageDaemonCommunication::DeleteUserKeys(uint32_t userId)
+{
+    LOGI("enter");
+    if (Connect() != E_OK) {
+        LOGE("Connect failed");
+        return E_IPC_ERROR;
+    }
+    return storageDaemon_->DeleteUserKeys(userId);
+}
+
+int32_t StorageDaemonCommunication::UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret)
+{
+    LOGI("enter");
+    if (Connect() != E_OK) {
+        LOGE("Connect failed");
+        return E_IPC_ERROR;
+    }
+    return storageDaemon_->UpdateUserAuth(userId, auth, compSecret);
+}
+
+int32_t StorageDaemonCommunication::ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret)
+{
+    LOGI("enter");
+    if (Connect() != E_OK) {
+        LOGE("Connect failed");
+        return E_IPC_ERROR;
+    }
+    return storageDaemon_->ActiveUserKey(userId, auth, compSecret);
+}
+
+int32_t StorageDaemonCommunication::InactiveUserKey(uint32_t userId)
+{
+    LOGI("enter");
+    if (Connect() != E_OK) {
+        LOGE("Connect failed");
+        return E_IPC_ERROR;
+    }
+    return storageDaemon_->InactiveUserKey(userId);
+}
 } // StorageManager
 } // OHOS

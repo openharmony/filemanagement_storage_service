@@ -43,6 +43,14 @@ public:
     virtual void NotifyDiskDestroyed(std::string diskId) = 0;
     virtual int32_t Partition(std::string diskId, int32_t type) = 0;
     virtual std::vector<Disk> GetAllDisks() = 0;
+
+    // fscrypt api
+    virtual int32_t GenerateUserKeys(uint32_t userId, uint32_t flags) = 0;
+    virtual int32_t DeleteUserKeys(uint32_t userId) = 0;
+    virtual int32_t UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret) = 0;
+    virtual int32_t ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret) = 0;
+    virtual int32_t InactiveUserKey(uint32_t userId) = 0;
+
     enum {
         PREPARE_ADD_USER = 1,
         REMOVE_USER,
@@ -60,7 +68,12 @@ public:
         NOTIFY_DISK_CREATED,
         NOTIFY_DISK_DESTROYED,
         PARTITION,
-        GET_ALL_DISKS
+        GET_ALL_DISKS,
+        CREATE_USER_KEYS,
+        DELETE_USER_KEYS,
+        UPDATE_USER_AUTH,
+        ACTIVE_USER_KEY,
+        INACTIVE_USER_KEY,
     };
 
     DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.StorageManager.IStorageManager");
