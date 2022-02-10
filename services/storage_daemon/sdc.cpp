@@ -20,6 +20,7 @@
 #include "storage_daemon_client.h"
 #include "storage_service_log.h"
 #include "utils/file_utils.h"
+#include "client/storage_manager_client.h"
 
 static void HandleFileCrypt(const std::string &cmd, const std::vector<std::string> &args)
 {
@@ -50,7 +51,7 @@ static void HandleFileCrypt(const std::string &cmd, const std::vector<std::strin
             LOGE("Parameter input error, please retry");
             return;
         }
-        int32_t ret = OHOS::StorageDaemon::StorageDaemonClient::GenerateUserKeys(userId, flags);
+        int32_t ret = OHOS::StorageManager::StorageManagerClient::GenerateUserKeys(userId, flags);
         if (ret) {
             LOGE("Create user %{public}u el failed ret %{public}d", userId, ret);
             return;
@@ -68,7 +69,7 @@ static void HandleFileCrypt(const std::string &cmd, const std::vector<std::strin
             return;
         }
         std::string volumId = "";
-        int32_t ret = OHOS::StorageDaemon::StorageDaemonClient::PrepareUserSpace(userId, volumId, flags);
+        int32_t ret = OHOS::StorageManager::StorageManagerClient::PrepareAddUser(userId, volumId, flags);
         if (ret) {
             LOGE("Prepare user %{public}u storage failed ret %{public}d", userId, ret);
             return;
@@ -84,7 +85,7 @@ static void HandleFileCrypt(const std::string &cmd, const std::vector<std::strin
             LOGE("Parameter input error, please retry");
             return;
         }
-        int ret = OHOS::StorageDaemon::StorageDaemonClient::DeleteUserKeys(userId);
+        int ret = OHOS::StorageManager::StorageManagerClient::DeleteUserKeys(userId);
         if (ret) {
             LOGE("Delete user %{public}u key failed ret %{public}d", userId, ret);
             return;
@@ -102,7 +103,7 @@ static void HandleFileCrypt(const std::string &cmd, const std::vector<std::strin
             return;
         }
         std::string volumId = "";
-        int ret = OHOS::StorageDaemon::StorageDaemonClient::DestroyUserSpace(userId, volumId, flags);
+        int ret = OHOS::StorageManager::StorageManagerClient::RemoveUser(userId, volumId, flags);
         if (ret) {
             LOGE("Destroy user %{public}u space failed ret %{public}d", userId, ret);
             return;
@@ -120,7 +121,7 @@ static void HandleFileCrypt(const std::string &cmd, const std::vector<std::strin
         }
         std::string token = args[4];
         std::string secret = args[5];
-        int ret = OHOS::StorageDaemon::StorageDaemonClient::UpdateUserAuth(userId, token, secret);
+        int ret = OHOS::StorageManager::StorageManagerClient::UpdateUserAuth(userId, token, secret);
         if (ret) {
             LOGE("Update user %{public}u auth failed ret %{public}d", userId, ret);
             return;
@@ -138,7 +139,7 @@ static void HandleFileCrypt(const std::string &cmd, const std::vector<std::strin
         }
         std::string token = args[4];
         std::string secret = args[5];
-        int ret = OHOS::StorageDaemon::StorageDaemonClient::ActiveUserKey(userId, token, secret);
+        int ret = OHOS::StorageManager::StorageManagerClient::ActiveUserKey(userId, token, secret);
         if (ret) {
             LOGE("Active user %{public}u key failed ret %{public}d", userId, ret);
             return;
@@ -154,7 +155,7 @@ static void HandleFileCrypt(const std::string &cmd, const std::vector<std::strin
             LOGE("Parameter input error, please retry");
             return;
         }
-        int ret = OHOS::StorageDaemon::StorageDaemonClient::InactiveUserKey(userId);
+        int ret = OHOS::StorageManager::StorageManagerClient::InactiveUserKey(userId);
         if (ret) {
             LOGE("Inactive user %{public}u key failed %{public}d", userId, ret);
             return;

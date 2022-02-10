@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef OHOS_STORAGE_MANAGER_MULTI_USER_MANAGER_SERVICE_H
-#define OHOS_STORAGE_MANAGER_MULTI_USER_MANAGER_SERVICE_H
+#ifndef OHOS_STORAGE_MANAGER_FILE_SYSTEM_CRYPTO_H
+#define OHOS_STORAGE_MANAGER_FILE_SYSTEM_CRYPTO_H
 
 #include <unordered_map>
 #include <singleton.h>
@@ -22,18 +22,17 @@
 
 namespace OHOS {
 namespace StorageManager {
-class MultiUserManagerService final : public NoCopyable {
-    DECLARE_DELAYED_SINGLETON(MultiUserManagerService);
+class FileSystemCrypto final : public NoCopyable {
+    DECLARE_DELAYED_SINGLETON(FileSystemCrypto);
 public:
-    int32_t PrepareAddUser(int32_t userId);
-    int32_t RemoveUser(int32_t userId);
-    int32_t PrepareStartUser(int32_t userId);
-    int32_t StopUser(int32_t userId);
-
+    int32_t GenerateUserKeys(uint32_t userId, uint32_t flags);
+    int32_t DeleteUserKeys(uint32_t userId);
+    int32_t UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret);
+    int32_t ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret);
+    int32_t InactiveUserKey(uint32_t userId);
 private:
     int32_t CheckUserIdRange(int32_t userId);
 };
 } // StorageManager
 } // OHOS
-
-#endif // OHOS_STORAGE_MANAGER_MULTI_USER_MANAGER_SERVICE_H
+#endif // OHOS_STORAGE_MANAGER_FILE_SYSTEM_CRYPTO_H

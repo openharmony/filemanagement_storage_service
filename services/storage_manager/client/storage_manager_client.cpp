@@ -39,7 +39,7 @@ sptr<IStorageManager> StorageManagerClient::GetStorageManagerProxy(void)
     return iface_cast<IStorageManager>(object);
 }
 
-int32_t StorageManagerClient::PrepareUserSpace(uint32_t userId, const std::string &volumId, uint32_t flags)
+int32_t StorageManagerClient::PrepareAddUser(uint32_t userId, const std::string &volumId, uint32_t flags)
 {
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
@@ -50,7 +50,7 @@ int32_t StorageManagerClient::PrepareUserSpace(uint32_t userId, const std::strin
     return client->PrepareAddUser(userId);
 }
 
-int32_t StorageManagerClient::DestroyUserSpace(uint32_t userId, const std::string &volumId, uint32_t flags)
+int32_t StorageManagerClient::RemoveUser(uint32_t userId, const std::string &volumId, uint32_t flags)
 {
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {

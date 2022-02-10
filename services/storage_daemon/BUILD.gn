@@ -78,6 +78,9 @@ config("sdc_config") {
     "//utils/system/safwk/native/include",
     "//foundation/communication/ipc/interfaces/innerkits/ipc_core/include/",
     "client/include",
+    "../../interfaces/innerkits/storage_manager/native",
+    "../storage_manager/include",
+    "//foundation/appexecfwk/standard/services/bundlemgr/include",
   ]
 }
 
@@ -87,6 +90,11 @@ ohos_executable("sdc") {
     "ipc/src/storage_daemon_proxy.cpp",
     "sdc.cpp",
     "utils/file_utils.cpp",
+    "../storage_manager/client/storage_manager_client.cpp",
+    "../storage_manager/ipc/src/storage_manager_proxy.cpp",
+    "../storage_manager/innerkits_impl/src/volume_core.cpp",
+    "../storage_manager/innerkits_impl/src/volume_external.cpp",
+    "../storage_manager/innerkits_impl/src/disk.cpp",
   ]
 
   configs = [ ":sdc_config" ]
@@ -99,6 +107,7 @@ ohos_executable("sdc") {
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
     "samgr_standard:samgr_proxy",
+    "safwk:system_ability_fwk",
   ]
 
   subsystem_name = "filemanagement"

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "user/multi_user_manager_service.h"
+#include "crypto/filesystem_crypto.h"
 #include "os_account_constants.h"
 #include "storage_daemon_communication/storage_daemon_communication.h"
 #include "storage_service_log.h"
@@ -21,79 +21,93 @@
 
 namespace OHOS {
 namespace StorageManager {
-MultiUserManagerService::MultiUserManagerService()
+FileSystemCrypto::FileSystemCrypto()
 {
-    LOGI("DEBUG MultiUserManagerService constructer");
+    LOGI("DEBUG FileSystemCrypto constructer");
 }
 
-MultiUserManagerService::~MultiUserManagerService()
+FileSystemCrypto::~FileSystemCrypto()
 {
-    LOGI("DEBUG ~MultiUserManagerService destructer ~");
+    LOGI("DEBUG ~FileSystemCrypto destructer ~");
 }
 
-int32_t MultiUserManagerService::CheckUserIdRange(int32_t userId)
+int32_t FileSystemCrypto::CheckUserIdRange(int32_t userId)
 {
     if (userId < AccountSA::Constants::START_USER_ID || userId > AccountSA::Constants::MAX_USER_ID) {
-        LOGE("MultiUserManagerService: userId:%{public}d is out of range", userId);
+        LOGE("FileSystemCrypto: userId:%{public}d is out of range", userId);
         return E_USERID_RANGE;
     }
     return E_OK;
 }
 
-int32_t MultiUserManagerService::PrepareAddUser(int32_t userId)
+int32_t FileSystemCrypto::GenerateUserKeys(uint32_t userId, uint32_t flags)
 {
-    LOGI("MultiUserManagerService::PrepareAddUser, userId:%{public}d", userId);
+    LOGI("UserId: %{public}u, flags:  %{public}u", userId, flags);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
-        LOGE("MultiUserManagerService::PrepareAddUser userId %{public}d out of range", userId);
+        LOGE("User ID out of range");
         return err;
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->PrepareAddUser(userId);
+    err = sdCommunication->GenerateUserKeys(userId, flags);
     return err;
 }
 
-int32_t MultiUserManagerService::RemoveUser(int32_t userId)
+int32_t FileSystemCrypto::DeleteUserKeys(uint32_t userId)
 {
-    LOGI("MultiUserManagerService::RemoveUser, userId:%{public}d", userId);
+    LOGI("UserId: %{public}u", userId);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
-        LOGE("MultiUserManagerService::RemoveUser userId %{public}d out of range", userId);
+        LOGE("User ID out of range");
         return err;
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->RemoveUser(userId);
+    err = sdCommunication->DeleteUserKeys(userId);
     return err;
 }
 
-int32_t MultiUserManagerService::PrepareStartUser(int32_t userId)
+int32_t FileSystemCrypto::UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret)
 {
-    LOGI("MultiUserManagerService::PrepareStartUser, userId:%{public}d", userId);
+    LOGI("UserId: %{public}u", userId);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
-        LOGE("MultiUserManagerService::PrepareStartUser userId %{public}d out of range", userId);
+        LOGE("User ID out of range");
         return err;
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->PrepareStartUser(userId);
+    err = sdCommunication->UpdateUserAuth(userId, auth, compSecret);
     return err;
 }
 
-int32_t MultiUserManagerService::StopUser(int32_t userId)
+int32_t FileSystemCrypto::ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret)
 {
-    LOGI("MultiUserManagerService::StopUser, userId:%{public}d", userId);
+    LOGI("UserId: %{public}u", userId);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
-        LOGE("MultiUserManagerService::StopUser userId %{public}d out of range", userId);
+        LOGE("User ID out of range");
         return err;
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->StopUser(userId);
+    err = sdCommunication->ActiveUserKey(userId, auth, compSecret);
     return err;
 }
-} // StorageManager
-} // OHOS
+
+int32_t FileSystemCrypto::InactiveUserKey(uint32_t userId)
+{
+    LOGI("UserId: %{public}u", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    err = sdCommunication->InactiveUserKey(userId);
+    return err;
+}
+}
+}
