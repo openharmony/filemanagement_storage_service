@@ -55,7 +55,7 @@ string MountArgument::GetCommFullPath() const
 string MountArgument::GetCachePath() const
 {
     stringstream ss;
-    ss << DATA_POINT << userId_ << "/hmdfs/" << relativePath_ << "/cache/";
+    ss << DATA_POINT << userId_ << "/hmdfs/cache/" << relativePath_ << "_cache/";
 
     return ss.str();
 }
