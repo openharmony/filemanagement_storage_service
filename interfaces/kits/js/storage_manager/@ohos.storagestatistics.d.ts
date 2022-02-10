@@ -22,7 +22,7 @@ import {AsyncCallback, Callback} from "./basic";
  * @sysCap N/A
  * @devices phone, tablet
  */
-declare namespace StorageStatistics {
+declare namespace storageStatistics {
   /**
    * Get the totalSize of volume.
    *
@@ -46,12 +46,12 @@ declare namespace StorageStatistics {
 
  export interface BundleStats {
   appSize: number;
-  appCach: number;
+  cacheSize: number;
   dataSize: number;
 }
-  function getBundleStat(volumeUuid: string, packageName: string,  callback: AsyncCallback<BundleStats>): void;
-  function getBundleStat(volumeUuid: string, packageName: string): Promise<BundleStats>;
+  function getBundleStats(volumeUuid: string, packageName: string,  callback: AsyncCallback<BundleStats>): void;
+  function getBundleStats(volumeUuid: string, packageName: string): Promise<BundleStats>;
 
 }
 
-export default StorageStatistics;
+export default storageStatistics;

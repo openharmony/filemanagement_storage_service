@@ -115,7 +115,7 @@ napi_value GetFreeSizeOfVolume(napi_env env, napi_callback_info info)
     return NVal::CreateUndefined(env).val_;
 }
 
-napi_value GetBundleStat(napi_env env, napi_callback_info info)
+napi_value GetBundleStats(napi_env env, napi_callback_info info)
 {
     NFuncArg funcArg(env, info);
     if (!funcArg.InitArgs((int)NARG_CNT::TWO, (int)NARG_CNT::THREE)) {
@@ -158,7 +158,7 @@ napi_value GetBundleStat(napi_env env, napi_callback_info info)
         bundleObject.AddProp("dataSize", NVal::CreateInt64(env, (*bundleStats)[2]).val_); // 2 is the index of data size
         return bundleObject;
     };
-    std::string procedureName = "GetBundleStat";
+    std::string procedureName = "GetBundleStats";
     NVal thisVar(env, funcArg.GetThisVar());
     if (funcArg.GetArgc() == (int)NARG_CNT::TWO) {
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;

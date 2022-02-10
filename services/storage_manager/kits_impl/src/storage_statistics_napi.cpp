@@ -30,7 +30,7 @@ napi_value StorageStatisticsExport(napi_env env, napi_value exports)
     static napi_property_descriptor desc[] = {
         DECLARE_NAPI_FUNCTION("getTotalSizeOfVolume", GetTotalSizeOfVolume),
         DECLARE_NAPI_FUNCTION("getFreeSizeOfVolume", GetFreeSizeOfVolume),
-        DECLARE_NAPI_FUNCTION("getBundleStat", GetBundleStat),
+        DECLARE_NAPI_FUNCTION("getBundleStats", GetBundleStats),
     };
     NAPI_CALL(env, napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc));
     return exports;
