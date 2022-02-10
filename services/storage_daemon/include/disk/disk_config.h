@@ -20,7 +20,6 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-
 class DiskConfig {
 public:
     DiskConfig(const std::string &sysPattern, const std::string &lable, int flag);
@@ -32,7 +31,6 @@ private:
     std::string label_;
     int flag_;
 };
-
 } // namespace STORAGE_DAEMON
 } // namespace OHOS
 

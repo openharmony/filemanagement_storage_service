@@ -15,12 +15,12 @@
 
 #include "utils/file_utils.h"
 
-#include <errno.h>
+#include <cerrno>
 #include <fstream>
 #include <unistd.h>
 #include <cstring>
 #include <dirent.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <fcntl.h>
 
 #include <sys/stat.h>
@@ -36,6 +36,7 @@
 namespace OHOS {
 namespace StorageDaemon {
 constexpr uint32_t ALL_PERMS = (S_ISUID | S_ISGID | S_ISVTX | S_IRWXU | S_IRWXG | S_IRWXO);
+const int BUF_LEN = 1024;
 
 int32_t ChMod(const std::string &path, mode_t mode)
 {
@@ -244,7 +245,7 @@ void ReadDigitDir(const std::string &path, std::vector<FileList> &dirInfo)
 
         uint32_t userId;
         std::string name(ent->d_name);
-        if (StringToUint32(name, userId) == false) {
+        if (!StringToUint32(name, userId)) {
             continue;
         }
         FileList entry = {
@@ -323,9 +324,10 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
     } else {
         close(pipe_fd[1]);
         if (output) {
-            char buf[1024] = { 0 };
+            char buf[BUF_LEN] = { 0 };
             output->clear();
-            while (read(pipe_fd[0], buf, 1023) > 0) {
+            while (read(pipe_fd[0], buf, BUF_LEN - 1) > 0) {
+                LOGI("get result %{public}s", buf);
                 output->push_back(buf);
             }
             return E_OK;
@@ -350,7 +352,9 @@ void TraverseDirUevent(const std::string &path, bool flag)
     int dirFd = dirfd(dir);
     int fd = openat(dirFd, "uevent", O_WRONLY | O_CLOEXEC);
     if (fd >= 0) {
-        write(fd, "add\n", 4);
+        std::string writeStr = "add\n";
+        int writeStrLen = writeStr.length();
+        write(fd, writeStr.c_str(), writeStrLen);
         close(fd);
     }
 
@@ -362,11 +366,6 @@ void TraverseDirUevent(const std::string &path, bool flag)
         if (ent->d_type != DT_DIR && !flag) {
             continue;
         }
-        
-        // fd = openat(dirFd, ent->d_name, O_RDONLY | O_DIRECTORY | O_CLOEXEC);
-        // if (fd < 0) {
-        //     continue;
-        // }
 
         TraverseDirUevent(path + "/" + ent->d_name, false);
     }

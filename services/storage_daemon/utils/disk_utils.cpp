@@ -15,7 +15,7 @@
 
 #include "utils/disk_utils.h"
 
-#include <errno.h>
+#include <cerrno>
 #include <unistd.h>
 #include <unordered_map>
 #include <fcntl.h>
@@ -27,15 +27,14 @@
 #include "storage_service_log.h"
 #include "utils/file_utils.h"
 
-
-
 namespace OHOS {
 namespace StorageDaemon {
+#define NODE_PERM 0660
 
 int CreateDiskNode(const std::string &path, dev_t dev)
 {
     const char *kPath = path.c_str();
-    if (mknod(kPath, 0660 | S_IFBLK, dev) < 0) {
+    if (mknod(kPath, NODE_PERM | S_IFBLK, dev) < 0) {
         LOGE("create disk node failed");
         return E_ERR;
     }
@@ -54,7 +53,6 @@ int DestroyDiskNode(const std::string &path)
 int GetDevSize(std::string path, uint64_t *size)
 {
     int fd = open(path.c_str(), O_RDONLY);
-
     if (fd < 0) {
         LOGE("open %s{private}s failed", path.c_str());
         return E_ERR;
@@ -72,7 +70,6 @@ int GetDevSize(std::string path, uint64_t *size)
 int GetMaxVolume(dev_t device)
 {
     unsigned int majorId = major(device);
-
     if (majorId == diskMmc) {
         std::string str;
         if (!ReadFile(SysfsMmcMaxVolumes, &str)) {
@@ -83,8 +80,6 @@ int GetMaxVolume(dev_t device)
     } else {
         return maxScsiVolumes;
     }
-
 }
-
 } // namespace STORAGE_DAEMON
 } // namespace OHOS

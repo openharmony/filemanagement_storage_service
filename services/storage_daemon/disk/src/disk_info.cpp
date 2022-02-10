@@ -27,7 +27,6 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-
 const std::string sgdiskPath = "/system/bin/sgdisk";
 const std::string sgdiskDumpCmd = "--ohos-dump";
 const std::string sgdiskZapCmd = "--zap-all";
@@ -88,7 +87,6 @@ int DiskInfo::Create()
 {
     CreateDiskNode(devPath_, device_);
     status = sCreate;
-    //TODO: 向上通知
     ReadMetadata();
     ReadPartition();
     return E_OK;
@@ -96,8 +94,7 @@ int DiskInfo::Create()
 
 int DiskInfo::Destroy()
 {
-    //TODO: 向上层通知
-    //auto volume = VolumeManager::Instance();
+    // auto volume = VolumeManager::Instance();
     for (auto volumeId : volumeId_) {
     //     volume->Destroy(volumeId);
     }
@@ -149,7 +146,7 @@ int DiskInfo::ReadMetadata()
     } else {
         std::string path(sysPath_ + "/device/vendor");
         std::string str;
-	if (!ReadFile(path, &str)) {
+        if (!ReadFile(path, &str)) {
             LOGE("open file %{public}s failed", path.c_str());
             return E_ERR;
         }
@@ -170,7 +167,6 @@ int DiskInfo::ReadPartition()
     std::vector<std::string> cmd;
     std::vector<std::string> output;
     std::vector<std::string> lines;
-
     int res;
 
     cmd.push_back(sgdiskPath);
@@ -184,7 +180,7 @@ int DiskInfo::ReadPartition()
     std::string bufToken = "\n";
     for (auto &buf : output) {
         auto split = SplitLine(buf, bufToken);
-	    for(auto &tmp : split)
+        for (auto &tmp : split)
             lines.push_back(tmp);
     }
 
@@ -207,8 +203,8 @@ int DiskInfo::ReadPartition()
                 LOGE("Invalid partition %{public}d", index);
                 continue;
             }
-            //dev_t partitionDev = makedev(major(device_), minor(device_) + index);
-            //CreateVolume(partitionDev);
+            // dev_t partitionDev = makedev(major(device_), minor(device_) + index);
+            // CreateVolume(partitionDev);
         }
     }
     return E_OK;
@@ -216,11 +212,11 @@ int DiskInfo::ReadPartition()
 
 int DiskInfo::CreateVolume(dev_t dev)
 {
-    //auto volume = VolumeManager::Instance();
+    // auto volume = VolumeManager::Instance();
 
-    //LOGI("Read metadata %{public}llu", dev);
-    //std::string volumeId = volume->CreateVolume(GetId(), dev);
-    //volumeId_.push_back(volumeId);
+    // LOGI("Read metadata %{public}llu", dev);
+    // std::string volumeId = volume->CreateVolume(GetId(), dev);
+    // volumeId_.push_back(volumeId);
     return E_OK;
 }
 
@@ -234,7 +230,6 @@ int DiskInfo::Partition()
     cmd.push_back(sgdiskZapCmd);
     cmd.push_back(devPath_);
     res = ForkExec(cmd);
-
     if (res != E_OK) {
         LOGW("sgdisk: zap fail");
     }
@@ -244,14 +239,12 @@ int DiskInfo::Partition()
     cmd.push_back(sgdiskPartCmd);
     cmd.push_back(devPath_);
     res = ForkExec(cmd);
-
-    if(res != E_OK) {
+    if (res != E_OK) {
         LOGE("sgdisk: partition fail");
         return res;
     }
 
     return E_OK;
 }
-
 } // namespace STORAGE_DAEMON
 } // namespace OHOS

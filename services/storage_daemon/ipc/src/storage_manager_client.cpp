@@ -30,7 +30,7 @@ int32_t StorageManagerClient::GetClient()
             return E_IPC_ERROR;
         }
 
-        auto object = sam->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID); 
+        auto object = sam->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
         if (object == nullptr) {
             LOGE("get storage manager object error");
             return E_IPC_ERROR;

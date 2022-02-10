@@ -68,18 +68,26 @@ std::vector<std::string> SplitLine(std::string &line, std::string &token)
     std::vector<std::string> result;
     char *l = new char[line.length() + 1];
     char *t = new char[token.length() + 1];
-    strcpy(l, line.c_str());
-    strcpy(t, token.c_str());
+    auto err = strcpy_s(l, line.length() + 1, line.c_str());
+    if (err) {
+        LOGE("strcpy line failed ret %{public}d", err);
+        return result;
+    }
+
+    err = strcpy_s(t, token.length() + 1, token.c_str());
+    if (err) {
+        LOGE("strcpy token failed ret %{public}d", err);
+        return result;
+    }
 
     char *tmp = strtok(l, t);
-    while(tmp) {
+    while (tmp) {
         std::string subStr = tmp;
         result.push_back(subStr);
-        tmp = strtok(NULL, t);
+        tmp = strtok(nullptr, t);
     }
 
     return result;
 }
-
 } // namespace StorageDaemon
 } // namespace OHOS

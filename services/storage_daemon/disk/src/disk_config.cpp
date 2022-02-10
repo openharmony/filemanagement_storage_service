@@ -16,13 +16,11 @@
 #include "disk/disk_config.h"
 
 #include <fnmatch.h>
-#include <string.h>
 
 #include "storage_service_log.h"
 
 namespace OHOS {
 namespace StorageDaemon {
-
 DiskConfig::DiskConfig(const std::string &sysPattern, const std::string &label, int flag)
 {
     sysPattern_ = sysPattern;
@@ -46,6 +44,5 @@ int DiskConfig::GetFlag() const
 {
     return flag_;
 }
-
 } // namespace STORAGE_DAEMON
 } // namespace OHOS

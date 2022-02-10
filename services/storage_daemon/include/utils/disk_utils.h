@@ -29,7 +29,6 @@ int CreateDiskNode(const std::string &path, dev_t dev);
 int DestroyDiskNode(const std::string &path);
 int GetDevSize(std::string path, uint64_t *size);
 int GetMaxVolume(dev_t device);
-
 } // namespace STORAGE_DAEMON
 } // namespace OHOS
 

@@ -64,7 +64,6 @@ private:
     int flags_;
     std::list<std::string> volumeId_;
 };
-
 } // STORAGE_DAEMON
 } // OHOS
 

@@ -42,6 +42,5 @@ void NetlinkHandler::OnEvent(char *msg)
         DiskManager::Instance()->HandleDiskEvent(nlData.get());
     }
 }
-
 } // StorageDaemon
 } // OHOS
