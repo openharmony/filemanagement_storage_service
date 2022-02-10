@@ -20,7 +20,6 @@ import {AsyncCallback, Callback} from "./basic";
  *
  * @since 8
  * @syscap SystemCapability.FileManagement.StorageService.SpatialStatistics
- * @devices phone, tablet
  */
 declare namespace storageStatistics {
   /**
