@@ -50,8 +50,8 @@ ohos_shared_library("storage_manager") {
   ]
 
   external_deps = [
-    "ability_runtime:base",
-    "ability_runtime:want",
+    "ability_base:base",
+    "ability_base:want",
     "bundle_framework:appexecfwk_base",
     "ces_standard:cesfwk_innerkits",
     "hiviewdfx_hilog_native:libhilog",
