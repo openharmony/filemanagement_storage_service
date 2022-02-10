@@ -19,7 +19,7 @@ import {AsyncCallback, Callback} from "./basic";
  * Provides filesystem statistics APIs
  *
  * @since 8
- * @sysCap N/A
+ * @sysCap SystemCapability.FileManagement.StorageService.SpatialStatistics
  * @devices phone, tablet
  */
 declare namespace storageStatistics {
