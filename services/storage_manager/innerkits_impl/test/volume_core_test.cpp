@@ -46,7 +46,7 @@ HWTEST_F(VolumeCoreTest, Volume_core_Get_0000, testing::ext::TestSize.Level1)
     int type = 2;
     std::string diskId = "123";
     int32_t state = UNMOUNTED;
-    VolumeCore volumecore(id,type,diskId,state);
+    VolumeCore volumecore(id, type, diskId, state);
 
     auto result1 = volumecore.GetId();
     EXPECT_EQ(result1, id);
@@ -76,7 +76,7 @@ HWTEST_F(VolumeCoreTest, Volume_core_Marshalling_0000, testing::ext::TestSize.Le
     int type = 2;
     std::string diskId = "123";
     int32_t state = UNMOUNTED;
-    VolumeCore volumecore(id,type,diskId,state);
+    VolumeCore volumecore(id, type, diskId, state);
     Parcel parcel;
     auto result = volumecore.Marshalling(parcel);
     GTEST_LOG_(INFO) << parcel.ReadString();

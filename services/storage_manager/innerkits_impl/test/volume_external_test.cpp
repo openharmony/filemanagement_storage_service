@@ -79,7 +79,7 @@ HWTEST_F(VolumeExternalTest, Volume_external_Marshalling_0000, testing::ext::Tes
     int type = 2;
     std::string diskId = "123";
     int32_t state = UNMOUNTED;
-    VolumeCore volumecore(id,type,diskId,state);
+    VolumeCore volumecore(id, type, diskId, state);
     VolumeExternal volumeexternal;
     int32_t fsType = 1;
     std::string fsUuid = "123";

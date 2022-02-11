@@ -45,9 +45,9 @@ HWTEST_F(DiskTest, Disk_Get_0000, testing::ext::TestSize.Level1)
     std::string diskId = "123";
     int64_t sizeBytes = 1000;
     std::string sysPath = "/";
-    std::string vendor = "huawei";
+    std::string vendor = "";
     int32_t flag = USB_FLAG;
-    Disk disk(diskId,sizeBytes,sysPath,vendor,flag);
+    Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
     auto result1 = disk.GetDiskId();
     EXPECT_EQ(result1, diskId);
     auto result2 = disk.GetSizeBytes();
@@ -77,9 +77,9 @@ HWTEST_F(DiskTest, Disk_Marshalling_0000, testing::ext::TestSize.Level1)
     std::string diskId = "123";
     int64_t sizeBytes = 1000;
     std::string sysPath = "/";
-    std::string vendor = "huawei";
+    std::string vendor = "";
     int32_t flag = USB_FLAG;
-    Disk disk(diskId,sizeBytes,sysPath,vendor,flag);
+    Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
     Parcel parcel;
     auto result = disk.Marshalling(parcel);
     GTEST_LOG_(INFO) << parcel.ReadString();
@@ -106,7 +106,7 @@ HWTEST_F(DiskTest, Disk_Unmarshalling_0000, testing::ext::TestSize.Level1)
     std::string diskId = "123";
     int64_t sizeBytes = 1000;
     std::string sysPath = "/";
-    std::string vendor = "huawei";
+    std::string vendor = "";
     int32_t flag = USB_FLAG;
     Parcel parcel;
     parcel.WriteString(diskId);

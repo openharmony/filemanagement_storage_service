@@ -171,7 +171,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Mount_0000, testin
     std::string volumeId = "123";
     int32_t flag = 1;
     if (sdCommunication != nullptr) {
-        result = sdCommunication->Mount(volumeId,flag);
+        result = sdCommunication->Mount(volumeId, flag);
     }
     EXPECT_EQ(result, 0);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Mount_0000 SUCCESS";
@@ -241,7 +241,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Partition_0000, te
     std::string diskId = "123";
     int32_t type = 1;
     if (sdCommunication != nullptr) {
-        result = sdCommunication->Partition(diskId,type);
+        result = sdCommunication->Partition(diskId, type);
     }
     EXPECT_EQ(result, 0);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Partition_0000 SUCCESS";

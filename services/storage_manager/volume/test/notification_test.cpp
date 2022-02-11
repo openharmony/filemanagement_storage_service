@@ -49,7 +49,7 @@ HWTEST_F(NotificationTest, Notification_NotifyVolumeChange_0000, testing::ext::T
         std::string fsUuid = "000";
         std::string path  = "/";
         std::shared_ptr<Notification> notification = DelayedSingleton<Notification>::GetInstance();
-        notification->NotifyVolumeChange(notifyCode,id,diskId,fsUuid,path);
+        notification->NotifyVolumeChange(notifyCode, id, diskId, fsUuid, path);
     GTEST_LOG_(INFO) << "NotificationTest-end Notification_NotifyVolumeChange_0000";
 }
 
@@ -70,9 +70,9 @@ HWTEST_F(NotificationTest, Notification_NotifyVolumeChange_0001, testing::ext::T
         std::string id = "111";
         std::string diskId = "111";
         std::string fsUuid = "111";
-        std::string path  = "/";  
+        std::string path  = "/";
         std::shared_ptr<Notification> notification = DelayedSingleton<Notification>::GetInstance();
-        notification->NotifyVolumeChange(notifyCode,id,diskId,fsUuid,path);
+        notification->NotifyVolumeChange(notifyCode, id, diskId, fsUuid, path);
     GTEST_LOG_(INFO) << "NotificationTest-end Notification_NotifyVolumeChange_0001";
 }
 
@@ -95,7 +95,7 @@ HWTEST_F(NotificationTest, Notification_NotifyVolumeChange_0002, testing::ext::T
         std::string fsUuid = "222";
         std::string path  = "/";
         std::shared_ptr<Notification> notification = DelayedSingleton<Notification>::GetInstance();
-        notification->NotifyVolumeChange(notifyCode,id,diskId,fsUuid,path);
+        notification->NotifyVolumeChange(notifyCode, id, diskId, fsUuid, path);
     GTEST_LOG_(INFO) << "NotificationTest-end Notification_NotifyVolumeChange_0002";
 }
 
@@ -118,7 +118,7 @@ HWTEST_F(NotificationTest, Notification_NotifyVolumeChange_0003, testing::ext::T
         std::string fsUuid = "333";
         std::string path  = "/";
         std::shared_ptr<Notification> notification = DelayedSingleton<Notification>::GetInstance();
-        notification->NotifyVolumeChange(notifyCode,id,diskId,fsUuid,path);
+        notification->NotifyVolumeChange(notifyCode, id, diskId, fsUuid, path);
     GTEST_LOG_(INFO) << "NotificationTest-end Notification_NotifyVolumeChange_0003";
 }
 

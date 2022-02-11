@@ -22,13 +22,13 @@ ohos_unittest("disk_test") {
  ]
 
  include_dirs = [
+    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
     "//foundation/filemanagement/storage_service/services/storage_daemon/include",
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
     "//foundation/filemanagement/storage_service/utils/include",
     "include",
     "//utils/system/safwk/native/include",
     "//utils/native/base/include",
-    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
   ]
 
   deps = [
@@ -53,13 +53,13 @@ ohos_unittest("volume_core_test") {
  ]
 
  include_dirs = [
+    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
     "//foundation/filemanagement/storage_service/services/storage_daemon/include",
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
     "//foundation/filemanagement/storage_service/utils/include",
     "include",
     "//utils/system/safwk/native/include",
     "//utils/native/base/include",
-    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
   ]
 
   deps = [
@@ -88,13 +88,13 @@ ohos_unittest("volume_external_test") {
  ]
 
  include_dirs = [
+    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
     "//foundation/filemanagement/storage_service/services/storage_daemon/include",
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
     "//foundation/filemanagement/storage_service/utils/include",
     "include",
     "//utils/system/safwk/native/include",
     "//utils/native/base/include",
-    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
   ]
 
   deps = [
