@@ -101,22 +101,21 @@ static const auto ALL_VERSION = std::map<std::string, uint8_t> {
 
 static const auto CONTENTS_MODES = std::map<std::string, uint8_t> {
     {"aes-256-xts", FSCRYPT_MODE_AES_256_XTS},
-    {"aes-128-cbc", FSCRYPT_MODE_AES_128_CBC},
-    {"adiantum", FSCRYPT_MODE_ADIANTUM},
 };
 
 static const auto FILENAME_MODES = std::map<std::string, uint8_t> {
     {"aes-256-cts", FSCRYPT_MODE_AES_256_CTS},
-    {"aes-128-cts", FSCRYPT_MODE_AES_128_CTS},
-    {"adiantum", FSCRYPT_MODE_ADIANTUM},
 };
+// To use Adiantum, CONFIG_CRYPTO_ADIANTUM must be enabled.
+// Also, fast implementations of ChaCha and NHPoly1305 should be enabled,
+// e.g. CONFIG_CRYPTO_CHACHA20_NEON and CONFIG_CRYPTO_NHPOLY1305_NEON for ARM.
 
 static const auto POLICY_FLAGS = std::map<std::string, uint8_t> {
     {"padding-4", FSCRYPT_POLICY_FLAGS_PAD_4},
     {"padding-8", FSCRYPT_POLICY_FLAGS_PAD_8},
     {"padding-16", FSCRYPT_POLICY_FLAGS_PAD_16},
     {"padding-32", FSCRYPT_POLICY_FLAGS_PAD_32},
-    {"direct-key", FSCRYPT_POLICY_FLAG_DIRECT_KEY}, // use with adiantum
+    // "direct-key" use with adiantum
 };
 
 static const auto FSCRYPT_OPTIONS_TABLE = std::vector<std::map<std::string, uint8_t>> {
