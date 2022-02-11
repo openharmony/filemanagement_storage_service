@@ -141,7 +141,7 @@ HWTEST_F(NotificationTest, Notification_NotifyVolumeChange_0004, testing::ext::T
         std::string fsUuid = "444";
         std::string path  = "/";
         std::shared_ptr<Notification> notification = DelayedSingleton<Notification>::GetInstance();
-        notification->NotifyVolumeChange(notifyCode,id,diskId,fsUuid,path);
+        notification->NotifyVolumeChange(notifyCode, id, diskId, fsUuid, path);
     GTEST_LOG_(INFO) << "NotificationTest-end Notification_NotifyVolumeChange_0004";
 }
 
@@ -164,7 +164,7 @@ HWTEST_F(NotificationTest, Notification_NotifyVolumeChange_0005, testing::ext::T
         std::string fsUuid = "555";
         std::string path  = "/";
         std::shared_ptr<Notification> notification = DelayedSingleton<Notification>::GetInstance();
-        notification->NotifyVolumeChange(notifyCode,id,diskId,fsUuid,path);
+        notification->NotifyVolumeChange(notifyCode, id, diskId, fsUuid, path);
     GTEST_LOG_(INFO) << "NotificationTest-end Notification_NotifyVolumeChange_0005";
 }
 }
