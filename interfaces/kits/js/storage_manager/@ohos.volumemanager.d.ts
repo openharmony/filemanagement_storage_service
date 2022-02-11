@@ -21,7 +21,7 @@ import {AsyncCallback, Callback} from "./basic";
  * @since 8
  * @syscap SystemCapability.FileManagement.StorageService.Volume
  */
-declare namespace VolumeManager {
+declare namespace volumeManager {
 
 /**
    * Get All Volumes
@@ -58,4 +58,4 @@ function unmount(volumeId: string): Promise<boolean>;
 
 }
 
-export default VolumeManager;
+export default volumeManager;
