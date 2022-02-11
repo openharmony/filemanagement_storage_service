@@ -75,6 +75,26 @@ bool IsDir(const std::string &path)
     return S_ISDIR(st.st_mode);
 }
 
+bool MkDirRecurse(const std::string& path, mode_t mode)
+{
+    std::string::size_type index = 0;
+    do {
+        std::string subPath = path;
+        index = path.find('/', index + 1);
+        if (index != std::string::npos) {
+            subPath = path.substr(0, index);
+        }
+
+        if (TEMP_FAILURE_RETRY(access(subPath.c_str(), F_OK)) != 0) {
+            if (MkDir(subPath.c_str(), mode) != 0 && errno != EEXIST) {
+                return false;
+            }
+        }
+    } while (index != std::string::npos);
+
+    return TEMP_FAILURE_RETRY(access(path.c_str(), F_OK)) == 0;
+}
+
 // On success, true is returned.  On error, false is returned, and errno is set appropriately.
 bool PrepareDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
 {
