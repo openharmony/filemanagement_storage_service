@@ -29,6 +29,7 @@ config("storage_manager_config") {
 
 ohos_shared_library("storage_manager") {
   sources = [
+    "crypto/filesystem_crypto.cpp",
     "disk/src/disk_manager_service.cpp",
     "ipc/src/storage_manager.cpp",
     "ipc/src/storage_manager_stub.cpp",
@@ -38,7 +39,6 @@ ohos_shared_library("storage_manager") {
     "user/src/multi_user_manager_service.cpp",
     "volume/src/notification.cpp",
     "volume/src/volume_manager_service.cpp",
-    "crypto/filesystem_crypto.cpp"
   ]
 
   configs = [ ":storage_manager_config" ]
