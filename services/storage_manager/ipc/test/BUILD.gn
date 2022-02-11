@@ -22,11 +22,12 @@ ohos_unittest("storage_manager_proxy_test") {
   ]
 
   include_dirs = [
+    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
-    "//foundation/filemanagement/storage_service/utils/include",
     "include",
     "//utils/system/safwk/native/include",
     "//utils/native/base/include",
+    "//foundation/filemanagement/storage_service/utils/include",
   ]
 
   deps = [ "//third_party/googletest:gtest_main" ]
