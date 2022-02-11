@@ -16,19 +16,19 @@ import("//build/test.gni")
 ohos_unittest("disk_test") {
   module_out_path = "storage_manager/storage_manager"
 
- sources = [
-     "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/disk.cpp",
-     "disk_test.cpp",
- ]
+  sources = [
+    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/disk.cpp",
+    "disk_test.cpp",
+  ]
 
- include_dirs = [
-    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
+  include_dirs = [
     "//foundation/filemanagement/storage_service/services/storage_daemon/include",
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
     "//foundation/filemanagement/storage_service/utils/include",
     "include",
     "//utils/system/safwk/native/include",
     "//utils/native/base/include",
+    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
   ]
 
   deps = [
@@ -47,19 +47,19 @@ ohos_unittest("disk_test") {
 ohos_unittest("volume_core_test") {
   module_out_path = "storage_manager/storage_manager"
 
- sources = [
-     "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/volume_core.cpp",
-     "volume_core_test.cpp",
- ]
+  sources = [
+    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/volume_core.cpp",
+    "volume_core_test.cpp",
+  ]
 
- include_dirs = [
-    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
+  include_dirs = [
     "//foundation/filemanagement/storage_service/services/storage_daemon/include",
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
     "//foundation/filemanagement/storage_service/utils/include",
     "include",
     "//utils/system/safwk/native/include",
     "//utils/native/base/include",
+    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
   ]
 
   deps = [
@@ -78,23 +78,23 @@ ohos_unittest("volume_core_test") {
 ohos_unittest("volume_external_test") {
   module_out_path = "storage_manager/storage_manager"
 
- sources = [
-     "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/volume_external.cpp",
-     "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/disk.cpp",
-     "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/volume_core.cpp",
-     "volume_external_test.cpp",
-     "volume_core_test.cpp",
-     "disk_test.cpp",
- ]
+  sources = [
+    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/disk.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/volume_core.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/volume_external.cpp",
+    "disk_test.cpp",
+    "volume_core_test.cpp",
+    "volume_external_test.cpp",
+  ]
 
- include_dirs = [
-    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
+  include_dirs = [
     "//foundation/filemanagement/storage_service/services/storage_daemon/include",
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
     "//foundation/filemanagement/storage_service/utils/include",
     "include",
     "//utils/system/safwk/native/include",
     "//utils/native/base/include",
+    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
   ]
 
   deps = [
@@ -112,9 +112,9 @@ ohos_unittest("volume_external_test") {
 
 group("volumeexternal_test") {
   testonly = true
-  deps = [ 
-      ":disk_test",
-      ":volume_external_test",
-      ":volume_core_test"
-   ]
+  deps = [
+    ":disk_test",
+    ":volume_core_test",
+    ":volume_external_test",
+  ]
 }
