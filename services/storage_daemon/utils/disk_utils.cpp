@@ -29,7 +29,7 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-#define NODE_PERM 0660
+static constexpr int32_t NODE_PERM = 0660;
 
 int CreateDiskNode(const std::string &path, dev_t dev)
 {

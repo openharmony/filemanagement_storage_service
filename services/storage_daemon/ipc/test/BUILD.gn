@@ -33,6 +33,9 @@ ohos_unittest("storage_daemon_test") {
   ]
 
   sources = [
+    "$ROOT_DIR/disk/src/disk_config.cpp",
+    "$ROOT_DIR/disk/src/disk_info.cpp",
+    "$ROOT_DIR/disk/src/disk_manager.cpp",
     "$ROOT_DIR/ipc/src/storage_daemon.cpp",
     "$ROOT_DIR/ipc/src/storage_daemon_stub.cpp",
     "$ROOT_DIR/ipc/test/storage_daemon_test.cpp",
@@ -42,9 +45,6 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/utils/mount_argument_utils.cpp",
     "$ROOT_DIR/utils/string_utils.cpp",
     "$ROOT_DIR/utils/test/common/help_utils.cpp",
-    "$ROOT_DIR/disk/src/disk_config.cpp",
-    "$ROOT_DIR/disk/src/disk_manager.cpp",
-    "$ROOT_DIR/disk/src/disk_info.cpp",
   ]
 
   deps = [

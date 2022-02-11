@@ -20,6 +20,7 @@ ohos_prebuilt_etc("storage_daemon_cfg") {
   part_name = "storage_service"
   subsystem_name = "filemanagement"
 }
+
 ## Install storage_daemon.cfg to /system/etc/init/storage_daemon.cfg }}}
 
 config("storage_daemon_config") {
@@ -46,27 +47,27 @@ ohos_prebuilt_etc("storage_daemon_disk_config") {
 
 ohos_executable("storage_daemon") {
   sources = [
+    "../storage_manager/innerkits_impl/src/disk.cpp",
+    "../storage_manager/innerkits_impl/src/volume_core.cpp",
+    "../storage_manager/innerkits_impl/src/volume_external.cpp",
+    "../storage_manager/ipc/src/storage_manager_proxy.cpp",
+    "disk/src/disk_config.cpp",
+    "disk/src/disk_info.cpp",
+    "disk/src/disk_manager.cpp",
     "ipc/src/storage_daemon.cpp",
     "ipc/src/storage_daemon_stub.cpp",
     "ipc/src/storage_manager_client.cpp",
-    "../storage_manager/ipc/src/storage_manager_proxy.cpp",
-    "../storage_manager/innerkits_impl/src/volume_core.cpp",
-    "../storage_manager/innerkits_impl/src/disk.cpp",
-    "../storage_manager/innerkits_impl/src/volume_external.cpp",
     "main.cpp",
     "netlink/src/netlink_data.cpp",
     "netlink/src/netlink_handler.cpp",
     "netlink/src/netlink_listener.cpp",
     "netlink/src/netlink_manager.cpp",
     "user/src/mount_manager.cpp",
-    "disk/src/disk_config.cpp",
-    "disk/src/disk_manager.cpp",
-    "disk/src/disk_info.cpp",
     "user/src/user_manager.cpp",
+    "utils/disk_utils.cpp",
     "utils/file_utils.cpp",
     "utils/mount_argument_utils.cpp",
     "utils/string_utils.cpp",
-    "utils/disk_utils.cpp",
   ]
 
   configs = [ ":storage_daemon_config" ]

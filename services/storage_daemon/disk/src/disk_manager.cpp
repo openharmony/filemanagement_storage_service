@@ -60,7 +60,6 @@ void DiskManager::HandleDiskEvent(NetlinkData *data)
 
     switch (data->GetAction()) {
         case NetlinkData::Actions::ADD: {
-            LOGI("diskConfig_ size %{public}d", diskConfig_.size());
             for (auto config : diskConfig_) {
                 if (config->IsMatch(devPath)) {
                     int flag = config->GetFlag();
@@ -112,7 +111,7 @@ void DiskManager::ChangeDisk(dev_t device)
     for (auto &diskInfo : disk_) {
         if (diskInfo->GetDevice() == device) {
             diskInfo->ReadMetadata();
-            diskInfo->ReadPartition();
+            // diskInfo->ReadPartition();
         }
     }
 }
@@ -161,7 +160,7 @@ int32_t DiskManager::HandlePartition(std::string diskId, int32_t type)
 {
     int32_t ret = E_NON_EXIST;
 
-    for (auto i = disk_.begin(); i != disk_.end();) {
+    for (auto i = disk_.begin(); i != disk_.end(); i++) {
         if ((*i)->GetId() == diskId) {
             ret = (*i)->Partition();
             break;

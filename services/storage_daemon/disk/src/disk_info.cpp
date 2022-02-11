@@ -184,7 +184,7 @@ int DiskInfo::ReadPartition()
             lines.push_back(tmp);
     }
 
-    std::string lineToken = "\t";
+    std::string lineToken = " \t";
     status = sScan;
     for (auto &line : lines) {
         auto split = SplitLine(line, lineToken);

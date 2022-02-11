@@ -128,7 +128,6 @@ int32_t StorageDaemonCommunication::Check(std::string volumeId)
         return E_IPC_ERROR;
     }
     return storageDaemon_->Check(volumeId);
-    return E_OK;
 }
 
 int32_t StorageDaemonCommunication::Partition(std::string diskId, int32_t type)
@@ -138,7 +137,7 @@ int32_t StorageDaemonCommunication::Partition(std::string diskId, int32_t type)
         LOGE("StorageDaemonCommunication::Partition connect failed");
         return E_IPC_ERROR;
     }
-    return E_OK;
+    return storageDaemon_->Partition(diskId, type);
 }
 
 int32_t StorageDaemonCommunication::GenerateUserKeys(uint32_t userId, uint32_t flags)
