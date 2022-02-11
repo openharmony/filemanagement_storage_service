@@ -375,4 +375,334 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_StopUser_0003, testing::
     proxy->RemoveUser(userId);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_StopUser_0003";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_GetFreeSizeOfVolume_0000
+ * @tc.name: Storage_manager_proxy_GetFreeSizeOfVolume_0000
+ * @tc.desc: Test function of GetFreeSizeOfVolume interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000GK100
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetFreeSizeOfVolume_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetFreeSizeOfVolume_0000";
+    std::string volumeUuid = "111";
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
+    int64_t result = proxy->GetFreeSizeOfVolume(volumeUuid);
+    EXPECT_NE(result, 0);
+    GTEST_LOG_(INFO) << result;
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetFreeSizeOfVolume_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_GetTotalSizeOfVolume_0000
+ * @tc.name: Storage_manager_proxy_GetTotalSizeOfVolume_0000
+ * @tc.desc: Test function of GetTotalSizeOfVolume interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000GK100
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetTotalSizeOfVolume_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetTotalSizeOfVolume_0000";
+    std::string volumeUuid = "112";
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
+    int64_t result = proxy->GetTotalSizeOfVolume(volumeUuid);
+    EXPECT_NE(result, 0);
+    GTEST_LOG_(INFO) << result;
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetTotalSizeOfVolume_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_GetBundleStats_0000
+ * @tc.name: Storage_manager_proxy_GetBundleStats_0000
+ * @tc.desc: Test function of GetBundleStats interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000GK101
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetBundleStats_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetBundleStats_0000";
+    std::string uuid = "113";
+    std::string pkgName = "ohos.acts.storage.volume";
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
+    std::vector<int64_t> result = proxy->GetBundleStats(uuid, pkgName);
+    GTEST_LOG_(INFO) << result[0];
+    GTEST_LOG_(INFO) << result[1];
+    GTEST_LOG_(INFO) << result[2];
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetBundleStats_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_GetBundleStats_0001
+ * @tc.name: Storage_manager_proxy_GetBundleStats_0001
+ * @tc.desc: Test function of GetBundleStats interface for Parameters ERROR which pkgName is not exist.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000GK101
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetBundleStats_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetBundleStats_0001";
+    std::string uuid = "114";
+    std::string pkgName = "ohos.acts.storage.zzzz";
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
+    std::vector<int64_t> result = proxy->GetBundleStats(uuid, pkgName);
+    GTEST_LOG_(INFO) << result[0];
+    GTEST_LOG_(INFO) << result[1];
+    GTEST_LOG_(INFO) << result[2];
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetBundleStats_0001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_NotifyVolumeCreated_0000
+ * @tc.name: Storage_manager_proxy_NotifyVolumeCreated_0001
+ * @tc.desc: Test function of NotifyVolumeCreated interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyVolumeCreated_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_NotifyVolumeCreated_0000";
+    VolumeCore vc;
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
+    proxy->NotifyVolumeCreated(vc);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_NotifyVolumeCreated_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_NotifyVolumeMounted_0000
+ * @tc.name: Storage_manager_proxy_NotifyVolumeMounted_0001
+ * @tc.desc: Test function of NotifyVolumeMounted interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyVolumeMounted_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_NotifyVolumeMounted_0000";
+    std::string volumeId = "118";
+    int32_t fsType = 1;
+    std::string fsUuid = "119";
+    std::string path = "/";
+    std::string description = "130";
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
+    proxy->NotifyVolumeMounted(volumeId, fsType, fsUuid, path, description);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_NotifyVolumeMounted_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_NotifyVolumeDestoryed_0000
+ * @tc.name: Storage_manager_proxy_NotifyVolumeDestoryed_0001
+ * @tc.desc: Test function of NotifyVolumeDestoryed interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyVolumeDestoryed_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_NotifyVolumeDestoryed_0000";
+    std::string volumeId = "120";
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
+    proxy->NotifyVolumeDestoryed(volumeId);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_NotifyVolumeDestoryed_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_Mount_0000
+ * @tc.name: Storage_manager_proxy_Mount_0000
+ * @tc.desc: Test function of Mount interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_Mount_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_Mount_0000";
+    std::string volumeId = "121";
+    int type = 1;
+    std::string diskId = "121";
+    VolumeCore vc(volumeId, type, diskId);
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
+    proxy->NotifyVolumeCreated(vc);
+    int32_t fsType = 1;
+    std::string fsUuid = "121";
+    std::string path = "/";
+    std::string description = "121";
+    proxy->NotifyVolumeMounted(volumeId, fsType, fsUuid, path, description);
+    proxy->Unmount(volumeId);
+    int32_t result = proxy->Mount(volumeId);
+    EXPECT_EQ(result, 0);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_Mount_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_Unmount_0000
+ * @tc.name: Storage_manager_proxy_Unmount_0000
+ * @tc.desc: Test function of Unmount interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_Unmount_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_Unmount_0000";
+    std::string volumeId = "122";
+    int type = 1;
+    std::string diskId = "122";
+    VolumeCore vc(volumeId, type, diskId);
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
+    proxy->NotifyVolumeCreated(vc);
+    int32_t fsType = 1;
+    std::string fsUuid = "121";
+    std::string path = "/";
+    std::string description = "121";
+    proxy->NotifyVolumeMounted(volumeId, fsType, fsUuid, path, description);
+    int32_t result = proxy->Unmount(volumeId);
+    EXPECT_EQ(result, 0);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_Unmount_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_GetAllVolumes_0000
+ * @tc.name: Storage_manager_proxy_GetAllVolumes_0000
+ * @tc.desc: Test function of GetAllVolumes interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetAllVolumes_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetAllVolumes_0000";
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
+    std::vector<VolumeExternal> result = proxy->GetAllVolumes();
+    EXPECT_NE(result.size(), 0);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetAllVolumes_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_NotifyDiskCreated_0000
+ * @tc.name: Storage_manager_proxy_NotifyDiskCreated_0001
+ * @tc.desc: Test function of NotifyDiskCreated interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPG
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyDiskCreated_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_NotifyDiskCreated_0000";
+    std::string diskId = "124";
+    int64_t sizeBytes = 1024;
+    std::string sysPath = "/";
+    std::string vendor = "124";
+    int32_t flag = 1;
+    Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
+    proxy->NotifyDiskCreated(disk);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_NotifyDiskCreated_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_NotifyDiskDestroyed_0000
+ * @tc.name: Storage_manager_proxy_NotifyDiskDestroyed_0001
+ * @tc.desc: Test function of NotifyDiskDestroyed interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPG
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyDiskDestroyed_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_NotifyDiskDestroyed_0000";
+    std::string diskId = "123";
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
+    proxy->NotifyDiskDestroyed(diskId);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_NotifyDiskDestroyed_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_Partition_0000
+ * @tc.name: Storage_manager_proxy_Partition_0000
+ * @tc.desc: Test function of Partition interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_Partition_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_Partition_0000";
+    std::string diskId = "124";
+    int64_t sizeBytes = 1024;
+    std::string sysPath = "/";
+    std::string vendor = "124";
+    int32_t flag = 1;
+    Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
+    int32_t type = 1;
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
+    proxy->NotifyDiskCreated(disk);
+    int32_t result = proxy->Partition(diskId, type);
+    EXPECT_EQ(result, 0);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_Partition_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_GetAllDisks_0000
+ * @tc.name: Storage_manager_proxy_GetAllDisks_0000
+ * @tc.desc: Test function of GetAllDisks interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPG
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetAllDisks_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetAllDisks_0000";
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
+    std::vector<Disk> result = proxy->GetAllDisks();
+    EXPECT_NE(result.size(), 0);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetAllDisks_0000";
+}
 } // namespace
