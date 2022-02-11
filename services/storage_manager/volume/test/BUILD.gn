@@ -45,7 +45,7 @@ ohos_unittest("notification_test") {
     "ipc:ipc_core",
     "safwk:system_ability_fwk",
     "samgr_standard:samgr_proxy",
-    "storage_service:storage_manager_sa_proxy"
+    "storage_service:storage_manager_sa_proxy",
   ]
 }
 
@@ -84,14 +84,14 @@ ohos_unittest("volume_manager_service_test") {
     "ipc:ipc_core",
     "safwk:system_ability_fwk",
     "samgr_standard:samgr_proxy",
-    "storage_service:storage_manager_sa_proxy"
+    "storage_service:storage_manager_sa_proxy",
   ]
 }
 
 group("volume_test") {
   testonly = true
   deps = [
-     ":notification_test",
-     ":volume_manager_service_test",
-     ]
+    ":notification_test",
+    ":volume_manager_service_test",
+  ]
 }
