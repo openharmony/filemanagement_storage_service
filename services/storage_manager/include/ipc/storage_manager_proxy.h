@@ -45,6 +45,14 @@ public:
     void NotifyDiskDestroyed(std::string diskId) override;
     int32_t Partition(std::string diskId, int32_t type) override;
     std::vector<Disk> GetAllDisks() override;
+
+    // fscrypt api
+    int32_t GenerateUserKeys(uint32_t userId, uint32_t flags) override;
+    int32_t DeleteUserKeys(uint32_t userId) override;
+    int32_t UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret) override;
+    int32_t ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret) override;
+    int32_t InactiveUserKey(uint32_t userId) override;
+
 private:
     static inline BrokerDelegator<StorageManagerProxy> delegator_;
 };

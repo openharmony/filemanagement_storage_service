@@ -43,6 +43,13 @@ private:
     int32_t HandleNotifyDiskDestroyed(MessageParcel &data, MessageParcel &reply);
     int32_t HandlePartition(MessageParcel &data, MessageParcel &reply);
     int32_t HandleGetAllDisks(MessageParcel &data, MessageParcel &reply);
+
+    // fscrypt api
+    int32_t HandleGenerateUserKeys(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleDeleteUserKeys(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleUpdateUserAuth(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleActiveUserKey(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleInactiveUserKey(MessageParcel &data, MessageParcel &reply);
 };
 } // StorageManager
 } // OHOS

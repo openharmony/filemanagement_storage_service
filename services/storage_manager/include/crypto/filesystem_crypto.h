@@ -13,47 +13,26 @@
  * limitations under the License.
  */
 
-#ifndef OHOS_STORAGE_MANAGER_STORAGE_DAEMON_COMMUNICATION_H
-#define OHOS_STORAGE_MANAGER_STORAGE_DAEMON_COMMUNICATION_H
+#ifndef OHOS_STORAGE_MANAGER_FILE_SYSTEM_CRYPTO_H
+#define OHOS_STORAGE_MANAGER_FILE_SYSTEM_CRYPTO_H
 
+#include <unordered_map>
 #include <singleton.h>
 #include <nocopyable.h>
-#include "system_ability.h"
-#include "ipc/istorage_daemon.h"
 
 namespace OHOS {
 namespace StorageManager {
-class StorageDaemonCommunication : public NoCopyable {
-    DECLARE_DELAYED_SINGLETON(StorageDaemonCommunication);
-
+class FileSystemCrypto final : public NoCopyable {
+    DECLARE_DELAYED_SINGLETON(FileSystemCrypto);
 public:
-    enum {
-        CRYPTO_FLAG_EL1 = 1,
-        CRYPTO_FLAG_EL2,
-    };
-    int32_t Connect();
-
-    int32_t PrepareAddUser(int32_t userId);
-    int32_t RemoveUser(int32_t userId);
-    int32_t PrepareStartUser(int32_t userId);
-    int32_t StopUser(int32_t userId);
-
-    int32_t Mount(std::string volumeId, int32_t flag);
-    int32_t Unmount(std::string volumeId);
-    int32_t Check(std::string volumeId);
-    int32_t Partition(std::string diskId, int32_t type);
-
-    // fscrypt api
     int32_t GenerateUserKeys(uint32_t userId, uint32_t flags);
     int32_t DeleteUserKeys(uint32_t userId);
     int32_t UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret);
     int32_t ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret);
     int32_t InactiveUserKey(uint32_t userId);
-
 private:
-    sptr<OHOS::StorageDaemon::IStorageDaemon> storageDaemon_;
+    int32_t CheckUserIdRange(int32_t userId);
 };
 } // StorageManager
 } // OHOS
-
-#endif
+#endif // OHOS_STORAGE_MANAGER_FILE_SYSTEM_CRYPTO_H

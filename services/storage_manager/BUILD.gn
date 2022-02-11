@@ -29,6 +29,7 @@ config("storage_manager_config") {
 
 ohos_shared_library("storage_manager") {
   sources = [
+    "crypto/filesystem_crypto.cpp",
     "disk/src/disk_manager_service.cpp",
     "ipc/src/storage_manager.cpp",
     "ipc/src/storage_manager_stub.cpp",

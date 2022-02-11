@@ -80,6 +80,21 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
         case GET_ALL_DISKS:
             HandleGetAllDisks(data, reply);
             break;
+        case CREATE_USER_KEYS:
+            HandleGenerateUserKeys(data, reply);
+            break;
+        case DELETE_USER_KEYS:
+            HandleDeleteUserKeys(data, reply);
+            break;
+        case UPDATE_USER_AUTH:
+            HandleUpdateUserAuth(data, reply);
+            break;
+        case ACTIVE_USER_KEY:
+            HandleActiveUserKey(data, reply);
+            break;
+        case INACTIVE_USER_KEY:
+            HandleInactiveUserKey(data, reply);
+            break;
         default: {
             LOGI("use IPCObjectStub default OnRemoteRequest");
             err = IPCObjectStub::OnRemoteRequest(code, data, reply, option);
@@ -293,6 +308,71 @@ int32_t StorageManagerStub::HandleGetAllDisks(MessageParcel &data, MessageParcel
             return  E_IPC_ERROR;
         }
     }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleGenerateUserKeys(MessageParcel &data, MessageParcel &reply)
+{
+    uint32_t userId = data.ReadUint32();
+    uint32_t flags = data.ReadUint32();
+    int32_t err = GenerateUserKeys(userId, flags);
+    if (!reply.WriteInt32(err)) {
+        LOGE("Write reply error code failed");
+        return E_IPC_ERROR;
+    }
+
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleDeleteUserKeys(MessageParcel &data, MessageParcel &reply)
+{
+    uint32_t userId = data.ReadUint32();
+    int32_t err = DeleteUserKeys(userId);
+    if (!reply.WriteInt32(err)) {
+        LOGE("Write reply error code failed");
+        return E_IPC_ERROR;
+    }
+
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleUpdateUserAuth(MessageParcel &data, MessageParcel &reply)
+{
+    uint32_t userId = data.ReadUint32();
+    std::string auth = data.ReadString();
+    std::string compSecret = data.ReadString();
+    int32_t err = UpdateUserAuth(userId, auth, compSecret);
+    if (!reply.WriteInt32(err)) {
+        LOGE("Write reply error code failed");
+        return E_IPC_ERROR;
+    }
+
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleActiveUserKey(MessageParcel &data, MessageParcel &reply)
+{
+    uint32_t userId = data.ReadUint32();
+    std::string auth = data.ReadString();
+    std::string compSecret = data.ReadString();
+    int32_t err = ActiveUserKey(userId, auth, compSecret);
+    if (!reply.WriteInt32(err)) {
+        LOGE("Write reply error code failed");
+        return E_IPC_ERROR;
+    }
+
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleInactiveUserKey(MessageParcel &data, MessageParcel &reply)
+{
+    uint32_t userId = data.ReadUint32();
+    int32_t err = InactiveUserKey(userId);
+    if (!reply.WriteInt32(err)) {
+        LOGE("Write reply error code failed");
+        return E_IPC_ERROR;
+    }
+
     return E_OK;
 }
 } // StorageManager

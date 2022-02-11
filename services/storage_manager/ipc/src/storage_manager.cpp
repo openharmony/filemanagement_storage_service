@@ -23,6 +23,7 @@
 #include "user/multi_user_manager_service.h"
 #include "volume/volume_manager_service.h"
 #include "disk/disk_manager_service.h"
+#include "crypto/filesystem_crypto.h"
 
 
 namespace OHOS {
@@ -161,6 +162,46 @@ std::vector<Disk> StorageManager::GetAllDisks()
     LOGI("StorageManger::GetAllDisks start");
     std::vector<Disk> result = DelayedSingleton<DiskManagerService>::GetInstance()->GetAllDisks();
     return result;
+}
+
+int32_t StorageManager::GenerateUserKeys(uint32_t userId, uint32_t flags)
+{
+    LOGI("UserId: %{public}u, flags:  %{public}u", userId, flags);
+    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
+    int32_t err = fsCrypto->GenerateUserKeys(userId, flags);
+    return err;
+}
+
+int32_t StorageManager::DeleteUserKeys(uint32_t userId)
+{
+    LOGI("UserId: %{public}u", userId);
+    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
+    int32_t err = fsCrypto->DeleteUserKeys(userId);
+    return err;
+}
+
+int32_t StorageManager::UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret)
+{
+    LOGI("UserId: %{public}u", userId);
+    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
+    int32_t err = fsCrypto->UpdateUserAuth(userId, auth, compSecret);
+    return err;
+}
+
+int32_t StorageManager::ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret)
+{
+    LOGI("UserId: %{public}u", userId);
+    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
+    int32_t err = fsCrypto->ActiveUserKey(userId, auth, compSecret);
+    return err;
+}
+
+int32_t StorageManager::InactiveUserKey(uint32_t userId)
+{
+    LOGI("UserId: %{public}u", userId);
+    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
+    int32_t err = fsCrypto->InactiveUserKey(userId);
+    return err;
 }
 }
 }
