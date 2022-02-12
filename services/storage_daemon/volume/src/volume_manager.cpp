@@ -20,6 +20,7 @@
 #include "storage_service_errno.h"
 #include "utils/string_utils.h"
 #include "volume/external_volume_info.h"
+#include "ipc/storage_manager_client.h"
 
 using namespace std;
 
@@ -66,6 +67,13 @@ std::string VolumeManager::CreateVolume(const std::string diskId, dev_t device)
     }
 
     volumes_.push_back(info);
+
+    StorageManagerClient client;
+    ret = client.NotifyVolumeCreated(info);
+    if (ret != E_OK) {
+        LOGE("Volume Notify Created failed");
+    }
+
     return volId;
 }
 
@@ -85,6 +93,12 @@ int32_t VolumeManager::DestroyVolume(const std::string volId)
         return ret;
     volumes_.remove(destroyNode);
     destroyNode.reset();
+
+    StorageManagerClient client;
+    ret = client.NotifyVolumeDestroyed(volId);
+    if (ret != E_OK) {
+        LOGE("Volume Notify Created failed");
+    }
     return E_OK;
 }
 
@@ -116,6 +130,12 @@ int32_t VolumeManager::Mount(const std::string volId, uint32_t flags)
     if (err != E_OK) {
         LOGE("the volume %{public}s mount failed.", volId.c_str());
         return err;
+    }
+
+    StorageManagerClient client;
+    err = client.NotifyVolumeMounted(info);
+    if (err) {
+        LOGE("Volume Notify Mount Destroyed failed");
     }
     return E_OK;
 }
