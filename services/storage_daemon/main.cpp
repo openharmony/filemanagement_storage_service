@@ -117,7 +117,7 @@ int main()
         }
     } while (true);
 
-    // StorageDaemon::DiskManager::Instance()->ReplayUevent();
+    StorageDaemon::DiskManager::Instance()->ReplayUevent();
 
     IPCSkeleton::JoinWorkThread();
 
