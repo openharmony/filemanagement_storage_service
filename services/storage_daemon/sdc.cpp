@@ -91,7 +91,7 @@ static void HandleFileCrypt(const std::string &cmd, const std::vector<std::strin
             return;
         }
     } else if (cmd == "destory_user_space") {
-        // sdc filecrypt destory_user_space userId flags
+        // sdc filecrypt destroy_user_space userId flags
         if (args.size() < 5) {
             LOGE("Parameter nums is less than 4, please retry");
             return;

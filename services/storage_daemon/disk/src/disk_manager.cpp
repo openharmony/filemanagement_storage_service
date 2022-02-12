@@ -82,7 +82,7 @@ void DiskManager::HandleDiskEvent(NetlinkData *data)
             break;
         }
         case NetlinkData::Actions::REMOVE: {
-            DestoryDisk(device);
+            DestroyDisk(device);
             LOGI("Handle Disk Remove Event");
             break;
         }
@@ -116,7 +116,7 @@ void DiskManager::ChangeDisk(dev_t device)
     }
 }
 
-void DiskManager::DestoryDisk(dev_t device)
+void DiskManager::DestroyDisk(dev_t device)
 {
     int ret;
 

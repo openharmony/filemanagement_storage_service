@@ -41,7 +41,7 @@ config("storage_daemon_config") {
 ohos_prebuilt_etc("storage_daemon_disk_config") {
   source = "config.txt"
   relative_install_dir = "init"
-  part_name = "storage_standard"
+  part_name = "storage_service"
   subsystem_name = "filemanagement"
 }
 

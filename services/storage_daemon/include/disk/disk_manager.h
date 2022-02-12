@@ -36,7 +36,7 @@ public:
 
     virtual ~DiskManager();
     void CreateDisk(std::shared_ptr<DiskInfo> &diskInfo);
-    void DestoryDisk(dev_t device);
+    void DestroyDisk(dev_t device);
     void ChangeDisk(dev_t device);
     std::shared_ptr<DiskInfo> GetDisk(dev_t device);
     void HandleDiskEvent(NetlinkData *data);
