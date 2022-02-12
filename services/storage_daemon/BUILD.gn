@@ -54,10 +54,6 @@ ohos_executable("storage_daemon") {
     "disk/src/disk_config.cpp",
     "disk/src/disk_info.cpp",
     "disk/src/disk_manager.cpp",
-    "volume/src/process.cpp",
-    "volume/src/volume_info.cpp",
-    "volume/src/external_volume_info.cpp",
-    "volume/src/volume_manager.cpp",
     "ipc/src/storage_daemon.cpp",
     "ipc/src/storage_daemon_stub.cpp",
     "ipc/src/storage_manager_client.cpp",
@@ -72,6 +68,10 @@ ohos_executable("storage_daemon") {
     "utils/file_utils.cpp",
     "utils/mount_argument_utils.cpp",
     "utils/string_utils.cpp",
+    "volume/src/external_volume_info.cpp",
+    "volume/src/process.cpp",
+    "volume/src/volume_info.cpp",
+    "volume/src/volume_manager.cpp",
   ]
 
   configs = [ ":storage_daemon_config" ]
