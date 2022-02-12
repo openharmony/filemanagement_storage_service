@@ -28,15 +28,35 @@ config("storage_daemon_config") {
     "include",
     "//utils/native/base/include",
     "//foundation/distributedschedule/samgr/interfaces/innerkits/samgr_proxy/include",
+    "../storage_manager/include",
+    "//foundation/aafwk/standard/interfaces/innerkits/base/include",
+    "//foundation/distributedschedule/safwk/interfaces/innerkits/safwk",
+    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
     "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include",
     "//foundation/filemanagement/storage_service/utils/include",
   ]
 }
 
+## Install config.txt to /system/etc/init/config.txt {{{
+ohos_prebuilt_etc("storage_daemon_disk_config") {
+  source = "config.txt"
+  relative_install_dir = "init"
+  part_name = "storage_service"
+  subsystem_name = "filemanagement"
+}
+
 ohos_executable("storage_daemon") {
   sources = [
+    "../storage_manager/innerkits_impl/src/disk.cpp",
+    "../storage_manager/innerkits_impl/src/volume_core.cpp",
+    "../storage_manager/innerkits_impl/src/volume_external.cpp",
+    "../storage_manager/ipc/src/storage_manager_proxy.cpp",
+    "disk/src/disk_config.cpp",
+    "disk/src/disk_info.cpp",
+    "disk/src/disk_manager.cpp",
     "ipc/src/storage_daemon.cpp",
     "ipc/src/storage_daemon_stub.cpp",
+    "ipc/src/storage_manager_client.cpp",
     "main.cpp",
     "netlink/src/netlink_data.cpp",
     "netlink/src/netlink_handler.cpp",
@@ -44,6 +64,7 @@ ohos_executable("storage_daemon") {
     "netlink/src/netlink_manager.cpp",
     "user/src/mount_manager.cpp",
     "user/src/user_manager.cpp",
+    "utils/disk_utils.cpp",
     "utils/file_utils.cpp",
     "utils/mount_argument_utils.cpp",
     "utils/string_utils.cpp",

@@ -16,17 +16,45 @@
 #ifndef OHOS_STORAGE_DAEMON_DISK_MANAGER_H
 #define OHOS_STORAGE_DAEMON_DISK_MANAGER_H
 
+#include <list>
+#include <memory>
+#include <mutex>
+#include <cstring>
 #include <nocopyable.h>
+
+#include <sys/types.h>
+
+#include "disk/disk_config.h"
+#include "disk/disk_info.h"
+#include "netlink/netlink_data.h"
 
 namespace OHOS {
 namespace StorageDaemon {
 class DiskManager final {
 public:
+    static DiskManager* Instance(void);
+
     virtual ~DiskManager();
+    void CreateDisk(std::shared_ptr<DiskInfo> &diskInfo);
+    void DestroyDisk(dev_t device);
+    void ChangeDisk(dev_t device);
+    std::shared_ptr<DiskInfo> GetDisk(dev_t device);
+    void HandleDiskEvent(NetlinkData *data);
+    int32_t HandlePartition(std::string diskId, int32_t type);
+    void AddDiskConfig(std::shared_ptr<DiskConfig> &diskConfig);
+    void ReplayUevent();
 
 private:
-    DiskManager();
+    DiskManager() = default;
+
+    std::mutex lock_;
+    std::list<std::shared_ptr<DiskInfo>> disk_;
+    std::list<std::shared_ptr<DiskConfig>> diskConfig_;
+    static DiskManager* instance_;
+
     DISALLOW_COPY_AND_MOVE(DiskManager);
+
+    const std::string sysBlockPath_ = "/sys/block";
 };
 } // STORAGE_DAEMON
 } // OHOS

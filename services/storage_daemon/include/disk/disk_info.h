@@ -16,9 +16,53 @@
 #ifndef OHOS_STORAGE_DAEMON_DISK_INFO_H
 #define OHOS_STORAGE_DAEMON_DISK_INFO_H
 
+#include <list>
+#include <string>
+
+#include <sys/types.h>
+
 namespace OHOS {
 namespace StorageDaemon {
+const int sInital = 0;
+const int sCreate = 1;
+const int sScan = 2;
+const int sDestroy = 4;
+
 class DiskInfo {
+public:
+    enum DeviceFlag {
+        sdFlag = 1,
+        usbFlag = 2,
+    };
+
+    DiskInfo(std::string sysPath_, std::string devPath_, dev_t device, int flag);
+    virtual ~DiskInfo();
+    int Create();
+    int Destroy();
+    int ReadMetadata();
+    int ReadPartition();
+    int CreateVolume(dev_t dev);
+    int Partition();
+    dev_t GetDevice() const;
+    std::string GetId() const;
+    std::string GetDevPath() const;
+    uint64_t GetDevDSize() const;
+    std::string GetSysPath() const;
+    std::string GetDevVendor() const;
+    int GetDevFlag() const;
+
+private:
+    std::string id_;
+    uint64_t size_;
+    /* device vendor infomation */
+    std::string vendor_;
+    std::string sysPath_;
+    int status;
+    std::string eventPath_;
+    std::string devPath_;
+    dev_t device_;
+    int flags_;
+    std::list<std::string> volumeId_;
 };
 } // STORAGE_DAEMON
 } // OHOS

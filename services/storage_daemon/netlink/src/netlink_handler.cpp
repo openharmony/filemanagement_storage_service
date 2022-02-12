@@ -17,24 +17,10 @@
 #include "netlink/netlink_data.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "disk/disk_manager.h"
 
 namespace OHOS {
 namespace StorageDaemon {
-void HandleDiskEventStub(NetlinkData *nlData)
-{
-    LOGI("GetAction %{public}d", nlData->GetAction());
-    LOGI("GetDevpath %{public}s", nlData->GetDevpath().c_str());
-    LOGI("GetSyspath %{public}s", nlData->GetSyspath().c_str());
-    LOGI("GetSubsystem %{public}s", nlData->GetSubsystem().c_str());
-    LOGI("GetParam MAJOR %{public}s", nlData->GetParam("MAJOR").c_str());
-    LOGI("GetParam MINOR %{public}s", nlData->GetParam("MINOR").c_str());
-    LOGI("GetParam DEVNAME %{public}s", nlData->GetParam("DEVNAME").c_str());
-    LOGI("GetParam DEVTYPE %{public}s", nlData->GetParam("DEVTYPE").c_str());
-    LOGI("GetParam SEQNUM %{public}s", nlData->GetParam("SEQNUM").c_str());
-
-    return;
-}
-
 NetlinkHandler::NetlinkHandler(int32_t socket) : NetlinkListener(socket) {}
 
 int32_t NetlinkHandler::Start()
@@ -53,7 +39,7 @@ void NetlinkHandler::OnEvent(char *msg)
 
     nlData->Decode(msg);
     if (strcmp(nlData->GetSubsystem().c_str(), "block") == 0) {
-        HandleDiskEventStub(nlData.get());
+        DiskManager::Instance()->HandleDiskEvent(nlData.get());
     }
 }
 } // StorageDaemon

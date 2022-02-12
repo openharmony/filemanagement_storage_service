@@ -14,18 +14,29 @@
  */
 
 #include "utils/file_utils.h"
+
 #include <cerrno>
+#include <fstream>
 #include <unistd.h>
 #include <cstring>
 #include <dirent.h>
+#include <cstdlib>
+#include <fcntl.h>
+
 #include <sys/stat.h>
+#include <sys/wait.h>
+#include <sys/types.h>
+
+
+#include "string_ex.h"
+
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "string_ex.h"
 
 namespace OHOS {
 namespace StorageDaemon {
 constexpr uint32_t ALL_PERMS = (S_ISUID | S_ISGID | S_ISVTX | S_IRWXU | S_IRWXG | S_IRWXO);
+const int BUF_LEN = 1024;
 
 int32_t ChMod(const std::string &path, mode_t mode)
 {
@@ -254,7 +265,7 @@ void ReadDigitDir(const std::string &path, std::vector<FileList> &dirInfo)
 
         uint32_t userId;
         std::string name(ent->d_name);
-        if (StringToUint32(name, userId) == false) {
+        if (!StringToUint32(name, userId)) {
             continue;
         }
         FileList entry = {
@@ -262,6 +273,121 @@ void ReadDigitDir(const std::string &path, std::vector<FileList> &dirInfo)
             .path = path + "/" + name
         };
         dirInfo.push_back(entry);
+    }
+
+    closedir(dir);
+}
+
+bool ReadFile(std::string path, std::string *str)
+{
+    std::ifstream infile;
+    int cnt = 0;
+    infile.open(path.c_str());
+    if (!infile) {
+        LOGE("Cannot open file");
+        return false;
+    }
+
+    while (1) {
+        std::string subStr;
+        infile >> subStr;
+        if (subStr == "") {
+            break;
+        }
+        cnt++;
+        *str = *str + subStr + '\n';
+    }
+
+    infile.close();
+    return cnt == 0 ? false : true;
+}
+
+static std::vector<char*> FromatCmd(std::vector<std::string> &cmd)
+{
+    std::vector<char*>res;
+    res.reserve(cmd.size() + 1);
+
+    for (auto& line : cmd) {
+        LOGI("cmd %{public}s", line.c_str());
+        res.emplace_back(const_cast<char*>(line.c_str()));
+    }
+    res.emplace_back(nullptr);
+
+    return res;
+}
+
+int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
+{
+    int pipe_fd[2];
+    pid_t pid;
+    int status;
+    auto args = FromatCmd(cmd);
+
+    if (pipe(pipe_fd) < 0) {
+        LOGE("creat pipe failed");
+        return E_ERR;
+    }
+
+    pid = fork();
+    if (pid == -1) {
+        LOGE("fork failed");
+        return E_ERR;
+    } else if (pid == 0) {
+        close(pipe_fd[0]);
+        if (dup2(pipe_fd[1], STDOUT_FILENO) == -1) {
+            LOGE("dup2 failed");
+            exit(1);
+        }
+        close(pipe_fd[1]);
+        execvp(args[0], const_cast<char **>(args.data()));
+        exit(0);
+    } else {
+        close(pipe_fd[1]);
+        if (output) {
+            char buf[BUF_LEN] = { 0 };
+            output->clear();
+            while (read(pipe_fd[0], buf, BUF_LEN - 1) > 0) {
+                LOGI("get result %{public}s", buf);
+                output->push_back(buf);
+            }
+            return E_OK;
+        }
+
+        waitpid(pid, &status, 0);
+        if (!WIFEXITED(status)) {
+            LOGE("Process exits abnormally");
+            return E_ERR;
+        }
+    }
+    return E_OK;
+}
+
+void TraverseDirUevent(const std::string &path, bool flag)
+{
+    DIR *dir = opendir(path.c_str());
+    if (dir == nullptr) {
+        return;
+    }
+
+    int dirFd = dirfd(dir);
+    int fd = openat(dirFd, "uevent", O_WRONLY | O_CLOEXEC);
+    if (fd >= 0) {
+        std::string writeStr = "add\n";
+        int writeStrLen = writeStr.length();
+        write(fd, writeStr.c_str(), writeStrLen);
+        close(fd);
+    }
+
+    for (struct dirent *ent = readdir(dir); ent != nullptr; ent = readdir(dir)) {
+        if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0) {
+            continue;
+        }
+
+        if (ent->d_type != DT_DIR && !flag) {
+            continue;
+        }
+
+        TraverseDirUevent(path + "/" + ent->d_name, false);
     }
 
     closedir(dir);

@@ -18,6 +18,7 @@
 namespace OHOS {
 namespace StorageManager {
 VolumeCore::VolumeCore() {}
+
 VolumeCore::VolumeCore(std::string id, int type, std::string diskId)
 {
     id_ = id;

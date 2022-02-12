@@ -14,10 +14,14 @@
  */
 
 #include "utils/string_utils.h"
+
 #include <cstdio>
 #include <cstdarg>
 #include <cstring>
+#include <vector>
+
 #include "securec.h"
+
 #include "storage_service_log.h"
 
 using namespace std;
@@ -55,6 +59,33 @@ std::string StringPrintf(const char *format, ...)
 
     va_end(ap_backup);
     va_end(ap);
+
+    return result;
+}
+
+std::vector<std::string> SplitLine(std::string &line, std::string &token)
+{
+    std::vector<std::string> result;
+    char *l = new char[line.length() + 1];
+    char *t = new char[token.length() + 1];
+    auto err = strcpy_s(l, line.length() + 1, line.c_str());
+    if (err) {
+        LOGE("strcpy line failed ret %{public}d", err);
+        return result;
+    }
+
+    err = strcpy_s(t, token.length() + 1, token.c_str());
+    if (err) {
+        LOGE("strcpy token failed ret %{public}d", err);
+        return result;
+    }
+
+    char *tmp = strtok(l, t);
+    while (tmp) {
+        std::string subStr = tmp;
+        result.push_back(subStr);
+        tmp = strtok(nullptr, t);
+    }
 
     return result;
 }

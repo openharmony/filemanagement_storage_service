@@ -12,23 +12,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef STORAGE_DAEMON_UTILS_STRING_UTILS_H
-#define STORAGE_DAEMON_UTILS_STRING_UTILS_H
+#ifndef STORAGE_DAEMON_UTILS_DISK_H
+#define STORAGE_DAEMON_UTILS_DISK_H
 
 #include <string>
+
 #include <sys/types.h>
 
 namespace OHOS {
 namespace StorageDaemon {
-std::string StringPrintf(const char *format, ...);
+const int diskMmc = 179;
+const int maxScsiVolumes = 15;
+const std::string SysfsMmcMaxVolumes = "/sys/module/mmcblk/parameters/perdev_minors";
 
-inline bool IsEndWith(const std::string &str, const std::string &end)
-{
-    return str.size() >= end.size() && str.substr(str.size() - end.size()) == end;
-}
+int CreateDiskNode(const std::string &path, dev_t dev);
+int DestroyDiskNode(const std::string &path);
+int GetDevSize(std::string path, uint64_t *size);
+int GetMaxVolume(dev_t device);
+} // namespace STORAGE_DAEMON
+} // namespace OHOS
 
-std::vector<std::string> SplitLine(std::string &line, std::string &token);
-}
-}
-
-#endif // STORAGE_DAEMON_UTILS_STRING_UTILS_H
+#endif // STORAGE_DAEMON_UTILS_DISK_H

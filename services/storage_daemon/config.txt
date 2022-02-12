@@ -1,0 +1,4 @@
+sysPattern /devices/platform/* label disk flag 0
+sysPattern /devices/aaaa/* label disk flag 0
+sysPattern /devices/aaaa/* label disk
+sysPatterns /devices/bbbb/* label disk flag 0

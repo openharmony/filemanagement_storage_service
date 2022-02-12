@@ -56,8 +56,8 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
         case NOTIFY_VOLUME_MOUNTED:
             HandleNotifyVolumeMounted(data, reply);
             break;
-        case NOTIFY_VOLUME_DESTORYED:
-            HandleNotifyVolumeDestoryed(data, reply);
+        case NOTIFY_VOLUME_DESTROYED:
+            HandleNotifyVolumeDestroyed(data, reply);
             break;
         case MOUNT:
             HandleMount(data, reply);
@@ -229,11 +229,11 @@ int32_t StorageManagerStub::HandleNotifyVolumeMounted(MessageParcel &data, Messa
     return E_OK;
 }
 
-int32_t StorageManagerStub::HandleNotifyVolumeDestoryed(MessageParcel &data, MessageParcel &reply)
+int32_t StorageManagerStub::HandleNotifyVolumeDestroyed(MessageParcel &data, MessageParcel &reply)
 {
     std::string volumeId = data.ReadString();
-    NotifyVolumeDestoryed(volumeId);
-    LOGI("StorageManagerStub::HandleNotifyVolumeDestoryed");
+    NotifyVolumeDestroyed(volumeId);
+    LOGI("StorageManagerStub::HandleNotifyVolumeDestroyed");
     return E_OK;
 }
 

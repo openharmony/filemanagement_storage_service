@@ -12,23 +12,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef STORAGE_DAEMON_UTILS_STRING_UTILS_H
-#define STORAGE_DAEMON_UTILS_STRING_UTILS_H
 
-#include <string>
-#include <sys/types.h>
+#include "disk/disk_config.h"
+
+#include <fnmatch.h>
+
+#include "storage_service_log.h"
 
 namespace OHOS {
 namespace StorageDaemon {
-std::string StringPrintf(const char *format, ...);
-
-inline bool IsEndWith(const std::string &str, const std::string &end)
+DiskConfig::DiskConfig(const std::string &sysPattern, const std::string &label, int flag)
 {
-    return str.size() >= end.size() && str.substr(str.size() - end.size()) == end;
+    sysPattern_ = sysPattern;
+    label_ = label;
+    flag_ = flag;
 }
 
-std::vector<std::string> SplitLine(std::string &line, std::string &token);
-}
+DiskConfig::~DiskConfig()
+{
 }
 
-#endif // STORAGE_DAEMON_UTILS_STRING_UTILS_H
+bool DiskConfig::IsMatch(std::string &sysPattern)
+{
+    LOGI("config sysPattern %{public}s", sysPattern_.c_str());
+    LOGI("device sysPattern %{public}s", sysPattern.c_str());
+
+    return !fnmatch(sysPattern_.c_str(), sysPattern.c_str(), 0);
+}
+
+int DiskConfig::GetFlag() const
+{
+    return flag_;
+}
+} // namespace STORAGE_DAEMON
+} // namespace OHOS

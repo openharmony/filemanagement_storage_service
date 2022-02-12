@@ -108,10 +108,10 @@ void StorageManager::NotifyVolumeMounted(std::string volumeId, int32_t fsType, s
     DelayedSingleton<VolumeManagerService>::GetInstance()->OnVolumeMounted(volumeId, fsType, fsUuid, path, description);
 }
 
-void StorageManager::NotifyVolumeDestoryed(std::string volumeId)
+void StorageManager::NotifyVolumeDestroyed(std::string volumeId)
 {
-    LOGI("StorageManger::NotifyVolumeDestoryed start");
-    DelayedSingleton<VolumeManagerService>::GetInstance()->OnVolumeDestoryed(volumeId);
+    LOGI("StorageManger::NotifyVolumeDestroyed start");
+    DelayedSingleton<VolumeManagerService>::GetInstance()->OnVolumeDestroyed(volumeId);
 }
 
 int32_t StorageManager::Mount(std::string volumeId)

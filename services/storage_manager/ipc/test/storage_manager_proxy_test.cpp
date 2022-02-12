@@ -513,23 +513,23 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyVolumeMounted_0000
 }
 
 /**
- * @tc.number: SUB_STORAGE_Storage_manager_proxy_NotifyVolumeDestoryed_0000
- * @tc.name: Storage_manager_proxy_NotifyVolumeDestoryed_0001
- * @tc.desc: Test function of NotifyVolumeDestoryed interface for SUCCESS.
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_NotifyVolumeDestroyed_0000
+ * @tc.name: Storage_manager_proxy_NotifyVolumeDestroyed_0001
+ * @tc.desc: Test function of NotifyVolumeDestroyed interface for SUCCESS.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
  * @tc.require: SR000GGUPF
  */
-HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyVolumeDestoryed_0000, testing::ext::TestSize.Level1)
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyVolumeDestroyed_0000, testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_NotifyVolumeDestoryed_0000";
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_NotifyVolumeDestroyed_0000";
     std::string volumeId = "120";
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
-    proxy->NotifyVolumeDestoryed(volumeId);
-    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_NotifyVolumeDestoryed_0000";
+    proxy->NotifyVolumeDestroyed(volumeId);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_NotifyVolumeDestroyed_0000";
 }
 
 /**

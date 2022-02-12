@@ -27,7 +27,7 @@ enum ErrNo {
     E_EXIST = 3,              // exist
     E_WRONG_TYPE = 4,         // wrong file type
     E_USER_STATE = 5,            // wrong user state
-    E_NON_EXIST = 6,            // no such user
+    E_NON_EXIST = 6,            // no such item
     E_PREPARE_DIR = 7,         // failed to prepare dir
     E_DESTROY_DIR = 8,         // failed to destroy dir
     E_MOUNT,        // mount error

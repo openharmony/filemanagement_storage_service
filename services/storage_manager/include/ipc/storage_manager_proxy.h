@@ -36,8 +36,8 @@ public:
     std::vector<int64_t> GetBundleStats(std::string uuid, std::string pkgName) override;
     void NotifyVolumeCreated(VolumeCore vc) override;
     void NotifyVolumeMounted(std::string volumeId, int32_t fsType, std::string fsUuid,
-        std::string path, std::string description) override;
-    void NotifyVolumeDestoryed(std::string volumeId) override;
+                             std::string path, std::string description) override;
+    void NotifyVolumeDestroyed(std::string volumeId) override;
     int32_t Mount(std::string volumeId) override;
     int32_t Unmount(std::string volumeId) override;
     std::vector<VolumeExternal> GetAllVolumes() override;

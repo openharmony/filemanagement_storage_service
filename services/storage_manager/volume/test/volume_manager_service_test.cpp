@@ -143,24 +143,24 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeMounted_0000, 
 }
 
 /**
- * @tc.number: SUB_STORAGE_Volume_manager_service_OnVolumeDestoryed_0000
- * @tc.name: Volume_manager_service_OnVolumeDestoryed_0000
- * @tc.desc: Test function of OnVolumeDestoryed interface for SUCCESS.
+ * @tc.number: SUB_STORAGE_Volume_manager_service_OnVolumeDestroyed_0000
+ * @tc.name: Volume_manager_service_OnVolumeDestroyed_0000
+ * @tc.desc: Test function of OnVolumeDestroyed interface for SUCCESS.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
  * @tc.require: SR000GGUPF
  */
-HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDestoryed_0000, testing::ext::TestSize.Level1)
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDestroyed_0000, testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_OnVolumeDestoryed_0000";
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_OnVolumeDestroyed_0000";
     std::shared_ptr<VolumeManagerService> vmService =
         DelayedSingleton<VolumeManagerService>::GetInstance();
     std::string volumeId = "";
     if (vmService != nullptr) {
-        vmService->OnVolumeDestoryed(volumeId);
+        vmService->OnVolumeDestroyed(volumeId);
     }
-    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_OnVolumeDestoryed_0000";
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_OnVolumeDestroyed_0000";
 }
 
 /**
