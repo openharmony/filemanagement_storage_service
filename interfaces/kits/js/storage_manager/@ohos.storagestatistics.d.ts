@@ -19,10 +19,9 @@ import {AsyncCallback, Callback} from "./basic";
  * Provides filesystem statistics APIs
  *
  * @since 8
- * @sysCap N/A
- * @devices phone, tablet
+ * @syscap SystemCapability.FileManagement.StorageService.SpatialStatistics
  */
-declare namespace StorageStatistics {
+declare namespace storageStatistics {
   /**
    * Get the totalSize of volume.
    *
@@ -46,12 +45,12 @@ declare namespace StorageStatistics {
 
  export interface BundleStats {
   appSize: number;
-  appCach: number;
+  cacheSize: number;
   dataSize: number;
 }
-  function getBundleStat(volumeUuid: string, packageName: string,  callback: AsyncCallback<BundleStats>): void;
-  function getBundleStat(volumeUuid: string, packageName: string): Promise<BundleStats>;
+  function getBundleStats(volumeUuid: string, packageName: string,  callback: AsyncCallback<BundleStats>): void;
+  function getBundleStats(volumeUuid: string, packageName: string): Promise<BundleStats>;
 
 }
 
-export default StorageStatistics;
+export default storageStatistics;

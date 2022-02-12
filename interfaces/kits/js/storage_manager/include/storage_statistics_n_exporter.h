@@ -23,7 +23,7 @@ namespace OHOS {
 namespace StorageManager {
 napi_value GetTotalSizeOfVolume(napi_env env, napi_callback_info info);
 napi_value GetFreeSizeOfVolume(napi_env env, napi_callback_info info);
-napi_value GetBundleStat(napi_env env, napi_callback_info info);
+napi_value GetBundleStats(napi_env env, napi_callback_info info);
 } // namespace StorageManager
 } // namespace OHOS
 #endif // STORAGESTATUS_N_EXPORTER_H

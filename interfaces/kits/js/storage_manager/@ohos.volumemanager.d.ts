@@ -19,10 +19,9 @@ import {AsyncCallback, Callback} from "./basic";
  * Provides volumemanager statistics APIs
  *
  * @since 8
- * @sysCap N/A
- * @devices phone, tablet
+ * @syscap SystemCapability.FileManagement.StorageService.Volume
  */
-declare namespace VolumeManager {
+declare namespace volumeManager {
 
 /**
    * Get All Volumes
@@ -59,4 +58,4 @@ function unmount(volumeId: string): Promise<boolean>;
 
 }
 
-export default VolumeManager;
+export default volumeManager;
