@@ -94,9 +94,9 @@ int DiskInfo::Create()
 
 int DiskInfo::Destroy()
 {
-    // auto volume = VolumeManager::Instance();
+    auto volume = VolumeManager::Instance();
     for (auto volumeId : volumeId_) {
-    //     volume->Destroy(volumeId);
+        volume->DestroyVolume(volumeId);
     }
     status = sDestroy;
     volumeId_.clear();
@@ -203,8 +203,8 @@ int DiskInfo::ReadPartition()
                 LOGE("Invalid partition %{public}d", index);
                 continue;
             }
-            // dev_t partitionDev = makedev(major(device_), minor(device_) + index);
-            // CreateVolume(partitionDev);
+            dev_t partitionDev = makedev(major(device_), minor(device_) + index);
+            CreateVolume(partitionDev);
         }
     }
     return E_OK;
@@ -212,11 +212,11 @@ int DiskInfo::ReadPartition()
 
 int DiskInfo::CreateVolume(dev_t dev)
 {
-    // auto volume = VolumeManager::Instance();
+    auto volume = VolumeManager::Instance();
 
-    // LOGI("Read metadata %{public}llu", dev);
-    // std::string volumeId = volume->CreateVolume(GetId(), dev);
-    // volumeId_.push_back(volumeId);
+    LOGI("disk read volume metadata");
+    std::string volumeId = volume->CreateVolume(GetId(), dev);
+    volumeId_.push_back(volumeId);
     return E_OK;
 }
 
