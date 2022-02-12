@@ -15,6 +15,7 @@
 #include "base_key.h"
 
 #include <fcntl.h>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -86,6 +87,9 @@ bool BaseKey::SaveKeyBlob(const KeyBlob &blob, const std::string &path)
         LOGE("open %{public}s failed, errno %{public}d", path.c_str(), errno);
         return false;
     }
+    // set permission 0600 of the key file
+    std::filesystem::permissions(path, std::filesystem::perms::owner_read | std::filesystem::perms::owner_write,
+                                 std::filesystem::perm_options::replace);
     if (file.write(reinterpret_cast<char *>(blob.data.get()), blob.size).fail()) {
         LOGE("write %{public}s failed, errno %{public}d", path.c_str(), errno);
         return false;
@@ -192,7 +196,7 @@ bool BaseKey::StoreKey(const UserAuth &auth)
 bool BaseKey::DoStoreKey(const UserAuth &auth)
 {
     auto pathTemp = dir_ + PATH_KEY_TEMP;
-    OHOS::ForceCreateDirectory(pathTemp);
+    MkDirRecurse(pathTemp, S_IRWXU);
 
     auto pathVersion = dir_ + PATH_FSCRYPT_VER;
     std::string version;
@@ -204,6 +208,8 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
         LOGE("save version failed, errno:%{public}d", errno);
         return false;
     }
+    std::filesystem::permissions(pathVersion, std::filesystem::perms::owner_read | std::filesystem::perms::owner_write,
+                                 std::filesystem::perm_options::replace);
 
     if (!GenerateAndSaveKeyBlob(keyContext_.alias, pathTemp + PATH_ALIAS, CRYPTO_KEY_ALIAS_SIZE)) {
         LOGE("GenerateAndSaveKeyBlob alias failed");

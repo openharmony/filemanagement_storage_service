@@ -34,6 +34,7 @@ int32_t MkDir(const std::string &path, mode_t mode);
 bool IsDir(const std::string &path);
 bool PrepareDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid);
 bool DestroyDir(const std::string &path);
+bool MkDirRecurse(const std::string& path, mode_t mode);
 bool RmDirRecurse(const std::string &path);
 int32_t Mount(const std::string &source, const std::string &target, const char *type,
               unsigned long flags, const void *data);
