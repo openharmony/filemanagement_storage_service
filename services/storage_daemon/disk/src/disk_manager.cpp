@@ -111,7 +111,6 @@ void DiskManager::ChangeDisk(dev_t device)
     for (auto &diskInfo : disk_) {
         if (diskInfo->GetDevice() == device) {
             diskInfo->ReadMetadata();
-            // diskInfo->ReadPartition();
         }
     }
 }
