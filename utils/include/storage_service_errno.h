@@ -34,6 +34,9 @@ enum ErrNo {
     E_UMOUNT,       // umount error
     E_SET_POLICY,
     E_USERID_RANGE, // id out or range
+    E_VOL_STATE,    // volume state check fail
+    E_WAIT,         // wait
+    E_NOT_SUPPORT,  // not support
 };
 }
 

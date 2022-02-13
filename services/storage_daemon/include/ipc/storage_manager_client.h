@@ -30,9 +30,9 @@ public:
     int32_t NotifyDiskCreated(std::shared_ptr<DiskInfo> &diskInfo);
     int32_t NotifyDiskDestroyed(std::string id);
 
-    int32_t NotifyVolumeCreated(VolumeInfo volumeInfo);
-    int32_t NotifyVolumeMounted(VolumeInfo volumeInfo);
-    int32_t NotifyVolumeDestroyed(VolumeInfo volumeInfo);
+    int32_t NotifyVolumeCreated(std::shared_ptr<VolumeInfo> info);
+    int32_t NotifyVolumeMounted(std::shared_ptr<VolumeInfo> volumeInfo);
+    int32_t NotifyVolumeDestroyed(std::string volId);
 
 private:
     DISALLOW_COPY_AND_MOVE(StorageManagerClient);

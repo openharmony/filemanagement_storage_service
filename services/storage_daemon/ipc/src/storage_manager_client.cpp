@@ -18,6 +18,7 @@
 #include "storage_service_log.h"
 #include "storage_service_errno.h"
 #include "disk.h"
+#include "volume/external_volume_info.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -71,37 +72,40 @@ int32_t StorageManagerClient::NotifyDiskDestroyed(std::string id)
     return E_OK;
 }
 
-int32_t StorageManagerClient::NotifyVolumeCreated(VolumeInfo volumeInfo)
+int32_t StorageManagerClient::NotifyVolumeCreated(std::shared_ptr<VolumeInfo> info)
 {
     if (GetClient() != E_OK) {
         return E_IPC_ERROR;
     }
 
-    StorageManager::VolumeCore vc;
+    StorageManager::VolumeCore vc(info->GetVolumeId(), info->GetVolumeType(),
+                                  info->GetDiskId(), info->GetState());
     storageManager_->NotifyVolumeCreated(vc);
 
     return E_OK;
 }
 
-int32_t StorageManagerClient::NotifyVolumeMounted(VolumeInfo volumeInfo)
+int32_t StorageManagerClient::NotifyVolumeMounted(std::shared_ptr<VolumeInfo> volumeInfo)
 {
     if (GetClient() != E_OK) {
         return E_IPC_ERROR;
     }
 
-    storageManager_->NotifyVolumeMounted("", 0, "", "", "");
+    std::shared_ptr<ExternalVolumeInfo> info = std::static_pointer_cast<ExternalVolumeInfo>(volumeInfo);
+    storageManager_->NotifyVolumeMounted(info->GetVolumeId(), info->GetFsType(), info->GetFsUuid(),
+                                         info->GetMountPath(), info->GetFsLabel());
 
     return E_OK;
 }
 
-int32_t StorageManagerClient::NotifyVolumeDestroyed(VolumeInfo volumeInfo)
+int32_t StorageManagerClient::NotifyVolumeDestroyed(std::string volId)
 
 {
     if (GetClient() != E_OK) {
         return E_IPC_ERROR;
     }
 
-    storageManager_->NotifyVolumeDestroyed("");
+    storageManager_->NotifyVolumeDestroyed(volId);
 
     return E_OK;
 }

@@ -38,6 +38,7 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/disk/src/disk_manager.cpp",
     "$ROOT_DIR/ipc/src/storage_daemon.cpp",
     "$ROOT_DIR/ipc/src/storage_daemon_stub.cpp",
+    "$ROOT_DIR/ipc/src/storage_manager_client.cpp",
     "$ROOT_DIR/ipc/test/storage_daemon_test.cpp",
     "$ROOT_DIR/user/src/mount_manager.cpp",
     "$ROOT_DIR/user/src/user_manager.cpp",
@@ -45,6 +46,10 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/utils/mount_argument_utils.cpp",
     "$ROOT_DIR/utils/string_utils.cpp",
     "$ROOT_DIR/utils/test/common/help_utils.cpp",
+    "$ROOT_DIR/volume/src/external_volume_info.cpp",
+    "$ROOT_DIR/volume/src/process.cpp",
+    "$ROOT_DIR/volume/src/volume_info.cpp",
+    "$ROOT_DIR/volume/src/volume_manager.cpp",
   ]
 
   deps = [
@@ -56,6 +61,7 @@ ohos_unittest("storage_daemon_test") {
   external_deps = [
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
+    "samgr_standard:samgr_proxy",
     "startup_l2:syspara",
   ]
 }

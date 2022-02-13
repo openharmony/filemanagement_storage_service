@@ -137,8 +137,9 @@ int32_t StorageDaemonStub::HandleCheck(MessageParcel &data, MessageParcel &reply
 int32_t StorageDaemonStub::HandleFormat(MessageParcel &data, MessageParcel &reply)
 {
     std::string volId = data.ReadString();
+    std::string fsType = data.ReadString();
 
-    int err = Format(volId);
+    int err = Format(volId, fsType);
     if (!reply.WriteInt32(err)) {
         return  E_IPC_ERROR;
     }

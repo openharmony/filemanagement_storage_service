@@ -54,7 +54,7 @@ public:
         return E_OK;
     }
 
-    virtual int32_t Format(std::string voldId) override
+    virtual int32_t Format(std::string volId, std::string fsType) override
     {
         return E_OK;
     }

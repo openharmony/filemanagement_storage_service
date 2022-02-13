@@ -17,16 +17,35 @@
 #define OHOS_STORAGE_DAEMON_VOLUME_MANAGER_H
 
 #include <nocopyable.h>
+#include <sys/types.h>
+#include <string>
+#include <list>
+#include <memory>
+#include "volume/volume_info.h"
 
 namespace OHOS {
 namespace StorageDaemon {
 class VolumeManager final {
 public:
-    virtual ~VolumeManager();
+    virtual ~VolumeManager() = default;
+    static VolumeManager* Instance();
+
+    std::string CreateVolume(const std::string diskId, dev_t device);
+    int32_t DestroyVolume(const std::string volId);
+
+    int32_t Check(const std::string volId);
+    int32_t Mount(const std::string volId, uint32_t flags);
+    int32_t UMount(const std::string volId);
+    int32_t Format(const std::string volId, const std::string fsType);
 
 private:
-    VolumeManager();
+    VolumeManager() = default;
     DISALLOW_COPY_AND_MOVE(VolumeManager);
+
+    static VolumeManager* instance_;
+    std::list<std::shared_ptr<VolumeInfo>> volumes_;
+
+    std::shared_ptr<VolumeInfo> GetVolume(const std::string volId);
 };
 } // STORAGE_DAEMON
 } // OHOS

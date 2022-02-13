@@ -68,6 +68,10 @@ ohos_executable("storage_daemon") {
     "utils/file_utils.cpp",
     "utils/mount_argument_utils.cpp",
     "utils/string_utils.cpp",
+    "volume/src/external_volume_info.cpp",
+    "volume/src/process.cpp",
+    "volume/src/volume_info.cpp",
+    "volume/src/volume_manager.cpp",
   ]
 
   configs = [ ":storage_daemon_config" ]

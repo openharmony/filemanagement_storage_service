@@ -16,9 +16,60 @@
 #ifndef OHOS_STORAGE_DAEMON_VOLUME_INFO_H
 #define OHOS_STORAGE_DAEMON_VOLUME_INFO_H
 
+#include <string>
+#include <sys/types.h>
+
 namespace OHOS {
 namespace StorageDaemon {
+enum VolumeState {
+    UNMOUNTED,
+    CHECKING,
+    MOUNTED,
+    EJECTING,
+    REMOVED,
+    BADREMOVABLE,
+};
+
+enum VolumeType {
+    EXTERNAL,
+};
+
 class VolumeInfo {
+public:
+    VolumeInfo() = default;
+    virtual ~VolumeInfo() = default;
+
+    int32_t Create(const std::string volId, const std::string diskId, dev_t device);
+    int32_t Destroy();
+    int32_t Mount(uint32_t flags);
+    int32_t UMount(bool force = false);
+    int32_t Check();
+    int32_t Format(const std::string type);
+
+    std::string GetVolumeId();
+    int32_t GetVolumeType();
+    std::string GetDiskId();
+    int32_t GetState();
+    std::string GetMountPath();
+
+protected:
+    virtual int32_t DoCreate(dev_t dev) = 0;
+    virtual int32_t DoDestroy() = 0;
+    virtual int32_t DoMount(const std::string mountPath, uint32_t mountFlags) = 0;
+    virtual int32_t DoUMount(const std::string mountPath, bool force) = 0;
+    virtual int32_t DoCheck() = 0;
+    virtual int32_t DoFormat(std::string type) = 0;
+
+private:
+    std::string id_;
+    std::string diskId_;
+    VolumeType type_;
+    VolumeState mountState_;
+    int32_t mountFlags_;
+    int32_t userIdOwner_;
+    std::string mountPath_;
+
+    const std::string mountPathDir_ = "/mnt/%s";
 };
 } // STORAGE_DAEMON
 } // OHOS
