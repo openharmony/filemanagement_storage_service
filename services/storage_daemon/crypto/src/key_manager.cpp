@@ -356,11 +356,22 @@ int KeyManager::GenerateUserKeys(unsigned int user, uint32_t flags)
 
 void KeyManager::DoDeleteUserKeys(unsigned int user)
 {
+    std::string elPath;
     auto it = userEl1Key_.find(user);
     if (it != userEl1Key_.end()) {
         auto elKey = it->second;
         elKey->ClearKey();
         userEl1Key_.erase(user);
+    } else {
+        elPath = USER_EL1_DIR + "/" + std::to_string(user);
+        std::shared_ptr<BaseKey> elKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>(elPath));
+        if (elKey == nullptr) {
+            LOGE("Malloc el1 Basekey memory failed");
+            return;
+        }
+        if (!elKey->ClearKey()) {
+            LOGE("Delete el1 key failed");
+        }
     }
 
     it = userEl2Key_.find(user);
@@ -368,6 +379,16 @@ void KeyManager::DoDeleteUserKeys(unsigned int user)
         auto elKey = it->second;
         elKey->ClearKey();
         userEl2Key_.erase(user);
+    } else {
+        elPath = USER_EL2_DIR + "/" + std::to_string(user);
+        std::shared_ptr<BaseKey> elKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>(elPath));
+        if (elKey == nullptr) {
+            LOGE("Malloc el2 Basekey memory failed");
+            return;
+        }
+        if (!elKey->ClearKey()) {
+            LOGE("Delete el2 key failed");
+        }
     }
 }
 
@@ -376,7 +397,7 @@ int KeyManager::DeleteUserKeys(unsigned int user)
     LOGI("start, user:%{public}d", user);
     std::lock_guard<std::mutex> lock(keyMutex_);
     DoDeleteUserKeys(user);
-    LOGI("delete user key success");
+    LOGI("delete user key end");
 
     return 0;
 }
@@ -489,14 +510,31 @@ int KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type,
         return 0;
     }
 
-    std::string policy = "";
     for (auto item : vec) {
-        if (KeyCtrl::LoadAndSetPolicy(keyPath, policy, item.path) == false) {
+        if (KeyCtrl::LoadAndSetPolicy(keyPath, item.path) == false) {
             LOGE("Set directory el policy error!");
             return -EFAULT;
         }
     }
     LOGI("Set user %{public}u el policy success", user);
+
+    return 0;
+}
+
+int KeyManager::UpdateKeyContext(uint32_t userId)
+{
+    LOGI("start");
+    std::lock_guard<std::mutex> lock(keyMutex_);
+    if (userEl2Key_.find(userId) == userEl2Key_.end()) {
+        LOGE("Have not found user %{public}u el2", userId);
+        return -ENOENT;
+    }
+    auto elKey = userEl2Key_[userId];
+    if (!elKey->UpdateKey()) {
+        LOGE("Basekey update newest context failed");
+        return -EFAULT;
+    }
+    LOGI("Basekey update key context success");
 
     return 0;
 }

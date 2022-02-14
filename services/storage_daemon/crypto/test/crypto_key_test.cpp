@@ -208,7 +208,6 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_restore_fail_wrong_version, TestSize.Leve
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_restore, TestSize.Level1)
 {
-    g_testKeyV1.keyInfo_.key.Clear();
     g_testKeyV1.ClearKey();
     EXPECT_TRUE(g_testKeyV1.InitKey());
     EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
@@ -336,7 +335,6 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_active, TestSize.Level1)
         return;
     }
 
-    g_testKeyV2.keyInfo_.key.Clear();
     g_testKeyV2.ClearKey();
     EXPECT_TRUE(g_testKeyV2.InitKey());
     EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
@@ -470,7 +468,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_default, TestSize.Lev
 
     OHOS::ForceRemoveDirectory(TEST_DIR_V2);
     OHOS::ForceCreateDirectory(TEST_DIR_V2);
-    EXPECT_TRUE(KeyCtrl::LoadAndSetPolicy(g_testKeyV2.GetDir(), "", TEST_DIR_V2));
+    EXPECT_TRUE(KeyCtrl::LoadAndSetPolicy(g_testKeyV2.GetDir(), TEST_DIR_V2));
 
     EXPECT_TRUE(OHOS::ForceCreateDirectory(TEST_DIR_V2 + "/test_dir"));
     EXPECT_TRUE(OHOS::SaveStringToFile(TEST_DIR_V2 + "/test_file1", "hello, world!\n"));
@@ -494,7 +492,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_load_and_set_policy_default, TestSize.Lev
 
     OHOS::ForceRemoveDirectory(TEST_DIR_LEGACY);
     OHOS::ForceCreateDirectory(TEST_DIR_LEGACY);
-    EXPECT_TRUE(KeyCtrl::LoadAndSetPolicy(g_testKeyV1.GetDir(), "", TEST_DIR_LEGACY));
+    EXPECT_TRUE(KeyCtrl::LoadAndSetPolicy(g_testKeyV1.GetDir(), TEST_DIR_LEGACY));
 
     EXPECT_TRUE(OHOS::ForceCreateDirectory(TEST_DIR_LEGACY + "/test_dir"));
     EXPECT_TRUE(OHOS::SaveStringToFile(TEST_DIR_LEGACY + "/test_file1", "hello, world!\n"));
@@ -572,4 +570,45 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_storekey_version_test_2, TestSize.Level1)
     std::string aliasLatest;
     EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_ALIAS, aliasLatest));
     EXPECT_EQ(aliasLatest, aliasV1);
+}
+
+/**
+ * @tc.name: fscrypt_key_v2_load_and_set_policy_padding_4
+ * @tc.desc: Verify the KeyCtrl::LoadAndSetPolicy function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK0BO
+ */
+HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_padding_4, TestSize.Level1)
+{
+    // skipped when kernel not support v2
+    if (KeyCtrl::GetFscryptVersion(TEST_MNT) == FSCRYPT_V1) {
+        return;
+    }
+
+    g_testKeyV2.ClearKey();
+    EXPECT_TRUE(g_testKeyV2.InitKey());
+    EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV2.ActiveKey());
+
+    EXPECT_EQ(0, KeyCtrl::InitFscryptPolicy("2:aes-256-cts:aes-256-xts:padding-4"));
+
+    OHOS::ForceRemoveDirectory(TEST_DIR_V2);
+    OHOS::ForceCreateDirectory(TEST_DIR_V2);
+    EXPECT_TRUE(KeyCtrl::LoadAndSetPolicy(g_testKeyV2.GetDir(), TEST_DIR_V2));
+
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(TEST_DIR_V2 + "/test_dir"));
+    EXPECT_TRUE(OHOS::SaveStringToFile(TEST_DIR_V2 + "/test_file1", "hello, world!\n"));
+    EXPECT_TRUE(OHOS::SaveStringToFile(TEST_DIR_V2 + "/test_file2", "AA"));
+    EXPECT_TRUE(OHOS::SaveStringToFile(TEST_DIR_V2 + "/111111111111111111111111111111111111111111111111", "AA"));
+
+    struct fscrypt_get_policy_ex_arg arg;
+    memset_s(&arg, sizeof(arg), 0, sizeof(arg));
+    arg.policy_size = sizeof(arg.policy);
+    EXPECT_TRUE(KeyCtrl::GetPolicy(TEST_DIR_V2, arg));
+    EXPECT_EQ(FSCRYPT_POLICY_V2, arg.policy.version);
+    EXPECT_EQ(FILENAME_MODES.at("aes-256-cts"), arg.policy.v2.filenames_encryption_mode);
+    EXPECT_EQ(CONTENTS_MODES.at("aes-256-xts"), arg.policy.v2.contents_encryption_mode);
+    EXPECT_EQ(POLICY_FLAGS.at("padding-4"), arg.policy.v2.flags);
+
+    EXPECT_TRUE(g_testKeyV2.ClearKey());
 }

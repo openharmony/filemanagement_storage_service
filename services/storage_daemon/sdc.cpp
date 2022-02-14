@@ -16,160 +16,186 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <map>
+#include <functional>
 
 #include "storage_daemon_client.h"
 #include "storage_service_log.h"
 #include "utils/file_utils.h"
 #include "client/storage_manager_client.h"
 
+static int32_t InitGlobalKey(const std::vector<std::string> &args)
+{
+    (void)args;
+    return OHOS::StorageDaemon::StorageDaemonClient::InitGlobalKey();
+}
+
+static int32_t InitMainUser(const std::vector<std::string> &args)
+{
+    (void)args;
+    return OHOS::StorageDaemon::StorageDaemonClient::InitGlobalUserKeys();
+}
+
+static int32_t GenerateUserKeys(const std::vector<std::string> &args)
+{
+    if (args.size() < 5) {
+        LOGE("Parameter nums is less than 5, please retry");
+        return -EINVAL;
+    }
+    uint32_t userId, flags;
+    if ((OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) ||
+        (OHOS::StorageDaemon::StringToUint32(args[4], flags) == false)) {
+        LOGE("Parameter input error, please retry");
+        return -EINVAL;
+    }
+    return OHOS::StorageManager::StorageManagerClient::GenerateUserKeys(userId, flags);
+}
+
+static int32_t PrepareUserSpace(const std::vector<std::string> &args)
+{
+    if (args.size() < 5) {
+        LOGE("Parameter nums is less than 5, please retry");
+        return -EINVAL;
+    }
+    uint32_t userId, flags;
+    if ((OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) ||
+        (OHOS::StorageDaemon::StringToUint32(args[4], flags) == false)) {
+        LOGE("Parameter input error, please retry");
+        return -EINVAL;
+    }
+    std::string volumId = "";
+    return OHOS::StorageManager::StorageManagerClient::PrepareAddUser(userId, volumId, flags);
+}
+
+static int32_t DeleteUserKeys(const std::vector<std::string> &args)
+{
+    if (args.size() < 4) {
+        LOGE("Parameter nums is less than 4, please retry");
+        return -EINVAL;
+    }
+    uint32_t userId;
+    if (OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) {
+        LOGE("Parameter input error, please retry");
+        return -EINVAL;
+    }
+    return OHOS::StorageManager::StorageManagerClient::DeleteUserKeys(userId);
+}
+
+static int32_t DestroyUserSpace(const std::vector<std::string> &args)
+{
+    if (args.size() < 5) {
+        LOGE("Parameter nums is less than 5, please retry");
+        return -EINVAL;
+    }
+    uint32_t userId, flags;
+    if (OHOS::StorageDaemon::StringToUint32(args[3], userId) == false ||
+        OHOS::StorageDaemon::StringToUint32(args[4], flags) == false) {
+        LOGE("Parameter input error, please retry");
+        return -EINVAL;
+    }
+    std::string volumId = "";
+    return OHOS::StorageManager::StorageManagerClient::RemoveUser(userId, volumId, flags);
+}
+
+static int32_t UpdateUserAuth(const std::vector<std::string> &args)
+{
+    if (args.size() < 6) {
+        LOGE("Parameter nums is less than 6, please retry");
+        return -EINVAL;
+    }
+    uint32_t userId;
+    if (OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) {
+        LOGE("Parameter input error, please retry");
+        return -EINVAL;
+    }
+    std::string token = args[4];
+    std::string secret = args[5];
+    return OHOS::StorageManager::StorageManagerClient::UpdateUserAuth(userId, token, secret);
+}
+
+static int32_t ActiveUserKey(const std::vector<std::string> &args)
+{
+    if (args.size() < 6) {
+        LOGE("Parameter nums is less than 6, please retry");
+        return -EINVAL;
+    }
+    uint32_t userId;
+    if (OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) {
+        LOGE("Parameter input error, please retry");
+        return -EINVAL;
+    }
+    std::string token = args[4];
+    std::string secret = args[5];
+    return OHOS::StorageManager::StorageManagerClient::ActiveUserKey(userId, token, secret);
+}
+
+static int32_t InactiveUserKey(const std::vector<std::string> &args)
+{
+    if (args.size() < 4) {
+        LOGE("Parameter nums is less than 4, please retry");
+        return -EINVAL;
+    }
+    uint32_t userId;
+    if (OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) {
+        LOGE("Parameter input error, please retry");
+        return -EINVAL;
+    }
+    return OHOS::StorageManager::StorageManagerClient::InactiveUserKey(userId);
+}
+
+static int32_t EnableFscrypt(const std::vector<std::string> &args)
+{
+    if (args.size() < 4) {
+        LOGE("Parameter nums is less than 4, please retry");
+        return -EINVAL;
+    }
+    auto option = args[3]; // cmd no.3 param is the option
+    return OHOS::StorageDaemon::StorageDaemonClient::FscryptEnable(option);
+}
+
+static int32_t UpdateKeyContext(const std::vector<std::string> &args)
+{
+    if (args.size() < 4) {
+        LOGE("Parameter nums is less than 4, please retry");
+        return -EINVAL;
+    }
+    uint32_t userId;
+    if (OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) {
+        LOGE("Parameter input error, please retry");
+        return -EINVAL;
+    }
+    return OHOS::StorageManager::StorageManagerClient::UpdateKeyContext(userId);
+}
+
+static const auto g_fscryptCmdHandler = std::map<std::string,
+    std::function<int32_t(const std::vector<std::string> &)>> {
+    {"init_global_key", InitGlobalKey},
+    {"init_main_user", InitMainUser},
+    {"generate_user_keys", GenerateUserKeys},
+    {"prepare_user_space", PrepareUserSpace},
+    {"delete_user_keys", DeleteUserKeys},
+    {"destroy_user_space", DestroyUserSpace},
+    {"update_user_auth", UpdateUserAuth},
+    {"active_user_key", ActiveUserKey},
+    {"inactive_user_key", InactiveUserKey},
+    {"enable", EnableFscrypt},
+    {"update_key_context", UpdateKeyContext},
+};
+
 static void HandleFileCrypt(const std::string &cmd, const std::vector<std::string> &args)
 {
     LOGI("fscrypt cmd: %{public}s", cmd.c_str());
-    if (cmd == "init_global_key") {
-        // sdc filecrypt init_global_key /data
-        int32_t ret = OHOS::StorageDaemon::StorageDaemonClient::InitGlobalKey();
-        if (ret) {
-            LOGE("Init global Key failed ret %{public}d", ret);
-            return;
-        }
-    } else if (cmd == "init_main_user") {
-        // sdc filecrypt init_main_user
-        int32_t ret = OHOS::StorageDaemon::StorageDaemonClient::InitGlobalUserKeys();
-        if (ret) {
-            LOGE("Init global user keys failed ret %{public}d", ret);
-            return;
-        }
-    } else if (cmd == "generate_user_keys") {
-        // sdc filecrypt generate_user_keys userId flag
-        if (args.size() < 5) {
-            LOGE("Parameter nums is less than 5, please retry");
-            return;
-        }
-        uint32_t userId, flags;
-        if ((OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) ||
-            (OHOS::StorageDaemon::StringToUint32(args[4], flags) == false)) {
-            LOGE("Parameter input error, please retry");
-            return;
-        }
-        int32_t ret = OHOS::StorageManager::StorageManagerClient::GenerateUserKeys(userId, flags);
-        if (ret) {
-            LOGE("Create user %{public}u el failed ret %{public}d", userId, ret);
-            return;
-        }
-    } else if (cmd == "prepare_user_space") {
-        // sdc filecrypt prepare_user_space userId flag
-        if (args.size() < 5) {
-            LOGE("Parameter nums is less than 5, please retry");
-            return;
-        }
-        uint32_t userId, flags;
-        if ((OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) ||
-            (OHOS::StorageDaemon::StringToUint32(args[4], flags) == false)) {
-            LOGE("Parameter input error, please retry");
-            return;
-        }
-        std::string volumId = "";
-        int32_t ret = OHOS::StorageManager::StorageManagerClient::PrepareAddUser(userId, volumId, flags);
-        if (ret) {
-            LOGE("Prepare user %{public}u storage failed ret %{public}d", userId, ret);
-            return;
-        }
-    } else if (cmd == "delete_user_keys") {
-        // sdc filecrypt delete_user_keys userId
-        if (args.size() < 4) {
-            LOGE("Parameter nums is less than 4, please retry");
-            return;
-        }
-        uint32_t userId;
-        if (OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) {
-            LOGE("Parameter input error, please retry");
-            return;
-        }
-        int ret = OHOS::StorageManager::StorageManagerClient::DeleteUserKeys(userId);
-        if (ret) {
-            LOGE("Delete user %{public}u key failed ret %{public}d", userId, ret);
-            return;
-        }
-    } else if (cmd == "destory_user_space") {
-        // sdc filecrypt destroy_user_space userId flags
-        if (args.size() < 5) {
-            LOGE("Parameter nums is less than 4, please retry");
-            return;
-        }
-        uint32_t userId, flags;
-        if (OHOS::StorageDaemon::StringToUint32(args[3], userId) == false ||
-            OHOS::StorageDaemon::StringToUint32(args[4], flags) == false) {
-            LOGE("Parameter input error, please retry");
-            return;
-        }
-        std::string volumId = "";
-        int ret = OHOS::StorageManager::StorageManagerClient::RemoveUser(userId, volumId, flags);
-        if (ret) {
-            LOGE("Destroy user %{public}u space failed ret %{public}d", userId, ret);
-            return;
-        }
-    } else if (cmd == "update_user_auth") {
-        // sdc filecrypt update_user_auth userId token secret
-        if (args.size() < 6) {
-            LOGE("Parameter nums is less than 4, please retry");
-            return;
-        }
-        uint32_t userId;
-        if (OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) {
-            LOGE("Parameter input error, please retry");
-            return;
-        }
-        std::string token = args[4];
-        std::string secret = args[5];
-        int ret = OHOS::StorageManager::StorageManagerClient::UpdateUserAuth(userId, token, secret);
-        if (ret) {
-            LOGE("Update user %{public}u auth failed ret %{public}d", userId, ret);
-            return;
-        }
-    } else if (cmd == "active_user_key") {
-        // sdc filecrypt active_user_key userId token secret
-        if (args.size() < 6) {
-            LOGE("Parameter nums is less than 4, please retry");
-            return;
-        }
-        uint32_t userId;
-        if (OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) {
-            LOGE("Parameter input error, please retry");
-            return;
-        }
-        std::string token = args[4];
-        std::string secret = args[5];
-        int ret = OHOS::StorageManager::StorageManagerClient::ActiveUserKey(userId, token, secret);
-        if (ret) {
-            LOGE("Active user %{public}u key failed ret %{public}d", userId, ret);
-            return;
-        }
-    } else if (cmd == "inactive_user_key") {
-        // sdc filecrypt inactive_user_key userId
-        if (args.size() < 4) {
-            LOGE("Parameter nums is less than 4, please retry");
-            return;
-        }
-        uint32_t userId;
-        if (OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) {
-            LOGE("Parameter input error, please retry");
-            return;
-        }
-        int ret = OHOS::StorageManager::StorageManagerClient::InactiveUserKey(userId);
-        if (ret) {
-            LOGE("Inactive user %{public}u key failed %{public}d", userId, ret);
-            return;
-        }
-    } else if (cmd == "enable") {
-        if (args.size() < 4) { // para.4: sdc filecrypt enable xxx
-            LOGE("Parameter nums is less than 4, please retry");
-            return;
-        }
-        int ret = OHOS::StorageDaemon::StorageDaemonClient::FscryptEnable(args[3]); // para.3: fscrypt options
-        if (ret) {
-            LOGE("Fscrypt enable failed %{public}d", ret);
-            return;
-        }
+
+    auto handler = g_fscryptCmdHandler.find(cmd);
+    if (handler == g_fscryptCmdHandler.end()) {
+        LOGE("Unknown fscrypt cmd: %{public}s", cmd.c_str());
+        return;
+    }
+    auto ret = handler->second(args);
+    if (ret != 0) {
+        LOGE("fscrypt cmd: %{public}s failed, ret: %{public}d", cmd.c_str(), ret);
+    } else {
+        LOGI("fscrypt cmd: %{public}s success", cmd.c_str());
     }
 }
 

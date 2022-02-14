@@ -44,6 +44,7 @@ public:
         UPDATE_USER_AUTH,
         ACTIVE_USER_KEY,
         INACTIVE_USER_KEY,
+        UPDATE_KEY_CONTEXT,
     };
 
     enum {
@@ -72,6 +73,7 @@ public:
     virtual int32_t UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret) = 0;
     virtual int32_t ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret) = 0;
     virtual int32_t InactiveUserKey(uint32_t userId) = 0;
+    virtual int32_t UpdateKeyContext(uint32_t userId) = 0;
 
     DECLARE_INTERFACE_DESCRIPTOR(u"ohos.StorageDaemon");
 };

@@ -48,6 +48,7 @@ private:
     int32_t HandleUpdateUserAuth(MessageParcel &data, MessageParcel &reply);
     int32_t HandleActiveUserKey(MessageParcel &data, MessageParcel &reply);
     int32_t HandleInactiveUserKey(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleUpdateKeyContext(MessageParcel &data, MessageParcel &reply);
 };
 } // StorageDaemon
 } // OHOS

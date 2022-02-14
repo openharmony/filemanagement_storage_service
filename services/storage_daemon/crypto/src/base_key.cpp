@@ -382,6 +382,7 @@ bool BaseKey::ClearKey(const std::string &mnt)
 {
     LOGD("enter, dir_ = %{public}s", dir_.c_str());
     InactiveKey(mnt);
+    keyInfo_.key.Clear();
 
     // remove all key alias of all versions
     std::vector<std::string> files;

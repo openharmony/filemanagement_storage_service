@@ -69,8 +69,7 @@ public:
     static bool SetPolicy(const std::string &path, FscryptPolicy &policy);
     static bool GetPolicy(const std::string &path, fscrypt_policy &policy);
     static bool GetPolicy(const std::string &path, fscrypt_get_policy_ex_arg &policy);
-    static bool LoadAndSetPolicy(const std::string &keyPath, const std::string &policyFile,
-        const std::string &toEncrypt);
+    static bool LoadAndSetPolicy(const std::string &keyPath, const std::string &toEncrypt);
     static uint8_t LoadVersion(const std::string &keyPath);
 
     static uint8_t GetFscryptVersion(const std::string &mnt);
@@ -99,12 +98,12 @@ static const auto ALL_VERSION = std::map<std::string, uint8_t> {
     {"2", FSCRYPT_V2},
 };
 
-static const auto CONTENTS_MODES = std::map<std::string, uint8_t> {
-    {"aes-256-xts", FSCRYPT_MODE_AES_256_XTS},
-};
-
 static const auto FILENAME_MODES = std::map<std::string, uint8_t> {
     {"aes-256-cts", FSCRYPT_MODE_AES_256_CTS},
+};
+
+static const auto CONTENTS_MODES = std::map<std::string, uint8_t> {
+    {"aes-256-xts", FSCRYPT_MODE_AES_256_XTS},
 };
 // To use Adiantum, CONFIG_CRYPTO_ADIANTUM must be enabled.
 // Also, fast implementations of ChaCha and NHPoly1305 should be enabled,
