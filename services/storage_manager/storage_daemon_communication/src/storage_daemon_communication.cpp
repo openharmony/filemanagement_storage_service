@@ -189,5 +189,15 @@ int32_t StorageDaemonCommunication::InactiveUserKey(uint32_t userId)
     }
     return storageDaemon_->InactiveUserKey(userId);
 }
+
+int32_t StorageDaemonCommunication::UpdateKeyContext(uint32_t userId)
+{
+    LOGI("enter");
+    if (Connect() != E_OK) {
+        LOGE("Connect failed");
+        return E_IPC_ERROR;
+    }
+    return storageDaemon_->UpdateKeyContext(userId);    
+}
 } // StorageManager
 } // OHOS

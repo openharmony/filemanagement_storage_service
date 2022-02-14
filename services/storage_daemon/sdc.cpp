@@ -90,7 +90,7 @@ static void HandleFileCrypt(const std::string &cmd, const std::vector<std::strin
             LOGE("Delete user %{public}u key failed ret %{public}d", userId, ret);
             return;
         }
-    } else if (cmd == "destory_user_space") {
+    } else if (cmd == "destroy_user_space") {
         // sdc filecrypt destroy_user_space userId flags
         if (args.size() < 5) {
             LOGE("Parameter nums is less than 4, please retry");
@@ -168,6 +168,22 @@ static void HandleFileCrypt(const std::string &cmd, const std::vector<std::strin
         int ret = OHOS::StorageDaemon::StorageDaemonClient::FscryptEnable(args[3]); // para.3: fscrypt options
         if (ret) {
             LOGE("Fscrypt enable failed %{public}d", ret);
+            return;
+        }
+    } else if (cmd == "update_key_context") {
+        // sdc filecrypt update_key_context userId
+        if (args.size() < 4) { // para.4: least nums of parameter
+            LOGE("Parameter nums is less than 4, please retry");
+            return;
+        }
+        uint32_t userId;
+        if (OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) { // para.3: user id
+            LOGE("Parameter input error, please retry");
+            return;
+        }
+        int ret = OHOS::StorageManager::StorageManagerClient::UpdateKeyContext(userId);
+        if (ret) {
+            LOGE("Update user %{public}u key context failed %{public}d", userId, ret);
             return;
         }
     }

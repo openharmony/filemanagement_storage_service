@@ -95,6 +95,9 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
         case INACTIVE_USER_KEY:
             HandleInactiveUserKey(data, reply);
             break;
+        case UPDATE_KEY_CONTEXT:
+            HandleUpdateKeyContext(data, reply);
+            break;
         default: {
             LOGI("use IPCObjectStub default OnRemoteRequest");
             err = IPCObjectStub::OnRemoteRequest(code, data, reply, option);
@@ -368,6 +371,18 @@ int32_t StorageManagerStub::HandleInactiveUserKey(MessageParcel &data, MessagePa
 {
     uint32_t userId = data.ReadUint32();
     int32_t err = InactiveUserKey(userId);
+    if (!reply.WriteInt32(err)) {
+        LOGE("Write reply error code failed");
+        return E_IPC_ERROR;
+    }
+
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleUpdateKeyContext(MessageParcel &data, MessageParcel &reply)
+{
+    uint32_t userId = data.ReadUint32();
+    int32_t err = UpdateKeyContext(userId);
     if (!reply.WriteInt32(err)) {
         LOGE("Write reply error code failed");
         return E_IPC_ERROR;

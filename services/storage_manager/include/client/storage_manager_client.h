@@ -32,6 +32,7 @@ public:
     static int32_t UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret);
     static int32_t ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret);
     static int32_t InactiveUserKey(uint32_t userId);
+    static int32_t UpdateKeyContext(uint32_t userId);
 
 private:
     static sptr<IStorageManager> GetStorageManagerProxy(void);

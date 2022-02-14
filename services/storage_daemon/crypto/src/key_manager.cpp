@@ -500,5 +500,23 @@ int KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type,
 
     return 0;
 }
+
+int KeyManager::UpdateKeyContext(uint32_t userId)
+{
+    LOGI("start");
+    std::lock_guard<std::mutex> lock(keyMutex_);
+    if (userEl2Key_.find(userId) == userEl2Key_.end()) {
+        LOGE("Have not found user %{public}u el2", userId);
+        return -ENOENT;
+    }
+    auto elKey = userEl2Key_[userId];
+    if (!elKey->UpdateKey()) {
+        LOGE("Basekey update newest context failed");
+        return -EFAULT;
+    }
+    LOGI("Basekey update key context success");
+
+    return 0;
+}
 } // namespace StorageDaemon
 } // namespace OHOS

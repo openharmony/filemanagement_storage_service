@@ -115,5 +115,16 @@ int32_t StorageManagerClient::InactiveUserKey(uint32_t userId)
 
     return client->InactiveUserKey(userId);
 }
+
+int32_t StorageManagerClient::UpdateKeyContext(uint32_t userId)
+{
+    sptr<IStorageManager> client = GetStorageManagerProxy();
+    if (client == nullptr) {
+        LOGE("get storage manager service failed");
+        return -EFAULT;
+    }
+
+    return client->UpdateKeyContext(userId);
+}
 }
 }

@@ -50,6 +50,7 @@ public:
     int InActiveUserKey(unsigned int user);
     int SetDirectoryElPolicy(unsigned int user, KeyType type,
                              const std::vector<FileList> &vec);
+    int UpdateKeyContext(uint32_t userId);
 
 private:
     KeyManager()

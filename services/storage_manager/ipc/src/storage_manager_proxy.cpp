@@ -233,6 +233,28 @@ int32_t StorageManagerProxy::InactiveUserKey(uint32_t userId)
     return reply.ReadInt32();
 }
 
+int32_t StorageManagerProxy::UpdateKeyContext(uint32_t userId)
+{
+    LOGI("user ID: %{public}u", userId);
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("WriteInterfaceToken failed");
+        return E_IPC_ERROR;
+    }
+    if (!data.WriteUint32(userId)) {
+        LOGE("Write user ID failed");
+        return E_IPC_ERROR;
+    }
+    int err = Remote()->SendRequest(UPDATE_KEY_CONTEXT, data, reply, option);
+    if (err != E_OK) {
+        LOGE("SendRequest failed");
+        return E_IPC_ERROR;
+    }
+
+    return reply.ReadInt32();
+}
+
 int64_t StorageManagerProxy::GetFreeSizeOfVolume(std::string volumeUuid)
 {
     LOGI("StorageManagerProxy::GetFreeSizeOfVolume, volumeUuid:%{public}s", volumeUuid.c_str());

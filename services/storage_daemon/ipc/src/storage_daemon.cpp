@@ -117,5 +117,10 @@ int32_t StorageDaemon::InactiveUserKey(uint32_t userId)
 {
     return KeyManager::GetInstance()->InActiveUserKey(userId);
 }
+
+int32_t StorageDaemon::UpdateKeyContext(uint32_t userId)
+{
+    return KeyManager::GetInstance()->UpdateKeyContext(userId);
+}
 } // StorageDaemon
 } // OHOS

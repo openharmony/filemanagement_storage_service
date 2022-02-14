@@ -375,5 +375,25 @@ int32_t StorageDaemonProxy::InactiveUserKey(uint32_t userId)
 
     return reply.ReadInt32();
 }
+
+int32_t StorageDaemonProxy::UpdateKeyContext(uint32_t userId)
+{
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+
+    if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
+        return E_IPC_ERROR;
+    }
+
+    if (!data.WriteUint32(userId)) {
+        return E_IPC_ERROR;
+    }
+    int err = Remote()->SendRequest(UPDATE_KEY_CONTEXT, data, reply, option);
+    if (err != E_OK) {
+        return E_IPC_ERROR;
+    }
+
+    return reply.ReadInt32();
+}
 } // StorageDaemon
 } // OHOS
