@@ -12,15 +12,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef STORAGE_DAEMON_CRYPTO_KEYCTL_H_
-#define STORAGE_DAEMON_CRYPTO_KEYCTL_H_
+#ifndef STORAGE_DAEMON_CRYPTO_KEYCTL_H
+#define STORAGE_DAEMON_CRYPTO_KEYCTL_H
+
 #include <unistd.h>
 #include <vector>
 #include <map>
 #include <string>
-#include <linux/fs.h>
 #include <linux/keyctl.h>
+#include <linux/version.h>
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
 #include <linux/fscrypt.h>
+#else
+#include "fscrypt_uapi.h"
+#endif
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -126,4 +131,4 @@ static const auto FSCRYPT_OPTIONS_TABLE = std::vector<std::map<std::string, uint
 } // namespace StorageDaemon
 } // namespace OHOS
 
-#endif // STORAGE_DAEMON_CRYPTO_KEYCTL_H_
+#endif // STORAGE_DAEMON_CRYPTO_KEYCTL_H
