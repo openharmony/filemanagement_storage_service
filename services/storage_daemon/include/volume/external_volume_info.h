@@ -54,7 +54,7 @@ private:
     const std::string devPathDir_ = "/dev/block/%s";
     std::vector<std::string> supportMountType_ = { "ext2", "ext3", "ext4", "ntfs", "exfat", "vfat" };
     std::map<std::string, std::string> supportFormatType_ = {
-        {"ext2", "mke2fs"}, {"ext3", "mke2fs"}, {"ext4", "mke2fs"}, {"ntfs", "mkfs.ntfs"}
+        {"ext2", "mke2fs"}, {"ext3", "mke2fs"}, {"ext4", "mke2fs"}, {"ntfs", "mkfs.ntfs"}, {"exfat", "mkfs.exfat"}
     };
 
     int32_t ReadMetadata();

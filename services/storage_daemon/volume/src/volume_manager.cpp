@@ -169,6 +169,7 @@ int32_t VolumeManager::Format(const std::string volId, const std::string fsType)
         LOGE("the volume %{public}s format failed.", volId.c_str());
         return err;
     }
+
     return E_OK;
 }
 } // StorageDaemon
