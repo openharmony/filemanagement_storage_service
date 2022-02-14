@@ -20,6 +20,15 @@
 
 namespace OHOS {
 namespace StorageManager {
+enum FsType {
+    UNDEFINED = -1,
+    EXT2,
+    EXT3,
+    EXT4,
+    NTFS,
+    EXFAT,
+    VFAT
+};
 class VolumeExternal : public VolumeCore {
 public:
     VolumeExternal();

@@ -67,7 +67,7 @@ std::string VolumeExternal::GetDescription()
 
 void VolumeExternal::Reset()
 {
-    fsType_ = 0;
+    fsType_ = UNDEFINED;
     fsUuid_ = "";
     path_ = "";
 }
