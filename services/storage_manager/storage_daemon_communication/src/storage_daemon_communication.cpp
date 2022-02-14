@@ -197,7 +197,7 @@ int32_t StorageDaemonCommunication::UpdateKeyContext(uint32_t userId)
         LOGE("Connect failed");
         return E_IPC_ERROR;
     }
-    return storageDaemon_->UpdateKeyContext(userId);    
+    return storageDaemon_->UpdateKeyContext(userId);
 }
 } // StorageManager
 } // OHOS

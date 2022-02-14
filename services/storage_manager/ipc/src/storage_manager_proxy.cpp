@@ -274,7 +274,7 @@ int64_t StorageManagerProxy::GetFreeSizeOfVolume(std::string volumeUuid)
         LOGE("StorageManagerProxy::GetFreeSizeOfVolume, SendRequest failed");
         return E_IPC_ERROR;
     }
-    return reply.ReadInt64();  
+    return reply.ReadInt64();
 }
 
 int64_t StorageManagerProxy::GetTotalSizeOfVolume(std::string volumeUuid)
@@ -296,7 +296,7 @@ int64_t StorageManagerProxy::GetTotalSizeOfVolume(std::string volumeUuid)
         LOGE("StorageManagerProxy::GetTotalSizeOfVolume, SendRequest failed");
         return E_IPC_ERROR;
     }
-    return reply.ReadInt64();  
+    return reply.ReadInt64();
 }
 
 std::vector<int64_t> StorageManagerProxy::GetBundleStats(std::string uuid, std::string pkgName)

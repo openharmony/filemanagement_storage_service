@@ -149,7 +149,8 @@ static int32_t EnableFscrypt(const std::vector<std::string> &args)
         LOGE("Parameter nums is less than 4, please retry");
         return -EINVAL;
     }
-    return OHOS::StorageDaemon::StorageDaemonClient::FscryptEnable(args[3]);
+    auto option = args[3]; // cmd no.3 param is the option
+    return OHOS::StorageDaemon::StorageDaemonClient::FscryptEnable(option);
 }
 
 static int32_t UpdateKeyContext(const std::vector<std::string> &args)
@@ -169,7 +170,7 @@ static int32_t UpdateKeyContext(const std::vector<std::string> &args)
 static const auto g_fscryptCmdHandler = std::map<std::string,
     std::function<int32_t(const std::vector<std::string> &)>> {
     {"init_global_key", InitGlobalKey},
-    {"init_global_user", InitMainUser},
+    {"init_main_user", InitMainUser},
     {"generate_user_keys", GenerateUserKeys},
     {"prepare_user_space", PrepareUserSpace},
     {"delete_user_keys", DeleteUserKeys},

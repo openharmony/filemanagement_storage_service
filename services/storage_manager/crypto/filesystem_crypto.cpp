@@ -121,7 +121,7 @@ int32_t FileSystemCrypto::UpdateKeyContext(uint32_t userId)
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->UpdateKeyContext(userId);
-    return err;   
+    return err;
 }
 }
 }

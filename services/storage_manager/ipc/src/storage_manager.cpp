@@ -209,7 +209,7 @@ int32_t StorageManager::UpdateKeyContext(uint32_t userId)
     LOGI("UserId: %{public}u", userId);
     std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
     int32_t err = fsCrypto->UpdateKeyContext(userId);
-    return err;   
+    return err;
 }
 }
 }
