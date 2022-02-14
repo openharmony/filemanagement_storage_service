@@ -19,6 +19,7 @@
       "ram": "",
       "deps": {
         "components": [
+            "ability_base",
             "bundle_framework",
             "hiviewdfx_hilog_native",
             "ipc",
@@ -70,9 +71,6 @@
             "//foundation/filemanagement/storage_service/services/storage_daemon/crypto/test:crypto_test",
             "//foundation/filemanagement/storage_service/services/storage_daemon/ipc/test:storage_daemon_ipc_test",
             "//foundation/filemanagement/storage_service/services/storage_daemon/user/test:storage_daemon_user_test",
-            "//foundation/filemanagement/storage_service/services/storage_daemon/disk/test:storage_daemon_disk_test",
-            "//foundation/filemanagement/storage_service/services/storage_daemon/volume/test:storage_daemon_volume_test",
-            "//foundation/filemanagement/storage_service/services/storage_daemon/netlink/test:storage_daemon_netlink_test",
             "//foundation/filemanagement/storage_service/services/storage_daemon/utils/test:storage_daemon_utils_test",
             "//foundation/filemanagement/storage_service/services/storage_manager/ipc/test:proxy_test",
             "//foundation/filemanagement/storage_service/services/storage_manager/storage_daemon_communication/test:communication_test",
