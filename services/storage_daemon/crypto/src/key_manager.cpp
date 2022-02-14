@@ -489,9 +489,8 @@ int KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type,
         return 0;
     }
 
-    std::string policy = "";
     for (auto item : vec) {
-        if (KeyCtrl::LoadAndSetPolicy(keyPath, policy, item.path) == false) {
+        if (KeyCtrl::LoadAndSetPolicy(keyPath, item.path) == false) {
             LOGE("Set directory el policy error!");
             return -EFAULT;
         }

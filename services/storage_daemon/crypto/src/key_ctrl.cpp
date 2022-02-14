@@ -38,7 +38,7 @@ constexpr uint32_t INDEX_FSCRYPT_FLAGS = 3;
 
 namespace OHOS {
 namespace StorageDaemon {
-struct EncryptPolicy g_policyOption;
+struct EncryptPolicy g_policyOption = DEFAULT_POLICY;
 
 key_serial_t KeyCtrl::AddKey(const std::string &type, const std::string &description, const key_serial_t ringId)
 {
@@ -140,15 +140,15 @@ bool KeyCtrl::GetPolicy(const std::string &path, fscrypt_get_policy_ex_arg &poli
     return FsIoctl(path, FS_IOC_GET_ENCRYPTION_POLICY_EX, reinterpret_cast<void *>(&policy));
 }
 
-static bool ParseOption(const std::map<std::string, uint8_t> &policy, const std::string &defaultStr, uint8_t &value)
+static bool ParseOption(const std::map<std::string, uint8_t> &policy, const std::string &option, uint8_t &value)
 {
-    if (policy.find(defaultStr) != policy.end()) {
-        LOGI("use default: %{public}s", defaultStr.c_str());
-        value = policy.at(defaultStr);
+    if (policy.find(option) != policy.end()) {
+        LOGI("use option: %{public}s", option.c_str());
+        value = policy.at(option);
         return true;
     }
 
-    LOGE("bad default policy: %{public}s, value not filled!", defaultStr.c_str());
+    LOGE("bad option: %{public}s, value not filled!", option.c_str());
     return false;
 }
 
@@ -178,21 +178,16 @@ static bool SetPolicyV2(const std::string &keyIdPath, const std::string &toEncry
     return KeyCtrl::SetPolicy(toEncrypt, arg);
 }
 
-bool KeyCtrl::LoadAndSetPolicy(const std::string &keyPath, const std::string &policyFile, const std::string &toEncrypt)
+bool KeyCtrl::LoadAndSetPolicy(const std::string &keyPath, const std::string &toEncrypt)
 {
     LOGD("enter");
 
     FscryptPolicy arg;
     (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
     // the modes and flags shares the same offset in the struct
-    if (!ParseOption(FILENAME_MODES, DEFAULT_POLICY.fileName, arg.v1.filenames_encryption_mode) ||
-        !ParseOption(CONTENTS_MODES, DEFAULT_POLICY.content, arg.v1.contents_encryption_mode) ||
-        !ParseOption(POLICY_FLAGS, DEFAULT_POLICY.flags, arg.v1.flags)) {
-        return false;
-    }
-
-    // Add parsing options from the policy file, now using default.
-    (void)policyFile;
+    ParseOption(FILENAME_MODES, g_policyOption.fileName, arg.v1.filenames_encryption_mode);
+    ParseOption(CONTENTS_MODES, g_policyOption.content, arg.v1.contents_encryption_mode);
+    ParseOption(POLICY_FLAGS, g_policyOption.flags, arg.v1.flags);
 
     auto ver = LoadVersion(keyPath);
     if (ver == FSCRYPT_V1) {
@@ -282,8 +277,7 @@ uint8_t KeyCtrl::GetEncryptedVersion(const std::string &dir)
 
 int32_t KeyCtrl::InitFscryptPolicy(const std::string &config)
 {
-    LOGI("fscrypt config:%{public}s", config.c_str());
-    g_policyOption = DEFAULT_POLICY;
+    LOGI("fscrypt config: %{public}s", config.c_str());
     if (config.empty()) {
         LOGE("fscrypt config is empty");
         return -EFAULT;
