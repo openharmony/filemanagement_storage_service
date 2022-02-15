@@ -34,8 +34,8 @@ REGISTER_SYSTEM_ABILITY_BY_ID(StorageManager, STORAGE_MANAGER_MANAGER_ID, true);
 void StorageManager::OnStart()
 {
     LOGI("StorageManager::OnStart Begin");
-    AccountSubscriber::Subscriber();
     bool res = SystemAbility::Publish(this);
+    AccountSubscriber::Subscriber();
     LOGI("StorageManager::OnStart End, res = %{public}d", res);
 }
 
