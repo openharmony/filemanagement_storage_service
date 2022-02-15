@@ -51,13 +51,13 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
 {
     const AAFwk::Want& want = eventData.GetWant();
     std::string action = want.GetAction();
-    LOGI("action:%{public}s.", action.c_str());
-    LOGI("zwwwwwddddddd");
+    LOGI("StorageManager: OnReceiveEvent action:%{public}s.", action.c_str());
     int pid;
     if ((pid = fork()) == 0) {
-        std::string args[] = {"/system/bin/aa", "start", "-b", "com.ohos.medialibrary.MediaScannerAbilityA", "-a", "MediaScannerAbility"};
+        std::vector<std::string> args = {"/system/bin/aa", "start", "-b",
+            "com.ohos.medialibrary.MediaScannerAbilityA", "-a", "MediaScannerAbility"};
         std::vector<char*> argv;
-        for (size_t i = 0; i < 6; i++) {
+        for (size_t i = 0; i < args.size(); i++) {
             argv.push_back(const_cast<char*>(args[i].c_str()));
         }
         argv.push_back(nullptr);
