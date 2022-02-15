@@ -36,10 +36,10 @@ const int32_t HMDFS_VAL_LEN = 6;
 MountManager::MountManager()
     : hmdfsDirVec_{{"/data/service/el2/%d/hmdfs", 0711, OID_SYSTEM, OID_SYSTEM},
                    {"/data/service/el2/%d/hmdfs/account", 0711, OID_SYSTEM, OID_SYSTEM},
-                   {"/data/service/el2/%d/hmdfs/account/files", 0711, OID_SYSTEM, OID_SYSTEM},
+                   {"/data/service/el2/%d/hmdfs/account/files", 0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
                    {"/data/service/el2/%d/hmdfs/account/data", 0711, OID_SYSTEM, OID_SYSTEM},
                    {"/data/service/el2/%d/hmdfs/non_account", 0711, OID_SYSTEM, OID_SYSTEM},
-                   {"/data/service/el2/%d/hmdfs/non_account/files", 0711, OID_SYSTEM, OID_SYSTEM},
+                   {"/data/service/el2/%d/hmdfs/non_account/files", 0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
                    {"/data/service/el2/%d/hmdfs/non_account/data", 0711, OID_SYSTEM, OID_SYSTEM},
                    {"/data/service/el2/%d/hmdfs/cache", 0711, OID_SYSTEM, OID_SYSTEM},
                    {"/data/service/el2/%d/hmdfs/cache/account_cache", 0711, OID_SYSTEM, OID_SYSTEM},
