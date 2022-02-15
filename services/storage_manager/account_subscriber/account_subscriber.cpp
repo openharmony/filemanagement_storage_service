@@ -42,8 +42,6 @@ bool AccountSubscriber::Subscriber(void)
         AccountSubscriber_ = std::make_shared<AccountSubscriber>(subscribeInfo);
         EventFwk::CommonEventManager::SubscribeCommonEvent(AccountSubscriber_);
     }
-    if (AccountSubscriber_ == nullptr) {
-    }
     return true;
 }
 
