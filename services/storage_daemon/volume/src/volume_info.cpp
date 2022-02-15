@@ -105,7 +105,7 @@ int32_t VolumeInfo::Mount(uint32_t flags)
         return E_MOUNT;
     }
 
-    err = mkdir(mountPath_.c_str(), S_IRWXU);
+    err = mkdir(mountPath_.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
     if (err) {
         LOGE("the volume %{public}s create mount file %{public}s failed",
              GetVolumeId().c_str(), GetMountPath().c_str());
