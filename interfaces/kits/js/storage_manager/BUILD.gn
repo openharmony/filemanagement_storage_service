@@ -15,7 +15,7 @@ import("//build/ohos.gni")
 
 js_declaration("storagestatistics_js") {
   part_name = "storage_service"
-  sources = [ "./@ohos.storagestatistics.d.ts" ]
+  sources = [ "./@ohos.storageStatistics.d.ts" ]
 }
 
 ohos_shared_library("storagestatistics") {
@@ -64,7 +64,7 @@ ohos_shared_library("storagestatistics") {
 
 js_declaration("volumemanager_js") {
   part_name = "storage_service"
-  sources = [ "./@ohos.volumemanager.d.ts" ]
+  sources = [ "./@ohos.volumeManager.d.ts" ]
 }
 
 ohos_shared_library("volumemanager") {
