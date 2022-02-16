@@ -21,10 +21,10 @@
 
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "ipc/storage_manager_client.h"
 #include "utils/string_utils.h"
 #include "utils/file_utils.h"
 #include "utils/disk_utils.h"
+#include "ipc/storage_manager_client.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -95,15 +95,8 @@ void DiskManager::HandleDiskEvent(NetlinkData *data)
 
 void DiskManager::CreateDisk(std::shared_ptr<DiskInfo> &diskInfo)
 {
-    int ret;
     diskInfo->Create();
     disk_.push_back(diskInfo);
-
-    StorageManagerClient client;
-    ret = client.NotifyDiskCreated(diskInfo);
-    if (ret != E_OK) {
-        LOGI("Notify Disk Destroyed failed");
-    }
 }
 
 void DiskManager::ChangeDisk(dev_t device)
