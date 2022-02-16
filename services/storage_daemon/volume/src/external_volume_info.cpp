@@ -132,7 +132,7 @@ int32_t ExternalVolumeInfo::DoDestroy()
 
 int32_t ExternalVolumeInfo::DoMount(const std::string mountPath, uint32_t mountFlags)
 {
-    int ret = mount(devPath_.c_str(), mountPath.c_str(), fsType_.c_str(), mountFlags, "");
+    int ret = mount(devPath_.c_str(), mountPath.c_str(), fsType_.c_str(), MS_MGC_VAL, "fmask=0000,dmask=0000");
     if (ret) {
         LOGE("External volume DoMount error.");
         return E_MOUNT;
