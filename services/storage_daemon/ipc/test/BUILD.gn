@@ -19,7 +19,7 @@ ohos_unittest("storage_daemon_test") {
   module_out_path = "filemanagement/storage_service/storage_daemon"
 
   defines = [
-    "STORAGE_LOG_TAG = \"STORAGE_DAEMON\"",
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
     "LOG_DOMAIN = 0xD004301",
   ]
 
@@ -75,7 +75,7 @@ ohos_unittest("storage_daemon_proxy_test") {
   module_out_path = "filemanagement/storage_service/storage_daemon"
 
   defines = [
-    "STORAGE_LOG_TAG = \"STORAGE_DAEMON\"",
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
     "LOG_DOMAIN = 0xD004301",
   ]
 
@@ -109,7 +109,7 @@ ohos_unittest("storage_daemon_stub_test") {
   module_out_path = "filemanagement/storage_service/storage_daemon"
 
   defines = [
-    "STORAGE_LOG_TAG = \"STORAGE_DAEMON\"",
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
     "LOG_DOMAIN = 0xD004301",
   ]
 

@@ -17,7 +17,7 @@ ohos_unittest("storage_daemon_communication_test") {
   module_out_path = "storage_manager/storage_manager"
 
   defines = [
-    "STORAGE_LOG_TAG = \"STORAGE_MANAGER\"",
+    "STORAGE_LOG_TAG = \"StorageManager\"",
     "LOG_DOMAIN = 0xD004300",
   ]
   sources = [

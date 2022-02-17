@@ -22,7 +22,7 @@ ohos_unittest("storage_manager_proxy_test") {
   ]
 
   defines = [
-    "STORAGE_LOG_TAG = \"STORAGE_MANAGER\"",
+    "STORAGE_LOG_TAG = \"StorageManager\"",
     "LOG_DOMAIN = 0xD004300",
   ]
 

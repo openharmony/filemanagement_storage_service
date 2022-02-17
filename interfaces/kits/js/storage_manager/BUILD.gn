@@ -24,7 +24,7 @@ ohos_shared_library("storagestatistics") {
   part_name = "storage_service"
 
   defines = [
-    "STORAGE_LOG_TAG = \"STORAGE_MANAGER\"",
+    "STORAGE_LOG_TAG = \"StorageManager\"",
     "LOG_DOMAIN = 0xD004300",
   ]
 
@@ -94,7 +94,7 @@ ohos_shared_library("volumemanager") {
   ]
 
   defines = [
-    "STORAGE_LOG_TAG = \"STORAGE_MANAGER\"",
+    "STORAGE_LOG_TAG = \"StorageManager\"",
     "LOG_DOMAIN = 0xD004300",
   ]
 

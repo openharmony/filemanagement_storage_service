@@ -35,7 +35,7 @@ ohos_shared_library("storage_manager_sa_proxy") {
   ]
 
   defines = [
-    "STORAGE_LOG_TAG = \"STORAGE_MANAGER\"",
+    "STORAGE_LOG_TAG = \"StorageManager\"",
     "LOG_DOMAIN = 0xD004300",
   ]
 
