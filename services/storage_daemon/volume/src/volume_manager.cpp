@@ -39,13 +39,11 @@ VolumeManager* VolumeManager::Instance()
 
 std::shared_ptr<VolumeInfo> VolumeManager::GetVolume(const std::string volId)
 {
-    for (std::list<std::shared_ptr<VolumeInfo>>::iterator it = volumes_.begin();
-         it != volumes_.end(); ++it) {
-        if ((*it)->GetVolumeId() == volId) {
-            return (*it);
-        }
+    auto it = volumes_.find(volId);
+    if (it == volumes_.end()) {
+        return nullptr;
     }
-    return nullptr;
+    return it->second;
 }
 
 std::string VolumeManager::CreateVolume(const std::string diskId, dev_t device)
@@ -66,7 +64,7 @@ std::string VolumeManager::CreateVolume(const std::string diskId, dev_t device)
         return "";
     }
 
-    volumes_.push_back(info);
+    volumes_[volId] = info;
 
     StorageManagerClient client;
     ret = client.NotifyVolumeCreated(info);
@@ -91,7 +89,7 @@ int32_t VolumeManager::DestroyVolume(const std::string volId)
     int32_t ret = destroyNode->Destroy();
     if (ret)
         return ret;
-    volumes_.remove(destroyNode);
+    volumes_.erase(volId);
     destroyNode.reset();
 
     StorageManagerClient client;
