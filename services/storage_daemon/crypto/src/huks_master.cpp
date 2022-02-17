@@ -15,10 +15,6 @@
 
 #include "huks_master.h"
 
-#include <string>
-#include <iostream>
-#include <algorithm>
-#include <unistd.h>
 #include <openssl/sha.h>
 
 #include "hks_api.h"

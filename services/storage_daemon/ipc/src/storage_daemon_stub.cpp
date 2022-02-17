@@ -216,7 +216,7 @@ int32_t StorageDaemonStub::HandleStopUser(MessageParcel &data, MessageParcel &re
 int32_t StorageDaemonStub::HandleInitGlobalKey(MessageParcel &data, MessageParcel &reply)
 {
     int err = InitGlobalKey();
-    if (!reply.WriteInt32(err)){
+    if (!reply.WriteInt32(err)) {
         return E_IPC_ERROR;
     }
 
@@ -226,7 +226,7 @@ int32_t StorageDaemonStub::HandleInitGlobalKey(MessageParcel &data, MessageParce
 int32_t StorageDaemonStub::HandleInitGlobalUserKeys(MessageParcel &data, MessageParcel &reply)
 {
     int err = InitGlobalUserKeys();
-    if (!reply.WriteInt32(err)){
+    if (!reply.WriteInt32(err)) {
         return E_IPC_ERROR;
     }
 

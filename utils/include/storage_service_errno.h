@@ -26,17 +26,18 @@ enum ErrNo {
     E_IPC_ERROR = 2,          // ipc error
     E_EXIST = 3,              // exist
     E_WRONG_TYPE = 4,         // wrong file type
-    E_USER_STATE = 5,            // wrong user state
-    E_NON_EXIST = 6,            // no such item
-    E_PREPARE_DIR = 7,         // failed to prepare dir
-    E_DESTROY_DIR = 8,         // failed to destroy dir
-    E_MOUNT,        // mount error
-    E_UMOUNT,       // umount error
-    E_SET_POLICY,
-    E_USERID_RANGE, // id out or range
-    E_VOL_STATE,    // volume state check fail
-    E_WAIT,         // wait
-    E_NOT_SUPPORT,  // not support
+    E_USER_STATE = 5,         // wrong user state
+    E_NON_EXIST = 6,          // no such item
+    E_PREPARE_DIR = 7,        // failed to prepare dir
+    E_DESTROY_DIR = 8,        // failed to destroy dir
+    E_MOUNT,                  // mount error
+    E_UMOUNT,                 // umount error
+    E_SET_POLICY,             // set policy error
+    E_USERID_RANGE,           // id out or range
+    E_VOL_STATE,              // volume state check fail
+    E_WAIT,                   // wait
+    E_NOT_SUPPORT,            // not support
+    E_SYS_CALL                // syscall error
 };
 }
 

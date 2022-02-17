@@ -155,7 +155,13 @@ int32_t ExternalVolumeInfo::DoUMount(const std::string mountPath, bool force)
         LOGE("External volume DoUmount error.");
         return E_UMOUNT;
     }
-    remove(mountPath.c_str());
+
+    ret = remove(mountPath.c_str());
+    if (ret) {
+        LOGE("failed to call remove(%{public}s) error, errno = %{public}d", mountPath.c_str(), errno);
+        return E_SYS_CALL;
+    }
+
     return E_OK;
 }
 

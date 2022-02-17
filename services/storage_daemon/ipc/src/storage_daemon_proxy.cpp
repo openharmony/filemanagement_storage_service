@@ -336,8 +336,8 @@ int32_t StorageDaemonProxy::UpdateUserAuth(uint32_t userId, std::string auth, st
     return reply.ReadInt32();
 }
 
- int32_t StorageDaemonProxy::ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret)
- {
+int32_t StorageDaemonProxy::ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret)
+{
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
 
@@ -348,13 +348,14 @@ int32_t StorageDaemonProxy::UpdateUserAuth(uint32_t userId, std::string auth, st
     if (!data.WriteUint32(userId)) {
         return E_IPC_ERROR;
     }
+
     int err = Remote()->SendRequest(ACTIVE_USER_KEY, data, reply, option);
     if (err != E_OK) {
         return E_IPC_ERROR;
     }
 
     return reply.ReadInt32();
- }
+}
 
 int32_t StorageDaemonProxy::InactiveUserKey(uint32_t userId)
 {
