@@ -319,7 +319,7 @@ std::vector<int64_t> StorageManagerProxy::GetBundleStats(std::string uuid, std::
     if (err != E_OK) {
         return result;
     }
-    std::vector<int64_t> val;  
+    std::vector<int64_t> val;
     if (!reply.ReadInt64Vector(&val)) {
         val = {};
     }

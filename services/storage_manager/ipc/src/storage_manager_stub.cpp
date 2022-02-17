@@ -102,7 +102,7 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
             LOGI("use IPCObjectStub default OnRemoteRequest");
             err = IPCObjectStub::OnRemoteRequest(code, data, reply, option);
             break;
-        } 
+        }
     }
     return err;
 }
