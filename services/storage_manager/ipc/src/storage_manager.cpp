@@ -20,6 +20,7 @@
 #include "system_ability_definition.h"
 #include "storage_service_log.h"
 #include "storage_service_errno.h"
+#include "account_subscriber/account_subscriber.h"
 #include "user/multi_user_manager_service.h"
 #include "volume/volume_manager_service.h"
 #include "disk/disk_manager_service.h"
@@ -34,6 +35,7 @@ void StorageManager::OnStart()
 {
     LOGI("StorageManager::OnStart Begin");
     bool res = SystemAbility::Publish(this);
+    AccountSubscriber::Subscriber();
     LOGI("StorageManager::OnStart End, res = %{public}d", res);
 }
 
