@@ -40,7 +40,7 @@ private:
     void VolumeStateNotify(int32_t state, std::string volumeId,
         std::string diskId, std::string fsUuid, std::string path);
     int32_t Check(std::string volumeId);
-}; 
+};
 } // StorageManager
 } // OHOS
 

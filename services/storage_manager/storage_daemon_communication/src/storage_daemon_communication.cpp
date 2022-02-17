@@ -23,13 +23,13 @@
 
 namespace OHOS {
 namespace StorageManager {
-StorageDaemonCommunication::StorageDaemonCommunication() 
+StorageDaemonCommunication::StorageDaemonCommunication()
 {
     LOGI("DEBUG StorageDaemonCommunication constructer");
     storageDaemon_ = nullptr;
 }
 
-StorageDaemonCommunication::~StorageDaemonCommunication() 
+StorageDaemonCommunication::~StorageDaemonCommunication()
 {
     LOGI("DEBUG ~StorageDaemonCommunication destructer ~");
 }
@@ -44,7 +44,7 @@ int32_t StorageDaemonCommunication::Connect()
             LOGE("StorageDaemonCommunication::Connect samgr nullptr");
             return E_IPC_ERROR;
         }
-        auto object = sam->GetSystemAbility(STORAGE_MANAGER_DAEMON_ID); 
+        auto object = sam->GetSystemAbility(STORAGE_MANAGER_DAEMON_ID);
         if (object == nullptr) {
             LOGE("StorageDaemonCommunication::Connect object nullptr");
             return E_IPC_ERROR;
@@ -59,7 +59,7 @@ int32_t StorageDaemonCommunication::Connect()
     return err;
 }
 
-int32_t StorageDaemonCommunication::PrepareAddUser(int32_t userId) 
+int32_t StorageDaemonCommunication::PrepareAddUser(int32_t userId)
 {
     LOGI("StorageDaemonCommunication::PrepareAddUser start");
     
@@ -70,27 +70,27 @@ int32_t StorageDaemonCommunication::PrepareAddUser(int32_t userId)
     return storageDaemon_->PrepareUserDirs(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
 }
 
-int32_t StorageDaemonCommunication::RemoveUser(int32_t userId) 
+int32_t StorageDaemonCommunication::RemoveUser(int32_t userId)
 {
     LOGI("StorageDaemonCommunication::RemoveUser start");
     if (Connect() != E_OK) {
         LOGE("StorageDaemonCommunication::RemoveUser connect failed");
         return E_IPC_ERROR;
-    } 
+    }
     return storageDaemon_->DestroyUserDirs(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
 }
 
-int32_t StorageDaemonCommunication::PrepareStartUser(int32_t userId) 
+int32_t StorageDaemonCommunication::PrepareStartUser(int32_t userId)
 {
     LOGI("StorageDaemonCommunication::PrepareStartUser start");
     if (Connect() != E_OK) {
         LOGE("StorageDaemonCommunication::PrepareStartUser connect failed");
         return E_IPC_ERROR;
-    } 
+    }
     return storageDaemon_->StartUser(userId);
 }
 
-int32_t StorageDaemonCommunication::StopUser(int32_t userId) 
+int32_t StorageDaemonCommunication::StopUser(int32_t userId)
 {
     LOGI("StorageDaemonCommunication::StopUser start");
     if (Connect() != E_OK) {

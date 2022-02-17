@@ -25,7 +25,7 @@ class StorageManagerProxy : public IRemoteProxy<IStorageManager> {
 public:
     explicit StorageManagerProxy(const sptr<IRemoteObject>& impl)
         : IRemoteProxy<IStorageManager>(impl) {}
-    ~StorageManagerProxy() override{}
+    ~StorageManagerProxy() override {}
 
     int32_t PrepareAddUser(int32_t userId) override;
     int32_t RemoveUser(int32_t userId) override;

@@ -143,7 +143,7 @@ napi_value GetBundleStats(napi_env env, napi_callback_info info)
         *bundleStats = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetBundleStats(uuidString, nameString);
         return UniError(ERRNO_NOERR);
     };
-    auto cbComplete = [bundleStats](napi_env env, UniError err) -> NVal { 
+    auto cbComplete = [bundleStats](napi_env env, UniError err) -> NVal {
         if (err) {
             return { env, err.GetNapiErr(env) };
         }

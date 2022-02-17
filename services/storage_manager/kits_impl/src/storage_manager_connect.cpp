@@ -50,7 +50,7 @@ int32_t StorageManagerConnect::Connect()
         return E_IPC_ERROR;
     }
     LOGI("StorageManagerConnect::Connect end");
-    return E_OK; 
+    return E_OK;
 }
 
 vector<int64_t> StorageManagerConnect::GetBundleStats(string uuid, string pkgName)

@@ -20,7 +20,7 @@
 namespace OHOS {
 namespace StorageManager {
 int32_t StorageManagerProxy::PrepareAddUser(int32_t userId)
-{   
+{
     LOGI("StorageManagerProxy::PrepareAddUser, userId:%{public}d", userId);
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -319,7 +319,7 @@ std::vector<int64_t> StorageManagerProxy::GetBundleStats(std::string uuid, std::
     if (err != E_OK) {
         return result;
     }
-    std::vector<int64_t> val;  
+    std::vector<int64_t> val;
     if (!reply.ReadInt64Vector(&val)) {
         val = {};
     }

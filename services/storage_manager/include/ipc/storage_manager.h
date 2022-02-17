@@ -25,7 +25,7 @@ namespace StorageManager {
 class StorageManager : public SystemAbility, public StorageManagerStub {
     DECLARE_SYSTEM_ABILITY(StorageManager)
 public:
-    StorageManager(int32_t saID, bool runOnCreate = true) : SystemAbility(saID, runOnCreate){};
+    StorageManager(int32_t saID, bool runOnCreate = true) : SystemAbility(saID, runOnCreate) {};
     ~StorageManager() = default;
 
     void OnStart() override;

@@ -38,4 +38,4 @@ napi_value StorageStatisticsExport(napi_env env, napi_value exports)
 
 NAPI_MODULE(storagestatistics, StorageStatisticsExport)
 } // namespace StorageManager
-} // namespace OHOS       
+} // namespace OHOS
