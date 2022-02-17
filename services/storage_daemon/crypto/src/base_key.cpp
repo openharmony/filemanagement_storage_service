@@ -394,6 +394,5 @@ bool BaseKey::ClearKey(const std::string &mnt)
     return OHOS::ForceRemoveDirectory(dir_);
     // use F2FS_IOC_SEC_TRIM_FILE
 }
-
 } // namespace StorageDaemon
 } // namespace OHOS
