@@ -25,7 +25,7 @@ using namespace std;
 namespace OHOS {
 namespace StorageManager {
 StorageTotalStatusService::StorageTotalStatusService() {}
-StorageTotalStatusService::~StorageTotalStatusService(){}
+StorageTotalStatusService::~StorageTotalStatusService() {}
 
 std::string StorageTotalStatusService::GetVolumePath(std::string volumeUuid)
 {
