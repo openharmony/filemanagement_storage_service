@@ -22,14 +22,14 @@
 #include <dirent.h>
 #include <cstdlib>
 #include <fcntl.h>
-
+#include <cerrno>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <sys/types.h>
 
 
 #include "string_ex.h"
-
+#include "securec.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 
@@ -345,6 +345,7 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
         close(pipe_fd[1]);
         if (output) {
             char buf[BUF_LEN] = { 0 };
+            (void)memset_s(buf, sizeof(buf), 0, sizeof(buf));
             output->clear();
             while (read(pipe_fd[0], buf, BUF_LEN - 1) > 0) {
                 LOGI("get result %{public}s", buf);
@@ -354,6 +355,9 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
         }
 
         waitpid(pid, &status, 0);
+        if (errno == ECHILD) {
+            return E_NO_CHILD;
+        }
         if (!WIFEXITED(status)) {
             LOGE("Process exits abnormally");
             return E_ERR;
