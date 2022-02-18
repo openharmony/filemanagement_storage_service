@@ -112,13 +112,19 @@ int KeyManager::RestoreDeviceKey(const std::string &dir)
 int KeyManager::InitGlobalDeviceKey(void)
 {
     LOGI("enter");
+    int ret = KeyCtrl::InitFscryptPolicy();
+    if (ret < 0) {
+        LOGE("fscrypt init failed, fscrypt will not be enabled");
+        return ret;
+    }
+
     std::lock_guard<std::mutex> lock(keyMutex_);
     if (hasGlobalDeviceKey_ || globalEl1Key_ != nullptr) {
         LOGD("glabal device el1 have existed");
         return 0;
     }
 
-    int ret = MkDir(STORAGE_DAEMON_DIR, 0700);
+    ret = MkDir(STORAGE_DAEMON_DIR, 0700);
     if (ret && errno != EEXIST) {
         LOGE("create storage daemon dir error");
         return ret;

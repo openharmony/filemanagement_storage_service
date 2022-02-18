@@ -23,6 +23,7 @@
 #include <unistd.h>
 #include <linux/fs.h>
 #include <linux/keyctl.h>
+#include <parameter.h>
 
 #include "storage_service_log.h"
 #include "securec.h"
@@ -39,6 +40,9 @@ constexpr uint32_t INDEX_FSCRYPT_FLAGS = 3;
 namespace OHOS {
 namespace StorageDaemon {
 struct EncryptPolicy g_policyOption = DEFAULT_POLICY;
+bool g_fscryptEnable = false;
+const std::string FSCRYPT_POLICY_KEY = "fscrypt.policy.config";
+constexpr uint32_t FSCRYPT_POLICY_BUFFER_SIZE = 100;
 
 key_serial_t KeyCtrl::AddKey(const std::string &type, const std::string &description, const key_serial_t ringId)
 {
@@ -275,33 +279,67 @@ uint8_t KeyCtrl::GetEncryptedVersion(const std::string &dir)
     return FSCRYPT_INVALID;
 }
 
-int32_t KeyCtrl::InitFscryptPolicy(const std::string &config)
+int32_t KeyCtrl::InitFscryptPolicy(void)
 {
-    LOGI("fscrypt config: %{public}s", config.c_str());
-    if (config.empty()) {
-        LOGE("fscrypt config is empty");
-        return -EFAULT;
+    LOGI("fscrypt init");
+    char tmp[FSCRYPT_POLICY_BUFFER_SIZE] = { 0 };
+    int ret = GetParameter(FSCRYPT_POLICY_KEY.c_str(), "", tmp, FSCRYPT_POLICY_BUFFER_SIZE);
+    if (ret < 0) {
+        LOGE("fscrypt is not enabled");
+        return -ENOTSUP;
     }
+
+    std::string config(tmp);
     std::vector<std::string> strs;
     std::string sep = ":";
     SplitStr(config, sep, strs, false, false);
     if (strs.size() != FSCRYPT_OPTIONS_TABLE.size()) {
-        LOGE("input fscrypt config error");
-        return -EFAULT;
+        LOGE("input fscrypt config error, use default policy");
+        return 0;
     }
 
     for (size_t index = 0; index < strs.size(); index++) {
         auto item = FSCRYPT_OPTIONS_TABLE[index];
         if (item.find(strs[index]) == item.end()) {
-            LOGE("input fscrypt %{public}s option error", strs[index].c_str());
-            return -EFAULT;
+            LOGE("input fscrypt %{public}s option error, user default policy", strs[index].c_str());
+            return 0;
         }
     }
     g_policyOption.version = strs[INDEX_FSCRYPT_VERSION];
     g_policyOption.fileName = strs[INDEX_FSCRYPT_FILENAME];
     g_policyOption.content = strs[INDEX_FSCRYPT_CONTENT];
     g_policyOption.flags = strs[INDEX_FSCRYPT_FLAGS];
-    LOGI("fscrypt policy init success");
+    LOGI("fscrypt policy init success, policy is %{public}s", tmp);
+    g_fscryptEnable = true;
+
+    return 0;
+}
+
+int32_t KeyCtrl::SetFscryptSyspara(const std::string &config)
+{
+    LOGI("SetFscryptSyapara start");
+    std::vector<std::string> strs;
+    std::string sep = ":";
+    SplitStr(config, sep, strs, false, false);
+    if (strs.size() != FSCRYPT_OPTIONS_TABLE.size()) {
+        LOGE("input fscrypt config error, use default policy");
+        return 0;
+    }
+
+    for (size_t index = 0; index < strs.size(); index++) {
+        auto item = FSCRYPT_OPTIONS_TABLE[index];
+        if (item.find(strs[index]) == item.end()) {
+            LOGE("input fscrypt %{public}s option error, user default policy", strs[index].c_str());
+            return 0;
+        }
+    }
+
+    int ret = SetParameter(FSCRYPT_POLICY_KEY.c_str(), config.c_str());
+    if (ret < 0) {
+        LOGE("fscrypt is not enabled, ret = %d", ret);
+        return -ENOTSUP;
+    }
+    LOGI("fscrypt system parameter set success");
 
     return 0;
 }
