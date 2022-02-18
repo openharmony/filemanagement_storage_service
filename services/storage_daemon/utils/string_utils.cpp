@@ -71,12 +71,16 @@ std::vector<std::string> SplitLine(std::string &line, std::string &token)
     auto err = strcpy_s(l, line.length() + 1, line.c_str());
     if (err) {
         LOGE("strcpy line failed ret %{public}d", err);
+        free(l);
+        free(t);
         return result;
     }
 
     err = strcpy_s(t, token.length() + 1, token.c_str());
     if (err) {
         LOGE("strcpy token failed ret %{public}d", err);
+        free(l);
+        free(t);
         return result;
     }
 
@@ -87,6 +91,8 @@ std::vector<std::string> SplitLine(std::string &line, std::string &token)
         tmp = strtok(nullptr, t);
     }
 
+    free(l);
+    free(t);
     return result;
 }
 } // namespace StorageDaemon
