@@ -279,7 +279,7 @@ uint8_t KeyCtrl::GetEncryptedVersion(const std::string &dir)
     return FSCRYPT_INVALID;
 }
 
-int32_t KeyCtrl::InitFscryptPolicy(void)
+int32_t KeyCtrl::InitFscryptPolicy()
 {
     LOGI("fscrypt init");
     char tmp[FSCRYPT_POLICY_BUFFER_SIZE] = { 0 };
@@ -329,14 +329,14 @@ int32_t KeyCtrl::SetFscryptSyspara(const std::string &config)
     for (size_t index = 0; index < strs.size(); index++) {
         auto item = FSCRYPT_OPTIONS_TABLE[index];
         if (item.find(strs[index]) == item.end()) {
-            LOGE("input fscrypt %{public}s option error, user default policy", strs[index].c_str());
+            LOGE("input fscrypt %{public}s option error, use default policy", strs[index].c_str());
             return 0;
         }
     }
 
     int ret = SetParameter(FSCRYPT_POLICY_KEY.c_str(), config.c_str());
     if (ret < 0) {
-        LOGE("fscrypt is not enabled, ret = %d", ret);
+        LOGE("fscrypt is not enabled, ret = %{public}d", ret);
         return -ENOTSUP;
     }
     LOGI("fscrypt system parameter set success");

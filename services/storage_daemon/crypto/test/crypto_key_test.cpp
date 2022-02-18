@@ -590,7 +590,8 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_padding_4, TestSize.L
     EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
     EXPECT_TRUE(g_testKeyV2.ActiveKey());
 
-    EXPECT_EQ(0, KeyCtrl::InitFscryptPolicy("2:aes-256-cts:aes-256-xts:padding-4"));
+    EXPECT_EQ(0, KeyCtrl::SetFscryptSyspara("2:aes-256-cts:aes-256-xts:padding-4"));
+    EXPECT_EQ(0, KeyCtrl::InitFscryptPolicy());
 
     OHOS::ForceRemoveDirectory(TEST_DIR_V2);
     OHOS::ForceCreateDirectory(TEST_DIR_V2);

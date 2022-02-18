@@ -79,7 +79,7 @@ public:
 
     static uint8_t GetFscryptVersion(const std::string &mnt);
     static uint8_t GetEncryptedVersion(const std::string &dir);
-    static int32_t InitFscryptPolicy(void);
+    static int32_t InitFscryptPolicy();
     static int32_t SetFscryptSyspara(const std::string &config);
 };
 
