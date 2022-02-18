@@ -132,7 +132,22 @@ int32_t ExternalVolumeInfo::DoDestroy()
 
 int32_t ExternalVolumeInfo::DoMount(const std::string mountPath, uint32_t mountFlags)
 {
-    int ret = mount(devPath_.c_str(), mountPath.c_str(), fsType_.c_str(), MS_MGC_VAL, "fmask=0000,dmask=0000");
+    int32_t ret = 0;
+    mode_t mode = 0777;
+
+    if (GetFsType() == -1) {
+        return E_NOT_SUPPORT;
+    }
+
+    if (fsType_ == "ext2" || fsType_ == "ext3" || fsType_ == "ext4") {
+        ret = mount(devPath_.c_str(), mountPath.c_str(), fsType_.c_str(), mountFlags, "");
+        if (!ret) {
+            TravelChmod(mountPath, mode);
+        }
+    } else {
+        ret = mount(devPath_.c_str(), mountPath.c_str(), fsType_.c_str(), MS_MGC_VAL, "fmask=000,dmask=000");
+    }
+
     if (ret) {
         LOGE("External volume DoMount error.");
         return E_MOUNT;

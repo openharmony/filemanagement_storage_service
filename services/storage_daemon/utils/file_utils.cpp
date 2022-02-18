@@ -192,6 +192,38 @@ bool RmDirRecurse(const std::string &path)
     return true;
 }
 
+void TravelChmod(std::string path, mode_t mode)
+{
+    struct stat st;
+    DIR *d = NULL;
+    struct dirent *dp = NULL;
+    const char *skip1 = ".";
+    const char *skip2 = "..";
+
+    if (stat(path.c_str(), &st) < 0 || !S_ISDIR(st.st_mode)) {
+        LOGE("invalid path");
+        return;
+    }
+
+    ChMod(path, mode);
+    if (!(d = opendir(path.c_str()))) {
+        LOGE("opendir failed");
+        return;
+    }
+
+    while ((dp = readdir(d)) != NULL) {
+        if ((!strncmp(dp->d_name, skip1, strlen(skip1))) || (!strncmp(dp->d_name, skip2, strlen(skip2))))
+            continue;
+
+        std::string subpath = path + "/" + dp->d_name;
+        stat(subpath.c_str(), &st);
+        ChMod(subpath, mode);
+        if (S_ISDIR(st.st_mode))
+            TravelChmod(subpath, mode);
+    }
+    closedir(d);
+}
+
 bool StringToUint32(const std::string &str, uint32_t &num)
 {
     if (str.empty()) {
