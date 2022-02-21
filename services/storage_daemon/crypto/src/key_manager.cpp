@@ -124,7 +124,7 @@ int KeyManager::InitGlobalDeviceKey(void)
         return 0;
     }
 
-    ret = MkDir(STORAGE_DAEMON_DIR, 0700);
+    ret = MkDir(STORAGE_DAEMON_DIR, 0700); // para.0700: root only
     if (ret && errno != EEXIST) {
         LOGE("create storage daemon dir error");
         return ret;

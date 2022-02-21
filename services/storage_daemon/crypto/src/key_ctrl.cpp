@@ -23,12 +23,12 @@
 #include <unistd.h>
 #include <linux/fs.h>
 #include <linux/keyctl.h>
-#include <parameter.h>
 
 #include "storage_service_log.h"
 #include "securec.h"
 #include "file_ex.h"
 #include "string_ex.h"
+#include "parameter.h"
 
 namespace {
 constexpr uint32_t INDEX_FSCRYPT_VERSION = 0;
