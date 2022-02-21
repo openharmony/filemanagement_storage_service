@@ -163,20 +163,22 @@ int32_t ExternalVolumeInfo::DoUMount(const std::string mountPath, bool force)
         Process ps(mountPath);
         ps.UpdatePidByPath();
         ps.KillProcess(SIGKILL);
+        umount2(mountPath.c_str(), MNT_DETACH);
+        remove(mountPath.c_str());
+        return E_OK;
     }
 
     int ret = umount(mountPath.c_str());
-    if (!force && ret) {
+    int err = remove(mountPath.c_str());
+    if (err && ret) {
         LOGE("External volume DoUmount error.");
         return E_UMOUNT;
     }
 
-    ret = remove(mountPath.c_str());
-    if (ret) {
+    if (err) {
         LOGE("failed to call remove(%{public}s) error, errno = %{public}d", mountPath.c_str(), errno);
         return E_SYS_CALL;
     }
-
     return E_OK;
 }
 
