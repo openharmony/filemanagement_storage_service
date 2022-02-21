@@ -52,8 +52,8 @@ ohos_static_library("libsdcrypto") {
   ]
 
   public_deps = [
-    "//utils/native/base:utils",
     "//base/startup/syspara_lite/interfaces/innerkits/native/syspara:syspara",
+    "//utils/native/base:utils",
   ]
 
   public_configs = [ ":crypto_public_config" ]
