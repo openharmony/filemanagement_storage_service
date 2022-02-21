@@ -51,7 +51,11 @@ ohos_static_library("libsdcrypto") {
     "src/key_manager.cpp",
   ]
 
-  public_deps = [ "//utils/native/base:utils" ]
+  public_deps = [
+    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara:syspara",
+    "//utils/native/base:utils",
+  ]
+
   public_configs = [ ":crypto_public_config" ]
   external_deps = [
     "hiviewdfx_hilog_native:libhilog",

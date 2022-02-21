@@ -275,7 +275,7 @@ int32_t StorageDaemonClient::InactiveUserKey(uint32_t userId)
 
 int32_t StorageDaemonClient::FscryptEnable(const std::string &fscryptOptions)
 {
-    int ret = OHOS::StorageDaemon::KeyCtrl::InitFscryptPolicy(fscryptOptions);
+    int ret = OHOS::StorageDaemon::KeyCtrl::SetFscryptSyspara(fscryptOptions);
     if (ret) {
         LOGE("Init fscrypt policy failed ret %{public}d", ret);
         return ret;
