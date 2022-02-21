@@ -69,6 +69,11 @@ int32_t UserManager::PrepareUserDirs(int32_t userId, uint32_t flags)
         if (err != E_OK) {
             return err;
         }
+
+        err = PrepareEl1BundleDir(userId);
+        if (err != E_OK) {
+            return err;
+        }
     }
 
     if (flags & IStorageDaemon::CRYPTO_FLAG_EL2) {
@@ -96,6 +101,9 @@ int32_t UserManager::DestroyUserDirs(int32_t userId, uint32_t flags)
 
     if (flags & IStorageDaemon::CRYPTO_FLAG_EL1) {
         err = DestroyDirsFromIdAndLevel(userId, el1_);
+        ret = (err != E_OK) ? err : ret;
+
+        err = DestroyEl1BundleDir(userId);
         ret = (err != E_OK) ? err : ret;
     }
 
@@ -173,6 +181,24 @@ int32_t UserManager::DestroyDirsFromIdAndLevel(int32_t userId, const std::string
 {
     if (!DestroyDirsFromVec(userId, level, rootDirVec_)) {
         LOGE("failed to destroy %{public}s dirs for userid %{public}d", level.c_str(), userId);
+        return E_DESTROY_DIR;
+    }
+
+    return E_OK;
+}
+
+int32_t UserManager::PrepareEl1BundleDir(int32_t userId)
+{
+    if (!PrepareDir(StringPrintf(bundle_.c_str(), userId), 0711, OID_ROOT, OID_ROOT)) {
+        return E_PREPARE_DIR;
+    }
+
+    return E_OK;
+}
+
+int32_t UserManager::DestroyEl1BundleDir(int32_t userId)
+{
+    if (!RmDirRecurse(StringPrintf(bundle_.c_str(), userId))) {
         return E_DESTROY_DIR;
     }
 

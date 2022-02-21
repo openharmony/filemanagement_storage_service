@@ -21,9 +21,15 @@ ohos_unittest("storage_manager_proxy_test") {
     "storage_manager_proxy_test.cpp",
   ]
 
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageManager\"",
+    "LOG_DOMAIN = 0xD004300",
+  ]
+
   include_dirs = [
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
+    "//foundation/filemanagement/storage_service/services/common/include",
     "include",
     "//utils/system/safwk/native/include",
     "//utils/native/base/include",

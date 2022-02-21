@@ -38,12 +38,15 @@ public:
 private:
     int32_t PrepareDirsFromIdAndLevel(int32_t userId, const std::string &level);
     int32_t DestroyDirsFromIdAndLevel(int32_t userId, const std::string &level);
+    int32_t PrepareEl1BundleDir(int32_t userId);
+    int32_t DestroyEl1BundleDir(int32_t userId);
 
     DISALLOW_COPY_AND_MOVE(UserManager);
 
     static std::shared_ptr<UserManager> instance_;
     const std::vector<DirInfo> rootDirVec_;
     const std::vector<DirInfo> subDirVec_;
+    const std::string bundle_ = "/data/app/el1/bundle/%d";
     const std::string el1_ = "el1";
     const std::string el2_ = "el2";
     std::mutex mutex_;

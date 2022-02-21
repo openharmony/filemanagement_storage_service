@@ -18,6 +18,11 @@ ROOT_DIR = "//foundation/filemanagement/storage_service/services/storage_daemon"
 ohos_unittest("storage_daemon_test") {
   module_out_path = "filemanagement/storage_service/storage_daemon"
 
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "LOG_DOMAIN = 0xD004301",
+  ]
+
   cflags_cc = [ "-Wno-unused-const-variable" ]
 
   include_dirs = [
@@ -28,7 +33,7 @@ ohos_unittest("storage_daemon_test") {
     "//foundation/distributedschedule/safwk/interfaces/innerkits/safwk",
     "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
     "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
-    "//foundation/filemanagement/storage_service/utils/include",
+    "//foundation/filemanagement/storage_service/services/common/include",
     "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include",
   ]
 
@@ -69,9 +74,14 @@ ohos_unittest("storage_daemon_test") {
 ohos_unittest("storage_daemon_proxy_test") {
   module_out_path = "filemanagement/storage_service/storage_daemon"
 
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "LOG_DOMAIN = 0xD004301",
+  ]
+
   include_dirs = [
     "$ROOT_DIR/include",
-    "//foundation/filemanagement/storage_service/utils/include",
+    "//foundation/filemanagement/storage_service/services/common/include",
     "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
     "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include",
   ]
@@ -98,10 +108,15 @@ ohos_unittest("storage_daemon_proxy_test") {
 ohos_unittest("storage_daemon_stub_test") {
   module_out_path = "filemanagement/storage_service/storage_daemon"
 
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "LOG_DOMAIN = 0xD004301",
+  ]
+
   include_dirs = [
     "$ROOT_DIR/include",
     "$ROOT_DIR/ipc/test/",
-    "//foundation/filemanagement/storage_service/utils/include",
+    "//foundation/filemanagement/storage_service/services/common/include",
     "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
     "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
     "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include",

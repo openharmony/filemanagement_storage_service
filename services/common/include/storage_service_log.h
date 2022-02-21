@@ -17,12 +17,8 @@
 
 #include "hilog/log.h"
 
-#ifndef LOG_DOMAIN
-#define LOG_DOMAIN 0xD004300
-#endif
-
 namespace OHOS {
-static constexpr OHOS::HiviewDFX::HiLogLabel LOG_LABEL = { LOG_CORE, LOG_DOMAIN, "StorageService" };
+static constexpr OHOS::HiviewDFX::HiLogLabel LOG_LABEL = { LOG_CORE, LOG_DOMAIN, STORAGE_LOG_TAG};
 
 #define PRINT_LOG(Level, fmt, ...) \
     OHOS::HiviewDFX::HiLog::Level(OHOS::LOG_LABEL, "[%{public}s:%{public}d] " fmt, \

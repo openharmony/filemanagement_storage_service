@@ -21,6 +21,11 @@ config("module_private_config") {
 ohos_moduletest("CryptoSubTest") {
   module_out_path = module_output_path
 
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "LOG_DOMAIN = 0xD004301",
+  ]
+
   include_dirs = [
     "../../include",
     "../../include/crypto",
