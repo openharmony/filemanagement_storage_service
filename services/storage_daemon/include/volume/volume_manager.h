@@ -19,7 +19,7 @@
 #include <nocopyable.h>
 #include <sys/types.h>
 #include <string>
-#include <list>
+#include <map>
 #include <memory>
 #include "volume/volume_info.h"
 
@@ -43,7 +43,7 @@ private:
     DISALLOW_COPY_AND_MOVE(VolumeManager);
 
     static VolumeManager* instance_;
-    std::list<std::shared_ptr<VolumeInfo>> volumes_;
+    std::map<std::string, std::shared_ptr<VolumeInfo>> volumes_;
 
     std::shared_ptr<VolumeInfo> GetVolume(const std::string volId);
 };

@@ -22,14 +22,14 @@
 #include <dirent.h>
 #include <cstdlib>
 #include <fcntl.h>
-
+#include <cerrno>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <sys/types.h>
 
 
 #include "string_ex.h"
-
+#include "securec.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 
@@ -192,6 +192,38 @@ bool RmDirRecurse(const std::string &path)
     return true;
 }
 
+void TravelChmod(std::string path, mode_t mode)
+{
+    struct stat st;
+    DIR *d = NULL;
+    struct dirent *dp = NULL;
+    const char *skip1 = ".";
+    const char *skip2 = "..";
+
+    if (stat(path.c_str(), &st) < 0 || !S_ISDIR(st.st_mode)) {
+        LOGE("invalid path");
+        return;
+    }
+
+    ChMod(path, mode);
+    if (!(d = opendir(path.c_str()))) {
+        LOGE("opendir failed");
+        return;
+    }
+
+    while ((dp = readdir(d)) != NULL) {
+        if ((!strncmp(dp->d_name, skip1, strlen(skip1))) || (!strncmp(dp->d_name, skip2, strlen(skip2))))
+            continue;
+
+        std::string subpath = path + "/" + dp->d_name;
+        stat(subpath.c_str(), &st);
+        ChMod(subpath, mode);
+        if (S_ISDIR(st.st_mode))
+            TravelChmod(subpath, mode);
+    }
+    closedir(d);
+}
+
 bool StringToUint32(const std::string &str, uint32_t &num)
 {
     if (str.empty()) {
@@ -345,6 +377,7 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
         close(pipe_fd[1]);
         if (output) {
             char buf[BUF_LEN] = { 0 };
+            (void)memset_s(buf, sizeof(buf), 0, sizeof(buf));
             output->clear();
             while (read(pipe_fd[0], buf, BUF_LEN - 1) > 0) {
                 LOGI("get result %{public}s", buf);
@@ -354,6 +387,9 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
         }
 
         waitpid(pid, &status, 0);
+        if (errno == ECHILD) {
+            return E_NO_CHILD;
+        }
         if (!WIFEXITED(status)) {
             LOGE("Process exits abnormally");
             return E_ERR;

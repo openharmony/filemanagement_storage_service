@@ -37,7 +37,8 @@ enum ErrNo {
     E_VOL_STATE,              // volume state check fail
     E_WAIT,                   // wait
     E_NOT_SUPPORT,            // not support
-    E_SYS_CALL                // syscall error
+    E_SYS_CALL,               // syscall error
+    E_NO_CHILD,               // child not exist
 };
 }
 

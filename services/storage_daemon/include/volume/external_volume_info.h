@@ -47,10 +47,6 @@ private:
     std::string fsType_;
     dev_t device_;
 
-    int32_t fsUuidLen_ = 40;
-    int32_t fsTypeLen_ = 20;
-    int32_t fsLabelLen_ = 256;
-
     const std::string devPathDir_ = "/dev/block/%s";
     std::vector<std::string> supportMountType_ = { "ext2", "ext3", "ext4", "ntfs", "exfat", "vfat" };
     std::map<std::string, std::string> supportFormatType_ = {
@@ -58,10 +54,7 @@ private:
     };
 
     int32_t ReadMetadata();
-    std::string GetBlkidData(const std::string type, int32_t size);
-    FILE *HandlePidForPopen(pid_t pid, int32_t *pfd, int32_t outsize, bool rw);
-    int32_t RunPopen(const char *cmd, char *const argv[], char *out, int outsize, bool rw);
-    int32_t GetExitErr(int32_t status);
+    std::string GetBlkidData(const std::string type);
 };
 } // STORAGE_DAEMON
 } // OHOS
