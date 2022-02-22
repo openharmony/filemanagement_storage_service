@@ -15,6 +15,8 @@
 
 #include "huks_master.h"
 
+#include <openssl/err.h>
+#include <openssl/rand.h>
 #include <openssl/sha.h>
 
 #include "hks_api.h"
@@ -28,46 +30,18 @@ bool HuksMaster::Init()
     return HksInitialize();
 }
 
-static bool GenerateRandomKeyLoop(KeyBlob &rawKey)
-{
-    LOGD("enter");
-    uint32_t offset = 0;
-    while (offset < rawKey.size) {
-        HksBlob hksKey = {
-            .size = std::min(rawKey.size - offset, static_cast<uint32_t>(HKS_MAX_RANDOM_LEN)),
-            .data = rawKey.data.get() + offset,
-        };
-        auto ret = HksGenerateRandom(nullptr, &hksKey);
-        if (ret != HKS_SUCCESS) {
-            LOGE("HksGenerateRandom failed ret %{public}d", ret);
-            return false;
-        }
-        offset += HKS_MAX_RANDOM_LEN;
-    }
-    return true;
-}
-
 bool HuksMaster::GenerateRandomKey(KeyBlob &rawKey)
 {
-    LOGD("enter");
+    LOGD("enter, size %{public}d", rawKey.size);
     if (rawKey.IsEmpty()) {
         LOGE("bad key size %{public}d", rawKey.size);
         return false;
     }
-    if (rawKey.size > HKS_MAX_RANDOM_LEN) {
-        return GenerateRandomKeyLoop(rawKey);
-    }
-
-    HksBlob hksKey = {
-        .size = rawKey.size,
-        .data = rawKey.data.get(),
-    };
-    auto ret = HksGenerateRandom(nullptr, &hksKey);
-    if (ret != HKS_SUCCESS) {
-        LOGE("HksGenerateRandom failed ret %{public}d", ret);
+    auto ret = RAND_bytes(rawKey.data.get(), rawKey.size);
+    if (ret <= 0) {
+        LOGE("RAND_bytes failed return %{public}d, errno %{public}lu", ret, ERR_get_error());
         return false;
     }
-    LOGD("success");
     return true;
 }
 
