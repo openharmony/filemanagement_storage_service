@@ -21,9 +21,9 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-const int diskMmc = 179;
-const int maxScsiVolumes = 15;
-const std::string SysfsMmcMaxVolumes = "/sys/module/mmcblk/parameters/perdev_minors";
+const int DISK_MMC_MAJOR = 179;
+const int MAX_SCSI_VOLUMES = 15;
+const std::string MMC_MAX_VOLUMES_PATH = "/sys/module/mmcblk/parameters/perdev_minors";
 
 int CreateDiskNode(const std::string &path, dev_t dev);
 int DestroyDiskNode(const std::string &path);

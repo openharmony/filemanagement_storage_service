@@ -47,8 +47,6 @@ DiskManager::~DiskManager()
 void DiskManager::HandleDiskEvent(NetlinkData *data)
 {
     std::lock_guard<std::mutex> lock(lock_);
-    std::string sysPath = data->GetSyspath();
-    std::string devPath = data->GetDevpath();
     std::string devType = data->GetParam("DEVTYPE");
     if (devType != "disk") {
         return;
@@ -60,19 +58,12 @@ void DiskManager::HandleDiskEvent(NetlinkData *data)
 
     switch (data->GetAction()) {
         case NetlinkData::Actions::ADD: {
-            for (auto config : diskConfig_) {
-                if (config->IsMatch(devPath)) {
-                    int flag = config->GetFlag();
-                    if (major == diskMmc) {
-                        flag |= DiskInfo::DeviceFlag::sdFlag;
-                    } else {
-                        flag |= DiskInfo::DeviceFlag::usbFlag;
-                    }
-                    auto diskInfo =  std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
-                    CreateDisk(diskInfo);
-                    LOGI("Handle Disk Add Event");
-                    break;
-                }
+            auto diskInfo = MatchConfig(data);
+            if (diskInfo == nullptr) {
+                LOGE("Can't match config");
+            } else {
+                CreateDisk(diskInfo);
+                LOGI("Handle Disk Add Event");
             }
             break;
         }
@@ -93,9 +84,40 @@ void DiskManager::HandleDiskEvent(NetlinkData *data)
     }
 }
 
+std::shared_ptr<DiskInfo> DiskManager::MatchConfig(NetlinkData *data)
+{
+    std::string sysPath = data->GetSyspath();
+    std::string devPath = data->GetDevpath();
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
+    dev_t device = makedev(major, minor);
+
+    for (auto config : diskConfig_) {
+        if (config->IsMatch(devPath)) {
+            int flag = config->GetFlag();
+            if (major == DISK_MMC_MAJOR) {
+            flag |= DiskInfo::DeviceFlag::SD_FLAG;
+            } else {
+            flag |= DiskInfo::DeviceFlag::USB_FLAG;
+            }
+            auto diskInfo =  std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+            return diskInfo;
+        }
+    }
+
+    return nullptr;
+}
+
 void DiskManager::CreateDisk(std::shared_ptr<DiskInfo> &diskInfo)
 {
-    diskInfo->Create();
+    int ret;
+
+    ret = diskInfo->Create();
+    if (ret != E_OK) {
+        LOGE("Create DiskInfo failed");
+        return;
+    }
+
     disk_.push_back(diskInfo);
 }
 
@@ -114,7 +136,12 @@ void DiskManager::DestroyDisk(dev_t device)
 
     for (auto i = disk_.begin(); i != disk_.end();) {
         if ((*i)->GetDevice() == device) {
-            (*i)->Destroy();
+            ret = (*i)->Destroy();
+            if (ret != E_OK) {
+                LOGE("Destroy DiskInfo failed");
+                return;
+            }
+
             StorageManagerClient client;
             ret = client.NotifyDiskDestroyed((*i)->GetId());
             if (ret != E_OK) {
@@ -134,7 +161,7 @@ std::shared_ptr<DiskInfo> DiskManager::GetDisk(dev_t device)
             return diskInfo;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 void DiskManager::AddDiskConfig(std::shared_ptr<DiskConfig> &diskConfig)
@@ -148,7 +175,7 @@ void DiskManager::ReplayUevent()
     TraverseDirUevent(sysBlockPath_, true);
 }
 
-int32_t DiskManager::HandlePartition(std::string diskId, int32_t type)
+int32_t DiskManager::HandlePartition(std::string diskId)
 {
     int32_t ret = E_NON_EXIST;
 

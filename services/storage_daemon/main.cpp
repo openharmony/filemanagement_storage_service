@@ -24,18 +24,18 @@
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
 #include "netlink/netlink_manager.h"
-#include "disk/disk_manager.h"
 #include "utils/string_utils.h"
 #include "storage_service_log.h"
 
 using namespace OHOS;
 
-const int configParamNum = 6;
+const int CONFIG_PARAM_NUM = 6;
+static const std::string CONFIG_PTAH = "/system/etc/init/config.txt";
 
 static bool ParasConfig(StorageDaemon::DiskManager *dm)
 {
     std::ifstream infile;
-    infile.open("/system/etc/init/config.txt");
+    infile.open(CONFIG_PTAH);
     if (!infile) {
         LOGE("Cannot open config");
         return false;
@@ -51,7 +51,7 @@ static bool ParasConfig(StorageDaemon::DiskManager *dm)
 
         std::string token = " ";
         auto split = StorageDaemon::SplitLine(line, token);
-        if (split.size() != configParamNum) {
+        if (split.size() != CONFIG_PARAM_NUM) {
             LOGE("Invalids config line: number of parameters is incorrect");
             continue;
         }

@@ -27,7 +27,6 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 
-
 #include "string_ex.h"
 #include "securec.h"
 #include "storage_service_errno.h"
@@ -97,7 +96,7 @@ bool MkDirRecurse(const std::string& path, mode_t mode)
         }
 
         if (TEMP_FAILURE_RETRY(access(subPath.c_str(), F_OK)) != 0) {
-            if (MkDir(subPath.c_str(), mode) != 0 && errno != EEXIST) {
+            if (MkDir(subPath, mode) != 0 && errno != EEXIST) {
                 return false;
             }
         }
