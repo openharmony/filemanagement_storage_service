@@ -144,6 +144,15 @@ int32_t ExternalVolumeInfo::DoMount(const std::string mountPath, uint32_t mountF
         if (!ret) {
             TravelChmod(mountPath, mode);
         }
+    } else if (fsType_ == "ntfs") {
+        std::vector<std::string> cmd = {
+            "mount.ntfs",
+            devPath_,
+            mountPath,
+            "-o",
+            "rw,uid=0,gid=0,dmask=000,fmask=000"
+        };
+        ret = ForkExec(cmd);
     } else {
         ret = mount(devPath_.c_str(), mountPath.c_str(), fsType_.c_str(), MS_MGC_VAL, "fmask=000,dmask=000");
     }
