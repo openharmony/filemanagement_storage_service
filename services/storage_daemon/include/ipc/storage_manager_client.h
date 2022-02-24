@@ -27,7 +27,7 @@ class StorageManagerClient final {
 public:
     StorageManagerClient() = default;
 
-    int32_t NotifyDiskCreated(std::shared_ptr<DiskInfo> &diskInfo);
+    int32_t NotifyDiskCreated(DiskInfo &diskInfo);
     int32_t NotifyDiskDestroyed(std::string id);
 
     int32_t NotifyVolumeCreated(std::shared_ptr<VolumeInfo> info);

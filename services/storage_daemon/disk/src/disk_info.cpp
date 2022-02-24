@@ -18,6 +18,7 @@
 #include <sys/sysmacros.h>
 
 #include "disk/disk_manager.h"
+#include "ipc/storage_manager_client.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/string_utils.h"
@@ -88,6 +89,14 @@ int DiskInfo::Create()
     CreateDiskNode(devPath_, device_);
     status = sCreate;
     ReadMetadata();
+
+    StorageManagerClient client;
+    int32_t ret = client.NotifyDiskCreated(*this);
+    if (ret != E_OK) {
+        LOGE("Notify Disk Created failed");
+        return ret;
+    }
+
     ReadPartition();
     return E_OK;
 }
