@@ -137,10 +137,12 @@ bool PrepareDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
         return true;
     }
 
+    mode_t mask = umask(0);
     if (MkDir(path, mode)) {
         LOGE("failed to mkdir, errno %{public}d", errno);
         return false;
     }
+    umask(mask);
 
     if (ChOwn(path, uid, gid)) {
         LOGE("failed to chown, errno %{public}d", errno);
