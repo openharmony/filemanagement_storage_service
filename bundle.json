@@ -65,12 +65,12 @@
             "//foundation/filemanagement/storage_service/services/storage_daemon/ipc/test:storage_daemon_ipc_test",
             "//foundation/filemanagement/storage_service/services/storage_daemon/user/test:storage_daemon_user_test",
             "//foundation/filemanagement/storage_service/services/storage_daemon/utils/test:storage_daemon_utils_test",
-            "//foundation/filemanagement/storage_service/services/storage_manager/ipc/test:proxy_test",
-            "//foundation/filemanagement/storage_service/services/storage_manager/storage_daemon_communication/test:communication_test",
-            "//foundation/filemanagement/storage_service/services/storage_manager/user/test:manager_service_test",
-            "//foundation/filemanagement/storage_service/services/storage_manager/volume/test:volume_test",
-            "//foundation/filemanagement/storage_service/services/storage_manager/disk/test:dmservice_test",
-            "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/test:volumeexternal_test"
+            "//foundation/filemanagement/storage_service/services/storage_manager/ipc/test:storage_manager_ipc_test",
+            "//foundation/filemanagement/storage_service/services/storage_manager/storage_daemon_communication/test:storage_manager_communication_test",
+            "//foundation/filemanagement/storage_service/services/storage_manager/user/test:storage_manager_user_test",
+            "//foundation/filemanagement/storage_service/services/storage_manager/volume/test:storage_manager_volume_test",
+            "//foundation/filemanagement/storage_service/services/storage_manager/disk/test:storage_manager_disk_test",
+            "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/test:storage_manager_innerkits_test"
         ]
       }
     }

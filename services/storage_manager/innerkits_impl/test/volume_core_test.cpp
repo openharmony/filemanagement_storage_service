@@ -42,12 +42,11 @@ public:
 HWTEST_F(VolumeCoreTest, Volume_core_Get_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeCoreTest-begin Volume_core_Get_0000";
-    std::string id = "456";
+    std::string id = "100";
     int type = 2;
-    std::string diskId = "123";
+    std::string diskId = "100";
     int32_t state = UNMOUNTED;
     VolumeCore volumecore(id, type, diskId, state);
-
     auto result1 = volumecore.GetId();
     EXPECT_EQ(result1, id);
     auto result2 = volumecore.GetType();
@@ -72,19 +71,18 @@ HWTEST_F(VolumeCoreTest, Volume_core_Get_0000, testing::ext::TestSize.Level1)
 HWTEST_F(VolumeCoreTest, Volume_core_Marshalling_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeCoreTest-begin Volume_core_Marshalling_0000";
-    std::string id = "456";
+    std::string id = "200";
     int type = 2;
-    std::string diskId = "123";
+    std::string diskId = "200";
     int32_t state = UNMOUNTED;
     VolumeCore volumecore(id, type, diskId, state);
     Parcel parcel;
-    auto result = volumecore.Marshalling(parcel);
-    GTEST_LOG_(INFO) << parcel.ReadString();
-    GTEST_LOG_(INFO) << parcel.ReadInt32();
-    GTEST_LOG_(INFO) << parcel.ReadString();
-    GTEST_LOG_(INFO) << parcel.ReadInt32();
-    GTEST_LOG_(INFO) << parcel.ReadBool();
-    EXPECT_EQ(result, true);
+    volumecore.Marshalling(parcel);
+    EXPECT_EQ(parcel.ReadString(), id);
+    EXPECT_EQ(parcel.ReadInt32(), type);
+    EXPECT_EQ(parcel.ReadString(), diskId);
+    EXPECT_EQ(parcel.ReadInt32(), state);
+    EXPECT_EQ(parcel.ReadBool(), 0);
     GTEST_LOG_(INFO) << "VolumeCoreTest-end Volume_core_Marshalling_0000";
 }
 
@@ -100,21 +98,23 @@ HWTEST_F(VolumeCoreTest, Volume_core_Marshalling_0000, testing::ext::TestSize.Le
 HWTEST_F(VolumeCoreTest, Volume_core_Unmarshalling_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeCoreTest-begin Volume_core_Unmarshalling_0000";
-    std::string id = "456";
+    std::string id = "300";
     int type = 2;
-    std::string diskId = "123";
-    int32_t state = UNMOUNTED;
+    std::string diskId = "300";
+    int32_t state = CHECKING;
     bool errorFlag = false;
+    VolumeCore volumecore("400", 1, "400", 0);
     Parcel parcel;
     parcel.WriteString(id);
     parcel.WriteInt32(type);
     parcel.WriteString(diskId);
     parcel.WriteInt32(state);
     parcel.WriteBool(errorFlag);
-    auto result = std::make_unique<VolumeCore>();
-    auto volumecore = std::make_unique<VolumeCore>();
-    result = volumecore->Unmarshalling(parcel);
-    EXPECT_NE(result, nullptr);
+    auto result = volumecore.Unmarshalling(parcel);
+    EXPECT_EQ(result->GetId(), id);
+    EXPECT_EQ(result->GetType(), type);
+    EXPECT_EQ(result->GetDiskId(), diskId);
+    EXPECT_EQ(result->GetState(), state);
     GTEST_LOG_(INFO) << "VolumeCoreTest-end Volume_core_Unmarshalling_0000";
 }
 }

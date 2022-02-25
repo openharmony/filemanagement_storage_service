@@ -168,12 +168,12 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Mount_0000, testin
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t result;
-    std::string volumeId = "123";
+    std::string volumeId = "200";
     int32_t flag = 1;
     if (sdCommunication != nullptr) {
         result = sdCommunication->Mount(volumeId, flag);
     }
-    EXPECT_EQ(result, 0);
+    EXPECT_EQ(result, 6);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Mount_0000 SUCCESS";
 }
 
@@ -192,11 +192,11 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Unmount_0000, test
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t result;
-    std::string volumeId = "123";
+    std::string volumeId = "300";
     if (sdCommunication != nullptr) {
         result = sdCommunication->Unmount(volumeId);
     }
-    EXPECT_EQ(result, 0);
+    EXPECT_EQ(result, 6);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Unmount_0000 SUCCESS";
 }
 
@@ -215,11 +215,11 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Check_0000, testin
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t result;
-    std::string volumeId = "123";
+    std::string volumeId = "400";
     if (sdCommunication != nullptr) {
         result = sdCommunication->Check(volumeId);
     }
-    EXPECT_EQ(result, 0);
+    EXPECT_EQ(result, 6);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Check_0000 SUCCESS";
 }
 
@@ -243,7 +243,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Partition_0000, te
     if (sdCommunication != nullptr) {
         result = sdCommunication->Partition(diskId, type);
     }
-    EXPECT_EQ(result, 0);
+    EXPECT_EQ(result, 6);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Partition_0000 SUCCESS";
 }
 } // namespace

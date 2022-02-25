@@ -16,11 +16,6 @@ import("//build/test.gni")
 ohos_unittest("multi_user_manager_service_test") {
   module_out_path = "storage_manager/storage_manager"
 
-  defines = [
-    "STORAGE_LOG_TAG = \"StorageManager\"",
-    "LOG_DOMAIN = 0xD004300",
-  ]
-
   sources = [
     "//foundation/filemanagement/storage_service/services/storage_daemon/ipc/src/storage_daemon_proxy.cpp",
     "//foundation/filemanagement/storage_service/services/storage_manager/storage_daemon_communication/src/storage_daemon_communication.cpp",
@@ -31,11 +26,13 @@ ohos_unittest("multi_user_manager_service_test") {
   include_dirs = [
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
     "//foundation/filemanagement/storage_service/services/storage_daemon/include",
-    "//foundation/filemanagement/storage_service/services/common/include",
+    "//foundation/filemanagement/storage_service/utils/include",
     "include",
     "//utils/system/safwk/native/include",
     "//utils/native/base/include",
   ]
+
+  defines = [ "ACCOUNT_LOG_TAG = \"STORAGE_MANAGER\"" ]
 
   deps = [
     "//base/account/os_account/frameworks/common:libaccount_common",
@@ -52,7 +49,7 @@ ohos_unittest("multi_user_manager_service_test") {
   ]
 }
 
-group("manager_service_test") {
+group("storage_manager_user_test") {
   testonly = true
   deps = [ ":multi_user_manager_service_test" ]
 }
