@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 #include "ipc/storage_manager_client.h"
+
 #include <system_ability_definition.h>
 #include <iservice_registry.h>
 #include "storage_service_log.h"
@@ -24,38 +25,36 @@ namespace OHOS {
 namespace StorageDaemon {
 int32_t StorageManagerClient::GetClient()
 {
+    auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (sam == nullptr) {
+        LOGE("get system ability manager error");
+        return E_IPC_ERROR;
+    }
+
+    auto object = sam->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    if (object == nullptr) {
+        LOGE("get storage manager object error");
+        return E_IPC_ERROR;
+    }
+
+    storageManager_ = iface_cast<OHOS::StorageManager::IStorageManager>(object);
     if (storageManager_ == nullptr) {
-        auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-        if (sam == nullptr) {
-            LOGE("get system ability manager error");
-            return E_IPC_ERROR;
-        }
-
-        auto object = sam->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
-        if (object == nullptr) {
-            LOGE("get storage manager object error");
-            return E_IPC_ERROR;
-        }
-
-        storageManager_ = iface_cast<OHOS::StorageManager::IStorageManager>(object);
-        if (storageManager_ == nullptr) {
-            LOGE("iface_cast error");
-            return E_IPC_ERROR;
-        }
+        LOGE("iface_cast error");
+        return E_IPC_ERROR;
     }
 
     return E_OK;
 }
 
-int32_t StorageManagerClient::NotifyDiskCreated(std::shared_ptr<DiskInfo> &diskInfo)
+int32_t StorageManagerClient::NotifyDiskCreated(DiskInfo &diskInfo)
 {
     if (GetClient() != E_OK) {
         return E_IPC_ERROR;
     }
 
-    StorageManager::Disk disk(diskInfo->GetId(), diskInfo->GetDevDSize(),
-                              diskInfo->GetSysPath(), diskInfo->GetDevVendor(),
-                              diskInfo->GetDevFlag());
+    StorageManager::Disk disk(diskInfo.GetId(), diskInfo.GetDevDSize(),
+                              diskInfo.GetSysPath(), diskInfo.GetDevVendor(),
+                              diskInfo.GetDevFlag());
     storageManager_->NotifyDiskCreated(disk);
 
     return E_OK;
