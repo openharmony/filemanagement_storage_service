@@ -45,7 +45,7 @@ HWTEST_F(VolumeExternalTest, Volume_external_Get_0000, testing::ext::TestSize.Le
     int32_t fsType = 1;
     std::string fsUuid = "100";
     std::string path = "/";
-    std::string description = "huawei";
+    std::string description = "";
     VolumeExternal volumeexternal;
     volumeexternal.SetFsType(fsType);
     volumeexternal.SetFsUuid(fsUuid);
@@ -84,7 +84,7 @@ HWTEST_F(VolumeExternalTest, Volume_external_Marshalling_0000, testing::ext::Tes
     int32_t fsType = 1;
     std::string fsUuid = "200";
     std::string path = "/";
-    std::string description = "huawei";
+    std::string description = "";
     Parcel parcel;
     volumeexternal.SetFsType(fsType);
     volumeexternal.SetFsUuid(fsUuid);
@@ -124,7 +124,7 @@ HWTEST_F(VolumeExternalTest, Volume_external_Unmarshalling_0000, testing::ext::T
     int32_t fsType = 1;
     std::string fsUuid = "300";
     std::string path = "/";
-    std::string description = "huawei";
+    std::string description = "";
     Parcel parcel;
     parcel.WriteString(id);
     parcel.WriteInt32(type);
