@@ -100,7 +100,7 @@ public:
     
     virtual int32_t Partition(std::string diskId, int32_t type) override
     {
-         return E_OK;
+        return E_OK;
     }
 
     virtual std::vector<Disk> GetAllDisks() override
@@ -111,32 +111,32 @@ public:
 
     virtual int32_t GenerateUserKeys(uint32_t userId, uint32_t flags) override
     {
-         return E_OK;
+        return E_OK;
     }
 
     virtual int32_t DeleteUserKeys(uint32_t userId) override
     {
-         return E_OK;
+        return E_OK;
     }
 
     virtual int32_t UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret) override
     {
-         return E_OK;
+        return E_OK;
     }
 
     virtual int32_t ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret) override
     {
-         return E_OK;
+        return E_OK;
     }
 
     virtual int32_t InactiveUserKey(uint32_t userId) override
     {
-         return E_OK;
+        return E_OK;
     }
     
     virtual int32_t UpdateKeyContext(uint32_t userId) override
     {
-         return E_OK;
+        return E_OK;
     }
 };
 } // namespace StorageManager
