@@ -24,6 +24,7 @@ ohos_unittest("multi_user_manager_service_test") {
   ]
 
   include_dirs = [
+    "//foundation/filemanagement/storage_service/services/common/include",
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
     "//foundation/filemanagement/storage_service/services/storage_daemon/include",
     "//foundation/filemanagement/storage_service/utils/include",
