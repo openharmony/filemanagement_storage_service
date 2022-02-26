@@ -34,6 +34,11 @@ ohos_unittest("disk_manager_service_test") {
     "//utils/native/base/include",
   ]
 
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageManager\"",
+    "LOG_DOMAIN = 0xD004300",
+  ]
+
   deps = [
     "//third_party/googletest:gtest_main",
     "//utils/native/base:utils",
