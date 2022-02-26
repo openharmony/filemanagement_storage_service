@@ -16,10 +16,6 @@ import("//build/test.gni")
 ohos_unittest("storage_daemon_communication_test") {
   module_out_path = "storage_manager/storage_manager"
 
-  defines = [
-    "STORAGE_LOG_TAG = \"StorageManager\"",
-    "LOG_DOMAIN = 0xD004300",
-  ]
   sources = [
     "//foundation/filemanagement/storage_service/services/storage_daemon/ipc/src/storage_daemon_proxy.cpp",
     "//foundation/filemanagement/storage_service/services/storage_manager/storage_daemon_communication/src/storage_daemon_communication.cpp",
@@ -27,12 +23,18 @@ ohos_unittest("storage_daemon_communication_test") {
   ]
 
   include_dirs = [
+    "//foundation/filemanagement/storage_service/services/common/include",
     "//foundation/filemanagement/storage_service/services/storage_daemon/include",
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
-    "//foundation/filemanagement/storage_service/services/common/include",
+    "//foundation/filemanagement/storage_service/utils/include",
     "include",
     "//utils/system/safwk/native/include",
     "//utils/native/base/include",
+  ]
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageManager\"",
+    "LOG_DOMAIN = 0xD004300",
   ]
 
   deps = [
@@ -48,7 +50,7 @@ ohos_unittest("storage_daemon_communication_test") {
   ]
 }
 
-group("communication_test") {
+group("storage_manager_communication_test") {
   testonly = true
   deps = [ ":storage_daemon_communication_test" ]
 }

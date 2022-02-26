@@ -43,7 +43,7 @@ HWTEST_F(VolumeExternalTest, Volume_external_Get_0000, testing::ext::TestSize.Le
 {
     GTEST_LOG_(INFO) << "VolumeExternalTest-begin Volume_external_Get_0000";
     int32_t fsType = 1;
-    std::string fsUuid = "123";
+    std::string fsUuid = "100";
     std::string path = "/";
     std::string description = "";
     VolumeExternal volumeexternal;
@@ -75,14 +75,14 @@ HWTEST_F(VolumeExternalTest, Volume_external_Get_0000, testing::ext::TestSize.Le
 HWTEST_F(VolumeExternalTest, Volume_external_Marshalling_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeExternalTest-begin Volume_external_Marshalling_0000";
-    std::string id = "456";
+    std::string id = "200";
     int type = 2;
-    std::string diskId = "123";
+    std::string diskId = "200";
     int32_t state = UNMOUNTED;
     VolumeCore volumecore(id, type, diskId, state);
     VolumeExternal volumeexternal;
     int32_t fsType = 1;
-    std::string fsUuid = "123";
+    std::string fsUuid = "200";
     std::string path = "/";
     std::string description = "";
     Parcel parcel;
@@ -96,10 +96,10 @@ HWTEST_F(VolumeExternalTest, Volume_external_Marshalling_0000, testing::ext::Tes
     GTEST_LOG_(INFO) << parcel.ReadString();
     GTEST_LOG_(INFO) << parcel.ReadInt32();
     GTEST_LOG_(INFO) << parcel.ReadBool();
-    GTEST_LOG_(INFO) << parcel.ReadInt32();
-    GTEST_LOG_(INFO) << parcel.ReadString();
-    GTEST_LOG_(INFO) << parcel.ReadString();
-    GTEST_LOG_(INFO) << parcel.ReadString();
+    EXPECT_EQ(parcel.ReadInt32(), fsType);
+    EXPECT_EQ(parcel.ReadString(), fsUuid);
+    EXPECT_EQ(parcel.ReadString(), path);
+    EXPECT_EQ(parcel.ReadString(), description);
     EXPECT_EQ(result, true);
     GTEST_LOG_(INFO) << "VolumeExternalTest-end Volume_external_Marshalling_0000";
 }
@@ -116,13 +116,13 @@ HWTEST_F(VolumeExternalTest, Volume_external_Marshalling_0000, testing::ext::Tes
 HWTEST_F(VolumeExternalTest, Volume_external_Unmarshalling_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeExternalTest-begin Volume_external_Unmarshalling_0000";
-    std::string id = "456";
+    std::string id = "300";
     int type = 2;
-    std::string diskId = "123";
+    std::string diskId = "300";
     int32_t state = UNMOUNTED;
     bool errorFlag = false;
     int32_t fsType = 1;
-    std::string fsUuid = "123";
+    std::string fsUuid = "300";
     std::string path = "/";
     std::string description = "";
     Parcel parcel;
@@ -135,10 +135,16 @@ HWTEST_F(VolumeExternalTest, Volume_external_Unmarshalling_0000, testing::ext::T
     parcel.WriteString(fsUuid);
     parcel.WriteString(path);
     parcel.WriteString(description);
-    auto result = std::make_unique<VolumeExternal>(*VolumeCore::Unmarshalling(parcel));
-    auto volumeexternal = std::make_unique<VolumeExternal>();
-    result = volumeexternal->Unmarshalling(parcel);
-    EXPECT_NE(result, nullptr);
+    VolumeExternal volumeexternal;
+    volumeexternal.SetFsType(2);
+    volumeexternal.SetFsUuid("400");
+    volumeexternal.SetPath("/");
+    volumeexternal.SetDescription("");
+    auto result = volumeexternal.Unmarshalling(parcel);
+    EXPECT_EQ(result->GetFsType(), fsType);
+    EXPECT_EQ(result->GetUuid(), fsUuid);
+    EXPECT_EQ(result->GetPath(), path);
+    EXPECT_EQ(result->GetDescription(), description);
     GTEST_LOG_(INFO) << "VolumeExternalTest-end Volume_external_Unmarshalling_0000";
 }
 }

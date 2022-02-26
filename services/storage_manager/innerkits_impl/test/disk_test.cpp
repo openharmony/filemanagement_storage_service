@@ -42,7 +42,7 @@ public:
 HWTEST_F(DiskTest, Disk_Get_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "DiskTest-begin Disk_Get_0000";
-    std::string diskId = "123";
+    std::string diskId = "100";
     int64_t sizeBytes = 1000;
     std::string sysPath = "/";
     std::string vendor = "";
@@ -74,20 +74,19 @@ HWTEST_F(DiskTest, Disk_Get_0000, testing::ext::TestSize.Level1)
 HWTEST_F(DiskTest, Disk_Marshalling_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "DiskTest-begin Disk_Marshalling_0000";
-    std::string diskId = "123";
-    int64_t sizeBytes = 1000;
+    std::string diskId = "200";
+    int64_t sizeBytes = 2000;
     std::string sysPath = "/";
     std::string vendor = "";
     int32_t flag = USB_FLAG;
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
     Parcel parcel;
-    auto result = disk.Marshalling(parcel);
-    GTEST_LOG_(INFO) << parcel.ReadString();
-    GTEST_LOG_(INFO) << parcel.ReadInt32();
-    GTEST_LOG_(INFO) << parcel.ReadString();
-    GTEST_LOG_(INFO) << parcel.ReadString();
-    GTEST_LOG_(INFO) << parcel.ReadInt32();
-    EXPECT_EQ(result, true);
+    disk.Marshalling(parcel);
+    EXPECT_EQ(parcel.ReadString(), diskId);
+    EXPECT_EQ(parcel.ReadInt32(), sizeBytes);
+    EXPECT_EQ(parcel.ReadString(), sysPath);
+    EXPECT_EQ(parcel.ReadString(), vendor);
+    EXPECT_EQ(parcel.ReadInt32(), flag);
     GTEST_LOG_(INFO) << "DiskTest-end Disk_Marshalling_0000";
 }
 
@@ -103,8 +102,8 @@ HWTEST_F(DiskTest, Disk_Marshalling_0000, testing::ext::TestSize.Level1)
 HWTEST_F(DiskTest, Disk_Unmarshalling_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "DiskTest-begin Disk_Unmarshalling_0000";
-    std::string diskId = "123";
-    int64_t sizeBytes = 1000;
+    std::string diskId = "300";
+    int64_t sizeBytes = 3000;
     std::string sysPath = "/";
     std::string vendor = "";
     int32_t flag = USB_FLAG;
@@ -114,10 +113,13 @@ HWTEST_F(DiskTest, Disk_Unmarshalling_0000, testing::ext::TestSize.Level1)
     parcel.WriteString(sysPath);
     parcel.WriteString(vendor);
     parcel.WriteInt32(flag);
-    auto result = std::make_unique<Disk>();
-    auto dk = std::make_unique<Disk>();
-    result = dk->Unmarshalling(parcel);
-    EXPECT_NE(result, nullptr);
+    Disk disk("400", 4000, "/", "", SD_FLAG);
+    auto result = disk.Unmarshalling(parcel);
+    EXPECT_EQ(result->GetDiskId(), diskId);
+    EXPECT_EQ(result->GetSizeBytes(), sizeBytes);
+    EXPECT_EQ(result->GetSysPath(), sysPath);
+    EXPECT_EQ(result->GetVendor(), vendor);
+    EXPECT_EQ(result->GetFlag(), flag);
     GTEST_LOG_(INFO) << "DiskTest-end Disk_Unmarshalling_0000";
 }
 }

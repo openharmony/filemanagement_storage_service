@@ -110,7 +110,7 @@ ohos_unittest("volume_external_test") {
   ]
 }
 
-group("volumeexternal_test") {
+group("storage_manager_innerkits_test") {
   testonly = true
   deps = [
     ":disk_test",

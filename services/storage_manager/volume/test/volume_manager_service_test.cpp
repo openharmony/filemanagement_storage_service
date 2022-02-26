@@ -16,6 +16,7 @@
 #include <cstdio>
 #include <gtest/gtest.h>
 
+#include "volume_core.h"
 #include "volume/volume_manager_service.h"
 
 namespace {
@@ -54,11 +55,9 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0000, testing::e
     int32_t result;
     if (vmService != nullptr) {
         vmService->OnVolumeCreated(vc);
-        vmService->OnVolumeMounted(volumeId, fsType, fsUuid, path, description);
-        vmService->Unmount(volumeId);
         result = vmService->Mount(volumeId);
     }
-    EXPECT_EQ(result, 0);
+    EXPECT_NE(result, 9);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Mount_0000";
 }
 
@@ -85,11 +84,11 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_0000, testing:
     VolumeCore vc(volumeId, fsType, diskId);
     int32_t result;
     if (vmService != nullptr) {
+        vc.SetState(VolumeState::MOUNTED);
         vmService->OnVolumeCreated(vc);
-        vmService->OnVolumeMounted(volumeId, fsType, fsUuid, path, description);
         result = vmService->Unmount(volumeId);
     }
-    EXPECT_EQ(result, 0);
+    EXPECT_NE(result, 10);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Unmount_0000";
 }
 

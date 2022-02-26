@@ -16,11 +16,6 @@ import("//build/test.gni")
 ohos_unittest("disk_manager_service_test") {
   module_out_path = "storage_manager/storage_manager"
 
-  defines = [
-    "STORAGE_LOG_TAG = \"StorageManager\"",
-    "LOG_DOMAIN = 0xD004300",
-  ]
-
   sources = [
     "//foundation/filemanagement/storage_service/services/storage_manager/disk/src/disk_manager_service.cpp",
     "//foundation/filemanagement/storage_service/services/storage_manager/storage_daemon_communication/src/storage_daemon_communication.cpp",
@@ -30,12 +25,18 @@ ohos_unittest("disk_manager_service_test") {
   include_dirs = [
     "//foundation/aafwk/standard/interfaces/innerkits/base/include/ohos/aafwk/base",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
+    "//foundation/filemanagement/storage_service/services/common/include",
     "//foundation/filemanagement/storage_service/services/storage_daemon/include",
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
-    "//foundation/filemanagement/storage_service/services/common/include",
+    "//foundation/filemanagement/storage_service/utils/include",
     "include",
     "//utils/system/safwk/native/include",
     "//utils/native/base/include",
+  ]
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageManager\"",
+    "LOG_DOMAIN = 0xD004300",
   ]
 
   deps = [
@@ -55,7 +56,7 @@ ohos_unittest("disk_manager_service_test") {
   ]
 }
 
-group("dmservice_test") {
+group("storage_manager_disk_test") {
   testonly = true
   deps = [ ":disk_manager_service_test" ]
 }
