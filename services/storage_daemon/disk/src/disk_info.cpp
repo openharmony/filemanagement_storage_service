@@ -28,10 +28,10 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-const std::string sgdiskPath = "/system/bin/sgdisk";
-const std::string sgdiskDumpCmd = "--ohos-dump";
-const std::string sgdiskZapCmd = "--zap-all";
-const std::string sgdiskPartCmd = "--new=0:0:-0 --typeconde=0:0c00 --gpttombr=1";
+const std::string SGDISK_PATH = "/system/bin/sgdisk";
+const std::string SGDISK_DUMP_CMD = "--ohos-dump";
+const std::string SGDISK_ZAP_CMD = "--zap-all";
+const std::string SGDISK_PART_CMD = "--new=0:0:-0 --typeconde=0:0c00 --gpttombr=1";
 
 DiskInfo::DiskInfo(std::string sysPath, std::string devPath, dev_t device, int flag)
 {
@@ -86,33 +86,46 @@ DiskInfo::~DiskInfo()
 
 int DiskInfo::Create()
 {
+    int ret;
+
     CreateDiskNode(devPath_, device_);
     status = sCreate;
     ReadMetadata();
 
     StorageManagerClient client;
-    int32_t ret = client.NotifyDiskCreated(*this);
+    ret = client.NotifyDiskCreated(*this);
     if (ret != E_OK) {
         LOGE("Notify Disk Created failed");
         return ret;
     }
 
-    ReadPartition();
+    ret = ReadPartition();
+    if (ret != E_OK) {
+        LOGE("Create disk failed");
+        return ret;
+    }
+
     return E_OK;
 }
 
 int DiskInfo::Destroy()
 {
+    int ret;
     auto volume = VolumeManager::Instance();
+
     for (auto volumeId : volumeId_) {
-        volume->DestroyVolume(volumeId);
+        ret = volume->DestroyVolume(volumeId);
+        if (ret != E_OK) {
+            LOGE("Destroy volume %{public}s failed", volumeId.c_str());
+            return E_ERR;
+        }
     }
     status = sDestroy;
     volumeId_.clear();
     return E_OK;
 }
 
-int DiskInfo::ReadMetadata()
+void DiskInfo::ReadMetadata()
 {
     size_ = -1;
     vendor_.clear();
@@ -121,12 +134,12 @@ int DiskInfo::ReadMetadata()
     }
 
     unsigned int majorId = major(device_);
-    if (majorId == diskMmc) {
+    if (majorId == DISK_MMC_MAJOR) {
         std::string path(sysPath_ + "/device/manfid");
         std::string str;
         if (!ReadFile(path, &str)) {
             LOGE("open file %{public}s failed", path.c_str());
-            return E_ERR;
+            return;
         }
         unsigned int manfid = std::stoi(str);
         switch (manfid) {
@@ -148,7 +161,7 @@ int DiskInfo::ReadMetadata()
             }
             default : {
                 vendor_ = "Unknown";
-                LOGE("Unknown vendor information: %{public}d", manfid);
+                LOGI("Unknown vendor information: %{public}d", manfid);
                 break;
             }
         }
@@ -157,12 +170,11 @@ int DiskInfo::ReadMetadata()
         std::string str;
         if (!ReadFile(path, &str)) {
             LOGE("open file %{public}s failed", path.c_str());
-            return E_ERR;
+            return;
         }
         vendor_ = str;
     LOGI("Read metadata %{public}s", path.c_str());
     }
-    return E_OK;
 }
 
 int DiskInfo::ReadPartition()
@@ -178,8 +190,8 @@ int DiskInfo::ReadPartition()
     std::vector<std::string> lines;
     int res;
 
-    cmd.push_back(sgdiskPath);
-    cmd.push_back(sgdiskDumpCmd);
+    cmd.push_back(SGDISK_PATH);
+    cmd.push_back(SGDISK_DUMP_CMD);
     cmd.push_back(devPath_);
     res = ForkExec(cmd, &output);
     if (res != E_OK) {
@@ -193,7 +205,7 @@ int DiskInfo::ReadPartition()
             lines.push_back(tmp);
     }
 
-    std::string lineToken = " \t";
+    std::string lineToken = " ";
     status = sScan;
     for (auto &line : lines) {
         auto split = SplitLine(line, lineToken);
@@ -213,7 +225,10 @@ int DiskInfo::ReadPartition()
                 continue;
             }
             dev_t partitionDev = makedev(major(device_), minor(device_) + index);
-            CreateVolume(partitionDev);
+            res = CreateVolume(partitionDev);
+            if (res != E_OK) {
+                return res;
+            }
         }
     }
     return E_OK;
@@ -225,6 +240,11 @@ int DiskInfo::CreateVolume(dev_t dev)
 
     LOGI("disk read volume metadata");
     std::string volumeId = volume->CreateVolume(GetId(), dev);
+    if (volumeId == "") {
+        LOGE("Create volume failed");
+        return E_ERR;
+    }
+
     volumeId_.push_back(volumeId);
     return E_OK;
 }
@@ -234,18 +254,23 @@ int DiskInfo::Partition()
     std::vector<std::string> cmd;
     int res;
 
-    Destroy();
-    cmd.push_back(sgdiskPath);
-    cmd.push_back(sgdiskZapCmd);
+    res = Destroy();
+    if (res != E_OK) {
+        LOGE("Destroy failed in Partition()");
+    }
+
+    cmd.push_back(SGDISK_PATH);
+    cmd.push_back(SGDISK_ZAP_CMD);
     cmd.push_back(devPath_);
     res = ForkExec(cmd);
     if (res != E_OK) {
-        LOGW("sgdisk: zap fail");
+        LOGE("sgdisk: zap fail");
+        return res;
     }
 
     cmd.clear();
-    cmd.push_back(sgdiskPath);
-    cmd.push_back(sgdiskPartCmd);
+    cmd.push_back(SGDISK_PATH);
+    cmd.push_back(SGDISK_PART_CMD);
     cmd.push_back(devPath_);
     res = ForkExec(cmd);
     if (res != E_OK) {

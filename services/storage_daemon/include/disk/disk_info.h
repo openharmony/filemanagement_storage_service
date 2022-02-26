@@ -31,15 +31,15 @@ const int sDestroy = 4;
 class DiskInfo {
 public:
     enum DeviceFlag {
-        sdFlag = 1,
-        usbFlag = 2,
+        SD_FLAG = 1,
+        USB_FLAG = 2,
     };
 
     DiskInfo(std::string sysPath_, std::string devPath_, dev_t device, int flag);
     virtual ~DiskInfo();
     int Create();
     int Destroy();
-    int ReadMetadata();
+    void ReadMetadata();
     int ReadPartition();
     int CreateVolume(dev_t dev);
     int Partition();

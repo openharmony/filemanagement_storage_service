@@ -66,33 +66,20 @@ std::string StringPrintf(const char *format, ...)
 std::vector<std::string> SplitLine(std::string &line, std::string &token)
 {
     std::vector<std::string> result;
-    char *l = new char[line.length() + 1];
-    char *t = new char[token.length() + 1];
-    auto err = strcpy_s(l, line.length() + 1, line.c_str());
-    if (err) {
-        LOGE("strcpy line failed ret %{public}d", err);
-        free(l);
-        free(t);
-        return result;
+    std::string::size_type start, end;
+
+    start = 0;
+    end = line.find(token);
+    while (std::string::npos != end) {
+        result.push_back(line.substr(start, end - start));
+        start = end + token.size();
+        end = line.find(token, start);
     }
 
-    err = strcpy_s(t, token.length() + 1, token.c_str());
-    if (err) {
-        LOGE("strcpy token failed ret %{public}d", err);
-        free(l);
-        free(t);
-        return result;
+    if (start != line.length()) {
+        result.push_back(line.substr(start));
     }
 
-    char *tmp = strtok(l, t);
-    while (tmp) {
-        std::string subStr = tmp;
-        result.push_back(subStr);
-        tmp = strtok(nullptr, t);
-    }
-
-    free(l);
-    free(t);
     return result;
 }
 } // namespace StorageDaemon

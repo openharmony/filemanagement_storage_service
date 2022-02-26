@@ -40,9 +40,10 @@ public:
     void ChangeDisk(dev_t device);
     std::shared_ptr<DiskInfo> GetDisk(dev_t device);
     void HandleDiskEvent(NetlinkData *data);
-    int32_t HandlePartition(std::string diskId, int32_t type);
+    int32_t HandlePartition(std::string diskId);
     void AddDiskConfig(std::shared_ptr<DiskConfig> &diskConfig);
     void ReplayUevent();
+    std::shared_ptr<DiskInfo> MatchConfig(NetlinkData *data);
 
 private:
     DiskManager() = default;

@@ -70,15 +70,15 @@ int GetDevSize(std::string path, uint64_t *size)
 int GetMaxVolume(dev_t device)
 {
     unsigned int majorId = major(device);
-    if (majorId == diskMmc) {
+    if (majorId == DISK_MMC_MAJOR) {
         std::string str;
-        if (!ReadFile(SysfsMmcMaxVolumes, &str)) {
+        if (!ReadFile(MMC_MAX_VOLUMES_PATH, &str)) {
             LOGE("Get MmcMaxVolumes failed");
             return E_ERR;
         }
         return std::stoi(str);
     } else {
-        return maxScsiVolumes;
+        return MAX_SCSI_VOLUMES;
     }
 }
 } // namespace STORAGE_DAEMON
