@@ -33,7 +33,10 @@ ohos_unittest("multi_user_manager_service_test") {
     "//utils/native/base/include",
   ]
 
-  defines = [ "ACCOUNT_LOG_TAG = \"STORAGE_MANAGER\"" ]
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageManager\"",
+    "LOG_DOMAIN = 0xD004300",
+  ]
 
   deps = [
     "//base/account/os_account/frameworks/common:libaccount_common",
