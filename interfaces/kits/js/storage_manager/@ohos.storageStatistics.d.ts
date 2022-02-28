@@ -40,7 +40,7 @@ declare namespace storageStatistics {
  /**
    * Get the bundlestat 
    * 
-   * @since 8
+   * @since 9
    */
 
  export interface BundleStats {
