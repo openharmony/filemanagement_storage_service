@@ -180,9 +180,8 @@ int32_t StorageManagerStub::HandleGetFree(MessageParcel &data, MessageParcel &re
 
 int32_t StorageManagerStub::HandleGetBundleStatus(MessageParcel &data, MessageParcel &reply)
 {
-    std::string uuid = data.ReadString();
     std::string pkgName = data.ReadString();
-    std::vector<int64_t> bundleStats = GetBundleStats(uuid, pkgName);
+    std::vector<int64_t> bundleStats = GetBundleStats(pkgName);
     if (!reply.WriteInt64Vector(bundleStats)) {
         return  E_IPC_ERROR;
     }
