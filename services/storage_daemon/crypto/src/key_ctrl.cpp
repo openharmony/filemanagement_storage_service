@@ -281,27 +281,33 @@ uint8_t KeyCtrl::GetEncryptedVersion(const std::string &dir)
 
 int32_t KeyCtrl::InitFscryptPolicy()
 {
-    LOGI("fscrypt init");
+    LOGD("enter");
     char tmp[FSCRYPT_POLICY_BUFFER_SIZE] = { 0 };
     int ret = GetParameter(FSCRYPT_POLICY_KEY.c_str(), "", tmp, FSCRYPT_POLICY_BUFFER_SIZE);
     if (ret < 0) {
-        LOGE("fscrypt is not enabled");
+        LOGI("fscrypt config parameter not set, not enable fscrypt");
+        g_fscryptEnable = false;
         return -ENOTSUP;
     }
 
     std::string config(tmp);
     std::vector<std::string> strs;
     std::string sep = ":";
+    LOGI("enable fscrypt policy from config: %{public}s", config.c_str());
     SplitStr(config, sep, strs, false, false);
     if (strs.size() != FSCRYPT_OPTIONS_TABLE.size()) {
-        LOGE("input fscrypt config error, use default policy");
+        LOGI("bad policy size, just use the default policy");
+        g_fscryptEnable = true;
+        g_policyOption = DEFAULT_POLICY;
         return 0;
     }
 
     for (size_t index = 0; index < strs.size(); index++) {
         auto item = FSCRYPT_OPTIONS_TABLE[index];
         if (item.find(strs[index]) == item.end()) {
-            LOGE("input fscrypt %{public}s option error, user default policy", strs[index].c_str());
+            LOGI("bad policy option %{public}s, just use the default policy", strs[index].c_str());
+            g_fscryptEnable = true;
+            g_policyOption = DEFAULT_POLICY;
             return 0;
         }
     }
@@ -309,37 +315,37 @@ int32_t KeyCtrl::InitFscryptPolicy()
     g_policyOption.fileName = strs[INDEX_FSCRYPT_FILENAME];
     g_policyOption.content = strs[INDEX_FSCRYPT_CONTENT];
     g_policyOption.flags = strs[INDEX_FSCRYPT_FLAGS];
-    LOGI("fscrypt policy init success, policy is %{public}s", tmp);
     g_fscryptEnable = true;
+    LOGI("fscrypt policy init success");
 
     return 0;
 }
 
 int32_t KeyCtrl::SetFscryptSyspara(const std::string &config)
 {
-    LOGI("SetFscryptSyapara start");
+    LOGD("start set parameter: %{public}s", config.c_str());
     std::vector<std::string> strs;
     std::string sep = ":";
     SplitStr(config, sep, strs, false, false);
     if (strs.size() != FSCRYPT_OPTIONS_TABLE.size()) {
-        LOGE("input fscrypt config error, use default policy");
-        return 0;
+        LOGE("bad policy size, not to set the parameter");
+        return -EINVAL;
     }
 
     for (size_t index = 0; index < strs.size(); index++) {
         auto item = FSCRYPT_OPTIONS_TABLE[index];
         if (item.find(strs[index]) == item.end()) {
-            LOGE("input fscrypt %{public}s option error, use default policy", strs[index].c_str());
-            return 0;
+            LOGE("bad policy option %{public}s, not to set the parameter", strs[index].c_str());
+            return -EINVAL;
         }
     }
 
     int ret = SetParameter(FSCRYPT_POLICY_KEY.c_str(), config.c_str());
     if (ret < 0) {
-        LOGE("fscrypt is not enabled, ret = %{public}d", ret);
+        LOGE("SetParameter failed ret = %{public}d", ret);
         return -ENOTSUP;
     }
-    LOGI("fscrypt system parameter set success");
+    LOGI("fscrypt config parameter set success");
 
     return 0;
 }
