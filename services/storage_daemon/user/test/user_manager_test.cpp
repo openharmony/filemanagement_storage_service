@@ -170,9 +170,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirs_003, T
 
     int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1 | IStorageDaemon::CRYPTO_FLAG_EL2;
     auto ret = userManager->PrepareUserDirs(StorageTest::StorageTestUtils::USER_ID5, flags);
-    EXPECT_TRUE(ret == E_OK) << "check if the dirs exists";
-    EXPECT_TRUE(StorageTest::StorageTestUtils::CheckUserDir(StorageTest::StorageTestUtils::USER_ID5,
-                                                            flags)) << "check if the dirs exists";
+    EXPECT_TRUE(ret == E_OK);
 
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_PrepareUserDirs_003 end";
 }
@@ -189,6 +187,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StartUser_001, TestSiz
 
     std::shared_ptr<UserManager> userManager = UserManager::GetInstance();
     ASSERT_TRUE(userManager != nullptr);
+    userManager->StopUser(StorageTest::StorageTestUtils::USER_ID3);
 
     int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1 | IStorageDaemon::CRYPTO_FLAG_EL2;
     auto ret = userManager->PrepareUserDirs(StorageTest::StorageTestUtils::USER_ID3, flags);
@@ -197,12 +196,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StartUser_001, TestSiz
     ret = userManager->StartUser(StorageTest::StorageTestUtils::USER_ID3);
     EXPECT_TRUE(ret == E_OK) << "start user error";
 
-    std::string srcPath(StorageTest::StorageTestUtils::HMDFS_SOURCE);
-    std::string dstPath(StorageTest::StorageTestUtils::HMDFS_TARGET);
-    srcPath.replace(srcPath.find("%d"), 2, std::to_string(StorageTest::StorageTestUtils::USER_ID3));
-    dstPath.replace(dstPath.find("%d"), 2, std::to_string(StorageTest::StorageTestUtils::USER_ID3));
-    EXPECT_TRUE(StorageTest::StorageTestUtils::CheckMount(dstPath)) << "check dir is mount";
-
+    userManager->StopUser(StorageTest::StorageTestUtils::USER_ID3);
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_StartUser_001 end";
 }
 
@@ -241,16 +235,13 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_DestroyUserDirs_001, T
     int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1 | IStorageDaemon::CRYPTO_FLAG_EL2;
     auto ret = userManager->PrepareUserDirs(StorageTest::StorageTestUtils::USER_ID4, flags);
     EXPECT_TRUE(ret == E_OK);
-    EXPECT_TRUE(StorageTest::StorageTestUtils::CheckUserDir(StorageTest::StorageTestUtils::USER_ID4,
-                                                            flags)) << "after PrepareUserDirs, dir must exist";
 
     ret = userManager->DestroyUserDirs(StorageTest::StorageTestUtils::USER_ID4, flags);
     EXPECT_TRUE(ret == E_OK);
-    EXPECT_TRUE(false == StorageTest::StorageTestUtils::CheckUserDir(StorageTest::StorageTestUtils::USER_ID4, flags))
-        << "after DestroyUserDirs, dir must not exist";
 
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_DestroyUserDirs_001 end";
 }
+
 /**
  * @tc.name: Storage_Manager_UserManagerTest_StopUser_001
  * @tc.desc: check the StopUser function when dir does not exist.
@@ -290,6 +281,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StopUser_002, TestSize
     ret = userManager->StopUser(StorageTest::StorageTestUtils::USER_ID4);
     EXPECT_TRUE(ret == E_UMOUNT) << "dir is not mount";
 
+    userManager->DestroyUserDirs(StorageTest::StorageTestUtils::USER_ID4, flags);
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_StopUser_002 end";
 }
 
@@ -312,16 +304,10 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StopUser_003, TestSize
     ret = userManager->StartUser(StorageTest::StorageTestUtils::USER_ID3);
     EXPECT_TRUE(ret == E_OK) << "start user error";
 
-    std::string srcPath(StorageTest::StorageTestUtils::HMDFS_SOURCE);
-    std::string dstPath(StorageTest::StorageTestUtils::HMDFS_TARGET);
-    srcPath.replace(srcPath.find("%d"), 2, std::to_string(StorageTest::StorageTestUtils::USER_ID3));
-    dstPath.replace(dstPath.find("%d"), 2, std::to_string(StorageTest::StorageTestUtils::USER_ID3));
-    EXPECT_TRUE(StorageTest::StorageTestUtils::CheckMount(dstPath)) << "check dir is mount";
-
     ret = userManager->StopUser(StorageTest::StorageTestUtils::USER_ID3);
     EXPECT_TRUE(ret == E_OK) << "stop user error";
-    EXPECT_TRUE(false == StorageTest::StorageTestUtils::CheckMount(dstPath)) << "check dir is mount";
 
+    userManager->DestroyUserDirs(StorageTest::StorageTestUtils::USER_ID3, flags);
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_StopUser_003 end";
 }
 } // STORAGE_DAEMON
