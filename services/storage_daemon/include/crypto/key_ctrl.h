@@ -127,7 +127,6 @@ static const auto FSCRYPT_OPTIONS_TABLE = std::vector<std::map<std::string, uint
     ALL_VERSION,
     FILENAME_MODES,
     CONTENTS_MODES,
-    POLICY_FLAGS,
 };
 } // namespace StorageDaemon
 } // namespace OHOS
