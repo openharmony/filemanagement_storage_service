@@ -14,7 +14,7 @@
 import("//build/test.gni")
 
 ohos_unittest("disk_test") {
-  module_out_path = "storage_manager/storage_manager"
+  module_out_path = "filemanagement/storage_service/storage_manager"
 
   sources = [
     "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/disk.cpp",
@@ -45,7 +45,7 @@ ohos_unittest("disk_test") {
 }
 
 ohos_unittest("volume_core_test") {
-  module_out_path = "storage_manager/storage_manager"
+  module_out_path = "filemanagement/storage_service/storage_manager"
 
   sources = [
     "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/volume_core.cpp",
@@ -76,7 +76,7 @@ ohos_unittest("volume_core_test") {
 }
 
 ohos_unittest("volume_external_test") {
-  module_out_path = "storage_manager/storage_manager"
+  module_out_path = "filemanagement/storage_service/storage_manager"
 
   sources = [
     "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/disk.cpp",
