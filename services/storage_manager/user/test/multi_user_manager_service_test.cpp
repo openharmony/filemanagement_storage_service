@@ -103,7 +103,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareAddUser_0002, 
 /**
  * @tc.number: SUB_STORAGE_User_manager_service_PrepareAddUser_0003
  * @tc.name: User_manager_service_PrepareAddUser_0003
- * @tc.desc: Test function of PrepareAddUser interface for Logic ERROR which Repeated add.
+ * @tc.desc: Test function of PrepareAddUser interface for SUCCESS which Repeated add.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
@@ -119,7 +119,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareAddUser_0003, 
         service->PrepareAddUser(userId);
         result = service->PrepareAddUser(userId);
     }
-    EXPECT_NE(result, 0);
+    EXPECT_EQ(result, 0);
     service->RemoveUser(userId);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_PrepareAddUser_0003";
 }
@@ -150,7 +150,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_RemoveUser_0000, test
 /**
  * @tc.number: SUB_STORAGE_User_manager_service_RemoveUser_0001
  * @tc.name: User_manager_service_RemoveUser_0001
- * @tc.desc: Test function of RemoveUser interface for Logic ERROR which remove userId not exist.
+ * @tc.desc: Test function of RemoveUser interface for SUCCESS which remove userId not exist.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
@@ -165,7 +165,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_RemoveUser_0001, test
     if (service != nullptr) {
         result = service->RemoveUser(userId);
     }
-    EXPECT_NE(result, 0);
+    EXPECT_EQ(result, 0);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_RemoveUser_0001";
 }
 
@@ -265,7 +265,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareStartUser_0002
 /**
  * @tc.number: SUB_STORAGE_User_manager_service_PrepareStartUser_0003
  * @tc.name: User_manager_service_PrepareStartUser_0003
- * @tc.desc: Test function of PrepareStartUser interface for Logic ERROR which Repeated start.
+ * @tc.desc: Test function of PrepareStartUser interface for SUCCESS which Repeated start.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
