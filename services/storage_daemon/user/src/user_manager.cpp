@@ -18,7 +18,6 @@
 #include "crypto/key_manager.h"
 #include "ipc/istorage_daemon.h"
 #include "storage_service_errno.h"
-#include "utils/file_utils.h"
 #include "storage_service_log.h"
 #include "utils/string_utils.h"
 
@@ -157,16 +156,10 @@ int32_t UserManager::PrepareDirsFromIdAndLevel(int32_t userId, const std::string
         temp.path = StringPrintf(item.path.c_str(), level.c_str(), userId);
         list.push_back(temp);
     }
-    if (level == el1_) {
-        if (KeyManager::GetInstance()->SetDirectoryElPolicy(userId, EL1_KEY, list)) {
-            LOGE("Set user dir el1 policy error");
-            return E_SET_POLICY;
-        }
-    } else if (level == el2_) {
-        if (KeyManager::GetInstance()->SetDirectoryElPolicy(userId, EL2_KEY, list)) {
-            LOGE("Set user dir el1 policy error");
-            return E_SET_POLICY;
-        }
+    int ret = SetElDirFscryptPolicy(userId, level, list);
+    if (ret != E_OK) {
+        LOGE("Set el poilcy failed");
+        return ret;
     }
 
     if (!PrepareDirsFromVec(userId, level, subDirVec_)) {
@@ -193,6 +186,18 @@ int32_t UserManager::PrepareEl1BundleDir(int32_t userId)
         return E_PREPARE_DIR;
     }
 
+    // set policy here
+    std::vector<FileList> list;
+    FileList temp;
+    temp.userId = userId;
+    temp.path = StringPrintf(bundle_.c_str(), userId);
+    list.push_back(temp);
+    int ret = SetElDirFscryptPolicy(userId, el1_, list);
+    if (ret != E_OK) {
+        LOGE("Set el1 poilcy failed");
+        return ret;
+    }
+
     return E_OK;
 }
 
@@ -200,6 +205,24 @@ int32_t UserManager::DestroyEl1BundleDir(int32_t userId)
 {
     if (!RmDirRecurse(StringPrintf(bundle_.c_str(), userId))) {
         return E_DESTROY_DIR;
+    }
+
+    return E_OK;
+}
+
+int32_t UserManager::SetElDirFscryptPolicy(int32_t userId, const std::string &level,
+                                           const std::vector<FileList> &list)
+{
+    if (level == el1_) {
+        if (KeyManager::GetInstance()->SetDirectoryElPolicy(userId, EL1_KEY, list)) {
+            LOGE("Set user dir el1 policy error");
+            return E_SET_POLICY;
+        }
+    } else if (level == el2_) {
+        if (KeyManager::GetInstance()->SetDirectoryElPolicy(userId, EL2_KEY, list)) {
+            LOGE("Set user dir el1 policy error");
+            return E_SET_POLICY;
+        }
     }
 
     return E_OK;
