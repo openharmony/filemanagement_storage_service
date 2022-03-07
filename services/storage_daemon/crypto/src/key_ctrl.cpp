@@ -353,7 +353,7 @@ bool KeyCtrl::HasFscryptSyspara()
     LOGD("enter");
     char tmp[FSCRYPT_POLICY_BUFFER_SIZE] = { 0 };
     int ret = GetParameter(FSCRYPT_POLICY_KEY.c_str(), "", tmp, FSCRYPT_POLICY_BUFFER_SIZE);
-    if (ret < 0) {
+    if (ret <= 0) {
         LOGD("fscrypt config parameter not set, not enable fscrypt");
         return false;
     }
