@@ -14,6 +14,7 @@
  */
 #include "key_ctrl.h"
 
+#include <algorithm>
 #include <vector>
 #include <map>
 #include <sys/syscall.h>
@@ -310,7 +311,7 @@ int32_t KeyCtrl::InitFscryptPolicy()
     LOGD("enter");
     char tmp[FSCRYPT_POLICY_BUFFER_SIZE] = { 0 };
     int ret = GetParameter(FSCRYPT_POLICY_KEY.c_str(), "", tmp, FSCRYPT_POLICY_BUFFER_SIZE);
-    if (ret < 0) {
+    if (ret <= 0) {
         LOGI("fscrypt config parameter not set, not enable fscrypt");
         g_fscryptEnable = false;
         return -ENOTSUP;
@@ -386,6 +387,33 @@ bool KeyCtrl::HasFscryptSyspara()
     }
 
     return true;
+}
+
+int32_t KeyCtrl::FscryptEnableGlobalKeyDir(const std::string &dir)
+{
+    LOGI("enter, dir = %{public}s", dir.c_str());
+
+    // Check the dir is in the global key dir list.
+    auto iter = GLOBAL_FSCRYPT_DIR.find(dir);
+    if (iter == GLOBAL_FSCRYPT_DIR.end()) {
+        LOGI("Is not global key fscrypt dir");
+        return 0;
+    }
+    if (!g_fscryptEnable) {
+        int ret = InitFscryptPolicy();
+        if (ret != 0) {
+            LOGE("Init fscrypt policy error");
+            return ret;
+        }
+        g_fscryptEnable = true;
+    }
+
+    if (!LoadAndSetPolicy(DEVICE_EL1_DIR, dir)) {
+        LOGE("Set fscrypt failed");
+        return -EFAULT;
+    }
+
+    return 0;
 }
 } // namespace StorageDaemon
 } // namespace OHOS

@@ -28,10 +28,6 @@ namespace StorageDaemon {
 const UserAuth NULL_KEY_AUTH = {
     .token = ""
 };
-const std::string DATA_EL0_DIR = std::string() + "/data/service/el0";
-const std::string STORAGE_DAEMON_DIR = DATA_EL0_DIR + "/storage_daemon";
-const std::string DEVICE_EL1_DIR = STORAGE_DAEMON_DIR + "/sd";
-
 const std::string FSCRYPT_USER_EL1_PUBLIC = std::string() + "/data/service/el1/public";
 const std::string SERVICE_STORAGE_DAEMON_DIR = FSCRYPT_USER_EL1_PUBLIC + "/storage_daemon";
 const std::string FSCRYPT_EL_DIR = SERVICE_STORAGE_DAEMON_DIR + "/sd";

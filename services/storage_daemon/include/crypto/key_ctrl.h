@@ -18,6 +18,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <set>
 #include <linux/keyctl.h>
 #include <linux/version.h>
 
@@ -54,6 +55,10 @@ union FscryptPolicy {
 #endif
 };
 
+const std::string DATA_EL0_DIR = std::string() + "/data/service/el0";
+const std::string STORAGE_DAEMON_DIR = DATA_EL0_DIR + "/storage_daemon";
+const std::string DEVICE_EL1_DIR = STORAGE_DAEMON_DIR + "/sd";
+
 class KeyCtrl {
 public:
     // ------ fscrypt legacy ------
@@ -89,6 +94,7 @@ public:
     static int32_t SetFscryptSyspara(const std::string &config);
     static bool HasFscryptSyspara();
     static std::string CheckRealPath(const std::string &path);
+    static int32_t FscryptEnableGlobalKeyDir(const std::string &dir);
 };
 
 struct EncryptPolicy {
@@ -135,6 +141,12 @@ static const auto FSCRYPT_OPTIONS_TABLE = std::vector<std::map<std::string, uint
     ALL_VERSION,
     FILENAME_MODES,
     CONTENTS_MODES,
+};
+
+static const std::set<std::string> GLOBAL_FSCRYPT_DIR = {
+    "/data/app/el1/bundle/public",
+    "/data/service/el1/public",
+    "/data/chipset/el1/public",
 };
 } // namespace StorageDaemon
 } // namespace OHOS

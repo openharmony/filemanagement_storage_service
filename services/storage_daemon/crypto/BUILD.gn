@@ -67,3 +67,50 @@ ohos_static_library("libsdcrypto") {
   subsystem_name = "filemanagement"
   part_name = "storage_service"
 }
+
+config("fscrypto_config") {
+  visibility = [ ":*" ]
+
+  include_dirs = [
+    "../include/crypto",
+    "//foundation/filemanagement/storage_service/services/common/include",
+  ]
+
+  cflags = [
+    "-g3",
+    "-Wall",
+  ]
+}
+
+config("fscrypto_public_config") {
+  include_dirs =
+      [ "//base/security/huks/interfaces/innerkits/huks_standard/main/include" ]
+}
+
+ohos_static_library("libfscryptutils") {
+  sources = [
+    "src/fscrypt_utils.cpp",
+    "src/key_ctrl.cpp",
+  ]
+
+  defines = [
+    "STORAGE_LOG_TAG = \"FscryptUtils\"",
+    "LOG_DOMAIN = 0xD004301",
+  ]
+
+  configs = [ ":fscrypto_config" ]
+  public_configs = [ ":fscrypto_public_config" ]
+
+  deps = [
+    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara:syspara",
+    "//utils/native/base:utils",
+  ]
+
+  external_deps = [
+    "hiviewdfx_hilog_native:libhilog",
+  ]
+
+  subsystem_name = "filemanagement"
+  part_name = "storage_service"
+}
+
