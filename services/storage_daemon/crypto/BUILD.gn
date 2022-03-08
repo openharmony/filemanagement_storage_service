@@ -82,11 +82,6 @@ config("fscrypto_config") {
   ]
 }
 
-config("fscrypto_public_config") {
-  include_dirs =
-      [ "//base/security/huks/interfaces/innerkits/huks_standard/main/include" ]
-}
-
 ohos_static_library("libfscryptutils") {
   sources = [
     "src/fscrypt_utils.cpp",
@@ -99,7 +94,6 @@ ohos_static_library("libfscryptutils") {
   ]
 
   configs = [ ":fscrypto_config" ]
-  public_configs = [ ":fscrypto_public_config" ]
 
   deps = [
     "//base/startup/syspara_lite/interfaces/innerkits/native/syspara:syspara",
