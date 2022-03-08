@@ -60,6 +60,7 @@ int GetDevSize(std::string path, uint64_t *size)
 
     if (ioctl(fd, BLKGETSIZE64, size)) {
         LOGE("get device %s{private}s size failed", path.c_str());
+        close(fd);
         return E_ERR;
     }
 
