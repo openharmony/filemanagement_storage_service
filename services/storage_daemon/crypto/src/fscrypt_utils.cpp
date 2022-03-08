@@ -14,10 +14,24 @@
  */
 #include "fscrypt_utils.h"
 
+#include <cerrno>
+
 #include "key_ctrl.h"
 
 int FscryptPolicyEnable(const char *dir)
 {
+    if (dir == nullptr) {
+        return -EINVAL;
+    }
     std::string tmp(dir);
     return OHOS::StorageDaemon::KeyCtrl::FscryptEnableGlobalKeyDir(tmp);
+}
+
+int SetFscryptSysparam(const char *policy)
+{
+    if (policy == nullptr) {
+        return -EINVAL;
+    }
+    std::string config(policy);
+    return OHOS::StorageDaemon::KeyCtrl::SetFscryptSyspara(config);
 }

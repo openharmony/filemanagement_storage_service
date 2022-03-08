@@ -20,6 +20,7 @@ extern "C" {
 #endif
 
 int FscryptPolicyEnable(const char *dir);
+int SetFscryptSysparam(const char *policy);
 
 #ifdef __cplusplus
 }
