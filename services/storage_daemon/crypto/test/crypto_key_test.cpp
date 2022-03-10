@@ -612,7 +612,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_padding_4, TestSize.L
     EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
     EXPECT_TRUE(g_testKeyV2.ActiveKey());
 
-    EXPECT_EQ(0, KeyCtrl::SetFscryptSyspara("2:aes-256-cts:aes-256-xts:padding-4"));
+    EXPECT_EQ(0, KeyCtrl::SetFscryptSyspara("2:aes-256-cts:aes-256-xts"));
     EXPECT_EQ(0, KeyCtrl::InitFscryptPolicy());
 
     OHOS::ForceRemoveDirectory(TEST_DIR_V2);
@@ -631,7 +631,6 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_padding_4, TestSize.L
     EXPECT_EQ(FSCRYPT_POLICY_V2, arg.policy.version);
     EXPECT_EQ(FILENAME_MODES.at("aes-256-cts"), arg.policy.v2.filenames_encryption_mode);
     EXPECT_EQ(CONTENTS_MODES.at("aes-256-xts"), arg.policy.v2.contents_encryption_mode);
-    EXPECT_EQ(POLICY_FLAGS.at("padding-4"), arg.policy.v2.flags);
 
     EXPECT_TRUE(g_testKeyV2.ClearKey());
 }
