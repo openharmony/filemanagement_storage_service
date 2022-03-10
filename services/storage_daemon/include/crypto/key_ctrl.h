@@ -81,6 +81,7 @@ public:
     static uint8_t GetEncryptedVersion(const std::string &dir);
     static int32_t InitFscryptPolicy();
     static int32_t SetFscryptSyspara(const std::string &config);
+    static bool HasFscryptSyspara();
 };
 
 struct EncryptPolicy {
@@ -127,7 +128,6 @@ static const auto FSCRYPT_OPTIONS_TABLE = std::vector<std::map<std::string, uint
     ALL_VERSION,
     FILENAME_MODES,
     CONTENTS_MODES,
-    POLICY_FLAGS,
 };
 } // namespace StorageDaemon
 } // namespace OHOS

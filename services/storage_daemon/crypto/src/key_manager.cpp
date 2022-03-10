@@ -286,6 +286,9 @@ int KeyManager::InitUserElkeyStorageDir(void)
 int KeyManager::InitGlobalUserKeys(void)
 {
     LOGI("enter");
+    if (!KeyCtrl::HasFscryptSyspara()) {
+        return 0;
+    }
     std::lock_guard<std::mutex> lock(keyMutex_);
     int ret = InitUserElkeyStorageDir();
     if (ret) {
@@ -308,16 +311,6 @@ int KeyManager::InitGlobalUserKeys(void)
         }
     }
 
-    std::string globalUserEl2Path = USER_EL2_DIR + "/" + std::to_string(GLOBAL_USER_ID);
-    if (!IsDir(globalUserEl2Path)) {
-        ret = GenerateAndInstallUserKey(GLOBAL_USER_ID, globalUserEl2Path, NULL_KEY_AUTH, EL2_KEY);
-        if (ret != 0) {
-            DoDeleteUserKeys(GLOBAL_USER_ID);
-            LOGE("Generate el2 failed");
-            return ret;
-        }
-    }
-
     ret = LoadAllUsersEl1Key();
     if (ret) {
         LOGE("Load all users el1 failed");
@@ -331,10 +324,14 @@ int KeyManager::InitGlobalUserKeys(void)
 int KeyManager::GenerateUserKeys(unsigned int user, uint32_t flags)
 {
     LOGI("start, user:%{public}u", user);
+    if (!KeyCtrl::HasFscryptSyspara()) {
+        return 0;
+    }
+
     std::lock_guard<std::mutex> lock(keyMutex_);
     if ((!IsDir(USER_EL1_DIR)) || (!IsDir(USER_EL2_DIR))) {
-        LOGD("El storage dir is not existed, fbe may not be enabled");
-        return 0;
+        LOGD("El storage dir is not existed");
+        return -ENOENT;
     }
 
     std::string el1Path = USER_EL1_DIR + "/" + std::to_string(user);
@@ -401,6 +398,10 @@ void KeyManager::DoDeleteUserKeys(unsigned int user)
 int KeyManager::DeleteUserKeys(unsigned int user)
 {
     LOGI("start, user:%{public}d", user);
+    if (!KeyCtrl::HasFscryptSyspara()) {
+        return 0;
+    }
+
     std::lock_guard<std::mutex> lock(keyMutex_);
     DoDeleteUserKeys(user);
     LOGI("delete user key end");
@@ -412,6 +413,10 @@ int KeyManager::UpdateUserAuth(unsigned int user, const std::string &token,
                                const std::string &composePwd)
 {
     LOGI("start, user:%{public}d", user);
+    if (!KeyCtrl::HasFscryptSyspara()) {
+        return 0;
+    }
+
     std::lock_guard<std::mutex> lock(keyMutex_);
     if (userEl2Key_.find(user) == userEl2Key_.end()) {
         LOGE("Have not found user %{public}u el2 key", user);
@@ -439,6 +444,10 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::string &token,
                               const std::string &secret)
 {
     LOGI("start");
+    if (!KeyCtrl::HasFscryptSyspara()) {
+        return 0;
+    }
+
     std::lock_guard<std::mutex> lock(keyMutex_);
     if (userEl2Key_.find(user) != userEl2Key_.end()) {
         LOGE("The user %{public}u el2 have been actived", user);
@@ -476,6 +485,10 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::string &token,
 int KeyManager::InActiveUserKey(unsigned int user)
 {
     LOGI("start");
+    if (!KeyCtrl::HasFscryptSyspara()) {
+        return 0;
+    }
+
     std::lock_guard<std::mutex> lock(keyMutex_);
     if (userEl2Key_.find(user) == userEl2Key_.end()) {
         LOGE("Have not found user %{public}u el2", user);
@@ -497,18 +510,22 @@ int KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type,
                                      const std::vector<FileList> &vec)
 {
     LOGI("start");
+    if (!KeyCtrl::HasFscryptSyspara()) {
+        return 0;
+    }
+
     std::string keyPath;
     std::lock_guard<std::mutex> lock(keyMutex_);
     if (type == EL1_KEY) {
         if (userEl1Key_.find(user) == userEl1Key_.end()) {
             LOGD("Have not found user %{public}u el1 key, not enable el1", user);
-            return 0;
+            return -ENOENT;
         }
         keyPath = userEl1Key_[user]->GetDir();
     } else if (type == EL2_KEY) {
         if (userEl2Key_.find(user) == userEl2Key_.end()) {
             LOGD("Have not found user %{public}u el2 key, not enable el2", user);
-            return 0;
+            return -ENOENT;
         }
         keyPath = userEl2Key_[user]->GetDir();
     } else {
@@ -530,6 +547,10 @@ int KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type,
 int KeyManager::UpdateKeyContext(uint32_t userId)
 {
     LOGI("start");
+    if (!KeyCtrl::HasFscryptSyspara()) {
+        return 0;
+    }
+
     std::lock_guard<std::mutex> lock(keyMutex_);
     if (userEl2Key_.find(userId) == userEl2Key_.end()) {
         LOGE("Have not found user %{public}u el2", userId);

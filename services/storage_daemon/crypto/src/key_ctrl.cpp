@@ -34,7 +34,6 @@ namespace {
 constexpr uint32_t INDEX_FSCRYPT_VERSION = 0;
 constexpr uint32_t INDEX_FSCRYPT_FILENAME = 1;
 constexpr uint32_t INDEX_FSCRYPT_CONTENT = 2;
-constexpr uint32_t INDEX_FSCRYPT_FLAGS = 3;
 }
 
 namespace OHOS {
@@ -314,7 +313,6 @@ int32_t KeyCtrl::InitFscryptPolicy()
     g_policyOption.version = strs[INDEX_FSCRYPT_VERSION];
     g_policyOption.fileName = strs[INDEX_FSCRYPT_FILENAME];
     g_policyOption.content = strs[INDEX_FSCRYPT_CONTENT];
-    g_policyOption.flags = strs[INDEX_FSCRYPT_FLAGS];
     g_fscryptEnable = true;
     LOGI("fscrypt policy init success");
 
@@ -348,6 +346,19 @@ int32_t KeyCtrl::SetFscryptSyspara(const std::string &config)
     LOGI("fscrypt config parameter set success");
 
     return 0;
+}
+
+bool KeyCtrl::HasFscryptSyspara()
+{
+    LOGD("enter");
+    char tmp[FSCRYPT_POLICY_BUFFER_SIZE] = { 0 };
+    int ret = GetParameter(FSCRYPT_POLICY_KEY.c_str(), "", tmp, FSCRYPT_POLICY_BUFFER_SIZE);
+    if (ret <= 0) {
+        LOGD("fscrypt config parameter not set, not enable fscrypt");
+        return false;
+    }
+
+    return true;
 }
 } // namespace StorageDaemon
 } // namespace OHOS
