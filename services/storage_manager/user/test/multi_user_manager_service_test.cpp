@@ -282,7 +282,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareStartUser_0003
         service->PrepareStartUser(userId);
         result = service->PrepareStartUser(userId);
     }
-    EXPECT_NE(result, 0);
+    EXPECT_EQ(result, 0);
     service->StopUser(userId);
     service->RemoveUser(userId);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_PrepareStartUser_0003";
