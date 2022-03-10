@@ -81,6 +81,7 @@ public:
     static uint8_t GetEncryptedVersion(const std::string &dir);
     static int32_t InitFscryptPolicy();
     static int32_t SetFscryptSyspara(const std::string &config);
+    static bool HasFscryptSyspara();
 };
 
 struct EncryptPolicy {
