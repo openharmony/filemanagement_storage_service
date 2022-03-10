@@ -287,7 +287,6 @@ int KeyManager::InitGlobalUserKeys(void)
 {
     LOGI("enter");
     if (!KeyCtrl::HasFscryptSyspara()) {
-        LOGD("fscrypt have not been enabled");
         return 0;
     }
     std::lock_guard<std::mutex> lock(keyMutex_);
@@ -326,7 +325,6 @@ int KeyManager::GenerateUserKeys(unsigned int user, uint32_t flags)
 {
     LOGI("start, user:%{public}u", user);
     if (!KeyCtrl::HasFscryptSyspara()) {
-        LOGD("fscrypt have not been enabled");
         return 0;
     }
 
@@ -401,7 +399,6 @@ int KeyManager::DeleteUserKeys(unsigned int user)
 {
     LOGI("start, user:%{public}d", user);
     if (!KeyCtrl::HasFscryptSyspara()) {
-        LOGD("fscrypt have not been enabled");
         return 0;
     }
 
@@ -417,7 +414,6 @@ int KeyManager::UpdateUserAuth(unsigned int user, const std::string &token,
 {
     LOGI("start, user:%{public}d", user);
     if (!KeyCtrl::HasFscryptSyspara()) {
-        LOGD("fscrypt have not been enabled");
         return 0;
     }
 
@@ -449,7 +445,6 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::string &token,
 {
     LOGI("start");
     if (!KeyCtrl::HasFscryptSyspara()) {
-        LOGD("fscrypt have not been enabled");
         return 0;
     }
 
@@ -491,7 +486,6 @@ int KeyManager::InActiveUserKey(unsigned int user)
 {
     LOGI("start");
     if (!KeyCtrl::HasFscryptSyspara()) {
-        LOGD("fscrypt have not been enabled");
         return 0;
     }
 
@@ -517,7 +511,6 @@ int KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type,
 {
     LOGI("start");
     if (!KeyCtrl::HasFscryptSyspara()) {
-        LOGD("fscrypt have not been enabled");
         return 0;
     }
 
@@ -555,7 +548,6 @@ int KeyManager::UpdateKeyContext(uint32_t userId)
 {
     LOGI("start");
     if (!KeyCtrl::HasFscryptSyspara()) {
-        LOGD("fscrypt have not been enabled");
         return 0;
     }
 
