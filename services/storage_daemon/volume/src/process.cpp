@@ -16,6 +16,7 @@
 #include "volume/process.h"
 #include <unistd.h>
 #include <csignal>
+#include <cerrno>
 #include <sys/types.h>
 #include <dirent.h>
 #include "storage_service_log.h"
@@ -43,23 +44,24 @@ std::string Process::GetPath()
 
 std::string Process::Readlink(std::string path)
 {
-    char *buf = 0;
     int len = 0;
     int size = 0;
     int growlen = 64;
+    std::string buf;
 
     do {
         size += growlen;
-        buf = (char *)realloc(buf, size);
-        len = readlink(path.c_str(), buf, size);
-        if (size == -1) {
-            free(buf);
+        buf.assign(std::string(size, '\0'));
+        len = readlink(path.c_str(), buf.data(), size);
+        if (len == -1) {
+            if (errno != ENOENT) {
+                LOGE("readlink %{public}s failed, errno: %{public}d", path.c_str(), errno);
+            }
             return "";
         }
-    } while (size < len + 1);
+    } while (size <= len);
 
-    buf[len] = '\0';
-    return std::string(buf);
+    return buf;
 }
 
 bool Process::CheckSubDir(std::string subdir)
