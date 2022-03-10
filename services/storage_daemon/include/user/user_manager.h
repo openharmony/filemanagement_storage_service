@@ -22,6 +22,7 @@
 #include <sys/types.h>
 #include <nocopyable.h>
 #include "user/mount_manager.h"
+#include "utils/file_utils.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -40,6 +41,8 @@ private:
     int32_t DestroyDirsFromIdAndLevel(int32_t userId, const std::string &level);
     int32_t PrepareEl1BundleDir(int32_t userId);
     int32_t DestroyEl1BundleDir(int32_t userId);
+    int32_t SetElDirFscryptPolicy(int32_t userId, const std::string &level,
+        const std::vector<FileList> &list);
 
     DISALLOW_COPY_AND_MOVE(UserManager);
 
