@@ -39,7 +39,7 @@ int StorageStatusService::GetCurrentUserId()
     return DEFAULT_USER_ID;
 }
 
-vector<int64_t> StorageStatusService::GetBundleStats(std::string uuid, std::string pkgName)
+vector<int64_t> StorageStatusService::GetBundleStats(std::string pkgName)
 {
     vector<int64_t> result = {0, 0, 0};
     int userId = GetCurrentUserId();

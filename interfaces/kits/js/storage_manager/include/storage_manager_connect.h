@@ -29,7 +29,7 @@ class StorageManagerConnect : public NoCopyable {
     DECLARE_DELAYED_SINGLETON(StorageManagerConnect);
 public:
     int32_t Connect();
-    std::vector<int64_t> GetBundleStats(std::string uuid, std::string pkgName);
+    std::vector<int64_t> GetBundleStats(std::string pkgName);
     int64_t GetFreeSizeOfVolume(std::string volumeUuid);
     int64_t GetTotalSizeOfVolume(std::string volumeUuid);
     bool Mount(std::string volumeId);

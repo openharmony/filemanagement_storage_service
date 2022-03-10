@@ -65,7 +65,7 @@ public:
         return E_OK;
     }
 
-    virtual std::vector<int64_t> GetBundleStats(std::string uuid, std::string pkgName) override
+    virtual std::vector<int64_t> GetBundleStats(std::string pkgName) override
     {
         std::vector<int64_t> result;
         return result;
