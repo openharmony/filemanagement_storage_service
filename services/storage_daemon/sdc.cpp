@@ -182,14 +182,14 @@ static const auto g_fscryptCmdHandler = std::map<std::string,
     {"update_key_context", UpdateKeyContext},
 };
 
-static void HandleFileCrypt(const std::string &cmd, const std::vector<std::string> &args)
+static int HandleFileCrypt(const std::string &cmd, const std::vector<std::string> &args)
 {
     LOGI("fscrypt cmd: %{public}s", cmd.c_str());
 
     auto handler = g_fscryptCmdHandler.find(cmd);
     if (handler == g_fscryptCmdHandler.end()) {
         LOGE("Unknown fscrypt cmd: %{public}s", cmd.c_str());
-        return;
+        return -EINVAL;
     }
     auto ret = handler->second(args);
     if (ret != 0) {
@@ -197,6 +197,7 @@ static void HandleFileCrypt(const std::string &cmd, const std::vector<std::strin
     } else {
         LOGI("fscrypt cmd: %{public}s success", cmd.c_str());
     }
+    return ret;
 }
 
 int main(int argc, char **argv)
@@ -209,10 +210,14 @@ int main(int argc, char **argv)
         return 0;
     }
 
+    int ret = 0;
     if (args[1] == "filecrypt") {
-        HandleFileCrypt(args[2], args); // no.2 param is the cmd
+        ret = HandleFileCrypt(args[2], args); // no.2 param is the cmd
+    } else {
+        LOGE("Unknown subsystem: %{public}s", args[1].c_str());
+        ret = -EINVAL;
     }
-    LOGI("sdc end");
 
-    return 0;
+    LOGI("sdc end");
+    return ret;
 }
