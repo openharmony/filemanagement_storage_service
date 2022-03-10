@@ -308,16 +308,6 @@ int KeyManager::InitGlobalUserKeys(void)
         }
     }
 
-    std::string globalUserEl2Path = USER_EL2_DIR + "/" + std::to_string(GLOBAL_USER_ID);
-    if (!IsDir(globalUserEl2Path)) {
-        ret = GenerateAndInstallUserKey(GLOBAL_USER_ID, globalUserEl2Path, NULL_KEY_AUTH, EL2_KEY);
-        if (ret != 0) {
-            DoDeleteUserKeys(GLOBAL_USER_ID);
-            LOGE("Generate el2 failed");
-            return ret;
-        }
-    }
-
     ret = LoadAllUsersEl1Key();
     if (ret) {
         LOGE("Load all users el1 failed");
