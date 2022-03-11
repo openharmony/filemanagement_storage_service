@@ -30,6 +30,10 @@ using namespace OHOS;
 using namespace StorageManager;
 class StorageManagerProxyTest : public testing::Test {
 public:
+    enum {
+        CRYPTO_FLAG_EL1 = 1,
+        CRYPTO_FLAG_EL2,
+    };
     static void SetUpTestCase(void) {};
     static void TearDownTestCase() {};
     void SetUp();
@@ -63,9 +67,9 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_PrepareAddUser_0000, tes
     ASSERT_TRUE(remote != nullptr) << "GetSystemAbility failed";
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
     ASSERT_TRUE(proxy != nullptr) << "fail to get proxy";
-    int32_t result = proxy->PrepareAddUser(userId);
+    int32_t result = proxy->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     EXPECT_EQ(result, 0);
-    proxy->RemoveUser(userId);
+    proxy->RemoveUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_PrepareAddUser_0000";
 }
 
@@ -88,7 +92,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_PrepareAddUser_0001, tes
     ASSERT_TRUE(remote != nullptr) << "GetSystemAbility failed";
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
     ASSERT_TRUE(proxy != nullptr) << "fail to get proxy";
-    int32_t result = proxy->PrepareAddUser(userId);
+    int32_t result = proxy->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     EXPECT_NE(result, 0);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_PrepareAddUser_0001";
 }
@@ -109,7 +113,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_PrepareAddUser_0002, tes
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
-    int32_t result = proxy->PrepareAddUser(userId);
+    int32_t result = proxy->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     EXPECT_NE(result, 0);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_PrepareAddUser_0002";
 }
@@ -130,10 +134,10 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_PrepareAddUser_0003, tes
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
-    proxy->PrepareAddUser(userId);
-    int32_t result = proxy->PrepareAddUser(userId);
+    proxy->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
+    int32_t result = proxy->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     EXPECT_EQ(result, 0);
-    proxy->RemoveUser(userId);
+    proxy->RemoveUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_PrepareAddUser_0003";
 }
 
@@ -153,8 +157,8 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_RemoveUser_0000, testing
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
-    proxy->PrepareAddUser(userId);
-    int32_t result = proxy->RemoveUser(userId);
+    proxy->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
+    int32_t result = proxy->RemoveUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     EXPECT_EQ(result, 0);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_RemoveUser_0000";
 }
@@ -175,7 +179,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_RemoveUser_0001, testing
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
-    int32_t result = proxy->RemoveUser(userId);
+    int32_t result = proxy->RemoveUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     EXPECT_EQ(result, 0);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_RemoveUser_0001";
 }
@@ -196,8 +200,8 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_RemoveUser_0002, testing
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
-    proxy->PrepareAddUser(userId);
-    int32_t result = proxy->RemoveUser(userId);
+    proxy->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
+    int32_t result = proxy->RemoveUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     EXPECT_NE(result, 0);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_RemoveUser_0002";
 }
@@ -218,11 +222,11 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_PrepareStartUser_0000, t
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
-    proxy->PrepareAddUser(userId);
+    proxy->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     int32_t result = proxy->PrepareStartUser(userId);
     EXPECT_EQ(result, 0);
     proxy->StopUser(userId);
-    proxy->RemoveUser(userId);
+    proxy->RemoveUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_PrepareStartUser_0000";
 }
 
@@ -242,12 +246,12 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_PrepareStartUser_0001, t
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
-    proxy->PrepareAddUser(userId);
+    proxy->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     proxy->PrepareStartUser(userId);
     int32_t result = proxy->PrepareStartUser(userId);
     EXPECT_EQ(result, 0);
     proxy->StopUser(userId);
-    proxy->RemoveUser(userId);
+    proxy->RemoveUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_PrepareStartUser_0001";
 }
 
@@ -288,7 +292,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_PrepareStartUser_0003, t
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
-    proxy->PrepareAddUser(userId);
+    proxy->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     int32_t result = proxy->PrepareStartUser(userId);
     EXPECT_NE(result, 0);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_PrepareStartUser_0003";
@@ -310,11 +314,11 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_StopUser_0000, testing::
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
-    proxy->PrepareAddUser(userId);
+    proxy->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     proxy->PrepareStartUser(userId);
     int32_t result = proxy->StopUser(userId);
     EXPECT_EQ(result, 0);
-    proxy->RemoveUser(userId);
+    proxy->RemoveUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_StopUser_0000";
 }
 
@@ -355,10 +359,10 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_StopUser_0002, testing::
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
-    proxy->PrepareAddUser(userId);
+    proxy->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     int32_t result = proxy->StopUser(userId);
     EXPECT_NE(result, 0);
-    proxy->RemoveUser(userId);
+    proxy->RemoveUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_StopUser_0002";
 }
 
@@ -378,11 +382,11 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_StopUser_0003, testing::
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
-    proxy->PrepareAddUser(userId);
+    proxy->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     proxy->PrepareStartUser(userId);
     int32_t result = proxy->StopUser(userId);
     EXPECT_NE(result, 0);
-    proxy->RemoveUser(userId);
+    proxy->RemoveUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_StopUser_0003";
 }
 

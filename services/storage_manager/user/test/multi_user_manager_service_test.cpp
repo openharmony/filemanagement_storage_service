@@ -25,6 +25,10 @@ using namespace OHOS;
 using namespace StorageManager;
 class MultiUserManagerServiceTest : public testing::Test {
 public:
+    enum {
+        CRYPTO_FLAG_EL1 = 1,
+        CRYPTO_FLAG_EL2,
+    };
     static void SetUpTestCase(void) {};
     static void TearDownTestCase() {};
     void SetUp() {};
@@ -47,10 +51,10 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareAddUser_0000, 
     int32_t userId = 101;
     int32_t result;
     if (service != nullptr) {
-        result = service->PrepareAddUser(userId);
+        result = service->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     }
     EXPECT_EQ(result, 0);
-    service->RemoveUser(userId);
+    service->RemoveUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_PrepareAddUser_0000";
 }
 
@@ -70,10 +74,10 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareAddUser_0001, 
     int32_t userId = -1;
     int32_t result;
     if (service != nullptr) {
-        result = service->PrepareAddUser(userId);
+        result = service->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     }
     EXPECT_NE(result, 0);
-    service->RemoveUser(userId);
+    service->RemoveUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_PrepareAddUser_0001";
 }
 
@@ -93,10 +97,10 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareAddUser_0002, 
     int32_t userId = 10000;
     int32_t result;
     if (service != nullptr) {
-        result = service->PrepareAddUser(userId);
+        result = service->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     }
     EXPECT_NE(result, 0);
-    service->RemoveUser(userId);
+    service->RemoveUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_PrepareAddUser_0002";
 }
 
@@ -116,11 +120,11 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareAddUser_0003, 
     int32_t userId = 102;
     int32_t result;
     if (service != nullptr) {
-        service->PrepareAddUser(userId);
-        result = service->PrepareAddUser(userId);
+        service->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
+        result = service->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     }
     EXPECT_EQ(result, 0);
-    service->RemoveUser(userId);
+    service->RemoveUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_PrepareAddUser_0003";
 }
 
@@ -140,8 +144,8 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_RemoveUser_0000, test
     int32_t userId = 103;
     int32_t result;
     if (service != nullptr) {
-        service->PrepareAddUser(userId);
-        result = service->RemoveUser(userId);
+        service->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
+        result = service->RemoveUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     }
     EXPECT_EQ(result, 0);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_RemoveUser_0000";
@@ -163,7 +167,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_RemoveUser_0001, test
     int32_t userId = 104;
     int32_t result;
     if (service != nullptr) {
-        result = service->RemoveUser(userId);
+        result = service->RemoveUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     }
     EXPECT_EQ(result, 0);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_RemoveUser_0001";
@@ -185,8 +189,8 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_RemoveUser_0002, test
     int32_t userId = -2;
     int32_t result;
     if (service != nullptr) {
-        service->PrepareAddUser(userId);
-        result = service->RemoveUser(userId);
+        service->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
+        result = service->RemoveUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     }
     EXPECT_NE(result, 0);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_RemoveUser_0002";
@@ -208,12 +212,12 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareStartUser_0000
     int32_t userId = 105;
     int32_t result;
     if (service != nullptr) {
-        service->PrepareAddUser(userId);
+        service->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
         result = service->PrepareStartUser(userId);
     }
     EXPECT_EQ(result, 0);
     service->StopUser(userId);
-    service->RemoveUser(userId);
+    service->RemoveUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_PrepareStartUser_0000";
 }
 
@@ -255,7 +259,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareStartUser_0002
     int32_t userId = -4;
     int32_t result;
     if (service != nullptr) {
-        service->PrepareAddUser(userId);
+        service->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
         result = service->PrepareStartUser(userId);
     }
     EXPECT_NE(result, 0);
@@ -278,13 +282,13 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareStartUser_0003
     int32_t userId = 107;
     int32_t result;
     if (service != nullptr) {
-        service->PrepareAddUser(userId);
+        service->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
         service->PrepareStartUser(userId);
         result = service->PrepareStartUser(userId);
     }
     EXPECT_NE(result, 0);
     service->StopUser(userId);
-    service->RemoveUser(userId);
+    service->RemoveUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_PrepareStartUser_0003";
 }
 
@@ -304,12 +308,12 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_StopUser_0000, testin
     int32_t userId = 108;
     int32_t result;
     if (service != nullptr) {
-        service->PrepareAddUser(userId);
+        service->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
         service->PrepareStartUser(userId);
         result = service->StopUser(userId);
     }
     EXPECT_EQ(result, 0);
-    service->RemoveUser(userId);
+    service->RemoveUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_StopUser_0000";
 }
 
@@ -351,7 +355,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_StopUser_0002, testin
     int32_t userId = -6;
     int32_t result;
     if (service != nullptr) {
-        service->PrepareAddUser(userId);
+        service->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
         service->PrepareStartUser(userId);
         result = service->StopUser(userId);
     }
@@ -375,11 +379,11 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_StopUser_0003, testin
     int32_t userId = 110;
     int32_t result;
     if (service != nullptr) {
-        service->PrepareAddUser(userId);
+        service->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
         result = service->StopUser(userId);
     }
     EXPECT_NE(result, 0);
-    service->RemoveUser(userId);
+    service->RemoveUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_StopUser_0003";
 }
 } // namespace

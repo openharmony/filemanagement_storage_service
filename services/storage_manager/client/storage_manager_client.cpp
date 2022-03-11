@@ -47,7 +47,7 @@ int32_t StorageManagerClient::PrepareAddUser(uint32_t userId, const std::string 
         return -EFAULT;
     }
 
-    return client->PrepareAddUser(userId);
+    return client->PrepareAddUser(userId, flags);
 }
 
 int32_t StorageManagerClient::RemoveUser(uint32_t userId, const std::string &volumId, uint32_t flags)
@@ -58,7 +58,7 @@ int32_t StorageManagerClient::RemoveUser(uint32_t userId, const std::string &vol
         return -EFAULT;
     }
 
-    return client->RemoveUser(userId);
+    return client->RemoveUser(userId, flags);
 }
 
 int32_t StorageManagerClient::GenerateUserKeys(uint32_t userId, uint32_t flags)
