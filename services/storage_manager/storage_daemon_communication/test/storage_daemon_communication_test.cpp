@@ -25,10 +25,6 @@ using namespace OHOS;
 using namespace StorageManager;
 class StorageDaemonCommunicationTest : public testing::Test {
 public:
-    enum {
-        CRYPTO_FLAG_EL1 = 1,
-        CRYPTO_FLAG_EL2,
-    };
     static void SetUpTestCase(void) {};
     static void TearDownTestCase() {};
     void SetUp() {};
@@ -72,12 +68,13 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_PrepareAddUser_000
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t userId = 101;
+    uint32_t flag = 3;
     int32_t result;
     if (sdCommunication != nullptr) {
-        result = sdCommunication->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
+        result = sdCommunication->PrepareAddUser(userId, flag);
     }
     EXPECT_EQ(result, 0);
-    sdCommunication->RemoveUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
+    sdCommunication->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_PrepareAddUser_0000";
 }
 
@@ -96,10 +93,11 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_RemoveUser_0000, t
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t userId = 102;
+    uint32_t flag = 3;
     int32_t result;
     if (sdCommunication != nullptr) {
-        sdCommunication->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
-        result = sdCommunication->RemoveUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
+        sdCommunication->PrepareAddUser(userId, flag);
+        result = sdCommunication->RemoveUser(userId, flag);
     }
     EXPECT_EQ(result, 0);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_RemoveUser_0000";
@@ -120,14 +118,15 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_PrepareStartUser_0
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t userId = 104;
+    uint32_t flag = 3;
     int32_t result;
     if (sdCommunication != nullptr) {
-        sdCommunication->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
+        sdCommunication->PrepareAddUser(userId, flag);
         result = sdCommunication->PrepareStartUser(userId);
     }
     EXPECT_EQ(result, 0);
     sdCommunication->StopUser(userId);
-    sdCommunication->RemoveUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
+    sdCommunication->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_PrepareStartUser_0000";
 }
 
@@ -146,14 +145,15 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_StopUser_0000, tes
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t userId = 106;
+    uint32_t flag = 3;
     int32_t result;
     if (sdCommunication != nullptr) {
-        sdCommunication->PrepareAddUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
+        sdCommunication->PrepareAddUser(userId, flag);
         sdCommunication->PrepareStartUser(userId);
         result = sdCommunication->StopUser(userId);
     }
     EXPECT_EQ(result, 0);
-    sdCommunication->RemoveUser(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
+    sdCommunication->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_StopUser_0000 SUCCESS";
 }
 
