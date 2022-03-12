@@ -31,17 +31,19 @@ static bool GetClientUid(int &uid)
 
 static bool GetClientTokenId(int &TokenId)
 {
-    TokenId = IPCSkeleton::GetCallingTokenID();;
+    TokenId = IPCSkeleton::GetCallingTokenID();
     return true;
 }
 
-static std::string GetProcessName(int pid) {
+static std::string GetProcessName(int pid)
+{
     Security::AccessToken::NativeTokenInfo tokenInfo = Security::AccessToken::NativeTokenInfo();
     Security::AccessToken::AccessTokenKit::GetNativeTokenInfo(pid, tokenInfo);
     return tokenInfo.processName;
 }
 
-bool CheckClientPermission() {
+bool CheckClientPermission()
+{
     int uid = 0;
     int tokenId = 0;
     if (!GetClientUid(uid)) {
@@ -67,7 +69,7 @@ int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
     if (GetDescriptor() != remoteDescriptor) {
         return E_PERMISSION_DENIED;
     }
-    
+
     if (!CheckClientPermission()) {
         LOGE("StorageDaemon checkPermission error");
         return E_PERMISSION_DENIED;
