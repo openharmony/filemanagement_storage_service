@@ -31,8 +31,8 @@ public:
     void OnStart() override;
     void OnStop() override;
 
-    int32_t PrepareAddUser(int32_t userId) override;
-    int32_t RemoveUser(int32_t userId) override;
+    int32_t PrepareAddUser(int32_t userId, uint32_t flags) override;
+    int32_t RemoveUser(int32_t userId, uint32_t flags) override;
     int32_t PrepareStartUser(int32_t userId) override;
     int32_t StopUser(int32_t userId) override;
 
