@@ -81,30 +81,3 @@ config("fscrypto_config") {
     "-Wall",
   ]
 }
-
-ohos_static_library("libfscryptutils") {
-  sources = [
-    "src/fscrypt_utils.cpp",
-    "src/key_ctrl.cpp",
-  ]
-
-  defines = [
-    "STORAGE_LOG_TAG = \"FscryptUtils\"",
-    "LOG_DOMAIN = 0xD004301",
-  ]
-
-  configs = [ ":fscrypto_config" ]
-
-  deps = [
-    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara:syspara",
-    "//utils/native/base:utils",
-  ]
-
-  external_deps = [
-    "hiviewdfx_hilog_native:libhilog",
-  ]
-
-  subsystem_name = "filemanagement"
-  part_name = "storage_service"
-}
-

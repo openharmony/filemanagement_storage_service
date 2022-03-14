@@ -84,7 +84,7 @@ ohos_executable("storage_daemon") {
 
   deps = [
     ":sdc",
-    "crypto:libfscryptutils",
+    "libfscrypt:libfscryptutils",
     "crypto:libsdcrypto",
     "//utils/native/base:utils",
   ]
