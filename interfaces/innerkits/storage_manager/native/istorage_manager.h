@@ -25,8 +25,8 @@ namespace OHOS {
 namespace StorageManager {
 class IStorageManager : public IRemoteBroker {
 public:
-    virtual int32_t PrepareAddUser(int32_t userId) = 0;
-    virtual int32_t RemoveUser(int32_t userId) = 0;
+    virtual int32_t PrepareAddUser(int32_t userId, uint32_t flags) = 0;
+    virtual int32_t RemoveUser(int32_t userId, uint32_t flags) = 0;
     virtual int32_t PrepareStartUser(int32_t userId) = 0;
     virtual int32_t StopUser(int32_t userId) = 0;
     virtual int64_t GetFreeSizeOfVolume(std::string volumeUuid) = 0;

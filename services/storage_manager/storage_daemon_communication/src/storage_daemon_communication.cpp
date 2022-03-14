@@ -59,7 +59,7 @@ int32_t StorageDaemonCommunication::Connect()
     return err;
 }
 
-int32_t StorageDaemonCommunication::PrepareAddUser(int32_t userId)
+int32_t StorageDaemonCommunication::PrepareAddUser(int32_t userId, uint32_t flags)
 {
     LOGI("StorageDaemonCommunication::PrepareAddUser start");
     
@@ -67,17 +67,17 @@ int32_t StorageDaemonCommunication::PrepareAddUser(int32_t userId)
         LOGE("StorageDaemonCommunication::PrepareAddUser connect failed");
         return E_IPC_ERROR;
     }
-    return storageDaemon_->PrepareUserDirs(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
+    return storageDaemon_->PrepareUserDirs(userId, flags);
 }
 
-int32_t StorageDaemonCommunication::RemoveUser(int32_t userId)
+int32_t StorageDaemonCommunication::RemoveUser(int32_t userId, uint32_t flags)
 {
     LOGI("StorageDaemonCommunication::RemoveUser start");
     if (Connect() != E_OK) {
         LOGE("StorageDaemonCommunication::RemoveUser connect failed");
         return E_IPC_ERROR;
     }
-    return storageDaemon_->DestroyUserDirs(userId, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
+    return storageDaemon_->DestroyUserDirs(userId, flags);
 }
 
 int32_t StorageDaemonCommunication::PrepareStartUser(int32_t userId)

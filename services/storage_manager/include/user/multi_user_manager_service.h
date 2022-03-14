@@ -25,8 +25,8 @@ namespace StorageManager {
 class MultiUserManagerService final : public NoCopyable {
     DECLARE_DELAYED_SINGLETON(MultiUserManagerService);
 public:
-    int32_t PrepareAddUser(int32_t userId);
-    int32_t RemoveUser(int32_t userId);
+    int32_t PrepareAddUser(int32_t userId, uint32_t flags);
+    int32_t RemoveUser(int32_t userId, uint32_t flags);
     int32_t PrepareStartUser(int32_t userId);
     int32_t StopUser(int32_t userId);
 
