@@ -22,6 +22,10 @@
 
 namespace OHOS {
 namespace StorageManager {
+enum {
+    CRYPTO_FLAG_EL1 = 1,
+    CRYPTO_FLAG_EL2,
+};
 class StorageManager : public SystemAbility, public StorageManagerStub {
     DECLARE_SYSTEM_ABILITY(StorageManager)
 public:
