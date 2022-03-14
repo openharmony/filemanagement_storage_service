@@ -53,14 +53,14 @@ int32_t StorageManagerConnect::Connect()
     return E_OK;
 }
 
-vector<int64_t> StorageManagerConnect::GetBundleStats(string uuid, string pkgName)
+vector<int64_t> StorageManagerConnect::GetBundleStats(string pkgName)
 {
     vector<int64_t> result = {};
     if (Connect() != E_OK) {
         LOGE("StorageManagerConnect::GetBundleStats:Connect error");
         return result;
     }
-    return storageManager_->GetBundleStats(uuid, pkgName);
+    return storageManager_->GetBundleStats(pkgName);
 }
 
 int64_t StorageManagerConnect::GetFreeSizeOfVolume(string volumeUuid)

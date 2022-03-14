@@ -299,16 +299,12 @@ int64_t StorageManagerProxy::GetTotalSizeOfVolume(std::string volumeUuid)
     return reply.ReadInt64();
 }
 
-std::vector<int64_t> StorageManagerProxy::GetBundleStats(std::string uuid, std::string pkgName)
+std::vector<int64_t> StorageManagerProxy::GetBundleStats(std::string pkgName)
 {
     std::vector<int64_t> result = {};
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
-        return result;
-    }
-
-    if (!data.WriteString(uuid)) {
         return result;
     }
 
