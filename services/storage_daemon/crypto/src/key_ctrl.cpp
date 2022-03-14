@@ -90,15 +90,26 @@ long KeyCtrl::GetSecurity(key_serial_t id, std::string &buffer)
     return syscall(__NR_keyctl, KEYCTL_GET_SECURITY, id, buffer.data(), buffer.length());
 }
 
+std::string CheckRealPath(const std::string &path)
+{
+    std::string realp(PATH_MAX + 1, '\0');
+    if (path.length() > PATH_MAX || realpath(path.c_str(), realp.data()) == nullptr) {
+        LOGE("realpath failed, path: %{public}s, errno: %{public}d", path.c_str(), errno);
+        return "";
+    }
+    return realp;
+}
+
 bool FsIoctl(const std::string &mnt, unsigned long cmd, void *arg)
 {
-    int fd = open(mnt.c_str(), O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+    std::string realp = CheckRealPath(mnt);
+    int fd = open(realp.c_str(), O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
     if (fd < 0) {
-        LOGE("open %{public}s failed, errno:%{public}d", mnt.c_str(), errno);
+        LOGE("open %{public}s failed, errno:%{public}d", realp.c_str(), errno);
         return false;
     }
     if (ioctl(fd, cmd, arg) != 0) {
-        LOGE("ioctl to %{public}s failed, errno:%{public}d", mnt.c_str(), errno);
+        LOGE("ioctl to %{public}s failed, errno:%{public}d", realp.c_str(), errno);
         close(fd);
         return false;
     }
@@ -164,7 +175,12 @@ static bool SetPolicyLegacy(const std::string &keyDescPath, const std::string &t
     }
 
     arg.v1.version = FSCRYPT_POLICY_V1;
-    (void)memcpy_s(arg.v1.master_key_descriptor, FSCRYPT_KEY_DESCRIPTOR_SIZE, keyDesc.data(), keyDesc.length());
+    auto ret = memcpy_s(arg.v1.master_key_descriptor, FSCRYPT_KEY_DESCRIPTOR_SIZE, keyDesc.data(),
+        keyDesc.length());
+    if (ret) {
+        LOGE("memcpy_s failed ret %{public}d", ret);
+        return false;
+    }
     return KeyCtrl::SetPolicy(toEncrypt, arg);
 }
 
@@ -222,9 +238,10 @@ uint8_t KeyCtrl::LoadVersion(const std::string &keyPath)
 
 static uint8_t CheckKernelFscrypt(const std::string &mnt)
 {
-    int fd = open(mnt.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+    std::string realp = CheckRealPath(mnt);
+    int fd = open(realp.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
     if (fd < 0) {
-        LOGE("open %{public}s failed, errno: %{public}d", mnt.c_str(), errno);
+        LOGE("open %{public}s failed, errno: %{public}d", realp.c_str(), errno);
         return FSCRYPT_INVALID;
     }
 
@@ -253,27 +270,28 @@ uint8_t KeyCtrl::GetFscryptVersion(const std::string &mnt)
 
 uint8_t KeyCtrl::GetEncryptedVersion(const std::string &dir)
 {
-    int fd = open(dir.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+    std::string realp = CheckRealPath(dir);
+    int fd = open(realp.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
     if (fd < 0) {
-        LOGE("open %{public}s failed, errno:%{public}d", dir.c_str(), errno);
+        LOGE("open %{public}s failed, errno:%{public}d", realp.c_str(), errno);
         return FSCRYPT_INVALID;
     }
 
     fscrypt_policy_v1 policy;
     if (ioctl(fd, FS_IOC_GET_ENCRYPTION_POLICY, &policy) == 0) {
-        LOGI("%{public}s is encrypted with v1 policy", dir.c_str());
+        LOGI("%{public}s is encrypted with v1 policy", realp.c_str());
         close(fd);
         return FSCRYPT_V1;
     }
     close(fd);
 
     if (errno == EINVAL) {
-        LOGI("%{public}s is encrypted with v2 policy", dir.c_str());
+        LOGI("%{public}s is encrypted with v2 policy", realp.c_str());
         return FSCRYPT_V2;
     } else if (errno == ENODATA) {
-        LOGI("%{public}s is not encrypted", dir.c_str());
+        LOGI("%{public}s is not encrypted", realp.c_str());
     } else {
-        LOGE("%{public}s unexpected errno: %{public}d", dir.c_str(), errno);
+        LOGE("%{public}s unexpected errno: %{public}d", realp.c_str(), errno);
     }
     return FSCRYPT_INVALID;
 }
