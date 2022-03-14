@@ -65,7 +65,7 @@ private:
     std::string diskId_;
     VolumeType type_;
     VolumeState mountState_;
-    int32_t mountFlags_;
+    uint32_t mountFlags_;
     int32_t userIdOwner_;
     std::string mountPath_;
 
