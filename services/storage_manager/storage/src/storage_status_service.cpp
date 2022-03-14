@@ -54,7 +54,7 @@ vector<int64_t> StorageStatusService::GetBundleStats(std::string pkgName)
         LOGE("StorageStatusService::An error occurred in querying bundle stats.");
         return result;
     }
-    for (int i = 0; i < bundleStats.size(); i++) {
+    for (uint i = 0; i < bundleStats.size(); i++) {
         if (bundleStats[i] == E_ERR) {
             LOGE("StorageStatusService::Failed to query %s data.", dataDir[i].c_str());
             bundleStats[i] = 0;

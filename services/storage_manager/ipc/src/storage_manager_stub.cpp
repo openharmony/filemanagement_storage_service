@@ -192,7 +192,7 @@ int32_t StorageManagerStub::HandleGetAllVolumes(MessageParcel &data, MessageParc
 {
     LOGE("StorageManagerStub::HandleGetAllVolumes Begin.");
     std::vector<VolumeExternal> ve = GetAllVolumes();
-    int size = ve.size();
+    uint size = ve.size();
     if (size == 0) {
         LOGE("StorageManagerStub::No volume.");
         if (!reply.WriteUint32(0)) {
@@ -294,7 +294,7 @@ int32_t StorageManagerStub::HandleGetAllDisks(MessageParcel &data, MessageParcel
 {
     LOGE("StorageManagerStub::HandleGetAllDisk Begin.");
     std::vector<Disk> disks = GetAllDisks();
-    int size = disks.size();
+    uint size = disks.size();
     if (size == 0) {
         LOGE("StorageManagerStub::No Disk.");
         if (!reply.WriteUint32(0)) {
