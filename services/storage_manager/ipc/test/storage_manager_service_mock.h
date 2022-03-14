@@ -35,12 +35,12 @@ public:
         return E_OK;
     }
 
-    virtual int32_t PrepareAddUser(int32_t userId) override
+    virtual int32_t PrepareAddUser(int32_t userId, uint32_t flags) override
     {
         return E_OK;
     }
 
-    virtual int32_t RemoveUser(int32_t userId) override
+    virtual int32_t RemoveUser(int32_t userId, uint32_t flags) override
     {
         return E_OK;
     }

@@ -40,7 +40,7 @@ int32_t MultiUserManagerService::CheckUserIdRange(int32_t userId)
     return E_OK;
 }
 
-int32_t MultiUserManagerService::PrepareAddUser(int32_t userId)
+int32_t MultiUserManagerService::PrepareAddUser(int32_t userId, uint32_t flags)
 {
     LOGI("MultiUserManagerService::PrepareAddUser, userId:%{public}d", userId);
     int32_t err = CheckUserIdRange(userId);
@@ -50,11 +50,11 @@ int32_t MultiUserManagerService::PrepareAddUser(int32_t userId)
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->PrepareAddUser(userId);
+    err = sdCommunication->PrepareAddUser(userId, flags);
     return err;
 }
 
-int32_t MultiUserManagerService::RemoveUser(int32_t userId)
+int32_t MultiUserManagerService::RemoveUser(int32_t userId, uint32_t flags)
 {
     LOGI("MultiUserManagerService::RemoveUser, userId:%{public}d", userId);
     int32_t err = CheckUserIdRange(userId);
@@ -64,7 +64,7 @@ int32_t MultiUserManagerService::RemoveUser(int32_t userId)
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->RemoveUser(userId);
+    err = sdCommunication->RemoveUser(userId, flags);
     return err;
 }
 

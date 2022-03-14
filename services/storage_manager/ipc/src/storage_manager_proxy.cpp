@@ -19,7 +19,7 @@
 
 namespace OHOS {
 namespace StorageManager {
-int32_t StorageManagerProxy::PrepareAddUser(int32_t userId)
+int32_t StorageManagerProxy::PrepareAddUser(int32_t userId, uint32_t flags)
 {
     LOGI("StorageManagerProxy::PrepareAddUser, userId:%{public}d", userId);
     MessageParcel data, reply;
@@ -32,6 +32,10 @@ int32_t StorageManagerProxy::PrepareAddUser(int32_t userId)
         LOGE("StorageManagerProxy::PrepareAddUser, WriteInt32 failed");
         return E_IPC_ERROR;
     }
+    if (!data.WriteUint32(flags)) {
+        LOGE("StorageManagerProxy::PrepareAddUser, WriteUint32 failed");
+        return E_IPC_ERROR;
+    }
     int err = Remote()->SendRequest(PREPARE_ADD_USER, data, reply, option);
     if (err != E_OK) {
         LOGE("StorageManagerProxy::PrepareAddUser, SendRequest failed");
@@ -40,7 +44,7 @@ int32_t StorageManagerProxy::PrepareAddUser(int32_t userId)
     return reply.ReadUint32();
 }
     
-int32_t StorageManagerProxy::RemoveUser(int32_t userId)
+int32_t StorageManagerProxy::RemoveUser(int32_t userId, uint32_t flags)
 {
     LOGI("StorageManagerProxy::RemoveUser, userId:%{public}d", userId);
     MessageParcel data, reply;
@@ -51,6 +55,10 @@ int32_t StorageManagerProxy::RemoveUser(int32_t userId)
     }
     if (!data.WriteInt32(userId)) {
         LOGE("StorageManagerProxy::RemoveUser, WriteInt32 failed");
+        return E_IPC_ERROR;
+    }
+    if (!data.WriteUint32(flags)) {
+        LOGE("StorageManagerProxy::PrepareAddUser, WriteUint32 failed");
         return E_IPC_ERROR;
     }
     int err = Remote()->SendRequest(REMOVE_USER, data, reply, option);

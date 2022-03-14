@@ -22,6 +22,10 @@
 
 namespace OHOS {
 namespace StorageManager {
+enum {
+    CRYPTO_FLAG_EL1 = 1,
+    CRYPTO_FLAG_EL2,
+};
 class StorageManager : public SystemAbility, public StorageManagerStub {
     DECLARE_SYSTEM_ABILITY(StorageManager)
 public:
@@ -31,8 +35,8 @@ public:
     void OnStart() override;
     void OnStop() override;
 
-    int32_t PrepareAddUser(int32_t userId) override;
-    int32_t RemoveUser(int32_t userId) override;
+    int32_t PrepareAddUser(int32_t userId, uint32_t flags) override;
+    int32_t RemoveUser(int32_t userId, uint32_t flags) override;
     int32_t PrepareStartUser(int32_t userId) override;
     int32_t StopUser(int32_t userId) override;
 

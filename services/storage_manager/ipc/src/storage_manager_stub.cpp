@@ -110,8 +110,9 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
 int32_t StorageManagerStub::HandlePrepareAddUser(MessageParcel &data, MessageParcel &reply)
 {
     int32_t userId = data.ReadInt32();
+    uint32_t flags = data.ReadUint32();
     LOGI("StorageManagerStub::HandlePrepareAddUser, userId:%{public}d", userId);
-    int err = PrepareAddUser(userId);
+    int err = PrepareAddUser(userId, flags);
     if (!reply.WriteUint32(err)) {
         LOGE("StorageManagerStub::HandlePrepareAddUser call PrepareAddUser failed");
         return  E_IPC_ERROR;
@@ -122,8 +123,9 @@ int32_t StorageManagerStub::HandlePrepareAddUser(MessageParcel &data, MessagePar
 int32_t StorageManagerStub::HandleRemoveUser(MessageParcel &data, MessageParcel &reply)
 {
     int32_t userId = data.ReadInt32();
+    uint32_t flags = data.ReadUint32();
     LOGI("StorageManagerStub::HandleRemoveUser, userId:%{public}d", userId);
-    int err = RemoveUser(userId);
+    int err = RemoveUser(userId, flags);
     if (!reply.WriteUint32(err)) {
         LOGE("StorageManagerStub::HandleRemoveUser call RemoveUser failed");
         return E_IPC_ERROR;

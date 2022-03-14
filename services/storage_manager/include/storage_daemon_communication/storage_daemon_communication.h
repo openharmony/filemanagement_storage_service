@@ -27,14 +27,10 @@ class StorageDaemonCommunication : public NoCopyable {
     DECLARE_DELAYED_SINGLETON(StorageDaemonCommunication);
 
 public:
-    enum {
-        CRYPTO_FLAG_EL1 = 1,
-        CRYPTO_FLAG_EL2,
-    };
     int32_t Connect();
 
-    int32_t PrepareAddUser(int32_t userId);
-    int32_t RemoveUser(int32_t userId);
+    int32_t PrepareAddUser(int32_t userId, uint32_t flags);
+    int32_t RemoveUser(int32_t userId, uint32_t flags);
     int32_t PrepareStartUser(int32_t userId);
     int32_t StopUser(int32_t userId);
 

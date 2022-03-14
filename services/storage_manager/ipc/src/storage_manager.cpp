@@ -44,19 +44,19 @@ void StorageManager::OnStop()
     LOGI("StorageManager::Onstop Done");
 }
 
-int32_t StorageManager::PrepareAddUser(int32_t userId)
+int32_t StorageManager::PrepareAddUser(int32_t userId, uint32_t flags)
 {
     LOGI("StorageManager::PrepareAddUser start, userId: %{public}d", userId);
     std::shared_ptr<MultiUserManagerService> userManager = DelayedSingleton<MultiUserManagerService>::GetInstance();
-    int32_t err = userManager->PrepareAddUser(userId);
+    int32_t err = userManager->PrepareAddUser(userId, flags);
     return err;
 }
 
-int32_t StorageManager::RemoveUser(int32_t userId)
+int32_t StorageManager::RemoveUser(int32_t userId, uint32_t flags)
 {
     LOGI("StorageManger::RemoveUser start, userId: %{public}d", userId);
     std::shared_ptr<MultiUserManagerService> userManager = DelayedSingleton<MultiUserManagerService>::GetInstance();
-    int32_t err = userManager->RemoveUser(userId);
+    int32_t err = userManager->RemoveUser(userId, flags);
     return err;
 }
 
