@@ -65,7 +65,7 @@ napi_value GetTotalSizeOfVolume(napi_env env, napi_callback_info info)
 
     std::string procedureName = "GetTotalSizeOfVolume";
     NVal thisVar(env, funcArg.GetThisVar());
-    if (funcArg.GetArgc() == (int)NARG_CNT::ONE) {
+    if (funcArg.GetArgc() == (uint)NARG_CNT::ONE) {
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
     } else {
         NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
@@ -106,7 +106,7 @@ napi_value GetFreeSizeOfVolume(napi_env env, napi_callback_info info)
 
     std::string procedureName = "getFreeSizeOfVolume";
     NVal thisVar(env, funcArg.GetThisVar());
-    if (funcArg.GetArgc() == (int)NARG_CNT::ONE) {
+    if (funcArg.GetArgc() == (uint)NARG_CNT::ONE) {
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
     } else {
         NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
@@ -153,7 +153,7 @@ napi_value GetBundleStats(napi_env env, napi_callback_info info)
     };
     std::string procedureName = "GetBundleStats";
     NVal thisVar(env, funcArg.GetThisVar());
-    if (funcArg.GetArgc() == (int)NARG_CNT::ONE) {
+    if (funcArg.GetArgc() == (uint)NARG_CNT::ONE) {
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
     } else {
         NVal cb(env, funcArg[(int)NARG_POS::SECOND]);

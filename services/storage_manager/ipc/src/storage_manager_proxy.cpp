@@ -460,11 +460,11 @@ std::vector<VolumeExternal> StorageManagerProxy::GetAllVolumes()
         LOGE("StorageManagerProxy::GetAllVolumes, SendRequest failed");
         return result;
     }
-    int size = reply.ReadUint32();
+    uint size = reply.ReadUint32();
     if (size == 0) {
         return result;
     }
-    for (int i = 0; i < size; i++) {
+    for (uint i = 0; i < size; i++) {
         std::unique_ptr<VolumeExternal> ve = VolumeExternal::Unmarshalling(reply);
         LOGI("StorageManagerProxy::GetAllVolumes push %{public}s", ve->GetId().c_str());
         result.push_back(*ve);
@@ -550,11 +550,11 @@ std::vector<Disk> StorageManagerProxy::GetAllDisks()
         LOGE("StorageManagerProxy::GetAllDisks, SendRequest failed");
         return result;
     }
-    int size = reply.ReadUint32();
+    uint size = reply.ReadUint32();
     if (size == 0) {
         return result;
     }
-    for (int i = 0; i < size; i++) {
+    for (uint i = 0; i < size; i++) {
         std::unique_ptr<Disk> disk = Disk::Unmarshalling(reply);
         LOGI("StorageManagerProxy::GetAllDisks push %{public}s", disk->GetDiskId().c_str());
         result.push_back(*disk);
