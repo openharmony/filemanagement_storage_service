@@ -219,7 +219,7 @@ int DiskInfo::ReadPartition()
             if (++it == split.end()) {
                 continue;
             }
-            int index = std::stoi(*it);
+            unsigned int index = (unsigned int) std::stoi(*it);
             if (index > maxVolumes || index < 1) {
                 LOGE("Invalid partition %{public}d", index);
                 continue;
