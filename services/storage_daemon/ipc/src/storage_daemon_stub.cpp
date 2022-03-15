@@ -44,7 +44,7 @@ static std::string GetProcessName(int pid)
 
 bool CheckClientPermission()
 {
-    int uid = 0;
+    int uid = -1;
     int tokenId = 0;
     if (!GetClientUid(uid)) {
         LOGE("GetClientUid: fail");
@@ -56,7 +56,7 @@ bool CheckClientPermission()
 
     std::string clientName = GetProcessName(tokenId);
     LOGI("GetClientProcessName:%{public}s", clientName.c_str());
-    if (IsSameTextStr(clientName, "storage_manager") || uid == 0) {
+    if (clientName == "storage_manager") || uid == 0) {
         return true;
     }
     return false;
