@@ -117,7 +117,7 @@ int32_t NetlinkListener::ReadMsg(int32_t fd_count, struct pollfd ufds[2])
                 RecvUeventMsg();
                 continue;
             }
-            if (ufds[i].revents & (POLLERR | POLLHUP)) {
+            if ((static_cast<uint32_t>(ufds[i].revents)) & (POLLERR | POLLHUP)) {
                 LOGE("POLLERR | POLLHUP");
                 return E_ERR;
             }
