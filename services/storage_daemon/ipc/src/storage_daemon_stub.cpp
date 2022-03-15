@@ -56,7 +56,7 @@ bool CheckClientPermission()
 
     std::string clientName = GetProcessName(tokenId);
     LOGI("GetClientProcessName:%{public}s", clientName.c_str());
-    if (clientName == "storage_manager") || uid == 0) {
+    if (clientName == "storage_manager" || uid == 0) {
         return true;
     }
     return false;
