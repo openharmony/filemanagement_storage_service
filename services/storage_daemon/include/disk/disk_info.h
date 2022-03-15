@@ -61,7 +61,7 @@ private:
     std::string eventPath_;
     std::string devPath_;
     dev_t device_;
-    int flags_;
+    unsigned int flags_;
     std::list<std::string> volumeId_;
 };
 } // STORAGE_DAEMON

@@ -52,7 +52,8 @@ int DestroyDiskNode(const std::string &path)
 
 int GetDevSize(std::string path, uint64_t *size)
 {
-    int fd = open(path.c_str(), O_RDONLY);
+    const char *kPath = path.c_str();
+    int fd = open(kPath, O_RDONLY);
     if (fd < 0) {
         LOGE("open %s{private}s failed", path.c_str());
         return E_ERR;
