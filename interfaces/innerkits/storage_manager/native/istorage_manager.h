@@ -31,7 +31,7 @@ public:
     virtual int32_t StopUser(int32_t userId) = 0;
     virtual int64_t GetFreeSizeOfVolume(std::string volumeUuid) = 0;
     virtual int64_t GetTotalSizeOfVolume(std::string volumeUuid) = 0;
-    virtual std::vector<int64_t> GetBundleStats(std::string uuid, std::string pkgName) = 0;
+    virtual std::vector<int64_t> GetBundleStats(std::string pkgName) = 0;
     virtual void NotifyVolumeCreated(VolumeCore vc) = 0;
     virtual void NotifyVolumeMounted(std::string volumeId, int fsType, std::string fsUuid,
                                      std::string path, std::string description) = 0;

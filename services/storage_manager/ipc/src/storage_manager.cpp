@@ -90,10 +90,10 @@ int64_t StorageManager::GetTotalSizeOfVolume(std::string volumeUuid)
     return result;
 }
 
-std::vector<int64_t> StorageManager::GetBundleStats(std::string uuid, std::string pkgName)
+std::vector<int64_t> StorageManager::GetBundleStats(std::string pkgName)
 {
     LOGI("StorageManger::getBundleStats start, pkgName: %{public}s", pkgName.c_str());
-    std::vector<int64_t> result = DelayedSingleton<StorageStatusService>::GetInstance()->GetBundleStats(uuid, pkgName);
+    std::vector<int64_t> result = DelayedSingleton<StorageStatusService>::GetInstance()->GetBundleStats(pkgName);
     return result;
 }
 

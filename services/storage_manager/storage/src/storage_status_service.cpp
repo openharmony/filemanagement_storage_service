@@ -39,7 +39,7 @@ int StorageStatusService::GetCurrentUserId()
     return DEFAULT_USER_ID;
 }
 
-vector<int64_t> StorageStatusService::GetBundleStats(std::string uuid, std::string pkgName)
+vector<int64_t> StorageStatusService::GetBundleStats(std::string pkgName)
 {
     vector<int64_t> result = {0, 0, 0};
     int userId = GetCurrentUserId();
@@ -54,7 +54,7 @@ vector<int64_t> StorageStatusService::GetBundleStats(std::string uuid, std::stri
         LOGE("StorageStatusService::An error occurred in querying bundle stats.");
         return result;
     }
-    for (int i = 0; i < bundleStats.size(); i++) {
+    for (uint i = 0; i < bundleStats.size(); i++) {
         if (bundleStats[i] == E_ERR) {
             LOGE("StorageStatusService::Failed to query %s data.", dataDir[i].c_str());
             bundleStats[i] = 0;

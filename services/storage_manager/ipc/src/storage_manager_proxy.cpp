@@ -307,16 +307,12 @@ int64_t StorageManagerProxy::GetTotalSizeOfVolume(std::string volumeUuid)
     return reply.ReadInt64();
 }
 
-std::vector<int64_t> StorageManagerProxy::GetBundleStats(std::string uuid, std::string pkgName)
+std::vector<int64_t> StorageManagerProxy::GetBundleStats(std::string pkgName)
 {
     std::vector<int64_t> result = {};
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
-        return result;
-    }
-
-    if (!data.WriteString(uuid)) {
         return result;
     }
 
@@ -472,11 +468,11 @@ std::vector<VolumeExternal> StorageManagerProxy::GetAllVolumes()
         LOGE("StorageManagerProxy::GetAllVolumes, SendRequest failed");
         return result;
     }
-    int size = reply.ReadUint32();
+    uint size = reply.ReadUint32();
     if (size == 0) {
         return result;
     }
-    for (int i = 0; i < size; i++) {
+    for (uint i = 0; i < size; i++) {
         std::unique_ptr<VolumeExternal> ve = VolumeExternal::Unmarshalling(reply);
         LOGI("StorageManagerProxy::GetAllVolumes push %{public}s", ve->GetId().c_str());
         result.push_back(*ve);
@@ -562,11 +558,11 @@ std::vector<Disk> StorageManagerProxy::GetAllDisks()
         LOGE("StorageManagerProxy::GetAllDisks, SendRequest failed");
         return result;
     }
-    int size = reply.ReadUint32();
+    uint size = reply.ReadUint32();
     if (size == 0) {
         return result;
     }
-    for (int i = 0; i < size; i++) {
+    for (uint i = 0; i < size; i++) {
         std::unique_ptr<Disk> disk = Disk::Unmarshalling(reply);
         LOGI("StorageManagerProxy::GetAllDisks push %{public}s", disk->GetDiskId().c_str());
         result.push_back(*disk);

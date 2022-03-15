@@ -48,8 +48,8 @@ declare namespace storageStatistics {
   cacheSize: number;
   dataSize: number;
 }
-  function getBundleStats(volumeUuid: string, packageName: string,  callback: AsyncCallback<BundleStats>): void;
-  function getBundleStats(volumeUuid: string, packageName: string): Promise<BundleStats>;
+  function getBundleStats(packageName: string,  callback: AsyncCallback<BundleStats>): void;
+  function getBundleStats(packageName: string): Promise<BundleStats>;
 
 }
 

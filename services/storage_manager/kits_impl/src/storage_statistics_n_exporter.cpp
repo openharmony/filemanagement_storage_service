@@ -65,7 +65,7 @@ napi_value GetTotalSizeOfVolume(napi_env env, napi_callback_info info)
 
     std::string procedureName = "GetTotalSizeOfVolume";
     NVal thisVar(env, funcArg.GetThisVar());
-    if (funcArg.GetArgc() == (int)NARG_CNT::ONE) {
+    if (funcArg.GetArgc() == (uint)NARG_CNT::ONE) {
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
     } else {
         NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
@@ -106,7 +106,7 @@ napi_value GetFreeSizeOfVolume(napi_env env, napi_callback_info info)
 
     std::string procedureName = "getFreeSizeOfVolume";
     NVal thisVar(env, funcArg.GetThisVar());
-    if (funcArg.GetArgc() == (int)NARG_CNT::ONE) {
+    if (funcArg.GetArgc() == (uint)NARG_CNT::ONE) {
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
     } else {
         NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
@@ -118,29 +118,22 @@ napi_value GetFreeSizeOfVolume(napi_env env, napi_callback_info info)
 napi_value GetBundleStats(napi_env env, napi_callback_info info)
 {
     NFuncArg funcArg(env, info);
-    if (!funcArg.InitArgs((int)NARG_CNT::TWO, (int)NARG_CNT::THREE)) {
-        UniError(EINVAL).ThrowErr(env, "Number of arguments unmatched 2-3");
+    if (!funcArg.InitArgs((int)NARG_CNT::ONE, (int)NARG_CNT::TWO)) {
+        UniError(EINVAL).ThrowErr(env, "Number of arguments unmatched");
         return nullptr;
     }
 
     bool succ = false;
-    std::unique_ptr<char []> uuid;
     std::unique_ptr<char []> name;
-    tie(succ, uuid, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
-    if (!succ) {
-        UniError(EINVAL).ThrowErr(env, "Invalid uuid");
-        return nullptr;
-    }
     tie(succ, name, std::ignore) = NVal(env, funcArg[(int)NARG_POS::SECOND]).ToUTF8String();
     if (!succ) {
         UniError(EINVAL).ThrowErr(env, "Invalid name");
         return nullptr;
     }
     auto bundleStats = std::make_shared<std::vector<int64_t>>();
-    std::string uuidString(uuid.get());
     std::string nameString(name.get());
-    auto cbExec = [uuidString, nameString, bundleStats](napi_env env) -> UniError {
-        *bundleStats = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetBundleStats(uuidString, nameString);
+    auto cbExec = [nameString, bundleStats](napi_env env) -> UniError {
+        *bundleStats = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetBundleStats(nameString);
         return UniError(ERRNO_NOERR);
     };
     auto cbComplete = [bundleStats](napi_env env, UniError err) -> NVal {
@@ -160,10 +153,10 @@ napi_value GetBundleStats(napi_env env, napi_callback_info info)
     };
     std::string procedureName = "GetBundleStats";
     NVal thisVar(env, funcArg.GetThisVar());
-    if (funcArg.GetArgc() == (int)NARG_CNT::TWO) {
+    if (funcArg.GetArgc() == (uint)NARG_CNT::ONE) {
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
     } else {
-        NVal cb(env, funcArg[(int)NARG_POS::THIRD]);
+        NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
         return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
     }
     return NVal::CreateUndefined(env).val_;

@@ -27,7 +27,7 @@ class StorageStatusService : public NoCopyable  {
     DECLARE_DELAYED_SINGLETON(StorageStatusService);
 
 public:
-    std::vector<int64_t> GetBundleStats(std::string uuid, std::string pkgName);
+    std::vector<int64_t> GetBundleStats(std::string pkgName);
 private:
     int GetCurrentUserId();
     const std::vector<std::string> dataDir = {"app", "local", "distributed", "database", "cache"};

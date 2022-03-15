@@ -182,9 +182,8 @@ int32_t StorageManagerStub::HandleGetFree(MessageParcel &data, MessageParcel &re
 
 int32_t StorageManagerStub::HandleGetBundleStatus(MessageParcel &data, MessageParcel &reply)
 {
-    std::string uuid = data.ReadString();
     std::string pkgName = data.ReadString();
-    std::vector<int64_t> bundleStats = GetBundleStats(uuid, pkgName);
+    std::vector<int64_t> bundleStats = GetBundleStats(pkgName);
     if (!reply.WriteInt64Vector(bundleStats)) {
         return  E_IPC_ERROR;
     }
@@ -195,7 +194,7 @@ int32_t StorageManagerStub::HandleGetAllVolumes(MessageParcel &data, MessageParc
 {
     LOGE("StorageManagerStub::HandleGetAllVolumes Begin.");
     std::vector<VolumeExternal> ve = GetAllVolumes();
-    int size = ve.size();
+    uint size = ve.size();
     if (size == 0) {
         LOGE("StorageManagerStub::No volume.");
         if (!reply.WriteUint32(0)) {
@@ -297,7 +296,7 @@ int32_t StorageManagerStub::HandleGetAllDisks(MessageParcel &data, MessageParcel
 {
     LOGE("StorageManagerStub::HandleGetAllDisk Begin.");
     std::vector<Disk> disks = GetAllDisks();
-    int size = disks.size();
+    uint size = disks.size();
     if (size == 0) {
         LOGE("StorageManagerStub::No Disk.");
         if (!reply.WriteUint32(0)) {

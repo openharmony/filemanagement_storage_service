@@ -455,12 +455,11 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetTotalSizeOfVolume_000
 HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetBundleStats_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetBundleStats_0000";
-    std::string uuid = "113";
     std::string pkgName = "ohos.acts.storage.volume";
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
-    std::vector<int64_t> result = proxy->GetBundleStats(uuid, pkgName);
+    std::vector<int64_t> result = proxy->GetBundleStats(pkgName);
     GTEST_LOG_(INFO) << result[0];
     GTEST_LOG_(INFO) << result[1];
     GTEST_LOG_(INFO) << result[2];
@@ -479,12 +478,11 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetBundleStats_0000, tes
 HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetBundleStats_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetBundleStats_0001";
-    std::string uuid = "114";
     std::string pkgName = "ohos.acts.storage.zzzz";
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
-    std::vector<int64_t> result = proxy->GetBundleStats(uuid, pkgName);
+    std::vector<int64_t> result = proxy->GetBundleStats(pkgName);
     GTEST_LOG_(INFO) << result[0];
     GTEST_LOG_(INFO) << result[1];
     GTEST_LOG_(INFO) << result[2];
