@@ -50,8 +50,6 @@ private:
     const std::vector<DirInfo> rootDirVec_;
     const std::vector<DirInfo> subDirVec_;
     const std::string bundle_ = "/data/app/el1/bundle/%d";
-    const std::string el1_ = "el1";
-    const std::string el2_ = "el2";
     std::mutex mutex_;
 };
 } // STORAGE_DAEMON

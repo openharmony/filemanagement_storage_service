@@ -64,7 +64,7 @@ int32_t UserManager::PrepareUserDirs(int32_t userId, uint32_t flags)
     int32_t err = E_OK;
 
     if (flags & IStorageDaemon::CRYPTO_FLAG_EL1) {
-        err = PrepareDirsFromIdAndLevel(userId, el1_);
+        err = PrepareDirsFromIdAndLevel(userId, EL1);
         if (err != E_OK) {
             return err;
         }
@@ -76,7 +76,7 @@ int32_t UserManager::PrepareUserDirs(int32_t userId, uint32_t flags)
     }
 
     if (flags & IStorageDaemon::CRYPTO_FLAG_EL2) {
-        err = PrepareDirsFromIdAndLevel(userId, el2_);
+        err = PrepareDirsFromIdAndLevel(userId, EL2);
         if (err != E_OK) {
             return err;
         }
@@ -99,7 +99,7 @@ int32_t UserManager::DestroyUserDirs(int32_t userId, uint32_t flags)
     int32_t err;
 
     if (flags & IStorageDaemon::CRYPTO_FLAG_EL1) {
-        err = DestroyDirsFromIdAndLevel(userId, el1_);
+        err = DestroyDirsFromIdAndLevel(userId, EL1);
         ret = (err != E_OK) ? err : ret;
 
         err = DestroyEl1BundleDir(userId);
@@ -107,7 +107,7 @@ int32_t UserManager::DestroyUserDirs(int32_t userId, uint32_t flags)
     }
 
     if (flags & IStorageDaemon::CRYPTO_FLAG_EL2) {
-        err = DestroyDirsFromIdAndLevel(userId, el2_);
+        err = DestroyDirsFromIdAndLevel(userId, EL2);
         ret = (err != E_OK) ? err : ret;
 
         err = MountManager::GetInstance()->DestroyHmdfsDirs(userId);
@@ -192,7 +192,7 @@ int32_t UserManager::PrepareEl1BundleDir(int32_t userId)
     temp.userId = userId;
     temp.path = StringPrintf(bundle_.c_str(), userId);
     list.push_back(temp);
-    int ret = SetElDirFscryptPolicy(userId, el1_, list);
+    int ret = SetElDirFscryptPolicy(userId, EL1, list);
     if (ret != E_OK) {
         LOGE("Set el1 poilcy failed");
         return ret;
@@ -213,16 +213,13 @@ int32_t UserManager::DestroyEl1BundleDir(int32_t userId)
 int32_t UserManager::SetElDirFscryptPolicy(int32_t userId, const std::string &level,
                                            const std::vector<FileList> &list)
 {
-    if (level == el1_) {
-        if (KeyManager::GetInstance()->SetDirectoryElPolicy(userId, EL1_KEY, list)) {
-            LOGE("Set user dir el1 policy error");
-            return E_SET_POLICY;
-        }
-    } else if (level == el2_) {
-        if (KeyManager::GetInstance()->SetDirectoryElPolicy(userId, EL2_KEY, list)) {
-            LOGE("Set user dir el1 policy error");
-            return E_SET_POLICY;
-        }
+    if (EL_DIR_MAP.find(level) == EL_DIR_MAP.end()) {
+        LOGE("el type error");
+        return E_SET_POLICY;
+    }
+    if (KeyManager::GetInstance()->SetDirectoryElPolicy(userId, EL_DIR_MAP[level], list)) {
+        LOGE("Set user dir el1 policy error");
+        return E_SET_POLICY;
     }
 
     return E_OK;
