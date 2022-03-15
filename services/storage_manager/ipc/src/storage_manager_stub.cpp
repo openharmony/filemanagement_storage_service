@@ -194,7 +194,7 @@ int32_t StorageManagerStub::HandleGetAllVolumes(MessageParcel &data, MessageParc
 {
     LOGE("StorageManagerStub::HandleGetAllVolumes Begin.");
     std::vector<VolumeExternal> ve = GetAllVolumes();
-    int size = ve.size();
+    uint size = ve.size();
     if (size == 0) {
         LOGE("StorageManagerStub::No volume.");
         if (!reply.WriteUint32(0)) {
@@ -205,7 +205,7 @@ int32_t StorageManagerStub::HandleGetAllVolumes(MessageParcel &data, MessageParc
     if (!reply.WriteUint32(ve.size())) {
         return  E_IPC_ERROR;
     }
-    for (int i = 0; i < size; i++) {
+    for (uint i = 0; i < size; i++) {
         if (!ve[i].Marshalling(reply)) {
             return  E_IPC_ERROR;
         }
@@ -296,7 +296,7 @@ int32_t StorageManagerStub::HandleGetAllDisks(MessageParcel &data, MessageParcel
 {
     LOGE("StorageManagerStub::HandleGetAllDisk Begin.");
     std::vector<Disk> disks = GetAllDisks();
-    int size = disks.size();
+    uint size = disks.size();
     if (size == 0) {
         LOGE("StorageManagerStub::No Disk.");
         if (!reply.WriteUint32(0)) {
@@ -307,7 +307,7 @@ int32_t StorageManagerStub::HandleGetAllDisks(MessageParcel &data, MessageParcel
     if (!reply.WriteUint32(disks.size())) {
         return  E_IPC_ERROR;
     }
-    for (int i = 0; i < size; i++) {
+    for (uint i = 0; i < size; i++) {
         if (!disks[i].Marshalling(reply)) {
             return  E_IPC_ERROR;
         }

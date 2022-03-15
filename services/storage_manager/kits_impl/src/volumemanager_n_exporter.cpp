@@ -74,7 +74,7 @@ napi_value GetAllVolumes(napi_env env, napi_callback_info info)
     };
     std::string procedureName = "GetAllVolumes";
     NVal thisVar(env, funcArg.GetThisVar());
-    if (funcArg.GetArgc() == (int)NARG_CNT::ZERO) {
+    if (funcArg.GetArgc() == (uint)NARG_CNT::ZERO) {
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
     } else {
         NVal cb(env, funcArg[(int)NARG_POS::FIRST]);
@@ -115,7 +115,7 @@ napi_value Mount(napi_env env, napi_callback_info info)
 
     std::string procedureName = "Mount";
     NVal thisVar(env, funcArg.GetThisVar());
-    if (funcArg.GetArgc() == (int)NARG_CNT::ONE) {
+    if (funcArg.GetArgc() == (uint)NARG_CNT::ONE) {
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
     } else {
         NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
@@ -155,7 +155,7 @@ napi_value Unmount(napi_env env, napi_callback_info info)
 
     std::string procedureName = "Unmount";
     NVal thisVar(env, funcArg.GetThisVar());
-    if (funcArg.GetArgc() == (int)NARG_CNT::ONE) {
+    if (funcArg.GetArgc() == (uint)NARG_CNT::ONE) {
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
     } else {
         NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
