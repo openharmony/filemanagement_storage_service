@@ -235,32 +235,6 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_PrepareStartUser_0000, t
 }
 
 /**
- * @tc.number: SUB_STORAGE_Storage_manager_proxy_PrepareStartUser_0001
- * @tc.name: Storage_manager_proxy_PrepareStartUser_0001
- * @tc.desc: Test function of PrepareStartUser interface for SUCCESS which Repeated start.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: AR000GK4HB
- */
-HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_PrepareStartUser_0001, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_PrepareStartUser_0001";
-    int32_t userId = 106;
-    uint32_t flag = 3;
-    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
-    auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
-    proxy->PrepareAddUser(userId, flag);
-    proxy->PrepareStartUser(userId);
-    int32_t result = proxy->PrepareStartUser(userId);
-    EXPECT_EQ(result, 0);
-    proxy->StopUser(userId);
-    proxy->RemoveUser(userId, flag);
-    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_PrepareStartUser_0001";
-}
-
-/**
  * @tc.number: SUB_STORAGE_Storage_manager_proxy_PrepareStartUser_0002
  * @tc.name: Storage_manager_proxy_PrepareStartUser_0002
  * @tc.desc: Test function of PrepareStartUser interface for Logic ERROR which start userId not exist.
