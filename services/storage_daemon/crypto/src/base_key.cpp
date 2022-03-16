@@ -113,7 +113,7 @@ bool BaseKey::LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t
     }
 
     file.seekg(0, std::ios::end);
-    uint32_t length = file.tellg();
+    uint32_t length = static_cast<uint32_t>(file.tellg());
     // zero size means use the file length.
     if ((size != 0) && (length != size)) {
         LOGE("file:%{public}s size error, real len %{public}d not expected %{public}d", path.c_str(), length, size);

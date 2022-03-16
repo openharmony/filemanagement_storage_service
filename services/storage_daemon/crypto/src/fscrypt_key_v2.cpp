@@ -39,14 +39,17 @@ bool FscryptKeyV2::ActiveKey(const std::string &mnt)
         return false;
     }
 
-    auto ret = KeyCtrl::InstallKey(mnt, *arg);
-    if (ret == false) {
+    if (!KeyCtrl::InstallKey(mnt, *arg)) {
         LOGE("InstallKey failed");
         return false;
     }
     keyInfo_.keyId.Alloc(FSCRYPT_KEY_IDENTIFIER_SIZE);
-    (void)memcpy_s(keyInfo_.keyId.data.get(), FSCRYPT_KEY_IDENTIFIER_SIZE, arg->key_spec.u.identifier,
+    auto ret = memcpy_s(keyInfo_.keyId.data.get(), keyInfo_.keyId.size, arg->key_spec.u.identifier,
         FSCRYPT_KEY_IDENTIFIER_SIZE);
+    if (ret) {
+        LOGE("memcpy_s failed ret %{public}d", ret);
+        return false;
+    }
 
     LOGD("success. key_id len:%{public}d, data(hex):%{private}s", keyInfo_.keyId.size,
         keyInfo_.keyId.ToString().c_str());
@@ -69,11 +72,14 @@ bool FscryptKeyV2::InactiveKey(const std::string &mnt)
     fscrypt_remove_key_arg arg;
     (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
     arg.key_spec.type = FSCRYPT_KEY_SPEC_TYPE_IDENTIFIER;
-    (void)memcpy_s(arg.key_spec.u.identifier, FSCRYPT_KEY_IDENTIFIER_SIZE, keyInfo_.keyId.data.get(),
+    auto ret = memcpy_s(arg.key_spec.u.identifier, FSCRYPT_KEY_IDENTIFIER_SIZE, keyInfo_.keyId.data.get(),
         keyInfo_.keyId.size);
+    if (ret) {
+        LOGE("memcpy_s failed ret %{public}d", ret);
+        return false;
+    }
 
-    auto ret = KeyCtrl::RemoveKey(mnt, arg);
-    if (ret == false) {
+    if (!KeyCtrl::RemoveKey(mnt, arg)) {
         return false;
     }
     if (arg.removal_status_flags & FSCRYPT_KEY_REMOVAL_STATUS_FLAG_OTHER_USERS) {
