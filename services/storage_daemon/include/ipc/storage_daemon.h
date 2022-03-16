@@ -21,8 +21,6 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-constexpr int UID_ROOT = 0;
-constexpr int UID_SYSTEM = 1000;
 class StorageDaemon : public StorageDaemonStub {
 public:
     StorageDaemon() = default;
