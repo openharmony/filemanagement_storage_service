@@ -272,33 +272,6 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareStartUser_0002
 }
 
 /**
- * @tc.number: SUB_STORAGE_User_manager_service_PrepareStartUser_0003
- * @tc.name: User_manager_service_PrepareStartUser_0003
- * @tc.desc: Test function of PrepareStartUser interface for SUCCESS which Repeated start.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: AR000GK4HB
- */
-HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareStartUser_0003, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-begin User_manager_service_PrepareStartUser_0003";
-    std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
-    int32_t userId = 107;
-    uint32_t flag = 3;
-    int32_t result;
-    if (service != nullptr) {
-        service->PrepareAddUser(userId, flag);
-        service->PrepareStartUser(userId);
-        result = service->PrepareStartUser(userId);
-    }
-    EXPECT_EQ(result, 0);
-    service->StopUser(userId);
-    service->RemoveUser(userId, flag);
-    GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_PrepareStartUser_0003";
-}
-
-/**
  * @tc.number: SUB_STORAGE_User_manager_service_StopUser_0000
  * @tc.name: User_manager_service_StopUser_0000
  * @tc.desc: Test function of StopUser interface for SUCCESS.
