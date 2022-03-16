@@ -33,7 +33,7 @@ bool CheckClientPermission()
         LOGE("GetClientUid: fail");
     }
 
-    if (uid == 3046 || uid == 1000 || uid == 0) {
+    if (uid == UID_ACCOUNTMGR || uid == UID_SYSTEM || uid == UID_ROOT) {
         return true;
     }
     return false;

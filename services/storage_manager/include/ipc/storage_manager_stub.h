@@ -21,6 +21,9 @@
 
 namespace OHOS {
 namespace StorageManager {
+constexpr int UID_ROOT = 0;
+constexpr int UID_SYSTEM = 1000;
+constexpr int UID_ACCOUNTMGR = 3046;
 class StorageManagerStub : public IRemoteStub<IStorageManager> {
 public:
     int32_t OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option) override;
