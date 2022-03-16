@@ -106,7 +106,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareAddUser_0002, 
 /**
  * @tc.number: SUB_STORAGE_User_manager_service_PrepareAddUser_0003
  * @tc.name: User_manager_service_PrepareAddUser_0003
- * @tc.desc: Test function of PrepareAddUser interface for Logic ERROR which Repeated add.
+ * @tc.desc: Test function of PrepareAddUser interface for SUCCESS which Repeated add.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
@@ -123,7 +123,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareAddUser_0003, 
         service->PrepareAddUser(userId, flag);
         result = service->PrepareAddUser(userId, flag);
     }
-    EXPECT_NE(result, 0);
+    EXPECT_EQ(result, 0);
     service->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_PrepareAddUser_0003";
 }
@@ -155,7 +155,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_RemoveUser_0000, test
 /**
  * @tc.number: SUB_STORAGE_User_manager_service_RemoveUser_0001
  * @tc.name: User_manager_service_RemoveUser_0001
- * @tc.desc: Test function of RemoveUser interface for Logic ERROR which remove userId not exist.
+ * @tc.desc: Test function of RemoveUser interface for SUCCESS which remove userId not exist.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
@@ -171,7 +171,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_RemoveUser_0001, test
     if (service != nullptr) {
         result = service->RemoveUser(userId, flag);
     }
-    EXPECT_NE(result, 0);
+    EXPECT_EQ(result, 0);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_RemoveUser_0001";
 }
 
@@ -269,33 +269,6 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareStartUser_0002
     }
     EXPECT_NE(result, 0);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_PrepareStartUser_0002";
-}
-
-/**
- * @tc.number: SUB_STORAGE_User_manager_service_PrepareStartUser_0003
- * @tc.name: User_manager_service_PrepareStartUser_0003
- * @tc.desc: Test function of PrepareStartUser interface for Logic ERROR which Repeated start.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: AR000GK4HB
- */
-HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareStartUser_0003, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-begin User_manager_service_PrepareStartUser_0003";
-    std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
-    int32_t userId = 107;
-    uint32_t flag = 3;
-    int32_t result;
-    if (service != nullptr) {
-        service->PrepareAddUser(userId, flag);
-        service->PrepareStartUser(userId);
-        result = service->PrepareStartUser(userId);
-    }
-    EXPECT_EQ(result, 0);
-    service->StopUser(userId);
-    service->RemoveUser(userId, flag);
-    GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_PrepareStartUser_0003";
 }
 
 /**
