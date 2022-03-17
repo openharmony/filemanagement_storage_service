@@ -72,7 +72,7 @@ private:
     int LoadAllUsersEl1Key(void);
     int InitUserElkeyStorageDir(void);
     bool HasElkey(uint32_t userId, KeyType type);
-    void DoDeleteUserKeys(unsigned int user);
+    int DoDeleteUserKeys(unsigned int user);
 
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl1Key_;
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl2Key_;
