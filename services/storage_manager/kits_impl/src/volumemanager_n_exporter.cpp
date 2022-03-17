@@ -62,7 +62,7 @@ napi_value GetAllVolumes(napi_env env, napi_callback_info info)
             volumeInfoObject.AddProp("uuid", NVal::CreateUTF8String(env, (*volumeInfo)[i].GetUuid()).val_);
             volumeInfoObject.AddProp("description",
                 NVal::CreateUTF8String(env, (*volumeInfo)[i].GetDescription()).val_);
-            volumeInfoObject.AddProp("removeAble", NVal::CreateBool(env, (bool)true).val_);
+            volumeInfoObject.AddProp("removAble", NVal::CreateBool(env, (bool)true).val_);
             volumeInfoObject.AddProp("state", NVal::CreateInt32(env, (*volumeInfo)[i].GetState()).val_);
             volumeInfoObject.AddProp("path", NVal::CreateUTF8String(env, (*volumeInfo)[i].GetPath()).val_);
             status = napi_set_element(env, volumeInfoArray, i, volumeInfoObject.val_);
