@@ -14,11 +14,31 @@
  */
 
 #include "ipc/storage_manager_stub.h"
+#include "ipc_skeleton.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 
 namespace OHOS {
 namespace StorageManager {
+static bool GetClientUid(int &uid)
+{
+    uid = IPCSkeleton::GetCallingUid();
+    return true;
+}
+
+bool CheckClientPermission()
+{
+    int uid = -1;
+    if (!GetClientUid(uid)) {
+        LOGE("GetClientUid: fail");
+    }
+
+    if (uid == UID_ACCOUNTMGR || uid == UID_SYSTEM || uid == UID_ROOT) {
+        return true;
+    }
+    return false;
+}
+
 int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
     MessageParcel &data, MessageParcel &reply, MessageOption &option)
 {

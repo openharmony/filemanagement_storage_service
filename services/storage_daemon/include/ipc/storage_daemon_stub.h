@@ -21,6 +21,8 @@
 
 namespace OHOS {
 namespace StorageDaemon {
+constexpr int UID_ROOT = 0;
+constexpr int UID_SYSTEM = 1000;
 class StorageDaemonStub : public IRemoteStub<IStorageDaemon> {
 public:
     virtual int32_t OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,

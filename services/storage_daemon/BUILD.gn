@@ -33,6 +33,7 @@ config("storage_daemon_config") {
     "//foundation/distributedschedule/safwk/interfaces/innerkits/safwk",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
     "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include",
+    "//base/sescurity/access_token/interfaces/innerkits/accesstoken/include",
     "//foundation/filemanagement/storage_service/services/common/include",
   ]
 }
@@ -88,6 +89,7 @@ ohos_executable("storage_daemon") {
   ]
 
   external_deps = [
+    "access_token:libaccesstoken_sdk",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
     "samgr_standard:samgr_proxy",
