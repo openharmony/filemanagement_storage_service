@@ -125,7 +125,7 @@ napi_value GetBundleStats(napi_env env, napi_callback_info info)
 
     bool succ = false;
     std::unique_ptr<char []> name;
-    tie(succ, name, std::ignore) = NVal(env, funcArg[(int)NARG_POS::SECOND]).ToUTF8String();
+    tie(succ, name, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
     if (!succ) {
         UniError(EINVAL).ThrowErr(env, "Invalid name");
         return nullptr;
