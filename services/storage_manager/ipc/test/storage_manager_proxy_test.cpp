@@ -120,7 +120,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_PrepareAddUser_0002, tes
 /**
  * @tc.number: SUB_STORAGE_Storage_manager_proxy_PrepareAddUser_0003
  * @tc.name: Storage_manager_proxy_PrepareAddUser_0003
- * @tc.desc: Test function of PrepareAddUser interface for Logic ERROR which Repeated add.
+ * @tc.desc: Test function of PrepareAddUser interface for SUCCESS which Repeated add.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
@@ -136,7 +136,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_PrepareAddUser_0003, tes
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
     proxy->PrepareAddUser(userId, flag);
     int32_t result = proxy->PrepareAddUser(userId, flag);
-    EXPECT_NE(result, 0);
+    EXPECT_EQ(result, 0);
     proxy->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_PrepareAddUser_0003";
 }
@@ -167,7 +167,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_RemoveUser_0000, testing
 /**
  * @tc.number: SUB_STORAGE_Storage_manager_proxy_RemoveUser_0001
  * @tc.name: Storage_manager_proxy_RemoveUser_0001
- * @tc.desc: Test function of RemoveUser interface for Logic ERROR which remove userId not exist.
+ * @tc.desc: Test function of RemoveUser interface for SUCCESS which remove userId not exist.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
@@ -182,7 +182,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_RemoveUser_0001, testing
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
     int32_t result = proxy->RemoveUser(userId, flag);
-    EXPECT_NE(result, 0);
+    EXPECT_EQ(result, 0);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_RemoveUser_0001";
 }
 
@@ -232,32 +232,6 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_PrepareStartUser_0000, t
     proxy->StopUser(userId);
     proxy->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_PrepareStartUser_0000";
-}
-
-/**
- * @tc.number: SUB_STORAGE_Storage_manager_proxy_PrepareStartUser_0001
- * @tc.name: Storage_manager_proxy_PrepareStartUser_0001
- * @tc.desc: Test function of PrepareStartUser interface for Logic ERROR which Repeated start.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: AR000GK4HB
- */
-HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_PrepareStartUser_0001, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_PrepareStartUser_0001";
-    int32_t userId = 106;
-    uint32_t flag = 3;
-    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
-    auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
-    proxy->PrepareAddUser(userId, flag);
-    proxy->PrepareStartUser(userId);
-    int32_t result = proxy->PrepareStartUser(userId);
-    EXPECT_NE(result, 0);
-    proxy->StopUser(userId);
-    proxy->RemoveUser(userId, flag);
-    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_PrepareStartUser_0001";
 }
 
 /**
@@ -674,18 +648,14 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyDiskDestroyed_0000
 HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_Partition_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_Partition_0000";
+    std::string volumeId = "121";
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+
     std::string diskId = "124";
-    int64_t sizeBytes = 1024;
-    std::string sysPath = "/";
-    std::string vendor = "124";
-    int32_t flag = 1;
-    Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
     int32_t type = 1;
-    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
-    auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
-    proxy->NotifyDiskCreated(disk);
-    int32_t result = proxy->Partition(diskId, type);
+    int32_t result = proxy_->Partition(diskId, type);
     EXPECT_EQ(result, 0);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_Partition_0000";
 }
