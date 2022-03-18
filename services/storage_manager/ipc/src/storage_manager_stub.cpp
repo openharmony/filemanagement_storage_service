@@ -32,8 +32,9 @@ bool CheckClientPermission()
     if (!GetClientUid(uid)) {
         LOGE("GetClientUid: fail");
     }
-
-    if (uid == UID_ACCOUNTMGR || uid == UID_SYSTEM || uid == UID_ROOT) {
+    LOGI("uid: %{public}d", uid);
+    if (uid == UID_ACCOUNTMGR || uid == UID_SYSTEM || uid == UID_ROOT || uid == UID_XTS) {
+        LOGI("StorageManager permissionCheck pass!");
         return true;
     }
     return false;
