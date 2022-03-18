@@ -100,7 +100,7 @@ std::shared_ptr<DiskInfo> DiskManager::MatchConfig(NetlinkData *data)
             } else {
                 flag |= DiskInfo::DeviceFlag::USB_FLAG;
             }
-            auto diskInfo =  std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+            auto diskInfo =  std::make_shared<DiskInfo>(sysPath, devPath, device, static_cast<int>(flag));
             return diskInfo;
         }
     }

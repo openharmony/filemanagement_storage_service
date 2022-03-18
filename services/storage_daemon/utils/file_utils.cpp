@@ -423,8 +423,7 @@ void TraverseDirUevent(const std::string &path, bool flag)
     int fd = openat(dirFd, "uevent", O_WRONLY | O_CLOEXEC);
     if (fd >= 0) {
         std::string writeStr = "add\n";
-        int writeStrLen = writeStr.length();
-        write(fd, writeStr.c_str(), writeStrLen);
+        write(fd, writeStr.c_str(), writeStr.length());
         close(fd);
     }
 

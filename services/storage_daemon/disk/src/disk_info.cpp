@@ -40,7 +40,7 @@ DiskInfo::DiskInfo(std::string sysPath, std::string devPath, dev_t device, int f
     eventPath_ = devPath;
     devPath_ = StringPrintf("/dev/block/%s", id_.c_str());
     device_ = device;
-    flags_ = flag;
+    flags_ = static_cast<unsigned int>(flag);
     status = sInital;
 }
 
@@ -141,7 +141,7 @@ void DiskInfo::ReadMetadata()
             LOGE("open file %{public}s failed", path.c_str());
             return;
         }
-        unsigned int manfid = std::stoi(str);
+        int manfid = std::stoi(str);
         switch (manfid) {
             case 0x000003: {
                 vendor_ = "SanDisk";
@@ -219,12 +219,12 @@ int DiskInfo::ReadPartition()
             if (++it == split.end()) {
                 continue;
             }
-            unsigned int index = (unsigned int) std::stoi(*it);
+            int32_t index = std::stoi(*it);
             if (index > maxVolumes || index < 1) {
                 LOGE("Invalid partition %{public}d", index);
                 continue;
             }
-            dev_t partitionDev = makedev(major(device_), minor(device_) + index);
+            dev_t partitionDev = makedev(major(device_), minor(device_) + static_cast<uint32_t>(index));
             res = CreateVolume(partitionDev);
             if (res != E_OK) {
                 return res;
