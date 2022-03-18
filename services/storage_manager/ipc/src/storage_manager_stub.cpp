@@ -301,7 +301,6 @@ int32_t StorageManagerStub::HandleUnmount(MessageParcel &data, MessageParcel &re
 int32_t StorageManagerStub::HandleNotifyDiskCreated(MessageParcel &data, MessageParcel &reply)
 {
     auto disk = Disk::Unmarshalling(data);
-    LOGI("zwd, %{public}s", disk->GetDiskId().c_str());
     NotifyDiskCreated(*disk);
     return E_OK;
 }
