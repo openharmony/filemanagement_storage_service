@@ -14,6 +14,7 @@
  */
 
 #include "ipc/storage_manager_stub.h"
+#include "accesstoken_kit.h"
 #include "ipc_skeleton.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -26,14 +27,22 @@ static bool GetClientUid(int &uid)
     return true;
 }
 
-bool CheckClientPermission()
+bool CheckClientPermission(const std::string& permissionStr)
 {
     int uid = -1;
     if (!GetClientUid(uid)) {
         LOGE("GetClientUid: fail");
     }
-
+    LOGI("uid: %{public}d", uid);
     if (uid == UID_ACCOUNTMGR || uid == UID_SYSTEM || uid == UID_ROOT) {
+        LOGI("StorageManager permissionCheck pass!");
+        return true;
+    }
+    Security::AccessToken::AccessTokenID tokenCaller = IPCSkeleton::GetCallingTokenID();
+    int res = Security::AccessToken::AccessTokenKit::VerifyAccessToken(tokenCaller,
+        permissionStr);
+    if (res == Security::AccessToken::PermissionState::PERMISSION_GRANTED) {
+        LOGI("Have media permission");
         return true;
     }
     return false;
@@ -46,7 +55,8 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
         return E_PERMISSION_DENIED;
     }
 
-    if (!CheckClientPermission()) {
+    std::string permission = "ohos.permission.READ_MEDIA";
+    if (!CheckClientPermission(permission)) {
         LOGE("StorageManager checkPermission error");
         return E_PERMISSION_DENIED;
     }
