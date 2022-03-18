@@ -46,7 +46,7 @@ public:
     static std::unique_ptr<VolumeCore> Unmarshalling(Parcel &parcel);
 private:
     std::string id_;
-    int32_t type_;
+    int32_t type_ {};
     std::string diskId_;
     int32_t state_ = UNMOUNTED;
     bool errorFlag_ = false;

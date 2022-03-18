@@ -34,8 +34,8 @@ protected:
     virtual void OnEvent(char *msg) = 0;
 
 private:
-    int32_t socketFd_;
-    int32_t socketPipe_[2];
+    int32_t socketFd_ { -1 };
+    int32_t socketPipe_[2] { -1, -1 };
     std::unique_ptr<std::thread> socketThread_;
     void RecvUeventMsg();
     int32_t ReadMsg(int32_t fd_count, struct pollfd ufds[2]);

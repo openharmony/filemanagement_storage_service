@@ -40,10 +40,10 @@ public:
     static std::unique_ptr<Disk> Unmarshalling(Parcel &parcel);
 private:
     std::string diskId_;
-    int64_t sizeBytes_;
+    int64_t sizeBytes_ {};
     std::string sysPath_;
     std::string vendor_;
-    int32_t flag_;
+    int32_t flag_ {};
 };
 } // STORAGE_MANAGER
 } // OHOS

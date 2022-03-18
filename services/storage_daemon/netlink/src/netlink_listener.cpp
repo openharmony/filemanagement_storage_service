@@ -113,7 +113,7 @@ int32_t NetlinkListener::ReadMsg(int32_t fd_count, struct pollfd ufds[2])
                 break;
             }
         } else if (ufds[i].fd == socketFd_) {
-            if (ufds[i].revents & POLLIN) {
+            if ((static_cast<uint32_t>(ufds[i].revents) & POLLIN)) {
                 RecvUeventMsg();
                 continue;
             }

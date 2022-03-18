@@ -47,7 +47,7 @@ public:
     bool Marshalling(Parcel &parcel) const override;
     static std::unique_ptr<VolumeExternal> Unmarshalling(Parcel &parcel);
 private:
-    int32_t fsType_;
+    int32_t fsType_ { UNDEFINED };
     std::string fsUuid_;
     std::string path_;
     std::string description_;

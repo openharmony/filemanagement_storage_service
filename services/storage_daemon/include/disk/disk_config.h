@@ -29,7 +29,7 @@ public:
 private:
     std::string sysPattern_;
     std::string label_;
-    int flag_;
+    int flag_ {};
 };
 } // namespace STORAGE_DAEMON
 } // namespace OHOS
