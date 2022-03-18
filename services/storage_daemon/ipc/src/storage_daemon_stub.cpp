@@ -29,7 +29,7 @@ static bool GetClientUid(int &uid)
     return true;
 }
 
-static bool GetClientTokenId(int &TokenId)
+static bool GetClientTokenId(uint32_t &TokenId)
 {
     TokenId = IPCSkeleton::GetCallingTokenID();
     return true;
@@ -45,7 +45,7 @@ static std::string GetProcessName(int pid)
 bool CheckClientPermission()
 {
     int uid = -1;
-    int tokenId = 0;
+    uint32_t tokenId = 0;
     if (!GetClientUid(uid)) {
         LOGE("GetClientUid: fail");
     }

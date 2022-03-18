@@ -29,9 +29,9 @@ public:
     int32_t Stop();
 
 private:
-    static NetlinkManager* instance_;
-    int32_t socketFd_;
-    NetlinkHandler *nlHandler_;
+    static NetlinkManager *instance_;
+    int32_t socketFd_ { -1 };
+    NetlinkHandler *nlHandler_ = nullptr;
     NetlinkManager() = default;
 };
 } // STORAGE_DAEMON

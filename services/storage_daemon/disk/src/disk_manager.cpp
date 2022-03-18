@@ -94,13 +94,13 @@ std::shared_ptr<DiskInfo> DiskManager::MatchConfig(NetlinkData *data)
 
     for (auto config : diskConfig_) {
         if (config->IsMatch(devPath)) {
-            int flag = config->GetFlag();
+            uint32_t flag = static_cast<uint32_t>(config->GetFlag());
             if (major == DISK_MMC_MAJOR) {
-            flag |= DiskInfo::DeviceFlag::SD_FLAG;
+                flag |= DiskInfo::DeviceFlag::SD_FLAG;
             } else {
-            flag |= DiskInfo::DeviceFlag::USB_FLAG;
+                flag |= DiskInfo::DeviceFlag::USB_FLAG;
             }
-            auto diskInfo =  std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+            auto diskInfo =  std::make_shared<DiskInfo>(sysPath, devPath, device, static_cast<int>(flag));
             return diskInfo;
         }
     }

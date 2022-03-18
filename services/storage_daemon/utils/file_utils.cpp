@@ -321,7 +321,14 @@ bool ReadFile(std::string path, std::string *str)
 {
     std::ifstream infile;
     int cnt = 0;
-    infile.open(path.c_str());
+
+    std::string rpath(PATH_MAX + 1, '\0');
+    if ((path.length() > PATH_MAX) || (realpath(path.c_str(), rpath.data()) == nullptr)) {
+        LOGE("realpath failed");
+        return false;
+    }
+
+    infile.open(rpath.c_str());
     if (!infile) {
         LOGE("Cannot open file");
         return false;
@@ -416,8 +423,7 @@ void TraverseDirUevent(const std::string &path, bool flag)
     int fd = openat(dirFd, "uevent", O_WRONLY | O_CLOEXEC);
     if (fd >= 0) {
         std::string writeStr = "add\n";
-        int writeStrLen = writeStr.length();
-        write(fd, writeStr.c_str(), writeStrLen);
+        write(fd, writeStr.c_str(), writeStr.length());
         close(fd);
     }
 

@@ -53,15 +53,15 @@ public:
 
 private:
     std::string id_;
-    uint64_t size_;
+    uint64_t size_ {};
     /* device vendor infomation */
     std::string vendor_;
     std::string sysPath_;
-    int status;
+    int status { sInital };
     std::string eventPath_;
     std::string devPath_;
-    dev_t device_;
-    unsigned int flags_;
+    dev_t device_ {};
+    unsigned int flags_ {};
     std::list<std::string> volumeId_;
 };
 } // STORAGE_DAEMON
