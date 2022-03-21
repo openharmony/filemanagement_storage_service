@@ -23,7 +23,6 @@
             "bundle_framework",
             "hiviewdfx_hilog_native",
             "ipc",
-            "os_account_standard",
             "safwk",
             "samgr_standard",
             "ability_runtime",

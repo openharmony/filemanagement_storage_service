@@ -14,8 +14,8 @@
  */
 
 #include "user/multi_user_manager_service.h"
-#include "os_account_constants.h"
 #include "storage_daemon_communication/storage_daemon_communication.h"
+#include "storage_service_constant.h"
 #include "storage_service_log.h"
 #include "storage_service_errno.h"
 
@@ -33,7 +33,7 @@ MultiUserManagerService::~MultiUserManagerService()
 
 int32_t MultiUserManagerService::CheckUserIdRange(int32_t userId)
 {
-    if (userId < AccountSA::Constants::START_USER_ID || userId > AccountSA::Constants::MAX_USER_ID) {
+    if (userId < StorageService::START_USER_ID || userId > StorageService::MAX_USER_ID) {
         LOGE("MultiUserManagerService: userId:%{public}d is out of range", userId);
         return E_USERID_RANGE;
     }
