@@ -19,6 +19,7 @@
 
 namespace OHOS {
 namespace StorageDaemon {
+#ifdef SUPPORT_FSCRYPT_V2
 bool FscryptKeyV2::ActiveKey(const std::string &mnt)
 {
     LOGD("enter");
@@ -92,5 +93,21 @@ bool FscryptKeyV2::InactiveKey(const std::string &mnt)
     keyInfo_.keyId.Clear();
     return true;
 }
+
+#else
+bool FscryptKeyV2::ActiveKey(const std::string &mnt)
+{
+    (void)mnt;
+    LOGI("Unsupported fscrypt v2");
+    return false;
+}
+
+bool FscryptKeyV2::InactiveKey(const std::string &mnt)
+{
+    (void)mnt;
+    LOGI("Unsupported fscrypt v2");
+    return false;
+}
+#endif
 } // namespace StorageDaemon
 } // namespace OHOS

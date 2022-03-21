@@ -21,8 +21,10 @@
 #include <string>
 #include <linux/keyctl.h>
 #include <linux/version.h>
+
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
 #include <linux/fscrypt.h>
+#define SUPPORT_FSCRYPT_V2
 #else
 #include "fscrypt_uapi.h"
 #endif
@@ -48,7 +50,9 @@ enum {
 
 union FscryptPolicy {
     fscrypt_policy_v1 v1;
+#ifdef SUPPORT_FSCRYPT_V2
     fscrypt_policy_v2 v2;
+#endif
 };
 
 class KeyCtrl {
@@ -67,13 +71,16 @@ public:
     static long GetSecurity(key_serial_t key, std::string &buffer);
 
     // ------ fscrypt v2 ------
+#ifdef SUPPORT_FSCRYPT_V2
     static bool InstallKey(const std::string &mnt, fscrypt_add_key_arg &arg);
     static bool RemoveKey(const std::string &mnt, fscrypt_remove_key_arg &arg);
     static bool GetKeyStatus(const std::string &mnt, fscrypt_get_key_status_arg &arg);
+    static bool GetPolicy(const std::string &path, fscrypt_get_policy_ex_arg &policy);
+#endif
 
     static bool SetPolicy(const std::string &path, FscryptPolicy &policy);
     static bool GetPolicy(const std::string &path, fscrypt_policy &policy);
-    static bool GetPolicy(const std::string &path, fscrypt_get_policy_ex_arg &policy);
+
     static bool LoadAndSetPolicy(const std::string &keyPath, const std::string &toEncrypt);
     static uint8_t LoadVersion(const std::string &keyPath);
 

@@ -118,6 +118,7 @@ bool FsIoctl(const std::string &mnt, unsigned long cmd, void *arg)
     return true;
 }
 
+#ifdef SUPPORT_FSCRYPT_V2
 bool KeyCtrl::InstallKey(const std::string &mnt, fscrypt_add_key_arg &arg)
 {
     LOGD("enter");
@@ -136,6 +137,13 @@ bool KeyCtrl::GetKeyStatus(const std::string &mnt, fscrypt_get_key_status_arg &a
     return FsIoctl(mnt, FS_IOC_GET_ENCRYPTION_KEY_STATUS, reinterpret_cast<void *>(&arg));
 }
 
+bool KeyCtrl::GetPolicy(const std::string &path, fscrypt_get_policy_ex_arg &policy)
+{
+    LOGD("enter");
+    return FsIoctl(path, FS_IOC_GET_ENCRYPTION_POLICY_EX, reinterpret_cast<void *>(&policy));
+}
+#endif
+
 bool KeyCtrl::SetPolicy(const std::string &path, FscryptPolicy &policy)
 {
     LOGD("enter");
@@ -146,12 +154,6 @@ bool KeyCtrl::GetPolicy(const std::string &path, fscrypt_policy &policy)
 {
     LOGD("enter");
     return FsIoctl(path, FS_IOC_GET_ENCRYPTION_POLICY, reinterpret_cast<void *>(&policy));
-}
-
-bool KeyCtrl::GetPolicy(const std::string &path, fscrypt_get_policy_ex_arg &policy)
-{
-    LOGD("enter");
-    return FsIoctl(path, FS_IOC_GET_ENCRYPTION_POLICY_EX, reinterpret_cast<void *>(&policy));
 }
 
 static bool ParseOption(const std::map<std::string, uint8_t> &policy, const std::string &option, uint8_t &value)
@@ -184,6 +186,7 @@ static bool SetPolicyLegacy(const std::string &keyDescPath, const std::string &t
     return KeyCtrl::SetPolicy(toEncrypt, arg);
 }
 
+#ifdef SUPPORT_FSCRYPT_V2
 static bool SetPolicyV2(const std::string &keyIdPath, const std::string &toEncrypt, FscryptPolicy &arg)
 {
     std::string keyId;
@@ -196,6 +199,7 @@ static bool SetPolicyV2(const std::string &keyIdPath, const std::string &toEncry
     (void)memcpy_s(arg.v2.master_key_identifier, FSCRYPT_KEY_IDENTIFIER_SIZE, keyId.data(), keyId.length());
     return KeyCtrl::SetPolicy(toEncrypt, arg);
 }
+#endif
 
 bool KeyCtrl::LoadAndSetPolicy(const std::string &keyPath, const std::string &toEncrypt)
 {
@@ -211,8 +215,10 @@ bool KeyCtrl::LoadAndSetPolicy(const std::string &keyPath, const std::string &to
     auto ver = LoadVersion(keyPath);
     if (ver == FSCRYPT_V1) {
         return SetPolicyLegacy(keyPath + PATH_KEYDESC, toEncrypt, arg);
+#ifdef SUPPORT_FSCRYPT_V2
     } else if (ver == FSCRYPT_V2) {
         return SetPolicyV2(keyPath + PATH_KEYID, toEncrypt, arg);
+#endif
     }
     LOGE("SetPolicy fail, unknown version");
     return false;
@@ -245,6 +251,7 @@ static uint8_t CheckKernelFscrypt(const std::string &mnt)
         return FSCRYPT_INVALID;
     }
 
+#ifdef SUPPORT_FSCRYPT_V2
     errno = 0;
     (void)ioctl(fd, FS_IOC_ADD_ENCRYPTION_KEY, nullptr);
     close(fd);
@@ -260,6 +267,9 @@ static uint8_t CheckKernelFscrypt(const std::string &mnt)
     }
     LOGW("Unexpected errno: %{public}d", errno);
     return FSCRYPT_INVALID;
+#else
+    return FSCRYPT_V1;
+#endif
 }
 
 uint8_t KeyCtrl::GetFscryptVersion(const std::string &mnt)
