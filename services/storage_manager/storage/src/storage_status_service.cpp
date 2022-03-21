@@ -14,11 +14,11 @@
  */
 
 #include "storage/storage_status_service.h"
+#include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "installd_client.h"
-#include "os_account_manager.h"
-#include "os_account_constants.h"
+#include "ipc_skeleton.h"
 
 using namespace std;
 
@@ -29,14 +29,10 @@ StorageStatusService::~StorageStatusService() {}
 
 int StorageStatusService::GetCurrentUserId()
 {
-    vector<int> osAccountInfos;
-    if (AccountSA::OsAccountManager::QueryActiveOsAccountIds(osAccountInfos) == E_OK) {
-        if (osAccountInfos.size() > 0) {
-            return osAccountInfos[0];
-        }
-    }
-    LOGE("StorageStatusService::An error occurred in querying current os account.");
-    return DEFAULT_USER_ID;
+    int uid = -1;
+    uid = IPCSkeleton::GetCallingUid();
+    int userId = uid / 200000;
+    return userId;
 }
 
 vector<int64_t> StorageStatusService::GetBundleStats(std::string pkgName)
@@ -44,7 +40,7 @@ vector<int64_t> StorageStatusService::GetBundleStats(std::string pkgName)
     vector<int64_t> result = {0, 0, 0};
     int userId = GetCurrentUserId();
     LOGI("StorageStatusService::userId is:%d", userId);
-    if (userId < 0 || userId > AccountSA::Constants::MAX_USER_ID) {
+    if (userId < 0 || userId > StorageService::MAX_USER_ID) {
         LOGI("StorageStatusService::Invaild userId.");
         return result;
     }
