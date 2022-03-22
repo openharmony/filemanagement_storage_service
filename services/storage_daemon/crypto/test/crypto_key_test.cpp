@@ -94,16 +94,15 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_init, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v2_init, TestSize.Level1)
 {
-    if (KeyCtrl::GetFscryptVersion(TEST_MNT) == FSCRYPT_V1) {
-        // On kernel donnot support fscrypt_v2, the InitKey() should fail.
-        EXPECT_FALSE(g_testKeyV2.InitKey());
-    } else {
-        EXPECT_TRUE(g_testKeyV2.InitKey());
-        EXPECT_EQ(FSCRYPT_V2, g_testKeyV2.keyInfo_.version);
-        EXPECT_EQ(CRYPTO_AES_256_XTS_KEY_SIZE, g_testKeyV2.keyInfo_.key.size);
-        EXPECT_NE(nullptr, g_testKeyV2.keyInfo_.key.data.get());
-        g_testKeyV2.keyInfo_.key.Clear();
-    }
+#ifdef SUPPORT_FSCRYPT_V2
+    EXPECT_TRUE(g_testKeyV2.InitKey());
+    EXPECT_EQ(FSCRYPT_V2, g_testKeyV2.keyInfo_.version);
+    EXPECT_EQ(CRYPTO_AES_256_XTS_KEY_SIZE, g_testKeyV2.keyInfo_.key.size);
+    EXPECT_NE(nullptr, g_testKeyV2.keyInfo_.key.data.get());
+    g_testKeyV2.keyInfo_.key.Clear();
+#else
+    EXPECT_FALSE(g_testKeyV2.InitKey());
+#endif
 }
 
 /**
@@ -137,6 +136,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_store, TestSize.Level1)
     EXPECT_EQ('1', buf[0]);
 }
 
+#ifdef SUPPORT_FSCRYPT_V2
 /**
  * @tc.name: fscrypt_key_v2_store
  * @tc.desc: Verify the StoreKey function.
@@ -145,11 +145,6 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_store, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v2_store, TestSize.Level1)
 {
-    // skipped when kernel not support v2
-    if (KeyCtrl::GetFscryptVersion(TEST_MNT) == FSCRYPT_V1) {
-        return;
-    }
-
     g_testKeyV2.ClearKey();
     EXPECT_TRUE(g_testKeyV2.InitKey());
     EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
@@ -176,11 +171,6 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_store, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v2_update, TestSize.Level1)
 {
-    // skipped when kernel not support v2
-    if (KeyCtrl::GetFscryptVersion(TEST_MNT) == FSCRYPT_V1) {
-        return;
-    }
-
     std::string buf {};
     EXPECT_TRUE(g_testKeyV2.UpdateKey());
 
@@ -202,15 +192,11 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_update, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_restore_fail_wrong_version, TestSize.Level1)
 {
-    // skipped when kernel not support v2
-    if (KeyCtrl::GetFscryptVersion(TEST_MNT) == FSCRYPT_V1) {
-        return;
-    }
-
     g_testKeyV1.keyInfo_.key.Clear();
     // the version loaded is v2, not expected v1.
     EXPECT_FALSE(g_testKeyV1.RestoreKey(emptyUserAuth));
 }
+#endif
 
 /**
  * @tc.name: fscrypt_key_v1_restore
@@ -327,13 +313,14 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_key_inactive, TestSize.Level1)
 {
     EXPECT_TRUE(g_testKeyV1.InactiveKey());
 
-    if (KeyCtrl::GetFscryptVersion(TEST_MNT) == FSCRYPT_V2) {
-        EXPECT_FALSE(OHOS::ForceCreateDirectory(TEST_DIR_LEGACY + "/test_dir1"));
-        EXPECT_FALSE(OHOS::SaveStringToFile(TEST_DIR_LEGACY + "/test_file3", "AAA"));
-    }
+#ifdef SUPPORT_FSCRYPT_V2
+    EXPECT_FALSE(OHOS::ForceCreateDirectory(TEST_DIR_LEGACY + "/test_dir1"));
+    EXPECT_FALSE(OHOS::SaveStringToFile(TEST_DIR_LEGACY + "/test_file3", "AAA"));
     // earlier kernels may have different behaviour.
+#endif
 }
 
+#ifdef SUPPORT_FSCRYPT_V2
 /**
  * @tc.name: fscrypt_key_v2_active
  * @tc.desc: Verify the fscrypt V2 active function.
@@ -342,11 +329,6 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_key_inactive, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v2_active, TestSize.Level1)
 {
-    // skipped when kernel not support v2
-    if (KeyCtrl::GetFscryptVersion(TEST_MNT) == FSCRYPT_V1) {
-        return;
-    }
-
     g_testKeyV2.ClearKey();
     EXPECT_TRUE(g_testKeyV2.InitKey());
     EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
@@ -367,11 +349,6 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_active, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_set, TestSize.Level1)
 {
-    // skipped when kernel not support v2
-    if (KeyCtrl::GetFscryptVersion(TEST_MNT) == FSCRYPT_V1) {
-        return;
-    }
-
     EXPECT_EQ(FSCRYPT_V2, g_testKeyV2.keyInfo_.version);
     FscryptPolicy arg;
     arg.v2.version = FSCRYPT_POLICY_V2;
@@ -398,11 +375,6 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_set, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_get, TestSize.Level1)
 {
-    // skipped when kernel not support v2
-    if (KeyCtrl::GetFscryptVersion(TEST_MNT) == FSCRYPT_V1) {
-        return;
-    }
-
     struct fscrypt_get_policy_ex_arg arg;
     memset_s(&arg, sizeof(arg), 0, sizeof(arg));
     arg.policy_size = sizeof(arg.policy);
@@ -423,11 +395,6 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_get, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_inactive, TestSize.Level1)
 {
-    // skipped when kernel not support v2
-    if (KeyCtrl::GetFscryptVersion(TEST_MNT) == FSCRYPT_V1) {
-        return;
-    }
-
     EXPECT_TRUE(g_testKeyV2.InactiveKey());
     // When the v2 policy removed, the files are encrypted.
     EXPECT_FALSE(OHOS::FileExists(TEST_DIR_V2 + "/test_dir"));
@@ -443,11 +410,6 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_inactive, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_restore, TestSize.Level1)
 {
-    // skipped when kernel not support v2
-    if (KeyCtrl::GetFscryptVersion(TEST_MNT) == FSCRYPT_V1) {
-        return;
-    }
-
     EXPECT_TRUE(g_testKeyV2.RestoreKey(emptyUserAuth));
     EXPECT_EQ(FSCRYPT_V2, g_testKeyV2.keyInfo_.version);
     EXPECT_TRUE(g_testKeyV2.ActiveKey());
@@ -468,11 +430,6 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_restore, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_default, TestSize.Level1)
 {
-    // skipped when kernel not support v2
-    if (KeyCtrl::GetFscryptVersion(TEST_MNT) == FSCRYPT_V1) {
-        return;
-    }
-
     g_testKeyV2.ClearKey();
     EXPECT_TRUE(g_testKeyV2.InitKey());
     EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
@@ -489,6 +446,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_default, TestSize.Lev
 
     EXPECT_TRUE(g_testKeyV2.ClearKey());
 }
+#endif
 
 /**
  * @tc.name: fscrypt_key_v1_load_and_set_policy_default
@@ -514,6 +472,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_load_and_set_policy_default, TestSize.Lev
     EXPECT_TRUE(g_testKeyV1.ClearKey());
 }
 
+#ifdef SUPPORT_FSCRYPT_V2
 /**
  * @tc.name: fscrypt_key_storekey_version_test_1
  * @tc.desc: Verify the fscrypt storekey function.
@@ -522,11 +481,6 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_load_and_set_policy_default, TestSize.Lev
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_storekey_version_test_1, TestSize.Level1)
 {
-    // skipped when kernel not support v2
-    if (KeyCtrl::GetFscryptVersion(TEST_MNT) == FSCRYPT_V1) {
-        return;
-    }
-
     EXPECT_TRUE(g_testKeyV2.InitKey());
 
     // storekey to version 0
@@ -566,11 +520,6 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_storekey_version_test_1, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_storekey_version_test_2, TestSize.Level1)
 {
-    // skipped when kernel not support v2
-    if (KeyCtrl::GetFscryptVersion(TEST_MNT) == FSCRYPT_V1) {
-        return;
-    }
-
     EXPECT_TRUE(g_testKeyV2.RestoreKey(emptyUserAuth));
 
     // storekey to version 0
@@ -602,11 +551,6 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_storekey_version_test_2, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_padding_4, TestSize.Level1)
 {
-    // skipped when kernel not support v2
-    if (KeyCtrl::GetFscryptVersion(TEST_MNT) == FSCRYPT_V1) {
-        return;
-    }
-
     g_testKeyV2.ClearKey();
     EXPECT_TRUE(g_testKeyV2.InitKey());
     EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
@@ -634,3 +578,4 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_padding_4, TestSize.L
 
     EXPECT_TRUE(g_testKeyV2.ClearKey());
 }
+#endif
