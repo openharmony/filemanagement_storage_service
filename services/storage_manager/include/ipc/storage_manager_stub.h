@@ -23,6 +23,7 @@ namespace OHOS {
 namespace StorageManager {
 constexpr int UID_ROOT = 0;
 constexpr int UID_SYSTEM = 1000;
+constexpr int UID_FMS = 1006;
 constexpr int UID_ACCOUNTMGR = 3046;
 class StorageManagerStub : public IRemoteStub<IStorageManager> {
 public:
