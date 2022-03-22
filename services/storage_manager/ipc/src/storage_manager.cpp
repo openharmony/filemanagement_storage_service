@@ -14,6 +14,8 @@
  */
 
 #include "ipc/storage_manager.h"
+
+#include <unistd.h>
 #include <storage/storage_status_service.h>
 #include <storage/storage_total_status_service.h>
 #include <singleton.h>
@@ -30,11 +32,21 @@
 namespace OHOS {
 namespace StorageManager {
 REGISTER_SYSTEM_ABILITY_BY_ID(StorageManager, STORAGE_MANAGER_MANAGER_ID, true);
+static constexpr int32_t GET_CLIENT_RETRY_TIMES = 5;
+static constexpr int32_t SLEEP_TIME = 1;
 
 void StorageManager::OnStart()
 {
     LOGI("StorageManager::OnStart Begin");
-    bool res = SystemAbility::Publish(this);
+    int32_t count = 0;
+    bool res = false;
+    while (!res && count++ < GET_CLIENT_RETRY_TIMES) {
+        res = SystemAbility::Publish(this);
+        if (!res) {
+            LOGE("StorageManager register SA failed!");
+            sleep(SLEEP_TIME);
+        }
+    }
     AccountSubscriber::Subscriber();
     LOGI("StorageManager::OnStart End, res = %{public}d", res);
 }
