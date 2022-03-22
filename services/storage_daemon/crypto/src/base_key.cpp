@@ -24,6 +24,7 @@
 #include "storage_service_log.h"
 #include "string_ex.h"
 #include "utils/file_utils.h"
+#include "key_control.h"
 
 namespace {
 const std::string PATH_LATEST_BACKUP = "/latest_bak";
@@ -40,7 +41,7 @@ BaseKey::BaseKey(std::string dir, uint8_t keyLen) : dir_(dir), keyLen_(keyLen)
 bool BaseKey::InitKey()
 {
     LOGD("enter");
-    if (keyInfo_.version == FSCRYPT_INVALID || keyInfo_.version > KeyCtrl::GetFscryptVersion(MNT_DATA)) {
+    if (keyInfo_.version == FSCRYPT_INVALID || keyInfo_.version > KeyCtrlGetFscryptVersion(MNT_DATA.c_str())) {
         LOGE("invalid version %{public}u", keyInfo_.version);
         return false;
     }
@@ -320,7 +321,7 @@ bool BaseKey::RestoreKey(const UserAuth &auth)
 bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
 {
     LOGD("enter, path = %{public}s", path.c_str());
-    auto ver = KeyCtrl::LoadVersion(dir_);
+    auto ver = KeyCtrlLoadVersion(dir_.c_str());
     if (ver == FSCRYPT_INVALID || ver != keyInfo_.version) {
         LOGE("RestoreKey fail. bad version loaded %{public}u not expected %{public}u", ver, keyInfo_.version);
         return false;

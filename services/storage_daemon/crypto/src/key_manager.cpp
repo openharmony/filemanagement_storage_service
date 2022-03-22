@@ -22,6 +22,8 @@
 #include "storage_service_log.h"
 #include "storage_service_errno.h"
 #include "key_ctrl.h"
+#include "fscrypt_control.h"
+#include "key_control.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -108,7 +110,7 @@ int KeyManager::RestoreDeviceKey(const std::string &dir)
 int KeyManager::InitGlobalDeviceKey(void)
 {
     LOGI("enter");
-    int ret = KeyCtrl::InitFscryptPolicy();
+    int ret = InitFscryptPolicy();
     if (ret < 0) {
         LOGE("fscrypt init failed, fscrypt will not be enabled");
         return ret;
@@ -282,7 +284,7 @@ int KeyManager::InitUserElkeyStorageDir(void)
 int KeyManager::InitGlobalUserKeys(void)
 {
     LOGI("enter");
-    if (!KeyCtrl::HasFscryptSyspara()) {
+    if (!KeyCtrlHasFscryptSyspara()) {
         return 0;
     }
     std::lock_guard<std::mutex> lock(keyMutex_);
@@ -320,7 +322,7 @@ int KeyManager::InitGlobalUserKeys(void)
 int KeyManager::GenerateUserKeys(unsigned int user, uint32_t flags)
 {
     LOGI("start, user:%{public}u", user);
-    if (!KeyCtrl::HasFscryptSyspara()) {
+    if (!KeyCtrlHasFscryptSyspara()) {
         return 0;
     }
 
@@ -394,7 +396,7 @@ void KeyManager::DoDeleteUserKeys(unsigned int user)
 int KeyManager::DeleteUserKeys(unsigned int user)
 {
     LOGI("start, user:%{public}d", user);
-    if (!KeyCtrl::HasFscryptSyspara()) {
+    if (!KeyCtrlHasFscryptSyspara()) {
         return 0;
     }
 
@@ -409,7 +411,7 @@ int KeyManager::UpdateUserAuth(unsigned int user, const std::string &token,
                                const std::string &composePwd)
 {
     LOGI("start, user:%{public}d", user);
-    if (!KeyCtrl::HasFscryptSyspara()) {
+    if (!KeyCtrlHasFscryptSyspara()) {
         return 0;
     }
 
@@ -440,7 +442,7 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::string &token,
                               const std::string &secret)
 {
     LOGI("start");
-    if (!KeyCtrl::HasFscryptSyspara()) {
+    if (!KeyCtrlHasFscryptSyspara()) {
         return 0;
     }
 
@@ -481,7 +483,7 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::string &token,
 int KeyManager::InActiveUserKey(unsigned int user)
 {
     LOGI("start");
-    if (!KeyCtrl::HasFscryptSyspara()) {
+    if (!KeyCtrlHasFscryptSyspara()) {
         return 0;
     }
 
@@ -506,7 +508,7 @@ int KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type,
                                      const std::vector<FileList> &vec)
 {
     LOGI("start");
-    if (!KeyCtrl::HasFscryptSyspara()) {
+    if (!KeyCtrlHasFscryptSyspara()) {
         return 0;
     }
 
@@ -530,7 +532,7 @@ int KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type,
     }
 
     for (auto item : vec) {
-        if (KeyCtrl::LoadAndSetPolicy(keyPath, item.path) == false) {
+        if (LoadAndSetPolicy(keyPath.c_str(), item.path.c_str()) != 0) {
             LOGE("Set directory el policy error!");
             return -EFAULT;
         }
@@ -543,7 +545,7 @@ int KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type,
 int KeyManager::UpdateKeyContext(uint32_t userId)
 {
     LOGI("start");
-    if (!KeyCtrl::HasFscryptSyspara()) {
+    if (!KeyCtrlHasFscryptSyspara()) {
         return 0;
     }
 

@@ -33,7 +33,8 @@ ohos_static_library("libfscryptutils") {
   output_name = "libfscryptutils"
   sources = [
     "src/fscrypt_utils.c",
-    "src/fscrypt_ctrl.c",
+    "src/fscrypt_control.c",
+    "src/key_control.c",
   ]
 
   configs = [ ":fscrypt_utils_config" ]
@@ -42,6 +43,7 @@ ohos_static_library("libfscryptutils") {
     "//base/startup/init_lite/services/log:init_log",
     "//base/startup/init_lite/services/utils:libinit_utils",
     "//base/startup/syspara_lite/interfaces/innerkits/native/syspara:syspara",
+    "//utils/native/base:utils",
   ]
 
   subsystem_name = "filemanagement"

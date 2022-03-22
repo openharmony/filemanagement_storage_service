@@ -12,14 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "fscrypt_ctrl.h"
+#include "fscrypt_control.h"
 
-#include <linux/version.h>
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
-#include <linux/fscrypt.h>
-#else
-#include "fscrypt_uapi.h"
-#endif
 #include <stdbool.h>
 #include <string.h>
 
@@ -27,9 +21,9 @@
 #include "fscrypt_log.h"
 #include "init_utils.h"
 #include "securec.h"
+#include "key_control.h"
 
 #define ARRAY_LEN(array) (sizeof((array)) / sizeof((array)[0]))
-#define POLICY_BUF_SIZE (100)
 
 typedef struct FscrtpyItem_ {
     char *key;
@@ -43,11 +37,6 @@ typedef struct EncryptPolicy_ {
     int flags;
     bool hwWrappedKey;
 }EncryptPolicy;
-
-union FscryptPolicy {
-    fscrypt_policy_v1 v1;
-    fscrypt_policy_v2 v2;
-};
 
 static EncryptPolicy g_fscryptPolicy = {
     FSCRYPT_V2,
@@ -63,8 +52,6 @@ enum FscryptOptins {
     FSCRYPT_CONTENT_MODE,
     FSCRYPT_OPTIONS_MAX,
 };
-
-static const char *FSCRYPT_POLICY_KEY = "fscrypt.policy.config";
 
 static const FscrtpyItem ALL_VERSION[] = {
     {"1", FSCRYPT_V1},
@@ -94,7 +81,9 @@ static const char *DEVICE_EL1_DIR = "/data/service/el0/storage_daemon/sd";
 static const char *PATH_KEYID = "/key_id";
 static const char *PATH_KEYDESC = "/key_desc";
 
-static bool IsSupportedPolicyKey(const char *key, const FscrtpyItem *items, size_t len)
+static bool IsSupportedPolicyKey(const char *key,
+                                 const FscrtpyItem *items,
+                                 size_t len)
 {
     for (size_t i = 0 ; i < len; i++) {
         if (strncmp(key, items[i].key, strlen(items[i].key)) == 0) {
@@ -104,7 +93,8 @@ static bool IsSupportedPolicyKey(const char *key, const FscrtpyItem *items, size
     return false;
 }
 
-static bool IsSupportedPolicy(const char *policy, enum FscryptOptins number)
+static bool IsSupportedPolicy(const char *policy,
+                              enum FscryptOptins number)
 {
     if ((number >= FSCRYPT_OPTIONS_MAX) ||(!policy)) {
         return false;
@@ -112,11 +102,14 @@ static bool IsSupportedPolicy(const char *policy, enum FscryptOptins number)
 
     switch (number) {
         case FSCRYPT_VERSION_NUM:
-            return IsSupportedPolicyKey(policy, ALL_VERSION, ARRAY_LEN(ALL_VERSION));
+            return IsSupportedPolicyKey(policy, ALL_VERSION,
+                ARRAY_LEN(ALL_VERSION));
         case FSCRYPT_FILENAME_MODE:
-            return IsSupportedPolicyKey(policy, FILENAME_MODES, ARRAY_LEN(FILENAME_MODES));
+            return IsSupportedPolicyKey(policy, FILENAME_MODES,
+                ARRAY_LEN(FILENAME_MODES));
         case FSCRYPT_CONTENT_MODE:
-            return IsSupportedPolicyKey(policy, CONTENTS_MODES, ARRAY_LEN(CONTENTS_MODES));
+            return IsSupportedPolicyKey(policy, CONTENTS_MODES,
+                ARRAY_LEN(CONTENTS_MODES));
         default:
             return false;
     }
@@ -167,7 +160,18 @@ int FscryptSetSysparam(const char *policy)
     return 0;
 }
 
-static int InitFscryptPolicy()
+static void PraseOnePloicyValue(int *value, const char *key,
+                                const FscrtpyItem *table, size_t numbers)
+{
+    for (size_t i = 0; i < numbers; i++) {
+        if (strncmp(key, table[i].key, strlen(table[i].key)) == 0) {
+            *value = table[i].value;
+            break;
+        }
+    }
+}
+
+int InitFscryptPolicy()
 {
     char policy[POLICY_BUF_SIZE];
     int ret = GetParameter(FSCRYPT_POLICY_KEY, "", policy, POLICY_BUF_SIZE - 1);
@@ -187,51 +191,109 @@ static int InitFscryptPolicy()
         return -ENOTSUP; 
     }
 
-    for (size_t i = 0; i < ARRAY_LEN(ALL_VERSION); i++) {
-        if (strncmp(option[FSCRYPT_VERSION_NUM], ALL_VERSION[i].key,
-            strlen(ALL_VERSION[i].key)) == 0) {
-            g_fscryptPolicy.version = ALL_VERSION[i].value;
-            break;
-        }
-    }
-    for (size_t i = 0; i < ARRAY_LEN(FILENAME_MODES); i++) {
-        if (strncmp(option[FSCRYPT_FILENAME_MODE], FILENAME_MODES[i].key,
-            strlen(FILENAME_MODES[i].key)) == 0) {
-            g_fscryptPolicy.fileName = FILENAME_MODES[i].value;
-            break;
-        }
-    }
-    for (size_t i = 0; i < ARRAY_LEN(CONTENTS_MODES); i++) {
-        if (strncmp(option[FSCRYPT_CONTENT_MODE], CONTENTS_MODES[i].key,
-            strlen(CONTENTS_MODES[i].key)) == 0) {
-            g_fscryptPolicy.content = CONTENTS_MODES[i].value;
-            break;
-        }
-    }
+    PraseOnePloicyValue(&g_fscryptPolicy.version, option[FSCRYPT_VERSION_NUM],
+        ALL_VERSION, ARRAY_LEN(ALL_VERSION));
+    PraseOnePloicyValue(&g_fscryptPolicy.fileName, option[FSCRYPT_FILENAME_MODE],
+        FILENAME_MODES, ARRAY_LEN(FILENAME_MODES));
+    PraseOnePloicyValue(&g_fscryptPolicy.content, option[FSCRYPT_CONTENT_MODE],
+        CONTENTS_MODES, ARRAY_LEN(CONTENTS_MODES));
+
     FreeStringVector(option, count);
     FSCRYPT_LOGI("Fscrypt policy init success");
 
     return 0;
 }
 
-static int SplicKeyPath(char *buf, size_t bufMax, const char *src, size_t len)
+/*
+ * Splic full path, Caller need to free *buf after using
+ * if return success.
+ * 
+ * @path: base key path
+ * @name: fscrypt file, so as /key_id
+ * @buf: splic result if return 0
+ */
+static int SplicKeyPath(const char *path, size_t pathLen,
+                        const char *name, size_t nameLen,
+                        char **buf)
 {
-    pathBuf[0] = '\0';
-    ret = strncat_s(buf, bufMax, DEVICE_EL1_DIR, strlen(DEVICE_EL1_DIR));
-    if (ret != 0) {
-        FSCRYPT_LOGE("splic previous path error");
-        return -EFAULT;
+    FSCRYPT_LOGI("key path %s, name %s", path, name);
+    *buf = NULL;
+    size_t bufMax = pathLen + nameLen + 1;
+    char *tmpBuf = (char *)malloc(bufMax);
+    if (!tmpBuf) {
+        FSCRYPT_LOGE("No memory for fscrypt v1 path buffer");
+        return -ENOMEM;
     }
-    ret = strncat_s(buf, bufMax, src, len);
+    tmpBuf[0] = '\0';
+
+    int ret = strncat_s(tmpBuf, bufMax, path, pathLen);
     if (ret != 0) {
+        free(tmpBuf);
+        FSCRYPT_LOGE("splic previous path error");
+        return ret;
+    }
+    ret = strncat_s(tmpBuf, bufMax, name, nameLen);
+    if (ret != 0) {
+        free(tmpBuf);
         FSCRYPT_LOGE("splic later path error");
+        return ret;
+    }
+    *buf = tmpBuf;
+
+    return 0;
+}
+
+static int SetPolicyLegacy(const char *keyDescPath,
+                           const char *toEncrypt,
+                           union FscryptPolicy *arg)
+{
+    char *keyDesc = ReadFileToBuf(keyDescPath);
+    if ((!keyDesc) ||
+        (strnlen(keyDesc, FSCRYPT_KEY_DESCRIPTOR_SIZE) != FSCRYPT_KEY_DESCRIPTOR_SIZE)) {
+        FSCRYPT_LOGE("bad key_desc file content");
+        return -EINVAL;
+    }
+    arg->v1.version = FSCRYPT_POLICY_V1;
+    (void)memcpy_s(arg->v1.master_key_descriptor,
+        FSCRYPT_KEY_DESCRIPTOR_SIZE, keyDesc, FSCRYPT_KEY_DESCRIPTOR_SIZE);
+    free(keyDesc);
+
+    if (!KeyCtrlSetPolicy(toEncrypt, arg)) {
+        FSCRYPT_LOGE("Set Policy v1 failed");
         return -EFAULT;
     }
     return 0;
 }
 
-static int LoadAndSetPolicy(const char *keyDir, const char *dir)
+static bool SetPolicyV2(const char *keyIdPath,
+                        const char *toEncrypt,
+                        union FscryptPolicy *arg)
 {
+    char *keyId = ReadFileToBuf(keyIdPath);
+    if ((!keyId) ||
+        (strnlen(keyId, FSCRYPT_KEY_IDENTIFIER_SIZE) != FSCRYPT_KEY_IDENTIFIER_SIZE)) {
+        FSCRYPT_LOGE("bad key_id file content");
+        return -EINVAL;
+    }
+
+    arg->v2.version = FSCRYPT_POLICY_V2;
+    (void)memcpy_s(arg->v2.master_key_identifier,
+        FSCRYPT_KEY_IDENTIFIER_SIZE, keyId, FSCRYPT_KEY_IDENTIFIER_SIZE);
+    free(keyId);
+
+    if (!KeyCtrlSetPolicy(toEncrypt, arg)) {
+        FSCRYPT_LOGE("Set Policy v2 failed");
+        return -EFAULT;
+    }
+    return 0;
+}
+
+int LoadAndSetPolicy(const char *keyDir, const char *dir)
+{
+    if (!keyDir || !dir) {
+        FSCRYPT_LOGE("set policy parameters is null");
+        return -EINVAL;
+    }
     int ret;
     if (!g_fscryptInited) {
         ret = InitFscryptPolicy();
@@ -242,43 +304,39 @@ static int LoadAndSetPolicy(const char *keyDir, const char *dir)
         g_fscryptInited = true;
     }
 
-    FscryptPolicy arg;
+    union FscryptPolicy arg;
     (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
     arg.v1.filenames_encryption_mode = g_fscryptPolicy.fileName;
     arg.v1.contents_encryption_mode = g_fscryptPolicy.content;
     arg.v1.flags = g_fscryptPolicy.flags;
 
     char *pathBuf = NULL;
-    int ret = -ENOTSUP;
+    ret = -ENOTSUP;
     if (g_fscryptPolicy.version == FSCRYPT_V1) {
-        size_t len = strlen(DEVICE_EL1_DIR) + strlen(PATH_KEYDESC) + 1;
-        pathBuf = (char *)malloc(len);
-        if (!pathBuf) {
-            FSCRYPT_LOGE("No memory for fscrypt v1 path buffer");
-            return -ENOMEM;
-        }
-        ret = SplicKeyPath(pathBuf, len, PATH_KEYDESC, strlen(PATH_KEYDESC));
+        ret = SplicKeyPath(keyDir, strlen(keyDir), PATH_KEYDESC,
+            strlen(PATH_KEYDESC), &pathBuf);
         if (ret != 0) {
             return ret;
         }
-        ret =  SetPolicyLegacy(pathBuf, dir, arg);
-    } else if (g_fscryptPolicy.version == FSCRYPT_V2)
-        size_t len = strlen(DEVICE_EL1_DIR) + strlen(PATH_KEYID) + 1;
-        pathBuf = (char *)malloc(len);
-        if (!pathBuf) {
-            FSCRYPT_LOGE("No memory for fscrypt v1 path buffer");
-            return -ENOMEM;
-        }
-        ret = SplicKeyPath(pathBuf, len, PATH_KEYID, strlen(PATH_KEYID));
+        ret = SetPolicyLegacy(pathBuf, dir, &arg);
+    } else if (g_fscryptPolicy.version == FSCRYPT_V2) {
+        ret = SplicKeyPath(keyDir, strlen(keyDir), PATH_KEYID,
+            strlen(PATH_KEYID), &pathBuf);
         if (ret != 0) {
             return ret;
         }
-        ret = SetPolicyV2(pathBuf, dir, arg);
+        ret = SetPolicyV2(pathBuf, dir, &arg);
     }
     if (pathBuf != NULL) {
         free(pathBuf);
     }
 
+    struct fscrypt_get_policy_ex_arg temp;
+    if (!KeyCtrlGetPolicyEx(dir, &temp)) {
+        FSCRYPT_LOGE("Get policy failed");
+    } else {
+        FSCRYPT_LOGI("Get policy success");
+    }
     return ret;
 }
 

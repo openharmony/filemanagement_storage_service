@@ -19,6 +19,7 @@ config("storage_daemon_crypto_config") {
   include_dirs = [
     "../include",
     "../include/crypto",
+    "../libfscrypt/include",
     "//foundation/filemanagement/storage_service/services/common/include",
     "//utils/system/safwk/native/include",
     "//utils/native/base/include",
@@ -32,8 +33,10 @@ config("storage_daemon_crypto_config") {
 }
 
 config("crypto_public_config") {
-  include_dirs =
-      [ "//base/security/huks/interfaces/innerkits/huks_standard/main/include" ]
+  include_dirs = [
+    "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
+    "../libfscrypt/include",
+  ]
 }
 
 ohos_static_library("libsdcrypto") {
@@ -43,7 +46,6 @@ ohos_static_library("libsdcrypto") {
     "src/fscrypt_key_v1.cpp",
     "src/fscrypt_key_v2.cpp",
     "src/huks_master.cpp",
-    "src/key_ctrl.cpp",
     "src/key_manager.cpp",
   ]
 
@@ -60,24 +62,11 @@ ohos_static_library("libsdcrypto") {
     "//base/startup/syspara_lite/interfaces/innerkits/native/syspara:syspara",
     "//third_party/openssl:libcrypto_shared",
     "//utils/native/base:utils",
+    "//foundation/filemanagement/storage_service/services/storage_daemon/libfscrypt:libfscryptutils",
   ]
 
   external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
 
   subsystem_name = "filemanagement"
   part_name = "storage_service"
-}
-
-config("fscrypto_config") {
-  visibility = [ ":*" ]
-
-  include_dirs = [
-    "../include/crypto",
-    "//foundation/filemanagement/storage_service/services/common/include",
-  ]
-
-  cflags = [
-    "-g3",
-    "-Wall",
-  ]
 }

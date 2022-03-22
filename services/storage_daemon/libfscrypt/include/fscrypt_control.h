@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Huawei Device Co., Ltd.
+ * Copyright (C) 2021 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,26 +12,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "fscrypt_utils.h"
+#ifndef FSCRYPT_CONTROL_H
+#define FSCRYPT_CONTROL_H
 
-#include <cerrno>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#include "key_ctrl.h"
+int FscryptSetSysparam(const char *policy);
+int SetGlobalEl1DirPolicy(const char *dir);
+int LoadAndSetPolicy(const char *keyDir, const char *dir);
+int InitFscryptPolicy();
 
-int FscryptPolicyEnable(const char *dir)
-{
-    if (dir == nullptr) {
-        return -EINVAL;
-    }
-    std::string tmp(dir);
-    return OHOS::StorageDaemon::KeyCtrl::FscryptEnableGlobalKeyDir(tmp);
+#ifdef __cplusplus
 }
+#endif
 
-int SetFscryptSysparam(const char *policy)
-{
-    if (policy == nullptr) {
-        return -EINVAL;
-    }
-    std::string config(policy);
-    return OHOS::StorageDaemon::KeyCtrl::SetFscryptSyspara(config);
-}
+#endif

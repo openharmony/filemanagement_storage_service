@@ -15,7 +15,7 @@
 #include "fscrypt_utils.h"
 
 #include "fscrypt_log.h"
-#include "fscrypt_ctrl.h"
+#include "fscrypt_control.h"
 
 int FscryptPolicyEnable(const char *dir)
 {
@@ -23,14 +23,16 @@ int FscryptPolicyEnable(const char *dir)
     if (!dir) {
         return -EINVAL;
     }
+
     return SetGlobalEl1DirPolicy(dir);
 }
 
 int SetFscryptSysparam(const char *policy)
 {
-    FSCRYPT_LOGI("SetFscryptSysparam start, policy = %s", policy);
+    FSCRYPT_LOGI("SetFscryptSysparam start1, policy = %s", policy);
     if (!policy) {
         return -EINVAL;
     }
+
     return FscryptSetSysparam(policy);
 }

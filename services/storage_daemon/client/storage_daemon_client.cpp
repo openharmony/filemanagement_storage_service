@@ -23,6 +23,7 @@
 #include "iservice_registry.h"
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
+#include "fscrypt_utils.h"
 
 namespace {
 constexpr uint32_t HUKS_SERVICE_SHIFT = 0;
@@ -275,7 +276,7 @@ int32_t StorageDaemonClient::InactiveUserKey(uint32_t userId)
 
 int32_t StorageDaemonClient::FscryptEnable(const std::string &fscryptOptions)
 {
-    int ret = OHOS::StorageDaemon::KeyCtrl::SetFscryptSyspara(fscryptOptions);
+    int ret = SetFscryptSysparam(fscryptOptions.c_str());
     if (ret) {
         LOGE("Init fscrypt policy failed ret %{public}d", ret);
         return ret;

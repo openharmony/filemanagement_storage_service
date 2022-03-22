@@ -59,44 +59,6 @@ const std::string DATA_EL0_DIR = std::string() + "/data/service/el0";
 const std::string STORAGE_DAEMON_DIR = DATA_EL0_DIR + "/storage_daemon";
 const std::string DEVICE_EL1_DIR = STORAGE_DAEMON_DIR + "/sd";
 
-class KeyCtrl {
-public:
-    // ------ fscrypt legacy ------
-    static key_serial_t AddKey(const std::string &type, const std::string &description, const key_serial_t ringId);
-    static key_serial_t AddKey(const std::string &type, const std::string &description, fscrypt_key &fsKey,
-        const key_serial_t ringId);
-    static key_serial_t GetKeyring(key_serial_t id, int create);
-    static long Revoke(key_serial_t id);
-    static long Search(key_serial_t ringId, const std::string &type, const std::string &description,
-        key_serial_t destRingId);
-    static long SetPermission(key_serial_t id, int permissions);
-    static long Unlink(key_serial_t key, key_serial_t keyring);
-    static long RestrictKeyring(key_serial_t keyring, const std::string &type, const std::string &restriction);
-    static long GetSecurity(key_serial_t key, std::string &buffer);
-
-    // ------ fscrypt v2 ------
-#ifdef SUPPORT_FSCRYPT_V2
-    static bool InstallKey(const std::string &mnt, fscrypt_add_key_arg &arg);
-    static bool RemoveKey(const std::string &mnt, fscrypt_remove_key_arg &arg);
-    static bool GetKeyStatus(const std::string &mnt, fscrypt_get_key_status_arg &arg);
-    static bool GetPolicy(const std::string &path, fscrypt_get_policy_ex_arg &policy);
-#endif
-
-    static bool SetPolicy(const std::string &path, FscryptPolicy &policy);
-    static bool GetPolicy(const std::string &path, fscrypt_policy &policy);
-
-    static bool LoadAndSetPolicy(const std::string &keyPath, const std::string &toEncrypt);
-    static uint8_t LoadVersion(const std::string &keyPath);
-
-    static uint8_t GetFscryptVersion(const std::string &mnt);
-    static uint8_t GetEncryptedVersion(const std::string &dir);
-    static int32_t InitFscryptPolicy();
-    static int32_t SetFscryptSyspara(const std::string &config);
-    static bool HasFscryptSyspara();
-    static std::string CheckRealPath(const std::string &path);
-    static int32_t FscryptEnableGlobalKeyDir(const std::string &dir);
-};
-
 struct EncryptPolicy {
     std::string version;
     std::string fileName;

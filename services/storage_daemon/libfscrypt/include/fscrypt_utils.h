@@ -16,18 +16,14 @@
 #define STORAGE_SERVICE_FSCRYPT_UTILS_H
 
 #ifdef __cplusplus
-#if __cplusplus
 extern "C" {
-#endif
 #endif
 
 int FscryptPolicyEnable(const char *dir);
 int SetFscryptSysparam(const char *policy);
 
 #ifdef __cplusplus
-#if __cplusplus
 }
-#endif
 #endif
 
 #endif
