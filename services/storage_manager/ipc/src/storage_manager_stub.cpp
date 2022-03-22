@@ -34,7 +34,7 @@ bool CheckClientPermission(const std::string& permissionStr)
         LOGE("GetClientUid: fail");
     }
     LOGI("uid: %{public}d", uid);
-    if (uid == UID_ACCOUNTMGR || uid == UID_SYSTEM || uid == UID_ROOT) {
+    if (uid == UID_ACCOUNTMGR || uid == UID_SYSTEM || uid == UID_ROOT || uid == UID_FMS) {
         LOGI("StorageManager permissionCheck pass!");
         return true;
     }
