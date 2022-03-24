@@ -110,7 +110,7 @@ int32_t NetlinkListener::ReadMsg(int32_t fd_count, struct pollfd ufds[2])
             }
             if (msg == 0) {
                 LOGI("Stop listener");
-                break;
+                return E_ERR;
             }
         } else if (ufds[i].fd == socketFd_) {
             if ((static_cast<uint32_t>(ufds[i].revents) & POLLIN)) {
