@@ -20,6 +20,7 @@ import {AsyncCallback, Callback} from "./basic";
  *
  * @since 9
  * @syscap SystemCapability.FileManagement.StorageService.Volume
+ * @systemapi
  */
 declare namespace volumeManager {
 
@@ -27,6 +28,7 @@ declare namespace volumeManager {
    * Get All Volumes
    * 
    * @since 9
+   * @systemapi
    */
  export interface Volume {
   id: string;
@@ -36,6 +38,12 @@ declare namespace volumeManager {
   state: number;
   path: string;
 }
+/**
+   * Get All Volumes
+   * 
+   * @since 9
+   * @systemapi
+   */
 function getAllVolumes(callback: AsyncCallback<Array<Volume>>): void;
 function getAllVolumes(): Promise<Array<Volume>>;
 
@@ -44,6 +52,7 @@ function getAllVolumes(): Promise<Array<Volume>>;
    * Mount
    * 
    * @since 9
+   * @systemapi
    */
 function mount(volumeId: string, callback: AsyncCallback<boolean>): void;
 function mount(volumeId: string): Promise<boolean>;
@@ -52,6 +61,7 @@ function mount(volumeId: string): Promise<boolean>;
    * UnMount
    * 
    * @since 9
+   * @systemapi
    */
 function unmount(volumeId: string, callback: AsyncCallback<boolean>): void;
 function unmount(volumeId: string): Promise<boolean>;

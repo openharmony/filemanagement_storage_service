@@ -20,12 +20,14 @@ import {AsyncCallback, Callback} from "./basic";
  *
  * @since 8
  * @syscap SystemCapability.FileManagement.StorageService.SpatialStatistics
+ * @systemapi
  */
 declare namespace storageStatistics {
   /**
    * Get the totalSize of volume.
    *
    * @since 8
+   * @systemapi
    */
   function getTotalSizeOfVolume(volumeUuid: string, callback: AsyncCallback<number>): void;
   function getTotalSizeOfVolume(volumeUuid: string): Promise<number>;
@@ -33,6 +35,7 @@ declare namespace storageStatistics {
    * Get the free size Of volume.
    * 
    * @since 8
+   * @systemapi
    */
   function getFreeSizeOfVolume(volumeUuid: string, callback: AsyncCallback<number>): void;
   function getFreeSizeOfVolume(volumeUuid: string): Promise<number>;
@@ -41,6 +44,7 @@ declare namespace storageStatistics {
    * Get the bundlestat 
    * 
    * @since 9
+   * @systemapi
    */
 
  export interface BundleStats {
@@ -48,6 +52,12 @@ declare namespace storageStatistics {
   cacheSize: number;
   dataSize: number;
 }
+ /**
+   * Get the bundlestat 
+   * 
+   * @since 9
+   * @systemapi
+   */
   function getBundleStats(packageName: string,  callback: AsyncCallback<BundleStats>): void;
   function getBundleStats(packageName: string): Promise<BundleStats>;
 
