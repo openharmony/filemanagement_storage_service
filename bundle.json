@@ -13,7 +13,9 @@
       "name": "storage_service",
       "subsystem": "filemanagement",
       "syscap": [],
-      "features": [],
+      "features": [
+        "storage_service_fstools"
+      ],
       "adapted_system_type": ["standard"],
       "rom": "",
       "ram": "",
