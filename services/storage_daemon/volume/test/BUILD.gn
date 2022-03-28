@@ -22,8 +22,8 @@ ohos_unittest("external_volume_info_test") {
 
   include_dirs = [
     "$ROOT_DIR/storage_daemon/include",
-    "//foundation/filemanagement/storage_service/services/common/include",
-    "//foundation/filemanagement/storage_service/services/storage_manager/include",
+    "$ROOT_DIR/common/include",
+    "$ROOT_DIR/storage_manager/include",
   ]
 
   sources = [
@@ -55,8 +55,8 @@ ohos_unittest("volume_info_test") {
   include_dirs = [
     "$ROOT_DIR/storage_daemon/include",
     "$ROOT_DIR/storage_daemon/utils/test/common",
-    "//foundation/filemanagement/storage_service/services/common/include",
-    "//foundation/filemanagement/storage_service/services/storage_manager/include",
+    "$ROOT_DIR/common/include",
+    "$ROOT_DIR/storage_manager/include",
   ]
 
   sources = [
@@ -86,8 +86,8 @@ ohos_unittest("volume_manager_test") {
   include_dirs = [
     "$ROOT_DIR/storage_daemon/include",
     "$ROOT_DIR/storage_daemon/include/volume",
-    "//foundation/filemanagement/storage_service/services/common/include",
-    "//foundation/filemanagement/storage_service/services/storage_manager/include",
+    "$ROOT_DIR/common/include",
+    "$ROOT_DIR/storage_manager/include",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
     "//foundation/distributedschedule/samgr/interfaces/innerkits/samgr_proxy/include",
   ]
