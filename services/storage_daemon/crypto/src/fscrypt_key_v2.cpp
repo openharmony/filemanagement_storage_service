@@ -35,7 +35,7 @@ bool FscryptKeyV2::ActiveKey(const std::string &mnt)
     arg->key_spec.type = FSCRYPT_KEY_SPEC_TYPE_IDENTIFIER;
     arg->raw_size = keyInfo_.key.size;
     auto err = memcpy_s(arg->raw, FSCRYPT_MAX_KEY_SIZE, keyInfo_.key.data.get(), keyInfo_.key.size);
-    if (err) {
+    if (err != EOK) {
         LOGE("memcpy failed ret %{public}d", err);
         return false;
     }
@@ -47,7 +47,7 @@ bool FscryptKeyV2::ActiveKey(const std::string &mnt)
     keyInfo_.keyId.Alloc(FSCRYPT_KEY_IDENTIFIER_SIZE);
     auto ret = memcpy_s(keyInfo_.keyId.data.get(), keyInfo_.keyId.size, arg->key_spec.u.identifier,
         FSCRYPT_KEY_IDENTIFIER_SIZE);
-    if (ret) {
+    if (ret != EOK) {
         LOGE("memcpy_s failed ret %{public}d", ret);
         return false;
     }
@@ -75,7 +75,7 @@ bool FscryptKeyV2::InactiveKey(const std::string &mnt)
     arg.key_spec.type = FSCRYPT_KEY_SPEC_TYPE_IDENTIFIER;
     auto ret = memcpy_s(arg.key_spec.u.identifier, FSCRYPT_KEY_IDENTIFIER_SIZE, keyInfo_.keyId.data.get(),
         keyInfo_.keyId.size);
-    if (ret) {
+    if (ret != EOK) {
         LOGE("memcpy_s failed ret %{public}d", ret);
         return false;
     }

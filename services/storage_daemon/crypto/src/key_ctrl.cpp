@@ -179,7 +179,7 @@ static bool SetPolicyLegacy(const std::string &keyDescPath, const std::string &t
     arg.v1.version = FSCRYPT_POLICY_V1;
     auto ret = memcpy_s(arg.v1.master_key_descriptor, FSCRYPT_KEY_DESCRIPTOR_SIZE, keyDesc.data(),
         keyDesc.length());
-    if (ret) {
+    if (ret != EOK) {
         LOGE("memcpy_s failed ret %{public}d", ret);
         return false;
     }
@@ -208,9 +208,9 @@ bool KeyCtrl::LoadAndSetPolicy(const std::string &keyPath, const std::string &to
     FscryptPolicy arg;
     (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
     // the modes and flags shares the same offset in the struct
-    ParseOption(FILENAME_MODES, g_policyOption.fileName, arg.v1.filenames_encryption_mode);
-    ParseOption(CONTENTS_MODES, g_policyOption.content, arg.v1.contents_encryption_mode);
-    ParseOption(POLICY_FLAGS, g_policyOption.flags, arg.v1.flags);
+    (void)ParseOption(FILENAME_MODES, g_policyOption.fileName, arg.v1.filenames_encryption_mode);
+    (void)ParseOption(CONTENTS_MODES, g_policyOption.content, arg.v1.contents_encryption_mode);
+    (void)ParseOption(POLICY_FLAGS, g_policyOption.flags, arg.v1.flags);
 
     auto ver = LoadVersion(keyPath);
     if (ver == FSCRYPT_V1) {

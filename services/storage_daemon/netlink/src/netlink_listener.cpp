@@ -66,7 +66,7 @@ ssize_t UeventKernelMulticastRecv(int32_t socket, char *buffer, size_t length)
     }
 
     struct ucred cred;
-    if (memcpy_s(&cred, sizeof(cred), CMSG_DATA(cmsg), sizeof(struct ucred)) != 0 || cred.uid != 0) {
+    if (memcpy_s(&cred, sizeof(cred), CMSG_DATA(cmsg), sizeof(struct ucred)) != EOK || cred.uid != 0) {
         LOGE("Uid check failed");
         return E_ERR;
     }
@@ -162,11 +162,14 @@ void NetlinkListener::RunListener()
     }
 }
 
-void *NetlinkListener::EventProcess(void *object)
+void NetlinkListener::EventProcess(void *object)
 {
+    if (object == nullptr) {
+        return;
+    }
+
     NetlinkListener* me = reinterpret_cast<NetlinkListener *>(object);
     me->RunListener();
-    return nullptr;
 }
 
 int32_t NetlinkListener::StartListener()
