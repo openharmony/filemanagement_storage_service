@@ -40,7 +40,7 @@ private:
     void RecvUeventMsg();
     int32_t ReadMsg(int32_t fd_count, struct pollfd ufds[2]);
     void RunListener();
-    static void* EventProcess(void*);
+    static void EventProcess(void*);
 };
 } // STORAGE_DAEMON
 } // OHOS

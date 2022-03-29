@@ -145,7 +145,7 @@ bool StorageTestUtils::CheckUserDir(int32_t userId, uint32_t flags)
 
 bool StorageTestUtils::CreateFile(const std::string &path)
 {
-    RmDirRecurse(path);
+    (void)RmDirRecurse(path);
     int fd = open(path.c_str(), O_RDWR | O_CREAT | O_TRUNC, MODE);
     if (fd == -1) {
         return false;

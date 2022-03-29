@@ -45,7 +45,7 @@ int32_t NetlinkManager::Start()
     int32_t sz = 256*1024;
     int32_t on = 1;
 
-    memset_s(&addr, sizeof(addr), 0, sizeof(addr));
+    (void)memset_s(&addr, sizeof(addr), 0, sizeof(addr));
     addr.nl_family = AF_NETLINK;
     addr.nl_pid = static_cast<uint32_t>(getpid());
     addr.nl_groups = 0xffffffff;

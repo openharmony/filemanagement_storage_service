@@ -33,7 +33,7 @@ bool FscryptKeyV1::ActiveKey(const std::string &mnt)
     fskey.mode = FS_ENCRYPTION_MODE_AES_256_XTS;
     fskey.size = keyInfo_.key.size;
     auto err = memcpy_s(fskey.raw, FS_MAX_KEY_SIZE, keyInfo_.key.data.get(), keyInfo_.key.size);
-    if (err) {
+    if (err != EOK) {
         LOGE("memcpy failed ret %{public}d", err);
         return false;
     }
@@ -112,7 +112,7 @@ bool FscryptKeyV1::GenerateKeyDesc()
     static_assert(SHA512_DIGEST_LENGTH >= CRYPTO_KEY_DESC_SIZE, "Hash too short for descriptor");
     keyInfo_.keyDesc.Alloc(CRYPTO_KEY_DESC_SIZE);
     auto err = memcpy_s(keyInfo_.keyDesc.data.get(), keyInfo_.keyDesc.size, keyRef2, CRYPTO_KEY_DESC_SIZE);
-    if (err) {
+    if (err != EOK) {
         LOGE("memcpy failed ret %{public}d", err);
         return false;
     }

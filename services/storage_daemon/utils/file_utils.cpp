@@ -212,7 +212,7 @@ void TravelChmod(std::string path, mode_t mode)
         return;
     }
 
-    ChMod(path, mode);
+    (void)ChMod(path, mode);
     if (!(d = opendir(path.c_str()))) {
         LOGE("opendir failed");
         return;
@@ -224,7 +224,7 @@ void TravelChmod(std::string path, mode_t mode)
 
         std::string subpath = path + "/" + dp->d_name;
         stat(subpath.c_str(), &st);
-        ChMod(subpath, mode);
+        (void)ChMod(subpath, mode);
         if (S_ISDIR(st.st_mode))
             TravelChmod(subpath, mode);
     }
