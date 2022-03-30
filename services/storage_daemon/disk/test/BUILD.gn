@@ -34,19 +34,19 @@ ohos_unittest("disk_manager_test") {
   ]
 
   sources = [
-    "$ROOT_DIR/disk/src/disk_manager.cpp",
     "$ROOT_DIR/disk/src/disk_config.cpp",
     "$ROOT_DIR/disk/src/disk_info.cpp",
+    "$ROOT_DIR/disk/src/disk_manager.cpp",
     "$ROOT_DIR/disk/test/disk_manager_test.cpp",
+    "$ROOT_DIR/ipc/src/storage_manager_client.cpp",
     "$ROOT_DIR/netlink/src/netlink_data.cpp",
-    "$ROOT_DIR/utils/string_utils.cpp",
     "$ROOT_DIR/utils/disk_utils.cpp",
     "$ROOT_DIR/utils/file_utils.cpp",
-    "$ROOT_DIR/ipc/src/storage_manager_client.cpp",
-    "$ROOT_DIR/volume/src/volume_manager.cpp",
-    "$ROOT_DIR/volume/src/volume_info.cpp",
+    "$ROOT_DIR/utils/string_utils.cpp",
     "$ROOT_DIR/volume/src/external_volume_info.cpp",
     "$ROOT_DIR/volume/src/process.cpp",
+    "$ROOT_DIR/volume/src/volume_info.cpp",
+    "$ROOT_DIR/volume/src/volume_manager.cpp",
   ]
 
   deps = [
@@ -84,15 +84,15 @@ ohos_unittest("disk_info_test") {
   sources = [
     "$ROOT_DIR/disk/src/disk_info.cpp",
     "$ROOT_DIR/disk/test/disk_info_test.cpp",
-    "$ROOT_DIR/volume/src/external_volume_info.cpp",
-    "$ROOT_DIR/volume/src/process.cpp",
-    "$ROOT_DIR/utils/string_utils.cpp",
+    "$ROOT_DIR/ipc/src/storage_manager_client.cpp",
+    "$ROOT_DIR/netlink/src/netlink_data.cpp",
     "$ROOT_DIR/utils/disk_utils.cpp",
     "$ROOT_DIR/utils/file_utils.cpp",
-    "$ROOT_DIR/ipc/src/storage_manager_client.cpp",
-    "$ROOT_DIR/volume/src/volume_manager.cpp",
+    "$ROOT_DIR/utils/string_utils.cpp",
+    "$ROOT_DIR/volume/src/external_volume_info.cpp",
+    "$ROOT_DIR/volume/src/process.cpp",
     "$ROOT_DIR/volume/src/volume_info.cpp",
-    "$ROOT_DIR/netlink/src/netlink_data.cpp",
+    "$ROOT_DIR/volume/src/volume_manager.cpp",
   ]
 
   deps = [
@@ -146,9 +146,9 @@ ohos_unittest("disk_config_test") {
 
 group("storage_daemon_disk_test") {
   testonly = true
-  deps = [ 
-    ":disk_manager_test",
-    ":disk_info_test",
+  deps = [
     ":disk_config_test",
+    ":disk_info_test",
+    ":disk_manager_test",
   ]
 }

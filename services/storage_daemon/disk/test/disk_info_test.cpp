@@ -16,10 +16,10 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include <sys/sysmacros.h>
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "disk/disk_info.h"
-#include <sys/sysmacros.h>
 
 #include "netlink/netlink_data.h"
 #include "disk_info_test_mock.h"

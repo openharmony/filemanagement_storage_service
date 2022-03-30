@@ -40,10 +40,10 @@ public:
     static void TearDownTestCase(void) {};
     void SetUp();
     void TearDown() {};
-
 };
 
-void DiskManagerTest::SetUp() {
+void DiskManagerTest::SetUp()
+{
     DiskManager *diskManager = DiskManager::Instance();
     std::ifstream infile;
     infile.open(CONFIG_PTAH);
