@@ -18,21 +18,123 @@ ROOT_DIR = "//foundation/filemanagement/storage_service/services/storage_daemon"
 ohos_unittest("disk_manager_test") {
   module_out_path = "filemanagement/storage_service/storage_daemon"
 
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "LOG_DOMAIN = 0xD004301",
+  ]
+
   include_dirs = [
     "$ROOT_DIR/include",
     "//foundation/filemanagement/storage_service/utils/include",
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
     "//foundation/distributedschedule/safwk/interfaces/innerkits/safwk",
+    "//foundation/filemanagement/storage_service/services/common/include",
+    "//foundation/filemanagement/storage_service/services/storage_daemon/include",
   ]
 
   sources = [
+    "$ROOT_DIR/disk/src/disk_config.cpp",
+    "$ROOT_DIR/disk/src/disk_info.cpp",
     "$ROOT_DIR/disk/src/disk_manager.cpp",
     "$ROOT_DIR/disk/test/disk_manager_test.cpp",
+    "$ROOT_DIR/ipc/src/storage_manager_client.cpp",
+    "$ROOT_DIR/netlink/src/netlink_data.cpp",
+    "$ROOT_DIR/utils/disk_utils.cpp",
+    "$ROOT_DIR/utils/file_utils.cpp",
+    "$ROOT_DIR/utils/string_utils.cpp",
+    "$ROOT_DIR/volume/src/external_volume_info.cpp",
+    "$ROOT_DIR/volume/src/process.cpp",
+    "$ROOT_DIR/volume/src/volume_info.cpp",
+    "$ROOT_DIR/volume/src/volume_manager.cpp",
   ]
 
   deps = [
     "//third_party/googletest:gtest_main",
+    "//utils/native/base:utils",
+  ]
+
+  external_deps = [
+    "hiviewdfx_hilog_native:libhilog",
+    "ipc:ipc_core",
+    "samgr_standard:samgr_proxy",
+    "storage_service:storage_manager_sa_proxy",
+  ]
+}
+
+ohos_unittest("disk_info_test") {
+  module_out_path = "filemanagement/storage_service/storage_daemon"
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "LOG_DOMAIN = 0xD004301",
+  ]
+
+  include_dirs = [
+    "$ROOT_DIR/disk/test",
+    "$ROOT_DIR/include",
+    "//foundation/filemanagement/storage_service/utils/include",
+    "//foundation/filemanagement/storage_service/services/storage_manager/include",
+    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
+    "//foundation/distributedschedule/safwk/interfaces/innerkits/safwk",
+    "//foundation/filemanagement/storage_service/services/common/include",
+    "//foundation/filemanagement/storage_service/services/storage_daemon/include",
+  ]
+
+  sources = [
+    "$ROOT_DIR/disk/src/disk_info.cpp",
+    "$ROOT_DIR/disk/test/disk_info_test.cpp",
+    "$ROOT_DIR/ipc/src/storage_manager_client.cpp",
+    "$ROOT_DIR/netlink/src/netlink_data.cpp",
+    "$ROOT_DIR/utils/disk_utils.cpp",
+    "$ROOT_DIR/utils/file_utils.cpp",
+    "$ROOT_DIR/utils/string_utils.cpp",
+    "$ROOT_DIR/volume/src/external_volume_info.cpp",
+    "$ROOT_DIR/volume/src/process.cpp",
+    "$ROOT_DIR/volume/src/volume_info.cpp",
+    "$ROOT_DIR/volume/src/volume_manager.cpp",
+  ]
+
+  deps = [
+    "//third_party/googletest:gmock_main",
+    "//third_party/googletest:gtest_main",
+    "//utils/native/base:utils",
+  ]
+
+  external_deps = [
+    "hiviewdfx_hilog_native:libhilog",
+    "ipc:ipc_core",
+    "samgr_standard:samgr_proxy",
+    "storage_service:storage_manager_sa_proxy",
+  ]
+}
+
+ohos_unittest("disk_config_test") {
+  module_out_path = "filemanagement/storage_service/storage_daemon"
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "LOG_DOMAIN = 0xD004301",
+  ]
+
+  include_dirs = [
+    "$ROOT_DIR/disk/test",
+    "$ROOT_DIR/include",
+    "//foundation/filemanagement/storage_service/utils/include",
+    "//foundation/filemanagement/storage_service/services/storage_manager/include",
+    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
+    "//foundation/distributedschedule/safwk/interfaces/innerkits/safwk",
+    "//foundation/filemanagement/storage_service/services/common/include",
+    "//foundation/filemanagement/storage_service/services/storage_daemon/include",
+  ]
+
+  sources = [
+    "$ROOT_DIR/disk/src/disk_config.cpp",
+    "$ROOT_DIR/disk/test/disk_config_test.cpp",
+  ]
+
+  deps = [
+    "//third_party/googletest:gmock_main",
     "//utils/native/base:utils",
   ]
 
@@ -44,5 +146,9 @@ ohos_unittest("disk_manager_test") {
 
 group("storage_daemon_disk_test") {
   testonly = true
-  deps = [ ":disk_manager_test" ]
+  deps = [
+    ":disk_config_test",
+    ":disk_info_test",
+    ":disk_manager_test",
+  ]
 }
