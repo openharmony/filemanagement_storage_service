@@ -142,10 +142,12 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_CreateDisk_001, TestSi
     DiskManager *diskManager = DiskManager::Instance();
     ASSERT_TRUE(diskManager != nullptr);
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=NetlinkData::Actions::ADD\0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+                        \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
+                        \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
+                        \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
     auto data = std::make_unique<NetlinkData>();
     data->Decode(msg);
-
     auto diskInfo = diskManager->MatchConfig(data.get());
     EXPECT_TRUE(diskInfo != nullptr);
     diskManager->CreateDisk(diskInfo);
@@ -166,7 +168,10 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_DestroyDisk_001, TestS
     DiskManager *diskManager = DiskManager::Instance();
     ASSERT_TRUE(diskManager != nullptr);
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=remove\0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=remove\0DEVTYPE=disk\0\
+                        \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
+                        \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
+                        \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
     auto data = std::make_unique<NetlinkData>();
     data->Decode(msg);
     unsigned int major = (unsigned int) std::stoi(data.get()->GetParam("MAJOR"));
@@ -190,7 +195,10 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_ChangeDisk_001, TestSi
     DiskManager *diskManager = DiskManager::Instance();
     ASSERT_TRUE(diskManager != nullptr);
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=change\0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=change\0DEVTYPE=disk\0\
+                        \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
+                        \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
+                        \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
     auto data = std::make_unique<NetlinkData>();
     data->Decode(msg);
     unsigned int major = std::stoi(data->GetParam("MAJOR"));
@@ -215,10 +223,12 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_GetDisk_001, TestSize.
     DiskManager *diskManager = DiskManager::Instance();
     ASSERT_TRUE(diskManager != nullptr);
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+                        \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
+                        \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
+                        \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
     auto data = std::make_unique<NetlinkData>();
     data->Decode(msg);
-
     unsigned int major = std::stoi(data->GetParam("MAJOR"));
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
@@ -242,10 +252,12 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_GetDisk_002, TestSize.
     DiskManager *diskManager = DiskManager::Instance();
     ASSERT_TRUE(diskManager != nullptr);
 
-    char msg[1024] = { "CHANGE@/class/input/input9/mouse2\0ACTION=add\0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+                        \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
+                        \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
+                        \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
     auto data = std::make_unique<NetlinkData>();
     data->Decode(msg);
-
     unsigned int major = std::stoi(data->GetParam("MAJOR"));
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
@@ -273,7 +285,10 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleDiskEvent_001, T
     DiskManager *diskManager = DiskManager::Instance();
     ASSERT_TRUE(diskManager != nullptr);
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+                        \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
+                        \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
+                        \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
     auto data = std::make_unique<NetlinkData>();
     data.get()->Decode(msg);
 
@@ -295,7 +310,10 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleDiskEvent_002, T
     DiskManager *diskManager = DiskManager::Instance();
     ASSERT_TRUE(diskManager != nullptr);
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=change\0DEVTYPE=disk\0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=change\0DEVTYPE=disk\0\
+                        \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
+                        \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
+                        \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
     auto data = std::make_unique<NetlinkData>();
     data.get()->Decode(msg);
 
@@ -317,7 +335,10 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleDiskEvent_003, T
     DiskManager *diskManager = DiskManager::Instance();
     ASSERT_TRUE(diskManager != nullptr);
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=remove\0DEVTYPE=disk\0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=remove\0DEVTYPE=disk\0\
+                        \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
+                        \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
+                        \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
     auto data = std::make_unique<NetlinkData>();
     data.get()->Decode(msg);
 
@@ -378,7 +399,10 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_001, TestS
     DiskManager *diskManager = DiskManager::Instance();
     ASSERT_TRUE(diskManager != nullptr);
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=NetlinkData::Actions::ADD\0DEVPATH=/class/input/input9/mouse2\0SUBSYSTEM=input\0SEQNUM=1064\0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+                        \0DEVPATH=/class/input/input9/mouse2\0SUBSYSTEM=input\0SEQNUM=1064\0\
+                        \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
+                        \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
     auto data = std::make_unique<NetlinkData>();
     data->Decode(msg);
     auto diskInfo = diskManager->MatchConfig(data.get());
@@ -400,7 +424,10 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_002, TestS
     DiskManager *diskManager = DiskManager::Instance();
     ASSERT_TRUE(diskManager != nullptr);
 
-    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=remove\0DEVTYPE=disk\0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+                        \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
+                        \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
+                        \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
     auto data = std::make_unique<NetlinkData>();
     data.get()->Decode(msg);
 
