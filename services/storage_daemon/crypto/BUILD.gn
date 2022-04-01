@@ -58,7 +58,7 @@ ohos_static_library("libsdcrypto") {
 
   deps = [
     "//base/startup/syspara_lite/interfaces/innerkits/native/syspara:syspara",
-    "//third_party/openssl:libcrypto_static",
+    "//third_party/openssl:libcrypto_shared",
     "//utils/native/base:utils",
   ]
 
