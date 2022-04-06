@@ -35,6 +35,12 @@ public:
     bool Mount(std::string volumeId);
     bool Unmount(std::string volumeId);
     std::vector<VolumeExternal> GetAllVolumes();
+    int64_t GetSystemSize();
+    int64_t GetTotalSize();
+    int64_t GetFreeSize();
+    std::vector<int64_t> GetStorageTotalStats();
+    std::vector<int64_t> GetUserStorageStats(int32_t userId);
+    std::vector<int64_t> GetAppStorageStats();
 private:
     sptr<StorageManager::IStorageManager> storageManager_ = nullptr;
 };

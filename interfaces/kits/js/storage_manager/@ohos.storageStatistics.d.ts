@@ -40,19 +40,19 @@ declare namespace storageStatistics {
   function getFreeSizeOfVolume(volumeUuid: string, callback: AsyncCallback<number>): void;
   function getFreeSizeOfVolume(volumeUuid: string): Promise<number>;
 
- /**
+  /**
    * Get the bundlestat 
    * 
    * @since 9
    * @systemapi
    */
 
- export interface BundleStats {
-  appSize: number;
-  cacheSize: number;
-  dataSize: number;
-}
- /**
+  export interface BundleStats {
+    appSize: number;
+    cacheSize: number;
+    dataSize: number;
+  }
+  /**
    * Get the bundlestat 
    * 
    * @since 9
@@ -60,6 +60,73 @@ declare namespace storageStatistics {
    */
   function getBundleStats(packageName: string,  callback: AsyncCallback<BundleStats>): void;
   function getBundleStats(packageName: string): Promise<BundleStats>;
+
+  /**
+   * Get the AppStorageStats
+   * 
+   * @since 9
+   */
+  function getAppStorageStats(callback: AsyncCallback<BundleStats>): void;
+  function getAppStorageStats(): Promise<BundleStats>;
+
+  /**
+   * Get the systemsize
+   * 
+   * @since 9
+   * @systemapi
+   */
+  function getSystemSize(callback: AsyncCallback<number>): void;
+  function getSystemSize(): Promise<number>;
+
+  /**
+   * Get the UserStorageStats
+   * 
+   * @since 9
+   * @systemapi
+   */
+  export interface TotalStats {
+    total: number;
+    audio: number;
+    video: number;
+    image: number;
+    app: number;
+  }
+
+  /**
+   * Get the UserStorageStats
+   * 
+   * @since 9
+   * @systemapi
+   */
+  function getUserStorageStats(userId: string, callback: AsyncCallback<TotalStats>): void;
+  function getUserStorageStats(userId: string): Promise<TotalStats>;
+
+  /**
+   * Get the totalsize
+   * 
+   * @since 9
+   * @systemapi
+   */
+  function getTotalSize(callback: AsyncCallback<number>): void;
+  function getTotalSize(): Promise<number>;
+
+  /**
+   * Get the freesize
+   * 
+   * @since 9
+   * @systemapi
+   */
+  function getFreeSize(callback: AsyncCallback<number>): void;
+  function getFreeSize(): Promise<number>;
+
+  /**
+   * Get the StorageTotalStats
+   * 
+   * @since 9
+   * @systemapi
+   */
+  function getStorageTotalStats(callback: AsyncCallback<TotalStats>): void;
+  function getStorageTotalStats(): Promise<TotalStats>;  
 
 }
 

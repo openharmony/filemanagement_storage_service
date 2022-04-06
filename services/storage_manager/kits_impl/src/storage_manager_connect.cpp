@@ -111,10 +111,73 @@ std::vector<VolumeExternal> StorageManagerConnect::GetAllVolumes()
 {
     vector<VolumeExternal> result = {};
     if (Connect() != E_OK) {
-        LOGE("StorageManagerConnect::GetTotalSizeOfVolume:Connect error");
+        LOGE("StorageManagerConnect::GetAllVolumes:Connect error");
         return result;
     }
     return storageManager_->GetAllVolumes();
+}
+
+int64_t StorageManagerConnect::GetSystemSize()
+{
+    if (Connect() != E_OK) {
+        LOGE("StorageManagerConnect::GetSystemSize:Connect error");
+        return 0;
+    }
+    int64_t result = storageManager_->GetSystemSize();
+    return result;
+}
+
+int64_t StorageManagerConnect::GetTotalSize()
+{
+    if (Connect() != E_OK) {
+        LOGE("StorageManagerConnect::GetTotalSize:Connect error");
+        return 0;
+    }
+    int64_t result = storageManager_->GetTotalSize();
+    return result;
+}
+
+int64_t StorageManagerConnect::GetFreeSize()
+{
+    if (Connect() != E_OK) {
+        LOGE("StorageManagerConnect::GetFreeSize:Connect error");
+        return 0;
+    }
+    int64_t result = storageManager_->GetFreeSize();
+    return result;
+}
+
+std::vector<int64_t> StorageManagerConnect::GetStorageTotalStats()
+{
+    std::vector<int64_t> result = {};
+    if (Connect() != E_OK) {
+        LOGE("StorageManagerConnect::GetStorageTotalStats:Connect error");
+        return result;
+    }
+    result = storageManager_->GetStorageTotalStats();
+    return result;
+}
+    
+std::vector<int64_t> StorageManagerConnect::GetUserStorageStats(int32_t userId)
+{
+    std::vector<int64_t> result = {};
+    if (Connect() != E_OK) {
+        LOGE("StorageManagerConnect::GetUserStorageStats:Connect error");
+        return result;
+    }
+    result = storageManager_->GetUserStorageStats(userId);
+    return result;
+}
+
+std::vector<int64_t> StorageManagerConnect::GetAppStorageStats()
+{
+    std::vector<int64_t> result = {};
+    if (Connect() != E_OK) {
+        LOGE("StorageManagerConnect::GetAppStorageStats:Connect error");
+        return result;
+    }
+    result = storageManager_->GetAppStorageStats();
+    return result;
 }
 } // StorageManager
 } // OHOS

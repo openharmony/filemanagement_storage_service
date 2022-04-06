@@ -569,6 +569,123 @@ std::vector<Disk> StorageManagerProxy::GetAllDisks()
     }
     return result;
 }
+
+int64_t StorageManagerProxy::GetSystemSize()
+{
+    LOGI("StorageManagerProxy::GetSystemSize");
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("StorageManagerProxy::GetSystemSize WriteInterfaceToken failed");
+        return E_IPC_ERROR;
+    }
+
+    int err = Remote()->SendRequest(GET_SYSTEM_SIZE, data, reply, option);
+    if (err != E_OK) {
+        LOGE("StorageManagerProxy::GetSystemSize SendRequest failed");
+        return E_IPC_ERROR;
+    }
+    return reply.ReadInt64();
+}
+
+int64_t StorageManagerProxy::GetTotalSize()
+{
+    LOGI("StorageManagerProxy::GetTotalSize");
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("StorageManagerProxy::GetTotalSize WriteInterfaceToken failed");
+        return E_IPC_ERROR;
+    }
+
+    int err = Remote()->SendRequest(GET_TOTAL_SIZE, data, reply, option);
+    if (err != E_OK) {
+        LOGE("StorageManagerProxy::GetTotalSize SendRequest failed");
+        return E_IPC_ERROR;
+    }
+    return reply.ReadInt64();
+}
+
+int64_t StorageManagerProxy::GetFreeSize()
+{
+    LOGI("StorageManagerProxy::GetFreeSize");
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("StorageManagerProxy::GetFreeSize WriteInterfaceToken failed");
+        return E_IPC_ERROR;
+    }
+
+    int err = Remote()->SendRequest(GET_FREE_SIZE, data, reply, option);
+    if (err != E_OK) {
+        LOGE("StorageManagerProxy::GetFreeSize SendRequest failed");
+        return E_IPC_ERROR;
+    }
+    return reply.ReadInt64();
+}
+
+std::vector<int64_t> StorageManagerProxy::GetStorageTotalStats()
+{
+    std::vector<int64_t> result = {};
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        return result;
+    }
+
+    int err = Remote()->SendRequest(GET_TOTAL_STATS, data, reply, option);
+    if (err != E_OK) {
+        return result;
+    }
+    std::vector<int64_t> val;
+    if (!reply.ReadInt64Vector(&val)) {
+        val = {};
+    }
+    return val;
+}
+
+std::vector<int64_t> StorageManagerProxy::GetUserStorageStats(int32_t userId)
+{
+    std::vector<int64_t> result = {};
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        return result;
+    }
+
+    if (!data.WriteInt32(userId)) {
+        return result;
+    }
+    int err = Remote()->SendRequest(GET_USER_STATS, data, reply, option);
+    if (err != E_OK) {
+        return result;
+    }
+    std::vector<int64_t> val;
+    if (!reply.ReadInt64Vector(&val)) {
+        val = {};
+    }
+    return val;
+}
+
+std::vector<int64_t> StorageManagerProxy::GetAppStorageStats()
+{
+    std::vector<int64_t> result = {};
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        return result;
+    }
+
+    int err = Remote()->SendRequest(GET_APP_STATS, data, reply, option);
+    if (err != E_OK) {
+        return result;
+    }
+    std::vector<int64_t> val;
+    if (!reply.ReadInt64Vector(&val)) {
+        val = {};
+    }
+    return val;
+}
 } // StorageManager
 } // OHOS
 

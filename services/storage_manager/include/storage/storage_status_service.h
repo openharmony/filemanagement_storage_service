@@ -28,8 +28,12 @@ class StorageStatusService : public NoCopyable  {
 
 public:
     std::vector<int64_t> GetBundleStats(std::string pkgName);
+    std::vector<int64_t> GetStorageTotalStats();
+    std::vector<int64_t> GetUserStorageStats(int32_t userId);
+    std::vector<int64_t> GetAppStorageStats();
 private:
     int GetCurrentUserId();
+    std::string GetCallingPkgName();
     const std::vector<std::string> dataDir = {"app", "local", "distributed", "database", "cache"};
     const int DEFAULT_USER_ID = 100;
     enum BUNDLE_STATS {APP = 0, LOCAL, DISTRIBUTED, DATABASE, CACHE};

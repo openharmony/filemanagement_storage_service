@@ -71,6 +71,39 @@ public:
         return result;
     }
 
+    virtual int64_t GetSystemSize() override
+    {
+        return E_OK;
+    }
+
+    virtual int64_t GetTotalSize() override
+    {
+        return E_OK;
+    }
+
+    virtual int64_t GetFreeSize() override
+    {
+        return E_OK;
+    }
+
+    virtual std::vector<int64_t> GetStorageTotalStats() override
+    {
+        std::vector<int64_t> result;
+        return result;
+    }
+
+    virtual std::vector<int64_t> GetUserStorageStats(int32_t userId) override
+    {
+        std::vector<int64_t> result;
+        return result;
+    }
+
+    virtual std::vector<int64_t> GetAppStorageStats() override
+    {
+        std::vector<int64_t> result;
+        return result;
+    }
+
     virtual void NotifyVolumeCreated(VolumeCore vc) override {}
 
     virtual void NotifyVolumeMounted(std::string volumeId, int fsType, std::string fsUuid,

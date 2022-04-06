@@ -161,5 +161,225 @@ napi_value GetBundleStats(napi_env env, napi_callback_info info)
     }
     return NVal::CreateUndefined(env).val_;
 }
+
+napi_value GetAppStorageStats(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+    if (!funcArg.InitArgs((int)NARG_CNT::ZERO, (int)NARG_CNT::ONE)) {
+        UniError(EINVAL).ThrowErr(env, "Number of arguments unmatched 0-1");
+        return nullptr;
+    }
+
+    auto bundleStats = std::make_shared<std::vector<int64_t>>();
+    auto cbExec = [bundleStats](napi_env env) -> UniError {
+        *bundleStats = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetAppStorageStats();
+        return UniError(ERRNO_NOERR);
+    };
+    auto cbComplete = [bundleStats](napi_env env, UniError err) -> NVal {
+        if (err) {
+            return { env, err.GetNapiErr(env) };
+        }
+        NVal bundleObject = NVal::CreateObject(env);
+        if ((*bundleStats).size() != 3) {
+            UniError(EINVAL).ThrowErr(env, "vector size error");
+            return bundleObject;
+        }
+        bundleObject.AddProp("appSize", NVal::CreateInt64(env, (*bundleStats)[0]).val_);
+        bundleObject.AddProp("cacheSize", NVal::CreateInt64(env,
+            (*bundleStats)[1]).val_);
+        bundleObject.AddProp("dataSize", NVal::CreateInt64(env, (*bundleStats)[2]).val_);
+        return bundleObject;
+    };
+    std::string procedureName = "GetAppStorageStats";
+    NVal thisVar(env, funcArg.GetThisVar());
+    if (funcArg.GetArgc() == (int)NARG_CNT::ZERO) {
+        return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
+    } else {
+        NVal cb(env, funcArg[(int)NARG_POS::FIRST]);
+        return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
+    }
+    return NVal::CreateUndefined(env).val_;
+}
+
+napi_value GetSystemSize(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+    if (!funcArg.InitArgs((int)NARG_CNT::ZERO, (int)NARG_CNT::ONE)) {
+        UniError(EINVAL).ThrowErr(env, "Number of arguments unmatched");
+        return nullptr;
+    }
+
+    auto resultSize = std::make_shared<int64_t>();
+    auto cbExec = [resultSize](napi_env env) -> UniError {
+        *resultSize = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetSystemSize();
+        return UniError(ERRNO_NOERR);
+    };
+    auto cbComplete = [resultSize](napi_env env, UniError err) -> NVal {
+        if (err) {
+            return { env, err.GetNapiErr(env) };
+        }
+        return { NVal::CreateInt64(env, *resultSize) };
+    };
+
+    std::string procedureName = "GetSystemSize";
+    NVal thisVar(env, funcArg.GetThisVar());
+    if (funcArg.GetArgc() == (int)NARG_CNT::ZERO) {
+        return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
+    } else {
+        NVal cb(env, funcArg[(int)NARG_POS::FIRST]);
+        return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
+    }
+    return NVal::CreateUndefined(env).val_;
+}
+
+napi_value GetUserStorageStats(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+    if (!funcArg.InitArgs((int)NARG_CNT::ONE, (int)NARG_CNT::TWO)) {
+        UniError(EINVAL).ThrowErr(env, "Number of arguments unmatched 1-2");
+        return nullptr;
+    }
+
+    bool succ = false;
+    int64_t userId;
+    std::tie(succ, userId) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToInt64();
+    if (!succ) {
+        UniError(EINVAL).ThrowErr(env, "Invalid userId");
+        return nullptr;
+    }
+
+    auto totalStats = std::make_shared<std::vector<int64_t>>();
+    auto cbExec = [userId, totalStats](napi_env env) -> UniError {
+        *totalStats = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetUserStorageStats(userId);
+        return UniError(ERRNO_NOERR);
+    };
+    auto cbComplete = [totalStats](napi_env env, UniError err) -> NVal {
+        if (err) {
+            return { env, err.GetNapiErr(env) };
+        }
+        NVal totalObject = NVal::CreateObject(env);
+        if ((*totalStats).size() != 5) {
+            UniError(EINVAL).ThrowErr(env, "vector size error");
+            return totalObject;
+        }
+        totalObject.AddProp("total", NVal::CreateInt64(env, (*totalStats)[0]).val_);
+        totalObject.AddProp("audio", NVal::CreateInt64(env, (*totalStats)[1]).val_);
+        totalObject.AddProp("video", NVal::CreateInt64(env, (*totalStats)[2]).val_);
+        totalObject.AddProp("image", NVal::CreateInt64(env, (*totalStats)[3]).val_);
+        totalObject.AddProp("app", NVal::CreateInt64(env, (*totalStats)[4]).val_);
+        return totalObject;
+    };
+    std::string procedureName = "GetUserStorageStats";
+    NVal thisVar(env, funcArg.GetThisVar());
+    if (funcArg.GetArgc() == (int)NARG_CNT::ONE) {
+        return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
+    } else {
+        NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
+        return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
+    }
+    return NVal::CreateUndefined(env).val_;
+}
+
+napi_value GetTotalSize(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+    if (!funcArg.InitArgs((int)NARG_CNT::ZERO, (int)NARG_CNT::ONE)) {
+        UniError(EINVAL).ThrowErr(env, "Number of arguments unmatched");
+        return nullptr;
+    }
+
+    auto resultSize = std::make_shared<int64_t>();
+    auto cbExec = [resultSize](napi_env env) -> UniError {
+        *resultSize = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetTotalSize();
+        return UniError(ERRNO_NOERR);
+    };
+    auto cbComplete = [resultSize](napi_env env, UniError err) -> NVal {
+        if (err) {
+            return { env, err.GetNapiErr(env) };
+        }
+        return { NVal::CreateInt64(env, *resultSize) };
+    };
+
+    std::string procedureName = "GetTotalSize";
+    NVal thisVar(env, funcArg.GetThisVar());
+    if (funcArg.GetArgc() == (int)NARG_CNT::ZERO) {
+        return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
+    } else {
+        NVal cb(env, funcArg[(int)NARG_POS::FIRST]);
+        return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
+    }
+    return NVal::CreateUndefined(env).val_;
+}
+
+napi_value GetFreeSize(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+    if (!funcArg.InitArgs((int)NARG_CNT::ZERO, (int)NARG_CNT::ONE)) {
+        UniError(EINVAL).ThrowErr(env, "Number of arguments unmatched");
+        return nullptr;
+    }
+
+    auto resultSize = std::make_shared<int64_t>();
+    auto cbExec = [resultSize](napi_env env) -> UniError {
+        *resultSize = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetFreeSize();
+        return UniError(ERRNO_NOERR);
+    };
+    auto cbComplete = [resultSize](napi_env env, UniError err) -> NVal {
+        if (err) {
+            return { env, err.GetNapiErr(env) };
+        }
+        return { NVal::CreateInt64(env, *resultSize) };
+    };
+
+    std::string procedureName = "GetFreeSize";
+    NVal thisVar(env, funcArg.GetThisVar());
+    if (funcArg.GetArgc() == (int)NARG_CNT::ZERO) {
+        return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
+    } else {
+        NVal cb(env, funcArg[(int)NARG_POS::FIRST]);
+        return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
+    }
+    return NVal::CreateUndefined(env).val_;
+}
+
+napi_value GetStorageTotalStats(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+    if (!funcArg.InitArgs((int)NARG_CNT::ZERO, (int)NARG_CNT::ONE)) {
+        UniError(EINVAL).ThrowErr(env, "Number of arguments unmatched 1-2");
+        return nullptr;
+    }
+
+    auto totalStats = std::make_shared<std::vector<int64_t>>();
+    auto cbExec = [totalStats](napi_env env) -> UniError {
+        *totalStats = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetStorageTotalStats();
+        return UniError(ERRNO_NOERR);
+    };
+    auto cbComplete = [totalStats](napi_env env, UniError err) -> NVal {
+        if (err) {
+            return { env, err.GetNapiErr(env) };
+        }
+        NVal totalObject = NVal::CreateObject(env);
+        if ((*totalStats).size() != 5) {
+            UniError(EINVAL).ThrowErr(env, "vector size error");
+            return totalObject;
+        }
+        totalObject.AddProp("total", NVal::CreateInt64(env, (*totalStats)[0]).val_);
+        totalObject.AddProp("audio", NVal::CreateInt64(env, (*totalStats)[1]).val_);
+        totalObject.AddProp("video", NVal::CreateInt64(env, (*totalStats)[2]).val_);
+        totalObject.AddProp("image", NVal::CreateInt64(env, (*totalStats)[3]).val_);
+        totalObject.AddProp("app", NVal::CreateInt64(env, (*totalStats)[4]).val_);
+        return totalObject;
+    };
+    std::string procedureName = "GetStorageTotalStats";
+    NVal thisVar(env, funcArg.GetThisVar());
+    if (funcArg.GetArgc() == (int)NARG_CNT::ZERO) {
+        return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
+    } else {
+        NVal cb(env, funcArg[(int)NARG_POS::FIRST]);
+        return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
+    }
+    return NVal::CreateUndefined(env).val_;
+}
 } // namespace StorageManager
 } // namespace OHOS

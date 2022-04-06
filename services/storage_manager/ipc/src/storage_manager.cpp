@@ -97,6 +97,48 @@ std::vector<int64_t> StorageManager::GetBundleStats(std::string pkgName)
     return result;
 }
 
+int64_t StorageManager::GetSystemSize()
+{
+    LOGI("StorageManger::getSystemSize start");
+    int64_t result = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetSystemSize();
+    return result;
+}
+
+int64_t StorageManager::GetTotalSize()
+{
+    LOGI("StorageManger::getTotalSize start");
+    int64_t result = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetTotalSize();
+    return result;
+}
+
+int64_t StorageManager::GetFreeSize()
+{
+    LOGI("StorageManger::getFreeSize start");
+    int64_t result = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetFreeSize();
+    return result;
+}
+
+std::vector<int64_t> StorageManager::GetStorageTotalStats()
+{
+    LOGI("StorageManger::GetStorageTotalStats start");
+    std::vector<int64_t> result = DelayedSingleton<StorageStatusService>::GetInstance()->GetStorageTotalStats();
+    return result;
+}
+    
+std::vector<int64_t> StorageManager::GetUserStorageStats(int32_t userId)
+{
+    LOGI("StorageManger::GetUserStorageStats start");
+    std::vector<int64_t> result = DelayedSingleton<StorageStatusService>::GetInstance()->GetUserStorageStats(userId);
+    return result;
+}
+
+std::vector<int64_t> StorageManager::GetAppStorageStats()
+{
+    LOGI("StorageManger::GetAppStorageStats start");
+    std::vector<int64_t> result = DelayedSingleton<StorageStatusService>::GetInstance()->GetAppStorageStats();
+    return result;
+}
+
 void StorageManager::NotifyVolumeCreated(VolumeCore vc)
 {
     LOGI("StorageManger::NotifyVolumeCreated start, volumeId: %{public}s", vc.GetId().c_str());
