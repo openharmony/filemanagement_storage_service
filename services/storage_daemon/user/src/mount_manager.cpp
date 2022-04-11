@@ -33,6 +33,7 @@ std::shared_ptr<MountManager> MountManager::instance_ = nullptr;
 
 const std::string HMDFS_SYS_CAP = "const.distributed_file_property.enabled";
 const int32_t HMDFS_VAL_LEN = 6;
+const int32_t HMDFS_TRUE_LEN = 5;
 MountManager::MountManager()
     : hmdfsDirVec_{{"/data/service/el2/%d/hmdfs", 0711, OID_SYSTEM, OID_SYSTEM},
                    {"/data/service/el2/%d/hmdfs/account", 0711, OID_SYSTEM, OID_SYSTEM},
@@ -148,7 +149,7 @@ bool MountManager::SupportHmdfs()
     char hmdfsEnable[HMDFS_VAL_LEN + 1] = {"false"};
     int ret = GetParameter(HMDFS_SYS_CAP.c_str(), "", hmdfsEnable, HMDFS_VAL_LEN);
     LOGI("GetParameter hmdfsEnable %{public}s, ret %{public}d", hmdfsEnable, ret);
-    if (strcmp(hmdfsEnable, "true") == 0) {
+    if (strncmp(hmdfsEnable, "true", HMDFS_TRUE_LEN) == 0) {
         return true;
     }
     return false;
