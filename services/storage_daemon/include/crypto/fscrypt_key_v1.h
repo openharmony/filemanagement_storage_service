@@ -16,6 +16,7 @@
 #define STORAGE_DAEMON_CRYPTO_FSCRYPT_KEYV1_H
 
 #include "base_key.h"
+#include "key_control.h"
 
 namespace OHOS {
 namespace StorageDaemon {

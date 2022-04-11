@@ -21,7 +21,6 @@
 #include <vector>
 #include <sys/types.h>
 
-#include "crypto/key_ctrl.h"
 #include "iremote_proxy.h"
 #include "ipc/istorage_daemon.h"
 #include "ipc/storage_daemon.h"

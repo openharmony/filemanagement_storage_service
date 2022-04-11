@@ -21,7 +21,6 @@
 #include "fscrypt_key_v2.h"
 #include "storage_service_log.h"
 #include "storage_service_errno.h"
-#include "key_ctrl.h"
 #include "fscrypt_control.h"
 #include "key_control.h"
 

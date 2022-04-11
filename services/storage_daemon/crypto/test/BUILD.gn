@@ -30,6 +30,7 @@ ohos_moduletest("CryptoSubTest") {
     "../../include",
     "../../include/crypto",
     "//utils/native/base/include",
+    "../../libfscrypt/include",
   ]
 
   sources = [ "crypto_key_test.cpp" ]
@@ -39,7 +40,10 @@ ohos_moduletest("CryptoSubTest") {
   configs = [ ":module_private_config" ]
 
   deps = [ "//third_party/googletest:gtest_main" ]
-  deps += [ "../../crypto:libsdcrypto" ]
+  deps += [
+    "//foundation/filemanagement/storage_service/services/storage_daemon/libfscrypt:libfscryptutils",
+    "../../crypto:libsdcrypto",
+    ]
 }
 
 group("crypto_test") {

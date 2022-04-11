@@ -15,7 +15,6 @@
 #include "fscrypt_key_v2.h"
 
 #include "storage_service_log.h"
-#include "key_ctrl.h"
 #include "key_control.h"
 
 namespace OHOS {

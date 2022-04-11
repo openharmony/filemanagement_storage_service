@@ -17,9 +17,23 @@
 
 #include <memory>
 #include <string>
+#include <unistd.h>
+#include <vector>
+#include <map>
+#include <string>
+#include <set>
+#include <linux/keyctl.h>
+#include <linux/version.h>
 
 #include "hks_type.h"
 #include "securec.h"
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
+#include <linux/fscrypt.h>
+#define SUPPORT_FSCRYPT_V2
+#else
+#include "fscrypt_uapi.h"
+#endif
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -29,6 +43,20 @@ constexpr uint32_t CRYPTO_AES_AAD_LEN = 16;
 constexpr uint32_t CRYPTO_AES_256_XTS_KEY_SIZE = 64;
 constexpr uint32_t CRYPTO_KEY_SHIELD_SIZE = 300;
 constexpr uint32_t CRYPTO_AES_256_KEY_ENCRYPTED_SIZE = 80;
+
+using key_serial_t = int;
+constexpr uint32_t CRYPTO_KEY_DESC_SIZE = FSCRYPT_KEY_DESCRIPTOR_SIZE;
+static const std::string MNT_DATA = "/data";
+static const std::string PATH_LATEST = "/latest";
+static const std::string PATH_ALIAS = "/alias";
+static const std::string PATH_SECDISC = "/sec_discard";
+static const std::string PATH_ENCRYPTED = "/encrypted";
+static const std::string PATH_KEYID = "/key_id";
+static const std::string PATH_KEYDESC = "/key_desc";
+
+const std::string DATA_EL0_DIR = std::string() + "/data/service/el0";
+const std::string STORAGE_DAEMON_DIR = DATA_EL0_DIR + "/storage_daemon";
+const std::string DEVICE_EL1_DIR = STORAGE_DAEMON_DIR + "/sd";
 
 class KeyBlob {
 public:
@@ -53,7 +81,6 @@ public:
         size = right.size;
         return *this;
     }
-
     bool Alloc(uint32_t len)
     {
         if (len > CRYPTO_KEY_SECDISC_SIZE) {
