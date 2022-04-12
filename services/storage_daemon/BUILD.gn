@@ -26,7 +26,6 @@ ohos_prebuilt_etc("storage_daemon_cfg") {
 config("storage_daemon_config") {
   include_dirs = [
     "include",
-    "../libfscrypt/include",
     "//utils/native/base/include",
     "//foundation/distributedschedule/samgr/interfaces/innerkits/samgr_proxy/include",
     "../storage_manager/include",
@@ -84,9 +83,9 @@ ohos_executable("storage_daemon") {
   configs = [ ":storage_daemon_config" ]
 
   deps = [
-    "libfscrypt:libfscryptutils",
     ":sdc",
     "crypto:libsdcrypto",
+    "libfscrypt:libfscryptutils",
     "//utils/native/base:utils",
   ]
 
@@ -106,7 +105,6 @@ ohos_executable("storage_daemon") {
 config("sdc_config") {
   include_dirs = [
     "include",
-    "libfscrypt/include",
     "//foundation/filemanagement/storage_service/services/common/include",
     "//utils/native/base/include",
     "//foundation/distributedschedule/samgr/interfaces/innerkits/samgr_proxy/include",
@@ -139,10 +137,7 @@ ohos_executable("sdc") {
 
   configs = [ ":sdc_config" ]
 
-  deps = [
-    "crypto:libsdcrypto",
-    "libfscrypt:libfscryptutils",
-  ]
+  deps = [ "libfscrypt:libfscryptutils" ]
 
   public_deps = [ "//utils/native/base:utils" ]
 

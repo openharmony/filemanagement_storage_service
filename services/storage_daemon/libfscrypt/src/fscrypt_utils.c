@@ -19,8 +19,8 @@
 
 int FscryptPolicyEnable(const char *dir)
 {
-    FSCRYPT_LOGI("FscryptPolicyEnable start, dir = %s", dir);
     if (!dir) {
+        FSCRYPT_LOGE("dir is null");
         return -EINVAL;
     }
 
@@ -29,8 +29,8 @@ int FscryptPolicyEnable(const char *dir)
 
 int SetFscryptSysparam(const char *policy)
 {
-    FSCRYPT_LOGI("SetFscryptSysparam start1, policy = %s", policy);
     if (!policy) {
+        FSCRYPT_LOGE("policy is null");
         return -EINVAL;
     }
 

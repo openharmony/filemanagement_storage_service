@@ -21,9 +21,9 @@
 #include "securec.h"
 #include "fscrypt_key_v1.h"
 #include "fscrypt_key_v2.h"
-#include "key_control.h"
-#include "fscrypt_control.h"
-#include "fscrypt_utils.h"
+#include "libfscrypt/key_control.h"
+#include "libfscrypt/fscrypt_control.h"
+#include "libfscrypt/fscrypt_utils.h"
 #include "key_utils.h"
 
 using namespace testing::ext;

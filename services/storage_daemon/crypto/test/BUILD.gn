@@ -30,7 +30,6 @@ ohos_moduletest("CryptoSubTest") {
     "../../include",
     "../../include/crypto",
     "//utils/native/base/include",
-    "../../libfscrypt/include",
   ]
 
   sources = [ "crypto_key_test.cpp" ]

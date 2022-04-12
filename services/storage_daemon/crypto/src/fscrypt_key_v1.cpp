@@ -16,7 +16,7 @@
 
 #include <openssl/sha.h>
 #include "storage_service_log.h"
-#include "key_control.h"
+#include "libfscrypt/key_control.h"
 
 namespace OHOS {
 namespace StorageDaemon {

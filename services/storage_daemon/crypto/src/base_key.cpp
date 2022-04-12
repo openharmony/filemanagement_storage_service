@@ -24,7 +24,7 @@
 #include "storage_service_log.h"
 #include "string_ex.h"
 #include "utils/file_utils.h"
-#include "key_control.h"
+#include "libfscrypt/key_control.h"
 
 namespace {
 const std::string PATH_LATEST_BACKUP = "/latest_bak";

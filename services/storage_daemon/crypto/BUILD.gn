@@ -19,7 +19,6 @@ config("storage_daemon_crypto_config") {
   include_dirs = [
     "../include",
     "../include/crypto",
-    "../libfscrypt/include",
     "//foundation/filemanagement/storage_service/services/common/include",
     "//utils/system/safwk/native/include",
     "//utils/native/base/include",
@@ -35,7 +34,6 @@ config("storage_daemon_crypto_config") {
 config("crypto_public_config") {
   include_dirs = [
     "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
-    "../libfscrypt/include",
   ]
 }
 

@@ -167,9 +167,10 @@ static void PraseOnePloicyValue(int *value, const char *key,
     for (size_t i = 0; i < numbers; i++) {
         if (strncmp(key, table[i].key, strlen(table[i].key)) == 0) {
             *value = table[i].value;
-            break;
+            return;
         }
     }
+    FSCRYPT_LOGE("Have not found value for the key!");
 }
 
 int InitFscryptPolicy()

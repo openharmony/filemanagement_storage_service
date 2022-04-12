@@ -23,7 +23,7 @@
 #include "iservice_registry.h"
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
-#include "fscrypt_utils.h"
+#include "libfscrypt/fscrypt_utils.h"
 
 namespace {
 constexpr uint32_t HUKS_SERVICE_SHIFT = 0;
