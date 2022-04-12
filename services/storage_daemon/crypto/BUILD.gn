@@ -32,9 +32,8 @@ config("storage_daemon_crypto_config") {
 }
 
 config("crypto_public_config") {
-  include_dirs = [
-    "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
-  ]
+  include_dirs =
+      [ "//base/security/huks/interfaces/innerkits/huks_standard/main/include" ]
 }
 
 ohos_static_library("libsdcrypto") {
@@ -58,9 +57,9 @@ ohos_static_library("libsdcrypto") {
   deps = [
     "//base/security/huks/frameworks/huks_standard/main/os_dependency:libhuks_os_dependency_standard_static",
     "//base/startup/syspara_lite/interfaces/innerkits/native/syspara:syspara",
+    "//foundation/filemanagement/storage_service/services/storage_daemon/libfscrypt:libfscryptutils",
     "//third_party/openssl:libcrypto_shared",
     "//utils/native/base:utils",
-    "//foundation/filemanagement/storage_service/services/storage_daemon/libfscrypt:libfscryptutils",
   ]
 
   external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
