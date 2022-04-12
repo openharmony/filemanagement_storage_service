@@ -75,8 +75,6 @@ static const char *GLOBAL_FSCRYPT_DIR[] = {
     "/data/chipset/el1/public",
 };
 
-//static const char *DATA_EL0_DIR = "/data/service/el0";
-//static const char *STORAGE_DAEMON_DIR = "/data/service/el0/storage_daemon";
 static const char *DEVICE_EL1_DIR = "/data/service/el0/storage_daemon/sd";
 static const char *PATH_KEYID = "/key_id";
 static const char *PATH_KEYDESC = "/key_desc";
@@ -130,7 +128,7 @@ int FscryptSetSysparam(const char *policy)
     int optNums = 0;
     char **options = SplitStringExt(tmp, ":", &optNums, FSCRYPT_OPTIONS_MAX);
     free(tmp);
-    if (!options) {  
+    if (!options) {
         return -ENOMEM;
     }
     if (optNums != FSCRYPT_OPTIONS_MAX) {
@@ -145,7 +143,7 @@ int FscryptSetSysparam(const char *policy)
         if (!IsSupportedPolicy(temp, i)) {
             FSCRYPT_LOGE("Not supported policy, %s", temp);
             FreeStringVector(options, optNums);
-            return -ENOTSUP;            
+            return -ENOTSUP;
         }
     }
     FreeStringVector(options, optNums);
@@ -173,7 +171,7 @@ static void PraseOnePloicyValue(int *value, const char *key,
     FSCRYPT_LOGE("Have not found value for the key!");
 }
 
-int InitFscryptPolicy()
+int InitFscryptPolicy(void)
 {
     if (g_fscryptInited) {
         FSCRYPT_LOGI("Have been init");
@@ -194,7 +192,7 @@ int InitFscryptPolicy()
     if (count != FSCRYPT_OPTIONS_MAX) {
         FSCRYPT_LOGE("Fscrypt policy count error");
         FreeStringVector(option, count);
-        return -ENOTSUP; 
+        return -ENOTSUP;
     }
 
     PraseOnePloicyValue(&g_fscryptPolicy.version, option[FSCRYPT_VERSION_NUM],
@@ -214,7 +212,7 @@ int InitFscryptPolicy()
 /*
  * Splic full path, Caller need to free *buf after using
  * if return success.
- * 
+ *
  * @path: base key path
  * @name: fscrypt file, so as /key_id
  * @buf: splic result if return 0
@@ -273,8 +271,8 @@ static int SetPolicyLegacy(const char *keyDescPath,
 }
 
 static int SetPolicyV2(const char *keyIdPath,
-                        const char *toEncrypt,
-                        union FscryptPolicy *arg)
+                       const char *toEncrypt,
+                       union FscryptPolicy *arg)
 {
     char *keyId = ReadFileToBuf(keyIdPath);
     if ((!keyId) ||

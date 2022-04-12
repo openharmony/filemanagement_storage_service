@@ -22,7 +22,7 @@ extern "C" {
 int FscryptSetSysparam(const char *policy);
 int SetGlobalEl1DirPolicy(const char *dir);
 int LoadAndSetPolicy(const char *keyDir, const char *dir);
-int InitFscryptPolicy();
+int InitFscryptPolicy(void);
 
 #ifdef __cplusplus
 }

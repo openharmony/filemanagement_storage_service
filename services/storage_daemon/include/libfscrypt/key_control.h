@@ -42,10 +42,9 @@ union FscryptPolicy {
 };
 
 typedef unsigned char uint8_t;
-
-static const char *FSCRYPT_POLICY_KEY = "fscrypt.policy.config";
 typedef int key_serial_t;
 
+static const char *FSCRYPT_POLICY_KEY = "fscrypt.policy.config";
 static const char *PATH_FSCRYPT_VER = "/fscrypt_version";
 
 key_serial_t KeyCtrlAddKey(const char *type, const char *description,
@@ -65,7 +64,7 @@ bool KeyCtrlGetPolicyEx(const char *path, struct fscrypt_get_policy_ex_arg *poli
 uint8_t KeyCtrlGetFscryptVersion(const char *mnt);
 uint8_t KeyCtrlLoadVersion(const char *keyPath);
 
-bool KeyCtrlHasFscryptSyspara();
+bool KeyCtrlHasFscryptSyspara(void);
 
 #ifdef __cplusplus
 }

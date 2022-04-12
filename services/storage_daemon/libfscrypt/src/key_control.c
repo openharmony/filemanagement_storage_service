@@ -18,11 +18,11 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <ctype.h>
 #include <linux/fs.h>
 #include <linux/keyctl.h>
 #include <linux/types.h>
-#include <stdlib.h>
-#include <ctype.h>
 
 #include "fscrypt_log.h"
 #include "securec.h"
@@ -166,7 +166,7 @@ uint8_t GetEncryptedVersion(const char *dir)
     return FSCRYPT_INVALID;
 }
 
-bool KeyCtrlHasFscryptSyspara()
+bool KeyCtrlHasFscryptSyspara(void)
 {
     FSCRYPT_LOGI("enter");
     char tmp[POLICY_BUF_SIZE] = { 0 };
@@ -200,7 +200,7 @@ uint8_t KeyCtrlLoadVersion(const char *keyPath)
     if (strncat_s(path, pathLen, PATH_FSCRYPT_VER, strlen(PATH_FSCRYPT_VER)) != EOK) {
         free(path);
         FSCRYPT_LOGE("version path strcat error");
-        return FSCRYPT_INVALID;        
+        return FSCRYPT_INVALID;
     }
 
     char *buf = ReadFileToBuf(path);
