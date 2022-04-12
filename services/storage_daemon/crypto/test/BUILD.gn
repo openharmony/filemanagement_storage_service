@@ -40,9 +40,9 @@ ohos_moduletest("CryptoSubTest") {
 
   deps = [ "//third_party/googletest:gtest_main" ]
   deps += [
-    "//foundation/filemanagement/storage_service/services/storage_daemon/libfscrypt:libfscryptutils",
     "../../crypto:libsdcrypto",
-    ]
+    "//foundation/filemanagement/storage_service/services/storage_daemon/libfscrypt:libfscryptutils",
+  ]
 }
 
 group("crypto_test") {
