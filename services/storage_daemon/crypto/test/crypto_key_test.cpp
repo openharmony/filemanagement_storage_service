@@ -440,9 +440,12 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_default, TestSize.Lev
     EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
     EXPECT_TRUE(g_testKeyV2.ActiveKey());
 
+    EXPECT_EQ(0, SetFscryptSysparam("2:aes-256-cts:aes-256-xts"));
+    EXPECT_EQ(0, InitFscryptPolicy());
+
     OHOS::ForceRemoveDirectory(TEST_DIR_V2);
     OHOS::ForceCreateDirectory(TEST_DIR_V2);
-    EXPECT_TRUE(LoadAndSetPolicy(g_testKeyV2.GetDir().c_str(), TEST_DIR_V2.c_str()));
+    EXPECT_EQ(0, LoadAndSetPolicy(g_testKeyV2.GetDir().c_str(), TEST_DIR_V2.c_str()));
 
     EXPECT_TRUE(OHOS::ForceCreateDirectory(TEST_DIR_V2 + "/test_dir"));
     EXPECT_TRUE(OHOS::SaveStringToFile(TEST_DIR_V2 + "/test_file1", "hello, world!\n"));
@@ -461,13 +464,17 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_default, TestSize.Lev
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_load_and_set_policy_default, TestSize.Level1)
 {
+    g_testKeyV1.ClearKey();
     EXPECT_TRUE(g_testKeyV1.InitKey());
     EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
     EXPECT_TRUE(g_testKeyV1.ActiveKey());
 
+    EXPECT_EQ(0, SetFscryptSysparam("1:aes-256-cts:aes-256-xts"));
+    EXPECT_EQ(0, InitFscryptPolicy());
+
     OHOS::ForceRemoveDirectory(TEST_DIR_LEGACY);
     OHOS::ForceCreateDirectory(TEST_DIR_LEGACY);
-    EXPECT_TRUE(LoadAndSetPolicy(g_testKeyV1.GetDir().c_str(), TEST_DIR_LEGACY.c_str()));
+    EXPECT_EQ(0, LoadAndSetPolicy(g_testKeyV1.GetDir().c_str(), TEST_DIR_LEGACY.c_str()));
 
     EXPECT_TRUE(OHOS::ForceCreateDirectory(TEST_DIR_LEGACY + "/test_dir"));
     EXPECT_TRUE(OHOS::SaveStringToFile(TEST_DIR_LEGACY + "/test_file1", "hello, world!\n"));
@@ -566,7 +573,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_padding_4, TestSize.L
 
     OHOS::ForceRemoveDirectory(TEST_DIR_V2);
     OHOS::ForceCreateDirectory(TEST_DIR_V2);
-    EXPECT_TRUE(LoadAndSetPolicy(g_testKeyV2.GetDir().c_str(), TEST_DIR_V2.c_str()));
+    EXPECT_EQ(0, LoadAndSetPolicy(g_testKeyV2.GetDir().c_str(), TEST_DIR_V2.c_str()));
 
     EXPECT_TRUE(OHOS::ForceCreateDirectory(TEST_DIR_V2 + "/test_dir"));
     EXPECT_TRUE(OHOS::SaveStringToFile(TEST_DIR_V2 + "/test_file1", "hello, world!\n"));

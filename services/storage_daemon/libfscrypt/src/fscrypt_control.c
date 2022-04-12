@@ -156,6 +156,7 @@ int FscryptSetSysparam(const char *policy)
         return ret;
     }
     g_fscryptEnabled = true;
+    g_fscryptInited = false; // need to re-init
 
     return 0;
 }
@@ -173,6 +174,10 @@ static void PraseOnePloicyValue(int *value, const char *key,
 
 int InitFscryptPolicy()
 {
+    if (g_fscryptInited) {
+        FSCRYPT_LOGI("Have been init");
+        return 0;
+    }
     char policy[POLICY_BUF_SIZE];
     int ret = GetParameter(FSCRYPT_POLICY_KEY, "", policy, POLICY_BUF_SIZE - 1);
     if (ret <= 0) {
@@ -199,6 +204,7 @@ int InitFscryptPolicy()
         CONTENTS_MODES, ARRAY_LEN(CONTENTS_MODES));
 
     FreeStringVector(option, count);
+    g_fscryptInited = true;
     FSCRYPT_LOGI("Fscrypt policy init success");
 
     return 0;
@@ -265,7 +271,7 @@ static int SetPolicyLegacy(const char *keyDescPath,
     return 0;
 }
 
-static bool SetPolicyV2(const char *keyIdPath,
+static int SetPolicyV2(const char *keyIdPath,
                         const char *toEncrypt,
                         union FscryptPolicy *arg)
 {
@@ -294,14 +300,10 @@ int LoadAndSetPolicy(const char *keyDir, const char *dir)
         FSCRYPT_LOGE("set policy parameters is null");
         return -EINVAL;
     }
-    int ret;
-    if (!g_fscryptInited) {
-        ret = InitFscryptPolicy();
-        if (ret != 0) {
-            FSCRYPT_LOGE("Get fscrypt policy error %d", ret);
-            return ret;
-        }
-        g_fscryptInited = true;
+    int ret = InitFscryptPolicy();
+    if (ret != 0) {
+        FSCRYPT_LOGE("Get fscrypt policy error %d", ret);
+        return ret;
     }
 
     union FscryptPolicy arg;
@@ -316,6 +318,7 @@ int LoadAndSetPolicy(const char *keyDir, const char *dir)
         ret = SplicKeyPath(keyDir, strlen(keyDir), PATH_KEYDESC,
             strlen(PATH_KEYDESC), &pathBuf);
         if (ret != 0) {
+            FSCRYPT_LOGE("path splice error");
             return ret;
         }
         ret = SetPolicyLegacy(pathBuf, dir, &arg);
@@ -323,6 +326,7 @@ int LoadAndSetPolicy(const char *keyDir, const char *dir)
         ret = SplicKeyPath(keyDir, strlen(keyDir), PATH_KEYID,
             strlen(PATH_KEYID), &pathBuf);
         if (ret != 0) {
+            FSCRYPT_LOGE("path splice error");
             return ret;
         }
         ret = SetPolicyV2(pathBuf, dir, &arg);
@@ -331,12 +335,6 @@ int LoadAndSetPolicy(const char *keyDir, const char *dir)
         free(pathBuf);
     }
 
-    struct fscrypt_get_policy_ex_arg temp;
-    if (!KeyCtrlGetPolicyEx(dir, &temp)) {
-        FSCRYPT_LOGE("Get policy failed");
-    } else {
-        FSCRYPT_LOGI("Get policy success");
-    }
     return ret;
 }
 
