@@ -119,7 +119,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_store, TestSize.Level1)
     std::string buf {};
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD));
     EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD, buf));
-    EXPECT_EQ(CRYPTO_KEY_GUARD_SIZE, buf.size());
+    EXPECT_EQ(CRYPTO_KEY_SHIELD_SIZE, buf.size());
 
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SECDISC));
     EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SECDISC, buf));
@@ -486,30 +486,30 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_storekey_version_test_1, TestSize.Level1)
     // storekey to version 0
     EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD));
-    std::string keyGuardV0;
-    EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD, keyGuardV0));
+    std::string keyShieldV0;
+    EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD, keyShieldV0));
 
     // storekey to version 1
     EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION1 + PATH_SHIELD));
-    std::string keyGuardV1;
-    EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION1 + PATH_SHIELD, keyGuardV1));
-    EXPECT_NE(keyGuardV0, keyGuardV1);
+    std::string keyShieldV1;
+    EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION1 + PATH_SHIELD, keyShieldV1));
+    EXPECT_NE(keyShieldV0, keyShieldV1);
 
     // storekey to version 2
     EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION2 + PATH_SHIELD));
-    std::string keyGuardV2;
-    EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION2 + PATH_SHIELD, keyGuardV2));
-    EXPECT_NE(keyGuardV1, keyGuardV2);
+    std::string keyShieldV2;
+    EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION2 + PATH_SHIELD, keyShieldV2));
+    EXPECT_NE(keyShieldV1, keyShieldV2);
 
     // updatekey will rename version 2 to latest
     EXPECT_TRUE(g_testKeyV2.UpdateKey());
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_SHIELD));
     EXPECT_FALSE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_LATEST_BACKUP + PATH_SHIELD));
-    std::string keyGuardLatest;
-    EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_SHIELD, keyGuardLatest));
-    EXPECT_EQ(keyGuardLatest, keyGuardV2);
+    std::string keyShieldLatest;
+    EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_SHIELD, keyShieldLatest));
+    EXPECT_EQ(keyShieldLatest, keyShieldV2);
 }
 
 /**
@@ -525,22 +525,22 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_storekey_version_test_2, TestSize.Level1)
     // storekey to version 0
     EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD));
-    std::string keyGuardV0;
-    EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD, keyGuardV0));
+    std::string keyShieldV0;
+    EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD, keyShieldV0));
 
     // storekey to version 1
     EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION1 + PATH_SHIELD));
-    std::string keyGuardV1;
-    EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION1 + PATH_SHIELD, keyGuardV1));
+    std::string keyShieldV1;
+    EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION1 + PATH_SHIELD, keyShieldV1));
 
     // restorekey will decrypt from versions and rename first success one to latest
     EXPECT_TRUE(g_testKeyV2.RestoreKey(emptyUserAuth));
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_SHIELD));
     EXPECT_FALSE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_LATEST_BACKUP + PATH_SHIELD));
-    std::string keyGuardLatest;
-    EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_SHIELD, keyGuardLatest));
-    EXPECT_EQ(keyGuardLatest, keyGuardV1);
+    std::string keyShieldLatest;
+    EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_SHIELD, keyShieldLatest));
+    EXPECT_EQ(keyShieldLatest, keyShieldV1);
 }
 
 /**

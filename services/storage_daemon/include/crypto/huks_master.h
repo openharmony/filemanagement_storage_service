@@ -56,8 +56,8 @@ private:
                         const HksBlob &inData, struct HksBlob &outData);
     int HdiAccessFinish(const HksBlob &handle, const HksParamSet *paramSet,
                         const HksBlob &inData, HksBlob &outData);
-    bool HuksHal3Stage(HksParamSet *paramSet1, const HksParamSet *paramSet2,
-                       const KeyBlob &keyIn, KeyBlob &keyOut);
+    bool HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *paramSet2,
+                            const KeyBlob &keyIn, KeyBlob &keyOut);
 
     HkmHdiHandle_t hdiHandle_ = nullptr;
     HkmHalDevice_t halDevice_ = nullptr;

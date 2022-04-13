@@ -259,7 +259,7 @@ bool HuksMaster::GenerateKey(KeyBlob &keyOut)
         }
         KeyBlob alias = GenerateRandomKey(CRYPTO_KEY_ALIAS_SIZE);
         HksBlob hksAlias = alias.ToHksBlob();
-        keyOut.Alloc(CRYPTO_KEY_GUARD_SIZE);
+        keyOut.Alloc(CRYPTO_KEY_SHIELD_SIZE);
         HksBlob hksKeyOut = keyOut.ToHksBlob();
         ret = HdiGenerateKey(hksAlias, paramSet, hksKeyOut);
         if (ret != HKS_SUCCESS) {
@@ -294,21 +294,9 @@ static KeyBlob HashAndClip(const std::string &prefix, const KeyBlob &payload, co
     return res;
 }
 
-static std::unique_ptr<HksParamSet> GenHuksKeyBlobParam(KeyContext &ctx)
+static HksParamSet *GenHuksKeyBlobParam(KeyContext &ctx)
 {
-    auto buffer = new (std::nothrow) uint8_t[ctx.shield.size];
-    if (!buffer) {
-        LOGE("alloc buffer failed, shield size %{public}d", ctx.shield.size);
-        return nullptr;
-    }
-
-    auto paramSet1 = std::unique_ptr<HksParamSet>(reinterpret_cast<HksParamSet *>(buffer));
-    auto ret = memcpy_s(paramSet1.get(), ctx.shield.size, ctx.shield.data.get(), ctx.shield.size);
-    if (ret != EOK) {
-        LOGE("memcpy_s failed ret %{public}d", ret);
-        return nullptr;
-    }
-    return paramSet1;
+    return reinterpret_cast<HksParamSet *>(ctx.shield.data.get());
 }
 
 static int AppendAeTag(KeyBlob &cipherText, HksParamSet *paramSet)
@@ -403,8 +391,8 @@ static HksParamSet *GenHuksOptionParam(KeyContext &ctx, const UserAuth &auth, co
     return paramSet;
 }
 
-bool HuksMaster::HuksHal3Stage(HksParamSet *paramSet1, const HksParamSet *paramSet2,
-                               const KeyBlob &keyIn, KeyBlob &keyOut)
+bool HuksMaster::HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *paramSet2,
+                                    const KeyBlob &keyIn, KeyBlob &keyOut)
 {
     LOGD("enter");
     HksBlob hksKey = { paramSet1->paramSetSize, reinterpret_cast<uint8_t *>(paramSet1) };
@@ -441,21 +429,21 @@ bool HuksMaster::EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo
         return false;
     }
 
-    auto paramSet1 = GenHuksKeyBlobParam(ctx);
+    HksParamSet *paramSet1 = GenHuksKeyBlobParam(ctx);
     if (paramSet1 == nullptr) {
         LOGE("GenHuksKeyBlobParam failed");
         return false;
     }
-    auto paramSet2 = GenHuksOptionParam(ctx, auth, true);
+    HksParamSet *paramSet2 = GenHuksOptionParam(ctx, auth, true);
     if (paramSet2 == nullptr) {
         LOGE("GenHuksOptionParam failed");
         return false;
     }
 
     ctx.encrypted.Alloc(CRYPTO_AES_256_KEY_ENCRYPTED_SIZE);
-    auto ret = HuksHal3Stage(paramSet1.get(), paramSet2, key.key, ctx.encrypted);
+    auto ret = HuksHalTripleStage(paramSet1, paramSet2, key.key, ctx.encrypted);
     if (!ret) {
-        LOGE("HuksHal3Stage failed");
+        LOGE("HuksHalTripleStage failed");
     }
 
     HksFreeParamSet(&paramSet2);
@@ -475,19 +463,21 @@ bool HuksMaster::DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key)
         return false;
     }
 
-    auto paramSet1 = GenHuksKeyBlobParam(ctx);
+    HksParamSet *paramSet1 = GenHuksKeyBlobParam(ctx);
     if (paramSet1 == nullptr) {
+        LOGE("GenHuksKeyBlobParam failed");
         return false;
     }
-    auto paramSet2 = GenHuksOptionParam(ctx, auth, false);
+    HksParamSet *paramSet2 = GenHuksOptionParam(ctx, auth, false);
     if (paramSet2 == nullptr) {
+        LOGE("GenHuksOptionParam failed");
         return false;
     }
 
     key.key.Alloc(CRYPTO_AES_256_XTS_KEY_SIZE);
-    auto ret = HuksHal3Stage(paramSet1.get(), paramSet2, ctx.encrypted, key.key);
+    auto ret = HuksHalTripleStage(paramSet1, paramSet2, ctx.encrypted, key.key);
     if (!ret) {
-        LOGE("HuksHal3Stage failed");
+        LOGE("HuksHalTripleStage failed");
     }
 
     HksFreeParamSet(&paramSet2);
