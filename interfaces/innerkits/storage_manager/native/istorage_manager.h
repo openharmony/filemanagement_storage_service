@@ -35,9 +35,9 @@ public:
     virtual int64_t GetSystemSize() = 0;
     virtual int64_t GetTotalSize() = 0;
     virtual int64_t GetFreeSize() = 0;
-    virtual std::vector<int64_t> GetStorageTotalStats() = 0;
+    virtual std::vector<int64_t> GetUserStorageStats() = 0;
     virtual std::vector<int64_t> GetUserStorageStats(int32_t userId) = 0;
-    virtual std::vector<int64_t> GetAppStorageStats() = 0;
+    virtual std::vector<int64_t> GetCurrentBundleStats() = 0;
     virtual void NotifyVolumeCreated(VolumeCore vc) = 0;
     virtual void NotifyVolumeMounted(std::string volumeId, int fsType, std::string fsUuid,
                                      std::string path, std::string description) = 0;
@@ -69,9 +69,9 @@ public:
         GET_SYSTEM_SIZE,
         GET_TOTAL_SIZE,
         GET_FREE_SIZE,
-        GET_TOTAL_STATS,
+        GET_CURR_USER_STATS,
         GET_USER_STATS,
-        GET_APP_STATS,
+        GET_CURR_BUNDLE_STATS,
         NOTIFY_VOLUME_CREATED,
         NOTIFY_VOLUME_MOUNTED,
         NOTIFY_VOLUME_DESTROYED,

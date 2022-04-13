@@ -624,7 +624,7 @@ int64_t StorageManagerProxy::GetFreeSize()
     return reply.ReadInt64();
 }
 
-std::vector<int64_t> StorageManagerProxy::GetStorageTotalStats()
+std::vector<int64_t> StorageManagerProxy::GetUserStorageStats()
 {
     std::vector<int64_t> result = {};
     MessageParcel data, reply;
@@ -633,7 +633,7 @@ std::vector<int64_t> StorageManagerProxy::GetStorageTotalStats()
         return result;
     }
 
-    int err = Remote()->SendRequest(GET_TOTAL_STATS, data, reply, option);
+    int err = Remote()->SendRequest(GET_CURR_USER_STATS, data, reply, option);
     if (err != E_OK) {
         return result;
     }
@@ -667,7 +667,7 @@ std::vector<int64_t> StorageManagerProxy::GetUserStorageStats(int32_t userId)
     return val;
 }
 
-std::vector<int64_t> StorageManagerProxy::GetAppStorageStats()
+std::vector<int64_t> StorageManagerProxy::GetCurrentBundleStats()
 {
     std::vector<int64_t> result = {};
     MessageParcel data, reply;
@@ -676,7 +676,7 @@ std::vector<int64_t> StorageManagerProxy::GetAppStorageStats()
         return result;
     }
 
-    int err = Remote()->SendRequest(GET_APP_STATS, data, reply, option);
+    int err = Remote()->SendRequest(GET_CURR_BUNDLE_STATS, data, reply, option);
     if (err != E_OK) {
         return result;
     }

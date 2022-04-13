@@ -86,7 +86,7 @@ public:
         return E_OK;
     }
 
-    virtual std::vector<int64_t> GetStorageTotalStats() override
+    virtual std::vector<int64_t> GetUserStorageStats() override
     {
         std::vector<int64_t> result;
         return result;
@@ -98,7 +98,7 @@ public:
         return result;
     }
 
-    virtual std::vector<int64_t> GetAppStorageStats() override
+    virtual std::vector<int64_t> GetCurrentBundleStats() override
     {
         std::vector<int64_t> result;
         return result;

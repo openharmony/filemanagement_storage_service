@@ -28,9 +28,9 @@ class StorageStatusService : public NoCopyable  {
 
 public:
     std::vector<int64_t> GetBundleStats(std::string pkgName);
-    std::vector<int64_t> GetStorageTotalStats();
+    std::vector<int64_t> GetUserStorageStats();
     std::vector<int64_t> GetUserStorageStats(int32_t userId);
-    std::vector<int64_t> GetAppStorageStats();
+    std::vector<int64_t> GetCurrentBundleStats();
 private:
     int GetCurrentUserId();
     std::string GetCallingPkgName();

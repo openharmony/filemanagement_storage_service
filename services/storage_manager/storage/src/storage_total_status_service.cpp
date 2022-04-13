@@ -75,7 +75,7 @@ int64_t StorageTotalStatusService::GetSystemSize()
 
 int64_t StorageTotalStatusService::GetTotalSize()
 {
-    string path = "/data"; // todo
+    string path = "/data";
     struct statvfs diskInfo;
     int ret = statvfs(path.c_str(), &diskInfo);
     if (ret != E_OK) {
@@ -87,7 +87,7 @@ int64_t StorageTotalStatusService::GetTotalSize()
 
 int64_t StorageTotalStatusService::GetFreeSize()
 {
-    string path = "/data"; // todo
+    string path = "/data";
     struct statvfs diskInfo;
     int ret = statvfs(path.c_str(), &diskInfo);
     if (ret != E_OK) {

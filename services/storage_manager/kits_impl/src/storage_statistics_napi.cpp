@@ -31,12 +31,11 @@ napi_value StorageStatisticsExport(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("getTotalSizeOfVolume", GetTotalSizeOfVolume),
         DECLARE_NAPI_FUNCTION("getFreeSizeOfVolume", GetFreeSizeOfVolume),
         DECLARE_NAPI_FUNCTION("getBundleStats", GetBundleStats),
-        DECLARE_NAPI_FUNCTION("getAppStorageStats", GetAppStorageStats),
+        DECLARE_NAPI_FUNCTION("getCurrentBundleStats", GetCurrentBundleStats),
         DECLARE_NAPI_FUNCTION("getSystemSize", GetSystemSize),
         DECLARE_NAPI_FUNCTION("getUserStorageStats", GetUserStorageStats),
         DECLARE_NAPI_FUNCTION("getTotalSize", GetTotalSize),
         DECLARE_NAPI_FUNCTION("getFreeSize", GetFreeSize),
-        DECLARE_NAPI_FUNCTION("getStorageTotalStats", GetStorageTotalStats),
     };
     NAPI_CALL(env, napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc));
     return exports;

@@ -89,14 +89,14 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
         case GET_FREE_SIZE:
             HandleGetFreeSize(data, reply);
             break;
-        case GET_TOTAL_STATS:
-            HandleGetStorageTotalStats(data, reply);
+        case GET_CURR_USER_STATS:
+            HandleGetCurrUserStorageStats(data, reply);
             break;
         case GET_USER_STATS:
             HandleGetUserStorageStats(data, reply);
             break;
-        case GET_APP_STATS:
-            HandleGetAppStorageStats(data, reply);
+        case GET_CURR_BUNDLE_STATS:
+            HandleGetCurrentBundleStats(data, reply);
             break;
         case GET_BUNDLE_STATUS:
             HandleGetBundleStatus(data, reply);
@@ -271,9 +271,9 @@ int32_t StorageManagerStub::HandleGetFreeSize(MessageParcel &data, MessageParcel
     return E_OK;
 }
 
-int32_t StorageManagerStub::HandleGetStorageTotalStats(MessageParcel &data, MessageParcel &reply)
+int32_t StorageManagerStub::HandleGetCurrUserStorageStats(MessageParcel &data, MessageParcel &reply)
 {
-    std::vector<int64_t> storageStats = GetStorageTotalStats();
+    std::vector<int64_t> storageStats = GetUserStorageStats();
     if (!reply.WriteInt64Vector(storageStats)) {
         return  E_IPC_ERROR;
     }
@@ -290,9 +290,9 @@ int32_t StorageManagerStub::HandleGetUserStorageStats(MessageParcel &data, Messa
     return E_OK;
 }
 
-int32_t StorageManagerStub::HandleGetAppStorageStats(MessageParcel &data, MessageParcel &reply)
+int32_t StorageManagerStub::HandleGetCurrentBundleStats(MessageParcel &data, MessageParcel &reply)
 {
-    std::vector<int64_t> bundleStats = GetAppStorageStats();
+    std::vector<int64_t> bundleStats = GetCurrentBundleStats();
     if (!reply.WriteInt64Vector(bundleStats)) {
         return  E_IPC_ERROR;
     }

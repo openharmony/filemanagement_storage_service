@@ -72,7 +72,7 @@ vector<int64_t> StorageStatusService::GetBundleStats(std::string pkgName)
     return result;
 }
 
-std::vector<int64_t> StorageStatusService::GetStorageTotalStats()
+std::vector<int64_t> StorageStatusService::GetUserStorageStats()
 {
     vector<int64_t> result = {0, 0, 0, 0, 0};
     return result;
@@ -84,7 +84,7 @@ std::vector<int64_t> StorageStatusService::GetUserStorageStats(int32_t userId)
     return result;
 }
 
-std::vector<int64_t> StorageStatusService::GetAppStorageStats()
+std::vector<int64_t> StorageStatusService::GetCurrentBundleStats()
 {
     vector<int64_t> result = {0, 0, 0};
     int userId = GetCurrentUserId();

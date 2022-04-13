@@ -37,9 +37,9 @@ public:
     int64_t GetSystemSize() override;
     int64_t GetTotalSize() override;
     int64_t GetFreeSize() override;
-    std::vector<int64_t> GetStorageTotalStats() override;
+    std::vector<int64_t> GetUserStorageStats() override;
     std::vector<int64_t> GetUserStorageStats(int32_t userId) override;
-    std::vector<int64_t> GetAppStorageStats() override;
+    std::vector<int64_t> GetCurrentBundleStats() override;
     void NotifyVolumeCreated(VolumeCore vc) override;
     void NotifyVolumeMounted(std::string volumeId, int32_t fsType, std::string fsUuid,
                              std::string path, std::string description) override;

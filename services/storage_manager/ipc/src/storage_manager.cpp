@@ -118,10 +118,10 @@ int64_t StorageManager::GetFreeSize()
     return result;
 }
 
-std::vector<int64_t> StorageManager::GetStorageTotalStats()
+std::vector<int64_t> StorageManager::GetUserStorageStats()
 {
-    LOGI("StorageManger::GetStorageTotalStats start");
-    std::vector<int64_t> result = DelayedSingleton<StorageStatusService>::GetInstance()->GetStorageTotalStats();
+    LOGI("StorageManger::GetUserStorageStats start");
+    std::vector<int64_t> result = DelayedSingleton<StorageStatusService>::GetInstance()->GetUserStorageStats();
     return result;
 }
     
@@ -132,10 +132,10 @@ std::vector<int64_t> StorageManager::GetUserStorageStats(int32_t userId)
     return result;
 }
 
-std::vector<int64_t> StorageManager::GetAppStorageStats()
+std::vector<int64_t> StorageManager::GetCurrentBundleStats()
 {
-    LOGI("StorageManger::GetAppStorageStats start");
-    std::vector<int64_t> result = DelayedSingleton<StorageStatusService>::GetInstance()->GetAppStorageStats();
+    LOGI("StorageManger::GetCurrentBundleStats start");
+    std::vector<int64_t> result = DelayedSingleton<StorageStatusService>::GetInstance()->GetCurrentBundleStats();
     return result;
 }
 

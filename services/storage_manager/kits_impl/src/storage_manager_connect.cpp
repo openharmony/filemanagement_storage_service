@@ -147,14 +147,14 @@ int64_t StorageManagerConnect::GetFreeSize()
     return result;
 }
 
-std::vector<int64_t> StorageManagerConnect::GetStorageTotalStats()
+std::vector<int64_t> StorageManagerConnect::GetUserStorageStats()
 {
     std::vector<int64_t> result = {};
     if (Connect() != E_OK) {
-        LOGE("StorageManagerConnect::GetStorageTotalStats:Connect error");
+        LOGE("StorageManagerConnect::GetUserStorageStats:Connect error");
         return result;
     }
-    result = storageManager_->GetStorageTotalStats();
+    result = storageManager_->GetUserStorageStats();
     return result;
 }
     
@@ -169,14 +169,14 @@ std::vector<int64_t> StorageManagerConnect::GetUserStorageStats(int32_t userId)
     return result;
 }
 
-std::vector<int64_t> StorageManagerConnect::GetAppStorageStats()
+std::vector<int64_t> StorageManagerConnect::GetCurrentBundleStats()
 {
     std::vector<int64_t> result = {};
     if (Connect() != E_OK) {
-        LOGE("StorageManagerConnect::GetAppStorageStats:Connect error");
+        LOGE("StorageManagerConnect::GetCurrentBundleStats:Connect error");
         return result;
     }
-    result = storageManager_->GetAppStorageStats();
+    result = storageManager_->GetCurrentBundleStats();
     return result;
 }
 } // StorageManager

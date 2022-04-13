@@ -27,6 +27,8 @@ declare namespace storageStatistics {
    * Get the totalSize of volume.
    *
    * @since 8
+   * @syscap SystemCapability.FileManagement.StorageService.SpatialStatistics
+   * @permission ohos.permission.STORAGE_MANAGER
    * @systemapi
    */
   function getTotalSizeOfVolume(volumeUuid: string, callback: AsyncCallback<number>): void;
@@ -35,6 +37,8 @@ declare namespace storageStatistics {
    * Get the free size Of volume.
    * 
    * @since 8
+   * @syscap SystemCapability.FileManagement.StorageService.SpatialStatistics
+   * @permission ohos.permission.STORAGE_MANAGER
    * @systemapi
    */
   function getFreeSizeOfVolume(volumeUuid: string, callback: AsyncCallback<number>): void;
@@ -44,6 +48,8 @@ declare namespace storageStatistics {
    * Get the bundlestat 
    * 
    * @since 9
+   * @syscap SystemCapability.FileManagement.StorageService.SpatialStatistics
+   * @permission ohos.permission.STORAGE_MANAGER
    * @systemapi
    */
 
@@ -56,23 +62,28 @@ declare namespace storageStatistics {
    * Get the bundlestat 
    * 
    * @since 9
+   * @syscap SystemCapability.FileManagement.StorageService.SpatialStatistics
+   * @permission ohos.permission.STORAGE_MANAGER
    * @systemapi
    */
   function getBundleStats(packageName: string,  callback: AsyncCallback<BundleStats>): void;
   function getBundleStats(packageName: string): Promise<BundleStats>;
 
   /**
-   * Get the AppStorageStats
+   * Get the CurrentBundleStats
    * 
    * @since 9
+   * @syscap SystemCapability.FileManagement.StorageService.SpatialStatistics
    */
-  function getAppStorageStats(callback: AsyncCallback<BundleStats>): void;
-  function getAppStorageStats(): Promise<BundleStats>;
+  function getCurrentBundleStats(callback: AsyncCallback<BundleStats>): void;
+  function getCurrentBundleStats(): Promise<BundleStats>;
 
   /**
    * Get the systemsize
    * 
    * @since 9
+   * @syscap SystemCapability.FileManagement.StorageService.SpatialStatistics
+   * @permission ohos.permission.STORAGE_MANAGER
    * @systemapi
    */
   function getSystemSize(callback: AsyncCallback<number>): void;
@@ -82,13 +93,15 @@ declare namespace storageStatistics {
    * Get the UserStorageStats
    * 
    * @since 9
+   * @syscap SystemCapability.FileManagement.StorageService.SpatialStatistics
    * @systemapi
    */
-  export interface TotalStats {
+  export interface StorageStats {
     total: number;
     audio: number;
     video: number;
     image: number;
+    file: number;
     app: number;
   }
 
@@ -96,15 +109,20 @@ declare namespace storageStatistics {
    * Get the UserStorageStats
    * 
    * @since 9
+   * @syscap SystemCapability.FileManagement.StorageService.SpatialStatistics
+   * @permission ohos.permission.STORAGE_MANAGER
    * @systemapi
    */
-  function getUserStorageStats(userId: string, callback: AsyncCallback<TotalStats>): void;
-  function getUserStorageStats(userId: string): Promise<TotalStats>;
+  function getUserStorageStats(userId: string, callback: AsyncCallback<StorageStats>): void;
+  function getUserStorageStats(callback: AsyncCallback<StorageStats>): void;
+  function getUserStorageStats(userId?: string): Promise<StorageStats>;
 
   /**
    * Get the totalsize
    * 
    * @since 9
+   * @syscap SystemCapability.FileManagement.StorageService.SpatialStatistics
+   * @permission ohos.permission.STORAGE_MANAGER
    * @systemapi
    */
   function getTotalSize(callback: AsyncCallback<number>): void;
@@ -114,19 +132,12 @@ declare namespace storageStatistics {
    * Get the freesize
    * 
    * @since 9
+   * @syscap SystemCapability.FileManagement.StorageService.SpatialStatistics
+   * @permission ohos.permission.STORAGE_MANAGER
    * @systemapi
    */
   function getFreeSize(callback: AsyncCallback<number>): void;
   function getFreeSize(): Promise<number>;
-
-  /**
-   * Get the StorageTotalStats
-   * 
-   * @since 9
-   * @systemapi
-   */
-  function getStorageTotalStats(callback: AsyncCallback<TotalStats>): void;
-  function getStorageTotalStats(): Promise<TotalStats>;  
 
 }
 
