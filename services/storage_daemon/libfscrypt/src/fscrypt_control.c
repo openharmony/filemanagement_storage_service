@@ -220,8 +220,8 @@ int InitFscryptPolicy(void)
  * @buf: splic result if return 0
  */
 static int SpliceKeyPath(const char *path, size_t pathLen,
-                        const char *name, size_t nameLen,
-                        char **buf)
+                         const char *name, size_t nameLen,
+                         char **buf)
 {
     FSCRYPT_LOGI("key path %s, name %s", path, name);
     *buf = NULL;
@@ -381,7 +381,7 @@ int SetGlobalEl1DirPolicy(const char *dir)
         size_t tmpLen = strlen(GLOBAL_FSCRYPT_DIR[i]);
         if ((strncmp(dir, GLOBAL_FSCRYPT_DIR[i], tmpLen) == 0) &&
             (strlen(dir) == tmpLen)) {
-            return LoadAndSetPolicy(DEVICE_EL1_DIR, dir);;
+            return LoadAndSetPolicy(DEVICE_EL1_DIR, dir);
         }
     }
     return 0;
