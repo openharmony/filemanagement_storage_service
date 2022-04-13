@@ -248,21 +248,53 @@ static int SplicKeyPath(const char *path, size_t pathLen,
     return 0;
 }
 
+static int ReadKeyFile(const char *path, char *buf, size_t len)
+{
+    if (!path || !buf) {
+        FSCRYPT_LOGE("path or buf is null");
+        return -EINVAL;
+    }
+    struct stat st = {0};
+    if (stat(path, &st) != 0) {
+        FSCRYPT_LOGE("stat file failed");
+        return -EFAULT;
+    }
+    if (st.st_size != len) {
+        FSCRYPT_LOGE("target file size is not equal to buf len");
+        return -EFAULT;
+    }
+
+    int fd = open(path, O_RDONLY);
+    if (fd < 0) {
+        FSCRYPT_LOGE("key file read open failed");
+        return -EFAULT;
+    }
+    if (read(fd, buf, len) != (ssize_t)len) {
+        FSCRYPT_LOGE("bad file content");
+        (void)close(fd);
+        return -EBADF;
+    }
+    (void)close(fd);
+
+    return 0;
+}
+
 static int SetPolicyLegacy(const char *keyDescPath,
                            const char *toEncrypt,
                            union FscryptPolicy *arg)
 {
-    char *keyDesc = ReadFileToBuf(keyDescPath);
-    if ((!keyDesc) ||
-        (strnlen(keyDesc, FSCRYPT_KEY_DESCRIPTOR_SIZE) != FSCRYPT_KEY_DESCRIPTOR_SIZE)) {
-        FSCRYPT_LOGE("bad key_desc file content");
-        return -EINVAL;
+    char keyDesc[FSCRYPT_KEY_DESCRIPTOR_SIZE] = {0};
+    int ret = ReadKeyFile(keyDescPath, keyDesc, FSCRYPT_KEY_DESCRIPTOR_SIZE);
+    if (ret != 0) {
+        return ret;
     }
     arg->v1.version = FSCRYPT_POLICY_V1;
-    (void)memcpy_s(arg->v1.master_key_descriptor,
+    ret = memcpy_s(arg->v1.master_key_descriptor,
         FSCRYPT_KEY_DESCRIPTOR_SIZE, keyDesc, FSCRYPT_KEY_DESCRIPTOR_SIZE);
-    free(keyDesc);
-
+    if (ret != 0) {
+        FSCRYPT_LOGE("memcpy_s copy failed");
+        return ret;
+    }
     if (!KeyCtrlSetPolicy(toEncrypt, arg)) {
         FSCRYPT_LOGE("Set Policy v1 failed");
         return -EFAULT;
@@ -274,18 +306,18 @@ static int SetPolicyV2(const char *keyIdPath,
                        const char *toEncrypt,
                        union FscryptPolicy *arg)
 {
-    char *keyId = ReadFileToBuf(keyIdPath);
-    if ((!keyId) ||
-        (strnlen(keyId, FSCRYPT_KEY_IDENTIFIER_SIZE) != FSCRYPT_KEY_IDENTIFIER_SIZE)) {
-        FSCRYPT_LOGE("bad key_id file content");
-        return -EINVAL;
+    char keyId[FSCRYPT_KEY_IDENTIFIER_SIZE] = {0};
+    int ret = ReadKeyFile(keyIdPath, keyId, FSCRYPT_KEY_IDENTIFIER_SIZE);
+    if (ret != 0) {
+        return ret;
     }
-
     arg->v2.version = FSCRYPT_POLICY_V2;
-    (void)memcpy_s(arg->v2.master_key_identifier,
+    ret = memcpy_s(arg->v2.master_key_identifier,
         FSCRYPT_KEY_IDENTIFIER_SIZE, keyId, FSCRYPT_KEY_IDENTIFIER_SIZE);
-    free(keyId);
-
+    if (ret != 0) {
+        FSCRYPT_LOGE("memcpy_s copy failed");
+        return ret;
+    }
     if (!KeyCtrlSetPolicy(toEncrypt, arg)) {
         FSCRYPT_LOGE("Set Policy v2 failed");
         return -EFAULT;
