@@ -163,7 +163,9 @@ static void PraseOnePloicyValue(int *value, const char *key,
                                 const FscrtpyItem *table, size_t numbers)
 {
     for (size_t i = 0; i < numbers; i++) {
-        if (strncmp(key, table[i].key, strlen(table[i].key)) == 0) {
+        size_t len = strlen(table[i].key);
+        if (strncmp(key, table[i].key, len) == 0 &&
+            strlen(key) == len) {
             *value = table[i].value;
             return;
         }
@@ -217,7 +219,7 @@ int InitFscryptPolicy(void)
  * @name: fscrypt file, so as /key_id
  * @buf: splic result if return 0
  */
-static int SplicKeyPath(const char *path, size_t pathLen,
+static int SpliceKeyPath(const char *path, size_t pathLen,
                         const char *name, size_t nameLen,
                         char **buf)
 {
@@ -346,7 +348,7 @@ int LoadAndSetPolicy(const char *keyDir, const char *dir)
     char *pathBuf = NULL;
     ret = -ENOTSUP;
     if (g_fscryptPolicy.version == FSCRYPT_V1) {
-        ret = SplicKeyPath(keyDir, strlen(keyDir), PATH_KEYDESC,
+        ret = SpliceKeyPath(keyDir, strlen(keyDir), PATH_KEYDESC,
             strlen(PATH_KEYDESC), &pathBuf);
         if (ret != 0) {
             FSCRYPT_LOGE("path splice error");
@@ -354,7 +356,7 @@ int LoadAndSetPolicy(const char *keyDir, const char *dir)
         }
         ret = SetPolicyLegacy(pathBuf, dir, &arg);
     } else if (g_fscryptPolicy.version == FSCRYPT_V2) {
-        ret = SplicKeyPath(keyDir, strlen(keyDir), PATH_KEYID,
+        ret = SpliceKeyPath(keyDir, strlen(keyDir), PATH_KEYID,
             strlen(PATH_KEYID), &pathBuf);
         if (ret != 0) {
             FSCRYPT_LOGE("path splice error");
@@ -375,16 +377,12 @@ int SetGlobalEl1DirPolicy(const char *dir)
         FSCRYPT_LOGI("Fscrypt have not enabled");
         return 0;
     }
-    size_t len = strlen(dir);
     for (size_t i = 0; i < ARRAY_LEN(GLOBAL_FSCRYPT_DIR); i++) {
         size_t tmpLen = strlen(GLOBAL_FSCRYPT_DIR[i]);
-        if (tmpLen != len) {
-            return 0;
-        }
-        if (strncmp(dir, GLOBAL_FSCRYPT_DIR[i], len) != 0) {
-            return 0;
+        if ((strncmp(dir, GLOBAL_FSCRYPT_DIR[i], tmpLen) == 0) &&
+            (strlen(dir) == tmpLen)) {
+            return LoadAndSetPolicy(DEVICE_EL1_DIR, dir);;
         }
     }
-
-    return LoadAndSetPolicy(DEVICE_EL1_DIR, dir);
+    return 0;
 }
