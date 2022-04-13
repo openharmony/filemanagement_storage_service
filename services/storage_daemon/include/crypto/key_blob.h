@@ -15,27 +15,54 @@
 #ifndef STORAGE_DAEMON_CRYPTO_KEY_UTILS_H
 #define STORAGE_DAEMON_CRYPTO_KEY_UTILS_H
 
-#include <string>
 #include <memory>
+#include <string>
 
-#include "securec.h"
 #include "hks_type.h"
+#include "securec.h"
 
 namespace OHOS {
 namespace StorageDaemon {
 constexpr uint32_t CRYPTO_KEY_SECDISC_SIZE = 16384;
 constexpr uint32_t CRYPTO_KEY_ALIAS_SIZE = 16;
-constexpr uint32_t CRYPTO_AES_256_LEN = 256;
 constexpr uint32_t CRYPTO_AES_AAD_LEN = 16;
 constexpr uint32_t CRYPTO_AES_256_XTS_KEY_SIZE = 64;
-static const std::string CRYPTO_NAME_PREFIXES[] = {"ext4", "f2fs", "fscrypt"};
+constexpr uint32_t CRYPTO_KEY_GUARD_SIZE = 300;
+constexpr uint32_t CRYPTO_AES_256_KEY_ENCRYPTED_SIZE = 80;
 
-struct KeyBlob {
+class KeyBlob {
+public:
+    KeyBlob() = default;
+    ~KeyBlob()
+    {
+        Clear();
+    }
+    KeyBlob(uint32_t len)
+    {
+        Alloc(len);
+        // may fail, need check IsEmpty() if needed
+    }
+    KeyBlob(KeyBlob &&right)
+    {
+        data = std::move(right.data);
+        size = right.size;
+    }
+    KeyBlob& operator=(KeyBlob &&right)
+    {
+        data = std::move(right.data);
+        size = right.size;
+        return *this;
+    }
+
     bool Alloc(uint32_t len)
     {
         if (len > CRYPTO_KEY_SECDISC_SIZE) {
             return false;
         }
+        if (!IsEmpty()) {
+            Clear();
+        }
+
         data = std::make_unique<uint8_t[]>(len);
         size = len;
         (void)memset_s(data.get(), size, 0, size);
@@ -81,9 +108,13 @@ struct KeyInfo {
 };
 
 struct KeyContext {
+    // secure discardable keyblob
     KeyBlob secDiscard;
-    KeyBlob alias;
+    // encrypted huks key for encrypt/decrypt
+    KeyBlob shield;
+    // encrypted blob of rawkey
     KeyBlob encrypted;
+    // aes_gcm tags
     KeyBlob nonce;
     KeyBlob aad;
 };

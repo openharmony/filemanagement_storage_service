@@ -17,7 +17,7 @@
 
 #include <string>
 
-#include "key_utils.h"
+#include "key_blob.h"
 #include "key_ctrl.h"
 
 namespace OHOS {
@@ -28,6 +28,7 @@ public:
     BaseKey(std::string dir, uint8_t keyLen = CRYPTO_AES_256_XTS_KEY_SIZE);
     ~BaseKey() = default;
 
+    /* key operations */
     bool InitKey();
     bool StoreKey(const UserAuth &auth);
     bool UpdateKey(const std::string &keypath = "");
@@ -52,9 +53,8 @@ private:
     static bool GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size);
     static bool GenerateKeyBlob(KeyBlob &blob, const uint32_t size);
     static bool LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size);
-    bool EncryptKey(const UserAuth &auth);
-    bool DecryptKey(const UserAuth &auth);
-    bool RemoveAlias(const std::string& keypath);
+    bool Encrypt(const UserAuth &auth);
+    bool Decrypt(const UserAuth &auth);
     int GetCandidateVersion() const;
     std::string GetCandidateDir() const;
     std::string GetNextCandidateDir() const;

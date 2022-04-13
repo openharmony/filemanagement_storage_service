@@ -15,19 +15,52 @@
 #ifndef STORAGE_DAEMON_CRYPTO_HUKS_MASTER_H
 #define STORAGE_DAEMON_CRYPTO_HUKS_MASTER_H
 
-#include "key_utils.h"
+#include "key_blob.h"
+
+#include "huks_hdi.h"
 
 namespace OHOS {
 namespace StorageDaemon {
+using HkmHdiHandle_t = void *;
+using HkmHalDevice_t = HuksHdi *;
+using HkmHalCreateHandle = HuksHdi *(*)(void);
+using HkmHalDestroyHandle = void (*)(HuksHdi *);
+
 class HuksMaster {
 public:
-    static bool Init();
-    static bool GenerateRandomKey(KeyBlob &rawKey);
-    static bool GenerateKey(const KeyBlob &keyAlias);
-    static bool DeleteKey(const KeyBlob &keyAlias);
+    static HuksMaster &GetInstance()
+    {
+        static HuksMaster instance;
+        return instance;
+    }
 
-    static bool EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo &key);
-    static bool DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key);
+    /* key operations */
+    KeyBlob GenerateRandomKey(uint32_t keyLen);
+    bool GenerateKey(KeyBlob &keyOut);
+    bool EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo &key);
+    bool DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key);
+private:
+    HuksMaster();
+    ~HuksMaster();
+    HuksMaster(const HuksMaster &) = delete;
+    HuksMaster &operator=(const HuksMaster &) = delete;
+
+    /* huks hal interface */
+    bool HdiCreate();
+    void HdiDestroy();
+    int HdiModuleInit();
+    int HdiGenerateKey(const HksBlob &keyAlias, const HksParamSet *paramSetIn,
+                       HksBlob &keyOut);
+    int HdiAccessInit(const HksBlob &key, const HksParamSet *paramSet, HksBlob &handle);
+    int HdiAccessUpdate(const HksBlob &handle, const HksParamSet *paramSet,
+                        const HksBlob &inData, struct HksBlob &outData);
+    int HdiAccessFinish(const HksBlob &handle, const HksParamSet *paramSet,
+                        const HksBlob &inData, HksBlob &outData);
+    bool HuksHal3Stage(HksParamSet *paramSet1, const HksParamSet *paramSet2,
+                       const KeyBlob &keyIn, KeyBlob &keyOut);
+
+    HkmHdiHandle_t hdiHandle_ = nullptr;
+    HkmHalDevice_t halDevice_ = nullptr;
 };
 } // namespace StorageDaemon
 } // namespace OHOS

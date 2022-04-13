@@ -21,7 +21,7 @@
 #include <memory>
 #include <mutex>
 
-#include "key_utils.h"
+#include "key_blob.h"
 #include "base_key.h"
 #include "utils/file_utils.h"
 
