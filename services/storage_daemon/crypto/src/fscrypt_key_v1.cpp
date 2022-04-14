@@ -20,6 +20,8 @@
 
 namespace OHOS {
 namespace StorageDaemon {
+static const std::string CRYPTO_NAME_PREFIXES[] = {"ext4", "f2fs", "fscrypt"};
+
 bool FscryptKeyV1::ActiveKey(const std::string &mnt)
 {
     (void)mnt;

@@ -16,11 +16,7 @@
 
 #include <fcntl.h>
 #include <fstream>
-#include <iostream>
 #include <string>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
 
 #include "directory_ex.h"
 #include "file_ex.h"
@@ -37,12 +33,8 @@ const std::string PATH_KEY_TEMP = "/temp";
 
 namespace OHOS {
 namespace StorageDaemon {
-static bool g_isHuksMasterInit = false;
 BaseKey::BaseKey(std::string dir, uint8_t keyLen) : dir_(dir), keyLen_(keyLen)
 {
-    if (!g_isHuksMasterInit && (HuksMaster::Init() == 0)) {
-        g_isHuksMasterInit = true;
-    }
 }
 
 bool BaseKey::InitKey()
@@ -65,14 +57,8 @@ bool BaseKey::InitKey()
 
 bool BaseKey::GenerateKeyBlob(KeyBlob &blob, const uint32_t size)
 {
-    if (!blob.Alloc(size)) {
-        return false;
-    }
-    if (!HuksMaster::GenerateRandomKey(blob)) {
-        blob.Clear();
-        return false;
-    }
-    return true;
+    blob = HuksMaster::GetInstance().GenerateRandomKey(size);
+    return !blob.IsEmpty();
 }
 
 bool BaseKey::SaveKeyBlob(const KeyBlob &blob, const std::string &path)
@@ -184,7 +170,6 @@ bool BaseKey::StoreKey(const UserAuth &auth)
     } else {
         LOGE("DoStoreKey fail, cleanup the temp dir");
     }
-    RemoveAlias(pathTemp);
     OHOS::ForceRemoveDirectory(pathTemp);
     return false;
 }
@@ -207,25 +192,25 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
     }
     ChMod(pathVersion, S_IREAD | S_IWRITE);
 
-    if (!GenerateAndSaveKeyBlob(keyContext_.alias, pathTemp + PATH_ALIAS, CRYPTO_KEY_ALIAS_SIZE)) {
-        LOGE("GenerateAndSaveKeyBlob alias failed");
+    if (!HuksMaster::GetInstance().GenerateKey(keyContext_.shield)) {
+        LOGE("GenerateKey of shield failed");
         return false;
     }
-    if (!HuksMaster::GenerateKey(keyContext_.alias)) {
-        LOGE("HuksMaster::GenerateKey failed");
+    if (!SaveKeyBlob(keyContext_.shield, pathTemp + PATH_SHIELD)) {
         return false;
     }
     if (!GenerateAndSaveKeyBlob(keyContext_.secDiscard, pathTemp + PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
         LOGE("GenerateAndSaveKeyBlob sec_discard failed");
         return false;
     }
-    if (!EncryptKey(auth)) {
+    if (!Encrypt(auth)) {
         return false;
     }
     if (!SaveKeyBlob(keyContext_.encrypted, pathTemp + PATH_ENCRYPTED)) {
         return false;
     }
     keyContext_.encrypted.Clear();
+    LOGD("finish");
     return true;
 }
 
@@ -274,7 +259,6 @@ bool BaseKey::UpdateKey(const std::string &keypath)
     GetSubDirs(dir_, files);
     for (const auto &it: files) {
         if (it != PATH_LATEST.substr(1)) {
-            RemoveAlias(dir_ + "/" + it);
             OHOS::ForceRemoveDirectory(dir_ + "/" + it);
         }
     }
@@ -282,13 +266,15 @@ bool BaseKey::UpdateKey(const std::string &keypath)
     return true;
 }
 
-bool BaseKey::EncryptKey(const UserAuth &auth)
+bool BaseKey::Encrypt(const UserAuth &auth)
 {
-    auto ret = HuksMaster::EncryptKey(keyContext_, auth, keyInfo_);
-    keyContext_.alias.Clear();
+    LOGD("enter");
+    auto ret = HuksMaster::GetInstance().EncryptKey(keyContext_, auth, keyInfo_);
+    keyContext_.shield.Clear();
     keyContext_.secDiscard.Clear();
     keyContext_.nonce.Clear();
     keyContext_.aad.Clear();
+    LOGD("finish");
     return ret;
 }
 
@@ -343,35 +329,27 @@ bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
     if (!LoadKeyBlob(keyContext_.encrypted, path + PATH_ENCRYPTED)) {
         return false;
     }
-    if (!LoadKeyBlob(keyContext_.alias, path + PATH_ALIAS, CRYPTO_KEY_ALIAS_SIZE)) {
-        keyContext_.alias.Clear();
+    if (!LoadKeyBlob(keyContext_.shield, path + PATH_SHIELD, CRYPTO_KEY_SHIELD_SIZE)) {
+        keyContext_.encrypted.Clear();
         return false;
     }
     if (!LoadKeyBlob(keyContext_.secDiscard, path + PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
         keyContext_.encrypted.Clear();
-        keyContext_.alias.Clear();
+        keyContext_.shield.Clear();
         return false;
     }
-    return DecryptKey(auth);
+    return Decrypt(auth);
 }
 
-bool BaseKey::DecryptKey(const UserAuth &auth)
+bool BaseKey::Decrypt(const UserAuth &auth)
 {
-    auto ret = HuksMaster::DecryptKey(keyContext_, auth, keyInfo_);
+    auto ret = HuksMaster::GetInstance().DecryptKey(keyContext_, auth, keyInfo_);
     keyContext_.encrypted.Clear();
-    keyContext_.alias.Clear();
+    keyContext_.shield.Clear();
     keyContext_.secDiscard.Clear();
     keyContext_.nonce.Clear();
     keyContext_.aad.Clear();
     return ret;
-}
-
-bool BaseKey::RemoveAlias(const std::string &keypath)
-{
-    LOGD("enter, keypath = %{public}s", keypath.c_str());
-    KeyBlob alias {};
-    return LoadKeyBlob(alias, keypath + PATH_ALIAS, CRYPTO_KEY_ALIAS_SIZE) &&
-           HuksMaster::DeleteKey(alias);
 }
 
 bool BaseKey::ClearKey(const std::string &mnt)
@@ -379,13 +357,6 @@ bool BaseKey::ClearKey(const std::string &mnt)
     LOGD("enter, dir_ = %{public}s", dir_.c_str());
     InactiveKey(mnt);
     keyInfo_.key.Clear();
-
-    // remove all key alias of all versions
-    std::vector<std::string> files;
-    GetSubDirs(dir_, files);
-    for (const auto &it : files) {
-        RemoveAlias(dir_ + "/" + it);
-    }
 
     return OHOS::ForceRemoveDirectory(dir_);
     // use F2FS_IOC_SEC_TRIM_FILE

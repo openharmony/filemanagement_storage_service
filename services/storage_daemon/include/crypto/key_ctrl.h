@@ -15,7 +15,6 @@
 #ifndef STORAGE_DAEMON_CRYPTO_KEYCTL_H
 #define STORAGE_DAEMON_CRYPTO_KEYCTL_H
 
-#include <unistd.h>
 #include <vector>
 #include <map>
 #include <string>
@@ -36,7 +35,7 @@ constexpr uint32_t CRYPTO_KEY_DESC_SIZE = FSCRYPT_KEY_DESCRIPTOR_SIZE;
 static const std::string MNT_DATA = "/data";
 static const std::string PATH_LATEST = "/latest";
 static const std::string PATH_FSCRYPT_VER = "/fscrypt_version";
-static const std::string PATH_ALIAS = "/alias";
+static const std::string PATH_SHIELD = "/shield";
 static const std::string PATH_SECDISC = "/sec_discard";
 static const std::string PATH_ENCRYPTED = "/encrypted";
 static const std::string PATH_KEYID = "/key_id";
