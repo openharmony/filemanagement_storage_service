@@ -24,7 +24,7 @@
 #include "libfscrypt/key_control.h"
 #include "libfscrypt/fscrypt_control.h"
 #include "libfscrypt/fscrypt_utils.h"
-#include "key_utils.h"
+#include "key_blob.h"
 
 using namespace testing::ext;
 using namespace OHOS::StorageDaemon;
