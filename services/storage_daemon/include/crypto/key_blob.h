@@ -32,7 +32,7 @@
 #include <linux/fscrypt.h>
 #define SUPPORT_FSCRYPT_V2
 #else
-#include "fscrypt_uapi.h"
+#include "libfscrypt/fscrypt_uapi.h"
 #endif
 
 namespace OHOS {

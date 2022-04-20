@@ -18,6 +18,7 @@
 #include <linux/version.h>
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
 #include <linux/fscrypt.h>
+#define SUPPORT_FSCRYPT_V2
 #else
 #include "fscrypt_uapi.h"
 #endif
@@ -38,7 +39,9 @@ enum {
 
 union FscryptPolicy {
     struct fscrypt_policy_v1 v1;
+#ifdef SUPPORT_FSCRYPT_V2
     struct fscrypt_policy_v2 v2;
+#endif
 };
 
 typedef unsigned char uint8_t;
@@ -55,12 +58,16 @@ long KeyCtrlSearch(key_serial_t ringId, const char *type, const char *descriptio
     key_serial_t destRingId);
 long KeyCtrlUnlink(key_serial_t key, key_serial_t keyring);
 
+#ifdef SUPPORT_FSCRYPT_V2
 bool KeyCtrlInstallKey(const char *mnt, struct fscrypt_add_key_arg *arg);
 bool KeyCtrlRemoveKey(const char *mnt, struct fscrypt_remove_key_arg *arg);
 bool KeyCtrlGetKeyStatus(const char *mnt, struct fscrypt_get_key_status_arg *arg);
+bool KeyCtrlGetPolicyEx(const char *path, struct fscrypt_get_policy_ex_arg *policy);
+#endif
+
 bool KeyCtrlSetPolicy(const char *path, union FscryptPolicy *policy);
 bool KeyCtrlGetPolicy(const char *path, struct fscrypt_policy *policy);
-bool KeyCtrlGetPolicyEx(const char *path, struct fscrypt_get_policy_ex_arg *policy);
+
 uint8_t KeyCtrlGetFscryptVersion(const char *mnt);
 uint8_t KeyCtrlLoadVersion(const char *keyPath);
 

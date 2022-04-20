@@ -76,8 +76,10 @@ static const char *GLOBAL_FSCRYPT_DIR[] = {
 };
 
 static const char *DEVICE_EL1_DIR = "/data/service/el0/storage_daemon/sd";
-static const char *PATH_KEYID = "/key_id";
 static const char *PATH_KEYDESC = "/key_desc";
+#ifdef SUPPORT_FSCRYPT_V2
+static const char *PATH_KEYID = "/key_id";
+#endif
 
 static bool IsSupportedPolicyKey(const char *key,
                                  const FscrtpyItem *items,
@@ -304,6 +306,7 @@ static int SetPolicyLegacy(const char *keyDescPath,
     return 0;
 }
 
+#ifdef SUPPORT_FSCRYPT_V2
 static int SetPolicyV2(const char *keyIdPath,
                        const char *toEncrypt,
                        union FscryptPolicy *arg)
@@ -326,6 +329,7 @@ static int SetPolicyV2(const char *keyIdPath,
     }
     return 0;
 }
+#endif
 
 int LoadAndSetPolicy(const char *keyDir, const char *dir)
 {
@@ -355,6 +359,7 @@ int LoadAndSetPolicy(const char *keyDir, const char *dir)
             return ret;
         }
         ret = SetPolicyLegacy(pathBuf, dir, &arg);
+#ifdef SUPPORT_FSCRYPT_V2
     } else if (g_fscryptPolicy.version == FSCRYPT_V2) {
         ret = SpliceKeyPath(keyDir, strlen(keyDir), PATH_KEYID,
             strlen(PATH_KEYID), &pathBuf);
@@ -363,6 +368,7 @@ int LoadAndSetPolicy(const char *keyDir, const char *dir)
             return ret;
         }
         ret = SetPolicyV2(pathBuf, dir, &arg);
+#endif
     }
     if (pathBuf != NULL) {
         free(pathBuf);
