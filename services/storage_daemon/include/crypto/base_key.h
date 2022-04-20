@@ -18,7 +18,6 @@
 #include <string>
 
 #include "key_blob.h"
-#include "key_ctrl.h"
 
 namespace OHOS {
 namespace StorageDaemon {

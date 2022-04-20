@@ -15,7 +15,7 @@
 #include "fscrypt_key_v2.h"
 
 #include "storage_service_log.h"
-#include "key_ctrl.h"
+#include "libfscrypt/key_control.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -40,7 +40,7 @@ bool FscryptKeyV2::ActiveKey(const std::string &mnt)
         return false;
     }
 
-    if (!KeyCtrl::InstallKey(mnt, *arg)) {
+    if (!KeyCtrlInstallKey(mnt.c_str(), arg)) {
         LOGE("InstallKey failed");
         return false;
     }
@@ -80,7 +80,7 @@ bool FscryptKeyV2::InactiveKey(const std::string &mnt)
         return false;
     }
 
-    if (!KeyCtrl::RemoveKey(mnt, arg)) {
+    if (!KeyCtrlRemoveKey(mnt.c_str(), &arg)) {
         return false;
     }
     if (arg.removal_status_flags & FSCRYPT_KEY_REMOVAL_STATUS_FLAG_OTHER_USERS) {

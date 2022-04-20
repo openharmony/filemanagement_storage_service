@@ -1,0 +1,51 @@
+# Copyright (c) 2022 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+import("//build/ohos.gni")
+
+## build sm execute bin file
+config("fscrypt_utils_config") {
+  visibility = [ ":*" ]
+
+  include_dirs = [
+    "../include/libfscrypt",
+    "//base/startup/init_lite/interfaces/innerkits/include",
+    "//base/startup/init_lite/services/log",
+    "//base/startup/init_lite/services/include",
+  ]
+
+  cflags = [
+    "-g3",
+    "-Wall",
+  ]
+}
+
+ohos_static_library("libfscryptutils") {
+  output_name = "libfscryptutils"
+  sources = [
+    "src/fscrypt_control.c",
+    "src/fscrypt_utils.c",
+    "src/key_control.c",
+  ]
+
+  configs = [ ":fscrypt_utils_config" ]
+
+  deps = [
+    "//base/startup/init_lite/services/log:init_log",
+    "//base/startup/init_lite/services/utils:libinit_utils",
+    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara:syspara",
+    "//utils/native/base:utils",
+  ]
+
+  subsystem_name = "filemanagement"
+  part_name = "storage_service"
+}

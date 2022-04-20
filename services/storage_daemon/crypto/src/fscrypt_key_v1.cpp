@@ -16,7 +16,7 @@
 
 #include <openssl/sha.h>
 #include "storage_service_log.h"
-#include "key_ctrl.h"
+#include "libfscrypt/key_control.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -40,10 +40,10 @@ bool FscryptKeyV1::ActiveKey(const std::string &mnt)
         return false;
     }
 
-    key_serial_t krid = KeyCtrl::Search(KEY_SPEC_SESSION_KEYRING, "keyring", "fscrypt", 0);
+    key_serial_t krid = KeyCtrlSearch(KEY_SPEC_SESSION_KEYRING, "keyring", "fscrypt", 0);
     if (krid == -1) {
         LOGI("no session keyring for fscrypt");
-        krid = KeyCtrl::AddKey("keyring", "fscrypt", KEY_SPEC_SESSION_KEYRING);
+        krid = KeyCtrlAddKey("keyring", "fscrypt", KEY_SPEC_SESSION_KEYRING);
         if (krid == -1) {
             LOGE("failed to add session keyring");
             return false;
@@ -52,7 +52,7 @@ bool FscryptKeyV1::ActiveKey(const std::string &mnt)
     for (auto prefix : CRYPTO_NAME_PREFIXES) {
         std::string keyref = prefix + ":" + keyInfo_.keyDesc.ToString();
         key_serial_t ks =
-            KeyCtrl::AddKey("logon", keyref, fskey, krid);
+            KeyCtrlAddKeyEx("logon", keyref.c_str(), &fskey, krid);
         if (ks == -1) {
             // Addkey failed, need to process the error
             LOGE("Failed to AddKey %{public}s into keyring %{public}d, errno %{public}d", keyref.c_str(), krid,
@@ -76,15 +76,15 @@ bool FscryptKeyV1::InactiveKey(const std::string &mnt)
         return false;
     }
 
-    key_serial_t krid = KeyCtrl::Search(KEY_SPEC_SESSION_KEYRING, "keyring", "fscrypt", 0);
+    key_serial_t krid = KeyCtrlSearch(KEY_SPEC_SESSION_KEYRING, "keyring", "fscrypt", 0);
     if (krid == -1) {
         LOGE("Error searching session keyring for fscrypt-provisioning key for fscrypt");
         return false;
     }
     for (auto prefix : CRYPTO_NAME_PREFIXES) {
         std::string keyref = prefix + ":" + keyInfo_.keyDesc.ToString();
-        key_serial_t ks = KeyCtrl::Search(krid, "logon", keyref, 0);
-        if (KeyCtrl::Unlink(ks, krid) != 0) {
+        key_serial_t ks = KeyCtrlSearch(krid, "logon", keyref.c_str(), 0);
+        if (KeyCtrlUnlink(ks, krid) != 0) {
             LOGE("Failed to unlink key with serial %{public}d ref %{public}s", krid, keyref.c_str());
         }
     }
