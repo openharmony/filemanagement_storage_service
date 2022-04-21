@@ -72,6 +72,7 @@ static bool FsIoctl(const char *mnt, unsigned long cmd, void *arg)
     return true;
 }
 
+#ifdef SUPPORT_FSCRYPT_V2
 bool KeyCtrlInstallKey(const char *mnt, struct fscrypt_add_key_arg *arg)
 {
     FSCRYPT_LOGI("enter");
@@ -90,6 +91,13 @@ bool KeyCtrlGetKeyStatus(const char *mnt, struct fscrypt_get_key_status_arg *arg
     return FsIoctl(mnt, FS_IOC_GET_ENCRYPTION_KEY_STATUS, (void *)(arg));
 }
 
+bool KeyCtrlGetPolicyEx(const char *path, struct fscrypt_get_policy_ex_arg *policy)
+{
+    FSCRYPT_LOGI("enter");
+    return FsIoctl(path, FS_IOC_GET_ENCRYPTION_POLICY_EX, (void *)(policy));
+}
+#endif
+
 bool KeyCtrlSetPolicy(const char *path, union FscryptPolicy *policy)
 {
     FSCRYPT_LOGI("enter");
@@ -102,12 +110,6 @@ bool KeyCtrlGetPolicy(const char *path, struct fscrypt_policy *policy)
     return FsIoctl(path, FS_IOC_GET_ENCRYPTION_POLICY, (void *)(policy));
 }
 
-bool KeyCtrlGetPolicyEx(const char *path, struct fscrypt_get_policy_ex_arg *policy)
-{
-    FSCRYPT_LOGI("enter");
-    return FsIoctl(path, FS_IOC_GET_ENCRYPTION_POLICY_EX, (void *)(policy));
-}
-
 static uint8_t CheckKernelFscrypt(const char *mnt)
 {
     int fd = open(mnt, O_RDONLY | O_DIRECTORY | O_CLOEXEC);
@@ -116,6 +118,7 @@ static uint8_t CheckKernelFscrypt(const char *mnt)
         return FSCRYPT_INVALID;
     }
 
+#ifdef SUPPORT_FSCRYPT_V2
     errno = 0;
     (void)ioctl(fd, FS_IOC_ADD_ENCRYPTION_KEY, NULL);
     close(fd);
@@ -131,6 +134,9 @@ static uint8_t CheckKernelFscrypt(const char *mnt)
     }
     FSCRYPT_LOGE("Unexpected errno: %d", errno);
     return FSCRYPT_INVALID;
+#else
+    return FSCRYPT_V1;
+#endif
 }
 
 uint8_t KeyCtrlGetFscryptVersion(const char *mnt)
