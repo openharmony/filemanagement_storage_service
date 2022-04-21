@@ -307,9 +307,9 @@ int64_t StorageManagerProxy::GetTotalSizeOfVolume(std::string volumeUuid)
     return reply.ReadInt64();
 }
 
-std::vector<int64_t> StorageManagerProxy::GetBundleStats(std::string pkgName)
+BundleStats StorageManagerProxy::GetBundleStats(std::string pkgName)
 {
-    std::vector<int64_t> result = {};
+    BundleStats result;
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
@@ -323,11 +323,8 @@ std::vector<int64_t> StorageManagerProxy::GetBundleStats(std::string pkgName)
     if (err != E_OK) {
         return result;
     }
-    std::vector<int64_t> val;
-    if (!reply.ReadInt64Vector(&val)) {
-        val = {};
-    }
-    return val;
+    result = *BundleStats::Unmarshalling(reply);
+    return result;
 }
 
 void StorageManagerProxy::NotifyVolumeCreated(VolumeCore vc)
@@ -624,9 +621,9 @@ int64_t StorageManagerProxy::GetFreeSize()
     return reply.ReadInt64();
 }
 
-std::vector<int64_t> StorageManagerProxy::GetUserStorageStats()
+StorageStats StorageManagerProxy::GetUserStorageStats()
 {
-    std::vector<int64_t> result = {};
+    StorageStats result;
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
@@ -637,16 +634,13 @@ std::vector<int64_t> StorageManagerProxy::GetUserStorageStats()
     if (err != E_OK) {
         return result;
     }
-    std::vector<int64_t> val;
-    if (!reply.ReadInt64Vector(&val)) {
-        val = {};
-    }
-    return val;
+    result = *StorageStats::Unmarshalling(reply);
+    return result;
 }
 
-std::vector<int64_t> StorageManagerProxy::GetUserStorageStats(int32_t userId)
+StorageStats StorageManagerProxy::GetUserStorageStats(int32_t userId)
 {
-    std::vector<int64_t> result = {};
+    StorageStats result;
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
@@ -660,16 +654,13 @@ std::vector<int64_t> StorageManagerProxy::GetUserStorageStats(int32_t userId)
     if (err != E_OK) {
         return result;
     }
-    std::vector<int64_t> val;
-    if (!reply.ReadInt64Vector(&val)) {
-        val = {};
-    }
-    return val;
+    result = *StorageStats::Unmarshalling(reply);
+    return result;
 }
 
-std::vector<int64_t> StorageManagerProxy::GetCurrentBundleStats()
+BundleStats StorageManagerProxy::GetCurrentBundleStats()
 {
-    std::vector<int64_t> result = {};
+    BundleStats result;
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
@@ -680,11 +671,8 @@ std::vector<int64_t> StorageManagerProxy::GetCurrentBundleStats()
     if (err != E_OK) {
         return result;
     }
-    std::vector<int64_t> val;
-    if (!reply.ReadInt64Vector(&val)) {
-        val = {};
-    }
-    return val;
+    result = *BundleStats::Unmarshalling(reply);
+    return result;
 }
 } // StorageManager
 } // OHOS

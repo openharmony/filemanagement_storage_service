@@ -234,8 +234,8 @@ int32_t StorageManagerStub::HandleGetFree(MessageParcel &data, MessageParcel &re
 int32_t StorageManagerStub::HandleGetBundleStatus(MessageParcel &data, MessageParcel &reply)
 {
     std::string pkgName = data.ReadString();
-    std::vector<int64_t> bundleStats = GetBundleStats(pkgName);
-    if (!reply.WriteInt64Vector(bundleStats)) {
+    BundleStats bundleStats = GetBundleStats(pkgName);
+    if (!reply.WriteParcelable(&bundleStats)) {
         return  E_IPC_ERROR;
     }
     return E_OK;
@@ -273,8 +273,8 @@ int32_t StorageManagerStub::HandleGetFreeSize(MessageParcel &data, MessageParcel
 
 int32_t StorageManagerStub::HandleGetCurrUserStorageStats(MessageParcel &data, MessageParcel &reply)
 {
-    std::vector<int64_t> storageStats = GetUserStorageStats();
-    if (!reply.WriteInt64Vector(storageStats)) {
+    StorageStats storageStats = GetUserStorageStats();
+    if (!reply.WriteParcelable(&storageStats)) {
         return  E_IPC_ERROR;
     }
     return E_OK;
@@ -283,8 +283,8 @@ int32_t StorageManagerStub::HandleGetCurrUserStorageStats(MessageParcel &data, M
 int32_t StorageManagerStub::HandleGetUserStorageStats(MessageParcel &data, MessageParcel &reply)
 {
     int32_t userId = data.ReadInt32();
-    std::vector<int64_t> storageStats = GetUserStorageStats(userId);
-    if (!reply.WriteInt64Vector(storageStats)) {
+    StorageStats storageStats = GetUserStorageStats(userId);
+    if (!reply.WriteParcelable(&storageStats)) {
         return  E_IPC_ERROR;
     }
     return E_OK;
@@ -292,8 +292,8 @@ int32_t StorageManagerStub::HandleGetUserStorageStats(MessageParcel &data, Messa
 
 int32_t StorageManagerStub::HandleGetCurrentBundleStats(MessageParcel &data, MessageParcel &reply)
 {
-    std::vector<int64_t> bundleStats = GetCurrentBundleStats();
-    if (!reply.WriteInt64Vector(bundleStats)) {
+    BundleStats bundleStats = GetCurrentBundleStats();
+    if (!reply.WriteParcelable(&bundleStats)) {
         return  E_IPC_ERROR;
     }
     return E_OK;

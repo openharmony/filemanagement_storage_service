@@ -130,7 +130,7 @@ napi_value GetBundleStats(napi_env env, napi_callback_info info)
         UniError(EINVAL).ThrowErr(env, "Invalid name");
         return nullptr;
     }
-    auto bundleStats = std::make_shared<std::vector<int64_t>>();
+    auto bundleStats = std::make_shared<BundleStats>();
     std::string nameString(name.get());
     auto cbExec = [nameString, bundleStats](napi_env env) -> UniError {
         *bundleStats = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetBundleStats(nameString);
@@ -141,14 +141,10 @@ napi_value GetBundleStats(napi_env env, napi_callback_info info)
             return { env, err.GetNapiErr(env) };
         }
         NVal bundleObject = NVal::CreateObject(env);
-        if ((*bundleStats).size() != 3) { // 3 is the fixed size of bundle stats.
-            UniError(EINVAL).ThrowErr(env, "vector size error");
-            return bundleObject;
-        }
-        bundleObject.AddProp("appSize", NVal::CreateInt64(env, (*bundleStats)[0]).val_); // 0 is the index of app size
+        bundleObject.AddProp("appSize", NVal::CreateInt64(env, (bundleStats->appSize_)).val_);
         bundleObject.AddProp("cacheSize", NVal::CreateInt64(env,
-            (*bundleStats)[1]).val_); // 1 is the index of cache size
-        bundleObject.AddProp("dataSize", NVal::CreateInt64(env, (*bundleStats)[2]).val_); // 2 is the index of data size
+            (bundleStats->cacheSize_)).val_);
+        bundleObject.AddProp("dataSize", NVal::CreateInt64(env, (bundleStats->dataSize_)).val_);
         return bundleObject;
     };
     std::string procedureName = "GetBundleStats";
@@ -170,7 +166,7 @@ napi_value GetCurrentBundleStats(napi_env env, napi_callback_info info)
         return nullptr;
     }
 
-    auto bundleStats = std::make_shared<std::vector<int64_t>>();
+    auto bundleStats = std::make_shared<BundleStats>();
     auto cbExec = [bundleStats](napi_env env) -> UniError {
         *bundleStats = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetCurrentBundleStats();
         return UniError(ERRNO_NOERR);
@@ -180,14 +176,10 @@ napi_value GetCurrentBundleStats(napi_env env, napi_callback_info info)
             return { env, err.GetNapiErr(env) };
         }
         NVal bundleObject = NVal::CreateObject(env);
-        if ((*bundleStats).size() != 3) {
-            UniError(EINVAL).ThrowErr(env, "vector size error");
-            return bundleObject;
-        }
-        bundleObject.AddProp("appSize", NVal::CreateInt64(env, (*bundleStats)[0]).val_);
+        bundleObject.AddProp("appSize", NVal::CreateInt64(env, (bundleStats->appSize_)).val_);
         bundleObject.AddProp("cacheSize", NVal::CreateInt64(env,
-            (*bundleStats)[1]).val_);
-        bundleObject.AddProp("dataSize", NVal::CreateInt64(env, (*bundleStats)[2]).val_);
+            (bundleStats->cacheSize_)).val_);
+        bundleObject.AddProp("dataSize", NVal::CreateInt64(env, (bundleStats->dataSize_)).val_);
         return bundleObject;
     };
     std::string procedureName = "GetCurrentBundleStats";
@@ -248,26 +240,22 @@ napi_value GetUserStorageStats(napi_env env, napi_callback_info info)
         return nullptr;
     }
 
-    auto totalStats = std::make_shared<std::vector<int64_t>>();
-    auto cbExec = [userId, totalStats](napi_env env) -> UniError {
-        *totalStats = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetUserStorageStats(userId);
+    auto storageStats = std::make_shared<StorageStats>();
+    auto cbExec = [userId, storageStats](napi_env env) -> UniError {
+        *storageStats = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetUserStorageStats(userId);
         return UniError(ERRNO_NOERR);
     };
-    auto cbComplete = [totalStats](napi_env env, UniError err) -> NVal {
+    auto cbComplete = [storageStats](napi_env env, UniError err) -> NVal {
         if (err) {
             return { env, err.GetNapiErr(env) };
         }
         NVal totalObject = NVal::CreateObject(env);
-        if ((*totalStats).size() != 6) {
-            UniError(EINVAL).ThrowErr(env, "vector size error");
-            return totalObject;
-        }
-        totalObject.AddProp("total", NVal::CreateInt64(env, (*totalStats)[0]).val_);
-        totalObject.AddProp("audio", NVal::CreateInt64(env, (*totalStats)[1]).val_);
-        totalObject.AddProp("video", NVal::CreateInt64(env, (*totalStats)[2]).val_);
-        totalObject.AddProp("image", NVal::CreateInt64(env, (*totalStats)[3]).val_);
-        totalObject.AddProp("file", NVal::CreateInt64(env, (*totalStats)[4]).val_);
-        totalObject.AddProp("app", NVal::CreateInt64(env, (*totalStats)[5]).val_);
+        totalObject.AddProp("total", NVal::CreateInt64(env, (storageStats->total_)).val_);
+        totalObject.AddProp("audio", NVal::CreateInt64(env, (storageStats->audio_)).val_);
+        totalObject.AddProp("video", NVal::CreateInt64(env, (storageStats->video_)).val_);
+        totalObject.AddProp("image", NVal::CreateInt64(env, (storageStats->image_)).val_);
+        totalObject.AddProp("file", NVal::CreateInt64(env, (storageStats->file_)).val_);
+        totalObject.AddProp("app", NVal::CreateInt64(env, (storageStats->app_)).val_);
         return totalObject;
     };
     std::string procedureName = "GetUserStorageStats";

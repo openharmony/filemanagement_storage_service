@@ -90,10 +90,10 @@ int64_t StorageManager::GetTotalSizeOfVolume(std::string volumeUuid)
     return result;
 }
 
-std::vector<int64_t> StorageManager::GetBundleStats(std::string pkgName)
+BundleStats StorageManager::GetBundleStats(std::string pkgName)
 {
     LOGI("StorageManger::getBundleStats start, pkgName: %{public}s", pkgName.c_str());
-    std::vector<int64_t> result = DelayedSingleton<StorageStatusService>::GetInstance()->GetBundleStats(pkgName);
+    BundleStats result = DelayedSingleton<StorageStatusService>::GetInstance()->GetBundleStats(pkgName);
     return result;
 }
 
@@ -118,24 +118,24 @@ int64_t StorageManager::GetFreeSize()
     return result;
 }
 
-std::vector<int64_t> StorageManager::GetUserStorageStats()
+StorageStats StorageManager::GetUserStorageStats()
 {
     LOGI("StorageManger::GetUserStorageStats start");
-    std::vector<int64_t> result = DelayedSingleton<StorageStatusService>::GetInstance()->GetUserStorageStats();
-    return result;
-}
-    
-std::vector<int64_t> StorageManager::GetUserStorageStats(int32_t userId)
-{
-    LOGI("StorageManger::GetUserStorageStats start");
-    std::vector<int64_t> result = DelayedSingleton<StorageStatusService>::GetInstance()->GetUserStorageStats(userId);
+    StorageStats result = DelayedSingleton<StorageStatusService>::GetInstance()->GetUserStorageStats();
     return result;
 }
 
-std::vector<int64_t> StorageManager::GetCurrentBundleStats()
+StorageStats StorageManager::GetUserStorageStats(int32_t userId)
+{
+    LOGI("StorageManger::GetUserStorageStats start");
+    StorageStats result = DelayedSingleton<StorageStatusService>::GetInstance()->GetUserStorageStats(userId);
+    return result;
+}
+
+BundleStats StorageManager::GetCurrentBundleStats()
 {
     LOGI("StorageManger::GetCurrentBundleStats start");
-    std::vector<int64_t> result = DelayedSingleton<StorageStatusService>::GetInstance()->GetCurrentBundleStats();
+    BundleStats result = DelayedSingleton<StorageStatusService>::GetInstance()->GetCurrentBundleStats();
     return result;
 }
 

@@ -20,6 +20,8 @@
 #include "volume_core.h"
 #include "volume_external.h"
 #include "disk.h"
+#include "bundle_stats.h"
+#include "storage_stats.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -31,13 +33,13 @@ public:
     virtual int32_t StopUser(int32_t userId) = 0;
     virtual int64_t GetFreeSizeOfVolume(std::string volumeUuid) = 0;
     virtual int64_t GetTotalSizeOfVolume(std::string volumeUuid) = 0;
-    virtual std::vector<int64_t> GetBundleStats(std::string pkgName) = 0;
+    virtual BundleStats GetBundleStats(std::string pkgName) = 0;
     virtual int64_t GetSystemSize() = 0;
     virtual int64_t GetTotalSize() = 0;
     virtual int64_t GetFreeSize() = 0;
-    virtual std::vector<int64_t> GetUserStorageStats() = 0;
-    virtual std::vector<int64_t> GetUserStorageStats(int32_t userId) = 0;
-    virtual std::vector<int64_t> GetCurrentBundleStats() = 0;
+    virtual StorageStats GetUserStorageStats() = 0;
+    virtual StorageStats GetUserStorageStats(int32_t userId) = 0;
+    virtual BundleStats GetCurrentBundleStats() = 0;
     virtual void NotifyVolumeCreated(VolumeCore vc) = 0;
     virtual void NotifyVolumeMounted(std::string volumeId, int fsType, std::string fsUuid,
                                      std::string path, std::string description) = 0;
