@@ -354,8 +354,9 @@ int KeyManager::GenerateUserKeys(unsigned int user, uint32_t flags)
     return 0;
 }
 
-void KeyManager::DoDeleteUserKeys(unsigned int user)
+int KeyManager::DoDeleteUserKeys(unsigned int user)
 {
+    int ret = 0;
     std::string elPath;
     auto it = userEl1Key_.find(user);
     if (it != userEl1Key_.end()) {
@@ -367,10 +368,11 @@ void KeyManager::DoDeleteUserKeys(unsigned int user)
         std::shared_ptr<BaseKey> elKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>(elPath));
         if (elKey == nullptr) {
             LOGE("Malloc el1 Basekey memory failed");
-            return;
+            return -ENOMEM;
         }
         if (!elKey->ClearKey()) {
             LOGE("Delete el1 key failed");
+            ret = -EFAULT;
         }
     }
 
@@ -384,12 +386,15 @@ void KeyManager::DoDeleteUserKeys(unsigned int user)
         std::shared_ptr<BaseKey> elKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>(elPath));
         if (elKey == nullptr) {
             LOGE("Malloc el2 Basekey memory failed");
-            return;
+            return -ENOMEM;
         }
         if (!elKey->ClearKey()) {
             LOGE("Delete el2 key failed");
+            ret = -EFAULT;
         }
     }
+
+    return ret;
 }
 
 int KeyManager::DeleteUserKeys(unsigned int user)
@@ -400,10 +405,10 @@ int KeyManager::DeleteUserKeys(unsigned int user)
     }
 
     std::lock_guard<std::mutex> lock(keyMutex_);
-    DoDeleteUserKeys(user);
+    int ret = DoDeleteUserKeys(user);
     LOGI("delete user key end");
 
-    return 0;
+    return ret;
 }
 
 int KeyManager::UpdateUserAuth(unsigned int user, const std::string &token,
