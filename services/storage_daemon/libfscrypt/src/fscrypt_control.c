@@ -27,14 +27,14 @@
 
 typedef struct FscrtpyItem_ {
     char *key;
-    unsigned int value;
+    uint8_t value;
 }FscrtpyItem;
 
 typedef struct EncryptPolicy_ {
-    int version;
-    int fileName;
-    int content;
-    int flags;
+    uint8_t version;
+    uint8_t fileName;
+    uint8_t content;
+    uint8_t flags;
     bool hwWrappedKey;
 }EncryptPolicy;
 
@@ -161,7 +161,7 @@ int FscryptSetSysparam(const char *policy)
     return 0;
 }
 
-static void PraseOnePloicyValue(int *value, const char *key,
+static void PraseOnePloicyValue(uint8_t *value, const char *key,
                                 const FscrtpyItem *table, size_t numbers)
 {
     for (size_t i = 0; i < numbers; i++) {
