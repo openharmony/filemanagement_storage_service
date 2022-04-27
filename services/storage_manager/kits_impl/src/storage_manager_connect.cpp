@@ -53,9 +53,9 @@ int32_t StorageManagerConnect::Connect()
     return E_OK;
 }
 
-vector<int64_t> StorageManagerConnect::GetBundleStats(string pkgName)
+BundleStats StorageManagerConnect::GetBundleStats(string pkgName)
 {
-    vector<int64_t> result = {};
+    BundleStats result;
     if (Connect() != E_OK) {
         LOGE("StorageManagerConnect::GetBundleStats:Connect error");
         return result;
@@ -111,10 +111,73 @@ std::vector<VolumeExternal> StorageManagerConnect::GetAllVolumes()
 {
     vector<VolumeExternal> result = {};
     if (Connect() != E_OK) {
-        LOGE("StorageManagerConnect::GetTotalSizeOfVolume:Connect error");
+        LOGE("StorageManagerConnect::GetAllVolumes:Connect error");
         return result;
     }
     return storageManager_->GetAllVolumes();
+}
+
+int64_t StorageManagerConnect::GetSystemSize()
+{
+    if (Connect() != E_OK) {
+        LOGE("StorageManagerConnect::GetSystemSize:Connect error");
+        return 0;
+    }
+    int64_t result = storageManager_->GetSystemSize();
+    return result;
+}
+
+int64_t StorageManagerConnect::GetTotalSize()
+{
+    if (Connect() != E_OK) {
+        LOGE("StorageManagerConnect::GetTotalSize:Connect error");
+        return 0;
+    }
+    int64_t result = storageManager_->GetTotalSize();
+    return result;
+}
+
+int64_t StorageManagerConnect::GetFreeSize()
+{
+    if (Connect() != E_OK) {
+        LOGE("StorageManagerConnect::GetFreeSize:Connect error");
+        return 0;
+    }
+    int64_t result = storageManager_->GetFreeSize();
+    return result;
+}
+
+StorageStats StorageManagerConnect::GetUserStorageStats()
+{
+    StorageStats result;
+    if (Connect() != E_OK) {
+        LOGE("StorageManagerConnect::GetUserStorageStats:Connect error");
+        return result;
+    }
+    result = storageManager_->GetUserStorageStats();
+    return result;
+}
+    
+StorageStats StorageManagerConnect::GetUserStorageStats(int32_t userId)
+{
+    StorageStats result;
+    if (Connect() != E_OK) {
+        LOGE("StorageManagerConnect::GetUserStorageStats:Connect error");
+        return result;
+    }
+    result = storageManager_->GetUserStorageStats(userId);
+    return result;
+}
+
+BundleStats StorageManagerConnect::GetCurrentBundleStats()
+{
+    BundleStats result;
+    if (Connect() != E_OK) {
+        LOGE("StorageManagerConnect::GetCurrentBundleStats:Connect error");
+        return result;
+    }
+    result = storageManager_->GetCurrentBundleStats();
+    return result;
 }
 } // StorageManager
 } // OHOS

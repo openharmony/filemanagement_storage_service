@@ -14,11 +14,13 @@
  */
 
 #include "storage/storage_status_service.h"
+#include "accesstoken_kit.h"
+#include "ipc_skeleton.h"
+#include "hap_token_info.h"
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "installd_client.h"
-#include "ipc_skeleton.h"
 
 using namespace std;
 
@@ -35,13 +37,21 @@ int StorageStatusService::GetCurrentUserId()
     return userId;
 }
 
-vector<int64_t> StorageStatusService::GetBundleStats(std::string pkgName)
+std::string StorageStatusService::GetCallingPkgName()
 {
-    vector<int64_t> result = {0, 0, 0};
+    uint32_t pid = IPCSkeleton::GetCallingTokenID();
+    Security::AccessToken::HapTokenInfo tokenInfo = Security::AccessToken::HapTokenInfo();
+    Security::AccessToken::AccessTokenKit::GetHapTokenInfo(pid, tokenInfo);
+    return tokenInfo.bundleName;
+}
+
+BundleStats StorageStatusService::GetBundleStats(std::string pkgName)
+{
+    BundleStats result;
     int userId = GetCurrentUserId();
-    LOGI("StorageStatusService::userId is:%d", userId);
+    LOGD("StorageStatusService::userId is:%d", userId);
     if (userId < 0 || userId > StorageService::MAX_USER_ID) {
-        LOGI("StorageStatusService::Invaild userId.");
+        LOGE("StorageStatusService::Invaild userId.");
         return result;
     }
     vector<int64_t> bundleStats;
@@ -56,9 +66,50 @@ vector<int64_t> StorageStatusService::GetBundleStats(std::string pkgName)
             bundleStats[i] = 0;
         }
     }
-    result[APPSIZE] = bundleStats[APP];
-    result[CACHESIZE] = bundleStats[CACHE];
-    result[DATASIZE] = bundleStats[LOCAL] + bundleStats[DISTRIBUTED] + bundleStats[DATABASE];
+    result.appSize_ = bundleStats[APP];
+    result.cacheSize_ = bundleStats[CACHE];
+    result.dataSize_ = bundleStats[LOCAL] + bundleStats[DISTRIBUTED] + bundleStats[DATABASE];
+    return result;
+}
+
+StorageStats StorageStatusService::GetUserStorageStats()
+{
+    StorageStats result;
+    return result;
+}
+
+StorageStats StorageStatusService::GetUserStorageStats(int32_t userId)
+{
+    StorageStats result;
+    return result;
+}
+
+BundleStats StorageStatusService::GetCurrentBundleStats()
+{
+    BundleStats result;
+    int userId = GetCurrentUserId();
+    LOGD("StorageStatusService::userId is:%d", userId);
+    if (userId < 0 || userId > StorageService::MAX_USER_ID) {
+        LOGE("StorageStatusService::Invaild userId.");
+        return result;
+    }
+    std::string pkgName = GetCallingPkgName();
+    LOGD("StorageStatusService::pkgName is %{public}s", pkgName.c_str());
+    vector<int64_t> bundleStats;
+    int errorcode = AppExecFwk::InstalldClient::GetInstance()->GetBundleStats(pkgName, userId, bundleStats);
+    if (bundleStats.size() != dataDir.size() || errorcode != E_OK) {
+        LOGE("StorageStatusService::An error occurred in querying bundle stats.");
+        return result;
+    }
+    for (uint i = 0; i < bundleStats.size(); i++) {
+        if (bundleStats[i] == E_ERR) {
+            LOGE("StorageStatusService::Failed to query %s data.", dataDir[i].c_str());
+            bundleStats[i] = 0;
+        }
+    }
+    result.appSize_ = bundleStats[APP];
+    result.cacheSize_ = bundleStats[CACHE];
+    result.dataSize_ = bundleStats[LOCAL] + bundleStats[DISTRIBUTED] + bundleStats[DATABASE];
     return result;
 }
 } // StorageManager

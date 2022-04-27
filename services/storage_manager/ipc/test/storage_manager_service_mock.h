@@ -65,9 +65,42 @@ public:
         return E_OK;
     }
 
-    virtual std::vector<int64_t> GetBundleStats(std::string pkgName) override
+    virtual BundleStats GetBundleStats(std::string pkgName) override
     {
-        std::vector<int64_t> result;
+        BundleStats result;
+        return result;
+    }
+
+    virtual int64_t GetSystemSize() override
+    {
+        return E_OK;
+    }
+
+    virtual int64_t GetTotalSize() override
+    {
+        return E_OK;
+    }
+
+    virtual int64_t GetFreeSize() override
+    {
+        return E_OK;
+    }
+
+    virtual StorageStats GetUserStorageStats() override
+    {
+        StorageStats result;
+        return result;
+    }
+
+    virtual StorageStats GetUserStorageStats(int32_t userId) override
+    {
+        StorageStats result;
+        return result;
+    }
+
+    virtual BundleStats GetCurrentBundleStats() override
+    {
+        BundleStats result;
         return result;
     }
 

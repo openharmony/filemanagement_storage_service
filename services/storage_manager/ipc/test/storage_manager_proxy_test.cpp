@@ -433,10 +433,10 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetBundleStats_0000, tes
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
-    std::vector<int64_t> result = proxy->GetBundleStats(pkgName);
-    GTEST_LOG_(INFO) << result[0];
-    GTEST_LOG_(INFO) << result[1];
-    GTEST_LOG_(INFO) << result[2];
+    BundleStats result = proxy->GetBundleStats(pkgName);
+    GTEST_LOG_(INFO) << result.appSize_;
+    GTEST_LOG_(INFO) << result.cacheSize_;
+    GTEST_LOG_(INFO) << result.dataSize_;
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetBundleStats_0000";
 }
 
@@ -456,10 +456,10 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetBundleStats_0001, tes
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
-    std::vector<int64_t> result = proxy->GetBundleStats(pkgName);
-    GTEST_LOG_(INFO) << result[0];
-    GTEST_LOG_(INFO) << result[1];
-    GTEST_LOG_(INFO) << result[2];
+    BundleStats result = proxy->GetBundleStats(pkgName);
+    GTEST_LOG_(INFO) << result.appSize_;
+    GTEST_LOG_(INFO) << result.cacheSize_;
+    GTEST_LOG_(INFO) << result.dataSize_;
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetBundleStats_0001";
 }
 

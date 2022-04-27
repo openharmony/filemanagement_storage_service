@@ -67,5 +67,34 @@ int64_t StorageTotalStatusService::GetTotalSizeOfVolume(string volumeUuid)
     int64_t totalSize =  (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_blocks;
     return totalSize;
 }
+
+int64_t StorageTotalStatusService::GetSystemSize()
+{
+    return E_OK;
+}
+
+int64_t StorageTotalStatusService::GetTotalSize()
+{
+    string path = "/data";
+    struct statvfs diskInfo;
+    int ret = statvfs(path.c_str(), &diskInfo);
+    if (ret != E_OK) {
+        return E_ERR;
+    }
+    int64_t totalSize =  (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_blocks;
+    return totalSize;
+}
+
+int64_t StorageTotalStatusService::GetFreeSize()
+{
+    string path = "/data";
+    struct statvfs diskInfo;
+    int ret = statvfs(path.c_str(), &diskInfo);
+    if (ret != E_OK) {
+        return E_ERR;
+    }
+    int64_t freeSize = (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_bfree;
+    return freeSize;
+}
 } // StorageManager
 } // OHOS

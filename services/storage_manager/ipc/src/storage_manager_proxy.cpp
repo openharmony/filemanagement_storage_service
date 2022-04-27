@@ -307,9 +307,9 @@ int64_t StorageManagerProxy::GetTotalSizeOfVolume(std::string volumeUuid)
     return reply.ReadInt64();
 }
 
-std::vector<int64_t> StorageManagerProxy::GetBundleStats(std::string pkgName)
+BundleStats StorageManagerProxy::GetBundleStats(std::string pkgName)
 {
-    std::vector<int64_t> result = {};
+    BundleStats result;
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
@@ -323,11 +323,8 @@ std::vector<int64_t> StorageManagerProxy::GetBundleStats(std::string pkgName)
     if (err != E_OK) {
         return result;
     }
-    std::vector<int64_t> val;
-    if (!reply.ReadInt64Vector(&val)) {
-        val = {};
-    }
-    return val;
+    result = *BundleStats::Unmarshalling(reply);
+    return result;
 }
 
 void StorageManagerProxy::NotifyVolumeCreated(VolumeCore vc)
@@ -567,6 +564,114 @@ std::vector<Disk> StorageManagerProxy::GetAllDisks()
         LOGI("StorageManagerProxy::GetAllDisks push %{public}s", disk->GetDiskId().c_str());
         result.push_back(*disk);
     }
+    return result;
+}
+
+int64_t StorageManagerProxy::GetSystemSize()
+{
+    LOGI("StorageManagerProxy::GetSystemSize");
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("StorageManagerProxy::GetSystemSize WriteInterfaceToken failed");
+        return E_IPC_ERROR;
+    }
+
+    int err = Remote()->SendRequest(GET_SYSTEM_SIZE, data, reply, option);
+    if (err != E_OK) {
+        LOGE("StorageManagerProxy::GetSystemSize SendRequest failed");
+        return E_IPC_ERROR;
+    }
+    return reply.ReadInt64();
+}
+
+int64_t StorageManagerProxy::GetTotalSize()
+{
+    LOGI("StorageManagerProxy::GetTotalSize");
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("StorageManagerProxy::GetTotalSize WriteInterfaceToken failed");
+        return E_IPC_ERROR;
+    }
+
+    int err = Remote()->SendRequest(GET_TOTAL_SIZE, data, reply, option);
+    if (err != E_OK) {
+        LOGE("StorageManagerProxy::GetTotalSize SendRequest failed");
+        return E_IPC_ERROR;
+    }
+    return reply.ReadInt64();
+}
+
+int64_t StorageManagerProxy::GetFreeSize()
+{
+    LOGI("StorageManagerProxy::GetFreeSize");
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("StorageManagerProxy::GetFreeSize WriteInterfaceToken failed");
+        return E_IPC_ERROR;
+    }
+
+    int err = Remote()->SendRequest(GET_FREE_SIZE, data, reply, option);
+    if (err != E_OK) {
+        LOGE("StorageManagerProxy::GetFreeSize SendRequest failed");
+        return E_IPC_ERROR;
+    }
+    return reply.ReadInt64();
+}
+
+StorageStats StorageManagerProxy::GetUserStorageStats()
+{
+    StorageStats result;
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        return result;
+    }
+
+    int err = Remote()->SendRequest(GET_CURR_USER_STATS, data, reply, option);
+    if (err != E_OK) {
+        return result;
+    }
+    result = *StorageStats::Unmarshalling(reply);
+    return result;
+}
+
+StorageStats StorageManagerProxy::GetUserStorageStats(int32_t userId)
+{
+    StorageStats result;
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        return result;
+    }
+
+    if (!data.WriteInt32(userId)) {
+        return result;
+    }
+    int err = Remote()->SendRequest(GET_USER_STATS, data, reply, option);
+    if (err != E_OK) {
+        return result;
+    }
+    result = *StorageStats::Unmarshalling(reply);
+    return result;
+}
+
+BundleStats StorageManagerProxy::GetCurrentBundleStats()
+{
+    BundleStats result;
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        return result;
+    }
+
+    int err = Remote()->SendRequest(GET_CURR_BUNDLE_STATS, data, reply, option);
+    if (err != E_OK) {
+        return result;
+    }
+    result = *BundleStats::Unmarshalling(reply);
     return result;
 }
 } // StorageManager

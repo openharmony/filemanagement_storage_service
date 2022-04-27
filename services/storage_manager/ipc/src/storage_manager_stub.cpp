@@ -80,6 +80,24 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
         case GET_FREE:
             HandleGetFree(data, reply);
             break;
+        case GET_SYSTEM_SIZE:
+            HandleGetSystemSize(data, reply);
+            break;
+        case GET_TOTAL_SIZE:
+            HandleGetTotalSize(data, reply);
+            break;
+        case GET_FREE_SIZE:
+            HandleGetFreeSize(data, reply);
+            break;
+        case GET_CURR_USER_STATS:
+            HandleGetCurrUserStorageStats(data, reply);
+            break;
+        case GET_USER_STATS:
+            HandleGetUserStorageStats(data, reply);
+            break;
+        case GET_CURR_BUNDLE_STATS:
+            HandleGetCurrentBundleStats(data, reply);
+            break;
         case GET_BUNDLE_STATUS:
             HandleGetBundleStatus(data, reply);
             break;
@@ -196,7 +214,7 @@ int32_t StorageManagerStub::HandleGetTotal(MessageParcel &data, MessageParcel &r
     std::string volumeId = data.ReadString();
     int64_t totalSize = GetTotalSizeOfVolume(volumeId);
     if (!reply.WriteInt64(totalSize)) {
-        LOGE("StorageManagerStub::HandleGetTotal call OnUserDelete failed");
+        LOGE("StorageManagerStub::HandleGetTotal call OnUserDGetTotalSizeOfVolume failed");
         return  E_IPC_ERROR;
     }
     return E_OK;
@@ -207,7 +225,7 @@ int32_t StorageManagerStub::HandleGetFree(MessageParcel &data, MessageParcel &re
     std::string volumeId = data.ReadString();
     int64_t freeSize = GetFreeSizeOfVolume(volumeId);
     if (!reply.WriteInt64(freeSize)) {
-        LOGE("StorageManagerStub::HandleGetFree call OnUserDelete failed");
+        LOGE("StorageManagerStub::HandleGetFree call GetFreeSizeOfVolume failed");
         return  E_IPC_ERROR;
     }
     return E_OK;
@@ -216,13 +234,70 @@ int32_t StorageManagerStub::HandleGetFree(MessageParcel &data, MessageParcel &re
 int32_t StorageManagerStub::HandleGetBundleStatus(MessageParcel &data, MessageParcel &reply)
 {
     std::string pkgName = data.ReadString();
-    std::vector<int64_t> bundleStats = GetBundleStats(pkgName);
-    if (!reply.WriteInt64Vector(bundleStats)) {
+    BundleStats bundleStats = GetBundleStats(pkgName);
+    if (!reply.WriteParcelable(&bundleStats)) {
         return  E_IPC_ERROR;
     }
     return E_OK;
 }
 
+int32_t StorageManagerStub::HandleGetSystemSize(MessageParcel &data, MessageParcel &reply)
+{
+    int64_t systemSize = GetSystemSize();
+    if (!reply.WriteInt64(systemSize)) {
+        LOGE("StorageManagerStub::HandleGetFree call GetSystemSize failed");
+        return  E_IPC_ERROR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleGetTotalSize(MessageParcel &data, MessageParcel &reply)
+{
+    int64_t totalSize = GetTotalSize();
+    if (!reply.WriteInt64(totalSize)) {
+        LOGE("StorageManagerStub::HandleGetFree call GetTotalSize failed");
+        return  E_IPC_ERROR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleGetFreeSize(MessageParcel &data, MessageParcel &reply)
+{
+    int64_t freeSize = GetFreeSize();
+    if (!reply.WriteInt64(freeSize)) {
+        LOGE("StorageManagerStub::HandleGetFree call GetFreeSize failed");
+        return  E_IPC_ERROR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleGetCurrUserStorageStats(MessageParcel &data, MessageParcel &reply)
+{
+    StorageStats storageStats = GetUserStorageStats();
+    if (!reply.WriteParcelable(&storageStats)) {
+        return  E_IPC_ERROR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleGetUserStorageStats(MessageParcel &data, MessageParcel &reply)
+{
+    int32_t userId = data.ReadInt32();
+    StorageStats storageStats = GetUserStorageStats(userId);
+    if (!reply.WriteParcelable(&storageStats)) {
+        return  E_IPC_ERROR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleGetCurrentBundleStats(MessageParcel &data, MessageParcel &reply)
+{
+    BundleStats bundleStats = GetCurrentBundleStats();
+    if (!reply.WriteParcelable(&bundleStats)) {
+        return  E_IPC_ERROR;
+    }
+    return E_OK;
+}
 int32_t StorageManagerStub::HandleGetAllVolumes(MessageParcel &data, MessageParcel &reply)
 {
     LOGE("StorageManagerStub::HandleGetAllVolumes Begin.");

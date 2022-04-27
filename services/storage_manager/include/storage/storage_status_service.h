@@ -20,6 +20,8 @@
 #include <nocopyable.h>
 #include <singleton.h>
 #include <iostream>
+#include "bundle_stats.h"
+#include "storage_stats.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -27,9 +29,13 @@ class StorageStatusService : public NoCopyable  {
     DECLARE_DELAYED_SINGLETON(StorageStatusService);
 
 public:
-    std::vector<int64_t> GetBundleStats(std::string pkgName);
+    BundleStats GetBundleStats(std::string pkgName);
+    StorageStats GetUserStorageStats();
+    StorageStats GetUserStorageStats(int32_t userId);
+    BundleStats GetCurrentBundleStats();
 private:
     int GetCurrentUserId();
+    std::string GetCallingPkgName();
     const std::vector<std::string> dataDir = {"app", "local", "distributed", "database", "cache"};
     const int DEFAULT_USER_ID = 100;
     enum BUNDLE_STATS {APP = 0, LOCAL, DISTRIBUTED, DATABASE, CACHE};
