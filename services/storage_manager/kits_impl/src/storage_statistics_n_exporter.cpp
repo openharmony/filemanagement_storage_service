@@ -184,7 +184,7 @@ napi_value GetCurrentBundleStats(napi_env env, napi_callback_info info)
     };
     std::string procedureName = "GetCurrentBundleStats";
     NVal thisVar(env, funcArg.GetThisVar());
-    if (funcArg.GetArgc() == (int)NARG_CNT::ZERO) {
+    if (funcArg.GetArgc() == (uint)NARG_CNT::ZERO) {
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
     } else {
         NVal cb(env, funcArg[(int)NARG_POS::FIRST]);
@@ -215,7 +215,7 @@ napi_value GetSystemSize(napi_env env, napi_callback_info info)
 
     std::string procedureName = "GetSystemSize";
     NVal thisVar(env, funcArg.GetThisVar());
-    if (funcArg.GetArgc() == (int)NARG_CNT::ZERO) {
+    if (funcArg.GetArgc() == (uint)NARG_CNT::ZERO) {
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
     } else {
         NVal cb(env, funcArg[(int)NARG_POS::FIRST]);
@@ -260,7 +260,7 @@ napi_value GetUserStorageStats(napi_env env, napi_callback_info info)
     };
     std::string procedureName = "GetUserStorageStats";
     NVal thisVar(env, funcArg.GetThisVar());
-    if (funcArg.GetArgc() == (int)NARG_CNT::ONE) {
+    if (funcArg.GetArgc() == (uint)NARG_CNT::ONE) {
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
     } else {
         NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
@@ -291,7 +291,7 @@ napi_value GetTotalSize(napi_env env, napi_callback_info info)
 
     std::string procedureName = "GetTotalSize";
     NVal thisVar(env, funcArg.GetThisVar());
-    if (funcArg.GetArgc() == (int)NARG_CNT::ZERO) {
+    if (funcArg.GetArgc() == (uint)NARG_CNT::ZERO) {
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
     } else {
         NVal cb(env, funcArg[(int)NARG_POS::FIRST]);
@@ -322,7 +322,7 @@ napi_value GetFreeSize(napi_env env, napi_callback_info info)
 
     std::string procedureName = "GetFreeSize";
     NVal thisVar(env, funcArg.GetThisVar());
-    if (funcArg.GetArgc() == (int)NARG_CNT::ZERO) {
+    if (funcArg.GetArgc() == (uint)NARG_CNT::ZERO) {
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
     } else {
         NVal cb(env, funcArg[(int)NARG_POS::FIRST]);
