@@ -154,6 +154,8 @@ public:
     int DeSerialize(const char *p, int size);
     ~Acl();
 };
+
+int AclSetDefault(const std::string &targetFile, const std::string &entryTxt);
 } // STORAGE_DAEMON
 } // OHOS
 
