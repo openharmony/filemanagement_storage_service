@@ -26,6 +26,8 @@
 #include "netlink/netlink_manager.h"
 #include "utils/string_utils.h"
 #include "storage_service_log.h"
+#include "file_sharing/acl.h"
+#include "file_sharing/file_sharing.h"
 
 using namespace OHOS;
 
@@ -118,6 +120,11 @@ int main()
     } while (true);
 
     StorageDaemon::DiskManager::Instance()->ReplayUevent();
+
+    if (StorageDaemon::SetupFileSharingDir() == -1) {
+        LOGE("Failed to set up the directory for file sharing");
+        return -1;
+    }
 
     IPCSkeleton::JoinWorkThread();
 
