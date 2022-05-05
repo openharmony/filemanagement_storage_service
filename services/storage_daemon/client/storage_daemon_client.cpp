@@ -26,13 +26,10 @@
 #include "libfscrypt/fscrypt_utils.h"
 
 namespace {
-constexpr uint32_t HUKS_SERVICE_SHIFT = 0;
 constexpr uint32_t STORAGE_DAEMON_SFIFT = 1;
 constexpr uint32_t CHECK_SERVICE_TIMES = 1000;
 constexpr uint32_t SLEEP_TIME_PRE_CHECK = 10; // 10ms
-constexpr uint32_t HUKS_SERVICE_FLAG = (1 << HUKS_SERVICE_SHIFT);
 constexpr uint32_t STORAGE_SERVICE_FLAG = (1 << STORAGE_DAEMON_SFIFT);
-constexpr int32_t HUKS_SERVICE_SAID = 3510;
 constexpr int32_t STORAGE_DAEMON_SAID = OHOS::STORAGE_MANAGER_DAEMON_ID;
 }
 
@@ -65,22 +62,7 @@ bool StorageDaemonClient::CheckServiceStatus(uint32_t serviceFlags)
     }
 
     bool exist = false;
-    if ((serviceFlags & HUKS_SERVICE_FLAG) == HUKS_SERVICE_FLAG) {
-        for (uint32_t i = 0; i < CHECK_SERVICE_TIMES; i++) {
-            auto object = samgr->CheckSystemAbility(HUKS_SERVICE_SAID, exist);
-            if (object != nullptr) {
-                break;
-            }
-            std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_TIME_PRE_CHECK));
-        }
-        if (exist == false) {
-            LOGE("huks service system ability error");
-            return false;
-        }
-    }
-
-    exist = false;
-    if ((serviceFlags & STORAGE_SERVICE_FLAG) == STORAGE_SERVICE_FLAG) {
+    if (serviceFlags & STORAGE_SERVICE_FLAG) {
         for (uint32_t i = 0; i < CHECK_SERVICE_TIMES; i++) {
             auto object = samgr->CheckSystemAbility(STORAGE_DAEMON_SAID, exist);
             if (object != nullptr) {
@@ -132,7 +114,7 @@ int32_t StorageDaemonClient::StopUser(int32_t userId)
 
 int32_t StorageDaemonClient::PrepareUserSpace(uint32_t userId, const std::string &volumId, uint32_t flags)
 {
-    if (!CheckServiceStatus(HUKS_SERVICE_FLAG | STORAGE_SERVICE_FLAG)) {
+    if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
         LOGE("service check failed");
         return -EAGAIN;
     }
@@ -164,7 +146,7 @@ int32_t StorageDaemonClient::DestroyUserSpace(uint32_t userId, const std::string
 
 int32_t StorageDaemonClient::InitGlobalKey(void)
 {
-    if (!CheckServiceStatus(HUKS_SERVICE_FLAG | STORAGE_SERVICE_FLAG)) {
+    if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
         LOGE("service check failed");
         return -EAGAIN;
     }
@@ -180,7 +162,7 @@ int32_t StorageDaemonClient::InitGlobalKey(void)
 
 int32_t StorageDaemonClient::InitGlobalUserKeys(void)
 {
-    if (!CheckServiceStatus(HUKS_SERVICE_FLAG | STORAGE_SERVICE_FLAG)) {
+    if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
         LOGE("service check failed");
         return -EAGAIN;
     }
@@ -196,7 +178,7 @@ int32_t StorageDaemonClient::InitGlobalUserKeys(void)
 
 int32_t StorageDaemonClient::GenerateUserKeys(uint32_t userId, uint32_t flags)
 {
-    if (!CheckServiceStatus(HUKS_SERVICE_FLAG | STORAGE_SERVICE_FLAG)) {
+    if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
         LOGE("service check failed");
         return -EAGAIN;
     }
@@ -212,7 +194,7 @@ int32_t StorageDaemonClient::GenerateUserKeys(uint32_t userId, uint32_t flags)
 
 int32_t StorageDaemonClient::DeleteUserKeys(uint32_t userId)
 {
-    if (!CheckServiceStatus(HUKS_SERVICE_FLAG | STORAGE_SERVICE_FLAG)) {
+    if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
         LOGE("service check failed");
         return -EAGAIN;
     }
@@ -228,7 +210,7 @@ int32_t StorageDaemonClient::DeleteUserKeys(uint32_t userId)
 
 int32_t StorageDaemonClient::UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret)
 {
-    if (!CheckServiceStatus(HUKS_SERVICE_FLAG | STORAGE_SERVICE_FLAG)) {
+    if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
         LOGE("service check failed");
         return -EAGAIN;
     }
@@ -244,7 +226,7 @@ int32_t StorageDaemonClient::UpdateUserAuth(uint32_t userId, std::string auth, s
 
 int32_t StorageDaemonClient::ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret)
 {
-    if (!CheckServiceStatus(HUKS_SERVICE_FLAG | STORAGE_SERVICE_FLAG)) {
+    if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
         LOGE("service check failed");
         return -EAGAIN;
     }
@@ -260,7 +242,7 @@ int32_t StorageDaemonClient::ActiveUserKey(uint32_t userId, std::string auth, st
 
 int32_t StorageDaemonClient::InactiveUserKey(uint32_t userId)
 {
-    if (!CheckServiceStatus(HUKS_SERVICE_FLAG | STORAGE_SERVICE_FLAG)) {
+    if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
         LOGE("service check failed");
         return -EAGAIN;
     }
