@@ -56,7 +56,7 @@ ohos_static_library("libsdcrypto") {
 
   deps = [
     "//base/security/huks/frameworks/huks_standard/main/os_dependency:libhuks_os_dependency_standard_static",
-    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara:syspara",
+    "//base/startup/init_lite/interfaces/innerkits:libbegetutil",
     "//foundation/filemanagement/storage_service/services/storage_daemon/libfscrypt:libfscryptutils",
     "//third_party/openssl:libcrypto_shared",
     "//utils/native/base:utils",

@@ -29,7 +29,7 @@ ohos_unittest("user_manager_test") {
     "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
     "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
     "//foundation/filemanagement/storage_service/services/common/include",
-    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include",
+    "//base/startup/init_lite/interfaces/innerkits/include/syspara",
   ]
 
   sources = [
@@ -51,7 +51,7 @@ ohos_unittest("user_manager_test") {
   external_deps = [
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
-    "startup_l2:syspara",
+    "init:libbegetutil",
   ]
 }
 

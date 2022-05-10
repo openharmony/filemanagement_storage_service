@@ -32,7 +32,7 @@ config("storage_daemon_config") {
     "//foundation/aafwk/standard/interfaces/innerkits/base/include",
     "//foundation/distributedschedule/safwk/interfaces/innerkits/safwk",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
-    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include",
+    "//base/startup/init_lite/interfaces/innerkits/include/syspara",
     "//base/security/access_token/interfaces/innerkits/accesstoken/include",
     "//foundation/filemanagement/storage_service/services/common/include",
   ]
@@ -96,7 +96,7 @@ ohos_executable("storage_daemon") {
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
     "samgr_standard:samgr_proxy",
-    "startup_l2:syspara",
+    "init:libbegetutil",
   ]
 
   subsystem_name = "filemanagement"

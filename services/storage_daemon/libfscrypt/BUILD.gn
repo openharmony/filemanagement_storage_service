@@ -42,7 +42,7 @@ ohos_static_library("libfscryptutils") {
   deps = [
     "//base/startup/init_lite/services/log:init_log",
     "//base/startup/init_lite/services/utils:libinit_utils",
-    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara:syspara",
+    "//base/startup/init_lite/interfaces/innerkits:libbegetutil",
     "//utils/native/base:utils",
   ]
 
