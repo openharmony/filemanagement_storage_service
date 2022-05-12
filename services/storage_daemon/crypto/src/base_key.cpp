@@ -330,7 +330,7 @@ bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
     if (!LoadKeyBlob(keyContext_.encrypted, path + PATH_ENCRYPTED)) {
         return false;
     }
-    if (!LoadKeyBlob(keyContext_.shield, path + PATH_SHIELD, CRYPTO_KEY_SHIELD_SIZE)) {
+    if (!LoadKeyBlob(keyContext_.shield, path + PATH_SHIELD)) {
         keyContext_.encrypted.Clear();
         return false;
     }
