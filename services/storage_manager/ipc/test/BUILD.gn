@@ -13,6 +13,8 @@
 
 import("//build/test.gni")
 
+aainnerkits_path = "//foundation/aafwk/standard/interfaces/innerkits"
+
 ohos_unittest("storage_manager_proxy_test") {
   module_out_path = "filemanagement/storage_service/storage_manager"
 
@@ -26,7 +28,7 @@ ohos_unittest("storage_manager_proxy_test") {
   ]
 
   include_dirs = [
-    "//foundation/aafwk/standard/interfaces/innerkits/base/include/ohos/aafwk/base",
+    "${aainnerkits_path}/base/include/ohos/aafwk/base",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
     "//foundation/filemanagement/storage_service/services/common/include",
     "//foundation/filemanagement/storage_service/services/storage_daemon/include",
