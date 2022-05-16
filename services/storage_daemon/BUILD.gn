@@ -13,8 +13,6 @@
 
 import("//build/ohos.gni")
 
-aainnerkits_path = "//foundation/aafwk/standard/interfaces/innerkits"
-
 ## Install storage_daemon.cfg to /system/etc/init/storage_daemon.cfg {{{
 ohos_prebuilt_etc("storage_daemon_cfg") {
   source = "storage_daemon.cfg"
@@ -31,7 +29,6 @@ config("storage_daemon_config") {
     "//utils/native/base/include",
     "//foundation/distributedschedule/samgr/interfaces/innerkits/samgr_proxy/include",
     "../storage_manager/include",
-    "${aainnerkits_path}/base/include",
     "//foundation/distributedschedule/safwk/interfaces/innerkits/safwk",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
     "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include",
