@@ -117,7 +117,7 @@ config("sdc_config") {
     "client/include",
     "../../interfaces/innerkits/storage_manager/native",
     "../storage_manager/include",
-    "//foundation/appexecfwk/standard/services/bundlemgr/include",
+    "//foundation/bundlemanager/bundle_framework/services/bundlemgr/include",
   ]
 }
 

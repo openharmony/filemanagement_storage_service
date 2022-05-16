@@ -24,7 +24,7 @@ config("storage_manager_config") {
     "//utils/native/base/include",
     "../storage_daemon/include",
     "//foundation/filemanagement/storage_service/services/common/include",
-    "//foundation/appexecfwk/standard/services/bundlemgr/include",
+    "//foundation/bundlemanager/bundle_framework/services/bundlemgr/include",
     "${aainnerkits_path}/base/include/ohos/aafwk/base",
   ]
 }
@@ -53,7 +53,7 @@ ohos_shared_library("storage_manager") {
 
   deps = [
     "../../interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
-    "//foundation/appexecfwk/standard/services/bundlemgr:libbms",
+    "//foundation/bundlemanager/bundle_framework/services/bundlemgr:libbms",
     "//utils/native/base:utils",
   ]
 
