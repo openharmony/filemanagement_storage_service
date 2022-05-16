@@ -235,7 +235,7 @@ int32_t StorageManagerStub::HandleGetBundleStatus(MessageParcel &data, MessagePa
 {
     std::string pkgName = data.ReadString();
     BundleStats bundleStats = GetBundleStats(pkgName);
-    if (!reply.WriteParcelable(&bundleStats)) {
+    if (!bundleStats.Marshalling(reply)) {
         return  E_IPC_ERROR;
     }
     return E_OK;
@@ -274,7 +274,7 @@ int32_t StorageManagerStub::HandleGetFreeSize(MessageParcel &data, MessageParcel
 int32_t StorageManagerStub::HandleGetCurrUserStorageStats(MessageParcel &data, MessageParcel &reply)
 {
     StorageStats storageStats = GetUserStorageStats();
-    if (!reply.WriteParcelable(&storageStats)) {
+    if (!storageStats.Marshalling(reply)) {
         return  E_IPC_ERROR;
     }
     return E_OK;
@@ -284,7 +284,7 @@ int32_t StorageManagerStub::HandleGetUserStorageStats(MessageParcel &data, Messa
 {
     int32_t userId = data.ReadInt32();
     StorageStats storageStats = GetUserStorageStats(userId);
-    if (!reply.WriteParcelable(&storageStats)) {
+    if (!storageStats.Marshalling(reply)) {
         return  E_IPC_ERROR;
     }
     return E_OK;
@@ -293,7 +293,7 @@ int32_t StorageManagerStub::HandleGetUserStorageStats(MessageParcel &data, Messa
 int32_t StorageManagerStub::HandleGetCurrentBundleStats(MessageParcel &data, MessageParcel &reply)
 {
     BundleStats bundleStats = GetCurrentBundleStats();
-    if (!reply.WriteParcelable(&bundleStats)) {
+    if (!bundleStats.Marshalling(reply)) {
         return  E_IPC_ERROR;
     }
     return E_OK;
