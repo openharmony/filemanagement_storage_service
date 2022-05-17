@@ -14,8 +14,6 @@
 import("//build/ohos.gni")
 import("//build/ohos/sa_profile/sa_profile.gni")
 
-aainnerkits_path = "//foundation/aafwk/standard/interfaces/innerkits"
-
 config("storage_manager_config") {
   include_dirs = [
     "include",
@@ -25,7 +23,6 @@ config("storage_manager_config") {
     "../storage_daemon/include",
     "//foundation/filemanagement/storage_service/services/common/include",
     "//foundation/bundlemanager/bundle_framework/services/bundlemgr/include",
-    "${aainnerkits_path}/base/include/ohos/aafwk/base",
   ]
 }
 
