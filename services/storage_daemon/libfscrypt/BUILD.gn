@@ -40,9 +40,9 @@ ohos_static_library("libfscryptutils") {
   configs = [ ":fscrypt_utils_config" ]
 
   deps = [
+    "//base/startup/init_lite/interfaces/innerkits:libbegetutil",
     "//base/startup/init_lite/services/log:init_log",
     "//base/startup/init_lite/services/utils:libinit_utils",
-    "//base/startup/init_lite/interfaces/innerkits:libbegetutil",
     "//utils/native/base:utils",
   ]
 

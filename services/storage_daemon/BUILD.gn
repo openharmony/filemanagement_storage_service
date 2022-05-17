@@ -94,9 +94,9 @@ ohos_executable("storage_daemon") {
   external_deps = [
     "access_token:libaccesstoken_sdk",
     "hiviewdfx_hilog_native:libhilog",
+    "init:libbegetutil",
     "ipc:ipc_core",
     "samgr_standard:samgr_proxy",
-    "init:libbegetutil",
   ]
 
   subsystem_name = "filemanagement"
