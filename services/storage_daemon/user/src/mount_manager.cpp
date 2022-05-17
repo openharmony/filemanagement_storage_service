@@ -68,8 +68,8 @@ int32_t MountManager::HmdfsTwiceMount(int32_t userId, std::string relativePath)
 
     // bind mount
     Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, relativePath));
-    ret = Mount(hmdfsMntArgs.GetFullDst() + "/device_view/", hmdfsMntArgs.GetCommFullPath(),
-                nullptr, MS_BIND, nullptr);
+    ret += Mount(hmdfsMntArgs.GetFullDst() + "/device_view/", hmdfsMntArgs.GetCommFullPath(),
+                 nullptr, MS_BIND, nullptr);
     if (ret != 0 && errno != EEXIST && errno != EBUSY) {
         LOGE("failed to bind mount, err %{public}d", errno);
         return E_MOUNT;
