@@ -263,7 +263,7 @@ static int ReadKeyFile(const char *path, char *buf, size_t len)
         FSCRYPT_LOGE("stat file failed");
         return -EFAULT;
     }
-    if (st.st_size != len) {
+    if ((size_t)st.st_size != len) {
         FSCRYPT_LOGE("target file size is not equal to buf len");
         return -EFAULT;
     }
