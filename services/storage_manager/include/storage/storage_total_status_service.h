@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,17 +23,17 @@
 
 namespace OHOS {
 namespace StorageManager {
+static const char *PATH_DEV_BLOCK = "/dev/block";
+static const char *PATH_MNT = "/mnt";
+static const char *PATH_DATA = "/data";
 class StorageTotalStatusService : public NoCopyable {
     DECLARE_DELAYED_SINGLETON(StorageTotalStatusService);
 
 public:
-    int64_t GetFreeSizeOfVolume(std::string volumeUuid);
-    int64_t GetTotalSizeOfVolume(std::string volumeUuid);
     int64_t GetSystemSize();
     int64_t GetTotalSize();
     int64_t GetFreeSize();
 private:
-    std::string GetVolumePath(std::string volumeUuid);
     const std::vector<std::string> mountDir = {"/debug_ramdisk", "/patch_hw",
         "/metadata", "/", "/cust", "/hw_product", "/odm", "/preas", "/vendor",
         "/vendor/modem/modem_driver", "/data"};
