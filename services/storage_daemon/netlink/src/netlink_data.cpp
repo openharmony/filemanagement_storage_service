@@ -38,14 +38,13 @@ void NetlinkData::Decode(const char *msg)
             }
         } else if (!strncmp(msg, "DEVPATH=", DEVPATH_PRE_LEN)) {
             msg += DEVPATH_PRE_LEN;
-            devPath_ = strdup(msg);
-            sysPath_ = "/sys";
-            sysPath_ += devPath_;
+            devPath_ = std::string(msg);
+            sysPath_ = "/sys" + devPath_;
         } else if (!strncmp(msg, "SUBSYSTEM=", SUBSYSTEM_PRE_LEN)) {
             msg += SUBSYSTEM_PRE_LEN;
-            subSystem_ = strdup(msg);
+            subSystem_ = std::string(msg);
         } else if (paramIdx < NL_PARAMS_MAX) {
-            params_.push_back(strdup(msg));
+            params_.push_back(std::string(msg));
             ++paramIdx;
         }
         while (*msg++);
@@ -89,4 +88,3 @@ const std::string NetlinkData::GetParam(const std::string paramName)
 }
 } // StorageDaemon
 } // OHOS
-
