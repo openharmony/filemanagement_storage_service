@@ -31,7 +31,9 @@ UserManager::UserManager()
                   {"/data/service/%s/%d", 0711, OID_ROOT, OID_ROOT},
                   {"/data/chipset/%s/%d", 0711, OID_ROOT, OID_ROOT}},
       subDirVec_{{"/data/app/%s/%d/base", 0711, OID_ROOT, OID_ROOT},
-                 {"/data/app/%s/%d/database", 0711, OID_ROOT, OID_ROOT}}
+                 {"/data/app/%s/%d/database", 0711, OID_ROOT, OID_ROOT}},
+      backupDirVec_{{"/data/service/el2/%d/backup", 02771, OID_BACKUP, OID_BACKUP},
+                    {"/data/service/el2/%d/backup/backup_sa", 0711, OID_BACKUP, OID_BACKUP}}
 {
 }
 
@@ -86,6 +88,11 @@ int32_t UserManager::PrepareUserDirs(int32_t userId, uint32_t flags)
             LOGE("Prepare hmdfs dir error");
             return err;
         }
+
+        err = PrepareEl2BackupDir(userId);
+        if (err != E_OK) {
+            return err;
+        }
     }
 
     return E_OK;
@@ -111,6 +118,9 @@ int32_t UserManager::DestroyUserDirs(int32_t userId, uint32_t flags)
         ret = (err != E_OK) ? err : ret;
 
         err = MountManager::GetInstance()->DestroyHmdfsDirs(userId);
+        ret = (err != E_OK) ? err : ret;
+
+        err = DestroyEl2BackupDir(userId);
         ret = (err != E_OK) ? err : ret;
     }
 
@@ -220,6 +230,28 @@ int32_t UserManager::SetElDirFscryptPolicy(int32_t userId, const std::string &le
     if (KeyManager::GetInstance()->SetDirectoryElPolicy(userId, EL_DIR_MAP[level], list)) {
         LOGE("Set user dir el1 policy error");
         return E_SET_POLICY;
+    }
+
+    return E_OK;
+}
+
+int32_t UserManager::PrepareEl2BackupDir(int32_t userId)
+{
+    for (const DirInfo &dir : backupDirVec_) {
+        if (!PrepareDir(StringPrintf(dir.path.c_str(), userId), dir.mode, dir.uid, dir.gid)) {
+            return E_PREPARE_DIR;
+        }
+    }
+
+    return E_OK;
+}
+
+int32_t UserManager::DestroyEl2BackupDir(int32_t userId)
+{
+    for (const DirInfo &dir :  backupDirVec_) {
+        if (!RmDirRecurse(StringPrintf(dir.path.c_str(), userId))) {
+            return E_DESTROY_DIR;
+        }
     }
 
     return E_OK;
