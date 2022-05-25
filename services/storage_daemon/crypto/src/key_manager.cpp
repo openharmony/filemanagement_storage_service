@@ -23,6 +23,7 @@
 #include "storage_service_errno.h"
 #include "libfscrypt/fscrypt_control.h"
 #include "libfscrypt/key_control.h"
+#include "parameter.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -66,6 +67,7 @@ int KeyManager::GenerateAndInstallDeviceKey(const std::string &dir)
     hasGlobalDeviceKey_ = true;
     LOGI("key create success");
 
+    SetParameter("bootevent.filemgr.decrypted", "true");
     return 0;
 }
 
@@ -103,6 +105,7 @@ int KeyManager::RestoreDeviceKey(const std::string &dir)
     hasGlobalDeviceKey_ = true;
     LOGI("key restore success");
 
+    SetParameter("bootevent.filemgr.decrypted", "true");
     return 0;
 }
 
