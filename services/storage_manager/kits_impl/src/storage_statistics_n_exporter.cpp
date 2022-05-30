@@ -227,22 +227,32 @@ napi_value GetSystemSize(napi_env env, napi_callback_info info)
 napi_value GetUserStorageStats(napi_env env, napi_callback_info info)
 {
     NFuncArg funcArg(env, info);
-    if (!funcArg.InitArgs((int)NARG_CNT::ONE, (int)NARG_CNT::TWO)) {
-        UniError(EINVAL).ThrowErr(env, "Number of arguments unmatched 1-2");
+    if (!funcArg.InitArgs((int)NARG_CNT::ZERO, (int)NARG_CNT::TWO)) {
+        UniError(EINVAL).ThrowErr(env, "Number of arguments unmatched 0-2");
         return nullptr;
     }
-
-    bool succ = false;
-    int64_t userId;
-    std::tie(succ, userId) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToInt64();
-    if (!succ) {
-        UniError(EINVAL).ThrowErr(env, "Invalid userId");
-        return nullptr;
+    bool fac = false;
+    int64_t userId = -1;
+    if (funcArg.GetArgc() >= 1) {
+        NVal ui(env, NVal(env, funcArg[(int)NARG_POS::FIRST]).val_);
+        if (ui.TypeIs(napi_number)) {
+            bool succ = false;
+            std::tie(succ, userId) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToInt64();
+            if (!succ) {
+                UniError(EINVAL).ThrowErr(env, "Invalid userId");
+                return nullptr;
+            }
+            fac = true;
+        }
     }
 
     auto storageStats = std::make_shared<StorageStats>();
-    auto cbExec = [userId, storageStats](napi_env env) -> UniError {
-        *storageStats = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetUserStorageStats(userId);
+    auto cbExec = [fac, userId, storageStats](napi_env env) -> UniError {
+        if (!fac) {
+            *storageStats = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetUserStorageStats();
+        } else {
+            *storageStats = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetUserStorageStats(userId);
+        }
         return UniError(ERRNO_NOERR);
     };
     auto cbComplete = [storageStats](napi_env env, UniError err) -> NVal {
@@ -260,9 +270,13 @@ napi_value GetUserStorageStats(napi_env env, napi_callback_info info)
     };
     std::string procedureName = "GetUserStorageStats";
     NVal thisVar(env, funcArg.GetThisVar());
-    if (funcArg.GetArgc() == (uint)NARG_CNT::ONE) {
+    if (funcArg.GetArgc() == (uint)NARG_CNT::ZERO || (funcArg.GetArgc() == (uint)NARG_CNT::ONE && fac)) {
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
     } else {
+        if (!fac) {
+            NVal cb(env, funcArg[(int)NARG_POS::FIRST]);
+            return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
+        }
         NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
         return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
     }

@@ -14,7 +14,8 @@
       "subsystem": "filemanagement",
       "syscap": [],
       "features": [
-        "storage_service_fstools"
+        "storage_service_fstools",
+        "storage_service_graphic"
       ],
       "adapted_system_type": ["standard"],
       "rom": "",

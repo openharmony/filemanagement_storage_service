@@ -13,6 +13,7 @@
 
 import("//build/ohos.gni")
 import("//build/ohos/sa_profile/sa_profile.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 config("storage_manager_config") {
   include_dirs = [
@@ -23,6 +24,7 @@ config("storage_manager_config") {
     "../storage_daemon/include",
     "//foundation/filemanagement/storage_service/services/common/include",
     "//foundation/bundlemanager/bundle_framework/services/bundlemgr/include",
+    "//foundation/multimedia/medialibrary_standard/interfaces/inner_api/media_library_helper/include",
   ]
 }
 
@@ -51,18 +53,33 @@ ohos_shared_library("storage_manager") {
 
   deps = [
     "../../interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
+    "//foundation/aafwk/standard/frameworks/kits/ability/native:abilitykit_native",
+    "//foundation/aafwk/standard/interfaces/innerkits/dataobs_manager:dataobs_manager",
+    "//foundation/bundlemanager/bundle_framework/common:libappexecfwk_common",
     "//foundation/bundlemanager/bundle_framework/services/bundlemgr:libbms",
+    "//foundation/distributeddatamgr/appdatamgr/interfaces/inner_api/native/data_share:datashare_abilitykit",
     "//utils/native/base:utils",
   ]
+
+  if (storage_service_graphic) {
+    defines += [ "STORAGE_SERVICE_GRAPHIC" ]
+    deps += [
+      "//foundation/multimedia/medialibrary_standard/frameworks/innerkitsimpl/media_library_helper:media_library",
+      "//foundation/multimedia/medialibrary_standard/frameworks/innerkitsimpl/media_library_manager:media_library_manager",
+    ]
+  }
 
   external_deps = [
     "ability_base:base",
     "ability_base:want",
     "access_token:libaccesstoken_sdk",
     "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
     "common_event_service:cesfwk_innerkits",
+    "dataability:native_dataability",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
+    "relational_store:native_rdb",
     "safwk:system_ability_fwk",
     "samgr_standard:samgr_proxy",
   ]
