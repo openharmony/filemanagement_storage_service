@@ -12,3 +12,6 @@
 # limitations under the License.
 
 aafwk_kits_path = "//foundation/aafwk/standard/frameworks/kits"
+declare_args() {
+  storage_service_graphic = true
+}

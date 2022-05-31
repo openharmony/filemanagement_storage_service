@@ -20,7 +20,16 @@
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "storage/storage_total_status_service.h"
 #include "installd_client.h"
+#include "bundle_mgr_interface.h"
+#include "application_info.h"
+#include "iservice_registry.h"
+#include "system_ability_definition.h"
+#ifdef STORAGE_SERVICE_GRAPHIC
+#include "media_library_manager.h"
+#include "media_volume.h"
+#endif
 
 using namespace std;
 
@@ -74,13 +83,75 @@ BundleStats StorageStatusService::GetBundleStats(std::string pkgName)
 
 StorageStats StorageStatusService::GetUserStorageStats()
 {
-    StorageStats result;
-    return result;
+    int userId = GetCurrentUserId();
+    return GetUserStorageStats(userId);
 }
 
 StorageStats StorageStatusService::GetUserStorageStats(int32_t userId)
 {
     StorageStats result;
+    // totalSize
+    int64_t totalSize = 0;
+    totalSize = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetTotalSize();
+    // appSize
+    LOGI("StorageStatusService::GetUserStorageStats userId is %{public}d", userId);
+    auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (sam == nullptr) {
+        LOGE("StorageStatusService::GetUserStorageStats samgr == nullptr");
+        return result;
+    }
+    sptr<IRemoteObject> remoteObject = sam->GetSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID);
+    if (!remoteObject) {
+        LOGE("StorageStatusService::GetUserStorageStats remoteObj == nullptr");
+        return result;
+    }
+
+    auto bundleMgr = iface_cast<AppExecFwk::IBundleMgr>(remoteObject);
+    vector<AppExecFwk::ApplicationInfo> appInfos;
+    bool res = bundleMgr->GetApplicationInfos(
+        AppExecFwk::ApplicationFlag::GET_BASIC_APPLICATION_INFO, userId, appInfos);
+    if (!res) {
+        LOGE("StorageStatusService::GetUserStorageStats an error occured in querying appInfos");
+        return result;
+    }
+    int64_t appSize = 0;
+    for (auto appInfo : appInfos) {
+        int64_t bundleSize = 0;
+        LOGI("StorageStatusService::GetCurUserStorageStats pkgname is %{public}s", appInfo.name.c_str());
+        vector<int64_t> bundleStats;
+        int errorcode = AppExecFwk::InstalldClient::GetInstance()->GetBundleStats(appInfo.name, userId, bundleStats);
+        if (bundleStats.size() != dataDir.size() || errorcode != E_OK) {
+            LOGE("StorageStatusService::An error occurred in querying bundle stats.");
+            return result;
+        }
+        for (uint i = 0; i < bundleStats.size(); i++) {
+            bundleSize += bundleStats[i];
+        }
+        appSize += bundleSize;
+    }
+    // mediaSize
+#ifdef STORAGE_SERVICE_GRAPHIC
+    Media::MediaLibraryManager mgr;
+    Media::MediaVolume mediaVol;
+    auto remoteObj = sam->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    if (remoteObj == nullptr) {
+        LOGE("StorageStatusService::GetUserStorageStats remoteObj == nullptr");
+        return result;
+    }
+    mgr.InitMediaLibraryManager(remoteObj);
+    if (mgr.QueryTotalSize(mediaVol)) {
+        LOGE("StorageStatusService::GetUserStorageStats an error occured in querying mediaSize");
+        return result;
+    }
+#endif
+    result.total_ = totalSize;
+    result.app_ = appSize;
+#ifdef STORAGE_SERVICE_GRAPHIC
+    result.audio_ = mediaVol.GetAudiosSize();
+    result.video_ = mediaVol.GetVideosSize();
+    result.image_ = mediaVol.GetImagesSize();
+    result.file_ = mediaVol.GetFilesSize();
+#endif
     return result;
 }
 
