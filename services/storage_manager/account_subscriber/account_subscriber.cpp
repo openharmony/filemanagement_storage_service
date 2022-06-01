@@ -22,8 +22,13 @@
 #include "bundle_info.h"
 #include "common_event_manager.h"
 #include "common_event_support.h"
-#include "storage_service_log.h"
+#include "iservice_registry.h"
+#include "system_ability_definition.h"
 #include "want.h"
+
+#include "storage_service_log.h"
+
+#include "media_library_manager.h"
 
 using namespace OHOS::AAFwk;
 namespace OHOS {
@@ -45,24 +50,29 @@ bool AccountSubscriber::Subscriber(void)
     return true;
 }
 
+Media::MediaLibraryManager *mgr = nullptr;
+
 void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventData)
 {
     const AAFwk::Want& want = eventData.GetWant();
     std::string action = want.GetAction();
     LOGI("StorageManager: OnReceiveEvent action:%{public}s.", action.c_str());
-    int pid;
-    if ((pid = fork()) == 0) {
-        std::vector<std::string> args = {"/system/bin/aa", "start", "-b",
-            "com.ohos.medialibrary.MediaScannerAbilityA", "-a", "MediaScannerAbility"};
-        std::vector<char*> argv;
-        for (size_t i = 0; i < args.size(); i++) {
-            argv.push_back(const_cast<char*>(args[i].c_str()));
-        }
-        argv.push_back(nullptr);
-        execvp("/system/bin/aa", argv.data());
-        exit(0);
+
+    auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (sam == nullptr) {
+        LOGE("GetSystemAbilityManager sam == nullptr");
+        return;
     }
-    waitpid(pid, nullptr, 0);
+
+    if (mgr == nullptr) {
+        mgr = Media::MediaLibraryManager::GetMediaLibraryManager();
+        auto remoteObj = sam->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+        if (remoteObj == nullptr) {
+            LOGE("GetSystemAbility remoteObj == nullptr");
+            return;
+        }
+        mgr->InitMediaLibraryManager(remoteObj);
+    }
 }
 }  // namespace StorageManager
 }  // namespace OHOS
