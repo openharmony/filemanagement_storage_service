@@ -121,10 +121,12 @@ int main()
 
     StorageDaemon::DiskManager::Instance()->ReplayUevent();
 
+#ifdef USER_FILE_SHARING
     if (StorageDaemon::SetupFileSharingDir() == -1) {
         LOGE("Failed to set up the directory for file sharing");
         return -1;
     }
+#endif
 
     IPCSkeleton::JoinWorkThread();
 
