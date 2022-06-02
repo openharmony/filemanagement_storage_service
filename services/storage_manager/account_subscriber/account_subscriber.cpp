@@ -28,11 +28,11 @@
 
 #include "storage_service_log.h"
 
-#include "media_library_manager.h"
-
 using namespace OHOS::AAFwk;
 namespace OHOS {
 namespace StorageManager {
+std::shared_ptr<DataShare::DataShareHelper> AccountSubscriber::mediaShare_ = nullptr;
+
 AccountSubscriber::AccountSubscriber(const EventFwk::CommonEventSubscribeInfo &subscriberInfo)
     : EventFwk::CommonEventSubscriber(subscriberInfo)
 {}
@@ -50,8 +50,6 @@ bool AccountSubscriber::Subscriber(void)
     return true;
 }
 
-Media::MediaLibraryManager *mgr = nullptr;
-
 void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventData)
 {
     const AAFwk::Want& want = eventData.GetWant();
@@ -64,15 +62,19 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
         return;
     }
 
-    if (mgr == nullptr) {
-        mgr = Media::MediaLibraryManager::GetMediaLibraryManager();
-        auto remoteObj = sam->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
-        if (remoteObj == nullptr) {
-            LOGE("GetSystemAbility remoteObj == nullptr");
-            return;
-        }
-        mgr->InitMediaLibraryManager(remoteObj);
+    auto remoteObj = sam->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    if (remoteObj == nullptr) {
+        LOGE("GetSystemAbility remoteObj == nullptr");
+        return;
     }
+
+    mediaShare_ = DataShare::DataShareHelper::Creator(remoteObj, "datashare:///media");
+}
+
+void MediaShareDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &object)
+{
+    auto sptr = DataShare::DataShareHelper::Creator(object.promote(), "datashare:///media");
+    AccountSubscriber::SetMediaShare(sptr);
 }
 }  // namespace StorageManager
 }  // namespace OHOS
