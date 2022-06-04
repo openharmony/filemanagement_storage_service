@@ -20,6 +20,7 @@
 #include "common_event_subscriber.h"
 #include "common_event_support.h"
 #include "matching_skills.h"
+#include "datashare_helper.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -29,8 +30,19 @@ public:
     explicit AccountSubscriber(const EventFwk::CommonEventSubscribeInfo &subscriberInfo);
     static bool Subscriber(void);
     virtual ~AccountSubscriber() = default;
-    
     virtual void OnReceiveEvent(const EventFwk::CommonEventData &eventData) override;
+    static void SetMediaShare(std::shared_ptr<DataShare::DataShareHelper> &sptr)
+    {
+        mediaShare_ = sptr;
+    }
+
+private:
+    static std::shared_ptr<DataShare::DataShareHelper> mediaShare_;
+};
+
+class MediaShareDeathRecipient : public IPCObjectProxy::DeathRecipient {
+public:
+    void OnRemoteDied(const wptr<IRemoteObject> &object) override;
 };
 }  // namespace StorageManager
 }  // namespace OHOS
