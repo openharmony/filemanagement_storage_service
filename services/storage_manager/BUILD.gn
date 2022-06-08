@@ -24,7 +24,7 @@ config("storage_manager_config") {
     "../storage_daemon/include",
     "//foundation/filemanagement/storage_service/services/common/include",
     "//foundation/bundlemanager/bundle_framework/services/bundlemgr/include",
-    "//foundation/multimedia/medialibrary_standard/interfaces/inner_api/media_library_helper/include",
+    "//foundation/multimedia/media_library/interfaces/inner_api/media_library_helper/include",
   ]
 }
 
@@ -64,8 +64,8 @@ ohos_shared_library("storage_manager") {
   if (storage_service_graphic) {
     defines += [ "STORAGE_SERVICE_GRAPHIC" ]
     deps += [
-      "//foundation/multimedia/medialibrary_standard/frameworks/innerkitsimpl/media_library_helper:media_library",
-      "//foundation/multimedia/medialibrary_standard/frameworks/innerkitsimpl/media_library_manager:media_library_manager",
+      "//foundation/multimedia/media_library/frameworks/innerkitsimpl/media_library_helper:media_library",
+      "//foundation/multimedia/media_library/frameworks/innerkitsimpl/media_library_manager:media_library_manager",
     ]
   }
 
