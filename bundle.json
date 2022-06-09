@@ -1,83 +1,84 @@
 {
-    "name": "@ohos/storage_service",
-    "description": "Storage service provides basic storage inquiry and management for the system and apps.",
-    "version": "3.1",
-    "license": "Apache License 2.0",
-    "publishAs": "code-segment",
-    "segment": {
-      "destPath": "foundation/filemanagement/storage_service"
-    },
-    "dirs": {},
-    "scripts": {},
-    "component": {
-      "name": "storage_service",
-      "subsystem": "filemanagement",
-      "syscap": [],
-      "features": [
-        "storage_service_fstools",
-        "storage_service_graphic"
+  "name": "@ohos/storage_service",
+  "description": "Storage service provides basic storage inquiry and management for the system and apps.",
+  "version": "3.1",
+  "license": "Apache License 2.0",
+  "publishAs": "code-segment",
+  "segment": {
+    "destPath": "foundation/filemanagement/storage_service"
+  },
+  "dirs": {},
+  "scripts": {},
+  "component": {
+    "name": "storage_service",
+    "subsystem": "filemanagement",
+    "syscap": [],
+    "features": [
+      "storage_service_fstools",
+      "storage_service_graphic"
+    ],
+    "adapted_system_type": ["standard"],
+    "rom": "",
+    "ram": "",
+    "deps": {
+      "components": [
+          "ability_base",
+          "bundle_framework",
+          "hiviewdfx_hilog_native",
+          "ipc",
+          "safwk",
+          "samgr_standard",
+          "ability_runtime",
+          "huks"
       ],
-      "adapted_system_type": ["standard"],
-      "rom": "",
-      "ram": "",
-      "deps": {
-        "components": [
-            "ability_base",
-            "bundle_framework",
-            "hiviewdfx_hilog_native",
-            "ipc",
-            "safwk",
-            "samgr_standard",
-            "ability_runtime",
-            "huks"
-        ],
-        "third_party": [
-          "exfat-utils",
-          "f2fs-tools",
-          "fsck_msdos",
-          "gptfdisk",
-          "newfs_msdos",
-          "ntfs-3g",
-          "e2fsprogs"
-        ]
-      },
-      "build": {
-        "sub_component": [
-            "//foundation/filemanagement/storage_service/services/storage_daemon:storage_daemon",
-            "//foundation/filemanagement/storage_service/services/storage_daemon:storage_daemon_cfg",
-            "//foundation/filemanagement/storage_service/services/storage_daemon:storage_daemon_disk_config",
-            "//foundation/filemanagement/storage_service/services/storage_daemon:storage_daemon_third_party",
-            "//foundation/filemanagement/storage_service/services/storage_manager/sa_profile:storage_manager_sa_profile",
-            "//foundation/filemanagement/storage_service/services/storage_manager/sa_profile:storage_manager_cfg",
-            "//foundation/filemanagement/storage_service/services/storage_manager:storage_manager",
-            "//foundation/filemanagement/storage_service/interfaces/kits/js/storage_manager:storage_js"
-        ],
-        "inner_kits": [
-            {
-                "name": "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
-                "header": {
-                  "header_files": [
-                    "istorage_manager.h"
-                  ],
-                  "header_base": "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native"
-                }
+      "third_party": [
+        "exfat-utils",
+        "f2fs-tools",
+        "fsck_msdos",
+        "gptfdisk",
+        "newfs_msdos",
+        "ntfs-3g",
+        "e2fsprogs"
+      ]
+    },
+    "build": {
+      "sub_component": [
+          "//foundation/filemanagement/storage_service/services/storage_daemon:storage_daemon",
+          "//foundation/filemanagement/storage_service/services/storage_daemon:storage_daemon_cfg",
+          "//foundation/filemanagement/storage_service/services/storage_daemon:storage_daemon_disk_config",
+          "//foundation/filemanagement/storage_service/services/storage_daemon:storage_daemon_third_party",
+          "//foundation/filemanagement/storage_service/services/storage_manager/sa_profile:storage_manager_sa_profile",
+          "//foundation/filemanagement/storage_service/services/storage_manager/sa_profile:storage_manager_cfg",
+          "//foundation/filemanagement/storage_service/services/storage_manager:storage_manager",
+          "//foundation/filemanagement/storage_service/interfaces/kits/js/storage_manager:storage_js"
+      ],
+      "inner_kits": [
+          {
+              "name": "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
+              "header": {
+                "header_files": [
+                  "istorage_manager.h"
+                ],
+                "header_base": "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native"
               }
-        ],
-        "test": [
-            "//foundation/filemanagement/storage_service/services/storage_daemon/crypto/test:crypto_test",
-	    "//foundation/filemanagement/storage_service/services/storage_daemon/disk/test:storage_daemon_disk_test",
-            "//foundation/filemanagement/storage_service/services/storage_daemon/ipc/test:storage_daemon_ipc_test",
-            "//foundation/filemanagement/storage_service/services/storage_daemon/netlink/test:storage_daemon_netlink_test",
-            "//foundation/filemanagement/storage_service/services/storage_daemon/user/test:storage_daemon_user_test",
-            "//foundation/filemanagement/storage_service/services/storage_daemon/utils/test:storage_daemon_utils_test",
-            "//foundation/filemanagement/storage_service/services/storage_daemon/volume/test:storage_daemon_volume_test",
-            "//foundation/filemanagement/storage_service/services/storage_manager/ipc/test:storage_manager_ipc_test",
-            "//foundation/filemanagement/storage_service/services/storage_manager/storage_daemon_communication/test:storage_manager_communication_test",
-            "//foundation/filemanagement/storage_service/services/storage_manager/user/test:storage_manager_user_test",
-            "//foundation/filemanagement/storage_service/services/storage_manager/volume/test:storage_manager_volume_test",
-            "//foundation/filemanagement/storage_service/services/storage_manager/disk/test:storage_manager_disk_test",
-            "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/test:storage_manager_innerkits_test"
-        ]
-      }
+            }
+      ],
+      "test": [
+          "//foundation/filemanagement/storage_service/services/storage_daemon/crypto/test:crypto_test",
+    "//foundation/filemanagement/storage_service/services/storage_daemon/disk/test:storage_daemon_disk_test",
+          "//foundation/filemanagement/storage_service/services/storage_daemon/ipc/test:storage_daemon_ipc_test",
+          "//foundation/filemanagement/storage_service/services/storage_daemon/netlink/test:storage_daemon_netlink_test",
+          "//foundation/filemanagement/storage_service/services/storage_daemon/user/test:storage_daemon_user_test",
+          "//foundation/filemanagement/storage_service/services/storage_daemon/utils/test:storage_daemon_utils_test",
+          "//foundation/filemanagement/storage_service/services/storage_daemon/volume/test:storage_daemon_volume_test",
+          "//foundation/filemanagement/storage_service/services/storage_manager/ipc/test:storage_manager_ipc_test",
+          "//foundation/filemanagement/storage_service/services/storage_manager/storage/test:storage_manager_storage_test",
+          "//foundation/filemanagement/storage_service/services/storage_manager/storage_daemon_communication/test:storage_manager_communication_test",
+          "//foundation/filemanagement/storage_service/services/storage_manager/user/test:storage_manager_user_test",
+          "//foundation/filemanagement/storage_service/services/storage_manager/volume/test:storage_manager_volume_test",
+          "//foundation/filemanagement/storage_service/services/storage_manager/disk/test:storage_manager_disk_test",
+          "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/test:storage_manager_innerkits_test"
+      ]
     }
   }
+}

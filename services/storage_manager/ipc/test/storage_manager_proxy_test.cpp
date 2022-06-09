@@ -679,4 +679,141 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetAllDisks_0000, testin
     EXPECT_NE(result.size(), 0);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetAllDisks_0000";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_GetSystemSize_0000
+ * @tc.name: Storage_manager_proxy_GetSystemSize_0000
+ * @tc.desc: Test function of GetSystemSize interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000H0372
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetSystemSize_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetSystemSize_0000";
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
+    int64_t result = proxy->GetSystemSize();
+    EXPECT_GE(result, 0);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetSystemSize_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_GetTotalSize_0000
+ * @tc.name: Storage_manager_proxy_GetTotalSize_0000
+ * @tc.desc: Test function of GetTotalSize interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000H0371
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetTotalSize_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetTotalSize_0000";
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
+    int64_t result = proxy->GetTotalSize();
+    EXPECT_GE(result, 0);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetTotalSize_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_GetFreeSize_0000
+ * @tc.name: Storage_manager_proxy_GetFreeSize_0000
+ * @tc.desc: Test function of GetFreeSize interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000H0371
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetFreeSize_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetFreeSize_0000";
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
+    int64_t result = proxy->GetFreeSize();
+    EXPECT_GE(result, 0);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetFreeSize_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_GetUserStorageStats_0000
+ * @tc.name: Storage_manager_proxy_GetUserStorageStats_0000
+ * @tc.desc: Test function of GetUserStorageStats interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000H0373
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetUserStorageStats_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetUserStorageStats_0000";
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
+    StorageStats result = proxy->GetUserStorageStats();
+    EXPECT_GE(result.total_, 0);
+    EXPECT_GE(result.audio_, 0);
+    EXPECT_GE(result.video_, 0);
+    EXPECT_GE(result.image_, 0);
+    EXPECT_GE(result.file_, 0);
+    EXPECT_GE(result.app_, 0);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetUserStorageStats_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_GetUserStorageStats_0001
+ * @tc.name: Storage_manager_proxy_GetUserStorageStats_0001
+ * @tc.desc: Test function of GetUserStorageStats interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000H0373
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetUserStorageStats_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetUserStorageStats_0001";
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
+    int32_t userId = 100;
+    StorageStats result = proxy->GetUserStorageStats(userId);
+    EXPECT_GE(result.total_, 0);
+    EXPECT_GE(result.audio_, 0);
+    EXPECT_GE(result.video_, 0);
+    EXPECT_GE(result.image_, 0);
+    EXPECT_GE(result.file_, 0);
+    EXPECT_GE(result.app_, 0);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetUserStorageStats_0001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_GetUserStorageStats_0002
+ * @tc.name: Storage_manager_proxy_GetUserStorageStats_0002
+ * @tc.desc: Test function of GetUserStorageStats interface for  Parameters ERROR which userId<0.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000H0373
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetUserStorageStats_0002, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetUserStorageStats_0002";
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
+    int32_t userId = -100;
+    StorageStats result = proxy->GetUserStorageStats(userId);
+    EXPECT_GE(result.total_, 0);
+    EXPECT_GE(result.audio_, 0);
+    EXPECT_GE(result.video_, 0);
+    EXPECT_GE(result.image_, 0);
+    EXPECT_GE(result.file_, 0);
+    EXPECT_GE(result.app_, 0);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetUserStorageStats_0002";
+}
 } // namespace
