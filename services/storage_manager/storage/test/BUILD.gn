@@ -42,9 +42,9 @@ ohos_unittest("storage_total_status_service_test") {
   ]
 
   deps = [
+    "//foundation/bundlemanager/bundle_framework/services/bundlemgr:libbms",
     "//third_party/googletest:gmock_main",
     "//third_party/googletest:gtest_main",
-    "//foundation/bundlemanager/bundle_framework/services/bundlemgr:libbms",
   ]
 
   external_deps = [
