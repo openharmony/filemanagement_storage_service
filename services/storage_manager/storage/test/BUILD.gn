@@ -44,6 +44,7 @@ ohos_unittest("storage_total_status_service_test") {
   deps = [
     "//third_party/googletest:gmock_main",
     "//third_party/googletest:gtest_main",
+    "//foundation/bundlemanager/bundle_framework/services/bundlemgr:libbms",
   ]
 
   external_deps = [
@@ -53,8 +54,10 @@ ohos_unittest("storage_total_status_service_test") {
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
     "common_event_service:cesfwk_innerkits",
+    "dataability:native_dataability",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
+    "relational_store:native_rdb",
     "safwk:system_ability_fwk",
     "samgr_standard:samgr_proxy",
     "storage_service:storage_manager_sa_proxy",
