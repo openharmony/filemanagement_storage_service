@@ -57,7 +57,7 @@ ohos_shared_library("storage_manager") {
     "//foundation/ability/ability_runtime/interfaces/inner_api/dataobs_manager:dataobs_manager",
     "//foundation/bundlemanager/bundle_framework/common:libappexecfwk_common",
     "//foundation/bundlemanager/bundle_framework/services/bundlemgr:libbms",
-    "//foundation/distributeddatamgr/appdatamgr/interfaces/inner_api/native/data_share:datashare_abilitykit",
+    "//foundation/distributeddatamgr/appdatamgr/data_share/interfaces/inner_api:datashare_abilitykit",
     "//utils/native/base:utils",
   ]
 
@@ -76,9 +76,9 @@ ohos_shared_library("storage_manager") {
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
     "common_event_service:cesfwk_innerkits",
-    "dataability:native_dataability",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
+    "relational_store:native_dataability",
     "relational_store:native_rdb",
     "safwk:system_ability_fwk",
     "samgr_standard:samgr_proxy",
