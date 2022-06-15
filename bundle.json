@@ -37,6 +37,7 @@
         "fsck_msdos",
         "gptfdisk",
         "newfs_msdos",
+        "ntfs-3g",
         "e2fsprogs"
       ]
     },
