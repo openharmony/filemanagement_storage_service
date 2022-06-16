@@ -151,7 +151,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_002, TestSize.Leve
     ret = mock.Check();
     EXPECT_TRUE(ret == E_OK);
 
-    std::string mountPath("/mnt/" + volId);
+    std::string mountPath("/mnt/external/" + volId);
     bool bRet = StorageTestUtils::MkDir(mountPath, S_IRWXU | S_IRWXG | S_IRWXO);
     EXPECT_TRUE(bRet);
 
@@ -179,7 +179,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_003, TestSize.Leve
     dev_t device = MKDEV(156, 306);
     EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, DoCheck()).Times(1).WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(mock, DoMount(testing::_, testing::_)).Times(1).WillOnce(testing::Return(E_MOUNT));
+    EXPECT_CALL(mock, DoMount(testing::_)).Times(1).WillOnce(testing::Return(E_MOUNT));
 
     auto ret = mock.Create(volId, diskId, device);
     EXPECT_TRUE(ret == E_OK);
@@ -190,7 +190,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_003, TestSize.Leve
     ret = mock.Mount(mountFlags);
     EXPECT_TRUE(ret == E_MOUNT);
 
-    StorageTestUtils::RmDirRecurse("/mnt/" + volId);
+    StorageTestUtils::RmDirRecurse("/mnt/external/" + volId);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Mount_003 end";
 }
 
@@ -210,7 +210,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_004, TestSize.Leve
     dev_t device = MKDEV(156, 307);
     EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, DoCheck()).Times(1).WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(mock, DoMount(testing::_, testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, DoMount(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
 
     auto ret = mock.Create(volId, diskId, device);
     EXPECT_TRUE(ret == E_OK);
@@ -221,7 +221,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_004, TestSize.Leve
     ret = mock.Mount(mountFlags);
     EXPECT_TRUE(ret == E_OK);
 
-    StorageTestUtils::RmDirRecurse("/mnt/" + volId);
+    StorageTestUtils::RmDirRecurse("/mnt/external/" + volId);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Mount_004 end";
 }
 
@@ -266,8 +266,8 @@ HWTEST_F(VolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_UMount_002, Test
 
     EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, DoCheck()).Times(1).WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(mock, DoMount(testing::_, testing::_)).Times(1).WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(mock, DoUMount(testing::_, testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, DoMount(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, DoUMount(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
 
     auto ret = mock.Create(volId, diskId, device);
     EXPECT_TRUE(ret == E_OK);
@@ -279,7 +279,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_UMount_002, Test
     ret = mock.UMount(force);
     EXPECT_TRUE(ret == E_OK);
 
-    StorageTestUtils::RmDirRecurse("/mnt/" + volId);
+    StorageTestUtils::RmDirRecurse("/mnt/external/" + volId);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_UMount_002 end";
 }
 
@@ -389,7 +389,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_Format_002, Test
 
 /**
  * @tc.name: Storage_Service_ExternalVolumeInfoTest_GetXXX_001
- * @tc.desc: Verify the GetVolumeId, GetVolumeType, GetDiskId, GetState, GetMountPath function.
+ * @tc.desc: Verify the GetVolumeId, GetVolumeType, GetDiskId, GetState function.
  * @tc.type: FUNC
  * @tc.require: SR000GGUOT
  */
@@ -410,7 +410,6 @@ HWTEST_F(VolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetXXX_001, Test
     EXPECT_TRUE(mock.GetVolumeType() == EXTERNAL);
     EXPECT_TRUE(mock.GetDiskId() == diskId);
     EXPECT_TRUE(mock.GetState() == UNMOUNTED);
-    EXPECT_TRUE(mock.GetMountPath() == "/mnt/" + volId);
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetXXX_001 end";
 }

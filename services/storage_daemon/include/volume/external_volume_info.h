@@ -23,6 +23,7 @@
 
 namespace OHOS {
 namespace StorageDaemon {
+constexpr int UID_FILE_MANAGER = 1006;
 class ExternalVolumeInfo : public VolumeInfo {
 public:
     ExternalVolumeInfo() = default;
@@ -31,12 +32,13 @@ public:
     int32_t GetFsType();
     std::string GetFsUuid();
     std::string GetFsLabel();
+    std::string GetMountPath();
 
 protected:
     virtual int32_t DoCreate(dev_t dev) override;
     virtual int32_t DoDestroy() override;
-    virtual int32_t DoMount(const std::string mountPath, uint32_t mountFlags) override;
-    virtual int32_t DoUMount(const std::string mountPath, bool force) override;
+    virtual int32_t DoMount(uint32_t mountFlags) override;
+    virtual int32_t DoUMount(bool force) override;
     virtual int32_t DoCheck() override;
     virtual int32_t DoFormat(std::string type) override;
 
@@ -45,9 +47,12 @@ private:
     std::string fsLabel_;
     std::string fsUuid_;
     std::string fsType_;
+    std::string mountPath_;
+
     dev_t device_;
 
     const std::string devPathDir_ = "/dev/block/%s";
+    const std::string mountPathDir_ = "/mnt/external/%s";
     std::vector<std::string> supportMountType_ = { "ext2", "ext3", "ext4", "ntfs", "exfat", "vfat" };
     std::map<std::string, std::string> supportFormatType_ = {
         {"ext2", "mke2fs"}, {"ext3", "mke2fs"}, {"ext4", "mke2fs"}, {"ntfs", "mkfs.ntfs"}, {"exfat", "mkfs.exfat"}

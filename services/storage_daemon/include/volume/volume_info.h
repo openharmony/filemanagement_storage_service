@@ -50,13 +50,12 @@ public:
     int32_t GetVolumeType();
     std::string GetDiskId();
     int32_t GetState();
-    std::string GetMountPath();
 
 protected:
     virtual int32_t DoCreate(dev_t dev) = 0;
     virtual int32_t DoDestroy() = 0;
-    virtual int32_t DoMount(const std::string mountPath, uint32_t mountFlags) = 0;
-    virtual int32_t DoUMount(const std::string mountPath, bool force) = 0;
+    virtual int32_t DoMount(uint32_t mountFlags) = 0;
+    virtual int32_t DoUMount(bool force) = 0;
     virtual int32_t DoCheck() = 0;
     virtual int32_t DoFormat(std::string type) = 0;
 
@@ -67,9 +66,6 @@ private:
     VolumeState mountState_;
     uint32_t mountFlags_;
     int32_t userIdOwner_;
-    std::string mountPath_;
-
-    const std::string mountPathDir_ = "/mnt/%s";
 };
 } // STORAGE_DAEMON
 } // OHOS
