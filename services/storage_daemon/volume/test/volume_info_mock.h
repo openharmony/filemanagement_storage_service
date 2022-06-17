@@ -27,8 +27,8 @@ public:
 
     MOCK_METHOD1(DoCreate, int32_t(dev_t));
     MOCK_METHOD0(DoDestroy, int32_t());
-    MOCK_METHOD2(DoMount, int32_t(std::string, uint32_t));
-    MOCK_METHOD2(DoUMount, int32_t(std::string, bool));
+    MOCK_METHOD1(DoMount, int32_t(uint32_t));
+    MOCK_METHOD1(DoUMount, int32_t(bool));
     MOCK_METHOD0(DoCheck, int32_t());
     MOCK_METHOD1(DoFormat, int32_t(std::string));
 };
