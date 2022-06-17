@@ -12,6 +12,7 @@
 # limitations under the License.
 
 aafwk_kits_path = "//foundation/ability/ability_runtime/frameworks/kits"
+aafwk_path = "//foundation/ability/ability_runtime"
 declare_args() {
   storage_service_graphic = true
 }
