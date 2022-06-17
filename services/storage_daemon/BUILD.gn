@@ -164,12 +164,12 @@ group("storage_daemon_third_party") {
   deps = []
   if (use_musl && storage_service_fstools) {
     deps += [
+      "//third_party/FreeBSD/sbin/fsck_msdosfs:fsck_msdos",
+      "//third_party/FreeBSD/sbin/newfs_msdos:newfs_msdos",
       "//third_party/e2fsprogs/misc:blkid",
       "//third_party/exfat-utils:exfat-utils",
       "//third_party/f2fs-tools:f2fs-tools",
-      "//third_party/fsck_msdos:fsck_msdos",
       "//third_party/gptfdisk:sgdisk",
-      "//third_party/newfs_msdos:newfs_msdos",
       "//third_party/ntfs-3g:ntfsprogs",
     ]
   }

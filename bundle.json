@@ -34,9 +34,9 @@
       "third_party": [
         "exfat-utils",
         "f2fs-tools",
-        "fsck_msdos",
+        "FreeBSD/sbin/fsck_msdosfs",
         "gptfdisk",
-        "newfs_msdos",
+        "FreeBSD/sbin/newfs_msdos",
         "ntfs-3g",
         "e2fsprogs"
       ]
