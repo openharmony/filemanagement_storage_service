@@ -12,11 +12,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "fscrypt_key_v1.h"
 
 #include <openssl/sha.h>
-#include "storage_service_log.h"
+
 #include "libfscrypt/key_control.h"
+#include "storage_service_log.h"
 
 namespace OHOS {
 namespace StorageDaemon {

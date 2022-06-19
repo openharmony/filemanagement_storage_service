@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "base_key.h"
 
 #include <fcntl.h>
@@ -21,10 +22,10 @@
 #include "directory_ex.h"
 #include "file_ex.h"
 #include "huks_master.h"
+#include "libfscrypt/key_control.h"
 #include "storage_service_log.h"
 #include "string_ex.h"
 #include "utils/file_utils.h"
-#include "libfscrypt/key_control.h"
 
 namespace {
 const std::string PATH_LATEST_BACKUP = "/latest_bak";

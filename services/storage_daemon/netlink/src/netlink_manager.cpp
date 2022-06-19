@@ -12,19 +12,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "netlink/netlink_manager.h"
 
 #include <cerrno>
-#include <iostream>
-
-#include <unistd.h>
 #include <fcntl.h>
+#include <iostream>
 #include <sys/socket.h>
+#include <unistd.h>
 #include <linux/netlink.h>
 
+#include "securec.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "securec.h"
 
 namespace OHOS {
 namespace StorageDaemon {

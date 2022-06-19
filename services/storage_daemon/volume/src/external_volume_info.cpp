@@ -15,21 +15,21 @@
 
 #include "volume/external_volume_info.h"
 
-#include <cstdlib>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <cerrno>
-#include <sys/mount.h>
-#include <csignal>
 #include <algorithm>
-#include <sys/wait.h>
+#include <cerrno>
+#include <csignal>
+#include <cstdlib>
 #include <cstring>
+#include <sys/mount.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
-#include "storage_service_log.h"
 #include "storage_service_errno.h"
+#include "storage_service_log.h"
+#include "utils/file_utils.h"
 #include "utils/string_utils.h"
 #include "volume/process.h"
-#include "utils/file_utils.h"
 
 using namespace std;
 namespace OHOS {

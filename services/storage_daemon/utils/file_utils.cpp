@@ -16,21 +16,21 @@
 #include "utils/file_utils.h"
 
 #include <cerrno>
-#include <fstream>
-#include <unistd.h>
+#include <cerrno>
+#include <cstdlib>
 #include <cstring>
 #include <dirent.h>
-#include <cstdlib>
 #include <fcntl.h>
-#include <cerrno>
+#include <fstream>
 #include <sys/stat.h>
-#include <sys/wait.h>
 #include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
-#include "string_ex.h"
 #include "securec.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "string_ex.h"
 
 namespace OHOS {
 namespace StorageDaemon {

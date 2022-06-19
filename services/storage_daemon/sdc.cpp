@@ -13,16 +13,16 @@
  * limitations under the License.
  */
 
+#include <functional>
 #include <iostream>
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
-#include <functional>
 
+#include "client/storage_manager_client.h"
 #include "storage_daemon_client.h"
 #include "storage_service_log.h"
 #include "utils/file_utils.h"
-#include "client/storage_manager_client.h"
 
 static int32_t InitGlobalKey(const std::vector<std::string> &args)
 {

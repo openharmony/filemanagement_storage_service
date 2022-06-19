@@ -14,12 +14,11 @@
  */
 
 #include <gtest/gtest.h>
-
 #include <linux/kdev_t.h>
 
+#include "external_volume_info_mock.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "external_volume_info_mock.h"
 
 namespace OHOS {
 namespace StorageDaemon {

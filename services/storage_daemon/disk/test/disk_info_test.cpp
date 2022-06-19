@@ -13,16 +13,17 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
-
+#include <gtest/gtest.h>
 #include <sys/sysmacros.h>
+
+#include "disk/disk_info.h"
+#include "disk_info_test_mock.h"
+#include "netlink/netlink_data.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "disk/disk_info.h"
-
-#include "netlink/netlink_data.h"
-#include "disk_info_test_mock.h"
+#include "utils/file_utils.h"
+#include "utils/string_utils.h"
 #include "utils/string_utils.h"
 #include "utils/file_utils.h"
 

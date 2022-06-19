@@ -19,13 +19,10 @@
 #include <sys/types.h>
 
 #include "gtest/gtest.h"
-
-#include "storage_service_log.h"
-#include "storage_service_errno.h"
-
 #include "common/help_utils.h"
+#include "storage_service_errno.h"
+#include "storage_service_log.h"
 #include "utils/file_utils.h"
-
 
 namespace OHOS {
 namespace StorageDaemon {

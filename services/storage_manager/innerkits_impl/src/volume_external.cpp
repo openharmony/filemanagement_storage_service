@@ -14,9 +14,10 @@
  */
 
 #include "volume_external.h"
-#include "volume/notification.h"
+
 #include "disk.h"
 #include "disk/disk_manager_service.h"
+#include "volume/notification.h"
 
 namespace OHOS {
 namespace StorageManager {

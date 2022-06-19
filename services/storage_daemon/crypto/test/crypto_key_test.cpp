@@ -12,19 +12,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <vector>
-#include <string>
-#include <gtest/gtest.h>
 
-#include "file_ex.h"
+#include <gtest/gtest.h>
+#include <string>
+#include <vector>
+
 #include "directory_ex.h"
-#include "securec.h"
+#include "file_ex.h"
 #include "fscrypt_key_v1.h"
 #include "fscrypt_key_v2.h"
-#include "libfscrypt/key_control.h"
+#include "key_blob.h"
 #include "libfscrypt/fscrypt_control.h"
 #include "libfscrypt/fscrypt_utils.h"
-#include "key_blob.h"
+#include "libfscrypt/key_control.h"
+#include "securec.h"
 
 using namespace testing::ext;
 using namespace OHOS::StorageDaemon;

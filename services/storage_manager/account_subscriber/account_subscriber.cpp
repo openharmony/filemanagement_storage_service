@@ -12,21 +12,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "account_subscriber/account_subscriber.h"
 
 #include <cinttypes>
-#include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <unistd.h>
+
 #include "appexecfwk_errors.h"
 #include "bundle_info.h"
 #include "common_event_manager.h"
 #include "common_event_support.h"
 #include "iservice_registry.h"
+#include "storage_service_log.h"
 #include "system_ability_definition.h"
 #include "want.h"
-
-#include "storage_service_log.h"
 
 using namespace OHOS::AAFwk;
 namespace OHOS {

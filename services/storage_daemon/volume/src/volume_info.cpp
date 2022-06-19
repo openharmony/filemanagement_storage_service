@@ -14,8 +14,9 @@
  */
 
 #include "volume/volume_info.h"
-#include "storage_service_log.h"
+
 #include "storage_service_errno.h"
+#include "storage_service_log.h"
 #include "utils/string_utils.h"
 
 using namespace std;

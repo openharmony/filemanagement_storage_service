@@ -14,12 +14,13 @@
  */
 
 #include "ipc/storage_daemon_stub.h"
+
 #include "accesstoken_kit.h"
 #include "ipc_skeleton.h"
 #include "native_token_info.h"
-#include "string_ex.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "string_ex.h"
 
 namespace OHOS {
 namespace StorageDaemon {

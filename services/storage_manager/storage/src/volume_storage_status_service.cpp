@@ -13,12 +13,14 @@
 * limitations under the License.
 */
 
+#include "storage/volume_storage_status_service.h"
+
 #include <singleton.h>
 #include <sys/statvfs.h>
-#include "volume/volume_manager_service.h"
+
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "storage/volume_storage_status_service.h"
+#include "volume/volume_manager_service.h"
 
 using namespace std;
 

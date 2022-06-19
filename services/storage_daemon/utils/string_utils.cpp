@@ -15,13 +15,12 @@
 
 #include "utils/string_utils.h"
 
-#include <cstdio>
 #include <cstdarg>
+#include <cstdio>
 #include <cstring>
 #include <vector>
 
 #include "securec.h"
-
 #include "storage_service_log.h"
 
 using namespace std;

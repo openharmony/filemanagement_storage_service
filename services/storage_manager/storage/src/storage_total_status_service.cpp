@@ -13,16 +13,17 @@
  * limitations under the License.
  */
 
+#include "storage/storage_total_status_service.h"
+
 #include <cstdlib>
 #include <cstring>
 #include <mntent.h>
-#include <unordered_set>
-#include <sys/statvfs.h>
 #include <singleton.h>
+#include <sys/statvfs.h>
+#include <unordered_set>
+
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "storage/storage_total_status_service.h"
-
 
 namespace OHOS {
 namespace StorageManager {

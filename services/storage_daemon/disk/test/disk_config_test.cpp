@@ -15,9 +15,9 @@
 
 #include <gtest/gtest.h>
 
+#include "disk/disk_config.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "disk/disk_config.h"
 
 namespace OHOS {
 namespace StorageDaemon {

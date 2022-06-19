@@ -16,8 +16,8 @@
 #include <cstdio>
 #include <gtest/gtest.h>
 
-#include "volume_core.h"
 #include "volume/volume_manager_service.h"
+#include "volume_core.h"
 
 namespace {
 using namespace std;
