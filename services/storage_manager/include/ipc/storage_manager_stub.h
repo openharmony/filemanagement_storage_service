@@ -53,6 +53,11 @@ private:
     int32_t HandleNotifyDiskDestroyed(MessageParcel &data, MessageParcel &reply);
     int32_t HandlePartition(MessageParcel &data, MessageParcel &reply);
     int32_t HandleGetAllDisks(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleGetVolumeByUuid(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleGetVolumeById(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleSetVolDesc(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleFormat(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleGetDiskById(MessageParcel &data, MessageParcel &reply);
 
     // fscrypt api
     int32_t HandleGenerateUserKeys(MessageParcel &data, MessageParcel &reply);

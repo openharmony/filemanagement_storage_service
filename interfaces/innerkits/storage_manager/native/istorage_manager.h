@@ -51,6 +51,11 @@ public:
     virtual void NotifyDiskDestroyed(std::string diskId) = 0;
     virtual int32_t Partition(std::string diskId, int32_t type) = 0;
     virtual std::vector<Disk> GetAllDisks() = 0;
+    virtual int32_t GetVolumeByUuid(std::string fsUuid, VolumeExternal &vc) = 0;
+    virtual int32_t GetVolumeById(std::string volumeId, VolumeExternal &vc) = 0;
+    virtual int32_t SetVolumeDescription(std::string fsUuid, std::string description) = 0;
+    virtual int32_t Format(std::string volumeId, std::string fsType) = 0;
+    virtual int32_t GetDiskById(std::string diskId, Disk &disk) = 0;
 
     // fscrypt api
     virtual int32_t GenerateUserKeys(uint32_t userId, uint32_t flags) = 0;
@@ -90,6 +95,11 @@ public:
         ACTIVE_USER_KEY,
         INACTIVE_USER_KEY,
         UPDATE_KEY_CONTEXT,
+        GET_VOL_BY_UUID,
+        GET_VOL_BY_ID,
+        SET_VOL_DESC,
+        FORMAT,
+        GET_DISK_BY_ID,
     };
 
     DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.StorageManager.IStorageManager");

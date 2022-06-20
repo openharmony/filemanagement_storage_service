@@ -35,6 +35,10 @@ public:
     void OnVolumeDestroyed(std::string volumeId);
     std::vector<VolumeExternal> GetAllVolumes();
     std::shared_ptr<VolumeExternal> GetVolumeByUuid(std::string volumeUuid);
+    int32_t GetVolumeByUuid(std::string fsUuid, VolumeExternal &vc);
+    int32_t GetVolumeById(std::string volumeId, VolumeExternal &vc);
+    int32_t SetVolumeDescription(std::string fsUuid, std::string description);
+    int32_t Format(std::string volumeId, std::string fsType);
 private:
     StorageRlMap<std::string, std::shared_ptr<VolumeExternal>> volumeMap_;
     void VolumeStateNotify(int32_t state, std::string volumeId,

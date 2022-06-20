@@ -59,6 +59,12 @@ int32_t StorageDaemon::Partition(std::string diskId, int32_t type)
     return DiskManager::Instance()->HandlePartition(diskId);
 }
 
+int32_t StorageDaemon::SetVolumeDescription(std::string volId, std::string description)
+{
+    LOGI("Handle SetVolumeDescription");
+    return VolumeManager::Instance()->SetVolumeDescription(volId, description);
+}
+
 int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
     return UserManager::GetInstance()->PrepareUserDirs(userId, flags);

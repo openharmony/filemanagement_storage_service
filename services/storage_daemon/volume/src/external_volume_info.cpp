@@ -37,14 +37,22 @@ namespace StorageDaemon {
 std::string ExternalVolumeInfo::GetBlkidData(const std::string type)
 {
     std::vector<std::string> output;
-    std::vector<std::string> cmd = {
-        "blkid",
-        "-s",
-        type,
-        "-o",
-        "value",
-        devPath_
-    };
+    std::vector<std::string> cmd;
+    if (fsType_ == "ntfs" && type == "LABEL") {
+        cmd = {
+            "ntfslabel",
+            devPath_
+        };
+    } else {
+        cmd = {
+            "blkid",
+            "-s",
+            type,
+            "-o",
+            "value",
+            devPath_
+        };
+    }
 
     int32_t err = ForkExec(cmd, &output);
     if (err) {
@@ -258,6 +266,28 @@ int32_t ExternalVolumeInfo::DoFormat(std::string type)
 
     if (err == E_NO_CHILD) {
         err = E_OK;
+    }
+
+    ReadMetadata();
+    return err;
+}
+int32_t ExternalVolumeInfo::DoSetVolDesc(std::string description)
+{
+    int32_t err = 0;
+    if (fsType_ == "ntfs") {
+        std::vector<std::string> cmd = {
+            "ntfslabel",
+            devPath_,
+            description
+        };
+        err = ForkExec(cmd);
+    } else if (fsType_ == "exfat") {
+        std::vector<std::string> cmd = {
+            "exfatlabel",
+            devPath_,
+            description
+        };
+        err = ForkExec(cmd);
     }
 
     ReadMetadata();

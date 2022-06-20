@@ -72,5 +72,14 @@ std::vector<Disk> DiskManagerService::GetAllDisks()
     }
     return result;
 }
+
+int32_t DiskManagerService::GetDiskById(std::string diskId, Disk &disk)
+{
+    if (diskMap_.Contains(diskId)) {
+        disk = *diskMap_[diskId];
+        return E_OK;
+    }
+    return E_NON_EXIST;
+}
 }
 }

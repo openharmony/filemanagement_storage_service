@@ -41,6 +41,7 @@ protected:
     virtual int32_t DoUMount(bool force) override;
     virtual int32_t DoCheck() override;
     virtual int32_t DoFormat(std::string type) override;
+    virtual int32_t DoSetVolDesc(std::string description) override;
 
 private:
     std::string devPath_;

@@ -169,5 +169,60 @@ namespace StorageManager {
         }
         return nullptr;
     }
+
+    int32_t VolumeManagerService::GetVolumeByUuid(std::string fsUuid, VolumeExternal &vc)
+    {
+        for (auto it = volumeMap_.Begin(); it != volumeMap_.End(); ++it) {
+            auto volume = it->second;
+            if (volume->GetUuid() == fsUuid) {
+                LOGE("VolumeManagerService::GetVolumeByUuid volumeUuid %{public}s exists", fsUuid.c_str());
+                vc = *volume;
+                return E_OK;
+            }
+        }
+        return E_NON_EXIST;
+    }
+
+    int32_t VolumeManagerService::GetVolumeById(std::string volumeId, VolumeExternal &vc)
+    {
+        if (volumeMap_.Contains(volumeId)) {
+            vc = *volumeMap_[volumeId];
+            return E_OK;
+        }
+        return E_NON_EXIST;
+    }
+
+    int32_t VolumeManagerService::SetVolumeDescription(std::string fsUuid, std::string description)
+    {
+        for (auto it = volumeMap_.Begin(); it != volumeMap_.End(); ++it) {
+            auto volume = it->second;
+            if (volume->GetUuid() == fsUuid) {
+                LOGI("VolumeManagerService::SetVolumeDescription volumeUuid %{public}s exists", fsUuid.c_str());
+                if (volume->GetState() != VolumeState::UNMOUNTED) {
+                    LOGE("VolumeManagerService::SetVolumeDescription volume state is not unmounted!");
+                    return E_VOL_STATE;
+                }
+                std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+                sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+                return sdCommunication->SetVolumeDescription(volume->GetId(), description);
+            }
+        }
+        return E_NON_EXIST;
+    }
+
+    int32_t VolumeManagerService::Format(std::string volumeId, std::string fsType)
+    {
+        if (volumeMap_.Find(volumeId) == volumeMap_.End()) {
+            return E_NON_EXIST;
+        }
+        if (volumeMap_[volumeId]->GetState() != VolumeState::UNMOUNTED) {
+            LOGE("VolumeManagerService::SetVolumeDescription volume state is not unmounted!");
+            return E_VOL_STATE;
+        }
+        // check fstype!!!!
+        std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+        sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+        return sdCommunication->Format(volumeId, fsType);
+    }
 } // StorageManager
 } // OHOS

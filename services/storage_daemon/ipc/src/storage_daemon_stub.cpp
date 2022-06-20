@@ -211,6 +211,19 @@ int32_t StorageDaemonStub::HandlePartition(MessageParcel &data, MessageParcel &r
     return E_OK;
 }
 
+int32_t StorageDaemonStub::HandleSetVolDesc(MessageParcel &data, MessageParcel &reply)
+{
+    std::string volId = data.ReadString();
+    std::string description = data.ReadString();
+
+    int err = SetVolumeDescription(volId, description);
+    if (!reply.WriteInt32(err)) {
+        return E_IPC_ERROR;
+    }
+
+    return E_OK;
+}
+
 int32_t StorageDaemonStub::HandlePrepareUserDirs(MessageParcel &data, MessageParcel &reply)
 {
     int32_t userId = data.ReadInt32();
