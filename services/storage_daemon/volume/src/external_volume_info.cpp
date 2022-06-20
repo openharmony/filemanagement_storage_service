@@ -247,12 +247,10 @@ int32_t ExternalVolumeInfo::DoFormat(std::string type)
         return E_NOT_SUPPORT;
     }
 
-    if (type == "ext2" || type == "ext3" || type == "ext4") {
+    if (type == "vfat") {
         std::vector<std::string> cmd = {
             iter->second,
-            "-F",
-            "-t",
-            type,
+            "-A",
             devPath_
         };
         err = ForkExec(cmd);
@@ -271,6 +269,7 @@ int32_t ExternalVolumeInfo::DoFormat(std::string type)
     ReadMetadata();
     return err;
 }
+
 int32_t ExternalVolumeInfo::DoSetVolDesc(std::string description)
 {
     int32_t err = 0;
@@ -288,6 +287,17 @@ int32_t ExternalVolumeInfo::DoSetVolDesc(std::string description)
             description
         };
         err = ForkExec(cmd);
+    } else if (fsType_ == "vfat") {
+        std::vector<std::string> cmd = {
+            "newfs_msdos",
+            "-L",
+            description,
+            devPath_
+        };
+        err = ForkExec(cmd);
+    } else {
+        LOGE("SetVolumeDescription fsType not support.");
+        return E_NOT_SUPPORT;
     }
 
     ReadMetadata();

@@ -438,11 +438,11 @@ int32_t StorageManagerStub::HandleGetVolumeByUuid(MessageParcel &data, MessagePa
     std::string fsUuid = data.ReadString();
     VolumeExternal vc;
     int err = GetVolumeByUuid(fsUuid, vc);
-    if (!reply.WriteUint32(err)) {
-        LOGE("StorageManagerStub::HandleGetVolumeByUuid call GetVolumeByUuid failed");
+    if (!vc.Marshalling(reply)) {
         return E_IPC_ERROR;
     }
-    if (!vc.Marshalling(reply)) {
+    if (!reply.WriteUint32(err)) {
+        LOGE("StorageManagerStub::HandleGetVolumeByUuid call GetVolumeByUuid failed");
         return E_IPC_ERROR;
     }
     return E_OK;
@@ -453,11 +453,11 @@ int32_t StorageManagerStub::HandleGetVolumeById(MessageParcel &data, MessageParc
     std::string volId = data.ReadString();
     VolumeExternal vc;
     int err = GetVolumeById(volId, vc);
-    if (!reply.WriteUint32(err)) {
-        LOGE("StorageManagerStub::HandleGetVolumeById call GetVolumeById failed");
+    if (!vc.Marshalling(reply)) {
         return E_IPC_ERROR;
     }
-    if (!vc.Marshalling(reply)) {
+    if (!reply.WriteUint32(err)) {
+        LOGE("StorageManagerStub::HandleGetVolumeById call GetVolumeById failed");
         return E_IPC_ERROR;
     }
     return E_OK;
@@ -492,11 +492,11 @@ int32_t StorageManagerStub::HandleGetDiskById(MessageParcel &data, MessageParcel
     std::string volId = data.ReadString();
     Disk disk;
     int err = GetDiskById(volId, disk);
-    if (!reply.WriteUint32(err)) {
-        LOGE("StorageManagerStub::HandleGetDiskById call GetDiskById failed");
+    if (!disk.Marshalling(reply)) {
         return E_IPC_ERROR;
     }
-    if (!disk.Marshalling(reply)) {
+    if (!reply.WriteUint32(err)) {
+        LOGE("StorageManagerStub::HandleGetDiskById call GetDiskById failed");
         return E_IPC_ERROR;
     }
     return E_OK;

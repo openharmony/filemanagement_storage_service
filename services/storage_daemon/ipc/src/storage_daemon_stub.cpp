@@ -96,6 +96,9 @@ int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
         case FORMAT:
             err = HandleFormat(data, reply);
             break;
+        case SET_VOL_DESC:
+            err = HandleSetVolDesc(data, reply);
+            break;
         case PREPARE_USER_DIRS:
             err = HandlePrepareUserDirs(data, reply);
             break;
