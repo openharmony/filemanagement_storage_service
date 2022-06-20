@@ -14,13 +14,15 @@
  */
 
 #include "volume/process.h"
-#include <unistd.h>
-#include <csignal>
+
 #include <cerrno>
-#include <sys/types.h>
+#include <csignal>
 #include <dirent.h>
-#include "storage_service_log.h"
+#include <sys/types.h>
+#include <unistd.h>
+
 #include "storage_service_errno.h"
+#include "storage_service_log.h"
 #include "utils/string_utils.h"
 
 using namespace std;

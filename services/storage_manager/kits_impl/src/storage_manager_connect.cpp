@@ -18,11 +18,11 @@
 #include <iservice_registry.h>
 #include <system_ability_definition.h>
 
+#include "ipc/storage_manager.h"
+#include "ipc/storage_manager_proxy.h"
 #include "storage/storage_status_service.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "ipc/storage_manager_proxy.h"
-#include "ipc/storage_manager.h"
 
 using namespace std;
 

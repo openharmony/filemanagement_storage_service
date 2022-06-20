@@ -15,14 +15,13 @@
 
 #include "volume/volume_manager_service.h"
 
-#include "volume/notification.h"
-#include "safe_map.h"
-#include "storage_daemon_communication/storage_daemon_communication.h"
-
-#include "storage_service_errno.h"
-#include "storage_service_log.h"
 #include "disk.h"
 #include "disk/disk_manager_service.h"
+#include "safe_map.h"
+#include "storage_daemon_communication/storage_daemon_communication.h"
+#include "storage_service_errno.h"
+#include "storage_service_log.h"
+#include "volume/notification.h"
 
 using namespace std;
 

@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include <fcntl.h>
 #include <gtest/gtest.h>
 #include <mntent.h>
@@ -19,11 +20,11 @@
 
 #include "ipc/istorage_daemon.h"
 #include "ipc/storage_daemon.h"
+#include "storage_service_errno.h"
+#include "storage_service_log.h"
 #include "test/common/help_utils.h"
 #include "user/user_manager.h"
-#include "storage_service_errno.h"
 #include "utils/file_utils.h"
-#include "storage_service_log.h"
 
 namespace OHOS {
 namespace StorageDaemon {

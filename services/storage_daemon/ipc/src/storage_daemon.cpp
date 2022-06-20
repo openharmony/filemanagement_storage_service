@@ -14,12 +14,13 @@
  */
 
 #include "ipc/storage_daemon.h"
-#include "user/user_manager.h"
-#include "disk/disk_manager.h"
-#include "volume/volume_manager.h"
-#include "storage_service_errno.h"
+
 #include "crypto/key_manager.h"
+#include "disk/disk_manager.h"
+#include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "user/user_manager.h"
+#include "volume/volume_manager.h"
 
 namespace OHOS {
 namespace StorageDaemon {

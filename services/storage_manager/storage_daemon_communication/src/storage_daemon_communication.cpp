@@ -12,14 +12,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "storage_daemon_communication/storage_daemon_communication.h"
-#include <system_ability_definition.h>
+
 #include <iservice_registry.h>
-#include "storage_service_log.h"
-#include "storage_service_errno.h"
+#include <system_ability_definition.h>
+
 #include "ipc/istorage_daemon.h"
 #include "ipc/storage_daemon.h"
 #include "ipc/storage_daemon_proxy.h"
+#include "storage_service_errno.h"
+#include "storage_service_log.h"
 
 namespace OHOS {
 namespace StorageManager {

@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "storage_daemon_client.h"
 
 #include <chrono>
@@ -21,9 +22,9 @@
 #include "iremote_object.h"
 #include "iremote_proxy.h"
 #include "iservice_registry.h"
+#include "libfscrypt/fscrypt_utils.h"
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
-#include "libfscrypt/fscrypt_utils.h"
 
 namespace {
 constexpr uint32_t STORAGE_DAEMON_SFIFT = 1;

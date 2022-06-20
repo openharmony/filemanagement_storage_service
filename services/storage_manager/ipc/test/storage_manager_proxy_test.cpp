@@ -16,13 +16,12 @@
 #include <cstdio>
 #include <gtest/gtest.h>
 
+#include "ipc/storage_manager_proxy.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
-#include "system_ability_definition.h"
-
-#include "volume/volume_manager_service.h"
-#include "ipc/storage_manager_proxy.h"
 #include "storage_manager_service_mock.h"
+#include "system_ability_definition.h"
+#include "volume/volume_manager_service.h"
 
 namespace {
 using namespace std;

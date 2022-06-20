@@ -14,20 +14,18 @@
  */
 
 #include "volumemanager_n_exporter.h"
-#include "storage_manager_connect.h"
 
+#include <singleton.h>
 #include <tuple>
 
+#include "common/napi/n_async/n_async_work_callback.h"
+#include "common/napi/n_async/n_async_work_promise.h"
 #include "common/napi/n_class.h"
 #include "common/napi/n_func_arg.h"
 #include "common/napi/n_val.h"
 #include "common/uni_error.h"
-#include "common/napi/n_async/n_async_work_callback.h"
-#include "common/napi/n_async/n_async_work_promise.h"
-
+#include "storage_manager_connect.h"
 #include "storage_service_log.h"
-
-#include <singleton.h>
 
 using namespace OHOS::StorageManager;
 using namespace OHOS::DistributedFS;

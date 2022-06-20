@@ -14,15 +14,17 @@
  */
 
 #include "volume/notification.h"
-#include "want.h"
-#include "want_params.h"
+
 #include "common_event_data.h"
 #include "common_event_manager.h"
 #include "common_event_support.h"
 #include "int_wrapper.h"
-#include "string_wrapper.h"
 #include "storage_service_log.h"
+#include "string_wrapper.h"
 #include "volume_core.h"
+#include "want.h"
+#include "want_params.h"
+
 namespace OHOS {
 namespace StorageManager {
 Notification::Notification() {}
