@@ -14,19 +14,20 @@
  */
 
 #include "ipc/storage_manager.h"
+
+#include <singleton.h>
 #include <storage/storage_status_service.h>
 #include <storage/storage_total_status_service.h>
 #include <storage/volume_storage_status_service.h>
-#include <singleton.h>
-#include "system_ability_definition.h"
-#include "storage_service_log.h"
-#include "storage_service_errno.h"
+
 #include "account_subscriber/account_subscriber.h"
+#include "crypto/filesystem_crypto.h"
+#include "disk/disk_manager_service.h"
+#include "storage_service_errno.h"
+#include "storage_service_log.h"
+#include "system_ability_definition.h"
 #include "user/multi_user_manager_service.h"
 #include "volume/volume_manager_service.h"
-#include "disk/disk_manager_service.h"
-#include "crypto/filesystem_crypto.h"
-
 
 namespace OHOS {
 namespace StorageManager {

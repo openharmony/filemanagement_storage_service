@@ -31,6 +31,11 @@ napi_value VolumeManagerExport(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("getAllVolumes", GetAllVolumes),
         DECLARE_NAPI_FUNCTION("mount", Mount),
         DECLARE_NAPI_FUNCTION("unmount", Unmount),
+        DECLARE_NAPI_FUNCTION("getVolumeByUuid", GetVolumeByUuid),
+        DECLARE_NAPI_FUNCTION("getVolumeById", GetVolumeById),
+        DECLARE_NAPI_FUNCTION("setVolumeDescription", SetVolumeDescription),
+        DECLARE_NAPI_FUNCTION("format", Format),
+        DECLARE_NAPI_FUNCTION("partition", Partition),
     };
     NAPI_CALL(env, napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc));
     return exports;

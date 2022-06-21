@@ -26,6 +26,11 @@ namespace ModuleVolumeManager {
 napi_value GetAllVolumes(napi_env env, napi_callback_info info);
 napi_value Mount(napi_env env, napi_callback_info info);
 napi_value Unmount(napi_env env, napi_callback_info info);
+napi_value GetVolumeByUuid(napi_env env, napi_callback_info info);
+napi_value GetVolumeById(napi_env env, napi_callback_info info);
+napi_value SetVolumeDescription(napi_env env, napi_callback_info info);
+napi_value Format(napi_env env, napi_callback_info info);
+napi_value Partition(napi_env env, napi_callback_info info);
 } // namespace ModuleVolumeManager
 } // namespace StorageManager
 } // namespace OHOS

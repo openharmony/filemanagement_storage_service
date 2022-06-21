@@ -41,6 +41,11 @@ public:
     StorageStats GetUserStorageStats();
     StorageStats GetUserStorageStats(int32_t userId);
     BundleStats GetCurrentBundleStats();
+    VolumeExternal GetVolumeByUuid(std::string uuid);
+    VolumeExternal GetVolumeById(std::string volumeId);
+    bool SetVolumeDescription(std::string uuid, std::string description);
+    bool Format(std::string volumeId, std::string fsType);
+    bool Partition(std::string diskId, int32_t type);
 private:
     sptr<StorageManager::IStorageManager> storageManager_ = nullptr;
 };
