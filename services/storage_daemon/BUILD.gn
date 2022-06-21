@@ -45,6 +45,10 @@ ohos_prebuilt_etc("storage_daemon_disk_config") {
   subsystem_name = "filemanagement"
 }
 
+declare_args() {
+  storage_service_user_file_sharing = false
+}
+
 ohos_executable("storage_daemon") {
   sources = [
     "../storage_manager/innerkits_impl/src/bundle_stats.cpp",
@@ -80,6 +84,15 @@ ohos_executable("storage_daemon") {
     "STORAGE_LOG_TAG = \"StorageDaemon\"",
     "LOG_DOMAIN = 0xD004301",
   ]
+
+  if (storage_service_user_file_sharing) {
+    defines += [ "USER_FILE_SHARING" ]
+    sources += [
+      "file_sharing/src/acl.cpp",
+      "file_sharing/src/file_sharing.cpp",
+      "file_sharing/src/setacl.cpp",
+    ]
+  }
 
   configs = [ ":storage_daemon_config" ]
 
