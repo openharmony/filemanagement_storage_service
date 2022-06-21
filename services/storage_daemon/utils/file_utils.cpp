@@ -37,6 +37,15 @@ namespace StorageDaemon {
 constexpr uint32_t ALL_PERMS = (S_ISUID | S_ISGID | S_ISVTX | S_IRWXU | S_IRWXG | S_IRWXO);
 const int BUF_LEN = 1024;
 
+int32_t Restorecon(const std::string &path)
+{
+    std::vector<std::string> cmd = {
+        "restorecon",
+        path
+    };
+    return ForkExec(cmd);
+}
+
 int32_t ChMod(const std::string &path, mode_t mode)
 {
     return TEMP_FAILURE_RETRY(chmod(path.c_str(), mode));
@@ -151,6 +160,12 @@ bool PrepareDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
 
     if (ChOwn(path, uid, gid)) {
         LOGE("failed to chown, errno %{public}d", errno);
+        return false;
+    }
+
+    int err = Restorecon(path);
+    if (err) {
+        LOGE("failed to restorecon, err:%{public}d", err);
         return false;
     }
 
