@@ -161,6 +161,249 @@ napi_value Unmount(napi_env env, napi_callback_info info)
     }
     return NVal::CreateUndefined(env).val_;
 }
+
+
+napi_value GetVolumeByUuid(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+    if (!funcArg.InitArgs((int)NARG_CNT::ONE, (int)NARG_CNT::TWO)) {
+        UniError(EINVAL).ThrowErr(env, "Number of arguments unmatched 1-2");
+        return nullptr;
+    }
+
+    bool succ = false;
+    std::unique_ptr<char []> uuid;
+    tie(succ, uuid, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
+    if (!succ) {
+        UniError(EINVAL).ThrowErr(env, "Invalid uuid");
+        return nullptr;
+    }
+
+    auto volumeInfo = std::make_shared<VolumeExternal>();
+    std::string uuidString(uuid.get());
+    auto cbExec = [uuidString, volumeInfo](napi_env env) -> UniError {
+        *volumeInfo = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetVolumeByUuid(uuidString);
+        return UniError(ERRNO_NOERR);
+    };
+    auto cbComplete = [volumeInfo](napi_env env, UniError err) -> NVal {
+        if (err) {
+            return { env, err.GetNapiErr(env) };
+        }
+        NVal volumeObject = NVal::CreateObject(env);
+        volumeObject.AddProp("id", NVal::CreateUTF8String(env, volumeInfo->GetId()).val_);
+        volumeObject.AddProp("uuid", NVal::CreateUTF8String(env, volumeInfo->GetUuid()).val_);
+        volumeObject.AddProp("description",
+            NVal::CreateUTF8String(env, volumeInfo->GetDescription()).val_);
+        volumeObject.AddProp("removable", NVal::CreateBool(env, (bool)true).val_);
+        volumeObject.AddProp("state", NVal::CreateInt32(env, volumeInfo->GetState()).val_);
+        volumeObject.AddProp("path", NVal::CreateUTF8String(env, volumeInfo->GetPath()).val_);
+        
+        return volumeObject;
+    };
+
+    std::string procedureName = "GetVolumeByUuid";
+    NVal thisVar(env, funcArg.GetThisVar());
+    if (funcArg.GetArgc() == (uint)NARG_CNT::ONE) {
+        return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
+    } else {
+        NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
+        return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
+    }
+    return NVal::CreateUndefined(env).val_;
+}
+
+
+napi_value GetVolumeById(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+    if (!funcArg.InitArgs((int)NARG_CNT::ONE, (int)NARG_CNT::TWO)) {
+        UniError(EINVAL).ThrowErr(env, "Number of arguments unmatched 1-2");
+        return nullptr;
+    }
+
+    bool succ = false;
+    std::unique_ptr<char []> volumeId;
+    tie(succ, volumeId, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
+    if (!succ) {
+        UniError(EINVAL).ThrowErr(env, "Invalid volumeId");
+        return nullptr;
+    }
+
+    auto volumeInfo = std::make_shared<VolumeExternal>();
+    std::string volumeIdString(volumeId.get());
+    auto cbExec = [volumeIdString, volumeInfo](napi_env env) -> UniError {
+        *volumeInfo = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetVolumeById(volumeIdString);
+        return UniError(ERRNO_NOERR);
+    };
+    auto cbComplete = [volumeInfo](napi_env env, UniError err) -> NVal {
+        if (err) {
+            return { env, err.GetNapiErr(env) };
+        }
+        NVal volumeObject = NVal::CreateObject(env);
+        volumeObject.AddProp("id", NVal::CreateUTF8String(env, volumeInfo->GetId()).val_);
+        volumeObject.AddProp("uuid", NVal::CreateUTF8String(env, volumeInfo->GetUuid()).val_);
+        volumeObject.AddProp("description",
+            NVal::CreateUTF8String(env, volumeInfo->GetDescription()).val_);
+        volumeObject.AddProp("removable", NVal::CreateBool(env, (bool)true).val_);
+        volumeObject.AddProp("state", NVal::CreateInt32(env, volumeInfo->GetState()).val_);
+        volumeObject.AddProp("path", NVal::CreateUTF8String(env, volumeInfo->GetPath()).val_);
+        
+        return volumeObject;
+    };
+    
+    std::string procedureName = "GetVolumeById";
+    NVal thisVar(env, funcArg.GetThisVar());
+    if (funcArg.GetArgc() == (uint)NARG_CNT::ONE) {
+        return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
+    } else {
+        NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
+        return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
+    }
+    return NVal::CreateUndefined(env).val_;
+}
+
+napi_value SetVolumeDescription(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+    if (!funcArg.InitArgs((int)NARG_CNT::TWO, (int)NARG_CNT::THREE)) {
+        UniError(EINVAL).ThrowErr(env, "Number of arguments unmatched");
+        return nullptr;
+    }
+
+    bool succ = false;
+    std::unique_ptr<char []> uuid;
+    std::unique_ptr<char []> description;
+    tie(succ, uuid, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
+    if (!succ) {
+        UniError(EINVAL).ThrowErr(env, "Invalid uuid");
+        return nullptr;
+    }
+
+    tie(succ, description, std::ignore) = NVal(env, funcArg[(int)NARG_POS::SECOND]).ToUTF8String();
+    if (!succ) {
+        UniError(EINVAL).ThrowErr(env, "Invalid description");
+        return nullptr;
+    }
+
+    auto result = std::make_shared<bool>();
+    std::string uuidString(uuid.get());
+    std::string descStr(description.get());
+    auto cbExec = [uuidString, descStr, result](napi_env env) -> UniError {
+        *result = DelayedSingleton<StorageManagerConnect>::GetInstance()->SetVolumeDescription(uuidString, descStr);
+        return UniError(ERRNO_NOERR);
+    };
+    auto cbComplete = [result](napi_env env, UniError err) -> NVal {
+        if (err) {
+            return { env, err.GetNapiErr(env) };
+        }
+        return { NVal::CreateBool(env, *result) };
+    };
+
+    std::string procedureName = "SetVolumeDescription";
+    NVal thisVar(env, funcArg.GetThisVar());
+    if (funcArg.GetArgc() == (uint)NARG_CNT::TWO) {
+        return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
+    } else {
+        NVal cb(env, funcArg[(int)NARG_POS::THIRD]);
+        return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
+    }
+    return NVal::CreateUndefined(env).val_;
+}
+
+napi_value Format(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+    if (!funcArg.InitArgs((int)NARG_CNT::TWO, (int)NARG_CNT::THREE)) {
+        UniError(EINVAL).ThrowErr(env, "Number of arguments unmatched");
+        return nullptr;
+    }
+
+    bool succ = false;
+    std::unique_ptr<char []> volumeId;
+    std::unique_ptr<char []> fsType;
+    tie(succ, volumeId, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
+    if (!succ) {
+        UniError(EINVAL).ThrowErr(env, "Invalid volumeId");
+        return nullptr;
+    }
+
+    tie(succ, fsType, std::ignore) = NVal(env, funcArg[(int)NARG_POS::SECOND]).ToUTF8String();
+    if (!succ) {
+        UniError(EINVAL).ThrowErr(env, "Invalid fsType");
+        return nullptr;
+    }
+
+    auto result = std::make_shared<bool>();
+    std::string volumeIdString(volumeId.get());
+    std::string fsTypeString(fsType.get());
+    auto cbExec = [volumeIdString, fsTypeString, result](napi_env env) -> UniError {
+        *result = DelayedSingleton<StorageManagerConnect>::GetInstance()->Format(volumeIdString, fsTypeString);
+        return UniError(ERRNO_NOERR);
+    };
+    auto cbComplete = [result](napi_env env, UniError err) -> NVal {
+        if (err) {
+            return { env, err.GetNapiErr(env) };
+        }
+        return { NVal::CreateBool(env, *result) };
+    };
+
+    std::string procedureName = "Format";
+    NVal thisVar(env, funcArg.GetThisVar());
+    if (funcArg.GetArgc() == (uint)NARG_CNT::TWO) {
+        return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
+    } else {
+        NVal cb(env, funcArg[(int)NARG_POS::THIRD]);
+        return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
+    }
+    return NVal::CreateUndefined(env).val_;
+}
+
+napi_value Partition(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+    if (!funcArg.InitArgs((int)NARG_CNT::TWO, (int)NARG_CNT::THREE)) {
+        UniError(EINVAL).ThrowErr(env, "Number of arguments unmatched");
+        return nullptr;
+    }
+
+    bool succ = false;
+    std::unique_ptr<char []> diskId;
+    int32_t type;
+    tie(succ, diskId, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
+    if (!succ) {
+        UniError(EINVAL).ThrowErr(env, "Invalid diskId");
+        return nullptr;
+    }
+
+    std::tie(succ, type) = NVal(env, funcArg[(int)NARG_POS::SECOND]).ToInt32();
+    if (!succ) {
+        UniError(EINVAL).ThrowErr(env, "Invalid type");
+        return nullptr;
+    }
+
+    auto result = std::make_shared<bool>();
+    std::string diskIdString(diskId.get());
+    auto cbExec = [diskIdString, type, result](napi_env env) -> UniError {
+        *result = DelayedSingleton<StorageManagerConnect>::GetInstance()->Partition(diskIdString, type);
+        return UniError(ERRNO_NOERR);
+    };
+    auto cbComplete = [result](napi_env env, UniError err) -> NVal {
+        if (err) {
+            return { env, err.GetNapiErr(env) };
+        }
+        return { NVal::CreateBool(env, *result) };
+    };
+
+    std::string procedureName = "Partition";
+    NVal thisVar(env, funcArg.GetThisVar());
+    if (funcArg.GetArgc() == (uint)NARG_CNT::TWO) {
+        return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
+    } else {
+        NVal cb(env, funcArg[(int)NARG_POS::THIRD]);
+        return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
+    }
+    return NVal::CreateUndefined(env).val_;
+}
 } // namespace ModuleVolumeManager
 } // namespace StorageManager
 } // namespace OHOS

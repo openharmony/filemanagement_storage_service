@@ -38,6 +38,8 @@ public:
     int32_t Unmount(std::string volumeId);
     int32_t Check(std::string volumeId);
     int32_t Partition(std::string diskId, int32_t type);
+    int32_t Format(std::string volumeId, std::string type);
+    int32_t SetVolumeDescription(std::string volumeId, std::string description);
 
     // fscrypt api
     int32_t GenerateUserKeys(uint32_t userId, uint32_t flags);

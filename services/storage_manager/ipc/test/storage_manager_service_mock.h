@@ -128,9 +128,9 @@ public:
     }
 
     virtual void NotifyDiskCreated(Disk disk) override {}
-    
+
     virtual void NotifyDiskDestroyed(std::string diskId) override {}
-    
+
     virtual int32_t Partition(std::string diskId, int32_t type) override
     {
         return E_OK;
@@ -140,6 +140,31 @@ public:
     {
         std::vector<Disk> result;
         return result;
+    }
+
+    virtual int32_t GetVolumeByUuid(std::string fsUuid, VolumeExternal &vc) override
+    {
+        return E_OK;
+    }
+
+    virtual int32_t GetVolumeById(std::string volumeId, VolumeExternal &vc) override
+    {
+        return E_OK;
+    }
+
+    virtual int32_t SetVolumeDescription(std::string fsUuid, std::string description) override
+    {
+        return E_OK;
+    }
+
+    virtual int32_t Format(std::string volumeId, std::string fsType) override
+    {
+        return E_OK;
+    }
+
+    virtual int32_t GetDiskById(std::string diskId, Disk &disk) override
+    {
+        return E_OK;
     }
 
     virtual int32_t GenerateUserKeys(uint32_t userId, uint32_t flags) override

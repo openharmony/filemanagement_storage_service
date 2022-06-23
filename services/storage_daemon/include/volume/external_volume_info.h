@@ -41,6 +41,7 @@ protected:
     virtual int32_t DoUMount(bool force) override;
     virtual int32_t DoCheck() override;
     virtual int32_t DoFormat(std::string type) override;
+    virtual int32_t DoSetVolDesc(std::string description) override;
 
 private:
     std::string devPath_;
@@ -54,9 +55,7 @@ private:
     const std::string devPathDir_ = "/dev/block/%s";
     const std::string mountPathDir_ = "/mnt/external/%s";
     std::vector<std::string> supportMountType_ = { "ext2", "ext3", "ext4", "ntfs", "exfat", "vfat" };
-    std::map<std::string, std::string> supportFormatType_ = {
-        {"ext2", "mke2fs"}, {"ext3", "mke2fs"}, {"ext4", "mke2fs"}, {"ntfs", "mkfs.ntfs"}, {"exfat", "mkfs.exfat"}
-    };
+    std::map<std::string, std::string> supportFormatType_ = {{"exfat", "mkfs.exfat"}, {"vfat", "newfs_msdos"}};
 
     int32_t ReadMetadata();
     std::string GetBlkidData(const std::string type);

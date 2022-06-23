@@ -162,10 +162,18 @@ int32_t VolumeInfo::Format(std::string type)
     }
 
     int32_t err = DoFormat(type);
-    if (err) {
-        return err;
+    return err;
+}
+
+int32_t VolumeInfo::SetVolumeDescription(const std::string description)
+{
+    if (mountState_ != UNMOUNTED) {
+        LOGE("Please unmount the volume %{public}s first", GetVolumeId().c_str());
+        return E_VOL_STATE;
     }
-    return E_OK;
+
+    int32_t err = DoSetVolDesc(description);
+    return err;
 }
 } // StorageDaemon
 } // OHOS

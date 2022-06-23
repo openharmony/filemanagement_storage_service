@@ -65,6 +65,12 @@ public:
     int32_t Partition(std::string diskId, int32_t type) override;
     std::vector<Disk> GetAllDisks() override;
 
+    int32_t GetVolumeByUuid(std::string fsUuid, VolumeExternal &vc) override;
+    int32_t GetVolumeById(std::string volumeId, VolumeExternal &vc) override;
+    int32_t SetVolumeDescription(std::string fsUuid, std::string description) override;
+    int32_t Format(std::string volumeId, std::string fsType) override;
+    int32_t GetDiskById(std::string diskId, Disk &disk) override;
+
     // fscrypt api
     int32_t GenerateUserKeys(uint32_t userId, uint32_t flags) override;
     int32_t DeleteUserKeys(uint32_t userId) override;

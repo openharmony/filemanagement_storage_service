@@ -45,6 +45,7 @@ public:
     int32_t UMount(bool force = false);
     int32_t Check();
     int32_t Format(const std::string type);
+    int32_t SetVolumeDescription(const std::string description);
 
     std::string GetVolumeId();
     int32_t GetVolumeType();
@@ -58,6 +59,7 @@ protected:
     virtual int32_t DoUMount(bool force) = 0;
     virtual int32_t DoCheck() = 0;
     virtual int32_t DoFormat(std::string type) = 0;
+    virtual int32_t DoSetVolDesc(std::string description) = 0;
 
 private:
     std::string id_;

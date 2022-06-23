@@ -674,6 +674,113 @@ BundleStats StorageManagerProxy::GetCurrentBundleStats()
     result = *BundleStats::Unmarshalling(reply);
     return result;
 }
+
+int32_t StorageManagerProxy::GetVolumeByUuid(std::string fsUuid, VolumeExternal &vc)
+{
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        return E_IPC_ERROR;
+    }
+
+    if (!data.WriteString(fsUuid)) {
+        return E_IPC_ERROR;
+    }
+
+    int err = Remote()->SendRequest(GET_VOL_BY_UUID, data, reply, option);
+    if (err != E_OK) {
+        return E_IPC_ERROR;
+    } else {
+        vc = *VolumeExternal::Unmarshalling(reply);
+    }
+    return reply.ReadInt32();
+}
+
+int32_t StorageManagerProxy::GetVolumeById(std::string volumeId, VolumeExternal &vc)
+{
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        return E_IPC_ERROR;
+    }
+
+    if (!data.WriteString(volumeId)) {
+        return E_IPC_ERROR;
+    }
+
+    int err = Remote()->SendRequest(GET_VOL_BY_ID, data, reply, option);
+    if (err != E_OK) {
+        return E_IPC_ERROR;
+    } else {
+        vc = *VolumeExternal::Unmarshalling(reply);
+    }
+    return reply.ReadInt32();
+}
+
+int32_t StorageManagerProxy::SetVolumeDescription(std::string fsUuid, std::string description)
+{
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        return E_IPC_ERROR;
+    }
+
+    if (!data.WriteString(fsUuid)) {
+        return E_IPC_ERROR;
+    }
+
+    if (!data.WriteString(description)) {
+        return E_IPC_ERROR;
+    }
+
+    int err = Remote()->SendRequest(SET_VOL_DESC, data, reply, option);
+    if (err != E_OK) {
+        return E_IPC_ERROR;
+    }
+    return reply.ReadInt32();
+}
+int32_t StorageManagerProxy::Format(std::string volumeId, std::string fsType)
+{
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        return E_IPC_ERROR;
+    }
+
+    if (!data.WriteString(volumeId)) {
+        return E_IPC_ERROR;
+    }
+
+    if (!data.WriteString(fsType)) {
+        return E_IPC_ERROR;
+    }
+
+    int err = Remote()->SendRequest(FORMAT, data, reply, option);
+    if (err != E_OK) {
+        return E_IPC_ERROR;
+    }
+    return reply.ReadInt32();
+}
+int32_t StorageManagerProxy::GetDiskById(std::string diskId, Disk &disk)
+{
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        return E_IPC_ERROR;
+    }
+
+    if (!data.WriteString(diskId)) {
+        return E_IPC_ERROR;
+    }
+
+    int err = Remote()->SendRequest(GET_DISK_BY_ID, data, reply, option);
+    if (err != E_OK) {
+        return E_IPC_ERROR;
+    } else {
+        disk = *Disk::Unmarshalling(reply);
+    }
+    return reply.ReadInt32();
+}
 } // StorageManager
 } // OHOS
 
