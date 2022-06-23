@@ -175,7 +175,7 @@ namespace StorageManager {
         for (auto it = volumeMap_.Begin(); it != volumeMap_.End(); ++it) {
             auto volume = it->second;
             if (volume->GetUuid() == fsUuid) {
-                LOGE("VolumeManagerService::GetVolumeByUuid volumeUuid %{public}s exists", fsUuid.c_str());
+                LOGI("VolumeManagerService::GetVolumeByUuid volumeUuid %{public}s exists", fsUuid.c_str());
                 vc = *volume;
                 return E_OK;
             }

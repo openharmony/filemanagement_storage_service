@@ -162,10 +162,7 @@ int32_t VolumeInfo::Format(std::string type)
     }
 
     int32_t err = DoFormat(type);
-    if (err) {
-        return err;
-    }
-    return E_OK;
+    return err;
 }
 
 int32_t VolumeInfo::SetVolumeDescription(const std::string description)
@@ -176,10 +173,7 @@ int32_t VolumeInfo::SetVolumeDescription(const std::string description)
     }
 
     int32_t err = DoSetVolDesc(description);
-    if (err) {
-        return err;
-    }
-    return E_OK;
+    return err;
 }
 } // StorageDaemon
 } // OHOS
