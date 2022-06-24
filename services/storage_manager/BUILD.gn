@@ -53,7 +53,7 @@ ohos_shared_library("storage_manager") {
 
   deps = [
     "../../interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
-    "//foundation/ability/ability_runtime/frameworks/kits/ability/native:abilitykit_native",
+    "//foundation/ability/ability_runtime/frameworks/native/ability/native:abilitykit_native",
     "//foundation/ability/ability_runtime/interfaces/inner_api/dataobs_manager:dataobs_manager",
     "//foundation/bundlemanager/bundle_framework/common:libappexecfwk_common",
     "//foundation/bundlemanager/bundle_framework/services/bundlemgr:libbms",
