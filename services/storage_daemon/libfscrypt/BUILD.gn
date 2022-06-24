@@ -18,9 +18,9 @@ config("fscrypt_utils_config") {
 
   include_dirs = [
     "../include/libfscrypt",
-    "//base/startup/init_lite/interfaces/innerkits/include",
-    "//base/startup/init_lite/services/log",
-    "//base/startup/init_lite/services/include",
+    "//base/startup/init/interfaces/innerkits/include",
+    "//base/startup/init/services/log",
+    "//base/startup/init/services/include",
   ]
 
   cflags = [
@@ -40,8 +40,8 @@ ohos_static_library("libfscryptutils") {
   configs = [ ":fscrypt_utils_config" ]
 
   deps = [
-    "//base/startup/init_lite/services/log:init_log",
-    "//base/startup/init_lite/services/utils:libinit_utils",
+    "//base/startup/init/services/log:init_log",
+    "//base/startup/init/services/utils:libinit_utils",
     "//base/startup/syspara_lite/interfaces/innerkits/native/syspara:syspara",
     "//utils/native/base:utils",
   ]
