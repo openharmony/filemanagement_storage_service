@@ -32,7 +32,7 @@
           "huks"
       ],
       "third_party": [
-        "exfat-utils",
+        "exfatprogs",
         "f2fs-tools",
         "FreeBSD/sbin/fsck_msdosfs",
         "gptfdisk",
