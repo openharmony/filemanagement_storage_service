@@ -56,13 +56,15 @@ ohos_static_library("libsdcrypto") {
 
   deps = [
     "//base/security/huks/frameworks/huks_standard/main/os_dependency:libhuks_os_dependency_standard_static",
-    "//base/startup/init_lite/interfaces/innerkits:libbegetutil",
     "//foundation/filemanagement/storage_service/services/storage_daemon/libfscrypt:libfscryptutils",
     "//third_party/openssl:libcrypto_shared",
     "//utils/native/base:utils",
   ]
 
-  external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
+  external_deps = [
+    "hiviewdfx_hilog_native:libhilog",
+    "init:libbegetutil",
+  ]
 
   subsystem_name = "filemanagement"
   part_name = "storage_service"
