@@ -32,6 +32,7 @@ public:
     void OnDiskCreated(Disk disk);
     void OnDiskDestroyed(std::string diskId);
     std::vector<Disk> GetAllDisks();
+    int32_t GetDiskById(std::string diskId, Disk &disk);
 private:
     StorageRlMap<std::string, std::shared_ptr<Disk>> diskMap_;
 };

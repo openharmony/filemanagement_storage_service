@@ -210,6 +210,41 @@ std::vector<Disk> StorageManager::GetAllDisks()
     return result;
 }
 
+int32_t StorageManager::GetVolumeByUuid(std::string fsUuid, VolumeExternal &vc)
+{
+    LOGI("StorageManger::GetVolumeByUuid start, uuid: %{public}s", fsUuid.c_str());
+    int32_t err = DelayedSingleton<VolumeManagerService>::GetInstance()->GetVolumeByUuid(fsUuid, vc);
+    return err;
+}
+
+int32_t StorageManager::GetVolumeById(std::string volumeId, VolumeExternal &vc)
+{
+    LOGI("StorageManger::GetVolumeById start, volId: %{public}s", volumeId.c_str());
+    int32_t err = DelayedSingleton<VolumeManagerService>::GetInstance()->GetVolumeById(volumeId, vc);
+    return err;
+}
+
+int32_t StorageManager::SetVolumeDescription(std::string fsUuid, std::string description)
+{
+    LOGI("StorageManger::SetVolumeDescription start, uuid: %{public}s", fsUuid.c_str());
+    int32_t err = DelayedSingleton<VolumeManagerService>::GetInstance()->SetVolumeDescription(fsUuid, description);
+    return err;
+}
+
+int32_t StorageManager::Format(std::string volumeId, std::string fsType)
+{
+    LOGI("StorageManger::Format start, volumeId: %{public}s, fsType: %{public}s", volumeId.c_str(), fsType.c_str());
+    int32_t err = DelayedSingleton<VolumeManagerService>::GetInstance()->Format(volumeId, fsType);
+    return err;
+}
+
+int32_t StorageManager::GetDiskById(std::string diskId, Disk &disk)
+{
+    LOGI("StorageManger::GetDiskById start, diskId: %{public}s", diskId.c_str());
+    int32_t err = DelayedSingleton<DiskManagerService>::GetInstance()->GetDiskById(diskId, disk);
+    return err;
+}
+
 int32_t StorageManager::GenerateUserKeys(uint32_t userId, uint32_t flags)
 {
     LOGI("UserId: %{public}u, flags:  %{public}u", userId, flags);

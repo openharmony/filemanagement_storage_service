@@ -96,6 +96,9 @@ int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
         case FORMAT:
             err = HandleFormat(data, reply);
             break;
+        case SET_VOL_DESC:
+            err = HandleSetVolDesc(data, reply);
+            break;
         case PREPARE_USER_DIRS:
             err = HandlePrepareUserDirs(data, reply);
             break;
@@ -206,6 +209,19 @@ int32_t StorageDaemonStub::HandlePartition(MessageParcel &data, MessageParcel &r
     int err = Partition(volId, type);
     if (!reply.WriteInt32(err)) {
         return  E_IPC_ERROR;
+    }
+
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleSetVolDesc(MessageParcel &data, MessageParcel &reply)
+{
+    std::string volId = data.ReadString();
+    std::string description = data.ReadString();
+
+    int err = SetVolumeDescription(volId, description);
+    if (!reply.WriteInt32(err)) {
+        return E_IPC_ERROR;
     }
 
     return E_OK;

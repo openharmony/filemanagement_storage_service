@@ -42,6 +42,8 @@ declare namespace volumeManager {
    * Get All Volumes
    * 
    * @since 9
+   * @syscap SystemCapability.FileManagement.StorageService.Volume
+   * @permission ohos.permission.STORAGE_MANAGER
    * @systemapi
    */
 function getAllVolumes(callback: AsyncCallback<Array<Volume>>): void;
@@ -52,6 +54,8 @@ function getAllVolumes(): Promise<Array<Volume>>;
    * Mount
    * 
    * @since 9
+   * @syscap SystemCapability.FileManagement.StorageService.Volume
+   * @permission ohos.permission.MOUNT_UNMOUNT_MANAGER
    * @systemapi
    */
 function mount(volumeId: string, callback: AsyncCallback<boolean>): void;
@@ -61,11 +65,69 @@ function mount(volumeId: string): Promise<boolean>;
    * UnMount
    * 
    * @since 9
+   * @syscap SystemCapability.FileManagement.StorageService.Volume
+   * @permission ohos.permission.MOUNT_UNMOUNT_MANAGER
    * @systemapi
    */
 function unmount(volumeId: string, callback: AsyncCallback<boolean>): void;
 function unmount(volumeId: string): Promise<boolean>;
 
+
+/**
+   * Get the volume by uuid.
+   * 
+   * @since 9
+   * @syscap SystemCapability.FileManagement.StorageService.Volume
+   * @permission ohos.permission.STORAGE_MANAGER
+   * @systemapi
+   */
+ function getVolumeByUuid(uuid: string, callback: AsyncCallback<Volume>): void;
+ function getVolumeByUuid(uuid: string): Promise<Volume>;
+ 
+/**
+   * Get the volume by id.
+   * 
+   * @since 9
+   * @syscap SystemCapability.FileManagement.StorageService.Volume
+   * @permission ohos.permission.STORAGE_MANAGER
+   * @systemapi
+   */
+function getVolumeById(volumeId: string, callback: AsyncCallback<Volume>): void;
+function getVolumeById(volumeId: string): Promise<Volume>;
+ 
+/**
+   * Set the description of volume.
+   * 
+   * @since 9
+   * @syscap SystemCapability.FileManagement.StorageService.Volume
+   * @permission ohos.permission.MOUNT_UNMOUNT_MANAGER
+   * @systemapi
+   */
+function setVolumeDescription(uuid: string, description: string, callback: AsyncCallback<boolean>): void;
+function setVolumeDescription(uuid: string, description: string): Promise<boolean>;
+ 
+/**
+   * Format.
+   * 
+   * @since 9
+   * @syscap SystemCapability.FileManagement.StorageService.Volume
+   * @permission ohos.permission.MOUNT_FORMAT_MANAGER
+   * @systemapi
+   */
+function format(volumeId: string, fsType: string, callback: AsyncCallback<boolean>): void;
+function format(volumeId: string, fsType: string): Promise<boolean>;
+   
+  
+/**
+   * Partition.
+   * 
+   * @since 9
+   * @syscap SystemCapability.FileManagement.StorageService.Volume
+   * @permission ohos.permission.MOUNT_FORMAT_MANAGER
+   * @systemapi
+   */
+function partition(diskId: string, type: number, callback: AsyncCallback<boolean>): void;
+function partition(diskId: string, type: number): Promise<boolean>;
 }
 
 export default volumeManager;

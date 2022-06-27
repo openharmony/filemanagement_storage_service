@@ -46,7 +46,7 @@ ohos_shared_library("storagestatistics") {
   ]
 
   deps = [
-    "${ability_runtime_kits_path}/ability/native:abilitykit_native",
+    "${ability_runtime_path}/frameworks/native/ability/native:abilitykit_native",
     "//foundation/arkui/napi:ace_napi",
     "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js:fileio",
     "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js:statfs",
@@ -100,7 +100,7 @@ ohos_shared_library("volumemanager") {
   ]
 
   deps = [
-    "${ability_runtime_kits_path}/ability/native:abilitykit_native",
+    "${ability_runtime_path}/frameworks/native/ability/native:abilitykit_native",
     "//foundation/arkui/napi:ace_napi",
     "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js:fileio",
     "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js:statfs",

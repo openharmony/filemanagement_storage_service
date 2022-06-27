@@ -64,6 +64,11 @@ public:
         return E_OK;
     }
 
+    virtual int32_t SetVolumeDescription(std::string volId, std::string description) override
+    {
+        return E_OK;
+    }
+
     virtual int32_t StartUser(int32_t userId) override
     {
         return E_OK;

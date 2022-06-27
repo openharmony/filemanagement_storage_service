@@ -146,6 +146,30 @@ int32_t StorageDaemonProxy::Partition(std::string diskId, int32_t type)
     return reply.ReadInt32();
 }
 
+int32_t StorageDaemonProxy::SetVolumeDescription(std::string volId, std::string description)
+{
+    MessageParcel data, reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
+        return E_IPC_ERROR;
+    }
+
+    if (!data.WriteString(volId)) {
+        return E_IPC_ERROR;
+    }
+
+    if (!data.WriteString(description)) {
+        return E_IPC_ERROR;
+    }
+
+    int err = Remote()->SendRequest(SET_VOL_DESC, data, reply, option);
+    if (err != E_OK) {
+        return E_IPC_ERROR;
+    }
+
+    return reply.ReadInt32();
+}
+
 int32_t StorageDaemonProxy::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
     MessageParcel data, reply;

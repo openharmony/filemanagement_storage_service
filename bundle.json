@@ -32,7 +32,7 @@
           "huks"
       ],
       "third_party": [
-        "exfat-utils",
+        "exfatprogs",
         "f2fs-tools",
         "FreeBSD/sbin/fsck_msdosfs",
         "gptfdisk",
@@ -57,7 +57,12 @@
               "name": "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
               "header": {
                 "header_files": [
-                  "istorage_manager.h"
+                  "istorage_manager.h",
+                  "bundle_stats.h",
+                  "storage_stats.h",
+                  "disk.h",
+                  "volume_core.h",
+                  "volume_external.h"
                 ],
                 "header_base": "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native"
               }

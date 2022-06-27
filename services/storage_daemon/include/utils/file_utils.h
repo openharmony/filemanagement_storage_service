@@ -30,6 +30,7 @@ struct FileList {
     std::string path;
 };
 
+int32_t Restorecon(const std::string &path);
 int32_t ChMod(const std::string &path, mode_t mode);
 int32_t MkDir(const std::string &path, mode_t mode);
 bool IsDir(const std::string &path);
