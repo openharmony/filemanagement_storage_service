@@ -29,7 +29,6 @@ ohos_unittest("user_manager_test") {
     "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
     "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
     "//foundation/filemanagement/storage_service/services/common/include",
-    "//base/startup/init_lite/interfaces/innerkits/include/syspara",
   ]
 
   sources = [

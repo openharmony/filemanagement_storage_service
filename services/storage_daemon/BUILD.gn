@@ -31,7 +31,6 @@ config("storage_daemon_config") {
     "../storage_manager/include",
     "//foundation/distributedschedule/safwk/interfaces/innerkits/safwk",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
-    "//base/startup/init_lite/interfaces/innerkits/include/syspara",
     "//base/security/access_token/interfaces/innerkits/accesstoken/include",
     "//foundation/filemanagement/storage_service/services/common/include",
   ]
