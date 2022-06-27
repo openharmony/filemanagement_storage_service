@@ -18,11 +18,11 @@
 #include <iservice_registry.h>
 #include <system_ability_definition.h>
 
+#include "ipc/storage_manager.h"
+#include "ipc/storage_manager_proxy.h"
 #include "storage/storage_status_service.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "ipc/storage_manager_proxy.h"
-#include "ipc/storage_manager.h"
 
 using namespace std;
 
@@ -178,6 +178,67 @@ BundleStats StorageManagerConnect::GetCurrentBundleStats()
     }
     result = storageManager_->GetCurrentBundleStats();
     return result;
+}
+
+VolumeExternal StorageManagerConnect::GetVolumeByUuid(std::string uuid)
+{
+    VolumeExternal result;
+    if (Connect() != E_OK) {
+        LOGE("StorageManagerConnect::GetVolumeByUuid:Connect error");
+        return result;
+    }
+    storageManager_->GetVolumeByUuid(uuid, result);
+    return result;
+}
+
+VolumeExternal StorageManagerConnect::GetVolumeById(std::string volumeId)
+{
+    VolumeExternal result;
+    if (Connect() != E_OK) {
+        LOGE("StorageManagerConnect::GetVolumeById:Connect error");
+        return result;
+    }
+    storageManager_->GetVolumeById(volumeId, result);
+    return result;
+}
+
+bool StorageManagerConnect::SetVolumeDescription(std::string uuid, std::string description)
+{
+    if (Connect() != E_OK) {
+        LOGE("StorageManagerConnect::SetVolumeDescription:Connect error");
+        return E_IPC_ERROR;
+    }
+    if (storageManager_->SetVolumeDescription(uuid, description) == E_OK) {
+        LOGE("StorageManagerConnect::SetVolumeDescription:success");
+        return true;
+    }
+    return false;
+}
+
+bool StorageManagerConnect::Format(std::string volumeId, std::string fsType)
+{
+    if (Connect() != E_OK) {
+        LOGE("StorageManagerConnect::Format:Connect error");
+        return E_IPC_ERROR;
+    }
+    if (storageManager_->Format(volumeId, fsType) == E_OK) {
+        LOGE("StorageManagerConnect::Format:success");
+        return true;
+    }
+    return false;
+}
+
+bool StorageManagerConnect::Partition(std::string diskId, int32_t type)
+{
+    if (Connect() != E_OK) {
+        LOGE("StorageManagerConnect::Partition:Connect error");
+        return E_IPC_ERROR;
+    }
+    if (storageManager_->Partition(diskId, type) == E_OK) {
+        LOGE("StorageManagerConnect::Partition:success");
+        return true;
+    }
+    return false;
 }
 } // StorageManager
 } // OHOS

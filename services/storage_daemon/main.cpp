@@ -15,8 +15,6 @@
 
 #include <fstream>
 
-#include "system_ability_definition.h"
-
 #include "disk/disk_config.h"
 #include "disk/disk_info.h"
 #include "disk/disk_manager.h"
@@ -24,8 +22,9 @@
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
 #include "netlink/netlink_manager.h"
-#include "utils/string_utils.h"
 #include "storage_service_log.h"
+#include "system_ability_definition.h"
+#include "utils/string_utils.h"
 
 using namespace OHOS;
 

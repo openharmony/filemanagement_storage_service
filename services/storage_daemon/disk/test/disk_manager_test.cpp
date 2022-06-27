@@ -13,19 +13,17 @@
  * limitations under the License.
  */
 
+#include <fstream>
 #include <gtest/gtest.h>
 #include <sys/sysmacros.h>
-#include <fstream>
 
-#include "storage_service_errno.h"
-#include "storage_service_log.h"
 #include "disk/disk_manager.h"
 #include "message_parcel.h"
-
 #include "netlink/netlink_data.h"
-#include "volume/external_volume_info.h"
-
+#include "storage_service_errno.h"
+#include "storage_service_log.h"
 #include "utils/string_utils.h"
+#include "volume/external_volume_info.h"
 
 namespace OHOS {
 namespace StorageDaemon {

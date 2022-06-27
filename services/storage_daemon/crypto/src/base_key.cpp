@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "base_key.h"
 
 #include <fcntl.h>
@@ -21,10 +22,10 @@
 #include "directory_ex.h"
 #include "file_ex.h"
 #include "huks_master.h"
+#include "libfscrypt/key_control.h"
 #include "storage_service_log.h"
 #include "string_ex.h"
 #include "utils/file_utils.h"
-#include "libfscrypt/key_control.h"
 
 namespace {
 const std::string PATH_LATEST_BACKUP = "/latest_bak";
@@ -330,7 +331,7 @@ bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
     if (!LoadKeyBlob(keyContext_.encrypted, path + PATH_ENCRYPTED)) {
         return false;
     }
-    if (!LoadKeyBlob(keyContext_.shield, path + PATH_SHIELD, CRYPTO_KEY_SHIELD_SIZE)) {
+    if (!LoadKeyBlob(keyContext_.shield, path + PATH_SHIELD)) {
         keyContext_.encrypted.Clear();
         return false;
     }

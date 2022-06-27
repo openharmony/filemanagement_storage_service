@@ -14,12 +14,11 @@
  */
 
 #include <gtest/gtest.h>
-
 #include <memory>
 
+#include "netlink/netlink_manager.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "netlink/netlink_manager.h"
 
 namespace OHOS {
 namespace StorageDaemon {

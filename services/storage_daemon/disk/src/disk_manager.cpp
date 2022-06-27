@@ -15,16 +15,15 @@
 
 #include "disk/disk_manager.h"
 
+#include <sys/sysmacros.h>
 #include <thread>
 
-#include <sys/sysmacros.h>
-
+#include "ipc/storage_manager_client.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "utils/string_utils.h"
-#include "utils/file_utils.h"
 #include "utils/disk_utils.h"
-#include "ipc/storage_manager_client.h"
+#include "utils/file_utils.h"
+#include "utils/string_utils.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -126,6 +125,7 @@ void DiskManager::ChangeDisk(dev_t device)
     for (auto &diskInfo : disk_) {
         if (diskInfo->GetDevice() == device) {
             diskInfo->ReadMetadata();
+            diskInfo->ReadPartition();
         }
     }
 }

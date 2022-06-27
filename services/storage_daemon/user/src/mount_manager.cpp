@@ -42,9 +42,9 @@ MountManager::MountManager()
                    {"/data/service/el2/%d/hmdfs/non_account", 0711, OID_SYSTEM, OID_SYSTEM},
                    {"/data/service/el2/%d/hmdfs/non_account/files", 0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
                    {"/data/service/el2/%d/hmdfs/non_account/data", 0711, OID_SYSTEM, OID_SYSTEM},
-                   {"/data/service/el2/%d/hmdfs/cache", 0711, OID_SYSTEM, OID_SYSTEM},
-                   {"/data/service/el2/%d/hmdfs/cache/account_cache", 0711, OID_SYSTEM, OID_SYSTEM},
-                   {"/data/service/el2/%d/hmdfs/cache/non_account_cache", 0711, OID_SYSTEM, OID_SYSTEM}},
+                   {"/data/service/el2/%d/hmdfs/cache", 0711, OID_DFS, OID_DFS},
+                   {"/data/service/el2/%d/hmdfs/cache/account_cache", 0711, OID_DFS, OID_DFS},
+                   {"/data/service/el2/%d/hmdfs/cache/non_account_cache", 0711, OID_DFS, OID_DFS}},
       virtualDir_{{"/storage/media/%d", 0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
                   {"/storage/media/%d/local", 0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
                   {"/mnt/hmdfs/", 0711, OID_ROOT, OID_ROOT},
@@ -68,8 +68,8 @@ int32_t MountManager::HmdfsTwiceMount(int32_t userId, std::string relativePath)
 
     // bind mount
     Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, relativePath));
-    ret = Mount(hmdfsMntArgs.GetFullDst() + "/device_view/", hmdfsMntArgs.GetCommFullPath(),
-                nullptr, MS_BIND, nullptr);
+    ret += Mount(hmdfsMntArgs.GetFullDst() + "/device_view/", hmdfsMntArgs.GetCommFullPath(),
+                 nullptr, MS_BIND, nullptr);
     if (ret != 0 && errno != EEXIST && errno != EBUSY) {
         LOGE("failed to bind mount, err %{public}d", errno);
         return E_MOUNT;

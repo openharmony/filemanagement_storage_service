@@ -15,21 +15,21 @@
 
 #include "volume/external_volume_info.h"
 
-#include <cstdlib>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <cerrno>
-#include <sys/mount.h>
-#include <csignal>
 #include <algorithm>
-#include <sys/wait.h>
+#include <cerrno>
+#include <csignal>
+#include <cstdlib>
 #include <cstring>
+#include <sys/mount.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
-#include "storage_service_log.h"
 #include "storage_service_errno.h"
+#include "storage_service_log.h"
+#include "utils/file_utils.h"
 #include "utils/string_utils.h"
 #include "volume/process.h"
-#include "utils/file_utils.h"
 
 using namespace std;
 namespace OHOS {
@@ -37,14 +37,22 @@ namespace StorageDaemon {
 std::string ExternalVolumeInfo::GetBlkidData(const std::string type)
 {
     std::vector<std::string> output;
-    std::vector<std::string> cmd = {
-        "blkid",
-        "-s",
-        type,
-        "-o",
-        "value",
-        devPath_
-    };
+    std::vector<std::string> cmd;
+    if (fsType_ == "ntfs" && type == "LABEL") {
+        cmd = {
+            "ntfslabel",
+            devPath_
+        };
+    } else {
+        cmd = {
+            "blkid",
+            "-s",
+            type,
+            "-o",
+            "value",
+            devPath_
+        };
+    }
 
     int32_t err = ForkExec(cmd, &output);
     if (err) {
@@ -96,6 +104,11 @@ std::string ExternalVolumeInfo::GetFsLabel()
     return fsLabel_;
 }
 
+std::string ExternalVolumeInfo::GetMountPath()
+{
+    return mountPath_;
+}
+
 int32_t ExternalVolumeInfo::DoCreate(dev_t dev)
 {
     int32_t ret = 0;
@@ -107,13 +120,6 @@ int32_t ExternalVolumeInfo::DoCreate(dev_t dev)
     ret = mknod(devPath_.c_str(), S_IFBLK, dev);
     if (ret) {
         LOGE("External volume DoCreate error.");
-        return E_ERR;
-    }
-
-    ret = ReadMetadata();
-    if (ret) {
-        LOGE("External volume ReadMetadata failed.");
-        remove(devPath_.c_str());
         return E_ERR;
     }
 
@@ -130,62 +136,87 @@ int32_t ExternalVolumeInfo::DoDestroy()
     return E_OK;
 }
 
-int32_t ExternalVolumeInfo::DoMount(const std::string mountPath, uint32_t mountFlags)
+int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
 {
     int32_t ret = 0;
     mode_t mode = 0777;
+    struct stat statbuf;
 
     if (GetFsType() == -1) {
         return E_NOT_SUPPORT;
     }
 
+    ret = ReadMetadata();
+    if (ret) {
+        LOGE("External volume ReadMetadata failed.");
+        remove(devPath_.c_str());
+        return E_ERR;
+    }
+    mountPath_ = StringPrintf(mountPathDir_.c_str(), fsUuid_.c_str());
+
+    // check if dir exists
+    ret = lstat(mountPath_.c_str(), &statbuf);
+    if (!ret) {
+        LOGE("volume mount path %{public}s exists, please remove first", GetMountPath().c_str());
+        return E_MOUNT;
+    }
+
+    ret = mkdir(mountPath_.c_str(), S_IRWXU | S_IRWXG | S_IXOTH);
+    if (ret) {
+        LOGE("the volume %{public}s create mount file %{public}s failed",
+             GetVolumeId().c_str(), GetMountPath().c_str());
+        return E_MOUNT;
+    }
+
+    auto mountData = StringPrintf("uid=%d,gid=%d,dmask=0007,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
     if (fsType_ == "ext2" || fsType_ == "ext3" || fsType_ == "ext4") {
-        ret = mount(devPath_.c_str(), mountPath.c_str(), fsType_.c_str(), mountFlags, "");
+        ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType_.c_str(), mountFlags, "");
         if (!ret) {
-            TravelChmod(mountPath, mode);
+            TravelChmod(mountPath_, mode);
         }
     } else if (fsType_ == "ntfs") {
         std::vector<std::string> cmd = {
             "mount.ntfs",
             devPath_,
-            mountPath,
+            mountPath_,
             "-o",
-            "rw,uid=0,gid=0,dmask=000,fmask=000"
+            "rw,uid=1006,gid=1006,dmask=0007,fmask=0007"
         };
         ret = ForkExec(cmd);
     } else {
-        ret = mount(devPath_.c_str(), mountPath.c_str(), fsType_.c_str(), MS_MGC_VAL, "fmask=000,dmask=000");
+        ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType_.c_str(), MS_MGC_VAL, mountData.c_str());
     }
 
     if (ret) {
         LOGE("External volume DoMount error.");
+        remove(mountPath_.c_str());
         return E_MOUNT;
     }
 
     return E_OK;
 }
 
-int32_t ExternalVolumeInfo::DoUMount(const std::string mountPath, bool force)
+int32_t ExternalVolumeInfo::DoUMount(bool force)
 {
     if (force) {
         LOGI("External volume start force to unmount.");
-        Process ps(mountPath);
+        Process ps(mountPath_);
         ps.UpdatePidByPath();
         ps.KillProcess(SIGKILL);
-        umount2(mountPath.c_str(), MNT_DETACH);
-        remove(mountPath.c_str());
+        umount2(mountPath_.c_str(), MNT_DETACH);
+        remove(mountPath_.c_str());
         return E_OK;
     }
 
-    int ret = umount(mountPath.c_str());
-    int err = remove(mountPath.c_str());
+    int ret = umount(mountPath_.c_str());
+    int err = remove(mountPath_.c_str());
     if (err && ret) {
         LOGE("External volume DoUmount error.");
         return E_UMOUNT;
     }
 
     if (err) {
-        LOGE("failed to call remove(%{public}s) error, errno = %{public}d", mountPath.c_str(), errno);
+        LOGE("failed to call remove(%{public}s) error, errno = %{public}d", mountPath_.c_str(), errno);
         return E_SYS_CALL;
     }
     return E_OK;
@@ -216,12 +247,10 @@ int32_t ExternalVolumeInfo::DoFormat(std::string type)
         return E_NOT_SUPPORT;
     }
 
-    if (type == "ext2" || type == "ext3" || type == "ext4") {
+    if (type == "vfat") {
         std::vector<std::string> cmd = {
             iter->second,
-            "-F",
-            "-t",
-            type,
+            "-A",
             devPath_
         };
         err = ForkExec(cmd);
@@ -235,6 +264,40 @@ int32_t ExternalVolumeInfo::DoFormat(std::string type)
 
     if (err == E_NO_CHILD) {
         err = E_OK;
+    }
+
+    ReadMetadata();
+    return err;
+}
+
+int32_t ExternalVolumeInfo::DoSetVolDesc(std::string description)
+{
+    int32_t err = 0;
+    if (fsType_ == "ntfs") {
+        std::vector<std::string> cmd = {
+            "ntfslabel",
+            devPath_,
+            description
+        };
+        err = ForkExec(cmd);
+    } else if (fsType_ == "exfat") {
+        std::vector<std::string> cmd = {
+            "exfatlabel",
+            devPath_,
+            description
+        };
+        err = ForkExec(cmd);
+    } else if (fsType_ == "vfat") {
+        std::vector<std::string> cmd = {
+            "newfs_msdos",
+            "-L",
+            description,
+            devPath_
+        };
+        err = ForkExec(cmd);
+    } else {
+        LOGE("SetVolumeDescription fsType not support.");
+        return E_NOT_SUPPORT;
     }
 
     ReadMetadata();

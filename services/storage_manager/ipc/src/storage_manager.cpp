@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,18 +14,20 @@
  */
 
 #include "ipc/storage_manager.h"
+
+#include <singleton.h>
 #include <storage/storage_status_service.h>
 #include <storage/storage_total_status_service.h>
-#include <singleton.h>
-#include "system_ability_definition.h"
-#include "storage_service_log.h"
-#include "storage_service_errno.h"
+#include <storage/volume_storage_status_service.h>
+
 #include "account_subscriber/account_subscriber.h"
+#include "crypto/filesystem_crypto.h"
+#include "disk/disk_manager_service.h"
+#include "storage_service_errno.h"
+#include "storage_service_log.h"
+#include "system_ability_definition.h"
 #include "user/multi_user_manager_service.h"
 #include "volume/volume_manager_service.h"
-#include "disk/disk_manager_service.h"
-#include "crypto/filesystem_crypto.h"
-
 
 namespace OHOS {
 namespace StorageManager {
@@ -79,14 +81,14 @@ int32_t StorageManager::StopUser(int32_t userId)
 int64_t StorageManager::GetFreeSizeOfVolume(std::string volumeUuid)
 {
     LOGI("StorageManger::getFreeSizeOfVolume start, volumeUuid: %{public}s", volumeUuid.c_str());
-    int64_t result = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetFreeSizeOfVolume(volumeUuid);
+    int64_t result = DelayedSingleton<VolumeStorageStatusService>::GetInstance()->GetFreeSizeOfVolume(volumeUuid);
     return result;
 }
 
 int64_t StorageManager::GetTotalSizeOfVolume(std::string volumeUuid)
 {
     LOGI("StorageManger::getTotalSizeOfVolume start, volumeUuid: %{public}s", volumeUuid.c_str());
-    int64_t result = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetTotalSizeOfVolume(volumeUuid);
+    int64_t result = DelayedSingleton<VolumeStorageStatusService>::GetInstance()->GetTotalSizeOfVolume(volumeUuid);
     return result;
 }
 
@@ -206,6 +208,41 @@ std::vector<Disk> StorageManager::GetAllDisks()
     LOGI("StorageManger::GetAllDisks start");
     std::vector<Disk> result = DelayedSingleton<DiskManagerService>::GetInstance()->GetAllDisks();
     return result;
+}
+
+int32_t StorageManager::GetVolumeByUuid(std::string fsUuid, VolumeExternal &vc)
+{
+    LOGI("StorageManger::GetVolumeByUuid start, uuid: %{public}s", fsUuid.c_str());
+    int32_t err = DelayedSingleton<VolumeManagerService>::GetInstance()->GetVolumeByUuid(fsUuid, vc);
+    return err;
+}
+
+int32_t StorageManager::GetVolumeById(std::string volumeId, VolumeExternal &vc)
+{
+    LOGI("StorageManger::GetVolumeById start, volId: %{public}s", volumeId.c_str());
+    int32_t err = DelayedSingleton<VolumeManagerService>::GetInstance()->GetVolumeById(volumeId, vc);
+    return err;
+}
+
+int32_t StorageManager::SetVolumeDescription(std::string fsUuid, std::string description)
+{
+    LOGI("StorageManger::SetVolumeDescription start, uuid: %{public}s", fsUuid.c_str());
+    int32_t err = DelayedSingleton<VolumeManagerService>::GetInstance()->SetVolumeDescription(fsUuid, description);
+    return err;
+}
+
+int32_t StorageManager::Format(std::string volumeId, std::string fsType)
+{
+    LOGI("StorageManger::Format start, volumeId: %{public}s, fsType: %{public}s", volumeId.c_str(), fsType.c_str());
+    int32_t err = DelayedSingleton<VolumeManagerService>::GetInstance()->Format(volumeId, fsType);
+    return err;
+}
+
+int32_t StorageManager::GetDiskById(std::string diskId, Disk &disk)
+{
+    LOGI("StorageManger::GetDiskById start, diskId: %{public}s", diskId.c_str());
+    int32_t err = DelayedSingleton<DiskManagerService>::GetInstance()->GetDiskById(diskId, disk);
+    return err;
 }
 
 int32_t StorageManager::GenerateUserKeys(uint32_t userId, uint32_t flags)

@@ -259,7 +259,7 @@ bool HuksMaster::GenerateKey(KeyBlob &keyOut)
         }
         KeyBlob alias = GenerateRandomKey(CRYPTO_KEY_ALIAS_SIZE);
         HksBlob hksAlias = alias.ToHksBlob();
-        keyOut.Alloc(CRYPTO_KEY_SHIELD_SIZE);
+        keyOut.Alloc(CRYPTO_KEY_SHIELD_MAX_SIZE);
         HksBlob hksKeyOut = keyOut.ToHksBlob();
         ret = HdiGenerateKey(hksAlias, paramSet, hksKeyOut);
         if (ret != HKS_SUCCESS) {

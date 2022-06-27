@@ -22,7 +22,7 @@
 namespace OHOS {
 namespace StorageDaemon {
 constexpr int UID_ROOT = 0;
-constexpr int UID_SYSTEM = 1000;
+constexpr int UID_STORAGEMANAGER = 1090;
 class StorageDaemonStub : public IRemoteStub<IStorageDaemon> {
 public:
     virtual int32_t OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
@@ -36,6 +36,7 @@ private:
     int32_t HandleCheck(MessageParcel &data, MessageParcel &reply);
     int32_t HandleFormat(MessageParcel &data, MessageParcel &reply);
     int32_t HandlePartition(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleSetVolDesc(MessageParcel &data, MessageParcel &reply);
 
     int32_t HandleStartUser(MessageParcel &data, MessageParcel &reply);
     int32_t HandleStopUser(MessageParcel &data, MessageParcel &reply);

@@ -14,12 +14,13 @@
  */
 
 #include "ipc/storage_daemon_stub.h"
+
 #include "accesstoken_kit.h"
 #include "ipc_skeleton.h"
 #include "native_token_info.h"
-#include "string_ex.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "string_ex.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -56,7 +57,7 @@ bool CheckClientPermission()
 
     std::string clientName = GetProcessName(tokenId);
     LOGI("GetClientProcessName:%{public}s", clientName.c_str());
-    if ((clientName == "storage_manager" && uid == UID_SYSTEM)|| uid == UID_ROOT) {
+    if ((uid == UID_STORAGEMANAGER)|| uid == UID_ROOT) {
         return true;
     }
     return false;
@@ -94,6 +95,9 @@ int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
             break;
         case FORMAT:
             err = HandleFormat(data, reply);
+            break;
+        case SET_VOL_DESC:
+            err = HandleSetVolDesc(data, reply);
             break;
         case PREPARE_USER_DIRS:
             err = HandlePrepareUserDirs(data, reply);
@@ -205,6 +209,19 @@ int32_t StorageDaemonStub::HandlePartition(MessageParcel &data, MessageParcel &r
     int err = Partition(volId, type);
     if (!reply.WriteInt32(err)) {
         return  E_IPC_ERROR;
+    }
+
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleSetVolDesc(MessageParcel &data, MessageParcel &reply)
+{
+    std::string volId = data.ReadString();
+    std::string description = data.ReadString();
+
+    int err = SetVolumeDescription(volId, description);
+    if (!reply.WriteInt32(err)) {
+        return E_IPC_ERROR;
     }
 
     return E_OK;

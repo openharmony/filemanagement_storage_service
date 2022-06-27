@@ -12,12 +12,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "netlink/netlink_handler.h"
 
+#include "disk/disk_manager.h"
 #include "netlink/netlink_data.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "disk/disk_manager.h"
 
 namespace OHOS {
 namespace StorageDaemon {

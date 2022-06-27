@@ -14,12 +14,11 @@
  */
 
 #include <gtest/gtest.h>
-
 #include <linux/kdev_t.h>
 
+#include "external_volume_info_mock.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "external_volume_info_mock.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -90,15 +89,14 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount_
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount_001 start";
 
     ExternalVolumeInfoMock mock;
-    std::string mountPath = "/data";
     uint32_t mountFlags = 0;
 
-    EXPECT_CALL(mock, DoMount(testing::_, testing::_)).Times(1).WillOnce(testing::Return(E_MOUNT));
-    auto ret = mock.DoMount(mountPath, mountFlags);
+    EXPECT_CALL(mock, DoMount(testing::_)).Times(1).WillOnce(testing::Return(E_MOUNT));
+    auto ret = mock.DoMount(mountFlags);
     EXPECT_TRUE(ret == E_MOUNT);
 
-    EXPECT_CALL(mock, DoMount(testing::_, testing::_)).Times(1).WillOnce(testing::Return(E_OK));
-    ret = mock.DoMount(mountPath, mountFlags);
+    EXPECT_CALL(mock, DoMount(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    ret = mock.DoMount(mountFlags);
     EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount_001 end";
 }
@@ -114,19 +112,18 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUMount
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMount_001 start";
 
     ExternalVolumeInfoMock mock;
-    std::string mountPath = "/data";
     bool force = true;
 
-    EXPECT_CALL(mock, DoUMount(testing::_, testing::_)).Times(1).WillOnce(testing::Return(E_UMOUNT));
-    auto ret = mock.DoUMount(mountPath, force);
+    EXPECT_CALL(mock, DoUMount(testing::_)).Times(1).WillOnce(testing::Return(E_UMOUNT));
+    auto ret = mock.DoUMount(force);
     EXPECT_TRUE(ret == E_UMOUNT);
 
-    EXPECT_CALL(mock, DoUMount(testing::_, testing::_)).Times(1).WillOnce(testing::Return(E_SYS_CALL));
-    ret = mock.DoUMount(mountPath, force);
+    EXPECT_CALL(mock, DoUMount(testing::_)).Times(1).WillOnce(testing::Return(E_SYS_CALL));
+    ret = mock.DoUMount(force);
     EXPECT_TRUE(ret == E_SYS_CALL);
 
-    EXPECT_CALL(mock, DoUMount(testing::_, testing::_)).Times(1).WillOnce(testing::Return(E_OK));
-    ret = mock.DoUMount(mountPath, force);
+    EXPECT_CALL(mock, DoUMount(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    ret = mock.DoUMount(force);
     EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoUMount_001 end";
 }

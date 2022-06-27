@@ -12,19 +12,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <vector>
-#include <string>
-#include <gtest/gtest.h>
 
-#include "file_ex.h"
+#include <gtest/gtest.h>
+#include <string>
+#include <vector>
+
 #include "directory_ex.h"
-#include "securec.h"
+#include "file_ex.h"
 #include "fscrypt_key_v1.h"
 #include "fscrypt_key_v2.h"
-#include "libfscrypt/key_control.h"
+#include "key_blob.h"
 #include "libfscrypt/fscrypt_control.h"
 #include "libfscrypt/fscrypt_utils.h"
-#include "key_blob.h"
+#include "libfscrypt/key_control.h"
+#include "securec.h"
 
 using namespace testing::ext;
 using namespace OHOS::StorageDaemon;
@@ -122,7 +123,6 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_store, TestSize.Level1)
     std::string buf {};
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD));
     EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD, buf));
-    EXPECT_EQ(CRYPTO_KEY_SHIELD_SIZE, buf.size());
 
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SECDISC));
     EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SECDISC, buf));
@@ -271,7 +271,8 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_policy_set, TestSize.Level1)
     EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
     EXPECT_TRUE(g_testKeyV1.ActiveKey());
 
-    union FscryptPolicy arg;
+    FscryptPolicy arg;
+    (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
     arg.v1.version = FSCRYPT_POLICY_V1;
     memcpy_s(arg.v1.master_key_descriptor, FSCRYPT_KEY_DESCRIPTOR_SIZE, g_testKeyV1.keyInfo_.keyDesc.data.get(),
         g_testKeyV1.keyInfo_.keyDesc.size);
@@ -354,7 +355,8 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_active, TestSize.Level1)
 HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_set, TestSize.Level1)
 {
     EXPECT_EQ(FSCRYPT_V2, g_testKeyV2.keyInfo_.version);
-    union FscryptPolicy arg;
+    FscryptPolicy arg;
+    (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
     arg.v2.version = FSCRYPT_POLICY_V2;
     memcpy_s(arg.v2.master_key_identifier, FSCRYPT_KEY_IDENTIFIER_SIZE, g_testKeyV2.keyInfo_.keyId.data.get(),
         g_testKeyV2.keyInfo_.keyId.size);

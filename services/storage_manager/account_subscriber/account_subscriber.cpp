@@ -12,22 +12,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "account_subscriber/account_subscriber.h"
 
 #include <cinttypes>
-#include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <unistd.h>
+
 #include "appexecfwk_errors.h"
 #include "bundle_info.h"
 #include "common_event_manager.h"
 #include "common_event_support.h"
+#include "iservice_registry.h"
 #include "storage_service_log.h"
+#include "system_ability_definition.h"
 #include "want.h"
 
 using namespace OHOS::AAFwk;
 namespace OHOS {
 namespace StorageManager {
+std::shared_ptr<DataShare::DataShareHelper> AccountSubscriber::mediaShare_ = nullptr;
+
 AccountSubscriber::AccountSubscriber(const EventFwk::CommonEventSubscribeInfo &subscriberInfo)
     : EventFwk::CommonEventSubscriber(subscriberInfo)
 {}
@@ -50,19 +56,26 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
     const AAFwk::Want& want = eventData.GetWant();
     std::string action = want.GetAction();
     LOGI("StorageManager: OnReceiveEvent action:%{public}s.", action.c_str());
-    int pid;
-    if ((pid = fork()) == 0) {
-        std::vector<std::string> args = {"/system/bin/aa", "start", "-b",
-            "com.ohos.medialibrary.MediaScannerAbilityA", "-a", "MediaScannerAbility"};
-        std::vector<char*> argv;
-        for (size_t i = 0; i < args.size(); i++) {
-            argv.push_back(const_cast<char*>(args[i].c_str()));
-        }
-        argv.push_back(nullptr);
-        execvp("/system/bin/aa", argv.data());
-        exit(0);
+
+    auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (sam == nullptr) {
+        LOGE("GetSystemAbilityManager sam == nullptr");
+        return;
     }
-    waitpid(pid, nullptr, 0);
+
+    auto remoteObj = sam->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    if (remoteObj == nullptr) {
+        LOGE("GetSystemAbility remoteObj == nullptr");
+        return;
+    }
+
+    mediaShare_ = DataShare::DataShareHelper::Creator(remoteObj, "datashare:///media");
+}
+
+void MediaShareDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &object)
+{
+    auto sptr = DataShare::DataShareHelper::Creator(object.promote(), "datashare:///media");
+    AccountSubscriber::SetMediaShare(sptr);
 }
 }  // namespace StorageManager
 }  // namespace OHOS

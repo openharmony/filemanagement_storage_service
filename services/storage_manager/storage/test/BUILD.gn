@@ -13,19 +13,18 @@
 
 import("//build/test.gni")
 
-ohos_unittest("storage_manager_proxy_test") {
+ohos_unittest("storage_total_status_service_test") {
   module_out_path = "filemanagement/storage_service/storage_manager"
 
   sources = [
-    "//foundation/filemanagement/storage_service/services/storage_manager/disk/src/disk_manager_service.cpp",
-    "//foundation/filemanagement/storage_service/services/storage_manager/ipc/src/storage_manager_proxy.cpp",
-    "//foundation/filemanagement/storage_service/services/storage_manager/storage_daemon_communication/src/storage_daemon_communication.cpp",
-    "//foundation/filemanagement/storage_service/services/storage_manager/volume/src/notification.cpp",
-    "//foundation/filemanagement/storage_service/services/storage_manager/volume/src/volume_manager_service.cpp",
-    "storage_manager_proxy_test.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/storage/src/storage_status_service.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/storage/src/storage_total_status_service.cpp",
+    "storage_total_status_service_test.cpp",
   ]
 
   include_dirs = [
+    "//foundation/aafwk/standard/interfaces/innerkits/base/include/ohos/aafwk/base",
+    "//foundation/bundlemanager/bundle_framework/services/bundlemgr/include",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
     "//foundation/filemanagement/storage_service/services/common/include",
     "//foundation/filemanagement/storage_service/services/storage_daemon/include",
@@ -43,6 +42,7 @@ ohos_unittest("storage_manager_proxy_test") {
   ]
 
   deps = [
+    "//foundation/bundlemanager/bundle_framework/services/bundlemgr:libbms",
     "//third_party/googletest:gmock_main",
     "//third_party/googletest:gtest_main",
   ]
@@ -50,16 +50,21 @@ ohos_unittest("storage_manager_proxy_test") {
   external_deps = [
     "ability_base:base",
     "ability_base:want",
+    "access_token:libaccesstoken_sdk",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
     "common_event_service:cesfwk_innerkits",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
+    "relational_store:native_dataability",
+    "relational_store:native_rdb",
     "safwk:system_ability_fwk",
     "samgr_standard:samgr_proxy",
     "storage_service:storage_manager_sa_proxy",
   ]
 }
 
-group("storage_manager_ipc_test") {
+group("storage_manager_storage_test") {
   testonly = true
-  deps = [ ":storage_manager_proxy_test" ]
+  deps = [ ":storage_total_status_service_test" ]
 }

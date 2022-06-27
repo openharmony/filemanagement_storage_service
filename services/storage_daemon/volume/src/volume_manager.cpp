@@ -14,13 +14,15 @@
  */
 
 #include "volume/volume_manager.h"
+
 #include <cstdlib>
 #include <sys/sysmacros.h>
-#include "storage_service_log.h"
+
+#include "ipc/storage_manager_client.h"
 #include "storage_service_errno.h"
+#include "storage_service_log.h"
 #include "utils/string_utils.h"
 #include "volume/external_volume_info.h"
-#include "ipc/storage_manager_client.h"
 
 using namespace std;
 
@@ -165,6 +167,23 @@ int32_t VolumeManager::Format(const std::string volId, const std::string fsType)
     int32_t err = info->Format(fsType);
     if (err != E_OK) {
         LOGE("the volume %{public}s format failed.", volId.c_str());
+        return err;
+    }
+
+    return E_OK;
+}
+
+int32_t VolumeManager::SetVolumeDescription(const std::string volId, const std::string description)
+{
+    std::shared_ptr<VolumeInfo> info = GetVolume(volId);
+    if (info == nullptr) {
+        LOGE("the volume %{public}s does not exist.", volId.c_str());
+        return E_NON_EXIST;
+    }
+
+    int32_t err = info->SetVolumeDescription(description);
+    if (err != E_OK) {
+        LOGE("the volume %{public}s setVolumeDescription failed.", volId.c_str());
         return err;
     }
 

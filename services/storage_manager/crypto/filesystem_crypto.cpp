@@ -14,10 +14,11 @@
  */
 
 #include "crypto/filesystem_crypto.h"
+
 #include "storage_daemon_communication/storage_daemon_communication.h"
 #include "storage_service_constant.h"
-#include "storage_service_log.h"
 #include "storage_service_errno.h"
+#include "storage_service_log.h"
 
 namespace OHOS {
 namespace StorageManager {

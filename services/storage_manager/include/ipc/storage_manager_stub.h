@@ -24,7 +24,7 @@ namespace StorageManager {
 constexpr int UID_ROOT = 0;
 constexpr int UID_SYSTEM = 1000;
 constexpr int UID_FMS = 1006;
-constexpr int UID_ACCOUNTMGR = 3046;
+constexpr int UID_ACCOUNTMGR = 3058;
 class StorageManagerStub : public IRemoteStub<IStorageManager> {
 public:
     int32_t OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option) override;
@@ -53,6 +53,11 @@ private:
     int32_t HandleNotifyDiskDestroyed(MessageParcel &data, MessageParcel &reply);
     int32_t HandlePartition(MessageParcel &data, MessageParcel &reply);
     int32_t HandleGetAllDisks(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleGetVolumeByUuid(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleGetVolumeById(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleSetVolDesc(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleFormat(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleGetDiskById(MessageParcel &data, MessageParcel &reply);
 
     // fscrypt api
     int32_t HandleGenerateUserKeys(MessageParcel &data, MessageParcel &reply);

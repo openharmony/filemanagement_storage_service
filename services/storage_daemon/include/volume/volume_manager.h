@@ -37,6 +37,7 @@ public:
     int32_t Mount(const std::string volId, uint32_t flags);
     int32_t UMount(const std::string volId);
     int32_t Format(const std::string volId, const std::string fsType);
+    int32_t SetVolumeDescription(const std::string volId, const std::string description);
 
 private:
     VolumeManager() = default;

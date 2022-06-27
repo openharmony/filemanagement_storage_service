@@ -14,12 +14,13 @@
  */
 
 #include "ipc/storage_daemon.h"
-#include "user/user_manager.h"
-#include "disk/disk_manager.h"
-#include "volume/volume_manager.h"
-#include "storage_service_errno.h"
+
 #include "crypto/key_manager.h"
+#include "disk/disk_manager.h"
+#include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "user/user_manager.h"
+#include "volume/volume_manager.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -56,6 +57,12 @@ int32_t StorageDaemon::Partition(std::string diskId, int32_t type)
 {
     LOGI("Handle Partition");
     return DiskManager::Instance()->HandlePartition(diskId);
+}
+
+int32_t StorageDaemon::SetVolumeDescription(std::string volId, std::string description)
+{
+    LOGI("Handle SetVolumeDescription");
+    return VolumeManager::Instance()->SetVolumeDescription(volId, description);
 }
 
 int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)

@@ -14,9 +14,10 @@
  */
 
 #include "disk/disk_manager_service.h"
+
 #include "storage_daemon_communication/storage_daemon_communication.h"
-#include "storage_service_log.h"
 #include "storage_service_errno.h"
+#include "storage_service_log.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -70,6 +71,15 @@ std::vector<Disk> DiskManagerService::GetAllDisks()
         result.push_back(disk);
     }
     return result;
+}
+
+int32_t DiskManagerService::GetDiskById(std::string diskId, Disk &disk)
+{
+    if (diskMap_.Contains(diskId)) {
+        disk = *diskMap_[diskId];
+        return E_OK;
+    }
+    return E_NON_EXIST;
 }
 }
 }

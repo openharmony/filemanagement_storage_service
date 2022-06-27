@@ -12,12 +12,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "netlink/netlink_listener.h"
 
 #include <cerrno>
-#include <memory>
 #include <iostream>
-
+#include <memory>
 #include <sys/socket.h>
 #include <sys/socket.h>
 #include <unistd.h>

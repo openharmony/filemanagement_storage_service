@@ -14,10 +14,9 @@
  */
 
 #include "volume/volume_info.h"
-#include <cstdlib>
-#include <sys/stat.h>
-#include "storage_service_log.h"
+
 #include "storage_service_errno.h"
+#include "storage_service_log.h"
 #include "utils/string_utils.h"
 
 using namespace std;
@@ -31,7 +30,6 @@ int32_t VolumeInfo::Create(const std::string volId, const std::string diskId, de
     mountState_ = UNMOUNTED;
     mountFlags_ = 0;
     userIdOwner_ = 0;
-    mountPath_ = StringPrintf(mountPathDir_.c_str(), id_.c_str());
 
     int32_t err = DoCreate(device);
     if (err) {
@@ -60,11 +58,6 @@ int32_t VolumeInfo::GetState()
     return mountState_;
 }
 
-std::string VolumeInfo::GetMountPath()
-{
-    return mountPath_;
-}
-
 int32_t VolumeInfo::Destroy()
 {
     VolumeState state = REMOVED;
@@ -87,7 +80,6 @@ int32_t VolumeInfo::Destroy()
 
 int32_t VolumeInfo::Mount(uint32_t flags)
 {
-    struct stat statbuf;
     int32_t err = 0;
 
     if (mountState_ == MOUNTED) {
@@ -98,24 +90,10 @@ int32_t VolumeInfo::Mount(uint32_t flags)
         return E_VOL_STATE;
     }
 
-    // check if dir exists
-    err = lstat(mountPath_.c_str(), &statbuf);
-    if (!err) {
-        LOGE("volume mount path %{public}s exists, please remove first", GetMountPath().c_str());
-        return E_MOUNT;
-    }
-
-    err = mkdir(mountPath_.c_str(), S_IRWXU | S_IRWXG | S_IRWXO);
-    if (err) {
-        LOGE("the volume %{public}s create mount file %{public}s failed",
-             GetVolumeId().c_str(), GetMountPath().c_str());
-        return E_MOUNT;
-    }
-
     mountFlags_ = flags;
-    err = DoMount(mountPath_, mountFlags_);
+    err = DoMount(mountFlags_);
     if (err) {
-        remove(mountPath_.c_str());
+        mountState_ = UNMOUNTED;
         return err;
     }
 
@@ -147,7 +125,7 @@ int32_t VolumeInfo::UMount(bool force)
 
     mountState_ = EJECTING;
 
-    err = DoUMount(mountPath_, force);
+    err = DoUMount(force);
     if (!force && err) {
         mountState_ = MOUNTED;
         return err;
@@ -184,10 +162,18 @@ int32_t VolumeInfo::Format(std::string type)
     }
 
     int32_t err = DoFormat(type);
-    if (err) {
-        return err;
+    return err;
+}
+
+int32_t VolumeInfo::SetVolumeDescription(const std::string description)
+{
+    if (mountState_ != UNMOUNTED) {
+        LOGE("Please unmount the volume %{public}s first", GetVolumeId().c_str());
+        return E_VOL_STATE;
     }
-    return E_OK;
+
+    int32_t err = DoSetVolDesc(description);
+    return err;
 }
 } // StorageDaemon
 } // OHOS

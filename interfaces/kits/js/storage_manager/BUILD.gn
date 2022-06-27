@@ -12,6 +12,7 @@
 # limitations under the License.
 
 import("//build/ohos.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 js_declaration("storagestatistics_js") {
   part_name = "storage_service"
@@ -45,7 +46,7 @@ ohos_shared_library("storagestatistics") {
   ]
 
   deps = [
-    "//foundation/aafwk/standard/frameworks/kits/ability/native:abilitykit_native",
+    "${aafwk_path}/frameworks/native/ability/native:abilitykit_native",
     "//foundation/arkui/napi:ace_napi",
     "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js:fileio",
     "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js:statfs",
@@ -99,7 +100,7 @@ ohos_shared_library("volumemanager") {
   ]
 
   deps = [
-    "//foundation/aafwk/standard/frameworks/kits/ability/native:abilitykit_native",
+    "${aafwk_path}/frameworks/native/ability/native:abilitykit_native",
     "//foundation/arkui/napi:ace_napi",
     "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js:fileio",
     "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js:statfs",

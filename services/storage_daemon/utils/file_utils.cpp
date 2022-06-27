@@ -16,26 +16,35 @@
 #include "utils/file_utils.h"
 
 #include <cerrno>
-#include <fstream>
-#include <unistd.h>
+#include <cerrno>
+#include <cstdlib>
 #include <cstring>
 #include <dirent.h>
-#include <cstdlib>
 #include <fcntl.h>
-#include <cerrno>
+#include <fstream>
 #include <sys/stat.h>
-#include <sys/wait.h>
 #include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
-#include "string_ex.h"
 #include "securec.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "string_ex.h"
 
 namespace OHOS {
 namespace StorageDaemon {
 constexpr uint32_t ALL_PERMS = (S_ISUID | S_ISGID | S_ISVTX | S_IRWXU | S_IRWXG | S_IRWXO);
 const int BUF_LEN = 1024;
+
+int32_t Restorecon(const std::string &path)
+{
+    std::vector<std::string> cmd = {
+        "restorecon",
+        path
+    };
+    return ForkExec(cmd);
+}
 
 int32_t ChMod(const std::string &path, mode_t mode)
 {
@@ -151,6 +160,12 @@ bool PrepareDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
 
     if (ChOwn(path, uid, gid)) {
         LOGE("failed to chown, errno %{public}d", errno);
+        return false;
+    }
+
+    int err = Restorecon(path);
+    if (err) {
+        LOGE("failed to restorecon, err:%{public}d", err);
         return false;
     }
 

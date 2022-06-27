@@ -12,14 +12,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include "storage_daemon_communication/storage_daemon_communication.h"
-#include <system_ability_definition.h>
+
 #include <iservice_registry.h>
-#include "storage_service_log.h"
-#include "storage_service_errno.h"
+#include <system_ability_definition.h>
+
 #include "ipc/istorage_daemon.h"
 #include "ipc/storage_daemon.h"
 #include "ipc/storage_daemon_proxy.h"
+#include "storage_service_errno.h"
+#include "storage_service_log.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -138,6 +141,26 @@ int32_t StorageDaemonCommunication::Partition(std::string diskId, int32_t type)
         return E_IPC_ERROR;
     }
     return storageDaemon_->Partition(diskId, type);
+}
+
+int32_t StorageDaemonCommunication::Format(std::string volumeId, std::string type)
+{
+    LOGI("StorageDaemonCommunication::Format start");
+    if (Connect() != E_OK) {
+        LOGE("StorageDaemonCommunication::Format connect failed");
+        return E_IPC_ERROR;
+    }
+    return storageDaemon_->Format(volumeId, type);
+}
+
+int32_t StorageDaemonCommunication::SetVolumeDescription(std::string volumeId, std::string description)
+{
+    LOGI("StorageDaemonCommunication::SetVolumeDescription start");
+    if (Connect() != E_OK) {
+        LOGE("StorageDaemonCommunication::SetVolumeDescription connect failed");
+        return E_IPC_ERROR;
+    }
+    return storageDaemon_->SetVolumeDescription(volumeId, description);
 }
 
 int32_t StorageDaemonCommunication::GenerateUserKeys(uint32_t userId, uint32_t flags)
