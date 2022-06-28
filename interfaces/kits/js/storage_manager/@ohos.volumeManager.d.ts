@@ -33,6 +33,7 @@ declare namespace volumeManager {
  export interface Volume {
   id: string;
   uuid: string;
+  diskId: string;
   description: string;
   removable: boolean;
   state: number;

@@ -58,6 +58,7 @@ napi_value GetAllVolumes(napi_env env, napi_callback_info info)
             NVal volumeInfoObject = NVal::CreateObject(env);
             volumeInfoObject.AddProp("id", NVal::CreateUTF8String(env, (*volumeInfo)[i].GetId()).val_);
             volumeInfoObject.AddProp("uuid", NVal::CreateUTF8String(env, (*volumeInfo)[i].GetUuid()).val_);
+            volumeInfoObject.AddProp("diskId", NVal::CreateUTF8String(env, (*volumeInfo)[i].GetDiskId()).val_);
             volumeInfoObject.AddProp("description",
                 NVal::CreateUTF8String(env, (*volumeInfo)[i].GetDescription()).val_);
             volumeInfoObject.AddProp("removable", NVal::CreateBool(env, (bool)true).val_);
@@ -192,6 +193,7 @@ napi_value GetVolumeByUuid(napi_env env, napi_callback_info info)
         NVal volumeObject = NVal::CreateObject(env);
         volumeObject.AddProp("id", NVal::CreateUTF8String(env, volumeInfo->GetId()).val_);
         volumeObject.AddProp("uuid", NVal::CreateUTF8String(env, volumeInfo->GetUuid()).val_);
+        volumeObject.AddProp("diskId", NVal::CreateUTF8String(env, volumeInfo->GetDiskId()).val_);
         volumeObject.AddProp("description",
             NVal::CreateUTF8String(env, volumeInfo->GetDescription()).val_);
         volumeObject.AddProp("removable", NVal::CreateBool(env, (bool)true).val_);
@@ -242,6 +244,7 @@ napi_value GetVolumeById(napi_env env, napi_callback_info info)
         NVal volumeObject = NVal::CreateObject(env);
         volumeObject.AddProp("id", NVal::CreateUTF8String(env, volumeInfo->GetId()).val_);
         volumeObject.AddProp("uuid", NVal::CreateUTF8String(env, volumeInfo->GetUuid()).val_);
+        volumeObject.AddProp("diskId", NVal::CreateUTF8String(env, volumeInfo->GetDiskId()).val_);
         volumeObject.AddProp("description",
             NVal::CreateUTF8String(env, volumeInfo->GetDescription()).val_);
         volumeObject.AddProp("removable", NVal::CreateBool(env, (bool)true).val_);
