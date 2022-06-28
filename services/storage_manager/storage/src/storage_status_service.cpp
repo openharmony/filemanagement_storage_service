@@ -85,6 +85,7 @@ StorageStats StorageStatusService::GetUserStorageStats(int32_t userId)
         LOGE("StorageStatusService::GetUserStorageStats samgr == nullptr");
         return result;
     }
+
     sptr<IRemoteObject> remoteObject = sam->GetSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID);
     if (!remoteObject) {
         LOGE("StorageStatusService::GetUserStorageStats remoteObj == nullptr");
@@ -94,6 +95,7 @@ StorageStats StorageStatusService::GetUserStorageStats(int32_t userId)
     auto bundleMgr = iface_cast<AppExecFwk::IBundleMgr>(remoteObject);
     if (bundleMgr == nullptr) {
         LOGE("StorageStatusService::GetUserStorageStats bundleMgr == nullptr");
+        return result;
     }
     vector<AppExecFwk::ApplicationInfo> appInfos;
     bool res = bundleMgr->GetApplicationInfos(
@@ -105,10 +107,10 @@ StorageStats StorageStatusService::GetUserStorageStats(int32_t userId)
     int64_t appSize = 0;
     for (auto appInfo : appInfos) {
         int64_t bundleSize = 0;
-        LOGD("StorageStatusServDce::GetCurUserStorageStats pkgname is %{public}s", appInfo.name.c_str());
+        LOGD("StorageStatusService::GetCurUserStorageStats pkgname is %{public}s", appInfo.name.c_str());
         vector<int64_t> bundleStats;
         res = bundleMgr->GetBundleStats(appInfo.name, userId, bundleStats);
-        if (bundleStats.size() != dataDir.size() || !res) {
+        if (!res || bundleStats.size() != dataDir.size()) {
             LOGE("StorageStatusService::An error occurred in querying bundle stats.");
             return result;
         }
@@ -157,7 +159,7 @@ BundleStats StorageStatusService::GetCurrentBundleStats()
     return GetBundleStats(pkgName, userId);
 }
 
-BundleStats StorageStatusService::GetBundleStats(std::string pkgName, int32_t userId)
+BundleStats StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t userId)
 {
     BundleStats result;
     auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
@@ -165,6 +167,7 @@ BundleStats StorageStatusService::GetBundleStats(std::string pkgName, int32_t us
         LOGE("StorageStatusService::GetBundleStats samgr == nullptr");
         return result;
     }
+
     sptr<IRemoteObject> remoteObject = sam->GetSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID);
     if (!remoteObject) {
         LOGE("StorageStatusService::GetBundleStats remoteObj == nullptr");
@@ -174,10 +177,11 @@ BundleStats StorageStatusService::GetBundleStats(std::string pkgName, int32_t us
     auto bundleMgr = iface_cast<AppExecFwk::IBundleMgr>(remoteObject);
     if (bundleMgr == nullptr) {
         LOGE("StorageStatusService::GetUserStorageStats bundleMgr == nullptr");
+        return result;
     }
     vector<int64_t> bundleStats;
     bool res = bundleMgr->GetBundleStats(pkgName, userId, bundleStats);
-    if (bundleStats.size() != dataDir.size() || !res) {
+    if (!res || bundleStats.size() != dataDir.size()) {
         LOGE("StorageStatusService::An error occurred in querying bundle stats.");
         return result;
     }

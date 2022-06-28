@@ -33,7 +33,7 @@ public:
     StorageStats GetUserStorageStats();
     StorageStats GetUserStorageStats(int32_t userId);
     BundleStats GetCurrentBundleStats();
-    BundleStats GetBundleStats(std::string pkgName, int32_t userId);
+    BundleStats GetBundleStats(const std::string &pkgName, int32_t userId);
 private:
     int GetCurrentUserId();
     std::string GetCallingPkgName();
