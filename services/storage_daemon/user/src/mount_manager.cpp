@@ -91,7 +91,7 @@ int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath)
 }
 
 int32_t MountManager::HmdfsMount(int32_t userId)
-{ 
+{
     int32_t ret = HmdfsTwiceMount(userId, "account");
 
     ret += HmdfsMount(userId, "non_account");

@@ -157,7 +157,7 @@ StorageStats StorageManagerConnect::GetUserStorageStats()
     result = storageManager_->GetUserStorageStats();
     return result;
 }
-    
+
 StorageStats StorageManagerConnect::GetUserStorageStats(int32_t userId)
 {
     StorageStats result;
