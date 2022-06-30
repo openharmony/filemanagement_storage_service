@@ -45,7 +45,7 @@ ohos_prebuilt_etc("storage_daemon_disk_config") {
 }
 
 declare_args() {
-  storage_service_user_file_sharing = false
+  storage_service_user_file_sharing = true
 }
 
 ohos_executable("storage_daemon") {
