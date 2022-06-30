@@ -35,7 +35,7 @@ namespace StorageManager {
     {
         DelayedSingleton<Notification>::GetInstance()->NotifyVolumeChange(state, volumeId, diskId, fsUuid, path);
     }
-    
+
     void VolumeManagerService::OnVolumeCreated(VolumeCore vc)
     {
         auto volumePtr = make_shared<VolumeExternal>(vc);

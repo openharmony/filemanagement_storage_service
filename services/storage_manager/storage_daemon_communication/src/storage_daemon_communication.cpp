@@ -37,7 +37,7 @@ StorageDaemonCommunication::~StorageDaemonCommunication()
     LOGI("DEBUG ~StorageDaemonCommunication destructer ~");
 }
 
-int32_t StorageDaemonCommunication::Connect() 
+int32_t StorageDaemonCommunication::Connect()
 {
     int32_t err = 0;
     LOGI("StorageDaemonCommunication::Connect start");
@@ -65,7 +65,7 @@ int32_t StorageDaemonCommunication::Connect()
 int32_t StorageDaemonCommunication::PrepareAddUser(int32_t userId, uint32_t flags)
 {
     LOGI("StorageDaemonCommunication::PrepareAddUser start");
-    
+
     if (Connect() != E_OK) {
         LOGE("StorageDaemonCommunication::PrepareAddUser connect failed");
         return E_IPC_ERROR;

@@ -43,7 +43,7 @@ int32_t StorageManagerProxy::PrepareAddUser(int32_t userId, uint32_t flags)
     }
     return reply.ReadUint32();
 }
-    
+
 int32_t StorageManagerProxy::RemoveUser(int32_t userId, uint32_t flags)
 {
     LOGI("StorageManagerProxy::RemoveUser, userId:%{public}d", userId);
