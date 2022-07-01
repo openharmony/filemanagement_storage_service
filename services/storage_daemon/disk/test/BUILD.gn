@@ -41,7 +41,6 @@ ohos_unittest("disk_manager_test") {
     "$ROOT_DIR/ipc/src/storage_manager_client.cpp",
     "$ROOT_DIR/netlink/src/netlink_data.cpp",
     "$ROOT_DIR/utils/disk_utils.cpp",
-    "$ROOT_DIR/utils/file_utils.cpp",
     "$ROOT_DIR/utils/string_utils.cpp",
     "$ROOT_DIR/volume/src/external_volume_info.cpp",
     "$ROOT_DIR/volume/src/process.cpp",
@@ -50,6 +49,7 @@ ohos_unittest("disk_manager_test") {
   ]
 
   deps = [
+    "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
     "//third_party/googletest:gtest_main",
     "//utils/native/base:utils",
   ]
@@ -87,7 +87,6 @@ ohos_unittest("disk_info_test") {
     "$ROOT_DIR/ipc/src/storage_manager_client.cpp",
     "$ROOT_DIR/netlink/src/netlink_data.cpp",
     "$ROOT_DIR/utils/disk_utils.cpp",
-    "$ROOT_DIR/utils/file_utils.cpp",
     "$ROOT_DIR/utils/string_utils.cpp",
     "$ROOT_DIR/volume/src/external_volume_info.cpp",
     "$ROOT_DIR/volume/src/process.cpp",
@@ -96,6 +95,7 @@ ohos_unittest("disk_info_test") {
   ]
 
   deps = [
+    "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
     "//third_party/googletest:gmock_main",
     "//third_party/googletest:gtest_main",
     "//utils/native/base:utils",

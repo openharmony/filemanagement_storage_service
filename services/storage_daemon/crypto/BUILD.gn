@@ -38,7 +38,6 @@ config("crypto_public_config") {
 
 ohos_static_library("libsdcrypto") {
   sources = [
-    "../utils/file_utils.cpp",
     "src/base_key.cpp",
     "src/fscrypt_key_v1.cpp",
     "src/fscrypt_key_v2.cpp",
@@ -56,6 +55,7 @@ ohos_static_library("libsdcrypto") {
 
   deps = [
     "//base/security/huks/frameworks/huks_standard/main/os_dependency:libhuks_os_dependency_standard_static",
+    "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
     "//foundation/filemanagement/storage_service/services/storage_daemon/libfscrypt:libfscryptutils",
     "//third_party/openssl:libcrypto_shared",
     "//utils/native/base:utils",

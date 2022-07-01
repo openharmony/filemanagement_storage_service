@@ -70,7 +70,6 @@ ohos_executable("storage_daemon") {
     "user/src/mount_manager.cpp",
     "user/src/user_manager.cpp",
     "utils/disk_utils.cpp",
-    "utils/file_utils.cpp",
     "utils/mount_argument_utils.cpp",
     "utils/string_utils.cpp",
     "volume/src/external_volume_info.cpp",
@@ -97,6 +96,7 @@ ohos_executable("storage_daemon") {
 
   deps = [
     ":sdc",
+    ":storage_common_utils",
     "crypto:libsdcrypto",
     "libfscrypt:libfscryptutils",
     "//utils/native/base:utils",
@@ -142,7 +142,6 @@ ohos_executable("sdc") {
     "client/storage_daemon_client.cpp",
     "ipc/src/storage_daemon_proxy.cpp",
     "sdc.cpp",
-    "utils/file_utils.cpp",
   ]
 
   defines = [
@@ -152,7 +151,10 @@ ohos_executable("sdc") {
 
   configs = [ ":sdc_config" ]
 
-  deps = [ "libfscrypt:libfscryptutils" ]
+  deps = [
+    ":storage_common_utils",
+    "libfscrypt:libfscryptutils",
+  ]
 
   public_deps = [ "//utils/native/base:utils" ]
 
@@ -170,6 +172,31 @@ ohos_executable("sdc") {
 
 declare_args() {
   storage_service_fstools = true
+}
+
+ohos_shared_library("storage_common_utils") {
+  include_dirs = [
+    "./include",
+    "//base/security/selinux/interfaces/policycoreutils/include",
+    "//foundation/filemanagement/storage_service/services/common/include",
+  ]
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageCommonUtils\"",
+    "LOG_DOMAIN = 0xD004301",
+  ]
+
+  sources = [ "./utils/file_utils.cpp" ]
+
+  deps = [
+    "//base/security/selinux:librestorecon",
+    "//utils/native/base:utils",
+  ]
+  external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
+
+  subsystem_name = "filemanagement"
+  part_name = "storage_service"
+  install_enable = true
 }
 
 group("storage_daemon_third_party") {
