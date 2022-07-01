@@ -50,6 +50,17 @@ int AclEntryParseTag(const std::string &tagTxt, AclXattrEntry &entry)
     return 0;
 }
 
+bool ParseNumericId(const std::string &idTxt, unsigned int &outId)
+{
+    char *p;
+    long converted = strtol(idTxt.c_str(), &p, 10);
+    if (*p == '\0' && converted >= 0 && converted <= UINT_MAX) {
+        outId = static_cast<unsigned int>(converted);
+        return true;
+    }
+    return false;
+}
+
 int AclEntryParseId(const std::string &idTxt, AclXattrEntry &entry)
 {
     struct passwd *pwd = nullptr;
@@ -61,6 +72,9 @@ int AclEntryParseId(const std::string &idTxt, AclXattrEntry &entry)
                 entry.tag = ACL_TAG::USER_OBJ;
                 return 0;
             }
+            if (ParseNumericId(idTxt, entry.id)) {
+                break;
+            }
             if ((pwd = getpwnam(idTxt.c_str())) == nullptr) {
                 return -1;
             }
@@ -71,6 +85,9 @@ int AclEntryParseId(const std::string &idTxt, AclXattrEntry &entry)
             if (idTxt.empty()) {
                 entry.tag = ACL_TAG::GROUP_OBJ;
                 return 0;
+            }
+            if (ParseNumericId(idTxt, entry.id)) {
+                break;
             }
             if ((grp = getgrnam(idTxt.c_str())) == nullptr) {
                 return -1;
