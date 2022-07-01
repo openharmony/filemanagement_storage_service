@@ -56,7 +56,6 @@ ohos_shared_library("storage_manager") {
     "//foundation/ability/ability_runtime/frameworks/native/ability/native:abilitykit_native",
     "//foundation/ability/ability_runtime/interfaces/inner_api/dataobs_manager:dataobs_manager",
     "//foundation/bundlemanager/bundle_framework/common:libappexecfwk_common",
-    "//foundation/bundlemanager/bundle_framework/services/bundlemgr:libbms",
     "//foundation/distributeddatamgr/appdatamgr/data_share/interfaces/inner_api:datashare_abilitykit",
     "//utils/native/base:utils",
   ]

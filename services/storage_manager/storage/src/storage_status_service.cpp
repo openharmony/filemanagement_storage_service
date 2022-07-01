@@ -63,22 +63,7 @@ BundleStats StorageStatusService::GetBundleStats(std::string pkgName)
         LOGE("StorageStatusService::Invaild userId.");
         return result;
     }
-    vector<int64_t> bundleStats;
-    int errorcode = AppExecFwk::InstalldClient::GetInstance()->GetBundleStats(pkgName, userId, bundleStats);
-    if (bundleStats.size() != dataDir.size() || errorcode != E_OK) {
-        LOGE("StorageStatusService::An error occurred in querying bundle stats.");
-        return result;
-    }
-    for (uint i = 0; i < bundleStats.size(); i++) {
-        if (bundleStats[i] == E_ERR) {
-            LOGE("StorageStatusService::Failed to query %s data.", dataDir[i].c_str());
-            bundleStats[i] = 0;
-        }
-    }
-    result.appSize_ = bundleStats[APP];
-    result.cacheSize_ = bundleStats[CACHE];
-    result.dataSize_ = bundleStats[LOCAL] + bundleStats[DISTRIBUTED] + bundleStats[DATABASE];
-    return result;
+    return GetBundleStats(pkgName, userId);
 }
 
 StorageStats StorageStatusService::GetUserStorageStats()
@@ -100,6 +85,7 @@ StorageStats StorageStatusService::GetUserStorageStats(int32_t userId)
         LOGE("StorageStatusService::GetUserStorageStats samgr == nullptr");
         return result;
     }
+
     sptr<IRemoteObject> remoteObject = sam->GetSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID);
     if (!remoteObject) {
         LOGE("StorageStatusService::GetUserStorageStats remoteObj == nullptr");
@@ -107,6 +93,10 @@ StorageStats StorageStatusService::GetUserStorageStats(int32_t userId)
     }
 
     auto bundleMgr = iface_cast<AppExecFwk::IBundleMgr>(remoteObject);
+    if (bundleMgr == nullptr) {
+        LOGE("StorageStatusService::GetUserStorageStats bundleMgr == nullptr");
+        return result;
+    }
     vector<AppExecFwk::ApplicationInfo> appInfos;
     bool res = bundleMgr->GetApplicationInfos(
         AppExecFwk::ApplicationFlag::GET_BASIC_APPLICATION_INFO, userId, appInfos);
@@ -117,10 +107,10 @@ StorageStats StorageStatusService::GetUserStorageStats(int32_t userId)
     int64_t appSize = 0;
     for (auto appInfo : appInfos) {
         int64_t bundleSize = 0;
-        LOGI("StorageStatusService::GetCurUserStorageStats pkgname is %{public}s", appInfo.name.c_str());
+        LOGD("StorageStatusService::GetCurUserStorageStats pkgname is %{public}s", appInfo.name.c_str());
         vector<int64_t> bundleStats;
-        int errorcode = AppExecFwk::InstalldClient::GetInstance()->GetBundleStats(appInfo.name, userId, bundleStats);
-        if (bundleStats.size() != dataDir.size() || errorcode != E_OK) {
+        res = bundleMgr->GetBundleStats(appInfo.name, userId, bundleStats);
+        if (!res || bundleStats.size() != dataDir.size()) {
             LOGE("StorageStatusService::An error occurred in querying bundle stats.");
             return result;
         }
@@ -166,9 +156,32 @@ BundleStats StorageStatusService::GetCurrentBundleStats()
     }
     std::string pkgName = GetCallingPkgName();
     LOGD("StorageStatusService::pkgName is %{public}s", pkgName.c_str());
+    return GetBundleStats(pkgName, userId);
+}
+
+BundleStats StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t userId)
+{
+    BundleStats result;
+    auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (sam == nullptr) {
+        LOGE("StorageStatusService::GetBundleStats samgr == nullptr");
+        return result;
+    }
+
+    sptr<IRemoteObject> remoteObject = sam->GetSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID);
+    if (!remoteObject) {
+        LOGE("StorageStatusService::GetBundleStats remoteObj == nullptr");
+        return result;
+    }
+
+    auto bundleMgr = iface_cast<AppExecFwk::IBundleMgr>(remoteObject);
+    if (bundleMgr == nullptr) {
+        LOGE("StorageStatusService::GetUserStorageStats bundleMgr == nullptr");
+        return result;
+    }
     vector<int64_t> bundleStats;
-    int errorcode = AppExecFwk::InstalldClient::GetInstance()->GetBundleStats(pkgName, userId, bundleStats);
-    if (bundleStats.size() != dataDir.size() || errorcode != E_OK) {
+    bool res = bundleMgr->GetBundleStats(pkgName, userId, bundleStats);
+    if (!res || bundleStats.size() != dataDir.size()) {
         LOGE("StorageStatusService::An error occurred in querying bundle stats.");
         return result;
     }
