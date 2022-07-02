@@ -69,13 +69,11 @@ int SetupFileSharingDir()
         return 0;
     }
 
-    int rc = AclSetDefault(PUBLIC_DIR, "g:file_manager:rwx");
-    if (rc == -1) {
-        LOGE("Failed to set default ACL for the public file sharing directory");
-        return -1;
-    }
-
-    return 0;
+    /*
+     * We have to use numeric id (1006) instead of character string ("file_manager")
+     * here due to the name-id mismatch in the in-house system.
+     */
+    return AclSetDefault(PUBLIC_DIR, "g:1006:rwx");
 }
 } // namespace StorageDaemon
 } // namespace OHOS
