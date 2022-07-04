@@ -250,4 +250,52 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Partition_0000, te
     EXPECT_EQ(result, 6);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Partition_0000 SUCCESS";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_Format_0000
+ * @tc.name: Daemon_communication_Format_0000
+ * @tc.desc: Test function of Format interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Format_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Format_0000 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t result;
+    string volumeId = "127";
+    string fsType = "1";
+    if (sdCommunication != nullptr) {
+        result = sdCommunication->Format(volumeId, fsType);
+    }
+    EXPECT_EQ(result, 6);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Format_0000 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_SetVolumeDescription_0000
+ * @tc.name: Daemon_communication_SetVolumeDescription_0000
+ * @tc.desc: Test function of SetVolumeDescription interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetVolumeDescription_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_SetVolumeDescription_0000 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t result;
+    string fsUuid = "128";
+    string description = "description-1";
+    if (sdCommunication != nullptr) {
+        result = sdCommunication->SetVolumeDescription(fsUuid, description);
+    }
+    EXPECT_EQ(result, 6);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_SetVolumeDescription_0000 SUCCESS";
+}
 } // namespace

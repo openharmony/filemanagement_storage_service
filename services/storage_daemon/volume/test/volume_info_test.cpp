@@ -132,46 +132,13 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_001, TestSize.Leve
 
 /**
  * @tc.name: Storage_Service_VolumeInfoTest_Mount_002
- * @tc.desc: Verify the Mount function when mount dir exists.
+ * @tc.desc: Verify the Mount function when DoMount return error.
  * @tc.type: FUNC
  * @tc.require: SR000GGUOT
  */
 HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Mount_002 start";
-
-    VolumeInfoMock mock;
-    std::string volId = "vol-1-5";
-    std::string diskId = "105";
-    dev_t device = MKDEV(156, 305);
-    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
-    auto ret = mock.Create(volId, diskId, device);
-    EXPECT_TRUE(ret == E_OK);
-    EXPECT_CALL(mock, DoCheck()).Times(1).WillOnce(testing::Return(E_OK));
-    ret = mock.Check();
-    EXPECT_TRUE(ret == E_OK);
-
-    std::string mountPath("/mnt/external/" + volId);
-    bool bRet = StorageTestUtils::MkDir(mountPath, S_IRWXU | S_IRWXG | S_IRWXO);
-    EXPECT_TRUE(bRet);
-
-    uint32_t mountFlags = 0;
-    ret = mock.Mount(mountFlags);
-    EXPECT_TRUE(ret == E_MOUNT);
-
-    StorageTestUtils::RmDirRecurse(mountPath);
-    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Mount_002 end";
-}
-
-/**
- * @tc.name: Storage_Service_VolumeInfoTest_Mount_003
- * @tc.desc: Verify the Mount function when DoMount return error.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
-HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_003, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Mount_003 start";
 
     VolumeInfoMock mock;
     std::string volId = "vol-1-6";
@@ -191,18 +158,18 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_003, TestSize.Leve
     EXPECT_TRUE(ret == E_MOUNT);
 
     StorageTestUtils::RmDirRecurse("/mnt/external/" + volId);
-    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Mount_003 end";
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Mount_002 end";
 }
 
 /**
- * @tc.name: Storage_Service_VolumeInfoTest_Mount_004
+ * @tc.name: Storage_Service_VolumeInfoTest_Mount_003
  * @tc.desc: Verify the Mount function when args are normal.
  * @tc.type: FUNC
  * @tc.require: SR000GGUOT
  */
-HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_004, TestSize.Level1)
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_003, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Mount_004 start";
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Mount_003 start";
 
     VolumeInfoMock mock;
     std::string volId = "vol-1-7";
@@ -222,7 +189,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_004, TestSize.Leve
     EXPECT_TRUE(ret == E_OK);
 
     StorageTestUtils::RmDirRecurse("/mnt/external/" + volId);
-    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Mount_004 end";
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Mount_003 end";
 }
 
 /**
@@ -412,6 +379,62 @@ HWTEST_F(VolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetXXX_001, Test
     EXPECT_TRUE(mock.GetState() == UNMOUNTED);
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetXXX_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeInfoTest_SetVolumeDescription_001
+ * @tc.desc: Verify the SetVolumeDescription function.
+ * @tc.type: FUNC
+ * @tc.require: 
+ */
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_SetVolumeDescription_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_SetVolumeDescription_001 start";
+    VolumeInfoMock mock;
+    std::string volId = "vol-1-13";
+    std::string diskId = "113";
+    dev_t device = MKDEV(156, 313);
+
+    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, DoCheck()).Times(1).WillOnce(testing::Return(E_OK));
+
+    auto ret = mock.Create(volId, diskId, device);
+    EXPECT_TRUE(ret == E_OK);
+    ret = mock.Check();
+    EXPECT_TRUE(ret == E_OK);
+
+    std::string description = "description-1";
+    ret = mock.SetVolumeDescription(description);
+    EXPECT_TRUE(ret == E_VOL_STATE);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_SetVolumeDescription_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeInfoTest_SetVolumeDescription_002
+ * @tc.desc: Verify the SetVolumeDescription function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_SetVolumeDescription_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_SetVolumeDescription_002 start";
+    VolumeInfoMock mock;
+    std::string volId = "vol-1-14";
+    std::string diskId = "114";
+    dev_t device = MKDEV(156, 314);
+
+    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, DoSetVolDesc(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+
+    auto ret = mock.Create(volId, diskId, device);
+    EXPECT_TRUE(ret == E_OK);
+
+    std::string description = "description-1";
+    ret = mock.SetVolumeDescription(description);
+    EXPECT_TRUE(ret == E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_SetVolumeDescription_002 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

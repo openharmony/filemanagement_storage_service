@@ -815,4 +815,132 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetUserStorageStats_0002
     EXPECT_GE(result.app_, 0);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetUserStorageStats_0002";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_GetVolumeByUuid_0000
+ * @tc.name: Storage_manager_proxy_GetVolumeByUuid_0000
+ * @tc.desc: Test function of GetVolumeByUuid interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetVolumeByUuid_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetVolumeByUuid_0000";
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
+    std::string volumeId = "100";
+    int32_t fsType = 1;
+    std::string fsUuid = "100";
+    std::string diskId = "100";
+    VolumeCore vc(volumeId, fsType, diskId);
+    proxy->NotifyVolumeCreated(vc);
+    VolumeExternal ve;
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    int64_t result = mock_->GetVolumeByUuid(fsUuid, ve);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetVolumeByUuid_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_GetVolumeById_0000
+ * @tc.name: Storage_manager_proxy_GetVolumeById_0000
+ * @tc.desc: Test function of GetVolumeById interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetVolumeById_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetVolumeById_0000";
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
+    std::string volumeId = "200";
+    int32_t fsType = 1;
+    std::string fsUuid = "200";
+    std::string diskId = "200";
+    VolumeCore vc(volumeId, fsType, diskId);
+    proxy->NotifyVolumeCreated(vc);
+    VolumeExternal ve;
+    int64_t result = proxy->GetVolumeById(volumeId, ve);
+    EXPECT_EQ(result, 0);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetVolumeById_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_SetVolumeDescription_0000
+ * @tc.name: Storage_manager_proxy_SetVolumeDescription_0000
+ * @tc.desc: Test function of SetVolumeDescription interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_SetVolumeDescription_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_SetVolumeDescription_0000";
+    std::string fsUuid = "300";
+    string description = "description-1";
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    int64_t result = mock_->SetVolumeDescription(fsUuid, description);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_SetVolumeDescription_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_Format_0000
+ * @tc.name: Storage_manager_proxy_Format_0000
+ * @tc.desc: Test function of Format interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_Format_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_Format_0000";
+    std::string volumeId = "400";
+    string fsTypes = "1";
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    int64_t result = mock_->Format(volumeId, fsTypes);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_Format_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_GetDiskById_0000
+ * @tc.name: Storage_manager_proxy_GetDiskById_0000
+ * @tc.desc: Test function of GetDiskById interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetDiskById_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetDiskById_0000";
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
+    std::string diskId = "500";
+    int64_t sizeBytes = 1024;
+    std::string sysPath = "/";
+    std::string vendor = "500";
+    int32_t flag = 1;
+    Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
+    proxy->NotifyDiskCreated(disk);
+    int64_t result = proxy->GetDiskById(diskId, disk);
+    EXPECT_EQ(result, 0);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetDiskById_0000";
+}
 } // namespace
