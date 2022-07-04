@@ -16,6 +16,8 @@
 #include "user/mount_manager.h"
 #include <cstdlib>
 #include <sys/mount.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include "ipc/istorage_daemon.h"
 #include "parameter.h"
 #include "storage_service_errno.h"
@@ -85,6 +87,11 @@ int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath)
     if (ret != 0 && errno != EEXIST && errno != EBUSY) {
         LOGE("failed to mount hmdfs, err %{public}d", errno);
         return E_MOUNT;
+    }
+
+    ret = chown(hmdfsMntArgs.GetCtrlPath().c_str(), OID_DFS, OID_SYSTEM);
+    if (ret != 0) {
+        LOGE("failed to chown hmdfs sysfs node, err %{public}d", errno);
     }
 
     return E_OK;
