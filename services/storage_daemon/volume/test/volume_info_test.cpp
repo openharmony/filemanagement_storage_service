@@ -385,7 +385,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetXXX_001, Test
  * @tc.name: Storage_Service_VolumeInfoTest_SetVolumeDescription_001
  * @tc.desc: Verify the SetVolumeDescription function.
  * @tc.type: FUNC
- * @tc.require: 
+ * @tc.require: AR000H09L6
  */
 HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_SetVolumeDescription_001, TestSize.Level1)
 {
