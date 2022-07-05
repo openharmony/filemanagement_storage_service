@@ -31,6 +31,7 @@ public:
     virtual int32_t Check(std::string volId) override;
     virtual int32_t Format(std::string volId, std::string fsType) override;
     virtual int32_t Partition(std::string diskId, int32_t type) override;
+    virtual int32_t SetVolumeDescription(std::string volId, std::string description) override;
 
     virtual int32_t StartUser(int32_t userId) override;
     virtual int32_t StopUser(int32_t userId) override;

@@ -15,7 +15,8 @@
     "syscap": [],
     "features": [
       "storage_service_fstools",
-      "storage_service_graphic"
+      "storage_service_graphic",
+      "storage_service_user_file_sharing"
     ],
     "adapted_system_type": ["standard"],
     "rom": "",
@@ -32,7 +33,7 @@
           "huks"
       ],
       "third_party": [
-        "exfat-utils",
+        "exfatprogs",
         "f2fs-tools",
         "FreeBSD/sbin/fsck_msdosfs",
         "gptfdisk",
@@ -57,7 +58,12 @@
               "name": "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
               "header": {
                 "header_files": [
-                  "istorage_manager.h"
+                  "istorage_manager.h",
+                  "bundle_stats.h",
+                  "storage_stats.h",
+                  "disk.h",
+                  "volume_core.h",
+                  "volume_external.h"
                 ],
                 "header_base": "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native"
               }
@@ -65,7 +71,8 @@
       ],
       "test": [
           "//foundation/filemanagement/storage_service/services/storage_daemon/crypto/test:crypto_test",
-    "//foundation/filemanagement/storage_service/services/storage_daemon/disk/test:storage_daemon_disk_test",
+          "//foundation/filemanagement/storage_service/services/storage_daemon/disk/test:storage_daemon_disk_test",
+          "//foundation/filemanagement/storage_service/services/storage_daemon/file_sharing/test:file_sharing_test",
           "//foundation/filemanagement/storage_service/services/storage_daemon/ipc/test:storage_daemon_ipc_test",
           "//foundation/filemanagement/storage_service/services/storage_daemon/netlink/test:storage_daemon_netlink_test",
           "//foundation/filemanagement/storage_service/services/storage_daemon/user/test:storage_daemon_user_test",

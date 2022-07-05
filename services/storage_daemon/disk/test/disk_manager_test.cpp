@@ -136,7 +136,7 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_Instance_002, TestSize
 HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_CreateDisk_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_CreateDisk_001 start";
-    
+
     DiskManager *diskManager = DiskManager::Instance();
     ASSERT_TRUE(diskManager != nullptr);
 
@@ -162,7 +162,7 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_CreateDisk_001, TestSi
 HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_DestroyDisk_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_DestroyDisk_001 start";
-    
+
     DiskManager *diskManager = DiskManager::Instance();
     ASSERT_TRUE(diskManager != nullptr);
 
@@ -189,7 +189,7 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_DestroyDisk_001, TestS
 HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_ChangeDisk_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_ChangeDisk_001 start";
-    
+
     DiskManager *diskManager = DiskManager::Instance();
     ASSERT_TRUE(diskManager != nullptr);
 
@@ -217,7 +217,7 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_ChangeDisk_001, TestSi
 HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_GetDisk_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_GetDisk_001 start";
-    
+
     DiskManager *diskManager = DiskManager::Instance();
     ASSERT_TRUE(diskManager != nullptr);
 
@@ -246,7 +246,7 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_GetDisk_001, TestSize.
 HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_GetDisk_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_GetDisk_002 start";
-    
+
     DiskManager *diskManager = DiskManager::Instance();
     ASSERT_TRUE(diskManager != nullptr);
 
@@ -279,7 +279,7 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_GetDisk_002, TestSize.
 HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleDiskEvent_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleDiskEvent_001 start";
-    
+
     DiskManager *diskManager = DiskManager::Instance();
     ASSERT_TRUE(diskManager != nullptr);
 
@@ -304,7 +304,7 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleDiskEvent_001, T
 HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleDiskEvent_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleDiskEvent_002 start";
-    
+
     DiskManager *diskManager = DiskManager::Instance();
     ASSERT_TRUE(diskManager != nullptr);
 
@@ -329,7 +329,7 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleDiskEvent_002, T
 HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleDiskEvent_003, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_HandleDiskEvent_003 start";
-    
+
     DiskManager *diskManager = DiskManager::Instance();
     ASSERT_TRUE(diskManager != nullptr);
 
@@ -354,7 +354,7 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_HandleDiskEvent_003, T
 HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_AddDiskConfig_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_AddDiskConfig_001 start";
-    
+
     DiskManager *diskManager = DiskManager::Instance();
     ASSERT_TRUE(diskManager != nullptr);
 
@@ -375,7 +375,7 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_AddDiskConfig_001, Tes
 HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_ReplayUevent_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_ReplayUevent_001 start";
-    
+
     DiskManager *diskManager = DiskManager::Instance();
     ASSERT_TRUE(diskManager != nullptr);
 
@@ -393,7 +393,7 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_ReplayUevent_001, Test
 HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_001 start";
-    
+
     DiskManager *diskManager = DiskManager::Instance();
     ASSERT_TRUE(diskManager != nullptr);
 
@@ -418,7 +418,7 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_001, TestS
 HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_MatchConfig_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_MatchConfig_002 start";
-    
+
     DiskManager *diskManager = DiskManager::Instance();
     ASSERT_TRUE(diskManager != nullptr);
 

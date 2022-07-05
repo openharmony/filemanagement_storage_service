@@ -12,27 +12,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef VOLUME_INFO_MOCK_H
-#define VOLUME_INFO_MOCK_H
-
-#include "gmock/gmock.h"
-#include "volume/volume_info.h"
+#ifndef OHOS_STORAGE_DAEMON_FILE_SHARING_H
+#define OHOS_STORAGE_DAEMON_FILE_SHARING_H
 
 namespace OHOS {
 namespace StorageDaemon {
-class VolumeInfoMock : public VolumeInfo {
-public:
-    VolumeInfoMock() {}
-    virtual ~VolumeInfoMock() {}
-
-    MOCK_METHOD1(DoCreate, int32_t(dev_t));
-    MOCK_METHOD0(DoDestroy, int32_t());
-    MOCK_METHOD1(DoMount, int32_t(uint32_t));
-    MOCK_METHOD1(DoUMount, int32_t(bool));
-    MOCK_METHOD0(DoCheck, int32_t());
-    MOCK_METHOD1(DoFormat, int32_t(std::string));
-    MOCK_METHOD1(DoSetVolDesc, int32_t(std::string));
-};
+int SetupFileSharingDir();
 } // namespace StorageDaemon
 } // namespace OHOS
-#endif // VOLUME_INFO_MOCK_H
+
+#endif // OHOS_STORAGE_DAEMON_FILE_SHARING_H

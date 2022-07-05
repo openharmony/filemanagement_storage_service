@@ -172,5 +172,22 @@ int32_t VolumeManager::Format(const std::string volId, const std::string fsType)
 
     return E_OK;
 }
+
+int32_t VolumeManager::SetVolumeDescription(const std::string volId, const std::string description)
+{
+    std::shared_ptr<VolumeInfo> info = GetVolume(volId);
+    if (info == nullptr) {
+        LOGE("the volume %{public}s does not exist.", volId.c_str());
+        return E_NON_EXIST;
+    }
+
+    int32_t err = info->SetVolumeDescription(description);
+    if (err != E_OK) {
+        LOGE("the volume %{public}s setVolumeDescription failed.", volId.c_str());
+        return err;
+    }
+
+    return E_OK;
+}
 } // StorageDaemon
 } // OHOS

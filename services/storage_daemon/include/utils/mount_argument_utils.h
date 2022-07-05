@@ -35,6 +35,7 @@ struct MountArgument final {
     std::string GetFullDst() const;
     std::string GetCommFullPath() const;
     std::string GetCachePath() const;
+    std::string GetCtrlPath() const;
     std::string OptionsToString() const;
     unsigned long GetFlags() const;
 };

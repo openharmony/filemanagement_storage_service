@@ -31,7 +31,6 @@ config("storage_daemon_config") {
     "../storage_manager/include",
     "//foundation/distributedschedule/safwk/interfaces/innerkits/safwk",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
-    "//base/startup/syspara_lite/interfaces/innerkits/native/syspara/include",
     "//base/security/access_token/interfaces/innerkits/accesstoken/include",
     "//foundation/filemanagement/storage_service/services/common/include",
   ]
@@ -43,6 +42,10 @@ ohos_prebuilt_etc("storage_daemon_disk_config") {
   relative_install_dir = "init"
   part_name = "storage_service"
   subsystem_name = "filemanagement"
+}
+
+declare_args() {
+  storage_service_user_file_sharing = true
 }
 
 ohos_executable("storage_daemon") {
@@ -81,6 +84,15 @@ ohos_executable("storage_daemon") {
     "LOG_DOMAIN = 0xD004301",
   ]
 
+  if (storage_service_user_file_sharing) {
+    defines += [ "USER_FILE_SHARING" ]
+    sources += [
+      "file_sharing/src/acl.cpp",
+      "file_sharing/src/file_sharing.cpp",
+      "file_sharing/src/setacl.cpp",
+    ]
+  }
+
   configs = [ ":storage_daemon_config" ]
 
   deps = [
@@ -93,9 +105,9 @@ ohos_executable("storage_daemon") {
   external_deps = [
     "access_token:libaccesstoken_sdk",
     "hiviewdfx_hilog_native:libhilog",
+    "init:libbegetutil",
     "ipc:ipc_core",
     "samgr_standard:samgr_proxy",
-    "startup_l2:syspara",
   ]
 
   subsystem_name = "filemanagement"
@@ -167,7 +179,7 @@ group("storage_daemon_third_party") {
       "//third_party/FreeBSD/sbin/fsck_msdosfs:fsck_msdos",
       "//third_party/FreeBSD/sbin/newfs_msdos:newfs_msdos",
       "//third_party/e2fsprogs/misc:blkid",
-      "//third_party/exfat-utils:exfat-utils",
+      "//third_party/exfatprogs:exfatprogs",
       "//third_party/f2fs-tools:f2fs-tools",
       "//third_party/gptfdisk:sgdisk",
       "//third_party/ntfs-3g:ntfsprogs",

@@ -12,26 +12,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef OHOS_STORAGE_DAEMON_ENDIAN_H
+#define OHOS_STORAGE_DAEMON_ENDIAN_H
 
-#include "bundle_stats.h"
-
-namespace OHOS {
-namespace StorageManager {
-bool BundleStats::Marshalling(Parcel &parcel) const
+inline bool IsLe()
 {
-    parcel.WriteInt64(appSize_);
-    parcel.WriteInt64(cacheSize_);
-    parcel.WriteInt64(dataSize_);
-    return true;
+    int tmp = 0x01;
+    return *(char *)&tmp;
 }
 
-std::unique_ptr<BundleStats> BundleStats::Unmarshalling(Parcel &parcel)
+inline bool IsBe()
 {
-    auto obj = std::make_unique<BundleStats>();
-    obj->appSize_ = parcel.ReadInt64();
-    obj->cacheSize_ = parcel.ReadInt64();
-    obj->dataSize_ = parcel.ReadInt64();
-    return obj;
+    int tmp = 0x01;
+    return *((char *)&tmp + sizeof(tmp) - 1);
 }
+
+/* We haven't meet any BE machine, so leave it until we really need it. */
+template <typename T>
+inline T LeToCpu(T x)
+{
+    return x;
 }
+
+template <typename T>
+inline T CpuToLe(T x)
+{
+    return x;
 }
+
+#endif // OHOS_STORAGE_DAEMON_ENDIAN_H

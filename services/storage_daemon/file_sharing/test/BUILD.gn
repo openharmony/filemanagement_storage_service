@@ -1,4 +1,4 @@
-# Copyright (c) 2022 Huawei Device Co., Ltd.
+# Copyright (C) 2022 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -10,9 +10,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import("//build/test.gni")
 
-ability_runtime_path = "//foundation/ability/ability_runtime"
-ability_runtime_kits_path = "${ability_runtime_path}/frameworks/kits"
-declare_args() {
-  storage_service_graphic = true
+ohos_moduletest("AclTest") {
+  module_out_path = "filemanagement/storage_service/storage_daemon"
+
+  include_dirs = [
+    "../../include",
+    "//utils/native/base/include",
+  ]
+
+  sources = [
+    "../src/acl.cpp",
+    "acl_test.cpp",
+  ]
+
+  deps = [ "//third_party/googletest:gtest_main" ]
+}
+
+group("file_sharing_test") {
+  testonly = true
+  deps = [ ":AclTest" ]
 }

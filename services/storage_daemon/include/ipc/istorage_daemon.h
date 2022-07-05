@@ -31,6 +31,7 @@ public:
         CHECK,
         FORMAT,
         PARTITION,
+        SET_VOL_DESC,
 
         PREPARE_USER_DIRS,
         DESTROY_USER_DIRS,
@@ -59,6 +60,7 @@ public:
     virtual int32_t Check(std::string volId) = 0;
     virtual int32_t Format(std::string volId, std::string fsType) = 0;
     virtual int32_t Partition(std::string diskId, int32_t type) = 0;
+    virtual int32_t SetVolumeDescription(std::string volId, std::string description) = 0;
 
     virtual int32_t StartUser(int32_t userId) = 0;
     virtual int32_t StopUser(int32_t userId) = 0;

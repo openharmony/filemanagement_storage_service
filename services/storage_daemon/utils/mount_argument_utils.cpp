@@ -23,9 +23,10 @@ namespace StorageDaemon {
 namespace Utils {
 using namespace std;
 namespace {
-static const std::string DATA_POINT = "/data/service/el2/";
-static const std::string BASE_MOUNT_POINT = "/mnt/hmdfs/";
-static const std::string COMM_DATA_POINT = "/storage/media/";
+    static const std::string DATA_POINT = "/data/service/el2/";
+    static const std::string BASE_MOUNT_POINT = "/mnt/hmdfs/";
+    static const std::string SYSFS_HMDFS_PATH = "/sys/fs/hmdfs/";
+    static const std::string COMM_DATA_POINT = "/storage/media/";
 } // namespace
 
 string MountArgument::GetFullSrc() const
@@ -57,6 +58,27 @@ string MountArgument::GetCachePath() const
     stringstream ss;
     ss << DATA_POINT << userId_ << "/hmdfs/cache/" << relativePath_ << "_cache/";
 
+    return ss.str();
+}
+
+static uint64_t MocklispHash(const string &str)
+{
+    uint64_t res = 0;
+    constexpr int mocklispHashPos = 5;
+    /* Mocklisp hash function. */
+    for (auto ch : str) {
+        res = (res << mocklispHashPos) - res + (uint64_t)ch;
+    }
+    return res;
+}
+
+string MountArgument::GetCtrlPath() const
+{
+    auto dst = GetFullDst();
+    auto res = MocklispHash(dst);
+
+    stringstream ss;
+    ss << SYSFS_HMDFS_PATH << res << "/cmd";
     return ss.str();
 }
 

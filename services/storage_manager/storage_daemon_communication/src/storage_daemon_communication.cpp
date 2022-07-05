@@ -37,7 +37,7 @@ StorageDaemonCommunication::~StorageDaemonCommunication()
     LOGI("DEBUG ~StorageDaemonCommunication destructer ~");
 }
 
-int32_t StorageDaemonCommunication::Connect() 
+int32_t StorageDaemonCommunication::Connect()
 {
     int32_t err = 0;
     LOGI("StorageDaemonCommunication::Connect start");
@@ -65,7 +65,7 @@ int32_t StorageDaemonCommunication::Connect()
 int32_t StorageDaemonCommunication::PrepareAddUser(int32_t userId, uint32_t flags)
 {
     LOGI("StorageDaemonCommunication::PrepareAddUser start");
-    
+
     if (Connect() != E_OK) {
         LOGE("StorageDaemonCommunication::PrepareAddUser connect failed");
         return E_IPC_ERROR;
@@ -141,6 +141,26 @@ int32_t StorageDaemonCommunication::Partition(std::string diskId, int32_t type)
         return E_IPC_ERROR;
     }
     return storageDaemon_->Partition(diskId, type);
+}
+
+int32_t StorageDaemonCommunication::Format(std::string volumeId, std::string type)
+{
+    LOGI("StorageDaemonCommunication::Format start");
+    if (Connect() != E_OK) {
+        LOGE("StorageDaemonCommunication::Format connect failed");
+        return E_IPC_ERROR;
+    }
+    return storageDaemon_->Format(volumeId, type);
+}
+
+int32_t StorageDaemonCommunication::SetVolumeDescription(std::string volumeId, std::string description)
+{
+    LOGI("StorageDaemonCommunication::SetVolumeDescription start");
+    if (Connect() != E_OK) {
+        LOGE("StorageDaemonCommunication::SetVolumeDescription connect failed");
+        return E_IPC_ERROR;
+    }
+    return storageDaemon_->SetVolumeDescription(volumeId, description);
 }
 
 int32_t StorageDaemonCommunication::GenerateUserKeys(uint32_t userId, uint32_t flags)
