@@ -18,6 +18,7 @@
 
 #include "volume/volume_manager_service.h"
 #include "volume_core.h"
+#include "storage_service_errno.h"
 
 namespace {
 using namespace std;
@@ -54,7 +55,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0000, testing::e
         vmService->OnVolumeCreated(vc);
         result = vmService->Mount(volumeId);
     }
-    EXPECT_NE(result, 9);
+    EXPECT_NE(result, E_MOUNT);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Mount_0000";
 }
 
@@ -82,7 +83,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_0000, testing:
         vmService->OnVolumeCreated(vc);
         result = vmService->Unmount(volumeId);
     }
-    EXPECT_NE(result, 10);
+    EXPECT_NE(result, E_UMOUNT);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Unmount_0000";
 }
 
@@ -224,7 +225,7 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeById_0000, tes
     vmService->OnVolumeCreated(vc);
     VolumeExternal ve;
     int32_t result = vmService->GetVolumeById(volumeId, ve);
-    EXPECT_EQ(result, 0);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_GetVolumeById_0000";
 }
 
@@ -245,7 +246,7 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeById_0001, tes
     std::string volumeId = "400";
     VolumeExternal ve;
     int32_t result = vmService->GetVolumeById(volumeId, ve);
-    EXPECT_NE(result, 0);
+    EXPECT_NE(result, E_OK);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_GetVolumeById_0001";
 }
 
@@ -271,7 +272,7 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_SetVolumeDescription_00
     std::string fsUuid = "500";
     std::string description = "description-1";
     int32_t result = vmService->SetVolumeDescription(fsUuid, description);
-    EXPECT_EQ(result, 6);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_SetVolumeDescription_0000";
 }
 
@@ -296,7 +297,7 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_Format_0000, testing::e
     vmService->OnVolumeCreated(vc);
     string fsTypes = "1";
     int32_t result = vmService->Format(volumeId, fsTypes);
-    EXPECT_EQ(result, 6);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_Format_0000";
 }
 
@@ -324,7 +325,7 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_Format_0001, testing::e
     vmService->GetVolumeById(volumeId, ve);
     string fsTypes = "1";
     int32_t result = vmService->Format(volumeId, fsTypes);
-    EXPECT_EQ(result, 13);
+    EXPECT_EQ(result, E_VOL_STATE);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_Format_0001";
 }
 } // namespace

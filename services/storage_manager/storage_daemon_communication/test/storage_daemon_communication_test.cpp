@@ -18,6 +18,7 @@
 
 #include "storage_daemon_communication/storage_daemon_communication.h"
 #include "user/multi_user_manager_service.h"
+#include "storage_service_errno.h"
 
 namespace {
 using namespace std;
@@ -49,7 +50,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Connect_0000, test
     if (sdCommunication != nullptr) {
         result = sdCommunication->Connect();
     }
-    EXPECT_EQ(result, 0);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Connect_0000";
 }
 
@@ -73,7 +74,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_PrepareAddUser_000
     if (sdCommunication != nullptr) {
         result = sdCommunication->PrepareAddUser(userId, flag);
     }
-    EXPECT_EQ(result, 0);
+    EXPECT_EQ(result, E_OK);
     sdCommunication->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_PrepareAddUser_0000";
 }
@@ -99,7 +100,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_RemoveUser_0000, t
         sdCommunication->PrepareAddUser(userId, flag);
         result = sdCommunication->RemoveUser(userId, flag);
     }
-    EXPECT_EQ(result, 0);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_RemoveUser_0000";
 }
 
@@ -124,7 +125,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_PrepareStartUser_0
         sdCommunication->PrepareAddUser(userId, flag);
         result = sdCommunication->PrepareStartUser(userId);
     }
-    EXPECT_EQ(result, 0);
+    EXPECT_EQ(result, E_OK);
     sdCommunication->StopUser(userId);
     sdCommunication->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_PrepareStartUser_0000";
@@ -152,7 +153,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_StopUser_0000, tes
         sdCommunication->PrepareStartUser(userId);
         result = sdCommunication->StopUser(userId);
     }
-    EXPECT_EQ(result, 0);
+    EXPECT_EQ(result, E_OK);
     sdCommunication->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_StopUser_0000 SUCCESS";
 }
@@ -177,7 +178,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Mount_0000, testin
     if (sdCommunication != nullptr) {
         result = sdCommunication->Mount(volumeId, flag);
     }
-    EXPECT_EQ(result, 6);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Mount_0000 SUCCESS";
 }
 
@@ -200,7 +201,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Unmount_0000, test
     if (sdCommunication != nullptr) {
         result = sdCommunication->Unmount(volumeId);
     }
-    EXPECT_EQ(result, 6);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Unmount_0000 SUCCESS";
 }
 
@@ -223,7 +224,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Check_0000, testin
     if (sdCommunication != nullptr) {
         result = sdCommunication->Check(volumeId);
     }
-    EXPECT_EQ(result, 6);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Check_0000 SUCCESS";
 }
 
@@ -247,7 +248,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Partition_0000, te
     if (sdCommunication != nullptr) {
         result = sdCommunication->Partition(diskId, type);
     }
-    EXPECT_EQ(result, 6);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Partition_0000 SUCCESS";
 }
 
@@ -271,7 +272,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Format_0000, testi
     if (sdCommunication != nullptr) {
         result = sdCommunication->Format(volumeId, fsType);
     }
-    EXPECT_EQ(result, 6);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Format_0000 SUCCESS";
 }
 
@@ -295,7 +296,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetVolumeDescripti
     if (sdCommunication != nullptr) {
         result = sdCommunication->SetVolumeDescription(fsUuid, description);
     }
-    EXPECT_EQ(result, 6);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_SetVolumeDescription_0000 SUCCESS";
 }
 } // namespace
