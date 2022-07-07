@@ -53,7 +53,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Create_001, TestSize.Lev
     EXPECT_TRUE(ret == E_OK);
 
     volId = "vol-1-2";
-    diskId = "102";
+    diskId = "disk-1-2";
     device = MKDEV(1, 2); // 1 is major device number, 2 is minor device number
     EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_ERR));
     ret = mock.Create(volId, diskId, device);
