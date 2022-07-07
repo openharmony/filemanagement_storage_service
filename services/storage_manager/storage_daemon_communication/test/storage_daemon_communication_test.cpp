@@ -291,7 +291,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetVolumeDescripti
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t result;
-    string fsUuid = "fs-2-6";
+    string fsUuid = "uuid-1";
     string description = "description-1";
     if (sdCommunication != nullptr) {
         result = sdCommunication->SetVolumeDescription(fsUuid, description);

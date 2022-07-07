@@ -192,7 +192,7 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeByUuid_0000, t
             DelayedSingleton<VolumeManagerService>::GetInstance();
     std::string volumeId = "vol-1-4";
     int32_t fsType = 1;
-    std::string fsUuid = "fs-1-4";
+    std::string fsUuid = "uuid-1";
     std::string path = "/";
     std::string description = "description-1";
     std::string diskId = "disk-1-4";
@@ -269,7 +269,7 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_SetVolumeDescription_00
     std::string diskId = "disk-1-7";
     VolumeCore vc(volumeId, fsType, diskId);
     vmService->OnVolumeCreated(vc);
-    std::string fsUuid = "fs-1-7";
+    std::string fsUuid = "uuid-2";
     std::string description = "description-1";
     int32_t result = vmService->SetVolumeDescription(fsUuid, description);
     EXPECT_EQ(result, E_NON_EXIST);
@@ -317,7 +317,7 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_Format_0001, testing::e
             DelayedSingleton<VolumeManagerService>::GetInstance();
     std::string volumeId = "vol-1-9";
     int fsType = 1;
-    std::string fsUuid = "fs-1-9";
+    std::string fsUuid = "uuid-3";
     std::string diskId = "disk-1-9";
     VolumeCore vc(volumeId, fsType, diskId, VolumeState::MOUNTED);
     vmService->OnVolumeCreated(vc);
