@@ -21,30 +21,19 @@
 
 namespace OHOS {
 namespace StorageManager {
-static bool GetClientUid(int &uid)
-{
-    uid = IPCSkeleton::GetCallingUid();
-    return true;
-}
-
+const std::string PERMISSION_STORAGE_MANAGER = "ohos.permission.STORAGE_MANAGER";
+const std::string PERMISSION_MOUNT_MANAGER = "ohos.permission.MOUNT_UNMOUNT_MANAGER";
+const std::string PERMISSION_FORMAT_MANAGER = "ohos.permission.MOUNT_FORMAT_MANAGER";
 bool CheckClientPermission(const std::string& permissionStr)
 {
-    int uid = -1;
-    if (!GetClientUid(uid)) {
-        LOGE("GetClientUid: fail");
-    }
-    LOGI("uid: %{public}d", uid);
-    if (uid == UID_ACCOUNTMGR || uid == UID_SYSTEM || uid == UID_ROOT || uid == UID_FMS) {
-        LOGI("StorageManager permissionCheck pass!");
-        return true;
-    }
     Security::AccessToken::AccessTokenID tokenCaller = IPCSkeleton::GetCallingTokenID();
     int res = Security::AccessToken::AccessTokenKit::VerifyAccessToken(tokenCaller,
         permissionStr);
     if (res == Security::AccessToken::PermissionState::PERMISSION_GRANTED) {
-        LOGI("Have media permission");
+        LOGI("StorageMangaer permissionCheck pass!");
         return true;
     }
+    LOGE("StorageManager permissionCheck error, need %{public}s", permissionStr.c_str());
     return false;
 }
 int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
@@ -55,11 +44,6 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
         return E_PERMISSION_DENIED;
     }
 
-    std::string permission = "ohos.permission.READ_MEDIA";
-    if (!CheckClientPermission(permission)) {
-        LOGE("StorageManager checkPermission error");
-        return E_PERMISSION_DENIED;
-    }
     int err = 0;
     switch (code) {
         case PREPARE_ADD_USER:
@@ -225,6 +209,9 @@ int32_t StorageManagerStub::HandleStopUser(MessageParcel &data, MessageParcel &r
 
 int32_t StorageManagerStub::HandleGetTotal(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     LOGE("StorageManagerStub::HandleGetTotal Begin.");
     std::string volumeId = data.ReadString();
     int64_t totalSize = GetTotalSizeOfVolume(volumeId);
@@ -237,6 +224,9 @@ int32_t StorageManagerStub::HandleGetTotal(MessageParcel &data, MessageParcel &r
 
 int32_t StorageManagerStub::HandleGetFree(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     std::string volumeId = data.ReadString();
     int64_t freeSize = GetFreeSizeOfVolume(volumeId);
     if (!reply.WriteInt64(freeSize)) {
@@ -248,6 +238,9 @@ int32_t StorageManagerStub::HandleGetFree(MessageParcel &data, MessageParcel &re
 
 int32_t StorageManagerStub::HandleGetBundleStatus(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     std::string pkgName = data.ReadString();
     BundleStats bundleStats = GetBundleStats(pkgName);
     if (!bundleStats.Marshalling(reply)) {
@@ -258,6 +251,9 @@ int32_t StorageManagerStub::HandleGetBundleStatus(MessageParcel &data, MessagePa
 
 int32_t StorageManagerStub::HandleGetSystemSize(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     int64_t systemSize = GetSystemSize();
     if (!reply.WriteInt64(systemSize)) {
         LOGE("StorageManagerStub::HandleGetFree call GetSystemSize failed");
@@ -268,6 +264,9 @@ int32_t StorageManagerStub::HandleGetSystemSize(MessageParcel &data, MessageParc
 
 int32_t StorageManagerStub::HandleGetTotalSize(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     int64_t totalSize = GetTotalSize();
     if (!reply.WriteInt64(totalSize)) {
         LOGE("StorageManagerStub::HandleGetFree call GetTotalSize failed");
@@ -278,6 +277,9 @@ int32_t StorageManagerStub::HandleGetTotalSize(MessageParcel &data, MessageParce
 
 int32_t StorageManagerStub::HandleGetFreeSize(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     int64_t freeSize = GetFreeSize();
     if (!reply.WriteInt64(freeSize)) {
         LOGE("StorageManagerStub::HandleGetFree call GetFreeSize failed");
@@ -288,6 +290,9 @@ int32_t StorageManagerStub::HandleGetFreeSize(MessageParcel &data, MessageParcel
 
 int32_t StorageManagerStub::HandleGetCurrUserStorageStats(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     StorageStats storageStats = GetUserStorageStats();
     if (!storageStats.Marshalling(reply)) {
         return  E_IPC_ERROR;
@@ -297,6 +302,9 @@ int32_t StorageManagerStub::HandleGetCurrUserStorageStats(MessageParcel &data, M
 
 int32_t StorageManagerStub::HandleGetUserStorageStats(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     int32_t userId = data.ReadInt32();
     StorageStats storageStats = GetUserStorageStats(userId);
     if (!storageStats.Marshalling(reply)) {
@@ -315,6 +323,9 @@ int32_t StorageManagerStub::HandleGetCurrentBundleStats(MessageParcel &data, Mes
 }
 int32_t StorageManagerStub::HandleGetAllVolumes(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     std::vector<VolumeExternal> ve = GetAllVolumes();
     uint size = ve.size();
     if (size == 0) {
@@ -365,6 +376,9 @@ int32_t StorageManagerStub::HandleNotifyVolumeDestroyed(MessageParcel &data, Mes
 
 int32_t StorageManagerStub::HandleMount(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     std::string volumeId = data.ReadString();
     int err = Mount(volumeId);
     if (!reply.WriteUint32(err)) {
@@ -376,6 +390,9 @@ int32_t StorageManagerStub::HandleMount(MessageParcel &data, MessageParcel &repl
 
 int32_t StorageManagerStub::HandleUnmount(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     std::string volumeId = data.ReadString();
     int err = Unmount(volumeId);
     if (!reply.WriteUint32(err)) {
@@ -401,6 +418,9 @@ int32_t StorageManagerStub::HandleNotifyDiskDestroyed(MessageParcel &data, Messa
 
 int32_t StorageManagerStub::HandlePartition(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_FORMAT_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     std::string diskId = data.ReadString();
     int32_t type = data.ReadInt32();
     int err = Partition(diskId, type);
@@ -413,6 +433,9 @@ int32_t StorageManagerStub::HandlePartition(MessageParcel &data, MessageParcel &
 
 int32_t StorageManagerStub::HandleGetAllDisks(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     std::vector<Disk> disks = GetAllDisks();
     uint size = disks.size();
     if (size == 0) {
@@ -435,6 +458,9 @@ int32_t StorageManagerStub::HandleGetAllDisks(MessageParcel &data, MessageParcel
 
 int32_t StorageManagerStub::HandleGetVolumeByUuid(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     std::string fsUuid = data.ReadString();
     VolumeExternal vc;
     int err = GetVolumeByUuid(fsUuid, vc);
@@ -450,6 +476,9 @@ int32_t StorageManagerStub::HandleGetVolumeByUuid(MessageParcel &data, MessagePa
 
 int32_t StorageManagerStub::HandleGetVolumeById(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     std::string volId = data.ReadString();
     VolumeExternal vc;
     int err = GetVolumeById(volId, vc);
@@ -465,6 +494,9 @@ int32_t StorageManagerStub::HandleGetVolumeById(MessageParcel &data, MessageParc
 
 int32_t StorageManagerStub::HandleSetVolDesc(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     std::string fsUuid = data.ReadString();
     std::string desc = data.ReadString();
     int err = SetVolumeDescription(fsUuid, desc);
@@ -477,6 +509,9 @@ int32_t StorageManagerStub::HandleSetVolDesc(MessageParcel &data, MessageParcel 
 
 int32_t StorageManagerStub::HandleFormat(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_FORMAT_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     std::string volId = data.ReadString();
     std::string fsType = data.ReadString();
     int err = Format(volId, fsType);
@@ -489,6 +524,9 @@ int32_t StorageManagerStub::HandleFormat(MessageParcel &data, MessageParcel &rep
 
 int32_t StorageManagerStub::HandleGetDiskById(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     std::string volId = data.ReadString();
     Disk disk;
     int err = GetDiskById(volId, disk);
