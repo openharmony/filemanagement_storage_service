@@ -67,7 +67,6 @@ ohos_unittest("netlink_handler_test") {
     "$ROOT_DIR/storage_daemon/netlink/src/netlink_listener.cpp",
     "$ROOT_DIR/storage_daemon/netlink/test/netlink_handler_test.cpp",
     "$ROOT_DIR/storage_daemon/utils/disk_utils.cpp",
-    "$ROOT_DIR/storage_daemon/utils/file_utils.cpp",
     "$ROOT_DIR/storage_daemon/utils/string_utils.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/external_volume_info.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/process.cpp",
@@ -78,6 +77,7 @@ ohos_unittest("netlink_handler_test") {
   ]
 
   deps = [
+    "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
     "//third_party/googletest:gmock_main",
     "//third_party/googletest:gtest_main",
     "//utils/native/base:utils",
@@ -144,7 +144,6 @@ ohos_unittest("netlink_manager_test") {
     "$ROOT_DIR/storage_daemon/netlink/src/netlink_manager.cpp",
     "$ROOT_DIR/storage_daemon/netlink/test/netlink_manager_test.cpp",
     "$ROOT_DIR/storage_daemon/utils/disk_utils.cpp",
-    "$ROOT_DIR/storage_daemon/utils/file_utils.cpp",
     "$ROOT_DIR/storage_daemon/utils/string_utils.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/external_volume_info.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/process.cpp",
@@ -155,6 +154,7 @@ ohos_unittest("netlink_manager_test") {
   ]
 
   deps = [
+    "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
     "//third_party/googletest:gtest_main",
     "//utils/native/base:utils",
   ]

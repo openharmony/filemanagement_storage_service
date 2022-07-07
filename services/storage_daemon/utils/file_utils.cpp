@@ -27,6 +27,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include "policycoreutils.h"
 #include "securec.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -36,15 +37,6 @@ namespace OHOS {
 namespace StorageDaemon {
 constexpr uint32_t ALL_PERMS = (S_ISUID | S_ISGID | S_ISVTX | S_IRWXU | S_IRWXG | S_IRWXO);
 const int BUF_LEN = 1024;
-
-int32_t Restorecon(const std::string &path)
-{
-    std::vector<std::string> cmd = {
-        "restorecon",
-        path
-    };
-    return ForkExec(cmd);
-}
 
 int32_t ChMod(const std::string &path, mode_t mode)
 {
@@ -163,7 +155,7 @@ bool PrepareDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
         return false;
     }
 
-    int err = Restorecon(path);
+    int err = Restorecon(path.c_str());
     if (err) {
         LOGE("failed to restorecon, err:%{public}d", err);
         return false;

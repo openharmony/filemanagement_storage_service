@@ -29,12 +29,12 @@ ohos_unittest("file_utils_test") {
   ]
 
   sources = [
-    "../file_utils.cpp",
     "common/help_utils.cpp",
     "file_utils_test.cpp",
   ]
 
   deps = [
+    "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
     "//third_party/googletest:gtest_main",
     "//utils/native/base:utils",
   ]
