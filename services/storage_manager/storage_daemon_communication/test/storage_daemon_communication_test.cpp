@@ -173,7 +173,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Mount_0000, testin
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t result;
-    std::string volumeId = "200";
+    std::string volumeId = "vol-2-1";
     int32_t flag = 1;
     if (sdCommunication != nullptr) {
         result = sdCommunication->Mount(volumeId, flag);
@@ -197,7 +197,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Unmount_0000, test
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t result;
-    std::string volumeId = "300";
+    std::string volumeId = "vol-2-2";
     if (sdCommunication != nullptr) {
         result = sdCommunication->Unmount(volumeId);
     }
@@ -220,7 +220,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Check_0000, testin
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t result;
-    std::string volumeId = "400";
+    std::string volumeId = "vol-2-3";
     if (sdCommunication != nullptr) {
         result = sdCommunication->Check(volumeId);
     }
@@ -243,7 +243,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Partition_0000, te
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t result;
-    std::string diskId = "123";
+    std::string diskId = "disk-2-4";
     int32_t type = 1;
     if (sdCommunication != nullptr) {
         result = sdCommunication->Partition(diskId, type);
@@ -267,8 +267,8 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Format_0000, testi
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t result;
-    string volumeId = "127";
-    string fsType = "1";
+    string volumeId = "vol-2-5";
+    string fsType = "fsType-1";
     if (sdCommunication != nullptr) {
         result = sdCommunication->Format(volumeId, fsType);
     }
@@ -291,7 +291,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetVolumeDescripti
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t result;
-    string fsUuid = "128";
+    string fsUuid = "fs-2-6";
     string description = "description-1";
     if (sdCommunication != nullptr) {
         result = sdCommunication->SetVolumeDescription(fsUuid, description);

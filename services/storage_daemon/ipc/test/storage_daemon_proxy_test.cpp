@@ -163,7 +163,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_SetVolumeDescription_001
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
-    string volId = "114";
+    string volId = "vol-0-1";
     string description = "description-1";
     int32_t ret = proxy_->SetVolumeDescription(volId, description);
     ASSERT_TRUE(ret == E_OK);

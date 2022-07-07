@@ -494,11 +494,11 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetDevDSize_001, TestSize.Le
 
     auto mock = std::make_shared<DiskInfoTestMock>(sysPath, devPath, device, flag);
 
-    uint64_t OK = 1;
-    EXPECT_CALL(*mock, GetDevDSize()).WillOnce(testing::Return(OK));
+    uint64_t mock_size = 1;
+    EXPECT_CALL(*mock, GetDevDSize()).WillOnce(testing::Return(mock_size));
     uint64_t ret = mock->GetDevDSize();
 
-    EXPECT_TRUE(ret == OK);
+    EXPECT_TRUE(ret == mock_size);
 
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetDevPath_001 end";
 }
