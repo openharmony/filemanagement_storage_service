@@ -261,5 +261,36 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonTest_HandleStopUser
 
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_HandleStopUser_001 end";
 }
+
+/**
+ * @tc.name: Storage_Manager_StorageDaemonTest_HandleSetVolDesc_001
+ * @tc.desc: Verify the HandleSetVolDesc function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonTest_HandleSetVolDesc_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_HandleSetVolDesc_001 start";
+
+    StorageDaemonStubMock mock;
+
+    MessageParcel data1;
+    MessageParcel reply1;
+    EXPECT_CALL(mock, SetVolumeDescription(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    int32_t ret = mock.HandleSetVolDesc(data1, reply1);
+    EXPECT_TRUE(ret == E_OK);
+    int32_t err = reply1.ReadInt32();
+    EXPECT_TRUE(err == E_OK);
+
+    MessageParcel data2;
+    MessageParcel reply2;
+    EXPECT_CALL(mock, SetVolumeDescription(testing::_, testing::_)).WillOnce(testing::Return(E_ERR));
+    ret = mock.HandleSetVolDesc(data2, reply2);
+    EXPECT_TRUE(ret == E_OK);
+    err = reply2.ReadInt32();
+    EXPECT_TRUE(err == E_ERR);
+
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_HandleSetVolDesc_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS

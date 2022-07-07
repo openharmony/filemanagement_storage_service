@@ -180,5 +180,32 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_001 end";
 }
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoSetVolDesc_001
+ * @tc.desc: Verify the DoSetVolDesc function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoSetVolDesc_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoSetVolDesc_001 start";
+
+    ExternalVolumeInfoMock mock;
+    std::string description = "description-1";
+
+    EXPECT_CALL(mock, DoSetVolDesc(testing::_)).Times(1).WillOnce(testing::Return(E_NOT_SUPPORT));
+    auto ret = mock.DoSetVolDesc(description);
+    EXPECT_TRUE(ret == E_NOT_SUPPORT);
+
+    EXPECT_CALL(mock, DoSetVolDesc(testing::_)).Times(1).WillOnce(testing::Return(E_ERR));
+    ret = mock.DoSetVolDesc(description);
+    EXPECT_TRUE(ret == E_ERR);
+
+    EXPECT_CALL(mock, DoSetVolDesc(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
+    ret = mock.DoSetVolDesc(description);
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoSetVolDesc_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS

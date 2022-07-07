@@ -18,6 +18,7 @@
 
 #include "storage_daemon_communication/storage_daemon_communication.h"
 #include "user/multi_user_manager_service.h"
+#include "storage_service_errno.h"
 
 namespace {
 using namespace std;
@@ -49,7 +50,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Connect_0000, test
     if (sdCommunication != nullptr) {
         result = sdCommunication->Connect();
     }
-    EXPECT_EQ(result, 0);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Connect_0000";
 }
 
@@ -73,7 +74,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_PrepareAddUser_000
     if (sdCommunication != nullptr) {
         result = sdCommunication->PrepareAddUser(userId, flag);
     }
-    EXPECT_EQ(result, 0);
+    EXPECT_EQ(result, E_OK);
     sdCommunication->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_PrepareAddUser_0000";
 }
@@ -99,7 +100,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_RemoveUser_0000, t
         sdCommunication->PrepareAddUser(userId, flag);
         result = sdCommunication->RemoveUser(userId, flag);
     }
-    EXPECT_EQ(result, 0);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_RemoveUser_0000";
 }
 
@@ -124,7 +125,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_PrepareStartUser_0
         sdCommunication->PrepareAddUser(userId, flag);
         result = sdCommunication->PrepareStartUser(userId);
     }
-    EXPECT_EQ(result, 0);
+    EXPECT_EQ(result, E_OK);
     sdCommunication->StopUser(userId);
     sdCommunication->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_PrepareStartUser_0000";
@@ -152,7 +153,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_StopUser_0000, tes
         sdCommunication->PrepareStartUser(userId);
         result = sdCommunication->StopUser(userId);
     }
-    EXPECT_EQ(result, 0);
+    EXPECT_EQ(result, E_OK);
     sdCommunication->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_StopUser_0000 SUCCESS";
 }
@@ -172,12 +173,12 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Mount_0000, testin
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t result;
-    std::string volumeId = "200";
+    std::string volumeId = "vol-2-1";
     int32_t flag = 1;
     if (sdCommunication != nullptr) {
         result = sdCommunication->Mount(volumeId, flag);
     }
-    EXPECT_EQ(result, 6);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Mount_0000 SUCCESS";
 }
 
@@ -196,11 +197,11 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Unmount_0000, test
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t result;
-    std::string volumeId = "300";
+    std::string volumeId = "vol-2-2";
     if (sdCommunication != nullptr) {
         result = sdCommunication->Unmount(volumeId);
     }
-    EXPECT_EQ(result, 6);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Unmount_0000 SUCCESS";
 }
 
@@ -219,11 +220,11 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Check_0000, testin
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t result;
-    std::string volumeId = "400";
+    std::string volumeId = "vol-2-3";
     if (sdCommunication != nullptr) {
         result = sdCommunication->Check(volumeId);
     }
-    EXPECT_EQ(result, 6);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Check_0000 SUCCESS";
 }
 
@@ -242,12 +243,60 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Partition_0000, te
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t result;
-    std::string diskId = "123";
+    std::string diskId = "disk-2-4";
     int32_t type = 1;
     if (sdCommunication != nullptr) {
         result = sdCommunication->Partition(diskId, type);
     }
-    EXPECT_EQ(result, 6);
+    EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Partition_0000 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_Format_0000
+ * @tc.name: Daemon_communication_Format_0000
+ * @tc.desc: Test function of Format interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Format_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Format_0000 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t result;
+    string volumeId = "vol-2-5";
+    string fsType = "fsType-1";
+    if (sdCommunication != nullptr) {
+        result = sdCommunication->Format(volumeId, fsType);
+    }
+    EXPECT_EQ(result, E_NON_EXIST);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Format_0000 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_SetVolumeDescription_0000
+ * @tc.name: Daemon_communication_SetVolumeDescription_0000
+ * @tc.desc: Test function of SetVolumeDescription interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetVolumeDescription_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_SetVolumeDescription_0000 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t result;
+    string fsUuid = "uuid-1";
+    string description = "description-1";
+    if (sdCommunication != nullptr) {
+        result = sdCommunication->SetVolumeDescription(fsUuid, description);
+    }
+    EXPECT_EQ(result, E_NON_EXIST);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_SetVolumeDescription_0000 SUCCESS";
 }
 } // namespace
