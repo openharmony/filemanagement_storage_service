@@ -199,7 +199,7 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeByUuid_0000, t
     VolumeCore vc(volumeId, fsType, diskId);
     vmService->OnVolumeCreated(vc);
     vmService->OnVolumeMounted(volumeId, fsType, fsUuid, path, description);
-    std::shared_ptr<VolumeExternal> result = vmService->GetVolumeByUuid(volumeId);
+    std::shared_ptr<VolumeExternal> result = vmService->GetVolumeByUuid(fsUuid);
     EXPECT_NE(result, nullptr);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_GetVolumeByUuid_0000";
 }
