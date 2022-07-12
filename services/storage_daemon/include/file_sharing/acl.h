@@ -151,7 +151,7 @@ public:
     bool IsValid();
     int InsertEntry(const AclXattrEntry &entry);
     char *Serialize(size_t &bufSize);
-    int DeSerialize(const char *p, int size);
+    int DeSerialize(const char *p, size_t size);
     ~Acl();
 };
 
