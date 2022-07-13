@@ -26,9 +26,9 @@
 #include <linux/fscrypt.h>
 
 #include "fscrypt_log.h"
+#include "fscrypt_sysparam.h"
 #include "init_utils.h"
 #include "key_control.h"
-#include "parameter.h"
 #include "securec.h"
 
 #define ARRAY_LEN(array) (sizeof((array)) / sizeof((array)[0]))
@@ -158,7 +158,7 @@ int FscryptSetSysparam(const char *policy)
     }
     FreeStringVector(options, optNums);
 
-    int ret = SetParameter(FSCRYPT_POLICY_KEY, policy);
+    int ret = SetFscryptParameter(FSCRYPT_POLICY_KEY, policy);
     if (ret < 0) {
         FSCRYPT_LOGE("Set fscrypt system parameter failed %d", ret);
         return ret;
@@ -190,8 +190,9 @@ int InitFscryptPolicy(void)
         return 0;
     }
     char policy[POLICY_BUF_SIZE];
-    int ret = GetParameter(FSCRYPT_POLICY_KEY, "", policy, POLICY_BUF_SIZE - 1);
-    if (ret <= 0) {
+    uint32_t len = POLICY_BUF_SIZE - 1;
+    int ret = GetFscryptParameter(FSCRYPT_POLICY_KEY, "", policy, &len);
+    if (ret != 0) {
         FSCRYPT_LOGI("Get fscrypt policy failed");
         return -ENOTSUP;
     }

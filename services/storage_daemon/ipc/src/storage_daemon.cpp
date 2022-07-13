@@ -67,6 +67,11 @@ int32_t StorageDaemon::SetVolumeDescription(std::string volId, std::string descr
 
 int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
+    int32_t ret = KeyManager::GetInstance()->GenerateUserKeys(userId, flags);
+    if (ret != 0) {
+        LOGE("Generate user %{public}d key error", userId);
+        return ret;
+    }
     return UserManager::GetInstance()->PrepareUserDirs(userId, flags);
 }
 
@@ -97,7 +102,7 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
         LOGE("Init global users els failed");
         return ret;
     }
-    return UserManager::GetInstance()->PrepareUserDirs(GLOBAL_USER_ID, CRYPTO_FLAG_EL1 | CRYPTO_FLAG_EL2);
+    return UserManager::GetInstance()->PrepareUserDirs(GLOBAL_USER_ID, CRYPTO_FLAG_EL1);
 }
 
 int32_t StorageDaemon::GenerateUserKeys(uint32_t userId, uint32_t flags)
