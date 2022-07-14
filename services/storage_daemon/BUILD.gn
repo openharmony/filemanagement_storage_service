@@ -201,7 +201,7 @@ ohos_shared_library("storage_common_utils") {
 
 group("storage_daemon_third_party") {
   deps = []
-  if (use_musl && storage_service_fstools) {
+  if (storage_service_fstools) {
     deps += [
       "//third_party/FreeBSD/sbin/fsck_msdosfs:fsck_msdos",
       "//third_party/FreeBSD/sbin/newfs_msdos:newfs_msdos",
