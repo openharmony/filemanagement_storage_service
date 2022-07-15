@@ -13,7 +13,10 @@
  * limitations under the License.
  */
 #include <gtest/gtest.h>
-
+#include "gtest/gtest-message.h"
+#include "gtest/gtest-test-part.h"
+#include "gtest/hwext/gtest-ext.h"
+#include "gtest/hwext/gtest-tag.h"
 #include "file_sharing/acl.h"
 
 using namespace testing::ext;

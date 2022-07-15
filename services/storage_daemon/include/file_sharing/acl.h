@@ -15,9 +15,9 @@
 #ifndef OHOS_STORAGE_DAEMON_ACL_H
 #define OHOS_STORAGE_DAEMON_ACL_H
 
-#include <map>
+#include <iosfwd>
 #include <set>
-#include <string>
+#include "__functional_base"
 
 namespace OHOS {
 namespace StorageDaemon {

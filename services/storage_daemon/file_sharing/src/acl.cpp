@@ -15,7 +15,8 @@
 #include "file_sharing/acl.h"
 
 #include <cerrno>
-
+#include <new>
+#include <type_traits>
 #include "file_sharing/endian.h"
 #include "securec.h"
 
