@@ -14,20 +14,24 @@
  */
 #include "key_control.h"
 
+#include <bits/errno.h>
+#include <bits/fcntl.h>
+#include <bits/syscall.h>
+#include <ctype.h>
 #include <sys/syscall.h>
 #include <fcntl.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <linux/fs.h>
 #include <linux/keyctl.h>
-#include <linux/types.h>
 
 #include "fscrypt_log.h"
-#include "securec.h"
 #include "init_utils.h"
 #include "parameter.h"
+#include "securec.h"
 
 key_serial_t KeyCtrlAddKey(const char *type, const char *description,
     const key_serial_t ringId)

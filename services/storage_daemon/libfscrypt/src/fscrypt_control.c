@@ -14,14 +14,22 @@
  */
 #include "fscrypt_control.h"
 
-#include <stdbool.h>
+#include <bits/errno.h>
+#include <fcntl.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <linux/fscrypt.h>
 
-#include "parameter.h"
 #include "fscrypt_log.h"
 #include "init_utils.h"
-#include "securec.h"
 #include "key_control.h"
+#include "parameter.h"
+#include "securec.h"
 
 #define ARRAY_LEN(array) (sizeof((array)) / sizeof((array)[0]))
 

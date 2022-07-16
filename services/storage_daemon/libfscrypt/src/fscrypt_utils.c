@@ -14,6 +14,7 @@
  */
 #include "fscrypt_utils.h"
 
+#include <bits/errno.h>
 #include "fscrypt_log.h"
 #include "fscrypt_control.h"
 
