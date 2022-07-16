@@ -131,4 +131,76 @@ HWTEST_F(storage_total_status_service_test, Storage_status_GetUserStorageStats_0
     EXPECT_GE(result.app_, 0);
     GTEST_LOG_(INFO) << "storage_total_status_service_test-end Storage_status_service_GetUserStorageStats_0001";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_status_service_GetBundleStats_0000
+ * @tc.name: Storage_status_service_GetBundleStats_0000
+ * @tc.desc: Test function of GetBundleStats interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(storage_total_status_service_test, Storage_status_GetBundleStats_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_total_status_service_test-begin Storage_status_service_GetBundleStats_0000";
+    std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
+    string pkgName = "com.test";
+    BundleStats result = service->GetBundleStats(pkgName);
+    GTEST_LOG_(INFO) << result.appSize_;
+    GTEST_LOG_(INFO) << result.cacheSize_;
+    GTEST_LOG_(INFO) << result.dataSize_;
+    EXPECT_EQ(result.appSize_, 0);
+    EXPECT_EQ(result.cacheSize_, 0);
+    EXPECT_EQ(result.dataSize_, 0);
+    GTEST_LOG_(INFO) << "storage_total_status_service_test-end Storage_status_service_GetBundleStats_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_status_service_GetBundleStats_0001
+ * @tc.name: Storage_status_service_GetBundleStats_0001
+ * @tc.desc: Test function of GetBundleStats interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(storage_total_status_service_test, Storage_status_GetBundleStats_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_total_status_service_test-begin Storage_status_service_GetBundleStats_0001";
+    std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
+    int userId = 100;
+    string pkgName = "com.test";
+    BundleStats result = service->GetBundleStats(pkgName, userId);
+    GTEST_LOG_(INFO) << result.appSize_;
+    GTEST_LOG_(INFO) << result.cacheSize_;
+    GTEST_LOG_(INFO) << result.dataSize_;
+    EXPECT_EQ(result.appSize_, 0);
+    EXPECT_EQ(result.cacheSize_, 0);
+    EXPECT_EQ(result.dataSize_, 0);
+    GTEST_LOG_(INFO) << "storage_total_status_service_test-end Storage_status_service_GetBundleStats_0001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_status_service_GetCurrentBundleStats_0000
+ * @tc.name: Storage_status_service_GetCurrentBundleStats_0000
+ * @tc.desc: Test function of GetCurrentBundleStats interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(storage_total_status_service_test, Storage_status_GetCurrentBundleStats_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_total_status_service_test-begin Storage_status_service_GetCurrentBundleStats_0000";
+    std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
+    BundleStats result = service->GetCurrentBundleStats();
+    GTEST_LOG_(INFO) << result.appSize_;
+    GTEST_LOG_(INFO) << result.cacheSize_;
+    GTEST_LOG_(INFO) << result.dataSize_;
+    EXPECT_EQ(result.appSize_, 0);
+    EXPECT_EQ(result.cacheSize_, 0);
+    EXPECT_EQ(result.dataSize_, 0);
+    GTEST_LOG_(INFO) << "storage_total_status_service_test-end Storage_status_service_GetCurrentBundleStats_0000";
+}
 } // namespace

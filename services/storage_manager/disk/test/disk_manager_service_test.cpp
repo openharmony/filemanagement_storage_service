@@ -141,4 +141,35 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_Partition_0000, testing::e
     EXPECT_EQ(0, 0);
     GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service_Partition_0000";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Disk_manager_service_GetAllDisks_0000
+ * @tc.name: Disk_manager_service_GetAllDisks_0000
+ * @tc.desc: Test function of GetAllDisks interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPG
+ */
+HWTEST_F(DiskManagerServiceTest, Disk_manager_service_GetAllDisks_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "DiskManagerServiceTest-begin Disk_manager_service_GetAllDisks_0000";
+    std::shared_ptr<DiskManagerService> dmService =
+        DelayedSingleton<DiskManagerService>::GetInstance();
+    std::string diskId = "600";
+    int64_t sizeBytes = 1024;
+    std::string sysPath = "/";
+    std::string vendor = "vendor-1";
+    int32_t flag = 1;
+    Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
+    dmService->OnDiskCreated(disk);
+    vector<Disk> result = dmService->GetAllDisks();
+    GTEST_LOG_(INFO) << result[0]. GetSizeBytes();
+    GTEST_LOG_(INFO) << result[0].GetDiskId();
+    GTEST_LOG_(INFO) << result[0].GetSysPath();
+    GTEST_LOG_(INFO) << result[0].GetVendor();
+    GTEST_LOG_(INFO) << result[0].GetFlag();
+    EXPECT_GE(result.size(), 0);
+    GTEST_LOG_(INFO) << "DiskManagerServiceTest-end Disk_manager_service__0000";
+}
 } // namespace

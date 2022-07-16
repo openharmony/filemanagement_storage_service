@@ -935,4 +935,160 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetDiskById_0000, testin
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetDiskById_0000";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_GenerateUserKeys_0000
+ * @tc.name: Storage_manager_proxy_GenerateUserKeys_0000
+ * @tc.desc: Test function of GenerateUserKeys interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GenerateUserKeys_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GenerateUserKeys_0000";
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    uint32_t userId = 100;
+    uint32_t flags = 100;
+    uint32_t result = proxy_->GenerateUserKeys(userId, flags);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GenerateUserKeys_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_DeleteUserKeys_0000
+ * @tc.name: Storage_manager_proxy_DeleteUserKeys_0000
+ * @tc.desc: Test function of DeleteUserKeys interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_DeleteUserKeys_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_DeleteUserKeys_0000";
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    uint32_t userId = 200;
+    uint32_t result = proxy_->DeleteUserKeys(userId);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_DeleteUserKeys_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_UpdateUserAuth_0000
+ * @tc.name: Storage_manager_proxy_UpdateUserAuth_0000
+ * @tc.desc: Test function of UpdateUserAuth interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0FG3
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_UpdateUserAuth_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_UpdateUserAuth_0000";
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    uint32_t userId = 300;
+    string auth = "auth-1";
+    string compSecret = "compSecret-1";
+    uint32_t result = proxy_->UpdateUserAuth(userId, auth, compSecret);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_UpdateUserAuth_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_ActiveUserKey_0000
+ * @tc.name: Storage_manager_proxy_ActiveUserKey_0000
+ * @tc.desc: Test function of ActiveUserKey interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0FG3
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_ActiveUserKey_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_ActiveUserKey_0000";
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    uint32_t userId = 400;
+    string auth = "auth-2";
+    string compSecret = "compSecret-2";
+    uint32_t result = proxy_->ActiveUserKey(userId, auth, compSecret);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_ActiveUserKey_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_InactiveUserKey_0000
+ * @tc.name: Storage_manager_proxy_InactiveUserKey_0000
+ * @tc.desc: Test function of InactiveUserKey interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_InactiveUserKey_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_InactiveUserKey_0000";
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    uint32_t userId = 500;
+    uint32_t result = proxy_->InactiveUserKey(userId);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_InactiveUserKey_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_UpdateKeyContext_0000
+ * @tc.name: Storage_manager_proxy_UpdateKeyContext_0000
+ * @tc.desc: Test function of UpdateKeyContext interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_UpdateKeyContext_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_UpdateKeyContext_0000";
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    uint32_t userId = 500;
+    uint32_t result = proxy_->UpdateKeyContext(userId);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_UpdateKeyContext_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_GetCurrentBundleStats_0000
+ * @tc.name: Storage_manager_proxy_GetCurrentBundleStats_0000
+ * @tc.desc: Test function of GetCurrentBundleStats interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetCurrentBundleStats_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetCurrentBundleStats_0000";
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    BundleStats result = proxy_->GetCurrentBundleStats();
+    GTEST_LOG_(INFO) << result.appSize_;
+    GTEST_LOG_(INFO) << result.cacheSize_;
+    GTEST_LOG_(INFO) << result.dataSize_;
+    EXPECT_EQ(result.appSize_, 0);
+    EXPECT_EQ(result.cacheSize_, 0);
+    EXPECT_EQ(result.dataSize_, 0);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetCurrentBundleStats_0000";
+}
 } // namespace
