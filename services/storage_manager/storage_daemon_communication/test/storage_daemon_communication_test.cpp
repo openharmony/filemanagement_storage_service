@@ -299,4 +299,100 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetVolumeDescripti
     EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_SetVolumeDescription_0000 SUCCESS";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_DeleteUserKeys_0000
+ * @tc.name: Daemon_communication_DeleteUserKeys_0000
+ * @tc.desc: Test function of DeleteUserKeys interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteUserKeys_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_DeleteUserKeys_0000 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t result;
+    int32_t userId = 100;
+    if (sdCommunication != nullptr) {
+        result = sdCommunication->DeleteUserKeys(userId);
+    }
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_DeleteUserKeys_0000 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_UpdateUserAuth_0000
+ * @tc.name: Daemon_communication_UpdateUserAuth_0000
+ * @tc.desc: Test function of UpdateUserAuth interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0FG3
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateUserAuth_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UpdateUserAuth_0000 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t result;
+    uint32_t userId = 200;
+    string auth = "auth-1";
+    string compSecret = "compSecret-1";
+    if (sdCommunication != nullptr) {
+        result = sdCommunication->UpdateUserAuth(userId, auth, compSecret);
+    }
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UpdateUserAuth_0000 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_ActiveUserKey_0000
+ * @tc.name: Daemon_communication_ActiveUserKey_0000
+ * @tc.desc: Test function of ActiveUserKey interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0FG3
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ActiveUserKey_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_ActiveUserKey_0000 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t result;
+    uint32_t userId = 300;
+    string auth = "auth-1";
+    string compSecret = "compSecret-1";
+    if (sdCommunication != nullptr) {
+        result = sdCommunication->ActiveUserKey(userId, auth, compSecret);
+    }
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_ActiveUserKey_0000 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_UpdateKeyContext_0000
+ * @tc.name: Daemon_communication_UpdateKeyContext_0000
+ * @tc.desc: Test function of UpdateKeyContext interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateKeyContext_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UpdateKeyContext_0000 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t result;
+    uint32_t userId = 300;
+    if (sdCommunication != nullptr) {
+        result = sdCommunication->UpdateKeyContext(userId);
+    }
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UpdateKeyContext_0000 SUCCESS";
+}
 } // namespace
