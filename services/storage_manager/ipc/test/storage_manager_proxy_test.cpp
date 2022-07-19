@@ -56,7 +56,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_PrepareAddUser_0000, tes
 {
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_PrepareAddUser_0000";
     int32_t userId = 101;
-    uint32_t flag = 3;
+    uint32_t flag = 1; // CRYPTO FLAG EL1
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     ASSERT_TRUE(samgr != nullptr) << "Storage_manager_proxy_PrepareAddUser_0000 fail to get GetSystemAbilityManager";
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
@@ -82,7 +82,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_PrepareAddUser_0001, tes
 {
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_PrepareAddUser_0001";
     int32_t userId = -1;
-    uint32_t flag = 3;
+    uint32_t flag = 1; // CRYPTO FLAG EL1
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     ASSERT_TRUE(samgr != nullptr) << "Storage_manager_proxy_PrepareAddUser_0001 fail to get GetSystemAbilityManager";
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
@@ -107,7 +107,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_PrepareAddUser_0002, tes
 {
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_PrepareAddUser_0002";
     int32_t userId = 10000;
-    uint32_t flag = 3;
+    uint32_t flag = 1; // CRYPTO FLAG EL1
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
@@ -129,7 +129,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_PrepareAddUser_0003, tes
 {
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_PrepareAddUser_0003";
     int32_t userId = 102;
-    uint32_t flag = 3;
+    uint32_t flag = 1; // CRYPTO FLAG EL1
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
@@ -153,7 +153,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_RemoveUser_0000, testing
 {
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_RemoveUser_0000";
     int32_t userId = 103;
-    uint32_t flag = 3;
+    uint32_t flag = 1; // CRYPTO FLAG EL1
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
@@ -176,7 +176,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_RemoveUser_0001, testing
 {
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_RemoveUser_0001";
     int32_t userId = 104;
-    uint32_t flag = 3;
+    uint32_t flag = 1; // CRYPTO FLAG EL1
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
@@ -198,7 +198,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_RemoveUser_0002, testing
 {
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_RemoveUser_0002";
     int32_t userId = -2;
-    uint32_t flag = 3;
+    uint32_t flag = 1; // CRYPTO FLAG EL1
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
@@ -221,7 +221,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_PrepareStartUser_0000, t
 {
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_PrepareStartUser_0000";
     int32_t userId = 105;
-    uint32_t flag = 3;
+    uint32_t flag = 1; // CRYPTO FLAG EL1
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
@@ -267,7 +267,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_PrepareStartUser_0003, t
 {
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_PrepareStartUser_0001";
     int32_t userId = -3;
-    uint32_t flag = 3;
+    uint32_t flag = 1; // CRYPTO FLAG EL1
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
@@ -290,7 +290,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_StopUser_0000, testing::
 {
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_StopUser_0000";
     int32_t userId = 108;
-    uint32_t flag = 3;
+    uint32_t flag = 1; // CRYPTO FLAG EL1
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
@@ -336,7 +336,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_StopUser_0002, testing::
 {
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_StopUser_0002";
     int32_t userId = 110;
-    uint32_t flag = 3;
+    uint32_t flag = 1; // CRYPTO FLAG EL1
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
@@ -360,7 +360,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_StopUser_0003, testing::
 {
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_StopUser_0003";
     int32_t userId = -4;
-    uint32_t flag = 3;
+    uint32_t flag = 1; // CRYPTO FLAG EL1
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
@@ -606,7 +606,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyDiskCreated_0000, 
     int64_t sizeBytes = 1024;
     std::string sysPath = "/";
     std::string vendor = "vendor-1";
-    int32_t flag = 1;
+    int32_t flag = 1; // disk type
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
@@ -779,7 +779,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetUserStorageStats_0001
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<StorageManager::IStorageManager>(remote);
-    int32_t userId = 100;
+    int32_t userId = 111;
     StorageStats result = proxy->GetUserStorageStats(userId);
     EXPECT_GE(result.total_, 0);
     EXPECT_GE(result.audio_, 0);
@@ -928,7 +928,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetDiskById_0000, testin
     int64_t sizeBytes = 1024;
     std::string sysPath = "/";
     std::string vendor = "vendor-1";
-    int32_t flag = 1;
+    int32_t flag = 1; // disk type
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
     proxy->NotifyDiskCreated(disk);
     int64_t result = proxy->GetDiskById(diskId, disk);
@@ -951,8 +951,8 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GenerateUserKeys_0000, t
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
-    uint32_t userId = 100;
-    uint32_t flags = 100;
+    uint32_t userId = 112;
+    uint32_t flags = 2; // UserKeys type
     uint32_t result = proxy_->GenerateUserKeys(userId, flags);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GenerateUserKeys_0000";
@@ -973,7 +973,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_DeleteUserKeys_0000, tes
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
-    uint32_t userId = 200;
+    uint32_t userId = 113;
     uint32_t result = proxy_->DeleteUserKeys(userId);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_DeleteUserKeys_0000";
@@ -994,7 +994,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_UpdateUserAuth_0000, tes
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
-    uint32_t userId = 300;
+    uint32_t userId = 114;
     string auth = "auth-1";
     string compSecret = "compSecret-1";
     uint32_t result = proxy_->UpdateUserAuth(userId, auth, compSecret);
@@ -1017,7 +1017,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_ActiveUserKey_0000, test
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
-    uint32_t userId = 400;
+    uint32_t userId = 115;
     string auth = "auth-2";
     string compSecret = "compSecret-2";
     uint32_t result = proxy_->ActiveUserKey(userId, auth, compSecret);
@@ -1040,7 +1040,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_InactiveUserKey_0000, te
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
-    uint32_t userId = 500;
+    uint32_t userId = 116;
     uint32_t result = proxy_->InactiveUserKey(userId);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_InactiveUserKey_0000";
@@ -1061,7 +1061,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_UpdateKeyContext_0000, t
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
-    uint32_t userId = 500;
+    uint32_t userId = 117;
     uint32_t result = proxy_->UpdateKeyContext(userId);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_UpdateKeyContext_0000";

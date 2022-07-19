@@ -46,7 +46,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Connect_0000, test
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Connect_0000";
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t result;
+    int32_t result = -1;
     if (sdCommunication != nullptr) {
         result = sdCommunication->Connect();
     }
@@ -70,7 +70,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_PrepareAddUser_000
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t userId = 101;
     uint32_t flag = 3;
-    int32_t result;
+    int32_t result = -1;
     if (sdCommunication != nullptr) {
         result = sdCommunication->PrepareAddUser(userId, flag);
     }
@@ -95,7 +95,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_RemoveUser_0000, t
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t userId = 102;
     uint32_t flag = 3;
-    int32_t result;
+    int32_t result = -1;
     if (sdCommunication != nullptr) {
         sdCommunication->PrepareAddUser(userId, flag);
         result = sdCommunication->RemoveUser(userId, flag);
@@ -120,7 +120,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_PrepareStartUser_0
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t userId = 104;
     uint32_t flag = 3;
-    int32_t result;
+    int32_t result = -1;
     if (sdCommunication != nullptr) {
         sdCommunication->PrepareAddUser(userId, flag);
         result = sdCommunication->PrepareStartUser(userId);
@@ -147,7 +147,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_StopUser_0000, tes
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t userId = 106;
     uint32_t flag = 3;
-    int32_t result;
+    int32_t result = -1;
     if (sdCommunication != nullptr) {
         sdCommunication->PrepareAddUser(userId, flag);
         sdCommunication->PrepareStartUser(userId);
@@ -172,7 +172,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Mount_0000, testin
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Mount_0000 SUCCESS";
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t result;
+    int32_t result = -1;
     std::string volumeId = "vol-2-1";
     int32_t flag = 1;
     if (sdCommunication != nullptr) {
@@ -196,7 +196,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Unmount_0000, test
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Unmount_0000 SUCCESS";
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t result;
+    int32_t result = -1;
     std::string volumeId = "vol-2-2";
     if (sdCommunication != nullptr) {
         result = sdCommunication->Unmount(volumeId);
@@ -219,7 +219,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Check_0000, testin
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Check_0000 SUCCESS";
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t result;
+    int32_t result = -1;
     std::string volumeId = "vol-2-3";
     if (sdCommunication != nullptr) {
         result = sdCommunication->Check(volumeId);
@@ -242,7 +242,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Partition_0000, te
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Partition_0000 SUCCESS";
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t result;
+    int32_t result = -1;
     std::string diskId = "disk-2-4";
     int32_t type = 1;
     if (sdCommunication != nullptr) {
@@ -266,7 +266,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Format_0000, testi
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Format_0000 SUCCESS";
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t result;
+    int32_t result = -1;
     string volumeId = "vol-2-5";
     string fsType = "fsType-1";
     if (sdCommunication != nullptr) {
@@ -290,7 +290,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetVolumeDescripti
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_SetVolumeDescription_0000 SUCCESS";
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t result;
+    int32_t result = -1;
     string fsUuid = "uuid-1";
     string description = "description-1";
     if (sdCommunication != nullptr) {
@@ -314,7 +314,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteUserKeys_000
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_DeleteUserKeys_0000 SUCCESS";
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t result;
+    int32_t result = -1;
     int32_t userId = 100;
     if (sdCommunication != nullptr) {
         result = sdCommunication->DeleteUserKeys(userId);
@@ -337,7 +337,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateUserAuth_000
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UpdateUserAuth_0000 SUCCESS";
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t result;
+    int32_t result = -1;
     uint32_t userId = 200;
     string auth = "auth-1";
     string compSecret = "compSecret-1";
@@ -362,7 +362,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ActiveUserKey_0000
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_ActiveUserKey_0000 SUCCESS";
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t result;
+    int32_t result = -1;
     uint32_t userId = 300;
     string auth = "auth-1";
     string compSecret = "compSecret-1";
@@ -387,7 +387,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateKeyContext_0
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UpdateKeyContext_0000 SUCCESS";
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t result;
+    int32_t result = -1;
     uint32_t userId = 300;
     if (sdCommunication != nullptr) {
         result = sdCommunication->UpdateKeyContext(userId);
