@@ -73,7 +73,7 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_OnDiskDestroyed_0000, test
     std::string diskId = "diskId-1-2";
     int64_t sizeBytes = 1024;
     std::string sysPath = "/";
-    std::string vendor = "vendor-1";
+    std::string vendor = "vendor-2";
     int32_t flag = 1;
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
     if (dmService != nullptr) {
@@ -100,7 +100,7 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_GetDiskById_0000, testing:
     std::string diskId = "diskId-1-3";
     int64_t sizeBytes = 1024;
     std::string sysPath = "/";
-    std::string vendor = "vendor-1";
+    std::string vendor = "vendor-3";
     int32_t flag = 1;
     std::shared_ptr<Disk> result;
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
@@ -129,7 +129,7 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_Partition_0000, testing::e
     std::string diskId = "diskId-1-4";
     int64_t sizeBytes = 1024;
     std::string sysPath = "/";
-    std::string vendor = "vendor-1";
+    std::string vendor = "vendor-4";
     int32_t flag = 1;
     int32_t type = 1;
     int32_t result;
@@ -159,7 +159,7 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_GetAllDisks_0000, testing:
     std::string diskId = "diskId-1-5";
     int64_t sizeBytes = 1024;
     std::string sysPath = "/";
-    std::string vendor = "vendor-1";
+    std::string vendor = "vendor-5";
     int32_t flag = 1;
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
     dmService->OnDiskCreated(disk);
