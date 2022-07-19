@@ -69,6 +69,7 @@ bool StorageDaemonClient::CheckServiceStatus(uint32_t serviceFlags)
             if (object != nullptr) {
                 break;
             }
+            LOGI("check storage daemon status %{public}u times", i);
             std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_TIME_PRE_CHECK));
         }
         if (exist == false) {

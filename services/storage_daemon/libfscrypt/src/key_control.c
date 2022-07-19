@@ -29,8 +29,8 @@
 #include <linux/keyctl.h>
 
 #include "fscrypt_log.h"
+#include "fscrypt_sysparam.h"
 #include "init_utils.h"
-#include "parameter.h"
 #include "securec.h"
 
 key_serial_t KeyCtrlAddKey(const char *type, const char *description,
@@ -180,8 +180,9 @@ bool KeyCtrlHasFscryptSyspara(void)
 {
     FSCRYPT_LOGI("enter");
     char tmp[POLICY_BUF_SIZE] = { 0 };
-    int ret = GetParameter(FSCRYPT_POLICY_KEY, "", tmp, POLICY_BUF_SIZE);
-    if (ret <= 0) {
+    uint32_t len = POLICY_BUF_SIZE;
+    int ret = GetFscryptParameter(FSCRYPT_POLICY_KEY, "", tmp, &len);
+    if (ret != 0) {
         FSCRYPT_LOGE("fscrypt config parameter not set, not enable fscrypt");
         return false;
     }
