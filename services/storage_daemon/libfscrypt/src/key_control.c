@@ -14,9 +14,7 @@
  */
 #include "key_control.h"
 
-#include <bits/errno.h>
 #include <bits/fcntl.h>
-#include <bits/syscall.h>
 #include <ctype.h>
 #include <sys/syscall.h>
 #include <fcntl.h>

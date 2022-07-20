@@ -14,7 +14,6 @@
  */
 #include "fscrypt_control.h"
 
-#include <bits/errno.h>
 #include <fcntl.h>
 #include <stdint.h>
 #include <stdlib.h>
