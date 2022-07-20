@@ -87,6 +87,7 @@ static bool ParasConfig(StorageDaemon::DiskManager *dm)
 
 int main()
 {
+    LOGI("storage_daemon start");
     StorageDaemon::NetlinkManager *nm = StorageDaemon::NetlinkManager::Instance();
     if (!nm) {
         LOGE("Unable to create NetlinkManager");

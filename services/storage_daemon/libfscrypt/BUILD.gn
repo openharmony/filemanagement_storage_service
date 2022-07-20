@@ -21,6 +21,7 @@ config("fscrypt_utils_config") {
     "//base/startup/init/interfaces/innerkits/include",
     "//base/startup/init/services/log",
     "//base/startup/init/services/include",
+    "//base/startup/init/services/include/param",
   ]
 
   cflags = [
@@ -35,6 +36,7 @@ ohos_static_library("libfscryptutils") {
     "src/fscrypt_control.c",
     "src/fscrypt_utils.c",
     "src/key_control.c",
+    "src/sysparam_dynamic.c",
   ]
 
   configs = [ ":fscrypt_utils_config" ]
@@ -46,6 +48,29 @@ ohos_static_library("libfscryptutils") {
   ]
 
   external_deps = [ "init:libbegetutil" ]
+
+  subsystem_name = "filemanagement"
+  part_name = "storage_service"
+}
+
+ohos_static_library("libfscryptutils_static") {
+  output_name = "libfscryptutils_static"
+  sources = [
+    "src/fscrypt_control.c",
+    "src/fscrypt_utils.c",
+    "src/key_control.c",
+    "src/sysparam_static.c",
+  ]
+
+  configs = [ ":fscrypt_utils_config" ]
+
+  deps = [
+    "//base/startup/init_lite/interfaces/innerkits:libbegetutil_static",
+    "//base/startup/init_lite/services/log:init_log",
+    "//base/startup/init_lite/services/param/linux:param_init",
+    "//base/startup/init_lite/services/utils:libinit_utils",
+    "//utils/native/base:utils",
+  ]
 
   subsystem_name = "filemanagement"
   part_name = "storage_service"

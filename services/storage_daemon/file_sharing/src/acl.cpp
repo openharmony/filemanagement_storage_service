@@ -15,7 +15,8 @@
 #include "file_sharing/acl.h"
 
 #include <cerrno>
-
+#include <new>
+#include <type_traits>
 #include "file_sharing/endian.h"
 #include "securec.h"
 
@@ -111,35 +112,52 @@ char *Acl::Serialize(size_t &bufSize)
         errno = ENOMEM;
         return nullptr;
     }
-    (void)memcpy_s(buf, bufSize, &header, sizeof(AclXattrHeader));
+    auto err = memcpy_s(buf, bufSize, &header, sizeof(AclXattrHeader));
+    if (err != EOK) {
+        errno = err;
+        delete[] buf;
+        buf = nullptr;
+        return nullptr;
+    }
 
     size_t restSize = bufSize - sizeof(AclXattrHeader);
     AclXattrEntry *ptr = reinterpret_cast<AclXattrEntry *>(buf + sizeof(AclXattrHeader));
     for (const auto &e : entries) {
-        (void)memcpy_s(ptr++, restSize, &e, sizeof(AclXattrEntry));
+        auto err = memcpy_s(ptr++, restSize, &e, sizeof(AclXattrEntry));
+        if (err != EOK) {
+            errno = err;
+            delete[] buf;
+            buf = nullptr;
+            return nullptr;
+        }
         restSize -= sizeof(AclXattrEntry);
     }
     return buf;
 }
 
-int Acl::DeSerialize(const char *p, int size)
+int Acl::DeSerialize(const char *p, size_t size)
 {
-    if (size > static_cast<int>(BUF_MAX_SIZE) || size < static_cast<int>(sizeof(AclXattrHeader))) {
+    if (size > BUF_MAX_SIZE || size < sizeof(AclXattrHeader)) {
         errno = EINVAL;
         return -1;
     }
-    size -= sizeof(AclXattrHeader);
     header = *reinterpret_cast<const AclXattrHeader *>(p);
+    size -= sizeof(AclXattrHeader);
     p += sizeof(AclXattrHeader);
 
+    /*
+     * `e->tag != ACL_TAG::UNDEFINED` is unreliable outside the buffer, so check
+     * it after checking the size of remaining buffer.
+     */
     for (const AclXattrEntry *e = reinterpret_cast<const AclXattrEntry *>(p);
-            LeToCpu(e->tag) != ACL_TAG::UNDEFINED && (size -= sizeof(AclXattrEntry)) >= 0;
+            size >= sizeof(AclXattrEntry) && LeToCpu(e->tag) != ACL_TAG::UNDEFINED;
             e++) {
         InsertEntry(*e);
+        size -= sizeof(AclXattrEntry);
     }
-    if (size < 0) {
+    if (size != 0) {
         entries.clear();
-        header = {};
+        header = { 0 };
         errno = EINVAL;
         return -1;
     }

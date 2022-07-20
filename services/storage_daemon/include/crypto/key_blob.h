@@ -43,6 +43,7 @@ constexpr uint32_t CRYPTO_AES_AAD_LEN = 16;
 constexpr uint32_t CRYPTO_AES_256_XTS_KEY_SIZE = 64;
 constexpr uint32_t CRYPTO_KEY_SHIELD_MAX_SIZE = 2048;
 constexpr uint32_t CRYPTO_AES_256_KEY_ENCRYPTED_SIZE = 80;
+constexpr uint32_t CRYPTO_TOKEN_SIZE = 32;
 
 using key_serial_t = int;
 constexpr uint32_t CRYPTO_KEY_DESC_SIZE = FSCRYPT_KEY_DESCRIPTOR_SIZE;

@@ -12,28 +12,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "fscrypt_utils.h"
+#ifndef FSCRYPT_SYS_PARAMETER_H
+#define FSCRYPT_SYS_PARAMETER_H
 
-#include <bits/errno.h>
-#include "fscrypt_log.h"
-#include "fscrypt_control.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-int FscryptPolicyEnable(const char *dir)
-{
-    if (!dir) {
-        FSCRYPT_LOGE("dir is null");
-        return -EINVAL;
-    }
+int GetFscryptParameter(const char *key, const char *def, char *value, unsigned int *len);
+int SetFscryptParameter(const char *policy, const char *value);
 
-    return SetGlobalEl1DirPolicy(dir);
+#ifdef __cplusplus
 }
+#endif
 
-int SetFscryptSysparam(const char *policy)
-{
-    if (!policy) {
-        FSCRYPT_LOGE("policy is null");
-        return -EINVAL;
-    }
-
-    return FscryptSetSysparam(policy);
-}
+#endif

@@ -15,9 +15,9 @@
 #ifndef OHOS_STORAGE_DAEMON_ACL_H
 #define OHOS_STORAGE_DAEMON_ACL_H
 
-#include <map>
+#include <iosfwd>
 #include <set>
-#include <string>
+#include "__functional_base"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -151,7 +151,7 @@ public:
     bool IsValid();
     int InsertEntry(const AclXattrEntry &entry);
     char *Serialize(size_t &bufSize);
-    int DeSerialize(const char *p, int size);
+    int DeSerialize(const char *p, size_t size);
     ~Acl();
 };
 

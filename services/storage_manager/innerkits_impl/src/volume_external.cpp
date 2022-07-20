@@ -15,10 +15,6 @@
 
 #include "volume_external.h"
 
-#include "disk.h"
-#include "disk/disk_manager_service.h"
-#include "volume/notification.h"
-
 namespace OHOS {
 namespace StorageManager {
 VolumeExternal::VolumeExternal() {}

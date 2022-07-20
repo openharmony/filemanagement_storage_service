@@ -133,7 +133,7 @@ int HuksMaster::HdiGenerateKey(const HksBlob &keyAlias, const HksParamSet *param
 }
 
 int HuksMaster::HdiAccessInit(const HksBlob &key, const HksParamSet *paramSet,
-                              HksBlob &handle)
+                              HksBlob &handle, HksBlob &token)
 {
     LOGD("enter");
     if (halDevice_ == nullptr) {
@@ -145,7 +145,7 @@ int HuksMaster::HdiAccessInit(const HksBlob &key, const HksParamSet *paramSet,
         return HKS_ERROR_NULL_POINTER;
     }
 
-    auto ret = halDevice_->HuksHdiInit(&key, paramSet, &handle);
+    auto ret = halDevice_->HuksHdiInit(&key, paramSet, &handle, &token);
     if (ret != HKS_SUCCESS) {
         LOGE("HuksHdiInit failed, ret %{public}d", ret);
     }
@@ -400,8 +400,10 @@ bool HuksMaster::HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *p
     HksBlob hksOut = keyOut.ToHksBlob();
     uint8_t h[sizeof(uint64_t)] = {0};
     HksBlob hksHandle = { sizeof(uint64_t), h};
+    uint8_t t[CRYPTO_TOKEN_SIZE] = {0};
+    HksBlob hksToken = { sizeof(t), t};
 
-    int ret = HdiAccessInit(hksKey, paramSet2, hksHandle);
+    int ret = HdiAccessInit(hksKey, paramSet2, hksHandle, hksToken);
     if (ret != HKS_SUCCESS) {
         LOGE("HdiAccessInit failed ret %{public}d", ret);
         return false;

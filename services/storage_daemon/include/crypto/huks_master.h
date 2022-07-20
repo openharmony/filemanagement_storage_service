@@ -51,7 +51,7 @@ private:
     int HdiModuleInit();
     int HdiGenerateKey(const HksBlob &keyAlias, const HksParamSet *paramSetIn,
                        HksBlob &keyOut);
-    int HdiAccessInit(const HksBlob &key, const HksParamSet *paramSet, HksBlob &handle);
+    int HdiAccessInit(const HksBlob &key, const HksParamSet *paramSet, HksBlob &handle, HksBlob &token);
     int HdiAccessUpdate(const HksBlob &handle, const HksParamSet *paramSet,
                         const HksBlob &inData, struct HksBlob &outData);
     int HdiAccessFinish(const HksBlob &handle, const HksParamSet *paramSet,
