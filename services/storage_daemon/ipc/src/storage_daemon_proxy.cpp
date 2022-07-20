@@ -340,7 +340,10 @@ int32_t StorageDaemonProxy::DeleteUserKeys(uint32_t userId)
     return reply.ReadInt32();
 }
 
-int32_t StorageDaemonProxy::UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret)
+int32_t StorageDaemonProxy::UpdateUserAuth(uint32_t userId,
+                                           const std::vector<uint8_t> &token,
+                                           const std::vector<uint8_t> &oldSecret,
+                                           const std::vector<uint8_t> &newSecret)
 {
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -352,6 +355,16 @@ int32_t StorageDaemonProxy::UpdateUserAuth(uint32_t userId, std::string auth, st
     if (!data.WriteUint32(userId)) {
         return E_IPC_ERROR;
     }
+    if (!data.WriteUInt8Vector(token)) {
+        return E_IPC_ERROR;
+    }
+    if (!data.WriteUInt8Vector(oldSecret)) {
+        return E_IPC_ERROR;
+    }
+    if (!data.WriteUInt8Vector(newSecret)) {
+        return E_IPC_ERROR;
+    }
+
     int err = Remote()->SendRequest(UPDATE_USER_AUTH, data, reply, option);
     if (err != E_OK) {
         return E_IPC_ERROR;
@@ -360,7 +373,9 @@ int32_t StorageDaemonProxy::UpdateUserAuth(uint32_t userId, std::string auth, st
     return reply.ReadInt32();
 }
 
-int32_t StorageDaemonProxy::ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret)
+int32_t StorageDaemonProxy::ActiveUserKey(uint32_t userId,
+                                          const std::vector<uint8_t> &token,
+                                          const std::vector<uint8_t> &secret)
 {
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -370,6 +385,12 @@ int32_t StorageDaemonProxy::ActiveUserKey(uint32_t userId, std::string auth, std
     }
 
     if (!data.WriteUint32(userId)) {
+        return E_IPC_ERROR;
+    }
+    if (!data.WriteUInt8Vector(token)) {
+        return E_IPC_ERROR;
+    }
+    if (!data.WriteUInt8Vector(secret)) {
         return E_IPC_ERROR;
     }
 

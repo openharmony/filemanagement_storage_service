@@ -210,7 +210,10 @@ int32_t StorageDaemonClient::DeleteUserKeys(uint32_t userId)
     return client->DeleteUserKeys(userId);
 }
 
-int32_t StorageDaemonClient::UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret)
+int32_t StorageDaemonClient::UpdateUserAuth(uint32_t userId,
+                                            const std::vector<uint8_t> &token,
+                                            const std::vector<uint8_t> &oldSecret,
+                                            const std::vector<uint8_t> &newSecret)
 {
     if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
         LOGE("service check failed");
@@ -223,10 +226,12 @@ int32_t StorageDaemonClient::UpdateUserAuth(uint32_t userId, std::string auth, s
         return -EAGAIN;
     }
 
-    return client->UpdateUserAuth(userId, auth, compSecret);
+    return client->UpdateUserAuth(userId, token, oldSecret, newSecret);
 }
 
-int32_t StorageDaemonClient::ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret)
+int32_t StorageDaemonClient::ActiveUserKey(uint32_t userId,
+                                           const std::vector<uint8_t> &token,
+                                           const std::vector<uint8_t> &secret)
 {
     if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
         LOGE("service check failed");
@@ -239,7 +244,7 @@ int32_t StorageDaemonClient::ActiveUserKey(uint32_t userId, std::string auth, st
         return -EAGAIN;
     }
 
-    return client->ActiveUserKey(userId, auth, compSecret);
+    return client->ActiveUserKey(userId, token, secret);
 }
 
 int32_t StorageDaemonClient::InactiveUserKey(uint32_t userId)

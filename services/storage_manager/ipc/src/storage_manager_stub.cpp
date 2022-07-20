@@ -568,9 +568,13 @@ int32_t StorageManagerStub::HandleDeleteUserKeys(MessageParcel &data, MessagePar
 int32_t StorageManagerStub::HandleUpdateUserAuth(MessageParcel &data, MessageParcel &reply)
 {
     uint32_t userId = data.ReadUint32();
-    std::string auth = data.ReadString();
-    std::string compSecret = data.ReadString();
-    int32_t err = UpdateUserAuth(userId, auth, compSecret);
+
+    std::vector<uint8_t> token, oldSecret, newSecret;
+    data.ReadUInt8Vector(&token);
+    data.ReadUInt8Vector(&oldSecret);
+    data.ReadUInt8Vector(&newSecret);
+
+    int32_t err = UpdateUserAuth(userId, token, oldSecret, newSecret);
     if (!reply.WriteInt32(err)) {
         LOGE("Write reply error code failed");
         return E_IPC_ERROR;
@@ -582,9 +586,12 @@ int32_t StorageManagerStub::HandleUpdateUserAuth(MessageParcel &data, MessagePar
 int32_t StorageManagerStub::HandleActiveUserKey(MessageParcel &data, MessageParcel &reply)
 {
     uint32_t userId = data.ReadUint32();
-    std::string auth = data.ReadString();
-    std::string compSecret = data.ReadString();
-    int32_t err = ActiveUserKey(userId, auth, compSecret);
+
+    std::vector<uint8_t> token, secret;
+    data.ReadUInt8Vector(&token);
+    data.ReadUInt8Vector(&secret);
+
+    int32_t err = ActiveUserKey(userId, token, secret);
     if (!reply.WriteInt32(err)) {
         LOGE("Write reply error code failed");
         return E_IPC_ERROR;

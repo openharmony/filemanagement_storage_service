@@ -148,8 +148,8 @@ struct KeyContext {
 };
 
 struct UserAuth {
-    std::string token;
-    // synthetic
+    std::vector<uint8_t> token;
+    std::vector<uint8_t> secret;
 };
 } // namespace StorageDaemon
 } // namespace OHOS

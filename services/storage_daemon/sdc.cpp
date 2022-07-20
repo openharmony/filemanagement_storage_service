@@ -108,9 +108,10 @@ static int32_t UpdateUserAuth(const std::vector<std::string> &args)
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }
-    std::string token = args[4];
-    std::string secret = args[5];
-    return OHOS::StorageManager::StorageManagerClient::UpdateUserAuth(userId, token, secret);
+    std::vector<uint8_t> token;
+    std::vector<uint8_t> oldsecret;
+    std::vector<uint8_t> newSecret;
+    return OHOS::StorageManager::StorageManagerClient::UpdateUserAuth(userId, token, oldsecret, newSecret);
 }
 
 static int32_t ActiveUserKey(const std::vector<std::string> &args)
@@ -124,8 +125,8 @@ static int32_t ActiveUserKey(const std::vector<std::string> &args)
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }
-    std::string token = args[4];
-    std::string secret = args[5];
+    std::vector<uint8_t> token;
+    std::vector<uint8_t> secret;
     return OHOS::StorageManager::StorageManagerClient::ActiveUserKey(userId, token, secret);
 }
 

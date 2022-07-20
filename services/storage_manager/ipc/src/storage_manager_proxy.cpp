@@ -159,7 +159,10 @@ int32_t StorageManagerProxy::DeleteUserKeys(uint32_t userId)
     return reply.ReadInt32();
 }
 
-int32_t StorageManagerProxy::UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret)
+int32_t StorageManagerProxy::UpdateUserAuth(uint32_t userId,
+                                            const std::vector<uint8_t> &token,
+                                            const std::vector<uint8_t> &oldSecret,
+                                            const std::vector<uint8_t> &newSecret)
 {
     LOGI("user ID: %{public}u", userId);
     MessageParcel data, reply;
@@ -172,14 +175,19 @@ int32_t StorageManagerProxy::UpdateUserAuth(uint32_t userId, std::string auth, s
         LOGE("Write user ID failed");
         return E_IPC_ERROR;
     }
-    if (!data.WriteString(auth)) {
-        LOGE("Write user auth failed");
+    if (!data.WriteUInt8Vector(token)) {
+        LOGE("Write token failed");
         return E_IPC_ERROR;
     }
-    if (!data.WriteString(compSecret)) {
-        LOGE("Write user secret failed");
+    if (!data.WriteUInt8Vector(oldSecret)) {
+        LOGE("Write oldSecret failed");
         return E_IPC_ERROR;
     }
+    if (!data.WriteUInt8Vector(newSecret)) {
+        LOGE("Write newSecret failed");
+        return E_IPC_ERROR;
+    }
+
     int err = Remote()->SendRequest(UPDATE_USER_AUTH, data, reply, option);
     if (err != E_OK) {
         LOGE("SendRequest failed");
@@ -189,7 +197,9 @@ int32_t StorageManagerProxy::UpdateUserAuth(uint32_t userId, std::string auth, s
     return reply.ReadInt32();
 }
 
-int32_t StorageManagerProxy::ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret)
+int32_t StorageManagerProxy::ActiveUserKey(uint32_t userId,
+                                           const std::vector<uint8_t> &token,
+                                           const std::vector<uint8_t> &secret)
 {
     LOGI("user ID: %{public}u", userId);
     MessageParcel data, reply;
@@ -202,14 +212,15 @@ int32_t StorageManagerProxy::ActiveUserKey(uint32_t userId, std::string auth, st
         LOGE("Write user ID failed");
         return E_IPC_ERROR;
     }
-    if (!data.WriteString(auth)) {
-        LOGE("Write user auth failed");
+    if (!data.WriteUInt8Vector(token)) {
+        LOGE("Write token failed");
         return E_IPC_ERROR;
     }
-    if (!data.WriteString(compSecret)) {
-        LOGE("Write user secret failed");
+    if (!data.WriteUInt8Vector(secret)) {
+        LOGE("Write secret failed");
         return E_IPC_ERROR;
     }
+
     int err = Remote()->SendRequest(ACTIVE_USER_KEY, data, reply, option);
     if (err != E_OK) {
         LOGE("SendRequest failed");
@@ -783,4 +794,3 @@ int32_t StorageManagerProxy::GetDiskById(std::string diskId, Disk &disk)
 }
 } // StorageManager
 } // OHOS
-

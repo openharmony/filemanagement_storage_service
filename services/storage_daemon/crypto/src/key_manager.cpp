@@ -28,9 +28,7 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-const UserAuth NULL_KEY_AUTH = {
-    .token = ""
-};
+const UserAuth NULL_KEY_AUTH = {};
 const std::string FSCRYPT_USER_EL1_PUBLIC = std::string() + "/data/service/el1/public";
 const std::string SERVICE_STORAGE_DAEMON_DIR = FSCRYPT_USER_EL1_PUBLIC + "/storage_daemon";
 const std::string FSCRYPT_EL_DIR = SERVICE_STORAGE_DAEMON_DIR + "/sd";
@@ -413,8 +411,10 @@ int KeyManager::DeleteUserKeys(unsigned int user)
     return ret;
 }
 
-int KeyManager::UpdateUserAuth(unsigned int user, const std::string &token,
-                               const std::string &composePwd)
+int KeyManager::UpdateUserAuth(unsigned int user,
+                               const std::vector<uint8_t> &token,
+                               const std::vector<uint8_t> &oldSecret,
+                               const std::vector<uint8_t> &newSecret)
 {
     LOGI("start, user:%{public}d", user);
     if (!KeyCtrlHasFscryptSyspara()) {
@@ -428,13 +428,13 @@ int KeyManager::UpdateUserAuth(unsigned int user, const std::string &token,
     }
 
     auto item = userEl2Key_[user];
-    UserAuth auth = {
-        .token = token,
-    };
+    UserAuth auth = {token, oldSecret};
     if (item->RestoreKey(auth) == false) {
         LOGE("Restoore key error");
         return -EFAULT;
     }
+
+    auth.secret = newSecret;
     if (item->StoreKey(auth) == false) {
         LOGE("Store key error");
         return -EFAULT;
@@ -444,8 +444,8 @@ int KeyManager::UpdateUserAuth(unsigned int user, const std::string &token,
     return 0;
 }
 
-int KeyManager::ActiveUserKey(unsigned int user, const std::string &token,
-                              const std::string &secret)
+int KeyManager::ActiveUserKey(unsigned int user, const std::vector<uint8_t> &token,
+                              const std::vector<uint8_t> &secret)
 {
     LOGI("start");
     if (!KeyCtrlHasFscryptSyspara()) {
@@ -468,9 +468,7 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::string &token,
         LOGE("Init el failed");
         return -EFAULT;
     }
-    UserAuth auth = {
-        .token = token
-    };
+    UserAuth auth = {token, secret};
     if (elKey->RestoreKey(auth) == false) {
         LOGE("Restore el failed");
         return -EFAULT;

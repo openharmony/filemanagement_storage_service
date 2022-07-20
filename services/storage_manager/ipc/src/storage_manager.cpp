@@ -261,19 +261,24 @@ int32_t StorageManager::DeleteUserKeys(uint32_t userId)
     return err;
 }
 
-int32_t StorageManager::UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret)
+int32_t StorageManager::UpdateUserAuth(uint32_t userId,
+                                       const std::vector<uint8_t> &token,
+                                       const std::vector<uint8_t> &oldSecret,
+                                       const std::vector<uint8_t> &newSecret)
 {
     LOGI("UserId: %{public}u", userId);
     std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    int32_t err = fsCrypto->UpdateUserAuth(userId, auth, compSecret);
+    int32_t err = fsCrypto->UpdateUserAuth(userId, token, oldSecret, newSecret);
     return err;
 }
 
-int32_t StorageManager::ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret)
+int32_t StorageManager::ActiveUserKey(uint32_t userId,
+                                      const std::vector<uint8_t> &token,
+                                      const std::vector<uint8_t> &secret)
 {
     LOGI("UserId: %{public}u", userId);
     std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    int32_t err = fsCrypto->ActiveUserKey(userId, auth, compSecret);
+    int32_t err = fsCrypto->ActiveUserKey(userId, token, secret);
     return err;
 }
 

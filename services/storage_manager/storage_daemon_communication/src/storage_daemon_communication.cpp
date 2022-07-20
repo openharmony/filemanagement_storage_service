@@ -183,24 +183,29 @@ int32_t StorageDaemonCommunication::DeleteUserKeys(uint32_t userId)
     return storageDaemon_->DeleteUserKeys(userId);
 }
 
-int32_t StorageDaemonCommunication::UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret)
+int32_t StorageDaemonCommunication::UpdateUserAuth(uint32_t userId,
+                                                   const std::vector<uint8_t> &token,
+                                                   const std::vector<uint8_t> &oldSecret,
+                                                   const std::vector<uint8_t> &newSecret)
 {
     LOGI("enter");
     if (Connect() != E_OK) {
         LOGE("Connect failed");
         return E_IPC_ERROR;
     }
-    return storageDaemon_->UpdateUserAuth(userId, auth, compSecret);
+    return storageDaemon_->UpdateUserAuth(userId, token, oldSecret, newSecret);
 }
 
-int32_t StorageDaemonCommunication::ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret)
+int32_t StorageDaemonCommunication::ActiveUserKey(uint32_t userId,
+                                                  const std::vector<uint8_t> &token,
+                                                  const std::vector<uint8_t> &secret)
 {
     LOGI("enter");
     if (Connect() != E_OK) {
         LOGE("Connect failed");
         return E_IPC_ERROR;
     }
-    return storageDaemon_->ActiveUserKey(userId, auth, compSecret);
+    return storageDaemon_->ActiveUserKey(userId, token, secret);
 }
 
 int32_t StorageDaemonCommunication::InactiveUserKey(uint32_t userId)
@@ -222,5 +227,5 @@ int32_t StorageDaemonCommunication::UpdateKeyContext(uint32_t userId)
     }
     return storageDaemon_->UpdateKeyContext(userId);
 }
-} // StorageManager
-} // OHOS
+} // namespace StorageManager
+} // namespace OHOS

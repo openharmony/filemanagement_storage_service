@@ -69,7 +69,10 @@ int32_t FileSystemCrypto::DeleteUserKeys(uint32_t userId)
     return err;
 }
 
-int32_t FileSystemCrypto::UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret)
+int32_t FileSystemCrypto::UpdateUserAuth(uint32_t userId,
+                                         const std::vector<uint8_t> &token,
+                                         const std::vector<uint8_t> &oldSecret,
+                                         const std::vector<uint8_t> &newSecret)
 {
     LOGI("UserId: %{public}u", userId);
     int32_t err = CheckUserIdRange(userId);
@@ -79,11 +82,13 @@ int32_t FileSystemCrypto::UpdateUserAuth(uint32_t userId, std::string auth, std:
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->UpdateUserAuth(userId, auth, compSecret);
+    err = sdCommunication->UpdateUserAuth(userId, token, oldSecret, newSecret);
     return err;
 }
 
-int32_t FileSystemCrypto::ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret)
+int32_t FileSystemCrypto::ActiveUserKey(uint32_t userId,
+                                        const std::vector<uint8_t> &token,
+                                        const std::vector<uint8_t> &secret)
 {
     LOGI("UserId: %{public}u", userId);
     int32_t err = CheckUserIdRange(userId);
@@ -93,7 +98,7 @@ int32_t FileSystemCrypto::ActiveUserKey(uint32_t userId, std::string auth, std::
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->ActiveUserKey(userId, auth, compSecret);
+    err = sdCommunication->ActiveUserKey(userId, token, secret);
     return err;
 }
 

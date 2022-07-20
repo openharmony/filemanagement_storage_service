@@ -60,8 +60,13 @@ public:
     // fscrypt api
     int32_t GenerateUserKeys(uint32_t userId, uint32_t flags) override;
     int32_t DeleteUserKeys(uint32_t userId) override;
-    int32_t UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret) override;
-    int32_t ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret) override;
+    int32_t UpdateUserAuth(uint32_t userId,
+                           const std::vector<uint8_t> &token,
+                           const std::vector<uint8_t> &oldSecret,
+                           const std::vector<uint8_t> &newSecret) override;
+    int32_t ActiveUserKey(uint32_t userId,
+                          const std::vector<uint8_t> &token,
+                          const std::vector<uint8_t> &secret) override;
     int32_t InactiveUserKey(uint32_t userId) override;
     int32_t UpdateKeyContext(uint32_t userId) override;
 

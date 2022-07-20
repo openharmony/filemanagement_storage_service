@@ -115,14 +115,19 @@ int32_t StorageDaemon::DeleteUserKeys(uint32_t userId)
     return KeyManager::GetInstance()->DeleteUserKeys(userId);
 }
 
-int32_t StorageDaemon::UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret)
+int32_t StorageDaemon::UpdateUserAuth(uint32_t userId,
+                                      const std::vector<uint8_t> &token,
+                                      const std::vector<uint8_t> &oldSecret,
+                                      const std::vector<uint8_t> &newSecret)
 {
-    return KeyManager::GetInstance()->UpdateUserAuth(userId, auth,compSecret);
+    return KeyManager::GetInstance()->UpdateUserAuth(userId, token, oldSecret, newSecret);
 }
 
-int32_t StorageDaemon::ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret)
+int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
+                                     const std::vector<uint8_t> &token,
+                                     const std::vector<uint8_t> &secret)
 {
-    return KeyManager::GetInstance()->ActiveUserKey(userId, auth, compSecret);
+    return KeyManager::GetInstance()->ActiveUserKey(userId, token, secret);
 }
 
 int32_t StorageDaemon::InactiveUserKey(uint32_t userId)
