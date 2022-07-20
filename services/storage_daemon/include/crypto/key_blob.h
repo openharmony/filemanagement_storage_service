@@ -17,11 +17,7 @@
 
 #include <memory>
 #include <string>
-#include <unistd.h>
 #include <vector>
-#include <map>
-#include <string>
-#include <set>
 #include <linux/keyctl.h>
 #include <linux/version.h>
 
@@ -40,6 +36,7 @@ namespace StorageDaemon {
 constexpr uint32_t CRYPTO_KEY_SECDISC_SIZE = 16384;
 constexpr uint32_t CRYPTO_KEY_ALIAS_SIZE = 16;
 constexpr uint32_t CRYPTO_AES_AAD_LEN = 16;
+constexpr uint32_t CRYPTO_AES_NONCE_LEN = 64;
 constexpr uint32_t CRYPTO_AES_256_XTS_KEY_SIZE = 64;
 constexpr uint32_t CRYPTO_KEY_SHIELD_MAX_SIZE = 2048;
 constexpr uint32_t CRYPTO_AES_256_KEY_ENCRYPTED_SIZE = 80;
@@ -75,6 +72,15 @@ public:
     {
         data = std::move(right.data);
         size = right.size;
+    }
+    KeyBlob(const std::vector<uint8_t> &vec)
+    {
+        if (Alloc(vec.size())) {
+            auto ret = memcpy_s(data.get(), size, vec.data(), vec.size());
+            if (ret != EOK) {
+                Clear();
+            }
+        }
     }
     KeyBlob& operator=(KeyBlob &&right)
     {

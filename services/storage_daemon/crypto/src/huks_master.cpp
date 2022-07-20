@@ -274,7 +274,7 @@ bool HuksMaster::GenerateKey(KeyBlob &keyOut)
     return ret == HKS_SUCCESS;
 }
 
-static KeyBlob HashAndClip(const std::string &prefix, const KeyBlob &payload, const uint32_t length)
+static KeyBlob HashAndClip(const std::string &prefix, const KeyBlob &payload, uint32_t length)
 {
     KeyBlob res(SHA512_DIGEST_LENGTH);
     std::string header = prefix;
@@ -316,9 +316,9 @@ static int AppendAeTag(KeyBlob &cipherText, HksParamSet *paramSet)
     return HksAddParams(paramSet, param, HKS_ARRAY_SIZE(param));
 }
 
-static int AppendNonceAad(KeyContext &ctx, HksParamSet *paramSet)
+static int AppendNonceAad(KeyContext &ctx, const KeyBlob &secret, HksParamSet *paramSet)
 {
-    ctx.nonce = HashAndClip("NONCE SHA512 prefix", ctx.secDiscard, HKS_AE_NONCE_LEN);
+    ctx.nonce = HashAndClip("NONCE SHA512 prefix", secret, CRYPTO_AES_NONCE_LEN);
     ctx.aad = HashAndClip("AAD SHA512 prefix", ctx.secDiscard, CRYPTO_AES_AAD_LEN);
     // pass the token here
     HksParam addParam[] = {
@@ -336,7 +336,7 @@ static int AppendNonceAad(KeyContext &ctx, HksParamSet *paramSet)
 
 static HksParamSet *GenHuksOptionParam(KeyContext &ctx, const UserAuth &auth, const bool isEncrypt)
 {
-    (void)auth;
+    // auth.token pass to huks
     HksParamSet *paramSet = nullptr;
     HksParam encryptParam[] = {
         { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_AES },
@@ -361,13 +361,13 @@ static HksParamSet *GenHuksOptionParam(KeyContext &ctx, const UserAuth &auth, co
     if (!isEncrypt) {
         ret = AppendAeTag(ctx.encrypted, paramSet);
         if (ret != HKS_SUCCESS) {
-            LOGE("AppendNonceAad failed ret %{public}d", ret);
+            LOGE("AppendAeTag failed ret %{public}d", ret);
             HksFreeParamSet(&paramSet);
             return nullptr;
         }
     }
 
-    ret = AppendNonceAad(ctx, paramSet);
+    ret = AppendNonceAad(ctx, KeyBlob(auth.secret), paramSet);
     if (ret != HKS_SUCCESS) {
         LOGE("AppendNonceAad failed ret %{public}d", ret);
         HksFreeParamSet(&paramSet);

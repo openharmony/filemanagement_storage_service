@@ -99,8 +99,8 @@ static int32_t DestroyUserSpace(const std::vector<std::string> &args)
 
 static int32_t UpdateUserAuth(const std::vector<std::string> &args)
 {
-    if (args.size() < 6) {
-        LOGE("Parameter nums is less than 6, please retry");
+    if (args.size() < 5) {
+        LOGE("Parameter nums is less than 5, please retry");
         return -EINVAL;
     }
     uint32_t userId;
@@ -108,16 +108,20 @@ static int32_t UpdateUserAuth(const std::vector<std::string> &args)
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }
-    std::vector<uint8_t> token;
-    std::vector<uint8_t> oldsecret;
-    std::vector<uint8_t> newSecret;
-    return OHOS::StorageManager::StorageManagerClient::UpdateUserAuth(userId, token, oldsecret, newSecret);
+
+    if (args.size() == 6) {
+        std::vector<uint8_t> oldSecret(args[4].begin(), args[4].end());
+        std::vector<uint8_t> newSecret(args[5].begin(), args[5].end());
+        return OHOS::StorageManager::StorageManagerClient::UpdateUserAuth(userId, {}, oldSecret, newSecret);
+    }
+    std::vector<uint8_t> newSecret(args[4].begin(), args[4].end());
+    return OHOS::StorageManager::StorageManagerClient::UpdateUserAuth(userId, {}, {}, newSecret);
 }
 
 static int32_t ActiveUserKey(const std::vector<std::string> &args)
 {
-    if (args.size() < 6) {
-        LOGE("Parameter nums is less than 6, please retry");
+    if (args.size() < 4) {
+        LOGE("Parameter nums is less than 4, please retry");
         return -EINVAL;
     }
     uint32_t userId;
@@ -125,9 +129,12 @@ static int32_t ActiveUserKey(const std::vector<std::string> &args)
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }
-    std::vector<uint8_t> token;
-    std::vector<uint8_t> secret;
-    return OHOS::StorageManager::StorageManagerClient::ActiveUserKey(userId, token, secret);
+
+    if (args.size() == 5) {
+        std::vector<uint8_t> secret(args[4].begin(), args[4].end());
+        return OHOS::StorageManager::StorageManagerClient::ActiveUserKey(userId, {}, secret);
+    }
+    return OHOS::StorageManager::StorageManagerClient::ActiveUserKey(userId, {}, {});
 }
 
 static int32_t InactiveUserKey(const std::vector<std::string> &args)
@@ -220,5 +227,6 @@ int main(int argc, char **argv)
     }
 
     LOGI("sdc end");
+    std::cout << "ret: " << ret << std::endl;
     return ret;
 }
