@@ -28,7 +28,7 @@
           "hiviewdfx_hilog_native",
           "ipc",
           "safwk",
-          "samgr_standard",
+          "samgr",
           "ability_runtime",
           "huks"
       ],

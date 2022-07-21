@@ -28,7 +28,7 @@ ohos_unittest("disk_manager_test") {
     "//foundation/filemanagement/storage_service/utils/include",
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
-    "//foundation/distributedschedule/safwk/interfaces/innerkits/safwk",
+    "//foundation/systemabilitymgr/safwk/interfaces/innerkits/safwk",
     "//foundation/filemanagement/storage_service/services/common/include",
     "//foundation/filemanagement/storage_service/services/storage_daemon/include",
   ]
@@ -57,7 +57,7 @@ ohos_unittest("disk_manager_test") {
   external_deps = [
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
-    "samgr_standard:samgr_proxy",
+    "samgr:samgr_proxy",
     "storage_service:storage_manager_sa_proxy",
   ]
 }
@@ -76,7 +76,7 @@ ohos_unittest("disk_info_test") {
     "//foundation/filemanagement/storage_service/utils/include",
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
-    "//foundation/distributedschedule/safwk/interfaces/innerkits/safwk",
+    "//foundation/systemabilitymgr/safwk/interfaces/innerkits/safwk",
     "//foundation/filemanagement/storage_service/services/common/include",
     "//foundation/filemanagement/storage_service/services/storage_daemon/include",
   ]
@@ -104,7 +104,7 @@ ohos_unittest("disk_info_test") {
   external_deps = [
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
-    "samgr_standard:samgr_proxy",
+    "samgr:samgr_proxy",
     "storage_service:storage_manager_sa_proxy",
   ]
 }
@@ -123,7 +123,7 @@ ohos_unittest("disk_config_test") {
     "//foundation/filemanagement/storage_service/utils/include",
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
-    "//foundation/distributedschedule/safwk/interfaces/innerkits/safwk",
+    "//foundation/systemabilitymgr/safwk/interfaces/innerkits/safwk",
     "//foundation/filemanagement/storage_service/services/common/include",
     "//foundation/filemanagement/storage_service/services/storage_daemon/include",
   ]
