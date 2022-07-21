@@ -996,9 +996,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_UpdateUserAuth_0000, tes
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
     uint32_t userId = 114;
-    string auth = "auth-1";
-    string compSecret = "compSecret-1";
-    uint32_t result = proxy_->UpdateUserAuth(userId, auth, compSecret);
+    uint32_t result = proxy_->UpdateUserAuth(userId, {}, {}, {});
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_UpdateUserAuth_0000";
 }
@@ -1019,9 +1017,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_ActiveUserKey_0000, test
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
     uint32_t userId = 115;
-    string auth = "auth-2";
-    string compSecret = "compSecret-2";
-    uint32_t result = proxy_->ActiveUserKey(userId, auth, compSecret);
+    uint32_t result = proxy_->ActiveUserKey(userId, {}, {});
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_ActiveUserKey_0000";
 }

@@ -51,7 +51,7 @@ public:
     static void TearDownTestCase(void);
     void SetUp();
     void TearDown();
-    UserAuth emptyUserAuth { "" };
+    UserAuth emptyUserAuth {};
 };
 
 void CryptoKeyTest::SetUpTestCase(void)

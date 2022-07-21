@@ -325,10 +325,13 @@ int32_t StorageDaemonStub::HandleDeleteUserKeys(MessageParcel &data, MessageParc
 int32_t StorageDaemonStub::HandleUpdateUserAuth(MessageParcel &data, MessageParcel &reply)
 {
     uint32_t userId = data.ReadUint32();
-    std::string auth = "";
-    std::string secret = "";
 
-    int err = UpdateUserAuth(userId, auth, secret);
+    std::vector<uint8_t> token, oldSecret, newSecret;
+    data.ReadUInt8Vector(&token);
+    data.ReadUInt8Vector(&oldSecret);
+    data.ReadUInt8Vector(&newSecret);
+
+    int err = UpdateUserAuth(userId, token, oldSecret, newSecret);
     if (!reply.WriteInt32(err)) {
         return E_IPC_ERROR;
     }
@@ -339,10 +342,12 @@ int32_t StorageDaemonStub::HandleUpdateUserAuth(MessageParcel &data, MessageParc
 int32_t StorageDaemonStub::HandleActiveUserKey(MessageParcel &data, MessageParcel &reply)
 {
     uint32_t userId = data.ReadUint32();
-    std::string auth = "";
-    std::string secret = "";
 
-    int err = ActiveUserKey(userId, auth, secret);
+    std::vector<uint8_t> token, secret;
+    data.ReadUInt8Vector(&token);
+    data.ReadUInt8Vector(&secret);
+
+    int err = ActiveUserKey(userId, token, secret);
     if (!reply.WriteInt32(err)) {
         return E_IPC_ERROR;
     }

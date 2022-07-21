@@ -51,9 +51,12 @@ public:
     int InitGlobalUserKeys(void);
     int GenerateUserKeys(unsigned int user, uint32_t flags);
     int DeleteUserKeys(unsigned int user);
-    int UpdateUserAuth(unsigned int user, const std::string &token, const std::string &composePwd);
-    int ActiveUserKey(unsigned int user, const std::string &token,
-                      const std::string &secret);
+    int UpdateUserAuth(unsigned int user,
+                       const std::vector<uint8_t> &token,
+                       const std::vector<uint8_t> &oldSecret,
+                       const std::vector<uint8_t> &newSecret);
+    int ActiveUserKey(unsigned int user, const std::vector<uint8_t> &token,
+                      const std::vector<uint8_t> &secret);
     int InActiveUserKey(unsigned int user);
     int SetDirectoryElPolicy(unsigned int user, KeyType type,
                              const std::vector<FileList> &vec);

@@ -339,10 +339,8 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateUserAuth_000
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t result = -1;
     uint32_t userId = 108;
-    string auth = "auth-1";
-    string compSecret = "compSecret-1";
     if (sdCommunication != nullptr) {
-        result = sdCommunication->UpdateUserAuth(userId, auth, compSecret);
+        result = sdCommunication->UpdateUserAuth(userId, {}, {}, {});
     }
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UpdateUserAuth_0000 SUCCESS";
@@ -364,10 +362,8 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ActiveUserKey_0000
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t result = -1;
     uint32_t userId = 109;
-    string auth = "auth-1";
-    string compSecret = "compSecret-1";
     if (sdCommunication != nullptr) {
-        result = sdCommunication->ActiveUserKey(userId, auth, compSecret);
+        result = sdCommunication->ActiveUserKey(userId, {}, {});
     }
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_ActiveUserKey_0000 SUCCESS";

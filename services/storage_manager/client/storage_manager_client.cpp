@@ -83,7 +83,10 @@ int32_t StorageManagerClient::DeleteUserKeys(uint32_t userId)
     return client->DeleteUserKeys(userId);
 }
 
-int32_t StorageManagerClient::UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret)
+int32_t StorageManagerClient::UpdateUserAuth(uint32_t userId,
+                                             const std::vector<uint8_t> &token,
+                                             const std::vector<uint8_t> &oldSecret,
+                                             const std::vector<uint8_t> &newSecret)
 {
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
@@ -91,10 +94,12 @@ int32_t StorageManagerClient::UpdateUserAuth(uint32_t userId, std::string auth, 
         return -EFAULT;
     }
 
-    return client->UpdateUserAuth(userId, auth, compSecret);
+    return client->UpdateUserAuth(userId, token, oldSecret, newSecret);
 }
 
-int32_t StorageManagerClient::ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret)
+int32_t StorageManagerClient::ActiveUserKey(uint32_t userId,
+                                            const std::vector<uint8_t> &token,
+                                            const std::vector<uint8_t> &secret)
 {
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
@@ -102,7 +107,7 @@ int32_t StorageManagerClient::ActiveUserKey(uint32_t userId, std::string auth, s
         return -EFAULT;
     }
 
-    return client->ActiveUserKey(userId, auth, compSecret);
+    return client->ActiveUserKey(userId, token, secret);
 }
 
 int32_t StorageManagerClient::InactiveUserKey(uint32_t userId)

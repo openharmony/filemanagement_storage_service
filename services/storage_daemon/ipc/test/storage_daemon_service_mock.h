@@ -108,12 +108,16 @@ public:
         return E_OK;
     }
 
-    virtual int32_t UpdateUserAuth(uint32_t userId, std::string auth, std::string compSecret) override
+    virtual int32_t UpdateUserAuth(uint32_t userId, const std::vector<uint8_t> &token,
+                                   const std::vector<uint8_t> &oldSecret,
+                                   const std::vector<uint8_t> &newSecret) override
     {
         return E_OK;
     }
 
-    virtual int32_t ActiveUserKey(uint32_t userId, std::string auth, std::string compSecret) override
+    virtual int32_t ActiveUserKey(uint32_t userId,
+                                  const std::vector<uint8_t> &token,
+                                  const std::vector<uint8_t> &secret) override
     {
         return E_OK;
     }

@@ -41,8 +41,9 @@ public:
     MOCK_METHOD0(InitGlobalUserKeys, int32_t(void));
     MOCK_METHOD2(GenerateUserKeys, int32_t(uint32_t, uint32_t));
     MOCK_METHOD1(DeleteUserKeys, int32_t(uint32_t));
-    MOCK_METHOD3(UpdateUserAuth,  int32_t(uint32_t, std::string, std::string));
-    MOCK_METHOD3(ActiveUserKey,  int32_t (uint32_t, std::string, std::string));
+    MOCK_METHOD4(UpdateUserAuth,  int32_t(uint32_t, const std::vector<uint8_t> &, const std::vector<uint8_t> &,
+        const std::vector<uint8_t> &));
+    MOCK_METHOD3(ActiveUserKey,  int32_t (uint32_t, const std::vector<uint8_t> &, const std::vector<uint8_t> &));
     MOCK_METHOD1(InactiveUserKey, int32_t (uint32_t));
     MOCK_METHOD1(UpdateKeyContext, int32_t (uint32_t));
 };
