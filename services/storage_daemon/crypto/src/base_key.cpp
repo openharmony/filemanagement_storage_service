@@ -194,7 +194,7 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
     }
     ChMod(pathVersion, S_IREAD | S_IWRITE);
 
-    if (!HuksMaster::GetInstance().GenerateKey(keyContext_.shield)) {
+    if (!HuksMaster::GetInstance().GenerateKey(auth, keyContext_.shield)) {
         LOGE("GenerateKey of shield failed");
         return false;
     }

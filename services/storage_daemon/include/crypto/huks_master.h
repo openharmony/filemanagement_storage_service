@@ -36,7 +36,7 @@ public:
 
     /* key operations */
     KeyBlob GenerateRandomKey(uint32_t keyLen);
-    bool GenerateKey(KeyBlob &keyOut);
+    bool GenerateKey(const UserAuth &auth, KeyBlob &keyOut);
     bool EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo &key);
     bool DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key);
 private:
