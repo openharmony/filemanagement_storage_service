@@ -79,7 +79,6 @@ napi_value GetAllVolumes(napi_env env, napi_callback_info info)
         NVal cb(env, funcArg[(int)NARG_POS::FIRST]);
         return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
     }
-    return NVal::CreateUndefined(env).val_;
 }
 
 
@@ -120,7 +119,6 @@ napi_value Mount(napi_env env, napi_callback_info info)
         NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
         return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
     }
-    return NVal::CreateUndefined(env).val_;
 }
 
 napi_value Unmount(napi_env env, napi_callback_info info)
@@ -160,7 +158,6 @@ napi_value Unmount(napi_env env, napi_callback_info info)
         NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
         return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
     }
-    return NVal::CreateUndefined(env).val_;
 }
 
 
@@ -211,7 +208,6 @@ napi_value GetVolumeByUuid(napi_env env, napi_callback_info info)
         NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
         return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
     }
-    return NVal::CreateUndefined(env).val_;
 }
 
 
@@ -262,7 +258,6 @@ napi_value GetVolumeById(napi_env env, napi_callback_info info)
         NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
         return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
     }
-    return NVal::CreateUndefined(env).val_;
 }
 
 napi_value SetVolumeDescription(napi_env env, napi_callback_info info)
@@ -310,7 +305,6 @@ napi_value SetVolumeDescription(napi_env env, napi_callback_info info)
         NVal cb(env, funcArg[(int)NARG_POS::THIRD]);
         return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
     }
-    return NVal::CreateUndefined(env).val_;
 }
 
 napi_value Format(napi_env env, napi_callback_info info)
@@ -358,7 +352,6 @@ napi_value Format(napi_env env, napi_callback_info info)
         NVal cb(env, funcArg[(int)NARG_POS::THIRD]);
         return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
     }
-    return NVal::CreateUndefined(env).val_;
 }
 
 napi_value Partition(napi_env env, napi_callback_info info)
@@ -405,7 +398,6 @@ napi_value Partition(napi_env env, napi_callback_info info)
         NVal cb(env, funcArg[(int)NARG_POS::THIRD]);
         return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
     }
-    return NVal::CreateUndefined(env).val_;
 }
 } // namespace ModuleVolumeManager
 } // namespace StorageManager

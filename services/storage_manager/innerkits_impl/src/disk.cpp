@@ -54,11 +54,26 @@ void Disk::SetFlag(int32_t flag)
 
 bool Disk::Marshalling(Parcel &parcel) const
 {
-    parcel.WriteString(diskId_);
-    parcel.WriteInt32(sizeBytes_);
-    parcel.WriteString(sysPath_);
-    parcel.WriteString(vendor_);
-    parcel.WriteInt32(flag_);
+    if (!parcel.WriteString(diskId_)) {
+        return false;
+    }
+
+    if (!parcel.WriteInt32(sizeBytes_)) {
+        return false;
+    }
+
+    if (!parcel.WriteString(sysPath_)) {
+        return false;
+    }
+
+    if (!parcel.WriteString(vendor_)) {
+        return false;
+    }
+
+    if (!parcel.WriteInt32(flag_)) {
+        return false;
+    }
+
     return true;
 }
 
