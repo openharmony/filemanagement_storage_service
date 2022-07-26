@@ -51,7 +51,6 @@ ohos_shared_library("storagestatistics") {
     "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js:fileio",
     "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js:statfs",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
-    "//foundation/filemanagement/storage_service/services/storage_manager:storage_manager",
     "//utils/native/base:utils",
   ]
 
@@ -105,7 +104,6 @@ ohos_shared_library("volumemanager") {
     "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js:fileio",
     "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js:statfs",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
-    "//foundation/filemanagement/storage_service/services/storage_manager:storage_manager",
     "//utils/native/base:utils",
   ]
 
