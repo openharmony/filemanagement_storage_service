@@ -19,9 +19,18 @@ namespace OHOS {
 namespace StorageManager {
 bool BundleStats::Marshalling(Parcel &parcel) const
 {
-    parcel.WriteInt64(appSize_);
-    parcel.WriteInt64(cacheSize_);
-    parcel.WriteInt64(dataSize_);
+    if (!parcel.WriteInt64(appSize_)) {
+        return false;
+    }
+
+    if (!parcel.WriteInt64(cacheSize_)) {
+        return false;
+    }
+
+    if (parcel.WriteInt64(dataSize_)) {
+        return false;
+    }
+
     return true;
 }
 

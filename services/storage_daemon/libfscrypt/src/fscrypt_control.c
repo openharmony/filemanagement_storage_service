@@ -22,7 +22,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <linux/fscrypt.h>
 
 #include "fscrypt_log.h"
 #include "fscrypt_sysparam.h"

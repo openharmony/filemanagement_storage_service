@@ -19,12 +19,30 @@ namespace OHOS {
 namespace StorageManager {
 bool StorageStats::Marshalling(Parcel &parcel) const
 {
-    parcel.WriteInt64(total_);
-    parcel.WriteInt64(audio_);
-    parcel.WriteInt64(video_);
-    parcel.WriteInt64(image_);
-    parcel.WriteInt64(file_);
-    parcel.WriteInt64(app_);
+    if (!parcel.WriteInt64(total_)) {
+        return false;
+    }
+
+    if (!parcel.WriteInt64(audio_)) {
+        return false;
+    }
+
+    if (!parcel.WriteInt64(video_)) {
+        return false;
+    }
+
+    if (!parcel.WriteInt64(image_)) {
+        return false;
+    }
+
+    if (!parcel.WriteInt64(file_)) {
+        return false;
+    }
+
+    if (!parcel.WriteInt64(app_)) {
+        return false;
+    }
+
     return true;
 }
 

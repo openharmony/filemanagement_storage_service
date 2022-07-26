@@ -16,7 +16,6 @@
 #include "utils/file_utils.h"
 
 #include <cerrno>
-#include <cerrno>
 #include <cstdlib>
 #include <cstring>
 #include <dirent.h>
