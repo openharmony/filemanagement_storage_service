@@ -862,7 +862,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetVolumeById_0000, test
     proxy->NotifyVolumeCreated(vc);
     VolumeExternal ve;
     int64_t result = proxy->GetVolumeById(volumeId, ve);
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetVolumeById_0000";
 }
 
@@ -933,7 +933,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetDiskById_0000, testin
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
     proxy->NotifyDiskCreated(disk);
     int64_t result = proxy->GetDiskById(diskId, disk);
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetDiskById_0000";
 }
 

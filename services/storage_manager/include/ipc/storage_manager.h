@@ -50,18 +50,18 @@ public:
     StorageStats GetUserStorageStats(int32_t userId) override;
     BundleStats GetCurrentBundleStats() override;
 
-    void NotifyVolumeCreated(VolumeCore vc) override;
-    void NotifyVolumeMounted(std::string volumeId, int32_t fsType, std::string fsUuid,
+    int32_t NotifyVolumeCreated(VolumeCore vc) override;
+    int32_t NotifyVolumeMounted(std::string volumeId, int32_t fsType, std::string fsUuid,
         std::string path, std::string description) override;
-    void NotifyVolumeDestroyed(std::string volumeId) override;
+    int32_t NotifyVolumeDestroyed(std::string volumeId) override;
 
     int32_t Mount(std::string volumeId) override;
     int32_t Unmount(std::string volumeId) override;
 
     std::vector<VolumeExternal> GetAllVolumes()override;
     
-    void NotifyDiskCreated(Disk disk) override;
-    void NotifyDiskDestroyed(std::string diskId) override;
+    int32_t NotifyDiskCreated(Disk disk) override;
+    int32_t NotifyDiskDestroyed(std::string diskId) override;
     int32_t Partition(std::string diskId, int32_t type) override;
     std::vector<Disk> GetAllDisks() override;
 

@@ -47,106 +47,106 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
     int err = 0;
     switch (code) {
         case PREPARE_ADD_USER:
-            HandlePrepareAddUser(data, reply);
+            err = HandlePrepareAddUser(data, reply);
             break;
         case REMOVE_USER:
-            HandleRemoveUser(data, reply);
+            err = HandleRemoveUser(data, reply);
             break;
         case PREPARE_START_USER:
-            HandlePrepareStartUser(data, reply);
+            err = HandlePrepareStartUser(data, reply);
             break;
         case STOP_USER:
-            HandleStopUser(data, reply);
+            err = HandleStopUser(data, reply);
             break;
         case GET_TOTAL:
-            HandleGetTotal(data, reply);
+            err = HandleGetTotal(data, reply);
             break;
         case GET_FREE:
-            HandleGetFree(data, reply);
+            err = HandleGetFree(data, reply);
             break;
         case GET_SYSTEM_SIZE:
-            HandleGetSystemSize(data, reply);
+            err = HandleGetSystemSize(data, reply);
             break;
         case GET_TOTAL_SIZE:
-            HandleGetTotalSize(data, reply);
+            err = HandleGetTotalSize(data, reply);
             break;
         case GET_FREE_SIZE:
-            HandleGetFreeSize(data, reply);
+            err = HandleGetFreeSize(data, reply);
             break;
         case GET_CURR_USER_STATS:
-            HandleGetCurrUserStorageStats(data, reply);
+            err = HandleGetCurrUserStorageStats(data, reply);
             break;
         case GET_USER_STATS:
-            HandleGetUserStorageStats(data, reply);
+            err = HandleGetUserStorageStats(data, reply);
             break;
         case GET_CURR_BUNDLE_STATS:
-            HandleGetCurrentBundleStats(data, reply);
+            err = HandleGetCurrentBundleStats(data, reply);
             break;
         case GET_BUNDLE_STATUS:
-            HandleGetBundleStatus(data, reply);
+            err = HandleGetBundleStatus(data, reply);
             break;
         case NOTIFY_VOLUME_CREATED:
-            HandleNotifyVolumeCreated(data, reply);
+            err = HandleNotifyVolumeCreated(data, reply);
             break;
         case NOTIFY_VOLUME_MOUNTED:
-            HandleNotifyVolumeMounted(data, reply);
+            err = HandleNotifyVolumeMounted(data, reply);
             break;
         case NOTIFY_VOLUME_DESTROYED:
-            HandleNotifyVolumeDestroyed(data, reply);
+            err = HandleNotifyVolumeDestroyed(data, reply);
             break;
         case MOUNT:
-            HandleMount(data, reply);
+            err = HandleMount(data, reply);
             break;
         case UNMOUNT:
-            HandleUnmount(data, reply);
+            err = HandleUnmount(data, reply);
             break;
         case GET_ALL_VOLUMES:
-            HandleGetAllVolumes(data, reply);
+            err = HandleGetAllVolumes(data, reply);
             break;
         case NOTIFY_DISK_CREATED:
-            HandleNotifyDiskCreated(data, reply);
+            err = HandleNotifyDiskCreated(data, reply);
             break;
         case NOTIFY_DISK_DESTROYED:
-            HandleNotifyDiskDestroyed(data, reply);
+            err = HandleNotifyDiskDestroyed(data, reply);
             break;
         case PARTITION:
-            HandlePartition(data, reply);
+            err = HandlePartition(data, reply);
             break;
         case GET_ALL_DISKS:
-            HandleGetAllDisks(data, reply);
+            err = HandleGetAllDisks(data, reply);
             break;
         case GET_VOL_BY_UUID:
-            HandleGetVolumeByUuid(data, reply);
+            err = HandleGetVolumeByUuid(data, reply);
             break;
         case GET_VOL_BY_ID:
-            HandleGetVolumeById(data, reply);
+            err = HandleGetVolumeById(data, reply);
             break;
         case SET_VOL_DESC:
-            HandleSetVolDesc(data, reply);
+            err = HandleSetVolDesc(data, reply);
             break;
         case FORMAT:
-            HandleFormat(data, reply);
+            err = HandleFormat(data, reply);
             break;
         case GET_DISK_BY_ID:
-            HandleGetDiskById(data, reply);
+            err = HandleGetDiskById(data, reply);
             break;
         case CREATE_USER_KEYS:
-            HandleGenerateUserKeys(data, reply);
+            err = HandleGenerateUserKeys(data, reply);
             break;
         case DELETE_USER_KEYS:
-            HandleDeleteUserKeys(data, reply);
+            err = HandleDeleteUserKeys(data, reply);
             break;
         case UPDATE_USER_AUTH:
-            HandleUpdateUserAuth(data, reply);
+            err = HandleUpdateUserAuth(data, reply);
             break;
         case ACTIVE_USER_KEY:
-            HandleActiveUserKey(data, reply);
+            err = HandleActiveUserKey(data, reply);
             break;
         case INACTIVE_USER_KEY:
-            HandleInactiveUserKey(data, reply);
+            err = HandleInactiveUserKey(data, reply);
             break;
         case UPDATE_KEY_CONTEXT:
-            HandleUpdateKeyContext(data, reply);
+            err = HandleUpdateKeyContext(data, reply);
             break;
         default: {
             LOGI("use IPCObjectStub default OnRemoteRequest");
