@@ -25,13 +25,13 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
-
-#include "policycoreutils.h"
 #include "securec.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "string_ex.h"
-
+#ifdef USE_LIBRESTORECON
+#include "policycoreutils.h"
+#endif
 namespace OHOS {
 namespace StorageDaemon {
 constexpr uint32_t ALL_PERMS = (S_ISUID | S_ISGID | S_ISVTX | S_IRWXU | S_IRWXG | S_IRWXO);
@@ -154,11 +154,13 @@ bool PrepareDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
         return false;
     }
 
+#ifdef USE_LIBRESTORECON
     int err = Restorecon(path.c_str());
     if (err) {
         LOGE("failed to restorecon, err:%{public}d", err);
         return false;
     }
+#endif
 
     return true;
 }
