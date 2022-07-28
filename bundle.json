@@ -89,7 +89,8 @@
           "//foundation/filemanagement/storage_service/services/storage_manager/user/test:storage_manager_user_test",
           "//foundation/filemanagement/storage_service/services/storage_manager/volume/test:storage_manager_volume_test",
           "//foundation/filemanagement/storage_service/services/storage_manager/disk/test:storage_manager_disk_test",
-          "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/test:storage_manager_innerkits_test"
+          "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/test:storage_manager_innerkits_test",
+          "//foundation/filemanagement/storage_service/test/fuzztest:storage_service_fuzztest"
       ]
     }
   }
