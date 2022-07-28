@@ -12,6 +12,7 @@
 # limitations under the License.
 
 import("//build/ohos.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ## Install storage_daemon.cfg to /system/etc/init/storage_daemon.cfg {{{
 ohos_prebuilt_etc("storage_daemon_cfg") {
@@ -177,7 +178,6 @@ declare_args() {
 ohos_shared_library("storage_common_utils") {
   include_dirs = [
     "./include",
-    "//base/security/selinux/interfaces/policycoreutils/include",
     "//foundation/filemanagement/storage_service/services/common/include",
   ]
 
@@ -188,10 +188,16 @@ ohos_shared_library("storage_common_utils") {
 
   sources = [ "./utils/file_utils.cpp" ]
 
-  deps = [
-    "//base/security/selinux:librestorecon",
-    "//utils/native/base:utils",
-  ]
+  deps = [ "//utils/native/base:utils" ]
+
+  if (use_librestorecon) {
+    defines += [ "USE_LIBRESTORECON" ]
+    include_dirs +=
+        [ "//base/security/selinux/interfaces/policycoreutils/include" ]
+
+    deps += [ "//base/security/selinux:librestorecon" ]
+  }
+
   external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
 
   subsystem_name = "filemanagement"
