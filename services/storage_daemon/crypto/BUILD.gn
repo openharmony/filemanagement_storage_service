@@ -21,7 +21,7 @@ config("storage_daemon_crypto_config") {
     "../include/crypto",
     "//foundation/filemanagement/storage_service/services/common/include",
     "//utils/system/safwk/native/include",
-    "//utils/native/base/include",
+    "//commonlibrary/c_utils/base/include",
     "//third_party/openssl/include",
   ]
 
@@ -58,10 +58,10 @@ ohos_static_library("libsdcrypto") {
     "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
     "//foundation/filemanagement/storage_service/services/storage_daemon/libfscrypt:libfscryptutils",
     "//third_party/openssl:libcrypto_shared",
-    "//utils/native/base:utils",
   ]
 
   external_deps = [
+    "c_utils:utils",
     "hiviewdfx_hilog_native:libhilog",
     "init:libbegetutil",
   ]

@@ -33,7 +33,7 @@ ohos_shared_library("storagestatistics") {
     "include",
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
     "//utils/system/safwk/native/include",
-    "//utils/native/base/include",
+    "//commonlibrary/c_utils/base/include",
     "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js/src/",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
     "//foundation/filemanagement/storage_service/services/common/include",
@@ -51,7 +51,6 @@ ohos_shared_library("storagestatistics") {
     "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js:fileio",
     "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js:statfs",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
-    "//utils/native/base:utils",
   ]
 
   external_deps = [
@@ -60,6 +59,7 @@ ohos_shared_library("storagestatistics") {
     "ability_runtime:ability_manager",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
     "safwk:system_ability_fwk",
@@ -81,7 +81,7 @@ ohos_shared_library("volumemanager") {
     "include",
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
     "//utils/system/safwk/native/include",
-    "//utils/native/base/include",
+    "//commonlibrary/c_utils/base/include",
     "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js/src/",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
     "//foundation/filemanagement/storage_service/services/common/include",
@@ -104,7 +104,6 @@ ohos_shared_library("volumemanager") {
     "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js:fileio",
     "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js:statfs",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
-    "//utils/native/base:utils",
   ]
 
   external_deps = [
@@ -113,6 +112,7 @@ ohos_shared_library("volumemanager") {
     "ability_runtime:ability_manager",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
     "safwk:system_ability_fwk",

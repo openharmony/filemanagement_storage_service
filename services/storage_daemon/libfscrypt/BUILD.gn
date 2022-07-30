@@ -44,10 +44,12 @@ ohos_static_library("libfscryptutils") {
   deps = [
     "//base/startup/init/services/log:init_log",
     "//base/startup/init/services/utils:libinit_utils",
-    "//utils/native/base:utils",
   ]
 
-  external_deps = [ "init:libbegetutil" ]
+  external_deps = [
+    "c_utils:utils",
+    "init:libbegetutil",
+  ]
 
   subsystem_name = "filemanagement"
   part_name = "storage_service"
@@ -69,9 +71,9 @@ ohos_static_library("libfscryptutils_static") {
     "//base/startup/init/services/log:init_log",
     "//base/startup/init/services/param/linux:param_init",
     "//base/startup/init/services/utils:libinit_utils",
-    "//utils/native/base:utils",
   ]
 
   subsystem_name = "filemanagement"
   part_name = "storage_service"
+  external_deps = [ "c_utils:utils" ]
 }
