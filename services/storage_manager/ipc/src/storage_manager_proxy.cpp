@@ -348,7 +348,11 @@ void StorageManagerProxy::NotifyVolumeCreated(VolumeCore vc)
         return;
     }
 
-    vc.Marshalling(data);
+    if (!vc.Marshalling(data)) {
+        LOGE("StorageManagerProxy::NotifyVolumeCreated, WriteVolumeInfo failed");
+        return;
+    }
+
     int err = Remote()->SendRequest(NOTIFY_VOLUME_CREATED, data, reply, option);
     if (err != E_OK) {
         LOGE("StorageManagerProxy::NotifyVolumeCreated, SendRequest failed");
@@ -497,7 +501,12 @@ void StorageManagerProxy::NotifyDiskCreated(Disk disk)
         LOGE("StorageManagerProxy::NotifyDiskCreate, WriteInterfaceToken failed");
         return;
     }
-    disk.Marshalling(data);
+
+    if (!disk.Marshalling(data)) {
+        LOGE("StorageManagerProxy::NotifyDiskCreate, WriteDiskInfo failed");
+        return;
+    }
+
     int err = Remote()->SendRequest(NOTIFY_DISK_CREATED, data, reply, option);
     if (err != E_OK) {
         LOGE("StorageManagerProxy::NotifyDiskCreate, SendRequest failed");

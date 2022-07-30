@@ -29,12 +29,12 @@ ohos_moduletest("CryptoSubTest") {
   include_dirs = [
     "../../include",
     "../../include/crypto",
-    "//utils/native/base/include",
+    "//commonlibrary/c_utils/base/include",
   ]
 
   sources = [ "crypto_key_test.cpp" ]
 
-  public_deps = [ "//utils/native/base:utils" ]
+  public_deps = [ "//commonlibrary/c_utils/base:utils" ]
 
   configs = [ ":module_private_config" ]
 

@@ -36,10 +36,10 @@ ohos_unittest("file_utils_test") {
   deps = [
     "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
     "//third_party/googletest:gtest_main",
-    "//utils/native/base:utils",
   ]
 
   external_deps = [
+    "c_utils:utils",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
   ]

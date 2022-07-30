@@ -51,10 +51,10 @@ ohos_unittest("disk_manager_test") {
   deps = [
     "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
     "//third_party/googletest:gtest_main",
-    "//utils/native/base:utils",
   ]
 
   external_deps = [
+    "c_utils:utils",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
     "samgr:samgr_proxy",
@@ -98,10 +98,10 @@ ohos_unittest("disk_info_test") {
     "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
     "//third_party/googletest:gmock_main",
     "//third_party/googletest:gtest_main",
-    "//utils/native/base:utils",
   ]
 
   external_deps = [
+    "c_utils:utils",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
     "samgr:samgr_proxy",
@@ -133,12 +133,10 @@ ohos_unittest("disk_config_test") {
     "$ROOT_DIR/disk/test/disk_config_test.cpp",
   ]
 
-  deps = [
-    "//third_party/googletest:gmock_main",
-    "//utils/native/base:utils",
-  ]
+  deps = [ "//third_party/googletest:gmock_main" ]
 
   external_deps = [
+    "c_utils:utils",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
   ]

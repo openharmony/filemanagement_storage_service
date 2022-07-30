@@ -77,7 +77,12 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
 
 int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
 {
-    return UserManager::GetInstance()->DestroyUserDirs(userId, flags);
+    int32_t ret = UserManager::GetInstance()->DestroyUserDirs(userId, flags);
+    if (ret != 0) {
+        LOGE("Destroy user %{public}d dirs error", userId);
+        return ret;
+    }
+    return KeyManager::GetInstance()->DeleteUserKeys(userId);
 }
 
 int32_t StorageDaemon::StartUser(int32_t userId)

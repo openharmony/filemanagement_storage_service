@@ -12,6 +12,7 @@
 # limitations under the License.
 
 import("//build/ohos.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ## Install storage_daemon.cfg to /system/etc/init/storage_daemon.cfg {{{
 ohos_prebuilt_etc("storage_daemon_cfg") {
@@ -26,7 +27,7 @@ ohos_prebuilt_etc("storage_daemon_cfg") {
 config("storage_daemon_config") {
   include_dirs = [
     "include",
-    "//utils/native/base/include",
+    "//commonlibrary/c_utils/base/include",
     "//foundation/systemabilitymgr/samgr/interfaces/innerkits/samgr_proxy/include",
     "../storage_manager/include",
     "//foundation/systemabilitymgr/safwk/interfaces/innerkits/safwk",
@@ -99,11 +100,11 @@ ohos_executable("storage_daemon") {
     ":storage_common_utils",
     "crypto:libsdcrypto",
     "libfscrypt:libfscryptutils",
-    "//utils/native/base:utils",
   ]
 
   external_deps = [
     "access_token:libaccesstoken_sdk",
+    "c_utils:utils",
     "hiviewdfx_hilog_native:libhilog",
     "init:libbegetutil",
     "ipc:ipc_core",
@@ -119,7 +120,7 @@ config("sdc_config") {
   include_dirs = [
     "include",
     "//foundation/filemanagement/storage_service/services/common/include",
-    "//utils/native/base/include",
+    "//commonlibrary/c_utils/base/include",
     "//foundation/systemabilitymgr/samgr/interfaces/innerkits/samgr_proxy/include",
     "//utils/system/safwk/native/include",
     "//foundation/communication/ipc/interfaces/innerkits/ipc_core/include/",
@@ -156,7 +157,7 @@ ohos_executable("sdc") {
     "libfscrypt:libfscryptutils",
   ]
 
-  public_deps = [ "//utils/native/base:utils" ]
+  public_deps = [ "//commonlibrary/c_utils/base:utils" ]
 
   external_deps = [
     "hiviewdfx_hilog_native:libhilog",
@@ -177,7 +178,6 @@ declare_args() {
 ohos_shared_library("storage_common_utils") {
   include_dirs = [
     "./include",
-    "//base/security/selinux/interfaces/policycoreutils/include",
     "//foundation/filemanagement/storage_service/services/common/include",
   ]
 
@@ -188,11 +188,18 @@ ohos_shared_library("storage_common_utils") {
 
   sources = [ "./utils/file_utils.cpp" ]
 
-  deps = [
-    "//base/security/selinux:librestorecon",
-    "//utils/native/base:utils",
+  if (use_librestorecon) {
+    defines += [ "USE_LIBRESTORECON" ]
+    include_dirs +=
+        [ "//base/security/selinux/interfaces/policycoreutils/include" ]
+
+    deps = [ "//base/security/selinux:librestorecon" ]
+  }
+
+  external_deps = [
+    "c_utils:utils",
+    "hiviewdfx_hilog_native:libhilog",
   ]
-  external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
 
   subsystem_name = "filemanagement"
   part_name = "storage_service"

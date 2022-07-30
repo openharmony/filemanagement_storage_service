@@ -33,7 +33,7 @@ ohos_unittest("storage_total_status_service_test") {
     "include",
     "//third_party/googletest/googlemock/include/gmock",
     "//utils/system/safwk/native/include",
-    "//utils/native/base/include",
+    "//commonlibrary/c_utils/base/include",
   ]
 
   defines = [

@@ -63,9 +63,10 @@ int KeyManager::GenerateAndInstallDeviceKey(const std::string &dir)
         LOGE("global security key active failed");
         return -EFAULT;
     }
+
+    (void)globalEl1Key_->UpdateKey();
     hasGlobalDeviceKey_ = true;
     LOGI("key create success");
-
     return 0;
 }
 
@@ -169,6 +170,7 @@ int KeyManager::GenerateAndInstallUserKey(uint32_t userId, const std::string &di
         return -EFAULT;
     }
 
+    (void)elKey->UpdateKey();
     if (type == EL1_KEY) {
         userEl1Key_[userId] = elKey;
     } else if (type == EL2_KEY) {
@@ -430,7 +432,7 @@ int KeyManager::UpdateUserAuth(unsigned int user,
     auto item = userEl2Key_[user];
     UserAuth auth = {token, oldSecret};
     if (item->RestoreKey(auth) == false) {
-        LOGE("Restoore key error");
+        LOGE("Restore key error");
         return -EFAULT;
     }
 

@@ -61,11 +61,26 @@ int32_t VolumeCore::GetState()
 
 bool VolumeCore::Marshalling(Parcel &parcel) const
 {
-    parcel.WriteString(id_);
-    parcel.WriteInt32(type_);
-    parcel.WriteString(diskId_);
-    parcel.WriteInt32(state_);
-    parcel.WriteBool(errorFlag_);
+    if (!parcel.WriteString(id_)) {
+        return false;
+    }
+
+    if (!parcel.WriteInt32(type_)) {
+        return false;
+    }
+
+    if (!parcel.WriteString(diskId_)) {
+        return false;
+    }
+
+    if (!parcel.WriteInt32(state_)) {
+        return false;
+    }
+
+    if (!parcel.WriteBool(errorFlag_)) {
+        return false;
+    }
+
     return true;
 }
 

@@ -69,11 +69,26 @@ void VolumeExternal::Reset()
 
 bool VolumeExternal::Marshalling(Parcel &parcel) const
 {
-    VolumeCore::Marshalling(parcel);
-    parcel.WriteInt32(fsType_);
-    parcel.WriteString(fsUuid_);
-    parcel.WriteString(path_);
-    parcel.WriteString(description_);
+    if (!VolumeCore::Marshalling(parcel)) {
+        return false;
+    }
+
+    if (!parcel.WriteInt32(fsType_)) {
+        return false;
+    }
+
+    if (!parcel.WriteString(fsUuid_)) {
+        return false;
+    }
+
+    if (!parcel.WriteString(path_)) {
+        return false;
+    }
+
+    if (parcel.WriteString(description_)) {
+        return false;
+    }
+
     return true;
 }
 

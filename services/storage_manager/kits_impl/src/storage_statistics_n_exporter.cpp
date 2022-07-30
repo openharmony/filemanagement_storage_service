@@ -70,7 +70,6 @@ napi_value GetTotalSizeOfVolume(napi_env env, napi_callback_info info)
         NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
         return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
     }
-    return NVal::CreateUndefined(env).val_;
 }
 
 
@@ -111,7 +110,6 @@ napi_value GetFreeSizeOfVolume(napi_env env, napi_callback_info info)
         NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
         return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
     }
-    return NVal::CreateUndefined(env).val_;
 }
 
 napi_value GetBundleStats(napi_env env, napi_callback_info info)
@@ -154,7 +152,6 @@ napi_value GetBundleStats(napi_env env, napi_callback_info info)
         NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
         return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
     }
-    return NVal::CreateUndefined(env).val_;
 }
 
 napi_value GetCurrentBundleStats(napi_env env, napi_callback_info info)
@@ -189,7 +186,6 @@ napi_value GetCurrentBundleStats(napi_env env, napi_callback_info info)
         NVal cb(env, funcArg[(int)NARG_POS::FIRST]);
         return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
     }
-    return NVal::CreateUndefined(env).val_;
 }
 
 napi_value GetSystemSize(napi_env env, napi_callback_info info)
@@ -220,7 +216,6 @@ napi_value GetSystemSize(napi_env env, napi_callback_info info)
         NVal cb(env, funcArg[(int)NARG_POS::FIRST]);
         return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
     }
-    return NVal::CreateUndefined(env).val_;
 }
 
 napi_value GetUserStorageStats(napi_env env, napi_callback_info info)
@@ -279,7 +274,6 @@ napi_value GetUserStorageStats(napi_env env, napi_callback_info info)
         NVal cb(env, funcArg[(int)NARG_POS::SECOND]);
         return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
     }
-    return NVal::CreateUndefined(env).val_;
 }
 
 napi_value GetTotalSize(napi_env env, napi_callback_info info)
@@ -310,7 +304,6 @@ napi_value GetTotalSize(napi_env env, napi_callback_info info)
         NVal cb(env, funcArg[(int)NARG_POS::FIRST]);
         return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
     }
-    return NVal::CreateUndefined(env).val_;
 }
 
 napi_value GetFreeSize(napi_env env, napi_callback_info info)
@@ -341,7 +334,6 @@ napi_value GetFreeSize(napi_env env, napi_callback_info info)
         NVal cb(env, funcArg[(int)NARG_POS::FIRST]);
         return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
     }
-    return NVal::CreateUndefined(env).val_;
 }
 } // namespace StorageManager
 } // namespace OHOS

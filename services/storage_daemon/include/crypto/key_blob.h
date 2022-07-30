@@ -40,7 +40,7 @@ constexpr uint32_t CRYPTO_AES_NONCE_LEN = 64;
 constexpr uint32_t CRYPTO_AES_256_XTS_KEY_SIZE = 64;
 constexpr uint32_t CRYPTO_KEY_SHIELD_MAX_SIZE = 2048;
 constexpr uint32_t CRYPTO_AES_256_KEY_ENCRYPTED_SIZE = 80;
-constexpr uint32_t CRYPTO_TOKEN_SIZE = 32;
+constexpr uint32_t CRYPTO_TOKEN_SIZE = TOKEN_CHALLENGE_LEN; // 32
 
 using key_serial_t = int;
 constexpr uint32_t CRYPTO_KEY_DESC_SIZE = FSCRYPT_KEY_DESCRIPTOR_SIZE;
@@ -154,8 +154,9 @@ struct KeyContext {
 };
 
 struct UserAuth {
-    std::vector<uint8_t> token;
-    std::vector<uint8_t> secret;
+    // when secure access enabled, token is needed to authenticate the user
+    KeyBlob token;
+    KeyBlob secret;
 };
 } // namespace StorageDaemon
 } // namespace OHOS
