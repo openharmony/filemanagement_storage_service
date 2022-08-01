@@ -26,15 +26,15 @@ int32_t StorageManagerProxy::PrepareAddUser(int32_t userId, uint32_t flags)
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::PrepareAddUser, WriteInterfaceToken failed");
-        return E_IPC_ERROR;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
     if (!data.WriteInt32(userId)) {
         LOGE("StorageManagerProxy::PrepareAddUser, WriteInt32 failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
     if (!data.WriteUint32(flags)) {
         LOGE("StorageManagerProxy::PrepareAddUser, WriteUint32 failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
     int err = SendRequest(PREPARE_ADD_USER, data, reply, option);
     if (err != E_OK) {
@@ -50,15 +50,15 @@ int32_t StorageManagerProxy::RemoveUser(int32_t userId, uint32_t flags)
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::RemoveUser, WriteInterfaceToken failed");
-        return E_IPC_ERROR;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
     if (!data.WriteInt32(userId)) {
         LOGE("StorageManagerProxy::RemoveUser, WriteInt32 failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
     if (!data.WriteUint32(flags)) {
         LOGE("StorageManagerProxy::RemoveUser, WriteUint32 failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
     int err = SendRequest(REMOVE_USER, data, reply, option);
     if (err != E_OK) {
@@ -74,11 +74,11 @@ int32_t StorageManagerProxy::PrepareStartUser(int32_t userId)
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::PrepareStartUser, WriteInterfaceToken failed");
-        return E_IPC_ERROR;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
     if (!data.WriteInt32(userId)) {
         LOGE("StorageManagerProxy::PrepareStartUser, WriteInt32 failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
     int err = SendRequest(PREPARE_START_USER, data, reply, option);
     if (err != E_OK) {
@@ -94,11 +94,11 @@ int32_t StorageManagerProxy::StopUser(int32_t userId)
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::StopUser, WriteInterfaceToken failed");
-        return E_IPC_ERROR;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
     if (!data.WriteInt32(userId)) {
         LOGE("StorageManagerProxy::StopUser, WriteInt32 failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
     int err = SendRequest(STOP_USER, data, reply, option);
     if (err != E_OK) {
@@ -114,15 +114,15 @@ int32_t StorageManagerProxy::GenerateUserKeys(uint32_t userId, uint32_t flags)
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("WriteInterfaceToken failed");
-        return E_IPC_ERROR;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
     if (!data.WriteUint32(userId)) {
         LOGE("Write user ID failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
     if (!data.WriteUint32(flags)) {
         LOGE("Write key flags failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
     int err = SendRequest(CREATE_USER_KEYS, data, reply, option);
     if (err != E_OK) {
@@ -139,11 +139,11 @@ int32_t StorageManagerProxy::DeleteUserKeys(uint32_t userId)
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("WriteInterfaceToken failed");
-        return E_IPC_ERROR;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
     if (!data.WriteUint32(userId)) {
         LOGE("Write user ID failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
     int err = SendRequest(DELETE_USER_KEYS, data, reply, option);
     if (err != E_OK) {
@@ -163,23 +163,23 @@ int32_t StorageManagerProxy::UpdateUserAuth(uint32_t userId,
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("WriteInterfaceToken failed");
-        return E_IPC_ERROR;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
     if (!data.WriteUint32(userId)) {
         LOGE("Write user ID failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
     if (!data.WriteUInt8Vector(token)) {
         LOGE("Write token failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
     if (!data.WriteUInt8Vector(oldSecret)) {
         LOGE("Write oldSecret failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
     if (!data.WriteUInt8Vector(newSecret)) {
         LOGE("Write newSecret failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
 
     int err = SendRequest(UPDATE_USER_AUTH, data, reply, option);
@@ -199,19 +199,19 @@ int32_t StorageManagerProxy::ActiveUserKey(uint32_t userId,
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("WriteInterfaceToken failed");
-        return E_IPC_ERROR;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
     if (!data.WriteUint32(userId)) {
         LOGE("Write user ID failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
     if (!data.WriteUInt8Vector(token)) {
         LOGE("Write token failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
     if (!data.WriteUInt8Vector(secret)) {
         LOGE("Write secret failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
 
     int err = SendRequest(ACTIVE_USER_KEY, data, reply, option);
@@ -229,11 +229,11 @@ int32_t StorageManagerProxy::InactiveUserKey(uint32_t userId)
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("WriteInterfaceToken failed");
-        return E_IPC_ERROR;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
     if (!data.WriteUint32(userId)) {
         LOGE("Write user ID failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
     int err = SendRequest(INACTIVE_USER_KEY, data, reply, option);
     if (err != E_OK) {
@@ -250,11 +250,11 @@ int32_t StorageManagerProxy::UpdateKeyContext(uint32_t userId)
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("WriteInterfaceToken failed");
-        return E_IPC_ERROR;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
     if (!data.WriteUint32(userId)) {
         LOGE("Write user ID failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
     int err = SendRequest(UPDATE_KEY_CONTEXT, data, reply, option);
     if (err != E_OK) {
@@ -271,12 +271,12 @@ int64_t StorageManagerProxy::GetFreeSizeOfVolume(std::string volumeUuid)
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::GetFreeSizeOfVolume, WriteInterfaceToken failed");
-        return E_IPC_ERROR;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
 
     if (!data.WriteString(volumeUuid)) {
         LOGE("StorageManagerProxy::GetFreeSizeOfVolume, WriteString failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
     int err = SendRequest(GET_FREE, data, reply, option);
     if (err != E_OK) {
@@ -292,12 +292,12 @@ int64_t StorageManagerProxy::GetTotalSizeOfVolume(std::string volumeUuid)
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::GetTotalSizeOfVolume, WriteInterfaceToken failed");
-        return E_IPC_ERROR;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
 
     if (!data.WriteString(volumeUuid)) {
         LOGE("StorageManagerProxy::GetTotalSizeOfVolume, WriteString failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
     int err = SendRequest(GET_TOTAL, data, reply, option);
     if (err != E_OK) {
@@ -333,12 +333,12 @@ int32_t StorageManagerProxy::NotifyVolumeCreated(VolumeCore vc)
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::NotifyVolumeCreated, WriteInterfaceToken failed");
-        return E_IPC_ERROR;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
 
     if (!vc.Marshalling(data)) {
         LOGE("StorageManagerProxy::NotifyVolumeCreated, WriteVolumeInfo failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
 
     int err = SendRequest(NOTIFY_VOLUME_CREATED, data, reply, option);
@@ -353,32 +353,32 @@ int32_t StorageManagerProxy::NotifyVolumeMounted(std::string volumeId, int32_t f
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::NotifyVolumeMounted, WriteInterfaceToken failed");
-        return E_IPC_ERROR;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
 
     if (!data.WriteString(volumeId)) {
         LOGE("StorageManagerProxy::NotifyVolumeMounted, WriteString failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
 
     if (!data.WriteInt32(fsType)) {
         LOGE("StorageManagerProxy::NotifyVolumeMounted, WriteInt32 failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
 
     if (!data.WriteString(fsUuid)) {
         LOGE("StorageManagerProxy::NotifyVolumeMounted, WriteString failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
 
     if (!data.WriteString(path)) {
         LOGE("StorageManagerProxy::NotifyVolumeMounted, WriteString failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
 
     if (!data.WriteString(description)) {
         LOGE("StorageManagerProxy::NotifyVolumeMounted, WriteString failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
 
     int err = SendRequest(NOTIFY_VOLUME_MOUNTED, data, reply, option);
@@ -392,12 +392,12 @@ int32_t StorageManagerProxy::NotifyVolumeDestroyed(std::string volumeId)
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::NotifyVolumedestroyed, WriteInterfaceToken failed");
-        return E_IPC_ERROR;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
 
     if (!data.WriteString(volumeId)) {
         LOGE("StorageManagerProxy::NotifyVolumedestroyed, WriteString failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
     int err = SendRequest(NOTIFY_VOLUME_DESTROYED, data, reply, option);
     return err;
@@ -410,12 +410,12 @@ int32_t StorageManagerProxy::Mount(std::string volumeId)
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::Mount, WriteInterfaceToken failed");
-        return E_IPC_ERROR;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
 
     if (!data.WriteString(volumeId)) {
         LOGE("StorageManagerProxy::Mount, WriteString failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
     int err = SendRequest(MOUNT, data, reply, option);
     if (err != E_OK) {
@@ -431,12 +431,12 @@ int32_t StorageManagerProxy::Unmount(std::string volumeId)
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::Unmount, WriteInterfaceToken failed");
-        return E_IPC_ERROR;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
 
     if (!data.WriteString(volumeId)) {
         LOGE("StorageManagerProxy::Unmount, WriteString failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
     int err = SendRequest(UNMOUNT, data, reply, option);
     if (err != E_OK) {
@@ -479,12 +479,12 @@ int32_t StorageManagerProxy::NotifyDiskCreated(Disk disk)
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::NotifyDiskCreate, WriteInterfaceToken failed");
-        return E_IPC_ERROR;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
 
     if (!disk.Marshalling(data)) {
         LOGE("StorageManagerProxy::NotifyDiskCreate, WriteDiskInfo failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
 
     int err = SendRequest(NOTIFY_DISK_CREATED, data, reply, option);
@@ -498,11 +498,11 @@ int32_t StorageManagerProxy::NotifyDiskDestroyed(std::string diskId)
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::NotifyDiskDestroyed, WriteInterfaceToken failed");
-        return E_IPC_ERROR;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
     if (!data.WriteString(diskId)) {
         LOGE("StorageManagerProxy::NotifyDiskDestroyed, WriteString failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
     int err = SendRequest(NOTIFY_DISK_DESTROYED, data, reply, option);
     return err;
@@ -515,15 +515,15 @@ int32_t StorageManagerProxy::Partition(std::string diskId, int32_t type)
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::Partition, WriteInterfaceToken failed");
-        return E_IPC_ERROR;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
     if (!data.WriteString(diskId)) {
         LOGE("StorageManagerProxy::Partition, WriteString failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
     if (!data.WriteInt32(type)) {
         LOGE("StorageManagerProxy::Partition WriteInt32 failed");
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
     int err = SendRequest(PARTITION, data, reply, option);
     if (err != E_OK) {
@@ -566,7 +566,7 @@ int64_t StorageManagerProxy::GetSystemSize()
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::GetSystemSize WriteInterfaceToken failed");
-        return E_IPC_ERROR;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
 
     int err = SendRequest(GET_SYSTEM_SIZE, data, reply, option);
@@ -583,7 +583,7 @@ int64_t StorageManagerProxy::GetTotalSize()
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::GetTotalSize WriteInterfaceToken failed");
-        return E_IPC_ERROR;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
 
     int err = SendRequest(GET_TOTAL_SIZE, data, reply, option);
@@ -600,7 +600,7 @@ int64_t StorageManagerProxy::GetFreeSize()
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::GetFreeSize WriteInterfaceToken failed");
-        return E_IPC_ERROR;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
 
     int err = SendRequest(GET_FREE_SIZE, data, reply, option);
@@ -669,11 +669,11 @@ int32_t StorageManagerProxy::GetVolumeByUuid(std::string fsUuid, VolumeExternal 
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
-        return E_IPC_ERROR;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
 
     if (!data.WriteString(fsUuid)) {
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
 
     int err = SendRequest(GET_VOL_BY_UUID, data, reply, option);
@@ -689,11 +689,11 @@ int32_t StorageManagerProxy::GetVolumeById(std::string volumeId, VolumeExternal 
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
-        return E_IPC_ERROR;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
 
     if (!data.WriteString(volumeId)) {
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
 
     int err = SendRequest(GET_VOL_BY_ID, data, reply, option);
@@ -709,15 +709,15 @@ int32_t StorageManagerProxy::SetVolumeDescription(std::string fsUuid, std::strin
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
-        return E_IPC_ERROR;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
 
     if (!data.WriteString(fsUuid)) {
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
 
     if (!data.WriteString(description)) {
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
 
     int err = SendRequest(SET_VOL_DESC, data, reply, option);
@@ -732,15 +732,15 @@ int32_t StorageManagerProxy::Format(std::string volumeId, std::string fsType)
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
-        return E_IPC_ERROR;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
 
     if (!data.WriteString(volumeId)) {
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
 
     if (!data.WriteString(fsType)) {
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
 
     int err = SendRequest(FORMAT, data, reply, option);
@@ -755,11 +755,11 @@ int32_t StorageManagerProxy::GetDiskById(std::string diskId, Disk &disk)
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
-        return E_IPC_ERROR;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
 
     if (!data.WriteString(diskId)) {
-        return E_IPC_ERROR;
+        return E_WRITE_PARCEL_ERR;
     }
 
     int err = SendRequest(GET_DISK_BY_ID, data, reply, option);
@@ -776,7 +776,7 @@ int32_t StorageManagerProxy::SendRequest(uint32_t code, MessageParcel &data, Mes
     sptr<IRemoteObject> remote = Remote();
     if (remote == nullptr) {
         LOGE("remote is nullptr, code = %{public}d", code);
-        return E_IPC_ERROR;
+        return E_REMOTE_IS_NULLPTR;
     }
 
     int32_t result = remote->SendRequest(code, data, reply, option);

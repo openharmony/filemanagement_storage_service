@@ -165,7 +165,7 @@ int32_t StorageManagerStub::HandlePrepareAddUser(MessageParcel &data, MessagePar
     int err = PrepareAddUser(userId, flags);
     if (!reply.WriteUint32(err)) {
         LOGE("StorageManagerStub::HandlePrepareAddUser call PrepareAddUser failed");
-        return  E_IPC_ERROR;
+        return  E_WRITE_REPLY_ERR;
     }
     return E_OK;
 }
@@ -178,7 +178,7 @@ int32_t StorageManagerStub::HandleRemoveUser(MessageParcel &data, MessageParcel 
     int err = RemoveUser(userId, flags);
     if (!reply.WriteUint32(err)) {
         LOGE("StorageManagerStub::HandleRemoveUser call RemoveUser failed");
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
     return E_OK;
 }
@@ -190,7 +190,7 @@ int32_t StorageManagerStub::HandlePrepareStartUser(MessageParcel &data, MessageP
     int err = PrepareStartUser(userId);
     if (!reply.WriteUint32(err)) {
         LOGE("StorageManagerStub::HandlePrepareStartUser call PrepareStartUser failed");
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
     return E_OK;
 }
@@ -202,7 +202,7 @@ int32_t StorageManagerStub::HandleStopUser(MessageParcel &data, MessageParcel &r
     int err = StopUser(userId);
     if (!reply.WriteUint32(err)) {
         LOGE("StorageManagerStub::HandleStopUser call StopUser failed");
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
     return E_OK;
 }
@@ -217,7 +217,7 @@ int32_t StorageManagerStub::HandleGetTotal(MessageParcel &data, MessageParcel &r
     int64_t totalSize = GetTotalSizeOfVolume(volumeId);
     if (!reply.WriteInt64(totalSize)) {
         LOGE("StorageManagerStub::HandleGetTotal call OnUserDGetTotalSizeOfVolume failed");
-        return  E_IPC_ERROR;
+        return  E_WRITE_REPLY_ERR;
     }
     return E_OK;
 }
@@ -231,7 +231,7 @@ int32_t StorageManagerStub::HandleGetFree(MessageParcel &data, MessageParcel &re
     int64_t freeSize = GetFreeSizeOfVolume(volumeId);
     if (!reply.WriteInt64(freeSize)) {
         LOGE("StorageManagerStub::HandleGetFree call GetFreeSizeOfVolume failed");
-        return  E_IPC_ERROR;
+        return  E_WRITE_REPLY_ERR;
     }
     return E_OK;
 }
@@ -244,7 +244,7 @@ int32_t StorageManagerStub::HandleGetBundleStatus(MessageParcel &data, MessagePa
     std::string pkgName = data.ReadString();
     BundleStats bundleStats = GetBundleStats(pkgName);
     if (!bundleStats.Marshalling(reply)) {
-        return  E_IPC_ERROR;
+        return  E_WRITE_REPLY_ERR;
     }
     return E_OK;
 }
@@ -257,7 +257,7 @@ int32_t StorageManagerStub::HandleGetSystemSize(MessageParcel &data, MessageParc
     int64_t systemSize = GetSystemSize();
     if (!reply.WriteInt64(systemSize)) {
         LOGE("StorageManagerStub::HandleGetFree call GetSystemSize failed");
-        return  E_IPC_ERROR;
+        return  E_WRITE_REPLY_ERR;
     }
     return E_OK;
 }
@@ -270,7 +270,7 @@ int32_t StorageManagerStub::HandleGetTotalSize(MessageParcel &data, MessageParce
     int64_t totalSize = GetTotalSize();
     if (!reply.WriteInt64(totalSize)) {
         LOGE("StorageManagerStub::HandleGetFree call GetTotalSize failed");
-        return  E_IPC_ERROR;
+        return  E_WRITE_REPLY_ERR;
     }
     return E_OK;
 }
@@ -283,7 +283,7 @@ int32_t StorageManagerStub::HandleGetFreeSize(MessageParcel &data, MessageParcel
     int64_t freeSize = GetFreeSize();
     if (!reply.WriteInt64(freeSize)) {
         LOGE("StorageManagerStub::HandleGetFree call GetFreeSize failed");
-        return  E_IPC_ERROR;
+        return  E_WRITE_REPLY_ERR;
     }
     return E_OK;
 }
@@ -295,7 +295,7 @@ int32_t StorageManagerStub::HandleGetCurrUserStorageStats(MessageParcel &data, M
     }
     StorageStats storageStats = GetUserStorageStats();
     if (!storageStats.Marshalling(reply)) {
-        return  E_IPC_ERROR;
+        return  E_WRITE_REPLY_ERR;
     }
     return E_OK;
 }
@@ -308,7 +308,7 @@ int32_t StorageManagerStub::HandleGetUserStorageStats(MessageParcel &data, Messa
     int32_t userId = data.ReadInt32();
     StorageStats storageStats = GetUserStorageStats(userId);
     if (!storageStats.Marshalling(reply)) {
-        return  E_IPC_ERROR;
+        return  E_WRITE_REPLY_ERR;
     }
     return E_OK;
 }
@@ -317,7 +317,7 @@ int32_t StorageManagerStub::HandleGetCurrentBundleStats(MessageParcel &data, Mes
 {
     BundleStats bundleStats = GetCurrentBundleStats();
     if (!bundleStats.Marshalling(reply)) {
-        return  E_IPC_ERROR;
+        return  E_WRITE_REPLY_ERR;
     }
     return E_OK;
 }
@@ -331,16 +331,16 @@ int32_t StorageManagerStub::HandleGetAllVolumes(MessageParcel &data, MessageParc
     if (size == 0) {
         LOGE("StorageManagerStub::No volume.");
         if (!reply.WriteUint32(0)) {
-            return  E_IPC_ERROR;
+            return  E_WRITE_REPLY_ERR;
         }
         return E_OK;
     }
     if (!reply.WriteUint32(ve.size())) {
-        return  E_IPC_ERROR;
+        return  E_WRITE_REPLY_ERR;
     }
     for (uint i = 0; i < size; i++) {
         if (!ve[i].Marshalling(reply)) {
-            return  E_IPC_ERROR;
+            return  E_WRITE_REPLY_ERR;
         }
     }
     return E_OK;
@@ -383,7 +383,7 @@ int32_t StorageManagerStub::HandleMount(MessageParcel &data, MessageParcel &repl
     int err = Mount(volumeId);
     if (!reply.WriteUint32(err)) {
         LOGE("StorageManagerStub::HandleMount call Mount failed");
-        return  E_IPC_ERROR;
+        return  E_WRITE_REPLY_ERR;
     }
     return E_OK;
 }
@@ -397,7 +397,7 @@ int32_t StorageManagerStub::HandleUnmount(MessageParcel &data, MessageParcel &re
     int err = Unmount(volumeId);
     if (!reply.WriteUint32(err)) {
         LOGE("StorageManagerStub::HandleUnmount call Mount failed");
-        return  E_IPC_ERROR;
+        return  E_WRITE_REPLY_ERR;
     }
     return E_OK;
 }
@@ -426,7 +426,7 @@ int32_t StorageManagerStub::HandlePartition(MessageParcel &data, MessageParcel &
     int err = Partition(diskId, type);
     if (!reply.WriteUint32(err)) {
         LOGE("StorageManagerStub::HandlePartition call Partition failed");
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
     return E_OK;
 }
@@ -441,16 +441,16 @@ int32_t StorageManagerStub::HandleGetAllDisks(MessageParcel &data, MessageParcel
     if (size == 0) {
         LOGE("StorageManagerStub::No Disk.");
         if (!reply.WriteUint32(0)) {
-            return  E_IPC_ERROR;
+            return  E_WRITE_REPLY_ERR;
         }
         return E_OK;
     }
     if (!reply.WriteUint32(disks.size())) {
-        return  E_IPC_ERROR;
+        return  E_WRITE_REPLY_ERR;
     }
     for (uint i = 0; i < size; i++) {
         if (!disks[i].Marshalling(reply)) {
-            return  E_IPC_ERROR;
+            return  E_WRITE_REPLY_ERR;
         }
     }
     return E_OK;
@@ -465,11 +465,11 @@ int32_t StorageManagerStub::HandleGetVolumeByUuid(MessageParcel &data, MessagePa
     VolumeExternal vc;
     int err = GetVolumeByUuid(fsUuid, vc);
     if (!vc.Marshalling(reply)) {
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
     if (!reply.WriteUint32(err)) {
         LOGE("StorageManagerStub::HandleGetVolumeByUuid call GetVolumeByUuid failed");
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
     return E_OK;
 }
@@ -483,11 +483,11 @@ int32_t StorageManagerStub::HandleGetVolumeById(MessageParcel &data, MessageParc
     VolumeExternal vc;
     int err = GetVolumeById(volId, vc);
     if (!vc.Marshalling(reply)) {
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
     if (!reply.WriteUint32(err)) {
         LOGE("StorageManagerStub::HandleGetVolumeById call GetVolumeById failed");
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
     return E_OK;
 }
@@ -502,7 +502,7 @@ int32_t StorageManagerStub::HandleSetVolDesc(MessageParcel &data, MessageParcel 
     int err = SetVolumeDescription(fsUuid, desc);
     if (!reply.WriteUint32(err)) {
         LOGE("StorageManagerStub::HandleSetVolDesc call SetVolumeDescription failed");
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
     return E_OK;
 }
@@ -517,7 +517,7 @@ int32_t StorageManagerStub::HandleFormat(MessageParcel &data, MessageParcel &rep
     int err = Format(volId, fsType);
     if (!reply.WriteUint32(err)) {
         LOGE("StorageManagerStub::HandleFormat call Format failed");
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
     return E_OK;
 }
@@ -531,11 +531,11 @@ int32_t StorageManagerStub::HandleGetDiskById(MessageParcel &data, MessageParcel
     Disk disk;
     int err = GetDiskById(volId, disk);
     if (!disk.Marshalling(reply)) {
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
     if (!reply.WriteUint32(err)) {
         LOGE("StorageManagerStub::HandleGetDiskById call GetDiskById failed");
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
     return E_OK;
 }
@@ -547,7 +547,7 @@ int32_t StorageManagerStub::HandleGenerateUserKeys(MessageParcel &data, MessageP
     int32_t err = GenerateUserKeys(userId, flags);
     if (!reply.WriteInt32(err)) {
         LOGE("Write reply error code failed");
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
 
     return E_OK;
@@ -559,7 +559,7 @@ int32_t StorageManagerStub::HandleDeleteUserKeys(MessageParcel &data, MessagePar
     int32_t err = DeleteUserKeys(userId);
     if (!reply.WriteInt32(err)) {
         LOGE("Write reply error code failed");
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
 
     return E_OK;
@@ -577,7 +577,7 @@ int32_t StorageManagerStub::HandleUpdateUserAuth(MessageParcel &data, MessagePar
     int32_t err = UpdateUserAuth(userId, token, oldSecret, newSecret);
     if (!reply.WriteInt32(err)) {
         LOGE("Write reply error code failed");
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
 
     return E_OK;
@@ -594,7 +594,7 @@ int32_t StorageManagerStub::HandleActiveUserKey(MessageParcel &data, MessageParc
     int32_t err = ActiveUserKey(userId, token, secret);
     if (!reply.WriteInt32(err)) {
         LOGE("Write reply error code failed");
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
 
     return E_OK;
@@ -606,7 +606,7 @@ int32_t StorageManagerStub::HandleInactiveUserKey(MessageParcel &data, MessagePa
     int32_t err = InactiveUserKey(userId);
     if (!reply.WriteInt32(err)) {
         LOGE("Write reply error code failed");
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
 
     return E_OK;
@@ -618,7 +618,7 @@ int32_t StorageManagerStub::HandleUpdateKeyContext(MessageParcel &data, MessageP
     int32_t err = UpdateKeyContext(userId);
     if (!reply.WriteInt32(err)) {
         LOGE("Write reply error code failed");
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
 
     return E_OK;

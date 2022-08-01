@@ -55,13 +55,13 @@ int32_t StorageManagerClient::GetClient()
         }
     }
 
-    return storageManager_ == nullptr ? E_IPC_ERROR : E_OK;
+    return storageManager_ == nullptr ? E_SERVICE_IS_NULLPTR : E_OK;
 }
 
 int32_t StorageManagerClient::NotifyDiskCreated(DiskInfo &diskInfo)
 {
     if (GetClient() != E_OK) {
-        return E_IPC_ERROR;
+        return E_SERVICE_IS_NULLPTR;
     }
 
     StorageManager::Disk disk(diskInfo.GetId(), diskInfo.GetDevDSize(),
@@ -75,7 +75,7 @@ int32_t StorageManagerClient::NotifyDiskCreated(DiskInfo &diskInfo)
 int32_t StorageManagerClient::NotifyDiskDestroyed(std::string id)
 {
     if (GetClient() != E_OK) {
-        return E_IPC_ERROR;
+        return E_SERVICE_IS_NULLPTR;
     }
 
     storageManager_->NotifyDiskDestroyed(id);
@@ -86,7 +86,7 @@ int32_t StorageManagerClient::NotifyDiskDestroyed(std::string id)
 int32_t StorageManagerClient::NotifyVolumeCreated(std::shared_ptr<VolumeInfo> info)
 {
     if (GetClient() != E_OK) {
-        return E_IPC_ERROR;
+        return E_SERVICE_IS_NULLPTR;
     }
 
     StorageManager::VolumeCore vc(info->GetVolumeId(), info->GetVolumeType(),
@@ -99,7 +99,7 @@ int32_t StorageManagerClient::NotifyVolumeCreated(std::shared_ptr<VolumeInfo> in
 int32_t StorageManagerClient::NotifyVolumeMounted(std::shared_ptr<VolumeInfo> volumeInfo)
 {
     if (GetClient() != E_OK) {
-        return E_IPC_ERROR;
+        return E_SERVICE_IS_NULLPTR;
     }
 
     std::shared_ptr<ExternalVolumeInfo> info = std::static_pointer_cast<ExternalVolumeInfo>(volumeInfo);
@@ -113,7 +113,7 @@ int32_t StorageManagerClient::NotifyVolumeDestroyed(std::string volId)
 
 {
     if (GetClient() != E_OK) {
-        return E_IPC_ERROR;
+        return E_SERVICE_IS_NULLPTR;
     }
 
     storageManager_->NotifyVolumeDestroyed(volId);
