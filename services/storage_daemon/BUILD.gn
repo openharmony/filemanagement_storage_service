@@ -188,7 +188,7 @@ ohos_shared_library("storage_common_utils") {
 
   sources = [ "./utils/file_utils.cpp" ]
 
-  if (use_librestorecon) {
+  if (storage_service_feature_use_librestorecon) {
     defines += [ "USE_LIBRESTORECON" ]
     include_dirs +=
         [ "//base/security/selinux/interfaces/policycoreutils/include" ]
