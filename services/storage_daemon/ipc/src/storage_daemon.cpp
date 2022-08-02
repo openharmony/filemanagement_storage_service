@@ -79,8 +79,7 @@ int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
 {
     int32_t ret = UserManager::GetInstance()->DestroyUserDirs(userId, flags);
     if (ret != 0) {
-        LOGE("Destroy user %{public}d dirs error", userId);
-        return ret;
+        LOGW("Destroy user %{public}d dirs failed, please check", userId);
     }
     return KeyManager::GetInstance()->DeleteUserKeys(userId);
 }

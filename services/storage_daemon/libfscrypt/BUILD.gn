@@ -66,13 +66,6 @@ ohos_static_library("libfscryptutils_static") {
 
   configs = [ ":fscrypt_utils_config" ]
 
-  deps = [
-    "//base/startup/init/interfaces/innerkits:libbegetutil_static",
-    "//base/startup/init/services/log:init_log",
-    "//base/startup/init/services/param/linux:param_init",
-    "//base/startup/init/services/utils:libinit_utils",
-  ]
-
   subsystem_name = "filemanagement"
   part_name = "storage_service"
   external_deps = [ "c_utils:utils" ]
