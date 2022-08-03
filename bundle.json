@@ -79,7 +79,6 @@
           "//foundation/filemanagement/storage_service/services/storage_daemon/disk/test:storage_daemon_disk_test",
           "//foundation/filemanagement/storage_service/services/storage_daemon/file_sharing/test:file_sharing_test",
           "//foundation/filemanagement/storage_service/services/storage_daemon/ipc/test:storage_daemon_ipc_test",
-          "//foundation/filemanagement/storage_service/services/storage_daemon/netlink/test:storage_daemon_netlink_test",
           "//foundation/filemanagement/storage_service/services/storage_daemon/user/test:storage_daemon_user_test",
           "//foundation/filemanagement/storage_service/services/storage_daemon/utils/test:storage_daemon_utils_test",
           "//foundation/filemanagement/storage_service/services/storage_daemon/volume/test:storage_daemon_volume_test",
