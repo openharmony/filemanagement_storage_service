@@ -158,7 +158,7 @@ int32_t StorageDaemonStub::HandleMount(MessageParcel &data, MessageParcel &reply
 
     int err = Mount(volId, flags);
     if (!reply.WriteInt32(err)) {
-        return  E_IPC_ERROR;
+        return  E_WRITE_REPLY_ERR;
     }
 
     return E_OK;
@@ -170,7 +170,7 @@ int32_t StorageDaemonStub::HandleUMount(MessageParcel &data, MessageParcel &repl
 
     int err = UMount(volId);
     if (!reply.WriteInt32(err)) {
-        return  E_IPC_ERROR;
+        return  E_WRITE_REPLY_ERR;
     }
 
     return E_OK;
@@ -182,7 +182,7 @@ int32_t StorageDaemonStub::HandleCheck(MessageParcel &data, MessageParcel &reply
 
     int err = Check(volId);
     if (!reply.WriteInt32(err)) {
-        return  E_IPC_ERROR;
+        return  E_WRITE_REPLY_ERR;
     }
 
     return E_OK;
@@ -195,7 +195,7 @@ int32_t StorageDaemonStub::HandleFormat(MessageParcel &data, MessageParcel &repl
 
     int err = Format(volId, fsType);
     if (!reply.WriteInt32(err)) {
-        return  E_IPC_ERROR;
+        return  E_WRITE_REPLY_ERR;
     }
 
     return E_OK;
@@ -208,7 +208,7 @@ int32_t StorageDaemonStub::HandlePartition(MessageParcel &data, MessageParcel &r
 
     int err = Partition(volId, type);
     if (!reply.WriteInt32(err)) {
-        return  E_IPC_ERROR;
+        return  E_WRITE_REPLY_ERR;
     }
 
     return E_OK;
@@ -221,7 +221,7 @@ int32_t StorageDaemonStub::HandleSetVolDesc(MessageParcel &data, MessageParcel &
 
     int err = SetVolumeDescription(volId, description);
     if (!reply.WriteInt32(err)) {
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
 
     return E_OK;
@@ -234,7 +234,7 @@ int32_t StorageDaemonStub::HandlePrepareUserDirs(MessageParcel &data, MessagePar
 
     int err = PrepareUserDirs(userId, flags);
     if (!reply.WriteInt32(err)) {
-        return  E_IPC_ERROR;
+        return  E_WRITE_REPLY_ERR;
     }
 
     return E_OK;
@@ -247,7 +247,7 @@ int32_t StorageDaemonStub::HandleDestroyUserDirs(MessageParcel &data, MessagePar
 
     int err = DestroyUserDirs(userId, flags);
     if (!reply.WriteInt32(err)) {
-        return  E_IPC_ERROR;
+        return  E_WRITE_REPLY_ERR;
     }
 
     return E_OK;
@@ -259,7 +259,7 @@ int32_t StorageDaemonStub::HandleStartUser(MessageParcel &data, MessageParcel &r
 
     int32_t err = StartUser(userId);
     if (!reply.WriteInt32(err)) {
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
 
     return E_OK;
@@ -271,7 +271,7 @@ int32_t StorageDaemonStub::HandleStopUser(MessageParcel &data, MessageParcel &re
 
     int32_t err = StopUser(userId);
     if (!reply.WriteInt32(err)) {
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
 
     return E_OK;
@@ -281,7 +281,7 @@ int32_t StorageDaemonStub::HandleInitGlobalKey(MessageParcel &data, MessageParce
 {
     int err = InitGlobalKey();
     if (!reply.WriteInt32(err)) {
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
 
     return E_OK;
@@ -291,7 +291,7 @@ int32_t StorageDaemonStub::HandleInitGlobalUserKeys(MessageParcel &data, Message
 {
     int err = InitGlobalUserKeys();
     if (!reply.WriteInt32(err)) {
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
 
     return E_OK;
@@ -304,7 +304,7 @@ int32_t StorageDaemonStub::HandleGenerateUserKeys(MessageParcel &data, MessagePa
 
     int err = GenerateUserKeys(userId, flags);
     if (!reply.WriteInt32(err)) {
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
 
     return E_OK;
@@ -316,7 +316,7 @@ int32_t StorageDaemonStub::HandleDeleteUserKeys(MessageParcel &data, MessageParc
 
     int err = DeleteUserKeys(userId);
     if (!reply.WriteInt32(err)) {
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
 
     return E_OK;
@@ -333,7 +333,7 @@ int32_t StorageDaemonStub::HandleUpdateUserAuth(MessageParcel &data, MessageParc
 
     int err = UpdateUserAuth(userId, token, oldSecret, newSecret);
     if (!reply.WriteInt32(err)) {
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
 
     return E_OK;
@@ -349,7 +349,7 @@ int32_t StorageDaemonStub::HandleActiveUserKey(MessageParcel &data, MessageParce
 
     int err = ActiveUserKey(userId, token, secret);
     if (!reply.WriteInt32(err)) {
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
 
     return E_OK;
@@ -361,7 +361,7 @@ int32_t StorageDaemonStub::HandleInactiveUserKey(MessageParcel &data, MessagePar
 
     int err = InactiveUserKey(userId);
     if (!reply.WriteInt32(err)) {
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
 
     return E_OK;
@@ -372,7 +372,7 @@ int32_t StorageDaemonStub::HandleUpdateKeyContext(MessageParcel &data, MessagePa
     uint32_t userId = data.ReadUint32();
     int err = UpdateKeyContext(userId);
     if (!reply.WriteInt32(err)) {
-        return E_IPC_ERROR;
+        return E_WRITE_REPLY_ERR;
     }
 
     return E_OK;

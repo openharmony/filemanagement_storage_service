@@ -27,7 +27,7 @@ bool BundleStats::Marshalling(Parcel &parcel) const
         return false;
     }
 
-    if (parcel.WriteInt64(dataSize_)) {
+    if (!parcel.WriteInt64(dataSize_)) {
         return false;
     }
 

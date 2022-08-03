@@ -55,6 +55,7 @@ public:
 
 private:
     static inline BrokerDelegator<StorageDaemonProxy> delegator_;
+    int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);
 };
 } // StorageDaemon
 } // OHOS

@@ -104,12 +104,21 @@ public:
         return result;
     }
 
-    virtual void NotifyVolumeCreated(VolumeCore vc) override {}
+    virtual int32_t NotifyVolumeCreated(VolumeCore vc) override
+    {
+        return E_OK;
+    }
 
-    virtual void NotifyVolumeMounted(std::string volumeId, int fsType, std::string fsUuid,
-                                     std::string path, std::string description) override {}
+    virtual int32_t NotifyVolumeMounted(std::string volumeId, int fsType, std::string fsUuid,
+        std::string path, std::string description) override
+    {
+        return E_OK;
+    }
 
-    virtual void NotifyVolumeDestroyed(std::string volumeId) override {}
+    virtual int32_t NotifyVolumeDestroyed(std::string volumeId) override
+    {
+        return E_OK;
+    }
 
     virtual int32_t Mount(std::string volumeId) override
     {
@@ -127,9 +136,15 @@ public:
         return result;
     }
 
-    virtual void NotifyDiskCreated(Disk disk) override {}
+    virtual int32_t NotifyDiskCreated(Disk disk) override
+    {
+        return E_OK;
+    }
 
-    virtual void NotifyDiskDestroyed(std::string diskId) override {}
+    virtual int32_t NotifyDiskDestroyed(std::string diskId) override
+    {
+        return E_OK;
+    }
 
     virtual int32_t Partition(std::string diskId, int32_t type) override
     {

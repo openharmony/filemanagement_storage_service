@@ -37,17 +37,17 @@ int32_t StorageManagerConnect::Connect()
     auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (sam == nullptr) {
         LOGE("StorageManagerConnect::Connect samgr == nullptr");
-        return E_IPC_ERROR;
+        return E_SA_IS_NULLPTR;
     }
     auto object = sam->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     if (object == nullptr) {
         LOGE("StorageManagerConnect::Connect object == nullptr");
-        return E_IPC_ERROR;
+        return E_REMOTE_IS_NULLPTR;
     }
     storageManager_ = iface_cast<StorageManager::IStorageManager>(object);
     if (storageManager_ == nullptr) {
         LOGE("StorageManagerConnect::Connect service == nullptr");
-        return E_IPC_ERROR;
+        return E_SERVICE_IS_NULLPTR;
     }
     LOGI("StorageManagerConnect::Connect end");
     return E_OK;
@@ -85,7 +85,7 @@ bool StorageManagerConnect::Mount(std::string volumeId)
 {
     if (Connect() != E_OK) {
         LOGE("StorageManagerConnect::Mount:Connect error");
-        return E_IPC_ERROR;
+        return false;
     }
     if (storageManager_->Mount(volumeId) == E_OK) {
         LOGE("StorageManagerConnect::Mount:success");
@@ -98,7 +98,7 @@ bool StorageManagerConnect::Unmount(std::string volumeId)
 {
     if (Connect() != E_OK) {
         LOGE("StorageManagerConnect::Unmount:Connect error");
-        return E_IPC_ERROR;
+        return false;
     }
     if (storageManager_->Unmount(volumeId) == E_OK) {
         LOGE("StorageManagerConnect::Unmount:success");
@@ -206,7 +206,7 @@ bool StorageManagerConnect::SetVolumeDescription(std::string uuid, std::string d
 {
     if (Connect() != E_OK) {
         LOGE("StorageManagerConnect::SetVolumeDescription:Connect error");
-        return E_IPC_ERROR;
+        return false;
     }
     if (storageManager_->SetVolumeDescription(uuid, description) == E_OK) {
         LOGE("StorageManagerConnect::SetVolumeDescription:success");
@@ -219,7 +219,7 @@ bool StorageManagerConnect::Format(std::string volumeId, std::string fsType)
 {
     if (Connect() != E_OK) {
         LOGE("StorageManagerConnect::Format:Connect error");
-        return E_IPC_ERROR;
+        return false;
     }
     if (storageManager_->Format(volumeId, fsType) == E_OK) {
         LOGE("StorageManagerConnect::Format:success");
@@ -232,7 +232,7 @@ bool StorageManagerConnect::Partition(std::string diskId, int32_t type)
 {
     if (Connect() != E_OK) {
         LOGE("StorageManagerConnect::Partition:Connect error");
-        return E_IPC_ERROR;
+        return false;
     }
     if (storageManager_->Partition(diskId, type) == E_OK) {
         LOGE("StorageManagerConnect::Partition:success");

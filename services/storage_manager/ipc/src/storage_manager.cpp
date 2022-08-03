@@ -141,23 +141,26 @@ BundleStats StorageManager::GetCurrentBundleStats()
     return result;
 }
 
-void StorageManager::NotifyVolumeCreated(VolumeCore vc)
+int32_t StorageManager::NotifyVolumeCreated(VolumeCore vc)
 {
     LOGI("StorageManger::NotifyVolumeCreated start, volumeId: %{public}s", vc.GetId().c_str());
     DelayedSingleton<VolumeManagerService>::GetInstance()->OnVolumeCreated(vc);
+    return E_OK;
 }
 
-void StorageManager::NotifyVolumeMounted(std::string volumeId, int32_t fsType, std::string fsUuid,
+int32_t StorageManager::NotifyVolumeMounted(std::string volumeId, int32_t fsType, std::string fsUuid,
     std::string path, std::string description)
 {
     LOGI("StorageManger::NotifyVolumeMounted start");
     DelayedSingleton<VolumeManagerService>::GetInstance()->OnVolumeMounted(volumeId, fsType, fsUuid, path, description);
+    return E_OK;
 }
 
-void StorageManager::NotifyVolumeDestroyed(std::string volumeId)
+int32_t StorageManager::NotifyVolumeDestroyed(std::string volumeId)
 {
     LOGI("StorageManger::NotifyVolumeDestroyed start");
     DelayedSingleton<VolumeManagerService>::GetInstance()->OnVolumeDestroyed(volumeId);
+    return E_OK;
 }
 
 int32_t StorageManager::Mount(std::string volumeId)
@@ -181,18 +184,20 @@ std::vector<VolumeExternal> StorageManager::GetAllVolumes()
     return result;
 }
 
-void StorageManager::NotifyDiskCreated(Disk disk)
+int32_t StorageManager::NotifyDiskCreated(Disk disk)
 {
     LOGI("StorageManager::NotifyDiskCreated start, diskId: %{public}s", disk.GetDiskId().c_str());
     std::shared_ptr<DiskManagerService> diskManager = DelayedSingleton<DiskManagerService>::GetInstance();
     diskManager->OnDiskCreated(disk);
+    return E_OK;
 }
 
-void StorageManager::NotifyDiskDestroyed(std::string diskId)
+int32_t StorageManager::NotifyDiskDestroyed(std::string diskId)
 {
     LOGI("StorageManager::NotifyDiskDestroyed start, diskId: %{public}s", diskId.c_str());
     std::shared_ptr<DiskManagerService> diskManager = DelayedSingleton<DiskManagerService>::GetInstance();
     diskManager->OnDiskDestroyed(diskId);
+    return E_OK;
 }
 
 int32_t StorageManager::Partition(std::string diskId, int32_t type)

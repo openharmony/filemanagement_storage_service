@@ -85,7 +85,7 @@ bool VolumeExternal::Marshalling(Parcel &parcel) const
         return false;
     }
 
-    if (parcel.WriteString(description_)) {
+    if (!parcel.WriteString(description_)) {
         return false;
     }
 

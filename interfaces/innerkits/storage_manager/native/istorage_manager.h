@@ -40,15 +40,15 @@ public:
     virtual StorageStats GetUserStorageStats() = 0;
     virtual StorageStats GetUserStorageStats(int32_t userId) = 0;
     virtual BundleStats GetCurrentBundleStats() = 0;
-    virtual void NotifyVolumeCreated(VolumeCore vc) = 0;
-    virtual void NotifyVolumeMounted(std::string volumeId, int fsType, std::string fsUuid,
+    virtual int32_t NotifyVolumeCreated(VolumeCore vc) = 0;
+    virtual int32_t NotifyVolumeMounted(std::string volumeId, int fsType, std::string fsUuid,
                                      std::string path, std::string description) = 0;
-    virtual void NotifyVolumeDestroyed(std::string volumeId) = 0;
+    virtual int32_t NotifyVolumeDestroyed(std::string volumeId) = 0;
     virtual int32_t Mount(std::string volumeId) = 0;
     virtual int32_t Unmount(std::string volumeId) = 0;
     virtual std::vector<VolumeExternal> GetAllVolumes() = 0;
-    virtual void NotifyDiskCreated(Disk disk) = 0;
-    virtual void NotifyDiskDestroyed(std::string diskId) = 0;
+    virtual int32_t NotifyDiskCreated(Disk disk) = 0;
+    virtual int32_t NotifyDiskDestroyed(std::string diskId) = 0;
     virtual int32_t Partition(std::string diskId, int32_t type) = 0;
     virtual std::vector<Disk> GetAllDisks() = 0;
     virtual int32_t GetVolumeByUuid(std::string fsUuid, VolumeExternal &vc) = 0;
