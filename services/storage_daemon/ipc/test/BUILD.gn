@@ -30,7 +30,7 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/utils",
     "$ROOT_DIR/../storage_manager/include",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
-    "//foundation/distributedschedule/safwk/interfaces/innerkits/safwk",
+    "//foundation/systemabilitymgr/safwk/interfaces/innerkits/safwk",
     "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
     "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
     "//foundation/filemanagement/storage_service/services/common/include",
@@ -68,7 +68,7 @@ ohos_unittest("storage_daemon_test") {
     "hiviewdfx_hilog_native:libhilog",
     "init:libbegetutil",
     "ipc:ipc_core",
-    "samgr_standard:samgr_proxy",
+    "samgr:samgr_proxy",
   ]
 }
 
@@ -101,7 +101,7 @@ ohos_unittest("storage_daemon_proxy_test") {
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
     "safwk:system_ability_fwk",
-    "samgr_standard:samgr_proxy",
+    "samgr:samgr_proxy",
   ]
 }
 
@@ -144,7 +144,7 @@ ohos_unittest("storage_daemon_stub_test") {
     "init:libbegetutil",
     "ipc:ipc_core",
     "safwk:system_ability_fwk",
-    "samgr_standard:samgr_proxy",
+    "samgr:samgr_proxy",
   ]
 }
 
