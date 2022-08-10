@@ -478,9 +478,9 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyVolumeCreated_0000
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<IStorageManager>(remote);
-    std::string volumeId = "vol-1-27";
+    std::string volumeId = "vol-1-16";
     int32_t fsType = 1;
-    std::string diskId = "disk-1-27";
+    std::string diskId = "disk-1-17";
     VolumeCore vc(volumeId, fsType, diskId);
     proxy->NotifyVolumeCreated(vc);
     proxy->NotifyVolumeDestroyed(volumeId);
