@@ -475,11 +475,15 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetBundleStats_0001, tes
 HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyVolumeCreated_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_NotifyVolumeCreated_0000";
-    VolumeCore vc;
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<IStorageManager>(remote);
+    std::string volumeId = "vol-1-27";
+    int32_t fsType = 1;
+    std::string diskId = "disk-1-27";
+    VolumeCore vc(volumeId, fsType, diskId);
     proxy->NotifyVolumeCreated(vc);
+    proxy->NotifyVolumeDestroyed(volumeId);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_NotifyVolumeCreated_0000";
 }
 
@@ -863,6 +867,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetVolumeById_0000, test
     VolumeExternal ve;
     int64_t result = proxy->GetVolumeById(volumeId, ve);
     EXPECT_EQ(result, E_PERMISSION_DENIED);
+    proxy->NotifyVolumeDestroyed(volumeId);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetVolumeById_0000";
 }
 
