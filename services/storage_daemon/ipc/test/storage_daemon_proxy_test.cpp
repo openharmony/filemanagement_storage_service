@@ -170,5 +170,81 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_SetVolumeDescription_001
 
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_SetVolumeDescription_001 end";
 }
+
+/**
+ * @tc.name: StorageDaemonProxyTest_InitGlobalKey_001
+ * @tc.desc: Verify the InitGlobalKey function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_InitGlobalKey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_InitGlobalKey_001 start";
+
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
+    int32_t ret = proxy_->InitGlobalKey();
+    ASSERT_TRUE(ret == E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_InitGlobalKey_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProxyTest_InitGlobalUserKeys_001
+ * @tc.desc: Verify the InitGlobalUserKeys function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_InitGlobalUserKeys_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_InitGlobalUserKeys_001 start";
+
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
+    int32_t ret = proxy_->InitGlobalUserKeys();
+    ASSERT_TRUE(ret == E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_InitGlobalUserKeys_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProxyTest_GenerateUserKeys_001
+ * @tc.desc: Verify the GenerateUserKeys function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_GenerateUserKeys_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_GenerateUserKeys_001 start";
+
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
+    int32_t ret = proxy_->GenerateUserKeys(USER_ID1, IStorageDaemon::CRYPTO_FLAG_EL1);
+    ASSERT_TRUE(ret == E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_GenerateUserKeys_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProxyTest_InactiveUserKey_001
+ * @tc.desc: Verify the InactiveUserKey function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_InactiveUserKey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_InactiveUserKey_001 start";
+
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
+    int32_t ret = proxy_->InactiveUserKey(USER_ID1);
+    ASSERT_TRUE(ret == E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_InactiveUserKey_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS

@@ -94,6 +94,7 @@ ohos_unittest("volume_manager_test") {
 
   sources = [
     "$ROOT_DIR/storage_daemon/ipc/src/storage_manager_client.cpp",
+    "$ROOT_DIR/storage_daemon/utils/file_utils.cpp",
     "$ROOT_DIR/storage_daemon/utils/string_utils.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/external_volume_info.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/process.cpp",

@@ -207,5 +207,74 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoSetVol
     EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoSetVolDesc_001 end";
 }
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_GetFsType_001
+ * @tc.desc: Verify the GetFsType function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetFsType_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetFsType_001 start";
+
+    ExternalVolumeInfo *evi = new ExternalVolumeInfo();
+    auto ret = evi->GetFsType();
+    GTEST_LOG_(INFO) << ret;
+    EXPECT_TRUE(ret == E_ERR);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetFsType_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_GetFsUuid_001
+ * @tc.desc: Verify the GetFsUuid function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetFsUuid_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetFsUuid_001 start";
+    
+    ExternalVolumeInfo *evi = new ExternalVolumeInfo();
+    std::string ret = evi->GetFsUuid();
+    GTEST_LOG_(INFO) << ret;
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetFsUuid_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_GetFsLabel_001
+ * @tc.desc: Verify the GetFsLabel function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetFsLabel_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetFsLabel_001 start";
+    
+    ExternalVolumeInfo *evi = new ExternalVolumeInfo();
+    std::string ret = evi->GetFsLabel();
+    GTEST_LOG_(INFO) << ret;
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetFsLabel_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_GetMountPath_001
+ * @tc.desc: Verify the GetMountPath function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetMountPath_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetMountPath_001 start";
+    
+    ExternalVolumeInfo *evi = new ExternalVolumeInfo();
+    std::string ret = evi->GetMountPath();
+    GTEST_LOG_(INFO) << ret;
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetMountPath_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS
