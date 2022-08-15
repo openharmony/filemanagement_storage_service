@@ -56,10 +56,22 @@ sptr<IStorageDaemon> StorageDaemonClient::GetStorageDaemonProxy(void)
 bool StorageDaemonClient::CheckServiceStatus(uint32_t serviceFlags)
 {
     LOGI("CheckServiceStatus start");
+
     auto samgr = OHOS::SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (samgr == nullptr) {
-        LOGE("samgr empty error");
-        return false;
+        LOGW("samgr empty, retry");
+        for (uint32_t i = 0; i < CHECK_SERVICE_TIMES; i++) {
+            samgr = OHOS::SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+            if (samgr != nullptr) {
+                break;
+            }
+            LOGI("check samgr %{public}u times", i);
+            std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_TIME_PRE_CHECK));
+        }
+        if (samgr == nullptr) {
+            LOGE("samgr empty error");
+            return false;
+        }
     }
 
     bool exist = false;
