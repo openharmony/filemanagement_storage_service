@@ -103,7 +103,7 @@ int32_t NetlinkListener::ReadMsg(int32_t fd_count, struct pollfd ufds[2])
         }
 
         if (ufds[i].fd == socketPipe_[0]) {
-            int32_t msg;
+            int32_t msg = 0;
             if (read(socketPipe_[0], &msg, 1) < 0) {
                 LOGE("Read socket pipe failed");
                 return E_ERR;
