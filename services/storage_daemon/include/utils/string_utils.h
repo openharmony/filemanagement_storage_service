@@ -28,7 +28,8 @@ inline bool IsEndWith(const std::string &str, const std::string &end)
 }
 
 std::vector<std::string> SplitLine(std::string &line, std::string &token);
-}
-}
-
+bool WriteFileSync(const char *path, const void *data, size_t size);
+bool SaveStringToFileSync(const std::string &path, const std::string &data);
+} // namespace StorageDaemon
+} // namespace OHOS
 #endif // STORAGE_DAEMON_UTILS_STRING_UTILS_H
