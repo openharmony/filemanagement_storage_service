@@ -157,7 +157,7 @@ bool BaseKey::StoreKey(const UserAuth &auth)
         auto candidate = GetNextCandidateDir();
         LOGD("rename %{public}s to %{public}s", pathTemp.c_str(), candidate.c_str());
         if (rename(pathTemp.c_str(), candidate.c_str()) == 0) {
-            sync();
+            SyncKeyDir();
             return true;
         }
         LOGE("rename fail return %{public}d, cleanup the temp dir", errno);
@@ -165,7 +165,7 @@ bool BaseKey::StoreKey(const UserAuth &auth)
         LOGE("DoStoreKey fail, cleanup the temp dir");
     }
     OHOS::ForceRemoveDirectory(pathTemp);
-    sync();
+    SyncKeyDir();
     return false;
 }
 
@@ -246,7 +246,7 @@ bool BaseKey::UpdateKey(const std::string &keypath)
                 LOGI("restore the latest_backup success");
             }
         }
-        sync();
+        SyncKeyDir();
         return false;
     }
     LOGD("rename candidate %{public}s to latest success", candidate.c_str());
@@ -260,7 +260,7 @@ bool BaseKey::UpdateKey(const std::string &keypath)
         }
     }
 
-    sync();
+    SyncKeyDir();
     return true;
 }
 
@@ -358,6 +358,21 @@ bool BaseKey::ClearKey(const std::string &mnt)
 
     return OHOS::ForceRemoveDirectory(dir_);
     // use F2FS_IOC_SEC_TRIM_FILE
+}
+
+void BaseKey::SyncKeyDir() const
+{
+    int fd = open(dir_.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+    if (fd < 0) {
+        LOGE("open %{private}s failed, errno %{public}d", dir_.c_str(), errno);
+        sync();
+        return;
+    }
+    if (syncfs(fd) != 0) {
+        LOGE("syncfs %{private}s failed, errno %{public}d", dir_.c_str(), errno);
+        sync();
+    }
+    close(fd);
 }
 } // namespace StorageDaemon
 } // namespace OHOS

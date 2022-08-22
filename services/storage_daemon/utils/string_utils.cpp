@@ -83,7 +83,7 @@ std::vector<std::string> SplitLine(std::string &line, std::string &token)
     return result;
 }
 
-bool WriteFileSync(const char *path, const void *data, size_t size)
+bool WriteFileSync(const char *path, const uint8_t *data, size_t size)
 {
     int fd = open(path, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
     if (fd == -1) {
@@ -98,12 +98,16 @@ bool WriteFileSync(const char *path, const void *data, size_t size)
         return false;
     }
     if (static_cast<size_t>(len) != size) {
-        LOGE("write return len %ld, not equal to content length %zu", len, size);
+        LOGE("write return len %{public}ld, not equal to content length %{public}zu", len, size);
         close(fd);
         return false;
     }
 
-    fsync(fd);
+    if (fsync(fd) != 0) {
+        LOGE("fsync %{public}s failed, errno %{public}d", path, errno);
+        close(fd);
+        return false;
+    }
     close(fd);
     return true;
 }
@@ -114,7 +118,7 @@ bool SaveStringToFileSync(const std::string &path, const std::string &data)
         return false;
     }
     LOGD("enter %{public}s, size=%{public}zu", path.c_str(), data.length());
-    return WriteFileSync(path.c_str(), data.c_str(), data.size());
+    return WriteFileSync(path.c_str(), reinterpret_cast<const uint8_t *>(data.c_str()), data.size());
 }
 } // namespace StorageDaemon
 } // namespace OHOS
