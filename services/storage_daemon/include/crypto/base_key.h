@@ -57,6 +57,7 @@ private:
     int GetCandidateVersion() const;
     std::string GetCandidateDir() const;
     std::string GetNextCandidateDir() const;
+    void SyncKeyDir() const;
 
     KeyContext keyContext_ {};
     uint8_t keyLen_ {};

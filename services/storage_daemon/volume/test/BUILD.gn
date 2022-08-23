@@ -27,7 +27,6 @@ ohos_unittest("external_volume_info_test") {
   ]
 
   sources = [
-    "$ROOT_DIR/storage_daemon/utils/string_utils.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/external_volume_info.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/process.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/volume_info.cpp",
@@ -60,13 +59,13 @@ ohos_unittest("volume_info_test") {
   ]
 
   sources = [
-    "$ROOT_DIR/storage_daemon/utils/string_utils.cpp",
     "$ROOT_DIR/storage_daemon/utils/test/common/help_utils.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/volume_info.cpp",
     "$ROOT_DIR/storage_daemon/volume/test/volume_info_test.cpp",
   ]
 
   deps = [
+    "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
     "//third_party/googletest:gmock_main",
     "//third_party/googletest:gtest_main",
   ]
@@ -94,8 +93,6 @@ ohos_unittest("volume_manager_test") {
 
   sources = [
     "$ROOT_DIR/storage_daemon/ipc/src/storage_manager_client.cpp",
-    "$ROOT_DIR/storage_daemon/utils/file_utils.cpp",
-    "$ROOT_DIR/storage_daemon/utils/string_utils.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/external_volume_info.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/process.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/volume_info.cpp",
@@ -105,6 +102,7 @@ ohos_unittest("volume_manager_test") {
   ]
 
   deps = [
+    "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
     "//third_party/googletest:gmock_main",
     "//third_party/googletest:gtest_main",
   ]

@@ -72,7 +72,6 @@ ohos_executable("storage_daemon") {
     "user/src/user_manager.cpp",
     "utils/disk_utils.cpp",
     "utils/mount_argument_utils.cpp",
-    "utils/string_utils.cpp",
     "volume/src/external_volume_info.cpp",
     "volume/src/process.cpp",
     "volume/src/volume_info.cpp",
@@ -186,7 +185,10 @@ ohos_shared_library("storage_common_utils") {
     "LOG_DOMAIN = 0xD004301",
   ]
 
-  sources = [ "./utils/file_utils.cpp" ]
+  sources = [
+    "./utils/file_utils.cpp",
+    "./utils/string_utils.cpp",
+  ]
 
   if (storage_service_feature_use_librestorecon) {
     defines += [ "USE_LIBRESTORECON" ]
