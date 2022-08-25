@@ -22,6 +22,7 @@
 #include "fscrypt_key_v1.h"
 #include "fscrypt_key_v2.h"
 #include "key_blob.h"
+#include "key_manager.h"
 #include "libfscrypt/fscrypt_control.h"
 #include "libfscrypt/fscrypt_utils.h"
 #include "libfscrypt/key_control.h"
@@ -41,6 +42,9 @@ const std::string TEST_KEYDIR_VERSION2 = "/version_2";
 const std::string TEST_KEYDIR_LATEST = "/latest";
 const std::string TEST_KEYDIR_LATEST_BACKUP = "/latest_bak";
 const std::string TEST_POLICY = "/data/test/policy";
+const std::string USER_KEY_DIR = "/data/service/el1/public/storage_daemon/sd";
+const std::string USER_EL1_DIR = USER_KEY_DIR + "/el1";
+const std::string USER_EL2_DIR = USER_KEY_DIR + "/el2";
 FscryptKeyV1 g_testKeyV1 {TEST_KEYPATH};
 FscryptKeyV2 g_testKeyV2 {TEST_KEYPATH};
 }
@@ -592,4 +596,43 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_padding_4, TestSize.L
 
     EXPECT_TRUE(g_testKeyV2.ClearKey());
 }
+
+/**
+ * @tc.name: key_manager_generate_delete_user_keys
+ * @tc.desc: Verify the KeyManager GenerateUserKeys and DeleteUserKeys
+ * @tc.type: FUNC
+ * @tc.require: SR000H0CM9
+ */
+HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys, TestSize.Level1)
+{
+    MkDirRecurse(USER_EL1_DIR, S_IRWXU);
+    MkDirRecurse(USER_EL2_DIR, S_IRWXU);
+    constexpr uint32_t USER_ID_TEST = 800;
+    EXPECT_EQ(0, KeyManager::GetInstance()->GenerateUserKeys(USER_ID_TEST, 0));
+    EXPECT_EQ(0, KeyManager::GetInstance()->DeleteUserKeys(USER_ID_TEST));
+}
 #endif
+
+/**
+ * @tc.name: fscrypt_key_secure_access_control
+ * @tc.desc: Verify the secure access when user have pin code.
+ * @tc.type: FUNC
+ * @tc.require: SR000H0CLT
+ */
+HWTEST_F(CryptoKeyTest, fscrypt_key_secure_access_control, TestSize.Level1)
+{
+    g_testKeyV1.ClearKey();
+    EXPECT_TRUE(g_testKeyV1.InitKey());
+    EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
+
+    std::string token = "bad_token";
+    std::string secret = "bad_secret";
+    std::vector<uint8_t> badToken(token.begin(), token.end());
+    std::vector<uint8_t> badSecret(secret.begin(), secret.end());
+    UserAuth badUserAuth {
+        .token = badToken,
+        .secret = badSecret
+    };
+    EXPECT_FALSE(g_testKeyV1.RestoreKey(badUserAuth));
+    EXPECT_TRUE(g_testKeyV1.ClearKey());
+}
