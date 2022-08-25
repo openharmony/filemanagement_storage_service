@@ -15,13 +15,17 @@
 
 #include "volume/volume_info.h"
 
+#include <sys/mount.h>
+
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/string_utils.h"
+#include "parameter.h"
 
 using namespace std;
 namespace OHOS {
 namespace StorageDaemon {
+const int32_t TRUE_LEN = 5;
 int32_t VolumeInfo::Create(const std::string volId, const std::string diskId, dev_t device)
 {
     id_ = volId;
@@ -30,6 +34,16 @@ int32_t VolumeInfo::Create(const std::string volId, const std::string diskId, de
     mountState_ = UNMOUNTED;
     mountFlags_ = 0;
     userIdOwner_ = 0;
+
+    std::string key = "usb.readonly";
+    int handle = static_cast<int>(FindParameter(key.c_str()));
+    if (handle != -1) {
+        char rdOnlyEnable[255] = {"false"};
+        auto res = GetParameterValue(handle, rdOnlyEnable, 255);
+        if (res >= 0 && strncmp(rdOnlyEnable, "true", TRUE_LEN) == 0) {
+            mountFlags_ |= MS_RDONLY;
+        }
+    }
 
     int32_t err = DoCreate(device);
     if (err) {
@@ -90,7 +104,7 @@ int32_t VolumeInfo::Mount(uint32_t flags)
         return E_VOL_STATE;
     }
 
-    mountFlags_ = flags;
+    mountFlags_ |= flags;
     err = DoMount(mountFlags_);
     if (err) {
         mountState_ = UNMOUNTED;

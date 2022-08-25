@@ -149,7 +149,6 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
     ret = ReadMetadata();
     if (ret) {
         LOGE("External volume ReadMetadata failed.");
-        remove(devPath_.c_str());
         return E_ERR;
     }
     mountPath_ = StringPrintf(mountPathDir_.c_str(), fsUuid_.c_str());
@@ -175,16 +174,22 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
             TravelChmod(mountPath_, mode);
         }
     } else if (fsType_ == "ntfs") {
+        if (mountFlags & MS_RDONLY) {
+            mountData = StringPrintf("ro,uid=%d,gid=%d,dmask=0007,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
+        } else {
+            mountData = StringPrintf("rw,uid=%d,gid=%d,dmask=0007,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
+        }
         std::vector<std::string> cmd = {
             "mount.ntfs",
             devPath_,
             mountPath_,
             "-o",
-            "rw,uid=1006,gid=1006,dmask=0007,fmask=0007"
+            mountData.c_str()
         };
         ret = ForkExec(cmd);
     } else {
-        ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType_.c_str(), MS_MGC_VAL, mountData.c_str());
+        mountFlags |= MS_MGC_VAL;
+        ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType_.c_str(), mountFlags, mountData.c_str());
     }
 
     if (ret) {
