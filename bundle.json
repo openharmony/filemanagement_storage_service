@@ -76,6 +76,7 @@
             }
       ],
       "test": [
+          "//foundation/filemanagement/storage_service/services/storage_daemon/crypto/test:crypto_test",
           "//foundation/filemanagement/storage_service/services/storage_daemon/disk/test:storage_daemon_disk_test",
           "//foundation/filemanagement/storage_service/services/storage_daemon/file_sharing/test:file_sharing_test",
           "//foundation/filemanagement/storage_service/services/storage_daemon/ipc/test:storage_daemon_ipc_test",
