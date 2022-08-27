@@ -18,6 +18,7 @@
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
+#include <fcntl.h>
 #include <vector>
 #include <unistd.h>
 
