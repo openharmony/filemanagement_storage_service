@@ -13,10 +13,6 @@
  * limitations under the License.
  */
 #include <gtest/gtest.h>
-#include "gtest/gtest-message.h"
-#include "gtest/gtest-test-part.h"
-#include "gtest/hwext/gtest-ext.h"
-#include "gtest/hwext/gtest-tag.h"
 #include "file_sharing/acl.h"
 
 using namespace testing::ext;
@@ -199,5 +195,64 @@ HWTEST_F(AclTest, acl_insert_test, TestSize.Level1)
               .id = ENTRIES_MAX_NUM, }
             );
     EXPECT_TRUE(rc != 0);
+}
+
+/**
+ * @tc.name: acl_serialize_test
+ * @tc.desc: Verify that Acl::Serialize/DeSerialize() works as expected.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09ML
+ */
+HWTEST_F(AclTest, acl_serialize_test, TestSize.Level1)
+{
+    Acl acl1;
+    ACL_PERM perm;
+    perm.SetR();
+    perm.SetW();
+
+    int rc = acl1.InsertEntry(
+            { .tag = ACL_TAG::USER_OBJ,
+              .perm = perm,
+              .id = ACL_UNDEFINED_ID, }
+            );
+    ASSERT_TRUE(rc == 0) << "inserting USER_OBJ entry failed";
+    rc = acl1.InsertEntry(
+            { .tag = ACL_TAG::GROUP_OBJ,
+              .perm = perm,
+              .id = ACL_UNDEFINED_ID, }
+            );
+    ASSERT_TRUE(rc == 0) << "inserting GROUP_OBJ entry failed";
+    rc = acl1.InsertEntry(
+            { .tag = ACL_TAG::OTHER,
+              .perm = perm,
+              .id = ACL_UNDEFINED_ID, }
+            );
+    ASSERT_TRUE(rc == 0) << "inserting OTHER entry failed";
+
+    constexpr size_t ENTRIES_TEST = 10;
+    for (int i = 1; i <= ENTRIES_TEST; ++i) {
+        rc = acl1.InsertEntry(
+                { .tag = ACL_TAG::USER,
+                  .perm = perm,
+                  .id = i, }
+                );
+        ASSERT_TRUE(rc == 0) << "inserting USER entries failed";
+    }
+    for (int i = ENTRIES_TEST + 1; i <= ENTRIES_TEST*2; ++i) {
+        rc = acl1.InsertEntry(
+                { .tag = ACL_TAG::GROUP,
+                  .perm = perm,
+                  .id = i, }
+                );
+        ASSERT_TRUE(rc == 0) << "inserting GROUP entries failed";
+    }
+
+    size_t bufSize;
+    char *buf = acl1.Serialize(bufSize);
+    ASSERT_TRUE(buf != nullptr) << "serialization failed";
+
+    Acl acl2;
+    rc = acl2.DeSerialize(buf, bufSize);
+    EXPECT_TRUE(rc == 0) << "de-serialization failed";
 }
 }
