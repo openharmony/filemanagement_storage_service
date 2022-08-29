@@ -68,5 +68,5 @@ ohos_static_library("libfscryptutils_static") {
 
   subsystem_name = "filemanagement"
   part_name = "storage_service"
-  external_deps = [ "c_utils:utils" ]
+  public_deps = [ "//third_party/bounds_checking_function:libsec_static" ]
 }
