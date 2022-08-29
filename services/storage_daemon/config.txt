@@ -1,3 +1,4 @@
 sysPattern /devices/platform/fe2b0000.dwmmc/* label disk flag 0
 sysPattern /devices/platform/usbhost/fd000000.dwc3/* label disk flag 0
 sysPattern /devices/platform/fd800000.usb/* label disk flag 0
+sysPattern /devices/platform/soc/f9890000.ehci/* label disk flag 0
