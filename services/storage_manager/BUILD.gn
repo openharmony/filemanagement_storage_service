@@ -24,6 +24,7 @@ config("storage_manager_config") {
     "../storage_daemon/include",
     "//foundation/filemanagement/storage_service/services/common/include",
     "//foundation/bundlemanager/bundle_framework/services/bundlemgr/include",
+    "//foundation/multimedia/media_library/frameworks/utils/include",
     "//foundation/multimedia/media_library/interfaces/inner_api/media_library_helper/include",
   ]
 }
