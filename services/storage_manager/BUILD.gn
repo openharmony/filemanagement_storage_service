@@ -56,7 +56,7 @@ ohos_shared_library("storage_manager") {
     "${ability_runtime_path}/interfaces/inner_api/dataobs_manager:dataobs_manager",
     "../../interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
     "//foundation/bundlemanager/bundle_framework/common:libappexecfwk_common",
-    "//foundation/distributeddatamgr/appdatamgr/data_share/interfaces/inner_api:datashare_abilitykit",
+    "//foundation/distributeddatamgr/appdatamgr/data_share/interfaces/inner_api:datashare_consumer",
     "//utils/native/base:utils",
   ]
 
