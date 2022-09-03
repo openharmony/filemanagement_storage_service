@@ -15,5 +15,4 @@ ability_runtime_path = "//foundation/ability/ability_runtime"
 ability_runtime_kits_path = "${ability_runtime_path}/frameworks/kits"
 declare_args() {
   storage_service_graphic = true
-  storage_service_feature_use_librestorecon = false
 }
