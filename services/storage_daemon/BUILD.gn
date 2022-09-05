@@ -127,6 +127,7 @@ config("sdc_config") {
     "../../interfaces/innerkits/storage_manager/native",
     "../storage_manager/include",
     "//foundation/bundlemanager/bundle_framework/services/bundlemgr/include",
+    "//foundation/systemabilitymgr/safwk/interfaces/innerkits/safwk",
   ]
 }
 
@@ -161,7 +162,6 @@ ohos_executable("sdc") {
   external_deps = [
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
-    "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
 
