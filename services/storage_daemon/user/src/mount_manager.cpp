@@ -23,6 +23,7 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/file_utils.h"
+#include "utils/redaction_utils.h"
 #include "utils/mount_argument_utils.h"
 #include "utils/string_utils.h"
 
@@ -181,13 +182,18 @@ int32_t MountManager::MountByUser(int32_t userId)
         return E_PREPARE_DIR;
     }
 
+    int err = E_MOUNT;
     if (!SupportHmdfs()) {
-        return LocalMount(userId);
+        err = LocalMount(userId);
     } else {
-        return HmdfsMount(userId);
+        err = HmdfsMount(userId);
+    }
+    if (err == E_OK) {
+        // TODO: Make it a fatal error if redaction mount failed
+        RedactionUtils::MountRedactionFs(userId);
     }
 
-    return E_OK;
+    return err;
 }
 
 int32_t MountManager::LocalUMount(int32_t userId)
@@ -201,6 +207,7 @@ int32_t MountManager::UmountByUser(int32_t userId)
     int32_t count = 0;
     while (count < UMOUNT_RETRY_TIMES) {
         int32_t err = E_OK;
+        RedactionUtils::UMountRedactionFs(userId);
         if (!SupportHmdfs()) {
             err = LocalUMount(userId);
         } else {
@@ -224,6 +231,7 @@ int32_t MountManager::PrepareHmdfsDirs(int32_t userId)
 {
     for (const DirInfo &dir : hmdfsDirVec_) {
         if (!PrepareDir(StringPrintf(dir.path.c_str(), userId), dir.mode, dir.uid, dir.gid)) {
+            LOGE("Failed to prepare dir: %{private}s", dir.path.c_str());
             return E_PREPARE_DIR;
         }
     }
@@ -235,6 +243,7 @@ int32_t MountManager::CreateVirtualDirs(int32_t userId)
 {
     for (const DirInfo &dir : virtualDir_) {
         if (!PrepareDir(StringPrintf(dir.path.c_str(), userId), dir.mode, dir.uid, dir.gid)) {
+            LOGE("Failed to prepare dir: %{private}s", dir.path.c_str());
             return E_PREPARE_DIR;
         }
     }
