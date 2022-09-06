@@ -35,10 +35,15 @@ const std::string FSCRYPT_EL_DIR = SERVICE_STORAGE_DAEMON_DIR + "/sd";
 const std::string USER_EL1_DIR = FSCRYPT_EL_DIR + "/el1";
 const std::string USER_EL2_DIR = FSCRYPT_EL_DIR + "/el2";
 
+std::shared_ptr<BaseKey> KeyManager::GetBaseKey(const std::string& dir)
+{
+    return std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>(dir));
+}
+
 int KeyManager::GenerateAndInstallDeviceKey(const std::string &dir)
 {
     LOGI("enter");
-    globalEl1Key_ = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>(dir));
+    globalEl1Key_ = GetBaseKey(dir);
     if (globalEl1Key_ == nullptr) {
         LOGE("No memory for device el1 key");
         return -ENOMEM;
@@ -78,7 +83,7 @@ int KeyManager::RestoreDeviceKey(const std::string &dir)
         return 0;
     }
 
-    globalEl1Key_ = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>(dir));
+    globalEl1Key_ = GetBaseKey(dir);
     if (globalEl1Key_ == nullptr) {
         LOGE("No memory for device el1 key");
         return -ENOMEM;
@@ -147,7 +152,7 @@ int KeyManager::GenerateAndInstallUserKey(uint32_t userId, const std::string &di
         return 0;
     }
 
-    std::shared_ptr<BaseKey> elKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>(dir));
+    std::shared_ptr<BaseKey> elKey = GetBaseKey(dir);
     if (elKey == nullptr) {
         LOGE("No memory for device el1 key");
         return -ENOMEM;
@@ -189,7 +194,7 @@ int KeyManager::RestoreUserKey(uint32_t userId, const std::string &dir, const Us
         return 0;
     }
 
-    auto elKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>(dir));
+    auto elKey = GetBaseKey(dir);
     if (elKey == nullptr) {
         LOGE("No memory for device el1 key");
         return -ENOMEM;
@@ -367,7 +372,7 @@ int KeyManager::DoDeleteUserKeys(unsigned int user)
         userEl1Key_.erase(user);
     } else {
         elPath = USER_EL1_DIR + "/" + std::to_string(user);
-        std::shared_ptr<BaseKey> elKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>(elPath));
+        std::shared_ptr<BaseKey> elKey = GetBaseKey(elPath);
         if (elKey == nullptr) {
             LOGE("Malloc el1 Basekey memory failed");
             return -ENOMEM;
@@ -385,7 +390,7 @@ int KeyManager::DoDeleteUserKeys(unsigned int user)
         userEl2Key_.erase(user);
     } else {
         elPath = USER_EL2_DIR + "/" + std::to_string(user);
-        std::shared_ptr<BaseKey> elKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>(elPath));
+        std::shared_ptr<BaseKey> elKey = GetBaseKey(elPath);
         if (elKey == nullptr) {
             LOGE("Malloc el2 Basekey memory failed");
             return -ENOMEM;
@@ -465,7 +470,7 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::vector<uint8_t> &tok
         return -ENOENT;
     }
 
-    std::shared_ptr<BaseKey> elKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>(keyDir));
+    std::shared_ptr<BaseKey> elKey = GetBaseKey(keyDir);
     if (elKey->InitKey() == false) {
         LOGE("Init el failed");
         return -EFAULT;

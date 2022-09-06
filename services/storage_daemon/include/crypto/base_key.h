@@ -24,7 +24,7 @@ namespace StorageDaemon {
 class BaseKey {
 public:
     BaseKey() = delete;
-    BaseKey(std::string dir, uint8_t keyLen = CRYPTO_AES_256_XTS_KEY_SIZE);
+    BaseKey(const std::string &dir, uint8_t keyLen = CRYPTO_AES_256_XTS_KEY_SIZE);
     ~BaseKey() = default;
 
     /* key operations */
