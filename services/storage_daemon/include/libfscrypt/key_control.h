@@ -15,6 +15,7 @@
 #ifndef KEY_CONTROL_H
 #define KEY_CONTROL_H
 
+#include <linux/keyctl.h>
 #include <linux/version.h>
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
 #include <linux/fscrypt.h>
@@ -50,6 +51,7 @@ typedef int key_serial_t;
 static const char *FSCRYPT_POLICY_KEY = "fscrypt.policy.config";
 static const char *PATH_FSCRYPT_VER = "/fscrypt_version";
 
+key_serial_t KeyCtrlGetKeyringId(key_serial_t id, int create);
 key_serial_t KeyCtrlAddKey(const char *type, const char *description,
     const key_serial_t ringId);
 key_serial_t KeyCtrlAddKeyEx(const char *type, const char *description,
