@@ -15,6 +15,8 @@
 #ifndef FSCRYPT_CONTROL_H
 #define FSCRYPT_CONTROL_H
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -23,6 +25,7 @@ int FscryptSetSysparam(const char *policy);
 int SetGlobalEl1DirPolicy(const char *dir);
 int LoadAndSetPolicy(const char *keyDir, const char *dir);
 int InitFscryptPolicy(void);
+uint8_t GetFscryptVersionFromPolicy(void);
 
 #ifdef __cplusplus
 }
