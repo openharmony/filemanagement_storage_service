@@ -278,7 +278,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_policy_set, TestSize.Level1)
     FscryptPolicy arg;
     (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
     arg.v1.version = FSCRYPT_POLICY_V1;
-    memcpy_s(arg.v1.master_key_descriptor, FSCRYPT_KEY_DESCRIPTOR_SIZE, g_testKeyV1.keyInfo_.keyDesc.data.get(),
+    (void)memcpy_s(arg.v1.master_key_descriptor, FSCRYPT_KEY_DESCRIPTOR_SIZE, g_testKeyV1.keyInfo_.keyDesc.data.get(),
         g_testKeyV1.keyInfo_.keyDesc.size);
     arg.v1.contents_encryption_mode = FSCRYPT_MODE_AES_256_XTS;
     arg.v1.filenames_encryption_mode = FSCRYPT_MODE_AES_256_CTS;
@@ -302,12 +302,12 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_policy_set, TestSize.Level1)
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_policy_get, TestSize.Level1)
 {
     struct fscrypt_policy arg;
-    memset_s(&arg, sizeof(arg), 0, sizeof(arg));
+    (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
     EXPECT_TRUE(KeyCtrlGetPolicy(TEST_DIR_LEGACY.c_str(), &arg));
     EXPECT_EQ(FSCRYPT_POLICY_V1, arg.version);
 
     std::string testDir = TEST_DIR_LEGACY + "/test_dir";
-    memset_s(&arg, sizeof(arg), 0, sizeof(arg));
+    (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
     EXPECT_TRUE(KeyCtrlGetPolicy(testDir.c_str(), &arg));
     EXPECT_EQ(FSCRYPT_POLICY_V1, arg.version);
 }
@@ -362,8 +362,8 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_set, TestSize.Level1)
     FscryptPolicy arg;
     (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
     arg.v2.version = FSCRYPT_POLICY_V2;
-    memcpy_s(arg.v2.master_key_identifier, FSCRYPT_KEY_IDENTIFIER_SIZE, g_testKeyV2.keyInfo_.keyId.data.get(),
-        g_testKeyV2.keyInfo_.keyId.size);
+    (void)memcpy_s(arg.v2.master_key_identifier, FSCRYPT_KEY_IDENTIFIER_SIZE, g_testKeyV2.keyInfo_.keyId.data.get(),
+                  g_testKeyV2.keyInfo_.keyId.size);
     arg.v2.contents_encryption_mode = FSCRYPT_MODE_AES_256_XTS;
     arg.v2.filenames_encryption_mode = FSCRYPT_MODE_AES_256_CTS;
     arg.v2.flags = FSCRYPT_POLICY_FLAGS_PAD_32;
@@ -386,12 +386,12 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_set, TestSize.Level1)
 HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_get, TestSize.Level1)
 {
     struct fscrypt_get_policy_ex_arg arg;
-    memset_s(&arg, sizeof(arg), 0, sizeof(arg));
+    (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
     arg.policy_size = sizeof(arg.policy);
     EXPECT_TRUE(KeyCtrlGetPolicyEx(TEST_DIR_V2.c_str(), &arg));
     EXPECT_EQ(FSCRYPT_POLICY_V2, arg.policy.version);
 
-    memset_s(&arg, sizeof(arg), 0, sizeof(arg));
+    (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
     arg.policy_size = sizeof(arg.policy);
     std::string testDir = TEST_DIR_V2 + "/test_dir";
     EXPECT_TRUE(KeyCtrlGetPolicyEx(testDir.c_str(), &arg));
@@ -587,7 +587,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_padding_4, TestSize.L
     EXPECT_TRUE(OHOS::SaveStringToFile(TEST_DIR_V2 + "/111111111111111111111111111111111111111111111111", "AA"));
 
     struct fscrypt_get_policy_ex_arg arg;
-    memset_s(&arg, sizeof(arg), 0, sizeof(arg));
+    (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
     arg.policy_size = sizeof(arg.policy);
     EXPECT_TRUE(KeyCtrlGetPolicyEx(TEST_DIR_V2.c_str(), &arg));
     EXPECT_EQ(FSCRYPT_POLICY_V2, arg.policy.version);
