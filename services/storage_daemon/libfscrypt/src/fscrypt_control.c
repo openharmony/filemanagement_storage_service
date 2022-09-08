@@ -15,7 +15,6 @@
 #include "fscrypt_control.h"
 
 #include <fcntl.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
@@ -358,7 +357,9 @@ int LoadAndSetPolicy(const char *keyDir, const char *dir)
 
     char *pathBuf = NULL;
     ret = -ENOTSUP;
-    if (g_fscryptPolicy.version == FSCRYPT_V1) {
+
+    uint8_t fscryptVer = KeyCtrlLoadVersion(keyDir);
+    if (fscryptVer == FSCRYPT_V1) {
         ret = SpliceKeyPath(keyDir, strlen(keyDir), PATH_KEYDESC,
             strlen(PATH_KEYDESC), &pathBuf);
         if (ret != 0) {
@@ -367,7 +368,7 @@ int LoadAndSetPolicy(const char *keyDir, const char *dir)
         }
         ret = SetPolicyLegacy(pathBuf, dir, &arg);
 #ifdef SUPPORT_FSCRYPT_V2
-    } else if (g_fscryptPolicy.version == FSCRYPT_V2) {
+    } else if (fscryptVer == FSCRYPT_V2) {
         ret = SpliceKeyPath(keyDir, strlen(keyDir), PATH_KEYID,
             strlen(PATH_KEYID), &pathBuf);
         if (ret != 0) {
@@ -398,4 +399,9 @@ int SetGlobalEl1DirPolicy(const char *dir)
         }
     }
     return 0;
+}
+
+uint8_t GetFscryptVersionFromPolicy(void)
+{
+    return g_fscryptPolicy.version;
 }

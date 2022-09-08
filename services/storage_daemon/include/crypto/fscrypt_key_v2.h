@@ -24,7 +24,7 @@ namespace StorageDaemon {
 class FscryptKeyV2 final : public BaseKey {
 public:
     FscryptKeyV2() = delete;
-    FscryptKeyV2(std::string dir, uint8_t keyLen = CRYPTO_AES_256_XTS_KEY_SIZE) : BaseKey(dir, keyLen)
+    FscryptKeyV2(const std::string &dir, uint8_t keyLen = CRYPTO_AES_256_XTS_KEY_SIZE) : BaseKey(dir, keyLen)
     {
         keyInfo_.version = FSCRYPT_V2;
     }

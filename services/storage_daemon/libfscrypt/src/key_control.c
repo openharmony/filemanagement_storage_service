@@ -31,6 +31,11 @@
 #include "init_utils.h"
 #include "securec.h"
 
+key_serial_t KeyCtrlGetKeyringId(key_serial_t id, int create)
+{
+    return syscall(__NR_keyctl, KEYCTL_GET_KEYRING_ID, id, create);
+}
+
 key_serial_t KeyCtrlAddKey(const char *type, const char *description,
     const key_serial_t ringId)
 {
