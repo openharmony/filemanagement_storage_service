@@ -23,6 +23,7 @@
 #include "storage/storage_total_status_service.h"
 #include "installd_client.h"
 #include "bundle_mgr_interface.h"
+#include "bundle_mgr_proxy.h"
 #include "application_info.h"
 #include "iservice_registry.h"
 #include "system_ability_definition.h"
