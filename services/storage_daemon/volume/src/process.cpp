@@ -139,12 +139,12 @@ bool Process::CheckFds(std::string pidPath)
     while ((dirEntry = readdir(dir)) != nullptr) {
         if (dirEntry->d_type != DT_LNK) continue;
         if (CheckSymlink(path + "/" + dirEntry->d_name)) {
-            closedir(dir);
+            (void)closedir(dir);
             return true;
         }
     }
 
-    closedir(dir);
+    (void)closedir(dir);
     return false;
 }
 
@@ -171,7 +171,7 @@ int32_t Process::UpdatePidByPath()
         }
     }
 
-    closedir(dir);
+    (void)closedir(dir);
     return E_OK;
 }
 

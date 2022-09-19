@@ -71,10 +71,10 @@ static bool FsIoctl(const char *mnt, unsigned long cmd, void *arg)
     }
     if (ioctl(fd, cmd, arg) != 0) {
         FSCRYPT_LOGE("ioctl to %s failed, errno:%d", mnt, errno);
-        close(fd);
+        (void)close(fd);
         return false;
     }
-    close(fd);
+    (void)close(fd);
     FSCRYPT_LOGI("success");
     return true;
 }
@@ -128,7 +128,7 @@ static uint8_t CheckKernelFscrypt(const char *mnt)
 #ifdef SUPPORT_FSCRYPT_V2
     errno = 0;
     (void)ioctl(fd, FS_IOC_ADD_ENCRYPTION_KEY, NULL);
-    close(fd);
+    (void)close(fd);
     if (errno == EOPNOTSUPP) {
         FSCRYPT_LOGE("Kernel doesn't support fscrypt v1 or v2.");
         return FSCRYPT_INVALID;
@@ -163,10 +163,10 @@ uint8_t GetEncryptedVersion(const char *dir)
     struct fscrypt_policy_v1 policy;
     if (ioctl(fd, FS_IOC_GET_ENCRYPTION_POLICY, &policy) == 0) {
         FSCRYPT_LOGI("%s is encrypted with v1 policy", dir);
-        close(fd);
+        (void)close(fd);
         return FSCRYPT_V1;
     }
-    close(fd);
+    (void)close(fd);
 
     if (errno == EINVAL) {
         FSCRYPT_LOGI("fscrypt is encrypted with v2 policy");

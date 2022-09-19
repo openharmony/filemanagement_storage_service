@@ -186,19 +186,19 @@ bool RmDirRecurse(const std::string &path)
             }
 
             if (!RmDirRecurse(path + "/" + ent->d_name)) {
-                closedir(dir);
+                (void)closedir(dir);
                 return false;
             }
         } else {
             if (unlink((path + "/" + ent->d_name).c_str())) {
                 LOGE("failed to unlink file %{public}s, errno %{public}d", ent->d_name, errno);
-                closedir(dir);
+                (void)closedir(dir);
                 return false;
             }
         }
     }
 
-    closedir(dir);
+    (void)closedir(dir);
     if (rmdir(path.c_str())) {
         LOGE("failed to rm dir %{public}s, errno %{public}d", path.c_str(), errno);
         return false;
@@ -236,7 +236,7 @@ void TravelChmod(std::string path, mode_t mode)
         if (S_ISDIR(st.st_mode))
             TravelChmod(subpath, mode);
     }
-    closedir(d);
+    (void)closedir(d);
 }
 
 bool StringToUint32(const std::string &str, uint32_t &num)
@@ -285,7 +285,7 @@ void GetSubDirs(const std::string &path, std::vector<std::string> &dirList)
         dirList.push_back(ent->d_name);
     }
 
-    closedir(dir);
+    (void)closedir(dir);
 }
 
 void ReadDigitDir(const std::string &path, std::vector<FileList> &dirInfo)
@@ -322,7 +322,7 @@ void ReadDigitDir(const std::string &path, std::vector<FileList> &dirInfo)
         dirInfo.push_back(entry);
     }
 
-    closedir(dir);
+    (void)closedir(dir);
 }
 
 bool ReadFile(std::string path, std::string *str)
@@ -387,16 +387,16 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
         LOGE("fork failed");
         return E_ERR;
     } else if (pid == 0) {
-        close(pipe_fd[0]);
+        (void)close(pipe_fd[0]);
         if (dup2(pipe_fd[1], STDOUT_FILENO) == -1) {
             LOGE("dup2 failed");
             exit(1);
         }
-        close(pipe_fd[1]);
+        (void)close(pipe_fd[1]);
         execvp(args[0], const_cast<char **>(args.data()));
         exit(0);
     } else {
-        close(pipe_fd[1]);
+        (void)close(pipe_fd[1]);
         if (output) {
             char buf[BUF_LEN] = { 0 };
             (void)memset_s(buf, sizeof(buf), 0, sizeof(buf));
@@ -432,7 +432,7 @@ void TraverseDirUevent(const std::string &path, bool flag)
     if (fd >= 0) {
         std::string writeStr = "add\n";
         write(fd, writeStr.c_str(), writeStr.length());
-        close(fd);
+        (void)close(fd);
     }
 
     for (struct dirent *ent = readdir(dir); ent != nullptr; ent = readdir(dir)) {
@@ -447,7 +447,7 @@ void TraverseDirUevent(const std::string &path, bool flag)
         TraverseDirUevent(path + "/" + ent->d_name, false);
     }
 
-    closedir(dir);
+    (void)closedir(dir);
 }
 } // STORAGE_DAEMON
 } // OHOS
