@@ -56,7 +56,6 @@ ohos_shared_library("storage_manager") {
     "${ability_runtime_path}/frameworks/native/ability/native:abilitykit_native",
     "${ability_runtime_path}/interfaces/inner_api/dataobs_manager:dataobs_manager",
     "../../interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
-    "//foundation/bundlemanager/bundle_framework/common:libappexecfwk_common",
   ]
 
   if (storage_service_graphic) {
@@ -78,7 +77,6 @@ ohos_shared_library("storage_manager") {
     "data_share:datashare_consumer",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
-    "relational_store:native_dataability",
     "relational_store:native_rdb",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
