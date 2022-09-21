@@ -15,53 +15,12 @@
 
 #include "ipc/storage_daemon_stub.h"
 
-#include "accesstoken_kit.h"
-#include "ipc_skeleton.h"
-#include "native_token_info.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "string_ex.h"
 
 namespace OHOS {
 namespace StorageDaemon {
-static bool GetClientUid(int &uid)
-{
-    uid = IPCSkeleton::GetCallingUid();
-    return true;
-}
-
-static bool GetClientTokenId(uint32_t &TokenId)
-{
-    TokenId = IPCSkeleton::GetCallingTokenID();
-    return true;
-}
-
-static std::string GetProcessName(int pid)
-{
-    Security::AccessToken::NativeTokenInfo tokenInfo = Security::AccessToken::NativeTokenInfo();
-    Security::AccessToken::AccessTokenKit::GetNativeTokenInfo(pid, tokenInfo);
-    return tokenInfo.processName;
-}
-
-bool CheckClientPermission()
-{
-    int uid = -1;
-    uint32_t tokenId = 0;
-    if (!GetClientUid(uid)) {
-        LOGE("GetClientUid: fail");
-    }
-
-    if (!GetClientTokenId(tokenId)) {
-        LOGE("GetClientTokenId: fail");
-    }
-
-    std::string clientName = GetProcessName(tokenId);
-    LOGI("GetClientProcessName:%{public}s", clientName.c_str());
-    if ((uid == UID_STORAGEMANAGER)|| uid == UID_ROOT) {
-        return true;
-    }
-    return false;
-}
 
 int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
                                            MessageParcel &reply, MessageOption &option)
@@ -71,10 +30,6 @@ int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
         return E_PERMISSION_DENIED;
     }
 
-    if (!CheckClientPermission()) {
-        LOGE("StorageDaemon checkPermission error");
-        return E_PERMISSION_DENIED;
-    }
     LOGI("recv remote request code %{public}u", code);
     int err = E_OK;
     switch (code) {
