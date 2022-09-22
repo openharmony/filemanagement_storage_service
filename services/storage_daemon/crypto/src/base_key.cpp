@@ -372,7 +372,7 @@ void BaseKey::SyncKeyDir() const
         LOGE("syncfs %{private}s failed, errno %{public}d", dir_.c_str(), errno);
         sync();
     }
-    close(fd);
+    (void)close(fd);
 }
 } // namespace StorageDaemon
 } // namespace OHOS

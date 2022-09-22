@@ -151,7 +151,7 @@ bool StorageTestUtils::CreateFile(const std::string &path)
     if (fd == -1) {
         return false;
     }
-    close(fd);
+    (void)close(fd);
     return true;
 }
 
@@ -196,18 +196,18 @@ bool StorageTestUtils::RmDirRecurse(const std::string &path)
             }
 
             if (!RmDirRecurse(path + "/" + ent->d_name)) {
-                closedir(dir);
+                (void)closedir(dir);
                 return false;
             }
         } else {
             if (unlink((path + "/" + ent->d_name).c_str())) {
-                closedir(dir);
+                (void)closedir(dir);
                 return false;
             }
         }
     }
 
-    closedir(dir);
+    (void)closedir(dir);
     if (rmdir(path.c_str())) {
         return false;
     }

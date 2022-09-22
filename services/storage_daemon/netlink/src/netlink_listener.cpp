@@ -184,8 +184,8 @@ int32_t NetlinkListener::StartListener()
     }
     socketThread_ = std::make_unique<std::thread>(&NetlinkListener::EventProcess, this);
     if (socketThread_ == nullptr) {
-        close(socketPipe_[0]);
-        close(socketPipe_[1]);
+        (void)close(socketPipe_[0]);
+        (void)close(socketPipe_[1]);
         socketPipe_[0] = socketPipe_[1] = -1;
         return E_ERR;
     }
@@ -202,8 +202,8 @@ int32_t NetlinkListener::StopListener()
         socketThread_->join();
     }
 
-    close(socketPipe_[0]);
-    close(socketPipe_[1]);
+    (void)close(socketPipe_[0]);
+    (void)close(socketPipe_[1]);
     socketPipe_[0] = socketPipe_[1] = -1;
 
     return E_OK;

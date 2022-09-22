@@ -58,25 +58,25 @@ int32_t NetlinkManager::Start()
 
     if (setsockopt(socketFd_, SOL_SOCKET, SO_RCVBUFFORCE, &sz, sizeof(sz)) != 0) {
         LOGE("Set SO_RCVBUFFORCE failed, errno %{public}d", errno);
-        close(socketFd_);
+        (void)close(socketFd_);
         return E_ERR;
     }
 
     if (setsockopt(socketFd_, SOL_SOCKET, SO_PASSCRED, &on, sizeof(on)) != 0) {
         LOGE("Set SO_PASSCRED failed, errno %{public}d", errno);
-        close(socketFd_);
+        (void)close(socketFd_);
         return E_ERR;
     }
 
     if (bind(socketFd_, (struct sockaddr *) &addr, sizeof(addr)) != 0) {
         LOGE("Socket bind failed, errno %{public}d", errno);
-        close(socketFd_);
+        (void)close(socketFd_);
         return E_ERR;
     }
 
     nlHandler_ = new NetlinkHandler(socketFd_);
     if (nlHandler_->Start()) {
-        close(socketFd_);
+        (void)close(socketFd_);
         return E_ERR;
     }
     return E_OK;
@@ -91,7 +91,7 @@ int32_t NetlinkManager::Stop()
     }
     delete nlHandler_;
     nlHandler_ = nullptr;
-    close(socketFd_);
+    (void)close(socketFd_);
     socketFd_ = -1;
 
     return ret;

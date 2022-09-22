@@ -95,21 +95,21 @@ bool WriteFileSync(const char *path, const uint8_t *data, size_t size)
     long len = write(fd, data, size);
     if (len < 0) {
         LOGE("write %{public}s failed, errno %{public}d", path, errno);
-        close(fd);
+        (void)close(fd);
         return false;
     }
     if (static_cast<size_t>(len) != size) {
         LOGE("write return len %{public}ld, not equal to content length %{public}zu", len, size);
-        close(fd);
+        (void)close(fd);
         return false;
     }
 
     if (fsync(fd) != 0) {
         LOGE("fsync %{public}s failed, errno %{public}d", path, errno);
-        close(fd);
+        (void)close(fd);
         return false;
     }
-    close(fd);
+    (void)close(fd);
     return true;
 }
 
