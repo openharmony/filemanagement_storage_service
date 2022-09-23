@@ -94,6 +94,38 @@ bool StorageDaemonClient::CheckServiceStatus(uint32_t serviceFlags)
     return true;
 }
 
+int32_t StorageDaemonClient::PrepareUserDirs(int32_t userId, uint32_t flags)
+{
+    if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
+        LOGE("service check failed");
+        return -EAGAIN;
+    }
+
+    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
+    if (client == nullptr) {
+        LOGE("get storage daemon service failed");
+        return -EAGAIN;
+    }
+
+    return client->PrepareUserDirs(userId, flags);
+}
+
+int32_t StorageDaemonClient::DestroyUserDirs(int32_t userId, uint32_t flags)
+{
+    if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
+        LOGE("service check failed");
+        return -EAGAIN;
+    }
+
+    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
+    if (client == nullptr) {
+        LOGE("get storage daemon service failed");
+        return -EAGAIN;
+    }
+
+    return client->DestroyUserDirs(userId, flags);
+}
+
 int32_t StorageDaemonClient::StartUser(int32_t userId)
 {
     if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
@@ -273,6 +305,22 @@ int32_t StorageDaemonClient::InactiveUserKey(uint32_t userId)
     }
 
     return client->InactiveUserKey(userId);
+}
+
+int32_t StorageDaemonClient::UpdateKeyContext(uint32_t userId)
+{
+    if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
+        LOGE("service check failed");
+        return -EAGAIN;
+    }
+
+    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
+    if (client == nullptr) {
+        LOGE("get storage daemon service failed");
+        return -EAGAIN;
+    }
+
+    return client->UpdateKeyContext(userId);
 }
 
 int32_t StorageDaemonClient::FscryptEnable(const std::string &fscryptOptions)
