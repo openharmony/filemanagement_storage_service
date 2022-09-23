@@ -20,6 +20,7 @@
 #include <nocopyable.h>
 #include "system_ability.h"
 #include "ipc/istorage_daemon.h"
+#include "iremote_object.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -54,8 +55,18 @@ public:
     int32_t InactiveUserKey(uint32_t userId);
     int32_t UpdateKeyContext(uint32_t userId);
 
+    int32_t ResetSdProxy();
 private:
     sptr<OHOS::StorageDaemon::IStorageDaemon> storageDaemon_;
+     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;
+};
+
+class SdDeathRecipient : public IRemoteObject::DeathRecipient {
+public:
+    SdDeathRecipient() = default;
+    virtual ~SdDeathRecipient() = default;
+
+    virtual void OnRemoteDied(const wptr<IRemoteObject> &object);
 };
 } // StorageManager
 } // OHOS

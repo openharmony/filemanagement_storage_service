@@ -21,6 +21,8 @@
 
 #include "system_ability.h"
 #include "istorage_manager.h"
+#include "bundle_stats.h"
+#include "storage_stats.h"
 #include "volume_external.h"
 
 namespace OHOS {
