@@ -19,7 +19,6 @@
 #include <iostream>
 #include <memory>
 #include <sys/socket.h>
-#include <sys/socket.h>
 #include <unistd.h>
 #include <linux/netlink.h>
 
