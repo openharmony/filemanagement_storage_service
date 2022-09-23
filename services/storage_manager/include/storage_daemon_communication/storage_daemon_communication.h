@@ -58,7 +58,8 @@ public:
     int32_t ResetSdProxy();
 private:
     sptr<OHOS::StorageDaemon::IStorageDaemon> storageDaemon_;
-     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;
+    sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;
+    std::mutex mutex_;
 };
 
 class SdDeathRecipient : public IRemoteObject::DeathRecipient {

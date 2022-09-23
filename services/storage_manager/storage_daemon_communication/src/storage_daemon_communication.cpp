@@ -41,6 +41,7 @@ int32_t StorageDaemonCommunication::Connect()
 {
     LOGI("StorageDaemonCommunication::Connect start");
     if (storageDaemon_ == nullptr) {
+        std::lock_guard<std::mutex> lock(mutex_);
         auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
         if (sam == nullptr) {
             LOGE("StorageDaemonCommunication::Connect samgr nullptr");
@@ -252,6 +253,7 @@ int32_t StorageDaemonCommunication::UpdateKeyContext(uint32_t userId)
 int32_t StorageDaemonCommunication::ResetSdProxy()
 {
     LOGD("enter");
+    std::lock_guard<std::mutex> lock(mutex_);
     if ((storageDaemon_ != nullptr) && (storageDaemon_->AsObject() != nullptr)) {
         storageDaemon_->AsObject()->RemoveDeathRecipient(deathRecipient_);
     }

@@ -181,6 +181,7 @@ int32_t StorageStatusService::ConnectBundleMgr()
 {
     LOGI("connect begin");
     if (bundleMgr_ == nullptr) {
+        std::lock_guard<std::mutex> lock(mutex_);
         auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
         if (sam == nullptr) {
             LOGE("StorageStatusService::ConnectBundleMgr samgr == nullptr");
@@ -214,6 +215,7 @@ int32_t StorageStatusService::ConnectBundleMgr()
 int32_t StorageStatusService::ResetBundleMgrProxy()
 {
     LOGD("enter");
+    std::lock_guard<std::mutex> lock(mutex_);
     if ((bundleMgr_ != nullptr) && (bundleMgr_->AsObject() != nullptr)) {
         bundleMgr_->AsObject()->RemoveDeathRecipient(deathRecipient_);
     }

@@ -48,8 +48,20 @@ public:
     bool SetVolumeDescription(std::string uuid, std::string description);
     bool Format(std::string volumeId, std::string fsType);
     bool Partition(std::string diskId, int32_t type);
+
+    int32_t ResetProxy();
 private:
     sptr<StorageManager::IStorageManager> storageManager_ = nullptr;
+    sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;
+    std::mutex mutex_;
+};
+
+class SmDeathRecipient : public IRemoteObject::DeathRecipient {
+public:
+    SmDeathRecipient() = default;
+    virtual ~SmDeathRecipient() = default;
+
+    virtual void OnRemoteDied(const wptr<IRemoteObject> &object);
 };
 } // StorageManager
 } // OHOS
