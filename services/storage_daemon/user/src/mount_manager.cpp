@@ -189,7 +189,6 @@ int32_t MountManager::MountByUser(int32_t userId)
         err = HmdfsMount(userId);
     }
     if (err == E_OK) {
-        // TODO: Make it a fatal error if redaction mount failed
         RedactionUtils::MountRedactionFs(userId);
     }
 
