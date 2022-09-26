@@ -31,11 +31,10 @@ constexpr size_t MNT_ENTRY_STRING_SIZE = 1024;
 
 bool RedactionUtils::SupportedRedactionFs()
 {
-    // TODO: Return the truth
     return false;
 }
 
-bool RedactionUtils::CheckRedactionFsMounted(int32_t userId)
+bool RedactionUtils::CheckRedactionFsMounted(const int32_t userId)
 {
     struct mntent mountEntry;
     char entryStr[MNT_ENTRY_STRING_SIZE] = {0};
@@ -63,20 +62,20 @@ bool RedactionUtils::CheckRedactionFsMounted(int32_t userId)
     return false;
 }
 
-int32_t RedactionUtils::MountRedactionFs(int32_t userId)
+int32_t RedactionUtils::MountRedactionFs(const int32_t userId)
 {
     const std::string destPath = GetRedactionMountPoint(userId);
     if (CheckRedactionFsMounted(userId)) {
         return E_OK;
     }
-    if (!PrepareDir(destPath.c_str(), 0711, OID_USER_DATA_RW, OID_USER_DATA_RW)) {
+    constexpr mode_t mode = 0711;
+    if (!PrepareDir(destPath.c_str(), mode, OID_USER_DATA_RW, OID_USER_DATA_RW)) {
         LOGE("Failed to prepare dir: %{private}s", destPath.c_str());
         return E_MOUNT;
     }
 
     if ((Mount("none", destPath, "redaction", MS_NODEV, nullptr) < 0) && (errno != EEXIST) && (errno != EBUSY)) {
         if (errno == ENODEV) {
-            // TODO: Make it a FATAL error if not supported redactionfs
             LOGE("Redactionfs is not supported on this device");
             return E_OK;
         }
@@ -91,12 +90,12 @@ int32_t RedactionUtils::MountRedactionFs(int32_t userId)
     return E_OK;
 }
 
-void RedactionUtils::UMountRedactionFs(int32_t userId)
+void RedactionUtils::UMountRedactionFs(const int32_t userId)
 {
     UMount2(GetRedactionMountPoint(userId), MNT_DETACH);
 }
 
-std::string RedactionUtils::GetRedactionMountPoint(int32_t userId)
+std::string RedactionUtils::GetRedactionMountPoint(const int32_t userId)
 {
     return REDACTION_MOUNT_POINT_PREFIX + std::to_string(userId) + REDACTION_MOUNT_POINT_DIR;
 }
