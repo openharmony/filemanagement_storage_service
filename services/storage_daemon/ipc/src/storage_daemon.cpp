@@ -17,6 +17,7 @@
 
 #include "crypto/key_manager.h"
 #include "disk/disk_manager.h"
+#include "file_sharing/file_sharing.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "user/user_manager.h"
@@ -101,6 +102,14 @@ int32_t StorageDaemon::InitGlobalKey(void)
 
 int32_t StorageDaemon::InitGlobalUserKeys(void)
 {
+#ifdef USER_FILE_SHARING
+    // File sharing depends on the /data/service/el1/public be decrypted.
+    // A hack way to prepare the sharing dir, move it to callbacks after the parameter ready.
+    if (SetupFileSharingDir() == -1) {
+        LOGE("Failed to set up the directory for file sharing");
+    }
+#endif
+
     int ret = KeyManager::GetInstance()->InitGlobalUserKeys();
     if (ret) {
         LOGE("Init global users els failed");
