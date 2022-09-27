@@ -45,7 +45,29 @@ ohos_unittest("file_utils_test") {
   ]
 }
 
+ohos_unittest("redaction_utils_test") {
+  module_out_path = "filemanagement/storage_service/storage_daemon"
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemonRedactUtils\"",
+    "LOG_DOMAIN = 0xD004301",
+  ]
+
+  include_dirs = [ "//foundation/filemanagement/storage_service/services/storage_daemon/include" ]
+
+  sources = [ "redaction_utils_test.cpp" ]
+
+  deps = [
+    "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
+    "//third_party/googletest:gtest_main",
+  ]
+}
+
 group("storage_daemon_utils_test") {
   testonly = true
   deps = [ ":file_utils_test" ]
+
+  if (!build_selinux) {
+    deps += [ ":redaction_utils_test" ]
+  }
 }
