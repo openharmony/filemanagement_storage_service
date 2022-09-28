@@ -48,7 +48,7 @@ static int32_t GenerateUserKeys(const std::vector<std::string> &args)
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }
-    return OHOS::StorageManager::StorageManagerClient::GenerateUserKeys(userId, flags);
+    return OHOS::StorageDaemon::StorageDaemonClient::GenerateUserKeys(userId, flags);
 }
 
 static int32_t PrepareUserSpace(const std::vector<std::string> &args)
@@ -63,8 +63,7 @@ static int32_t PrepareUserSpace(const std::vector<std::string> &args)
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }
-    std::string volumId = "";
-    return OHOS::StorageManager::StorageManagerClient::PrepareAddUser(userId, volumId, flags);
+    return OHOS::StorageDaemon::StorageDaemonClient::PrepareUserDirs(userId, flags);
 }
 
 static int32_t DeleteUserKeys(const std::vector<std::string> &args)
@@ -78,7 +77,7 @@ static int32_t DeleteUserKeys(const std::vector<std::string> &args)
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }
-    return OHOS::StorageManager::StorageManagerClient::DeleteUserKeys(userId);
+    return OHOS::StorageDaemon::StorageDaemonClient::DeleteUserKeys(userId);
 }
 
 static int32_t DestroyUserSpace(const std::vector<std::string> &args)
@@ -93,8 +92,7 @@ static int32_t DestroyUserSpace(const std::vector<std::string> &args)
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }
-    std::string volumId = "";
-    return OHOS::StorageManager::StorageManagerClient::RemoveUser(userId, volumId, flags);
+    return OHOS::StorageDaemon::StorageDaemonClient::DestroyUserDirs(userId, flags);
 }
 
 static int32_t UpdateUserAuth(const std::vector<std::string> &args)
@@ -112,10 +110,10 @@ static int32_t UpdateUserAuth(const std::vector<std::string> &args)
     if (args.size() == 6) {
         std::vector<uint8_t> oldSecret(args[4].begin(), args[4].end());
         std::vector<uint8_t> newSecret(args[5].begin(), args[5].end());
-        return OHOS::StorageManager::StorageManagerClient::UpdateUserAuth(userId, {}, oldSecret, newSecret);
+        return OHOS::StorageDaemon::StorageDaemonClient::UpdateUserAuth(userId, {}, oldSecret, newSecret);
     }
     std::vector<uint8_t> newSecret(args[4].begin(), args[4].end());
-    return OHOS::StorageManager::StorageManagerClient::UpdateUserAuth(userId, {}, {}, newSecret);
+    return OHOS::StorageDaemon::StorageDaemonClient::UpdateUserAuth(userId, {}, {}, newSecret);
 }
 
 static int32_t ActiveUserKey(const std::vector<std::string> &args)
@@ -132,9 +130,9 @@ static int32_t ActiveUserKey(const std::vector<std::string> &args)
 
     if (args.size() == 5) {
         std::vector<uint8_t> secret(args[4].begin(), args[4].end());
-        return OHOS::StorageManager::StorageManagerClient::ActiveUserKey(userId, {}, secret);
+        return OHOS::StorageDaemon::StorageDaemonClient::ActiveUserKey(userId, {}, secret);
     }
-    return OHOS::StorageManager::StorageManagerClient::ActiveUserKey(userId, {}, {});
+    return OHOS::StorageDaemon::StorageDaemonClient::ActiveUserKey(userId, {}, {});
 }
 
 static int32_t InactiveUserKey(const std::vector<std::string> &args)
@@ -148,7 +146,7 @@ static int32_t InactiveUserKey(const std::vector<std::string> &args)
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }
-    return OHOS::StorageManager::StorageManagerClient::InactiveUserKey(userId);
+    return OHOS::StorageDaemon::StorageDaemonClient::InactiveUserKey(userId);
 }
 
 static int32_t EnableFscrypt(const std::vector<std::string> &args)
@@ -172,7 +170,7 @@ static int32_t UpdateKeyContext(const std::vector<std::string> &args)
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }
-    return OHOS::StorageManager::StorageManagerClient::UpdateKeyContext(userId);
+    return OHOS::StorageDaemon::StorageDaemonClient::UpdateKeyContext(userId);
 }
 
 static const auto g_fscryptCmdHandler = std::map<std::string,

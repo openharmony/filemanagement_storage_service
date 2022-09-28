@@ -159,6 +159,9 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
 
 int32_t StorageManagerStub::HandlePrepareAddUser(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     int32_t userId = data.ReadInt32();
     uint32_t flags = data.ReadUint32();
     LOGI("StorageManagerStub::HandlePrepareAddUser, userId:%{public}d", userId);
@@ -172,6 +175,9 @@ int32_t StorageManagerStub::HandlePrepareAddUser(MessageParcel &data, MessagePar
 
 int32_t StorageManagerStub::HandleRemoveUser(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     int32_t userId = data.ReadInt32();
     uint32_t flags = data.ReadUint32();
     LOGI("StorageManagerStub::HandleRemoveUser, userId:%{public}d", userId);
@@ -185,6 +191,9 @@ int32_t StorageManagerStub::HandleRemoveUser(MessageParcel &data, MessageParcel 
 
 int32_t StorageManagerStub::HandlePrepareStartUser(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     int32_t userId = data.ReadInt32();
     LOGI("StorageManagerStub::HandlePrepareStartUser, userId:%{public}d", userId);
     int err = PrepareStartUser(userId);
@@ -197,6 +206,9 @@ int32_t StorageManagerStub::HandlePrepareStartUser(MessageParcel &data, MessageP
 
 int32_t StorageManagerStub::HandleStopUser(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     int32_t userId = data.ReadInt32();
     LOGI("StorageManagerStub::HandleStopUser, userId:%{public}d", userId);
     int err = StopUser(userId);
@@ -348,6 +360,9 @@ int32_t StorageManagerStub::HandleGetAllVolumes(MessageParcel &data, MessageParc
 
 int32_t StorageManagerStub::HandleNotifyVolumeCreated(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     std::unique_ptr<VolumeCore> vc = VolumeCore::Unmarshalling(data);
     NotifyVolumeCreated(*vc);
     LOGI("StorageManagerStub::HandleNotifyVolumeCreated");
@@ -356,6 +371,9 @@ int32_t StorageManagerStub::HandleNotifyVolumeCreated(MessageParcel &data, Messa
 
 int32_t StorageManagerStub::HandleNotifyVolumeMounted(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     std::string volumeId = data.ReadString();
     int32_t fsType = data.ReadInt32();
     std::string fsUuid = data.ReadString();
@@ -368,6 +386,9 @@ int32_t StorageManagerStub::HandleNotifyVolumeMounted(MessageParcel &data, Messa
 
 int32_t StorageManagerStub::HandleNotifyVolumeDestroyed(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     std::string volumeId = data.ReadString();
     NotifyVolumeDestroyed(volumeId);
     LOGI("StorageManagerStub::HandleNotifyVolumeDestroyed");
@@ -404,6 +425,9 @@ int32_t StorageManagerStub::HandleUnmount(MessageParcel &data, MessageParcel &re
 
 int32_t StorageManagerStub::HandleNotifyDiskCreated(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     auto disk = Disk::Unmarshalling(data);
     NotifyDiskCreated(*disk);
     return E_OK;
@@ -411,6 +435,9 @@ int32_t StorageManagerStub::HandleNotifyDiskCreated(MessageParcel &data, Message
 
 int32_t StorageManagerStub::HandleNotifyDiskDestroyed(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     std::string diskId = data.ReadString();
     NotifyDiskDestroyed(diskId);
     return E_OK;
@@ -542,6 +569,9 @@ int32_t StorageManagerStub::HandleGetDiskById(MessageParcel &data, MessageParcel
 
 int32_t StorageManagerStub::HandleGenerateUserKeys(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     uint32_t userId = data.ReadUint32();
     uint32_t flags = data.ReadUint32();
     int32_t err = GenerateUserKeys(userId, flags);
@@ -555,6 +585,9 @@ int32_t StorageManagerStub::HandleGenerateUserKeys(MessageParcel &data, MessageP
 
 int32_t StorageManagerStub::HandleDeleteUserKeys(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     uint32_t userId = data.ReadUint32();
     int32_t err = DeleteUserKeys(userId);
     if (!reply.WriteInt32(err)) {
@@ -567,6 +600,9 @@ int32_t StorageManagerStub::HandleDeleteUserKeys(MessageParcel &data, MessagePar
 
 int32_t StorageManagerStub::HandleUpdateUserAuth(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     uint32_t userId = data.ReadUint32();
 
     std::vector<uint8_t> token, oldSecret, newSecret;
@@ -585,6 +621,9 @@ int32_t StorageManagerStub::HandleUpdateUserAuth(MessageParcel &data, MessagePar
 
 int32_t StorageManagerStub::HandleActiveUserKey(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     uint32_t userId = data.ReadUint32();
 
     std::vector<uint8_t> token, secret;
@@ -602,6 +641,9 @@ int32_t StorageManagerStub::HandleActiveUserKey(MessageParcel &data, MessageParc
 
 int32_t StorageManagerStub::HandleInactiveUserKey(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     uint32_t userId = data.ReadUint32();
     int32_t err = InactiveUserKey(userId);
     if (!reply.WriteInt32(err)) {
@@ -614,6 +656,9 @@ int32_t StorageManagerStub::HandleInactiveUserKey(MessageParcel &data, MessagePa
 
 int32_t StorageManagerStub::HandleUpdateKeyContext(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
     uint32_t userId = data.ReadUint32();
     int32_t err = UpdateKeyContext(userId);
     if (!reply.WriteInt32(err)) {
