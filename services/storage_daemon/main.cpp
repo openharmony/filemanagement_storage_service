@@ -18,8 +18,6 @@
 #include "disk/disk_config.h"
 #include "disk/disk_info.h"
 #include "disk/disk_manager.h"
-#include "file_sharing/acl.h"
-#include "file_sharing/file_sharing.h"
 #include "ipc/storage_daemon.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
@@ -120,13 +118,6 @@ int main()
     } while (true);
 
     StorageDaemon::DiskManager::Instance()->ReplayUevent();
-
-#ifdef USER_FILE_SHARING
-    if (StorageDaemon::SetupFileSharingDir() == -1) {
-        LOGE("Failed to set up the directory for file sharing");
-    }
-#endif
-
     IPCSkeleton::JoinWorkThread();
 
     return 0;
