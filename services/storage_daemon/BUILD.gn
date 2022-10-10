@@ -27,7 +27,7 @@ ohos_prebuilt_etc("storage_daemon_cfg") {
 config("storage_daemon_config") {
   include_dirs = [
     "include",
-    "//commonlibrary/c_utils/base/include",
+    "//third_party/bounds_checking_function/include",
     "//foundation/systemabilitymgr/samgr/interfaces/innerkits/samgr_proxy/include",
     "../storage_manager/include",
     "//foundation/systemabilitymgr/safwk/interfaces/innerkits/safwk",
