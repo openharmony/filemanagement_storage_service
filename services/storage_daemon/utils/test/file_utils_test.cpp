@@ -52,6 +52,8 @@ public:
 
 void FileUtilsTest::SetUp(void)
 {
+    mode_t mode = 002;
+    umask(mode);
     StorageTest::StorageTestUtils::RmDirRecurse(PATH_CHMOD);
     StorageTest::StorageTestUtils::RmDirRecurse(PATH_CHOWN);
     StorageTest::StorageTestUtils::RmDirRecurse(PATH_MKDIR);

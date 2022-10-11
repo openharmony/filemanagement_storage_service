@@ -19,7 +19,8 @@
 |  -------------  | ---------------------------------------- |
 | 多用户管理      | 负责管理用户，并调用storage_manager提供的能力管理相应用户的数据目录。 |
 | 包管理          | 负责提供包的管理功能。为storage_manager提供指定用户、指定包名对应的空间大小。 |
-| FileManagerService            | 负责提供对文件的管理功能。需要storage_manager提供的卷信息。 |
+| 媒体库服务| 负责提供媒体文件信息，为storage_manager提供指定用户的各类媒体文件的空间大小。 |
+| 公共文件访问框架            | 负责提供对文件的管理功能。需要storage_manager提供的卷信息。 |
 
 ## 目录
 ```
@@ -38,4 +39,10 @@
 
 ## 相关仓
 [多用户管理](http:////gitee.com/openharmony/account_os_account)  
-[包管理](http://gitee.com/openharmony/appexecfwk_standard)
+[包管理](http://gitee.com/openharmony/appexecfwk_standard)  
+[媒体库服务](https://gitee.com/openharmony/multimedia_medialibrary_standard)  
+[公共文件访问框架](https://gitee.com/openharmony/filemanagement_user_file_service)  
+[文件访问接口](https://gitee.com/openharmony/filemanagement_file_api)  
+[分布式文件服务](https://gitee.com/openharmony/filemanagement_dfs_service)  
+[应用文件服务](https://gitee.com/openharmony/filemanagement_app_file_service)  
+[**存储管理服务**](https://gitee.com/openharmony/filemanagement_storage_service)  

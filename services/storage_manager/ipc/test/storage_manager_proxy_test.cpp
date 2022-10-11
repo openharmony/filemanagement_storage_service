@@ -65,7 +65,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_PrepareAddUser_0000, tes
     auto proxy = iface_cast<IStorageManager>(remote);
     ASSERT_TRUE(proxy != nullptr) << "fail to get proxy";
     int32_t result = proxy->PrepareAddUser(userId, flag);
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
     proxy->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_PrepareAddUser_0000";
 }
@@ -136,7 +136,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_PrepareAddUser_0003, tes
     auto proxy = iface_cast<IStorageManager>(remote);
     proxy->PrepareAddUser(userId, flag);
     int32_t result = proxy->PrepareAddUser(userId, flag);
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
     proxy->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_PrepareAddUser_0003";
 }
@@ -160,7 +160,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_RemoveUser_0000, testing
     auto proxy = iface_cast<IStorageManager>(remote);
     proxy->PrepareAddUser(userId, flag);
     int32_t result = proxy->RemoveUser(userId, flag);
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_RemoveUser_0000";
 }
 
@@ -182,7 +182,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_RemoveUser_0001, testing
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<IStorageManager>(remote);
     int32_t result = proxy->RemoveUser(userId, flag);
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_RemoveUser_0001";
 }
 
@@ -228,7 +228,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_PrepareStartUser_0000, t
     auto proxy = iface_cast<IStorageManager>(remote);
     proxy->PrepareAddUser(userId, flag);
     int32_t result = proxy->PrepareStartUser(userId);
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
     proxy->StopUser(userId);
     proxy->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_PrepareStartUser_0000";
@@ -298,7 +298,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_StopUser_0000, testing::
     proxy->PrepareAddUser(userId, flag);
     proxy->PrepareStartUser(userId);
     int32_t result = proxy->StopUser(userId);
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
     proxy->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_StopUser_0000";
 }
@@ -512,7 +512,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyVolumeMounted_0000
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<IStorageManager>(remote);
     int64_t result = proxy->NotifyVolumeMounted(volumeId, fsType, fsUuid, path, description);
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << result;
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_NotifyVolumeMounted_0000";
 }
@@ -534,7 +534,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyVolumeDestroyed_00
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<IStorageManager>(remote);
     int64_t result = proxy->NotifyVolumeDestroyed(volumeId);
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << result;
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_NotifyVolumeDestroyed_0000";
 }

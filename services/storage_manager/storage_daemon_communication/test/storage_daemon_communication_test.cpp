@@ -317,6 +317,9 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteUserKeys_000
     int32_t result = -1;
     int32_t userId = 107;
     if (sdCommunication != nullptr) {
+        int32_t flags = 3;
+        result = sdCommunication->GenerateUserKeys(userId, flags);
+        EXPECT_EQ(result, E_OK);
         result = sdCommunication->DeleteUserKeys(userId);
     }
     EXPECT_EQ(result, E_OK);
@@ -340,7 +343,12 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateUserAuth_000
     int32_t result = -1;
     uint32_t userId = 108;
     if (sdCommunication != nullptr) {
+        int32_t flags = 3;
+        result = sdCommunication->PrepareAddUser(userId, flags);
+        EXPECT_EQ(result, E_OK);
         result = sdCommunication->UpdateUserAuth(userId, {}, {}, {});
+        EXPECT_EQ(result, E_OK);
+        sdCommunication->RemoveUser(userId, flags);
     }
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UpdateUserAuth_0000 SUCCESS";
@@ -363,7 +371,12 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ActiveUserKey_0000
     int32_t result = -1;
     uint32_t userId = 109;
     if (sdCommunication != nullptr) {
+        int32_t flags = 3;
+        result = sdCommunication->PrepareAddUser(userId, flags);
+        EXPECT_EQ(result, E_OK);
         result = sdCommunication->ActiveUserKey(userId, {}, {});
+        EXPECT_EQ(result, E_OK);
+        sdCommunication->RemoveUser(userId, flags);
     }
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_ActiveUserKey_0000 SUCCESS";
@@ -386,9 +399,14 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateKeyContext_0
     int32_t result = -1;
     uint32_t userId = 110;
     if (sdCommunication != nullptr) {
+        int32_t flags = 3;
+        result = sdCommunication->PrepareAddUser(userId, flags);
+        EXPECT_EQ(result, E_OK);
         result = sdCommunication->UpdateKeyContext(userId);
+        EXPECT_EQ(result, -EFAULT);
+        sdCommunication->RemoveUser(userId, flags);
     }
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, -EFAULT);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UpdateKeyContext_0000 SUCCESS";
 }
 } // namespace
