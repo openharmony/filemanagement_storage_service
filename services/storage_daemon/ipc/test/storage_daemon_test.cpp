@@ -176,7 +176,7 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_StartUser_002, Tes
     ASSERT_TRUE(storageDaemon_ != nullptr);
 
     int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1 | IStorageDaemon::CRYPTO_FLAG_EL2;
-    auto ret = UserManager::GetInstance()->PrepareUserDirs(StorageTest::StorageTestUtils::USER_ID5, flags);
+    auto ret = storageDaemon_->PrepareUserDirs(StorageTest::StorageTestUtils::USER_ID5, flags);
     EXPECT_TRUE(ret == E_OK) << "create user dirs error";
 
     ret = storageDaemon_->StartUser(StorageTest::StorageTestUtils::USER_ID5);
@@ -263,9 +263,9 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_StopUser_003, Test
     ASSERT_TRUE(storageDaemon_ != nullptr);
 
     int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1 | IStorageDaemon::CRYPTO_FLAG_EL2;
-    auto ret = UserManager::GetInstance()->PrepareUserDirs(StorageTest::StorageTestUtils::USER_ID3, flags);
+    auto ret = storageDaemon_->PrepareUserDirs(StorageTest::StorageTestUtils::USER_ID3, flags);
     EXPECT_TRUE(ret == E_OK) << "PrepareUserDirs error";
-    ret = UserManager::GetInstance()->StartUser(StorageTest::StorageTestUtils::USER_ID3);
+    ret = storageDaemon_->StartUser(StorageTest::StorageTestUtils::USER_ID3);
     EXPECT_TRUE(ret == E_OK) << "StartUser error";
 
     ret = storageDaemon_->StopUser(StorageTest::StorageTestUtils::USER_ID3);
