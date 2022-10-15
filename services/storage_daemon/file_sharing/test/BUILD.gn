@@ -26,9 +26,45 @@ ohos_moduletest("AclTest") {
   ]
 
   deps = [ "//third_party/googletest:gtest_main" ]
+
+  external_deps = [ "c_utils:utils" ]
+}
+
+ohos_moduletest("SetAclTest") {
+  module_out_path = "filemanagement/storage_service/storage_daemon"
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "LOG_DOMAIN = 0xD004301",
+  ]
+
+  include_dirs = [
+    "../../include",
+    "//commonlibrary/c_utils/base/include",
+    "//foundation/filemanagement/storage_service/services/common/include",
+  ]
+
+  sources = [
+    "../src/acl.cpp",
+    "../src/setacl.cpp",
+    "setacl_test.cpp",
+  ]
+
+  deps = [
+    "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
+    "//third_party/googletest:gtest_main",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "hiviewdfx_hilog_native:libhilog",
+  ]
 }
 
 group("file_sharing_test") {
   testonly = true
-  deps = [ ":AclTest" ]
+  deps = [
+    ":AclTest",
+    ":SetAclTest",
+  ]
 }
