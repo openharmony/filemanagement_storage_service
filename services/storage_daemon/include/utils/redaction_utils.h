@@ -23,14 +23,15 @@ const std::string REDACTION_MOUNT_POINT_DIR = "/local/redaction";
 
 namespace OHOS {
 namespace StorageDaemon {
-class RedactionUtils {
+
+class RedactionUtils{
 public:
-    static int32_t MountRedactionFs(const int32_t userId);
-    static void UMountRedactionFs(const int32_t userId);
-    static bool CheckRedactionFsMounted(const int32_t userId);
+    static int32_t MountRedactionFs(int32_t userId);
+    static void UMountRedactionFs(int32_t userId);
+    static bool CheckRedactionFsMounted(int32_t userId);
     static bool SupportedRedactionFs();
 private:
-    static std::string GetRedactionMountPoint(const int32_t userId);
+    static std::string GetRedactionMountPoint(int32_t userId);
 };
 }
 }
