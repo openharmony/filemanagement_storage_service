@@ -19,14 +19,22 @@
 #include "storage_daemon_communication/storage_daemon_communication.h"
 #include "user/multi_user_manager_service.h"
 #include "storage_service_errno.h"
+#include "parameters.h"
 
 namespace {
 using namespace std;
 using namespace OHOS;
 using namespace StorageManager;
+const string DISTRIBUTED_FILE_PROPERTY = "const.distributed_file_property.enabled";
+bool g_fscryptEnable = false;
 class StorageDaemonCommunicationTest : public testing::Test {
 public:
-    static void SetUpTestCase(void) {};
+    static void SetUpTestCase(void)
+    {
+        if (system::GetBoolParameter(DISTRIBUTED_FILE_PROPERTY, false)) {
+            g_fscryptEnable = true;
+        }
+    }
     static void TearDownTestCase() {};
     void SetUp() {};
     void TearDown() {};
@@ -403,10 +411,18 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateKeyContext_0
         result = sdCommunication->PrepareAddUser(userId, flags);
         EXPECT_EQ(result, E_OK);
         result = sdCommunication->UpdateKeyContext(userId);
-        EXPECT_EQ(result, -EFAULT);
+        if (g_fscryptEnable) {
+            EXPECT_EQ(result, -EFAULT);
+        } else {
+            EXPECT_EQ(result, E_OK);
+        }
         sdCommunication->RemoveUser(userId, flags);
     }
-    EXPECT_EQ(result, -EFAULT);
+    if (g_fscryptEnable) {
+        EXPECT_EQ(result, -EFAULT);
+    } else {
+        EXPECT_EQ(result, E_OK);
+    }
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UpdateKeyContext_0000 SUCCESS";
 }
 } // namespace
