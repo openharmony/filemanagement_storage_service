@@ -103,6 +103,9 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_init, TestSize.Level1)
 HWTEST_F(CryptoKeyTest, fscrypt_key_v2_init, TestSize.Level1)
 {
 #ifdef SUPPORT_FSCRYPT_V2
+    if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) == FSCRYPT_V1) {
+        return;
+    }
     EXPECT_TRUE(g_testKeyV2.InitKey());
     EXPECT_EQ(FSCRYPT_V2, g_testKeyV2.keyInfo_.version);
     EXPECT_EQ(CRYPTO_AES_256_XTS_KEY_SIZE, g_testKeyV2.keyInfo_.key.size);
@@ -152,6 +155,9 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_store, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v2_store, TestSize.Level1)
 {
+    if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) == FSCRYPT_V1) {
+        return;
+    }
     g_testKeyV2.ClearKey();
     EXPECT_TRUE(g_testKeyV2.InitKey());
     EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
@@ -178,6 +184,9 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_store, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v2_update, TestSize.Level1)
 {
+    if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) == FSCRYPT_V1) {
+        return;
+    }
     std::string buf {};
     EXPECT_TRUE(g_testKeyV2.UpdateKey());
 
@@ -199,6 +208,9 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_update, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_restore_fail_wrong_version, TestSize.Level1)
 {
+    if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) == FSCRYPT_V1) {
+        return;
+    }
     g_testKeyV1.keyInfo_.key.Clear();
     // the version loaded is v2, not expected v1.
     EXPECT_FALSE(g_testKeyV1.RestoreKey(emptyUserAuth));
@@ -338,6 +350,9 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_key_inactive, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v2_active, TestSize.Level1)
 {
+    if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) == FSCRYPT_V1) {
+        return;
+    }
     g_testKeyV2.ClearKey();
     EXPECT_TRUE(g_testKeyV2.InitKey());
     EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
@@ -358,6 +373,9 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_active, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_set, TestSize.Level1)
 {
+    if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) == FSCRYPT_V1) {
+        return;
+    }
     EXPECT_EQ(FSCRYPT_V2, g_testKeyV2.keyInfo_.version);
     FscryptPolicy arg;
     (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
@@ -385,6 +403,9 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_set, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_get, TestSize.Level1)
 {
+    if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) == FSCRYPT_V1) {
+        return;
+    }
     struct fscrypt_get_policy_ex_arg arg;
     (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
     arg.policy_size = sizeof(arg.policy);
@@ -406,6 +427,9 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_get, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_inactive, TestSize.Level1)
 {
+    if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) == FSCRYPT_V1) {
+        return;
+    }
     EXPECT_TRUE(g_testKeyV2.InactiveKey());
     // When the v2 policy removed, the files are encrypted.
     EXPECT_FALSE(OHOS::FileExists(TEST_DIR_V2 + "/test_dir"));
@@ -421,6 +445,9 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_inactive, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_restore, TestSize.Level1)
 {
+    if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) == FSCRYPT_V1) {
+        return;
+    }
     EXPECT_TRUE(g_testKeyV2.RestoreKey(emptyUserAuth));
     EXPECT_EQ(FSCRYPT_V2, g_testKeyV2.keyInfo_.version);
     EXPECT_TRUE(g_testKeyV2.ActiveKey());
@@ -441,6 +468,9 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_restore, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_default, TestSize.Level1)
 {
+    if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) == FSCRYPT_V1) {
+        return;
+    }
     g_testKeyV2.ClearKey();
     EXPECT_TRUE(g_testKeyV2.InitKey());
     EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
@@ -470,6 +500,9 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_default, TestSize.Lev
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_load_and_set_policy_default, TestSize.Level1)
 {
+    if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) == FSCRYPT_V1) {
+        return;
+    }
     g_testKeyV1.ClearKey();
     EXPECT_TRUE(g_testKeyV1.InitKey());
     EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
@@ -499,6 +532,9 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_load_and_set_policy_default, TestSize.Lev
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_storekey_version_test_1, TestSize.Level1)
 {
+    if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) == FSCRYPT_V1) {
+        return;
+    }
     EXPECT_TRUE(g_testKeyV2.InitKey());
 
     // storekey to version 0
@@ -538,6 +574,9 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_storekey_version_test_1, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_storekey_version_test_2, TestSize.Level1)
 {
+    if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) == FSCRYPT_V1) {
+        return;
+    }
     EXPECT_TRUE(g_testKeyV2.RestoreKey(emptyUserAuth));
 
     // storekey to version 0
@@ -569,6 +608,9 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_storekey_version_test_2, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_padding_4, TestSize.Level1)
 {
+    if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) == FSCRYPT_V1) {
+        return;
+    }
     g_testKeyV2.ClearKey();
     EXPECT_TRUE(g_testKeyV2.InitKey());
     EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
