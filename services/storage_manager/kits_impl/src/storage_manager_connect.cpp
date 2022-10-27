@@ -20,7 +20,6 @@
 
 #include "ipc/storage_manager.h"
 #include "ipc/storage_manager_proxy.h"
-#include "storage/storage_status_service.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 
@@ -34,20 +33,30 @@ StorageManagerConnect::~StorageManagerConnect() {}
 int32_t StorageManagerConnect::Connect()
 {
     LOGI("StorageManagerConnect::Connect start");
-    auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    if (sam == nullptr) {
-        LOGE("StorageManagerConnect::Connect samgr == nullptr");
-        return E_SA_IS_NULLPTR;
-    }
-    auto object = sam->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
-    if (object == nullptr) {
-        LOGE("StorageManagerConnect::Connect object == nullptr");
-        return E_REMOTE_IS_NULLPTR;
-    }
-    storageManager_ = iface_cast<StorageManager::IStorageManager>(object);
     if (storageManager_ == nullptr) {
-        LOGE("StorageManagerConnect::Connect service == nullptr");
-        return E_SERVICE_IS_NULLPTR;
+        std::lock_guard<std::mutex> lock(mutex_);
+        auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+        if (sam == nullptr) {
+            LOGE("StorageManagerConnect::Connect samgr == nullptr");
+            return E_SA_IS_NULLPTR;
+        }
+        auto object = sam->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+        if (object == nullptr) {
+            LOGE("StorageManagerConnect::Connect object == nullptr");
+            return E_REMOTE_IS_NULLPTR;
+        }
+        storageManager_ = iface_cast<StorageManager::IStorageManager>(object);
+        if (storageManager_ == nullptr) {
+            LOGE("StorageManagerConnect::Connect service == nullptr");
+            return E_SERVICE_IS_NULLPTR;
+        }
+        deathRecipient_ = new (std::nothrow) SmDeathRecipient();
+        if (deathRecipient_ == nullptr) {
+            LOGE("StorageManagerConnect::Connect failed to create death recipient");
+            return E_DEATH_RECIPIENT_IS_NULLPTR;
+        }
+
+        storageManager_->AsObject()->AddDeathRecipient(deathRecipient_);
     }
     LOGI("StorageManagerConnect::Connect end");
     return E_OK;
@@ -239,6 +248,23 @@ bool StorageManagerConnect::Partition(std::string diskId, int32_t type)
         return true;
     }
     return false;
+}
+
+int32_t StorageManagerConnect::ResetProxy()
+{
+    LOGD("enter");
+    std::lock_guard<std::mutex> lock(mutex_);
+    if ((storageManager_ != nullptr) && (storageManager_->AsObject() != nullptr)) {
+        storageManager_->AsObject()->RemoveDeathRecipient(deathRecipient_);
+    }
+    storageManager_ = nullptr;
+
+    return E_OK;
+}
+
+void SmDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
+{
+    DelayedSingleton<StorageManagerConnect>::GetInstance()->ResetProxy();
 }
 } // StorageManager
 } // OHOS
