@@ -91,7 +91,31 @@ HWTEST_F(SetAclTest, SetAclTest_002, TestSize.Level1)
     int rc = MkDir(PATH_TEST, mode);
     ASSERT_TRUE(rc == 0) << "directory creation failed";
 
+    rc = AclSetDefault(PATH_TEST, "u:rot:rw");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+
     rc = AclSetDefault(PATH_TEST, "g:rot:rw");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+
+    rc = AclSetDefault(PATH_TEST, "o:rot:rw");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+
+    rc = AclSetDefault(PATH_TEST, "o:root:rw");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+
+    rc = AclSetDefault(PATH_TEST, "w:root:rw");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+
+    rc = AclSetDefault(PATH_TEST, "u:root;rw");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+
+    rc = AclSetDefault(PATH_TEST, "u;root;rw");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+
+    rc = AclSetDefault(PATH_TEST, "u:root:");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+
+    rc = AclSetDefault(PATH_TEST, "u:root:rv");
     EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
 
     GTEST_LOG_(INFO) << "SetAclTest_002 ends";
@@ -111,7 +135,13 @@ HWTEST_F(SetAclTest, SetAclTest_003, TestSize.Level1)
     int rc = MkDir(PATH_TEST, mode);
     ASSERT_TRUE(rc == 0) << "directory creation failed";
 
-    rc = AclSetDefault(PATH_TEST, "g:root:rw");
+    rc = AclSetDefault(PATH_TEST, "u:root:rw");
+    EXPECT_TRUE(rc == 0) << "it should succeed";
+
+    rc = AclSetDefault(PATH_TEST, "g:root:rx");
+    EXPECT_TRUE(rc == 0) << "it should succeed";
+
+    rc = AclSetDefault(PATH_TEST, "o::rw");
     EXPECT_TRUE(rc == 0) << "it should succeed";
 
     GTEST_LOG_(INFO) << "SetAclTest_003 ends";
