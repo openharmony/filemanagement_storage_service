@@ -18,14 +18,23 @@
 
 #include "storage_daemon_communication/storage_daemon_communication.h"
 #include "user/multi_user_manager_service.h"
+#include "storage_service_errno.h"
+#include "parameters.h"
 
 namespace {
 using namespace std;
 using namespace OHOS;
 using namespace StorageManager;
+const string DISTRIBUTED_FILE_PROPERTY = "const.distributed_file_property.enabled";
+bool g_fscryptEnable = false;
 class MultiUserManagerServiceTest : public testing::Test {
 public:
-    static void SetUpTestCase(void) {};
+    static void SetUpTestCase(void)
+    {
+        if (system::GetBoolParameter(DISTRIBUTED_FILE_PROPERTY, false)) {
+            g_fscryptEnable = true;
+        }
+    };
     static void TearDownTestCase() {};
     void SetUp() {};
     void TearDown() {};
@@ -123,7 +132,11 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareAddUser_0003, 
         service->PrepareAddUser(userId, flag);
         result = service->PrepareAddUser(userId, flag);
     }
-    EXPECT_EQ(result, -EEXIST);
+    if (g_fscryptEnable) {
+        EXPECT_EQ(result, -EEXIST);
+    } else {
+        EXPECT_EQ(result, E_OK);
+    }
     service->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_PrepareAddUser_0003";
 }
@@ -171,7 +184,11 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_RemoveUser_0001, test
     if (service != nullptr) {
         result = service->RemoveUser(userId, flag);
     }
-    EXPECT_EQ(result, -EFAULT);
+    if (g_fscryptEnable) {
+        EXPECT_EQ(result, -EFAULT);
+    } else {
+        EXPECT_EQ(result, E_OK);
+    }
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_RemoveUser_0001";
 }
 
