@@ -39,9 +39,9 @@ StorageDaemonCommunication::~StorageDaemonCommunication()
 
 int32_t StorageDaemonCommunication::Connect()
 {
-    int32_t err = 0;
     LOGI("StorageDaemonCommunication::Connect start");
     if (storageDaemon_ == nullptr) {
+        std::lock_guard<std::mutex> lock(mutex_);
         auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
         if (sam == nullptr) {
             LOGE("StorageDaemonCommunication::Connect samgr nullptr");
@@ -57,9 +57,16 @@ int32_t StorageDaemonCommunication::Connect()
             LOGE("StorageDaemonCommunication::Connect service nullptr");
             return E_SERVICE_IS_NULLPTR;
         }
+        deathRecipient_ = new (std::nothrow) SdDeathRecipient();
+        if (deathRecipient_ == nullptr) {
+            LOGE("StorageDaemonCommunication::Connect failed to create death recipient");
+            return E_DEATH_RECIPIENT_IS_NULLPTR;
+        }
+
+        storageDaemon_->AsObject()->AddDeathRecipient(deathRecipient_);
     }
     LOGI("StorageDaemonCommunication::Connect end");
-    return err;
+    return E_OK;
 }
 
 int32_t StorageDaemonCommunication::PrepareAddUser(int32_t userId, uint32_t flags)
@@ -241,6 +248,23 @@ int32_t StorageDaemonCommunication::UpdateKeyContext(uint32_t userId)
         return err;
     }
     return storageDaemon_->UpdateKeyContext(userId);
+}
+
+int32_t StorageDaemonCommunication::ResetSdProxy()
+{
+    LOGD("enter");
+    std::lock_guard<std::mutex> lock(mutex_);
+    if ((storageDaemon_ != nullptr) && (storageDaemon_->AsObject() != nullptr)) {
+        storageDaemon_->AsObject()->RemoveDeathRecipient(deathRecipient_);
+    }
+    storageDaemon_ = nullptr;
+
+    return E_OK;
+}
+
+void SdDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
+{
+    DelayedSingleton<StorageDaemonCommunication>::GetInstance()->ResetSdProxy();
 }
 } // namespace StorageManager
 } // namespace OHOS
