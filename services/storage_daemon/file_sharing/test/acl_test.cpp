@@ -180,7 +180,7 @@ HWTEST_F(AclTest, acl_insert_test, TestSize.Level1)
      * first 99 operations should succeed
      */
     constexpr size_t ENTRIES_MAX_NUM = 100; // check Acl::ENTRIES_MAX_NUM
-    for (int i = 1; i <= (ENTRIES_MAX_NUM - 1); ++i) {
+    for (size_t i = 1; i <= (ENTRIES_MAX_NUM - 1); ++i) {
         rc = acl.InsertEntry(
                 { .tag = ACL_TAG::USER,
                   .perm = perm,
@@ -197,6 +197,42 @@ HWTEST_F(AclTest, acl_insert_test, TestSize.Level1)
     EXPECT_TRUE(rc != 0);
 }
 
+int CreateValidBasicAcl(Acl &out)
+{
+    Acl acl;
+    ACL_PERM perm;
+    perm.SetR();
+    perm.SetW();
+
+    int rc = acl.InsertEntry(
+        { .tag = ACL_TAG::USER_OBJ,
+          .perm = perm,
+          .id = ACL_UNDEFINED_ID, }
+        );
+    if (rc != 0) {
+        return rc;
+    }
+    rc = acl.InsertEntry(
+        { .tag = ACL_TAG::GROUP_OBJ,
+          .perm = perm,
+          .id = ACL_UNDEFINED_ID, }
+        );
+    if (rc != 0) {
+        return rc;
+    }
+    rc = acl.InsertEntry(
+        { .tag = ACL_TAG::OTHER,
+          .perm = perm,
+          .id = ACL_UNDEFINED_ID, }
+        );
+    if (rc != 0) {
+        return rc;
+    }
+
+    out = acl;
+    return rc;
+}
+
 /**
  * @tc.name: acl_serialize_test
  * @tc.desc: Verify that Acl::Serialize/DeSerialize() works as expected.
@@ -206,31 +242,14 @@ HWTEST_F(AclTest, acl_insert_test, TestSize.Level1)
 HWTEST_F(AclTest, acl_serialize_test, TestSize.Level1)
 {
     Acl acl1;
+    int rc = CreateValidBasicAcl(acl1);
+    ASSERT_TRUE(rc == 0) << "creating basic ACL failed";
+
     ACL_PERM perm;
     perm.SetR();
     perm.SetW();
-
-    int rc = acl1.InsertEntry(
-            { .tag = ACL_TAG::USER_OBJ,
-              .perm = perm,
-              .id = ACL_UNDEFINED_ID, }
-            );
-    ASSERT_TRUE(rc == 0) << "inserting USER_OBJ entry failed";
-    rc = acl1.InsertEntry(
-            { .tag = ACL_TAG::GROUP_OBJ,
-              .perm = perm,
-              .id = ACL_UNDEFINED_ID, }
-            );
-    ASSERT_TRUE(rc == 0) << "inserting GROUP_OBJ entry failed";
-    rc = acl1.InsertEntry(
-            { .tag = ACL_TAG::OTHER,
-              .perm = perm,
-              .id = ACL_UNDEFINED_ID, }
-            );
-    ASSERT_TRUE(rc == 0) << "inserting OTHER entry failed";
-
     constexpr size_t ENTRIES_TEST = 10;
-    for (int i = 1; i <= ENTRIES_TEST; ++i) {
+    for (size_t i = 1; i <= ENTRIES_TEST; ++i) {
         rc = acl1.InsertEntry(
                 { .tag = ACL_TAG::USER,
                   .perm = perm,
@@ -238,7 +257,7 @@ HWTEST_F(AclTest, acl_serialize_test, TestSize.Level1)
                 );
         ASSERT_TRUE(rc == 0) << "inserting USER entries failed";
     }
-    for (int i = ENTRIES_TEST + 1; i <= ENTRIES_TEST*2; ++i) {
+    for (size_t i = ENTRIES_TEST + 1; i <= ENTRIES_TEST*2; ++i) {
         rc = acl1.InsertEntry(
                 { .tag = ACL_TAG::GROUP,
                   .perm = perm,
@@ -251,8 +270,58 @@ HWTEST_F(AclTest, acl_serialize_test, TestSize.Level1)
     char *buf = acl1.Serialize(bufSize);
     ASSERT_TRUE(buf != nullptr) << "serialization failed";
 
+    rc = acl1.InsertEntry(
+            { .tag = ACL_TAG::GROUP,
+              .perm = perm,
+              .id = ENTRIES_TEST*2 + 1, }
+            );
+    buf = acl1.Serialize(bufSize);
+    ASSERT_TRUE(buf != nullptr) << "post-update serialization failed";
+
     Acl acl2;
     rc = acl2.DeSerialize(buf, bufSize);
     EXPECT_TRUE(rc == 0) << "de-serialization failed";
+}
+
+/**
+ * @tc.name: acl_serialize_test_2
+ * @tc.desc: Covering Acl::Serialize()/DeSerialize()'s exception branches.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09ML
+ */
+HWTEST_F(AclTest, acl_serialize_test_2, TestSize.Level1)
+{
+    /* Invalid ACL for serialization */
+    {
+        Acl acl;
+        size_t bufSize;
+        char *buf = acl.Serialize(bufSize);
+        EXPECT_TRUE(buf == nullptr) << "invalid ACL shouldn't serialize";
+    }
+
+    /* Invalid buffer size for Acl::DeSerialize(): case 1 */
+    {
+        Acl acl;
+        size_t bufSize = 0;
+        char *buf = nullptr;
+        int rc = acl.DeSerialize(buf, bufSize);
+        EXPECT_TRUE(rc != 0) << "invalid binary shouldn't de-serialized";
+    }
+
+    /* Invalid buffer size for Acl::DeSerialize(): case 2 */
+    {
+        Acl acl1;
+        int rc = CreateValidBasicAcl(acl1);
+        ASSERT_TRUE(rc == 0) << "creating basic ACL failed";
+
+        size_t bufSize;
+        char *buf = acl1.Serialize(bufSize);
+        ASSERT_TRUE(buf != nullptr) << "serialization failed";
+
+        Acl acl2;
+        size_t bias = 1;
+        rc = acl2.DeSerialize(buf, bufSize + bias);
+        EXPECT_TRUE(rc != 0) << "de-serializing with wrong bufSize should fail";
+    }
 }
 }
