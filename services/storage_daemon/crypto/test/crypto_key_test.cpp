@@ -17,6 +17,10 @@
 #include <string>
 #include <vector>
 
+#include <stdlib.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
 #include "directory_ex.h"
 #include "file_ex.h"
 #include "fscrypt_key_v1.h"
@@ -53,6 +57,7 @@ class CryptoKeyTest : public testing::Test {
 public:
     static void SetUpTestCase(void);
     static void TearDownTestCase(void);
+    static int32_t ExecSdcBinary(std::vector<std::string> params);
     void SetUp();
     void TearDown();
     UserAuth emptyUserAuth {};
@@ -76,6 +81,70 @@ void CryptoKeyTest::SetUp(void)
 void CryptoKeyTest::TearDown(void)
 {
     // input testcase teardown step，teardown invoked after each testcases
+}
+
+int32_t CryptoKeyTest::ExecSdcBinary(std::vector<std::string> params)
+{
+    if (params.size() == 0) {
+            return 0;
+    }
+    pid_t pid = fork();
+    if (pid < 0) {
+        return -EINVAL;
+    }
+    if (pid == 0) {
+        int ret = -EINVAL;
+        if (params.size() == 1) {
+            const char* const argv[] = {
+                "/system/bin/sdc",
+                "filecrypt",
+                params[0].c_str(),
+                NULL
+            };
+            ret = execv(argv[0], (char *const *)argv);
+        } else if (params.size() == 2) {
+            const char* const argv[] = {
+                "/system/bin/sdc",
+                "filecrypt",
+                params[0].c_str(),
+                params[1].c_str(),
+                NULL
+            };
+            ret = execv(argv[0], (char *const *)argv);
+        } else if (params.size() == 3) {
+             const char* const argv[] = {
+                "/system/bin/sdc",
+                "filecrypt",
+                params[0].c_str(),
+                params[1].c_str(),
+                params[2].c_str(),
+                NULL
+            };
+            ret = execv(argv[0], (char *const *)argv);   
+        } else if (params.size() == 4) {
+             const char* const argv[] = {
+                "/system/bin/sdc",
+                "filecrypt",
+                params[0].c_str(),
+                params[1].c_str(),
+                params[2].c_str(),
+                params[3].c_str(),
+                NULL
+            };
+            ret = execv(argv[0], (char *const *)argv);
+        }
+        if (ret) {
+            return -EINVAL;
+        }  
+
+    }
+    int status;
+    pid_t ret = waitpid(pid, &status, 0);
+    if (ret != pid) {
+        return -EINVAL;
+    }
+
+    return 0;
 }
 
 /**
@@ -694,4 +763,125 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_secure_access_control, TestSize.Level1)
     };
     EXPECT_FALSE(g_testKeyV1.RestoreKey(badUserAuth));
     EXPECT_TRUE(g_testKeyV1.ClearKey());
+}
+
+/**
+ * @tc.name: fscrypt_sdc_filecrypt
+ * @tc.desc: Verify the sdc interface.
+ * @tc.type: FUNC
+ * @tc.require: SR000H0CLT
+ */
+HWTEST_F(CryptoKeyTest, fscrypt_sdc_filecrypt, TestSize.Level1)
+{
+    std::vector<std::string> params;
+
+    // test sdc enable
+    params.push_back("enable");
+    params.push_back("2:abs-256-cts:aes-256-xts");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    params.clear();
+
+    // test sdc init_global_key
+    params.push_back("init_global_key");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    params.clear();
+
+    // test sdc init_main_user
+    params.push_back("init_main_user");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    params.clear();
+
+    // test sdc inactive_user_key
+    params.push_back("inactive_user_key");
+    params.push_back("id");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    params.clear();
+    params.push_back("inactive_user_key");
+    params.push_back("10");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    params.clear();
+
+    // test sdc update_key_context
+    params.push_back("update_key_context");
+    params.push_back("id");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    params.clear();
+    params.push_back("update_key_context");
+    params.push_back("10");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    params.clear();
+
+    // test sdc delete_user_keys
+    params.push_back("delete_user_keys");
+    params.push_back("id");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    params.clear();
+    params.push_back("delete_user_keys");
+    params.push_back("10");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    params.clear();
+
+    // test sdc generate_user_keys
+    params.push_back("generate_user_keys");
+    params.push_back("id");
+    params.push_back("flag");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    params.clear();
+    params.push_back("generate_user_keys");
+    params.push_back("10");
+    params.push_back("0");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    params.clear();
+
+    // test sdc prepare_user_space
+    params.push_back("prepare_user_space");
+    params.push_back("id");
+    params.push_back("flag");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    params.clear();
+    params.push_back("prepare_user_space");
+    params.push_back("10");
+    params.push_back("0");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    params.clear();
+
+    // test sdc destroy_user_space
+    params.push_back("destroy_user_space");
+    params.push_back("id");
+    params.push_back("flag");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    params.clear();
+    params.push_back("destroy_user_space");
+    params.push_back("10");
+    params.push_back("0");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    params.clear();
+
+    // test sdc update_user_auth
+    params.push_back("update_user_auth");
+    params.push_back("id");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    params.clear();
+    params.push_back("update_user_auth");
+    params.push_back("10");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    params.clear();
+
+    // test sdc active_user_key
+    params.push_back("active_user_key");
+    params.push_back("id");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    params.clear();
+    params.push_back("active_user_key");
+    params.push_back("10");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    params.clear();
 }
