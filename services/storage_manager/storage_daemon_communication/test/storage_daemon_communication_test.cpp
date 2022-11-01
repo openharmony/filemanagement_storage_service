@@ -25,13 +25,13 @@ namespace {
 using namespace std;
 using namespace OHOS;
 using namespace StorageManager;
-const string DISTRIBUTED_FILE_PROPERTY = "const.distributed_file_property.enabled";
+const string FSCRYPT_POLICY_KEY = "fscrypt.policy.config";
 bool g_fscryptEnable = false;
 class StorageDaemonCommunicationTest : public testing::Test {
 public:
     static void SetUpTestCase(void)
     {
-        if (system::GetBoolParameter(DISTRIBUTED_FILE_PROPERTY, false)) {
+        if (system::GetBoolParameter(FSCRYPT_POLICY_KEY, false)) {
             g_fscryptEnable = true;
         }
     }
