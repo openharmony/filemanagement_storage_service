@@ -28,6 +28,7 @@
 #include "key_blob.h"
 #include "key_manager.h"
 #include "libfscrypt/fscrypt_control.h"
+#include "libfscrypt/fscrypt_sysparam.h"
 #include "libfscrypt/fscrypt_utils.h"
 #include "libfscrypt/key_control.h"
 #include "securec.h"
@@ -57,7 +58,7 @@ class CryptoKeyTest : public testing::Test {
 public:
     static void SetUpTestCase(void);
     static void TearDownTestCase(void);
-    static int32_t ExecSdcBinary(std::vector<std::string> params);
+    static int32_t ExecSdcBinary(std::vector<std::string> params, int isCrypt);
     void SetUp();
     void TearDown();
     UserAuth emptyUserAuth {};
@@ -83,7 +84,7 @@ void CryptoKeyTest::TearDown(void)
     // input testcase teardown step，teardown invoked after each testcases
 }
 
-int32_t CryptoKeyTest::ExecSdcBinary(std::vector<std::string> params)
+int32_t CryptoKeyTest::ExecSdcBinary(std::vector<std::string> params, int isCrypt)
 {
     if (params.size() == 0) {
             return 0;
@@ -94,48 +95,61 @@ int32_t CryptoKeyTest::ExecSdcBinary(std::vector<std::string> params)
     }
     if (pid == 0) {
         int ret = -EINVAL;
-        if (params.size() == 1) {
-            const char* const argv[] = {
-                "/system/bin/sdc",
-                "filecrypt",
-                params[0].c_str(),
+        if (!isCrypt) {
+             char * const argv[] = {
+                (char *)"/system/bin/sdc",
+                (char *)"nullcmd",
                 NULL
             };
-            ret = execv(argv[0], (char *const *)argv);
+            ret = execv(argv[0], argv);
+        } else if (params.size() == 0) {
+            char * const argv[] = {
+                (char *)"/system/bin/sdc",
+                NULL
+            };
+            ret = execv(argv[0], argv);
+        } else if (params.size() == 1) {
+            char * const argv[] = {
+                (char *)"/system/bin/sdc",
+                (char *)"filecrypt",
+                (char *)params[0].c_str(),
+                NULL
+            };
+            ret = execv(argv[0], argv);
         } else if (params.size() == 2) {
-            const char* const argv[] = {
-                "/system/bin/sdc",
-                "filecrypt",
-                params[0].c_str(),
-                params[1].c_str(),
+            char * const argv[] = {
+                (char *)"/system/bin/sdc",
+                (char *)"filecrypt",
+                (char *)params[0].c_str(),
+                (char *)params[1].c_str(),
                 NULL
             };
-            ret = execv(argv[0], (char *const *)argv);
+            ret = execv(argv[0], argv);
         } else if (params.size() == 3) {
-             const char* const argv[] = {
-                "/system/bin/sdc",
-                "filecrypt",
-                params[0].c_str(),
-                params[1].c_str(),
-                params[2].c_str(),
+             char * const argv[] = {
+                (char *)"/system/bin/sdc",
+                (char *)"filecrypt",
+                (char *)params[0].c_str(),
+                (char *)params[1].c_str(),
+                (char *)params[2].c_str(),
                 NULL
             };
-            ret = execv(argv[0], (char *const *)argv);   
+            ret = execv(argv[0], argv);
         } else if (params.size() == 4) {
-             const char* const argv[] = {
-                "/system/bin/sdc",
-                "filecrypt",
-                params[0].c_str(),
-                params[1].c_str(),
-                params[2].c_str(),
-                params[3].c_str(),
+             char * const argv[] = {
+                (char *)"/system/bin/sdc",
+                (char *)"filecrypt",
+                (char *)params[0].c_str(),
+                (char *)params[1].c_str(),
+                (char *)params[2].c_str(),
+                (char *)params[3].c_str(),
                 NULL
             };
-            ret = execv(argv[0], (char *const *)argv);
+            ret = execv(argv[0], argv);
         }
         if (ret) {
             return -EINVAL;
-        }  
+        }
 
     }
     int status;
@@ -391,6 +405,10 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_policy_get, TestSize.Level1)
     (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
     EXPECT_TRUE(KeyCtrlGetPolicy(testDir.c_str(), &arg));
     EXPECT_EQ(FSCRYPT_POLICY_V1, arg.version);
+
+    EXPECT_FALSE(KeyCtrlGetPolicy(NULL, NULL));
+    EXPECT_FALSE(KeyCtrlGetPolicy(testDir.c_str(), NULL));
+
 }
 
 /**
@@ -775,86 +793,118 @@ HWTEST_F(CryptoKeyTest, fscrypt_sdc_filecrypt, TestSize.Level1)
 {
     std::vector<std::string> params;
 
+    // test no param
+    params.clear();
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 0));
+
+    // test not filecrypt param
+    params.clear();
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+
+    // test filecrypt cmd not existed
+    params.push_back("noexisted");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+
     // test sdc enable
     params.push_back("enable");
     params.push_back("2:abs-256-cts:aes-256-xts");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
     params.clear();
+    params.push_back("enable");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
 
     // test sdc init_global_key
     params.push_back("init_global_key");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
     params.clear();
 
     // test sdc init_main_user
     params.push_back("init_main_user");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
     params.clear();
 
     // test sdc inactive_user_key
     params.push_back("inactive_user_key");
     params.push_back("id");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
     params.clear();
     params.push_back("inactive_user_key");
     params.push_back("10");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("inactive_user_key");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
     params.clear();
 
     // test sdc update_key_context
     params.push_back("update_key_context");
     params.push_back("id");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
     params.clear();
     params.push_back("update_key_context");
     params.push_back("10");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("update_key_context");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
     params.clear();
 
     // test sdc delete_user_keys
     params.push_back("delete_user_keys");
     params.push_back("id");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
     params.clear();
     params.push_back("delete_user_keys");
     params.push_back("10");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("delete_user_keys");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
     params.clear();
 
     // test sdc generate_user_keys
     params.push_back("generate_user_keys");
     params.push_back("id");
     params.push_back("flag");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
     params.clear();
     params.push_back("generate_user_keys");
     params.push_back("10");
     params.push_back("0");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("generate_user_keys");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
     params.clear();
 
     // test sdc prepare_user_space
     params.push_back("prepare_user_space");
     params.push_back("id");
     params.push_back("flag");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
     params.clear();
     params.push_back("prepare_user_space");
     params.push_back("10");
     params.push_back("0");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("prepare_user_space");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
     params.clear();
 
     // test sdc destroy_user_space
     params.push_back("destroy_user_space");
     params.push_back("id");
     params.push_back("flag");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
     params.clear();
     params.push_back("destroy_user_space");
     params.push_back("10");
     params.push_back("0");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("destroy_user_space");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
     params.clear();
 
     // test sdc update_user_auth
@@ -862,13 +912,21 @@ HWTEST_F(CryptoKeyTest, fscrypt_sdc_filecrypt, TestSize.Level1)
     params.push_back("id");
     params.push_back("01234567890abcd");
     params.push_back("01234567890abcd");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
     params.clear();
     params.push_back("update_user_auth");
     params.push_back("10");
     params.push_back("01234567890abcd");
     params.push_back("01234567890abcd");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("update_user_auth");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("update_user_auth");
+    params.push_back("10");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
     params.clear();
 
     // test sdc active_user_key
@@ -876,12 +934,62 @@ HWTEST_F(CryptoKeyTest, fscrypt_sdc_filecrypt, TestSize.Level1)
     params.push_back("id");
     params.push_back("01234567890abcd");
     params.push_back("01234567890abcd");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
     params.clear();
     params.push_back("active_user_key");
     params.push_back("10");
     params.push_back("01234567890abcd");
     params.push_back("01234567890abcd");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params));
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
     params.clear();
+    params.push_back("active_user_key");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("active_user_key");
+    params.push_back("10");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+}
+
+/**
+ * @tc.name: libfscrypt api test
+ * @tc.desc: Verify the libfscrypt interface.
+ * @tc.type: FUNC
+ * @tc.require: SR000H0CLT
+ */
+HWTEST_F(CryptoKeyTest, fscrypt_libfscrypt_api, TestSize.Level1)
+{
+    // test api in sysparam_dynamic.c
+    EXPECT_NE(0, GetFscryptParameter(NULL, NULL, NULL, NULL));
+    EXPECT_NE(0, SetFscryptParameter(NULL, NULL));
+
+    // test api in fscrypt_utils.c
+    EXPECT_NE(0, FscryptPolicyEnable(NULL));
+    EXPECT_NE(0, SetFscryptSysparam(NULL));
+
+    // test api in key_control.c
+    EXPECT_EQ(FSCRYPT_INVALID, KeyCtrlLoadVersion(NULL));
+    EXPECT_EQ(FSCRYPT_INVALID, KeyCtrlLoadVersion("/nofile"));
+    EXPECT_EQ(FSCRYPT_INVALID, KeyCtrlGetFscryptVersion(NULL));
+    // version iss not digit
+    OHOS::ForceRemoveDirectory(TEST_DIR_LEGACY);
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(TEST_DIR_LEGACY));
+    std::string testVersionFile = TEST_DIR_LEGACY + "/fscrypt_version";
+    EXPECT_TRUE(OHOS::SaveStringToFile(testVersionFile, "not-digit\n"));
+    EXPECT_EQ(FSCRYPT_INVALID, KeyCtrlLoadVersion(TEST_DIR_LEGACY.c_str()));
+    // bad version
+    OHOS::ForceRemoveDirectory(TEST_DIR_LEGACY);
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(TEST_DIR_LEGACY));
+    testVersionFile = TEST_DIR_LEGACY + "/fscrypt_version";
+    EXPECT_TRUE(OHOS::SaveStringToFile(testVersionFile, "10\n"));
+    EXPECT_EQ(FSCRYPT_INVALID, KeyCtrlLoadVersion(TEST_DIR_LEGACY.c_str()));
+
+    key_serial_t id = 1;
+    EXPECT_NE(0, KeyCtrlGetKeyringId(id, 0));
+
+    // test api in fscrypt_control.c
+    EXPECT_NE(0, LoadAndSetPolicy(NULL, NULL));
+    EXPECT_NE(0, FscryptSetSysparam("2:abs-256-cts"));
+
 }
