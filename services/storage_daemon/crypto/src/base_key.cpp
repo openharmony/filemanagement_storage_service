@@ -353,7 +353,7 @@ bool BaseKey::Decrypt(const UserAuth &auth)
 bool BaseKey::ClearKey(const std::string &mnt)
 {
     LOGD("enter, dir_ = %{public}s", dir_.c_str());
-    InactiveKey(mnt);
+    InactiveKey(USER_DESTROY, mnt);
     keyInfo_.key.Clear();
 
     return OHOS::ForceRemoveDirectory(dir_);

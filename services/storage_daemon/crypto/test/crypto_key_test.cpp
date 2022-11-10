@@ -22,7 +22,9 @@
 #include <unistd.h>
 
 #include "directory_ex.h"
+#include "fbex.h"
 #include "file_ex.h"
+#include "fscrypt_key_v1_ext.h"
 #include "fscrypt_key_v1.h"
 #include "fscrypt_key_v2.h"
 #include "huks_master.h"
@@ -41,7 +43,7 @@ namespace {
 const std::string TEST_MNT = "/data";
 const std::string TEST_DIR_LEGACY = "/data/test/crypto_dir_legacy";
 const std::string TEST_DIR_V2 = "/data/test/crypto_dir";
-const std::string TEST_KEYPATH = "/data/test/keypath";
+const std::string TEST_KEYPATH = "/data/test/key/el2/80";
 const std::string TEST_KEYPATH_BAD = "/sys/test/keypath";
 const std::string TEST_KEYDIR_VERSION0 = "/version_0";
 const std::string TEST_KEYDIR_VERSION1 = "/version_1";
@@ -355,7 +357,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_active, TestSize.Level1)
     EXPECT_FALSE(g_testKeyV1.keyInfo_.key.IsEmpty());
     EXPECT_EQ(FSCRYPT_V1, g_testKeyV1.keyInfo_.version);
 
-    EXPECT_TRUE(g_testKeyV1.ActiveKey());
+    EXPECT_TRUE(g_testKeyV1.ActiveKey(FIRST_CREATE_KEY));
     // raw key should be erase after install to kernel.
     EXPECT_TRUE(g_testKeyV1.keyInfo_.key.IsEmpty());
     EXPECT_TRUE(g_testKeyV1.keyInfo_.keyId.IsEmpty());
@@ -397,7 +399,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_policy_set, TestSize.Level1)
 {
     EXPECT_TRUE(g_testKeyV1.InitKey());
     EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
-    EXPECT_TRUE(g_testKeyV1.ActiveKey());
+    EXPECT_TRUE(g_testKeyV1.ActiveKey(FIRST_CREATE_KEY));
 
     FscryptPolicy arg;
     (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
@@ -448,7 +450,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_policy_get, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_key_inactive, TestSize.Level1)
 {
-    EXPECT_TRUE(g_testKeyV1.InactiveKey());
+    EXPECT_TRUE(g_testKeyV1.InactiveKey(USER_DESTROY));
 
 #ifdef SUPPORT_FSCRYPT_V2
     EXPECT_FALSE(OHOS::ForceCreateDirectory(TEST_DIR_LEGACY + "/test_dir1"));
@@ -616,13 +618,10 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_default, TestSize.Lev
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_load_and_set_policy_default, TestSize.Level1)
 {
-    if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) == FSCRYPT_V1) {
-        return;
-    }
     g_testKeyV1.ClearKey();
     EXPECT_TRUE(g_testKeyV1.InitKey());
     EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
-    EXPECT_TRUE(g_testKeyV1.ActiveKey());
+    EXPECT_TRUE(g_testKeyV1.ActiveKey(FIRST_CREATE_KEY));
 
     EXPECT_EQ(0, SetFscryptSysparam("1:aes-256-cts:aes-256-xts"));
     EXPECT_EQ(0, InitFscryptPolicy());
@@ -764,7 +763,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_padding_4, TestSize.L
  */
 HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys, TestSize.Level1)
 {
-    uint32_t userId = 800;
+    uint32_t userId = 81;
     const string USER_EL1_DIR = "/data/test/user/el1";
     const string USER_EL2_DIR = "/data/test/user/el2";
 
@@ -789,7 +788,7 @@ HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys, TestSize.Level1)
     EXPECT_EQ(0, KeyManager::GetInstance()->UpdateKeyContext(userId));
     KeyManager::GetInstance()->UpdateUserAuth(userId, {'t', 'o', 'k', 'e', 'n'}, {}, {'s', 'e', 'c', 'r', 'e', 't'});
     EXPECT_EQ(-EFAULT, KeyManager::GetInstance()->UpdateKeyContext(userId)); // no need to update keycontext
-    EXPECT_EQ(0, KeyManager::GetInstance()->InActiveUserKey(userId));
+    KeyManager::GetInstance()->InActiveUserKey(userId);                      // may fail on some platforms
     EXPECT_EQ(0, KeyManager::GetInstance()->ActiveUserKey(userId, {}, {}));
     EXPECT_EQ(0, KeyManager::GetInstance()->ActiveUserKey(userId, {}, {})); /// have been actived, also return 0
     EXPECT_EQ(0, KeyManager::GetInstance()->DeleteUserKeys(userId));
@@ -1042,4 +1041,34 @@ HWTEST_F(CryptoKeyTest, fscrypt_libfscrypt_api, TestSize.Level1)
     EXPECT_NE(0, LoadAndSetPolicy(NULL, NULL));
     EXPECT_NE(0, FscryptSetSysparam("2:abs-256-cts"));
 
+}
+
+/**
+ * @tc.name: fscrypt_fbex_utils
+ * @tc.desc: Verify the fbex utils.
+ * @tc.type: FUNC
+ * @tc.require: SR000HE9U7
+ */
+HWTEST_F(CryptoKeyTest, fscrypt_fbex_utils, TestSize.Level1)
+{
+    if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) != FSCRYPT_V1) {
+        return; // skip not v1 fscrypt
+    }
+    if (!FBEX::IsFBEXSupported()) {
+        return; // skip no fbex support
+    }
+    (void)FBEX::IsMspReady();
+    (void)FBEX::GetStatus();
+
+    constexpr uint32_t userId = 82; // test userid
+    uint8_t buf[FBEX_IV_SIZE] = {0};
+    buf[0] = 0xfb; // fitst byte const to kernel
+    buf[1] = 0x30; // second byte const to kernel
+    EXPECT_EQ(0, FBEX::InstallKeyToKernel(userId, TYPE_EL2, buf, FBEX_IV_SIZE, FIRST_CREATE_KEY));
+    EXPECT_EQ(0, FBEX::LockScreenToKernel(userId));
+    EXPECT_EQ(0, FBEX::UnlockScreenToKernel(userId, TYPE_EL3, buf, FBEX_IV_SIZE));
+    uint8_t buf1[FBEX_IV_SIZE] = {0};
+    buf1[0] = 0xfb; // fitst byte const to kernel
+    buf1[1] = 0x30; // second byte const to kernel
+    EXPECT_EQ(0, FBEX::UninstallOrLockUserKeyToKernel(userId, TYPE_EL2, buf1, FBEX_IV_SIZE, USER_DESTROY));
 }
