@@ -12,27 +12,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef STORAGE_DAEMON_CRYPTO_FSCRYPT_KEYV2_H
-#define STORAGE_DAEMON_CRYPTO_FSCRYPT_KEYV2_H
 
-#include "base_key.h"
-#include "libfscrypt/key_control.h"
+#ifndef STORAGE_DAEMON_CRYPTO_FSCRYPT_KEY_V1_EXT_H
+#define STORAGE_DAEMON_CRYPTO_FSCRYPT_KEY_V1_EXT_H
+
+#include <string>
 
 namespace OHOS {
 namespace StorageDaemon {
-// for openharmony kernel 5.10+, prefer using the the FSCRYPT_V2.
-class FscryptKeyV2 final : public BaseKey {
+class FscryptKeyV1Ext {
 public:
-    FscryptKeyV2() = delete;
-    FscryptKeyV2(const std::string &dir, uint8_t keyLen = CRYPTO_AES_256_XTS_KEY_SIZE) : BaseKey(dir, keyLen)
+    FscryptKeyV1Ext() = default;
+    ~FscryptKeyV1Ext() = default;
+    void SetDir(const std::string &dir)
     {
-        keyInfo_.version = FSCRYPT_V2;
+        dir_ = dir;
+        userId_ = GetUserIdFromDir();
+        type_ = GetTypeFromDir();
     }
-    ~FscryptKeyV2() = default;
+    bool ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size);
+    bool InactiveKeyExt(uint32_t flag);
 
-    bool ActiveKey(uint32_t flag = 0, const std::string &mnt = MNT_DATA);
-    bool InactiveKey(uint32_t flag = 0, const std::string &mnt = MNT_DATA);
+private:
+    uint32_t GetUserIdFromDir();
+    uint32_t GetTypeFromDir();
+
+    std::string dir_;
+    uint32_t userId_ = 0;
+    uint32_t type_ = 0;
 };
 } // namespace StorageDaemon
 } // namespace OHOS
-#endif // STORAGE_DAEMON_CRYPTO_FSCRYPT_KEYV2_H
+
+#endif // STORAGE_DAEMON_CRYPTO_FSCRYPT_KEY_V1_EXT_H

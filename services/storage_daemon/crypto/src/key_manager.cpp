@@ -75,7 +75,7 @@ int KeyManager::GenerateAndInstallDeviceKey(const std::string &dir)
         return -EFAULT;
     }
 
-    if (globalEl1Key_->ActiveKey() == false) {
+    if (globalEl1Key_->ActiveKey(FIRST_CREATE_KEY) == false) {
         globalEl1Key_->ClearKey();
         globalEl1Key_ = nullptr;
         LOGE("global security key active failed");
@@ -113,7 +113,7 @@ int KeyManager::RestoreDeviceKey(const std::string &dir)
         return -EFAULT;
     }
 
-    if (globalEl1Key_->ActiveKey() == false) {
+    if (globalEl1Key_->ActiveKey(RETRIEVE_KEY) == false) {
         globalEl1Key_ = nullptr;
         LOGE("global security key active failed");
         return -EFAULT;
@@ -180,7 +180,7 @@ int KeyManager::GenerateAndInstallUserKey(uint32_t userId, const std::string &di
         return -EFAULT;
     }
 
-    if (elKey->ActiveKey() == false) {
+    if (elKey->ActiveKey(FIRST_CREATE_KEY) == false) {
         elKey->ClearKey();
         LOGE("user security key active failed");
         return -EFAULT;
@@ -220,7 +220,7 @@ int KeyManager::RestoreUserKey(uint32_t userId, const std::string &dir, const Us
         return -EFAULT;
     }
 
-    if (elKey->ActiveKey() == false) {
+    if (elKey->ActiveKey(RETRIEVE_KEY) == false) {
         LOGE("user security key active failed");
         return -EFAULT;
     }
@@ -490,7 +490,7 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::vector<uint8_t> &tok
         LOGE("Restore el failed");
         return -EFAULT;
     }
-    if (elKey->ActiveKey() == false) {
+    if (elKey->ActiveKey(RETRIEVE_KEY) == false) {
         LOGE("Active user %{public}u key failed", user);
         return -EFAULT;
     }
@@ -514,7 +514,7 @@ int KeyManager::InActiveUserKey(unsigned int user)
         return -ENOENT;
     }
     auto elKey = userEl2Key_[user];
-    if (elKey->InactiveKey() == false) {
+    if (elKey->InactiveKey(USER_LOGOUT) == false) {
         LOGE("Clear user %{public}u key failed", user);
         return -EFAULT;
     }

@@ -21,6 +21,11 @@
 
 namespace OHOS {
 namespace StorageDaemon {
+const uint8_t RETRIEVE_KEY = 0x0;
+const uint8_t FIRST_CREATE_KEY = 0x6c;
+const uint8_t USER_LOGOUT = 0x0;
+const uint8_t USER_DESTROY = 0x1;
+
 class BaseKey {
 public:
     BaseKey() = delete;
@@ -32,8 +37,8 @@ public:
     bool StoreKey(const UserAuth &auth);
     bool UpdateKey(const std::string &keypath = "");
     bool RestoreKey(const UserAuth &auth);
-    virtual bool ActiveKey(const std::string &mnt = MNT_DATA) = 0;
-    virtual bool InactiveKey(const std::string &mnt = MNT_DATA) = 0;
+    virtual bool ActiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
+    virtual bool InactiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
     bool ClearKey(const std::string &mnt = MNT_DATA);
 
     KeyInfo keyInfo_;
