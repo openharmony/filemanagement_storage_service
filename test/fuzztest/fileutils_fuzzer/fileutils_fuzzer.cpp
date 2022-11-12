@@ -28,7 +28,6 @@ bool FileUtilFuzzTest(const uint8_t *data, size_t size)
     unsigned int ustate = *(reinterpret_cast<const unsigned int *>(data));
     unsigned long flags = *(reinterpret_cast<const unsigned long *>(data));
     int state = *(reinterpret_cast<const int *>(data));
-    bool isActive = *(reinterpret_cast<const bool *>(data));
     char character = *(reinterpret_cast<const char *>(data));
     char *character2 = &character;
     uint32_t state32 = *(reinterpret_cast<const uint32_t *>(data));
@@ -36,7 +35,6 @@ bool FileUtilFuzzTest(const uint8_t *data, size_t size)
     struct StorageDaemon::FileList list = {ustate, metaData};
     std::vector<std::string> metaData2;
     metaData2.push_back(metaData);
-    std::vector<std::string> metaData3;
     std::vector<StorageDaemon::FileList> metaData4;
     metaData4.push_back(list);
     std::string *metaData5 = &metaData;
@@ -54,8 +52,6 @@ bool FileUtilFuzzTest(const uint8_t *data, size_t size)
     StorageDaemon::GetSubDirs(metaData, metaData2);
     StorageDaemon::ReadDigitDir(metaData, metaData4);
     StorageDaemon::ReadFile(metaData, metaData5);
-    StorageDaemon::ForkExec(metaData2, &metaData3);
-    StorageDaemon::TraverseDirUevent(metaData, isActive);
     result = true;
     return result;
 }
