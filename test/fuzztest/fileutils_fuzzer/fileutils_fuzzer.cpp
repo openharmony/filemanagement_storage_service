@@ -37,22 +37,17 @@ bool FileUtilFuzzTest(const uint8_t *data, size_t size)
     metaData2.push_back(metaData);
     std::vector<StorageDaemon::FileList> metaData4;
     metaData4.push_back(list);
-    std::string *metaData5 = &metaData;
-    StorageDaemon::ChMod(metaData, ustate);
-    StorageDaemon::MkDir(metaData, ustate);
+    std::string metaData5;
     StorageDaemon::Mount(metaData, metaData, character2, flags, data);
     StorageDaemon::UMount(metaData);
     StorageDaemon::UMount2(metaData, state);
     StorageDaemon::IsDir(metaData);
-    StorageDaemon::MkDirRecurse(metaData, ustate);
-    StorageDaemon::PrepareDir(metaData, ustate, ustate, ustate);
-    StorageDaemon::RmDirRecurse(metaData);
-    StorageDaemon::TravelChmod(metaData, ustate);
     StorageDaemon::StringToUint32(metaData, state32);
     StorageDaemon::GetSubDirs(metaData, metaData2);
     StorageDaemon::ReadDigitDir(metaData, metaData4);
-    StorageDaemon::ReadFile(metaData, metaData5);
+    StorageDaemon::ReadFile(metaData, &metaData5);
     result = true;
+
     return result;
 }
 } // namespace OHOS
