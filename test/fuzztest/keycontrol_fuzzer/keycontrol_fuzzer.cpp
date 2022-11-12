@@ -19,12 +19,12 @@
 #include <cstdint>
 
 namespace OHOS {
+#ifdef SUPPORT_FSCRYPT_V2
 bool SysparamDynamicFuzzTest(const uint8_t *data, size_t size)
 {
     if ((data == nullptr) || (size <= 0)) {
         return false;
     }
-    bool result = false;
     struct fscrypt_add_key_arg fscryptaddkeyarg;
     struct fscrypt_add_key_arg *fscryptaddkeyarg2 = &fscryptaddkeyarg;
     struct fscrypt_remove_key_arg fscryptremovekeyarg;
@@ -56,9 +56,18 @@ bool SysparamDynamicFuzzTest(const uint8_t *data, size_t size)
     KeyCtrlGetFscryptVersion(character2);
     KeyCtrlLoadVersion(character2);
     KeyCtrlHasFscryptSyspara();
-    result = true;
-    return result;
+    return true;
 }
+#else
+bool SysparamDynamicFuzzTest(const uint8_t *data, size_t size)
+{
+    if ((data == nullptr) || (size <= 0)) {
+        return false;
+    }
+    
+    return true;
+}
+#endif
 } // namespace OHOS
 
 /* Fuzzer entry point */

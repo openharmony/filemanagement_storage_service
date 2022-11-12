@@ -24,15 +24,13 @@ bool SysparamStaticFuzzTest(const uint8_t *data, size_t size)
     if ((data == nullptr) || (size <= 0)) {
         return false;
     }
-    bool result = false;
     char character = *(reinterpret_cast<const char *>(data));
     char *character2 = &character;
     unsigned int len = *(reinterpret_cast<const unsigned int *>(data));
     unsigned int *len2 = &len;
     GetFscryptParameter(character2, character2, character2, len2);
     SetFscryptParameter(character2, character2);
-    result = true;
-    return result;
+    return true;
 }
 } // namespace OHOS
 

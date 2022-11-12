@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 #include "storagestats_fuzzer.h"
-
 #include "storage_stats.h"
 #include <cstddef>
 #include <cstdint>
@@ -24,13 +23,11 @@ bool FileUtilFuzzTest(const uint8_t *data, size_t size)
     if ((data == nullptr) || (size <= 0)) {
         return false;
     }
-    bool result = false;
     Parcel parcel;
     StorageManager::StorageStats storagestats;
     storagestats.Marshalling(parcel);
     storagestats.Unmarshalling(parcel);
-    result = true;
-    return result;
+    return true;
 }
 } // namespace OHOS
 

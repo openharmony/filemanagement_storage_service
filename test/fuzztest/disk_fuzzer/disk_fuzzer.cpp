@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 #include "disk_fuzzer.h"
-
 #include "disk.h"
 #include <cstddef>
 #include <cstdint>
@@ -24,7 +23,6 @@ bool FileUtilFuzzTest(const uint8_t *data, size_t size)
     if ((data == nullptr) || (size <= 0)) {
         return false;
     }
-    bool result = false;
     Parcel parcel;
     StorageManager::Disk disk;
     int32_t flag = *(reinterpret_cast<const int32_t *>(data));
@@ -36,8 +34,7 @@ bool FileUtilFuzzTest(const uint8_t *data, size_t size)
     disk.SetFlag(flag);
     disk.Marshalling(parcel);
     disk.Unmarshalling(parcel);
-    result = true;
-    return result;
+    return true;
 }
 } // namespace OHOS
 

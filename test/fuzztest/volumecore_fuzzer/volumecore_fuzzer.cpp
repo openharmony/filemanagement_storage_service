@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 #include "volumecore_fuzzer.h"
-
 #include "volume_core.h"
 #include <cstddef>
 #include <cstdint>
@@ -24,7 +23,6 @@ bool FileUtilFuzzTest(const uint8_t *data, size_t size)
     if ((data == nullptr) || (size <= 0)) {
         return false;
     }
-    bool result = false;
     Parcel parcel;
     StorageManager::VolumeCore volumecore;
     int32_t state = *(reinterpret_cast<const int32_t *>(data));
@@ -35,8 +33,7 @@ bool FileUtilFuzzTest(const uint8_t *data, size_t size)
     volumecore.SetState(state);
     volumecore.Marshalling(parcel);
     volumecore.Unmarshalling(parcel);
-    result = true;
-    return result;
+    return true;
 }
 } // namespace OHOS
 

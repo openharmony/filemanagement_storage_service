@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 #include "redactionutils_fuzzer.h"
-
 #include "utils/redaction_utils.h"
 #include <cstddef>
 #include <cstdint>
@@ -24,14 +23,12 @@ bool RedactionUtilsFuzzTest(const uint8_t *data, size_t size)
     if ((data == nullptr) || (size <= 0)) {
         return false;
     }
-    bool result = false;
     int32_t state32 = *(reinterpret_cast<const int32_t *>(data));
     StorageDaemon::RedactionUtils::MountRedactionFs(state32);
     StorageDaemon::RedactionUtils::UMountRedactionFs(state32);
     StorageDaemon::RedactionUtils::CheckRedactionFsMounted(state32);
     StorageDaemon::RedactionUtils::SupportedRedactionFs();
-    result = true;
-    return result;
+    return true;
 }
 } // namespace OHOS
 

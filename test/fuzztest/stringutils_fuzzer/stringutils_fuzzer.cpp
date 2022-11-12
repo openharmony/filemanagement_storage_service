@@ -24,15 +24,13 @@ bool StringUtilsFuzzTest(const uint8_t *data, size_t size)
     if ((data == nullptr) || (size <= 0)) {
         return false;
     }
-    bool result = false;
     std::string metaData(reinterpret_cast<const char *>(data), size);
     const char *character = "test";
     StorageDaemon::IsEndWith(metaData, metaData);
     StorageDaemon::StringPrintf(character);
     StorageDaemon::WriteFileSync(character, data, size);
     StorageDaemon::SaveStringToFileSync(metaData, metaData);
-    result = true;
-    return result;
+    return true;
 }
 } // namespace OHOS
 

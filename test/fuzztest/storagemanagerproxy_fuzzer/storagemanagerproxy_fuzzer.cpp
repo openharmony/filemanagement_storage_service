@@ -64,7 +64,7 @@ bool StorageManagerProxyFuzzTest(const uint8_t *data, size_t size)
     prePar.SetVolumeDescription(fsUuid, description);
     prePar.UpdateUserAuth(userId, token, secret, secret);
     prePar.NotifyVolumeMounted(volumeUuid, fsType, fsUuid, path, description);
-    return false;
+    return true;
 }
 
 bool StorageManagerProxyGetFuzzTest(const uint8_t *data, size_t size)
@@ -94,7 +94,7 @@ bool StorageManagerProxyGetFuzzTest(const uint8_t *data, size_t size)
     getStor.GetVolumeById(volumeUuid, vc1);
     getStor.GetFreeSizeOfVolume(volumeUuid);
     getStor.GetTotalSizeOfVolume(volumeUuid);
-    return false;
+    return true;
 }
 
 } // namespace StorageManager

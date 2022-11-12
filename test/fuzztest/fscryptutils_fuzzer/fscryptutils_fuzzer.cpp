@@ -24,13 +24,11 @@ bool FscryptUtilsFuzzTest(const uint8_t *data, size_t size)
     if ((data == nullptr) || (size <= 0)) {
         return false;
     }
-    bool result = false;
     char character = *(reinterpret_cast<const char *>(data));
     char *character2 = &character;
     FscryptPolicyEnable(character2);
     SetFscryptSysparam(character2);
-    result = true;
-    return result;
+    return true;
 }
 } // namespace OHOS
 

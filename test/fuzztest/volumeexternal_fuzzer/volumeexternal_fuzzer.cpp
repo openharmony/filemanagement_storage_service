@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 #include "volumeexternal_fuzzer.h"
-
 #include "volume_external.h"
 #include <cstddef>
 #include <cstdint>
@@ -24,7 +23,6 @@ bool FileUtilFuzzTest(const uint8_t *data, size_t size)
     if ((data == nullptr) || (size <= 0)) {
         return false;
     }
-    bool result = false;
     Parcel parcel;
     StorageManager::VolumeExternal volumeexternal;
     int32_t fsType = *(reinterpret_cast<const int32_t *>(data));
@@ -40,8 +38,7 @@ bool FileUtilFuzzTest(const uint8_t *data, size_t size)
     volumeexternal.Reset();
     volumeexternal.Marshalling(parcel);
     volumeexternal.Unmarshalling(parcel);
-    result = true;
-    return result;
+    return true;
 }
 } // namespace OHOS
 
