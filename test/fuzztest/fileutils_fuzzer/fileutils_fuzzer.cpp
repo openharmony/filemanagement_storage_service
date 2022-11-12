@@ -36,7 +36,7 @@ bool FileUtilFuzzTest(const uint8_t *data, size_t size)
     struct StorageDaemon::FileList list = {ustate, metaData};
     std::vector<std::string> metaData2;
     metaData2.push_back(metaData);
-    std::vector<std::string> *metaData3 = &metaData2;
+    std::vector<std::string> metaData3;
     std::vector<StorageDaemon::FileList> metaData4;
     metaData4.push_back(list);
     std::string *metaData5 = &metaData;
@@ -54,7 +54,7 @@ bool FileUtilFuzzTest(const uint8_t *data, size_t size)
     StorageDaemon::GetSubDirs(metaData, metaData2);
     StorageDaemon::ReadDigitDir(metaData, metaData4);
     StorageDaemon::ReadFile(metaData, metaData5);
-    StorageDaemon::ForkExec(metaData2, metaData3);
+    StorageDaemon::ForkExec(metaData2, &metaData3);
     StorageDaemon::TraverseDirUevent(metaData, isActive);
     result = true;
     return result;
