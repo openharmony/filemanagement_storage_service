@@ -26,10 +26,6 @@ bool FileUtilFuzzTest(const uint8_t *data, size_t size)
     }
     bool result = false;
     unsigned int ustate = *(reinterpret_cast<const unsigned int *>(data));
-    unsigned long flags = *(reinterpret_cast<const unsigned long *>(data));
-    int state = *(reinterpret_cast<const int *>(data));
-    char character = *(reinterpret_cast<const char *>(data));
-    char *character2 = &character;
     uint32_t state32 = *(reinterpret_cast<const uint32_t *>(data));
     std::string metaData(reinterpret_cast<const char *>(data), size);
     struct StorageDaemon::FileList list = {ustate, metaData};
@@ -38,16 +34,12 @@ bool FileUtilFuzzTest(const uint8_t *data, size_t size)
     std::vector<StorageDaemon::FileList> metaData4;
     metaData4.push_back(list);
     std::string metaData5;
-    StorageDaemon::Mount(metaData, metaData, character2, flags, data);
-    StorageDaemon::UMount(metaData);
-    StorageDaemon::UMount2(metaData, state);
     StorageDaemon::IsDir(metaData);
     StorageDaemon::StringToUint32(metaData, state32);
     StorageDaemon::GetSubDirs(metaData, metaData2);
     StorageDaemon::ReadDigitDir(metaData, metaData4);
     StorageDaemon::ReadFile(metaData, &metaData5);
     result = true;
-
     return result;
 }
 } // namespace OHOS
