@@ -19,7 +19,6 @@
 #include <cstdint>
 
 namespace OHOS {
-#ifdef SUPPORT_FSCRYPT_V2
 bool SysparamDynamicFuzzTest(const uint8_t *data, size_t size)
 {
     if ((data == nullptr) || (size <= 0)) {
@@ -62,16 +61,6 @@ bool SysparamDynamicFuzzTest(const uint8_t *data, size_t size)
     result = true;
     return result;
 }
-#else
-bool SysparamDynamicFuzzTest(const uint8_t *data, size_t size)
-{
-    if ((data == nullptr) || (size <= 0)) {
-        return false;
-    }
-    
-    return true;
-}
-#endif
 } // namespace OHOS
 
 /* Fuzzer entry point */
