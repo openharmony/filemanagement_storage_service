@@ -17,13 +17,15 @@
 #include "storage_service_log.h"
 namespace OHOS {
 namespace StorageManager {
-bool StorageTotalStatusServiceFuzzTest(const uint8_t* data, size_t size)
+bool StorageTotalStatusServiceFuzzTest(const uint8_t *data, size_t size)
 {
     if ((data == nullptr) || (size <= 0)) {
         return false;
     }
     std::shared_ptr<StorageTotalStatusService> service = DelayedSingleton<StorageTotalStatusService>::GetInstance();
     int64_t result = service->GetTotalSize();
+    service->GetSystemSize();
+    service->GetFreeSize();
     // You can add other interfaces of class StorageTotalStatusService here.
     if (result >= 0) {
         LOGI("Storage total status service fuzz test of interface StorageTotalStatusService::GetTotalSize success!");
@@ -36,7 +38,7 @@ bool StorageTotalStatusServiceFuzzTest(const uint8_t* data, size_t size)
 } // namespace OHOS
 
 /* Fuzzer entry point */
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
     /* Run your code on data */
     OHOS::StorageManager::StorageTotalStatusServiceFuzzTest(data, size);
