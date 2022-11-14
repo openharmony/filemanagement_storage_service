@@ -638,6 +638,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_padding_4, TestSize.L
 
     EXPECT_TRUE(g_testKeyV2.ClearKey());
 }
+#endif
 
 /**
  * @tc.name: key_manager_generate_delete_user_keys
@@ -649,11 +650,27 @@ HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys, TestSize.Level1)
 {
     MkDirRecurse(USER_EL1_DIR, S_IRWXU);
     MkDirRecurse(USER_EL2_DIR, S_IRWXU);
-    constexpr uint32_t USER_ID_TEST = 800;
-    EXPECT_EQ(0, KeyManager::GetInstance()->GenerateUserKeys(USER_ID_TEST, 0));
-    EXPECT_EQ(0, KeyManager::GetInstance()->DeleteUserKeys(USER_ID_TEST));
+    uint32_t userId = 800;
+    const string USER_EL1_DIR = "/data/test/user/el1";
+    const string USER_EL2_DIR = "/data/test/user/el2";
+    OHOS::ForceRemoveDirectory(USER_EL1_DIR);
+    OHOS::ForceCreateDirectory(USER_EL1_DIR);
+    OHOS::ForceRemoveDirectory(USER_EL2_DIR);
+    OHOS::ForceCreateDirectory(USER_EL2_DIR);
+
+    EXPECT_EQ(0, SetFscryptSysparam("1:aes-256-cts:aes-256-xts"));
+    EXPECT_EQ(0, InitFscryptPolicy());
+    KeyManager::GetInstance()->InitGlobalDeviceKey();
+    KeyManager::GetInstance()->InitGlobalUserKeys();
+    EXPECT_EQ(0, KeyManager::GetInstance()->GenerateUserKeys(userId, 0));
+    EXPECT_EQ(0, KeyManager::GetInstance()->SetDirectoryElPolicy(userId, EL1_KEY, {{userId, USER_EL1_DIR}}));
+    EXPECT_EQ(0, KeyManager::GetInstance()->SetDirectoryElPolicy(userId, EL2_KEY, {{userId, USER_EL2_DIR}}));
+    EXPECT_EQ(0, KeyManager::GetInstance()->UpdateUserAuth(userId, {}, {}, {}));
+    EXPECT_EQ(0, KeyManager::GetInstance()->UpdateKeyContext(userId));
+    EXPECT_EQ(0, KeyManager::GetInstance()->InActiveUserKey(userId));
+    EXPECT_EQ(0, KeyManager::GetInstance()->ActiveUserKey(userId, {}, {}));
+    EXPECT_EQ(0, KeyManager::GetInstance()->DeleteUserKeys(userId));
 }
-#endif
 
 /**
  * @tc.name: fscrypt_key_secure_access_control
