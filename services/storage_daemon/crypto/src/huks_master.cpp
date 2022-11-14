@@ -153,26 +153,6 @@ int HuksMaster::HdiAccessInit(const HksBlob &key, const HksParamSet *paramSet,
     return ret;
 }
 
-int HuksMaster::HdiAccessUpdate(const HksBlob &handle, const HksParamSet *paramSet,
-                                const HksBlob &inData, HksBlob &outData)
-{
-    LOGD("enter");
-    if (halDevice_ == nullptr) {
-        LOGE("halDevice_ is nullptr");
-        return HKS_ERROR_NULL_POINTER;
-    }
-    if (halDevice_->HuksHdiUpdate == nullptr) {
-        LOGE("HuksHdiAccessUpdate is nullptr");
-        return HKS_ERROR_NULL_POINTER;
-    }
-
-    auto ret = halDevice_->HuksHdiUpdate(&handle, paramSet, &inData, &outData);
-    if (ret != HKS_SUCCESS) {
-        LOGE("HuksHdiUpdate failed, ret %{public}d", ret);
-    }
-    return ret;
-}
-
 int HuksMaster::HdiAccessFinish(const HksBlob &handle, const HksParamSet *paramSet,
                                 const HksBlob &inData, HksBlob &outData)
 {
