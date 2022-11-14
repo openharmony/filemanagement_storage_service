@@ -21,7 +21,7 @@
 namespace OHOS {
 namespace StorageDaemon {
 #ifdef SUPPORT_FSCRYPT_V2
-bool FscryptKeyV2::ActiveKey(const std::string &mnt)
+bool FscryptKeyV2::ActiveKey(uint32_t flag, const std::string &mnt)
 {
     LOGD("enter");
     if (keyInfo_.key.IsEmpty()) {
@@ -63,7 +63,7 @@ bool FscryptKeyV2::ActiveKey(const std::string &mnt)
     return true;
 }
 
-bool FscryptKeyV2::InactiveKey(const std::string &mnt)
+bool FscryptKeyV2::InactiveKey(uint32_t flag, const std::string &mnt)
 {
     LOGD("enter");
     if (keyInfo_.keyId.size != FSCRYPT_KEY_IDENTIFIER_SIZE) {
@@ -96,16 +96,18 @@ bool FscryptKeyV2::InactiveKey(const std::string &mnt)
 }
 
 #else
-bool FscryptKeyV2::ActiveKey(const std::string &mnt)
+bool FscryptKeyV2::ActiveKey(uint32_t flag, const std::string &mnt)
 {
     (void)mnt;
+    (void)flag;
     LOGI("Unsupported fscrypt v2");
     return false;
 }
 
-bool FscryptKeyV2::InactiveKey(const std::string &mnt)
+bool FscryptKeyV2::InactiveKey(uint32_t flag, const std::string &mnt)
 {
     (void)mnt;
+    (void)flag;
     LOGI("Unsupported fscrypt v2");
     return false;
 }
