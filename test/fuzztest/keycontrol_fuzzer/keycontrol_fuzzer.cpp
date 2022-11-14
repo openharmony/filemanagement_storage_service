@@ -25,10 +25,6 @@ bool SysparamDynamicFuzzTest(const uint8_t *data, size_t size)
         return false;
     }
     bool result = false;
-    struct fscrypt_add_key_arg fscryptaddkeyarg;
-    struct fscrypt_remove_key_arg fscryptremovekeyarg;
-    struct fscrypt_get_key_status_arg fscryptgetkeystatusarg;
-    struct fscrypt_get_policy_ex_arg fscryptgetpolicyexarg;
     struct fscrypt_policy fscryptpolicy;
     struct fscrypt_policy *fscryptpolicy2 = &fscryptpolicy;
     struct fscrypt_key fsKey1;
@@ -44,6 +40,10 @@ bool SysparamDynamicFuzzTest(const uint8_t *data, size_t size)
     KeyCtrlSearch(state, character2, character2, state);
     KeyCtrlUnlink(state, state);
 #ifdef SUPPORT_FSCRYPT_V2
+    struct fscrypt_add_key_arg fscryptaddkeyarg;
+    struct fscrypt_remove_key_arg fscryptremovekeyarg;
+    struct fscrypt_get_key_status_arg fscryptgetkeystatusarg;
+    struct fscrypt_get_policy_ex_arg fscryptgetpolicyexarg;
     struct fscrypt_add_key_arg *fscryptaddkeyarg2 = &fscryptaddkeyarg;
     struct fscrypt_remove_key_arg *fscryptremovekeyarg2 = &fscryptremovekeyarg;
     struct fscrypt_get_key_status_arg *fscryptgetkeystatusarg2 = &fscryptgetkeystatusarg;
