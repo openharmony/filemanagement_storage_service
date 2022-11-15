@@ -35,9 +35,9 @@ bool StorageManagerProxyFuzzTest(const uint8_t *data, size_t size)
     StorageManagerProxy prePar(impl);
     std::string path((const char *)data, size);
     std::string fsUuid((const char *)data, size);
-    int32_t userId = reinterpret_cast<int32_t>(data);
-    int32_t flags = reinterpret_cast<int32_t>(data);
-    int32_t fsType = reinterpret_cast<int32_t>(data);
+    int32_t userId = *(reinterpret_cast<const int32_t *>(data));
+    int32_t flags = *(reinterpret_cast<const int32_t *>(data));
+    int32_t fsType = *(reinterpret_cast<const int32_t *>(data));
     std::string volumeUuid((const char *)data, size);
     std::string description((const char *)data, size);
 
@@ -78,7 +78,7 @@ bool StorageManagerProxyGetFuzzTest(const uint8_t *data, size_t size)
     StorageManagerProxy getStor(impl);
     std::string volumeUuid((const char *)data, size);
     std::string pkgName((const char *)data, size);
-    int32_t userId = reinterpret_cast<int32_t>(data);
+    int32_t userId = *(reinterpret_cast<const int32_t *>(data));
     std::string fsUuid((const char *)data, size);
 
     getStor.GetAllVolumes();
