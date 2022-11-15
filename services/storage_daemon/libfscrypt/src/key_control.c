@@ -152,33 +152,6 @@ uint8_t KeyCtrlGetFscryptVersion(const char *mnt)
     return version;
 }
 
-uint8_t GetEncryptedVersion(const char *dir)
-{
-    int fd = open(dir, O_RDONLY | O_DIRECTORY | O_CLOEXEC);
-    if (fd < 0) {
-        FSCRYPT_LOGE("open version dir failed, errno:%d", errno);
-        return FSCRYPT_INVALID;
-    }
-
-    struct fscrypt_policy_v1 policy;
-    if (ioctl(fd, FS_IOC_GET_ENCRYPTION_POLICY, &policy) == 0) {
-        FSCRYPT_LOGI("%s is encrypted with v1 policy", dir);
-        (void)close(fd);
-        return FSCRYPT_V1;
-    }
-    (void)close(fd);
-
-    if (errno == EINVAL) {
-        FSCRYPT_LOGI("fscrypt is encrypted with v2 policy");
-        return FSCRYPT_V2;
-    } else if (errno == ENODATA) {
-        FSCRYPT_LOGI("fscrypt is not encrypted");
-    } else {
-        FSCRYPT_LOGE("unexpected errno: %d", errno);
-    }
-    return FSCRYPT_INVALID;
-}
-
 bool KeyCtrlHasFscryptSyspara(void)
 {
     FSCRYPT_LOGI("enter");

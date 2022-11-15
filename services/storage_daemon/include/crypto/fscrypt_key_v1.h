@@ -16,6 +16,7 @@
 #define STORAGE_DAEMON_CRYPTO_FSCRYPT_KEYV1_H
 
 #include "base_key.h"
+#include "fscrypt_key_v1_ext.h"
 #include "libfscrypt/key_control.h"
 
 namespace OHOS {
@@ -26,14 +27,18 @@ public:
     FscryptKeyV1(const std::string &dir, uint8_t keyLen = CRYPTO_AES_256_XTS_KEY_SIZE) : BaseKey(dir, keyLen)
     {
         keyInfo_.version = FSCRYPT_V1;
+        fscryptV1Ext.SetDir(dir);
     }
     ~FscryptKeyV1() = default;
 
-    bool ActiveKey(const std::string &mnt = MNT_DATA);
-    bool InactiveKey(const std::string &mnt = MNT_DATA);
+    bool ActiveKey(uint32_t flag = 0, const std::string &mnt = MNT_DATA);
+    bool InactiveKey(uint32_t flag = 0, const std::string &mnt = MNT_DATA);
 
 private:
     bool GenerateKeyDesc();
+    bool InstallKeyToKeyring();
+    bool UninstallKeyToKeyring();
+    FscryptKeyV1Ext fscryptV1Ext;
 };
 } // namespace StorageDaemon
 } // namespace OHOS

@@ -24,7 +24,7 @@ namespace OHOS {
 namespace StorageDaemon {
 static const std::string CRYPTO_NAME_PREFIXES[] = {"ext4", "f2fs", "fscrypt"};
 
-bool FscryptKeyV1::ActiveKey(const std::string &mnt)
+bool FscryptKeyV1::ActiveKey(uint32_t flag, const std::string &mnt)
 {
     (void)mnt;
     LOGD("enter");
@@ -33,6 +33,20 @@ bool FscryptKeyV1::ActiveKey(const std::string &mnt)
         return false;
     }
 
+    if (!fscryptV1Ext.ActiveKeyExt(flag, keyInfo_.key.data.get(), keyInfo_.key.size)) {
+        LOGE("fscryptV1Ext ActiveKeyExtfailed");
+        return false;
+    }
+    if (!InstallKeyToKeyring()) {
+        LOGE("InstallKeyToKeyring failed");
+        return false;
+    }
+    LOGD("success");
+    return true;
+}
+
+bool FscryptKeyV1::InstallKeyToKeyring()
+{
     fscrypt_key fskey;
     fskey.mode = FS_ENCRYPTION_MODE_AES_256_XTS;
     fskey.size = keyInfo_.key.size;
@@ -69,10 +83,26 @@ bool FscryptKeyV1::ActiveKey(const std::string &mnt)
     return true;
 }
 
-bool FscryptKeyV1::InactiveKey(const std::string &mnt)
+bool FscryptKeyV1::InactiveKey(uint32_t flag, const std::string &mnt)
 {
     (void)mnt;
     LOGD("enter");
+    bool ret = true;
+
+    if (!UninstallKeyToKeyring()) {
+        LOGE("UninstallKeyToKeyring failed");
+        ret = false;
+    }
+    if (!fscryptV1Ext.InactiveKeyExt(flag)) {
+        LOGE("fscryptV1Ext InactiveKeyExt failed");
+        ret = false;
+    }
+    LOGD("finish");
+    return ret;
+}
+
+bool FscryptKeyV1::UninstallKeyToKeyring()
+{
     if (keyInfo_.keyDesc.IsEmpty()) {
         LOGE("keyDesc is null, key not installed?");
         return false;
