@@ -97,7 +97,7 @@ int32_t CryptoKeyTest::ExecSdcBinary(std::vector<std::string> params, int isCryp
     if (pid == 0) {
         int ret = -EINVAL;
         if (!isCrypt) {
-             char * const argv[] = {
+            char * const argv[] = {
                 (char *)"/system/bin/sdc",
                 (char *)"nullcmd",
                 NULL
@@ -127,7 +127,7 @@ int32_t CryptoKeyTest::ExecSdcBinary(std::vector<std::string> params, int isCryp
             };
             ret = execv(argv[0], argv);
         } else if (params.size() == 3) {
-             char * const argv[] = {
+            char * const argv[] = {
                 (char *)"/system/bin/sdc",
                 (char *)"filecrypt",
                 (char *)params[0].c_str(),
@@ -137,7 +137,7 @@ int32_t CryptoKeyTest::ExecSdcBinary(std::vector<std::string> params, int isCryp
             };
             ret = execv(argv[0], argv);
         } else if (params.size() == 4) {
-             char * const argv[] = {
+            char * const argv[] = {
                 (char *)"/system/bin/sdc",
                 (char *)"filecrypt",
                 (char *)params[0].c_str(),
@@ -151,7 +151,6 @@ int32_t CryptoKeyTest::ExecSdcBinary(std::vector<std::string> params, int isCryp
         if (ret) {
             return -EINVAL;
         }
-
     }
     int status;
     pid_t ret = waitpid(pid, &status, 0);
@@ -436,7 +435,6 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_policy_get, TestSize.Level1)
 
     EXPECT_FALSE(KeyCtrlGetPolicy(NULL, NULL));
     EXPECT_FALSE(KeyCtrlGetPolicy(testDir.c_str(), NULL));
-
 }
 
 /**
@@ -1046,12 +1044,14 @@ HWTEST_F(CryptoKeyTest, fscrypt_libfscrypt_api, TestSize.Level1)
     EXPECT_EQ(FSCRYPT_INVALID, KeyCtrlLoadVersion(NULL));
     EXPECT_EQ(FSCRYPT_INVALID, KeyCtrlLoadVersion("/nofile"));
     EXPECT_EQ(FSCRYPT_INVALID, KeyCtrlGetFscryptVersion(NULL));
+
     // version iss not digit
     OHOS::ForceRemoveDirectory(TEST_DIR_LEGACY);
     EXPECT_TRUE(OHOS::ForceCreateDirectory(TEST_DIR_LEGACY));
     std::string testVersionFile = TEST_DIR_LEGACY + "/fscrypt_version";
     EXPECT_TRUE(OHOS::SaveStringToFile(testVersionFile, "not-digit\n"));
     EXPECT_EQ(FSCRYPT_INVALID, KeyCtrlLoadVersion(TEST_DIR_LEGACY.c_str()));
+
     // bad version
     OHOS::ForceRemoveDirectory(TEST_DIR_LEGACY);
     EXPECT_TRUE(OHOS::ForceCreateDirectory(TEST_DIR_LEGACY));
