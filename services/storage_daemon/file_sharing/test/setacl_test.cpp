@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 #include <cstdio>
+#include <cstdlib>
+#include <ctime>
 
 #include <fcntl.h>
 
@@ -26,6 +28,7 @@ using namespace OHOS::StorageDaemon;
 
 namespace {
 const std::string PATH_TEST = "/data/file_sharing_setacl_test";
+std::string randomId = "0";
 
 class SetAclTest : public testing::Test {
 public:
@@ -38,6 +41,10 @@ public:
 void SetAclTest::SetUpTestCase(void)
 {
     // input testsuit setup step，setup invoked before all testcases
+    constexpr int randomIdUpperBound = 1000;
+    std::srand(std::time(nullptr));
+    randomId = std::to_string(std::rand() % randomIdUpperBound); // [0, 999]
+    GTEST_LOG_(INFO) << "SetAclTest: randomId = " << randomId;
 }
 
 void SetAclTest::TearDownTestCase(void)
@@ -100,22 +107,40 @@ HWTEST_F(SetAclTest, SetAclTest_002, TestSize.Level1)
     rc = AclSetDefault(PATH_TEST, "o:rot:rw");
     EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
 
-    rc = AclSetDefault(PATH_TEST, "o:root:rw");
+    rc = AclSetDefault(PATH_TEST, "o:root:r-x");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+    rc = AclSetDefault(PATH_TEST, std::string("o:") + randomId + ":r-x");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+
+    rc = AclSetDefault(PATH_TEST, "m:root:--x");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+    rc = AclSetDefault(PATH_TEST, std::string("m:") + randomId + ":--x");
     EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
 
     rc = AclSetDefault(PATH_TEST, "w:root:rw");
     EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+    rc = AclSetDefault(PATH_TEST, std::string("w:") + randomId + ":rw");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
 
     rc = AclSetDefault(PATH_TEST, "u:root;rw");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+    rc = AclSetDefault(PATH_TEST, std::string("u:") + randomId + ";rw");
     EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
 
     rc = AclSetDefault(PATH_TEST, "u;root;rw");
     EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+    rc = AclSetDefault(PATH_TEST, std::string("u;") + randomId + ";rw");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
 
     rc = AclSetDefault(PATH_TEST, "u:root:");
     EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+    rc = AclSetDefault(PATH_TEST, std::string("u:") + randomId + ":");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
 
-    rc = AclSetDefault(PATH_TEST, "u:root:rv");
+    rc = AclSetDefault(PATH_TEST, "u::rv-");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+
+    rc = AclSetDefault(PATH_TEST, "g::v--");
     EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
 
     GTEST_LOG_(INFO) << "SetAclTest_002 ends";
@@ -135,13 +160,25 @@ HWTEST_F(SetAclTest, SetAclTest_003, TestSize.Level1)
     int rc = MkDir(PATH_TEST, mode);
     ASSERT_TRUE(rc == 0) << "directory creation failed";
 
+    rc = AclSetDefault(PATH_TEST, "u::rwx");
+    EXPECT_TRUE(rc == 0) << "it should succeed";
+    rc = AclSetDefault(PATH_TEST, "g::rwx");
+    EXPECT_TRUE(rc == 0) << "it should succeed";
+
     rc = AclSetDefault(PATH_TEST, "u:root:rw");
     EXPECT_TRUE(rc == 0) << "it should succeed";
-
-    rc = AclSetDefault(PATH_TEST, "g:root:rx");
+    rc = AclSetDefault(PATH_TEST, std::string("u:") + randomId + ":rw");
     EXPECT_TRUE(rc == 0) << "it should succeed";
 
-    rc = AclSetDefault(PATH_TEST, "o::rw");
+    rc = AclSetDefault(PATH_TEST, "g:root:r-x");
+    EXPECT_TRUE(rc == 0) << "it should succeed";
+    rc = AclSetDefault(PATH_TEST, std::string("g:") + randomId + ":r-x");
+    EXPECT_TRUE(rc == 0) << "it should succeed";
+
+    rc = AclSetDefault(PATH_TEST, "o::-");
+    EXPECT_TRUE(rc == 0) << "it should succeed";
+
+    rc = AclSetDefault(PATH_TEST, "m::rwx");
     EXPECT_TRUE(rc == 0) << "it should succeed";
 
     GTEST_LOG_(INFO) << "SetAclTest_003 ends";
