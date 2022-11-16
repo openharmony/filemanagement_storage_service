@@ -256,7 +256,7 @@ int32_t MountManager::DestroyHmdfsDirs(int32_t userId)
 
     for (const DirInfo &dir : hmdfsDirVec_) {
         if (IsEndWith(dir.path.c_str(), "%d")) {
-            err &= RmDirRecurse(StringPrintf(dir.path.c_str(), userId));
+            err = RmDirRecurse(StringPrintf(dir.path.c_str(), userId));
         }
     }
 
