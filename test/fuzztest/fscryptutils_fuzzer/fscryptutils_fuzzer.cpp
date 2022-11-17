@@ -21,7 +21,7 @@
 namespace OHOS {
 bool FscryptUtilsFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size <= sizeof(char))) {
+    if ((data == nullptr) || (size < sizeof(char))) {
         return false;
     }
     bool result = false;

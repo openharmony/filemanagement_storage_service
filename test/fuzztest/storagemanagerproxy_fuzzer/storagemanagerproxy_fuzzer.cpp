@@ -22,7 +22,7 @@ namespace OHOS {
 namespace StorageManager {
 bool StorageManagerProxyFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size <= sizeof(int32_t))) {
+    if ((data == nullptr) || (size < sizeof(int32_t))) {
         return false;
     }
     VolumeCore vc;
@@ -69,7 +69,7 @@ bool StorageManagerProxyFuzzTest(const uint8_t *data, size_t size)
 
 bool StorageManagerProxyGetFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size <= sizof(int32_t))) {
+    if ((data == nullptr) || (size < sizeof(int32_t))) {
         return false;
     }
 
