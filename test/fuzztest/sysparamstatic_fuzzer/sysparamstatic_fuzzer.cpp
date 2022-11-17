@@ -21,7 +21,7 @@
 namespace OHOS {
 bool SysparamStaticFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size <= sizeof(unsigned int))) {
+    if ((data == nullptr) || (size < sizeof(unsigned int))) {
         return false;
     }
     char character = *(reinterpret_cast<const char *>(data));
