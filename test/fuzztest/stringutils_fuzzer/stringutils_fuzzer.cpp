@@ -21,7 +21,7 @@
 namespace OHOS {
 bool StringUtilsFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size <= 0)) {
+    if ((data == nullptr) || (size < sizeof(char))) {
         return false;
     }
     std::string metaData(reinterpret_cast<const char *>(data), size);

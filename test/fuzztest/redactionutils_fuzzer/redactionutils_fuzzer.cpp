@@ -20,7 +20,7 @@
 namespace OHOS {
 bool RedactionUtilsFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size <= 0)) {
+    if ((data == nullptr) || (size < sizeof(int32_t))) {
         return false;
     }
     int32_t state32 = *(reinterpret_cast<const int32_t *>(data));
