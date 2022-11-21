@@ -17,7 +17,7 @@
 
 #include <linux/keyctl.h>
 #include <linux/version.h>
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
+#if ((defined LINUX_VERSION_CODE ) && LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0))
 #include <linux/fscrypt.h>
 #define SUPPORT_FSCRYPT_V2
 #else

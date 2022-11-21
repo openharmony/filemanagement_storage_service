@@ -144,7 +144,7 @@ inline bool DestroyDirsFromVec(int32_t userId, const std::string &level, const s
 
     for (const DirInfo &dir : vec) {
         if (IsEndWith(dir.path.c_str(), "%d")) {
-            err &= RmDirRecurse(StringPrintf(dir.path.c_str(), level.c_str(), userId));
+            err = RmDirRecurse(StringPrintf(dir.path.c_str(), level.c_str(), userId));
         }
     }
 
@@ -162,7 +162,7 @@ int32_t UserManager::PrepareDirsFromIdAndLevel(int32_t userId, const std::string
     std::vector<FileList> list;
     for (auto item : rootDirVec_) {
         FileList temp;
-        temp.userId = userId;
+        temp.userId = static_cast<uint32_t>(userId);
         temp.path = StringPrintf(item.path.c_str(), level.c_str(), userId);
         list.push_back(temp);
     }
@@ -199,7 +199,7 @@ int32_t UserManager::PrepareEl1BundleDir(int32_t userId)
     // set policy here
     std::vector<FileList> list;
     FileList temp;
-    temp.userId = userId;
+    temp.userId = static_cast<uint32_t>(userId);
     temp.path = StringPrintf(bundle_.c_str(), userId);
     list.push_back(temp);
     int ret = SetElDirFscryptPolicy(userId, EL1, list);
