@@ -31,7 +31,8 @@ class StorageDaemonCommunicationTest : public testing::Test {
 public:
     static void SetUpTestCase(void)
     {
-        if (system::GetBoolParameter(FSCRYPT_POLICY_KEY, false)) {
+        std::string res = system::GetParameter(FSCRYPT_POLICY_KEY, "");
+        if (!res.empty()) {
             g_fscryptEnable = true;
         }
     }
@@ -424,5 +425,35 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateKeyContext_0
         EXPECT_EQ(result, E_OK);
     }
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UpdateKeyContext_0000 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_InactiveUserKey_0000
+ * @tc.name: Daemon_communication_InactiveUserKey_0000
+ * @tc.desc: Test function of InactiveUserKey interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0FG3
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_InactiveUserKey_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_InactiveUserKey_0000 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t result = -1;
+    uint32_t userId = 109;
+    if (sdCommunication != nullptr) {
+        int32_t flags = 3;
+        result = sdCommunication->PrepareAddUser(userId, flags);
+        EXPECT_EQ(result, E_OK);
+        result = sdCommunication->ActiveUserKey(userId, {}, {});
+        EXPECT_EQ(result, E_OK);
+        result = sdCommunication->InactiveUserKey(userId);
+        EXPECT_EQ(result, E_OK);
+        sdCommunication->RemoveUser(userId, flags);
+    }
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_InactiveUserKey_0000 SUCCESS";
 }
 } // namespace
