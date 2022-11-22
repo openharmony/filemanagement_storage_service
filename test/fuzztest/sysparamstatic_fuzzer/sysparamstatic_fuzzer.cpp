@@ -35,7 +35,7 @@ bool SysparamStaticFuzzTest(const uint8_t *data, size_t size)
 
     unsigned int len[MAX_NUM] = { 0x00 };
 
-    if (EOK != memcpy_s(len,sizeof(len)-1, data, size))
+    if (EOK != memcpy_s(len, sizeof(len)-1, data, size))
     {
         return false;
     }
