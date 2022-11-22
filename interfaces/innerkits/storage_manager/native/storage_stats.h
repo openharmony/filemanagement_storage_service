@@ -23,8 +23,8 @@ namespace StorageManager {
 class StorageStats final : public Parcelable {
 public:
     StorageStats() {}
-    StorageStats(int64_t total, int64_t audio, int64_t video, int64_t file, int64_t app)
-        : total_(total), audio_(audio), video_(video), file_(file), app_(app) {}
+    StorageStats(int64_t total, int64_t audio, int64_t video, int64_t image, int64_t file, int64_t app)
+        : total_(total), audio_(audio), video_(video), image_(image), file_(file), app_(app) {}
     ~StorageStats() {}
 
     int64_t total_ {0};
