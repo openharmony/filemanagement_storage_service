@@ -15,22 +15,27 @@
 
 #include "fscryptutils_fuzzer.h"
 #include "libfscrypt/fscrypt_utils.h"
+#include <securec.h>
 #include <cstddef>
 #include <cstdint>
+#define MAX_NUM 100
 
 namespace OHOS {
 bool FscryptUtilsFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size < sizeof(char))) {
+    if ((data == nullptr) || (size <= 0)) {
         return false;
     }
-    bool result = false;
-    char character = *(reinterpret_cast<const char *>(data));
-    char *character2 = &character;
-    FscryptPolicyEnable(character2);
-    SetFscryptSysparam(character2);
-    result = true;
-    return result;
+
+    char character[MAX_NUM] = { 0x00 }; 
+    if(EOK != memcpy_s(character, sizeof(character)-1, data, size))
+    {
+        return false;
+    }
+
+    FscryptPolicyEnable(character);
+    SetFscryptSysparam(character);
+    return true;
 }
 } // namespace OHOS
 
