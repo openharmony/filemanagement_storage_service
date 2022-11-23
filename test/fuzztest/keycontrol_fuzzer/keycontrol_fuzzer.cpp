@@ -34,8 +34,7 @@ bool SysparamDynamicFuzzTest(const uint8_t *data, size_t size)
     union FscryptPolicy *policy = &policy1;
     int state = *(reinterpret_cast<const int *>(data));
     char character[MAX_NUM] = { 0x00 };
-    if (EOK != memcpy_s(character, sizeof(character)-1, data, size))
-    {
+    if (EOK != memcpy_s(character, sizeof(character)-1, data, size)) {
         return false;
     }
 
