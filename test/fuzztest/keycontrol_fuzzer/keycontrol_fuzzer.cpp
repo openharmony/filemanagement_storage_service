@@ -15,8 +15,10 @@
 
 #include "keycontrol_fuzzer.h"
 #include "key_control.h"
+#include <securec.h>
 #include <cstddef>
 #include <cstdint>
+#define MAX_NUM 100
 
 namespace OHOS {
 bool SysparamDynamicFuzzTest(const uint8_t *data, size_t size)
@@ -30,13 +32,16 @@ bool SysparamDynamicFuzzTest(const uint8_t *data, size_t size)
     struct fscrypt_key *fsKey = &fsKey1;
     union FscryptPolicy policy1;
     union FscryptPolicy *policy = &policy1;
-    char character = *(reinterpret_cast<const char *>(data));
-    char *character2 = &character;
     int state = *(reinterpret_cast<const int *>(data));
+    char character[MAX_NUM] = { 0x00 };
+    if (EOK != memcpy_s(character, sizeof(character)-1, data, size)) {
+        return false;
+    }
+
     KeyCtrlGetKeyringId(state, state);
-    KeyCtrlAddKey(character2, character2, state);
-    KeyCtrlAddKeyEx(character2, character2, fsKey, state);
-    KeyCtrlSearch(state, character2, character2, state);
+    KeyCtrlAddKey(character, character, state);
+    KeyCtrlAddKeyEx(character, character, fsKey, state);
+    KeyCtrlSearch(state, character, character, state);
     KeyCtrlUnlink(state, state);
 #ifdef SUPPORT_FSCRYPT_V2
     struct fscrypt_add_key_arg fscryptaddkeyarg;
@@ -47,15 +52,15 @@ bool SysparamDynamicFuzzTest(const uint8_t *data, size_t size)
     struct fscrypt_get_key_status_arg *fscryptgetkeystatusarg2 = &fscryptgetkeystatusarg;
     struct fscrypt_get_policy_ex_arg fscryptgetpolicyexarg;
     struct fscrypt_get_policy_ex_arg *fscryptgetpolicyexarg2 = &fscryptgetpolicyexarg;
-    KeyCtrlInstallKey(character2, fscryptaddkeyarg2);
-    KeyCtrlRemoveKey(character2, fscryptremovekeyarg2);
-    KeyCtrlGetKeyStatus(character2, fscryptgetkeystatusarg2);
-    KeyCtrlGetPolicyEx(character2, fscryptgetpolicyexarg2);
+    KeyCtrlInstallKey(character, fscryptaddkeyarg2);
+    KeyCtrlRemoveKey(character, fscryptremovekeyarg2);
+    KeyCtrlGetKeyStatus(character, fscryptgetkeystatusarg2);
+    KeyCtrlGetPolicyEx(character, fscryptgetpolicyexarg2);
 #endif
-    KeyCtrlSetPolicy(character2, policy);
-    KeyCtrlGetPolicy(character2, fscryptpolicy2);
-    KeyCtrlGetFscryptVersion(character2);
-    KeyCtrlLoadVersion(character2);
+    KeyCtrlSetPolicy(character, policy);
+    KeyCtrlGetPolicy(character, fscryptpolicy2);
+    KeyCtrlGetFscryptVersion(character);
+    KeyCtrlLoadVersion(character);
     KeyCtrlHasFscryptSyspara();
     return true;
 }

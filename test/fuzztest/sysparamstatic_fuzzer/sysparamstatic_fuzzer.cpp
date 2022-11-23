@@ -15,8 +15,10 @@
 
 #include "sysparamstatic_fuzzer.h"
 #include "libfscrypt/fscrypt_sysparam.h"
+#include <securec.h>
 #include <cstddef>
 #include <cstdint>
+#define MAX_NUM 100
 
 namespace OHOS {
 bool SysparamStaticFuzzTest(const uint8_t *data, size_t size)
@@ -24,12 +26,19 @@ bool SysparamStaticFuzzTest(const uint8_t *data, size_t size)
     if ((data == nullptr) || (size < sizeof(unsigned int))) {
         return false;
     }
-    char character = *(reinterpret_cast<const char *>(data));
-    char *character2 = &character;
-    unsigned int len = *(reinterpret_cast<const unsigned int *>(data));
-    unsigned int *len2 = &len;
-    GetFscryptParameter(character2, character2, character2, len2);
-    SetFscryptParameter(character2, character2);
+
+    char character[MAX_NUM] = { 0x00 };
+    if (EOK != memcpy_s(character, sizeof(character)-1, data, size)) {
+        return false;
+    }
+
+    unsigned int len[MAX_NUM] = { 0x00 };
+    if (EOK != memcpy_s(len, sizeof(len)-1, data, size)) {
+        return false;
+    }
+
+    GetFscryptParameter(character, character, character, len);
+    SetFscryptParameter(character, character);
     return true;
 }
 } // namespace OHOS
