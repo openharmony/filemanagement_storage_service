@@ -28,8 +28,7 @@ bool FscryptUtilsFuzzTest(const uint8_t *data, size_t size)
     }
 
     char character[MAX_NUM] = { 0x00 };
-    if (EOK != memcpy_s(character, sizeof(character)-1, data, size))
-    {
+    if (EOK != memcpy_s(character, sizeof(character)-1, data, size)) {
         return false;
     }
 
