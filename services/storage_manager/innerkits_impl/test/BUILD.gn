@@ -104,10 +104,42 @@ ohos_unittest("volume_external_test") {
   ]
 }
 
+ohos_unittest("storage_stats_test") {
+  module_out_path = "filemanagement/storage_service/storage_manager"
+
+  sources = [
+    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/bundle_stats.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/storage_stats.cpp",
+    "bundle_stats_test.cpp",
+    "storage_stats_test.cpp",
+  ]
+
+  include_dirs = [
+    "//foundation/filemanagement/storage_service/services/storage_daemon/include",
+    "//foundation/filemanagement/storage_service/services/storage_manager/include",
+    "//foundation/filemanagement/storage_service/utils/include",
+    "include",
+    "//utils/system/safwk/native/include",
+    "//commonlibrary/c_utils/base/include",
+    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
+  ]
+
+  deps = [ "//third_party/googletest:gtest_main" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "hiviewdfx_hilog_native:libhilog",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+  ]
+}
+
 group("storage_manager_innerkits_test") {
   testonly = true
   deps = [
     ":disk_test",
+    ":storage_stats_test",
     ":volume_core_test",
     ":volume_external_test",
   ]
