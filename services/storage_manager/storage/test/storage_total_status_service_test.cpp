@@ -203,4 +203,22 @@ HWTEST_F(storage_total_status_service_test, Storage_status_GetCurrentBundleStats
     EXPECT_EQ(result.dataSize_, 0);
     GTEST_LOG_(INFO) << "storage_total_status_service_test-end Storage_status_service_GetCurrentBundleStats_0000";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_status_service_ResetBundleMgrProxy_0000
+ * @tc.name: Storage_total_status_ResetBundleMgrProxy_0000
+ * @tc.desc: Test function of ResetBundleMgrProxy interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(storage_total_status_service_test, Storage_total_status_ResetBundleMgrProxy_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "storage_total_status_service_test-begin Storage_total_status_ResetBundleMgrProxy_0000";
+    std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
+    int64_t result = service->ResetBundleMgrProxy();
+    EXPECT_GE(result, 0);
+    GTEST_LOG_(INFO) << "storage_total_status_service_test-end Storage_total_status_ResetBundleMgrProxy_0000";
+}
 } // namespace
