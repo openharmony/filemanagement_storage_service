@@ -274,5 +274,134 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_StopUser_003, Test
     storageDaemon_->DestroyUserDirs(StorageTest::StorageTestUtils::USER_ID3, flags);
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_StopUser_003 end";
 }
+
+/**
+ * @tc.name: Storage_Manager_StorageDaemonTest_Shutdown_001
+ * @tc.desc: check the StopUser function normal
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_Shutdown_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_Shutdown_001 start";
+
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+    auto ret = storageDaemon_->Shutdown();
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_Shutdown_001 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_StorageDaemonTest_Mount_001
+ * @tc.desc: check the Mount function when volume not exist
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_Mount_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_Mount_001 start";
+
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+    std::string volId = "vol-1-1";
+    uint32_t flag = 0;
+    auto ret = storageDaemon_->Mount(volId, flag);
+    EXPECT_TRUE(ret == E_NON_EXIST);
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_Mount_001 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_StorageDaemonTest_UMount_001
+ * @tc.desc: check the UMount function when volume not exist
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_UMount_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_UMount_001 start";
+
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+    std::string volId = "vol-1-2";
+    auto ret = storageDaemon_->UMount(volId);
+    EXPECT_TRUE(ret == E_NON_EXIST);
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_UMount_001 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_StorageDaemonTest_Check_001
+ * @tc.desc: check the Check function when volume not exist
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_Check_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_Check_001 start";
+
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+    std::string volId = "vol-1-3";
+    auto ret = storageDaemon_->Check(volId);
+    EXPECT_TRUE(ret == E_NON_EXIST);
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_Check_001 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_StorageDaemonTest_Format_001
+ * @tc.desc: check the Format function when volume not exist
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_Format_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_Format_001 start";
+
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+    std::string volId = "vol-1-4";
+    std::string fsType = "exfat";
+    auto ret = storageDaemon_->Format(volId, fsType);
+    EXPECT_TRUE(ret == E_NON_EXIST);
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_Format_001 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_StorageDaemonTest_Partition_001
+ * @tc.desc: check the Partition function when disk not exist
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_Partition_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_Partition_001 start";
+
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+    std::string diskId = "disk-1-0";
+    int32_t type = 0;
+    auto ret = storageDaemon_->Partition(diskId, type);
+    EXPECT_TRUE(ret == E_NON_EXIST);
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_Partition_001 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_StorageDaemonTest_SetVolumeDescription_001
+ * @tc.desc: check the SetVolumeDescription function when volume not exist
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_SetVolumeDescription_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_SetVolumeDescription_001 start";
+
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+    std::string volId = "vol-1-5";
+    std::string des = "des";
+    auto ret = storageDaemon_->SetVolumeDescription(volId, des);
+    EXPECT_TRUE(ret == E_NON_EXIST);
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_SetVolumeDescription_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS
