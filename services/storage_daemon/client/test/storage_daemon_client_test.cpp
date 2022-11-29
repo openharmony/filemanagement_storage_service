@@ -199,33 +199,5 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Update
     storageDaemonClient_->DeleteUserKeys(userid);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UpdateKeyContext_001 end";
 }
-
-/**
- * @tc.name: Storage_Service_StorageDaemonClientTest_FscryptEnable_001
- * @tc.desc: Verify the FscryptEnable function.
- * @tc.type: FUNC
- * @tc.require: AR000H0F7I
- */
-HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_FscryptEnable_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_FscryptEnable_001 start";
-
-    ASSERT_TRUE(storageDaemonClient_ != nullptr);
-
-    int32_t userid = 111;
-    int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL2;
-    int32_t ret = storageDaemonClient_->GenerateUserKeys(userid, flags);
-    ASSERT_TRUE(ret == E_OK);
-
-    ret = storageDaemonClient_->ActiveUserKey(userid, {}, {});
-    EXPECT_TRUE(ret == E_OK);
-
-    std::string str = "1:aes-256-cts:aes-256-xts";
-    ret = storageDaemonClient_->FscryptEnable(str);
-    EXPECT_TRUE(ret == E_OK);
-
-    storageDaemonClient_->DeleteUserKeys(userid);
-    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_FscryptEnable_001 end";
-}
 }
 }
