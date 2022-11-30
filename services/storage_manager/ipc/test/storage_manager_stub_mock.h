@@ -61,7 +61,6 @@ public:
     MOCK_METHOD3(ActiveUserKey, int32_t(uint32_t, const std::vector<uint8_t> &, const std::vector<uint8_t> &));
     MOCK_METHOD1(InactiveUserKey, int32_t(uint32_t));
     MOCK_METHOD1(UpdateKeyContext, int32_t(uint32_t));
-
 };
 }  // namespace StorageManager
 }  // namespace OHOS
