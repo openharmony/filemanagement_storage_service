@@ -47,6 +47,38 @@ ohos_unittest("external_volume_info_test") {
   ]
 }
 
+ohos_unittest("process_test") {
+  module_out_path = "filemanagement/storage_service/storage_daemon"
+
+  defines = [ "STORAGE_LOG_TAG = \"StorageDaemon\"" ]
+
+  include_dirs = [
+    "$ROOT_DIR/storage_daemon/include",
+    "$ROOT_DIR/storage_daemon/include/volume",
+    "$ROOT_DIR/common/include",
+  ]
+
+  sources = [
+    "$ROOT_DIR/storage_daemon/volume/src/external_volume_info.cpp",
+    "$ROOT_DIR/storage_daemon/volume/src/process.cpp",
+    "$ROOT_DIR/storage_daemon/volume/src/volume_info.cpp",
+    "$ROOT_DIR/storage_daemon/volume/test/process_test.cpp",
+  ]
+
+  deps = [
+    "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
+    "//third_party/googletest:gmock_main",
+    "//third_party/googletest:gtest_main",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "hiviewdfx_hilog_native:libhilog",
+    "init:libbegetutil",
+    "ipc:ipc_core",
+  ]
+}
+
 ohos_unittest("volume_info_test") {
   module_out_path = "filemanagement/storage_service/storage_daemon"
 
@@ -123,6 +155,7 @@ group("storage_daemon_volume_test") {
   testonly = true
   deps = [
     ":external_volume_info_test",
+    ":process_test",
     ":volume_info_test",
     ":volume_manager_test",
   ]

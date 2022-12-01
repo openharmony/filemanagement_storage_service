@@ -30,10 +30,6 @@ ohos_unittest("storage_total_status_service_test") {
     "//foundation/filemanagement/storage_service/services/storage_daemon/include",
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
     "//foundation/filemanagement/storage_service/utils/include",
-    "include",
-    "//third_party/googletest/googlemock/include/gmock",
-    "//utils/system/safwk/native/include",
-    "//commonlibrary/c_utils/base/include",
   ]
 
   defines = [
@@ -43,7 +39,6 @@ ohos_unittest("storage_total_status_service_test") {
 
   deps = [
     "//foundation/bundlemanager/bundle_framework/services/bundlemgr:libbms",
-    "//third_party/googletest:gmock_main",
     "//third_party/googletest:gtest_main",
   ]
 
@@ -64,7 +59,45 @@ ohos_unittest("storage_total_status_service_test") {
   ]
 }
 
+ohos_unittest("volume_storage_status_service_test") {
+  module_out_path = "filemanagement/storage_service/storage_manager"
+
+  sources = [
+    "//foundation/filemanagement/storage_service/services/storage_manager/storage/src/storage_status_service.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/storage/src/volume_storage_status_service.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/volume/src/volume_manager_service.cpp",
+    "volume_storage_status_service_test.cpp",
+  ]
+  include_dirs = [
+    "//foundation/bundlemanager/bundle_framework/services/bundlemgr/include",
+    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
+    "//foundation/filemanagement/storage_service/services/common/include",
+    "//foundation/filemanagement/storage_service/services/storage_daemon/include",
+    "//foundation/filemanagement/storage_service/services/storage_manager/include",
+  ]
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageManager\"",
+    "LOG_DOMAIN = 0xD004300",
+  ]
+
+  deps = [ "//third_party/googletest:gtest_main" ]
+
+  external_deps = [
+    "access_token:libaccesstoken_sdk",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "hiviewdfx_hilog_native:libhilog",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+    "storage_service:storage_manager_sa_proxy",
+  ]
+}
+
 group("storage_manager_storage_test") {
   testonly = true
-  deps = [ ":storage_total_status_service_test" ]
+  deps = [
+    ":storage_total_status_service_test",
+    ":volume_storage_status_service_test",
+  ]
 }
