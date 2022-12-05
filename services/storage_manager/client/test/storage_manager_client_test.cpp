@@ -21,10 +21,11 @@
 #include "ipc/storage_manager.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+
 namespace OHOS {
 namespace StorageManager {
 using namespace std;
-using namespace testing::ext; 
+using namespace testing::ext;
 class StorageManagerClientTest : public testing::Test {
 public:
     static void SetUpTestCase(void) {};
@@ -178,7 +179,6 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_UpdateUserAuth_0000, T
 
     storageManagerClient_->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "Client_manager_service_UpdateUserAuth_0000 end";
-
 }
 
 /**
