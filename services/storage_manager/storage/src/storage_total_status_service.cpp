@@ -34,15 +34,14 @@ constexpr int32_t DATA_DIR_LEN = 5;
 StorageTotalStatusService::StorageTotalStatusService() {}
 StorageTotalStatusService::~StorageTotalStatusService() {}
 
-int64_t StorageTotalStatusService::GetSystemSize()
+int32_t StorageTotalStatusService::GetSystemSize(int64_t &systemSize)
 {
     struct mntent *mntent = nullptr;
-    struct statvfs diskInfo;
     std::unordered_set<std::string> mntSet;
-    int64_t totalSystemSize = 0;
     std::unique_ptr<FILE, decltype(&endmntent)> mntFile(setmntent("/proc/mounts", "re"), endmntent);
     if (mntFile.get() == nullptr) {
         LOGE("enter setmntent is error");
+        return E_ERR;
     }
     while ((mntent = getmntent(mntFile.get())) != nullptr) {
         if (!mntent) {
@@ -57,37 +56,42 @@ int64_t StorageTotalStatusService::GetSystemSize()
         if (strncmp(strName, PATH_DEV_BLOCK, DEV_BLOCK_DIR_LEN) == 0 && strncmp(strDir, PATH_MNT, MNT_DIR_LEN) != 0 &&
             strncmp(strDir, PATH_DATA, DATA_DIR_LEN) != 0) {
             LOGI("mntent::strName is %{public}s, mntent::strDir is %{public}s", strName, strDir);
-            int ret = statvfs(strDir, &diskInfo);
-            if (ret != E_OK) {
-                return E_ERR;
+            int64_t blkSize;
+            int32_t err = GetSizeOfPath(strDir, SizeType::USED, blkSize);
+            if (err != E_OK) {
+                LOGE("get path %s size err", strDir);
             }
-            int64_t systemSize = (int64_t)diskInfo.f_bsize * ((int64_t)diskInfo.f_blocks - (int64_t)diskInfo.f_bfree);
-            totalSystemSize += systemSize;
+            systemSize += blkSize;
         }
     }
-    return totalSystemSize;
+    return E_OK;
 }
 
-int64_t StorageTotalStatusService::GetTotalSize()
+int32_t StorageTotalStatusService::GetTotalSize(int64_t &totalSize)
+{
+    return GetSizeOfPath(PATH_DATA, SizeType::TOTAL, totalSize);
+}
+
+int32_t StorageTotalStatusService::GetFreeSize(int64_t &freeSize)
+{
+    return GetSizeOfPath(PATH_DATA, SizeType::FREE, freeSize);
+}
+
+int32_t StorageTotalStatusService::GetSizeOfPath(const char * path, int32_t type, int64_t &size)
 {
     struct statvfs diskInfo;
-    int ret = statvfs(PATH_DATA, &diskInfo);
+    int ret = statvfs(path, &diskInfo);
     if (ret != E_OK) {
         return E_ERR;
     }
-    int64_t totalSize =  (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_blocks;
-    return totalSize;
-}
-
-int64_t StorageTotalStatusService::GetFreeSize()
-{
-    struct statvfs diskInfo;
-    int ret = statvfs(PATH_DATA, &diskInfo);
-    if (ret != E_OK) {
-        return E_ERR;
+    if (type == SizeType::TOTAL) {
+        size = (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_blocks;
+    } else if (type == SizeType::FREE) {
+        size = (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_bfree;
+    } else {
+        size = (int64_t)diskInfo.f_bsize * ((int64_t)diskInfo.f_blocks - (int64_t)diskInfo.f_bfree);
     }
-    int64_t freeSize = (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_bfree;
-    return freeSize;
+    return E_OK;
 }
 } // StorageManager
 } // OHOS

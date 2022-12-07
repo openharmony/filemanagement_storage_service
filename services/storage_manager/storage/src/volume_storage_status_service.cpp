@@ -40,7 +40,7 @@ std::string VolumeStorageStatusService::GetVolumePath(std::string volumeUuid)
     return volumePtr->GetPath();
 }
 
-int64_t VolumeStorageStatusService::GetFreeSizeOfVolume(string volumeUuid)
+int32_t VolumeStorageStatusService::GetFreeSizeOfVolume(string volumeUuid, int64_t &freeSize)
 {
     string path = GetVolumePath(volumeUuid);
     LOGI("VolumeStorageStatusService::GetFreeSizeOfVolume path is %{public}s", path.c_str());
@@ -52,11 +52,11 @@ int64_t VolumeStorageStatusService::GetFreeSizeOfVolume(string volumeUuid)
     if (ret != E_OK) {
         return E_ERR;
     }
-    int64_t freeSize = (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_bfree;
-    return freeSize;
+    freeSize = (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_bfree;
+    return E_OK;
 }
 
-int64_t VolumeStorageStatusService::GetTotalSizeOfVolume(string volumeUuid)
+int32_t VolumeStorageStatusService::GetTotalSizeOfVolume(string volumeUuid, int64_t &totalSize)
 {
     string path = GetVolumePath(volumeUuid);
     if (path == "") {
@@ -67,8 +67,8 @@ int64_t VolumeStorageStatusService::GetTotalSizeOfVolume(string volumeUuid)
     if (ret != E_OK) {
         return E_ERR;
     }
-    int64_t totalSize =  (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_blocks;
-    return totalSize;
+    totalSize =  (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_blocks;
+    return E_OK;
 }
 } // StorageManager
 } // OHOS

@@ -50,8 +50,9 @@ napi_value GetTotalSizeOfVolume(napi_env env, napi_callback_info info)
 
     auto resultSize = std::make_shared<int64_t>();
     std::string uuidString(uuid.get());
-    auto cbExec = [uuidString, resultSize](napi_env env) -> UniError {
-        *resultSize = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetTotalSizeOfVolume(uuidString);
+    auto errNum = std::make_shared<int32_t>();
+    auto cbExec = [uuidString, resultSize, errNum](napi_env env) -> UniError {
+        *errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetTotalSizeOfVolume(uuidString, *resultSize);
         return UniError(ERRNO_NOERR);
     };
 
@@ -91,8 +92,9 @@ napi_value GetFreeSizeOfVolume(napi_env env, napi_callback_info info)
 
     auto resultSize = std::make_shared<int64_t>();
     std::string uuidString(uuid.get());
-    auto cbExec = [uuidString, resultSize](napi_env env) -> UniError {
-        *resultSize = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetFreeSizeOfVolume(uuidString);
+    auto errNum = std::make_shared<int32_t>();
+    auto cbExec = [uuidString, resultSize, errNum](napi_env env) -> UniError {
+        *errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetFreeSizeOfVolume(uuidString, *resultSize);
         return UniError(ERRNO_NOERR);
     };
     auto cbComplete = [resultSize](napi_env env, UniError err) -> NVal {
@@ -129,8 +131,9 @@ napi_value GetBundleStats(napi_env env, napi_callback_info info)
     }
     auto bundleStats = std::make_shared<BundleStats>();
     std::string nameString(name.get());
-    auto cbExec = [nameString, bundleStats](napi_env env) -> UniError {
-        *bundleStats = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetBundleStats(nameString);
+    auto errNum = std::make_shared<int32_t>();
+    auto cbExec = [nameString, bundleStats, errNum](napi_env env) -> UniError {
+        *errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetBundleStats(nameString, *bundleStats);
         return UniError(ERRNO_NOERR);
     };
     auto cbComplete = [bundleStats](napi_env env, UniError err) -> NVal {
@@ -163,8 +166,9 @@ napi_value GetCurrentBundleStats(napi_env env, napi_callback_info info)
     }
 
     auto bundleStats = std::make_shared<BundleStats>();
-    auto cbExec = [bundleStats](napi_env env) -> UniError {
-        *bundleStats = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetCurrentBundleStats();
+    auto errNum = std::make_shared<int32_t>();
+    auto cbExec = [bundleStats, errNum](napi_env env) -> UniError {
+        *errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetCurrentBundleStats(*bundleStats);
         return UniError(ERRNO_NOERR);
     };
     auto cbComplete = [bundleStats](napi_env env, UniError err) -> NVal {
@@ -197,8 +201,9 @@ napi_value GetSystemSize(napi_env env, napi_callback_info info)
     }
 
     auto resultSize = std::make_shared<int64_t>();
-    auto cbExec = [resultSize](napi_env env) -> UniError {
-        *resultSize = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetSystemSize();
+    auto errNum = std::make_shared<int32_t>();
+    auto cbExec = [resultSize, errNum](napi_env env) -> UniError {
+        *errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetSystemSize(*resultSize);
         return UniError(ERRNO_NOERR);
     };
     auto cbComplete = [resultSize](napi_env env, UniError err) -> NVal {
@@ -241,11 +246,12 @@ napi_value GetUserStorageStats(napi_env env, napi_callback_info info)
     }
 
     auto storageStats = std::make_shared<StorageStats>();
-    auto cbExec = [fac, userId, storageStats](napi_env env) -> UniError {
+    auto errNum = std::make_shared<int32_t>();
+    auto cbExec = [fac, userId, storageStats, errNum](napi_env env) -> UniError {
         if (!fac) {
-            *storageStats = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetUserStorageStats();
+            *errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetUserStorageStats(*storageStats);
         } else {
-            *storageStats = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetUserStorageStats(userId);
+            *errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetUserStorageStats(userId, *storageStats);
         }
         return UniError(ERRNO_NOERR);
     };
@@ -285,8 +291,9 @@ napi_value GetTotalSize(napi_env env, napi_callback_info info)
     }
 
     auto resultSize = std::make_shared<int64_t>();
-    auto cbExec = [resultSize](napi_env env) -> UniError {
-        *resultSize = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetTotalSize();
+    auto errNum = std::make_shared<int32_t>();
+    auto cbExec = [resultSize, errNum](napi_env env) -> UniError {
+        *errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetTotalSize(*resultSize);
         return UniError(ERRNO_NOERR);
     };
     auto cbComplete = [resultSize](napi_env env, UniError err) -> NVal {
@@ -315,8 +322,9 @@ napi_value GetFreeSize(napi_env env, napi_callback_info info)
     }
 
     auto resultSize = std::make_shared<int64_t>();
-    auto cbExec = [resultSize](napi_env env) -> UniError {
-        *resultSize = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetFreeSize();
+    auto errNum = std::make_shared<int32_t>();
+    auto cbExec = [resultSize, errNum](napi_env env) -> UniError {
+        *errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetFreeSize(*resultSize);
         return UniError(ERRNO_NOERR);
     };
     auto cbComplete = [resultSize](napi_env env, UniError err) -> NVal {

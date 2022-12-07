@@ -41,8 +41,9 @@ napi_value GetAllVolumes(napi_env env, napi_callback_info info)
         return nullptr;
     }
     auto volumeInfo = std::make_shared<std::vector<VolumeExternal>>();
-    auto cbExec = [volumeInfo](napi_env env) -> UniError {
-         *volumeInfo = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetAllVolumes();
+    auto errNum = std::make_shared<int32_t>();
+    auto cbExec = [volumeInfo, errNum](napi_env env) -> UniError {
+        *errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetAllVolumes(*volumeInfo);
         return UniError(ERRNO_NOERR);
     };
     auto cbComplete = [volumeInfo](napi_env env, UniError err) -> NVal {
@@ -98,7 +99,7 @@ napi_value Mount(napi_env env, napi_callback_info info)
         return nullptr;
     }
 
-    auto result = std::make_shared<bool>();
+    auto result = std::make_shared<int32_t>();
     std::string volumeIdString(volumeId.get());
     auto cbExec = [volumeIdString, result](napi_env env) -> UniError {
         *result = DelayedSingleton<StorageManagerConnect>::GetInstance()->Mount(volumeIdString);
@@ -108,7 +109,7 @@ napi_value Mount(napi_env env, napi_callback_info info)
         if (err) {
             return { env, err.GetNapiErr(env) };
         }
-        return { NVal::CreateBool(env, *result) };
+        return { NVal::CreateUndefined(env) };
     };
 
     std::string procedureName = "Mount";
@@ -137,7 +138,7 @@ napi_value Unmount(napi_env env, napi_callback_info info)
         return nullptr;
     }
 
-    auto result = std::make_shared<bool>();
+    auto result = std::make_shared<int32_t>();
     std::string volumeIdString(volumeId.get());
     auto cbExec = [volumeIdString, result](napi_env env) -> UniError {
         *result = DelayedSingleton<StorageManagerConnect>::GetInstance()->Unmount(volumeIdString);
@@ -147,7 +148,7 @@ napi_value Unmount(napi_env env, napi_callback_info info)
         if (err) {
             return { env, err.GetNapiErr(env) };
         }
-        return { NVal::CreateBool(env, *result) };
+        return { NVal::CreateUndefined(env) };
     };
 
     std::string procedureName = "Unmount";
@@ -179,8 +180,9 @@ napi_value GetVolumeByUuid(napi_env env, napi_callback_info info)
 
     auto volumeInfo = std::make_shared<VolumeExternal>();
     std::string uuidString(uuid.get());
-    auto cbExec = [uuidString, volumeInfo](napi_env env) -> UniError {
-        *volumeInfo = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetVolumeByUuid(uuidString);
+    auto errNum = std::make_shared<int32_t>();
+    auto cbExec = [uuidString, volumeInfo, errNum](napi_env env) -> UniError {
+        *errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetVolumeByUuid(uuidString, *volumeInfo);
         return UniError(ERRNO_NOERR);
     };
     auto cbComplete = [volumeInfo](napi_env env, UniError err) -> NVal {
@@ -229,8 +231,9 @@ napi_value GetVolumeById(napi_env env, napi_callback_info info)
 
     auto volumeInfo = std::make_shared<VolumeExternal>();
     std::string volumeIdString(volumeId.get());
-    auto cbExec = [volumeIdString, volumeInfo](napi_env env) -> UniError {
-        *volumeInfo = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetVolumeById(volumeIdString);
+    auto errNum = std::make_shared<int32_t>();
+    auto cbExec = [volumeIdString, volumeInfo, errNum](napi_env env) -> UniError {
+        *errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetVolumeById(volumeIdString, *volumeInfo);
         return UniError(ERRNO_NOERR);
     };
     auto cbComplete = [volumeInfo](napi_env env, UniError err) -> NVal {
@@ -283,7 +286,7 @@ napi_value SetVolumeDescription(napi_env env, napi_callback_info info)
         return nullptr;
     }
 
-    auto result = std::make_shared<bool>();
+    auto result = std::make_shared<int32_t>();
     std::string uuidString(uuid.get());
     std::string descStr(description.get());
     auto cbExec = [uuidString, descStr, result](napi_env env) -> UniError {
@@ -294,7 +297,7 @@ napi_value SetVolumeDescription(napi_env env, napi_callback_info info)
         if (err) {
             return { env, err.GetNapiErr(env) };
         }
-        return { NVal::CreateBool(env, *result) };
+        return { NVal::CreateUndefined(env) };
     };
 
     std::string procedureName = "SetVolumeDescription";
@@ -330,7 +333,7 @@ napi_value Format(napi_env env, napi_callback_info info)
         return nullptr;
     }
 
-    auto result = std::make_shared<bool>();
+    auto result = std::make_shared<int32_t>();
     std::string volumeIdString(volumeId.get());
     std::string fsTypeString(fsType.get());
     auto cbExec = [volumeIdString, fsTypeString, result](napi_env env) -> UniError {
@@ -341,7 +344,7 @@ napi_value Format(napi_env env, napi_callback_info info)
         if (err) {
             return { env, err.GetNapiErr(env) };
         }
-        return { NVal::CreateBool(env, *result) };
+        return { NVal::CreateUndefined(env) };
     };
 
     std::string procedureName = "Format";
@@ -377,7 +380,7 @@ napi_value Partition(napi_env env, napi_callback_info info)
         return nullptr;
     }
 
-    auto result = std::make_shared<bool>();
+    auto result = std::make_shared<int32_t>();
     std::string diskIdString(diskId.get());
     auto cbExec = [diskIdString, type, result](napi_env env) -> UniError {
         *result = DelayedSingleton<StorageManagerConnect>::GetInstance()->Partition(diskIdString, type);
@@ -387,7 +390,7 @@ napi_value Partition(napi_env env, napi_callback_info info)
         if (err) {
             return { env, err.GetNapiErr(env) };
         }
-        return { NVal::CreateBool(env, *result) };
+        return { NVal::CreateUndefined(env) };
     };
 
     std::string procedureName = "Partition";

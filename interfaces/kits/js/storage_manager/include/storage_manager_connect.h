@@ -31,23 +31,23 @@ class StorageManagerConnect : public NoCopyable {
     DECLARE_DELAYED_SINGLETON(StorageManagerConnect);
 public:
     int32_t Connect();
-    BundleStats GetBundleStats(std::string pkgName);
-    int64_t GetFreeSizeOfVolume(std::string volumeUuid);
-    int64_t GetTotalSizeOfVolume(std::string volumeUuid);
-    bool Mount(std::string volumeId);
-    bool Unmount(std::string volumeId);
-    std::vector<VolumeExternal> GetAllVolumes();
-    int64_t GetSystemSize();
-    int64_t GetTotalSize();
-    int64_t GetFreeSize();
-    StorageStats GetUserStorageStats();
-    StorageStats GetUserStorageStats(int32_t userId);
-    BundleStats GetCurrentBundleStats();
-    VolumeExternal GetVolumeByUuid(std::string uuid);
-    VolumeExternal GetVolumeById(std::string volumeId);
-    bool SetVolumeDescription(std::string uuid, std::string description);
-    bool Format(std::string volumeId, std::string fsType);
-    bool Partition(std::string diskId, int32_t type);
+    int32_t GetBundleStats(std::string pkgName, BundleStats &bundleStats);
+    int32_t GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize);
+    int32_t GetTotalSizeOfVolume(std::string volumeUuid, int64_t &totalSize);
+    int32_t Mount(std::string volumeId);
+    int32_t Unmount(std::string volumeId);
+    int32_t GetAllVolumes(std::vector<VolumeExternal> &vecOfVol);
+    int32_t GetSystemSize(int64_t &systemSize);
+    int32_t GetTotalSize(int64_t &totalSize);
+    int32_t GetFreeSize(int64_t &freeSize);
+    int32_t GetUserStorageStats(StorageStats &storageStats);
+    int32_t GetUserStorageStats(int32_t userId, StorageStats &storageStats);
+    int32_t GetCurrentBundleStats(BundleStats &bundleStats);
+    int32_t GetVolumeByUuid(std::string uuid, VolumeExternal &vol);
+    int32_t GetVolumeById(std::string volumeId, VolumeExternal &vol);
+    int32_t SetVolumeDescription(std::string uuid, std::string description);
+    int32_t Format(std::string volumeId, std::string fsType);
+    int32_t Partition(std::string diskId, int32_t type);
 
     int32_t ResetProxy();
 private:

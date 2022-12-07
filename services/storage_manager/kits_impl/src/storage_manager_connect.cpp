@@ -62,192 +62,175 @@ int32_t StorageManagerConnect::Connect()
     return E_OK;
 }
 
-BundleStats StorageManagerConnect::GetBundleStats(string pkgName)
+int32_t StorageManagerConnect::GetBundleStats(string pkgName, BundleStats &BundleStats)
 {
-    BundleStats result;
-    if (Connect() != E_OK) {
+    int32_t err = Connect();
+    if (err != E_OK) {
         LOGE("StorageManagerConnect::GetBundleStats:Connect error");
-        return result;
+        return err;
     }
-    return storageManager_->GetBundleStats(pkgName);
+    return storageManager_->GetBundleStats(pkgName, BundleStats);
 }
 
-int64_t StorageManagerConnect::GetFreeSizeOfVolume(string volumeUuid)
+int32_t StorageManagerConnect::GetFreeSizeOfVolume(string volumeUuid, int64_t &freeSize)
 {
-    if (Connect() != E_OK) {
+    int32_t err = Connect();
+    if (err != E_OK) {
         LOGE("StorageManagerConnect::GetFreeSizeOfVolume:Connect error");
-        return 0;
+        return err;
     }
-    return storageManager_->GetFreeSizeOfVolume(volumeUuid);
+    return storageManager_->GetFreeSizeOfVolume(volumeUuid, freeSize);
 }
 
-int64_t StorageManagerConnect::GetTotalSizeOfVolume(string volumeUuid)
+int32_t StorageManagerConnect::GetTotalSizeOfVolume(string volumeUuid, int64_t &totalSize)
 {
-    if (Connect() != E_OK) {
+    int32_t err = Connect();
+    if (err != E_OK) {
         LOGE("StorageManagerConnect::GetTotalSizeOfVolume:Connect error");
-        return 0;
+        return err;
     }
-    return storageManager_->GetTotalSizeOfVolume(volumeUuid);
+    return storageManager_->GetTotalSizeOfVolume(volumeUuid, totalSize);
 }
 
-bool StorageManagerConnect::Mount(std::string volumeId)
+int32_t StorageManagerConnect::Mount(std::string volumeId)
 {
-    if (Connect() != E_OK) {
+    int32_t err = Connect();
+    if (err != E_OK) {
         LOGE("StorageManagerConnect::Mount:Connect error");
-        return false;
+        return err;
     }
-    if (storageManager_->Mount(volumeId) == E_OK) {
-        LOGE("StorageManagerConnect::Mount:success");
-        return true;
-    }
-    return false;
+    return storageManager_->Mount(volumeId);
 }
 
-bool StorageManagerConnect::Unmount(std::string volumeId)
+int32_t StorageManagerConnect::Unmount(std::string volumeId)
 {
-    if (Connect() != E_OK) {
+    int32_t err = Connect();
+    if (err != E_OK) {
         LOGE("StorageManagerConnect::Unmount:Connect error");
         return false;
     }
-    if (storageManager_->Unmount(volumeId) == E_OK) {
-        LOGE("StorageManagerConnect::Unmount:success");
-        return true;
-    }
-    return false;
+    return storageManager_->Unmount(volumeId);
 }
 
-std::vector<VolumeExternal> StorageManagerConnect::GetAllVolumes()
+int32_t StorageManagerConnect::GetAllVolumes(std::vector<VolumeExternal> &vecOfVol)
 {
-    vector<VolumeExternal> result = {};
-    if (Connect() != E_OK) {
+    int32_t err = Connect();
+    if (err != E_OK) {
         LOGE("StorageManagerConnect::GetAllVolumes:Connect error");
-        return result;
+        return err;
     }
-    return storageManager_->GetAllVolumes();
+    return storageManager_->GetAllVolumes(vecOfVol);
 }
 
-int64_t StorageManagerConnect::GetSystemSize()
+int32_t StorageManagerConnect::GetSystemSize(int64_t &systemSize)
 {
-    if (Connect() != E_OK) {
+    int32_t err = Connect();
+    if (err != E_OK) {
         LOGE("StorageManagerConnect::GetSystemSize:Connect error");
-        return 0;
+        return err;
     }
-    int64_t result = storageManager_->GetSystemSize();
-    return result;
+    return storageManager_->GetSystemSize(systemSize);
 }
 
-int64_t StorageManagerConnect::GetTotalSize()
+int32_t StorageManagerConnect::GetTotalSize(int64_t &totalSize)
 {
-    if (Connect() != E_OK) {
+    int32_t err = Connect();
+    if (err != E_OK) {
         LOGE("StorageManagerConnect::GetTotalSize:Connect error");
-        return 0;
+        return err;
     }
-    int64_t result = storageManager_->GetTotalSize();
-    return result;
+    return storageManager_->GetTotalSize(totalSize);
 }
 
-int64_t StorageManagerConnect::GetFreeSize()
+int32_t StorageManagerConnect::GetFreeSize(int64_t &freeSize)
 {
-    if (Connect() != E_OK) {
+    int32_t err = Connect();
+    if (err != E_OK) {
         LOGE("StorageManagerConnect::GetFreeSize:Connect error");
-        return 0;
+        return err;
     }
-    int64_t result = storageManager_->GetFreeSize();
-    return result;
+    return storageManager_->GetFreeSize(freeSize);
 }
 
-StorageStats StorageManagerConnect::GetUserStorageStats()
+int32_t StorageManagerConnect::GetUserStorageStats(StorageStats &storageStats)
 {
-    StorageStats result;
-    if (Connect() != E_OK) {
+    int32_t err = Connect();
+    if (err != E_OK) {
         LOGE("StorageManagerConnect::GetUserStorageStats:Connect error");
-        return result;
+        return err;
     }
-    result = storageManager_->GetUserStorageStats();
-    return result;
+    return storageManager_->GetUserStorageStats(storageStats);
 }
 
-StorageStats StorageManagerConnect::GetUserStorageStats(int32_t userId)
+int32_t StorageManagerConnect::GetUserStorageStats(int32_t userId, StorageStats &storageStats)
 {
-    StorageStats result;
-    if (Connect() != E_OK) {
+    int32_t err = Connect();
+    if (err != E_OK) {
         LOGE("StorageManagerConnect::GetUserStorageStats:Connect error");
-        return result;
+        return err;
     }
-    result = storageManager_->GetUserStorageStats(userId);
-    return result;
+    return storageManager_->GetUserStorageStats(userId, storageStats);
 }
 
-BundleStats StorageManagerConnect::GetCurrentBundleStats()
+int32_t StorageManagerConnect::GetCurrentBundleStats(BundleStats &bundleStats)
 {
     BundleStats result;
-    if (Connect() != E_OK) {
+    int32_t err = Connect();
+    if (err != E_OK) {
         LOGE("StorageManagerConnect::GetCurrentBundleStats:Connect error");
-        return result;
+        return err;
     }
-    result = storageManager_->GetCurrentBundleStats();
-    return result;
+    return storageManager_->GetCurrentBundleStats(bundleStats);
 }
 
-VolumeExternal StorageManagerConnect::GetVolumeByUuid(std::string uuid)
+int32_t StorageManagerConnect::GetVolumeByUuid(std::string uuid, VolumeExternal &vol)
 {
-    VolumeExternal result;
-    if (Connect() != E_OK) {
+    int32_t err = Connect();
+    if (err != E_OK) {
         LOGE("StorageManagerConnect::GetVolumeByUuid:Connect error");
-        return result;
+        return err;
     }
-    storageManager_->GetVolumeByUuid(uuid, result);
-    return result;
+    return storageManager_->GetVolumeByUuid(uuid, vol);
 }
 
-VolumeExternal StorageManagerConnect::GetVolumeById(std::string volumeId)
+int32_t StorageManagerConnect::GetVolumeById(std::string volumeId, VolumeExternal &vol)
 {
-    VolumeExternal result;
-    if (Connect() != E_OK) {
+    int32_t err = Connect();
+    if (err != E_OK) {
         LOGE("StorageManagerConnect::GetVolumeById:Connect error");
-        return result;
+        return err;
     }
-    storageManager_->GetVolumeById(volumeId, result);
-    return result;
+    return storageManager_->GetVolumeById(volumeId, vol);
 }
 
-bool StorageManagerConnect::SetVolumeDescription(std::string uuid, std::string description)
+int32_t StorageManagerConnect::SetVolumeDescription(std::string uuid, std::string description)
 {
-    if (Connect() != E_OK) {
+    int32_t err = Connect();
+    if (err != E_OK) {
         LOGE("StorageManagerConnect::SetVolumeDescription:Connect error");
-        return false;
+        return err;
     }
-    if (storageManager_->SetVolumeDescription(uuid, description) == E_OK) {
-        LOGE("StorageManagerConnect::SetVolumeDescription:success");
-        return true;
-    }
-    return false;
+    return storageManager_->SetVolumeDescription(uuid, description);
 }
 
-bool StorageManagerConnect::Format(std::string volumeId, std::string fsType)
+int32_t StorageManagerConnect::Format(std::string volumeId, std::string fsType)
 {
-    if (Connect() != E_OK) {
+    int32_t err = Connect();
+    if (err != E_OK) {
         LOGE("StorageManagerConnect::Format:Connect error");
-        return false;
+        return err;
     }
-    if (storageManager_->Format(volumeId, fsType) == E_OK) {
-        LOGE("StorageManagerConnect::Format:success");
-        return true;
-    }
-    return false;
+    return storageManager_->Format(volumeId, fsType);
 }
 
-bool StorageManagerConnect::Partition(std::string diskId, int32_t type)
+int32_t StorageManagerConnect::Partition(std::string diskId, int32_t type)
 {
-    if (Connect() != E_OK) {
+    int32_t err = Connect();
+    if (err != E_OK) {
         LOGE("StorageManagerConnect::Partition:Connect error");
-        return false;
+        return err;
     }
-    if (storageManager_->Partition(diskId, type) == E_OK) {
-        LOGE("StorageManagerConnect::Partition:success");
-        return true;
-    }
-    return false;
+    return storageManager_->Partition(diskId, type);
 }
 
 int32_t StorageManagerConnect::ResetProxy()
