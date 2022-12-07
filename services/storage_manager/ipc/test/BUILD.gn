@@ -59,7 +59,106 @@ ohos_unittest("storage_manager_proxy_test") {
   ]
 }
 
+ohos_unittest("storage_manager_stub_test") {
+  module_out_path = "filemanagement/storage_service/storage_manager"
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageManager\"",
+    "LOG_DOMAIN = 0xD004300",
+  ]
+
+  include_dirs = [
+    "//foundation/filemanagement/storage_service/services/storage_manager/client/test",
+    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
+    "//foundation/filemanagement/storage_service/services/storage_manager/include",
+    "//foundation/filemanagement/storage_service/services/storage_manager/ipc/test/",
+    "//foundation/filemanagement/storage_service/services/common/include",
+    "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
+    "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
+    "//base/security/access_token/interfaces/innerkits/accesstoken/include",
+  ]
+
+  sources = [
+    "//foundation/filemanagement/storage_service/services/storage_manager/client/test/get_self_permissions.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/bundle_stats.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/disk.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/storage_stats.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/volume_core.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/volume_external.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/ipc/src/storage_manager_proxy.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/ipc/src/storage_manager_stub.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/ipc/test/storage_manager_stub_test.cpp",
+  ]
+
+  deps = [
+    "//third_party/googletest:gmock_main",
+    "//third_party/googletest:gtest_main",
+  ]
+
+  external_deps = [
+    "access_token:libaccesstoken_sdk",
+    "access_token:libnativetoken",
+    "access_token:libtoken_setproc",
+    "c_utils:utils",
+    "hiviewdfx_hilog_native:libhilog",
+    "init:libbegetutil",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+  ]
+}
+
+ohos_unittest("storage_manager_stub_nonpermission_test") {
+  module_out_path = "filemanagement/storage_service/storage_manager"
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageManager\"",
+    "LOG_DOMAIN = 0xD004300",
+  ]
+
+  include_dirs = [
+    "//foundation/filemanagement/storage_service/services/storage_manager/client/test",
+    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
+    "//foundation/filemanagement/storage_service/services/storage_manager/include",
+    "//foundation/filemanagement/storage_service/services/storage_manager/ipc/test/",
+    "//foundation/filemanagement/storage_service/services/common/include",
+    "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
+    "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
+    "//base/security/access_token/interfaces/innerkits/accesstoken/include",
+  ]
+
+  sources = [
+    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/bundle_stats.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/disk.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/storage_stats.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/volume_core.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/volume_external.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/ipc/src/storage_manager_proxy.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/ipc/src/storage_manager_stub.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_manager/ipc/test/storage_manager_stub_noper_test.cpp",
+  ]
+
+  deps = [
+    "//third_party/googletest:gmock_main",
+    "//third_party/googletest:gtest_main",
+  ]
+
+  external_deps = [
+    "access_token:libaccesstoken_sdk",
+    "c_utils:utils",
+    "hiviewdfx_hilog_native:libhilog",
+    "init:libbegetutil",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+  ]
+}
+
 group("storage_manager_ipc_test") {
   testonly = true
-  deps = [ ":storage_manager_proxy_test" ]
+  deps = [
+    ":storage_manager_proxy_test",
+    ":storage_manager_stub_nonpermission_test",
+    ":storage_manager_stub_test",
+  ]
 }

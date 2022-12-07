@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
 
 #include <linux/kdev_t.h>
 
@@ -20,6 +21,7 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "volume/volume_manager.h"
+#include "volume_info_mock.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -92,6 +94,30 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_CreateVolume_001, 
 }
 
 /**
+ * @tc.name: Storage_Service_VolumeManagerTest_CreateVolume_002
+ * @tc.desc: Verify the CreateVolume function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_CreateVolume_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_CreateVolume_002 start";
+
+    VolumeManager *volumeManager = VolumeManager::Instance();
+    ASSERT_TRUE(volumeManager != nullptr);
+
+    std::string diskId = "diskId-1-1";
+    dev_t device = MKDEV(1, 1); // 1 is major device number, 1 is minor device number
+    std::string result = volumeManager->CreateVolume(diskId, device);
+    std::string res = volumeManager->CreateVolume(diskId, device);
+    GTEST_LOG_(INFO) << result;
+    EXPECT_TRUE(res.empty());
+    volumeManager->DestroyVolume(result);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_CreateVolume_002 end";
+}
+
+/**
  * @tc.name: Storage_Service_VolumeManagerTest_DestroyVolume_001
  * @tc.desc: Verify the DestroyVolume function.
  * @tc.type: FUNC
@@ -111,6 +137,26 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_DestroyVolume_001,
     EXPECT_EQ(result, E_OK);
 
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_DestroyVolume_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeManagerTest_DestroyVolume_002
+ * @tc.desc: Verify the DestroyVolume function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_DestroyVolume_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_DestroyVolume_002 start";
+
+    VolumeManager *volumeManager = VolumeManager::Instance();
+    ASSERT_TRUE(volumeManager != nullptr);
+
+    std::string volId = "vol-2-1";
+    int32_t result = volumeManager->DestroyVolume(volId);
+    EXPECT_EQ(result, E_NON_EXIST);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_DestroyVolume_002 end";
 }
 
 /**
@@ -138,6 +184,26 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Check_001, TestSiz
 }
 
 /**
+ * @tc.name: Storage_Service_VolumeManagerTest_Check_002
+ * @tc.desc: Verify the Check function not existing situation.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Check_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Check_002 start";
+
+    VolumeManager *volumeManager = VolumeManager::Instance();
+    ASSERT_TRUE(volumeManager != nullptr);
+
+    std::string volId = "vol-2-2";
+    int32_t result = volumeManager->Check(volId);
+    EXPECT_EQ(result, E_NON_EXIST);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Check_002 end";
+}
+
+/**
  * @tc.name: Storage_Service_VolumeManagerTest_Mount_001
  * @tc.desc: Verify the Mount function.
  * @tc.type: FUNC
@@ -160,6 +226,27 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Mount_001, TestSiz
     volumeManager->DestroyVolume(volId);
 
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Mount_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeManagerTest_Mount_002
+ * @tc.desc: Verify the Mount function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Mount_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Mount_002 start";
+
+    VolumeManager *volumeManager = VolumeManager::Instance();
+    ASSERT_TRUE(volumeManager != nullptr);
+
+    std::string volId = "vol-2-3";
+    uint32_t flags = 1; // disk type
+    int32_t result = volumeManager->Mount(volId, flags);
+    EXPECT_EQ(result, E_NON_EXIST);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Mount_002 end";
 }
 
 /**
@@ -189,6 +276,30 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_UMount_001, TestSi
 }
 
 /**
+ * @tc.name: Storage_Service_VolumeManagerTest_UMount_002
+ * @tc.desc: Verify the UMount function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_UMount_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_UMount_002 start";
+
+    VolumeManager *volumeManager = VolumeManager::Instance();
+    ASSERT_TRUE(volumeManager != nullptr);
+
+    std::string volId = "vol-2-4";
+    uint32_t flags = 1; // disk type
+    volumeManager->Mount(volId, flags);
+    int32_t result = volumeManager->UMount(volId);
+    EXPECT_EQ(result, E_NON_EXIST);
+
+    volumeManager->DestroyVolume(volId);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_UMount_002 end";
+}
+
+/**
  * @tc.name: Storage_Service_VolumeManagerTest_Format_001
  * @tc.desc: Verify the Format function.
  * @tc.type: FUNC
@@ -214,6 +325,29 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Format_001, TestSi
 }
 
 /**
+ * @tc.name: Storage_Service_VolumeManagerTest_Format_002
+ * @tc.desc: Verify the Format function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Format_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Format_002 start";
+
+    VolumeManager *volumeManager = VolumeManager::Instance();
+    ASSERT_TRUE(volumeManager != nullptr);
+
+    std::string volId = "vol-2-5";
+    std::string fsType = "ext2";
+    int32_t result = volumeManager->Format(volId, fsType);
+    EXPECT_EQ(result, E_NON_EXIST);
+
+    volumeManager->DestroyVolume(volId);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Format_002 end";
+}
+
+/**
  * @tc.name: Storage_Service_VolumeManagerTest_SetVolumeDescription_001
  * @tc.desc: Verify the SetVolumeDescription function.
  * @tc.type: FUNC
@@ -236,6 +370,29 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_SetVolumeDescripti
     volumeManager->DestroyVolume(volId);
 
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_SetVolumeDescription_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeManagerTest_SetVolumeDescription_002
+ * @tc.desc: Verify the SetVolumeDescription function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_SetVolumeDescription_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_SetVolumeDescription_002 start";
+
+    VolumeManager *volumeManager = VolumeManager::Instance();
+    ASSERT_TRUE(volumeManager != nullptr);
+
+    std::string volId = "vol-2-6";
+    string description = "description-1";
+    int32_t result = volumeManager->SetVolumeDescription(volId, description);
+    EXPECT_EQ(result, E_NON_EXIST);
+
+    volumeManager->DestroyVolume(volId);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_SetVolumeDescription_002 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

@@ -79,6 +79,7 @@
             }
       ],
       "test": [
+          "//foundation/filemanagement/storage_service/services/storage_daemon/client/test:storage_daemon_client_test",
           "//foundation/filemanagement/storage_service/services/storage_daemon/crypto/test:crypto_test",
           "//foundation/filemanagement/storage_service/services/storage_daemon/disk/test:storage_daemon_disk_test",
           "//foundation/filemanagement/storage_service/services/storage_daemon/file_sharing/test:file_sharing_test",
@@ -87,6 +88,8 @@
           "//foundation/filemanagement/storage_service/services/storage_daemon/user/test:storage_daemon_user_test",
           "//foundation/filemanagement/storage_service/services/storage_daemon/utils/test:storage_daemon_utils_test",
           "//foundation/filemanagement/storage_service/services/storage_daemon/volume/test:storage_daemon_volume_test",
+          "//foundation/filemanagement/storage_service/services/storage_manager/client/test:storage_manager_client_test",
+          "//foundation/filemanagement/storage_service/services/storage_manager/crypto/test:storage_manager_crypto_test",
           "//foundation/filemanagement/storage_service/services/storage_manager/ipc/test:storage_manager_ipc_test",
           "//foundation/filemanagement/storage_service/services/storage_manager/storage/test:storage_manager_storage_test",
           "//foundation/filemanagement/storage_service/services/storage_manager/storage_daemon_communication/test:storage_manager_communication_test",

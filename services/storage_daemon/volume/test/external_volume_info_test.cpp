@@ -42,16 +42,13 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoCreate
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoCreate_001 start";
 
-    ExternalVolumeInfoMock mock;
+    ExternalVolumeInfo vol;
     dev_t device = MKDEV(156, 300);
-    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
-    auto ret = mock.DoCreate(device);
-    EXPECT_TRUE(ret == E_OK);
-
-    device = MKDEV(156, 301);
-    EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_ERR));
-    ret = mock.DoCreate(device);
-    EXPECT_TRUE(ret == E_ERR);
+    std::string diskId = "disk-156-300";
+    std::string volId = "vol-156-301";
+    int32_t ret = vol.Create(volId, diskId, device);
+    EXPECT_EQ(ret, E_OK);
+    ret = vol.Destroy();
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoCreate_001 end";
 }
@@ -66,14 +63,14 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoDestro
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoDestroy_001 start";
 
-    ExternalVolumeInfoMock mock;
-    EXPECT_CALL(mock, DoDestroy()).Times(1).WillOnce(testing::Return(E_OK));
-    auto ret = mock.DoDestroy();
-    EXPECT_TRUE(ret == E_OK);
-
-    EXPECT_CALL(mock, DoDestroy()).Times(1).WillOnce(testing::Return(E_ERR));
-    ret = mock.DoDestroy();
-    EXPECT_TRUE(ret == E_ERR);
+    ExternalVolumeInfo vol;
+    dev_t device = MKDEV(156, 400);
+    std::string diskId = "disk-156-400";
+    std::string volId = "vol-156-401";
+    int32_t ret = vol.Create(volId, diskId, device);
+    EXPECT_EQ(ret, E_OK);
+    ret = vol.Destroy();
+    EXPECT_EQ(ret, E_OK);
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoDestroy_001 end";
 }
@@ -138,19 +135,16 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoCheck_
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoCheck_001 start";
 
-    ExternalVolumeInfoMock mock;
-
-    EXPECT_CALL(mock, DoCheck()).Times(1).WillOnce(testing::Return(E_ERR));
-    auto ret = mock.DoCheck();
-    EXPECT_TRUE(ret == E_ERR);
-
-    EXPECT_CALL(mock, DoCheck()).Times(1).WillOnce(testing::Return(E_NOT_SUPPORT));
-    ret = mock.DoCheck();
-    EXPECT_TRUE(ret == E_NOT_SUPPORT);
-
-    EXPECT_CALL(mock, DoCheck()).Times(1).WillOnce(testing::Return(E_OK));
-    ret = mock.DoCheck();
-    EXPECT_TRUE(ret == E_OK);
+    ExternalVolumeInfo vol;
+    dev_t device = MKDEV(156, 600);
+    std::string diskId = "disk-156-600";
+    std::string volId = "vol-156-601";
+    int32_t ret = vol.Create(volId, diskId, device);
+    EXPECT_EQ(ret, E_OK);
+    ret = vol.Check();
+    EXPECT_EQ(ret, E_ERR);
+    ret = vol.Destroy();
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoCheck_001 end";
 }
 
@@ -164,21 +158,66 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_001 start";
 
-    ExternalVolumeInfoMock mock;
-    std::string type = "ext2";
-
-    EXPECT_CALL(mock, DoFormat(testing::_)).Times(1).WillOnce(testing::Return(E_NOT_SUPPORT));
-    auto ret = mock.DoFormat(type);
-    EXPECT_TRUE(ret == E_NOT_SUPPORT);
-
-    EXPECT_CALL(mock, DoFormat(testing::_)).Times(1).WillOnce(testing::Return(E_ERR));
-    ret = mock.DoFormat(type);
-    EXPECT_TRUE(ret == E_ERR);
-
-    EXPECT_CALL(mock, DoFormat(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
-    ret = mock.DoFormat(type);
-    EXPECT_TRUE(ret == E_OK);
+    ExternalVolumeInfo vol;
+    dev_t device = MKDEV(156, 700);
+    std::string diskId = "disk-156-700";
+    std::string volId = "vol-156-701";
+    int32_t ret = vol.Create(volId, diskId, device);
+    EXPECT_EQ(ret, E_OK);
+    std::string flag = "exfat";
+    ret = vol.Format(flag);
+    EXPECT_EQ(ret, E_OK);
+    ret = vol.Destroy();
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoFormat_002
+ * @tc.desc: Verify the DoFormat function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_002 start";
+
+    ExternalVolumeInfo vol;
+    dev_t device = MKDEV(156, 701);
+    std::string diskId = "disk-156-701";
+    std::string volId = "vol-156-702";
+    int32_t ret = vol.Create(volId, diskId, device);
+    EXPECT_EQ(ret, E_OK);
+    std::string flag = "vfat";
+    ret = vol.Format(flag);
+    EXPECT_EQ(ret, E_OK);
+    ret = vol.Destroy();
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoFormat_003
+ * @tc.desc: Verify the DoFormat function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_003 start";
+
+    ExternalVolumeInfo vol;
+    dev_t device = MKDEV(156, 702);
+    std::string diskId = "disk-156-702";
+    std::string volId = "vol-156-703";
+    int32_t ret = vol.Create(volId, diskId, device);
+    EXPECT_EQ(ret, E_OK);
+    std::string flag = "ntfs";
+    ret = vol.Format(flag);
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+    ret = vol.Destroy();
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_003 end";
 }
 
 /**
@@ -191,20 +230,17 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoSetVol
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoSetVolDesc_001 start";
 
-    ExternalVolumeInfoMock mock;
-    std::string description = "description-1";
-
-    EXPECT_CALL(mock, DoSetVolDesc(testing::_)).Times(1).WillOnce(testing::Return(E_NOT_SUPPORT));
-    auto ret = mock.DoSetVolDesc(description);
-    EXPECT_TRUE(ret == E_NOT_SUPPORT);
-
-    EXPECT_CALL(mock, DoSetVolDesc(testing::_)).Times(1).WillOnce(testing::Return(E_ERR));
-    ret = mock.DoSetVolDesc(description);
-    EXPECT_TRUE(ret == E_ERR);
-
-    EXPECT_CALL(mock, DoSetVolDesc(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
-    ret = mock.DoSetVolDesc(description);
-    EXPECT_TRUE(ret == E_OK);
+    ExternalVolumeInfo vol;
+    dev_t device = MKDEV(156, 800);
+    std::string diskId = "disk-156-800";
+    std::string volId = "vol-156-801";
+    int32_t ret = vol.Create(volId, diskId, device);
+    EXPECT_EQ(ret, E_OK);
+    std::string des = "label1";
+    ret = vol.SetVolumeDescription(des);
+    EXPECT_EQ(ret, E_NOT_SUPPORT);
+    ret = vol.Destroy();
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoSetVolDesc_001 end";
 }
 

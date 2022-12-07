@@ -31,7 +31,8 @@ class MultiUserManagerServiceTest : public testing::Test {
 public:
     static void SetUpTestCase(void)
     {
-        if (system::GetBoolParameter(FSCRYPT_POLICY_KEY, false)) {
+        std::string res = system::GetParameter(FSCRYPT_POLICY_KEY, "");
+        if (!res.empty()) {
             g_fscryptEnable = true;
         }
     };
