@@ -44,7 +44,7 @@ public:
     virtual int32_t NotifyVolumeMounted(std::string volumeId, int fsType, std::string fsUuid,
                                      std::string path, std::string description) = 0;
     virtual int32_t NotifyVolumeDestroyed(std::string volumeId) = 0;
-    virtual int32_t Mount(std::string volumeIsd) = 0;
+    virtual int32_t Mount(std::string volumeId) = 0;
     virtual int32_t Unmount(std::string volumeId) = 0;
     virtual int32_t GetAllVolumes(std::vector<VolumeExternal> &vecOfVol) = 0;
     virtual int32_t NotifyDiskCreated(Disk disk) = 0;

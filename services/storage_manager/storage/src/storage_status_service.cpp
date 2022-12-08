@@ -142,7 +142,6 @@ int32_t StorageStatusService::GetCurrentBundleStats(BundleStats &bundleStats)
     int userId = GetCurrentUserId();
     LOGD("StorageStatusService::userId is:%d", userId);
     std::string pkgName = GetCallingPkgName();
-    LOGD("StorageStatusService::pkgName is %{public}s", pkgName.c_str());
     return GetBundleStats(pkgName, userId, bundleStats);
 }
 

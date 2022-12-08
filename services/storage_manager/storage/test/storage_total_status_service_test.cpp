@@ -18,6 +18,7 @@
 
 #include "storage/storage_status_service.h"
 #include "storage/storage_total_status_service.h"
+#include "storage_service_errno.h"
 
 namespace {
 using namespace std;
@@ -44,8 +45,9 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetSystemSize_0000,
 {
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_total_status_service_GetSystemSize_0000";
     std::shared_ptr<StorageTotalStatusService> service = DelayedSingleton<StorageTotalStatusService>::GetInstance();
-    int64_t result = service->GetSystemSize();
-    EXPECT_GE(result, 0);
+    int64_t systemSize;
+    int32_t result = service->GetSystemSize(systemSize);
+    EXPECT_EQ(result, 0);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_total_status_service_GetSystemSize_0000";
 }
 
@@ -62,8 +64,9 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetTotalSize_0000, 
 {
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_total_status_service_GetTotalSize_0000";
     std::shared_ptr<StorageTotalStatusService> service = DelayedSingleton<StorageTotalStatusService>::GetInstance();
-    int64_t result = service->GetTotalSize();
-    EXPECT_GE(result, 0);
+    int64_t totalSize;
+    int32_t result = service->GetTotalSize(totalSize);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_total_status_service_GetTotalSize_0000";
 }
 
@@ -80,8 +83,9 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_GetFreeSize_0000, t
 {
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_total_status_service_GetFreeSize_0000";
     std::shared_ptr<StorageTotalStatusService> service = DelayedSingleton<StorageTotalStatusService>::GetInstance();
-    int64_t result = service->GetFreeSize();
-    EXPECT_GE(result, 0);
+    int64_t freeSize;
+    int32_t result = service->GetFreeSize(freeSize);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_total_status_service_GetFreeSize_0000";
 }
 
@@ -98,13 +102,9 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetUserStorageStats_0000,
 {
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_GetUserStorageStats_0000";
     std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
-    StorageStats result = service->GetUserStorageStats();
-    EXPECT_GE(result.total_, 0);
-    EXPECT_GE(result.audio_, 0);
-    EXPECT_GE(result.video_, 0);
-    EXPECT_GE(result.image_, 0);
-    EXPECT_GE(result.file_, 0);
-    EXPECT_GE(result.app_, 0);
+    StorageStats storageStats;
+    int32_t result = service->GetUserStorageStats(storageStats);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_GetUserStorageStats_0000";
 }
 
@@ -121,14 +121,10 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetUserStorageStats_0001,
 {
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_GetUserStorageStats_0001";
     std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
-    int32_t userId = 200;
-    StorageStats result = service->GetUserStorageStats(userId);
-    EXPECT_GE(result.total_, 0);
-    EXPECT_GE(result.audio_, 0);
-    EXPECT_GE(result.video_, 0);
-    EXPECT_GE(result.image_, 0);
-    EXPECT_GE(result.file_, 0);
-    EXPECT_GE(result.app_, 0);
+    int32_t userId = 100;
+    StorageStats storageStats;
+    int32_t result = service->GetUserStorageStats(userId, storageStats);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_GetUserStorageStats_0001";
 }
 
@@ -146,13 +142,9 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetBundleStats_0000, test
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_GetBundleStats_0000";
     std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
     string pkgName = "com.test";
-    BundleStats result = service->GetBundleStats(pkgName);
-    GTEST_LOG_(INFO) << result.appSize_;
-    GTEST_LOG_(INFO) << result.cacheSize_;
-    GTEST_LOG_(INFO) << result.dataSize_;
-    EXPECT_EQ(result.appSize_, 0);
-    EXPECT_EQ(result.cacheSize_, 0);
-    EXPECT_EQ(result.dataSize_, 0);
+    BundleStats bundleStats;
+    int32_t result = service->GetBundleStats(pkgName, bundleStats);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_GetBundleStats_0000";
 }
 
@@ -171,20 +163,16 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetBundleStats_0001, test
     std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
     int userId = 100;
     string pkgName = "com.test";
-    BundleStats result = service->GetBundleStats(pkgName, userId);
-    GTEST_LOG_(INFO) << result.appSize_;
-    GTEST_LOG_(INFO) << result.cacheSize_;
-    GTEST_LOG_(INFO) << result.dataSize_;
-    EXPECT_EQ(result.appSize_, 0);
-    EXPECT_EQ(result.cacheSize_, 0);
-    EXPECT_EQ(result.dataSize_, 0);
+    BundleStats bundleStats;
+    int32_t result = service->GetBundleStats(pkgName, userId, bundleStats);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_GetBundleStats_0001";
 }
 
 /**
  * @tc.number: SUB_STORAGE_Storage_status_service_GetCurrentBundleStats_0000
  * @tc.name: Storage_status_service_GetCurrentBundleStats_0000
- * @tc.desc: Test function of GetCurrentBundleStats interface for SUCCESS.
+ * @tc.desc: Test function of GetCurrentBundleStats when caller is not hap.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
@@ -194,13 +182,9 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetCurrentBundleStats_000
 {
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_GetCurrentBundleStats_0000";
     std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
-    BundleStats result = service->GetCurrentBundleStats();
-    GTEST_LOG_(INFO) << result.appSize_;
-    GTEST_LOG_(INFO) << result.cacheSize_;
-    GTEST_LOG_(INFO) << result.dataSize_;
-    EXPECT_EQ(result.appSize_, 0);
-    EXPECT_EQ(result.cacheSize_, 0);
-    EXPECT_EQ(result.dataSize_, 0);
+    BundleStats bundleStats;
+    int32_t result = service->GetCurrentBundleStats(bundleStats);
+    EXPECT_EQ(result, E_BUNDLEMGR_ERROR);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_GetCurrentBundleStats_0000";
 }
 

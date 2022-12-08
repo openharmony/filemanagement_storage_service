@@ -77,7 +77,7 @@ int32_t StorageTotalStatusService::GetFreeSize(int64_t &freeSize)
     return GetSizeOfPath(PATH_DATA, SizeType::FREE, freeSize);
 }
 
-int32_t StorageTotalStatusService::GetSizeOfPath(const char * path, int32_t type, int64_t &size)
+int32_t StorageTotalStatusService::GetSizeOfPath(const char *path, int32_t type, int64_t &size)
 {
     struct statvfs diskInfo;
     int ret = statvfs(path, &diskInfo);
