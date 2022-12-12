@@ -71,11 +71,5 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
 
     mediaShare_ = DataShare::DataShareHelper::Creator(remoteObj, "datashare:///media");
 }
-
-void MediaShareDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &object)
-{
-    auto sptr = DataShare::DataShareHelper::Creator(object.promote(), "datashare:///media");
-    AccountSubscriber::SetMediaShare(sptr);
-}
 }  // namespace StorageManager
 }  // namespace OHOS
