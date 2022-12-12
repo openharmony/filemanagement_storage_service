@@ -39,11 +39,6 @@ public:
 private:
     static std::shared_ptr<DataShare::DataShareHelper> mediaShare_;
 };
-
-class MediaShareDeathRecipient : public IPCObjectProxy::DeathRecipient {
-public:
-    void OnRemoteDied(const wptr<IRemoteObject> &object) override;
-};
 }  // namespace StorageManager
 }  // namespace OHOS
 
