@@ -20,8 +20,10 @@
 
 #include "ipc/storage_manager.h"
 #include "ipc/storage_manager_proxy.h"
+#include "ipc_skeleton.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "tokenid_kit.h"
 
 using namespace std;
 
@@ -107,7 +109,7 @@ int32_t StorageManagerConnect::Unmount(std::string volumeId)
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("StorageManagerConnect::Unmount:Connect error");
-        return false;
+        return err;
     }
     return storageManager_->Unmount(volumeId);
 }
@@ -248,6 +250,21 @@ int32_t StorageManagerConnect::ResetProxy()
 void SmDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
 {
     DelayedSingleton<StorageManagerConnect>::GetInstance()->ResetProxy();
+}
+
+bool IsSystemApp()
+{
+    uint64_t fullTokenId = OHOS::IPCSkeleton::GetCallingFullTokenID();
+    return Security::AccessToken::TokenIdKit::IsSystemAppByFullTokenID(fullTokenId);
+}
+
+int32_t Convert2JsErrNum(int32_t errNum)
+{
+    if (errCodeTable.find(errNum) != errCodeTable.end()) {
+        return errCodeTable.at(errNum);
+    } else {
+        return errNum;
+    }
 }
 } // StorageManager
 } // OHOS

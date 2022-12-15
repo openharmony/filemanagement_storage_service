@@ -45,7 +45,7 @@ int32_t VolumeStorageStatusService::GetFreeSizeOfVolume(string volumeUuid, int64
     string path = GetVolumePath(volumeUuid);
     LOGI("VolumeStorageStatusService::GetFreeSizeOfVolume path is %{public}s", path.c_str());
     if (path == "") {
-        return E_ERR;
+        return E_NON_EXIST;
     }
     struct statvfs diskInfo;
     int ret = statvfs(path.c_str(), &diskInfo);
@@ -60,7 +60,7 @@ int32_t VolumeStorageStatusService::GetTotalSizeOfVolume(string volumeUuid, int6
 {
     string path = GetVolumePath(volumeUuid);
     if (path == "") {
-        return E_ERR;
+        return E_NON_EXIST;
     }
     struct statvfs diskInfo;
     int ret = statvfs(path.c_str(), &diskInfo);

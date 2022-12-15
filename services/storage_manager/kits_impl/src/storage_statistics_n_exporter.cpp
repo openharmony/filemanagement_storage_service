@@ -18,25 +18,30 @@
 #include <singleton.h>
 #include <tuple>
 
-#include "common/napi/n_async/n_async_work_callback.h"
-#include "common/napi/n_async/n_async_work_promise.h"
-#include "common/napi/n_class.h"
-#include "common/napi/n_func_arg.h"
-#include "common/napi/n_val.h"
-#include "common/uni_error.h"
+#include "n_async/n_async_work_callback.h"
+#include "n_async/n_async_work_promise.h"
+#include "n_class.h"
+#include "n_func_arg.h"
+#include "n_val.h"
+#include "n_error.h"
 #include "storage_manager_connect.h"
 #include "storage_service_log.h"
+#include "storage_service_errno.h"
 #include "storage_statistics_napi.h"
 
-using namespace OHOS::DistributedFS;
+using namespace OHOS::FileManagement::LibN;
 
 namespace OHOS {
 namespace StorageManager {
 napi_value GetTotalSizeOfVolume(napi_env env, napi_callback_info info)
 {
+    if(!IsSystemApp()) {
+        NError(E_PERMISSION_SYS).ThrowErr(env);
+        return nullptr;
+    }
     NFuncArg funcArg(env, info);
     if (!funcArg.InitArgs((int)NARG_CNT::ONE, (int)NARG_CNT::TWO)) {
-        UniError(EINVAL).ThrowErr(env, "Number of arguments unmatched");
+        NError(E_PARAMS).ThrowErr(env);
         return nullptr;
     }
 
@@ -44,19 +49,21 @@ napi_value GetTotalSizeOfVolume(napi_env env, napi_callback_info info)
     std::unique_ptr<char []> uuid;
     tie(succ, uuid, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
     if (!succ) {
-        UniError(EINVAL).ThrowErr(env, "Invalid uuid");
+        NError(E_PARAMS).ThrowErr(env);
         return nullptr;
     }
 
     auto resultSize = std::make_shared<int64_t>();
     std::string uuidString(uuid.get());
-    auto errNum = std::make_shared<int32_t>();
-    auto cbExec = [uuidString, resultSize, errNum](napi_env env) -> UniError {
-        *errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetTotalSizeOfVolume(uuidString, *resultSize);
-        return UniError(ERRNO_NOERR);
+    auto cbExec = [uuidString, resultSize]() -> NError {
+        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetTotalSizeOfVolume(uuidString, *resultSize);
+        if (errNum != E_OK) {
+            return NError(Convert2JsErrNum(errNum));
+        }
+        return NError(ERRNO_NOERR);
     };
 
-    auto cbComplete = [resultSize](napi_env env, UniError err) -> NVal {
+    auto cbComplete = [resultSize](napi_env env, NError err) -> NVal {
         if (err) {
             return { env, err.GetNapiErr(env) };
         }
@@ -76,9 +83,13 @@ napi_value GetTotalSizeOfVolume(napi_env env, napi_callback_info info)
 
 napi_value GetFreeSizeOfVolume(napi_env env, napi_callback_info info)
 {
+    if(!IsSystemApp()) {
+        NError(E_PERMISSION_SYS).ThrowErr(env);
+        return nullptr;
+    }
     NFuncArg funcArg(env, info);
     if (!funcArg.InitArgs((int)NARG_CNT::ONE, (int)NARG_CNT::TWO)) {
-        UniError(EINVAL).ThrowErr(env, "Number of arguments unmatched");
+        NError(E_PARAMS).ThrowErr(env);
         return nullptr;
     }
 
@@ -86,18 +97,20 @@ napi_value GetFreeSizeOfVolume(napi_env env, napi_callback_info info)
     std::unique_ptr<char []> uuid;
     tie(succ, uuid, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
     if (!succ) {
-        UniError(EINVAL).ThrowErr(env, "Invalid uuid");
+        NError(E_PARAMS).ThrowErr(env);
         return nullptr;
     }
 
     auto resultSize = std::make_shared<int64_t>();
     std::string uuidString(uuid.get());
-    auto errNum = std::make_shared<int32_t>();
-    auto cbExec = [uuidString, resultSize, errNum](napi_env env) -> UniError {
-        *errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetFreeSizeOfVolume(uuidString, *resultSize);
-        return UniError(ERRNO_NOERR);
+    auto cbExec = [uuidString, resultSize]() -> NError {
+        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetFreeSizeOfVolume(uuidString, *resultSize);
+        if (errNum != E_OK) {
+            return NError(Convert2JsErrNum(errNum));
+        }
+        return NError(ERRNO_NOERR);
     };
-    auto cbComplete = [resultSize](napi_env env, UniError err) -> NVal {
+    auto cbComplete = [resultSize](napi_env env, NError err) -> NVal {
         if (err) {
             return { env, err.GetNapiErr(env) };
         }
@@ -116,9 +129,13 @@ napi_value GetFreeSizeOfVolume(napi_env env, napi_callback_info info)
 
 napi_value GetBundleStats(napi_env env, napi_callback_info info)
 {
+    if(!IsSystemApp()) {
+        NError(E_PERMISSION_SYS).ThrowErr(env);
+        return nullptr;
+    }
     NFuncArg funcArg(env, info);
     if (!funcArg.InitArgs((int)NARG_CNT::ONE, (int)NARG_CNT::TWO)) {
-        UniError(EINVAL).ThrowErr(env, "Number of arguments unmatched");
+        NError(E_PARAMS).ThrowErr(env);
         return nullptr;
     }
 
@@ -126,17 +143,19 @@ napi_value GetBundleStats(napi_env env, napi_callback_info info)
     std::unique_ptr<char []> name;
     tie(succ, name, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
     if (!succ) {
-        UniError(EINVAL).ThrowErr(env, "Invalid name");
+        NError(E_PARAMS).ThrowErr(env);
         return nullptr;
     }
     auto bundleStats = std::make_shared<BundleStats>();
     std::string nameString(name.get());
-    auto errNum = std::make_shared<int32_t>();
-    auto cbExec = [nameString, bundleStats, errNum](napi_env env) -> UniError {
-        *errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetBundleStats(nameString, *bundleStats);
-        return UniError(ERRNO_NOERR);
+    auto cbExec = [nameString, bundleStats]() -> NError {
+        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetBundleStats(nameString, *bundleStats);
+        if (errNum != E_OK) {
+            return NError(Convert2JsErrNum(errNum));
+        }
+        return NError(ERRNO_NOERR);
     };
-    auto cbComplete = [bundleStats](napi_env env, UniError err) -> NVal {
+    auto cbComplete = [bundleStats](napi_env env, NError err) -> NVal {
         if (err) {
             return { env, err.GetNapiErr(env) };
         }
@@ -161,17 +180,18 @@ napi_value GetCurrentBundleStats(napi_env env, napi_callback_info info)
 {
     NFuncArg funcArg(env, info);
     if (!funcArg.InitArgs((int)NARG_CNT::ZERO, (int)NARG_CNT::ONE)) {
-        UniError(EINVAL).ThrowErr(env, "Number of arguments unmatched 0-1");
+        NError(E_PARAMS).ThrowErr(env);
         return nullptr;
     }
-
     auto bundleStats = std::make_shared<BundleStats>();
-    auto errNum = std::make_shared<int32_t>();
-    auto cbExec = [bundleStats, errNum](napi_env env) -> UniError {
-        *errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetCurrentBundleStats(*bundleStats);
-        return UniError(ERRNO_NOERR);
+    auto cbExec = [bundleStats]() -> NError {
+        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetCurrentBundleStats(*bundleStats);
+        if (errNum != E_OK) {
+            return NError(Convert2JsErrNum(errNum));
+        }
+        return NError(ERRNO_NOERR);
     };
-    auto cbComplete = [bundleStats](napi_env env, UniError err) -> NVal {
+    auto cbComplete = [bundleStats](napi_env env, NError err) -> NVal {
         if (err) {
             return { env, err.GetNapiErr(env) };
         }
@@ -194,19 +214,25 @@ napi_value GetCurrentBundleStats(napi_env env, napi_callback_info info)
 
 napi_value GetSystemSize(napi_env env, napi_callback_info info)
 {
+    if(!IsSystemApp()) {
+        NError(E_PERMISSION_SYS).ThrowErr(env);
+        return nullptr;
+    }
     NFuncArg funcArg(env, info);
     if (!funcArg.InitArgs((int)NARG_CNT::ZERO, (int)NARG_CNT::ONE)) {
-        UniError(EINVAL).ThrowErr(env, "Number of arguments unmatched");
+        NError(E_PARAMS).ThrowErr(env);
         return nullptr;
     }
 
     auto resultSize = std::make_shared<int64_t>();
-    auto errNum = std::make_shared<int32_t>();
-    auto cbExec = [resultSize, errNum](napi_env env) -> UniError {
-        *errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetSystemSize(*resultSize);
-        return UniError(ERRNO_NOERR);
+    auto cbExec = [resultSize]() -> NError {
+        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetSystemSize(*resultSize);
+        if (errNum != E_OK) {
+            return NError(Convert2JsErrNum(errNum));
+        }
+        return NError(ERRNO_NOERR);
     };
-    auto cbComplete = [resultSize](napi_env env, UniError err) -> NVal {
+    auto cbComplete = [resultSize](napi_env env, NError err) -> NVal {
         if (err) {
             return { env, err.GetNapiErr(env) };
         }
@@ -225,9 +251,13 @@ napi_value GetSystemSize(napi_env env, napi_callback_info info)
 
 napi_value GetUserStorageStats(napi_env env, napi_callback_info info)
 {
+    if(!IsSystemApp()) {
+        NError(E_PERMISSION_SYS).ThrowErr(env);
+        return nullptr;
+    }
     NFuncArg funcArg(env, info);
     if (!funcArg.InitArgs((int)NARG_CNT::ZERO, (int)NARG_CNT::TWO)) {
-        UniError(EINVAL).ThrowErr(env, "Number of arguments unmatched 0-2");
+        NError(E_PARAMS).ThrowErr(env);
         return nullptr;
     }
     bool fac = false;
@@ -238,7 +268,7 @@ napi_value GetUserStorageStats(napi_env env, napi_callback_info info)
             bool succ = false;
             std::tie(succ, userId) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToInt64();
             if (!succ) {
-                UniError(EINVAL).ThrowErr(env, "Invalid userId");
+                NError(E_PARAMS).ThrowErr(env);
                 return nullptr;
             }
             fac = true;
@@ -246,16 +276,19 @@ napi_value GetUserStorageStats(napi_env env, napi_callback_info info)
     }
 
     auto storageStats = std::make_shared<StorageStats>();
-    auto errNum = std::make_shared<int32_t>();
-    auto cbExec = [fac, userId, storageStats, errNum](napi_env env) -> UniError {
+    auto cbExec = [fac, userId, storageStats]() -> NError {
+        int32_t errNum;
         if (!fac) {
-            *errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetUserStorageStats(*storageStats);
+            errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetUserStorageStats(*storageStats);
         } else {
-            *errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetUserStorageStats(userId, *storageStats);
+            errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetUserStorageStats(userId, *storageStats);
         }
-        return UniError(ERRNO_NOERR);
+        if (errNum != E_OK) {
+            return NError(Convert2JsErrNum(errNum));
+        }
+        return NError(ERRNO_NOERR);
     };
-    auto cbComplete = [storageStats](napi_env env, UniError err) -> NVal {
+    auto cbComplete = [storageStats](napi_env env, NError err) -> NVal {
         if (err) {
             return { env, err.GetNapiErr(env) };
         }
@@ -284,19 +317,25 @@ napi_value GetUserStorageStats(napi_env env, napi_callback_info info)
 
 napi_value GetTotalSize(napi_env env, napi_callback_info info)
 {
+    if(!IsSystemApp()) {
+        NError(E_PERMISSION_SYS).ThrowErr(env);
+        return nullptr;
+    }
     NFuncArg funcArg(env, info);
     if (!funcArg.InitArgs((int)NARG_CNT::ZERO, (int)NARG_CNT::ONE)) {
-        UniError(EINVAL).ThrowErr(env, "Number of arguments unmatched");
+        NError(E_PARAMS).ThrowErr(env);
         return nullptr;
     }
 
     auto resultSize = std::make_shared<int64_t>();
-    auto errNum = std::make_shared<int32_t>();
-    auto cbExec = [resultSize, errNum](napi_env env) -> UniError {
-        *errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetTotalSize(*resultSize);
-        return UniError(ERRNO_NOERR);
+    auto cbExec = [resultSize]() -> NError {
+        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetTotalSize(*resultSize);
+        if (errNum != E_OK) {
+            return NError(Convert2JsErrNum(errNum));
+        }
+        return NError(ERRNO_NOERR);
     };
-    auto cbComplete = [resultSize](napi_env env, UniError err) -> NVal {
+    auto cbComplete = [resultSize](napi_env env, NError err) -> NVal {
         if (err) {
             return { env, err.GetNapiErr(env) };
         }
@@ -315,19 +354,25 @@ napi_value GetTotalSize(napi_env env, napi_callback_info info)
 
 napi_value GetFreeSize(napi_env env, napi_callback_info info)
 {
+    if(!IsSystemApp()) {
+        NError(E_PERMISSION_SYS).ThrowErr(env);
+        return nullptr;
+    }
     NFuncArg funcArg(env, info);
     if (!funcArg.InitArgs((int)NARG_CNT::ZERO, (int)NARG_CNT::ONE)) {
-        UniError(EINVAL).ThrowErr(env, "Number of arguments unmatched");
+        NError(E_PARAMS).ThrowErr(env);
         return nullptr;
     }
 
     auto resultSize = std::make_shared<int64_t>();
-    auto errNum = std::make_shared<int32_t>();
-    auto cbExec = [resultSize, errNum](napi_env env) -> UniError {
-        *errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetFreeSize(*resultSize);
-        return UniError(ERRNO_NOERR);
+    auto cbExec = [resultSize]() -> NError {
+        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetFreeSize(*resultSize);
+        if (errNum != E_OK) {
+            return NError(Convert2JsErrNum(errNum));
+        }
+        return NError(ERRNO_NOERR);
     };
-    auto cbComplete = [resultSize](napi_env env, UniError err) -> NVal {
+    auto cbComplete = [resultSize](napi_env env, NError err) -> NVal {
         if (err) {
             return { env, err.GetNapiErr(env) };
         }

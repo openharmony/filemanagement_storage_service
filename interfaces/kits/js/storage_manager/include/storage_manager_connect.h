@@ -63,6 +63,9 @@ public:
 
     virtual void OnRemoteDied(const wptr<IRemoteObject> &object);
 };
+
+bool IsSystemApp();
+int32_t Convert2JsErrNum(int32_t errNum);
 } // StorageManager
 } // OHOS
 

@@ -172,7 +172,7 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetBundleStats_0001, test
 /**
  * @tc.number: SUB_STORAGE_Storage_status_service_GetCurrentBundleStats_0000
  * @tc.name: Storage_status_service_GetCurrentBundleStats_0000
- * @tc.desc: Test function of GetCurrentBundleStats when caller is not hap.
+ * @tc.desc: Test function of GetCurrentBundleStats when caller is not a hap.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1

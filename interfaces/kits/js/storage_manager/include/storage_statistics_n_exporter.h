@@ -16,7 +16,7 @@
 #ifndef STORAGESTATUS_N_EXPORTER_H
 #define STORAGESTATUS_N_EXPORTER_H
 
-#include "common/napi/n_exporter.h"
+#include "n_exporter.h"
 #include "storage_statistics_napi.h"
 
 namespace OHOS {
