@@ -55,53 +55,49 @@ public:
         return E_OK;
     }
 
-    virtual int64_t GetFreeSizeOfVolume(std::string volumeUuid) override
+    virtual int32_t GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize) override
     {
         return E_OK;
     }
 
-    virtual int64_t GetTotalSizeOfVolume(std::string volumeUuid) override
+    virtual int32_t GetTotalSizeOfVolume(std::string volumeUuid, int64_t &totalSize) override
     {
         return E_OK;
     }
 
-    virtual BundleStats GetBundleStats(std::string pkgName) override
-    {
-        BundleStats result;
-        return result;
-    }
-
-    virtual int64_t GetSystemSize() override
+    virtual int32_t GetBundleStats(std::string pkgName, BundleStats &bundleStats) override
     {
         return E_OK;
     }
 
-    virtual int64_t GetTotalSize() override
+    virtual int32_t GetSystemSize(int64_t &systemSize) override
     {
         return E_OK;
     }
 
-    virtual int64_t GetFreeSize() override
+    virtual int32_t GetTotalSize(int64_t &totalSize) override
     {
         return E_OK;
     }
 
-    virtual StorageStats GetUserStorageStats() override
+    virtual int32_t GetFreeSize(int64_t &freeSize) override
     {
-        StorageStats result;
-        return result;
+        return E_OK;
     }
 
-    virtual StorageStats GetUserStorageStats(int32_t userId) override
+    virtual int32_t GetUserStorageStats(StorageStats &storageStats) override
     {
-        StorageStats result;
-        return result;
+        return E_OK;
     }
 
-    virtual BundleStats GetCurrentBundleStats() override
+    virtual int32_t GetUserStorageStats(int32_t userId, StorageStats &storageStats) override
     {
-        BundleStats result;
-        return result;
+        return E_OK;
+    }
+
+    virtual int32_t GetCurrentBundleStats(BundleStats &bundleStats) override
+    {
+        return E_OK;
     }
 
     virtual int32_t NotifyVolumeCreated(VolumeCore vc) override
@@ -130,10 +126,9 @@ public:
         return E_OK;
     }
 
-    virtual std::vector<VolumeExternal> GetAllVolumes() override
+    virtual int32_t GetAllVolumes(std::vector<VolumeExternal> &vecOfVol) override
     {
-        std::vector<VolumeExternal> result;
-        return result;
+        return E_OK;
     }
 
     virtual int32_t NotifyDiskCreated(Disk disk) override
@@ -151,10 +146,9 @@ public:
         return E_OK;
     }
 
-    virtual std::vector<Disk> GetAllDisks() override
+    virtual int32_t GetAllDisks(std::vector<Disk> &vecOfDisk) override
     {
-        std::vector<Disk> result;
-        return result;
+        return E_OK;
     }
 
     virtual int32_t GetVolumeByUuid(std::string fsUuid, VolumeExternal &vc) override

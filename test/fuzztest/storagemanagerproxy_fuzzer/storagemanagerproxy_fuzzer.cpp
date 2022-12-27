@@ -80,20 +80,28 @@ bool StorageManagerProxyGetFuzzTest(const uint8_t *data, size_t size)
     std::string pkgName((const char *)data, size);
     int32_t userId = *(reinterpret_cast<const int32_t *>(data));
     std::string fsUuid((const char *)data, size);
-
-    getStor.GetAllVolumes();
-    getStor.GetAllDisks();
-    getStor.GetSystemSize();
-    getStor.GetTotalSize();
-    getStor.GetFreeSize();
-    getStor.GetUserStorageStats();
-    getStor.GetBundleStats(pkgName);
-    getStor.GetCurrentBundleStats();
-    getStor.GetUserStorageStats(userId);
+    int64_t systemSize = *(reinterpret_cast<const int64_t *>(data));
+    int64_t totalSize = *(reinterpret_cast<const int64_t *>(data));
+    int64_t freeSize = *(reinterpret_cast<const int64_t *>(data));
+    int64_t freeVolSize = *(reinterpret_cast<const int64_t *>(data));
+    int64_t totalVolSize = *(reinterpret_cast<const int64_t *>(data));
+    BundleStats bundleStats;
+    StorageStats storageStats;
+    std::vector<VolumeExternal> vecOfVol;
+    std::vector<Disk> vecOfDisk;
+    getStor.GetAllVolumes(vecOfVol);
+    getStor.GetAllDisks(vecOfDisk);
+    getStor.GetSystemSize(systemSize);
+    getStor.GetTotalSize(totalSize);
+    getStor.GetFreeSize(freeSize);
+    getStor.GetUserStorageStats(storageStats);
+    getStor.GetBundleStats(pkgName, bundleStats);
+    getStor.GetCurrentBundleStats(bundleStats);
+    getStor.GetUserStorageStats(userId, storageStats);
     getStor.GetVolumeByUuid(fsUuid, vc1);
     getStor.GetVolumeById(volumeUuid, vc1);
-    getStor.GetFreeSizeOfVolume(volumeUuid);
-    getStor.GetTotalSizeOfVolume(volumeUuid);
+    getStor.GetFreeSizeOfVolume(volumeUuid, freeVolSize);
+    getStor.GetTotalSizeOfVolume(volumeUuid, totalVolSize);
     return true;
 }
 

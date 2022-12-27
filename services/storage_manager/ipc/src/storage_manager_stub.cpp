@@ -226,9 +226,13 @@ int32_t StorageManagerStub::HandleGetTotal(MessageParcel &data, MessageParcel &r
     }
     LOGE("StorageManagerStub::HandleGetTotal Begin.");
     std::string volumeId = data.ReadString();
-    int64_t totalSize = GetTotalSizeOfVolume(volumeId);
-    if (!reply.WriteInt64(totalSize)) {
+    int64_t totalSize;
+    int32_t err = GetTotalSizeOfVolume(volumeId, totalSize);
+    if (!reply.WriteInt32(err)) {
         LOGE("StorageManagerStub::HandleGetTotal call OnUserDGetTotalSizeOfVolume failed");
+        return  E_WRITE_REPLY_ERR;
+    }
+    if (!reply.WriteInt64(totalSize)) {
         return  E_WRITE_REPLY_ERR;
     }
     return E_OK;
@@ -240,9 +244,13 @@ int32_t StorageManagerStub::HandleGetFree(MessageParcel &data, MessageParcel &re
         return E_PERMISSION_DENIED;
     }
     std::string volumeId = data.ReadString();
-    int64_t freeSize = GetFreeSizeOfVolume(volumeId);
-    if (!reply.WriteInt64(freeSize)) {
+    int64_t freeSize;
+    int32_t err = GetFreeSizeOfVolume(volumeId, freeSize);
+    if (!reply.WriteInt32(err)) {
         LOGE("StorageManagerStub::HandleGetFree call GetFreeSizeOfVolume failed");
+        return  E_WRITE_REPLY_ERR;
+    }
+    if (!reply.WriteInt64(freeSize)) {
         return  E_WRITE_REPLY_ERR;
     }
     return E_OK;
@@ -254,7 +262,11 @@ int32_t StorageManagerStub::HandleGetBundleStatus(MessageParcel &data, MessagePa
         return E_PERMISSION_DENIED;
     }
     std::string pkgName = data.ReadString();
-    BundleStats bundleStats = GetBundleStats(pkgName);
+    BundleStats bundleStats;
+    int32_t err = GetBundleStats(pkgName, bundleStats);
+    if (!reply.WriteInt32(err)) {
+        return  E_WRITE_REPLY_ERR;
+    }
     if (!bundleStats.Marshalling(reply)) {
         return  E_WRITE_REPLY_ERR;
     }
@@ -266,7 +278,11 @@ int32_t StorageManagerStub::HandleGetSystemSize(MessageParcel &data, MessageParc
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    int64_t systemSize = GetSystemSize();
+    int64_t systemSize;
+    int32_t err = GetSystemSize(systemSize);
+    if (!reply.WriteInt32(err)) {
+        return  E_WRITE_REPLY_ERR;
+    }
     if (!reply.WriteInt64(systemSize)) {
         LOGE("StorageManagerStub::HandleGetFree call GetSystemSize failed");
         return  E_WRITE_REPLY_ERR;
@@ -279,7 +295,11 @@ int32_t StorageManagerStub::HandleGetTotalSize(MessageParcel &data, MessageParce
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    int64_t totalSize = GetTotalSize();
+    int64_t totalSize;
+    int32_t err = GetTotalSize(totalSize);
+    if (!reply.WriteInt32(err)) {
+        return  E_WRITE_REPLY_ERR;
+    }
     if (!reply.WriteInt64(totalSize)) {
         LOGE("StorageManagerStub::HandleGetFree call GetTotalSize failed");
         return  E_WRITE_REPLY_ERR;
@@ -292,7 +312,11 @@ int32_t StorageManagerStub::HandleGetFreeSize(MessageParcel &data, MessageParcel
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    int64_t freeSize = GetFreeSize();
+    int64_t freeSize;
+    int32_t err = GetFreeSize(freeSize);
+    if (!reply.WriteInt32(err)) {
+        return  E_WRITE_REPLY_ERR;
+    }
     if (!reply.WriteInt64(freeSize)) {
         LOGE("StorageManagerStub::HandleGetFree call GetFreeSize failed");
         return  E_WRITE_REPLY_ERR;
@@ -305,7 +329,11 @@ int32_t StorageManagerStub::HandleGetCurrUserStorageStats(MessageParcel &data, M
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    StorageStats storageStats = GetUserStorageStats();
+    StorageStats storageStats;
+    int32_t err = GetUserStorageStats(storageStats);
+    if (!reply.WriteInt32(err)) {
+        return  E_WRITE_REPLY_ERR;
+    }
     if (!storageStats.Marshalling(reply)) {
         return  E_WRITE_REPLY_ERR;
     }
@@ -318,7 +346,11 @@ int32_t StorageManagerStub::HandleGetUserStorageStats(MessageParcel &data, Messa
         return E_PERMISSION_DENIED;
     }
     int32_t userId = data.ReadInt32();
-    StorageStats storageStats = GetUserStorageStats(userId);
+    StorageStats storageStats;
+    int32_t err = GetUserStorageStats(userId, storageStats);
+    if (!reply.WriteInt32(err)) {
+        return  E_WRITE_REPLY_ERR;
+    }
     if (!storageStats.Marshalling(reply)) {
         return  E_WRITE_REPLY_ERR;
     }
@@ -327,7 +359,11 @@ int32_t StorageManagerStub::HandleGetUserStorageStats(MessageParcel &data, Messa
 
 int32_t StorageManagerStub::HandleGetCurrentBundleStats(MessageParcel &data, MessageParcel &reply)
 {
-    BundleStats bundleStats = GetCurrentBundleStats();
+    BundleStats bundleStats;
+    int32_t err = GetCurrentBundleStats(bundleStats);
+    if (!reply.WriteInt32(err)) {
+        return  E_WRITE_REPLY_ERR;
+    }
     if (!bundleStats.Marshalling(reply)) {
         return  E_WRITE_REPLY_ERR;
     }
@@ -338,7 +374,11 @@ int32_t StorageManagerStub::HandleGetAllVolumes(MessageParcel &data, MessageParc
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    std::vector<VolumeExternal> ve = GetAllVolumes();
+    std::vector<VolumeExternal> ve;
+    int32_t err = GetAllVolumes(ve);
+    if (!reply.WriteInt32(err)) {
+        return  E_WRITE_REPLY_ERR;
+    }
     uint size = ve.size();
     if (size == 0) {
         LOGE("StorageManagerStub::No volume.");
@@ -463,7 +503,11 @@ int32_t StorageManagerStub::HandleGetAllDisks(MessageParcel &data, MessageParcel
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    std::vector<Disk> disks = GetAllDisks();
+    std::vector<Disk> disks;
+    int32_t err = GetAllDisks(disks);
+    if (!reply.WriteUint32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
     uint size = disks.size();
     if (size == 0) {
         LOGE("StorageManagerStub::No Disk.");

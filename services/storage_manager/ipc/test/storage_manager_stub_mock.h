@@ -28,26 +28,26 @@ public:
     MOCK_METHOD1(PrepareStartUser, int32_t(int32_t));
     MOCK_METHOD1(StopUser, int32_t(int32_t));
 
-    MOCK_METHOD1(GetFreeSizeOfVolume, int64_t(std::string));
-    MOCK_METHOD1(GetTotalSizeOfVolume, int64_t(std::string));
-    MOCK_METHOD1(GetBundleStats, BundleStats(std::string));
-    MOCK_METHOD0(GetSystemSize, int64_t());
-    MOCK_METHOD0(GetTotalSize, int64_t());
-    MOCK_METHOD0(GetFreeSize, int64_t());
-    MOCK_METHOD0(GetUserStorageStats, StorageStats());
-    MOCK_METHOD1(GetUserStorageStats, StorageStats(int32_t));
-    MOCK_METHOD0(GetCurrentBundleStats, BundleStats());
+    MOCK_METHOD2(GetFreeSizeOfVolume, int32_t(std::string, int64_t &));
+    MOCK_METHOD2(GetTotalSizeOfVolume, int32_t(std::string, int64_t &));
+    MOCK_METHOD2(GetBundleStats, int32_t(std::string, BundleStats &));
+    MOCK_METHOD1(GetSystemSize, int32_t(int64_t &));
+    MOCK_METHOD1(GetTotalSize, int32_t(int64_t &));
+    MOCK_METHOD1(GetFreeSize, int32_t(int64_t &));
+    MOCK_METHOD1(GetUserStorageStats, int32_t(StorageStats &));
+    MOCK_METHOD2(GetUserStorageStats, int32_t(int32_t, StorageStats &));
+    MOCK_METHOD1(GetCurrentBundleStats, int32_t(BundleStats &));
 
     MOCK_METHOD1(NotifyVolumeCreated, int32_t(VolumeCore));
     MOCK_METHOD5(NotifyVolumeMounted, int32_t(std::string, int32_t, std::string, std::string, std::string));
     MOCK_METHOD1(NotifyVolumeDestroyed, int32_t(std::string));
     MOCK_METHOD1(Mount, int32_t(std::string));
     MOCK_METHOD1(Unmount, int32_t(std::string));
-    MOCK_METHOD0(GetAllVolumes, std::vector<VolumeExternal>());
+    MOCK_METHOD1(GetAllVolumes, int32_t(std::vector<VolumeExternal> &));
     MOCK_METHOD1(NotifyDiskCreated, int32_t(Disk));
     MOCK_METHOD1(NotifyDiskDestroyed, int32_t(std::string));
     MOCK_METHOD2(Partition, int32_t(std::string, int32_t));
-    MOCK_METHOD0(GetAllDisks, std::vector<Disk>());
+    MOCK_METHOD1(GetAllDisks, int32_t(std::vector<Disk> &));
     MOCK_METHOD2(GetVolumeByUuid, int32_t(std::string, VolumeExternal &));
     MOCK_METHOD2(GetVolumeById, int32_t(std::string, VolumeExternal &));
     MOCK_METHOD2(SetVolumeDescription, int32_t(std::string, std::string));

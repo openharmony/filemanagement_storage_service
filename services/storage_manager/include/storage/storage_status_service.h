@@ -31,11 +31,11 @@ class StorageStatusService : public NoCopyable  {
     DECLARE_DELAYED_SINGLETON(StorageStatusService);
 
 public:
-    BundleStats GetBundleStats(std::string pkgName);
-    StorageStats GetUserStorageStats();
-    StorageStats GetUserStorageStats(int32_t userId);
-    BundleStats GetCurrentBundleStats();
-    BundleStats GetBundleStats(const std::string &pkgName, int32_t userId);
+    int32_t GetBundleStats(std::string pkgName, BundleStats &bundleStats);
+    int32_t GetUserStorageStats(StorageStats &storageStats);
+    int32_t GetUserStorageStats(int32_t userId, StorageStats &storageStats);
+    int32_t GetCurrentBundleStats(BundleStats &bundleStats);
+    int32_t GetBundleStats(const std::string &pkgName, int32_t userId, BundleStats &bundleStats);
     int32_t ResetBundleMgrProxy();
 
 private:
