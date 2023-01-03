@@ -142,6 +142,7 @@ static uint8_t CheckKernelFscrypt(const char *mnt)
     FSCRYPT_LOGE("Unexpected errno: %d", errno);
     return FSCRYPT_INVALID;
 #else
+    (void)close(fd);
     return FSCRYPT_V1;
 #endif
 }
