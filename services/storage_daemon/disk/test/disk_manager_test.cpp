@@ -30,7 +30,7 @@ namespace StorageDaemon {
 using namespace testing::ext;
 
 const int CONFIG_PARAM_NUM = 6;
-static const std::string CONFIG_PTAH = "/system/etc/init/config.txt";
+static const std::string CONFIG_PTAH = "/system/etc/storage_daemon/disk_config";
 
 class DiskManagerTest : public testing::Test {
 public:
