@@ -264,7 +264,7 @@ int32_t StorageManagerProxy::UpdateKeyContext(uint32_t userId)
     return reply.ReadInt32();
 }
 
-int64_t StorageManagerProxy::GetFreeSizeOfVolume(std::string volumeUuid)
+int32_t StorageManagerProxy::GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize)
 {
     LOGI("StorageManagerProxy::GetFreeSizeOfVolume, volumeUuid:%{public}s", volumeUuid.c_str());
     MessageParcel data, reply;
@@ -282,10 +282,15 @@ int64_t StorageManagerProxy::GetFreeSizeOfVolume(std::string volumeUuid)
     if (err != E_OK) {
         return err;
     }
-    return reply.ReadInt64();
+    err = reply.ReadInt32();
+    if (err != E_OK) {
+        return err;
+    }
+    freeSize = reply.ReadInt64();
+    return E_OK;
 }
 
-int64_t StorageManagerProxy::GetTotalSizeOfVolume(std::string volumeUuid)
+int32_t StorageManagerProxy::GetTotalSizeOfVolume(std::string volumeUuid, int64_t &totalSize)
 {
     LOGI("StorageManagerProxy::GetTotalSizeOfVolume, volumeUuid:%{public}s", volumeUuid.c_str());
     MessageParcel data, reply;
@@ -303,27 +308,35 @@ int64_t StorageManagerProxy::GetTotalSizeOfVolume(std::string volumeUuid)
     if (err != E_OK) {
         return err;
     }
-    return reply.ReadInt64();
+    err = reply.ReadInt32();
+    if (err != E_OK) {
+        return err;
+    }
+    totalSize = reply.ReadInt64();
+    return E_OK;
 }
 
-BundleStats StorageManagerProxy::GetBundleStats(std::string pkgName)
+int32_t StorageManagerProxy::GetBundleStats(std::string pkgName, BundleStats &bundleStats)
 {
-    BundleStats result;
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
-        return result;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
 
     if (!data.WriteString(pkgName)) {
-        return result;
+        return E_WRITE_PARCEL_ERR;
     }
     int err = SendRequest(GET_BUNDLE_STATUS, data, reply, option);
     if (err != E_OK) {
-        return result;
+        return err;
     }
-    result = *BundleStats::Unmarshalling(reply);
-    return result;
+    err = reply.ReadInt32();
+    if (err != E_OK) {
+        return err;
+    }
+    bundleStats = *BundleStats::Unmarshalling(reply);
+    return E_OK;
 }
 
 int32_t StorageManagerProxy::NotifyVolumeCreated(VolumeCore vc)
@@ -445,31 +458,34 @@ int32_t StorageManagerProxy::Unmount(std::string volumeId)
     return reply.ReadInt32();
 }
 
-std::vector<VolumeExternal> StorageManagerProxy::GetAllVolumes()
+int32_t StorageManagerProxy::GetAllVolumes(std::vector<VolumeExternal> &vecOfVol)
 {
-    std::vector<VolumeExternal> result = {};
     LOGI("StorageManagerProxy::GetAllVolumes");
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::GetAllVolumes, WriteInterfaceToken failed");
-        return result;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
 
     int err = SendRequest(GET_ALL_VOLUMES, data, reply, option);
     if (err != E_OK) {
-        return result;
+        return err;
+    }
+    err = reply.ReadInt32();
+    if (err != E_OK) {
+        return err;
     }
     uint size = reply.ReadUint32();
     if (size == 0) {
-        return result;
+        return reply.ReadInt32();
     }
     for (uint i = 0; i < size; i++) {
         std::unique_ptr<VolumeExternal> ve = VolumeExternal::Unmarshalling(reply);
         LOGI("StorageManagerProxy::GetAllVolumes push %{public}s", ve->GetId().c_str());
-        result.push_back(*ve);
+        vecOfVol.push_back(*ve);
     }
-    return result;
+    return E_OK;
 }
 
 int32_t StorageManagerProxy::NotifyDiskCreated(Disk disk)
@@ -532,7 +548,7 @@ int32_t StorageManagerProxy::Partition(std::string diskId, int32_t type)
     return reply.ReadInt32();
 }
 
-std::vector<Disk> StorageManagerProxy::GetAllDisks()
+int32_t StorageManagerProxy::GetAllDisks(std::vector<Disk> &vecOfDisk)
 {
     LOGI("StorageManagerProxy::GetAllDisks");
     std::vector<Disk> result = {};
@@ -540,26 +556,30 @@ std::vector<Disk> StorageManagerProxy::GetAllDisks()
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::GetAllDisks, WriteInterfaceToken failed");
-        return result;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
 
     int err = SendRequest(GET_ALL_DISKS, data, reply, option);
     if (err != E_OK) {
-        return result;
+        return err;
+    }
+    err = reply.ReadInt32();
+    if (err != E_OK) {
+        return err;
     }
     uint size = reply.ReadUint32();
     if (size == 0) {
-        return result;
+        return reply.ReadInt32();
     }
     for (uint i = 0; i < size; i++) {
         std::unique_ptr<Disk> disk = Disk::Unmarshalling(reply);
         LOGI("StorageManagerProxy::GetAllDisks push %{public}s", disk->GetDiskId().c_str());
-        result.push_back(*disk);
+        vecOfDisk.push_back(*disk);
     }
-    return result;
+    return E_OK;
 }
 
-int64_t StorageManagerProxy::GetSystemSize()
+int32_t StorageManagerProxy::GetSystemSize(int64_t &systemSize)
 {
     LOGI("StorageManagerProxy::GetSystemSize");
     MessageParcel data, reply;
@@ -573,10 +593,15 @@ int64_t StorageManagerProxy::GetSystemSize()
     if (err != E_OK) {
         return err;
     }
-    return reply.ReadInt64();
+    err = reply.ReadInt32();
+    if (err != E_OK) {
+        return err;
+    }
+    systemSize = reply.ReadInt64();
+    return E_OK;
 }
 
-int64_t StorageManagerProxy::GetTotalSize()
+int32_t StorageManagerProxy::GetTotalSize(int64_t &totalSize)
 {
     LOGI("StorageManagerProxy::GetTotalSize");
     MessageParcel data, reply;
@@ -590,10 +615,15 @@ int64_t StorageManagerProxy::GetTotalSize()
     if (err != E_OK) {
         return err;
     }
-    return reply.ReadInt64();
+    err = reply.ReadInt32();
+    if (err != E_OK) {
+        return err;
+    }
+    totalSize = reply.ReadInt64();
+    return E_OK;
 }
 
-int64_t StorageManagerProxy::GetFreeSize()
+int32_t StorageManagerProxy::GetFreeSize(int64_t &freeSize)
 {
     LOGI("StorageManagerProxy::GetFreeSize");
     MessageParcel data, reply;
@@ -607,61 +637,78 @@ int64_t StorageManagerProxy::GetFreeSize()
     if (err != E_OK) {
         return err;
     }
-    return reply.ReadInt64();
+    err = reply.ReadInt32();
+    if (err != E_OK) {
+        return err;
+    }
+    freeSize = reply.ReadInt64();
+    return E_OK;
 }
 
-StorageStats StorageManagerProxy::GetUserStorageStats()
+int32_t StorageManagerProxy::GetUserStorageStats(StorageStats &storageStats)
 {
     StorageStats result;
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
-        return result;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
 
     int err = SendRequest(GET_CURR_USER_STATS, data, reply, option);
     if (err != E_OK) {
-        return result;
+        return err;
     }
-    result = *StorageStats::Unmarshalling(reply);
-    return result;
+    err = reply.ReadInt32();
+    if (err != E_OK) {
+        return err;
+    }
+    storageStats = *StorageStats::Unmarshalling(reply);
+    return E_OK;
 }
 
-StorageStats StorageManagerProxy::GetUserStorageStats(int32_t userId)
+int32_t StorageManagerProxy::GetUserStorageStats(int32_t userId, StorageStats &storageStats)
 {
     StorageStats result;
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
-        return result;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
 
     if (!data.WriteInt32(userId)) {
-        return result;
+        return E_WRITE_PARCEL_ERR;
     }
     int err = SendRequest(GET_USER_STATS, data, reply, option);
     if (err != E_OK) {
-        return result;
+        return err;
     }
-    result = *StorageStats::Unmarshalling(reply);
-    return result;
+    err = reply.ReadInt32();
+    if (err != E_OK) {
+        return err;
+    }
+    storageStats = *StorageStats::Unmarshalling(reply);
+    return E_OK;
 }
 
-BundleStats StorageManagerProxy::GetCurrentBundleStats()
+int32_t StorageManagerProxy::GetCurrentBundleStats(BundleStats &bundleStats)
 {
     BundleStats result;
     MessageParcel data, reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
-        return result;
+        return E_WRITE_DESCRIPTOR_ERR;
     }
 
     int err = SendRequest(GET_CURR_BUNDLE_STATS, data, reply, option);
     if (err != E_OK) {
-        return result;
+        return err;
     }
-    result = *BundleStats::Unmarshalling(reply);
-    return result;
+    err = reply.ReadInt32();
+    if (err != E_OK) {
+        return err;
+    }
+    bundleStats = *BundleStats::Unmarshalling(reply);
+    return E_OK;
 }
 
 int32_t StorageManagerProxy::GetVolumeByUuid(std::string fsUuid, VolumeExternal &vc)

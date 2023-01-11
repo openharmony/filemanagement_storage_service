@@ -59,8 +59,8 @@ function getAllVolumes(): Promise<Array<Volume>>;
    * @permission ohos.permission.MOUNT_UNMOUNT_MANAGER
    * @systemapi
    */
-function mount(volumeId: string, callback: AsyncCallback<boolean>): void;
-function mount(volumeId: string): Promise<boolean>;
+function mount(volumeId: string, callback: AsyncCallback<void>): void;
+function mount(volumeId: string): Promise<void>;
 
 /**
    * UnMount
@@ -70,8 +70,8 @@ function mount(volumeId: string): Promise<boolean>;
    * @permission ohos.permission.MOUNT_UNMOUNT_MANAGER
    * @systemapi
    */
-function unmount(volumeId: string, callback: AsyncCallback<boolean>): void;
-function unmount(volumeId: string): Promise<boolean>;
+function unmount(volumeId: string, callback: AsyncCallback<void>): void;
+function unmount(volumeId: string): Promise<void>;
 
 
 /**

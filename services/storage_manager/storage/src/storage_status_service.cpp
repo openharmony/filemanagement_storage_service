@@ -55,42 +55,41 @@ std::string StorageStatusService::GetCallingPkgName()
     return tokenInfo.bundleName;
 }
 
-BundleStats StorageStatusService::GetBundleStats(std::string pkgName)
+int32_t StorageStatusService::GetBundleStats(std::string pkgName, BundleStats &bundleStats)
 {
-    BundleStats result;
     int userId = GetCurrentUserId();
     LOGD("StorageStatusService::userId is:%d", userId);
-    if (userId < 0 || userId > StorageService::MAX_USER_ID) {
-        LOGE("StorageStatusService::Invaild userId.");
-        return result;
-    }
-    return GetBundleStats(pkgName, userId);
+    return GetBundleStats(pkgName, userId, bundleStats);
 }
 
-StorageStats StorageStatusService::GetUserStorageStats()
+int32_t StorageStatusService::GetUserStorageStats(StorageStats &storageStats)
 {
     int userId = GetCurrentUserId();
-    return GetUserStorageStats(userId);
+    return GetUserStorageStats(userId, storageStats);
 }
 
-StorageStats StorageStatusService::GetUserStorageStats(int32_t userId)
+int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &storageStats)
 {
-    StorageStats result;
     // totalSize
-    int64_t totalSize = 0;
-    totalSize = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetTotalSize();
+    int64_t totalSize;
+    int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetTotalSize(totalSize);
+    if (err != E_OK) {
+        LOGE("StorageStatusService::GetUserStorageStats getTotalSize failed");
+        return err;
+    }
     // appSize
     LOGI("StorageStatusService::GetUserStorageStats userId is %{public}d", userId);
-    if (ConnectBundleMgr() != E_OK) {
+    err = ConnectBundleMgr();
+    if (err != E_OK) {
         LOGE("StorageStatusService::GetUserStorageStats connect bundlemgr failed");
-        return result;
+        return err;
     }
     vector<AppExecFwk::ApplicationInfo> appInfos;
     bool res = bundleMgr_->GetApplicationInfos(
         AppExecFwk::ApplicationFlag::GET_BASIC_APPLICATION_INFO, userId, appInfos);
     if (!res) {
         LOGE("StorageStatusService::GetUserStorageStats an error occured in querying appInfos");
-        return result;
+        return E_BUNDLEMGR_ERROR;
     }
     int64_t appSize = 0;
     for (auto appInfo : appInfos) {
@@ -100,7 +99,7 @@ StorageStats StorageStatusService::GetUserStorageStats(int32_t userId)
         res = bundleMgr_->GetBundleStats(appInfo.name, userId, bundleStats);
         if (!res || bundleStats.size() != dataDir.size()) {
             LOGE("StorageStatusService::An error occurred in querying bundle stats.");
-            return result;
+            return E_BUNDLEMGR_ERROR;
         }
         for (uint i = 0; i < bundleStats.size(); i++) {
             bundleSize += bundleStats[i];
@@ -114,56 +113,56 @@ StorageStats StorageStatusService::GetUserStorageStats(int32_t userId)
     auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (sam == nullptr) {
         LOGE("StorageStatusService::GetUserStorageStats samgr == nullptr");
-        return result;
+        return E_SA_IS_NULLPTR;
     }
     auto remoteObj = sam->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     if (remoteObj == nullptr) {
         LOGE("StorageStatusService::GetUserStorageStats remoteObj == nullptr");
-        return result;
+        return E_REMOTE_IS_NULLPTR;
     }
     mgr.InitMediaLibraryManager(remoteObj);
     if (mgr.QueryTotalSize(mediaVol)) {
         LOGE("StorageStatusService::GetUserStorageStats an error occured in querying mediaSize");
-        return result;
+        return E_MEDIALIBRARY_ERROR;
     }
 #endif
-    result.total_ = totalSize;
-    result.app_ = appSize;
+    storageStats.total_ = totalSize;
+    storageStats.app_ = appSize;
 #ifdef STORAGE_SERVICE_GRAPHIC
-    result.audio_ = mediaVol.GetAudiosSize();
-    result.video_ = mediaVol.GetVideosSize();
-    result.image_ = mediaVol.GetImagesSize();
-    result.file_ = mediaVol.GetFilesSize();
+    storageStats.audio_ = mediaVol.GetAudiosSize();
+    storageStats.video_ = mediaVol.GetVideosSize();
+    storageStats.image_ = mediaVol.GetImagesSize();
+    storageStats.file_ = mediaVol.GetFilesSize();
 #endif
-    return result;
+    return E_OK;
 }
 
-BundleStats StorageStatusService::GetCurrentBundleStats()
+int32_t StorageStatusService::GetCurrentBundleStats(BundleStats &bundleStats)
 {
-    BundleStats result;
     int userId = GetCurrentUserId();
     LOGD("StorageStatusService::userId is:%d", userId);
-    if (userId < 0 || userId > StorageService::MAX_USER_ID) {
-        LOGE("StorageStatusService::Invaild userId.");
-        return result;
-    }
     std::string pkgName = GetCallingPkgName();
-    LOGD("StorageStatusService::pkgName is %{public}s", pkgName.c_str());
-    return GetBundleStats(pkgName, userId);
+    return GetBundleStats(pkgName, userId, bundleStats);
 }
 
-BundleStats StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t userId)
+int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t userId, BundleStats &pkgStats)
 {
-    BundleStats result;
-    if (ConnectBundleMgr() != E_OK) {
+    int32_t err = ConnectBundleMgr();
+    if (err != E_OK) {
         LOGE("StorageStatusService::GetBundleStats connect bundlemgr failed");
-        return result;
+        return err;
     }
+
+    if (userId < 0 || userId > StorageService::MAX_USER_ID) {
+        LOGE("StorageStatusService::Invaild userId.");
+        return E_USERID_RANGE;
+    }
+
     vector<int64_t> bundleStats;
     bool res = bundleMgr_->GetBundleStats(pkgName, userId, bundleStats);
     if (!res || bundleStats.size() != dataDir.size()) {
         LOGE("StorageStatusService::An error occurred in querying bundle stats.");
-        return result;
+        return E_BUNDLEMGR_ERROR;
     }
     for (uint i = 0; i < bundleStats.size(); i++) {
         if (bundleStats[i] == E_ERR) {
@@ -171,10 +170,10 @@ BundleStats StorageStatusService::GetBundleStats(const std::string &pkgName, int
             bundleStats[i] = 0;
         }
     }
-    result.appSize_ = bundleStats[APP];
-    result.cacheSize_ = bundleStats[CACHE];
-    result.dataSize_ = bundleStats[LOCAL] + bundleStats[DISTRIBUTED] + bundleStats[DATABASE];
-    return result;
+    pkgStats.appSize_ = bundleStats[APP];
+    pkgStats.cacheSize_ = bundleStats[CACHE];
+    pkgStats.dataSize_ = bundleStats[LOCAL] + bundleStats[DISTRIBUTED] + bundleStats[DATABASE];
+    return E_OK;
 }
 
 int32_t StorageStatusService::ConnectBundleMgr()

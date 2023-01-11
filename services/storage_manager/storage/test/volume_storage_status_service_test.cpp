@@ -15,8 +15,8 @@
 
 #include <cstdio>
 #include <gtest/gtest.h>
-
 #include "storage/volume_storage_status_service.h"
+
 #include "storage_service_errno.h"
 #include "storage/volume_storage_status_service.h"
 
@@ -24,7 +24,6 @@ namespace {
 using namespace std;
 using namespace OHOS;
 using namespace StorageManager;
-using namespace testing::ext;
 
 class VolumeStorageStatusServiceTest : public testing::Test {
     public:
@@ -43,15 +42,17 @@ class VolumeStorageStatusServiceTest : public testing::Test {
  * @tc.level Level 1
  * @tc.require: SR000H0372
  */
-HWTEST_F(VolumeStorageStatusServiceTest, Volume_storage_status_service_GetFreeSizeOfVolume_0000, TestSize.Level1)
+HWTEST_F(VolumeStorageStatusServiceTest,
+    Volume_storage_status_service_GetFreeSizeOfVolume_0000, testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "VolumeStorageStatusServiceTest-begin Volume_storage_status_service_GetFreeSizeOfVolume_0000";
+    GTEST_LOG_(INFO) << "Volume_storage_status_service_GetFreeSizeOfVolume_0000 start";
     std::shared_ptr<VolumeStorageStatusService> service = DelayedSingleton<VolumeStorageStatusService>::GetInstance();
     string volumeUuid ="";
-    int64_t result = service->GetFreeSizeOfVolume(volumeUuid);
+    int64_t freeSize;
+    int32_t result = service->GetFreeSizeOfVolume(volumeUuid, freeSize);
 
-    EXPECT_EQ(result, E_ERR);
-    GTEST_LOG_(INFO) << "VolumeStorageStatusServiceTest-end Volume_storage_status_service_GetFreeSizeOfVolume_0000";
+    EXPECT_EQ(result, E_NON_EXIST);
+    GTEST_LOG_(INFO) << "Volume_storage_status_service_GetFreeSizeOfVolume_0000 end";
 }
 
 /**
@@ -63,15 +64,16 @@ HWTEST_F(VolumeStorageStatusServiceTest, Volume_storage_status_service_GetFreeSi
  * @tc.level Level 1
  * @tc.require: SR000H0372
  */
-HWTEST_F(VolumeStorageStatusServiceTest, Volume_storage_status_service_GetTotalSizeOfVolume_0000, TestSize.Level1)
+HWTEST_F(VolumeStorageStatusServiceTest,
+    Volume_storage_status_service_GetTotalSizeOfVolume_0000, testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "VolumeStorageStatusServiceTest-begin Volume_storage_status_service_GetTotalSizeOfVolume_0000";
+    GTEST_LOG_(INFO) << "Volume_storage_status_service_GetTotalSizeOfVolume_0000 start";
     std::shared_ptr<VolumeStorageStatusService> service = DelayedSingleton<VolumeStorageStatusService>::GetInstance();
     string volumeUuid ="";
-    int64_t result = service->GetTotalSizeOfVolume(volumeUuid);
+    int64_t totalSize;
+    int32_t result = service->GetTotalSizeOfVolume(volumeUuid, totalSize);
 
-    EXPECT_EQ(result, E_ERR);
-    GTEST_LOG_(INFO) <<
-        "VolumeStorageStatusServiceTest-end Volume_storage_status_service_GetTotalSizeOfVolume_0000";
+    EXPECT_EQ(result, E_NON_EXIST);
+    GTEST_LOG_(INFO) << "Volume_storage_status_service_GetTotalSizeOfVolume_0000 end";
 }
 }

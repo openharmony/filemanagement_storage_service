@@ -15,6 +15,7 @@
 #include "storagetotalstatusservice_fuzzer.h"
 #include "storage/storage_total_status_service.h"
 #include "storage_service_log.h"
+#include "storage_service_errno.h"
 namespace OHOS {
 namespace StorageManager {
 bool StorageTotalStatusServiceFuzzTest(const uint8_t *data, size_t size)
@@ -23,16 +24,28 @@ bool StorageTotalStatusServiceFuzzTest(const uint8_t *data, size_t size)
         return false;
     }
     std::shared_ptr<StorageTotalStatusService> service = DelayedSingleton<StorageTotalStatusService>::GetInstance();
-    int64_t result = service->GetTotalSize();
-    service->GetSystemSize();
-    service->GetFreeSize();
-    // You can add other interfaces of class StorageTotalStatusService here.
-    if (result >= 0) {
-        LOGI("Storage total status service fuzz test of interface StorageTotalStatusService::GetTotalSize success!");
-        return true;
+    int64_t totalSize;
+    int64_t systemSize;
+    int64_t freeSize;
+    int32_t result = service->GetTotalSize(totalSize);
+    if (result != E_OK) {
+        LOGI("Storage total status service fuzz test of interface StorageTotalStatusService::GetTotalSize failed!");
+        return false;
     }
-    LOGE("Storage total status service fuzz test of interface StorageTotalStatusService::GetTotalSize failed!");
-    return false;
+    result = service->GetSystemSize(systemSize);
+    if (result != E_OK) {
+        LOGI("Storage total status service fuzz test of interface StorageTotalStatusService::GetSystemSize failed!");
+        return false;
+    }
+    result = service->GetFreeSize(freeSize);
+    if (result != E_OK) {
+        LOGI("Storage total status service fuzz test of interface StorageTotalStatusService::GetFreeSize failed!");
+        return false;
+    }
+    // You can add other interfaces of class StorageTotalStatusService here.
+    
+    LOGE("Storage total status service fuzz test of interface StorageTotalStatusService: success!");
+    return true;
 }
 } // namespace StorageManager
 } // namespace OHOS
