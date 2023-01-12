@@ -20,7 +20,6 @@ group("storage_service_fuzztest") {
     "//foundation/filemanagement/storage_service/test/fuzztest/fileutils_fuzzer:FileUtilsFuzzTest",
     "//foundation/filemanagement/storage_service/test/fuzztest/fscryptutils_fuzzer:FscryptUtilsFuzzTest",
     "//foundation/filemanagement/storage_service/test/fuzztest/keycontrol_fuzzer:KeyControlFuzzTest",
-    "//foundation/filemanagement/storage_service/test/fuzztest/redactionutils_fuzzer:RedactionUtilsFuzzTest",
     "//foundation/filemanagement/storage_service/test/fuzztest/storagestats_fuzzer:StorageStatsFuzzTest",
     "//foundation/filemanagement/storage_service/test/fuzztest/storagetotalstatusservice_fuzzer:StorageTotalStatusServiceFuzzTest",
     "//foundation/filemanagement/storage_service/test/fuzztest/stringutils_fuzzer:StringUtilsFuzzTest",
