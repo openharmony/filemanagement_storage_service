@@ -61,6 +61,12 @@ Note:If the text contains special characters, please escape them according to th
             <filefilter name="defaultFilter" desc="Files that do not need to be scanned">
                 <filteritem type="filename" name="*.jpg" desc="jpg no need to add policy"/>
             </filefilter>
+            <filefilter name="defaultPolicyFilter" desc="Filters for compatibility，license header policies">
+                <filteritem type="filepath" name="services/storage_daemon/disk_config" desc="config file,can not add license head"/>
+            </filefilter>
+            <filefilter name="copyrightPolicyFilter" desc="Filters for copyright header policies">
+                <filteritem type="filepath" name="services/storage_daemon/disk_config" desc="config file,can not add license head"/>
+            </filefilter>
         </filefilterlist>
     </oatconfig>
 </configuration>

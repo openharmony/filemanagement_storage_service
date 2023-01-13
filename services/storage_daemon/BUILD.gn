@@ -37,10 +37,10 @@ config("storage_daemon_config") {
   ]
 }
 
-## Install config.txt to /system/etc/init/config.txt {{{
+## Install disk_config to /system/etc/storage_daemon/disk_config {{{
 ohos_prebuilt_etc("storage_daemon_disk_config") {
-  source = "config.txt"
-  relative_install_dir = "init"
+  source = "disk_config"
+  relative_install_dir = "storage_daemon"
   part_name = "storage_service"
   subsystem_name = "filemanagement"
 }
