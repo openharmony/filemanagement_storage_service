@@ -16,11 +16,11 @@ import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 js_declaration("storagestatistics_js") {
   part_name = "storage_service"
-  sources = [ "./@ohos.storageStatistics.d.ts" ]
+  sources = [ "./@ohos.file.storageStatistics.d.ts" ]
 }
 
 ohos_shared_library("storagestatistics") {
-  relative_install_dir = "module"
+  relative_install_dir = "module/file"
   subsystem_name = "filemanagement"
   part_name = "storage_service"
 
@@ -62,11 +62,11 @@ ohos_shared_library("storagestatistics") {
 
 js_declaration("volumemanager_js") {
   part_name = "storage_service"
-  sources = [ "./@ohos.volumeManager.d.ts" ]
+  sources = [ "./@ohos.file.volumeManager.d.ts" ]
 }
 
 ohos_shared_library("volumemanager") {
-  relative_install_dir = "module"
+  relative_install_dir = "module/file"
   subsystem_name = "filemanagement"
   part_name = "storage_service"
 
