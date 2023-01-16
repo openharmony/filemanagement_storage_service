@@ -34,7 +34,7 @@ ohos_shared_library("storagestatistics") {
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
     "//utils/system/safwk/native/include",
     "//commonlibrary/c_utils/base/include",
-    "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js/src/",
+    "//foundation/filemanagement/file_api/utils/filemgmt_libn/include",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
     "//foundation/filemanagement/storage_service/services/common/include",
     "//foundation/systemabilitymgr/safwk/interfaces/innerkits/safwk",
@@ -48,7 +48,7 @@ ohos_shared_library("storagestatistics") {
 
   deps = [
     "//foundation/arkui/napi:ace_napi",
-    "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js:fileio",
+    "//foundation/filemanagement/file_api/utils/filemgmt_libn:filemgmt_libn",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
   ]
 
@@ -75,7 +75,7 @@ ohos_shared_library("volumemanager") {
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
     "//utils/system/safwk/native/include",
     "//commonlibrary/c_utils/base/include",
-    "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js/src/",
+    "//foundation/filemanagement/file_api/utils/filemgmt_libn/include",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
     "//foundation/filemanagement/storage_service/services/common/include",
     "//foundation/systemabilitymgr/safwk/interfaces/innerkits/safwk",
@@ -94,7 +94,7 @@ ohos_shared_library("volumemanager") {
 
   deps = [
     "//foundation/arkui/napi:ace_napi",
-    "//foundation/distributeddatamgr/distributedfile/interfaces/kits/js:fileio",
+    "//foundation/filemanagement/file_api/utils/filemgmt_libn:filemgmt_libn",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
   ]
 

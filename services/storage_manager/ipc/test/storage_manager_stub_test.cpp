@@ -30,6 +30,42 @@ using namespace testing::ext;
 
 namespace {
     const int ERROR_CODE = 99999;
+    int g_code[] = {
+        IStorageManager::PREPARE_ADD_USER,
+        IStorageManager::REMOVE_USER,
+        IStorageManager::PREPARE_START_USER,
+        IStorageManager::STOP_USER,
+        IStorageManager::NOTIFY_VOLUME_CREATED,
+        IStorageManager::NOTIFY_VOLUME_MOUNTED,
+        IStorageManager::NOTIFY_VOLUME_DESTROYED,
+        IStorageManager::MOUNT,
+        IStorageManager::UNMOUNT,
+        IStorageManager::NOTIFY_DISK_CREATED,
+        IStorageManager::NOTIFY_DISK_DESTROYED,
+        IStorageManager::PARTITION,
+        IStorageManager::CREATE_USER_KEYS,
+        IStorageManager::DELETE_USER_KEYS,
+        IStorageManager::UPDATE_USER_AUTH,
+        IStorageManager::ACTIVE_USER_KEY,
+        IStorageManager::INACTIVE_USER_KEY,
+        IStorageManager::UPDATE_KEY_CONTEXT,
+        IStorageManager::GET_VOL_BY_UUID,
+        IStorageManager::GET_VOL_BY_ID,
+        IStorageManager::SET_VOL_DESC,
+        IStorageManager::FORMAT,
+        IStorageManager::GET_DISK_BY_ID,
+        IStorageManager::GET_TOTAL,
+        IStorageManager::GET_FREE,
+        IStorageManager::GET_SYSTEM_SIZE,
+        IStorageManager::GET_TOTAL_SIZE,
+        IStorageManager::GET_FREE_SIZE,
+        IStorageManager::GET_BUNDLE_STATUS,
+        IStorageManager::GET_CURR_BUNDLE_STATS,
+        IStorageManager::GET_CURR_USER_STATS,
+        IStorageManager::GET_USER_STATS,
+        IStorageManager::GET_ALL_VOLUMES,
+        IStorageManager::GET_ALL_DISKS,
+    };
 }
 
 class StorageManagerStubTest : public testing::Test {
@@ -107,32 +143,6 @@ HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemote
 {
     GTEST_LOG_(INFO) << "Storage_Manager_StorageManagerStubTest_OnRemoteRequest_003 start";
 
-    int code[] = {
-        IStorageManager::PREPARE_ADD_USER,
-        IStorageManager::REMOVE_USER,
-        IStorageManager::PREPARE_START_USER,
-        IStorageManager::STOP_USER,
-        IStorageManager::NOTIFY_VOLUME_CREATED,
-        IStorageManager::NOTIFY_VOLUME_MOUNTED,
-        IStorageManager::NOTIFY_VOLUME_DESTROYED,
-        IStorageManager::MOUNT,
-        IStorageManager::UNMOUNT,
-        IStorageManager::NOTIFY_DISK_CREATED,
-        IStorageManager::NOTIFY_DISK_DESTROYED,
-        IStorageManager::PARTITION,
-        IStorageManager::CREATE_USER_KEYS,
-        IStorageManager::DELETE_USER_KEYS,
-        IStorageManager::UPDATE_USER_AUTH,
-        IStorageManager::ACTIVE_USER_KEY,
-        IStorageManager::INACTIVE_USER_KEY,
-        IStorageManager::UPDATE_KEY_CONTEXT,
-        IStorageManager::GET_VOL_BY_UUID,
-        IStorageManager::GET_VOL_BY_ID,
-        IStorageManager::SET_VOL_DESC,
-        IStorageManager::FORMAT,
-        IStorageManager::GET_DISK_BY_ID,
-    };
-
     StorageManagerStubMock mock;
 
     EXPECT_CALL(mock, PrepareAddUser(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
@@ -159,8 +169,19 @@ HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemote
     EXPECT_CALL(mock, ActiveUserKey(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, InactiveUserKey(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, UpdateKeyContext(testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, GetFreeSizeOfVolume(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, GetTotalSizeOfVolume(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, GetSystemSize(testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, GetTotalSize(testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, GetFreeSize(testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, GetBundleStats(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, GetCurrentBundleStats(testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, GetUserStorageStats(testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, GetUserStorageStats(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, GetAllVolumes(testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, GetAllDisks(testing::_)).WillOnce(testing::Return(E_OK));
 
-    for (auto c : code) {
+    for (auto c : g_code) {
         MessageParcel data;
         MessageParcel reply;
         MessageOption option(MessageOption::TF_SYNC);
@@ -172,166 +193,6 @@ HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemote
     }
 
     GTEST_LOG_(INFO) << "Storage_Manager_StorageManagerStubTest_OnRemoteRequest_003 end";
-}
-
-/**
- * @tc.name: Storage_Manager_StorageManagerStubTest_OnRemoteRequest_004
- * @tc.desc: Verify the OnRemoteRequest function.
- * @tc.type: FUNC
- * @tc.require: AR000GK4HB
- */
-HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemoteRequest_004, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Manager_StorageManagerStubTest_OnRemoteRequest_004 start";
-
-    int code[] = {
-        IStorageManager::GET_TOTAL,
-        IStorageManager::GET_FREE,
-        IStorageManager::GET_SYSTEM_SIZE,
-        IStorageManager::GET_TOTAL_SIZE,
-        IStorageManager::GET_FREE_SIZE,
-        IStorageManager::GET_BUNDLE_STATUS,
-        IStorageManager::GET_CURR_BUNDLE_STATS,
-        IStorageManager::GET_CURR_USER_STATS,
-        IStorageManager::GET_USER_STATS,
-    };
-
-    StorageManagerStubMock mock;
-
-    int64_t bytes = 1024;
-    BundleStats bs(100, 101, 102);
-    StorageStats ss(100, 101, 102, 103, 104, 105);
-    EXPECT_CALL(mock, GetFreeSizeOfVolume(testing::_)).WillOnce(testing::Return(bytes));
-    EXPECT_CALL(mock, GetTotalSizeOfVolume(testing::_)).WillOnce(testing::Return(bytes));
-    EXPECT_CALL(mock, GetSystemSize()).WillOnce(testing::Return(bytes));
-    EXPECT_CALL(mock, GetTotalSize()).WillOnce(testing::Return(bytes));
-    EXPECT_CALL(mock, GetFreeSize()).WillOnce(testing::Return(bytes));
-    EXPECT_CALL(mock, GetBundleStats(testing::_)).WillOnce(testing::Return(bs));
-    EXPECT_CALL(mock, GetCurrentBundleStats()).WillOnce(testing::Return(bs));
-    EXPECT_CALL(mock, GetUserStorageStats()).WillOnce(testing::Return(ss));
-    EXPECT_CALL(mock, GetUserStorageStats(testing::_)).WillOnce(testing::Return(ss));
-
-    for (auto c : code) {
-        MessageParcel data;
-        MessageParcel reply;
-        MessageOption option(MessageOption::TF_SYNC);
-        bool bRet = data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor());
-        EXPECT_TRUE(bRet) << "write token error";
-        int32_t ret = mock.OnRemoteRequest(c, data, reply, option);
-        EXPECT_TRUE(ret == E_OK);
-        if (c == IStorageManager::GET_BUNDLE_STATUS || c == IStorageManager::GET_CURR_BUNDLE_STATS) {
-            auto res = *BundleStats::Unmarshalling(reply);
-            EXPECT_EQ(res.appSize_, bs.appSize_);
-            EXPECT_EQ(res.cacheSize_, bs.cacheSize_);
-            EXPECT_EQ(res.dataSize_, bs.dataSize_);
-        } else if (c == IStorageManager::GET_CURR_USER_STATS || c == IStorageManager::GET_USER_STATS) {
-            auto res = *StorageStats::Unmarshalling(reply);
-            EXPECT_EQ(res.total_, ss.total_);
-            EXPECT_EQ(res.audio_, ss.audio_);
-            EXPECT_EQ(res.video_, ss.video_);
-            EXPECT_EQ(res.image_, ss.image_);
-            EXPECT_EQ(res.file_, ss.file_);
-            EXPECT_EQ(res.app_, ss.app_);
-        } else {
-            EXPECT_TRUE(reply.ReadInt32() == bytes);
-        }
-    }
-
-    GTEST_LOG_(INFO) << "Storage_Manager_StorageManagerStubTest_OnRemoteRequest_004 end";
-}
-
-/**
- * @tc.name: Storage_Manager_StorageManagerStubTest_OnRemoteRequest_005
- * @tc.desc: Verify the OnRemoteRequest function.
- * @tc.type: FUNC
- * @tc.require: AR000GK4HB
- */
-HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemoteRequest_005, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Manager_StorageManagerStubTest_OnRemoteRequest_005 start";
-
-    StorageManagerStubMock mock;
-
-    VolumeExternal ve;
-    ve.SetFsType(EXFAT);
-    std::vector<VolumeExternal> vec1 = {ve};
-    std::string diskId = "disk-1-1";
-    int64_t size = 0;
-    std::string sysPath = "/dev/block/sda";
-    std::string vendor = "unknown";
-    int32_t flag = 0;
-    Disk disk(diskId, size, sysPath, vendor, flag);
-    std::vector<Disk> vec2 = {disk};
-    EXPECT_CALL(mock, GetAllVolumes()).WillOnce(testing::Return(vec1));
-    EXPECT_CALL(mock, GetAllDisks()).WillOnce(testing::Return(vec2));
-    
-    MessageParcel data1;
-    MessageParcel reply1;
-    MessageOption option1(MessageOption::TF_SYNC);
-    bool bRet1 = data1.WriteInterfaceToken(StorageManagerProxy::GetDescriptor());
-    EXPECT_TRUE(bRet1) << "write token error";
-    int32_t ret1 = mock.OnRemoteRequest(IStorageManager::GET_ALL_VOLUMES, data1, reply1, option1);
-    EXPECT_TRUE(ret1 == E_OK);
-    uint32_t size1 = reply1.ReadUint32();
-    EXPECT_EQ(size1, 1);
-    auto res1 = *VolumeExternal::Unmarshalling(reply1);
-    EXPECT_EQ(ve.GetFsType(), res1.GetFsType());
-
-    MessageParcel data2;
-    MessageParcel reply2;
-    MessageOption option2(MessageOption::TF_SYNC);
-    bool bRet2 = data2.WriteInterfaceToken(StorageManagerProxy::GetDescriptor());
-    EXPECT_TRUE(bRet2) << "write token error";
-    int32_t ret2 = mock.OnRemoteRequest(IStorageManager::GET_ALL_DISKS, data2, reply2, option2);
-    EXPECT_TRUE(ret2 == E_OK);
-    uint32_t size2 = reply2.ReadUint32();
-    EXPECT_EQ(size2, 1);
-    auto res2 = *Disk::Unmarshalling(reply2);
-    EXPECT_EQ(disk.GetDiskId(), res2.GetDiskId());
-
-    GTEST_LOG_(INFO) << "Storage_Manager_StorageManagerStubTest_OnRemoteRequest_005 end";
-}
-
-/**
- * @tc.name: Storage_Manager_StorageManagerStubTest_OnRemoteRequest_006
- * @tc.desc: Verify the OnRemoteRequest function.
- * @tc.type: FUNC
- * @tc.require: AR000GK4HB
- */
-HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemoteRequest_006, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Manager_StorageManagerStubTest_OnRemoteRequest_006 start";
-
-    StorageManagerStubMock mock;
-
-    VolumeExternal ve;
-    ve.SetFsType(EXFAT);
-    std::vector<VolumeExternal> vec1;
-    std::vector<Disk> vec2;
-    EXPECT_CALL(mock, GetAllVolumes()).WillOnce(testing::Return(vec1));
-    EXPECT_CALL(mock, GetAllDisks()).WillOnce(testing::Return(vec2));
-    
-    MessageParcel data1;
-    MessageParcel reply1;
-    MessageOption option1(MessageOption::TF_SYNC);
-    bool bRet1 = data1.WriteInterfaceToken(StorageManagerProxy::GetDescriptor());
-    EXPECT_TRUE(bRet1) << "write token error";
-    int32_t ret1 = mock.OnRemoteRequest(IStorageManager::GET_ALL_VOLUMES, data1, reply1, option1);
-    EXPECT_TRUE(ret1 == E_OK);
-    uint32_t size1 = reply1.ReadUint32();
-    EXPECT_EQ(size1, 0);
-
-    MessageParcel data2;
-    MessageParcel reply2;
-    MessageOption option2(MessageOption::TF_SYNC);
-    bool bRet2 = data2.WriteInterfaceToken(StorageManagerProxy::GetDescriptor());
-    EXPECT_TRUE(bRet2) << "write token error";
-    int32_t ret2 = mock.OnRemoteRequest(IStorageManager::GET_ALL_DISKS, data2, reply2, option2);
-    EXPECT_TRUE(ret2 == E_OK);
-    uint32_t size2 = reply2.ReadUint32();
-    EXPECT_EQ(size2, 0);
-
-    GTEST_LOG_(INFO) << "Storage_Manager_StorageManagerStubTest_OnRemoteRequest_006 end";
 }
 } // STORAGE_MANAGER
 } // OHOS

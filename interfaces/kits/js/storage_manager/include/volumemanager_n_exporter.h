@@ -16,9 +16,8 @@
 #ifndef VOLUMEMANAGER_N_EXPORTER_H
 #define VOLUMEMANAGER_N_EXPORTER_H
 
-#include "common/napi/n_exporter.h"
+#include "n_exporter.h"
 #include "storage_manager_connect.h"
-
 
 namespace OHOS {
 namespace StorageManager {

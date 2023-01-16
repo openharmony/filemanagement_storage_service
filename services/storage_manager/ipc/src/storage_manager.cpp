@@ -78,67 +78,69 @@ int32_t StorageManager::StopUser(int32_t userId)
     return err;
 }
 
-int64_t StorageManager::GetFreeSizeOfVolume(std::string volumeUuid)
+int32_t StorageManager::GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize)
 {
     LOGI("StorageManger::getFreeSizeOfVolume start, volumeUuid: %{public}s", volumeUuid.c_str());
-    int64_t result = DelayedSingleton<VolumeStorageStatusService>::GetInstance()->GetFreeSizeOfVolume(volumeUuid);
-    return result;
+    std::shared_ptr<VolumeStorageStatusService> volumeStatsManager = DelayedSingleton<VolumeStorageStatusService>::GetInstance();
+    int32_t err = volumeStatsManager->GetFreeSizeOfVolume(volumeUuid, freeSize);
+    return err;
 }
 
-int64_t StorageManager::GetTotalSizeOfVolume(std::string volumeUuid)
+int32_t StorageManager::GetTotalSizeOfVolume(std::string volumeUuid, int64_t &totalSize)
 {
     LOGI("StorageManger::getTotalSizeOfVolume start, volumeUuid: %{public}s", volumeUuid.c_str());
-    int64_t result = DelayedSingleton<VolumeStorageStatusService>::GetInstance()->GetTotalSizeOfVolume(volumeUuid);
-    return result;
+    std::shared_ptr<VolumeStorageStatusService> volumeStatsManager = DelayedSingleton<VolumeStorageStatusService>::GetInstance();
+    int32_t err = volumeStatsManager->GetTotalSizeOfVolume(volumeUuid, totalSize);
+    return err;
 }
 
-BundleStats StorageManager::GetBundleStats(std::string pkgName)
+int32_t StorageManager::GetBundleStats(std::string pkgName, BundleStats &bundleStats)
 {
     LOGI("StorageManger::getBundleStats start, pkgName: %{public}s", pkgName.c_str());
-    BundleStats result = DelayedSingleton<StorageStatusService>::GetInstance()->GetBundleStats(pkgName);
-    return result;
+    int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetBundleStats(pkgName, bundleStats);
+    return err;
 }
 
-int64_t StorageManager::GetSystemSize()
+int32_t StorageManager::GetSystemSize(int64_t &systemSize)
 {
     LOGI("StorageManger::getSystemSize start");
-    int64_t result = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetSystemSize();
-    return result;
+    int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetSystemSize(systemSize);
+    return err;
 }
 
-int64_t StorageManager::GetTotalSize()
+int32_t StorageManager::GetTotalSize(int64_t &totalSize)
 {
     LOGI("StorageManger::getTotalSize start");
-    int64_t result = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetTotalSize();
-    return result;
+    int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetTotalSize(totalSize);
+    return err;
 }
 
-int64_t StorageManager::GetFreeSize()
+int32_t StorageManager::GetFreeSize(int64_t &freeSize)
 {
     LOGI("StorageManger::getFreeSize start");
-    int64_t result = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetFreeSize();
-    return result;
+    int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetFreeSize(freeSize);
+    return err;
 }
 
-StorageStats StorageManager::GetUserStorageStats()
+int32_t StorageManager::GetUserStorageStats(StorageStats &storageStats)
 {
     LOGI("StorageManger::GetUserStorageStats start");
-    StorageStats result = DelayedSingleton<StorageStatusService>::GetInstance()->GetUserStorageStats();
-    return result;
+    int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetUserStorageStats(storageStats);
+    return err;
 }
 
-StorageStats StorageManager::GetUserStorageStats(int32_t userId)
+int32_t StorageManager::GetUserStorageStats(int32_t userId, StorageStats &storageStats)
 {
     LOGI("StorageManger::GetUserStorageStats start");
-    StorageStats result = DelayedSingleton<StorageStatusService>::GetInstance()->GetUserStorageStats(userId);
-    return result;
+    int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetUserStorageStats(userId, storageStats);
+    return err;
 }
 
-BundleStats StorageManager::GetCurrentBundleStats()
+int32_t StorageManager::GetCurrentBundleStats(BundleStats &bundleStats)
 {
     LOGI("StorageManger::GetCurrentBundleStats start");
-    BundleStats result = DelayedSingleton<StorageStatusService>::GetInstance()->GetCurrentBundleStats();
-    return result;
+    int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetCurrentBundleStats(bundleStats);
+    return err;
 }
 
 int32_t StorageManager::NotifyVolumeCreated(VolumeCore vc)
@@ -177,11 +179,11 @@ int32_t StorageManager::Unmount(std::string volumeId)
     return result;
 }
 
-std::vector<VolumeExternal> StorageManager::GetAllVolumes()
+int32_t StorageManager::GetAllVolumes(std::vector<VolumeExternal> &vecOfVol)
 {
     LOGI("StorageManger::GetAllVolumes start");
-    std::vector<VolumeExternal> result = DelayedSingleton<VolumeManagerService>::GetInstance()->GetAllVolumes();
-    return result;
+    vecOfVol = DelayedSingleton<VolumeManagerService>::GetInstance()->GetAllVolumes();
+    return E_OK;
 }
 
 int32_t StorageManager::NotifyDiskCreated(Disk disk)
@@ -208,11 +210,11 @@ int32_t StorageManager::Partition(std::string diskId, int32_t type)
     return err;
 }
 
-std::vector<Disk> StorageManager::GetAllDisks()
+int32_t StorageManager::GetAllDisks(std::vector<Disk> &vecOfDisk)
 {
     LOGI("StorageManger::GetAllDisks start");
-    std::vector<Disk> result = DelayedSingleton<DiskManagerService>::GetInstance()->GetAllDisks();
-    return result;
+    vecOfDisk = DelayedSingleton<DiskManagerService>::GetInstance()->GetAllDisks();
+    return E_OK;
 }
 
 int32_t StorageManager::GetVolumeByUuid(std::string fsUuid, VolumeExternal &vc)

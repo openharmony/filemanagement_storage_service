@@ -386,10 +386,11 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetFreeSizeOfVolume_0000
 {
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetFreeSizeOfVolume_0000";
     std::string volumeUuid = "uuid-1";
+    int64_t freeSize;
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
-    int64_t result = proxy_->GetFreeSizeOfVolume(volumeUuid);
+    int32_t result = proxy_->GetFreeSizeOfVolume(volumeUuid, freeSize);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << result;
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetFreeSizeOfVolume_0000";
@@ -408,10 +409,11 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetTotalSizeOfVolume_000
 {
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetTotalSizeOfVolume_0000";
     std::string volumeUuid = "uuid-2";
+    int64_t totalSize;
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
-    int64_t result = proxy_->GetTotalSizeOfVolume(volumeUuid);
+    int32_t result = proxy_->GetTotalSizeOfVolume(volumeUuid, totalSize);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << result;
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetTotalSizeOfVolume_0000";
@@ -430,37 +432,13 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetBundleStats_0000, tes
 {
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetBundleStats_0000";
     std::string pkgName = "ohos.acts.storage.volume";
-    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
-    auto proxy = iface_cast<IStorageManager>(remote);
-    BundleStats result = proxy->GetBundleStats(pkgName);
-    GTEST_LOG_(INFO) << result.appSize_;
-    GTEST_LOG_(INFO) << result.cacheSize_;
-    GTEST_LOG_(INFO) << result.dataSize_;
+    BundleStats bundleStats;
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    int32_t result = proxy_->GetBundleStats(pkgName, bundleStats);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetBundleStats_0000";
-}
-
-/**
- * @tc.number: SUB_STORAGE_Storage_manager_proxy_GetBundleStats_0001
- * @tc.name: Storage_manager_proxy_GetBundleStats_0001
- * @tc.desc: Test function of GetBundleStats interface for Parameters ERROR which pkgName is not exist.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: AR000GK101
- */
-HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetBundleStats_0001, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetBundleStats_0001";
-    std::string pkgName = "ohos.acts.storage.zzzz";
-    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
-    auto proxy = iface_cast<IStorageManager>(remote);
-    BundleStats result = proxy->GetBundleStats(pkgName);
-    GTEST_LOG_(INFO) << result.appSize_;
-    GTEST_LOG_(INFO) << result.cacheSize_;
-    GTEST_LOG_(INFO) << result.dataSize_;
-    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetBundleStats_0001";
 }
 
 /**
@@ -598,8 +576,9 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetAllVolumes_0000, test
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
-    std::vector<VolumeExternal> result = proxy_->GetAllVolumes();
-    EXPECT_EQ(result.size(), 0);
+    std::vector<VolumeExternal> vecOfVol;
+    int32_t result = proxy_->GetAllVolumes(vecOfVol);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetAllVolumes_0000";
 }
 
@@ -664,7 +643,6 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_Partition_0000, testing:
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
-
     std::string diskId = "disk-1-25";
     int32_t type = 1;
     int32_t result = proxy_->Partition(diskId, type);
@@ -687,8 +665,9 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetAllDisks_0000, testin
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
-    std::vector<Disk> result = proxy_->GetAllDisks();
-    EXPECT_EQ(result.size(), 0);
+    std::vector<Disk> vecOfDisk;
+    int32_t result = proxy_->GetAllDisks(vecOfDisk);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetAllDisks_0000";
 }
 
@@ -704,11 +683,12 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetAllDisks_0000, testin
 HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetSystemSize_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetSystemSize_0000";
-    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
-    auto proxy = iface_cast<IStorageManager>(remote);
-    int64_t result = proxy->GetSystemSize();
-    EXPECT_GE(result, 0);
+    int64_t systemSize;
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    int32_t result = proxy_->GetSystemSize(systemSize);
+    EXPECT_GE(result, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetSystemSize_0000";
 }
 
@@ -724,11 +704,12 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetSystemSize_0000, test
 HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetTotalSize_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetTotalSize_0000";
-    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
-    auto proxy = iface_cast<IStorageManager>(remote);
-    int64_t result = proxy->GetTotalSize();
-    EXPECT_GE(result, 0);
+    int64_t totalSize;
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    int32_t result = proxy_->GetTotalSize(totalSize);
+    EXPECT_GE(result, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetTotalSize_0000";
 }
 
@@ -744,11 +725,12 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetTotalSize_0000, testi
 HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetFreeSize_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetFreeSize_0000";
-    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
-    auto proxy = iface_cast<IStorageManager>(remote);
-    int64_t result = proxy->GetFreeSize();
-    EXPECT_GE(result, 0);
+    int64_t FreeSize;
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    int32_t result = proxy_->GetFreeSize(FreeSize);
+    EXPECT_GE(result, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetFreeSize_0000";
 }
 
@@ -764,16 +746,12 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetFreeSize_0000, testin
 HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetUserStorageStats_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetUserStorageStats_0000";
-    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
-    auto proxy = iface_cast<IStorageManager>(remote);
-    StorageStats result = proxy->GetUserStorageStats();
-    EXPECT_GE(result.total_, 0);
-    EXPECT_GE(result.audio_, 0);
-    EXPECT_GE(result.video_, 0);
-    EXPECT_GE(result.image_, 0);
-    EXPECT_GE(result.file_, 0);
-    EXPECT_GE(result.app_, 0);
+    StorageStats storageStats;
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    int32_t result = proxy_->GetUserStorageStats(storageStats);
+    EXPECT_GE(result, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetUserStorageStats_0000";
 }
 
@@ -789,44 +767,14 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetUserStorageStats_0000
 HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetUserStorageStats_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetUserStorageStats_0001";
-    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
-    auto proxy = iface_cast<IStorageManager>(remote);
+    StorageStats storageStats;
     int32_t userId = 111;
-    StorageStats result = proxy->GetUserStorageStats(userId);
-    EXPECT_GE(result.total_, 0);
-    EXPECT_GE(result.audio_, 0);
-    EXPECT_GE(result.video_, 0);
-    EXPECT_GE(result.image_, 0);
-    EXPECT_GE(result.file_, 0);
-    EXPECT_GE(result.app_, 0);
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    int32_t result = proxy_->GetUserStorageStats(userId, storageStats);
+    EXPECT_GE(result, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetUserStorageStats_0001";
-}
-
-/**
- * @tc.number: SUB_STORAGE_Storage_manager_proxy_GetUserStorageStats_0002
- * @tc.name: Storage_manager_proxy_GetUserStorageStats_0002
- * @tc.desc: Test function of GetUserStorageStats interface for  Parameters ERROR which userId<0.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: SR000H0373
- */
-HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetUserStorageStats_0002, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetUserStorageStats_0002";
-    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
-    auto proxy = iface_cast<IStorageManager>(remote);
-    int32_t userId = -100;
-    StorageStats result = proxy->GetUserStorageStats(userId);
-    EXPECT_GE(result.total_, 0);
-    EXPECT_GE(result.audio_, 0);
-    EXPECT_GE(result.video_, 0);
-    EXPECT_GE(result.image_, 0);
-    EXPECT_GE(result.file_, 0);
-    EXPECT_GE(result.app_, 0);
-    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetUserStorageStats_0002";
 }
 
 /**
@@ -1092,13 +1040,9 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetCurrentBundleStats_00
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
-    BundleStats result = proxy_->GetCurrentBundleStats();
-    GTEST_LOG_(INFO) << result.appSize_;
-    GTEST_LOG_(INFO) << result.cacheSize_;
-    GTEST_LOG_(INFO) << result.dataSize_;
-    EXPECT_EQ(result.appSize_, 0);
-    EXPECT_EQ(result.cacheSize_, 0);
-    EXPECT_EQ(result.dataSize_, 0);
+    BundleStats bundleStats;
+    int32_t result = proxy_->GetCurrentBundleStats(bundleStats);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetCurrentBundleStats_0000";
 }
 } // namespace

@@ -25,8 +25,8 @@ class VolumeStorageStatusService : public NoCopyable {
     DECLARE_DELAYED_SINGLETON(VolumeStorageStatusService);
 
 public:
-    int64_t GetFreeSizeOfVolume(std::string volumeUuid);
-    int64_t GetTotalSizeOfVolume(std::string volumeUuid);
+    int32_t GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize);
+    int32_t GetTotalSizeOfVolume(std::string volumeUuid, int64_t &totalSize);
 private:
     std::string GetVolumePath(std::string volumeUuid);
 };
