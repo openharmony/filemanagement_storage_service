@@ -81,7 +81,8 @@ int32_t StorageManager::StopUser(int32_t userId)
 int32_t StorageManager::GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize)
 {
     LOGI("StorageManger::getFreeSizeOfVolume start, volumeUuid: %{public}s", volumeUuid.c_str());
-    std::shared_ptr<VolumeStorageStatusService> volumeStatsManager = DelayedSingleton<VolumeStorageStatusService>::GetInstance();
+    std::shared_ptr<VolumeStorageStatusService> volumeStatsManager =
+        DelayedSingleton<VolumeStorageStatusService>::GetInstance();
     int32_t err = volumeStatsManager->GetFreeSizeOfVolume(volumeUuid, freeSize);
     return err;
 }
@@ -89,7 +90,8 @@ int32_t StorageManager::GetFreeSizeOfVolume(std::string volumeUuid, int64_t &fre
 int32_t StorageManager::GetTotalSizeOfVolume(std::string volumeUuid, int64_t &totalSize)
 {
     LOGI("StorageManger::getTotalSizeOfVolume start, volumeUuid: %{public}s", volumeUuid.c_str());
-    std::shared_ptr<VolumeStorageStatusService> volumeStatsManager = DelayedSingleton<VolumeStorageStatusService>::GetInstance();
+    std::shared_ptr<VolumeStorageStatusService> volumeStatsManager =
+        DelayedSingleton<VolumeStorageStatusService>::GetInstance();
     int32_t err = volumeStatsManager->GetTotalSizeOfVolume(volumeUuid, totalSize);
     return err;
 }

@@ -40,7 +40,7 @@ public:
     int32_t GetTotalSize(int64_t &totalSize);
     int32_t GetFreeSize(int64_t &freeSize);
 private:
-    int32_t GetSizeOfPath(const char * path, int32_t type, int64_t &size);
+    int32_t GetSizeOfPath(const char *path, int32_t type, int64_t &size);
     const std::vector<std::string> mountDir = {"/debug_ramdisk", "/patch_hw",
         "/metadata", "/", "/cust", "/hw_product", "/odm", "/preas", "/vendor",
         "/vendor/modem/modem_driver", "/data"};
