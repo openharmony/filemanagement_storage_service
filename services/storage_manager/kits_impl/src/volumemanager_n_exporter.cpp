@@ -36,7 +36,7 @@ namespace StorageManager {
 namespace ModuleVolumeManager {
 napi_value GetAllVolumes(napi_env env, napi_callback_info info)
 {
-    if(!IsSystemApp()) {
+    if (!IsSystemApp()) {
         NError(E_PERMISSION_SYS).ThrowErr(env);
         return nullptr;
     }
@@ -92,7 +92,7 @@ napi_value GetAllVolumes(napi_env env, napi_callback_info info)
 
 napi_value Mount(napi_env env, napi_callback_info info)
 {
-    if(!IsSystemApp()) {
+    if (!IsSystemApp()) {
         NError(E_PERMISSION_SYS).ThrowErr(env);
         return nullptr;
     }
@@ -137,7 +137,7 @@ napi_value Mount(napi_env env, napi_callback_info info)
 
 napi_value Unmount(napi_env env, napi_callback_info info)
 {
-    if(!IsSystemApp()) {
+    if (!IsSystemApp()) {
         NError(E_PERMISSION_SYS).ThrowErr(env);
         return nullptr;
     }
@@ -183,7 +183,7 @@ napi_value Unmount(napi_env env, napi_callback_info info)
 
 napi_value GetVolumeByUuid(napi_env env, napi_callback_info info)
 {
-    if(!IsSystemApp()) {
+    if (!IsSystemApp()) {
         NError(E_PERMISSION_SYS).ThrowErr(env);
         return nullptr;
     }
@@ -204,7 +204,8 @@ napi_value GetVolumeByUuid(napi_env env, napi_callback_info info)
     auto volumeInfo = std::make_shared<VolumeExternal>();
     std::string uuidString(uuid.get());
     auto cbExec = [uuidString, volumeInfo]() -> NError {
-        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetVolumeByUuid(uuidString, *volumeInfo);
+        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetVolumeByUuid(uuidString,
+            *volumeInfo);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
         }
@@ -240,7 +241,7 @@ napi_value GetVolumeByUuid(napi_env env, napi_callback_info info)
 
 napi_value GetVolumeById(napi_env env, napi_callback_info info)
 {
-    if(!IsSystemApp()) {
+    if (!IsSystemApp()) {
         NError(E_PERMISSION_SYS).ThrowErr(env);
         return nullptr;
     }
@@ -261,7 +262,8 @@ napi_value GetVolumeById(napi_env env, napi_callback_info info)
     auto volumeInfo = std::make_shared<VolumeExternal>();
     std::string volumeIdString(volumeId.get());
     auto cbExec = [volumeIdString, volumeInfo]() -> NError {
-        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetVolumeById(volumeIdString, *volumeInfo);
+        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetVolumeById(volumeIdString,
+            *volumeInfo);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
         }
@@ -296,7 +298,7 @@ napi_value GetVolumeById(napi_env env, napi_callback_info info)
 
 napi_value SetVolumeDescription(napi_env env, napi_callback_info info)
 {
-    if(!IsSystemApp()) {
+    if (!IsSystemApp()) {
         NError(E_PERMISSION_SYS).ThrowErr(env);
         return nullptr;
     }
@@ -324,7 +326,8 @@ napi_value SetVolumeDescription(napi_env env, napi_callback_info info)
     std::string uuidString(uuid.get());
     std::string descStr(description.get());
     auto cbExec = [uuidString, descStr]() -> NError {
-        int32_t result = DelayedSingleton<StorageManagerConnect>::GetInstance()->SetVolumeDescription(uuidString, descStr);
+        int32_t result = DelayedSingleton<StorageManagerConnect>::GetInstance()->SetVolumeDescription(uuidString,
+            descStr);
         if (result != E_OK) {
             return NError(Convert2JsErrNum(result));
         }
@@ -349,7 +352,7 @@ napi_value SetVolumeDescription(napi_env env, napi_callback_info info)
 
 napi_value Format(napi_env env, napi_callback_info info)
 {
-    if(!IsSystemApp()) {
+    if (!IsSystemApp()) {
         NError(E_PERMISSION_SYS).ThrowErr(env);
         return nullptr;
     }
@@ -402,7 +405,7 @@ napi_value Format(napi_env env, napi_callback_info info)
 
 napi_value Partition(napi_env env, napi_callback_info info)
 {
-    if(!IsSystemApp()) {
+    if (!IsSystemApp()) {
         NError(E_PERMISSION_SYS).ThrowErr(env);
         return nullptr;
     }

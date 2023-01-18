@@ -35,7 +35,7 @@ namespace OHOS {
 namespace StorageManager {
 napi_value GetTotalSizeOfVolume(napi_env env, napi_callback_info info)
 {
-    if(!IsSystemApp()) {
+    if (!IsSystemApp()) {
         NError(E_PERMISSION_SYS).ThrowErr(env);
         return nullptr;
     }
@@ -56,7 +56,8 @@ napi_value GetTotalSizeOfVolume(napi_env env, napi_callback_info info)
     auto resultSize = std::make_shared<int64_t>();
     std::string uuidString(uuid.get());
     auto cbExec = [uuidString, resultSize]() -> NError {
-        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetTotalSizeOfVolume(uuidString, *resultSize);
+        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetTotalSizeOfVolume(uuidString,
+            *resultSize);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
         }
@@ -83,7 +84,7 @@ napi_value GetTotalSizeOfVolume(napi_env env, napi_callback_info info)
 
 napi_value GetFreeSizeOfVolume(napi_env env, napi_callback_info info)
 {
-    if(!IsSystemApp()) {
+    if (!IsSystemApp()) {
         NError(E_PERMISSION_SYS).ThrowErr(env);
         return nullptr;
     }
@@ -104,7 +105,8 @@ napi_value GetFreeSizeOfVolume(napi_env env, napi_callback_info info)
     auto resultSize = std::make_shared<int64_t>();
     std::string uuidString(uuid.get());
     auto cbExec = [uuidString, resultSize]() -> NError {
-        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetFreeSizeOfVolume(uuidString, *resultSize);
+        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetFreeSizeOfVolume(uuidString,
+            *resultSize);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
         }
@@ -129,7 +131,7 @@ napi_value GetFreeSizeOfVolume(napi_env env, napi_callback_info info)
 
 napi_value GetBundleStats(napi_env env, napi_callback_info info)
 {
-    if(!IsSystemApp()) {
+    if (!IsSystemApp()) {
         NError(E_PERMISSION_SYS).ThrowErr(env);
         return nullptr;
     }
@@ -149,7 +151,8 @@ napi_value GetBundleStats(napi_env env, napi_callback_info info)
     auto bundleStats = std::make_shared<BundleStats>();
     std::string nameString(name.get());
     auto cbExec = [nameString, bundleStats]() -> NError {
-        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetBundleStats(nameString, *bundleStats);
+        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetBundleStats(nameString,
+            *bundleStats);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
         }
@@ -214,7 +217,7 @@ napi_value GetCurrentBundleStats(napi_env env, napi_callback_info info)
 
 napi_value GetSystemSize(napi_env env, napi_callback_info info)
 {
-    if(!IsSystemApp()) {
+    if (!IsSystemApp()) {
         NError(E_PERMISSION_SYS).ThrowErr(env);
         return nullptr;
     }
@@ -251,7 +254,7 @@ napi_value GetSystemSize(napi_env env, napi_callback_info info)
 
 napi_value GetUserStorageStats(napi_env env, napi_callback_info info)
 {
-    if(!IsSystemApp()) {
+    if (!IsSystemApp()) {
         NError(E_PERMISSION_SYS).ThrowErr(env);
         return nullptr;
     }
@@ -317,7 +320,7 @@ napi_value GetUserStorageStats(napi_env env, napi_callback_info info)
 
 napi_value GetTotalSize(napi_env env, napi_callback_info info)
 {
-    if(!IsSystemApp()) {
+    if (!IsSystemApp()) {
         NError(E_PERMISSION_SYS).ThrowErr(env);
         return nullptr;
     }
@@ -354,7 +357,7 @@ napi_value GetTotalSize(napi_env env, napi_callback_info info)
 
 napi_value GetFreeSize(napi_env env, napi_callback_info info)
 {
-    if(!IsSystemApp()) {
+    if (!IsSystemApp()) {
         NError(E_PERMISSION_SYS).ThrowErr(env);
         return nullptr;
     }
