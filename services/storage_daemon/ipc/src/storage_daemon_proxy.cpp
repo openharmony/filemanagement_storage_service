@@ -24,7 +24,8 @@ StorageDaemonProxy::StorageDaemonProxy(const sptr<IRemoteObject> &impl) : IRemot
 
 int32_t StorageDaemonProxy::Shutdown()
 {
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
 
     if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
@@ -36,7 +37,8 @@ int32_t StorageDaemonProxy::Shutdown()
 
 int32_t StorageDaemonProxy::Mount(std::string volId, uint32_t flags)
 {
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
         return E_WRITE_DESCRIPTOR_ERR;
@@ -60,7 +62,8 @@ int32_t StorageDaemonProxy::Mount(std::string volId, uint32_t flags)
 
 int32_t StorageDaemonProxy::UMount(std::string volId)
 {
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
         return E_WRITE_DESCRIPTOR_ERR;
@@ -80,7 +83,8 @@ int32_t StorageDaemonProxy::UMount(std::string volId)
 
 int32_t StorageDaemonProxy::Check(std::string volId)
 {
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
         return E_WRITE_DESCRIPTOR_ERR;
@@ -100,7 +104,8 @@ int32_t StorageDaemonProxy::Check(std::string volId)
 
 int32_t StorageDaemonProxy::Format(std::string volId, std::string fsType)
 {
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
         return E_WRITE_DESCRIPTOR_ERR;
@@ -124,7 +129,8 @@ int32_t StorageDaemonProxy::Format(std::string volId, std::string fsType)
 
 int32_t StorageDaemonProxy::Partition(std::string diskId, int32_t type)
 {
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
         return E_WRITE_DESCRIPTOR_ERR;
@@ -148,7 +154,8 @@ int32_t StorageDaemonProxy::Partition(std::string diskId, int32_t type)
 
 int32_t StorageDaemonProxy::SetVolumeDescription(std::string volId, std::string description)
 {
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
         return E_WRITE_DESCRIPTOR_ERR;
@@ -172,7 +179,8 @@ int32_t StorageDaemonProxy::SetVolumeDescription(std::string volId, std::string 
 
 int32_t StorageDaemonProxy::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
 
     if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
@@ -197,7 +205,8 @@ int32_t StorageDaemonProxy::PrepareUserDirs(int32_t userId, uint32_t flags)
 
 int32_t StorageDaemonProxy::DestroyUserDirs(int32_t userId, uint32_t flags)
 {
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
 
     if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
@@ -222,7 +231,8 @@ int32_t StorageDaemonProxy::DestroyUserDirs(int32_t userId, uint32_t flags)
 
 int32_t StorageDaemonProxy::StartUser(int32_t userId)
 {
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
 
     if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
@@ -243,7 +253,8 @@ int32_t StorageDaemonProxy::StartUser(int32_t userId)
 
 int32_t StorageDaemonProxy::StopUser(int32_t userId)
 {
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
 
     if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
@@ -264,7 +275,8 @@ int32_t StorageDaemonProxy::StopUser(int32_t userId)
 
 int32_t StorageDaemonProxy::InitGlobalKey(void)
 {
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
         return E_WRITE_DESCRIPTOR_ERR;
@@ -280,7 +292,8 @@ int32_t StorageDaemonProxy::InitGlobalKey(void)
 
 int32_t StorageDaemonProxy::InitGlobalUserKeys(void)
 {
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     LOGI("start");
     if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
@@ -297,7 +310,8 @@ int32_t StorageDaemonProxy::InitGlobalUserKeys(void)
 
 int32_t StorageDaemonProxy::GenerateUserKeys(uint32_t userId, uint32_t flags)
 {
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
 
     LOGI("start");
@@ -322,7 +336,8 @@ int32_t StorageDaemonProxy::GenerateUserKeys(uint32_t userId, uint32_t flags)
 
 int32_t StorageDaemonProxy::DeleteUserKeys(uint32_t userId)
 {
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
 
     if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
@@ -345,7 +360,8 @@ int32_t StorageDaemonProxy::UpdateUserAuth(uint32_t userId,
                                            const std::vector<uint8_t> &oldSecret,
                                            const std::vector<uint8_t> &newSecret)
 {
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
 
     if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
@@ -377,7 +393,8 @@ int32_t StorageDaemonProxy::ActiveUserKey(uint32_t userId,
                                           const std::vector<uint8_t> &token,
                                           const std::vector<uint8_t> &secret)
 {
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
 
     if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
@@ -404,7 +421,8 @@ int32_t StorageDaemonProxy::ActiveUserKey(uint32_t userId,
 
 int32_t StorageDaemonProxy::InactiveUserKey(uint32_t userId)
 {
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
 
     if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
@@ -424,7 +442,8 @@ int32_t StorageDaemonProxy::InactiveUserKey(uint32_t userId)
 
 int32_t StorageDaemonProxy::UpdateKeyContext(uint32_t userId)
 {
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
 
     if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
