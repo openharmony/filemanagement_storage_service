@@ -73,7 +73,7 @@ ohos_unittest("storage_manager_stub_test") {
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
     "//foundation/filemanagement/storage_service/services/storage_manager/ipc/test/",
     "//foundation/filemanagement/storage_service/services/common/include",
-    "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
+    "//base/security/huks/interfaces/inner_api/huks_standard/main/include",
     "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
     "//base/security/access_token/interfaces/innerkits/accesstoken/include",
   ]
@@ -122,7 +122,7 @@ ohos_unittest("storage_manager_stub_nonpermission_test") {
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
     "//foundation/filemanagement/storage_service/services/storage_manager/ipc/test/",
     "//foundation/filemanagement/storage_service/services/common/include",
-    "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
+    "//base/security/huks/interfaces/inner_api/huks_standard/main/include",
     "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
     "//base/security/access_token/interfaces/innerkits/accesstoken/include",
   ]

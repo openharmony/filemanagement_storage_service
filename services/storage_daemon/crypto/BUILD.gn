@@ -33,7 +33,7 @@ config("storage_daemon_crypto_config") {
 
 config("crypto_public_config") {
   include_dirs =
-      [ "//base/security/huks/interfaces/innerkits/huks_standard/main/include" ]
+      [ "//base/security/huks/interfaces/inner_api/huks_standard/main/include" ]
 }
 
 ohos_static_library("libsdcrypto") {

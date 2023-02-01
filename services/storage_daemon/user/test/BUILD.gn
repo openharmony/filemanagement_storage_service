@@ -26,7 +26,7 @@ ohos_unittest("user_manager_test") {
   include_dirs = [
     "$ROOT_DIR/include",
     "$ROOT_DIR/utils",
-    "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
+    "//base/security/huks/interfaces/inner_api/huks_standard/main/include",
     "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
     "//foundation/filemanagement/storage_service/services/common/include",
   ]

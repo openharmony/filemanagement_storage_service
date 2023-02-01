@@ -31,7 +31,7 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/../storage_manager/include",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
     "//foundation/systemabilitymgr/safwk/interfaces/innerkits/safwk",
-    "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
+    "//base/security/huks/interfaces/inner_api/huks_standard/main/include",
     "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
     "//foundation/filemanagement/storage_service/services/common/include",
     "//base/security/access_token/interfaces/innerkits/accesstoken/include",
@@ -117,7 +117,7 @@ ohos_unittest("storage_daemon_stub_test") {
     "$ROOT_DIR/include",
     "$ROOT_DIR/ipc/test/",
     "//foundation/filemanagement/storage_service/services/common/include",
-    "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
+    "//base/security/huks/interfaces/inner_api/huks_standard/main/include",
     "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
     "//base/security/access_token/interfaces/innerkits/accesstoken/include",
   ]

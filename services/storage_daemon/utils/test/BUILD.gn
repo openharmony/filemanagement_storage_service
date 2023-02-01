@@ -23,7 +23,7 @@ ohos_unittest("file_utils_test") {
 
   include_dirs = [
     "//foundation/filemanagement/storage_service/services/storage_daemon/include",
-    "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
+    "//base/security/huks/interfaces/inner_api/huks_standard/main/include",
     "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
     "//foundation/filemanagement/storage_service/services/common/include",
   ]
