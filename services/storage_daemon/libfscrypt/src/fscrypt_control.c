@@ -101,7 +101,7 @@ static bool IsSupportedPolicyKey(const char *key,
 static bool IsSupportedPolicy(const char *policy,
                               enum FscryptOptins number)
 {
-    if ((number >= FSCRYPT_OPTIONS_MAX) ||(!policy)) {
+    if ((number >= FSCRYPT_OPTIONS_MAX) || (!policy)) {
         return false;
     }
 

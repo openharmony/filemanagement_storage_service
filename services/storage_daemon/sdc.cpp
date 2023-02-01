@@ -42,7 +42,8 @@ static int32_t GenerateUserKeys(const std::vector<std::string> &args)
         LOGE("Parameter nums is less than 5, please retry");
         return -EINVAL;
     }
-    uint32_t userId, flags;
+    uint32_t userId;
+    uint32_t flags;
     if ((OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) ||
         (OHOS::StorageDaemon::StringToUint32(args[4], flags) == false)) {
         LOGE("Parameter input error, please retry");
@@ -57,7 +58,8 @@ static int32_t PrepareUserSpace(const std::vector<std::string> &args)
         LOGE("Parameter nums is less than 5, please retry");
         return -EINVAL;
     }
-    uint32_t userId, flags;
+    uint32_t userId;
+    uint32_t flags;
     if ((OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) ||
         (OHOS::StorageDaemon::StringToUint32(args[4], flags) == false)) {
         LOGE("Parameter input error, please retry");
@@ -86,7 +88,8 @@ static int32_t DestroyUserSpace(const std::vector<std::string> &args)
         LOGE("Parameter nums is less than 5, please retry");
         return -EINVAL;
     }
-    uint32_t userId, flags;
+    uint32_t userId;
+    uint32_t flags;
     if (OHOS::StorageDaemon::StringToUint32(args[3], userId) == false ||
         OHOS::StorageDaemon::StringToUint32(args[4], flags) == false) {
         LOGE("Parameter input error, please retry");
