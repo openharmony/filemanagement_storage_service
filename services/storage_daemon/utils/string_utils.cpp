@@ -67,7 +67,8 @@ std::string StringPrintf(const char *format, ...)
 std::vector<std::string> SplitLine(std::string &line, std::string &token)
 {
     std::vector<std::string> result;
-    std::string::size_type start, end;
+    std::string::size_type start;
+    std::string::size_type end;
 
     start = 0;
     end = line.find(token);
