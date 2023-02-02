@@ -649,7 +649,9 @@ int32_t StorageManagerStub::HandleUpdateUserAuth(MessageParcel &data, MessagePar
     }
     uint32_t userId = data.ReadUint32();
 
-    std::vector<uint8_t> token, oldSecret, newSecret;
+    std::vector<uint8_t> token;
+    std::vector<uint8_t> oldSecret;
+    std::vector<uint8_t> newSecret;
     data.ReadUInt8Vector(&token);
     data.ReadUInt8Vector(&oldSecret);
     data.ReadUInt8Vector(&newSecret);
@@ -670,7 +672,8 @@ int32_t StorageManagerStub::HandleActiveUserKey(MessageParcel &data, MessageParc
     }
     uint32_t userId = data.ReadUint32();
 
-    std::vector<uint8_t> token, secret;
+    std::vector<uint8_t> token;
+    std::vector<uint8_t> secret;
     data.ReadUInt8Vector(&token);
     data.ReadUInt8Vector(&secret);
 

@@ -22,7 +22,8 @@ namespace StorageManager {
 int32_t StorageManagerProxy::PrepareAddUser(int32_t userId, uint32_t flags)
 {
     LOGI("StorageManagerProxy::PrepareAddUser, userId:%{public}d", userId);
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::PrepareAddUser, WriteInterfaceToken failed");
@@ -46,7 +47,8 @@ int32_t StorageManagerProxy::PrepareAddUser(int32_t userId, uint32_t flags)
 int32_t StorageManagerProxy::RemoveUser(int32_t userId, uint32_t flags)
 {
     LOGI("StorageManagerProxy::RemoveUser, userId:%{public}d", userId);
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::RemoveUser, WriteInterfaceToken failed");
@@ -70,7 +72,8 @@ int32_t StorageManagerProxy::RemoveUser(int32_t userId, uint32_t flags)
 int32_t StorageManagerProxy::PrepareStartUser(int32_t userId)
 {
     LOGI("StorageManagerProxy::PrepareStartUser, userId:%{public}d", userId);
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::PrepareStartUser, WriteInterfaceToken failed");
@@ -90,7 +93,8 @@ int32_t StorageManagerProxy::PrepareStartUser(int32_t userId)
 int32_t StorageManagerProxy::StopUser(int32_t userId)
 {
     LOGI("StorageManagerProxy::StopUser, userId:%{public}d", userId);
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::StopUser, WriteInterfaceToken failed");
@@ -110,7 +114,8 @@ int32_t StorageManagerProxy::StopUser(int32_t userId)
 int32_t StorageManagerProxy::GenerateUserKeys(uint32_t userId, uint32_t flags)
 {
     LOGI("user ID: %{public}u, flags: %{public}u", userId, flags);
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("WriteInterfaceToken failed");
@@ -135,7 +140,8 @@ int32_t StorageManagerProxy::GenerateUserKeys(uint32_t userId, uint32_t flags)
 int32_t StorageManagerProxy::DeleteUserKeys(uint32_t userId)
 {
     LOGI("user ID: %{public}u", userId);
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("WriteInterfaceToken failed");
@@ -159,7 +165,8 @@ int32_t StorageManagerProxy::UpdateUserAuth(uint32_t userId,
                                             const std::vector<uint8_t> &newSecret)
 {
     LOGI("user ID: %{public}u", userId);
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("WriteInterfaceToken failed");
@@ -195,7 +202,8 @@ int32_t StorageManagerProxy::ActiveUserKey(uint32_t userId,
                                            const std::vector<uint8_t> &secret)
 {
     LOGI("user ID: %{public}u", userId);
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("WriteInterfaceToken failed");
@@ -225,7 +233,8 @@ int32_t StorageManagerProxy::ActiveUserKey(uint32_t userId,
 int32_t StorageManagerProxy::InactiveUserKey(uint32_t userId)
 {
     LOGI("user ID: %{public}u", userId);
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("WriteInterfaceToken failed");
@@ -246,7 +255,8 @@ int32_t StorageManagerProxy::InactiveUserKey(uint32_t userId)
 int32_t StorageManagerProxy::UpdateKeyContext(uint32_t userId)
 {
     LOGI("user ID: %{public}u", userId);
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("WriteInterfaceToken failed");
@@ -267,7 +277,8 @@ int32_t StorageManagerProxy::UpdateKeyContext(uint32_t userId)
 int32_t StorageManagerProxy::GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize)
 {
     LOGI("StorageManagerProxy::GetFreeSizeOfVolume, volumeUuid:%{public}s", volumeUuid.c_str());
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::GetFreeSizeOfVolume, WriteInterfaceToken failed");
@@ -293,7 +304,8 @@ int32_t StorageManagerProxy::GetFreeSizeOfVolume(std::string volumeUuid, int64_t
 int32_t StorageManagerProxy::GetTotalSizeOfVolume(std::string volumeUuid, int64_t &totalSize)
 {
     LOGI("StorageManagerProxy::GetTotalSizeOfVolume, volumeUuid:%{public}s", volumeUuid.c_str());
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::GetTotalSizeOfVolume, WriteInterfaceToken failed");
@@ -318,7 +330,8 @@ int32_t StorageManagerProxy::GetTotalSizeOfVolume(std::string volumeUuid, int64_
 
 int32_t StorageManagerProxy::GetBundleStats(std::string pkgName, BundleStats &bundleStats)
 {
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         return E_WRITE_DESCRIPTOR_ERR;
@@ -342,7 +355,8 @@ int32_t StorageManagerProxy::GetBundleStats(std::string pkgName, BundleStats &bu
 int32_t StorageManagerProxy::NotifyVolumeCreated(VolumeCore vc)
 {
     LOGI("StorageManagerProxy::NotifyVolumeCreated, volumeUuid:%{public}s", vc.GetId().c_str());
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::NotifyVolumeCreated, WriteInterfaceToken failed");
@@ -362,7 +376,8 @@ int32_t StorageManagerProxy::NotifyVolumeMounted(std::string volumeId, int32_t f
     std::string path, std::string description)
 {
     LOGI("StorageManagerProxy::NotifyVolumeMounted, volumeUuid:%{public}s", volumeId.c_str());
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::NotifyVolumeMounted, WriteInterfaceToken failed");
@@ -401,7 +416,8 @@ int32_t StorageManagerProxy::NotifyVolumeMounted(std::string volumeId, int32_t f
 int32_t StorageManagerProxy::NotifyVolumeDestroyed(std::string volumeId)
 {
     LOGI("StorageManagerProxy::NotifyVolumedestroyed, volumeId:%{public}s", volumeId.c_str());
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::NotifyVolumedestroyed, WriteInterfaceToken failed");
@@ -419,7 +435,8 @@ int32_t StorageManagerProxy::NotifyVolumeDestroyed(std::string volumeId)
 int32_t StorageManagerProxy::Mount(std::string volumeId)
 {
     LOGI("StorageManagerProxy::Mount, volumeId:%{public}s", volumeId.c_str());
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::Mount, WriteInterfaceToken failed");
@@ -440,7 +457,8 @@ int32_t StorageManagerProxy::Mount(std::string volumeId)
 int32_t StorageManagerProxy::Unmount(std::string volumeId)
 {
     LOGI("StorageManagerProxy::Unmount, volumeId:%{public}s", volumeId.c_str());
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::Unmount, WriteInterfaceToken failed");
@@ -461,7 +479,8 @@ int32_t StorageManagerProxy::Unmount(std::string volumeId)
 int32_t StorageManagerProxy::GetAllVolumes(std::vector<VolumeExternal> &vecOfVol)
 {
     LOGI("StorageManagerProxy::GetAllVolumes");
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::GetAllVolumes, WriteInterfaceToken failed");
@@ -491,7 +510,8 @@ int32_t StorageManagerProxy::GetAllVolumes(std::vector<VolumeExternal> &vecOfVol
 int32_t StorageManagerProxy::NotifyDiskCreated(Disk disk)
 {
     LOGI("StorageManagerProxy::NotifyDiskCreate, diskId:%{public}s", disk.GetDiskId().c_str());
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::NotifyDiskCreate, WriteInterfaceToken failed");
@@ -510,7 +530,8 @@ int32_t StorageManagerProxy::NotifyDiskCreated(Disk disk)
 int32_t StorageManagerProxy::NotifyDiskDestroyed(std::string diskId)
 {
     LOGI("StorageManagerProxy::NotifyDiskDestroyed, diskId:%{public}s", diskId.c_str());
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::NotifyDiskDestroyed, WriteInterfaceToken failed");
@@ -527,7 +548,8 @@ int32_t StorageManagerProxy::NotifyDiskDestroyed(std::string diskId)
 int32_t StorageManagerProxy::Partition(std::string diskId, int32_t type)
 {
     LOGI("StorageManagerProxy::Partition, diskId:%{public}s", diskId.c_str());
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::Partition, WriteInterfaceToken failed");
@@ -552,7 +574,8 @@ int32_t StorageManagerProxy::GetAllDisks(std::vector<Disk> &vecOfDisk)
 {
     LOGI("StorageManagerProxy::GetAllDisks");
     std::vector<Disk> result = {};
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::GetAllDisks, WriteInterfaceToken failed");
@@ -582,7 +605,8 @@ int32_t StorageManagerProxy::GetAllDisks(std::vector<Disk> &vecOfDisk)
 int32_t StorageManagerProxy::GetSystemSize(int64_t &systemSize)
 {
     LOGI("StorageManagerProxy::GetSystemSize");
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::GetSystemSize WriteInterfaceToken failed");
@@ -604,7 +628,8 @@ int32_t StorageManagerProxy::GetSystemSize(int64_t &systemSize)
 int32_t StorageManagerProxy::GetTotalSize(int64_t &totalSize)
 {
     LOGI("StorageManagerProxy::GetTotalSize");
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::GetTotalSize WriteInterfaceToken failed");
@@ -626,7 +651,8 @@ int32_t StorageManagerProxy::GetTotalSize(int64_t &totalSize)
 int32_t StorageManagerProxy::GetFreeSize(int64_t &freeSize)
 {
     LOGI("StorageManagerProxy::GetFreeSize");
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("StorageManagerProxy::GetFreeSize WriteInterfaceToken failed");
@@ -648,7 +674,8 @@ int32_t StorageManagerProxy::GetFreeSize(int64_t &freeSize)
 int32_t StorageManagerProxy::GetUserStorageStats(StorageStats &storageStats)
 {
     StorageStats result;
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         return E_WRITE_DESCRIPTOR_ERR;
@@ -669,7 +696,8 @@ int32_t StorageManagerProxy::GetUserStorageStats(StorageStats &storageStats)
 int32_t StorageManagerProxy::GetUserStorageStats(int32_t userId, StorageStats &storageStats)
 {
     StorageStats result;
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         return E_WRITE_DESCRIPTOR_ERR;
@@ -693,7 +721,8 @@ int32_t StorageManagerProxy::GetUserStorageStats(int32_t userId, StorageStats &s
 int32_t StorageManagerProxy::GetCurrentBundleStats(BundleStats &bundleStats)
 {
     BundleStats result;
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         return E_WRITE_DESCRIPTOR_ERR;
@@ -713,7 +742,8 @@ int32_t StorageManagerProxy::GetCurrentBundleStats(BundleStats &bundleStats)
 
 int32_t StorageManagerProxy::GetVolumeByUuid(std::string fsUuid, VolumeExternal &vc)
 {
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         return E_WRITE_DESCRIPTOR_ERR;
@@ -733,7 +763,8 @@ int32_t StorageManagerProxy::GetVolumeByUuid(std::string fsUuid, VolumeExternal 
 
 int32_t StorageManagerProxy::GetVolumeById(std::string volumeId, VolumeExternal &vc)
 {
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         return E_WRITE_DESCRIPTOR_ERR;
@@ -753,7 +784,8 @@ int32_t StorageManagerProxy::GetVolumeById(std::string volumeId, VolumeExternal 
 
 int32_t StorageManagerProxy::SetVolumeDescription(std::string fsUuid, std::string description)
 {
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         return E_WRITE_DESCRIPTOR_ERR;
@@ -776,7 +808,8 @@ int32_t StorageManagerProxy::SetVolumeDescription(std::string fsUuid, std::strin
 
 int32_t StorageManagerProxy::Format(std::string volumeId, std::string fsType)
 {
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         return E_WRITE_DESCRIPTOR_ERR;
@@ -799,7 +832,8 @@ int32_t StorageManagerProxy::Format(std::string volumeId, std::string fsType)
 
 int32_t StorageManagerProxy::GetDiskById(std::string diskId, Disk &disk)
 {
-    MessageParcel data, reply;
+    MessageParcel data;
+    MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         return E_WRITE_DESCRIPTOR_ERR;
