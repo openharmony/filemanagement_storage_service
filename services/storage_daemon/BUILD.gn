@@ -187,7 +187,6 @@ ohos_shared_library("storage_common_utils") {
 
   sources = [
     "./utils/file_utils.cpp",
-    "./utils/redaction_utils.cpp",
     "./utils/string_utils.cpp",
   ]
 
