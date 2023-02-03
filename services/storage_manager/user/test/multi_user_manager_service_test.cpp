@@ -54,7 +54,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareAddUser_0000, 
 {
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-begin User_manager_service_PrepareAddUser_0000";
     std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
-    int32_t userId = 101;
+    int32_t userId = 121;
     uint32_t flag = 3;
     int32_t result;
     if (service != nullptr) {
