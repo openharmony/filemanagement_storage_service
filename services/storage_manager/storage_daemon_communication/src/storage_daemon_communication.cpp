@@ -40,8 +40,8 @@ StorageDaemonCommunication::~StorageDaemonCommunication()
 int32_t StorageDaemonCommunication::Connect()
 {
     LOGI("StorageDaemonCommunication::Connect start");
+    std::lock_guard<std::mutex> lock(mutex_);
     if (storageDaemon_ == nullptr) {
-        std::lock_guard<std::mutex> lock(mutex_);
         auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
         if (sam == nullptr) {
             LOGE("StorageDaemonCommunication::Connect samgr nullptr");

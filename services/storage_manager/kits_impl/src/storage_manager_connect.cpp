@@ -35,8 +35,8 @@ StorageManagerConnect::~StorageManagerConnect() {}
 int32_t StorageManagerConnect::Connect()
 {
     LOGI("StorageManagerConnect::Connect start");
+    std::lock_guard<std::mutex> lock(mutex_);
     if (storageManager_ == nullptr) {
-        std::lock_guard<std::mutex> lock(mutex_);
         auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
         if (sam == nullptr) {
             LOGE("StorageManagerConnect::Connect samgr == nullptr");

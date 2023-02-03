@@ -179,8 +179,8 @@ int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t
 int32_t StorageStatusService::ConnectBundleMgr()
 {
     LOGI("connect begin");
+    std::lock_guard<std::mutex> lock(mutex_);
     if (bundleMgr_ == nullptr) {
-        std::lock_guard<std::mutex> lock(mutex_);
         auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
         if (sam == nullptr) {
             LOGE("StorageStatusService::ConnectBundleMgr samgr == nullptr");
