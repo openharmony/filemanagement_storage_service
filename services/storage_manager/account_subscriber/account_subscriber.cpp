@@ -43,7 +43,7 @@ bool AccountSubscriber::Subscriber(void)
 {
     if (AccountSubscriber_ == nullptr) {
         EventFwk::MatchingSkills matchingSkills;
-        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USER_SWITCHED);
+        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USER_UNLOCKED);
         EventFwk::CommonEventSubscribeInfo subscribeInfo(matchingSkills);
         AccountSubscriber_ = std::make_shared<AccountSubscriber>(subscribeInfo);
         EventFwk::CommonEventManager::SubscribeCommonEvent(AccountSubscriber_);
