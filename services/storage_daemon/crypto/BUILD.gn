@@ -60,8 +60,8 @@ ohos_static_library("libsdcrypto") {
   external_deps = [
     "c_utils:utils",
     "hiviewdfx_hilog_native:libhilog",
-    "init:libbegetutil",
     "huks:libhukssdk",
+    "init:libbegetutil",
   ]
 
   subsystem_name = "filemanagement"
