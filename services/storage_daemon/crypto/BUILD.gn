@@ -48,7 +48,6 @@ ohos_static_library("libsdcrypto") {
   ]
 
   configs = [ ":storage_daemon_crypto_config" ]
-  
 
   deps = [
     "//base/security/huks/frameworks/huks_standard/main/os_dependency:libhuks_os_dependency_standard_static",
