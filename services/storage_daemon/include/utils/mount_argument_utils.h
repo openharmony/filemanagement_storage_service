@@ -33,6 +33,9 @@ struct MountArgument final {
 
     std::string GetFullSrc() const;
     std::string GetFullDst() const;
+    std::string GetShareSrc() const;
+    std::string GetShareDst() const;
+    std::string GetUserIdPara() const;
     std::string GetCommFullPath() const;
     std::string GetCachePath() const;
     std::string GetCtrlPath() const;

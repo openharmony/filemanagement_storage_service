@@ -53,6 +53,10 @@ public:
     virtual int32_t InactiveUserKey(uint32_t userId) override;
     virtual int32_t UpdateKeyContext(uint32_t userId) override;
 
+    // app file share api
+    virtual int32_t CreateShareFile(std::string uri, int32_t tokenId, int32_t flag) override;
+    virtual int32_t DeleteShareFile(int32_t tokenId, std::vector<std::string>sharePathList) override;
+
 private:
     static inline BrokerDelegator<StorageDaemonProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

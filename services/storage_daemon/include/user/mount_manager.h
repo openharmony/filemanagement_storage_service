@@ -55,6 +55,8 @@ private:
     int32_t HmdfsTwiceMount(int32_t userId, std::string relativePath);
     int32_t HmdfsUMount(int32_t userId);
     int32_t HmdfsUMount(int32_t userId, std::string relativePath);
+    int32_t SharefsMount(int32_t userId);
+    int32_t SharefsUMount(int32_t userId);
     int32_t HmdfsTwiceUMount(int32_t userId, std::string relativePath);
     int32_t LocalMount(int32_t userId);
     int32_t LocalUMount(int32_t userId);

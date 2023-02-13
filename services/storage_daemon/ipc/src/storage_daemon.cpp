@@ -17,11 +17,13 @@
 
 #include "crypto/key_manager.h"
 #include "disk/disk_manager.h"
+#include "file_share.h"
 #include "file_sharing/file_sharing.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "user/user_manager.h"
 #include "volume/volume_manager.h"
+
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -151,6 +153,16 @@ int32_t StorageDaemon::InactiveUserKey(uint32_t userId)
 int32_t StorageDaemon::UpdateKeyContext(uint32_t userId)
 {
     return KeyManager::GetInstance()->UpdateKeyContext(userId);
+}
+
+int32_t StorageDaemon::CreateShareFile(std::string uri, int32_t tokenId, int32_t flag)
+{
+    return AppFileService::FileShare::CreateShareFile(uri, tokenId, flag);
+}
+
+int32_t StorageDaemon::DeleteShareFile(int32_t tokenId, std::vector<std::string>sharePathList)
+{
+    return AppFileService::FileShare::DeleteShareFile(tokenId, sharePathList);
 }
 } // StorageDaemon
 } // OHOS

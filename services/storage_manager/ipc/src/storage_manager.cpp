@@ -23,6 +23,7 @@
 #include "account_subscriber/account_subscriber.h"
 #include "crypto/filesystem_crypto.h"
 #include "disk/disk_manager_service.h"
+#include "storage_daemon_communication/storage_daemon_communication.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
@@ -305,6 +306,20 @@ int32_t StorageManager::UpdateKeyContext(uint32_t userId)
     std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
     int32_t err = fsCrypto->UpdateKeyContext(userId);
     return err;
+}
+
+int32_t StorageManager::CreateShareFile(std::string uri, int32_t tokenId, int32_t flag)
+{
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->CreateShareFile(uri, tokenId, flag);
+}
+
+int32_t StorageManager::DeleteShareFile(int32_t tokenId, std::vector<std::string> sharePathList)
+{
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->DeleteShareFile(tokenId, sharePathList);
 }
 }
 }
