@@ -851,6 +851,69 @@ int32_t StorageManagerProxy::GetDiskById(std::string diskId, Disk &disk)
     return reply.ReadInt32();
 }
 
+int32_t StorageManagerProxy::CreateShareFile(std::string uri, int32_t tokenId, int32_t flag)
+{
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    if (!data.WriteString(uri)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    if (!data.WriteUint32(tokenId)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    if (!data.WriteUint32(flag)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    int err = SendRequest(CREATE_SHARE_FILE, data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+
+    return reply.ReadInt32();
+}
+
+int32_t StorageManagerProxy::DeleteShareFile(int32_t tokenId, std::vector<std::string>sharePathList)
+{
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_ASYNC);
+
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    if (!data.WriteUint32(tokenId)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    size_t length = sharePathList.size();
+    if (!data.WriteUint32(length)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    for (auto &sharePath : sharePathList) {
+        if (!data.WriteString(sharePath)) {
+            return E_WRITE_PARCEL_ERR;
+        }
+    }
+
+    int err = SendRequest(DELETE_SHARE_FILE, data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+
+    return reply.ReadInt32();
+}
+
 int32_t StorageManagerProxy::SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {

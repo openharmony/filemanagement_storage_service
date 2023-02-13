@@ -27,6 +27,8 @@ namespace {
     static const std::string BASE_MOUNT_POINT = "/mnt/hmdfs/";
     static const std::string SYSFS_HMDFS_PATH = "/sys/fs/hmdfs/";
     static const std::string COMM_DATA_POINT = "/storage/media/";
+    static const std::string SHAREFS_DATA_POINT = "/data/service/el2/";
+    static const std::string SHAREFS_BASE_MOUNT_POINT = "/mnt/share/";
 } // namespace
 
 string MountArgument::GetFullSrc() const
@@ -41,6 +43,30 @@ string MountArgument::GetFullDst() const
 {
     stringstream ss;
     ss << BASE_MOUNT_POINT << userId_ << "/" << relativePath_;
+
+    return ss.str();
+}
+
+string MountArgument::GetShareSrc() const
+{
+    stringstream ss;
+    ss << SHAREFS_DATA_POINT << userId_ << "/share";
+
+    return ss.str();
+}
+
+string MountArgument::GetUserIdPara() const
+{
+    stringstream ss;
+    ss << "user_id=" << userId_;
+
+    return ss.str();
+}
+
+string MountArgument::GetShareDst() const
+{
+    stringstream ss;
+    ss << SHAREFS_BASE_MOUNT_POINT << userId_;
 
     return ss.str();
 }

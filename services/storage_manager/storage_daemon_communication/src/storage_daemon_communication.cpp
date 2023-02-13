@@ -266,5 +266,27 @@ void SdDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
 {
     DelayedSingleton<StorageDaemonCommunication>::GetInstance()->ResetSdProxy();
 }
+
+int32_t StorageDaemonCommunication::CreateShareFile(std::string uri, int32_t tokenId, int32_t flag)
+{
+    LOGI("enter");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    return storageDaemon_->CreateShareFile(uri, tokenId, flag);
+}
+
+int32_t StorageDaemonCommunication::DeleteShareFile(int32_t tokenId, std::vector<std::string>sharePathList)
+{
+    LOGI("enter");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    return storageDaemon_->DeleteShareFile(tokenId, sharePathList);
+}
 } // namespace StorageManager
 } // namespace OHOS

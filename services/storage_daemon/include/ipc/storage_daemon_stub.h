@@ -52,6 +52,10 @@ private:
     int32_t HandleActiveUserKey(MessageParcel &data, MessageParcel &reply);
     int32_t HandleInactiveUserKey(MessageParcel &data, MessageParcel &reply);
     int32_t HandleUpdateKeyContext(MessageParcel &data, MessageParcel &reply);
+
+    // app file share api
+    int32_t HandleCreateShareFile(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleDeleteShareFile(MessageParcel &data, MessageParcel &reply);
 };
 } // StorageDaemon
 } // OHOS
