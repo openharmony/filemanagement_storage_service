@@ -215,13 +215,13 @@ int32_t MountManager::MountByUser(int32_t userId)
         ret = HmdfsMount(userId);
     }
 
-    if (!ret) {
+    if (ret != E_OK) {
         LOGE("hmdfs mount error");
         return ret;
     }
 
     ret = SharefsMount(userId);
-    if (!ret) {
+    if (ret != E_OK) {
         LOGE("sharefs mount error");
         return ret;
     }
