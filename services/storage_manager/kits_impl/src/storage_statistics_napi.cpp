@@ -41,6 +41,19 @@ napi_value StorageStatisticsExport(napi_env env, napi_value exports)
     return exports;
 }
 
-NAPI_MODULE(storagestatistics, StorageStatisticsExport)
+static napi_module _module = {
+    .nm_version = 1,
+    .nm_flags = 0,
+    .nm_filename = nullptr,
+    .nm_register_func = StorageStatisticsExport,
+    .nm_modname = "file.storagestatistics",
+    .nm_priv = ((void *)0),
+    .reserved = {0}
+};
+
+extern "C" __attribute__((constructor)) void RegisterModule(void)
+{
+    napi_module_register(&_module);
+}
 } // namespace StorageManager
 } // namespace OHOS
