@@ -75,7 +75,6 @@ ohos_unittest("storage_manager_stub_test") {
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
     "//foundation/filemanagement/storage_service/services/storage_manager/ipc/test/",
     "//foundation/filemanagement/storage_service/services/common/include",
-    "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
     "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
     "//base/security/access_token/interfaces/innerkits/accesstoken/include",
   ]
@@ -107,6 +106,7 @@ ohos_unittest("storage_manager_stub_test") {
     "app_file_service:fileshare_native",
     "c_utils:utils",
     "hiviewdfx_hilog_native:libhilog",
+    "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_core",
     "safwk:system_ability_fwk",
@@ -128,7 +128,6 @@ ohos_unittest("storage_manager_stub_nonpermission_test") {
     "//foundation/filemanagement/storage_service/services/storage_manager/include",
     "//foundation/filemanagement/storage_service/services/storage_manager/ipc/test/",
     "//foundation/filemanagement/storage_service/services/common/include",
-    "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
     "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
     "//base/security/access_token/interfaces/innerkits/accesstoken/include",
   ]
@@ -157,6 +156,7 @@ ohos_unittest("storage_manager_stub_nonpermission_test") {
     "app_file_service:fileshare_native",
     "c_utils:utils",
     "hiviewdfx_hilog_native:libhilog",
+    "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_core",
     "safwk:system_ability_fwk",

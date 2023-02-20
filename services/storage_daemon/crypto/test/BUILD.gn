@@ -43,6 +43,7 @@ ohos_moduletest("CryptoSubTest") {
     "../../crypto:libsdcrypto",
     "//foundation/filemanagement/storage_service/services/storage_daemon/libfscrypt:libfscryptutils",
   ]
+  external_deps = [ "huks:libhukssdk" ]
 }
 
 group("crypto_test") {

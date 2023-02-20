@@ -31,11 +31,6 @@ config("storage_daemon_crypto_config") {
   ]
 }
 
-config("crypto_public_config") {
-  include_dirs =
-      [ "//base/security/huks/interfaces/innerkits/huks_standard/main/include" ]
-}
-
 ohos_static_library("libsdcrypto") {
   sources = [
     "src/base_key.cpp",
@@ -53,7 +48,6 @@ ohos_static_library("libsdcrypto") {
   ]
 
   configs = [ ":storage_daemon_crypto_config" ]
-  public_configs = [ ":crypto_public_config" ]
 
   deps = [
     "//base/security/huks/frameworks/huks_standard/main/os_dependency:libhuks_os_dependency_standard_static",
@@ -65,6 +59,7 @@ ohos_static_library("libsdcrypto") {
   external_deps = [
     "c_utils:utils",
     "hiviewdfx_hilog_native:libhilog",
+    "huks:libhukssdk",
     "init:libbegetutil",
   ]
 

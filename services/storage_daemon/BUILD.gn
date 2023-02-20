@@ -109,6 +109,7 @@ ohos_executable("storage_daemon") {
     "app_file_service:fileshare_native",
     "c_utils:utils",
     "hiviewdfx_hilog_native:libhilog",
+    "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_core",
     "samgr:samgr_proxy",

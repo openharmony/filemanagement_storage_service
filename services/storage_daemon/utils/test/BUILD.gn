@@ -23,7 +23,6 @@ ohos_unittest("file_utils_test") {
 
   include_dirs = [
     "//foundation/filemanagement/storage_service/services/storage_daemon/include",
-    "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
     "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
     "//foundation/filemanagement/storage_service/services/common/include",
   ]
@@ -41,6 +40,7 @@ ohos_unittest("file_utils_test") {
   external_deps = [
     "c_utils:utils",
     "hiviewdfx_hilog_native:libhilog",
+    "huks:libhukssdk",
     "ipc:ipc_core",
   ]
 }
