@@ -63,7 +63,11 @@ ohos_unittest("storage_daemon_test") {
   ]
 
   external_deps = [
+    "ability_base:base",
+    "ability_base:want",
+    "ability_base:zuri",
     "access_token:libaccesstoken_sdk",
+    "app_file_service:fileshare_native",
     "c_utils:utils",
     "hiviewdfx_hilog_native:libhilog",
     "init:libbegetutil",

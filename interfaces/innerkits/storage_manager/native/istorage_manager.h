@@ -69,6 +69,10 @@ public:
                                   const std::vector<uint8_t> &secret) = 0;
     virtual int32_t InactiveUserKey(uint32_t userId) = 0;
     virtual int32_t UpdateKeyContext(uint32_t userId) = 0;
+    
+    // app file share api
+    virtual int32_t CreateShareFile(std::string uri, int32_t tokenID, int32_t flag) = 0;
+    virtual int32_t DeleteShareFile(int32_t tokenId, std::vector<std::string>sharePathList) = 0;
 
     enum {
         PREPARE_ADD_USER = 1,
@@ -105,6 +109,8 @@ public:
         SET_VOL_DESC,
         FORMAT,
         GET_DISK_BY_ID,
+        CREATE_SHARE_FILE,
+        DELETE_SHARE_FILE,
     };
 
     DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.StorageManager.IStorageManager");

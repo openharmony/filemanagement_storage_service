@@ -37,7 +37,8 @@ const std::string HMDFS_SYS_CAP = "const.distributed_file_property.enabled";
 const int32_t HMDFS_VAL_LEN = 6;
 const int32_t HMDFS_TRUE_LEN = 5;
 MountManager::MountManager()
-    : hmdfsDirVec_{{"/data/service/el2/%d/hmdfs", 0711, OID_SYSTEM, OID_SYSTEM},
+    : hmdfsDirVec_{{"/data/service/el2/%d/share", 0711, OID_SYSTEM, OID_SYSTEM},
+                   {"/data/service/el2/%d/hmdfs", 0711, OID_SYSTEM, OID_SYSTEM},
                    {"/data/service/el2/%d/hmdfs/account", 0711, OID_SYSTEM, OID_SYSTEM},
                    {"/data/service/el2/%d/hmdfs/account/files", 02771, OID_USER_DATA_RW, OID_USER_DATA_RW},
                    {"/data/service/el2/%d/hmdfs/account/data", 0711, OID_SYSTEM, OID_SYSTEM},
@@ -50,6 +51,8 @@ MountManager::MountManager()
                    {"/data/service/el2/%d/hmdfs/account/services", 0771, OID_DFS_SHARE, OID_DFS_SHARE}},
       virtualDir_{{"/storage/media/%d", 0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
                   {"/storage/media/%d/local", 0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
+                  {"/mnt/share/", 0711, OID_ROOT, OID_ROOT},
+                  {"/mnt/share/%d/", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/%d/", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/%d/account", 0711, OID_ROOT, OID_ROOT},
@@ -76,6 +79,30 @@ int32_t MountManager::HmdfsTwiceMount(int32_t userId, std::string relativePath)
     if (ret != 0 && errno != EEXIST && errno != EBUSY) {
         LOGE("failed to bind mount, err %{public}d", errno);
         return E_MOUNT;
+    }
+    return E_OK;
+}
+
+int32_t MountManager::SharefsMount(int32_t userId)
+{
+    Utils::MountArgument sharefsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
+    int ret = Mount(sharefsMntArgs.GetShareSrc(), sharefsMntArgs.GetShareDst(), "sharefs",
+                    sharefsMntArgs.GetFlags(), sharefsMntArgs.GetUserIdPara().c_str());
+    if (ret != 0 && errno != EEXIST && errno != EBUSY) {
+        LOGE("failed to mount sharefs, err %{public}d", errno);
+        return E_MOUNT;
+    }
+    return E_OK;
+}
+
+int32_t MountManager::SharefsUMount(int32_t userId)
+{
+    Utils::MountArgument sharefsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
+    int32_t ret = UMount2(sharefsMntArgs.GetShareDst().c_str(), MNT_DETACH);
+    if (ret != E_OK) {
+        LOGE("umount sharefs, errno %{public}d, sharefs dst %{public}s", errno,
+             sharefsMntArgs.GetShareDst().c_str());
+        return E_UMOUNT;
     }
     return E_OK;
 }
@@ -176,17 +203,28 @@ int32_t MountManager::LocalMount(int32_t userId)
 
 int32_t MountManager::MountByUser(int32_t userId)
 {
+    int ret = E_OK;
     if (CreateVirtualDirs(userId) != E_OK) {
         LOGE("create hmdfs virtual dir error");
         return E_PREPARE_DIR;
     }
 
     if (!SupportHmdfs()) {
-        return LocalMount(userId);
+        ret = LocalMount(userId);
     } else {
-        return HmdfsMount(userId);
+        ret = HmdfsMount(userId);
     }
 
+    if (ret != E_OK) {
+        LOGE("hmdfs mount error");
+        return ret;
+    }
+
+    ret = SharefsMount(userId);
+    if (ret != E_OK) {
+        LOGE("sharefs mount error");
+        return ret;
+    }
     return E_OK;
 }
 
@@ -201,6 +239,10 @@ int32_t MountManager::UmountByUser(int32_t userId)
     int32_t count = 0;
     while (count < UMOUNT_RETRY_TIMES) {
         int32_t err = E_OK;
+        err = SharefsUMount(userId);
+        if(err != E_OK) {
+            LOGE("failed to umount sharefs, errno %{public}d", errno);
+        }
         if (!SupportHmdfs()) {
             err = LocalUMount(userId);
         } else {
@@ -211,12 +253,10 @@ int32_t MountManager::UmountByUser(int32_t userId)
         } else if (errno == EBUSY) {
             count++;
             continue;
-        } else {
-            LOGE("failed to umount, errno %{public}d", errno);
-            return E_UMOUNT;
         }
+        LOGE("failed to umount hmdfs, errno %{public}d", errno);
+        return E_UMOUNT;
     }
-
     return E_OK;
 }
 

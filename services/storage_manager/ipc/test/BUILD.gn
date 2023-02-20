@@ -50,6 +50,8 @@ ohos_unittest("storage_manager_proxy_test") {
   external_deps = [
     "ability_base:base",
     "ability_base:want",
+    "ability_base:zuri",
+    "app_file_service:fileshare_native",
     "common_event_service:cesfwk_innerkits",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
@@ -96,9 +98,13 @@ ohos_unittest("storage_manager_stub_test") {
   ]
 
   external_deps = [
+    "ability_base:base",
+    "ability_base:want",
+    "ability_base:zuri",
     "access_token:libaccesstoken_sdk",
     "access_token:libnativetoken",
     "access_token:libtoken_setproc",
+    "app_file_service:fileshare_native",
     "c_utils:utils",
     "hiviewdfx_hilog_native:libhilog",
     "init:libbegetutil",
@@ -144,7 +150,11 @@ ohos_unittest("storage_manager_stub_nonpermission_test") {
   ]
 
   external_deps = [
+    "ability_base:base",
+    "ability_base:want",
+    "ability_base:zuri",
     "access_token:libaccesstoken_sdk",
+    "app_file_service:fileshare_native",
     "c_utils:utils",
     "hiviewdfx_hilog_native:libhilog",
     "init:libbegetutil",
