@@ -240,27 +240,23 @@ int32_t MountManager::UmountByUser(int32_t userId)
     while (count < UMOUNT_RETRY_TIMES) {
         int32_t err = E_OK;
         err = SharefsUMount(userId);
+        if (err != E_OK) {
+            LOGE("failed to umount sharefs, errno %{public}d", errno);
+        }
         if (!SupportHmdfs()) {
             err = LocalUMount(userId);
         } else {
             err = HmdfsUMount(userId);
         }
-        if (errno == EBUSY) {
-            count++;
-            continue;
-        } else {
-            LOGE("failed to umount hmdfs, errno %{public}d", errno);
-            return E_UMOUNT;
-        }
-        if (err != E_OK && err != EBUSY) {
-            LOGE("failed to umount sharefs, errno %{public}d", errno);
-            return E_UMOUNT;
-        }
         if (err == E_OK) {
             break;
+        } else if (errno == EBUSY) {
+            count++;
+            continue;
         }
+        LOGE("failed to umount hmdfs, errno %{public}d", errno);
+        return E_UMOUNT;
     }
-
     return E_OK;
 }
 
