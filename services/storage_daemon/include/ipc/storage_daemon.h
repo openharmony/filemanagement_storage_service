@@ -53,6 +53,10 @@ public:
                                   const std::vector<uint8_t> &secret) override;
     virtual int32_t InactiveUserKey(uint32_t userId) override;
     virtual int32_t UpdateKeyContext(uint32_t userId) override;
+
+    // app file share api
+    virtual int32_t CreateShareFile(std::string uri, int32_t tokenId, int32_t flag) override;
+    virtual int32_t DeleteShareFile(int32_t tokenId, std::vector<std::string>sharePathList) override;
 };
 } // StorageDaemon
 } // OHOS

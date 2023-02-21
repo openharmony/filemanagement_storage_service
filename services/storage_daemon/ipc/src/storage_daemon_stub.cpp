@@ -90,6 +90,12 @@ int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
         case UPDATE_KEY_CONTEXT:
             err = HandleUpdateKeyContext(data, reply);
             break;
+        case CREATE_SHARE_FILE:
+            err = HandleCreateShareFile(data, reply);
+            break;
+        case DELETE_SHARE_FILE:
+            err = HandleDeleteShareFile(data, reply);
+            break;
         default: {
             LOGI(" use IPCObjectStub default OnRemoteRequest");
             err = IPCObjectStub::OnRemoteRequest(code, data, reply, option);
@@ -333,6 +339,34 @@ int32_t StorageDaemonStub::HandleUpdateKeyContext(MessageParcel &data, MessagePa
         return E_WRITE_REPLY_ERR;
     }
 
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleCreateShareFile(MessageParcel &data, MessageParcel &reply)
+{
+    std::string uri = data.ReadString();
+    int32_t tokenId = data.ReadInt32();
+    int32_t flag = data.ReadUint32();
+    int err = CreateShareFile(uri, tokenId, flag);
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleDeleteShareFile(MessageParcel &data, MessageParcel &reply)
+{
+    int32_t tokenId = data.ReadInt32();
+    int32_t length = data.ReadInt32();
+    std::vector<std::string> sharePathList;
+    for (int32_t i = 0; i < length; i++) {
+        std::string path = data.ReadString();
+        sharePathList.emplace_back(path);
+    }
+    int err = DeleteShareFile(tokenId, sharePathList);
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
     return E_OK;
 }
 } // StorageDaemon
