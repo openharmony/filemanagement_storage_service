@@ -24,52 +24,38 @@
 
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "utils/storage_utils.h"
 
 namespace OHOS {
 namespace StorageManager {
-constexpr int32_t DEV_BLOCK_DIR_LEN = 10;
-constexpr int32_t MNT_DIR_LEN = 4;
-constexpr int32_t DATA_DIR_LEN = 5;
-
 StorageTotalStatusService::StorageTotalStatusService() {}
 StorageTotalStatusService::~StorageTotalStatusService() {}
 
 int32_t StorageTotalStatusService::GetSystemSize(int64_t &systemSize)
 {
-    struct mntent *mntent = nullptr;
-    std::unordered_set<std::string> mntSet;
-    std::unique_ptr<FILE, decltype(&endmntent)> mntFile(setmntent("/proc/mounts", "re"), endmntent);
-    if (mntFile.get() == nullptr) {
-        LOGE("enter setmntent is error");
-        return E_ERR;
+    int64_t totalSize = 0;
+    int32_t ret = GetTotalSize(totalSize);
+    if (ret != E_OK) {
+        return ret;
     }
-    while ((mntent = getmntent(mntFile.get())) != nullptr) {
-        if (!mntent) {
-            LOGE("enter getmntent is error");
-            break;
-        }
-        char *strName = mntent->mnt_fsname;
-        char *strDir = mntent->mnt_dir;
-        if (!mntSet.insert(strName).second) {
-            continue;
-        }
-        if (strncmp(strName, PATH_DEV_BLOCK, DEV_BLOCK_DIR_LEN) == 0 && strncmp(strDir, PATH_MNT, MNT_DIR_LEN) != 0 &&
-            strncmp(strDir, PATH_DATA, DATA_DIR_LEN) != 0) {
-            LOGI("mntent::strName is %{public}s, mntent::strDir is %{public}s", strName, strDir);
-            int64_t blkSize;
-            int32_t err = GetSizeOfPath(strDir, SizeType::USED, blkSize);
-            if (err != E_OK) {
-                LOGE("get path %s size err", strDir);
-            }
-            systemSize += blkSize;
-        }
-    }
+    systemSize = GetRoundSize(totalSize) - totalSize;
     return E_OK;
 }
 
 int32_t StorageTotalStatusService::GetTotalSize(int64_t &totalSize)
 {
-    return GetSizeOfPath(PATH_DATA, SizeType::TOTAL, totalSize);
+    int64_t dataSize = 0;
+    int32_t ret = GetSizeOfPath(PATH_DATA, SizeType::TOTAL, dataSize);
+    if (ret != E_OK) {
+        return ret;
+    }
+    int64_t rootSize = 0;
+    ret = GetSizeOfPath(PATH_ROOT, SizeType::TOTAL, rootSize);
+    if (ret != E_OK) {
+        return ret;
+    }
+    totalSize = dataSize + rootSize;
+    return E_OK;
 }
 
 int32_t StorageTotalStatusService::GetFreeSize(int64_t &freeSize)

@@ -13,6 +13,7 @@
 
 import("//build/config/features.gni")
 import("//build/test.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ohos_fuzztest("StorageTotalStatusServiceFuzzTest") {
   module_out_path = "filemanagement/storage_service"
@@ -29,7 +30,8 @@ ohos_fuzztest("StorageTotalStatusServiceFuzzTest") {
     "-fno-omit-frame-pointer",
   ]
   sources = [
-    "//foundation/filemanagement/storage_service/services/storage_manager/storage/src/storage_total_status_service.cpp",
+    "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
+    "${storage_manager_path}/utils/src/storage_utils.cpp",
     "//foundation/filemanagement/storage_service/test/fuzztest/storagetotalstatusservice_fuzzer/storagetotalstatusservice_fuzzer.cpp",
   ]
   defines = [ "STORAGE_LOG_TAG = \"storage_service\"" ]

@@ -26,6 +26,7 @@ namespace StorageManager {
 static const char *PATH_DEV_BLOCK = "/dev/block";
 static const char *PATH_MNT = "/mnt";
 static const char *PATH_DATA = "/data";
+static const char *PATH_ROOT = "/";
 
 enum SizeType {
     TOTAL,
