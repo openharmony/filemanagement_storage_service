@@ -154,6 +154,9 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
         case DELETE_SHARE_FILE:
             err = HandleDeleteShareFile(data, reply);
             break;
+        case SET_BUNDLE_QUOTA:
+            err = HandleSetBundleQuota(data, reply);
+            break;
         default: {
             LOGI("use IPCObjectStub default OnRemoteRequest");
             err = IPCObjectStub::OnRemoteRequest(code, data, reply, option);
@@ -750,6 +753,23 @@ int32_t StorageManagerStub::HandleDeleteShareFile(MessageParcel &data, MessagePa
         sharePathList.emplace_back(path);
     }
     int err = DeleteShareFile(tokenId, sharePathList);
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleSetBundleQuota(MessageParcel &data, MessageParcel &reply)
+{
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+
+    std::string bundleName = data.ReadString();
+    int32_t uid = data.ReadInt32();
+    std::string bundleDataDirPath = data.ReadString();
+    int32_t limitSizeMb = data.ReadInt32();
+    int err = SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }

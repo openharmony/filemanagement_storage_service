@@ -57,6 +57,9 @@ public:
     virtual int32_t CreateShareFile(std::string uri, int32_t tokenId, int32_t flag) override;
     virtual int32_t DeleteShareFile(int32_t tokenId, std::vector<std::string>sharePathList) override;
 
+    virtual int32_t SetBundleQuota(const std::string &bundleName, int32_t uid,
+        const std::string &bundleDataDirPath, int32_t limitSizeMb) override;
+
 private:
     static inline BrokerDelegator<StorageDaemonProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

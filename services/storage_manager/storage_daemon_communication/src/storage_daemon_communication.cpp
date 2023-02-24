@@ -288,5 +288,18 @@ int32_t StorageDaemonCommunication::DeleteShareFile(int32_t tokenId, std::vector
     }
     return storageDaemon_->DeleteShareFile(tokenId, sharePathList);
 }
+
+int32_t StorageDaemonCommunication::SetBundleQuota(const std::string &bundleName, int32_t uid,
+    const std::string &bundleDataDirPath, int32_t limitSizeMb)
+{
+    LOGI("enter");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    return storageDaemon_->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
+}
+
 } // namespace StorageManager
 } // namespace OHOS

@@ -913,6 +913,40 @@ int32_t StorageManagerProxy::DeleteShareFile(int32_t tokenId, std::vector<std::s
 
     return reply.ReadInt32();
 }
+int32_t StorageManagerProxy::SetBundleQuota(const std::string &bundleName, int32_t uid,
+    const std::string &bundleDataDirPath, int32_t limitSizeMb)
+{
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    if (!data.WriteString(bundleName)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    if (!data.WriteInt32(uid)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    if (!data.WriteString(bundleDataDirPath)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    if (!data.WriteInt32(limitSizeMb)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    int err = SendRequest(SET_BUNDLE_QUOTA, data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+
+    return reply.ReadInt32();
+}
 
 int32_t StorageManagerProxy::SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
