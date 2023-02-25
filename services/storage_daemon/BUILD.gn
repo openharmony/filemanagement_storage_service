@@ -213,6 +213,13 @@ ohos_shared_library("storage_common_utils") {
   install_enable = true
 }
 
+ohos_prebuilt_etc("usb_config.para") {
+  source = "usb_config.para"
+  part_name = "storage_service"
+  subsystem_name = "filemanagement"
+  module_install_dir = "etc/param"
+}
+
 group("storage_daemon_third_party") {
   deps = []
   if (storage_service_fstools) {
