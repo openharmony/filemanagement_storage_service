@@ -16,3 +16,7 @@ ability_runtime_kits_path = "${ability_runtime_path}/frameworks/kits"
 declare_args() {
   storage_service_graphic = true
 }
+storage_manager_path =
+    "//foundation/filemanagement/storage_service/services/storage_manager"
+storage_daemon_path =
+    "//foundation/filemanagement/storage_service/services/storage_daemon"

@@ -29,6 +29,7 @@
 #include "system_ability_definition.h"
 #include "user/multi_user_manager_service.h"
 #include "volume/volume_manager_service.h"
+#include "utils/storage_utils.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -115,6 +116,7 @@ int32_t StorageManager::GetTotalSize(int64_t &totalSize)
 {
     LOGI("StorageManger::getTotalSize start");
     int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetTotalSize(totalSize);
+    totalSize = GetRoundSize(totalSize);
     return err;
 }
 

@@ -12,13 +12,15 @@
 # limitations under the License.
 
 import("//build/test.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ohos_unittest("storage_total_status_service_test") {
   module_out_path = "filemanagement/storage_service/storage_manager"
 
   sources = [
-    "//foundation/filemanagement/storage_service/services/storage_manager/storage/src/storage_status_service.cpp",
-    "//foundation/filemanagement/storage_service/services/storage_manager/storage/src/storage_total_status_service.cpp",
+    "${storage_manager_path}/storage/src/storage_status_service.cpp",
+    "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
+    "${storage_manager_path}/utils/src/storage_utils.cpp",
     "storage_total_status_service_test.cpp",
   ]
 
