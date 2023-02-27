@@ -321,5 +321,13 @@ int32_t StorageManager::DeleteShareFile(int32_t tokenId, std::vector<std::string
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     return sdCommunication->DeleteShareFile(tokenId, sharePathList);
 }
+
+int32_t StorageManager::SetBundleQuota(const std::string &bundleName, int32_t uid,
+    const std::string &bundleDataDirPath, int32_t limitSizeMb)
+{
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
+}
 }
 }

@@ -96,6 +96,9 @@ int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
         case DELETE_SHARE_FILE:
             err = HandleDeleteShareFile(data, reply);
             break;
+        case SET_BUNDLE_QUOTA:
+            err = HandleSetBundleQuota(data, reply);
+            break;
         default: {
             LOGI(" use IPCObjectStub default OnRemoteRequest");
             err = IPCObjectStub::OnRemoteRequest(code, data, reply, option);
@@ -369,5 +372,19 @@ int32_t StorageDaemonStub::HandleDeleteShareFile(MessageParcel &data, MessagePar
     }
     return E_OK;
 }
+
+int32_t StorageDaemonStub::HandleSetBundleQuota(MessageParcel &data, MessageParcel &reply)
+{
+    std::string bundleName = data.ReadString();
+    int32_t uid = data.ReadInt32();
+    std::string bundleDataDirPath = data.ReadString();
+    int32_t limitSizeMb = data.ReadInt32();
+    int err = SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+
 } // StorageDaemon
 } // OHOS

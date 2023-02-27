@@ -66,6 +66,8 @@ private:
     // app file share api
     int32_t HandleCreateShareFile(MessageParcel &data, MessageParcel &reply);
     int32_t HandleDeleteShareFile(MessageParcel &data, MessageParcel &reply);
+
+    int32_t HandleSetBundleQuota(MessageParcel &data, MessageParcel &reply);
 };
 } // StorageManager
 } // OHOS

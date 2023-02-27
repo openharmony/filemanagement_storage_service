@@ -87,6 +87,9 @@ public:
     // app file share api
     int32_t CreateShareFile(std::string uri, int32_t tokenId, int32_t flag) override;
     int32_t DeleteShareFile(int32_t tokenId, std::vector<std::string>sharePathList) override;
+
+    int32_t SetBundleQuota(const std::string &bundleName, int32_t uid, const std::string &bundleDataDirPath,
+        int32_t limitSizeMb) override;
 private:
     StorageManager();
     static sptr<StorageManager> instance_;

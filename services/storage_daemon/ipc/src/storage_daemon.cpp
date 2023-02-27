@@ -19,6 +19,7 @@
 #include "disk/disk_manager.h"
 #include "file_share.h"
 #include "file_sharing/file_sharing.h"
+#include "quota/quota_manager.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "user/user_manager.h"
@@ -164,5 +165,12 @@ int32_t StorageDaemon::DeleteShareFile(int32_t tokenId, std::vector<std::string>
 {
     return AppFileService::FileShare::DeleteShareFile(tokenId, sharePathList);
 }
+
+int32_t StorageDaemon::SetBundleQuota(const std::string &bundleName, int32_t uid,
+    const std::string &bundleDataDirPath, int32_t limitSizeMb)
+{
+    return QuotaManager::GetInstance()->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
+}
+
 } // StorageDaemon
 } // OHOS
