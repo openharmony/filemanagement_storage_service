@@ -20,3 +20,5 @@ storage_manager_path =
     "//foundation/filemanagement/storage_service/services/storage_manager"
 storage_daemon_path =
     "//foundation/filemanagement/storage_service/services/storage_daemon"
+storage_interface_path =
+    "//foundation/filemanagement/storage_service/interfaces"

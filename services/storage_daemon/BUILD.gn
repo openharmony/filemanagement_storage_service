@@ -162,9 +162,8 @@ ohos_executable("sdc") {
     "libfscrypt:libfscryptutils",
   ]
 
-  public_deps = [ "//commonlibrary/c_utils/base:utils" ]
-
   external_deps = [
+    "c_utils:utils",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
     "samgr:samgr_proxy",
@@ -195,18 +194,18 @@ ohos_shared_library("storage_common_utils") {
     "./utils/string_utils.cpp",
   ]
 
+  external_deps = [
+    "c_utils:utils",
+    "hiviewdfx_hilog_native:libhilog",
+  ]
+
   if (build_selinux) {
     defines += [ "USE_LIBRESTORECON" ]
     include_dirs +=
         [ "//base/security/selinux/interfaces/policycoreutils/include" ]
 
-    deps = [ "//base/security/selinux:librestorecon" ]
+    external_deps += [ "selinux:librestorecon" ]
   }
-
-  external_deps = [
-    "c_utils:utils",
-    "hiviewdfx_hilog_native:libhilog",
-  ]
 
   subsystem_name = "filemanagement"
   part_name = "storage_service"

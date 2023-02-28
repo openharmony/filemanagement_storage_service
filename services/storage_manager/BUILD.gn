@@ -53,23 +53,13 @@ ohos_shared_library("storage_manager") {
 
   configs = [ ":storage_manager_config" ]
 
-  deps = [
-    "${ability_runtime_path}/frameworks/native/ability/native:abilitykit_native",
-    "${ability_runtime_path}/interfaces/inner_api/dataobs_manager:dataobs_manager",
-    "../../interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
-  ]
-
-  if (storage_service_graphic) {
-    defines += [ "STORAGE_SERVICE_GRAPHIC" ]
-    deps += [
-      "//foundation/multimedia/media_library/frameworks/innerkitsimpl/media_library_helper:media_library",
-      "//foundation/multimedia/media_library/frameworks/innerkitsimpl/media_library_manager:media_library_manager",
-    ]
-  }
+  deps = [ "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy" ]
 
   external_deps = [
     "ability_base:base",
     "ability_base:want",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:dataobs_manager",
     "access_token:libaccesstoken_sdk",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
@@ -82,6 +72,14 @@ ohos_shared_library("storage_manager") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
+
+  if (storage_service_graphic) {
+    defines += [ "STORAGE_SERVICE_GRAPHIC" ]
+    external_deps += [
+      "media_library:media_library",
+      "media_library:media_library_manager",
+    ]
+  }
 
   subsystem_name = "filemanagement"
   part_name = "storage_service"
