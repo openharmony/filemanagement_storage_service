@@ -31,7 +31,7 @@ class StorageStatusService : public NoCopyable  {
     DECLARE_DELAYED_SINGLETON(StorageStatusService);
 
 public:
-    int32_t GetBundleStats(std::string pkgName, BundleStats &bundleStats);
+    int32_t GetBundleStats(const std::string &pkgName, BundleStats &bundleStats);
     int32_t GetUserStorageStats(StorageStats &storageStats);
     int32_t GetUserStorageStats(int32_t userId, StorageStats &storageStats);
     int32_t GetCurrentBundleStats(BundleStats &bundleStats);
