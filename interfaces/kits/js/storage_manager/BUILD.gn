@@ -46,17 +46,15 @@ ohos_shared_library("storagestatistics") {
     "//foundation/filemanagement/storage_service/services/storage_manager/kits_impl/src/storage_statistics_napi.cpp",
   ]
 
-  deps = [
-    "//foundation/arkui/napi:ace_napi",
-    "//foundation/filemanagement/file_api/utils/filemgmt_libn:filemgmt_libn",
-    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
-  ]
+  deps = [ "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy" ]
 
   external_deps = [
     "access_token:libtokenid_sdk",
     "c_utils:utils",
+    "file_api:filemgmt_libn",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
+    "napi:ace_napi",
     "samgr:samgr_proxy",
   ]
 }
@@ -93,17 +91,15 @@ ohos_shared_library("volumemanager") {
     "LOG_DOMAIN = 0xD004300",
   ]
 
-  deps = [
-    "//foundation/arkui/napi:ace_napi",
-    "//foundation/filemanagement/file_api/utils/filemgmt_libn:filemgmt_libn",
-    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
-  ]
+  deps = [ "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy" ]
 
   external_deps = [
     "access_token:libtokenid_sdk",
     "c_utils:utils",
+    "file_api:filemgmt_libn",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
+    "napi:ace_napi",
     "samgr:samgr_proxy",
   ]
 }

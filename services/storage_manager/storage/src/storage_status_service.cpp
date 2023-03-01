@@ -27,6 +27,7 @@
 #include "application_info.h"
 #include "iservice_registry.h"
 #include "system_ability_definition.h"
+#include "utils/storage_utils.h"
 #ifdef STORAGE_SERVICE_GRAPHIC
 #include "media_library_manager.h"
 #include "media_volume.h"
@@ -55,7 +56,7 @@ std::string StorageStatusService::GetCallingPkgName()
     return tokenInfo.bundleName;
 }
 
-int32_t StorageStatusService::GetBundleStats(std::string pkgName, BundleStats &bundleStats)
+int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, BundleStats &bundleStats)
 {
     int userId = GetCurrentUserId();
     LOGD("StorageStatusService::userId is:%d", userId);
@@ -71,7 +72,7 @@ int32_t StorageStatusService::GetUserStorageStats(StorageStats &storageStats)
 int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &storageStats)
 {
     // totalSize
-    int64_t totalSize;
+    int64_t totalSize = 0;
     int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetTotalSize(totalSize);
     if (err != E_OK) {
         LOGE("StorageStatusService::GetUserStorageStats getTotalSize failed");
@@ -92,7 +93,7 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
         return E_BUNDLEMGR_ERROR;
     }
     int64_t appSize = 0;
-    for (auto appInfo : appInfos) {
+    for (const auto& appInfo : appInfos) {
         int64_t bundleSize = 0;
         LOGD("StorageStatusService::GetCurUserStorageStats pkgname is %{public}s", appInfo.name.c_str());
         vector<int64_t> bundleStats;
@@ -126,7 +127,7 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
         return E_MEDIALIBRARY_ERROR;
     }
 #endif
-    storageStats.total_ = totalSize;
+    storageStats.total_ = GetRoundSize(totalSize);
     storageStats.app_ = appSize;
 #ifdef STORAGE_SERVICE_GRAPHIC
     storageStats.audio_ = mediaVol.GetAudiosSize();
