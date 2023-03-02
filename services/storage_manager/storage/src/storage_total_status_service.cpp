@@ -33,12 +33,17 @@ StorageTotalStatusService::~StorageTotalStatusService() {}
 
 int32_t StorageTotalStatusService::GetSystemSize(int64_t &systemSize)
 {
-    int64_t totalSize = 0;
-    int32_t ret = GetTotalSize(totalSize);
+    int64_t roundSize = 0;
+    int32_t ret = GetTotalSize(roundSize);
     if (ret != E_OK) {
         return ret;
     }
-    systemSize = GetRoundSize(totalSize) - totalSize;
+    int64_t totalSize = 0;
+    ret = GetSizeOfPath(PATH_DATA, SizeType::TOTAL, totalSize);
+    if (ret != E_OK) {
+        return ret;
+    }
+    systemSize = roundSize - totalSize;
     return E_OK;
 }
 
@@ -54,7 +59,7 @@ int32_t StorageTotalStatusService::GetTotalSize(int64_t &totalSize)
     if (ret != E_OK) {
         return ret;
     }
-    totalSize = dataSize + rootSize;
+    totalSize = GetRoundSize(dataSize + rootSize);
     return E_OK;
 }
 
