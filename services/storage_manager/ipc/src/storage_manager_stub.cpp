@@ -746,12 +746,11 @@ int32_t StorageManagerStub::HandleDeleteShareFile(MessageParcel &data, MessagePa
         return E_PERMISSION_DENIED;
     }
     int32_t tokenId = data.ReadInt32();
-    int32_t length = data.ReadInt32();
     std::vector<std::string> sharePathList;
-    for (int32_t i = 0; i < length; i++) {
-        std::string path = data.ReadString();
-        sharePathList.emplace_back(path);
+    if (!data.ReadStringVector(&sharePathList)) {
+        return E_WRITE_REPLY_ERR;
     }
+    
     int err = DeleteShareFile(tokenId, sharePathList);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
