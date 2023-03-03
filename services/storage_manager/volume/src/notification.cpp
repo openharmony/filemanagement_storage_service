@@ -30,13 +30,12 @@ namespace StorageManager {
 Notification::Notification() {}
 Notification::~Notification() {}
 
-void Notification::NotifyVolumeChange(int32_t notifyCode, std::string id, std::string diskId,
-    std::string fsUuid, std::string path)
+void Notification::NotifyVolumeChange(int32_t notifyCode, std::shared_ptr<VolumeExternal> volume)
 {
     AAFwk::Want want;
     AAFwk::WantParams wantParams;
-    wantParams.SetParam("id", AAFwk::String::Box(id));
-    wantParams.SetParam("diskId", AAFwk::String::Box(diskId));
+    wantParams.SetParam("id", AAFwk::String::Box(volume->GetId()));
+    wantParams.SetParam("diskId", AAFwk::String::Box(volume->GetDiskId()));
     switch (notifyCode) {
         case VOLUME_REMOVED:
             LOGI("notifycode: VOLUME_REMOVED");
@@ -50,8 +49,9 @@ void Notification::NotifyVolumeChange(int32_t notifyCode, std::string id, std::s
         case VOLUME_MOUNTED:
             LOGI("notifycode: VOLUME_MOUNTED");
             wantParams.SetParam("volumeState", AAFwk::Integer::Box(MOUNTED));
-            wantParams.SetParam("fsUuid", AAFwk::String::Box(fsUuid));
-            wantParams.SetParam("path", AAFwk::String::Box(path));
+            wantParams.SetParam("fsUuid", AAFwk::String::Box(volume->GetUuid()));
+            wantParams.SetParam("path", AAFwk::String::Box(volume->GetPath()));
+            wantParams.SetParam("fsType", AAFwk::Integer::Box(volume->GetFsType()));
             want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_VOLUME_MOUNTED);
             break;
         case VOLUME_BAD_REMOVAL:
