@@ -18,6 +18,7 @@
 
 #include <singleton.h>
 #include <nocopyable.h>
+#include "volume_external.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -31,8 +32,7 @@ enum {
 class Notification final : public NoCopyable {
     DECLARE_DELAYED_SINGLETON(Notification);
 public:
-    void NotifyVolumeChange(int32_t notifyCode, std::string id, std::string diskId,
-        std::string fsUuid, std::string path);
+    void NotifyVolumeChange(int32_t notifyCode, std::shared_ptr<VolumeExternal> volume);
 };
 } // StorageManager
 } // OHOS

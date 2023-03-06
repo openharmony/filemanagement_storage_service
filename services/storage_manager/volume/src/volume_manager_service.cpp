@@ -30,10 +30,9 @@ namespace StorageManager {
     VolumeManagerService::VolumeManagerService() {}
     VolumeManagerService::~VolumeManagerService() {}
 
-    void VolumeManagerService::VolumeStateNotify(int32_t state, string volumeId, string diskId,
-        string fsUuid, string path)
+    void VolumeManagerService::VolumeStateNotify(int32_t state, std::shared_ptr<VolumeExternal> volume)
     {
-        DelayedSingleton<Notification>::GetInstance()->NotifyVolumeChange(state, volumeId, diskId, fsUuid, path);
+        DelayedSingleton<Notification>::GetInstance()->NotifyVolumeChange(state, volume);
     }
 
     void VolumeManagerService::OnVolumeCreated(VolumeCore vc)
@@ -54,7 +53,7 @@ namespace StorageManager {
         if (volumePtr->GetState() != VolumeState::UNMOUNTED) {
             state =  VOLUME_BAD_REMOVAL;
         }
-        VolumeStateNotify(state, volumeId, volumePtr->GetDiskId(), "", "");
+        VolumeStateNotify(state, volumePtr);
         volumeMap_.Erase(volumeId);
     }
 
@@ -84,7 +83,7 @@ namespace StorageManager {
         }
         volumePtr->SetDescription(des);
         volumePtr->SetState(VolumeState::MOUNTED);
-        VolumeStateNotify(VOLUME_MOUNTED, volumeId, volumePtr->GetDiskId(), fsUuid, path);
+        VolumeStateNotify(VOLUME_MOUNTED, volumePtr);
     }
 
     int32_t VolumeManagerService::Mount(std::string volumeId)
@@ -126,12 +125,12 @@ namespace StorageManager {
         std::shared_ptr<StorageDaemonCommunication> sdCommunication;
         sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
         volumePtr->SetState(VolumeState::EJECTING);
-        VolumeStateNotify(VOLUME_EJECT, volumeId, volumePtr->GetDiskId(), "", "");
+        VolumeStateNotify(VOLUME_EJECT, volumePtr);
         int32_t result = sdCommunication->Unmount(volumeId);
         if (result == E_OK) {
             volumePtr->SetState(VolumeState::UNMOUNTED);
             volumePtr->Reset();
-            VolumeStateNotify(VOLUME_UNMOUNTED, volumeId, volumePtr->GetDiskId(), "", "");
+            VolumeStateNotify(VOLUME_UNMOUNTED, volumePtr);
         } else {
             volumePtr->SetState(VolumeState::MOUNTED);
         }

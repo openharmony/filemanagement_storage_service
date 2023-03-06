@@ -127,7 +127,7 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
         return E_MEDIALIBRARY_ERROR;
     }
 #endif
-    storageStats.total_ = GetRoundSize(totalSize);
+    storageStats.total_ = totalSize;
     storageStats.app_ = appSize;
 #ifdef STORAGE_SERVICE_GRAPHIC
     storageStats.audio_ = mediaVol.GetAudiosSize();

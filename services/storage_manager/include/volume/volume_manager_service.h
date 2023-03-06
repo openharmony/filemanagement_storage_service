@@ -41,8 +41,7 @@ public:
     int32_t Format(std::string volumeId, std::string fsType);
 private:
     StorageRlMap<std::string, std::shared_ptr<VolumeExternal>> volumeMap_;
-    void VolumeStateNotify(int32_t state, std::string volumeId,
-        std::string diskId, std::string fsUuid, std::string path);
+    void VolumeStateNotify(int32_t state, std::shared_ptr<VolumeExternal> volume);
     int32_t Check(std::string volumeId);
 };
 } // StorageManager
