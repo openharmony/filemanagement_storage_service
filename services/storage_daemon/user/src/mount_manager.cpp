@@ -240,7 +240,7 @@ int32_t MountManager::UmountByUser(int32_t userId)
     while (count < UMOUNT_RETRY_TIMES) {
         int32_t err = E_OK;
         err = SharefsUMount(userId);
-        if(err != E_OK) {
+        if (err != E_OK) {
             LOGE("failed to umount sharefs, errno %{public}d", errno);
         }
         if (!SupportHmdfs()) {
