@@ -51,12 +51,6 @@ declare_args() {
 
 ohos_executable("storage_daemon") {
   sources = [
-    "../storage_manager/innerkits_impl/src/bundle_stats.cpp",
-    "../storage_manager/innerkits_impl/src/disk.cpp",
-    "../storage_manager/innerkits_impl/src/storage_stats.cpp",
-    "../storage_manager/innerkits_impl/src/volume_core.cpp",
-    "../storage_manager/innerkits_impl/src/volume_external.cpp",
-    "../storage_manager/ipc/src/storage_manager_proxy.cpp",
     "disk/src/disk_config.cpp",
     "disk/src/disk_info.cpp",
     "disk/src/disk_manager.cpp",
@@ -98,6 +92,7 @@ ohos_executable("storage_daemon") {
   deps = [
     ":sdc",
     ":storage_common_utils",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
     "crypto:libsdcrypto",
     "libfscrypt:libfscryptutils",
   ]
@@ -139,13 +134,6 @@ config("sdc_config") {
 
 ohos_executable("sdc") {
   sources = [
-    "../storage_manager/client/storage_manager_client.cpp",
-    "../storage_manager/innerkits_impl/src/bundle_stats.cpp",
-    "../storage_manager/innerkits_impl/src/disk.cpp",
-    "../storage_manager/innerkits_impl/src/storage_stats.cpp",
-    "../storage_manager/innerkits_impl/src/volume_core.cpp",
-    "../storage_manager/innerkits_impl/src/volume_external.cpp",
-    "../storage_manager/ipc/src/storage_manager_proxy.cpp",
     "client/storage_daemon_client.cpp",
     "ipc/src/storage_daemon_proxy.cpp",
     "sdc.cpp",
@@ -160,6 +148,7 @@ ohos_executable("sdc") {
 
   deps = [
     ":storage_common_utils",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
     "libfscrypt:libfscryptutils",
   ]
 

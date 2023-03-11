@@ -18,8 +18,7 @@
 #include <iservice_registry.h>
 #include <system_ability_definition.h>
 
-#include "ipc/storage_manager.h"
-#include "ipc/storage_manager_proxy.h"
+#include "storage_manager_proxy.h"
 #include "ipc_skeleton.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"

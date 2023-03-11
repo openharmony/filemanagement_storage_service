@@ -162,6 +162,9 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeCreated_0000, 
     VolumeCore vc(volumeId, type, diskId);
     if (vmService != nullptr) {
         vmService->OnVolumeCreated(vc);
+        VolumeExternal ve;
+        int32_t res = vmService->GetVolumeById(volumeId, ve);
+        EXPECT_EQ(res, E_OK);
         vmService->OnVolumeDestroyed(volumeId);
     }
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_OnVolumeCreated_0000";
@@ -181,13 +184,16 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeMounted_0000, 
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_OnVolumeMounted_0000";
     std::shared_ptr<VolumeManagerService> vmService =
         DelayedSingleton<VolumeManagerService>::GetInstance();
-    std::string volumeId = "";
+    std::string volumeId = "vol-1-5";
     int32_t fsType = 1;
     std::string fsUuid = "";
     std::string path = "";
     std::string description = "";
     if (vmService != nullptr) {
         vmService->OnVolumeMounted(volumeId, fsType, fsUuid, path, description);
+        VolumeExternal ve;
+        int32_t res = vmService->GetVolumeById(volumeId, ve);
+        EXPECT_EQ(res, E_NON_EXIST);
     }
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_OnVolumeMounted_0000";
 }
@@ -206,9 +212,12 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDestroyed_0000
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_OnVolumeDestroyed_0000";
     std::shared_ptr<VolumeManagerService> vmService =
         DelayedSingleton<VolumeManagerService>::GetInstance();
-    std::string volumeId = "";
+    std::string volumeId = "vol-1-5";
     if (vmService != nullptr) {
         vmService->OnVolumeDestroyed(volumeId);
+        VolumeExternal ve;
+        int32_t res = vmService->GetVolumeById(volumeId, ve);
+        EXPECT_EQ(res, E_NON_EXIST);
     }
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_OnVolumeDestroyed_0000";
 }

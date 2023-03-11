@@ -19,7 +19,7 @@
 #include "iremote_proxy.h"
 #include "istorage_manager.h"
 #include "ipc/storage_manager.h"
-#include "ipc/storage_manager_proxy.h"
+#include "storage_manager_proxy.h"
 
 namespace OHOS {
 namespace StorageManager {

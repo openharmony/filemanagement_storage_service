@@ -16,7 +16,7 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
-#include "ipc/storage_manager_proxy.h"
+#include "storage_manager_proxy.h"
 #include "ipc/storage_manager_stub.h"
 #include "storage_manager_stub_mock.h"
 
