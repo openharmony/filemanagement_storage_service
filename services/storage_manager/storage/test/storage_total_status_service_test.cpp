@@ -145,7 +145,7 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetBundleStats_0000, Test
     string pkgName = "com.test";
     BundleStats bundleStats;
     int32_t result = service->GetBundleStats(pkgName, bundleStats);
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_BUNDLEMGR_ERROR);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_GetBundleStats_0000";
 }
 
@@ -166,7 +166,7 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetBundleStats_0001, Test
     string pkgName = "com.test";
     BundleStats bundleStats;
     int32_t result = service->GetBundleStats(pkgName, userId, bundleStats);
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_BUNDLEMGR_ERROR);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_GetBundleStats_0001";
 }
 

@@ -77,7 +77,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_PrepareAddUser_000
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_PrepareAddUser_0000";
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t userId = 101;
+    int32_t userId = 121;
     uint32_t flag = 3;
     int32_t result = -1;
     if (sdCommunication != nullptr) {
