@@ -35,7 +35,7 @@ int32_t VolumeInfo::Create(const std::string volId, const std::string diskId, de
     mountFlags_ = 0;
     userIdOwner_ = 0;
 
-    std::string key = "persist.filemanagement.usb.readonly";
+    std::string key = "usb.readonly";
     int handle = static_cast<int>(FindParameter(key.c_str()));
     if (handle != -1) {
         char rdOnlyEnable[255] = {"false"};
