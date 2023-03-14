@@ -220,20 +220,6 @@ ohos_prebuilt_etc("usb_config.para") {
   module_install_dir = "etc/param"
 }
 
-ohos_prebuilt_etc("usb_config.para.dac") {
-  source = "usb_config.para.dac"
-  part_name = "storage_service"
-  subsystem_name = "filemanagement"
-  module_install_dir = "etc/param"
-}
-
-group("storage_daemon_usb_param") {
-  deps = [
-    ":usb_config.para",
-    ":usb_config.para.dac",
-  ]
-}
-
 group("storage_daemon_third_party") {
   deps = []
   if (storage_service_fstools) {
