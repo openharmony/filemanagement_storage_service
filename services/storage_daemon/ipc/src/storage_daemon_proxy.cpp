@@ -505,15 +505,8 @@ int32_t StorageDaemonProxy::DeleteShareFile(int32_t tokenId, std::vector<std::st
         return E_WRITE_PARCEL_ERR;
     }
 
-    size_t length = sharePathList.size();
-    if (!data.WriteUint32(length)) {
+    if (!data.WriteStringVector(sharePathList)) {
         return E_WRITE_PARCEL_ERR;
-    }
-
-    for (auto &sharePath : sharePathList) {
-        if (!data.WriteString(sharePath)) {
-            return E_WRITE_PARCEL_ERR;
-        }
     }
 
     int err = SendRequest(DELETE_SHARE_FILE, data, reply, option);
