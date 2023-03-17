@@ -439,5 +439,30 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_UpdateKeyContext_001, Te
 
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_UpdateKeyContext_001 end";
 }
+
+/**
+ * @tc.name: StorageDaemonProxyTest_SetBundleQuota_001
+ * @tc.desc: Verify the SetBundleQuota function.
+ * @tc.type: FUNC
+ * @tc.require: AR000HSKSO
+ */
+HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_SetBundleQuota_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_SetBundleQuota_001 start";
+
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
+    string bundleName = "com.ohos.bundleName-0-1";
+    string bundleDataDirPath = "/data/app/el2/100/base/" + bundleName;
+    int32_t uid = 20000000;
+    int32_t limitSizeMb = 1000;
+    int32_t ret = proxy_->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
+    ASSERT_TRUE(ret == E_OK);
+    ASSERT_TRUE(IStorageDaemon::SET_BUNDLE_QUOTA == mock_->code_);
+
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_SetBundleQuota_001 end";
+}
+
 } // STORAGE_DAEMON
 } // OHOS

@@ -1,0 +1,50 @@
+# Copyright (c) 2023 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/test.gni")
+
+ROOT_DIR = "../../.."
+
+ohos_unittest("quota_manager_test") {
+  module_out_path = "filemanagement/storage_service/storage_daemon"
+
+  defines = [ "STORAGE_LOG_TAG = \"StorageDaemon\"" ]
+
+  include_dirs = [
+    "$ROOT_DIR/common/include",
+    "$ROOT_DIR/storage_daemon/include",
+    "$ROOT_DIR/storage_manager/include",
+  ]
+
+  sources = [
+    "$ROOT_DIR/storage_daemon/quota/quota_manager.cpp",
+    "$ROOT_DIR/storage_daemon/quota/test/quota_manager_test.cpp",
+  ]
+
+  deps = [
+    "$ROOT_DIR/storage_daemon:storage_common_utils",
+    "//third_party/googletest:gtest_main",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "hiviewdfx_hilog_native:libhilog",
+    "init:libbegetutil",
+    "ipc:ipc_core",
+  ]
+}
+
+group("storage_daemon_quota_test") {
+  testonly = true
+  deps = [ ":quota_manager_test" ]
+}
