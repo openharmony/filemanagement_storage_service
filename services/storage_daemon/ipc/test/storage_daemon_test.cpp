@@ -403,5 +403,26 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_SetVolumeDescripti
     EXPECT_TRUE(ret == E_NON_EXIST);
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_SetVolumeDescription_001 end";
 }
+
+/**
+ * @tc.name: Storage_Manager_StorageDaemonTest_SetBundleQuota_001
+ * @tc.desc: check the SetBundleQuota function
+ * @tc.type: FUNC
+ * @tc.require: AR000HSKSO
+ */
+HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_SetBundleQuota_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_SetBundleQuota_001 start";
+
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+    std::string bundleName = "com.ohos.bundleName-0-1";
+    std::string bundleDataDirPath = "/data/app/el2/100/base/" + bundleName;
+    int32_t uid = 20000000;
+    int32_t limitSizeMb = 1000;
+    auto ret = storageDaemon_->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
+    EXPECT_TRUE(ret == E_SYS_CALL);
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_SetBundleQuota_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS
