@@ -208,7 +208,7 @@ Acl AclFromMode(const std::string &file)
 }
 } // anonymous namespace
 
-int AclSetDefault(const std::string &targetFile, const std::string &entryTxt)
+int AclSetAttribution(const std::string &targetFile, const std::string &entryTxt, const char *aclAttrName)
 {
     if (!IsDir(targetFile)) {
         LOGE("Failed to confirm %{private}s is a directory: %{public}s",
@@ -244,12 +244,24 @@ int AclSetDefault(const std::string &targetFile, const std::string &entryTxt)
         LOGE("Failed to serialize ACL into binary: %{public}s", std::strerror(errno));
         return -1;
     }
-    if (setxattr(targetFile.c_str(), ACL_XATTR_DEFAULT, buf, bufSize, 0) == -1) {
+    if (setxattr(targetFile.c_str(), aclAttrName, buf, bufSize, 0) == -1) {
         LOGE("Failed to write into file's xattr: %{public}s", std::strerror(errno));
         return -1;
     }
-
     return 0;
 }
+
+int AclSetDefault(const std::string &targetFile, const std::string &entryTxt)
+{
+    return AclSetAttribution(targetFile,entryTxt,ACL_XATTR_DEFAULT);
+}
+
+
+
+int AclSetAccess(const std::string &targetFile, const std::string &entryTxt)
+{
+    return AclSetAttribution(targetFile,entryTxt,ACL_XATTR_ACCESS);
+}
+
 } // namespace StorageDaemon
 } // namespace OHOS

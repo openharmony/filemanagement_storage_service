@@ -1,0 +1,55 @@
+# Copyright (c) 2023 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/ohos.gni")
+import("//build/ohos_var.gni")
+
+config("public_config") {
+  include_dirs = [ "." ]
+}
+
+config("private_config") {
+  include_dirs = [
+    "//foundation/filemanagement/storage_service/services/storage_manager/include",
+    "//foundation/filemanagement/storage_service/services/storage_daemon/include",
+    "//foundation/filemanagement/storage_service/services/common/include",
+  ]
+}
+
+ohos_shared_library("storage_manager_acl") {
+  sources = [
+    "//foundation/filemanagement/storage_service/services/storage_daemon/file_sharing/src/acl.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_daemon/file_sharing/src/setacl.cpp",
+    "//foundation/filemanagement/storage_service/services/storage_daemon/utils/file_utils.cpp",
+  ]
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageManager\"",
+    "LOG_DOMAIN = 0xD004300",
+  ]
+
+  configs = [ ":private_config" ]
+  public_configs = [ ":public_config" ]
+
+  external_deps = [
+    "hiviewdfx_hilog_native:libhilog",
+    "ipc:ipc_core",
+  ]
+  public_deps = [
+    "//commonlibrary/c_utils/base:utils",
+    "//foundation/communication/ipc/interfaces/innerkits/ipc_core:ipc_core",
+  ]
+
+  part_name = "storage_service"
+  subsystem_name = "filemanagement"
+}

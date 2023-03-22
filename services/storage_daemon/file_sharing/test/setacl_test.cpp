@@ -22,6 +22,7 @@
 
 #include "file_sharing/acl.h"
 #include "utils/file_utils.h"
+#include "storage_acl.h"
 
 using namespace testing::ext;
 using namespace OHOS::StorageDaemon;
@@ -182,5 +183,127 @@ HWTEST_F(SetAclTest, SetAclTest_003, TestSize.Level1)
     EXPECT_TRUE(rc == 0) << "it should succeed";
 
     GTEST_LOG_(INFO) << "SetAclTest_003 ends";
+}
+
+/**
+ * @tc.name: SetAclTest_004
+ * @tc.desc: AclSetAccess() on a regular file should fail.
+ * @tc.type: FUNC
+ * @tc.require: AR000I1L48
+ */
+HWTEST_F(SetAclTest, SetAclTest_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "SetAclTest_004 starts";
+
+    mode_t mode = S_IRWXU | S_IRWXG | S_IXOTH; // 0771
+    int fd = creat(PATH_TEST.c_str(), mode);
+    ASSERT_TRUE(fd > 0) << "file creation failed";
+
+    int rc = AclSetAccess(PATH_TEST, "not care");
+    EXPECT_TRUE(rc == -1) << "path is not a dir";
+
+    GTEST_LOG_(INFO) << "SetAclTest_004 ends";
+}
+
+
+/**
+ * @tc.name: SetAclTest_005
+ * @tc.desc: AclSetAccess() with wrong ACL should fail.
+ * @tc.type: FUNC
+ * @tc.require: AR000I1L48
+ */
+HWTEST_F(SetAclTest, SetAclTest_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "SetAclTest_005 starts";
+
+    mode_t mode = S_IRWXU | S_IRWXG | S_IXOTH; // 0771
+    int rc = MkDir(PATH_TEST, mode);
+    ASSERT_TRUE(rc == 0) << "directory creation failed";
+
+    rc = AclSetAccess(PATH_TEST, "u:rot:rw");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+
+    rc = AclSetAccess(PATH_TEST, "g:rot:rw");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+
+    rc = AclSetAccess(PATH_TEST, "o:rot:rw");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+
+    rc = AclSetAccess(PATH_TEST, "o:root:r-x");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+    rc = AclSetAccess(PATH_TEST, std::string("o:") + randomId + ":r-x");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+
+    rc = AclSetAccess(PATH_TEST, "m:root:--x");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+    rc = AclSetAccess(PATH_TEST, std::string("m:") + randomId + ":--x");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+
+    rc = AclSetAccess(PATH_TEST, "w:root:rw");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+    rc = AclSetAccess(PATH_TEST, std::string("w:") + randomId + ":rw");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+
+    rc = AclSetAccess(PATH_TEST, "u:root;rw");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+    rc = AclSetAccess(PATH_TEST, std::string("u:") + randomId + ";rw");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+
+    rc = AclSetAccess(PATH_TEST, "u;root;rw");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+    rc = AclSetAccess(PATH_TEST, std::string("u;") + randomId + ";rw");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+
+    rc = AclSetAccess(PATH_TEST, "u:root:");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+    rc = AclSetAccess(PATH_TEST, std::string("u:") + randomId + ":");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+
+    rc = AclSetAccess(PATH_TEST, "u::rv-");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+
+    rc = AclSetAccess(PATH_TEST, "g::v--");
+    EXPECT_TRUE(rc == -1) << "ACL entry is wrong";
+
+    GTEST_LOG_(INFO) << "SetAclTest_005 ends";
+}
+
+
+/**
+ * @tc.name: SetAclTest_006
+ * @tc.desc: AclSetAccess() on a regular file should fail.
+ * @tc.type: FUNC
+ * @tc.require: AR000I1L48
+ */
+HWTEST_F(SetAclTest, SetAclTest_006, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "SetAclTest_006 starts";
+
+    mode_t mode = S_IRWXU | S_IRWXG | S_IXOTH; // 0771
+    int rc = MkDir(PATH_TEST, mode);
+    ASSERT_TRUE(rc == 0) << "directory creation failed";
+
+    rc = AclSetAccess(PATH_TEST, "u::rwx");
+    EXPECT_TRUE(rc == 0) << "it should succeed";
+    rc = AclSetAccess(PATH_TEST, "g::rwx");
+    EXPECT_TRUE(rc == 0) << "it should succeed";
+
+    rc = AclSetAccess(PATH_TEST, "u:root:rwx");
+    EXPECT_TRUE(rc == 0) << "it should succeed";
+    rc = AclSetAccess(PATH_TEST, std::string("u:") + randomId + ":rwx");
+    EXPECT_TRUE(rc == 0) << "it should succeed";
+
+    rc = AclSetAccess(PATH_TEST, "g:root:--x");
+    EXPECT_TRUE(rc == 0) << "it should succeed";
+    rc = AclSetAccess(PATH_TEST, std::string("g:") + randomId + ":--x");
+    EXPECT_TRUE(rc == 0) << "it should succeed";
+
+    rc = AclSetAccess(PATH_TEST, "o::-");
+    EXPECT_TRUE(rc == 0) << "it should succeed";
+
+    rc = AclSetAccess(PATH_TEST, "m::rwx");
+    EXPECT_TRUE(rc == 0) << "it should succeed";
+
+    GTEST_LOG_(INFO) << "SetAclTest_006 ends";
 }
 }
