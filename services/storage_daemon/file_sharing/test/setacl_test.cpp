@@ -205,7 +205,6 @@ HWTEST_F(SetAclTest, SetAclTest_004, TestSize.Level1)
     GTEST_LOG_(INFO) << "SetAclTest_004 ends";
 }
 
-
 /**
  * @tc.name: SetAclTest_005
  * @tc.desc: AclSetAccess() with wrong ACL should fail.
@@ -267,7 +266,6 @@ HWTEST_F(SetAclTest, SetAclTest_005, TestSize.Level1)
 
     GTEST_LOG_(INFO) << "SetAclTest_005 ends";
 }
-
 
 /**
  * @tc.name: SetAclTest_006

@@ -253,15 +253,12 @@ int AclSetAttribution(const std::string &targetFile, const std::string &entryTxt
 
 int AclSetDefault(const std::string &targetFile, const std::string &entryTxt)
 {
-    return AclSetAttribution(targetFile,entryTxt,ACL_XATTR_DEFAULT);
+    return AclSetAttribution(targetFile, entryTxt, ACL_XATTR_DEFAULT);
 }
-
-
 
 int AclSetAccess(const std::string &targetFile, const std::string &entryTxt)
 {
-    return AclSetAttribution(targetFile,entryTxt,ACL_XATTR_ACCESS);
+    return AclSetAttribution(targetFile, entryTxt, ACL_XATTR_ACCESS);
 }
-
 } // namespace StorageDaemon
 } // namespace OHOS
