@@ -20,17 +20,18 @@ config("public_config") {
 
 config("private_config") {
   include_dirs = [
-    "//foundation/filemanagement/storage_service/services/storage_manager/include",
-    "//foundation/filemanagement/storage_service/services/storage_daemon/include",
-    "//foundation/filemanagement/storage_service/services/common/include",
+    "../../../../services/storage_manager/include",
+    "../../../../services/storage_manager/include",
+    "../../../../services/storage_daemon/include",
+    "../../../../services/common/include",
   ]
 }
 
 ohos_shared_library("storage_manager_acl") {
   sources = [
-    "//foundation/filemanagement/storage_service/services/storage_daemon/file_sharing/src/acl.cpp",
-    "//foundation/filemanagement/storage_service/services/storage_daemon/file_sharing/src/setacl.cpp",
-    "//foundation/filemanagement/storage_service/services/storage_daemon/utils/file_utils.cpp",
+    "../../../../services/storage_daemon/file_sharing/src/acl.cpp",
+    "../../../../services/storage_daemon/file_sharing/src/setacl.cpp",
+    "../../../../services/storage_daemon/utils/file_utils.cpp",
   ]
 
   defines = [
@@ -47,8 +48,8 @@ ohos_shared_library("storage_manager_acl") {
   ]
 
   public_deps = [
-    "//commonlibrary/c_utils/base:utils",
-    "//foundation/communication/ipc/interfaces/innerkits/ipc_core:ipc_core",
+    "base:utils",
+    "ipc:ipc_core",
   ]
 
   part_name = "storage_service"
