@@ -17,7 +17,7 @@
 
 #include <iosfwd>
 #include <set>
-#include "__functional_base"
+#include <functional>
 
 namespace OHOS {
 namespace StorageDaemon {
