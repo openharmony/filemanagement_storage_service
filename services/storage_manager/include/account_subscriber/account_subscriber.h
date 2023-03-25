@@ -15,6 +15,9 @@
 #ifndef STORAGE_MANAGER_ACCOUNT_SUBSCRIBER_H
 #define STORAGE_MANAGER_ACCOUNT_SUBSCRIBER_H
 
+#include <mutex>
+#include <unordered_map>
+
 #include "common_event_manager.h"
 #include "common_event_subscribe_info.h"
 #include "common_event_subscriber.h"
@@ -24,6 +27,11 @@
 
 namespace OHOS {
 namespace StorageManager {
+enum {
+    USER_UNLOCK_BIT,
+    USER_SWITCH_BIT
+};
+
 class AccountSubscriber : public EventFwk::CommonEventSubscriber {
 public:
     AccountSubscriber() = default;
@@ -38,6 +46,10 @@ public:
 
 private:
     static std::shared_ptr<DataShare::DataShareHelper> mediaShare_;
+    std::mutex mutex_;
+
+    int32_t userId_;
+    std::unordered_map<int32_t, uint32_t> userRecord_;
 };
 }  // namespace StorageManager
 }  // namespace OHOS
