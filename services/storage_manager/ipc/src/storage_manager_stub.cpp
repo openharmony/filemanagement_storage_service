@@ -657,6 +657,7 @@ int32_t StorageManagerStub::HandleUpdateUserAuth(MessageParcel &data, MessagePar
         return E_PERMISSION_DENIED;
     }
     uint32_t userId = data.ReadUint32();
+    uint64_t secureUid = data.ReadUint64();
 
     std::vector<uint8_t> token;
     std::vector<uint8_t> oldSecret;
@@ -665,7 +666,7 @@ int32_t StorageManagerStub::HandleUpdateUserAuth(MessageParcel &data, MessagePar
     data.ReadUInt8Vector(&oldSecret);
     data.ReadUInt8Vector(&newSecret);
 
-    int32_t err = UpdateUserAuth(userId, token, oldSecret, newSecret);
+    int32_t err = UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
     if (!reply.WriteInt32(err)) {
         LOGE("Write reply error code failed");
         return E_WRITE_REPLY_ERR;

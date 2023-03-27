@@ -197,15 +197,7 @@ static int AppendSecureAccessParams(const UserAuth &auth, HksParamSet *paramSet)
     }
 
     LOGI("append the secure access params when generate key");
-    HksUserAuthToken tokenStruct;
-    auto ret = memcpy_s(&tokenStruct, sizeof(tokenStruct), auth.token.data.get(), auth.token.size);
-    if (ret != EOK) {
-        LOGE("memcpy_s error, ret=%{public}d, dstSize=%{public}u, srcSize=%{public}u", ret,
-            (uint32_t)sizeof(tokenStruct), auth.token.size);
-        return HKS_ERROR_BUFFER_TOO_SMALL;
-    }
-    uint64_t secureUid = tokenStruct.secureUid;
-    uint64_t enrollId = tokenStruct.enrolledId;
+    uint64_t secureUid = auth.secureUid;
 
     HksParam param[] = {
         { .tag = HKS_TAG_USER_AUTH_TYPE, .uint32Param = HKS_USER_AUTH_TYPE_PIN },
@@ -214,10 +206,6 @@ static int AppendSecureAccessParams(const UserAuth &auth, HksParamSet *paramSet)
         { .tag = HKS_TAG_USER_AUTH_SECURE_UID,
           .blob =
             { sizeof(secureUid), (uint8_t *)&secureUid }
-        },
-        { .tag = HKS_TAG_USER_AUTH_ENROLL_ID_INFO,
-          .blob =
-            { sizeof(enrollId), (uint8_t *)&enrollId }
         },
         { .tag = HKS_TAG_AUTH_TIMEOUT,
           .uint32Param = 30 // token timeout is 30 seconds when no challenge
@@ -355,6 +343,8 @@ static int AppendNonceAadToken(KeyContext &ctx, const UserAuth &auth, HksParamSe
     ctx.nonce = HashAndClip("NONCE SHA512 prefix", auth.secret, CRYPTO_AES_NONCE_LEN);
     ctx.aad = HashAndClip("AAD SHA512 prefix", ctx.secDiscard, CRYPTO_AES_AAD_LEN);
     HksParam addParam[] = {
+        { .tag = HKS_TAG_USER_AUTH_TYPE, .uint32Param = HKS_USER_AUTH_TYPE_PIN },
+        { .tag = HKS_TAG_KEY_AUTH_ACCESS_TYPE, .uint32Param = HKS_AUTH_ACCESS_INVALID_CLEAR_PASSWORD },
         { .tag = HKS_TAG_NONCE,
           .blob =
             { ctx.nonce.size, ctx.nonce.data.get() }

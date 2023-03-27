@@ -131,12 +131,12 @@ int32_t StorageDaemon::DeleteUserKeys(uint32_t userId)
     return KeyManager::GetInstance()->DeleteUserKeys(userId);
 }
 
-int32_t StorageDaemon::UpdateUserAuth(uint32_t userId,
+int32_t StorageDaemon::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                                       const std::vector<uint8_t> &token,
                                       const std::vector<uint8_t> &oldSecret,
                                       const std::vector<uint8_t> &newSecret)
 {
-    return KeyManager::GetInstance()->UpdateUserAuth(userId, token, oldSecret, newSecret);
+    return KeyManager::GetInstance()->UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
 }
 
 int32_t StorageDaemon::ActiveUserKey(uint32_t userId,

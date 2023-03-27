@@ -157,6 +157,7 @@ struct UserAuth {
     // when secure access enabled, token is needed to authenticate the user
     KeyBlob token;
     KeyBlob secret;
+    uint64_t secureUid { 0 };
 };
 } // namespace StorageDaemon
 } // namespace OHOS

@@ -355,7 +355,7 @@ int32_t StorageDaemonProxy::DeleteUserKeys(uint32_t userId)
     return reply.ReadInt32();
 }
 
-int32_t StorageDaemonProxy::UpdateUserAuth(uint32_t userId,
+int32_t StorageDaemonProxy::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                                            const std::vector<uint8_t> &token,
                                            const std::vector<uint8_t> &oldSecret,
                                            const std::vector<uint8_t> &newSecret)
@@ -369,6 +369,9 @@ int32_t StorageDaemonProxy::UpdateUserAuth(uint32_t userId,
     }
 
     if (!data.WriteUint32(userId)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+    if (!data.WriteUint64(secureUid)) {
         return E_WRITE_PARCEL_ERR;
     }
     if (!data.WriteUInt8Vector(token)) {

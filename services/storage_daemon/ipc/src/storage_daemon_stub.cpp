@@ -289,6 +289,7 @@ int32_t StorageDaemonStub::HandleDeleteUserKeys(MessageParcel &data, MessageParc
 int32_t StorageDaemonStub::HandleUpdateUserAuth(MessageParcel &data, MessageParcel &reply)
 {
     uint32_t userId = data.ReadUint32();
+    uint64_t secureUid = data.ReadUint64();
 
     std::vector<uint8_t> token;
     std::vector<uint8_t> oldSecret;
@@ -297,7 +298,7 @@ int32_t StorageDaemonStub::HandleUpdateUserAuth(MessageParcel &data, MessageParc
     data.ReadUInt8Vector(&oldSecret);
     data.ReadUInt8Vector(&newSecret);
 
-    int err = UpdateUserAuth(userId, token, oldSecret, newSecret);
+    int err = UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }

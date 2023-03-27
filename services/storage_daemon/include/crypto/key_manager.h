@@ -51,7 +51,7 @@ public:
     int InitGlobalUserKeys(void);
     int GenerateUserKeys(unsigned int user, uint32_t flags);
     int DeleteUserKeys(unsigned int user);
-    int UpdateUserAuth(unsigned int user,
+    int UpdateUserAuth(unsigned int user, uint64_t secureUid,
                        const std::vector<uint8_t> &token,
                        const std::vector<uint8_t> &oldSecret,
                        const std::vector<uint8_t> &newSecret);
