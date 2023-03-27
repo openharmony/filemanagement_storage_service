@@ -36,7 +36,7 @@ namespace StorageDaemon {
 constexpr uint32_t CRYPTO_KEY_SECDISC_SIZE = 16384;
 constexpr uint32_t CRYPTO_KEY_ALIAS_SIZE = 16;
 constexpr uint32_t CRYPTO_AES_AAD_LEN = 16;
-constexpr uint32_t CRYPTO_AES_NONCE_LEN = 64;
+constexpr uint32_t CRYPTO_AES_NONCE_LEN = 12;
 constexpr uint32_t CRYPTO_AES_256_XTS_KEY_SIZE = 64;
 constexpr uint32_t CRYPTO_KEY_SHIELD_MAX_SIZE = 2048;
 constexpr uint32_t CRYPTO_AES_256_KEY_ENCRYPTED_SIZE = 80;

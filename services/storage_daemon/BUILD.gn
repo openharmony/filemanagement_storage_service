@@ -116,6 +116,11 @@ ohos_executable("storage_daemon") {
     "samgr:samgr_proxy",
   ]
 
+  ldflags = [
+    "-Wl,-z,max-page-size=4096",
+    "-Wl,-z,separate-code",
+  ]
+
   subsystem_name = "filemanagement"
   part_name = "storage_service"
   install_enable = true
