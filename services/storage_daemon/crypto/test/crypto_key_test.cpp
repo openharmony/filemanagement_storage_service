@@ -804,9 +804,9 @@ HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys, TestSize.Level1)
     EXPECT_EQ(-EEXIST, KeyManager::GetInstance()->GenerateUserKeys(userId, 0)); // key existed
     EXPECT_EQ(0, KeyManager::GetInstance()->SetDirectoryElPolicy(userId, EL1_KEY, {{userId, USER_EL1_DIR}}));
     EXPECT_EQ(0, KeyManager::GetInstance()->SetDirectoryElPolicy(userId, EL2_KEY, {{userId, USER_EL2_DIR}}));
-    EXPECT_EQ(0, KeyManager::GetInstance()->UpdateUserAuth(userId, {}, {}, {}));
+    EXPECT_EQ(0, KeyManager::GetInstance()->UpdateUserAuth(userId, 0, {}, {}, {}));
     EXPECT_EQ(0, KeyManager::GetInstance()->UpdateKeyContext(userId));
-    KeyManager::GetInstance()->UpdateUserAuth(userId, {'t', 'o', 'k', 'e', 'n'}, {}, {'s', 'e', 'c', 'r', 'e', 't'});
+    KeyManager::GetInstance()->UpdateUserAuth(userId, 0, {'t', 'o', 'k', 'e', 'n'}, {}, {'s', 'e', 'c', 'r', 'e', 't'});
     EXPECT_EQ(-EFAULT, KeyManager::GetInstance()->UpdateKeyContext(userId)); // no need to update keycontext
     KeyManager::GetInstance()->InActiveUserKey(userId);                      // may fail on some platforms
     EXPECT_EQ(0, KeyManager::GetInstance()->ActiveUserKey(userId, {}, {}));
@@ -821,7 +821,7 @@ HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys, TestSize.Level1)
     EXPECT_EQ(-ENOENT, KeyManager::GetInstance()->SetDirectoryElPolicy(userId, EL2_KEY, {{userId, USER_EL2_DIR}}));
     EXPECT_EQ(0, KeyManager::GetInstance()->SetDirectoryElPolicy(userId, static_cast<KeyType>(0),
                                                                  {{userId, USER_EL2_DIR}})); // bad keytype
-    EXPECT_EQ(-ENOENT, KeyManager::GetInstance()->UpdateUserAuth(userId, {}, {}, {}));
+    EXPECT_EQ(-ENOENT, KeyManager::GetInstance()->UpdateUserAuth(userId, 0, {}, {}, {}));
     EXPECT_EQ(-ENOENT, KeyManager::GetInstance()->UpdateKeyContext(userId));
     EXPECT_EQ(-ENOENT, KeyManager::GetInstance()->InActiveUserKey(userId));
     EXPECT_EQ(-ENOENT, KeyManager::GetInstance()->ActiveUserKey(userId, {}, {}));

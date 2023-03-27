@@ -139,7 +139,8 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRe
     EXPECT_CALL(mock, InitGlobalUserKeys()).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, GenerateUserKeys(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, DeleteUserKeys(testing::_)).WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(mock, UpdateUserAuth(testing::_, testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, UpdateUserAuth(testing::_, testing::_, testing::_, testing::_, testing::_))
+        .WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, ActiveUserKey(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, InactiveUserKey(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, UpdateKeyContext(testing::_)).WillOnce(testing::Return(E_OK));
@@ -606,7 +607,8 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonTest_HandleUpdateUs
 
     MessageParcel data1;
     MessageParcel reply1;
-    EXPECT_CALL(mock, UpdateUserAuth(testing::_, testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, UpdateUserAuth(testing::_, testing::_, testing::_, testing::_, testing::_))
+        .WillOnce(testing::Return(E_OK));
     int32_t ret = mock.HandleUpdateUserAuth(data1, reply1);
     EXPECT_TRUE(ret == E_OK);
     int32_t err = reply1.ReadInt32();
@@ -614,7 +616,7 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonTest_HandleUpdateUs
 
     MessageParcel data2;
     MessageParcel reply2;
-    EXPECT_CALL(mock, UpdateUserAuth(testing::_, testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_ERR));
+    EXPECT_CALL(mock, UpdateUserAuth(testing::_, testing::_, testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_ERR));
     ret = mock.HandleUpdateUserAuth(data2, reply2);
     EXPECT_TRUE(ret == E_OK);
     err = reply2.ReadInt32();

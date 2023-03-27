@@ -108,7 +108,8 @@ public:
         return E_OK;
     }
 
-    virtual int32_t UpdateUserAuth(uint32_t userId, const std::vector<uint8_t> &token,
+    virtual int32_t UpdateUserAuth(uint32_t userId, uint64_t secureUid,
+                                   const std::vector<uint8_t> &token,
                                    const std::vector<uint8_t> &oldSecret,
                                    const std::vector<uint8_t> &newSecret) override
     {

@@ -355,7 +355,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateUserAuth_000
         int32_t flags = 3;
         result = sdCommunication->PrepareAddUser(userId, flags);
         EXPECT_EQ(result, E_OK);
-        result = sdCommunication->UpdateUserAuth(userId, {}, {}, {});
+        result = sdCommunication->UpdateUserAuth(userId, 0, {}, {}, {});
         EXPECT_EQ(result, E_OK);
         sdCommunication->RemoveUser(userId, flags);
     }
