@@ -44,6 +44,7 @@ bool AccountSubscriber::Subscriber(void)
     if (AccountSubscriber_ == nullptr) {
         EventFwk::MatchingSkills matchingSkills;
         matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USER_UNLOCKED);
+        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USER_SWITCHED);
         EventFwk::CommonEventSubscribeInfo subscribeInfo(matchingSkills);
         AccountSubscriber_ = std::make_shared<AccountSubscriber>(subscribeInfo);
         EventFwk::CommonEventManager::SubscribeCommonEvent(AccountSubscriber_);
@@ -55,20 +56,49 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
 {
     const AAFwk::Want& want = eventData.GetWant();
     std::string action = want.GetAction();
+    int32_t userId = eventData.GetCode();
     LOGI("StorageManager: OnReceiveEvent action:%{public}s.", action.c_str());
+
+    std::unique_lock<std::mutex> lock(mutex_);
+    /* get user status */
+    uint32_t status = 0;
+    auto entry = userRecord_.find(userId);
+    if (entry != userRecord_.end()) {
+        status = entry->second;
+    }
+
+    /* update status */
+    if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USER_UNLOCKED) {
+        status |= 1 << USER_UNLOCK_BIT;
+    } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USER_SWITCHED) {
+        status |= 1 << USER_SWITCH_BIT;
+        /* clear previous user status */
+        auto oldEntry = userRecord_.find(userId_);
+        if (oldEntry != userRecord_.end()) {
+            userRecord_[userId_] = oldEntry->second & (~USER_SWITCH_BIT);
+        }
+    }
+    userId_ = userId;
+    userRecord_[userId] = status;
+
+    LOGI("userId %{public}d, status %{public}d", userId, status);
+    if (status != (1 << USER_UNLOCK_BIT | 1 << USER_SWITCH_BIT)) {
+        return;
+    }
+    lock.unlock();
 
     auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (sam == nullptr) {
         LOGE("GetSystemAbilityManager sam == nullptr");
         return;
     }
-
     auto remoteObj = sam->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     if (remoteObj == nullptr) {
         LOGE("GetSystemAbility remoteObj == nullptr");
         return;
     }
 
+    LOGI("connect %{public}d media library", userId);
     mediaShare_ = DataShare::DataShareHelper::Creator(remoteObj, "datashare:///media");
 }
 
