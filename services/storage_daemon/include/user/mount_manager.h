@@ -46,6 +46,7 @@ public:
     int32_t UmountByUser(int32_t userId);
     int32_t PrepareHmdfsDirs(int32_t userId);
     int32_t DestroyHmdfsDirs(int32_t userId);
+    int32_t CloudMount(int32_t userId);
 
 private:
     bool SupportHmdfs();

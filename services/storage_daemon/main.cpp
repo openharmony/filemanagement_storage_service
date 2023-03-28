@@ -24,6 +24,7 @@
 #include "netlink/netlink_manager.h"
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
+#include "user/user_manager.h"
 #include "utils/string_utils.h"
 
 using namespace OHOS;
