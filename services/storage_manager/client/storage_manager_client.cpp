@@ -83,7 +83,7 @@ int32_t StorageManagerClient::DeleteUserKeys(uint32_t userId)
     return client->DeleteUserKeys(userId);
 }
 
-int32_t StorageManagerClient::UpdateUserAuth(uint32_t userId,
+int32_t StorageManagerClient::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                                              const std::vector<uint8_t> &token,
                                              const std::vector<uint8_t> &oldSecret,
                                              const std::vector<uint8_t> &newSecret)
@@ -94,7 +94,7 @@ int32_t StorageManagerClient::UpdateUserAuth(uint32_t userId,
         return -EFAULT;
     }
 
-    return client->UpdateUserAuth(userId, token, oldSecret, newSecret);
+    return client->UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
 }
 
 int32_t StorageManagerClient::ActiveUserKey(uint32_t userId,

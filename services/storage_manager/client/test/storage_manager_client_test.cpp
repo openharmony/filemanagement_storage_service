@@ -174,7 +174,7 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_UpdateUserAuth_0000, T
     int32_t ret = storageManagerClient_->PrepareAddUser(userId, flag);
     EXPECT_TRUE(ret == E_OK);
 
-    ret = storageManagerClient_->UpdateUserAuth(userId, {}, {}, {});
+    ret = storageManagerClient_->UpdateUserAuth(userId, 0, {}, {}, {});
     EXPECT_TRUE(ret == E_OK) << "UpdateUserAuth error";
 
     storageManagerClient_->RemoveUser(userId, flag);
@@ -258,7 +258,7 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_UpdateKeyContext_0000,
     int32_t ret = storageManagerClient_->GenerateUserKeys(userId, flag);
     EXPECT_TRUE(ret == E_OK);
 
-    ret = storageManagerClient_->UpdateUserAuth(userId, {}, {}, {});
+    ret = storageManagerClient_->UpdateUserAuth(userId, 0, {}, {}, {});
     EXPECT_TRUE(ret == E_OK) << "UpdateUserAuth error";
 
     ret = storageManagerClient_->UpdateKeyContext(userId);

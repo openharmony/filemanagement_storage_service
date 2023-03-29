@@ -113,10 +113,10 @@ static int32_t UpdateUserAuth(const std::vector<std::string> &args)
     if (args.size() == 6) {
         std::vector<uint8_t> oldSecret(args[4].begin(), args[4].end());
         std::vector<uint8_t> newSecret(args[5].begin(), args[5].end());
-        return OHOS::StorageDaemon::StorageDaemonClient::UpdateUserAuth(userId, {}, oldSecret, newSecret);
+        return OHOS::StorageDaemon::StorageDaemonClient::UpdateUserAuth(userId, 0, {}, oldSecret, newSecret);
     }
     std::vector<uint8_t> newSecret(args[4].begin(), args[4].end());
-    return OHOS::StorageDaemon::StorageDaemonClient::UpdateUserAuth(userId, {}, {}, newSecret);
+    return OHOS::StorageDaemon::StorageDaemonClient::UpdateUserAuth(userId, 0, {}, {}, newSecret);
 }
 
 static int32_t ActiveUserKey(const std::vector<std::string> &args)

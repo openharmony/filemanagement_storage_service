@@ -428,7 +428,7 @@ int KeyManager::DeleteUserKeys(unsigned int user)
     return ret;
 }
 
-int KeyManager::UpdateUserAuth(unsigned int user,
+int KeyManager::UpdateUserAuth(unsigned int user, uint64_t secureUid,
                                const std::vector<uint8_t> &token,
                                const std::vector<uint8_t> &oldSecret,
                                const std::vector<uint8_t> &newSecret)
@@ -445,7 +445,7 @@ int KeyManager::UpdateUserAuth(unsigned int user,
     }
 
     auto item = userEl2Key_[user];
-    UserAuth auth = {token, oldSecret};
+    UserAuth auth = {token, oldSecret, secureUid};
     if ((item->RestoreKey(auth) == false) && (item->RestoreKey(NULL_KEY_AUTH) == false)) {
         LOGE("Restore key error");
         return -EFAULT;

@@ -201,7 +201,7 @@ int32_t StorageDaemonCommunication::DeleteUserKeys(uint32_t userId)
     return storageDaemon_->DeleteUserKeys(userId);
 }
 
-int32_t StorageDaemonCommunication::UpdateUserAuth(uint32_t userId,
+int32_t StorageDaemonCommunication::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                                                    const std::vector<uint8_t> &token,
                                                    const std::vector<uint8_t> &oldSecret,
                                                    const std::vector<uint8_t> &newSecret)
@@ -212,7 +212,7 @@ int32_t StorageDaemonCommunication::UpdateUserAuth(uint32_t userId,
         LOGE("Connect failed");
         return err;
     }
-    return storageDaemon_->UpdateUserAuth(userId, token, oldSecret, newSecret);
+    return storageDaemon_->UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
 }
 
 int32_t StorageDaemonCommunication::ActiveUserKey(uint32_t userId,

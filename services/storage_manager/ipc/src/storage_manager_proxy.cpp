@@ -159,7 +159,7 @@ int32_t StorageManagerProxy::DeleteUserKeys(uint32_t userId)
     return reply.ReadInt32();
 }
 
-int32_t StorageManagerProxy::UpdateUserAuth(uint32_t userId,
+int32_t StorageManagerProxy::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                                             const std::vector<uint8_t> &token,
                                             const std::vector<uint8_t> &oldSecret,
                                             const std::vector<uint8_t> &newSecret)
@@ -173,6 +173,10 @@ int32_t StorageManagerProxy::UpdateUserAuth(uint32_t userId,
         return E_WRITE_DESCRIPTOR_ERR;
     }
     if (!data.WriteUint32(userId)) {
+        LOGE("Write user ID failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+    if (!data.WriteUint64(secureUid)) {
         LOGE("Write user ID failed");
         return E_WRITE_PARCEL_ERR;
     }

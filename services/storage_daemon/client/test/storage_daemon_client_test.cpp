@@ -165,7 +165,7 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Update
     ret = storageDaemonClient_->StartUser(userid);
     EXPECT_TRUE(ret == E_OK) << "StartUser error";
 
-    ret = storageDaemonClient_->UpdateUserAuth(userid, {}, {}, {});
+    ret = storageDaemonClient_->UpdateUserAuth(userid, 0, {}, {}, {});
     EXPECT_TRUE(ret == E_OK) << "UpdateUserAuth error";
 
     ret = storageDaemonClient_->StopUser(userid);
@@ -190,7 +190,7 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Update
     int32_t ret = storageDaemonClient_->GenerateUserKeys(userid, flags);
     ASSERT_TRUE(ret == E_OK);
 
-    ret = storageDaemonClient_->UpdateUserAuth(userid, {}, {}, {});
+    ret = storageDaemonClient_->UpdateUserAuth(userid, 0, {}, {}, {});
     EXPECT_TRUE(ret == E_OK) << "UpdateUserAuth error";
 
     ret = storageDaemonClient_->UpdateKeyContext(userid);

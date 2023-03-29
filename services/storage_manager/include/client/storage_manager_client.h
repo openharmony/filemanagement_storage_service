@@ -29,7 +29,7 @@ public:
     static int32_t RemoveUser(uint32_t userId, uint32_t flags);
     static int32_t GenerateUserKeys(uint32_t userId, uint32_t flags);
     static int32_t DeleteUserKeys(uint32_t userId);
-    static int32_t UpdateUserAuth(uint32_t userId,
+    static int32_t UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                                   const std::vector<uint8_t> &token,
                                   const std::vector<uint8_t> &oldSecret,
                                   const std::vector<uint8_t> &newSecret);

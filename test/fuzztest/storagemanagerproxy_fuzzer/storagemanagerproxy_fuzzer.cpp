@@ -38,6 +38,7 @@ bool StorageManagerProxyFuzzTest(const uint8_t *data, size_t size)
     int32_t userId = *(reinterpret_cast<const int32_t *>(data));
     int32_t flags = *(reinterpret_cast<const int32_t *>(data));
     int32_t fsType = *(reinterpret_cast<const int32_t *>(data));
+    uint64_t secureUid = *(reinterpret_cast<const uint64_t *>(data));
     std::string volumeUuid((const char *)data, size);
     std::string description((const char *)data, size);
 
@@ -62,7 +63,7 @@ bool StorageManagerProxyFuzzTest(const uint8_t *data, size_t size)
     prePar.NotifyVolumeDestroyed(volumeUuid);
     prePar.ActiveUserKey(userId, token, secret);
     prePar.SetVolumeDescription(fsUuid, description);
-    prePar.UpdateUserAuth(userId, token, secret, secret);
+    prePar.UpdateUserAuth(userId, secureUid, token, secret, secret);
     prePar.NotifyVolumeMounted(volumeUuid, fsType, fsUuid, path, description);
     return true;
 }

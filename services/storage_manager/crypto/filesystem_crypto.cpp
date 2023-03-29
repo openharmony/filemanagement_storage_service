@@ -69,7 +69,7 @@ int32_t FileSystemCrypto::DeleteUserKeys(uint32_t userId)
     return err;
 }
 
-int32_t FileSystemCrypto::UpdateUserAuth(uint32_t userId,
+int32_t FileSystemCrypto::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                                          const std::vector<uint8_t> &token,
                                          const std::vector<uint8_t> &oldSecret,
                                          const std::vector<uint8_t> &newSecret)
@@ -82,7 +82,7 @@ int32_t FileSystemCrypto::UpdateUserAuth(uint32_t userId,
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->UpdateUserAuth(userId, token, oldSecret, newSecret);
+    err = sdCommunication->UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
     return err;
 }
 

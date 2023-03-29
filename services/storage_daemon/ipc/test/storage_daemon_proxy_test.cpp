@@ -373,7 +373,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_UpdateUserAuth_001, Test
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
-    int32_t ret = proxy_->UpdateUserAuth(USER_ID1, {}, {}, {});
+    int32_t ret = proxy_->UpdateUserAuth(USER_ID1, 0, {}, {}, {});
     ASSERT_TRUE(ret == E_OK);
     ASSERT_TRUE(IStorageDaemon::UPDATE_USER_AUTH == mock_->code_);
 

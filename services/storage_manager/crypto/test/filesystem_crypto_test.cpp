@@ -137,7 +137,7 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_UpdateUserAuth_0000, testi
     uint32_t flags = 2; // UserKeys type
     uint32_t result = fileSystemCrypto_->GenerateUserKeys(userId, flags);
     EXPECT_EQ(result, E_OK);
-    result = fileSystemCrypto_->UpdateUserAuth(userId, {}, {}, {});
+    result = fileSystemCrypto_->UpdateUserAuth(userId, 0, {}, {}, {});
     EXPECT_EQ(result, E_OK);
 
     fileSystemCrypto_->DeleteUserKeys(userId);
@@ -159,7 +159,7 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_UpdateUserAuth_0001, testi
     std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
         DelayedSingleton<FileSystemCrypto>::GetInstance();
     uint32_t userId = 9999;
-    uint32_t ret = fileSystemCrypto_->UpdateUserAuth(userId, {}, {}, {});
+    uint32_t ret = fileSystemCrypto_->UpdateUserAuth(userId, 0, {}, {}, {});
     EXPECT_EQ(ret, E_USERID_RANGE);
 
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_UpdateUserAuth_0001";
@@ -280,7 +280,7 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_UpdateKeyContext_0000, Tes
     int32_t ret = fileSystemCrypto_->GenerateUserKeys(userId, flags);
     ASSERT_EQ(ret, E_OK);
 
-    ret = fileSystemCrypto_->UpdateUserAuth(userId, {}, {}, {});
+    ret = fileSystemCrypto_->UpdateUserAuth(userId, 0, {}, {}, {});
     EXPECT_EQ(ret, E_OK);
 
     ret = fileSystemCrypto_->UpdateKeyContext(userId);
