@@ -12,6 +12,7 @@
 # limitations under the License.
 import("//build/ohos.gni")
 import("//build/ohos_var.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 config("public_config") {
   include_dirs = [ "." ]
@@ -19,21 +20,21 @@ config("public_config") {
 
 config("private_config") {
   include_dirs = [
-    "//foundation/filemanagement/storage_service/services/storage_manager/include",
+    "${storage_manager_path}/include",
     "//foundation/filemanagement/storage_service/services/storage_daemon/include",
-    "//foundation/filemanagement/storage_service/services/common/include",
+    "${storage_service_common_path}/include",
   ]
 }
 
 ohos_shared_library("storage_manager_sa_proxy") {
   sources = [
-    "//foundation/filemanagement/storage_service/services/storage_daemon/ipc/src/storage_daemon_proxy.cpp",
-    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/bundle_stats.cpp",
-    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/disk.cpp",
-    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/storage_stats.cpp",
-    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/volume_core.cpp",
-    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/volume_external.cpp",
-    "//foundation/filemanagement/storage_service/services/storage_manager/ipc/src/storage_manager_proxy.cpp",
+    "${storage_daemon_path}/ipc/src/storage_daemon_proxy.cpp",
+    "${storage_manager_path}/innerkits_impl/src/bundle_stats.cpp",
+    "${storage_manager_path}/innerkits_impl/src/disk.cpp",
+    "${storage_manager_path}/innerkits_impl/src/storage_manager_proxy.cpp",
+    "${storage_manager_path}/innerkits_impl/src/storage_stats.cpp",
+    "${storage_manager_path}/innerkits_impl/src/volume_core.cpp",
+    "${storage_manager_path}/innerkits_impl/src/volume_external.cpp",
   ]
 
   defines = [

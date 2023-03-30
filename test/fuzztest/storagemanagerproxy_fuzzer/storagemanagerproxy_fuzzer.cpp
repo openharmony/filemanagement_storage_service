@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 #include "storagemanagerproxy_fuzzer.h"
-#include "ipc/storage_manager_proxy.h"
+#include "storage_manager_proxy.h"
 #include <vector>
 
 using namespace OHOS::StorageManager;

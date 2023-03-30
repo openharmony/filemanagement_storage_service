@@ -16,7 +16,7 @@
 #include <cstdio>
 #include <gtest/gtest.h>
 
-#include "ipc/storage_manager_proxy.h"
+#include "storage_manager_proxy.h"
 #include "ipc/storage_manager.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
@@ -603,7 +603,8 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyDiskCreated_0000, 
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<IStorageManager>(remote);
-    proxy->NotifyDiskCreated(disk);
+    int32_t result = proxy->NotifyDiskCreated(disk);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_NotifyDiskCreated_0000";
 }
 
@@ -623,7 +624,8 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyDiskDestroyed_0000
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<IStorageManager>(remote);
-    proxy->NotifyDiskDestroyed(diskId);
+    int32_t result = proxy->NotifyDiskDestroyed(diskId);
+    EXPECT_EQ(result, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_NotifyDiskDestroyed_0000";
 }
 

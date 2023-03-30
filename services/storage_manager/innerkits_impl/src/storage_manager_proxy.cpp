@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "ipc/storage_manager_proxy.h"
+#include "storage_manager_proxy.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 
