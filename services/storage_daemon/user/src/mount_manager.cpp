@@ -31,7 +31,7 @@
 namespace OHOS {
 namespace StorageDaemon {
 using namespace std;
-using namespace OHOS::Storage::CloudFile;
+using namespace OHOS::FileManagement::CloudFile;
 constexpr int32_t UMOUNT_RETRY_TIMES = 3;
 std::shared_ptr<MountManager> MountManager::instance_ = nullptr;
 
@@ -142,18 +142,24 @@ int32_t MountManager::CloudMount(int32_t userId)
     }
 
     opt = StringPrintf("fd=%i,"
-		    "rootmode=40000,"
-		    "default_permissions,"
-		    "allow_other,"
-		    "user_id=0,group_id=0",
-		    fd);
+        "rootmode=40000,"
+        "default_permissions,"
+        "allow_other,"
+        "user_id=0,group_id=0",
+        fd);
     ret = Mount("/dev/fuse", path.c_str(), "fuse", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_NOATIME, opt.c_str());
+    if (ret) {
+        LOGE("failed to mount fuse, err %{public}d %{public}d %{public}s", errno, ret, path.c_str());
+        close(fd);
+        return ret;
+    }
 
     ret = CloudDaemonManager::GetInstance().StartFuse(fd, path);
     if (ret) {
-        LOGE("failed to mount fuse, err %{public}d %{public}d %{public}s", errno, ret, path.c_str());
-	UMount(path.c_str());
+        LOGE("failed to connect fuse, err %{public}d %{public}d %{public}s", errno, ret, path.c_str());
+        UMount(path.c_str());
     }
+    close(fd);
     return ret;
 }
 

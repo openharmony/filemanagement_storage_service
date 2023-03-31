@@ -34,7 +34,6 @@ config("storage_daemon_config") {
     "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
     "//base/security/access_token/interfaces/innerkits/accesstoken/include",
     "//foundation/filemanagement/storage_service/services/common/include",
-    "//foundation/filemanagement/dfs_service/interfaces/inner_api/native/cloud_daemon_kit_inner",
   ]
 }
 
@@ -105,12 +104,12 @@ ohos_executable("storage_daemon") {
     "access_token:libaccesstoken_sdk",
     "app_file_service:fileshare_native",
     "c_utils:utils",
+    "dfs_service:cloud_daemon_kit_inner",
     "hiviewdfx_hilog_native:libhilog",
     "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_core",
     "samgr:samgr_proxy",
-    "dfs_service:cloud_daemon_kit_inner",
   ]
 
   ldflags = [
