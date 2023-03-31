@@ -78,6 +78,15 @@
                 ],
                 "header_base": "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native"
               }
+            },
+            {
+              "name": "//foundation/filemanagement/storage_service/interfaces/innerkits/acl/native:storage_manager_acl",
+              "header": {
+                "header_files": [
+                  "storage_acl.h"
+                ],
+                "header_base": "//foundation/filemanagement/storage_service/interfaces/innerkits/acl/native"
+              }
             }
       ],
       "test": [
