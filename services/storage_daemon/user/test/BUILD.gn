@@ -46,6 +46,7 @@ ohos_unittest("user_manager_test") {
 
   external_deps = [
     "c_utils:utils",
+    "dfs_service:cloud_daemon_kit_inner",
     "hiviewdfx_hilog_native:libhilog",
     "huks:libhukssdk",
     "init:libbegetutil",

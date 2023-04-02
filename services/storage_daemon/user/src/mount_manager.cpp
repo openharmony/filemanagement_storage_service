@@ -25,11 +25,13 @@
 #include "utils/file_utils.h"
 #include "utils/mount_argument_utils.h"
 #include "utils/string_utils.h"
+#include "cloud_daemon_manager.h"
 
 
 namespace OHOS {
 namespace StorageDaemon {
 using namespace std;
+using namespace OHOS::FileManagement::CloudFile;
 constexpr int32_t UMOUNT_RETRY_TIMES = 3;
 std::shared_ptr<MountManager> MountManager::instance_ = nullptr;
 
@@ -56,7 +58,8 @@ MountManager::MountManager()
                   {"/mnt/hmdfs/", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/%d/", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/%d/account", 0711, OID_ROOT, OID_ROOT},
-                  {"/mnt/hmdfs/%d/non_account", 0711, OID_ROOT, OID_ROOT}}
+                  {"/mnt/hmdfs/%d/non_account", 0711, OID_ROOT, OID_ROOT},
+                  {"/mnt/hmdfs/%d/cloud", 0711, OID_ROOT, OID_ROOT}}
 {
 }
 
@@ -125,6 +128,41 @@ int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath)
     return E_OK;
 }
 
+int32_t MountManager::CloudMount(int32_t userId)
+{
+    int fd = -1;
+    string opt;
+    int ret;
+    Utils::MountArgument cloudMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
+    const string path = cloudMntArgs.GetFullCloud();
+
+    fd = open("/dev/fuse", O_RDWR);
+    if (fd < 0) {
+        return E_MOUNT;
+    }
+
+    opt = StringPrintf("fd=%i,"
+        "rootmode=40000,"
+        "default_permissions,"
+        "allow_other,"
+        "user_id=0,group_id=0",
+        fd);
+    ret = Mount("/dev/fuse", path.c_str(), "fuse", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_NOATIME, opt.c_str());
+    if (ret) {
+        LOGE("failed to mount fuse, err %{public}d %{public}d %{public}s", errno, ret, path.c_str());
+        close(fd);
+        return ret;
+    }
+
+    ret = CloudDaemonManager::GetInstance().StartFuse(fd, path);
+    if (ret) {
+        LOGE("failed to connect fuse, err %{public}d %{public}d %{public}s", errno, ret, path.c_str());
+        UMount(path.c_str());
+    }
+    close(fd);
+    return ret;
+}
+
 int32_t MountManager::HmdfsMount(int32_t userId)
 {
     int32_t ret = HmdfsTwiceMount(userId, "account");
@@ -133,6 +171,8 @@ int32_t MountManager::HmdfsMount(int32_t userId)
     if (ret != E_OK) {
         return E_MOUNT;
     }
+
+    ret = CloudMount(userId);
 
     return E_OK;
 }

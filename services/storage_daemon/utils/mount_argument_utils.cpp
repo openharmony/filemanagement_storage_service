@@ -47,6 +47,14 @@ string MountArgument::GetFullDst() const
     return ss.str();
 }
 
+string MountArgument::GetFullCloud() const
+{
+    stringstream ss;
+    ss << BASE_MOUNT_POINT << userId_ << "/" << "cloud";
+
+    return ss.str();
+}
+
 string MountArgument::GetShareSrc() const
 {
     stringstream ss;

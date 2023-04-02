@@ -40,6 +40,7 @@ struct MountArgument final {
     std::string GetCachePath() const;
     std::string GetCtrlPath() const;
     std::string OptionsToString() const;
+    std::string GetFullCloud() const;
     unsigned long GetFlags() const;
 };
 
