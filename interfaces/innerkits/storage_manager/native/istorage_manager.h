@@ -25,6 +25,11 @@
 
 namespace OHOS {
 namespace StorageManager {
+// PrepareAddUser flags
+enum {
+    CRYPTO_FLAG_EL1 = 1,
+    CRYPTO_FLAG_EL2,
+};
 class IStorageManager : public IRemoteBroker {
 public:
     virtual int32_t PrepareAddUser(int32_t userId, uint32_t flags) = 0;
