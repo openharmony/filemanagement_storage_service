@@ -15,6 +15,7 @@
 
 #include "user/mount_manager.h"
 #include <cstdlib>
+#include <fcntl.h>
 #include <sys/mount.h>
 #include <sys/types.h>
 #include <unistd.h>
