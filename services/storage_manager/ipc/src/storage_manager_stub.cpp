@@ -21,14 +21,22 @@
 
 namespace OHOS {
 namespace StorageManager {
+constexpr pid_t ACCOUNT_UID = 3058;
 const std::string PERMISSION_STORAGE_MANAGER = "ohos.permission.STORAGE_MANAGER";
 const std::string PERMISSION_MOUNT_MANAGER = "ohos.permission.MOUNT_UNMOUNT_MANAGER";
 const std::string PERMISSION_FORMAT_MANAGER = "ohos.permission.MOUNT_FORMAT_MANAGER";
 bool CheckClientPermission(const std::string& permissionStr)
 {
     Security::AccessToken::AccessTokenID tokenCaller = IPCSkeleton::GetCallingTokenID();
-    int res = Security::AccessToken::AccessTokenKit::VerifyAccessToken(tokenCaller,
-        permissionStr);
+    auto uid = IPCSkeleton::GetCallingUid();
+    auto tokenType = Security::AccessToken::AccessTokenKit::GetTokenTypeFlag(tokenCaller);
+    int res = Security::AccessToken::PermissionState::PERMISSION_DENIED;
+    if (tokenType == Security::AccessToken::TOKEN_NATIVE && uid == ACCOUNT_UID) {
+        res = Security::AccessToken::PermissionState::PERMISSION_GRANTED;
+    } else {
+        res = Security::AccessToken::AccessTokenKit::VerifyAccessToken(tokenCaller, permissionStr);
+    }
+
     if (res == Security::AccessToken::PermissionState::PERMISSION_GRANTED) {
         LOGI("StorageMangaer permissionCheck pass!");
         return true;
