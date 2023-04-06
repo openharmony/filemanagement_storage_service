@@ -18,7 +18,6 @@
 
 #include "client/storage_manager_client.h"
 #include "get_self_permissions.h"
-#include "ipc/storage_manager.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 namespace OHOS {
