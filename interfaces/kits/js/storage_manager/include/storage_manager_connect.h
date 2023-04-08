@@ -19,7 +19,6 @@
 #include <nocopyable.h>
 #include <singleton.h>
 
-#include "system_ability.h"
 #include "istorage_manager.h"
 #include "bundle_stats.h"
 #include "storage_stats.h"
