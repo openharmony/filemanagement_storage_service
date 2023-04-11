@@ -13,7 +13,7 @@
 * limitations under the License.
 */
 
-import {AsyncCallback, Callback} from "./basic";
+import type { AsyncCallback } from './basic';
 
 /**
  * Provides volumemanager statistics APIs
@@ -24,21 +24,21 @@ import {AsyncCallback, Callback} from "./basic";
  */
 declare namespace volumeManager {
 
-/**
+  /**
    * Get All Volumes
    * 
    * @since 9
    * @systemapi
    */
- export interface Volume {
-  id: string;
-  uuid: string;
-  diskId: string;
-  description: string;
-  removable: boolean;
-  state: number;
-  path: string;
-}
+  export interface Volume {
+    id: string;
+    uuid: string;
+    diskId: string;
+    description: string;
+    removable: boolean;
+    state: number;
+    path: string;
+  }
 /**
    * Get All Volumes
    * 
@@ -47,8 +47,8 @@ declare namespace volumeManager {
    * @permission ohos.permission.STORAGE_MANAGER
    * @systemapi
    */
-function getAllVolumes(callback: AsyncCallback<Array<Volume>>): void;
-function getAllVolumes(): Promise<Array<Volume>>;
+  function getAllVolumes(callback: AsyncCallback<Array<Volume>>): void;
+  function getAllVolumes(): Promise<Array<Volume>>;
 
 
  /**
@@ -59,8 +59,8 @@ function getAllVolumes(): Promise<Array<Volume>>;
    * @permission ohos.permission.MOUNT_UNMOUNT_MANAGER
    * @systemapi
    */
-function mount(volumeId: string, callback: AsyncCallback<void>): void;
-function mount(volumeId: string): Promise<void>;
+  function mount(volumeId: string, callback: AsyncCallback<void>): void;
+  function mount(volumeId: string): Promise<void>;
 
 /**
    * UnMount
@@ -70,8 +70,8 @@ function mount(volumeId: string): Promise<void>;
    * @permission ohos.permission.MOUNT_UNMOUNT_MANAGER
    * @systemapi
    */
-function unmount(volumeId: string, callback: AsyncCallback<void>): void;
-function unmount(volumeId: string): Promise<void>;
+  function unmount(volumeId: string, callback: AsyncCallback<void>): void;
+  function unmount(volumeId: string): Promise<void>;
 
 
 /**
@@ -82,8 +82,8 @@ function unmount(volumeId: string): Promise<void>;
    * @permission ohos.permission.STORAGE_MANAGER
    * @systemapi
    */
- function getVolumeByUuid(uuid: string, callback: AsyncCallback<Volume>): void;
- function getVolumeByUuid(uuid: string): Promise<Volume>;
+  function getVolumeByUuid(uuid: string, callback: AsyncCallback<Volume>): void;
+  function getVolumeByUuid(uuid: string): Promise<Volume>;
  
 /**
    * Get the volume by id.
@@ -93,8 +93,8 @@ function unmount(volumeId: string): Promise<void>;
    * @permission ohos.permission.STORAGE_MANAGER
    * @systemapi
    */
-function getVolumeById(volumeId: string, callback: AsyncCallback<Volume>): void;
-function getVolumeById(volumeId: string): Promise<Volume>;
+  function getVolumeById(volumeId: string, callback: AsyncCallback<Volume>): void;
+  function getVolumeById(volumeId: string): Promise<Volume>;
  
 /**
    * Set the description of volume.
@@ -104,8 +104,8 @@ function getVolumeById(volumeId: string): Promise<Volume>;
    * @permission ohos.permission.MOUNT_UNMOUNT_MANAGER
    * @systemapi
    */
-function setVolumeDescription(uuid: string, description: string, callback: AsyncCallback<boolean>): void;
-function setVolumeDescription(uuid: string, description: string): Promise<boolean>;
+  function setVolumeDescription(uuid: string, description: string, callback: AsyncCallback<boolean>): void;
+  function setVolumeDescription(uuid: string, description: string): Promise<boolean>;
  
 /**
    * Format.
@@ -115,8 +115,8 @@ function setVolumeDescription(uuid: string, description: string): Promise<boolea
    * @permission ohos.permission.MOUNT_FORMAT_MANAGER
    * @systemapi
    */
-function format(volumeId: string, fsType: string, callback: AsyncCallback<boolean>): void;
-function format(volumeId: string, fsType: string): Promise<boolean>;
+  function format(volumeId: string, fsType: string, callback: AsyncCallback<boolean>): void;
+  function format(volumeId: string, fsType: string): Promise<boolean>;
    
   
 /**
@@ -127,8 +127,8 @@ function format(volumeId: string, fsType: string): Promise<boolean>;
    * @permission ohos.permission.MOUNT_FORMAT_MANAGER
    * @systemapi
    */
-function partition(diskId: string, type: number, callback: AsyncCallback<boolean>): void;
-function partition(diskId: string, type: number): Promise<boolean>;
+  function partition(diskId: string, type: number, callback: AsyncCallback<boolean>): void;
+  function partition(diskId: string, type: number): Promise<boolean>;
 }
 
 export default volumeManager;

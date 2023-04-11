@@ -13,7 +13,7 @@
 * limitations under the License.
 */
 
-import {AsyncCallback, Callback} from "./basic";
+import type { AsyncCallback } from './basic';
 
 /**
  * Provides filesystem statistics APIs
@@ -66,7 +66,7 @@ declare namespace storageStatistics {
    * @permission ohos.permission.STORAGE_MANAGER
    * @systemapi
    */
-  function getBundleStats(packageName: string,  callback: AsyncCallback<BundleStats>): void;
+  function getBundleStats(packageName: string, callback: AsyncCallback<BundleStats>): void;
   function getBundleStats(packageName: string): Promise<BundleStats>;
 
   /**
