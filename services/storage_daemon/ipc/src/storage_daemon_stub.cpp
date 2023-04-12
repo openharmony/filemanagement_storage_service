@@ -345,8 +345,8 @@ int32_t StorageDaemonStub::HandleUpdateKeyContext(MessageParcel &data, MessagePa
 int32_t StorageDaemonStub::HandleCreateShareFile(MessageParcel &data, MessageParcel &reply)
 {
     std::string uri = data.ReadString();
-    int32_t tokenId = data.ReadInt32();
-    int32_t flag = data.ReadUint32();
+    uint32_t tokenId = data.ReadUint32();
+    uint32_t flag = data.ReadUint32();
     int err = CreateShareFile(uri, tokenId, flag);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
@@ -356,12 +356,11 @@ int32_t StorageDaemonStub::HandleCreateShareFile(MessageParcel &data, MessagePar
 
 int32_t StorageDaemonStub::HandleDeleteShareFile(MessageParcel &data, MessageParcel &reply)
 {
-    int32_t tokenId = data.ReadInt32();
+    uint32_t tokenId = data.ReadUint32();
     std::vector<std::string> sharePathList;
     if (!data.ReadStringVector(&sharePathList)) {
         return E_WRITE_REPLY_ERR;
     }
-    
     int err = DeleteShareFile(tokenId, sharePathList);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;

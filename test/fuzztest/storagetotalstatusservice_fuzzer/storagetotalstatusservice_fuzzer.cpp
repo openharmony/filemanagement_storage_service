@@ -43,7 +43,7 @@ bool StorageTotalStatusServiceFuzzTest(const uint8_t *data, size_t size)
         return false;
     }
     // You can add other interfaces of class StorageTotalStatusService here.
-    
+
     LOGE("Storage total status service fuzz test of interface StorageTotalStatusService: success!");
     return true;
 }

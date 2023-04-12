@@ -573,7 +573,6 @@ int32_t StorageManagerProxy::Partition(std::string diskId, int32_t type)
 int32_t StorageManagerProxy::GetAllDisks(std::vector<Disk> &vecOfDisk)
 {
     LOGI("StorageManagerProxy::GetAllDisks");
-    std::vector<Disk> result = {};
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -851,7 +850,7 @@ int32_t StorageManagerProxy::GetDiskById(std::string diskId, Disk &disk)
     return reply.ReadInt32();
 }
 
-int32_t StorageManagerProxy::CreateShareFile(std::string uri, int32_t tokenId, int32_t flag)
+int32_t StorageManagerProxy::CreateShareFile(std::string uri, uint32_t tokenId, uint32_t flag)
 {
     MessageParcel data;
     MessageParcel reply;
@@ -881,7 +880,7 @@ int32_t StorageManagerProxy::CreateShareFile(std::string uri, int32_t tokenId, i
     return reply.ReadInt32();
 }
 
-int32_t StorageManagerProxy::DeleteShareFile(int32_t tokenId, std::vector<std::string>sharePathList)
+int32_t StorageManagerProxy::DeleteShareFile(uint32_t tokenId, std::vector<std::string>sharePathList)
 {
     MessageParcel data;
     MessageParcel reply;
