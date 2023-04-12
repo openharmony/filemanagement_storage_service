@@ -156,12 +156,12 @@ int32_t StorageDaemon::UpdateKeyContext(uint32_t userId)
     return KeyManager::GetInstance()->UpdateKeyContext(userId);
 }
 
-int32_t StorageDaemon::CreateShareFile(std::string uri, int32_t tokenId, int32_t flag)
+int32_t StorageDaemon::CreateShareFile(std::string uri, uint32_t tokenId, uint32_t flag)
 {
     return AppFileService::FileShare::CreateShareFile(uri, tokenId, flag);
 }
 
-int32_t StorageDaemon::DeleteShareFile(int32_t tokenId, std::vector<std::string>sharePathList)
+int32_t StorageDaemon::DeleteShareFile(uint32_t tokenId, std::vector<std::string>sharePathList)
 {
     return AppFileService::FileShare::DeleteShareFile(tokenId, sharePathList);
 }

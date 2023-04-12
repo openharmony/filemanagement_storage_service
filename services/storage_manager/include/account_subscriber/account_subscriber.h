@@ -48,7 +48,7 @@ private:
     static std::shared_ptr<DataShare::DataShareHelper> mediaShare_;
     std::mutex mutex_;
 
-    int32_t userId_;
+    int32_t userId_ = 0;
     std::unordered_map<int32_t, uint32_t> userRecord_;
 };
 }  // namespace StorageManager
