@@ -24,10 +24,14 @@
 #include "storage_service_log.h"
 #include "user/user_manager.h"
 #include "volume/volume_manager.h"
+#include "user/mount_manager.h"
+#include "system_ability_definition.h"
+#include "cloud_daemon_manager.h"
 
 
 namespace OHOS {
 namespace StorageDaemon {
+using namespace OHOS::FileManagement::CloudFile;
 int32_t StorageDaemon::Shutdown()
 {
     return E_OK;
@@ -170,6 +174,24 @@ int32_t StorageDaemon::SetBundleQuota(const std::string &bundleName, int32_t uid
     const std::string &bundleDataDirPath, int32_t limitSizeMb)
 {
     return QuotaManager::GetInstance()->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
+}
+
+void StorageDaemon::SystemAbilityStatusChangeListener::OnAddSystemAbility(int32_t systemAbilityId,
+                                                                          const std::string &deviceId)
+{
+    LOGI("SystemAbilityId:%{public}d", systemAbilityId);
+    if (systemAbilityId == FILEMANAGEMENT_CLOUD_DAEMON_SERVICE_SA_ID) {
+        MountManager::GetInstance()->SetCloudState(true);
+    }
+}
+
+void StorageDaemon::SystemAbilityStatusChangeListener::OnRemoveSystemAbility(int32_t systemAbilityId,
+                                                                             const std::string &deviceId)
+{
+    LOGI("SystemAbilityId:%{public}d", systemAbilityId);
+    if (systemAbilityId == FILEMANAGEMENT_CLOUD_DAEMON_SERVICE_SA_ID) {
+        MountManager::GetInstance()->SetCloudState(false);
+    }
 }
 
 } // StorageDaemon

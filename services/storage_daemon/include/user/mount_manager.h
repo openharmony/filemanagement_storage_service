@@ -17,6 +17,7 @@
 #define OHOS_STORAGE_DAEMON_MOUNT_MANAGER_H
 
 #include <string>
+#include <mutex>
 #include <vector>
 #include <sys/types.h>
 #include <nocopyable.h>
@@ -47,6 +48,7 @@ public:
     int32_t PrepareHmdfsDirs(int32_t userId);
     int32_t DestroyHmdfsDirs(int32_t userId);
     int32_t CloudMount(int32_t userId);
+    void SetCloudState(bool active);
 
 private:
     bool SupportHmdfs();
@@ -61,12 +63,16 @@ private:
     int32_t HmdfsTwiceUMount(int32_t userId, std::string relativePath);
     int32_t LocalMount(int32_t userId);
     int32_t LocalUMount(int32_t userId);
+    void MountCloudForUsers();
 
     DISALLOW_COPY_AND_MOVE(MountManager);
 
     static std::shared_ptr<MountManager> instance_;
     const std::vector<DirInfo> hmdfsDirVec_;
     const std::vector<DirInfo> virtualDir_;
+    std::mutex mountMutex_;
+    std::vector<int32_t> activeUsers_;
+    bool cloudReady_{false};
 };
 } // STORAGE_DAEMON
 } // OHOS

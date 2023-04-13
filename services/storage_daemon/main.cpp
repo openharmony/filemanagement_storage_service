@@ -26,8 +26,12 @@
 #include "system_ability_definition.h"
 #include "user/user_manager.h"
 #include "utils/string_utils.h"
+#include "system_ability_definition.h"
+#include "cloud_daemon_manager.h"
 
 using namespace OHOS;
+using namespace OHOS::FileManagement::CloudFile;
+using CloudListener = StorageDaemon::StorageDaemon::SystemAbilityStatusChangeListener;
 
 const int CONFIG_PARAM_NUM = 6;
 static const std::string CONFIG_PTAH = "/system/etc/storage_daemon/disk_config";
@@ -114,6 +118,8 @@ int main()
         if (samgr != nullptr) {
             sptr<StorageDaemon::StorageDaemon> sd = new StorageDaemon::StorageDaemon();
             samgr->AddSystemAbility(STORAGE_MANAGER_DAEMON_ID, sd);
+            sptr<CloudListener> listenter = new CloudListener();
+            samgr->SubscribeSystemAbility(FILEMANAGEMENT_CLOUD_DAEMON_SERVICE_SA_ID, listenter);
             break;
         }
     } while (true);
