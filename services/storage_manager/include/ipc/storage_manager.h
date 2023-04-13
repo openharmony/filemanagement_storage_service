@@ -55,7 +55,7 @@ public:
     int32_t Unmount(std::string volumeId) override;
 
     int32_t GetAllVolumes(std::vector<VolumeExternal> &vecOfVol)override;
-    
+
     int32_t NotifyDiskCreated(Disk disk) override;
     int32_t NotifyDiskDestroyed(std::string diskId) override;
     int32_t Partition(std::string diskId, int32_t type) override;
@@ -81,8 +81,8 @@ public:
     int32_t UpdateKeyContext(uint32_t userId) override;
 
     // app file share api
-    int32_t CreateShareFile(std::string uri, int32_t tokenId, int32_t flag) override;
-    int32_t DeleteShareFile(int32_t tokenId, std::vector<std::string>sharePathList) override;
+    int32_t CreateShareFile(std::string uri, uint32_t tokenId, uint32_t flag) override;
+    int32_t DeleteShareFile(uint32_t tokenId, std::vector<std::string>sharePathList) override;
 
     int32_t SetBundleQuota(const std::string &bundleName, int32_t uid, const std::string &bundleDataDirPath,
         int32_t limitSizeMb) override;

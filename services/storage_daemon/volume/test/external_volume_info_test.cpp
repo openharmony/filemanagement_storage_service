@@ -271,7 +271,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetFsTyp
 HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetFsUuid_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetFsUuid_001 start";
-    
+
     ExternalVolumeInfo *evi = new ExternalVolumeInfo();
     std::string ret = evi->GetFsUuid();
     GTEST_LOG_(INFO) << ret;
@@ -289,7 +289,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetFsUui
 HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetFsLabel_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetFsLabel_001 start";
-    
+
     ExternalVolumeInfo *evi = new ExternalVolumeInfo();
     std::string ret = evi->GetFsLabel();
     GTEST_LOG_(INFO) << ret;
@@ -307,7 +307,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetFsLab
 HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetMountPath_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetMountPath_001 start";
-    
+
     ExternalVolumeInfo *evi = new ExternalVolumeInfo();
     std::string ret = evi->GetMountPath();
     GTEST_LOG_(INFO) << ret;
