@@ -46,7 +46,7 @@ static napi_module _module = {
     .nm_flags = 0,
     .nm_filename = nullptr,
     .nm_register_func = VolumeManagerExport,
-    .nm_modname = "file.volumemanager",
+    .nm_modname = "file.volumeManager",
     .nm_priv = ((void *)0),
     .reserved = {0}
 };
