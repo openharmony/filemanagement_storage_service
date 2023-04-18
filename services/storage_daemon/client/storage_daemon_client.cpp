@@ -325,11 +325,13 @@ int32_t StorageDaemonClient::UpdateKeyContext(uint32_t userId)
 
 int32_t StorageDaemonClient::FscryptEnable(const std::string &fscryptOptions)
 {
+#ifdef USER_CRYPTO_MANAGER
     int ret = SetFscryptSysparam(fscryptOptions.c_str());
     if (ret) {
         LOGE("Init fscrypt policy failed ret %{public}d", ret);
         return ret;
     }
+#endif
 
     return 0;
 }

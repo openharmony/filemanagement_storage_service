@@ -24,6 +24,7 @@
 #include "libfscrypt/fscrypt_control.h"
 #include "libfscrypt/key_control.h"
 #include "parameter.h"
+#include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 

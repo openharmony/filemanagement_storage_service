@@ -93,8 +93,6 @@ ohos_executable("storage_daemon") {
     ":sdc",
     ":storage_common_utils",
     "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
-    "crypto:libsdcrypto",
-    "libfscrypt:libfscryptutils",
   ]
 
   external_deps = [
@@ -106,11 +104,19 @@ ohos_executable("storage_daemon") {
     "c_utils:utils",
     "dfs_service:cloud_daemon_kit_inner",
     "hiviewdfx_hilog_native:libhilog",
-    "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_core",
     "samgr:samgr_proxy",
   ]
+
+  if (user_crypto_manager) {
+    defines += [ "USER_CRYPTO_MANAGER" ]
+    deps += [
+      "crypto:libsdcrypto",
+      "libfscrypt:libfscryptutils",
+    ]
+    external_deps += [ "huks:libhukssdk" ]
+  }
 
   subsystem_name = "filemanagement"
   part_name = "storage_service"
@@ -150,8 +156,12 @@ ohos_executable("sdc") {
   deps = [
     ":storage_common_utils",
     "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
-    "libfscrypt:libfscryptutils",
   ]
+
+  if (user_crypto_manager) {
+    defines += [ "USER_CRYPTO_MANAGER" ]
+    deps += [ "libfscrypt:libfscryptutils" ]
+  }
 
   external_deps = [
     "c_utils:utils",
@@ -236,5 +246,24 @@ group("storage_daemon_third_party") {
       "//third_party/gptfdisk:sgdisk",
       "//third_party/ntfs-3g:ntfsprogs",
     ]
+  }
+}
+
+group("storage_daemon_unit_test") {
+  testonly = true
+  deps = [
+    "client/test:storage_daemon_client_test",
+    "disk/test:storage_daemon_disk_test",
+    "file_sharing/test:file_sharing_test",
+    "ipc/test:storage_daemon_ipc_test",
+    "netlink/test:storage_daemon_netlink_test",
+    "quota/test:storage_daemon_quota_test",
+    "user/test:storage_daemon_user_test",
+    "utils/test:storage_daemon_utils_test",
+    "volume/test:storage_daemon_volume_test",
+  ]
+
+  if (user_crypto_manager) {
+    deps += [ "crypto/test:crypto_test" ]
   }
 }

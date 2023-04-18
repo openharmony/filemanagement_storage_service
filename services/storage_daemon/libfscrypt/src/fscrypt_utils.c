@@ -19,20 +19,28 @@
 
 int FscryptPolicyEnable(const char *dir)
 {
+#ifdef USER_CRYPTO_MANAGER
     if (!dir) {
         FSCRYPT_LOGE("dir is null");
         return -EINVAL;
     }
 
     return SetGlobalEl1DirPolicy(dir);
+#else
+    return 0;
+#endif
 }
 
 int SetFscryptSysparam(const char *policy)
 {
+#ifdef USER_CRYPTO_MANAGER
     if (!policy) {
         FSCRYPT_LOGE("policy is null");
         return -EINVAL;
     }
 
     return FscryptSetSysparam(policy);
+#else
+    return 0;
+#endif
 }

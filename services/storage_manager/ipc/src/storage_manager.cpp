@@ -16,12 +16,16 @@
 #include "ipc/storage_manager.h"
 
 #include <singleton.h>
+#ifdef STORAGE_STATISTICS_MANAGER
 #include <storage/storage_status_service.h>
 #include <storage/storage_total_status_service.h>
 #include <storage/volume_storage_status_service.h>
-
 #include "account_subscriber/account_subscriber.h"
+#endif
+
+#ifdef USER_CRYPTO_MANAGER
 #include "crypto/filesystem_crypto.h"
+#endif
 #include "disk/disk_manager_service.h"
 #include "storage_daemon_communication/storage_daemon_communication.h"
 #include "storage_service_errno.h"
@@ -38,7 +42,9 @@ void StorageManager::OnStart()
 {
     LOGI("StorageManager::OnStart Begin");
     bool res = SystemAbility::Publish(this);
+#ifdef STORAGE_STATISTICS_MANAGER
     AccountSubscriber::Subscriber();
+#endif
     LOGI("StorageManager::OnStart End, res = %{public}d", res);
 }
 
@@ -81,69 +87,105 @@ int32_t StorageManager::StopUser(int32_t userId)
 
 int32_t StorageManager::GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize)
 {
+#ifdef STORAGE_STATISTICS_MANAGER
     LOGI("StorageManger::getFreeSizeOfVolume start, volumeUuid: %{public}s", volumeUuid.c_str());
     std::shared_ptr<VolumeStorageStatusService> volumeStatsManager =
         DelayedSingleton<VolumeStorageStatusService>::GetInstance();
     int32_t err = volumeStatsManager->GetFreeSizeOfVolume(volumeUuid, freeSize);
     return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManager::GetTotalSizeOfVolume(std::string volumeUuid, int64_t &totalSize)
 {
+#ifdef STORAGE_STATISTICS_MANAGER
     LOGI("StorageManger::getTotalSizeOfVolume start, volumeUuid: %{public}s", volumeUuid.c_str());
     std::shared_ptr<VolumeStorageStatusService> volumeStatsManager =
         DelayedSingleton<VolumeStorageStatusService>::GetInstance();
     int32_t err = volumeStatsManager->GetTotalSizeOfVolume(volumeUuid, totalSize);
     return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManager::GetBundleStats(std::string pkgName, BundleStats &bundleStats)
 {
+#ifdef STORAGE_STATISTICS_MANAGER
     LOGI("StorageManger::getBundleStats start, pkgName: %{public}s", pkgName.c_str());
     int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetBundleStats(pkgName, bundleStats);
     return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManager::GetSystemSize(int64_t &systemSize)
 {
+#ifdef STORAGE_STATISTICS_MANAGER
     LOGI("StorageManger::getSystemSize start");
     int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetSystemSize(systemSize);
     return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManager::GetTotalSize(int64_t &totalSize)
 {
+#ifdef STORAGE_STATISTICS_MANAGER
     LOGI("StorageManger::getTotalSize start");
     int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetTotalSize(totalSize);
     return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManager::GetFreeSize(int64_t &freeSize)
 {
+#ifdef STORAGE_STATISTICS_MANAGER
     LOGI("StorageManger::getFreeSize start");
     int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetFreeSize(freeSize);
     return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManager::GetUserStorageStats(StorageStats &storageStats)
 {
+#ifdef STORAGE_STATISTICS_MANAGER
     LOGI("StorageManger::GetUserStorageStats start");
     int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetUserStorageStats(storageStats);
     return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManager::GetUserStorageStats(int32_t userId, StorageStats &storageStats)
 {
+#ifdef STORAGE_STATISTICS_MANAGER
     LOGI("StorageManger::GetUserStorageStats start");
     int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetUserStorageStats(userId, storageStats);
     return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManager::GetCurrentBundleStats(BundleStats &bundleStats)
 {
+#ifdef STORAGE_STATISTICS_MANAGER
     LOGI("StorageManger::GetCurrentBundleStats start");
     int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetCurrentBundleStats(bundleStats);
     return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManager::NotifyVolumeCreated(VolumeCore vc)
@@ -257,18 +299,26 @@ int32_t StorageManager::GetDiskById(std::string diskId, Disk &disk)
 
 int32_t StorageManager::GenerateUserKeys(uint32_t userId, uint32_t flags)
 {
+#ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u, flags:  %{public}u", userId, flags);
     std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
     int32_t err = fsCrypto->GenerateUserKeys(userId, flags);
     return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManager::DeleteUserKeys(uint32_t userId)
 {
+#ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
     std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
     int32_t err = fsCrypto->DeleteUserKeys(userId);
     return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManager::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
@@ -276,36 +326,52 @@ int32_t StorageManager::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                                        const std::vector<uint8_t> &oldSecret,
                                        const std::vector<uint8_t> &newSecret)
 {
+#ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
     std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
     int32_t err = fsCrypto->UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
     return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManager::ActiveUserKey(uint32_t userId,
                                       const std::vector<uint8_t> &token,
                                       const std::vector<uint8_t> &secret)
 {
+#ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
     std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
     int32_t err = fsCrypto->ActiveUserKey(userId, token, secret);
     return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManager::InactiveUserKey(uint32_t userId)
 {
+#ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
     std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
     int32_t err = fsCrypto->InactiveUserKey(userId);
     return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManager::UpdateKeyContext(uint32_t userId)
 {
+#ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
     std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
     int32_t err = fsCrypto->UpdateKeyContext(userId);
     return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManager::CreateShareFile(std::string uri, int32_t tokenId, int32_t flag)

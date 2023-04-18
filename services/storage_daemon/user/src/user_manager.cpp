@@ -15,8 +15,11 @@
 
 #include "user/user_manager.h"
 #include <cstdlib>
+#ifdef USER_CRYPTO_MANAGER
 #include "crypto/key_manager.h"
+#endif
 #include "ipc/istorage_daemon.h"
+#include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/string_utils.h"
@@ -223,6 +226,7 @@ int32_t UserManager::DestroyEl1BundleDir(int32_t userId)
 int32_t UserManager::SetElDirFscryptPolicy(int32_t userId, const std::string &level,
                                            const std::vector<FileList> &list)
 {
+#ifdef USER_CRYPTO_MANAGER
     if (EL_DIR_MAP.find(level) == EL_DIR_MAP.end()) {
         LOGE("el type error");
         return E_SET_POLICY;
@@ -231,6 +235,7 @@ int32_t UserManager::SetElDirFscryptPolicy(int32_t userId, const std::string &le
         LOGE("Set user dir el1 policy error");
         return E_SET_POLICY;
     }
+#endif
 
     return E_OK;
 }
