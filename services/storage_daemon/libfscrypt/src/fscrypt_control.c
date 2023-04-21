@@ -166,6 +166,7 @@ int FscryptSetSysparam(const char *policy)
     return 0;
 }
 
+#ifdef USER_CRYPTO_MANAGER
 static void PraseOnePloicyValue(uint8_t *value, const char *key,
                                 const FscrtpyItem *table, size_t numbers)
 {
@@ -179,9 +180,11 @@ static void PraseOnePloicyValue(uint8_t *value, const char *key,
     }
     FSCRYPT_LOGE("Have not found value for the key!");
 }
+#endif
 
 int InitFscryptPolicy(void)
 {
+#ifdef USER_CRYPTO_MANAGER
     if (g_fscryptInited) {
         FSCRYPT_LOGI("Have been init");
         return 0;
@@ -215,6 +218,7 @@ int InitFscryptPolicy(void)
     FreeStringVector(option, count);
     g_fscryptInited = true;
     FSCRYPT_LOGI("Fscrypt policy init success");
+#endif
 
     return 0;
 }

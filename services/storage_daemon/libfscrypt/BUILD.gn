@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import("//build/ohos.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ## build sm execute bin file
 config("fscrypt_utils_config") {
@@ -39,6 +40,10 @@ ohos_static_library("libfscryptutils") {
     "src/sysparam_dynamic.c",
   ]
 
+  if (user_crypto_manager) {
+    defines = [ "USER_CRYPTO_MANAGER" ]
+  }
+
   configs = [ ":fscrypt_utils_config" ]
 
   deps = [
@@ -63,6 +68,10 @@ ohos_static_library("libfscryptutils_static") {
     "src/key_control.c",
     "src/sysparam_static.c",
   ]
+
+  if (user_crypto_manager) {
+    defines = [ "USER_CRYPTO_MANAGER" ]
+  }
 
   configs = [ ":fscrypt_utils_config" ]
 

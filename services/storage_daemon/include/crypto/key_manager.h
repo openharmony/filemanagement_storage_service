@@ -21,25 +21,13 @@
 #include <memory>
 #include <mutex>
 
+#include "storage_service_constant.h"
 #include "key_blob.h"
 #include "base_key.h"
 #include "utils/file_utils.h"
 
 namespace OHOS {
 namespace StorageDaemon {
-constexpr uint32_t GLOBAL_USER_ID = 0;
-
-static const std::string EL1 = "el1";
-static const std::string EL2 = "el2";
-enum KeyType {
-    EL1_KEY = 1,
-    EL2_KEY = 2,
-};
-static std::map<std::string, KeyType> EL_DIR_MAP = {
-    {EL1, EL1_KEY},
-    {EL2, EL2_KEY},
-};
-
 class KeyManager {
 public:
     static KeyManager *GetInstance(void)

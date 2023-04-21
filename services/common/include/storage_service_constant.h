@@ -15,11 +15,27 @@
 #ifndef STORAGE_SERVICE_CONSTANTS_H
 #define STORAGE_SERVICE_CONSTANTS_H
 
+#include <map>
 
 namespace OHOS {
 namespace StorageService {
 const int START_USER_ID = 100;
 const int MAX_USER_ID = 1099;
+}
+
+namespace StorageDaemon {
+constexpr uint32_t GLOBAL_USER_ID = 0;
+
+static const std::string EL1 = "el1";
+static const std::string EL2 = "el2";
+enum KeyType {
+    EL1_KEY = 1,
+    EL2_KEY = 2,
+};
+static std::map<std::string, KeyType> EL_DIR_MAP = {
+    {EL1, EL1_KEY},
+    {EL2, EL2_KEY},
+};
 }
 }
 

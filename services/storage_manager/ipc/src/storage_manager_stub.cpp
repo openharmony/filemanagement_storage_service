@@ -386,6 +386,7 @@ int32_t StorageManagerStub::HandleGetCurrentBundleStats(MessageParcel &data, Mes
     }
     return E_OK;
 }
+
 int32_t StorageManagerStub::HandleGetAllVolumes(MessageParcel &data, MessageParcel &reply)
 {
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {

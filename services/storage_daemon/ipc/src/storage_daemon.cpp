@@ -15,11 +15,14 @@
 
 #include "ipc/storage_daemon.h"
 
+#ifdef USER_CRYPTO_MANAGER
 #include "crypto/key_manager.h"
+#endif
 #include "disk/disk_manager.h"
 #include "file_share.h"
 #include "file_sharing/file_sharing.h"
 #include "quota/quota_manager.h"
+#include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "user/user_manager.h"
@@ -75,11 +78,14 @@ int32_t StorageDaemon::SetVolumeDescription(std::string volId, std::string descr
 
 int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
+#ifdef USER_CRYPTO_MANAGER
     int32_t ret = KeyManager::GetInstance()->GenerateUserKeys(userId, flags);
     if (ret != 0) {
         LOGE("Generate user %{public}d key error", userId);
         return ret;
     }
+#endif
+
     return UserManager::GetInstance()->PrepareUserDirs(userId, flags);
 }
 
@@ -89,7 +95,12 @@ int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
     if (ret != 0) {
         LOGW("Destroy user %{public}d dirs failed, please check", userId);
     }
+
+#ifdef USER_CRYPTO_MANAGER
     return KeyManager::GetInstance()->DeleteUserKeys(userId);
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageDaemon::StartUser(int32_t userId)
@@ -104,7 +115,11 @@ int32_t StorageDaemon::StopUser(int32_t userId)
 
 int32_t StorageDaemon::InitGlobalKey(void)
 {
+#ifdef USER_CRYPTO_MANAGER
     return KeyManager::GetInstance()->InitGlobalDeviceKey();
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageDaemon::InitGlobalUserKeys(void)
@@ -117,22 +132,33 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
     }
 #endif
 
+#ifdef USER_CRYPTO_MANAGER
     int ret = KeyManager::GetInstance()->InitGlobalUserKeys();
     if (ret) {
         LOGE("Init global users els failed");
         return ret;
     }
+#endif
+
     return UserManager::GetInstance()->PrepareUserDirs(GLOBAL_USER_ID, CRYPTO_FLAG_EL1);
 }
 
 int32_t StorageDaemon::GenerateUserKeys(uint32_t userId, uint32_t flags)
 {
+#ifdef USER_CRYPTO_MANAGER
     return KeyManager::GetInstance()->GenerateUserKeys(userId, flags);
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageDaemon::DeleteUserKeys(uint32_t userId)
 {
+#ifdef USER_CRYPTO_MANAGER
     return KeyManager::GetInstance()->DeleteUserKeys(userId);
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageDaemon::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
@@ -140,24 +166,40 @@ int32_t StorageDaemon::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                                       const std::vector<uint8_t> &oldSecret,
                                       const std::vector<uint8_t> &newSecret)
 {
+#ifdef USER_CRYPTO_MANAGER
     return KeyManager::GetInstance()->UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
                                      const std::vector<uint8_t> &token,
                                      const std::vector<uint8_t> &secret)
 {
+#ifdef USER_CRYPTO_MANAGER
     return KeyManager::GetInstance()->ActiveUserKey(userId, token, secret);
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageDaemon::InactiveUserKey(uint32_t userId)
 {
+#ifdef USER_CRYPTO_MANAGER
     return KeyManager::GetInstance()->InActiveUserKey(userId);
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageDaemon::UpdateKeyContext(uint32_t userId)
 {
+#ifdef USER_CRYPTO_MANAGER
     return KeyManager::GetInstance()->UpdateKeyContext(userId);
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageDaemon::CreateShareFile(std::string uri, uint32_t tokenId, uint32_t flag)
