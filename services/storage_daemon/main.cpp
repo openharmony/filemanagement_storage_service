@@ -15,13 +15,15 @@
 
 #include <fstream>
 
+#ifdef EXTERNAL_STORAGE_MANAGER
 #include "disk/disk_config.h"
 #include "disk/disk_info.h"
 #include "disk/disk_manager.h"
+#include "netlink/netlink_manager.h"
+#endif
 #include "ipc/storage_daemon.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
-#include "netlink/netlink_manager.h"
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
 #include "user/user_manager.h"
@@ -29,6 +31,7 @@
 
 using namespace OHOS;
 
+#ifdef EXTERNAL_STORAGE_MANAGER
 const int CONFIG_PARAM_NUM = 6;
 static const std::string CONFIG_PTAH = "/system/etc/storage_daemon/disk_config";
 
@@ -83,10 +86,12 @@ static bool ParasConfig(StorageDaemon::DiskManager *dm)
     infile.close();
     return true;
 }
+#endif
 
 int main()
 {
     LOGI("storage_daemon start");
+#ifdef EXTERNAL_STORAGE_MANAGER
     StorageDaemon::NetlinkManager *nm = StorageDaemon::NetlinkManager::Instance();
     if (!nm) {
         LOGE("Unable to create NetlinkManager");
@@ -108,6 +113,7 @@ int main()
         LOGE("Paras config failed");
         return -1;
     }
+#endif
 
     do {
         auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
@@ -118,7 +124,9 @@ int main()
         }
     } while (true);
 
+#ifdef EXTERNAL_STORAGE_MANAGER
     StorageDaemon::DiskManager::Instance()->ReplayUevent();
+#endif
     IPCSkeleton::JoinWorkThread();
 
     return 0;

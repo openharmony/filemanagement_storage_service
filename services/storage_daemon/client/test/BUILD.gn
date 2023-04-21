@@ -24,7 +24,7 @@ ohos_unittest("storage_daemon_clt_test") {
     "LOG_DOMAIN = 0xD004301",
   ]
 
-  if (user_crypto_manager) {
+  if (storage_service_user_crypto_manager) {
     defines += [ "USER_CRYPTO_MANAGER" ]
   }
 

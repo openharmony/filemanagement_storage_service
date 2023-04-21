@@ -31,14 +31,11 @@ config("storage_manager_config") {
 
 ohos_shared_library("storage_manager") {
   sources = [
-    "disk/src/disk_manager_service.cpp",
     "ipc/src/storage_manager.cpp",
     "ipc/src/storage_manager_stub.cpp",
     "storage_daemon_communication/src/storage_daemon_communication.cpp",
     "user/src/multi_user_manager_service.cpp",
     "utils/src/storage_utils.cpp",
-    "volume/src/notification.cpp",
-    "volume/src/volume_manager_service.cpp",
   ]
 
   defines = [
@@ -46,9 +43,18 @@ ohos_shared_library("storage_manager") {
     "LOG_DOMAIN = 0xD004300",
   ]
 
-  if (user_crypto_manager) {
+  if (storage_service_user_crypto_manager) {
     defines += [ "USER_CRYPTO_MANAGER" ]
     sources += [ "crypto/filesystem_crypto.cpp" ]
+  }
+
+  if (storage_service_external_storage_manager) {
+    defines += [ "EXTERNAL_STORAGE_MANAGER" ]
+    sources += [
+      "disk/src/disk_manager_service.cpp",
+      "volume/src/notification.cpp",
+      "volume/src/volume_manager_service.cpp",
+    ]
   }
 
   configs = [ ":storage_manager_config" ]
@@ -67,7 +73,7 @@ ohos_shared_library("storage_manager") {
     "samgr:samgr_proxy",
   ]
 
-  if (storage_statistics_manager) {
+  if (storage_service_storage_statistics_manager) {
     defines += [ "STORAGE_STATISTICS_MANAGER" ]
     sources += [
       "account_subscriber/account_subscriber.cpp",
@@ -102,19 +108,24 @@ group("storage_manager_unit_test") {
   testonly = true
   deps = [
     "client/test:storage_manager_client_test",
-    "disk/test:storage_manager_disk_test",
     "innerkits_impl/test:storage_manager_innerkits_test",
     "ipc/test:storage_manager_ipc_test",
     "storage_daemon_communication/test:storage_manager_communication_test",
     "user/test:storage_manager_user_test",
-    "volume/test:storage_manager_volume_test",
   ]
 
-  if (user_crypto_manager) {
+  if (storage_service_user_crypto_manager) {
     deps += [ "crypto/test:storage_manager_crypto_test" ]
   }
 
-  if (storage_statistics_manager) {
+  if (storage_service_storage_statistics_manager) {
     deps += [ "storage/test:storage_manager_storage_test" ]
+  }
+
+  if (storage_service_external_storage_manager) {
+    deps += [
+      "disk/test:storage_manager_disk_test",
+      "volume/test:storage_manager_volume_test",
+    ]
   }
 }
