@@ -58,7 +58,6 @@ private:
     std::map<std::string, std::string> supportFormatType_ = {{"exfat", "mkfs.exfat"}, {"vfat", "newfs_msdos"}};
 
     int32_t ReadMetadata();
-    std::string GetBlkidData(const std::string type);
 };
 } // STORAGE_DAEMON
 } // OHOS

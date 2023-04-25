@@ -29,6 +29,9 @@ int CreateDiskNode(const std::string &path, dev_t dev);
 int DestroyDiskNode(const std::string &path);
 int GetDevSize(std::string path, uint64_t *size);
 int GetMaxVolume(dev_t device);
+int32_t ReadMetadata(const std::string &path, std::string &uuid, std::string &type, std::string &label);
+std::string GetBlkidData(const std::string &devPath, const std::string &type);
+std::string GetBlkidDataByCmd(std::vector<std::string> &cmd);
 } // namespace STORAGE_DAEMON
 } // namespace OHOS
 

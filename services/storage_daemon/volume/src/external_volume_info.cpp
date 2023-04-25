@@ -27,6 +27,7 @@
 
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "utils/disk_utils.h"
 #include "utils/file_utils.h"
 #include "utils/string_utils.h"
 #include "volume/process.h"
@@ -34,54 +35,18 @@
 using namespace std;
 namespace OHOS {
 namespace StorageDaemon {
-std::string ExternalVolumeInfo::GetBlkidData(const std::string type)
+int32_t ExternalVolumeInfo::ReadMetadata()
 {
-    std::vector<std::string> output;
-    std::vector<std::string> cmd;
-    if (fsType_ == "ntfs" && type == "LABEL") {
+    int32_t ret = OHOS::StorageDaemon::ReadMetadata(devPath_, fsUuid_, fsType_, fsLabel_);
+    if (fsType_ == "ntfs") {
+        std::vector<std::string> cmd;
         cmd = {
             "ntfslabel",
             devPath_
         };
-    } else {
-        cmd = {
-            "blkid",
-            "-s",
-            type,
-            "-o",
-            "value",
-            devPath_
-        };
+        fsLabel_ = GetBlkidDataByCmd(cmd);
     }
-
-    int32_t err = ForkExec(cmd, &output);
-    if (err) {
-        return "";
-    }
-
-    if (output.size() > 0) {
-        size_t sep = string::npos;
-        sep = output[0].find_first_of("\n");
-        if (sep != string::npos)
-            output[0].resize(sep);
-        return output[0];
-    }
-    return "";
-}
-
-int32_t ExternalVolumeInfo::ReadMetadata()
-{
-    fsUuid_ = GetBlkidData("UUID");
-    fsType_ = GetBlkidData("TYPE");
-    fsLabel_ = GetBlkidData("LABEL");
-
-    if (fsUuid_.empty() || fsType_.empty()) {
-        LOGE("External volume ReadMetadata error.");
-        return E_ERR;
-    }
-    LOGI("ReadMetadata, fsUuid=%{public}s, fsType=%{public}d, fsLabel=%{public}s.",
-         GetFsUuid().c_str(), GetFsType(), GetFsLabel().c_str());
-    return E_OK;
+    return ret;
 }
 
 int32_t ExternalVolumeInfo::GetFsType()
