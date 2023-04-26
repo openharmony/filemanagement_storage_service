@@ -33,6 +33,12 @@ const std::string SGDISK_DUMP_CMD = "--ohos-dump";
 const std::string SGDISK_ZAP_CMD = "--zap-all";
 const std::string SGDISK_PART_CMD = "--new=0:0:-0 --typeconde=0:0c00 --gpttombr=1";
 
+enum class Table {
+    UNKNOWN,
+    MBR,
+    GPT,
+};
+
 DiskInfo::DiskInfo(std::string sysPath, std::string devPath, dev_t device, int flag)
 {
     id_ = StringPrintf("disk-%d-%d", major(device), minor(device));
@@ -207,6 +213,8 @@ int DiskInfo::ReadPartition()
 
     std::string lineToken = " ";
     status = sScan;
+    bool foundPart = false;
+    Table table = Table::UNKNOWN;
     for (auto &line : lines) {
         auto split = SplitLine(line, lineToken);
         auto it = split.begin();
@@ -214,7 +222,17 @@ int DiskInfo::ReadPartition()
             continue;
         }
         if (*it == "DISK") {
-            continue;
+            if (++it == split.end()) {
+                continue;
+            }
+            if (*it == "mbr") {
+                table = Table::MBR;
+            } else if (*it == "gpt") {
+                table = Table::GPT;
+            } else {
+                LOGI("Unknown partition table %{public}s", (*it).c_str());
+                continue;
+            }
         } else if (*it == "PART") {
             if (++it == split.end()) {
                 continue;
@@ -226,9 +244,21 @@ int DiskInfo::ReadPartition()
             }
             dev_t partitionDev = makedev(major(device_), minor(device_) + static_cast<uint32_t>(index));
             res = CreateVolume(partitionDev);
-            if (res != E_OK) {
-                return res;
+            if (res == E_OK) {
+                foundPart = true;
             }
+        }
+    }
+    if (table == Table::UNKNOWN || !foundPart) {
+        LOGI("%{public}s has unknown table", id_.c_str());
+        std::string fsType;
+        std::string uuid;
+        std::string label;
+        if (OHOS::StorageDaemon::ReadMetadata(devPath_, fsType, uuid, label) == E_OK) {
+            CreateVolume(device_);
+        } else {
+            LOGE("failed to identify the disk device");
+            return E_NON_EXIST;
         }
     }
     return E_OK;

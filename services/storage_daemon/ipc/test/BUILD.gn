@@ -52,8 +52,6 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/quota/quota_manager.cpp",
     "$ROOT_DIR/user/src/mount_manager.cpp",
     "$ROOT_DIR/user/src/user_manager.cpp",
-    "$ROOT_DIR/utils/disk_utils.cpp",
-    "$ROOT_DIR/utils/mount_argument_utils.cpp",
     "$ROOT_DIR/utils/test/common/help_utils.cpp",
     "$ROOT_DIR/volume/src/external_volume_info.cpp",
     "$ROOT_DIR/volume/src/process.cpp",

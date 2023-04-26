@@ -65,8 +65,6 @@ ohos_executable("storage_daemon") {
     "quota/quota_manager.cpp",
     "user/src/mount_manager.cpp",
     "user/src/user_manager.cpp",
-    "utils/disk_utils.cpp",
-    "utils/mount_argument_utils.cpp",
     "volume/src/external_volume_info.cpp",
     "volume/src/process.cpp",
     "volume/src/volume_info.cpp",
@@ -191,7 +189,9 @@ ohos_shared_library("storage_common_utils") {
   ]
 
   sources = [
+    "./utils/disk_utils.cpp",
     "./utils/file_utils.cpp",
+    "./utils/mount_argument_utils.cpp",
     "./utils/string_utils.cpp",
   ]
 

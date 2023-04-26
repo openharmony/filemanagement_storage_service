@@ -264,8 +264,7 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_GetDisk_002, TestSize.
     EXPECT_TRUE(diskInfo != nullptr);
     diskManager->CreateDisk(diskInfo);
     diskInfo = diskManager->GetDisk(device);
-    dev_t device1 = diskInfo->GetDevice();
-    EXPECT_TRUE(device1 == device);
+    EXPECT_TRUE(diskInfo == nullptr);
 
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_GetDisk_002 end";
 }
