@@ -26,6 +26,7 @@
 #include "storage_service_log.h"
 #include "utils/file_utils.h"
 
+using namespace std;
 namespace OHOS {
 namespace StorageDaemon {
 static constexpr int32_t NODE_PERM = 0660;
@@ -81,6 +82,54 @@ int GetMaxVolume(dev_t device)
     } else {
         return MAX_SCSI_VOLUMES;
     }
+}
+
+int32_t ReadMetadata(const std::string &devPath, std::string &uuid, std::string &type, std::string &label)
+{
+    uuid = GetBlkidData(devPath, "UUID");
+    type = GetBlkidData(devPath, "TYPE");
+    label = GetBlkidData(devPath, "LABEL");
+
+    if (uuid.empty() || type.empty()) {
+        LOGE("External volume ReadMetadata error.");
+        return E_ERR;
+    }
+    LOGI("ReadMetadata, fsUuid=%{public}s, fsType=%{public}s, fsLabel=%{public}s.", uuid.c_str(), type.c_str(),
+        label.c_str());
+    return E_OK;
+}
+
+std::string GetBlkidData(const std::string &devPath, const std::string &type)
+{
+    std::vector<std::string> cmd;
+    cmd = {
+        "blkid",
+        "-s",
+        type,
+        "-o",
+        "value",
+        devPath
+    };
+    return GetBlkidDataByCmd(cmd);
+}
+
+std::string GetBlkidDataByCmd(std::vector<std::string> &cmd)
+{
+    std::vector<std::string> output;
+
+    int32_t err = ForkExec(cmd, &output);
+    if (err) {
+        return "";
+    }
+
+    if (output.size() > 0) {
+        size_t sep = string::npos;
+        sep = output[0].find_first_of("\n");
+        if (sep != string::npos)
+            output[0].resize(sep);
+        return output[0];
+    }
+    return "";
 }
 } // namespace STORAGE_DAEMON
 } // namespace OHOS
