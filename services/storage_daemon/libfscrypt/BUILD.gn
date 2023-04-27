@@ -40,7 +40,7 @@ ohos_static_library("libfscryptutils") {
     "src/sysparam_dynamic.c",
   ]
 
-  if (user_crypto_manager) {
+  if (storage_service_user_crypto_manager) {
     defines = [ "USER_CRYPTO_MANAGER" ]
   }
 
@@ -69,7 +69,7 @@ ohos_static_library("libfscryptutils_static") {
     "src/sysparam_static.c",
   ]
 
-  if (user_crypto_manager) {
+  if (storage_service_user_crypto_manager) {
     defines = [ "USER_CRYPTO_MANAGER" ]
   }
 

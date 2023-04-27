@@ -20,7 +20,10 @@
     "features": [
       "storage_service_fstools",
       "storage_service_graphic",
-      "storage_service_user_file_sharing"
+      "storage_service_user_file_sharing",
+      "storage_service_user_crypto_manager",
+      "storage_service_external_storage_manager",
+      "storage_service_storage_statistics_manager"
     ],
     "adapted_system_type": ["standard"],
     "rom": "",

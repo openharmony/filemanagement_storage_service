@@ -24,8 +24,12 @@ ohos_unittest("storage_daemon_test") {
     "LOG_DOMAIN = 0xD004301",
   ]
 
-  if (user_crypto_manager) {
+  if (storage_service_user_crypto_manager) {
     defines += [ "USER_CRYPTO_MANAGER" ]
+  }
+
+  if (storage_service_external_storage_manager) {
+    defines += [ "EXTERNAL_STORAGE_MANAGER" ]
   }
 
   cflags_cc = [ "-Wno-unused-const-variable" ]
@@ -122,7 +126,7 @@ ohos_unittest("storage_daemon_stub_test") {
     "LOG_DOMAIN = 0xD004301",
   ]
 
-  if (user_crypto_manager) {
+  if (storage_service_user_crypto_manager) {
     defines += [ "USER_CRYPTO_MANAGER" ]
   }
 

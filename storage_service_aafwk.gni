@@ -15,8 +15,9 @@ ability_runtime_path = "//foundation/ability/ability_runtime"
 ability_runtime_kits_path = "${ability_runtime_path}/frameworks/kits"
 declare_args() {
   storage_service_graphic = true
-  user_crypto_manager = true
-  storage_statistics_manager = true
+  storage_service_user_crypto_manager = true
+  storage_service_external_storage_manager = true
+  storage_service_storage_statistics_manager = true
 }
 storage_manager_path =
     "//foundation/filemanagement/storage_service/services/storage_manager"

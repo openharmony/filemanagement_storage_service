@@ -20,7 +20,9 @@
 
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#ifdef EXTERNAL_STORAGE_MANAGER
 #include "volume/volume_manager_service.h"
+#endif
 
 using namespace std;
 
@@ -32,12 +34,16 @@ VolumeStorageStatusService::~VolumeStorageStatusService() {}
 
 std::string VolumeStorageStatusService::GetVolumePath(std::string volumeUuid)
 {
+#ifdef EXTERNAL_STORAGE_MANAGER
     auto volumePtr = DelayedSingleton<VolumeManagerService>::GetInstance()->GetVolumeByUuid(volumeUuid);
     if (volumePtr == nullptr) {
         LOGE("VolumeStorageStatusService::GetVolumePath fail.");
         return "";
     }
     return volumePtr->GetPath();
+#else
+    return "";
+#endif
 }
 
 int32_t VolumeStorageStatusService::GetFreeSizeOfVolume(string volumeUuid, int64_t &freeSize)

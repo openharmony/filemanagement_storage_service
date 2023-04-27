@@ -26,13 +26,15 @@
 #ifdef USER_CRYPTO_MANAGER
 #include "crypto/filesystem_crypto.h"
 #endif
+#ifdef EXTERNAL_STORAGE_MANAGER
 #include "disk/disk_manager_service.h"
+#include "volume/volume_manager_service.h"
+#endif
 #include "storage_daemon_communication/storage_daemon_communication.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
 #include "user/multi_user_manager_service.h"
-#include "volume/volume_manager_service.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -190,111 +192,164 @@ int32_t StorageManager::GetCurrentBundleStats(BundleStats &bundleStats)
 
 int32_t StorageManager::NotifyVolumeCreated(VolumeCore vc)
 {
+#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::NotifyVolumeCreated start, volumeId: %{public}s", vc.GetId().c_str());
     DelayedSingleton<VolumeManagerService>::GetInstance()->OnVolumeCreated(vc);
+#endif
+
     return E_OK;
 }
 
 int32_t StorageManager::NotifyVolumeMounted(std::string volumeId, int32_t fsType, std::string fsUuid,
     std::string path, std::string description)
 {
+#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::NotifyVolumeMounted start");
     DelayedSingleton<VolumeManagerService>::GetInstance()->OnVolumeMounted(volumeId, fsType, fsUuid, path, description);
+#endif
+
     return E_OK;
 }
 
 int32_t StorageManager::NotifyVolumeDestroyed(std::string volumeId)
 {
+#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::NotifyVolumeDestroyed start");
     DelayedSingleton<VolumeManagerService>::GetInstance()->OnVolumeDestroyed(volumeId);
+#endif
+
     return E_OK;
 }
 
 int32_t StorageManager::Mount(std::string volumeId)
 {
+#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::Mount start");
     int result = DelayedSingleton<VolumeManagerService>::GetInstance()->Mount(volumeId);
     return result;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManager::Unmount(std::string volumeId)
 {
+#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::Unmount start");
     int result = DelayedSingleton<VolumeManagerService>::GetInstance()->Unmount(volumeId);
     return result;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManager::GetAllVolumes(std::vector<VolumeExternal> &vecOfVol)
 {
+#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::GetAllVolumes start");
     vecOfVol = DelayedSingleton<VolumeManagerService>::GetInstance()->GetAllVolumes();
+#endif
+
     return E_OK;
 }
 
 int32_t StorageManager::NotifyDiskCreated(Disk disk)
 {
+#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManager::NotifyDiskCreated start, diskId: %{public}s", disk.GetDiskId().c_str());
     std::shared_ptr<DiskManagerService> diskManager = DelayedSingleton<DiskManagerService>::GetInstance();
     diskManager->OnDiskCreated(disk);
+#endif
+
     return E_OK;
 }
 
 int32_t StorageManager::NotifyDiskDestroyed(std::string diskId)
 {
+#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManager::NotifyDiskDestroyed start, diskId: %{public}s", diskId.c_str());
     std::shared_ptr<DiskManagerService> diskManager = DelayedSingleton<DiskManagerService>::GetInstance();
     diskManager->OnDiskDestroyed(diskId);
+#endif
+
     return E_OK;
 }
 
 int32_t StorageManager::Partition(std::string diskId, int32_t type)
 {
+#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManager::Partition start, diskId: %{public}s", diskId.c_str());
     std::shared_ptr<DiskManagerService> diskManager = DelayedSingleton<DiskManagerService>::GetInstance();
     int32_t err = diskManager->Partition(diskId, type);
     return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManager::GetAllDisks(std::vector<Disk> &vecOfDisk)
 {
+#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::GetAllDisks start");
     vecOfDisk = DelayedSingleton<DiskManagerService>::GetInstance()->GetAllDisks();
+#endif
+
     return E_OK;
 }
 
 int32_t StorageManager::GetVolumeByUuid(std::string fsUuid, VolumeExternal &vc)
 {
+#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::GetVolumeByUuid start, uuid: %{public}s", fsUuid.c_str());
     int32_t err = DelayedSingleton<VolumeManagerService>::GetInstance()->GetVolumeByUuid(fsUuid, vc);
     return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManager::GetVolumeById(std::string volumeId, VolumeExternal &vc)
 {
+#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::GetVolumeById start, volId: %{public}s", volumeId.c_str());
     int32_t err = DelayedSingleton<VolumeManagerService>::GetInstance()->GetVolumeById(volumeId, vc);
     return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManager::SetVolumeDescription(std::string fsUuid, std::string description)
 {
+#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::SetVolumeDescription start, uuid: %{public}s", fsUuid.c_str());
     int32_t err = DelayedSingleton<VolumeManagerService>::GetInstance()->SetVolumeDescription(fsUuid, description);
     return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManager::Format(std::string volumeId, std::string fsType)
 {
+#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::Format start, volumeId: %{public}s, fsType: %{public}s", volumeId.c_str(), fsType.c_str());
     int32_t err = DelayedSingleton<VolumeManagerService>::GetInstance()->Format(volumeId, fsType);
     return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManager::GetDiskById(std::string diskId, Disk &disk)
 {
+#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::GetDiskById start, diskId: %{public}s", diskId.c_str());
     int32_t err = DelayedSingleton<DiskManagerService>::GetInstance()->GetDiskById(diskId, disk);
     return err;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManager::GenerateUserKeys(uint32_t userId, uint32_t flags)

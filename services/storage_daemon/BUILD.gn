@@ -51,24 +51,15 @@ declare_args() {
 
 ohos_executable("storage_daemon") {
   sources = [
-    "disk/src/disk_config.cpp",
-    "disk/src/disk_info.cpp",
-    "disk/src/disk_manager.cpp",
     "ipc/src/storage_daemon.cpp",
     "ipc/src/storage_daemon_stub.cpp",
     "ipc/src/storage_manager_client.cpp",
     "main.cpp",
-    "netlink/src/netlink_data.cpp",
-    "netlink/src/netlink_handler.cpp",
-    "netlink/src/netlink_listener.cpp",
-    "netlink/src/netlink_manager.cpp",
     "quota/quota_manager.cpp",
     "user/src/mount_manager.cpp",
     "user/src/user_manager.cpp",
-    "volume/src/external_volume_info.cpp",
-    "volume/src/process.cpp",
-    "volume/src/volume_info.cpp",
-    "volume/src/volume_manager.cpp",
+    "utils/disk_utils.cpp",
+    "utils/mount_argument_utils.cpp",
   ]
 
   defines = [
@@ -82,6 +73,23 @@ ohos_executable("storage_daemon") {
       "file_sharing/src/acl.cpp",
       "file_sharing/src/file_sharing.cpp",
       "file_sharing/src/setacl.cpp",
+    ]
+  }
+
+  if (storage_service_external_storage_manager) {
+    defines += [ "EXTERNAL_STORAGE_MANAGER" ]
+    sources += [
+      "disk/src/disk_config.cpp",
+      "disk/src/disk_info.cpp",
+      "disk/src/disk_manager.cpp",
+      "netlink/src/netlink_data.cpp",
+      "netlink/src/netlink_handler.cpp",
+      "netlink/src/netlink_listener.cpp",
+      "netlink/src/netlink_manager.cpp",
+      "volume/src/external_volume_info.cpp",
+      "volume/src/process.cpp",
+      "volume/src/volume_info.cpp",
+      "volume/src/volume_manager.cpp",
     ]
   }
 
@@ -107,7 +115,7 @@ ohos_executable("storage_daemon") {
     "samgr:samgr_proxy",
   ]
 
-  if (user_crypto_manager) {
+  if (storage_service_user_crypto_manager) {
     defines += [ "USER_CRYPTO_MANAGER" ]
     deps += [
       "crypto:libsdcrypto",
@@ -156,7 +164,7 @@ ohos_executable("sdc") {
     "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
   ]
 
-  if (user_crypto_manager) {
+  if (storage_service_user_crypto_manager) {
     defines += [ "USER_CRYPTO_MANAGER" ]
     deps += [ "libfscrypt:libfscryptutils" ]
   }
@@ -236,7 +244,7 @@ group("storage_daemon_usb_param") {
 
 group("storage_daemon_third_party") {
   deps = []
-  if (storage_service_fstools) {
+  if (storage_service_external_storage_manager && storage_service_fstools) {
     deps += [
       "//third_party/FreeBSD/sbin/fsck_msdosfs:fsck_msdos",
       "//third_party/FreeBSD/sbin/newfs_msdos:newfs_msdos",
@@ -253,17 +261,22 @@ group("storage_daemon_unit_test") {
   testonly = true
   deps = [
     "client/test:storage_daemon_client_test",
-    "disk/test:storage_daemon_disk_test",
     "file_sharing/test:file_sharing_test",
     "ipc/test:storage_daemon_ipc_test",
-    "netlink/test:storage_daemon_netlink_test",
     "quota/test:storage_daemon_quota_test",
     "user/test:storage_daemon_user_test",
     "utils/test:storage_daemon_utils_test",
-    "volume/test:storage_daemon_volume_test",
   ]
 
-  if (user_crypto_manager) {
+  if (storage_service_user_crypto_manager) {
     deps += [ "crypto/test:crypto_test" ]
+  }
+
+  if (storage_service_external_storage_manager) {
+    deps += [
+      "disk/test:storage_daemon_disk_test",
+      "netlink/test:storage_daemon_netlink_test",
+      "volume/test:storage_daemon_volume_test",
+    ]
   }
 }

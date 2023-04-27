@@ -18,7 +18,10 @@
 #ifdef USER_CRYPTO_MANAGER
 #include "crypto/key_manager.h"
 #endif
+#ifdef EXTERNAL_STORAGE_MANAGER
 #include "disk/disk_manager.h"
+#include "volume/volume_manager.h"
+#endif
 #include "file_share.h"
 #include "file_sharing/file_sharing.h"
 #include "quota/quota_manager.h"
@@ -26,7 +29,6 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "user/user_manager.h"
-#include "volume/volume_manager.h"
 #include "user/mount_manager.h"
 #include "system_ability_definition.h"
 #include "cloud_daemon_manager.h"
@@ -42,38 +44,62 @@ int32_t StorageDaemon::Shutdown()
 
 int32_t StorageDaemon::Mount(std::string volId, uint32_t flags)
 {
+#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle Mount");
     return VolumeManager::Instance()->Mount(volId, flags);
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageDaemon::UMount(std::string volId)
 {
+#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle UMount");
     return VolumeManager::Instance()->UMount(volId);
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageDaemon::Check(std::string volId)
 {
+#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle Check");
     return VolumeManager::Instance()->Check(volId);
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageDaemon::Format(std::string volId, std::string fsType)
 {
+#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle Format");
     return VolumeManager::Instance()->Format(volId, fsType);
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageDaemon::Partition(std::string diskId, int32_t type)
 {
+#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle Partition");
     return DiskManager::Instance()->HandlePartition(diskId);
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageDaemon::SetVolumeDescription(std::string volId, std::string description)
 {
+#ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle SetVolumeDescription");
     return VolumeManager::Instance()->SetVolumeDescription(volId, description);
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)

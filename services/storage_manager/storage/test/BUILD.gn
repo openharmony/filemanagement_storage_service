@@ -82,6 +82,10 @@ ohos_unittest("volume_storage_status_service_test") {
     "LOG_DOMAIN = 0xD004300",
   ]
 
+  if (storage_service_external_storage_manager) {
+    defines += [ "EXTERNAL_STORAGE_MANAGER" ]
+  }
+
   deps = [ "//third_party/googletest:gtest_main" ]
 
   external_deps = [
