@@ -429,14 +429,14 @@ int32_t StorageManager::UpdateKeyContext(uint32_t userId)
 #endif
 }
 
-int32_t StorageManager::CreateShareFile(std::string uri, int32_t tokenId, int32_t flag)
+int32_t StorageManager::CreateShareFile(std::string uri, uint32_t tokenId, uint32_t flag)
 {
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     return sdCommunication->CreateShareFile(uri, tokenId, flag);
 }
 
-int32_t StorageManager::DeleteShareFile(int32_t tokenId, std::vector<std::string> sharePathList)
+int32_t StorageManager::DeleteShareFile(uint32_t tokenId, std::vector<std::string> sharePathList)
 {
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();

@@ -197,7 +197,9 @@ ohos_shared_library("storage_common_utils") {
   ]
 
   sources = [
+    "./utils/disk_utils.cpp",
     "./utils/file_utils.cpp",
+    "./utils/mount_argument_utils.cpp",
     "./utils/string_utils.cpp",
   ]
 

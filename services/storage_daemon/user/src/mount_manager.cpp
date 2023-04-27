@@ -26,6 +26,7 @@
 #include "utils/file_utils.h"
 #include "utils/mount_argument_utils.h"
 #include "utils/string_utils.h"
+#include "system_ability_definition.h"
 #include "cloud_daemon_manager.h"
 
 
@@ -129,6 +130,7 @@ int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath)
     return E_OK;
 }
 
+
 int32_t MountManager::CloudMount(int32_t userId)
 {
     int fd = -1;
@@ -136,6 +138,10 @@ int32_t MountManager::CloudMount(int32_t userId)
     int ret;
     Utils::MountArgument cloudMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
     const string path = cloudMntArgs.GetFullCloud();
+    if (!cloudReady_) {
+        LOGI("Cloud Service has not started");
+        return E_MOUNT;
+    }
 
     fd = open("/dev/fuse", O_RDWR);
     if (fd < 0) {
@@ -173,9 +179,30 @@ int32_t MountManager::HmdfsMount(int32_t userId)
         return E_MOUNT;
     }
 
+    mountMutex_.lock();
     ret = CloudMount(userId);
+    if (ret)
+        activeUsers_.push_back(userId);
+    mountMutex_.unlock();
 
     return E_OK;
+}
+
+void MountManager::MountCloudForUsers()
+{
+    for (int i = 0; i < activeUsers_.size(); i++) {
+        CloudMount(activeUsers_[i]);
+    }
+}
+
+void MountManager::SetCloudState(bool active)
+{
+    mountMutex_.lock();
+    cloudReady_ = active;
+    if (cloudReady_) {
+        MountCloudForUsers();
+    }
+    mountMutex_.unlock();
 }
 
 int32_t MountManager::HmdfsTwiceUMount(int32_t userId, std::string relativePath)

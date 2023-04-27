@@ -87,8 +87,8 @@ public:
     virtual int32_t UpdateKeyContext(uint32_t userId) = 0;
 
     // app file share api
-    virtual int32_t CreateShareFile(std::string uri, int32_t tokenId, int32_t flag) = 0;
-    virtual int32_t DeleteShareFile(int32_t tokenId, std::vector<std::string>sharePathList) = 0;
+    virtual int32_t CreateShareFile(std::string uri, uint32_t tokenId, uint32_t flag) = 0;
+    virtual int32_t DeleteShareFile(uint32_t tokenId, std::vector<std::string>sharePathList) = 0;
 
     virtual int32_t SetBundleQuota(const std::string &bundleName, int32_t uid,
         const std::string &bundleDataDirPath, int32_t limitSizeMb)

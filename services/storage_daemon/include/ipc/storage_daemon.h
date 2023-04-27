@@ -18,6 +18,7 @@
 
 #include <mutex>
 #include "ipc/storage_daemon_stub.h"
+#include "system_ability_status_change_stub.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -55,11 +56,19 @@ public:
     virtual int32_t UpdateKeyContext(uint32_t userId) override;
 
     // app file share api
-    virtual int32_t CreateShareFile(std::string uri, int32_t tokenId, int32_t flag) override;
-    virtual int32_t DeleteShareFile(int32_t tokenId, std::vector<std::string>sharePathList) override;
+    virtual int32_t CreateShareFile(std::string uri, uint32_t tokenId, uint32_t flag) override;
+    virtual int32_t DeleteShareFile(uint32_t tokenId, std::vector<std::string>sharePathList) override;
 
     virtual int32_t SetBundleQuota(const std::string &bundleName, int32_t uid,
         const std::string &bundleDataDirPath, int32_t limitSizeMb) override;
+
+    class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
+    public:
+        SystemAbilityStatusChangeListener() = default;
+        ~SystemAbilityStatusChangeListener() = default;
+        void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;
+        void OnRemoveSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;
+    };
 };
 } // StorageDaemon
 } // OHOS

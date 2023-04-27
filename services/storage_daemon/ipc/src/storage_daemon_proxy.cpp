@@ -464,7 +464,7 @@ int32_t StorageDaemonProxy::UpdateKeyContext(uint32_t userId)
     return reply.ReadInt32();
 }
 
-int32_t StorageDaemonProxy::CreateShareFile(std::string uri, int32_t tokenId, int32_t flag)
+int32_t StorageDaemonProxy::CreateShareFile(std::string uri, uint32_t tokenId, uint32_t flag)
 {
     MessageParcel data;
     MessageParcel reply;
@@ -494,7 +494,7 @@ int32_t StorageDaemonProxy::CreateShareFile(std::string uri, int32_t tokenId, in
     return reply.ReadInt32();
 }
 
-int32_t StorageDaemonProxy::DeleteShareFile(int32_t tokenId, std::vector<std::string>sharePathList)
+int32_t StorageDaemonProxy::DeleteShareFile(uint32_t tokenId, std::vector<std::string>sharePathList)
 {
     MessageParcel data;
     MessageParcel reply;
