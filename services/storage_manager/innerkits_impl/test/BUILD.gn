@@ -12,23 +12,22 @@
 # limitations under the License.
 
 import("//build/test.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ohos_unittest("disk_test") {
   module_out_path = "filemanagement/storage_service/storage_manager"
 
   sources = [
-    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/disk.cpp",
+    "../src/disk.cpp",
     "disk_test.cpp",
   ]
 
   include_dirs = [
-    "//foundation/filemanagement/storage_service/services/storage_daemon/include",
-    "//foundation/filemanagement/storage_service/services/storage_manager/include",
-    "//foundation/filemanagement/storage_service/utils/include",
+    "${storage_daemon_path}/include",
+    "${storage_manager_path}/include",
+    "${storage_service_path}/utils/include",
     "include",
-    "//utils/system/safwk/native/include",
-    "//commonlibrary/c_utils/base/include",
-    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   deps = [ "//third_party/googletest:gtest_main" ]
@@ -46,18 +45,16 @@ ohos_unittest("volume_core_test") {
   module_out_path = "filemanagement/storage_service/storage_manager"
 
   sources = [
-    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/volume_core.cpp",
+    "../src/volume_core.cpp",
     "volume_core_test.cpp",
   ]
 
   include_dirs = [
-    "//foundation/filemanagement/storage_service/services/storage_daemon/include",
-    "//foundation/filemanagement/storage_service/services/storage_manager/include",
-    "//foundation/filemanagement/storage_service/utils/include",
+    "${storage_daemon_path}/include",
+    "${storage_manager_path}/include",
+    "${storage_service_path}/utils/include",
     "include",
-    "//utils/system/safwk/native/include",
-    "//commonlibrary/c_utils/base/include",
-    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   deps = [ "//third_party/googletest:gtest_main" ]
@@ -75,22 +72,20 @@ ohos_unittest("volume_external_test") {
   module_out_path = "filemanagement/storage_service/storage_manager"
 
   sources = [
-    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/disk.cpp",
-    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/volume_core.cpp",
-    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/volume_external.cpp",
+    "../src/disk.cpp",
+    "../src/volume_core.cpp",
+    "../src/volume_external.cpp",
     "disk_test.cpp",
     "volume_core_test.cpp",
     "volume_external_test.cpp",
   ]
 
   include_dirs = [
-    "//foundation/filemanagement/storage_service/services/storage_daemon/include",
-    "//foundation/filemanagement/storage_service/services/storage_manager/include",
-    "//foundation/filemanagement/storage_service/utils/include",
+    "${storage_daemon_path}/include",
+    "${storage_manager_path}/include",
+    "${storage_service_path}/utils/include",
     "include",
-    "//utils/system/safwk/native/include",
-    "//commonlibrary/c_utils/base/include",
-    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   deps = [ "//third_party/googletest:gtest_main" ]
@@ -108,20 +103,18 @@ ohos_unittest("storage_stats_test") {
   module_out_path = "filemanagement/storage_service/storage_manager"
 
   sources = [
-    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/bundle_stats.cpp",
-    "//foundation/filemanagement/storage_service/services/storage_manager/innerkits_impl/src/storage_stats.cpp",
+    "../src/bundle_stats.cpp",
+    "../src/storage_stats.cpp",
     "bundle_stats_test.cpp",
     "storage_stats_test.cpp",
   ]
 
   include_dirs = [
-    "//foundation/filemanagement/storage_service/services/storage_daemon/include",
-    "//foundation/filemanagement/storage_service/services/storage_manager/include",
-    "//foundation/filemanagement/storage_service/utils/include",
+    "${storage_daemon_path}/include",
+    "${storage_manager_path}/include",
+    "${storage_service_path}/utils/include",
     "include",
-    "//utils/system/safwk/native/include",
-    "//commonlibrary/c_utils/base/include",
-    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   deps = [ "//third_party/googletest:gtest_main" ]

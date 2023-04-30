@@ -13,15 +13,16 @@
 
 import("//build/config/features.gni")
 import("//build/test.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ohos_fuzztest("StorageManagerProxyFuzzTest") {
   module_out_path = "filemanagement/storage_service"
-  fuzz_config_file = "//foundation/filemanagement/storage_service/test/fuzztest/storagemanagerproxy_fuzzer"
+  fuzz_config_file =
+      "${storage_service_path}/test/fuzztest/storagemanagerproxy_fuzzer"
   include_dirs = [
-    "//foundation/filemanagement/storage_service/services/common/include",
-    "//foundation/filemanagement/storage_service/services/storage_manager/include",
-    "//commonlibrary/c_utils/base/include",
-    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
+    "${storage_service_common_path}/include",
+    "${storage_manager_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
   cflags = [
     "-g",
@@ -29,18 +30,20 @@ ohos_fuzztest("StorageManagerProxyFuzzTest") {
     "-Wno-unused-variable",
     "-fno-omit-frame-pointer",
   ]
-  sources = [ "//foundation/filemanagement/storage_service/test/fuzztest/storagemanagerproxy_fuzzer/storagemanagerproxy_fuzzer.cpp" ]
+  sources = [ "${storage_service_path}/test/fuzztest/storagemanagerproxy_fuzzer/storagemanagerproxy_fuzzer.cpp" ]
 
   defines = [ "STORAGE_LOG_TAG = \"storage_service\"" ]
   deps = [
-    "//commonlibrary/c_utils/base:utils",
-    "//foundation/ability/ability_runtime/frameworks/native/ability/native:abilitykit_native",
-    "//foundation/bundlemanager/bundle_framework/services/bundlemgr:libbms",
-    "//foundation/communication/ipc/interfaces/innerkits/ipc_core:ipc_core",
-    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
+    "${bundlemanager_framework_path}/services/bundlemgr:libbms",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
   ]
 
-  external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
+  external_deps = [
+    "ability_runtime:abilitykit_native",
+    "c_utils:utils",
+    "hiviewdfx_hilog_native:libhilog",
+    "ipc:ipc_core",
+  ]
 }
 
 group("fuzztest") {

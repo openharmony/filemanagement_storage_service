@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import("//build/ohos.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ## build sm execute bin file
 config("storage_daemon_crypto_config") {
@@ -19,9 +20,7 @@ config("storage_daemon_crypto_config") {
   include_dirs = [
     "../include",
     "../include/crypto",
-    "//foundation/filemanagement/storage_service/services/common/include",
-    "//utils/system/safwk/native/include",
-    "//commonlibrary/c_utils/base/include",
+    "${storage_service_common_path}/include",
     "//third_party/openssl/include",
   ]
 
@@ -51,9 +50,9 @@ ohos_static_library("libsdcrypto") {
   configs = [ ":storage_daemon_crypto_config" ]
 
   deps = [
-    "//base/security/huks/frameworks/huks_standard/main/os_dependency:libhuks_os_dependency_standard_static",
-    "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
-    "//foundation/filemanagement/storage_service/services/storage_daemon/libfscrypt:libfscryptutils",
+    "${security_huks_frameworks_path}/main/os_dependency:libhuks_os_dependency_standard_static",
+    "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}/libfscrypt:libfscryptutils",
     "//third_party/openssl:libcrypto_shared",
   ]
 

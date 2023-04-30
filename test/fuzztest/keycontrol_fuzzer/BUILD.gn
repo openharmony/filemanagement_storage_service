@@ -14,20 +14,21 @@
 #####################hydra-fuzz###################
 import("//build/config/features.gni")
 import("//build/test.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ##############################fuzztest##########################################
 ohos_fuzztest("KeyControlFuzzTest") {
   module_out_path = "filemanagement/storage_service"
-  fuzz_config_file = "//foundation/filemanagement/storage_service/test/fuzztest/keycontrol_fuzzer"
-  include_dirs = [ "//foundation/filemanagement/storage_service/services/storage_daemon/include/libfscrypt" ]
+  fuzz_config_file = "${storage_service_path}/test/fuzztest/keycontrol_fuzzer"
+  include_dirs = [ "${storage_daemon_path}/include/libfscrypt" ]
   cflags = [
     "-g",
     "-O0",
     "-Wno-unused-variable",
     "-fno-omit-frame-pointer",
   ]
-  sources = [ "//foundation/filemanagement/storage_service/test/fuzztest/keycontrol_fuzzer/keycontrol_fuzzer.cpp" ]
-  deps = [ "//foundation/filemanagement/storage_service/services/storage_daemon/libfscrypt:libfscryptutils" ]
+  sources = [ "${storage_service_path}/test/fuzztest/keycontrol_fuzzer/keycontrol_fuzzer.cpp" ]
+  deps = [ "${storage_daemon_path}/libfscrypt:libfscryptutils" ]
 }
 
 ###############################################################################

@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import("//build/test.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ohos_moduletest("AclTest") {
   module_out_path = "filemanagement/storage_service/storage_daemon"
@@ -41,8 +42,7 @@ ohos_moduletest("SetAclTest") {
   include_dirs = [
     "../../include",
     "../../../../interfaces/innerkits/acl/native",
-    "//commonlibrary/c_utils/base/include",
-    "//foundation/filemanagement/storage_service/services/common/include",
+    "${storage_service_common_path}/include",
   ]
 
   sources = [
@@ -52,7 +52,7 @@ ohos_moduletest("SetAclTest") {
   ]
 
   deps = [
-    "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
+    "${storage_daemon_path}:storage_common_utils",
     "//third_party/googletest:gtest_main",
   ]
 

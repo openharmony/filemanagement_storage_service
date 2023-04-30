@@ -13,20 +13,21 @@
 
 import("//build/config/features.gni")
 import("//build/test.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ohos_fuzztest("FileUtilsFuzzTest") {
   module_out_path = "filemanagement/storage_service"
-  fuzz_config_file = "//foundation/filemanagement/storage_service/test/fuzztest/fileutils_fuzzer"
-  include_dirs = [ "//foundation/filemanagement/storage_service/services/storage_daemon/include" ]
+  fuzz_config_file = "${storage_service_path}/test/fuzztest/fileutils_fuzzer"
+  include_dirs = [ "${storage_daemon_path}/include" ]
   cflags = [
     "-g",
     "-O0",
     "-Wno-unused-variable",
     "-fno-omit-frame-pointer",
   ]
-  sources = [ "//foundation/filemanagement/storage_service/test/fuzztest/fileutils_fuzzer/fileutils_fuzzer.cpp" ]
+  sources = [ "${storage_service_path}/test/fuzztest/fileutils_fuzzer/fileutils_fuzzer.cpp" ]
   defines = []
-  deps = [ "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils" ]
+  deps = [ "${storage_daemon_path}:storage_common_utils" ]
 }
 
 group("fuzztest") {

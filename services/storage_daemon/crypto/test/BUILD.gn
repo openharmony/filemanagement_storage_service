@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import("//build/test.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 module_output_path = "storage_service/crypto"
 
@@ -29,22 +30,22 @@ ohos_moduletest("CryptoSubTest") {
   include_dirs = [
     "../../include",
     "../../include/crypto",
-    "//commonlibrary/c_utils/base/include",
     "../../../common/include",
   ]
 
   sources = [ "crypto_key_test.cpp" ]
 
-  public_deps = [ "//commonlibrary/c_utils/base:utils" ]
-
   configs = [ ":module_private_config" ]
 
   deps = [ "//third_party/googletest:gtest_main" ]
   deps += [
+    "${storage_daemon_path}/libfscrypt:libfscryptutils",
     "../../crypto:libsdcrypto",
-    "//foundation/filemanagement/storage_service/services/storage_daemon/libfscrypt:libfscryptutils",
   ]
-  external_deps = [ "huks:libhukssdk" ]
+  external_deps = [
+    "c_utils:utils",
+    "huks:libhukssdk",
+  ]
 }
 
 group("crypto_test") {

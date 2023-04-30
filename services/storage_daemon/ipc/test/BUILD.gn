@@ -14,7 +14,7 @@
 import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
-ROOT_DIR = "//foundation/filemanagement/storage_service/services/storage_daemon"
+ROOT_DIR = "${storage_daemon_path}"
 
 ohos_unittest("storage_daemon_test") {
   module_out_path = "filemanagement/storage_service/storage_daemon"
@@ -38,11 +38,8 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/include",
     "$ROOT_DIR/utils",
     "$ROOT_DIR/../storage_manager/include",
-    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
-    "//foundation/systemabilitymgr/safwk/interfaces/innerkits/safwk",
-    "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
-    "//foundation/filemanagement/storage_service/services/common/include",
-    "//base/security/access_token/interfaces/innerkits/accesstoken/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+    "${storage_service_common_path}/include",
   ]
 
   sources = [
@@ -65,7 +62,7 @@ ohos_unittest("storage_daemon_test") {
 
   deps = [
     "$ROOT_DIR/crypto:libsdcrypto",
-    "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
+    "${storage_daemon_path}:storage_common_utils",
     "//third_party/googletest:gtest_main",
   ]
 
@@ -81,6 +78,8 @@ ohos_unittest("storage_daemon_test") {
     "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_core",
+    "ipc:libdbinder",
+    "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
 }
@@ -95,8 +94,7 @@ ohos_unittest("storage_daemon_proxy_test") {
 
   include_dirs = [
     "$ROOT_DIR/include",
-    "//foundation/filemanagement/storage_service/services/common/include",
-    "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
+    "${storage_service_common_path}/include",
   ]
 
   sources = [
@@ -113,6 +111,7 @@ ohos_unittest("storage_daemon_proxy_test") {
     "c_utils:utils",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
+    "ipc:libdbinder",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
@@ -133,9 +132,7 @@ ohos_unittest("storage_daemon_stub_test") {
   include_dirs = [
     "$ROOT_DIR/include",
     "$ROOT_DIR/ipc/test/",
-    "//foundation/filemanagement/storage_service/services/common/include",
-    "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
-    "//base/security/access_token/interfaces/innerkits/accesstoken/include",
+    "${storage_service_common_path}/include",
   ]
 
   sources = [
@@ -147,7 +144,7 @@ ohos_unittest("storage_daemon_stub_test") {
   ]
 
   deps = [
-    "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
+    "${storage_daemon_path}:storage_common_utils",
     "//third_party/googletest:gmock_main",
     "//third_party/googletest:gtest_main",
   ]
@@ -159,6 +156,7 @@ ohos_unittest("storage_daemon_stub_test") {
     "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_core",
+    "ipc:libdbinder",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]

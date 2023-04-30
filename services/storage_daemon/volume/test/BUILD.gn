@@ -12,8 +12,9 @@
 # limitations under the License.
 
 import("//build/test.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
-ROOT_DIR = "//foundation/filemanagement/storage_service/services"
+ROOT_DIR = "${storage_service_path}/services"
 
 ohos_unittest("external_volume_info_test") {
   module_out_path = "filemanagement/storage_service/storage_daemon"
@@ -34,7 +35,7 @@ ohos_unittest("external_volume_info_test") {
   ]
 
   deps = [
-    "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
+    "${storage_daemon_path}:storage_common_utils",
     "//third_party/googletest:gmock_main",
     "//third_party/googletest:gtest_main",
   ]
@@ -66,7 +67,7 @@ ohos_unittest("process_test") {
   ]
 
   deps = [
-    "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
+    "${storage_daemon_path}:storage_common_utils",
     "//third_party/googletest:gmock_main",
     "//third_party/googletest:gtest_main",
   ]
@@ -98,7 +99,7 @@ ohos_unittest("volume_info_test") {
   ]
 
   deps = [
-    "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
+    "${storage_daemon_path}:storage_common_utils",
     "//third_party/googletest:gmock_main",
     "//third_party/googletest:gtest_main",
   ]
@@ -121,8 +122,7 @@ ohos_unittest("volume_manager_test") {
     "$ROOT_DIR/storage_daemon/include/volume",
     "$ROOT_DIR/common/include",
     "$ROOT_DIR/storage_manager/include",
-    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
-    "//foundation/systemabilitymgr/samgr/interfaces/innerkits/samgr_proxy/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   sources = [
@@ -136,7 +136,7 @@ ohos_unittest("volume_manager_test") {
   ]
 
   deps = [
-    "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
+    "${storage_daemon_path}:storage_common_utils",
     "//third_party/googletest:gmock_main",
     "//third_party/googletest:gtest_main",
   ]

@@ -17,11 +17,11 @@ import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ohos_fuzztest("StorageTotalStatusServiceFuzzTest") {
   module_out_path = "filemanagement/storage_service"
-  fuzz_config_file = "//foundation/filemanagement/storage_service/test/fuzztest/storagetotalstatusservice_fuzzer"
+  fuzz_config_file =
+      "${storage_service_path}/test/fuzztest/storagetotalstatusservice_fuzzer"
   include_dirs = [
-    "//foundation/filemanagement/storage_service/services/common/include",
-    "//foundation/filemanagement/storage_service/services/storage_manager/include",
-    "//commonlibrary/c_utils/base/include",
+    "${storage_service_common_path}/include",
+    "${storage_manager_path}/include",
   ]
   cflags = [
     "-g",
@@ -32,14 +32,15 @@ ohos_fuzztest("StorageTotalStatusServiceFuzzTest") {
   sources = [
     "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
     "${storage_manager_path}/utils/src/storage_utils.cpp",
-    "//foundation/filemanagement/storage_service/test/fuzztest/storagetotalstatusservice_fuzzer/storagetotalstatusservice_fuzzer.cpp",
+    "./storagetotalstatusservice_fuzzer.cpp",
   ]
   defines = [ "STORAGE_LOG_TAG = \"storage_service\"" ]
-  deps = [
-    "//foundation/bundlemanager/bundle_framework/services/bundlemgr:libbms",
-  ]
+  deps = [ "${bundlemanager_framework_path}/services/bundlemgr:libbms" ]
 
-  external_deps = [ "hiviewdfx_hilog_native:libhilog" ]
+  external_deps = [
+    "c_utils:utils",
+    "hiviewdfx_hilog_native:libhilog",
+  ]
 }
 
 group("fuzztest") {

@@ -25,13 +25,12 @@ ohos_unittest("storage_total_status_service_test") {
   ]
 
   include_dirs = [
-    "//foundation/aafwk/standard/interfaces/innerkits/base/include/ohos/aafwk/base",
-    "//foundation/bundlemanager/bundle_framework/services/bundlemgr/include",
-    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
-    "//foundation/filemanagement/storage_service/services/common/include",
-    "//foundation/filemanagement/storage_service/services/storage_daemon/include",
-    "//foundation/filemanagement/storage_service/services/storage_manager/include",
-    "//foundation/filemanagement/storage_service/utils/include",
+    "${bundlemanager_framework_path}/services/bundlemgr/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+    "${storage_service_common_path}/include",
+    "${storage_daemon_path}/include",
+    "${storage_manager_path}/include",
+    "${storage_service_path}/utils/include",
   ]
 
   defines = [
@@ -39,10 +38,7 @@ ohos_unittest("storage_total_status_service_test") {
     "LOG_DOMAIN = 0xD004300",
   ]
 
-  deps = [
-    "//foundation/bundlemanager/bundle_framework/services/bundlemgr:libbms",
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "//third_party/googletest:gtest_main" ]
 
   external_deps = [
     "ability_base:base",
@@ -65,17 +61,17 @@ ohos_unittest("volume_storage_status_service_test") {
   module_out_path = "filemanagement/storage_service/storage_manager"
 
   sources = [
-    "//foundation/filemanagement/storage_service/services/storage_manager/storage/src/storage_status_service.cpp",
-    "//foundation/filemanagement/storage_service/services/storage_manager/storage/src/volume_storage_status_service.cpp",
-    "//foundation/filemanagement/storage_service/services/storage_manager/volume/src/volume_manager_service.cpp",
+    "${storage_manager_path}/storage/src/storage_status_service.cpp",
+    "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
+    "${storage_manager_path}/volume/src/volume_manager_service.cpp",
     "volume_storage_status_service_test.cpp",
   ]
   include_dirs = [
-    "//foundation/bundlemanager/bundle_framework/services/bundlemgr/include",
-    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
-    "//foundation/filemanagement/storage_service/services/common/include",
-    "//foundation/filemanagement/storage_service/services/storage_daemon/include",
-    "//foundation/filemanagement/storage_service/services/storage_manager/include",
+    "${bundlemanager_framework_path}/services/bundlemgr/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+    "${storage_service_common_path}/include",
+    "${storage_daemon_path}/include",
+    "${storage_manager_path}/include",
   ]
   defines = [
     "STORAGE_LOG_TAG = \"StorageManager\"",

@@ -31,19 +31,15 @@ ohos_shared_library("storagestatistics") {
 
   include_dirs = [
     "include",
-    "//foundation/filemanagement/storage_service/services/storage_manager/include",
-    "//utils/system/safwk/native/include",
-    "//commonlibrary/c_utils/base/include",
-    "//foundation/filemanagement/file_api/utils/filemgmt_libn/include",
-    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
-    "//foundation/filemanagement/storage_service/services/common/include",
-    "//foundation/systemabilitymgr/safwk/interfaces/innerkits/safwk",
+    "${storage_service_path}/services/storage_manager/include",
+    "${storage_service_path}/interfaces/innerkits/storage_manager/native",
+    "${storage_service_path}/services/common/include",
   ]
 
   sources = [
-    "//foundation/filemanagement/storage_service/services/storage_manager/kits_impl/src/storage_manager_connect.cpp",
-    "//foundation/filemanagement/storage_service/services/storage_manager/kits_impl/src/storage_statistics_n_exporter.cpp",
-    "//foundation/filemanagement/storage_service/services/storage_manager/kits_impl/src/storage_statistics_napi.cpp",
+    "${storage_service_path}/services/storage_manager/kits_impl/src/storage_manager_connect.cpp",
+    "${storage_service_path}/services/storage_manager/kits_impl/src/storage_statistics_n_exporter.cpp",
+    "${storage_service_path}/services/storage_manager/kits_impl/src/storage_statistics_napi.cpp",
   ]
 
   deps = [ "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy" ]
@@ -55,6 +51,7 @@ ohos_shared_library("storagestatistics") {
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
     "napi:ace_napi",
+    "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
 }
@@ -71,19 +68,15 @@ ohos_shared_library("volumemanager") {
 
   include_dirs = [
     "include",
-    "//foundation/filemanagement/storage_service/services/storage_manager/include",
-    "//utils/system/safwk/native/include",
-    "//commonlibrary/c_utils/base/include",
-    "//foundation/filemanagement/file_api/utils/filemgmt_libn/include",
-    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
-    "//foundation/filemanagement/storage_service/services/common/include",
-    "//foundation/systemabilitymgr/safwk/interfaces/innerkits/safwk",
+    "${storage_service_path}/services/storage_manager/include",
+    "${storage_service_path}/interfaces/innerkits/storage_manager/native",
+    "${storage_service_path}/services/common/include",
   ]
 
   sources = [
-    "//foundation/filemanagement/storage_service/services/storage_manager/kits_impl/src/storage_manager_connect.cpp",
-    "//foundation/filemanagement/storage_service/services/storage_manager/kits_impl/src/volumemanager_n_exporter.cpp",
-    "//foundation/filemanagement/storage_service/services/storage_manager/kits_impl/src/volumemanager_napi.cpp",
+    "${storage_service_path}/services/storage_manager/kits_impl/src/storage_manager_connect.cpp",
+    "${storage_service_path}/services/storage_manager/kits_impl/src/volumemanager_n_exporter.cpp",
+    "${storage_service_path}/services/storage_manager/kits_impl/src/volumemanager_napi.cpp",
   ]
 
   defines = [
@@ -100,6 +93,7 @@ ohos_shared_library("volumemanager") {
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
     "napi:ace_napi",
+    "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
 }
