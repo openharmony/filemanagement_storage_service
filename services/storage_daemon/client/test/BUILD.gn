@@ -14,8 +14,6 @@
 import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
-ROOT_DIR = "//foundation/filemanagement/storage_service/services/storage_daemon"
-
 ohos_unittest("storage_daemon_clt_test") {
   module_out_path = "filemanagement/storage_service/storage_daemon"
 
@@ -29,23 +27,21 @@ ohos_unittest("storage_daemon_clt_test") {
   }
 
   include_dirs = [
-    "$ROOT_DIR/include",
-    "$ROOT_DIR/client/include",
-    "$ROOT_DIR/utils/test/common",
-    "//foundation/filemanagement/storage_service/services/common/include",
-    "//foundation/systemabilitymgr/samgr/interfaces/innerkits/samgr_proxy/include",
-    "//foundation/systemabilitymgr/samgr/utils/native/include",
+    "${storage_daemon_path}/include",
+    "${storage_daemon_path}/client/include",
+    "${storage_daemon_path}/utils/test/common",
+    "${storage_service_common_path}/include",
   ]
 
   sources = [
-    "$ROOT_DIR/client/storage_daemon_client.cpp",
-    "$ROOT_DIR/client/test/storage_daemon_client_test.cpp",
-    "$ROOT_DIR/utils/test/common/help_utils.cpp",
+    "${storage_daemon_path}/client/storage_daemon_client.cpp",
+    "${storage_daemon_path}/client/test/storage_daemon_client_test.cpp",
+    "${storage_daemon_path}/utils/test/common/help_utils.cpp",
   ]
 
   deps = [
-    "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
-    "//foundation/filemanagement/storage_service/services/storage_daemon/libfscrypt:libfscryptutils",
+    "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}/libfscrypt:libfscryptutils",
     "//third_party/googletest:gtest_main",
   ]
 

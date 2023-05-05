@@ -19,13 +19,11 @@ config("storage_manager_config") {
   include_dirs = [
     "include",
     "../../interfaces/innerkits/storage_manager/native",
-    "//utils/system/safwk/native/include",
-    "//commonlibrary/c_utils/base/include",
     "../storage_daemon/include",
-    "//foundation/filemanagement/storage_service/services/common/include",
-    "//foundation/bundlemanager/bundle_framework/services/bundlemgr/include",
-    "//foundation/multimedia/media_library/frameworks/utils/include",
-    "//foundation/multimedia/media_library/interfaces/inner_api/media_library_helper/include",
+    "../common/include",
+    "${bundlemanager_framework_path}/services/bundlemgr/include",
+    "${multimedia_library_path}/frameworks/utils/include",
+    "${multimedia_library_path}/interfaces/inner_api/media_library_helper/include",
   ]
 }
 

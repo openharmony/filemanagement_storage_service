@@ -14,20 +14,21 @@
 #####################hydra-fuzz###################
 import("//build/config/features.gni")
 import("//build/test.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ##############################fuzztest##########################################
 ohos_fuzztest("StringUtilsFuzzTest") {
   module_out_path = "filemanagement/storage_service"
-  fuzz_config_file = "//foundation/filemanagement/storage_service/test/fuzztest/stringutils_fuzzer"
-  include_dirs = [ "//foundation/filemanagement/storage_service/services/storage_daemon/include" ]
+  fuzz_config_file = "${storage_service_path}/test/fuzztest/stringutils_fuzzer"
+  include_dirs = [ "${storage_daemon_path}/include" ]
   cflags = [
     "-g",
     "-O0",
     "-Wno-unused-variable",
     "-fno-omit-frame-pointer",
   ]
-  sources = [ "//foundation/filemanagement/storage_service/test/fuzztest/stringutils_fuzzer/stringutils_fuzzer.cpp" ]
-  deps = [ "//foundation/filemanagement/storage_service//services/storage_daemon:storage_common_utils" ]
+  sources = [ "${storage_service_path}/test/fuzztest/stringutils_fuzzer/stringutils_fuzzer.cpp" ]
+  deps = [ "${storage_daemon_path}:storage_common_utils" ]
 }
 
 ###############################################################################

@@ -12,25 +12,23 @@
 # limitations under the License.
 
 import("//build/test.gni")
-
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 ohos_unittest("multi_user_manager_service_test") {
   module_out_path = "filemanagement/storage_service/storage_manager"
 
   sources = [
-    "//foundation/filemanagement/storage_service/services/storage_daemon/ipc/src/storage_daemon_proxy.cpp",
-    "//foundation/filemanagement/storage_service/services/storage_manager/storage_daemon_communication/src/storage_daemon_communication.cpp",
-    "//foundation/filemanagement/storage_service/services/storage_manager/user/src/multi_user_manager_service.cpp",
+    "${storage_daemon_path}/ipc/src/storage_daemon_proxy.cpp",
+    "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
+    "${storage_manager_path}/user/src/multi_user_manager_service.cpp",
     "multi_user_manager_service_test.cpp",
   ]
 
   include_dirs = [
-    "//foundation/filemanagement/storage_service/services/common/include",
-    "//foundation/filemanagement/storage_service/services/storage_manager/include",
-    "//foundation/filemanagement/storage_service/services/storage_daemon/include",
-    "//foundation/filemanagement/storage_service/utils/include",
+    "${storage_service_common_path}/include",
+    "${storage_manager_path}/include",
+    "${storage_daemon_path}/include",
+    "${storage_service_path}/utils/include",
     "include",
-    "//utils/system/safwk/native/include",
-    "//commonlibrary/c_utils/base/include",
   ]
 
   defines = [

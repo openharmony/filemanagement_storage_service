@@ -31,11 +31,9 @@ ohos_unittest("storage_manager_proxy_test") {
     "${storage_service_common_path}/include",
     "${storage_daemon_path}/include",
     "${storage_manager_path}/include",
-    "//foundation/filemanagement/storage_service/utils/include",
+    "${storage_service_path}/utils/include",
     "include",
     "//third_party/googletest/googlemock/include/gmock",
-    "//utils/system/safwk/native/include",
-    "//commonlibrary/c_utils/base/include",
   ]
 
   defines = [
@@ -53,6 +51,7 @@ ohos_unittest("storage_manager_proxy_test") {
     "ability_base:want",
     "ability_base:zuri",
     "app_file_service:fileshare_native",
+    "c_utils:utils",
     "common_event_service:cesfwk_innerkits",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
@@ -76,8 +75,6 @@ ohos_unittest("storage_manager_stub_test") {
     "${storage_manager_path}/include",
     "${storage_manager_path}/ipc/test/",
     "${storage_service_common_path}/include",
-    "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
-    "//base/security/access_token/interfaces/innerkits/accesstoken/include",
   ]
 
   sources = [
@@ -110,6 +107,7 @@ ohos_unittest("storage_manager_stub_test") {
     "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_core",
+    "ipc:libdbinder",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
@@ -129,8 +127,6 @@ ohos_unittest("storage_manager_stub_nonpermission_test") {
     "${storage_manager_path}/include",
     "${storage_manager_path}/ipc/test/",
     "${storage_service_common_path}/include",
-    "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
-    "//base/security/access_token/interfaces/innerkits/accesstoken/include",
   ]
 
   sources = [
@@ -160,6 +156,7 @@ ohos_unittest("storage_manager_stub_nonpermission_test") {
     "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_core",
+    "ipc:libdbinder",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]

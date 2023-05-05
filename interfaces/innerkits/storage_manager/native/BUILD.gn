@@ -21,7 +21,7 @@ config("public_config") {
 config("private_config") {
   include_dirs = [
     "${storage_manager_path}/include",
-    "//foundation/filemanagement/storage_service/services/storage_daemon/include",
+    "${storage_service_path}/services/storage_daemon/include",
     "${storage_service_common_path}/include",
   ]
 }
@@ -46,12 +46,13 @@ ohos_shared_library("storage_manager_sa_proxy") {
   public_configs = [ ":public_config" ]
 
   external_deps = [
+    "c_utils:utils",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
   ]
   public_deps = [
-    "//commonlibrary/c_utils/base:utils",
-    "//foundation/communication/ipc/interfaces/innerkits/ipc_core:ipc_core",
+    "${c_utils_base_path}:utils",
+    "${communication_ipc_path}/interfaces/innerkits/ipc_core:ipc_core",
   ]
 
   part_name = "storage_service"

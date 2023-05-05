@@ -12,8 +12,9 @@
 # limitations under the License.
 
 import("//build/test.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
-ROOT_DIR = "//foundation/filemanagement/storage_service/services"
+ROOT_DIR = "${storage_service_path}/services"
 
 ohos_unittest("netlink_data_test") {
   module_out_path = "filemanagement/storage_service/storage_daemon"
@@ -23,8 +24,8 @@ ohos_unittest("netlink_data_test") {
   include_dirs = [
     "$ROOT_DIR/common/include",
     "$ROOT_DIR/storage_daemon/include",
-    "//foundation/filemanagement/storage_service/utils/include",
-    "//foundation/filemanagement/storage_service/storage_manager/include",
+    "${storage_service_path}/utils/include",
+    "${storage_service_path}/storage_manager/include",
   ]
 
   sources = [
@@ -50,9 +51,8 @@ ohos_unittest("netlink_handler_test") {
     "$ROOT_DIR/common/include",
     "$ROOT_DIR/storage_daemon/include",
     "$ROOT_DIR/storage_manager/include",
-    "//foundation/filemanagement/storage_service/utils/include",
-    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
-    "//commonlibrary/c_utils/base/include",
+    "${storage_service_path}/utils/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   sources = [
@@ -73,7 +73,7 @@ ohos_unittest("netlink_handler_test") {
   ]
 
   deps = [
-    "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
+    "${storage_daemon_path}:storage_common_utils",
     "//third_party/googletest:gmock_main",
     "//third_party/googletest:gtest_main",
   ]
@@ -96,7 +96,7 @@ ohos_unittest("netlink_listener_test") {
   include_dirs = [
     "$ROOT_DIR/storage_daemon/include",
     "$ROOT_DIR/common/include",
-    "//foundation/filemanagement/storage_service/utils/include",
+    "${storage_service_path}/utils/include",
   ]
 
   sources = [
@@ -125,9 +125,8 @@ ohos_unittest("netlink_manager_test") {
     "$ROOT_DIR/common/include",
     "$ROOT_DIR/storage_daemon/include",
     "$ROOT_DIR/storage_manager/include",
-    "//foundation/filemanagement/storage_service/utils/include",
-    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
-    "//commonlibrary/c_utils/base/include",
+    "${storage_service_path}/utils/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   sources = [
@@ -149,7 +148,7 @@ ohos_unittest("netlink_manager_test") {
   ]
 
   deps = [
-    "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
+    "${storage_daemon_path}:storage_common_utils",
     "//third_party/googletest:gtest_main",
   ]
 

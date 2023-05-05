@@ -12,8 +12,9 @@
 # limitations under the License.
 
 import("//build/test.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
-ROOT_DIR = "//foundation/filemanagement/storage_service/services/storage_daemon"
+ROOT_DIR = "${storage_daemon_path}"
 
 ohos_unittest("disk_manager_test") {
   module_out_path = "filemanagement/storage_service/storage_daemon"
@@ -25,12 +26,10 @@ ohos_unittest("disk_manager_test") {
 
   include_dirs = [
     "$ROOT_DIR/include",
-    "//foundation/filemanagement/storage_service/utils/include",
-    "//foundation/filemanagement/storage_service/services/storage_manager/include",
-    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
-    "//foundation/systemabilitymgr/safwk/interfaces/innerkits/safwk",
-    "//foundation/filemanagement/storage_service/services/common/include",
-    "//foundation/filemanagement/storage_service/services/storage_daemon/include",
+    "${storage_service_path}/utils/include",
+    "${storage_manager_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+    "${storage_service_common_path}/include",
   ]
 
   sources = [
@@ -47,7 +46,7 @@ ohos_unittest("disk_manager_test") {
   ]
 
   deps = [
-    "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
+    "$ROOT_DIR:storage_common_utils",
     "//third_party/googletest:gtest_main",
   ]
 
@@ -56,6 +55,7 @@ ohos_unittest("disk_manager_test") {
     "hiviewdfx_hilog_native:libhilog",
     "init:libbegetutil",
     "ipc:ipc_core",
+    "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "storage_service:storage_manager_sa_proxy",
   ]
@@ -72,12 +72,10 @@ ohos_unittest("disk_info_test") {
   include_dirs = [
     "$ROOT_DIR/disk/test",
     "$ROOT_DIR/include",
-    "//foundation/filemanagement/storage_service/utils/include",
-    "//foundation/filemanagement/storage_service/services/storage_manager/include",
-    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
-    "//foundation/systemabilitymgr/safwk/interfaces/innerkits/safwk",
-    "//foundation/filemanagement/storage_service/services/common/include",
-    "//foundation/filemanagement/storage_service/services/storage_daemon/include",
+    "${storage_service_path}/utils/include",
+    "${storage_manager_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+    "${storage_service_common_path}/include",
   ]
 
   sources = [
@@ -92,7 +90,7 @@ ohos_unittest("disk_info_test") {
   ]
 
   deps = [
-    "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
+    "$ROOT_DIR:storage_common_utils",
     "//third_party/googletest:gmock_main",
     "//third_party/googletest:gtest_main",
   ]
@@ -102,6 +100,7 @@ ohos_unittest("disk_info_test") {
     "hiviewdfx_hilog_native:libhilog",
     "init:libbegetutil",
     "ipc:ipc_core",
+    "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "storage_service:storage_manager_sa_proxy",
   ]
@@ -118,12 +117,10 @@ ohos_unittest("disk_config_test") {
   include_dirs = [
     "$ROOT_DIR/disk/test",
     "$ROOT_DIR/include",
-    "//foundation/filemanagement/storage_service/utils/include",
-    "//foundation/filemanagement/storage_service/services/storage_manager/include",
-    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
-    "//foundation/systemabilitymgr/safwk/interfaces/innerkits/safwk",
-    "//foundation/filemanagement/storage_service/services/common/include",
-    "//foundation/filemanagement/storage_service/services/storage_daemon/include",
+    "${storage_service_path}/utils/include",
+    "${storage_manager_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+    "${storage_service_common_path}/include",
   ]
 
   sources = [
@@ -137,6 +134,7 @@ ohos_unittest("disk_config_test") {
     "c_utils:utils",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
+    "safwk:system_ability_fwk",
   ]
 }
 

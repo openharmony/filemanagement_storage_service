@@ -12,6 +12,7 @@
 # limitations under the License.
 
 import("//build/test.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ohos_unittest("file_utils_test") {
   module_out_path = "filemanagement/storage_service/storage_daemon"
@@ -22,9 +23,8 @@ ohos_unittest("file_utils_test") {
   ]
 
   include_dirs = [
-    "//foundation/filemanagement/storage_service/services/storage_daemon/include",
-    "//foundation/communication/ipc/interfaces/innerkits/libdbinder/include",
-    "//foundation/filemanagement/storage_service/services/common/include",
+    "${storage_daemon_path}/include",
+    "${storage_service_common_path}/include",
   ]
 
   sources = [
@@ -33,7 +33,7 @@ ohos_unittest("file_utils_test") {
   ]
 
   deps = [
-    "//foundation/filemanagement/storage_service/services/storage_daemon:storage_common_utils",
+    "${storage_daemon_path}:storage_common_utils",
     "//third_party/googletest:gtest_main",
   ]
 
@@ -42,6 +42,7 @@ ohos_unittest("file_utils_test") {
     "hiviewdfx_hilog_native:libhilog",
     "huks:libhukssdk",
     "ipc:ipc_core",
+    "ipc:libdbinder",
   ]
 }
 

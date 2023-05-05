@@ -10,22 +10,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 group("storage_service_fuzztest") {
   testonly = true
   deps = [
     # deps file
-    "//foundation/filemanagement/storage_service/test/fuzztest/bundlestats_fuzzer:BundleStatsFuzzTest",
-    "//foundation/filemanagement/storage_service/test/fuzztest/disk_fuzzer:DiskFuzzTest",
-    "//foundation/filemanagement/storage_service/test/fuzztest/fileutils_fuzzer:FileUtilsFuzzTest",
-    "//foundation/filemanagement/storage_service/test/fuzztest/fscryptutils_fuzzer:FscryptUtilsFuzzTest",
-    "//foundation/filemanagement/storage_service/test/fuzztest/keycontrol_fuzzer:KeyControlFuzzTest",
-    "//foundation/filemanagement/storage_service/test/fuzztest/storagestats_fuzzer:StorageStatsFuzzTest",
-    "//foundation/filemanagement/storage_service/test/fuzztest/storagetotalstatusservice_fuzzer:StorageTotalStatusServiceFuzzTest",
-    "//foundation/filemanagement/storage_service/test/fuzztest/stringutils_fuzzer:StringUtilsFuzzTest",
-    "//foundation/filemanagement/storage_service/test/fuzztest/sysparamdynamic_fuzzer:SysparamDynamicFuzzTest",
-    "//foundation/filemanagement/storage_service/test/fuzztest/sysparamstatic_fuzzer:SysparamStaticFuzzTest",
-    "//foundation/filemanagement/storage_service/test/fuzztest/volumecore_fuzzer:VolumeCoreFuzzTest",
-    "//foundation/filemanagement/storage_service/test/fuzztest/volumeexternal_fuzzer:VolumeExternalFuzzTest",
+    "${storage_service_path}/test/fuzztest/bundlestats_fuzzer:BundleStatsFuzzTest",
+    "${storage_service_path}/test/fuzztest/disk_fuzzer:DiskFuzzTest",
+    "${storage_service_path}/test/fuzztest/fileutils_fuzzer:FileUtilsFuzzTest",
+    "${storage_service_path}/test/fuzztest/fscryptutils_fuzzer:FscryptUtilsFuzzTest",
+    "${storage_service_path}/test/fuzztest/keycontrol_fuzzer:KeyControlFuzzTest",
+    "${storage_service_path}/test/fuzztest/storagestats_fuzzer:StorageStatsFuzzTest",
+    "${storage_service_path}/test/fuzztest/storagetotalstatusservice_fuzzer:StorageTotalStatusServiceFuzzTest",
+    "${storage_service_path}/test/fuzztest/stringutils_fuzzer:StringUtilsFuzzTest",
+    "${storage_service_path}/test/fuzztest/sysparamdynamic_fuzzer:SysparamDynamicFuzzTest",
+    "${storage_service_path}/test/fuzztest/sysparamstatic_fuzzer:SysparamStaticFuzzTest",
+    "${storage_service_path}/test/fuzztest/volumecore_fuzzer:VolumeCoreFuzzTest",
+    "${storage_service_path}/test/fuzztest/volumeexternal_fuzzer:VolumeExternalFuzzTest",
   ]
 }

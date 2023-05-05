@@ -28,12 +28,9 @@ config("storage_daemon_config") {
   include_dirs = [
     "include",
     "//third_party/bounds_checking_function/include",
-    "//foundation/systemabilitymgr/samgr/interfaces/innerkits/samgr_proxy/include",
     "../storage_manager/include",
-    "//foundation/systemabilitymgr/safwk/interfaces/innerkits/safwk",
-    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
-    "//base/security/access_token/interfaces/innerkits/accesstoken/include",
-    "//foundation/filemanagement/storage_service/services/common/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+    "../common/include",
   ]
 }
 
@@ -112,6 +109,7 @@ ohos_executable("storage_daemon") {
     "hiviewdfx_hilog_native:libhilog",
     "init:libbegetutil",
     "ipc:ipc_core",
+    "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
 
@@ -132,16 +130,11 @@ ohos_executable("storage_daemon") {
 config("sdc_config") {
   include_dirs = [
     "include",
-    "//foundation/filemanagement/storage_service/services/common/include",
-    "//commonlibrary/c_utils/base/include",
-    "//foundation/systemabilitymgr/samgr/interfaces/innerkits/samgr_proxy/include",
-    "//utils/system/safwk/native/include",
-    "//foundation/communication/ipc/interfaces/innerkits/ipc_core/include/",
+    "../common/include",
     "client/include",
     "../../interfaces/innerkits/storage_manager/native",
     "../storage_manager/include",
-    "//foundation/bundlemanager/bundle_framework/services/bundlemgr/include",
-    "//foundation/systemabilitymgr/safwk/interfaces/innerkits/safwk",
+    "${bundlemanager_framework_path}/services/bundlemgr/include",
   ]
 }
 
@@ -173,6 +166,7 @@ ohos_executable("sdc") {
     "c_utils:utils",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
+    "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
 
@@ -188,7 +182,7 @@ declare_args() {
 ohos_shared_library("storage_common_utils") {
   include_dirs = [
     "./include",
-    "//foundation/filemanagement/storage_service/services/common/include",
+    "../common/include",
   ]
 
   defines = [
@@ -210,8 +204,6 @@ ohos_shared_library("storage_common_utils") {
 
   if (build_selinux) {
     defines += [ "USE_LIBRESTORECON" ]
-    include_dirs +=
-        [ "//base/security/selinux/interfaces/policycoreutils/include" ]
 
     external_deps += [ "selinux:librestorecon" ]
   }

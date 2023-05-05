@@ -12,25 +12,24 @@
 # limitations under the License.
 
 import("//build/test.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ohos_unittest("disk_manager_service_test") {
   module_out_path = "filemanagement/storage_service/storage_manager"
 
   sources = [
-    "//foundation/filemanagement/storage_service/services/storage_manager/disk/src/disk_manager_service.cpp",
-    "//foundation/filemanagement/storage_service/services/storage_manager/storage_daemon_communication/src/storage_daemon_communication.cpp",
+    "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
+    "../src/disk_manager_service.cpp",
     "disk_manager_service_test.cpp",
   ]
 
   include_dirs = [
-    "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native",
-    "//foundation/filemanagement/storage_service/services/common/include",
-    "//foundation/filemanagement/storage_service/services/storage_daemon/include",
-    "//foundation/filemanagement/storage_service/services/storage_manager/include",
-    "//foundation/filemanagement/storage_service/utils/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+    "${storage_service_common_path}/include",
+    "${storage_daemon_path}/include",
+    "${storage_manager_path}/include",
+    "${storage_service_path}/utils/include",
     "include",
-    "//utils/system/safwk/native/include",
-    "//commonlibrary/c_utils/base/include",
   ]
 
   defines = [
@@ -43,6 +42,7 @@ ohos_unittest("disk_manager_service_test") {
   external_deps = [
     "ability_base:base",
     "ability_base:want",
+    "c_utils:utils",
     "c_utils:utils",
     "common_event_service:cesfwk_innerkits",
     "hiviewdfx_hilog_native:libhilog",
