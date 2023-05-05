@@ -123,6 +123,9 @@ string MountArgument::OptionsToString() const
     if (useCache_) {
         ss << ",cache_dir=" << GetCachePath();
     }
+    if (useCloudDir_) {
+        ss << ",cloud_dir=" << GetFullCloud();
+    }
     if (caseSensitive_) {
         ss << ",sensitive";
     }
@@ -146,6 +149,7 @@ MountArgument MountArgumentDescriptors::Alpha(int userId, string relativePath)
         .userId_ = userId,
         .needInitDir_ = true,
         .useCache_ = true,
+        .useCloudDir_ = true,
         .enableMergeView_ = true,
         .enableFixupOwnerShip_ = false,
         .enableOfflineStash_ = true,

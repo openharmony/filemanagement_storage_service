@@ -25,6 +25,7 @@ struct MountArgument final {
     int userId_{ 0 };
     bool needInitDir_{ false };
     bool useCache_{ false };
+    bool useCloudDir_ { false };
     bool caseSensitive_{ false };
     bool enableMergeView_{ false };
     bool enableFixupOwnerShip_{ false };
