@@ -167,6 +167,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_StopUser_0000, tes
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_StopUser_0000 SUCCESS";
 }
 
+#ifdef EXTERNAL_STORAGE_MANAGER
 /**
  * @tc.number: SUB_STORAGE_Daemon_communication_Mount_0000
  * @tc.name: Daemon_communication_Mount_0000
@@ -308,7 +309,9 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetVolumeDescripti
     EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_SetVolumeDescription_0000 SUCCESS";
 }
+#endif
 
+#ifdef USER_CRYPTO_MANAGER
 /**
  * @tc.number: SUB_STORAGE_Daemon_communication_DeleteUserKeys_0000
  * @tc.name: Daemon_communication_DeleteUserKeys_0000
@@ -456,4 +459,5 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_InactiveUserKey_00
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_InactiveUserKey_0000 SUCCESS";
 }
+#endif
 } // namespace

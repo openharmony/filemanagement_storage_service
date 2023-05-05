@@ -292,6 +292,7 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_Shutdown_001, Test
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_Shutdown_001 end";
 }
 
+#ifdef EXTERNAL_STORAGE_MANAGER
 /**
  * @tc.name: Storage_Manager_StorageDaemonTest_Mount_001
  * @tc.desc: check the Mount function when volume not exist
@@ -403,6 +404,7 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_SetVolumeDescripti
     EXPECT_TRUE(ret == E_NON_EXIST);
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_SetVolumeDescription_001 end";
 }
+#endif
 
 /**
  * @tc.name: Storage_Manager_StorageDaemonTest_SetBundleQuota_001

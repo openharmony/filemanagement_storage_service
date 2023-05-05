@@ -12,6 +12,7 @@
 # limitations under the License.
 
 import("//build/test.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ohos_unittest("storage_daemon_communication_test") {
   module_out_path = "filemanagement/storage_service/storage_manager"
@@ -36,6 +37,14 @@ ohos_unittest("storage_daemon_communication_test") {
     "STORAGE_LOG_TAG = \"StorageManager\"",
     "LOG_DOMAIN = 0xD004300",
   ]
+
+  if (storage_service_user_crypto_manager) {
+    defines += [ "USER_CRYPTO_MANAGER" ]
+  }
+
+  if (storage_service_external_storage_manager) {
+    defines += [ "EXTERNAL_STORAGE_MANAGER" ]
+  }
 
   deps = [ "//third_party/googletest:gtest_main" ]
 
