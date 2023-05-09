@@ -20,7 +20,7 @@
 #include <singleton.h>
 #include <nocopyable.h>
 #include "disk.h"
-#include "utils/storage_rl_map.h"
+#include "storage_rl_map.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -34,7 +34,7 @@ public:
     std::vector<Disk> GetAllDisks();
     int32_t GetDiskById(std::string diskId, Disk &disk);
 private:
-    StorageRlMap<std::string, std::shared_ptr<Disk>> diskMap_;
+    StorageService::StorageRlMap<std::string, std::shared_ptr<Disk>> diskMap_;
 };
 } // StorageManager
 } // OHOS

@@ -54,7 +54,6 @@ ssize_t UeventKernelMulticastRecv(int32_t socket, char *buffer, size_t length)
     }
 
     if (addr.nl_groups == 0 || addr.nl_pid != 0) {
-        LOGE("Groups or pid check failed");
         return E_ERR;
     }
 

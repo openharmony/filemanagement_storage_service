@@ -19,8 +19,8 @@
 #include <nocopyable.h>
 #include <sys/types.h>
 #include <string>
-#include <map>
 #include <memory>
+#include "storage_rl_map.h"
 #include "volume/volume_info.h"
 
 namespace OHOS {
@@ -44,7 +44,7 @@ private:
     DISALLOW_COPY_AND_MOVE(VolumeManager);
 
     static VolumeManager* instance_;
-    std::map<std::string, std::shared_ptr<VolumeInfo>> volumes_;
+    StorageService::StorageRlMap<std::string, std::shared_ptr<VolumeInfo>> volumes_;
 
     std::shared_ptr<VolumeInfo> GetVolume(const std::string volId);
 };

@@ -41,8 +41,8 @@ VolumeManager* VolumeManager::Instance()
 
 std::shared_ptr<VolumeInfo> VolumeManager::GetVolume(const std::string volId)
 {
-    auto it = volumes_.find(volId);
-    if (it == volumes_.end()) {
+    auto it = volumes_.Find(volId);
+    if (it == volumes_.End()) {
         return nullptr;
     }
     return it->second;
@@ -91,7 +91,7 @@ int32_t VolumeManager::DestroyVolume(const std::string volId)
     int32_t ret = destroyNode->Destroy();
     if (ret)
         return ret;
-    volumes_.erase(volId);
+    volumes_.Erase(volId);
     destroyNode.reset();
 
     StorageManagerClient client;

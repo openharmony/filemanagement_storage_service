@@ -59,7 +59,7 @@ void DiskManager::HandleDiskEvent(NetlinkData *data)
         case NetlinkData::Actions::ADD: {
             auto diskInfo = MatchConfig(data);
             if (diskInfo == nullptr) {
-                LOGE("Can't match config");
+                LOGI("Can't match config");
             } else {
                 CreateDisk(diskInfo);
                 LOGI("Handle Disk Add Event");
