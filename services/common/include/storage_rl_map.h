@@ -21,7 +21,7 @@
 #include "rwlock.h"
 
 namespace OHOS {
-namespace StorageManager {
+namespace StorageService {
 template <typename K, typename V>
 class StorageRlMap : public NoCopyable {
 public:

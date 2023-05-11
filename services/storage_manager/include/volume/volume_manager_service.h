@@ -20,7 +20,7 @@
 #include <nocopyable.h>
 #include "volume_core.h"
 #include "volume_external.h"
-#include "utils/storage_rl_map.h"
+#include "storage_rl_map.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -40,7 +40,7 @@ public:
     int32_t SetVolumeDescription(std::string fsUuid, std::string description);
     int32_t Format(std::string volumeId, std::string fsType);
 private:
-    StorageRlMap<std::string, std::shared_ptr<VolumeExternal>> volumeMap_;
+    StorageService::StorageRlMap<std::string, std::shared_ptr<VolumeExternal>> volumeMap_;
     void VolumeStateNotify(int32_t state, std::shared_ptr<VolumeExternal> volume);
     int32_t Check(std::string volumeId);
 };
