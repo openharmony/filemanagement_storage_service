@@ -152,7 +152,9 @@ int32_t MountManager::CloudMount(int32_t userId)
         "rootmode=40000,"
         "default_permissions,"
         "allow_other,"
-        "user_id=0,group_id=0",
+        "user_id=0,group_id=0,"
+        "context=\"u:object_r:hmdfs:s0\","
+        "fscontext=u:object_r:hmdfs:s0",
         fd);
     ret = Mount("/dev/fuse", path.c_str(), "fuse", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_NOATIME, opt.c_str());
     if (ret) {
@@ -237,6 +239,20 @@ int32_t MountManager::HmdfsUMount(int32_t userId, std::string relativePath)
     return E_OK;
 }
 
+int32_t MountManager::CloudUMount(int32_t userId)
+{
+    int32_t err = E_OK;
+    Utils::MountArgument cloudMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
+    const string path = cloudMntArgs.GetFullCloud();
+
+    err = UMount(path);
+    if (err != E_OK) {
+        LOGE("fuse umount failed, errno %{public}d, fuse dst %{public}s", errno, path.c_str());
+        return E_UMOUNT;
+    }
+    return E_OK;
+}
+
 int32_t MountManager::HmdfsUMount(int32_t userId)
 {
     int32_t ret = HmdfsTwiceUMount(userId, "account");
@@ -244,6 +260,7 @@ int32_t MountManager::HmdfsUMount(int32_t userId)
     if (ret != E_OK) {
         return E_UMOUNT;
     }
+    CloudUMount(userId);
     return E_OK;
 }
 
