@@ -38,6 +38,7 @@ struct MountArgument final {
     std::string GetShareDst() const;
     std::string GetUserIdPara() const;
     std::string GetCommFullPath() const;
+    std::string GetCloudFullPath() const;
     std::string GetCachePath() const;
     std::string GetCtrlPath() const;
     std::string OptionsToString() const;

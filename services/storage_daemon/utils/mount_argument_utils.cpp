@@ -27,6 +27,7 @@ namespace {
     static const std::string BASE_MOUNT_POINT = "/mnt/hmdfs/";
     static const std::string SYSFS_HMDFS_PATH = "/sys/fs/hmdfs/";
     static const std::string COMM_DATA_POINT = "/storage/media/";
+    static const std::string COMM_CLOUD_POINT = "/storage/cloud/";
     static const std::string SHAREFS_DATA_POINT = "/data/service/el2/";
     static const std::string SHAREFS_BASE_MOUNT_POINT = "/mnt/share/";
 } // namespace
@@ -83,6 +84,14 @@ string MountArgument::GetCommFullPath() const
 {
     stringstream ss;
     ss << COMM_DATA_POINT << userId_ << "/";
+
+    return ss.str();
+}
+
+string MountArgument::GetCloudFullPath() const
+{
+    stringstream ss;
+    ss << COMM_CLOUD_POINT << userId_ << "/";
 
     return ss.str();
 }
