@@ -15,6 +15,8 @@
 
 #include "ipc/storage_daemon.h"
 
+#include <dlfcn.h>
+
 #ifdef USER_CRYPTO_MANAGER
 #include "crypto/key_manager.h"
 #endif
@@ -22,7 +24,6 @@
 #include "disk/disk_manager.h"
 #include "volume/volume_manager.h"
 #endif
-#include "file_share.h"
 #include "file_sharing/file_sharing.h"
 #include "quota/quota_manager.h"
 #include "storage_service_constant.h"
@@ -37,6 +38,9 @@
 namespace OHOS {
 namespace StorageDaemon {
 using namespace OHOS::FileManagement::CloudFile;
+
+typedef int32_t (*CreateShareFileFunc)(std::string, uint32_t, uint32_t);
+typedef int32_t (*DeleteShareFileFunc)(uint32_t, std::vector<std::string>);
 int32_t StorageDaemon::Shutdown()
 {
     return E_OK;
@@ -106,7 +110,7 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
 #ifdef USER_CRYPTO_MANAGER
     int32_t ret = KeyManager::GetInstance()->GenerateUserKeys(userId, flags);
-    if (ret != 0) {
+    if (ret != E_OK) {
         LOGE("Generate user %{public}d key error", userId);
         return ret;
     }
@@ -118,7 +122,7 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
 int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
 {
     int32_t ret = UserManager::GetInstance()->DestroyUserDirs(userId, flags);
-    if (ret != 0) {
+    if (ret != E_OK) {
         LOGW("Destroy user %{public}d dirs failed, please check", userId);
     }
 
@@ -230,12 +234,40 @@ int32_t StorageDaemon::UpdateKeyContext(uint32_t userId)
 
 int32_t StorageDaemon::CreateShareFile(std::string uri, uint32_t tokenId, uint32_t flag)
 {
-    return AppFileService::FileShare::CreateShareFile(uri, tokenId, flag);
+    void *dlhandler = dlopen("libfileshare_native.z.so", RTLD_LAZY);
+    if (dlhandler == NULL) {
+        LOGE("CreateShareFile cannot open so, errno = %{public}s", dlerror());
+        return E_ERR;
+    }
+    CreateShareFileFunc createShareFile = nullptr;
+    createShareFile = reinterpret_cast<CreateShareFileFunc>(dlsym(dlhandler, "CreateShareFile"));
+    if (createShareFile == nullptr) {
+        LOGE("CreateShareFile dlsym failed, errno = %{public}s", dlerror());
+        dlclose(dlhandler);
+        return E_ERR;
+    }
+    int ret = createShareFile(uri, tokenId, flag);
+    dlclose(dlhandler);
+    return ret;
 }
 
 int32_t StorageDaemon::DeleteShareFile(uint32_t tokenId, std::vector<std::string>sharePathList)
 {
-    return AppFileService::FileShare::DeleteShareFile(tokenId, sharePathList);
+    void *dlhandler = dlopen("libfileshare_native.z.so", RTLD_LAZY);
+    if (dlhandler == NULL) {
+        LOGE("DeleteShareFile cannot open so, errno = %{public}s", dlerror());
+        return E_ERR;
+    }
+    DeleteShareFileFunc deleteShareFile = nullptr;
+    deleteShareFile = reinterpret_cast<DeleteShareFileFunc>(dlsym(dlhandler, "DeleteShareFile"));
+    if (deleteShareFile == nullptr) {
+        LOGE("DeleteShareFile dlsym failed, errno = %{public}s", dlerror());
+        dlclose(dlhandler);
+        return E_ERR;
+    }
+    int32_t ret = deleteShareFile(tokenId, sharePathList);
+    dlclose(dlhandler);
+    return ret;
 }
 
 int32_t StorageDaemon::SetBundleQuota(const std::string &bundleName, int32_t uid,
