@@ -616,7 +616,8 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonTest_HandleUpdateUs
 
     MessageParcel data2;
     MessageParcel reply2;
-    EXPECT_CALL(mock, UpdateUserAuth(testing::_, testing::_, testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_ERR));
+    EXPECT_CALL(mock, UpdateUserAuth(testing::_, testing::_, testing::_, testing::_,
+        testing::_)).WillOnce(testing::Return(E_ERR));
     ret = mock.HandleUpdateUserAuth(data2, reply2);
     EXPECT_TRUE(ret == E_OK);
     err = reply2.ReadInt32();

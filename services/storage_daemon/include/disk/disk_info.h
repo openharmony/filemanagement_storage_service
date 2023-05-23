@@ -63,6 +63,7 @@ private:
     dev_t device_ {};
     unsigned int flags_ {};
     std::list<std::string> volumeId_;
+    int32_t ReadDiskLines(std::vector<std::string> lines, int32_t maxVols);
 };
 } // STORAGE_DAEMON
 } // OHOS

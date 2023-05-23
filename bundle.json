@@ -49,8 +49,8 @@
         "napi",
         "file_api",
         "data_share",
-        "init"
-
+        "init",
+        "hitrace_native"
       ],
       "third_party": [
         "e2fsprogs"

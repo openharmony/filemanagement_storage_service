@@ -211,16 +211,19 @@ int DiskInfo::ReadPartition()
             lines.push_back(tmp);
     }
 
-    std::string lineToken = " ";
     status = sScan;
+    return ReadDiskLines(lines, maxVolumes);
+}
+
+int32_t DiskInfo::ReadDiskLines(std::vector<std::string> lines, int32_t maxVols)
+{
+    std::string lineToken = " ";
     bool foundPart = false;
     Table table = Table::UNKNOWN;
     for (auto &line : lines) {
         auto split = SplitLine(line, lineToken);
         auto it = split.begin();
-        if (it == split.end()) {
-            continue;
-        }
+        if (it == split.end()) continue;
         if (*it == "DISK") {
             if (++it == split.end()) {
                 continue;
@@ -234,17 +237,14 @@ int DiskInfo::ReadPartition()
                 continue;
             }
         } else if (*it == "PART") {
-            if (++it == split.end()) {
-                continue;
-            }
+            if (++it == split.end()) continue;
             int32_t index = std::stoi(*it);
-            if (index > maxVolumes || index < 1) {
+            if (index > maxVols || index < 1) {
                 LOGE("Invalid partition %{public}d", index);
                 continue;
             }
             dev_t partitionDev = makedev(major(device_), minor(device_) + static_cast<uint32_t>(index));
-            res = CreateVolume(partitionDev);
-            if (res == E_OK) {
+            if (CreateVolume(partitionDev) == E_OK) {
                 foundPart = true;
             }
         }
