@@ -14,6 +14,7 @@
  */
 
 #include "storage_manager_proxy.h"
+#include "hitrace_meter.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 
@@ -22,6 +23,7 @@ namespace StorageManager {
 int32_t StorageManagerProxy::PrepareAddUser(int32_t userId, uint32_t flags)
 {
     LOGI("StorageManagerProxy::PrepareAddUser, userId:%{public}d", userId);
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -47,6 +49,7 @@ int32_t StorageManagerProxy::PrepareAddUser(int32_t userId, uint32_t flags)
 int32_t StorageManagerProxy::RemoveUser(int32_t userId, uint32_t flags)
 {
     LOGI("StorageManagerProxy::RemoveUser, userId:%{public}d", userId);
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -72,6 +75,7 @@ int32_t StorageManagerProxy::RemoveUser(int32_t userId, uint32_t flags)
 int32_t StorageManagerProxy::PrepareStartUser(int32_t userId)
 {
     LOGI("StorageManagerProxy::PrepareStartUser, userId:%{public}d", userId);
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -93,6 +97,7 @@ int32_t StorageManagerProxy::PrepareStartUser(int32_t userId)
 int32_t StorageManagerProxy::StopUser(int32_t userId)
 {
     LOGI("StorageManagerProxy::StopUser, userId:%{public}d", userId);
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -114,6 +119,7 @@ int32_t StorageManagerProxy::StopUser(int32_t userId)
 int32_t StorageManagerProxy::GenerateUserKeys(uint32_t userId, uint32_t flags)
 {
     LOGI("user ID: %{public}u, flags: %{public}u", userId, flags);
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -140,6 +146,7 @@ int32_t StorageManagerProxy::GenerateUserKeys(uint32_t userId, uint32_t flags)
 int32_t StorageManagerProxy::DeleteUserKeys(uint32_t userId)
 {
     LOGI("user ID: %{public}u", userId);
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -165,6 +172,7 @@ int32_t StorageManagerProxy::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                                             const std::vector<uint8_t> &newSecret)
 {
     LOGI("user ID: %{public}u", userId);
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -206,6 +214,7 @@ int32_t StorageManagerProxy::ActiveUserKey(uint32_t userId,
                                            const std::vector<uint8_t> &secret)
 {
     LOGI("user ID: %{public}u", userId);
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -237,6 +246,7 @@ int32_t StorageManagerProxy::ActiveUserKey(uint32_t userId,
 int32_t StorageManagerProxy::InactiveUserKey(uint32_t userId)
 {
     LOGI("user ID: %{public}u", userId);
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -259,6 +269,7 @@ int32_t StorageManagerProxy::InactiveUserKey(uint32_t userId)
 int32_t StorageManagerProxy::UpdateKeyContext(uint32_t userId)
 {
     LOGI("user ID: %{public}u", userId);
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -281,6 +292,7 @@ int32_t StorageManagerProxy::UpdateKeyContext(uint32_t userId)
 int32_t StorageManagerProxy::GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize)
 {
     LOGI("StorageManagerProxy::GetFreeSizeOfVolume, volumeUuid:%{public}s", volumeUuid.c_str());
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -308,6 +320,7 @@ int32_t StorageManagerProxy::GetFreeSizeOfVolume(std::string volumeUuid, int64_t
 int32_t StorageManagerProxy::GetTotalSizeOfVolume(std::string volumeUuid, int64_t &totalSize)
 {
     LOGI("StorageManagerProxy::GetTotalSizeOfVolume, volumeUuid:%{public}s", volumeUuid.c_str());
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -334,6 +347,7 @@ int32_t StorageManagerProxy::GetTotalSizeOfVolume(std::string volumeUuid, int64_
 
 int32_t StorageManagerProxy::GetBundleStats(std::string pkgName, BundleStats &bundleStats)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -359,6 +373,7 @@ int32_t StorageManagerProxy::GetBundleStats(std::string pkgName, BundleStats &bu
 int32_t StorageManagerProxy::NotifyVolumeCreated(VolumeCore vc)
 {
     LOGI("StorageManagerProxy::NotifyVolumeCreated, volumeUuid:%{public}s", vc.GetId().c_str());
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -380,6 +395,7 @@ int32_t StorageManagerProxy::NotifyVolumeMounted(std::string volumeId, int32_t f
     std::string path, std::string description)
 {
     LOGI("StorageManagerProxy::NotifyVolumeMounted, volumeUuid:%{public}s", volumeId.c_str());
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -419,7 +435,8 @@ int32_t StorageManagerProxy::NotifyVolumeMounted(std::string volumeId, int32_t f
 
 int32_t StorageManagerProxy::NotifyVolumeDestroyed(std::string volumeId)
 {
-    LOGI("StorageManagerProxy::NotifyVolumedestroyed, volumeId:%{public}s", volumeId.c_str());
+    LOGI("StorageManagerProxy::NotifyVolumedestroyed, volumeId:%{public}s", volumeId.c_str());\
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -439,6 +456,7 @@ int32_t StorageManagerProxy::NotifyVolumeDestroyed(std::string volumeId)
 int32_t StorageManagerProxy::Mount(std::string volumeId)
 {
     LOGI("StorageManagerProxy::Mount, volumeId:%{public}s", volumeId.c_str());
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -461,6 +479,7 @@ int32_t StorageManagerProxy::Mount(std::string volumeId)
 int32_t StorageManagerProxy::Unmount(std::string volumeId)
 {
     LOGI("StorageManagerProxy::Unmount, volumeId:%{public}s", volumeId.c_str());
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -483,6 +502,7 @@ int32_t StorageManagerProxy::Unmount(std::string volumeId)
 int32_t StorageManagerProxy::GetAllVolumes(std::vector<VolumeExternal> &vecOfVol)
 {
     LOGI("StorageManagerProxy::GetAllVolumes");
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -514,6 +534,7 @@ int32_t StorageManagerProxy::GetAllVolumes(std::vector<VolumeExternal> &vecOfVol
 int32_t StorageManagerProxy::NotifyDiskCreated(Disk disk)
 {
     LOGI("StorageManagerProxy::NotifyDiskCreate, diskId:%{public}s", disk.GetDiskId().c_str());
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -534,6 +555,7 @@ int32_t StorageManagerProxy::NotifyDiskCreated(Disk disk)
 int32_t StorageManagerProxy::NotifyDiskDestroyed(std::string diskId)
 {
     LOGI("StorageManagerProxy::NotifyDiskDestroyed, diskId:%{public}s", diskId.c_str());
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -552,6 +574,7 @@ int32_t StorageManagerProxy::NotifyDiskDestroyed(std::string diskId)
 int32_t StorageManagerProxy::Partition(std::string diskId, int32_t type)
 {
     LOGI("StorageManagerProxy::Partition, diskId:%{public}s", diskId.c_str());
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -577,6 +600,7 @@ int32_t StorageManagerProxy::Partition(std::string diskId, int32_t type)
 int32_t StorageManagerProxy::GetAllDisks(std::vector<Disk> &vecOfDisk)
 {
     LOGI("StorageManagerProxy::GetAllDisks");
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -608,6 +632,7 @@ int32_t StorageManagerProxy::GetAllDisks(std::vector<Disk> &vecOfDisk)
 int32_t StorageManagerProxy::GetSystemSize(int64_t &systemSize)
 {
     LOGI("StorageManagerProxy::GetSystemSize");
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -631,6 +656,7 @@ int32_t StorageManagerProxy::GetSystemSize(int64_t &systemSize)
 int32_t StorageManagerProxy::GetTotalSize(int64_t &totalSize)
 {
     LOGI("StorageManagerProxy::GetTotalSize");
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -654,6 +680,7 @@ int32_t StorageManagerProxy::GetTotalSize(int64_t &totalSize)
 int32_t StorageManagerProxy::GetFreeSize(int64_t &freeSize)
 {
     LOGI("StorageManagerProxy::GetFreeSize");
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -676,6 +703,7 @@ int32_t StorageManagerProxy::GetFreeSize(int64_t &freeSize)
 
 int32_t StorageManagerProxy::GetUserStorageStats(StorageStats &storageStats)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     StorageStats result;
     MessageParcel data;
     MessageParcel reply;
@@ -698,6 +726,7 @@ int32_t StorageManagerProxy::GetUserStorageStats(StorageStats &storageStats)
 
 int32_t StorageManagerProxy::GetUserStorageStats(int32_t userId, StorageStats &storageStats)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     StorageStats result;
     MessageParcel data;
     MessageParcel reply;
@@ -723,6 +752,7 @@ int32_t StorageManagerProxy::GetUserStorageStats(int32_t userId, StorageStats &s
 
 int32_t StorageManagerProxy::GetCurrentBundleStats(BundleStats &bundleStats)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     BundleStats result;
     MessageParcel data;
     MessageParcel reply;
@@ -745,6 +775,7 @@ int32_t StorageManagerProxy::GetCurrentBundleStats(BundleStats &bundleStats)
 
 int32_t StorageManagerProxy::GetVolumeByUuid(std::string fsUuid, VolumeExternal &vc)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -766,6 +797,7 @@ int32_t StorageManagerProxy::GetVolumeByUuid(std::string fsUuid, VolumeExternal 
 
 int32_t StorageManagerProxy::GetVolumeById(std::string volumeId, VolumeExternal &vc)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -787,6 +819,7 @@ int32_t StorageManagerProxy::GetVolumeById(std::string volumeId, VolumeExternal 
 
 int32_t StorageManagerProxy::SetVolumeDescription(std::string fsUuid, std::string description)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -811,6 +844,7 @@ int32_t StorageManagerProxy::SetVolumeDescription(std::string fsUuid, std::strin
 
 int32_t StorageManagerProxy::Format(std::string volumeId, std::string fsType)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -835,6 +869,7 @@ int32_t StorageManagerProxy::Format(std::string volumeId, std::string fsType)
 
 int32_t StorageManagerProxy::GetDiskById(std::string diskId, Disk &disk)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -856,6 +891,7 @@ int32_t StorageManagerProxy::GetDiskById(std::string diskId, Disk &disk)
 
 int32_t StorageManagerProxy::CreateShareFile(std::string uri, uint32_t tokenId, uint32_t flag)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -886,6 +922,7 @@ int32_t StorageManagerProxy::CreateShareFile(std::string uri, uint32_t tokenId, 
 
 int32_t StorageManagerProxy::DeleteShareFile(uint32_t tokenId, std::vector<std::string>sharePathList)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_ASYNC);
@@ -912,6 +949,7 @@ int32_t StorageManagerProxy::DeleteShareFile(uint32_t tokenId, std::vector<std::
 int32_t StorageManagerProxy::SetBundleQuota(const std::string &bundleName, int32_t uid,
     const std::string &bundleDataDirPath, int32_t limitSizeMb)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);

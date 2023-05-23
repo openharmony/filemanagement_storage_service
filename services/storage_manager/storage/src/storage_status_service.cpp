@@ -17,6 +17,7 @@
 #include "accesstoken_kit.h"
 #include "ipc_skeleton.h"
 #include "hap_token_info.h"
+#include "hitrace_meter.h"
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -148,6 +149,7 @@ int32_t StorageStatusService::GetCurrentBundleStats(BundleStats &bundleStats)
 
 int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t userId, BundleStats &pkgStats)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     int32_t err = ConnectBundleMgr();
     if (err != E_OK) {
         LOGE("StorageStatusService::GetBundleStats connect bundlemgr failed");
