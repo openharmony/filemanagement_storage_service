@@ -56,6 +56,8 @@ MountManager::MountManager()
                    {"/data/service/el2/%d/hmdfs/account/services", 0771, OID_DFS_SHARE, OID_DFS_SHARE}},
       virtualDir_{{"/storage/media/%d", 0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
                   {"/storage/media/%d/local", 0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
+                  {"/storage/cloud", 0711, OID_ROOT, OID_ROOT},
+                  {"/storage/cloud/%d", 0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
                   {"/mnt/share/", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/share/%d/", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/", 0711, OID_ROOT, OID_ROOT},
@@ -83,7 +85,13 @@ int32_t MountManager::HmdfsTwiceMount(int32_t userId, std::string relativePath)
     ret += Mount(hmdfsMntArgs.GetFullDst() + "/device_view/", hmdfsMntArgs.GetCommFullPath(),
                  nullptr, MS_BIND, nullptr);
     if (ret != 0 && errno != EEXIST && errno != EBUSY) {
-        LOGE("failed to bind mount, err %{public}d", errno);
+        LOGE("failed to bind mount device_view, err %{public}d", errno);
+        return E_MOUNT;
+    }
+    ret += Mount(hmdfsMntArgs.GetFullDst() + "/cloud_merge_view/", hmdfsMntArgs.GetCloudFullPath(),
+                 nullptr, MS_BIND, nullptr);
+    if (ret != 0 && errno != EEXIST && errno != EBUSY) {
+        LOGE("failed to bind mount cloud_merge_view, err %{public}d", errno);
         return E_MOUNT;
     }
     return E_OK;
@@ -216,6 +224,11 @@ int32_t MountManager::HmdfsTwiceUMount(int32_t userId, std::string relativePath)
         LOGE("failed to un bind mount, errno %{public}d, ComDataDir_ dst %{public}s", errno,
              hmdfsMntArgs.GetCommFullPath().c_str());
     }
+    err = UMount(hmdfsMntArgs.GetCloudFullPath());
+    if (err != E_OK) {
+        LOGE("failed to un bind mount, errno %{public}d, CloudDataDir dst %{public}s", errno,
+             hmdfsMntArgs.GetCloudFullPath().c_str());
+    }
 
     err = UMount2(hmdfsMntArgs.GetFullDst().c_str(), MNT_DETACH);
     if (err != E_OK) {
@@ -267,6 +280,11 @@ int32_t MountManager::LocalMount(int32_t userId)
         LOGE("failed to bind mount, err %{public}d", errno);
         return E_MOUNT;
     }
+    if (Mount(LocalMntArgs.GetFullSrc(), LocalMntArgs.GetCloudFullPath(),
+              nullptr, MS_BIND, nullptr)) {
+        LOGE("failed to bind mount, err %{public}d", errno);
+        return E_MOUNT;
+    }
     return E_OK;
 }
 
@@ -300,7 +318,17 @@ int32_t MountManager::MountByUser(int32_t userId)
 int32_t MountManager::LocalUMount(int32_t userId)
 {
     Utils::MountArgument LocalMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, "account"));
-    return UMount(LocalMntArgs.GetCommFullPath() + "local/");
+    int err = UMount(LocalMntArgs.GetCommFullPath() + "local/");
+    if (err != E_OK) {
+        LOGE("failed to un bind mount, errno %{public}d, ComDataDir dst %{public}s", errno,
+             LocalMntArgs.GetCommFullPath().c_str());
+    }
+    err = UMount(LocalMntArgs.GetCloudFullPath());
+    if (err != E_OK) {
+        LOGE("failed to un bind mount, errno %{public}d, CloudDataDir dst %{public}s", errno,
+             LocalMntArgs.GetCloudFullPath().c_str());
+    }
+    return err;
 }
 
 int32_t MountManager::UmountByUser(int32_t userId)
