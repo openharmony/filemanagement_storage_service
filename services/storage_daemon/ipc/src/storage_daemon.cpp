@@ -129,7 +129,7 @@ int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
 #ifdef USER_CRYPTO_MANAGER
     return KeyManager::GetInstance()->DeleteUserKeys(userId);
 #else
-    return E_OK;
+    return ret;
 #endif
 }
 
