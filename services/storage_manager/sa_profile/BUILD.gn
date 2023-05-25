@@ -14,7 +14,7 @@ import("//build/ohos.gni")
 import("//build/ohos/sa_profile/sa_profile.gni")
 
 ohos_sa_profile("storage_manager_sa_profile") {
-  sources = [ "5003.xml" ]
+  sources = [ "5003.json" ]
   part_name = "storage_service"
 }
 
