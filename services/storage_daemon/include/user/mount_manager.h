@@ -64,6 +64,7 @@ private:
     int32_t LocalMount(int32_t userId);
     int32_t LocalUMount(int32_t userId);
     void MountCloudForUsers();
+    int32_t CloudUMount(int32_t userId);
 
     DISALLOW_COPY_AND_MOVE(MountManager);
 
