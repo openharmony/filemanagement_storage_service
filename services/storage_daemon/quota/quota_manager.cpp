@@ -15,6 +15,7 @@
 
 #include "quota/quota_manager.h"
 
+#include <cstdint>
 #include <cstdlib>
 #include <fstream>
 #include <sstream>
@@ -34,8 +35,8 @@ const std::string QUOTA_DEVICE_DATA_PATH = "/data";
 const std::string PROC_MOUNTS_PATH = "/proc/mounts";
 const std::string DEV_BLOCK_PATH = "/dev/block/";
 const int32_t DEV_BLOCK_PATH_LEN = DEV_BLOCK_PATH.length();
-const int64_t ONE_KB = int64_t(1);
-const int64_t ONE_MB = int64_t(1024 * ONE_KB);
+const uint64_t ONE_KB = int64_t(1);
+const uint64_t ONE_MB = int64_t(1024 * ONE_KB);
 static std::map<std::string, std::string> mQuotaReverseMounts;
 std::recursive_mutex mMountsLock;
 
@@ -114,7 +115,7 @@ int32_t QuotaManager::SetBundleQuota(const std::string &bundleName, int32_t uid,
     }
 
     dq.dqb_valid = QIF_LIMITS;
-    dq.dqb_bhardlimit = limitSizeMb * ONE_MB;
+    dq.dqb_bhardlimit = (uint32_t)limitSizeMb * ONE_MB;
     if (quotactl(QCMD(Q_SETQUOTA, USRQUOTA), device.c_str(), uid, reinterpret_cast<char*>(&dq)) != 0) {
         LOGE("Failed to set hard quota, errno : %{public}d", errno);
         return E_SYS_CALL;

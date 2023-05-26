@@ -19,7 +19,7 @@ namespace OHOS {
 namespace StorageManager {
 int64_t GetRoundSize(int64_t size)
 {
-    int64_t val = 1;
+    uint64_t val = 1;
     int64_t multple = UNIT;
     int64_t stdMultiple = STD_UNIT;
     while (val * stdMultiple < size) {

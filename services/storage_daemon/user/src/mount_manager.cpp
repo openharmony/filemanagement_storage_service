@@ -201,7 +201,7 @@ int32_t MountManager::HmdfsMount(int32_t userId)
 
 void MountManager::MountCloudForUsers()
 {
-    for (int i = 0; i < activeUsers_.size(); i++) {
+    for (uint32_t i = 0; i < activeUsers_.size(); i++) {
         CloudMount(activeUsers_[i]);
     }
 }
