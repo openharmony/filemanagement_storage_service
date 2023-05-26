@@ -86,7 +86,7 @@ void HuksMaster::HdiDestroy()
         (*destroyHdi)(halDevice_);
     }
 
-    // add dlclose(hdiHandle_) here will cause segmentfault when exit
+    dlclose(hdiHandle_);
     hdiHandle_ = nullptr;
     halDevice_ = nullptr;
     LOGD("finish");

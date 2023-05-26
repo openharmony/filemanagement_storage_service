@@ -28,23 +28,16 @@ using HkmHalDestroyHandle = void (*)(HuksHdi *);
 
 class HuksMaster {
 public:
-    static HuksMaster &GetInstance()
-    {
-        static HuksMaster instance;
-        return instance;
-    }
-
+    HuksMaster();
+    ~HuksMaster();
+    HuksMaster(const HuksMaster &) = delete;
+    HuksMaster &operator=(const HuksMaster &) = delete;
     /* key operations */
     KeyBlob GenerateRandomKey(uint32_t keyLen);
     bool GenerateKey(const UserAuth &auth, KeyBlob &keyOut);
     bool EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo &key);
     bool DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key);
 private:
-    HuksMaster();
-    ~HuksMaster();
-    HuksMaster(const HuksMaster &) = delete;
-    HuksMaster &operator=(const HuksMaster &) = delete;
-
     /* huks hal interface */
     bool HdiCreate();
     void HdiDestroy();
