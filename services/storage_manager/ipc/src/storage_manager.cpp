@@ -44,15 +44,21 @@ void StorageManager::OnStart()
 {
     LOGI("StorageManager::OnStart Begin");
     bool res = SystemAbility::Publish(this);
-#ifdef STORAGE_STATISTICS_MANAGER
-    AccountSubscriber::Subscriber();
-#endif
+    AddSystemAbilityListener(COMMON_EVENT_SERVICE_ID);
     LOGI("StorageManager::OnStart End, res = %{public}d", res);
 }
 
 void StorageManager::OnStop()
 {
     LOGI("StorageManager::Onstop Done");
+}
+
+void StorageManager::OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId)
+{
+    LOGI("StorageManager::OnAddSystemAbility SA id %{public}d added", systemAbilityId);
+#ifdef STORAGE_STATISTICS_MANAGER
+    AccountSubscriber::Subscriber();
+#endif
 }
 
 int32_t StorageManager::PrepareAddUser(int32_t userId, uint32_t flags)

@@ -88,6 +88,7 @@ public:
         int32_t limitSizeMb) override;
 private:
     StorageManager();
+    void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;
     static sptr<StorageManager> instance_;
     static std::mutex instanceLock_;
 };
