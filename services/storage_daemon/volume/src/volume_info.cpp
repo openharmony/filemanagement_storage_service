@@ -17,6 +17,7 @@
 
 #include <sys/mount.h>
 
+#include "ipc/storage_manager_client.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/string_utils.h"
@@ -78,10 +79,18 @@ int32_t VolumeInfo::Destroy()
     if (mountState_ == REMOVED || mountState_ == BADREMOVABLE) {
         return E_OK;
     }
+    StorageManagerClient client;
     if (mountState_ != UNMOUNTED) {
         // force umount
         UMount(true);
         state = BADREMOVABLE;
+        if (client.NotifyVolumeStateChanged(id_, StorageManager::VolumeState::BAD_REMOVAL) != E_OK) {
+            LOGE("Volume Notify Bad Removal failed");
+        }
+    } else {
+        if (client.NotifyVolumeStateChanged(id_, StorageManager::VolumeState::REMOVED) != E_OK) {
+            LOGE("Volume Notify Removed failed");
+        }
     }
 
     int32_t err = DoDestroy();
@@ -138,6 +147,10 @@ int32_t VolumeInfo::UMount(bool force)
     }
 
     mountState_ = EJECTING;
+    StorageManagerClient client;
+    if (client.NotifyVolumeStateChanged(id_, StorageManager::VolumeState::EJECTING) != E_OK) {
+        LOGE("Volume Notify Ejecting failed");
+    }
 
     err = DoUMount(force);
     if (!force && err) {
@@ -146,6 +159,9 @@ int32_t VolumeInfo::UMount(bool force)
     }
 
     mountState_ = UNMOUNTED;
+    if (client.NotifyVolumeStateChanged(id_, StorageManager::VolumeState::UNMOUNTED) != E_OK) {
+        LOGE("Volume Notify Unmounted failed");
+    }
     return E_OK;
 }
 

@@ -54,7 +54,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Mount_0000, testing::e
     if (vmService != nullptr) {
         vmService->OnVolumeCreated(vc);
         result = vmService->Mount(volumeId);
-        vmService->OnVolumeDestroyed(volumeId);
+        vmService->OnVolumeStateChanged(volumeId, VolumeState::BAD_REMOVAL);
     }
     EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Mount_0000";
@@ -136,7 +136,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_0001, testing:
         vc.SetState(VolumeState::MOUNTED);
         vmService->OnVolumeCreated(vc);
         result = vmService->Unmount(volumeId);
-        vmService->OnVolumeDestroyed(volumeId);
+        vmService->OnVolumeStateChanged(volumeId, VolumeState::REMOVED);
     }
     EXPECT_EQ(result, E_NON_EXIST);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_Unmount_0001";
@@ -165,7 +165,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeCreated_0000, 
         VolumeExternal ve;
         int32_t res = vmService->GetVolumeById(volumeId, ve);
         EXPECT_EQ(res, E_OK);
-        vmService->OnVolumeDestroyed(volumeId);
+        vmService->OnVolumeStateChanged(volumeId, VolumeState::BAD_REMOVAL);
     }
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_OnVolumeCreated_0000";
 }
@@ -214,7 +214,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDestroyed_0000
         DelayedSingleton<VolumeManagerService>::GetInstance();
     std::string volumeId = "vol-1-5";
     if (vmService != nullptr) {
-        vmService->OnVolumeDestroyed(volumeId);
+        vmService->OnVolumeStateChanged(volumeId, VolumeState::BAD_REMOVAL);
         VolumeExternal ve;
         int32_t res = vmService->GetVolumeById(volumeId, ve);
         EXPECT_EQ(res, E_NON_EXIST);

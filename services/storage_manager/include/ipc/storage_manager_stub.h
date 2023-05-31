@@ -41,7 +41,7 @@ private:
     int32_t HandleGetCurrentBundleStats(MessageParcel &data, MessageParcel &reply);
     int32_t HandleNotifyVolumeCreated(MessageParcel &data, MessageParcel &reply);
     int32_t HandleNotifyVolumeMounted(MessageParcel &data, MessageParcel &reply);
-    int32_t HandleNotifyVolumeDestroyed(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleNotifyVolumeStateChanged(MessageParcel &data, MessageParcel &reply);
     int32_t HandleMount(MessageParcel &data, MessageParcel &reply);
     int32_t HandleUnmount(MessageParcel &data, MessageParcel &reply);
     int32_t HandleGetAllVolumes(MessageParcel &data, MessageParcel &reply);

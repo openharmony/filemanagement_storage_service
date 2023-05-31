@@ -111,7 +111,7 @@ public:
         return E_OK;
     }
 
-    virtual int32_t NotifyVolumeDestroyed(std::string volumeId) override
+    virtual int32_t NotifyVolumeStateChanged(std::string volumeId, VolumeState state) override
     {
         return E_OK;
     }

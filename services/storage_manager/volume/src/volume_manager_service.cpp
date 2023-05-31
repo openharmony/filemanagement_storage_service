@@ -30,7 +30,7 @@ namespace StorageManager {
     VolumeManagerService::VolumeManagerService() {}
     VolumeManagerService::~VolumeManagerService() {}
 
-    void VolumeManagerService::VolumeStateNotify(int32_t state, std::shared_ptr<VolumeExternal> volume)
+    void VolumeManagerService::VolumeStateNotify(VolumeState state, std::shared_ptr<VolumeExternal> volume)
     {
         DelayedSingleton<Notification>::GetInstance()->NotifyVolumeChange(state, volume);
     }
@@ -42,19 +42,17 @@ namespace StorageManager {
         Mount(volumePtr->GetId());
     }
 
-    void VolumeManagerService::OnVolumeDestroyed(string volumeId)
+    void VolumeManagerService::OnVolumeStateChanged(string volumeId, VolumeState state)
     {
         if (!volumeMap_.Contains(volumeId)) {
             LOGE("VolumeManagerService::OnVolumeDestroyed volumeId %{public}s not exists", volumeId.c_str());
             return;
         }
         std::shared_ptr<VolumeExternal> volumePtr = volumeMap_[volumeId];
-        int32_t state = VOLUME_REMOVED;
-        if (volumePtr->GetState() != VolumeState::UNMOUNTED) {
-            state =  VOLUME_BAD_REMOVAL;
-        }
         VolumeStateNotify(state, volumePtr);
-        volumeMap_.Erase(volumeId);
+        if (state == VolumeState::REMOVED || state == VolumeState::BAD_REMOVAL) {
+            volumeMap_.Erase(volumeId);
+        }
     }
 
     void VolumeManagerService::OnVolumeMounted(std::string volumeId, int fsType, std::string fsUuid,
@@ -83,7 +81,7 @@ namespace StorageManager {
         }
         volumePtr->SetDescription(des);
         volumePtr->SetState(VolumeState::MOUNTED);
-        VolumeStateNotify(VOLUME_MOUNTED, volumePtr);
+        VolumeStateNotify(VolumeState::MOUNTED, volumePtr);
     }
 
     int32_t VolumeManagerService::Mount(std::string volumeId)
@@ -125,12 +123,10 @@ namespace StorageManager {
         std::shared_ptr<StorageDaemonCommunication> sdCommunication;
         sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
         volumePtr->SetState(VolumeState::EJECTING);
-        VolumeStateNotify(VOLUME_EJECT, volumePtr);
         int32_t result = sdCommunication->Unmount(volumeId);
         if (result == E_OK) {
             volumePtr->SetState(VolumeState::UNMOUNTED);
             volumePtr->Reset();
-            VolumeStateNotify(VOLUME_UNMOUNTED, volumePtr);
         } else {
             volumePtr->SetState(VolumeState::MOUNTED);
         }

@@ -22,17 +22,10 @@
 
 namespace OHOS {
 namespace StorageManager {
-enum {
-    VOLUME_REMOVED,
-    VOLUME_UNMOUNTED,
-    VOLUME_MOUNTED,
-    VOLUME_BAD_REMOVAL,
-    VOLUME_EJECT
-};
 class Notification final : public NoCopyable {
     DECLARE_DELAYED_SINGLETON(Notification);
 public:
-    void NotifyVolumeChange(int32_t notifyCode, std::shared_ptr<VolumeExternal> volume);
+    void NotifyVolumeChange(VolumeState notifyCode, std::shared_ptr<VolumeExternal> volume);
 };
 } // StorageManager
 } // OHOS

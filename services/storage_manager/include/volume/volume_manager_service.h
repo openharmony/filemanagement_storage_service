@@ -32,7 +32,7 @@ public:
     void OnVolumeCreated(VolumeCore vc);
     void OnVolumeMounted(std::string volumeId, int32_t fsType, std::string fsUuid,
         std::string path, std::string description);
-    void OnVolumeDestroyed(std::string volumeId);
+    void OnVolumeStateChanged(std::string volumeId, VolumeState state);
     std::vector<VolumeExternal> GetAllVolumes();
     std::shared_ptr<VolumeExternal> GetVolumeByUuid(std::string volumeUuid);
     int32_t GetVolumeByUuid(std::string fsUuid, VolumeExternal &vc);
@@ -41,7 +41,7 @@ public:
     int32_t Format(std::string volumeId, std::string fsType);
 private:
     StorageService::StorageRlMap<std::string, std::shared_ptr<VolumeExternal>> volumeMap_;
-    void VolumeStateNotify(int32_t state, std::shared_ptr<VolumeExternal> volume);
+    void VolumeStateNotify(VolumeState state, std::shared_ptr<VolumeExternal> volume);
     int32_t Check(std::string volumeId);
 };
 } // StorageManager

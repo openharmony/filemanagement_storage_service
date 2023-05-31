@@ -37,7 +37,7 @@ namespace {
         IStorageManager::STOP_USER,
         IStorageManager::NOTIFY_VOLUME_CREATED,
         IStorageManager::NOTIFY_VOLUME_MOUNTED,
-        IStorageManager::NOTIFY_VOLUME_DESTROYED,
+        IStorageManager::NOTIFY_VOLUME_STATE_CHANGED,
         IStorageManager::MOUNT,
         IStorageManager::UNMOUNT,
         IStorageManager::NOTIFY_DISK_CREATED,
@@ -152,7 +152,7 @@ HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemote
     EXPECT_CALL(mock, NotifyVolumeCreated(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, NotifyVolumeMounted(testing::_, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(mock, NotifyVolumeDestroyed(testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, NotifyVolumeStateChanged(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, Mount(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, Unmount(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, NotifyDiskCreated(testing::_)).WillOnce(testing::Return(E_OK));

@@ -511,7 +511,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyVolumeDestroyed_00
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     auto proxy = iface_cast<IStorageManager>(remote);
-    int64_t result = proxy->NotifyVolumeDestroyed(volumeId);
+    int64_t result = proxy->NotifyVolumeStateChanged(volumeId, VolumeState::BAD_REMOVAL);
     EXPECT_EQ(result, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << result;
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_NotifyVolumeDestroyed_0000";
@@ -825,7 +825,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetVolumeById_0000, test
     VolumeExternal ve;
     int64_t result = proxy->GetVolumeById(volumeId, ve);
     EXPECT_EQ(result, E_PERMISSION_DENIED);
-    proxy->NotifyVolumeDestroyed(volumeId);
+    proxy->NotifyVolumeStateChanged(volumeId, VolumeState::BAD_REMOVAL);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetVolumeById_0000";
 }
 

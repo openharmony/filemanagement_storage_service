@@ -43,14 +43,13 @@ public:
 HWTEST_F(NotificationTest, Notification_NotifyVolumeChange_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "NotificationTest-begin Notification_NotifyVolumeChange_0000";
-        int32_t notifyCode = VOLUME_REMOVED;
         std::string volumeId = "vol-1-1";
         int32_t fsType = 1;
         std::string diskId = "disk-1-1";
         VolumeCore vc(volumeId, fsType, diskId);
         std::shared_ptr<VolumeExternal> volume = make_shared<VolumeExternal>(vc);
         std::shared_ptr<Notification> notification = DelayedSingleton<Notification>::GetInstance();
-        notification->NotifyVolumeChange(notifyCode, volume);
+        notification->NotifyVolumeChange(VolumeState::REMOVED, volume);
         EXPECT_EQ(vc.GetDiskId(), diskId);
     GTEST_LOG_(INFO) << "NotificationTest-end Notification_NotifyVolumeChange_0000";
 }
@@ -68,14 +67,13 @@ HWTEST_F(NotificationTest, Notification_NotifyVolumeChange_0000, testing::ext::T
 HWTEST_F(NotificationTest, Notification_NotifyVolumeChange_0001, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "NotificationTestt-begin Notification_NotifyVolumeChange_0001";
-        int32_t notifyCode = VOLUME_UNMOUNTED;
         std::string volumeId = "vol-1-1";
         int32_t fsType = 1;
         std::string diskId = "disk-1-1";
         VolumeCore vc(volumeId, fsType, diskId);
         std::shared_ptr<VolumeExternal> volume = make_shared<VolumeExternal>(vc);
         std::shared_ptr<Notification> notification = DelayedSingleton<Notification>::GetInstance();
-        notification->NotifyVolumeChange(notifyCode, volume);
+        notification->NotifyVolumeChange(VolumeState::UNMOUNTED, volume);
         EXPECT_EQ(vc.GetDiskId(), diskId);
     GTEST_LOG_(INFO) << "NotificationTest-end Notification_NotifyVolumeChange_0001";
 }
@@ -93,7 +91,6 @@ HWTEST_F(NotificationTest, Notification_NotifyVolumeChange_0001, testing::ext::T
 HWTEST_F(NotificationTest, Notification_NotifyVolumeChange_0002, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "NotificationTest-begin Notification_NotifyVolumeChange_0002";
-        int32_t notifyCode = VOLUME_MOUNTED;
         std::string volumeId = "vol-1-1";
         int32_t fsType = 1;
         std::string diskId = "disk-1-1";
@@ -102,7 +99,7 @@ HWTEST_F(NotificationTest, Notification_NotifyVolumeChange_0002, testing::ext::T
         volume->SetFsUuid("uuid1");
         volume->SetPath("path1");
         std::shared_ptr<Notification> notification = DelayedSingleton<Notification>::GetInstance();
-        notification->NotifyVolumeChange(notifyCode, volume);
+        notification->NotifyVolumeChange(VolumeState::MOUNTED, volume);
         EXPECT_EQ(vc.GetDiskId(), diskId);
     GTEST_LOG_(INFO) << "NotificationTest-end Notification_NotifyVolumeChange_0002";
 }
@@ -120,14 +117,13 @@ HWTEST_F(NotificationTest, Notification_NotifyVolumeChange_0002, testing::ext::T
 HWTEST_F(NotificationTest, Notification_NotifyVolumeChange_0003, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "NotificationTest-begin Notification_NotifyVolumeChange_0003";
-        int32_t notifyCode = VOLUME_BAD_REMOVAL;
         std::string volumeId = "vol-1-1";
         int32_t fsType = 1;
         std::string diskId = "disk-1-1";
         VolumeCore vc(volumeId, fsType, diskId);
         std::shared_ptr<VolumeExternal> volume = make_shared<VolumeExternal>(vc);
         std::shared_ptr<Notification> notification = DelayedSingleton<Notification>::GetInstance();
-        notification->NotifyVolumeChange(notifyCode, volume);
+        notification->NotifyVolumeChange(VolumeState::BAD_REMOVAL, volume);
         EXPECT_EQ(vc.GetDiskId(), diskId);
     GTEST_LOG_(INFO) << "NotificationTest-end Notification_NotifyVolumeChange_0003";
 }
@@ -145,14 +141,13 @@ HWTEST_F(NotificationTest, Notification_NotifyVolumeChange_0003, testing::ext::T
 HWTEST_F(NotificationTest, Notification_NotifyVolumeChange_0004, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "NotificationTest-begin Notification_NotifyVolumeChange_0004";
-        int32_t notifyCode = VOLUME_EJECT;
         std::string volumeId = "vol-1-1";
         int32_t fsType = 1;
         std::string diskId = "disk-1-1";
         VolumeCore vc(volumeId, fsType, diskId);
         std::shared_ptr<VolumeExternal> volume = make_shared<VolumeExternal>(vc);
         std::shared_ptr<Notification> notification = DelayedSingleton<Notification>::GetInstance();
-        notification->NotifyVolumeChange(notifyCode, volume);
+        notification->NotifyVolumeChange(VolumeState::EJECTING, volume);
         EXPECT_EQ(vc.GetDiskId(), diskId);
     GTEST_LOG_(INFO) << "NotificationTest-end Notification_NotifyVolumeChange_0004";
 }
@@ -170,14 +165,13 @@ HWTEST_F(NotificationTest, Notification_NotifyVolumeChange_0004, testing::ext::T
 HWTEST_F(NotificationTest, Notification_NotifyVolumeChange_0005, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "NotificationTest-begin Notification_NotifyVolumeChange_0005";
-        int32_t notifyCode = 5;
         std::string volumeId = "vol-1-1";
         int32_t fsType = 1;
         std::string diskId = "disk-1-1";
         VolumeCore vc(volumeId, fsType, diskId);
         std::shared_ptr<VolumeExternal> volume = make_shared<VolumeExternal>(vc);
         std::shared_ptr<Notification> notification = DelayedSingleton<Notification>::GetInstance();
-        notification->NotifyVolumeChange(notifyCode, volume);
+        notification->NotifyVolumeChange(VolumeState::CHECKING, volume);
         EXPECT_EQ(vc.GetDiskId(), diskId);
     GTEST_LOG_(INFO) << "NotificationTest-end Notification_NotifyVolumeChange_0005";
 }

@@ -94,11 +94,6 @@ int32_t VolumeManager::DestroyVolume(const std::string volId)
     volumes_.Erase(volId);
     destroyNode.reset();
 
-    StorageManagerClient client;
-    ret = client.NotifyVolumeDestroyed(volId);
-    if (ret != E_OK) {
-        LOGE("Volume Notify Created failed");
-    }
     return E_OK;
 }
 

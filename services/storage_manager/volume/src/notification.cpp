@@ -30,23 +30,23 @@ namespace StorageManager {
 Notification::Notification() {}
 Notification::~Notification() {}
 
-void Notification::NotifyVolumeChange(int32_t notifyCode, std::shared_ptr<VolumeExternal> volume)
+void Notification::NotifyVolumeChange(VolumeState notifyCode, std::shared_ptr<VolumeExternal> volume)
 {
     AAFwk::Want want;
     AAFwk::WantParams wantParams;
     wantParams.SetParam("id", AAFwk::String::Box(volume->GetId()));
     wantParams.SetParam("diskId", AAFwk::String::Box(volume->GetDiskId()));
     switch (notifyCode) {
-        case VOLUME_REMOVED:
+        case VolumeState::REMOVED:
             LOGI("notifycode: VOLUME_REMOVED");
             want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_VOLUME_REMOVED);
             break;
-        case VOLUME_UNMOUNTED:
+        case VolumeState::UNMOUNTED:
             LOGI("notifycode: VOLUME_UNMOUNTED");
             wantParams.SetParam("volumeState", AAFwk::Integer::Box(UNMOUNTED));
             want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_VOLUME_UNMOUNTED);
             break;
-        case VOLUME_MOUNTED:
+        case VolumeState::MOUNTED:
             LOGI("notifycode: VOLUME_MOUNTED");
             wantParams.SetParam("volumeState", AAFwk::Integer::Box(MOUNTED));
             wantParams.SetParam("fsUuid", AAFwk::String::Box(volume->GetUuid()));
@@ -54,11 +54,11 @@ void Notification::NotifyVolumeChange(int32_t notifyCode, std::shared_ptr<Volume
             wantParams.SetParam("fsType", AAFwk::Integer::Box(volume->GetFsType()));
             want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_VOLUME_MOUNTED);
             break;
-        case VOLUME_BAD_REMOVAL:
+        case VolumeState::BAD_REMOVAL:
             LOGI("notifycode: VOLUME_BAD_REMOVAL");
             want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_VOLUME_BAD_REMOVAL);
             break;
-        case VOLUME_EJECT:
+        case VolumeState::EJECTING:
             LOGI("notifycode: VOLUME_EJECT");
             wantParams.SetParam("volumeState", AAFwk::Integer::Box(EJECTING));
             want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_VOLUME_EJECT);
