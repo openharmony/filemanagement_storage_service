@@ -13,6 +13,7 @@
 
 import("//build/ohos.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
+import("//third_party/e2fsprogs/e2fsprogs.gni")
 
 ## Install storage_daemon.cfg to /system/etc/init/storage_daemon.cfg {{{
 ohos_prebuilt_etc("storage_daemon_cfg") {
