@@ -57,5 +57,6 @@ ohos_shared_library("storage_manager_sa_proxy") {
   ]
 
   part_name = "storage_service"
+  innerapi_tags = [ "platformsdk" ]
   subsystem_name = "filemanagement"
 }
