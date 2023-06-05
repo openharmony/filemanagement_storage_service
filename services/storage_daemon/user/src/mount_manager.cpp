@@ -172,7 +172,7 @@ int32_t MountManager::CloudMount(int32_t userId)
         return ret;
     }
 
-    ret = CloudDaemonManager::GetInstance().StartFuse(fd, path);
+    ret = CloudDaemonManager::GetInstance().StartFuse(userId, fd, path);
     if (ret) {
         LOGE("failed to connect fuse, err %{public}d %{public}d %{public}s", errno, ret, path.c_str());
         UMount(path.c_str());
