@@ -13,7 +13,6 @@
 
 import("//build/ohos.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
-import("//third_party/e2fsprogs/e2fsprogs.gni")
 
 ## Install storage_daemon.cfg to /system/etc/init/storage_daemon.cfg {{{
 ohos_prebuilt_etc("storage_daemon_cfg") {
@@ -239,7 +238,7 @@ group("storage_daemon_third_party") {
     deps += [
       "//third_party/FreeBSD/sbin/fsck_msdosfs:fsck_msdos",
       "//third_party/FreeBSD/sbin/newfs_msdos:newfs_msdos",
-      "//third_party/e2fsprogs/e2fsprogs/misc:blkid",
+      "//third_party/e2fsprogs:blkid",
       "//third_party/exfatprogs:exfatprogs",
       "//third_party/f2fs-tools:f2fs-tools",
       "//third_party/gptfdisk:sgdisk",
