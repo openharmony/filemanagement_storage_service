@@ -151,6 +151,7 @@ int KeyManager::InitGlobalDeviceKey(void)
             LOGE("make device el1 dir error");
             return ret;
         }
+        UpgradeKeys({{0, DEVICE_EL1_DIR}});
         return RestoreDeviceKey(DEVICE_EL1_DIR);
     }
 
@@ -260,7 +261,11 @@ int KeyManager::LoadAllUsersEl1Key(void)
 {
     LOGI("enter");
     std::vector<FileList> dirInfo;
+    ReadDigitDir(USER_EL2_DIR, dirInfo);
+    UpgradeKeys(dirInfo);
+    dirInfo.clear();
     ReadDigitDir(USER_EL1_DIR, dirInfo);
+    UpgradeKeys(dirInfo);
     for (auto item : dirInfo) {
         if (RestoreUserKey(item.userId, item.path, NULL_KEY_AUTH, EL1_KEY) != 0) {
             LOGE("user %{public}u el1 key restore error", item.userId);
@@ -583,6 +588,15 @@ int KeyManager::UpdateKeyContext(uint32_t userId)
     }
     LOGI("Basekey update key context success");
 
+    return 0;
+}
+
+int KeyManager::UpgradeKeys(const std::vector<FileList> &dirInfo)
+{
+    for (const auto &it : dirInfo) {
+        std::shared_ptr<BaseKey> elKey = GetBaseKey(it.path);
+        elKey->UpgradeKeys();
+    }
     return 0;
 }
 } // namespace StorageDaemon

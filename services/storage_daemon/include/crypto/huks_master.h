@@ -39,6 +39,7 @@ public:
     bool GenerateKey(const UserAuth &auth, KeyBlob &keyOut);
     bool EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo &key);
     bool DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key);
+    bool UpgradeKey(KeyContext &ctx);
 private:
     HuksMaster();
     ~HuksMaster();
@@ -59,6 +60,7 @@ private:
                         const HksBlob &inData, HksBlob &outData);
     bool HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *paramSet2,
                             const KeyBlob &keyIn, KeyBlob &keyOut);
+    int HdiAccessUpgradeKey(const HksBlob &oldKey, const HksParamSet *paramSet, struct HksBlob &newKey);
 
     HkmHdiHandle_t hdiHandle_ = nullptr;
     HkmHalDevice_t halDevice_ = nullptr;

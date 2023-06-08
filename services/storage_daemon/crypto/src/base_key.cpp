@@ -374,5 +374,23 @@ void BaseKey::SyncKeyDir() const
     }
     (void)close(fd);
 }
+
+bool BaseKey::UpgradeKeys()
+{
+    std::vector<std::string> versions;
+    GetSubDirs(dir_, versions);
+
+    for (const auto &it : versions) {
+        std::string shieldPath = dir_ + "/" + it + PATH_SHIELD;
+        LOGI("Upgrade of %{public}s", shieldPath.c_str());
+        LoadKeyBlob(keyContext_.shield, shieldPath);
+        if (HuksMaster::GetInstance().UpgradeKey(keyContext_)) {
+            LOGI("success upgrade of %{public}s", shieldPath.c_str());
+            SaveKeyBlob(keyContext_.shield, shieldPath);
+            SyncKeyDir();
+        }
+    }
+    return true;
+}
 } // namespace StorageDaemon
 } // namespace OHOS

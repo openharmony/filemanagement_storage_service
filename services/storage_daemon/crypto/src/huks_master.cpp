@@ -87,7 +87,7 @@ void HuksMaster::HdiDestroy()
         (*destroyHdi)(halDevice_);
     }
 
-    // add dlclose(hdiHandle_) here will cause segmentfault when exit
+    dlclose(hdiHandle_);
     hdiHandle_ = nullptr;
     halDevice_ = nullptr;
     LOGD("finish");
@@ -189,6 +189,25 @@ int HuksMaster::HdiAccessFinish(const HksBlob &handle, const HksParamSet *paramS
     auto ret = halDevice_->HuksHdiFinish(&handle, paramSet, &inData, &outData);
     if (ret != HKS_SUCCESS) {
         LOGE("HuksHdiFinish failed, ret %{public}d", ret);
+    }
+    return ret;
+}
+
+int HuksMaster::HdiAccessUpgradeKey(const HksBlob &oldKey, const HksParamSet *paramSet, struct HksBlob &newKey)
+{
+    LOGD("enter");
+    if (halDevice_ == nullptr) {
+        LOGE("halDevice_ is nullptr");
+        return HKS_ERROR_NULL_POINTER;
+    }
+    if (halDevice_->HuksHdiUpgradeKey == nullptr) {
+        LOGE("HuksHdiUpgradeKey is nullptr");
+        return HKS_ERROR_NULL_POINTER;
+    }
+
+    auto ret = halDevice_->HuksHdiUpgradeKey(&oldKey, paramSet, &newKey);
+    if (ret != HKS_SUCCESS) {
+        LOGI("HuksHdiUpgradeKey ret %{public}d", ret);
     }
     return ret;
 }
@@ -530,5 +549,44 @@ bool HuksMaster::DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key)
     LOGD("finish");
     return ret;
 }
+
+bool HuksMaster::UpgradeKey(KeyContext &ctx)
+{
+    struct HksParamSet *paramSet = NULL;
+    bool ret = false;
+
+    do {
+        int err = HksInitParamSet(&paramSet);
+        if (err != HKS_SUCCESS) {
+            LOGE("HksInitParamSet failed ret %{public}d", err);
+            break;
+        }
+        err = HksAddParams(paramSet, g_generateKeyParam, HKS_ARRAY_SIZE(g_generateKeyParam));
+        if (err != HKS_SUCCESS) {
+            LOGE("HksAddParams failed ret %{public}d", err);
+            break;
+        }
+        err = HksBuildParamSet(&paramSet);
+        if (err != HKS_SUCCESS) {
+            LOGE("HksBuildParamSet failed ret %{public}d", err);
+            break;
+        }
+
+        KeyBlob keyOut(CRYPTO_KEY_SHIELD_MAX_SIZE);
+        HksBlob hksIn = ctx.shield.ToHksBlob();
+        HksBlob hksOut = keyOut.ToHksBlob();
+
+        err = HdiAccessUpgradeKey(hksIn, paramSet, hksOut);
+        if (err == HKS_SUCCESS) {
+            LOGE("Shield upgraded successfully");
+            ctx.shield.Clear();
+            ctx.shield = std::move(keyOut);
+            ret = true;
+        }
+    } while (0);
+    HksFreeParamSet(&paramSet);
+    return ret;
+}
+
 } // namespace StorageDaemon
 } // namespace OHOS

@@ -40,6 +40,7 @@ public:
     virtual bool ActiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
     virtual bool InactiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
     bool ClearKey(const std::string &mnt = MNT_DATA);
+    bool UpgradeKeys();
 
     KeyInfo keyInfo_;
     std::string GetDir() const

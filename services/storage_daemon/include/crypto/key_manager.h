@@ -64,6 +64,7 @@ private:
     int InitUserElkeyStorageDir(void);
     bool HasElkey(uint32_t userId, KeyType type);
     int DoDeleteUserKeys(unsigned int user);
+    int UpgradeKeys(const std::vector<FileList> &dirInfo);
     std::shared_ptr<BaseKey> GetBaseKey(const std::string& dir);
 
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl1Key_;

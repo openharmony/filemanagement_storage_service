@@ -120,6 +120,11 @@ ohos_executable("storage_daemon") {
     external_deps += [ "huks:libhukssdk" ]
   }
 
+  ldflags = [
+    "-Wl,-z,max-page-size=4096",
+    "-Wl,-z,separate-code",
+  ]
+
   subsystem_name = "filemanagement"
   part_name = "storage_service"
   install_enable = true
