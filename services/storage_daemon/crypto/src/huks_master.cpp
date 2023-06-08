@@ -37,6 +37,7 @@ HuksMaster::HuksMaster()
 HuksMaster::~HuksMaster()
 {
     LOGD("enter");
+    HdiModuleDestroy();
     HdiDestroy();
     LOGD("finish");
 }
@@ -107,6 +108,25 @@ int HuksMaster::HdiModuleInit()
     int ret = halDevice_->HuksHdiModuleInit();
     if (ret != HKS_SUCCESS) {
         LOGE("HuksHdiModuleInit failed, ret %{public}d", ret);
+    }
+    return ret;
+}
+
+int HuksMaster::HdiModuleDestroy()
+{
+    LOGD("enter");
+    if (halDevice_ == nullptr) {
+        LOGE("halDevice_ is nullptr");
+        return HKS_ERROR_NULL_POINTER;
+    }
+    if (halDevice_->HuksHdiModuleDestroy == nullptr) {
+        LOGE("HuksHdiModuleDestroy is nullptr");
+        return HKS_ERROR_NULL_POINTER;
+    }
+
+    int ret = halDevice_->HuksHdiModuleDestroy();
+    if (ret != HKS_SUCCESS) {
+        LOGE("HuksHdiModuleDestroy failed, ret %{public}d", ret);
     }
     return ret;
 }

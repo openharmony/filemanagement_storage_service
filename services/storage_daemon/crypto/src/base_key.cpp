@@ -61,7 +61,7 @@ bool BaseKey::InitKey()
 
 bool BaseKey::GenerateKeyBlob(KeyBlob &blob, const uint32_t size)
 {
-    blob = HuksMaster::GetInstance().GenerateRandomKey(size);
+    blob = HuksMaster::GenerateRandomKey(size);
     return !blob.IsEmpty();
 }
 

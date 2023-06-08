@@ -35,7 +35,7 @@ public:
     }
 
     /* key operations */
-    KeyBlob GenerateRandomKey(uint32_t keyLen);
+    static KeyBlob GenerateRandomKey(uint32_t keyLen);
     bool GenerateKey(const UserAuth &auth, KeyBlob &keyOut);
     bool EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo &key);
     bool DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key);
@@ -49,6 +49,7 @@ private:
     bool HdiCreate();
     void HdiDestroy();
     int HdiModuleInit();
+    int HdiModuleDestroy();
     int HdiGenerateKey(const HksBlob &keyAlias, const HksParamSet *paramSetIn,
                        HksBlob &keyOut);
     int HdiAccessInit(const HksBlob &key, const HksParamSet *paramSet, HksBlob &handle, HksBlob &token);
