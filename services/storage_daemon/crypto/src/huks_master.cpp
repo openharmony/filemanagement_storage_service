@@ -550,11 +550,43 @@ bool HuksMaster::DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key)
     return ret;
 }
 
+static bool CheckNeedUpgrade(KeyBlob &inData)
+{
+    constexpr uint32_t HKS_KEY_VERSION = 3;
+    HksParamSet *keyBlobParamSet = NULL;
+    int ret = HksGetParamSet(reinterpret_cast<HksParamSet *>(inData.data.get()), inData.size, &keyBlobParamSet);
+    if (ret != HKS_SUCCESS) {
+        LOGE("HksGetParamSet failed %{public}d", ret);
+        return false;
+    }
+
+    struct HksParam *keyVersion = NULL;
+    ret = HksGetParam(keyBlobParamSet, HKS_TAG_KEY_VERSION, &keyVersion);
+    if (ret != HKS_SUCCESS) {
+        LOGE("version get key param failed!");
+        HksFreeParamSet(&keyBlobParamSet);
+        return false;
+    }
+
+    if (keyVersion->uint32Param >= HKS_KEY_VERSION) {
+        HksFreeParamSet(&keyBlobParamSet);
+        return false;
+    }
+    HksFreeParamSet(&keyBlobParamSet);
+    return true;
+}
+
 bool HuksMaster::UpgradeKey(KeyContext &ctx)
 {
     struct HksParamSet *paramSet = NULL;
     bool ret = false;
 
+    if (!CheckNeedUpgrade(ctx.shield)) {
+        LOGI("no need to upgrade");
+        return false;
+    }
+
+    LOGI("Do upgradekey");
     do {
         int err = HksInitParamSet(&paramSet);
         if (err != HKS_SUCCESS) {
@@ -578,7 +610,8 @@ bool HuksMaster::UpgradeKey(KeyContext &ctx)
 
         err = HdiAccessUpgradeKey(hksIn, paramSet, hksOut);
         if (err == HKS_SUCCESS) {
-            LOGE("Shield upgraded successfully");
+            LOGI("Shield upgraded successfully");
+            keyOut.size = hksOut.size;
             ctx.shield.Clear();
             ctx.shield = std::move(keyOut);
             ret = true;
