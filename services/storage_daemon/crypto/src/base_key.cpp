@@ -61,7 +61,7 @@ bool BaseKey::InitKey()
 
 bool BaseKey::GenerateKeyBlob(KeyBlob &blob, const uint32_t size)
 {
-    blob = HuksMaster().GenerateRandomKey(size);
+    blob = HuksMaster::GetInstance().GenerateRandomKey(size);
     return !blob.IsEmpty();
 }
 
@@ -188,7 +188,7 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
     }
     ChMod(pathVersion, S_IREAD | S_IWRITE);
 
-    if (!HuksMaster().GenerateKey(auth, keyContext_.shield)) {
+    if (!HuksMaster::GetInstance().GenerateKey(auth, keyContext_.shield)) {
         LOGE("GenerateKey of shield failed");
         return false;
     }
@@ -267,7 +267,7 @@ bool BaseKey::UpdateKey(const std::string &keypath)
 bool BaseKey::Encrypt(const UserAuth &auth)
 {
     LOGD("enter");
-    auto ret = HuksMaster().EncryptKey(keyContext_, auth, keyInfo_);
+    auto ret = HuksMaster::GetInstance().EncryptKey(keyContext_, auth, keyInfo_);
     keyContext_.shield.Clear();
     keyContext_.secDiscard.Clear();
     keyContext_.nonce.Clear();
@@ -341,7 +341,7 @@ bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
 
 bool BaseKey::Decrypt(const UserAuth &auth)
 {
-    auto ret = HuksMaster().DecryptKey(keyContext_, auth, keyInfo_);
+    auto ret = HuksMaster::GetInstance().DecryptKey(keyContext_, auth, keyInfo_);
     keyContext_.encrypted.Clear();
     keyContext_.shield.Clear();
     keyContext_.secDiscard.Clear();
