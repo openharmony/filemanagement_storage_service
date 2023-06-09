@@ -37,6 +37,7 @@ HuksMaster::HuksMaster()
 HuksMaster::~HuksMaster()
 {
     LOGD("enter");
+    HdiModuleDestroy();
     HdiDestroy();
     LOGD("finish");
 }
@@ -111,6 +112,25 @@ int HuksMaster::HdiModuleInit()
     return ret;
 }
 
+int HuksMaster::HdiModuleDestroy()
+{
+    LOGD("enter");
+    if (halDevice_ == nullptr) {
+        LOGE("halDevice_ is nullptr");
+        return HKS_ERROR_NULL_POINTER;
+    }
+    if (halDevice_->HuksHdiModuleDestroy == nullptr) {
+        LOGE("HuksHdiModuleDestroy is nullptr");
+        return HKS_ERROR_NULL_POINTER;
+    }
+
+    int ret = halDevice_->HuksHdiModuleDestroy();
+    if (ret != HKS_SUCCESS) {
+        LOGE("HuksHdiModuleDestroy failed, ret %{public}d", ret);
+    }
+    return ret;
+}
+
 int HuksMaster::HdiGenerateKey(const HksBlob &keyAlias, const HksParamSet *paramSetIn,
                                HksBlob &keyOut)
 {
@@ -169,6 +189,25 @@ int HuksMaster::HdiAccessFinish(const HksBlob &handle, const HksParamSet *paramS
     auto ret = halDevice_->HuksHdiFinish(&handle, paramSet, &inData, &outData);
     if (ret != HKS_SUCCESS) {
         LOGE("HuksHdiFinish failed, ret %{public}d", ret);
+    }
+    return ret;
+}
+
+int HuksMaster::HdiAccessUpgradeKey(const HksBlob &oldKey, const HksParamSet *paramSet, struct HksBlob &newKey)
+{
+    LOGD("enter");
+    if (halDevice_ == nullptr) {
+        LOGE("halDevice_ is nullptr");
+        return HKS_ERROR_NULL_POINTER;
+    }
+    if (halDevice_->HuksHdiUpgradeKey == nullptr) {
+        LOGE("HuksHdiUpgradeKey is nullptr");
+        return HKS_ERROR_NULL_POINTER;
+    }
+
+    auto ret = halDevice_->HuksHdiUpgradeKey(&oldKey, paramSet, &newKey);
+    if (ret != HKS_SUCCESS) {
+        LOGI("HuksHdiUpgradeKey ret %{public}d", ret);
     }
     return ret;
 }
@@ -510,5 +549,77 @@ bool HuksMaster::DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key)
     LOGD("finish");
     return ret;
 }
+
+static bool CheckNeedUpgrade(KeyBlob &inData)
+{
+    constexpr uint32_t HKS_KEY_VERSION = 3;
+    HksParamSet *keyBlobParamSet = NULL;
+    int ret = HksGetParamSet(reinterpret_cast<HksParamSet *>(inData.data.get()), inData.size, &keyBlobParamSet);
+    if (ret != HKS_SUCCESS) {
+        LOGE("HksGetParamSet failed %{public}d", ret);
+        return false;
+    }
+
+    struct HksParam *keyVersion = NULL;
+    ret = HksGetParam(keyBlobParamSet, HKS_TAG_KEY_VERSION, &keyVersion);
+    if (ret != HKS_SUCCESS) {
+        LOGE("version get key param failed!");
+        HksFreeParamSet(&keyBlobParamSet);
+        return false;
+    }
+
+    if (keyVersion->uint32Param >= HKS_KEY_VERSION) {
+        HksFreeParamSet(&keyBlobParamSet);
+        return false;
+    }
+    HksFreeParamSet(&keyBlobParamSet);
+    return true;
+}
+
+bool HuksMaster::UpgradeKey(KeyContext &ctx)
+{
+    struct HksParamSet *paramSet = NULL;
+    bool ret = false;
+
+    if (!CheckNeedUpgrade(ctx.shield)) {
+        LOGI("no need to upgrade");
+        return false;
+    }
+
+    LOGI("Do upgradekey");
+    do {
+        int err = HksInitParamSet(&paramSet);
+        if (err != HKS_SUCCESS) {
+            LOGE("HksInitParamSet failed ret %{public}d", err);
+            break;
+        }
+        err = HksAddParams(paramSet, g_generateKeyParam, HKS_ARRAY_SIZE(g_generateKeyParam));
+        if (err != HKS_SUCCESS) {
+            LOGE("HksAddParams failed ret %{public}d", err);
+            break;
+        }
+        err = HksBuildParamSet(&paramSet);
+        if (err != HKS_SUCCESS) {
+            LOGE("HksBuildParamSet failed ret %{public}d", err);
+            break;
+        }
+
+        KeyBlob keyOut(CRYPTO_KEY_SHIELD_MAX_SIZE);
+        HksBlob hksIn = ctx.shield.ToHksBlob();
+        HksBlob hksOut = keyOut.ToHksBlob();
+
+        err = HdiAccessUpgradeKey(hksIn, paramSet, hksOut);
+        if (err == HKS_SUCCESS) {
+            LOGI("Shield upgraded successfully");
+            keyOut.size = hksOut.size;
+            ctx.shield.Clear();
+            ctx.shield = std::move(keyOut);
+            ret = true;
+        }
+    } while (0);
+    HksFreeParamSet(&paramSet);
+    return ret;
+}
+
 } // namespace StorageDaemon
 } // namespace OHOS

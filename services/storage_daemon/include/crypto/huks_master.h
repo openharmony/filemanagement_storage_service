@@ -28,20 +28,29 @@ using HkmHalDestroyHandle = void (*)(HuksHdi *);
 
 class HuksMaster {
 public:
+    static HuksMaster &GetInstance()
+    {
+        static HuksMaster instance;
+        return instance;
+    }
+
+    /* key operations */
+    static KeyBlob GenerateRandomKey(uint32_t keyLen);
+    bool GenerateKey(const UserAuth &auth, KeyBlob &keyOut);
+    bool EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo &key);
+    bool DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key);
+    bool UpgradeKey(KeyContext &ctx);
+private:
     HuksMaster();
     ~HuksMaster();
     HuksMaster(const HuksMaster &) = delete;
     HuksMaster &operator=(const HuksMaster &) = delete;
-    /* key operations */
-    KeyBlob GenerateRandomKey(uint32_t keyLen);
-    bool GenerateKey(const UserAuth &auth, KeyBlob &keyOut);
-    bool EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo &key);
-    bool DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key);
-private:
+
     /* huks hal interface */
     bool HdiCreate();
     void HdiDestroy();
     int HdiModuleInit();
+    int HdiModuleDestroy();
     int HdiGenerateKey(const HksBlob &keyAlias, const HksParamSet *paramSetIn,
                        HksBlob &keyOut);
     int HdiAccessInit(const HksBlob &key, const HksParamSet *paramSet, HksBlob &handle, HksBlob &token);
@@ -51,6 +60,7 @@ private:
                         const HksBlob &inData, HksBlob &outData);
     bool HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *paramSet2,
                             const KeyBlob &keyIn, KeyBlob &keyOut);
+    int HdiAccessUpgradeKey(const HksBlob &oldKey, const HksParamSet *paramSet, struct HksBlob &newKey);
 
     HkmHdiHandle_t hdiHandle_ = nullptr;
     HkmHalDevice_t halDevice_ = nullptr;
