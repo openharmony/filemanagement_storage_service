@@ -155,7 +155,7 @@ int Acl::DeSerialize(const char *p, size_t size)
         InsertEntry(*e);
         size -= sizeof(AclXattrEntry);
     }
-    if (size != 0) {
+    if (size < 0) {
         entries.clear();
         header = { 0 };
         errno = EINVAL;

@@ -25,6 +25,8 @@
 #include "storage_service_log.h"
 #include "utils/file_utils.h"
 
+constexpr int BUF_SIZE = 400;
+
 namespace OHOS {
 namespace StorageDaemon {
 namespace {
@@ -206,6 +208,19 @@ Acl AclFromMode(const std::string &file)
 
     return acl;
 }
+
+Acl AclFromFile(const std::string &file)
+{
+    Acl acl;
+    char buf[BUF_SIZE] = { 0 };
+    ssize_t len = getxattr(file.c_str(), ACL_XATTR_ACCESS, buf, BUF_SIZE);
+    if (len != -1) {
+        acl.DeSerialize(buf, BUF_SIZE);
+        return acl;
+    }
+    return AclFromMode(file);
+}
+
 } // anonymous namespace
 
 int AclSetAttribution(const std::string &targetFile, const std::string &entryTxt, const char *aclAttrName)
@@ -225,7 +240,12 @@ int AclSetAttribution(const std::string &targetFile, const std::string &entryTxt
     }
 
     /* init acl from file's mode */
-    Acl acl = AclFromMode(targetFile);
+    Acl acl;
+    if (strcmp(aclAttrName, ACL_XATTR_ACCESS) == 0) {
+        acl = AclFromFile(targetFile);
+    } else {
+        acl = AclFromMode(targetFile);
+    }
     if (acl.IsEmpty()) {
         LOGE("Failed to generate ACL from file's mode: %{public}s", std::strerror(errno));
         return -1;
