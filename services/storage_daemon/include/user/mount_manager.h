@@ -63,7 +63,8 @@ private:
     int32_t HmdfsTwiceUMount(int32_t userId, std::string relativePath);
     int32_t LocalMount(int32_t userId);
     int32_t LocalUMount(int32_t userId);
-    void MountCloudForUsers();
+    void MountCloudForUsers(void);
+    void UMountCloudForUsers(void);
     int32_t CloudUMount(int32_t userId);
 
     DISALLOW_COPY_AND_MOVE(MountManager);
@@ -72,7 +73,8 @@ private:
     const std::vector<DirInfo> hmdfsDirVec_;
     const std::vector<DirInfo> virtualDir_;
     std::mutex mountMutex_;
-    std::vector<int32_t> activeUsers_;
+    std::vector<int32_t> fuseToMountUsers_;
+    std::vector<int32_t> fuseMountedUsers_;
     bool cloudReady_{false};
 };
 } // STORAGE_DAEMON

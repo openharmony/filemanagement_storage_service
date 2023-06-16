@@ -154,6 +154,7 @@ int32_t MountManager::CloudMount(int32_t userId)
 
     fd = open("/dev/fuse", O_RDWR);
     if (fd < 0) {
+        LOGE("open /dev/fuse fail");
         return E_MOUNT;
     }
 
@@ -177,6 +178,7 @@ int32_t MountManager::CloudMount(int32_t userId)
         LOGE("failed to connect fuse, err %{public}d %{public}d %{public}s", errno, ret, path.c_str());
         UMount(path.c_str());
     }
+    LOGI("mount %{public}s success", path.c_str());
     close(fd);
     return ret;
 }
@@ -192,17 +194,39 @@ int32_t MountManager::HmdfsMount(int32_t userId)
 
     mountMutex_.lock();
     ret = CloudMount(userId);
-    if (ret)
-        activeUsers_.push_back(userId);
+    if (ret == E_OK) {
+        fuseMountedUsers_.push_back(userId);
+    } else {
+        fuseToMountUsers_.push_back(userId);
+    }
     mountMutex_.unlock();
 
     return E_OK;
 }
 
-void MountManager::MountCloudForUsers()
+void MountManager::MountCloudForUsers(void)
 {
-    for (uint32_t i = 0; i < activeUsers_.size(); i++) {
-        CloudMount(activeUsers_[i]);
+    for (auto it = fuseToMountUsers_.begin(); it != fuseToMountUsers_.end();) {
+        int32_t res = CloudMount(*it);
+        if (res == E_OK) {
+            fuseMountedUsers_.push_back(*it);
+            it = fuseToMountUsers_.erase(it);
+        } else {
+            it++;
+        }
+    }
+}
+
+void MountManager::UMountCloudForUsers(void)
+{
+    for (auto it = fuseMountedUsers_.begin(); it != fuseMountedUsers_.end();) {
+        int32_t res = CloudUMount(*it);
+        if (res == E_OK) {
+            fuseToMountUsers_.push_back(*it);
+            it = fuseMountedUsers_.erase(it);
+        } else {
+            it++;
+        }
     }
 }
 
@@ -212,6 +236,8 @@ void MountManager::SetCloudState(bool active)
     cloudReady_ = active;
     if (cloudReady_) {
         MountCloudForUsers();
+    } else {
+        UMountCloudForUsers();
     }
     mountMutex_.unlock();
 }
@@ -264,6 +290,7 @@ int32_t MountManager::CloudUMount(int32_t userId)
         LOGE("fuse umount failed, errno %{public}d, fuse dst %{public}s", errno, path.c_str());
         return E_UMOUNT;
     }
+    LOGI("umount %{public}s success", path.c_str());
     return E_OK;
 }
 
