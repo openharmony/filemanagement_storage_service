@@ -48,6 +48,7 @@ ohos_shared_library("storage_manager_acl") {
     "ipc:ipc_core",
   ]
 
+  innerapi_tags = [ "platformsdk" ]
   part_name = "storage_service"
   subsystem_name = "filemanagement"
 }
