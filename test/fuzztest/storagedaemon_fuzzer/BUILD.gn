@@ -55,6 +55,7 @@ ohos_fuzztest("StorageDaemonFuzzTest") {
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
     "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
   ]
 }
 
