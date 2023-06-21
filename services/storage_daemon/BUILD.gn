@@ -205,12 +205,6 @@ ohos_shared_library("storage_common_utils") {
     "hiviewdfx_hilog_native:libhilog",
   ]
 
-  if (build_selinux) {
-    defines += [ "USE_LIBRESTORECON" ]
-
-    external_deps += [ "selinux:librestorecon" ]
-  }
-
   subsystem_name = "filemanagement"
   part_name = "storage_service"
   install_enable = true
