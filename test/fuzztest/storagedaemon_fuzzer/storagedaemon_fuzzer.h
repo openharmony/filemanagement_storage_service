@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-#ifndef STORAGEMANAGER_FUZZER_H
-#define STORAGEMANAGER_FUZZER_H
+#ifndef STORAGEDAEMON_FUZZER_H
+#define STORAGEDAEMON_FUZZER_H
 
-#define FUZZ_PROJECT_NAME "storagemanager_fuzzer"
+#define FUZZ_PROJECT_NAME "storagedaemon_fuzzer"
 
 #endif
