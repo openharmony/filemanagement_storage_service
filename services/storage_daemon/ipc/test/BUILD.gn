@@ -43,6 +43,7 @@ ohos_unittest("storage_daemon_test") {
   ]
 
   sources = [
+    "$ROOT_DIR/crypto/test/key_manager_mock.cpp",
     "$ROOT_DIR/disk/src/disk_config.cpp",
     "$ROOT_DIR/disk/src/disk_info.cpp",
     "$ROOT_DIR/disk/src/disk_manager.cpp",
@@ -61,7 +62,6 @@ ohos_unittest("storage_daemon_test") {
   ]
 
   deps = [
-    "$ROOT_DIR/crypto:libsdcrypto",
     "${storage_daemon_path}:storage_common_utils",
     "//third_party/googletest:gtest_main",
   ]
