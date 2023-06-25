@@ -25,35 +25,38 @@
       "storage_service_external_storage_manager",
       "storage_service_storage_statistics_manager"
     ],
-    "adapted_system_type": ["standard"],
+    "adapted_system_type": [ "small", "standard" ],
     "rom": "4096KB",
     "ram": "10240KB",
     "deps": {
       "components": [
         "ability_base",
-        "bundle_framework",
-        "hiviewdfx_hilog_native",
-        "ipc",
-        "safwk",
-        "samgr",
         "ability_runtime",
-        "huks",
-        "app_file_service",
-        "dfs_service",
-        "startup",
         "access_token",
-        "relational_store",
-        "common_event_service",
+        "app_file_service",
+        "bundle_framework",
         "c_utils",
+        "common_event_service",
+        "data_share",
+        "dfs_service",
+        "file_api",
+        "hitrace_native",
+        "hiviewdfx_hilog_native",
+        "huks",
+        "init",
+        "ipc",
         "media_library",
         "napi",
-        "file_api",
-        "data_share",
-        "init",
-        "hitrace_native"
+        "relational_store",
+        "safwk",
+        "samgr",
+        "selinux",
+        "startup"
       ],
       "third_party": [
-        "e2fsprogs"
+        "bounds_checking_function",
+        "e2fsprogs",
+        "openssl"
       ]
     },
     "build": {
