@@ -320,7 +320,7 @@ HWTEST_F(AclTest, acl_serialize_test_2, TestSize.Level1)
 
         Acl acl2;
         size_t bias = 1;
-        rc = acl2.DeSerialize(buf, bufSize + bias);
+        rc = acl2.DeSerialize(buf, sizeof(AclXattrHeader) + sizeof(AclXattrEntry) * 100 + bias);
         EXPECT_TRUE(rc != 0) << "de-serializing with wrong bufSize should fail";
     }
 }
