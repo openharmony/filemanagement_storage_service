@@ -65,12 +65,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         return 0;
     }
 
-    if (size < OHOS::U32_AT_SIZE) {
-        return 0;
-    }
-
     /* Validate the length of size */
-    if (size == 0 || size > OHOS::FOO_MAX_LEN) {
+    if (size < OHOS::U32_AT_SIZE || size > OHOS::FOO_MAX_LEN) {
         return 0;
     }
 
