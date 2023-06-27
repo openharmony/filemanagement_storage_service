@@ -560,7 +560,7 @@ static bool CheckNeedUpgrade(KeyBlob &inData)
         return false;
     }
 
-    struct HksParam *keyVersion = NULL;
+    struct HksParam *keyVersion = nullptr;
     ret = HksGetParam(keyBlobParamSet, HKS_TAG_KEY_VERSION, &keyVersion);
     if (ret != HKS_SUCCESS) {
         LOGE("version get key param failed!");

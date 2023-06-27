@@ -36,6 +36,7 @@ void Notification::NotifyVolumeChange(int32_t notifyCode, std::shared_ptr<Volume
     AAFwk::WantParams wantParams;
     wantParams.SetParam("id", AAFwk::String::Box(volume->GetId()));
     wantParams.SetParam("diskId", AAFwk::String::Box(volume->GetDiskId()));
+    wantParams.SetParam("fsUuid", AAFwk::String::Box(volume->GetUuid()));
     switch (notifyCode) {
         case VOLUME_REMOVED:
             LOGI("notifycode: VOLUME_REMOVED");
@@ -49,7 +50,6 @@ void Notification::NotifyVolumeChange(int32_t notifyCode, std::shared_ptr<Volume
         case VOLUME_MOUNTED:
             LOGI("notifycode: VOLUME_MOUNTED");
             wantParams.SetParam("volumeState", AAFwk::Integer::Box(MOUNTED));
-            wantParams.SetParam("fsUuid", AAFwk::String::Box(volume->GetUuid()));
             wantParams.SetParam("path", AAFwk::String::Box(volume->GetPath()));
             wantParams.SetParam("fsType", AAFwk::Integer::Box(volume->GetFsType()));
             want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_VOLUME_MOUNTED);
