@@ -50,7 +50,7 @@
         "relational_store",
         "safwk",
         "samgr",
-        "selinux",
+        "selinux_adapter",
         "startup"
       ],
       "third_party": [
