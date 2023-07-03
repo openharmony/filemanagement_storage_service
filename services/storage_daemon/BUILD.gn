@@ -208,7 +208,7 @@ ohos_shared_library("storage_common_utils") {
   if (build_selinux) {
     defines += [ "USE_LIBRESTORECON" ]
 
-    external_deps += [ "selinux:librestorecon" ]
+    external_deps += [ "selinux_adapter:librestorecon" ]
   }
 
   subsystem_name = "filemanagement"
