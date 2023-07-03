@@ -58,7 +58,7 @@ ohos_static_library("libsdcrypto") {
 
   external_deps = [
     "c_utils:utils",
-    "hiviewdfx_hilog_native:libhilog",
+    "hilog:libhilog",
     "huks:libhukssdk",
     "init:libbegetutil",
   ]

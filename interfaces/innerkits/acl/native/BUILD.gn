@@ -44,7 +44,7 @@ ohos_shared_library("storage_manager_acl") {
 
   external_deps = [
     "c_utils:utils",
-    "hiviewdfx_hilog_native:libhilog",
+    "hilog:libhilog",
     "ipc:ipc_core",
   ]
 

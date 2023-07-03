@@ -104,7 +104,7 @@ ohos_executable("storage_daemon") {
     "ability_base:zuri",
     "c_utils:utils",
     "dfs_service:cloud_daemon_kit_inner",
-    "hiviewdfx_hilog_native:libhilog",
+    "hilog:libhilog",
     "init:libbegetutil",
     "ipc:ipc_core",
     "safwk:system_ability_fwk",
@@ -167,7 +167,7 @@ ohos_executable("sdc") {
 
   external_deps = [
     "c_utils:utils",
-    "hiviewdfx_hilog_native:libhilog",
+    "hilog:libhilog",
     "ipc:ipc_core",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
@@ -202,7 +202,7 @@ ohos_shared_library("storage_common_utils") {
 
   external_deps = [
     "c_utils:utils",
-    "hiviewdfx_hilog_native:libhilog",
+    "hilog:libhilog",
   ]
 
   if (build_selinux) {
