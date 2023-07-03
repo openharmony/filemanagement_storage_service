@@ -74,7 +74,7 @@ ohos_unittest("storage_daemon_test") {
     "app_file_service:fileshare_native",
     "c_utils:utils",
     "dfs_service:cloud_daemon_kit_inner",
-    "hiviewdfx_hilog_native:libhilog",
+    "hilog:libhilog",
     "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_core",
@@ -109,7 +109,7 @@ ohos_unittest("storage_daemon_proxy_test") {
 
   external_deps = [
     "c_utils:utils",
-    "hiviewdfx_hilog_native:libhilog",
+    "hilog:libhilog",
     "ipc:ipc_core",
     "ipc:libdbinder",
     "safwk:system_ability_fwk",
@@ -152,7 +152,7 @@ ohos_unittest("storage_daemon_stub_test") {
   external_deps = [
     "access_token:libaccesstoken_sdk",
     "c_utils:utils",
-    "hiviewdfx_hilog_native:libhilog",
+    "hilog:libhilog",
     "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_core",
