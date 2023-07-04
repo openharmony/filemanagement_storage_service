@@ -50,8 +50,7 @@
         "relational_store",
         "safwk",
         "samgr",
-        "selinux_adapter",
-        "startup"
+        "selinux_adapter"
       ],
       "third_party": [
         "bounds_checking_function",

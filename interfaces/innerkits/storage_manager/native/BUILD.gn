@@ -51,10 +51,6 @@ ohos_shared_library("storage_manager_sa_proxy") {
     "hitrace:hitrace_meter",
     "ipc:ipc_core",
   ]
-  public_deps = [
-    "${c_utils_base_path}:utils",
-    "${communication_ipc_path}/interfaces/innerkits/ipc_core:ipc_core",
-  ]
 
   part_name = "storage_service"
   innerapi_tags = [ "platformsdk" ]
