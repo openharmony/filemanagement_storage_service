@@ -217,11 +217,11 @@ int32_t StorageManager::NotifyVolumeMounted(std::string volumeId, int32_t fsType
     return E_OK;
 }
 
-int32_t StorageManager::NotifyVolumeDestroyed(std::string volumeId)
+int32_t StorageManager::NotifyVolumeStateChanged(std::string volumeId, VolumeState state)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
-    LOGI("StorageManger::NotifyVolumeDestroyed start");
-    DelayedSingleton<VolumeManagerService>::GetInstance()->OnVolumeDestroyed(volumeId);
+    LOGI("StorageManger::NotifyVolumeStateChanged start");
+    DelayedSingleton<VolumeManagerService>::GetInstance()->OnVolumeStateChanged(volumeId, state);
 #endif
 
     return E_OK;

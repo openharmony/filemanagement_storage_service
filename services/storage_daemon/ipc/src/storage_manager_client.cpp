@@ -109,14 +109,14 @@ int32_t StorageManagerClient::NotifyVolumeMounted(std::shared_ptr<VolumeInfo> vo
     return E_OK;
 }
 
-int32_t StorageManagerClient::NotifyVolumeDestroyed(std::string volId)
+int32_t StorageManagerClient::NotifyVolumeStateChanged(std::string volId, StorageManager::VolumeState state)
 
 {
     if (GetClient() != E_OK) {
         return E_SERVICE_IS_NULLPTR;
     }
 
-    storageManager_->NotifyVolumeDestroyed(volId);
+    storageManager_->NotifyVolumeStateChanged(volId, state);
 
     return E_OK;
 }

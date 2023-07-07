@@ -28,7 +28,9 @@ enum VolumeState {
     UNMOUNTED = 0,
     CHECKING,
     MOUNTED,
-    EJECTING
+    EJECTING,
+    REMOVED,
+    BAD_REMOVAL
 };
 class VolumeCore : public Parcelable {
 public:

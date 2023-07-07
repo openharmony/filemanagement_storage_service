@@ -40,7 +40,7 @@ public:
 
     MOCK_METHOD1(NotifyVolumeCreated, int32_t(VolumeCore));
     MOCK_METHOD5(NotifyVolumeMounted, int32_t(std::string, int32_t, std::string, std::string, std::string));
-    MOCK_METHOD1(NotifyVolumeDestroyed, int32_t(std::string));
+    MOCK_METHOD2(NotifyVolumeStateChanged, int32_t(std::string, VolumeState));
     MOCK_METHOD1(Mount, int32_t(std::string));
     MOCK_METHOD1(Unmount, int32_t(std::string));
     MOCK_METHOD1(GetAllVolumes, int32_t(std::vector<VolumeExternal> &));

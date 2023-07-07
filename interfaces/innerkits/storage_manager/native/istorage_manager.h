@@ -48,7 +48,7 @@ public:
     virtual int32_t NotifyVolumeCreated(VolumeCore vc) = 0;
     virtual int32_t NotifyVolumeMounted(std::string volumeId, int fsType, std::string fsUuid,
                                      std::string path, std::string description) = 0;
-    virtual int32_t NotifyVolumeDestroyed(std::string volumeId) = 0;
+    virtual int32_t NotifyVolumeStateChanged(std::string volumeId, VolumeState state) = 0;
     virtual int32_t Mount(std::string volumeId) = 0;
     virtual int32_t Unmount(std::string volumeId) = 0;
     virtual int32_t GetAllVolumes(std::vector<VolumeExternal> &vecOfVol) = 0;
@@ -101,7 +101,7 @@ public:
         GET_CURR_BUNDLE_STATS,
         NOTIFY_VOLUME_CREATED,
         NOTIFY_VOLUME_MOUNTED,
-        NOTIFY_VOLUME_DESTROYED,
+        NOTIFY_VOLUME_STATE_CHANGED,
         MOUNT,
         UNMOUNT,
         GET_ALL_VOLUMES,

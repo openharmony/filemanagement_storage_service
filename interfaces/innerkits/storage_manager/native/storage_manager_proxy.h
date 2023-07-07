@@ -43,7 +43,7 @@ public:
     int32_t NotifyVolumeCreated(VolumeCore vc) override;
     int32_t NotifyVolumeMounted(std::string volumeId, int32_t fsType, std::string fsUuid,
                              std::string path, std::string description) override;
-    int32_t NotifyVolumeDestroyed(std::string volumeId) override;
+    int32_t NotifyVolumeStateChanged(std::string volumeId, VolumeState state) override;
     int32_t Mount(std::string volumeId) override;
     int32_t Unmount(std::string volumeId) override;
     int32_t GetAllVolumes(std::vector<VolumeExternal> &vecOfVol) override;

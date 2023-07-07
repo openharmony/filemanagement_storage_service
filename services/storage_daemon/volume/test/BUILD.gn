@@ -25,9 +25,11 @@ ohos_unittest("external_volume_info_test") {
     "$ROOT_DIR/storage_daemon/include",
     "$ROOT_DIR/common/include",
     "$ROOT_DIR/storage_manager/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   sources = [
+    "$ROOT_DIR/storage_daemon/ipc/src/storage_manager_client.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/external_volume_info.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/process.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/volume_info.cpp",
@@ -45,6 +47,8 @@ ohos_unittest("external_volume_info_test") {
     "hilog:libhilog",
     "init:libbegetutil",
     "ipc:ipc_core",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
   ]
 }
 
@@ -57,6 +61,7 @@ ohos_unittest("process_test") {
     "$ROOT_DIR/storage_daemon/include",
     "$ROOT_DIR/storage_daemon/include/volume",
     "$ROOT_DIR/common/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   sources = [
@@ -90,9 +95,11 @@ ohos_unittest("volume_info_test") {
     "$ROOT_DIR/storage_daemon/utils/test/common",
     "$ROOT_DIR/common/include",
     "$ROOT_DIR/storage_manager/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   sources = [
+    "$ROOT_DIR/storage_daemon/ipc/src/storage_manager_client.cpp",
     "$ROOT_DIR/storage_daemon/utils/test/common/help_utils.cpp",
     "$ROOT_DIR/storage_daemon/volume/src/volume_info.cpp",
     "$ROOT_DIR/storage_daemon/volume/test/volume_info_test.cpp",
@@ -109,6 +116,8 @@ ohos_unittest("volume_info_test") {
     "hilog:libhilog",
     "init:libbegetutil",
     "ipc:ipc_core",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
   ]
 }
 

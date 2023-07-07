@@ -99,8 +99,8 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
         case NOTIFY_VOLUME_MOUNTED:
             err = HandleNotifyVolumeMounted(data, reply);
             break;
-        case NOTIFY_VOLUME_DESTROYED:
-            err = HandleNotifyVolumeDestroyed(data, reply);
+        case NOTIFY_VOLUME_STATE_CHANGED:
+            err = HandleNotifyVolumeStateChanged(data, reply);
             break;
         case MOUNT:
             err = HandleMount(data, reply);
@@ -442,14 +442,15 @@ int32_t StorageManagerStub::HandleNotifyVolumeMounted(MessageParcel &data, Messa
     return E_OK;
 }
 
-int32_t StorageManagerStub::HandleNotifyVolumeDestroyed(MessageParcel &data, MessageParcel &reply)
+int32_t StorageManagerStub::HandleNotifyVolumeStateChanged(MessageParcel &data, MessageParcel &reply)
 {
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
     std::string volumeId = data.ReadString();
-    NotifyVolumeDestroyed(volumeId);
-    LOGI("StorageManagerStub::HandleNotifyVolumeDestroyed");
+    VolumeState state = VolumeState(data.ReadInt32());
+    NotifyVolumeStateChanged(volumeId, state);
+    LOGI("StorageManagerStub::HandleNotifyVolumeStateChanged");
     return E_OK;
 }
 

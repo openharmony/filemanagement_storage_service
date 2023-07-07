@@ -32,7 +32,7 @@ public:
 
     int32_t NotifyVolumeCreated(std::shared_ptr<VolumeInfo> info);
     int32_t NotifyVolumeMounted(std::shared_ptr<VolumeInfo> volumeInfo);
-    int32_t NotifyVolumeDestroyed(std::string volId);
+    int32_t NotifyVolumeStateChanged(std::string volId, StorageManager::VolumeState state);
 
 private:
     DISALLOW_COPY_AND_MOVE(StorageManagerClient);

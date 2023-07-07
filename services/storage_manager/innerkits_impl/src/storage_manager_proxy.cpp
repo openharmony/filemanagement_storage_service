@@ -433,23 +433,28 @@ int32_t StorageManagerProxy::NotifyVolumeMounted(std::string volumeId, int32_t f
     return err;
 }
 
-int32_t StorageManagerProxy::NotifyVolumeDestroyed(std::string volumeId)
+int32_t StorageManagerProxy::NotifyVolumeStateChanged(std::string volumeId, VolumeState state)
 {
-    LOGI("StorageManagerProxy::NotifyVolumedestroyed, volumeId:%{public}s", volumeId.c_str());\
+    LOGI("StorageManagerProxy::NotifyVolumeStateChanged, volumeId:%{public}s", volumeId.c_str());
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
-        LOGE("StorageManagerProxy::NotifyVolumedestroyed, WriteInterfaceToken failed");
+        LOGE("StorageManagerProxy::NotifyVolumeStateChanged, WriteInterfaceToken failed");
         return E_WRITE_DESCRIPTOR_ERR;
     }
 
     if (!data.WriteString(volumeId)) {
-        LOGE("StorageManagerProxy::NotifyVolumedestroyed, WriteString failed");
+        LOGE("StorageManagerProxy::NotifyVolumeStateChanged, WriteString failed");
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(NOTIFY_VOLUME_DESTROYED, data, reply, option);
+
+    if (!data.WriteInt32(state)) {
+        LOGE("StorageManagerProxy::NotifyVolumeStateChanged, WriteInt failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+    int err = SendRequest(NOTIFY_VOLUME_STATE_CHANGED, data, reply, option);
     return err;
 }
 
