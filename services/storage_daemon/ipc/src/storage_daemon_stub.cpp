@@ -15,6 +15,7 @@
 
 #include "ipc/storage_daemon_stub.h"
 
+#include "ipc/storage_daemon_ipc_interface_code.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "string_ex.h"
@@ -33,70 +34,70 @@ int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
     LOGI("recv remote request code %{public}u", code);
     int err = E_OK;
     switch (code) {
-        case SHUTDOWN:
+        case static_cast<int32_t>(StorageDaemonInterfaceCode::SHUTDOWN):
             err = HandleShutdown();
             break;
-        case CHECK:
+        case static_cast<int32_t>(StorageDaemonInterfaceCode::CHECK):
             err = HandleCheck(data, reply);
             break;
-        case MOUNT:
+        case static_cast<int32_t>(StorageDaemonInterfaceCode::MOUNT):
             err = HandleMount(data, reply);
             break;
-        case UMOUNT:
+        case static_cast<int32_t>(StorageDaemonInterfaceCode::UMOUNT):
             err =HandleUMount(data, reply);
             break;
-        case PARTITION:
+        case static_cast<int32_t>(StorageDaemonInterfaceCode::PARTITION):
             err = HandlePartition(data, reply);
             break;
-        case FORMAT:
+        case static_cast<int32_t>(StorageDaemonInterfaceCode::FORMAT):
             err = HandleFormat(data, reply);
             break;
-        case SET_VOL_DESC:
+        case static_cast<int32_t>(StorageDaemonInterfaceCode::SET_VOL_DESC):
             err = HandleSetVolDesc(data, reply);
             break;
-        case PREPARE_USER_DIRS:
+        case static_cast<int32_t>(StorageDaemonInterfaceCode::PREPARE_USER_DIRS):
             err = HandlePrepareUserDirs(data, reply);
             break;
-        case DESTROY_USER_DIRS:
+        case static_cast<int32_t>(StorageDaemonInterfaceCode::DESTROY_USER_DIRS):
             err = HandleDestroyUserDirs(data, reply);
             break;
-        case START_USER:
+        case static_cast<int32_t>(StorageDaemonInterfaceCode::START_USER):
             err = HandleStartUser(data,  reply);
             break;
-        case STOP_USER:
+        case static_cast<int32_t>(StorageDaemonInterfaceCode::STOP_USER):
             err = HandleStopUser(data, reply);
             break;
-        case INIT_GLOBAL_KEY:
+        case static_cast<int32_t>(StorageDaemonInterfaceCode::INIT_GLOBAL_KEY):
             err = HandleInitGlobalKey(data, reply);
             break;
-        case INIT_GLOBAL_USER_KEYS:
+        case static_cast<int32_t>(StorageDaemonInterfaceCode::INIT_GLOBAL_USER_KEYS):
             err = HandleInitGlobalUserKeys(data, reply);
             break;
-        case CREATE_USER_KEYS:
+        case static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_USER_KEYS):
             err = HandleGenerateUserKeys(data, reply);
             break;
-        case DELETE_USER_KEYS:
+        case static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_USER_KEYS):
             err = HandleDeleteUserKeys(data, reply);
             break;
-        case UPDATE_USER_AUTH:
+        case static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_USER_AUTH):
             err = HandleUpdateUserAuth(data, reply);
             break;
-        case ACTIVE_USER_KEY:
+        case static_cast<int32_t>(StorageDaemonInterfaceCode::ACTIVE_USER_KEY):
             err = HandleActiveUserKey(data, reply);
             break;
-        case INACTIVE_USER_KEY:
+        case static_cast<int32_t>(StorageDaemonInterfaceCode::INACTIVE_USER_KEY):
             err = HandleInactiveUserKey(data, reply);
             break;
-        case UPDATE_KEY_CONTEXT:
+        case static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_KEY_CONTEXT):
             err = HandleUpdateKeyContext(data, reply);
             break;
-        case CREATE_SHARE_FILE:
+        case static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_SHARE_FILE):
             err = HandleCreateShareFile(data, reply);
             break;
-        case DELETE_SHARE_FILE:
+        case static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_SHARE_FILE):
             err = HandleDeleteShareFile(data, reply);
             break;
-        case SET_BUNDLE_QUOTA:
+        case static_cast<int32_t>(StorageDaemonInterfaceCode::SET_BUNDLE_QUOTA):
             err = HandleSetBundleQuota(data, reply);
             break;
         default: {

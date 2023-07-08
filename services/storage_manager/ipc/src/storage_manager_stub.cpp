@@ -16,6 +16,7 @@
 #include "ipc/storage_manager_stub.h"
 #include "accesstoken_kit.h"
 #include "ipc_skeleton.h"
+#include "storage_manager_ipc_interface_code.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 
@@ -54,115 +55,115 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
 
     int err = 0;
     switch (code) {
-        case PREPARE_ADD_USER:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::PREPARE_ADD_USER):
             err = HandlePrepareAddUser(data, reply);
             break;
-        case REMOVE_USER:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::REMOVE_USER):
             err = HandleRemoveUser(data, reply);
             break;
-        case PREPARE_START_USER:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::PREPARE_START_USER):
             err = HandlePrepareStartUser(data, reply);
             break;
-        case STOP_USER:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::STOP_USER):
             err = HandleStopUser(data, reply);
             break;
-        case GET_TOTAL:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::GET_TOTAL):
             err = HandleGetTotal(data, reply);
             break;
-        case GET_FREE:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::GET_FREE):
             err = HandleGetFree(data, reply);
             break;
-        case GET_SYSTEM_SIZE:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::GET_SYSTEM_SIZE):
             err = HandleGetSystemSize(data, reply);
             break;
-        case GET_TOTAL_SIZE:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::GET_TOTAL_SIZE):
             err = HandleGetTotalSize(data, reply);
             break;
-        case GET_FREE_SIZE:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::GET_FREE_SIZE):
             err = HandleGetFreeSize(data, reply);
             break;
-        case GET_CURR_USER_STATS:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::GET_CURR_USER_STATS):
             err = HandleGetCurrUserStorageStats(data, reply);
             break;
-        case GET_USER_STATS:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::GET_USER_STATS):
             err = HandleGetUserStorageStats(data, reply);
             break;
-        case GET_CURR_BUNDLE_STATS:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::GET_CURR_BUNDLE_STATS):
             err = HandleGetCurrentBundleStats(data, reply);
             break;
-        case GET_BUNDLE_STATUS:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::GET_BUNDLE_STATUS):
             err = HandleGetBundleStatus(data, reply);
             break;
-        case NOTIFY_VOLUME_CREATED:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_VOLUME_CREATED):
             err = HandleNotifyVolumeCreated(data, reply);
             break;
-        case NOTIFY_VOLUME_MOUNTED:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_VOLUME_MOUNTED):
             err = HandleNotifyVolumeMounted(data, reply);
             break;
-        case NOTIFY_VOLUME_STATE_CHANGED:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_VOLUME_STATE_CHANGED):
             err = HandleNotifyVolumeStateChanged(data, reply);
             break;
-        case MOUNT:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::MOUNT):
             err = HandleMount(data, reply);
             break;
-        case UNMOUNT:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::UNMOUNT):
             err = HandleUnmount(data, reply);
             break;
-        case GET_ALL_VOLUMES:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::GET_ALL_VOLUMES):
             err = HandleGetAllVolumes(data, reply);
             break;
-        case NOTIFY_DISK_CREATED:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_DISK_CREATED):
             err = HandleNotifyDiskCreated(data, reply);
             break;
-        case NOTIFY_DISK_DESTROYED:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_DISK_DESTROYED):
             err = HandleNotifyDiskDestroyed(data, reply);
             break;
-        case PARTITION:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::PARTITION):
             err = HandlePartition(data, reply);
             break;
-        case GET_ALL_DISKS:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::GET_ALL_DISKS):
             err = HandleGetAllDisks(data, reply);
             break;
-        case GET_VOL_BY_UUID:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::GET_VOL_BY_UUID):
             err = HandleGetVolumeByUuid(data, reply);
             break;
-        case GET_VOL_BY_ID:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::GET_VOL_BY_ID):
             err = HandleGetVolumeById(data, reply);
             break;
-        case SET_VOL_DESC:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::SET_VOL_DESC):
             err = HandleSetVolDesc(data, reply);
             break;
-        case FORMAT:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::FORMAT):
             err = HandleFormat(data, reply);
             break;
-        case GET_DISK_BY_ID:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::GET_DISK_BY_ID):
             err = HandleGetDiskById(data, reply);
             break;
-        case CREATE_USER_KEYS:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::CREATE_USER_KEYS):
             err = HandleGenerateUserKeys(data, reply);
             break;
-        case DELETE_USER_KEYS:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::DELETE_USER_KEYS):
             err = HandleDeleteUserKeys(data, reply);
             break;
-        case UPDATE_USER_AUTH:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::UPDATE_USER_AUTH):
             err = HandleUpdateUserAuth(data, reply);
             break;
-        case ACTIVE_USER_KEY:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::ACTIVE_USER_KEY):
             err = HandleActiveUserKey(data, reply);
             break;
-        case INACTIVE_USER_KEY:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::INACTIVE_USER_KEY):
             err = HandleInactiveUserKey(data, reply);
             break;
-        case UPDATE_KEY_CONTEXT:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::UPDATE_KEY_CONTEXT):
             err = HandleUpdateKeyContext(data, reply);
             break;
-        case CREATE_SHARE_FILE:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::CREATE_SHARE_FILE):
             err = HandleCreateShareFile(data, reply);
             break;
-        case DELETE_SHARE_FILE:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::DELETE_SHARE_FILE):
             err = HandleDeleteShareFile(data, reply);
             break;
-        case SET_BUNDLE_QUOTA:
+        case static_cast<int32_t>(StorageManagerInterfaceCode::SET_BUNDLE_QUOTA):
             err = HandleSetBundleQuota(data, reply);
             break;
         default: {
