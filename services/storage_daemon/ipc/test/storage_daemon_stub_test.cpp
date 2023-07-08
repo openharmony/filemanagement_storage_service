@@ -19,6 +19,7 @@
 #define private public
 
 #include "ipc/istorage_daemon.h"
+#include "ipc/storage_daemon_ipc_interface_code.h"
 #include "ipc/storage_daemon_proxy.h"
 #include "ipc/storage_daemon_stub.h"
 #include "storage_daemon_stub_mock.h"
@@ -32,26 +33,26 @@ using namespace testing::ext;
 
 namespace {
     const int ERROR_CODE = 99999;
-    int g_code[] = {
-        IStorageDaemon::SHUTDOWN,
-        IStorageDaemon::MOUNT,
-        IStorageDaemon::UMOUNT,
-        IStorageDaemon::CHECK,
-        IStorageDaemon::FORMAT,
-        IStorageDaemon::PARTITION,
-        IStorageDaemon::SET_VOL_DESC,
-        IStorageDaemon::PREPARE_USER_DIRS,
-        IStorageDaemon::DESTROY_USER_DIRS,
-        IStorageDaemon::START_USER,
-        IStorageDaemon::STOP_USER,
-        IStorageDaemon::INIT_GLOBAL_KEY,
-        IStorageDaemon::INIT_GLOBAL_USER_KEYS,
-        IStorageDaemon::CREATE_USER_KEYS,
-        IStorageDaemon::DELETE_USER_KEYS,
-        IStorageDaemon::UPDATE_USER_AUTH,
-        IStorageDaemon::ACTIVE_USER_KEY,
-        IStorageDaemon::INACTIVE_USER_KEY,
-        IStorageDaemon::UPDATE_KEY_CONTEXT
+    int32_t g_code[] = {
+        static_cast<int32_t>(StorageDaemonInterfaceCode::SHUTDOWN),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::MOUNT),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::UMOUNT),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::CHECK),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::FORMAT),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::PARTITION),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::SET_VOL_DESC),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::PREPARE_USER_DIRS),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::DESTROY_USER_DIRS),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::START_USER),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::STOP_USER),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::INIT_GLOBAL_KEY),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::INIT_GLOBAL_USER_KEYS),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_USER_KEYS),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_USER_KEYS),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_USER_AUTH),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::ACTIVE_USER_KEY),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::INACTIVE_USER_KEY),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_KEY_CONTEXT)
     };
 }
 
@@ -81,7 +82,8 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRe
     bool bRet = data.WriteInterfaceToken(u"error descriptor");
     EXPECT_TRUE(bRet) << "write token error";
 
-    int32_t ret = mock.OnRemoteRequest(IStorageDaemon::START_USER, data, reply, option);
+    int32_t ret = mock.OnRemoteRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::START_USER), data, reply,
+        option);
     EXPECT_TRUE(ret == E_PERMISSION_DENIED) << "descriptor error";
 
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_001 end";

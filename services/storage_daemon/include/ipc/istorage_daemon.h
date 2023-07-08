@@ -24,35 +24,6 @@ namespace StorageDaemon {
 class IStorageDaemon : public IRemoteBroker {
 public:
     enum {
-        SHUTDOWN = 1,
-
-        MOUNT,
-        UMOUNT,
-        CHECK,
-        FORMAT,
-        PARTITION,
-        SET_VOL_DESC,
-
-        PREPARE_USER_DIRS,
-        DESTROY_USER_DIRS,
-        START_USER,
-        STOP_USER,
-
-        INIT_GLOBAL_KEY,
-        INIT_GLOBAL_USER_KEYS,
-        CREATE_USER_KEYS,
-        DELETE_USER_KEYS,
-        UPDATE_USER_AUTH,
-        ACTIVE_USER_KEY,
-        INACTIVE_USER_KEY,
-        UPDATE_KEY_CONTEXT,
-        CREATE_SHARE_FILE,
-        DELETE_SHARE_FILE,
-
-        SET_BUNDLE_QUOTA,
-    };
-
-    enum {
         CRYPTO_FLAG_EL1 = 1,
         CRYPTO_FLAG_EL2,
     };

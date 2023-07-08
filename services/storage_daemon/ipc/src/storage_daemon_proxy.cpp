@@ -14,6 +14,7 @@
  */
 
 #include "ipc/storage_daemon_proxy.h"
+#include "ipc/storage_daemon_ipc_interface_code.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 
@@ -32,7 +33,7 @@ int32_t StorageDaemonProxy::Shutdown()
         return E_WRITE_DESCRIPTOR_ERR;
     }
 
-    return SendRequest(SHUTDOWN, data, reply, option);
+    return SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::SHUTDOWN), data, reply, option);
 }
 
 int32_t StorageDaemonProxy::Mount(std::string volId, uint32_t flags)
@@ -52,7 +53,7 @@ int32_t StorageDaemonProxy::Mount(std::string volId, uint32_t flags)
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(MOUNT, data, reply, option);
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::MOUNT), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -73,7 +74,7 @@ int32_t StorageDaemonProxy::UMount(std::string volId)
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(UMOUNT, data, reply, option);
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::UMOUNT), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -94,7 +95,7 @@ int32_t StorageDaemonProxy::Check(std::string volId)
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(CHECK, data, reply, option);
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::CHECK), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -119,7 +120,7 @@ int32_t StorageDaemonProxy::Format(std::string volId, std::string fsType)
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(FORMAT, data, reply, option);
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::FORMAT), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -144,7 +145,7 @@ int32_t StorageDaemonProxy::Partition(std::string diskId, int32_t type)
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(PARTITION, data, reply, option);
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::PARTITION), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -169,7 +170,7 @@ int32_t StorageDaemonProxy::SetVolumeDescription(std::string volId, std::string 
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(SET_VOL_DESC, data, reply, option);
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::SET_VOL_DESC), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -195,7 +196,7 @@ int32_t StorageDaemonProxy::PrepareUserDirs(int32_t userId, uint32_t flags)
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(PREPARE_USER_DIRS, data, reply, option);
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::PREPARE_USER_DIRS), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -221,7 +222,7 @@ int32_t StorageDaemonProxy::DestroyUserDirs(int32_t userId, uint32_t flags)
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(DESTROY_USER_DIRS, data, reply, option);
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::DESTROY_USER_DIRS), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -243,7 +244,7 @@ int32_t StorageDaemonProxy::StartUser(int32_t userId)
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(START_USER, data, reply, option);
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::START_USER), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -265,7 +266,7 @@ int32_t StorageDaemonProxy::StopUser(int32_t userId)
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(STOP_USER, data, reply, option);
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::STOP_USER), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -282,7 +283,7 @@ int32_t StorageDaemonProxy::InitGlobalKey(void)
         return E_WRITE_DESCRIPTOR_ERR;
     }
 
-    int err = SendRequest(INIT_GLOBAL_KEY, data, reply, option);
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::INIT_GLOBAL_KEY), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -300,7 +301,8 @@ int32_t StorageDaemonProxy::InitGlobalUserKeys(void)
         return E_WRITE_DESCRIPTOR_ERR;
     }
 
-    int err = SendRequest(INIT_GLOBAL_USER_KEYS, data, reply, option);
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::INIT_GLOBAL_USER_KEYS), data, reply,
+        option);
     if (err != E_OK) {
         return err;
     }
@@ -326,7 +328,7 @@ int32_t StorageDaemonProxy::GenerateUserKeys(uint32_t userId, uint32_t flags)
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(CREATE_USER_KEYS, data, reply, option);
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_USER_KEYS), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -347,7 +349,7 @@ int32_t StorageDaemonProxy::DeleteUserKeys(uint32_t userId)
     if (!data.WriteUint32(userId)) {
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(DELETE_USER_KEYS, data, reply, option);
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_USER_KEYS), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -384,7 +386,7 @@ int32_t StorageDaemonProxy::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(UPDATE_USER_AUTH, data, reply, option);
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_USER_AUTH), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -414,7 +416,7 @@ int32_t StorageDaemonProxy::ActiveUserKey(uint32_t userId,
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(ACTIVE_USER_KEY, data, reply, option);
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::ACTIVE_USER_KEY), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -435,7 +437,7 @@ int32_t StorageDaemonProxy::InactiveUserKey(uint32_t userId)
     if (!data.WriteUint32(userId)) {
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(INACTIVE_USER_KEY, data, reply, option);
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::INACTIVE_USER_KEY), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -456,7 +458,7 @@ int32_t StorageDaemonProxy::UpdateKeyContext(uint32_t userId)
     if (!data.WriteUint32(userId)) {
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(UPDATE_KEY_CONTEXT, data, reply, option);
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_KEY_CONTEXT), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -486,7 +488,7 @@ int32_t StorageDaemonProxy::CreateShareFile(std::string uri, uint32_t tokenId, u
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(CREATE_SHARE_FILE, data, reply, option);
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_SHARE_FILE), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -512,7 +514,7 @@ int32_t StorageDaemonProxy::DeleteShareFile(uint32_t tokenId, std::vector<std::s
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(DELETE_SHARE_FILE, data, reply, option);
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_SHARE_FILE), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -546,7 +548,7 @@ int32_t StorageDaemonProxy::SetBundleQuota(const std::string &bundleName, int32_
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(SET_BUNDLE_QUOTA, data, reply, option);
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::SET_BUNDLE_QUOTA), data, reply, option);
     if (err != E_OK) {
         return err;
     }

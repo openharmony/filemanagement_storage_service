@@ -16,6 +16,7 @@
 #include <gtest/gtest.h>
 
 #include "ipc/istorage_daemon.h"
+#include "ipc/storage_daemon_ipc_interface_code.h"
 #include "ipc/storage_daemon_proxy.h"
 #include "storage_daemon_service_mock.h"
 #include "storage_service_errno.h"
@@ -61,7 +62,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_Shutdown_001, TestSize.L
 
     int32_t ret = proxy_->Shutdown();
     ASSERT_TRUE(ret == E_OK);
-    ASSERT_TRUE(IStorageDaemon::SHUTDOWN == mock_->code_);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::SHUTDOWN) == mock_->code_);
 
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_Shutdown_001 end";
 }
@@ -82,7 +83,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_PrepareUserDirs_001, Tes
 
     int32_t ret = proxy_->PrepareUserDirs(USER_ID1, IStorageDaemon::CRYPTO_FLAG_EL1);
     ASSERT_TRUE(ret == E_OK);
-    ASSERT_TRUE(IStorageDaemon::PREPARE_USER_DIRS == mock_->code_);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::PREPARE_USER_DIRS) == mock_->code_);
 
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_PrepareUserDirs_001 end";
 }
@@ -103,7 +104,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_DestroyUserDirs_001, Tes
 
     int32_t ret = proxy_->DestroyUserDirs(USER_ID1, IStorageDaemon::CRYPTO_FLAG_EL1);
     ASSERT_TRUE(ret == E_OK);
-    ASSERT_TRUE(IStorageDaemon::DESTROY_USER_DIRS == mock_->code_);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::DESTROY_USER_DIRS) == mock_->code_);
 
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_DestroyUserDirs_001 end";
 }
@@ -124,7 +125,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_StartUser_001, TestSize.
 
     int32_t ret = proxy_->StartUser(USER_ID1);
     ASSERT_TRUE(ret == E_OK);
-    ASSERT_TRUE(IStorageDaemon::START_USER == mock_->code_);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::START_USER) == mock_->code_);
 
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_StartUser_001 end";
 }
@@ -145,7 +146,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_StopUser_001, TestSize.L
 
     int32_t ret = proxy_->StopUser(USER_ID1);
     ASSERT_TRUE(ret == E_OK);
-    ASSERT_TRUE(IStorageDaemon::STOP_USER == mock_->code_);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::STOP_USER) == mock_->code_);
 
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_StopUser_001 end";
 }
@@ -167,7 +168,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_Mount_001, TestSize.Leve
     uint32_t flag = 1;
     int32_t ret = proxy_->Mount(volId, flag);
     ASSERT_TRUE(ret == E_OK);
-    ASSERT_TRUE(IStorageDaemon::MOUNT == mock_->code_);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::MOUNT) == mock_->code_);
 
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_Mount_001 end";
 }
@@ -188,7 +189,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_UMount_001, TestSize.Lev
     string volId = "vol-0-2";
     int32_t ret = proxy_->UMount(volId);
     ASSERT_TRUE(ret == E_OK);
-    ASSERT_TRUE(IStorageDaemon::UMOUNT == mock_->code_);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::UMOUNT) == mock_->code_);
 
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_UMount_001 end";
 }
@@ -209,7 +210,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_Check_001, TestSize.Leve
     string volId = "vol-0-3";
     int32_t ret = proxy_->Check(volId);
     ASSERT_TRUE(ret == E_OK);
-    ASSERT_TRUE(IStorageDaemon::CHECK == mock_->code_);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::CHECK) == mock_->code_);
 
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_Check_001 end";
 }
@@ -231,7 +232,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_Format_001, TestSize.Lev
     string fsType = "exfat";
     int32_t ret = proxy_->Format(volId, fsType);
     ASSERT_TRUE(ret == E_OK);
-    ASSERT_TRUE(IStorageDaemon::FORMAT == mock_->code_);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::FORMAT) == mock_->code_);
 
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_Format_001 end";
 }
@@ -253,7 +254,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_Partition_001, TestSize.
     int32_t type = 0;
     int32_t ret = proxy_->Partition(diskId, type);
     ASSERT_TRUE(ret == E_OK);
-    ASSERT_TRUE(IStorageDaemon::PARTITION == mock_->code_);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::PARTITION) == mock_->code_);
 
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_Partition_001 end";
 }
@@ -275,7 +276,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_SetVolumeDescription_001
     string description = "description-1";
     int32_t ret = proxy_->SetVolumeDescription(volId, description);
     ASSERT_TRUE(ret == E_OK);
-    ASSERT_TRUE(IStorageDaemon::SET_VOL_DESC == mock_->code_);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::SET_VOL_DESC) == mock_->code_);
 
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_SetVolumeDescription_001 end";
 }
@@ -295,7 +296,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_InitGlobalKey_001, TestS
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
     int32_t ret = proxy_->InitGlobalKey();
     ASSERT_TRUE(ret == E_OK);
-    ASSERT_TRUE(IStorageDaemon::INIT_GLOBAL_KEY == mock_->code_);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::INIT_GLOBAL_KEY) == mock_->code_);
 
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_InitGlobalKey_001 end";
 }
@@ -315,7 +316,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_InitGlobalUserKeys_001, 
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
     int32_t ret = proxy_->InitGlobalUserKeys();
     ASSERT_TRUE(ret == E_OK);
-    ASSERT_TRUE(IStorageDaemon::INIT_GLOBAL_USER_KEYS == mock_->code_);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::INIT_GLOBAL_USER_KEYS) == mock_->code_);
 
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_InitGlobalUserKeys_001 end";
 }
@@ -335,7 +336,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_GenerateUserKeys_001, Te
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
     int32_t ret = proxy_->GenerateUserKeys(USER_ID1, IStorageDaemon::CRYPTO_FLAG_EL1);
     ASSERT_TRUE(ret == E_OK);
-    ASSERT_TRUE(IStorageDaemon::CREATE_USER_KEYS == mock_->code_);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_USER_KEYS) == mock_->code_);
 
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_GenerateUserKeys_001 end";
 }
@@ -355,7 +356,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_DeleteUserKeys_001, Test
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
     int32_t ret = proxy_->DeleteUserKeys(USER_ID1);
     ASSERT_TRUE(ret == E_OK);
-    ASSERT_TRUE(IStorageDaemon::DELETE_USER_KEYS == mock_->code_);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_USER_KEYS) == mock_->code_);
 
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_DeleteUserKeys_001 end";
 }
@@ -375,7 +376,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_UpdateUserAuth_001, Test
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
     int32_t ret = proxy_->UpdateUserAuth(USER_ID1, 0, {}, {}, {});
     ASSERT_TRUE(ret == E_OK);
-    ASSERT_TRUE(IStorageDaemon::UPDATE_USER_AUTH == mock_->code_);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_USER_AUTH) == mock_->code_);
 
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_UpdateUserAuth_001 end";
 }
@@ -395,7 +396,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_ActiveUserKey_001, TestS
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
     int32_t ret = proxy_->ActiveUserKey(USER_ID1, {}, {});
     ASSERT_TRUE(ret == E_OK);
-    ASSERT_TRUE(IStorageDaemon::ACTIVE_USER_KEY == mock_->code_);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::ACTIVE_USER_KEY) == mock_->code_);
 
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_ActiveUserKey_001 end";
 }
@@ -415,7 +416,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_InactiveUserKey_001, Tes
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
     int32_t ret = proxy_->InactiveUserKey(USER_ID1);
     ASSERT_TRUE(ret == E_OK);
-    ASSERT_TRUE(IStorageDaemon::INACTIVE_USER_KEY == mock_->code_);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::INACTIVE_USER_KEY) == mock_->code_);
 
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_InactiveUserKey_001 end";
 }
@@ -435,7 +436,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_UpdateKeyContext_001, Te
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
     int32_t ret = proxy_->UpdateKeyContext(USER_ID1);
     ASSERT_TRUE(ret == E_OK);
-    ASSERT_TRUE(IStorageDaemon::UPDATE_KEY_CONTEXT == mock_->code_);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_KEY_CONTEXT) == mock_->code_);
 
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_UpdateKeyContext_001 end";
 }
@@ -459,7 +460,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_SetBundleQuota_001, Test
     int32_t limitSizeMb = 1000;
     int32_t ret = proxy_->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
     ASSERT_TRUE(ret == E_OK);
-    ASSERT_TRUE(IStorageDaemon::SET_BUNDLE_QUOTA == mock_->code_);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::SET_BUNDLE_QUOTA) == mock_->code_);
 
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_SetBundleQuota_001 end";
 }
