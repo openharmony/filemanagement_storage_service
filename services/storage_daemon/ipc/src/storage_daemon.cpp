@@ -280,6 +280,11 @@ void StorageDaemon::SystemAbilityStatusChangeListener::OnAddSystemAbility(int32_
                                                                           const std::string &deviceId)
 {
     LOGI("SystemAbilityId:%{public}d", systemAbilityId);
+#ifdef EXTERNAL_STORAGE_MANAGER
+    if (systemAbilityId == ACCESS_TOKEN_MANAGER_SERVICE_ID) {
+        DiskManager::Instance()->ReplayUevent();
+    }
+#endif
     if (systemAbilityId == FILEMANAGEMENT_CLOUD_DAEMON_SERVICE_SA_ID) {
         MountManager::GetInstance()->SetCloudState(true);
     }

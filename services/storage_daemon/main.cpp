@@ -126,13 +126,11 @@ int main()
             samgr->AddSystemAbility(STORAGE_MANAGER_DAEMON_ID, sd);
             sptr<CloudListener> listenter = new CloudListener();
             samgr->SubscribeSystemAbility(FILEMANAGEMENT_CLOUD_DAEMON_SERVICE_SA_ID, listenter);
+            samgr->SubscribeSystemAbility(ACCESS_TOKEN_MANAGER_SERVICE_ID, listenter);
             break;
         }
     } while (true);
 
-#ifdef EXTERNAL_STORAGE_MANAGER
-    StorageDaemon::DiskManager::Instance()->ReplayUevent();
-#endif
     IPCSkeleton::JoinWorkThread();
 
     return 0;
