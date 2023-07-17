@@ -164,8 +164,7 @@ int32_t Process::UpdatePidByPath()
             if (CheckMaps(pidPath)
                 || CheckSymlink(pidPath + "/cwd")
                 || CheckSymlink(pidPath + "/root")
-                || CheckSymlink(pidPath + "/exe")
-                || CheckFds(pidPath)) {
+                || CheckSymlink(pidPath + "/exe")) {
                 pids_.insert(pid);
             }
         }
