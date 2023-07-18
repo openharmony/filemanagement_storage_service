@@ -29,6 +29,7 @@ ohos_fuzztest("StorageStatsFuzzTest") {
   sources = [ "${storage_service_path}/test/fuzztest/storagestats_fuzzer/storagestats_fuzzer.cpp" ]
   defines = []
   deps = [ "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy" ]
+  external_deps = [ "c_utils:utils" ]
 }
 
 group("fuzztest") {

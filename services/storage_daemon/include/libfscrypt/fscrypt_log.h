@@ -25,4 +25,26 @@
 #define FSCRYPT_LOGE(fmt, ...) INIT_LOGE(fmt, ##__VA_ARGS__)
 #define FSCRYPT_LOGV(fmt, ...) INIT_LOGV(fmt, ##__VA_ARGS__)
 
+#define FSCRYPT_ERROR_CHECK(ret, statement, format, ...) \
+    do {                                                  \
+        if (!(ret)) {                                     \
+            FSCRYPT_LOGE(format, ##__VA_ARGS__);             \
+            statement;                                    \
+        }                                                 \
+    } while (0)
+
+#define FSCRYPT_CHECK(ret, statement) \
+    do {                                \
+        if (!(ret)) {                  \
+            statement;                 \
+        }                         \
+    } while (0)
+
+#define FSCRYPT_CHECK_RETURN_VALUE(ret, result) \
+    do {                                \
+        if (!(ret)) {                            \
+            return result;                       \
+        }                                  \
+    } while (0)
+
 #endif

@@ -29,6 +29,7 @@ ohos_fuzztest("DiskFuzzTest") {
       [ "${storage_service_path}/test/fuzztest/disk_fuzzer/disk_fuzzer.cpp" ]
   defines = []
   deps = [ "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy" ]
+  external_deps = [ "c_utils:utils" ]
 }
 
 group("fuzztest") {

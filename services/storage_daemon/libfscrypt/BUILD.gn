@@ -36,6 +36,7 @@ ohos_static_library("libfscryptutils") {
   sources = [
     "src/fscrypt_control.c",
     "src/fscrypt_utils.c",
+    "src/init_utils.c",
     "src/key_control.c",
     "src/sysparam_dynamic.c",
   ]
@@ -45,11 +46,6 @@ ohos_static_library("libfscryptutils") {
   }
 
   configs = [ ":fscrypt_utils_config" ]
-
-  deps = [
-    "${start_init_services_path}/log:init_log",
-    "${start_init_services_path}/utils:libinit_utils",
-  ]
 
   external_deps = [
     "c_utils:utils",
@@ -77,5 +73,5 @@ ohos_static_library("libfscryptutils_static") {
 
   subsystem_name = "filemanagement"
   part_name = "storage_service"
-  public_deps = [ "//third_party/bounds_checking_function:libsec_static" ]
+  deps = [ "//third_party/bounds_checking_function:libsec_static" ]
 }

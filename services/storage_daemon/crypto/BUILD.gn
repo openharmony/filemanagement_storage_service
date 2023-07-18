@@ -50,7 +50,6 @@ ohos_static_library("libsdcrypto") {
   configs = [ ":storage_daemon_crypto_config" ]
 
   deps = [
-    "${security_huks_frameworks_path}/main/os_dependency:libhuks_os_dependency_standard_static",
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
     "//third_party/openssl:libcrypto_shared",

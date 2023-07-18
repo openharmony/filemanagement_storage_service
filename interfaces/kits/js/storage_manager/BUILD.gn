@@ -47,6 +47,7 @@ ohos_shared_library("storagestatistics") {
   external_deps = [
     "access_token:libtokenid_sdk",
     "c_utils:utils",
+    "file_api:filemgmt_libhilog",
     "file_api:filemgmt_libn",
     "hilog:libhilog",
     "ipc:ipc_core",
@@ -89,6 +90,7 @@ ohos_shared_library("volumemanager") {
   external_deps = [
     "access_token:libtokenid_sdk",
     "c_utils:utils",
+    "file_api:filemgmt_libhilog",
     "file_api:filemgmt_libn",
     "hilog:libhilog",
     "ipc:ipc_core",
