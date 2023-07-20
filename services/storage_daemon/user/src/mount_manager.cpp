@@ -47,6 +47,8 @@ MountManager::MountManager()
                    {"/data/service/el2/%d/hmdfs/account", 0711, OID_SYSTEM, OID_SYSTEM},
                    {"/data/service/el2/%d/hmdfs/account/files", 02771, OID_USER_DATA_RW, OID_USER_DATA_RW},
                    {"/data/service/el2/%d/hmdfs/account/data", 0711, OID_SYSTEM, OID_SYSTEM},
+                   {"/data/service/el2/%d/hmdfs/account/files/Documents", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
+                   {"/data/service/el2/%d/hmdfs/account/files/Download", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
                    {"/data/service/el2/%d/hmdfs/non_account", 0711, OID_SYSTEM, OID_SYSTEM},
                    {"/data/service/el2/%d/hmdfs/non_account/files", 0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
                    {"/data/service/el2/%d/hmdfs/non_account/data", 0711, OID_SYSTEM, OID_SYSTEM},
@@ -335,6 +337,7 @@ int32_t MountManager::LocalMount(int32_t userId)
 int32_t MountManager::MountByUser(int32_t userId)
 {
     int ret = E_OK;
+    PrepareFileManagerDir(userId);
     if (CreateVirtualDirs(userId) != E_OK) {
         LOGE("create hmdfs virtual dir error");
         return E_PREPARE_DIR;
@@ -359,6 +362,29 @@ int32_t MountManager::MountByUser(int32_t userId)
     return E_OK;
 }
 
+void MountManager::PrepareFileManagerDir(int32_t userId)
+{
+    for (const DirInfo &dir : hmdfsDirVec_) {
+        if (dir.uid == OID_FILE_MANAGER || dir.gid == OID_FILE_MANAGER) {
+            if(is_sime_gid_uid(StringPrintf(dir.path.c_str,userId),dir.uid,dir.gid) == 1){
+                LOGE("don't deal url: %{public}s", dir.path.c_str());
+                continue;
+            }
+            vector<std::string> cmd = {
+                "/system/bin/chown",
+                "-R",
+                StringPrintf("%d:%d", dir.uid, dir.gid),
+                StringPrintf(dir.path.c_str(), userId),
+            };
+            vector<std::string> out;
+            int32_t err = ForkExec(cmd, &out);
+            if(err != 0) {
+                LOGE("path: %{public}s chown faile err:%{public}d", cmd.back().c_str(), err);
+                continue;
+            }
+        }
+    }
+}
 int32_t MountManager::LocalUMount(int32_t userId)
 {
     Utils::MountArgument LocalMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, "account"));

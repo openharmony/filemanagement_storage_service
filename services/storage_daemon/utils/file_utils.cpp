@@ -394,6 +394,7 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
         }
         (void)close(pipe_fd[1]);
         execvp(args[0], const_cast<char **>(args.data()));
+        LOGE("execvp failed errno: %{public}d uid: %{public}d gid: %{public}d", errno, getuid(), getgid());
         exit(0);
     } else {
         (void)close(pipe_fd[1]);
@@ -448,6 +449,15 @@ void TraverseDirUevent(const std::string &path, bool flag)
     }
 
     (void)closedir(dir);
+}
+
+int is_sime_gid_uid(const string dir, uid_t uid, gid_t gid){
+	struct stat st;
+    if (TEMP_FAILURE_RETRY(lstat(dir.c_str(), &st)) == E_ERR) {
+        LOGE("failed to lstat, errno %{public}d", errno);
+        return -1;
+    }
+    return (st.st_uid == uid) && (st.st_gid == gid) ? 1 : 0;
 }
 } // STORAGE_DAEMON
 } // OHOS
