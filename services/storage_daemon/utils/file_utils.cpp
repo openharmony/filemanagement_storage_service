@@ -394,6 +394,7 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
         }
         (void)close(pipe_fd[1]);
         execvp(args[0], const_cast<char **>(args.data()));
+        LOGE("execvp failed errno: %{public}d uid: %{public}d gid: %{public}d", errno, getuid(), getgid());
         exit(0);
     } else {
         (void)close(pipe_fd[1]);
