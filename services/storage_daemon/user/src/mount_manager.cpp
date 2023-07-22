@@ -337,6 +337,8 @@ int32_t MountManager::LocalMount(int32_t userId)
 int32_t MountManager::MountByUser(int32_t userId)
 {
     int ret = E_OK;
+    // The Documnets and Download directories are managed by the File access framework,
+    // and the UID GID is changed to filemanager
     PrepareFileManagerDir(userId);
     if (CreateVirtualDirs(userId) != E_OK) {
         LOGE("create hmdfs virtual dir error");
@@ -364,27 +366,12 @@ int32_t MountManager::MountByUser(int32_t userId)
 
 void MountManager::PrepareFileManagerDir(int32_t userId)
 {
-    for (const DirInfo &dir : hmdfsDirVec_) {
-        if (dir.uid == OID_FILE_MANAGER || dir.gid == OID_FILE_MANAGER) {
-            if(is_sime_gid_uid(StringPrintf(dir.path.c_str,userId),dir.uid,dir.gid) == 1){
-                LOGE("don't deal url: %{public}s", dir.path.c_str());
-                continue;
-            }
-            vector<std::string> cmd = {
-                "/system/bin/chown",
-                "-R",
-                StringPrintf("%d:%d", dir.uid, dir.gid),
-                StringPrintf(dir.path.c_str(), userId),
-            };
-            vector<std::string> out;
-            int32_t err = ForkExec(cmd, &out);
-            if(err != 0) {
-                LOGE("path: %{public}s chown faile err:%{public}d", cmd.back().c_str(), err);
-                continue;
-            }
-        }
-    }
+    char documentPath[] = "/data/service/el2/%d/hmdfs/account/files/Documents";
+    ChownRecursion(StringPrintf(documentPath, userId), OID_FILE_MANAGER, OID_FILE_MANAGER);
+    char downloadPath[] = "/data/service/el2/%d/hmdfs/account/files/Download";
+    ChownRecursion(StringPrintf(downloadPath, userId), OID_FILE_MANAGER, OID_FILE_MANAGER);
 }
+
 int32_t MountManager::LocalUMount(int32_t userId)
 {
     Utils::MountArgument LocalMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, "account"));
