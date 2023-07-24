@@ -147,7 +147,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Destroy_003, TestSize.Le
     ret = mock.Destroy();
     EXPECT_TRUE(ret == E_OK);
 
-    StorageTestUtils::RmDirRecurse("/mnt/external/" + volId);
+    StorageTestUtils::RmDirRecurse("/mnt/data/external/" + volId);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Destroy_003 end";
 }
 
@@ -196,7 +196,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_002, TestSize.Leve
     ret = mock.Mount(mountFlags);
     EXPECT_TRUE(ret == E_MOUNT);
 
-    StorageTestUtils::RmDirRecurse("/mnt/external/" + volId);
+    StorageTestUtils::RmDirRecurse("/mnt/data/external/" + volId);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Mount_002 end";
 }
 
@@ -227,7 +227,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_003, TestSize.Leve
     ret = mock.Mount(mountFlags);
     EXPECT_TRUE(ret == E_OK);
 
-    StorageTestUtils::RmDirRecurse("/mnt/external/" + volId);
+    StorageTestUtils::RmDirRecurse("/mnt/data/external/" + volId);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Mount_003 end";
 }
 
@@ -261,7 +261,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_004, TestSize.Leve
     ret = mock.Mount(mountFlags);
     EXPECT_TRUE(ret == E_OK);
 
-    StorageTestUtils::RmDirRecurse("/mnt/external/" + volId);
+    StorageTestUtils::RmDirRecurse("/mnt/data/external/" + volId);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Mount_004 end";
 }
 
@@ -319,7 +319,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_UMount_002, Test
     ret = mock.UMount(force);
     EXPECT_TRUE(ret == E_OK);
 
-    StorageTestUtils::RmDirRecurse("/mnt/external/" + volId);
+    StorageTestUtils::RmDirRecurse("/mnt/data/external/" + volId);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_UMount_002 end";
 }
 
@@ -353,7 +353,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_UMount_003, Test
     ret = mock.UMount(force);
     EXPECT_TRUE(ret == E_OK);
 
-    StorageTestUtils::RmDirRecurse("/mnt/external/" + volId);
+    StorageTestUtils::RmDirRecurse("/mnt/data/external/" + volId);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_UMount_003 end";
 }
 
@@ -388,7 +388,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_UMount_004, Test
     ret = mock.UMount(force);
     EXPECT_TRUE(ret == E_ERR);
 
-    StorageTestUtils::RmDirRecurse("/mnt/external/" + volId);
+    StorageTestUtils::RmDirRecurse("/mnt/data/external/" + volId);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_UMount_004 end";
 }
 
