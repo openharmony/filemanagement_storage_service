@@ -60,6 +60,7 @@ MountManager::MountManager()
                   {"/storage/cloud/%d", 0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
                   {"/mnt/share/", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/share/%d/", 0711, OID_ROOT, OID_ROOT},
+                  {"/mnt/data/%d/", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/%d/", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/%d/account", 0711, OID_ROOT, OID_ROOT},
