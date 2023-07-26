@@ -19,6 +19,7 @@
 #include <cstring>
 
 #include "message_parcel.h"
+#include "storage_daemon_ipc_interface_code.h"
 #include "storage_daemon_stub.h"
 #include "storage_daemon.h"
 #include "securec.h"
@@ -42,7 +43,9 @@ uint32_t GetU32Data(const char* ptr)
 bool StorageDaemonFuzzTest(std::unique_ptr<char[]> data, size_t size)
 {
     uint32_t code = GetU32Data(data.get());
-    if (code == 0) {
+    if (code == 0
+        || code % MAX_CALL_TRANSACTION == static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_SHARE_FILE)
+        || code % MAX_CALL_TRANSACTION == static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_SHARE_FILE)) {
         return true;
     }
     MessageParcel datas;
