@@ -53,7 +53,7 @@ private:
     dev_t device_;
 
     const std::string devPathDir_ = "/dev/block/%s";
-    const std::string mountPathDir_ = "/mnt/external/%s";
+    const std::string mountPathDir_ = "/mnt/data/external/%s";
     std::vector<std::string> supportMountType_ = { "ext2", "ext3", "ext4", "ntfs", "exfat", "vfat" };
     std::map<std::string, std::string> supportFormatType_ = {{"exfat", "mkfs.exfat"}, {"vfat", "newfs_msdos"}};
 
