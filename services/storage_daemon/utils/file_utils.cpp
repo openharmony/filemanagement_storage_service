@@ -394,6 +394,7 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
         }
         (void)close(pipe_fd[1]);
         execvp(args[0], const_cast<char **>(args.data()));
+        LOGE("execvp failed errno: %{public}d", errno);
         exit(0);
     } else {
         (void)close(pipe_fd[1]);
@@ -449,5 +450,35 @@ void TraverseDirUevent(const std::string &path, bool flag)
 
     (void)closedir(dir);
 }
+
+int IsSameGidUid(const std::string dir, uid_t uid, gid_t gid)
+{
+    struct stat st;
+    if (TEMP_FAILURE_RETRY(lstat(dir.c_str(), &st)) == E_ERR) {
+        LOGE("failed to lstat, errno %{public}d", errno);
+        return -1;
+    }
+    return (st.st_uid == uid) && (st.st_gid == gid) ? 1 : 0;
+}
+
+void ChownRecursion(const std::string dir, uid_t uid, gid_t gid)
+{
+    if (IsSameGidUid(dir, uid, gid) != 0) {
+        LOGI("don't deal url: %{public}s", dir.c_str());
+        return;
+    }
+    std::vector<std::string> cmd = {
+        "/system/bin/chown",
+        "-R",
+        std::to_string(uid) + ":" + std::to_string(gid),
+        dir
+    };
+    std::vector<std::string> out;
+    int32_t err = ForkExec(cmd, &out);
+    if (err != 0) {
+        LOGE("path: %{public}s chown failed err:%{public}d", cmd.back().c_str(), err);
+    }
+}
+
 } // STORAGE_DAEMON
 } // OHOS

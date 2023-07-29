@@ -47,6 +47,8 @@ MountManager::MountManager()
                    {"/data/service/el2/%d/hmdfs/account", 0711, OID_SYSTEM, OID_SYSTEM},
                    {"/data/service/el2/%d/hmdfs/account/files", 02771, OID_USER_DATA_RW, OID_USER_DATA_RW},
                    {"/data/service/el2/%d/hmdfs/account/data", 0711, OID_SYSTEM, OID_SYSTEM},
+                   {"/data/service/el2/%d/hmdfs/account/files/Documents", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
+                   {"/data/service/el2/%d/hmdfs/account/files/Download", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
                    {"/data/service/el2/%d/hmdfs/non_account", 0711, OID_SYSTEM, OID_SYSTEM},
                    {"/data/service/el2/%d/hmdfs/non_account/files", 0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
                    {"/data/service/el2/%d/hmdfs/non_account/data", 0711, OID_SYSTEM, OID_SYSTEM},
@@ -336,6 +338,9 @@ int32_t MountManager::LocalMount(int32_t userId)
 int32_t MountManager::MountByUser(int32_t userId)
 {
     int ret = E_OK;
+    // The Documnets and Download directories are managed by the File access framework,
+    // and the UID GID is changed to filemanager
+    PrepareFileManagerDir(userId);
     if (CreateVirtualDirs(userId) != E_OK) {
         LOGE("create hmdfs virtual dir error");
         return E_PREPARE_DIR;
@@ -358,6 +363,14 @@ int32_t MountManager::MountByUser(int32_t userId)
         return ret;
     }
     return E_OK;
+}
+
+void MountManager::PrepareFileManagerDir(int32_t userId)
+{
+    char documentPath[] = "/data/service/el2/%d/hmdfs/account/files/Documents";
+    ChownRecursion(StringPrintf(documentPath, userId), OID_FILE_MANAGER, OID_FILE_MANAGER);
+    char downloadPath[] = "/data/service/el2/%d/hmdfs/account/files/Download";
+    ChownRecursion(StringPrintf(downloadPath, userId), OID_FILE_MANAGER, OID_FILE_MANAGER);
 }
 
 int32_t MountManager::LocalUMount(int32_t userId)
