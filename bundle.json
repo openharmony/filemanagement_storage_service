@@ -99,6 +99,20 @@
                 ],
                 "header_base": "//foundation/filemanagement/storage_service/interfaces/innerkits/acl/native"
               }
+            },
+            {
+              "name": "//foundation/filemanagement/storage_service/services/storage_daemon/libfscrypt:libfscryptutils_static",
+              "header": {
+                "header_files": [
+                  "fscrypt_control.h",
+                  "fscrypt_log.h",
+                  "fscrypt_sysparam.h",
+                  "fscrypt_uapi.h",
+                  "fscrypt_utils.h",
+                  "key_control.h"
+                ],
+                "header_base": "//foundation/filemanagement/storage_service/services/storage_daemon/include/libfscrypt"
+              }
             }
       ],
       "test": [
