@@ -46,8 +46,6 @@ MountManager::MountManager()
                    {"/data/service/el2/%d/hmdfs/fuse", 0771, OID_DFS, OID_DFS},
                    {"/data/service/el2/%d/hmdfs/account", 0711, OID_SYSTEM, OID_SYSTEM},
                    {"/data/service/el2/%d/hmdfs/account/files", 02771, OID_USER_DATA_RW, OID_USER_DATA_RW},
-                   {"/data/service/el2/%d/hmdfs/account/files/Documents", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
-                   {"/data/service/el2/%d/hmdfs/account/files/Download", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
                    {"/data/service/el2/%d/hmdfs/account/data", 0711, OID_SYSTEM, OID_SYSTEM},
                    {"/data/service/el2/%d/hmdfs/account/files/Documents", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
                    {"/data/service/el2/%d/hmdfs/account/files/Download", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
