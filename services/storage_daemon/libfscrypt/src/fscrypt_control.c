@@ -277,8 +277,13 @@ static int ReadKeyFile(const char *path, char *buf, size_t len)
         FSCRYPT_LOGE("target file size is not equal to buf len");
         return -EFAULT;
     }
+    char *realPath = realpath(path, NULL);
+    if (realPath == NULL) {
+        FSCRYPT_LOGE("realpath failed");
+        return -EFAULT;
+    }
 
-    int fd = open(path, O_RDONLY);
+    int fd = open(realPath, O_RDONLY);
     if (fd < 0) {
         FSCRYPT_LOGE("key file read open failed");
         return -EFAULT;
