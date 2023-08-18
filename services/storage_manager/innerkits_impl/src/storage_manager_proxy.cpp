@@ -924,7 +924,7 @@ int32_t StorageManagerProxy::CreateShareFile(std::string uri, uint32_t tokenId, 
     return reply.ReadInt32();
 }
 
-int32_t StorageManagerProxy::DeleteShareFile(uint32_t tokenId, std::vector<std::string>sharePathList)
+int32_t StorageManagerProxy::DeleteShareFile(uint32_t tokenId, std::vector<std::string> sharePathList)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
