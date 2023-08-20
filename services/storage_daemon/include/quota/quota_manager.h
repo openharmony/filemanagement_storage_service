@@ -29,6 +29,7 @@ public:
 
     int32_t SetBundleQuota(const std::string &bundleName, int32_t uid,
         const std::string &bundleDataDirPath, int32_t limitSizeMb);
+    int32_t GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size);
 private:
     QuotaManager() = default;
     DISALLOW_COPY_AND_MOVE(QuotaManager);

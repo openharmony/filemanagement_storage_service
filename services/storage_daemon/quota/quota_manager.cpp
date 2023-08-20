@@ -28,6 +28,7 @@
 
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "storage_service_constant.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -77,6 +78,69 @@ static bool InitialiseQuotaMounts()
     }
 
     return true;
+}
+
+static int64_t GetOccupiedSpaceForUid(int32_t uid, int64_t &size)
+{
+    if (InitialiseQuotaMounts() != true) {
+        LOGE("Failed to initialise quota mounts");
+        return E_SYS_ERR;
+    }
+
+    std::string device = "";
+    device = mQuotaReverseMounts[QUOTA_DEVICE_DATA_PATH];
+    if (device.empty()) {
+        LOGE("skip when device no quotas present");
+        return E_OK;
+    }
+
+    struct dqblk dq;
+    if (quotactl(QCMD(Q_GETQUOTA, USRQUOTA), device.c_str(), uid, reinterpret_cast<char*>(&dq)) != 0) {
+        LOGE("Failed to get quotactl, errno : %{public}d", errno);
+        return E_SYS_ERR;
+    }
+
+    size = dq.dqb_curspace;
+    return E_OK;
+}
+
+static int64_t GetOccupiedSpaceForGid(int32_t uid, int64_t &size)
+{
+    if (InitialiseQuotaMounts() != true) {
+        LOGE("Failed to initialise quota mounts");
+        return E_SYS_ERR;
+    }
+
+    std::string device = "";
+    device = mQuotaReverseMounts[QUOTA_DEVICE_DATA_PATH];
+    if (device.empty()) {
+        LOGE("skip when device no quotas present");
+        return E_OK;
+    }
+
+    struct dqblk dq;
+    if (quotactl(QCMD(Q_GETQUOTA, GRPQUOTA), device.c_str(), uid, reinterpret_cast<char*>(&dq)) != 0) {
+        LOGE("Failed to get quotactl, errno : %{public}d", errno);
+        return E_SYS_ERR;
+    }
+
+    size = dq.dqb_curspace;
+    return E_OK;
+}
+
+int32_t QuotaManager::GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size)
+{
+    switch (idType) {
+        case USERID:
+            return GetOccupiedSpaceForUid(id, size);
+            break;
+        case GRPID:
+            return GetOccupiedSpaceForGid(id, size);
+            break;
+        default:
+            return E_NON_EXIST;
+    }
+    return E_OK;
 }
 
 int32_t QuotaManager::SetBundleQuota(const std::string &bundleName, int32_t uid,

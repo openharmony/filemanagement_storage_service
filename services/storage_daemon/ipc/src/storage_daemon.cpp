@@ -276,6 +276,11 @@ int32_t StorageDaemon::SetBundleQuota(const std::string &bundleName, int32_t uid
     return QuotaManager::GetInstance()->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
 }
 
+int32_t StorageDaemon::GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size)
+{
+    return QuotaManager::GetInstance()->GetOccupiedSpace(idType, id, size);
+}
+
 void StorageDaemon::SystemAbilityStatusChangeListener::OnAddSystemAbility(int32_t systemAbilityId,
                                                                           const std::string &deviceId)
 {

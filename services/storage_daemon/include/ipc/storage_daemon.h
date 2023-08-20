@@ -61,7 +61,7 @@ public:
 
     virtual int32_t SetBundleQuota(const std::string &bundleName, int32_t uid,
         const std::string &bundleDataDirPath, int32_t limitSizeMb) override;
-
+    virtual int32_t GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size) override;
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
     public:
         SystemAbilityStatusChangeListener() = default;

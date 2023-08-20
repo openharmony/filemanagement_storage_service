@@ -142,6 +142,11 @@ public:
     {
         return E_OK;
     }
+
+    virtual int32_t GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size) override
+    {
+        return E_OK;
+    }
 };
 } // namespace StorageDaemon
 } // namespace OHOS

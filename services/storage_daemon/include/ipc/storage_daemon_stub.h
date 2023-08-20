@@ -58,6 +58,7 @@ private:
     int32_t HandleDeleteShareFile(MessageParcel &data, MessageParcel &reply);
 
     int32_t HandleSetBundleQuota(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleGetOccupiedSpace(MessageParcel &data, MessageParcel &reply);
 };
 } // StorageDaemon
 } // OHOS

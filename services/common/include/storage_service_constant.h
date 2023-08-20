@@ -36,6 +36,12 @@ static std::map<std::string, KeyType> EL_DIR_MAP = {
     {EL1, EL1_KEY},
     {EL2, EL2_KEY},
 };
+
+enum QuotaIdType {
+    USERID,
+    GRPID,
+    PRJID
+};
 }
 }
 

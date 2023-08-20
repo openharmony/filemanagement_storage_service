@@ -301,5 +301,15 @@ int32_t StorageDaemonCommunication::SetBundleQuota(const std::string &bundleName
     return storageDaemon_->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
 }
 
+int32_t StorageDaemonCommunication::GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size)
+{
+    LOGI("enter");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    return storageDaemon_->GetOccupiedSpace(idType, id, size);
+}
 } // namespace StorageManager
 } // namespace OHOS

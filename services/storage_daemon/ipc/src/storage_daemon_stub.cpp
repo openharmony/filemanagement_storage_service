@@ -100,6 +100,9 @@ int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
         case static_cast<int32_t>(StorageDaemonInterfaceCode::SET_BUNDLE_QUOTA):
             err = HandleSetBundleQuota(data, reply);
             break;
+        case static_cast<int32_t>(StorageDaemonInterfaceCode::GET_SPACE):
+            err = HandleGetOccupiedSpace(data, reply);
+            break;
         default: {
             LOGI(" use IPCObjectStub default OnRemoteRequest");
             err = IPCObjectStub::OnRemoteRequest(code, data, reply, option);
@@ -386,5 +389,20 @@ int32_t StorageDaemonStub::HandleSetBundleQuota(MessageParcel &data, MessageParc
     return E_OK;
 }
 
+int32_t StorageDaemonStub::HandleGetOccupiedSpace(MessageParcel &data, MessageParcel &reply)
+{
+    int32_t idType = data.ReadInt32();
+    int32_t id = data.ReadInt32();
+    int64_t size = 0;
+    int err = GetOccupiedSpace(idType, id, size);
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
+    if (!reply.WriteInt64(size)) {
+        LOGE("StorageManagerStub::HandleGetFree call GetTotalSize failed");
+        return  E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
 } // StorageDaemon
 } // OHOS
