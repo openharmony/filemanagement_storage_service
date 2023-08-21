@@ -18,6 +18,7 @@
 #include "ipc_skeleton.h"
 #include "hap_token_info.h"
 #include "hitrace_meter.h"
+#include "storage_daemon_communication/storage_daemon_communication.h"
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -38,6 +39,7 @@ using namespace std;
 
 namespace OHOS {
 namespace StorageManager {
+const int UID_FILE_MANAGER = 1006;
 StorageStatusService::StorageStatusService() {}
 StorageStatusService::~StorageStatusService() {}
 
@@ -81,32 +83,11 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
     }
     // appSize
     LOGI("StorageStatusService::GetUserStorageStats userId is %{public}d", userId);
-    err = ConnectBundleMgr();
-    if (err != E_OK) {
-        LOGE("StorageStatusService::GetUserStorageStats connect bundlemgr failed");
-        return err;
-    }
-    vector<AppExecFwk::ApplicationInfo> appInfos;
-    bool res = bundleMgr_->GetApplicationInfos(
-        AppExecFwk::ApplicationFlag::GET_BASIC_APPLICATION_INFO, userId, appInfos);
-    if (!res) {
-        LOGE("StorageStatusService::GetUserStorageStats an error occured in querying appInfos");
-        return E_BUNDLEMGR_ERROR;
-    }
     int64_t appSize = 0;
-    for (const auto& appInfo : appInfos) {
-        int64_t bundleSize = 0;
-        LOGD("StorageStatusService::GetCurUserStorageStats pkgname is %{public}s", appInfo.name.c_str());
-        vector<int64_t> bundleStats;
-        res = bundleMgr_->GetBundleStats(appInfo.name, userId, bundleStats);
-        if (!res || bundleStats.size() != dataDir.size()) {
-            LOGE("StorageStatusService::An error occurred in querying bundle stats.");
-            return E_BUNDLEMGR_ERROR;
-        }
-        for (uint i = 0; i < bundleStats.size(); i++) {
-            bundleSize += bundleStats[i];
-        }
-        appSize += bundleSize;
+    err = GetAppSize(userId, appSize);
+    if (err != E_OK) {
+        LOGE("StorageStatusService::GetUserStorageStats getAppSize failed");
+        return err;
     }
     // mediaSize
 #ifdef STORAGE_SERVICE_GRAPHIC
@@ -134,9 +115,11 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
     storageStats.audio_ = mediaVol.GetAudiosSize();
     storageStats.video_ = mediaVol.GetVideosSize();
     storageStats.image_ = mediaVol.GetImagesSize();
-    storageStats.file_ = mediaVol.GetFilesSize();
 #endif
-    return E_OK;
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    err = sdCommunication->GetOccupiedSpace(StorageDaemon::GRPID, UID_FILE_MANAGER, storageStats.file_);
+    return err;
 }
 
 int32_t StorageStatusService::GetCurrentBundleStats(BundleStats &bundleStats)
@@ -211,6 +194,37 @@ int32_t StorageStatusService::ConnectBundleMgr()
         bundleMgr_->AsObject()->AddDeathRecipient(deathRecipient_);
     }
     LOGI("connect end");
+    return E_OK;
+}
+
+int32_t StorageStatusService::GetAppSize(int32_t userId, int64_t &appSize)
+{
+    int32_t err = ConnectBundleMgr();
+    if (err != E_OK) {
+        LOGE("StorageStatusService::GetUserStorageStats connect bundlemgr failed");
+        return err;
+    }
+    vector<AppExecFwk::ApplicationInfo> appInfos;
+    bool res = bundleMgr_->GetApplicationInfos(
+        AppExecFwk::ApplicationFlag::GET_BASIC_APPLICATION_INFO, userId, appInfos);
+    if (!res) {
+        LOGE("StorageStatusService::GetUserStorageStats an error occured in querying appInfos");
+        return E_BUNDLEMGR_ERROR;
+    }
+    for (const auto& appInfo : appInfos) {
+        int64_t bundleSize = 0;
+        LOGD("StorageStatusService::GetCurUserStorageStats pkgname is %{public}s", appInfo.name.c_str());
+        vector<int64_t> bundleStats;
+        res = bundleMgr_->GetBundleStats(appInfo.name, userId, bundleStats);
+        if (!res || bundleStats.size() != dataDir.size()) {
+            LOGE("StorageStatusService::An error occurred in querying bundle stats.");
+            return E_BUNDLEMGR_ERROR;
+        }
+        for (uint i = 0; i < bundleStats.size(); i++) {
+            bundleSize += bundleStats[i];
+        }
+        appSize += bundleSize;
+    }
     return E_OK;
 }
 

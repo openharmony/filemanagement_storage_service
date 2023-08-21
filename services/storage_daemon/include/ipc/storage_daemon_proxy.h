@@ -59,7 +59,7 @@ public:
 
     virtual int32_t SetBundleQuota(const std::string &bundleName, int32_t uid,
         const std::string &bundleDataDirPath, int32_t limitSizeMb) override;
-
+    virtual int32_t GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size) override;
 private:
     static inline BrokerDelegator<StorageDaemonProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

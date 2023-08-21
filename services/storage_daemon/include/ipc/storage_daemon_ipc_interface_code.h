@@ -49,6 +49,7 @@ namespace StorageDaemon {
         DELETE_SHARE_FILE,
 
         SET_BUNDLE_QUOTA,
+        GET_SPACE,
     };
 } // namespace StorageDaemon
 } // namespace OHOS
