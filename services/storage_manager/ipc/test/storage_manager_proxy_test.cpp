@@ -901,6 +901,100 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetDiskById_0000, testin
 }
 
 /**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_CreateShareFile_0000
+ * @tc.name: Storage_manager_proxy_CreateShareFile_0000
+ * @tc.desc: Test function of CreateShareFile interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI7U9Z9
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_CreateShareFile_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_CreateShareFile_0000";
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    std::string uri = "file://com.demo.a/storage/share/files/test.txt";
+    uint32_t tokenId = 100;
+    uint32_t flag = 0;
+    int64_t result = proxy_->CreateShareFile(uri, tokenId, flag);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_CreateShareFile_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_CreateShareFile_0100
+ * @tc.name: Storage_manager_proxy_CreateShareFile_0100
+ * @tc.desc: Test function of CreateShareFile interface for SendRequest failed.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI7U9Z9
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_CreateShareFile_0100, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_CreateShareFile_0100";
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Return(E_WRITE_DESCRIPTOR_ERR));
+    std::string uri = "file://com.demo.a/storage/share/files/test.txt";
+    uint32_t tokenId = 100;
+    uint32_t flag = 0;
+    int64_t result = proxy_->CreateShareFile(uri, tokenId, flag);
+    EXPECT_EQ(result, E_WRITE_DESCRIPTOR_ERR);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_CreateShareFile_0100";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_DeleteShareFile_0000
+ * @tc.name: Storage_manager_proxy_DeleteShareFile_0000
+ * @tc.desc: Test function of DeleteShareFile interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI7U9Z9
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_DeleteShareFile_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_DeleteShareFile_0000";
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    std::string uri = "file://com.demo.a/storage/share/files/test.txt";
+    uint32_t tokenId = 100;
+    std::vector<std::string> sharePathList;
+    sharePathList.push_back(uri);
+    int64_t result = proxy_->DeleteShareFile(tokenId, sharePathList);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_DeleteShareFile_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_DeleteShareFile_0100
+ * @tc.name: Storage_manager_proxy_DeleteShareFile_0100
+ * @tc.desc: Test function of DeleteShareFile interface for SendRequest failed.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI7U9Z9
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_DeleteShareFile_0100, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_DeleteShareFile_0100";
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Return(E_WRITE_DESCRIPTOR_ERR));
+    std::string uri = "file://com.demo.a/storage/share/files/test.txt";
+    uint32_t tokenId = 100;
+    std::vector<std::string> sharePathList;
+    sharePathList.push_back(uri);
+    int64_t result = proxy_->DeleteShareFile(tokenId, sharePathList);
+    EXPECT_EQ(result, E_WRITE_DESCRIPTOR_ERR);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_DeleteShareFile_0100";
+}
+
+/**
  * @tc.number: SUB_STORAGE_Storage_manager_proxy_GenerateUserKeys_0000
  * @tc.name: Storage_manager_proxy_GenerateUserKeys_0000
  * @tc.desc: Test function of GenerateUserKeys interface for SUCCESS.
