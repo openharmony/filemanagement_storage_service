@@ -243,11 +243,15 @@ int32_t StorageDaemon::CreateShareFile(std::string uri, uint32_t tokenId, uint32
     createShareFile = reinterpret_cast<CreateShareFileFunc>(dlsym(dlhandler, "CreateShareFile"));
     if (createShareFile == nullptr) {
         LOGE("CreateShareFile dlsym failed, errno = %{public}s", dlerror());
+#ifndef STORAGE_DAEMON_FUZZ_TEST
         dlclose(dlhandler);
+#endif
         return E_ERR;
     }
     int ret = createShareFile(uri, tokenId, flag);
+#ifndef STORAGE_DAEMON_FUZZ_TEST
     dlclose(dlhandler);
+#endif
     return ret;
 }
 
@@ -262,11 +266,15 @@ int32_t StorageDaemon::DeleteShareFile(uint32_t tokenId, std::vector<std::string
     deleteShareFile = reinterpret_cast<DeleteShareFileFunc>(dlsym(dlhandler, "DeleteShareFile"));
     if (deleteShareFile == nullptr) {
         LOGE("DeleteShareFile dlsym failed, errno = %{public}s", dlerror());
+#ifndef STORAGE_DAEMON_FUZZ_TEST
         dlclose(dlhandler);
+#endif
         return E_ERR;
     }
     int32_t ret = deleteShareFile(tokenId, sharePathList);
+#ifndef STORAGE_DAEMON_FUZZ_TEST
     dlclose(dlhandler);
+#endif
     return ret;
 }
 
