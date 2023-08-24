@@ -391,5 +391,50 @@ napi_value GetFreeSize(napi_env env, napi_callback_info info)
         return NAsyncWorkCallback(env, thisVar, cb).Schedule(procedureName, cbExec, cbComplete).val_;
     }
 }
+
+napi_value GetTotalSizeSync(napi_env env, napi_callback_info info)
+{
+    if (!IsSystemApp()) {
+        NError(E_PERMISSION_SYS).ThrowErr(env);
+        return nullptr;
+    }
+    NFuncArg funcArg(env, info);
+    if (!funcArg.InitArgs((int)NARG_CNT::ZERO)) {
+        NError(E_PARAMS).ThrowErr(env);
+        return nullptr;
+    }
+
+    auto resultSize = std::make_shared<int64_t>();
+    
+    int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetTotalSize(*resultSize);
+    if (errNum != E_OK) {
+        NError(Convert2JsErrNum(errNum)).ThrowErr(env);
+        return nullptr;
+    }
+
+    return NVal::CreateInt64(env, *resultSize).val_;
+}
+
+napi_value GetFreeSizeSync(napi_env env, napi_callback_info info)
+{
+    if (!IsSystemApp()) {
+        NError(E_PERMISSION_SYS).ThrowErr(env);
+        return nullptr;
+    }
+    NFuncArg funcArg(env, info);
+    if (!funcArg.InitArgs((int)NARG_CNT::ZERO)) {
+        NError(E_PARAMS).ThrowErr(env);
+        return nullptr;
+    }
+
+    auto resultSize = std::make_shared<int64_t>();
+    
+    int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetFreeSize(*resultSize);
+    if (errNum != E_OK) {
+        NError(Convert2JsErrNum(errNum)).ThrowErr(env);
+        return nullptr;
+    }
+    return NVal::CreateInt64(env, *resultSize).val_;
+}
 } // namespace StorageManager
 } // namespace OHOS
