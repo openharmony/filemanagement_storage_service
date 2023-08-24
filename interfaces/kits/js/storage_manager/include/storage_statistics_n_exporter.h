@@ -29,6 +29,8 @@ napi_value GetSystemSize(napi_env env, napi_callback_info info);
 napi_value GetUserStorageStats(napi_env env, napi_callback_info info);
 napi_value GetTotalSize(napi_env env, napi_callback_info info);
 napi_value GetFreeSize(napi_env env, napi_callback_info info);
+napi_value GetTotalSizeSync(napi_env env, napi_callback_info info);
+napi_value GetFreeSizeSync(napi_env env, napi_callback_info info);
 } // namespace StorageManager
 } // namespace OHOS
 #endif // STORAGESTATUS_N_EXPORTER_H
