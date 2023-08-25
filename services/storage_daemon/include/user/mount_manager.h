@@ -64,6 +64,7 @@ private:
     int32_t HmdfsTwiceUMount(int32_t userId, std::string relativePath);
     int32_t LocalMount(int32_t userId);
     int32_t LocalUMount(int32_t userId);
+    int32_t SetFafQuotaProId(int32_t userId);
     void MountCloudForUsers(void);
     void UMountCloudForUsers(void);
     void PrepareFileManagerDir(int32_t userId);
@@ -74,6 +75,7 @@ private:
     static std::shared_ptr<MountManager> instance_;
     const std::vector<DirInfo> hmdfsDirVec_;
     const std::vector<DirInfo> virtualDir_;
+    const std::vector<std::string> fileManagerDir_;
     std::mutex mountMutex_;
     std::vector<int32_t> fuseToMountUsers_;
     std::vector<int32_t> fuseMountedUsers_;

@@ -17,10 +17,12 @@
 
 #include <cstdint>
 #include <cstdlib>
+#include <fcntl.h>
 #include <fstream>
 #include <sstream>
 #include <map>
 #include <linux/quota.h>
+#include <sys/ioctl.h>
 #include <sys/quota.h>
 #include <sys/statvfs.h>
 #include <linux/fs.h>
@@ -100,11 +102,11 @@ static int64_t GetOccupiedSpaceForUid(int32_t uid, int64_t &size)
         return E_SYS_ERR;
     }
 
-    size = dq.dqb_curspace;
+    size = static_cast<int64_t>(dq.dqb_curspace);
     return E_OK;
 }
 
-static int64_t GetOccupiedSpaceForGid(int32_t uid, int64_t &size)
+static int64_t GetOccupiedSpaceForGid(int32_t gid, int64_t &size)
 {
     if (InitialiseQuotaMounts() != true) {
         LOGE("Failed to initialise quota mounts");
@@ -119,12 +121,37 @@ static int64_t GetOccupiedSpaceForGid(int32_t uid, int64_t &size)
     }
 
     struct dqblk dq;
-    if (quotactl(QCMD(Q_GETQUOTA, GRPQUOTA), device.c_str(), uid, reinterpret_cast<char*>(&dq)) != 0) {
+    if (quotactl(QCMD(Q_GETQUOTA, GRPQUOTA), device.c_str(), gid, reinterpret_cast<char*>(&dq)) != 0) {
         LOGE("Failed to get quotactl, errno : %{public}d", errno);
         return E_SYS_ERR;
     }
 
-    size = dq.dqb_curspace;
+    size = static_cast<int64_t>(dq.dqb_curspace);
+    return E_OK;
+}
+
+
+static int64_t GetOccupiedSpaceForPrjId(int32_t prjId, int64_t &size)
+{
+    if (InitialiseQuotaMounts() != true) {
+        LOGE("Failed to initialise quota mounts");
+        return E_SYS_ERR;
+    }
+
+    std::string device = "";
+    device = mQuotaReverseMounts[QUOTA_DEVICE_DATA_PATH];
+    if (device.empty()) {
+        LOGE("skip when device no quotas present");
+        return E_OK;
+    }
+
+    struct dqblk dq;
+    if (quotactl(QCMD(Q_GETQUOTA, PRJQUOTA), device.c_str(), prjId, reinterpret_cast<char*>(&dq)) != 0) {
+        LOGE("Failed to get quotactl, errno : %{public}d", errno);
+        return E_SYS_ERR;
+    }
+
+    size = static_cast<int64_t>(dq.dqb_curspace);
     return E_OK;
 }
 
@@ -136,6 +163,9 @@ int32_t QuotaManager::GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size
             break;
         case GRPID:
             return GetOccupiedSpaceForGid(id, size);
+            break;
+        case PRJID:
+            return GetOccupiedSpaceForPrjId(id, size);
             break;
         default:
             return E_NON_EXIST;
@@ -189,5 +219,37 @@ int32_t QuotaManager::SetBundleQuota(const std::string &bundleName, int32_t uid,
     }
 }
 
+int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int64_t prjId, bool inherit)
+{
+    struct fsxattr fsx;
+    int fd = open(path.c_str(), O_RDONLY | O_CLOEXEC);
+    if (fd < 0) {
+        LOGE("Failed to open %{public}s, errno: %{public}d", path.c_str(), errno);
+        return E_SYS_CALL;
+    }
+    if (ioctl(fd, FS_IOC_FSGETXATTR, &fsx) == -1) {
+        LOGE("Failed to get extended attributes of %{public}s, errno: %{public}d", path.c_str(), errno);
+        return E_SYS_CALL;
+    }
+    fsx.fsx_projid = prjId;
+    if (ioctl(fd, FS_IOC_FSSETXATTR, &fsx) == -1) {
+        LOGE("Failed to set project id for %{public}s, errno: %{public}d", path.c_str(), errno);
+        return E_SYS_CALL;
+    }
+
+    if (inherit) {
+        uint32_t flags;
+        if (ioctl(fd, FS_IOC_GETFLAGS, &flags) == -1) {
+            LOGE("Failed to get flags for %{public}s, errno:%{public}d", path.c_str(), errno);
+            return E_SYS_CALL;
+        }
+        flags |= FS_PROJINHERIT_FL;
+        if (ioctl(fd, FS_IOC_SETFLAGS, &flags) == -1) {
+            LOGE("Failed to set flags for %{public}s, errno:%{public}d", path.c_str(), errno);
+            return E_SYS_CALL;
+        }
+    }
+    return E_OK;
+}
 } // StorageDaemon
 } // OHOS

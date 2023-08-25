@@ -36,6 +36,7 @@ ohos_unittest("user_manager_test") {
 
   sources = [
     "$ROOT_DIR/crypto/test/key_manager_mock.cpp",
+    "$ROOT_DIR/quota/quota_manager.cpp",
     "$ROOT_DIR/user/src/mount_manager.cpp",
     "$ROOT_DIR/user/src/user_manager.cpp",
     "$ROOT_DIR/user/test/user_manager_test.cpp",
