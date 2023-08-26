@@ -33,7 +33,11 @@
 #include "user/mount_manager.h"
 #include "system_ability_definition.h"
 #include "cloud_daemon_manager.h"
-
+#ifdef USER_CRYPTO_MIGRATE_KEY
+#include "string_ex.h"
+#include "utils/file_utils.h"
+#include <filesystem>
+#endif
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -106,10 +110,68 @@ int32_t StorageDaemon::SetVolumeDescription(std::string volId, std::string descr
 #endif
 }
 
+#ifdef USER_CRYPTO_MIGRATE_KEY
+std::string StorageDaemon::GetNeedRestoreFilePath(int32_t userId, const std::string &user_dir)
+{
+    std::string path = user_dir + "/" + std::to_string(userId) + "/latest/need_restore";
+    return path;
+}
+
+int32_t StorageDaemon::RestoreUserKey(int32_t userId, uint32_t flags)
+{
+    LOGI("prepare restore user dirs for %{public}d, flags %{public}u", userId, flags);
+    int32_t ret = E_OK;
+    std::string el1NeedRestorePath = GetNeedRestoreFilePath(userId, USER_EL1_DIR);
+    std::string el2NeedRestorePath = GetNeedRestoreFilePath(userId, USER_EL2_DIR);
+    if (!std::filesystem::exists(el1NeedRestorePath) && !std::filesystem::exists(el2NeedRestorePath)) {
+        LOGE("need_restore file is not existed");
+        return -EEXIST;
+    }
+
+    if (std::filesystem::exists(el1NeedRestorePath)) {
+        LOGI("start restore User DE");
+        ret = KeyManager::GetInstance()->RestoreUserKey(userId, EL1_KEY);
+        if (ret != E_OK) {
+            LOGE("RestoreUserKey EL1_KEY failed, error = %{public}d", ret);
+            return ret;
+        }
+        ret = UserManager::GetInstance()->PrepareUserDirs(userId, IStorageDaemon::CRYPTO_FLAG_EL1);
+        if (ret != E_OK) {
+            LOGE("PrepareUserDirs CRYPTO_FLAG_EL1 failed, error = %{public}d", ret);
+            return ret;
+        }
+        (void)remove(el1NeedRestorePath.c_str());
+        LOGI("restore User DE success");
+    }
+
+    if (std::filesystem::exists(el2NeedRestorePath)) {
+        LOGI("start restore User CE");
+        ret = KeyManager::GetInstance()->RestoreUserKey(userId, EL2_KEY);
+        if (ret != E_OK) {
+            LOGE("RestoreUserKey EL2_KEY failed, but return success, error = %{public}d", ret);
+            return E_OK; // mybe need user key, so return E_OK to continue
+        }
+        ret = UserManager::GetInstance()->PrepareUserDirs(userId, IStorageDaemon::CRYPTO_FLAG_EL2);
+        if (ret != E_OK) {
+            LOGE("PrepareUserDirs CRYPTO_FLAG_EL2 failed, error = %{public}d", ret);
+            return ret;
+        }
+        (void)remove(el2NeedRestorePath.c_str());
+        LOGI("restore User CE success");
+    }
+    return E_OK;
+}
+#endif
+
 int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
 #ifdef USER_CRYPTO_MANAGER
     int32_t ret = KeyManager::GetInstance()->GenerateUserKeys(userId, flags);
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    if (ret == -EEXIST) {
+        return RestoreUserKey(userId, flags);
+    }
+#endif
     if (ret != E_OK) {
         LOGE("Generate user %{public}d key error", userId);
         return ret;
@@ -203,12 +265,50 @@ int32_t StorageDaemon::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
 #endif
 }
 
+#ifdef USER_CRYPTO_MIGRATE_KEY
+int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuth(uint32_t userId, const std::vector<uint8_t> &token,
+    const std::vector<uint8_t> &secret)
+{
+    LOGI("start userId %{public}u", userId);
+    int32_t ret = E_OK;
+    ret = KeyManager::GetInstance()->ActiveUserKey(userId, token, {'!'});
+    if (ret != E_OK) {
+        return ret;
+    }
+    ret = KeyManager::GetInstance()->UpdateUserAuth(userId, 0, token, {'!'}, secret, false);
+    if (ret != E_OK) {
+        return ret;
+    }
+    ret = KeyManager::GetInstance()->UpdateKeyContext(userId);
+    if (ret != E_OK) {
+        return ret;
+    }
+    LOGI("try to destory ce dir first");
+    (void)UserManager::GetInstance()->DestroyUserDirs(userId, IStorageDaemon::CRYPTO_FLAG_EL2);
+    ret = UserManager::GetInstance()->PrepareUserDirs(userId, IStorageDaemon::CRYPTO_FLAG_EL2);
+    if (ret != E_OK) {
+        return ret;
+    }
+    LOGI("userId %{public}u sucess", userId);
+    return E_OK;
+}
+#endif
 int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
                                      const std::vector<uint8_t> &token,
                                      const std::vector<uint8_t> &secret)
 {
 #ifdef USER_CRYPTO_MANAGER
-    return KeyManager::GetInstance()->ActiveUserKey(userId, token, secret);
+    auto ret = KeyManager::GetInstance()->ActiveUserKey(userId, token, secret);
+    if (ret == E_OK) {
+        return E_OK;
+    }
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    std::string el2NeedRestorePath = GetNeedRestoreFilePath(userId, USER_EL2_DIR);
+    if (std::filesystem::exists(el2NeedRestorePath) && (!token.empty() || !secret.empty())) {
+        return PrepareUserDirsAndUpdateUserAuth(userId, token, secret);
+    }
+#endif
+    return ret;
 #else
     return E_OK;
 #endif

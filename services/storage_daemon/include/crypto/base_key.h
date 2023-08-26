@@ -34,7 +34,11 @@ public:
 
     /* key operations */
     bool InitKey();
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    bool StoreKey(const UserAuth &auth, bool needGenerateShield = true);
+#else
     bool StoreKey(const UserAuth &auth);
+#endif
     bool UpdateKey(const std::string &keypath = "");
     bool RestoreKey(const UserAuth &auth);
     virtual bool ActiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
@@ -53,7 +57,11 @@ protected:
     std::string dir_ {};
 
 private:
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    bool DoStoreKey(const UserAuth &auth, bool needGenerateShield = true);
+#else
     bool DoStoreKey(const UserAuth &auth);
+#endif
     bool DoRestoreKey(const UserAuth &auth, const std::string &keypath);
     static bool GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size);
     static bool GenerateKeyBlob(KeyBlob &blob, const uint32_t size);

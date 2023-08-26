@@ -69,6 +69,14 @@ public:
         void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;
         void OnRemoveSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;
     };
+#ifdef USER_CRYPTO_MIGRATE_KEY
+private:
+    std::string GetNeedRestoreFilePath(int32_t userId, const std::string &user_dir);
+    int32_t RestoreUserKey(int32_t userId, uint32_t flags);
+    int32_t PrepareUserDirsAndUpdateUserAuth(uint32_t userId,
+                                             const std::vector<uint8_t> &token,
+                                             const std::vector<uint8_t> &secret);
+#endif
 };
 } // StorageDaemon
 } // OHOS
