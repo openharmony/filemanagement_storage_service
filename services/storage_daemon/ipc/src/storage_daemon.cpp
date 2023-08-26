@@ -32,12 +32,15 @@
 #include "user/user_manager.h"
 #include "user/mount_manager.h"
 #include "system_ability_definition.h"
+#ifdef DFS_SERVICE
 #include "cloud_daemon_manager.h"
-
+#endif
 
 namespace OHOS {
 namespace StorageDaemon {
+#ifdef DFS_SERVICE
 using namespace OHOS::FileManagement::CloudFile;
+#endif
 
 typedef int32_t (*CreateShareFileFunc)(std::string, uint32_t, uint32_t);
 typedef int32_t (*DeleteShareFileFunc)(uint32_t, std::vector<std::string>);

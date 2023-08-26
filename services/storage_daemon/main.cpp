@@ -29,10 +29,14 @@
 #include "user/user_manager.h"
 #include "utils/string_utils.h"
 #include "system_ability_definition.h"
+#ifdef DFS_SERVICE
 #include "cloud_daemon_manager.h"
+#endif
 
 using namespace OHOS;
+#ifdef DFS_SERVICE
 using namespace OHOS::FileManagement::CloudFile;
+#endif
 using CloudListener = StorageDaemon::StorageDaemon::SystemAbilityStatusChangeListener;
 
 #ifdef EXTERNAL_STORAGE_MANAGER
