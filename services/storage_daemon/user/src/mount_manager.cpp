@@ -27,13 +27,17 @@
 #include "utils/mount_argument_utils.h"
 #include "utils/string_utils.h"
 #include "system_ability_definition.h"
+#ifdef DFS_SERVICE
 #include "cloud_daemon_manager.h"
-
+#endif
 
 namespace OHOS {
 namespace StorageDaemon {
 using namespace std;
+#ifdef DFS_SERVICE
 using namespace OHOS::FileManagement::CloudFile;
+#endif
+
 constexpr int32_t UMOUNT_RETRY_TIMES = 3;
 std::shared_ptr<MountManager> MountManager::instance_ = nullptr;
 
@@ -149,6 +153,7 @@ int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath)
 
 int32_t MountManager::CloudMount(int32_t userId)
 {
+#ifdef DFS_SERVICE
     int fd = -1;
     string opt;
     int ret;
@@ -188,6 +193,9 @@ int32_t MountManager::CloudMount(int32_t userId)
     LOGI("mount %{public}s success", path.c_str());
     close(fd);
     return ret;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t MountManager::HmdfsMount(int32_t userId)
@@ -288,6 +296,7 @@ int32_t MountManager::HmdfsUMount(int32_t userId, std::string relativePath)
 
 int32_t MountManager::CloudUMount(int32_t userId)
 {
+#ifdef DFS_SERVICE
     int32_t err = E_OK;
     Utils::MountArgument cloudMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
     const string path = cloudMntArgs.GetFullCloud();
@@ -299,6 +308,9 @@ int32_t MountManager::CloudUMount(int32_t userId)
     }
     LOGI("umount %{public}s success", path.c_str());
     return E_OK;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t MountManager::HmdfsUMount(int32_t userId)
