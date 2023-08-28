@@ -103,7 +103,6 @@ ohos_executable("storage_daemon") {
     "ability_base:want",
     "ability_base:zuri",
     "c_utils:utils",
-    "dfs_service:cloud_daemon_kit_inner",
     "hilog:libhilog",
     "init:libbegetutil",
     "ipc:ipc_core",
@@ -121,6 +120,11 @@ ohos_executable("storage_daemon") {
       "libfscrypt:libfscryptutils",
     ]
     external_deps += [ "huks:libhukssdk" ]
+  }
+
+  if (storage_service_dfs_service) {
+    defines += [ "DFS_SERVICE" ]
+    external_deps += [ "dfs_service:cloud_daemon_kit_inner" ]
   }
 
   ldflags = [

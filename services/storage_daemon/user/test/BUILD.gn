@@ -50,13 +50,17 @@ ohos_unittest("user_manager_test") {
 
   external_deps = [
     "c_utils:utils",
-    "dfs_service:cloud_daemon_kit_inner",
     "hilog:libhilog",
     "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_core",
     "ipc:libdbinder",
   ]
+
+  if (storage_service_dfs_service) {
+    defines += [ "DFS_SERVICE" ]
+    external_deps += [ "dfs_service:cloud_daemon_kit_inner" ]
+  }
 }
 
 group("storage_daemon_user_test") {
