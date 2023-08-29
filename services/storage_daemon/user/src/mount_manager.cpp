@@ -21,6 +21,8 @@
 #include <unistd.h>
 #include "ipc/istorage_daemon.h"
 #include "parameter.h"
+#include "quota/quota_manager.h"
+#include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/file_utils.h"
@@ -37,13 +39,14 @@ using namespace std;
 #ifdef DFS_SERVICE
 using namespace OHOS::FileManagement::CloudFile;
 #endif
-
+using namespace OHOS::StorageService;
 constexpr int32_t UMOUNT_RETRY_TIMES = 3;
 std::shared_ptr<MountManager> MountManager::instance_ = nullptr;
 
 const std::string HMDFS_SYS_CAP = "const.distributed_file_property.enabled";
 const int32_t HMDFS_VAL_LEN = 6;
 const int32_t HMDFS_TRUE_LEN = 5;
+const string SHARE_PATH = "/data/service/el1/public/storage_daemon/share/public";
 MountManager::MountManager()
     : hmdfsDirVec_{{"/data/service/el2/%d/share", 0711, OID_SYSTEM, OID_SYSTEM},
                    {"/data/service/el2/%d/hmdfs", 0711, OID_SYSTEM, OID_SYSTEM},
@@ -75,7 +78,13 @@ MountManager::MountManager()
                   {"/mnt/hmdfs/%d/", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/%d/account", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/%d/non_account", 0711, OID_ROOT, OID_ROOT},
-                  {"/mnt/hmdfs/%d/cloud", 0711, OID_ROOT, OID_ROOT}}
+                  {"/mnt/hmdfs/%d/cloud", 0711, OID_ROOT, OID_ROOT}},
+      fileManagerDir_{"/data/service/el2/%d/hmdfs/account/files/Documents",
+                      "/data/service/el2/%d/hmdfs/account/files/Download",
+                      "/data/service/el2/%d/hmdfs/account/files/Desktop",
+                      "/data/service/el2/%d/hmdfs/account/files/Docs",
+                      "/data/service/el2/%d/hmdfs/account/files/Recent",
+                      "/data/service/el2/%d/hmdfs/account/files/Trash"}
 {
 }
 
@@ -378,6 +387,7 @@ int32_t MountManager::MountByUser(int32_t userId)
         LOGE("sharefs mount error");
         return ret;
     }
+    SetFafQuotaProId(userId);
     return E_OK;
 }
 
@@ -464,6 +474,16 @@ int32_t MountManager::DestroyHmdfsDirs(int32_t userId)
     }
 
     return err ? E_OK : E_DESTROY_DIR;
+}
+
+int32_t MountManager::SetFafQuotaProId(int32_t userId)
+{
+    int64_t prjId = userId * USER_CONST + UID_FILE_MANAGER;
+    for (const string &dir: fileManagerDir_) {
+        QuotaManager::GetInstance()->SetQuotaPrjId(StringPrintf(dir.c_str(), userId), prjId, true);
+    }
+    QuotaManager::GetInstance()->SetQuotaPrjId(StringPrintf(SHARE_PATH.c_str(), userId), prjId, true);
+    return E_OK;
 }
 } // namespace StorageDaemon
 } // namespace OHOS
