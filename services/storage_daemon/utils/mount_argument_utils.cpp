@@ -30,6 +30,7 @@ namespace {
     static const std::string COMM_CLOUD_POINT = "/storage/cloud/";
     static const std::string SHAREFS_DATA_POINT = "/data/service/el2/";
     static const std::string SHAREFS_BASE_MOUNT_POINT = "/mnt/share/";
+    static const std::string TMPFS_MNT_DATA = "/mnt/data/";
 } // namespace
 
 string MountArgument::GetFullSrc() const
@@ -51,7 +52,7 @@ string MountArgument::GetFullDst() const
 string MountArgument::GetFullCloud() const
 {
     stringstream ss;
-    ss << BASE_MOUNT_POINT << userId_ << "/" << "cloud";
+    ss << TMPFS_MNT_DATA << userId_ << "/" << "cloud";
 
     return ss.str();
 }
