@@ -148,11 +148,19 @@ std::string BaseKey::GetNextCandidateDir() const
     return dir_ + PATH_KEY_VERSION + std::to_string(candidate + 1);
 }
 
+#ifdef USER_CRYPTO_MIGRATE_KEY
+bool BaseKey::StoreKey(const UserAuth &auth, bool needGenerateShield)
+#else
 bool BaseKey::StoreKey(const UserAuth &auth)
+#endif
 {
     LOGD("enter");
     auto pathTemp = dir_ + PATH_KEY_TEMP;
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    if (DoStoreKey(auth, needGenerateShield)) {
+#else
     if (DoStoreKey(auth)) {
+#endif
         // rename keypath/temp/ to keypath/version_xx/
         auto candidate = GetNextCandidateDir();
         LOGD("rename %{public}s to %{public}s", pathTemp.c_str(), candidate.c_str());
@@ -170,7 +178,11 @@ bool BaseKey::StoreKey(const UserAuth &auth)
 }
 
 // All key files are saved under keypath/temp/ in this function.
+#ifdef USER_CRYPTO_MIGRATE_KEY
+bool BaseKey::DoStoreKey(const UserAuth &auth, bool needGenerateShield)
+#else
 bool BaseKey::DoStoreKey(const UserAuth &auth)
+#endif
 {
     auto pathTemp = dir_ + PATH_KEY_TEMP;
     MkDirRecurse(pathTemp, S_IRWXU);
@@ -188,10 +200,24 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
     }
     ChMod(pathVersion, S_IREAD | S_IWRITE);
 
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    if (needGenerateShield) {
+        if (!HuksMaster::GetInstance().GenerateKey(auth, keyContext_.shield)) {
+            LOGE("GenerateKey of shield failed");
+            return false;
+        }
+    } else {
+        if (!LoadKeyBlob(keyContext_.shield, dir_ + PATH_LATEST + PATH_SHIELD)) {
+            keyContext_.encrypted.Clear();
+            return false;
+        }
+    }
+#else
     if (!HuksMaster::GetInstance().GenerateKey(auth, keyContext_.shield)) {
         LOGE("GenerateKey of shield failed");
         return false;
     }
+#endif
     if (!SaveKeyBlob(keyContext_.shield, pathTemp + PATH_SHIELD)) {
         return false;
     }

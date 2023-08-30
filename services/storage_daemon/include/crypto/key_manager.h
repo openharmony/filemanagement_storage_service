@@ -28,6 +28,11 @@
 
 namespace OHOS {
 namespace StorageDaemon {
+const std::string FSCRYPT_USER_EL1_PUBLIC = std::string() + "/data/service/el1/public";
+const std::string SERVICE_STORAGE_DAEMON_DIR = FSCRYPT_USER_EL1_PUBLIC + "/storage_daemon";
+const std::string FSCRYPT_EL_DIR = SERVICE_STORAGE_DAEMON_DIR + "/sd";
+const std::string USER_EL1_DIR = FSCRYPT_EL_DIR + "/el1";
+const std::string USER_EL2_DIR = FSCRYPT_EL_DIR + "/el2";
 class KeyManager {
 public:
     static KeyManager *GetInstance(void)
@@ -39,17 +44,27 @@ public:
     int InitGlobalUserKeys(void);
     int GenerateUserKeys(unsigned int user, uint32_t flags);
     int DeleteUserKeys(unsigned int user);
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    int UpdateUserAuth(unsigned int user, uint64_t secureUid,
+                       const std::vector<uint8_t> &token,
+                       const std::vector<uint8_t> &oldSecret,
+                       const std::vector<uint8_t> &newSecret,
+                       bool needGenerateShield = true);
+#else
     int UpdateUserAuth(unsigned int user, uint64_t secureUid,
                        const std::vector<uint8_t> &token,
                        const std::vector<uint8_t> &oldSecret,
                        const std::vector<uint8_t> &newSecret);
+#endif
     int ActiveUserKey(unsigned int user, const std::vector<uint8_t> &token,
                       const std::vector<uint8_t> &secret);
     int InActiveUserKey(unsigned int user);
     int SetDirectoryElPolicy(unsigned int user, KeyType type,
                              const std::vector<FileList> &vec);
     int UpdateKeyContext(uint32_t userId);
-
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    int RestoreUserKey(uint32_t userId, KeyType type);
+#endif
 private:
     KeyManager()
     {

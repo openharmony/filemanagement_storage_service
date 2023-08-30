@@ -31,11 +31,6 @@
 namespace OHOS {
 namespace StorageDaemon {
 const UserAuth NULL_KEY_AUTH = {};
-const std::string FSCRYPT_USER_EL1_PUBLIC = std::string() + "/data/service/el1/public";
-const std::string SERVICE_STORAGE_DAEMON_DIR = FSCRYPT_USER_EL1_PUBLIC + "/storage_daemon";
-const std::string FSCRYPT_EL_DIR = SERVICE_STORAGE_DAEMON_DIR + "/sd";
-const std::string USER_EL1_DIR = FSCRYPT_EL_DIR + "/el1";
-const std::string USER_EL2_DIR = FSCRYPT_EL_DIR + "/el2";
 
 std::shared_ptr<BaseKey> KeyManager::GetBaseKey(const std::string& dir)
 {
@@ -434,10 +429,18 @@ int KeyManager::DeleteUserKeys(unsigned int user)
     return ret;
 }
 
+#ifdef USER_CRYPTO_MIGRATE_KEY
+int KeyManager::UpdateUserAuth(unsigned int user, uint64_t secureUid,
+                               const std::vector<uint8_t> &token,
+                               const std::vector<uint8_t> &oldSecret,
+                               const std::vector<uint8_t> &newSecret,
+                               bool needGenerateShield)
+#else
 int KeyManager::UpdateUserAuth(unsigned int user, uint64_t secureUid,
                                const std::vector<uint8_t> &token,
                                const std::vector<uint8_t> &oldSecret,
                                const std::vector<uint8_t> &newSecret)
+#endif
 {
     LOGI("start, user:%{public}d", user);
     if (!KeyCtrlHasFscryptSyspara()) {
@@ -458,7 +461,11 @@ int KeyManager::UpdateUserAuth(unsigned int user, uint64_t secureUid,
     }
 
     auth.secret = newSecret;
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    if (item->StoreKey(auth, needGenerateShield) == false) {
+#else
     if (item->StoreKey(auth) == false) {
+#endif
         LOGE("Store key error");
         return -EFAULT;
     }
@@ -599,5 +606,26 @@ int KeyManager::UpgradeKeys(const std::vector<FileList> &dirInfo)
     }
     return 0;
 }
+
+#ifdef USER_CRYPTO_MIGRATE_KEY
+int KeyManager::RestoreUserKey(uint32_t userId, KeyType type)
+{
+    LOGI("start, user is %{public}u , type is %{public}d", userId, type);
+    std::string dir;
+    if (type == EL1_KEY) {
+        dir = USER_EL1_DIR + "/" + std::to_string(userId);
+    } else if (type == EL2_KEY) {
+        dir = USER_EL2_DIR + "/" + std::to_string(userId);
+    } else {
+        LOGE("type is invaild");
+        return -EFAULT;
+    }
+    if (!IsDir(dir)) {
+        LOGE("dir not exist");
+        return -ENOENT;
+    }
+    return RestoreUserKey(userId, dir, NULL_KEY_AUTH, type);
+}
+#endif
 } // namespace StorageDaemon
 } // namespace OHOS
