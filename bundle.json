@@ -23,7 +23,8 @@
       "storage_service_user_file_sharing",
       "storage_service_user_crypto_manager",
       "storage_service_external_storage_manager",
-      "storage_service_storage_statistics_manager"
+      "storage_service_storage_statistics_manager",
+      "storage_service_crypto_test"
     ],
     "adapted_system_type": [ "small", "standard" ],
     "rom": "4096KB",

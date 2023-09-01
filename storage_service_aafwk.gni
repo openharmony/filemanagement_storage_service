@@ -18,6 +18,7 @@ declare_args() {
   storage_service_user_crypto_manager = true
   storage_service_external_storage_manager = true
   storage_service_storage_statistics_manager = true
+  storage_service_crypto_test = false
   if (defined(global_parts_info) &&
       defined(global_parts_info.filemanagement_dfs_service)) {
     storage_service_dfs_service = true

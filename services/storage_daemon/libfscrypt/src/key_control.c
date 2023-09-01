@@ -128,7 +128,7 @@ static uint8_t CheckKernelFscrypt(const char *mnt)
     char *realPath = realpath(mnt, NULL);
     if (realPath == NULL) {
         FSCRYPT_LOGE("realpath failed");
-        return -EFAULT;
+        return FSCRYPT_INVALID;
     }
 
     int fd = open(realPath, O_RDONLY | O_DIRECTORY | O_CLOEXEC);

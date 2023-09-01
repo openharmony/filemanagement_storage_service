@@ -36,6 +36,10 @@ ohos_moduletest("CryptoSubTest") {
 
   sources = [ "crypto_key_test.cpp" ]
 
+  if (storage_service_crypto_test) {
+    defines += [ "CRYPTO_TEST" ]
+  }
+
   configs = [ ":module_private_config" ]
 
   deps = [ "//third_party/googletest:gtest_main" ]
