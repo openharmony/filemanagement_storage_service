@@ -49,6 +49,7 @@ bool ReadFile(std::string path, std::string *str);
 int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output = nullptr);
 void TraverseDirUevent(const std::string &path, bool flag);
 void ChownRecursion(const std::string dir, uid_t uid, gid_t gid);
+int IsSameGidUid(const std::string dir, uid_t uid, gid_t gid);
 }
 }
 
