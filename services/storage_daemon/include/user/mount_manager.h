@@ -47,7 +47,9 @@ public:
     int32_t MountByUser(int32_t userId);
     int32_t UmountByUser(int32_t userId);
     int32_t PrepareHmdfsDirs(int32_t userId);
+    int32_t PrepareFileManagerDirs(int32_t userId);
     int32_t DestroyHmdfsDirs(int32_t userId);
+    int32_t DestroyFileManagerDirs(int32_t userId);
     int32_t CloudMount(int32_t userId);
     void SetCloudState(bool active);
 
@@ -74,6 +76,7 @@ private:
     static std::shared_ptr<MountManager> instance_;
     const std::vector<DirInfo> hmdfsDirVec_;
     const std::vector<DirInfo> virtualDir_;
+    const std::vector<DirInfo> fileManagerDir_;
     std::mutex mountMutex_;
     std::vector<int32_t> fuseToMountUsers_;
     std::vector<int32_t> fuseMountedUsers_;

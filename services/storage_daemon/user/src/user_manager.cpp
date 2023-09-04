@@ -92,6 +92,12 @@ int32_t UserManager::PrepareUserDirs(int32_t userId, uint32_t flags)
             return err;
         }
 
+        err = MountManager::GetInstance()->PrepareFileManagerDirs(userId);
+        if (err != E_OK) {
+            LOGE("Prepare fileManager dir error");
+            return err;
+        }
+
         err = PrepareEl2BackupDir(userId);
         if (err != E_OK) {
             return err;
@@ -118,6 +124,9 @@ int32_t UserManager::DestroyUserDirs(int32_t userId, uint32_t flags)
 
     if (flags & IStorageDaemon::CRYPTO_FLAG_EL2) {
         err = DestroyDirsFromIdAndLevel(userId, EL2);
+        ret = (err != E_OK) ? err : ret;
+
+        err = MountManager::GetInstance()->DestroyFileManagerDirs(userId);
         ret = (err != E_OK) ? err : ret;
 
         err = MountManager::GetInstance()->DestroyHmdfsDirs(userId);

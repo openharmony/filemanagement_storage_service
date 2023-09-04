@@ -47,12 +47,6 @@ MountManager::MountManager()
                    {"/data/service/el2/%d/hmdfs/account", 0711, OID_SYSTEM, OID_SYSTEM},
                    {"/data/service/el2/%d/hmdfs/account/files", 02771, OID_USER_DATA_RW, OID_USER_DATA_RW},
                    {"/data/service/el2/%d/hmdfs/account/data", 0711, OID_SYSTEM, OID_SYSTEM},
-                   {"/data/service/el2/%d/hmdfs/account/files/Documents", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
-                   {"/data/service/el2/%d/hmdfs/account/files/Download", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
-                   {"/data/service/el2/%d/hmdfs/account/files/Desktop", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
-                   {"/data/service/el2/%d/hmdfs/account/files/Docs", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
-                   {"/data/service/el2/%d/hmdfs/account/files/.Recent", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
-                   {"/data/service/el2/%d/hmdfs/account/files/.Trash", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
                    {"/data/service/el2/%d/hmdfs/non_account", 0711, OID_SYSTEM, OID_SYSTEM},
                    {"/data/service/el2/%d/hmdfs/non_account/files", 0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
                    {"/data/service/el2/%d/hmdfs/non_account/data", 0711, OID_SYSTEM, OID_SYSTEM},
@@ -71,7 +65,13 @@ MountManager::MountManager()
                   {"/mnt/hmdfs/%d/", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/%d/account", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/%d/non_account", 0711, OID_ROOT, OID_ROOT},
-                  {"/mnt/hmdfs/%d/cloud", 0711, OID_ROOT, OID_ROOT}}
+                  {"/mnt/hmdfs/%d/cloud", 0711, OID_ROOT, OID_ROOT}},
+      fileManagerDir_{{"/data/service/el2/%d/hmdfs/account/files/Documents", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
+                   {"/data/service/el2/%d/hmdfs/account/files/Download", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
+                   {"/data/service/el2/%d/hmdfs/account/files/Desktop", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
+                   {"/data/service/el2/%d/hmdfs/account/files/Docs", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
+                   {"/data/service/el2/%d/hmdfs/account/files/.Recent", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
+                   {"/data/service/el2/%d/hmdfs/account/files/.Trash", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER}}
 {
 }
 
@@ -371,10 +371,29 @@ int32_t MountManager::MountByUser(int32_t userId)
 
 void MountManager::PrepareFileManagerDir(int32_t userId)
 {
-    char documentPath[] = "/data/service/el2/%d/hmdfs/account/files/Documents";
-    ChownRecursion(StringPrintf(documentPath, userId), OID_FILE_MANAGER, OID_FILE_MANAGER);
-    char downloadPath[] = "/data/service/el2/%d/hmdfs/account/files/Download";
-    ChownRecursion(StringPrintf(downloadPath, userId), OID_FILE_MANAGER, OID_FILE_MANAGER);
+    for (const DirInfo &dir : fileManagerDir_) {
+        std::string path = StringPrintf(dir.path.c_str(), userId);
+        int ret = IsSameGidUid(path, dir.uid, dir.gid);
+        LOGE("prepareDir %{public}s ret %{public}d", path.c_str(), ret);
+        // Dir exist and same uid, gid
+        if (ret == E_OK) {
+            continue;
+        }
+        // system error
+        if (ret == E_SYS_ERR) {
+            LOGE("system err %{public}s ", path.c_str());
+            continue;
+        }
+        // Dir exist and different uid, gid
+        if (ret == E_DIFF_UID_GID) {
+            ChownRecursion(path, OID_FILE_MANAGER, OID_FILE_MANAGER);
+            continue;
+        }
+        // Dir not exist
+        if (ret == E_NON_EXIST && !PrepareDir(path, dir.mode, dir.uid, dir.gid)) {
+            LOGE("failed to prepareDir %{public}s ", path.c_str());
+        }
+    }
 }
 
 int32_t MountManager::LocalUMount(int32_t userId)
@@ -430,6 +449,17 @@ int32_t MountManager::PrepareHmdfsDirs(int32_t userId)
     return E_OK;
 }
 
+int32_t MountManager::PrepareFileManagerDirs(int32_t userId)
+{
+    for (const DirInfo &dir : fileManagerDir_) {
+        if (!PrepareDir(StringPrintf(dir.path.c_str(), userId), dir.mode, dir.uid, dir.gid)) {
+            return E_PREPARE_DIR;
+        }
+    }
+
+    return E_OK;
+}
+
 int32_t MountManager::CreateVirtualDirs(int32_t userId)
 {
     for (const DirInfo &dir : virtualDir_) {
@@ -453,5 +483,20 @@ int32_t MountManager::DestroyHmdfsDirs(int32_t userId)
 
     return err ? E_OK : E_DESTROY_DIR;
 }
+
+
+int32_t MountManager::DestroyFileManagerDirs(int32_t userId)
+{
+    bool err = true;
+
+    for (const DirInfo &dir : fileManagerDir_) {
+        if (IsEndWith(dir.path.c_str(), "%d")) {
+            err = RmDirRecurse(StringPrintf(dir.path.c_str(), userId));
+        }
+    }
+
+    return err ? E_OK : E_DESTROY_DIR;
+}
+
 } // namespace StorageDaemon
 } // namespace OHOS

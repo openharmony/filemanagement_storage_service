@@ -456,17 +456,16 @@ int IsSameGidUid(const std::string dir, uid_t uid, gid_t gid)
     struct stat st;
     if (TEMP_FAILURE_RETRY(lstat(dir.c_str(), &st)) == E_ERR) {
         LOGE("failed to lstat, errno %{public}d", errno);
-        return -1;
+        if (errno == ENOENT) {
+            return E_NON_EXIST;
+        }
+        return E_SYS_ERR;
     }
-    return (st.st_uid == uid) && (st.st_gid == gid) ? 1 : 0;
+    return (st.st_uid == uid) && (st.st_gid == gid) ? E_OK : E_DIFF_UID_GID;
 }
 
 void ChownRecursion(const std::string dir, uid_t uid, gid_t gid)
 {
-    if (IsSameGidUid(dir, uid, gid) != 0) {
-        LOGI("don't deal url: %{public}s", dir.c_str());
-        return;
-    }
     std::vector<std::string> cmd = {
         "/system/bin/chown",
         "-R",
