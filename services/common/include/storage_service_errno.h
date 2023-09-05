@@ -50,6 +50,7 @@ enum ErrNo {
     E_BUNDLEMGR_ERROR,
     E_MEDIALIBRARY_ERROR,
     E_SYS_ERR,
+    E_DIFF_UID_GID
 };
 
 enum JsErrCode {
