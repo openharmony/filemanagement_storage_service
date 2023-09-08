@@ -21,8 +21,8 @@
 #include "string_ex.h"
 
 namespace OHOS {
-using namespace std;
 namespace StorageDaemon {
+using namespace std;
 
 StorageDaemonStub::StorageDaemonStub()
 {
@@ -37,7 +37,7 @@ StorageDaemonStub::StorageDaemonStub()
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::PARTITION)] =
         &StorageDaemonStub::HandlePartition;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::FORMAT)] =
-        &StorageDaemonStub::HandleFormat;  
+        &StorageDaemonStub::HandleFormat; 
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::SET_VOL_DESC)] =
         &StorageDaemonStub::HandleSetVolDesc;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::PREPARE_USER_DIRS)] =
@@ -74,16 +74,16 @@ StorageDaemonStub::StorageDaemonStub()
         &StorageDaemonStub::HandleGetOccupiedSpace;
 }
 
-int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, 
+int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code,
                                            MessageParcel &data,
                                            MessageParcel &reply,
                                            MessageOption &option)
 {
-    if(data.ReadInterfaceToken() != GetDescriptor()) {
+    if (data.ReadInterfaceToken() != GetDescriptor()) {
         return E_PERMISSION_DENIED;
     }
     auto interfaceIndex = opToInterfaceMap_.find(code);
-    if(interfaceIndex == opToInterfaceMap_.end() || !interfaceIndex->second) {
+    if (interfaceIndex == opToInterfaceMap_.end() || !interfaceIndex->second) {
         LOGE("Cannot response request %d: unknown tranction", code);
         return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
     }

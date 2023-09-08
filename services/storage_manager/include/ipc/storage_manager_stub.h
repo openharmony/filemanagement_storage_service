@@ -16,6 +16,7 @@
 #ifndef OHOS_STORAGE_MANAGER_STORAGE_MANAGER_STUB_H
 #define OHOS_STORAGE_MANAGER_STORAGE_MANAGER_STUB_H
 
+#include <map>
 #include "iremote_stub.h"
 #include "istorage_manager.h"
 
@@ -23,9 +24,14 @@ namespace OHOS {
 namespace StorageManager {
 class StorageManagerStub : public IRemoteStub<IStorageManager> {
 public:
+    StorageManagerStub();
+    virtual ~StorageManagerStub() = default;
     int32_t OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option) override;
 
 private:
+    using ManagerInterface = int32_t (StorageManagerStub::*)(MessageParcel &data, MessageParcel &reply);
+    std::map<uint32_t, ManagerInterface> opToInterfaceMap_;
+    
     int32_t HandlePrepareAddUser(MessageParcel &data, MessageParcel &reply);
     int32_t HandleRemoveUser(MessageParcel &data, MessageParcel &reply);
     int32_t HandlePrepareStartUser(MessageParcel &data, MessageParcel &reply);
