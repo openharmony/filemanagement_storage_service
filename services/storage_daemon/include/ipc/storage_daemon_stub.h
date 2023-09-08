@@ -16,6 +16,7 @@
 #ifndef OHOS_STORAGE_DAEMON_STORAGE_DAEMON_STUB_H
 #define OHOS_STORAGE_DAEMON_STORAGE_DAEMON_STUB_H
 
+#include <map>
 #include "iremote_stub.h"
 #include "ipc/istorage_daemon.h"
 
@@ -23,13 +24,17 @@ namespace OHOS {
 namespace StorageDaemon {
 constexpr int UID_ROOT = 0;
 constexpr int UID_STORAGEMANAGER = 1090;
-class StorageDaemonStub : public IRemoteStub<IStorageDaemon> {
+class __attribute__ ((visibility("default"))) StorageDaemonStub : public IRemoteStub<IStorageDaemon> {
 public:
-    virtual int32_t OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
+    StorageDaemonStub();
+    virtual ~StorageDaemonStub() = default;
+    int32_t OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
         MessageOption &option) override;
 
 private:
-    int32_t HandleShutdown();
+    using DaemonInterface = int32_t (StorageDaemonStub::*)(MessageParcel &data, MessageParcel &reply);
+    std::map<uint32_t, DaemonInterface> opToInterfaceMap_;
+    int32_t HandleShutdown(MessageParcel &data, MessageParcel &reply);
 
     int32_t HandleMount(MessageParcel &data, MessageParcel &reply);
     int32_t HandleUMount(MessageParcel &data, MessageParcel &reply);

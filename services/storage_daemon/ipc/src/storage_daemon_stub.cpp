@@ -21,99 +21,76 @@
 #include "string_ex.h"
 
 namespace OHOS {
+using namespace std;
 namespace StorageDaemon {
 
-int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
-                                           MessageParcel &reply, MessageOption &option)
+StorageDaemonStub::StorageDaemonStub()
 {
-    auto remoteDescriptor = data.ReadInterfaceToken();
-    if (GetDescriptor() != remoteDescriptor) {
-        return E_PERMISSION_DENIED;
-    }
-
-    LOGI("recv remote request code %{public}u", code);
-    int err = E_OK;
-    switch (code) {
-        case static_cast<int32_t>(StorageDaemonInterfaceCode::SHUTDOWN):
-            err = HandleShutdown();
-            break;
-        case static_cast<int32_t>(StorageDaemonInterfaceCode::CHECK):
-            err = HandleCheck(data, reply);
-            break;
-        case static_cast<int32_t>(StorageDaemonInterfaceCode::MOUNT):
-            err = HandleMount(data, reply);
-            break;
-        case static_cast<int32_t>(StorageDaemonInterfaceCode::UMOUNT):
-            err =HandleUMount(data, reply);
-            break;
-        case static_cast<int32_t>(StorageDaemonInterfaceCode::PARTITION):
-            err = HandlePartition(data, reply);
-            break;
-        case static_cast<int32_t>(StorageDaemonInterfaceCode::FORMAT):
-            err = HandleFormat(data, reply);
-            break;
-        case static_cast<int32_t>(StorageDaemonInterfaceCode::SET_VOL_DESC):
-            err = HandleSetVolDesc(data, reply);
-            break;
-        case static_cast<int32_t>(StorageDaemonInterfaceCode::PREPARE_USER_DIRS):
-            err = HandlePrepareUserDirs(data, reply);
-            break;
-        case static_cast<int32_t>(StorageDaemonInterfaceCode::DESTROY_USER_DIRS):
-            err = HandleDestroyUserDirs(data, reply);
-            break;
-        case static_cast<int32_t>(StorageDaemonInterfaceCode::START_USER):
-            err = HandleStartUser(data,  reply);
-            break;
-        case static_cast<int32_t>(StorageDaemonInterfaceCode::STOP_USER):
-            err = HandleStopUser(data, reply);
-            break;
-        case static_cast<int32_t>(StorageDaemonInterfaceCode::INIT_GLOBAL_KEY):
-            err = HandleInitGlobalKey(data, reply);
-            break;
-        case static_cast<int32_t>(StorageDaemonInterfaceCode::INIT_GLOBAL_USER_KEYS):
-            err = HandleInitGlobalUserKeys(data, reply);
-            break;
-        case static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_USER_KEYS):
-            err = HandleGenerateUserKeys(data, reply);
-            break;
-        case static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_USER_KEYS):
-            err = HandleDeleteUserKeys(data, reply);
-            break;
-        case static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_USER_AUTH):
-            err = HandleUpdateUserAuth(data, reply);
-            break;
-        case static_cast<int32_t>(StorageDaemonInterfaceCode::ACTIVE_USER_KEY):
-            err = HandleActiveUserKey(data, reply);
-            break;
-        case static_cast<int32_t>(StorageDaemonInterfaceCode::INACTIVE_USER_KEY):
-            err = HandleInactiveUserKey(data, reply);
-            break;
-        case static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_KEY_CONTEXT):
-            err = HandleUpdateKeyContext(data, reply);
-            break;
-        case static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_SHARE_FILE):
-            err = HandleCreateShareFile(data, reply);
-            break;
-        case static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_SHARE_FILE):
-            err = HandleDeleteShareFile(data, reply);
-            break;
-        case static_cast<int32_t>(StorageDaemonInterfaceCode::SET_BUNDLE_QUOTA):
-            err = HandleSetBundleQuota(data, reply);
-            break;
-        case static_cast<int32_t>(StorageDaemonInterfaceCode::GET_SPACE):
-            err = HandleGetOccupiedSpace(data, reply);
-            break;
-        default: {
-            LOGI(" use IPCObjectStub default OnRemoteRequest");
-            err = IPCObjectStub::OnRemoteRequest(code, data, reply, option);
-            break;
-        }
-    }
-
-    return err;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::SHUTDOWN)] =
+        &StorageDaemonStub::HandleShutdown;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::CHECK)] =
+        &StorageDaemonStub::HandleCheck;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::MOUNT)] =
+        &StorageDaemonStub::HandleMount;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::UMOUNT)] =
+        &StorageDaemonStub::HandleUMount;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::PARTITION)] =
+        &StorageDaemonStub::HandlePartition;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::FORMAT)] =
+        &StorageDaemonStub::HandleFormat;  
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::SET_VOL_DESC)] =
+        &StorageDaemonStub::HandleSetVolDesc;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::PREPARE_USER_DIRS)] =
+        &StorageDaemonStub::HandlePrepareUserDirs;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::DESTROY_USER_DIRS)] =
+        &StorageDaemonStub::HandleDestroyUserDirs;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::START_USER)] =
+        &StorageDaemonStub::HandleStartUser;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::STOP_USER)] =
+        &StorageDaemonStub::HandleStopUser;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::INIT_GLOBAL_KEY)] =
+        &StorageDaemonStub::HandleInitGlobalKey;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::INIT_GLOBAL_USER_KEYS)] =
+        &StorageDaemonStub::HandleInitGlobalUserKeys;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::CREATE_USER_KEYS)] =
+        &StorageDaemonStub::HandleGenerateUserKeys;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::DELETE_USER_KEYS)] =
+        &StorageDaemonStub::HandleDeleteUserKeys;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::UPDATE_USER_AUTH)] =
+        &StorageDaemonStub::HandleUpdateUserAuth;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::ACTIVE_USER_KEY)] =
+        &StorageDaemonStub::HandleActiveUserKey;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::INACTIVE_USER_KEY)] =
+        &StorageDaemonStub::HandleInactiveUserKey;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::UPDATE_KEY_CONTEXT)] =
+        &StorageDaemonStub::HandleUpdateKeyContext;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::CREATE_SHARE_FILE)] =
+        &StorageDaemonStub::HandleCreateShareFile;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::DELETE_SHARE_FILE)] =
+        &StorageDaemonStub::HandleDeleteShareFile;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::SET_BUNDLE_QUOTA)] =
+        &StorageDaemonStub::HandleSetBundleQuota;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_SPACE)] =
+        &StorageDaemonStub::HandleGetOccupiedSpace;
 }
 
-int32_t StorageDaemonStub::HandleShutdown()
+int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, 
+                                           MessageParcel &data,
+                                           MessageParcel &reply,
+                                           MessageOption &option)
+{
+    if(data.ReadInterfaceToken() != GetDescriptor()) {
+        return E_PERMISSION_DENIED;
+    }
+    auto interfaceIndex = opToInterfaceMap_.find(code);
+    if(interfaceIndex == opToInterfaceMap_.end() || !interfaceIndex->second) {
+        LOGE("Cannot response request %d: unknown tranction", code);
+        return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
+    }
+    return (this->*(interfaceIndex->second))(data, reply);
+}
+
+int32_t StorageDaemonStub::HandleShutdown(MessageParcel &data, MessageParcel &reply)
 {
     Shutdown();
     return E_OK;
