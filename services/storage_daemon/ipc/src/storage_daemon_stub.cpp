@@ -37,7 +37,7 @@ StorageDaemonStub::StorageDaemonStub()
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::PARTITION)] =
         &StorageDaemonStub::HandlePartition;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::FORMAT)] =
-        &StorageDaemonStub::HandleFormat; 
+        &StorageDaemonStub::HandleFormat;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::SET_VOL_DESC)] =
         &StorageDaemonStub::HandleSetVolDesc;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::PREPARE_USER_DIRS)] =
