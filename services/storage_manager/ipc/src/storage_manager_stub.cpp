@@ -22,6 +22,8 @@
 
 namespace OHOS {
 namespace StorageManager {
+using namespace std;
+
 constexpr pid_t ACCOUNT_UID = 3058;
 const std::string PERMISSION_STORAGE_MANAGER = "ohos.permission.STORAGE_MANAGER";
 const std::string PERMISSION_MOUNT_MANAGER = "ohos.permission.MOUNT_UNMOUNT_MANAGER";
@@ -45,134 +47,97 @@ bool CheckClientPermission(const std::string& permissionStr)
     LOGE("StorageManager permissionCheck error, need %{public}s", permissionStr.c_str());
     return false;
 }
+
+StorageManagerStub::StorageManagerStub()
+{
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::PREPARE_ADD_USER)] =
+        &StorageManagerStub::HandlePrepareAddUser;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::REMOVE_USER)] =
+        &StorageManagerStub::HandleRemoveUser;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::PREPARE_START_USER)] =
+        &StorageManagerStub::HandlePrepareStartUser;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::STOP_USER)] =
+        &StorageManagerStub::HandleStopUser;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_TOTAL)] =
+        &StorageManagerStub::HandleGetTotal;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_FREE)] =
+        &StorageManagerStub::HandleGetFree;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_SYSTEM_SIZE)] =
+        &StorageManagerStub::HandleGetSystemSize;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_TOTAL_SIZE)] =
+        &StorageManagerStub::HandleGetTotalSize;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_FREE_SIZE)] =
+        &StorageManagerStub::HandleGetFreeSize;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_CURR_USER_STATS)] =
+        &StorageManagerStub::HandleGetCurrUserStorageStats;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_USER_STATS)] =
+        &StorageManagerStub::HandleGetUserStorageStats;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_CURR_BUNDLE_STATS)] =
+        &StorageManagerStub::HandleGetCurrentBundleStats;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_BUNDLE_STATUS)] =
+        &StorageManagerStub::HandleGetBundleStatus;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::NOTIFY_VOLUME_CREATED)] =
+        &StorageManagerStub::HandleNotifyVolumeCreated;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::NOTIFY_VOLUME_MOUNTED)] =
+        &StorageManagerStub::HandleNotifyVolumeMounted;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::NOTIFY_VOLUME_STATE_CHANGED)] =
+        &StorageManagerStub::HandleNotifyVolumeStateChanged;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::MOUNT)] =
+        &StorageManagerStub::HandleMount;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::UNMOUNT)] =
+        &StorageManagerStub::HandleUnmount;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_ALL_VOLUMES)] =
+        &StorageManagerStub::HandleGetAllVolumes;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::NOTIFY_DISK_CREATED)] =
+        &StorageManagerStub::HandleNotifyDiskCreated;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::NOTIFY_DISK_DESTROYED)] =
+        &StorageManagerStub::HandleNotifyDiskDestroyed;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::PARTITION)] =
+        &StorageManagerStub::HandlePartition;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_ALL_DISKS)] =
+        &StorageManagerStub::HandleGetAllDisks;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_VOL_BY_UUID)] =
+        &StorageManagerStub::HandleGetVolumeByUuid;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_VOL_BY_ID)] =
+        &StorageManagerStub::HandleGetVolumeById;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::SET_VOL_DESC)] =
+        &StorageManagerStub::HandleSetVolDesc;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::FORMAT)] =
+        &StorageManagerStub::HandleFormat;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_DISK_BY_ID)] =
+        &StorageManagerStub::HandleGetDiskById;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::CREATE_USER_KEYS)] =
+        &StorageManagerStub::HandleGenerateUserKeys;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::DELETE_USER_KEYS)] =
+        &StorageManagerStub::HandleDeleteUserKeys;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::UPDATE_USER_AUTH)] =
+        &StorageManagerStub::HandleUpdateUserAuth;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::ACTIVE_USER_KEY)] =
+        &StorageManagerStub::HandleActiveUserKey;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::INACTIVE_USER_KEY)] =
+        &StorageManagerStub::HandleInactiveUserKey;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::UPDATE_KEY_CONTEXT)] =
+        &StorageManagerStub::HandleUpdateKeyContext;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::CREATE_SHARE_FILE)] =
+        &StorageManagerStub::HandleCreateShareFile;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::DELETE_SHARE_FILE)] =
+        &StorageManagerStub::HandleDeleteShareFile;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::SET_BUNDLE_QUOTA)] =
+        &StorageManagerStub::HandleSetBundleQuota;
+}
+
 int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
     MessageParcel &data, MessageParcel &reply, MessageOption &option)
 {
-    auto remoteDescriptor = data.ReadInterfaceToken();
-    if (GetDescriptor() != remoteDescriptor) {
+    if (data.ReadInterfaceToken() != GetDescriptor()) {
         return E_PERMISSION_DENIED;
     }
-
-    int err = 0;
-    switch (code) {
-        case static_cast<int32_t>(StorageManagerInterfaceCode::PREPARE_ADD_USER):
-            err = HandlePrepareAddUser(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::REMOVE_USER):
-            err = HandleRemoveUser(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::PREPARE_START_USER):
-            err = HandlePrepareStartUser(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::STOP_USER):
-            err = HandleStopUser(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::GET_TOTAL):
-            err = HandleGetTotal(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::GET_FREE):
-            err = HandleGetFree(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::GET_SYSTEM_SIZE):
-            err = HandleGetSystemSize(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::GET_TOTAL_SIZE):
-            err = HandleGetTotalSize(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::GET_FREE_SIZE):
-            err = HandleGetFreeSize(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::GET_CURR_USER_STATS):
-            err = HandleGetCurrUserStorageStats(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::GET_USER_STATS):
-            err = HandleGetUserStorageStats(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::GET_CURR_BUNDLE_STATS):
-            err = HandleGetCurrentBundleStats(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::GET_BUNDLE_STATUS):
-            err = HandleGetBundleStatus(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_VOLUME_CREATED):
-            err = HandleNotifyVolumeCreated(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_VOLUME_MOUNTED):
-            err = HandleNotifyVolumeMounted(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_VOLUME_STATE_CHANGED):
-            err = HandleNotifyVolumeStateChanged(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::MOUNT):
-            err = HandleMount(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::UNMOUNT):
-            err = HandleUnmount(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::GET_ALL_VOLUMES):
-            err = HandleGetAllVolumes(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_DISK_CREATED):
-            err = HandleNotifyDiskCreated(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_DISK_DESTROYED):
-            err = HandleNotifyDiskDestroyed(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::PARTITION):
-            err = HandlePartition(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::GET_ALL_DISKS):
-            err = HandleGetAllDisks(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::GET_VOL_BY_UUID):
-            err = HandleGetVolumeByUuid(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::GET_VOL_BY_ID):
-            err = HandleGetVolumeById(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::SET_VOL_DESC):
-            err = HandleSetVolDesc(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::FORMAT):
-            err = HandleFormat(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::GET_DISK_BY_ID):
-            err = HandleGetDiskById(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::CREATE_USER_KEYS):
-            err = HandleGenerateUserKeys(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::DELETE_USER_KEYS):
-            err = HandleDeleteUserKeys(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::UPDATE_USER_AUTH):
-            err = HandleUpdateUserAuth(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::ACTIVE_USER_KEY):
-            err = HandleActiveUserKey(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::INACTIVE_USER_KEY):
-            err = HandleInactiveUserKey(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::UPDATE_KEY_CONTEXT):
-            err = HandleUpdateKeyContext(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::CREATE_SHARE_FILE):
-            err = HandleCreateShareFile(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::DELETE_SHARE_FILE):
-            err = HandleDeleteShareFile(data, reply);
-            break;
-        case static_cast<int32_t>(StorageManagerInterfaceCode::SET_BUNDLE_QUOTA):
-            err = HandleSetBundleQuota(data, reply);
-            break;
-        default: {
-            LOGI("use IPCObjectStub default OnRemoteRequest");
-            err = IPCObjectStub::OnRemoteRequest(code, data, reply, option);
-            break;
-        }
+    auto interfaceIndex = opToInterfaceMap_.find(code);
+    if (interfaceIndex == opToInterfaceMap_.end() || !interfaceIndex->second) {
+        LOGE("Cannot response request %d: unknown tranction", code);
+        return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
     }
-    return err;
+    return (this->*(interfaceIndex->second))(data, reply);
 }
 
 int32_t StorageManagerStub::HandlePrepareAddUser(MessageParcel &data, MessageParcel &reply)
