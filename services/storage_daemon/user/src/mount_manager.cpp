@@ -303,12 +303,12 @@ int32_t MountManager::CloudUMount(int32_t userId)
     Utils::MountArgument cloudMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
     const string path = cloudMntArgs.GetFullCloud();
 
-    err = UMount(path);
+    err = UMount2(path, MNT_DETACH);
     if (err != E_OK) {
-        LOGE("fuse umount failed, errno %{public}d, fuse dst %{public}s", errno, path.c_str());
+        LOGE("fuse umount2 failed, errno %{public}d, fuse dst %{public}s", errno, path.c_str());
         return E_UMOUNT;
     }
-    LOGI("umount %{public}s success", path.c_str());
+    LOGI("umount2 %{public}s success", path.c_str());
     return E_OK;
 #else
     return E_OK;
