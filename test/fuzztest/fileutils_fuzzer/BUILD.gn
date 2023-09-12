@@ -16,7 +16,7 @@ import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ohos_fuzztest("FileUtilsFuzzTest") {
-  module_out_path = "filemanagement/storage_service"
+  module_out_path = "storage_service/storage_service"
   fuzz_config_file = "${storage_service_path}/test/fuzztest/fileutils_fuzzer"
   include_dirs = [ "${storage_daemon_path}/include" ]
   cflags = [
