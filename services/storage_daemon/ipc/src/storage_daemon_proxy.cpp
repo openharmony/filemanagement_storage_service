@@ -466,37 +466,42 @@ int32_t StorageDaemonProxy::UpdateKeyContext(uint32_t userId)
     return reply.ReadInt32();
 }
 
-int32_t StorageDaemonProxy::CreateShareFile(std::string uri, uint32_t tokenId, uint32_t flag)
+std::vector<int32_t> StorageDaemonProxy::CreateShareFile(const std::vector<std::string> &uriList,
+                                                         uint32_t tokenId, uint32_t flag)
 {
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
 
     if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
-        return E_WRITE_DESCRIPTOR_ERR;
+        return std::vector<int32_t>{E_WRITE_DESCRIPTOR_ERR};
     }
 
-    if (!data.WriteString(uri)) {
-        return E_WRITE_PARCEL_ERR;
+    if (!data.WriteStringVector(uriList)) {
+        return std::vector<int32_t>{E_WRITE_PARCEL_ERR};
     }
 
     if (!data.WriteUint32(tokenId)) {
-        return E_WRITE_PARCEL_ERR;
+        return std::vector<int32_t>{E_WRITE_PARCEL_ERR};
     }
 
     if (!data.WriteUint32(flag)) {
-        return E_WRITE_PARCEL_ERR;
+        return std::vector<int32_t>{E_WRITE_PARCEL_ERR};
     }
 
     int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_SHARE_FILE), data, reply, option);
     if (err != E_OK) {
-        return err;
+        return std::vector<int32_t>{err};
     }
 
-    return reply.ReadInt32();
+    std::vector<int32_t> retList;
+    if (!reply.ReadInt32Vector(&retList)) {
+        return std::vector<int32_t>{E_WRITE_PARCEL_ERR};
+    };
+    return retList;
 }
 
-int32_t StorageDaemonProxy::DeleteShareFile(uint32_t tokenId, std::vector<std::string>sharePathList)
+int32_t StorageDaemonProxy::DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList)
 {
     MessageParcel data;
     MessageParcel reply;
@@ -510,7 +515,7 @@ int32_t StorageDaemonProxy::DeleteShareFile(uint32_t tokenId, std::vector<std::s
         return E_WRITE_PARCEL_ERR;
     }
 
-    if (!data.WriteStringVector(sharePathList)) {
+    if (!data.WriteStringVector(uriList)) {
         return E_WRITE_PARCEL_ERR;
     }
 

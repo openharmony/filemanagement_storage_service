@@ -57,8 +57,8 @@ public:
     int32_t ResetSdProxy();
 
     // app file share api
-    int32_t CreateShareFile(std::string uri, uint32_t tokenId, uint32_t flag);
-    int32_t DeleteShareFile(uint32_t tokenId, std::vector<std::string> sharePathList);
+    std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList, uint32_t tokenId, uint32_t flag);
+    int32_t DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList);
 
     int32_t SetBundleQuota(const std::string &bundleName, int32_t uid, const std::string &bundleDataDirPath,
         int32_t limitSizeMb);

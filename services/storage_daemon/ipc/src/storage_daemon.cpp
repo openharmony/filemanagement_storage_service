@@ -47,8 +47,8 @@ namespace StorageDaemon {
 using namespace OHOS::FileManagement::CloudFile;
 #endif
 
-typedef int32_t (*CreateShareFileFunc)(std::string, uint32_t, uint32_t);
-typedef int32_t (*DeleteShareFileFunc)(uint32_t, std::vector<std::string>);
+typedef int32_t (*CreateShareFileFunc)(const std::vector<std::string> &, uint32_t, uint32_t, std::vector<int32_t> &);
+typedef int32_t (*DeleteShareFileFunc)(uint32_t, const std::vector<std::string> &);
 int32_t StorageDaemon::Shutdown()
 {
     return E_OK;
@@ -336,12 +336,13 @@ int32_t StorageDaemon::UpdateKeyContext(uint32_t userId)
 #endif
 }
 
-int32_t StorageDaemon::CreateShareFile(std::string uri, uint32_t tokenId, uint32_t flag)
+std::vector<int32_t> StorageDaemon::CreateShareFile(const std::vector<std::string> &uriList,
+                                                    uint32_t tokenId, uint32_t flag)
 {
     void *dlhandler = dlopen("libfileshare_native.z.so", RTLD_LAZY);
     if (dlhandler == NULL) {
         LOGE("CreateShareFile cannot open so, errno = %{public}s", dlerror());
-        return E_ERR;
+        return std::vector<int32_t>{E_ERR};
     }
     CreateShareFileFunc createShareFile = nullptr;
     createShareFile = reinterpret_cast<CreateShareFileFunc>(dlsym(dlhandler, "CreateShareFile"));
@@ -350,16 +351,18 @@ int32_t StorageDaemon::CreateShareFile(std::string uri, uint32_t tokenId, uint32
 #ifndef STORAGE_DAEMON_FUZZ_TEST
         dlclose(dlhandler);
 #endif
-        return E_ERR;
+        return std::vector<int32_t>{E_ERR};
     }
-    int ret = createShareFile(uri, tokenId, flag);
+    LOGI("Create Share file list len is %{public}d", uriList.size());
+    std::vector<int32_t> retList;
+    createShareFile(uriList, tokenId, flag, retList);
 #ifndef STORAGE_DAEMON_FUZZ_TEST
     dlclose(dlhandler);
 #endif
-    return ret;
+    return retList;
 }
 
-int32_t StorageDaemon::DeleteShareFile(uint32_t tokenId, std::vector<std::string>sharePathList)
+int32_t StorageDaemon::DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList)
 {
     void *dlhandler = dlopen("libfileshare_native.z.so", RTLD_LAZY);
     if (dlhandler == NULL) {
@@ -375,7 +378,7 @@ int32_t StorageDaemon::DeleteShareFile(uint32_t tokenId, std::vector<std::string
 #endif
         return E_ERR;
     }
-    int32_t ret = deleteShareFile(tokenId, sharePathList);
+    int32_t ret = deleteShareFile(tokenId, uriList);
 #ifndef STORAGE_DAEMON_FUZZ_TEST
     dlclose(dlhandler);
 #endif
