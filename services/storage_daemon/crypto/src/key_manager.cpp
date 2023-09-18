@@ -487,6 +487,10 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::vector<uint8_t> &tok
     }
 
     std::shared_ptr<BaseKey> elKey = GetBaseKey(keyDir);
+    if (elKey == nullptr) {
+        LOGE("elKey failed");
+        return -EOPNOTSUPP;
+    }
     if (elKey->InitKey() == false) {
         LOGE("Init el failed");
         return -EFAULT;
@@ -595,6 +599,10 @@ int KeyManager::UpgradeKeys(const std::vector<FileList> &dirInfo)
 {
     for (const auto &it : dirInfo) {
         std::shared_ptr<BaseKey> elKey = GetBaseKey(it.path);
+        if (elKey == nullptr) {
+            LOGE("elKel feiled");
+            continue;
+        }
         elKey->UpgradeKeys();
     }
     return 0;
