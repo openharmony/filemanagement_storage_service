@@ -132,6 +132,9 @@ int32_t UserManager::DestroyUserDirs(int32_t userId, uint32_t flags)
         err = MountManager::GetInstance()->DestroyHmdfsDirs(userId);
         ret = (err != E_OK) ? err : ret;
 
+        err = MountManager::GetInstance()->DestroySystemServiceDirs(userId);
+        ret = (err != E_OK) ? err : ret;
+
         err = DestroyEl2BackupDir(userId);
         ret = (err != E_OK) ? err : ret;
     }

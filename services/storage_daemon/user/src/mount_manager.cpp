@@ -72,6 +72,7 @@ MountManager::MountManager()
                   {"/mnt/hmdfs/%d/", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/%d/account", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/%d/non_account", 0711, OID_ROOT, OID_ROOT}},
+      systemServiceDir_{{"/data/service/el2/%d/tee", 0711, OID_TEE, OID_TEE}},
       fileManagerDir_{{"/data/service/el2/%d/hmdfs/account/files/Documents", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
                    {"/data/service/el2/%d/hmdfs/account/files/Download", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
                    {"/data/service/el2/%d/hmdfs/account/files/Desktop", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
@@ -381,6 +382,11 @@ int32_t MountManager::MountByUser(int32_t userId)
         return ret;
     }
     SetFafQuotaProId(userId);
+
+    if (CreateSystemServiceDirs(userId) != E_OK) {
+        LOGE("create system service dir error");
+        return E_PREPARE_DIR;
+    }
     return E_OK;
 }
 
@@ -484,6 +490,32 @@ int32_t MountManager::CreateVirtualDirs(int32_t userId)
     }
 
     return E_OK;
+}
+
+int32_t MountManager::CreateSystemServiceDirs(int32_t userId)
+{
+    int32_t err = E_OK;
+    for (const DirInfo &dir : systemServiceDir_) {
+        std::string path = StringPrintf(dir.path.c_str(), userId);
+        if (!PrepareDir(path, dir.mode, dir.uid, dir.gid)) {
+            LOGE("failed to prepareDir %{public}s ", path.c_str());
+            err = E_PREPARE_DIR;
+        }
+    }
+    return err;
+}
+
+int32_t MountManager::DestroySystemServiceDirs(int32_t userId)
+{
+    int32_t err = E_OK;
+    for (const DirInfo &dir : systemServiceDir_) {
+        std::string path = StringPrintf(dir.path.c_str(), userId);
+        if (!RmDirRecurse(path)) {
+            LOGE("failed to RmDirRecurse %{public}s ", path.c_str());
+            err = E_DESTROY_DIR;
+        }
+    }
+    return E_DESTROY_DIR;
 }
 
 int32_t MountManager::DestroyHmdfsDirs(int32_t userId)

@@ -38,6 +38,7 @@ constexpr uid_t OID_USER_DATA_RW = 1008;
 constexpr uid_t OID_DFS = 1009;
 constexpr uid_t OID_BACKUP = 1089;
 constexpr uid_t OID_DFS_SHARE = 3822;
+constexpr uid_t OID_TEE = 6668;
 
 class MountManager final {
 public:
@@ -50,6 +51,7 @@ public:
     int32_t PrepareFileManagerDirs(int32_t userId);
     int32_t DestroyHmdfsDirs(int32_t userId);
     int32_t DestroyFileManagerDirs(int32_t userId);
+    int32_t DestroySystemServiceDirs(int32_t userId);
     int32_t CloudMount(int32_t userId);
     void SetCloudState(bool active);
 
@@ -67,6 +69,7 @@ private:
     int32_t LocalMount(int32_t userId);
     int32_t LocalUMount(int32_t userId);
     int32_t SetFafQuotaProId(int32_t userId);
+    int32_t CreateSystemServiceDirs(int32_t userId);
     void MountCloudForUsers(void);
     void UMountCloudForUsers(void);
     void PrepareFileManagerDir(int32_t userId);
@@ -77,6 +80,7 @@ private:
     static std::shared_ptr<MountManager> instance_;
     const std::vector<DirInfo> hmdfsDirVec_;
     const std::vector<DirInfo> virtualDir_;
+    const std::vector<DirInfo> systemServiceDir_;
     const std::vector<DirInfo> fileManagerDir_;
     std::mutex mountMutex_;
     std::vector<int32_t> fuseToMountUsers_;
