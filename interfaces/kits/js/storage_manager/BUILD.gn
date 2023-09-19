@@ -14,11 +14,6 @@
 import("//build/ohos.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
-js_declaration("storagestatistics_js") {
-  part_name = "storage_service"
-  sources = [ "./@ohos.file.storageStatistics.d.ts" ]
-}
-
 ohos_shared_library("storagestatistics") {
   relative_install_dir = "module/file"
   subsystem_name = "filemanagement"
@@ -55,11 +50,6 @@ ohos_shared_library("storagestatistics") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
-}
-
-js_declaration("volumemanager_js") {
-  part_name = "storage_service"
-  sources = [ "./@ohos.file.volumeManager.d.ts" ]
 }
 
 ohos_shared_library("volumemanager") {
@@ -103,8 +93,6 @@ ohos_shared_library("volumemanager") {
 group("storage_js") {
   deps = [
     ":storagestatistics",
-    ":storagestatistics_js",
     ":volumemanager",
-    ":volumemanager_js",
   ]
 }
