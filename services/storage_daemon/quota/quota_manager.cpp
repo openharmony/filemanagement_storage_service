@@ -219,10 +219,16 @@ int32_t QuotaManager::SetBundleQuota(const std::string &bundleName, int32_t uid,
     }
 }
 
-int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int64_t prjId, bool inherit)
+int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int32_t prjId, bool inherit)
 {
     struct fsxattr fsx;
-    int fd = open(path.c_str(), O_RDONLY | O_CLOEXEC);
+    char *realPath = realpath(path.c_str(), NULL);
+    if (realPath == NULL) {
+        LOGE("realpath failed");
+        return E_SYS_CALL;
+    }
+
+    int fd = open(realPath, O_RDONLY | O_CLOEXEC);
     if (fd < 0) {
         LOGE("Failed to open %{public}s, errno: %{public}d", path.c_str(), errno);
         return E_SYS_CALL;
@@ -231,7 +237,7 @@ int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int64_t prjId, bool
         LOGE("Failed to get extended attributes of %{public}s, errno: %{public}d", path.c_str(), errno);
         return E_SYS_CALL;
     }
-    fsx.fsx_projid = prjId;
+    fsx.fsx_projid = static_cast<uint32_t>(prjId);
     if (ioctl(fd, FS_IOC_FSSETXATTR, &fsx) == -1) {
         LOGE("Failed to set project id for %{public}s, errno: %{public}d", path.c_str(), errno);
         return E_SYS_CALL;
