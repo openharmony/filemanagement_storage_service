@@ -21,8 +21,8 @@ config("fscrypt_utils_config") {
     "../include/libfscrypt",
     "${start_init_interfaces_path}/innerkits/include",
     "${start_init_services_path}/log",
-    "${start_init_services_path}/include",
-    "${start_init_services_path}/include/param",
+    "${start_init_interfaces_path}/innerkits/include",
+    "${start_init_interfaces_path}/innerkits/include/param",
   ]
 
   cflags = [
