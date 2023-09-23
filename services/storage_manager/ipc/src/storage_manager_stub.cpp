@@ -707,11 +707,14 @@ int32_t StorageManagerStub::HandleCreateShareFile(MessageParcel &data, MessagePa
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    std::string uri = data.ReadString();
+    std::vector<std::string> uriList;
+    if (!data.ReadStringVector(&uriList)) {
+        return E_WRITE_REPLY_ERR;
+    }
     uint32_t tokenId = data.ReadUint32();
     uint32_t flag = data.ReadUint32();
-    int err = CreateShareFile(uri, tokenId, flag);
-    if (!reply.WriteInt32(err)) {
+    std::vector<int32_t> retList = CreateShareFile(uriList, tokenId, flag);
+    if (!reply.WriteInt32Vector(retList)) {
         return E_WRITE_REPLY_ERR;
     }
     return E_OK;
@@ -723,12 +726,12 @@ int32_t StorageManagerStub::HandleDeleteShareFile(MessageParcel &data, MessagePa
         return E_PERMISSION_DENIED;
     }
     uint32_t tokenId = data.ReadUint32();
-    std::vector<std::string> sharePathList;
-    if (!data.ReadStringVector(&sharePathList)) {
+    std::vector<std::string> uriList;
+    if (!data.ReadStringVector(&uriList)) {
         return E_WRITE_REPLY_ERR;
     }
 
-    int err = DeleteShareFile(tokenId, sharePathList);
+    int err = DeleteShareFile(tokenId, uriList);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }

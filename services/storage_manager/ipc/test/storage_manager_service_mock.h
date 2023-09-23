@@ -211,12 +211,13 @@ public:
         return E_OK;
     }
 
-    virtual int32_t CreateShareFile(std::string uri, uint32_t tokenId, uint32_t flag) override
+    virtual std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,
+                                                uint32_t tokenId, uint32_t flag) override
     {
-        return E_OK;
+        return std::vector<int32_t>{E_OK};
     }
 
-    virtual int32_t DeleteShareFile(uint32_t tokenId, std::vector<std::string>sharePathList) override
+    virtual int32_t DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList) override
     {
         return E_OK;
     }

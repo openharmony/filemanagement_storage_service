@@ -918,8 +918,11 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_CreateShareFile_0000, te
     std::string uri = "file://com.demo.a/storage/share/files/test.txt";
     uint32_t tokenId = 100;
     uint32_t flag = 0;
-    int64_t result = proxy_->CreateShareFile(uri, tokenId, flag);
-    EXPECT_EQ(result, E_OK);
+    vector<string> uriList(1, uri);
+    vector<int32_t> retList = proxy_->CreateShareFile(uriList, tokenId, flag);
+    for (const auto &ret : retList) {
+        EXPECT_EQ(ret, E_OK);
+    }
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_CreateShareFile_0000";
 }
 
@@ -941,8 +944,11 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_CreateShareFile_0100, te
     std::string uri = "file://com.demo.a/storage/share/files/test.txt";
     uint32_t tokenId = 100;
     uint32_t flag = 0;
-    int64_t result = proxy_->CreateShareFile(uri, tokenId, flag);
-    EXPECT_EQ(result, E_WRITE_DESCRIPTOR_ERR);
+    vector<string> uriList(1, uri);
+    vector<int32_t> retList = proxy_->CreateShareFile(uriList, tokenId, flag);
+    for (const auto &ret : retList) {
+        EXPECT_EQ(ret, E_WRITE_DESCRIPTOR_ERR);
+    }
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_CreateShareFile_0100";
 }
 
