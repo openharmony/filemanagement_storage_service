@@ -22,7 +22,7 @@ namespace StorageService {
 const int START_USER_ID = 100;
 const int MAX_USER_ID = 1099;
 const int UID_FILE_MANAGER = 1006;
-const int64_t USER_CONST = 10000;
+const int32_t USER_CONST = 10000;
 }
 
 namespace StorageDaemon {

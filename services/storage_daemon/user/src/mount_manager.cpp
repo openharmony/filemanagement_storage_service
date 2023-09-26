@@ -507,12 +507,12 @@ int32_t MountManager::CreateSystemServiceDirs(int32_t userId)
 
 int32_t MountManager::DestroySystemServiceDirs(int32_t userId)
 {
-    int32_t err = E_OK;
+    bool err = true;
     for (const DirInfo &dir : systemServiceDir_) {
         std::string path = StringPrintf(dir.path.c_str(), userId);
         if (!RmDirRecurse(path)) {
             LOGE("failed to RmDirRecurse %{public}s ", path.c_str());
-            err = E_DESTROY_DIR;
+            err &= E_DESTROY_DIR;
         }
     }
     return E_DESTROY_DIR;
@@ -524,7 +524,7 @@ int32_t MountManager::DestroyHmdfsDirs(int32_t userId)
 
     for (const DirInfo &dir : hmdfsDirVec_) {
         if (IsEndWith(dir.path.c_str(), "%d")) {
-            err = RmDirRecurse(StringPrintf(dir.path.c_str(), userId));
+            err &= RmDirRecurse(StringPrintf(dir.path.c_str(), userId));
         }
     }
 
@@ -538,7 +538,7 @@ int32_t MountManager::DestroyFileManagerDirs(int32_t userId)
 
     for (const DirInfo &dir : fileManagerDir_) {
         if (IsEndWith(dir.path.c_str(), "%d")) {
-            err = RmDirRecurse(StringPrintf(dir.path.c_str(), userId));
+            err &= RmDirRecurse(StringPrintf(dir.path.c_str(), userId));
         }
     }
 
@@ -548,7 +548,7 @@ int32_t MountManager::DestroyFileManagerDirs(int32_t userId)
 
 int32_t MountManager::SetFafQuotaProId(int32_t userId)
 {
-    int64_t prjId = userId * USER_CONST + UID_FILE_MANAGER;
+    int32_t prjId = userId * USER_CONST + UID_FILE_MANAGER;
     for (const DirInfo &dir: fileManagerDir_) {
         QuotaManager::GetInstance()->SetQuotaPrjId(StringPrintf(dir.path.c_str(), userId), prjId, true);
     }

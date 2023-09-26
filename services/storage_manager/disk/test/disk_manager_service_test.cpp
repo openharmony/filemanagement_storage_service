@@ -206,7 +206,7 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_GetDiskById_0001, testing:
     std::string sysPath = "/";
     std::string vendor = "vendor-6";
     int32_t flag = 1;
-    int32_t result;
+    int32_t result = E_OK;
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
     if (dmService != nullptr) {
         dmService->OnDiskCreated(disk);
@@ -237,7 +237,7 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_GetDiskById_0002, testing:
     std::string sysPath = "/";
     std::string vendor = "vendor-7";
     int32_t flag = 1;
-    int32_t result;
+    int32_t result = E_OK;
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
     if (dmService != nullptr) {
         result = dmService->GetDiskById(diskId_1, disk);
@@ -266,7 +266,7 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_Partition_0000, testing::e
     std::string vendor = "vendor-8";
     int32_t flag = 1;
     int32_t type = 1;
-    int32_t result;
+    int32_t result = E_OK;
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
     if (dmService != nullptr) {
         dmService->OnDiskCreated(disk);
@@ -297,7 +297,7 @@ HWTEST_F(DiskManagerServiceTest, Disk_manager_service_Partition_0001, testing::e
     std::string vendor = "vendor-9";
     int32_t flag = 1;
     int32_t type = 1;
-    int32_t result;
+    int32_t result = E_OK;
     Disk disk(diskId, sizeBytes, sysPath, vendor, flag);
     if (dmService != nullptr) {
         result = dmService->Partition(diskId, type);
