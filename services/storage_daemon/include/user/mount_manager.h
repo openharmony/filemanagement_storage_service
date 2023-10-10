@@ -39,6 +39,7 @@ constexpr uid_t OID_DFS = 1009;
 constexpr uid_t OID_BACKUP = 1089;
 constexpr uid_t OID_DFS_SHARE = 3822;
 constexpr uid_t OID_TEE = 6668;
+constexpr uid_t OID_DEVICE_AUTH = 3333;
 
 class MountManager final {
 public:
