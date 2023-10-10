@@ -158,7 +158,7 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
     }
 
     if (ret) {
-        LOGE("External volume DoMount error.");
+        LOGE("External volume DoMount error, errno = %{public}d", errno);
         remove(mountPath_.c_str());
         return E_MOUNT;
     }
