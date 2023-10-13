@@ -512,7 +512,7 @@ int32_t MountManager::DestroySystemServiceDirs(int32_t userId)
         std::string path = StringPrintf(dir.path.c_str(), userId);
         if (!RmDirRecurse(path)) {
             LOGE("failed to RmDirRecurse %{public}s ", path.c_str());
-            err &= E_DESTROY_DIR;
+            err = err && E_DESTROY_DIR;
         }
     }
     return E_DESTROY_DIR;
@@ -524,7 +524,7 @@ int32_t MountManager::DestroyHmdfsDirs(int32_t userId)
 
     for (const DirInfo &dir : hmdfsDirVec_) {
         if (IsEndWith(dir.path.c_str(), "%d")) {
-            err &= RmDirRecurse(StringPrintf(dir.path.c_str(), userId));
+            err = err && RmDirRecurse(StringPrintf(dir.path.c_str(), userId));
         }
     }
 
@@ -538,7 +538,7 @@ int32_t MountManager::DestroyFileManagerDirs(int32_t userId)
 
     for (const DirInfo &dir : fileManagerDir_) {
         if (IsEndWith(dir.path.c_str(), "%d")) {
-            err &= RmDirRecurse(StringPrintf(dir.path.c_str(), userId));
+            err = err && RmDirRecurse(StringPrintf(dir.path.c_str(), userId));
         }
     }
 
