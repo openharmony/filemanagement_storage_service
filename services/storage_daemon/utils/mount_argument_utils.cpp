@@ -49,10 +49,18 @@ string MountArgument::GetFullDst() const
     return ss.str();
 }
 
-string MountArgument::GetFullCloud() const
+string MountArgument::GetFullMediaCloud() const
 {
     stringstream ss;
     ss << TMPFS_MNT_DATA << userId_ << "/" << "cloud";
+
+    return ss.str();
+}
+
+string MountArgument::GetFullCloud() const
+{
+    stringstream ss;
+    ss << TMPFS_MNT_DATA << userId_ << "/" << "cloud_fuse";
 
     return ss.str();
 }
@@ -134,13 +142,16 @@ string MountArgument::OptionsToString() const
         ss << ",cache_dir=" << GetCachePath();
     }
     if (useCloudDir_) {
-        ss << ",cloud_dir=" << GetFullCloud();
+        ss << ",cloud_dir=" << GetFullMediaCloud();
     }
     if (caseSensitive_) {
         ss << ",sensitive";
     }
     if (enableMergeView_) {
         ss << ",merge";
+    }
+    if (enableCloudDisk_) {
+        ss << ",cloud_disk";
     }
     if (!enableOfflineStash_) {
         ss << ",no_offline_stash";
@@ -161,6 +172,7 @@ MountArgument MountArgumentDescriptors::Alpha(int userId, string relativePath)
         .useCache_ = true,
         .useCloudDir_ = true,
         .enableMergeView_ = true,
+        .enableCloudDisk_ = false,
         .enableFixupOwnerShip_ = false,
         .enableOfflineStash_ = true,
         .relativePath_ = relativePath,

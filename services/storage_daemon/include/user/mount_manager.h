@@ -53,14 +53,15 @@ public:
     int32_t DestroyHmdfsDirs(int32_t userId);
     int32_t DestroyFileManagerDirs(int32_t userId);
     int32_t DestroySystemServiceDirs(int32_t userId);
-    int32_t CloudMount(int32_t userId);
+    int32_t CloudMount(int32_t userId, const std::string& path);
+    int32_t CloudTwiceMount(int32_t userId);
     void SetCloudState(bool active);
 
 private:
     bool SupportHmdfs();
     int32_t CreateVirtualDirs(int32_t userId);
     int32_t HmdfsMount(int32_t userId);
-    int32_t HmdfsMount(int32_t userId, std::string relativePath);
+    int32_t HmdfsMount(int32_t userId, std::string relativePath, bool mountCloudDisk = false);
     int32_t HmdfsTwiceMount(int32_t userId, std::string relativePath);
     int32_t HmdfsUMount(int32_t userId);
     int32_t HmdfsUMount(int32_t userId, std::string relativePath);
