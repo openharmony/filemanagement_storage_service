@@ -32,6 +32,7 @@
 #include "user/user_manager.h"
 #include "user/mount_manager.h"
 #include "system_ability_definition.h"
+#include "file_share.h"
 #ifdef DFS_SERVICE
 #include "cloud_daemon_manager.h"
 #endif
@@ -339,49 +340,15 @@ int32_t StorageDaemon::UpdateKeyContext(uint32_t userId)
 std::vector<int32_t> StorageDaemon::CreateShareFile(const std::vector<std::string> &uriList,
                                                     uint32_t tokenId, uint32_t flag)
 {
-    void *dlhandler = dlopen("libfileshare_native.z.so", RTLD_LAZY);
-    if (dlhandler == NULL) {
-        LOGE("CreateShareFile cannot open so, errno = %{public}s", dlerror());
-        return std::vector<int32_t>{E_ERR};
-    }
-    CreateShareFileFunc createShareFile = nullptr;
-    createShareFile = reinterpret_cast<CreateShareFileFunc>(dlsym(dlhandler, "CreateShareFile"));
-    if (createShareFile == nullptr) {
-        LOGE("CreateShareFile dlsym failed, errno = %{public}s", dlerror());
-#ifndef STORAGE_DAEMON_FUZZ_TEST
-        dlclose(dlhandler);
-#endif
-        return std::vector<int32_t>{E_ERR};
-    }
     LOGI("Create Share file list len is %{public}d", uriList.size());
     std::vector<int32_t> retList;
-    createShareFile(uriList, tokenId, flag, retList);
-#ifndef STORAGE_DAEMON_FUZZ_TEST
-    dlclose(dlhandler);
-#endif
+    AppFileService::CreateShareFile(uriList, tokenId, flag, retList);
     return retList;
 }
 
 int32_t StorageDaemon::DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList)
 {
-    void *dlhandler = dlopen("libfileshare_native.z.so", RTLD_LAZY);
-    if (dlhandler == NULL) {
-        LOGE("DeleteShareFile cannot open so, errno = %{public}s", dlerror());
-        return E_ERR;
-    }
-    DeleteShareFileFunc deleteShareFile = nullptr;
-    deleteShareFile = reinterpret_cast<DeleteShareFileFunc>(dlsym(dlhandler, "DeleteShareFile"));
-    if (deleteShareFile == nullptr) {
-        LOGE("DeleteShareFile dlsym failed, errno = %{public}s", dlerror());
-#ifndef STORAGE_DAEMON_FUZZ_TEST
-        dlclose(dlhandler);
-#endif
-        return E_ERR;
-    }
-    int32_t ret = deleteShareFile(tokenId, uriList);
-#ifndef STORAGE_DAEMON_FUZZ_TEST
-    dlclose(dlhandler);
-#endif
+    int32_t ret = AppFileService::DeleteShareFile(tokenId, uriList);
     return ret;
 }
 

@@ -52,6 +52,7 @@ ohos_fuzztest("StorageDaemonDeleteShareFileFuzzTest") {
 
   external_deps = [
     "ability_runtime:abilitykit_native",
+    "app_file_service:fileshare_native",
     "c_utils:utils",
     "hilog:libhilog",
     "init:libbegetutil",

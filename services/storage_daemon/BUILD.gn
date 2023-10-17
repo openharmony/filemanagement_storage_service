@@ -102,6 +102,7 @@ ohos_executable("storage_daemon") {
     "ability_base:base",
     "ability_base:want",
     "ability_base:zuri",
+    "app_file_service:fileshare_native",
     "c_utils:utils",
     "hilog:libhilog",
     "init:libbegetutil",
