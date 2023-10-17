@@ -70,6 +70,7 @@ ohos_unittest("storage_daemon_test") {
     "ability_base:base",
     "ability_base:want",
     "ability_base:zuri",
+    "app_file_service:fileshare_native",
     "access_token:libaccesstoken_sdk",
     "c_utils:utils",
     "dfs_service:cloud_daemon_kit_inner",
