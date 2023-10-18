@@ -50,7 +50,8 @@
         "relational_store",
         "safwk",
         "samgr",
-        "selinux_adapter"
+        "selinux_adapter",
+        "app_file_service"
       ],
       "third_party": [
         "bounds_checking_function",
