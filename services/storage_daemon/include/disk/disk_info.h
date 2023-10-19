@@ -64,6 +64,8 @@ private:
     unsigned int flags_ {};
     std::list<std::string> volumeId_;
     int32_t ReadDiskLines(std::vector<std::string> lines, int32_t maxVols);
+    bool CreateMBRVolume(int32_t type, dev_t dev);
+    int32_t CreateUnknownTabVol();
 };
 } // STORAGE_DAEMON
 } // OHOS
