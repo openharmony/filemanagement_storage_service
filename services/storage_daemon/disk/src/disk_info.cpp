@@ -215,6 +215,32 @@ int DiskInfo::ReadPartition()
     return ReadDiskLines(lines, maxVolumes);
 }
 
+bool DiskInfo::CreateMBRVolume(int32_t type, dev_t dev)
+{
+    // FAT16 || NTFS/EXFAT || W95 FAT32 || W95 FAT32 || W95 FAT16
+    if (type == 0x06 || type == 0x07 || type == 0x0b || type == 0x0c || type == 0x0e) {
+        if (CreateVolume(dev) == E_OK) {
+                return true;
+        }
+    }
+    return false;
+}
+
+int32_t DiskInfo::CreateUnknownTabVol()
+{
+    LOGI("%{public}s has unknown table", id_.c_str());
+    std::string fsType;
+    std::string uuid;
+    std::string label;
+    if (OHOS::StorageDaemon::ReadMetadata(devPath_, fsType, uuid, label) == E_OK) {
+        CreateVolume(device_);
+    } else {
+        LOGE("failed to identify the disk device");
+        return E_NON_EXIST;
+    }
+    return E_OK;
+}
+
 int32_t DiskInfo::ReadDiskLines(std::vector<std::string> lines, int32_t maxVols)
 {
     std::string lineToken = " ";
@@ -244,22 +270,21 @@ int32_t DiskInfo::ReadDiskLines(std::vector<std::string> lines, int32_t maxVols)
                 continue;
             }
             dev_t partitionDev = makedev(major(device_), minor(device_) + static_cast<uint32_t>(index));
-            if (CreateVolume(partitionDev) == E_OK) {
-                foundPart = true;
+            if (table == Table::MBR) {
+                if (++it == split.end()) {
+                    continue;
+                }
+                int32_t type = std::stoi("0x" + *it);
+                foundPart = CreateMBRVolume(type, partitionDev);
+            } else if (table == Table::GPT) {
+                if (CreateVolume(partitionDev) == E_OK) {
+                    foundPart = true;
+                }
             }
         }
     }
     if (table == Table::UNKNOWN || !foundPart) {
-        LOGI("%{public}s has unknown table", id_.c_str());
-        std::string fsType;
-        std::string uuid;
-        std::string label;
-        if (OHOS::StorageDaemon::ReadMetadata(devPath_, fsType, uuid, label) == E_OK) {
-            CreateVolume(device_);
-        } else {
-            LOGE("failed to identify the disk device");
-            return E_NON_EXIST;
-        }
+        return CreateUnknownTabVol();
     }
     return E_OK;
 }

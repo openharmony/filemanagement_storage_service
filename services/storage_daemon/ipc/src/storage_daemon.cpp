@@ -340,7 +340,7 @@ int32_t StorageDaemon::UpdateKeyContext(uint32_t userId)
 std::vector<int32_t> StorageDaemon::CreateShareFile(const std::vector<std::string> &uriList,
                                                     uint32_t tokenId, uint32_t flag)
 {
-    LOGI("Create Share file list len is %{public}d", uriList.size());
+    LOGI("Create Share file list len is %{public}zu", uriList.size());
     std::vector<int32_t> retList;
     AppFileService::CreateShareFile(uriList, tokenId, flag, retList);
     return retList;
