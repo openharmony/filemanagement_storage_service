@@ -244,8 +244,26 @@ int32_t DiskInfo::ReadDiskLines(std::vector<std::string> lines, int32_t maxVols)
                 continue;
             }
             dev_t partitionDev = makedev(major(device_), minor(device_) + static_cast<uint32_t>(index));
-            if (CreateVolume(partitionDev) == E_OK) {
-                foundPart = true;
+            if (table == Table::MBR) {
+                if (++it == split.end()) {
+                    continue;
+                }
+                int32_t type = std::stoi("0x" + *it);
+                switch (type) {
+                    case 0x06:
+                    case 0x07:
+                    case 0x0b:
+                    case 0x0c:
+                    case 0x0e:
+                        if (CreateVolume(partitionDev) == E_OK) {
+                        foundPart = true;
+                        }
+                        break;
+                };
+            } else if (table == Table::GPT) {
+                if (CreateVolume(partitionDev) == E_OK) {
+                    foundPart = true;
+                }
             }
         }
     }
