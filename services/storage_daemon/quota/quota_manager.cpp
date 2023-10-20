@@ -27,6 +27,7 @@
 #include <sys/statvfs.h>
 #include <linux/fs.h>
 #include <linux/dqblk_xfs.h>
+#include <unistd.h>
 
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -235,11 +236,13 @@ int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int32_t prjId, bool
     }
     if (ioctl(fd, FS_IOC_FSGETXATTR, &fsx) == -1) {
         LOGE("Failed to get extended attributes of %{public}s, errno: %{public}d", path.c_str(), errno);
+        (void)close(fd);
         return E_SYS_CALL;
     }
     fsx.fsx_projid = static_cast<uint32_t>(prjId);
     if (ioctl(fd, FS_IOC_FSSETXATTR, &fsx) == -1) {
         LOGE("Failed to set project id for %{public}s, errno: %{public}d", path.c_str(), errno);
+        (void)close(fd);
         return E_SYS_CALL;
     }
 
@@ -247,11 +250,13 @@ int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int32_t prjId, bool
         uint32_t flags;
         if (ioctl(fd, FS_IOC_GETFLAGS, &flags) == -1) {
             LOGE("Failed to get flags for %{public}s, errno:%{public}d", path.c_str(), errno);
+            (void)close(fd);
             return E_SYS_CALL;
         }
         flags |= FS_PROJINHERIT_FL;
         if (ioctl(fd, FS_IOC_SETFLAGS, &flags) == -1) {
             LOGE("Failed to set flags for %{public}s, errno:%{public}d", path.c_str(), errno);
+            (void)close(fd);
             return E_SYS_CALL;
         }
     }
