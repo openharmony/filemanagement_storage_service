@@ -203,6 +203,7 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_PrepareDir_001, TestSize.Level1)
     ASSERT_TRUE(ret != true) << "path is not a dir";
 
     GTEST_LOG_(INFO) << "FileUtilsTest_PrepareDir_001 end";
+    (void)close(fd);
 }
 
 /**

@@ -83,6 +83,7 @@ HWTEST_F(SetAclTest, SetAclTest_001, TestSize.Level1)
     EXPECT_TRUE(rc == -1) << "path is not a dir";
 
     GTEST_LOG_(INFO) << "SetAclTest_001 ends";
+    close(fd);
 }
 
 /**
@@ -203,6 +204,7 @@ HWTEST_F(SetAclTest, SetAclTest_004, TestSize.Level1)
     EXPECT_TRUE(rc == -1) << "path is not a dir";
 
     GTEST_LOG_(INFO) << "SetAclTest_004 ends";
+    close(fd);
 }
 
 /**

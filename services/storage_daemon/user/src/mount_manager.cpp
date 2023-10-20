@@ -516,7 +516,7 @@ int32_t MountManager::DestroySystemServiceDirs(int32_t userId)
             err = err && E_DESTROY_DIR;
         }
     }
-    return E_DESTROY_DIR;
+    return err ? E_OK : E_DESTROY_DIR;
 }
 
 int32_t MountManager::DestroyHmdfsDirs(int32_t userId)
