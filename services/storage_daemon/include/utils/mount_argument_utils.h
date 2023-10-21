@@ -28,6 +28,7 @@ struct MountArgument final {
     bool useCloudDir_ { false };
     bool caseSensitive_{ false };
     bool enableMergeView_{ false };
+    bool enableCloudDisk_{ false };
     bool enableFixupOwnerShip_{ false };
     bool enableOfflineStash_{ true };
     std::string relativePath_;
@@ -43,6 +44,7 @@ struct MountArgument final {
     std::string GetCtrlPath() const;
     std::string OptionsToString() const;
     std::string GetFullCloud() const;
+    std::string GetFullMediaCloud() const;
     unsigned long GetFlags() const;
 };
 

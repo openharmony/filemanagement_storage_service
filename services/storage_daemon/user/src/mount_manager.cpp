@@ -56,9 +56,12 @@ MountManager::MountManager()
                    {"/data/service/el2/%d/hmdfs/non_account", 0711, OID_SYSTEM, OID_SYSTEM},
                    {"/data/service/el2/%d/hmdfs/non_account/files", 0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
                    {"/data/service/el2/%d/hmdfs/non_account/data", 0711, OID_SYSTEM, OID_SYSTEM},
+                   {"/data/service/el2/%d/hmdfs/cloud", 0711, OID_SYSTEM, OID_SYSTEM},
+                   {"/data/service/el2/%d/hmdfs/cloud/data", 0711, OID_SYSTEM, OID_SYSTEM},
                    {"/data/service/el2/%d/hmdfs/cache", 0711, OID_DFS, OID_DFS},
                    {"/data/service/el2/%d/hmdfs/cache/account_cache", 0711, OID_DFS, OID_DFS},
                    {"/data/service/el2/%d/hmdfs/cache/non_account_cache", 0711, OID_DFS, OID_DFS},
+                   {"/data/service/el2/%d/hmdfs/cache/cloud_cache", 0711, OID_DFS, OID_DFS},
                    {"/data/service/el2/%d/hmdfs/account/services", 0771, OID_DFS_SHARE, OID_DFS_SHARE}},
       virtualDir_{{"/storage/media/%d", 0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
                   {"/storage/media/%d/local", 0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
@@ -68,8 +71,10 @@ MountManager::MountManager()
                   {"/mnt/share/%d/", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/data/%d/", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/data/%d/cloud", 0711, OID_ROOT, OID_ROOT},
+                  {"/mnt/data/%d/cloud_fuse", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/%d/", 0711, OID_ROOT, OID_ROOT},
+                  {"/mnt/hmdfs/%d/cloud", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/%d/account", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/%d/non_account", 0711, OID_ROOT, OID_ROOT}},
       systemServiceDir_{{"/data/service/el2/%d/tee", 0711, OID_TEE, OID_TEE},
@@ -136,10 +141,17 @@ int32_t MountManager::SharefsUMount(int32_t userId)
     return E_OK;
 }
 
-int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath)
+int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath, bool mountCloudDisk)
 {
     Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, relativePath));
-    int ret = Mount(hmdfsMntArgs.GetFullSrc(), hmdfsMntArgs.GetFullDst(), "hmdfs",
+    if (mountCloudDisk) {
+        hmdfsMntArgs.enableCloudDisk_ = true;
+        hmdfsMntArgs.useCloudDir_ = false;
+        hmdfsMntArgs.enableMergeView_ = false;
+    }
+
+    std::string mountSrcPath = hmdfsMntArgs.GetFullSrc();
+    int ret = Mount(mountSrcPath, hmdfsMntArgs.GetFullDst(), "hmdfs",
                     hmdfsMntArgs.GetFlags(), hmdfsMntArgs.OptionsToString().c_str());
     if (ret != 0 && errno != EEXIST && errno != EBUSY) {
         LOGE("failed to mount hmdfs, err %{public}d", errno);
@@ -154,15 +166,12 @@ int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath)
     return E_OK;
 }
 
-
-int32_t MountManager::CloudMount(int32_t userId)
+int32_t MountManager::CloudMount(int32_t userId, const string& path)
 {
 #ifdef DFS_SERVICE
     int fd = -1;
     string opt;
     int ret;
-    Utils::MountArgument cloudMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
-    const string path = cloudMntArgs.GetFullCloud();
     if (!cloudReady_) {
         LOGI("Cloud Service has not started");
         return E_MOUNT;
@@ -202,6 +211,28 @@ int32_t MountManager::CloudMount(int32_t userId)
 #endif
 }
 
+int32_t MountManager::CloudTwiceMount(int32_t userId)
+{
+#ifdef DFS_SERVICE
+    Utils::MountArgument cloudMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
+    const string cloudPath = cloudMntArgs.GetFullCloud();
+    int32_t ret = CloudMount(userId, cloudPath);
+    if (ret != E_OK) {
+        LOGE("failed to mount cloud disk fuse, err %{public}d path %{public}s", errno, cloudPath.c_str());
+        return ret;
+    }
+    const string cloudMediaPath = cloudMntArgs.GetFullMediaCloud();
+    ret = CloudMount(userId, cloudMediaPath);
+    if (ret != E_OK) {
+        LOGE("failed to mount cloud media fuse, err %{public}d path %{public}s", errno, cloudMediaPath.c_str());
+        return ret;
+    }
+    return ret;
+#else
+    return E_OK;
+#endif
+}
+
 int32_t MountManager::HmdfsMount(int32_t userId)
 {
     int32_t ret = HmdfsTwiceMount(userId, "account");
@@ -212,7 +243,7 @@ int32_t MountManager::HmdfsMount(int32_t userId)
     }
 
     mountMutex_.lock();
-    ret = CloudMount(userId);
+    ret = CloudTwiceMount(userId);
     if (ret == E_OK) {
         fuseMountedUsers_.push_back(userId);
     } else {
@@ -220,13 +251,18 @@ int32_t MountManager::HmdfsMount(int32_t userId)
     }
     mountMutex_.unlock();
 
+    ret = HmdfsMount(userId, "cloud", true);
+    if (ret != E_OK) {
+        return E_MOUNT;
+    }
+
     return E_OK;
 }
 
 void MountManager::MountCloudForUsers(void)
 {
     for (auto it = fuseToMountUsers_.begin(); it != fuseToMountUsers_.end();) {
-        int32_t res = CloudMount(*it);
+        int32_t res = CloudTwiceMount(*it);
         if (res == E_OK) {
             fuseMountedUsers_.push_back(*it);
             it = fuseToMountUsers_.erase(it);
@@ -304,13 +340,20 @@ int32_t MountManager::CloudUMount(int32_t userId)
     int32_t err = E_OK;
     Utils::MountArgument cloudMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
     const string path = cloudMntArgs.GetFullCloud();
+    const string mediaCloudPath = cloudMntArgs.GetFullMediaCloud();
 
     err = UMount2(path, MNT_DETACH);
     if (err != E_OK) {
         LOGE("fuse umount2 failed, errno %{public}d, fuse dst %{public}s", errno, path.c_str());
         return E_UMOUNT;
     }
-    LOGI("umount2 %{public}s success", path.c_str());
+
+    err = UMount2(mediaCloudPath, MNT_DETACH);
+    if (err != E_OK) {
+        LOGE("fuse umount2 failed, errno %{public}d, fuse dst %{public}s", errno, mediaCloudPath.c_str());
+        return E_UMOUNT;
+    }
+    LOGI("umount2 media cloud path:%{public}s  cloud path:%{public}s success", mediaCloudPath.c_str(), path.c_str());
     return E_OK;
 #else
     return E_OK;
