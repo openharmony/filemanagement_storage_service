@@ -464,6 +464,30 @@ int IsSameGidUid(const std::string dir, uid_t uid, gid_t gid)
     return (st.st_uid == uid) && (st.st_gid == gid) ? E_OK : E_DIFF_UID_GID;
 }
 
+bool MoveDataShell(const std::string &from, const std::string &to)
+{
+    LOGI("MoveDataShell start");
+    std::vector<std::string> cmd = {
+        "/system/bin/mv",
+        from,
+        to
+    };
+    std::vector<std::string> out;
+    int32_t err = ForkExec(cmd, &out);
+    if (err != 0) {
+        LOGE("MoveDataShell failed err:%{public}d", err);
+    }
+    return true;
+}
+
+void MoveFileManagerData(const std::string &filesPath)
+{
+    std::string docsPath = filesPath + "Docs/";
+    MoveDataShell(filesPath + "Download/", docsPath);
+    MoveDataShell(filesPath + "Documents/", docsPath);
+    MoveDataShell(filesPath + "Desktop/", docsPath);
+}
+
 void ChownRecursion(const std::string dir, uid_t uid, gid_t gid)
 {
     std::vector<std::string> cmd = {

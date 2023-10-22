@@ -81,10 +81,12 @@ MountManager::MountManager()
                   {"/data/service/el2/%d/deviceauth", 0711, OID_DEVICE_AUTH, OID_DEVICE_AUTH},
                   {"/data/service/el2/%d/huks_service", 0711, OID_HUKS, OID_HUKS},
                   {"/data/service/el4/%d/huks_service", 0711, OID_HUKS, OID_HUKS}},
-      fileManagerDir_{{"/data/service/el2/%d/hmdfs/account/files/Documents", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
-                   {"/data/service/el2/%d/hmdfs/account/files/Download", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
-                   {"/data/service/el2/%d/hmdfs/account/files/Desktop", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
-                   {"/data/service/el2/%d/hmdfs/account/files/Docs", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
+      fileManagerDir_{{"/data/service/el2/%d/hmdfs/account/files/Docs", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
+                   {"/data/service/el2/%d/hmdfs/account/files/Docs/Documents",
+                   02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
+                   {"/data/service/el2/%d/hmdfs/account/files/Docs/Download",
+                   02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
+                   {"/data/service/el2/%d/hmdfs/account/files/Docs/Desktop", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
                    {"/data/service/el2/%d/hmdfs/account/files/.Recent", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
                    {"/data/service/el2/%d/hmdfs/account/files/.Trash", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER}}
 {
@@ -443,6 +445,9 @@ int32_t MountManager::MountByUser(int32_t userId)
 
 void MountManager::PrepareFileManagerDir(int32_t userId)
 {
+    std::string filesPath = StringPrintf("/data/service/el2/%d/hmdfs/account/files/", userId);
+    // move file manager dir
+    MoveFileManagerData(filesPath);
     for (const DirInfo &dir : fileManagerDir_) {
         std::string path = StringPrintf(dir.path.c_str(), userId);
         int ret = IsSameGidUid(path, dir.uid, dir.gid);
