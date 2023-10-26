@@ -554,10 +554,7 @@ int32_t MountManager::DestroySystemServiceDirs(int32_t userId)
     bool err = true;
     for (const DirInfo &dir : systemServiceDir_) {
         std::string path = StringPrintf(dir.path.c_str(), userId);
-        if (!RmDirRecurse(path)) {
-            LOGE("failed to RmDirRecurse %{public}s ", path.c_str());
-            err = err && E_DESTROY_DIR;
-        }
+        err = err && RmDirRecurse(path);
     }
     return err ? E_OK : E_DESTROY_DIR;
 }

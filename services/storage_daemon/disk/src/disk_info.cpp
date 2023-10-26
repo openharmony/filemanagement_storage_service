@@ -274,7 +274,7 @@ int32_t DiskInfo::ReadDiskLines(std::vector<std::string> lines, int32_t maxVols)
                 if (++it == split.end()) {
                     continue;
                 }
-                int32_t type = std::stoi("0x" + *it);
+                int32_t type = std::stoi("0x0" + *it, 0, 16);
                 foundPart = CreateMBRVolume(type, partitionDev);
             } else if (table == Table::GPT) {
                 if (CreateVolume(partitionDev) == E_OK) {
