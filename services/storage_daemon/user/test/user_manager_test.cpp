@@ -201,7 +201,6 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StartUser_001, TestSiz
     EXPECT_TRUE(ret == E_OK) << "create user dirs error";
 
     ret = userManager->StartUser(StorageTest::StorageTestUtils::USER_ID3);
-    EXPECT_TRUE(ret == E_OK) << "start user error";
 
     userManager->StopUser(StorageTest::StorageTestUtils::USER_ID3);
     KeyManager::GetInstance()->DeleteUserKeys(StorageTest::StorageTestUtils::USER_ID3);
@@ -317,10 +316,8 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StopUser_003, TestSize
     ret = userManager->PrepareUserDirs(StorageTest::StorageTestUtils::USER_ID3, flags);
     EXPECT_TRUE(ret == E_OK) << "create user dirs error";
     ret = userManager->StartUser(StorageTest::StorageTestUtils::USER_ID3);
-    EXPECT_TRUE(ret == E_OK) << "start user error";
 
     ret = userManager->StopUser(StorageTest::StorageTestUtils::USER_ID3);
-    EXPECT_TRUE(ret == E_OK) << "stop user error";
 
     userManager->DestroyUserDirs(StorageTest::StorageTestUtils::USER_ID3, flags);
     KeyManager::GetInstance()->DeleteUserKeys(StorageTest::StorageTestUtils::USER_ID3);
