@@ -342,13 +342,13 @@ std::vector<int32_t> StorageDaemon::CreateShareFile(const std::vector<std::strin
 {
     LOGI("Create Share file list len is %{public}zu", uriList.size());
     std::vector<int32_t> retList;
-    AppFileService::CreateShareFile(uriList, tokenId, flag, retList);
+    AppFileService::FileShare::CreateShareFile(uriList, tokenId, flag, retList);
     return retList;
 }
 
 int32_t StorageDaemon::DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList)
 {
-    int32_t ret = AppFileService::DeleteShareFile(tokenId, uriList);
+    int32_t ret = AppFileService::FileShare::DeleteShareFile(tokenId, uriList);
     return ret;
 }
 
