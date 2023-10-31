@@ -17,7 +17,7 @@ import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 ROOT_DIR = "${storage_daemon_path}"
 
 ohos_unittest("storage_daemon_test") {
-  module_out_path = "filemanagement/storage_service/storage_daemon"
+  module_out_path = "storage_service/storage_daemon"
 
   defines = [
     "STORAGE_LOG_TAG = \"StorageDaemon\"",
@@ -85,7 +85,7 @@ ohos_unittest("storage_daemon_test") {
 }
 
 ohos_unittest("storage_daemon_proxy_test") {
-  module_out_path = "filemanagement/storage_service/storage_daemon"
+  module_out_path = "storage_service/storage_daemon"
 
   defines = [
     "STORAGE_LOG_TAG = \"StorageDaemon\"",
@@ -118,7 +118,7 @@ ohos_unittest("storage_daemon_proxy_test") {
 }
 
 ohos_unittest("storage_daemon_stub_test") {
-  module_out_path = "filemanagement/storage_service/storage_daemon"
+  module_out_path = "storage_service/storage_daemon"
 
   defines = [
     "STORAGE_LOG_TAG = \"StorageDaemon\"",

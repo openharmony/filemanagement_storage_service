@@ -15,7 +15,7 @@ import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ohos_unittest("storage_daemon_communication_test") {
-  module_out_path = "filemanagement/storage_service/storage_manager"
+  module_out_path = "storage_service/storage_manager"
 
   sources = [
     "${storage_daemon_path}/ipc/src/storage_daemon_proxy.cpp",

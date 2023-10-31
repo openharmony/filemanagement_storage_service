@@ -15,7 +15,7 @@ import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ohos_unittest("storage_manager_proxy_test") {
-  module_out_path = "filemanagement/storage_service/storage_manager"
+  module_out_path = "storage_service/storage_manager"
 
   sources = [
     "${storage_manager_path}/disk/src/disk_manager_service.cpp",
@@ -62,7 +62,7 @@ ohos_unittest("storage_manager_proxy_test") {
 }
 
 ohos_unittest("storage_manager_stub_test") {
-  module_out_path = "filemanagement/storage_service/storage_manager"
+  module_out_path = "storage_service/storage_manager"
 
   defines = [
     "STORAGE_LOG_TAG = \"StorageManager\"",
@@ -114,7 +114,7 @@ ohos_unittest("storage_manager_stub_test") {
 }
 
 ohos_unittest("storage_manager_stub_nonpermission_test") {
-  module_out_path = "filemanagement/storage_service/storage_manager"
+  module_out_path = "storage_service/storage_manager"
 
   defines = [
     "STORAGE_LOG_TAG = \"StorageManager\"",
