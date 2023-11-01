@@ -28,6 +28,7 @@ constexpr pid_t ACCOUNT_UID = 3058;
 const std::string PERMISSION_STORAGE_MANAGER = "ohos.permission.STORAGE_MANAGER";
 const std::string PERMISSION_MOUNT_MANAGER = "ohos.permission.MOUNT_UNMOUNT_MANAGER";
 const std::string PERMISSION_FORMAT_MANAGER = "ohos.permission.MOUNT_FORMAT_MANAGER";
+const std::string PROCESS_NAME_FOUNDATION = "foundation";
 bool CheckClientPermission(const std::string& permissionStr)
 {
     Security::AccessToken::AccessTokenID tokenCaller = IPCSkeleton::GetCallingTokenID();
@@ -46,6 +47,20 @@ bool CheckClientPermission(const std::string& permissionStr)
     }
     LOGE("StorageManager permissionCheck error, need %{public}s", permissionStr.c_str());
     return false;
+}
+
+bool CheckClientProcessName(const std::string& processName)
+{
+    Security::AccessToken::AccessTokenID tokenCaller = IPCSkeleton::GetCallingTokenID();
+    Security::AccessToken::NativeTokenInfo nativeInfo;
+    Security::AccessToken::AccessTokenKit::GetNativeTokenInfo(tokenCaller, nativeInfo);
+    if (nativeInfo.processName != processName) {
+        LOGE("StorageManager CheckClientProcessName error, need %{public}s, actual %{public}s",
+            processName.c_str(), nativeInfo.processName.c_str());
+        return false;
+    }
+
+    return true;
 }
 
 StorageManagerStub::StorageManagerStub()
@@ -704,9 +719,10 @@ int32_t StorageManagerStub::HandleUpdateKeyContext(MessageParcel &data, MessageP
 
 int32_t StorageManagerStub::HandleCreateShareFile(MessageParcel &data, MessageParcel &reply)
 {
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+    if (!CheckClientProcessName(PROCESS_NAME_FOUNDATION)) {
         return E_PERMISSION_DENIED;
     }
+
     std::vector<std::string> uriList;
     if (!data.ReadStringVector(&uriList)) {
         return E_WRITE_REPLY_ERR;
@@ -722,9 +738,10 @@ int32_t StorageManagerStub::HandleCreateShareFile(MessageParcel &data, MessagePa
 
 int32_t StorageManagerStub::HandleDeleteShareFile(MessageParcel &data, MessageParcel &reply)
 {
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+    if (!CheckClientProcessName(PROCESS_NAME_FOUNDATION)) {
         return E_PERMISSION_DENIED;
     }
+
     uint32_t tokenId = data.ReadUint32();
     std::vector<std::string> uriList;
     if (!data.ReadStringVector(&uriList)) {
