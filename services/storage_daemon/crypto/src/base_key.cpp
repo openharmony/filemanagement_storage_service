@@ -28,6 +28,9 @@
 #include "string_ex.h"
 #include "utils/file_utils.h"
 #include "utils/string_utils.h"
+#include "third_party/openssl/include/openssl/evp.h"
+#include "key_manager.h"
+#include "openssl/err.h"
 
 namespace {
 const std::string PATH_LATEST_BACKUP = "/latest_bak";
@@ -177,6 +180,45 @@ bool BaseKey::StoreKey(const UserAuth &auth)
     return false;
 }
 
+#ifdef USER_CRYPTO_MIGRATE_KEY
+bool BaseKey::NewStoreKey(const UserAuth &auth, bool needGenerateShield, unsigned int user)
+#else
+bool BaseKey::NewStoreKey(const UserAuth &auth, unsigned int user)
+#endif
+{
+    LOGD("enter");
+    const std::string NEED_UPDATE_PATH = USER_EL2_DIR + "/" + std::to_string(user) + SUFFIX_NEED_UPDATE;
+    if(!IsDir(NEED_UPDATE_PATH)) {
+        int ret = MkDir(NEED_UPDATE_PATH, 0700);
+        if (ret && errno != EEXIST) {
+            LOGE("create NEED_UPDATE_PATH dir error");
+        }
+        else {
+            LOGI("create NEED_UPDATE_PATH dir success");
+        }
+    }
+    auto pathTemp = dir_ + PATH_KEY_TEMP;
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    if (DoStoreKey(auth, needGenerateShield)) {
+#else
+    if (DoStoreKey(auth)) {
+#endif
+        // rename keypath/temp/ to keypath/version_xx/
+        auto candidate = GetNextCandidateDir();
+        LOGD("rename %{public}s to %{public}s", pathTemp.c_str(), candidate.c_str());
+        if (rename(pathTemp.c_str(), candidate.c_str()) == 0) {
+            SyncKeyDir();
+            return true;
+        }
+        LOGE("rename fail return %{public}d, cleanup the temp dir", errno);
+    } else {
+        LOGE("DoStoreKey fail, cleanup the temp dir");
+    }
+    OHOS::ForceRemoveDirectory(pathTemp);
+    SyncKeyDir();
+    return false;
+}
+
 // All key files are saved under keypath/temp/ in this function.
 #ifdef USER_CRYPTO_MIGRATE_KEY
 bool BaseKey::DoStoreKey(const UserAuth &auth, bool needGenerateShield)
@@ -293,13 +335,71 @@ bool BaseKey::UpdateKey(const std::string &keypath)
 bool BaseKey::Encrypt(const UserAuth &auth)
 {
     LOGD("enter");
-    auto ret = HuksMaster::GetInstance().EncryptKey(keyContext_, auth, keyInfo_);
+    bool ret;
+    if (auth.secret.IsEmpty()) {
+        ret = HuksMaster::GetInstance().EncryptKey(keyContext_, auth, keyInfo_);
+    }
+    else {
+        ret = EnhancedEncrypt(auth.secret, keyInfo_.key, &keyContext_.encrypted);
+    }
     keyContext_.shield.Clear();
     keyContext_.secDiscard.Clear();
     keyContext_.nonce.Clear();
     keyContext_.aad.Clear();
     LOGD("finish");
     return ret;
+}
+
+bool BaseKey::EnhancedEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, KeyBlob* cipherText) {
+    if(!ReadRandomBytes(256, &keyContext_.secDiscard)){
+        LOGE("Enhanced encrypt get random bytes fail");
+        return false;
+    }
+    keyContext_.shield = HuksMaster::GetInstance().NewHashAndClip(preKey, keyContext_.secDiscard, 256);
+    auto ctx = std::unique_ptr<EVP_CIPHER_CTX,decltype(&::EVP_CIPHER_CTX_free)>(
+        EVP_CIPHER_CTX_new(), EVP_CIPHER_CTX_free);
+    if (!ctx) {
+        logOpensslError();
+        return false;
+    }
+    if (1 != EVP_EncryptInit_ex(ctx.get(), EVP_aes_256_gcm(), NULL,
+                                reinterpret_cast<const uint8_t*>(keyContext_.shield.data[0]),
+                                reinterpret_cast<const uint8_t*>(cipherText->data[0]))) {
+        logOpensslError();
+        return false;             
+    }
+    int outlen;
+    if (1 != EVP_EncryptUpdate(
+                ctx.get(), reinterpret_cast<uint8_t*>(&(*cipherText).data[0] + GCM_NONCE_BYTES),
+                &outlen, reinterpret_cast<const uint8_t*>(plainText.data[0]), plainText.size)) {
+        logOpensslError();
+        return false;
+    }
+    if (outlen != static_cast<int>(plainText.size)) {
+        // LOGE("GCM cipherText length should be %{private}", plainText.size, "was %{public}", outlen);
+        return false;
+    }
+    if (1 != EVP_EncryptFinal_ex(ctx.get(),
+                                 reinterpret_cast<uint8_t*>(&(*cipherText).data[0] + GCM_NONCE_BYTES + plainText.size),
+                                 &outlen)) {
+        logOpensslError();
+        return false;
+    }
+    if (outlen != 0) {
+        // LOGE("GCM EncryptFinal should be 0 %{public}, was", outlen);
+        return false;
+    }
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_GCM_GET_TAG, GCM_MAC_BYTES,
+                                reinterpret_cast<uint8_t*>(&(*cipherText).data[0] + GCM_NONCE_BYTES + plainText.size))) {
+        logOpensslError();
+        return false;
+    }
+    return true;
+}
+
+void BaseKey::logOpensslError(){
+    // LOGE("Openssl error: %{public} ",ERR_get_error());
+    LOGE("Openssl error");
 }
 
 bool BaseKey::RestoreKey(const UserAuth &auth)
@@ -367,13 +467,90 @@ bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
 
 bool BaseKey::Decrypt(const UserAuth &auth)
 {
-    auto ret = HuksMaster::GetInstance().DecryptKey(keyContext_, auth, keyInfo_);
+    bool ret = false;
+    if(ENHANCE_VERSION == "v_1") {
+        ret = HuksMaster::GetInstance().DecryptKey(keyContext_, auth, keyInfo_);
+    }
+    else if(ENHANCE_VERSION == "v_2") {
+        ret = EnhancedDecrypt(auth.secret, keyContext_.encrypted, &keyInfo_.key);
+    }
     keyContext_.encrypted.Clear();
     keyContext_.shield.Clear();
     keyContext_.secDiscard.Clear();
     keyContext_.nonce.Clear();
     keyContext_.aad.Clear();
     return ret;
+}
+
+
+bool BaseKey::EnhancedDecrypt(const KeyBlob &preKey, const KeyBlob &cipherText, KeyBlob* plainText) {
+    if(cipherText.size < GCM_NONCE_BYTES + GCM_MAC_BYTES) {
+        // LOGE("GCM cipherText too small: %{public} ", cipherText.size);
+        return false;
+    }
+    if(!ReadRandomBytes(256, &keyContext_.secDiscard)) {
+        return false;
+    }
+    keyContext_.shield = HuksMaster::GetInstance().NewHashAndClip(preKey, keyContext_.secDiscard, 256);  
+    auto ctx = std::unique_ptr<EVP_CIPHER_CTX,decltype(&::EVP_CIPHER_CTX_free)> (
+        EVP_CIPHER_CTX_new(), EVP_CIPHER_CTX_free);
+    if (!ctx) {
+        logOpensslError();
+        return false;
+    }
+    if (1 != EVP_DecryptInit_ex(ctx.get(), EVP_aes_256_gcm(), NULL,
+                                reinterpret_cast<const uint8_t*>(keyContext_.shield.data[0]),
+                                reinterpret_cast<const uint8_t*>(cipherText.data[0]))) {
+        logOpensslError();
+        return false;             
+    }
+    *plainText = KeyBlob(cipherText.size - GCM_NONCE_BYTES - GCM_MAC_BYTES);
+    int outlen;
+    if (1 != EVP_DecryptUpdate(ctx.get(), reinterpret_cast<uint8_t*>(&plainText->data[0]), &outlen,
+                                reinterpret_cast<const uint8_t*>(cipherText.data[0] + GCM_NONCE_BYTES),
+                                plainText->size)) {
+        logOpensslError();
+        return false;
+    }
+    if (outlen != static_cast<int>(plainText->size)) {
+        // LOGE("GCM plainText length should be %{private}", plainText->size, "was %{public}", outlen);
+        return false;
+    }
+    if (1 != EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_GCM_SET_TAG, GCM_MAC_BYTES,
+                                 const_cast<void*>(reinterpret_cast<const void*>(
+                                 cipherText.data[0] + GCM_NONCE_BYTES + plainText->size)))) {
+        logOpensslError();
+        return false;
+    }
+    if (1 != EVP_DecryptFinal_ex(ctx.get(),
+                                 reinterpret_cast<uint8_t*>(&(*plainText).data[0] + plainText->size),
+                                 &outlen)) {
+        logOpensslError();
+        return false;
+    }
+    if (outlen != 0) {
+        // LOGE("GCM EncryptFinal should be 0, was %{public} ", outlen);
+        return false;
+    }
+    return true;
+}
+
+bool BaseKey:: ReadRandomBytes(size_t bytes, KeyBlob* secdiscard) {
+    int fd = TEMP_FAILURE_RETRY(open("/dev/urandom", O_RDONLY | O_CLOEXEC | O_NOFOLLOW));
+    if (fd == -1) {
+        return false;
+    }
+    ssize_t n;
+    while((n = TEMP_FAILURE_RETRY(read(fd, &secdiscard, bytes))) > 0) {
+        bytes -= n;
+        secdiscard += n;
+    }
+    close(fd);
+    if(bytes == 0) {
+        return true;
+    }else {
+        return false;
+    }
 }
 
 bool BaseKey::ClearKey(const std::string &mnt)

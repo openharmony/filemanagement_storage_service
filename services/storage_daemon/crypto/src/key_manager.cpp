@@ -27,6 +27,7 @@
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "base_key.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -452,7 +453,6 @@ int KeyManager::UpdateUserAuth(unsigned int user, uint64_t secureUid,
         LOGE("Have not found user %{public}u el2 key", user);
         return -ENOENT;
     }
-
     auto item = userEl2Key_[user];
     UserAuth auth = {token, oldSecret, secureUid};
     if ((item->RestoreKey(auth) == false) && (item->RestoreKey(NULL_KEY_AUTH) == false)) {
@@ -462,14 +462,14 @@ int KeyManager::UpdateUserAuth(unsigned int user, uint64_t secureUid,
 
     auth.secret = newSecret;
 #ifdef USER_CRYPTO_MIGRATE_KEY
-    if (item->StoreKey(auth, needGenerateShield) == false) {
+        if (item->NewStoreKey(auth, needGenerateShield, user) == false) {
 #else
-    if (item->StoreKey(auth) == false) {
+        if (item->NewStoreKey(auth) == false, user) {
 #endif
-        LOGE("Store key error");
-        return -EFAULT;
-    }
-    item->keyInfo_.key.Clear();
+            LOGE("Store key error");
+            return -EFAULT;
+        }
+        item->keyInfo_.key.Clear();
 
     return 0;
 }
@@ -503,6 +503,13 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::vector<uint8_t> &tok
         return -EFAULT;
     }
     UserAuth auth = {token, secret};
+    const std::string NEED_UPDATE_PATH = keyDir + SUFFIX_NEED_UPDATE;
+    if (auth.secret.IsEmpty() || (!auth.secret.IsEmpty() && !IsDir(NEED_UPDATE_PATH))) {
+        ENHANCE_VERSION = "v_1";
+    }
+    else if(!auth.secret.IsEmpty() && IsDir(NEED_UPDATE_PATH)) {
+        ENHANCE_VERSION = "v_2";
+    }
     if ((elKey->RestoreKey(auth) == false) && (elKey->RestoreKey(NULL_KEY_AUTH) == false)) {
         LOGE("Restore el failed");
         return -EFAULT;

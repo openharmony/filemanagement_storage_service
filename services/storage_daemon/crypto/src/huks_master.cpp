@@ -332,6 +332,21 @@ static KeyBlob HashAndClip(const std::string &prefix, const KeyBlob &payload, ui
     return res;
 }
 
+KeyBlob HuksMaster::NewHashAndClip(const KeyBlob &prefix, const KeyBlob &payload, uint32_t length)
+{
+    KeyBlob res(SHA512_DIGEST_LENGTH);
+    SHA512_CTX c;
+    SHA512_Init(&c);
+    SHA512_Update(&c, prefix.data.get(), prefix.size);
+    if (!payload.IsEmpty()) {
+        SHA512_Update(&c, payload.data.get(), payload.size);
+    }
+    SHA512_Final(res.data.get(), &c);
+
+    res.size = length;
+    return res;
+}
+
 static HksParamSet *GenHuksKeyBlobParam(KeyContext &ctx)
 {
     return reinterpret_cast<HksParamSet *>(ctx.shield.data.get());
