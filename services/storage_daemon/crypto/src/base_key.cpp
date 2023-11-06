@@ -31,6 +31,7 @@
 #include "third_party/openssl/include/openssl/evp.h"
 #include "key_manager.h"
 #include "openssl/err.h"
+#include "err.h"
 
 namespace {
 const std::string PATH_LATEST_BACKUP = "/latest_bak";
@@ -40,6 +41,7 @@ const std::string PATH_KEY_TEMP = "/temp";
 
 namespace OHOS {
 namespace StorageDaemon {
+std::string ENHANCE_VERSION;
 BaseKey::BaseKey(const std::string &dir, uint8_t keyLen) : dir_(dir), keyLen_(keyLen)
 {
 }
@@ -188,7 +190,7 @@ bool BaseKey::NewStoreKey(const UserAuth &auth, unsigned int user)
 {
     LOGD("enter");
     const std::string NEED_UPDATE_PATH = USER_EL2_DIR + "/" + std::to_string(user) + SUFFIX_NEED_UPDATE;
-    if(!IsDir(NEED_UPDATE_PATH)) {
+    if (!IsDir(NEED_UPDATE_PATH)) {
         int ret = MkDir(NEED_UPDATE_PATH, 0700);
         if (ret && errno != EEXIST) {
             LOGE("create NEED_UPDATE_PATH dir error");
@@ -340,7 +342,7 @@ bool BaseKey::Encrypt(const UserAuth &auth)
         ret = HuksMaster::GetInstance().EncryptKey(keyContext_, auth, keyInfo_);
     }
     else {
-        ret = EnhancedEncrypt(auth.secret, keyInfo_.key, &keyContext_.encrypted);
+        ret = EnhanceEncrypt(auth.secret, keyInfo_.key, &keyContext_.encrypted);
     }
     keyContext_.shield.Clear();
     keyContext_.secDiscard.Clear();
@@ -350,13 +352,13 @@ bool BaseKey::Encrypt(const UserAuth &auth)
     return ret;
 }
 
-bool BaseKey::EnhancedEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, KeyBlob* cipherText) {
-    if(!ReadRandomBytes(256, &keyContext_.secDiscard)){
+bool BaseKey::EnhanceEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, KeyBlob* cipherText) {
+    if (!ReadRandomBytes(256, &keyContext_.secDiscard)) {
         LOGE("Enhanced encrypt get random bytes fail");
         return false;
     }
     keyContext_.shield = HuksMaster::GetInstance().NewHashAndClip(preKey, keyContext_.secDiscard, 256);
-    auto ctx = std::unique_ptr<EVP_CIPHER_CTX,decltype(&::EVP_CIPHER_CTX_free)>(
+    auto ctx = std::unique_ptr<EVP_CIPHER_CTX, decltype(&::EVP_CIPHER_CTX_free)>(
         EVP_CIPHER_CTX_new(), EVP_CIPHER_CTX_free);
     if (!ctx) {
         logOpensslError();
@@ -366,7 +368,7 @@ bool BaseKey::EnhancedEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, K
                                 reinterpret_cast<const uint8_t*>(keyContext_.shield.data[0]),
                                 reinterpret_cast<const uint8_t*>(cipherText->data[0]))) {
         logOpensslError();
-        return false;             
+        return false;
     }
     int outlen;
     if (1 != EVP_EncryptUpdate(
@@ -376,7 +378,7 @@ bool BaseKey::EnhancedEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, K
         return false;
     }
     if (outlen != static_cast<int>(plainText.size)) {
-        // LOGE("GCM cipherText length should be %{private}", plainText.size, "was %{public}", outlen);
+        LOGE("GCM cipherText length should be %{private}d, was %{public}u", plainText.size, outlen);
         return false;
     }
     if (1 != EVP_EncryptFinal_ex(ctx.get(),
@@ -386,20 +388,21 @@ bool BaseKey::EnhancedEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, K
         return false;
     }
     if (outlen != 0) {
-        // LOGE("GCM EncryptFinal should be 0 %{public}, was", outlen);
+        LOGE("GCM EncryptFinal should be 0 , was %{public}u", outlen);
         return false;
     }
     if (1 != EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_GCM_GET_TAG, GCM_MAC_BYTES,
-                                reinterpret_cast<uint8_t*>(&(*cipherText).data[0] + GCM_NONCE_BYTES + plainText.size))) {
+                                reinterpret_cast<uint8_t*>(&(*cipherText).data[0] + 
+                                GCM_NONCE_BYTES + plainText.size))) {
         logOpensslError();
         return false;
     }
     return true;
 }
 
-void BaseKey::logOpensslError(){
-    // LOGE("Openssl error: %{public} ",ERR_get_error());
-    LOGE("Openssl error");
+void BaseKey::logOpensslError()
+{
+    LOGE("Openssl error: %{public}lu ", ERR_get_error());
 }
 
 bool BaseKey::RestoreKey(const UserAuth &auth)
@@ -468,11 +471,11 @@ bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
 bool BaseKey::Decrypt(const UserAuth &auth)
 {
     bool ret = false;
-    if(ENHANCE_VERSION == "v_1") {
+    if (ENHANCE_VERSION == "v_1") {
         ret = HuksMaster::GetInstance().DecryptKey(keyContext_, auth, keyInfo_);
     }
-    else if(ENHANCE_VERSION == "v_2") {
-        ret = EnhancedDecrypt(auth.secret, keyContext_.encrypted, &keyInfo_.key);
+    else if (ENHANCE_VERSION == "v_2") {
+        ret = EnhanceDecrypt(auth.secret, keyContext_.encrypted, &keyInfo_.key);
     }
     keyContext_.encrypted.Clear();
     keyContext_.shield.Clear();
@@ -482,17 +485,16 @@ bool BaseKey::Decrypt(const UserAuth &auth)
     return ret;
 }
 
-
-bool BaseKey::EnhancedDecrypt(const KeyBlob &preKey, const KeyBlob &cipherText, KeyBlob* plainText) {
-    if(cipherText.size < GCM_NONCE_BYTES + GCM_MAC_BYTES) {
-        // LOGE("GCM cipherText too small: %{public} ", cipherText.size);
+bool BaseKey::EnhanceDecrypt(const KeyBlob &preKey, const KeyBlob &cipherText, KeyBlob* plainText) {
+    if (cipherText.size < GCM_NONCE_BYTES + GCM_MAC_BYTES) {
+        LOGE("GCM cipherText too small: %{public}u ", cipherText.size);
         return false;
     }
-    if(!ReadRandomBytes(256, &keyContext_.secDiscard)) {
+    if (!ReadRandomBytes(256, &keyContext_.secDiscard)) {
         return false;
     }
     keyContext_.shield = HuksMaster::GetInstance().NewHashAndClip(preKey, keyContext_.secDiscard, 256);  
-    auto ctx = std::unique_ptr<EVP_CIPHER_CTX,decltype(&::EVP_CIPHER_CTX_free)> (
+    auto ctx = std::unique_ptr<EVP_CIPHER_CTX, decltype(&::EVP_CIPHER_CTX_free)>(
         EVP_CIPHER_CTX_new(), EVP_CIPHER_CTX_free);
     if (!ctx) {
         logOpensslError();
@@ -502,7 +504,7 @@ bool BaseKey::EnhancedDecrypt(const KeyBlob &preKey, const KeyBlob &cipherText, 
                                 reinterpret_cast<const uint8_t*>(keyContext_.shield.data[0]),
                                 reinterpret_cast<const uint8_t*>(cipherText.data[0]))) {
         logOpensslError();
-        return false;             
+        return false;
     }
     *plainText = KeyBlob(cipherText.size - GCM_NONCE_BYTES - GCM_MAC_BYTES);
     int outlen;
@@ -513,7 +515,7 @@ bool BaseKey::EnhancedDecrypt(const KeyBlob &preKey, const KeyBlob &cipherText, 
         return false;
     }
     if (outlen != static_cast<int>(plainText->size)) {
-        // LOGE("GCM plainText length should be %{private}", plainText->size, "was %{public}", outlen);
+        LOGE("GCM plainText length should be %{private}u, was %{public}d", plainText->size, outlen);
         return false;
     }
     if (1 != EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_GCM_SET_TAG, GCM_MAC_BYTES,
@@ -529,26 +531,27 @@ bool BaseKey::EnhancedDecrypt(const KeyBlob &preKey, const KeyBlob &cipherText, 
         return false;
     }
     if (outlen != 0) {
-        // LOGE("GCM EncryptFinal should be 0, was %{public} ", outlen);
+        LOGE("GCM EncryptFinal should be 0, was %{public}d ", outlen);
         return false;
     }
     return true;
 }
 
-bool BaseKey:: ReadRandomBytes(size_t bytes, KeyBlob* secdiscard) {
+bool BaseKey::ReadRandomBytes(size_t bytes, KeyBlob* secdiscard)
+{
     int fd = TEMP_FAILURE_RETRY(open("/dev/urandom", O_RDONLY | O_CLOEXEC | O_NOFOLLOW));
     if (fd == -1) {
         return false;
     }
     ssize_t n;
-    while((n = TEMP_FAILURE_RETRY(read(fd, &secdiscard, bytes))) > 0) {
+    while ((n = TEMP_FAILURE_RETRY(read(fd, &secdiscard, bytes))) > 0) {
         bytes -= n;
         secdiscard += n;
     }
-    close(fd);
-    if(bytes == 0) {
+    close(fd);std::string ENHANCE_VERSION;
+    if (bytes == 0) {
         return true;
-    }else {
+    } else {
         return false;
     }
 }

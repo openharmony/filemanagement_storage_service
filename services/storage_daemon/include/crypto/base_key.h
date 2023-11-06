@@ -50,8 +50,8 @@ public:
 #endif
     bool UpdateKey(const std::string &keypath = "");
     bool RestoreKey(const UserAuth &auth);
-    bool EnhancedDecrypt(const KeyBlob &preKey, const KeyBlob &cipherText, KeyBlob* plainText);
-    bool EnhancedEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, KeyBlob* cipherText);
+    bool EnhanceDecrypt(const KeyBlob &preKey, const KeyBlob &cipherText, KeyBlob* plainText);
+    bool EnhanceEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, KeyBlob* cipherText);
     bool ReadRandomBytes(size_t bytes, KeyBlob* secdiscard);
     virtual bool ActiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
     virtual bool InactiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
