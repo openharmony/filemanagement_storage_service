@@ -235,6 +235,11 @@ int32_t MountManager::CloudTwiceMount(int32_t userId)
 
 int32_t MountManager::HmdfsMount(int32_t userId)
 {
+    int32_t err = PrepareHmdfsDirs(userId);
+    if (err != E_OK) {
+        LOGE("Prepare fileManager dir error");
+    }
+
     int32_t ret = HmdfsTwiceMount(userId, "account");
 
     ret += HmdfsMount(userId, "non_account");
