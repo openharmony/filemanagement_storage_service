@@ -28,8 +28,7 @@ const uint8_t USER_DESTROY = 0x1;
 constexpr size_t AES_KEY_BYTES = 64;
 constexpr size_t GCM_MAC_BYTES = 16;
 constexpr size_t GCM_NONCE_BYTES = 64;
-extern std::string ENHANCE_VERSION;
-
+extern std::string g_enhanceVersion;
 class BaseKey {
 public:
     BaseKey() = delete;
