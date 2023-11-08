@@ -41,7 +41,6 @@ const std::string PATH_KEY_TEMP = "/temp";
 
 namespace OHOS {
 namespace StorageDaemon {
-std::string g_enhanceVersion;
 BaseKey::BaseKey(const std::string &dir, uint8_t keyLen) : dir_(dir), keyLen_(keyLen)
 {
 }
@@ -339,9 +338,11 @@ bool BaseKey::Encrypt(const UserAuth &auth)
     LOGD("enter");
     bool ret;
     if (auth.secret.IsEmpty()) {
+        LOGE("Huks encrypt start");
         ret = HuksMaster::GetInstance().EncryptKey(keyContext_, auth, keyInfo_);
     }
     else {
+        LOGE("Enhanced encrypt start");
         ret = EnhanceEncrypt(auth.secret, keyInfo_.key, &keyContext_.encrypted);
     }
     keyContext_.shield.Clear();
@@ -472,9 +473,11 @@ bool BaseKey::Decrypt(const UserAuth &auth)
 {
     bool ret = false;
     if (g_enhanceVersion == "v_1") {
+        LOGE("Huks decrypt key start");
         ret = HuksMaster::GetInstance().DecryptKey(keyContext_, auth, keyInfo_);
     }
     else if (g_enhanceVersion == "v_2") {
+        LOGE("Enhanced decrypt key start");
         ret = EnhanceDecrypt(auth.secret, keyContext_.encrypted, &keyInfo_.key);
     }
     keyContext_.encrypted.Clear();
@@ -491,6 +494,7 @@ bool BaseKey::EnhanceDecrypt(const KeyBlob &preKey, const KeyBlob &cipherText, K
         return false;
     }
     if (!ReadRandomBytes(256, &keyContext_.secDiscard)) {
+        LOGE("Enhanced decrypt get random bytes failed");
         return false;
     }
     keyContext_.shield = HuksMaster::GetInstance().NewHashAndClip(preKey, keyContext_.secDiscard, 256);
@@ -597,6 +601,16 @@ bool BaseKey::UpgradeKeys()
         }
     }
     return true;
+}
+
+std::string BaseKey::getEnhanceVersion() const
+{
+    return g_enhanceVersion;
+}
+
+void BaseKey::setEnhanceVersion(const std::string& enhanceVersion)
+{
+    this->g_enhanceVersion = enhanceVersion;
 }
 } // namespace StorageDaemon
 } // namespace OHOS
