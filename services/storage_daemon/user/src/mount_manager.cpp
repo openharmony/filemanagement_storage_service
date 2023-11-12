@@ -56,8 +56,8 @@ MountManager::MountManager()
                    {"/data/service/el2/%d/hmdfs/non_account", 0711, OID_SYSTEM, OID_SYSTEM},
                    {"/data/service/el2/%d/hmdfs/non_account/files", 0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
                    {"/data/service/el2/%d/hmdfs/non_account/data", 0711, OID_SYSTEM, OID_SYSTEM},
-                   {"/data/service/el2/%d/hmdfs/cloud", 0711, OID_SYSTEM, OID_SYSTEM},
-                   {"/data/service/el2/%d/hmdfs/cloud/data", 0711, OID_SYSTEM, OID_SYSTEM},
+                   {"/data/service/el2/%d/hmdfs/cloud", 0711, OID_DFS, OID_DFS},
+                   {"/data/service/el2/%d/hmdfs/cloud/data", 0711, OID_DFS, OID_DFS},
                    {"/data/service/el2/%d/hmdfs/cache", 0711, OID_DFS, OID_DFS},
                    {"/data/service/el2/%d/hmdfs/cache/account_cache", 0711, OID_DFS, OID_DFS},
                    {"/data/service/el2/%d/hmdfs/cache/non_account_cache", 0711, OID_DFS, OID_DFS},
@@ -71,7 +71,7 @@ MountManager::MountManager()
                   {"/mnt/share/%d/", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/data/%d/", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/data/%d/cloud", 0711, OID_ROOT, OID_ROOT},
-                  {"/mnt/data/%d/cloud_fuse", 0711, OID_ROOT, OID_ROOT},
+                  {"/mnt/data/%d/cloud_fuse", 0711, OID_DFS, OID_DFS},
                   {"/mnt/hmdfs/", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/%d/", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/%d/cloud", 0711, OID_ROOT, OID_ROOT},
@@ -144,13 +144,14 @@ int32_t MountManager::SharefsUMount(int32_t userId)
 int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath, bool mountCloudDisk)
 {
     Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, relativePath));
+    std::string mountSrcPath = hmdfsMntArgs.GetFullSrc();
     if (mountCloudDisk) {
         hmdfsMntArgs.enableCloudDisk_ = true;
         hmdfsMntArgs.useCloudDir_ = false;
         hmdfsMntArgs.enableMergeView_ = false;
+        mountSrcPath = hmdfsMntArgs.GetFullCloud();
     }
 
-    std::string mountSrcPath = hmdfsMntArgs.GetFullSrc();
     int ret = Mount(mountSrcPath, hmdfsMntArgs.GetFullDst(), "hmdfs",
                     hmdfsMntArgs.GetFlags(), hmdfsMntArgs.OptionsToString().c_str());
     if (ret != 0 && errno != EEXIST && errno != EBUSY) {
@@ -258,7 +259,7 @@ int32_t MountManager::HmdfsMount(int32_t userId)
 
     ret = HmdfsMount(userId, "cloud", true);
     if (ret != E_OK) {
-        return E_MOUNT;
+        LOGE("mount cloud to hmdfs failed!");
     }
 
     return E_OK;
@@ -428,7 +429,6 @@ int32_t MountManager::MountByUser(int32_t userId)
     ret = SharefsMount(userId);
     if (ret != E_OK) {
         LOGE("sharefs mount error");
-        return ret;
     }
     SetFafQuotaProId(userId);
 
