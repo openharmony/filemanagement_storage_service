@@ -225,10 +225,10 @@ Acl AclFromFile(const std::string &file)
 
 int AclSetAttribution(const std::string &targetFile, const std::string &entryTxt, const char *aclAttrName)
 {
-    if (!IsDir(targetFile)) {
+    if (strcmp(aclAttrName, ACL_XATTR_ACCESS) && !IsDir(targetFile)) {
         LOGE("Failed to confirm %{private}s is a directory: %{public}s",
-             targetFile.c_str(),
-             errno == 0 ? "file exists but isn't a directory" : std::strerror(errno));
+            targetFile.c_str(),
+            errno == 0 ? "file exists but isn't a directory" : std::strerror(errno));
         return -1;
     }
 

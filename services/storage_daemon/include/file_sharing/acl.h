@@ -153,6 +153,8 @@ public:
     char *Serialize(size_t &bufSize);
     int DeSerialize(const char *p, size_t size);
     ~Acl();
+private:
+    void CompareInsertEntry(const AclXattrEntry &entry);
 };
 
 int AclSetDefault(const std::string &targetFile, const std::string &entryTxt);
