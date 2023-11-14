@@ -25,9 +25,8 @@ const uint8_t RETRIEVE_KEY = 0x0;
 const uint8_t FIRST_CREATE_KEY = 0x6c;
 const uint8_t USER_LOGOUT = 0x0;
 const uint8_t USER_DESTROY = 0x1;
-constexpr size_t AES_KEY_BYTES = 64;
 constexpr size_t GCM_MAC_BYTES = 16;
-constexpr size_t GCM_NONCE_BYTES = 64;
+constexpr size_t GCM_NONCE_BYTES = 12;
 class BaseKey {
 public:
     BaseKey() = delete;
@@ -41,16 +40,10 @@ public:
 #else
     bool StoreKey(const UserAuth &auth);
 #endif
-#ifdef USER_CRYPTO_MIGRATE_KEY
-    bool NewStoreKey(const UserAuth &auth, bool needGenerateShield, unsigned int user);
-#else
-    bool NewStoreKey(const UserAuth &auth, unsigned int user);
-#endif
     bool UpdateKey(const std::string &keypath = "");
     bool RestoreKey(const UserAuth &auth);
     bool EnhanceDecrypt(const KeyBlob &preKey, const KeyBlob &cipherText, KeyBlob* plainText);
     bool EnhanceEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, KeyBlob* cipherText);
-    bool ReadRandomBytes(size_t bytes, KeyBlob* secdiscard);
     virtual bool ActiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
     virtual bool InactiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
     bool ClearKey(const std::string &mnt = MNT_DATA);
@@ -61,8 +54,6 @@ public:
     {
         return dir_;
     }
-    std::string getEnhanceVersion() const;
-    void setEnhanceVersion(const std::string& version);
 
 protected:
     static bool SaveKeyBlob(const KeyBlob &blob, const std::string &path);

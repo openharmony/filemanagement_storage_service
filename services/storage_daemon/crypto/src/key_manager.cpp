@@ -462,9 +462,9 @@ int KeyManager::UpdateUserAuth(unsigned int user, uint64_t secureUid,
 
     auth.secret = newSecret;
 #ifdef USER_CRYPTO_MIGRATE_KEY
-        if (item->NewStoreKey(auth, needGenerateShield, user) == false) {
+        if (item->StoreKey(auth, needGenerateShield) == false) {
 #else
-        if (item->NewStoreKey(auth, user) == false) {
+        if (item->StoreKey(auth) == false) {
 #endif
             LOGE("Store key error");
             return -EFAULT;

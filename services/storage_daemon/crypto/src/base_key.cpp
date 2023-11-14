@@ -242,7 +242,7 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
         return false;
     }
     ChMod(pathVersion, S_IREAD | S_IWRITE);
-
+    if (auth.secret.IsEmpty()) {
 #ifdef USER_CRYPTO_MIGRATE_KEY
     if (needGenerateShield) {
         if (!HuksMaster::GetInstance().GenerateKey(auth, keyContext_.shield)) {
@@ -263,6 +263,7 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
 #endif
     if (!SaveKeyBlob(keyContext_.shield, pathTemp + PATH_SHIELD)) {
         return false;
+    }
     }
     if (!GenerateAndSaveKeyBlob(keyContext_.secDiscard, pathTemp + PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
         LOGE("GenerateAndSaveKeyBlob sec_discard failed");
@@ -354,11 +355,7 @@ bool BaseKey::Encrypt(const UserAuth &auth)
 }
 
 bool BaseKey::EnhanceEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, KeyBlob* cipherText) {
-    if (!ReadRandomBytes(256, &keyContext_.secDiscard)) {
-        LOGE("Enhanced encrypt get random bytes fail");
-        return false;
-    }
-    keyContext_.shield = HuksMaster::GetInstance().NewHashAndClip(preKey, keyContext_.secDiscard, 256);
+    keyContext_.shield = HuksMaster::GetInstance().NewHashAndClip(preKey, keyContext_.secDiscard, 32);
     auto ctx = std::unique_ptr<EVP_CIPHER_CTX, decltype(&::EVP_CIPHER_CTX_free)>(
         EVP_CIPHER_CTX_new(), EVP_CIPHER_CTX_free);
     if (!ctx) {
@@ -448,18 +445,28 @@ bool BaseKey::RestoreKey(const UserAuth &auth)
 bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
 {
     LOGD("enter, path = %{public}s", path.c_str());
+    const std::string NEED_UPDATE_PATH = dir_ + PATH_LATEST + SUFFIX_NEED_UPDATE;
+    if (auth.secret.IsEmpty() || (!auth.secret.IsEmpty() && !IsDir(Need))) {
+        g_enhanceVersion = "v_1";
+        LOGI("set g_enhanceVersion as v_1 success");
+    }
+    else if (!auth.secret.IsEmpty() && IsDir(NEED_UPDATE_PATH)) {
+        g_enhanceVersion = "v_2";
+        LOGI("set g_enhanceVersion as v_2 success");
+    }
     auto ver = KeyCtrlLoadVersion(dir_.c_str());
     if (ver == FSCRYPT_INVALID || ver != keyInfo_.version) {
         LOGE("RestoreKey fail. bad version loaded %{public}u not expected %{public}u", ver, keyInfo_.version);
         return false;
     }
-
     if (!LoadKeyBlob(keyContext_.encrypted, path + PATH_ENCRYPTED)) {
         return false;
     }
-    if (!LoadKeyBlob(keyContext_.shield, path + PATH_SHIELD)) {
-        keyContext_.encrypted.Clear();
-        return false;
+    if (g_enhanceVersion == "v_1") {
+        if (!LoadKeyBlob(keyContext_.shield, path + PATH_SHIELD)) {
+            keyContext_.encrypted.Clear();
+            return false;
+        }
     }
     if (!LoadKeyBlob(keyContext_.secDiscard, path + PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
         keyContext_.encrypted.Clear();
@@ -497,7 +504,7 @@ bool BaseKey::EnhanceDecrypt(const KeyBlob &preKey, const KeyBlob &cipherText, K
         LOGE("Enhanced decrypt get random bytes failed");
         return false;
     }
-    keyContext_.shield = HuksMaster::GetInstance().NewHashAndClip(preKey, keyContext_.secDiscard, 256);
+    keyContext_.shield = HuksMaster::GetInstance().NewHashAndClip(preKey, keyContext_.secDiscard, 32);
     auto ctx = std::unique_ptr<EVP_CIPHER_CTX, decltype(&::EVP_CIPHER_CTX_free)>(
         EVP_CIPHER_CTX_new(), EVP_CIPHER_CTX_free);
     if (!ctx) {
@@ -538,26 +545,8 @@ bool BaseKey::EnhanceDecrypt(const KeyBlob &preKey, const KeyBlob &cipherText, K
         LOGE("GCM EncryptFinal should be 0, was %{public}d ", outlen);
         return false;
     }
+    LOGI("Enhance decrypt key success");
     return true;
-}
-
-bool BaseKey::ReadRandomBytes(size_t bytes, KeyBlob* secdiscard)
-{
-    int fd = TEMP_FAILURE_RETRY(open("/dev/urandom", O_RDONLY | O_CLOEXEC | O_NOFOLLOW));
-    if (fd == -1) {
-        return false;
-    }
-    ssize_t n;
-    while ((n = TEMP_FAILURE_RETRY(read(fd, &secdiscard, bytes))) > 0) {
-        bytes -= n;
-        secdiscard += n;
-    }
-    close(fd);
-    if (bytes == 0) {
-        return true;
-    } else {
-        return false;
-    }
 }
 
 bool BaseKey::ClearKey(const std::string &mnt)
@@ -601,16 +590,6 @@ bool BaseKey::UpgradeKeys()
         }
     }
     return true;
-}
-
-std::string BaseKey::getEnhanceVersion() const
-{
-    return g_enhanceVersion;
-}
-
-void BaseKey::setEnhanceVersion(const std::string& enhanceVersion)
-{
-    this->g_enhanceVersion = enhanceVersion;
 }
 } // namespace StorageDaemon
 } // namespace OHOS
