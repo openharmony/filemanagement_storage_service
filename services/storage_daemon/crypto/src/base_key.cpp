@@ -181,45 +181,6 @@ bool BaseKey::StoreKey(const UserAuth &auth)
     return false;
 }
 
-#ifdef USER_CRYPTO_MIGRATE_KEY
-bool BaseKey::NewStoreKey(const UserAuth &auth, bool needGenerateShield, unsigned int user)
-#else
-bool BaseKey::NewStoreKey(const UserAuth &auth, unsigned int user)
-#endif
-{
-    LOGD("enter");
-    const std::string NEED_UPDATE_PATH = USER_EL2_DIR + "/" + std::to_string(user) + SUFFIX_NEED_UPDATE;
-    if (!IsDir(NEED_UPDATE_PATH)) {
-        int ret = MkDir(NEED_UPDATE_PATH, 0700);
-        if (ret && errno != EEXIST) {
-            LOGE("create NEED_UPDATE_PATH dir error");
-        }
-        else {
-            LOGI("create NEED_UPDATE_PATH dir success");
-        }
-    }
-    auto pathTemp = dir_ + PATH_KEY_TEMP;
-#ifdef USER_CRYPTO_MIGRATE_KEY
-    if (DoStoreKey(auth, needGenerateShield)) {
-#else
-    if (DoStoreKey(auth)) {
-#endif
-        // rename keypath/temp/ to keypath/version_xx/
-        auto candidate = GetNextCandidateDir();
-        LOGD("rename %{public}s to %{public}s", pathTemp.c_str(), candidate.c_str());
-        if (rename(pathTemp.c_str(), candidate.c_str()) == 0) {
-            SyncKeyDir();
-            return true;
-        }
-        LOGE("rename fail return %{public}d, cleanup the temp dir", errno);
-    } else {
-        LOGE("DoStoreKey fail, cleanup the temp dir");
-    }
-    OHOS::ForceRemoveDirectory(pathTemp);
-    SyncKeyDir();
-    return false;
-}
-
 // All key files are saved under keypath/temp/ in this function.
 #ifdef USER_CRYPTO_MIGRATE_KEY
 bool BaseKey::DoStoreKey(const UserAuth &auth, bool needGenerateShield)
@@ -229,7 +190,16 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
 {
     auto pathTemp = dir_ + PATH_KEY_TEMP;
     MkDirRecurse(pathTemp, S_IRWXU);
-
+    const std::string NEED_UPDATE_PATH = pathTemp + SUFFIX_NEED_UPDATE;
+    if (!IsDir(NEED_UPDATE_PATH)) {
+        int ret = MkDir(NEED_UPDATE_PATH, 0700);
+        if (ret && errno != EEXIST) {
+            LOGE("create NEED_UPDATE_PATH dir error");
+        }
+        else {
+            LOGI("create NEED_UPDATE_PATH dir success");
+        }
+    }
     auto pathVersion = dir_ + PATH_FSCRYPT_VER;
     std::string version;
     if (OHOS::LoadStringFromFile(pathVersion, version)) {
@@ -362,6 +332,7 @@ bool BaseKey::EnhanceEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, Ke
         logOpensslError();
         return false;
     }
+    *cipherText = KeyBlob(GCM_NONCE_BYTES + plainText.size + GCM_MAX_BYTES);
     if (1 != EVP_EncryptInit_ex(ctx.get(), EVP_aes_256_gcm(), NULL,
                                 reinterpret_cast<const uint8_t*>(keyContext_.shield.data.get()),
                                 reinterpret_cast<const uint8_t*>(cipherText->data.get()))) {
@@ -395,6 +366,7 @@ bool BaseKey::EnhanceEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, Ke
         logOpensslError();
         return false;
     }
+    LOGI("Enhance encrypt key success");
     return true;
 }
 
@@ -498,10 +470,6 @@ bool BaseKey::Decrypt(const UserAuth &auth)
 bool BaseKey::EnhanceDecrypt(const KeyBlob &preKey, const KeyBlob &cipherText, KeyBlob* plainText) {
     if (cipherText.size < GCM_NONCE_BYTES + GCM_MAC_BYTES) {
         LOGE("GCM cipherText too small: %{public}u ", cipherText.size);
-        return false;
-    }
-    if (!ReadRandomBytes(256, &keyContext_.secDiscard)) {
-        LOGE("Enhanced decrypt get random bytes failed");
         return false;
     }
     keyContext_.shield = HuksMaster::GetInstance().NewHashAndClip(preKey, keyContext_.secDiscard, 32);
