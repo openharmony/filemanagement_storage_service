@@ -213,26 +213,26 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
     ChMod(pathVersion, S_IREAD | S_IWRITE);
     if (auth.secret.IsEmpty()) {
 #ifdef USER_CRYPTO_MIGRATE_KEY
-    if (needGenerateShield) {
+        if (needGenerateShield) {
+            if (!HuksMaster::GetInstance().GenerateKey(auth, keyContext_.shield)) {
+                LOGE("GenerateKey of shield failed");
+                return false;
+            }
+        } else {
+            if (!LoadKeyBlob(keyContext_.shield, dir_ + PATH_LATEST + PATH_SHIELD)) {
+                keyContext_.encrypted.Clear();
+                return false;
+            }
+        }
+#else
         if (!HuksMaster::GetInstance().GenerateKey(auth, keyContext_.shield)) {
             LOGE("GenerateKey of shield failed");
             return false;
         }
-    } else {
-        if (!LoadKeyBlob(keyContext_.shield, dir_ + PATH_LATEST + PATH_SHIELD)) {
-            keyContext_.encrypted.Clear();
+#endif
+        if (!SaveKeyBlob(keyContext_.shield, pathTemp + PATH_SHIELD)) {
             return false;
         }
-    }
-#else
-    if (!HuksMaster::GetInstance().GenerateKey(auth, keyContext_.shield)) {
-        LOGE("GenerateKey of shield failed");
-        return false;
-    }
-#endif
-    if (!SaveKeyBlob(keyContext_.shield, pathTemp + PATH_SHIELD)) {
-        return false;
-    }
     }
     if (!GenerateAndSaveKeyBlob(keyContext_.secDiscard, pathTemp + PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
         LOGE("GenerateAndSaveKeyBlob sec_discard failed");
@@ -420,8 +420,7 @@ bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
     if (auth.secret.IsEmpty() || (!auth.secret.IsEmpty() && !IsDir(NEED_UPDATE_PATH))) {
         g_enhanceVersion = "v_1";
         LOGI("set g_enhanceVersion as v_1 success");
-    }
-    else if (!auth.secret.IsEmpty() && IsDir(NEED_UPDATE_PATH)) {
+    } else if (!auth.secret.IsEmpty() && IsDir(NEED_UPDATE_PATH)) {
         g_enhanceVersion = "v_2";
         LOGI("set g_enhanceVersion as v_2 success");
     }

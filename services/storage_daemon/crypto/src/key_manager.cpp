@@ -509,7 +509,7 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::vector<uint8_t> &tok
         return -EFAULT;
     }
     if (!IsDir(NEED_UPDATE_PATH)) {
-        if ((elKey->StoreKey(auth) == false) && (elKey->StoreKey(NULL_KEY_AUTH) == false)) {
+        if (elKey->StoreKey(auth) == false) {
             LOGE("Store el failed");
             return -EFAULT;
         }
