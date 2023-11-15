@@ -468,11 +468,11 @@ bool BaseKey::Decrypt(const UserAuth &auth)
 
 bool BaseKey::EnhanceDecrypt(const KeyBlob &preKey, const KeyBlob &cipherText, KeyBlob* plainText)
 {
+    keyContext_.shield = HuksMaster::GetInstance().NewHashAndClip(preKey, keyContext_.secDiscard, 32);
     if (cipherText.size < GCM_NONCE_BYTES + GCM_MAC_BYTES) {
         LOGE("GCM cipherText too small: %{public}u ", cipherText.size);
         return false;
     }
-    keyContext_.shield = HuksMaster::GetInstance().NewHashAndClip(preKey, keyContext_.secDiscard, 32);
     auto ctx = std::unique_ptr<EVP_CIPHER_CTX, decltype(&::EVP_CIPHER_CTX_free)>(
         EVP_CIPHER_CTX_new(), EVP_CIPHER_CTX_free);
     if (!ctx) {

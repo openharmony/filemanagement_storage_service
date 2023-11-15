@@ -462,14 +462,14 @@ int KeyManager::UpdateUserAuth(unsigned int user, uint64_t secureUid,
 
     auth.secret = newSecret;
 #ifdef USER_CRYPTO_MIGRATE_KEY
-        if (item->StoreKey(auth, needGenerateShield) == false) {
+    if (item->StoreKey(auth, needGenerateShield) == false) {
 #else
-        if (item->StoreKey(auth) == false) {
+    if (item->StoreKey(auth) == false) {
 #endif
-            LOGE("Store key error");
-            return -EFAULT;
-        }
-        item->keyInfo_.key.Clear();
+        LOGE("Store key error");
+        return -EFAULT;
+    }
+    item->keyInfo_.key.Clear();
 
     return 0;
 }
@@ -504,12 +504,12 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::vector<uint8_t> &tok
         return -EFAULT;
     }
     UserAuth auth = {token, secret};
-    if ((elkey->RestoreKey(auth) == false) && (elkey->RestoreKey(NULL_KEY_AUTH) == false)) {
+    if ((elKey->RestoreKey(auth) == false) && (elKey->RestoreKey(NULL_KEY_AUTH) == false)) {
         LOGE("Restore el failed");
         return -EFAULT;
     }
     if (!IsDir(NEED_UPDATE_PATH)) {
-        if ((elkey->StoreKey(auth) == false) && (elkey->StoreKey(NULL_KEY_AUTH) == false)) {
+        if ((elKey->StoreKey(auth) == false) && (elKey->StoreKey(NULL_KEY_AUTH) == false)) {
             LOGE("Store el failed");
             return -EFAULT;
         }
