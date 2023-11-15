@@ -195,8 +195,7 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
         int ret = MkDir(NEED_UPDATE_PATH, 0700);
         if (ret && errno != EEXIST) {
             LOGE("create NEED_UPDATE_PATH dir error");
-        }
-        else {
+        } else {
             LOGI("create NEED_UPDATE_PATH dir success");
         }
     }
@@ -332,7 +331,7 @@ bool BaseKey::EnhanceEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, Ke
         logOpensslError();
         return false;
     }
-    *cipherText = KeyBlob(GCM_NONCE_BYTES + plainText.size + GCM_MAX_BYTES);
+    *cipherText = KeyBlob(GCM_NONCE_BYTES + plainText.size + GCM_MAC_BYTES);
     if (1 != EVP_EncryptInit_ex(ctx.get(), EVP_aes_256_gcm(), NULL,
                                 reinterpret_cast<const uint8_t*>(keyContext_.shield.data.get()),
                                 reinterpret_cast<const uint8_t*>(cipherText->data.get()))) {
@@ -418,7 +417,7 @@ bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
 {
     LOGD("enter, path = %{public}s", path.c_str());
     const std::string NEED_UPDATE_PATH = dir_ + PATH_LATEST + SUFFIX_NEED_UPDATE;
-    if (auth.secret.IsEmpty() || (!auth.secret.IsEmpty() && !IsDir(Need))) {
+    if (auth.secret.IsEmpty() || (!auth.secret.IsEmpty() && !IsDir(NEED_UPDATE_PATH))) {
         g_enhanceVersion = "v_1";
         LOGI("set g_enhanceVersion as v_1 success");
     }
@@ -452,11 +451,11 @@ bool BaseKey::Decrypt(const UserAuth &auth)
 {
     bool ret = false;
     if (g_enhanceVersion == "v_1") {
-        LOGE("Huks decrypt key start");
+        LOGI("Huks decrypt key start");
         ret = HuksMaster::GetInstance().DecryptKey(keyContext_, auth, keyInfo_);
     }
     else if (g_enhanceVersion == "v_2") {
-        LOGE("Enhanced decrypt key start");
+        LOGI("Enhanced decrypt key start");
         ret = EnhanceDecrypt(auth.secret, keyContext_.encrypted, &keyInfo_.key);
     }
     keyContext_.encrypted.Clear();
@@ -467,7 +466,8 @@ bool BaseKey::Decrypt(const UserAuth &auth)
     return ret;
 }
 
-bool BaseKey::EnhanceDecrypt(const KeyBlob &preKey, const KeyBlob &cipherText, KeyBlob* plainText) {
+bool BaseKey::EnhanceDecrypt(const KeyBlob &preKey, const KeyBlob &cipherText, KeyBlob* plainText)
+{
     if (cipherText.size < GCM_NONCE_BYTES + GCM_MAC_BYTES) {
         LOGE("GCM cipherText too small: %{public}u ", cipherText.size);
         return false;
@@ -487,7 +487,7 @@ bool BaseKey::EnhanceDecrypt(const KeyBlob &preKey, const KeyBlob &cipherText, K
     }
     *plainText = KeyBlob(cipherText.size - GCM_NONCE_BYTES - GCM_MAC_BYTES);
     int outlen;
-    if (1 != EVP_DecryptUpdate(ctx.get(), reinterpret_cast<uint8_t*>(&plainText->data[0]), &outlen,
+    if (1 != EVP_DecryptUpdate(ctx.get(), reinterpret_cast<uint8_t*>(&(*plainText).data[0]), &outlen,
                                 reinterpret_cast<const uint8_t*>(cipherText.data.get() + GCM_NONCE_BYTES),
                                 plainText->size)) {
         logOpensslError();

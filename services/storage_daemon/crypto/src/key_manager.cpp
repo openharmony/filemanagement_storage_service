@@ -488,6 +488,7 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::vector<uint8_t> &tok
         return 0;
     }
     std::string keyDir = USER_EL2_DIR + "/" + std::to_string(user);
+    std::string NEED_UPDATE_PATH = keyDir + PATH_LATEST + SUFFIX_NEED_UPDATE;
     if (!IsDir(keyDir)) {
         LOGE("Have not found user %{public}u el2", user);
         return -ENOENT;
@@ -503,18 +504,17 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::vector<uint8_t> &tok
         return -EFAULT;
     }
     UserAuth auth = {token, secret};
-    auto item = userEl2Key_[user];
-    const std::string NEED_UPDATE_PATH = keyDir + SUFFIX_NEED_UPDATE;
-    if (auth.secret.IsEmpty() || (!auth.secret.IsEmpty() && !IsDir(NEED_UPDATE_PATH))) {
-        item->setEnhanceVersion("v_1");
-    }
-    else if (!auth.secret.IsEmpty() && IsDir(NEED_UPDATE_PATH)) {
-        item->setEnhanceVersion("v_2");
-    }
-    if ((item->RestoreKey(auth) == false) && (item->RestoreKey(NULL_KEY_AUTH) == false)) {
+    if ((elkey->RestoreKey(auth) == false) && (elkey->RestoreKey(NULL_KEY_AUTH) == false)) {
         LOGE("Restore el failed");
         return -EFAULT;
     }
+    if (!IsDir(NEED_UPDATE_PATH)) {
+        if ((elkey->StoreKey(auth) == false) && (elkey->StoreKey(NULL_KEY_AUTH) == false)) {
+            LOGE("Store el failed");
+            return -EFAULT;
+        }
+    }
+    
     if (elKey->ActiveKey(RETRIEVE_KEY) == false) {
         LOGE("Active user %{public}u key failed", user);
         return -EFAULT;
