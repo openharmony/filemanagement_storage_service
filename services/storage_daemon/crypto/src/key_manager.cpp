@@ -17,6 +17,7 @@
 
 #include <string>
 
+#include "base_key.h"
 #include "directory_ex.h"
 #include "file_ex.h"
 #include "fscrypt_key_v1.h"
@@ -27,7 +28,6 @@
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "base_key.h"
 
 namespace OHOS {
 namespace StorageDaemon {
