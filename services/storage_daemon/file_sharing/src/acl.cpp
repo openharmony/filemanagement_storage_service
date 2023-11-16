@@ -50,6 +50,17 @@ bool Acl::IsValid()
     return true;
 }
 
+void Acl::CompareInsertEntry(const AclXattrEntry &entry)
+{
+    if (entries.count(entry)) {
+        auto it = entries.find(entry);
+        entries.erase(it);
+    }
+    if (entry.perm.IsReadable() || entry.perm.IsWritable() || entry.perm.IsExecutable()) {
+        entries.insert(entry);
+    }
+}
+
 int Acl::InsertEntry(const AclXattrEntry &entry)
 {
     if (entries.size() >= ENTRIES_MAX_NUM) {
@@ -62,11 +73,11 @@ int Acl::InsertEntry(const AclXattrEntry &entry)
         case ACL_TAG::USER_OBJ:
         case ACL_TAG::MASK:
         case ACL_TAG::OTHER:
-            entries.insert(entry);
+            CompareInsertEntry(entry);
             break;
         case ACL_TAG::USER:
         case ACL_TAG::GROUP:
-            entries.insert(entry); // must before ReCalcMaskPerm()
+            CompareInsertEntry(entry); // must before ReCalcMaskPerm()
             maskDemand++;
             /*
              * In either case there's no or already one ACL_MASK entry in the set,
@@ -77,7 +88,7 @@ int Acl::InsertEntry(const AclXattrEntry &entry)
              * Be warned: do _NOT_ combine the following into one line, otherwise
              * you can't pass the !!genius!! CI coding style check.
              */
-            entries.insert(
+            CompareInsertEntry(
                 { ACL_TAG::MASK, ReCalcMaskPerm(), ACL_UNDEFINED_ID }
             );
             break;
