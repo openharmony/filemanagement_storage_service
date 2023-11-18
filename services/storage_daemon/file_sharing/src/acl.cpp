@@ -73,7 +73,7 @@ int Acl::InsertEntry(const AclXattrEntry &entry)
         case ACL_TAG::USER_OBJ:
         case ACL_TAG::MASK:
         case ACL_TAG::OTHER:
-            CompareInsertEntry(entry);
+            entries.insert(entry);
             break;
         case ACL_TAG::USER:
         case ACL_TAG::GROUP:
