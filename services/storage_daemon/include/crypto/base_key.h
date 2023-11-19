@@ -64,12 +64,19 @@ private:
 #else
     bool DoStoreKey(const UserAuth &auth);
 #endif
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    bool LoadAndSaveShield(const UserAuth &auth, const std::string &pathTemp, bool needGenerateShield = true);
+#else
+    bool LoadAndSaveShield(const UserAuth &auth, const std::string &pathTemp);
+#endif
     bool DoRestoreKey(const UserAuth &auth, const std::string &keypath);
     static bool GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size);
     static bool GenerateKeyBlob(KeyBlob &blob, const uint32_t size);
     static bool LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size);
     bool Encrypt(const UserAuth &auth);
     bool Decrypt(const UserAuth &auth);
+    void MkdirVersionCheck(const std::string &pathtemp);
+    bool LoadAndSaveStringToFile();
     int GetCandidateVersion() const;
     std::string GetCandidateDir() const;
     std::string GetNextCandidateDir() const;

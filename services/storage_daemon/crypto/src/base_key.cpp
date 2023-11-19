@@ -192,15 +192,48 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
 {
     auto pathTemp = dir_ + PATH_KEY_TEMP;
     MkDirRecurse(pathTemp, S_IRWXU);
+    MkdirVersionCheck(pathTemp);
+    if (!LoadAndSaveStringToFile())
+    {
+        return false;
+    }
+    if (auth.secret.IsEmpty()) {
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    if (!LoadAndSaveShield(auth, pathTemp, needGenerateShield)) {
+#else
+    if (!LoadAndSaveShield(auth, pathTemp)) {
+#endif
+        return false;
+        }
+    }
+    if (!GenerateAndSaveKeyBlob(keyContext_.secDiscard, pathTemp + PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
+        LOGE("GenerateAndSaveKeyBlob sec_discard failed");
+        return false;
+    }
+    if (!Encrypt(auth)) {
+        return false;
+    }
+    if (!SaveKeyBlob(keyContext_.encrypted, pathTemp + PATH_ENCRYPTED)) {
+        return false;
+    }
+    keyContext_.encrypted.Clear();
+    LOGD("finish");
+    return true;
+}
+
+void BaseKey::MkdirVersionCheck(const std::string &pathTemp)
+{
     const std::string NEED_UPDATE_PATH = pathTemp + SUFFIX_NEED_UPDATE;
     if (!IsDir(NEED_UPDATE_PATH)) {
         int ret = MkDir(NEED_UPDATE_PATH, 0700);
         if (ret && errno != EEXIST) {
             LOGE("create NEED_UPDATE_PATH dir error");
-        } else {
-            LOGI("create NEED_UPDATE_PATH dir success");
         }
     }
+}
+
+bool BaseKey::LoadAndSaveStringToFile()
+{
     auto pathVersion = dir_ + PATH_FSCRYPT_VER;
     std::string version;
     if (OHOS::LoadStringFromFile(pathVersion, version)) {
@@ -213,7 +246,15 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
         return false;
     }
     ChMod(pathVersion, S_IREAD | S_IWRITE);
-    if (auth.secret.IsEmpty()) {
+    return true;
+}
+
+#ifdef USER_CRYPTO_MIGRATE_KEY
+bool BaseKey::LoadAndSaveShield(const UserAuth &auth, const std::string &pathTemp, bool needGenerateShield)
+#else
+bool BaseKey::LoadAndSaveShield(const UserAuth &auth, const std::string &pathTemp)
+#endif
+{
 #ifdef USER_CRYPTO_MIGRATE_KEY
         if (needGenerateShield) {
             if (!HuksMaster::GetInstance().GenerateKey(auth, keyContext_.shield)) {
@@ -235,19 +276,6 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
         if (!SaveKeyBlob(keyContext_.shield, pathTemp + PATH_SHIELD)) {
             return false;
         }
-    }
-    if (!GenerateAndSaveKeyBlob(keyContext_.secDiscard, pathTemp + PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
-        LOGE("GenerateAndSaveKeyBlob sec_discard failed");
-        return false;
-    }
-    if (!Encrypt(auth)) {
-        return false;
-    }
-    if (!SaveKeyBlob(keyContext_.encrypted, pathTemp + PATH_ENCRYPTED)) {
-        return false;
-    }
-    keyContext_.encrypted.Clear();
-    LOGD("finish");
     return true;
 }
 
@@ -342,7 +370,8 @@ bool BaseKey::EnhanceEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, Ke
     int outlen;
     if (EVP_EncryptUpdate(
                 ctx.get(), reinterpret_cast<uint8_t*>(&(*cipherText).data[0] + GCM_NONCE_BYTES),
-                &outlen, reinterpret_cast<const uint8_t*>(plainText.data.get()), plainText.size) != OPENSSL_SUCCESS_FLAG) {
+                &outlen, reinterpret_cast<const uint8_t*>(plainText.data.get()), plainText.size) 
+                != OPENSSL_SUCCESS_FLAG) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
     }
