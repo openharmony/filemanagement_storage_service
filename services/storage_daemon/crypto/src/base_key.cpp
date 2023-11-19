@@ -333,26 +333,26 @@ bool BaseKey::EnhanceEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, Ke
         return false;
     }
     *cipherText = KeyBlob(GCM_NONCE_BYTES + plainText.size + GCM_MAC_BYTES);
-    if (OPENSSL_SUCCESS_FLAG != EVP_EncryptInit_ex(ctx.get(), EVP_aes_256_gcm(), NULL,
+    if (EVP_EncryptInit_ex(ctx.get(), EVP_aes_256_gcm(), NULL,
                                 reinterpret_cast<const uint8_t*>(keyContext_.shield.data.get()),
-                                reinterpret_cast<const uint8_t*>(cipherText->data.get()))) {
+                                reinterpret_cast<const uint8_t*>(cipherText->data.get())) != OPENSSL_SUCCESS_FLAG) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
     }
     int outlen;
-    if (OPENSSL_SUCCESS_FLAG != EVP_EncryptUpdate(
+    if (EVP_EncryptUpdate(
                 ctx.get(), reinterpret_cast<uint8_t*>(&(*cipherText).data[0] + GCM_NONCE_BYTES),
-                &outlen, reinterpret_cast<const uint8_t*>(plainText.data.get()), plainText.size)) {
+                &outlen, reinterpret_cast<const uint8_t*>(plainText.data.get()), plainText.size) != OPENSSL_SUCCESS_FLAG) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
     }
-    if (outlen != static_cast<int>(plainText.size)) {
+    if (static_cast<int>(plainText.size) != outlen) {
         LOGE("GCM cipherText length should be %{private}d, was %{public}u", plainText.size, outlen);
         return false;
     }
-    if (OPENSSL_SUCCESS_FLAG != EVP_EncryptFinal_ex(ctx.get(),
-                                 reinterpret_cast<uint8_t*>(&(*cipherText).data[0] + GCM_NONCE_BYTES + plainText.size),
-                                 &outlen)) {
+    if (EVP_EncryptFinal_ex(ctx.get(),
+                            reinterpret_cast<uint8_t*>(&(*cipherText).data[0] + GCM_NONCE_BYTES + plainText.size),
+                            &outlen) != OPENSSL_SUCCESS_FLAG) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
     }
@@ -360,9 +360,9 @@ bool BaseKey::EnhanceEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, Ke
         LOGE("GCM EncryptFinal should be 0 , was %{public}u", outlen);
         return false;
     }
-    if (OPENSSL_SUCCESS_FLAG != EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_GCM_GET_TAG, GCM_MAC_BYTES,
+    if (EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_GCM_GET_TAG, GCM_MAC_BYTES,
                                 reinterpret_cast<uint8_t*> (&(*cipherText).data[0] +
-                                GCM_NONCE_BYTES + plainText.size))) {
+                                GCM_NONCE_BYTES + plainText.size)) != OPENSSL_SUCCESS_FLAG) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
     }
@@ -473,33 +473,33 @@ bool BaseKey::EnhanceDecrypt(const KeyBlob &preKey, const KeyBlob &cipherText, K
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
     }
-    if (OPENSSL_SUCCESS_FLAG != EVP_DecryptInit_ex(ctx.get(), EVP_aes_256_gcm(), NULL,
+    if (EVP_DecryptInit_ex(ctx.get(), EVP_aes_256_gcm(), NULL,
                                 reinterpret_cast<const uint8_t*>(keyContext_.shield.data.get()),
-                                reinterpret_cast<const uint8_t*>(cipherText.data.get()))) {
+                                reinterpret_cast<const uint8_t*>(cipherText.data.get())) != OPENSSL_SUCCESS_FLAG) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
     }
     *plainText = KeyBlob(cipherText.size - GCM_NONCE_BYTES - GCM_MAC_BYTES);
     int outlen;
-    if (OPENSSL_SUCCESS_FLAG != EVP_DecryptUpdate(ctx.get(), reinterpret_cast<uint8_t*>(&(*plainText).data[0]), &outlen,
-                                reinterpret_cast<const uint8_t*>(cipherText.data.get() + GCM_NONCE_BYTES),
-                                plainText->size)) {
+    if (EVP_DecryptUpdate(ctx.get(), reinterpret_cast<uint8_t*>(&(*plainText).data[0]), &outlen,
+                            reinterpret_cast<const uint8_t*>(cipherText.data.get() + GCM_NONCE_BYTES),
+                            plainText->size) != OPENSSL_SUCCESS_FLAG) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
     }
-    if (outlen != static_cast<int>(plainText->size)) {
+    if (static_cast<int>(plainText->size) != outlen) {
         LOGE("GCM plainText length should be %{private}u, was %{public}d", plainText->size, outlen);
         return false;
     }
-    if (OPENSSL_SUCCESS_FLAG != EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_GCM_SET_TAG, GCM_MAC_BYTES,
-                                 const_cast<void*>(reinterpret_cast<const void*>(
-                                 cipherText.data.get() + GCM_NONCE_BYTES + plainText->size)))) {
+    if (EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_GCM_SET_TAG, GCM_MAC_BYTES,
+                            const_cast<void*>(reinterpret_cast<const void*>(
+                            cipherText.data.get() + GCM_NONCE_BYTES + plainText->size))) != OPENSSL_SUCCESS_FLAG) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
     }
-    if (OPENSSL_SUCCESS_FLAG != EVP_DecryptFinal_ex(ctx.get(),
-                                 reinterpret_cast<uint8_t*>(&(*plainText).data[0] + plainText->size),
-                                 &outlen)) {
+    if (EVP_DecryptFinal_ex(ctx.get(),
+                            reinterpret_cast<uint8_t*>(&(*plainText).data[0] + plainText->size),
+                            &outlen) != OPENSSL_SUCCESS_FLAG) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
     }
