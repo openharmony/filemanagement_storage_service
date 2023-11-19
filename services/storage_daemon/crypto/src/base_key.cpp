@@ -370,7 +370,7 @@ bool BaseKey::EnhanceEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, Ke
     int outlen;
     if (EVP_EncryptUpdate(
                 ctx.get(), reinterpret_cast<uint8_t*>(&(*cipherText).data[0] + GCM_NONCE_BYTES),
-                &outlen, reinterpret_cast<const uint8_t*>(plainText.data.get()), plainText.size) 
+                &outlen, reinterpret_cast<const uint8_t*>(plainText.data.get()), plainText.size)
                 != OPENSSL_SUCCESS_FLAG) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
