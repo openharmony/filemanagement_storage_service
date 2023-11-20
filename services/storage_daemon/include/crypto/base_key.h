@@ -85,7 +85,6 @@ private:
 
     KeyContext keyContext_ {};
     uint8_t keyLen_ {};
-
 };
 } // namespace StorageDaemon
 } // namespace OHOS

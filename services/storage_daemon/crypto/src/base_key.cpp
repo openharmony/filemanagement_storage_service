@@ -420,7 +420,8 @@ bool BaseKey::Decrypt(const UserAuth &auth)
         ret = HuksMaster::GetInstance().DecryptKey(keyContext_, auth, keyInfo_);
     } else if (keyEncryptType_ == OpensslCrypto::KEY_CRYPT_OPENSSL) {
         LOGI("Enhanced decrypt key start");
-        ret = OpensslCrypto::GetInstance().DecryptWithoutHuks(auth.secret, keyContext_.encrypted, keyInfo_.key, keyContext_.shield, keyContext_.secDiscard);
+        ret = OpensslCrypto::GetInstance().DecryptWithoutHuks(auth.secret, keyContext_.encrypted,
+                                                              keyInfo_.key, keyContext_.shield, keyContext_.secDiscard);
     }
     keyContext_.encrypted.Clear();
     keyContext_.shield.Clear();

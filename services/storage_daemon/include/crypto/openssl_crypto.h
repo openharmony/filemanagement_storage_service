@@ -1,6 +1,5 @@
-
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -27,8 +26,10 @@ public:
         static OpensslCrypto instance;
         return instance;
     }
-    bool DecryptWithoutHuks(const KeyBlob &preKey, const KeyBlob &cipherText, KeyBlob &plainText, KeyBlob &shield, KeyBlob &secDiscard);
-    bool EncryptWithoutHuks(const KeyBlob &preKey, const KeyBlob &plainText, KeyBlob &cipherText, KeyBlob &shield, KeyBlob &secDiscard);
+    bool DecryptWithoutHuks(const KeyBlob &preKey, const KeyBlob &cipherText,
+                            KeyBlob &plainText, KeyBlob &shield, KeyBlob &secDiscard);
+    bool EncryptWithoutHuks(const KeyBlob &preKey, const KeyBlob &plainText,
+                            KeyBlob &cipherText, KeyBlob &shield, KeyBlob &secDiscard);
     KeyBlob HashAndClip(const KeyBlob &prefix, const KeyBlob &payload, uint32_t length);
     void MkdirVersionCheck(const std::string &pathtemp);
     enum KeyEncryptType {
