@@ -37,7 +37,6 @@ public:
     /* key operations */
     static KeyBlob GenerateRandomKey(uint32_t keyLen);
     static KeyBlob HashAndClip(const std::string &prefix, const KeyBlob &payload, uint32_t length);
-    KeyBlob NewHashAndClip(const KeyBlob &prefix, const KeyBlob &payload, uint32_t length);
     bool GenerateKey(const UserAuth &auth, KeyBlob &keyOut);
     bool EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo &key);
     bool DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key);

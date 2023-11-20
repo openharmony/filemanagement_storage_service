@@ -18,6 +18,7 @@
 #include <string>
 
 #include "key_blob.h"
+#include "openssl_crypto.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -27,6 +28,8 @@ const uint8_t USER_LOGOUT = 0x0;
 const uint8_t USER_DESTROY = 0x1;
 constexpr size_t GCM_MAC_BYTES = 16;
 constexpr size_t GCM_NONCE_BYTES = 12;
+const int RANDOM_NUMBER_SIZE = 32;
+const int OPENSSL_SUCCESS_FLAG = 1;
 class BaseKey {
 public:
     BaseKey() = delete;
@@ -42,13 +45,12 @@ public:
 #endif
     bool UpdateKey(const std::string &keypath = "");
     bool RestoreKey(const UserAuth &auth);
-    bool EnhanceDecrypt(const KeyBlob &preKey, const KeyBlob &cipherText, KeyBlob* plainText);
-    bool EnhanceEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, KeyBlob* cipherText);
     virtual bool ActiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
     virtual bool InactiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
     bool ClearKey(const std::string &mnt = MNT_DATA);
     bool UpgradeKeys();
     KeyInfo keyInfo_;
+    OpensslCrypto::KeyEncryptType keyEncryptType_;
     std::string GetDir() const
     {
         return dir_;
@@ -75,7 +77,6 @@ private:
     static bool LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size);
     bool Encrypt(const UserAuth &auth);
     bool Decrypt(const UserAuth &auth);
-    void MkdirVersionCheck(const std::string &pathtemp);
     bool LoadAndSaveStringToFile();
     int GetCandidateVersion() const;
     std::string GetCandidateDir() const;
@@ -84,7 +85,7 @@ private:
 
     KeyContext keyContext_ {};
     uint8_t keyLen_ {};
-    std::string g_enhanceVersion;
+
 };
 } // namespace StorageDaemon
 } // namespace OHOS
