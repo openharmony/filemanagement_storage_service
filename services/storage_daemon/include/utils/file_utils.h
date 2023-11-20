@@ -50,6 +50,7 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output = n
 void TraverseDirUevent(const std::string &path, bool flag);
 void ChownRecursion(const std::string dir, uid_t uid, gid_t gid);
 int IsSameGidUid(const std::string dir, uid_t uid, gid_t gid);
+void MoveFileManagerData(const std::string &filesPath);
 }
 }
 
