@@ -31,6 +31,16 @@ config("storage_daemon_crypto_config") {
 }
 
 ohos_static_library("libsdcrypto") {
+  stack_protector_ret = true
+  sanitize = {
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+
   sources = [
     "src/base_key.cpp",
     "src/fbex.cpp",

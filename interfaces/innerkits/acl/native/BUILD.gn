@@ -28,6 +28,16 @@ config("private_config") {
 }
 
 ohos_shared_library("storage_manager_acl") {
+  stack_protector_ret = true
+  sanitize = {
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+
   sources = [
     "../../../../services/storage_daemon/file_sharing/src/acl.cpp",
     "../../../../services/storage_daemon/file_sharing/src/setacl.cpp",

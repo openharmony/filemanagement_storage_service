@@ -47,6 +47,16 @@ declare_args() {
 }
 
 ohos_executable("storage_daemon") {
+  stack_protector_ret = true
+  sanitize = {
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+
   sources = [
     "ipc/src/storage_daemon.cpp",
     "ipc/src/storage_daemon_stub.cpp",
@@ -150,6 +160,16 @@ config("sdc_config") {
 }
 
 ohos_executable("sdc") {
+  stack_protector_ret = true
+  sanitize = {
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+
   sources = [
     "client/storage_daemon_client.cpp",
     "ipc/src/storage_daemon_proxy.cpp",
@@ -191,6 +211,16 @@ declare_args() {
 }
 
 ohos_shared_library("storage_common_utils") {
+  stack_protector_ret = true
+  sanitize = {
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+
   include_dirs = [
     "./include",
     "../common/include",

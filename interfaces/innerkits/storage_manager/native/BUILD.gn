@@ -27,6 +27,16 @@ config("private_config") {
 }
 
 ohos_shared_library("storage_manager_sa_proxy") {
+  stack_protector_ret = true
+  sanitize = {
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+
   sources = [
     "${storage_daemon_path}/ipc/src/storage_daemon_proxy.cpp",
     "${storage_manager_path}/innerkits_impl/src/bundle_stats.cpp",
