@@ -35,8 +35,9 @@ UserManager::UserManager()
                   {"/data/chipset/%s/%d", 0711, OID_ROOT, OID_ROOT}},
       subDirVec_{{"/data/app/%s/%d/base", 0711, OID_ROOT, OID_ROOT},
                  {"/data/app/%s/%d/database", 0711, OID_ROOT, OID_ROOT}},
-      backupDirVec_{{"/data/service/el2/%d/backup", 02771, OID_BACKUP, OID_BACKUP},
-                    {"/data/service/el2/%d/backup/backup_sa", 0711, OID_BACKUP, OID_BACKUP}}
+      el2DirVec_{{"/data/service/el2/%d/backup", 02771, OID_BACKUP, OID_BACKUP},
+                 {"/data/service/el2/%d/backup/backup_sa", 0711, OID_BACKUP, OID_BACKUP},
+				 {"/data/app/el2/%d/log", 0711, OID_ROOT, OID_ROOT}}
 {
 }
 
@@ -254,7 +255,7 @@ int32_t UserManager::SetElDirFscryptPolicy(int32_t userId, const std::string &le
 
 int32_t UserManager::PrepareEl2BackupDir(int32_t userId)
 {
-    for (const DirInfo &dir : backupDirVec_) {
+    for (const DirInfo &dir : el2DirVec_) {
         if (!PrepareDir(StringPrintf(dir.path.c_str(), userId), dir.mode, dir.uid, dir.gid)) {
             return E_PREPARE_DIR;
         }
@@ -265,7 +266,7 @@ int32_t UserManager::PrepareEl2BackupDir(int32_t userId)
 
 int32_t UserManager::DestroyEl2BackupDir(int32_t userId)
 {
-    for (const DirInfo &dir :  backupDirVec_) {
+    for (const DirInfo &dir :  el2DirVec_) {
         if (!RmDirRecurse(StringPrintf(dir.path.c_str(), userId))) {
             return E_DESTROY_DIR;
         }
