@@ -37,7 +37,7 @@ UserManager::UserManager()
                  {"/data/app/%s/%d/database", 0711, OID_ROOT, OID_ROOT}},
       el2DirVec_{{"/data/service/el2/%d/backup", 02771, OID_BACKUP, OID_BACKUP},
                  {"/data/service/el2/%d/backup/backup_sa", 0711, OID_BACKUP, OID_BACKUP},
-				 {"/data/app/el2/%d/log", 0711, OID_ROOT, OID_ROOT}}
+                 {"/data/app/el2/%d/log", 0711, OID_ROOT, OID_ROOT}}
 {
 }
 
