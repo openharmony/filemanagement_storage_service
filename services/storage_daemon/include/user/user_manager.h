@@ -51,7 +51,7 @@ private:
     static std::shared_ptr<UserManager> instance_;
     const std::vector<DirInfo> rootDirVec_;
     const std::vector<DirInfo> subDirVec_;
-    const std::vector<DirInfo> backupDirVec_;
+    const std::vector<DirInfo> el2DirVec_;
     const std::string bundle_ = "/data/app/el1/bundle/%d";
     std::mutex mutex_;
 };
