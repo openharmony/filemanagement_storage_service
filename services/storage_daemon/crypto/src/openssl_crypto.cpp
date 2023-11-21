@@ -14,7 +14,6 @@
  */
 #include "base_key.h"
 #include "err.h"
-#include "huks_master.h"
 #include "key_manager.h"
 #include "key_blob.h"
 #include "openssl_crypto.h"

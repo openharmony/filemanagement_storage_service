@@ -328,7 +328,8 @@ bool BaseKey::Encrypt(const UserAuth &auth)
         LOGE("Enhanced encrypt start");
         LOGI("shield before: %s", keyContext_.shield.ToString().c_str());
         LOGI("encrypted before: %s", keyContext_.encrypted.ToString().c_str());
-        ret = OpensslCrypto::GetInstance().EncryptWithoutHuks(auth.secret, keyInfo_.key, keyContext_.encrypted, keyContext_.shield, keyContext_.secDiscard);
+        ret = OpensslCrypto::GetInstance().EncryptWithoutHuks(auth.secret, keyInfo_.key, keyContext_.encrypted,
+                                                              keyContext_.shield, keyContext_.secDiscard);
         LOGI("shield after: %s", keyContext_.shield.ToString().c_str());
         LOGI("encrypted before: %s", keyContext_.encrypted.ToString().c_str());
     }
