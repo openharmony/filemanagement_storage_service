@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -26,10 +26,7 @@ const uint8_t RETRIEVE_KEY = 0x0;
 const uint8_t FIRST_CREATE_KEY = 0x6c;
 const uint8_t USER_LOGOUT = 0x0;
 const uint8_t USER_DESTROY = 0x1;
-constexpr size_t GCM_MAC_BYTES = 16;
-constexpr size_t GCM_NONCE_BYTES = 12;
-const int RANDOM_NUMBER_SIZE = 32;
-const int OPENSSL_SUCCESS_FLAG = 1;
+const std::string SUFFIX_NEED_UPDATE = "/need_update";
 class BaseKey {
 public:
     BaseKey() = delete;
@@ -50,12 +47,17 @@ public:
     bool ClearKey(const std::string &mnt = MNT_DATA);
     bool UpgradeKeys();
     KeyInfo keyInfo_;
-    OpensslCrypto::KeyEncryptType keyEncryptType_;
     std::string GetDir() const
     {
         return dir_;
     }
-
+    enum class KeyEncryptType {
+        KEY_CRYPT_HUKS,
+        KEY_CRYPT_OPENSSL
+    };
+    KeyEncryptType keyEncryptType_;
+    std::string KeyEncryptTypeToString(KeyEncryptType keyEncryptType_);
+    
 protected:
     static bool SaveKeyBlob(const KeyBlob &blob, const std::string &path);
     std::string dir_ {};
@@ -66,18 +68,14 @@ private:
 #else
     bool DoStoreKey(const UserAuth &auth);
 #endif
-#ifdef USER_CRYPTO_MIGRATE_KEY
-    bool LoadAndSaveShield(const UserAuth &auth, const std::string &pathTemp, bool needGenerateShield = true);
-#else
-    bool LoadAndSaveShield(const UserAuth &auth, const std::string &pathTemp);
-#endif
+    bool LoadAndSaveShield(const UserAuth &auth, const std::string &pathTemp, bool needGenerateShield);
     bool DoRestoreKey(const UserAuth &auth, const std::string &keypath);
     static bool GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size);
     static bool GenerateKeyBlob(KeyBlob &blob, const uint32_t size);
     static bool LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size);
     bool Encrypt(const UserAuth &auth);
     bool Decrypt(const UserAuth &auth);
-    bool LoadAndSaveStringToFile();
+    bool CheckAndUpdateVersion();
     int GetCandidateVersion() const;
     std::string GetCandidateDir() const;
     std::string GetNextCandidateDir() const;

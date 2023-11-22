@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,12 +24,11 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-bool OpensslCrypto::DecryptWithoutHuks(const KeyBlob &preKey, const KeyBlob &cipherText,
-                                       KeyBlob &plainText, KeyBlob &shield, KeyBlob &secDiscard)
+bool OpensslCrypto::DecryptWithoutHuks(const KeyBlob &preKey, KeyContext &keyContext_, KeyBlob &plainText)
 {
-    shield = HashAndClip(preKey, secDiscard, RANDOM_NUMBER_SIZE);
-    if (cipherText.size < GCM_NONCE_BYTES + GCM_MAC_BYTES) {
-        LOGE("GCM cipherText too small: %{public}u ", cipherText.size);
+    KeyBlob shield = HashAndClip(preKey, keyContext_.secDiscard, AES_256_HASH_RANDOM_SIZE);
+    if (keyContext_.encrypted.size < GCM_NONCE_BYTES + GCM_MAC_BYTES) {
+        LOGE("GCM cipherText too small: %{public}u ", keyContext_.encrypted.size);
         return false;
     }
     auto ctx = std::unique_ptr<EVP_CIPHER_CTX, decltype(&::EVP_CIPHER_CTX_free)>(
@@ -40,14 +39,15 @@ bool OpensslCrypto::DecryptWithoutHuks(const KeyBlob &preKey, const KeyBlob &cip
     }
     if (EVP_DecryptInit_ex(ctx.get(), EVP_aes_256_gcm(), NULL,
                            reinterpret_cast<const uint8_t*>(shield.data.get()),
-                           reinterpret_cast<const uint8_t*>(cipherText.data.get())) != OPENSSL_SUCCESS_FLAG) {
+                           reinterpret_cast<const uint8_t*>(keyContext_.encrypted.data.get())) !=
+                           OPENSSL_SUCCESS_FLAG) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
     }
-    plainText = KeyBlob(cipherText.size - GCM_NONCE_BYTES - GCM_MAC_BYTES);
+    plainText = KeyBlob(keyContext_.encrypted.size - GCM_NONCE_BYTES - GCM_MAC_BYTES);
     int outlen;
     if (EVP_DecryptUpdate(ctx.get(), reinterpret_cast<uint8_t*>(plainText.data.get()), &outlen,
-                          reinterpret_cast<const uint8_t*>(cipherText.data.get() + GCM_NONCE_BYTES),
+                          reinterpret_cast<const uint8_t*>(keyContext_.encrypted.data.get() + GCM_NONCE_BYTES),
                           plainText.size) != OPENSSL_SUCCESS_FLAG) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
@@ -58,7 +58,8 @@ bool OpensslCrypto::DecryptWithoutHuks(const KeyBlob &preKey, const KeyBlob &cip
     }
     if (EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_GCM_SET_TAG, GCM_MAC_BYTES,
                             const_cast<void*>(reinterpret_cast<const void*>(
-                            cipherText.data.get() + GCM_NONCE_BYTES + plainText.size))) != OPENSSL_SUCCESS_FLAG) {
+                            keyContext_.encrypted.data.get() + GCM_NONCE_BYTES + plainText.size))) !=
+                            OPENSSL_SUCCESS_FLAG) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
     }
@@ -76,25 +77,25 @@ bool OpensslCrypto::DecryptWithoutHuks(const KeyBlob &preKey, const KeyBlob &cip
     return true;
 }
 
-bool OpensslCrypto::EncryptWithoutHuks(const KeyBlob &preKey, const KeyBlob &plainText,
-                                       KeyBlob &cipherText, KeyBlob &shield, KeyBlob &secDiscard)
+bool OpensslCrypto::EncryptWithoutHuks(const KeyBlob &preKey, const KeyBlob &plainText, KeyContext &keyContext_)
 {
-    shield = HashAndClip(preKey, secDiscard, RANDOM_NUMBER_SIZE);
+    KeyBlob shield = HashAndClip(preKey, keyContext_.secDiscard, AES_256_HASH_RANDOM_SIZE);
     auto ctx = std::unique_ptr<EVP_CIPHER_CTX, decltype(&::EVP_CIPHER_CTX_free)>(
         EVP_CIPHER_CTX_new(), EVP_CIPHER_CTX_free);
     if (!ctx) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
     }
-    cipherText = KeyBlob(GCM_NONCE_BYTES + plainText.size + GCM_MAC_BYTES);
+    keyContext_.encrypted = KeyBlob(GCM_NONCE_BYTES + plainText.size + GCM_MAC_BYTES);
     if (EVP_EncryptInit_ex(ctx.get(), EVP_aes_256_gcm(), NULL,
                            reinterpret_cast<const uint8_t*>(shield.data.get()),
-                           reinterpret_cast<const uint8_t*>(cipherText.data.get())) != OPENSSL_SUCCESS_FLAG) {
+                           reinterpret_cast<const uint8_t*>(keyContext_.encrypted.data.get())) != 
+                           OPENSSL_SUCCESS_FLAG) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
     }
     int outlen;
-    if (EVP_EncryptUpdate(ctx.get(), reinterpret_cast<uint8_t*>(cipherText.data.get() + GCM_NONCE_BYTES),
+    if (EVP_EncryptUpdate(ctx.get(), reinterpret_cast<uint8_t*>(keyContext_.encrypted.data.get() + GCM_NONCE_BYTES),
                           &outlen, reinterpret_cast<const uint8_t*>(plainText.data.get()), plainText.size) !=
                           OPENSSL_SUCCESS_FLAG) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
@@ -105,8 +106,8 @@ bool OpensslCrypto::EncryptWithoutHuks(const KeyBlob &preKey, const KeyBlob &pla
         return false;
     }
     if (EVP_EncryptFinal_ex(ctx.get(),
-                            reinterpret_cast<uint8_t*>(cipherText.data.get() + GCM_NONCE_BYTES + plainText.size),
-                            &outlen) != OPENSSL_SUCCESS_FLAG) {
+                            reinterpret_cast<uint8_t*>(keyContext_.encrypted.data.get() + 
+                            GCM_NONCE_BYTES + plainText.size), &outlen) != OPENSSL_SUCCESS_FLAG) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
     }
@@ -115,7 +116,7 @@ bool OpensslCrypto::EncryptWithoutHuks(const KeyBlob &preKey, const KeyBlob &pla
         return false;
     }
     if (EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_GCM_GET_TAG, GCM_MAC_BYTES,
-                            reinterpret_cast<uint8_t*> (cipherText.data.get() +
+                            reinterpret_cast<uint8_t*> (keyContext_.encrypted.data.get() +
                             GCM_NONCE_BYTES + plainText.size)) != OPENSSL_SUCCESS_FLAG) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
@@ -137,17 +138,6 @@ KeyBlob OpensslCrypto::HashAndClip(const KeyBlob &prefix, const KeyBlob &payload
 
     res.size = length;
     return res;
-}
-
-void OpensslCrypto::MkdirVersionCheck(const std::string &pathTemp)
-{
-    const std::string NEED_UPDATE_PATH = pathTemp + SUFFIX_NEED_UPDATE;
-    if (!IsDir(NEED_UPDATE_PATH)) {
-        int ret = MkDir(NEED_UPDATE_PATH, 0700);
-        if (ret && errno != EEXIST) {
-            LOGE("create NEED_UPDATE_PATH dir error");
-        }
-    }
 }
 
 } // namespace StorageDaemon

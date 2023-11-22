@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Huawei Device Co., Ltd.
+ * Copyright (C) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -508,11 +508,9 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::vector<uint8_t> &tok
         LOGE("Restore el failed");
         return -EFAULT;
     }
-    if (!IsDir(NEED_UPDATE_PATH)) {
-        if (elKey->StoreKey(auth) == false) {
-            LOGE("Store el failed");
-            return -EFAULT;
-        }
+    if (!IsDir(NEED_UPDATE_PATH) && (elKey->StoreKey(auth) == false)) {
+        LOGE("Store el failed");
+        return -EFAULT;
     }
     
     if (elKey->ActiveKey(RETRIEVE_KEY) == false) {

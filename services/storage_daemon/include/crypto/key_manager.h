@@ -33,7 +33,6 @@ const std::string SERVICE_STORAGE_DAEMON_DIR = FSCRYPT_USER_EL1_PUBLIC + "/stora
 const std::string FSCRYPT_EL_DIR = SERVICE_STORAGE_DAEMON_DIR + "/sd";
 const std::string USER_EL1_DIR = FSCRYPT_EL_DIR + "/el1";
 const std::string USER_EL2_DIR = FSCRYPT_EL_DIR + "/el2";
-const std::string SUFFIX_NEED_UPDATE = "/need_update";
 class KeyManager {
 public:
     static KeyManager *GetInstance(void)
