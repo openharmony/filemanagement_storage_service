@@ -319,9 +319,11 @@ bool BaseKey::Encrypt(const UserAuth &auth)
     if (!auth.secret.IsEmpty()) {
         LOGI("Enhanced encrypt start");
         ret = OpensslCrypto::EncryptWithoutHuks(auth.secret, keyInfo_.key, keyContext_);
+        keyEncryptType_ = KeyEncryptType::KEY_CRYPT_OPENSSL;
     } else {
         LOGI("Huks encrypt start");
         ret = HuksMaster::GetInstance().EncryptKey(keyContext_, auth, keyInfo_);
+        keyEncryptType_ = KeyEncryptType::KEY_CRYPT_HUKS;
     }
     keyContext_.shield.Clear();
     keyContext_.secDiscard.Clear();
@@ -480,6 +482,5 @@ std::string BaseKey::KeyEncryptTypeToString(KeyEncryptType keyEncryptType_)
             return "KEY_CRYPT_HUKS";
     }
 }
-
 } // namespace StorageDaemon
 } // namespace OHOS

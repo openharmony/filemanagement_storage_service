@@ -37,8 +37,7 @@ bool OpensslCrypto::DecryptWithoutHuks(const KeyBlob &preKey, KeyContext &keyCon
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
     }
-    if (EVP_DecryptInit_ex(ctx.get(), EVP_aes_256_gcm(), NULL,
-                           reinterpret_cast<const uint8_t*>(shield.data.get()),
+    if (EVP_DecryptInit_ex(ctx.get(), EVP_aes_256_gcm(), NULL, reinterpret_cast<const uint8_t*>(shield.data.get()),
                            reinterpret_cast<const uint8_t*>(keyContext_.encrypted.data.get())) !=
                            OPENSSL_SUCCESS_FLAG) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
@@ -63,8 +62,7 @@ bool OpensslCrypto::DecryptWithoutHuks(const KeyBlob &preKey, KeyContext &keyCon
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
     }
-    if (EVP_DecryptFinal_ex(ctx.get(),
-                            reinterpret_cast<uint8_t*>(plainText.data.get() + plainText.size),
+    if (EVP_DecryptFinal_ex(ctx.get(), reinterpret_cast<uint8_t*>(plainText.data.get() + plainText.size),
                             &outlen) != OPENSSL_SUCCESS_FLAG) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
@@ -89,7 +87,7 @@ bool OpensslCrypto::EncryptWithoutHuks(const KeyBlob &preKey, const KeyBlob &pla
     keyContext_.encrypted = KeyBlob(GCM_NONCE_BYTES + plainText.size + GCM_MAC_BYTES);
     if (EVP_EncryptInit_ex(ctx.get(), EVP_aes_256_gcm(), NULL,
                            reinterpret_cast<const uint8_t*>(shield.data.get()),
-                           reinterpret_cast<const uint8_t*>(keyContext_.encrypted.data.get())) != 
+                           reinterpret_cast<const uint8_t*>(keyContext_.encrypted.data.get())) !=
                            OPENSSL_SUCCESS_FLAG) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
@@ -106,7 +104,7 @@ bool OpensslCrypto::EncryptWithoutHuks(const KeyBlob &preKey, const KeyBlob &pla
         return false;
     }
     if (EVP_EncryptFinal_ex(ctx.get(),
-                            reinterpret_cast<uint8_t*>(keyContext_.encrypted.data.get() + 
+                            reinterpret_cast<uint8_t*>(keyContext_.encrypted.data.get() +
                             GCM_NONCE_BYTES + plainText.size), &outlen) != OPENSSL_SUCCESS_FLAG) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
