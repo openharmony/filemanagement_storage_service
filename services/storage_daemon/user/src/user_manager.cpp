@@ -266,7 +266,7 @@ int32_t UserManager::PrepareEl2BackupDir(int32_t userId)
 
 int32_t UserManager::DestroyEl2BackupDir(int32_t userId)
 {
-    for (const DirInfo &dir :  el2DirVec_) {
+    for (const DirInfo &dir : el2DirVec_) {
         if (!RmDirRecurse(StringPrintf(dir.path.c_str(), userId))) {
             return E_DESTROY_DIR;
         }
