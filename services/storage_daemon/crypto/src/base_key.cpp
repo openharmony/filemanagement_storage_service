@@ -191,7 +191,7 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
     if (!CheckAndUpdateVersion()) {
         return false;
     }
-    if (auth.secret.IsEmpty() && !LoadAndSaveShield(auth, pathTemp, needGenerateShield)) {
+    if ((auth.secret.IsEmpty()) && (!LoadAndSaveShield(auth, pathTemp, needGenerateShield))) {
         return false;
     }
     if (!GenerateAndSaveKeyBlob(keyContext_.secDiscard, pathTemp + PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
