@@ -87,8 +87,8 @@ MountManager::MountManager()
                    {"/data/service/el2/%d/hmdfs/account/files/Docs/Download",
                    02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
                    {"/data/service/el2/%d/hmdfs/account/files/Docs/Desktop", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
-                   {"/data/service/el2/%d/hmdfs/account/files/.Recent", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
-                   {"/data/service/el2/%d/hmdfs/account/files/.Trash", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER}}
+                   {"/data/service/el2/%d/hmdfs/account/files/Docs/.Trash", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
+                   {"/data/service/el2/%d/hmdfs/account/files/.Recent", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER}}
 {
 }
 
