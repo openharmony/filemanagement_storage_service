@@ -467,7 +467,7 @@ bool BaseKey::UpgradeKeys()
     return true;
 }
 
-std::string BaseKey::KeyEncryptTypeToString(KeyEncryptType keyEncryptType_)
+std::string BaseKey::KeyEncryptTypeToString(KeyEncryptType keyEncryptType_) const
 {
     switch (keyEncryptType_) {
         case KeyEncryptType::KEY_CRYPT_OPENSSL:
