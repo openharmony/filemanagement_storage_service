@@ -21,12 +21,12 @@ namespace OHOS {
 namespace StorageDaemon {
 constexpr size_t GCM_MAC_BYTES = 16;
 constexpr size_t GCM_NONCE_BYTES = 12;
-const int AES_256_HASH_RANDOM_SIZE = 32;
-const int OPENSSL_SUCCESS_FLAG = 1;
+constexpr int AES_256_HASH_RANDOM_SIZE = 32;
+constexpr int OPENSSL_SUCCESS_FLAG = 1;
 class OpensslCrypto {
 public:
-    static bool DecryptWithoutHuks(const KeyBlob &preKey, KeyContext &keyContext_, KeyBlob &plainText);
-    static bool EncryptWithoutHuks(const KeyBlob &preKey, const KeyBlob &plainText, KeyContext &keyContext_);
+    static bool AESDecrypt(const KeyBlob &preKey, KeyContext &keyContext_, KeyBlob &plainText);
+    static bool AESEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, KeyContext &keyContext_);
     static KeyBlob HashAndClip(const KeyBlob &prefix, const KeyBlob &payload, uint32_t length);
 };
 } // namespace StorageDaemon

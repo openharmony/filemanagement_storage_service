@@ -508,7 +508,7 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::vector<uint8_t> &tok
         LOGE("Restore el failed");
         return -EFAULT;
     }
-    if (!IsDir(NEED_UPDATE_PATH) && (elKey->StoreKey(auth) == false)) {
+    if (!FileExists(NEED_UPDATE_PATH) && (elKey->StoreKey(auth) == false)) {
         LOGE("Store el failed");
         return -EFAULT;
     }

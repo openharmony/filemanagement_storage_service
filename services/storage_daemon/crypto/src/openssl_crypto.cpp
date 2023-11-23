@@ -24,7 +24,7 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-bool OpensslCrypto::DecryptWithoutHuks(const KeyBlob &preKey, KeyContext &keyContext_, KeyBlob &plainText)
+bool OpensslCrypto::AESDecrypt(const KeyBlob &preKey, KeyContext &keyContext_, KeyBlob &plainText)
 {
     KeyBlob shield = HashAndClip(preKey, keyContext_.secDiscard, AES_256_HASH_RANDOM_SIZE);
     if (keyContext_.encrypted.size < GCM_NONCE_BYTES + GCM_MAC_BYTES) {
@@ -75,7 +75,7 @@ bool OpensslCrypto::DecryptWithoutHuks(const KeyBlob &preKey, KeyContext &keyCon
     return true;
 }
 
-bool OpensslCrypto::EncryptWithoutHuks(const KeyBlob &preKey, const KeyBlob &plainText, KeyContext &keyContext_)
+bool OpensslCrypto::AESEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, KeyContext &keyContext_)
 {
     KeyBlob shield = HashAndClip(preKey, keyContext_.secDiscard, AES_256_HASH_RANDOM_SIZE);
     auto ctx = std::unique_ptr<EVP_CIPHER_CTX, decltype(&::EVP_CIPHER_CTX_free)>(

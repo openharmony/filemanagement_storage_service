@@ -55,8 +55,6 @@ public:
         KEY_CRYPT_HUKS,
         KEY_CRYPT_OPENSSL
     };
-    KeyEncryptType keyEncryptType_;
-    std::string KeyEncryptTypeToString(KeyEncryptType keyEncryptType_);
     
 protected:
     static bool SaveKeyBlob(const KeyBlob &blob, const std::string &path);
@@ -83,6 +81,8 @@ private:
 
     KeyContext keyContext_ {};
     uint8_t keyLen_ {};
+    KeyEncryptType keyEncryptType_;
+    std::string KeyEncryptTypeToString(KeyEncryptType keyEncryptType_) const;
 };
 } // namespace StorageDaemon
 } // namespace OHOS

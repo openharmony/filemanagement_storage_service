@@ -191,10 +191,8 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
     if (!CheckAndUpdateVersion()) {
         return false;
     }
-    if (auth.secret.IsEmpty()) {
-        if (!LoadAndSaveShield(auth, pathTemp, needGenerateShield)) {
-            return false;
-        }
+    if (auth.secret.IsEmpty() && !LoadAndSaveShield(auth, pathTemp, needGenerateShield)) {
+        return false;
     }
     if (!GenerateAndSaveKeyBlob(keyContext_.secDiscard, pathTemp + PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
         LOGE("GenerateAndSaveKeyBlob sec_discard failed");
@@ -318,7 +316,7 @@ bool BaseKey::Encrypt(const UserAuth &auth)
     bool ret;
     if (!auth.secret.IsEmpty()) {
         LOGI("Enhanced encrypt start");
-        ret = OpensslCrypto::EncryptWithoutHuks(auth.secret, keyInfo_.key, keyContext_);
+        ret = OpensslCrypto::AESEncrypt(auth.secret, keyInfo_.key, keyContext_);
         keyEncryptType_ = KeyEncryptType::KEY_CRYPT_OPENSSL;
     } else {
         LOGI("Huks encrypt start");
@@ -391,15 +389,11 @@ bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
     if (!LoadKeyBlob(keyContext_.encrypted, path + PATH_ENCRYPTED)) {
         return false;
     }
-    switch (keyEncryptType_) {
-        case KeyEncryptType::KEY_CRYPT_HUKS:
-            if (!LoadKeyBlob(keyContext_.shield, path + PATH_SHIELD)) {
-                keyContext_.encrypted.Clear();
-                return false;
-            }
-            break;
-        case KeyEncryptType::KEY_CRYPT_OPENSSL:
-            break;
+    if (keyEncryptType_ == KeyEncryptType::KEY_CRYPT_HUKS) {
+        if (!LoadKeyBlob(keyContext_.shield, path + PATH_SHIELD)) {
+            keyContext_.encrypted.Clear();
+            return false;
+        }
     }
     if (!LoadKeyBlob(keyContext_.secDiscard, path + PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
         keyContext_.encrypted.Clear();
@@ -415,7 +409,7 @@ bool BaseKey::Decrypt(const UserAuth &auth)
     switch (keyEncryptType_) {
         case KeyEncryptType::KEY_CRYPT_OPENSSL:
             LOGI("Enhanced decrypt key start");
-            ret = OpensslCrypto::DecryptWithoutHuks(auth.secret, keyContext_, keyInfo_.key);
+            ret = OpensslCrypto::AESDecrypt(auth.secret, keyContext_, keyInfo_.key);
             break;
         case KeyEncryptType::KEY_CRYPT_HUKS:
             LOGI("Huks decrypt key start");
