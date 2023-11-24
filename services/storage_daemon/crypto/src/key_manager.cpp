@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Huawei Device Co., Ltd.
+ * Copyright (C) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,6 +17,7 @@
 
 #include <string>
 
+#include "base_key.h"
 #include "directory_ex.h"
 #include "file_ex.h"
 #include "fscrypt_key_v1.h"
@@ -452,7 +453,6 @@ int KeyManager::UpdateUserAuth(unsigned int user, uint64_t secureUid,
         LOGE("Have not found user %{public}u el2 key", user);
         return -ENOENT;
     }
-
     auto item = userEl2Key_[user];
     UserAuth auth = {token, oldSecret, secureUid};
     if ((item->RestoreKey(auth) == false) && (item->RestoreKey(NULL_KEY_AUTH) == false)) {
@@ -488,6 +488,7 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::vector<uint8_t> &tok
         return 0;
     }
     std::string keyDir = USER_EL2_DIR + "/" + std::to_string(user);
+    std::string NEED_UPDATE_PATH = keyDir + PATH_LATEST + SUFFIX_NEED_UPDATE;
     if (!IsDir(keyDir)) {
         LOGE("Have not found user %{public}u el2", user);
         return -ENOENT;
@@ -507,6 +508,11 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::vector<uint8_t> &tok
         LOGE("Restore el failed");
         return -EFAULT;
     }
+    if (!FileExists(NEED_UPDATE_PATH) && (elKey->StoreKey(auth) == false)) {
+        LOGE("Store el failed");
+        return -EFAULT;
+    }
+    
     if (elKey->ActiveKey(RETRIEVE_KEY) == false) {
         LOGE("Active user %{public}u key failed", user);
         return -EFAULT;

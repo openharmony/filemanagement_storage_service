@@ -21,9 +21,9 @@
 #include <memory>
 #include <mutex>
 
-#include "storage_service_constant.h"
-#include "key_blob.h"
 #include "base_key.h"
+#include "key_blob.h"
+#include "storage_service_constant.h"
 #include "utils/file_utils.h"
 
 namespace OHOS {

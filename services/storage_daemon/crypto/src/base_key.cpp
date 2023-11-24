@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,6 +24,7 @@
 #include "file_ex.h"
 #include "huks_master.h"
 #include "libfscrypt/key_control.h"
+#include "openssl_crypto.h"
 #include "storage_service_log.h"
 #include "string_ex.h"
 #include "utils/file_utils.h"
@@ -186,39 +187,11 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
 {
     auto pathTemp = dir_ + PATH_KEY_TEMP;
     MkDirRecurse(pathTemp, S_IRWXU);
-
-    auto pathVersion = dir_ + PATH_FSCRYPT_VER;
-    std::string version;
-    if (OHOS::LoadStringFromFile(pathVersion, version)) {
-        if (version != std::to_string(keyInfo_.version)) {
-            LOGE("version already exist %{public}s, not expected %{public}d", version.c_str(), keyInfo_.version);
-            return false;
-        }
-    } else if (SaveStringToFileSync(pathVersion, std::to_string(keyInfo_.version)) == false) {
-        LOGE("save version failed, errno:%{public}d", errno);
+    const std::string NEED_UPDATE_PATH = pathTemp + SUFFIX_NEED_UPDATE;
+    if (!CheckAndUpdateVersion()) {
         return false;
     }
-    ChMod(pathVersion, S_IREAD | S_IWRITE);
-
-#ifdef USER_CRYPTO_MIGRATE_KEY
-    if (needGenerateShield) {
-        if (!HuksMaster::GetInstance().GenerateKey(auth, keyContext_.shield)) {
-            LOGE("GenerateKey of shield failed");
-            return false;
-        }
-    } else {
-        if (!LoadKeyBlob(keyContext_.shield, dir_ + PATH_LATEST + PATH_SHIELD)) {
-            keyContext_.encrypted.Clear();
-            return false;
-        }
-    }
-#else
-    if (!HuksMaster::GetInstance().GenerateKey(auth, keyContext_.shield)) {
-        LOGE("GenerateKey of shield failed");
-        return false;
-    }
-#endif
-    if (!SaveKeyBlob(keyContext_.shield, pathTemp + PATH_SHIELD)) {
+    if ((auth.secret.IsEmpty()) && (!LoadAndSaveShield(auth, pathTemp, needGenerateShield))) {
         return false;
     }
     if (!GenerateAndSaveKeyBlob(keyContext_.secDiscard, pathTemp + PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
@@ -231,8 +204,55 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
     if (!SaveKeyBlob(keyContext_.encrypted, pathTemp + PATH_ENCRYPTED)) {
         return false;
     }
+    if (!SaveStringToFile(NEED_UPDATE_PATH, KeyEncryptTypeToString(keyEncryptType_))) {
+        LOGE("make file fali");
+        return false;
+    }
     keyContext_.encrypted.Clear();
     LOGD("finish");
+    return true;
+}
+
+bool BaseKey::CheckAndUpdateVersion()
+{
+    auto pathVersion = dir_ + PATH_FSCRYPT_VER;
+    std::string version;
+    if (OHOS::LoadStringFromFile(pathVersion, version)) {
+        if (version != std::to_string(keyInfo_.version)) {
+            LOGE("version already exist %{public}s, not expected %{public}d", version.c_str(), keyInfo_.version);
+            return false;
+        }
+    } else if (SaveStringToFileSync(pathVersion, std::to_string(keyInfo_.version)) == false) {
+        LOGE("save version failed, errno:%{public}d", errno);
+        return false;
+    }
+    ChMod(pathVersion, S_IREAD | S_IWRITE);
+    return true;
+}
+
+bool BaseKey::LoadAndSaveShield(const UserAuth &auth, const std::string &pathTemp, bool needGenerateShield)
+{
+#ifdef USER_CRYPTO_MIGRATE_KEY
+        if (needGenerateShield) {
+            if (!HuksMaster::GetInstance().GenerateKey(auth, keyContext_.shield)) {
+                LOGE("GenerateKey of shield failed");
+                return false;
+            }
+        } else {
+            if (!LoadKeyBlob(keyContext_.shield, dir_ + PATH_LATEST + PATH_SHIELD)) {
+                keyContext_.encrypted.Clear();
+                return false;
+            }
+        }
+#else
+        if (!HuksMaster::GetInstance().GenerateKey(auth, keyContext_.shield)) {
+            LOGE("GenerateKey of shield failed");
+            return false;
+        }
+#endif
+        if (!SaveKeyBlob(keyContext_.shield, pathTemp + PATH_SHIELD)) {
+            return false;
+        }
     return true;
 }
 
@@ -293,7 +313,16 @@ bool BaseKey::UpdateKey(const std::string &keypath)
 bool BaseKey::Encrypt(const UserAuth &auth)
 {
     LOGD("enter");
-    auto ret = HuksMaster::GetInstance().EncryptKey(keyContext_, auth, keyInfo_);
+    bool ret;
+    if (!auth.secret.IsEmpty()) {
+        LOGI("Enhanced encrypt start");
+        ret = OpensslCrypto::AESEncrypt(auth.secret, keyInfo_.key, keyContext_);
+        keyEncryptType_ = KeyEncryptType::KEY_CRYPT_OPENSSL;
+    } else {
+        LOGI("Huks encrypt start");
+        ret = HuksMaster::GetInstance().EncryptKey(keyContext_, auth, keyInfo_);
+        keyEncryptType_ = KeyEncryptType::KEY_CRYPT_HUKS;
+    }
     keyContext_.shield.Clear();
     keyContext_.secDiscard.Clear();
     keyContext_.nonce.Clear();
@@ -344,18 +373,27 @@ bool BaseKey::RestoreKey(const UserAuth &auth)
 bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
 {
     LOGD("enter, path = %{public}s", path.c_str());
+    const std::string NEED_UPDATE_PATH = dir_ + PATH_LATEST + SUFFIX_NEED_UPDATE;
+    if (!auth.secret.IsEmpty() && FileExists(NEED_UPDATE_PATH)) {
+        keyEncryptType_ = KeyEncryptType::KEY_CRYPT_OPENSSL;
+        LOGI("set keyEncryptType_ as KEY_CRYPT_OPENSSL success");
+    } else if (auth.secret.IsEmpty() || (!auth.secret.IsEmpty() && !FileExists(NEED_UPDATE_PATH))) {
+        keyEncryptType_ = KeyEncryptType::KEY_CRYPT_HUKS;
+        LOGI("set keyEncryptType_ as KEY_CRYPT_HUKS success");
+    }
     auto ver = KeyCtrlLoadVersion(dir_.c_str());
     if (ver == FSCRYPT_INVALID || ver != keyInfo_.version) {
         LOGE("RestoreKey fail. bad version loaded %{public}u not expected %{public}u", ver, keyInfo_.version);
         return false;
     }
-
     if (!LoadKeyBlob(keyContext_.encrypted, path + PATH_ENCRYPTED)) {
         return false;
     }
-    if (!LoadKeyBlob(keyContext_.shield, path + PATH_SHIELD)) {
-        keyContext_.encrypted.Clear();
-        return false;
+    if (keyEncryptType_ == KeyEncryptType::KEY_CRYPT_HUKS) {
+        if (!LoadKeyBlob(keyContext_.shield, path + PATH_SHIELD)) {
+            keyContext_.encrypted.Clear();
+            return false;
+        }
     }
     if (!LoadKeyBlob(keyContext_.secDiscard, path + PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
         keyContext_.encrypted.Clear();
@@ -367,7 +405,17 @@ bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
 
 bool BaseKey::Decrypt(const UserAuth &auth)
 {
-    auto ret = HuksMaster::GetInstance().DecryptKey(keyContext_, auth, keyInfo_);
+    bool ret = false;
+    switch (keyEncryptType_) {
+        case KeyEncryptType::KEY_CRYPT_OPENSSL:
+            LOGI("Enhanced decrypt key start");
+            ret = OpensslCrypto::AESDecrypt(auth.secret, keyContext_, keyInfo_.key);
+            break;
+        case KeyEncryptType::KEY_CRYPT_HUKS:
+            LOGI("Huks decrypt key start");
+            ret = HuksMaster::GetInstance().DecryptKey(keyContext_, auth, keyInfo_);
+            break;
+    }
     keyContext_.encrypted.Clear();
     keyContext_.shield.Clear();
     keyContext_.secDiscard.Clear();
@@ -417,6 +465,16 @@ bool BaseKey::UpgradeKeys()
         }
     }
     return true;
+}
+
+std::string BaseKey::KeyEncryptTypeToString(KeyEncryptType keyEncryptType_) const
+{
+    switch (keyEncryptType_) {
+        case KeyEncryptType::KEY_CRYPT_OPENSSL:
+            return "KEY_CRYPT_OPENSSL";
+        case KeyEncryptType::KEY_CRYPT_HUKS:
+            return "KEY_CRYPT_HUKS";
+    }
 }
 } // namespace StorageDaemon
 } // namespace OHOS
