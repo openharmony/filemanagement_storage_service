@@ -43,6 +43,8 @@ private:
     int32_t DestroyEl1BundleDir(int32_t userId);
     int32_t PrepareEl2BackupDir(int32_t userId);
     int32_t DestroyEl2BackupDir(int32_t userId);
+    int32_t PrepareEl1Dir(int32_t userId);
+    int32_t DestroyEl1Dir(int32_t userId);
     int32_t SetElDirFscryptPolicy(int32_t userId, const std::string &level,
         const std::vector<FileList> &list);
 
@@ -52,6 +54,7 @@ private:
     const std::vector<DirInfo> rootDirVec_;
     const std::vector<DirInfo> subDirVec_;
     const std::vector<DirInfo> el2DirVec_;
+    const std::vector<DirInfo> el1DirVec_;
     const std::string bundle_ = "/data/app/el1/bundle/%d";
     std::mutex mutex_;
 };
