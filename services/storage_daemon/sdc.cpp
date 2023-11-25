@@ -36,6 +36,7 @@ static int32_t InitMainUser(const std::vector<std::string> &args)
     return OHOS::StorageDaemon::StorageDaemonClient::InitGlobalUserKeys();
 }
 
+#ifdef SDC_TEST_ENABLE
 static int32_t GenerateUserKeys(const std::vector<std::string> &args)
 {
     if (args.size() < 5) {
@@ -175,11 +176,13 @@ static int32_t UpdateKeyContext(const std::vector<std::string> &args)
     }
     return OHOS::StorageDaemon::StorageDaemonClient::UpdateKeyContext(userId);
 }
+#endif
 
 static const auto g_fscryptCmdHandler = std::map<std::string,
     std::function<int32_t(const std::vector<std::string> &)>> {
     {"init_global_key", InitGlobalKey},
     {"init_main_user", InitMainUser},
+#ifdef SDC_TEST_ENABLE
     {"generate_user_keys", GenerateUserKeys},
     {"prepare_user_space", PrepareUserSpace},
     {"delete_user_keys", DeleteUserKeys},
@@ -189,6 +192,7 @@ static const auto g_fscryptCmdHandler = std::map<std::string,
     {"inactive_user_key", InactiveUserKey},
     {"enable", EnableFscrypt},
     {"update_key_context", UpdateKeyContext},
+#endif
 };
 
 static int HandleFileCrypt(const std::string &cmd, const std::vector<std::string> &args)
