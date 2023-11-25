@@ -15,6 +15,16 @@ import("//build/ohos.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ohos_shared_library("storagestatistics") {
+  stack_protector_ret = true
+  sanitize = {
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+
   relative_install_dir = "module/file"
   subsystem_name = "filemanagement"
   part_name = "storage_service"
@@ -53,6 +63,16 @@ ohos_shared_library("storagestatistics") {
 }
 
 ohos_shared_library("volumemanager") {
+  stack_protector_ret = true
+  sanitize = {
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+
   relative_install_dir = "module/file"
   subsystem_name = "filemanagement"
   part_name = "storage_service"
