@@ -37,7 +37,8 @@ UserManager::UserManager()
                  {"/data/app/%s/%d/database", 0711, OID_ROOT, OID_ROOT}},
       el2DirVec_{{"/data/service/el2/%d/backup", 02771, OID_BACKUP, OID_BACKUP},
                  {"/data/service/el2/%d/backup/backup_sa", 0711, OID_BACKUP, OID_BACKUP},
-                 {"/data/app/el2/%d/log", 0711, OID_ROOT, OID_ROOT}}
+                 {"/data/app/el2/%d/log", 0711, OID_ROOT, OID_ROOT}},
+      el1DirVec_{{"/data/service/el1/%d/distributeddata", 0711, OID_DDMS, OID_DDMS}}
 {
 }
 
@@ -103,6 +104,11 @@ int32_t UserManager::PrepareUserDirs(int32_t userId, uint32_t flags)
         if (err != E_OK) {
             return err;
         }
+
+        int32_t errorCode = PrepareEl1Dir(userId);
+        if (errorCode != E_OK) {
+            LOGW("Prepare el1 dir fail, %{public}d.", errorCode);
+        }
     }
 
     return E_OK;
@@ -137,6 +143,9 @@ int32_t UserManager::DestroyUserDirs(int32_t userId, uint32_t flags)
         ret = (err != E_OK) ? err : ret;
 
         err = DestroyEl2BackupDir(userId);
+        ret = (err != E_OK) ? err : ret;
+
+        err = DestroyEl1Dir(userId);
         ret = (err != E_OK) ? err : ret;
     }
 
@@ -267,6 +276,28 @@ int32_t UserManager::PrepareEl2BackupDir(int32_t userId)
 int32_t UserManager::DestroyEl2BackupDir(int32_t userId)
 {
     for (const DirInfo &dir : el2DirVec_) {
+        if (!RmDirRecurse(StringPrintf(dir.path.c_str(), userId))) {
+            return E_DESTROY_DIR;
+        }
+    }
+
+    return E_OK;
+}
+
+int32_t UserManager::PrepareEl1Dir(int32_t userId)
+{
+    for (const DirInfo &dir : el1DirVec_) {
+        if (!PrepareDir(StringPrintf(dir.path.c_str(), userId), dir.mode, dir.uid, dir.gid)) {
+            return E_PREPARE_DIR;
+        }
+    }
+
+    return E_OK;
+}
+
+int32_t UserManager::DestroyEl1Dir(int32_t userId)
+{
+    for (const DirInfo &dir : el1DirVec_) {
         if (!RmDirRecurse(StringPrintf(dir.path.c_str(), userId))) {
             return E_DESTROY_DIR;
         }
