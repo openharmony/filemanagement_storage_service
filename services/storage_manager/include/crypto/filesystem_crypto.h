@@ -36,6 +36,8 @@ public:
                           const std::vector<uint8_t> &secret);
     int32_t InactiveUserKey(uint32_t userId);
     int32_t UpdateKeyContext(uint32_t userId);
+    int32_t LockUserScreen(uint32_t userId);
+    int32_t UnlockUserScreen(uint32_t userId);
 private:
     int32_t CheckUserIdRange(int32_t userId);
 };

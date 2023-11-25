@@ -128,6 +128,16 @@ public:
         return E_OK;
     }
 
+    virtual int32_t LockUserScreen(uint32_t userId) override
+    {
+        return E_OK;
+    }
+
+    virtual int32_t UnlockUserScreen(uint32_t userId) override
+    {
+        return E_OK;
+    }
+
     virtual int32_t UpdateKeyContext(uint32_t userId) override
     {
         return E_OK;

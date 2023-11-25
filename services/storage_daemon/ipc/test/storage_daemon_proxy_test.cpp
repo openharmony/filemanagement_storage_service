@@ -422,6 +422,46 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_InactiveUserKey_001, Tes
 }
 
 /**
+ * @tc.name: StorageDaemonProxyTest_LockUserScreen_001
+ * @tc.desc: Verify the LockUserScreen function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_LockUserScreen_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_LockUserScreen_001 start";
+
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
+    int32_t ret = proxy_->LockUserScreen(USER_ID1);
+    ASSERT_TRUE(ret == E_OK);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::INACTIVE_USER_KEY) == mock_->code_);
+
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_LockUserScreen_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProxyTest_UnlockUserScreen_001
+ * @tc.desc: Verify the UnlockUserScreen function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_UnlockUserScreen_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_UnlockUserScreen_001 start";
+
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
+    int32_t ret = proxy_->UnlockUserScreen(USER_ID1);
+    ASSERT_TRUE(ret == E_OK);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::INACTIVE_USER_KEY) == mock_->code_);
+
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_UnlockUserScreen_001 end";
+}
+
+/**
  * @tc.name: StorageDaemonProxyTest_UpdateKeyContext_001
  * @tc.desc: Verify the UpdateKeyContext function.
  * @tc.type: FUNC

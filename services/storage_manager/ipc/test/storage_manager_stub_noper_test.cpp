@@ -80,6 +80,8 @@ HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemote
         static_cast<int32_t>(StorageManagerInterfaceCode::GET_USER_STATS),
         static_cast<int32_t>(StorageManagerInterfaceCode::GET_ALL_VOLUMES),
         static_cast<int32_t>(StorageManagerInterfaceCode::GET_ALL_DISKS),
+        static_cast<int32_t>(StorageManagerInterfaceCode::LOCK_USER_SCREEN),
+        static_cast<int32_t>(StorageManagerInterfaceCode::UNLOCK_USER_SCREEN),
     };
 
     StorageManagerStubMock mock;

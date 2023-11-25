@@ -328,6 +328,24 @@ int32_t StorageDaemon::InactiveUserKey(uint32_t userId)
 #endif
 }
 
+int32_t StorageDaemon::LockUserScreen(uint32_t userId)
+{
+#ifdef USER_CRYPTO_MANAGER
+    return KeyManager::GetInstance()->LockUserScreen(userId);
+#else
+    return E_OK;
+#endif
+}
+
+int32_t StorageDaemon::UnlockUserScreen(uint32_t userId)
+{
+#ifdef USER_CRYPTO_MANAGER
+    return KeyManager::GetInstance()->UnlockUserScreen(userId);
+#else
+    return E_OK;
+#endif
+}
+
 int32_t StorageDaemon::UpdateKeyContext(uint32_t userId)
 {
 #ifdef USER_CRYPTO_MANAGER

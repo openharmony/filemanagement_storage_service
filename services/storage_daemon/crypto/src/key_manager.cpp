@@ -524,6 +524,12 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::vector<uint8_t> &tok
     return 0;
 }
 
+int KeyManager::UnlockUserScreen(uint32_t user)
+{
+    LOGI("user %{public}u UnlockUserScreen success", user);
+    return 0;
+}
+
 int KeyManager::InActiveUserKey(unsigned int user)
 {
     LOGI("start");
@@ -548,6 +554,11 @@ int KeyManager::InActiveUserKey(unsigned int user)
     return 0;
 }
 
+int KeyManager::LockUserScreen(uint32_t user)
+{
+    LOGI("user %{public}u LockUserScreen success", user);
+    return 0;
+}
 int KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type,
                                      const std::vector<FileList> &vec)
 {

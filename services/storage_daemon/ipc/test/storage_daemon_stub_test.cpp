@@ -52,7 +52,9 @@ namespace {
         static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_USER_AUTH),
         static_cast<int32_t>(StorageDaemonInterfaceCode::ACTIVE_USER_KEY),
         static_cast<int32_t>(StorageDaemonInterfaceCode::INACTIVE_USER_KEY),
-        static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_KEY_CONTEXT)
+        static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_KEY_CONTEXT),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::LOCK_USER_SCREEN),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::UNLOCK_USER_SCREEN),
     };
 }
 
@@ -146,6 +148,8 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRe
     EXPECT_CALL(mock, ActiveUserKey(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, InactiveUserKey(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, UpdateKeyContext(testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, LockUserScreen(testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, UnlockUserScreen(testing::_)).WillOnce(testing::Return(E_OK));
 
     for (auto c : g_code) {
         MessageParcel data;

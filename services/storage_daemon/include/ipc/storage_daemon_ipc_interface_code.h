@@ -24,19 +24,16 @@ namespace OHOS {
 namespace StorageDaemon {
     enum class StorageDaemonInterfaceCode {
         SHUTDOWN = 1,
-
         MOUNT,
         UMOUNT,
         CHECK,
         FORMAT,
         PARTITION,
         SET_VOL_DESC,
-
         PREPARE_USER_DIRS,
         DESTROY_USER_DIRS,
         START_USER,
         STOP_USER,
-
         INIT_GLOBAL_KEY,
         INIT_GLOBAL_USER_KEYS,
         CREATE_USER_KEYS,
@@ -47,7 +44,8 @@ namespace StorageDaemon {
         UPDATE_KEY_CONTEXT,
         CREATE_SHARE_FILE,
         DELETE_SHARE_FILE,
-
+        LOCK_USER_SCREEN,
+        UNLOCK_USER_SCREEN,
         SET_BUNDLE_QUOTA,
         GET_SPACE,
     };

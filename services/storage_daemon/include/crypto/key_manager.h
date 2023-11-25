@@ -62,6 +62,8 @@ public:
     int SetDirectoryElPolicy(unsigned int user, KeyType type,
                              const std::vector<FileList> &vec);
     int UpdateKeyContext(uint32_t userId);
+    int LockUserScreen(uint32_t user);
+    int UnlockUserScreen(uint32_t user);
 #ifdef USER_CRYPTO_MIGRATE_KEY
     int RestoreUserKey(uint32_t userId, KeyType type);
 #endif
