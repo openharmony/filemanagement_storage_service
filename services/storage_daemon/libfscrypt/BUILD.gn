@@ -32,6 +32,16 @@ config("fscrypt_utils_config") {
 }
 
 ohos_static_library("libfscryptutils") {
+  stack_protector_ret = true
+  sanitize = {
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+
   output_name = "libfscryptutils"
   sources = [
     "src/fscrypt_control.c",
@@ -57,6 +67,16 @@ ohos_static_library("libfscryptutils") {
 }
 
 ohos_static_library("libfscryptutils_static") {
+  stack_protector_ret = true
+  sanitize = {
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+
   output_name = "libfscryptutils_static"
   sources = [
     "src/fscrypt_control.c",
