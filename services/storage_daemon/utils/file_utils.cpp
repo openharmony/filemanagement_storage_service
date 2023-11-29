@@ -486,6 +486,7 @@ void MoveFileManagerData(const std::string &filesPath)
     MoveDataShell(filesPath + "Download/", docsPath);
     MoveDataShell(filesPath + "Documents/", docsPath);
     MoveDataShell(filesPath + "Desktop/", docsPath);
+    MoveDataShell(filesPath + ".Trash/", docsPath);
 }
 
 void ChownRecursion(const std::string dir, uid_t uid, gid_t gid)
