@@ -67,6 +67,8 @@ private:
     int32_t HandleUpdateUserAuth(MessageParcel &data, MessageParcel &reply);
     int32_t HandleActiveUserKey(MessageParcel &data, MessageParcel &reply);
     int32_t HandleInactiveUserKey(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleLockUserScreen(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleUnlockUserScreen(MessageParcel &data, MessageParcel &reply);
     int32_t HandleUpdateKeyContext(MessageParcel &data, MessageParcel &reply);
 
     // app file share api

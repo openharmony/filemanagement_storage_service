@@ -50,6 +50,8 @@ public:
     static int32_t InactiveUserKey(uint32_t userId);
     static int32_t FscryptEnable(const std::string &fscryptOptions);
     static int32_t UpdateKeyContext(uint32_t userId);
+    static int32_t LockUserScreen(uint32_t userId);
+    static int32_t UnlockUserScreen(uint32_t userId);
 
 private:
     static sptr<IStorageDaemon> GetStorageDaemonProxy(void);

@@ -25,6 +25,7 @@ namespace StorageManager {
 using namespace std;
 
 constexpr pid_t ACCOUNT_UID = 3058;
+constexpr pid_t STORAGE_MANAGER_UID = 1090;
 const std::string PERMISSION_STORAGE_MANAGER = "ohos.permission.STORAGE_MANAGER";
 const std::string PERMISSION_MOUNT_MANAGER = "ohos.permission.MOUNT_UNMOUNT_MANAGER";
 const std::string PERMISSION_FORMAT_MANAGER = "ohos.permission.MOUNT_FORMAT_MANAGER";
@@ -46,6 +47,18 @@ bool CheckClientPermission(const std::string& permissionStr)
         return true;
     }
     LOGE("StorageManager permissionCheck error, need %{public}s", permissionStr.c_str());
+    return false;
+}
+
+bool CheckClientPermissionForCrypt()
+{
+    Security::AccessToken::AccessTokenID tokenCaller = IPCSkeleton::GetCallingTokenID();
+    auto uid = IPCSkeleton::GetCallingUid();
+    auto tokenType = Security::AccessToken::AccessTokenKit::GetTokenTypeFlag(tokenCaller);
+    if (tokenType == Security::AccessToken::TOKEN_NATIVE && (uid == ACCOUNT_UID || uid == STORAGE_MANAGER_UID)) {
+        LOGI("StorageMangaer CheckClientPermissionForCrypt permissionCheck pass!");
+        return true;
+    }
     return false;
 }
 
@@ -131,6 +144,10 @@ StorageManagerStub::StorageManagerStub()
         &StorageManagerStub::HandleActiveUserKey;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::INACTIVE_USER_KEY)] =
         &StorageManagerStub::HandleInactiveUserKey;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::LOCK_USER_SCREEN)] =
+        &StorageManagerStub::HandleLockUserScreen;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::UNLOCK_USER_SCREEN)] =
+        &StorageManagerStub::HandleUnlockUserScreen;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::UPDATE_KEY_CONTEXT)] =
         &StorageManagerStub::HandleUpdateKeyContext;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::CREATE_SHARE_FILE)] =
@@ -694,6 +711,36 @@ int32_t StorageManagerStub::HandleInactiveUserKey(MessageParcel &data, MessagePa
     }
     uint32_t userId = data.ReadUint32();
     int32_t err = InactiveUserKey(userId);
+    if (!reply.WriteInt32(err)) {
+        LOGE("Write reply error code failed");
+        return E_WRITE_REPLY_ERR;
+    }
+
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleLockUserScreen(MessageParcel &data, MessageParcel &reply)
+{
+    if (!CheckClientPermissionForCrypt()) {
+        return E_PERMISSION_DENIED;
+    }
+    uint32_t userId = data.ReadUint32();
+    int32_t err = LockUserScreen(userId);
+    if (!reply.WriteInt32(err)) {
+        LOGE("Write reply error code failed");
+        return E_WRITE_REPLY_ERR;
+    }
+
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleUnlockUserScreen(MessageParcel &data, MessageParcel &reply)
+{
+    if (!CheckClientPermissionForCrypt()) {
+        return E_PERMISSION_DENIED;
+    }
+    uint32_t userId = data.ReadUint32();
+    int32_t err = UnlockUserScreen(userId);
     if (!reply.WriteInt32(err)) {
         LOGE("Write reply error code failed");
         return E_WRITE_REPLY_ERR;

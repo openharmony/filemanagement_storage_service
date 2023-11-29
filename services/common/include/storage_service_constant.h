@@ -30,13 +30,20 @@ constexpr uint32_t GLOBAL_USER_ID = 0;
 
 static const std::string EL1 = "el1";
 static const std::string EL2 = "el2";
+static const std::string EL3 = "el3";
+static const std::string EL4 = "el4";
+
 enum KeyType {
     EL1_KEY = 1,
     EL2_KEY = 2,
+    EL3_KEY = 3,
+    EL4_KEY = 4,
 };
 static std::map<std::string, KeyType> EL_DIR_MAP = {
     {EL1, EL1_KEY},
     {EL2, EL2_KEY},
+    {EL3, EL3_KEY},
+    {EL4, EL4_KEY},
 };
 
 enum QuotaIdType {

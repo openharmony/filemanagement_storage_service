@@ -266,5 +266,49 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_UpdateKeyContext_0000,
     storageManagerClient_->DeleteUserKeys(userId);
     GTEST_LOG_(INFO) << "Client_manager_service_UpdateKeyContext_0000 end";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Client_manager_LockUserScreen_0000
+ * @tc.name: Client_manager_service_LockUserScreen_0000
+ * @tc.desc: Test function of LockUserScreen interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(StorageManagerClientTest, Client_manager_service_LockUserScreen_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerClientTest-begin Client_manager_service_LockUserScreen_0000";
+
+    ASSERT_TRUE(storageManagerClient_ != nullptr);
+
+    uint32_t userId = 107;
+    int32_t ret = storageManagerClient_->LockUserScreen(userId);
+    EXPECT_TRUE(ret == E_OK);
+
+    GTEST_LOG_(INFO) << "Client_manager_service_LockUserScreen_0000 end";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Client_manager_UnlockUserScreen_0000
+ * @tc.name: Client_manager_service_UnlockUserScreen_0000
+ * @tc.desc: Test function of UnlockUserScreen interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(StorageManagerClientTest, Client_manager_service_UnlockUserScreen_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerClientTest-begin Client_manager_service_UnlockUserScreen_0000";
+
+    ASSERT_TRUE(storageManagerClient_ != nullptr);
+
+    uint32_t userId = 107;
+    uint32_t ret = storageManagerClient_->UnlockUserScreen(userId);
+    EXPECT_TRUE(ret == E_OK);
+
+    GTEST_LOG_(INFO) << "Client_manager_service_UnlockUserScreen_0000 end";
+}
 }
 }

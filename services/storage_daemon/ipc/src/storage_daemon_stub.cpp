@@ -62,6 +62,10 @@ StorageDaemonStub::StorageDaemonStub()
         &StorageDaemonStub::HandleActiveUserKey;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::INACTIVE_USER_KEY)] =
         &StorageDaemonStub::HandleInactiveUserKey;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::LOCK_USER_SCREEN)] =
+        &StorageDaemonStub::HandleLockUserScreen;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::UNLOCK_USER_SCREEN)] =
+        &StorageDaemonStub::HandleUnlockUserScreen;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::UPDATE_KEY_CONTEXT)] =
         &StorageDaemonStub::HandleUpdateKeyContext;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::CREATE_SHARE_FILE)] =
@@ -309,6 +313,30 @@ int32_t StorageDaemonStub::HandleInactiveUserKey(MessageParcel &data, MessagePar
     uint32_t userId = data.ReadUint32();
 
     int err = InactiveUserKey(userId);
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
+
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleLockUserScreen(MessageParcel &data, MessageParcel &reply)
+{
+    uint32_t userId = data.ReadUint32();
+
+    int err = LockUserScreen(userId);
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
+
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleUnlockUserScreen(MessageParcel &data, MessageParcel &reply)
+{
+    uint32_t userId = data.ReadUint32();
+
+    int err = UnlockUserScreen(userId);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }

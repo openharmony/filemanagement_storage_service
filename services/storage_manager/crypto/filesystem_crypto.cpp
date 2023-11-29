@@ -116,6 +116,32 @@ int32_t FileSystemCrypto::InactiveUserKey(uint32_t userId)
     return err;
 }
 
+int32_t FileSystemCrypto::LockUserScreen(uint32_t userId)
+{
+    LOGI("UserId: %{public}u", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->LockUserScreen(userId);
+}
+
+int32_t FileSystemCrypto::UnlockUserScreen(uint32_t userId)
+{
+    LOGI("UserId: %{public}u", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->UnlockUserScreen(userId);
+}
+
 int32_t FileSystemCrypto::UpdateKeyContext(uint32_t userId)
 {
     LOGI("UserId: %{public}u", userId);

@@ -241,6 +241,50 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_InactiveUserKey_0000, Test
 }
 
 /**
+ * @tc.number: SUB_STORAGE_Storage_manager_crypto_LockUserScreen_0000
+ * @tc.name: Storage_manager_crypto_LockUserScreen_0000
+ * @tc.desc: Test function of LockUserScreen interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_LockUserScreen_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileSystemCryptoTest-start Storage_manager_crypto_LockUserScreen_0000";
+    std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
+        DelayedSingleton<FileSystemCrypto>::GetInstance();
+    int32_t userId = 102;
+
+    int32_t ret = fileSystemCrypto_->LockUserScreen(userId);
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_LockUserScreen_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_crypto_UnlockUserScreen_0000
+ * @tc.name: Storage_manager_crypto_UnlockUserScreen_0000
+ * @tc.desc: Test function of UnlockUserScreen interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_UnlockUserScreen_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileSystemCryptoTest-start Storage_manager_crypto_UnlockUserScreen_0000";
+    std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
+        DelayedSingleton<FileSystemCrypto>::GetInstance();
+    int32_t userId = 102;
+
+    int32_t ret = fileSystemCrypto_->UnlockUserScreen(userId);
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_UnlockUserScreen_0000";
+}
+
+/**
  * @tc.number: SUB_STORAGE_Storage_manager_crypto_InactiveUserKey_0001
  * @tc.name: Storage_manager_crypto_InactiveUserKey_0001
  * @tc.desc: Test function of InactiveUserKey interface for Parameters ERROR which userId not in [101, 1099].

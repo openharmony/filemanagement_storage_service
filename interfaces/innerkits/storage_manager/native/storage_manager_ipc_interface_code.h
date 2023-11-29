@@ -63,6 +63,8 @@ namespace StorageManager {
         UPDATE_USER_AUTH,
         ACTIVE_USER_KEY,
         INACTIVE_USER_KEY,
+        LOCK_USER_SCREEN,
+        UNLOCK_USER_SCREEN,
         UPDATE_KEY_CONTEXT,
         GET_VOL_BY_UUID,
         GET_VOL_BY_ID,

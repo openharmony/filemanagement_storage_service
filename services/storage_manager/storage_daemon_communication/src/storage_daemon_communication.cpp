@@ -239,6 +239,28 @@ int32_t StorageDaemonCommunication::InactiveUserKey(uint32_t userId)
     return storageDaemon_->InactiveUserKey(userId);
 }
 
+int32_t StorageDaemonCommunication::LockUserScreen(uint32_t userId)
+{
+    LOGI("enter");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    return storageDaemon_->LockUserScreen(userId);
+}
+
+int32_t StorageDaemonCommunication::UnlockUserScreen(uint32_t userId)
+{
+    LOGI("enter");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    return storageDaemon_->UnlockUserScreen(userId);
+}
+
 int32_t StorageDaemonCommunication::UpdateKeyContext(uint32_t userId)
 {
     LOGI("enter");

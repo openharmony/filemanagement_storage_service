@@ -16,20 +16,27 @@
 #include "account_subscriber/account_subscriber.h"
 
 #include <cinttypes>
+#include <memory>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <vector>
 
+#ifdef USER_CRYPTO_MANAGER
+#include "crypto/filesystem_crypto.h"
+#endif
 #include "appexecfwk_errors.h"
 #include "bundle_info.h"
 #include "common_event_manager.h"
 #include "common_event_support.h"
 #include "iservice_registry.h"
+#include "os_account_manager.h"
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
 #include "want.h"
 
 using namespace OHOS::AAFwk;
+using namespace OHOS::AccountSA;
 namespace OHOS {
 namespace StorageManager {
 std::shared_ptr<DataShare::DataShareHelper> AccountSubscriber::mediaShare_ = nullptr;
@@ -45,6 +52,7 @@ bool AccountSubscriber::Subscriber(void)
         EventFwk::MatchingSkills matchingSkills;
         matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USER_UNLOCKED);
         matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USER_SWITCHED);
+        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_LOCKED);
         EventFwk::CommonEventSubscribeInfo subscribeInfo(matchingSkills);
         AccountSubscriber_ = std::make_shared<AccountSubscriber>(subscribeInfo);
         EventFwk::CommonEventManager::SubscribeCommonEvent(AccountSubscriber_);
@@ -57,8 +65,6 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
     const AAFwk::Want& want = eventData.GetWant();
     std::string action = want.GetAction();
     int32_t userId = eventData.GetCode();
-    LOGI("StorageManager: OnReceiveEvent action:%{public}s.", action.c_str());
-
     std::unique_lock<std::mutex> lock(mutex_);
     /* get user status */
     uint32_t status = 0;
@@ -66,7 +72,6 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
     if (entry != userRecord_.end()) {
         status = entry->second;
     }
-
     /* update status */
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USER_UNLOCKED) {
         status |= 1 << USER_UNLOCK_BIT;
@@ -77,16 +82,25 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
         if (oldEntry != userRecord_.end()) {
             userRecord_[userId_] = oldEntry->second & (~USER_SWITCH_BIT);
         }
+    } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_LOCKED) {
+        std::vector<int32_t> ids;
+        int ret = AccountSA::OsAccountManager::QueryActiveOsAccountIds(ids);
+        if (ret != 0 || ids.empty()) {
+            LOGE("Query active userid failed, ret = %{public}u", ret);
+            return;
+        }
+        userId = ids[0];
+        if (!OnReceiveEventLockUserScreen(userId)) {
+            LOGE("user %{public}u LockUserScreen fail", userId);
+            return;
+        }
     }
     userId_ = userId;
     userRecord_[userId] = status;
-
-    LOGI("userId %{public}d, status %{public}d", userId, status);
     if (status != (1 << USER_UNLOCK_BIT | 1 << USER_SWITCH_BIT)) {
         return;
     }
     lock.unlock();
-
     auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (sam == nullptr) {
         LOGE("GetSystemAbilityManager sam == nullptr");
@@ -97,9 +111,22 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
         LOGE("GetSystemAbility remoteObj == nullptr");
         return;
     }
-
-    LOGI("connect %{public}d media library", userId);
     mediaShare_ = DataShare::DataShareHelper::Creator(remoteObj, "datashare:///media");
+}
+bool AccountSubscriber::OnReceiveEventLockUserScreen(int32_t userId)
+{
+    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
+    if (fsCrypto != nullptr) {
+        int ret = fsCrypto->LockUserScreen(userId);
+        if (ret != 0) {
+            LOGE("user %{public}u LockUserScreen fail", userId);
+            return false;
+        }
+    } else {
+        LOGE("fsCrypto is nullptr");
+        return false;
+    }
+    return true;
 }
 }  // namespace StorageManager
 }  // namespace OHOS

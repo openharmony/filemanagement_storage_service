@@ -54,6 +54,8 @@ public:
                                   const std::vector<uint8_t> &secret) override;
     virtual int32_t InactiveUserKey(uint32_t userId) override;
     virtual int32_t UpdateKeyContext(uint32_t userId) override;
+    virtual int32_t LockUserScreen(uint32_t userId) override;
+    virtual int32_t UnlockUserScreen(uint32_t userId) override;
 
     // app file share api
     virtual std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,

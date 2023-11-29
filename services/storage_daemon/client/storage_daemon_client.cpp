@@ -106,7 +106,6 @@ int32_t StorageDaemonClient::PrepareUserDirs(int32_t userId, uint32_t flags)
         LOGE("get storage daemon service failed");
         return -EAGAIN;
     }
-
     return client->PrepareUserDirs(userId, flags);
 }
 
@@ -122,7 +121,6 @@ int32_t StorageDaemonClient::DestroyUserDirs(int32_t userId, uint32_t flags)
         LOGE("get storage daemon service failed");
         return -EAGAIN;
     }
-
     return client->DestroyUserDirs(userId, flags);
 }
 
@@ -305,6 +303,38 @@ int32_t StorageDaemonClient::InactiveUserKey(uint32_t userId)
     }
 
     return client->InactiveUserKey(userId);
+}
+
+int32_t StorageDaemonClient::LockUserScreen(uint32_t userId)
+{
+    if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
+        LOGE("service check failed");
+        return -EAGAIN;
+    }
+
+    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
+    if (client == nullptr) {
+        LOGE("get storage daemon service failed");
+        return -EAGAIN;
+    }
+
+    return client->LockUserScreen(userId);
+}
+
+int32_t StorageDaemonClient::UnlockUserScreen(uint32_t userId)
+{
+    if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
+        LOGE("service check failed");
+        return -EAGAIN;
+    }
+
+    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
+    if (client == nullptr) {
+        LOGE("get storage daemon service failed");
+        return -EAGAIN;
+    }
+
+    return client->UnlockUserScreen(userId);
 }
 
 int32_t StorageDaemonClient::UpdateKeyContext(uint32_t userId)

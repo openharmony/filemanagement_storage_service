@@ -66,6 +66,8 @@ namespace {
         static_cast<int32_t>(StorageManagerInterfaceCode::GET_USER_STATS),
         static_cast<int32_t>(StorageManagerInterfaceCode::GET_ALL_VOLUMES),
         static_cast<int32_t>(StorageManagerInterfaceCode::GET_ALL_DISKS),
+        static_cast<int32_t>(StorageManagerInterfaceCode::LOCK_USER_SCREEN),
+        static_cast<int32_t>(StorageManagerInterfaceCode::UNLOCK_USER_SCREEN),
     };
 }
 
@@ -171,6 +173,8 @@ HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemote
         .WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, ActiveUserKey(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, InactiveUserKey(testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, LockUserScreen(testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, UnlockUserScreen(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, UpdateKeyContext(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, GetFreeSizeOfVolume(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, GetTotalSizeOfVolume(testing::_, testing::_)).WillOnce(testing::Return(E_OK));

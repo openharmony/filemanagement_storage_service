@@ -51,7 +51,8 @@
         "safwk",
         "samgr",
         "selinux_adapter",
-        "app_file_service"
+        "app_file_service",
+        "os_account"
       ],
       "third_party": [
         "bounds_checking_function",

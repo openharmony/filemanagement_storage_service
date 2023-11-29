@@ -131,5 +131,27 @@ int32_t StorageManagerClient::UpdateKeyContext(uint32_t userId)
 
     return client->UpdateKeyContext(userId);
 }
+
+int32_t StorageManagerClient::LockUserScreen(uint32_t userId)
+{
+    sptr<IStorageManager> client = GetStorageManagerProxy();
+    if (client == nullptr) {
+        LOGE("get storage manager service failed");
+        return -EFAULT;
+    }
+
+    return client->LockUserScreen(userId);
+}
+
+int32_t StorageManagerClient::UnlockUserScreen(uint32_t userId)
+{
+    sptr<IStorageManager> client = GetStorageManagerProxy();
+    if (client == nullptr) {
+        LOGE("get storage manager service failed");
+        return -EFAULT;
+    }
+
+    return client->UnlockUserScreen(userId);
+}
 }
 }
