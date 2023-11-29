@@ -29,6 +29,7 @@ public:
     ~StorageRlMap() {}
     V& operator[](const K& key)
     {
+        Utils::UniqueWriteGuard<Utils::RWLock> mapGuard(this->rl_);
         return map_[key];
     }
     void Erase(const K& key)

@@ -66,7 +66,7 @@ std::string VolumeManager::CreateVolume(const std::string diskId, dev_t device)
         return "";
     }
 
-    volumes_[volId] = info;
+    volumes_.Insert(volId, info);
 
     StorageManagerClient client;
     ret = client.NotifyVolumeCreated(info);
