@@ -21,13 +21,11 @@ int64_t GetRoundSize(int64_t size)
 {
     uint64_t val = 1;
     int64_t multple = UNIT;
-    int64_t stdMultiple = STD_UNIT;
-    while (val * stdMultiple < size) {
+    while (val * multple < size) {
         val <<= 1;
-        if (val > THRESHOLD) {
+        if (val > THRESHOLD && multple < ONE_GB)  {
             val = 1;
             multple *= UNIT;
-            stdMultiple *= STD_UNIT;
         }
     }
     return val * multple;

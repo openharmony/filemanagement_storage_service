@@ -20,8 +20,8 @@
 namespace OHOS {
 namespace StorageManager {
 static const int64_t UNIT = 1000;
-static const int64_t STD_UNIT = 1024;
 static const int64_t THRESHOLD = 512;
+static const int64_t ONE_GB = 10000000000;
 int64_t GetRoundSize(int64_t size);
 } // namespace STORAGE_MANAGER
 } // namespace OHOS
