@@ -19,10 +19,19 @@
 
 namespace OHOS {
 static constexpr OHOS::HiviewDFX::HiLogLabel LOG_LABEL = { LOG_CORE, LOG_DOMAIN, STORAGE_LOG_TAG};
+static constexpr OHOS::HiviewDFX::HiLogLabel KLOG_LABEL = { LOG_KMSG, LOG_DOMAIN, STORAGE_LOG_TAG};
 
+#if defined KMSG_LOG
+#define PRINT_LOG(Level, fmt, ...) \
+    OHOS::HiviewDFX::HiLog::Level(OHOS::LOG_LABEL, "[%{public}s:%{public}d] " fmt, \
+                            __FUNCTION__, __LINE__, ##__VA_ARGS__); \
+    OHOS::HiviewDFX::HiLog::Level(OHOS::KLOG_LABEL, "[%{public}s:%{public}d] " fmt, \
+                            __FUNCTION__, __LINE__, ##__VA_ARGS__)
+#else
 #define PRINT_LOG(Level, fmt, ...) \
     OHOS::HiviewDFX::HiLog::Level(OHOS::LOG_LABEL, "[%{public}s:%{public}d] " fmt, \
                             __FUNCTION__, __LINE__, ##__VA_ARGS__)
+#endif
 
 #define LOGD(fmt, ...) PRINT_LOG(Debug, fmt, ##__VA_ARGS__)
 #define LOGI(fmt, ...) PRINT_LOG(Info, fmt, ##__VA_ARGS__)
