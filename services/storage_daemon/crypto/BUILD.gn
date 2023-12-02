@@ -57,6 +57,7 @@ ohos_static_library("libsdcrypto") {
     "LOG_DOMAIN = 0xD004301",
     "OPENSSL_SUPPRESS_DEPRECATED",
     "USER_CRYPTO_MIGRATE_KEY",
+    "KMSG_LOG",
   ]
 
   configs = [ ":storage_daemon_crypto_config" ]
