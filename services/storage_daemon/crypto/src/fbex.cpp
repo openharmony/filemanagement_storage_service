@@ -157,8 +157,9 @@ int FBEX::LockScreenToKernel(uint32_t userId)
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
         return -errno;
     }
-
-    FbeOpts ops{.user = userId};
+    FbeOpts ops;
+    (void)memset_s(&ops, sizeof(FbeOpts), 0, sizeof(FbeOpts));
+    ops.user = userId;
     int ret = ioctl(fd, FBEX_IOC_LOCK_SCREEN, &ops);
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);

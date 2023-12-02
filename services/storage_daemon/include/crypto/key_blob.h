@@ -59,6 +59,14 @@ const std::string DEVICE_EL1_DIR = STORAGE_DAEMON_DIR + "/sd";
 class KeyBlob {
 public:
     KeyBlob() = default;
+    KeyBlob(KeyBlob const &blob)
+    {
+        Alloc(blob.size);
+        auto ret = memcpy_s(data.get(), size, blob.data.get(), blob.size);
+        if (ret != EOK) {
+            Clear();
+        }
+    }
     ~KeyBlob()
     {
         Clear();

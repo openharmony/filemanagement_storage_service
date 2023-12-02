@@ -38,10 +38,7 @@ int32_t KeyManager::DeleteUserKeys(unsigned int user)
 {
     return E_OK;
 }
-int32_t KeyManager::UpdateUserAuth(unsigned int user, uint64_t secureUid,
-    const std::vector<uint8_t> &token,
-    const std::vector<uint8_t> &oldSecret,
-    const std::vector<uint8_t> &newSecret)
+int32_t KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret *userTokenSecret)
 {
     return E_OK;
 }

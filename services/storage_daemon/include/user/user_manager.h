@@ -52,6 +52,7 @@ private:
 
     static std::shared_ptr<UserManager> instance_;
     const std::vector<DirInfo> rootDirVec_;
+    const std::vector<DirInfo> eceSeceDirVec_;
     const std::vector<DirInfo> subDirVec_;
     const std::vector<DirInfo> el2DirVec_;
     const std::vector<DirInfo> el1DirVec_;

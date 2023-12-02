@@ -51,6 +51,7 @@ void TraverseDirUevent(const std::string &path, bool flag);
 void ChownRecursion(const std::string dir, uid_t uid, gid_t gid);
 int IsSameGidUid(const std::string dir, uid_t uid, gid_t gid);
 void MoveFileManagerData(const std::string &filesPath);
+void OpenSubFile(const std::string &path, std::vector<std::string>  &dirInfo);
 }
 }
 

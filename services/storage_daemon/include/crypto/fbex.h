@@ -23,8 +23,8 @@ namespace StorageDaemon {
 constexpr uint32_t USERID_GLOBAL_EL1 = 0;
 constexpr uint32_t TYPE_EL1 = 0;
 constexpr uint32_t TYPE_EL2 = 1;
-constexpr uint32_t TYPE_EL3 = 2;
-constexpr uint32_t TYPE_EL4 = 3;
+constexpr uint32_t TYPE_EL3 = 3;
+constexpr uint32_t TYPE_EL4 = 2;
 constexpr uint32_t TYPE_GLOBAL_EL1 = 4;
 
 constexpr uint32_t FBEX_IV_SIZE = 64;
