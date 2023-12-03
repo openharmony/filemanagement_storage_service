@@ -17,11 +17,19 @@
 #define OHOS_STORAGE_DAEMON_STORAGE_DAEMON_H
 
 #include <mutex>
-#include "ipc/storage_daemon_stub.h"
 #include "system_ability_status_change_stub.h"
+#include "ipc/storage_daemon_stub.h"
+#include <vector>
 
 namespace OHOS {
 namespace StorageDaemon {
+
+struct UserTokenSecret {
+    const std::vector<uint8_t> token;
+    const std::vector<uint8_t> oldSecret;
+    const std::vector<uint8_t> newSecret;
+    uint64_t secureUid;
+};
 class StorageDaemon : public StorageDaemonStub {
 public:
     StorageDaemon() = default;

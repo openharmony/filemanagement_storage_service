@@ -23,6 +23,7 @@ config("fscrypt_utils_config") {
     "${start_init_services_path}/log",
     "${start_init_interfaces_path}/innerkits/include",
     "${start_init_interfaces_path}/innerkits/include/param",
+    "${storage_service_common_path}/include",
   ]
 
   cflags = [
@@ -90,6 +91,11 @@ ohos_static_library("libfscryptutils_static") {
   }
 
   configs = [ ":fscrypt_utils_config" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "init:libbegetutil",
+  ]
 
   subsystem_name = "filemanagement"
   part_name = "storage_service"

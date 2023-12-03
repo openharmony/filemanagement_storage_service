@@ -73,6 +73,7 @@ ohos_static_library("libsdcrypto") {
     "hilog:libhilog",
     "huks:libhukssdk",
     "init:libbegetutil",
+    "ipc:ipc_core",
   ]
 
   subsystem_name = "filemanagement"

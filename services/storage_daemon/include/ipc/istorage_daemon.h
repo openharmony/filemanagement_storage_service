@@ -25,7 +25,9 @@ class IStorageDaemon : public IRemoteBroker {
 public:
     enum {
         CRYPTO_FLAG_EL1 = 1,
-        CRYPTO_FLAG_EL2,
+        CRYPTO_FLAG_EL2 = 2,
+        CRYPTO_FLAG_EL3 = 4,
+        CRYPTO_FLAG_EL4 = 8,
     };
 
     virtual int32_t Shutdown() = 0;

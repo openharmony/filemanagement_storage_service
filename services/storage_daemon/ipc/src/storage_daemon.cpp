@@ -170,6 +170,8 @@ int32_t StorageDaemon::RestoreUserKey(int32_t userId, uint32_t flags)
 
 int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
+    //CRYPTO_FLAG_EL3 create el3,  CRYPTO_FLAG_EL4 create el4
+    flags = flags | IStorageDaemon::CRYPTO_FLAG_EL3 | IStorageDaemon::CRYPTO_FLAG_EL4;
 #ifdef USER_CRYPTO_MANAGER
     int32_t ret = KeyManager::GetInstance()->GenerateUserKeys(userId, flags);
 #ifdef USER_CRYPTO_MIGRATE_KEY
@@ -188,6 +190,8 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
 
 int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
 {
+    //CRYPTO_FLAG_EL3 destroy el3,  CRYPTO_FLAG_EL4 destroy el4
+    flags = flags | IStorageDaemon::CRYPTO_FLAG_EL3 | IStorageDaemon::CRYPTO_FLAG_EL4;
     int32_t ret = UserManager::GetInstance()->DestroyUserDirs(userId, flags);
     if (ret != E_OK) {
         LOGW("Destroy user %{public}d dirs failed, please check", userId);
@@ -263,8 +267,10 @@ int32_t StorageDaemon::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                                       const std::vector<uint8_t> &oldSecret,
                                       const std::vector<uint8_t> &newSecret)
 {
+    UserTokenSecret userTokenSecret = {
+        .token = token, .oldSecret = oldSecret, .newSecret = newSecret, .secureUid = secureUid};
 #ifdef USER_CRYPTO_MANAGER
-    return KeyManager::GetInstance()->UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
+    return KeyManager::GetInstance()->UpdateUserAuth(userId, &userTokenSecret);
 #else
     return E_OK;
 #endif
@@ -280,7 +286,8 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuth(uint32_t userId, const s
     if (ret != E_OK) {
         return ret;
     }
-    ret = KeyManager::GetInstance()->UpdateUserAuth(userId, 0, token, {'!'}, secret, false);
+    UserTokenSecret userTokenSecret = {.token = token, .oldSecret = {'!'}, .newSecret = secret, .secureUid = 0};
+    ret = KeyManager::GetInstance()->UpdateUserAuth(userId, &userTokenSecret);
     if (ret != E_OK) {
         return ret;
     }

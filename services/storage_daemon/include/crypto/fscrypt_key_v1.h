@@ -18,6 +18,7 @@
 #include "base_key.h"
 #include "fscrypt_key_v1_ext.h"
 #include "libfscrypt/key_control.h"
+#include "fbex.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -33,10 +34,13 @@ public:
 
     bool ActiveKey(uint32_t flag = 0, const std::string &mnt = MNT_DATA);
     bool InactiveKey(uint32_t flag = 0, const std::string &mnt = MNT_DATA);
+    bool LockUserScreen(uint32_t flag = 0, uint32_t sdpClass = 0, const std::string &mnt = MNT_DATA);
+    bool UnlockUserScreen(uint32_t flag = 0, uint32_t sdpClass = 0, const std::string &mnt = MNT_DATA);
 
 private:
     bool GenerateKeyDesc();
     bool InstallKeyToKeyring();
+    bool InstallEceSeceKeyToKeyring(uint32_t sdpClass);
     bool UninstallKeyToKeyring();
     FscryptKeyV1Ext fscryptV1Ext;
 };

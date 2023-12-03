@@ -33,6 +33,8 @@ UserManager::UserManager()
     : rootDirVec_{{"/data/app/%s/%d", 0711, OID_ROOT, OID_ROOT},
                   {"/data/service/%s/%d", 0711, OID_ROOT, OID_ROOT},
                   {"/data/chipset/%s/%d", 0711, OID_ROOT, OID_ROOT}},
+      eceSeceDirVec_{{"/data/app/%s/%d", 0711, OID_ROOT, OID_ROOT},
+                     {"/data/service/%s/%d", 0711, OID_ROOT, OID_ROOT}},
       subDirVec_{{"/data/app/%s/%d/base", 0711, OID_ROOT, OID_ROOT},
                  {"/data/app/%s/%d/database", 0711, OID_ROOT, OID_ROOT}},
       el2DirVec_{{"/data/service/el2/%d/backup", 02771, OID_BACKUP, OID_BACKUP},
@@ -75,39 +77,43 @@ int32_t UserManager::PrepareUserDirs(int32_t userId, uint32_t flags)
         if (err != E_OK) {
             return err;
         }
-
         err = PrepareEl1BundleDir(userId);
         if (err != E_OK) {
             return err;
         }
     }
-
     if (flags & IStorageDaemon::CRYPTO_FLAG_EL2) {
         err = PrepareDirsFromIdAndLevel(userId, EL2);
         if (err != E_OK) {
             return err;
         }
-
+        err = PrepareEl2BackupDir(userId);
+        if (err != E_OK) {
+            return err;
+        }
+    }
+    if (flags & IStorageDaemon::CRYPTO_FLAG_EL3) {
+        err = PrepareDirsFromIdAndLevel(userId, EL3);
+        if (err != E_OK) {
+            return err;
+        }
+    }
+    if (flags & IStorageDaemon::CRYPTO_FLAG_EL4) {
+        err = PrepareDirsFromIdAndLevel(userId, EL4);
+        if (err != E_OK) {
+            return err;
+        }
+    }
+    if (flags & IStorageDaemon::CRYPTO_FLAG_EL2) {
         err = MountManager::GetInstance()->PrepareHmdfsDirs(userId);
         if (err != E_OK) {
             LOGE("Prepare hmdfs dir error");
             return err;
         }
-
         err = MountManager::GetInstance()->PrepareFileManagerDirs(userId);
         if (err != E_OK) {
             LOGE("Prepare fileManager dir error");
             return err;
-        }
-
-        err = PrepareEl2BackupDir(userId);
-        if (err != E_OK) {
-            return err;
-        }
-
-        int32_t errorCode = PrepareEl1Dir(userId);
-        if (errorCode != E_OK) {
-            LOGW("Prepare el1 dir fail, %{public}d.", errorCode);
         }
     }
 
@@ -149,6 +155,16 @@ int32_t UserManager::DestroyUserDirs(int32_t userId, uint32_t flags)
         ret = (err != E_OK) ? err : ret;
     }
 
+    if (flags & IStorageDaemon::CRYPTO_FLAG_EL3) {
+        err = DestroyDirsFromIdAndLevel(userId, EL3);
+        ret = (err != E_OK) ? err : ret;
+    }
+
+    if (flags & IStorageDaemon::CRYPTO_FLAG_EL4) {
+        err = DestroyDirsFromIdAndLevel(userId, EL4);
+        ret = (err != E_OK) ? err : ret;
+    }
+
     return ret;
 }
 
@@ -178,18 +194,31 @@ inline bool DestroyDirsFromVec(int32_t userId, const std::string &level, const s
 
 int32_t UserManager::PrepareDirsFromIdAndLevel(int32_t userId, const std::string &level)
 {
-    if (!PrepareDirsFromVec(userId, level, rootDirVec_)) {
-        LOGE("failed to prepare %{public}s root dirs for userid %{public}d", level.c_str(), userId);
-        return E_PREPARE_DIR;
-    }
-
-    // set policy here
     std::vector<FileList> list;
-    for (auto item : rootDirVec_) {
-        FileList temp;
-        temp.userId = static_cast<uint32_t>(userId);
-        temp.path = StringPrintf(item.path.c_str(), level.c_str(), userId);
-        list.push_back(temp);
+    if (level != EL3 && level != EL4) {
+        if (!PrepareDirsFromVec(userId, level, rootDirVec_)) {
+            LOGE("failed to prepare %{public}s root dirs for userid %{public}d", level.c_str(), userId);
+            return E_PREPARE_DIR;
+        }
+        // set policy here
+        for (auto item : rootDirVec_) {
+            FileList temp;
+            temp.userId = static_cast<uint32_t>(userId);
+            temp.path = StringPrintf(item.path.c_str(), level.c_str(), userId);
+            list.push_back(temp);
+        }
+    } else {
+        if (!PrepareDirsFromVec(userId, level, eceSeceDirVec_)) {
+            LOGE("failed to prepare %{public}s root dirs for userid %{public}d", level.c_str(), userId);
+            return E_PREPARE_DIR;
+        }
+        // set policy here
+        for (auto item : eceSeceDirVec_) {
+            FileList temp;
+            temp.userId = static_cast<uint32_t>(userId);
+            temp.path = StringPrintf(item.path.c_str(), level.c_str(), userId);
+            list.push_back(temp);
+        }
     }
     int ret = SetElDirFscryptPolicy(userId, level, list);
     if (ret != E_OK) {
@@ -207,11 +236,17 @@ int32_t UserManager::PrepareDirsFromIdAndLevel(int32_t userId, const std::string
 
 int32_t UserManager::DestroyDirsFromIdAndLevel(int32_t userId, const std::string &level)
 {
-    if (!DestroyDirsFromVec(userId, level, rootDirVec_)) {
-        LOGE("failed to destroy %{public}s dirs for userid %{public}d", level.c_str(), userId);
-        return E_DESTROY_DIR;
+    if (level != EL3 && level != EL4) {
+        if (!DestroyDirsFromVec(userId, level, rootDirVec_)) {
+            LOGE("failed to destroy %{public}s dirs for userid %{public}d", level.c_str(), userId);
+            return E_DESTROY_DIR;
+        }
+    } else {
+        if (!DestroyDirsFromVec(userId, level, eceSeceDirVec_)) {
+            LOGE("failed to destroy %{public}s dirs for userid %{public}d", level.c_str(), userId);
+            return E_DESTROY_DIR;
+        }
     }
-
     return E_OK;
 }
 

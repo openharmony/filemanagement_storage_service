@@ -23,7 +23,7 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-bool FscryptKeyV1Ext::ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size)
+bool FscryptKeyV1Ext::ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, uint32_t &elType)
 {
     if (!FBEX::IsFBEXSupported()) {
         return true;
@@ -35,7 +35,21 @@ bool FscryptKeyV1Ext::ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size)
         LOGE("InstallKeyToKernel failed, userId %{public}d, type %{public}d, flag %{public}u", userId_, type_, flag);
         return false;
     }
+    //Used to associate el3 and el4 kernels.
+    elType = type_;
+    return true;
+}
 
+bool FscryptKeyV1Ext::UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_t size)
+{
+    if (!FBEX::IsFBEXSupported()) {
+        return true;
+    }
+    LOGD("enter");
+    if (FBEX::UnlockScreenToKernel(userId_, type_, iv, size)) {
+        LOGE("UnlockScreenToKernel failed, userId %{public}d", userId_);
+        return false;
+    }
     return true;
 }
 
@@ -60,6 +74,21 @@ bool FscryptKeyV1Ext::InactiveKeyExt(uint32_t flag)
              type_, destroy);
         return false;
     }
+    return true;
+}
+
+bool FscryptKeyV1Ext::LockUserScreenExt(uint32_t flag, uint32_t &elType)
+{
+    if (!FBEX::IsFBEXSupported()) {
+        return true;
+    }
+    LOGD("enter");
+    if (FBEX::LockScreenToKernel(flag)) {
+        LOGE("LockScreenToKernel failed, userId %{public}d", flag);
+        return false;
+    }
+    //Used to associate el3 and el4 kernels.
+    elType = type_;
     return true;
 }
 
