@@ -23,7 +23,6 @@
 
 #include "base_key.h"
 #include "key_blob.h"
-#include "ipc/storage_daemon.h"
 #include "storage_service_constant.h"
 #include "utils/file_utils.h"
 
@@ -34,8 +33,6 @@ const std::string SERVICE_STORAGE_DAEMON_DIR = FSCRYPT_USER_EL1_PUBLIC + "/stora
 const std::string FSCRYPT_EL_DIR = SERVICE_STORAGE_DAEMON_DIR + "/sd";
 const std::string USER_EL1_DIR = FSCRYPT_EL_DIR + "/el1";
 const std::string USER_EL2_DIR = FSCRYPT_EL_DIR + "/el2";
-const std::string USER_EL3_DIR = FSCRYPT_EL_DIR + "/el3";
-const std::string USER_EL4_DIR = FSCRYPT_EL_DIR + "/el4";
 class KeyManager {
 public:
     static KeyManager *GetInstance(void)
@@ -47,29 +44,24 @@ public:
     int InitGlobalUserKeys(void);
     int GenerateUserKeys(unsigned int user, uint32_t flags);
     int DeleteUserKeys(unsigned int user);
-
 #ifdef USER_CRYPTO_MIGRATE_KEY
-    int UpdateUserAuth(unsigned int user, struct UserTokenSecret *userTokenSecret,
+    int UpdateUserAuth(unsigned int user, uint64_t secureUid,
+                       const std::vector<uint8_t> &token,
+                       const std::vector<uint8_t> &oldSecret,
+                       const std::vector<uint8_t> &newSecret,
                        bool needGenerateShield = true);
-    int UpdateCeEceSeceUserAuth(unsigned int user, struct UserTokenSecret *userTokenSecret,
-                                std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_, bool needGenerateShield);
 #else
-    int UpdateUserAuth(unsigned int user, struct UserTokenSecret *userTokenSecret);
-    int UpdateCeEceSeceUserAuth(unsigned int user, struct UserTokenSecret *userTokenSecret,
-                                std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_);
-
+    int UpdateUserAuth(unsigned int user, uint64_t secureUid,
+                       const std::vector<uint8_t> &token,
+                       const std::vector<uint8_t> &oldSecret,
+                       const std::vector<uint8_t> &newSecret);
 #endif
     int ActiveUserKey(unsigned int user, const std::vector<uint8_t> &token,
                       const std::vector<uint8_t> &secret);
-    int ActiveCeSceSeceUserKey(unsigned int user, std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_,
-                               std::string keyDir, const std::vector<uint8_t> &token,
-                               const std::vector<uint8_t> &secret);
     int InActiveUserKey(unsigned int user);
     int SetDirectoryElPolicy(unsigned int user, KeyType type,
                              const std::vector<FileList> &vec);
     int UpdateKeyContext(uint32_t userId);
-    int UpdateCeEceSeceKeyContext(uint32_t userId, std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_);
-    int getEceSeceKeyPath(unsigned int user, KeyType type, std::string &eceSeceKeyPath);
     int LockUserScreen(uint32_t user);
     int UnlockUserScreen(uint32_t user);
 #ifdef USER_CRYPTO_MIGRATE_KEY
@@ -89,15 +81,11 @@ private:
     int InitUserElkeyStorageDir(void);
     bool HasElkey(uint32_t userId, KeyType type);
     int DoDeleteUserKeys(unsigned int user);
-    int DoDeleteUserCeEceSeceKeys(unsigned int user, const std::string USER_DIR,
-                                  std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_);
     int UpgradeKeys(const std::vector<FileList> &dirInfo);
     std::shared_ptr<BaseKey> GetBaseKey(const std::string& dir);
 
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl1Key_;
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl2Key_;
-    std::map<unsigned int, std::shared_ptr<BaseKey>> userEl3Key_;
-    std::map<unsigned int, std::shared_ptr<BaseKey>> userEl4Key_;
     std::shared_ptr<BaseKey> globalEl1Key_ { nullptr };
 
     std::mutex keyMutex_;

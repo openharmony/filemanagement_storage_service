@@ -25,7 +25,6 @@
 #endif
 
 #include <stdbool.h>
-#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,36 +32,11 @@ extern "C" {
 
 #define POLICY_BUF_SIZE (100)
 
-static const uint32_t FSCRYPT_CE_CLASS = 1;
-static const uint32_t FSCRYPT_SDP_ECE_CLASS = 2;
-static const uint32_t FSCRYPT_SDP_SECE_CLASS = 3;
-static const uint32_t FSCRYPT_DPS_CLASS = 4;
-
-#define EXT4_AES_256_XTS_KEY_SIZE 64
-#define EXT4_ENCRYPTION_MODE_ECDH 3
-#define EXT4_ENCRYPTION_MODE_AES_256_XTS 1
-#define SECE_PUB_KEY_LEN 64
-#define SECE_PRI_KEY_LEN 32
-#define EXT4_AES_256_XTS_KEY_SIZE_TO_KEYRING 32
-
 enum {
     FSCRYPT_INVALID = 0,
     FSCRYPT_V1 = 1,
     FSCRYPT_V2 = 2,
 };
-
-#define EXT4_MAX_KEY_SIZE 64
-#pragma pack(push, 1)
-struct EncryptionKeySdp {
-    uint32_t version;
-    uint32_t sdpClass; //ECE || SECE
-    uint32_t mode; //xts or ecdh
-    char raw[EXT4_MAX_KEY_SIZE];
-    uint32_t size;
-    char pubkey[EXT4_MAX_KEY_SIZE];
-    uint32_t pubkeySize;
-};
-#pragma pack(pop)
 
 union FscryptPolicy {
     struct fscrypt_policy_v1 v1;
@@ -82,8 +56,6 @@ key_serial_t KeyCtrlAddKey(const char *type, const char *description,
     const key_serial_t ringId);
 key_serial_t KeyCtrlAddKeyEx(const char *type, const char *description,
     struct fscrypt_key *fsKey, const key_serial_t ringId);
-key_serial_t KeyCtrlAddKeySdp(const char *type, const char *description,
-                              struct EncryptionKeySdp *fsKey, const key_serial_t ringId);
 long KeyCtrlSearch(key_serial_t ringId, const char *type, const char *description,
     key_serial_t destRingId);
 long KeyCtrlUnlink(key_serial_t key, key_serial_t keyring);

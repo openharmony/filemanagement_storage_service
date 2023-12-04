@@ -27,7 +27,6 @@
 #include "init_utils.h"
 #include "key_control.h"
 #include "securec.h"
-#include <sys/ioctl.h>
 
 #define ARRAY_LEN(array) (sizeof((array)) / sizeof((array)[0]))
 
@@ -395,82 +394,6 @@ int LoadAndSetPolicy(const char *keyDir, const char *dir)
     return ret;
 }
 
-static int ActSetFileXattrActSetFileXattr(const char *path, char *keyDesc, int storageType)
-{
-    struct FscryptSdpPolicy PolicySDP = {0, 0, 0, 0, 0, {0, 0, 0, 0, 0, 0, 0, 0}};
-    PolicySDP.version = SDP_VERSIOIN;
-    PolicySDP.sdpclass = storageType;
-    PolicySDP.contentsEncryptionMode = SDP_CONTENTS_ENCRYPTION_MODE;
-    PolicySDP.filenamesEncryptionMode = SDP_FILENAMES_ENCRYPTION_MODE;
-    PolicySDP.flags = SDP_FLAGS;
-
-    int ret = memcpy_s((char *)PolicySDP.masterKeyDescriptor, FS_KEY_DESC_SIZE, (char *)keyDesc,
-                       FSCRYPT_KEY_DESCRIPTOR_SIZE);
-    if (ret != 0) {
-        FSCRYPT_LOGE("memcpy_s copy failed");
-        return -errno;
-    }
-    int fd = open((char *)path, O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
-    if (fd < 0) {
-        FSCRYPT_LOGE("install File or Directory open failed: %{public}d", errno);
-        return -errno;
-    }
-    ret = ioctl(fd, F2FS_IOC_SET_SDP_ENCRYPTION_POLICY, &PolicySDP);
-    if (ret != 0) {
-        FSCRYPT_LOGE("ioctl fbex_cmd failed, ret: 0x%{public}X, errno: %{public}d", ret, errno);
-        close(fd);
-        return ret;
-    }
-    close(fd);
-    return ret;
-}
-
-int LoadAndSetEceAndSecePolicy(const char *keyDir, const char *dir, int type)
-{
-    int el3Key = 3; // el3
-    int el4Key = 4; // el4
-    if (!keyDir || !dir) {
-        FSCRYPT_LOGE("set policy parameters is null");
-        return -EINVAL;
-    }
-    char *pathBuf = NULL;
-    int ret = -ENOTSUP;
-
-    ret = SpliceKeyPath(keyDir, strlen(keyDir), PATH_KEYDESC, strlen(PATH_KEYDESC), &pathBuf);
-    if (ret != 0) {
-        FSCRYPT_LOGE("path splice error");
-        return ret;
-    }
-    uint8_t fscryptVer = KeyCtrlLoadVersion(keyDir);
-    if (fscryptVer == FSCRYPT_V1) {
-        if (type == el3Key || type == el4Key) {
-            if (type == el3Key) {
-                type = FSCRYPT_SDP_SECE_CLASS;
-            } else {
-                type = FSCRYPT_SDP_ECE_CLASS;
-            }
-            char keyDesc[FSCRYPT_KEY_DESCRIPTOR_SIZE] = {0};
-            ret = ReadKeyFile(pathBuf, keyDesc, FSCRYPT_KEY_DESCRIPTOR_SIZE);
-            if (ret != 0) {
-                return ret;
-            }
-            ret = ActSetFileXattrActSetFileXattr(dir, keyDesc, type);
-            if (ret != 0) {
-                FSCRYPT_LOGE("ActSetFileXattr failed");
-                return ret;
-            }
-        }
-#ifdef SUPPORT_FSCRYPT_V2
-    } else if (fscryptVer == FSCRYPT_V2) {
-        return 0;
-#endif
-    }
-    if (pathBuf != NULL) {
-        free(pathBuf);
-    }
-    return ret;
-}
-
 int SetGlobalEl1DirPolicy(const char *dir)
 {
     if (!g_fscryptEnabled) {
@@ -479,7 +402,8 @@ int SetGlobalEl1DirPolicy(const char *dir)
     }
     for (size_t i = 0; i < ARRAY_LEN(GLOBAL_FSCRYPT_DIR); i++) {
         size_t tmpLen = strlen(GLOBAL_FSCRYPT_DIR[i]);
-        if ((strncmp(dir, GLOBAL_FSCRYPT_DIR[i], tmpLen) == 0) && (strlen(dir) == tmpLen)) {
+        if ((strncmp(dir, GLOBAL_FSCRYPT_DIR[i], tmpLen) == 0) &&
+            (strlen(dir) == tmpLen)) {
             return LoadAndSetPolicy(DEVICE_EL1_DIR, dir);
         }
     }

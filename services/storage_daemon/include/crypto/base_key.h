@@ -44,10 +44,7 @@ public:
     bool RestoreKey(const UserAuth &auth);
     virtual bool ActiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
     virtual bool InactiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
-    virtual bool LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt = MNT_DATA) = 0;
-    virtual bool UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt = MNT_DATA) = 0;
     bool ClearKey(const std::string &mnt = MNT_DATA);
-    void WipingActionDir(std::string &path);
     bool UpgradeKeys();
     KeyInfo keyInfo_;
     std::string GetDir() const

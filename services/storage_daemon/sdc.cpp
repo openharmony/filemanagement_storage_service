@@ -23,7 +23,9 @@
 #include "storage_daemon_client.h"
 #include "storage_service_log.h"
 #include "utils/file_utils.h"
-
+constexpr const uint32_t ARGS_NUMS_SIX = 6;
+constexpr const uint32_t ARGS_NUMS_FIVE = 5;
+constexpr const uint32_t ARGS_NUMS_FOUR = 4;
 static int32_t InitGlobalKey(const std::vector<std::string> &args)
 {
     (void)args;
@@ -39,7 +41,7 @@ static int32_t InitMainUser(const std::vector<std::string> &args)
 #ifdef SDC_TEST_ENABLE
 static int32_t GenerateUserKeys(const std::vector<std::string> &args)
 {
-    if (args.size() < 5) {
+    if (args.size() < ARGS_NUMS_FIVE) {
         LOGE("Parameter nums is less than 5, please retry");
         return -EINVAL;
     }
@@ -56,7 +58,7 @@ static int32_t GenerateUserKeys(const std::vector<std::string> &args)
 
 static int32_t PrepareUserSpace(const std::vector<std::string> &args)
 {
-    if (args.size() < 5) {
+    if (args.size() < ARGS_NUMS_FIVE) {
         LOGE("Parameter nums is less than 5, please retry");
         return -EINVAL;
     }
@@ -73,7 +75,7 @@ static int32_t PrepareUserSpace(const std::vector<std::string> &args)
 
 static int32_t DeleteUserKeys(const std::vector<std::string> &args)
 {
-    if (args.size() < 4) {
+    if (args.size() < ARGS_NUMS_FOUR) {
         LOGE("Parameter nums is less than 4, please retry");
         return -EINVAL;
     }
@@ -88,7 +90,7 @@ static int32_t DeleteUserKeys(const std::vector<std::string> &args)
 
 static int32_t DestroyUserSpace(const std::vector<std::string> &args)
 {
-    if (args.size() < 5) {
+    if (args.size() < ARGS_NUMS_FIVE) {
         LOGE("Parameter nums is less than 5, please retry");
         return -EINVAL;
     }
@@ -105,7 +107,7 @@ static int32_t DestroyUserSpace(const std::vector<std::string> &args)
 
 static int32_t UpdateUserAuth(const std::vector<std::string> &args)
 {
-    if (args.size() < 5) {
+    if (args.size() < ARGS_NUMS_FIVE) {
         LOGE("Parameter nums is less than 5, please retry");
         return -EINVAL;
     }
@@ -117,7 +119,7 @@ static int32_t UpdateUserAuth(const std::vector<std::string> &args)
     }
 
     // 4 means take the fifth argument of args, 5 means take the sixth argument of args
-    if (args.size() == 6) {
+    if (args.size() == ARGS_NUMS_SIX) {
         std::vector<uint8_t> oldSecret(args[4].begin(), args[4].end());
         std::vector<uint8_t> newSecret(args[5].begin(), args[5].end());
         return OHOS::StorageDaemon::StorageDaemonClient::UpdateUserAuth(userId, 0, {}, oldSecret, newSecret);
@@ -128,7 +130,7 @@ static int32_t UpdateUserAuth(const std::vector<std::string> &args)
 
 static int32_t ActiveUserKey(const std::vector<std::string> &args)
 {
-    if (args.size() < 4) {
+    if (args.size() < ARGS_NUMS_FOUR) {
         LOGE("Parameter nums is less than 4, please retry");
         return -EINVAL;
     }
@@ -139,7 +141,7 @@ static int32_t ActiveUserKey(const std::vector<std::string> &args)
         return -EINVAL;
     }
     // 4 means take the fifth argument of args
-    if (args.size() == 5) {
+    if (args.size() == ARGS_NUMS_FIVE) {
         std::vector<uint8_t> secret(args[4].begin(), args[4].end());
         return OHOS::StorageDaemon::StorageDaemonClient::ActiveUserKey(userId, {}, secret);
     }
@@ -148,7 +150,7 @@ static int32_t ActiveUserKey(const std::vector<std::string> &args)
 
 static int32_t InactiveUserKey(const std::vector<std::string> &args)
 {
-    if (args.size() < 4) {
+    if (args.size() < ARGS_NUMS_FOUR) {
         LOGE("Parameter nums is less than 4, please retry");
         return -EINVAL;
     }
@@ -163,7 +165,7 @@ static int32_t InactiveUserKey(const std::vector<std::string> &args)
 
 static int32_t LockUserScreen(const std::vector<std::string> &args)
 {
-    if (args.size() < 4) {
+    if (args.size() < ARGS_NUMS_FOUR) {
         LOGE("Parameter nums is less than 4, please retry");
         return -EINVAL;
     }
@@ -178,7 +180,7 @@ static int32_t LockUserScreen(const std::vector<std::string> &args)
 
 static int32_t UnlockUserScreen(const std::vector<std::string> &args)
 {
-    if (args.size() < 4) {
+    if (args.size() < ARGS_NUMS_FOUR) {
         LOGE("Parameter nums is less than 4, please retry");
         return -EINVAL;
     }
@@ -193,7 +195,7 @@ static int32_t UnlockUserScreen(const std::vector<std::string> &args)
 
 static int32_t EnableFscrypt(const std::vector<std::string> &args)
 {
-    if (args.size() < 4) {
+    if (args.size() < ARGS_NUMS_FOUR) {
         LOGE("Parameter nums is less than 4, please retry");
         return -EINVAL;
     }
@@ -203,7 +205,7 @@ static int32_t EnableFscrypt(const std::vector<std::string> &args)
 
 static int32_t UpdateKeyContext(const std::vector<std::string> &args)
 {
-    if (args.size() < 4) {
+    if (args.size() < ARGS_NUMS_FOUR) {
         LOGE("Parameter nums is less than 4, please retry");
         return -EINVAL;
     }

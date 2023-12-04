@@ -325,39 +325,6 @@ void ReadDigitDir(const std::string &path, std::vector<FileList> &dirInfo)
     (void)closedir(dir);
 }
 
-void OpenSubFile(const std::string &path, std::vector<std::string>  &file)
-{
-    struct stat st;
-    int ret = TEMP_FAILURE_RETRY(lstat(path.c_str(), &st));
-    if (ret != 0 || ((st.st_mode & S_IFDIR) != S_IFDIR)) {
-        LOGI("path is not dir");
-        return;
-    }
-
-    DIR *dir = opendir(path.c_str());
-    if (!dir) {
-        LOGI("failed to open dir %{public}s, errno %{public}d", path.c_str(), errno);
-        return;
-    }
-    for (struct dirent *ent = readdir(dir); ent != nullptr; ent = readdir(dir)) {
-        if ((ent->d_type != DT_DIR)) {
-            std::string name(ent->d_name);
-            std::string filePath = path + "/" + name;
-            LOGI("filePath is %{public}s", filePath.c_str());
-            file.push_back(filePath);
-            continue;
-        } else {
-            if ((strcmp(ent->d_name, ".") == 0) || (strcmp(ent->d_name, "..") == 0)) {
-                continue;
-            }
-            std::string name(ent->d_name);
-            std::string filePath = path + "/" + name;
-            OpenSubFile(filePath, file);
-        }
-    }
-    (void)closedir(dir);
-}
-
 bool ReadFile(std::string path, std::string *str)
 {
     std::ifstream infile;

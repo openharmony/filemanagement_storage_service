@@ -30,10 +30,8 @@ public:
         userId_ = GetUserIdFromDir();
         type_ = GetTypeFromDir();
     }
-    bool ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, uint32_t &elType);
+    bool ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size);
     bool InactiveKeyExt(uint32_t flag);
-    bool LockUserScreenExt(uint32_t flag, uint32_t &elType);
-    bool UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_t size);
 
 private:
     uint32_t GetUserIdFromDir();

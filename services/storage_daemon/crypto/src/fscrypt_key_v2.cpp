@@ -112,21 +112,5 @@ bool FscryptKeyV2::InactiveKey(uint32_t flag, const std::string &mnt)
     return false;
 }
 #endif
-
-bool FscryptKeyV2::LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt)
-{
-    (void)mnt;
-    (void)flag;
-    LOGI("Unsupported fscrypt v2");
-    return false;
-}
-
-bool FscryptKeyV2::UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt)
-{
-    (void)mnt;
-    (void)flag;
-    LOGI("Unsupported fscrypt v2");
-    return false;
-}
 } // namespace StorageDaemon
 } // namespace OHOS

@@ -26,60 +26,21 @@ static const std::string CRYPTO_NAME_PREFIXES[] = {"ext4", "f2fs", "fscrypt"};
 
 bool FscryptKeyV1::ActiveKey(uint32_t flag, const std::string &mnt)
 {
-    uint32_t elType;
-    uint32_t sdpClass;
     (void)mnt;
     LOGD("enter");
     if (!GenerateKeyDesc()) {
         LOGE("GenerateKeyDesc failed");
         return false;
     }
-    KeyBlob keys(keyInfo_.key);
-    if (!fscryptV1Ext.ActiveKeyExt(flag, keyInfo_.key.data.get(), keyInfo_.key.size, elType)) {
+
+    if (!fscryptV1Ext.ActiveKeyExt(flag, keyInfo_.key.data.get(), keyInfo_.key.size)) {
         LOGE("fscryptV1Ext ActiveKeyExtfailed");
         return false;
     }
-    if (elType == TYPE_EL3 || elType == TYPE_EL4) {
-        if (elType == TYPE_EL3) {
-            sdpClass = FSCRYPT_SDP_SECE_CLASS;
-        } else {
-            sdpClass = FSCRYPT_SDP_ECE_CLASS;
-        }
-        if (!InstallEceSeceKeyToKeyring(sdpClass)) {
-            LOGE("InstallEceSeceKeyToKeyring failed");
-            return false;
-        }
-    } else {
-        if (!InstallKeyToKeyring()) {
-            LOGE("InstallKeyToKeyring failed");
-            return false;
-        }
-    }
-    keyInfo_.key = std::move(keys);
-    LOGD("success");
-    return true;
-}
-
-bool FscryptKeyV1::UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt)
-{
-    (void)mnt;
-    LOGD("enter");
-    if (!GenerateKeyDesc()) {
-        LOGE("GenerateKeyDesc failed");
+    if (!InstallKeyToKeyring()) {
+        LOGE("InstallKeyToKeyring failed");
         return false;
     }
-    KeyBlob keys(keyInfo_.key);
-    if (!fscryptV1Ext.UnlockUserScreenExt(flag, keyInfo_.key.data.get(), keyInfo_.key.size)) {
-        LOGE("fscryptV1Ext UnlockUserScreenExtfailed");
-        return false;
-    }
-    if (sdpClass == FSCRYPT_SDP_ECE_CLASS) {
-        if (!InstallEceSeceKeyToKeyring(sdpClass)) {
-            LOGE("UnlockUserScreen InstallKeyToKeyring failed");
-            return false;
-        }
-    }
-    keyInfo_.key = std::move(keys);
     LOGD("success");
     return true;
 }
@@ -122,48 +83,6 @@ bool FscryptKeyV1::InstallKeyToKeyring()
     return true;
 }
 
-bool FscryptKeyV1::InstallEceSeceKeyToKeyring(uint32_t sdpClass)
-{
-    EncryptionKeySdp fskey;
-    if (keyInfo_.key.size != sizeof(fskey.raw)) {
-        LOGE("Wrong key size is %{public}d", keyInfo_.key.size);
-        return false;
-    }
-    fskey.mode = EXT4_ENCRYPTION_MODE_AES_256_XTS;
-    auto err = memcpy_s(fskey.raw, sizeof(fskey.raw), keyInfo_.key.data.get(), keyInfo_.key.size);
-    if (err != EOK) {
-        LOGE("memcpy failed ret %{public}d", err);
-        return false;
-    }
-    fskey.size = EXT4_AES_256_XTS_KEY_SIZE_TO_KEYRING;
-    fskey.sdpClass = sdpClass;
-    fskey.version = 0;
-    key_serial_t krid = KeyCtrlSearch(KEY_SPEC_SESSION_KEYRING, "keyring", "fscrypt", 0);
-    if (krid == -1) {
-        LOGI("no session keyring for fscrypt");
-        krid = KeyCtrlAddKey("keyring", "fscrypt", KEY_SPEC_SESSION_KEYRING);
-        if (krid == -1) {
-            LOGE("failed to add session keyring");
-            return false;
-        }
-    }
-    for (auto prefix : CRYPTO_NAME_PREFIXES) {
-        std::string keyref = prefix + ":" + keyInfo_.keyDesc.ToString();
-        key_serial_t ks =
-                KeyCtrlAddKeySdp("logon", keyref.c_str(), &fskey, krid);
-        if (ks == -1) {
-            // Addkey failed, need to process the error
-            LOGE("Failed to AddKey %{public}s into keyring %{public}d, errno %{public}d", keyref.c_str(), krid,
-                 errno);
-        }
-    }
-    if (!SaveKeyBlob(keyInfo_.keyDesc, dir_ + PATH_KEYDESC)) {
-        return false;
-    }
-    LOGD("success");
-    return true;
-}
-
 bool FscryptKeyV1::InactiveKey(uint32_t flag, const std::string &mnt)
 {
     (void)mnt;
@@ -177,26 +96,6 @@ bool FscryptKeyV1::InactiveKey(uint32_t flag, const std::string &mnt)
     if (!fscryptV1Ext.InactiveKeyExt(flag)) {
         LOGE("fscryptV1Ext InactiveKeyExt failed");
         ret = false;
-    }
-    LOGD("finish");
-    return ret;
-}
-
-bool FscryptKeyV1::LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt)
-{
-    uint32_t elType;
-    (void)mnt;
-    LOGD("enter");
-    bool ret = true;
-    if (!fscryptV1Ext.LockUserScreenExt(flag, elType)) {
-        LOGE("fscryptV1Ext InactiveKeyExt failed");
-        ret = false;
-    }
-    if (elType == TYPE_EL4) {
-        if (!UninstallKeyToKeyring()) {
-            LOGE("UninstallKeyToKeyring failed");
-            ret = false;
-        }
     }
     LOGD("finish");
     return ret;

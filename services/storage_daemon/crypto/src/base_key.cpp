@@ -34,26 +34,6 @@ namespace {
 const std::string PATH_LATEST_BACKUP = "/latest_bak";
 const std::string PATH_KEY_VERSION = "/version_";
 const std::string PATH_KEY_TEMP = "/temp";
-
-#ifndef F2FS_IOCTL_MAGIC
-#define F2FS_IOCTL_MAGIC 0xf5
-#endif
-
-#ifndef F2FS_IOC_SEC_TRIM_FILE
-    struct F2fsSectrimRange {
-        uint64_t start;
-        uint64_t len;
-        uint64_t flags;
-    };
-    using F2fsSectrim = F2fsSectrimRange;
-#define F2FS_IOC_SEC_TRIM_FILE _IOW(F2FS_IOCTL_MAGIC, 20, F2fsSectrim)
-#define F2FS_TRIM_FILE_DISCARD 0x1
-#define F2FS_TRIM_FILE_ZEROOUT 0x2
-#endif
-#ifndef F2FS_IOC_SET_PIN_FILE
-#define F2FS_IOC_SET_PIN_FILE _IOW(F2FS_IOCTL_MAGIC, 13, set)
-#define F2FS_IOC_GET_PIN_FILE _IOR(F2FS_IOCTL_MAGIC, 14, set)
-#endif
 }
 
 namespace OHOS {
@@ -449,47 +429,9 @@ bool BaseKey::ClearKey(const std::string &mnt)
     LOGD("enter, dir_ = %{public}s", dir_.c_str());
     InactiveKey(USER_DESTROY, mnt);
     keyInfo_.key.Clear();
-    WipingActionDir(dir_);
+
     return OHOS::ForceRemoveDirectory(dir_);
     // use F2FS_IOC_SEC_TRIM_FILE
-}
-
-void BaseKey::WipingActionDir(std::string &path)
-{
-    std::vector<std::string> fileList;
-    LOGI("WipingActionDir path.c_str() is %{public}s", path.c_str());
-    OpenSubFile(path.c_str(), fileList);
-    for (const auto &it: fileList) {
-        int fd = open(it.c_str(), O_WRONLY | O_CLOEXEC);
-        if (fd < 0) {
-            LOGE("open %{public}s failed, errno %{public}u", it.c_str(), errno);
-            return;
-        }
-        uint32_t  set = 1;
-        int ret = ioctl(fd, F2FS_IOC_SET_PIN_FILE, &set);
-        if (ret != 0) {
-            LOGE("F2FS_IOC_SET_PIN_FILE ioctl is %{public}u, errno = %{public}u", ret, errno);
-        }
-        struct F2fsSectrimRange trimRange;
-        trimRange.start = 0;
-        trimRange.len = -1;
-        trimRange.flags = F2FS_TRIM_FILE_DISCARD | F2FS_TRIM_FILE_ZEROOUT;
-        ret = ioctl(fd, F2FS_IOC_SEC_TRIM_FILE, &trimRange);
-        if (ret != 0 && errno == EOPNOTSUPP) {
-            trimRange.flags = F2FS_TRIM_FILE_ZEROOUT;
-            ret = ioctl(fd, F2FS_IOC_SEC_TRIM_FILE, &trimRange);
-            if (ret != 0) {
-                LOGE("F2FS_IOC_SEC_TRIM_FILE ioctl is %{public}u, errno = %{public}u", ret, errno);
-            }
-        }
-        set = 0;
-        ret = ioctl(fd, F2FS_IOC_SET_PIN_FILE, &set);
-        if (ret != 0) {
-            LOGE("F2FS_IOC_SET_PIN_FILE ioctl is %{public}u", ret);
-        }
-        LOGI("WipingActionDir success");
-        close(fd);
-    }
 }
 
 void BaseKey::SyncKeyDir() const
