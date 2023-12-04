@@ -16,9 +16,11 @@
 #include "user/mount_manager.h"
 #include <cstdlib>
 #include <fcntl.h>
+#include <set>
 #include <sys/mount.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include<filesystem>
 #include "ipc/istorage_daemon.h"
 #include "parameter.h"
 #include "quota/quota_manager.h"
@@ -43,6 +45,27 @@ using namespace OHOS::StorageService;
 constexpr int32_t UMOUNT_RETRY_TIMES = 3;
 std::shared_ptr<MountManager> MountManager::instance_ = nullptr;
 
+const string SANDBOX_ROOT_PATH = "/mnt/sandbox/";
+const string CURRENT_USER_ID_FLAG = "<currentUserId>";
+const string PACKAGE_NAME_FLAG = "<bundleName>";
+const set<string> SANDBOX_EXCLUDE_PATH = {
+    "chipset",
+    "system"
+};
+const vector<string> CRYPTO_SANDBOX_PATH = {
+    "/data/storage/el2/base/",
+    "/data/storage/el2/database/",
+    "/data/storage/el2/share/",
+    "/data/storage/el2/log/",
+    "/data/storage/el2/distributedfiles/"
+};
+const vector<string> CRYPTO_SRC_PATH = {
+    "/data/app/el2/<currentUserId>/base/<bundleName>/",
+    "/data/app/el2/<currentUserId>/database/<bundleName>/",
+    "/mnt/share/<currentUserId>/<bundleName>/",
+    "/data/app/el2/<currentUserId>/log/<bundleName>/",
+    "/mnt/hmdfs/<currentUserId>/account/merge_view/data/<bundleName>/"
+};
 const std::string HMDFS_SYS_CAP = "const.distributed_file_property.enabled";
 const int32_t HMDFS_VAL_LEN = 6;
 const int32_t HMDFS_TRUE_LEN = 5;
@@ -266,6 +289,52 @@ int32_t MountManager::HmdfsMount(int32_t userId)
     }
 
     return E_OK;
+}
+
+static void ParseSandboxPath(string &path, const string &userId, const string &bundleName)
+{
+    size_t pos = path.find(CURRENT_USER_ID_FLAG);
+    if (pos != string::npos) {
+        path = path.replace(pos, CURRENT_USER_ID_FLAG.length(), userId);
+    }
+
+    pos = path.find(PACKAGE_NAME_FLAG);
+    if (pos != string::npos) {
+        path = path.replace(pos, PACKAGE_NAME_FLAG.length(), bundleName);
+    }
+}
+
+int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
+{
+    filesystem::path rootDir(SANDBOX_ROOT_PATH);
+    if (!exists(rootDir)) {
+        LOGE("root path not exists");
+        return -ENOENT;
+    }
+
+    int32_t ret = 0;
+    filesystem::directory_iterator bundleNameList(rootDir);
+    for (const auto &bundleName : bundleNameList) {
+        if (SANDBOX_EXCLUDE_PATH.find(bundleName.path().filename()) != SANDBOX_EXCLUDE_PATH.end()) {
+            continue;
+        }
+        for (size_t i = 0; i < CRYPTO_SANDBOX_PATH.size(); i++) {
+            string dstPath = bundleName.path().generic_string() + CRYPTO_SANDBOX_PATH[i];
+            string srcPath = CRYPTO_SRC_PATH[i];
+            ParseSandboxPath(srcPath, to_string(userId), bundleName.path().filename().generic_string());
+            ret = mount(srcPath.c_str(), dstPath.c_str(), NULL, MS_BIND | MS_REC, NULL);
+            if (ret != 0) {
+                continue;
+            }
+            ret = mount(NULL, dstPath.c_str(), NULL, MS_SHARED, NULL);
+            if (ret != 0) {
+                LOGI("mount to share failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
+                    srcPath.c_str(), dstPath.c_str(), errno);
+                continue;
+            }
+        }
+    }
+    return ret;
 }
 
 void MountManager::MountCloudForUsers(void)

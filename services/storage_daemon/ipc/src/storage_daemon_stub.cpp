@@ -68,6 +68,8 @@ StorageDaemonStub::StorageDaemonStub()
         &StorageDaemonStub::HandleUnlockUserScreen;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::UPDATE_KEY_CONTEXT)] =
         &StorageDaemonStub::HandleUpdateKeyContext;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::MOUNT_CRYPTO_PATH_AGAIN)] =
+        &StorageDaemonStub::HandleMountCryptoPathAgain;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::CREATE_SHARE_FILE)] =
         &StorageDaemonStub::HandleCreateShareFile;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::DELETE_SHARE_FILE)] =
@@ -352,6 +354,16 @@ int32_t StorageDaemonStub::HandleUpdateKeyContext(MessageParcel &data, MessagePa
         return E_WRITE_REPLY_ERR;
     }
 
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleMountCryptoPathAgain(MessageParcel &data, MessageParcel &reply)
+{
+    uint32_t userId = data.ReadUint32();
+    int32_t err = MountCryptoPathAgain(userId);
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
     return E_OK;
 }
 

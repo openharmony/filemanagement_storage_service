@@ -42,6 +42,7 @@ namespace StorageDaemon {
         ACTIVE_USER_KEY,
         INACTIVE_USER_KEY,
         UPDATE_KEY_CONTEXT,
+        MOUNT_CRYPTO_PATH_AGAIN,
         CREATE_SHARE_FILE,
         DELETE_SHARE_FILE,
         LOCK_USER_SCREEN,
