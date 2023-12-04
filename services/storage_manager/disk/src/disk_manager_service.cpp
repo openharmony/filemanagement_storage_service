@@ -29,7 +29,7 @@ std::shared_ptr<Disk> DiskManagerService::GetDiskById(std::string diskId)
     if (!diskMap_.Contains(diskId)) {
         return nullptr;
     }
-    return diskMap_[diskId];
+    return diskMap_.ReadVal(diskId);
 }
 
 void DiskManagerService::OnDiskCreated(Disk disk)
@@ -76,7 +76,7 @@ std::vector<Disk> DiskManagerService::GetAllDisks()
 int32_t DiskManagerService::GetDiskById(std::string diskId, Disk &disk)
 {
     if (diskMap_.Contains(diskId)) {
-        disk = *diskMap_[diskId];
+        disk = *diskMap_.ReadVal(diskId);
         return E_OK;
     }
     return E_NON_EXIST;
