@@ -39,6 +39,7 @@ ohos_unittest("netlink_data_test") {
     "c_utils:utils",
     "hilog:libhilog",
     "ipc:ipc_core",
+    "samgr:samgr_proxy",
   ]
 }
 
@@ -113,6 +114,7 @@ ohos_unittest("netlink_listener_test") {
     "c_utils:utils",
     "hilog:libhilog",
     "ipc:ipc_core",
+    "samgr:samgr_proxy",
   ]
 }
 
