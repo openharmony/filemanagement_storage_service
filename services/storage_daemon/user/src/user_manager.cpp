@@ -81,6 +81,10 @@ int32_t UserManager::PrepareUserDirs(int32_t userId, uint32_t flags)
         if (err != E_OK) {
             return err;
         }
+        int32_t errorCode = PrepareEl1Dir(userId);
+        if (errorCode != E_OK) {
+            LOGW("Prepare el1 dir fail, %{public}d.", errorCode);
+        }
     }
     if (flags & IStorageDaemon::CRYPTO_FLAG_EL2) {
         err = PrepareDirsFromIdAndLevel(userId, EL2);
