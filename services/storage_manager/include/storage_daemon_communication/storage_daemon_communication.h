@@ -55,6 +55,7 @@ public:
     int32_t UpdateKeyContext(uint32_t userId);
     int32_t LockUserScreen(uint32_t userId);
     int32_t UnlockUserScreen(uint32_t userId);
+    int32_t MountCryptoPathAgain(int32_t userId);
 
     int32_t ResetSdProxy();
 

@@ -31,6 +31,7 @@
 #include "common_event_support.h"
 #include "iservice_registry.h"
 #include "os_account_manager.h"
+#include "storage_daemon_communication/storage_daemon_communication.h"
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
 #include "want.h"
@@ -58,6 +59,18 @@ bool AccountSubscriber::Subscriber(void)
         EventFwk::CommonEventManager::SubscribeCommonEvent(AccountSubscriber_);
     }
     return true;
+}
+
+static void MountCryptoPathAgain(int32_t userId)
+{
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t err = sdCommunication->MountCryptoPathAgain(userId);
+    if (err != 0) {
+        LOGI("mount crypto path failed err is %{public}d", err);
+        return;
+    }
+    LOGI("MountCryptoPathAgain success");
 }
 
 void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventData)
@@ -99,6 +112,10 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
     userRecord_[userId] = status;
     if (status != (1 << USER_UNLOCK_BIT | 1 << USER_SWITCH_BIT)) {
         return;
+    }
+
+    if ((status & USER_UNLOCK_BIT) == USER_UNLOCK_BIT) {
+        MountCryptoPathAgain(userId);
     }
     lock.unlock();
     auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();

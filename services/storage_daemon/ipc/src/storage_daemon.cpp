@@ -362,6 +362,16 @@ int32_t StorageDaemon::UpdateKeyContext(uint32_t userId)
 #endif
 }
 
+int32_t StorageDaemon::MountCryptoPathAgain(uint32_t userId)
+{
+    LOGI("begin to MountCryptoPathAgain");
+#ifdef USER_CRYPTO_MANAGER
+    return MountManager::GetInstance()->MountCryptoPathAgain(userId);
+#else
+    return E_OK;
+#endif
+}
+
 std::vector<int32_t> StorageDaemon::CreateShareFile(const std::vector<std::string> &uriList,
                                                     uint32_t tokenId, uint32_t flag)
 {

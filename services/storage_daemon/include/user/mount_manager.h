@@ -57,6 +57,7 @@ public:
     int32_t DestroySystemServiceDirs(int32_t userId);
     int32_t CloudMount(int32_t userId, const std::string& path);
     int32_t CloudTwiceMount(int32_t userId);
+    int32_t MountCryptoPathAgain(uint32_t userId);
     void SetCloudState(bool active);
 
 private:

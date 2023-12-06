@@ -143,6 +143,11 @@ public:
         return E_OK;
     }
 
+    virtual int32_t MountCryptoPathAgain(uint32_t userId) override
+    {
+        return E_OK;
+    }
+
     virtual std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,
                                                 uint32_t tokenId, uint32_t flag) override
     {

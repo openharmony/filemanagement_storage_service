@@ -508,6 +508,28 @@ int32_t StorageDaemonProxy::UpdateKeyContext(uint32_t userId)
     return reply.ReadInt32();
 }
 
+int32_t StorageDaemonProxy::MountCryptoPathAgain(uint32_t userId)
+{
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+
+    if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    if (!data.WriteUint32(userId)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::MOUNT_CRYPTO_PATH_AGAIN),
+        data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+
+    return reply.ReadInt32();
+}
+
 std::vector<int32_t> StorageDaemonProxy::CreateShareFile(const std::vector<std::string> &uriList,
                                                          uint32_t tokenId, uint32_t flag)
 {

@@ -334,5 +334,16 @@ int32_t StorageDaemonCommunication::GetOccupiedSpace(int32_t idType, int32_t id,
     }
     return storageDaemon_->GetOccupiedSpace(idType, id, size);
 }
+
+int32_t StorageDaemonCommunication::MountCryptoPathAgain(int32_t userId)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    return storageDaemon_->MountCryptoPathAgain(userId);
+}
+
 } // namespace StorageManager
 } // namespace OHOS
