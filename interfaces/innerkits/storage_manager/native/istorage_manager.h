@@ -28,7 +28,9 @@ namespace StorageManager {
 // PrepareAddUser flags
 enum {
     CRYPTO_FLAG_EL1 = 1,
-    CRYPTO_FLAG_EL2,
+    CRYPTO_FLAG_EL2 = 2,
+    CRYPTO_FLAG_EL3 = 4,
+    CRYPTO_FLAG_EL4 = 8,
 };
 class IStorageManager : public IRemoteBroker {
 public:

@@ -436,7 +436,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_LockUserScreen_001, Test
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
     int32_t ret = proxy_->LockUserScreen(USER_ID1);
     ASSERT_TRUE(ret == E_OK);
-    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::INACTIVE_USER_KEY) == mock_->code_);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::LOCK_USER_SCREEN) == mock_->code_);
 
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_LockUserScreen_001 end";
 }
@@ -456,7 +456,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_UnlockUserScreen_001, Te
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
     int32_t ret = proxy_->UnlockUserScreen(USER_ID1);
     ASSERT_TRUE(ret == E_OK);
-    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::INACTIVE_USER_KEY) == mock_->code_);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::UNLOCK_USER_SCREEN) == mock_->code_);
 
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_UnlockUserScreen_001 end";
 }

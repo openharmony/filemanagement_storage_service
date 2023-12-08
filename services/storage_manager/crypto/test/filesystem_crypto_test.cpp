@@ -254,7 +254,7 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_LockUserScreen_0000, TestS
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-start Storage_manager_crypto_LockUserScreen_0000";
     std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
         DelayedSingleton<FileSystemCrypto>::GetInstance();
-    int32_t userId = 102;
+    int32_t userId = 100;
 
     int32_t ret = fileSystemCrypto_->LockUserScreen(userId);
     EXPECT_EQ(ret, E_OK);
@@ -276,7 +276,7 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_UnlockUserScreen_0000, Tes
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-start Storage_manager_crypto_UnlockUserScreen_0000";
     std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
         DelayedSingleton<FileSystemCrypto>::GetInstance();
-    int32_t userId = 102;
+    int32_t userId = 100;
 
     int32_t ret = fileSystemCrypto_->UnlockUserScreen(userId);
     EXPECT_EQ(ret, E_OK);

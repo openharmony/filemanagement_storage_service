@@ -49,13 +49,13 @@ public:
     int DeleteUserKeys(unsigned int user);
 
 #ifdef USER_CRYPTO_MIGRATE_KEY
-    int UpdateUserAuth(unsigned int user, struct UserTokenSecret *userTokenSecret,
+    int UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret,
                        bool needGenerateShield = true);
-    int UpdateCeEceSeceUserAuth(unsigned int user, struct UserTokenSecret *userTokenSecret,
+    int UpdateCeEceSeceUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret,
                                 std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_, bool needGenerateShield);
 #else
-    int UpdateUserAuth(unsigned int user, struct UserTokenSecret *userTokenSecret);
-    int UpdateCeEceSeceUserAuth(unsigned int user, struct UserTokenSecret *userTokenSecret,
+    int UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret);
+    int UpdateCeEceSeceUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret,
                                 std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_);
 
 #endif
@@ -99,6 +99,7 @@ private:
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl3Key_;
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl4Key_;
     std::shared_ptr<BaseKey> globalEl1Key_ { nullptr };
+    std::map<unsigned int, bool> userPinProtect;
 
     std::mutex keyMutex_;
     bool hasGlobalDeviceKey_;

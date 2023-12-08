@@ -38,7 +38,7 @@ int32_t KeyManager::DeleteUserKeys(unsigned int user)
 {
     return E_OK;
 }
-int32_t KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret *userTokenSecret)
+int32_t KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret)
 {
     return E_OK;
 }

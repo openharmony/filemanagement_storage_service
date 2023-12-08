@@ -485,10 +485,10 @@ int KeyManager::DeleteUserKeys(unsigned int user)
 }
 
 #ifdef USER_CRYPTO_MIGRATE_KEY
-int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret *userTokenSecret,
+int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret,
                                bool needGenerateShield)
 #else
-int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret *userTokenSecret)
+int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret)
 #endif
 {
 #ifdef USER_CRYPTO_MIGRATE_KEY
@@ -496,32 +496,27 @@ int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret *userTo
     if (ret != 0) {
         LOGE("user %{public}u UpdateUserAuth el2 key fail", user);
         return -EFAULT;
-        ;
     }
     ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, userEl3Key_, needGenerateShield);
     if (ret != 0) {
         LOGE("user %{public}u UpdateUserAuth el3 key fail", user);
         return -EFAULT;
-        ;
     }
     ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, userEl4Key_, needGenerateShield);
     if (ret != 0) {
         LOGE("user %{public}u UpdateUserAuth el4 key fail", user);
         return -EFAULT;
-        ;
     }
 #else
     int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, userEl2Key_);
     if (ret != 0) {
         LOGE("user %{public}u UpdateUserAuth el2 key fail", user);
         return -EFAULT;
-        ;
     }
     ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, userEl3Key_);
     if (ret != 0) {
         LOGE("user %{public}u UpdateUserAuth el3 key fail", user);
         return -EFAULT;
-        ;
     }
     ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, userEl4Key_);
     if (ret != 0) {
@@ -529,18 +524,20 @@ int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret *userTo
         return -EFAULT;
     }
 #endif
+    std::lock_guard<std::mutex> lock(keyMutex_);
+    userPinProtect[user] = !userTokenSecret.newSecret.empty();
     return ret;
 }
 
 #ifdef USER_CRYPTO_MIGRATE_KEY
 int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
-                                        struct UserTokenSecret *userTokenSecret,
+                                        struct UserTokenSecret &userTokenSecret,
                                         std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_,
                                         bool needGenerateShield)
 {
 #else
 int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
-                                        struct UserTokenSecret *userTokenSecret,
+                                        struct UserTokenSecret &userTokenSecret,
                                         std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_)
 {
 #endif
@@ -555,13 +552,13 @@ int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
         return -ENOENT;
     }
     auto item = userElKey_[user];
-    UserAuth auth = {userTokenSecret->token, userTokenSecret->oldSecret, userTokenSecret->secureUid};
+    UserAuth auth = {userTokenSecret.token, userTokenSecret.oldSecret, userTokenSecret.secureUid};
     if ((item->RestoreKey(auth) == false) && (item->RestoreKey(NULL_KEY_AUTH) == false)) {
         LOGE("Restore key error");
         return -EFAULT;
     }
 
-    auth.secret = userTokenSecret->newSecret;
+    auth.secret = userTokenSecret.newSecret;
 #ifdef USER_CRYPTO_MIGRATE_KEY
     if (item->StoreKey(auth, needGenerateShield) == false) {
 #else
@@ -595,6 +592,12 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::vector<uint8_t> &tok
     if (ActiveCeSceSeceUserKey(user, userEl4Key_, keyEL4Dir, token, secret) != 0) {
         LOGI("Active user %{public}u el4 fail", user);
         return -EFAULT;
+    }
+    std::lock_guard<std::mutex> lock(keyMutex_);
+    if (secret.empty()) {
+        userPinProtect.insert(std::make_pair(user, false));
+    } else {
+        userPinProtect.insert(std::make_pair(user, true));
     }
     return 0;
 }
@@ -716,10 +719,14 @@ int KeyManager::InActiveUserKey(unsigned int user)
 int KeyManager::LockUserScreen(uint32_t user)
 {
     LOGI("start");
+    std::lock_guard<std::mutex> lock(keyMutex_);
+    auto iter = userPinProtect.find(user);
+    if (iter == userPinProtect.end() || iter->second == false) {
+        return 0;
+    }
     if (!KeyCtrlHasFscryptSyspara()) {
         return 0;
     }
-    std::lock_guard<std::mutex> lock(keyMutex_);
     if (userEl4Key_.find(user) == userEl4Key_.end()) {
         LOGE("Have not found user %{public}u el3 or el4", user);
         return -ENOENT;
