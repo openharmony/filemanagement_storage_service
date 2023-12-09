@@ -270,7 +270,7 @@ int32_t StorageDaemon::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
     UserTokenSecret userTokenSecret = {
         .token = token, .oldSecret = oldSecret, .newSecret = newSecret, .secureUid = secureUid};
 #ifdef USER_CRYPTO_MANAGER
-    return KeyManager::GetInstance()->UpdateUserAuth(userId, &userTokenSecret);
+    return KeyManager::GetInstance()->UpdateUserAuth(userId, userTokenSecret);
 #else
     return E_OK;
 #endif
@@ -287,7 +287,7 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuth(uint32_t userId, const s
         return ret;
     }
     UserTokenSecret userTokenSecret = {.token = token, .oldSecret = {'!'}, .newSecret = secret, .secureUid = 0};
-    ret = KeyManager::GetInstance()->UpdateUserAuth(userId, &userTokenSecret);
+    ret = KeyManager::GetInstance()->UpdateUserAuth(userId, userTokenSecret);
     if (ret != E_OK) {
         return ret;
     }

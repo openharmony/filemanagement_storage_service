@@ -282,9 +282,9 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_LockUserScreen_0000, T
 
     ASSERT_TRUE(storageManagerClient_ != nullptr);
 
-    uint32_t userId = 107;
+    uint32_t userId = 100;
     int32_t ret = storageManagerClient_->LockUserScreen(userId);
-    EXPECT_TRUE(ret == E_OK);
+    EXPECT_TRUE(ret == E_PERMISSION_DENIED);
 
     GTEST_LOG_(INFO) << "Client_manager_service_LockUserScreen_0000 end";
 }
@@ -304,9 +304,9 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_UnlockUserScreen_0000,
 
     ASSERT_TRUE(storageManagerClient_ != nullptr);
 
-    uint32_t userId = 107;
-    uint32_t ret = storageManagerClient_->UnlockUserScreen(userId);
-    EXPECT_TRUE(ret == E_OK);
+    uint32_t userId = 104;
+    int32_t ret = storageManagerClient_->UnlockUserScreen(userId);
+    EXPECT_TRUE(ret == E_PERMISSION_DENIED);
 
     GTEST_LOG_(INFO) << "Client_manager_service_UnlockUserScreen_0000 end";
 }
