@@ -492,66 +492,63 @@ int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTo
 #endif
 {
 #ifdef USER_CRYPTO_MIGRATE_KEY
-    int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, userEl2Key_, needGenerateShield);
+    int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL2_KEY, needGenerateShield);
     if (ret != 0) {
         LOGE("user %{public}u UpdateUserAuth el2 key fail", user);
         return -EFAULT;
     }
-    ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, userEl3Key_, needGenerateShield);
+    ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL3_KEY, needGenerateShield);
     if (ret != 0) {
         LOGE("user %{public}u UpdateUserAuth el3 key fail", user);
         return -EFAULT;
     }
-    ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, userEl4Key_, needGenerateShield);
+    ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL4_KEY, needGenerateShield);
     if (ret != 0) {
         LOGE("user %{public}u UpdateUserAuth el4 key fail", user);
         return -EFAULT;
     }
 #else
-    int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, userEl2Key_);
+    int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL2_KEY);
     if (ret != 0) {
         LOGE("user %{public}u UpdateUserAuth el2 key fail", user);
         return -EFAULT;
     }
-    ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, userEl3Key_);
+    ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL3_KEY);
     if (ret != 0) {
         LOGE("user %{public}u UpdateUserAuth el3 key fail", user);
         return -EFAULT;
     }
-    ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, userEl4Key_);
+    ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL4_KEY);
     if (ret != 0) {
         LOGE("user %{public}u UpdateUserAuth el4 key fail", user);
         return -EFAULT;
     }
 #endif
-    std::lock_guard<std::mutex> lock(keyMutex_);
-    userPinProtect[user] = !userTokenSecret.newSecret.empty();
+
     return ret;
 }
 
 #ifdef USER_CRYPTO_MIGRATE_KEY
 int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
                                         struct UserTokenSecret &userTokenSecret,
-                                        std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_,
-                                        bool needGenerateShield)
-{
+                                        KeyType type, bool needGenerateShield)
 #else
 int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
                                         struct UserTokenSecret &userTokenSecret,
-                                        std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_)
-{
+                                        KeyType type)
 #endif
-
+{
     LOGI("start, user:%{public}d", user);
     if (!KeyCtrlHasFscryptSyspara()) {
         return 0;
     }
     std::lock_guard<std::mutex> lock(keyMutex_);
-    if (userElKey_.find(user) == userElKey_.end()) {
+    std::shared_ptr<BaseKey> item = GetUserElKey(user, type);
+    if (item == nullptr) {
         LOGE("Have not found user %{public}u el key", user);
         return -ENOENT;
     }
-    auto item = userElKey_[user];
+
     UserAuth auth = {userTokenSecret.token, userTokenSecret.oldSecret, userTokenSecret.secureUid};
     if ((item->RestoreKey(auth) == false) && (item->RestoreKey(NULL_KEY_AUTH) == false)) {
         LOGE("Restore key error");
@@ -568,6 +565,7 @@ int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
         return -EFAULT;
     }
 
+    userPinProtect[user] = !userTokenSecret.newSecret.empty();
     return 0;
 }
 
@@ -578,40 +576,102 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::vector<uint8_t> &tok
     if (!KeyCtrlHasFscryptSyspara()) {
         return 0;
     }
-    std::string keyEL2Dir = USER_EL2_DIR + "/" + std::to_string(user);
-    std::string keyEL3Dir = USER_EL3_DIR + "/" + std::to_string(user);
-    std::string keyEL4Dir = USER_EL4_DIR + "/" + std::to_string(user);
-    if (ActiveCeSceSeceUserKey(user, userEl2Key_, keyEL2Dir, token, secret) != 0) {
+
+    if (ActiveCeSceSeceUserKey(user, EL2_KEY, token, secret) != 0) {
         LOGI("Active user %{public}u el2 fail", user);
         return -EFAULT;
     }
-    if (ActiveCeSceSeceUserKey(user, userEl3Key_, keyEL3Dir, token, secret) != 0) {
+    if (ActiveCeSceSeceUserKey(user, EL3_KEY, token, secret) != 0) {
         LOGI("Active user %{public}u el3 fail", user);
         return -EFAULT;
     }
-    if (ActiveCeSceSeceUserKey(user, userEl4Key_, keyEL4Dir, token, secret) != 0) {
+    if (ActiveCeSceSeceUserKey(user, EL4_KEY, token, secret) != 0) {
         LOGI("Active user %{public}u el4 fail", user);
         return -EFAULT;
-    }
-    std::lock_guard<std::mutex> lock(keyMutex_);
-    if (secret.empty()) {
-        userPinProtect.insert(std::make_pair(user, false));
-    } else {
-        userPinProtect.insert(std::make_pair(user, true));
     }
     return 0;
 }
 
-int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
-                                       std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_,
-                                       std::string keyDir,
+std::string KeyManager::GetKeyDirByUserAndType(unsigned int user, KeyType type)
+{
+    std::string keyDir = "";
+    switch (type) {
+        case EL1_KEY:
+            keyDir = USER_EL1_DIR + "/" + std::to_string(user);
+            break;
+        case EL2_KEY:
+            keyDir = USER_EL2_DIR + "/" + std::to_string(user);
+            break;
+        case EL3_KEY:
+            keyDir = USER_EL3_DIR + "/" + std::to_string(user);
+            break;
+        case EL4_KEY:
+            keyDir = USER_EL4_DIR + "/" + std::to_string(user);
+            break;
+        default:
+            LOGE("GetKeyDirByUserAndType type %{public}u is invalid", type);
+            break;
+    }
+    return keyDir;
+}
+
+void KeyManager::SaveUserElKey(unsigned int user, KeyType type, std::shared_ptr<BaseKey> elKey)
+{
+    switch (type) {
+        case EL1_KEY:
+            userEl1Key_[user] = elKey;
+            break;
+        case EL2_KEY:
+            userEl2Key_[user] = elKey;
+            break;
+        case EL3_KEY:
+            userEl3Key_[user] = elKey;
+            break;
+        case EL4_KEY:
+            userEl4Key_[user] = elKey;
+            break;
+        default:
+            LOGE("SaveUserElKey type %{public}u is invalid", type);
+    }
+}
+
+std::shared_ptr<BaseKey> KeyManager::GetUserElKey(unsigned int user, KeyType type)
+{
+    if (HasElkey(user, type) != true) {
+        LOGE("Have not found user %{public}u key, type %{public}u", user, type);
+        return nullptr;
+    }
+
+    switch (type) {
+        case EL1_KEY:
+            return userEl1Key_[user];
+        case EL2_KEY:
+            return userEl2Key_[user];
+        case EL3_KEY:
+            return userEl3Key_[user];
+        case EL4_KEY:
+            return userEl4Key_[user];
+        default:
+            LOGE("GetUserElKey type %{public}u is invalid", type);
+            return nullptr;
+    }
+}
+
+int KeyManager::ActiveCeSceSeceUserKey(unsigned int user, KeyType type,
                                        const std::vector<uint8_t> &token,
                                        const std::vector<uint8_t> &secret)
 {
-    std::lock_guard<std::mutex> lock(keyMutex_);
-    if (userElKey_.find(user) != userElKey_.end()) {
-        LOGE("The user %{public}u el have been actived, keyDir is %{public}s", user, keyDir.c_str());
+    if (!KeyCtrlHasFscryptSyspara()) {
         return 0;
+    }
+    std::lock_guard<std::mutex> lock(keyMutex_);
+    if (HasElkey(user, type)) {
+        LOGE("The user %{public}u el have been actived, key type is %{public}u", user, type);
+        return 0;
+    }
+    std::string keyDir = GetKeyDirByUserAndType(user, type);
+    if (keyDir == "") {
+        return E_KEY_TYPE_INVAL;
     }
     if (!IsDir(keyDir)) {
         LOGE("Have not found user %{public}u el", user);
@@ -642,7 +702,12 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
         return -EFAULT;
     }
 
-    userElKey_[user] = elKey;
+    SaveUserElKey(user, type, elKey);
+    if (secret.empty()) {
+        userPinProtect.insert(std::make_pair(user, false));
+    } else {
+        userPinProtect.insert(std::make_pair(user, true));
+    }
     LOGI("Active user %{public}u el success", user);
 
     return 0;
@@ -805,18 +870,22 @@ int KeyManager::getEceSeceKeyPath(unsigned int user, KeyType type, std::string &
     return 0;
 }
 
-int KeyManager::UpdateCeEceSeceKeyContext(uint32_t userId, std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_)
+int KeyManager::UpdateCeEceSeceKeyContext(uint32_t userId, KeyType type)
 {
     LOGI("start");
     if (!KeyCtrlHasFscryptSyspara()) {
         return 0;
     }
     std::lock_guard<std::mutex> lock(keyMutex_);
-    if (userElKey_.find(userId) == userElKey_.end()) {
-        LOGE("Have not found user %{public}u el2", userId);
+    if (HasElkey(userId, type) == false) {
+        LOGE("Have not found user %{public}u el%{public}u", userId, type);
         return -ENOENT;
     }
-    auto elKey = userElKey_[userId];
+    std::shared_ptr<BaseKey> elKey = GetUserElKey(userId, type);
+    if (elKey == nullptr) {
+        LOGE("Have not found user %{public}u, type el%{public}u", userId, type);
+        return -ENOENT;
+    }
     if (!elKey->UpdateKey()) {
         LOGE("Basekey update newest context failed");
         return -EFAULT;
@@ -827,17 +896,17 @@ int KeyManager::UpdateCeEceSeceKeyContext(uint32_t userId, std::map<unsigned int
 int KeyManager::UpdateKeyContext(uint32_t userId)
 {
     LOGI("UpdateKeyContext enter");
-    int ret = UpdateCeEceSeceKeyContext(userId, userEl2Key_);
+    int ret = UpdateCeEceSeceKeyContext(userId, EL2_KEY);
     if (ret != 0) {
         LOGE("Basekey update EL2 newest context failed");
         return -EFAULT;
     }
-    ret = UpdateCeEceSeceKeyContext(userId, userEl3Key_);
+    ret = UpdateCeEceSeceKeyContext(userId, EL3_KEY);
     if (ret != 0) {
         LOGE("Basekey update EL3 newest context failed");
         return -EFAULT;
     }
-    ret = UpdateCeEceSeceKeyContext(userId, userEl4Key_);
+    ret = UpdateCeEceSeceKeyContext(userId, EL4_KEY);
     if (ret != 0) {
         LOGE("Basekey update EL4 newest context failed");
         return -EFAULT;
@@ -863,15 +932,12 @@ int KeyManager::UpgradeKeys(const std::vector<FileList> &dirInfo)
 int KeyManager::RestoreUserKey(uint32_t userId, KeyType type)
 {
     LOGI("start, user is %{public}u , type is %{public}d", userId, type);
-    std::string dir;
-    if (type == EL1_KEY) {
-        dir = USER_EL1_DIR + "/" + std::to_string(userId);
-    } else if (type == EL2_KEY) {
-        dir = USER_EL2_DIR + "/" + std::to_string(userId);
-    } else {
-        LOGE("type is invaild");
+    std::string dir = GetKeyDirByUserAndType(userId, type);
+    if (dir == "") {
+        LOGE("type is invalid, %{public}u", type);
         return -EFAULT;
     }
+
     if (!IsDir(dir)) {
         LOGE("dir not exist");
         return -ENOENT;

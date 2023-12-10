@@ -38,6 +38,7 @@ public:
 private:
     uint32_t GetUserIdFromDir();
     uint32_t GetTypeFromDir();
+    uint32_t GetMappedUserId(uint32_t userId, uint32_t type);
 
     std::string dir_;
     uint32_t userId_ = 0;
