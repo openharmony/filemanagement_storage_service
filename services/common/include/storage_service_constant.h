@@ -22,7 +22,7 @@ namespace StorageService {
 const int START_USER_ID = 100;
 const int MAX_USER_ID = 1099;
 const int UID_FILE_MANAGER = 1006;
-const int32_t USER_CONST = 10000;
+const uid_t USER_ID_BASE = 200000;
 }
 
 namespace StorageDaemon {
@@ -47,7 +47,7 @@ static std::map<std::string, KeyType> EL_DIR_MAP = {
 };
 
 enum QuotaIdType {
-    USERID,
+    USRID,
     GRPID,
     PRJID
 };

@@ -512,15 +512,21 @@ int32_t MountManager::MountByUser(int32_t userId)
     return E_OK;
 }
 
+static uid_t GetFileManagerUid(uid_t uid, int32_t userId)
+{
+    return USER_ID_BASE * userId + uid;
+}
+
 void MountManager::PrepareFileManagerDir(int32_t userId)
 {
     std::string filesPath = StringPrintf("/data/service/el2/%d/hmdfs/account/files/", userId);
     // move file manager dir
     MoveFileManagerData(filesPath);
     for (const DirInfo &dir : fileManagerDir_) {
+        uid_t dirUid = GetFileManagerUid(dir.uid, userId);
         std::string path = StringPrintf(dir.path.c_str(), userId);
-        int ret = IsSameGidUid(path, dir.uid, dir.gid);
-        LOGE("prepareDir %{public}s ret %{public}d", path.c_str(), ret);
+        int ret = IsSameGidUid(path, dirUid, dir.gid);
+        LOGD("prepareDir %{public}s ret %{public}d, dirUid: %{public}d", path.c_str(), ret, dirUid);
         // Dir exist and same uid, gid
         if (ret == E_OK) {
             continue;
@@ -532,11 +538,11 @@ void MountManager::PrepareFileManagerDir(int32_t userId)
         }
         // Dir exist and different uid, gid
         if (ret == E_DIFF_UID_GID) {
-            ChownRecursion(path, OID_FILE_MANAGER, OID_FILE_MANAGER);
+            ChownRecursion(path, dirUid, OID_FILE_MANAGER);
             continue;
         }
         // Dir not exist
-        if (ret == E_NON_EXIST && !PrepareDir(path, dir.mode, dir.uid, dir.gid)) {
+        if (ret == E_NON_EXIST && !PrepareDir(path, dir.mode, dirUid, dir.gid)) {
             LOGE("failed to prepareDir %{public}s ", path.c_str());
         }
     }
@@ -598,7 +604,8 @@ int32_t MountManager::PrepareHmdfsDirs(int32_t userId)
 int32_t MountManager::PrepareFileManagerDirs(int32_t userId)
 {
     for (const DirInfo &dir : fileManagerDir_) {
-        if (!PrepareDir(StringPrintf(dir.path.c_str(), userId), dir.mode, dir.uid, dir.gid)) {
+        uid_t dirUid = GetFileManagerUid(dir.uid, userId);
+        if (!PrepareDir(StringPrintf(dir.path.c_str(), userId), dir.mode, dirUid, dir.gid)) {
             return E_PREPARE_DIR;
         }
     }
@@ -670,7 +677,7 @@ int32_t MountManager::DestroyFileManagerDirs(int32_t userId)
 
 int32_t MountManager::SetFafQuotaProId(int32_t userId)
 {
-    int32_t prjId = userId * USER_CONST + UID_FILE_MANAGER;
+    int32_t prjId = 0;
     for (const DirInfo &dir: fileManagerDir_) {
         QuotaManager::GetInstance()->SetQuotaPrjId(StringPrintf(dir.path.c_str(), userId), prjId, true);
     }

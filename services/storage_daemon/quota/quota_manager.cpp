@@ -159,7 +159,7 @@ static int64_t GetOccupiedSpaceForPrjId(int32_t prjId, int64_t &size)
 int32_t QuotaManager::GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size)
 {
     switch (idType) {
-        case USERID:
+        case USRID:
             return GetOccupiedSpaceForUid(id, size);
             break;
         case GRPID:
@@ -238,6 +238,9 @@ int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int32_t prjId, bool
         LOGE("Failed to get extended attributes of %{public}s, errno: %{public}d", path.c_str(), errno);
         (void)close(fd);
         return E_SYS_CALL;
+    }
+    if (fsx.fsx_projid == prjId) {
+        return E_OK;
     }
     fsx.fsx_projid = static_cast<uint32_t>(prjId);
     if (ioctl(fd, FS_IOC_FSSETXATTR, &fsx) == -1) {
