@@ -36,16 +36,6 @@ int32_t VolumeInfo::Create(const std::string volId, const std::string diskId, de
     mountFlags_ = 0;
     userIdOwner_ = 0;
 
-    std::string key = "persist.filemanagement.usb.readonly";
-    int handle = static_cast<int>(FindParameter(key.c_str()));
-    if (handle != -1) {
-        char rdOnlyEnable[255] = {"false"};
-        auto res = GetParameterValue(handle, rdOnlyEnable, 255);
-        if (res >= 0 && strncmp(rdOnlyEnable, "true", TRUE_LEN) == 0) {
-            mountFlags_ |= MS_RDONLY;
-        }
-    }
-
     int32_t err = DoCreate(device);
     if (err) {
         return err;
@@ -113,6 +103,16 @@ int32_t VolumeInfo::Mount(uint32_t flags)
         return E_VOL_STATE;
     }
 
+    std::string key = "persist.filemanagement.usb.readonly";
+    int handle = static_cast<int>(FindParameter(key.c_str()));
+    if (handle != -1) {
+        char rdOnlyEnable[255] = {"false"};
+        auto res = GetParameterValue(handle, rdOnlyEnable, 255);
+        if (res >= 0 && strncmp(rdOnlyEnable, "true", TRUE_LEN) == 0) {
+            mountFlags_ |= MS_RDONLY;
+        }
+    }
+    
     mountFlags_ |= flags;
     err = DoMount(mountFlags_);
     if (err) {
