@@ -52,23 +52,22 @@ public:
     int UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret,
                        bool needGenerateShield = true);
     int UpdateCeEceSeceUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret,
-                                std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_, bool needGenerateShield);
+                                KeyType type, bool needGenerateShield);
 #else
     int UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret);
     int UpdateCeEceSeceUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret,
-                                std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_);
+                                KeyType type);
 
 #endif
     int ActiveUserKey(unsigned int user, const std::vector<uint8_t> &token,
                       const std::vector<uint8_t> &secret);
-    int ActiveCeSceSeceUserKey(unsigned int user, std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_,
-                               std::string keyDir, const std::vector<uint8_t> &token,
+    int ActiveCeSceSeceUserKey(unsigned int user, KeyType type, const std::vector<uint8_t> &token,
                                const std::vector<uint8_t> &secret);
     int InActiveUserKey(unsigned int user);
     int SetDirectoryElPolicy(unsigned int user, KeyType type,
                              const std::vector<FileList> &vec);
     int UpdateKeyContext(uint32_t userId);
-    int UpdateCeEceSeceKeyContext(uint32_t userId, std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_);
+    int UpdateCeEceSeceKeyContext(uint32_t userId, KeyType type);
     int getEceSeceKeyPath(unsigned int user, KeyType type, std::string &eceSeceKeyPath);
     int LockUserScreen(uint32_t user);
     int UnlockUserScreen(uint32_t user);
@@ -93,6 +92,9 @@ private:
                                   std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_);
     int UpgradeKeys(const std::vector<FileList> &dirInfo);
     std::shared_ptr<BaseKey> GetBaseKey(const std::string& dir);
+    std::shared_ptr<BaseKey> GetUserElKey(unsigned int user, KeyType type);
+    void SaveUserElKey(unsigned int user, KeyType type, std::shared_ptr<BaseKey> elKey);
+    std::string GetKeyDirByUserAndType(unsigned int user, KeyType type);
 
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl1Key_;
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl2Key_;

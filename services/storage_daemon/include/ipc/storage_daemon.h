@@ -17,9 +17,10 @@
 #define OHOS_STORAGE_DAEMON_STORAGE_DAEMON_H
 
 #include <mutex>
-#include "system_ability_status_change_stub.h"
-#include "ipc/storage_daemon_stub.h"
 #include <vector>
+#include "ipc/storage_daemon_stub.h"
+#include "system_ability_status_change_stub.h"
+#include "storage_service_constant.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -88,6 +89,13 @@ private:
     int32_t PrepareUserDirsAndUpdateUserAuth(uint32_t userId,
                                              const std::vector<uint8_t> &token,
                                              const std::vector<uint8_t> &secret);
+    int32_t PrepareUserDirsAndUpdateUserAuth(uint32_t userId, KeyType type,
+                                             const std::vector<uint8_t> &token,
+                                             const std::vector<uint8_t> &secret);
+    int32_t GetCryptoFlag(KeyType type, uint32_t &flags);
+    std::string GetNeedRestoreFilePathByType(int32_t userId, KeyType type);
+    bool IsNeedRestorePathExist(uint32_t userId, bool needCheckEl1);
+    int32_t RestoreUserOneKey(int32_t userId, KeyType type);
 #endif
 };
 } // StorageDaemon

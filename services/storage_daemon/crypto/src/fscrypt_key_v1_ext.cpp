@@ -15,6 +15,7 @@
 
 #include "fscrypt_key_v1_ext.h"
 
+#include <filesystem>
 #include <vector>
 
 #include "fbex.h"
@@ -23,6 +24,42 @@
 
 namespace OHOS {
 namespace StorageDaemon {
+static const std::string NEED_RESTORE_PATH = "/data/service/el0/storage_daemon/sd/latest/need_restore";
+static const uint32_t DEFAULT_SINGLE_FIRST_USER_ID = 100;
+static const uint32_t USER_ID_DIFF = 91;
+
+/* sec_fbe_drv module saved userId, type and IV in ioctl FBEX_IOC_ADD_IV process.
+ * In Upgrade Scenario, before upgrade user id 0 and after upgrade  user id 100, ioctl
+ * FBEX_IOC_ADD_IV will return error.
+ * so, to solve this problem, when el3/el4 ioctl FBEX_IOC_ADD_IV, userId need be mapped
+ * in Upgrade Scenario.
+ * user id mapped as:
+ * src-userId  mapped-userId    diff
+ * 0               100          100
+ * 10              101           91
+ * 11              102           91
+ * 12              103           91
+ * ...             ...           91
+ * 128             219           91
+ * 129             220           91
+ * ...             ...           91
+ */
+uint32_t FscryptKeyV1Ext::GetMappedUserId(uint32_t userId, uint32_t type)
+{
+    if (std::filesystem::exists(NEED_RESTORE_PATH) &&
+        (type == TYPE_EL2 || type == TYPE_EL3 || type == TYPE_EL4)) {
+        if (userId == DEFAULT_SINGLE_FIRST_USER_ID) {
+            return 0;
+        }
+
+        if (userId > DEFAULT_SINGLE_FIRST_USER_ID) {
+            return userId - USER_ID_DIFF;
+        }
+    }
+
+    return userId;
+}
+
 bool FscryptKeyV1Ext::ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, uint32_t &elType)
 {
     if (!FBEX::IsFBEXSupported()) {
@@ -30,11 +67,14 @@ bool FscryptKeyV1Ext::ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, ui
     }
 
     LOGD("enter");
+    uint32_t user = GetMappedUserId(userId_, type_);
+    LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, user);
     // iv buffer returns derived keys
-    if (FBEX::InstallKeyToKernel(userId_, type_, iv, size, static_cast<uint8_t>(flag)) != 0) {
-        LOGE("InstallKeyToKernel failed, userId %{public}d, type %{public}d, flag %{public}u", userId_, type_, flag);
+    if (FBEX::InstallKeyToKernel(user, type_, iv, size, static_cast<uint8_t>(flag)) != 0) {
+        LOGE("InstallKeyToKernel failed, user %{public}d, type %{public}d, flag %{public}u", user, type_, flag);
         return false;
     }
+
     //Used to associate el3 and el4 kernels.
     elType = type_;
     return true;
@@ -46,8 +86,10 @@ bool FscryptKeyV1Ext::UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_t s
         return true;
     }
     LOGD("enter");
-    if (FBEX::UnlockScreenToKernel(userId_, type_, iv, size)) {
-        LOGE("UnlockScreenToKernel failed, userId %{public}d", userId_);
+    uint32_t user = GetMappedUserId(userId_, type_);
+    LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, user);
+    if (FBEX::UnlockScreenToKernel(user, type_, iv, size)) {
+        LOGE("UnlockScreenToKernel failed, userId %{public}d, %{public}d", userId_, flag);
         return false;
     }
     return true;
@@ -69,7 +111,9 @@ bool FscryptKeyV1Ext::InactiveKeyExt(uint32_t flag)
     buf[0] = 0xfb; // fitst byte const to kernel
     buf[1] = 0x30; // second byte const to kernel
 
-    if (FBEX::UninstallOrLockUserKeyToKernel(userId_, type_, buf, FBEX_IV_SIZE, destroy) != 0) {
+    uint32_t user = GetMappedUserId(userId_, type_);
+    LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, user);
+    if (FBEX::UninstallOrLockUserKeyToKernel(user, type_, buf, FBEX_IV_SIZE, destroy) != 0) {
         LOGE("UninstallOrLockUserKeyToKernel failed, userId %{public}d, type %{public}d, destroy %{public}u", userId_,
              type_, destroy);
         return false;
@@ -83,7 +127,9 @@ bool FscryptKeyV1Ext::LockUserScreenExt(uint32_t flag, uint32_t &elType)
         return true;
     }
     LOGD("enter");
-    if (FBEX::LockScreenToKernel(flag)) {
+    uint32_t user = GetMappedUserId(userId_, type_);
+    LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, user);
+    if (FBEX::LockScreenToKernel(user)) {
         LOGE("LockScreenToKernel failed, userId %{public}d", flag);
         return false;
     }
