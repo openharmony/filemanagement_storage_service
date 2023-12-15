@@ -110,6 +110,8 @@ int32_t VolumeInfo::Mount(uint32_t flags)
         auto res = GetParameterValue(handle, rdOnlyEnable, 255);
         if (res >= 0 && strncmp(rdOnlyEnable, "true", TRUE_LEN) == 0) {
             mountFlags_ |= MS_RDONLY;
+        } else {
+            mountFlags_ &= ~MS_RDONLY;
         }
     }
     
