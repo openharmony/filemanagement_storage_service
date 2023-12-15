@@ -74,5 +74,19 @@ int32_t KeyManager::UpdateKeyContext(uint32_t userId)
 {
     return E_OK;
 }
+
+int KeyManager::GenerateUserKeyByType(unsigned int user, KeyType type,
+                                      const std::vector<uint8_t> &token,
+                                      const std::vector<uint8_t> &secret)
+{
+    return E_OK;
+}
+
+int KeyManager::ActiveCeSceSeceUserKey(unsigned int user, KeyType type,
+                                       const std::vector<uint8_t> &token,
+                                       const std::vector<uint8_t> &secret)
+{
+    return E_OK;
+}
 } // namespace StorageDaemon
 } // namespace OHOS

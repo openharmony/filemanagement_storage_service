@@ -74,6 +74,11 @@ public:
 #ifdef USER_CRYPTO_MIGRATE_KEY
     int RestoreUserKey(uint32_t userId, KeyType type);
 #endif
+    std::string GetKeyDirByUserAndType(unsigned int user, KeyType type);
+    std::string GetKeyDirByType(KeyType type);
+    int GenerateUserKeyByType(unsigned int user, KeyType type,
+                              const std::vector<uint8_t> &token,
+                              const std::vector<uint8_t> &secret);
 private:
     KeyManager()
     {
@@ -94,7 +99,8 @@ private:
     std::shared_ptr<BaseKey> GetBaseKey(const std::string& dir);
     std::shared_ptr<BaseKey> GetUserElKey(unsigned int user, KeyType type);
     void SaveUserElKey(unsigned int user, KeyType type, std::shared_ptr<BaseKey> elKey);
-    std::string GetKeyDirByUserAndType(unsigned int user, KeyType type);
+    bool IsNeedClearKeyFile(std::string file);
+    void ProcUpgradeKey(const std::vector<FileList> &dirInfo);
 
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl1Key_;
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl2Key_;

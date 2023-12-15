@@ -82,21 +82,25 @@ public:
         void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;
         void OnRemoveSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;
     };
-#ifdef USER_CRYPTO_MIGRATE_KEY
+
 private:
+#ifdef USER_CRYPTO_MIGRATE_KEY
     std::string GetNeedRestoreFilePath(int32_t userId, const std::string &user_dir);
-    int32_t RestoreUserKey(int32_t userId, uint32_t flags);
-    int32_t PrepareUserDirsAndUpdateUserAuth(uint32_t userId,
-                                             const std::vector<uint8_t> &token,
-                                             const std::vector<uint8_t> &secret);
+    std::string GetNeedRestoreFilePathByType(int32_t userId, KeyType type);
     int32_t PrepareUserDirsAndUpdateUserAuth(uint32_t userId, KeyType type,
                                              const std::vector<uint8_t> &token,
                                              const std::vector<uint8_t> &secret);
-    int32_t GetCryptoFlag(KeyType type, uint32_t &flags);
-    std::string GetNeedRestoreFilePathByType(int32_t userId, KeyType type);
+    int32_t RestoreUserKey(int32_t userId, uint32_t flags);
     bool IsNeedRestorePathExist(uint32_t userId, bool needCheckEl1);
     int32_t RestoreUserOneKey(int32_t userId, KeyType type);
 #endif
+    int32_t GetCryptoFlag(KeyType type, uint32_t &flags);
+    int32_t GenerateKeyAndPrepareUserDirs(uint32_t userId, KeyType type,
+                                          const std::vector<uint8_t> &token,
+                                          const std::vector<uint8_t> &secret);
+    int32_t ActiveUserKeyAndPrepare(uint32_t userId, KeyType type,
+                                    const std::vector<uint8_t> &token,
+                                    const std::vector<uint8_t> &secret);
 };
 } // StorageDaemon
 } // OHOS

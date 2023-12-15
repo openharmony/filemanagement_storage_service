@@ -15,6 +15,7 @@
 
 #include "key_manager.h"
 
+#include <filesystem>
 #include <string>
 
 #include "base_key.h"
@@ -32,6 +33,7 @@
 namespace OHOS {
 namespace StorageDaemon {
 const UserAuth NULL_KEY_AUTH = {};
+const std::string DEFAULT_NEED_RESTORE_VERSION = "1";
 
 std::shared_ptr<BaseKey> KeyManager::GetBaseKey(const std::string& dir)
 {
@@ -271,6 +273,42 @@ bool KeyManager::HasElkey(uint32_t userId, KeyType type)
     return false;
 }
 
+bool KeyManager::IsNeedClearKeyFile(std::string file)
+{
+    LOGI("enter:");
+    if (!std::filesystem::exists(file)) {
+        LOGE("file not exist, file is %{private}s", file.c_str());
+        return false;
+    }
+
+    std::string version;
+    if (!OHOS::LoadStringFromFile(file, version)) {
+        LOGE("LoadStringFromFile return fail, file is %{private}s", file.c_str());
+        return false;
+    }
+
+    if (version != DEFAULT_NEED_RESTORE_VERSION) {
+        LOGE("need to clear, file is %{private}s, version is %{public}s.", file.c_str(), version.c_str());
+        return true;
+    }
+    LOGE("no need to clear, file is %{private}s, version is %{public}s", file.c_str(), version.c_str());
+    return false;
+}
+
+void KeyManager::ProcUpgradeKey(const std::vector<FileList> &dirInfo)
+{
+    LOGI("enter:");
+    for (const auto &it : dirInfo) {
+        std::string needRestorePath = it.path + "/latest/need_restore";
+        if (IsNeedClearKeyFile(needRestorePath)) {
+            bool ret = RmDirRecurse(it.path);
+            if (!ret) {
+                LOGE("remove key dir fail, result is %{public}d, dir %{private}s", ret, it.path.c_str());
+            }
+        }
+    }
+}
+
 int KeyManager::LoadAllUsersEl1Key(void)
 {
     LOGI("enter");
@@ -286,6 +324,13 @@ int KeyManager::LoadAllUsersEl1Key(void)
         }
     }
 
+    /* only for el3/el4 upgrade scene */
+    dirInfo.clear();
+    ReadDigitDir(USER_EL3_DIR, dirInfo);
+    ProcUpgradeKey(dirInfo);
+    dirInfo.clear();
+    ReadDigitDir(USER_EL4_DIR, dirInfo);
+    ProcUpgradeKey(dirInfo);
     return 0;
 }
 
@@ -413,6 +458,38 @@ int KeyManager::GenerateUserKeys(unsigned int user, uint32_t flags)
         return ret;
     }
     LOGI("Create user el success");
+
+    return 0;
+}
+
+int KeyManager::GenerateUserKeyByType(unsigned int user, KeyType type,
+                                      const std::vector<uint8_t> &token,
+                                      const std::vector<uint8_t> &secret)
+{
+    LOGI("start, user:%{public}u, type %{public}u", user, type);
+    if (!KeyCtrlHasFscryptSyspara()) {
+        return 0;
+    }
+
+    std::lock_guard<std::mutex> lock(keyMutex_);
+    std::string elPath = GetKeyDirByType(type);
+    if (!IsDir(elPath)) {
+        LOGI("El storage dir is not existed");
+        return -ENOENT;
+    }
+
+    std::string elUserKeyPath = elPath + + "/" + std::to_string(user);
+    if (IsDir(elUserKeyPath)) {
+        LOGE("user %{public}d el key have existed, create error", user);
+        return -EEXIST;
+    }
+    UserAuth auth = {.token = token, .secret = secret, .secureUid = 0};
+    int ret = GenerateAndInstallUserKey(user, elUserKeyPath, auth, type);
+    if (ret) {
+        LOGE("user el create error, user %{public}u, type %{public}u", user, type);
+        return ret;
+    }
+    LOGI("Create user el success, user %{public}u, type %{public}u", user, type);
 
     return 0;
 }
@@ -615,6 +692,29 @@ std::string KeyManager::GetKeyDirByUserAndType(unsigned int user, KeyType type)
     return keyDir;
 }
 
+std::string KeyManager::GetKeyDirByType(KeyType type)
+{
+    std::string keyDir = "";
+    switch (type) {
+        case EL1_KEY:
+            keyDir = USER_EL1_DIR;
+            break;
+        case EL2_KEY:
+            keyDir = USER_EL2_DIR;
+            break;
+        case EL3_KEY:
+            keyDir = USER_EL3_DIR;
+            break;
+        case EL4_KEY:
+            keyDir = USER_EL4_DIR;
+            break;
+        default:
+            LOGE("GetKeyDirByType type %{public}u is invalid", type);
+            break;
+    }
+    return keyDir;
+}
+
 void KeyManager::SaveUserElKey(unsigned int user, KeyType type, std::shared_ptr<BaseKey> elKey)
 {
     switch (type) {
@@ -804,6 +904,7 @@ int KeyManager::LockUserScreen(uint32_t user)
     LOGI("LockUserScreen user %{public}u el3 and el4 success", user);
     return 0;
 }
+
 int KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type, const std::vector<FileList> &vec)
 {
     LOGI("start");
@@ -815,22 +916,22 @@ int KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type, const std:
     std::lock_guard<std::mutex> lock(keyMutex_);
     if (type == EL1_KEY) {
         if (userEl1Key_.find(user) == userEl1Key_.end()) {
-            LOGD("Have not found user %{public}u el1 key, not enable el1", user);
+            LOGE("Have not found user %{public}u el1 key, not enable el1", user);
             return -ENOENT;
         }
         keyPath = userEl1Key_[user]->GetDir();
     } else if (type == EL2_KEY || type == EL3_KEY || type == EL4_KEY) {
         if (userEl2Key_.find(user) == userEl2Key_.end()) {
-            LOGD("Have not found user %{public}u el2 key, not enable el2", user);
+            LOGE("Have not found user %{public}u el2 key, not enable el2", user);
             return -ENOENT;
         }
         keyPath = userEl2Key_[user]->GetDir();
     } else {
-        LOGD("Not specify el flags, no need to crypt");
+        LOGE("Not specify el flags, no need to crypt");
         return 0;
     }
     if (getEceSeceKeyPath(user, type, eceSeceKeyPath) != 0) {
-        LOGD("method getEceSeceKeyPath fail");
+        LOGE("method getEceSeceKeyPath fail");
         return -ENOENT;
     }
     for (auto item : vec) {
