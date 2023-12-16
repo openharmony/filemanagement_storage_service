@@ -116,10 +116,10 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
     storageStats.video_ = mediaVol.GetVideosSize();
     storageStats.image_ = mediaVol.GetImagesSize();
 #endif
-    int32_t prjId = userId * USER_CONST + UID_FILE_MANAGER;
+    int32_t prjId = userId * USER_ID_BASE + UID_FILE_MANAGER;
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->GetOccupiedSpace(StorageDaemon::PRJID, prjId, storageStats.file_);
+    err = sdCommunication->GetOccupiedSpace(StorageDaemon::USRID, prjId, storageStats.file_);
     return err;
 }
 
