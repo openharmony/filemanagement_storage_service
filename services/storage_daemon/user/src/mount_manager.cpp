@@ -309,7 +309,7 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
 {
     filesystem::path rootDir(SANDBOX_ROOT_PATH);
     if (!exists(rootDir)) {
-        LOGE("root path not exists");
+        LOGE("root path not exists, rootDir is %{public}s", SANDBOX_ROOT_PATH.c_str());
         return -ENOENT;
     }
 
@@ -325,14 +325,18 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
             ParseSandboxPath(srcPath, to_string(userId), bundleName.path().filename().generic_string());
             ret = mount(srcPath.c_str(), dstPath.c_str(), NULL, MS_BIND | MS_REC, NULL);
             if (ret != 0) {
+                LOGE("mount bind failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
+                    srcPath.c_str(), dstPath.c_str(), errno);
                 continue;
             }
             ret = mount(NULL, dstPath.c_str(), NULL, MS_SHARED, NULL);
             if (ret != 0) {
-                LOGI("mount to share failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
+                LOGE("mount to share failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
                     srcPath.c_str(), dstPath.c_str(), errno);
                 continue;
             }
+            LOGD("mount crypto path success, srcPath is %{public}s dstPath is %{public}s",
+                srcPath.c_str(), dstPath.c_str());
         }
     }
     return ret;
