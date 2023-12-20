@@ -40,7 +40,8 @@ UserManager::UserManager()
       el2DirVec_{{"/data/service/el2/%d/backup", 02771, OID_BACKUP, OID_BACKUP},
                  {"/data/service/el2/%d/backup/backup_sa", 0711, OID_BACKUP, OID_BACKUP},
                  {"/data/app/el2/%d/log", 0711, OID_ROOT, OID_ROOT}},
-      el1DirVec_{{"/data/service/el1/%d/distributeddata", 0711, OID_DDMS, OID_DDMS}}
+      el1DirVec_{{"/data/service/el1/%d/distributeddata", 0711, OID_DDMS, OID_DDMS},
+                 {"/data/service/el1/%d/backup", 02711, OID_BACKUP, OID_BACKUP}}
 {
 }
 
