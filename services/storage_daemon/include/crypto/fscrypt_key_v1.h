@@ -36,6 +36,7 @@ public:
     bool InactiveKey(uint32_t flag = 0, const std::string &mnt = MNT_DATA);
     bool LockUserScreen(uint32_t flag = 0, uint32_t sdpClass = 0, const std::string &mnt = MNT_DATA);
     bool UnlockUserScreen(uint32_t flag = 0, uint32_t sdpClass = 0, const std::string &mnt = MNT_DATA);
+    void DropCachesIfNeed();
 
 private:
     bool GenerateKeyDesc();
