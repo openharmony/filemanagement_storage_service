@@ -572,33 +572,33 @@ int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTo
     int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL2_KEY, needGenerateShield);
     if (ret != 0) {
         LOGE("user %{public}u UpdateUserAuth el2 key fail", user);
-        return -EFAULT;
+        return ret;
     }
     ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL3_KEY, needGenerateShield);
     if (ret != 0) {
         LOGE("user %{public}u UpdateUserAuth el3 key fail", user);
-        return -EFAULT;
+        return ret;
     }
     ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL4_KEY, needGenerateShield);
     if (ret != 0) {
         LOGE("user %{public}u UpdateUserAuth el4 key fail", user);
-        return -EFAULT;
+        return ret;
     }
 #else
     int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL2_KEY);
     if (ret != 0) {
         LOGE("user %{public}u UpdateUserAuth el2 key fail", user);
-        return -EFAULT;
+        return ret;
     }
     ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL3_KEY);
     if (ret != 0) {
         LOGE("user %{public}u UpdateUserAuth el3 key fail", user);
-        return -EFAULT;
+        return ret;
     }
     ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL4_KEY);
     if (ret != 0) {
         LOGE("user %{public}u UpdateUserAuth el4 key fail", user);
-        return -EFAULT;
+        return ret;
     }
 #endif
 
@@ -1000,17 +1000,17 @@ int KeyManager::UpdateKeyContext(uint32_t userId)
     int ret = UpdateCeEceSeceKeyContext(userId, EL2_KEY);
     if (ret != 0) {
         LOGE("Basekey update EL2 newest context failed");
-        return -EFAULT;
+        return ret;
     }
     ret = UpdateCeEceSeceKeyContext(userId, EL3_KEY);
     if (ret != 0) {
         LOGE("Basekey update EL3 newest context failed");
-        return -EFAULT;
+        return ret;
     }
     ret = UpdateCeEceSeceKeyContext(userId, EL4_KEY);
     if (ret != 0) {
         LOGE("Basekey update EL4 newest context failed");
-        return -EFAULT;
+        return ret;
     }
     LOGI("Basekey update key context success");
     return 0;

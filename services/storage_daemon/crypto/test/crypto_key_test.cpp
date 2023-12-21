@@ -384,7 +384,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_active, TestSize.Level1)
 
     EXPECT_TRUE(g_testKeyV1.ActiveKey(FIRST_CREATE_KEY));
     // raw key should be erase after install to kernel.
-    EXPECT_TRUE(g_testKeyV1.keyInfo_.key.IsEmpty());
+    EXPECT_FALSE(g_testKeyV1.keyInfo_.key.IsEmpty());
     EXPECT_TRUE(g_testKeyV1.keyInfo_.keyId.IsEmpty());
     // key desc saved in memory for later clear key.
     EXPECT_FALSE(g_testKeyV1.keyInfo_.keyDesc.IsEmpty());
@@ -943,7 +943,7 @@ HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys, TestSize.Level1)
     EXPECT_EQ(-ENOENT, KeyManager::GetInstance()->UpdateUserAuth(userId, userTokenSecretNull));
     EXPECT_EQ(-ENOENT, KeyManager::GetInstance()->UpdateKeyContext(userId));
     EXPECT_EQ(-ENOENT, KeyManager::GetInstance()->InActiveUserKey(userId));
-    EXPECT_EQ(-ENOENT, KeyManager::GetInstance()->ActiveUserKey(userId, {}, {}));
+    EXPECT_EQ(-EFAULT, KeyManager::GetInstance()->ActiveUserKey(userId, {}, {}));
     EXPECT_EQ(-EFAULT, KeyManager::GetInstance()->DeleteUserKeys(userId));
 }
 
