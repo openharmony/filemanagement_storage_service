@@ -118,6 +118,11 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
         MountCryptoPathAgain(userId);
     }
     lock.unlock();
+    GetSystemAbility();
+}
+
+void AccountSubscriber::GetSystemAbility()
+{
     auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (sam == nullptr) {
         LOGE("GetSystemAbilityManager sam == nullptr");
@@ -130,6 +135,7 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
     }
     mediaShare_ = DataShare::DataShareHelper::Creator(remoteObj, "datashare:///media");
 }
+
 bool AccountSubscriber::OnReceiveEventLockUserScreen(int32_t userId)
 {
     std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
