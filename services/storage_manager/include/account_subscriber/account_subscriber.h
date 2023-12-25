@@ -51,6 +51,8 @@ private:
     int32_t userId_ = 0;
     std::unordered_map<int32_t, uint32_t> userRecord_;
     bool OnReceiveEventLockUserScreen(int32_t userId);
+
+    void GetSystemAbility();
 };
 }  // namespace StorageManager
 }  // namespace OHOS
