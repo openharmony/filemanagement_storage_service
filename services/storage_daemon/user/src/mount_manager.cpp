@@ -15,10 +15,12 @@
 
 #include "user/mount_manager.h"
 #include <cstdlib>
+#include <dirent.h>
 #include <fcntl.h>
 #include <set>
 #include <sys/mount.h>
 #include <sys/types.h>
+#include <thread>
 #include <unistd.h>
 #include<filesystem>
 #include "ipc/istorage_daemon.h"
@@ -481,11 +483,38 @@ int32_t MountManager::LocalMount(int32_t userId)
     return E_OK;
 }
 
+static void RmExistDir(const std::string &dirPath)
+{
+    if (access(dirPath.c_str(), 0) == 0) {
+        if (!RmDirRecurse(dirPath)) {
+            LOGE("Failed to remove dir %{public}s", dirPath.c_str());
+        }
+    }
+}
+
+static void ClearRedundantResources(int32_t userId)
+{
+    std::string sharePath = StringPrintf("/data/service/el2/%d/share", userId);
+    filesystem::path rootDir(sharePath);
+    if (!exists(rootDir)) {
+        LOGE("Bundles share path not exists, rootDir is %{public}s", sharePath.c_str());
+        return;
+    }
+
+    filesystem::directory_iterator bundleNameList(rootDir);
+    for (const auto &bundleName : bundleNameList) {
+        RmExistDir(bundleName.path().generic_string() + "/r");
+        RmExistDir(bundleName.path().generic_string() + "/rw");
+    }
+}
+
 int32_t MountManager::MountByUser(int32_t userId)
 {
     int ret = E_OK;
     // The Documnets and Download directories are managed by the File access framework,
     // and the UID GID is changed to filemanager
+    std::thread thread(ClearRedundantResources, userId);
+    thread.detach();
     PrepareFileManagerDir(userId);
     if (CreateVirtualDirs(userId) != E_OK) {
         LOGE("create hmdfs virtual dir error");
