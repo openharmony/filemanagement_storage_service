@@ -138,6 +138,7 @@ string MountArgument::OptionsToString() const
 {
     stringstream ss;
     ss << "local_dst=" << GetFullDst() << ",user_id=" << userId_;
+    ss << ",ra_pages=512";
     if (useCache_) {
         ss << ",cache_dir=" << GetCachePath();
     }
