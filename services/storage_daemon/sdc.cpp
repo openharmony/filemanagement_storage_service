@@ -24,8 +24,10 @@
 #include "storage_service_log.h"
 #include "utils/file_utils.h"
 
+#ifdef SDC_TEST_ENABLE
 constexpr int32_t NUM4 = 4;
 constexpr int32_t NUM5 = 5;
+#endif
 
 static int32_t InitGlobalKey(const std::vector<std::string> &args)
 {
