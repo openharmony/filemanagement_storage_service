@@ -52,7 +52,8 @@ const string CURRENT_USER_ID_FLAG = "<currentUserId>";
 const string PACKAGE_NAME_FLAG = "<bundleName>";
 const set<string> SANDBOX_EXCLUDE_PATH = {
     "chipset",
-    "system"
+    "system",
+    "com.ohos.render"
 };
 const vector<string> CRYPTO_SANDBOX_PATH = {
     "/data/storage/el2/base/",
@@ -309,7 +310,7 @@ static void ParseSandboxPath(string &path, const string &userId, const string &b
 
 int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
 {
-    filesystem::path rootDir(SANDBOX_ROOT_PATH);
+    filesystem::path rootDir(SANDBOX_ROOT_PATH + "/" + to_string(userId));
     if (!exists(rootDir)) {
         LOGE("root path not exists, rootDir is %{public}s", SANDBOX_ROOT_PATH.c_str());
         return -ENOENT;
