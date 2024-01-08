@@ -25,7 +25,6 @@ namespace StorageManager {
 using namespace std;
 
 constexpr pid_t ACCOUNT_UID = 3058;
-constexpr pid_t STORAGE_MANAGER_UID = 1090;
 const std::string PERMISSION_STORAGE_MANAGER_CRYPT = "ohos.permission.STORAGE_MANAGER_CRYPT";
 const std::string PERMISSION_STORAGE_MANAGER = "ohos.permission.STORAGE_MANAGER";
 const std::string PERMISSION_MOUNT_MANAGER = "ohos.permission.MOUNT_UNMOUNT_MANAGER";
