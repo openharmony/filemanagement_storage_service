@@ -79,19 +79,17 @@ static bool FsIoctl(const char *mnt, unsigned long cmd, void *arg)
     }
 
     int fd = open(realPath, O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+    free(realPath);
     if (fd < 0) {
         FSCRYPT_LOGE("open %s failed, errno:%d", mnt, errno);
-        free(realPath);
         return false;
     }
     if (ioctl(fd, cmd, arg) != 0) {
         FSCRYPT_LOGE("ioctl to %s failed, errno:%d", mnt, errno);
         (void)close(fd);
-        free(realPath);
         return false;
     }
     (void)close(fd);
-    free(realPath);
     FSCRYPT_LOGI("success");
     return true;
 }
