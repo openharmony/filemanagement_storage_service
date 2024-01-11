@@ -47,6 +47,7 @@ private:
     int32_t DestroyEl1Dir(int32_t userId);
     int32_t SetElDirFscryptPolicy(int32_t userId, const std::string &level,
         const std::vector<FileList> &list);
+    int32_t CheckUserIdRange(int32_t userId);
 
     DISALLOW_COPY_AND_MOVE(UserManager);
 
