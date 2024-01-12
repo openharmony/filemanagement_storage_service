@@ -57,6 +57,11 @@ int32_t UserManager::StartUser(int32_t userId)
 {
     LOGI("start user %{public}d", userId);
     std::lock_guard<std::mutex> lock(mutex_);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("UserManager::StartUser userId %{public}d out of range", userId);
+        return err;
+    }
     return MountManager::GetInstance()->MountByUser(userId);
 }
 
@@ -64,6 +69,11 @@ int32_t UserManager::StopUser(int32_t userId)
 {
     LOGI("stop user %{public}d", userId);
     std::lock_guard<std::mutex> lock(mutex_);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("UserManager::StopUser userId %{public}d out of range", userId);
+        return err;
+    }
     return MountManager::GetInstance()->UmountByUser(userId);
 }
 
@@ -71,8 +81,11 @@ int32_t UserManager::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
     LOGI("prepare user dirs for %{public}d, flags %{public}u", userId, flags);
     std::lock_guard<std::mutex> lock(mutex_);
-    int32_t err = E_OK;
-
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("UserManager::PrepareUserDirs userId %{public}d out of range", userId);
+        return err;
+    }
     if (flags & IStorageDaemon::CRYPTO_FLAG_EL1) {
         err = PrepareDirsFromIdAndLevel(userId, EL1);
         if (err != E_OK) {
@@ -129,9 +142,12 @@ int32_t UserManager::DestroyUserDirs(int32_t userId, uint32_t flags)
 {
     LOGI("destroy user dirs for %{public}d, flags %{public}u", userId, flags);
     std::lock_guard<std::mutex> lock(mutex_);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("UserManager::DestroyUserDirs userId %{public}d out of range", userId);
+        return err;
+    }
     int32_t ret = E_OK;
-    int32_t err;
-
     if (flags & IStorageDaemon::CRYPTO_FLAG_EL1) {
         err = DestroyDirsFromIdAndLevel(userId, EL1);
         ret = (err != E_OK) ? err : ret;
@@ -139,7 +155,6 @@ int32_t UserManager::DestroyUserDirs(int32_t userId, uint32_t flags)
         err = DestroyEl1BundleDir(userId);
         ret = (err != E_OK) ? err : ret;
     }
-
     if (flags & IStorageDaemon::CRYPTO_FLAG_EL2) {
         err = DestroyDirsFromIdAndLevel(userId, EL2);
         ret = (err != E_OK) ? err : ret;
@@ -159,12 +174,10 @@ int32_t UserManager::DestroyUserDirs(int32_t userId, uint32_t flags)
         err = DestroyEl1Dir(userId);
         ret = (err != E_OK) ? err : ret;
     }
-
     if (flags & IStorageDaemon::CRYPTO_FLAG_EL3) {
         err = DestroyDirsFromIdAndLevel(userId, EL3);
         ret = (err != E_OK) ? err : ret;
     }
-
     if (flags & IStorageDaemon::CRYPTO_FLAG_EL4) {
         err = DestroyDirsFromIdAndLevel(userId, EL4);
         ret = (err != E_OK) ? err : ret;
@@ -343,6 +356,15 @@ int32_t UserManager::DestroyEl1Dir(int32_t userId)
         }
     }
 
+    return E_OK;
+}
+
+int32_t UserManager::CheckUserIdRange(int32_t userId)
+{
+    if (userId > StorageService::MAX_USER_ID) {
+        LOGE("MultiUserManagerService: userId:%{public}d is out of range", userId);
+        return E_USERID_RANGE;
+    }
     return E_OK;
 }
 } // namespace StorageDaemon
