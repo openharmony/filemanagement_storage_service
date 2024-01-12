@@ -59,7 +59,7 @@ int32_t UserManager::StartUser(int32_t userId)
     std::lock_guard<std::mutex> lock(mutex_);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
-        LOGE("UserManager::PrepareAddUser userId %{public}d out of range", userId);
+        LOGE("UserManager::StartUser userId %{public}d out of range", userId);
         return err;
     }
     return MountManager::GetInstance()->MountByUser(userId);
@@ -71,7 +71,7 @@ int32_t UserManager::StopUser(int32_t userId)
     std::lock_guard<std::mutex> lock(mutex_);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
-        LOGE("UserManager::PrepareAddUser userId %{public}d out of range", userId);
+        LOGE("UserManager::StopUser userId %{public}d out of range", userId);
         return err;
     }
     return MountManager::GetInstance()->UmountByUser(userId);
@@ -83,7 +83,7 @@ int32_t UserManager::PrepareUserDirs(int32_t userId, uint32_t flags)
     std::lock_guard<std::mutex> lock(mutex_);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
-        LOGE("UserManager::PrepareAddUser userId %{public}d out of range", userId);
+        LOGE("UserManager::PrepareUserDirs userId %{public}d out of range", userId);
         return err;
     }
     if (flags & IStorageDaemon::CRYPTO_FLAG_EL1) {
@@ -144,7 +144,7 @@ int32_t UserManager::DestroyUserDirs(int32_t userId, uint32_t flags)
     std::lock_guard<std::mutex> lock(mutex_);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
-        LOGE("UserManager::PrepareAddUser userId %{public}d out of range", userId);
+        LOGE("UserManager::DestroyUserDirs userId %{public}d out of range", userId);
         return err;
     }
     int32_t ret = E_OK;
