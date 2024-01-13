@@ -57,7 +57,7 @@ bool CheckClientPermissionForCrypt(const std::string& permissionStr)
     LOGE("CheckClientPermission :res is %d", res);
     if (res == Security::AccessToken::PermissionState::PERMISSION_GRANTED) {
         LOGI("StorageMangaer permissionCheck pass!");
-        return true; 
+        return true;
     }
     LOGE("StorageManager permissionCheck error, need %{public}s", permissionStr.c_str());
     return false;
@@ -175,13 +175,10 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
 
 int32_t StorageManagerStub::HandlePrepareAddUser(MessageParcel &data, MessageParcel &reply)
 {
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
+        LOGE("HandlePrepareAddUser has not permission");
         return E_PERMISSION_DENIED;
     }
-    // if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
-    //     LOGE("HandlePrepareAddUser has not permission");
-    //     return E_PERMISSION_DENIED;
-    // }
     int32_t userId = data.ReadInt32();
     uint32_t flags = data.ReadUint32();
     LOGI("StorageManagerStub::HandlePrepareAddUser, userId:%{public}d", userId);
