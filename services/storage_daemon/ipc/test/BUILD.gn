@@ -72,6 +72,7 @@ ohos_unittest("storage_daemon_test") {
     "ability_base:zuri",
     "access_token:libaccesstoken_sdk",
     "app_file_service:fileshare_native",
+    "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "dfs_service:cloud_daemon_kit_inner",
     "hilog:libhilog",
@@ -151,6 +152,7 @@ ohos_unittest("storage_daemon_stub_test") {
 
   external_deps = [
     "access_token:libaccesstoken_sdk",
+    "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "hilog:libhilog",
     "huks:libhukssdk",

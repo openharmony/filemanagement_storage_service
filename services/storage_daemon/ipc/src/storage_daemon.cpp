@@ -194,6 +194,9 @@ int32_t StorageDaemon::RestoreUserOneKey(int32_t userId, KeyType type)
             return ret;
         }
         (void)remove(elNeedRestorePath.c_str());
+        if (type == EL4_KEY) {
+            UserManager::GetInstance()->CreateBundleDataDir(userId);
+        }
         LOGI("restore User %{public}u el%{public}u success", userId, type);
     }
     return E_OK;
@@ -460,6 +463,7 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("userId %{public}u, tok empty %{public}d sec empty %{public}d", userId, token.empty(), secret.empty());
+    bool updateFlag = false;
     int ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL2_KEY, token, secret);
     if (ret != E_OK) {
 #ifdef USER_CRYPTO_MIGRATE_KEY
@@ -467,6 +471,7 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
              userId, token.empty(), secret.empty());
         std::string el2NeedRestorePath = GetNeedRestoreFilePath(userId, USER_EL2_DIR);
         if (std::filesystem::exists(el2NeedRestorePath) && (!token.empty() || !secret.empty())) {
+            updateFlag = true;
             ret = PrepareUserDirsAndUpdateUserAuth(userId, EL2_KEY, token, secret);
         }
 #endif
@@ -489,6 +494,9 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
         return ret;
     }
 
+    if (updateFlag) {
+        UserManager::GetInstance()->CreateBundleDataDir(userId);
+    }
     return ret;
 #else
     return E_OK;
