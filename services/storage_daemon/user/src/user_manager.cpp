@@ -15,6 +15,7 @@
 
 #include "user/user_manager.h"
 #include <cstdlib>
+#include "bundle_mgr_client.h"
 #ifdef USER_CRYPTO_MANAGER
 #include "crypto/key_manager.h"
 #endif
@@ -366,6 +367,14 @@ int32_t UserManager::CheckUserIdRange(int32_t userId)
         return E_USERID_RANGE;
     }
     return E_OK;
+}
+
+void UserManager::CreateBundleDataDir(uint32_t userId)
+{
+    OHOS::AppExecFwk::BundleMgrClient client;
+    LOGI("CreateBundleDataDir start: userId %{public}u", userId);
+    auto ret = client.CreateBundleDataDir(userId);
+    LOGI("CreateBundleDataDir end: userId %{public}u, ret %{public}d", userId, ret);
 }
 } // namespace StorageDaemon
 } // namespace OHOS
