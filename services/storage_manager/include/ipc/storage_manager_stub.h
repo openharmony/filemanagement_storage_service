@@ -44,6 +44,7 @@ private:
     int32_t HandleGetFreeSize(MessageParcel &data, MessageParcel &reply);
     int32_t HandleGetCurrUserStorageStats(MessageParcel &data, MessageParcel &reply);
     int32_t HandleGetUserStorageStats(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleGetUserStorageStatsByType(MessageParcel &data, MessageParcel &reply);
     int32_t HandleGetCurrentBundleStats(MessageParcel &data, MessageParcel &reply);
     int32_t HandleNotifyVolumeCreated(MessageParcel &data, MessageParcel &reply);
     int32_t HandleNotifyVolumeMounted(MessageParcel &data, MessageParcel &reply);

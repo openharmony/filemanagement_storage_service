@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -1052,6 +1052,37 @@ int32_t StorageManagerProxy::SendRequest(uint32_t code, MessageParcel &data, Mes
         return result;
     }
 
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::GetUserStorageStatsByType(int32_t userId, StorageStats &storageStats, std::string type)
+{
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
+    StorageStats result;
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    if (!data.WriteInt32(userId)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    if (!data.WriteString(type)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::GET_USER_STATS_BY_TYPE), data, reply,
+        option);
+    if (err != E_OK) {
+        return err;
+    }
+    err = reply.ReadInt32();
+    if (err != E_OK) {
+        return err;
+    }
+    storageStats = *StorageStats::Unmarshalling(reply);
     return E_OK;
 }
 } // StorageManager

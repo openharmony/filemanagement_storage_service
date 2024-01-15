@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -25,6 +25,7 @@ namespace StorageManager {
 using namespace std;
 
 constexpr pid_t ACCOUNT_UID = 3058;
+constexpr pid_t BACKUP_SA_UID = 1089;
 const std::string PERMISSION_STORAGE_MANAGER_CRYPT = "ohos.permission.STORAGE_MANAGER_CRYPT";
 const std::string PERMISSION_STORAGE_MANAGER = "ohos.permission.STORAGE_MANAGER";
 const std::string PERMISSION_MOUNT_MANAGER = "ohos.permission.MOUNT_UNMOUNT_MANAGER";
@@ -100,6 +101,8 @@ StorageManagerStub::StorageManagerStub()
         &StorageManagerStub::HandleGetCurrUserStorageStats;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_USER_STATS)] =
         &StorageManagerStub::HandleGetUserStorageStats;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_USER_STATS_BY_TYPE)] =
+        &StorageManagerStub::HandleGetUserStorageStatsByType;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_CURR_BUNDLE_STATS)] =
         &StorageManagerStub::HandleGetCurrentBundleStats;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_BUNDLE_STATUS)] =
@@ -810,6 +813,25 @@ int32_t StorageManagerStub::HandleSetBundleQuota(MessageParcel &data, MessagePar
     int err = SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleGetUserStorageStatsByType(MessageParcel &data, MessageParcel &reply)
+{
+    if (IPCSkeleton::GetCallingUid() != BACKUP_SA_UID) {
+        LOGE("StorageManager permissionCheck error, calling uid is invalid, need backup_sa uid.");
+        return E_PERMISSION_DENIED;
+    }
+    int32_t userId = data.ReadInt32();
+    std::string type = data.ReadString();
+    StorageStats storageStats;
+    int32_t err = GetUserStorageStatsByType(userId, storageStats, type);
+    if (!reply.WriteInt32(err)) {
+        return  E_WRITE_REPLY_ERR;
+    }
+    if (!storageStats.Marshalling(reply)) {
+        return  E_WRITE_REPLY_ERR;
     }
     return E_OK;
 }

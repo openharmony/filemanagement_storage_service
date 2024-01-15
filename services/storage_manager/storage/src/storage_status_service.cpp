@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -40,8 +40,54 @@ using namespace std;
 namespace OHOS {
 namespace StorageManager {
 using namespace OHOS::StorageService;
+
+namespace {
+const string MEDIA_TYPE = "media";
+const string FILE_TYPE = "file";
+} // namespace
+
 StorageStatusService::StorageStatusService() {}
 StorageStatusService::~StorageStatusService() {}
+
+int32_t GetMediaStorageStats(StorageStats &storageStats)
+{
+#ifdef STORAGE_SERVICE_GRAPHIC
+    Media::MediaLibraryManager mgr;
+    Media::MediaVolume mediaVol;
+    auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (sam == nullptr) {
+        LOGE("StorageStatusService::GetUserStorageStats samgr == nullptr");
+        return E_SA_IS_NULLPTR;
+    }
+    auto remoteObj = sam->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    if (remoteObj == nullptr) {
+        LOGE("StorageStatusService::GetUserStorageStats remoteObj == nullptr");
+        return E_REMOTE_IS_NULLPTR;
+    }
+    mgr.InitMediaLibraryManager(remoteObj);
+    if (mgr.QueryTotalSize(mediaVol)) {
+        LOGE("StorageStatusService::GetUserStorageStats an error occured in querying mediaSize");
+        return E_MEDIALIBRARY_ERROR;
+    }
+
+    storageStats.audio_ = mediaVol.GetAudiosSize();
+    storageStats.video_ = mediaVol.GetVideosSize();
+    storageStats.image_ = mediaVol.GetImagesSize();
+#endif
+
+    return E_OK;
+}
+
+int32_t GetFileStorageStats(int32_t userId, StorageStats &storageStats)
+{
+    int32_t err = E_OK;
+    int32_t prjId = userId * USER_ID_BASE + UID_FILE_MANAGER;
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    err = sdCommunication->GetOccupiedSpace(StorageDaemon::USRID, prjId, storageStats.file_);
+
+    return err;
+}
 
 int StorageStatusService::GetCurrentUserId()
 {
@@ -89,37 +135,18 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
         LOGE("StorageStatusService::GetUserStorageStats getAppSize failed");
         return err;
     }
-    // mediaSize
-#ifdef STORAGE_SERVICE_GRAPHIC
-    Media::MediaLibraryManager mgr;
-    Media::MediaVolume mediaVol;
-    auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    if (sam == nullptr) {
-        LOGE("StorageStatusService::GetUserStorageStats samgr == nullptr");
-        return E_SA_IS_NULLPTR;
-    }
-    auto remoteObj = sam->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
-    if (remoteObj == nullptr) {
-        LOGE("StorageStatusService::GetUserStorageStats remoteObj == nullptr");
-        return E_REMOTE_IS_NULLPTR;
-    }
-    mgr.InitMediaLibraryManager(remoteObj);
-    if (mgr.QueryTotalSize(mediaVol)) {
-        LOGE("StorageStatusService::GetUserStorageStats an error occured in querying mediaSize");
-        return E_MEDIALIBRARY_ERROR;
-    }
-#endif
+
     storageStats.total_ = totalSize;
     storageStats.app_ = appSize;
-#ifdef STORAGE_SERVICE_GRAPHIC
-    storageStats.audio_ = mediaVol.GetAudiosSize();
-    storageStats.video_ = mediaVol.GetVideosSize();
-    storageStats.image_ = mediaVol.GetImagesSize();
-#endif
-    int32_t prjId = userId * USER_ID_BASE + UID_FILE_MANAGER;
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->GetOccupiedSpace(StorageDaemon::USRID, prjId, storageStats.file_);
+
+    // mediaSize
+    err = GetMediaStorageStats(storageStats);
+    if (err != E_OK) {
+        LOGE("StorageStatusService::GetUserStorageStats getMedia failed");
+        return err;
+    }
+    // fileSize
+    err = GetFileStorageStats(userId, storageStats);
     return err;
 }
 
@@ -244,6 +271,23 @@ int32_t StorageStatusService::ResetBundleMgrProxy()
 void BundleMgrDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
 {
     DelayedSingleton<StorageStatusService>::GetInstance()->ResetBundleMgrProxy();
+}
+
+int32_t StorageStatusService::GetUserStorageStatsByType(int32_t userId, StorageStats &storageStats, std::string type)
+{
+    storageStats.video_ = 0;
+    storageStats.image_ = 0;
+    storageStats.file_ = 0;
+    int32_t err = E_OK;
+    if (type == MEDIA_TYPE) {
+        LOGD("GetUserStorageStatsByType media");
+        err = GetMediaStorageStats(storageStats);
+    } else if (type == FILE_TYPE) {
+        LOGD("GetUserStorageStatsByType file");
+        err = GetFileStorageStats(userId, storageStats);
+    }
+
+    return err;
 }
 } // StorageManager
 } // OHOS

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -74,6 +74,7 @@ namespace StorageManager {
         CREATE_SHARE_FILE,
         DELETE_SHARE_FILE,
         SET_BUNDLE_QUOTA,
+        GET_USER_STATS_BY_TYPE,
     };
 } // namespace StorageManager
 } // namespace OHOS
