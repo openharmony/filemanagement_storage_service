@@ -25,7 +25,7 @@ namespace StorageManager {
 using namespace std;
 
 constexpr pid_t ACCOUNT_UID = 3058;
-constexpr pid_t STORAGE_MANAGER_UID = 1090;
+const std::string PERMISSION_STORAGE_MANAGER_CRYPT = "ohos.permission.STORAGE_MANAGER_CRYPT";
 const std::string PERMISSION_STORAGE_MANAGER = "ohos.permission.STORAGE_MANAGER";
 const std::string PERMISSION_MOUNT_MANAGER = "ohos.permission.MOUNT_UNMOUNT_MANAGER";
 const std::string PERMISSION_FORMAT_MANAGER = "ohos.permission.MOUNT_FORMAT_MANAGER";
@@ -50,15 +50,15 @@ bool CheckClientPermission(const std::string& permissionStr)
     return false;
 }
 
-bool CheckClientPermissionForCrypt()
+bool CheckClientPermissionForCrypt(const std::string& permissionStr)
 {
     Security::AccessToken::AccessTokenID tokenCaller = IPCSkeleton::GetCallingTokenID();
-    auto uid = IPCSkeleton::GetCallingUid();
-    auto tokenType = Security::AccessToken::AccessTokenKit::GetTokenTypeFlag(tokenCaller);
-    if (tokenType == Security::AccessToken::TOKEN_NATIVE && (uid == ACCOUNT_UID || uid == STORAGE_MANAGER_UID)) {
-        LOGI("StorageMangaer CheckClientPermissionForCrypt permissionCheck pass!");
+    int res = Security::AccessToken::AccessTokenKit::VerifyAccessToken(tokenCaller, permissionStr);
+    if (res == Security::AccessToken::PermissionState::PERMISSION_GRANTED) {
+        LOGI("StorageMangaer permissionCheck pass!");
         return true;
     }
+    LOGE("StorageManager permissionCheck error, need %{public}s", permissionStr.c_str());
     return false;
 }
 
@@ -174,7 +174,7 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
 
 int32_t StorageManagerStub::HandlePrepareAddUser(MessageParcel &data, MessageParcel &reply)
 {
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
     int32_t userId = data.ReadInt32();
@@ -190,7 +190,7 @@ int32_t StorageManagerStub::HandlePrepareAddUser(MessageParcel &data, MessagePar
 
 int32_t StorageManagerStub::HandleRemoveUser(MessageParcel &data, MessageParcel &reply)
 {
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
     int32_t userId = data.ReadInt32();
@@ -661,7 +661,7 @@ int32_t StorageManagerStub::HandleDeleteUserKeys(MessageParcel &data, MessagePar
 
 int32_t StorageManagerStub::HandleUpdateUserAuth(MessageParcel &data, MessageParcel &reply)
 {
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
     uint32_t userId = data.ReadUint32();
@@ -679,13 +679,12 @@ int32_t StorageManagerStub::HandleUpdateUserAuth(MessageParcel &data, MessagePar
         LOGE("Write reply error code failed");
         return E_WRITE_REPLY_ERR;
     }
-
     return E_OK;
 }
 
 int32_t StorageManagerStub::HandleActiveUserKey(MessageParcel &data, MessageParcel &reply)
 {
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
     uint32_t userId = data.ReadUint32();
@@ -700,13 +699,12 @@ int32_t StorageManagerStub::HandleActiveUserKey(MessageParcel &data, MessageParc
         LOGE("Write reply error code failed");
         return E_WRITE_REPLY_ERR;
     }
-
     return E_OK;
 }
 
 int32_t StorageManagerStub::HandleInactiveUserKey(MessageParcel &data, MessageParcel &reply)
 {
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
     uint32_t userId = data.ReadUint32();
@@ -715,13 +713,12 @@ int32_t StorageManagerStub::HandleInactiveUserKey(MessageParcel &data, MessagePa
         LOGE("Write reply error code failed");
         return E_WRITE_REPLY_ERR;
     }
-
     return E_OK;
 }
 
 int32_t StorageManagerStub::HandleLockUserScreen(MessageParcel &data, MessageParcel &reply)
 {
-    if (!CheckClientPermissionForCrypt()) {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
     uint32_t userId = data.ReadUint32();
@@ -736,7 +733,7 @@ int32_t StorageManagerStub::HandleLockUserScreen(MessageParcel &data, MessagePar
 
 int32_t StorageManagerStub::HandleUnlockUserScreen(MessageParcel &data, MessageParcel &reply)
 {
-    if (!CheckClientPermissionForCrypt()) {
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
     uint32_t userId = data.ReadUint32();
@@ -745,13 +742,12 @@ int32_t StorageManagerStub::HandleUnlockUserScreen(MessageParcel &data, MessageP
         LOGE("Write reply error code failed");
         return E_WRITE_REPLY_ERR;
     }
-
     return E_OK;
 }
 
 int32_t StorageManagerStub::HandleUpdateKeyContext(MessageParcel &data, MessageParcel &reply)
 {
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
     uint32_t userId = data.ReadUint32();
@@ -760,7 +756,6 @@ int32_t StorageManagerStub::HandleUpdateKeyContext(MessageParcel &data, MessageP
         LOGE("Write reply error code failed");
         return E_WRITE_REPLY_ERR;
     }
-
     return E_OK;
 }
 
