@@ -428,6 +428,8 @@ int32_t MountManager::CloudUMount(int32_t userId)
     const string path = cloudMntArgs.GetFullCloud();
     const string mediaCloudPath = cloudMntArgs.GetFullMediaCloud();
 
+    HmdfsUMount(userId, "cloud");
+
     err = UMount2(path, MNT_DETACH);
     if (err != E_OK) {
         LOGE("fuse umount2 failed, errno %{public}d, fuse dst %{public}s", errno, path.c_str());
