@@ -25,7 +25,6 @@
 #include "key_blob.h"
 #include "ipc/storage_daemon.h"
 #include "storage_service_constant.h"
-#include "timer.h"
 #include "utils/file_utils.h"
 
 namespace OHOS {
@@ -102,10 +101,6 @@ private:
     void SaveUserElKey(unsigned int user, KeyType type, std::shared_ptr<BaseKey> elKey);
     bool IsNeedClearKeyFile(std::string file);
     void ProcUpgradeKey(const std::vector<FileList> &dirInfo);
-    int LockUserScreenCallback(uint32_t user);
-    using TimerCallback = std::function<void()>;
-    bool StartTimer(const TimerCallback &callback, uint32_t interval);
-    void StopTimer();
 
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl1Key_;
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl2Key_;
@@ -114,10 +109,7 @@ private:
     std::shared_ptr<BaseKey> globalEl1Key_ { nullptr };
     std::map<unsigned int, bool> userPinProtect;
 
-    std::shared_ptr<Utils::Timer> timer_ = nullptr;
-    uint32_t screenTimerId_ = 0;
     std::mutex keyMutex_;
-    std::mutex timerLock_;
     bool hasGlobalDeviceKey_;
 };
 } // namespace StorageDaemon

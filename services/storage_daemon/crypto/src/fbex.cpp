@@ -96,7 +96,7 @@ static inline bool CheckIvValid(const uint8_t *iv, uint32_t size)
 
 int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size, uint8_t flag)
 {
-    LOGI("enter, userId: %{public}d, type: %{public}u, flag: %{public}u", userId, type, flag);
+    LOGD("enter, userId: %{public}d, type: %{public}u, flag: %{public}u", userId, type, flag);
     if (!CheckIvValid(iv, size)) {
         LOGE("install key param invalid");
         return -EINVAL;
@@ -119,13 +119,13 @@ int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32
     close(fd);
 
     (void)memcpy_s(iv, size, ops.iv, sizeof(ops.iv));
-    LOGI("success");
+    LOGD("success");
     return ret;
 }
 
 int FBEX::UninstallOrLockUserKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size, bool destroy)
 {
-    LOGI("enter, userId: %{public}d, type: %{public}u, flag: %{public}d", userId, type, destroy);
+    LOGD("enter, userId: %{public}d, type: %{public}u, flag: %{public}d", userId, type, destroy);
     if (!CheckIvValid(iv, size)) {
         LOGE("uninstall key param invalid");
         return -EINVAL;
@@ -144,14 +144,14 @@ int FBEX::UninstallOrLockUserKeyToKernel(uint32_t userId, uint32_t type, uint8_t
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
     }
     close(fd);
-    LOGI("success");
+    LOGD("success");
     return ret;
 }
 
 // for el3 & el4
 int FBEX::LockScreenToKernel(uint32_t userId)
 {
-    LOGI("enter, userId: %{public}d", userId);
+    LOGD("enter, userId: %{public}d", userId);
 
     int fd = open(FBEX_CMD_PATH, O_RDWR);
     if (fd < 0) {
@@ -166,13 +166,13 @@ int FBEX::LockScreenToKernel(uint32_t userId)
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
     }
     close(fd);
-    LOGI("success");
+    LOGD("success");
     return ret;
 }
 
 int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size)
 {
-    LOGI("enter, userId: %{public}d, type: %{public}u", userId, type);
+    LOGD("enter, userId: %{public}d, type: %{public}u", userId, type);
     if (!CheckIvValid(iv, size)) {
         LOGE("install key param invalid");
         return -EINVAL;
@@ -195,7 +195,7 @@ int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint
     close(fd);
 
     (void)memcpy_s(iv, size, ops.iv, sizeof(ops.iv));
-    LOGI("success");
+    LOGD("success");
     return ret;
 }
 
