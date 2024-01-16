@@ -33,11 +33,11 @@ namespace StorageTest {
 const uid_t StorageTestUtils::OID_ROOT = 0;
 const uid_t StorageTestUtils::OID_SYSTEM = 1000;
 
-const int32_t StorageTestUtils::USER_ID1 = 70001;
-const int32_t StorageTestUtils::USER_ID2 = 70002;
-const int32_t StorageTestUtils::USER_ID3 = 70003;
-const int32_t StorageTestUtils::USER_ID4 = 70004;
-const int32_t StorageTestUtils::USER_ID5 = 70005;
+const int32_t StorageTestUtils::USER_ID1 = 101;
+const int32_t StorageTestUtils::USER_ID2 = 102;
+const int32_t StorageTestUtils::USER_ID3 = 103;
+const int32_t StorageTestUtils::USER_ID4 = 104;
+const int32_t StorageTestUtils::USER_ID5 = 105;
 const mode_t StorageTestUtils::MODE = 0711;
 
 const std::vector<Dir> StorageTestUtils::g_rootDirs = {
