@@ -361,7 +361,7 @@ int32_t UserManager::DestroyEl1Dir(int32_t userId)
 
 int32_t UserManager::CheckUserIdRange(int32_t userId)
 {
-    if (userId > StorageService::MAX_USER_ID) {
+    if ((userId < StorageService::START_USER_ID && userId != ZERO_USER_ID)|| userId > StorageService::MAX_USER_ID) {
         LOGE("MultiUserManagerService: userId:%{public}d is out of range", userId);
         return E_USERID_RANGE;
     }
