@@ -820,7 +820,6 @@ int KeyManager::UnlockUserScreen(uint32_t user)
     if (!KeyCtrlHasFscryptSyspara()) {
         return 0;
     }
-    StopTimer();
     std::lock_guard<std::mutex> lock(keyMutex_);
     if (userEl4Key_.find(user) == userEl4Key_.end()) {
         LOGE("The user %{public}u not been actived", user);
@@ -882,9 +881,9 @@ int KeyManager::InActiveUserKey(unsigned int user)
     return 0;
 }
 
-int KeyManager::LockUserScreenCallback(uint32_t user)
+int KeyManager::LockUserScreen(uint32_t user)
 {
-    LOGI("LockUserScreenCallback start");
+    LOGI("start");
     std::lock_guard<std::mutex> lock(keyMutex_);
     auto iter = userPinProtect.find(user);
     if (iter == userPinProtect.end() || iter->second == false) {
@@ -904,50 +903,6 @@ int KeyManager::LockUserScreenCallback(uint32_t user)
     }
     LOGI("LockUserScreen user %{public}u el3 and el4 success", user);
     return 0;
-}
-
-void KeyManager::StopTimer()
-{
-    LOGI("StopTimer run in");
-    std::lock_guard<std::mutex> lock(timerLock_);
-    if (timer_ == nullptr) {
-        LOGE("timer_ is nullptr.");
-        return;
-    }
-    timer_->Unregister(screenTimerId_);
-    timer_->Shutdown();
-    timer_ = nullptr;
-    LOGI("StopTimer run end");
-}
-
-bool KeyManager::StartTimer(const TimerCallback &callback, uint32_t interval)
-{
-    LOGI("StartTimer run in");
-    std::lock_guard<std::mutex> lock(timerLock_);
-    if (timer_ == nullptr) {
-        timer_ = std::make_shared<Utils::Timer>("OH_StorageService");
-        uint32_t ret = timer_->Setup();
-        if (ret != Utils::TIMER_ERR_OK) {
-            LOGE("Create Timer error");
-            return false;
-        }
-        screenTimerId_ = timer_->Register(callback, interval, true);
-    } else {
-        LOGI("timer is not nullptr, Update timer.");
-        timer_->Unregister(screenTimerId_);
-        screenTimerId_ = timer_->Register(callback, interval, true);
-    }
-    LOGI("StopTimer run end");
-    return true;
-}
-
-int KeyManager::LockUserScreen(uint32_t user)
-{
-    LOGI("start");
-    int ret = 0;
-    auto callback = [user, this, &ret]() { ret = LockUserScreenCallback(user); };
-    StartTimer(callback, 10000);
-    return ret;
 }
 
 int KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type, const std::vector<FileList> &vec)
