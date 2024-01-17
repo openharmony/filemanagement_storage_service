@@ -148,6 +148,7 @@ ohos_executable("storage_daemon") {
   subsystem_name = "filemanagement"
   part_name = "storage_service"
   install_enable = true
+  use_exceptions = true
 }
 
 config("sdc_config") {

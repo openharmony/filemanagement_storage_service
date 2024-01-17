@@ -66,6 +66,7 @@ public:
     int32_t SetBundleQuota(const std::string &bundleName, int32_t uid, const std::string &bundleDataDirPath,
         int32_t limitSizeMb);
     int32_t GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size);
+    int32_t UpdateMemoryPara(int32_t size, int32_t &oldSize);
 private:
     sptr<OHOS::StorageDaemon::IStorageDaemon> storageDaemon_;
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;

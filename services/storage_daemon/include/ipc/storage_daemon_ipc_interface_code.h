@@ -49,6 +49,7 @@ namespace StorageDaemon {
         UNLOCK_USER_SCREEN,
         SET_BUNDLE_QUOTA,
         GET_SPACE,
+        UPDATE_MEM_PARA,
     };
 } // namespace StorageDaemon
 } // namespace OHOS

@@ -491,5 +491,12 @@ int32_t StorageManager::GetUserStorageStatsByType(int32_t userId, StorageStats &
     return E_OK;
 #endif
 }
+
+int32_t StorageManager::UpdateMemoryPara(int32_t size, int32_t &oldSize)
+{
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->UpdateMemoryPara(size, oldSize);
+}
 }
 }

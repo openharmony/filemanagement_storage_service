@@ -159,6 +159,8 @@ StorageManagerStub::StorageManagerStub()
         &StorageManagerStub::HandleDeleteShareFile;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::SET_BUNDLE_QUOTA)] =
         &StorageManagerStub::HandleSetBundleQuota;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::UPDATE_MEM_PARA)] =
+        &StorageManagerStub::HandleUpdateMemoryPara;
 }
 
 int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
@@ -823,15 +825,36 @@ int32_t StorageManagerStub::HandleGetUserStorageStatsByType(MessageParcel &data,
         LOGE("StorageManager permissionCheck error, calling uid is invalid, need backup_sa uid.");
         return E_PERMISSION_DENIED;
     }
+
     int32_t userId = data.ReadInt32();
     std::string type = data.ReadString();
     StorageStats storageStats;
     int32_t err = GetUserStorageStatsByType(userId, storageStats, type);
     if (!reply.WriteInt32(err)) {
-        return  E_WRITE_REPLY_ERR;
+        return E_WRITE_REPLY_ERR;
     }
     if (!storageStats.Marshalling(reply)) {
         return  E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleUpdateMemoryPara(MessageParcel &data, MessageParcel &reply)
+{
+    if (IPCSkeleton::GetCallingUid() != BACKUP_SA_UID) {
+        LOGE("StorageManager permissionCheck error, calling uid is invalid, need backup_sa uid.");
+        return E_PERMISSION_DENIED;
+    }
+
+    int32_t size = data.ReadInt32();
+    int32_t oldSize = 0;
+    int err = UpdateMemoryPara(size, oldSize);
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
+    if (!reply.WriteInt32(oldSize)) {
+        LOGE("StorageManagerStub::HandleUpdateMemoryPara call UpdateMemoryPara failed");
+        return E_WRITE_REPLY_ERR;
     }
     return E_OK;
 }

@@ -91,6 +91,8 @@ public:
         return 0;
     }
 
+    virtual int32_t UpdateMemoryPara(int32_t size, int32_t &oldSize) = 0;
+
     DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.StorageManager.IStorageManager");
 };
 } // StorageManager
