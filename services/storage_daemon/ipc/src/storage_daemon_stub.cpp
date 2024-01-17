@@ -78,6 +78,8 @@ StorageDaemonStub::StorageDaemonStub()
         &StorageDaemonStub::HandleSetBundleQuota;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_SPACE)] =
         &StorageDaemonStub::HandleGetOccupiedSpace;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::UPDATE_MEM_PARA)] =
+        &StorageDaemonStub::HandleUpdateMemoryPara;
 }
 
 int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code,
@@ -421,6 +423,20 @@ int32_t StorageDaemonStub::HandleGetOccupiedSpace(MessageParcel &data, MessagePa
     if (!reply.WriteInt64(size)) {
         LOGE("StorageManagerStub::HandleGetFree call GetTotalSize failed");
         return  E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+int32_t StorageDaemonStub::HandleUpdateMemoryPara(MessageParcel &data, MessageParcel &reply)
+{
+    int32_t size = data.ReadInt32();
+    int32_t oldSize = 0;
+    int err = UpdateMemoryPara(size, oldSize);
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
+    if (!reply.WriteInt32(oldSize)) {
+    LOGE("StorageManagerStub::HandleUpdateMemoryPara call Write oldSize failed");
+        return E_WRITE_REPLY_ERR;
     }
     return E_OK;
 }

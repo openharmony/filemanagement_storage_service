@@ -655,6 +655,32 @@ int32_t StorageDaemonProxy::GetOccupiedSpace(int32_t idType, int32_t id, int64_t
     return E_OK;
 }
 
+int32_t StorageDaemonProxy::UpdateMemoryPara(int32_t size, int32_t &oldSize)
+{
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+
+    if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    if (!data.WriteInt32(size)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_MEM_PARA), data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+    err = reply.ReadInt32();
+    if (err != E_OK) {
+        return err;
+    }
+    oldSize = reply.ReadInt32();
+    return E_OK;
+}
+
 int32_t StorageDaemonProxy::SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option)
 {
     sptr<IRemoteObject> remote = Remote();

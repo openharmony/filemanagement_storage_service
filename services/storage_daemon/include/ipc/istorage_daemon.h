@@ -75,6 +75,8 @@ public:
 
     virtual int32_t GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size) = 0;
 
+    virtual int32_t UpdateMemoryPara(int32_t size, int32_t &oldSize) = 0;
+
     DECLARE_INTERFACE_DESCRIPTOR(u"ohos.StorageDaemon");
 };
 } // STORAGE_DAEMON

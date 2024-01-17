@@ -75,6 +75,7 @@ namespace StorageManager {
         DELETE_SHARE_FILE,
         SET_BUNDLE_QUOTA,
         GET_USER_STATS_BY_TYPE,
+        UPDATE_MEM_PARA,
     };
 } // namespace StorageManager
 } // namespace OHOS
