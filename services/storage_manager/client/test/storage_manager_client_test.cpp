@@ -64,7 +64,7 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_PrepareAddUser_0000, T
     ASSERT_TRUE(storageManagerClient_ != nullptr);
 
     vector<string> perms;
-    perms.push_back("ohos.permission.STORAGE_MANAGER");
+    perms.push_back("ohos.permission.STORAGE_MANAGER_CRYPT");
     uint64_t tokenId = 0;
     PermissionUtilsTest::SetAccessTokenPermission("StorageManagerClientTest", perms, tokenId);
     ASSERT_TRUE(tokenId != 0);
