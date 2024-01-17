@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -45,6 +45,7 @@ public:
     int32_t GetUserStorageStats(StorageStats &storageStats) override;
     int32_t GetUserStorageStats(int32_t userId, StorageStats &storageStats) override;
     int32_t GetCurrentBundleStats(BundleStats &bundleStats) override;
+    int32_t GetUserStorageStatsByType(int32_t userId, StorageStats &storageStats, std::string type) override;
 
     int32_t NotifyVolumeCreated(VolumeCore vc) override;
     int32_t NotifyVolumeMounted(std::string volumeId, int32_t fsType, std::string fsUuid,

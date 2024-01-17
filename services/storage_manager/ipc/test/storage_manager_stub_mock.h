@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -36,6 +36,7 @@ public:
     MOCK_METHOD1(GetFreeSize, int32_t(int64_t &));
     MOCK_METHOD1(GetUserStorageStats, int32_t(StorageStats &));
     MOCK_METHOD2(GetUserStorageStats, int32_t(int32_t, StorageStats &));
+    MOCK_METHOD3(GetUserStorageStatsByType, int32_t(int32_t, StorageStats &, std::string));
     MOCK_METHOD1(GetCurrentBundleStats, int32_t(BundleStats &));
 
     MOCK_METHOD1(NotifyVolumeCreated, int32_t(VolumeCore));

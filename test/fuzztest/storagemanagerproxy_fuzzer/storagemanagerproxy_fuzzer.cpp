@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -86,6 +86,7 @@ bool StorageManagerProxyGetFuzzTest(const uint8_t *data, size_t size)
     int64_t freeSize = *(reinterpret_cast<const int64_t *>(data));
     int64_t freeVolSize = *(reinterpret_cast<const int64_t *>(data));
     int64_t totalVolSize = *(reinterpret_cast<const int64_t *>(data));
+    std::string type((const char *)data, size);
     BundleStats bundleStats;
     StorageStats storageStats;
     std::vector<VolumeExternal> vecOfVol;
@@ -99,6 +100,7 @@ bool StorageManagerProxyGetFuzzTest(const uint8_t *data, size_t size)
     getStor.GetBundleStats(pkgName, bundleStats);
     getStor.GetCurrentBundleStats(bundleStats);
     getStor.GetUserStorageStats(userId, storageStats);
+    getStor.GetUserStorageStatsByType(userId, storageStats, type)
     getStor.GetVolumeByUuid(fsUuid, vc1);
     getStor.GetVolumeById(volumeUuid, vc1);
     getStor.GetFreeSizeOfVolume(volumeUuid, freeVolSize);

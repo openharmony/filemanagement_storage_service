@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -1214,4 +1214,25 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_SetBundleQuota_0000, tes
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_SetBundleQuota_0000";
 }
 
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_GetUserStorageStatsByType_0000
+ * @tc.name: Storage_manager_proxy_GetUserStorageStatsByType_0000
+ * @tc.desc: Test function of GetUserStorageStatsByType interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetUserStorageStatsByType_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetUserStorageStatsByType_0000";
+    StorageStats storageStats;
+    int32_t userId = 111;
+    std::string type = "media";
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    int32_t result = proxy_->GetUserStorageStatsByType(userId, storageStats, type);
+    EXPECT_GE(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetUserStorageStatsByType_0000";
+}
 } // namespace
