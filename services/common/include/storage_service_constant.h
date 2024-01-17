@@ -21,6 +21,7 @@ namespace OHOS {
 namespace StorageService {
 const int START_USER_ID = 100;
 const int MAX_USER_ID = 1099;
+const int ZERO_USER_ID = 0;
 const int UID_FILE_MANAGER = 1006;
 const uid_t USER_ID_BASE = 200000;
 }
