@@ -170,10 +170,6 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_DeleteUserKeys_0000, T
     int32_t ret = storageManagerClient_->GenerateUserKeys(userId, flag);
     EXPECT_TRUE(ret == E_OK);
 
-    vector<string> permsDelete;
-    permsDelete.push_back("ohos.permission.STORAGE_MANAGER_CRYPT");
-    PermissionUtilsTest::SetAccessTokenPermission("StorageManagerClientTest", permsDelete, tokenId);
-
     ret = storageManagerClient_->DeleteUserKeys(userId);
     EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "Client_manager_service_DeleteUserKeys_0000 end";
@@ -366,12 +362,6 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_UnlockUserScreen_0000,
     GTEST_LOG_(INFO) << "StorageManagerClientTest-begin Client_manager_service_UnlockUserScreen_0000";
 
     ASSERT_TRUE(storageManagerClient_ != nullptr);
-
-    vector<string> perms;
-    perms.push_back("ohos.permission.STORAGE_MANAGER_CRYPT");
-    uint64_t tokenId = 0;
-    PermissionUtilsTest::SetAccessTokenPermission("StorageManagerClientTest", perms, tokenId);
-    ASSERT_TRUE(tokenId != 0);
 
     uint32_t userId = 104;
     int32_t ret = storageManagerClient_->UnlockUserScreen(userId);
