@@ -17,11 +17,26 @@
 #define OHOS_STORAGE_DAEMON_QUOTA_MANAGER_H
 
 #include <nocopyable.h>
+#include <set>
 #include <sys/types.h>
 #include <string>
+#include <vector>
 
 namespace OHOS {
 namespace StorageDaemon {
+struct FileStat {
+    std::string filePath;
+    int64_t fileSize;
+    int64_t lastUpdateTime;
+    int32_t mode;
+    bool isDir;
+    bool isIncre;
+};
+struct BundleStatsParas {
+    uint32_t userId;
+    std::string &bundleName;
+    int64_t lastBackupTime;
+};
 class QuotaManager final {
 public:
     virtual ~QuotaManager() = default;
@@ -31,6 +46,8 @@ public:
         const std::string &bundleDataDirPath, int32_t limitSizeMb);
     int32_t GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size);
     int32_t SetQuotaPrjId(const std::string &path, int32_t prjId, bool inherit);
+    int32_t GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
+        const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes);
 private:
     QuotaManager() = default;
     DISALLOW_COPY_AND_MOVE(QuotaManager);

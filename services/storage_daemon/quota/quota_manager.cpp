@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,21 +17,31 @@
 
 #include <cstdint>
 #include <cstdlib>
+#include <dirent.h>
 #include <fcntl.h>
 #include <fstream>
-#include <sstream>
-#include <map>
+#include <iostream>
+#include <linux/dqblk_xfs.h>
+#include <linux/fs.h>
 #include <linux/quota.h>
+#include <map>
+#include <sstream>
+#include <stack>
 #include <sys/ioctl.h>
 #include <sys/quota.h>
+#include <sys/stat.h>
 #include <sys/statvfs.h>
-#include <linux/fs.h>
-#include <linux/dqblk_xfs.h>
+#include <sys/types.h>
+#include <tuple>
+#include <unique_fd.h>
 #include <unistd.h>
 
+#include "file_uri.h"
+#include "sandbox_helper.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "storage_service_constant.h"
+#include "utils/file_utils.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -264,6 +274,14 @@ int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int32_t prjId, bool
             return E_SYS_CALL;
         }
     }
+    return E_OK;
+}
+
+int32_t QuotaManager::GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
+    const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes)
+{
+    LOGI("GetBundleStatsForIncrease start");
+
     return E_OK;
 }
 } // StorageDaemon

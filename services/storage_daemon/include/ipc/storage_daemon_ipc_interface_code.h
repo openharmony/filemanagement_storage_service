@@ -50,6 +50,7 @@ namespace StorageDaemon {
         SET_BUNDLE_QUOTA,
         GET_SPACE,
         UPDATE_MEM_PARA,
+        GET_BUNDLE_STATS_INCREASE,
     };
 } // namespace StorageDaemon
 } // namespace OHOS

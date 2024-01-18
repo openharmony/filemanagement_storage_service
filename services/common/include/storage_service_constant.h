@@ -28,6 +28,33 @@ const uid_t USER_ID_BASE = 200000;
 
 namespace StorageDaemon {
 constexpr uint32_t GLOBAL_USER_ID = 0;
+constexpr char FILE_SEPARATOR_CHAR = '/';
+static const std::string FILE_CONTENT_SEPARATOR = ";";
+static const std::string WILDCARD_DEFAULT_INCLUDE = "*";
+static const std::string BACKUP_PATH_PREFIX = "/data/service/el2/";
+static const std::string BACKUP_PATH_SURFFIX = "/backup/backup_sa/";
+static const std::string BACKUP_INCEXC_SYMBOL = "incExc_";
+static const std::string BACKUP_STAT_SYMBOL = "stat_";
+static const std::string BACKUP_INCLUDE = "INCLUDES";
+static const std::string BACKUP_EXCLUDE = "EXCLUDES";
+static const std::string DEFAULT_PATH_WITH_WILDCARD = "haps/*";
+static const std::string BASE_EL1 = "/data/storage/el1/base/";
+static const std::string BASE_EL2 = "/data/storage/el2/base/";
+static const std::string PHY_APP = "/data/app/";
+static const std::string BASE = "/base/";
+static const std::string DEFAULT_INCLUDE_PATH_IN_HAP_FILES = "files";
+static const std::string DEFAULT_INCLUDE_PATH_IN_HAP_DATABASE = "database";
+static const std::string DEFAULT_INCLUDE_PATH_IN_HAP_PREFERENCE = "preferences";
+static const std::string URI_PREFIX = "file://";
+static const std::string NORMAL_SAND_PREFIX = "/data/storage";
+static const std::string FILE_SAND_PREFIX = "/storage/Users";
+static const std::string MEDIA_CLOUD_SAND_PREFIX = "/storage/cloud";
+static const std::string MEDIA_SAND_PREFIX = "/storage/media";
+static const std::string FILE_AUTHORITY = "docs";
+
+// backup stat file version
+static const std::string VER_10_LINE1 = "version=1.0&attrNum=7";
+static const std::string VER_10_LINE2 = "path;mode;dir;size;mtime;hash;isIncremental";
 
 static const std::string EL1 = "el1";
 static const std::string EL2 = "el2";

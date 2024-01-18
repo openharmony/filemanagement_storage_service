@@ -91,6 +91,10 @@ public:
     int32_t SetBundleQuota(const std::string &bundleName, int32_t uid, const std::string &bundleDataDirPath,
         int32_t limitSizeMb) override;
     int32_t UpdateMemoryPara(int32_t size, int32_t &oldSize) override;
+
+    int32_t GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
+        const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes) override;
+
 private:
     StorageManager();
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;

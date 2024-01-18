@@ -80,6 +80,8 @@ StorageDaemonStub::StorageDaemonStub()
         &StorageDaemonStub::HandleGetOccupiedSpace;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::UPDATE_MEM_PARA)] =
         &StorageDaemonStub::HandleUpdateMemoryPara;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_BUNDLE_STATS_INCREASE)] =
+        &StorageDaemonStub::HandleGetBundleStatsForIncrease;
 }
 
 int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code,
@@ -440,5 +442,30 @@ int32_t StorageDaemonStub::HandleUpdateMemoryPara(MessageParcel &data, MessagePa
     }
     return E_OK;
 }
+
+int32_t StorageDaemonStub::HandleGetBundleStatsForIncrease(MessageParcel &data, MessageParcel &reply)
+{
+    uint32_t userId = data.ReadUint32();
+    std::vector<std::string> bundleNames;
+    if (!data.ReadStringVector(&bundleNames)) {
+        return E_WRITE_REPLY_ERR;
+    }
+    std::vector<int64_t> incrementalBackTimes;
+    if (!data.ReadInt64Vector(&incrementalBackTimes)) {
+        return E_WRITE_REPLY_ERR;
+    }
+
+    std::vector<int64_t> pkgFileSizes;
+    int32_t err = GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes, pkgFileSizes);
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
+    if (!reply.WriteInt64Vector(pkgFileSizes)) {
+        LOGE("StorageDaemonStub::HandleGetBundleStatsForIncrease call GetBundleStatsForIncrease failed");
+        return  E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+
 } // StorageDaemon
 } // OHOS

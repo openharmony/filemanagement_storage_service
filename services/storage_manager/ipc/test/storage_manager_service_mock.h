@@ -240,6 +240,11 @@ public:
     {
         return E_OK;
     }
+    virtual int32_t GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
+        const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes) override
+    {
+        return E_OK;
+    }
 };
 } // namespace StorageManager
 } // namespace OHOS

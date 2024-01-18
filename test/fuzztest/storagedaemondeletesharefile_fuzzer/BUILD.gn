@@ -51,8 +51,11 @@ ohos_fuzztest("StorageDaemonDeleteShareFileFuzzTest") {
   deps = [ "${bundlemanager_framework_path}/services/bundlemgr:libbms" ]
 
   external_deps = [
+    "ability_base:zuri",
     "ability_runtime:abilitykit_native",
     "app_file_service:fileshare_native",
+    "app_file_service:fileuri_native",
+    "app_file_service:sandbox_helper_native",
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "hilog:libhilog",

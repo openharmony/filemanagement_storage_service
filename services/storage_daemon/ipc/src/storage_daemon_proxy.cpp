@@ -655,6 +655,47 @@ int32_t StorageDaemonProxy::GetOccupiedSpace(int32_t idType, int32_t id, int64_t
     return E_OK;
 }
 
+int32_t StorageDaemonProxy::GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
+    const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes)
+{
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    if (!data.WriteInt32(userId)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    if (!data.WriteStringVector(bundleNames)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    if (!data.WriteInt64Vector(incrementalBackTimes)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::GET_BUNDLE_STATS_INCREASE), data, reply,
+        option);
+    if (err != E_OK) {
+        LOGE("StorageDaemonProxy::SendRequest call err = %{public}d", err);
+        return err;
+    }
+    err = reply.ReadInt32();
+    if (err != E_OK) {
+        LOGE("StorageDaemonProxy::SendRequest reply.ReadInt32() call err = %{public}d", err);
+        return err;
+    }
+    if (!reply.ReadInt64Vector(&pkgFileSizes)) {
+        LOGE("StorageDaemonProxy::SendRequest read pkgFileSizes");
+        return E_WRITE_REPLY_ERR;
+    }
+
+    return E_OK;
+}
+
 int32_t StorageDaemonProxy::UpdateMemoryPara(int32_t size, int32_t &oldSize)
 {
     MessageParcel data;

@@ -78,6 +78,8 @@ private:
 
     int32_t HandleSetBundleQuota(MessageParcel &data, MessageParcel &reply);
     int32_t HandleUpdateMemoryPara(MessageParcel &data, MessageParcel &reply);
+
+    int32_t HandleGetBundleStatsForIncrease(MessageParcel &data, MessageParcel &reply);
 };
 } // StorageManager
 } // OHOS
