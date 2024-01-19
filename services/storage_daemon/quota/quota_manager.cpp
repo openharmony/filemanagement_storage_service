@@ -230,6 +230,7 @@ int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int32_t prjId, bool
     }
 
     int fd = open(realPath, O_RDONLY | O_CLOEXEC);
+    free(realPath);
     if (fd < 0) {
         LOGE("Failed to open %{public}s, errno: %{public}d", path.c_str(), errno);
         return E_SYS_CALL;
