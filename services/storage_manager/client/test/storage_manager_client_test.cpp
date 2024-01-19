@@ -373,7 +373,7 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_UnlockUserScreen_0000,
     int32_t ret = storageManagerClient_->UnlockUserScreen(userId);
     EXPECT_TRUE(ret == E_PERMISSION_DENIED);
 
-    GTEST_LOG_(INFO) << "Client_manager_service_UnlockUserScreen_0000 end"; 
+    GTEST_LOG_(INFO) << "Client_manager_service_UnlockUserScreen_0000 end";
 }
 }
 }
