@@ -70,6 +70,7 @@ public:
     int32_t InactiveUserKey(uint32_t userId) override;
     int32_t LockUserScreen(uint32_t userId) override;
     int32_t UnlockUserScreen(uint32_t userId) override;
+    int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus) override;
     int32_t UpdateKeyContext(uint32_t userId) override;
 
     // app file share api

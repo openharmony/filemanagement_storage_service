@@ -65,6 +65,8 @@ public:
     MOCK_METHOD2(DeleteShareFile, int32_t (uint32_t, const std::vector<std::string> &));
     MOCK_METHOD1(LockUserScreen, int32_t(uint32_t));
     MOCK_METHOD1(UnlockUserScreen, int32_t(uint32_t));
+    MOCK_METHOD2(GetLockScreenStatus, int32_t(uint32_t, bool &));
+    MOCK_METHOD2(UpdateMemoryPara, int32_t (int32_t, int32_t &));
 };
 }  // namespace StorageManager
 }  // namespace OHOS

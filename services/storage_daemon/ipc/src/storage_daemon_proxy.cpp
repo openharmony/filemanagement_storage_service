@@ -487,6 +487,27 @@ int32_t StorageDaemonProxy::UnlockUserScreen(uint32_t userId)
     return reply.ReadInt32();
 }
 
+int32_t StorageDaemonProxy::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)
+{
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+
+    if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    if (!data.WriteUint32(userId)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::LOCK_SCREEN_STATUS), data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+    lockScreenStatus = reply.ReadBool();
+    return reply.ReadInt32();
+}
+
 int32_t StorageDaemonProxy::UpdateKeyContext(uint32_t userId)
 {
     MessageParcel data;

@@ -445,6 +445,17 @@ int32_t StorageManager::UnlockUserScreen(uint32_t userId)
 #endif
 }
 
+int32_t StorageManager::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)
+{
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("UserId: %{public}u", userId);
+    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
+    return fsCrypto->GetLockScreenStatus(userId, lockScreenStatus);
+#else
+    return E_OK;
+#endif
+}
+
 int32_t StorageManager::UpdateKeyContext(uint32_t userId)
 {
 #ifdef USER_CRYPTO_MANAGER

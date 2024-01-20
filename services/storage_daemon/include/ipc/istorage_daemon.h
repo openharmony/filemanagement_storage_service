@@ -60,6 +60,7 @@ public:
     virtual int32_t UpdateKeyContext(uint32_t userId) = 0;
     virtual int32_t LockUserScreen(uint32_t userId) = 0;
     virtual int32_t UnlockUserScreen(uint32_t user) = 0;
+    virtual int32_t GetLockScreenStatus(uint32_t user, bool &lockScreenStatus) = 0;
     virtual int32_t MountCryptoPathAgain(uint32_t userId) = 0;
 
     // app file share api

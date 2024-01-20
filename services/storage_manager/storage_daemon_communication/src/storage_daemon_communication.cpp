@@ -261,6 +261,17 @@ int32_t StorageDaemonCommunication::UnlockUserScreen(uint32_t userId)
     return storageDaemon_->UnlockUserScreen(userId);
 }
 
+int32_t StorageDaemonCommunication::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)
+{
+    LOGI("enter");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    return storageDaemon_->GetLockScreenStatus(userId, lockScreenStatus);
+}
+
 int32_t StorageDaemonCommunication::UpdateKeyContext(uint32_t userId)
 {
     LOGI("enter");

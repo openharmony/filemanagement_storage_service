@@ -216,6 +216,11 @@ public:
         return E_OK;
     }
 
+    virtual int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus) override
+    {
+        return E_OK;
+    }
+
     virtual int32_t UpdateKeyContext(uint32_t userId) override
     {
         return E_OK;

@@ -148,6 +148,8 @@ StorageManagerStub::StorageManagerStub()
         &StorageManagerStub::HandleLockUserScreen;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::UNLOCK_USER_SCREEN)] =
         &StorageManagerStub::HandleUnlockUserScreen;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::LOCK_SCREEN_STATUS)] =
+        &StorageManagerStub::HandleGetLockScreenStatus;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::UPDATE_KEY_CONTEXT)] =
         &StorageManagerStub::HandleUpdateKeyContext;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::CREATE_SHARE_FILE)] =
@@ -738,6 +740,25 @@ int32_t StorageManagerStub::HandleUnlockUserScreen(MessageParcel &data, MessageP
     }
     uint32_t userId = data.ReadUint32();
     int32_t err = UnlockUserScreen(userId);
+    if (!reply.WriteInt32(err)) {
+        LOGE("Write reply error code failed");
+        return E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleGetLockScreenStatus(MessageParcel &data, MessageParcel &reply)
+{
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    uint32_t userId = data.ReadUint32();
+    bool lockScreenStatus = false;
+    int32_t err = GetLockScreenStatus(userId, lockScreenStatus);
+    if (!reply.WriteBool(lockScreenStatus)) {
+        LOGE("Write reply lockScreenStatus failed");
+        return E_WRITE_REPLY_ERR;
+    }
     if (!reply.WriteInt32(err)) {
         LOGE("Write reply error code failed");
         return E_WRITE_REPLY_ERR;

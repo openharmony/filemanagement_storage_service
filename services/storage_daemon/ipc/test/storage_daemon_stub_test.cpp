@@ -55,6 +55,7 @@ namespace {
         static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_KEY_CONTEXT),
         static_cast<int32_t>(StorageDaemonInterfaceCode::LOCK_USER_SCREEN),
         static_cast<int32_t>(StorageDaemonInterfaceCode::UNLOCK_USER_SCREEN),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::LOCK_SCREEN_STATUS),
     };
 }
 
@@ -150,6 +151,7 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRe
     EXPECT_CALL(mock, UpdateKeyContext(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, LockUserScreen(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, UnlockUserScreen(testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, GetLockScreenStatus(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
 
     for (auto c : g_code) {
         MessageParcel data;
@@ -692,6 +694,37 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonTest_HandleInactive
     EXPECT_TRUE(err == E_ERR);
 
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_HandleInactiveUserKey_001 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_StorageDaemonTest_HandleGetLockScreenStatus_001
+ * @tc.desc: Verify the HandleGetLockScreenStatus function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonTest_HandleGetLockScreenStatus_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_HandleGetLockScreenStatus_001 start";
+
+    StorageDaemonStubMock mock;
+
+    MessageParcel data1;
+    MessageParcel reply1;
+    EXPECT_CALL(mock, GetLockScreenStatus(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    int32_t ret = mock.HandleGetLockScreenStatus(data1, reply1);
+    EXPECT_TRUE(ret == E_OK);
+    int32_t err = reply1.ReadInt32();
+    EXPECT_TRUE(err == E_OK);
+
+    MessageParcel data2;
+    MessageParcel reply2;
+    EXPECT_CALL(mock, GetLockScreenStatus(testing::_, testing::_)).WillOnce(testing::Return(E_ERR));
+    ret = mock.HandleGetLockScreenStatus(data2, reply2);
+    EXPECT_TRUE(ret == E_OK);
+    err = reply2.ReadInt32();
+    EXPECT_TRUE(err == E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_HandleGetLockScreenStatus_001 end";
 }
 
 /**
