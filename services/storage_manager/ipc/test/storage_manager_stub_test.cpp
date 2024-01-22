@@ -147,6 +147,12 @@ HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemote
 
     StorageManagerStubMock mock;
 
+    vector<string> perms;
+    perms.push_back("ohos.permission.STORAGE_MANAGER");
+    perms.push_back("ohos.permission.STORAGE_MANAGER_CRYPT");
+    uint64_t tokenId = 0;
+    PermissionUtilsTest::SetAccessTokenPermission("StorageManagerStubTest", perms, tokenId);
+    ASSERT_TRUE(tokenId != 0);
     EXPECT_CALL(mock, PrepareStartUser(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, StopUser(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, NotifyVolumeCreated(testing::_)).WillOnce(testing::Return(E_OK));
@@ -176,10 +182,6 @@ HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemote
     EXPECT_CALL(mock, GetUserStorageStats(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, GetAllVolumes(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, GetAllDisks(testing::_)).WillOnce(testing::Return(E_OK));
-    vector<string> perms;
-    perms.push_back("ohos.permission.STORAGE_MANAGER_CRYPT");
-    uint64_t tokenId = 0;
-    PermissionUtilsTest::SetAccessTokenPermission("StorageManagerStubTest", perms, tokenId);
     ASSERT_TRUE(tokenId != 0);
     EXPECT_CALL(mock, PrepareAddUser(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, RemoveUser(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
