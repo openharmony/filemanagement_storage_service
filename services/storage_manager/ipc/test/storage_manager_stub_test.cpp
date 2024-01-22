@@ -149,6 +149,8 @@ HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemote
     std::vector<string> perms;
     perms.push_back("ohos.permission.STORAGE_MANAGER");
     perms.push_back("ohos.permission.STORAGE_MANAGER_CRYPT");
+    perms.push_back("ohos.permission.MOUNT_UNMOUNT_MANAGER");
+    perms.push_back("ohos.permission.MOUNT_FORMAT_MANAGER");
     uint64_t tokenId = 0;
     PermissionUtilsTest::SetAccessTokenPermission("StorageManagerPxyTest", perms, tokenId);
     ASSERT_TRUE(tokenId != 0);

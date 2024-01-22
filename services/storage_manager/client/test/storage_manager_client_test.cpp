@@ -196,7 +196,6 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_UpdateUserAuth_0000, T
     PermissionUtilsTest::SetAccessTokenPermission("StorageManagerClientTest", perms, tokenId);
     ASSERT_TRUE(tokenId != 0);
 
-
     uint32_t userId = 105;
     uint32_t flag = CRYPTO_FLAG_EL2;
     int32_t ret = storageManagerClient_->PrepareAddUser(userId, flag);
