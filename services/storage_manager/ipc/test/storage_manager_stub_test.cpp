@@ -146,13 +146,14 @@ HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemote
     GTEST_LOG_(INFO) << "Storage_Manager_StorageManagerStubTest_OnRemoteRequest_003 start";
 
     StorageManagerStubMock mock;
-
-    vector<string> perms;
+    std::vector<string> perms;
     perms.push_back("ohos.permission.STORAGE_MANAGER");
     perms.push_back("ohos.permission.STORAGE_MANAGER_CRYPT");
     uint64_t tokenId = 0;
-    PermissionUtilsTest::SetAccessTokenPermission("StorageManagerStubTest", perms, tokenId);
+    PermissionUtilsTest::SetAccessTokenPermission("StorageManagerPxyTest", perms, tokenId);
     ASSERT_TRUE(tokenId != 0);
+    EXPECT_CALL(mock, PrepareAddUser(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, RemoveUser(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, PrepareStartUser(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, StopUser(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, NotifyVolumeCreated(testing::_)).WillOnce(testing::Return(E_OK));
@@ -171,6 +172,11 @@ HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemote
     EXPECT_CALL(mock, GetDiskById(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, GenerateUserKeys(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, DeleteUserKeys(testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, UpdateUserAuth(testing::_, testing::_, testing::_, testing::_, testing::_))
+        .WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, ActiveUserKey(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, InactiveUserKey(testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, UpdateKeyContext(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, GetFreeSizeOfVolume(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, GetTotalSizeOfVolume(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, GetSystemSize(testing::_)).WillOnce(testing::Return(E_OK));
@@ -182,14 +188,6 @@ HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemote
     EXPECT_CALL(mock, GetUserStorageStats(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, GetAllVolumes(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, GetAllDisks(testing::_)).WillOnce(testing::Return(E_OK));
-    ASSERT_TRUE(tokenId != 0);
-    EXPECT_CALL(mock, PrepareAddUser(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(mock, RemoveUser(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(mock, UpdateUserAuth(testing::_, testing::_, testing::_, testing::_, testing::_))
-        .WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(mock, ActiveUserKey(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(mock, InactiveUserKey(testing::_)).WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(mock, UpdateKeyContext(testing::_)).WillOnce(testing::Return(E_OK));
 
     for (auto c : g_code) {
         MessageParcel data;
