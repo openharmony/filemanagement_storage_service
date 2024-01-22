@@ -26,6 +26,7 @@ using namespace std;
 
 constexpr pid_t ACCOUNT_UID = 3058;
 constexpr pid_t BACKUP_SA_UID = 1089;
+constexpr pid_t FOUNDATION_UID = 5523;
 const std::string PERMISSION_STORAGE_MANAGER_CRYPT = "ohos.permission.STORAGE_MANAGER_CRYPT";
 const std::string PERMISSION_STORAGE_MANAGER = "ohos.permission.STORAGE_MANAGER";
 const std::string PERMISSION_MOUNT_MANAGER = "ohos.permission.MOUNT_UNMOUNT_MANAGER";
@@ -63,14 +64,16 @@ bool CheckClientPermissionForCrypt(const std::string& permissionStr)
     return false;
 }
 
-bool CheckClientProcessName(const std::string& processName)
+bool CheckClientPermissionForShareFile()
 {
     Security::AccessToken::AccessTokenID tokenCaller = IPCSkeleton::GetCallingTokenID();
     Security::AccessToken::NativeTokenInfo nativeInfo;
     Security::AccessToken::AccessTokenKit::GetNativeTokenInfo(tokenCaller, nativeInfo);
-    if (nativeInfo.processName != processName) {
-        LOGE("StorageManager CheckClientProcessName error, need %{public}s, actual %{public}s",
-            processName.c_str(), nativeInfo.processName.c_str());
+
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (nativeInfo.processName != PROCESS_NAME_FOUNDATION || uid != FOUNDATION_UID) {
+        LOGE("CheckClientPermissionForShareFile error, processName is %{public}s, uid is %{public}d",
+            nativeInfo.processName.c_str(), uid);
         return false;
     }
 
@@ -766,7 +769,7 @@ int32_t StorageManagerStub::HandleUpdateKeyContext(MessageParcel &data, MessageP
 
 int32_t StorageManagerStub::HandleCreateShareFile(MessageParcel &data, MessageParcel &reply)
 {
-    if (!CheckClientProcessName(PROCESS_NAME_FOUNDATION)) {
+    if (!CheckClientPermissionForShareFile()) {
         return E_PERMISSION_DENIED;
     }
 
@@ -785,7 +788,7 @@ int32_t StorageManagerStub::HandleCreateShareFile(MessageParcel &data, MessagePa
 
 int32_t StorageManagerStub::HandleDeleteShareFile(MessageParcel &data, MessageParcel &reply)
 {
-    if (!CheckClientProcessName(PROCESS_NAME_FOUNDATION)) {
+    if (!CheckClientPermissionForShareFile()) {
         return E_PERMISSION_DENIED;
     }
 
