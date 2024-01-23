@@ -146,7 +146,14 @@ HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemote
     GTEST_LOG_(INFO) << "Storage_Manager_StorageManagerStubTest_OnRemoteRequest_003 start";
 
     StorageManagerStubMock mock;
-
+    std::vector<string> perms;
+    perms.push_back("ohos.permission.STORAGE_MANAGER");
+    perms.push_back("ohos.permission.STORAGE_MANAGER_CRYPT");
+    perms.push_back("ohos.permission.MOUNT_UNMOUNT_MANAGER");
+    perms.push_back("ohos.permission.MOUNT_FORMAT_MANAGER");
+    uint64_t tokenId = 0;
+    PermissionUtilsTest::SetAccessTokenPermission("StorageManagerPxyTest", perms, tokenId);
+    ASSERT_TRUE(tokenId != 0);
     EXPECT_CALL(mock, PrepareAddUser(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, RemoveUser(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, PrepareStartUser(testing::_)).WillOnce(testing::Return(E_OK));

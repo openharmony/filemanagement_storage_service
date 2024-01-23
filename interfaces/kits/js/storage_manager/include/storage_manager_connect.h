@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -41,6 +41,7 @@ public:
     int32_t GetFreeSize(int64_t &freeSize);
     int32_t GetUserStorageStats(StorageStats &storageStats);
     int32_t GetUserStorageStats(int32_t userId, StorageStats &storageStats);
+    int32_t GetUserStorageStatsByType(int32_t userId, StorageStats &storageStats, std::string type);
     int32_t GetCurrentBundleStats(BundleStats &bundleStats);
     int32_t GetVolumeByUuid(std::string uuid, VolumeExternal &vol);
     int32_t GetVolumeById(std::string volumeId, VolumeExternal &vol);

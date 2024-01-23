@@ -83,6 +83,8 @@ ohos_unittest("storage_daemon_test") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
+
+  use_exceptions = true
 }
 
 ohos_unittest("storage_daemon_proxy_test") {

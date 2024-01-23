@@ -66,6 +66,8 @@ ohos_fuzztest("StorageDaemonCreateShareFileFuzzTest") {
     defines += [ "DFS_SERVICE" ]
     external_deps += [ "dfs_service:cloud_daemon_kit_inner" ]
   }
+
+  use_exceptions = true
 }
 
 group("fuzztest") {

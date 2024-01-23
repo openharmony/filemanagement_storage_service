@@ -356,5 +356,16 @@ int32_t StorageDaemonCommunication::MountCryptoPathAgain(int32_t userId)
     return storageDaemon_->MountCryptoPathAgain(userId);
 }
 
+int32_t StorageDaemonCommunication::UpdateMemoryPara(int32_t size, int32_t &oldSize)
+{
+    LOGI("StorageDaemonCommunication::UpdateMemoryPara");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    return storageDaemon_->UpdateMemoryPara(size, oldSize);
+}
+
 } // namespace StorageManager
 } // namespace OHOS

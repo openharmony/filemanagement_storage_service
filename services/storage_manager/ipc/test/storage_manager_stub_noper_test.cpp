@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,25 +28,8 @@ namespace OHOS {
 namespace StorageManager {
 using namespace testing::ext;
 
-class StorageManagerStubTest : public testing::Test {
-public:
-    static void SetUpTestCase(void) {};
-    static void TearDownTestCase(void) {};
-    void SetUp() {};
-    void TearDown() {};
-};
-
-/**
- * @tc.name: Storage_Manager_StorageManagerStubTest_OnRemoteRequest_001
- * @tc.desc: Verify the OnRemoteRequest function.
- * @tc.type: FUNC
- * @tc.require: AR000GK4HB
- */
-HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemoteRequest_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Manager_StorageManagerStubTest_OnRemoteRequest_001 start";
-
-    int code[] = {
+namespace {
+    int32_t g_code[] = {
         static_cast<int32_t>(StorageManagerInterfaceCode::PREPARE_ADD_USER),
         static_cast<int32_t>(StorageManagerInterfaceCode::REMOVE_USER),
         static_cast<int32_t>(StorageManagerInterfaceCode::PREPARE_START_USER),
@@ -78,15 +61,36 @@ HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemote
         static_cast<int32_t>(StorageManagerInterfaceCode::GET_BUNDLE_STATUS),
         static_cast<int32_t>(StorageManagerInterfaceCode::GET_CURR_USER_STATS),
         static_cast<int32_t>(StorageManagerInterfaceCode::GET_USER_STATS),
+        static_cast<int32_t>(StorageManagerInterfaceCode::GET_USER_STATS_BY_TYPE),
         static_cast<int32_t>(StorageManagerInterfaceCode::GET_ALL_VOLUMES),
         static_cast<int32_t>(StorageManagerInterfaceCode::GET_ALL_DISKS),
         static_cast<int32_t>(StorageManagerInterfaceCode::LOCK_USER_SCREEN),
         static_cast<int32_t>(StorageManagerInterfaceCode::UNLOCK_USER_SCREEN),
     };
 
+} // namespace
+
+class StorageManagerStubTest : public testing::Test {
+public:
+    static void SetUpTestCase(void) {};
+    static void TearDownTestCase(void) {};
+    void SetUp() {};
+    void TearDown() {};
+};
+
+/**
+ * @tc.name: Storage_Manager_StorageManagerStubTest_OnRemoteRequest_001
+ * @tc.desc: Verify the OnRemoteRequest function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemoteRequest_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageManagerStubTest_OnRemoteRequest_001 start";
+
     StorageManagerStubMock mock;
 
-    for (auto c : code) {
+    for (auto c : g_code) {
         MessageParcel data;
         MessageParcel reply;
         MessageOption option(MessageOption::TF_SYNC);

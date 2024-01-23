@@ -50,6 +50,7 @@ namespace StorageDaemon {
         LOCK_SCREEN_STATUS,
         SET_BUNDLE_QUOTA,
         GET_SPACE,
+        UPDATE_MEM_PARA,
     };
 } // namespace StorageDaemon
 } // namespace OHOS

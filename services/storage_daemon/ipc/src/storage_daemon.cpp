@@ -16,7 +16,8 @@
 #include "ipc/storage_daemon.h"
 
 #include <dlfcn.h>
-
+#include <fcntl.h>
+#include <fstream>
 #ifdef USER_CRYPTO_MANAGER
 #include "crypto/key_manager.h"
 #endif
@@ -47,6 +48,11 @@ namespace StorageDaemon {
 #ifdef DFS_SERVICE
 using namespace OHOS::FileManagement::CloudFile;
 #endif
+
+constexpr int32_t DEFAULT_VFS_CACHE_PRESSURE = 100;
+constexpr int32_t MAX_VFS_CACHE_PRESSURE = 10000;
+static const std::string DATA = "/data";
+static const std::string VFS_CACHE_PRESSURE = "/proc/sys/vm/vfs_cache_pressure";
 
 typedef int32_t (*CreateShareFileFunc)(const std::vector<std::string> &, uint32_t, uint32_t, std::vector<int32_t> &);
 typedef int32_t (*DeleteShareFileFunc)(uint32_t, const std::vector<std::string> &);
@@ -582,6 +588,66 @@ int32_t StorageDaemon::SetBundleQuota(const std::string &bundleName, int32_t uid
 int32_t StorageDaemon::GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size)
 {
     return QuotaManager::GetInstance()->GetOccupiedSpace(idType, id, size);
+}
+
+static bool ReadFileToString(const std::string& pathInst, std::string& oldContent)
+{
+    std::fstream fd;
+    fd.open(pathInst.c_str(), std::ios::in);
+    if (!fd.is_open()) {
+        LOGE("open fail!");
+        return false;
+    }
+    // Get Old data
+    std::getline(fd, oldContent);
+    LOGE("StorageDaemon::ReadFileToString %{public}s", oldContent.c_str());
+    fd.close();
+    return true;
+}
+
+static bool SaveStringToFile(const std::string& pathInst, const std::string& content)
+{
+    std::fstream fd;
+    fd.open(pathInst.c_str(), std::ios::out);
+    if (!fd.is_open()) {
+        LOGE("open fail!");
+        return false;
+    }
+    LOGI("StorageDaemon::SaveStringToFile %{public}s", content.c_str());
+    // Write New data
+    fd << content;
+    fd.close();
+    return true;
+}
+
+int32_t StorageDaemon::UpdateMemoryPara(int32_t size, int32_t &oldSize)
+{
+    LOGI("StorageDaemon::UpdateMemoryPara");
+    if (size > MAX_VFS_CACHE_PRESSURE || size < 0) {
+        LOGE("size is invalid");
+        return E_NOT_SUPPORT;
+    }
+    // Get old data
+    std::string oldContent;
+    if (!ReadFileToString(VFS_CACHE_PRESSURE, oldContent)) {
+        LOGE("Failed to read");
+    }
+    if (!oldContent.empty()) {
+        try {
+            oldSize = std::stoi(oldContent);
+        } catch (...) {
+            LOGE("StorageDaemon:UpdateMemoryPara invalid old memory size");
+            return E_SYS_CALL;
+        }
+    } else {
+        oldSize = DEFAULT_VFS_CACHE_PRESSURE;
+    }
+    // Update new data
+    if (!SaveStringToFile(VFS_CACHE_PRESSURE, std::to_string(size))) {
+        LOGE("Failed to write");
+        return E_SYS_CALL;
+    }
+    return E_OK;
 }
 
 void StorageDaemon::SystemAbilityStatusChangeListener::OnAddSystemAbility(int32_t systemAbilityId,
