@@ -935,8 +935,9 @@ int KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type, const std:
         return -ENOENT;
     }
     for (auto item : vec) {
-        if (LoadAndSetPolicy(keyPath.c_str(), item.path.c_str()) != 0) {
-            LOGE("Set directory el policy error!");
+        int result = LoadAndSetPolicy(keyPath.c_str(), item.path.c_str());
+        if (result != 0) {
+            LOGE("Set directory el policy error!result is :%{public}d", result);
             return -EFAULT;
         }
     }
