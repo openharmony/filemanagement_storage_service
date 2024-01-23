@@ -378,6 +378,9 @@ int LoadAndSetPolicy(const char *keyDir, const char *dir)
             return ret;
         }
         ret = SetPolicyLegacy(pathBuf, dir, &arg);
+        if (ret != 0) {
+            FSCRYPT_LOGE("SetPolicyLegacy fail, ret: %d", ret);
+        }
 #ifdef SUPPORT_FSCRYPT_V2
     } else if (fscryptVer == FSCRYPT_V2) {
         ret = SpliceKeyPath(keyDir, strlen(keyDir), PATH_KEYID,
@@ -387,6 +390,9 @@ int LoadAndSetPolicy(const char *keyDir, const char *dir)
             return ret;
         }
         ret = SetPolicyV2(pathBuf, dir, &arg);
+        if (ret != 0) {
+            FSCRYPT_LOGE("SetPolicyV2 fail, ret: %d", ret);
+        }
 #endif
     }
     if (pathBuf != NULL) {
