@@ -73,6 +73,7 @@ bool StorageDaemonClient::CheckServiceStatus(uint32_t serviceFlags)
             return false;
         }
     }
+    
     bool exist = false;
     if (serviceFlags & STORAGE_SERVICE_FLAG) {
         for (uint32_t i = 0; i < CHECK_SERVICE_TIMES; i++) {
