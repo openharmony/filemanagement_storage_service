@@ -39,6 +39,7 @@ public:
     static int32_t UpdateKeyContext(uint32_t userId);
     static int32_t LockUserScreen(uint32_t userId);
     static int32_t UnlockUserScreen(uint32_t userId);
+    static int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus);
 private:
     static sptr<IStorageManager> GetStorageManagerProxy(void);
 };

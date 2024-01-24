@@ -153,5 +153,16 @@ int32_t StorageManagerClient::UnlockUserScreen(uint32_t userId)
 
     return client->UnlockUserScreen(userId);
 }
+
+int32_t StorageManagerClient::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)
+{
+    sptr<IStorageManager> client = GetStorageManagerProxy();
+    if (client == nullptr) {
+        LOGE("get storage manager service failed");
+        return -EFAULT;
+    }
+
+    return client->GetLockScreenStatus(userId, lockScreenStatus);
+}
 }
 }

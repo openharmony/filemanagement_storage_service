@@ -64,6 +64,11 @@ int32_t KeyManager::UnlockUserScreen(uint32_t user)
     return E_OK;
 }
 
+int32_t KeyManager::GetLockScreenStatus(uint32_t user, bool &lockScreenStatus)
+{
+    return E_OK;
+}
+
 int32_t KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type,
     const std::vector<FileList> &vec)
 {

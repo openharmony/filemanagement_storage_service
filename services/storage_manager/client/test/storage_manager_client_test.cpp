@@ -374,5 +374,28 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_UnlockUserScreen_0000,
 
     GTEST_LOG_(INFO) << "Client_manager_service_UnlockUserScreen_0000 end";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Client_manager_GetLockScreenStatus_0000
+ * @tc.name: Client_manager_service_GetLockScreenStatus_0000
+ * @tc.desc: Test function of GetLockScreenStatus interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(StorageManagerClientTest, Client_manager_service_GetLockScreenStatus_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerClientTest-begin Client_manager_service_GetLockScreenStatus_0000";
+
+    ASSERT_TRUE(storageManagerClient_ != nullptr);
+
+    uint32_t userId = 104;
+    bool lockScreenStatus = false;
+    int32_t ret = storageManagerClient_->GetLockScreenStatus(userId, lockScreenStatus);
+    EXPECT_TRUE(ret == E_OK);
+
+    GTEST_LOG_(INFO) << "Client_manager_service_GetLockScreenStatus_0000 end";
+}
 }
 }

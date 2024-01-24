@@ -506,6 +506,7 @@ int KeyManager::DoDeleteUserCeEceSeceKeys(unsigned int user,
         auto elKey = it->second;
         elKey->ClearKey();
         userElKey_.erase(user);
+        saveLockScreenStatus.erase(user);
     } else {
         elPath = USER_DIR + "/" + std::to_string(user);
         std::shared_ptr<BaseKey> elKey = GetBaseKey(elPath);
@@ -810,18 +811,24 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user, KeyType type,
         userPinProtect.insert(std::make_pair(user, true));
     }
     LOGI("Active user %{public}u el success", user);
-
+    saveLockScreenStatus.insert(std::make_pair(user, true));
     return 0;
 }
 
 int KeyManager::UnlockUserScreen(uint32_t user)
 {
     LOGI("start");
+    auto iter = saveLockScreenStatus.find(user);
+    if (iter == saveLockScreenStatus.end()) {
+        saveLockScreenStatus.insert(std::make_pair(user, false));
+    }
     if (!KeyCtrlHasFscryptSyspara()) {
+        saveLockScreenStatus[user] = false;
         return 0;
     }
     std::lock_guard<std::mutex> lock(keyMutex_);
     if (userEl4Key_.find(user) == userEl4Key_.end()) {
+        saveLockScreenStatus[user] = false;
         LOGE("The user %{public}u not been actived", user);
         return 0;
     }
@@ -831,6 +838,18 @@ int KeyManager::UnlockUserScreen(uint32_t user)
         return -EFAULT;
     }
     LOGI("UnlockUserScreen user %{public}u el3 and el4 success", user);
+    saveLockScreenStatus[user] = true;
+    LOGI("saveLockScreenStatus is %{public}d", saveLockScreenStatus[user]);
+    return 0;
+}
+
+int KeyManager::GetLockScreenStatus(uint32_t user, bool &lockScreenStatus)
+{
+    LOGI("start");
+    std::lock_guard<std::mutex> lock(keyMutex_);
+    auto iter = saveLockScreenStatus.find(user);
+    lockScreenStatus = (iter == saveLockScreenStatus.end()) ? false: iter->second;
+    LOGI("lockScreenStatus is %{public}d", lockScreenStatus);
     return 0;
 }
 
@@ -840,7 +859,6 @@ int KeyManager::InActiveUserKey(unsigned int user)
     if (!KeyCtrlHasFscryptSyspara()) {
         return 0;
     }
-
     std::lock_guard<std::mutex> lock(keyMutex_);
     if (userEl2Key_.find(user) == userEl2Key_.end()) {
         LOGE("Have not found user %{public}u el2", user);
@@ -885,11 +903,17 @@ int KeyManager::LockUserScreen(uint32_t user)
 {
     LOGI("start");
     std::lock_guard<std::mutex> lock(keyMutex_);
-    auto iter = userPinProtect.find(user);
+    auto iter = saveLockScreenStatus.find(user);
+    if (iter == saveLockScreenStatus.end()) {
+        saveLockScreenStatus.insert(std::make_pair(user, false));
+    }
+    iter = userPinProtect.find(user);
     if (iter == userPinProtect.end() || iter->second == false) {
+        saveLockScreenStatus[user] = false;
         return 0;
     }
     if (!KeyCtrlHasFscryptSyspara()) {
+        saveLockScreenStatus[user] = false;
         return 0;
     }
     if (userEl4Key_.find(user) == userEl4Key_.end()) {
@@ -902,6 +926,8 @@ int KeyManager::LockUserScreen(uint32_t user)
         return -EFAULT;
     }
     LOGI("LockUserScreen user %{public}u el3 and el4 success", user);
+    saveLockScreenStatus[user] = false;
+    LOGI("saveLockScreenStatus is %{public}d", saveLockScreenStatus[user]);
     return 0;
 }
 

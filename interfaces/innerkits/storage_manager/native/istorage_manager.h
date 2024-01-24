@@ -79,6 +79,7 @@ public:
     virtual int32_t UpdateKeyContext(uint32_t userId) = 0;
     virtual int32_t LockUserScreen(uint32_t userId) = 0;
     virtual int32_t UnlockUserScreen(uint32_t userId) = 0;
+    virtual int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus) = 0;
 
     // app file share api
     virtual std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,

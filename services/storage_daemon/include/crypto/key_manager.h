@@ -71,6 +71,7 @@ public:
     int getEceSeceKeyPath(unsigned int user, KeyType type, std::string &eceSeceKeyPath);
     int LockUserScreen(uint32_t user);
     int UnlockUserScreen(uint32_t user);
+    int GetLockScreenStatus(uint32_t user, bool &lockScreenStatus);
 #ifdef USER_CRYPTO_MIGRATE_KEY
     int RestoreUserKey(uint32_t userId, KeyType type);
 #endif
@@ -108,6 +109,7 @@ private:
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl4Key_;
     std::shared_ptr<BaseKey> globalEl1Key_ { nullptr };
     std::map<unsigned int, bool> userPinProtect;
+    std::map<unsigned int, bool> saveLockScreenStatus;
 
     std::mutex keyMutex_;
     bool hasGlobalDeviceKey_;

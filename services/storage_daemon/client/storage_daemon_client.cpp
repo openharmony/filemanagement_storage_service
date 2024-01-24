@@ -337,6 +337,22 @@ int32_t StorageDaemonClient::UnlockUserScreen(uint32_t userId)
     return client->UnlockUserScreen(userId);
 }
 
+int32_t StorageDaemonClient::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)
+{
+    if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
+        LOGE("service check failed");
+        return -EAGAIN;
+    }
+
+    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
+    if (client == nullptr) {
+        LOGE("get storage daemon service failed");
+        return -EAGAIN;
+    }
+
+    return client->GetLockScreenStatus(userId, lockScreenStatus);
+}
+
 int32_t StorageDaemonClient::UpdateKeyContext(uint32_t userId)
 {
     if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {

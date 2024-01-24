@@ -47,6 +47,7 @@ namespace StorageDaemon {
         DELETE_SHARE_FILE,
         LOCK_USER_SCREEN,
         UNLOCK_USER_SCREEN,
+        LOCK_SCREEN_STATUS,
         SET_BUNDLE_QUOTA,
         GET_SPACE,
         UPDATE_MEM_PARA,

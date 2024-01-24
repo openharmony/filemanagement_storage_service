@@ -38,6 +38,7 @@ public:
     int32_t UpdateKeyContext(uint32_t userId);
     int32_t LockUserScreen(uint32_t userId);
     int32_t UnlockUserScreen(uint32_t userId);
+    int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus);
 private:
     int32_t CheckUserIdRange(int32_t userId);
 };

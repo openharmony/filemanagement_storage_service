@@ -66,6 +66,8 @@ StorageDaemonStub::StorageDaemonStub()
         &StorageDaemonStub::HandleLockUserScreen;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::UNLOCK_USER_SCREEN)] =
         &StorageDaemonStub::HandleUnlockUserScreen;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::LOCK_SCREEN_STATUS)] =
+        &StorageDaemonStub::HandleGetLockScreenStatus;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::UPDATE_KEY_CONTEXT)] =
         &StorageDaemonStub::HandleUpdateKeyContext;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::MOUNT_CRYPTO_PATH_AGAIN)] =
@@ -341,6 +343,21 @@ int32_t StorageDaemonStub::HandleUnlockUserScreen(MessageParcel &data, MessagePa
     uint32_t userId = data.ReadUint32();
 
     int err = UnlockUserScreen(userId);
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
+
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleGetLockScreenStatus(MessageParcel &data, MessageParcel &reply)
+{
+    uint32_t userId = data.ReadUint32();
+    bool lockScreenStatus = false;
+    int err = GetLockScreenStatus(userId, lockScreenStatus);
+    if (!reply.WriteBool(lockScreenStatus)) {
+        return E_WRITE_REPLY_ERR;
+    }
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
