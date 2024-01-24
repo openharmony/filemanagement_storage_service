@@ -126,17 +126,18 @@ int main()
     do {
         auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
         if (samgr != nullptr) {
+            LOGI("samgr is not null");
             sptr<StorageDaemon::StorageDaemon> sd = new StorageDaemon::StorageDaemon();
             int ret = samgr->AddSystemAbility(STORAGE_MANAGER_DAEMON_ID, sd);
-            if (ret != 0) {
-                LOGI("AddSystemAbility fail, ret: %{public}d, errno: %{public}d", ret, errno);
-            }
-            
+            LOGI("AddSystemAbility fail, ret: %{public}d, errno: %{public}d", ret, errno);
             sptr<CloudListener> listenter = new CloudListener();
-            samgr->SubscribeSystemAbility(FILEMANAGEMENT_CLOUD_DAEMON_SERVICE_SA_ID, listenter);
-            samgr->SubscribeSystemAbility(ACCESS_TOKEN_MANAGER_SERVICE_ID, listenter);
+            ret = samgr->SubscribeSystemAbility(FILEMANAGEMENT_CLOUD_DAEMON_SERVICE_SA_ID, listenter);
+            LOGI("SubscribeSystemAbility fail, ret: %{public}d, errno: %{public}d", ret, errno);
+            ret = samgr->SubscribeSystemAbility(ACCESS_TOKEN_MANAGER_SERVICE_ID, listenter);
+            LOGI("SubscribeSystemAbility fail, ret: %{public}d, errno: %{public}d", ret, errno);
             break;
         }
+        LOGI("samgr is null");
     } while (true);
 
     IPCSkeleton::JoinWorkThread();
