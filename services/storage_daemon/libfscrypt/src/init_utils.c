@@ -47,6 +47,7 @@ char *ReadFileToBuf(const char *configFile)
         if (fread(buffer, fileStat.st_size, 1, fd) != 1) {
             free(buffer);
             buffer = NULL;
+            FSCRYPT_LOGE("Failed to read config file, err = %d", errno);
             break;
         }
         buffer[fileStat.st_size] = '\0';
