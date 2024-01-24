@@ -127,7 +127,11 @@ int main()
         auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
         if (samgr != nullptr) {
             sptr<StorageDaemon::StorageDaemon> sd = new StorageDaemon::StorageDaemon();
-            samgr->AddSystemAbility(STORAGE_MANAGER_DAEMON_ID, sd);
+            int ret = samgr->AddSystemAbility(STORAGE_MANAGER_DAEMON_ID, sd);
+            if (ret != 0) {
+                LOGI("AddSystemAbility fail, ret: %{public}d, errno: %{public}d", ret, errno);
+            }
+            
             sptr<CloudListener> listenter = new CloudListener();
             samgr->SubscribeSystemAbility(FILEMANAGEMENT_CLOUD_DAEMON_SERVICE_SA_ID, listenter);
             samgr->SubscribeSystemAbility(ACCESS_TOKEN_MANAGER_SERVICE_ID, listenter);
