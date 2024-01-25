@@ -129,12 +129,12 @@ int main()
             LOGE("samgr is not null");
             sptr<StorageDaemon::StorageDaemon> sd = new StorageDaemon::StorageDaemon();
             int ret = samgr->AddSystemAbility(STORAGE_MANAGER_DAEMON_ID, sd);
-            LOGI("AddSystemAbility fail, ret: %{public}d, errno: %{public}d", ret, errno);
+            LOGI("AddSystemAbility: ret: %{public}d, errno: %{public}d", ret, errno);
             sptr<CloudListener> listenter = new CloudListener();
             ret = samgr->SubscribeSystemAbility(FILEMANAGEMENT_CLOUD_DAEMON_SERVICE_SA_ID, listenter);
-            LOGI("SubscribeSystemAbility for DAEMON_SERVICE fail, ret: %{public}d, errno: %{public}d", ret, errno);
+            LOGI("SubscribeSystemAbility for DAEMON_SERVICE: ret: %{public}d, errno: %{public}d", ret, errno);
             ret = samgr->SubscribeSystemAbility(ACCESS_TOKEN_MANAGER_SERVICE_ID, listenter);
-            LOGI("SubscribeSystemAbility for MANAGER_SERVICE fail, ret: %{public}d, errno: %{public}d", ret, errno);
+            LOGI("SubscribeSystemAbility for MANAGER_SERVICE: ret: %{public}d, errno: %{public}d", ret, errno);
             break;
         }
     } while (true);
