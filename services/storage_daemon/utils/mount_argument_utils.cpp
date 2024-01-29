@@ -28,9 +28,11 @@ namespace {
     static const std::string SYSFS_HMDFS_PATH = "/sys/fs/hmdfs/";
     static const std::string COMM_DATA_POINT = "/storage/media/";
     static const std::string COMM_CLOUD_POINT = "/storage/cloud/";
+    static const std::string RELATIVE_DOCS_PATH = "/files/Docs";
     static const std::string SHAREFS_DATA_POINT = "/data/service/el2/";
     static const std::string SHAREFS_BASE_MOUNT_POINT = "/mnt/share/";
     static const std::string TMPFS_MNT_DATA = "/mnt/data/";
+    static const std::string HMDFS_DEVICE_VIEW_LOCAL_DOCS_PATH = "/device_view/local" + RELATIVE_DOCS_PATH;
 } // namespace
 
 string MountArgument::GetFullSrc() const
@@ -101,6 +103,22 @@ string MountArgument::GetCloudFullPath() const
 {
     stringstream ss;
     ss << COMM_CLOUD_POINT << userId_ << "/";
+
+    return ss.str();
+}
+
+string MountArgument::GetCloudDocsPath() const
+{
+    stringstream ss;
+    ss << COMM_CLOUD_POINT << userId_ << RELATIVE_DOCS_PATH;
+
+    return ss.str();
+}
+
+string MountArgument::GetLocalDocsPath() const
+{
+    stringstream ss;
+    ss << BASE_MOUNT_POINT << userId_ << "/" << relativePath_ << HMDFS_DEVICE_VIEW_LOCAL_DOCS_PATH;
 
     return ss.str();
 }
