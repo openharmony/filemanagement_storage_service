@@ -278,11 +278,245 @@ int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int32_t prjId, bool
     return E_OK;
 }
 
+static std::tuple<std::vector<std::string>, std::vector<std::string>> ReadIncludesExcludesPath(
+    const std::string &bundleName, const int64_t lastBackupTime, const uint32_t userId)
+{
+    if (bundleName.empty()) {
+        LOGE("bundleName is empty");
+        return { {}, {} };
+    }
+    // 保存includeExclude的path
+    std::string filePath = BACKUP_PATH_PREFIX + std::to_string(userId) + BACKUP_PATH_SURFFIX +
+        bundleName + FILE_SEPARATOR_CHAR + BACKUP_INCEXC_SYMBOL + std::to_string(lastBackupTime);
+    std::ifstream incExcFile;
+    incExcFile.open(filePath.data());
+    if (!incExcFile.is_open()) {
+        LOGE("Cannot open include/exclude file, fail errno:%{public}d", errno);
+        return { {}, {} };
+    }
+
+    std::vector<std::string> includes;
+    std::vector<std::string> excludes;
+    bool incOrExt = true;
+    while (incExcFile) {
+        std::string line;
+        std::getline(incExcFile, line);
+        if (line.empty()) {
+            LOGI("Read Complete");
+            break;
+        }
+        if (line == BACKUP_INCLUDE) {
+            incOrExt = true;
+        } else if (line == BACKUP_EXCLUDE) {
+            incOrExt = false;
+        }
+        if (incOrExt && line != BACKUP_INCLUDE) {
+            includes.emplace_back(line);
+        } else if (!incOrExt && line != BACKUP_EXCLUDE) {
+            excludes.emplace_back(line);
+        }
+    }
+    incExcFile.close();
+    return {includes, excludes};
+}
+
+
+static bool AddPathMapForPathWildCard(uint32_t userid, const std::string &bundleName, const std::string &phyPath,
+    std::map<std::string, std::string> &pathMap)
+{
+    std::string physicalPrefixEl1 = PHY_APP + EL1 + FILE_SEPARATOR_CHAR + std::to_string(userid) + BASE +
+        bundleName + FILE_SEPARATOR_CHAR;
+    std::string physicalPrefixEl2 = PHY_APP + EL2 + FILE_SEPARATOR_CHAR + std::to_string(userid) + BASE +
+        bundleName + FILE_SEPARATOR_CHAR;
+    if (phyPath.find(physicalPrefixEl1) == 0) {
+        std::string relatePath = phyPath.substr(physicalPrefixEl1.size());
+        pathMap.insert({phyPath, BASE_EL1 + relatePath});
+    } else if (phyPath.find(physicalPrefixEl2) == 0) {
+        std::string relatePath = phyPath.substr(physicalPrefixEl2.size());
+        pathMap.insert({phyPath, BASE_EL2 + relatePath});
+    } else {
+        LOGE("Invalid phyiscal path");
+        return false;
+    }
+    return true;
+}
+
+static bool GetPathWildCard(uint32_t userid, const std::string &bundleName, const std::string &includeWildCard,
+    std::vector<std::string> &includePathList, std::map<std::string, std::string> &pathMap)
+{
+    size_t pos = includeWildCard.rfind(WILDCARD_DEFAULT_INCLUDE);
+    if (pos == std::string::npos) {
+        LOGE("CheckIfDefaultPathWildCard: path should include *");
+        return false;
+    }
+    std::string pathBeforeWildCard = includeWildCard.substr(0, pos);
+    DIR *dirPtr = opendir(pathBeforeWildCard.c_str());
+    if (dirPtr == nullptr) {
+        LOGE("CheckIfDefaultPathWildCard open file dir:%{private}s is failure", pathBeforeWildCard.c_str());
+        return false;
+    }
+    struct dirent *entry = nullptr;
+    std::vector<std::string> subDirs;
+    while ((entry = readdir(dirPtr)) != nullptr) {
+        if ((strcmp(entry->d_name, ".") == 0) || (strcmp(entry->d_name, "..") == 0)) {
+            continue;
+        }
+        std::string path = pathBeforeWildCard + entry->d_name;
+        if (entry->d_type == DT_DIR) {
+            subDirs.emplace_back(path);
+        }
+    }
+    closedir(dirPtr);
+    for (auto &subDir : subDirs) {
+        DIR *subDirPtr = opendir(subDir.c_str());
+        if (subDirPtr == nullptr) {
+            LOGE("CheckIfDefaultPathWildCard open file dir:%{private}s is failure", subDir.c_str());
+            return false;
+        }
+        while ((entry = readdir(subDirPtr)) != nullptr) {
+            if ((strcmp(entry->d_name, ".") == 0) || (strcmp(entry->d_name, "..") == 0)) {
+                continue;
+            }
+            std::string dirName = std::string(entry->d_name);
+
+            std::string path = subDir + FILE_SEPARATOR_CHAR + entry->d_name;
+            if (entry->d_type == DT_DIR && (dirName == DEFAULT_INCLUDE_PATH_IN_HAP_FILES ||
+                dirName == DEFAULT_INCLUDE_PATH_IN_HAP_DATABASE ||
+                dirName == DEFAULT_INCLUDE_PATH_IN_HAP_PREFERENCE)) {
+                includePathList.emplace_back(path);
+                AddPathMapForPathWildCard(userid, bundleName, path, pathMap);
+            }
+        }
+        closedir(subDirPtr);
+    }
+
+    return true;
+}
+
+static void RecognizeSandboxWildCard(const uint32_t userId, const std::string &bundleName,
+    const std::string &sandBoxPathStr, std::vector<std::string> &phyIncludes,
+    std::map<std::string, std::string>& pathMap)
+{
+    if (sandBoxPathStr.find(BASE_EL1 + DEFAULT_PATH_WITH_WILDCARD) == 0) {
+        std::string physicalPrefix = PHY_APP + EL1 + FILE_SEPARATOR_CHAR + std::to_string(userId) + BASE +
+            bundleName + FILE_SEPARATOR_CHAR;
+        std::string relatePath = sandBoxPathStr.substr(BASE_EL1.size());
+        if (!GetPathWildCard(userId, bundleName, physicalPrefix + relatePath, phyIncludes, pathMap)) {
+            LOGE("GetPathWildCard dir path invaild");
+        }
+    } else if (sandBoxPathStr.find(BASE_EL2 + DEFAULT_PATH_WITH_WILDCARD) == 0) {
+        std::string physicalPrefix = PHY_APP + EL2 + FILE_SEPARATOR_CHAR + std::to_string(userId) + BASE +
+            bundleName + FILE_SEPARATOR_CHAR;
+        std::string relatePath = sandBoxPathStr.substr(BASE_EL2.size());
+        if (!GetPathWildCard(userId, bundleName, physicalPrefix + relatePath, phyIncludes, pathMap)) {
+            LOGE("GetPathWildCard dir path invaild");
+        }
+    }
+}
+
+static void ConvertSandboxRealPath(const uint32_t userId, const std::string &bundleName,
+    const std::string &sandBoxPathStr, std::vector<std::string> &realPaths,
+    std::map<std::string, std::string>& pathMap)
+{
+    std::string uriString;
+    if (sandBoxPathStr.find(NORMAL_SAND_PREFIX) == 0) {
+        // for normal hap, start with file://bundleName
+        uriString = URI_PREFIX + bundleName;
+    } else if (sandBoxPathStr.find(FILE_SAND_PREFIX) == 0) {
+        // for public files, start with file://docs
+        uriString = URI_PREFIX + FILE_AUTHORITY;
+    } else if (sandBoxPathStr.find(MEDIA_CLOUD_SAND_PREFIX) == 0 || sandBoxPathStr.find(MEDIA_SAND_PREFIX) == 0) {
+        // for media files, no need to transform
+        return;
+    }
+
+    if (!uriString.empty()) {
+        uriString += sandBoxPathStr;
+        AppFileService::ModuleFileUri::FileUri uri(uriString);
+        // files
+        std::string physicalPath;
+        int ret = AppFileService::SandboxHelper::GetBackupPhysicalPath(uri.ToString(), std::to_string(userId),
+            physicalPath);
+        if (ret != 0) {
+            LOGE("Get physical path failed with %{public}d", ret);
+            return;
+        }
+        realPaths.emplace_back(physicalPath);
+        pathMap.insert({physicalPath, sandBoxPathStr});
+    }
+}
+
+static void DealWithIncludeFiles(const BundleStatsParas &paras, const std::vector<std::string> &includes,
+    std::vector<std::string> &phyIncludes, std::map<std::string, std::string>& pathMap)
+{
+    uint32_t userId = paras.userId;
+    std::string bundleName = paras.bundleName;
+    for (auto &include : includes) {
+        std::string includeStr = include;
+        if (includeStr.front() != FILE_SEPARATOR_CHAR) {
+            includeStr = FILE_SEPARATOR_CHAR + includeStr;
+        }
+        if (includeStr.find(BASE_EL1 + DEFAULT_PATH_WITH_WILDCARD) == 0 ||
+            includeStr.find(BASE_EL2 + DEFAULT_PATH_WITH_WILDCARD) == 0) {
+            // recognize sandbox path to physical path with wild card
+            RecognizeSandboxWildCard(userId, bundleName, includeStr, phyIncludes, pathMap);
+            if (phyIncludes.empty()) {
+                LOGE("DealWithIncludeFiles failed to recognize path with wildcard %{private}s", bundleName.c_str());
+                continue;
+            }
+        } else {
+            // convert sandbox to physical path
+            ConvertSandboxRealPath(userId, bundleName, includeStr, phyIncludes, pathMap);
+        }
+    }
+}
+
+static void GetBundleStatsForIncreaseEach(uint32_t userId, std::string &bundleName, int64_t lastBackupTime,
+    std::vector<int64_t> &pkgFileSizes)
+{
+    // input parameters
+    BundleStatsParas paras = {.userId = userId, .bundleName = bundleName, .lastBackupTime = lastBackupTime};
+
+    // obtain includes, excludes in backup extension config
+    auto [includes, excludes] = ReadIncludesExcludesPath(bundleName, lastBackupTime, userId);
+    if (includes.empty()) {
+        pkgFileSizes.emplace_back(0);
+        return;
+    }
+    // physical paths
+    std::vector<std::string> phyIncludes;
+    // map about sandbox path to physical path
+    std::map<std::string, std::string> pathMap;
+
+    // recognize physical path for include directory
+    DealWithIncludeFiles(paras, includes, phyIncludes, pathMap);
+    if (phyIncludes.empty()) {
+        LOGE("Incorrect convert for include sandbox path for %{private}s", bundleName.c_str());
+        pkgFileSizes.emplace_back(0);
+        return;
+    }
+
+    // recognize physical path for exclude directory
+    std::vector<std::string> phyExcludes;
+    for (auto &exclude : excludes) {
+        std::string excludeStr = exclude;
+        if (excludeStr.front() != FILE_SEPARATOR_CHAR) {
+            excludeStr = FILE_SEPARATOR_CHAR + excludeStr;
+        }
+        // convert sandbox to physical path
+        ConvertSandboxRealPath(userId, bundleName, excludeStr, phyExcludes, pathMap);
+    }
+}
+
 int32_t QuotaManager::GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
     const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes)
 {
     LOGI("GetBundleStatsForIncrease start");
-
+    for (size_t i = 0; i < bundleNames.size(); i++) {
+        std::string bundleName = bundleNames[i];
+        int64_t lastBackupTime = incrementalBackTimes[i];
+        GetBundleStatsForIncreaseEach(userId, bundleName, lastBackupTime, pkgFileSizes);
+    }
     return E_OK;
 }
 } // StorageDaemon
