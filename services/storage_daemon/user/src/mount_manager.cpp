@@ -144,6 +144,11 @@ int32_t MountManager::HmdfsTwiceMount(int32_t userId, std::string relativePath)
         LOGE("failed to bind mount cloud_merge_view, err %{public}d", errno);
         return E_MOUNT;
     }
+
+    if (Mount(hmdfsMntArgs.GetLocalDocsPath(), hmdfsMntArgs.GetCloudDocsPath(),
+              nullptr, MS_BIND, nullptr)) {
+        LOGE("failed to bind mount docs, err %{public}d", errno);
+    }
     return E_OK;
 }
 
