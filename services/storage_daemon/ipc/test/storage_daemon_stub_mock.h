@@ -54,6 +54,8 @@ public:
     MOCK_METHOD1(UnlockUserScreen, int32_t (uint32_t));
     MOCK_METHOD2(GetLockScreenStatus, int32_t (uint32_t, bool &));
     MOCK_METHOD2(UpdateMemoryPara, int32_t (int32_t, int32_t &));
+    MOCK_METHOD4(GetBundleStatsForIncrease, int32_t(uint32_t, const std::vector<std::string> &,
+        const std::vector<int64_t> &, std::vector<int64_t> &));
 };
 }  // namespace StorageDaemon
 }  // namespace OHOS

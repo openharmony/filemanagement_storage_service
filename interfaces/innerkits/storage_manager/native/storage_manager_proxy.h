@@ -83,6 +83,8 @@ public:
         int32_t limitSizeMb) override;
     int32_t UpdateMemoryPara(int32_t size, int32_t &oldSize) override;
 
+    int32_t GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
+        const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes) override;
 private:
     static inline BrokerDelegator<StorageManagerProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

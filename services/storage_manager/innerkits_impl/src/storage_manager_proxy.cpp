@@ -1060,6 +1060,47 @@ int32_t StorageManagerProxy::SetBundleQuota(const std::string &bundleName, int32
     return reply.ReadInt32();
 }
 
+
+int32_t StorageManagerProxy::GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
+    const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes)
+{
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    if (!data.WriteInt32(userId)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    if (!data.WriteStringVector(bundleNames)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    if (!data.WriteInt64Vector(incrementalBackTimes)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::GET_BUNDLE_STATS_INCREASE), data, reply,
+        option);
+    if (err != E_OK) {
+        return err;
+    }
+    err = reply.ReadInt32();
+    if (err != E_OK) {
+        return err;
+    }
+    if (!reply.ReadInt64Vector(&pkgFileSizes)) {
+        LOGE("StorageManagerProxy::SendRequest read pkgFileSizes");
+        return E_WRITE_REPLY_ERR;
+    }
+
+    return E_OK;
+}
+
 int32_t StorageManagerProxy::UpdateMemoryPara(int32_t size, int32_t &oldSize)
 {
     MessageParcel data;

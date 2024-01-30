@@ -32,6 +32,7 @@
 #include "storage_service_log.h"
 #include "user/user_manager.h"
 #include "user/mount_manager.h"
+#include "utils/file_utils.h"
 #include "system_ability_definition.h"
 #include "file_share.h"
 #ifdef DFS_SERVICE
@@ -39,7 +40,6 @@
 #endif
 #ifdef USER_CRYPTO_MIGRATE_KEY
 #include "string_ex.h"
-#include "utils/file_utils.h"
 #include <filesystem>
 #endif
 
@@ -56,6 +56,7 @@ static const std::string VFS_CACHE_PRESSURE = "/proc/sys/vm/vfs_cache_pressure";
 
 typedef int32_t (*CreateShareFileFunc)(const std::vector<std::string> &, uint32_t, uint32_t, std::vector<int32_t> &);
 typedef int32_t (*DeleteShareFileFunc)(uint32_t, const std::vector<std::string> &);
+
 int32_t StorageDaemon::Shutdown()
 {
     return E_OK;
@@ -588,6 +589,13 @@ int32_t StorageDaemon::SetBundleQuota(const std::string &bundleName, int32_t uid
 int32_t StorageDaemon::GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size)
 {
     return QuotaManager::GetInstance()->GetOccupiedSpace(idType, id, size);
+}
+
+int32_t StorageDaemon::GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
+    const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes)
+{
+    return QuotaManager::GetInstance()->GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes,
+        pkgFileSizes);
 }
 
 static bool ReadFileToString(const std::string& pathInst, std::string& oldContent)

@@ -77,6 +77,7 @@ namespace StorageManager {
         SET_BUNDLE_QUOTA,
         GET_USER_STATS_BY_TYPE,
         UPDATE_MEM_PARA,
+        GET_BUNDLE_STATS_INCREASE,
     };
 } // namespace StorageManager
 } // namespace OHOS

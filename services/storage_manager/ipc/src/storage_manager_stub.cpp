@@ -32,6 +32,7 @@ const std::string PERMISSION_STORAGE_MANAGER = "ohos.permission.STORAGE_MANAGER"
 const std::string PERMISSION_MOUNT_MANAGER = "ohos.permission.MOUNT_UNMOUNT_MANAGER";
 const std::string PERMISSION_FORMAT_MANAGER = "ohos.permission.MOUNT_FORMAT_MANAGER";
 const std::string PROCESS_NAME_FOUNDATION = "foundation";
+
 bool CheckClientPermission(const std::string& permissionStr)
 {
     Security::AccessToken::AccessTokenID tokenCaller = IPCSkeleton::GetCallingTokenID();
@@ -166,6 +167,8 @@ StorageManagerStub::StorageManagerStub()
         &StorageManagerStub::HandleSetBundleQuota;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::UPDATE_MEM_PARA)] =
         &StorageManagerStub::HandleUpdateMemoryPara;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_BUNDLE_STATS_INCREASE)] =
+        &StorageManagerStub::HandleGetBundleStatsForIncrease;
 }
 
 int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
@@ -842,6 +845,36 @@ int32_t StorageManagerStub::HandleSetBundleQuota(MessageParcel &data, MessagePar
     }
     return E_OK;
 }
+
+int32_t StorageManagerStub::HandleGetBundleStatsForIncrease(MessageParcel &data, MessageParcel &reply)
+{
+    if (IPCSkeleton::GetCallingUid() != BACKUP_SA_UID) {
+        LOGE("StorageManager permissionCheck error, calling uid is invalid, need backup_sa uid.");
+        return E_PERMISSION_DENIED;
+    }
+
+    uint32_t userId = data.ReadUint32();
+    std::vector<std::string> bundleNames;
+    if (!data.ReadStringVector(&bundleNames)) {
+        return E_WRITE_REPLY_ERR;
+    }
+    std::vector<int64_t> incrementalBackTimes;
+    if (!data.ReadInt64Vector(&incrementalBackTimes)) {
+        return E_WRITE_REPLY_ERR;
+    }
+
+    std::vector<int64_t> pkgFileSizes;
+    int32_t err = GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes, pkgFileSizes);
+    if (!reply.WriteUint32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
+    if (!reply.WriteInt64Vector(pkgFileSizes)) {
+        LOGE("StorageManagerStub::HandleGetBundleStatsForIncrease call GetBundleStatsForIncrease failed");
+        return  E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+
 
 int32_t StorageManagerStub::HandleGetUserStorageStatsByType(MessageParcel &data, MessageParcel &reply)
 {

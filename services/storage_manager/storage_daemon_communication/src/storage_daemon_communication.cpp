@@ -356,6 +356,18 @@ int32_t StorageDaemonCommunication::MountCryptoPathAgain(int32_t userId)
     return storageDaemon_->MountCryptoPathAgain(userId);
 }
 
+int32_t StorageDaemonCommunication::GetBundleStatsForIncrease(uint32_t userId,
+    const std::vector<std::string> &bundleNames, const std::vector<int64_t> &incrementalBackTimes,
+    std::vector<int64_t> &pkgFileSizes)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    return storageDaemon_->GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes, pkgFileSizes);
+}
+
 int32_t StorageDaemonCommunication::UpdateMemoryPara(int32_t size, int32_t &oldSize)
 {
     LOGI("StorageDaemonCommunication::UpdateMemoryPara");
