@@ -823,13 +823,15 @@ int KeyManager::UnlockUserScreen(uint32_t user)
         saveLockScreenStatus.insert(std::make_pair(user, false));
     }
     if (!KeyCtrlHasFscryptSyspara()) {
-        saveLockScreenStatus[user] = false;
+        saveLockScreenStatus[user] = true;
+        LOGI("saveLockScreenStatus is %{public}d", saveLockScreenStatus[user]);
         return 0;
     }
     std::lock_guard<std::mutex> lock(keyMutex_);
     if (userEl4Key_.find(user) == userEl4Key_.end()) {
-        saveLockScreenStatus[user] = false;
-        LOGE("The user %{public}u not been actived", user);
+        saveLockScreenStatus[user] = true;
+        LOGE("The user %{public}u not been actived and saveLockScreenStatus is %{public}d", user,
+             saveLockScreenStatus[user]);
         return 0;
     }
     auto el4Key = userEl4Key_[user];
@@ -837,9 +839,9 @@ int KeyManager::UnlockUserScreen(uint32_t user)
         LOGE("UnlockUserScreen user %{public}u el4 key failed", user);
         return -EFAULT;
     }
-    LOGI("UnlockUserScreen user %{public}u el3 and el4 success", user);
     saveLockScreenStatus[user] = true;
-    LOGI("saveLockScreenStatus is %{public}d", saveLockScreenStatus[user]);
+    LOGI("UnlockUserScreen user %{public}u el3 and el4 success and saveLockScreenStatus is %{public}d", user,
+         saveLockScreenStatus[user]);
     return 0;
 }
 
@@ -903,17 +905,18 @@ int KeyManager::LockUserScreen(uint32_t user)
 {
     LOGI("start");
     std::lock_guard<std::mutex> lock(keyMutex_);
-    auto iter = saveLockScreenStatus.find(user);
+    auto iter = userPinProtect.find(user);
+    if (iter == userPinProtect.end() || iter->second == false) {
+        LOGI("saveLockScreenStatus is %{public}d", saveLockScreenStatus[user]);
+        return 0;
+    }
+    iter = saveLockScreenStatus.find(user);
     if (iter == saveLockScreenStatus.end()) {
         saveLockScreenStatus.insert(std::make_pair(user, false));
     }
-    iter = userPinProtect.find(user);
-    if (iter == userPinProtect.end() || iter->second == false) {
-        saveLockScreenStatus[user] = false;
-        return 0;
-    }
     if (!KeyCtrlHasFscryptSyspara()) {
         saveLockScreenStatus[user] = false;
+        LOGI("saveLockScreenStatus is %{public}d", saveLockScreenStatus[user]);
         return 0;
     }
     if (userEl4Key_.find(user) == userEl4Key_.end()) {
