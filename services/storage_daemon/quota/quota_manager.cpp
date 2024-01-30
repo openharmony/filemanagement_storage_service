@@ -445,6 +445,16 @@ static void ConvertSandboxRealPath(const uint32_t userId, const std::string &bun
     }
 }
 
+/**
+ * @brief Check if path in includes is directory or not
+ *
+ * @param path            path in includes
+ * @param lastBackupTime  start time for last backup
+ * @param fileStats       map for file path and file stat
+ * @param pathMap         map for file sandbox path and physical path
+ *
+ * @return std::tuple<bool, bool> : is success or not for system call / is directory or not
+ */
 static std::tuple<bool, bool> CheckIfDirForIncludes(const std::string &path, int64_t lastBackupTime,
     std::map<std::string, struct FileStat> &fileStats, std::map<std::string, std::string> &pathMap)
 {
@@ -567,6 +577,14 @@ static bool GetIncludesFileStats(const std::string &dir, int64_t lastBackupTime,
     return true;
 }
 
+/**
+ * @brief Check if path in excludes is directory or not
+ *
+ * @param path      path in includes
+ * @param fileSet   file sets
+ *
+ * @return std::tuple<bool, bool> : is success or not for system call / is directory or not
+ */
 static std::tuple<bool, bool> CheckIfDirForExcludes(const std::string &path, std::set<std::string> &fileSet)
 {
     // check whether the path exists
@@ -686,7 +704,8 @@ static int64_t GetDiskUsage(const std::map<std::string, struct FileStat> &toBack
     return size;
 }
 
-static int32_t WriteFileList(const std::map<std::string, struct FileStat> &toBackupFileStats, const std::string &filePath)
+static int32_t WriteFileList(const std::map<std::string, struct FileStat> &toBackupFileStats,
+    const std::string &filePath)
 {
     std::ofstream statFile;
     statFile.open(filePath.data(), std::ios::out | std::ios::trunc);
