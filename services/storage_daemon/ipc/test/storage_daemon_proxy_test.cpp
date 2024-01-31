@@ -505,5 +505,27 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_SetBundleQuota_001, Test
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_SetBundleQuota_001 end";
 }
 
+/**
+ * @tc.name: StorageDaemonProxyTest_UpdateMemoryPara_001
+ * @tc.desc: Verify the UpdateMemoryPara function.
+ * @tc.type: FUNC
+ * @tc.require: I8ZBB3
+ */
+HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_UpdateMemoryPara_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_UpdateMemoryParaa_001 start";
+
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
+    int32_t size = 1000;
+    int32_t oldSize = 500;
+    int32_t ret = proxy_->UpdateMemoryPara(size, oldSize);
+    ASSERT_TRUE(ret == E_OK);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_MEM_PARA) == mock_->code_);
+
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_UpdateMemoryPara_001 end";
+}
+
 } // STORAGE_DAEMON
 } // OHOS
