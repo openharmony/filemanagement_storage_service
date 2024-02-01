@@ -446,6 +446,27 @@ static void ConvertSandboxRealPath(const uint32_t userId, const std::string &bun
 }
 
 /**
+ * @brief insert recognized include files or sub-directories
+ *
+ * @param fileStats       map for file path and file stat
+ * @param path            file path in includes
+ * @param fileStats       file stat
+ */
+static void InsertIncludeFileStats(std::map<std::string, struct FileStat> &fileStats, const std::string &path,
+    const struct FileStat fileStat)
+{
+    if (path.empty()) {
+        LOGE("Invalid empty path when recoginize include files");
+        return;
+    }
+    std::string formatPath = path;
+    if (fileStat.isDir && formatPath.back() != FILE_SEPARATOR_CHAR) {
+        formatPath.push_back(FILE_SEPARATOR_CHAR);
+    }
+    fileStats.insert({formatPath, fileStat});
+}
+
+/**
  * @brief Check if path in includes is directory or not
  *
  * @param path            path in includes
@@ -485,7 +506,7 @@ static std::tuple<bool, bool> CheckIfDirForIncludes(const std::string &path, int
         if (lastUpdateTime > lastBackupTime) {
             fileStat.isIncre = true;
         }
-        fileStats.insert({path, fileStat});
+        InsertIncludeFileStats(fileStats, path, fileStat);
         return {true, false};
     }
 }
@@ -515,7 +536,7 @@ static bool AddOuterDirIntoFileStat(const std::string &dir, int64_t lastBackupTi
     fileStat.lastUpdateTime = lastUpdateTime;
     fileStat.isIncre = (lastUpdateTime > lastBackupTime) ? true : false;
     fileStat.isDir = true;
-    fileStats.insert({dir, fileStat});
+    InsertIncludeFileStats(fileStats, dir, fileStat);
     return true;
 }
 
@@ -570,11 +591,31 @@ static bool GetIncludesFileStats(const std::string &dir, int64_t lastBackupTime,
                 folderStack.push(path);
             }
             // record map about file to its directory
-            fileStats.insert({path, fileStat});
+            InsertIncludeFileStats(fileStats, path, fileStat);
         }
         closedir(dirPtr);
     }
     return true;
+}
+
+/**
+ * @brief insert recognized exclude files or sub-directories
+ *
+ * @param fileSet     set for file path
+ * @param path        file path in exclude
+ * @param isDir       isDir
+ */
+static void InsertExcludeFileSet(std::set<std::string> &fileSet, const std::string &path, bool isDir)
+{
+    if (path.empty()) {
+        LOGE("Invalid empty path when recoginize exclude files");
+        return;
+    }
+    std::string formatPath = path;
+    if (isDir && formatPath.back() != FILE_SEPARATOR_CHAR) {
+        formatPath.push_back(FILE_SEPARATOR_CHAR);
+    }
+    fileSet.insert(formatPath);
 }
 
 /**
@@ -597,14 +638,14 @@ static std::tuple<bool, bool> CheckIfDirForExcludes(const std::string &path, std
         LOGI("%{private}s exists and is a directory", path.c_str());
         return {true, true};
     } else {
-        fileSet.insert(path);
+        InsertExcludeFileSet(fileSet, path, false);
         return {true, false};
     }
 }
 
 static bool GetExcludesFile(const std::string &dir, std::set<std::string> &fileSet)
 {
-    fileSet.emplace(dir);
+    InsertExcludeFileSet(fileSet, dir, true);
 
     std::stack<std::string> folderStack;
     std::string filePath;
@@ -636,8 +677,7 @@ static bool GetExcludesFile(const std::string &dir, std::set<std::string> &fileS
             if (entry->d_type == DT_DIR) {
                 isDir = true;
             }
-            fileSet.insert(path);
-
+            InsertExcludeFileSet(fileSet, path, isDir);
             if (isDir) {
                 folderStack.push(path);
             }
