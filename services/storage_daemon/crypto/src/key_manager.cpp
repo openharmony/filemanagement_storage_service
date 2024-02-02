@@ -525,7 +525,6 @@ int KeyManager::DoDeleteUserCeEceSeceKeys(unsigned int user,
 int KeyManager::DoDeleteUserKeys(unsigned int user)
 {
     int ret = 0;
-    std::string elPath;
     ret = DoDeleteUserCeEceSeceKeys(user, USER_EL1_DIR, userEl1Key_);
     if (ret != 0) {
         LOGE("Delete el1 key failed");
