@@ -45,6 +45,12 @@ key_serial_t KeyCtrlAddKey(const char *type, const char *description,
 key_serial_t KeyCtrlAddKeyEx(const char *type, const char *description,
     struct fscrypt_key *fsKey, const key_serial_t ringId)
 {
+    FSCRYPT_LOGE("KeyCtrlAddKeyEx: description length: %d", (int)sizeof(description));
+    FSCRYPT_LOGE("KeyCtrlAddKeyEx: description content: ");
+    for (size_t i = 0; i < (int)sizeof(description); i++)
+    {
+        FSCRYPT_LOGE("%02x", description[i]);
+    }
     return syscall(__NR_add_key, type, description,
         (void *)(fsKey), sizeof(struct fscrypt_key),
         ringId);
