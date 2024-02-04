@@ -1243,7 +1243,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetUserStorageStatsByTyp
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
- * * @tc.require: I90X2X
+ * @tc.require: I90X2X
  */
 HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_UpdateMemoryPara_0000, testing::ext::TestSize.Level1)
 {
