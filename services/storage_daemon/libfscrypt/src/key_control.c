@@ -47,8 +47,7 @@ key_serial_t KeyCtrlAddKeyEx(const char *type, const char *description,
 {
     size_t descLen = 0;
     FSCRYPT_LOGE("KeyCtrlAddKeyEx: description content: ");
-    for (size_t i = 0; description[i] != '\0'; i++)
-    {
+    for (size_t i = 0; description[i] != '\0'; i++) {
         FSCRYPT_LOGE("%02x", description[i]);
         descLen++;
     }
