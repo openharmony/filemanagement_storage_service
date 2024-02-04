@@ -1235,4 +1235,26 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetUserStorageStatsByTyp
     EXPECT_GE(result, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetUserStorageStatsByType_0000";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_UpdateMemoryPara_0000
+ * @tc.name: Storage_manager_proxy_UpdateMemoryPara_0000
+ * @tc.desc: Test function of UpdateMemoryPara interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * * @tc.require: I90X2X
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_UpdateMemoryPara_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_UpdateMemoryPara_0000";
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    int32_t size = 1000;
+    int32_t oldSize =500;
+    int32_t result = proxy_->UpdateMemoryPara(size, oldSize);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_UpdateMemoryPara_0000";
+}
 } // namespace
