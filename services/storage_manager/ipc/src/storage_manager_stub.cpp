@@ -23,9 +23,11 @@
 namespace OHOS {
 namespace StorageManager {
 constexpr pid_t ACCOUNT_UID = 3058;
+constexpr pid_t FOUNDATION_UID = 5523;
 const std::string PERMISSION_STORAGE_MANAGER = "ohos.permission.STORAGE_MANAGER";
 const std::string PERMISSION_MOUNT_MANAGER = "ohos.permission.MOUNT_UNMOUNT_MANAGER";
 const std::string PERMISSION_FORMAT_MANAGER = "ohos.permission.MOUNT_FORMAT_MANAGER";
+const std::string PROCESS_NAME_FOUNDATION = "foundation";
 bool CheckClientPermission(const std::string& permissionStr)
 {
     Security::AccessToken::AccessTokenID tokenCaller = IPCSkeleton::GetCallingTokenID();
@@ -45,6 +47,23 @@ bool CheckClientPermission(const std::string& permissionStr)
     LOGE("StorageManager permissionCheck error, need %{public}s", permissionStr.c_str());
     return false;
 }
+
+bool CheckClientPermissionForShareFile()
+{
+    Security::AccessToken::AccessTokenID tokenCaller = IPCSkeleton::GetCallingTokenID();
+    Security::AccessToken::NativeTokenInfo nativeInfo;
+    Security::AccessToken::AccessTokenKit::GetNativeTokenInfo(tokenCaller, nativeInfo);
+
+    auto uid = IPCSkeleton::GetCallingUid();
+    if (nativeInfo.processName != PROCESS_NAME_FOUNDATION || uid != FOUNDATION_UID) {
+        LOGE("CheckClientPermissionForShareFile error, processName is %{public}s, uid is %{public}d",
+            nativeInfo.processName.c_str(), uid);
+        return false;
+    }
+
+    return true;
+}
+
 int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
     MessageParcel &data, MessageParcel &reply, MessageOption &option)
 {
@@ -739,9 +758,10 @@ int32_t StorageManagerStub::HandleUpdateKeyContext(MessageParcel &data, MessageP
 
 int32_t StorageManagerStub::HandleCreateShareFile(MessageParcel &data, MessageParcel &reply)
 {
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+    if (!CheckClientPermissionForShareFile()) {
         return E_PERMISSION_DENIED;
     }
+
     std::string uri = data.ReadString();
     uint32_t tokenId = data.ReadUint32();
     uint32_t flag = data.ReadUint32();
@@ -754,9 +774,10 @@ int32_t StorageManagerStub::HandleCreateShareFile(MessageParcel &data, MessagePa
 
 int32_t StorageManagerStub::HandleDeleteShareFile(MessageParcel &data, MessageParcel &reply)
 {
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+    if (!CheckClientPermissionForShareFile()) {
         return E_PERMISSION_DENIED;
     }
+
     uint32_t tokenId = data.ReadUint32();
     std::vector<std::string> sharePathList;
     if (!data.ReadStringVector(&sharePathList)) {
