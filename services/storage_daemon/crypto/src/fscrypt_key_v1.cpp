@@ -110,7 +110,7 @@ bool FscryptKeyV1::InstallKeyToKeyring()
     for (auto prefix : CRYPTO_NAME_PREFIXES) {
         std::string keyref = prefix + ":" + keyInfo_.keyDesc.ToString();
         LOGI("InstallKeyToKeyring: keyref: %{public}s", keyref.c_str());
-        LOGI("InstallKeyToKeyring: keyref length: %{public}d", keyref.length());
+        LOGI("InstallKeyToKeyring: keyref length: %{public}zu", keyref.length());
         key_serial_t ks =
             KeyCtrlAddKeyEx("logon", keyref.c_str(), &fskey, krid);
         if (ks == -1) {
