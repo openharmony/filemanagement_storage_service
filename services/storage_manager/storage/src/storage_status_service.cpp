@@ -232,27 +232,20 @@ int32_t StorageStatusService::GetAppSize(int32_t userId, int64_t &appSize)
         LOGE("StorageStatusService::GetUserStorageStats connect bundlemgr failed");
         return err;
     }
-    vector<AppExecFwk::ApplicationInfo> appInfos;
-    bool res = bundleMgr_->GetApplicationInfos(
-        AppExecFwk::ApplicationFlag::GET_BASIC_APPLICATION_INFO, userId, appInfos);
-    if (!res) {
-        LOGE("StorageStatusService::GetUserStorageStats an error occured in querying appInfos");
+
+    vector<int64_t> bundleStats;
+    bool res = bundleMgr_->GetAllBundleStats(userId, bundleStats);
+    if (!res || bundleStats.size() != dataDir.size()) {
+        LOGE("StorageStatusService::GetAllBundleStats fail. res %{public}d, bundleStats.size %{public}zu",
+             res, bundleStats.size());
         return E_BUNDLEMGR_ERROR;
     }
-    for (const auto& appInfo : appInfos) {
-        int64_t bundleSize = 0;
-        LOGD("StorageStatusService::GetCurUserStorageStats pkgname is %{public}s", appInfo.name.c_str());
-        vector<int64_t> bundleStats;
-        res = bundleMgr_->GetBundleStats(appInfo.name, userId, bundleStats);
-        if (!res || bundleStats.size() != dataDir.size()) {
-            LOGE("StorageStatusService::An error occurred in querying bundle stats.");
-            return E_BUNDLEMGR_ERROR;
-        }
-        for (uint i = 0; i < bundleStats.size(); i++) {
-            bundleSize += bundleStats[i];
-        }
-        appSize += bundleSize;
+
+    for (uint i = 0; i < bundleStats.size(); i++) {
+        appSize += bundleStats[i];
     }
+
+    LOGD("StorageStatusService:: userId %{public}d", userId);
     return E_OK;
 }
 
