@@ -50,6 +50,9 @@ std::shared_ptr<MountManager> MountManager::instance_ = nullptr;
 const string SANDBOX_ROOT_PATH = "/mnt/sandbox/";
 const string CURRENT_USER_ID_FLAG = "<currentUserId>";
 const string PACKAGE_NAME_FLAG = "<bundleName>";
+const string SCENE_BOARD_BUNDLE_NAME = "com.ohos.sceneboard";
+const string PUBLIC_DIR_SANDBOX_PATH = "/storage/Users/currentUser";
+const string PUBLIC_DIR_SRC_PATH = "/storage/media/<currentUserId>/local/files/Docs";
 const set<string> SANDBOX_EXCLUDE_PATH = {
     "chipset",
     "system",
@@ -327,9 +330,17 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
         if (SANDBOX_EXCLUDE_PATH.find(bundleName.path().filename()) != SANDBOX_EXCLUDE_PATH.end()) {
             continue;
         }
-        for (size_t i = 0; i < CRYPTO_SANDBOX_PATH.size(); i++) {
-            string dstPath = bundleName.path().generic_string() + CRYPTO_SANDBOX_PATH[i];
-            string srcPath = CRYPTO_SRC_PATH[i];
+
+        vector<string> cryptoSandboxPathVector = CRYPTO_SANDBOX_PATH;
+        vector<string> cryptoSandboxSrcVector = CRYPTO_SRC_PATH;
+        if (bundleName.path().filename().generic_string() == SCENE_BOARD_BUNDLE_NAME) {
+            cryptoSandboxPathVector.push_back(PUBLIC_DIR_SANDBOX_PATH);
+            cryptoSandboxSrcVector.push_back(PUBLIC_DIR_SRC_PATH);
+        }
+
+        for (size_t i = 0; i < cryptoSandboxPathVector.size(); i++) {
+            string dstPath = bundleName.path().generic_string() + cryptoSandboxPathVector[i];
+            string srcPath = cryptoSandboxSrcVector[i];
             ParseSandboxPath(srcPath, to_string(userId), bundleName.path().filename().generic_string());
             ret = mount(srcPath.c_str(), dstPath.c_str(), NULL, MS_BIND | MS_REC, NULL);
             if (ret != 0) {
