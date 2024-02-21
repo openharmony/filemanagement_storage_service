@@ -141,6 +141,10 @@ ohos_executable("storage_daemon") {
     defines += [ "DFS_SERVICE" ]
     external_deps += [ "dfs_service:cloud_daemon_kit_inner" ]
   }
+  if (build_selinux) {
+    defines += [ "USE_LIBRESTORECON" ]
+    external_deps += [ "selinux_adapter:librestorecon" ]
+  }
 
   ldflags = [
     "-Wl,-z,max-page-size=4096",
