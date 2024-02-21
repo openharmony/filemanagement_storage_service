@@ -51,6 +51,7 @@ StorageStatusService::~StorageStatusService() {}
 
 int32_t GetMediaStorageStats(StorageStats &storageStats)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
 #ifdef STORAGE_SERVICE_GRAPHIC
     Media::MediaLibraryManager mgr;
     Media::MediaVolume mediaVol;
@@ -80,6 +81,7 @@ int32_t GetMediaStorageStats(StorageStats &storageStats)
 
 int32_t GetFileStorageStats(int32_t userId, StorageStats &storageStats)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     int32_t err = E_OK;
     int32_t prjId = userId * USER_ID_BASE + UID_FILE_MANAGER;
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
@@ -228,6 +230,7 @@ int32_t StorageStatusService::ConnectBundleMgr()
 
 int32_t StorageStatusService::GetAppSize(int32_t userId, int64_t &appSize)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     int32_t err = ConnectBundleMgr();
     if (err != E_OK) {
         LOGE("StorageStatusService::GetUserStorageStats connect bundlemgr failed");
