@@ -122,6 +122,7 @@ int32_t StorageStatusService::GetUserStorageStats(StorageStats &storageStats)
 
 int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &storageStats)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     // totalSize
     int64_t totalSize = 0;
     int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetTotalSize(totalSize);
