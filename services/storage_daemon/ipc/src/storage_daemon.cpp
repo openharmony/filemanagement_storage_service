@@ -42,6 +42,9 @@
 #include "string_ex.h"
 #include <filesystem>
 #endif
+#ifdef USE_LIBRESTORECON
+#include "policycoreutils.h"
+#endif
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -53,6 +56,9 @@ constexpr int32_t DEFAULT_VFS_CACHE_PRESSURE = 100;
 constexpr int32_t MAX_VFS_CACHE_PRESSURE = 10000;
 static const std::string DATA = "/data";
 static const std::string VFS_CACHE_PRESSURE = "/proc/sys/vm/vfs_cache_pressure";
+const std::string DATA_SERVICE_EL2 = "/data/service/el2/";
+const std::string DATA_SERVICE_EL3 = "/data/service/el3/";
+const std::string DATA_SERVICE_EL4 = "/data/service/el4/";
 
 typedef int32_t (*CreateShareFileFunc)(const std::vector<std::string> &, uint32_t, uint32_t, std::vector<int32_t> &);
 typedef int32_t (*DeleteShareFileFunc)(uint32_t, const std::vector<std::string> &);
@@ -464,6 +470,52 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepare(uint32_t userId, KeyType type,
 #endif
 }
 
+int32_t StorageDaemon::RestoreconForEl2BackupDirs(const std::string &path)
+{
+#ifdef USE_LIBRESTORECON
+    LOGI("RestoreconForEl2BackupDirs enter, path is %{public}s", path.c_str());
+    Restorecon(path.c_str());
+    LOGI("RestoreconForEl2BackupDirs Restorecon success, path is %{public}s", path.c_str());
+    std::vector<std::string> files;
+    GetSubDirs(path, files);
+    const std::string bundles = "bundles";
+    for (const auto &file: files) {
+        LOGI("GetSubDirs file is %{public}s", file.c_str());
+        if (file == bundles) {
+            Restorecon((path + "/" + file).c_str());
+            LOGI("RestoreconForEl2BackupDirs Restorecon file is %{public}s", (path + "/" + file).c_str());
+        } else {
+            RestoreconRecurse((path + "/" + file).c_str());
+            LOGI("RestoreconForEl2BackupDirs RestoreconRecurse file is %{public}s", (path + "/" + file).c_str());
+        }
+    }
+#endif
+    return E_OK;
+}
+
+int32_t StorageDaemon::RestoreconForEl2(const std::string &path)
+{
+#ifdef USE_LIBRESTORECON
+    LOGI("RestoreconForEl2 enter, path is %{public}s", path.c_str());
+    Restorecon(path.c_str());
+    LOGI("Restorecon success, path is %{public}s", path.c_str());
+    std::vector<std::string> files;
+    GetSubDirs(path, files);
+    const std::string backup = "backup";
+    for (const auto &file: files) {
+        LOGI("GetSubDirs file is %{public}s", file.c_str());
+        if (file != backup) {
+            RestoreconRecurse((path + "/" + file).c_str());
+            LOGI("RestoreconForEl2 RestoreconRecurse file is %{public}s", (path + "/" + file).c_str());
+        } else {
+            RestoreconForEl2BackupDirs(path + "/" + file);
+            LOGI("RestoreconForEl2 RestoreconForEl2BackupDirs file is %{public}s", (path + "/" + file).c_str());
+        }
+    }
+#endif
+    return E_OK;
+}
+
 int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
                                      const std::vector<uint8_t> &token,
                                      const std::vector<uint8_t> &secret)
@@ -500,7 +552,17 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
         LOGE("ActiveUserKey fail, userId %{public}u, type %{public}u", userId, EL4_KEY);
         return ret;
     }
-
+#ifdef USE_LIBRESTORECON
+    LOGI("Begin to restorecon path, userId = %{public}d", userId);
+    RestoreconRecurse((DATA_SERVICE_EL2 + "public").c_str());
+    const std::string &path = DATA_SERVICE_EL2 + std::to_string(userId);
+    RestoreconForEl2(path);
+    LOGI("Restorecon el2 end, userId = %{public}d", userId);
+    RestoreconRecurse((DATA_SERVICE_EL3 + std::to_string(userId)).c_str());
+    LOGI("Restorecon el3 end, userId = %{public}d", userId);
+    RestoreconRecurse((DATA_SERVICE_EL4 + std::to_string(userId)).c_str());
+    LOGI("Restorecon el4 end, userId = %{public}d", userId);
+#endif
     if (updateFlag) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
     }
