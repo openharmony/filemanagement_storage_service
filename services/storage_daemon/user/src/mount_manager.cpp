@@ -110,6 +110,7 @@ MountManager::MountManager()
                   {"/data/service/el2/%d/deviceauth", 0711, OID_DEVICE_AUTH, OID_DEVICE_AUTH},
                   {"/data/service/el2/%d/huks_service", 0711, OID_HUKS, OID_HUKS},
                   {"/data/service/el4/%d/huks_service", 0711, OID_HUKS, OID_HUKS}},
+                  {"/data/service/el2/%d/dlp_credential_service", 0711, OID_DLP_CREDENTIAL, OID_DLP_CREDENTIAL}},
       fileManagerDir_{{"/data/service/el2/%d/hmdfs/account/files/Docs", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
                    {"/data/service/el2/%d/hmdfs/account/files/Docs/Documents",
                    02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
