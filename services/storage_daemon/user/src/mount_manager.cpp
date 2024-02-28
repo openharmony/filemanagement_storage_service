@@ -36,6 +36,9 @@
 #ifdef DFS_SERVICE
 #include "cloud_daemon_manager.h"
 #endif
+#ifdef USE_LIBRESTORECON
+#include "policycoreutils.h"
+#endif
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -674,6 +677,19 @@ int32_t MountManager::CreateVirtualDirs(int32_t userId)
     }
 
     return E_OK;
+}
+
+int32_t MountManager::RestoreconSystemServiceDirs(int32_t userId)
+{
+    int32_t err = E_OK;
+#ifdef USE_LIBRESTORECON
+    for (const DirInfo &dir : systemServiceDir_) {
+        std::string path = StringPrintf(dir.path.c_str(), userId);
+        RestoreconRecurse(path.c_str());
+        LOGE("systemServiceDir_ RestoreconRecurse path is %{private}s ", path.c_str());
+    }
+#endif
+    return err;
 }
 
 int32_t MountManager::CreateSystemServiceDirs(int32_t userId)

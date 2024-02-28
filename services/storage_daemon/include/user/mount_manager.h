@@ -60,6 +60,7 @@ public:
     int32_t CloudTwiceMount(int32_t userId);
     int32_t MountCryptoPathAgain(uint32_t userId);
     void SetCloudState(bool active);
+    int32_t RestoreconSystemServiceDirs(int32_t userId);
 
 private:
     bool SupportHmdfs();
