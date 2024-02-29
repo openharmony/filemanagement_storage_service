@@ -503,7 +503,7 @@ static std::tuple<bool, bool> CheckIfDirForIncludes(const std::string &path, int
         fileStat.isDir = false;
         int64_t lastUpdateTime = static_cast<int64_t>(fileStatInfo.st_mtime);
         fileStat.lastUpdateTime = lastUpdateTime;
-        if (lastUpdateTime > lastBackupTime) {
+        if (lastBackupTime == 0 || lastUpdateTime > lastBackupTime) {
             fileStat.isIncre = true;
         }
         InsertIncludeFileStats(fileStats, path, fileStat);
@@ -534,7 +534,7 @@ static bool AddOuterDirIntoFileStat(const std::string &dir, int64_t lastBackupTi
     fileStat.mode = fileInfo.st_mode;
     int64_t lastUpdateTime = static_cast<int64_t>(fileInfo.st_mtime);
     fileStat.lastUpdateTime = lastUpdateTime;
-    fileStat.isIncre = (lastUpdateTime > lastBackupTime) ? true : false;
+    fileStat.isIncre = (lastBackupTime == 0 || lastUpdateTime > lastBackupTime) ? true : false;
     fileStat.isDir = true;
     InsertIncludeFileStats(fileStats, dir, fileStat);
     return true;
@@ -585,7 +585,7 @@ static bool GetIncludesFileStats(const std::string &dir, int64_t lastBackupTime,
             fileStat.mode = fileInfo.st_mode;
             int64_t lastUpdateTime = static_cast<int64_t>(fileInfo.st_mtime);
             fileStat.lastUpdateTime = lastUpdateTime;
-            fileStat.isIncre = (lastUpdateTime > lastBackupTime) ? true : false;
+            fileStat.isIncre = (lastBackupTime == 0 || lastUpdateTime > lastBackupTime) ? true : false;
             if (entry->d_type == DT_DIR) {
                 fileStat.isDir = true;
                 folderStack.push(path);
