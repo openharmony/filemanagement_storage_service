@@ -297,6 +297,7 @@ group("storage_daemon_third_party") {
       "//third_party/FreeBSD/sbin/newfs_msdos:newfs_msdos",
       "//third_party/e2fsprogs:blkid",
       "//third_party/exfatprogs:exfatprogs",
+      
       # "//third_party/f2fs-tools:f2fs-tools",
       "//third_party/gptfdisk:sgdisk",
       "//third_party/ntfs-3g:ntfsprogs",
