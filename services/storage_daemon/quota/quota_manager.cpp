@@ -503,7 +503,7 @@ static std::tuple<bool, bool> CheckIfDirForIncludes(const std::string &path, int
         fileStat.isDir = false;
         int64_t lastUpdateTime = static_cast<int64_t>(fileStatInfo.st_mtime);
         fileStat.lastUpdateTime = lastUpdateTime;
-        if (lastUpdateTime > lastBackupTime) {
+        if (lastUpdateTime == 0 || lastUpdateTime > lastBackupTime) {
             fileStat.isIncre = true;
         }
         InsertIncludeFileStats(fileStats, path, fileStat);
