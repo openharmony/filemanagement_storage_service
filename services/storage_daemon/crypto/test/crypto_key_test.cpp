@@ -24,8 +24,8 @@
 #include "directory_ex.h"
 #include "fbex.h"
 #include "file_ex.h"
-#include "fscrypt_key_v1_ext.h"
 #include "fscrypt_key_v1.h"
+#include "fscrypt_key_v1_ext.h"
 #include "fscrypt_key_v2.h"
 #include "huks_master.h"
 #include "key_blob.h"
@@ -54,6 +54,11 @@ const std::string TEST_POLICY = "/data/test/policy";
 const std::string USER_KEY_DIR = "/data/service/el1/public/storage_daemon/sd";
 const std::string USER_KEY_EL1_DIR = USER_KEY_DIR + "/el1";
 const std::string USER_KEY_EL2_DIR = USER_KEY_DIR + "/el2";
+const int32_t PARAMS_SIZE_0 = 0;
+const int32_t PARAMS_SIZE_1 = 1;
+const int32_t PARAMS_SIZE_2 = 2;
+const int32_t PARAMS_SIZE_3 = 3;
+const int32_t PARAMS_SIZE_4 = 4;
 FscryptKeyV1 g_testKeyV1 {TEST_KEYPATH};
 FscryptKeyV2 g_testKeyV2 {TEST_KEYPATH};
 }
@@ -63,6 +68,7 @@ public:
     static void SetUpTestCase(void);
     static void TearDownTestCase(void);
     static int32_t ExecSdcBinary(std::vector<std::string> params, int isCrypt);
+    static int32_t ExecSdcBinaryPidIsZero(std::vector<std::string> params, int isCrypt);
     void SetUp();
     void TearDown();
     UserAuth emptyUserAuth {};
@@ -97,55 +103,26 @@ int32_t CryptoKeyTest::ExecSdcBinary(std::vector<std::string> params, int isCryp
     if (pid == 0) {
         int ret = -EINVAL;
         if (!isCrypt) {
-            char * const argv[] = {
-                (char *)"/system/bin/sdc",
-                (char *)"nullcmd",
-                NULL
-            };
+            char *const argv[] = {(char *)"/system/bin/sdc", (char *)"nullcmd", NULL};
             ret = execv(argv[0], argv);
-        } else if (params.size() == 0) {
-            char * const argv[] = {
-                (char *)"/system/bin/sdc",
-                NULL
-            };
+        } else if (params.size() == PARAMS_SIZE_0) {
+            char *const argv[] = {(char *)"/system/bin/sdc", NULL};
             ret = execv(argv[0], argv);
-        } else if (params.size() == 1) {
-            char * const argv[] = {
-                (char *)"/system/bin/sdc",
-                (char *)"filecrypt",
-                (char *)params[0].c_str(),
-                NULL
-            };
+        } else if (params.size() == PARAMS_SIZE_1) {
+            char *const argv[] = {(char *)"/system/bin/sdc", (char *)"filecrypt", (char *)params[0].c_str(), NULL};
             ret = execv(argv[0], argv);
-        } else if (params.size() == 2) {
-            char * const argv[] = {
-                (char *)"/system/bin/sdc",
-                (char *)"filecrypt",
-                (char *)params[0].c_str(),
-                (char *)params[1].c_str(),
-                NULL
-            };
+        } else if (params.size() == PARAMS_SIZE_2) {
+            char *const argv[] = {(char *)"/system/bin/sdc", (char *)"filecrypt", (char *)params[0].c_str(),
+                                  (char *)params[1].c_str(), NULL};
             ret = execv(argv[0], argv);
-        } else if (params.size() == 3) {
-            char * const argv[] = {
-                (char *)"/system/bin/sdc",
-                (char *)"filecrypt",
-                (char *)params[0].c_str(),
-                (char *)params[1].c_str(),
-                (char *)params[2].c_str(),
-                NULL
-            };
+        } else if (params.size() == PARAMS_SIZE_3) {
+            char *const argv[] = {(char *)"/system/bin/sdc", (char *)"filecrypt", (char *)params[0].c_str(),
+                                  (char *)params[1].c_str(), (char *)params[2].c_str(), NULL};
             ret = execv(argv[0], argv);
-        } else if (params.size() == 4) {
-            char * const argv[] = {
-                (char *)"/system/bin/sdc",
-                (char *)"filecrypt",
-                (char *)params[0].c_str(),
-                (char *)params[1].c_str(),
-                (char *)params[2].c_str(),
-                (char *)params[3].c_str(),
-                NULL
-            };
+        } else if (params.size() == PARAMS_SIZE_4) {
+            char *const argv[] = {(char *)"/system/bin/sdc", (char *)"filecrypt", (char *)params[0].c_str(),
+                                  (char *)params[1].c_str(), (char *)params[2].c_str(),
+                                  (char *)params[3].c_str(), NULL};
             ret = execv(argv[0], argv);
         }
         if (ret) {
@@ -980,7 +957,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_secure_access_control, TestSize.Level1)
  * @tc.type: FUNC
  * @tc.require: SR000H0CLT
  */
-HWTEST_F(CryptoKeyTest, fscrypt_sdc_filecrypt, TestSize.Level1)
+HWTEST_F(CryptoKeyTest, fscrypt_sdc_filecrypt_001, TestSize.Level1)
 {
     std::vector<std::string> params;
 
@@ -1027,8 +1004,14 @@ HWTEST_F(CryptoKeyTest, fscrypt_sdc_filecrypt, TestSize.Level1)
     params.push_back("inactive_user_key");
     EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
     params.clear();
+}
+
+HWTEST_F(CryptoKeyTest, fscrypt_sdc_filecrypt_002, TestSize.Level1)
+{
+    std::vector<std::string> params;
 
     // test sdc update_key_context
+    params.clear();
     params.push_back("update_key_context");
     params.push_back("id");
     EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
@@ -1068,8 +1051,14 @@ HWTEST_F(CryptoKeyTest, fscrypt_sdc_filecrypt, TestSize.Level1)
     params.push_back("generate_user_keys");
     EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
     params.clear();
+}
+
+HWTEST_F(CryptoKeyTest, fscrypt_sdc_filecrypt_003, TestSize.Level1)
+{
+    std::vector<std::string> params;
 
     // test sdc prepare_user_space
+    params.clear();
     params.push_back("prepare_user_space");
     params.push_back("id");
     params.push_back("flag");
@@ -1098,8 +1087,14 @@ HWTEST_F(CryptoKeyTest, fscrypt_sdc_filecrypt, TestSize.Level1)
     params.push_back("destroy_user_space");
     EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
     params.clear();
+}
+
+HWTEST_F(CryptoKeyTest, fscrypt_sdc_filecrypt_004, TestSize.Level1)
+{
+    std::vector<std::string> params;
 
     // test sdc update_user_auth
+    params.clear();
     params.push_back("update_user_auth");
     params.push_back("id");
     params.push_back("01234567890abcd");
