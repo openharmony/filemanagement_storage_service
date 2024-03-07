@@ -470,59 +470,13 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepare(uint32_t userId, KeyType type,
 #endif
 }
 
-int32_t StorageDaemon::RestoreconForEl2BackupDirs(const std::string &path)
-{
-#ifdef USE_LIBRESTORECON
-    LOGI("RestoreconForEl2BackupDirs enter, path is %{public}s", path.c_str());
-    Restorecon(path.c_str());
-    LOGI("RestoreconForEl2BackupDirs Restorecon success, path is %{public}s", path.c_str());
-    std::vector<std::string> files;
-    GetSubDirs(path, files);
-    const std::string bundles = "bundles";
-    for (const auto &file: files) {
-        LOGI("GetSubDirs file is %{public}s", file.c_str());
-        if (file == bundles) {
-            Restorecon((path + "/" + file).c_str());
-            LOGI("RestoreconForEl2BackupDirs Restorecon file is %{public}s", (path + "/" + file).c_str());
-        } else {
-            RestoreconRecurse((path + "/" + file).c_str());
-            LOGI("RestoreconForEl2BackupDirs RestoreconRecurse file is %{public}s", (path + "/" + file).c_str());
-        }
-    }
-#endif
-    return E_OK;
-}
-
-int32_t StorageDaemon::RestoreconForEl2(const std::string &path)
-{
-#ifdef USE_LIBRESTORECON
-    LOGI("RestoreconForEl2 enter, path is %{public}s", path.c_str());
-    Restorecon(path.c_str());
-    LOGI("Restorecon success, path is %{public}s", path.c_str());
-    std::vector<std::string> files;
-    GetSubDirs(path, files);
-    const std::string backup = "backup";
-    for (const auto &file: files) {
-        LOGI("GetSubDirs file is %{public}s", file.c_str());
-        if (file != backup) {
-            RestoreconRecurse((path + "/" + file).c_str());
-            LOGI("RestoreconForEl2 RestoreconRecurse file is %{public}s", (path + "/" + file).c_str());
-        } else {
-            RestoreconForEl2BackupDirs(path + "/" + file);
-            LOGI("RestoreconForEl2 RestoreconForEl2BackupDirs file is %{public}s", (path + "/" + file).c_str());
-        }
-    }
-#endif
-    return E_OK;
-}
-
 int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
                                      const std::vector<uint8_t> &token,
                                      const std::vector<uint8_t> &secret)
 {
+    bool updateFlag = false;
 #ifdef USER_CRYPTO_MANAGER
     LOGI("userId %{public}u, tok empty %{public}d sec empty %{public}d", userId, token.empty(), secret.empty());
-    bool updateFlag = false;
     int ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL2_KEY, token, secret);
     if (ret != E_OK) {
 #ifdef USER_CRYPTO_MIGRATE_KEY
@@ -552,24 +506,44 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
         LOGE("ActiveUserKey fail, userId %{public}u, type %{public}u", userId, EL4_KEY);
         return ret;
     }
-#ifdef USE_LIBRESTORECON
-    LOGI("Begin to restorecon path, userId = %{public}d", userId);
-    RestoreconRecurse((DATA_SERVICE_EL2 + "public").c_str());
-    const std::string &path = DATA_SERVICE_EL2 + std::to_string(userId);
-    RestoreconForEl2(path);
-    LOGI("Restorecon el2 end, userId = %{public}d", userId);
-    RestoreconRecurse((DATA_SERVICE_EL3 + std::to_string(userId)).c_str());
-    LOGI("Restorecon el3 end, userId = %{public}d", userId);
-    RestoreconRecurse((DATA_SERVICE_EL4 + std::to_string(userId)).c_str());
-    LOGI("Restorecon el4 end, userId = %{public}d", userId);
-#endif
+    RestoreconElX(userId);
     if (updateFlag) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
     }
     return ret;
 #else
+    RestoreconElX(userId);
+    if (updateFlag) {
+        UserManager::GetInstance()->CreateBundleDataDir(userId);
+    }
     return E_OK;
 #endif
+}
+
+int32_t StorageDaemon::RestoreconElX(uint32_t userId)
+{
+#ifdef USE_LIBRESTORECON
+    LOGI("Begin to restorecon path, userId = %{public}d", userId);
+    RestoreconRecurse((DATA_SERVICE_EL2 + "public").c_str());
+    const std::string &path = DATA_SERVICE_EL2 + std::to_string(userId);
+    LOGI("RestoreconRecurse el2 public end, userId = %{public}d", userId);
+    MountManager::GetInstance()->RestoreconSystemServiceDirs(userId);
+    LOGI("RestoreconSystemServiceDirs el2 end, userId = %{public}d", userId);
+    RestoreconRecurse((DATA_SERVICE_EL2 + std::to_string(userId) + "/share").c_str());
+    LOGI("RestoreconRecurse el2 share end, userId = %{public}d", userId);
+    const std::string &DATA_SERVICE_EL2_HMDFS = DATA_SERVICE_EL2 + std::to_string(userId) + "/hmdfs/";
+    Restorecon(DATA_SERVICE_EL2_HMDFS.c_str());
+    LOGI("Restorecon el2 DATA_SERVICE_EL2_HMDFS end, userId = %{public}d", userId);
+    const std::string &ACCOUNT_FILES = "/hmdfs/account/files/";
+    const std::string &EL2_HMDFS_ACCOUNT_FILES = DATA_SERVICE_EL2 + std::to_string(userId) + ACCOUNT_FILES;
+    Restorecon(EL2_HMDFS_ACCOUNT_FILES.c_str());
+    LOGI("Restorecon el2 DATA_SERVICE_EL2_HMDFS_ACCOUNT_FILES end, userId = %{public}d", userId);
+    const std::string &FILES_RECENT = "/hmdfs/account/files/.Recent";
+    const std::string &EL2_HMDFS_ACCOUNT_FILES_RECENT = DATA_SERVICE_EL2 + std::to_string(userId) + FILES_RECENT;
+    Restorecon(EL2_HMDFS_ACCOUNT_FILES_RECENT.c_str());
+    LOGI("Restorecon el2 DATA_SERVICE_EL2_HMDFS_ACCOUNT_FILES_RECENT end, userId = %{public}d", userId);
+#endif
+    return E_OK;
 }
 
 int32_t StorageDaemon::InactiveUserKey(uint32_t userId)

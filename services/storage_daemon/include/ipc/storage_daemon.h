@@ -105,8 +105,7 @@ private:
     int32_t ActiveUserKeyAndPrepare(uint32_t userId, KeyType type,
                                     const std::vector<uint8_t> &token,
                                     const std::vector<uint8_t> &secret);
-    int32_t RestoreconForEl2(const std::string &path);
-    int32_t RestoreconForEl2BackupDirs(const std::string &path);
+    int32_t RestoreconElX(uint32_t userId);
 };
 } // StorageDaemon
 } // OHOS
