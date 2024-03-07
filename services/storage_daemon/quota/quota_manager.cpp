@@ -867,6 +867,11 @@ int32_t QuotaManager::GetBundleStatsForIncrease(uint32_t userId, const std::vect
     const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes)
 {
     LOGI("GetBundleStatsForIncrease start");
+    if (bundleNames.size() != incrementalBackTimes.size()) {
+        LOGE("Invalid paramters, size of bundleNames should match incrementalBackTimes.");
+        return E_SYS_ERR;
+    }
+
     for (size_t i = 0; i < bundleNames.size(); i++) {
         std::string bundleName = bundleNames[i];
         int64_t lastBackupTime = incrementalBackTimes[i];
