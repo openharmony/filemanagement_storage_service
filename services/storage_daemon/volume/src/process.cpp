@@ -109,12 +109,16 @@ bool Process::CheckMaps(std::string pidPath)
             if (CheckSubDir(line)) {
                 LOGI("Found map in %{public}s", pidPath.c_str());
                 (void)fclose(file);
+                free(buf);
+                buf = nullptr;
                 return true;
             }
         }
     }
 
     (void)fclose(file);
+    free(buf);
+    buf = nullptr;
     return false;
 }
 
