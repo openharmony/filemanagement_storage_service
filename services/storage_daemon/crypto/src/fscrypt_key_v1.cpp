@@ -15,8 +15,11 @@
 
 #include "fscrypt_key_v1.h"
 
+#include <fcntl.h>
 #include <openssl/sha.h>
+#include <unistd.h>
 
+#include "file_ex.h"
 #include "libfscrypt/key_control.h"
 #include "storage_service_log.h"
 
@@ -97,8 +100,22 @@ bool FscryptKeyV1::InactiveKey(uint32_t flag, const std::string &mnt)
         LOGE("fscryptV1Ext InactiveKeyExt failed");
         ret = false;
     }
+    DropCachesIfNeed();
     LOGD("finish");
     return ret;
+}
+
+void FscryptKeyV1::DropCachesIfNeed()
+{
+    int fd = open(MNT_DATA.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+    if (fd < 0 || syncfs(fd)) {
+        sync();
+    }
+    if (!SaveStringToFile("/proc/sys/vm/drop_caches", "2")) {
+        LOGE("Failed to drop cache during key eviction");
+    }
+    (void)close(fd);
+    LOGI("drop cache success");
 }
 
 bool FscryptKeyV1::UninstallKeyToKeyring()
