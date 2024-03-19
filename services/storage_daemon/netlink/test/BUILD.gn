@@ -17,6 +17,13 @@ import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 ROOT_DIR = "${storage_service_path}/services"
 
 ohos_unittest("netlink_data_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   module_out_path = "storage_service/storage_daemon"
 
   defines = [ "STORAGE_LOG_TAG = \"StorageDaemon\"" ]
@@ -44,6 +51,13 @@ ohos_unittest("netlink_data_test") {
 }
 
 ohos_unittest("netlink_handler_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   module_out_path = "storage_service/storage_daemon"
 
   defines = [ "STORAGE_LOG_TAG = \"StorageDaemon\"" ]
@@ -90,6 +104,13 @@ ohos_unittest("netlink_handler_test") {
 }
 
 ohos_unittest("netlink_listener_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   module_out_path = "storage_service/storage_daemon"
 
   defines = [ "STORAGE_LOG_TAG = \"StorageDaemon\"" ]
@@ -119,6 +140,13 @@ ohos_unittest("netlink_listener_test") {
 }
 
 ohos_unittest("netlink_manager_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   module_out_path = "storage_service/storage_daemon"
 
   defines = [ "STORAGE_LOG_TAG = \"StorageDaemon\"" ]

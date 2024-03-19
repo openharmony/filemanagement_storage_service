@@ -17,6 +17,13 @@ import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 ROOT_DIR = "${storage_service_path}/services"
 
 ohos_unittest("external_volume_info_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   module_out_path = "storage_service/storage_daemon"
 
   defines = [ "STORAGE_LOG_TAG = \"StorageDaemon\"" ]
@@ -53,6 +60,13 @@ ohos_unittest("external_volume_info_test") {
 }
 
 ohos_unittest("process_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   module_out_path = "storage_service/storage_daemon"
 
   defines = [ "STORAGE_LOG_TAG = \"StorageDaemon\"" ]
@@ -86,6 +100,13 @@ ohos_unittest("process_test") {
 }
 
 ohos_unittest("volume_info_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   module_out_path = "storage_service/storage_daemon"
 
   defines = [ "STORAGE_LOG_TAG = \"StorageDaemon\"" ]
@@ -122,6 +143,13 @@ ohos_unittest("volume_info_test") {
 }
 
 ohos_unittest("volume_manager_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   module_out_path = "storage_service/storage_daemon"
 
   defines = [ "STORAGE_LOG_TAG = \"StorageDaemon\"" ]

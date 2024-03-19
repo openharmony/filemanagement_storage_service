@@ -17,6 +17,13 @@ import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 ROOT_DIR = "${storage_daemon_path}"
 
 ohos_unittest("disk_manager_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   module_out_path = "storage_service/storage_daemon"
 
   defines = [
@@ -62,6 +69,13 @@ ohos_unittest("disk_manager_test") {
 }
 
 ohos_unittest("disk_info_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   module_out_path = "storage_service/storage_daemon"
 
   defines = [
@@ -107,6 +121,13 @@ ohos_unittest("disk_info_test") {
 }
 
 ohos_unittest("disk_config_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   module_out_path = "storage_service/storage_daemon"
 
   defines = [
