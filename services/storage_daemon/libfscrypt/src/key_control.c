@@ -71,6 +71,7 @@ static bool FsIoctl(const char *mnt, unsigned long cmd, void *arg)
     }
 
     int fd = open(realPath, O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+    free(realPath);
     if (fd < 0) {
         FSCRYPT_LOGE("open %s failed, errno:%d", mnt, errno);
         return false;
@@ -132,6 +133,7 @@ static uint8_t CheckKernelFscrypt(const char *mnt)
     }
 
     int fd = open(realPath, O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+    free(realPath);
     if (fd < 0) {
         FSCRYPT_LOGE("open policy file failed, errno: %d", errno);
         return FSCRYPT_INVALID;
