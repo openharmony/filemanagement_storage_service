@@ -15,6 +15,13 @@ import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ohos_unittest("disk_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   module_out_path = "storage_service/storage_manager"
 
   sources = [
@@ -42,6 +49,13 @@ ohos_unittest("disk_test") {
 }
 
 ohos_unittest("volume_core_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   module_out_path = "storage_service/storage_manager"
 
   sources = [
@@ -69,6 +83,13 @@ ohos_unittest("volume_core_test") {
 }
 
 ohos_unittest("volume_external_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   module_out_path = "storage_service/storage_manager"
 
   sources = [
@@ -100,6 +121,13 @@ ohos_unittest("volume_external_test") {
 }
 
 ohos_unittest("storage_stats_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   module_out_path = "storage_service/storage_manager"
 
   sources = [
