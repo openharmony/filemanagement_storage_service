@@ -53,7 +53,7 @@ HWTEST_F(NetlinkListenerTest, NetlinkListenerTest_StartListener_001, TestSize.Le
         EXPECT_TRUE(ret == E_ERR);
     };
     std::thread execThread(execFun, mock);
-    sleep(3);
+    sleep(1);
     execThread.join();
     GTEST_LOG_(INFO) << "NetlinkListenerTest_StartListener_001 end";
 }
@@ -77,7 +77,7 @@ HWTEST_F(NetlinkListenerTest, NetlinkListenerTest_StartListener_StopListener_001
         EXPECT_TRUE(ret == E_OK);
     };
     std::thread execThread(execFun, mock);
-    sleep(1);
+    sleep(3);
     ret = mock->StopListener();
     EXPECT_TRUE(ret == E_OK);
     execThread.join();
