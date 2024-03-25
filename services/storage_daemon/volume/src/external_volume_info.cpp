@@ -257,14 +257,6 @@ int32_t ExternalVolumeInfo::DoSetVolDesc(std::string description)
             description
         };
         err = ForkExec(cmd);
-    } else if (fsType_ == "vfat") {
-        std::vector<std::string> cmd = {
-            "newfs_msdos",
-            "-L",
-            description,
-            devPath_
-        };
-        err = ForkExec(cmd);
     } else {
         LOGE("SetVolumeDescription fsType not support.");
         return E_NOT_SUPPORT;
