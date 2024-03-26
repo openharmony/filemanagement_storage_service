@@ -51,6 +51,7 @@ const std::string DEV_BLOCK_PATH = "/dev/block/";
 const int32_t DEV_BLOCK_PATH_LEN = DEV_BLOCK_PATH.length();
 const uint64_t ONE_KB = int64_t(1);
 const uint64_t ONE_MB = int64_t(1024 * ONE_KB);
+const uint64_t PATH_MAX_LEN = 4096;
 static std::map<std::string, std::string> mQuotaReverseMounts;
 std::recursive_mutex mMountsLock;
 
@@ -540,6 +541,17 @@ static bool AddOuterDirIntoFileStat(const std::string &dir, int64_t lastBackupTi
     return true;
 }
 
+static uint32_t CheckOverLongPath(const std::string &path)
+{
+    uint32_t len = path.length();
+    if (len >= PATH_MAX_LEN) {
+        size_t found = path.find_last_of('/');
+        std::string sub = path.substr(found + 1);
+        LOGE("Path over long, length:%{public}d, fileName:%{public}s.", len, sub.c_str());
+    }
+    return len;
+}
+
 static bool GetIncludesFileStats(const std::string &dir, int64_t lastBackupTime,
     std::map<std::string, struct FileStat> &fileStats, std::map<std::string, std::string> &pathMap)
 {
@@ -581,6 +593,7 @@ static bool GetIncludesFileStats(const std::string &dir, int64_t lastBackupTime,
             struct FileStat fileStat = {};
             fileStat.filePath = PhysicalToSandboxPath(dir, sandboxDir, path);
             fileStat.fileSize = fileInfo.st_size;
+            CheckOverLongPath(fileStat.filePath);
             // mode
             fileStat.mode = fileInfo.st_mode;
             int64_t lastUpdateTime = static_cast<int64_t>(fileInfo.st_mtime);
