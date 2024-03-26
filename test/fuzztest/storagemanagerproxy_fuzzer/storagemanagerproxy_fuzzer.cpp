@@ -60,7 +60,6 @@ bool StorageManagerProxyFuzzTest(const uint8_t *data, size_t size)
     prePar.PrepareAddUser(userId, flags);
     prePar.GenerateUserKeys(userId, flags);
     prePar.NotifyDiskDestroyed(volumeUuid);
-    prePar.NotifyVolumeDestroyed(volumeUuid);
     prePar.ActiveUserKey(userId, token, secret);
     prePar.SetVolumeDescription(fsUuid, description);
     prePar.UpdateUserAuth(userId, secureUid, token, secret, secret);
@@ -91,6 +90,12 @@ bool StorageManagerProxyGetFuzzTest(const uint8_t *data, size_t size)
     StorageStats storageStats;
     std::vector<VolumeExternal> vecOfVol;
     std::vector<Disk> vecOfDisk;
+    std::vector<int64_t> incrementalBackTimes;
+    std::vector<int64_t> pkgFileSizes;
+    std::vector<std::string> bundleName;
+    incrementalBackTimes.push_back(*data);
+    pkgFileSizes.push_back(*data);
+    bundleName.push_back((const char *)data);
     getStor.GetAllVolumes(vecOfVol);
     getStor.GetAllDisks(vecOfDisk);
     getStor.GetSystemSize(systemSize);
@@ -100,11 +105,12 @@ bool StorageManagerProxyGetFuzzTest(const uint8_t *data, size_t size)
     getStor.GetBundleStats(pkgName, bundleStats);
     getStor.GetCurrentBundleStats(bundleStats);
     getStor.GetUserStorageStats(userId, storageStats);
-    getStor.GetUserStorageStatsByType(userId, storageStats, type)
+    getStor.GetUserStorageStatsByType(userId, storageStats, type);
     getStor.GetVolumeByUuid(fsUuid, vc1);
     getStor.GetVolumeById(volumeUuid, vc1);
     getStor.GetFreeSizeOfVolume(volumeUuid, freeVolSize);
     getStor.GetTotalSizeOfVolume(volumeUuid, totalVolSize);
+    getStor.GetBundleStatsForIncrease(userId, bundleName, incrementalBackTimes, pkgFileSizes);
     return true;
 }
 
