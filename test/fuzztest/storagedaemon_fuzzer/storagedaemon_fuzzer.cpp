@@ -25,7 +25,6 @@
 #include "securec.h"
 #include "user_manager.h"
 
-
 using namespace OHOS::StorageDaemon;
 
 namespace OHOS {
@@ -62,17 +61,21 @@ bool StorageDaemonFuzzTest(std::unique_ptr<char[]> data, size_t size)
     return true;
 }
 
-    bool UserManagerFuzzTest(const uint8_t *data, size_t size)
-    {
-        if ((data == nullptr) || (size < sizeof(int32_t))) {
-            return false;
-        }
+bool UserManagerFuzzTest(const uint8_t *data, size_t size)
+{
+    if ((data == nullptr) || (size < sizeof(int32_t))) {
+        return false;
+    }
 
-        int32_t userId = *(reinterpret_cast<const int32_t *>(data));
-        uint32_t flag = *(reinterpret_cast<const uint32_t *>(data));
-        userManager->DestroyUserDirs(userId, flag);
+    int32_t userId = *(reinterpret_cast<const int32_t *>(data));
+    uint32_t flag = *(reinterpret_cast<const uint32_t *>(data));
+    userManager->PrepareUserDirs(userId, flag);
+    userManager->DestroyUserDirs(userId, flag);
+    userManager->StartUser(userId);
+    userManager->StopUser(userId);
+    userManager->CreateBundleDataDir(flag);
 
-        return true;
+    return true;
     }
 } // namespace OHOS
 
