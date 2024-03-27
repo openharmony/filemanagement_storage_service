@@ -27,7 +27,6 @@ ohos_prebuilt_etc("storage_daemon_cfg") {
 config("storage_daemon_config") {
   include_dirs = [
     "include",
-    "//third_party/bounds_checking_function/include",
     "../storage_manager/include",
     "${storage_interface_path}/innerkits/storage_manager/native",
     "../common/include",
@@ -116,6 +115,7 @@ ohos_executable("storage_daemon") {
     "app_file_service:fileshare_native",
     "app_file_service:fileuri_native",
     "app_file_service:sandbox_helper_native",
+    "bounds_checking_function:libsec_shared",
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "hilog:libhilog",

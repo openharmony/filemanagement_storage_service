@@ -16,10 +16,7 @@ import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 ohos_moduletest("AclTest") {
   module_out_path = "storage_service/storage_daemon"
 
-  include_dirs = [
-    "../../include",
-    "//third_party/bounds_checking_function/include",
-  ]
+  include_dirs = [ "../../include" ]
 
   sources = [
     "../src/acl.cpp",
