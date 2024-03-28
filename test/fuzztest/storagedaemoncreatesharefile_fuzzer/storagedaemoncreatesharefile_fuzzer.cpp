@@ -19,6 +19,7 @@
 #include <cstring>
 
 #include "message_parcel.h"
+#include "mount_argument_utils.h"
 #include "storage_daemon_ipc_interface_code.h"
 #include "storage_daemon_stub.h"
 #include "storage_daemon.h"
@@ -52,8 +53,31 @@ bool StorageDaemonCreateShareFileFuzzTest(std::unique_ptr<char[]> data, size_t s
 
     return true;
 }
-} // namespace OHOS
 
+bool MountArgumentUtilsFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    if ((data == nullptr) || (size < sizeof(uint32_t))) {
+        return false;
+    }
+    struct Utils::MountArgument argument = {};
+    argument.GetFullSrc();
+    argument.GetFullDst();
+    argument.GetShareSrc();
+    argument.GetShareDst();
+    argument.GetUserIdPara();
+    argument.GetCommFullPath();
+    argument.GetCloudFullPath();
+    argument.GetCachePath();
+    argument.GetCtrlPath();
+    argument.OptionsToString();
+    argument.GetFullCloud();
+    argument.GetFullMediaCloud();
+    argument.GetCloudDocsPath();
+    argument.GetLocalDocsPath();
+    argument.GetFlags();
+    return true;
+}
+} // namespace OHOS
 /* Fuzzer entry point */
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
@@ -73,5 +97,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         return 0;
     }
     OHOS::StorageDaemonCreateShareFileFuzzTest(move(str), size);
+    OHOS::MountArgumentUtilsFuzzTest(move(str), size);
+
     return 0;
 }
