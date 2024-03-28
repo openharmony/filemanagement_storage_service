@@ -1207,7 +1207,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_fbex_utils, TestSize.Level1)
     uint8_t buf[FBEX_IV_SIZE] = {0};
     buf[0] = 0xfb; // fitst byte const to kernel
     buf[1] = 0x30; // second byte const to kernel
-    EXPECT_EQ(0, FBEX::InstallKeyToKernel(userId, TYPE_EL2, buf, FBEX_IV_SIZE, FIRST_CREATE_KEY));
+    EXPECT_EQ(0, FBEX::InstallKeyToKernel(userId, TYPE_EL4, buf, FBEX_IV_SIZE, FIRST_CREATE_KEY));
     EXPECT_EQ(0, FBEX::LockScreenToKernel(userId));
     EXPECT_EQ(0, FBEX::UnlockScreenToKernel(userId, TYPE_EL3, buf, FBEX_IV_SIZE));
     uint8_t buf1[FBEX_IV_SIZE] = {0};
