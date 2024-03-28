@@ -33,6 +33,7 @@ public:
 
     bool ActiveKey(uint32_t flag = 0, const std::string &mnt = MNT_DATA);
     bool InactiveKey(uint32_t flag = 0, const std::string &mnt = MNT_DATA);
+    void DropCachesIfNeed();
 
 private:
     bool GenerateKeyDesc();
