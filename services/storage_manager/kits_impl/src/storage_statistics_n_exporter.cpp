@@ -15,18 +15,18 @@
 
 #include "storage_statistics_n_exporter.h"
 
-#include <singleton.h>
 #include <tuple>
+#include <singleton.h>
 
 #include "n_async/n_async_work_callback.h"
 #include "n_async/n_async_work_promise.h"
 #include "n_class.h"
+#include "n_error.h"
 #include "n_func_arg.h"
 #include "n_val.h"
-#include "n_error.h"
 #include "storage_manager_connect.h"
-#include "storage_service_log.h"
 #include "storage_service_errno.h"
+#include "storage_service_log.h"
 #include "storage_statistics_napi.h"
 
 using namespace OHOS::FileManagement::LibN;
