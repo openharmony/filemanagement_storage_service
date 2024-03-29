@@ -23,6 +23,7 @@
 #include "storage_daemon_stub.h"
 #include "storage_daemon.h"
 #include "securec.h"
+#include "user_manager.h"
 
 using namespace OHOS::StorageDaemon;
 
@@ -33,7 +34,8 @@ constexpr size_t U32_AT_SIZE = 4;
 
 std::shared_ptr<StorageDaemon::StorageDaemon> storageDaemon =
     std::make_shared<StorageDaemon::StorageDaemon>();
-
+std::shared_ptr<StorageDaemon::UserManager> userManager =
+        StorageDaemon::UserManager::GetInstance();
 uint32_t GetU32Data(const char* ptr)
 {
     // 将第0个数字左移24位，将第1个数字左移16位，将第2个数字左移8位，第3个数字不左移
@@ -58,6 +60,23 @@ bool StorageDaemonFuzzTest(std::unique_ptr<char[]> data, size_t size)
 
     return true;
 }
+
+bool UserManagerFuzzTest(const uint8_t *data, size_t size)
+{
+    if ((data == nullptr) || (size < sizeof(int32_t))) {
+        return false;
+    }
+
+    int32_t userId = *(reinterpret_cast<const int32_t *>(data));
+    uint32_t flag = *(reinterpret_cast<const uint32_t *>(data));
+    userManager->PrepareUserDirs(userId, flag);
+    userManager->DestroyUserDirs(userId, flag);
+    userManager->StartUser(userId);
+    userManager->StopUser(userId);
+    userManager->CreateBundleDataDir(flag);
+
+    return true;
+    }
 } // namespace OHOS
 
 /* Fuzzer entry point */
@@ -79,5 +98,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         return 0;
     }
     OHOS::StorageDaemonFuzzTest(move(str), size);
+    OHOS::UserManagerFuzzTest(data, size);
+
     return 0;
 }
