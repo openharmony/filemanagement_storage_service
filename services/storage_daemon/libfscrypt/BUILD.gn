@@ -44,7 +44,7 @@ config("fscrypt_utils_public_config") {
 }
 
 ohos_static_library("libfscryptutils") {
-  stack_protector_ret = true
+  branch_protector_ret = "pac_ret"
   sanitize = {
     integer_overflow = true
     ubsan = true
@@ -79,7 +79,7 @@ ohos_static_library("libfscryptutils") {
 }
 
 ohos_static_library("libfscryptutils_static") {
-  stack_protector_ret = true
+  branch_protector_ret = "pac_ret"
   sanitize = {
     integer_overflow = true
     ubsan = true
