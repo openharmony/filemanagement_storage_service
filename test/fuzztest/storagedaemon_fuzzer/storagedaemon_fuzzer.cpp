@@ -28,9 +28,9 @@
 using namespace OHOS::StorageDaemon;
 
 namespace OHOS {
-constexpr size_t FOO_MAX_LEN = 1024;
 constexpr uint8_t MAX_CALL_TRANSACTION = 32;
 constexpr size_t U32_AT_SIZE = 4;
+constexpr size_t FOO_MAX_LEN = 1024;
 
 std::shared_ptr<StorageDaemon::StorageDaemon> storageDaemon =
     std::make_shared<StorageDaemon::StorageDaemon>();
