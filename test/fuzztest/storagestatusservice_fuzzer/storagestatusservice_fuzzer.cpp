@@ -27,14 +27,14 @@ bool StorageStatusServiceFuzzTest(const uint8_t *data, size_t size)
     std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
 
     int32_t userId = *(reinterpret_cast<const int32_t *>(data));
-    std::string pkgName((const char *) data, size);
-    std::string type((const char *) data, size);
+    std::string pkgName(reinterpret_cast<const char *>(data), size);
+    std::string type(reinterpret_cast<const char *>(data), size);
     BundleStats bundleStats;
     StorageStats storageStats;
     std::vector<std::string> bundleName;
     std::vector<int64_t> incrementalBackTimes;
     std::vector<int64_t> pkgFileSizes;
-    bundleName.push_back((const char *) data);
+    bundleName.push_back(reinterpret_cast<const char *>(data));
     incrementalBackTimes.push_back(*data);
     pkgFileSizes.push_back(*data);
     int32_t result = service->GetBundleStats(pkgName, bundleStats);

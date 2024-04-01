@@ -18,6 +18,7 @@ group("storage_service_fuzztest") {
     # deps file
     "${storage_service_path}/test/fuzztest/bundlestats_fuzzer:BundleStatsFuzzTest",
     "${storage_service_path}/test/fuzztest/disk_fuzzer:DiskFuzzTest",
+    "${storage_service_path}/test/fuzztest/filesystemcrypto_fuzzer:FileSystemCryptoFuzzTest",
     "${storage_service_path}/test/fuzztest/fileutils_fuzzer:FileUtilsFuzzTest",
     "${storage_service_path}/test/fuzztest/fscryptutils_fuzzer:FscryptUtilsFuzzTest",
     "${storage_service_path}/test/fuzztest/keycontrol_fuzzer:KeyControlFuzzTest",
@@ -27,6 +28,7 @@ group("storage_service_fuzztest") {
     "${storage_service_path}/test/fuzztest/storagemanager_fuzzer:StorageManagerFuzzTest",
     "${storage_service_path}/test/fuzztest/storagemanagerproxy_fuzzer:StorageManagerProxyFuzzTest",
     "${storage_service_path}/test/fuzztest/storagestats_fuzzer:StorageStatsFuzzTest",
+    "${storage_service_path}/test/fuzztest/storagestatusservice_fuzzer:StorageStatusServiceFuzzTest",
     "${storage_service_path}/test/fuzztest/storagetotalstatusservice_fuzzer:StorageTotalStatusServiceFuzzTest",
     "${storage_service_path}/test/fuzztest/stringutils_fuzzer:StringUtilsFuzzTest",
     "${storage_service_path}/test/fuzztest/sysparamdynamic_fuzzer:SysparamDynamicFuzzTest",
