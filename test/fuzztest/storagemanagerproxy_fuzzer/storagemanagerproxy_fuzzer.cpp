@@ -14,7 +14,9 @@
  */
 #include "storagemanagerproxy_fuzzer.h"
 #include "storage_manager_proxy.h"
+#include "storagemanagerproxymock.h"
 #include <vector>
+#include <memory>
 
 using namespace OHOS::StorageManager;
 
@@ -25,14 +27,19 @@ bool StorageManagerProxyFuzzTest(const uint8_t *data, size_t size)
     if ((data == nullptr) || (size < sizeof(int32_t))) {
         return false;
     }
+    auto impl = new StorageManagerProxyMock();
+    auto proxy = std::make_shared<StorageManagerProxy>(impl);
+    if (proxy == nullptr || impl == nullptr) {
+        return 0;
+    }
+    
     VolumeCore vc;
     Disk disk;
     MessageParcel reply;
     MessageOption option;
     std::vector<uint8_t> token;
     std::vector<uint8_t> secret;
-    const sptr<IRemoteObject> impl;
-    StorageManagerProxy prePar(impl);
+
     std::string path(reinterpret_cast<const char *>(data), size);
     std::string fsUuid(reinterpret_cast<const char *>(data), size);
     int32_t userId = *(reinterpret_cast<const int32_t *>(data));
@@ -43,26 +50,26 @@ bool StorageManagerProxyFuzzTest(const uint8_t *data, size_t size)
     std::string description(reinterpret_cast<const char *>(data), size);
     token.push_back(*data);
     secret.push_back(*data);
-    prePar.StopUser(userId);
-    prePar.Mount(volumeUuid);
-    prePar.Unmount(volumeUuid);
-    prePar.DeleteUserKeys(userId);
-    prePar.NotifyDiskCreated(disk);
-    prePar.InactiveUserKey(userId);
-    prePar.UpdateKeyContext(userId);
-    prePar.NotifyVolumeCreated(vc);
-    prePar.RemoveUser(userId, flags);
-    prePar.PrepareStartUser(userId);
-    prePar.Format(volumeUuid, path);
-    prePar.GetDiskById(volumeUuid, disk);
-    prePar.Partition(volumeUuid, fsType);
-    prePar.PrepareAddUser(userId, flags);
-    prePar.GenerateUserKeys(userId, flags);
-    prePar.NotifyDiskDestroyed(volumeUuid);
-    prePar.ActiveUserKey(userId, token, secret);
-    prePar.SetVolumeDescription(fsUuid, description);
-    prePar.UpdateUserAuth(userId, secureUid, token, secret, secret);
-    prePar.NotifyVolumeMounted(volumeUuid, fsType, fsUuid, path, description);
+    proxy->StopUser(userId);
+    proxy->Mount(volumeUuid);
+    proxy->Unmount(volumeUuid);
+    proxy->DeleteUserKeys(userId);
+    proxy->NotifyDiskCreated(disk);
+    proxy->InactiveUserKey(userId);
+    proxy->UpdateKeyContext(userId);
+    proxy->NotifyVolumeCreated(vc);
+    proxy->RemoveUser(userId, flags);
+    proxy->PrepareStartUser(userId);
+    proxy->Format(volumeUuid, path);
+    proxy->GetDiskById(volumeUuid, disk);
+    proxy->Partition(volumeUuid, fsType);
+    proxy->PrepareAddUser(userId, flags);
+    proxy->GenerateUserKeys(userId, flags);
+    proxy->NotifyDiskDestroyed(volumeUuid);
+    proxy->ActiveUserKey(userId, token, secret);
+    proxy->SetVolumeDescription(fsUuid, description);
+    proxy->UpdateUserAuth(userId, secureUid, token, secret, secret);
+    proxy->NotifyVolumeMounted(volumeUuid, fsType, fsUuid, path, description);
     return true;
 }
 
@@ -71,10 +78,12 @@ bool StorageManagerProxyGetFuzzTest(const uint8_t *data, size_t size)
     if ((data == nullptr) || (size < sizeof(int32_t))) {
         return false;
     }
-
+    auto impl = new StorageManagerProxyMock();
+    auto proxy = std::make_shared<StorageManagerProxy>(impl);
+    if (proxy == nullptr || impl == nullptr) {
+        return 0;
+    }
     VolumeExternal vc1;
-    const sptr<IRemoteObject> impl;
-    StorageManagerProxy getStor(impl);
     std::string volumeUuid(reinterpret_cast<const char *>(data), size);
     std::string pkgName(reinterpret_cast<const char *>(data), size);
     int32_t userId = *(reinterpret_cast<const int32_t *>(data));
@@ -95,24 +104,23 @@ bool StorageManagerProxyGetFuzzTest(const uint8_t *data, size_t size)
     incrementalBackTimes.push_back(*data);
     pkgFileSizes.push_back(*data);
     bundleName.push_back(reinterpret_cast<const char *>(data));
-    getStor.GetAllVolumes(vecOfVol);
-    getStor.GetAllDisks(vecOfDisk);
-    getStor.GetSystemSize(systemSize);
-    getStor.GetTotalSize(totalSize);
-    getStor.GetFreeSize(freeSize);
-    getStor.GetUserStorageStats(storageStats);
-    getStor.GetBundleStats(pkgName, bundleStats);
-    getStor.GetCurrentBundleStats(bundleStats);
-    getStor.GetUserStorageStats(userId, storageStats);
-    getStor.GetUserStorageStatsByType(userId, storageStats, type);
-    getStor.GetVolumeByUuid(fsUuid, vc1);
-    getStor.GetVolumeById(volumeUuid, vc1);
-    getStor.GetFreeSizeOfVolume(volumeUuid, freeVolSize);
-    getStor.GetTotalSizeOfVolume(volumeUuid, totalVolSize);
-    getStor.GetBundleStatsForIncrease(userId, bundleName, incrementalBackTimes, pkgFileSizes);
+    proxy->GetAllVolumes(vecOfVol);
+    proxy->GetAllDisks(vecOfDisk);
+    proxy->GetSystemSize(systemSize);
+    proxy->GetTotalSize(totalSize);
+    proxy->GetFreeSize(freeSize);
+    proxy->GetUserStorageStats(storageStats);
+    proxy->GetBundleStats(pkgName, bundleStats);
+    proxy->GetCurrentBundleStats(bundleStats);
+    proxy->GetUserStorageStats(userId, storageStats);
+    proxy->GetUserStorageStatsByType(userId, storageStats, type);
+    proxy->GetVolumeByUuid(fsUuid, vc1);
+    proxy->GetVolumeById(volumeUuid, vc1);
+    proxy->GetFreeSizeOfVolume(volumeUuid, freeVolSize);
+    proxy->GetTotalSizeOfVolume(volumeUuid, totalVolSize);
+    proxy->GetBundleStatsForIncrease(userId, bundleName, incrementalBackTimes, pkgFileSizes);
     return true;
 }
-
 } // namespace StorageManager
 } // namespace OHOS
 
@@ -120,6 +128,7 @@ bool StorageManagerProxyGetFuzzTest(const uint8_t *data, size_t size)
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
     /* Run your code on data */
+
     OHOS::StorageManager::StorageManagerProxyFuzzTest(data, size);
     OHOS::StorageManager::StorageManagerProxyGetFuzzTest(data, size);
     return 0;
