@@ -1272,7 +1272,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetBundleStatsForIncreas
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
-    uint32_t userId;
+    uint32_t userId = 100;
     std::vector<std::string> bundleNames;
     std::vector<int64_t> incrementalBackTimes;
     std::vector<int64_t> pkgFileSizes;
