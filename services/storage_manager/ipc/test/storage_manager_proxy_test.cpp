@@ -1277,7 +1277,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetBundleStatsForIncreas
     std::vector<int64_t> incrementalBackTimes;
     std::vector<int64_t> pkgFileSizes;
     int32_t result = proxy_->GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes, pkgFileSizes);
-    EXPECT_NE(result, E_OK);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetBundleStatsForIncrease_0000";
 }
 } // namespace
