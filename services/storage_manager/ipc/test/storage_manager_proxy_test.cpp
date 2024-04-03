@@ -1257,4 +1257,27 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_UpdateMemoryPara_0000, t
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_UpdateMemoryPara_0000";
 }
+
+/**
+ * @tc.number: SUB_Storage_manager_proxy_GetBundleStatsForIncrease_0000
+ * @tc.name: Storage_manager_proxy_GetBundleStatsForIncrease_0000
+ * @tc.desc: Test function of GetBundleStatsForIncrease interface for FAILED.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetBundleStatsForIncrease_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GetBundleStatsForIncrease_0000";
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    uint32_t userId;
+    std::vector<std::string> bundleNames;
+    std::vector<int64_t> incrementalBackTimes;
+    std::vector<int64_t> pkgFileSizes;
+    int32_t result = proxy_->GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes, pkgFileSizes);
+    EXPECT_NE(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetBundleStatsForIncrease_0000";
+}
 } // namespace
