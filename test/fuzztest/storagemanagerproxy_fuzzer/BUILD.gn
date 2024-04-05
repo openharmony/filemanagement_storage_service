@@ -22,6 +22,7 @@ ohos_fuzztest("StorageManagerProxyFuzzTest") {
   include_dirs = [
     "${storage_service_common_path}/include",
     "${storage_manager_path}/include",
+    "${storage_manager_path}/include/ipc",
     "${storage_interface_path}/innerkits/storage_manager/native",
   ]
   cflags = [
@@ -36,6 +37,7 @@ ohos_fuzztest("StorageManagerProxyFuzzTest") {
   deps = [
     "${bundlemanager_framework_path}/services/bundlemgr:libbms",
     "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
+    "${storage_service_path}/services/storage_manager:storage_manager",
   ]
 
   external_deps = [
