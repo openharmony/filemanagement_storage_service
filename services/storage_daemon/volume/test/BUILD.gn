@@ -23,7 +23,7 @@ ohos_unittest("external_volume_info_test") {
     cfi = true
     cfi_cross_dso = true
     debug = false
-    blocklist = "${storage_service_path}\cfi_blocklist.txt"
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
   }
   module_out_path = "storage_service/storage_daemon"
 
@@ -67,7 +67,7 @@ ohos_unittest("process_test") {
     cfi = true
     cfi_cross_dso = true
     debug = false
-    blocklist = "${storage_service_path}\cfi_blocklist.txt"
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
   }
   module_out_path = "storage_service/storage_daemon"
 
@@ -108,7 +108,7 @@ ohos_unittest("volume_info_test") {
     cfi = true
     cfi_cross_dso = true
     debug = false
-    blocklist = "${storage_service_path}\cfi_blocklist.txt"
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
   }
   module_out_path = "storage_service/storage_daemon"
 
