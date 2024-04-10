@@ -117,15 +117,15 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirs_001, T
     std::shared_ptr<UserManager> userManager = UserManager::GetInstance();
     ASSERT_TRUE(userManager != nullptr);
 
-    std::string filePath(StorageTest::StorageTestUtils::g_rootDirs[0].path);
+    std::string filePath(StorageTest::StorageTestUtils::gRootDirs[0].path);
     filePath.replace(filePath.find("%s"), 2, "el1");
-    filePath.replace(filePath.find("%d"), 2, std::to_string(StorageTest::StorageTestUtils::USER_ID1));
+    filePath.replace(filePath.find("%d"), 2, std::to_string(StorageTest::USER_ID1));
     auto bRet = StorageTest::StorageTestUtils::CreateFile(filePath);
     EXPECT_TRUE(bRet) << "check the file create";
 
     int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1 | IStorageDaemon::CRYPTO_FLAG_EL2 |
                     IStorageDaemon::CRYPTO_FLAG_EL3 | IStorageDaemon::CRYPTO_FLAG_EL4;
-    int32_t ret = userManager->PrepareUserDirs(StorageTest::StorageTestUtils::USER_ID1, flags);
+    int32_t ret = userManager->PrepareUserDirs(StorageTest::USER_ID1, flags);
     EXPECT_TRUE(ret == E_PREPARE_DIR) << "the path is not dir";
 
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_PrepareUserDirs_001 end";
@@ -144,14 +144,14 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirs_002, T
     std::shared_ptr<UserManager> userManager = UserManager::GetInstance();
     ASSERT_TRUE(userManager != nullptr);
 
-    std::string filePath(StorageTest::StorageTestUtils::g_rootDirs[0].path);
+    std::string filePath(StorageTest::StorageTestUtils::gRootDirs[0].path);
     filePath.replace(filePath.find("%s"), 2, "el1");
-    filePath.replace(filePath.find("%d"), 2, std::to_string(StorageTest::StorageTestUtils::USER_ID1));
+    filePath.replace(filePath.find("%d"), 2, std::to_string(StorageTest::USER_ID1));
     auto bRet = StorageTest::StorageTestUtils::CreateFile(filePath);
     EXPECT_TRUE(bRet) << "check the file create";
 
     int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1;
-    int32_t ret = userManager->PrepareUserDirs(StorageTest::StorageTestUtils::USER_ID1, flags);
+    int32_t ret = userManager->PrepareUserDirs(StorageTest::USER_ID1, flags);
     EXPECT_TRUE(ret == E_PREPARE_DIR) << "the flags is incorrect";
 
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_PrepareUserDirs_002 end";
@@ -172,13 +172,13 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirs_003, T
 
     int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1 | IStorageDaemon::CRYPTO_FLAG_EL2 |
                     IStorageDaemon::CRYPTO_FLAG_EL3 | IStorageDaemon::CRYPTO_FLAG_EL4;
-    auto ret = KeyManager::GetInstance()->GenerateUserKeys(StorageTest::StorageTestUtils::USER_ID5, flags);
+    auto ret = KeyManager::GetInstance()->GenerateUserKeys(StorageTest::USER_ID5, flags);
     EXPECT_EQ(ret, E_OK);
 
-    ret = userManager->PrepareUserDirs(StorageTest::StorageTestUtils::USER_ID5, flags);
+    ret = userManager->PrepareUserDirs(StorageTest::USER_ID5, flags);
     EXPECT_TRUE(ret == E_OK);
-    userManager->DestroyUserDirs(StorageTest::StorageTestUtils::USER_ID5, flags);
-    KeyManager::GetInstance()->DeleteUserKeys(StorageTest::StorageTestUtils::USER_ID5);
+    userManager->DestroyUserDirs(StorageTest::USER_ID5, flags);
+    KeyManager::GetInstance()->DeleteUserKeys(StorageTest::USER_ID5);
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_PrepareUserDirs_003 end";
 }
 
@@ -194,18 +194,18 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StartUser_001, TestSiz
 
     std::shared_ptr<UserManager> userManager = UserManager::GetInstance();
     ASSERT_TRUE(userManager != nullptr);
-    userManager->StopUser(StorageTest::StorageTestUtils::USER_ID3);
+    userManager->StopUser(StorageTest::USER_ID3);
 
     int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1 | IStorageDaemon::CRYPTO_FLAG_EL2;
-    auto ret = KeyManager::GetInstance()->GenerateUserKeys(StorageTest::StorageTestUtils::USER_ID3, flags);
+    auto ret = KeyManager::GetInstance()->GenerateUserKeys(StorageTest::USER_ID3, flags);
     EXPECT_EQ(ret, E_OK);
-    ret = userManager->PrepareUserDirs(StorageTest::StorageTestUtils::USER_ID3, flags);
+    ret = userManager->PrepareUserDirs(StorageTest::USER_ID3, flags);
     EXPECT_TRUE(ret == E_OK) << "create user dirs error";
 
-    ret = userManager->StartUser(StorageTest::StorageTestUtils::USER_ID3);
+    ret = userManager->StartUser(StorageTest::USER_ID3);
 
-    userManager->StopUser(StorageTest::StorageTestUtils::USER_ID3);
-    KeyManager::GetInstance()->DeleteUserKeys(StorageTest::StorageTestUtils::USER_ID3);
+    userManager->StopUser(StorageTest::USER_ID3);
+    KeyManager::GetInstance()->DeleteUserKeys(StorageTest::USER_ID3);
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_StartUser_001 end";
 }
 
@@ -222,7 +222,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StartUser_002, TestSiz
     std::shared_ptr<UserManager> userManager = UserManager::GetInstance();
     ASSERT_TRUE(userManager != nullptr);
 
-    int32_t ret = userManager->StartUser(StorageTest::StorageTestUtils::USER_ID1);
+    int32_t ret = userManager->StartUser(StorageTest::USER_ID1);
     EXPECT_TRUE(ret == E_MOUNT) << "user's dirs are not prepare";
 
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_StartUser_002 end";
@@ -242,14 +242,14 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_DestroyUserDirs_001, T
     ASSERT_TRUE(userManager != nullptr);
 
     int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1 | IStorageDaemon::CRYPTO_FLAG_EL2;
-    auto ret = KeyManager::GetInstance()->GenerateUserKeys(StorageTest::StorageTestUtils::USER_ID4, flags);
+    auto ret = KeyManager::GetInstance()->GenerateUserKeys(StorageTest::USER_ID4, flags);
     EXPECT_EQ(ret, E_OK);
-    ret = userManager->PrepareUserDirs(StorageTest::StorageTestUtils::USER_ID4, flags);
+    ret = userManager->PrepareUserDirs(StorageTest::USER_ID4, flags);
     EXPECT_TRUE(ret == E_OK);
 
-    ret = userManager->DestroyUserDirs(StorageTest::StorageTestUtils::USER_ID4, flags);
+    ret = userManager->DestroyUserDirs(StorageTest::USER_ID4, flags);
     EXPECT_TRUE(ret == E_OK);
-    KeyManager::GetInstance()->DeleteUserKeys(StorageTest::StorageTestUtils::USER_ID4);
+    KeyManager::GetInstance()->DeleteUserKeys(StorageTest::USER_ID4);
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_DestroyUserDirs_001 end";
 }
 
@@ -266,7 +266,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StopUser_001, TestSize
     std::shared_ptr<UserManager> userManager = UserManager::GetInstance();
     ASSERT_TRUE(userManager != nullptr);
 
-    auto ret = userManager->StopUser(StorageTest::StorageTestUtils::USER_ID2);
+    auto ret = userManager->StopUser(StorageTest::USER_ID2);
     EXPECT_TRUE(ret == E_UMOUNT) << "dir is not mount";
 
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_StopUser_001 end";
@@ -286,16 +286,16 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StopUser_002, TestSize
     ASSERT_TRUE(userManager != nullptr);
 
     int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1 | IStorageDaemon::CRYPTO_FLAG_EL2;
-    auto ret = KeyManager::GetInstance()->GenerateUserKeys(StorageTest::StorageTestUtils::USER_ID4, flags);
+    auto ret = KeyManager::GetInstance()->GenerateUserKeys(StorageTest::USER_ID4, flags);
     EXPECT_EQ(ret, E_OK);
-    ret = userManager->PrepareUserDirs(StorageTest::StorageTestUtils::USER_ID4, flags);
+    ret = userManager->PrepareUserDirs(StorageTest::USER_ID4, flags);
     EXPECT_TRUE(ret == E_OK) << "create user dirs error";
 
-    ret = userManager->StopUser(StorageTest::StorageTestUtils::USER_ID4);
+    ret = userManager->StopUser(StorageTest::USER_ID4);
     EXPECT_TRUE(ret == E_UMOUNT) << "dir is not mount";
 
-    userManager->DestroyUserDirs(StorageTest::StorageTestUtils::USER_ID4, flags);
-    KeyManager::GetInstance()->DeleteUserKeys(StorageTest::StorageTestUtils::USER_ID4);
+    userManager->DestroyUserDirs(StorageTest::USER_ID4, flags);
+    KeyManager::GetInstance()->DeleteUserKeys(StorageTest::USER_ID4);
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_StopUser_002 end";
 }
 
@@ -313,16 +313,16 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StopUser_003, TestSize
     ASSERT_TRUE(userManager != nullptr);
 
     int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL2;
-    auto ret = KeyManager::GetInstance()->GenerateUserKeys(StorageTest::StorageTestUtils::USER_ID3, flags);
+    auto ret = KeyManager::GetInstance()->GenerateUserKeys(StorageTest::USER_ID3, flags);
     EXPECT_EQ(ret, E_OK);
-    ret = userManager->PrepareUserDirs(StorageTest::StorageTestUtils::USER_ID3, flags);
+    ret = userManager->PrepareUserDirs(StorageTest::USER_ID3, flags);
     EXPECT_TRUE(ret == E_OK) << "create user dirs error";
-    ret = userManager->StartUser(StorageTest::StorageTestUtils::USER_ID3);
+    ret = userManager->StartUser(StorageTest::USER_ID3);
 
-    ret = userManager->StopUser(StorageTest::StorageTestUtils::USER_ID3);
+    ret = userManager->StopUser(StorageTest::USER_ID3);
 
-    userManager->DestroyUserDirs(StorageTest::StorageTestUtils::USER_ID3, flags);
-    KeyManager::GetInstance()->DeleteUserKeys(StorageTest::StorageTestUtils::USER_ID3);
+    userManager->DestroyUserDirs(StorageTest::USER_ID3, flags);
+    KeyManager::GetInstance()->DeleteUserKeys(StorageTest::USER_ID3);
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_StopUser_003 end";
 }
 } // STORAGE_DAEMON

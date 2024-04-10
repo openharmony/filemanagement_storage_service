@@ -178,7 +178,7 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_RmDir_001, TestSize.Level1)
 
     int32_t ret = RmDir(PATH_RMDIR);
     ASSERT_TRUE(ret == E_OK);
-    EXPECT_TRUE(false == StorageTest::StorageTestUtils::CheckDir(PATH_RMDIR));
+    EXPECT_TRUE(StorageTest::StorageTestUtils::CheckDir(PATH_RMDIR) == false);
 
     GTEST_LOG_(INFO) << "FileUtilsTest_RmDir_001 end";
 }

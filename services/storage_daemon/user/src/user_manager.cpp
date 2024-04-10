@@ -29,22 +29,24 @@ using namespace std;
 
 namespace OHOS {
 namespace StorageDaemon {
+static constexpr int MODE_0711 = 0711;
+static constexpr int MODE_02771 = 02771;
 std::shared_ptr<UserManager> UserManager::instance_ = nullptr;
 UserManager::UserManager()
-    : rootDirVec_{{"/data/app/%s/%d", 0711, OID_ROOT, OID_ROOT},
-                  {"/data/service/%s/%d", 0711, OID_ROOT, OID_ROOT},
-                  {"/data/chipset/%s/%d", 0711, OID_ROOT, OID_ROOT}},
-      eceSeceDirVec_{{"/data/app/%s/%d", 0711, OID_ROOT, OID_ROOT},
-                     {"/data/service/%s/%d", 0711, OID_ROOT, OID_ROOT}},
-      subDirVec_{{"/data/app/%s/%d/base", 0711, OID_ROOT, OID_ROOT},
-                 {"/data/app/%s/%d/database", 0711, OID_ROOT, OID_ROOT}},
-      el2DirVec_{{"/data/service/el2/%d/backup", 02771, OID_BACKUP, OID_BACKUP},
-                 {"/data/service/el2/%d/backup/backup_sa", 0711, OID_BACKUP, OID_BACKUP},
-                 {"/data/service/el2/%d/backup/bundles", 0711, OID_BACKUP, OID_BACKUP},
-                 {"/data/app/el2/%d/log", 0711, OID_ROOT, OID_ROOT}},
-      el1DirVec_{{"/data/service/el1/%d/distributeddata", 0711, OID_DDMS, OID_DDMS},
-                 {"/data/service/el1/%d/backup", 02711, OID_BACKUP, OID_BACKUP},
-                 {"/data/service/el1/%d/backup/bundles", 0711, OID_BACKUP, OID_BACKUP}}
+    : rootDirVec_{{"/data/app/%s/%d", MODE_0711, OID_ROOT, OID_ROOT},
+                  {"/data/service/%s/%d", MODE_0711, OID_ROOT, OID_ROOT},
+                  {"/data/chipset/%s/%d", MODE_0711, OID_ROOT, OID_ROOT}},
+      eceSeceDirVec_{{"/data/app/%s/%d", MODE_0711, OID_ROOT, OID_ROOT},
+                     {"/data/service/%s/%d", MODE_0711, OID_ROOT, OID_ROOT}},
+      subDirVec_{{"/data/app/%s/%d/base", MODE_0711, OID_ROOT, OID_ROOT},
+                 {"/data/app/%s/%d/database", MODE_0711, OID_ROOT, OID_ROOT}},
+      el2DirVec_{{"/data/service/el2/%d/backup", MODE_02771, OID_BACKUP, OID_BACKUP},
+                 {"/data/service/el2/%d/backup/backup_sa", MODE_0711, OID_BACKUP, OID_BACKUP},
+                 {"/data/service/el2/%d/backup/bundles", MODE_0711, OID_BACKUP, OID_BACKUP},
+                 {"/data/app/el2/%d/log", MODE_0711, OID_ROOT, OID_ROOT}},
+      el1DirVec_{{"/data/service/el1/%d/distributeddata", MODE_0711, OID_DDMS, OID_DDMS},
+                 {"/data/service/el1/%d/backup", MODE_02771, OID_BACKUP, OID_BACKUP},
+                 {"/data/service/el1/%d/backup/bundles", MODE_0711, OID_BACKUP, OID_BACKUP}}
 {
 }
 
@@ -273,7 +275,7 @@ int32_t UserManager::DestroyDirsFromIdAndLevel(int32_t userId, const std::string
 
 int32_t UserManager::PrepareEl1BundleDir(int32_t userId)
 {
-    if (!PrepareDir(StringPrintf(bundle_.c_str(), userId), 0711, OID_ROOT, OID_ROOT)) {
+    if (!PrepareDir(StringPrintf(bundle_.c_str(), userId), MODE_0711, OID_ROOT, OID_ROOT)) {
         return E_PREPARE_DIR;
     }
 

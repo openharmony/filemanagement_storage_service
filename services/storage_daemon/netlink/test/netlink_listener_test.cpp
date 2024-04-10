@@ -115,7 +115,7 @@ int32_t StartSocket(int32_t& socketFd)
         return -1;
     }
 
-    if (bind(socketFd, (struct sockaddr *) &addr, sizeof(addr)) != 0) {
+    if (bind(socketFd, reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr)) != 0) {
         LOGE("Socket bind failed, errno %{public}d", errno);
         (void)close(socketFd);
         return -1;

@@ -139,12 +139,12 @@ int KeyManager::InitGlobalDeviceKey(void)
         return 0;
     }
 
-    ret = MkDir(STORAGE_DAEMON_DIR, 0700); // para.0700: root only
+    ret = MkDir(STORAGE_DAEMON_DIR, S_IRUSR | S_IWUSR | S_IXUSR); // para.0700: root only
     if (ret && errno != EEXIST) {
         LOGE("create storage daemon dir error");
         return ret;
     }
-    ret = MkDir(DEVICE_EL1_DIR, 0700);
+    ret = MkDir(DEVICE_EL1_DIR, S_IRUSR | S_IWUSR | S_IXUSR);
     if (ret) {
         if (errno != EEXIST) {
             LOGE("make device el1 dir error");
@@ -337,36 +337,36 @@ int KeyManager::LoadAllUsersEl1Key(void)
 
 int KeyManager::InitUserElkeyStorageDir(void)
 {
-    int ret = MkDir(SERVICE_STORAGE_DAEMON_DIR, 0700);
+    int ret = MkDir(SERVICE_STORAGE_DAEMON_DIR, S_IRUSR | S_IWUSR | S_IXUSR);
     if (ret && errno != EEXIST) {
         LOGE("make service storage daemon dir error");
         return ret;
     }
 
-    ret = MkDir(FSCRYPT_EL_DIR, 0700);
+    ret = MkDir(FSCRYPT_EL_DIR, S_IRUSR | S_IWUSR | S_IXUSR);
     if (ret && errno != EEXIST) {
         LOGE("make service storage daemon dir error");
         return ret;
     }
 
-    ret = MkDir(USER_EL1_DIR, 0700);
+    ret = MkDir(USER_EL1_DIR, S_IRUSR | S_IWUSR | S_IXUSR);
     if (ret && errno != EEXIST) {
         LOGE("make el1 storage dir error");
         return ret;
     }
-    ret = MkDir(USER_EL2_DIR, 0700);
+    ret = MkDir(USER_EL2_DIR, S_IRUSR | S_IWUSR | S_IXUSR);
     if (ret && errno != EEXIST) {
         LOGE("make el2 storage dir error");
         return ret;
     }
     // 0700 means create el3 permissions
-    ret = MkDir(USER_EL3_DIR, 0700);
+    ret = MkDir(USER_EL3_DIR, S_IRUSR | S_IWUSR | S_IXUSR);
     if (ret && errno != EEXIST) {
         LOGE("make el3 storage dir error");
         return ret;
     }
     // 0700 means create el4 permissions
-    ret = MkDir(USER_EL4_DIR, 0700);
+    ret = MkDir(USER_EL4_DIR, S_IRUSR | S_IWUSR | S_IXUSR);
     if (ret && errno != EEXIST) {
         LOGE("make el4 storage dir error");
         return ret;

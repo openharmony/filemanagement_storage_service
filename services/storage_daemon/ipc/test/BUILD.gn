@@ -151,6 +151,7 @@ ohos_unittest("storage_daemon_stub_test") {
   defines = [
     "STORAGE_LOG_TAG = \"StorageDaemon\"",
     "LOG_DOMAIN = 0xD004301",
+    "private = public",
   ]
 
   if (storage_service_user_crypto_manager) {

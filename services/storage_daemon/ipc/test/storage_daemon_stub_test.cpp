@@ -16,8 +16,6 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
-#define private public
-
 #include "ipc/istorage_daemon.h"
 #include "ipc/storage_daemon_ipc_interface_code.h"
 #include "ipc/storage_daemon_proxy.h"

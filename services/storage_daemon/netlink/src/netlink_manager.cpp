@@ -68,7 +68,7 @@ int32_t NetlinkManager::Start()
         return E_ERR;
     }
 
-    if (bind(socketFd_, (struct sockaddr *) &addr, sizeof(addr)) != 0) {
+    if (bind(socketFd_, reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr)) != 0) {
         LOGE("Socket bind failed, errno %{public}d", errno);
         (void)close(socketFd_);
         return E_ERR;

@@ -553,7 +553,7 @@ bool HuksMaster::DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key)
 static bool CheckNeedUpgrade(KeyBlob &inData)
 {
     constexpr uint32_t HKS_KEY_VERSION = 3;
-    HksParamSet *keyBlobParamSet = NULL;
+    HksParamSet *keyBlobParamSet = nullptr;
     int ret = HksGetParamSet(reinterpret_cast<HksParamSet *>(inData.data.get()), inData.size, &keyBlobParamSet);
     if (ret != HKS_SUCCESS) {
         LOGE("HksGetParamSet failed %{public}d", ret);
@@ -578,7 +578,7 @@ static bool CheckNeedUpgrade(KeyBlob &inData)
 
 bool HuksMaster::UpgradeKey(KeyContext &ctx)
 {
-    struct HksParamSet *paramSet = NULL;
+    struct HksParamSet *paramSet = nullptr;
     bool ret = false;
 
     if (!CheckNeedUpgrade(ctx.shield)) {

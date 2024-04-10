@@ -210,8 +210,8 @@ bool RmDirRecurse(const std::string &path)
 void TravelChmod(std::string path, mode_t mode)
 {
     struct stat st;
-    DIR *d = NULL;
-    struct dirent *dp = NULL;
+    DIR *d = nullptr;
+    struct dirent *dp = nullptr;
     const char *skip1 = ".";
     const char *skip2 = "..";
 
@@ -226,15 +226,16 @@ void TravelChmod(std::string path, mode_t mode)
         return;
     }
 
-    while ((dp = readdir(d)) != NULL) {
-        if ((!strncmp(dp->d_name, skip1, strlen(skip1))) || (!strncmp(dp->d_name, skip2, strlen(skip2))))
+    while ((dp = readdir(d)) != nullptr) {
+        if ((!strncmp(dp->d_name, skip1, strlen(skip1))) || (!strncmp(dp->d_name, skip2, strlen(skip2)))) {
             continue;
-
+        }
         std::string subpath = path + "/" + dp->d_name;
         stat(subpath.c_str(), &st);
         (void)ChMod(subpath, mode);
-        if (S_ISDIR(st.st_mode))
+        if (S_ISDIR(st.st_mode)) {
             TravelChmod(subpath, mode);
+        }
     }
     (void)closedir(d);
 }

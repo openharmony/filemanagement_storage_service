@@ -30,37 +30,26 @@
 namespace OHOS {
 namespace StorageDaemon {
 namespace StorageTest {
-const uid_t StorageTestUtils::OID_ROOT = 0;
-const uid_t StorageTestUtils::OID_SYSTEM = 1000;
-
-const int32_t StorageTestUtils::USER_ID1 = 301;
-const int32_t StorageTestUtils::USER_ID2 = 302;
-const int32_t StorageTestUtils::USER_ID3 = 303;
-const int32_t StorageTestUtils::USER_ID4 = 304;
-const int32_t StorageTestUtils::USER_ID5 = 305;
-const mode_t StorageTestUtils::MODE = 0711;
-
-const std::vector<Dir> StorageTestUtils::g_rootDirs = {
-    {"/data/app/%s/%d", 0711, OID_ROOT, OID_ROOT},
-    {"/data/service/%s/%d", 0711, OID_ROOT, OID_ROOT},
-    {"/data/chipset/%s/%d", 0711, OID_ROOT, OID_ROOT}
+const std::string hmdfsTarget = "/storage/media/%d/local";
+static constexpr int MODE_0711 = 0711;
+const std::vector<Dir> StorageTestUtils::gRootDirs = {
+    {"/data/app/%s/%d", MODE_0711, OID_ROOT, OID_ROOT},
+    {"/data/service/%s/%d", MODE_0711, OID_ROOT, OID_ROOT},
+    {"/data/chipset/%s/%d", MODE_0711, OID_ROOT, OID_ROOT}
 };
 
-const std::vector<Dir> StorageTestUtils::g_subDirs = {
-    {"/data/app/%s/%d/base", 0711, OID_ROOT, OID_ROOT},
-    {"/data/app/%s/%d/database", 0711, OID_ROOT, OID_ROOT}
+const std::vector<Dir> StorageTestUtils::gSubDirs = {
+    {"/data/app/%s/%d/base", MODE_0711, OID_ROOT, OID_ROOT},
+    {"/data/app/%s/%d/database", MODE_0711, OID_ROOT, OID_ROOT}
 };
 
-const std::vector<Dir> StorageTestUtils::g_hmdfsDirs = {
-    {"/data/service/el2/%d/hmdfs", 0711, OID_SYSTEM, OID_SYSTEM},
-    {"/data/service/el2/%d/hmdfs/files", 0711, OID_SYSTEM, OID_SYSTEM},
-    {"/data/service/el2/%d/hmdfs/data", 0711, OID_SYSTEM, OID_SYSTEM},
-    {"/storage/media/%d", 0711, OID_ROOT, OID_ROOT},
-    {"/storage/media/%d/local", 0711, OID_ROOT, OID_ROOT}
+const std::vector<Dir> StorageTestUtils::gHmdfsDirs = {
+    {"/data/service/el2/%d/hmdfs", MODE_0711, OID_SYSTEM, OID_SYSTEM},
+    {"/data/service/el2/%d/hmdfs/files", MODE_0711, OID_SYSTEM, OID_SYSTEM},
+    {"/data/service/el2/%d/hmdfs/data", MODE_0711, OID_SYSTEM, OID_SYSTEM},
+    {"/storage/media/%d", MODE_0711, OID_ROOT, OID_ROOT},
+    {"/storage/media/%d/local", MODE_0711, OID_ROOT, OID_ROOT}
 };
-
-const std::string StorageTestUtils::HMDFS_SOURCE = "/data/service/el2/%d/hmdfs/files";
-const std::string StorageTestUtils::HMDFS_TARGET = "/storage/media/%d/local";
 
 bool StorageTestUtils::CheckMount(const std::string& dstPath)
 {
@@ -94,7 +83,7 @@ bool StorageTestUtils::CheckDir(const std::string &path)
 
 bool StorageTestUtils::CheckUserDir(int32_t userId, uint32_t flags)
 {
-    for (const Dir &dir : g_rootDirs) {
+    for (const Dir &dir : gRootDirs) {
         std::string path(dir.path);
         path.replace(path.find("%d"), strlen("%d"), std::to_string(userId));
 
@@ -114,7 +103,7 @@ bool StorageTestUtils::CheckUserDir(int32_t userId, uint32_t flags)
         }
     }
 
-    for (const Dir &dir : g_subDirs) {
+    for (const Dir &dir : gSubDirs) {
         if (flags & IStorageDaemon::CRYPTO_FLAG_EL1) {
             std::string path(dir.path);
             path.replace(path.find("%d"), strlen("%d"), std::to_string(userId));
@@ -134,7 +123,7 @@ bool StorageTestUtils::CheckUserDir(int32_t userId, uint32_t flags)
         }
     }
 
-    for (const Dir &dir : g_hmdfsDirs) {
+    for (const Dir &dir : gHmdfsDirs) {
         std::string path(dir.path);
         path.replace(path.find("%d"), strlen("%d"), std::to_string(userId));
         if (CheckDir(path) == false) {
@@ -243,7 +232,7 @@ void StorageTestUtils::ClearTestResource()
         USER_ID5
     };
     for (auto id : userIds) {
-        std::string dstPath(HMDFS_TARGET);
+        std::string dstPath(hmdfsTarget);
         dstPath.replace(dstPath.find("%d"), strlen("%d"), std::to_string(id));
         UMount(dstPath);
         RmDir(id);
