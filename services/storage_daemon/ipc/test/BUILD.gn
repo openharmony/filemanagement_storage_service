@@ -43,6 +43,7 @@ ohos_unittest("storage_daemon_test") {
 
   include_dirs = [
     "$ROOT_DIR/include",
+    "$ROOT_DIR/include/crypto",
     "$ROOT_DIR/utils",
     "$ROOT_DIR/../storage_manager/include",
     "${storage_interface_path}/innerkits/storage_manager/native",
@@ -50,6 +51,7 @@ ohos_unittest("storage_daemon_test") {
   ]
 
   sources = [
+    "$ROOT_DIR/crypto/src/anco_key_manager.cpp",
     "$ROOT_DIR/crypto/test/key_manager_mock.cpp",
     "$ROOT_DIR/disk/src/disk_config.cpp",
     "$ROOT_DIR/disk/src/disk_info.cpp",
