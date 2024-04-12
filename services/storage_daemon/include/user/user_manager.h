@@ -31,6 +31,7 @@ public:
     UserManager();
     virtual ~UserManager() = default;
     static std::shared_ptr<UserManager> GetInstance();
+    int32_t CheckCrypto(int32_t userId, uint32_t flags);
     int32_t PrepareUserDirs(int32_t userId, uint32_t flags);
     int32_t DestroyUserDirs(int32_t userId, uint32_t flags);
     int32_t StartUser(int32_t userId);
