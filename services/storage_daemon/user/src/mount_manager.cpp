@@ -365,6 +365,43 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
     return ret;
 }
 
+int32_t MountManager::UMountCryptoPathAgain(uint32_t userId)
+{
+    filesystem::path rootDir(SANDBOX_ROOT_PATH + "/" + to_string(userId));
+    if (!exists(rootDir)) {
+        LOGE("root path not exists, rootDir is %{public}s", SANDBOX_ROOT_PATH.c_str());
+        return -ENOENT;
+    }
+
+    int32_t ret = 0;
+    filesystem::directory_iterator bundleNameList(rootDir);
+    for (const auto &bundleName : bundleNameList) {
+        if (SANDBOX_EXCLUDE_PATH.find(bundleName.path().filename()) != SANDBOX_EXCLUDE_PATH.end()) {
+            continue;
+        }
+
+        vector<string> cryptoSandboxPathVector = CRYPTO_SANDBOX_PATH;
+        if (bundleName.path().filename().generic_string() == SCENE_BOARD_BUNDLE_NAME) {
+            cryptoSandboxPathVector.push_back(PUBLIC_DIR_SANDBOX_PATH);
+        }
+
+        for (size_t i = 0; i < cryptoSandboxPathVector.size(); i++) {
+            string dstPath = bundleName.path().generic_string() + cryptoSandboxPathVector[i];
+            ret = UMount2(dstPath.c_str(), MNT_DETACH);
+            if (ret != 0) {
+                LOGE("umount failed, dstPath is %{public}s errno is %{public}d", dstPath.c_str(), errno);
+                continue;
+            }
+            ret = UMount2(dstPath.c_str(), MNT_DETACH);
+            if (ret != 0) {
+                LOGE("umount failed, dstPath is %{public}s errno is %{public}d", dstPath.c_str(), errno);
+                continue;
+            }
+        }
+    }
+    return ret;
+}
+
 void MountManager::MountCloudForUsers(void)
 {
     for (auto it = fuseToMountUsers_.begin(); it != fuseToMountUsers_.end();) {
@@ -628,6 +665,10 @@ int32_t MountManager::UmountByUser(int32_t userId)
         err = SharefsUMount(userId);
         if (err != E_OK) {
             LOGE("failed to umount sharefs, errno %{public}d", errno);
+        }
+        UMountCryptoPathAgain(userId);
+        if (err != E_OK) {
+            LOGE("failed to umount crypto path, errno %{public}d", errno);
         }
         if (!SupportHmdfs()) {
             err = LocalUMount(userId);
