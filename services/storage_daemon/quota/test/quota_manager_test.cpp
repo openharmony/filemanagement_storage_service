@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -186,6 +186,24 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_SetBundleQuota_005, 
     EXPECT_EQ(result, E_SYS_CALL);
 
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_SetBundleQuota_005 end";
+}
+
+/**
+ * @tc.name: Storage_Service_QuotaManagerTest_CheckOverLongPath_001
+ * @tc.desc: Test overLong path.
+ * @tc.type: FUNC
+ * @tc.require: AR20240111379420
+ */
+HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_CheckOverLongPath_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_CheckOverLongPath_001 start";
+
+    std::string bundleDataDirPath = BUNDLE_PATH;
+    uint32_t len = bundleDataDirPath.length();
+    int32_t result = CheckOverLongPath(bundleDataDirPath);
+    EXPECT_EQ(result, len);
+
+    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_CheckOverLongPath_001 end";
 }
 } // STORAGE_DAEMON
 } // OHOS
