@@ -219,15 +219,18 @@ KeyBlob HuksMaster::GenerateRandomKey(uint32_t keyLen)
     if (out.IsEmpty()) {
         return out;
     }
-    LOGE("RAND is start");
-    LOGI("RAND is start");
-    auto ret = RAND_bytes(out.data.get(), out.size);
-    LOGI("RAND is finished");
-    LOGE("RAND is finished");
-    if (ret <= 0) {
-        LOGE("RAND_bytes failed return %{public}d, errno %{public}lu", ret, ERR_get_error());
-        out.Clear();
-    }
+    std::thread([&out, keyLen]() {
+        LOGE("RAND is start");
+        LOGI("RAND is start");
+        auto ret = RAND_bytes(out.data.get(), out.size);
+        LOGI("RAND is finished");
+        LOGE("RAND is finished");
+        if (ret <= 0) {
+            LOGE("RAND_bytes failed return %{public}d, errno %{public}lu", ret, ERR_get_error());
+            out.Clear();
+        }
+    }).detach();
+
     return out;
 }
 
