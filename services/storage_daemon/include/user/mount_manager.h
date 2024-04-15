@@ -60,7 +60,7 @@ public:
     int32_t CloudMount(int32_t userId, const std::string& path);
     int32_t CloudTwiceMount(int32_t userId);
     int32_t MountCryptoPathAgain(uint32_t userId);
-    int32_t UMountCryptoPathAgain(uint32_t userId);
+    void UMountCryptoPathAgain(uint32_t userId);
     void SetCloudState(bool active);
     int32_t RestoreconSystemServiceDirs(int32_t userId);
 

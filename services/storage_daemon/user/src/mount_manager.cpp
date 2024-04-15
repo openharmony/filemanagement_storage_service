@@ -365,7 +365,7 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
     return ret;
 }
 
-int32_t MountManager::UMountCryptoPathAgain(uint32_t userId)
+void MountManager::UMountCryptoPathAgain(uint32_t userId)
 {
     filesystem::path rootDir(SANDBOX_ROOT_PATH + "/" + to_string(userId));
     if (!exists(rootDir)) {
@@ -394,7 +394,6 @@ int32_t MountManager::UMountCryptoPathAgain(uint32_t userId)
             }
         }
     }
-    return ret;
 }
 
 void MountManager::MountCloudForUsers(void)
@@ -668,9 +667,6 @@ int32_t MountManager::UmountByUser(int32_t userId)
             LOGE("failed to umount sharefs, errno %{public}d", errno);
         }
         UMountCryptoPathAgain(userId);
-        if (err != E_OK) {
-            LOGE("failed to umount crypto path, errno %{public}d", errno);
-        }
         if (!SupportHmdfs()) {
             err = LocalUMount(userId);
         } else {
