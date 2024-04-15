@@ -15,6 +15,7 @@
 
 #include "key_manager.h"
 
+#include <openssl/rand.h>
 #include <string>
 
 #include "directory_ex.h"
@@ -336,6 +337,7 @@ int KeyManager::InitGlobalUserKeys(void)
         LOGE("Load all users el1 failed");
         return ret;
     }
+    RAND_poll();
     LOGI("Init global user key success");
 
     return 0;
