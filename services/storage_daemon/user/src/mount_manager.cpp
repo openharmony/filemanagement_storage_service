@@ -392,11 +392,6 @@ int32_t MountManager::UMountCryptoPathAgain(uint32_t userId)
                 LOGE("umount failed, dstPath is %{public}s errno is %{public}d", dstPath.c_str(), errno);
                 continue;
             }
-            ret = UMount2(dstPath.c_str(), MNT_DETACH);
-            if (ret != 0) {
-                LOGE("umount failed, dstPath is %{public}s errno is %{public}d", dstPath.c_str(), errno);
-                continue;
-            }
         }
     }
     return ret;
