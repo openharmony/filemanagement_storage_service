@@ -370,7 +370,7 @@ void MountManager::UMountCryptoPathAgain(uint32_t userId)
     filesystem::path rootDir(SANDBOX_ROOT_PATH + "/" + to_string(userId));
     if (!exists(rootDir)) {
         LOGE("root path not exists, rootDir is %{public}s", SANDBOX_ROOT_PATH.c_str());
-        return -ENOENT;
+        return;
     }
 
     int32_t ret = 0;
