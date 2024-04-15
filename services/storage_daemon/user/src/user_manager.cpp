@@ -84,46 +84,9 @@ int32_t UserManager::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
     LOGI("prepare user dirs for %{public}d, flags %{public}u", userId, flags);
     std::lock_guard<std::mutex> lock(mutex_);
-    int32_t err = CheckUserIdRange(userId);
+    int32_t err = CheckCrypto(userId, flags);
     if (err != E_OK) {
-        LOGE("UserManager::PrepareUserDirs userId %{public}d out of range", userId);
         return err;
-    }
-    if (flags & IStorageDaemon::CRYPTO_FLAG_EL1) {
-        err = PrepareDirsFromIdAndLevel(userId, EL1);
-        if (err != E_OK) {
-            return err;
-        }
-        err = PrepareEl1BundleDir(userId);
-        if (err != E_OK) {
-            return err;
-        }
-        int32_t errorCode = PrepareEl1Dir(userId);
-        if (errorCode != E_OK) {
-            LOGW("Prepare el1 dir fail, %{public}d.", errorCode);
-        }
-    }
-    if (flags & IStorageDaemon::CRYPTO_FLAG_EL2) {
-        err = PrepareDirsFromIdAndLevel(userId, EL2);
-        if (err != E_OK) {
-            return err;
-        }
-        err = PrepareEl2BackupDir(userId);
-        if (err != E_OK) {
-            return err;
-        }
-    }
-    if (flags & IStorageDaemon::CRYPTO_FLAG_EL3) {
-        err = PrepareDirsFromIdAndLevel(userId, EL3);
-        if (err != E_OK) {
-            return err;
-        }
-    }
-    if (flags & IStorageDaemon::CRYPTO_FLAG_EL4) {
-        err = PrepareDirsFromIdAndLevel(userId, EL4);
-        if (err != E_OK) {
-            return err;
-        }
     }
     if (flags & IStorageDaemon::CRYPTO_FLAG_EL2) {
         err = MountManager::GetInstance()->PrepareHmdfsDirs(userId);
@@ -378,6 +341,52 @@ void UserManager::CreateBundleDataDir(uint32_t userId)
     LOGI("CreateBundleDataDir start: userId %{public}u", userId);
     auto ret = client.CreateBundleDataDir(userId);
     LOGI("CreateBundleDataDir end: userId %{public}u, ret %{public}d", userId, ret);
+}
+
+int32_t UserManager::CheckCrypto(int32_t userId, uint32_t flags)
+{
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("UserManager::PrepareUserDirs userId %{public}d out of range", userId);
+        return err;
+    }
+    if (flags & IStorageDaemon::CRYPTO_FLAG_EL1) {
+        int32_t err = PrepareDirsFromIdAndLevel(userId, EL1);
+        if (err != E_OK) {
+            return err;
+        }
+        err = PrepareEl1BundleDir(userId);
+        if (err != E_OK) {
+            return err;
+        }
+        int32_t errorCode = PrepareEl1Dir(userId);
+        if (errorCode != E_OK) {
+            LOGW("Prepare el1 dir fail, %{public}d.", errorCode);
+        }
+    }
+    if (flags & IStorageDaemon::CRYPTO_FLAG_EL2) {
+        err = PrepareDirsFromIdAndLevel(userId, EL2);
+        if (err != E_OK) {
+            return err;
+        }
+        err = PrepareEl2BackupDir(userId);
+        if (err != E_OK) {
+            return err;
+        }
+    }
+    if (flags & IStorageDaemon::CRYPTO_FLAG_EL3) {
+        err = PrepareDirsFromIdAndLevel(userId, EL3);
+        if (err != E_OK) {
+            return err;
+        }
+    }
+    if (flags & IStorageDaemon::CRYPTO_FLAG_EL4) {
+        err = PrepareDirsFromIdAndLevel(userId, EL4);
+        if (err != E_OK) {
+            return err;
+        }
+    }
+    return E_OK;
 }
 } // namespace StorageDaemon
 } // namespace OHOS
