@@ -18,6 +18,7 @@
 #include "quota/quota_manager.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "storage_service_constant.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -204,6 +205,51 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_CheckOverLongPath_00
     EXPECT_EQ(result, len);
 
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_CheckOverLongPath_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_QuotaManagerTest_GetOccupiedSpace_001
+ * @tc.desc: Test whether GetOccupiedSpace is called normally.
+ * @tc.type: FUNC
+ * @tc.require: AR000HSKSO
+ */
+HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_GetOccupiedSpace_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetOccupiedSpace_001 start";
+
+    QuotaManager *quotaManager = QuotaManager::GetInstance();
+    ASSERT_TRUE(quotaManager != nullptr);
+
+    int32_t idType = USRID;
+    int32_t uid = -1;
+    int64_t size = 0;
+    int32_t result = quotaManager->GetOccupiedSpace(idType, uid, size);
+    EXPECT_EQ(result, E_SYS_ERR);
+    uid = UID;
+    result = quotaManager->GetOccupiedSpace(idType, uid, size);
+    EXPECT_EQ(result, E_OK);
+
+    idType = GRPID;
+    int32_t gid = -1;
+    result = quotaManager->GetOccupiedSpace(idType, gid, size);
+    EXPECT_EQ(result, E_SYS_ERR);
+    gid = 1006;
+    result = quotaManager->GetOccupiedSpace(idType, gid, size);
+    EXPECT_EQ(result, E_OK);
+
+    idType = PRJID;
+    int32_t prjid = -1;
+    result = quotaManager->GetOccupiedSpace(idType, prjid, size);
+    EXPECT_EQ(result, E_SYS_ERR);
+    prjid = 0;
+    result = quotaManager->GetOccupiedSpace(idType, prjid, size);
+    EXPECT_EQ(result, E_OK);
+
+    idType = -1;
+    result = quotaManager->GetOccupiedSpace(idType, uid, size);
+    EXPECT_EQ(result, E_NON_EXIST);
+
+    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetOccupiedSpace_001 end";
 }
 } // STORAGE_DAEMON
 } // OHOS
