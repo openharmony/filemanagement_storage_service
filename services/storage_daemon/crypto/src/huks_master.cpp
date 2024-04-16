@@ -234,7 +234,7 @@ KeyBlob HuksMaster::GenerateRandomKey(uint32_t keyLen)
     uint32_t remainderBytes = keyLen % numThreads;
     for (int i = 0; i < numThreads; ++i) {
         uint32_t threadBytes = bytesPerThread + (i < remainderBytes ? 1 : 0);
-        threads.emplace_back(GenerateRandomBytes, out.data + i * bytesPerThread, threadBytes, i);
+        threads.emplace_back(GenerateRandomBytes, out.data.get() + i * bytesPerThread, threadBytes, i);
     }
     for (auto& t : threads) {
         t.join();
