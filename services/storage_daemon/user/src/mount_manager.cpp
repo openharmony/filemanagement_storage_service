@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -56,6 +56,7 @@ const string PACKAGE_NAME_FLAG = "<bundleName>";
 const string SCENE_BOARD_BUNDLE_NAME = "com.ohos.sceneboard";
 const string PUBLIC_DIR_SANDBOX_PATH = "/storage/Users/currentUser";
 const string PUBLIC_DIR_SRC_PATH = "/storage/media/<currentUserId>/local/files/Docs";
+const string MOUNT_POINT_INFO = "/proc/mounts";
 const set<string> SANDBOX_EXCLUDE_PATH = {
     "chipset",
     "system",
@@ -370,6 +371,47 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
     return ret;
 }
 
+int32_t MountManager::findMountPointsWithPrefix(std::string prefix, std::list<std::string> &toUnmount)
+{
+    std::ifstream inputStream(MOUNT_POINT_INFO.c_str(), std::ios::in);
+    if (!inputStream.is_open()) {
+        LOGE("unable to open /proc/mounts, errno is %{public}d", errno);
+        return -errno;
+    }
+    std::string tmpLine;
+    while (std::getline(inputStream, tmpLine)) {
+        if (tmpLine.length() > prefix.length() && tmpLine.substr(0, prefix.length()) == prefix) {
+            std::stringstream ss(tmpLine);
+            std::string mnt;
+            ss >> mnt;
+            ss >> mnt;
+            toUnmount.push_front(mnt);
+            mnt.clear();
+        }
+    }
+    tmpLine.clear();
+    inputStream.close();
+    return E_OK;
+}
+
+void MountManager::UMountCryptoPathAgain(uint32_t userId)
+{
+    Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
+    const string &mountPointPrefix = hmdfsMntArgs.GetMountPointPrefix();
+    std::list<std::string> toUnmount;
+    int32_t res = findMountPointsWithPrefix(mountPointPrefix, toUnmount);
+    if (res != E_OK) {
+        return;
+    }
+    LOGI("unmount crypto path start, total %{public}d.", toUnmount.size());
+    for (const std::string &path: toUnmount) {
+        res = UMount2(path.c_str(), MNT_DETACH);
+        if (res != E_OK) {
+            LOGE("failed to unmount %{public}s, errno %{public}d.", path.c_str(), errno);
+        }
+    }
+}
+
 void MountManager::MountCloudForUsers(void)
 {
     for (auto it = fuseToMountUsers_.begin(); it != fuseToMountUsers_.end();) {
@@ -415,12 +457,18 @@ int32_t MountManager::HmdfsTwiceUMount(int32_t userId, std::string relativePath)
     Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, relativePath));
     err = UMount(hmdfsMntArgs.GetCommFullPath());
     if (err != E_OK) {
-        LOGE("failed to un bind mount, errno %{public}d, ComDataDir_ dst %{public}s", errno,
+        LOGE("failed to umount bind mount point, errno %{public}d, ComDataDir_ dst %{public}s", errno,
              hmdfsMntArgs.GetCommFullPath().c_str());
     }
+    err = UMount(hmdfsMntArgs.GetCloudDocsPath());
+    if (err != E_OK) {
+        LOGE("failed to umount bind mount point, errno %{public}d, CloudDataDir dst %{public}s", errno,
+             hmdfsMntArgs.GetCloudDocsPath().c_str());
+    }
+
     err = UMount(hmdfsMntArgs.GetCloudFullPath());
     if (err != E_OK) {
-        LOGE("failed to un bind mount, errno %{public}d, CloudDataDir dst %{public}s", errno,
+        LOGE("failed to umount bind mount point, errno %{public}d, CloudDataDir dst %{public}s", errno,
              hmdfsMntArgs.GetCloudFullPath().c_str());
     }
 
@@ -639,6 +687,7 @@ int32_t MountManager::UmountByUser(int32_t userId)
         } else {
             err = HmdfsUMount(userId);
         }
+        UMountCryptoPathAgain(userId);
         if (err == E_OK) {
             break;
         } else if (errno == EBUSY) {

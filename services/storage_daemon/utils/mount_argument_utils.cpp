@@ -152,6 +152,13 @@ string MountArgument::GetCtrlPath() const
     return ss.str();
 }
 
+string MountArgument::GetMountPointPrefix() const
+{
+    stringstream ss;
+    ss << DATA_POINT << userId_ << "/hmdfs";
+    return ss.str();
+}
+
 string MountArgument::OptionsToString() const
 {
     stringstream ss;

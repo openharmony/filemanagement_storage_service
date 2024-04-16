@@ -541,7 +541,7 @@ static bool AddOuterDirIntoFileStat(const std::string &dir, int64_t lastBackupTi
     return true;
 }
 
-static uint32_t CheckOverLongPath(const std::string &path)
+uint32_t CheckOverLongPath(const std::string &path)
 {
     uint32_t len = path.length();
     if (len >= PATH_MAX_LEN) {

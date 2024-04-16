@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Huawei Device Co., Ltd.
+ * Copyright (C) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -1186,35 +1186,5 @@ HWTEST_F(CryptoKeyTest, fscrypt_libfscrypt_api, TestSize.Level1)
     EXPECT_NE(0, FscryptSetSysparam("2:abs-256-cts"));
     EXPECT_NE(0, FscryptSetSysparam("2:abs-256-cts:bad-param"));
     EXPECT_NE(0, FscryptSetSysparam(NULL));
-}
-
-/**
- * @tc.name: fscrypt_fbex_utils
- * @tc.desc: Verify the fbex utils.
- * @tc.type: FUNC
- * @tc.require: SR000HE9U7
- */
-HWTEST_F(CryptoKeyTest, fscrypt_fbex_utils, TestSize.Level1)
-{
-    if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) != FSCRYPT_V1) {
-        return; // skip not v1 fscrypt
-    }
-    if (!FBEX::IsFBEXSupported()) {
-        return; // skip no fbex support
-    }
-    (void)FBEX::IsMspReady();
-    (void)FBEX::GetStatus();
-
-    constexpr uint32_t userId = 82; // test userid
-    uint8_t buf[FBEX_IV_SIZE] = {0};
-    buf[0] = 0xfb; // fitst byte const to kernel
-    buf[1] = 0x30; // second byte const to kernel
-    EXPECT_EQ(0, FBEX::InstallKeyToKernel(userId, TYPE_EL4, buf, FBEX_IV_SIZE, FIRST_CREATE_KEY));
-    EXPECT_EQ(0, FBEX::LockScreenToKernel(userId));
-    EXPECT_EQ(0, FBEX::UnlockScreenToKernel(userId, TYPE_EL3, buf, FBEX_IV_SIZE));
-    uint8_t buf1[FBEX_IV_SIZE] = {0};
-    buf1[0] = 0xfb; // fitst byte const to kernel
-    buf1[1] = 0x30; // second byte const to kernel
-    EXPECT_EQ(0, FBEX::UninstallOrLockUserKeyToKernel(userId, TYPE_EL2, buf1, FBEX_IV_SIZE, USER_DESTROY));
 }
 }

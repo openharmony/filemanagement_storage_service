@@ -21,6 +21,7 @@ ohos_fuzztest("StorageDaemonCreateShareFileFuzzTest") {
   include_dirs = [
     "${storage_service_common_path}/include",
     "${storage_daemon_path}/include",
+    "${storage_daemon_path}/include/crypto",
     "${storage_daemon_path}/include/ipc",
     "${storage_daemon_path}/include/quota",
     "${storage_daemon_path}/include/user",
@@ -33,6 +34,8 @@ ohos_fuzztest("StorageDaemonCreateShareFileFuzzTest") {
     "-fno-omit-frame-pointer",
   ]
   sources = [
+    "${storage_daemon_path}/crypto/src/anco_key_manager.cpp",
+    "${storage_daemon_path}/crypto/src/key_manager.cpp",
     "${storage_daemon_path}/ipc/src/storage_daemon.cpp",
     "${storage_daemon_path}/ipc/src/storage_daemon_stub.cpp",
     "${storage_daemon_path}/quota/quota_manager.cpp",
@@ -48,7 +51,10 @@ ohos_fuzztest("StorageDaemonCreateShareFileFuzzTest") {
     "STORAGE_LOG_TAG = \"storage_service\"",
     "STORAGE_DAEMON_FUZZ_TEST",
   ]
-  deps = [ "${bundlemanager_framework_path}/services/bundlemgr:libbms" ]
+  deps = [
+    "${bundlemanager_framework_path}/services/bundlemgr:libbms",
+    "${storage_daemon_path}/libfscrypt:libfscryptutils",
+  ]
 
   external_deps = [
     "ability_base:zuri",
@@ -59,6 +65,7 @@ ohos_fuzztest("StorageDaemonCreateShareFileFuzzTest") {
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "hilog:libhilog",
+    "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_core",
     "safwk:system_ability_fwk",

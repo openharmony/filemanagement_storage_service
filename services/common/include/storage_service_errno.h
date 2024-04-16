@@ -51,7 +51,9 @@ enum ErrNo {
     E_MEDIALIBRARY_ERROR,
     E_SYS_ERR,
     E_KEY_TYPE_INVAL,
-    E_DIFF_UID_GID
+    E_DIFF_UID_GID,
+    E_JSON_PARSE_ERROR,
+    E_OPEN_JSON_FILE_ERROR,
 };
 
 enum JsErrCode {

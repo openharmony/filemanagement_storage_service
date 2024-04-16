@@ -88,6 +88,9 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
     }
     /* update status */
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USER_UNLOCKED) {
+        if (status == (1 << USER_UNLOCK_BIT | 1 << USER_SWITCH_BIT)) {
+            status = 0;
+        }
         status |= 1 << USER_UNLOCK_BIT;
     } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USER_SWITCHED) {
         status |= 1 << USER_SWITCH_BIT;
