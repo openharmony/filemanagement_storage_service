@@ -369,6 +369,25 @@ int32_t StorageDaemonClient::UpdateKeyContext(uint32_t userId)
     return client->UpdateKeyContext(userId);
 }
 
+int32_t StorageDaemonClient::MountDfsDocs(int32_t userId, std::string relativePath,
+    std::string networkId, std::string deviceId)
+{
+    LOGI("StorageDaemonClient::MountDfsDocs start.");
+    if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
+        LOGE("Storage service flag check failed!");
+        return -EAGAIN;
+    }
+
+    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
+    if (client == nullptr) {
+        LOGE("Get StorageDaemon service failed!");
+        return -EAGAIN;
+    }
+
+    return client->MountDfsDocs(userId, relativePath, networkId, deviceId);
+}
+
+
 int32_t StorageDaemonClient::FscryptEnable(const std::string &fscryptOptions)
 {
 #ifdef USER_CRYPTO_MANAGER

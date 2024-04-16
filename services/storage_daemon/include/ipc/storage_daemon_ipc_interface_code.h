@@ -52,6 +52,7 @@ namespace StorageDaemon {
         GET_SPACE,
         UPDATE_MEM_PARA,
         GET_BUNDLE_STATS_INCREASE,
+        MOUNT_DFS_DOCS,
     };
 } // namespace StorageDaemon
 } // namespace OHOS

@@ -462,6 +462,30 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_UnlockUserScreen_001, Te
 }
 
 /**
+ * @tc.name: StorageDaemonProxyTest_MountDfsDocs_001
+ * @tc.desc: Verify the MountDfsDocs function.
+ * @tc.type: FUNC
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_MountDfsDocs_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_MountDfsDocs_001 start";
+
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
+
+    std::string relativePath = "account";
+    std::string networkId = "testnetworkid";
+    std::string deviceId = "testdevid";
+    int32_t ret = proxy_->MountDfsDocs(USER_ID1, relativePath, networkId, deviceId);
+    ASSERT_TRUE(ret == E_OK);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::MOUNT_DFS_DOCS) == mock_->code_);
+
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_MountDfsDocs_001 end";
+}
+
+/**
  * @tc.name: StorageDaemonProxyTest_UpdateKeyContext_001
  * @tc.desc: Verify the UpdateKeyContext function.
  * @tc.type: FUNC

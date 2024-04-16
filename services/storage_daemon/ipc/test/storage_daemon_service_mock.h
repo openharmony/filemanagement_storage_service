@@ -138,6 +138,12 @@ public:
         return E_OK;
     }
 
+    virtual int32_t MountDfsDocs(int32_t userId, std::string relativePath,
+        std::string networkId, std::string deviceId) override
+    {
+        return E_OK;
+    }
+
     virtual int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus) override
     {
         return E_OK;

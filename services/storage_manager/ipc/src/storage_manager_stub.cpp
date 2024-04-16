@@ -27,6 +27,7 @@ using namespace std;
 constexpr pid_t ACCOUNT_UID = 3058;
 constexpr pid_t BACKUP_SA_UID = 1089;
 constexpr pid_t FOUNDATION_UID = 5523;
+constexpr pid_t DFS_UID = 1009;
 const std::string PERMISSION_STORAGE_MANAGER_CRYPT = "ohos.permission.STORAGE_MANAGER_CRYPT";
 const std::string PERMISSION_STORAGE_MANAGER = "ohos.permission.STORAGE_MANAGER";
 const std::string PERMISSION_MOUNT_MANAGER = "ohos.permission.MOUNT_UNMOUNT_MANAGER";
@@ -169,6 +170,8 @@ StorageManagerStub::StorageManagerStub()
         &StorageManagerStub::HandleUpdateMemoryPara;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_BUNDLE_STATS_INCREASE)] =
         &StorageManagerStub::HandleGetBundleStatsForIncrease;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::MOUNT_DFS_DOCS)] =
+        &StorageManagerStub::HandleMountDfsDocs;
 }
 
 int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
@@ -911,6 +914,27 @@ int32_t StorageManagerStub::HandleUpdateMemoryPara(MessageParcel &data, MessageP
     }
     if (!reply.WriteInt32(oldSize)) {
         LOGE("StorageManagerStub::HandleUpdateMemoryPara call UpdateMemoryPara failed");
+        return E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleMountDfsDocs(MessageParcel &data, MessageParcel &reply)
+{
+    // Only for dfs create device dir and bind mount from DFS Docs.
+    if (IPCSkeleton::GetCallingUid() != DFS_UID) {
+        LOGE("HandleMountDfsDocs permissionCheck error, calling uid now is %{public}d, should be DFS_UID: %{public}d",
+            IPCSkeleton::GetCallingUid(), DFS_UID);
+        return E_PERMISSION_DENIED;
+    }
+
+    int32_t userId = data.ReadInt32();
+    std::string relativePath = data.ReadString();
+    std::string networkId = data.ReadString();
+    std::string deviceId = data.ReadString();
+
+    int32_t err = MountDfsDocs(userId, relativePath, networkId, deviceId);
+    if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
     return E_OK;

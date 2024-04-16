@@ -379,5 +379,17 @@ int32_t StorageDaemonCommunication::UpdateMemoryPara(int32_t size, int32_t &oldS
     return storageDaemon_->UpdateMemoryPara(size, oldSize);
 }
 
+int32_t StorageDaemonCommunication::MountDfsDocs(int32_t userId, std::string relativePath,
+    std::string networkId, std::string deviceId)
+{
+    LOGI("StorageDaemonCommunication::MountDfsDocs start.");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    return storageDaemon_->MountDfsDocs(userId, relativePath, networkId, deviceId);
+}
+
 } // namespace StorageManager
 } // namespace OHOS

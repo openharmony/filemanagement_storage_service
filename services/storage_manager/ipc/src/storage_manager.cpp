@@ -523,5 +523,14 @@ int32_t StorageManager::UpdateMemoryPara(int32_t size, int32_t &oldSize)
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     return sdCommunication->UpdateMemoryPara(size, oldSize);
 }
+
+int32_t StorageManager::MountDfsDocs(int32_t userId, std::string relativePath,
+    std::string networkId, std::string deviceId)
+{
+    LOGI("StorageManager::MountDfsDocs start.");
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->MountDfsDocs(userId, relativePath, networkId, deviceId);
+}
 }
 }

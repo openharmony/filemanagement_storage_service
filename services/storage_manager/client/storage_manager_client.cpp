@@ -164,5 +164,18 @@ int32_t StorageManagerClient::GetLockScreenStatus(uint32_t userId, bool &lockScr
 
     return client->GetLockScreenStatus(userId, lockScreenStatus);
 }
+
+int32_t StorageManagerClient::MountDfsDocs(int32_t userId, std::string relativePath,
+    std::string networkId, std::string deviceId)
+{
+    LOGI("StorageManagerClient::MountDfsDocs start.");
+    sptr<IStorageManager> client = GetStorageManagerProxy();
+    if (client == nullptr) {
+        LOGE("get storage manager service failed");
+        return -EFAULT;
+    }
+
+    return client->MountDfsDocs(userId, relativePath, networkId, deviceId);
+}
 }
 }

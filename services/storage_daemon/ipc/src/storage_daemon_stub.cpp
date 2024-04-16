@@ -84,6 +84,8 @@ StorageDaemonStub::StorageDaemonStub()
         &StorageDaemonStub::HandleUpdateMemoryPara;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_BUNDLE_STATS_INCREASE)] =
         &StorageDaemonStub::HandleGetBundleStatsForIncrease;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::MOUNT_DFS_DOCS)] =
+        &StorageDaemonStub::HandleMountDfsDocs;
 }
 
 int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code,
@@ -480,6 +482,21 @@ int32_t StorageDaemonStub::HandleGetBundleStatsForIncrease(MessageParcel &data, 
     if (!reply.WriteInt64Vector(pkgFileSizes)) {
         LOGE("StorageDaemonStub::HandleGetBundleStatsForIncrease call GetBundleStatsForIncrease failed");
         return  E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleMountDfsDocs(MessageParcel &data, MessageParcel &reply)
+{
+    LOGI("StorageDaemonStub::HandleMountDfsDocs start.");
+    int32_t userId = data.ReadInt32();
+    std::string relativePath = data.ReadString();
+    std::string networkId = data.ReadString();
+    std::string deviceId = data.ReadString();
+
+    int32_t err = MountDfsDocs(userId, relativePath, networkId, deviceId);
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
     }
     return E_OK;
 }

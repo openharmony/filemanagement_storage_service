@@ -71,6 +71,7 @@ private:
     int32_t HandleUpdateMemoryPara(MessageParcel &data, MessageParcel &reply);
 
     int32_t HandleGetBundleStatsForIncrease(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleMountDfsDocs(MessageParcel &data, MessageParcel &reply);
 };
 } // StorageDaemon
 } // OHOS

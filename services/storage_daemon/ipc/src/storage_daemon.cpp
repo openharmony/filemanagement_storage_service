@@ -647,6 +647,13 @@ int32_t StorageDaemon::GetBundleStatsForIncrease(uint32_t userId, const std::vec
         pkgFileSizes);
 }
 
+int32_t StorageDaemon::MountDfsDocs(int32_t userId, std::string relativePath,
+    std::string networkId, std::string deviceId)
+{
+    LOGI("StorageDaemon::MountDfsDocs start.");
+    return MountManager::GetInstance()->MountDfsDocs(userId, relativePath, networkId, deviceId);
+}
+
 static bool ReadFileToString(const std::string& pathInst, std::string& oldContent)
 {
     std::fstream fd;

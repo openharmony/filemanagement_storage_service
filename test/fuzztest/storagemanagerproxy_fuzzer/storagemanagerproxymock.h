@@ -228,6 +228,12 @@ public:
         return E_OK;
     }
 
+    int32_t MountDfsDocs(int32_t userId, std::string relativePath,
+        std::string networkId, std::string deviceId) override
+    {
+        return E_OK;
+    }
+
     std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,
                                                  uint32_t tokenId, uint32_t flag) override
     {

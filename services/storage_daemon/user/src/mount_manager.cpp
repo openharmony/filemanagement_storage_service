@@ -48,6 +48,7 @@ using namespace OHOS::FileManagement::CloudFile;
 #endif
 using namespace OHOS::StorageService;
 constexpr int32_t UMOUNT_RETRY_TIMES = 3;
+constexpr mode_t DFS_DIR_MODE = 0711;
 std::shared_ptr<MountManager> MountManager::instance_ = nullptr;
 
 const string SANDBOX_ROOT_PATH = "/mnt/sandbox/";
@@ -105,6 +106,7 @@ MountManager::MountManager()
                   {"/mnt/data/%d/", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/data/%d/cloud", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/data/%d/cloud_fuse", 0711, OID_DFS, OID_DFS},
+                  {"/mnt/data/%d/hmdfs", 0711, OID_FILE_MANAGER, OID_FILE_MANAGER},
                   {"/mnt/hmdfs/", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/%d/", 0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/%d/cloud", 0711, OID_ROOT, OID_ROOT},
@@ -726,6 +728,26 @@ int32_t MountManager::CreateVirtualDirs(int32_t userId)
         }
     }
 
+    return E_OK;
+}
+
+int32_t MountManager::MountDfsDocs(int32_t userId, std::string relativePath,
+    std::string networkId, std::string deviceId)
+{
+    LOGI("MountManager::MountDfsDocs start.");
+    std::string dstPath = StringPrintf("/mnt/data/%d/hmdfs/%s/", userId, deviceId.c_str());
+    if (!PrepareDir(dstPath, DFS_DIR_MODE, OID_FILE_MANAGER, OID_FILE_MANAGER)) {
+        return E_PREPARE_DIR;
+    }
+
+    Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, relativePath));
+    std::string srcPath = hmdfsMntArgs.GetFullDst() + "/device_view/" + networkId + "/files/Docs/";
+    int32_t ret = Mount(srcPath, dstPath, nullptr, MS_BIND, nullptr);
+    if (ret != 0 && errno != EEXIST && errno != EBUSY) {
+        LOGE("MountDfsDocs mount bind failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
+            srcPath.c_str(), dstPath.c_str(), errno);
+        return E_MOUNT;
+    }
     return E_OK;
 }
 

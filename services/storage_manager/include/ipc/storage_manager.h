@@ -96,6 +96,10 @@ public:
     int32_t GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
         const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes) override;
 
+    // dfs service
+    int32_t MountDfsDocs(int32_t userId, std::string relativePath, std::string networkId,
+        std::string deviceId) override;
+
 private:
     StorageManager();
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;
