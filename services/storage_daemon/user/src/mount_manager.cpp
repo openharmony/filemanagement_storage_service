@@ -451,18 +451,18 @@ int32_t MountManager::HmdfsTwiceUMount(int32_t userId, std::string relativePath)
     Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, relativePath));
     err = UMount(hmdfsMntArgs.GetCommFullPath());
     if (err != E_OK) {
-        LOGE("failed to un bind mount, errno %{public}d, ComDataDir_ dst %{public}s", errno,
+        LOGE("failed to umount bind mount point, errno %{public}d, ComDataDir_ dst %{public}s", errno,
              hmdfsMntArgs.GetCommFullPath().c_str());
     }
     err = UMount(hmdfsMntArgs.GetCloudDocsPath());
     if (err != E_OK) {
-        LOGE("failed to un bind mount, errno %{public}d, CloudDataDir dst %{public}s", errno,
+        LOGE("failed to umount bind mount point, errno %{public}d, CloudDataDir dst %{public}s", errno,
              hmdfsMntArgs.GetCloudDocsPath().c_str());
     }
 
     err = UMount(hmdfsMntArgs.GetCloudFullPath());
     if (err != E_OK) {
-        LOGE("failed to un bind mount, errno %{public}d, CloudDataDir dst %{public}s", errno,
+        LOGE("failed to umount bind mount point, errno %{public}d, CloudDataDir dst %{public}s", errno,
              hmdfsMntArgs.GetCloudFullPath().c_str());
     }
 
