@@ -196,7 +196,7 @@ int32_t ExternalVolumeInfo::DoCheck()
 {
     int32_t ret = ExternalVolumeInfo::ReadMetadata();
     if (ret) {
-        LOGE("External volume uuid=%{public}s DoCheck failed.", GetFsUuid().c_str());
+        LOGE("External volume uuid=%{public}s DoCheck failed.", GetAnonyString(GetFsUuid()).c_str());
         return E_ERR;
     }
 
