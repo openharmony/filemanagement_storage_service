@@ -16,6 +16,8 @@
 #ifndef OHOS_STORAGE_DAEMON_MOUNT_MANAGER_H
 #define OHOS_STORAGE_DAEMON_MOUNT_MANAGER_H
 
+#include <fstream>
+#include <list>
 #include <string>
 #include <mutex>
 #include <vector>
@@ -63,6 +65,7 @@ public:
     void UMountCryptoPathAgain(uint32_t userId);
     void SetCloudState(bool active);
     int32_t RestoreconSystemServiceDirs(int32_t userId);
+    int32_t findMountPointsWithPrefix(std::string prefix, std::list<std::string> &toUnmount);
 
 private:
     bool SupportHmdfs();

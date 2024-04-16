@@ -56,6 +56,7 @@ const string PACKAGE_NAME_FLAG = "<bundleName>";
 const string SCENE_BOARD_BUNDLE_NAME = "com.ohos.sceneboard";
 const string PUBLIC_DIR_SANDBOX_PATH = "/storage/Users/currentUser";
 const string PUBLIC_DIR_SRC_PATH = "/storage/media/<currentUserId>/local/files/Docs";
+const string MOUNT_POINT_INFO = "/proc/mounts";
 const set<string> SANDBOX_EXCLUDE_PATH = {
     "chipset",
     "system",
@@ -365,33 +366,38 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
     return ret;
 }
 
+int32_t MountManager::findMountPointsWithPrefix(std::string prefix, std::list<std::string> &toUnmount)
+{
+    std::ifstream inputStream(MOUNT_POINT_INFO.c_str(), std::ios::in);
+    if (!inputStream.is_open()) {
+        LOGE("unable to open /proc/mounts, errno is %{public}d", errno);
+        return -errno;
+    }
+    std::string tmpLine;
+    while (std::getline(inputStream, tmpLine)) {
+        if (tmpLine.substr(0, prefix.length()) == prefix) {
+            char *mnt = strtok(tmpLine.data(), " ");
+            mnt = strtok(nullptr, " ");
+            toUnmount.push_front(mnt);
+        }
+    }
+    inputStream.close();
+    return E_OK;
+}
+
 void MountManager::UMountCryptoPathAgain(uint32_t userId)
 {
-    filesystem::path rootDir(SANDBOX_ROOT_PATH + "/" + to_string(userId));
-    if (!exists(rootDir)) {
-        LOGE("root path not exists, rootDir is %{public}s", SANDBOX_ROOT_PATH.c_str());
+    Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
+    const string &mountPointPrefix = hmdfsMntArgs.GetMountPointPrefix();
+    std::list<std::string> toUnmount;
+    int32_t res = findMountPointsWithPrefix(mountPointPrefix, toUnmount);
+    if (res != E_OK) {
         return;
     }
-
-    int32_t ret = 0;
-    filesystem::directory_iterator bundleNameList(rootDir);
-    for (const auto &bundleName : bundleNameList) {
-        if (SANDBOX_EXCLUDE_PATH.find(bundleName.path().filename()) != SANDBOX_EXCLUDE_PATH.end()) {
-            continue;
-        }
-
-        vector<string> cryptoSandboxPathVector = CRYPTO_SANDBOX_PATH;
-        if (bundleName.path().filename().generic_string() == SCENE_BOARD_BUNDLE_NAME) {
-            cryptoSandboxPathVector.push_back(PUBLIC_DIR_SANDBOX_PATH);
-        }
-
-        for (size_t i = 0; i < cryptoSandboxPathVector.size(); i++) {
-            string dstPath = bundleName.path().generic_string() + cryptoSandboxPathVector[i];
-            ret = UMount2(dstPath.c_str(), MNT_DETACH);
-            if (ret != 0) {
-                LOGE("umount failed, dstPath is %{public}s errno is %{public}d", dstPath.c_str(), errno);
-                continue;
-            }
+    for (const std::string &path: toUnmount) {
+        res = UMount2(path.c_str(), MNT_DETACH);
+        if (res != E_OK) {
+            LOGE("failed to unmount %{public}s, errno %{public}d.", path.c_str(), errno);
         }
     }
 }
@@ -666,12 +672,12 @@ int32_t MountManager::UmountByUser(int32_t userId)
         if (err != E_OK) {
             LOGE("failed to umount sharefs, errno %{public}d", errno);
         }
-        UMountCryptoPathAgain(userId);
         if (!SupportHmdfs()) {
             err = LocalUMount(userId);
         } else {
             err = HmdfsUMount(userId);
         }
+        UMountCryptoPathAgain(userId);
         if (err == E_OK) {
             break;
         } else if (errno == EBUSY) {

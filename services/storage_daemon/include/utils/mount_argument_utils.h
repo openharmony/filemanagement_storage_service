@@ -47,6 +47,7 @@ struct MountArgument final {
     std::string GetFullMediaCloud() const;
     std::string GetCloudDocsPath() const;
     std::string GetLocalDocsPath() const;
+    std::string GetMountPointPrefix() const;
     unsigned long GetFlags() const;
 };
 
