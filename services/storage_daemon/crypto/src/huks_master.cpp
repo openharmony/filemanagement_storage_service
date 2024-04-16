@@ -16,6 +16,7 @@
 #include "huks_master.h"
 
 #include <dlfcn.h>
+#include <thread>
 #include <openssl/err.h>
 #include <openssl/rand.h>
 #include <openssl/sha.h>
@@ -219,7 +220,7 @@ KeyBlob HuksMaster::GenerateRandomKey(uint32_t keyLen)
     if (out.IsEmpty()) {
         return out;
     }
-    std::thread([&out, keyLen]() {
+    std::thread([&out]() {
         LOGE("RAND is start");
         LOGI("RAND is start");
         auto ret = RAND_bytes(out.data.get(), out.size);
