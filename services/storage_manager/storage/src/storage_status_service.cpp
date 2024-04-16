@@ -206,7 +206,7 @@ int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t
 
 int32_t StorageStatusService::ConnectBundleMgr()
 {
-    LOGI("connect begin");
+    LOGD("connect begin");
     std::lock_guard<std::mutex> lock(mutex_);
     if (bundleMgr_ == nullptr) {
         auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
@@ -235,7 +235,7 @@ int32_t StorageStatusService::ConnectBundleMgr()
 
         bundleMgr_->AsObject()->AddDeathRecipient(deathRecipient_);
     }
-    LOGI("connect end");
+    LOGD("connect end");
     return E_OK;
 }
 

@@ -59,7 +59,7 @@ void DiskManager::HandleDiskEvent(NetlinkData *data)
         case NetlinkData::Actions::ADD: {
             auto diskInfo = MatchConfig(data);
             if (diskInfo == nullptr) {
-                LOGI("Can't match config");
+                LOGI("Can't match config, devPath is %{public}s", data->GetDevpath().c_str());
             } else {
                 CreateDisk(diskInfo);
                 LOGI("Handle Disk Add Event");

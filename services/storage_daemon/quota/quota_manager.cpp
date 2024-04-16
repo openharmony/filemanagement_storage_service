@@ -487,7 +487,7 @@ static std::tuple<bool, bool> CheckIfDirForIncludes(const std::string &path, int
         return {false, false};
     }
     if (S_ISDIR(fileStatInfo.st_mode)) {
-        LOGI("%{private}s exists and is a directory", path.c_str());
+        LOGD("%{private}s exists and is a directory", path.c_str());
         return {true, true};
     } else {
         std::string sandboxPath = path;

@@ -46,7 +46,7 @@ bool CheckClientPermission(const std::string& permissionStr)
     }
 
     if (res == Security::AccessToken::PermissionState::PERMISSION_GRANTED) {
-        LOGI("StorageMangaer permissionCheck pass!");
+        LOGD("StorageMangaer permissionCheck pass!");
         return true;
     }
     LOGE("StorageManager permissionCheck error, need %{public}s", permissionStr.c_str());
@@ -58,7 +58,7 @@ bool CheckClientPermissionForCrypt(const std::string& permissionStr)
     Security::AccessToken::AccessTokenID tokenCaller = IPCSkeleton::GetCallingTokenID();
     int res = Security::AccessToken::AccessTokenKit::VerifyAccessToken(tokenCaller, permissionStr);
     if (res == Security::AccessToken::PermissionState::PERMISSION_GRANTED) {
-        LOGI("StorageMangaer permissionCheck pass!");
+        LOGD("StorageMangaer permissionCheck pass!");
         return true;
     }
     LOGE("StorageManager permissionCheck error, need %{public}s", permissionStr.c_str());
