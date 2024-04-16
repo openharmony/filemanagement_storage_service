@@ -107,7 +107,8 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
         if (!OnReceiveEventLockUserScreen(userId)) {
             LOGE("user %{public}u LockUserScreen fail", userId);
         }
-        LOGI("Handle EventFwk::CommonEventSupport::Common_EVENT_SCREEN_LOCKED finished!");
+        LOGI("Handle EventFwk::CommonEventSupport::Common_EVENT_SCREEN_LOCKED finished, userId is %{public}u",
+            userId);
         return;
     }
     userId_ = userId;

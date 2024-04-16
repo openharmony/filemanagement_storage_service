@@ -118,7 +118,7 @@ int32_t FileSystemCrypto::InactiveUserKey(uint32_t userId)
 
 int32_t FileSystemCrypto::LockUserScreen(uint32_t userId)
 {
-    LOGI("UserId: %{public}u", userId);
+    LOGD("UserId: %{public}u", userId);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("User ID out of range");

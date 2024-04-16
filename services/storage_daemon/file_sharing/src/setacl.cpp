@@ -261,7 +261,8 @@ int AclSetAttribution(const std::string &targetFile, const std::string &entryTxt
     size_t bufSize;
     char *buf = acl.Serialize(bufSize);
     if (buf == nullptr) {
-        LOGE("Failed to serialize ACL into binary: %{public}s", std::strerror(errno));
+        LOGE("Failed to serialize ACL into binary: %{public}s, bufSize: %{public}zu",
+            std::strerror(errno), bufSize);
         return -1;
     }
     if (setxattr(targetFile.c_str(), aclAttrName, buf, bufSize, 0) == -1) {

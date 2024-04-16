@@ -34,8 +34,8 @@ DiskConfig::~DiskConfig()
 
 bool DiskConfig::IsMatch(std::string &sysPattern)
 {
-    LOGI("config sysPattern %{public}s", sysPattern_.c_str());
-    LOGI("device sysPattern %{public}s", sysPattern.c_str());
+    LOGI("config sysPattern %{public}s, device sysPattern %{public}s",
+        sysPattern_.c_str(), sysPattern.c_str());
 
     return !fnmatch(sysPattern_.c_str(), sysPattern.c_str(), 0);
 }
