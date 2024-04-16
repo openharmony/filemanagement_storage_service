@@ -375,12 +375,16 @@ int32_t MountManager::findMountPointsWithPrefix(std::string prefix, std::list<st
     }
     std::string tmpLine;
     while (std::getline(inputStream, tmpLine)) {
-        if (tmpLine.substr(0, prefix.length()) == prefix) {
-            char *mnt = strtok(tmpLine.data(), " ");
-            mnt = strtok(nullptr, " ");
+        if (tmpLine.length() > prefix.length() && tmpLine.substr(0, prefix.length()) == prefix) {
+            std::stringstream ss(tmpLine);
+            std::string mnt;
+            ss >> mnt;
+            ss >> mnt;
             toUnmount.push_front(mnt);
+            mnt.clear();
         }
     }
+    tmpLine.clear();
     inputStream.close();
     return E_OK;
 }
