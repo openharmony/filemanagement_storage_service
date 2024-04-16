@@ -213,25 +213,32 @@ int HuksMaster::HdiAccessUpgradeKey(const HksBlob &oldKey, const HksParamSet *pa
     return ret;
 }
 
+void HuksMaster::GenerateRandomBytes(uint8_t* data, uint32_t size, int threadId)
+{
+    auto ret = RAND_bytes(data, size);
+    if (ret <= 0) {
+        LOGE("RAND_bytes failed return %{public}d, errno %{public}lu", ret, ERR_get_error());
+    }
+}
+
 KeyBlob HuksMaster::GenerateRandomKey(uint32_t keyLen)
 {
-    LOGD("enter, size %{public}d", keyLen);
     KeyBlob out(keyLen);
     if (out.IsEmpty()) {
         return out;
     }
-    std::thread([&out]() {
-        LOGE("RAND is start");
-        LOGI("RAND is start");
-        auto ret = RAND_bytes(out.data.get(), out.size);
-        LOGI("RAND is finished");
-        LOGE("RAND is finished");
-        if (ret <= 0) {
-            LOGE("RAND_bytes failed return %{public}d, errno %{public}lu", ret, ERR_get_error());
-            out.Clear();
-        }
-    }).detach();
-
+    int numThreads = std::thread::hardware_concurrency();
+    std::vector<std::thread> threads;
+    std::vector<std::vector<uint8_t>> threadResults(numThreads);
+    uint32_t bytesPerThread = keyLen / numThreads;
+    uint32_t remainderBytes = keyLen % numThreads;
+    for (int i = 0; i < numThreads; ++i) {
+        uint32_t threadBytes = bytesPerThread + (i < remainderBytes ? 1 : 0);
+        threads.emplace_back(GenerateRandomBytes, out.data + i * bytesPerThread, threadBytes, i);
+    }
+    for (auto& t : threads) {
+        t.join();
+    }
     return out;
 }
 
