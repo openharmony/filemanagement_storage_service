@@ -213,7 +213,7 @@ int HuksMaster::HdiAccessUpgradeKey(const HksBlob &oldKey, const HksParamSet *pa
     return ret;
 }
 
-static void HuksMaster::GenerateRandomBytes(uint8_t* data, uint32_t size, int threadId)
+static void GenerateRandomBytes(uint8_t* data, uint32_t size, int threadId)
 {
     auto ret = RAND_bytes(data, size);
     if (ret <= 0) {
