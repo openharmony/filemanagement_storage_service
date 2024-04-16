@@ -61,7 +61,6 @@ private:
     bool HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *paramSet2,
                             const KeyBlob &keyIn, KeyBlob &keyOut);
     int HdiAccessUpgradeKey(const HksBlob &oldKey, const HksParamSet *paramSet, struct HksBlob &newKey);
-    void GenerateRandomBytes(uint8_t* data, uint32_t size, int threadId);
 
     HkmHdiHandle_t hdiHandle_ = nullptr;
     HkmHalDevice_t halDevice_ = nullptr;
