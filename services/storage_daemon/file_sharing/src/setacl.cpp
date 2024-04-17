@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -144,7 +144,7 @@ AclXattrEntry AclEntryParseText(const std::string &entryTxt)
         LOGE("Invalid ACL entry format");
         return {};
     }
-    const std::string tagTxt = entryTxt.substr(last, pos-last);
+    const std::string tagTxt = entryTxt.substr(last, pos - last);
     if (AclEntryParseTag(tagTxt, entry) == -1) {
         LOGE("Unknown tag: %{public}s", tagTxt.c_str());
         return {};
@@ -155,7 +155,7 @@ AclXattrEntry AclEntryParseText(const std::string &entryTxt)
         LOGE("Invalid ACL entry format");
         return {};
     }
-    const std::string idTxt = entryTxt.substr(last, pos-last);
+    const std::string idTxt = entryTxt.substr(last, pos - last);
     if (AclEntryParseId(idTxt, entry) == -1) {
         switch (entry.tag) {
             case ACL_TAG::USER:

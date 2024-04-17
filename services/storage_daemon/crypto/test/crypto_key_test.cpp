@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Huawei Device Co., Ltd.
+ * Copyright (C) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,7 +17,7 @@
 #include <string>
 #include <vector>
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -37,7 +37,6 @@
 #include "securec.h"
 
 using namespace testing::ext;
-using namespace OHOS::StorageDaemon;
 
 namespace {
 const std::string TEST_MNT = "/data";
@@ -59,10 +58,11 @@ const int32_t PARAMS_SIZE_1 = 1;
 const int32_t PARAMS_SIZE_2 = 2;
 const int32_t PARAMS_SIZE_3 = 3;
 const int32_t PARAMS_SIZE_4 = 4;
-FscryptKeyV1 g_testKeyV1 {TEST_KEYPATH};
-FscryptKeyV2 g_testKeyV2 {TEST_KEYPATH};
+OHOS::StorageDaemon::FscryptKeyV1 g_testKeyV1 {TEST_KEYPATH};
+OHOS::StorageDaemon::FscryptKeyV2 g_testKeyV2 {TEST_KEYPATH};
 }
 
+namespace OHOS::StorageDaemon {
 class CryptoKeyTest : public testing::Test {
 public:
     static void SetUpTestCase(void);
@@ -103,26 +103,28 @@ int32_t CryptoKeyTest::ExecSdcBinary(std::vector<std::string> params, int isCryp
     if (pid == 0) {
         int ret = -EINVAL;
         if (!isCrypt) {
-            char *const argv[] = {(char *)"/system/bin/sdc", (char *)"nullcmd", NULL};
+            char *const argv[] = {const_cast<char *>("/system/bin/sdc"), const_cast<char *>("nullcmd"), nullptr};
             ret = execv(argv[0], argv);
         } else if (params.size() == PARAMS_SIZE_0) {
-            char *const argv[] = {(char *)"/system/bin/sdc", NULL};
+            char *const argv[] = {const_cast<char *>("/system/bin/sdc"), nullptr};
             ret = execv(argv[0], argv);
         } else if (params.size() == PARAMS_SIZE_1) {
-            char *const argv[] = {(char *)"/system/bin/sdc", (char *)"filecrypt", (char *)params[0].c_str(), NULL};
+            char *const argv[] = {const_cast<char *>("/system/bin/sdc"), const_cast<char *>("filecrypt"),
+                const_cast<char *>(params[0].c_str()), nullptr};
             ret = execv(argv[0], argv);
         } else if (params.size() == PARAMS_SIZE_2) {
-            char *const argv[] = {(char *)"/system/bin/sdc", (char *)"filecrypt", (char *)params[0].c_str(),
-                                  (char *)params[1].c_str(), NULL};
+            char *const argv[] = {const_cast<char *>("/system/bin/sdc"), const_cast<char *>("filecrypt"),
+                const_cast<char *>(params[0].c_str()), const_cast<char *>(params[1].c_str()), nullptr};
             ret = execv(argv[0], argv);
         } else if (params.size() == PARAMS_SIZE_3) {
-            char *const argv[] = {(char *)"/system/bin/sdc", (char *)"filecrypt", (char *)params[0].c_str(),
-                                  (char *)params[1].c_str(), (char *)params[2].c_str(), NULL};
+            char *const argv[] = {const_cast<char *>("/system/bin/sdc"), const_cast<char *>("filecrypt"),
+                const_cast<char *>(params[0].c_str()), const_cast<char *>(params[1].c_str()),
+                const_cast<char *>(params[2].c_str()), nullptr};
             ret = execv(argv[0], argv);
         } else if (params.size() == PARAMS_SIZE_4) {
-            char *const argv[] = {(char *)"/system/bin/sdc", (char *)"filecrypt", (char *)params[0].c_str(),
-                                  (char *)params[1].c_str(), (char *)params[2].c_str(),
-                                  (char *)params[3].c_str(), NULL};
+            char *const argv[] = {const_cast<char *>("/system/bin/sdc"), const_cast<char *>("filecrypt"),
+                const_cast<char *>(params[0].c_str()), const_cast<char *>(params[1].c_str()),
+                const_cast<char *>(params[2].c_str()), const_cast<char *>(params[3].c_str()), nullptr};
             ret = execv(argv[0], argv);
         }
         if (ret) {
@@ -1184,4 +1186,5 @@ HWTEST_F(CryptoKeyTest, fscrypt_libfscrypt_api, TestSize.Level1)
     EXPECT_NE(0, FscryptSetSysparam("2:abs-256-cts"));
     EXPECT_NE(0, FscryptSetSysparam("2:abs-256-cts:bad-param"));
     EXPECT_NE(0, FscryptSetSysparam(NULL));
+}
 }

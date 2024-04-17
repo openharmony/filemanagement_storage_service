@@ -234,8 +234,8 @@ int32_t QuotaManager::SetBundleQuota(const std::string &bundleName, int32_t uid,
 int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int32_t prjId, bool inherit)
 {
     struct fsxattr fsx;
-    char *realPath = realpath(path.c_str(), NULL);
-    if (realPath == NULL) {
+    char *realPath = realpath(path.c_str(), nullptr);
+    if (realPath == nullptr) {
         LOGE("realpath failed");
         return E_SYS_CALL;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -68,7 +68,7 @@ int32_t NetlinkManager::Start()
         return E_ERR;
     }
 
-    if (bind(socketFd_, (struct sockaddr *) &addr, sizeof(addr)) != 0) {
+    if (bind(socketFd_, reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr)) != 0) {
         LOGE("Socket bind failed, errno %{public}d", errno);
         (void)close(socketFd_);
         return E_ERR;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -553,7 +553,7 @@ bool HuksMaster::DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key)
 static bool CheckNeedUpgrade(KeyBlob &inData)
 {
     constexpr uint32_t HKS_KEY_VERSION = 3;
-    HksParamSet *keyBlobParamSet = NULL;
+    HksParamSet *keyBlobParamSet = nullptr;
     int ret = HksGetParamSet(reinterpret_cast<HksParamSet *>(inData.data.get()), inData.size, &keyBlobParamSet);
     if (ret != HKS_SUCCESS) {
         LOGE("HksGetParamSet failed %{public}d", ret);
@@ -578,7 +578,7 @@ static bool CheckNeedUpgrade(KeyBlob &inData)
 
 bool HuksMaster::UpgradeKey(KeyContext &ctx)
 {
-    struct HksParamSet *paramSet = NULL;
+    struct HksParamSet *paramSet = nullptr;
     bool ret = false;
 
     if (!CheckNeedUpgrade(ctx.shield)) {
