@@ -28,7 +28,7 @@ ohos_unittest("quota_manager_test") {
   defines = [ "STORAGE_LOG_TAG = \"StorageDaemon\"" ]
 
   include_dirs = [
-    "$ROOT_DIR/utils",
+    "$ROOT_DIR/storage_daemon/utils",
     "$ROOT_DIR/common/include",
     "$ROOT_DIR/storage_daemon/include",
     "$ROOT_DIR/storage_manager/include",
@@ -37,7 +37,7 @@ ohos_unittest("quota_manager_test") {
   sources = [
     "$ROOT_DIR/storage_daemon/quota/quota_manager.cpp",
     "$ROOT_DIR/storage_daemon/quota/test/quota_manager_test.cpp",
-    "$ROOT_DIR/utils/test/common/help_utils.cpp"
+    "$ROOT_DIR/storage_daemon/utils/test/common/help_utils.cpp"
   ]
 
   deps = [
