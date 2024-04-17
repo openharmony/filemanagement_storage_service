@@ -20,7 +20,7 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "storage_service_constant.h"
-#include "utils/test/common/help_utils.h"
+#include "test/common/help_utils.h"
 #include "utils/file_utils.h"
 
 namespace OHOS {
