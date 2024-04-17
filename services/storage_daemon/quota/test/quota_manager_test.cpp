@@ -251,5 +251,71 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_GetOccupiedSpace_001
 
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetOccupiedSpace_001 end";
 }
+
+/**
+ * @tc.name: Storage_Service_QuotaManagerTest_GetBundleStatsForIncrease_001
+ * @tc.desc: Test whether GetBundleStatsForIncrease is called normally.
+ * @tc.type: FUNC
+ * @tc.require: AR000HSKSO
+ */
+HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_GetBundleStatsForIncrease_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetBundleStatsForIncrease_001 start";
+
+    QuotaManager *quotaManager = QuotaManager::GetInstance();
+    ASSERT_TRUE(quotaManager != nullptr);
+
+    // create parameter
+    uint32_t userId = 100;
+    std::vector<std::string> bundleNames;
+    std::string bundleName = "com.ohos.UserFile.ExternalFileManager";
+    bundleNames.emplace_back(bundleName);
+    std::vector<int64_t> incrementalBackTimes;
+    int64_t lastIncrementalTime = 0;
+    incrementalBackTimes.emplace_back(lastIncrementalTime);
+    std::vector<int64_t> pkgFileSizes;
+    // prepare config file
+    mode_t mode = 0771;
+    // backup_sa bundle path
+    std::string backupSaBundleDir = BACKUP_PATH_PREFIX + std::to_string(userId) + BACKUP_PATH_SURFFIX + bundleName +
+                                    FILE_SEPARATOR_CHAR;
+    if (!StorageTest::StorageTestUtils::CheckDir(backupSaBundleDir)) {
+        StorageTest::StorageTestUtils::MkDir(backupSaBundleDir, mode);
+    }
+    // backup_sa include/exclude
+    std::string incExFilePath = backupSaBundleDir + BACKUP_INCEXC_SYMBOL + std::to_string(lastIncrementalTime);
+    std::ofstream incExcFile;
+    incExcFile.open(incExFilePath.data(), std::ios::out | std::ios::trunc);
+    if (!incExcFile.is_open()) {
+        EXPECT_TRUE(false) << "Failed to create file for include-exclude config";
+    }
+    incExcFile << BACKUP_INCLUDE << std::endl;
+    std::string include = "/storage/Users/currentUser/";
+    incExcFile << include << std::endl;
+
+    incExcFile << BACKUP_EXCLUDE << std::endl;
+    std::string exclude = "/storage/Users/currentUser/.Trash/";
+    incExcFile << exclude << std::endl;
+    incExcFile.close();
+
+    // backup_sa stat
+    std::string statFilePath = backupSaBundleDir + BACKUP_STAT_SYMBOL + std::to_string(lastIncrementalTime);
+    std::ofstream statFile;
+    statFile.open(statFilePath.data(), std::ios::out | std::ios::trunc);
+    if (!statFile.is_open()) {
+        EXPECT_TRUE(false) << "Failed to create file for bundle stat";
+    }
+    statFile.close();
+    // invoke GetBundleStatsForIncrease
+    auto ret = quotaManager->GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes, pkgFileSizes);
+    EXPECT_TRUE(ret == E_OK);
+    EXPECT_GE(pkgFileSizes[0], 0);
+
+    if (StorageTest::StorageTestUtils::CheckDir(backupSaBundleDir)) {
+        StorageTest::StorageTestUtils::RmDirRecurse(backupSaBundleDir);
+    }
+
+    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetBundleStatsForIncrease_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS
