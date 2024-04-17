@@ -18,7 +18,7 @@
 #include "storage_manager_ipc_interface_code.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "utils/disk_utils.h"
+#include "utils/storage_utils.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -362,7 +362,8 @@ int32_t StorageManagerProxy::UpdateKeyContext(uint32_t userId)
 
 int32_t StorageManagerProxy::GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize)
 {
-    LOGI("StorageManagerProxy::GetFreeSizeOfVolume, volumeUuid:%{public}s", GetAnonyString(volumeUuid).c_str());
+    LOGI("StorageManagerProxy::GetFreeSizeOfVolume, volumeUuid:%{public}s",
+        GetAnonyString(volumeUuid).c_str());
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
@@ -390,7 +391,8 @@ int32_t StorageManagerProxy::GetFreeSizeOfVolume(std::string volumeUuid, int64_t
 
 int32_t StorageManagerProxy::GetTotalSizeOfVolume(std::string volumeUuid, int64_t &totalSize)
 {
-    LOGI("StorageManagerProxy::GetTotalSizeOfVolume, volumeUuid:%{public}s", GetAnonyString(volumeUuid).c_str());
+    LOGI("StorageManagerProxy::GetTotalSizeOfVolume, volumeUuid:%{public}s",
+        GetAnonyString(volumeUuid).c_str());
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
@@ -443,7 +445,8 @@ int32_t StorageManagerProxy::GetBundleStats(std::string pkgName, BundleStats &bu
 
 int32_t StorageManagerProxy::NotifyVolumeCreated(VolumeCore vc)
 {
-    LOGI("StorageManagerProxy::NotifyVolumeCreated, volumeUuid:%{public}s", GetAnonyString(vc.GetId()).c_str());
+    LOGI("StorageManagerProxy::NotifyVolumeCreated, volumeUuid:%{public}s",
+        GetAnonyString(vc.GetId()).c_str());
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
@@ -464,7 +467,8 @@ int32_t StorageManagerProxy::NotifyVolumeCreated(VolumeCore vc)
 int32_t StorageManagerProxy::NotifyVolumeMounted(std::string volumeId, int32_t fsType, std::string fsUuid,
     std::string path, std::string description)
 {
-    LOGI("StorageManagerProxy::NotifyVolumeMounted, volumeUuid:%{public}s", GetAnonyString(volumeId).c_str());
+    LOGI("StorageManagerProxy::NotifyVolumeMounted, volumeUuid:%{public}s",
+        GetAnonyString(volumeId).c_str());
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;

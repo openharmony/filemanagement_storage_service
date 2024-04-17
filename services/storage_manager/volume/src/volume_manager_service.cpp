@@ -21,7 +21,7 @@
 #include "storage_daemon_communication/storage_daemon_communication.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "utils/disk_utils.h"
+#include "utils/storage_utils.h"
 #include "volume/notification.h"
 
 using namespace std;
@@ -160,7 +160,7 @@ namespace StorageManager {
             auto vc = it->second;
             if (vc->GetUuid() == volumeUuid) {
                 LOGE("VolumeManagerService::GetVolumeByUuid volumeUuid %{public}s exists",
-                GetAnonyString(volumeUuid).c_str());
+                    GetAnonyString(volumeUuid).c_str());
                 return vc;
             }
         }
@@ -173,7 +173,7 @@ namespace StorageManager {
             auto volume = it->second;
             if (volume->GetUuid() == fsUuid) {
                 LOGI("VolumeManagerService::GetVolumeByUuid volumeUuid %{public}s exists",
-                GetAnonyString(fsUuid).c_str());
+                    GetAnonyString(fsUuid).c_str());
                 vc = *volume;
                 return E_OK;
             }
@@ -196,7 +196,7 @@ namespace StorageManager {
             auto volume = it->second;
             if (volume->GetUuid() == fsUuid) {
                 LOGI("VolumeManagerService::SetVolumeDescription volumeUuid %{public}s exists",
-                GetAnonyString(fsUuid).c_str());
+                    GetAnonyString(fsUuid).c_str());
                 if (volume->GetState() != VolumeState::UNMOUNTED) {
                     LOGE("VolumeManagerService::SetVolumeDescription volume state is not unmounted!");
                     return E_VOL_STATE;
