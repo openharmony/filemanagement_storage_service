@@ -13,12 +13,14 @@
  * limitations under the License.
  */
 
+#include <fstream>
 #include <gtest/gtest.h>
 
 #include "quota/quota_manager.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "storage_service_constant.h"
+#include "test/common/help_utils.h"
 #include "utils/file_utils.h"
 
 namespace OHOS {
@@ -279,7 +281,7 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_GetBundleStatsForInc
     mode_t mode = 0771;
     // backup_sa bundle path
     std::string backupSaBundleDir = BACKUP_PATH_PREFIX + std::to_string(userId) + BACKUP_PATH_SURFFIX + bundleName +
-                                    FILE_SEPARATOR_CHAR;
+        FILE_SEPARATOR_CHAR;
     if (!StorageTest::StorageTestUtils::CheckDir(backupSaBundleDir)) {
         StorageTest::StorageTestUtils::MkDir(backupSaBundleDir, mode);
     }
