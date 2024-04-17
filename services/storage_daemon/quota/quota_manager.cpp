@@ -425,8 +425,17 @@ static void ConvertSandboxRealPath(const uint32_t userId, const std::string &bun
     } else if (sandBoxPathStr.find(FILE_SAND_PREFIX) == 0) {
         // for public files, start with file://docs
         uriString = URI_PREFIX + FILE_AUTHORITY;
-    } else if (sandBoxPathStr.find(MEDIA_CLOUD_SAND_PREFIX) == 0 || sandBoxPathStr.find(MEDIA_SAND_PREFIX) == 0) {
-        // for media files, no need to transform
+    } else if (sandBoxPathStr.find(MEDIA_SAND_PREFIX) == 0) {
+        std::string physicalPath = sandBoxPathStr;
+        physicalPath.insert(MEDIA_SAND_PREFIX.length(), FILE_SEPARATOR_CHAR + std::to_string(userId));
+        realPaths.emplace_back(physicalPath);
+        pathMap.insert({physicalPath, sandBoxPathStr});
+        return;
+    } else if (sandBoxPathStr.find(MEDIA_CLOUD_SAND_PREFIX) == 0) {
+        std::string physicalPath = sandBoxPathStr;
+        physicalPath.insert(MEDIA_CLOUD_SAND_PREFIX.length(), FILE_SEPARATOR_CHAR + std::to_string(userId));
+        realPaths.emplace_back(physicalPath);
+        pathMap.insert({physicalPath, sandBoxPathStr});
         return;
     }
 
