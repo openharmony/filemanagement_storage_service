@@ -19,6 +19,7 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "storage_service_constant.h"
+#include "utils/file_utils.h"
 
 namespace OHOS {
 namespace StorageDaemon {
