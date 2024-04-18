@@ -232,7 +232,6 @@ KeyBlob HuksMaster::GenerateRandomKey(uint32_t keyLen)
         numThreads = 1;
     }
     std::vector<std::thread> threads;
-    std::vector<std::vector<uint8_t>> threadResults(numThreads);
     uint32_t bytesPerThread = keyLen / numThreads;
     uint32_t remainderBytes = keyLen % numThreads;
     for (int i = 0; i < numThreads; ++i) {
