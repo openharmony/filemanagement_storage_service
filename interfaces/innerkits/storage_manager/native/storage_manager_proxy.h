@@ -94,7 +94,7 @@ private:
     static inline BrokerDelegator<StorageManagerProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);
 };
-} // StorageManager   
+} // StorageManager
 } // OHOS
 
 #endif // OHOS_STORAGE_MANAGER_STORAGE_MANAGER_PROXY_H

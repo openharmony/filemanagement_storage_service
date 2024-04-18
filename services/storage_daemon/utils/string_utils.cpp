@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -33,13 +33,13 @@ static constexpr int32_t BUFF_SIZE = 1024;
 std::string StringPrintf(const char *format, ...)
 {
     va_list ap;
-    va_list ap_backup;
+    va_list apBackup;
     va_start(ap, format);
-    va_copy(ap_backup, ap);
+    va_copy(apBackup, ap);
     char buf[BUFF_SIZE] = {0};
     std::string result;
 
-    int count = vsnprintf_s(buf, sizeof(buf), sizeof(buf), format, ap_backup);
+    int count = vsnprintf_s(buf, sizeof(buf), sizeof(buf), format, apBackup);
     if (count < 0) {
         LOGE("vsnprintf_s error, errno %{public}d", errno);
     } else if (count >= 0 && count < BUFF_SIZE) {
@@ -58,7 +58,7 @@ std::string StringPrintf(const char *format, ...)
         delete[] newBuf;
     }
 
-    va_end(ap_backup);
+    va_end(apBackup);
     va_end(ap);
 
     return result;
