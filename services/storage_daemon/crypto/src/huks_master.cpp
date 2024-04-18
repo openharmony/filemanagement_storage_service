@@ -228,6 +228,9 @@ KeyBlob HuksMaster::GenerateRandomKey(uint32_t keyLen)
         return out;
     }
     int numThreads = std::thread::hardware_concurrency();
+    if (numThreads == 0) {
+        numThreads = 1;
+    }
     std::vector<std::thread> threads;
     std::vector<std::vector<uint8_t>> threadResults(numThreads);
     uint32_t bytesPerThread = keyLen / numThreads;
