@@ -717,8 +717,8 @@ int32_t StorageDaemonProxy::GetBundleStatsForIncrease(uint32_t userId, const std
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::MountDfsDocs(int32_t userId, std::string relativePath,
-    std::string networkId, std::string deviceId)
+int32_t StorageDaemonProxy::MountDfsDocs(int32_t userId, const std::string &relativePath,
+    const std::string &networkId, const std::string &deviceId)
 {
     LOGI("StorageDaemonProxy::MountDfsDocs start.");
     MessageParcel data;

@@ -379,8 +379,8 @@ int32_t StorageDaemonCommunication::UpdateMemoryPara(int32_t size, int32_t &oldS
     return storageDaemon_->UpdateMemoryPara(size, oldSize);
 }
 
-int32_t StorageDaemonCommunication::MountDfsDocs(int32_t userId, std::string relativePath,
-    std::string networkId, std::string deviceId)
+int32_t StorageDaemonCommunication::MountDfsDocs(int32_t userId, const std::string &relativePath,
+    const std::string &networkId, const std::string &deviceId)
 {
     LOGI("StorageDaemonCommunication::MountDfsDocs start.");
     int32_t err = Connect();

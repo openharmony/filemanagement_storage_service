@@ -108,7 +108,7 @@ MountManager::MountManager()
                   {"/mnt/data/%d/", MODE_0711, OID_ROOT, OID_ROOT},
                   {"/mnt/data/%d/cloud", MODE_0711, OID_ROOT, OID_ROOT},
                   {"/mnt/data/%d/cloud_fuse", MODE_0711, OID_DFS, OID_DFS},
-                  {"/mnt/data/%d/hmdfs", 0711, OID_FILE_MANAGER, OID_FILE_MANAGER},
+                  {"/mnt/data/%d/hmdfs", MODE_0711, OID_FILE_MANAGER, OID_FILE_MANAGER},
                   {"/mnt/hmdfs/", MODE_0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/%d/", MODE_0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/%d/cloud", MODE_0711, OID_ROOT, OID_ROOT},
@@ -735,8 +735,8 @@ int32_t MountManager::CreateVirtualDirs(int32_t userId)
     return E_OK;
 }
 
-int32_t MountManager::MountDfsDocs(int32_t userId, std::string relativePath,
-    std::string networkId, std::string deviceId)
+int32_t MountManager::MountDfsDocs(int32_t userId, const std::string &relativePath,
+    const std::string &networkId, const std::string &deviceId)
 {
     LOGI("MountManager::MountDfsDocs start.");
     std::string dstPath = StringPrintf("/mnt/data/%d/hmdfs/%s/", userId, deviceId.c_str());

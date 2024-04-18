@@ -40,8 +40,8 @@ public:
     static int32_t LockUserScreen(uint32_t userId);
     static int32_t UnlockUserScreen(uint32_t userId);
     static int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus);
-    static int32_t MountDfsDocs(int32_t userId, std::string relativePath,
-        std::string networkId, std::string deviceId);
+    static int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,
+        const std::string &networkId, const std::string &deviceId);
 private:
     static sptr<IStorageManager> GetStorageManagerProxy(void);
 };

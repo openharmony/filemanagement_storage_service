@@ -97,8 +97,8 @@ public:
         const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes) = 0;
 
     // dfs service
-    virtual int32_t MountDfsDocs(int32_t userId, std::string relativePath,
-        std::string networkId, std::string deviceId) = 0;
+    virtual int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,
+        const std::string &networkId, const std::string &deviceId) = 0;
 
     DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.StorageManager.IStorageManager");
 };

@@ -221,8 +221,8 @@ public:
         return E_OK;
     }
 
-    virtual int32_t MountDfsDocs(int32_t userId, std::string relativePath,
-        std::string networkId, std::string deviceId) override
+    virtual int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,
+        const std::string &networkId, const std::string &deviceId) override
     {
         return E_OK;
     }

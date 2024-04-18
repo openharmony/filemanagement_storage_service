@@ -1175,8 +1175,8 @@ int32_t StorageManagerProxy::GetUserStorageStatsByType(int32_t userId, StorageSt
     return E_OK;
 }
 
-int32_t StorageManagerProxy::MountDfsDocs(int32_t userId, std::string relativePath,
-    std::string networkId, std::string deviceId)
+int32_t StorageManagerProxy::MountDfsDocs(int32_t userId, const std::string &relativePath,
+    const std::string &networkId, const std::string &deviceId)
 {
     LOGI("StorageManagerProxy::MountDfsDocs start. User ID: %{public}u", userId);
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);

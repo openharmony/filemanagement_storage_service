@@ -369,8 +369,8 @@ int32_t StorageDaemonClient::UpdateKeyContext(uint32_t userId)
     return client->UpdateKeyContext(userId);
 }
 
-int32_t StorageDaemonClient::MountDfsDocs(int32_t userId, std::string relativePath,
-    std::string networkId, std::string deviceId)
+int32_t StorageDaemonClient::MountDfsDocs(int32_t userId, const std::string &relativePath,
+    const std::string &networkId, const std::string &deviceId)
 {
     LOGI("StorageDaemonClient::MountDfsDocs start.");
     if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
