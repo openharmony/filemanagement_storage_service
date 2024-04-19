@@ -198,6 +198,8 @@ int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath, bool 
         hmdfsMntArgs.useCloudDir_ = false;
         hmdfsMntArgs.enableMergeView_ = false;
         mountSrcPath = hmdfsMntArgs.GetFullCloud();
+    } else {
+        hmdfsMntArgs.caseSensitive_ = true;
     }
 
     int ret = Mount(mountSrcPath, hmdfsMntArgs.GetFullDst(), "hmdfs",
