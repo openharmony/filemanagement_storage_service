@@ -213,7 +213,7 @@ int HuksMaster::HdiAccessUpgradeKey(const HksBlob &oldKey, const HksParamSet *pa
     return ret;
 }
 
-static void GenerateRandomBytes(uint8_t* data, uint32_t size, int threadId)
+static void GenerateRandomBytes(uint8_t* data, uint32_t size)
 {
     auto ret = RAND_bytes(data, size);
     if (ret <= 0) {
@@ -227,7 +227,7 @@ KeyBlob HuksMaster::GenerateRandomKey(uint32_t keyLen)
     if (out.IsEmpty()) {
         return out;
     }
-    int numThreads = std::thread::hardware_concurrency();
+    uint32_t numThreads = std::thread::hardware_concurrency();
     if (numThreads == 0) {
         numThreads = 1;
     }
@@ -236,7 +236,7 @@ KeyBlob HuksMaster::GenerateRandomKey(uint32_t keyLen)
     uint32_t remainderBytes = keyLen % numThreads;
     for (int i = 0; i < numThreads; ++i) {
         uint32_t threadBytes = bytesPerThread + (i < remainderBytes ? 1 : 0);
-        threads.emplace_back(GenerateRandomBytes, out.data.get() + i * bytesPerThread, threadBytes, i);
+        threads.emplace_back(GenerateRandomBytes, out.data.get() + i * bytesPerThread, threadBytes);
     }
     for (auto& t : threads) {
         t.join();
