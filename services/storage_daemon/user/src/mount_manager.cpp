@@ -405,7 +405,7 @@ void MountManager::UMountCryptoPathAgain(uint32_t userId)
     if (res != E_OK) {
         return;
     }
-    LOGI("unmount crypto path start, total %{public}d.", toUnmount.size());
+    LOGI("unmount crypto path start, total %{public}zu.", toUnmount.size());
     for (const std::string &path: toUnmount) {
         res = UMount2(path.c_str(), MNT_DETACH);
         if (res != E_OK) {
