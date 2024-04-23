@@ -16,6 +16,7 @@
 #include "huks_master.h"
 
 #include <dlfcn.h>
+#include <thread>
 #include <openssl/err.h>
 #include <openssl/rand.h>
 #include <openssl/sha.h>
@@ -212,18 +213,33 @@ int HuksMaster::HdiAccessUpgradeKey(const HksBlob &oldKey, const HksParamSet *pa
     return ret;
 }
 
+static void GenerateRandomBytes(uint8_t* data, uint32_t size)
+{
+    auto ret = RAND_bytes(data, size);
+    if (ret <= 0) {
+        LOGE("RAND_bytes failed return %{public}d, errno %{public}lu", ret, ERR_get_error());
+    }
+}
+
 KeyBlob HuksMaster::GenerateRandomKey(uint32_t keyLen)
 {
-    LOGD("enter, size %{public}d", keyLen);
     KeyBlob out(keyLen);
     if (out.IsEmpty()) {
         return out;
     }
-
-    auto ret = RAND_bytes(out.data.get(), out.size);
-    if (ret <= 0) {
-        LOGE("RAND_bytes failed return %{public}d, errno %{public}lu", ret, ERR_get_error());
-        out.Clear();
+    uint32_t numThreads = std::thread::hardware_concurrency();
+    if (numThreads == 0) {
+        numThreads = 1;
+    }
+    std::vector<std::thread> threads;
+    uint32_t bytesPerThread = keyLen / numThreads;
+    uint32_t remainderBytes = keyLen % numThreads;
+    for (int i = 0; i < numThreads; ++i) {
+        uint32_t threadBytes = bytesPerThread + (i < remainderBytes ? 1 : 0);
+        threads.emplace_back(GenerateRandomBytes, out.data.get() + i * bytesPerThread, threadBytes);
+    }
+    for (auto& t : threads) {
+        t.join();
     }
     return out;
 }
