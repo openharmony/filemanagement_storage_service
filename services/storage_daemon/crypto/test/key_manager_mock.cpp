@@ -69,6 +69,16 @@ int32_t KeyManager::GetLockScreenStatus(uint32_t user, bool &lockScreenStatus)
     return E_OK;
 }
 
+int32_t KeyManager::GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId)
+{
+    return E_OK;
+}
+
+int32_t KeyManager::DeleteAppkey(uint32_t userId, const std::string keyId)
+{
+    return E_OK;
+}
+
 int32_t KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type,
     const std::vector<FileList> &vec)
 {

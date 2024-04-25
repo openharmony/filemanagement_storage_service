@@ -84,6 +84,10 @@ StorageDaemonStub::StorageDaemonStub()
         &StorageDaemonStub::HandleUpdateMemoryPara;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_BUNDLE_STATS_INCREASE)] =
         &StorageDaemonStub::HandleGetBundleStatsForIncrease;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::GENERATE_APP_KEY)] =
+        &StorageDaemonStub::HandleGenerateAppkey;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::DELETE_APP_KEY)] =
+        &StorageDaemonStub::HandleDeleteAppkey;
 }
 
 int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code,
@@ -360,6 +364,34 @@ int32_t StorageDaemonStub::HandleGetLockScreenStatus(MessageParcel &data, Messag
     if (!reply.WriteBool(lockScreenStatus)) {
         return E_WRITE_REPLY_ERR;
     }
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
+
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleGenerateAppkey(MessageParcel &data, MessageParcel &reply)
+{
+    uint32_t userId = data.ReadUint32();
+    uint32_t appUid = data.ReadUint32();
+    std::string keyId;
+    int err = GenerateAppkey(userId, appUid, keyId);
+    if (!reply.WriteString(keyId)) {
+        return E_WRITE_REPLY_ERR;
+    }
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
+
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleDeleteAppkey(MessageParcel &data, MessageParcel &reply)
+{
+    uint32_t userId = data.ReadUint32();
+    std::string keyId = data.ReadString();
+    int err = DeleteAppkey(userId, keyId);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }

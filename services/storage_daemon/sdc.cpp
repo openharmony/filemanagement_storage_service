@@ -228,6 +228,39 @@ static int32_t UpdateKeyContext(const std::vector<std::string> &args)
     }
     return OHOS::StorageDaemon::StorageDaemonClient::UpdateKeyContext(userId);
 }
+
+static int32_t GenerateAppkey(const std::vector<std::string> &args)
+{
+    if (args.size() < ARG_CNT_4) {
+        LOGE("Parameter nums is less than 4, please retry");
+        return -EINVAL;
+    }
+    uint32_t userId;
+    // 3 means take the fourth argument of args
+    if (OHOS::StorageDaemon::StringToUint32(args[INDEX_3], userId) == false) {
+        LOGE("Parameter input error, please retry");
+        return -EINVAL;
+    }
+    uint32_t appUid = 0;
+    std::string keyId;
+    return OHOS::StorageDaemon::StorageDaemonClient::GenerateAppkey(userId, appUid, keyId);
+}
+
+static int32_t DeleteAppkey(const std::vector<std::string> &args)
+{
+    if (args.size() < ARG_CNT_4) {
+        LOGE("Parameter nums is less than 4, please retry");
+        return -EINVAL;
+    }
+    uint32_t userId;
+    // 3 means take the fourth argument of args
+    if (OHOS::StorageDaemon::StringToUint32(args[INDEX_3], userId) == false) {
+        LOGE("Parameter input error, please retry");
+        return -EINVAL;
+    }
+    const std::string keyId;
+    return OHOS::StorageDaemon::StorageDaemonClient::DeleteAppkey(userId, keyId);
+}
 #endif
 
 static const auto g_fscryptCmdHandler = std::map<std::string,
@@ -246,6 +279,8 @@ static const auto g_fscryptCmdHandler = std::map<std::string,
     {"update_key_context", UpdateKeyContext},
     {"lock_user_screen", LockUserScreen},
     {"unlock_user_screen", UnlockUserScreen},
+    {"generate_app_key", GenerateAppkey},
+    {"delete_app_key", DeleteAppkey},
 #endif
 };
 

@@ -31,6 +31,7 @@ enum {
     CRYPTO_FLAG_EL2 = 2,
     CRYPTO_FLAG_EL3 = 4,
     CRYPTO_FLAG_EL4 = 8,
+    CRYPTO_FLAG_EL5 = 16,
 };
 class IStorageManager : public IRemoteBroker {
 public:
@@ -80,6 +81,8 @@ public:
     virtual int32_t LockUserScreen(uint32_t userId) = 0;
     virtual int32_t UnlockUserScreen(uint32_t userId) = 0;
     virtual int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus) = 0;
+    virtual int32_t GenerateAppkey(uint32_t appUid, std::string &keyId) = 0;
+    virtual int32_t DeleteAppkey(const std::string keyId) = 0;
 
     // app file share api
     virtual std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,

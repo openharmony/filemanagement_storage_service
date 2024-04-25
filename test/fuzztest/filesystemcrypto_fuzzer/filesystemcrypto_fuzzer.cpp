@@ -201,6 +201,39 @@ bool GetLockScreenStatusFuzzTest(const uint8_t *data, size_t size)
     }
     return true;
 }
+
+bool GenerateAppkeyFuzzTest(const uint8_t *data, size_t size)
+{
+    if (data == nullptr || size <= sizeof(uint32_t)) {
+        return false;
+    }
+
+    int pos = 0;
+    uint32_t appUid = TypeCast<uint32_t>(data, &pos);
+    std::string keyId;
+    int32_t result = fileSystem->GenerateAppkey(appUid, keyId);
+    if (result != E_OK) {
+        LOGI("file system crypto fuzz test of interface FileSystemCrypto::GenerateAppkey failed!");
+        return false;
+    }
+    return true;
+}
+
+bool DeleteAppkeyFuzzTest(const uint8_t *data, size_t size)
+{
+    if (data == nullptr || size <= sizeof(uint32_t)) {
+        return false;
+    }
+
+    int pos = 0;
+    const std::string keyId = TypeCast<std::string>(data, &pos);
+    int32_t result = fileSystem->DeleteAppkey(keyId);
+    if (result != E_OK) {
+        LOGI("file system crypto fuzz test of interface FileSystemCrypto::DeleteAppkey failed!");
+        return false;
+    }
+    return true;
+}
 } // namespace StorageManager
 } // namespace OHOS
 
@@ -217,6 +250,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     OHOS::StorageManager::LockUserScreenFuzzTest(data, size);
     OHOS::StorageManager::UnlockUserScreenFuzzTest(data, size);
     OHOS::StorageManager::GetLockScreenStatusFuzzTest(data, size);
+    OHOS::StorageManager::GenerateAppkeyFuzzTest(data, size);
+    OHOS::StorageManager::DeleteAppkeyFuzzTest(data, size);
 
     return 0;
 }

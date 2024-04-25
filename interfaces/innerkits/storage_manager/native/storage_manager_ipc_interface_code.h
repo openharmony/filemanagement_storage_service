@@ -78,6 +78,8 @@ namespace StorageManager {
         GET_USER_STATS_BY_TYPE,
         UPDATE_MEM_PARA,
         GET_BUNDLE_STATS_INCREASE,
+        GENERATE_APP_KEY,
+        DELETE_APP_KEY,
     };
 } // namespace StorageManager
 } // namespace OHOS

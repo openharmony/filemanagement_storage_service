@@ -461,6 +461,29 @@ int32_t StorageManager::GetLockScreenStatus(uint32_t userId, bool &lockScreenSta
 #endif
 }
 
+int32_t StorageManager::GenerateAppkey(uint32_t appUid, std::string &keyId)
+{
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("appUid: %{public}u", appUid);
+    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
+    return fsCrypto->GenerateAppkey(appUid, keyId);
+#else
+    return E_OK;
+#endif
+}
+
+int32_t StorageManager::DeleteAppkey(const std::string keyId)
+{
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("DeleteAppkey enter");
+    LOGI("keyId :  %{public}s", keyId.c_str());
+    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
+    return fsCrypto->DeleteAppkey(keyId);
+#else
+    return E_OK;
+#endif
+}
+
 int32_t StorageManager::UpdateKeyContext(uint32_t userId)
 {
 #ifdef USER_CRYPTO_MANAGER

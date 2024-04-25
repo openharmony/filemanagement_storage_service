@@ -53,6 +53,8 @@ public:
     static int32_t LockUserScreen(uint32_t userId);
     static int32_t UnlockUserScreen(uint32_t userId);
     static int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus);
+    static int32_t GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId);
+    static int32_t DeleteAppkey(uint32_t userId, const std::string keyId);
 
 private:
     static sptr<IStorageDaemon> GetStorageDaemonProxy(void);

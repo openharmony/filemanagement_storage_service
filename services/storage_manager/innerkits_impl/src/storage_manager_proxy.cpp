@@ -360,6 +360,52 @@ int32_t StorageManagerProxy::UpdateKeyContext(uint32_t userId)
     return reply.ReadInt32();
 }
 
+int32_t StorageManagerProxy::GenerateAppkey(uint32_t appUid, std::string &keyId)
+{
+    LOGI("appUid ID: %{public}u", appUid);
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("WriteInterfaceToken failed");
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+    if (!data.WriteUint32(appUid)) {
+        LOGE("Write appUid failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::GENERATE_APP_KEY), data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+    keyId = reply.ReadString();
+    return reply.ReadInt32();
+}
+
+int32_t StorageManagerProxy::DeleteAppkey(const std::string keyId)
+{
+    LOGI("DeleteAppkey enter ");
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("WriteInterfaceToken failed");
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+    if (!data.WriteString(keyId)) {
+        LOGE("Write key ID failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::DELETE_APP_KEY), data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+
+    return reply.ReadInt32();
+}
+
 int32_t StorageManagerProxy::GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize)
 {
     LOGI("StorageManagerProxy::GetFreeSizeOfVolume, volumeUuid:%{public}s",
