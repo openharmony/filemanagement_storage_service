@@ -96,6 +96,9 @@ public:
     int32_t GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
         const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes) override;
 
+    // reset user event record api
+    void ResetUserEventRecord(int32_t userId);
+
 private:
     StorageManager();
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;

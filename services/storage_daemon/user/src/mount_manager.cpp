@@ -405,13 +405,16 @@ void MountManager::UMountCryptoPathAgain(uint32_t userId)
     if (res != E_OK) {
         return;
     }
-    LOGI("unmount crypto path start, total %{public}zu.", toUnmount.size());
+
+    int total = static_cast<int>(toUnmount.size());
+    LOGI("unmount crypto path start, total %{public}zu.", total);
     for (const std::string &path: toUnmount) {
         res = UMount2(path.c_str(), MNT_DETACH);
         if (res != E_OK) {
             LOGE("failed to unmount %{public}s, errno %{public}d.", path.c_str(), errno);
         }
     }
+    CloudUMount(userId);
 }
 
 void MountManager::MountCloudForUsers(void)
@@ -687,9 +690,8 @@ int32_t MountManager::UmountByUser(int32_t userId)
         if (!SupportHmdfs()) {
             err = LocalUMount(userId);
         } else {
-            err = HmdfsUMount(userId);
+            UMountCryptoPathAgain(userId);
         }
-        UMountCryptoPathAgain(userId);
         if (err == E_OK) {
             break;
         } else if (errno == EBUSY) {

@@ -73,6 +73,14 @@ static void MountCryptoPathAgain(int32_t userId)
     LOGI("MountCryptoPathAgain success");
 }
 
+void AccountSubscriber::ResetUserEventRecord(int32_t userId)
+{
+    LOGI("ResetUserEventRecord start, userId is %{public}d", userId);
+    if (AccountSubscriber_->userRecord_.find(userId) != AccountSubscriber_->userRecord_.end()) {
+        AccountSubscriber_->userRecord_.erase(userId);
+    }
+}
+
 void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventData)
 {
     const AAFwk::Want& want = eventData.GetWant();
