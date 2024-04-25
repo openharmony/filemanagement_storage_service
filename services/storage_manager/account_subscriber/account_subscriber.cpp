@@ -40,6 +40,7 @@ using namespace OHOS::AAFwk;
 using namespace OHOS::AccountSA;
 namespace OHOS {
 namespace StorageManager {
+static std::mutex userRecordLock;
 std::shared_ptr<DataShare::DataShareHelper> AccountSubscriber::mediaShare_ = nullptr;
 
 AccountSubscriber::AccountSubscriber(const EventFwk::CommonEventSubscribeInfo &subscriberInfo)
@@ -77,6 +78,7 @@ void AccountSubscriber::ResetUserEventRecord(int32_t userId)
 {
     LOGI("ResetUserEventRecord start, userId is %{public}d", userId);
     if (AccountSubscriber_->userRecord_.find(userId) != AccountSubscriber_->userRecord_.end()) {
+        std::lock_guard<std::mutex> lock(userRecordLock);
         AccountSubscriber_->userRecord_.erase(userId);
     }
 }
