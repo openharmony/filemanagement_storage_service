@@ -720,23 +720,14 @@ int32_t StorageDaemonProxy::GetBundleStatsForIncrease(uint32_t userId, const std
 int32_t StorageDaemonProxy::MountDfsDocs(int32_t userId, const std::string &relativePath,
     const std::string &networkId, const std::string &deviceId)
 {
-    LOGI("StorageDaemonProxy::MountDfsDocs start.");
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
         return E_WRITE_DESCRIPTOR_ERR;
     }
-    if (!data.WriteInt32(userId)) {
-        return E_WRITE_PARCEL_ERR;
-    }
-    if (!data.WriteString(relativePath)) {
-        return E_WRITE_PARCEL_ERR;
-    }
-    if (!data.WriteString(networkId)) {
-        return E_WRITE_PARCEL_ERR;
-    }
-    if (!data.WriteString(deviceId)) {
+    if (!data.WriteInt32(userId) || !data.WriteString(relativePath) ||
+        !data.WriteString(networkId) || !data.WriteString(deviceId)) {
         return E_WRITE_PARCEL_ERR;
     }
 

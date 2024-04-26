@@ -372,7 +372,6 @@ int32_t StorageDaemonClient::UpdateKeyContext(uint32_t userId)
 int32_t StorageDaemonClient::MountDfsDocs(int32_t userId, const std::string &relativePath,
     const std::string &networkId, const std::string &deviceId)
 {
-    LOGI("StorageDaemonClient::MountDfsDocs start.");
     if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
         LOGE("Storage service flag check failed!");
         return -EAGAIN;

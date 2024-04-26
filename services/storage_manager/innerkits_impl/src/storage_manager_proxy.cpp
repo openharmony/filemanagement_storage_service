@@ -1178,7 +1178,6 @@ int32_t StorageManagerProxy::GetUserStorageStatsByType(int32_t userId, StorageSt
 int32_t StorageManagerProxy::MountDfsDocs(int32_t userId, const std::string &relativePath,
     const std::string &networkId, const std::string &deviceId)
 {
-    LOGI("StorageManagerProxy::MountDfsDocs start. User ID: %{public}u", userId);
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
@@ -1188,20 +1187,9 @@ int32_t StorageManagerProxy::MountDfsDocs(int32_t userId, const std::string &rel
         LOGE("StorageManagerProxy::MountDfsDocs, WriteInterfaceToken failed");
         return E_WRITE_DESCRIPTOR_ERR;
     }
-    if (!data.WriteInt32(userId)) {
-        LOGE("StorageManagerProxy::MountDfsDocs, Write userId failed");
-        return E_WRITE_PARCEL_ERR;
-    }
-    if (!data.WriteString(relativePath)) {
-        LOGE("StorageManagerProxy::MountDfsDocs, Write relativePath failed");
-        return E_WRITE_PARCEL_ERR;
-    }
-    if (!data.WriteString(networkId)) {
-        LOGE("StorageManagerProxy::MountDfsDocs, Write networkId failed");
-        return E_WRITE_PARCEL_ERR;
-    }
-    if (!data.WriteString(deviceId)) {
-        LOGE("StorageManagerProxy::MountDfsDocs, Write deviceId failed");
+    if (!data.WriteInt32(userId) || !data.WriteString(relativePath) ||
+        !data.WriteString(networkId) || !data.WriteString(deviceId)) {
+        LOGE("StorageManagerProxy::MountDfsDocs, Write failed");
         return E_WRITE_PARCEL_ERR;
     }
 
