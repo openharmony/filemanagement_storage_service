@@ -21,11 +21,13 @@ namespace OHOS {
 namespace StorageManager {
 bool StorageStatusServiceFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size == 0)) {
+    if ((data == nullptr) || (size <= sizeof(int64_t))) {
         return false;
     }
     std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
-
+    if (service == nullptr) {
+        return 0;
+    }
     int32_t userId = *(reinterpret_cast<const int32_t *>(data));
     std::string pkgName(reinterpret_cast<const char *>(data), size);
     std::string type(reinterpret_cast<const char *>(data), size);
@@ -34,39 +36,17 @@ bool StorageStatusServiceFuzzTest(const uint8_t *data, size_t size)
     std::vector<std::string> bundleName;
     std::vector<int64_t> incrementalBackTimes;
     std::vector<int64_t> pkgFileSizes;
-    bundleName.push_back(reinterpret_cast<const char *>(data));
-    incrementalBackTimes.push_back(*data);
-    pkgFileSizes.push_back(*data);
-    int32_t result = service->GetBundleStats(pkgName, bundleStats);
-    if (result != E_OK) {
-        LOGI("Storage status service fuzz test of interface StorageStatusService::GetBundleStats failed!");
-        return false;
-    }
-    result = service->GetUserStorageStats(storageStats);
-    if (result != E_OK) {
-        LOGI("Storage status service fuzz test of interface StorageStatusService::GetUserStorageStats failed!");
-        return false;
-    }
-    result = service->GetUserStorageStats(userId, storageStats);
-    if (result != E_OK) {
-        LOGI("Storage status service fuzz test of interface StorageStatusService::GetUserStorageStats failed!");
-        return false;
-    }
-    result = service->GetUserStorageStatsByType(userId, storageStats, type);
-    if (result != E_OK) {
-        LOGI("Storage status service fuzz test of interface StorageStatusService::GetUserStorageStatsByType failed!");
-        return false;
-    }
-    result = service->GetCurrentBundleStats(bundleStats);
-    if (result != E_OK) {
-        LOGI("Storage status service fuzz test of interface StorageStatusService::GetCurrentBundleStats failed!");
-        return false;
-    }
-    result = service->GetBundleStats(pkgName, userId, bundleStats);
-    if (result != E_OK) {
-        LOGI("Storage status service fuzz test of interface StorageStatusService::GetBundleStats failed!");
-        return false;
-    }
+    std::string metaData(reinterpret_cast<const char *>(data), size);
+    int64_t metaData2 = *(reinterpret_cast<const int64_t *>(data));
+    bundleName.push_back(metaData);
+    incrementalBackTimes.push_back(metaData2);
+    pkgFileSizes.push_back(metaData2);
+    service->GetBundleStats(pkgName, bundleStats);
+    service->GetUserStorageStats(storageStats);
+    service->GetUserStorageStats(userId, storageStats);
+    service->GetUserStorageStatsByType(userId, storageStats, type);
+    service->GetCurrentBundleStats(bundleStats);
+    service->GetBundleStats(pkgName, userId, bundleStats);
     service->GetBundleStatsForIncrease(userId, bundleName, incrementalBackTimes, pkgFileSizes);
     service->ResetBundleMgrProxy();
     return true;
