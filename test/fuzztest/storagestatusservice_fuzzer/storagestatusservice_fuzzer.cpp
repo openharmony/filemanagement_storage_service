@@ -21,7 +21,7 @@ namespace OHOS {
 namespace StorageManager {
 bool StorageStatusServiceFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size <= 0)) {
+    if ((data == nullptr) || (size <= sizeof(int64_t))) {
         return false;
     }
     std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
@@ -35,8 +35,8 @@ bool StorageStatusServiceFuzzTest(const uint8_t *data, size_t size)
     std::vector<int64_t> incrementalBackTimes;
     std::vector<int64_t> pkgFileSizes;
     bundleName.push_back(reinterpret_cast<const char *>(data));
-    incrementalBackTimes.push_back(*data);
-    pkgFileSizes.push_back(*data);
+    incrementalBackTimes.push_back(*(reinterpret_cast<const int64_t *>(data));
+    pkgFileSizes.push_back(*(reinterpret_cast<const int64_t *>(data));
     int32_t result = service->GetBundleStats(pkgName, bundleStats);
     if (result != E_OK) {
         LOGI("Storage status service fuzz test of interface StorageStatusService::GetBundleStats failed!");
