@@ -63,7 +63,13 @@ int32_t AncoKeyManager::SetAncoDirectoryElPolicy(const std::string &path, const 
 int32_t AncoKeyManager::ReadFileAndCreateDir(const std::string &path, const std::string &type,
                                              std::vector<FileList> &vec)
 {
-    std::ifstream infile(path, std::ios::in);
+    char realPath[PATH_MAX] = {0x00};
+    if (realpath(path.c_str(), realPath) == nullptr) {
+        LOGE("path not valid, path = %{private}s", path.c_str());
+        return E_JSON_PARSE_ERROR;
+    }
+
+    std::ifstream infile(std::string(realPath), std::ios::in);
     if (!infile.is_open()) {
         LOGE("Open file failed, errno = %{public}d", errno);
         return E_OPEN_JSON_FILE_ERROR;

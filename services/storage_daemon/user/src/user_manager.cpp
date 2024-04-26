@@ -353,7 +353,7 @@ int32_t UserManager::CheckCrypto(int32_t userId, uint32_t flags)
         return err;
     }
     if (flags & IStorageDaemon::CRYPTO_FLAG_EL1) {
-        int32_t err = PrepareDirsFromIdAndLevel(userId, EL1);
+        err = PrepareDirsFromIdAndLevel(userId, EL1);
         if (err != E_OK) {
             return err;
         }

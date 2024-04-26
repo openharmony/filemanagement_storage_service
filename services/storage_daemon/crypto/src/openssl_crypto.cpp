@@ -14,6 +14,7 @@
  */
 #include "base_key.h"
 #include "err.h"
+#include "huks_master.h"
 #include "key_manager.h"
 #include "key_blob.h"
 #include "openssl_crypto.h"
@@ -84,7 +85,7 @@ bool OpensslCrypto::AESEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, 
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
     }
-    keyContext_.encrypted = KeyBlob(GCM_NONCE_BYTES + plainText.size + GCM_MAC_BYTES);
+    keyContext_.encrypted = HuksMaster::GenerateRandomKey(GCM_NONCE_BYTES + plainText.size + GCM_MAC_BYTES);
     if (EVP_EncryptInit_ex(ctx.get(), EVP_aes_256_gcm(), NULL,
                            reinterpret_cast<const uint8_t*>(shield.data.get()),
                            reinterpret_cast<const uint8_t*>(keyContext_.encrypted.data.get())) !=

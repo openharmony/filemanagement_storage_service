@@ -32,6 +32,7 @@ int GetMaxVolume(dev_t device);
 int32_t ReadMetadata(const std::string &path, std::string &uuid, std::string &type, std::string &label);
 std::string GetBlkidData(const std::string &devPath, const std::string &type);
 std::string GetBlkidDataByCmd(std::vector<std::string> &cmd);
+std::string GetAnonyString(const std::string &value);
 } // namespace STORAGE_DAEMON
 } // namespace OHOS
 

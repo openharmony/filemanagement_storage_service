@@ -357,10 +357,10 @@ bool BaseKey::RestoreKey(const UserAuth &auth)
     auto candidate = GetCandidateDir();
     if (candidate.empty()) {
         // no candidate dir, just restore from the latest
-        return DoRestoreKey(auth, dir_ + PATH_LATEST);
+        return DoRestoreKeyEx(auth, dir_ + PATH_LATEST);
     }
 
-    if (DoRestoreKey(auth, candidate)) {
+    if (DoRestoreKeyEx(auth, candidate)) {
         // update the latest with the candidate
         UpdateKey();
         return true;
@@ -381,13 +381,39 @@ bool BaseKey::RestoreKey(const UserAuth &auth)
     });
     for (const auto &it: files) {
         if (it != candidate) {
-            if (DoRestoreKey(auth, dir_ + "/" + it)) {
+            if (DoRestoreKeyEx(auth, dir_ + "/" + it)) {
                 UpdateKey(it);
                 return true;
             }
         }
     }
     return false;
+}
+
+bool BaseKey::DoRestoreKeyEx(const UserAuth &auth, const std::string &keyPath)
+{
+    LOGD("enter restore key ex");
+    if (!DoRestoreKey(auth, keyPath)) {
+        LOGE("First restore failed !");
+        return false;
+    }
+    if (keyEncryptType_ == KeyEncryptType::KEY_CRYPT_HUKS) {
+        LOGE("Key encrypted by huks, skip !");
+        return true;
+    }
+    if (!StoreKey(auth)) {
+        LOGE("Store key failed !");
+        return false;
+    }
+    if (!UpdateKey()) {
+        LOGE("Update key context failed !");
+        return false;
+    }
+    if (!DoRestoreKey(auth, keyPath)) {
+        LOGE("Second restore failed !");
+        return false;
+    }
+    return true;
 }
 
 bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)

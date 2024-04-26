@@ -31,6 +31,7 @@ constexpr size_t INDEX_2 = 2;
 #ifdef SDC_TEST_ENABLE
 constexpr int32_t ARG_CNT_4 = 4;
 constexpr int32_t ARG_CNT_5 = 5;
+constexpr int32_t ARG_CNT_6 = 6;
 constexpr size_t INDEX_3 = 3;
 constexpr size_t INDEX_4 = 4;
 constexpr size_t INDEX_5 = 5;
@@ -129,7 +130,7 @@ static int32_t UpdateUserAuth(const std::vector<std::string> &args)
     }
 
     // 4 means take the fifth argument of args, 5 means take the sixth argument of args
-    if (args.size() == 6) {
+    if (args.size() == ARG_CNT_6) {
         std::vector<uint8_t> oldSecret(args[INDEX_4].begin(), args[INDEX_4].end());
         std::vector<uint8_t> newSecret(args[INDEX_5].begin(), args[INDEX_5].end());
         return OHOS::StorageDaemon::StorageDaemonClient::UpdateUserAuth(userId, 0, {}, oldSecret, newSecret);
@@ -151,7 +152,7 @@ static int32_t ActiveUserKey(const std::vector<std::string> &args)
         return -EINVAL;
     }
     // 4 means take the fifth argument of args
-    if (args.size() == 5) {
+    if (args.size() == ARG_CNT_5) {
         std::vector<uint8_t> secret(args[INDEX_4].begin(), args[INDEX_4].end());
         return OHOS::StorageDaemon::StorageDaemonClient::ActiveUserKey(userId, {}, secret);
     }
