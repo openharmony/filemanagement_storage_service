@@ -29,6 +29,7 @@ ohos_unittest("storage_manager_proxy_test") {
     "${storage_manager_path}/disk/src/disk_manager_service.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_manager_proxy.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
+    "${storage_manager_path}/utils/src/storage_utils.cpp",
     "${storage_manager_path}/volume/src/notification.cpp",
     "${storage_manager_path}/volume/src/volume_manager_service.cpp",
     "storage_manager_proxy_test.cpp",
@@ -103,6 +104,7 @@ ohos_unittest("storage_manager_stub_test") {
     "${storage_manager_path}/innerkits_impl/src/volume_external.cpp",
     "${storage_manager_path}/ipc/src/storage_manager_stub.cpp",
     "${storage_manager_path}/ipc/test/storage_manager_stub_test.cpp",
+    "${storage_manager_path}/utils/src/storage_utils.cpp",
   ]
 
   deps = [
@@ -161,6 +163,7 @@ ohos_unittest("storage_manager_stub_nonpermission_test") {
     "${storage_manager_path}/innerkits_impl/src/volume_external.cpp",
     "${storage_manager_path}/ipc/src/storage_manager_stub.cpp",
     "${storage_manager_path}/ipc/test/storage_manager_stub_noper_test.cpp",
+    "${storage_manager_path}/utils/src/storage_utils.cpp",
   ]
 
   deps = [

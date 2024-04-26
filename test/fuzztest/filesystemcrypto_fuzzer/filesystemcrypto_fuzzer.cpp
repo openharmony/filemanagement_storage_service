@@ -36,7 +36,7 @@ std::shared_ptr<FileSystemCrypto> fileSystem =
 
 bool GenerateUserKeysFuzzTest(const uint8_t *data, size_t size)
 {
-    if (data == nullptr || size <= sizeof(uint32_t)) {
+    if (data == nullptr || size <= sizeof(uint32_t) + sizeof(uint32_t)) {
         return false;
     }
 
@@ -71,7 +71,7 @@ bool DeleteUserKeysFuzzTest(const uint8_t *data, size_t size)
 
 bool UpdateUserAuthFuzzTest(const uint8_t *data, size_t size)
 {
-    if (data == nullptr || size <= sizeof(uint32_t)) {
+    if (data == nullptr || size <= sizeof(uint32_t) + sizeof(uint64_t)) {
         return false;
     }
 
@@ -96,7 +96,7 @@ bool UpdateUserAuthFuzzTest(const uint8_t *data, size_t size)
 
 bool ActiveUserKeyFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size <= 0)) {
+    if ((data == nullptr) || (size <= sizeof(uint32_t))) {
         return false;
     }
 
@@ -118,7 +118,7 @@ bool ActiveUserKeyFuzzTest(const uint8_t *data, size_t size)
 
 bool InactiveUserKeyFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size <= 0)) {
+    if ((data == nullptr) || (size <= sizeof(uint32_t))) {
         return false;
     }
 
@@ -135,7 +135,7 @@ bool InactiveUserKeyFuzzTest(const uint8_t *data, size_t size)
 
 bool UpdateKeyContextFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size <= 0)) {
+    if ((data == nullptr) || (size <= sizeof(uint32_t))) {
         return false;
     }
 
@@ -152,7 +152,7 @@ bool UpdateKeyContextFuzzTest(const uint8_t *data, size_t size)
 
 bool LockUserScreenFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size <= 0)) {
+    if ((data == nullptr) || (size <= sizeof(uint32_t))) {
         return false;
     }
 
@@ -169,7 +169,7 @@ bool LockUserScreenFuzzTest(const uint8_t *data, size_t size)
 
 bool UnlockUserScreenFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size <= 0)) {
+    if ((data == nullptr) || (size <= sizeof(uint32_t))) {
         return false;
     }
 
@@ -186,7 +186,7 @@ bool UnlockUserScreenFuzzTest(const uint8_t *data, size_t size)
 
 bool GetLockScreenStatusFuzzTest(const uint8_t *data, size_t size)
 {
-    if (data == nullptr || size <= sizeof(uint32_t)) {
+    if (data == nullptr || size <= sizeof(uint32_t) + sizeof(bool)) {
         return false;
     }
 
