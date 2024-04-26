@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -29,22 +29,24 @@ using namespace std;
 
 namespace OHOS {
 namespace StorageDaemon {
+static constexpr int MODE_0711 = 0711;
+static constexpr int MODE_02771 = 02771;
 std::shared_ptr<UserManager> UserManager::instance_ = nullptr;
 UserManager::UserManager()
-    : rootDirVec_{{"/data/app/%s/%d", 0711, OID_ROOT, OID_ROOT},
-                  {"/data/service/%s/%d", 0711, OID_ROOT, OID_ROOT},
-                  {"/data/chipset/%s/%d", 0711, OID_ROOT, OID_ROOT}},
-      eceSeceDirVec_{{"/data/app/%s/%d", 0711, OID_ROOT, OID_ROOT},
-                     {"/data/service/%s/%d", 0711, OID_ROOT, OID_ROOT}},
-      subDirVec_{{"/data/app/%s/%d/base", 0711, OID_ROOT, OID_ROOT},
-                 {"/data/app/%s/%d/database", 0711, OID_ROOT, OID_ROOT}},
-      el2DirVec_{{"/data/service/el2/%d/backup", 02771, OID_BACKUP, OID_BACKUP},
-                 {"/data/service/el2/%d/backup/backup_sa", 0711, OID_BACKUP, OID_BACKUP},
-                 {"/data/service/el2/%d/backup/bundles", 0711, OID_BACKUP, OID_BACKUP},
-                 {"/data/app/el2/%d/log", 0711, OID_ROOT, OID_ROOT}},
-      el1DirVec_{{"/data/service/el1/%d/distributeddata", 0711, OID_DDMS, OID_DDMS},
-                 {"/data/service/el1/%d/backup", 02711, OID_BACKUP, OID_BACKUP},
-                 {"/data/service/el1/%d/backup/bundles", 0711, OID_BACKUP, OID_BACKUP}}
+    : rootDirVec_{{"/data/app/%s/%d", MODE_0711, OID_ROOT, OID_ROOT},
+                  {"/data/service/%s/%d", MODE_0711, OID_ROOT, OID_ROOT},
+                  {"/data/chipset/%s/%d", MODE_0711, OID_ROOT, OID_ROOT}},
+      eceSeceDirVec_{{"/data/app/%s/%d", MODE_0711, OID_ROOT, OID_ROOT},
+                     {"/data/service/%s/%d", MODE_0711, OID_ROOT, OID_ROOT}},
+      subDirVec_{{"/data/app/%s/%d/base", MODE_0711, OID_ROOT, OID_ROOT},
+                 {"/data/app/%s/%d/database", MODE_0711, OID_ROOT, OID_ROOT}},
+      el2DirVec_{{"/data/service/el2/%d/backup", MODE_02771, OID_BACKUP, OID_BACKUP},
+                 {"/data/service/el2/%d/backup/backup_sa", MODE_0711, OID_BACKUP, OID_BACKUP},
+                 {"/data/service/el2/%d/backup/bundles", MODE_0711, OID_BACKUP, OID_BACKUP},
+                 {"/data/app/el2/%d/log", MODE_0711, OID_ROOT, OID_ROOT}},
+      el1DirVec_{{"/data/service/el1/%d/distributeddata", MODE_0711, OID_DDMS, OID_DDMS},
+                 {"/data/service/el1/%d/backup", MODE_02771, OID_BACKUP, OID_BACKUP},
+                 {"/data/service/el1/%d/backup/bundles", MODE_0711, OID_BACKUP, OID_BACKUP}}
 {
 }
 
@@ -84,46 +86,9 @@ int32_t UserManager::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
     LOGI("prepare user dirs for %{public}d, flags %{public}u", userId, flags);
     std::lock_guard<std::mutex> lock(mutex_);
-    int32_t err = CheckUserIdRange(userId);
+    int32_t err = CheckCrypto(userId, flags);
     if (err != E_OK) {
-        LOGE("UserManager::PrepareUserDirs userId %{public}d out of range", userId);
         return err;
-    }
-    if (flags & IStorageDaemon::CRYPTO_FLAG_EL1) {
-        err = PrepareDirsFromIdAndLevel(userId, EL1);
-        if (err != E_OK) {
-            return err;
-        }
-        err = PrepareEl1BundleDir(userId);
-        if (err != E_OK) {
-            return err;
-        }
-        int32_t errorCode = PrepareEl1Dir(userId);
-        if (errorCode != E_OK) {
-            LOGW("Prepare el1 dir fail, %{public}d.", errorCode);
-        }
-    }
-    if (flags & IStorageDaemon::CRYPTO_FLAG_EL2) {
-        err = PrepareDirsFromIdAndLevel(userId, EL2);
-        if (err != E_OK) {
-            return err;
-        }
-        err = PrepareEl2BackupDir(userId);
-        if (err != E_OK) {
-            return err;
-        }
-    }
-    if (flags & IStorageDaemon::CRYPTO_FLAG_EL3) {
-        err = PrepareDirsFromIdAndLevel(userId, EL3);
-        if (err != E_OK) {
-            return err;
-        }
-    }
-    if (flags & IStorageDaemon::CRYPTO_FLAG_EL4) {
-        err = PrepareDirsFromIdAndLevel(userId, EL4);
-        if (err != E_OK) {
-            return err;
-        }
     }
     if (flags & IStorageDaemon::CRYPTO_FLAG_EL2) {
         err = MountManager::GetInstance()->PrepareHmdfsDirs(userId);
@@ -273,7 +238,7 @@ int32_t UserManager::DestroyDirsFromIdAndLevel(int32_t userId, const std::string
 
 int32_t UserManager::PrepareEl1BundleDir(int32_t userId)
 {
-    if (!PrepareDir(StringPrintf(bundle_.c_str(), userId), 0711, OID_ROOT, OID_ROOT)) {
+    if (!PrepareDir(StringPrintf(bundle_.c_str(), userId), MODE_0711, OID_ROOT, OID_ROOT)) {
         return E_PREPARE_DIR;
     }
 
@@ -378,6 +343,52 @@ void UserManager::CreateBundleDataDir(uint32_t userId)
     LOGI("CreateBundleDataDir start: userId %{public}u", userId);
     auto ret = client.CreateBundleDataDir(userId);
     LOGI("CreateBundleDataDir end: userId %{public}u, ret %{public}d", userId, ret);
+}
+
+int32_t UserManager::CheckCrypto(int32_t userId, uint32_t flags)
+{
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("UserManager::PrepareUserDirs userId %{public}d out of range", userId);
+        return err;
+    }
+    if (flags & IStorageDaemon::CRYPTO_FLAG_EL1) {
+        err = PrepareDirsFromIdAndLevel(userId, EL1);
+        if (err != E_OK) {
+            return err;
+        }
+        err = PrepareEl1BundleDir(userId);
+        if (err != E_OK) {
+            return err;
+        }
+        int32_t errorCode = PrepareEl1Dir(userId);
+        if (errorCode != E_OK) {
+            LOGW("Prepare el1 dir fail, %{public}d.", errorCode);
+        }
+    }
+    if (flags & IStorageDaemon::CRYPTO_FLAG_EL2) {
+        err = PrepareDirsFromIdAndLevel(userId, EL2);
+        if (err != E_OK) {
+            return err;
+        }
+        err = PrepareEl2BackupDir(userId);
+        if (err != E_OK) {
+            return err;
+        }
+    }
+    if (flags & IStorageDaemon::CRYPTO_FLAG_EL3) {
+        err = PrepareDirsFromIdAndLevel(userId, EL3);
+        if (err != E_OK) {
+            return err;
+        }
+    }
+    if (flags & IStorageDaemon::CRYPTO_FLAG_EL4) {
+        err = PrepareDirsFromIdAndLevel(userId, EL4);
+        if (err != E_OK) {
+            return err;
+        }
+    }
+    return E_OK;
 }
 } // namespace StorageDaemon
 } // namespace OHOS

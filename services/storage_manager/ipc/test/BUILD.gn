@@ -15,12 +15,21 @@ import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ohos_unittest("storage_manager_proxy_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
+  }
   module_out_path = "storage_service/storage_manager"
 
   sources = [
     "${storage_manager_path}/disk/src/disk_manager_service.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_manager_proxy.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
+    "${storage_manager_path}/utils/src/storage_utils.cpp",
     "${storage_manager_path}/volume/src/notification.cpp",
     "${storage_manager_path}/volume/src/volume_manager_service.cpp",
     "storage_manager_proxy_test.cpp",
@@ -62,6 +71,14 @@ ohos_unittest("storage_manager_proxy_test") {
 }
 
 ohos_unittest("storage_manager_stub_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
+  }
   module_out_path = "storage_service/storage_manager"
 
   defines = [
@@ -87,6 +104,7 @@ ohos_unittest("storage_manager_stub_test") {
     "${storage_manager_path}/innerkits_impl/src/volume_external.cpp",
     "${storage_manager_path}/ipc/src/storage_manager_stub.cpp",
     "${storage_manager_path}/ipc/test/storage_manager_stub_test.cpp",
+    "${storage_manager_path}/utils/src/storage_utils.cpp",
   ]
 
   deps = [
@@ -145,6 +163,7 @@ ohos_unittest("storage_manager_stub_nonpermission_test") {
     "${storage_manager_path}/innerkits_impl/src/volume_external.cpp",
     "${storage_manager_path}/ipc/src/storage_manager_stub.cpp",
     "${storage_manager_path}/ipc/test/storage_manager_stub_noper_test.cpp",
+    "${storage_manager_path}/utils/src/storage_utils.cpp",
   ]
 
   deps = [

@@ -44,6 +44,7 @@ public:
         mediaShare_ = sptr;
     }
 
+    static void ResetUserEventRecord(int32_t userId);
 private:
     static std::shared_ptr<DataShare::DataShareHelper> mediaShare_;
     std::mutex mutex_;

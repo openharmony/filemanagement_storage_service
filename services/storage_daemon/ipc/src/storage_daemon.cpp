@@ -18,6 +18,8 @@
 #include <dlfcn.h>
 #include <fcntl.h>
 #include <fstream>
+
+#include "crypto/anco_key_manager.h"
 #ifdef USER_CRYPTO_MANAGER
 #include "crypto/key_manager.h"
 #endif
@@ -59,6 +61,11 @@ static const std::string VFS_CACHE_PRESSURE = "/proc/sys/vm/vfs_cache_pressure";
 const std::string DATA_SERVICE_EL2 = "/data/service/el2/";
 const std::string DATA_SERVICE_EL3 = "/data/service/el3/";
 const std::string DATA_SERVICE_EL4 = "/data/service/el4/";
+const std::string CONFIG_FILE_PATH = "/data/virt_service/rgm_manager/rgm_hmos/config/storage/direnc.json";
+const std::string USER_PATH = "/data/app/el1/100";
+const std::string ANCO_TYPE_SYS_EL1 = "encryption=Require_Sys_EL1";
+const std::string ANCO_TYPE_USER_EL1 = "encryption=Require_User_EL1";
+const std::string ANCO_TYPE_USER_EL2 = "encryption=Require_User_EL2";
 
 typedef int32_t (*CreateShareFileFunc)(const std::vector<std::string> &, uint32_t, uint32_t, std::vector<int32_t> &);
 typedef int32_t (*DeleteShareFileFunc)(uint32_t, const std::vector<std::string> &);
@@ -309,8 +316,10 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
         return ret;
     }
 #endif
+    auto result = UserManager::GetInstance()->PrepareUserDirs(GLOBAL_USER_ID, CRYPTO_FLAG_EL1);
 
-    return UserManager::GetInstance()->PrepareUserDirs(GLOBAL_USER_ID, CRYPTO_FLAG_EL1);
+    AncoInitCryptKey();
+    return result;
 }
 
 int32_t StorageDaemon::GenerateUserKeys(uint32_t userId, uint32_t flags)
@@ -510,12 +519,16 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
     if (updateFlag) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
     }
+
+    AncoActiveCryptKey(userId);
     return ret;
 #else
     RestoreconElX(userId);
     if (updateFlag) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
     }
+
+    AncoActiveCryptKey(userId);
     return E_OK;
 #endif
 }
@@ -717,5 +730,35 @@ void StorageDaemon::SystemAbilityStatusChangeListener::OnRemoveSystemAbility(int
     }
 }
 
-} // StorageDaemon
-} // OHOS
+void StorageDaemon::AncoInitCryptKey()
+{
+    std::error_code errorCode;
+    if (std::filesystem::exists(CONFIG_FILE_PATH, errorCode)) {
+        auto ret = AncoKeyManager::GetInstance()->SetAncoDirectoryElPolicy(CONFIG_FILE_PATH, ANCO_TYPE_SYS_EL1,
+                                                                           GLOBAL_USER_ID);
+        if (ret != E_OK) {
+            LOGE("SetAncoDirectoryElPolicy failed, ret = %{public}d", ret);
+        }
+        if (std::filesystem::exists(USER_PATH, errorCode)) {
+            ret = AncoKeyManager::GetInstance()->SetAncoDirectoryElPolicy(CONFIG_FILE_PATH, ANCO_TYPE_USER_EL1,
+                                                                          ANCO_USER_ID);
+            if (ret != E_OK) {
+                LOGE("SetAncoDirectoryElPolicy failed, ret = %{public}d", ret);
+            }
+        }
+    }
+}
+
+void StorageDaemon::AncoActiveCryptKey(uint32_t userId)
+{
+    std::error_code errorCode;
+    if (std::filesystem::exists(CONFIG_FILE_PATH, errorCode)) {
+        auto ret = AncoKeyManager::GetInstance()->SetAncoDirectoryElPolicy(CONFIG_FILE_PATH, ANCO_TYPE_USER_EL2,
+                                                                           userId);
+        if (ret != E_OK) {
+            LOGE("SetAncoDirectoryElPolicy failed, ret = %{public}d", ret);
+        }
+    }
+}
+} // namespace StorageDaemon
+} // namespace OHOS

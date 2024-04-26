@@ -40,6 +40,7 @@ using namespace OHOS::AAFwk;
 using namespace OHOS::AccountSA;
 namespace OHOS {
 namespace StorageManager {
+static std::mutex userRecordLock;
 std::shared_ptr<DataShare::DataShareHelper> AccountSubscriber::mediaShare_ = nullptr;
 
 AccountSubscriber::AccountSubscriber(const EventFwk::CommonEventSubscribeInfo &subscriberInfo)
@@ -73,6 +74,15 @@ static void MountCryptoPathAgain(int32_t userId)
     LOGI("MountCryptoPathAgain success");
 }
 
+void AccountSubscriber::ResetUserEventRecord(int32_t userId)
+{
+    LOGI("ResetUserEventRecord start, userId is %{public}d", userId);
+    if (AccountSubscriber_->userRecord_.find(userId) != AccountSubscriber_->userRecord_.end()) {
+        std::lock_guard<std::mutex> lock(userRecordLock);
+        AccountSubscriber_->userRecord_.erase(userId);
+    }
+}
+
 void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventData)
 {
     const AAFwk::Want& want = eventData.GetWant();
@@ -88,6 +98,9 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
     }
     /* update status */
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USER_UNLOCKED) {
+        if (status == (1 << USER_UNLOCK_BIT | 1 << USER_SWITCH_BIT)) {
+            status = 0;
+        }
         status |= 1 << USER_UNLOCK_BIT;
     } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USER_SWITCHED) {
         status |= 1 << USER_SWITCH_BIT;
@@ -107,7 +120,8 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
         if (!OnReceiveEventLockUserScreen(userId)) {
             LOGE("user %{public}u LockUserScreen fail", userId);
         }
-        LOGI("Handle EventFwk::CommonEventSupport::Common_EVENT_SCREEN_LOCKED finished!");
+        LOGI("Handle EventFwk::CommonEventSupport::Common_EVENT_SCREEN_LOCKED finished, userId is %{public}u",
+            userId);
         return;
     }
     userId_ = userId;

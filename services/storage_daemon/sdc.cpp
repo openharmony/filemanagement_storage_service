@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Huawei Device Co., Ltd.
+ * Copyright (C) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,9 +24,17 @@
 #include "storage_service_log.h"
 #include "utils/file_utils.h"
 
+constexpr int32_t ARG_CNT_2 = 2;
+constexpr size_t INDEX_1 = 1;
+constexpr size_t INDEX_2 = 2;
+
 #ifdef SDC_TEST_ENABLE
 constexpr int32_t ARG_CNT_4 = 4;
 constexpr int32_t ARG_CNT_5 = 5;
+constexpr int32_t ARG_CNT_6 = 6;
+constexpr size_t INDEX_3 = 3;
+constexpr size_t INDEX_4 = 4;
+constexpr size_t INDEX_5 = 5;
 #endif
 
 static int32_t InitGlobalKey(const std::vector<std::string> &args)
@@ -51,8 +59,8 @@ static int32_t GenerateUserKeys(const std::vector<std::string> &args)
     uint32_t userId;
     uint32_t flags;
     // 3 means take the fourth argument of args, 4 means take the fifth argument of args
-    if ((OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) ||
-        (OHOS::StorageDaemon::StringToUint32(args[4], flags) == false)) {
+    if ((OHOS::StorageDaemon::StringToUint32(args[INDEX_3], userId) == false) ||
+        (OHOS::StorageDaemon::StringToUint32(args[INDEX_4], flags) == false)) {
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }
@@ -68,8 +76,8 @@ static int32_t PrepareUserSpace(const std::vector<std::string> &args)
     uint32_t userId;
     uint32_t flags;
     // 3 means take the fourth argument of args, 4 means take the fifth argument of args
-    if ((OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) ||
-        (OHOS::StorageDaemon::StringToUint32(args[4], flags) == false)) {
+    if ((OHOS::StorageDaemon::StringToUint32(args[INDEX_3], userId) == false) ||
+        (OHOS::StorageDaemon::StringToUint32(args[INDEX_4], flags) == false)) {
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }
@@ -84,7 +92,7 @@ static int32_t DeleteUserKeys(const std::vector<std::string> &args)
     }
     uint32_t userId;
     // 3 means take the fourth argument of args
-    if (OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) {
+    if (OHOS::StorageDaemon::StringToUint32(args[INDEX_3], userId) == false) {
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }
@@ -100,8 +108,8 @@ static int32_t DestroyUserSpace(const std::vector<std::string> &args)
     uint32_t userId;
     uint32_t flags;
     // 3 means take the fourth argument of args, 4 means take the fifth argument of args
-    if (OHOS::StorageDaemon::StringToUint32(args[3], userId) == false ||
-        OHOS::StorageDaemon::StringToUint32(args[4], flags) == false) {
+    if (OHOS::StorageDaemon::StringToUint32(args[INDEX_3], userId) == false ||
+        OHOS::StorageDaemon::StringToUint32(args[INDEX_4], flags) == false) {
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }
@@ -116,18 +124,18 @@ static int32_t UpdateUserAuth(const std::vector<std::string> &args)
     }
     uint32_t userId;
     // 3 means take the fourth argument of args
-    if (OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) {
+    if (OHOS::StorageDaemon::StringToUint32(args[INDEX_3], userId) == false) {
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }
 
     // 4 means take the fifth argument of args, 5 means take the sixth argument of args
-    if (args.size() == 6) {
-        std::vector<uint8_t> oldSecret(args[4].begin(), args[4].end());
-        std::vector<uint8_t> newSecret(args[5].begin(), args[5].end());
+    if (args.size() == ARG_CNT_6) {
+        std::vector<uint8_t> oldSecret(args[INDEX_4].begin(), args[INDEX_4].end());
+        std::vector<uint8_t> newSecret(args[INDEX_5].begin(), args[INDEX_5].end());
         return OHOS::StorageDaemon::StorageDaemonClient::UpdateUserAuth(userId, 0, {}, oldSecret, newSecret);
     }
-    std::vector<uint8_t> newSecret(args[4].begin(), args[4].end());
+    std::vector<uint8_t> newSecret(args[INDEX_4].begin(), args[INDEX_4].end());
     return OHOS::StorageDaemon::StorageDaemonClient::UpdateUserAuth(userId, 0, {}, {}, newSecret);
 }
 
@@ -139,13 +147,13 @@ static int32_t ActiveUserKey(const std::vector<std::string> &args)
     }
     uint32_t userId;
     // 3 means take the fourth argument of args
-    if (OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) {
+    if (OHOS::StorageDaemon::StringToUint32(args[INDEX_3], userId) == false) {
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }
     // 4 means take the fifth argument of args
-    if (args.size() == 5) {
-        std::vector<uint8_t> secret(args[4].begin(), args[4].end());
+    if (args.size() == ARG_CNT_5) {
+        std::vector<uint8_t> secret(args[INDEX_4].begin(), args[INDEX_4].end());
         return OHOS::StorageDaemon::StorageDaemonClient::ActiveUserKey(userId, {}, secret);
     }
     return OHOS::StorageDaemon::StorageDaemonClient::ActiveUserKey(userId, {}, {});
@@ -159,7 +167,7 @@ static int32_t InactiveUserKey(const std::vector<std::string> &args)
     }
     uint32_t userId;
     // 3 means take the fourth argument of args
-    if (OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) {
+    if (OHOS::StorageDaemon::StringToUint32(args[INDEX_3], userId) == false) {
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }
@@ -174,7 +182,7 @@ static int32_t LockUserScreen(const std::vector<std::string> &args)
     }
     uint32_t userId;
     // 3 means take the fourth argument of args
-    if (OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) {
+    if (OHOS::StorageDaemon::StringToUint32(args[INDEX_3], userId) == false) {
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }
@@ -189,7 +197,7 @@ static int32_t UnlockUserScreen(const std::vector<std::string> &args)
     }
     uint32_t userId;
     // 3 means take the fourth argument of args
-    if (OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) {
+    if (OHOS::StorageDaemon::StringToUint32(args[INDEX_3], userId) == false) {
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }
@@ -202,7 +210,7 @@ static int32_t EnableFscrypt(const std::vector<std::string> &args)
         LOGE("Parameter nums is less than 4, please retry");
         return -EINVAL;
     }
-    auto option = args[3]; // cmd no.3 param is the option
+    auto option = args[INDEX_3]; // cmd no.3 param is the option
     return OHOS::StorageDaemon::StorageDaemonClient::FscryptEnable(option);
 }
 
@@ -214,7 +222,7 @@ static int32_t UpdateKeyContext(const std::vector<std::string> &args)
     }
     uint32_t userId;
     // 3 means take the fourth argument of args
-    if (OHOS::StorageDaemon::StringToUint32(args[3], userId) == false) {
+    if (OHOS::StorageDaemon::StringToUint32(args[INDEX_3], userId) == false) {
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }
@@ -264,17 +272,17 @@ int main(int argc, char **argv)
     LOGI("sdc start");
     std::vector<std::string> args(argv, argv + argc);
 
-    if (argc < 2) {
+    if (argc < ARG_CNT_2) {
         LOGE("usage: sdc <subsystem> [cmd]");
         return 0;
     }
 
     int ret = 0;
     // no.1 param is the cmd
-    if (args[1] == "filecrypt") {
-        ret = HandleFileCrypt(args[2], args); // no.2 param is the cmd
+    if (args[INDEX_1] == "filecrypt") {
+        ret = HandleFileCrypt(args[INDEX_2], args); // no.2 param is the cmd
     } else {
-        LOGE("Unknown subsystem: %{public}s", args[1].c_str()); // no.1 param is the cmd
+        LOGE("Unknown subsystem: %{public}s", args[INDEX_1].c_str()); // no.1 param is the cmd
         ret = -EINVAL;
     }
 

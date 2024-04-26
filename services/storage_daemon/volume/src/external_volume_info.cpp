@@ -196,7 +196,7 @@ int32_t ExternalVolumeInfo::DoCheck()
 {
     int32_t ret = ExternalVolumeInfo::ReadMetadata();
     if (ret) {
-        LOGE("External volume uuid=%{public}s DoCheck failed.", GetFsUuid().c_str());
+        LOGE("External volume uuid=%{public}s DoCheck failed.", GetAnonyString(GetFsUuid()).c_str());
         return E_ERR;
     }
 
@@ -255,14 +255,6 @@ int32_t ExternalVolumeInfo::DoSetVolDesc(std::string description)
             "exfatlabel",
             devPath_,
             description
-        };
-        err = ForkExec(cmd);
-    } else if (fsType_ == "vfat") {
-        std::vector<std::string> cmd = {
-            "newfs_msdos",
-            "-L",
-            description,
-            devPath_
         };
         err = ForkExec(cmd);
     } else {

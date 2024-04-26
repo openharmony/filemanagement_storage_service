@@ -19,10 +19,7 @@ config("fscrypt_utils_config") {
 
   include_dirs = [
     "../include/libfscrypt",
-    "${start_init_interfaces_path}/innerkits/include",
     "${start_init_services_path}/log",
-    "${start_init_interfaces_path}/innerkits/include",
-    "${start_init_interfaces_path}/innerkits/include/param",
     "${storage_service_common_path}/include",
   ]
 
@@ -44,7 +41,7 @@ config("fscrypt_utils_public_config") {
 }
 
 ohos_static_library("libfscryptutils") {
-  stack_protector_ret = true
+  branch_protector_ret = "pac_ret"
   sanitize = {
     integer_overflow = true
     ubsan = true
@@ -79,7 +76,7 @@ ohos_static_library("libfscryptutils") {
 }
 
 ohos_static_library("libfscryptutils_static") {
-  stack_protector_ret = true
+  branch_protector_ret = "pac_ret"
   sanitize = {
     integer_overflow = true
     ubsan = true
@@ -105,11 +102,11 @@ ohos_static_library("libfscryptutils_static") {
   public_configs = [ ":fscrypt_utils_public_config" ]
 
   external_deps = [
+    "bounds_checking_function:libsec_static",
     "c_utils:utils",
     "init:libbegetutil",
   ]
 
   subsystem_name = "filemanagement"
   part_name = "storage_service"
-  deps = [ "//third_party/bounds_checking_function:libsec_static" ]
 }

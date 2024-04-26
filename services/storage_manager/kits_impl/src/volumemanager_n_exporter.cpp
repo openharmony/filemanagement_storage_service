@@ -21,12 +21,12 @@
 #include "n_async/n_async_work_callback.h"
 #include "n_async/n_async_work_promise.h"
 #include "n_class.h"
+#include "n_error.h"
 #include "n_func_arg.h"
 #include "n_val.h"
-#include "n_error.h"
 #include "storage_manager_connect.h"
-#include "storage_service_log.h"
 #include "storage_service_errno.h"
+#include "storage_service_log.h"
 
 using namespace OHOS::StorageManager;
 using namespace OHOS::FileManagement::LibN;
@@ -34,15 +34,24 @@ using namespace OHOS::FileManagement::LibN;
 namespace OHOS {
 namespace StorageManager {
 namespace ModuleVolumeManager {
-napi_value GetAllVolumes(napi_env env, napi_callback_info info)
+bool CheckVolumes(napi_env env, napi_callback_info info, NFuncArg& funcArg)
 {
     if (!IsSystemApp()) {
         NError(E_PERMISSION_SYS).ThrowErr(env);
-        return nullptr;
+        return false;
     }
-    NFuncArg funcArg(env, info);
     if (!funcArg.InitArgs((int)NARG_CNT::ZERO, (int)NARG_CNT::ONE)) {
         NError(E_PARAMS).ThrowErr(env);
+        return false;
+    }
+    return true;
+}
+
+napi_value GetAllVolumes(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+    bool checkresult = CheckVolumes(env, info, funcArg);
+    if (!checkresult) {
         return nullptr;
     }
     auto volumeInfo = std::make_shared<std::vector<VolumeExternal>>();
@@ -89,19 +98,27 @@ napi_value GetAllVolumes(napi_env env, napi_callback_info info)
     }
 }
 
-
-napi_value Mount(napi_env env, napi_callback_info info)
+bool CheckMount(napi_env env, napi_callback_info info, NFuncArg& funcArg)
 {
     if (!IsSystemApp()) {
         NError(E_PERMISSION_SYS).ThrowErr(env);
-        return nullptr;
+        return false;
     }
-    NFuncArg funcArg(env, info);
     if (!funcArg.InitArgs((int)NARG_CNT::ONE, (int)NARG_CNT::TWO)) {
         NError(E_PARAMS).ThrowErr(env);
+        return false;
+    }
+    return true;
+}
+
+
+napi_value Mount(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+    bool checkresult = CheckMount(env, info, funcArg);
+    if (!checkresult) {
         return nullptr;
     }
-
     bool succ = false;
     std::unique_ptr<char []> volumeId;
     tie(succ, volumeId, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
@@ -137,16 +154,11 @@ napi_value Mount(napi_env env, napi_callback_info info)
 
 napi_value Unmount(napi_env env, napi_callback_info info)
 {
-    if (!IsSystemApp()) {
-        NError(E_PERMISSION_SYS).ThrowErr(env);
-        return nullptr;
-    }
     NFuncArg funcArg(env, info);
-    if (!funcArg.InitArgs((int)NARG_CNT::ONE, (int)NARG_CNT::TWO)) {
-        NError(E_PARAMS).ThrowErr(env);
+    bool checkresult = CheckMount(env, info, funcArg);
+    if (!checkresult) {
         return nullptr;
     }
-
     bool succ = false;
     std::unique_ptr<char []> volumeId;
     tie(succ, volumeId, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
@@ -183,16 +195,11 @@ napi_value Unmount(napi_env env, napi_callback_info info)
 
 napi_value GetVolumeByUuid(napi_env env, napi_callback_info info)
 {
-    if (!IsSystemApp()) {
-        NError(E_PERMISSION_SYS).ThrowErr(env);
-        return nullptr;
-    }
     NFuncArg funcArg(env, info);
-    if (!funcArg.InitArgs((int)NARG_CNT::ONE, (int)NARG_CNT::TWO)) {
-        NError(E_PARAMS).ThrowErr(env);
+    bool checkresult = CheckMount(env, info, funcArg);
+    if (!checkresult) {
         return nullptr;
     }
-
     bool succ = false;
     std::unique_ptr<char []> uuid;
     tie(succ, uuid, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
@@ -200,7 +207,6 @@ napi_value GetVolumeByUuid(napi_env env, napi_callback_info info)
         NError(E_PARAMS).ThrowErr(env);
         return nullptr;
     }
-
     auto volumeInfo = std::make_shared<VolumeExternal>();
     std::string uuidString(uuid.get());
     auto cbExec = [uuidString, volumeInfo]() -> NError {
@@ -241,16 +247,11 @@ napi_value GetVolumeByUuid(napi_env env, napi_callback_info info)
 
 napi_value GetVolumeById(napi_env env, napi_callback_info info)
 {
-    if (!IsSystemApp()) {
-        NError(E_PERMISSION_SYS).ThrowErr(env);
-        return nullptr;
-    }
     NFuncArg funcArg(env, info);
-    if (!funcArg.InitArgs((int)NARG_CNT::ONE, (int)NARG_CNT::TWO)) {
-        NError(E_PARAMS).ThrowErr(env);
+    bool checkresult = CheckMount(env, info, funcArg);
+    if (!checkresult) {
         return nullptr;
     }
-
     bool succ = false;
     std::unique_ptr<char []> volumeId;
     tie(succ, volumeId, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();

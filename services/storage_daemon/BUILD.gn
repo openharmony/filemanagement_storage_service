@@ -27,7 +27,6 @@ ohos_prebuilt_etc("storage_daemon_cfg") {
 config("storage_daemon_config") {
   include_dirs = [
     "include",
-    "//third_party/bounds_checking_function/include",
     "../storage_manager/include",
     "${storage_interface_path}/innerkits/storage_manager/native",
     "../common/include",
@@ -47,7 +46,7 @@ declare_args() {
 }
 
 ohos_executable("storage_daemon") {
-  stack_protector_ret = true
+  branch_protector_ret = "pac_ret"
   sanitize = {
     integer_overflow = true
     ubsan = true
@@ -116,6 +115,7 @@ ohos_executable("storage_daemon") {
     "app_file_service:fileshare_native",
     "app_file_service:fileuri_native",
     "app_file_service:sandbox_helper_native",
+    "bounds_checking_function:libsec_shared",
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "hilog:libhilog",
@@ -169,7 +169,7 @@ config("sdc_config") {
 }
 
 ohos_executable("sdc") {
-  stack_protector_ret = true
+  branch_protector_ret = "pac_ret"
   sanitize = {
     integer_overflow = true
     ubsan = true
@@ -225,7 +225,7 @@ declare_args() {
 }
 
 ohos_shared_library("storage_common_utils") {
-  stack_protector_ret = true
+  branch_protector_ret = "pac_ret"
   sanitize = {
     integer_overflow = true
     ubsan = true
@@ -297,13 +297,15 @@ group("storage_daemon_third_party") {
       "//third_party/FreeBSD/sbin/newfs_msdos:newfs_msdos",
       "//third_party/e2fsprogs:blkid",
       "//third_party/exfatprogs:exfatprogs",
-
-      # "//third_party/f2fs-tools:f2fs-tools",
       "//third_party/gptfdisk:sgdisk",
       "//third_party/ntfs-3g:ntfsprogs",
     ]
   }
-  external_deps = [ "f2fs-tools:libf2fs" ]
+  external_deps = [
+    "f2fs-tools:fsck.f2fs",
+    "f2fs-tools:libf2fs",
+    "f2fs-tools:mkfs.f2fs",
+  ]
 }
 
 group("storage_daemon_unit_test") {

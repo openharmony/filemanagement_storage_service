@@ -16,10 +16,10 @@
 #include <cstdio>
 #include <gtest/gtest.h>
 
-#include "storage_daemon_communication/storage_daemon_communication.h"
-#include "user/multi_user_manager_service.h"
-#include "storage_service_errno.h"
 #include "parameters.h"
+#include "storage_daemon_communication/storage_daemon_communication.h"
+#include "storage_service_errno.h"
+#include "user/multi_user_manager_service.h"
 
 namespace {
 using namespace std;

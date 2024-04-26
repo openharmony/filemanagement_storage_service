@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -115,7 +115,7 @@ int32_t StartSocket(int32_t& socketFd)
         return -1;
     }
 
-    if (bind(socketFd, (struct sockaddr *) &addr, sizeof(addr)) != 0) {
+    if (bind(socketFd, reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr)) != 0) {
         LOGE("Socket bind failed, errno %{public}d", errno);
         (void)close(socketFd);
         return -1;

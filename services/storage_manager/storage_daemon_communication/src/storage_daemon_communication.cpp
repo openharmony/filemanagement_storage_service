@@ -39,7 +39,7 @@ StorageDaemonCommunication::~StorageDaemonCommunication()
 
 int32_t StorageDaemonCommunication::Connect()
 {
-    LOGI("StorageDaemonCommunication::Connect start");
+    LOGD("StorageDaemonCommunication::Connect start");
     std::lock_guard<std::mutex> lock(mutex_);
     if (storageDaemon_ == nullptr) {
         auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
@@ -65,7 +65,7 @@ int32_t StorageDaemonCommunication::Connect()
 
         storageDaemon_->AsObject()->AddDeathRecipient(deathRecipient_);
     }
-    LOGI("StorageDaemonCommunication::Connect end");
+    LOGD("StorageDaemonCommunication::Connect end");
     return E_OK;
 }
 
@@ -241,7 +241,7 @@ int32_t StorageDaemonCommunication::InactiveUserKey(uint32_t userId)
 
 int32_t StorageDaemonCommunication::LockUserScreen(uint32_t userId)
 {
-    LOGI("enter");
+    LOGD("enter");
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("Connect failed");

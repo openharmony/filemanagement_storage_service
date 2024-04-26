@@ -21,7 +21,6 @@ config("storage_daemon_crypto_config") {
     "../include",
     "../include/crypto",
     "${storage_service_common_path}/include",
-    "//third_party/openssl/include",
   ]
 
   cflags = [
@@ -31,7 +30,7 @@ config("storage_daemon_crypto_config") {
 }
 
 ohos_static_library("libsdcrypto") {
-  stack_protector_ret = true
+  branch_protector_ret = "pac_ret"
   sanitize = {
     integer_overflow = true
     ubsan = true
@@ -42,6 +41,7 @@ ohos_static_library("libsdcrypto") {
   }
 
   sources = [
+    "src/anco_key_manager.cpp",
     "src/base_key.cpp",
     "src/fbex.cpp",
     "src/fscrypt_key_v1.cpp",
@@ -65,7 +65,6 @@ ohos_static_library("libsdcrypto") {
   deps = [
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
-    "//third_party/openssl:libcrypto_shared",
   ]
 
   external_deps = [
@@ -74,6 +73,7 @@ ohos_static_library("libsdcrypto") {
     "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_core",
+    "openssl:libcrypto_shared",
   ]
 
   subsystem_name = "filemanagement"

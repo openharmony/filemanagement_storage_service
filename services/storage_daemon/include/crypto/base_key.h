@@ -71,6 +71,7 @@ private:
 #endif
     bool LoadAndSaveShield(const UserAuth &auth, const std::string &pathTemp, bool needGenerateShield);
     bool DoRestoreKey(const UserAuth &auth, const std::string &keypath);
+    bool DoRestoreKeyEx(const UserAuth &auth, const std::string &keypath);
     static bool GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size);
     static bool GenerateKeyBlob(KeyBlob &blob, const uint32_t size);
     static bool LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size);

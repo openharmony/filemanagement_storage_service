@@ -14,6 +14,7 @@
  */
 
 #include <fstream>
+#include <unistd.h>
 
 #ifdef EXTERNAL_STORAGE_MANAGER
 #include "disk/disk_config.h"
@@ -96,6 +97,8 @@ static bool ParasConfig(StorageDaemon::DiskManager *dm)
 }
 #endif
 
+static const int32_t SLEEP_TIME_INTERVAL_3MS = 3 * 1000;
+
 int main()
 {
     LOGI("storage_daemon start");
@@ -137,6 +140,7 @@ int main()
             LOGI("SubscribeSystemAbility for MANAGER_SERVICE: ret: %{public}d, errno: %{public}d", ret, errno);
             break;
         }
+        usleep(SLEEP_TIME_INTERVAL_3MS);
     } while (true);
     LOGE("samgr GetSystemAbilityManager finish");
     IPCSkeleton::JoinWorkThread();

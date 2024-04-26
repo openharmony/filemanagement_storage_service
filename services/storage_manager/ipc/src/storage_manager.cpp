@@ -34,6 +34,7 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
+#include "utils/storage_utils.h"
 #include "user/multi_user_manager_service.h"
 
 namespace OHOS {
@@ -58,6 +59,13 @@ void StorageManager::OnAddSystemAbility(int32_t systemAbilityId, const std::stri
     LOGI("StorageManager::OnAddSystemAbility SA id %{public}d added", systemAbilityId);
 #ifdef STORAGE_STATISTICS_MANAGER
     AccountSubscriber::Subscriber();
+#endif
+}
+
+void StorageManager::ResetUserEventRecord(int32_t userId)
+{
+#ifdef STORAGE_STATISTICS_MANAGER
+    AccountSubscriber::ResetUserEventRecord(userId);
 #endif
 }
 
@@ -90,13 +98,15 @@ int32_t StorageManager::StopUser(int32_t userId)
     LOGI("StorageManger::StopUser start, userId: %{public}d", userId);
     std::shared_ptr<MultiUserManagerService> userManager = DelayedSingleton<MultiUserManagerService>::GetInstance();
     int32_t err = userManager->StopUser(userId);
+    ResetUserEventRecord(userId);
     return err;
 }
 
 int32_t StorageManager::GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
-    LOGI("StorageManger::getFreeSizeOfVolume start, volumeUuid: %{public}s", volumeUuid.c_str());
+    LOGI("StorageManger::getFreeSizeOfVolume start, volumeUuid: %{public}s",
+        GetAnonyString(volumeUuid).c_str());
     std::shared_ptr<VolumeStorageStatusService> volumeStatsManager =
         DelayedSingleton<VolumeStorageStatusService>::GetInstance();
     int32_t err = volumeStatsManager->GetFreeSizeOfVolume(volumeUuid, freeSize);
@@ -109,7 +119,8 @@ int32_t StorageManager::GetFreeSizeOfVolume(std::string volumeUuid, int64_t &fre
 int32_t StorageManager::GetTotalSizeOfVolume(std::string volumeUuid, int64_t &totalSize)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
-    LOGI("StorageManger::getTotalSizeOfVolume start, volumeUuid: %{public}s", volumeUuid.c_str());
+    LOGI("StorageManger::getTotalSizeOfVolume start, volumeUuid: %{public}s",
+        GetAnonyString(volumeUuid).c_str());
     std::shared_ptr<VolumeStorageStatusService> volumeStatsManager =
         DelayedSingleton<VolumeStorageStatusService>::GetInstance();
     int32_t err = volumeStatsManager->GetTotalSizeOfVolume(volumeUuid, totalSize);
@@ -306,7 +317,8 @@ int32_t StorageManager::GetAllDisks(std::vector<Disk> &vecOfDisk)
 int32_t StorageManager::GetVolumeByUuid(std::string fsUuid, VolumeExternal &vc)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
-    LOGI("StorageManger::GetVolumeByUuid start, uuid: %{public}s", fsUuid.c_str());
+    LOGI("StorageManger::GetVolumeByUuid start, uuid: %{public}s",
+        GetAnonyString(fsUuid).c_str());
     int32_t err = DelayedSingleton<VolumeManagerService>::GetInstance()->GetVolumeByUuid(fsUuid, vc);
     return err;
 #else
@@ -328,7 +340,8 @@ int32_t StorageManager::GetVolumeById(std::string volumeId, VolumeExternal &vc)
 int32_t StorageManager::SetVolumeDescription(std::string fsUuid, std::string description)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
-    LOGI("StorageManger::SetVolumeDescription start, uuid: %{public}s", fsUuid.c_str());
+    LOGI("StorageManger::SetVolumeDescription start, uuid: %{public}s",
+        GetAnonyString(fsUuid).c_str());
     int32_t err = DelayedSingleton<VolumeManagerService>::GetInstance()->SetVolumeDescription(fsUuid, description);
     return err;
 #else

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -56,6 +56,7 @@ const string PACKAGE_NAME_FLAG = "<bundleName>";
 const string SCENE_BOARD_BUNDLE_NAME = "com.ohos.sceneboard";
 const string PUBLIC_DIR_SANDBOX_PATH = "/storage/Users/currentUser";
 const string PUBLIC_DIR_SRC_PATH = "/storage/media/<currentUserId>/local/files/Docs";
+const string MOUNT_POINT_INFO = "/proc/mounts";
 const set<string> SANDBOX_EXCLUDE_PATH = {
     "chipset",
     "system",
@@ -79,49 +80,54 @@ const std::string HMDFS_SYS_CAP = "const.distributed_file_property.enabled";
 const int32_t HMDFS_VAL_LEN = 6;
 const int32_t HMDFS_TRUE_LEN = 5;
 const string SHARE_PATH = "/data/service/el1/public/storage_daemon/share/public";
+static constexpr int MODE_0711 = 0711;
+static constexpr int MODE_0771 = 0771;
+static constexpr int MODE_02771 = 02771;
 MountManager::MountManager()
-    : hmdfsDirVec_{{"/data/service/el2/%d/share", 0711, OID_SYSTEM, OID_SYSTEM},
-                   {"/data/service/el2/%d/hmdfs", 0711, OID_SYSTEM, OID_SYSTEM},
-                   {"/data/service/el2/%d/hmdfs/account", 0711, OID_SYSTEM, OID_SYSTEM},
-                   {"/data/service/el2/%d/hmdfs/account/files", 02771, OID_USER_DATA_RW, OID_USER_DATA_RW},
-                   {"/data/service/el2/%d/hmdfs/account/data", 0711, OID_SYSTEM, OID_SYSTEM},
-                   {"/data/service/el2/%d/hmdfs/non_account", 0711, OID_SYSTEM, OID_SYSTEM},
-                   {"/data/service/el2/%d/hmdfs/non_account/files", 0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
-                   {"/data/service/el2/%d/hmdfs/non_account/data", 0711, OID_SYSTEM, OID_SYSTEM},
-                   {"/data/service/el2/%d/hmdfs/cloud", 0711, OID_DFS, OID_DFS},
-                   {"/data/service/el2/%d/hmdfs/cloud/data", 0711, OID_DFS, OID_DFS},
-                   {"/data/service/el2/%d/hmdfs/cache", 0711, OID_DFS, OID_DFS},
-                   {"/data/service/el2/%d/hmdfs/cache/account_cache", 0711, OID_DFS, OID_DFS},
-                   {"/data/service/el2/%d/hmdfs/cache/non_account_cache", 0711, OID_DFS, OID_DFS},
-                   {"/data/service/el2/%d/hmdfs/cache/cloud_cache", 0711, OID_DFS, OID_DFS},
-                   {"/data/service/el2/%d/hmdfs/account/services", 0771, OID_DFS_SHARE, OID_DFS_SHARE}},
-      virtualDir_{{"/storage/media/%d", 0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
-                  {"/storage/media/%d/local", 0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
-                  {"/storage/cloud", 0711, OID_ROOT, OID_ROOT},
-                  {"/storage/cloud/%d", 0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
-                  {"/mnt/share/", 0711, OID_ROOT, OID_ROOT},
-                  {"/mnt/share/%d/", 0711, OID_ROOT, OID_ROOT},
-                  {"/mnt/data/%d/", 0711, OID_ROOT, OID_ROOT},
-                  {"/mnt/data/%d/cloud", 0711, OID_ROOT, OID_ROOT},
-                  {"/mnt/data/%d/cloud_fuse", 0711, OID_DFS, OID_DFS},
-                  {"/mnt/hmdfs/", 0711, OID_ROOT, OID_ROOT},
-                  {"/mnt/hmdfs/%d/", 0711, OID_ROOT, OID_ROOT},
-                  {"/mnt/hmdfs/%d/cloud", 0711, OID_ROOT, OID_ROOT},
-                  {"/mnt/hmdfs/%d/account", 0711, OID_ROOT, OID_ROOT},
-                  {"/mnt/hmdfs/%d/non_account", 0711, OID_ROOT, OID_ROOT}},
-      systemServiceDir_{{"/data/service/el2/%d/tee", 0711, OID_TEE, OID_TEE},
-                  {"/data/service/el2/%d/deviceauth", 0711, OID_DEVICE_AUTH, OID_DEVICE_AUTH},
-                  {"/data/service/el2/%d/huks_service", 0711, OID_HUKS, OID_HUKS},
-                  {"/data/service/el4/%d/huks_service", 0711, OID_HUKS, OID_HUKS},
-                  {"/data/service/el2/%d/dlp_credential_service", 0711, OID_DLP_CREDENTIAL, OID_DLP_CREDENTIAL}},
-      fileManagerDir_{{"/data/service/el2/%d/hmdfs/account/files/Docs", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
+    : hmdfsDirVec_{{"/data/service/el2/%d/share", MODE_0711, OID_SYSTEM, OID_SYSTEM},
+                   {"/data/service/el2/%d/hmdfs", MODE_0711, OID_SYSTEM, OID_SYSTEM},
+                   {"/data/service/el2/%d/hmdfs/account", MODE_0711, OID_SYSTEM, OID_SYSTEM},
+                   {"/data/service/el2/%d/hmdfs/account/files", MODE_02771, OID_USER_DATA_RW, OID_USER_DATA_RW},
+                   {"/data/service/el2/%d/hmdfs/account/data", MODE_0711, OID_SYSTEM, OID_SYSTEM},
+                   {"/data/service/el2/%d/hmdfs/non_account", MODE_0711, OID_SYSTEM, OID_SYSTEM},
+                   {"/data/service/el2/%d/hmdfs/non_account/files", MODE_0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
+                   {"/data/service/el2/%d/hmdfs/non_account/data", MODE_0711, OID_SYSTEM, OID_SYSTEM},
+                   {"/data/service/el2/%d/hmdfs/cloud", MODE_0711, OID_DFS, OID_DFS},
+                   {"/data/service/el2/%d/hmdfs/cloud/data", MODE_0711, OID_DFS, OID_DFS},
+                   {"/data/service/el2/%d/hmdfs/cache", MODE_0711, OID_DFS, OID_DFS},
+                   {"/data/service/el2/%d/hmdfs/cache/account_cache", MODE_0711, OID_DFS, OID_DFS},
+                   {"/data/service/el2/%d/hmdfs/cache/non_account_cache", MODE_0711, OID_DFS, OID_DFS},
+                   {"/data/service/el2/%d/hmdfs/cache/cloud_cache", MODE_0711, OID_DFS, OID_DFS},
+                   {"/data/service/el2/%d/hmdfs/account/services", MODE_0771, OID_DFS_SHARE, OID_DFS_SHARE}},
+      virtualDir_{{"/storage/media/%d", MODE_0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
+                  {"/storage/media/%d/local", MODE_0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
+                  {"/storage/cloud", MODE_0711, OID_ROOT, OID_ROOT},
+                  {"/storage/cloud/%d", MODE_0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
+                  {"/mnt/share/", MODE_0711, OID_ROOT, OID_ROOT},
+                  {"/mnt/share/%d/", MODE_0711, OID_ROOT, OID_ROOT},
+                  {"/mnt/data/%d/", MODE_0711, OID_ROOT, OID_ROOT},
+                  {"/mnt/data/%d/cloud", MODE_0711, OID_ROOT, OID_ROOT},
+                  {"/mnt/data/%d/cloud_fuse", MODE_0711, OID_DFS, OID_DFS},
+                  {"/mnt/hmdfs/", MODE_0711, OID_ROOT, OID_ROOT},
+                  {"/mnt/hmdfs/%d/", MODE_0711, OID_ROOT, OID_ROOT},
+                  {"/mnt/hmdfs/%d/cloud", MODE_0711, OID_ROOT, OID_ROOT},
+                  {"/mnt/hmdfs/%d/account", MODE_0711, OID_ROOT, OID_ROOT},
+                  {"/mnt/hmdfs/%d/non_account", MODE_0711, OID_ROOT, OID_ROOT}},
+      systemServiceDir_{{"/data/service/el2/%d/tee", MODE_0711, OID_TEE, OID_TEE},
+                  {"/data/service/el2/%d/deviceauth", MODE_0711, OID_DEVICE_AUTH, OID_DEVICE_AUTH},
+                  {"/data/service/el2/%d/huks_service", MODE_0711, OID_HUKS, OID_HUKS},
+                  {"/data/service/el4/%d/huks_service", MODE_0711, OID_HUKS, OID_HUKS},
+                  {"/data/service/el2/%d/dlp_credential_service", MODE_0711, OID_DLP_CREDENTIAL, OID_DLP_CREDENTIAL}},
+      fileManagerDir_{{"/data/service/el2/%d/hmdfs/account/files/Docs", MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
                    {"/data/service/el2/%d/hmdfs/account/files/Docs/Documents",
-                   02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
+                   MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
                    {"/data/service/el2/%d/hmdfs/account/files/Docs/Download",
-                   02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
-                   {"/data/service/el2/%d/hmdfs/account/files/Docs/Desktop", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
-                   {"/data/service/el2/%d/hmdfs/account/files/Docs/.Trash", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
-                   {"/data/service/el2/%d/hmdfs/account/files/.Recent", 02771, OID_FILE_MANAGER, OID_FILE_MANAGER}}
+                   MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
+                   {"/data/service/el2/%d/hmdfs/account/files/Docs/Desktop",
+                   MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
+                   {"/data/service/el2/%d/hmdfs/account/files/Docs/.Trash",
+                   MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
+                   {"/data/service/el2/%d/hmdfs/account/files/.Recent", MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER}}
 {
 }
 
@@ -346,13 +352,13 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
             string dstPath = bundleName.path().generic_string() + cryptoSandboxPathVector[i];
             string srcPath = cryptoSandboxSrcVector[i];
             ParseSandboxPath(srcPath, to_string(userId), bundleName.path().filename().generic_string());
-            ret = mount(srcPath.c_str(), dstPath.c_str(), NULL, MS_BIND | MS_REC, NULL);
+            ret = mount(srcPath.c_str(), dstPath.c_str(), nullptr, MS_BIND | MS_REC, nullptr);
             if (ret != 0) {
                 LOGE("mount bind failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
                     srcPath.c_str(), dstPath.c_str(), errno);
                 continue;
             }
-            ret = mount(NULL, dstPath.c_str(), NULL, MS_SHARED, NULL);
+            ret = mount(nullptr, dstPath.c_str(), nullptr, MS_SHARED, nullptr);
             if (ret != 0) {
                 LOGE("mount to share failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
                     srcPath.c_str(), dstPath.c_str(), errno);
@@ -363,6 +369,50 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
         }
     }
     return ret;
+}
+
+int32_t MountManager::findMountPointsWithPrefix(std::string prefix, std::list<std::string> &toUnmount)
+{
+    std::ifstream inputStream(MOUNT_POINT_INFO.c_str(), std::ios::in);
+    if (!inputStream.is_open()) {
+        LOGE("unable to open /proc/mounts, errno is %{public}d", errno);
+        return -errno;
+    }
+    std::string tmpLine;
+    while (std::getline(inputStream, tmpLine)) {
+        if (tmpLine.length() > prefix.length() && tmpLine.substr(0, prefix.length()) == prefix) {
+            std::stringstream ss(tmpLine);
+            std::string mnt;
+            ss >> mnt;
+            ss >> mnt;
+            toUnmount.push_front(mnt);
+            mnt.clear();
+        }
+    }
+    tmpLine.clear();
+    inputStream.close();
+    return E_OK;
+}
+
+void MountManager::UMountCryptoPathAgain(uint32_t userId)
+{
+    Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
+    const string &mountPointPrefix = hmdfsMntArgs.GetMountPointPrefix();
+    std::list<std::string> toUnmount;
+    int32_t res = findMountPointsWithPrefix(mountPointPrefix, toUnmount);
+    if (res != E_OK) {
+        return;
+    }
+
+    int total = static_cast<int>(toUnmount.size());
+    LOGI("unmount crypto path start, total %{public}d.", total);
+    for (const std::string &path: toUnmount) {
+        res = UMount2(path.c_str(), MNT_DETACH);
+        if (res != E_OK) {
+            LOGE("failed to unmount %{public}s, errno %{public}d.", path.c_str(), errno);
+        }
+    }
+    CloudUMount(userId);
 }
 
 void MountManager::MountCloudForUsers(void)
@@ -410,12 +460,18 @@ int32_t MountManager::HmdfsTwiceUMount(int32_t userId, std::string relativePath)
     Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, relativePath));
     err = UMount(hmdfsMntArgs.GetCommFullPath());
     if (err != E_OK) {
-        LOGE("failed to un bind mount, errno %{public}d, ComDataDir_ dst %{public}s", errno,
+        LOGE("failed to umount bind mount point, errno %{public}d, ComDataDir_ dst %{public}s", errno,
              hmdfsMntArgs.GetCommFullPath().c_str());
     }
+    err = UMount(hmdfsMntArgs.GetCloudDocsPath());
+    if (err != E_OK) {
+        LOGE("failed to umount bind mount point, errno %{public}d, CloudDataDir dst %{public}s", errno,
+             hmdfsMntArgs.GetCloudDocsPath().c_str());
+    }
+
     err = UMount(hmdfsMntArgs.GetCloudFullPath());
     if (err != E_OK) {
-        LOGE("failed to un bind mount, errno %{public}d, CloudDataDir dst %{public}s", errno,
+        LOGE("failed to umount bind mount point, errno %{public}d, CloudDataDir dst %{public}s", errno,
              hmdfsMntArgs.GetCloudFullPath().c_str());
     }
 
@@ -632,7 +688,7 @@ int32_t MountManager::UmountByUser(int32_t userId)
         if (!SupportHmdfs()) {
             err = LocalUMount(userId);
         } else {
-            err = HmdfsUMount(userId);
+            UMountCryptoPathAgain(userId);
         }
         if (err == E_OK) {
             break;

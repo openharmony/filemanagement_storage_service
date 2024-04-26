@@ -96,6 +96,7 @@ bool UpdateUserAuthFuzzTest(const uint8_t *data, size_t size)
 
 bool ActiveUserKeyFuzzTest(const uint8_t *data, size_t size)
 {
+
     if ((data == nullptr) || (size <= sizeof(uint32_t))) {
         return false;
     }
@@ -118,6 +119,7 @@ bool ActiveUserKeyFuzzTest(const uint8_t *data, size_t size)
 
 bool InactiveUserKeyFuzzTest(const uint8_t *data, size_t size)
 {
+
     if ((data == nullptr) || (size <= sizeof(uint32_t))) {
         return false;
     }
@@ -135,6 +137,7 @@ bool InactiveUserKeyFuzzTest(const uint8_t *data, size_t size)
 
 bool UpdateKeyContextFuzzTest(const uint8_t *data, size_t size)
 {
+ master
     if ((data == nullptr) || (size <= sizeof(uint32_t))) {
         return false;
     }
