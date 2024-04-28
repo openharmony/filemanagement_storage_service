@@ -22,6 +22,7 @@
 #include <sys/types.h>
 #include <thread>
 #include <unistd.h>
+#include <regex>
 #include<filesystem>
 #include "ipc/istorage_daemon.h"
 #include "parameter.h"
@@ -748,7 +749,7 @@ int32_t MountManager::MountDfsDocs(int32_t userId, const std::string &relativePa
 
     std::regex pathRegex("^[a-zA-Z0-9_/]+$");
     if (relativePath.empty() || relativePath.length() > PATH_MAX || !std::regex_match(relativePath, pathRegex)) {
-        LOGE("[MountDfsDocs]invalid relativePath")
+        LOGE("[MountDfsDocs]invalid relativePath");
         return E_MOUNT;
     }
 
