@@ -126,8 +126,11 @@ string MountArgument::GetLocalDocsPath() const
 string MountArgument::GetCachePath() const
 {
     stringstream ss;
-    ss << DATA_POINT << userId_ << "/hmdfs/cache/" << relativePath_ << "_cache/";
-
+    if (enableCloudDisk_) {
+        ss << DATA_POINT << userId_ << "/hmdfs/cloud/";
+    } else {
+        ss << DATA_POINT << userId_ << "/hmdfs/cache/" << relativePath_ << "_cache/";
+    }
     return ss.str();
 }
 
