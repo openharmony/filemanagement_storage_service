@@ -746,7 +746,6 @@ int32_t MountManager::MountDfsDocs(int32_t userId, const std::string &relativePa
         return E_PREPARE_DIR;
     }
 
-
     std::regex pathRegex("^[a-zA-Z0-9_/]+$");
     if (relativePath.empty() || relativePath.length() > PATH_MAX || !std::regex_match(relativePath, pathRegex)) {
         LOGE("[MountDfsDocs]invalid relativePath")
