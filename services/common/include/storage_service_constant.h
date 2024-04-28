@@ -55,8 +55,8 @@ static const std::string MEDIA_SAND_PREFIX = "/storage/media";
 static const std::string FILE_AUTHORITY = "docs";
 
 // backup stat file version
-static const std::string VER_10_LINE1 = "version=1.0&attrNum=7";
-static const std::string VER_10_LINE2 = "path;mode;dir;size;mtime;hash;isIncremental";
+static const std::string VER_10_LINE1 = "version=1.0&attrNum=8";
+static const std::string VER_10_LINE2 = "path;mode;dir;size;mtime;hash;isIncremental;encodeFlag";
 
 static const std::string EL1 = "el1";
 static const std::string EL2 = "el2";
