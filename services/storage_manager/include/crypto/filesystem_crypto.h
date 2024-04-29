@@ -39,6 +39,8 @@ public:
     int32_t LockUserScreen(uint32_t userId);
     int32_t UnlockUserScreen(uint32_t userId);
     int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus);
+    int32_t GenerateAppkey(uint32_t appUid, std::string &keyId);
+    int32_t DeleteAppkey(const std::string keyId);
 private:
     int32_t CheckUserIdRange(int32_t userId);
 };

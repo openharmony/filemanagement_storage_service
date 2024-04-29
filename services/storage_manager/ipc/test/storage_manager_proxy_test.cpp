@@ -1149,6 +1149,50 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_UnlockUserScreen_0000, t
 }
 
 /**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_GenerateAppkey_0000
+ * @tc.name: Storage_manager_proxy_GenerateAppkey_0000
+ * @tc.desc: Test function of UnlockUserScreen interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GenerateAppkey_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_GenerateAppkey_0000";
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    uint32_t appUid = 0;
+    std::string keyId = NULL;
+    uint32_t result = proxy_->GenerateAppkey(appUid, keyId);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "Storage_manager_proxy_GenerateAppkey_0000 end";
+}
+
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_DeleteAppkey_0000
+ * @tc.name: Storage_manager_proxy_DeleteAppkey_0000
+ * @tc.desc: Test function of UnlockUserScreen interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_DeleteAppkey_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_DeleteAppkey_0000";
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    const std::string keyId = NULL;
+    uint32_t result = proxy_->DeleteAppkey(keyId);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_DeleteAppkey_0000";
+}
+
+/**
  * @tc.number: SUB_STORAGE_Storage_manager_proxy_UpdateKeyContext_0000
  * @tc.name: Storage_manager_proxy_UpdateKeyContext_0000
  * @tc.desc: Test function of UpdateKeyContext interface for SUCCESS.

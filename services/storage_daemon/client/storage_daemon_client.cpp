@@ -369,6 +369,38 @@ int32_t StorageDaemonClient::UpdateKeyContext(uint32_t userId)
     return client->UpdateKeyContext(userId);
 }
 
+int32_t StorageDaemonClient::GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId)
+{
+    if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
+        LOGE("service check failed");
+        return -EAGAIN;
+    }
+
+    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
+    if (client == nullptr) {
+        LOGE("get storage daemon service failed");
+        return -EAGAIN;
+    }
+
+    return client->GenerateAppkey(userId, appUid, keyId);
+}
+
+int32_t StorageDaemonClient::DeleteAppkey(uint32_t userId, const std::string keyId)
+{
+    if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
+        LOGE("service check failed");
+        return -EAGAIN;
+    }
+
+    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
+    if (client == nullptr) {
+        LOGE("get storage daemon service failed");
+        return -EAGAIN;
+    }
+
+    return client->DeleteAppkey(userId, keyId);
+}
+
 int32_t StorageDaemonClient::FscryptEnable(const std::string &fscryptOptions)
 {
 #ifdef USER_CRYPTO_MANAGER

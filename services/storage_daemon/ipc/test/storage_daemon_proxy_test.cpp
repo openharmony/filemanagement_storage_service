@@ -462,6 +462,50 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_UnlockUserScreen_001, Te
 }
 
 /**
+ * @tc.name: StorageDaemonProxyTest_GenerateAppkey_001
+ * @tc.desc: Verify the UnlockUserScreen function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_GenerateAppkey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_GenerateAppkey_001 start";
+
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
+    uint32_t appUid = 0;
+    std::string keyId = NULL;
+    int32_t ret = proxy_->GenerateAppkey(USER_ID1, appUid, keyId);
+    ASSERT_TRUE(ret == E_OK);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::GENERATE_APP_KEY) == mock_->code_);
+
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_GenerateAppkey_001 end";
+}
+
+
+/**
+ * @tc.name: StorageDaemonProxyTest_GenerateAppkey_001
+ * @tc.desc: Verify the UnlockUserScreen function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_DeleteAppkey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_DeleteAppkey_001 start";
+
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
+    std::string keyId = NULL;
+    int32_t ret = proxy_->DeleteAppkey(USER_ID1, keyId);
+    ASSERT_TRUE(ret == E_OK);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::GENERATE_APP_KEY) == mock_->code_);
+
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_DeleteAppkey_001 end";
+}
+
+/**
  * @tc.name: StorageDaemonProxyTest_UpdateKeyContext_001
  * @tc.desc: Verify the UpdateKeyContext function.
  * @tc.type: FUNC
