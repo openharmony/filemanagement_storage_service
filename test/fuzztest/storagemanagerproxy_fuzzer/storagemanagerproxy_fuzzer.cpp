@@ -24,7 +24,7 @@ namespace OHOS {
 namespace StorageManager {
 bool StorageManagerProxyFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size < sizeof(int32_t))) {
+    if ((data == nullptr) || (size <= sizeof(uint64_t))) {
         return false;
     }
     auto impl = new StorageManagerProxyMock();
@@ -40,42 +40,38 @@ bool StorageManagerProxyFuzzTest(const uint8_t *data, size_t size)
     std::vector<uint8_t> token;
     std::vector<uint8_t> secret;
 
-    std::string path(reinterpret_cast<const char *>(data), size);
-    std::string fsUuid(reinterpret_cast<const char *>(data), size);
-    int32_t userId = *(reinterpret_cast<const int32_t *>(data));
-    int32_t flags = *(reinterpret_cast<const int32_t *>(data));
-    int32_t fsType = *(reinterpret_cast<const int32_t *>(data));
-    uint64_t secureUid = *(reinterpret_cast<const uint64_t *>(data));
-    std::string volumeUuid(reinterpret_cast<const char *>(data), size);
-    std::string description(reinterpret_cast<const char *>(data), size);
+    std::string metaData(reinterpret_cast<const char *>(data), size);
+    int32_t metaData2 = *(reinterpret_cast<const int32_t *>(data));
+    uint32_t metaData3 = *(reinterpret_cast<const uint32_t *>(data));
+    uint64_t metaData4 = *(reinterpret_cast<const uint64_t *>(data));
     token.push_back(*data);
     secret.push_back(*data);
-    proxy->StopUser(userId);
-    proxy->Mount(volumeUuid);
-    proxy->Unmount(volumeUuid);
-    proxy->DeleteUserKeys(userId);
+    proxy->StopUser(metaData2);
+    proxy->Mount(metaData);
+    proxy->Unmount(metaData);
+    proxy->DeleteUserKeys(metaData3);
     proxy->NotifyDiskCreated(disk);
-    proxy->InactiveUserKey(userId);
-    proxy->UpdateKeyContext(userId);
+    proxy->InactiveUserKey(metaData3);
+    proxy->UpdateKeyContext(metaData3);
     proxy->NotifyVolumeCreated(vc);
-    proxy->RemoveUser(userId, flags);
-    proxy->PrepareStartUser(userId);
-    proxy->Format(volumeUuid, path);
-    proxy->GetDiskById(volumeUuid, disk);
-    proxy->Partition(volumeUuid, fsType);
-    proxy->PrepareAddUser(userId, flags);
-    proxy->GenerateUserKeys(userId, flags);
-    proxy->NotifyDiskDestroyed(volumeUuid);
-    proxy->ActiveUserKey(userId, token, secret);
-    proxy->SetVolumeDescription(fsUuid, description);
-    proxy->UpdateUserAuth(userId, secureUid, token, secret, secret);
-    proxy->NotifyVolumeMounted(volumeUuid, fsType, fsUuid, path, description);
+    proxy->RemoveUser(metaData2, metaData3);
+    proxy->PrepareStartUser(metaData2);
+    proxy->Format(metaData, metaData);
+    proxy->GetDiskById(metaData, disk);
+    proxy->Partition(metaData, metaData2);
+    proxy->PrepareAddUser(metaData2, metaData3);
+    proxy->GenerateUserKeys(metaData2, metaData3);
+    proxy->NotifyDiskDestroyed(metaData);
+    proxy->ActiveUserKey(metaData2, token, secret);
+    proxy->SetVolumeDescription(metaData, metaData);
+    proxy->UpdateUserAuth(metaData2, metaData4, token, secret, secret);
+    proxy->NotifyVolumeMounted(metaData, metaData2, metaData, metaData, metaData);
     return true;
 }
 
 bool StorageManagerProxyGetFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size < sizeof(int32_t))) {
+    if ((data == nullptr) || (size <= sizeof(int64_t))) {
         return false;
     }
     auto impl = new StorageManagerProxyMock();
@@ -84,16 +80,10 @@ bool StorageManagerProxyGetFuzzTest(const uint8_t *data, size_t size)
         return 0;
     }
     VolumeExternal vc1;
-    std::string volumeUuid(reinterpret_cast<const char *>(data), size);
-    std::string pkgName(reinterpret_cast<const char *>(data), size);
+    std::string metaData(reinterpret_cast<const char *>(data), size);
     int32_t userId = *(reinterpret_cast<const int32_t *>(data));
-    std::string fsUuid(reinterpret_cast<const char *>(data), size);
-    int64_t systemSize = *(reinterpret_cast<const int64_t *>(data));
-    int64_t totalSize = *(reinterpret_cast<const int64_t *>(data));
-    int64_t freeSize = *(reinterpret_cast<const int64_t *>(data));
-    int64_t freeVolSize = *(reinterpret_cast<const int64_t *>(data));
-    int64_t totalVolSize = *(reinterpret_cast<const int64_t *>(data));
-    std::string type(reinterpret_cast<const char *>(data), size);
+    int64_t metaData4 = *(reinterpret_cast<const int64_t *>(data));
+
     BundleStats bundleStats;
     StorageStats storageStats;
     std::vector<VolumeExternal> vecOfVol;
@@ -101,23 +91,23 @@ bool StorageManagerProxyGetFuzzTest(const uint8_t *data, size_t size)
     std::vector<int64_t> incrementalBackTimes;
     std::vector<int64_t> pkgFileSizes;
     std::vector<std::string> bundleName;
-    incrementalBackTimes.push_back(*data);
-    pkgFileSizes.push_back(*data);
-    bundleName.push_back(reinterpret_cast<const char *>(data));
+    incrementalBackTimes.push_back(metaData4);
+    pkgFileSizes.push_back(metaData4);
+    bundleName.push_back(metaData);
     proxy->GetAllVolumes(vecOfVol);
     proxy->GetAllDisks(vecOfDisk);
-    proxy->GetSystemSize(systemSize);
-    proxy->GetTotalSize(totalSize);
-    proxy->GetFreeSize(freeSize);
+    proxy->GetSystemSize(metaData4);
+    proxy->GetTotalSize(metaData4);
+    proxy->GetFreeSize(metaData4);
     proxy->GetUserStorageStats(storageStats);
-    proxy->GetBundleStats(pkgName, bundleStats);
+    proxy->GetBundleStats(metaData, bundleStats);
     proxy->GetCurrentBundleStats(bundleStats);
     proxy->GetUserStorageStats(userId, storageStats);
-    proxy->GetUserStorageStatsByType(userId, storageStats, type);
-    proxy->GetVolumeByUuid(fsUuid, vc1);
-    proxy->GetVolumeById(volumeUuid, vc1);
-    proxy->GetFreeSizeOfVolume(volumeUuid, freeVolSize);
-    proxy->GetTotalSizeOfVolume(volumeUuid, totalVolSize);
+    proxy->GetUserStorageStatsByType(userId, storageStats, metaData);
+    proxy->GetVolumeByUuid(metaData, vc1);
+    proxy->GetVolumeById(metaData, vc1);
+    proxy->GetFreeSizeOfVolume(metaData, metaData4);
+    proxy->GetTotalSizeOfVolume(metaData, metaData4);
     proxy->GetBundleStatsForIncrease(userId, bundleName, incrementalBackTimes, pkgFileSizes);
     return true;
 }
