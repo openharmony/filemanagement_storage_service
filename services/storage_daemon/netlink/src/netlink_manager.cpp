@@ -47,7 +47,7 @@ int32_t NetlinkManager::Start()
 
     (void)memset_s(&addr, sizeof(addr), 0, sizeof(addr));
     addr.nl_family = AF_NETLINK;
-    addr.nl_pid = static_cast<uint32_t>(getpid());
+    addr.nl_pid = static_cast<uint32_t>(getprocpid());
     addr.nl_groups = 0xffffffff;
 
     socketFd_ = socket(PF_NETLINK, SOCK_DGRAM | SOCK_CLOEXEC, NETLINK_KOBJECT_UEVENT);

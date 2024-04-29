@@ -163,7 +163,7 @@ int32_t Process::UpdatePidByPath()
     while ((dirEntry = readdir(dir)) != nullptr) {
         if (dirEntry->d_type != DT_DIR) continue;
         pid_t pid = atoi(dirEntry->d_name);
-        if (pid > 0 && pid != getpid()) {
+        if (pid > 0 && pid != getprocpid()) {
             std::string pidPath = StringPrintf("/proc/%d", pid);
             if (CheckMaps(pidPath)
                 || CheckSymlink(pidPath + "/cwd")
