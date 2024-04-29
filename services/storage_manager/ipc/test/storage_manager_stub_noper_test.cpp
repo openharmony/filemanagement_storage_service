@@ -66,6 +66,8 @@ namespace {
         static_cast<int32_t>(StorageManagerInterfaceCode::GET_ALL_DISKS),
         static_cast<int32_t>(StorageManagerInterfaceCode::LOCK_USER_SCREEN),
         static_cast<int32_t>(StorageManagerInterfaceCode::UNLOCK_USER_SCREEN),
+        static_cast<int32_t>(StorageManagerInterfaceCode::GENERATE_APP_KEY),
+        static_cast<int32_t>(StorageManagerInterfaceCode::DELETE_APP_KEY),
     };
 
 } // namespace

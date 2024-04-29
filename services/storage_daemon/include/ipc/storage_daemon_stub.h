@@ -61,6 +61,8 @@ private:
     int32_t HandleUnlockUserScreen(MessageParcel &data, MessageParcel &reply);
     int32_t HandleGetLockScreenStatus(MessageParcel &data, MessageParcel &reply);
     int32_t HandleMountCryptoPathAgain(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleGenerateAppkey(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleDeleteAppkey(MessageParcel &data, MessageParcel &reply);
 
     // app file share api
     int32_t HandleCreateShareFile(MessageParcel &data, MessageParcel &reply);

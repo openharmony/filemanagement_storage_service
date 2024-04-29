@@ -36,7 +36,7 @@ UserManager::UserManager()
     : rootDirVec_{{"/data/app/%s/%d", MODE_0711, OID_ROOT, OID_ROOT},
                   {"/data/service/%s/%d", MODE_0711, OID_ROOT, OID_ROOT},
                   {"/data/chipset/%s/%d", MODE_0711, OID_ROOT, OID_ROOT}},
-      eceSeceDirVec_{{"/data/app/%s/%d", MODE_0711, OID_ROOT, OID_ROOT},
+      el3DirEl4DirEl5DirVec_{{"/data/app/%s/%d", MODE_0711, OID_ROOT, OID_ROOT},
                      {"/data/service/%s/%d", MODE_0711, OID_ROOT, OID_ROOT}},
       subDirVec_{{"/data/app/%s/%d/base", MODE_0711, OID_ROOT, OID_ROOT},
                  {"/data/app/%s/%d/database", MODE_0711, OID_ROOT, OID_ROOT}},
@@ -194,12 +194,12 @@ int32_t UserManager::PrepareDirsFromIdAndLevel(int32_t userId, const std::string
             list.push_back(temp);
         }
     } else {
-        if (!PrepareDirsFromVec(userId, level, eceSeceDirVec_)) {
+        if (!PrepareDirsFromVec(userId, level, el3DirEl4DirEl5DirVec_)) {
             LOGE("failed to prepare %{public}s root dirs for userid %{public}d", level.c_str(), userId);
             return E_PREPARE_DIR;
         }
         // set policy here
-        for (auto item : eceSeceDirVec_) {
+        for (auto item : el3DirEl4DirEl5DirVec_) {
             FileList temp;
             temp.userId = static_cast<uint32_t>(userId);
             temp.path = StringPrintf(item.path.c_str(), level.c_str(), userId);
@@ -228,7 +228,7 @@ int32_t UserManager::DestroyDirsFromIdAndLevel(int32_t userId, const std::string
             return E_DESTROY_DIR;
         }
     } else {
-        if (!DestroyDirsFromVec(userId, level, eceSeceDirVec_)) {
+        if (!DestroyDirsFromVec(userId, level, el3DirEl4DirEl5DirVec_)) {
             LOGE("failed to destroy %{public}s dirs for userid %{public}d", level.c_str(), userId);
             return E_DESTROY_DIR;
         }

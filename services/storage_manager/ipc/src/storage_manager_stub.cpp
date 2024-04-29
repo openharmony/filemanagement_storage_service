@@ -172,6 +172,10 @@ StorageManagerStub::StorageManagerStub()
         &StorageManagerStub::HandleGetBundleStatsForIncrease;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::MOUNT_DFS_DOCS)] =
         &StorageManagerStub::HandleMountDfsDocs;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GENERATE_APP_KEY)] =
+        &StorageManagerStub::HandleGenerateAppkey;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::DELETE_APP_KEY)] =
+        &StorageManagerStub::HandleDeleteAppkey;
 }
 
 int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
@@ -773,6 +777,39 @@ int32_t StorageManagerStub::HandleGetLockScreenStatus(MessageParcel &data, Messa
         LOGE("Write reply lockScreenStatus failed");
         return E_WRITE_REPLY_ERR;
     }
+    if (!reply.WriteInt32(err)) {
+        LOGE("Write reply error code failed");
+        return E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleGenerateAppkey(MessageParcel &data, MessageParcel &reply)
+{
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
+        return E_PERMISSION_DENIED;
+    }
+    uint32_t appUid = data.ReadUint32();
+    std::string keyId;
+    int32_t err = GenerateAppkey(appUid, keyId);
+    if (!reply.WriteString(keyId)) {
+        LOGE("Write reply lockScreenStatus failed");
+        return E_WRITE_REPLY_ERR;
+    }
+    if (!reply.WriteInt32(err)) {
+        LOGE("Write reply error code failed");
+        return E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleDeleteAppkey(MessageParcel &data, MessageParcel &reply)
+{
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
+        return E_PERMISSION_DENIED;
+    }
+    std::string keyId = data.ReadString();
+    int32_t err = DeleteAppkey(keyId);
     if (!reply.WriteInt32(err)) {
         LOGE("Write reply error code failed");
         return E_WRITE_REPLY_ERR;

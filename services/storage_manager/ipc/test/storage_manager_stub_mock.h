@@ -71,6 +71,8 @@ public:
     MOCK_METHOD2(UpdateMemoryPara, int32_t (int32_t, int32_t &));
     MOCK_METHOD4(GetBundleStatsForIncrease, int32_t(uint32_t, const std::vector<std::string> &,
         const std::vector<int64_t> &, std::vector<int64_t> &));
+    MOCK_METHOD2(GenerateAppkey, int32_t(uint32_t, std::string &));
+    MOCK_METHOD1(DeleteAppkey, int32_t(std::string));
 };
 }  // namespace StorageManager
 }  // namespace OHOS

@@ -53,6 +53,8 @@ namespace StorageDaemon {
         UPDATE_MEM_PARA,
         GET_BUNDLE_STATS_INCREASE,
         MOUNT_DFS_DOCS,
+        GENERATE_APP_KEY,
+        DELETE_APP_KEY,
     };
 } // namespace StorageDaemon
 } // namespace OHOS

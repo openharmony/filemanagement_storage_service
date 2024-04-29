@@ -73,6 +73,8 @@ public:
     int32_t UnlockUserScreen(uint32_t userId) override;
     int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus) override;
     int32_t UpdateKeyContext(uint32_t userId) override;
+    int32_t GenerateAppkey(uint32_t appUid, std::string &keyId) override;
+    int32_t DeleteAppkey(const std::string keyId) override;
 
     // app file share api
     std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,

@@ -36,6 +36,7 @@ const std::string USER_EL1_DIR = FSCRYPT_EL_DIR + "/el1";
 const std::string USER_EL2_DIR = FSCRYPT_EL_DIR + "/el2";
 const std::string USER_EL3_DIR = FSCRYPT_EL_DIR + "/el3";
 const std::string USER_EL4_DIR = FSCRYPT_EL_DIR + "/el4";
+const std::string USER_EL5_DIR = FSCRYPT_EL_DIR + "/el5";
 class KeyManager {
 public:
     static KeyManager *GetInstance(void)
@@ -72,6 +73,8 @@ public:
     int LockUserScreen(uint32_t user);
     int UnlockUserScreen(uint32_t user);
     int GetLockScreenStatus(uint32_t user, bool &lockScreenStatus);
+    int GenerateAppkey(uint32_t user, uint32_t appUid, std::string &keyId);
+    int DeleteAppkey(uint32_t user, const std::string keyId);
 #ifdef USER_CRYPTO_MIGRATE_KEY
     int RestoreUserKey(uint32_t userId, KeyType type);
 #endif

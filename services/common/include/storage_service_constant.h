@@ -55,25 +55,28 @@ static const std::string MEDIA_SAND_PREFIX = "/storage/media";
 static const std::string FILE_AUTHORITY = "docs";
 
 // backup stat file version
-static const std::string VER_10_LINE1 = "version=1.0&attrNum=7";
-static const std::string VER_10_LINE2 = "path;mode;dir;size;mtime;hash;isIncremental";
+static const std::string VER_10_LINE1 = "version=1.0&attrNum=8";
+static const std::string VER_10_LINE2 = "path;mode;dir;size;mtime;hash;isIncremental;encodeFlag";
 
 static const std::string EL1 = "el1";
 static const std::string EL2 = "el2";
 static const std::string EL3 = "el3";
 static const std::string EL4 = "el4";
+static const std::string EL5 = "el5";
 
 enum KeyType {
     EL1_KEY = 1,
     EL2_KEY = 2,
     EL3_KEY = 3,
     EL4_KEY = 4,
+    EL5_KEY = 5,
 };
 static std::map<std::string, KeyType> EL_DIR_MAP = {
     {EL1, EL1_KEY},
     {EL2, EL2_KEY},
     {EL3, EL3_KEY},
     {EL4, EL4_KEY},
+    {EL5, EL5_KEY},
 };
 
 enum QuotaIdType {

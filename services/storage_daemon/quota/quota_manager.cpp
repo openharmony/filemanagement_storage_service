@@ -48,6 +48,7 @@ namespace StorageDaemon {
 const std::string QUOTA_DEVICE_DATA_PATH = "/data";
 const std::string PROC_MOUNTS_PATH = "/proc/mounts";
 const std::string DEV_BLOCK_PATH = "/dev/block/";
+const char LINE_SEP = '\n';
 const int32_t DEV_BLOCK_PATH_LEN = DEV_BLOCK_PATH.length();
 const uint64_t ONE_KB = int64_t(1);
 const uint64_t ONE_MB = int64_t(1024 * ONE_KB);
@@ -782,7 +783,13 @@ static int32_t WriteFileList(const std::map<std::string, struct FileStat> &toBac
     for (auto it = toBackupFileStats.begin(); it != toBackupFileStats.end();) {
         std::string fileLine = "";
         FileStat fileStat = it->second;
-        fileLine += fileStat.filePath + FILE_CONTENT_SEPARATOR;
+        bool encodeFlag = false;
+        if (fileStat.filePath.find(LINE_SEP) != std::string::npos) {
+            fileLine += AppFileService::SandboxHelper::Encode(fileStat.filePath) + FILE_CONTENT_SEPARATOR;
+            encodeFlag = true;
+        } else {
+            fileLine += fileStat.filePath + FILE_CONTENT_SEPARATOR;
+        }
         fileLine += std::to_string(fileStat.mode) + FILE_CONTENT_SEPARATOR;
         if (fileStat.isDir) {
             fileLine += std::to_string(1) + FILE_CONTENT_SEPARATOR;
@@ -793,6 +800,12 @@ static int32_t WriteFileList(const std::map<std::string, struct FileStat> &toBac
         fileLine += std::to_string(fileStat.lastUpdateTime) + FILE_CONTENT_SEPARATOR;
         fileLine += FILE_CONTENT_SEPARATOR;
         if (fileStat.isIncre) {
+            fileLine += std::to_string(1);
+        } else {
+            fileLine += std::to_string(0);
+        }
+        fileLine += FILE_CONTENT_SEPARATOR;
+        if (encodeFlag) {
             fileLine += std::to_string(1);
         } else {
             fileLine += std::to_string(0);

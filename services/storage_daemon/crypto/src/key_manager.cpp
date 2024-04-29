@@ -854,6 +854,20 @@ int KeyManager::GetLockScreenStatus(uint32_t user, bool &lockScreenStatus)
     return 0;
 }
 
+int KeyManager::GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId)
+{
+    std::lock_guard<std::mutex> lock(keyMutex_);
+    LOGE("Generate appkey2 success");
+    return 0;
+}
+
+int KeyManager::DeleteAppkey(uint32_t userId, const std::string keyId)
+{
+    std::lock_guard<std::mutex> lock(keyMutex_);
+    LOGE("Delete appkey2 success");
+    return 0;
+}
+
 int KeyManager::InActiveUserKey(unsigned int user)
 {
     LOGI("start");

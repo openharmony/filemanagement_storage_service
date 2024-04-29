@@ -508,6 +508,53 @@ int32_t StorageDaemonProxy::GetLockScreenStatus(uint32_t userId, bool &lockScree
     return reply.ReadInt32();
 }
 
+int32_t StorageDaemonProxy::GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId)
+{
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+
+    if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    if (!data.WriteUint32(userId)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+    if (!data.WriteUint32(appUid)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::GENERATE_APP_KEY), data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+    keyId = reply.ReadString();
+    return reply.ReadInt32();
+}
+
+int32_t StorageDaemonProxy::DeleteAppkey(uint32_t userId, const std::string keyId)
+{
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+
+    if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    if (!data.WriteUint32(userId)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+    if (!data.WriteString(keyId)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_APP_KEY), data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+    return reply.ReadInt32();
+}
+
 int32_t StorageDaemonProxy::UpdateKeyContext(uint32_t userId)
 {
     MessageParcel data;

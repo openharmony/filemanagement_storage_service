@@ -56,6 +56,8 @@ public:
     virtual int32_t UnlockUserScreen(uint32_t userId) override;
     virtual int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus) override;
     virtual int32_t MountCryptoPathAgain(uint32_t userId) override;
+    virtual int32_t GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId) override;
+    virtual int32_t DeleteAppkey(uint32_t userId, const std::string keyId) override;
 
     // app file share api
     virtual std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,

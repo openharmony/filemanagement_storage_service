@@ -57,6 +57,8 @@ public:
     int32_t UnlockUserScreen(uint32_t userId);
     int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus);
     int32_t MountCryptoPathAgain(int32_t userId);
+    int32_t GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId);
+    int32_t DeleteAppkey(uint32_t userId, const std::string keyId);
 
     int32_t ResetSdProxy();
 
