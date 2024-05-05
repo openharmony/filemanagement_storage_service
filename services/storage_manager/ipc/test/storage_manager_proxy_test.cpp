@@ -1193,6 +1193,30 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_DeleteAppkey_0000, testi
 }
 
 /**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_MountDfsDocs_001
+ * @tc.name: Storage_manager_proxy_MountDfsDocs_001
+ * @tc.desc: Test function of MountDfsDocs interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_MountDfsDocs_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_MountDfsDocs_001";
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    uint32_t userId = 120;
+    std::string relativePath = "account";
+    std::string networkId = "testnetworkid";
+    std::string deviceId = "testdevid";
+    uint32_t result = proxy_->MountDfsDocs(userId, relativePath, networkId, deviceId);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_MountDfsDocs_001";
+}
+
+/**
  * @tc.number: SUB_STORAGE_Storage_manager_proxy_UpdateKeyContext_0000
  * @tc.name: Storage_manager_proxy_UpdateKeyContext_0000
  * @tc.desc: Test function of UpdateKeyContext interface for SUCCESS.

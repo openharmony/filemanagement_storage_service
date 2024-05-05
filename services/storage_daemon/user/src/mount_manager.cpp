@@ -22,6 +22,7 @@
 #include <sys/types.h>
 #include <thread>
 #include <unistd.h>
+#include <regex>
 #include<filesystem>
 #include "ipc/istorage_daemon.h"
 #include "parameter.h"
@@ -108,6 +109,7 @@ MountManager::MountManager()
                   {"/mnt/data/%d/", MODE_0711, OID_ROOT, OID_ROOT},
                   {"/mnt/data/%d/cloud", MODE_0711, OID_ROOT, OID_ROOT},
                   {"/mnt/data/%d/cloud_fuse", MODE_0711, OID_DFS, OID_DFS},
+                  {"/mnt/data/%d/hmdfs", MODE_0711, OID_FILE_MANAGER, OID_FILE_MANAGER},
                   {"/mnt/hmdfs/", MODE_0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/%d/", MODE_0711, OID_ROOT, OID_ROOT},
                   {"/mnt/hmdfs/%d/cloud", MODE_0711, OID_ROOT, OID_ROOT},
@@ -733,6 +735,32 @@ int32_t MountManager::CreateVirtualDirs(int32_t userId)
         }
     }
 
+    return E_OK;
+}
+
+int32_t MountManager::MountDfsDocs(int32_t userId, const std::string &relativePath,
+    const std::string &networkId, const std::string &deviceId)
+{
+    LOGI("MountManager::MountDfsDocs start.");
+    std::string dstPath = StringPrintf("/mnt/data/%d/hmdfs/%s/", userId, deviceId.c_str());
+    if (!PrepareDir(dstPath, MODE_0711, OID_FILE_MANAGER, OID_FILE_MANAGER)) {
+        return E_PREPARE_DIR;
+    }
+
+    std::regex pathRegex("^[a-zA-Z0-9_/]+$");
+    if (relativePath.empty() || relativePath.length() > PATH_MAX || !std::regex_match(relativePath, pathRegex)) {
+        LOGE("[MountDfsDocs]invalid relativePath");
+        return E_MOUNT;
+    }
+
+    Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, relativePath));
+    std::string srcPath = hmdfsMntArgs.GetFullDst() + "/device_view/" + networkId + "/files/Docs/";
+    int32_t ret = Mount(srcPath, dstPath, nullptr, MS_BIND, nullptr);
+    if (ret != 0 && errno != EEXIST && errno != EBUSY) {
+        LOGE("MountDfsDocs mount bind failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
+            srcPath.c_str(), dstPath.c_str(), errno);
+        return E_MOUNT;
+    }
     return E_OK;
 }
 

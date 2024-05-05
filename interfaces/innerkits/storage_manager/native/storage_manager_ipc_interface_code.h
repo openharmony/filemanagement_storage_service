@@ -78,6 +78,7 @@ namespace StorageManager {
         GET_USER_STATS_BY_TYPE,
         UPDATE_MEM_PARA,
         GET_BUNDLE_STATS_INCREASE,
+        MOUNT_DFS_DOCS,
         GENERATE_APP_KEY,
         DELETE_APP_KEY,
     };

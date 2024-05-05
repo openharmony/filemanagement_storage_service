@@ -401,6 +401,23 @@ int32_t StorageDaemonClient::DeleteAppkey(uint32_t userId, const std::string key
     return client->DeleteAppkey(userId, keyId);
 }
 
+int32_t StorageDaemonClient::MountDfsDocs(int32_t userId, const std::string &relativePath,
+    const std::string &networkId, const std::string &deviceId)
+{
+    if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
+        LOGE("Storage service flag check failed!");
+        return -EAGAIN;
+    }
+
+    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
+    if (client == nullptr) {
+        LOGE("Get StorageDaemon service failed!");
+        return -EAGAIN;
+    }
+
+    return client->MountDfsDocs(userId, relativePath, networkId, deviceId);
+}
+
 int32_t StorageDaemonClient::FscryptEnable(const std::string &fscryptOptions)
 {
 #ifdef USER_CRYPTO_MANAGER

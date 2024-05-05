@@ -1225,5 +1225,31 @@ int32_t StorageManagerProxy::GetUserStorageStatsByType(int32_t userId, StorageSt
     storageStats = *StorageStats::Unmarshalling(reply);
     return E_OK;
 }
+
+int32_t StorageManagerProxy::MountDfsDocs(int32_t userId, const std::string &relativePath,
+    const std::string &networkId, const std::string &deviceId)
+{
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("StorageManagerProxy::MountDfsDocs, WriteInterfaceToken failed");
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+    if (!data.WriteInt32(userId) || !data.WriteString(relativePath) ||
+        !data.WriteString(networkId) || !data.WriteString(deviceId)) {
+        LOGE("StorageManagerProxy::MountDfsDocs, Write failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::MOUNT_DFS_DOCS), data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+
+    return reply.ReadInt32();
+}
 } // StorageManager
 } // OHOS
