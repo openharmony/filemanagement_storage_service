@@ -24,6 +24,7 @@
 #include "common_event_support.h"
 #include "matching_skills.h"
 #include "datashare_helper.h"
+#include "storage_service_constant.h"
 
 namespace OHOS {
 namespace StorageManager {
