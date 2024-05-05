@@ -76,6 +76,9 @@ static void MountCryptoPathAgain(int32_t userId)
 
 void AccountSubscriber::ResetUserEventRecord(int32_t userId)
 {
+    if (userId < StorageService::START_USER_ID || userId > StorageService::MAX_USER_ID) {
+        return;
+    }
     LOGI("ResetUserEventRecord start, userId is %{public}d", userId);
     if (AccountSubscriber_->userRecord_.find(userId) != AccountSubscriber_->userRecord_.end()) {
         std::lock_guard<std::mutex> lock(userRecordLock);

@@ -98,7 +98,9 @@ int32_t StorageManager::StopUser(int32_t userId)
     LOGI("StorageManger::StopUser start, userId: %{public}d", userId);
     std::shared_ptr<MultiUserManagerService> userManager = DelayedSingleton<MultiUserManagerService>::GetInstance();
     int32_t err = userManager->StopUser(userId);
-    ResetUserEventRecord(userId);
+    if (err != E_USERID_RANGE) {
+        ResetUserEventRecord(userId);
+    }
     return err;
 }
 
