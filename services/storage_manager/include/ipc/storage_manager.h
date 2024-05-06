@@ -81,7 +81,9 @@ public:
     int32_t InactiveUserKey(uint32_t userId) override;
     int32_t UpdateKeyContext(uint32_t userId) override;
     int32_t LockUserScreen(uint32_t userId) override;
-    int32_t UnlockUserScreen(uint32_t userId) override;
+    int32_t UnlockUserScreen(uint32_t userId,
+                             const std::vector<uint8_t> &token,
+                             const std::vector<uint8_t> &secret) override;
     int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus) override;
     int32_t GenerateAppkey(uint32_t appUid, std::string &keyId) override;
     int32_t DeleteAppkey(const std::string keyId) override;

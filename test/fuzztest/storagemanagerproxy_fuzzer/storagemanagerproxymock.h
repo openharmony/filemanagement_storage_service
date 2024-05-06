@@ -213,7 +213,9 @@ public:
         return E_OK;
     }
 
-    int32_t UnlockUserScreen(uint32_t userId) override
+    int32_t UnlockUserScreen(uint32_t userId,
+                             const std::vector<uint8_t> &token,
+                             const std::vector<uint8_t> &secret) override
     {
         return E_OK;
     }

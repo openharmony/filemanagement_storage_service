@@ -757,7 +757,13 @@ int32_t StorageManagerStub::HandleUnlockUserScreen(MessageParcel &data, MessageP
         return E_PERMISSION_DENIED;
     }
     uint32_t userId = data.ReadUint32();
-    int32_t err = UnlockUserScreen(userId);
+
+    std::vector<uint8_t> token;
+    std::vector<uint8_t> secret;
+    data.ReadUInt8Vector(&token);
+    data.ReadUInt8Vector(&secret);
+
+    int32_t err = UnlockUserScreen(userId, token, secret);
     if (!reply.WriteInt32(err)) {
         LOGE("Write reply error code failed");
         return E_WRITE_REPLY_ERR;

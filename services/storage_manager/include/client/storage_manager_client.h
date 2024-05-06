@@ -38,7 +38,9 @@ public:
     static int32_t InactiveUserKey(uint32_t userId);
     static int32_t UpdateKeyContext(uint32_t userId);
     static int32_t LockUserScreen(uint32_t userId);
-    static int32_t UnlockUserScreen(uint32_t userId);
+    static int32_t UnlockUserScreen(uint32_t userId,
+                                    const std::vector<uint8_t> &token,
+                                    const std::vector<uint8_t> &secret);
     static int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus);
     static int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId);

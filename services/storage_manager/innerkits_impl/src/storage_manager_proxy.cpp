@@ -291,7 +291,9 @@ int32_t StorageManagerProxy::LockUserScreen(uint32_t userId)
     return reply.ReadInt32();
 }
 
-int32_t StorageManagerProxy::UnlockUserScreen(uint32_t userId)
+int32_t StorageManagerProxy::UnlockUserScreen(uint32_t userId,
+                                              const std::vector<uint8_t> &token,
+                                              const std::vector<uint8_t> &secret)
 {
     LOGI("user ID: %{public}u", userId);
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
@@ -304,6 +306,14 @@ int32_t StorageManagerProxy::UnlockUserScreen(uint32_t userId)
     }
     if (!data.WriteUint32(userId)) {
         LOGE("Write user ID failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+    if (!data.WriteUInt8Vector(token)) {
+        LOGE("Write token failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+    if (!data.WriteUInt8Vector(secret)) {
+        LOGE("Write secret failed");
         return E_WRITE_PARCEL_ERR;
     }
     int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::UNLOCK_USER_SCREEN), data, reply, option);

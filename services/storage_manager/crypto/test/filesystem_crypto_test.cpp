@@ -278,7 +278,7 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_UnlockUserScreen_0000, Tes
         DelayedSingleton<FileSystemCrypto>::GetInstance();
     int32_t userId = 100;
 
-    int32_t ret = fileSystemCrypto_->UnlockUserScreen(userId);
+    int32_t ret = fileSystemCrypto_->UnlockUserScreen(userId, {}, {});
     EXPECT_EQ(ret, E_OK);
 
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_UnlockUserScreen_0000";

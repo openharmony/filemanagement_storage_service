@@ -201,7 +201,12 @@ static int32_t UnlockUserScreen(const std::vector<std::string> &args)
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }
-    return OHOS::StorageDaemon::StorageDaemonClient::UnlockUserScreen(userId);
+    // 4 means take the fifth argument of args
+    if (args.size() == ARG_CNT_5) {
+        std::vector<uint8_t> secret(args[INDEX_4].begin(), args[INDEX_4].end());
+        return OHOS::StorageDaemon::StorageDaemonClient::UnlockUserScreen(userId, {}, secret);
+    }
+    return OHOS::StorageDaemon::StorageDaemonClient::UnlockUserScreen(userId, {}, {});
 }
 
 static int32_t EnableFscrypt(const std::vector<std::string> &args)
