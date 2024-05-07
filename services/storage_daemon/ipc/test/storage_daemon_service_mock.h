@@ -144,6 +144,12 @@ public:
         return E_OK;
     }
 
+    virtual int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
+        const std::string &networkId, const std::string &deviceId) override
+    {
+        return E_OK;
+    }
+
     virtual int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus) override
     {
         return E_OK;

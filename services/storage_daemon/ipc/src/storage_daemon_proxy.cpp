@@ -786,6 +786,28 @@ int32_t StorageDaemonProxy::MountDfsDocs(int32_t userId, const std::string &rela
     return reply.ReadInt32();
 }
 
+int32_t StorageDaemonProxy::UMountDfsDocs(int32_t userId, const std::string &relativePath,
+    const std::string &networkId, const std::string &deviceId)
+{
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+    if (!data.WriteInt32(userId) || !data.WriteString(relativePath) ||
+        !data.WriteString(networkId) || !data.WriteString(deviceId)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::UMOUNT_DFS_DOCS), data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+
+    return reply.ReadInt32();
+}
+
 int32_t StorageDaemonProxy::UpdateMemoryPara(int32_t size, int32_t &oldSize)
 {
     MessageParcel data;

@@ -315,6 +315,27 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_MountDfsDocs_001, 
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_MountDfsDocs_001 end";
 }
 
+/**
+ * @tc.name: Storage_Manager_StorageDaemonTest_UMountDfsDocs_001
+ * @tc.desc: check the StopUser function normal
+ * @tc.type: FUNC
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_UMountDfsDocs_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_UMountDfsDocs_001 start";
+
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+    int32_t userId = 105;
+    std::string relativePath = "account";
+    std::string networkId = "testnetworkid";
+    std::string deviceId = "testdevid";
+    auto ret = storageDaemon_->UMountDfsDocs(userId, relativePath, networkId, deviceId);
+    EXPECT_EQ(ret, E_DESTROY_DIR);
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_UMountDfsDocs_001 end";
+}
+
 #ifdef EXTERNAL_STORAGE_MANAGER
 /**
  * @tc.name: Storage_Manager_StorageDaemonTest_Mount_001

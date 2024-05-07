@@ -411,5 +411,17 @@ int32_t StorageDaemonCommunication::MountDfsDocs(int32_t userId, const std::stri
     return storageDaemon_->MountDfsDocs(userId, relativePath, networkId, deviceId);
 }
 
+int32_t StorageDaemonCommunication::UMountDfsDocs(int32_t userId, const std::string &relativePath,
+    const std::string &networkId, const std::string &deviceId)
+{
+    LOGI("StorageDaemonCommunication::UMountDfsDocs start.");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    return storageDaemon_->UMountDfsDocs(userId, relativePath, networkId, deviceId);
+}
+
 } // namespace StorageManager
 } // namespace OHOS

@@ -52,6 +52,7 @@ namespace {
         static_cast<int32_t>(StorageDaemonInterfaceCode::INACTIVE_USER_KEY),
         static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_KEY_CONTEXT),
         static_cast<int32_t>(StorageDaemonInterfaceCode::MOUNT_DFS_DOCS),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::UMOUNT_DFS_DOCS),
         static_cast<int32_t>(StorageDaemonInterfaceCode::LOCK_USER_SCREEN),
         static_cast<int32_t>(StorageDaemonInterfaceCode::UNLOCK_USER_SCREEN),
         static_cast<int32_t>(StorageDaemonInterfaceCode::LOCK_SCREEN_STATUS),
@@ -153,6 +154,7 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRe
     EXPECT_CALL(mock, LockUserScreen(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, UnlockUserScreen(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, MountDfsDocs(testing::_, testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, UMountDfsDocs(testing::_, testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, GetLockScreenStatus(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, GenerateAppkey(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, DeleteAppkey(testing::_, testing::_)).WillOnce(testing::Return(E_OK));

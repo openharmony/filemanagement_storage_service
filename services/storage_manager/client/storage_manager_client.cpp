@@ -176,5 +176,17 @@ int32_t StorageManagerClient::MountDfsDocs(int32_t userId, const std::string &re
 
     return client->MountDfsDocs(userId, relativePath, networkId, deviceId);
 }
+
+int32_t StorageManagerClient::UMountDfsDocs(int32_t userId, const std::string &relativePath,
+    const std::string &networkId, const std::string &deviceId)
+{
+    sptr<IStorageManager> client = GetStorageManagerProxy();
+    if (client == nullptr) {
+        LOGE("get storage manager service failed");
+        return -EFAULT;
+    }
+
+    return client->UMountDfsDocs(userId, relativePath, networkId, deviceId);
+}
 }
 }

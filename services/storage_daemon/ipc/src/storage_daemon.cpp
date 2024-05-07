@@ -672,6 +672,13 @@ int32_t StorageDaemon::MountDfsDocs(int32_t userId, const std::string &relativeP
     return MountManager::GetInstance()->MountDfsDocs(userId, relativePath, networkId, deviceId);
 }
 
+int32_t StorageDaemon::UMountDfsDocs(int32_t userId, const std::string &relativePath,
+    const std::string &networkId, const std::string &deviceId)
+{
+    LOGI("StorageDaemon::UMountDfsDocs start.");
+    return MountManager::GetInstance()->UMountDfsDocs(userId, relativePath, networkId, deviceId);
+}
+
 static bool ReadFileToString(const std::string& pathInst, std::string& oldContent)
 {
     std::fstream fd;

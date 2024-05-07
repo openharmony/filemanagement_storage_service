@@ -102,6 +102,8 @@ public:
     // dfs service
     virtual int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId) = 0;
+    virtual int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
+        const std::string &networkId, const std::string &deviceId) = 0;
 
     DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.StorageManager.IStorageManager");
 };

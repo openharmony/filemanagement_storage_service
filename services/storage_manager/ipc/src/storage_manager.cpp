@@ -570,5 +570,14 @@ int32_t StorageManager::MountDfsDocs(int32_t userId, const std::string &relative
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     return sdCommunication->MountDfsDocs(userId, relativePath, networkId, deviceId);
 }
+
+int32_t StorageManager::UMountDfsDocs(int32_t userId, const std::string &relativePath,
+    const std::string &networkId, const std::string &deviceId)
+{
+    LOGI("StorageManager::UMountDfsDocs start.");
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->UMountDfsDocs(userId, relativePath, networkId, deviceId);
+}
 }
 }

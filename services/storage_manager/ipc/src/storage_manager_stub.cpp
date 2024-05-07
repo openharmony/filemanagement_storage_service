@@ -172,6 +172,8 @@ StorageManagerStub::StorageManagerStub()
         &StorageManagerStub::HandleGetBundleStatsForIncrease;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::MOUNT_DFS_DOCS)] =
         &StorageManagerStub::HandleMountDfsDocs;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::UMOUNT_DFS_DOCS)] =
+            &StorageManagerStub::HandleUMountDfsDocs;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GENERATE_APP_KEY)] =
         &StorageManagerStub::HandleGenerateAppkey;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::DELETE_APP_KEY)] =
@@ -971,6 +973,26 @@ int32_t StorageManagerStub::HandleMountDfsDocs(MessageParcel &data, MessageParce
     std::string deviceId = data.ReadString();
 
     int32_t err = MountDfsDocs(userId, relativePath, networkId, deviceId);
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleUMountDfsDocs(MessageParcel &data, MessageParcel &reply)
+{
+    // Only for dfs create device dir and bind mount from DFS Docs.
+    if (IPCSkeleton::GetCallingUid() != DFS_UID) {
+        LOGE("HandleUMountDfsDocs permissionCheck error, calling uid now is %{public}d, should be DFS_UID: %{public}d",
+             IPCSkeleton::GetCallingUid(), DFS_UID);
+        return E_PERMISSION_DENIED;
+    }
+
+    int32_t userId = data.ReadInt32();
+    std::string relativePath = data.ReadString();
+    std::string networkId = data.ReadString();
+    std::string deviceId = data.ReadString();
+    int32_t err = UMountDfsDocs(userId, relativePath, networkId, deviceId);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }

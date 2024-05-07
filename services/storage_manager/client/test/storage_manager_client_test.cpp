@@ -407,6 +407,37 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_MountDfsDocs_001, Test
 }
 
 /**
+ * @tc.number: SUB_STORAGE_Client_manager_UMountDfsDocs_001
+ * @tc.name: Client_manager_service_UMountDfsDocs_001
+ * @tc.desc: Test function of UMountDfsDocs interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageManagerClientTest, Client_manager_service_UMountDfsDocs_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerClientTest-begin Client_manager_service_UMountDfsDocs_001";
+
+    ASSERT_TRUE(storageManagerClient_ != nullptr);
+
+    vector<string> perms;
+    perms.push_back("ohos.permission.STORAGE_MANAGER");
+    uint64_t tokenId = 0;
+    PermissionUtilsTest::SetAccessTokenPermission("StorageManagerClientTest", perms, tokenId);
+    ASSERT_TRUE(tokenId != 0);
+
+    uint32_t userId = 104;
+    std::string relativePath = "account";
+    std::string networkId = "testnetworkid";
+    std::string deviceId = "testdevid";
+    int32_t ret = storageManagerClient_->UMountDfsDocs(userId, relativePath, networkId, deviceId);
+    EXPECT_TRUE(ret == E_PERMISSION_DENIED);
+
+    GTEST_LOG_(INFO) << "Client_manager_service_UMountDfsDocs_001 end";
+}
+
+/**
  * @tc.number: SUB_STORAGE_Client_manager_GetLockScreenStatus_0000
  * @tc.name: Client_manager_service_GetLockScreenStatus_0000
  * @tc.desc: Test function of GetLockScreenStatus interface for SUCCESS.
