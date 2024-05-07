@@ -155,6 +155,7 @@ public:
     ~Acl();
 private:
     void CompareInsertEntry(const AclXattrEntry &entry);
+    void SetMaskEntry();
 };
 
 int AclSetDefault(const std::string &targetFile, const std::string &entryTxt);
