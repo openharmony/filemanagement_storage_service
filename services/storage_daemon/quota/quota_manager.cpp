@@ -304,7 +304,7 @@ static std::tuple<std::vector<std::string>, std::vector<std::string>> ReadInclud
         std::string line;
         std::getline(incExcFile, line);
         if (line.empty()) {
-            LOGI("Read Complete");
+            LOGD("Read Complete");
             break;
         }
         if (line == BACKUP_INCLUDE) {
@@ -403,14 +403,14 @@ static void RecognizeSandboxWildCard(const uint32_t userId, const std::string &b
             bundleName + FILE_SEPARATOR_CHAR;
         std::string relatePath = sandBoxPathStr.substr(BASE_EL1.size());
         if (!GetPathWildCard(userId, bundleName, physicalPrefix + relatePath, phyIncludes, pathMap)) {
-            LOGE("GetPathWildCard dir path invaild");
+            LOGE("el1 GetPathWildCard dir path invaild");
         }
     } else if (sandBoxPathStr.find(BASE_EL2 + DEFAULT_PATH_WITH_WILDCARD) == 0) {
         std::string physicalPrefix = PHY_APP + EL2 + FILE_SEPARATOR_CHAR + std::to_string(userId) + BASE +
             bundleName + FILE_SEPARATOR_CHAR;
         std::string relatePath = sandBoxPathStr.substr(BASE_EL2.size());
         if (!GetPathWildCard(userId, bundleName, physicalPrefix + relatePath, phyIncludes, pathMap)) {
-            LOGE("GetPathWildCard dir path invaild");
+            LOGE("el2 GetPathWildCard dir path invaild");
         }
     }
 }
@@ -720,7 +720,6 @@ static std::map<std::string, struct FileStat> FilterExtensionPath(int64_t lastBa
         // Check if includeDir is a file path
         auto [isSucc, isDir] = CheckIfDirForIncludes(includeDir, lastBackupTime, fileStats, pathMap);
         if (!isSucc) {
-            LOGE("GetIncludesFileStats dir path invaild");
             continue;
         }
         // recognize all file in include directory
