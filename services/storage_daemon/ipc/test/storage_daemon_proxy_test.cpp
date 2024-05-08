@@ -475,7 +475,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_GenerateAppkey_001, Test
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
     uint32_t appUid = 0;
-    std::string keyId = NULL;
+    std::string keyId;
     int32_t ret = proxy_->GenerateAppkey(USER_ID1, appUid, keyId);
     ASSERT_TRUE(ret == E_OK);
     ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::GENERATE_APP_KEY) == mock_->code_);
@@ -497,10 +497,10 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_DeleteAppkey_001, TestSi
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
-    std::string keyId = NULL;
+    std::string keyId;
     int32_t ret = proxy_->DeleteAppkey(USER_ID1, keyId);
     ASSERT_TRUE(ret == E_OK);
-    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::GENERATE_APP_KEY) == mock_->code_);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_APP_KEY) == mock_->code_);
 
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_DeleteAppkey_001 end";
 }

@@ -756,8 +756,10 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonTest_HandleGenerate
     EXPECT_CALL(mock, GenerateAppkey(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_ERR));
     ret = mock.HandleGenerateAppkey(data2, reply2);
     EXPECT_TRUE(ret == E_OK);
+    string keyId = reply2.ReadString();
+    EXPECT_TRUE(keyId == "");
     err = reply2.ReadInt32();
-    EXPECT_TRUE(err == E_OK);
+    EXPECT_TRUE(err == E_ERR);
 
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_HandleGenerateAppkey_001 end";
 }
@@ -788,7 +790,7 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonTest_HandleDeleteAp
     ret = mock.HandleDeleteAppkey(data2, reply2);
     EXPECT_TRUE(ret == E_OK);
     err = reply2.ReadInt32();
-    EXPECT_TRUE(err == E_OK);
+    EXPECT_TRUE(err == E_ERR);
 
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_HandleDeleteAppkey_001 end";
 }
