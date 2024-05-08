@@ -70,7 +70,7 @@ public:
     int32_t RestoreconSystemServiceDirs(int32_t userId);
     int32_t FindMountPointsToMap(std::map<std::string, std::list<std::string>> &mountMap, int32_t userId);
     void MountPointToList(std::list<std::string> &hmdfsList, std::list<std::string> &hmfsList,
-                             std::list<std::string> &sharefsList, std::string &line, int32_t userId);
+        std::list<std::string> &sharefsList, std::string &line, int32_t userId);
 
 private:
     bool SupportHmdfs();

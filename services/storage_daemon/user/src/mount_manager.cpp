@@ -366,7 +366,7 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
 }
 
 void MountManager::MountPointToList(std::list<std::string> &hmdfsList, std::list<std::string> &hmfsList,
-                                 std::list<std::string> &sharefsList, std::string &line, int32_t userId)
+    std::list<std::string> &sharefsList, std::string &line, int32_t userId)
 {
     if (line.empty()) {
         return;
