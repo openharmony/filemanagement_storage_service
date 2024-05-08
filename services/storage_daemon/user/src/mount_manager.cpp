@@ -768,11 +768,18 @@ int32_t MountManager::UMountDfsDocs(int32_t userId, const std::string &relativeP
     const std::string &networkId, const std::string &deviceId)
 {
     LOGI("MountManager::UMountDfsDocs start.");
+
+    std::regex pathRegex("^[a-zA-Z0-9_/]+$");
+    if (relativePath.empty() || relativePath.length() > PATH_MAX || !std::regex_match(relativePath, pathRegex)) {
+        LOGE("[UMountDfsDocs]invalid relativePath");
+        return E_UMOUNT;
+    }
+
     Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, relativePath));
     std::string srcPath = hmdfsMntArgs.GetFullDst() + "/device_view/" + networkId + "/files/Docs/";
     int32_t ret = UMount2(srcPath, MNT_FORCE);
     if (ret != E_OK) {
-        LOGE("Failed to unbind mount, srcPath is %{public}s errno is %{public}d",
+        LOGE("UMountDfsDocs unmount bind failed, srcPath is %{public}s errno is %{public}d",
              srcPath.c_str(), errno);
         return E_UMOUNT;
     }
