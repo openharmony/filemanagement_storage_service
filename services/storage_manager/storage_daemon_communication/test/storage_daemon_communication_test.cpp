@@ -201,7 +201,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountDfsDocs_001, 
  */
 HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountDfsDocs_001, testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_MountDfsDocs_001 SUCCESS";
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UMountDfsDocs_001 SUCCESS";
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
             DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     uint32_t userId = 100;
