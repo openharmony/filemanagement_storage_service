@@ -777,24 +777,17 @@ int32_t MountManager::UMountDfsDocs(int32_t userId, const std::string &relativeP
 
     Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, relativePath));
     std::string srcPath = hmdfsMntArgs.GetFullDst() + "/device_view/" + networkId + "/files/Docs/";
-
-    LOGI("lixiang,UMountDfsDocs start!!!!!!!!!!!!!!!!!!");
     int32_t ret = UMount2(srcPath, MNT_FORCE);
-    LOGI("lixiang,UMountDfsDocs end??????????????????????");
-
     if (ret != E_OK) {
         LOGE("UMountDfsDocs unmount bind failed, srcPath is %{public}s errno is %{public}d",
              srcPath.c_str(), errno);
-        LOGI("lixiang,reserr!!!!!!!!!!!???????????");
         return E_UMOUNT;
     }
     LOGI("MountManager::UMountDfsDocs end.");
     std::string dirPath = StringPrintf("/mnt/data/%d/hmdfs/%s/", userId, deviceId.c_str());
     if (!RmDirRecurse(dirPath)) {
         LOGE("Failed to remove dir %{public}s", dirPath.c_str());
-        LOGI("lixiang,rm11??????????");
     }
-    LOGI("lixiang,end22??????????");
     return E_OK;
 }
 
