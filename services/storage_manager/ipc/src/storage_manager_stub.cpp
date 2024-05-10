@@ -173,7 +173,7 @@ StorageManagerStub::StorageManagerStub()
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::MOUNT_DFS_DOCS)] =
         &StorageManagerStub::HandleMountDfsDocs;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::UMOUNT_DFS_DOCS)] =
-            &StorageManagerStub::HandleUMountDfsDocs;
+        &StorageManagerStub::HandleUMountDfsDocs;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GENERATE_APP_KEY)] =
         &StorageManagerStub::HandleGenerateAppkey;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::DELETE_APP_KEY)] =

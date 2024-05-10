@@ -1265,7 +1265,7 @@ int32_t StorageManagerProxy::UMountDfsDocs(int32_t userId, const std::string &re
         return E_WRITE_DESCRIPTOR_ERR;
     }
     if (!data.WriteInt32(userId) || !data.WriteString(relativePath) ||
-    !data.WriteString(networkId) || !data.WriteString(deviceId)) {
+        !data.WriteString(networkId) || !data.WriteString(deviceId)) {
         LOGE("StorageManagerProxy::UMountDfsDocs, Write failed");
         return E_WRITE_PARCEL_ERR;
     }
