@@ -186,7 +186,7 @@ void AncoKeyManager::SetUserPermissionMap()
     AncoKeyManager::ownerMap_["media_rw"] = "1023";
     AncoKeyManager::ownerMap_["media"] = "1013";
     AncoKeyManager::ownerMap_["misc"] = "9998";
-    AncoKeyManager::ownerMap_["shell"] = "20000";
+    AncoKeyManager::ownerMap_["shell"] = "2000";
     AncoKeyManager::ownerMap_["cache"] = "2001";
     AncoKeyManager::ownerMap_["log"] = "1007";
     AncoKeyManager::ownerMap_["file_manager"] = "1006";
