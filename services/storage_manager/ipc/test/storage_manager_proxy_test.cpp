@@ -1163,8 +1163,9 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GenerateAppkey_0000, tes
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    GTEST_LOG_(INFO) << proxy_;
     uint32_t appUid = 0;
-    std::string keyId = NULL;
+    std::string keyId;
     uint32_t result = proxy_->GenerateAppkey(appUid, keyId);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "Storage_manager_proxy_GenerateAppkey_0000 end";
@@ -1186,7 +1187,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_DeleteAppkey_0000, testi
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
-    const std::string keyId = NULL;
+    const std::string keyId;
     uint32_t result = proxy_->DeleteAppkey(keyId);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_DeleteAppkey_0000";

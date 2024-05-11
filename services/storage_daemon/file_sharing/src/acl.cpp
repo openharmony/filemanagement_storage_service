@@ -61,6 +61,36 @@ void Acl::CompareInsertEntry(const AclXattrEntry &entry)
     }
 }
 
+void Acl::SetMaskEntry()
+{
+    auto it = std::find_if(entries.begin(), entries.end(),
+        [] (const AclXattrEntry e) { return e.tag == ACL_TAG::GROUP; });
+    if (it != entries.end()) {
+        // if has GROUP entry, update MASK entry
+        maskDemand = 1;
+        /*
+        * In either case there's no or already one ACL_MASK entry in the set,
+        * we need to re-calculate MASK's permission and *insert* it (to replace
+        * the old one in latter case since we can't change std::set's element
+        * in-place). So do the following unconditionally.
+        *
+        * Be warned: do _NOT_ combine the following into one line, otherwise
+        * you can't pass the !!genius!! CI coding style check.
+        */
+        CompareInsertEntry(
+            { ACL_TAG::MASK, ReCalcMaskPerm(), ACL_UNDEFINED_ID }
+        );
+    } else {
+        // if no GROUP entry, remove MASK entry
+        maskDemand = 0;
+        auto itMask = std::find_if(entries.begin(), entries.end(),
+            [] (const AclXattrEntry e) { return e.tag == ACL_TAG::MASK; });
+        if (itMask != entries.end()) {
+            entries.erase(itMask);
+        }
+    }
+}
+
 int Acl::InsertEntry(const AclXattrEntry &entry)
 {
     if (entries.size() >= ENTRIES_MAX_NUM) {
@@ -78,19 +108,7 @@ int Acl::InsertEntry(const AclXattrEntry &entry)
         case ACL_TAG::USER:
         case ACL_TAG::GROUP:
             CompareInsertEntry(entry); // must before ReCalcMaskPerm()
-            maskDemand++;
-            /*
-             * In either case there's no or already one ACL_MASK entry in the set,
-             * we need to re-calculate MASK's permission and *insert* it (to replace
-             * the old one in latter case since we can't change std::set's element
-             * in-place). So do the following unconditionally.
-             *
-             * Be warned: do _NOT_ combine the following into one line, otherwise
-             * you can't pass the !!genius!! CI coding style check.
-             */
-            CompareInsertEntry(
-                { ACL_TAG::MASK, ReCalcMaskPerm(), ACL_UNDEFINED_ID }
-            );
+            SetMaskEntry();
             break;
         default:
             errno = EINVAL;
