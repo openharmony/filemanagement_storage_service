@@ -389,7 +389,7 @@ void MountManager::MountPointToList(std::list<std::string> &hmdfsList, std::list
         return;
     }
     if (type == MOUNT_POINT_TYPE_HMFS) {
-        if (dst.length() >= hmfsPrefix.length() && src.substr(0, hmfsPrefix.length()) == hmfsPrefix) {
+        if (dst.length() >= hmfsPrefix.length() && dst.substr(0, hmfsPrefix.length()) == hmfsPrefix) {
             hmfsList.push_front(dst);
         }
         return;
