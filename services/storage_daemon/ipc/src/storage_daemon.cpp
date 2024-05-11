@@ -19,8 +19,8 @@
 #include <fcntl.h>
 #include <fstream>
 
-#include "crypto/anco_key_manager.h"
 #ifdef USER_CRYPTO_MANAGER
+#include "crypto/anco_key_manager.h"
 #include "crypto/key_manager.h"
 #endif
 #ifdef EXTERNAL_STORAGE_MANAGER
@@ -317,8 +317,9 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
     }
 #endif
     auto result = UserManager::GetInstance()->PrepareUserDirs(GLOBAL_USER_ID, CRYPTO_FLAG_EL1);
-
+#ifdef USER_CRYPTO_MANAGER
     AncoInitCryptKey();
+#endif
     return result;
 }
 
@@ -527,8 +528,9 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
     if (updateFlag) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
     }
-
+#ifdef USER_CRYPTO_MANAGER
     AncoActiveCryptKey(userId);
+#endif
     return E_OK;
 #endif
 }
@@ -757,6 +759,7 @@ void StorageDaemon::SystemAbilityStatusChangeListener::OnRemoveSystemAbility(int
 
 void StorageDaemon::AncoInitCryptKey()
 {
+#ifdef USER_CRYPTO_MANAGER
     std::error_code errorCode;
     if (std::filesystem::exists(CONFIG_FILE_PATH, errorCode)) {
         auto ret = AncoKeyManager::GetInstance()->SetAncoDirectoryElPolicy(CONFIG_FILE_PATH, ANCO_TYPE_SYS_EL1,
@@ -772,10 +775,12 @@ void StorageDaemon::AncoInitCryptKey()
             }
         }
     }
+#endif
 }
 
 void StorageDaemon::AncoActiveCryptKey(uint32_t userId)
 {
+#ifdef USER_CRYPTO_MANAGER
     std::error_code errorCode;
     if (std::filesystem::exists(CONFIG_FILE_PATH, errorCode)) {
         auto ret = AncoKeyManager::GetInstance()->SetAncoDirectoryElPolicy(CONFIG_FILE_PATH, ANCO_TYPE_USER_EL2,
@@ -784,6 +789,7 @@ void StorageDaemon::AncoActiveCryptKey(uint32_t userId)
             LOGE("SetAncoDirectoryElPolicy failed, ret = %{public}d", ret);
         }
     }
+#endif
 }
 } // namespace StorageDaemon
 } // namespace OHOS
