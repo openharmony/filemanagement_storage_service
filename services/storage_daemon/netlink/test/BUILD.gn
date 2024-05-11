@@ -45,7 +45,7 @@ ohos_unittest("netlink_data_test") {
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
-    "ipc:ipc_core",
+    "ipc:ipc_single",
     "samgr:samgr_proxy",
   ]
 }
@@ -97,7 +97,7 @@ ohos_unittest("netlink_handler_test") {
     "c_utils:utils",
     "hilog:libhilog",
     "init:libbegetutil",
-    "ipc:ipc_core",
+    "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
@@ -134,7 +134,7 @@ ohos_unittest("netlink_listener_test") {
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
-    "ipc:ipc_core",
+    "ipc:ipc_single",
     "samgr:samgr_proxy",
   ]
 }
@@ -186,7 +186,7 @@ ohos_unittest("netlink_manager_test") {
     "c_utils:utils",
     "hilog:libhilog",
     "init:libbegetutil",
-    "ipc:ipc_core",
+    "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]

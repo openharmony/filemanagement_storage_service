@@ -77,7 +77,7 @@ ohos_shared_library("storage_manager") {
     "common_event_service:cesfwk_innerkits",
     "hilog:libhilog",
     "hitrace:hitrace_meter",
-    "ipc:ipc_core",
+    "ipc:ipc_single",
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",

@@ -65,7 +65,7 @@ ohos_unittest("user_manager_test") {
     "hilog:libhilog",
     "huks:libhukssdk",
     "init:libbegetutil",
-    "ipc:ipc_core",
+    "ipc:ipc_single",
     "ipc:libdbinder",
   ]
 

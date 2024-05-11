@@ -60,7 +60,7 @@ ohos_shared_library("storage_manager_sa_proxy") {
     "c_utils:utils",
     "hilog:libhilog",
     "hitrace:hitrace_meter",
-    "ipc:ipc_core",
+    "ipc:ipc_single",
   ]
 
   part_name = "storage_service"

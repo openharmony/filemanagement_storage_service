@@ -57,7 +57,7 @@ ohos_unittest("storage_daemon_communication_test") {
     "c_utils:utils",
     "hilog:libhilog",
     "init:libbegetutil",
-    "ipc:ipc_core",
+    "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]

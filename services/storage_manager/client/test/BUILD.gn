@@ -48,7 +48,7 @@ ohos_unittest("storage_manager_clt_test") {
     "access_token:libtoken_setproc",
     "c_utils:utils",
     "hilog:libhilog",
-    "ipc:ipc_core",
+    "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "storage_service:storage_manager_sa_proxy",

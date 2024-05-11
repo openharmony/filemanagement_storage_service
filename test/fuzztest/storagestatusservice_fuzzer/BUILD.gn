@@ -44,7 +44,7 @@ ohos_fuzztest("StorageStatusServiceFuzzTest") {
     "c_utils:utils",
     "hilog:libhilog",
     "hitrace:hitrace_meter",
-    "ipc:ipc_core",
+    "ipc:ipc_single",
     "storage_service:storage_manager_sa_proxy",
   ]
 }

@@ -72,7 +72,7 @@ ohos_static_library("libsdcrypto") {
     "hilog:libhilog",
     "huks:libhukssdk",
     "init:libbegetutil",
-    "ipc:ipc_core",
+    "ipc:ipc_single",
     "openssl:libcrypto_shared",
   ]
 

@@ -120,7 +120,7 @@ ohos_executable("storage_daemon") {
     "c_utils:utils",
     "hilog:libhilog",
     "init:libbegetutil",
-    "ipc:ipc_core",
+    "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
@@ -154,7 +154,6 @@ ohos_executable("storage_daemon") {
   subsystem_name = "filemanagement"
   part_name = "storage_service"
   install_enable = true
-  use_exceptions = true
 }
 
 config("sdc_config") {
@@ -210,7 +209,7 @@ ohos_executable("sdc") {
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
-    "ipc:ipc_core",
+    "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
