@@ -33,6 +33,7 @@ namespace {
     static const std::string SHAREFS_BASE_MOUNT_POINT = "/mnt/share/";
     static const std::string TMPFS_MNT_DATA = "/mnt/data/";
     static const std::string HMDFS_DEVICE_VIEW_LOCAL_DOCS_PATH = "/device_view/local" + RELATIVE_DOCS_PATH;
+    static const std::string SANDBOX_PATH = "/mnt/sandbox/";
 } // namespace
 
 string MountArgument::GetFullSrc() const
@@ -159,6 +160,13 @@ string MountArgument::GetMountPointPrefix() const
 {
     stringstream ss;
     ss << DATA_POINT << userId_ << "/hmdfs";
+    return ss.str();
+}
+
+std::string MountArgument::GetSandboxPath() const
+{
+    stringstream ss;
+    ss << SANDBOX_PATH << userId_;
     return ss.str();
 }
 
