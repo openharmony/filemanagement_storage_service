@@ -48,6 +48,7 @@ struct MountArgument final {
     std::string GetCloudDocsPath() const;
     std::string GetLocalDocsPath() const;
     std::string GetMountPointPrefix() const;
+    std::string GetSandboxPath() const;
     unsigned long GetFlags() const;
 };
 

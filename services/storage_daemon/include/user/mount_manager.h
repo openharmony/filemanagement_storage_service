@@ -18,6 +18,7 @@
 
 #include <fstream>
 #include <list>
+#include <map>
 #include <string>
 #include <mutex>
 #include <vector>
@@ -67,9 +68,12 @@ public:
     int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
                          const std::string &networkId, const std::string &deviceId);
     void UMountCryptoPathAgain(uint32_t userId);
+    int32_t UMountAllPath(int32_t userId);
     void SetCloudState(bool active);
     int32_t RestoreconSystemServiceDirs(int32_t userId);
-    int32_t findMountPointsWithPrefix(std::string prefix, std::list<std::string> &toUnmount);
+    int32_t FindMountPointsToMap(std::map<std::string, std::list<std::string>> &mountMap, int32_t userId);
+    void MountPointToList(std::list<std::string> &hmdfsList, std::list<std::string> &hmfsList,
+        std::list<std::string> &sharefsList, std::string &line, int32_t userId);
 
 private:
     bool SupportHmdfs();
@@ -77,11 +81,8 @@ private:
     int32_t HmdfsMount(int32_t userId);
     int32_t HmdfsMount(int32_t userId, std::string relativePath, bool mountCloudDisk = false);
     int32_t HmdfsTwiceMount(int32_t userId, std::string relativePath);
-    int32_t HmdfsUMount(int32_t userId);
     int32_t HmdfsUMount(int32_t userId, std::string relativePath);
     int32_t SharefsMount(int32_t userId);
-    int32_t SharefsUMount(int32_t userId);
-    int32_t HmdfsTwiceUMount(int32_t userId, std::string relativePath);
     int32_t LocalMount(int32_t userId);
     int32_t LocalUMount(int32_t userId);
     int32_t SetFafQuotaProId(int32_t userId);

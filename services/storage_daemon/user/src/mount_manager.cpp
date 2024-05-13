@@ -23,7 +23,7 @@
 #include <thread>
 #include <unistd.h>
 #include <regex>
-#include<filesystem>
+#include <filesystem>
 #include "ipc/istorage_daemon.h"
 #include "parameter.h"
 #include "quota/quota_manager.h"
@@ -58,6 +58,9 @@ const string SCENE_BOARD_BUNDLE_NAME = "com.ohos.sceneboard";
 const string PUBLIC_DIR_SANDBOX_PATH = "/storage/Users/currentUser";
 const string PUBLIC_DIR_SRC_PATH = "/storage/media/<currentUserId>/local/files/Docs";
 const string MOUNT_POINT_INFO = "/proc/mounts";
+const string MOUNT_POINT_TYPE_HMDFS = "hmdfs";
+const string MOUNT_POINT_TYPE_HMFS = "hmfs";
+const string MOUNT_POINT_TYPE_SHAREFS = "sharefs";
 const set<string> SANDBOX_EXCLUDE_PATH = {
     "chipset",
     "system",
@@ -175,18 +178,6 @@ int32_t MountManager::SharefsMount(int32_t userId)
     if (ret != 0 && errno != EEXIST && errno != EBUSY) {
         LOGE("failed to mount sharefs, err %{public}d", errno);
         return E_MOUNT;
-    }
-    return E_OK;
-}
-
-int32_t MountManager::SharefsUMount(int32_t userId)
-{
-    Utils::MountArgument sharefsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
-    int32_t ret = UMount2(sharefsMntArgs.GetShareDst().c_str(), MNT_DETACH);
-    if (ret != E_OK) {
-        LOGE("umount sharefs, errno %{public}d, sharefs dst %{public}s", errno,
-             sharefsMntArgs.GetShareDst().c_str());
-        return E_UMOUNT;
     }
     return E_OK;
 }
@@ -354,6 +345,7 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
             string dstPath = bundleName.path().generic_string() + cryptoSandboxPathVector[i];
             string srcPath = cryptoSandboxSrcVector[i];
             ParseSandboxPath(srcPath, to_string(userId), bundleName.path().filename().generic_string());
+            LOGD("mount crypto path, srcPath is %{public}s, dstPath is %{public}s", srcPath.c_str(), dstPath.c_str());
             ret = mount(srcPath.c_str(), dstPath.c_str(), nullptr, MS_BIND | MS_REC, nullptr);
             if (ret != 0) {
                 LOGE("mount bind failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
@@ -373,48 +365,106 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
     return ret;
 }
 
-int32_t MountManager::findMountPointsWithPrefix(std::string prefix, std::list<std::string> &toUnmount)
+void MountManager::MountPointToList(std::list<std::string> &hmdfsList, std::list<std::string> &hmfsList,
+    std::list<std::string> &sharefsList, std::string &line, int32_t userId)
+{
+    if (line.empty()) {
+        return;
+    }
+    Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
+    const string &hmdfsPrefix = hmdfsMntArgs.GetMountPointPrefix();
+    const string &hmfsPrefix = hmdfsMntArgs.GetSandboxPath();
+    const string &sharefsPrefix = hmdfsMntArgs.GetShareSrc();
+    std::stringstream ss(line);
+    std::string src;
+    ss >> src;
+    std::string dst;
+    ss >> dst;
+    std::string type;
+    ss >> type;
+    if (type == MOUNT_POINT_TYPE_HMDFS) {
+        if (src.length() >= hmdfsPrefix.length() && src.substr(0, hmdfsPrefix.length()) == hmdfsPrefix) {
+            hmdfsList.push_front(dst);
+        }
+        return;
+    }
+    if (type == MOUNT_POINT_TYPE_HMFS) {
+        if (dst.length() >= hmfsPrefix.length() && dst.substr(0, hmfsPrefix.length()) == hmfsPrefix) {
+            hmfsList.push_front(dst);
+        }
+        return;
+    }
+    if (type == MOUNT_POINT_TYPE_SHAREFS) {
+        if (src.length() >= sharefsPrefix.length() &&
+            src.substr(0, sharefsPrefix.length()) == sharefsPrefix) {
+            sharefsList.push_front(dst);
+        }
+        return;
+    }
+}
+
+int32_t MountManager::FindMountPointsToMap(std::map<std::string, std::list<std::string>> &mountMap, int32_t userId)
 {
     std::ifstream inputStream(MOUNT_POINT_INFO.c_str(), std::ios::in);
     if (!inputStream.is_open()) {
         LOGE("unable to open /proc/mounts, errno is %{public}d", errno);
         return -errno;
     }
+    std::list<std::string> hmdfsList;
+    std::list<std::string> hmfsList;
+    std::list<std::string> sharefsList;
     std::string tmpLine;
     while (std::getline(inputStream, tmpLine)) {
-        if (tmpLine.length() > prefix.length() && tmpLine.substr(0, prefix.length()) == prefix) {
-            std::stringstream ss(tmpLine);
-            std::string mnt;
-            ss >> mnt;
-            ss >> mnt;
-            toUnmount.push_front(mnt);
-            mnt.clear();
-        }
+        MountPointToList(hmdfsList, hmfsList, sharefsList, tmpLine, userId);
     }
-    tmpLine.clear();
     inputStream.close();
+    mountMap[MOUNT_POINT_TYPE_HMDFS] = hmdfsList;
+    mountMap[MOUNT_POINT_TYPE_HMFS] = hmfsList;
+    mountMap[MOUNT_POINT_TYPE_SHAREFS] = sharefsList;
+    hmdfsList.clear();
+    hmfsList.clear();
+    sharefsList.clear();
     return E_OK;
 }
 
-void MountManager::UMountCryptoPathAgain(uint32_t userId)
+int32_t MountManager::UMountAllPath(int32_t userId)
 {
-    Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
-    const string &mountPointPrefix = hmdfsMntArgs.GetMountPointPrefix();
-    std::list<std::string> toUnmount;
-    int32_t res = findMountPointsWithPrefix(mountPointPrefix, toUnmount);
+    std::map<std::string, std::list<std::string>> mountMap;
+    int32_t res = FindMountPointsToMap(mountMap, userId);
     if (res != E_OK) {
-        return;
+        return res;
     }
-
-    int total = static_cast<int>(toUnmount.size());
-    LOGI("unmount crypto path start, total %{public}d.", total);
-    for (const std::string &path: toUnmount) {
+    std::list<std::string> list = mountMap[MOUNT_POINT_TYPE_HMFS];
+    int total = static_cast<int>(list.size());
+    LOGI("unmount hmfs path start, total %{public}d.", total);
+    for (const std::string &path: list) {
+        LOGD("unmount hmfs path %{public}s.", path.c_str());
         res = UMount2(path.c_str(), MNT_DETACH);
         if (res != E_OK) {
-            LOGE("failed to unmount %{public}s, errno %{public}d.", path.c_str(), errno);
+            LOGE("failed to unmount hmfs path %{public}s, errno %{public}d.", path.c_str(), errno);
         }
     }
-    CloudUMount(userId);
+    list = mountMap[MOUNT_POINT_TYPE_SHAREFS];
+    total = static_cast<int>(list.size());
+    LOGI("unmount sharefs path start, total %{public}d.", total);
+    for (const std::string &path: list) {
+        LOGD("unmount sharefs path %{public}s.", path.c_str());
+        res = UMount2(path.c_str(), MNT_DETACH);
+        if (res != E_OK) {
+            LOGE("failed to unmount sharefs path %{public}s, errno %{public}d.", path.c_str(), errno);
+        }
+    }
+    list = mountMap[MOUNT_POINT_TYPE_HMDFS];
+    total = static_cast<int>(list.size());
+    LOGI("unmount hmdfs path start, total %{public}d.", total);
+    for (const std::string &path: list) {
+        LOGD("unmount hmdfs path %{public}s.", path.c_str());
+        res = UMount2(path.c_str(), MNT_DETACH);
+        if (res != E_OK) {
+            LOGE("failed to unmount hmdfs path %{public}s, errno %{public}d.", path.c_str(), errno);
+        }
+    }
+    return E_OK;
 }
 
 void MountManager::MountCloudForUsers(void)
@@ -455,37 +505,6 @@ void MountManager::SetCloudState(bool active)
     mountMutex_.unlock();
 }
 
-int32_t MountManager::HmdfsTwiceUMount(int32_t userId, std::string relativePath)
-{
-    int32_t err = E_OK;
-    // un bind mount
-    Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, relativePath));
-    err = UMount(hmdfsMntArgs.GetCommFullPath());
-    if (err != E_OK) {
-        LOGE("failed to umount bind mount point, errno %{public}d, ComDataDir_ dst %{public}s", errno,
-             hmdfsMntArgs.GetCommFullPath().c_str());
-    }
-    err = UMount(hmdfsMntArgs.GetCloudDocsPath());
-    if (err != E_OK) {
-        LOGE("failed to umount bind mount point, errno %{public}d, CloudDataDir dst %{public}s", errno,
-             hmdfsMntArgs.GetCloudDocsPath().c_str());
-    }
-
-    err = UMount(hmdfsMntArgs.GetCloudFullPath());
-    if (err != E_OK) {
-        LOGE("failed to umount bind mount point, errno %{public}d, CloudDataDir dst %{public}s", errno,
-             hmdfsMntArgs.GetCloudFullPath().c_str());
-    }
-
-    err = UMount2(hmdfsMntArgs.GetFullDst().c_str(), MNT_DETACH);
-    if (err != E_OK) {
-        LOGE("identical account hmdfs umount failed, errno %{public}d, hmdfs dst %{public}s", errno,
-             hmdfsMntArgs.GetFullDst().c_str());
-        return E_UMOUNT;
-    }
-    return E_OK;
-}
-
 int32_t MountManager::HmdfsUMount(int32_t userId, std::string relativePath)
 {
     Utils::MountArgument hmdfsAuthMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, relativePath));
@@ -524,17 +543,6 @@ int32_t MountManager::CloudUMount(int32_t userId)
 #else
     return E_OK;
 #endif
-}
-
-int32_t MountManager::HmdfsUMount(int32_t userId)
-{
-    int32_t ret = HmdfsTwiceUMount(userId, "account");
-    ret += HmdfsUMount(userId, "non_account");
-    if (ret != E_OK) {
-        return E_UMOUNT;
-    }
-    CloudUMount(userId);
-    return E_OK;
 }
 
 bool MountManager::SupportHmdfs()
@@ -683,15 +691,12 @@ int32_t MountManager::UmountByUser(int32_t userId)
     int32_t count = 0;
     while (count < UMOUNT_RETRY_TIMES) {
         int32_t err = E_OK;
-        err = SharefsUMount(userId);
-        if (err != E_OK) {
-            LOGE("failed to umount sharefs, errno %{public}d", errno);
-        }
         if (!SupportHmdfs()) {
             err = LocalUMount(userId);
         } else {
-            UMountCryptoPathAgain(userId);
+            err = UMountAllPath(userId);
         }
+        err = CloudUMount(userId);
         if (err == E_OK) {
             break;
         } else if (errno == EBUSY) {
@@ -799,7 +804,7 @@ int32_t MountManager::RestoreconSystemServiceDirs(int32_t userId)
     for (const DirInfo &dir : systemServiceDir_) {
         std::string path = StringPrintf(dir.path.c_str(), userId);
         RestoreconRecurse(path.c_str());
-        LOGE("systemServiceDir_ RestoreconRecurse path is %{private}s ", path.c_str());
+        LOGD("systemServiceDir_ RestoreconRecurse path is %{private}s ", path.c_str());
     }
 #endif
     return err;

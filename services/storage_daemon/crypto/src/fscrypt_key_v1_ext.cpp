@@ -128,7 +128,7 @@ bool FscryptKeyV1Ext::LockUserScreenExt(uint32_t flag, uint32_t &elType)
     }
     LOGD("enter");
     uint32_t user = GetMappedUserId(userId_, type_);
-    LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, user);
+    LOGD("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, user);
     if (FBEX::LockScreenToKernel(user)) {
         LOGE("LockScreenToKernel failed, userId %{public}d", flag);
         return false;

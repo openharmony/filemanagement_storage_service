@@ -223,12 +223,12 @@ public:
         return E_OK;
     }
 
-    virtual int32_t GenerateAppkey(uint32_t appUid, std::string &keyId) override
+    int32_t GenerateAppkey(uint32_t appUid, std::string &keyId) override
     {
         return E_OK;
     }
 
-    virtual int32_t DeleteAppkey(const std::string keyId) override
+    int32_t DeleteAppkey(const std::string keyId) override
     {
         return E_OK;
     }

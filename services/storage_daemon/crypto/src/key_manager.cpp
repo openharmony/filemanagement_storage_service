@@ -909,14 +909,14 @@ int KeyManager::InActiveUserKey(unsigned int user)
         return -EFAULT;
     }
     userEl4Key_.erase(user);
-    LOGI("Inactive user %{public}u el3 success", user);
+    LOGI("Inactive user %{public}u elX success", user);
 
     return 0;
 }
 
 int KeyManager::LockUserScreen(uint32_t user)
 {
-    LOGI("start");
+    LOGD("start");
     std::lock_guard<std::mutex> lock(keyMutex_);
     auto iter = userPinProtect.find(user);
     if (iter == userPinProtect.end() || iter->second == false) {
@@ -929,7 +929,8 @@ int KeyManager::LockUserScreen(uint32_t user)
     }
     if (!KeyCtrlHasFscryptSyspara()) {
         saveLockScreenStatus[user] = false;
-        LOGI("saveLockScreenStatus is %{public}d", saveLockScreenStatus[user]);
+        LOGI("KeyCtrlHasFscryptSyspara is false, saveLockScreenStatus is %{public}d",
+            saveLockScreenStatus[user]);
         return 0;
     }
     if (userEl4Key_.find(user) == userEl4Key_.end()) {
@@ -941,9 +942,10 @@ int KeyManager::LockUserScreen(uint32_t user)
         LOGE("Clear user %{public}u key failed", user);
         return -EFAULT;
     }
-    LOGI("LockUserScreen user %{public}u el3 and el4 success", user);
+
     saveLockScreenStatus[user] = false;
-    LOGI("saveLockScreenStatus is %{public}d", saveLockScreenStatus[user]);
+    LOGI("LockUserScreen user %{public}u el3 and el4 success, saveLockScreenStatus is %{public}d",
+        user, saveLockScreenStatus[user]);
     return 0;
 }
 
