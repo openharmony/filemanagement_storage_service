@@ -244,6 +244,12 @@ public:
         return E_OK;
     }
 
+    int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
+        const std::string &networkId, const std::string &deviceId) override
+    {
+        return E_OK;
+    }
+
     std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,
                                                  uint32_t tokenId, uint32_t flag) override
     {

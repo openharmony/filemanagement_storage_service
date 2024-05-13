@@ -86,6 +86,8 @@ StorageDaemonStub::StorageDaemonStub()
         &StorageDaemonStub::HandleGetBundleStatsForIncrease;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::MOUNT_DFS_DOCS)] =
         &StorageDaemonStub::HandleMountDfsDocs;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::UMOUNT_DFS_DOCS)] =
+            &StorageDaemonStub::HandleUMountDfsDocs;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::GENERATE_APP_KEY)] =
         &StorageDaemonStub::HandleGenerateAppkey;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::DELETE_APP_KEY)] =
@@ -527,6 +529,21 @@ int32_t StorageDaemonStub::HandleMountDfsDocs(MessageParcel &data, MessageParcel
     std::string deviceId = data.ReadString();
 
     int32_t err = MountDfsDocs(userId, relativePath, networkId, deviceId);
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleUMountDfsDocs(MessageParcel &data, MessageParcel &reply)
+{
+    LOGI("StorageDaemonStub::HandleUMountDfsDocs start.");
+    int32_t userId = data.ReadInt32();
+    std::string relativePath = data.ReadString();
+    std::string networkId = data.ReadString();
+    std::string deviceId = data.ReadString();
+
+    int32_t err = UMountDfsDocs(userId, relativePath, networkId, deviceId);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }

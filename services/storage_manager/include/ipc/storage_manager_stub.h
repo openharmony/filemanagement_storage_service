@@ -86,6 +86,7 @@ private:
 
     // dfs service
     int32_t HandleMountDfsDocs(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleUMountDfsDocs(MessageParcel &data, MessageParcel &reply);
 };
 } // StorageManager
 } // OHOS

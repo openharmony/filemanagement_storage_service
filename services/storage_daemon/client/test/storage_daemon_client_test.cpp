@@ -142,6 +142,27 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_MountD
 }
 
 /**
+ * @tc.name: Storage_Service_StorageDaemonClientTest_UMountDfsDocs_001
+ * @tc.desc: Verify the UMountDfsDocs function when args are normal.
+ * @tc.type: FUNC
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_UMountDfsDocs_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UMountDfsDocs_001 start";
+
+    ASSERT_TRUE(storageDaemonClient_ != nullptr);
+
+    int32_t userId = 105;
+    std::string relativePath = "account";
+    std::string networkId = "testnetworkid";
+    std::string deviceId = "testdevid";
+    int32_t ret = storageDaemonClient_->UMountDfsDocs(userId, relativePath, networkId, deviceId);
+    EXPECT_EQ(ret, E_UMOUNT);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UMountDfsDocs_001 end";
+}
+
+/**
  * @tc.name: Storage_Service_StorageDaemonClientTest_ActiveUserKey_001
  * @tc.desc: Verify the ActiveUserKey function.
  * @tc.type: FUNC

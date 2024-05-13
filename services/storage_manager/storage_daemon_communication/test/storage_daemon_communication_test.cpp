@@ -190,6 +190,30 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountDfsDocs_001, 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_MountDfsDocs_001 SUCCESS";
 }
 
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_UMountDfsDocs_001
+ * @tc.name: Daemon_communication_UMountDfsDocs_001
+ * @tc.desc: Test function of UMountDfsDocs interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountDfsDocs_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UMountDfsDocs_001 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+            DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    uint32_t userId = 100;
+    std::string relativePath = "account";
+    std::string networkId = "testnetworkid";
+    std::string deviceId = "testdevid";
+    int32_t result = sdCommunication->UMountDfsDocs(userId, relativePath, networkId, deviceId);
+    EXPECT_EQ(result, E_UMOUNT);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UMountDfsDocs_001 SUCCESS";
+}
+
 #ifdef EXTERNAL_STORAGE_MANAGER
 /**
  * @tc.number: SUB_STORAGE_Daemon_communication_Mount_0000

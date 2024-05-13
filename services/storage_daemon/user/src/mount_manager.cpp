@@ -769,6 +769,34 @@ int32_t MountManager::MountDfsDocs(int32_t userId, const std::string &relativePa
     return E_OK;
 }
 
+int32_t MountManager::UMountDfsDocs(int32_t userId, const std::string &relativePath,
+    const std::string &networkId, const std::string &deviceId)
+{
+    LOGI("MountManager::UMountDfsDocs start.");
+
+    std::regex pathRegex("^[a-zA-Z0-9_/]+$");
+    if (relativePath.empty() || relativePath.length() > PATH_MAX || !std::regex_match(relativePath, pathRegex)) {
+        LOGE("[UMountDfsDocs]invalid relativePath");
+        return E_UMOUNT;
+    }
+
+    Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, relativePath));
+    std::string srcPath = hmdfsMntArgs.GetFullDst() + "/device_view/" + networkId + "/files/Docs/";
+    sync();
+    int32_t ret = UMount2(srcPath, MNT_FORCE);
+    if (ret != E_OK) {
+        LOGE("UMountDfsDocs unmount bind failed, srcPath is %{public}s errno is %{public}d",
+             srcPath.c_str(), errno);
+        return E_UMOUNT;
+    }
+    LOGI("MountManager::UMountDfsDocs end.");
+    std::string dirPath = StringPrintf("/mnt/data/%d/hmdfs/%s/", userId, deviceId.c_str());
+    if (!RmDirRecurse(dirPath)) {
+        LOGE("Failed to remove dir %{public}s", dirPath.c_str());
+    }
+    return E_OK;
+}
+
 int32_t MountManager::RestoreconSystemServiceDirs(int32_t userId)
 {
     int32_t err = E_OK;
