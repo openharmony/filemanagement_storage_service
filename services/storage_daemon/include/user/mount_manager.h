@@ -66,7 +66,7 @@ public:
     int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId);
     int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
-                         const std::string &networkId, const std::string &deviceId);
+        const std::string &networkId, const std::string &deviceId);
     void UMountCryptoPathAgain(uint32_t userId);
     int32_t UMountAllPath(int32_t userId);
     void SetCloudState(bool active);
