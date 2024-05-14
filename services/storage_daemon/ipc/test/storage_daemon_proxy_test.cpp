@@ -454,7 +454,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_UnlockUserScreen_001, Te
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
-    int32_t ret = proxy_->UnlockUserScreen(USER_ID1);
+    int32_t ret = proxy_->UnlockUserScreen(USER_ID1, {}, {});
     ASSERT_TRUE(ret == E_OK);
     ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::UNLOCK_USER_SCREEN) == mock_->code_);
 

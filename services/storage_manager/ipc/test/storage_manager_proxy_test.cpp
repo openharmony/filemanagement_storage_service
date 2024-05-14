@@ -1143,7 +1143,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_UnlockUserScreen_0000, t
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
     uint32_t userId = 120;
-    uint32_t result = proxy_->UnlockUserScreen(userId);
+    uint32_t result = proxy_->UnlockUserScreen(userId, {}, {});
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_UnlockUserScreen_0000";
 }

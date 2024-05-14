@@ -466,7 +466,9 @@ int32_t StorageDaemonProxy::LockUserScreen(uint32_t userId)
     return reply.ReadInt32();
 }
 
-int32_t StorageDaemonProxy::UnlockUserScreen(uint32_t userId)
+int32_t StorageDaemonProxy::UnlockUserScreen(uint32_t userId,
+                                             const std::vector<uint8_t> &token,
+                                             const std::vector<uint8_t> &secret)
 {
     MessageParcel data;
     MessageParcel reply;
@@ -477,6 +479,12 @@ int32_t StorageDaemonProxy::UnlockUserScreen(uint32_t userId)
     }
 
     if (!data.WriteUint32(userId)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+    if (!data.WriteUInt8Vector(token)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+    if (!data.WriteUInt8Vector(secret)) {
         return E_WRITE_PARCEL_ERR;
     }
     int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::UNLOCK_USER_SCREEN), data, reply, option);

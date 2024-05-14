@@ -543,7 +543,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UnlockUserScreen_0
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     uint32_t userId = 100;
-    int32_t result = sdCommunication->UnlockUserScreen(userId);
+    int32_t result = sdCommunication->UnlockUserScreen(userId, {}, {});
     EXPECT_EQ(result, E_OK);
 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UnlockUserScreen_0000 SUCCESS";

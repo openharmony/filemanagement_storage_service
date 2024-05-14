@@ -143,7 +143,9 @@ int32_t StorageManagerClient::LockUserScreen(uint32_t userId)
     return client->LockUserScreen(userId);
 }
 
-int32_t StorageManagerClient::UnlockUserScreen(uint32_t userId)
+int32_t StorageManagerClient::UnlockUserScreen(uint32_t userId,
+                                               const std::vector<uint8_t> &token,
+                                               const std::vector<uint8_t> &secret)
 {
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
@@ -151,7 +153,7 @@ int32_t StorageManagerClient::UnlockUserScreen(uint32_t userId)
         return -EFAULT;
     }
 
-    return client->UnlockUserScreen(userId);
+    return client->UnlockUserScreen(userId, token, secret);
 }
 
 int32_t StorageManagerClient::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)

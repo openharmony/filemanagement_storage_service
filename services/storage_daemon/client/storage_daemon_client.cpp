@@ -321,7 +321,9 @@ int32_t StorageDaemonClient::LockUserScreen(uint32_t userId)
     return client->LockUserScreen(userId);
 }
 
-int32_t StorageDaemonClient::UnlockUserScreen(uint32_t userId)
+int32_t StorageDaemonClient::UnlockUserScreen(uint32_t userId,
+                                              const std::vector<uint8_t> &token,
+                                              const std::vector<uint8_t> &secret)
 {
     if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
         LOGE("service check failed");
@@ -334,7 +336,7 @@ int32_t StorageDaemonClient::UnlockUserScreen(uint32_t userId)
         return -EAGAIN;
     }
 
-    return client->UnlockUserScreen(userId);
+    return client->UnlockUserScreen(userId, token, secret);
 }
 
 int32_t StorageDaemonClient::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)

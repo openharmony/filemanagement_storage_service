@@ -449,12 +449,14 @@ int32_t StorageManager::LockUserScreen(uint32_t userId)
 #endif
 }
 
-int32_t StorageManager::UnlockUserScreen(uint32_t userId)
+int32_t StorageManager::UnlockUserScreen(uint32_t userId,
+                                         const std::vector<uint8_t> &token,
+                                         const std::vector<uint8_t> &secret)
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
     std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    return fsCrypto->UnlockUserScreen(userId);
+    return fsCrypto->UnlockUserScreen(userId, token, secret);
 #else
     return E_OK;
 #endif

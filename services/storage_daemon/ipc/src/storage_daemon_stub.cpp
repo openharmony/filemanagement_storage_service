@@ -352,7 +352,12 @@ int32_t StorageDaemonStub::HandleUnlockUserScreen(MessageParcel &data, MessagePa
 {
     uint32_t userId = data.ReadUint32();
 
-    int err = UnlockUserScreen(userId);
+    std::vector<uint8_t> token;
+    std::vector<uint8_t> secret;
+    data.ReadUInt8Vector(&token);
+    data.ReadUInt8Vector(&secret);
+
+    int err = UnlockUserScreen(userId, token, secret);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }

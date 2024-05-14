@@ -579,10 +579,12 @@ int32_t StorageDaemon::LockUserScreen(uint32_t userId)
 #endif
 }
 
-int32_t StorageDaemon::UnlockUserScreen(uint32_t userId)
+int32_t StorageDaemon::UnlockUserScreen(uint32_t userId,
+                                        const std::vector<uint8_t> &token,
+                                        const std::vector<uint8_t> &secret)
 {
 #ifdef USER_CRYPTO_MANAGER
-    return KeyManager::GetInstance()->UnlockUserScreen(userId);
+    return KeyManager::GetInstance()->UnlockUserScreen(userId, token, secret);
 #else
     return E_OK;
 #endif

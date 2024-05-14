@@ -51,7 +51,7 @@ public:
     MOCK_METHOD2(DeleteShareFile, int32_t (uint32_t, const std::vector<std::string> &));
     MOCK_METHOD3(GetOccupiedSpace, int32_t (int32_t, int32_t, int64_t &));
     MOCK_METHOD1(LockUserScreen, int32_t (uint32_t));
-    MOCK_METHOD1(UnlockUserScreen, int32_t (uint32_t));
+    MOCK_METHOD3(UnlockUserScreen, int32_t (uint32_t, const std::vector<uint8_t> &, const std::vector<uint8_t> &));
     MOCK_METHOD2(GetLockScreenStatus, int32_t (uint32_t, bool &));
     MOCK_METHOD4(MountDfsDocs, int32_t(int32_t, const std::string &, const std::string &, const std::string &));
     MOCK_METHOD4(UMountDfsDocs, int32_t(int32_t, const std::string &, const std::string &, const std::string &));

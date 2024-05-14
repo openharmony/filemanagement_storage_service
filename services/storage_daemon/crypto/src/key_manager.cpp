@@ -814,7 +814,7 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user, KeyType type,
     return 0;
 }
 
-int KeyManager::UnlockUserScreen(uint32_t user)
+int KeyManager::UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret)
 {
     LOGI("start");
     auto iter = saveLockScreenStatus.find(user);

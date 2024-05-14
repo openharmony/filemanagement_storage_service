@@ -176,7 +176,7 @@ bool UnlockUserScreenFuzzTest(const uint8_t *data, size_t size)
     int pos = 0;
     uint32_t userId = TypeCast<uint32_t>(data, &pos);
 
-    int32_t result = fileSystem->UnlockUserScreen(userId);
+    int32_t result = fileSystem->UnlockUserScreen(userId, {}, {});
     if (result != E_OK) {
         LOGI("file system crypto fuzz test of interface FileSystemCrypto::UnlockUserScreen failed!");
         return false;
