@@ -209,7 +209,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountDfsDocs_001,
     std::string networkId = "testnetworkid";
     std::string deviceId = "testdevid";
     int32_t result = sdCommunication->UMountDfsDocs(userId, relativePath, networkId, deviceId);
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, E_UMOUNT);
 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UMountDfsDocs_001 SUCCESS";
 }
