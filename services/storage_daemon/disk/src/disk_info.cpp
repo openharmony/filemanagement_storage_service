@@ -179,7 +179,7 @@ void DiskInfo::ReadMetadata()
             return;
         }
         vendor_ = str;
-    LOGI("Read metadata %{public}s", path.c_str());
+        LOGI("Read metadata %{public}s", path.c_str());
     }
 }
 

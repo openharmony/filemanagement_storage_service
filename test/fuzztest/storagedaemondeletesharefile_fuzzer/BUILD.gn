@@ -67,7 +67,7 @@ ohos_fuzztest("StorageDaemonDeleteShareFileFuzzTest") {
     "hilog:libhilog",
     "huks:libhukssdk",
     "init:libbegetutil",
-    "ipc:ipc_core",
+    "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]

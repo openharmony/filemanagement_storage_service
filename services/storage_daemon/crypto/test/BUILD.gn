@@ -51,6 +51,7 @@ ohos_moduletest("CryptoSubTest") {
     "c_utils:utils",
     "hilog:libhilog",
     "huks:libhukssdk",
+    "ipc:ipc_single",
   ]
 }
 

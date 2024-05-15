@@ -48,7 +48,7 @@ ohos_unittest("file_utils_test") {
     "c_utils:utils",
     "hilog:libhilog",
     "huks:libhukssdk",
-    "ipc:ipc_core",
+    "ipc:ipc_single",
     "ipc:libdbinder",
   ]
 }
