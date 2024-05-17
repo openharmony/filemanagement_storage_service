@@ -221,12 +221,11 @@ bool GenerateAppkeyFuzzTest(const uint8_t *data, size_t size)
 
 bool DeleteAppkeyFuzzTest(const uint8_t *data, size_t size)
 {
-    if (data == nullptr || size <= sizeof(uint32_t)) {
+    if (data == nullptr) {
         return false;
     }
 
-    int pos = 0;
-    const std::string keyId = TypeCast<std::string>(data, &pos);
+    const std::string keyId(reinterpret_cast<const char *>(data), size);
     int32_t result = fileSystem->DeleteAppkey(keyId);
     if (result != E_OK) {
         LOGI("file system crypto fuzz test of interface FileSystemCrypto::DeleteAppkey failed!");
