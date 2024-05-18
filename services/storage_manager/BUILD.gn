@@ -22,8 +22,6 @@ config("storage_manager_config") {
     "../storage_daemon/include",
     "../common/include",
     "${bundlemanager_framework_path}/services/bundlemgr/include",
-    "${multimedia_library_path}/frameworks/utils/include",
-    "${multimedia_library_path}/interfaces/inner_api/media_library_helper/include",
   ]
 }
 
