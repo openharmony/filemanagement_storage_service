@@ -25,6 +25,12 @@ declare_args() {
   } else {
     storage_service_dfs_service = false
   }
+  if (defined(global_parts_info) &&
+      defined(global_parts_info.accesscontrol_el5_filekey_policy)) {
+    storage_service_el5_filekey_manager = true
+  } else {
+    storage_service_el5_filekey_manager = false
+  }
 }
 storage_manager_path =
     "//foundation/filemanagement/storage_service/services/storage_manager"

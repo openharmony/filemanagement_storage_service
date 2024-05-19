@@ -33,6 +33,7 @@ constexpr const char *FBEX_UFS_INLINE_BASE_ADDR = "/proc/bootdevice/name";
 constexpr const char *FBEX_INLINE_CRYPTO_V3 = "3\n";
 
 constexpr const char *FBEX_CMD_PATH = "/dev/fbex_cmd";
+constexpr const char *FBEX_UECE_PATH = "/dev/fbex_uece";
 
 const uint8_t FBEX_IOC_MAGIC = 'f';
 const uint8_t FBEX_ADD_IV = 0x1;
@@ -41,6 +42,7 @@ const uint8_t FBEX_LOCK_SCREEN = 0x3;
 const uint8_t FBEX_UNLOCK_SCREEN = 0x4;
 const uint8_t FBEX_USER_LOGOUT = 0x8;
 const uint8_t FBEX_STATUS_REPORT = 0xC;
+const uint8_t FBEX_GENERATE_APP_KEY = 25;
 
 struct FbeOptStr {
     uint32_t user = 0;
@@ -51,12 +53,21 @@ struct FbeOptStr {
 };
 using FbeOpts = FbeOptStr;
 
+struct FbeOptStrE {
+    uint32_t user = 0;
+    uint32_t status = 0;
+    uint32_t length = 0;
+    uint8_t eBuffer[OHOS::StorageDaemon::FBEX_E_BUFFER_SIZE] = {0};
+};
+using FbeOptsE = FbeOptStrE;
+
 #define FBEX_IOC_ADD_IV _IOWR(FBEX_IOC_MAGIC, FBEX_ADD_IV, FbeOpts)
 #define FBEX_IOC_DEL_IV _IOW(FBEX_IOC_MAGIC, FBEX_DEL_IV, FbeOpts)
 #define FBEX_IOC_LOCK_SCREEN _IOW(FBEX_IOC_MAGIC, FBEX_LOCK_SCREEN, FbeOpts)
 #define FBEX_IOC_UNLOCK_SCREEN _IOWR(FBEX_IOC_MAGIC, FBEX_UNLOCK_SCREEN, FbeOpts)
 #define FBEX_IOC_USER_LOGOUT _IOW(FBEX_IOC_MAGIC, FBEX_USER_LOGOUT, FbeOpts)
 #define FBEX_IOC_STATUS_REPORT _IOW(FBEX_IOC_MAGIC, FBEX_STATUS_REPORT, FbeOpts)
+#define HISI_FBEX_ADD_APPKEY2 _IOWR(FBEX_IOC_MAGIC, FBEX_GENERATE_APP_KEY, FbeOptsE)
 } // namespace
 
 namespace OHOS {
@@ -168,6 +179,32 @@ int FBEX::LockScreenToKernel(uint32_t userId)
     close(fd);
     LOGD("success");
     return ret;
+}
+
+int FBEX::GenerateAppkey(uint32_t userId, uint32_t appUid, std::unique_ptr<uint8_t[]> &appKey, uint32_t size)
+{
+    LOGI("GenerateAppkey enter");
+    int fd = open(FBEX_UECE_PATH, O_RDWR);
+    if (fd < 0) {
+        if (errno == ENOENT) {
+            LOGE("fbex_uece does not exist, fbe not support this command!");
+            appKey.reset(nullptr);
+            return 0;
+        }
+        LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        return -errno;
+    }
+    FbeOptsE ops{.user = userId, .status = appUid, .length = size};
+    uint32_t fbeRet = ioctl(fd, HISI_FBEX_ADD_APPKEY2, &ops);
+    if (fbeRet != 0) {
+        LOGE("ioctl fbex_cmd failed, fbeRet: 0x%{public}x, errno: %{public}d", fbeRet, errno);
+        close(fd);
+        return -errno;
+    }
+    (void)memcpy_s(appKey.get(), size, ops.eBuffer, sizeof(ops.eBuffer));
+    close(fd);
+    LOGI("success");
+    return 0;
 }
 
 int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size)

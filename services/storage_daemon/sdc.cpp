@@ -263,7 +263,7 @@ static int32_t DeleteAppkey(const std::vector<std::string> &args)
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }
-    const std::string keyId;
+    std::string keyId = args[INDEX_4];
     return OHOS::StorageDaemon::StorageDaemonClient::DeleteAppkey(userId, keyId);
 }
 #endif

@@ -63,6 +63,106 @@ bool FscryptKeyV1::ActiveKey(uint32_t flag, const std::string &mnt)
     return true;
 }
 
+bool FscryptKeyV1::GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyDesc)
+{
+    KeyBlob appKey(FBEX_KEYID_SIZE);
+    if (!fscryptV1Ext.GenerateAppkey(userId, appUid, appKey.data, appKey.size)) {
+        LOGE("fscryptV1Ext GenerateAppkey failed");
+        return false;
+    }
+    // The ioctl does not support EL5, return empty character string
+    if (appKey.data.get() == nullptr) {
+        LOGE("appKey.data.get() is unllptr!");
+        keyDesc = "";
+        return true;
+    }
+    if (!GenerateAppKeyDesc(appKey)) {
+        LOGE("GenerateAppKeyDesc failed");
+        return false;
+    }
+    if (!InstallKeyForAppKeyToKeyring(reinterpret_cast<uint32_t *>(appKey.data.get()))) {
+        LOGE("InstallKeyForAppKeyToKeyring failed");
+        return false;
+    }
+    keyDesc = keyInfo_.keyDesc.ToString();
+    keyInfo_.keyDesc.Clear();
+    LOGI("success");
+    return true;
+}
+
+bool FscryptKeyV1::InstallKeyForAppKeyToKeyring(uint32_t *appKey)
+{
+    LOGI("InstallKeyForAppKeyToKeyring enter");
+    EncryptAsdpKey fskey;
+    const size_t keySize = sizeof(*appKey);
+    fskey.size = keySize;
+    fskey.version = 0;
+    auto err = memcpy_s(fskey.raw, FSCRYPT_MAX_KEY_SIZE, appKey, keySize);
+    if (err != EOK) {
+        LOGE("memcpy failed ret %{public}d", err);
+        return false;
+    }
+    key_serial_t krid = KeyCtrlSearch(KEY_SPEC_SESSION_KEYRING, "keyring", "fscrypt", 0);
+    if (krid < -1) {
+        LOGI("no session keyring for fscrypt");
+        krid = KeyCtrlAddKey("keyring", "fscrypt", KEY_SPEC_SESSION_KEYRING);
+        if (krid < -1) {
+            LOGE("failed to add session keyring");
+            return false;
+        }
+    }
+    for (auto prefix : CRYPTO_NAME_PREFIXES) {
+        std::string keyref = prefix + ":" + keyInfo_.keyDesc.ToString();
+        LOGI("InstallKeyToKeyring: keyref length: %{public}zu", keyref.length());
+        key_serial_t ks =
+            KeyCtrlAddAppAsdpKey("logon", keyref.c_str(), &fskey, krid);
+        if (ks < -1) {
+            // Addkey failed, need to process the error
+            LOGE("Failed to AddKey %{public}s into keyring %{public}d, errno %{public}d", keyref.c_str(), krid,
+                 errno);
+        }
+    }
+    if (!SaveKeyBlob(keyInfo_.keyDesc, dir_ + PATH_KEYDESC)) {
+        return false;
+    }
+    LOGI("success");
+    return true;
+}
+
+bool FscryptKeyV1::DeleteAppkey(const std::string KeyId)
+{
+    LOGI("DeleteAppkey enter");
+    if (!UninstallKeyForAppKeyToKeyring(KeyId)) {
+        LOGE("FscryptKeyV1 Delete Appkey2 failed");
+        return false;
+    }
+    LOGD("success");
+    return true;
+}
+
+bool FscryptKeyV1::UninstallKeyForAppKeyToKeyring(const std::string keyId)
+{
+    LOGI("UninstallKeyForAppKeyToKeyring enter");
+    if (keyId.length() == 0) {
+        LOGE("keyId is null, does not need to be installed?");
+        return false;
+    }
+    key_serial_t krid = KeyCtrlSearch(KEY_SPEC_SESSION_KEYRING, "keyring", "fscrypt", 0);
+    if (krid == -1) {
+        LOGE("Error searching session keyring for fscrypt-provisioning key for fscrypt");
+        return false;
+    }
+    for (auto prefix : CRYPTO_NAME_PREFIXES) {
+        std::string keyref = prefix + ":" + keyId;
+        key_serial_t ks = KeyCtrlSearch(krid, "logon", keyref.c_str(), 0);
+        if (KeyCtrlUnlink(ks, krid) != 0) {
+            LOGE("Failed to unlink key with serial %{public}d ref %{public}s", krid, keyref.c_str());
+        }
+    }
+    LOGD("success");
+    return true;
+}
+
 bool FscryptKeyV1::UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt)
 {
     (void)mnt;
@@ -270,6 +370,34 @@ bool FscryptKeyV1::GenerateKeyDesc()
         LOGE("memcpy failed ret %{public}d", err);
         return false;
     }
+    return true;
+}
+
+bool FscryptKeyV1::GenerateAppKeyDesc(KeyBlob appKey)
+{
+    if (appKey.IsEmpty()) {
+        LOGE("key is empty");
+        return false;
+    }
+    SHA512_CTX c;
+    SHA512_Init(&c);
+    SHA512_Update(&c, appKey.data.get(), appKey.size - 1);
+    uint8_t keyRef1[SHA512_DIGEST_LENGTH] = { 0 };
+    SHA512_Final(keyRef1, &c);
+
+    SHA512_Init(&c);
+    SHA512_Update(&c, keyRef1, SHA512_DIGEST_LENGTH);
+    uint8_t keyRef2[SHA512_DIGEST_LENGTH] = { 0 };
+    SHA512_Final(keyRef2, &c);
+
+    static_assert(SHA512_DIGEST_LENGTH >= CRYPTO_KEY_DESC_SIZE, "Hash too short for descriptor");
+    keyInfo_.keyDesc.Alloc(CRYPTO_KEY_DESC_SIZE);
+    auto err = memcpy_s(keyInfo_.keyDesc.data.get(), keyInfo_.keyDesc.size, keyRef2, CRYPTO_KEY_DESC_SIZE);
+    if (err != EOK) {
+        LOGE("memcpy failed ret %{public}d", err);
+        return false;
+    }
+    LOGE("GenerateAppKeyDesc keyDesc : %{private}s", keyInfo_.keyDesc.ToString().c_str());
     return true;
 }
 } // namespace StorageDaemon

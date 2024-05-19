@@ -76,6 +76,11 @@ ohos_static_library("libsdcrypto") {
     "openssl:libcrypto_shared",
   ]
 
+  if (storage_service_el5_filekey_manager) {
+    defines += [ "EL5_FILEKEY_MANAGER" ]
+    external_deps += [ "access_token:el5_filekey_manager_sdk" ]
+  }
+
   subsystem_name = "filemanagement"
   part_name = "storage_service"
 }

@@ -19,7 +19,6 @@
 #include <string>
 
 #include "base_key.h"
-#include "common_timer_errors.h"
 #include "directory_ex.h"
 #include "file_ex.h"
 #include "fscrypt_key_v1.h"
@@ -30,6 +29,12 @@
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#ifdef EL5_FILEKEY_MANAGER
+#include "el5_filekey_manager_kit.h"
+#endif
+#ifdef EL5_FILEKEY_MANAGER
+using namespace OHOS::Security::AccessToken;
+#endif
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -667,6 +672,10 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::vector<uint8_t> &tok
         LOGI("Active user %{public}u el4 fail", user);
         return -EFAULT;
     }
+    if (UnlockUserAppKeys(user) != E_OK) {
+        LOGE("failed to delete appkey2");
+        return -EFAULT;
+    }
     return 0;
 }
 
@@ -857,15 +866,71 @@ int KeyManager::GetLockScreenStatus(uint32_t user, bool &lockScreenStatus)
 int KeyManager::GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId)
 {
     std::lock_guard<std::mutex> lock(keyMutex_);
-    LOGE("Generate appkey2 success");
+    if (userEl2Key_.find(userId) == userEl2Key_.end()) {
+        LOGD("userEl2Key_ has not existed");
+        return -ENOENT;
+    }
+    auto elKey = userEl2Key_[userId];
+    if (elKey->GenerateAppkey(userId, appUid, keyId) == false) {
+        LOGE("Failed to generate Appkey2");
+        return -EFAULT;
+    }
     return 0;
 }
 
 int KeyManager::DeleteAppkey(uint32_t userId, const std::string keyId)
 {
     std::lock_guard<std::mutex> lock(keyMutex_);
-    LOGE("Delete appkey2 success");
+    if (userEl2Key_.find(userId) == userEl2Key_.end()) {
+        LOGD("userEl2Key_ has not existed");
+        return -ENOENT;
+    }
+    auto elKey = userEl2Key_[userId];
+    if (elKey->DeleteAppkey(keyId) == false) {
+        LOGE("Failed to delete Appkey2");
+        return -EFAULT;
+    }
     return 0;
+}
+
+int KeyManager::UnlockUserAppKeys(uint32_t userId)
+{
+    LOGI("UnlockUserAppKeys enter!");
+#ifdef EL5_FILEKEY_MANAGER
+    std::vector<std::pair<int, std::string>> keyInfo;
+    std::vector<std::pair<std::string, bool>> loadInfos;
+    if (El5FilekeyManagerKit::GetUserAppKey(userId, keyInfo) != 0) {
+        LOGE("get User Appkeys fail.");
+        return -EFAULT;
+    }
+    if (keyInfo.size() == 0) {
+        LOGE("The keyInfo is empty!");
+        return 0;
+    }
+    if (userEl2Key_.find(userId) == userEl2Key_.end()) {
+        LOGD("userEl2Key_ has not existed");
+        return -ENOENT;
+    }
+    auto elKey = userEl2Key_[userId];
+    std::string keyId;
+    for (auto keyInfoAppUid :keyInfo) {
+        if (elKey->GenerateAppkey(userId, keyInfoAppUid.first, keyId) == false) {
+            LOGE("Failed to Generate Appkey2!");
+            loadInfos.push_back(std::make_pair(keyInfoAppUid.second, false));
+        }
+        if (keyInfoAppUid.second != keyId) {
+            LOGE("The keyId check fails!");
+            loadInfos.push_back(std::make_pair(keyInfoAppUid.second, false));
+        }
+        loadInfos.push_back(std::make_pair(keyInfoAppUid.second, true));
+    }
+    if (El5FilekeyManagerKit::ChangeUserAppkeysLoadInfo(userId, loadInfos) != 0) {
+        LOGE("Change User Appkeys LoadInfo fail.");
+        return -EFAULT;
+    }
+    LOGI("UnlockUserAppKeys success!");
+#endif
+    return E_OK;
 }
 
 int KeyManager::InActiveUserKey(unsigned int user)
@@ -875,42 +940,38 @@ int KeyManager::InActiveUserKey(unsigned int user)
         return 0;
     }
     std::lock_guard<std::mutex> lock(keyMutex_);
-    if (userEl2Key_.find(user) == userEl2Key_.end()) {
+    int ret = InactiveUserElKey(user, userEl2Key_);
+    if (ret != E_OK) {
+        LOGE("Inactive userEl2Key_ failed");
+        return ret;
+    }
+    ret = InactiveUserElKey(user, userEl3Key_);
+    if (ret != E_OK) {
+        LOGE("Inactive userEl3Key_ failed");
+        return ret;
+    }
+    ret = InactiveUserElKey(user, userEl4Key_);
+    if (ret != E_OK) {
+        LOGE("Inactive userEl4Key_ failed");
+        return ret;
+    }
+    LOGI("Inactive user %{public}u elX success", user);
+    return 0;
+}
+
+int KeyManager::InactiveUserElKey(unsigned int user, std::map<unsigned int, std::shared_ptr<BaseKey>> userElxKey_)
+{
+    if (userElxKey_.find(user) == userElxKey_.end()) {
         LOGE("Have not found user %{public}u el2", user);
         return -ENOENT;
     }
-    auto elKey = userEl2Key_[user];
+    auto elKey = userElxKey_[user];
     if (elKey->InactiveKey(USER_LOGOUT) == false) {
         LOGE("Clear user %{public}u key failed", user);
         return -EFAULT;
     }
-    userEl2Key_.erase(user);
-    LOGI("Inactive user %{public}u el2 success", user);
-
-    if (userEl3Key_.find(user) == userEl3Key_.end()) {
-        LOGE("Have not found user %{public}u el3", user);
-        return -ENOENT;
-    }
-    elKey = userEl3Key_[user];
-    if (elKey->InactiveKey(USER_LOGOUT) == false) {
-        LOGE("Clear user %{public}u key failed", user);
-        return -EFAULT;
-    }
-    userEl3Key_.erase(user);
-    LOGI("Inactive user %{public}u el3 success", user);
-
-    if (userEl4Key_.find(user) == userEl4Key_.end()) {
-        LOGE("Have not found user %{public}u el4", user);
-        return -ENOENT;
-    }
-    elKey = userEl4Key_[user];
-    if (elKey->InactiveKey(USER_LOGOUT) == false) {
-        LOGE("Clear user %{public}u key failed", user);
-        return -EFAULT;
-    }
-    userEl4Key_.erase(user);
+    userElxKey_.erase(user);
     LOGI("Inactive user %{public}u elX success", user);
-
     return 0;
 }
 

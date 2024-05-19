@@ -17,6 +17,8 @@
 #define STORAGE_DAEMON_CRYPTO_FBEX_X
 
 #include <cstdint>
+#include <memory>
+#include <string>
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -28,6 +30,8 @@ constexpr uint32_t TYPE_EL4 = 2;
 constexpr uint32_t TYPE_GLOBAL_EL1 = 4;
 
 constexpr uint32_t FBEX_IV_SIZE = 64;
+constexpr uint32_t FBEX_KEYID_SIZE = 64;
+constexpr uint32_t FBEX_E_BUFFER_SIZE = 64;
 
 class FBEX {
 public:
@@ -38,6 +42,7 @@ public:
     static int UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size);
     static bool IsMspReady();
     static int GetStatus();
+    static int GenerateAppkey(uint32_t userId, uint32_t appUid, std::unique_ptr<uint8_t[]> &keyId, uint32_t size);
 };
 } // namespace StorageDaemon
 } // namespace OHOS

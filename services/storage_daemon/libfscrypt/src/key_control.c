@@ -58,6 +58,14 @@ key_serial_t KeyCtrlAddKeySdp(const char *type, const char *description,
                    ringId);
 }
 
+key_serial_t KeyCtrlAddAppAsdpKey(const char *type,
+                                  const char *description,
+                                  struct EncryptAsdpKey *fsKey,
+                                  const key_serial_t ringId)
+{
+    return syscall(__NR_add_key, type, description, (void *)(fsKey), sizeof(struct EncryptAsdpKey), ringId);
+}
+
 long KeyCtrlSearch(key_serial_t ringId, const char *type, const char *description,
     key_serial_t destRingId)
 {
