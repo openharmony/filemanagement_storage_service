@@ -16,6 +16,7 @@
 #ifndef OHOS_STORAGE_MANAGER_VOLUME_EXTERNAL_H
 #define OHOS_STORAGE_MANAGER_VOLUME_EXTERNAL_H
 
+#include <map>
 #include "volume_core.h"
 
 namespace OHOS {
@@ -29,6 +30,11 @@ enum FsType {
     EXFAT,
     VFAT
 };
+static std::map<FsType, std::string> FS_TYPE_MAP = {
+        {NTFS, "ntfs"},
+        {EXFAT, "exfat"},
+        {VFAT, "vfat"}
+};
 class VolumeExternal : public VolumeCore {
 public:
     VolumeExternal();
@@ -39,6 +45,7 @@ public:
     void SetPath(std::string path);
     void SetDescription(std::string description);
     int32_t GetFsType();
+    std::string GetFsTypeString();
     std::string GetUuid();
     std::string GetPath();
     std::string GetDescription();

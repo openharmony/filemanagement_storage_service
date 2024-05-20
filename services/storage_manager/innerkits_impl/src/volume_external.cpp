@@ -47,6 +47,11 @@ int32_t VolumeExternal::GetFsType()
     return fsType_;
 }
 
+std::string VolumeExternal::GetFsTypeString()
+{
+    return FS_TYPE_MAP[fsType_];
+}
+
 std::string VolumeExternal::GetUuid()
 {
     return fsUuid_;
