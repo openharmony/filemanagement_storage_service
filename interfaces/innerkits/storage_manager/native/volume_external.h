@@ -30,10 +30,10 @@ enum FsType {
     EXFAT,
     VFAT
 };
-static std::map<FsType, std::string> FS_TYPE_MAP = {
-        {NTFS, "ntfs"},
-        {EXFAT, "exfat"},
-        {VFAT, "vfat"}
+static std::map<int32_t, std::string> FS_TYPE_MAP = {
+    {NTFS, "ntfs"},
+    {EXFAT, "exfat"},
+    {VFAT, "vfat"}
 };
 class VolumeExternal : public VolumeCore {
 public:
