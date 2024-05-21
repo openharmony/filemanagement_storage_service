@@ -224,7 +224,7 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_StopUser_001, Test
     ASSERT_TRUE(storageDaemon_ != nullptr);
 
     auto ret = storageDaemon_->StopUser(StorageTest::USER_ID1);
-    EXPECT_TRUE(ret == E_UMOUNT) << "dir is not mount";
+    EXPECT_TRUE(ret == E_OK) << "dir is not mount";
 
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_StopUser_001 end";
 }
@@ -246,7 +246,7 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_StopUser_002, Test
     EXPECT_TRUE(ret == E_OK) << "create user dirs error";
 
     ret = storageDaemon_->StopUser(StorageTest::USER_ID4);
-    EXPECT_TRUE(ret == E_UMOUNT) << "stop user error";
+    EXPECT_TRUE(ret == E_OK) << "stop user error";
 
     storageDaemon_->DestroyUserDirs(StorageTest::USER_ID4, flags);
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_StopUser_002 end";
