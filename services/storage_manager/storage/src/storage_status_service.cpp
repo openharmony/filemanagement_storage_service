@@ -23,7 +23,6 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "storage/storage_total_status_service.h"
-#include "installd_client.h"
 #include "bundle_mgr_interface.h"
 #include "bundle_mgr_proxy.h"
 #include "application_info.h"
