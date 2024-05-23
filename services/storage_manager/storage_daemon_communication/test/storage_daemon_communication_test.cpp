@@ -357,7 +357,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteUserKeys_000
         EXPECT_EQ(result, E_OK);
         result = sdCommunication->DeleteUserKeys(userId);
     }
-    EXPECT_EQ(result, 0);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_DeleteUserKeys_0000 SUCCESS";
 }
 
@@ -385,7 +385,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateUserAuth_000
         EXPECT_EQ(result, E_OK);
         sdCommunication->RemoveUser(userId, flags);
     }
-    EXPECT_EQ(result, 0);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UpdateUserAuth_0000 SUCCESS";
 }
 

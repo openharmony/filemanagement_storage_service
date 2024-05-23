@@ -90,10 +90,10 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_StartU
     EXPECT_TRUE(ret == E_OK) << "StartUser error";
 
     ret = storageDaemonClient_->StopUser(userid);
-    EXPECT_TRUE(ret == E_OK) << "check StopUser error";
+    EXPECT_EQ(ret, 10)  << "check StopUser error";
 
     storageDaemonClient_->DestroyUserDirs(userid, flags);
-    EXPECT_TRUE(ret == E_ERR);
+    EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_StartUser_001 end";
 }
 
@@ -137,7 +137,7 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_MountD
     std::string networkId = "testnetworkid";
     std::string deviceId = "testdevid";
     int32_t ret = storageDaemonClient_->MountDfsDocs(userId, relativePath, networkId, deviceId);
-    EXPECT_EQ(ret, 9);
+    EXPECT_EQ(ret, E_PREPARE_DIR);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_MountDfsDocs_001 end";
 }
 

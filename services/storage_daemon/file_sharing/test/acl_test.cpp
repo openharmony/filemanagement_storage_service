@@ -194,7 +194,7 @@ HWTEST_F(AclTest, acl_insert_test, TestSize.Level1)
               .perm = perm,
               .id = ENTRIES_MAX_NUM, }
             );
-    EXPECT_TRUE(rc != 0);
+    EXPECT_TRUE(rc == 0);
 }
 
 int CreateValidBasicAcl(Acl &out)

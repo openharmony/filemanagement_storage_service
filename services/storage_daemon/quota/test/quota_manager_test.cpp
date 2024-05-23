@@ -227,7 +227,7 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_GetOccupiedSpace_001
     int32_t uid = -1;
     int64_t size = 0;
     int32_t result = quotaManager->GetOccupiedSpace(idType, uid, size);
-    EXPECT_EQ(result, 26);
+    EXPECT_EQ(result, E_SYS_ERR);
     uid = UID;
     result = quotaManager->GetOccupiedSpace(idType, uid, size);
     EXPECT_EQ(result, E_OK);

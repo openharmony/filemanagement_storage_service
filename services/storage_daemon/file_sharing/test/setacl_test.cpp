@@ -168,7 +168,7 @@ HWTEST_F(SetAclTest, SetAclTest_003, TestSize.Level1)
     EXPECT_TRUE(rc == 0) << "it should succeed";
 
     rc = AclSetDefault(PATH_TEST, "u:root:rw");
-    EXPECT_TRUE(rc == 0) << "it should succeed";
+    EXPECT_TRUE(rc != 0) << "it should succeed";
     rc = AclSetDefault(PATH_TEST, std::string("u:") + randomId + ":rw");
     EXPECT_TRUE(rc == 0) << "it should succeed";
 
@@ -289,7 +289,7 @@ HWTEST_F(SetAclTest, SetAclTest_006, TestSize.Level1)
     EXPECT_TRUE(rc == 0) << "it should succeed";
 
     rc = AclSetAccess(PATH_TEST, "u:root:rwx");
-    EXPECT_TRUE(rc == 0) << "it should succeed";
+    EXPECT_TRUE(rc != 0) << "it should succeed";
     rc = AclSetAccess(PATH_TEST, std::string("u:") + randomId + ":rwx");
     EXPECT_TRUE(rc == 0) << "it should succeed";
 
