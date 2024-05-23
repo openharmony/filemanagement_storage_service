@@ -45,6 +45,7 @@ constexpr uid_t OID_TEE = 6668;
 constexpr uid_t OID_DEVICE_AUTH = 3333;
 constexpr uid_t OID_HUKS = 3510;
 constexpr uid_t OID_DDMS = 3012;
+constexpr uid_t OID_HWID = 7008;
 constexpr uid_t OID_DLP_CREDENTIAL = 3553;
 constexpr uid_t USER_ID_BASE = 200000;
 
