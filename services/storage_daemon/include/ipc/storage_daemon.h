@@ -113,6 +113,9 @@ private:
     int32_t ActiveUserKeyAndPrepare(uint32_t userId, KeyType type,
                                     const std::vector<uint8_t> &token,
                                     const std::vector<uint8_t> &secret);
+    int32_t ActiveUserKeyAndPrepareElX(uint32_t userId,
+                                       const std::vector<uint8_t> &token,
+                                       const std::vector<uint8_t> &secret);
     int32_t RestoreconElX(uint32_t userId);
     void AncoInitCryptKey();
     void AncoActiveCryptKey(uint32_t userId);

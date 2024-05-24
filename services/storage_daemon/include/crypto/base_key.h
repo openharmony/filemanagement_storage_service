@@ -26,6 +26,9 @@ const uint8_t RETRIEVE_KEY = 0x0;
 const uint8_t FIRST_CREATE_KEY = 0x6c;
 const uint8_t USER_LOGOUT = 0x0;
 const uint8_t USER_DESTROY = 0x1;
+const uint32_t USER_UNLOCK = 0x2;
+const uint32_t USER_ADD_AUTH = 0x0;
+const uint32_t USER_CHANGE_AUTH = 0x1;
 const std::string SUFFIX_NEED_UPDATE = "/need_update";
 class BaseKey {
 public:
@@ -46,7 +49,14 @@ public:
     virtual bool InactiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
     virtual bool LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt = MNT_DATA) = 0;
     virtual bool UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt = MNT_DATA) = 0;
-    virtual bool GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId) = 0;
+    virtual bool AddClassE(uint32_t status) = 0;
+    virtual bool DeleteClassE(uint32_t user) = 0;
+    virtual bool DecryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status) = 0;
+    virtual bool EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status) = 0;
+    bool EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey, KeyBlob &encryptedKey);
+    bool DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey, KeyBlob &decryptedKey);
+    bool RenameKeyPath(const std::string &keyPath);
+	virtual bool GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId) = 0;
     virtual bool DeleteAppkey(const std::string KeyId) = 0;
     bool ClearKey(const std::string &mnt = MNT_DATA);
     void WipingActionDir(std::string &path);
@@ -80,6 +90,9 @@ private:
     bool Encrypt(const UserAuth &auth);
     bool Decrypt(const UserAuth &auth);
     bool CheckAndUpdateVersion();
+    void CombKeyBlob(const KeyBlob &encAad, const KeyBlob &end, KeyBlob &keyOut);
+    void SplitKeyBlob(const KeyBlob &keyIn, KeyBlob &encAad, KeyBlob &nonce, uint32_t start);
+    void ClearKeyContext(KeyContext &keyCtx);
     int GetCandidateVersion() const;
     std::string GetCandidateDir() const;
     std::string GetNextCandidateDir() const;

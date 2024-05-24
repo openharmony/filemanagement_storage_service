@@ -34,7 +34,11 @@ public:
     bool InactiveKey(uint32_t flag = 0, const std::string &mnt = MNT_DATA);
     bool LockUserScreen(uint32_t flag = 0, uint32_t sdpClass = 0, const std::string &mnt = MNT_DATA);
     bool UnlockUserScreen(uint32_t flag = 0, uint32_t sdpClass = 0, const std::string &mnt = MNT_DATA);
-    bool GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &KeyId);
+    bool AddClassE(uint32_t status = 0);
+    bool DeleteClassE(uint32_t user = 0);
+    bool DecryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user = 0, uint32_t status = 0);
+    bool EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user = 0, uint32_t status = 0);
+	bool GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &KeyId);
     bool DeleteAppkey(const std::string KeyId);
 };
 } // namespace StorageDaemon

@@ -323,7 +323,8 @@ static void ParseSandboxPath(string &path, const string &userId, const string &b
 int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
 {
     filesystem::path rootDir(SANDBOX_ROOT_PATH + "/" + to_string(userId));
-    if (!exists(rootDir)) {
+    std::error_code errCode;
+    if (!exists(rootDir, errCode)) {
         LOGE("root path not exists, rootDir is %{public}s", SANDBOX_ROOT_PATH.c_str());
         return -ENOENT;
     }
@@ -586,7 +587,8 @@ static void ClearRedundantResources(int32_t userId)
 {
     std::string sharePath = StringPrintf("/data/service/el2/%d/share", userId);
     filesystem::path rootDir(sharePath);
-    if (!exists(rootDir)) {
+    std::error_code errCode;
+    if (!exists(rootDir, errCode)) {
         LOGE("Bundles share path not exists, rootDir is %{public}s", sharePath.c_str());
         return;
     }

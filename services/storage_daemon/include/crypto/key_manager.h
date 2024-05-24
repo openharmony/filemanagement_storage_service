@@ -102,12 +102,22 @@ private:
     int DoDeleteUserCeEceSeceKeys(unsigned int user, const std::string USER_DIR,
                                   std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_);
     int UpgradeKeys(const std::vector<FileList> &dirInfo);
+    int UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSecret);
+    bool ResetESecret(unsigned int user, std::shared_ptr<BaseKey> &elKey);
     std::shared_ptr<BaseKey> GetBaseKey(const std::string& dir);
     std::shared_ptr<BaseKey> GetUserElKey(unsigned int user, KeyType type);
     void SaveUserElKey(unsigned int user, KeyType type, std::shared_ptr<BaseKey> elKey);
     bool IsNeedClearKeyFile(std::string file);
     void ProcUpgradeKey(const std::vector<FileList> &dirInfo);
-    int InactiveUserElKey(unsigned int user, std::map<unsigned int, std::shared_ptr<BaseKey>> userElxKey_);
+    int GenerateElxAndInstallUserKey(unsigned int user);
+    int ActiveUeceUserKey(unsigned int user,
+                          const std::vector<uint8_t> &token,
+                          const std::vector<uint8_t> &secret, std::shared_ptr<BaseKey> elKey);
+    int ActiveElXUserKey(unsigned int user,
+                                      const std::vector<uint8_t> &token, std::string keyDir,
+                                      const std::vector<uint8_t> &secret, std::shared_ptr<BaseKey> elKey);
+	int InactiveUserElKey(unsigned int user, std::map<unsigned int, std::shared_ptr<BaseKey>> userElxKey_);
+									  
 
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl1Key_;
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl2Key_;
@@ -117,7 +127,7 @@ private:
     std::shared_ptr<BaseKey> globalEl1Key_ { nullptr };
     std::map<unsigned int, bool> userPinProtect;
     std::map<unsigned int, bool> saveLockScreenStatus;
-
+    std::map<unsigned int, bool> saveESecretStatus;
     std::mutex keyMutex_;
     bool hasGlobalDeviceKey_;
 };

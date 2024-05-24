@@ -340,7 +340,7 @@ bool BaseKey::Encrypt(const UserAuth &auth)
         keyEncryptType_ = KeyEncryptType::KEY_CRYPT_OPENSSL;
     } else {
         LOGI("Huks encrypt start");
-        ret = HuksMaster::GetInstance().EncryptKey(keyContext_, auth, keyInfo_);
+        ret = HuksMaster::GetInstance().EncryptKey(keyContext_, auth, keyInfo_, true);
         keyEncryptType_ = KeyEncryptType::KEY_CRYPT_HUKS;
     }
     keyContext_.shield.Clear();
@@ -459,7 +459,7 @@ bool BaseKey::Decrypt(const UserAuth &auth)
             break;
         case KeyEncryptType::KEY_CRYPT_HUKS:
             LOGI("Huks decrypt key start");
-            ret = HuksMaster::GetInstance().DecryptKey(keyContext_, auth, keyInfo_);
+            ret = HuksMaster::GetInstance().DecryptKey(keyContext_, auth, keyInfo_, true);
             break;
     }
     keyContext_.encrypted.Clear();
@@ -549,6 +549,114 @@ bool BaseKey::UpgradeKeys()
         }
     }
     return true;
+}
+
+bool BaseKey::EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey, KeyBlob &encryptedKey)
+{
+    LOGD("enter");
+    KeyContext keyCtx;
+    if (!MkDirRecurse(keyPath, S_IRWXU)) {
+        LOGE("MkDirRecurse failed!");
+    }
+    LOGI("key path is exist : %{public}d", FileExists(keyPath));
+    if (!HuksMaster::GetInstance().GenerateKey(auth, keyCtx.shield) ||
+        !SaveKeyBlob(keyCtx.shield, keyPath + PATH_SHIELD)) {
+        LOGE("GenerateKey and save shield failed!");
+        return false;
+    }
+    if (!GenerateAndSaveKeyBlob(keyCtx.secDiscard, keyPath + PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
+        keyCtx.shield.Clear();
+        LOGE("GenerateAndSaveKeyBlob sec_discard failed!");
+        return false;
+    }
+    if (!HuksMaster::GetInstance().EncryptKey(keyCtx, auth, {.key = planKey}, false)) {
+        keyCtx.shield.Clear();
+        keyCtx.secDiscard.Clear();
+        LOGE("HUKS encrypt key failed!");
+        return false;
+    }
+    CombKeyBlob(keyCtx.encrypted, keyCtx.nonce, encryptedKey);
+
+    ClearKeyContext(keyCtx);
+    LOGD("finish");
+    return true;
+}
+
+bool BaseKey::DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey, KeyBlob &decryptedKey)
+{
+    LOGD("enter");
+    KeyContext keyCtx;
+    auto candidate = GetCandidateDir();
+    std::string path = candidate.empty() ? keyPath : candidate;
+    if (!LoadKeyBlob(keyCtx.shield, path + PATH_SHIELD)) {
+        LOGE("Load KeyBlob shield failed!");
+        return false;
+    }
+    if (!LoadKeyBlob(keyCtx.secDiscard, path + PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
+        LOGE("Load KeyBlob secDiscard failed!");
+        keyCtx.shield.Clear();
+        return false;
+    }
+
+    KeyInfo planKeyInfo = {.key = planKey};
+    SplitKeyBlob(planKey, keyCtx.encrypted, keyCtx.nonce, AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES);
+    LOGE("decrypted size : %{public}d, nonce size : %{public}d", keyCtx.encrypted.size, keyCtx.nonce.size);
+
+    if (!HuksMaster::GetInstance().DecryptKey(keyCtx, auth, planKeyInfo, false)) {
+        keyCtx.shield.Clear();
+        keyCtx.encrypted.Clear();
+        LOGE("HUKS decrypt key failed!");
+        return false;
+    }
+
+    decryptedKey = std::move(planKeyInfo.key);
+    planKeyInfo.key.Clear();
+    ClearKeyContext(keyCtx);
+    LOGD("finish");
+    return true;
+}
+
+bool BaseKey::RenameKeyPath(const std::string &keyPath)
+{
+    // rename keypath/temp/ to keypath/version_xx/
+    auto candidate = GetNextCandidateDir();
+    LOGD("rename %{public}s to %{public}s", keyPath.c_str(), candidate.c_str());
+    if (rename(keyPath.c_str(), candidate.c_str()) != 0) {
+        LOGE("rename %{public}s to %{public}s failed!", keyPath.c_str(), candidate.c_str());
+        return false;
+    }
+    SyncKeyDir();
+    return true;
+}
+
+void BaseKey::CombKeyBlob(const KeyBlob &encAad, const KeyBlob &end, KeyBlob &keyOut)
+{
+    std::vector<uint8_t> startVct(encAad.data.get(), encAad.data.get() + encAad.size);
+    std::vector<uint8_t> endVct(end.data.get(), end.data.get() + end.size);
+    startVct.insert(startVct.end(), endVct.begin(), endVct.end());
+    std::copy(startVct.begin(), startVct.end(), keyOut.data.get());
+    startVct.clear();
+    endVct.clear();
+}
+
+void BaseKey::SplitKeyBlob(const KeyBlob &keyIn, KeyBlob &encAad, KeyBlob &nonce, uint32_t start)
+{
+    std::vector<uint8_t> inVct(keyIn.data.get(), keyIn.data.get() + keyIn.size);
+    encAad.Alloc(start);
+    nonce.Alloc(keyIn.size - start);
+    std::copy(inVct.begin(), inVct.begin() + start, encAad.data.get());
+    std::copy(inVct.begin() + start, inVct.end(), nonce.data.get());
+    inVct.clear();
+}
+
+void BaseKey::ClearKeyContext(KeyContext &keyCtx)
+{
+    LOGD("enter clear");
+    keyCtx.shield.Clear();
+    keyCtx.encrypted.Clear();
+    keyCtx.secDiscard.Clear();
+    keyCtx.nonce.Clear();
+    keyCtx.aad.Clear();
 }
 
 std::string BaseKey::KeyEncryptTypeToString(KeyEncryptType keyEncryptType_) const
