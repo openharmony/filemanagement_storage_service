@@ -56,7 +56,7 @@ public:
     bool EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey, KeyBlob &encryptedKey);
     bool DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey, KeyBlob &decryptedKey);
     bool RenameKeyPath(const std::string &keyPath);
-	virtual bool GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId) = 0;
+    virtual bool GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId) = 0;
     virtual bool DeleteAppkey(const std::string KeyId) = 0;
     bool ClearKey(const std::string &mnt = MNT_DATA);
     void WipingActionDir(std::string &path);
