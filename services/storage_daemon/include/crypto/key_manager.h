@@ -116,8 +116,7 @@ private:
     int ActiveElXUserKey(unsigned int user,
                                       const std::vector<uint8_t> &token, std::string keyDir,
                                       const std::vector<uint8_t> &secret, std::shared_ptr<BaseKey> elKey);
-	int InactiveUserElKey(unsigned int user, std::map<unsigned int, std::shared_ptr<BaseKey>> userElxKey_);
-									  
+    int InactiveUserElKey(unsigned int user, std::map<unsigned int, std::shared_ptr<BaseKey>> userElxKey_);
 
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl1Key_;
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl2Key_;
