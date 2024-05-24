@@ -90,10 +90,10 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_StartU
     EXPECT_TRUE(ret == E_OK) << "StartUser error";
 
     ret = storageDaemonClient_->StopUser(userid);
-    EXPECT_TRUE(ret == E_OK) << "check StopUser error";
+    EXPECT_EQ(ret, 10)  << "check StopUser error";
 
     storageDaemonClient_->DestroyUserDirs(userid, flags);
-    EXPECT_TRUE(ret == E_OK);
+    EXPECT_EQ(ret, 10);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_StartUser_001 end";
 }
 

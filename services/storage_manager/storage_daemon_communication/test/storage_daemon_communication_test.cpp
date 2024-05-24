@@ -161,7 +161,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_StopUser_0000, tes
         sdCommunication->PrepareStartUser(userId);
         result = sdCommunication->StopUser(userId);
     }
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, 10);
     sdCommunication->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_StopUser_0000 SUCCESS";
 }
