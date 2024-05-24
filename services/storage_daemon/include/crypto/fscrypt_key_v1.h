@@ -36,6 +36,8 @@ public:
     bool InactiveKey(uint32_t flag = 0, const std::string &mnt = MNT_DATA);
     bool LockUserScreen(uint32_t flag = 0, uint32_t sdpClass = 0, const std::string &mnt = MNT_DATA);
     bool UnlockUserScreen(uint32_t flag = 0, uint32_t sdpClass = 0, const std::string &mnt = MNT_DATA);
+    bool GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId);
+    bool DeleteAppkey(const std::string keyId);
     void DropCachesIfNeed();
 
 private:
@@ -44,6 +46,9 @@ private:
     bool InstallEceSeceKeyToKeyring(uint32_t sdpClass);
     bool UninstallKeyToKeyring();
     FscryptKeyV1Ext fscryptV1Ext;
+    bool InstallKeyForAppKeyToKeyring(uint32_t *keyId);
+    bool UninstallKeyForAppKeyToKeyring(const std::string keyId);
+    bool GenerateAppKeyDesc(KeyBlob appKey);
 };
 } // namespace StorageDaemon
 } // namespace OHOS

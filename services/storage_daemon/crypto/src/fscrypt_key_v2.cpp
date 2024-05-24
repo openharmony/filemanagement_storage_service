@@ -128,5 +128,17 @@ bool FscryptKeyV2::UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std:
     LOGI("Unsupported fscrypt v2");
     return true;
 }
+
+bool FscryptKeyV2::GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &KeyId)
+{
+    LOGI("Unsupported fscrypt v2");
+    return false;
+}
+
+bool FscryptKeyV2::DeleteAppkey(const std::string KeyId)
+{
+    LOGI("Unsupported fscrypt v2");
+    return false;
+}
 } // namespace StorageDaemon
 } // namespace OHOS

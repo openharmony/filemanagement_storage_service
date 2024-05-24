@@ -76,6 +76,7 @@ public:
     int GetLockScreenStatus(uint32_t user, bool &lockScreenStatus);
     int GenerateAppkey(uint32_t user, uint32_t appUid, std::string &keyId);
     int DeleteAppkey(uint32_t user, const std::string keyId);
+    int UnlockUserAppKeys(uint32_t userId);
 #ifdef USER_CRYPTO_MIGRATE_KEY
     int RestoreUserKey(uint32_t userId, KeyType type);
 #endif
@@ -106,11 +107,13 @@ private:
     void SaveUserElKey(unsigned int user, KeyType type, std::shared_ptr<BaseKey> elKey);
     bool IsNeedClearKeyFile(std::string file);
     void ProcUpgradeKey(const std::vector<FileList> &dirInfo);
+    int InactiveUserElKey(unsigned int user, std::map<unsigned int, std::shared_ptr<BaseKey>> userElxKey_);
 
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl1Key_;
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl2Key_;
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl3Key_;
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl4Key_;
+    std::map<unsigned int, std::shared_ptr<BaseKey>> userEl5Key_;
     std::shared_ptr<BaseKey> globalEl1Key_ { nullptr };
     std::map<unsigned int, bool> userPinProtect;
     std::map<unsigned int, bool> saveLockScreenStatus;

@@ -44,6 +44,7 @@ static const uint32_t FSCRYPT_DPS_CLASS = 4;
 #define SECE_PUB_KEY_LEN 64
 #define SECE_PRI_KEY_LEN 32
 #define EXT4_AES_256_XTS_KEY_SIZE_TO_KEYRING 32
+#define EXT4_AES_256_XTS_APP_KEY_SIZE_TO_KEYRING 8
 
 enum {
     FSCRYPT_INVALID = 0,
@@ -61,6 +62,15 @@ struct EncryptionKeySdp {
     uint32_t size;
     char pubkey[EXT4_MAX_KEY_SIZE];
     uint32_t pubkeySize;
+};
+#pragma pack(pop)
+
+#define FSCRYPT_MAX_KEY_SIZE 64
+#pragma pack(push, 1)
+struct EncryptAsdpKey {
+    uint32_t version;
+    uint8_t raw[FSCRYPT_MAX_KEY_SIZE];
+    uint32_t size;
 };
 #pragma pack(pop)
 
@@ -84,6 +94,10 @@ key_serial_t KeyCtrlAddKeyEx(const char *type, const char *description,
     struct fscrypt_key *fsKey, const key_serial_t ringId);
 key_serial_t KeyCtrlAddKeySdp(const char *type, const char *description,
                               struct EncryptionKeySdp *fsKey, const key_serial_t ringId);
+key_serial_t KeyCtrlAddAppAsdpKey(const char *type,
+                                  const char *description,
+                                  struct EncryptAsdpKey *fsKey,
+                                  const key_serial_t ringId);
 long KeyCtrlSearch(key_serial_t ringId, const char *type, const char *description,
     key_serial_t destRingId);
 long KeyCtrlUnlink(key_serial_t key, key_serial_t keyring);

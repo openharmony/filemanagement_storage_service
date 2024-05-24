@@ -16,6 +16,7 @@
 #ifndef STORAGE_DAEMON_CRYPTO_FSCRYPT_KEY_V1_EXT_H
 #define STORAGE_DAEMON_CRYPTO_FSCRYPT_KEY_V1_EXT_H
 
+#include <memory>
 #include <string>
 
 namespace OHOS {
@@ -34,6 +35,7 @@ public:
     bool InactiveKeyExt(uint32_t flag);
     bool LockUserScreenExt(uint32_t flag, uint32_t &elType);
     bool UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_t size);
+    bool GenerateAppkey(uint32_t userId, uint32_t appUid, std::unique_ptr<uint8_t[]> &keyId, uint32_t size);
 
 private:
     uint32_t GetUserIdFromDir();
