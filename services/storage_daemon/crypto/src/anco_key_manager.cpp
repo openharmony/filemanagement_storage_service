@@ -17,6 +17,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <regex>
 #include <sstream>
 
 #include "crypto/key_manager.h"
@@ -93,9 +94,7 @@ int32_t AncoKeyManager::ReadFileAndCreateDir(const std::string &path, const std:
 
         auto ret = CreatePolicyDir(ancoDirInfo, type, vec);
         if (ret != E_OK) {
-            infile.close();
             LOGE(" Create policy dir failed, ret = %{public}d", ret);
-            return ret;
         }
     }
 
@@ -126,6 +125,12 @@ int32_t AncoKeyManager::CreatePolicyDir(const AncoDirInfo &ancoDirInfo,
     }
     auto gid = static_cast<gid_t>(std::stoi(iter->second));
 
+    if (ancoDirInfo.policy == ANCO_TYPE_NONE && type == ANCO_TYPE_SYS_EL1) {
+        if (!PrepareDir(ancoDirInfo.path, mode, uid, gid)) {
+            LOGE("Prepare dir failed, path = %{public}s", ancoDirInfo.path.c_str());
+            return E_PREPARE_DIR;
+        }
+    }
     if (ancoDirInfo.policy == type) {
         std::error_code errorCode;
         if (!std::filesystem::exists(ancoDirInfo.path, errorCode)) {
@@ -134,13 +139,7 @@ int32_t AncoKeyManager::CreatePolicyDir(const AncoDirInfo &ancoDirInfo,
             vec.push_back(fileList);
         }
         if (!PrepareDir(ancoDirInfo.path, mode, uid, gid)) {
-            LOGE("Prepare dir failed");
-            return E_PREPARE_DIR;
-        }
-    }
-    if (ancoDirInfo.policy == ANCO_TYPE_NONE && type == ANCO_TYPE_SYS_EL1) {
-        if (!PrepareDir(ancoDirInfo.path, mode, uid, gid)) {
-            LOGE("Prepare dir failed");
+            LOGE("Prepare dir failed, path = %{public}s", ancoDirInfo.path.c_str());
             return E_PREPARE_DIR;
         }
     }
@@ -170,8 +169,9 @@ int32_t AncoKeyManager::CheckMemberValid(const AncoDirInfo &ancoDirInfo)
         LOGE("AncoDirInfo.path not valid, path = %{public}s", ancoDirInfo.path.c_str());
         return E_JSON_PARSE_ERROR;
     }
-    char realPath[PATH_MAX] = {0x00};
-    if (realpath(ancoDirInfo.path.c_str(), realPath) == nullptr) {
+
+    std::regex pathRegex("^[a-zA-Z0-9_\\-/\\\\]*$");
+    if (!std::regex_match(ancoDirInfo.path.c_str(), pathRegex)) {
         LOGE("AncoDirInfo.path not valid, path = %{public}s", ancoDirInfo.path.c_str());
         return E_JSON_PARSE_ERROR;
     }
