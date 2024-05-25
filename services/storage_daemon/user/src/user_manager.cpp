@@ -150,6 +150,10 @@ int32_t UserManager::DestroyUserDirs(int32_t userId, uint32_t flags)
         err = DestroyDirsFromIdAndLevel(userId, EL4);
         ret = (err != E_OK) ? err : ret;
     }
+    if (flags & IStorageDaemon::CRYPTO_FLAG_EL5) {
+        err = DestroyDirsFromIdAndLevel(userId, EL5);
+        ret = (err != E_OK) ? err : ret;
+    }
 
     return ret;
 }
@@ -181,7 +185,7 @@ inline bool DestroyDirsFromVec(int32_t userId, const std::string &level, const s
 int32_t UserManager::PrepareDirsFromIdAndLevel(int32_t userId, const std::string &level)
 {
     std::vector<FileList> list;
-    if (level != EL3 && level != EL4) {
+    if (level != EL3 && level != EL4 && level != EL5) {
         if (!PrepareDirsFromVec(userId, level, rootDirVec_)) {
             LOGE("failed to prepare %{public}s root dirs for userid %{public}d", level.c_str(), userId);
             return E_PREPARE_DIR;
@@ -222,7 +226,7 @@ int32_t UserManager::PrepareDirsFromIdAndLevel(int32_t userId, const std::string
 
 int32_t UserManager::DestroyDirsFromIdAndLevel(int32_t userId, const std::string &level)
 {
-    if (level != EL3 && level != EL4) {
+    if (level != EL3 && level != EL4 && level != EL5) {
         if (!DestroyDirsFromVec(userId, level, rootDirVec_)) {
             LOGE("failed to destroy %{public}s dirs for userid %{public}d", level.c_str(), userId);
             return E_DESTROY_DIR;
@@ -384,6 +388,12 @@ int32_t UserManager::CheckCrypto(int32_t userId, uint32_t flags)
     }
     if (flags & IStorageDaemon::CRYPTO_FLAG_EL4) {
         err = PrepareDirsFromIdAndLevel(userId, EL4);
+        if (err != E_OK) {
+            return err;
+        }
+    }
+    if (flags & IStorageDaemon::CRYPTO_FLAG_EL5) {
+        err = PrepareDirsFromIdAndLevel(userId, EL5);
         if (err != E_OK) {
             return err;
         }

@@ -47,7 +47,7 @@ static const uint32_t USER_ID_DIFF = 91;
 uint32_t FscryptKeyV1Ext::GetMappedUserId(uint32_t userId, uint32_t type)
 {
     if (std::filesystem::exists(NEED_RESTORE_PATH) &&
-        (type == TYPE_EL2 || type == TYPE_EL3 || type == TYPE_EL4)) {
+        (type == TYPE_EL2 || type == TYPE_EL3 || type == TYPE_EL4 || type == TYPE_EL5)) {
         if (userId == DEFAULT_SINGLE_FIRST_USER_ID) {
             return 0;
         }
@@ -109,6 +109,68 @@ bool FscryptKeyV1Ext::GenerateAppkey(uint32_t user, uint32_t appUid, std::unique
     }
     return true;
 }
+
+bool FscryptKeyV1Ext::AddClassE(uint32_t status)
+{
+    if (!FBEX::IsFBEXSupported()) {
+        return true;
+    }
+    LOGD("enter");
+    uint32_t user = GetMappedUserId(userId_, type_);
+    LOGI("map userId %{public}u to %{public}u", userId_, user);
+    if (FBEX::InstallEL5KeyToKernel(user, status)) {
+        LOGE("AddESecret failed, userId_ %{public}d, status is %{public}d", userId_, status);
+        return false;
+    }
+    return true;
+}
+
+bool FscryptKeyV1Ext::DeleteClassE(uint32_t flag)
+{
+    if (!FBEX::IsFBEXSupported()) {
+        return true;
+    }
+    LOGD("enter");
+    bool destroy = !!flag;
+    uint32_t user = GetMappedUserId(userId_, type_);
+    LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, user);
+    if (FBEX::UninstallOrLockUserKeyForEL5ToKernel(user, destroy)) {
+        LOGE("UninstallOrLockUserKeyForEL5ToKernel failed, userId_ %{public}d", userId_);
+        return false;
+    }
+    return true;
+}
+
+bool FscryptKeyV1Ext::ReadClassE(uint32_t status, uint8_t *classEBuffer, uint32_t length, bool &isFbeSupport)
+{
+    if (!FBEX::IsFBEXSupported()) {
+        return true;
+    }
+    LOGD("enter");
+    uint32_t userId = GetMappedUserId(userId_, type_);
+    LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, userId);
+    if (FBEX::ReadESecretToKernel(userId, status, classEBuffer, length, isFbeSupport)) {
+        LOGE("ReadESecretToKernel failed, user %{public}d, status is %{public}d", userId, status);
+        return false;
+    }
+    return true;
+}
+
+bool FscryptKeyV1Ext::WriteClassE(uint32_t status, uint8_t *classEBuffer, uint32_t length)
+{
+    if (!FBEX::IsFBEXSupported()) {
+        return true;
+    }
+    LOGD("enter");
+    uint32_t userId = GetMappedUserId(userId_, type_);
+    LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, userId);
+    if (FBEX::WriteESecretToKernel(userId, status, classEBuffer, length)) {
+        LOGE("WriteESecretToKernel failed, user %{public}d, status is %{public}d", userId, status);
+        return false;
+    }
+    return true;
+}
+
 bool FscryptKeyV1Ext::InactiveKeyExt(uint32_t flag)
 {
     if (!FBEX::IsFBEXSupported()) {
@@ -127,10 +189,18 @@ bool FscryptKeyV1Ext::InactiveKeyExt(uint32_t flag)
 
     uint32_t user = GetMappedUserId(userId_, type_);
     LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, user);
-    if (FBEX::UninstallOrLockUserKeyToKernel(user, type_, buf, FBEX_IV_SIZE, destroy) != 0) {
-        LOGE("UninstallOrLockUserKeyToKernel failed, userId %{public}d, type %{public}d, destroy %{public}u", userId_,
-             type_, destroy);
-        return false;
+    if (type_ == TYPE_EL5) {
+        if (FBEX::UninstallOrLockUserKeyForEL5ToKernel(user, destroy) != 0) {
+            LOGE("UninstallOrLockUserKeyForEL5ToKernel failed, userId %{public}d, destroy %{public}u",
+                 userId_,  destroy);
+            return false;
+        }
+    } else {
+        if (FBEX::UninstallOrLockUserKeyToKernel(user, type_, buf, FBEX_IV_SIZE, destroy) != 0) {
+            LOGE("UninstallOrLockUserKeyToKernel failed, userId %{public}d, type %{public}d, destroy %{public}u",
+                 userId_, type_, destroy);
+            return false;
+        }
     }
     return true;
 }
@@ -174,6 +244,7 @@ uint32_t FscryptKeyV1Ext::GetTypeFromDir()
         {"el2", TYPE_EL2},
         {"el3", TYPE_EL3},
         {"el4", TYPE_EL4},
+        {"el5", TYPE_EL5},
     };
     uint32_t type = TYPE_GLOBAL_EL1; // default to global el1
 
