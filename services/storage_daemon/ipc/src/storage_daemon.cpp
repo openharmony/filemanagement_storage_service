@@ -66,6 +66,8 @@ const std::string USER_PATH = "/data/app/el1/100";
 const std::string ANCO_TYPE_SYS_EL1 = "encryption=Require_Sys_EL1";
 const std::string ANCO_TYPE_USER_EL1 = "encryption=Require_User_EL1";
 const std::string ANCO_TYPE_USER_EL2 = "encryption=Require_User_EL2";
+const std::string DATA_SERVICE_EL1_PUBLIC_STORAGE_DAEMON_SD = "/data/service/el1/public/storage_daemon/sd";
+const std::string DATA_SERVICE_EL0_STORAGE_DAEMON_SD = "/data/service/el0/storage_daemon/sd";
 
 typedef int32_t (*CreateShareFileFunc)(const std::vector<std::string> &, uint32_t, uint32_t, std::vector<int32_t> &);
 typedef int32_t (*DeleteShareFileFunc)(uint32_t, const std::vector<std::string> &);
@@ -293,7 +295,11 @@ int32_t StorageDaemon::StopUser(int32_t userId)
 int32_t StorageDaemon::InitGlobalKey(void)
 {
 #ifdef USER_CRYPTO_MANAGER
-    return KeyManager::GetInstance()->InitGlobalDeviceKey();
+    int ret = KeyManager::GetInstance()->InitGlobalDeviceKey();
+#ifdef USE_LIBRESTORECON
+    RestoreconRecurse(DATA_SERVICE_EL0_STORAGE_DAEMON_SD.c_str());
+#endif
+    return ret;
 #else
     return E_OK;
 #endif
@@ -315,6 +321,9 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
         LOGE("Init global users els failed");
         return ret;
     }
+#endif
+#ifdef USE_LIBRESTORECON
+    RestoreconRecurse(DATA_SERVICE_EL1_PUBLIC_STORAGE_DAEMON_SD.c_str());
 #endif
     auto result = UserManager::GetInstance()->PrepareUserDirs(GLOBAL_USER_ID, CRYPTO_FLAG_EL1);
 #ifdef USER_CRYPTO_MANAGER
