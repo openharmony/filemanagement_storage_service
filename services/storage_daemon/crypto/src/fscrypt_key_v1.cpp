@@ -53,7 +53,7 @@ bool FscryptKeyV1::ActiveKey(uint32_t flag, const std::string &mnt)
             return false;
         }
     } else {
-        if (!InstallKeyToKeyring()) {
+        if (!InstallKeyToKeyring(elType)) {
             LOGE("InstallKeyToKeyring failed");
             return false;
         }
@@ -187,7 +187,7 @@ bool FscryptKeyV1::UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std:
     return true;
 }
 
-bool FscryptKeyV1::InstallKeyToKeyring()
+bool FscryptKeyV1::InstallKeyToKeyring(uint32_t elType)
 {
     fscrypt_key fskey;
     fskey.mode = FS_ENCRYPTION_MODE_AES_256_XTS;
@@ -219,8 +219,10 @@ bool FscryptKeyV1::InstallKeyToKeyring()
                 errno);
         }
     }
-    if (!SaveKeyBlob(keyInfo_.keyDesc, dir_ + PATH_KEYDESC)) {
-        return false;
+    if (elType == TYPE_GLOBAL_EL1) {
+        if (!SaveKeyBlob(keyInfo_.keyDesc, dir_ + PATH_KEYDESC)) {
+            return false;
+        }
     }
     keyInfo_.key.Clear();
     LOGD("success");
@@ -261,9 +263,6 @@ bool FscryptKeyV1::InstallEceSeceKeyToKeyring(uint32_t sdpClass)
             LOGE("Failed to AddKey %{public}s into keyring %{public}d, errno %{public}d", keyref.c_str(), krid,
                  errno);
         }
-    }
-    if (!SaveKeyBlob(keyInfo_.keyDesc, dir_ + PATH_KEYDESC)) {
-        return false;
     }
     LOGD("success");
     return true;
