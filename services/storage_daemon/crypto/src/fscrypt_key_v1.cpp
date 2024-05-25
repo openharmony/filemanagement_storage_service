@@ -103,10 +103,10 @@ bool FscryptKeyV1::InstallKeyForAppKeyToKeyring(uint32_t *appKey)
         return false;
     }
     key_serial_t krid = KeyCtrlSearch(KEY_SPEC_SESSION_KEYRING, "keyring", "fscrypt", 0);
-    if (krid < -1) {
+    if (krid < 0) {
         LOGI("no session keyring for fscrypt");
         krid = KeyCtrlAddKey("keyring", "fscrypt", KEY_SPEC_SESSION_KEYRING);
-        if (krid < -1) {
+        if (krid < 0) {
             LOGE("failed to add session keyring");
             return false;
         }
@@ -116,7 +116,7 @@ bool FscryptKeyV1::InstallKeyForAppKeyToKeyring(uint32_t *appKey)
         LOGI("InstallKeyToKeyring: keyref length: %{public}zu", keyref.length());
         key_serial_t ks =
             KeyCtrlAddAppAsdpKey("logon", keyref.c_str(), &fskey, krid);
-        if (ks < -1) {
+        if (ks < 0) {
             // Addkey failed, need to process the error
             LOGE("Failed to AddKey %{public}s into keyring %{public}d, errno %{public}d", keyref.c_str(), krid,
                  errno);
@@ -184,6 +184,100 @@ bool FscryptKeyV1::UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std:
     }
     keyInfo_.key = std::move(keys);
     LOGD("success");
+    return true;
+}
+
+bool FscryptKeyV1::AddClassE(uint32_t status)
+{
+    LOGI("AddClassE enter");
+    if (!fscryptV1Ext.AddClassE(status)) {
+        LOGE("fscryptV1Ext AddClassE failed");
+        return false;
+    }
+    LOGI("AddClassE finish");
+    return true;
+}
+
+bool FscryptKeyV1::DeleteClassE(uint32_t flag)
+{
+    LOGI("DeleteClassE enter");
+    if (!fscryptV1Ext.DeleteClassE(flag)) {
+        LOGE("fscryptV1Ext DeleteClassE failed");
+        return false;
+    }
+    LOGI("DeleteClassE finish");
+    return true;
+}
+
+bool FscryptKeyV1::DecryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status)
+{
+    LOGI("enter");
+    KeyBlob eSecretFBE(AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES);
+    bool isFbeSupport = true;
+    if (!fscryptV1Ext.ReadClassE(status, eSecretFBE.data.get(), eSecretFBE.size, isFbeSupport)) {
+        LOGE("fscryptV1Ext ReadClassE failed");
+        return false;
+    }
+    if (auth.token.IsEmpty() && auth.secret.IsEmpty()) {
+        LOGE("Token and secret is invalid, do not deal.");
+        eSecretFBE.Clear();
+        return true;
+    }
+    if (!isFbeSupport) {
+        LOGE("fbe not support uece, skip!");
+        isSupport = false;
+        return true;
+    }
+    LOGI("Decrypt keyPath is %{public}s", (dir_ + PATH_LATEST).c_str());
+    KeyBlob decryptedKey(AES_256_HASH_RANDOM_SIZE);
+    if (!DecryptKeyBlob(auth, dir_ + PATH_LATEST, eSecretFBE, decryptedKey)) {
+        LOGE("DecryptKeyBlob Decrypt failed");
+        eSecretFBE.Clear();
+        return false;
+    }
+    eSecretFBE.Clear();
+    LOGI("Decrypt end!");
+    if (!fscryptV1Ext.WriteClassE(status, decryptedKey.data.get(), decryptedKey.size)) {
+        LOGE("fscryptV1Ext WriteClassE failed");
+        return false;
+    }
+    decryptedKey.Clear();
+    LOGI("finish");
+    return true;
+}
+
+bool FscryptKeyV1::EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status)
+{
+    LOGI("enter");
+    KeyBlob eSecretFBE(AES_256_HASH_RANDOM_SIZE);
+    bool isFbeSupport = true;
+    if (!fscryptV1Ext.ReadClassE(status, eSecretFBE.data.get(), eSecretFBE.size, isFbeSupport)) {
+        LOGE("fscryptV1Ext ReadClassE failed");
+        return false;
+    }
+    if (!isFbeSupport) {
+        LOGE("fbe not support E type, skip!");
+        isSupport = false;
+        return true;
+    }
+    KeyBlob encryptedKey(AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES);
+    if (!EncryptKeyBlob(auth, dir_ + PATH_LATEST, eSecretFBE, encryptedKey)) {
+        LOGE("EncryptKeyBlob Decrypt failed");
+        eSecretFBE.Clear();
+        return false;
+    }
+    eSecretFBE.Clear();
+    if (!RenameKeyPath(dir_ + PATH_LATEST)) {
+        LOGE("RenameKeyPath failed");
+        return false;
+    }
+    LOGI("encrypt end");
+    if (!fscryptV1Ext.WriteClassE(status, encryptedKey.data.get(), encryptedKey.size)) {
+        LOGE("fscryptV1Ext WriteClassE failed");
+        return false;
+    }
+    encryptedKey.Clear();
+    LOGI("finish");
     return true;
 }
 

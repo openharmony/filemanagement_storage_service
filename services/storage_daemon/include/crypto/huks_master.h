@@ -37,8 +37,8 @@ public:
     /* key operations */
     static KeyBlob GenerateRandomKey(uint32_t keyLen);
     bool GenerateKey(const UserAuth &auth, KeyBlob &keyOut);
-    bool EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo &key);
-    bool DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key);
+    bool EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo &key, bool isNeedNewNonce);
+    bool DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key, bool isNeedNewNonce);
     bool UpgradeKey(KeyContext &ctx);
 private:
     HuksMaster();

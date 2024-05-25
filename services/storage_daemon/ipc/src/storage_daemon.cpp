@@ -150,6 +150,9 @@ int32_t StorageDaemon::GetCryptoFlag(KeyType type, uint32_t &flags)
         case EL4_KEY:
             flags = IStorageDaemon::CRYPTO_FLAG_EL4;
             return E_OK;
+        case EL5_KEY:
+            flags = IStorageDaemon::CRYPTO_FLAG_EL5;
+            return E_OK;
         default:
             LOGE("GetCryptoFlag error, type = %{public}u", type);
             return E_KEY_TYPE_INVAL;
@@ -174,6 +177,8 @@ std::string StorageDaemon::GetNeedRestoreFilePathByType(int32_t userId, KeyType 
             return GetNeedRestoreFilePath(userId, USER_EL3_DIR);
         case EL4_KEY:
             return GetNeedRestoreFilePath(userId, USER_EL4_DIR);
+        case EL5_KEY:
+            return GetNeedRestoreFilePath(userId, USER_EL5_DIR);
         default:
             LOGE("GetNeedRestoreFilePathByType key type error, type = %{public}u", type);
             return "";
@@ -232,7 +237,7 @@ int32_t StorageDaemon::RestoreUserKey(int32_t userId, uint32_t flags)
         return -EEXIST;
     }
 
-    std::vector<KeyType> type = {EL1_KEY, EL2_KEY, EL3_KEY, EL4_KEY};
+    std::vector<KeyType> type = {EL1_KEY, EL2_KEY, EL3_KEY, EL4_KEY, EL5_KEY};
     for (unsigned long i = 0; i < type.size(); i++) {
         ret = RestoreUserOneKey(userId, type[i]);
         if (ret != E_OK) {
@@ -247,7 +252,7 @@ int32_t StorageDaemon::RestoreUserKey(int32_t userId, uint32_t flags)
 int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
     //CRYPTO_FLAG_EL3 create el3,  CRYPTO_FLAG_EL4 create el4
-    flags = flags | IStorageDaemon::CRYPTO_FLAG_EL3 | IStorageDaemon::CRYPTO_FLAG_EL4;
+    flags = flags | IStorageDaemon::CRYPTO_FLAG_EL3 | IStorageDaemon::CRYPTO_FLAG_EL4 | IStorageDaemon::CRYPTO_FLAG_EL5;
 #ifdef USER_CRYPTO_MANAGER
     int32_t ret = KeyManager::GetInstance()->GenerateUserKeys(userId, flags);
 #ifdef USER_CRYPTO_MIGRATE_KEY
@@ -267,7 +272,7 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
 int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
 {
     //CRYPTO_FLAG_EL3 destroy el3,  CRYPTO_FLAG_EL4 destroy el4
-    flags = flags | IStorageDaemon::CRYPTO_FLAG_EL3 | IStorageDaemon::CRYPTO_FLAG_EL4;
+    flags = flags | IStorageDaemon::CRYPTO_FLAG_EL3 | IStorageDaemon::CRYPTO_FLAG_EL4 | IStorageDaemon::CRYPTO_FLAG_EL5;
     int32_t ret = UserManager::GetInstance()->DestroyUserDirs(userId, flags);
     if (ret != E_OK) {
         LOGW("Destroy user %{public}d dirs failed, please check", userId);
@@ -480,6 +485,30 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepare(uint32_t userId, KeyType type,
 #endif
 }
 
+int32_t StorageDaemon::ActiveUserKeyAndPrepareElX(uint32_t userId,
+                                                  const std::vector<uint8_t> &token,
+                                                  const std::vector<uint8_t> &secret)
+{
+#ifdef USER_CRYPTO_MANAGER
+    int ret = ActiveUserKeyAndPrepare(userId, EL3_KEY, token, secret);
+    if (ret != E_OK) {
+        LOGE("ActiveUserKey fail, userId %{public}u, type %{public}u", userId, EL3_KEY);
+        return ret;
+    }
+    ret = ActiveUserKeyAndPrepare(userId, EL4_KEY, token, secret);
+    if (ret != E_OK) {
+        LOGE("ActiveUserKey fail, userId %{public}u, type %{public}u", userId, EL4_KEY);
+        return ret;
+    }
+    ret = ActiveUserKeyAndPrepare(userId, EL5_KEY, token, secret);
+    if (ret != E_OK) {
+        LOGE("ActiveUserKey fail, userId %{public}u, type %{public}u", userId, EL5_KEY);
+        return ret;
+    }
+#endif
+    return E_OK;
+}
+
 int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
                                      const std::vector<uint8_t> &token,
                                      const std::vector<uint8_t> &secret)
@@ -504,14 +533,7 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
             return ret;
         }
     }
-
-    ret = ActiveUserKeyAndPrepare(userId, EL3_KEY, token, secret);
-    if (ret != E_OK) {
-        LOGE("ActiveUserKey fail, userId %{public}u, type %{public}u", userId, EL3_KEY);
-        return ret;
-    }
-
-    ret = ActiveUserKeyAndPrepare(userId, EL4_KEY, token, secret);
+    ret = ActiveUserKeyAndPrepareElX(userId, token, secret);
     if (ret != E_OK) {
         LOGE("ActiveUserKey fail, userId %{public}u, type %{public}u", userId, EL4_KEY);
         return ret;
