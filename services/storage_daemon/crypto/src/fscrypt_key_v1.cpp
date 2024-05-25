@@ -103,10 +103,10 @@ bool FscryptKeyV1::InstallKeyForAppKeyToKeyring(uint32_t *appKey)
         return false;
     }
     key_serial_t krid = KeyCtrlSearch(KEY_SPEC_SESSION_KEYRING, "keyring", "fscrypt", 0);
-    if (krid < -1) {
+    if (krid < 0) {
         LOGI("no session keyring for fscrypt");
         krid = KeyCtrlAddKey("keyring", "fscrypt", KEY_SPEC_SESSION_KEYRING);
-        if (krid < -1) {
+        if (krid < 0) {
             LOGE("failed to add session keyring");
             return false;
         }
@@ -116,7 +116,7 @@ bool FscryptKeyV1::InstallKeyForAppKeyToKeyring(uint32_t *appKey)
         LOGI("InstallKeyToKeyring: keyref length: %{public}zu", keyref.length());
         key_serial_t ks =
             KeyCtrlAddAppAsdpKey("logon", keyref.c_str(), &fskey, krid);
-        if (ks < -1) {
+        if (ks < 0) {
             // Addkey failed, need to process the error
             LOGE("Failed to AddKey %{public}s into keyring %{public}d, errno %{public}d", keyref.c_str(), krid,
                  errno);
