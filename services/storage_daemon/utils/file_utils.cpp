@@ -207,7 +207,7 @@ bool RmDirRecurse(const std::string &path)
     return true;
 }
 
-void TravelChmod(std::string path, mode_t mode)
+void TravelChmod(const std::string &path, mode_t mode)
 {
     struct stat st;
     DIR *d = nullptr;
@@ -359,7 +359,7 @@ void OpenSubFile(const std::string &path, std::vector<std::string>  &file)
     (void)closedir(dir);
 }
 
-bool ReadFile(std::string path, std::string *str)
+bool ReadFile(const std::string &path, std::string *str)
 {
     std::ifstream infile;
     int cnt = 0;
@@ -485,7 +485,7 @@ void TraverseDirUevent(const std::string &path, bool flag)
     (void)closedir(dir);
 }
 
-int IsSameGidUid(const std::string dir, uid_t uid, gid_t gid)
+int IsSameGidUid(const std::string &dir, uid_t uid, gid_t gid)
 {
     struct stat st;
     if (TEMP_FAILURE_RETRY(lstat(dir.c_str(), &st)) == E_ERR) {
@@ -526,7 +526,7 @@ void MoveFileManagerData(const std::string &filesPath)
     MoveDataShell(filesPath + ".Trash/", docsPath);
 }
 
-void ChownRecursion(const std::string dir, uid_t uid, gid_t gid)
+void ChownRecursion(const std::string &dir, uid_t uid, gid_t gid)
 {
     std::vector<std::string> cmd = {
         "/system/bin/chown",

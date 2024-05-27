@@ -50,7 +50,7 @@ int DestroyDiskNode(const std::string &path)
     return E_OK;
 }
 
-int GetDevSize(std::string path, uint64_t *size)
+int GetDevSize(const std::string &path, uint64_t *size)
 {
     const char *kPath = path.c_str();
     int fd = open(kPath, O_RDONLY);
@@ -123,8 +123,7 @@ std::string GetBlkidDataByCmd(std::vector<std::string> &cmd)
     }
 
     if (output.size() > 0) {
-        size_t sep = string::npos;
-        sep = output[0].find_first_of("\n");
+        size_t sep = output[0].find_first_of("\n");
         if (sep != string::npos)
             output[0].resize(sep);
         return output[0];

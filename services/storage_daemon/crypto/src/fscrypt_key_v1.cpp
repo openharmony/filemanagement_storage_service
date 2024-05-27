@@ -30,7 +30,6 @@ static const std::string CRYPTO_NAME_PREFIXES[] = {"ext4", "f2fs", "fscrypt"};
 bool FscryptKeyV1::ActiveKey(uint32_t flag, const std::string &mnt)
 {
     uint32_t elType;
-    uint32_t sdpClass;
     (void)mnt;
     LOGD("enter");
     if (!GenerateKeyDesc()) {
@@ -43,6 +42,7 @@ bool FscryptKeyV1::ActiveKey(uint32_t flag, const std::string &mnt)
         return false;
     }
     if (elType == TYPE_EL3 || elType == TYPE_EL4) {
+        uint32_t sdpClass;
         if (elType == TYPE_EL3) {
             sdpClass = FSCRYPT_SDP_SECE_CLASS;
         } else {

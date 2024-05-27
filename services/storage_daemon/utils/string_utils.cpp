@@ -42,7 +42,7 @@ std::string StringPrintf(const char *format, ...)
     int count = vsnprintf_s(buf, sizeof(buf), sizeof(buf), format, apBackup);
     if (count < 0) {
         LOGE("vsnprintf_s error, errno %{public}d", errno);
-    } else if (count >= 0 && count < BUFF_SIZE) {
+    } else if (count < BUFF_SIZE) {
         result.append(buf, count);
     } else {
         LOGI("allocate larger buffer, len = %{public}d", count + 1);

@@ -39,7 +39,7 @@ bool CheckClientPermission(const std::string& permissionStr)
     Security::AccessToken::AccessTokenID tokenCaller = IPCSkeleton::GetCallingTokenID();
     auto uid = IPCSkeleton::GetCallingUid();
     auto tokenType = Security::AccessToken::AccessTokenKit::GetTokenTypeFlag(tokenCaller);
-    int res = Security::AccessToken::PermissionState::PERMISSION_DENIED;
+    int res;
     if (tokenType == Security::AccessToken::TOKEN_NATIVE && uid == ACCOUNT_UID) {
         res = Security::AccessToken::PermissionState::PERMISSION_GRANTED;
     } else {
