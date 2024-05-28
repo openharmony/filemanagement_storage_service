@@ -84,6 +84,7 @@ bool FscryptKeyV1::GenerateAppkey(uint32_t userId, uint32_t appUid, std::string 
         LOGE("InstallKeyForAppKeyToKeyring failed");
         return false;
     }
+    appKey.Clear();
     keyDesc = keyInfo_.keyDesc.ToString();
     keyInfo_.keyDesc.Clear();
     LOGI("success");
