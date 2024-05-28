@@ -188,7 +188,9 @@ int32_t UserManager::PrepareDirsFromIdAndLevel(int32_t userId, const std::string
     if (level != EL3 && level != EL4 && level != EL5) {
         if (!PrepareDirsFromVec(userId, level, rootDirVec_)) {
             LOGE("failed to prepare %{public}s root dirs for userid %{public}d", level.c_str(), userId);
-            return E_PREPARE_DIR;
+            if (level != EL1) {
+                return E_PREPARE_DIR;
+            }
         }
         // set policy here
         for (auto item : rootDirVec_) {
