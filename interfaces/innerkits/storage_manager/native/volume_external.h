@@ -31,6 +31,9 @@ enum FsType {
     VFAT
 };
 static std::map<int32_t, std::string> FS_TYPE_MAP = {
+    {EXT2, "ext2"},
+    {EXT3, "ext3"},
+    {EXT4, "ext4"},
     {NTFS, "ntfs"},
     {EXFAT, "exfat"},
     {VFAT, "vfat"}
