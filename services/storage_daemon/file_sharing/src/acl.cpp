@@ -147,7 +147,7 @@ char *Acl::Serialize(size_t &bufSize)
     size_t restSize = bufSize - sizeof(AclXattrHeader);
     AclXattrEntry *ptr = reinterpret_cast<AclXattrEntry *>(buf + sizeof(AclXattrHeader));
     for (const auto &e : entries) {
-        auto err = memcpy_s(ptr++, restSize, &e, sizeof(AclXattrEntry));
+        err = memcpy_s(ptr++, restSize, &e, sizeof(AclXattrEntry));
         if (err != EOK) {
             errno = err;
             delete[] buf;

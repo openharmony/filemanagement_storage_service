@@ -116,11 +116,10 @@ int DiskInfo::Create()
 
 int DiskInfo::Destroy()
 {
-    int ret;
     auto volume = VolumeManager::Instance();
 
     for (auto volumeId : volumeId_) {
-        ret = volume->DestroyVolume(volumeId);
+        auto ret = volume->DestroyVolume(volumeId);
         if (ret != E_OK) {
             LOGE("Destroy volume %{public}s failed", volumeId.c_str());
             return E_ERR;

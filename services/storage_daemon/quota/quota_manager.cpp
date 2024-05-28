@@ -716,7 +716,7 @@ static std::map<std::string, struct FileStat> FilterExtensionPath(int64_t lastBa
 {
     // all file with stats in include directory
     std::map<std::string, struct FileStat> fileStats;
-    for (auto &includeDir : includes) {
+    for (const auto &includeDir : includes) {
         // Check if includeDir is a file path
         auto [isSucc, isDir] = CheckIfDirForIncludes(includeDir, lastBackupTime, fileStats, pathMap);
         if (!isSucc) {
@@ -730,7 +730,7 @@ static std::map<std::string, struct FileStat> FilterExtensionPath(int64_t lastBa
 
     // all file with stats in exclude directory
     std::set<std::string> excludeFiles;
-    for (auto &excludeDir : excludes) {
+    for (const auto &excludeDir : excludes) {
         auto [isSuccess, isDir] = CheckIfDirForExcludes(excludeDir, excludeFiles);
         if (!isSuccess) {
             LOGE("GetExcludesFile dir path invaild");
@@ -744,7 +744,7 @@ static std::map<std::string, struct FileStat> FilterExtensionPath(int64_t lastBa
 
     // clear exclude directory
     std::map<std::string, struct FileStat>::iterator it;
-    for (auto &excludeFile : excludeFiles) {
+    for (const auto &excludeFile : excludeFiles) {
         it = fileStats.find(excludeFile);
         if (it != fileStats.end()) {
             fileStats.erase(it);
@@ -822,7 +822,7 @@ static void DealWithIncludeFiles(const BundleStatsParas &paras, const std::vecto
 {
     uint32_t userId = paras.userId;
     std::string bundleName = paras.bundleName;
-    for (auto &include : includes) {
+    for (const auto &include : includes) {
         std::string includeStr = include;
         if (includeStr.front() != FILE_SEPARATOR_CHAR) {
             includeStr = FILE_SEPARATOR_CHAR + includeStr;
@@ -869,7 +869,7 @@ static void GetBundleStatsForIncreaseEach(uint32_t userId, std::string &bundleNa
 
     // recognize physical path for exclude directory
     std::vector<std::string> phyExcludes;
-    for (auto &exclude : excludes) {
+    for (const auto &exclude : excludes) {
         std::string excludeStr = exclude;
         if (excludeStr.front() != FILE_SEPARATOR_CHAR) {
             excludeStr = FILE_SEPARATOR_CHAR + excludeStr;

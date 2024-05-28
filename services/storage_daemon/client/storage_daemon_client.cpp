@@ -74,8 +74,8 @@ bool StorageDaemonClient::CheckServiceStatus(uint32_t serviceFlags)
         }
     }
 
-    bool exist = false;
     if (serviceFlags & STORAGE_SERVICE_FLAG) {
+        bool exist = false;
         for (uint32_t i = 0; i < CHECK_SERVICE_TIMES; i++) {
             auto object = samgr->CheckSystemAbility(STORAGE_DAEMON_SAID, exist);
             if (object != nullptr) {

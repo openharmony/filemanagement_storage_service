@@ -46,7 +46,7 @@ bool PrepareDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid);
 bool DestroyDir(const std::string &path);
 bool MkDirRecurse(const std::string& path, mode_t mode);
 bool RmDirRecurse(const std::string &path);
-void TravelChmod(std::string path, mode_t mode);
+void TravelChmod(const std::string &path, mode_t mode);
 int32_t Mount(const std::string &source, const std::string &target, const char *type,
               unsigned long flags, const void *data);
 int32_t UMount(const std::string &path);
@@ -54,11 +54,11 @@ int32_t UMount2(const std::string &path, int flag);
 void GetSubDirs(const std::string &path, std::vector<std::string> &dirList);
 void ReadDigitDir(const std::string &path, std::vector<FileList> &dirInfo);
 bool StringToUint32(const std::string &str, uint32_t &num);
-bool ReadFile(std::string path, std::string *str);
+bool ReadFile(const std::string &path, std::string *str);
 int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output = nullptr);
 void TraverseDirUevent(const std::string &path, bool flag);
-void ChownRecursion(const std::string dir, uid_t uid, gid_t gid);
-int IsSameGidUid(const std::string dir, uid_t uid, gid_t gid);
+void ChownRecursion(const std::string &dir, uid_t uid, gid_t gid);
+int IsSameGidUid(const std::string &dir, uid_t uid, gid_t gid);
 void MoveFileManagerData(const std::string &filesPath);
 void OpenSubFile(const std::string &path, std::vector<std::string>  &dirInfo);
 }
