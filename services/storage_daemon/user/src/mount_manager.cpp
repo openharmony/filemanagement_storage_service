@@ -349,6 +349,10 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
             ParseSandboxPath(srcPath, to_string(userId), bundleName.path().filename().generic_string());
             LOGD("mount crypto path, srcPath is %{public}s, dstPath is %{public}s", srcPath.c_str(), dstPath.c_str());
             ret = mount(srcPath.c_str(), dstPath.c_str(), nullptr, MS_BIND | MS_REC, nullptr);
+            if (ret != E_OK && errno == EBUSY) {
+                ret = mount(srcPath.c_str(), dstPath.c_str(), nullptr, MS_BIND | MS_REC, nullptr);
+                LOGI("mount again dstPath is %{public}s, ret is &{public}d", dstPath.c_str(), ret);
+            }
             if (ret != 0) {
                 LOGE("mount bind failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
                     srcPath.c_str(), dstPath.c_str(), errno);
