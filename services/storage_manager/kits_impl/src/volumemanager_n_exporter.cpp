@@ -81,7 +81,7 @@ napi_value GetAllVolumes(napi_env env, napi_callback_info info)
             volumeInfoObject.AddProp("removable", NVal::CreateBool(env, (bool)true).val_);
             volumeInfoObject.AddProp("state", NVal::CreateInt32(env, (*volumeInfo)[i].GetState()).val_);
             volumeInfoObject.AddProp("path", NVal::CreateUTF8String(env, (*volumeInfo)[i].GetPath()).val_);
-            volumeInfoObject.AddProp("fstype", NVal::CreateUTF8String(env, (*volumeInfo)[i].GetFsTypeString()).val_);
+            volumeInfoObject.AddProp("fsType", NVal::CreateUTF8String(env, (*volumeInfo)[i].GetFsTypeString()).val_);
             status = napi_set_element(env, volumeInfoArray, i, volumeInfoObject.val_);
             if (status != napi_ok) {
                 return { env, NError(status).GetNapiErr(env) };
