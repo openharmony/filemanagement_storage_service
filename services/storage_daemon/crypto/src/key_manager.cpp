@@ -666,6 +666,10 @@ int KeyManager::UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSe
 {
     LOGI("UpdateESecret enter");
     std::shared_ptr<BaseKey> el5Key = GetUserElKey(user, EL5_KEY);
+    if (el5Key == nullptr) {
+        LOGE("Have not found user %{public}u el key", user);
+        return -ENOENT;
+    }
     if (tokenSecret.newSecret.empty()) {
         if (!el5Key->DeleteClassE(user)) {
             LOGE("user %{public}u DeleteClassE fail", user);
@@ -892,7 +896,7 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
         LOGE("ActiveElXUserKey failed");
         return -EFAULT;
     }
-    
+
     SaveUserElKey(user, type, elKey);
     if (secret.empty()) {
         userPinProtect.insert(std::make_pair(user, false));
