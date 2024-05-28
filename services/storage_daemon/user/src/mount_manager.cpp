@@ -211,6 +211,7 @@ int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath, bool 
 
 int32_t MountManager::CloudMount(int32_t userId, const string& path)
 {
+    LOGI("cloud mount start");
 #ifdef DFS_SERVICE
     int fd = -1;
     string opt;
@@ -225,7 +226,7 @@ int32_t MountManager::CloudMount(int32_t userId, const string& path)
         LOGE("open /dev/fuse fail");
         return E_MOUNT;
     }
-
+    LOGI("open fuse end");
     opt = StringPrintf("fd=%i,"
         "rootmode=40000,"
         "default_permissions,"
@@ -234,13 +235,14 @@ int32_t MountManager::CloudMount(int32_t userId, const string& path)
         "context=\"u:object_r:hmdfs:s0\","
         "fscontext=u:object_r:hmdfs:s0",
         fd);
+    LOGI("start to mount fuse");
     ret = Mount("/dev/fuse", path.c_str(), "fuse", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_NOATIME, opt.c_str());
     if (ret) {
         LOGE("failed to mount fuse, err %{public}d %{public}d %{public}s", errno, ret, path.c_str());
         close(fd);
         return ret;
     }
-    LOGI("StartFuse.");
+    LOGI("start cloud daemon fuse");
     ret = CloudDaemonManager::GetInstance().StartFuse(userId, fd, path);
     if (ret) {
         LOGE("failed to connect fuse, err %{public}d %{public}d %{public}s", errno, ret, path.c_str());
@@ -256,6 +258,7 @@ int32_t MountManager::CloudMount(int32_t userId, const string& path)
 
 int32_t MountManager::CloudTwiceMount(int32_t userId)
 {
+    LOGI("mount cloud twice start");
 #ifdef DFS_SERVICE
     Utils::MountArgument cloudMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
     const string cloudPath = cloudMntArgs.GetFullCloud();
@@ -290,6 +293,7 @@ int32_t MountManager::HmdfsMount(int32_t userId)
         return E_MOUNT;
     }
 
+    LOGI("ready to mount cloud");
     mountMutex_.lock();
     ret = CloudTwiceMount(userId);
     if (ret == E_OK) {
@@ -349,6 +353,10 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
             ParseSandboxPath(srcPath, to_string(userId), bundleName.path().filename().generic_string());
             LOGD("mount crypto path, srcPath is %{public}s, dstPath is %{public}s", srcPath.c_str(), dstPath.c_str());
             ret = mount(srcPath.c_str(), dstPath.c_str(), nullptr, MS_BIND | MS_REC, nullptr);
+            if (ret != E_OK && errno == EBUSY) {
+                ret = mount(srcPath.c_str(), dstPath.c_str(), nullptr, MS_BIND | MS_REC, nullptr);
+                LOGI("mount again dstPath is %{public}s, ret is %{public}d.", dstPath.c_str(), ret);
+            }
             if (ret != 0) {
                 LOGE("mount bind failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
                     srcPath.c_str(), dstPath.c_str(), errno);
@@ -497,6 +505,7 @@ void MountManager::UMountCloudForUsers(void)
 
 void MountManager::SetCloudState(bool active)
 {
+    LOGI("set cloud state start, active is %{public}d", active);
     mountMutex_.lock();
     cloudReady_ = active;
     if (cloudReady_) {
@@ -505,6 +514,7 @@ void MountManager::SetCloudState(bool active)
         UMountCloudForUsers();
     }
     mountMutex_.unlock();
+    LOGI("set cloud state end");
 }
 
 int32_t MountManager::HmdfsUMount(int32_t userId, std::string relativePath)
