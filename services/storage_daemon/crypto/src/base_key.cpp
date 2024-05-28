@@ -401,6 +401,23 @@ bool BaseKey::DoRestoreKeyEx(const UserAuth &auth, const std::string &keyPath)
         LOGE("Key encrypted by huks, skip !");
         return true;
     }
+    KeyBlob tempEnc(keyContext_.encrypted.size);
+    if (!LoadKeyBlob(tempEnc, keyPath + PATH_ENCRYPTED)) {
+        LOGE("key encrypted by huks, skip !");
+        return true;
+    }
+
+    uint32_t ivSum = 0;
+    for (size_t i = 0; i < GCM_NONCE_BYTES; ++i) {
+        ivSum += tempEnc.data[i];
+    }
+    if (ivSum != 0) {
+        LOGE("key already update, skip !");
+        tempEnc.Clear();
+        return true;
+    }
+    tempEnc.Clear();
+    
     if (!StoreKey(auth)) {
         LOGE("Store key failed !");
         return false;
