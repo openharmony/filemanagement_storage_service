@@ -36,6 +36,7 @@ struct BundleStatsParas {
     uint32_t userId;
     std::string &bundleName;
     int64_t lastBackupTime;
+    int64_t fileSizeSum;
 };
 uint32_t CheckOverLongPath(const std::string &path);
 class QuotaManager final {
