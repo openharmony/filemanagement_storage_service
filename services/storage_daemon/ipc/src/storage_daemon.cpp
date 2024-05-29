@@ -190,9 +190,7 @@ std::string StorageDaemon::GetNeedRestoreFilePathByType(int32_t userId, KeyType 
 int32_t StorageDaemon::RestoreUserOneKey(int32_t userId, KeyType type)
 {
     uint32_t flags = 0;
-    int32_t ret;
-
-    ret = GetCryptoFlag(type, flags);
+    int32_t ret = GetCryptoFlag(type, flags);
     if (ret != E_OK) {
         return ret;
     }
@@ -232,8 +230,6 @@ int32_t StorageDaemon::RestoreUserOneKey(int32_t userId, KeyType type)
 int32_t StorageDaemon::RestoreUserKey(int32_t userId, uint32_t flags)
 {
     LOGI("prepare restore user dirs for %{public}d, flags %{public}u", userId, flags);
-    int32_t ret = E_OK;
-
     if (!IsNeedRestorePathExist(userId, true)) {
         LOGE("need_restore file is not existed");
         return -EEXIST;
@@ -241,7 +237,7 @@ int32_t StorageDaemon::RestoreUserKey(int32_t userId, uint32_t flags)
 
     std::vector<KeyType> type = {EL1_KEY, EL2_KEY, EL3_KEY, EL4_KEY, EL5_KEY};
     for (unsigned long i = 0; i < type.size(); i++) {
-        ret = RestoreUserOneKey(userId, type[i]);
+        auto ret = RestoreUserOneKey(userId, type[i]);
         if (ret != E_OK) {
             return ret;
         }

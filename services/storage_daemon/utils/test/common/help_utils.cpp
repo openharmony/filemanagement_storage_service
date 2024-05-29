@@ -215,7 +215,7 @@ void StorageTestUtils::RmDir(const int32_t userId)
         "/data/chipset/el2/",
         "/storage/media/"
     };
-    std::string cmd;
+
     for (auto path : paths) {
         path.append(std::to_string(userId));
         RmDirRecurse(path);
@@ -224,14 +224,14 @@ void StorageTestUtils::RmDir(const int32_t userId)
 
 void StorageTestUtils::ClearTestResource()
 {
-    int32_t userIds[] = {
+    const int32_t userIds[] = {
         USER_ID1,
         USER_ID2,
         USER_ID3,
         USER_ID4,
         USER_ID5
     };
-    for (auto id : userIds) {
+    for (const auto id : userIds) {
         std::string dstPath(hmdfsTarget);
         dstPath.replace(dstPath.find("%d"), strlen("%d"), std::to_string(id));
         UMount(dstPath);
