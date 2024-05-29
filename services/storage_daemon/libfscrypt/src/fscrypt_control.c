@@ -441,13 +441,12 @@ int LoadAndSetEceAndSecePolicy(const char *keyDir, const char *dir, int type)
         return -EINVAL;
     }
     char *pathBuf = NULL;
-    int ret = -ENOTSUP;
-
-    ret = SpliceKeyPath(keyDir, strlen(keyDir), PATH_KEYDESC, strlen(PATH_KEYDESC), &pathBuf);
+    int ret = SpliceKeyPath(keyDir, strlen(keyDir), PATH_KEYDESC, strlen(PATH_KEYDESC), &pathBuf);
     if (ret != 0) {
         FSCRYPT_LOGE("path splice error");
         return ret;
     }
+
     uint8_t fscryptVer = KeyCtrlLoadVersion(keyDir);
     if (fscryptVer == FSCRYPT_V1) {
         if (type == el3Key || type == el4Key) {

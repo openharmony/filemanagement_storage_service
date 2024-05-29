@@ -75,10 +75,9 @@ ssize_t UeventKernelMulticastRecv(int32_t socket, char *buffer, size_t length)
 void NetlinkListener::RecvUeventMsg()
 {
     auto msg = std::make_unique<char[]>(UEVENT_MSG_LEN + 1);
-    ssize_t count;
 
     while (1) {
-        count = UeventKernelMulticastRecv(socketFd_, msg.get(), UEVENT_MSG_LEN);
+        auto count = UeventKernelMulticastRecv(socketFd_, msg.get(), UEVENT_MSG_LEN);
         if (count <= 0) {
             (void)memset_s(msg.get(), UEVENT_MSG_LEN + 1, 0, UEVENT_MSG_LEN + 1);
             break;

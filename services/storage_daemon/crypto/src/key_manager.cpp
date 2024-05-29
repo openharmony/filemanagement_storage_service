@@ -547,7 +547,6 @@ int KeyManager::DoDeleteUserCeEceSeceKeys(unsigned int user,
                                           std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_)
 {
     int ret = 0;
-    std::string elPath;
     auto it = userElKey_.find(user);
     if (it != userElKey_.end()) {
         auto elKey = it->second;
@@ -555,7 +554,7 @@ int KeyManager::DoDeleteUserCeEceSeceKeys(unsigned int user,
         userElKey_.erase(user);
         saveLockScreenStatus.erase(user);
     } else {
-        elPath = USER_DIR + "/" + std::to_string(user);
+        std::string elPath = USER_DIR + "/" + std::to_string(user);
         std::shared_ptr<BaseKey> elKey = GetBaseKey(elPath);
         if (elKey == nullptr) {
             LOGE("Malloc el1 Basekey memory failed");
@@ -575,22 +574,18 @@ int KeyManager::DoDeleteUserKeys(unsigned int user)
     ret = DoDeleteUserCeEceSeceKeys(user, USER_EL1_DIR, userEl1Key_);
     if (ret != 0) {
         LOGE("Delete el1 key failed");
-        ret = -EFAULT;
     }
     ret = DoDeleteUserCeEceSeceKeys(user, USER_EL2_DIR, userEl2Key_);
     if (ret != 0) {
         LOGE("Delete el2 key failed");
-        ret = -EFAULT;
     }
     ret = DoDeleteUserCeEceSeceKeys(user, USER_EL3_DIR, userEl3Key_);
     if (ret != 0) {
         LOGE("Delete el3 key failed");
-        ret = -EFAULT;
     }
     ret = DoDeleteUserCeEceSeceKeys(user, USER_EL4_DIR, userEl4Key_);
     if (ret != 0) {
         LOGE("Delete el4 key failed");
-        ret = -EFAULT;
     }
     ret = DoDeleteUserCeEceSeceKeys(user, USER_EL5_DIR, userEl5Key_);
     if (ret != 0) {

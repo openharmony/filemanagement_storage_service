@@ -440,7 +440,7 @@ bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
     if (!auth.secret.IsEmpty() && FileExists(NEED_UPDATE_PATH)) {
         keyEncryptType_ = KeyEncryptType::KEY_CRYPT_OPENSSL;
         LOGI("set keyEncryptType_ as KEY_CRYPT_OPENSSL success");
-    } else if (auth.secret.IsEmpty() || (!auth.secret.IsEmpty() && !FileExists(NEED_UPDATE_PATH))) {
+    } else {
         keyEncryptType_ = KeyEncryptType::KEY_CRYPT_HUKS;
         LOGI("set keyEncryptType_ as KEY_CRYPT_HUKS success");
     }
