@@ -262,18 +262,8 @@ int32_t MountManager::CloudTwiceMount(int32_t userId)
 #ifdef DFS_SERVICE
     Utils::MountArgument cloudMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
     const string cloudPath = cloudMntArgs.GetFullCloud();
-    int32_t ret = CloudMount(userId, cloudPath);
-    if (ret != E_OK) {
-        LOGE("failed to mount cloud disk fuse, err %{public}d path %{public}s", errno, cloudPath.c_str());
-        return ret;
-    }
     const string cloudMediaPath = cloudMntArgs.GetFullMediaCloud();
-    ret = CloudMount(userId, cloudMediaPath);
-    if (ret != E_OK) {
-        LOGE("failed to mount cloud media fuse, err %{public}d path %{public}s", errno, cloudMediaPath.c_str());
-        return ret;
-    }
-    return ret;
+    return (CloudMount(userId, cloudPath) | CloudMount(userId, cloudMediaPath));
 #else
     return E_OK;
 #endif
