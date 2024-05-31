@@ -322,7 +322,6 @@ static std::tuple<std::vector<std::string>, std::vector<std::string>> ReadInclud
     return {includes, excludes};
 }
 
-
 static bool AddPathMapForPathWildCard(uint32_t userid, const std::string &bundleName, const std::string &phyPath,
     std::map<std::string, std::string> &pathMap)
 {
@@ -456,44 +455,78 @@ static void ConvertSandboxRealPath(const uint32_t userId, const std::string &bun
     }
 }
 
-/**
- * @brief insert recognized include files or sub-directories
- *
- * @param fileStats       map for file path and file stat
- * @param path            file path in includes
- * @param fileStats       file stat
- */
-static void InsertIncludeFileStats(std::map<std::string, struct FileStat> &fileStats, const std::string &path,
-    const struct FileStat fileStat)
+static void WriteFileList(std::ofstream &statFile, struct FileStat fileStat, BundleStatsParas &paras)
 {
-    if (path.empty()) {
-        LOGE("Invalid empty path when recoginize include files");
-        return;
+    std::string fileLine = "";
+    bool encodeFlag = false;
+    if (fileStat.filePath.find(LINE_SEP) != std::string::npos) {
+        fileLine += AppFileService::SandboxHelper::Encode(fileStat.filePath) + FILE_CONTENT_SEPARATOR;
+        encodeFlag = true;
+    } else {
+        fileLine += fileStat.filePath + FILE_CONTENT_SEPARATOR;
     }
+    fileLine += std::to_string(fileStat.mode) + FILE_CONTENT_SEPARATOR;
+    if (fileStat.isDir) {
+        fileLine += std::to_string(1) + FILE_CONTENT_SEPARATOR;
+    } else {
+        fileLine += std::to_string(0) + FILE_CONTENT_SEPARATOR;
+    }
+    fileLine += std::to_string(fileStat.fileSize) + FILE_CONTENT_SEPARATOR;
+    fileLine += std::to_string(fileStat.lastUpdateTime) + FILE_CONTENT_SEPARATOR;
+    fileLine += FILE_CONTENT_SEPARATOR;
+    if (fileStat.isIncre) {
+        fileLine += std::to_string(1);
+    } else {
+        fileLine += std::to_string(0);
+    }
+    fileLine += FILE_CONTENT_SEPARATOR;
+    if (encodeFlag) {
+        fileLine += std::to_string(1);
+    } else {
+        fileLine += std::to_string(0);
+    }
+    // te file line
+    statFile << fileLine << std::endl;
+    if (fileStat.isIncre) {
+        paras.fileSizeSum += fileStat.fileSize;
+    }
+}
+
+static bool ExcludeFilter(std::map<std::string, bool> &excludesMap, const std::string &path)
+{
     std::string formatPath = path;
-    if (fileStat.isDir && formatPath.back() != FILE_SEPARATOR_CHAR) {
-        formatPath.push_back(FILE_SEPARATOR_CHAR);
+    for (auto exclude = excludesMap.begin(); exclude != excludesMap.end(); exclude++) {
+        if (exclude->second != true) {
+            if (formatPath.compare(exclude->first) == 0) {
+                return true;
+            }
+        } else {
+            if (formatPath.compare(0, exclude->first.size(), exclude->first) == 0) {
+                return true;
+            }
+        }
     }
-    fileStats.insert({formatPath, fileStat});
+    return false;
 }
 
 /**
  * @brief Check if path in includes is directory or not
  *
  * @param path            path in includes
- * @param lastBackupTime  start time for last backup
- * @param fileStats       map for file path and file stat
+ * @param paras           start time for last backup and file size sum
  * @param pathMap         map for file sandbox path and physical path
+ * @param statFile        target file stream pointer
+ * @param excludeMap      map for exclude physical path and isDir
  *
  * @return std::tuple<bool, bool> : is success or not for system call / is directory or not
  */
-static std::tuple<bool, bool> CheckIfDirForIncludes(const std::string &path, int64_t lastBackupTime,
-    std::map<std::string, struct FileStat> &fileStats, std::map<std::string, std::string> &pathMap)
+static std::tuple<bool, bool> CheckIfDirForIncludes(const std::string &path, BundleStatsParas &paras,
+    std::map<std::string, std::string> &pathMap, std::ofstream &statFile, std::map<std::string, bool> &excludesMap)
 {
     // check whether the path exists
     struct stat fileStatInfo = {0};
     if (stat(path.c_str(), &fileStatInfo) != 0) {
-        LOGE("GetIncludesFileStats call stat error %{private}s, fail errno:%{public}d", path.c_str(), errno);
+        LOGE("CheckIfDirForIncludes call stat error %{private}s, fail errno:%{public}d", path.c_str(), errno);
         return {false, false};
     }
     if (S_ISDIR(fileStatInfo.st_mode)) {
@@ -514,10 +547,12 @@ static std::tuple<bool, bool> CheckIfDirForIncludes(const std::string &path, int
         fileStat.isDir = false;
         int64_t lastUpdateTime = static_cast<int64_t>(fileStatInfo.st_mtime);
         fileStat.lastUpdateTime = lastUpdateTime;
-        if (lastBackupTime == 0 || lastUpdateTime > lastBackupTime) {
+        if (paras.lastBackupTime == 0 || lastUpdateTime > paras.lastBackupTime) {
             fileStat.isIncre = true;
         }
-        InsertIncludeFileStats(fileStats, path, fileStat);
+        if (ExcludeFilter(excludesMap, path) == false) {
+            WriteFileList(statFile, fileStat, paras);
+        }
         return {true, false};
     }
 }
@@ -530,8 +565,8 @@ static std::string PhysicalToSandboxPath(const std::string &dir, const std::stri
     return sandboxDir + pathSurffix;
 }
 
-static bool AddOuterDirIntoFileStat(const std::string &dir, int64_t lastBackupTime, const std::string &sandboxDir,
-    std::map<std::string, struct FileStat> &fileStats)
+static bool AddOuterDirIntoFileStat(const std::string &dir, BundleStatsParas &paras, const std::string &sandboxDir,
+    std::ofstream &statFile, std::map<std::string, bool> &excludesMap)
 {
     struct stat fileInfo = {0};
     if (stat(dir.c_str(), &fileInfo) != 0) {
@@ -545,9 +580,15 @@ static bool AddOuterDirIntoFileStat(const std::string &dir, int64_t lastBackupTi
     fileStat.mode = fileInfo.st_mode;
     int64_t lastUpdateTime = static_cast<int64_t>(fileInfo.st_mtime);
     fileStat.lastUpdateTime = lastUpdateTime;
-    fileStat.isIncre = (lastBackupTime == 0 || lastUpdateTime > lastBackupTime) ? true : false;
+    fileStat.isIncre = (paras.lastBackupTime == 0 || lastUpdateTime > paras.lastBackupTime) ? true : false;
     fileStat.isDir = true;
-    InsertIncludeFileStats(fileStats, dir, fileStat);
+    std::string formatPath = dir;
+    if (formatPath.back() != FILE_SEPARATOR_CHAR) {
+        formatPath.push_back(FILE_SEPARATOR_CHAR);
+    }
+    if (ExcludeFilter(excludesMap, formatPath) == false) {
+        WriteFileList(statFile, fileStat, paras);
+    }
     return true;
 }
 
@@ -562,8 +603,21 @@ uint32_t CheckOverLongPath(const std::string &path)
     return len;
 }
 
-static bool GetIncludesFileStats(const std::string &dir, int64_t lastBackupTime,
-    std::map<std::string, struct FileStat> &fileStats, std::map<std::string, std::string> &pathMap)
+static void InsertStatFile(const std::string &path, struct FileStat fileStat,
+    std::ofstream &statFile, std::map<std::string, bool> &excludesMap, BundleStatsParas &paras)
+{
+    std::string formatPath = path;
+    if (fileStat.isDir == true && formatPath.back() != FILE_SEPARATOR_CHAR) {
+        formatPath.push_back(FILE_SEPARATOR_CHAR);
+    }
+    if (ExcludeFilter(excludesMap, formatPath) == false) {
+        WriteFileList(statFile, fileStat, paras);
+    }
+}
+
+static bool GetIncludesFileStats(const std::string &dir, BundleStatsParas &paras,
+    std::map<std::string, std::string> &pathMap,
+    std::ofstream &statFile, std::map<std::string, bool> &excludesMap)
 {
     std::string sandboxDir = dir;
     auto it = pathMap.find(dir);
@@ -571,7 +625,7 @@ static bool GetIncludesFileStats(const std::string &dir, int64_t lastBackupTime,
         sandboxDir = it->second;
     }
     // stat current directory info
-    AddOuterDirIntoFileStat(dir, lastBackupTime, sandboxDir, fileStats);
+    AddOuterDirIntoFileStat(dir, paras, sandboxDir, statFile, excludesMap);
 
     std::stack<std::string> folderStack;
     std::string filePath;
@@ -608,213 +662,55 @@ static bool GetIncludesFileStats(const std::string &dir, int64_t lastBackupTime,
             fileStat.mode = fileInfo.st_mode;
             int64_t lastUpdateTime = static_cast<int64_t>(fileInfo.st_mtime);
             fileStat.lastUpdateTime = lastUpdateTime;
-            fileStat.isIncre = (lastBackupTime == 0 || lastUpdateTime > lastBackupTime) ? true : false;
+            fileStat.isIncre = (paras.lastBackupTime == 0 || lastUpdateTime > paras.lastBackupTime) ? true : false;
             if (entry->d_type == DT_DIR) {
                 fileStat.isDir = true;
                 folderStack.push(path);
             }
-            // record map about file to its directory
-            InsertIncludeFileStats(fileStats, path, fileStat);
+            InsertStatFile(path, fileStat, statFile, excludesMap, paras);
         }
         closedir(dirPtr);
     }
     return true;
 }
 
-/**
- * @brief insert recognized exclude files or sub-directories
- *
- * @param fileSet     set for file path
- * @param path        file path in exclude
- * @param isDir       isDir
- */
-static void InsertExcludeFileSet(std::set<std::string> &fileSet, const std::string &path, bool isDir)
+static void SetExcludePathMap(std::string &excludePath, std::map<std::string, bool> &excludesMap)
 {
-    if (path.empty()) {
-        LOGE("Invalid empty path when recoginize exclude files");
+    struct stat fileStatInfo = {0};
+    if (stat(excludePath.c_str(), &fileStatInfo) != 0) {
+        LOGE("SetExcludePathMap call stat error %{private}s, errno:%{public}d", excludePath.c_str(), errno);
         return;
     }
-    std::string formatPath = path;
-    if (isDir && formatPath.back() != FILE_SEPARATOR_CHAR) {
-        formatPath.push_back(FILE_SEPARATOR_CHAR);
-    }
-    fileSet.insert(formatPath);
-}
-
-/**
- * @brief Check if path in excludes is directory or not
- *
- * @param path      path in includes
- * @param fileSet   file sets
- *
- * @return std::tuple<bool, bool> : is success or not for system call / is directory or not
- */
-static std::tuple<bool, bool> CheckIfDirForExcludes(const std::string &path, std::set<std::string> &fileSet)
-{
-    // check whether the path exists
-    struct stat fileStatInfo = {0};
-    if (stat(path.c_str(), &fileStatInfo) != 0) {
-        LOGE("CheckIfDirForExcludes call stat error %{private}s, errno:%{public}d", path.c_str(), errno);
-        return {false, false};
-    }
     if (S_ISDIR(fileStatInfo.st_mode)) {
-        LOGI("%{private}s exists and is a directory", path.c_str());
-        return {true, true};
+        if (excludePath.back() != FILE_SEPARATOR_CHAR) {
+            excludePath.push_back(FILE_SEPARATOR_CHAR);
+        }
+        excludesMap.insert({excludePath, true});
     } else {
-        InsertExcludeFileSet(fileSet, path, false);
-        return {true, false};
+        excludesMap.insert({excludePath, false});
     }
 }
 
-static bool GetExcludesFile(const std::string &dir, std::set<std::string> &fileSet)
-{
-    InsertExcludeFileSet(fileSet, dir, true);
-
-    std::stack<std::string> folderStack;
-    std::string filePath;
-    folderStack.push(dir);
-    while (!folderStack.empty()) {
-        filePath = folderStack.top();
-        folderStack.pop();
-
-        DIR *dirPtr = opendir(filePath.c_str());
-        if (dirPtr == nullptr) {
-            LOGE("GetExcludesFile open file dir:%{private}s fail, errno:%{public}d", filePath.c_str(), errno);
-            continue;
-        }
-        if (filePath.back() != FILE_SEPARATOR_CHAR) {
-            filePath.push_back(FILE_SEPARATOR_CHAR);
-        }
-        struct dirent *entry = nullptr;
-        while ((entry = readdir(dirPtr)) != nullptr) {
-            if ((strcmp(entry->d_name, ".") == 0) || (strcmp(entry->d_name, "..") == 0)) {
-                continue;
-            }
-            std::string path = filePath + entry->d_name;
-            struct stat fileInfo = {0};
-            if (stat(path.c_str(), &fileInfo) != 0) {
-                LOGE("GetExcludesFile call stat error %{private}s, errno:%{public}d", path.c_str(), errno);
-                fileInfo.st_size = 0;
-            }
-            bool isDir = false;
-            if (entry->d_type == DT_DIR) {
-                isDir = true;
-            }
-            InsertExcludeFileSet(fileSet, path, isDir);
-            if (isDir) {
-                folderStack.push(path);
-            }
-        }
-        closedir(dirPtr);
-    }
-    return true;
-}
-
-static std::map<std::string, struct FileStat> FilterExtensionPath(int64_t lastBackupTime,
+static void ScanExtensionPath(BundleStatsParas &paras,
     const std::vector<std::string> &includes, const std::vector<std::string> &excludes,
-    std::map<std::string, std::string> &pathMap)
+    std::map<std::string, std::string> &pathMap, std::ofstream &statFile)
 {
+    std::map<std::string, bool> excludesMap;
+    for (auto exclude : excludes) {
+        SetExcludePathMap(exclude, excludesMap);
+    }
     // all file with stats in include directory
-    std::map<std::string, struct FileStat> fileStats;
     for (const auto &includeDir : includes) {
         // Check if includeDir is a file path
-        auto [isSucc, isDir] = CheckIfDirForIncludes(includeDir, lastBackupTime, fileStats, pathMap);
+        auto [isSucc, isDir] = CheckIfDirForIncludes(includeDir, paras, pathMap, statFile, excludesMap);
         if (!isSucc) {
             continue;
         }
         // recognize all file in include directory
-        if (isDir && !GetIncludesFileStats(includeDir, lastBackupTime, fileStats, pathMap)) {
+        if (isDir && !GetIncludesFileStats(includeDir, paras, pathMap, statFile, excludesMap)) {
             LOGE("Faied to get include files for includeDir");
         }
     }
-
-    // all file with stats in exclude directory
-    std::set<std::string> excludeFiles;
-    for (const auto &excludeDir : excludes) {
-        auto [isSuccess, isDir] = CheckIfDirForExcludes(excludeDir, excludeFiles);
-        if (!isSuccess) {
-            LOGE("GetExcludesFile dir path invaild");
-            continue;
-        }
-        // recognize all file in include directory
-        if (isDir && !GetExcludesFile(excludeDir, excludeFiles)) {
-            LOGE("Faied to get include files for excludeDir, %{private}s", excludeDir.c_str());
-        }
-    }
-
-    // clear exclude directory
-    std::map<std::string, struct FileStat>::iterator it;
-    for (const auto &excludeFile : excludeFiles) {
-        it = fileStats.find(excludeFile);
-        if (it != fileStats.end()) {
-            fileStats.erase(it);
-        }
-    }
-    return fileStats;
-}
-
-static int64_t GetDiskUsage(const std::map<std::string, struct FileStat> &toBackupFileStats)
-{
-    int64_t size = 0;
-    for (auto it = toBackupFileStats.begin(); it != toBackupFileStats.end();) {
-        FileStat fileStat = it->second;
-        if (fileStat.isIncre) {
-            size += fileStat.fileSize;
-        }
-        it++;
-    }
-    return size;
-}
-
-static int32_t WriteFileList(const std::map<std::string, struct FileStat> &toBackupFileStats,
-    const std::string &filePath)
-{
-    std::ofstream statFile;
-    statFile.open(filePath.data(), std::ios::out | std::ios::trunc);
-    if (!statFile.is_open()) {
-        LOGE("Cannot create file for file stats, errno:%{public}d", errno);
-        return E_SYS_ERR;
-    }
-
-    statFile << VER_10_LINE1 << std::endl;
-    statFile << VER_10_LINE2 << std::endl;
-
-    for (auto it = toBackupFileStats.begin(); it != toBackupFileStats.end();) {
-        std::string fileLine = "";
-        FileStat fileStat = it->second;
-        bool encodeFlag = false;
-        if (fileStat.filePath.find(LINE_SEP) != std::string::npos) {
-            fileLine += AppFileService::SandboxHelper::Encode(fileStat.filePath) + FILE_CONTENT_SEPARATOR;
-            encodeFlag = true;
-        } else {
-            fileLine += fileStat.filePath + FILE_CONTENT_SEPARATOR;
-        }
-        fileLine += std::to_string(fileStat.mode) + FILE_CONTENT_SEPARATOR;
-        if (fileStat.isDir) {
-            fileLine += std::to_string(1) + FILE_CONTENT_SEPARATOR;
-        } else {
-            fileLine += std::to_string(0) + FILE_CONTENT_SEPARATOR;
-        }
-        fileLine += std::to_string(fileStat.fileSize) + FILE_CONTENT_SEPARATOR;
-        fileLine += std::to_string(fileStat.lastUpdateTime) + FILE_CONTENT_SEPARATOR;
-        fileLine += FILE_CONTENT_SEPARATOR;
-        if (fileStat.isIncre) {
-            fileLine += std::to_string(1);
-        } else {
-            fileLine += std::to_string(0);
-        }
-        fileLine += FILE_CONTENT_SEPARATOR;
-        if (encodeFlag) {
-            fileLine += std::to_string(1);
-        } else {
-            fileLine += std::to_string(0);
-        }
-        // write file line
-        statFile << fileLine << std::endl;
-        it++;
-    }
-    statFile.close();
-    return E_OK;
 }
 
 static void DealWithIncludeFiles(const BundleStatsParas &paras, const std::vector<std::string> &includes,
@@ -846,7 +742,8 @@ static void GetBundleStatsForIncreaseEach(uint32_t userId, std::string &bundleNa
     std::vector<int64_t> &pkgFileSizes)
 {
     // input parameters
-    BundleStatsParas paras = {.userId = userId, .bundleName = bundleName, .lastBackupTime = lastBackupTime};
+    BundleStatsParas paras = {.userId = userId, .bundleName = bundleName,
+                              .lastBackupTime = lastBackupTime, .fileSizeSum = 0};
 
     // obtain includes, excludes in backup extension config
     auto [includes, excludes] = ReadIncludesExcludesPath(bundleName, lastBackupTime, userId);
@@ -878,23 +775,22 @@ static void GetBundleStatsForIncreaseEach(uint32_t userId, std::string &bundleNa
         ConvertSandboxRealPath(userId, bundleName, excludeStr, phyExcludes, pathMap);
     }
 
-    // filter exclude directory
-    std::map<std::string, struct FileStat> toBackupFileStats = FilterExtensionPath(
-        lastBackupTime, phyIncludes, phyExcludes, pathMap);
-    if (toBackupFileStats.empty()) {
-        LOGI("No increment file found for %{private}s", bundleName.c_str());
+    std::string filePath = BACKUP_PATH_PREFIX + std::to_string(userId) + BACKUP_PATH_SURFFIX +
+        bundleName + FILE_SEPARATOR_CHAR + BACKUP_STAT_SYMBOL + std::to_string(lastBackupTime);
+    std::ofstream statFile;
+    statFile.open(filePath.data(), std::ios::out | std::ios::trunc);
+    if (!statFile.is_open()) {
+        LOGE("creat file fail, errno:%{public}d.", errno);
         pkgFileSizes.emplace_back(0);
         return;
     }
+    statFile << VER_10_LINE1 << std::endl;
+    statFile << VER_10_LINE2 << std::endl;
+
+    ScanExtensionPath(paras, phyIncludes, phyExcludes, pathMap, statFile);
     // calculate summary file sizes
-    pkgFileSizes.emplace_back(GetDiskUsage(toBackupFileStats));
-    // write into brief report
-    std::string filePath = BACKUP_PATH_PREFIX + std::to_string(userId) + BACKUP_PATH_SURFFIX +
-        bundleName + FILE_SEPARATOR_CHAR + BACKUP_STAT_SYMBOL + std::to_string(lastBackupTime);
-    if (WriteFileList(toBackupFileStats, filePath) != 0) {
-        LOGE("file is created failed path %{private}s", bundleName.c_str());
-        return;
-    }
+    pkgFileSizes.emplace_back(paras.fileSizeSum);
+    statFile.close();
 }
 
 int32_t QuotaManager::GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
