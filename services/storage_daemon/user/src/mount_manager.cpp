@@ -783,14 +783,19 @@ int32_t MountManager::UMountDfsDocs(int32_t userId, const std::string &relativeP
         return E_UMOUNT;
     }
 
-    std::string dstPath = StringPrintf("/mnt/data/%d/hmdfs/%s/", userId, deviceId.c_str());
+    std::string dstPath = StringPrintf("/mnt/data/%d/hmdfs/%s", userId, deviceId.c_str());
     sync();
     int32_t ret = UMount2(dstPath, MNT_FORCE);
     if (ret != E_OK) {
         LOGE("UMountDfsDocs unmount bind failed, srcPath is %{public}s errno is %{public}d",
              dstPath.c_str(), errno);
+        return E_UMOUNT;
     }
     LOGI("MountManager::UMountDfsDocs end.");
+    if (!filesystem::is_empty(dstPath)) {
+        LOGE("[UMountDfsDocs] Failed to umount");
+        return E_UMOUNT;
+    }
     if (!RmDirRecurse(dstPath)) {
         LOGE("Failed to remove dir %{public}s", dstPath.c_str());
     }
