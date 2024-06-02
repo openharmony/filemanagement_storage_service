@@ -48,6 +48,7 @@ const uint8_t FBEX_READ_EL5 = 22;
 const uint8_t FBEX_WRITE_EL5 = 23;
 const uint8_t FBEX_DEL_EL5 = 24;
 const uint8_t FBEX_GENERATE_APP_KEY = 25;
+const uint8_t FBEX_CHANGE_PINCODE = 26;
 
 struct FbeOptStr {
     uint32_t user = 0;
@@ -77,6 +78,7 @@ using FbeOptsE = FbeOptStrE;
 #define HISI_FBEX_ADD_CLASS_E _IOWR(FBEX_IOC_MAGIC, FBEX_ADD_EL5, FbeOptsE)
 #define HISI_FBEX_DEL_USER_PINCODE _IOWR(FBEX_IOC_MAGIC, FBEX_DEL_EL5, FbeOptsE)
 #define HISI_FBEX_ADD_APPKEY2 _IOWR(FBEX_IOC_MAGIC, FBEX_GENERATE_APP_KEY, FbeOptsE)
+#define HISI_FBEX_CHANGE_PINCODE _IOWR(FBEX_IOC_MAGIC, FBEX_CHANGE_PINCODE, FbeOptsE)
 
 } // namespace
 
@@ -232,6 +234,29 @@ int FBEX::UninstallOrLockUserKeyForEL5ToKernel(uint32_t userId, bool destroy)
     }
     close(fd);
     LOGI("success");
+    return ret;
+}
+
+int FBEX::ChangePinCodeClassE(uint32_t userId)
+{
+    LOGI("enter, userId: %{public}d", userId);
+    int fd = open(FBEX_UECE_PATH, O_RDWR);
+    if (fd < 0) {
+        if (errno == ENOENT) {
+            LOGE("fbex_uece does not exist, fbe not support this command!");
+            return 0;
+        }
+        LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        return -errno;
+    }
+    FbeOptsE ops{.user = userId};
+    int ret = ioctl(fd, FBEX_CHANGE_PINCODE, &ops);
+    if (ret != 0) {
+        LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
+        ret = -errno;
+    }
+    close(fd);
+    LOGI("change pincode classE success.");
     return ret;
 }
 

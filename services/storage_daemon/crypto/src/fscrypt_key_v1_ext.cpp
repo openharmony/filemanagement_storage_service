@@ -141,6 +141,21 @@ bool FscryptKeyV1Ext::DeleteClassE(uint32_t flag)
     return true;
 }
 
+bool FscryptKeyV1Ext::ChangePinCodeClassE(uint32_t flag)
+{
+    (void)flag;
+    if (!FBEX::IsFBEXSupported()) {
+        return true;
+    }
+    uint32_t userId = GetMappedUserId(userId_, type_);
+    LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, userId);
+    if (FBEX::ChangePinCodeClassE(userId)) {
+        LOGE("ChangePinCodeClassE failed, userId_ %{public}d", userId_);
+        return false;
+    }
+    return true;
+}
+
 bool FscryptKeyV1Ext::ReadClassE(uint32_t status, uint8_t *classEBuffer, uint32_t length, bool &isFbeSupport)
 {
     if (!FBEX::IsFBEXSupported()) {
