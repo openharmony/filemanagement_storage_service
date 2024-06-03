@@ -388,6 +388,7 @@ void FscryptKeyV1::DropCachesIfNeed()
     if (fd < 0 || syncfs(fd)) {
         sync();
     }
+    LOGI("drop cache start.");
     if (!SaveStringToFile("/proc/sys/vm/drop_caches", "2")) {
         LOGE("Failed to drop cache during key eviction");
     }
