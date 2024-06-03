@@ -68,7 +68,7 @@ int KeyManager::GenerateAndInstallDeviceKey(const std::string &dir)
         return -EOPNOTSUPP;
     }
 
-    if (globalEl1Key_->InitKey() == false) {
+    if (globalEl1Key_->InitKey(true) == false) {
         globalEl1Key_ = nullptr;
         LOGE("global security key init failed");
         return -EFAULT;
@@ -107,7 +107,7 @@ int KeyManager::RestoreDeviceKey(const std::string &dir)
         return -EOPNOTSUPP;
     }
 
-    if (globalEl1Key_->InitKey() == false) {
+    if (globalEl1Key_->InitKey(false) == false) {
         globalEl1Key_ = nullptr;
         LOGE("global security key init failed");
         return -EFAULT;
@@ -187,7 +187,7 @@ int KeyManager::GenerateAndInstallUserKey(uint32_t userId, const std::string &di
         return 0;
     }
 
-    if (elKey->InitKey() == false) {
+    if (elKey->InitKey(true) == false) {
         LOGE("user security key init failed");
         return -EFAULT;
     }
@@ -232,7 +232,7 @@ int KeyManager::RestoreUserKey(uint32_t userId, const std::string &dir, const Us
         return -EOPNOTSUPP;
     }
 
-    if (elKey->InitKey() == false) {
+    if (elKey->InitKey(false) == false) {
         LOGE("user security key init failed");
         return -EFAULT;
     }
@@ -706,13 +706,24 @@ int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
         return -ENOENT;
     }
 
-    UserAuth auth = {userTokenSecret.token, userTokenSecret.oldSecret, userTokenSecret.secureUid};
+    UserAuth auth = { {}, userTokenSecret.oldSecret, userTokenSecret.secureUid };
+    if (!userTokenSecret.oldSecret.empty()) {
+        KeyBlob token(userTokenSecret.token);
+        auth.token = std::move(token);
+    }
     if ((item->RestoreKey(auth) == false) && (item->RestoreKey(NULL_KEY_AUTH) == false)) {
         LOGE("Restore key error");
         return -EFAULT;
     }
-
-    auth.secret = userTokenSecret.newSecret;
+    if (!userTokenSecret.newSecret.empty()) {
+        KeyBlob token(userTokenSecret.token);
+        KeyBlob newSecret(userTokenSecret.newSecret);
+        auth.token = std::move(token);
+        auth.secret = std::move(newSecret);
+    } else {
+        auth.token.Clear();
+        auth.secret.Clear();
+    }
 #ifdef USER_CRYPTO_MIGRATE_KEY
     if (item->StoreKey(auth, needGenerateShield) == false) {
 #else
@@ -923,11 +934,11 @@ int KeyManager::ActiveElXUserKey(unsigned int user,
                                  const std::vector<uint8_t> &token, std::string keyDir,
                                  const std::vector<uint8_t> &secret, std::shared_ptr<BaseKey> elKey)
 {
-    if (elKey->InitKey() == false) {
+    if (elKey->InitKey(false) == false) {
         LOGE("Init el failed");
         return -EFAULT;
     }
-    UserAuth auth = {token, secret};
+    UserAuth auth = { token, secret };
     if ((elKey->RestoreKey(auth) == false) && (elKey->RestoreKey(NULL_KEY_AUTH) == false)) {
         LOGE("Restore el failed");
         return -EFAULT;
@@ -964,6 +975,10 @@ int KeyManager::UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &toke
         return 0;
     }
     auto el4Key = userEl4Key_[user];
+    if (!el4Key->RestoreKey({ token, secret })) {
+        LOGE("Restore user %{public}u el4 key failed", user);
+        return -EFAULT;
+    }
     if (!el4Key->UnlockUserScreen(user, FSCRYPT_SDP_ECE_CLASS)) {
         LOGE("UnlockUserScreen user %{public}u el4 key failed", user);
         return -EFAULT;
@@ -1133,6 +1148,7 @@ int KeyManager::LockUserScreen(uint32_t user)
         LOGE("Clear user %{public}u key failed", user);
         return -EFAULT;
     }
+    // todo 找IAM查询认证状态,如果不是人脸指纹就清除缓存中的值
 
     saveLockScreenStatus[user] = false;
     LOGI("LockUserScreen user %{public}u el3 and el4 success, saveLockScreenStatus is %{public}d",

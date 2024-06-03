@@ -27,9 +27,10 @@ namespace OHOS {
 namespace StorageDaemon {
 bool OpensslCrypto::AESDecrypt(const KeyBlob &preKey, KeyContext &keyContext_, KeyBlob &plainText)
 {
-    KeyBlob shield = HashAndClip(preKey, keyContext_.secDiscard, AES_256_HASH_RANDOM_SIZE);
-    if (keyContext_.encrypted.size < GCM_NONCE_BYTES + GCM_MAC_BYTES) {
-        LOGE("GCM cipherText too small: %{public}u ", keyContext_.encrypted.size);
+    LOGI("enter");
+    KeyBlob shield = HashWithPrefix(preKey, keyContext_.secDiscard, AES_256_HASH_RANDOM_SIZE);
+    if (keyContext_.rndEnc.size < GCM_NONCE_BYTES + GCM_MAC_BYTES) {
+        LOGE("GCM cipherText too small: %{public}u ", keyContext_.rndEnc.size);
         return false;
     }
     auto ctx = std::unique_ptr<EVP_CIPHER_CTX, decltype(&::EVP_CIPHER_CTX_free)>(
@@ -39,15 +40,15 @@ bool OpensslCrypto::AESDecrypt(const KeyBlob &preKey, KeyContext &keyContext_, K
         return false;
     }
     if (EVP_DecryptInit_ex(ctx.get(), EVP_aes_256_gcm(), NULL, reinterpret_cast<const uint8_t*>(shield.data.get()),
-                           reinterpret_cast<const uint8_t*>(keyContext_.encrypted.data.get())) !=
+                           reinterpret_cast<const uint8_t*>(keyContext_.rndEnc.data.get())) !=
                            OPENSSL_SUCCESS_FLAG) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
     }
-    plainText = KeyBlob(keyContext_.encrypted.size - GCM_NONCE_BYTES - GCM_MAC_BYTES);
+    plainText = KeyBlob(keyContext_.rndEnc.size - GCM_NONCE_BYTES - GCM_MAC_BYTES);
     int outlen;
     if (EVP_DecryptUpdate(ctx.get(), reinterpret_cast<uint8_t*>(plainText.data.get()), &outlen,
-                          reinterpret_cast<const uint8_t*>(keyContext_.encrypted.data.get() + GCM_NONCE_BYTES),
+                          reinterpret_cast<const uint8_t*>(keyContext_.rndEnc.data.get() + GCM_NONCE_BYTES),
                           plainText.size) != OPENSSL_SUCCESS_FLAG) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
@@ -58,7 +59,7 @@ bool OpensslCrypto::AESDecrypt(const KeyBlob &preKey, KeyContext &keyContext_, K
     }
     if (EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_GCM_SET_TAG, GCM_MAC_BYTES,
                             const_cast<void*>(reinterpret_cast<const void*>(
-                            keyContext_.encrypted.data.get() + GCM_NONCE_BYTES + plainText.size))) !=
+                            keyContext_.rndEnc.data.get() + GCM_NONCE_BYTES + plainText.size))) !=
                             OPENSSL_SUCCESS_FLAG) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
@@ -78,23 +79,24 @@ bool OpensslCrypto::AESDecrypt(const KeyBlob &preKey, KeyContext &keyContext_, K
 
 bool OpensslCrypto::AESEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, KeyContext &keyContext_)
 {
-    KeyBlob shield = HashAndClip(preKey, keyContext_.secDiscard, AES_256_HASH_RANDOM_SIZE);
+    LOGI("enter");
+    KeyBlob shield = HashWithPrefix(preKey, keyContext_.secDiscard, AES_256_HASH_RANDOM_SIZE);
     auto ctx = std::unique_ptr<EVP_CIPHER_CTX, decltype(&::EVP_CIPHER_CTX_free)>(
         EVP_CIPHER_CTX_new(), EVP_CIPHER_CTX_free);
     if (!ctx) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
     }
-    keyContext_.encrypted = HuksMaster::GenerateRandomKey(GCM_NONCE_BYTES + plainText.size + GCM_MAC_BYTES);
+    keyContext_.rndEnc = HuksMaster::GenerateRandomKey(GCM_NONCE_BYTES + plainText.size + GCM_MAC_BYTES);
     if (EVP_EncryptInit_ex(ctx.get(), EVP_aes_256_gcm(), NULL,
                            reinterpret_cast<const uint8_t*>(shield.data.get()),
-                           reinterpret_cast<const uint8_t*>(keyContext_.encrypted.data.get())) !=
+                           reinterpret_cast<const uint8_t*>(keyContext_.rndEnc.data.get())) !=
                            OPENSSL_SUCCESS_FLAG) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
     }
     int outlen;
-    if (EVP_EncryptUpdate(ctx.get(), reinterpret_cast<uint8_t*>(keyContext_.encrypted.data.get() + GCM_NONCE_BYTES),
+    if (EVP_EncryptUpdate(ctx.get(), reinterpret_cast<uint8_t*>(keyContext_.rndEnc.data.get() + GCM_NONCE_BYTES),
                           &outlen, reinterpret_cast<const uint8_t*>(plainText.data.get()), plainText.size) !=
                           OPENSSL_SUCCESS_FLAG) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
@@ -105,7 +107,7 @@ bool OpensslCrypto::AESEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, 
         return false;
     }
     if (EVP_EncryptFinal_ex(ctx.get(),
-                            reinterpret_cast<uint8_t*>(keyContext_.encrypted.data.get() +
+                            reinterpret_cast<uint8_t*>(keyContext_.rndEnc.data.get() +
                             GCM_NONCE_BYTES + plainText.size), &outlen) != OPENSSL_SUCCESS_FLAG) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
@@ -115,7 +117,7 @@ bool OpensslCrypto::AESEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, 
         return false;
     }
     if (EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_GCM_GET_TAG, GCM_MAC_BYTES,
-                            reinterpret_cast<uint8_t*> (keyContext_.encrypted.data.get() +
+                            reinterpret_cast<uint8_t*> (keyContext_.rndEnc.data.get() +
                             GCM_NONCE_BYTES + plainText.size)) != OPENSSL_SUCCESS_FLAG) {
         LOGE("Openssl error: %{public}lu ", ERR_get_error());
         return false;
@@ -124,7 +126,7 @@ bool OpensslCrypto::AESEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, 
     return true;
 }
 
-KeyBlob OpensslCrypto::HashAndClip(const KeyBlob &prefix, const KeyBlob &payload, uint32_t length)
+KeyBlob OpensslCrypto::HashWithPrefix(const KeyBlob &prefix, const KeyBlob &payload, uint32_t length)
 {
     KeyBlob res(SHA512_DIGEST_LENGTH);
     SHA512_CTX c;

@@ -236,20 +236,14 @@ static int AppendSecureAccessParams(const UserAuth &auth, HksParamSet *paramSet)
     }
 
     LOGI("append the secure access params when generate key");
-    uint64_t secureUid = auth.secureUid;
 
     HksParam param[] = {
         { .tag = HKS_TAG_USER_AUTH_TYPE,
             .uint32Param = HKS_USER_AUTH_TYPE_PIN | HKS_USER_AUTH_TYPE_FACE | HKS_USER_AUTH_TYPE_FINGERPRINT },
         { .tag = HKS_TAG_KEY_AUTH_ACCESS_TYPE, .uint32Param = HKS_AUTH_ACCESS_INVALID_CLEAR_PASSWORD },
         { .tag = HKS_TAG_CHALLENGE_TYPE, .uint32Param = HKS_CHALLENGE_TYPE_NONE },
-        { .tag = HKS_TAG_USER_AUTH_SECURE_UID,
-          .blob =
-            { sizeof(secureUid), (uint8_t *)&secureUid }
-        },
-        { .tag = HKS_TAG_AUTH_TIMEOUT,
-          .uint32Param = 30 // token timeout is 30 seconds when no challenge
-        }
+        { .tag = HKS_TAG_USER_AUTH_SECURE_UID, .blob = { sizeof(auth.secureUid), (uint8_t *)&auth.secureUid } },
+        { .tag = HKS_TAG_AUTH_TIMEOUT, .uint32Param = 30 } // token timeout is 30 seconds when no challenge
     };
     return HksAddParams(paramSet, param, HKS_ARRAY_SIZE(param));
 }
@@ -313,7 +307,7 @@ bool HuksMaster::GenerateKey(const UserAuth &auth, KeyBlob &keyOut)
     return ret == HKS_SUCCESS;
 }
 
-static KeyBlob HashAndClip(const std::string &prefix, const KeyBlob &payload, uint32_t length)
+static KeyBlob HashWithPrefix(const std::string &prefix, const KeyBlob &payload, uint32_t length)
 {
     KeyBlob res(SHA512_DIGEST_LENGTH);
     std::string header = prefix;
@@ -357,17 +351,30 @@ static int AppendAeTag(KeyBlob &cipherText, HksParamSet *paramSet)
 
 static int AppendNonceAad(KeyContext &ctx, HksParamSet *paramSet)
 {
-    ctx.nonce = HashAndClip("NONCE SHA512 prefix", ctx.secDiscard, CRYPTO_AES_NONCE_LEN);
-    ctx.aad = HashAndClip("AAD SHA512 prefix", ctx.secDiscard, CRYPTO_AES_AAD_LEN);
+    ctx.nonce = HashWithPrefix("NONCE SHA512 prefix", ctx.secDiscard, CRYPTO_AES_NONCE_LEN);
+    ctx.aad = HashWithPrefix("AAD SHA512 prefix", ctx.secDiscard, CRYPTO_AES_AAD_LEN);
     HksParam addParam[] = {
-        { .tag = HKS_TAG_NONCE,
-          .blob =
-            { ctx.nonce.size, ctx.nonce.data.get() }
-        },
-        { .tag = HKS_TAG_ASSOCIATED_DATA,
-          .blob =
-            { ctx.aad.size, ctx.aad.data.get() }
-        }
+        { .tag = HKS_TAG_NONCE, .blob = { ctx.nonce.size, ctx.nonce.data.get() } },
+        { .tag = HKS_TAG_ASSOCIATED_DATA, .blob = { ctx.aad.size, ctx.aad.data.get() } }
+    };
+    return HksAddParams(paramSet, addParam, HKS_ARRAY_SIZE(addParam));
+}
+
+static int AppendNonceAadTokenEx(KeyContext &ctx, const UserAuth &auth, HksParamSet *paramSet, bool isEncrypt)
+{
+    if (auth.secret.IsEmpty() || auth.token.IsEmpty()) {
+        LOGI("auth is empty, not to use secure access tag");
+        HksParam addParam[] = {
+            { .tag = HKS_TAG_NONCE, .blob = { ctx.nonce.size, ctx.nonce.data.get() } },
+            { .tag = HKS_TAG_ASSOCIATED_DATA, .blob = { ctx.aad.size, ctx.aad.data.get() } }
+        };
+        return HksAddParams(paramSet, addParam, HKS_ARRAY_SIZE(addParam));
+    }
+
+    HksParam addParam[] = {
+        { .tag = HKS_TAG_NONCE, .blob = { ctx.nonce.size, ctx.nonce.data.get() } },
+        { .tag = HKS_TAG_ASSOCIATED_DATA, .blob = { ctx.aad.size, ctx.aad.data.get() } },
+        { .tag = HKS_TAG_AUTH_TOKEN, .blob = { auth.token.size, auth.token.data.get() } }
     };
     return HksAddParams(paramSet, addParam, HKS_ARRAY_SIZE(addParam));
 }
@@ -379,8 +386,7 @@ static int AppendNewNonceAadToken(KeyContext &ctx, const UserAuth &auth, HksPara
         ctx.nonce = HuksMaster::GenerateRandomKey(CRYPTO_HKS_NONCE_LEN);
         LOGI("Encrypt generate new nonce size: %{public}d", ctx.nonce.size);
     }
-    LOGI("nonce size: %{public}d", ctx.nonce.size);
-    ctx.aad = HashAndClip("AAD SHA512 prefix", ctx.secDiscard, CRYPTO_AES_AAD_LEN);
+    ctx.aad = HashWithPrefix("AAD SHA512 prefix", ctx.secDiscard, CRYPTO_AES_AAD_LEN);
     LOGI("secret/token is empty : %{public}d / %{public}d", auth.secret.IsEmpty(), auth.token.IsEmpty());
     if (auth.secret.IsEmpty() && auth.token.IsEmpty()) {
         LOGI("token & secret is empty, Only append nonce & aad!");
@@ -402,9 +408,8 @@ static int AppendNonceAadToken(KeyContext &ctx, const UserAuth &auth, HksParamSe
     }
 
     LOGI("append the secure access params when encrypt/decrypt");
-    ctx.nonce = HashAndClip("NONCE SHA512 prefix", auth.secret, CRYPTO_AES_NONCE_LEN);
-    LOGI("nonce size: %{public}d", ctx.nonce.size);
-    ctx.aad = HashAndClip("AAD SHA512 prefix", ctx.secDiscard, CRYPTO_AES_AAD_LEN);
+    ctx.nonce = HashWithPrefix("NONCE SHA512 prefix", auth.secret, CRYPTO_AES_NONCE_LEN);
+    ctx.aad = HashWithPrefix("AAD SHA512 prefix", ctx.secDiscard, CRYPTO_AES_AAD_LEN);
     HksParam addParam[] = {
         { .tag = HKS_TAG_USER_AUTH_TYPE, .uint32Param = HKS_USER_AUTH_TYPE_PIN },
         { .tag = HKS_TAG_KEY_AUTH_ACCESS_TYPE, .uint32Param = HKS_AUTH_ACCESS_INVALID_CLEAR_PASSWORD },
@@ -422,6 +427,57 @@ static int AppendNonceAadToken(KeyContext &ctx, const UserAuth &auth, HksParamSe
         }
     };
     return HksAddParams(paramSet, addParam, HKS_ARRAY_SIZE(addParam));
+}
+
+static HksParamSet *GenHuksOptionParamEx(KeyContext &ctx, const UserAuth &auth, const bool isEncrypt)
+{
+    HksParam encryptParam[] = {
+        { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_AES },
+        { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_GCM },
+        { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_NONE },
+        { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false },
+        { .tag = HKS_TAG_PURPOSE, .uint32Param = isEncrypt ? HKS_KEY_PURPOSE_ENCRYPT : HKS_KEY_PURPOSE_DECRYPT},
+        { .tag = HKS_TAG_CHALLENGE_TYPE, .uint32Param = HKS_CHALLENGE_TYPE_NONE },
+        { .tag = HKS_TAG_PROCESS_NAME, .blob = { sizeof(g_processName), g_processName } }
+    };
+
+    HksParamSet *paramSet = nullptr;
+    auto ret = HksInitParamSet(&paramSet);
+    if (ret != HKS_SUCCESS) {
+        LOGE("HksInitParamSet failed ret %{public}d", ret);
+        return nullptr;
+    }
+    ret = HksAddParams(paramSet, encryptParam, HKS_ARRAY_SIZE(encryptParam));
+    if (ret != HKS_SUCCESS) {
+        LOGE("HksAddParams failed ret %{public}d", ret);
+        HksFreeParamSet(&paramSet);
+        return nullptr;
+    }
+
+    if (!isEncrypt) {
+        ret = AppendAeTag(ctx.rndEnc, paramSet);
+        if (ret != HKS_SUCCESS) {
+            LOGE("AppendAeTag failed ret %{public}d", ret);
+            HksFreeParamSet(&paramSet);
+            return nullptr;
+        }
+    }
+
+    ret = AppendNonceAadTokenEx(ctx, auth, paramSet, isEncrypt);
+    if (ret != HKS_SUCCESS) {
+        LOGE("AppendNonceAad failed ret %{public}d", ret);
+        HksFreeParamSet(&paramSet);
+        return nullptr;
+    }
+
+    ret = HksBuildParamSet(&paramSet);
+    if (ret != HKS_SUCCESS) {
+        LOGE("HksBuildParamSet failed ret %{public}d", ret);
+        HksFreeParamSet(&paramSet);
+        return nullptr;
+    }
+
+    return paramSet;
 }
 
 static HksParamSet *GenHuksOptionParam(KeyContext &ctx,
@@ -453,7 +509,7 @@ static HksParamSet *GenHuksOptionParam(KeyContext &ctx,
     }
 
     if (!isEncrypt) {
-        ret = AppendAeTag(ctx.encrypted, paramSet);
+        ret = AppendAeTag(ctx.rndEnc, paramSet);
         if (ret != HKS_SUCCESS) {
             LOGE("AppendAeTag failed ret %{public}d", ret);
             HksFreeParamSet(&paramSet);
@@ -482,7 +538,7 @@ static HksParamSet *GenHuksOptionParam(KeyContext &ctx,
 bool HuksMaster::HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *paramSet2,
                                     const KeyBlob &keyIn, KeyBlob &keyOut)
 {
-    LOGD("enter");
+    LOGI("enter");
     HksBlob hksKey = { paramSet1->paramSetSize, reinterpret_cast<uint8_t *>(paramSet1) };
     HksBlob hksIn = keyIn.ToHksBlob();
     HksBlob hksOut = keyOut.ToHksBlob();
@@ -504,7 +560,42 @@ bool HuksMaster::HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *p
     }
 
     keyOut.size = hksOut.size;
+    LOGI("finish");
     return true;
+}
+
+bool HuksMaster::EncryptKeyEx(const UserAuth &auth, const KeyBlob &rnd, KeyContext &ctx)
+{
+    LOGI("enter");
+    if (ctx.shield.IsEmpty()) {
+        LOGE("bad shield input, size %{public}d", ctx.shield.size);
+        return false;
+    }
+    if (rnd.IsEmpty()) {
+        LOGE("bad rawKey input, size %{public}d", rnd.size);
+        return false;
+    }
+
+    HksParamSet *paramSet1 = GenHuksKeyBlobParam(ctx);
+    if (paramSet1 == nullptr) {
+        LOGE("GenHuksKeyBlobParam failed");
+        return false;
+    }
+    HksParamSet *paramSet2 = GenHuksOptionParamEx(ctx, auth, true);
+    if (paramSet2 == nullptr) {
+        LOGE("GenHuksOptionParam failed");
+        return false;
+    }
+
+    ctx.rndEnc.Alloc(rnd.size + CRYPTO_AES_AAD_LEN);
+    auto ret = HuksHalTripleStage(paramSet1, paramSet2, rnd, ctx.rndEnc);
+    if (!ret) {
+        LOGE("HuksHalTripleStage failed");
+    }
+
+    HksFreeParamSet(&paramSet2);
+    LOGI("finish");
+    return ret;
 }
 
 bool HuksMaster::EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo &key, bool isNeedNewNonce)
@@ -530,13 +621,11 @@ bool HuksMaster::EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo
         return false;
     }
 
-    ctx.encrypted.Alloc(CRYPTO_AES_256_KEY_ENCRYPTED_SIZE);
-    auto ret = HuksHalTripleStage(paramSet1, paramSet2, key.key, ctx.encrypted);
+    ctx.rndEnc.Alloc(CRYPTO_AES_256_KEY_ENCRYPTED_SIZE);
+    auto ret = HuksHalTripleStage(paramSet1, paramSet2, key.key, ctx.rndEnc);
     if (!ret) {
         LOGE("HuksHalTripleStage failed");
     }
-    LOGE("encrypted size %{public}d", ctx.encrypted.size);
-    LOGE("nonce size %{public}d", ctx.nonce.size);
     HksFreeParamSet(&paramSet2);
     LOGD("finish");
     return ret;
@@ -549,8 +638,8 @@ bool HuksMaster::DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key,
         LOGE("bad shield input, size %{public}d", ctx.shield.size);
         return false;
     }
-    if (ctx.encrypted.IsEmpty()) {
-        LOGE("bad encrypted input, size %{public}d", ctx.encrypted.size);
+    if (ctx.rndEnc.IsEmpty()) {
+        LOGE("bad encrypted input, size %{public}d", ctx.rndEnc.size);
         return false;
     }
 
@@ -565,14 +654,48 @@ bool HuksMaster::DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key,
         return false;
     }
 
-    key.key.Alloc(CRYPTO_AES_256_XTS_KEY_SIZE);
-    auto ret = HuksHalTripleStage(paramSet1, paramSet2, ctx.encrypted, key.key);
+    key.key.Alloc(ctx.rndEnc.size);
+    auto ret = HuksHalTripleStage(paramSet1, paramSet2, ctx.rndEnc, key.key);
     if (!ret) {
         LOGE("HuksHalTripleStage failed");
     }
 
     HksFreeParamSet(&paramSet2);
-    LOGD("finish");
+    LOGI("finish");
+    return ret;
+}
+
+bool HuksMaster::DecryptKeyEx(KeyContext &ctx, const UserAuth &auth, KeyBlob &rnd)
+{
+    LOGI("enter");
+    if (ctx.shield.IsEmpty()) {
+        LOGE("bad shield input, size %{public}d", ctx.shield.size);
+        return false;
+    }
+    if (ctx.rndEnc.IsEmpty()) {
+        LOGE("bad encrypted input, size %{public}d", ctx.rndEnc.size);
+        return false;
+    }
+
+    HksParamSet *paramSet1 = GenHuksKeyBlobParam(ctx);
+    if (paramSet1 == nullptr) {
+        LOGE("GenHuksKeyBlobParam failed");
+        return false;
+    }
+    HksParamSet *paramSet2 = GenHuksOptionParamEx(ctx, auth, false);
+    if (paramSet2 == nullptr) {
+        LOGE("GenHuksOptionParam failed");
+        return false;
+    }
+
+    rnd.Alloc(ctx.rndEnc.size);
+    auto ret = HuksHalTripleStage(paramSet1, paramSet2, ctx.rndEnc, rnd);
+    if (!ret) {
+        LOGE("HuksHalTripleStage failed");
+    }
+
+    HksFreeParamSet(&paramSet2);
+    LOGI("finish");
     return ret;
 }
 

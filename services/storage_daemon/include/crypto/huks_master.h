@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -38,7 +38,9 @@ public:
     static KeyBlob GenerateRandomKey(uint32_t keyLen);
     bool GenerateKey(const UserAuth &auth, KeyBlob &keyOut);
     bool EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo &key, bool isNeedNewNonce);
+    bool EncryptKeyEx(const UserAuth &auth, const KeyBlob &rnd, KeyContext &ctx);
     bool DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key, bool isNeedNewNonce);
+    bool DecryptKeyEx(KeyContext &ctx, const UserAuth &auth, KeyBlob &rnd);
     bool UpgradeKey(KeyContext &ctx);
 private:
     HuksMaster();

@@ -46,7 +46,7 @@ public:
 
 private:
     bool GenerateKeyDesc();
-    bool InstallKeyToKeyring(uint32_t elType);
+    bool InstallKeyToKeyring();
     bool InstallEceSeceKeyToKeyring(uint32_t sdpClass);
     bool UninstallKeyToKeyring();
     FscryptKeyV1Ext fscryptV1Ext;
