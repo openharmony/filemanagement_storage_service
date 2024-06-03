@@ -256,7 +256,7 @@ int FBEX::ChangePinCodeClassE(uint32_t userId)
         ret = -errno;
     }
     close(fd);
-    LOGI("change pincode classE success.");
+    LOGI("change pincode classE finish.");
     return ret;
 }
 
