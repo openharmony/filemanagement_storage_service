@@ -457,6 +457,10 @@ static void ConvertSandboxRealPath(const uint32_t userId, const std::string &bun
 
 static void WriteFileList(std::ofstream &statFile, struct FileStat fileStat, BundleStatsParas &paras)
 {
+    if (!statFile.is_open() || fileStat.filePath.empty()) {
+        LOGE("WriteFileList Param failed");
+        return;
+    }
     std::string fileLine = "";
     bool encodeFlag = false;
     if (fileStat.filePath.find(LINE_SEP) != std::string::npos) {
@@ -494,6 +498,10 @@ static void WriteFileList(std::ofstream &statFile, struct FileStat fileStat, Bun
 
 static bool ExcludeFilter(std::map<std::string, bool> &excludesMap, const std::string &path)
 {
+    if (path.empty()) {
+        LOGE("ExcludeFilter Param failed");
+        return true;
+    }
     std::string formatPath = path;
     for (auto exclude = excludesMap.begin(); exclude != excludesMap.end(); exclude++) {
         if (exclude->second != true) {
@@ -523,6 +531,10 @@ static bool ExcludeFilter(std::map<std::string, bool> &excludesMap, const std::s
 static std::tuple<bool, bool> CheckIfDirForIncludes(const std::string &path, BundleStatsParas &paras,
     std::map<std::string, std::string> &pathMap, std::ofstream &statFile, std::map<std::string, bool> &excludesMap)
 {
+    if (!statFile.is_open() || path.empty()) {
+        LOGE("CheckIfDirForIncludes Param failed");
+        return {false, false};
+    }
     // check whether the path exists
     struct stat fileStatInfo = {0};
     if (stat(path.c_str(), &fileStatInfo) != 0) {
@@ -568,6 +580,10 @@ static std::string PhysicalToSandboxPath(const std::string &dir, const std::stri
 static bool AddOuterDirIntoFileStat(const std::string &dir, BundleStatsParas &paras, const std::string &sandboxDir,
     std::ofstream &statFile, std::map<std::string, bool> &excludesMap)
 {
+    if (!statFile.is_open() || dir.empty()) {
+        LOGE("AddOuterDirIntoFileStat Param failed");
+        return false;
+    }
     struct stat fileInfo = {0};
     if (stat(dir.c_str(), &fileInfo) != 0) {
         LOGE("AddOuterDirIntoFileStat call stat error %{private}s, fail errno:%{public}d", dir.c_str(), errno);
@@ -606,6 +622,10 @@ uint32_t CheckOverLongPath(const std::string &path)
 static void InsertStatFile(const std::string &path, struct FileStat fileStat,
     std::ofstream &statFile, std::map<std::string, bool> &excludesMap, BundleStatsParas &paras)
 {
+    if (!statFile.is_open() || path.empty()) {
+        LOGE("InsertStatFile Param failed");
+        return;
+    }
     std::string formatPath = path;
     if (fileStat.isDir == true && formatPath.back() != FILE_SEPARATOR_CHAR) {
         formatPath.push_back(FILE_SEPARATOR_CHAR);
@@ -676,6 +696,10 @@ static bool GetIncludesFileStats(const std::string &dir, BundleStatsParas &paras
 
 static void SetExcludePathMap(std::string &excludePath, std::map<std::string, bool> &excludesMap)
 {
+    if (excludePath.empty()) {
+        LOGE("SetExcludePathMap Param failed");
+        return;
+    }
     struct stat fileStatInfo = {0};
     if (stat(excludePath.c_str(), &fileStatInfo) != 0) {
         LOGE("SetExcludePathMap call stat error %{private}s, errno:%{public}d", excludePath.c_str(), errno);
