@@ -53,6 +53,7 @@ public:
     virtual bool DeleteClassE(uint32_t user) = 0;
     virtual bool DecryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status) = 0;
     virtual bool EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status) = 0;
+    virtual bool ChangePinCodeClassE(uint32_t user) = 0;
     bool EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey, KeyBlob &encryptedKey);
     bool DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey, KeyBlob &decryptedKey);
     bool RenameKeyPath(const std::string &keyPath);

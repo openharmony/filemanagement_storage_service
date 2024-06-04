@@ -155,6 +155,13 @@ bool FscryptKeyV2::DeleteClassE(uint32_t user)
     return true;
 }
 
+bool FscryptKeyV2::ChangePinCodeClassE(uint32_t user)
+{
+    (void)user;
+    LOGI("Unsupported fscrypt v2");
+    return true;
+}
+
 bool FscryptKeyV2::DecryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status)
 {
     (void)auth;

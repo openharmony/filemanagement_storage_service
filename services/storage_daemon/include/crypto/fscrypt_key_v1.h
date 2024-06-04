@@ -41,6 +41,7 @@ public:
     void DropCachesIfNeed();
     bool AddClassE(uint32_t status = 0);
     bool DeleteClassE(uint32_t flag = 0);
+    bool ChangePinCodeClassE(uint32_t user = 0);
     bool DecryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user = 0, uint32_t status = 0);
     bool EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user = 0, uint32_t status = 0);
 

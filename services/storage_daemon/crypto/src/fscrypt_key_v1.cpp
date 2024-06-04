@@ -210,6 +210,17 @@ bool FscryptKeyV1::DeleteClassE(uint32_t flag)
     return true;
 }
 
+bool FscryptKeyV1::ChangePinCodeClassE(uint32_t userId)
+{
+    LOGI("ChangePinCodeClassE enter, userId: %{public}d", userId);
+    if (!fscryptV1Ext.ChangePinCodeClassE(userId)) {
+        LOGE("fscryptV1Ext ChangePinCodeClassE failed");
+        return false;
+    }
+    LOGI("ChangePinCodeClassE finish");
+    return true;
+}
+
 bool FscryptKeyV1::DecryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status)
 {
     LOGI("enter");

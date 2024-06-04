@@ -51,6 +51,7 @@ public:
     static int GetStatus();
     static int InstallEL5KeyToKernel(uint32_t userId, uint8_t flag);
     static int UninstallOrLockUserKeyForEL5ToKernel(uint32_t userId, bool destroy);
+    static int ChangePinCodeClassE(uint32_t user);
     static int GenerateAppkey(uint32_t userId, uint32_t appUid, std::unique_ptr<uint8_t[]> &keyId, uint32_t size);
 };
 } // namespace StorageDaemon

@@ -673,6 +673,14 @@ int KeyManager::UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSe
         saveESecretStatus[user] = false;
         return 0;
     }
+    if (!tokenSecret.newSecret.empty() && !tokenSecret.oldSecret.empty()) {
+        if (!el5Key->ChangePinCodeClassE(user)) {
+            LOGE("user %{public}u ChangePinCodeClassE fail", user);
+            return -EFAULT;
+        }
+        saveESecretStatus[user] = true;
+        return 0;
+    }
     uint32_t status = tokenSecret.oldSecret.empty() ? USER_ADD_AUTH : USER_CHANGE_AUTH;
     LOGI("UpdateESecret status is %{public}u", status);
     UserAuth auth = { .token = tokenSecret.token, .secret = tokenSecret.newSecret, .secureUid = tokenSecret.secureUid };
