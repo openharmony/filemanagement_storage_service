@@ -1085,11 +1085,10 @@ int KeyManager::InActiveUserKey(unsigned int user)
         LOGE("Inactive userEl4Key_ failed");
         return ret;
     }
-    LOGI("Inactive user %{public}u elX success", user);
     return 0;
 }
 
-int KeyManager::InactiveUserElKey(unsigned int user, std::map<unsigned int, std::shared_ptr<BaseKey>> userElxKey_)
+int KeyManager::InactiveUserElKey(unsigned int user, std::map<unsigned int, std::shared_ptr<BaseKey>> &userElxKey_)
 {
     if (userElxKey_.find(user) == userElxKey_.end()) {
         LOGE("Have not found user %{public}u el2", user);
