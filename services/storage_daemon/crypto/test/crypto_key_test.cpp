@@ -148,8 +148,8 @@ int32_t CryptoKeyTest::ExecSdcBinary(std::vector<std::string> params, int isCryp
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_init, TestSize.Level1)
 {
-    EXPECT_TRUE(g_testKeyV1.InitKey());
-    EXPECT_FALSE(g_testKeyV1.InitKey()); // rawkey not empty
+    EXPECT_TRUE(g_testKeyV1.InitKey(true));
+    EXPECT_FALSE(g_testKeyV1.InitKey(true)); // rawkey not empty
 
     EXPECT_EQ(FSCRYPT_V1, g_testKeyV1.keyInfo_.version);
     EXPECT_EQ(CRYPTO_AES_256_XTS_KEY_SIZE, g_testKeyV1.keyInfo_.key.size);
@@ -169,13 +169,13 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_init, TestSize.Level1)
     if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) == FSCRYPT_V1) {
         return;
     }
-    EXPECT_TRUE(g_testKeyV2.InitKey());
+    EXPECT_TRUE(g_testKeyV2.InitKey(true));
     EXPECT_EQ(FSCRYPT_V2, g_testKeyV2.keyInfo_.version);
     EXPECT_EQ(CRYPTO_AES_256_XTS_KEY_SIZE, g_testKeyV2.keyInfo_.key.size);
     EXPECT_NE(nullptr, g_testKeyV2.keyInfo_.key.data.get());
     g_testKeyV2.keyInfo_.key.Clear();
 #else
-    EXPECT_FALSE(g_testKeyV2.InitKey());
+    EXPECT_FALSE(g_testKeyV2.InitKey(true));
     EXPECT_FALSE(g_testKeyV2.ActiveKey());
     EXPECT_FALSE(g_testKeyV2.InactiveKey());
 #endif
@@ -190,7 +190,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_init, TestSize.Level1)
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_store, TestSize.Level1)
 {
 #ifndef CRYPTO_TEST
-    EXPECT_TRUE(g_testKeyV1.InitKey());
+    EXPECT_TRUE(g_testKeyV1.InitKey(true));
     g_testKeyV1.StoreKey(emptyUserAuth);
 
     std::string buf {};
@@ -203,7 +203,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_store, TestSize.Level1)
     OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_ENCRYPTED);
     OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_ENCRYPTED, buf);
 #else
-    EXPECT_TRUE(g_testKeyV1.InitKey());
+    EXPECT_TRUE(g_testKeyV1.InitKey(true));
     EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
 
     std::string buf {};
@@ -225,7 +225,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_store, TestSize.Level1)
     EXPECT_EQ('1', buf[0]);
 
     FscryptKeyV1 g_testKeyV1BadDir {TEST_KEYPATH_BAD};
-    EXPECT_TRUE(g_testKeyV1BadDir.InitKey());
+    EXPECT_TRUE(g_testKeyV1BadDir.InitKey(true));
     EXPECT_FALSE(g_testKeyV1BadDir.StoreKey(emptyUserAuth));
     EXPECT_FALSE(g_testKeyV1BadDir.UpdateKey());
     EXPECT_FALSE(g_testKeyV1BadDir.ActiveKey());
@@ -244,7 +244,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_store, TestSize.Level1)
         return;
     }
     g_testKeyV2.ClearKey();
-    EXPECT_TRUE(g_testKeyV2.InitKey());
+    EXPECT_TRUE(g_testKeyV2.InitKey(true));
     EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
     EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
 
@@ -311,7 +311,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_restore_fail_wrong_version, TestSize.Leve
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_restore, TestSize.Level1)
 {
     g_testKeyV1.ClearKey();
-    EXPECT_TRUE(g_testKeyV1.InitKey());
+    EXPECT_TRUE(g_testKeyV1.InitKey(true));
 #ifndef CRYPTO_TEST
     g_testKeyV1.StoreKey(emptyUserAuth);
     g_testKeyV1.UpdateKey();
@@ -352,7 +352,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_active, TestSize.Level1)
 {
     g_testKeyV1.ClearKey();
     EXPECT_FALSE(g_testKeyV1.ActiveKey()); // active empty key should fail
-    EXPECT_TRUE(g_testKeyV1.InitKey());
+    EXPECT_TRUE(g_testKeyV1.InitKey(true));
 #ifndef CRYPTO_TEST
     g_testKeyV1.StoreKey(emptyUserAuth);
 #else
@@ -363,7 +363,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_active, TestSize.Level1)
 
     EXPECT_TRUE(g_testKeyV1.ActiveKey(FIRST_CREATE_KEY));
     // raw key should be erase after install to kernel.
-    EXPECT_FALSE(g_testKeyV1.keyInfo_.key.IsEmpty());
+    EXPECT_TRUE(g_testKeyV1.keyInfo_.key.IsEmpty());
     EXPECT_TRUE(g_testKeyV1.keyInfo_.keyId.IsEmpty());
     // key desc saved in memory for later clear key.
     EXPECT_FALSE(g_testKeyV1.keyInfo_.keyDesc.IsEmpty());
@@ -372,7 +372,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_active, TestSize.Level1)
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + PATH_KEYDESC));
 
     FscryptKeyV1 g_testKeyV1BadLen {TEST_KEYPATH, CRYPTO_AES_256_XTS_KEY_SIZE * 2};
-    EXPECT_TRUE(g_testKeyV1BadLen.InitKey());
+    EXPECT_TRUE(g_testKeyV1BadLen.InitKey(true));
     EXPECT_FALSE(g_testKeyV1BadLen.InactiveKey());
     EXPECT_FALSE(g_testKeyV1BadLen.ActiveKey());
 }
@@ -400,7 +400,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_clear, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_policy_set, TestSize.Level1)
 {
-    EXPECT_TRUE(g_testKeyV1.InitKey());
+    EXPECT_TRUE(g_testKeyV1.InitKey(true));
 #ifndef CRYPTO_TEST
     g_testKeyV1.StoreKey(emptyUserAuth);
 #else
@@ -478,7 +478,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_active, TestSize.Level1)
         return;
     }
     g_testKeyV2.ClearKey();
-    EXPECT_TRUE(g_testKeyV2.InitKey());
+    EXPECT_TRUE(g_testKeyV2.InitKey(true));
     EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
     EXPECT_TRUE(g_testKeyV2.ActiveKey());
 
@@ -596,7 +596,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_default, TestSize.Lev
         return;
     }
     g_testKeyV2.ClearKey();
-    EXPECT_TRUE(g_testKeyV2.InitKey());
+    EXPECT_TRUE(g_testKeyV2.InitKey(true));
     EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
     EXPECT_TRUE(g_testKeyV2.ActiveKey());
 
@@ -625,7 +625,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_default, TestSize.Lev
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_load_and_set_policy_default, TestSize.Level1)
 {
     g_testKeyV1.ClearKey();
-    EXPECT_TRUE(g_testKeyV1.InitKey());
+    EXPECT_TRUE(g_testKeyV1.InitKey(true));
 #ifndef CRYPTO_TEST
     g_testKeyV1.StoreKey(emptyUserAuth);
 #else
@@ -656,7 +656,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_load_and_set_policy_default, TestSize.Lev
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_storekey_version_test_1, TestSize.Level1)
 {
-    EXPECT_TRUE(g_testKeyV1.InitKey());
+    EXPECT_TRUE(g_testKeyV1.InitKey(true));
 #ifndef CRYPTO_TEST
     // storekey to version 0
     g_testKeyV1.StoreKey(emptyUserAuth);
@@ -837,7 +837,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_padding_4, TestSize.L
         return;
     }
     g_testKeyV2.ClearKey();
-    EXPECT_TRUE(g_testKeyV2.InitKey());
+    EXPECT_TRUE(g_testKeyV2.InitKey(true));
     EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
     EXPECT_TRUE(g_testKeyV2.ActiveKey());
 
@@ -935,7 +935,7 @@ HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys, TestSize.Level1)
 HWTEST_F(CryptoKeyTest, fscrypt_key_secure_access_control, TestSize.Level1)
 {
     g_testKeyV1.ClearKey();
-    EXPECT_TRUE(g_testKeyV1.InitKey());
+    EXPECT_TRUE(g_testKeyV1.InitKey(true));
 #ifndef CRYPTO_TEST
     g_testKeyV1.StoreKey(emptyUserAuth);
 #else

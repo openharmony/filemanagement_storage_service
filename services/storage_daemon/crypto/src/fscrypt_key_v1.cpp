@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -31,13 +31,15 @@ bool FscryptKeyV1::ActiveKey(uint32_t flag, const std::string &mnt)
 {
     uint32_t elType;
     (void)mnt;
-    LOGD("enter");
+    LOGI("enter");
     if (!GenerateKeyDesc()) {
+        keyInfo_.key.Clear();
         LOGE("GenerateKeyDesc failed");
         return false;
     }
-    KeyBlob keys(keyInfo_.key);
+    LOGE("ActiveKey-- keyInfo: %{public}u", keyInfo_.key.size);
     if (!fscryptV1Ext.ActiveKeyExt(flag, keyInfo_.key.data.get(), keyInfo_.key.size, elType)) {
+        keyInfo_.key.Clear();
         LOGE("fscryptV1Ext ActiveKeyExtfailed");
         return false;
     }
@@ -49,17 +51,19 @@ bool FscryptKeyV1::ActiveKey(uint32_t flag, const std::string &mnt)
             sdpClass = FSCRYPT_SDP_ECE_CLASS;
         }
         if (!InstallEceSeceKeyToKeyring(sdpClass)) {
+            keyInfo_.key.Clear();
             LOGE("InstallEceSeceKeyToKeyring failed");
             return false;
         }
     } else {
-        if (!InstallKeyToKeyring(elType)) {
+        if (!InstallKeyToKeyring()) {
+            keyInfo_.key.Clear();
             LOGE("InstallKeyToKeyring failed");
             return false;
         }
     }
-    keyInfo_.key = std::move(keys);
-    LOGD("success");
+    keyInfo_.key.Clear();
+    LOGI("success");
     return true;
 }
 
@@ -167,24 +171,27 @@ bool FscryptKeyV1::UninstallKeyForAppKeyToKeyring(const std::string keyId)
 bool FscryptKeyV1::UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt)
 {
     (void)mnt;
-    LOGD("enter");
+    LOGI("enter");
     if (!GenerateKeyDesc()) {
+        keyInfo_.key.Clear();
         LOGE("GenerateKeyDesc failed");
         return false;
     }
-    KeyBlob keys(keyInfo_.key);
+    LOGI("keyInfo empty: %{public}u:", keyInfo_.key.IsEmpty());
     if (!fscryptV1Ext.UnlockUserScreenExt(flag, keyInfo_.key.data.get(), keyInfo_.key.size)) {
+        keyInfo_.key.Clear();
         LOGE("fscryptV1Ext UnlockUserScreenExtfailed");
         return false;
     }
     if (sdpClass == FSCRYPT_SDP_ECE_CLASS) {
         if (!InstallEceSeceKeyToKeyring(sdpClass)) {
+            keyInfo_.key.Clear();
             LOGE("UnlockUserScreen InstallKeyToKeyring failed");
             return false;
         }
     }
-    keyInfo_.key = std::move(keys);
-    LOGD("success");
+    keyInfo_.key.Clear();
+    LOGI("success");
     return true;
 }
 
@@ -293,7 +300,7 @@ bool FscryptKeyV1::EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t
     return true;
 }
 
-bool FscryptKeyV1::InstallKeyToKeyring(uint32_t elType)
+bool FscryptKeyV1::InstallKeyToKeyring()
 {
     fscrypt_key fskey;
     fskey.mode = FS_ENCRYPTION_MODE_AES_256_XTS;
@@ -325,10 +332,8 @@ bool FscryptKeyV1::InstallKeyToKeyring(uint32_t elType)
                 errno);
         }
     }
-    if (elType == TYPE_GLOBAL_EL1) {
-        if (!SaveKeyBlob(keyInfo_.keyDesc, dir_ + PATH_KEYDESC)) {
-            return false;
-        }
+    if (!SaveKeyBlob(keyInfo_.keyDesc, dir_ + PATH_KEYDESC)) {
+        return false;
     }
     keyInfo_.key.Clear();
     LOGD("success");
@@ -369,6 +374,9 @@ bool FscryptKeyV1::InstallEceSeceKeyToKeyring(uint32_t sdpClass)
             LOGE("Failed to AddKey %{public}s into keyring %{public}d, errno %{public}d", keyref.c_str(), krid,
                  errno);
         }
+    }
+    if (!SaveKeyBlob(keyInfo_.keyDesc, dir_ + PATH_KEYDESC)) {
+        return false;
     }
     LOGD("success");
     return true;

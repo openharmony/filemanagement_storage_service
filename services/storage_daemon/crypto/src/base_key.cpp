@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,6 +21,7 @@
 #include <unistd.h>
 
 #include "directory_ex.h"
+#include "fbex.h"
 #include "file_ex.h"
 #include "huks_master.h"
 #include "libfscrypt/key_control.h"
@@ -62,7 +63,20 @@ BaseKey::BaseKey(const std::string &dir, uint8_t keyLen) : dir_(dir), keyLen_(ke
 {
 }
 
-bool BaseKey::InitKey()
+static void DoTempStore(const KeyContext &sourceCtx, KeyContext &targetCtx)
+{
+    LOGI("Store huks result temporary.");
+    KeyBlob tempAad(sourceCtx.aad);
+    KeyBlob tempNonce(sourceCtx.nonce);
+    KeyBlob tempRndEnc(sourceCtx.rndEnc);
+    KeyBlob tempShield(sourceCtx.shield);
+    targetCtx.aad = std::move(tempAad);
+    targetCtx.nonce = std::move(tempNonce);
+    targetCtx.rndEnc = std::move(tempRndEnc);
+    targetCtx.shield = std::move(tempShield);
+}
+
+bool BaseKey::InitKey(bool needGenerateKey)
 {
     LOGD("enter");
     if (keyInfo_.version == FSCRYPT_INVALID || keyInfo_.version > KeyCtrlGetFscryptVersion(MNT_DATA.c_str())) {
@@ -73,7 +87,7 @@ bool BaseKey::InitKey()
         LOGE("key is not empty");
         return false;
     }
-    if (!GenerateKeyBlob(keyInfo_.key, keyLen_)) {
+    if (needGenerateKey && !GenerateKeyBlob(keyInfo_.key, keyLen_)) {
         LOGE("GenerateKeyBlob raw key failed");
         return false;
     }
@@ -205,31 +219,37 @@ bool BaseKey::DoStoreKey(const UserAuth &auth, bool needGenerateShield)
 bool BaseKey::DoStoreKey(const UserAuth &auth)
 #endif
 {
+    LOGI("enter");
     auto pathTemp = dir_ + PATH_KEY_TEMP;
     MkDirRecurse(pathTemp, S_IRWXU);
-    const std::string NEED_UPDATE_PATH = pathTemp + SUFFIX_NEED_UPDATE;
     if (!CheckAndUpdateVersion()) {
         return false;
     }
-    if ((auth.secret.IsEmpty()) && (!LoadAndSaveShield(auth, pathTemp, needGenerateShield))) {
-        return false;
+    uint32_t keyType = GetTypeFromDir();
+    if (keyType == TYPE_EL1 || keyType == TYPE_GLOBAL_EL1) {
+        return EncryptDe(auth, pathTemp);
     }
-    if (!GenerateAndSaveKeyBlob(keyContext_.secDiscard, pathTemp + PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
-        LOGE("GenerateAndSaveKeyBlob sec_discard failed");
-        return false;
+    if ((auth.token.IsEmpty() && auth.secret.IsEmpty()) || // OOBE首次开机  删除密码(ABC)
+        !auth.token.IsEmpty()) {  // 新增密码  修改密码(ABC)
+        LOGI("Encrypt huks openssl.");
+        KeyContext keyCtx = {};
+        if (!InitKeyContext(auth, pathTemp, keyCtx)) {
+            LOGE("init key context failed !");
+            return false;
+        }
+
+        if (!EncryptEceSece(auth, keyType, keyCtx)) {
+            LOGE("Encrypt key failed !");
+            ClearKeyContext(keyCtx);
+            return false;
+        }
+        // save key buff nonce+rndEnc+aad
+        if (!SaveAndCleanKeyBuff(pathTemp, keyCtx)) {
+            LOGE("save key buff failed !");
+            return false;
+        }
     }
-    if (!Encrypt(auth)) {
-        return false;
-    }
-    if (!SaveKeyBlob(keyContext_.encrypted, pathTemp + PATH_ENCRYPTED)) {
-        return false;
-    }
-    if (!SaveStringToFile(NEED_UPDATE_PATH, KeyEncryptTypeToString(keyEncryptType_))) {
-        LOGE("make file fali");
-        return false;
-    }
-    keyContext_.encrypted.Clear();
-    LOGD("finish");
+    LOGI("finish");
     return true;
 }
 
@@ -250,29 +270,74 @@ bool BaseKey::CheckAndUpdateVersion()
     return true;
 }
 
-bool BaseKey::LoadAndSaveShield(const UserAuth &auth, const std::string &pathTemp, bool needGenerateShield)
+bool BaseKey::InitKeyContext(const UserAuth &auth, const std::string &keyPath, KeyContext &keyCtx)
+{
+    LOGI("enter");
+    if (!LoadAndSaveShield(auth, keyPath + PATH_SHIELD, true, keyCtx)) {
+        LOGE("Load or save shield failed !");
+        return false;
+    }
+
+    if (!GenerateAndSaveKeyBlob(keyCtx.secDiscard, keyPath + PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
+        LOGE("Generate sec_discard failed");
+        return false;
+    }
+
+    if (!GenerateKeyBlob(keyCtx.nonce, GCM_NONCE_BYTES) ||
+        !GenerateKeyBlob(keyCtx.aad, GCM_MAC_BYTES)) {
+        LOGE("Generate nonce and aad failed !");
+        return false;
+    }
+    return true;
+}
+
+bool BaseKey::SaveAndCleanKeyBuff(const std::string &keyPath, KeyContext &keyCtx)
+{
+    KeyBlob storeKey(keyCtx.nonce.size + keyCtx.rndEnc.size + keyCtx.aad.size);
+    if (!CombKeyCtx(keyCtx.nonce, keyCtx.rndEnc, keyCtx.aad, storeKey)) {
+        LOGE("CombKeyCtx failed");
+        return false;
+    }
+
+    if (!SaveKeyBlob(storeKey, keyPath + PATH_ENCRYPTED)) {
+        return false;
+    }
+
+    const std::string NEED_UPDATE_PATH = keyPath + SUFFIX_NEED_UPDATE;
+    if (!SaveStringToFile(NEED_UPDATE_PATH, KeyEncryptTypeToString(keyEncryptType_))) {
+        LOGE("Save key type file failed");
+        return false;
+    }
+
+    storeKey.Clear();
+    ClearKeyContext(keyCtx);
+    return true;
+}
+
+bool BaseKey::LoadAndSaveShield(const UserAuth &auth, const std::string &pathShield,
+                                bool needGenerateShield, KeyContext &keyCtx)
 {
 #ifdef USER_CRYPTO_MIGRATE_KEY
-        if (needGenerateShield) {
-            if (!HuksMaster::GetInstance().GenerateKey(auth, keyContext_.shield)) {
-                LOGE("GenerateKey of shield failed");
-                return false;
-            }
-        } else {
-            if (!LoadKeyBlob(keyContext_.shield, dir_ + PATH_LATEST + PATH_SHIELD)) {
-                keyContext_.encrypted.Clear();
-                return false;
-            }
-        }
-#else
-        if (!HuksMaster::GetInstance().GenerateKey(auth, keyContext_.shield)) {
+    if (needGenerateShield) {
+        if (!HuksMaster::GetInstance().GenerateKey(auth, keyCtx.shield)) {
             LOGE("GenerateKey of shield failed");
             return false;
         }
-#endif
-        if (!SaveKeyBlob(keyContext_.shield, pathTemp + PATH_SHIELD)) {
+    } else {
+        if (!LoadKeyBlob(keyCtx.shield, dir_ + PATH_LATEST + PATH_SHIELD)) {  // needcheck is update
+            keyCtx.rndEnc.Clear();
             return false;
         }
+    }
+#else
+    if (!HuksMaster::GetInstance().GenerateKey(auth, keyCtx.shield)) {
+        LOGE("GenerateKey of shield failed");
+        return false;
+    }
+#endif
+    if (!SaveKeyBlob(keyCtx.shield,  pathShield)) {
+        return false;
+    }
     return true;
 }
 
@@ -330,25 +395,66 @@ bool BaseKey::UpdateKey(const std::string &keypath)
     return true;
 }
 
-bool BaseKey::Encrypt(const UserAuth &auth)
+// 针对De只通过Huks加密
+bool BaseKey::EncryptDe(const UserAuth &auth, const std::string &path)
 {
-    LOGD("enter");
-    bool ret;
-    if (!auth.secret.IsEmpty()) {
-        LOGI("Enhanced encrypt start");
-        ret = OpensslCrypto::AESEncrypt(auth.secret, keyInfo_.key, keyContext_);
-        keyEncryptType_ = KeyEncryptType::KEY_CRYPT_OPENSSL;
-    } else {
-        LOGI("Huks encrypt start");
-        ret = HuksMaster::GetInstance().EncryptKey(keyContext_, auth, keyInfo_, true);
-        keyEncryptType_ = KeyEncryptType::KEY_CRYPT_HUKS;
+    LOGI("enter");
+    KeyContext ctxDe;
+    if (!InitKeyContext(auth, path, ctxDe)) {
+        LOGE("init key context failed !");
+        return false;
     }
-    keyContext_.shield.Clear();
-    keyContext_.secDiscard.Clear();
-    keyContext_.nonce.Clear();
-    keyContext_.aad.Clear();
-    LOGD("finish");
-    return ret;
+    keyEncryptType_ = KeyEncryptType::KEY_CRYPT_HUKS;
+    if (!HuksMaster::GetInstance().EncryptKey(ctxDe, auth, keyInfo_, true)) {
+        LOGE("Encrypt by hks failed.");
+        ClearKeyContext(ctxDe);
+        return false;
+    }
+    if (!SaveKeyBlob(ctxDe.rndEnc, path + PATH_ENCRYPTED)) {
+        LOGE("SaveKeyBlob rndEnc failed.");
+        ClearKeyContext(ctxDe);
+        return false;
+    }
+    const std::string NEED_UPDATE_PATH = path + SUFFIX_NEED_UPDATE;
+    if (!SaveStringToFile(NEED_UPDATE_PATH, KeyEncryptTypeToString(keyEncryptType_))) {
+        LOGE("Save key type file failed");
+        return false;
+    }
+    LOGI("finish");
+    return true;
+}
+
+// 不针对RND_ENC 会将传入的keyCtx 加密  HKS->OpenSSL
+bool BaseKey::EncryptEceSece(const UserAuth &auth, const uint32_t keyType, KeyContext &keyCtx)
+{
+    LOGI("enter");
+    // rnd 64 -> rndEnc 80
+    if (!HuksMaster::GetInstance().EncryptKeyEx(auth, keyInfo_.key, keyCtx)) {
+        LOGE("Encrypt by hks failed.");
+        return false;
+    }
+    LOGI("Huks encrypt end.");
+
+    UserAuth mUserAuth = auth;
+    if (auth.secret.IsEmpty()) {
+        mUserAuth.secret = KeyBlob(NULL_SECRET);
+    }
+
+    if (keyType == TYPE_EL3 || keyType == TYPE_EL4) {
+        DoTempStore(keyCtx, keyContext_);
+    }
+
+    KeyBlob rndEnc(keyCtx.rndEnc);
+    LOGI("Encrypt by openssl start"); // rndEnc 80 -> rndEncEnc 108
+    if (!OpensslCrypto::AESEncrypt(mUserAuth.secret, rndEnc, keyCtx)) {
+        LOGE("Encrypt by openssl failed.");
+        return false;
+    }
+    LOGI("Encrypt by openssl end");
+    rndEnc.Clear();
+    keyEncryptType_ = KeyEncryptType::KEY_CRYPT_HUKS_OPENSSL;
+    LOGI("finish");
+    return true;
 }
 
 bool BaseKey::RestoreKey(const UserAuth &auth)
@@ -401,7 +507,8 @@ bool BaseKey::DoRestoreKeyEx(const UserAuth &auth, const std::string &keyPath)
         LOGE("Key encrypted by huks, skip !");
         return true;
     }
-    KeyBlob tempEnc(keyContext_.encrypted.size);
+
+    KeyBlob tempEnc(keyContext_.rndEnc.size);
     if (!LoadKeyBlob(tempEnc, keyPath + PATH_ENCRYPTED)) {
         LOGE("key encrypted by huks, skip !");
         return true;
@@ -433,7 +540,7 @@ bool BaseKey::DoRestoreKeyEx(const UserAuth &auth, const std::string &keyPath)
     return true;
 }
 
-bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
+bool BaseKey::DoRestoreKeyOld(const UserAuth &auth, const std::string &path)
 {
     LOGD("enter, path = %{public}s", path.c_str());
     const std::string NEED_UPDATE_PATH = dir_ + PATH_LATEST + SUFFIX_NEED_UPDATE;
@@ -449,21 +556,166 @@ bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
         LOGE("RestoreKey fail. bad version loaded %{public}u not expected %{public}u", ver, keyInfo_.version);
         return false;
     }
-    if (!LoadKeyBlob(keyContext_.encrypted, path + PATH_ENCRYPTED)) {
+    if (!LoadKeyBlob(keyContext_.rndEnc, path + PATH_ENCRYPTED)) {
         return false;
     }
     if (keyEncryptType_ == KeyEncryptType::KEY_CRYPT_HUKS) {
         if (!LoadKeyBlob(keyContext_.shield, path + PATH_SHIELD)) {
-            keyContext_.encrypted.Clear();
+            keyContext_.rndEnc.Clear();
             return false;
         }
     }
     if (!LoadKeyBlob(keyContext_.secDiscard, path + PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
-        keyContext_.encrypted.Clear();
+        keyContext_.rndEnc.Clear();
         keyContext_.shield.Clear();
         return false;
     }
     return Decrypt(auth);
+}
+
+bool BaseKey::DoRestoreKeyDe(const UserAuth &auth, const std::string &path)
+{
+    LOGI("enter");
+    KeyContext ctxNone;  // 1.设备级,用户el1  无token  无secret    d
+    if (!LoadKeyBlob(ctxNone.rndEnc, path + PATH_ENCRYPTED)) {
+        LOGE("Load rndEnc failed !");
+        return false;
+    }
+
+    if (!LoadKeyBlob(ctxNone.secDiscard, path + PATH_SECDISC) ||
+        !LoadKeyBlob(ctxNone.shield, path + PATH_SHIELD)) {
+        ctxNone.rndEnc.Clear();
+        LOGE("Load shield failed !");
+        return false;
+    }
+
+    LOGI("Decrypt by hks start.");    // keyCtx.rndEnc 80 -> 64
+    if (!HuksMaster::GetInstance().DecryptKey(ctxNone, auth, keyInfo_, true)) {
+        LOGE("Decrypt by hks failed.");
+        ClearKeyContext(ctxNone);
+        return false;
+    }
+    ClearKeyContext(ctxNone);
+    LOGI("finish");
+    return true;
+}
+
+bool BaseKey::DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &path, const uint32_t keyType)
+{
+    LOGI("enter");
+    if ((auth.secret.IsEmpty() && auth.token.IsEmpty()) ||  // 无密码Avtive  新增密码,用空密码解密(ABC)
+        (!auth.secret.IsEmpty() && !auth.token.IsEmpty())) { // 有密码Avtive 修改密码,老密码解密(ABC)  Pin码解锁(AB)
+        KeyContext ctxNone;
+        if (!LoadKeyBlob(ctxNone.rndEnc, path + PATH_ENCRYPTED)) {
+            LOGE("Load rndEnc failed !");
+            return false;
+        }
+
+        ctxNone.aad.Alloc(GCM_MAC_BYTES);
+        ctxNone.nonce.Alloc(GCM_NONCE_BYTES);
+        if (!SplitKeyCtx(ctxNone.rndEnc, ctxNone.nonce, ctxNone.rndEnc, ctxNone.aad)) {
+            ctxNone.rndEnc.Clear();
+            LOGE("Split key context failed !");
+            return false;
+        }
+        if (!LoadKeyBlob(ctxNone.secDiscard, path + PATH_SECDISC) ||
+            !LoadKeyBlob(ctxNone.shield, path + PATH_SHIELD)) {
+            ctxNone.rndEnc.Clear();
+            LOGE("Load shield failed !");
+            return false;
+        }
+        return DecryptReal(auth, keyType, ctxNone);
+    }
+
+    // 人脸指纹场景  有token  无secret(AB)
+    if (auth.secret.IsEmpty() && !auth.token.IsEmpty()) {
+        if (!keyContext_.shield.IsEmpty() || !keyContext_.rndEnc.IsEmpty()) {
+            LOGI("Restore key by face/finger");
+            UserAuth mUserAuth = auth;
+            mUserAuth.secret = KeyBlob(NULL_SECRET);
+            KeyContext tempCtx = {};
+            DoTempStore(keyContext_, tempCtx);
+            if (!HuksMaster::GetInstance().DecryptKeyEx(tempCtx, mUserAuth, keyInfo_.key)) {
+                LOGE("Decrypt by hks failed.");
+                ClearKeyContext(tempCtx);
+                return false;
+            }
+            ClearKeyContext(tempCtx);
+        }
+        return true;
+    }
+    LOGE("Decrypt failed, invalid param !");
+    return false;
+}
+
+bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
+{
+    std::string encryptType;
+    LoadStringFromFile(dir_ + PATH_LATEST + SUFFIX_NEED_UPDATE, encryptType);
+    LOGI("encrypt type : %{public}s, keyInfo empty: %{public}u", encryptType.c_str(), keyInfo_.key.IsEmpty());
+
+    uint32_t keyType = GetTypeFromDir();
+    if (keyType == TYPE_EL1 || keyType == TYPE_GLOBAL_EL1) {
+        LOGI("Restore device key.");
+        return DoRestoreKeyDe(auth, path);
+    }
+    int ret;
+    if (encryptType == KeyEncryptTypeToString(KeyEncryptType::KEY_CRYPT_HUKS_OPENSSL)) {
+        LOGI("Restore ce ece sece key.");
+        ret = DoRestoreKeyCeEceSece(auth, path, keyType);
+    } else {
+        ret = DoUpdateRestore(auth, path);
+    }
+    LOGI("end ret %{public}u", ret);
+    return ret != 0;
+}
+
+bool BaseKey::DoUpdateRestore(const UserAuth &auth, const std::string &keyPath)
+{
+    LOGI("enter");
+    if (!DoRestoreKeyOld(auth, keyPath)) {
+        LOGE("Restore old failed !");
+        return false;
+    }
+
+    if (!StoreKey(auth)) {
+        LOGE("Store old failed !");
+        return false;
+    }
+    if (!UpdateKey()) {
+        LOGE("Update old failed !");
+        return false;
+    }
+    LOGI("finish");
+    return true;
+}
+
+bool BaseKey::DecryptReal(const UserAuth &auth, const uint32_t keyType, KeyContext &keyCtx)
+{
+    LOGI("enter");
+    UserAuth mUserAuth = auth;
+    if (auth.secret.IsEmpty()) {
+        mUserAuth.secret = KeyBlob(NULL_SECRET);
+    }
+    KeyBlob rndEnc(keyCtx.rndEnc);
+    if (!OpensslCrypto::AESDecrypt(mUserAuth.secret, keyCtx, rndEnc)) { // rndEncEnc -> rndEnc
+        LOGE("Decrypt by openssl failed.");
+        return false;
+    }
+
+    keyCtx.rndEnc = std::move(rndEnc);
+    if (keyType == TYPE_EL3 || keyType == TYPE_EL4) {
+        DoTempStore(keyCtx, keyContext_);
+    }
+
+    if (!HuksMaster::GetInstance().DecryptKeyEx(keyCtx, auth, keyInfo_.key)) { // rndEnc -> rnd
+        LOGE("Decrypt by hks failed.");
+        return false;
+    }
+
+    rndEnc.Clear();
+    LOGI("finish");
+    return true;
 }
 
 bool BaseKey::Decrypt(const UserAuth &auth)
@@ -478,12 +730,11 @@ bool BaseKey::Decrypt(const UserAuth &auth)
             LOGI("Huks decrypt key start");
             ret = HuksMaster::GetInstance().DecryptKey(keyContext_, auth, keyInfo_, true);
             break;
+        case KeyEncryptType::KEY_CRYPT_HUKS_OPENSSL:
+            LOGI("Huks openssl decrypt key, skip");
+            break;
     }
-    keyContext_.encrypted.Clear();
-    keyContext_.shield.Clear();
-    keyContext_.secDiscard.Clear();
-    keyContext_.nonce.Clear();
-    keyContext_.aad.Clear();
+    ClearKeyContext(keyContext_);
     return ret;
 }
 
@@ -592,7 +843,7 @@ bool BaseKey::EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, K
         LOGE("HUKS encrypt key failed!");
         return false;
     }
-    CombKeyBlob(keyCtx.encrypted, keyCtx.nonce, encryptedKey);
+    CombKeyBlob(keyCtx.rndEnc, keyCtx.nonce, encryptedKey);
 
     ClearKeyContext(keyCtx);
     LOGD("finish");
@@ -616,12 +867,12 @@ bool BaseKey::DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath, K
     }
 
     KeyInfo planKeyInfo = {.key = planKey};
-    SplitKeyBlob(planKey, keyCtx.encrypted, keyCtx.nonce, AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES);
-    LOGE("decrypted size : %{public}d, nonce size : %{public}d", keyCtx.encrypted.size, keyCtx.nonce.size);
+    SplitKeyBlob(planKey, keyCtx.rndEnc, keyCtx.nonce, AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES);
+    LOGE("decrypted size : %{public}d, nonce size : %{public}d", keyCtx.rndEnc.size, keyCtx.nonce.size);
 
     if (!HuksMaster::GetInstance().DecryptKey(keyCtx, auth, planKeyInfo, false)) {
         keyCtx.shield.Clear();
-        keyCtx.encrypted.Clear();
+        keyCtx.rndEnc.Clear();
         LOGE("HUKS decrypt key failed!");
         return false;
     }
@@ -666,14 +917,23 @@ void BaseKey::SplitKeyBlob(const KeyBlob &keyIn, KeyBlob &encAad, KeyBlob &nonce
     inVct.clear();
 }
 
+void BaseKey::ClearMemoryKeyCtx()
+{
+    LOGI("enter, dir_ = %{public}s", dir_.c_str());
+    keyContext_.rndEnc.Clear();
+    keyContext_.shield.Clear();
+    keyContext_.nonce.Clear();
+    keyContext_.aad.Clear();
+}
+
 void BaseKey::ClearKeyContext(KeyContext &keyCtx)
 {
     LOGD("enter clear");
-    keyCtx.shield.Clear();
-    keyCtx.encrypted.Clear();
-    keyCtx.secDiscard.Clear();
-    keyCtx.nonce.Clear();
     keyCtx.aad.Clear();
+    keyCtx.nonce.Clear();
+    keyCtx.shield.Clear();
+    keyCtx.rndEnc.Clear();
+    keyCtx.secDiscard.Clear();
 }
 
 std::string BaseKey::KeyEncryptTypeToString(KeyEncryptType keyEncryptType_) const
@@ -683,7 +943,97 @@ std::string BaseKey::KeyEncryptTypeToString(KeyEncryptType keyEncryptType_) cons
             return "KEY_CRYPT_OPENSSL";
         case KeyEncryptType::KEY_CRYPT_HUKS:
             return "KEY_CRYPT_HUKS";
+        case KeyEncryptType::KEY_CRYPT_HUKS_OPENSSL:
+            return "KEY_CRYPT_HUKS_OPENSSL";
     }
+}
+
+bool BaseKey::CombKeyCtx(const KeyBlob &nonce, const KeyBlob &rndEnc, const KeyBlob &aad, KeyBlob &keyOut)
+{
+    LOGI("enter");
+    if (nonce.IsEmpty() || aad.IsEmpty() || rndEnc.IsEmpty()) {
+        LOGE("Invalid param, can not combine !");
+        return false;
+    }
+    LOGE("rndEncEnc: %{public}u", rndEnc.size);
+    std::vector<uint8_t> nonceVct(nonce.data.get(), nonce.data.get() + nonce.size);
+    std::vector<uint8_t> rndVct(rndEnc.data.get(), rndEnc.data.get() + rndEnc.size);
+    std::vector<uint8_t> aadVct(aad.data.get(), aad.data.get() + aad.size);
+
+    nonceVct.insert(nonceVct.end(), rndVct.begin(), rndVct.end());
+    nonceVct.insert(nonceVct.end(), aadVct.begin(), aadVct.end());
+    std::copy(nonceVct.begin(), nonceVct.end(), keyOut.data.get());
+    nonceVct.clear();
+    rndVct.clear();
+    aadVct.clear();
+    return true;
+}
+
+bool BaseKey::SplitKeyCtx(const KeyBlob &keyIn, KeyBlob &nonce, KeyBlob &rndEnc, KeyBlob &aad)
+{
+    LOGI("enter");
+    if (keyIn.size < (nonce.size + aad.size)) {
+        LOGE("Invalid keyIn size is too small");
+        return false;
+    }
+    std::vector<uint8_t> keyInVct(keyIn.data.get(), keyIn.data.get() + keyIn.size);
+    rndEnc.Alloc(keyIn.size - nonce.size - aad.size);
+
+    std::copy(keyInVct.begin(), keyInVct.begin() + nonce.size, nonce.data.get());
+    std::copy(keyInVct.begin() + nonce.size, keyInVct.begin() + nonce.size + rndEnc.size, rndEnc.data.get());
+    std::copy(keyInVct.begin() + nonce.size + rndEnc.size, keyInVct.end(), aad.data.get());
+    LOGI("rndEncEnc: %{public}u", rndEnc.size);
+    keyInVct.clear();
+    return true;
+}
+
+uint32_t BaseKey::GetTypeFromDir()
+{
+    static const std::vector<std::pair<std::string, uint32_t>> typeStrs = {
+        {"el1", TYPE_EL1},
+        {"el2", TYPE_EL2},
+        {"el3", TYPE_EL3},
+        {"el4", TYPE_EL4},
+        {"el5", TYPE_EL5},
+    };
+    uint32_t type = TYPE_GLOBAL_EL1; // default to global el1
+
+    // fscrypt key dir is like `/data/foo/bar/el1/100`
+    auto slashIndex = dir_.rfind('/');
+    if (slashIndex == std::string::npos) {
+        LOGE("bad dir %{public}s", dir_.c_str());
+        return type;
+    }
+    slashIndex = dir_.rfind('/', slashIndex - 1);
+    if (slashIndex == std::string::npos) {
+        LOGE("bad dir %{public}s", dir_.c_str());
+        return type;
+    }
+
+    std::string el = dir_.substr(slashIndex + 1); // el string is like `el1/100`
+    for (const auto &it : typeStrs) {
+        if (el.find(it.first) != std::string::npos) {
+            type = it.second;
+            break;
+        }
+    }
+    LOGI("el string is %{public}s, parse type %{public}d", el.c_str(), type);
+    return type;
+}
+
+uint32_t BaseKey::GetIdFromDir()
+{
+    int userId = USERID_GLOBAL_EL1; // default to global el1
+
+    // fscrypt key dir is like `/data/foo/bar/el1/100`
+    auto slashIndex = dir_.rfind('/');
+    if (slashIndex != std::string::npos) {
+        std::string last = dir_.substr(slashIndex + 1);
+        (void)OHOS::StrToInt(last, userId);
+    }
+
+    LOGI("dir_: %{public}s, get userId is %{public}d", dir_.c_str(), userId);
+    return static_cast<uint32_t>(userId);
 }
 } // namespace StorageDaemon
 } // namespace OHOS
