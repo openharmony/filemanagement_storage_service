@@ -30,6 +30,7 @@
 namespace {
 constexpr const char *FBEX_UFS_INLINE_SUPPORT_PREFIX = "/sys/devices/platform/";
 constexpr const char *FBEX_UFS_INLINE_SUPPORT_END = "/ufs_inline_stat";
+constexpr const char *FBEX_NVME_INLINE_SUPPORT_PATH = "/proc/nvme_crypto";
 constexpr const char *FBEX_UFS_INLINE_BASE_ADDR = "/proc/bootdevice/name";
 constexpr const char *FBEX_INLINE_CRYPTO_V3 = "3\n";
 
@@ -105,11 +106,10 @@ bool FBEX::IsFBEXSupported()
     }
 
     std::string versionNum;
-    if (!OHOS::LoadStringFromFile(rpath, versionNum)) {
-        LOGE("read ufs_inline_stat failed, errno: %{public}d", errno);
-        return false;
+    if (OHOS::LoadStringFromFile(rpath, versionNum) && versionNum.compare(FBEX_INLINE_CRYPTO_V3) == 0) {
+        return true;
     }
-    return versionNum.compare(FBEX_INLINE_CRYPTO_V3) == 0;
+    return access(FBEX_NVME_INLINE_SUPPORT_PATH, F_OK) == 0;
 }
 
 static inline bool CheckIvValid(const uint8_t *iv, uint32_t size)
