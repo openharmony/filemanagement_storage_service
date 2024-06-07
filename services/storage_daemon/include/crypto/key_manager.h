@@ -37,6 +37,7 @@ const std::string USER_EL2_DIR = FSCRYPT_EL_DIR + "/el2";
 const std::string USER_EL3_DIR = FSCRYPT_EL_DIR + "/el3";
 const std::string USER_EL4_DIR = FSCRYPT_EL_DIR + "/el4";
 const std::string USER_EL5_DIR = FSCRYPT_EL_DIR + "/el5";
+const std::string UECE_DIR = "data/service/el5";
 class KeyManager {
 public:
     static KeyManager *GetInstance(void)
@@ -94,6 +95,7 @@ private:
     int GenerateAndInstallDeviceKey(const std::string &dir);
     int RestoreDeviceKey(const std::string &dir);
     int GenerateAndInstallUserKey(uint32_t userId, const std::string &dir, const UserAuth &auth, KeyType type);
+    int GenerateAndInstallEl5Key(uint32_t userId, const std::string &dir, const UserAuth &auth);
     int RestoreUserKey(uint32_t userId, const std::string &dir, const UserAuth &auth, KeyType type);
     int LoadAllUsersEl1Key(void);
     int InitUserElkeyStorageDir(void);

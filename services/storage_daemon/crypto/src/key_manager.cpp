@@ -24,6 +24,7 @@
 #include "file_ex.h"
 #include "fscrypt_key_v1.h"
 #include "fscrypt_key_v2.h"
+#include "iam_client.h"
 #include "libfscrypt/fscrypt_control.h"
 #include "libfscrypt/key_control.h"
 #include "parameter.h"
@@ -170,40 +171,27 @@ int KeyManager::GenerateAndInstallUserKey(uint32_t userId, const std::string &di
         LOGD("The user %{public}u el %{public}u have existed", userId, type);
         return 0;
     }
-
     auto elKey = GetBaseKey(dir);
     if (elKey == nullptr) {
         return -EOPNOTSUPP;
     }
     if (type == EL5_KEY) {
-        elKey = GetBaseKey(dir);
-        if (elKey->AddClassE(FIRST_CREATE_KEY) == false) {
-            DoDeleteUserKeys(userId);
-            LOGE("user %{public}u el5 create error", userId);
-            return -EFAULT;
-        }
-        userEl5Key_[userId] = elKey;
-        saveESecretStatus[userId] = false;
-        return 0;
+        return GenerateAndInstallEl5Key(userId, dir, auth);
     }
-
     if (elKey->InitKey(true) == false) {
         LOGE("user security key init failed");
         return -EFAULT;
     }
-
     if (elKey->StoreKey(auth) == false) {
         elKey->ClearKey();
         LOGE("user security key store failed");
         return -EFAULT;
     }
-
     if (elKey->ActiveKey(FIRST_CREATE_KEY) == false) {
         elKey->ClearKey();
         LOGE("user security key active failed");
         return -EFAULT;
     }
-
     (void)elKey->UpdateKey();
     if (type == EL1_KEY) {
         userEl1Key_[userId] = elKey;
@@ -215,7 +203,29 @@ int KeyManager::GenerateAndInstallUserKey(uint32_t userId, const std::string &di
         userEl4Key_[userId] = elKey;
     }
     LOGI("key create success");
+    return 0;
+}
 
+int KeyManager::GenerateAndInstallEl5Key(uint32_t userId, const std::string &dir, const UserAuth &auth)
+{
+    LOGI("enter");
+    auto elKey = GetBaseKey(dir);
+    if (elKey == nullptr) {
+        return -EOPNOTSUPP;
+    }
+    if (elKey->AddClassE(FIRST_CREATE_KEY) == false) {
+        DoDeleteUserKeys(userId);
+        LOGE("user %{public}u el5 create error", userId);
+        return -EFAULT;
+    }
+    if ((!auth.secret.IsEmpty() && !auth.token.IsEmpty()) &&
+        (!elKey->EncryptClassE(auth, saveESecretStatus[userId], userId, USER_ADD_AUTH))) {
+        DoDeleteUserKeys(userId);
+        LOGE("user %{public}u el5 create error", userId);
+        return -EFAULT;
+    }
+    userEl5Key_[userId] = elKey;
+    saveESecretStatus[userId] = false;
     return 0;
 }
 
@@ -531,6 +541,11 @@ int KeyManager::GenerateUserKeyByType(unsigned int user, KeyType type,
         LOGE("user %{public}d el key have existed, create error", user);
         return -EEXIST;
     }
+    uint64_t secureUid = { 0 };
+    if (!secret.empty() && !token.empty()) {
+        IamClient::GetInstance().GetSecureUid(user, secureUid);
+        LOGE("token is exist, get secure uid.");
+    }
     UserAuth auth = {.token = token, .secret = secret, .secureUid = 0};
     int ret = GenerateAndInstallUserKey(user, elUserKeyPath, auth, type);
     if (ret) {
@@ -678,7 +693,7 @@ int KeyManager::UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSe
             LOGE("user %{public}u ChangePinCodeClassE fail", user);
             return -EFAULT;
         }
-        saveESecretStatus[user] = true;
+        saveESecretStatus[user] = false;
         return 0;
     }
     uint32_t status = tokenSecret.oldSecret.empty() ? USER_ADD_AUTH : USER_CHANGE_AUTH;
@@ -889,7 +904,12 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
     if (keyDir == "") {
         return E_KEY_TYPE_INVAL;
     }
-    if (!IsDir(keyDir)) {
+    if ((type != EL5_KEY) && !IsDir(keyDir)) {
+        LOGE("Have not found user %{public}u el", user);
+        return -ENOENT;
+    }
+    std::string keyUeceDir = UECE_DIR + "/" + std::to_string(user);
+    if ((type == TYPE_EL5) && !IsDir(keyUeceDir)) {
         LOGE("Have not found user %{public}u el", user);
         return -ENOENT;
     }

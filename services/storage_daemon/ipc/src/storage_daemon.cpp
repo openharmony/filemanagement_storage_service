@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,6 +21,7 @@
 
 #ifdef USER_CRYPTO_MANAGER
 #include "crypto/anco_key_manager.h"
+#include "crypto/iam_client.h"
 #include "crypto/key_manager.h"
 #endif
 #ifdef EXTERNAL_STORAGE_MANAGER
@@ -384,7 +385,12 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuth(uint32_t userId, KeyType
         return ret;
     }
 
-    UserTokenSecret userTokenSecret = {.token = token, .oldSecret = {'!'}, .newSecret = secret, .secureUid = 0};
+    uint64_t secureUid = { 0 };
+    if (!IamClient::GetInstance().GetSecureUid(userId, secureUid)) {
+        LOGE("Get secure uid form iam failed, use default value.");
+    }
+    UserTokenSecret userTokenSecret = { .token = token, .oldSecret = {'!'}, .newSecret = secret,
+                                        .secureUid = secureUid };
     ret = KeyManager::GetInstance()->UpdateCeEceSeceUserAuth(userId, userTokenSecret, type, false);
     if (ret != E_OK) {
         return ret;

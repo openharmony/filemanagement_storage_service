@@ -48,6 +48,7 @@ ohos_static_library("libsdcrypto") {
     "src/fscrypt_key_v1_ext.cpp",
     "src/fscrypt_key_v2.cpp",
     "src/huks_master.cpp",
+    "src/iam_client.cpp",
     "src/key_manager.cpp",
     "src/openssl_crypto.cpp",
   ]
@@ -74,6 +75,7 @@ ohos_static_library("libsdcrypto") {
     "init:libbegetutil",
     "ipc:ipc_single",
     "openssl:libcrypto_shared",
+    "user_auth_framework:userauth_client",
   ]
 
   if (storage_service_el5_filekey_manager) {
