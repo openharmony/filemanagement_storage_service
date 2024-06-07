@@ -147,7 +147,7 @@ int FBEX::InstallEL5KeyToKernel(uint32_t userId, uint8_t flag)
     }
 
     FbeOptsE ops{.user = userId};
-    uint32_t fbeRet = ioctl(fd, HISI_FBEX_ADD_CLASS_E, &ops);
+    auto fbeRet = ioctl(fd, HISI_FBEX_ADD_CLASS_E, &ops);
     int ret = 0;
     LOGE("InstallEL5KeyToKernel, ret: 0x%{public}x, errno: %{public}d", fbeRet, errno);
     if (fbeRet != 0) {
@@ -226,7 +226,7 @@ int FBEX::UninstallOrLockUserKeyForEL5ToKernel(uint32_t userId, bool destroy)
         return -errno;
     }
     FbeOptsE ops{.user = userId};
-    uint32_t fbeRet = ioctl(fd, destroy ? HISI_FBEX_DEL_USER_PINCODE : FBEX_IOC_USER_LOGOUT, &ops);
+    auto fbeRet = ioctl(fd, destroy ? HISI_FBEX_DEL_USER_PINCODE : FBEX_IOC_USER_LOGOUT, &ops);
     int ret = 0;
     if (fbeRet != 0) {
         LOGE("ioctl fbex_cmd failed, fbeRet: 0x%{public}x, errno: %{public}d", fbeRet, errno);
@@ -296,7 +296,7 @@ int FBEX::GenerateAppkey(uint32_t userId, uint32_t appUid, std::unique_ptr<uint8
         return -errno;
     }
     FbeOptsE ops{.user = userId, .status = appUid, .length = size};
-    uint32_t fbeRet = ioctl(fd, HISI_FBEX_ADD_APPKEY2, &ops);
+    auto fbeRet = ioctl(fd, HISI_FBEX_ADD_APPKEY2, &ops);
     if (fbeRet != 0) {
         LOGE("ioctl fbex_cmd failed, fbeRet: 0x%{public}x, errno: %{public}d", fbeRet, errno);
         close(fd);
@@ -358,7 +358,7 @@ int FBEX::ReadESecretToKernel(uint32_t userId, uint32_t status, uint8_t *eBuffer
     uint32_t bufferSize = AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES;
     FbeOptsE ops{.user = userId, .status = status, .length = bufferSize};
     (void)memcpy_s(ops.eBuffer, sizeof(ops.eBuffer), eBuffer, length);
-    uint32_t ret = ioctl(fd, HISI_FBEX_READ_CLASS_E, &ops);
+    auto ret = ioctl(fd, HISI_FBEX_READ_CLASS_E, &ops);
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
         close(fd);
@@ -395,7 +395,7 @@ int FBEX::WriteESecretToKernel(uint32_t userId, uint32_t status, uint8_t *eBuffe
     uint32_t bufferSize = AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES;
     FbeOptsE ops{.user = userId, .status = status, .length = bufferSize};
     (void)memcpy_s(ops.eBuffer, sizeof(ops.eBuffer), eBuffer, length);
-    uint32_t ret = ioctl(fd, HISI_FBEX_WRITE_CLASS_E, &ops);
+    auto ret = ioctl(fd, HISI_FBEX_WRITE_CLASS_E, &ops);
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
         close(fd);
