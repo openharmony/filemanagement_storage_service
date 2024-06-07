@@ -98,7 +98,7 @@ bool FBEX::IsFBEXSupported()
 
     if ((path.length() > PATH_MAX) || (realpath(path.c_str(), rpath.data()) == nullptr)) {
         LOGE("realpath of %{public}s failed, errno: %{public}d", path.c_str(), errno);
-        return false;
+        return access(FBEX_NVME_INLINE_SUPPORT_PATH, F_OK) == 0;
     }
     if (rpath.rfind(FBEX_UFS_INLINE_SUPPORT_PREFIX) != 0) {
         LOGE("rpath %{public}s is invalid", rpath.c_str());
@@ -106,10 +106,11 @@ bool FBEX::IsFBEXSupported()
     }
 
     std::string versionNum;
-    if (OHOS::LoadStringFromFile(rpath, versionNum) && versionNum.compare(FBEX_INLINE_CRYPTO_V3) == 0) {
-        return true;
+    if (!OHOS::LoadStringFromFile(rpath, versionNum)) {
+        LOGE("read ufs_inline_stat failed, errno: %{public}d", errno);
+        return false;
     }
-    return access(FBEX_NVME_INLINE_SUPPORT_PATH, F_OK) == 0;
+    return versionNum.compare(FBEX_INLINE_CRYPTO_V3) == 0;
 }
 
 static inline bool CheckIvValid(const uint8_t *iv, uint32_t size)
