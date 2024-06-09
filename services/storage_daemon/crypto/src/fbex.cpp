@@ -95,10 +95,11 @@ bool FBEX::IsFBEXSupported()
 
     std::string path = FBEX_UFS_INLINE_SUPPORT_PREFIX + baseAddr + FBEX_UFS_INLINE_SUPPORT_END;
     std::string rpath(PATH_MAX + 1, '\0');
+    std::string nvmePath = FBEX_NVME_INLINE_SUPPORT_PATH;
 
     if ((path.length() > PATH_MAX) || (realpath(path.c_str(), rpath.data()) == nullptr)) {
         LOGE("realpath of %{public}s failed, errno: %{public}d", path.c_str(), errno);
-        return access(FBEX_NVME_INLINE_SUPPORT_PATH, F_OK) == 0;
+        return access(nvmePath.c_str(), F_OK) == 0;
     }
     if (rpath.rfind(FBEX_UFS_INLINE_SUPPORT_PREFIX) != 0) {
         LOGE("rpath %{public}s is invalid", rpath.c_str());
