@@ -32,7 +32,10 @@ ohos_fuzztest("StorageManagerFuzzTest") {
   ]
   sources = [ "${storage_service_path}/test/fuzztest/storagemanager_fuzzer/storagemanager_fuzzer.cpp" ]
 
-  defines = [ "STORAGE_LOG_TAG = \"storage_service\"" ]
+  defines = [
+    "STORAGE_LOG_TAG = \"storage_service\"",
+    "private=public",
+  ]
   deps = [
     "${bundlemanager_framework_path}/services/bundlemgr:libbms",
     "${storage_service_path}/services/storage_manager:storage_manager",

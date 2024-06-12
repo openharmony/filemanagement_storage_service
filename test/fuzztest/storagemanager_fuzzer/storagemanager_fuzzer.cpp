@@ -92,6 +92,184 @@ bool StorageManagerFuzzTest(std::unique_ptr<char[]> data, size_t size)
 
     return true;
 }
+
+bool HandlePrepareAddUserFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageManagerPtr->HandlePrepareAddUser(datas, reply);
+    return true;
+}
+
+bool HandleRemoveUserFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageManagerPtr->HandleRemoveUser(datas, reply);
+    return true;
+}
+
+bool HandlePrepareStartUserFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageManagerPtr->HandlePrepareStartUser(datas, reply);
+    return true;
+}
+bool HandleStopUserFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageManagerPtr->HandleStopUser(datas, reply);
+    return true;
+}
+bool HandleGetCurrentBundleStatsFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageManagerPtr->HandleGetCurrentBundleStats(datas, reply);
+    return true;
+}
+
+bool HandleMountFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageManagerPtr->HandleMount(datas, reply);
+    return true;
+}
+
+bool HandleUnmountFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageManagerPtr->HandleUnmount(datas, reply);
+    return true;
+}
+
+bool HandlePartitionFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageManagerPtr->HandlePartition(datas, reply);
+    return true;
+}
+
+bool HandleFormatFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageManagerPtr->HandleFormat(datas, reply);
+    return true;
+}
+
+bool HandleGenerateUserKeysFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageManagerPtr->HandleGenerateUserKeys(datas, reply);
+    return true;
+}
+
+bool HandleDeleteUserKeysFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageManagerPtr->HandleDeleteUserKeys(datas, reply);
+    return true;
+}
+
+bool HandleUpdateUserAuthFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageManagerPtr->HandleUpdateUserAuth(datas, reply);
+    return true;
+}
+
+bool HandleActiveUserKeyFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageManagerPtr->HandleActiveUserKey(datas, reply);
+    return true;
+}
+
+bool HandleInactiveUserKeyFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageManagerPtr->HandleInactiveUserKey(datas, reply);
+    return true;
+}
+
+bool HandleLockUserScreenFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageManagerPtr->HandleLockUserScreen(datas, reply);
+    return true;
+}
+
+bool HandleUnlockUserScreenFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageManagerPtr->HandleUnlockUserScreen(datas, reply);
+    return true;
+}
+
+bool HandleUpdateKeyContextFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageManagerPtr->HandleUpdateKeyContext(datas, reply);
+    return true;
+}
+
+bool HandleCreateShareFileFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageManagerPtr->HandleCreateShareFile(datas, reply);
+    return true;
+}
+
+bool HandleDeleteShareFileFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageManagerPtr->HandleDeleteShareFile(datas, reply);
+    return true;
+}
+
+bool HandleSetBundleQuotaFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageManagerPtr->HandleSetBundleQuota(datas, reply);
+    return true;
+}
 } // namespace OHOS::StorageManager
 
 /* Fuzzer entry point */
@@ -114,5 +292,25 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     }
 
     OHOS::StorageManager::StorageManagerFuzzTest(move(str), size);
+    OHOS::StorageManager::HandlePrepareAddUserFuzzTest(move(str), size);
+    OHOS::StorageManager::HandleRemoveUserFuzzTest(move(str), size);
+    OHOS::StorageManager::HandlePrepareStartUserFuzzTest(move(str), size);
+    OHOS::StorageManager::HandleStopUserFuzzTest(move(str), size);
+    OHOS::StorageManager::HandleGetCurrentBundleStatsFuzzTest(move(str), size);
+    OHOS::StorageManager::HandleMountFuzzTest(move(str), size);
+    OHOS::StorageManager::HandleUnmountFuzzTest(move(str), size);
+    OHOS::StorageManager::HandlePartitionFuzzTest(move(str), size);
+    OHOS::StorageManager::HandleFormatFuzzTest(move(str), size);
+    OHOS::StorageManager::HandleGenerateUserKeysFuzzTest(move(str), size);
+    OHOS::StorageManager::HandleDeleteUserKeysFuzzTest(move(str), size);
+    OHOS::StorageManager::HandleUpdateUserAuthFuzzTest(move(str), size);
+    OHOS::StorageManager::HandleActiveUserKeyFuzzTest(move(str), size);
+    OHOS::StorageManager::HandleInactiveUserKeyFuzzTest(move(str), size);
+    OHOS::StorageManager::HandleLockUserScreenFuzzTest(move(str), size);
+    OHOS::StorageManager::HandleUnlockUserScreenFuzzTest(move(str), size);
+    OHOS::StorageManager::HandleUpdateKeyContextFuzzTest(move(str), size);
+    OHOS::StorageManager::HandleCreateShareFileFuzzTest(move(str), size);
+    OHOS::StorageManager::HandleDeleteShareFileFuzzTest(move(str), size);
+    OHOS::StorageManager::HandleSetBundleQuotaFuzzTest(move(str), size);
     return 0;
 }
