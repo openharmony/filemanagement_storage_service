@@ -59,7 +59,8 @@ const std::string PATH_KEY_TEMP = "/temp";
 
 namespace OHOS {
 namespace StorageDaemon {
-BaseKey::BaseKey(const std::string &dir, uint8_t keyLen) : dir_(dir), keyLen_(keyLen)
+BaseKey::BaseKey(const std::string &dir, uint8_t keyLen) : dir_(dir), keyLen_(keyLen),
+    keyEncryptType_(KeyEncryptType::KEY_CRYPT_HUKS)
 {
 }
 

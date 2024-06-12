@@ -555,7 +555,7 @@ static std::tuple<bool, bool> CheckIfDirForIncludes(const std::string &path, Bun
         fileStat.filePath = sandboxPath;
         fileStat.fileSize = fileStatInfo.st_size;
         // mode
-        fileStat.mode = fileStatInfo.st_mode;
+        fileStat.mode = static_cast<int32_t>(fileStatInfo.st_mode);
         fileStat.isDir = false;
         int64_t lastUpdateTime = static_cast<int64_t>(fileStatInfo.st_mtime);
         fileStat.lastUpdateTime = lastUpdateTime;
@@ -593,7 +593,7 @@ static bool AddOuterDirIntoFileStat(const std::string &dir, BundleStatsParas &pa
     fileStat.filePath = PhysicalToSandboxPath(dir, sandboxDir, dir);
     fileStat.fileSize = fileInfo.st_size;
     // mode
-    fileStat.mode = fileInfo.st_mode;
+    fileStat.mode = static_cast<int32_t>(fileInfo.st_mode);
     int64_t lastUpdateTime = static_cast<int64_t>(fileInfo.st_mtime);
     fileStat.lastUpdateTime = lastUpdateTime;
     fileStat.isIncre = (paras.lastBackupTime == 0 || lastUpdateTime > paras.lastBackupTime) ? true : false;
@@ -679,7 +679,7 @@ static bool GetIncludesFileStats(const std::string &dir, BundleStatsParas &paras
             fileStat.fileSize = fileInfo.st_size;
             CheckOverLongPath(fileStat.filePath);
             // mode
-            fileStat.mode = fileInfo.st_mode;
+            fileStat.mode = static_cast<int32_t>(fileInfo.st_mode);
             int64_t lastUpdateTime = static_cast<int64_t>(fileInfo.st_mtime);
             fileStat.lastUpdateTime = lastUpdateTime;
             fileStat.isIncre = (paras.lastBackupTime == 0 || lastUpdateTime > paras.lastBackupTime) ? true : false;
