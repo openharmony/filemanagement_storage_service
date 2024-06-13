@@ -507,6 +507,7 @@ int KeyManager::GenerateElxAndInstallUserKey(unsigned int user)
         LOGE("user el5 create error");
         return ret;
     }
+    saveLockScreenStatus[user] = true;
     return ret;
 }
 
