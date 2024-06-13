@@ -59,6 +59,13 @@ HWTEST_F(VolumeExternalTest, Volume_external_Get_0000, testing::ext::TestSize.Le
     EXPECT_EQ(result3, path);
     auto result4 = volumeexternal.GetDescription();
     EXPECT_EQ(result4, description);
+
+    auto result5 = volumeexternal.GetFsTypeString();
+    EXPECT_EQ(result5, FS_TYPE_MAP[fsType]);
+
+    volumeexternal.SetFsType(FsType::UNDEFINED);
+    auto result6 = volumeexternal.GetFsTypeString();
+    EXPECT_EQ(result6, "undefined");
     volumeexternal.Reset();
     GTEST_LOG_(INFO) << "VolumeExternalTest-end Volume_external_Get_0000";
 }
@@ -145,6 +152,7 @@ HWTEST_F(VolumeExternalTest, Volume_external_Unmarshalling_0000, testing::ext::T
     EXPECT_EQ(result->GetUuid(), fsUuid);
     EXPECT_EQ(result->GetPath(), path);
     EXPECT_EQ(result->GetDescription(), description);
+    EXPECT_EQ(result->GetFsTypeString(), FS_TYPE_MAP[fsType]);
     GTEST_LOG_(INFO) << "VolumeExternalTest-end Volume_external_Unmarshalling_0000";
 }
 }
