@@ -59,13 +59,13 @@ void SetNativeToken()
     perms[TOKEN_INDEX_TWO] = "ohos.permission.MOUNT_UNMOUNT_MANAGER";
     perms[TOKEN_INDEX_THREE] = "ohos.permission.MOUNT_FORMAT_MANAGER";
     NativeTokenInfoParams infoInstance = {
-            .dcapsNum = 0,
-            .permsNum = 1,
-            .aclsNum = 0,
-            .dcaps = nullptr,
-            .perms = perms,
-            .acls = nullptr,
-            .aplStr = "system_core",
+        .dcapsNum = 0,
+        .permsNum = 1,
+        .aclsNum = 0,
+        .dcaps = nullptr,
+        .perms = perms,
+        .acls = nullptr,
+        .aplStr = "system_core",
     };
 
     infoInstance.processName = "StorageDaemonFuzzTest";
@@ -97,7 +97,7 @@ bool StorageDaemonFuzzTest(std::unique_ptr<char[]> data, size_t size)
     return true;
 }
 
-bool HandleStartUserFuzzTest(const uint8_t *data, size_t size)
+bool HandleStartUserFuzzTest(std::unique_ptr<char[]> data, size_t size)
 {
     MessageParcel datas;
     MessageParcel reply;
@@ -106,7 +106,7 @@ bool HandleStartUserFuzzTest(const uint8_t *data, size_t size)
     return true;
 }
 
-bool HandleStopUserFuzzTest(const uint8_t *data, size_t size)
+bool HandleStopUserFuzzTest(std::unique_ptr<char[]> data, size_t size)
 {
     MessageParcel datas;
     MessageParcel reply;
@@ -288,8 +288,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     }
     OHOS::StorageDaemonFuzzTest(move(str), size);
     OHOS::UserManagerFuzzTest(data, size);
-    OHOS::HandleStartUserFuzzTest(data, size);
-    OHOS::HandleStopUserFuzzTest(data, size);
+    OHOS::HandleStartUserFuzzTest(move(str), size);
+    OHOS::HandleStopUserFuzzTest(move(str), size);
     OHOS::HandlePrepareUserDirsFuzzTest(move(str), size);
     OHOS::HandleDestroyUserDirsFuzzTest(move(str), size);
     OHOS::HandleMountFuzzTest(move(str), size);
