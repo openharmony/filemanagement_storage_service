@@ -68,7 +68,7 @@ void SetNativeToken()
             .aplStr = "system_core",
     };
 
-    infoInstance.processName = "StorageManagerFuzzTest";
+    infoInstance.processName = "StorageDaemonFuzzTest";
     tokenId = GetAccessTokenId(&infoInstance);
     const uint64_t systemAppMask = (static_cast<uint64_t>(1) << 32);
     tokenId |= systemAppMask;
