@@ -24,6 +24,7 @@
 #include "fbex.h"
 #include "file_ex.h"
 #include "huks_master.h"
+#include "iam_client.h"
 #include "libfscrypt/key_control.h"
 #include "openssl_crypto.h"
 #include "storage_service_log.h"
@@ -679,7 +680,12 @@ bool BaseKey::DoUpdateRestore(const UserAuth &auth, const std::string &keyPath)
         return false;
     }
 
-    if (!StoreKey(auth)) {
+    uint64_t secureUid = { 0 };
+    if (!IamClient::GetInstance().GetSecureUid(GetIdFromDir(), secureUid)) {
+        LOGE("Get secure uid form iam failed, use default value.");
+    }
+
+    if (!StoreKey({ auth.token, auth.secret, secureUid })) {
         LOGE("Store old failed !");
         return false;
     }

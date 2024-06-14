@@ -123,6 +123,7 @@ ohos_executable("storage_daemon") {
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "user_auth_framework:userauth_client",
   ]
 
   if (storage_service_user_crypto_manager) {

@@ -58,7 +58,8 @@
         "selinux_adapter",
         "app_file_service",
         "os_account",
-        "openssl"
+        "openssl",
+        "user_auth_framework"
       ],
       "third_party": [
         "e2fsprogs",
