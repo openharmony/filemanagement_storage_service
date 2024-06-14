@@ -61,6 +61,159 @@ bool StorageDaemonFuzzTest(std::unique_ptr<char[]> data, size_t size)
     return true;
 }
 
+bool HandleStartUserFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageDaemon->HandleStartUser(datas, reply);
+    return true;
+}
+
+bool HandleStopUserFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageDaemon->HandleStopUser(datas, reply);
+    return true;
+}
+
+bool HandlePrepareUserDirsFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageDaemon->HandlePrepareUserDirs(datas, reply);
+    return true;
+}
+
+bool HandleDestroyUserDirsFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageDaemon->HandleDestroyUserDirs(datas, reply);
+    return true;
+}
+
+bool HandleMountFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageDaemon->HandleMount(datas, reply);
+    return true;
+}
+
+bool HandleUMountFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageDaemon->HandleUMount(datas, reply);
+    return true;
+}
+
+bool HandlePartitionFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageDaemon->HandlePartition(datas, reply);
+    return true;
+}
+
+bool HandleCheckFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageDaemon->HandleCheck(datas, reply);
+    return true;
+}
+
+bool HandleSetVolDescFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageDaemon->HandleSetVolDesc(datas, reply);
+    return true;
+}
+
+bool HandleFormatFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageDaemon->HandleFormat(datas, reply);
+    return true;
+}
+
+bool HandleSetBundleQuotaFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageDaemon->HandleSetBundleQuota(datas, reply);
+    return true;
+}
+
+bool HandleGenerateUserKeysFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageDaemon->HandleGenerateUserKeys(datas, reply);
+    return true;
+}
+
+bool HandleDeleteUserKeysFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageDaemon->HandleDeleteUserKeys(datas, reply);
+    return true;
+}
+
+bool HandleUpdateUserAuthFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageDaemon->HandleUpdateUserAuth(datas, reply);
+    return true;
+}
+
+bool HandleActiveUserKeyFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageDaemon->HandleActiveUserKey(datas, reply);
+    return true;
+}
+
+bool HandleInactiveUserKeyFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageDaemon->HandleInactiveUserKey(datas, reply);
+    return true;
+}
+
+bool HandleUpdateKeyContextFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+
+    storageDaemon->HandleUpdateKeyContext(datas, reply);
+    return true;
+}
+
 bool UserManagerFuzzTest(const uint8_t *data, size_t size)
 {
     if ((data == nullptr) || (size < sizeof(int32_t))) {
@@ -99,6 +252,22 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     }
     OHOS::StorageDaemonFuzzTest(move(str), size);
     OHOS::UserManagerFuzzTest(data, size);
-
+    OHOS::HandleStartUserFuzzTest(move(str), size);
+    OHOS::HandleStopUserFuzzTest(move(str), size);
+    OHOS::HandlePrepareUserDirsFuzzTest(move(str), size);
+    OHOS::HandleDestroyUserDirsFuzzTest(move(str), size);
+    OHOS::HandleMountFuzzTest(move(str), size);
+    OHOS::HandleUMountFuzzTest(move(str), size);
+    OHOS::HandlePartitionFuzzTest(move(str), size);
+    OHOS::HandleCheckFuzzTest(move(str), size);
+    OHOS::HandleSetVolDescFuzzTest(move(str), size);
+    OHOS::HandleFormatFuzzTest(move(str), size);
+    OHOS::HandleSetBundleQuotaFuzzTest(move(str), size);
+    OHOS::HandleGenerateUserKeysFuzzTest(move(str), size);
+    OHOS::HandleDeleteUserKeysFuzzTest(move(str), size);
+    OHOS::HandleUpdateUserAuthFuzzTest(move(str), size);
+    OHOS::HandleActiveUserKeyFuzzTest(move(str), size);
+    OHOS::HandleInactiveUserKeyFuzzTest(move(str), size);
+    OHOS::HandleUpdateKeyContextFuzzTest(move(str), size);
     return 0;
 }
