@@ -45,6 +45,12 @@ uint32_t GetU32Data(const char* ptr)
     return (ptr[0] << 24) | (ptr[1] << 16) | (ptr[2] << 8) | (ptr[3]);
 }
 
+enum {
+    TOKEN_INDEX_ONE = 0,
+    TOKEN_INDEX_TWO,
+    TOKEN_INDEX_THREE,
+};
+
 void SetNativeToken()
 {
     uint64_t tokenId;
