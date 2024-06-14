@@ -24,6 +24,9 @@
 #include "storage_daemon.h"
 #include "securec.h"
 #include "user_manager.h"
+#include "nativetoken_kit.h"
+#include "token_setproc.h"
+#include "accesstoken_kit.h"
 
 using namespace OHOS::StorageDaemon;
 
