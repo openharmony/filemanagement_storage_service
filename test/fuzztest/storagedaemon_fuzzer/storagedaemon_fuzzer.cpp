@@ -252,8 +252,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     }
     OHOS::StorageDaemonFuzzTest(move(str), size);
     OHOS::UserManagerFuzzTest(data, size);
-    OHOS::HandleStartUserFuzzTest(move(str), size);
-    OHOS::HandleStopUserFuzzTest(move(str), size);
+    OHOS::HandleStartUserFuzzTest(data, size);
+    OHOS::HandleStopUserFuzzTest(data, size);
     OHOS::HandlePrepareUserDirsFuzzTest(move(str), size);
     OHOS::HandleDestroyUserDirsFuzzTest(move(str), size);
     OHOS::HandleMountFuzzTest(move(str), size);
