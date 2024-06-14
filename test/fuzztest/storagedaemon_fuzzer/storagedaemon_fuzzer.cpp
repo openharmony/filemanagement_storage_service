@@ -61,7 +61,7 @@ bool StorageDaemonFuzzTest(std::unique_ptr<char[]> data, size_t size)
     return true;
 }
 
-bool HandleStartUserFuzzTest(std::unique_ptr<char[]> data, size_t size)
+bool HandleStartUserFuzzTest(const uint8_t *data, size_t size)
 {
     MessageParcel datas;
     MessageParcel reply;
@@ -70,7 +70,7 @@ bool HandleStartUserFuzzTest(std::unique_ptr<char[]> data, size_t size)
     return true;
 }
 
-bool HandleStopUserFuzzTest(std::unique_ptr<char[]> data, size_t size)
+bool HandleStopUserFuzzTest(const uint8_t *data, size_t size)
 {
     MessageParcel datas;
     MessageParcel reply;
