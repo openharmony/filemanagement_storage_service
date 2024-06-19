@@ -80,9 +80,11 @@ void AccountSubscriber::ResetUserEventRecord(int32_t userId)
         return;
     }
     LOGI("ResetUserEventRecord start, userId is %{public}d", userId);
-    if (AccountSubscriber_->userRecord_.find(userId) != AccountSubscriber_->userRecord_.end()) {
-        std::lock_guard<std::mutex> lock(userRecordLock);
-        AccountSubscriber_->userRecord_.erase(userId);
+    if (AccountSubscriber_ != nullptr) {
+        if (AccountSubscriber_->userRecord_.find(userId) != AccountSubscriber_->userRecord_.end()) {
+            std::lock_guard<std::mutex> lock(userRecordLock);
+            AccountSubscriber_->userRecord_.erase(userId);
+        }
     }
 }
 
