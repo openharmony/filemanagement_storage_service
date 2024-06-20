@@ -47,17 +47,17 @@ AccountSubscriber::AccountSubscriber(const EventFwk::CommonEventSubscribeInfo &s
     : EventFwk::CommonEventSubscriber(subscriberInfo)
 {}
 
-std::shared_ptr<AccountSubscriber> AccountSubscriber_ = nullptr;
+std::shared_ptr<AccountSubscriber> accountSubscriber_ = nullptr;
 bool AccountSubscriber::Subscriber(void)
 {
-    if (AccountSubscriber_ == nullptr) {
+    if (accountSubscriber_ == nullptr) {
         EventFwk::MatchingSkills matchingSkills;
         matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USER_UNLOCKED);
         matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USER_SWITCHED);
         matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_LOCKED);
         EventFwk::CommonEventSubscribeInfo subscribeInfo(matchingSkills);
-        AccountSubscriber_ = std::make_shared<AccountSubscriber>(subscribeInfo);
-        EventFwk::CommonEventManager::SubscribeCommonEvent(AccountSubscriber_);
+        accountSubscriber_ = std::make_shared<AccountSubscriber>(subscribeInfo);
+        EventFwk::CommonEventManager::SubscribeCommonEvent(accountSubscriber_);
     }
     return true;
 }
@@ -80,11 +80,13 @@ void AccountSubscriber::ResetUserEventRecord(int32_t userId)
         return;
     }
     LOGI("ResetUserEventRecord start, userId is %{public}d", userId);
-    if (AccountSubscriber_ != nullptr) {
-        if (AccountSubscriber_->userRecord_.find(userId) != AccountSubscriber_->userRecord_.end()) {
-            std::lock_guard<std::mutex> lock(userRecordLock);
-            AccountSubscriber_->userRecord_.erase(userId);
-        }
+    if (accountSubscriber_ == nullptr) {
+        LOGE("accountSubscriber_ is nullptr");
+        return;
+    }
+    if (accountSubscriber_->userRecord_.find(userId) != accountSubscriber_->userRecord_.end()) {
+        std::lock_guard<std::mutex> lock(userRecordLock);
+        accountSubscriber_->userRecord_.erase(userId);
     }
 }
 
