@@ -55,12 +55,12 @@ int GetDevSize(std::string path, uint64_t *size)
     const char *kPath = path.c_str();
     int fd = open(kPath, O_RDONLY);
     if (fd < 0) {
-        LOGE("open %s{private}s failed", path.c_str());
+        LOGE("open %{private}s failed", path.c_str());
         return E_ERR;
     }
 
     if (ioctl(fd, BLKGETSIZE64, size)) {
-        LOGE("get device %s{private}s size failed", path.c_str());
+        LOGE("get device %{private}s size failed", path.c_str());
         (void)close(fd);
         return E_ERR;
     }
