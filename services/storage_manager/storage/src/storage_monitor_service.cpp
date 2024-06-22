@@ -55,7 +55,7 @@ StorageMonitorService::~StorageMonitorService()
     eventHandler_ = nullptr;
 }
 
-int32_t StorageMonitorService::StartStorageMonitorTask()
+void StorageMonitorService::StartStorageMonitorTask()
 {
     LOGI("StorageMonitorService, start deicve storage monitor task.");
     std::unique_lock<std::mutex> lock(eventMutex_);
@@ -126,10 +126,13 @@ void StorageMonitorService::CheckAndCleanBundleCache()
 
     auto bundleMgr = DelayedSingleton<BundleMgrConnector>::GetInstance()->GetBundleMgrProxy();
     if (bundleMgr == nullptr) {
-        LOGE("StorageMonitorService::CleanBundleCacheFiles connect bundlemgr failed");
+        LOGE("Connect bundle manager sa proxy failed.");
         return;
     }
-    ErrCode ret = bundleMgr->CleanBundleCacheFilesAutomatic(lowThreshold * 2);
+    AppExecFwk::ErrCode ret = bundleMgr->CleanBundleCacheFilesAutomatic(lowThreshold * CONST_NUM_TWO);
+    if (ret != AppExecFwk::ERR_OK) {
+        LOGE("Invoke bundleMgr interface to clean bundle cache files automatic failed.");
+    }
 }
 
 int64_t StorageMonitorService::GetLowerThreshold(int64_t totalSize)

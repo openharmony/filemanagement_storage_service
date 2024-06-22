@@ -23,6 +23,7 @@
 #include <unordered_set>
 
 #include "iservice_registry.h"
+#include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
 

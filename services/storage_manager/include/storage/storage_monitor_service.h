@@ -16,10 +16,11 @@
 #ifndef OHOS_STORAGE_MANAGER_STORAGE_MONITOR_SERVICE_H
 #define OHOS_STORAGE_MANAGER_STORAGE_MONITOR_SERVICE_H
 
-#include <vector>
+#include <iostream>
 #include <nocopyable.h>
 #include <singleton.h>
-#include <iostream>
+#include <thread>
+#include <vector>
 #include "event_handler.h"
 
 namespace OHOS {
