@@ -17,19 +17,21 @@
 
 #include <cstdlib>
 #include <cstring>
-#include "hitrace_meter.h"
 #include <mntent.h>
+#include <pthread.h>
 #include <singleton.h>
 #include <sys/statvfs.h>
 #include <unordered_set>
 
-#include "bundle_manager_connector.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "storage_total_status_service.h"
+#include "storage/bundle_manager_connector.h"
+#include "storage/storage_total_status_service.h"
 
 namespace OHOS {
 namespace StorageManager {
+constexpr int32_t CONST_NUM_TWO = 2;
+constexpr int32_t CONST_NUM_THREE = 3;
 constexpr int32_t DEFAULT_CHECK_INTERVAL = 60 * 1000; // 60s
 constexpr int32_t STORAGE_THRESHOLD_PERCENTAGE = 5; // 5%
 constexpr int64_t STORAGE_THRESHOLD_MAX_BYTES = 500 * 1024 * 1024; // 500M
@@ -117,7 +119,7 @@ void StorageMonitorService::CheckAndCleanBundleCache()
         return;
     }
 
-    if (freeSize >= (lowThreshold * 3) / 2) {
+    if (freeSize >= (lowThreshold * CONST_NUM_THREE) / CONST_NUM_TWO) {
         LOGI("The clean cache threshold had not been reached, skip this event.");
         return;
     }

@@ -17,11 +17,14 @@
 
 #include <cstdlib>
 #include <cstring>
-#include "hitrace_meter.h"
 #include <mntent.h>
 #include <singleton.h>
 #include <sys/statvfs.h>
 #include <unordered_set>
+
+#include "iservice_registry.h"
+#include "storage_service_log.h"
+#include "system_ability_definition.h"
 
 namespace OHOS {
 namespace StorageManager {
