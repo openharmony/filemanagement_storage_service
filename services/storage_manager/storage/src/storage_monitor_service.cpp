@@ -129,8 +129,8 @@ void StorageMonitorService::CheckAndCleanBundleCache()
         LOGE("Connect bundle manager sa proxy failed.");
         return;
     }
-    AppExecFwk::ErrCode ret = bundleMgr->CleanBundleCacheFilesAutomatic(lowThreshold * CONST_NUM_TWO);
-    if (ret != AppExecFwk::ERR_OK) {
+    auto ret = bundleMgr->CleanBundleCacheFilesAutomatic(lowThreshold * CONST_NUM_TWO);
+    if (ret != ERR_OK) {
         LOGE("Invoke bundleMgr interface to clean bundle cache files automatic failed.");
     }
 }
