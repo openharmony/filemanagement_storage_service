@@ -25,6 +25,8 @@
 #include "storage/bundle_manager_connector.h"
 #include "storage/storage_total_status_service.h"
 #include "application_info.h"
+#include "iservice_registry.h"
+#include "system_ability_definition.h"
 #include "utils/storage_utils.h"
 #ifdef STORAGE_SERVICE_GRAPHIC
 #include "media_library_manager.h"
