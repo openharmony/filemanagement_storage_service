@@ -194,6 +194,8 @@ int32_t QuotaManager::SetBundleQuota(const std::string &bundleName, int32_t uid,
         return E_NON_EXIST;
     }
 
+    LOGE("SetBundleQuota Start, bundleName is %{public}s, uid is %{public}d, bundleDataDirPath is %{public}s, "
+         "limit is %{public}d.", bundleName.c_str(), uid, bundleDataDirPath.c_str(), limitSizeMb);
     if (InitialiseQuotaMounts() != true) {
         LOGE("Failed to initialise quota mounts");
         return E_NON_EXIST;
