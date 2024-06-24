@@ -816,7 +816,7 @@ static void GetBundleStatsForIncreaseEach(uint32_t userId, std::string &bundleNa
     ScanExtensionPath(paras, phyIncludes, phyExcludes, pathMap, statFile);
     // calculate summary file sizes
     pkgFileSizes.emplace_back(paras.fileSizeSum);
-    LOGI("bundleName: %{public}s, size: %{public}lld", bundleName.c_str(), static_cast<long long>paras.fileSizeSum);
+    LOGI("bundleName: %{public}s, size: %{public}lld", bundleName.c_str(), static_cast<long long>(paras.fileSizeSum));
     statFile.close();
 }
 
