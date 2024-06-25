@@ -116,7 +116,8 @@ void StorageMonitorService::CheckAndCleanBundleCache()
         return;
     }
 
-    LOGD("Device storage freeSize=%{public}" PRId64 "B, threshold = %{public}" PRId64 "B", freeSize, lowThreshold);
+    LOGD("Device storage freeSize=%{public}lld, threshold=%{public}lld", static_cast<long long>(freeSize),
+        static_cast<long long>(lowThreshold));
     if (freeSize >= (lowThreshold * CONST_NUM_THREE) / CONST_NUM_TWO) {
         LOGD("The cache clean threshold had not been reached, skip this clean task.");
         return;
