@@ -123,7 +123,6 @@ ohos_executable("storage_daemon") {
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
-    "user_auth_framework:userauth_client",
   ]
 
   if (storage_service_user_crypto_manager) {
@@ -136,6 +135,11 @@ ohos_executable("storage_daemon") {
       "libfscrypt:libfscryptutils",
     ]
     external_deps += [ "huks:libhukssdk" ]
+  }
+
+  if (enable_user_auth_framework) {
+    defines += [ "USER_AUTH_FRAMEWORK" ]
+    external_deps += [ "user_auth_framework:userauth_client" ]
   }
 
   if (storage_service_dfs_service) {

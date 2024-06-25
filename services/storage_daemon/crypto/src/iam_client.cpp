@@ -29,6 +29,7 @@ IamClient::~IamClient()
     LOGD("enter");
 }
 
+#ifdef USER_AUTH_FRAMEWORK
 void UserSecCallback::OnSecUserInfo(const UserIam::UserAuth::SecUserInfo &info)
 {
     LOGI("enter");
@@ -41,10 +42,13 @@ uint64_t UserSecCallback::GetSecureUid()
     LOGI("enter");
     return secureUid_;
 }
+#endif
 
 bool IamClient::GetSecureUid(uint32_t userId, uint64_t &secureUid)
 {
     LOGI("enter");
+#ifdef USER_AUTH_FRAMEWORK
+    LOGI("get secure uid real !");
     secureUidStatus_ = FAILED;
     std::shared_ptr<UserSecCallback> secCallback = std::make_shared<UserSecCallback>();
     if (UserIam::UserAuth::UserIdmClient::GetInstance().GetSecUserInfo(userId, secCallback) !=
@@ -60,6 +64,10 @@ bool IamClient::GetSecureUid(uint32_t userId, uint64_t &secureUid)
         LOGE("Get secure uid failed, use default !");
     }
     secureUid = secCallback->GetSecureUid();
+#else
+    LOGI("iam not support, use default !");
+    secureUid = { 0 };
+#endif
     LOGI("finish");
     return true;
 }

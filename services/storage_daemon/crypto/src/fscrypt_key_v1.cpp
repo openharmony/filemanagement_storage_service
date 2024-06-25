@@ -37,7 +37,7 @@ bool FscryptKeyV1::ActiveKey(uint32_t flag, const std::string &mnt)
         LOGE("GenerateKeyDesc failed");
         return false;
     }
-    LOGE("ActiveKey-- keyInfo: %{public}u", keyInfo_.key.size);
+    LOGE("ActiveKey key is empty: %{public}u", keyInfo_.key.IsEmpty());
     if (!fscryptV1Ext.ActiveKeyExt(flag, keyInfo_.key.data.get(), keyInfo_.key.size, elType)) {
         keyInfo_.key.Clear();
         LOGE("fscryptV1Ext ActiveKeyExtfailed");
