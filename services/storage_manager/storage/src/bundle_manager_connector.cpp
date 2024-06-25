@@ -59,6 +59,7 @@ sptr<AppExecFwk::IBundleMgr> BundleMgrConnector::GetBundleMgrProxy()
         deathRecipient_ = new (std::nothrow) BundleMgrDeathRecipient();
         if (!deathRecipient_) {
             LOGE("BundleMgrConnector::GetBundleMgrProxy failed to create death recipient");
+            bundleMgr_ = nullptr;
             return nullptr;
         }
         bundleMgr_->AsObject()->AddDeathRecipient(deathRecipient_);
