@@ -116,9 +116,9 @@ void StorageMonitorService::CheckAndCleanBundleCache()
         return;
     }
 
+    LOGD("Device storage freeSize=%{public}" PRId64 "B, threshold = %{public}" PRId64 "B", freeSize, lowThreshold);
     if (freeSize >= (lowThreshold * CONST_NUM_THREE) / CONST_NUM_TWO) {
-        LOGD("The cache clean threshold had not been reached, freeSize=%{public}" PRId64 ", threshold=%{public}"
-            PRId64 ", skip this clean task.", freeSize, lowThreshold);
+        LOGD("The cache clean threshold had not been reached, skip this clean task.");
         return;
     }
 
@@ -127,8 +127,7 @@ void StorageMonitorService::CheckAndCleanBundleCache()
         LOGE("Connect bundle manager sa proxy failed.");
         return;
     }
-    LOGD("Start clean bundle cache files automatic, freeSize=%{public}" PRId64 ", threshold=%{public}"
-        PRId64 "", freeSize, lowThreshold);
+    LOGD("Device storage free size not enough, start clean bundle cache files automatic.");
     auto ret = bundleMgr->CleanBundleCacheFilesAutomatic(lowThreshold * CONST_NUM_TWO);
     if (ret != ERR_OK) {
         LOGE("Invoke bundleMgr interface to clean bundle cache files automatic failed.");
