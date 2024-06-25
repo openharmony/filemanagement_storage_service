@@ -189,7 +189,7 @@ int32_t QuotaManager::GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size
 int32_t QuotaManager::SetBundleQuota(const std::string &bundleName, int32_t uid,
     const std::string &bundleDataDirPath, int32_t limitSizeMb)
 {
-    if (bundleName.empty() || bundleDataDirPath.empty() || uid < 0 || limitSizeMb <= 0) {
+    if (bundleName.empty() || bundleDataDirPath.empty() || uid < 0 || limitSizeMb < 0) {
         LOGE("Calling the function PrepareBundleDirQuotaWithSize with invalid param");
         return E_NON_EXIST;
     }
