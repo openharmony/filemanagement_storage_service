@@ -36,14 +36,11 @@ constexpr int32_t DEFAULT_CHECK_INTERVAL = 60 * 1000; // 60s
 constexpr int32_t STORAGE_THRESHOLD_PERCENTAGE = 5; // 5%
 constexpr int64_t STORAGE_THRESHOLD_MAX_BYTES = 500 * 1024 * 1024; // 500M
 
-StorageMonitorService::StorageMonitorService()
-{
-    LOGI("StorageMonitorService Constructor.");
-}
+StorageMonitorService::StorageMonitorService() {}
 
 StorageMonitorService::~StorageMonitorService()
 {
-    LOGI("StorageMonitorService Destructor.");
+    LOGD("StorageMonitorService Destructor.");
     std::unique_lock<std::mutex> lock(eventMutex_);
     if ((eventHandler_ != nullptr) && (eventHandler_->GetEventRunner() != nullptr)) {
         eventHandler_->RemoveAllEvents();
@@ -120,7 +117,8 @@ void StorageMonitorService::CheckAndCleanBundleCache()
     }
 
     if (freeSize >= (lowThreshold * CONST_NUM_THREE) / CONST_NUM_TWO) {
-        LOGI("The clean cache threshold had not been reached, skip this event.");
+        LOGD("The cache clean threshold had not been reached, freeSize=%{public}" PRId64 ", threshold=%{public}"
+            PRId64 ", skip this clean task.", freeSize, lowThreshold);
         return;
     }
 
@@ -129,6 +127,8 @@ void StorageMonitorService::CheckAndCleanBundleCache()
         LOGE("Connect bundle manager sa proxy failed.");
         return;
     }
+    LOGD("Start clean bundle cache files automatic, freeSize=%{public}" PRId64 ", threshold=%{public}"
+        PRId64 "", freeSize, lowThreshold);
     auto ret = bundleMgr->CleanBundleCacheFilesAutomatic(lowThreshold * CONST_NUM_TWO);
     if (ret != ERR_OK) {
         LOGE("Invoke bundleMgr interface to clean bundle cache files automatic failed.");

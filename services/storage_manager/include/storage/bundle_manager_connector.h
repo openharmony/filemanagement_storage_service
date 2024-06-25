@@ -21,6 +21,7 @@
 #include <iostream>
 #include "bundle_stats.h"
 #include "bundle_mgr_interface.h"
+#include "bundle_mgr_proxy.h"
 #include "iremote_object.h"
 
 namespace OHOS {

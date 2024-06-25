@@ -29,14 +29,10 @@
 
 namespace OHOS {
 namespace StorageManager {
-BundleMgrConnector::BundleMgrConnector()
-{
-    LOGI("BundleMgrConnector Constructor.");
-}
+BundleMgrConnector::BundleMgrConnector() {}
 
 BundleMgrConnector::~BundleMgrConnector()
 {
-    LOGI("BundleMgrConnector Destructor.");
     bundleMgr_ = nullptr;
     deathRecipient_ = nullptr;
 }
