@@ -17,6 +17,7 @@
 
 #include <singleton.h>
 #ifdef STORAGE_STATISTICS_MANAGER
+#include <storage/storage_monitor_service.h>
 #include <storage/storage_status_service.h>
 #include <storage/storage_total_status_service.h>
 #include <storage/volume_storage_status_service.h>
@@ -46,6 +47,9 @@ void StorageManager::OnStart()
     LOGI("StorageManager::OnStart Begin");
     bool res = SystemAbility::Publish(this);
     AddSystemAbilityListener(COMMON_EVENT_SERVICE_ID);
+#ifdef STORAGE_STATISTICS_MANAGER
+    DelayedSingleton<StorageMonitorService>::GetInstance()->StartStorageMonitorTask();
+#endif
     LOGI("StorageManager::OnStart End, res = %{public}d", res);
 }
 
