@@ -32,6 +32,8 @@ namespace OHOS {
 namespace StorageManager {
 constexpr int32_t CONST_NUM_TWO = 2;
 constexpr int32_t CONST_NUM_THREE = 3;
+constexpr int32_t CONST_NUM_ONE_HUNDRED = 100;
+constexpr int32_t WAIT_THREAD_TIMEOUT_MS = 5;
 constexpr int32_t DEFAULT_CHECK_INTERVAL = 60 * 1000; // 60s
 constexpr int32_t STORAGE_THRESHOLD_PERCENTAGE = 5; // 5%
 constexpr int64_t STORAGE_THRESHOLD_MAX_BYTES = 500 * 1024 * 1024; // 500M
@@ -58,7 +60,7 @@ void StorageMonitorService::StartStorageMonitorTask()
     std::unique_lock<std::mutex> lock(eventMutex_);
     if (eventHandler_ == nullptr) {
         eventThread_ = std::thread(&StorageMonitorService::StartEventHandler, this);
-        eventCon_.wait(lock, [this] {
+        eventCon_.wait_for(lock, std::chrono::seconds(WAIT_THREAD_TIMEOUT_MS), [this] {
             return eventHandler_ != nullptr;
         });
     }
@@ -137,7 +139,7 @@ void StorageMonitorService::CheckAndCleanBundleCache()
 
 int64_t StorageMonitorService::GetLowerThreshold(int64_t totalSize)
 {
-    int64_t lowBytes = (totalSize * STORAGE_THRESHOLD_PERCENTAGE) / 100;
+    int64_t lowBytes = (totalSize * STORAGE_THRESHOLD_PERCENTAGE) / CONST_NUM_ONE_HUNDRED;
     return (lowBytes < STORAGE_THRESHOLD_MAX_BYTES) ? lowBytes : STORAGE_THRESHOLD_MAX_BYTES;
 }
 } // StorageManager
