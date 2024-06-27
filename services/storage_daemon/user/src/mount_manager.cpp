@@ -49,6 +49,7 @@ using namespace OHOS::FileManagement::CloudFile;
 #endif
 using namespace OHOS::StorageService;
 constexpr int32_t UMOUNT_RETRY_TIMES = 3;
+constexpr int32_t ONE_KB = 1024;
 std::shared_ptr<MountManager> MountManager::instance_ = nullptr;
 
 const string SANDBOX_ROOT_PATH = "/mnt/sandbox/";
@@ -233,30 +234,47 @@ int32_t MountManager::FindProcess(int32_t userId)
                 break;
             }
         }
-        if (isNum) {
-            std::string pidPath = "/proc/" + name;
-            bool found = true;
-            found |= CheckMaps(pidPath + "/maps", prefix);
-            found |= CheckSymlink(pidPath + "/cwd", prefix);
-            found |= CheckSymlink(pidPath + "/root", prefix);
-            found |= CheckSymlink(pidPath + "/exe", prefix);
-            if (found) {
-                std::string filename = "/proc/" + name + "/stat";
-                FILE *file = fopen(filename.c_str(), "r");
-                if (file != nullptr) {
-                    int pid;
-                    char nameBuf[256];
-                    fscanf(file, "%d %s", &pid, nameBuf);
-                    fclose(file);
-                    std::string processName = nameBuf;
-                    processName = processName.substr(1, processName.size() - 2);
-                    LOGE("find a link pid is %{public}d, processName is %{public}s.", pid, processName.c_str());
-                    processInfos.push_back({pid, processName});
-                }
-            }
+        if (!isNum) continue;
+        std::string pidPath = "/proc/" + name;
+        bool found = true;
+        found |= CheckMaps(pidPath + "/maps", prefix);
+        found |= CheckSymlink(pidPath + "/cwd", prefix);
+        found |= CheckSymlink(pidPath + "/root", prefix);
+        found |= CheckSymlink(pidPath + "/exe", prefix);
+        if (!found) continue;
+        std::string filename = "/proc/" + name + "/stat";
+        ProcessInfo info;
+        if (GetProcessInfo(filename, info)) {
+            LOGE("find a link pid is %{public}d, processName is %{public}s.", info.pid, info.name.c_str());
+            processInfos.push_back(info);
         }
     }
     return E_OK;
+}
+
+bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info)
+{
+    if (filename.empty()) {
+        return false;
+    }
+    std::ifstream inputStream(filename.c_str(), std::ios::in);
+    if (!inputStream.is_open()) {
+        LOGE("unable to open %{public}s, err %{public}d", filename.c_str(), errno);
+        return false;
+    }
+    std::string line;
+    std::getline(inputStream, line);
+    if (line.empty()) {
+        return false;
+    }
+    std::stringstream ss(line);
+    std::string pid;
+    ss >> pid;
+    std::string processName;
+    ss >> processName;
+    info.pid = std::stoi(pid);
+    info.name = processName;
+    return true;
 }
 
 bool MountManager::CheckMaps(const std::string &path, const std::string &prefix)
@@ -283,9 +301,9 @@ bool MountManager::CheckMaps(const std::string &path, const std::string &prefix)
 
 bool MountManager::CheckSymlink(const std::string &path, const std::string &prefix)
 {
-    char realPath[1024];
+    char realPath[ONE_KB];
     int res = readlink(path.c_str(), realPath, sizeof(realPath) - 1);
-    if (res < 0 || res >= 1024) {
+    if (res < 0 || res >= ONE_KB) {
         return false;
     }
     realPath[res] = '\0';

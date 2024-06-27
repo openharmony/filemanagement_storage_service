@@ -83,6 +83,7 @@ public:
     int32_t FindProcess(int32_t userId);
     bool CheckMaps(const std::string &path, const std::string &prefix);
     bool CheckSymlink(const std::string &path, const std::string &prefix);
+    bool GetProcessInfo(const std::string &filename, ProcessInfo &info);
 
 private:
     bool SupportHmdfs();
