@@ -259,7 +259,7 @@ int32_t MountManager::FindProcess(int32_t userId)
     return E_OK;
 }
 
-bool CheckMaps(const std::string &path, const std::string &prefix)
+bool MountManager::CheckMaps(const std::string &path, const std::string &prefix)
 {
     bool found = false;
     std::ifstream inputStream(path.c_str(), std::ios::in);
@@ -281,7 +281,7 @@ bool CheckMaps(const std::string &path, const std::string &prefix)
     return found;
 }
 
-bool CheckSymlink(const std::string &path, const std::string &prefix)
+bool MountManager::CheckSymlink(const std::string &path, const std::string &prefix)
 {
     char realPath[1024];
     int res = readlink(path.c_str(), realPath, sizeof(realPath) - 1);
