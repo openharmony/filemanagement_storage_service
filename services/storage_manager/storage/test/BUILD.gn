@@ -26,8 +26,6 @@ ohos_unittest("storage_total_status_service_test") {
 
   sources = [
     "${storage_daemon_path}/ipc/src/storage_daemon_proxy.cpp",
-    "${storage_manager_path}/storage/src/bundle_manager_connector.cpp",
-    "${storage_manager_path}/storage/src/storage_monitor_service.cpp",
     "${storage_manager_path}/storage/src/storage_status_service.cpp",
     "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",

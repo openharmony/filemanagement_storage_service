@@ -22,6 +22,7 @@
 #include <iostream>
 #include "bundle_stats.h"
 #include "storage_stats.h"
+#include "bundle_mgr_interface.h"
 #include "iremote_object.h"
 
 namespace OHOS {
@@ -38,15 +39,28 @@ public:
     int32_t GetBundleStats(const std::string &pkgName, int32_t userId, BundleStats &bundleStats);
     int32_t GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
         const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes);
+    int32_t ResetBundleMgrProxy();
 
 private:
     int GetCurrentUserId();
     std::string GetCallingPkgName();
+    int32_t ConnectBundleMgr();
     int32_t GetAppSize(int32_t userId, int64_t &size);
     const std::vector<std::string> dataDir = {"app", "local", "distributed", "database", "cache"};
+    sptr<AppExecFwk::IBundleMgr> bundleMgr_ = nullptr;
+    sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;
+    std::mutex mutex_;
     const int DEFAULT_USER_ID = 100;
     enum BUNDLE_STATS {APP = 0, LOCAL, DISTRIBUTED, DATABASE, CACHE};
     enum BUNDLE_STATS_RESULT {APPSIZE = 0, CACHESIZE, DATASIZE};
+};
+
+class BundleMgrDeathRecipient : public IRemoteObject::DeathRecipient {
+public:
+    BundleMgrDeathRecipient() = default;
+    virtual ~BundleMgrDeathRecipient() = default;
+
+    virtual void OnRemoteDied(const wptr<IRemoteObject> &object);
 };
 } // StorageManager
 } // OHOS

@@ -85,8 +85,6 @@ ohos_shared_library("storage_manager") {
     defines += [ "STORAGE_STATISTICS_MANAGER" ]
     sources += [
       "account_subscriber/account_subscriber.cpp",
-      "storage/src/bundle_manager_connector.cpp",
-      "storage/src/storage_monitor_service.cpp",
       "storage/src/storage_status_service.cpp",
       "storage/src/storage_total_status_service.cpp",
       "storage/src/volume_storage_status_service.cpp",
@@ -97,7 +95,6 @@ ohos_shared_library("storage_manager") {
       "bundle_framework:appexecfwk_base",
       "bundle_framework:appexecfwk_core",
       "data_share:datashare_consumer",
-      "eventhandler:libeventhandler",
       "relational_store:native_rdb",
     ]
 

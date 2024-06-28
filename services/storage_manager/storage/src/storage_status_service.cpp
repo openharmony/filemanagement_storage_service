@@ -22,8 +22,9 @@
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "storage/bundle_manager_connector.h"
 #include "storage/storage_total_status_service.h"
+#include "bundle_mgr_interface.h"
+#include "bundle_mgr_proxy.h"
 #include "application_info.h"
 #include "iservice_registry.h"
 #include "system_ability_definition.h"
@@ -173,10 +174,10 @@ int32_t StorageStatusService::GetCurrentBundleStats(BundleStats &bundleStats)
 int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t userId, BundleStats &pkgStats)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
-    auto bundleMgr = DelayedSingleton<BundleMgrConnector>::GetInstance()->GetBundleMgrProxy();
-    if (bundleMgr == nullptr) {
+    int32_t err = ConnectBundleMgr();
+    if (err != E_OK) {
         LOGE("StorageStatusService::GetBundleStats connect bundlemgr failed");
-        return E_SERVICE_IS_NULLPTR;
+        return err;
     }
 
     if (userId < 0 || userId > StorageService::MAX_USER_ID) {
@@ -185,7 +186,7 @@ int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t
     }
 
     vector<int64_t> bundleStats;
-    bool res = bundleMgr->GetBundleStats(pkgName, userId, bundleStats);
+    bool res = bundleMgr_->GetBundleStats(pkgName, userId, bundleStats);
     if (!res || bundleStats.size() != dataDir.size()) {
         LOGE("StorageStatusService::An error occurred in querying bundle stats.");
         return E_BUNDLEMGR_ERROR;
@@ -202,17 +203,52 @@ int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t
     return E_OK;
 }
 
+int32_t StorageStatusService::ConnectBundleMgr()
+{
+    LOGD("connect begin");
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (bundleMgr_ == nullptr) {
+        auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+        if (sam == nullptr) {
+            LOGE("StorageStatusService::ConnectBundleMgr samgr == nullptr");
+            return E_SA_IS_NULLPTR;
+        }
+
+        sptr<IRemoteObject> remoteObject = sam->GetSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID);
+        if (!remoteObject) {
+            LOGE("StorageStatusService::ConnectBundleMgr remoteObj == nullptr");
+            return E_REMOTE_IS_NULLPTR;
+        }
+
+        bundleMgr_ = iface_cast<AppExecFwk::IBundleMgr>(remoteObject);
+        if (bundleMgr_ == nullptr) {
+            LOGE("StorageStatusService::ConnectBundleMgr bundleMgr == nullptr");
+            return E_SERVICE_IS_NULLPTR;
+        }
+
+        deathRecipient_ = new (std::nothrow) BundleMgrDeathRecipient();
+        if (!deathRecipient_) {
+            LOGE("StorageStatusService::ConnectBundleMgr failed to create death recipient");
+            return E_DEATH_RECIPIENT_IS_NULLPTR;
+        }
+
+        bundleMgr_->AsObject()->AddDeathRecipient(deathRecipient_);
+    }
+    LOGD("connect end");
+    return E_OK;
+}
+
 int32_t StorageStatusService::GetAppSize(int32_t userId, int64_t &appSize)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
-    auto bundleMgr = DelayedSingleton<BundleMgrConnector>::GetInstance()->GetBundleMgrProxy();
-    if (bundleMgr == nullptr) {
+    int32_t err = ConnectBundleMgr();
+    if (err != E_OK) {
         LOGE("StorageStatusService::GetUserStorageStats connect bundlemgr failed");
-        return E_SERVICE_IS_NULLPTR;
+        return err;
     }
 
     vector<int64_t> bundleStats;
-    bool res = bundleMgr->GetAllBundleStats(userId, bundleStats);
+    bool res = bundleMgr_->GetAllBundleStats(userId, bundleStats);
     if (!res || bundleStats.size() != dataDir.size()) {
         LOGE("StorageStatusService::GetAllBundleStats fail. res %{public}d, bundleStats.size %{public}zu",
              res, bundleStats.size());
@@ -225,6 +261,23 @@ int32_t StorageStatusService::GetAppSize(int32_t userId, int64_t &appSize)
 
     LOGD("StorageStatusService:: userId %{public}d", userId);
     return E_OK;
+}
+
+int32_t StorageStatusService::ResetBundleMgrProxy()
+{
+    LOGD("enter");
+    std::lock_guard<std::mutex> lock(mutex_);
+    if ((bundleMgr_ != nullptr) && (bundleMgr_->AsObject() != nullptr)) {
+        bundleMgr_->AsObject()->RemoveDeathRecipient(deathRecipient_);
+    }
+    bundleMgr_ = nullptr;
+
+    return E_OK;
+}
+
+void BundleMgrDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
+{
+    DelayedSingleton<StorageStatusService>::GetInstance()->ResetBundleMgrProxy();
 }
 
 int32_t StorageStatusService::GetUserStorageStatsByType(int32_t userId, StorageStats &storageStats, std::string type)
