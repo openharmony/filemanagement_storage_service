@@ -75,12 +75,16 @@ ohos_static_library("libsdcrypto") {
     "init:libbegetutil",
     "ipc:ipc_single",
     "openssl:libcrypto_shared",
-    "user_auth_framework:userauth_client",
   ]
 
   if (storage_service_el5_filekey_manager) {
     defines += [ "EL5_FILEKEY_MANAGER" ]
     external_deps += [ "access_token:el5_filekey_manager_sdk" ]
+  }
+
+  if (enable_user_auth_framework) {
+    defines += [ "USER_AUTH_FRAMEWORK" ]
+    external_deps += [ "user_auth_framework:userauth_client" ]
   }
 
   subsystem_name = "filemanagement"

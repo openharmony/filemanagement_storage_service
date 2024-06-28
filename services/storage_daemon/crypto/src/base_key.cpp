@@ -826,7 +826,8 @@ bool BaseKey::UpgradeKeys()
     return true;
 }
 
-bool BaseKey::EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey, KeyBlob &encryptedKey)
+bool BaseKey::EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey,
+                             KeyBlob &encryptedKey)
 {
     LOGD("enter");
     KeyContext keyCtx;
@@ -857,7 +858,8 @@ bool BaseKey::EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, K
     return true;
 }
 
-bool BaseKey::DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey, KeyBlob &decryptedKey)
+bool BaseKey::DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey,
+                             KeyBlob &decryptedKey)
 {
     LOGD("enter");
     KeyContext keyCtx;

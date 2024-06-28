@@ -19,10 +19,12 @@
 #include <condition_variable>
 #include <mutex>
 
+#ifdef USER_AUTH_FRAMEWORK
 #include "iam_common_defines.h"
 #include "user_idm_client.h"
 #include "user_idm_client_callback.h"
 #include "user_idm_client_defines.h"
+#endif
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -34,7 +36,7 @@ enum UserSecStatus {
     FAILED
 };
 
-
+#ifdef USER_AUTH_FRAMEWORK
 class UserSecCallback : public UserIam::UserAuth::GetSecUserInfoCallback {
 public:
     UserSecCallback()
@@ -51,6 +53,7 @@ public:
 private:
     uint64_t secureUid_;
 };
+#endif
 
 class IamClient {
 public:

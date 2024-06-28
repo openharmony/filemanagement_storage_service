@@ -549,6 +549,10 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
         LOGE("ActiveUserKey fail, userId %{public}u, type %{public}u", userId, EL4_KEY);
         return ret;
     }
+    if (KeyManager::GetInstance()->UnlockUserAppKeys(userId, true) != E_OK) {
+        LOGE("failed to delete appkey2");
+        return -EFAULT;
+    }
     RestoreconElX(userId);
     if (updateFlag) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);

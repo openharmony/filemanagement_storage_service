@@ -93,8 +93,12 @@ ohos_unittest("storage_daemon_test") {
     "ipc:libdbinder",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
-    "user_auth_framework:userauth_client",
   ]
+
+  if (enable_user_auth_framework) {
+    defines += [ "USER_AUTH_FRAMEWORK" ]
+    external_deps += [ "user_auth_framework:userauth_client" ]
+  }
 
   use_exceptions = true
 }
@@ -192,8 +196,12 @@ ohos_unittest("storage_daemon_stub_test") {
     "ipc:libdbinder",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
-    "user_auth_framework:userauth_client",
   ]
+
+  if (enable_user_auth_framework) {
+    defines += [ "USER_AUTH_FRAMEWORK" ]
+    external_deps += [ "user_auth_framework:userauth_client" ]
+  }
 }
 
 group("storage_daemon_ipc_test") {
