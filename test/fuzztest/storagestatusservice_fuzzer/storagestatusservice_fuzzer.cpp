@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 #include "storagestatusservice_fuzzer.h"
+#include "storage/bundle_manager_connector.h"
 #include "storage/storage_status_service.h"
 #include "storage_service_log.h"
 #include "storage_service_errno.h"
@@ -48,7 +49,7 @@ bool StorageStatusServiceFuzzTest(const uint8_t *data, size_t size)
     service->GetCurrentBundleStats(bundleStats);
     service->GetBundleStats(pkgName, userId, bundleStats);
     service->GetBundleStatsForIncrease(userId, bundleName, incrementalBackTimes, pkgFileSizes);
-    service->ResetBundleMgrProxy();
+    DelayedSingleton<BundleMgrConnector>::GetInstance()->ResetBundleMgrProxy();
     return true;
 }
 } // namespace StorageManager

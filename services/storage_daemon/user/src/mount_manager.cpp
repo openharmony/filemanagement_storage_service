@@ -916,7 +916,7 @@ int32_t MountManager::RestoreconSystemServiceDirs(int32_t userId)
     for (const DirInfo &dir : systemServiceDir_) {
         std::string path = StringPrintf(dir.path.c_str(), userId);
         RestoreconRecurse(path.c_str());
-        LOGD("systemServiceDir_ RestoreconRecurse path is %{private}s ", path.c_str());
+        LOGD("systemServiceDir_ RestoreconRecurse path is %{public}s ", path.c_str());
     }
 #endif
     return err;
