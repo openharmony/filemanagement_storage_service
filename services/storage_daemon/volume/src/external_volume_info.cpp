@@ -45,6 +45,13 @@ int32_t ExternalVolumeInfo::ReadMetadata()
             devPath_
         };
         fsLabel_ = GetBlkidDataByCmd(cmd);
+    } else if (fsType_ == "exfat") {
+        std::vector<std::string> cmd;
+        cmd = {
+            "exfatlabel",
+            devPath_
+        };
+        fsLabel_ = GetBlkidDataByCmd(cmd);
     }
     return ret;
 }
@@ -87,7 +94,6 @@ int32_t ExternalVolumeInfo::DoCreate(dev_t dev)
         LOGE("External volume DoCreate error.");
         return E_ERR;
     }
-
     return E_OK;
 }
 
@@ -103,35 +109,15 @@ int32_t ExternalVolumeInfo::DoDestroy()
 
 int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
 {
-    int32_t ret = 0;
     mode_t mode = 0777;
     struct stat statbuf;
+    int32_t ret = DoCheck();
 
-    if (GetFsType() == -1) {
-        return E_NOT_SUPPORT;
-    }
-
-    ret = ReadMetadata();
-    if (ret) {
-        LOGE("External volume ReadMetadata failed.");
-        return E_ERR;
-    }
     mountPath_ = StringPrintf(mountPathDir_.c_str(), fsUuid_.c_str());
-
-    // check if dir exists
-    ret = lstat(mountPath_.c_str(), &statbuf);
-    if (!ret) {
+    if (!lstat(mountPath_.c_str(), &statbuf)) {
         LOGE("volume mount path %{public}s exists, please remove first", GetMountPath().c_str());
         return E_MOUNT;
     }
-
-    ret = mkdir(mountPath_.c_str(), S_IRWXU | S_IRWXG | S_IXOTH);
-    if (ret) {
-        LOGE("the volume %{public}s create mount file %{public}s failed",
-             GetVolumeId().c_str(), GetMountPath().c_str());
-        return E_MOUNT;
-    }
-
     auto mountData = StringPrintf("uid=%d,gid=%d,dmask=0007,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
     if (fsType_ == "ext2" || fsType_ == "ext3" || fsType_ == "ext4") {
         ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType_.c_str(), mountFlags, "");
@@ -152,6 +138,13 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
             mountData.c_str()
         };
         ret = ForkExec(cmd);
+    } else if (fsType_ == "exfat") {
+        std::vector<std::string> cmd = {
+            "mount.exfat",
+            devPath_,
+            mountPath_
+        };
+        ret = ForkExec(cmd);
     } else {
         mountFlags |= MS_MGC_VAL;
         ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType_.c_str(), mountFlags, mountData.c_str());
@@ -162,7 +155,6 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
         remove(mountPath_.c_str());
         return E_MOUNT;
     }
-
     return E_OK;
 }
 
