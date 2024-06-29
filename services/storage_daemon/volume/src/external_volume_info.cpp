@@ -107,18 +107,42 @@ int32_t ExternalVolumeInfo::DoDestroy()
     return E_OK;
 }
 
-int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
+int32_t ExternalVolumeInfo::PreMountCheck()
 {
-    mode_t mode = 0777;
+    // check fstype
+    if (GetFsType() == -1) {
+        LOGE("External Volume type not support.");
+        return E_NOT_SUPPORT;
+    }
+    
+    int32_t ret = ExternalVolumeInfo::ReadMetadata();
+    if (ret) {
+        LOGE("External volume PreMountCheck failed.");
+        return E_ERR;
+    }
+    
     struct stat statbuf;
-    int32_t ret = DoCheck();
-
     mountPath_ = StringPrintf(mountPathDir_.c_str(), fsUuid_.c_str());
     if (!lstat(mountPath_.c_str(), &statbuf)) {
         LOGE("volume mount path %{public}s exists, please remove first", GetMountPath().c_str());
         return E_MOUNT;
     }
+    return E_OK;
+}
+
+int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
+{
+    mode_t mode = 0777;
+    int32_t ret = PreMountCheck();
+    if (ret != E_OK) {
+        return ret;
+    }
     auto mountData = StringPrintf("uid=%d,gid=%d,dmask=0007,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
+    if (mkdir(mountPath_.c_str(), S_IRWXU | S_IRWXG | S_IXOTH)) {
+        LOGE("the volume %{public}s exists, please remove first", GetMountPath().c_str());
+        return E_MOUNT;
+    }
+
     if (fsType_ == "ext2" || fsType_ == "ext3" || fsType_ == "ext4") {
         ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType_.c_str(), mountFlags, "");
         if (!ret) {
