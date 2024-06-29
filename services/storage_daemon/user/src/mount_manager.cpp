@@ -236,7 +236,7 @@ int32_t MountManager::FindProcess(int32_t userId)
         }
         if (!isNum) continue;
         std::string pidPath = "/proc/" + name;
-        bool found = true;
+        bool found = false;
         found |= CheckMaps(pidPath + "/maps", prefix);
         found |= CheckSymlink(pidPath + "/cwd", prefix);
         found |= CheckSymlink(pidPath + "/root", prefix);
