@@ -113,23 +113,24 @@ int32_t ExternalVolumeInfo::PreMountCheck()
         LOGE("External Volume type not support.");
         return E_NOT_SUPPORT;
     }
-    
+
     int32_t ret = ExternalVolumeInfo::ReadMetadata();
     if (ret) {
         LOGE("External volume PreMountCheck failed.");
         return E_ERR;
     }
-    
+
     struct stat statbuf;
     mountPath_ = StringPrintf(mountPathDir_.c_str(), fsUuid_.c_str());
     if (!lstat(mountPath_.c_str(), &statbuf)) {
         LOGE("volume mount path %{public}s exists, please remove first", GetMountPath().c_str());
         return E_MOUNT;
     }
+
     return E_OK;
 }
 
-std::vector<std::string> ExternalVolumeInfo::(uint32_t mountFlags)
+std::vector<std::string> ExternalVolumeInfo::FormCmdExfat(uint32_t mountFlags)
 {
     auto mountData = StringPrintf("rw");
     if (mountFlags & MS_RDONLY) {
@@ -139,7 +140,7 @@ std::vector<std::string> ExternalVolumeInfo::(uint32_t mountFlags)
     std::vector<std::string> cmd = {
         "mount.exfat",
         "-o",
-        mountData.c_str();
+        mountData.c_str(),
         devPath_,
         mountPath_
     };

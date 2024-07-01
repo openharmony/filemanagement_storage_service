@@ -59,6 +59,8 @@ private:
 
     int32_t ReadMetadata();
     int32_t PreMountCheck();
+
+    std::vector<std::string> FormCmdExfat(uint32_t mountFlags);
 };
 } // STORAGE_DAEMON
 } // OHOS
