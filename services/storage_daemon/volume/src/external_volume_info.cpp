@@ -109,7 +109,6 @@ int32_t ExternalVolumeInfo::DoDestroy()
 
 int32_t ExternalVolumeInfo::PreMountCheck()
 {
-    // check fstype
     if (GetFsType() == -1) {
         LOGE("External Volume type not support.");
         return E_NOT_SUPPORT;
@@ -130,6 +129,23 @@ int32_t ExternalVolumeInfo::PreMountCheck()
     return E_OK;
 }
 
+std::vector<std::string> ExternalVolumeInfo::(uint32_t mountFlags)
+{
+    auto mountData = StringPrintf("rw");
+    if (mountFlags & MS_RDONLY) {
+        mountData = StringPrintf("ro");
+    }
+
+    std::vector<std::string> cmd = {
+        "mount.exfat",
+        "-o",
+        mountData.c_str();
+        devPath_,
+        mountPath_
+    };
+    return cmd;
+}
+
 int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
 {
     mode_t mode = 0777;
@@ -138,8 +154,10 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
         return ret;
     }
     auto mountData = StringPrintf("uid=%d,gid=%d,dmask=0007,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
-    if (mkdir(mountPath_.c_str(), S_IRWXU | S_IRWXG | S_IXOTH)) {
-        LOGE("the volume %{public}s exists, please remove first", GetMountPath().c_str());
+    ret = mkdir(mountPath_.c_str(), S_IRWXU | S_IRWXG | S_IXOTH);
+    if (ret) {
+        LOGE("the volume %{public}s create mount file %{public}s failed",
+            VolumeInfo::GetVolumeId().c_str(), GetMountPath().c_str());
         return E_MOUNT;
     }
 
@@ -163,11 +181,7 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
         };
         ret = ForkExec(cmd);
     } else if (fsType_ == "exfat") {
-        std::vector<std::string> cmd = {
-            "mount.exfat",
-            devPath_,
-            mountPath_
-        };
+        std::vector<std::string> cmd = FormCmdExfat(mountFlags);
         ret = ForkExec(cmd);
     } else {
         mountFlags |= MS_MGC_VAL;
