@@ -116,7 +116,7 @@ int32_t ExternalVolumeInfo::PreMountCheck()
 
     int32_t ret = ExternalVolumeInfo::ReadMetadata();
     if (ret) {
-        LOGE("External volume PreMountCheck failed.");
+        LOGE("External volume ReadMetadata failed.");
         return E_ERR;
     }
 
@@ -154,14 +154,15 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
     if (ret != E_OK) {
         return ret;
     }
-    auto mountData = StringPrintf("uid=%d,gid=%d,dmask=0007,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
+
     ret = mkdir(mountPath_.c_str(), S_IRWXU | S_IRWXG | S_IXOTH);
     if (ret) {
         LOGE("the volume %{public}s create mount file %{public}s failed",
-            VolumeInfo::GetVolumeId().c_str(), GetMountPath().c_str());
+            GetVolumeId().c_str(), GetMountPath().c_str());
         return E_MOUNT;
     }
 
+    auto mountData = StringPrintf("uid=%d,gid=%d,dmask=0007,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
     if (fsType_ == "ext2" || fsType_ == "ext3" || fsType_ == "ext4") {
         ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType_.c_str(), mountFlags, "");
         if (!ret) {
