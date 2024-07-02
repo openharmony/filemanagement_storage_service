@@ -114,7 +114,7 @@ int32_t ExternalVolumeInfo::PreMountCheck()
         return E_NOT_SUPPORT;
     }
 
-    int32_t ret = ExternalVolumeInfo::ReadMetadata();
+    int32_t ret = ReadMetadata();
     if (ret) {
         LOGE("External volume ReadMetadata failed.");
         return E_ERR;
@@ -152,6 +152,7 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
     mode_t mode = 0777;
     int32_t ret = PreMountCheck();
     if (ret != E_OK) {
+        LOGE("Prechecks before mounting failed, errno is %d", ret);
         return ret;
     }
 
