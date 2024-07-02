@@ -132,9 +132,9 @@ int32_t ExternalVolumeInfo::PreMountCheck()
 
 std::vector<std::string> ExternalVolumeInfo::FormCmdExfat(uint32_t mountFlags)
 {
-    auto mountData = StringPrintf("rw");
+    auto mountData = StringPrintf("rw,uid=%d,gid=%d,dmask=0007,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
     if (mountFlags & MS_RDONLY) {
-        mountData = StringPrintf("ro");
+        mountData = StringPrintf("ro,uid=%d,gid=%d,dmask=0007,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
     }
 
     std::vector<std::string> cmd = {
