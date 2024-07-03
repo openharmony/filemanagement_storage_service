@@ -45,13 +45,6 @@ int32_t ExternalVolumeInfo::ReadMetadata()
             devPath_
         };
         fsLabel_ = GetBlkidDataByCmd(cmd);
-    } else if (fsType_ == "exfat") {
-        std::vector<std::string> cmd;
-        cmd = {
-            "exfatlabel",
-            devPath_
-        };
-        fsLabel_ = GetBlkidDataByCmd(cmd);
     }
     return ret;
 }
@@ -107,30 +100,35 @@ int32_t ExternalVolumeInfo::DoDestroy()
     return E_OK;
 }
 
-int32_t ExternalVolumeInfo::PreMountCheck()
+int32_t ExternalVolumeInfo::DoMount4Ext(uint32_t mountFlags)
 {
-    if (GetFsType() == -1) {
-        LOGE("External Volume type not support.");
-        return E_NOT_SUPPORT;
+    mode_t mode = 0777;
+    int32_t ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType_.c_str(), mountFlags, "");
+    if (!ret) {
+        TravelChmod(mountPath_, mode);
     }
-
-    int32_t ret = ReadMetadata();
-    if (ret) {
-        LOGE("External volume ReadMetadata failed.");
-        return E_ERR;
-    }
-
-    struct stat statbuf;
-    mountPath_ = StringPrintf(mountPathDir_.c_str(), fsUuid_.c_str());
-    if (!lstat(mountPath_.c_str(), &statbuf)) {
-        LOGE("volume mount path %{public}s exists, please remove first", GetMountPath().c_str());
-        return E_MOUNT;
-    }
-
-    return E_OK;
+    return ret;
 }
 
-std::vector<std::string> ExternalVolumeInfo::FormCmdExfat(uint32_t mountFlags)
+int32_t ExternalVolumeInfo::DoMount4Ntfs(uint32_t mountFlags)
+{
+    auto mountData = StringPrintf("rw,uid=%d,gid=%d,dmask=0007,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
+    if (mountFlags & MS_RDONLY) {
+        mountData = StringPrintf("ro,uid=%d,gid=%d,dmask=0007,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
+    }
+
+    std::vector<std::string> cmd = {
+        "mount.ntfs",
+        devPath_,
+        mountPath_,
+        "-o",
+        mountData.c_str()
+    };
+    int32_t ret = ForkExec(cmd);
+    return ret;
+}
+
+int32_t ExternalVolumeInfo::DoMount4Exfat(uint32_t mountFlags)
 {
     auto mountData = StringPrintf("rw,uid=%d,gid=%d,dmask=0007,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
     if (mountFlags & MS_RDONLY) {
@@ -142,20 +140,30 @@ std::vector<std::string> ExternalVolumeInfo::FormCmdExfat(uint32_t mountFlags)
         "-o",
         mountData.c_str(),
         devPath_,
-        mountPath_
+        mountPath_,
     };
-    return cmd;
+    int32_t ret = ForkExec(cmd);
+    return ret;
+}
+
+int32_t ExternalVolumeInfo::DoMount4OtherType(uint32_t mountFlags)
+{
+    mountFlags |= MS_MGC_VAL;
+    auto mountData = StringPrintf("uid=%d,gid=%d,dmask=0007,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
+    int32_t ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType_.c_str(), mountFlags, mountData.c_str());
+    return ret;
 }
 
 int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
 {
-    mode_t mode = 0777;
-    int32_t ret = PreMountCheck();
-    if (ret != E_OK) {
-        LOGE("Prechecks before mounting failed, errno is %d", ret);
-        return ret;
-    }
+    int32_t ret = DoCheck();
+    struct stat statbuf;
 
+    mountPath_ = StringPrintf(mountPathDir_.c_str(), fsUuid_.c_str());
+    if (!lstat(mountPath_.c_str(), &statbuf)) {
+        LOGE("volume mount path %{public}s exists, please remove first", GetMountPath().c_str());
+        return E_MOUNT;
+    }
     ret = mkdir(mountPath_.c_str(), S_IRWXU | S_IRWXG | S_IXOTH);
     if (ret) {
         LOGE("the volume %{public}s create mount file %{public}s failed",
@@ -163,32 +171,14 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
         return E_MOUNT;
     }
 
-    auto mountData = StringPrintf("uid=%d,gid=%d,dmask=0007,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
     if (fsType_ == "ext2" || fsType_ == "ext3" || fsType_ == "ext4") {
-        ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType_.c_str(), mountFlags, "");
-        if (!ret) {
-            TravelChmod(mountPath_, mode);
-        }
+        ret = DoMount4Ext(mountFlags);
     } else if (fsType_ == "ntfs") {
-        if (mountFlags & MS_RDONLY) {
-            mountData = StringPrintf("ro,uid=%d,gid=%d,dmask=0007,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
-        } else {
-            mountData = StringPrintf("rw,uid=%d,gid=%d,dmask=0007,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
-        }
-        std::vector<std::string> cmd = {
-            "mount.ntfs",
-            devPath_,
-            mountPath_,
-            "-o",
-            mountData.c_str()
-        };
-        ret = ForkExec(cmd);
+        ret = DoMount4Ntfs(mountFlags);
     } else if (fsType_ == "exfat") {
-        std::vector<std::string> cmd = FormCmdExfat(mountFlags);
-        ret = ForkExec(cmd);
+        ret = DoMount4Exfat(mountFlags);
     } else {
-        mountFlags |= MS_MGC_VAL;
-        ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType_.c_str(), mountFlags, mountData.c_str());
+        ret = DoMount4OtherType(mountFlags);
     }
 
     if (ret) {
