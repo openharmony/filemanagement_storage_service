@@ -1008,7 +1008,7 @@ int KeyManager::UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &toke
         return 0;
     }
     auto el4Key = userEl4Key_[user];
-    if (!el4Key->RestoreKey({ token, secret })) {
+    if (!el4Key->RestoreKey({ token, secret }) && !el4Key->RestoreKey(NULL_KEY_AUTH)) {
         LOGE("Restore user %{public}u el4 key failed", user);
         return -EFAULT;
     }
