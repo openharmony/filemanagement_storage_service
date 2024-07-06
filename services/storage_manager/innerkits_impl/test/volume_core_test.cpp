@@ -111,6 +111,7 @@ HWTEST_F(VolumeCoreTest, Volume_core_Unmarshalling_0000, testing::ext::TestSize.
     parcel.WriteInt32(state);
     parcel.WriteBool(errorFlag);
     auto result = volumecore.Unmarshalling(parcel);
+    ASSERT_TRUE(result != nullptr);
     EXPECT_EQ(result->GetId(), id);
     EXPECT_EQ(result->GetType(), type);
     EXPECT_EQ(result->GetDiskId(), diskId);

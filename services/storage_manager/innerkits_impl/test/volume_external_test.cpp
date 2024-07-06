@@ -148,6 +148,7 @@ HWTEST_F(VolumeExternalTest, Volume_external_Unmarshalling_0000, testing::ext::T
     volumeexternal.SetPath("/");
     volumeexternal.SetDescription("");
     auto result = volumeexternal.Unmarshalling(parcel);
+    ASSERT_TRUE(result != nullptr);
     EXPECT_EQ(result->GetFsType(), fsType);
     EXPECT_EQ(result->GetUuid(), fsUuid);
     EXPECT_EQ(result->GetPath(), path);

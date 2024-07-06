@@ -34,6 +34,9 @@ void Notification::NotifyVolumeChange(VolumeState notifyCode, std::shared_ptr<Vo
 {
     AAFwk::Want want;
     AAFwk::WantParams wantParams;
+    if (volume == nullptr) {
+        return;
+    }
     wantParams.SetParam("id", AAFwk::String::Box(volume->GetId()));
     wantParams.SetParam("diskId", AAFwk::String::Box(volume->GetDiskId()));
     wantParams.SetParam("fsUuid", AAFwk::String::Box(volume->GetUuid()));
