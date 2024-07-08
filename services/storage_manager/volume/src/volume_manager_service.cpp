@@ -65,6 +65,7 @@ namespace StorageManager {
         }
         std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeId);
         if (volumePtr == nullptr) {
+            LOGE("volumePtr is nullptr for volumeId");
             return;
         }
         volumePtr->SetFsType(fsType);
@@ -96,6 +97,7 @@ namespace StorageManager {
         }
         std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeId);
         if (volumePtr == nullptr) {
+            LOGE("volumePtr is nullptr for volumeId");
             return -EFAULT;
         }
         if (volumePtr->GetState() != VolumeState::UNMOUNTED) {
@@ -124,6 +126,7 @@ namespace StorageManager {
         }
         std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeId);
         if (volumePtr == nullptr) {
+            LOGE("volumePtr is nullptr for volumeId");
             return -EFAULT;
         }
         if (volumePtr->GetState() != VolumeState::MOUNTED) {
@@ -147,6 +150,7 @@ namespace StorageManager {
     {
         std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeId);
         if (volumePtr == nullptr) {
+            LOGE("volumePtr is nullptr for volumeId");
             return -EFAULT;
         }
         std::shared_ptr<StorageDaemonCommunication> sdCommunication;
