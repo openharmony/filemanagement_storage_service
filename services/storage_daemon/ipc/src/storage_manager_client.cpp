@@ -121,9 +121,6 @@ int32_t StorageManagerClient::NotifyVolumeStateChanged(std::string volId, Storag
     if (GetClient() != E_OK) {
         return E_SERVICE_IS_NULLPTR;
     }
-    if (state == nullptr) {
-        return E_PARAMS_INVAL;
-    }
 
     storageManager_->NotifyVolumeStateChanged(volId, state);
 
