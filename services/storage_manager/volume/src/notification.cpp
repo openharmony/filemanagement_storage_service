@@ -35,6 +35,7 @@ void Notification::NotifyVolumeChange(VolumeState notifyCode, std::shared_ptr<Vo
     AAFwk::Want want;
     AAFwk::WantParams wantParams;
     if (volume == nullptr) {
+        LOGE("Notification::NotifyVolumeChange volume is nullptr");
         return;
     }
     wantParams.SetParam("id", AAFwk::String::Box(volume->GetId()));
