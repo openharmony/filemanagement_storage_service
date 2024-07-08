@@ -785,6 +785,10 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::vector<uint8_t> &tok
         LOGI("Active user %{public}u el4 fail", user);
         return -EFAULT;
     }
+    if (UnlockUserAppKeys(user, true) != E_OK) {
+        LOGE("failed to delete appkey2");
+        return -EFAULT;
+    }
     saveESecretStatus[user] = !secret.empty();
     return 0;
 }
@@ -910,8 +914,8 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
         return -ENOENT;
     }
     std::string keyUeceDir = UECE_DIR + "/" + std::to_string(user);
-    if ((type == TYPE_EL5) && !IsDir(keyUeceDir)) {
-        LOGE("Have not found user %{public}u el", user);
+    if ((type == EL5_KEY) && !IsDir(keyUeceDir)) {
+        LOGE("Have not found uece dir %{public}u el", user);
         return -ENOENT;
     }
 
@@ -921,13 +925,13 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
         return -EOPNOTSUPP;
     }
     if (type == EL5_KEY) {
-        if (ActiveUeceUserKey(user, token, secret, elKey)) {
+        if (ActiveUeceUserKey(user, token, secret, elKey) != 0) {
             LOGE("ActiveUeceUserKey failed");
             return -EFAULT;
         }
         return 0;
     }
-    if (ActiveElXUserKey(user, token, keyDir, secret, elKey)) {
+    if (ActiveElXUserKey(user, token, keyDir, secret, elKey) != 0) {
         LOGE("ActiveElXUserKey failed");
         return -EFAULT;
     }
@@ -1004,7 +1008,7 @@ int KeyManager::UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &toke
         return 0;
     }
     auto el4Key = userEl4Key_[user];
-    if (!el4Key->RestoreKey({ token, secret })) {
+    if (!el4Key->RestoreKey({ token, secret }) && !el4Key->RestoreKey(NULL_KEY_AUTH)) {
         LOGE("Restore user %{public}u el4 key failed", user);
         return -EFAULT;
     }
@@ -1012,18 +1016,20 @@ int KeyManager::UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &toke
         LOGE("UnlockUserScreen user %{public}u el4 key failed", user);
         return -EFAULT;
     }
+    LOGI("DecryptClassE user %{public}u saveESecretStatus %{public}d", user, saveESecretStatus[user]);
+    UserAuth auth = { .token = token, .secret = secret };
+    auto el5Key = userEl5Key_[user];
+    if (!el5Key->DecryptClassE(auth, saveESecretStatus[user], user, USER_UNLOCK)) {
+        LOGE("Unlock user %{public}u uece failed", user);
+        return -EFAULT;
+    }
+    if (UnlockUserAppKeys(user, false) != E_OK) {
+        LOGE("failed to delete appkey2");
+        return -EFAULT;
+    }
     saveLockScreenStatus[user] = true;
     LOGI("UnlockUserScreen user %{public}u el3 and el4 success and saveLockScreenStatus is %{public}d", user,
          saveLockScreenStatus[user]);
-    LOGI("DecryptClassE user %{public}u saveESecretStatus %{public}d", user, saveESecretStatus[user]);
-    if (saveESecretStatus[user]) {
-        UserAuth auth = { .token = token, .secret = secret };
-        auto el5Key = userEl5Key_[user];
-        if (!el5Key->DecryptClassE(auth, saveESecretStatus[user], user, USER_UNLOCK)) {
-            LOGE("Unlock user %{public}u uece failed", user);
-            return -EFAULT;
-        }
-    }
     return 0;
 }
 
@@ -1067,25 +1073,34 @@ int KeyManager::DeleteAppkey(uint32_t userId, const std::string keyId)
     return 0;
 }
 
-int KeyManager::UnlockUserAppKeys(uint32_t userId)
+int KeyManager::UnlockUserAppKeys(uint32_t userId, bool needGetAllAppKey)
 {
     LOGI("UnlockUserAppKeys enter!");
 #ifdef EL5_FILEKEY_MANAGER
     std::vector<std::pair<int, std::string>> keyInfo;
     std::vector<std::pair<std::string, bool>> loadInfos;
-    if (El5FilekeyManagerKit::GetUserAppKey(userId, keyInfo) != 0) {
-        LOGE("get User Appkeys fail.");
-        return -EFAULT;
+    if (needGetAllAppKey) {
+        if (El5FilekeyManagerKit::GetUserAllAppKey(userId, keyInfo) != 0) {
+            LOGE("get user all app keys fail.");
+            return -EFAULT;
+        }
+        LOGI("get user all app keys success.");
+    } else {
+        if (El5FilekeyManagerKit::GetUserAppKey(userId, keyInfo) != 0) {
+            LOGE("get User Appkeys fail.");
+            return -EFAULT;
+        }
+        LOGI("get User Appkeys success.");
     }
     if (keyInfo.size() == 0) {
         LOGE("The keyInfo is empty!");
         return 0;
     }
-    if (userEl2Key_.find(userId) == userEl2Key_.end()) {
-        LOGD("userEl2Key_ has not existed");
+    if (userEl5Key_.find(userId) == userEl5Key_.end()) {
+        LOGE("userEl5Key_ has not existed");
         return -ENOENT;
     }
-    auto elKey = userEl2Key_[userId];
+    auto elKey = userEl5Key_[userId];
     std::string keyId;
     for (auto keyInfoAppUid :keyInfo) {
         if (elKey->GenerateAppkey(userId, keyInfoAppUid.first, keyId) == false) {

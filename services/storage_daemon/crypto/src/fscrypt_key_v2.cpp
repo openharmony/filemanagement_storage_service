@@ -167,7 +167,7 @@ bool FscryptKeyV2::DecryptClassE(const UserAuth &auth, bool &isSupport, uint32_t
     (void)auth;
     (void)user;
     (void)status;
-    (void)isSupport;
+    isSupport = false;
     LOGI("Unsupported fscrypt v2");
     return true;
 }
@@ -177,7 +177,7 @@ bool FscryptKeyV2::EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t
     (void)auth;
     (void)user;
     (void)status;
-    (void)isSupport;
+    isSupport = false;
     LOGI("Unsupported fscrypt v2");
     return true;
 }

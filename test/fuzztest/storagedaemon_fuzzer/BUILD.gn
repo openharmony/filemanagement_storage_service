@@ -74,12 +74,16 @@ ohos_fuzztest("StorageDaemonFuzzTest") {
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
-    "user_auth_framework:userauth_client",
   ]
 
   if (storage_service_dfs_service) {
     defines += [ "DFS_SERVICE" ]
     external_deps += [ "dfs_service:cloud_daemon_kit_inner" ]
+  }
+
+  if (enable_user_auth_framework) {
+    defines += [ "USER_AUTH_FRAMEWORK" ]
+    external_deps += [ "user_auth_framework:userauth_client" ]
   }
 
   use_exceptions = true

@@ -189,7 +189,7 @@ int32_t QuotaManager::GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size
 int32_t QuotaManager::SetBundleQuota(const std::string &bundleName, int32_t uid,
     const std::string &bundleDataDirPath, int32_t limitSizeMb)
 {
-    if (bundleName.empty() || bundleDataDirPath.empty() || uid < 0 || limitSizeMb <= 0) {
+    if (bundleName.empty() || bundleDataDirPath.empty() || uid < 0 || limitSizeMb < 0) {
         LOGE("Calling the function PrepareBundleDirQuotaWithSize with invalid param");
         return E_NON_EXIST;
     }
@@ -764,6 +764,20 @@ static void DealWithIncludeFiles(const BundleStatsParas &paras, const std::vecto
     }
 }
 
+static inline bool PathSortFunc(const std::string &path1, const std::string &path2)
+{
+    return path1 < path2;
+}
+
+static void DeduplicationPath(std::vector<std::string> &configPaths)
+{
+    sort(configPaths.begin(), configPaths.end(), PathSortFunc);
+    auto it = unique(configPaths.begin(), configPaths.end(), [](const std::string &path1, const std::string &path2) {
+        return path1 == path2;
+    });
+    configPaths.erase(it, configPaths.end());
+}
+
 static void GetBundleStatsForIncreaseEach(uint32_t userId, std::string &bundleName, int64_t lastBackupTime,
     std::vector<int64_t> &pkgFileSizes)
 {
@@ -813,6 +827,7 @@ static void GetBundleStatsForIncreaseEach(uint32_t userId, std::string &bundleNa
     statFile << VER_10_LINE1 << std::endl;
     statFile << VER_10_LINE2 << std::endl;
 
+    DeduplicationPath(phyIncludes);
     ScanExtensionPath(paras, phyIncludes, phyExcludes, pathMap, statFile);
     // calculate summary file sizes
     pkgFileSizes.emplace_back(paras.fileSizeSum);

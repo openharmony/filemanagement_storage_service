@@ -74,12 +74,12 @@ using FbeOptsE = FbeOptStrE;
 #define FBEX_IOC_UNLOCK_SCREEN _IOWR(FBEX_IOC_MAGIC, FBEX_UNLOCK_SCREEN, FbeOpts)
 #define FBEX_IOC_USER_LOGOUT _IOW(FBEX_IOC_MAGIC, FBEX_USER_LOGOUT, FbeOpts)
 #define FBEX_IOC_STATUS_REPORT _IOW(FBEX_IOC_MAGIC, FBEX_STATUS_REPORT, FbeOpts)
-#define HISI_FBEX_READ_CLASS_E _IOWR(FBEX_IOC_MAGIC, FBEX_READ_EL5, FbeOptsE)
-#define HISI_FBEX_WRITE_CLASS_E _IOWR(FBEX_IOC_MAGIC, FBEX_WRITE_EL5, FbeOptsE)
-#define HISI_FBEX_ADD_CLASS_E _IOWR(FBEX_IOC_MAGIC, FBEX_ADD_EL5, FbeOptsE)
-#define HISI_FBEX_DEL_USER_PINCODE _IOWR(FBEX_IOC_MAGIC, FBEX_DEL_EL5, FbeOptsE)
-#define HISI_FBEX_ADD_APPKEY2 _IOWR(FBEX_IOC_MAGIC, FBEX_GENERATE_APP_KEY, FbeOptsE)
-#define HISI_FBEX_CHANGE_PINCODE _IOWR(FBEX_IOC_MAGIC, FBEX_CHANGE_PINCODE, FbeOptsE)
+#define FBEX_READ_CLASS_E _IOWR(FBEX_IOC_MAGIC, FBEX_READ_EL5, FbeOptsE)
+#define FBEX_WRITE_CLASS_E _IOWR(FBEX_IOC_MAGIC, FBEX_WRITE_EL5, FbeOptsE)
+#define FBEX_ADD_CLASS_E _IOWR(FBEX_IOC_MAGIC, FBEX_ADD_EL5, FbeOptsE)
+#define FBEX_DEL_USER_PINCODE _IOWR(FBEX_IOC_MAGIC, FBEX_DEL_EL5, FbeOptsE)
+#define FBEX_ADD_APPKEY2 _IOWR(FBEX_IOC_MAGIC, FBEX_GENERATE_APP_KEY, FbeOptsE)
+#define FBEX_CHANGE_PINCODE _IOWR(FBEX_IOC_MAGIC, FBEX_CHANGE_PINCODE, FbeOptsE)
 
 } // namespace
 
@@ -149,7 +149,7 @@ int FBEX::InstallEL5KeyToKernel(uint32_t userId, uint8_t flag)
     }
 
     FbeOptsE ops{.user = userId};
-    auto fbeRet = ioctl(fd, HISI_FBEX_ADD_CLASS_E, &ops);
+    auto fbeRet = ioctl(fd, FBEX_ADD_CLASS_E, &ops);
     int ret = 0;
     LOGE("InstallEL5KeyToKernel, ret: 0x%{public}x, errno: %{public}d", fbeRet, errno);
     if (fbeRet != 0) {
@@ -228,7 +228,7 @@ int FBEX::UninstallOrLockUserKeyForEL5ToKernel(uint32_t userId, bool destroy)
         return -errno;
     }
     FbeOptsE ops{.user = userId};
-    auto fbeRet = ioctl(fd, destroy ? HISI_FBEX_DEL_USER_PINCODE : FBEX_IOC_USER_LOGOUT, &ops);
+    auto fbeRet = ioctl(fd, destroy ? FBEX_DEL_USER_PINCODE : FBEX_IOC_USER_LOGOUT, &ops);
     int ret = 0;
     if (fbeRet != 0) {
         LOGE("ioctl fbex_cmd failed, fbeRet: 0x%{public}x, errno: %{public}d", fbeRet, errno);
@@ -298,7 +298,7 @@ int FBEX::GenerateAppkey(uint32_t userId, uint32_t appUid, std::unique_ptr<uint8
         return -errno;
     }
     FbeOptsE ops{.user = userId, .status = appUid, .length = size};
-    auto fbeRet = ioctl(fd, HISI_FBEX_ADD_APPKEY2, &ops);
+    auto fbeRet = ioctl(fd, FBEX_ADD_APPKEY2, &ops);
     if (fbeRet != 0) {
         LOGE("ioctl fbex_cmd failed, fbeRet: 0x%{public}x, errno: %{public}d", fbeRet, errno);
         close(fd);
@@ -360,7 +360,7 @@ int FBEX::ReadESecretToKernel(uint32_t userId, uint32_t status, uint8_t *eBuffer
     uint32_t bufferSize = AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES;
     FbeOptsE ops{.user = userId, .status = status, .length = bufferSize};
     (void)memcpy_s(ops.eBuffer, sizeof(ops.eBuffer), eBuffer, length);
-    auto ret = ioctl(fd, HISI_FBEX_READ_CLASS_E, &ops);
+    auto ret = ioctl(fd, FBEX_READ_CLASS_E, &ops);
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
         close(fd);
@@ -397,7 +397,7 @@ int FBEX::WriteESecretToKernel(uint32_t userId, uint32_t status, uint8_t *eBuffe
     uint32_t bufferSize = AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES;
     FbeOptsE ops{.user = userId, .status = status, .length = bufferSize};
     (void)memcpy_s(ops.eBuffer, sizeof(ops.eBuffer), eBuffer, length);
-    auto ret = ioctl(fd, HISI_FBEX_WRITE_CLASS_E, &ops);
+    auto ret = ioctl(fd, FBEX_WRITE_CLASS_E, &ops);
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
         close(fd);

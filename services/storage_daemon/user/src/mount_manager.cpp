@@ -49,6 +49,7 @@ using namespace OHOS::FileManagement::CloudFile;
 #endif
 using namespace OHOS::StorageService;
 constexpr int32_t UMOUNT_RETRY_TIMES = 3;
+constexpr int32_t ONE_KB = 1024;
 std::shared_ptr<MountManager> MountManager::instance_ = nullptr;
 
 const string SANDBOX_ROOT_PATH = "/mnt/sandbox/";
@@ -198,6 +199,7 @@ int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath, bool 
                     hmdfsMntArgs.GetFlags(), hmdfsMntArgs.OptionsToString().c_str());
     if (ret != 0 && errno != EEXIST && errno != EBUSY) {
         LOGE("failed to mount hmdfs, err %{public}d", errno);
+        FindProcess(userId);
         return E_MOUNT;
     }
 
@@ -207,6 +209,110 @@ int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath, bool 
     }
 
     return E_OK;
+}
+
+int32_t MountManager::FindProcess(int32_t userId)
+{
+    if (userId <= 0) return E_OK;
+    LOGI("FindProcess start, userId is %{public}d", userId);
+    Utils::MountArgument argument(Utils::MountArgumentDescriptors::Alpha(userId, ""));
+    const string &prefix = argument.GetMountPointPrefix();
+    DIR *dir = opendir("/proc");
+    if (dir == nullptr) {
+        LOGE("failed to open dir proc, err %{public}d", errno);
+        return -errno;
+    }
+    std::vector<ProcessInfo> processInfos;
+    struct dirent *entry;
+    while ((entry = readdir(dir)) != nullptr) {
+        if (entry->d_type != DT_DIR) continue;
+        std::string name = entry->d_name;
+        bool isNum = true;
+        for (char c : name) {
+            if (!isdigit(c)) {
+                isNum = false;
+                break;
+            }
+        }
+        if (!isNum) continue;
+        std::string pidPath = "/proc/" + name;
+        bool found = false;
+        found |= CheckMaps(pidPath + "/maps", prefix);
+        found |= CheckSymlink(pidPath + "/cwd", prefix);
+        found |= CheckSymlink(pidPath + "/root", prefix);
+        found |= CheckSymlink(pidPath + "/exe", prefix);
+        if (!found) continue;
+        std::string filename = "/proc/" + name + "/stat";
+        ProcessInfo info;
+        if (GetProcessInfo(filename, info)) {
+            LOGE("find a link pid is %{public}d, processName is %{public}s.", info.pid, info.name.c_str());
+            processInfos.push_back(info);
+        }
+    }
+    return E_OK;
+}
+
+bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info)
+{
+    if (filename.empty()) {
+        return false;
+    }
+    std::ifstream inputStream(filename.c_str(), std::ios::in);
+    if (!inputStream.is_open()) {
+        LOGE("unable to open %{public}s, err %{public}d", filename.c_str(), errno);
+        return false;
+    }
+    std::string line;
+    std::getline(inputStream, line);
+    if (line.empty()) {
+        return false;
+    }
+    std::stringstream ss(line);
+    std::string pid;
+    ss >> pid;
+    std::string processName;
+    ss >> processName;
+    info.pid = std::stoi(pid);
+    info.name = processName;
+    return true;
+}
+
+bool MountManager::CheckMaps(const std::string &path, const std::string &prefix)
+{
+    bool found = false;
+    std::ifstream inputStream(path.c_str(), std::ios::in);
+    if (!inputStream.is_open()) {
+        LOGE("unable to open %{public}s, err %{public}d", path.c_str(), errno);
+    }
+    std::string tmpLine;
+    while (std::getline(inputStream, tmpLine)) {
+        std::string::size_type pos = tmpLine.find("/");
+        if (pos != std::string::npos) {
+            tmpLine = tmpLine.substr(pos);
+            if (tmpLine.find(prefix) == 0) {
+                LOGE("find a fd %{public}s", tmpLine.c_str());
+                found = true;
+                break;
+            }
+        }
+    }
+    return found;
+}
+
+bool MountManager::CheckSymlink(const std::string &path, const std::string &prefix)
+{
+    char realPath[ONE_KB];
+    int res = readlink(path.c_str(), realPath, sizeof(realPath) - 1);
+    if (res < 0 || res >= ONE_KB) {
+        return false;
+    }
+    realPath[res] = '\0';
+    std::string realPathStr(realPath);
+    if (realPathStr.find(prefix) == 0) {
+        LOGE("find a fd %{public}s", realPathStr.c_str());
+        return true;
+    }
+    return false;
 }
 
 int32_t MountManager::CloudMount(int32_t userId, const string& path)
@@ -691,6 +797,7 @@ int32_t MountManager::LocalUMount(int32_t userId)
 
 int32_t MountManager::UmountByUser(int32_t userId)
 {
+    FindProcess(userId);
     int32_t count = 0;
     while (count < UMOUNT_RETRY_TIMES) {
         int32_t err = E_OK;
@@ -809,7 +916,7 @@ int32_t MountManager::RestoreconSystemServiceDirs(int32_t userId)
     for (const DirInfo &dir : systemServiceDir_) {
         std::string path = StringPrintf(dir.path.c_str(), userId);
         RestoreconRecurse(path.c_str());
-        LOGD("systemServiceDir_ RestoreconRecurse path is %{private}s ", path.c_str());
+        LOGD("systemServiceDir_ RestoreconRecurse path is %{public}s ", path.c_str());
     }
 #endif
     return err;

@@ -34,6 +34,11 @@ struct DirInfo {
     gid_t gid;
 };
 
+struct ProcessInfo {
+    int pid;
+    std::string name;
+};
+
 constexpr uid_t OID_ROOT = 0;
 constexpr uid_t OID_SYSTEM = 1000;
 constexpr uid_t OID_FILE_MANAGER = 1006;
@@ -75,6 +80,10 @@ public:
     int32_t FindMountPointsToMap(std::map<std::string, std::list<std::string>> &mountMap, int32_t userId);
     void MountPointToList(std::list<std::string> &hmdfsList, std::list<std::string> &hmfsList,
         std::list<std::string> &sharefsList, std::string &line, int32_t userId);
+    int32_t FindProcess(int32_t userId);
+    bool CheckMaps(const std::string &path, const std::string &prefix);
+    bool CheckSymlink(const std::string &path, const std::string &prefix);
+    bool GetProcessInfo(const std::string &filename, ProcessInfo &info);
 
 private:
     bool SupportHmdfs();

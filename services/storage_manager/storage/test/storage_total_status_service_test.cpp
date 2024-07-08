@@ -16,6 +16,7 @@
 #include <cstdio>
 #include <gtest/gtest.h>
 
+#include "storage/bundle_manager_connector.h"
 #include "storage/storage_status_service.h"
 #include "storage/storage_total_status_service.h"
 #include "storage_service_errno.h"
@@ -200,7 +201,7 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetCurrentBundleStats_000
 HWTEST_F(StorageTotalStatusServiceTest, Storage_total_status_ResetBundleMgrProxy_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_total_status_ResetBundleMgrProxy_0000";
-    std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
+    std::shared_ptr<BundleMgrConnector> service = DelayedSingleton<BundleMgrConnector>::GetInstance();
     int64_t result = service->ResetBundleMgrProxy();
     EXPECT_GE(result, 0);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_total_status_ResetBundleMgrProxy_0000";
