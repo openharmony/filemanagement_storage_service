@@ -77,6 +77,10 @@ int32_t StorageDaemonCommunication::PrepareAddUser(int32_t userId, uint32_t flag
         LOGE("StorageDaemonCommunication::PrepareAddUser connect failed");
         return err;
     }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
     return storageDaemon_->PrepareUserDirs(userId, flags);
 }
 
@@ -87,6 +91,10 @@ int32_t StorageDaemonCommunication::RemoveUser(int32_t userId, uint32_t flags)
     if (err != E_OK) {
         LOGE("StorageDaemonCommunication::RemoveUser connect failed");
         return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->DestroyUserDirs(userId, flags);
 }
@@ -99,6 +107,10 @@ int32_t StorageDaemonCommunication::PrepareStartUser(int32_t userId)
         LOGE("StorageDaemonCommunication::PrepareStartUser connect failed");
         return err;
     }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
     return storageDaemon_->StartUser(userId);
 }
 
@@ -109,6 +121,10 @@ int32_t StorageDaemonCommunication::StopUser(int32_t userId)
     if (err != E_OK) {
         LOGE("StorageDaemonCommunication::StopUser connect failed");
         return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->StopUser(userId);
 }
@@ -121,6 +137,10 @@ int32_t StorageDaemonCommunication::Mount(std::string volumeId, int32_t flag)
         LOGE("StorageDaemonCommunication::mount connect failed");
         return err;
     }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
     return storageDaemon_->Mount(volumeId, flag);
 }
 
@@ -131,6 +151,10 @@ int32_t StorageDaemonCommunication::Unmount(std::string volumeId)
     if (err != E_OK) {
         LOGE("StorageDaemonCommunication::unmount connect failed");
         return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->UMount(volumeId);
 }
@@ -143,6 +167,10 @@ int32_t StorageDaemonCommunication::Check(std::string volumeId)
         LOGE("StorageDaemonCommunication::check connect failed");
         return err;
     }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
     return storageDaemon_->Check(volumeId);
 }
 
@@ -153,6 +181,10 @@ int32_t StorageDaemonCommunication::Partition(std::string diskId, int32_t type)
     if (err != E_OK) {
         LOGE("StorageDaemonCommunication::Partition connect failed");
         return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->Partition(diskId, type);
 }
@@ -165,6 +197,10 @@ int32_t StorageDaemonCommunication::Format(std::string volumeId, std::string typ
         LOGE("StorageDaemonCommunication::Format connect failed");
         return err;
     }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
     return storageDaemon_->Format(volumeId, type);
 }
 
@@ -175,6 +211,10 @@ int32_t StorageDaemonCommunication::SetVolumeDescription(std::string volumeId, s
     if (err != E_OK) {
         LOGE("StorageDaemonCommunication::SetVolumeDescription connect failed");
         return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->SetVolumeDescription(volumeId, description);
 }
@@ -187,6 +227,10 @@ int32_t StorageDaemonCommunication::GenerateUserKeys(uint32_t userId, uint32_t f
         LOGE("Connect failed");
         return err;
     }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
     return storageDaemon_->GenerateUserKeys(userId, flags);
 }
 
@@ -197,6 +241,10 @@ int32_t StorageDaemonCommunication::DeleteUserKeys(uint32_t userId)
     if (err != E_OK) {
         LOGE("Connect failed");
         return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->DeleteUserKeys(userId);
 }
@@ -212,6 +260,10 @@ int32_t StorageDaemonCommunication::UpdateUserAuth(uint32_t userId, uint64_t sec
         LOGE("Connect failed");
         return err;
     }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
     return storageDaemon_->UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
 }
 
@@ -225,6 +277,10 @@ int32_t StorageDaemonCommunication::ActiveUserKey(uint32_t userId,
         LOGE("Connect failed");
         return err;
     }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
     return storageDaemon_->ActiveUserKey(userId, token, secret);
 }
 
@@ -236,6 +292,10 @@ int32_t StorageDaemonCommunication::InactiveUserKey(uint32_t userId)
         LOGE("Connect failed");
         return err;
     }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
     return storageDaemon_->InactiveUserKey(userId);
 }
 
@@ -246,6 +306,10 @@ int32_t StorageDaemonCommunication::LockUserScreen(uint32_t userId)
     if (err != E_OK) {
         LOGE("Connect failed");
         return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->LockUserScreen(userId);
 }
@@ -260,6 +324,10 @@ int32_t StorageDaemonCommunication::UnlockUserScreen(uint32_t userId,
         LOGE("Connect failed");
         return err;
     }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
     return storageDaemon_->UnlockUserScreen(userId, token, secret);
 }
 
@@ -271,6 +339,10 @@ int32_t StorageDaemonCommunication::GetLockScreenStatus(uint32_t userId, bool &l
         LOGE("Connect failed");
         return err;
     }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
     return storageDaemon_->GetLockScreenStatus(userId, lockScreenStatus);
 }
 
@@ -281,6 +353,10 @@ int32_t StorageDaemonCommunication::UpdateKeyContext(uint32_t userId)
     if (err != E_OK) {
         LOGE("Connect failed");
         return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->UpdateKeyContext(userId);
 }
@@ -311,6 +387,10 @@ std::vector<int32_t> StorageDaemonCommunication::CreateShareFile(const std::vect
         LOGE("Connect failed");
         return std::vector<int32_t>{err};
     }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return std::vector<int32_t>{err};
+    }
     return storageDaemon_->CreateShareFile(uriList, tokenId, flag);
 }
 
@@ -321,6 +401,10 @@ int32_t StorageDaemonCommunication::DeleteShareFile(uint32_t tokenId, const std:
     if (err != E_OK) {
         LOGE("Connect failed");
         return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->DeleteShareFile(tokenId, uriList);
 }
@@ -334,6 +418,10 @@ int32_t StorageDaemonCommunication::SetBundleQuota(const std::string &bundleName
         LOGE("Connect failed");
         return err;
     }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
     return storageDaemon_->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
 }
 
@@ -345,6 +433,10 @@ int32_t StorageDaemonCommunication::GetOccupiedSpace(int32_t idType, int32_t id,
         LOGE("Connect failed");
         return err;
     }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
     return storageDaemon_->GetOccupiedSpace(idType, id, size);
 }
 
@@ -354,6 +446,10 @@ int32_t StorageDaemonCommunication::MountCryptoPathAgain(int32_t userId)
     if (err != E_OK) {
         LOGE("Connect failed");
         return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->MountCryptoPathAgain(userId);
 }
@@ -365,6 +461,10 @@ int32_t StorageDaemonCommunication::GenerateAppkey(uint32_t userId, uint32_t app
         LOGE("Connect failed");
         return err;
     }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
     return storageDaemon_->GenerateAppkey(userId, appUid, keyId);
 }
 
@@ -374,6 +474,10 @@ int32_t StorageDaemonCommunication::DeleteAppkey(uint32_t userId, const std::str
     if (err != E_OK) {
         LOGE("Connect failed");
         return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->DeleteAppkey(userId, keyId);
 }
@@ -387,6 +491,10 @@ int32_t StorageDaemonCommunication::GetBundleStatsForIncrease(uint32_t userId,
         LOGE("Connect failed");
         return err;
     }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
     return storageDaemon_->GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes, pkgFileSizes);
 }
 
@@ -397,6 +505,10 @@ int32_t StorageDaemonCommunication::UpdateMemoryPara(int32_t size, int32_t &oldS
     if (err != E_OK) {
         LOGE("Connect failed");
         return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->UpdateMemoryPara(size, oldSize);
 }
@@ -410,6 +522,10 @@ int32_t StorageDaemonCommunication::MountDfsDocs(int32_t userId, const std::stri
         LOGE("Connect failed");
         return err;
     }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
     return storageDaemon_->MountDfsDocs(userId, relativePath, networkId, deviceId);
 }
 
@@ -421,6 +537,10 @@ int32_t StorageDaemonCommunication::UMountDfsDocs(int32_t userId, const std::str
     if (err != E_OK) {
         LOGE("Connect failed");
         return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->UMountDfsDocs(userId, relativePath, networkId, deviceId);
 }

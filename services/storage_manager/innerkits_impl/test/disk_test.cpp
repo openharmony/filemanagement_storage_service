@@ -115,6 +115,7 @@ HWTEST_F(DiskTest, Disk_Unmarshalling_0000, testing::ext::TestSize.Level1)
     parcel.WriteInt32(flag);
     Disk disk("400", 4000, "/", "", SD_FLAG);
     auto result = disk.Unmarshalling(parcel);
+    ASSERT_TRUE(result != nullptr);
     EXPECT_EQ(result->GetDiskId(), diskId);
     EXPECT_EQ(result->GetSizeBytes(), sizeBytes);
     EXPECT_EQ(result->GetSysPath(), sysPath);

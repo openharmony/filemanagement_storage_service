@@ -18,6 +18,7 @@
 #include "storage_daemon_communication/storage_daemon_communication.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "utils/storage_utils.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -35,7 +36,8 @@ std::shared_ptr<Disk> DiskManagerService::GetDiskById(std::string diskId)
 void DiskManagerService::OnDiskCreated(Disk disk)
 {
     if (diskMap_.Contains(disk.GetDiskId())) {
-        LOGE("DiskManagerService::OnDiskCreated the disk %{public}s already exists", disk.GetDiskId().c_str());
+        LOGE("DiskManagerService::OnDiskCreated the disk %{public}s already exists",
+            GetAnonyString(disk.GetDiskId()).c_str());
         return;
     }
     auto diskPtr = std::make_shared<Disk>(disk);
@@ -45,7 +47,7 @@ void DiskManagerService::OnDiskCreated(Disk disk)
 void DiskManagerService::OnDiskDestroyed(std::string diskId)
 {
     if (!diskMap_.Contains(diskId)) {
-        LOGE("DiskManagerService::OnDiskDestroyed the disk %{public}s doesn't exist", diskId.c_str());
+        LOGE("DiskManagerService::OnDiskDestroyed the disk %{public}s doesn't exist", GetAnonyString(diskId).c_str());
         return;
     }
     diskMap_.Erase(diskId);
@@ -54,7 +56,7 @@ void DiskManagerService::OnDiskDestroyed(std::string diskId)
 int32_t DiskManagerService::Partition(std::string diskId, int32_t type)
 {
     if (!diskMap_.Contains(diskId)) {
-        LOGE("DiskManagerService::Partition the disk %{public}s doesn't exist", diskId.c_str());
+        LOGE("DiskManagerService::Partition the disk %{public}s doesn't exist", GetAnonyString(diskId).c_str());
         return E_NON_EXIST;
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;

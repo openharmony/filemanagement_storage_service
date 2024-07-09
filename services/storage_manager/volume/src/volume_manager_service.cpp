@@ -64,6 +64,10 @@ namespace StorageManager {
             return;
         }
         std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeId);
+        if (volumePtr == nullptr) {
+            LOGE("volumePtr is nullptr for volumeId");
+            return;
+        }
         volumePtr->SetFsType(fsType);
         volumePtr->SetFsUuid(fsUuid);
         volumePtr->SetPath(path);
@@ -92,6 +96,10 @@ namespace StorageManager {
             return E_NON_EXIST;
         }
         std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeId);
+        if (volumePtr == nullptr) {
+            LOGE("volumePtr is nullptr for volumeId");
+            return -EFAULT;
+        }
         if (volumePtr->GetState() != VolumeState::UNMOUNTED) {
             LOGE("VolumeManagerService::The type of volume(Id %{public}s) is not unmounted", volumeId.c_str());
             return E_MOUNT;
@@ -117,6 +125,10 @@ namespace StorageManager {
             return E_NON_EXIST;
         }
         std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeId);
+        if (volumePtr == nullptr) {
+            LOGE("volumePtr is nullptr for volumeId");
+            return -EFAULT;
+        }
         if (volumePtr->GetState() != VolumeState::MOUNTED) {
             LOGE("VolumeManagerService::The type of volume(Id %{public}s) is not mounted", volumeId.c_str());
             return E_UMOUNT;
@@ -137,6 +149,10 @@ namespace StorageManager {
     int32_t VolumeManagerService::Check(std::string volumeId)
     {
         std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeId);
+        if (volumePtr == nullptr) {
+            LOGE("volumePtr is nullptr for volumeId");
+            return -EFAULT;
+        }
         std::shared_ptr<StorageDaemonCommunication> sdCommunication;
         sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
         volumePtr->SetState(VolumeState::CHECKING);

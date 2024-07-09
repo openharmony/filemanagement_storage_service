@@ -20,6 +20,7 @@
 
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "utils/storage_utils.h"
 #ifdef EXTERNAL_STORAGE_MANAGER
 #include "volume/volume_manager_service.h"
 #endif
@@ -49,7 +50,7 @@ std::string VolumeStorageStatusService::GetVolumePath(std::string volumeUuid)
 int32_t VolumeStorageStatusService::GetFreeSizeOfVolume(string volumeUuid, int64_t &freeSize)
 {
     string path = GetVolumePath(volumeUuid);
-    LOGI("VolumeStorageStatusService::GetFreeSizeOfVolume path is %{public}s", path.c_str());
+    LOGI("VolumeStorageStatusService::GetFreeSizeOfVolume path is %{public}s", GetAnonyString(path).c_str());
     if (path == "") {
         return E_NON_EXIST;
     }

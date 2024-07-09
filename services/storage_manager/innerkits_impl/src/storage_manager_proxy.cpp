@@ -668,7 +668,7 @@ int32_t StorageManagerProxy::GetAllVolumes(std::vector<VolumeExternal> &vecOfVol
 
 int32_t StorageManagerProxy::NotifyDiskCreated(Disk disk)
 {
-    LOGI("StorageManagerProxy::NotifyDiskCreate, diskId:%{public}s", disk.GetDiskId().c_str());
+    LOGI("StorageManagerProxy::NotifyDiskCreate, diskId:%{public}s", GetAnonyString(disk.GetDiskId()).c_str());
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
@@ -688,7 +688,7 @@ int32_t StorageManagerProxy::NotifyDiskCreated(Disk disk)
 
 int32_t StorageManagerProxy::NotifyDiskDestroyed(std::string diskId)
 {
-    LOGI("StorageManagerProxy::NotifyDiskDestroyed, diskId:%{public}s", diskId.c_str());
+    LOGI("StorageManagerProxy::NotifyDiskDestroyed, diskId:%{public}s", GetAnonyString(diskId).c_str());
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
@@ -706,7 +706,7 @@ int32_t StorageManagerProxy::NotifyDiskDestroyed(std::string diskId)
 
 int32_t StorageManagerProxy::Partition(std::string diskId, int32_t type)
 {
-    LOGI("StorageManagerProxy::Partition, diskId:%{public}s", diskId.c_str());
+    LOGI("StorageManagerProxy::Partition, diskId:%{public}s", GetAnonyString(diskId).c_str());
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
@@ -756,7 +756,7 @@ int32_t StorageManagerProxy::GetAllDisks(std::vector<Disk> &vecOfDisk)
     }
     for (uint i = 0; i < size; i++) {
         std::unique_ptr<Disk> disk = Disk::Unmarshalling(reply);
-        LOGI("StorageManagerProxy::GetAllDisks push %{public}s", disk->GetDiskId().c_str());
+        LOGI("StorageManagerProxy::GetAllDisks push %{public}s", GetAnonyString(disk->GetDiskId()).c_str());
         vecOfDisk.push_back(*disk);
     }
     return E_OK;
