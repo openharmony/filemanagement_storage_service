@@ -308,6 +308,7 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_UpdateKeyContext_0000,
 
     uint32_t userId = 108;
     uint32_t flag = CRYPTO_FLAG_EL2;
+    storageManagerClient_->DeleteUserKeys(userId);
     int32_t ret = storageManagerClient_->GenerateUserKeys(userId, flag);
     EXPECT_TRUE(ret == E_OK);
 

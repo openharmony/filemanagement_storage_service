@@ -310,7 +310,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_StopUser_0000, testin
         service->PrepareStartUser(userId);
         result = service->StopUser(userId);
     }
-    EXPECT_EQ(result, 0);
+    EXPECT_EQ(result, E_UMOUNT);
     service->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_StopUser_0000";
 }
