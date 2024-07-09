@@ -85,8 +85,7 @@ int32_t NetlinkManager::Start()
 int32_t NetlinkManager::Stop()
 {
     int32_t ret = 0;
-
-    if (nlHandler_->Stop()) {
+    if ((nlHandler_ != nullptr) && nlHandler_->Stop()) {
         ret = E_ERR;
     }
     delete nlHandler_;
