@@ -46,6 +46,10 @@ static const std::string CONFIG_PTAH = "/system/etc/storage_daemon/disk_config";
 
 static bool ParasConfig(StorageDaemon::DiskManager *dm)
 {
+    if (dm == nullptr) {
+        LOGE("Unable to get DiskManger");
+        return false;
+    }
     std::ifstream infile;
     infile.open(CONFIG_PTAH);
     if (!infile) {
