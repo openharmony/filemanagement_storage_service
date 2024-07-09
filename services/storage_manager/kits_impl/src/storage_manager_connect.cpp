@@ -56,8 +56,9 @@ int32_t StorageManagerConnect::Connect()
             LOGE("StorageManagerConnect::Connect failed to create death recipient");
             return E_DEATH_RECIPIENT_IS_NULLPTR;
         }
-
-        storageManager_->AsObject()->AddDeathRecipient(deathRecipient_);
+        if (storageManager_->AsObject() != nullptr) {
+            storageManager_->AsObject()->AddDeathRecipient(deathRecipient_);
+        }
     }
     LOGD("StorageManagerConnect::Connect end");
     return E_OK;
