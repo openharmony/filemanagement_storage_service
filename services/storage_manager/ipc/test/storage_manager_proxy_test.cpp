@@ -496,7 +496,8 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyVolumeCreated_0000
 {
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_NotifyVolumeCreated_0000";
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    ASSERT_TRUE(samgr != nullptr) << "Storage_manager_proxy_NotifyVolumeCreated_0000 fail to get GetSystemAbilityManager";
+    ASSERT_TRUE(samgr != nullptr) << "Storage_manager_proxy_NotifyVolumeCreated_0000 \
+    fail to get GetSystemAbilityManager";
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     ASSERT_TRUE(remote != nullptr) << "GetSystemAbility failed";
     auto proxy = iface_cast<IStorageManager>(remote);
@@ -534,7 +535,8 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyVolumeMounted_0000
     std::string path = "/";
     std::string description = "description-1";
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    ASSERT_TRUE(samgr != nullptr) << "Storage_manager_proxy_NotifyVolumeMounted_0000 fail to get GetSystemAbilityManager";
+    ASSERT_TRUE(samgr != nullptr) << "Storage_manager_proxy_NotifyVolumeMounted_0000 \
+    fail to get GetSystemAbilityManager";
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     ASSERT_TRUE(remote != nullptr) << "GetSystemAbility failed";
     auto proxy = iface_cast<IStorageManager>(remote);
@@ -559,7 +561,8 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyVolumeDestroyed_00
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_NotifyVolumeDestroyed_0000";
     std::string volumeId = "vol-1-20";
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    ASSERT_TRUE(samgr != nullptr) << "Storage_manager_proxy_NotifyVolumeDestroyed_0000 fail to get GetSystemAbilityManager";
+    ASSERT_TRUE(samgr != nullptr) << "Storage_manager_proxy_NotifyVolumeDestroyed_0000 \
+    fail to get GetSystemAbilityManager";
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     ASSERT_TRUE(remote != nullptr) << "GetSystemAbility failed";
     auto proxy = iface_cast<IStorageManager>(remote);
@@ -684,7 +687,8 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyDiskDestroyed_0000
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_NotifyDiskDestroyed_0000";
     std::string diskId = "disk-1-24";
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    ASSERT_TRUE(samgr != nullptr) << "Storage_manager_proxy_NotifyDiskDestroyed_0000 fail to get GetSystemAbilityManager";
+    ASSERT_TRUE(samgr != nullptr) << "Storage_manager_proxy_NotifyDiskDestroyed_0000 \
+    fail to get GetSystemAbilityManager";
     auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     ASSERT_TRUE(remote != nullptr) << "GetSystemAbility failed";
     auto proxy = iface_cast<IStorageManager>(remote);
