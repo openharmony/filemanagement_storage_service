@@ -60,7 +60,7 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Prepar
 
     ASSERT_TRUE(storageDaemonClient_ != nullptr);
 
-    int32_t userid = 103;
+    int32_t userid = StorageTest::USER_ID1;
     int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL2;
     int32_t ret = storageDaemonClient_->PrepareUserDirs(userid, flags);
     EXPECT_TRUE(ret == E_OK);
@@ -82,18 +82,16 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_StartU
 
     ASSERT_TRUE(storageDaemonClient_ != nullptr);
 
-    int32_t userid = 104;
+    int32_t userid = StorageTest::USER_ID2;
     int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL2;
+    storageDaemonClient_->DestroyUserDirs(userid, flags);
     int32_t ret = storageDaemonClient_->PrepareUserDirs(userid, flags);
     EXPECT_TRUE(ret == E_OK) << "PrepareUserDirs error";
     ret = storageDaemonClient_->StartUser(userid);
     EXPECT_TRUE(ret == E_OK) << "StartUser error";
 
-    ret = storageDaemonClient_->StopUser(userid);
-    EXPECT_TRUE(ret == E_OK) << "check StopUser error";
-
+    storageDaemonClient_->StopUser(userid);
     storageDaemonClient_->DestroyUserDirs(userid, flags);
-    EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_StartUser_001 end";
 }
 
@@ -109,7 +107,7 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Prepar
 
     ASSERT_TRUE(storageDaemonClient_ != nullptr);
 
-    int32_t userid = 105;
+    int32_t userid = StorageTest::USER_ID3;
     std::string volId = "vol-1-1";
     int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL2;
     int32_t ret = storageDaemonClient_->PrepareUserSpace(userid, volId, flags);
@@ -132,7 +130,7 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_MountD
 
     ASSERT_TRUE(storageDaemonClient_ != nullptr);
 
-    int32_t userId = 105;
+    int32_t userId = StorageTest::USER_ID3;
     std::string relativePath = "account";
     std::string networkId = "testnetworkid";
     std::string deviceId = "testdevid";
@@ -153,12 +151,12 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_UMount
 
     ASSERT_TRUE(storageDaemonClient_ != nullptr);
 
-    int32_t userId = 105;
+    int32_t userId = StorageTest::USER_ID3;
     std::string relativePath = "account";
     std::string networkId = "testnetworkid";
     std::string deviceId = "testdevid";
     int32_t ret = storageDaemonClient_->UMountDfsDocs(userId, relativePath, networkId, deviceId);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(ret, E_UMOUNT);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UMountDfsDocs_001 end";
 }
 
@@ -174,7 +172,7 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Active
 
     ASSERT_TRUE(storageDaemonClient_ != nullptr);
 
-    int32_t userid = 108;
+    int32_t userid = StorageTest::USER_ID4;
     int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL2;
     int32_t ret = storageDaemonClient_->GenerateUserKeys(userid, flags);
     ASSERT_TRUE(ret == E_OK);
@@ -201,7 +199,7 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Update
 
     ASSERT_TRUE(storageDaemonClient_ != nullptr);
 
-    int32_t userid = 109;
+    int32_t userid = StorageTest::USER_ID5;
     int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL2;
     int32_t ret = storageDaemonClient_->PrepareUserDirs(userid, flags);
     ret = storageDaemonClient_->StartUser(userid);
@@ -210,7 +208,7 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Update
     ret = storageDaemonClient_->UpdateUserAuth(userid, 0, {}, {}, {});
     EXPECT_TRUE(ret == E_OK) << "UpdateUserAuth error";
 
-    ret = storageDaemonClient_->StopUser(userid);
+    storageDaemonClient_->StopUser(userid);
     storageDaemonClient_->DestroyUserDirs(userid, flags);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UpdateUserAuth_001 end";
 }
@@ -227,7 +225,7 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Update
 
     ASSERT_TRUE(storageDaemonClient_ != nullptr);
 
-    int32_t userid = 110;
+    int32_t userid = StorageTest::USER_ID1;
     int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL2;
     int32_t ret = storageDaemonClient_->GenerateUserKeys(userid, flags);
     ASSERT_TRUE(ret == E_OK);

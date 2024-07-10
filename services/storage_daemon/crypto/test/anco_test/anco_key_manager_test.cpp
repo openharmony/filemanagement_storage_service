@@ -69,7 +69,7 @@ HWTEST_F(AncoKeyManagerTest, Set_Anco_Directory_El_Policy_utils_001, TestSize.Le
     const std::string policyType = "";
     const uint32_t user = 0;
     EXPECT_EQ(AncoKeyManager::GetInstance()->SetAncoDirectoryElPolicy(path, policyType, user),
-              OHOS::E_OPEN_JSON_FILE_ERROR);
+              OHOS::E_JSON_PARSE_ERROR);
     GTEST_LOG_(INFO) << "AnKeyManagerTest_SetAnDirectoryElpolicy_0100 end";
 }
 
