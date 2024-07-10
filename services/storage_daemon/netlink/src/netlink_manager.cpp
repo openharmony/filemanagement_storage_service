@@ -85,11 +85,12 @@ int32_t NetlinkManager::Start()
 int32_t NetlinkManager::Stop()
 {
     int32_t ret = 0;
-
-    if (nlHandler_->Stop()) {
-        ret = E_ERR;
+    if (nlHandler_ != nullptr) {
+        if (nlHandler_->Stop()) {
+            ret = E_ERR;
+        }
+        delete nlHandler_;
     }
-    delete nlHandler_;
     nlHandler_ = nullptr;
     (void)close(socketFd_);
     socketFd_ = -1;
