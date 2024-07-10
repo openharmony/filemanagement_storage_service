@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef STORAGE_DAEMON_CILENT_H
-#define STORAGE_DAEMON_CILENT_H
+#ifndef STORAGE_DAEMON_CLIENT_H
+#define STORAGE_DAEMON_CLIENT_H
 
 #include <mutex>
 #include <iostream>

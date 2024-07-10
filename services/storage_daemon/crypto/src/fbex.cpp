@@ -147,7 +147,6 @@ int FBEX::InstallEL5KeyToKernel(uint32_t userId, uint8_t flag)
     FbeOptsE ops{.user = userId};
     uint32_t fbeRet = ioctl(fd, HISI_FBEX_ADD_CLASS_E, &ops);
     int ret = 0;
-    LOGE("InstallEL5KeyToKernel, ret: 0x%{public}x, errno: %{public}d", fbeRet, errno);
     if (fbeRet != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", fbeRet, errno);
         ret = -errno;
@@ -159,7 +158,7 @@ int FBEX::InstallEL5KeyToKernel(uint32_t userId, uint8_t flag)
 
 int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size, uint8_t flag)
 {
-    LOGD("enter, userId: %{public}d, type: %{public}u, flag: %{public}u", userId, type, flag);
+    LOGI("enter, userId: %{public}d, type: %{public}u, flag: %{public}u", userId, type, flag);
     if (!CheckIvValid(iv, size)) {
         LOGE("install key param invalid");
         return -EINVAL;
@@ -182,13 +181,13 @@ int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32
     close(fd);
 
     (void)memcpy_s(iv, size, ops.iv, sizeof(ops.iv));
-    LOGD("success");
+    LOGI("InstallKeyToKernel success");
     return ret;
 }
 
 int FBEX::UninstallOrLockUserKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size, bool destroy)
 {
-    LOGD("enter, userId: %{public}d, type: %{public}u, flag: %{public}d", userId, type, destroy);
+    LOGI("enter, userId: %{public}d, type: %{public}u, flag: %{public}d", userId, type, destroy);
     if (!CheckIvValid(iv, size)) {
         LOGE("uninstall key param invalid");
         return -EINVAL;
@@ -207,7 +206,7 @@ int FBEX::UninstallOrLockUserKeyToKernel(uint32_t userId, uint32_t type, uint8_t
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
     }
     close(fd);
-    LOGD("success");
+    LOGI("UninstallOrLockUserKeyToKernel success");
     return ret;
 }
 
@@ -231,14 +230,14 @@ int FBEX::UninstallOrLockUserKeyForEL5ToKernel(uint32_t userId, bool destroy)
         ret = -errno;
     }
     close(fd);
-    LOGI("success");
+    LOGI("UninstallOrLockUserKeyForEL5ToKernel success");
     return ret;
 }
 
 // for el3 & el4
 int FBEX::LockScreenToKernel(uint32_t userId)
 {
-    LOGD("enter, userId: %{public}d", userId);
+    LOGI("enter, userId: %{public}d", userId);
 
     int fd = open(FBEX_CMD_PATH, O_RDWR);
     if (fd < 0) {
@@ -253,7 +252,7 @@ int FBEX::LockScreenToKernel(uint32_t userId)
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
     }
     close(fd);
-    LOGD("success");
+    LOGI("LockScreenToKernel success");
     return ret;
 }
 
@@ -279,13 +278,13 @@ int FBEX::GenerateAppkey(uint32_t userId, uint32_t appUid, std::unique_ptr<uint8
     }
     (void)memcpy_s(appKey.get(), size, ops.eBuffer, sizeof(ops.eBuffer));
     close(fd);
-    LOGI("success");
+    LOGI("GenerateAppkey success");
     return 0;
 }
 
 int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size)
 {
-    LOGD("enter, userId: %{public}d, type: %{public}u", userId, type);
+    LOGI("enter, userId: %{public}d, type: %{public}u", userId, type);
     if (!CheckIvValid(iv, size)) {
         LOGE("install key param invalid");
         return -EINVAL;
@@ -308,7 +307,7 @@ int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint
     close(fd);
 
     (void)memcpy_s(iv, size, ops.iv, sizeof(ops.iv));
-    LOGD("success");
+    LOGI("UnlockScreenToKernel success");
     return ret;
 }
 
@@ -346,7 +345,7 @@ int FBEX::ReadESecretToKernel(uint32_t userId, uint32_t status, uint8_t *eBuffer
         bufferSize = AES_256_HASH_RANDOM_SIZE;
     }
     (void)memcpy_s(eBuffer, length, ops.eBuffer, bufferSize);
-    LOGI("success");
+    LOGI("ReadESecretToKernel success");
     return 0;
 }
 
@@ -377,7 +376,7 @@ int FBEX::WriteESecretToKernel(uint32_t userId, uint32_t status, uint8_t *eBuffe
         return -errno;
     }
     close(fd);
-    LOGI("success");
+    LOGI("WriteESecretToKernel success");
     return 0;
 }
 
