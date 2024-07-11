@@ -75,7 +75,6 @@ ohos_static_library("libsdcrypto") {
     "init:libbegetutil",
     "ipc:ipc_single",
     "openssl:libcrypto_shared",
-    "user_auth_framework:userauth_client",
     "samgr:samgr_proxy",
   ]
 
