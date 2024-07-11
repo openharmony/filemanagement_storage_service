@@ -102,12 +102,138 @@ int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code,
     if (data.ReadInterfaceToken() != GetDescriptor()) {
         return E_PERMISSION_DENIED;
     }
-    auto interfaceIndex = opToInterfaceMap_.find(code);
-    if (interfaceIndex == opToInterfaceMap_.end() || !interfaceIndex->second) {
-        LOGE("Cannot response request %d: unknown tranction", code);
-        return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
+    switch (code) {
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::SHUTDOWN):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::CHECK):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::MOUNT):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::UMOUNT):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::PARTITION):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::FORMAT):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::SET_VOL_DESC):
+            return OnRemoteRequestForBase(code, data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::PREPARE_USER_DIRS):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::DESTROY_USER_DIRS):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::START_USER):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::STOP_USER):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::INIT_GLOBAL_KEY):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::INIT_GLOBAL_USER_KEYS):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::CREATE_USER_KEYS):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::DELETE_USER_KEYS):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::UPDATE_USER_AUTH):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::ACTIVE_USER_KEY):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::INACTIVE_USER_KEY):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::LOCK_USER_SCREEN):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::UNLOCK_USER_SCREEN):
+            return OnRemoteRequestForUser(code, data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::LOCK_SCREEN_STATUS):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::UPDATE_KEY_CONTEXT):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::MOUNT_CRYPTO_PATH_AGAIN):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::CREATE_SHARE_FILE):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::DELETE_SHARE_FILE):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::SET_BUNDLE_QUOTA):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_SPACE):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::UPDATE_MEM_PARA):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_BUNDLE_STATS_INCREASE):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::MOUNT_DFS_DOCS):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::UMOUNT_DFS_DOCS):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::GENERATE_APP_KEY):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::DELETE_APP_KEY):
+            return OnRemoteRequestForApp(code, data, reply);
+        default:
+            LOGE("Cannot response request %d: unknown tranction", code);
+            return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
     }
-    return (this->*(interfaceIndex->second))(data, reply);
+}
+
+int32_t StorageDaemonStub::OnRemoteRequestForBase(uint32_t code, MessageParcel &data, MessageParcel &reply)
+{
+    switch (code) {
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::SHUTDOWN):
+            return HandleShutdown(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::CHECK):
+            return HandleCheck(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::MOUNT):
+            return HandleMount(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::UMOUNT):
+            return HandleUMount(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::PARTITION):
+            return HandlePartition(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::FORMAT):
+            return HandleFormat(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::SET_VOL_DESC):
+            return HandleSetVolDesc(data, reply);
+        default:
+            LOGE("Cannot response request %d: unknown tranction", code);
+            return E_SYS_ERR;
+    }
+}
+int32_t StorageDaemonStub::OnRemoteRequestForUser(uint32_t code, MessageParcel &data, MessageParcel &reply)
+{
+    switch (code) {
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::PREPARE_USER_DIRS):
+            return HandlePrepareUserDirs(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::DESTROY_USER_DIRS):
+            return HandleDestroyUserDirs(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::START_USER):
+            return HandleStartUser(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::STOP_USER):
+            return HandleStopUser(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::INIT_GLOBAL_KEY):
+            return HandleInitGlobalKey(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::INIT_GLOBAL_USER_KEYS):
+            return HandleInitGlobalUserKeys(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::CREATE_USER_KEYS):
+            return HandleGenerateUserKeys(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::DELETE_USER_KEYS):
+            return HandleDeleteUserKeys(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::UPDATE_USER_AUTH):
+            return HandleUpdateUserAuth(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::ACTIVE_USER_KEY):
+            return HandleActiveUserKey(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::INACTIVE_USER_KEY):
+            return HandleInactiveUserKey(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::LOCK_USER_SCREEN):
+            return HandleLockUserScreen(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::UNLOCK_USER_SCREEN):
+            return HandleUnlockUserScreen(data, reply);
+        default:
+            LOGE("Cannot response request %d: unknown tranction", code);
+            return E_SYS_ERR;
+    }
+}
+int32_t StorageDaemonStub::OnRemoteRequestForApp(uint32_t code, MessageParcel &data, MessageParcel &reply)
+{
+    switch (code) {
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::LOCK_SCREEN_STATUS):
+            return HandleGetLockScreenStatus(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::UPDATE_KEY_CONTEXT):
+            return HandleUpdateKeyContext(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::MOUNT_CRYPTO_PATH_AGAIN):
+            return HandleMountCryptoPathAgain(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::CREATE_SHARE_FILE):
+            return HandleCreateShareFile(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::DELETE_SHARE_FILE):
+            return HandleDeleteShareFile(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::SET_BUNDLE_QUOTA):
+            return HandleSetBundleQuota(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_SPACE):
+            return HandleGetOccupiedSpace(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::UPDATE_MEM_PARA):
+            return HandleUpdateMemoryPara(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_BUNDLE_STATS_INCREASE):
+            return HandleGetBundleStatsForIncrease(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::MOUNT_DFS_DOCS):
+            return HandleMountDfsDocs(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::UMOUNT_DFS_DOCS):
+            return HandleUMountDfsDocs(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::GENERATE_APP_KEY):
+            return HandleGenerateAppkey(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::DELETE_APP_KEY):
+            return HandleDeleteAppkey(data, reply);
+        default:
+            LOGE("Cannot response request %d: unknown tranction", code);
+            return E_SYS_ERR;
+    }
 }
 
 int32_t StorageDaemonStub::HandleShutdown(MessageParcel &data, MessageParcel &reply)

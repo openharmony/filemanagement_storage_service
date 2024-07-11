@@ -34,6 +34,9 @@ public:
 private:
     using DaemonInterface = int32_t (StorageDaemonStub::*)(MessageParcel &data, MessageParcel &reply);
     std::map<uint32_t, DaemonInterface> opToInterfaceMap_;
+    int32_t OnRemoteRequestForBase(uint32_t code, MessageParcel &data, MessageParcel &reply);
+    int32_t OnRemoteRequestForUser(uint32_t code, MessageParcel &data, MessageParcel &reply);
+    int32_t OnRemoteRequestForApp(uint32_t code, MessageParcel &data, MessageParcel &reply);
     int32_t HandleShutdown(MessageParcel &data, MessageParcel &reply);
 
     int32_t HandleMount(MessageParcel &data, MessageParcel &reply);
