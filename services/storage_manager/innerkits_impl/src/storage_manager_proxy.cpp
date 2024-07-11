@@ -41,7 +41,8 @@ int32_t StorageManagerProxy::PrepareAddUser(int32_t userId, uint32_t flags)
         LOGE("StorageManagerProxy::PrepareAddUser, WriteUint32 failed");
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::PREPARE_ADD_USER), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::PREPARE_ADD_USER), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -67,7 +68,8 @@ int32_t StorageManagerProxy::RemoveUser(int32_t userId, uint32_t flags)
         LOGE("StorageManagerProxy::RemoveUser, WriteUint32 failed");
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::REMOVE_USER), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::REMOVE_USER), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -89,7 +91,8 @@ int32_t StorageManagerProxy::PrepareStartUser(int32_t userId)
         LOGE("StorageManagerProxy::PrepareStartUser, WriteInt32 failed");
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::PREPARE_START_USER), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::PREPARE_START_USER), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -111,7 +114,8 @@ int32_t StorageManagerProxy::StopUser(int32_t userId)
         LOGE("StorageManagerProxy::StopUser, WriteInt32 failed");
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::STOP_USER), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::STOP_USER), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -137,7 +141,8 @@ int32_t StorageManagerProxy::GenerateUserKeys(uint32_t userId, uint32_t flags)
         LOGE("Write key flags failed");
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::CREATE_USER_KEYS), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::CREATE_USER_KEYS), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -160,7 +165,8 @@ int32_t StorageManagerProxy::DeleteUserKeys(uint32_t userId)
         LOGE("Write user ID failed");
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::DELETE_USER_KEYS), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::DELETE_USER_KEYS), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -203,7 +209,8 @@ int32_t StorageManagerProxy::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::UPDATE_USER_AUTH), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::UPDATE_USER_AUTH), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -237,7 +244,8 @@ int32_t StorageManagerProxy::ActiveUserKey(uint32_t userId,
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::ACTIVE_USER_KEY), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::ACTIVE_USER_KEY), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -260,7 +268,8 @@ int32_t StorageManagerProxy::InactiveUserKey(uint32_t userId)
         LOGE("Write user ID failed");
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::INACTIVE_USER_KEY), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::INACTIVE_USER_KEY), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -283,7 +292,8 @@ int32_t StorageManagerProxy::LockUserScreen(uint32_t userId)
         LOGE("Write user ID failed");
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::LOCK_USER_SCREEN), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::LOCK_USER_SCREEN), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -316,7 +326,8 @@ int32_t StorageManagerProxy::UnlockUserScreen(uint32_t userId,
         LOGE("Write secret failed");
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::UNLOCK_USER_SCREEN), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::UNLOCK_USER_SCREEN), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -339,7 +350,8 @@ int32_t StorageManagerProxy::GetLockScreenStatus(uint32_t userId, bool &lockScre
         LOGE("Write user ID failed");
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::LOCK_SCREEN_STATUS), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::LOCK_SCREEN_STATUS), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -362,7 +374,8 @@ int32_t StorageManagerProxy::UpdateKeyContext(uint32_t userId)
         LOGE("Write user ID failed");
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::UPDATE_KEY_CONTEXT), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::UPDATE_KEY_CONTEXT), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -385,7 +398,8 @@ int32_t StorageManagerProxy::GenerateAppkey(uint32_t appUid, std::string &keyId)
         LOGE("Write appUid failed");
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::GENERATE_APP_KEY), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::GENERATE_APP_KEY), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -408,7 +422,8 @@ int32_t StorageManagerProxy::DeleteAppkey(const std::string keyId)
         LOGE("Write key ID failed");
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::DELETE_APP_KEY), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::DELETE_APP_KEY), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -433,7 +448,8 @@ int32_t StorageManagerProxy::GetFreeSizeOfVolume(std::string volumeUuid, int64_t
         LOGE("StorageManagerProxy::GetFreeSizeOfVolume, WriteString failed");
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::GET_FREE), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::GET_FREE), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -462,7 +478,8 @@ int32_t StorageManagerProxy::GetTotalSizeOfVolume(std::string volumeUuid, int64_
         LOGE("StorageManagerProxy::GetTotalSizeOfVolume, WriteString failed");
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::GET_TOTAL), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::GET_TOTAL), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -487,7 +504,8 @@ int32_t StorageManagerProxy::GetBundleStats(std::string pkgName, BundleStats &bu
     if (!data.WriteString(pkgName)) {
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::GET_BUNDLE_STATUS), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::GET_BUNDLE_STATUS), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -517,7 +535,8 @@ int32_t StorageManagerProxy::NotifyVolumeCreated(VolumeCore vc)
         return E_WRITE_PARCEL_ERR;
     }
 
-    return SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_VOLUME_CREATED), data, reply, option);
+    return SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_VOLUME_CREATED), data, reply, option);
 }
 
 int32_t StorageManagerProxy::NotifyVolumeMounted(std::string volumeId, int32_t fsType, std::string fsUuid,
@@ -559,7 +578,8 @@ int32_t StorageManagerProxy::NotifyVolumeMounted(std::string volumeId, int32_t f
         return E_WRITE_PARCEL_ERR;
     }
 
-    return SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_VOLUME_MOUNTED), data, reply, option);
+    return SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_VOLUME_MOUNTED), data, reply, option);
 }
 
 int32_t StorageManagerProxy::NotifyVolumeStateChanged(std::string volumeId, VolumeState state)
@@ -584,7 +604,8 @@ int32_t StorageManagerProxy::NotifyVolumeStateChanged(std::string volumeId, Volu
         return E_WRITE_PARCEL_ERR;
     }
 
-    return SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_VOLUME_STATE_CHANGED), data, reply,
+    return SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_VOLUME_STATE_CHANGED), data, reply,
         option);
 }
 
@@ -604,7 +625,8 @@ int32_t StorageManagerProxy::Mount(std::string volumeId)
         LOGE("StorageManagerProxy::Mount, WriteString failed");
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::MOUNT), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::MOUNT), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -627,7 +649,8 @@ int32_t StorageManagerProxy::Unmount(std::string volumeId)
         LOGE("StorageManagerProxy::Unmount, WriteString failed");
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::UNMOUNT), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::UNMOUNT), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -646,7 +669,8 @@ int32_t StorageManagerProxy::GetAllVolumes(std::vector<VolumeExternal> &vecOfVol
         return E_WRITE_DESCRIPTOR_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::GET_ALL_VOLUMES), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::GET_ALL_VOLUMES), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -658,7 +682,7 @@ int32_t StorageManagerProxy::GetAllVolumes(std::vector<VolumeExternal> &vecOfVol
     if (size == 0) {
         return reply.ReadInt32();
     }
-    for (uint i = 0; i < size; i++) {
+    for (uint32_t i = 0; i < size; i++) {
         std::unique_ptr<VolumeExternal> ve = VolumeExternal::Unmarshalling(reply);
         LOGI("StorageManagerProxy::GetAllVolumes push %{public}s", ve->GetId().c_str());
         vecOfVol.push_back(*ve);
@@ -723,7 +747,8 @@ int32_t StorageManagerProxy::Partition(std::string diskId, int32_t type)
         LOGE("StorageManagerProxy::Partition WriteInt32 failed");
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::PARTITION), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::PARTITION), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -742,7 +767,8 @@ int32_t StorageManagerProxy::GetAllDisks(std::vector<Disk> &vecOfDisk)
         return E_WRITE_DESCRIPTOR_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::GET_ALL_DISKS), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::GET_ALL_DISKS), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -754,7 +780,7 @@ int32_t StorageManagerProxy::GetAllDisks(std::vector<Disk> &vecOfDisk)
     if (size == 0) {
         return reply.ReadInt32();
     }
-    for (uint i = 0; i < size; i++) {
+    for (uint32_t i = 0; i < size; i++) {
         std::unique_ptr<Disk> disk = Disk::Unmarshalling(reply);
         LOGI("StorageManagerProxy::GetAllDisks push %{public}s", disk->GetDiskId().c_str());
         vecOfDisk.push_back(*disk);
@@ -774,7 +800,8 @@ int32_t StorageManagerProxy::GetSystemSize(int64_t &systemSize)
         return E_WRITE_DESCRIPTOR_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::GET_SYSTEM_SIZE), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::GET_SYSTEM_SIZE), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -798,7 +825,8 @@ int32_t StorageManagerProxy::GetTotalSize(int64_t &totalSize)
         return E_WRITE_DESCRIPTOR_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::GET_TOTAL_SIZE), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::GET_TOTAL_SIZE), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -822,7 +850,8 @@ int32_t StorageManagerProxy::GetFreeSize(int64_t &freeSize)
         return E_WRITE_DESCRIPTOR_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::GET_FREE_SIZE), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::GET_FREE_SIZE), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -845,7 +874,8 @@ int32_t StorageManagerProxy::GetUserStorageStats(StorageStats &storageStats)
         return E_WRITE_DESCRIPTOR_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::GET_CURR_USER_STATS), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::GET_CURR_USER_STATS), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -871,7 +901,8 @@ int32_t StorageManagerProxy::GetUserStorageStats(int32_t userId, StorageStats &s
     if (!data.WriteInt32(userId)) {
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::GET_USER_STATS), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::GET_USER_STATS), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -894,7 +925,7 @@ int32_t StorageManagerProxy::GetCurrentBundleStats(BundleStats &bundleStats)
         return E_WRITE_DESCRIPTOR_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::GET_CURR_BUNDLE_STATS), data, reply,
+    int32_t err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::GET_CURR_BUNDLE_STATS), data, reply,
         option);
     if (err != E_OK) {
         return err;
@@ -921,7 +952,8 @@ int32_t StorageManagerProxy::GetVolumeByUuid(std::string fsUuid, VolumeExternal 
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::GET_VOL_BY_UUID), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::GET_VOL_BY_UUID), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -943,7 +975,8 @@ int32_t StorageManagerProxy::GetVolumeById(std::string volumeId, VolumeExternal 
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::GET_VOL_BY_ID), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::GET_VOL_BY_ID), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -969,7 +1002,8 @@ int32_t StorageManagerProxy::SetVolumeDescription(std::string fsUuid, std::strin
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::SET_VOL_DESC), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::SET_VOL_DESC), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -994,7 +1028,8 @@ int32_t StorageManagerProxy::Format(std::string volumeId, std::string fsType)
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::FORMAT), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::FORMAT), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -1015,7 +1050,8 @@ int32_t StorageManagerProxy::GetDiskById(std::string diskId, Disk &disk)
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::GET_DISK_BY_ID), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::GET_DISK_BY_ID), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -1047,7 +1083,8 @@ std::vector<int32_t> StorageManagerProxy::CreateShareFile(const std::vector<std:
         return std::vector<int32_t>{E_WRITE_PARCEL_ERR};
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::CREATE_SHARE_FILE), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::CREATE_SHARE_FILE), data, reply, option);
     if (err != E_OK) {
         return std::vector<int32_t>{err};
     }
@@ -1078,7 +1115,8 @@ int32_t StorageManagerProxy::DeleteShareFile(uint32_t tokenId, const std::vector
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::DELETE_SHARE_FILE), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::DELETE_SHARE_FILE), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -1113,7 +1151,8 @@ int32_t StorageManagerProxy::SetBundleQuota(const std::string &bundleName, int32
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::SET_BUNDLE_QUOTA), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::SET_BUNDLE_QUOTA), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -1145,7 +1184,8 @@ int32_t StorageManagerProxy::GetBundleStatsForIncrease(uint32_t userId, const st
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::GET_BUNDLE_STATS_INCREASE), data, reply,
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::GET_BUNDLE_STATS_INCREASE), data, reply,
         option);
     if (err != E_OK) {
         return err;
@@ -1174,7 +1214,8 @@ int32_t StorageManagerProxy::UpdateMemoryPara(int32_t size, int32_t &oldSize)
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::UPDATE_MEM_PARA), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::UPDATE_MEM_PARA), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -1223,7 +1264,8 @@ int32_t StorageManagerProxy::GetUserStorageStatsByType(int32_t userId, StorageSt
     if (!data.WriteString(type)) {
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::GET_USER_STATS_BY_TYPE), data, reply,
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::GET_USER_STATS_BY_TYPE), data, reply,
         option);
     if (err != E_OK) {
         return err;
@@ -1254,7 +1296,8 @@ int32_t StorageManagerProxy::MountDfsDocs(int32_t userId, const std::string &rel
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::MOUNT_DFS_DOCS), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::MOUNT_DFS_DOCS), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -1280,7 +1323,8 @@ int32_t StorageManagerProxy::UMountDfsDocs(int32_t userId, const std::string &re
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::UMOUNT_DFS_DOCS), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::UMOUNT_DFS_DOCS), data, reply, option);
     if (err != E_OK) {
         return err;
     }
