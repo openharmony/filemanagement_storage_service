@@ -354,7 +354,7 @@ static bool GetPathWildCard(uint32_t userId, const std::string &bundleName, cons
         return false;
     }
     std::string pathBeforeWildCard = includeWildCard.substr(0, pos);
-    std::unique_ptr<DIR> dirPtr = opendir(pathBeforeWildCard.c_str());
+    DIR *dirPtr = opendir(pathBeforeWildCard.c_str());
     if (dirPtr == nullptr) {
         LOGE("GetPathWildCard open file dir:%{private}s fail, errno:%{public}d", pathBeforeWildCard.c_str(), errno);
         return false;
@@ -372,7 +372,7 @@ static bool GetPathWildCard(uint32_t userId, const std::string &bundleName, cons
     }
     closedir(dirPtr);
     for (auto &subDir : subDirs) {
-        std::unique_ptr<DIR> subDirPtr = opendir(subDir.c_str());
+        DIR *subDirPtr = opendir(subDir.c_str());
         if (subDirPtr == nullptr) {
             LOGE("GetPathWildCard open file dir:%{private}s fail, errno:%{public}d", subDir.c_str(), errno);
             return false;
@@ -819,21 +819,21 @@ static void GetBundleStatsForIncreaseEach(uint32_t userId, std::string &bundleNa
     std::string filePath = BACKUP_PATH_PREFIX + std::to_string(userId) + BACKUP_PATH_SURFFIX +
         bundleName + FILE_SEPARATOR_CHAR + BACKUP_STAT_SYMBOL + std::to_string(lastBackupTime);
     std::unique_ptr<std::ofstream> statFile;
-    statFile.open(filePath.data(), std::ios::out | std::ios::trunc);
-    if (!statFile.is_open()) {
+    statFile->open(filePath.data(), std::ios::out | std::ios::trunc);
+    if (!statFile->is_open()) {
         LOGE("creat file fail, errno:%{public}d.", errno);
         pkgFileSizes.emplace_back(0);
         return;
     }
-    statFile << VER_10_LINE1 << std::endl;
-    statFile << VER_10_LINE2 << std::endl;
+    statFile.get() << VER_10_LINE1 << std::endl;
+    statFile.get() << VER_10_LINE2 << std::endl;
 
     DeduplicationPath(phyIncludes);
-    ScanExtensionPath(paras, phyIncludes, phyExcludes, pathMap, statFile);
+    ScanExtensionPath(paras, phyIncludes, phyExcludes, pathMap, statFile.get());
     // calculate summary file sizes
     pkgFileSizes.emplace_back(paras.fileSizeSum);
     LOGI("bundleName: %{public}s, size: %{public}lld", bundleName.c_str(), static_cast<long long>(paras.fileSizeSum));
-    statFile.close();
+    statFile->close();
 }
 
 int32_t QuotaManager::GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
