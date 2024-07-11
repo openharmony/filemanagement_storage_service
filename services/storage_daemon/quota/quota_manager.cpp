@@ -50,8 +50,8 @@ const std::string PROC_MOUNTS_PATH = "/proc/mounts";
 const std::string DEV_BLOCK_PATH = "/dev/block/";
 const char LINE_SEP = '\n';
 const int32_t DEV_BLOCK_PATH_LEN = DEV_BLOCK_PATH.length();
-const uint64_t ONE_KB = int64_t(1);
-const uint64_t ONE_MB = int64_t(1024 * ONE_KB);
+const uint64_t ONE_KB = static_cast<uint64_t>(1);
+const uint64_t ONE_MB = static_cast<uint64_t>(1024 * ONE_KB);
 const uint64_t PATH_MAX_LEN = 4096;
 static std::map<std::string, std::string> mQuotaReverseMounts;
 std::recursive_mutex mMountsLock;
@@ -80,7 +80,7 @@ static bool InitialiseQuotaMounts()
     std::string target;
     std::string ignored;
 
-    while (!in.eof()) {
+    while (in.peek() != EOF) {
         std::getline(in, source, ' ');
         std::getline(in, target, ' ');
         std::getline(in, ignored);
@@ -190,7 +190,7 @@ int32_t QuotaManager::SetBundleQuota(const std::string &bundleName, int32_t uid,
     const std::string &bundleDataDirPath, int32_t limitSizeMb)
 {
     if (bundleName.empty() || bundleDataDirPath.empty() || uid < 0 || limitSizeMb < 0) {
-        LOGE("Calling the function PrepareBundleDirQuotaWithSize with invalid param");
+        LOGE("Calling the function SetBundleQuota with invalid param");
         return E_NON_EXIST;
     }
 
@@ -240,6 +240,7 @@ int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int32_t prjId, bool
     char *realPath = realpath(path.c_str(), nullptr);
     if (realPath == nullptr) {
         LOGE("realpath failed");
+        free(realPath);
         return E_SYS_CALL;
     }
 
@@ -344,7 +345,7 @@ static bool AddPathMapForPathWildCard(uint32_t userid, const std::string &bundle
     return true;
 }
 
-static bool GetPathWildCard(uint32_t userid, const std::string &bundleName, const std::string &includeWildCard,
+static bool GetPathWildCard(uint32_t userId, const std::string &bundleName, const std::string &includeWildCard,
     std::vector<std::string> &includePathList, std::map<std::string, std::string> &pathMap)
 {
     size_t pos = includeWildCard.rfind(WILDCARD_DEFAULT_INCLUDE);
@@ -353,7 +354,7 @@ static bool GetPathWildCard(uint32_t userid, const std::string &bundleName, cons
         return false;
     }
     std::string pathBeforeWildCard = includeWildCard.substr(0, pos);
-    DIR *dirPtr = opendir(pathBeforeWildCard.c_str());
+    std::unique_ptr<DIR> *dirPtr = opendir(pathBeforeWildCard.c_str());
     if (dirPtr == nullptr) {
         LOGE("GetPathWildCard open file dir:%{private}s fail, errno:%{public}d", pathBeforeWildCard.c_str(), errno);
         return false;
@@ -371,7 +372,7 @@ static bool GetPathWildCard(uint32_t userid, const std::string &bundleName, cons
     }
     closedir(dirPtr);
     for (auto &subDir : subDirs) {
-        DIR *subDirPtr = opendir(subDir.c_str());
+        std::unique_ptr<DIR> *subDirPtr = opendir(subDir.c_str());
         if (subDirPtr == nullptr) {
             LOGE("GetPathWildCard open file dir:%{private}s fail, errno:%{public}d", subDir.c_str(), errno);
             return false;
@@ -387,7 +388,7 @@ static bool GetPathWildCard(uint32_t userid, const std::string &bundleName, cons
                 dirName == DEFAULT_INCLUDE_PATH_IN_HAP_DATABASE ||
                 dirName == DEFAULT_INCLUDE_PATH_IN_HAP_PREFERENCE)) {
                 includePathList.emplace_back(path);
-                AddPathMapForPathWildCard(userid, bundleName, path, pathMap);
+                AddPathMapForPathWildCard(userId, bundleName, path, pathMap);
             }
         }
         closedir(subDirPtr);
@@ -547,14 +548,14 @@ static std::tuple<bool, bool> CheckIfDirForIncludes(const std::string &path, Bun
         LOGD("%{private}s exists and is a directory", path.c_str());
         return {true, true};
     } else {
-        std::string sandboxPath = path;
+        std::string sandBoxPath = path;
         auto it = pathMap.find(path);
         if (it != pathMap.end()) {
-            sandboxPath = it->second;
+            sandBoxPath = it->second;
         }
 
         struct FileStat fileStat;
-        fileStat.filePath = sandboxPath;
+        fileStat.filePath = sandBoxPath;
         fileStat.fileSize = fileStatInfo.st_size;
         // mode
         fileStat.mode = static_cast<int32_t>(fileStatInfo.st_mode);
@@ -571,12 +572,12 @@ static std::tuple<bool, bool> CheckIfDirForIncludes(const std::string &path, Bun
     }
 }
 
-static std::string PhysicalToSandboxPath(const std::string &dir, const std::string &sandboxDir,
+static std::string PhysicalToSandboxPath(const std::string &dir, const std::string &sandBoxDir,
     const std::string &path)
 {
     std::size_t dirPos = dir.size();
     std::string pathSurffix = path.substr(dirPos);
-    return sandboxDir + pathSurffix;
+    return sandBoxDir + pathSurffix;
 }
 
 static bool AddOuterDirIntoFileStat(const std::string &dir, BundleStatsParas &paras, const std::string &sandboxDir,
@@ -632,7 +633,7 @@ static void InsertStatFile(const std::string &path, struct FileStat fileStat,
     if (fileStat.isDir == true && formatPath.back() != FILE_SEPARATOR_CHAR) {
         formatPath.push_back(FILE_SEPARATOR_CHAR);
     }
-    if (ExcludeFilter(excludesMap, formatPath) == false) {
+    if (!ExcludeFilter(excludesMap, formatPath)) {
         WriteFileList(statFile, fileStat, paras);
     }
 }
@@ -817,7 +818,7 @@ static void GetBundleStatsForIncreaseEach(uint32_t userId, std::string &bundleNa
 
     std::string filePath = BACKUP_PATH_PREFIX + std::to_string(userId) + BACKUP_PATH_SURFFIX +
         bundleName + FILE_SEPARATOR_CHAR + BACKUP_STAT_SYMBOL + std::to_string(lastBackupTime);
-    std::ofstream statFile;
+    std::unique_ptr<std::ofstream> statFile;
     statFile.open(filePath.data(), std::ios::out | std::ios::trunc);
     if (!statFile.is_open()) {
         LOGE("creat file fail, errno:%{public}d.", errno);
@@ -851,5 +852,5 @@ int32_t QuotaManager::GetBundleStatsForIncrease(uint32_t userId, const std::vect
     }
     return E_OK;
 }
-} // StorageDaemon
-} // OHOS
+} // namespace STORAGE_DAEMON
+} // namespace OHOS
