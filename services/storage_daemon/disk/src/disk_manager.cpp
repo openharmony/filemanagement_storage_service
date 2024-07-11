@@ -45,6 +45,10 @@ DiskManager::~DiskManager()
 
 void DiskManager::HandleDiskEvent(NetlinkData *data)
 {
+    if (data == nullptr) {
+        LOGE("data is empty");
+        return;
+    }
     std::lock_guard<std::mutex> lock(lock_);
     std::string devType = data->GetParam("DEVTYPE");
     if (devType != "disk") {
@@ -85,6 +89,10 @@ void DiskManager::HandleDiskEvent(NetlinkData *data)
 
 std::shared_ptr<DiskInfo> DiskManager::MatchConfig(NetlinkData *data)
 {
+    if (data == nullptr) {
+        LOGE("data is empty");
+        return nullptr;
+    }
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
     unsigned int major = (unsigned int) std::stoi(data->GetParam("MAJOR"));
@@ -109,6 +117,10 @@ std::shared_ptr<DiskInfo> DiskManager::MatchConfig(NetlinkData *data)
 
 void DiskManager::CreateDisk(std::shared_ptr<DiskInfo> &diskInfo)
 {
+    if (diskInfo == nullptr) {
+        LOGE("data is empty");
+        return;
+    }
     int ret;
 
     ret = diskInfo->Create();
@@ -157,7 +169,7 @@ void DiskManager::DestroyDisk(dev_t device)
 std::shared_ptr<DiskInfo> DiskManager::GetDisk(dev_t device)
 {
     for (auto &diskInfo : disk_) {
-        if (diskInfo->GetDevice() == device) {
+        if (diskInfo != nullptr && diskInfo->GetDevice() == device) {
             return diskInfo;
         }
     }
@@ -167,7 +179,9 @@ std::shared_ptr<DiskInfo> DiskManager::GetDisk(dev_t device)
 void DiskManager::AddDiskConfig(std::shared_ptr<DiskConfig> &diskConfig)
 {
     std::lock_guard<std::mutex> lock(lock_);
-    diskConfig_.push_back(diskConfig);
+    if (diskConfig != nullptr) {
+        diskConfig_.push_back(diskConfig);
+    }
 }
 
 void DiskManager::ReplayUevent()
