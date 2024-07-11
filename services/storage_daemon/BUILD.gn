@@ -117,6 +117,7 @@ ohos_executable("storage_daemon") {
     "app_file_service:sandbox_helper_native",
     "bounds_checking_function:libsec_shared",
     "bundle_framework:appexecfwk_core",
+    "bundle_framework:appexecfwk_base",
     "c_utils:utils",
     "hilog:libhilog",
     "init:libbegetutil",

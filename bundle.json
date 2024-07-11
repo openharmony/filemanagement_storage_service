@@ -52,7 +52,6 @@
         "ipc",
         "media_library",
         "napi",
-        "ntfs-3g",
         "relational_store",
         "safwk",
         "samgr",
@@ -60,7 +59,8 @@
         "app_file_service",
         "os_account",
         "openssl",
-        "user_auth_framework"
+        "user_auth_framework",
+        "ntfs-3g"
       ],
       "third_party": [
         "e2fsprogs",
