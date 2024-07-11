@@ -825,11 +825,11 @@ static void GetBundleStatsForIncreaseEach(uint32_t userId, std::string &bundleNa
         pkgFileSizes.emplace_back(0);
         return;
     }
-    statFile.get() << VER_10_LINE1 << std::endl;
-    statFile.get() << VER_10_LINE2 << std::endl;
+    *(statFile.get()) << VER_10_LINE1 << std::endl;
+    *(statFile.get()) << VER_10_LINE2 << std::endl;
 
     DeduplicationPath(phyIncludes);
-    ScanExtensionPath(paras, phyIncludes, phyExcludes, pathMap, statFile.get());
+    ScanExtensionPath(paras, phyIncludes, phyExcludes, pathMap, *(statFile.get()));
     // calculate summary file sizes
     pkgFileSizes.emplace_back(paras.fileSizeSum);
     LOGI("bundleName: %{public}s, size: %{public}lld", bundleName.c_str(), static_cast<long long>(paras.fileSizeSum));
