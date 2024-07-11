@@ -75,6 +75,7 @@ ohos_static_library("libsdcrypto") {
     "init:libbegetutil",
     "ipc:ipc_single",
     "openssl:libcrypto_shared",
+    "samgr:samgr_proxy",
   ]
 
   if (storage_service_el5_filekey_manager) {
