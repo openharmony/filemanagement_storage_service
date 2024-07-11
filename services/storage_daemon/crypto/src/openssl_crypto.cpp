@@ -21,7 +21,7 @@
 #include "openssl/err.h"
 #include <openssl/sha.h>
 #include "storage_service_log.h"
-#include "third_party/openssl/include/openssl/evp.h"
+#include "openssl/evp.h"
 
 namespace OHOS {
 namespace StorageDaemon {
