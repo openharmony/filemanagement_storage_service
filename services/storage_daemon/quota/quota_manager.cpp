@@ -354,7 +354,7 @@ static bool GetPathWildCard(uint32_t userId, const std::string &bundleName, cons
         return false;
     }
     std::string pathBeforeWildCard = includeWildCard.substr(0, pos);
-    std::unique_ptr<DIR> dirPtr(opendir(pathBeforeWildCard.c_str()));
+    std::unique_ptr<DIR, decltype(&closedir)> dirPtr(opendir(pathBeforeWildCard.c_str()), closedir);
     if (dirPtr == nullptr) {
         LOGE("GetPathWildCard open file dir:%{private}s fail, errno:%{public}d", pathBeforeWildCard.c_str(), errno);
         return false;
@@ -370,9 +370,8 @@ static bool GetPathWildCard(uint32_t userId, const std::string &bundleName, cons
             subDirs.emplace_back(path);
         }
     }
-    closedir(dirPtr.get());
     for (auto &subDir : subDirs) {
-        std::unique_ptr<DIR> subDirPtr(opendir(subDir.c_str()));
+        std::unique_ptr<DIR, decltype(&closedir)> subDirPtr(opendir(subDir.c_str()), closedir);
         if (subDirPtr == nullptr) {
             LOGE("GetPathWildCard open file dir:%{private}s fail, errno:%{public}d", subDir.c_str(), errno);
             return false;
@@ -391,7 +390,6 @@ static bool GetPathWildCard(uint32_t userId, const std::string &bundleName, cons
                 AddPathMapForPathWildCard(userId, bundleName, path, pathMap);
             }
         }
-        closedir(subDirPtr.get());
     }
     return true;
 }
