@@ -91,7 +91,7 @@ std::shared_ptr<DiskInfo> DiskManager::MatchConfig(NetlinkData *data)
 {
     if (data == nullptr) {
         LOGE("data is empty");
-        return;
+        return nullptr;
     }
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
