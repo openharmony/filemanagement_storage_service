@@ -96,6 +96,9 @@ bool StorageManagerFuzzTest(std::unique_ptr<char[]> data, size_t size)
 bool HandlePrepareAddUserFuzzTest(std::unique_ptr<char[]> data, size_t size)
 {
     MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
     MessageParcel reply;
 
     storageManagerPtr->HandlePrepareAddUser(datas, reply);
@@ -105,6 +108,9 @@ bool HandlePrepareAddUserFuzzTest(std::unique_ptr<char[]> data, size_t size)
 bool HandleRemoveUserFuzzTest(std::unique_ptr<char[]> data, size_t size)
 {
     MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
     MessageParcel reply;
 
     storageManagerPtr->HandleRemoveUser(datas, reply);
@@ -114,6 +120,9 @@ bool HandleRemoveUserFuzzTest(std::unique_ptr<char[]> data, size_t size)
 bool HandlePrepareStartUserFuzzTest(std::unique_ptr<char[]> data, size_t size)
 {
     MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
     MessageParcel reply;
 
     storageManagerPtr->HandlePrepareStartUser(datas, reply);
@@ -122,6 +131,9 @@ bool HandlePrepareStartUserFuzzTest(std::unique_ptr<char[]> data, size_t size)
 bool HandleStopUserFuzzTest(std::unique_ptr<char[]> data, size_t size)
 {
     MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
     MessageParcel reply;
 
     storageManagerPtr->HandleStopUser(datas, reply);
@@ -130,6 +142,9 @@ bool HandleStopUserFuzzTest(std::unique_ptr<char[]> data, size_t size)
 bool HandleGetCurrentBundleStatsFuzzTest(std::unique_ptr<char[]> data, size_t size)
 {
     MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
     MessageParcel reply;
 
     storageManagerPtr->HandleGetCurrentBundleStats(datas, reply);
@@ -139,6 +154,9 @@ bool HandleGetCurrentBundleStatsFuzzTest(std::unique_ptr<char[]> data, size_t si
 bool HandleMountFuzzTest(std::unique_ptr<char[]> data, size_t size)
 {
     MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
     MessageParcel reply;
 
     storageManagerPtr->HandleMount(datas, reply);
@@ -148,6 +166,9 @@ bool HandleMountFuzzTest(std::unique_ptr<char[]> data, size_t size)
 bool HandleUnmountFuzzTest(std::unique_ptr<char[]> data, size_t size)
 {
     MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
     MessageParcel reply;
 
     storageManagerPtr->HandleUnmount(datas, reply);
@@ -157,6 +178,9 @@ bool HandleUnmountFuzzTest(std::unique_ptr<char[]> data, size_t size)
 bool HandlePartitionFuzzTest(std::unique_ptr<char[]> data, size_t size)
 {
     MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
     MessageParcel reply;
 
     storageManagerPtr->HandlePartition(datas, reply);
@@ -166,6 +190,9 @@ bool HandlePartitionFuzzTest(std::unique_ptr<char[]> data, size_t size)
 bool HandleFormatFuzzTest(std::unique_ptr<char[]> data, size_t size)
 {
     MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
     MessageParcel reply;
 
     storageManagerPtr->HandleFormat(datas, reply);
@@ -175,6 +202,9 @@ bool HandleFormatFuzzTest(std::unique_ptr<char[]> data, size_t size)
 bool HandleGenerateUserKeysFuzzTest(std::unique_ptr<char[]> data, size_t size)
 {
     MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
     MessageParcel reply;
 
     storageManagerPtr->HandleGenerateUserKeys(datas, reply);
@@ -184,6 +214,9 @@ bool HandleGenerateUserKeysFuzzTest(std::unique_ptr<char[]> data, size_t size)
 bool HandleDeleteUserKeysFuzzTest(std::unique_ptr<char[]> data, size_t size)
 {
     MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
     MessageParcel reply;
 
     storageManagerPtr->HandleDeleteUserKeys(datas, reply);
@@ -193,6 +226,9 @@ bool HandleDeleteUserKeysFuzzTest(std::unique_ptr<char[]> data, size_t size)
 bool HandleUpdateUserAuthFuzzTest(std::unique_ptr<char[]> data, size_t size)
 {
     MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
     MessageParcel reply;
 
     storageManagerPtr->HandleUpdateUserAuth(datas, reply);
@@ -202,6 +238,9 @@ bool HandleUpdateUserAuthFuzzTest(std::unique_ptr<char[]> data, size_t size)
 bool HandleActiveUserKeyFuzzTest(std::unique_ptr<char[]> data, size_t size)
 {
     MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
     MessageParcel reply;
 
     storageManagerPtr->HandleActiveUserKey(datas, reply);
@@ -211,6 +250,9 @@ bool HandleActiveUserKeyFuzzTest(std::unique_ptr<char[]> data, size_t size)
 bool HandleInactiveUserKeyFuzzTest(std::unique_ptr<char[]> data, size_t size)
 {
     MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
     MessageParcel reply;
 
     storageManagerPtr->HandleInactiveUserKey(datas, reply);
@@ -220,6 +262,9 @@ bool HandleInactiveUserKeyFuzzTest(std::unique_ptr<char[]> data, size_t size)
 bool HandleLockUserScreenFuzzTest(std::unique_ptr<char[]> data, size_t size)
 {
     MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
     MessageParcel reply;
 
     storageManagerPtr->HandleLockUserScreen(datas, reply);
@@ -229,6 +274,9 @@ bool HandleLockUserScreenFuzzTest(std::unique_ptr<char[]> data, size_t size)
 bool HandleUnlockUserScreenFuzzTest(std::unique_ptr<char[]> data, size_t size)
 {
     MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
     MessageParcel reply;
 
     storageManagerPtr->HandleUnlockUserScreen(datas, reply);
@@ -238,6 +286,9 @@ bool HandleUnlockUserScreenFuzzTest(std::unique_ptr<char[]> data, size_t size)
 bool HandleUpdateKeyContextFuzzTest(std::unique_ptr<char[]> data, size_t size)
 {
     MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
     MessageParcel reply;
 
     storageManagerPtr->HandleUpdateKeyContext(datas, reply);
@@ -247,6 +298,9 @@ bool HandleUpdateKeyContextFuzzTest(std::unique_ptr<char[]> data, size_t size)
 bool HandleCreateShareFileFuzzTest(std::unique_ptr<char[]> data, size_t size)
 {
     MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
     MessageParcel reply;
 
     storageManagerPtr->HandleCreateShareFile(datas, reply);
@@ -256,6 +310,9 @@ bool HandleCreateShareFileFuzzTest(std::unique_ptr<char[]> data, size_t size)
 bool HandleDeleteShareFileFuzzTest(std::unique_ptr<char[]> data, size_t size)
 {
     MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
     MessageParcel reply;
 
     storageManagerPtr->HandleDeleteShareFile(datas, reply);
@@ -265,6 +322,9 @@ bool HandleDeleteShareFileFuzzTest(std::unique_ptr<char[]> data, size_t size)
 bool HandleSetBundleQuotaFuzzTest(std::unique_ptr<char[]> data, size_t size)
 {
     MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
     MessageParcel reply;
 
     storageManagerPtr->HandleSetBundleQuota(datas, reply);
