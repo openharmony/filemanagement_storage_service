@@ -354,14 +354,14 @@ static bool GetPathWildCard(uint32_t userId, const std::string &bundleName, cons
         return false;
     }
     std::string pathBeforeWildCard = includeWildCard.substr(0, pos);
-    std::unique_ptr<DIR, decltype(&closedir)> dirPtr(opendir(pathBeforeWildCard.c_str()), closedir);
+    DIR *dirPtr = opendir(pathBeforeWildCard.c_str());
     if (dirPtr == nullptr) {
         LOGE("GetPathWildCard open file dir:%{private}s fail, errno:%{public}d", pathBeforeWildCard.c_str(), errno);
         return false;
     }
     struct dirent *entry = nullptr;
     std::vector<std::string> subDirs;
-    while ((entry = readdir(dirPtr.get())) != nullptr) {
+    while ((entry = readdir(dirPtr)) != nullptr) {
         if ((strcmp(entry->d_name, ".") == 0) || (strcmp(entry->d_name, "..") == 0)) {
             continue;
         }
@@ -370,13 +370,14 @@ static bool GetPathWildCard(uint32_t userId, const std::string &bundleName, cons
             subDirs.emplace_back(path);
         }
     }
+    closedir(dirPtr);
     for (auto &subDir : subDirs) {
-        std::unique_ptr<DIR, decltype(&closedir)> subDirPtr(opendir(subDir.c_str()), closedir);
+        DIR *subDirPtr = opendir(subDir.c_str());
         if (subDirPtr == nullptr) {
             LOGE("GetPathWildCard open file dir:%{private}s fail, errno:%{public}d", subDir.c_str(), errno);
             return false;
         }
-        while ((entry = readdir(subDirPtr.get())) != nullptr) {
+        while ((entry = readdir(subDirPtr)) != nullptr) {
             if ((strcmp(entry->d_name, ".") == 0) || (strcmp(entry->d_name, "..") == 0)) {
                 continue;
             }
@@ -390,6 +391,7 @@ static bool GetPathWildCard(uint32_t userId, const std::string &bundleName, cons
                 AddPathMapForPathWildCard(userId, bundleName, path, pathMap);
             }
         }
+        closedir(subDirPtr);
     }
     return true;
 }
