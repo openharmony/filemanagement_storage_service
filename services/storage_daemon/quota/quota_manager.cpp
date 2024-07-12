@@ -325,12 +325,12 @@ static std::tuple<std::vector<std::string>, std::vector<std::string>> ReadInclud
     return {includes, excludes};
 }
 
-static bool AddPathMapForPathWildCard(uint32_t userid, const std::string &bundleName, const std::string &phyPath,
+static bool AddPathMapForPathWildCard(uint32_t userId, const std::string &bundleName, const std::string &phyPath,
     std::map<std::string, std::string> &pathMap)
 {
-    std::string physicalPrefixEl1 = PHY_APP + EL1 + FILE_SEPARATOR_CHAR + std::to_string(userid) + BASE +
+    std::string physicalPrefixEl1 = PHY_APP + EL1 + FILE_SEPARATOR_CHAR + std::to_string(userId) + BASE +
         bundleName + FILE_SEPARATOR_CHAR;
-    std::string physicalPrefixEl2 = PHY_APP + EL2 + FILE_SEPARATOR_CHAR + std::to_string(userid) + BASE +
+    std::string physicalPrefixEl2 = PHY_APP + EL2 + FILE_SEPARATOR_CHAR + std::to_string(userId) + BASE +
         bundleName + FILE_SEPARATOR_CHAR;
     if (phyPath.find(physicalPrefixEl1) == 0) {
         std::string relatePath = phyPath.substr(physicalPrefixEl1.size());
@@ -395,20 +395,20 @@ static bool GetPathWildCard(uint32_t userId, const std::string &bundleName, cons
 }
 
 static void RecognizeSandboxWildCard(const uint32_t userId, const std::string &bundleName,
-    const std::string &sandBoxPathStr, std::vector<std::string> &phyIncludes,
+    const std::string &sandboxPathStr, std::vector<std::string> &phyIncludes,
     std::map<std::string, std::string>& pathMap)
 {
-    if (sandBoxPathStr.find(BASE_EL1 + DEFAULT_PATH_WITH_WILDCARD) == 0) {
+    if (sandboxPathStr.find(BASE_EL1 + DEFAULT_PATH_WITH_WILDCARD) == 0) {
         std::string physicalPrefix = PHY_APP + EL1 + FILE_SEPARATOR_CHAR + std::to_string(userId) + BASE +
             bundleName + FILE_SEPARATOR_CHAR;
-        std::string relatePath = sandBoxPathStr.substr(BASE_EL1.size());
+        std::string relatePath = sandboxPathStr.substr(BASE_EL1.size());
         if (!GetPathWildCard(userId, bundleName, physicalPrefix + relatePath, phyIncludes, pathMap)) {
             LOGE("el1 GetPathWildCard dir path invaild");
         }
-    } else if (sandBoxPathStr.find(BASE_EL2 + DEFAULT_PATH_WITH_WILDCARD) == 0) {
+    } else if (sandboxPathStr.find(BASE_EL2 + DEFAULT_PATH_WITH_WILDCARD) == 0) {
         std::string physicalPrefix = PHY_APP + EL2 + FILE_SEPARATOR_CHAR + std::to_string(userId) + BASE +
             bundleName + FILE_SEPARATOR_CHAR;
-        std::string relatePath = sandBoxPathStr.substr(BASE_EL2.size());
+        std::string relatePath = sandboxPathStr.substr(BASE_EL2.size());
         if (!GetPathWildCard(userId, bundleName, physicalPrefix + relatePath, phyIncludes, pathMap)) {
             LOGE("el2 GetPathWildCard dir path invaild");
         }
@@ -416,32 +416,32 @@ static void RecognizeSandboxWildCard(const uint32_t userId, const std::string &b
 }
 
 static void ConvertSandboxRealPath(const uint32_t userId, const std::string &bundleName,
-    const std::string &sandBoxPathStr, std::vector<std::string> &realPaths,
+    const std::string &sandboxPathStr, std::vector<std::string> &realPaths,
     std::map<std::string, std::string>& pathMap)
 {
     std::string uriString;
-    if (sandBoxPathStr.find(NORMAL_SAND_PREFIX) == 0) {
+    if (sandboxPathStr.find(NORMAL_SAND_PREFIX) == 0) {
         // for normal hap, start with file://bundleName
         uriString = URI_PREFIX + bundleName;
-    } else if (sandBoxPathStr.find(FILE_SAND_PREFIX) == 0) {
+    } else if (sandboxPathStr.find(FILE_SAND_PREFIX) == 0) {
         // for public files, start with file://docs
         uriString = URI_PREFIX + FILE_AUTHORITY;
-    } else if (sandBoxPathStr.find(MEDIA_SAND_PREFIX) == 0) {
-        std::string physicalPath = sandBoxPathStr;
+    } else if (sandboxPathStr.find(MEDIA_SAND_PREFIX) == 0) {
+        std::string physicalPath = sandboxPathStr;
         physicalPath.insert(MEDIA_SAND_PREFIX.length(), FILE_SEPARATOR_CHAR + std::to_string(userId));
         realPaths.emplace_back(physicalPath);
-        pathMap.insert({physicalPath, sandBoxPathStr});
+        pathMap.insert({physicalPath, sandboxPathStr});
         return;
-    } else if (sandBoxPathStr.find(MEDIA_CLOUD_SAND_PREFIX) == 0) {
-        std::string physicalPath = sandBoxPathStr;
+    } else if (sandboxPathStr.find(MEDIA_CLOUD_SAND_PREFIX) == 0) {
+        std::string physicalPath = sandboxPathStr;
         physicalPath.insert(MEDIA_CLOUD_SAND_PREFIX.length(), FILE_SEPARATOR_CHAR + std::to_string(userId));
         realPaths.emplace_back(physicalPath);
-        pathMap.insert({physicalPath, sandBoxPathStr});
+        pathMap.insert({physicalPath, sandboxPathStr});
         return;
     }
 
     if (!uriString.empty()) {
-        uriString += sandBoxPathStr;
+        uriString += sandboxPathStr;
         AppFileService::ModuleFileUri::FileUri uri(uriString);
         // files
         std::string physicalPath;
@@ -452,7 +452,7 @@ static void ConvertSandboxRealPath(const uint32_t userId, const std::string &bun
             return;
         }
         realPaths.emplace_back(physicalPath);
-        pathMap.insert({physicalPath, sandBoxPathStr});
+        pathMap.insert({physicalPath, sandboxPathStr});
     }
 }
 
@@ -546,14 +546,14 @@ static std::tuple<bool, bool> CheckIfDirForIncludes(const std::string &path, Bun
         LOGD("%{private}s exists and is a directory", path.c_str());
         return {true, true};
     } else {
-        std::string sandBoxPath = path;
+        std::string sandboxPath = path;
         auto it = pathMap.find(path);
         if (it != pathMap.end()) {
-            sandBoxPath = it->second;
+            sandboxPath = it->second;
         }
 
         struct FileStat fileStat;
-        fileStat.filePath = sandBoxPath;
+        fileStat.filePath = sandboxPath;
         fileStat.fileSize = fileStatInfo.st_size;
         // mode
         fileStat.mode = static_cast<int32_t>(fileStatInfo.st_mode);
@@ -570,12 +570,12 @@ static std::tuple<bool, bool> CheckIfDirForIncludes(const std::string &path, Bun
     }
 }
 
-static std::string PhysicalToSandboxPath(const std::string &dir, const std::string &sandBoxDir,
+static std::string PhysicalToSandboxPath(const std::string &dir, const std::string &sandboxDir,
     const std::string &path)
 {
     std::size_t dirPos = dir.size();
     std::string pathSurffix = path.substr(dirPos);
-    return sandBoxDir + pathSurffix;
+    return sandboxDir + pathSurffix;
 }
 
 static bool AddOuterDirIntoFileStat(const std::string &dir, BundleStatsParas &paras, const std::string &sandboxDir,
