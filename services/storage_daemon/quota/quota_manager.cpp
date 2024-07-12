@@ -816,22 +816,22 @@ static void GetBundleStatsForIncreaseEach(uint32_t userId, std::string &bundleNa
 
     std::string filePath = BACKUP_PATH_PREFIX + std::to_string(userId) + BACKUP_PATH_SURFFIX +
         bundleName + FILE_SEPARATOR_CHAR + BACKUP_STAT_SYMBOL + std::to_string(lastBackupTime);
-    std::unique_ptr<std::ofstream> statFile;
-    statFile->open(filePath.data(), std::ios::out | std::ios::trunc);
-    if (!statFile->is_open()) {
+    std::ofstream statFile;
+    statFile.open(filePath.data(), std::ios::out | std::ios::trunc);
+    if (!statFile.is_open()) {
         LOGE("creat file fail, errno:%{public}d.", errno);
         pkgFileSizes.emplace_back(0);
         return;
     }
-    *(statFile.get()) << VER_10_LINE1 << std::endl;
-    *(statFile.get()) << VER_10_LINE2 << std::endl;
+    statFile << VER_10_LINE1 << std::endl;
+    statFile << VER_10_LINE2 << std::endl;
 
     DeduplicationPath(phyIncludes);
-    ScanExtensionPath(paras, phyIncludes, phyExcludes, pathMap, *(statFile.get()));
+    ScanExtensionPath(paras, phyIncludes, phyExcludes, pathMap, statFile);
     // calculate summary file sizes
     pkgFileSizes.emplace_back(paras.fileSizeSum);
     LOGI("bundleName: %{public}s, size: %{public}lld", bundleName.c_str(), static_cast<long long>(paras.fileSizeSum));
-    statFile->close();
+    statFile.close();
 }
 
 int32_t QuotaManager::GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
