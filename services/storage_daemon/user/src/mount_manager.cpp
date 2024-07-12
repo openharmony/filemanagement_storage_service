@@ -711,7 +711,8 @@ int32_t MountManager::MountByUser(int32_t userId)
     int ret = E_OK;
     // The Documnets and Download directories are managed by the File access framework,
     // and the UID GID is changed to filemanager
-    std::thread thread([userId] { ClearRedundantResources(userId); });
+    std::thread thread(ClearRedundantResources, userId);
+    thread.detach();
     PrepareFileManagerDir(userId);
     if (CreateVirtualDirs(userId) != E_OK) {
         LOGE("create hmdfs virtual dir error");
