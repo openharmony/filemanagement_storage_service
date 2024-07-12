@@ -29,7 +29,7 @@ public:
     int32_t Stop();
 
 private:
-    constexpr int32_t ONE_KB = 1024;
+    static constexpr int32_t ONE_KB = 1024;
     static NetlinkManager *instance_;
     int32_t socketFd_ { -1 };
     NetlinkHandler *nlHandler_ = nullptr;
