@@ -179,7 +179,7 @@ int32_t NetlinkListener::StartListener()
         LOGE("Pipe error");
         return E_ERR;
     }
-    socketThread_ = std::make_unique<std::thread>(&NetlinkListener::EventProcess, this);
+    socketThread_ = std::make_unique<std::thread>([this]() { this->EventProcess(static_cast<void *>(this)); });
     if (socketThread_ == nullptr) {
         (void)close(socketPipe_[0]);
         (void)close(socketPipe_[1]);

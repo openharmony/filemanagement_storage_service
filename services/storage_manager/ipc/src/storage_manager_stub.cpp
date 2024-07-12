@@ -186,12 +186,105 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
     if (data.ReadInterfaceToken() != GetDescriptor()) {
         return E_PERMISSION_DENIED;
     }
-    auto interfaceIndex = opToInterfaceMap_.find(code);
-    if (interfaceIndex == opToInterfaceMap_.end() || !interfaceIndex->second) {
-        LOGE("Cannot response request %d: unknown tranction", code);
-        return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
+    switch (code) {
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::PREPARE_ADD_USER):
+            return HandlePrepareAddUser(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::REMOVE_USER):
+            return HandleRemoveUser(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::PREPARE_START_USER):
+            return HandlePrepareStartUser(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::STOP_USER):
+            return HandleStopUser(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_TOTAL):
+            return HandleGetTotal(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_FREE):
+            return HandleGetFree(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_SYSTEM_SIZE):
+            return HandleGetSystemSize(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_TOTAL_SIZE):
+            return HandleGetTotalSize(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_FREE_SIZE):
+            return HandleGetFreeSize(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_CURR_USER_STATS):
+            return HandleGetCurrUserStorageStats(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_USER_STATS):
+            return HandleGetUserStorageStats(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_USER_STATS_BY_TYPE):
+            return HandleGetUserStorageStatsByType(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_CURR_BUNDLE_STATS):
+            return HandleGetCurrentBundleStats(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_BUNDLE_STATUS):
+            return HandleGetBundleStatus(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::NOTIFY_VOLUME_CREATED):
+            return HandleNotifyVolumeCreated(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::NOTIFY_VOLUME_MOUNTED):
+            return HandleNotifyVolumeMounted(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::NOTIFY_VOLUME_STATE_CHANGED):
+            return HandleNotifyVolumeStateChanged(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::MOUNT):
+            return HandleMount(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::UNMOUNT):
+            return HandleUnmount(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_ALL_VOLUMES):
+            return HandleGetAllVolumes(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::NOTIFY_DISK_CREATED):
+            return HandleNotifyDiskCreated(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::NOTIFY_DISK_DESTROYED):
+            return HandleNotifyDiskDestroyed(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::PARTITION):
+            return HandlePartition(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_ALL_DISKS):
+            return HandleGetAllDisks(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_VOL_BY_UUID):
+            return HandleGetVolumeByUuid(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_VOL_BY_ID):
+            return HandleGetVolumeById(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::SET_VOL_DESC):
+            return HandleSetVolDesc(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::FORMAT):
+            return HandleFormat(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_DISK_BY_ID):
+            return HandleGetDiskById(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::CREATE_USER_KEYS):
+            return HandleGenerateUserKeys(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::DELETE_USER_KEYS):
+            return HandleDeleteUserKeys(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::UPDATE_USER_AUTH):
+            return HandleUpdateUserAuth(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::ACTIVE_USER_KEY):
+            return HandleActiveUserKey(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::INACTIVE_USER_KEY):
+            return HandleInactiveUserKey(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::LOCK_USER_SCREEN):
+            return HandleLockUserScreen(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::UNLOCK_USER_SCREEN):
+            return HandleUnlockUserScreen(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::LOCK_SCREEN_STATUS):
+            return HandleGetLockScreenStatus(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::UPDATE_KEY_CONTEXT):
+            return HandleUpdateKeyContext(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::CREATE_SHARE_FILE):
+            return HandleCreateShareFile(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::DELETE_SHARE_FILE):
+            return HandleDeleteShareFile(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::SET_BUNDLE_QUOTA):
+            return HandleSetBundleQuota(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::UPDATE_MEM_PARA):
+            return HandleUpdateMemoryPara(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_BUNDLE_STATS_INCREASE):
+            return HandleGetBundleStatsForIncrease(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::MOUNT_DFS_DOCS):
+            return HandleMountDfsDocs(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::UMOUNT_DFS_DOCS):
+            return HandleUMountDfsDocs(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::GENERATE_APP_KEY):
+            return HandleGenerateAppkey(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::DELETE_APP_KEY):
+            return HandleDeleteAppkey(data, reply);
+        default:
+            LOGE("Cannot response request %d: unknown tranction", code);
+            return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
     }
-    return (this->*(interfaceIndex->second))(data, reply);
 }
 
 int32_t StorageManagerStub::HandlePrepareAddUser(MessageParcel &data, MessageParcel &reply)
