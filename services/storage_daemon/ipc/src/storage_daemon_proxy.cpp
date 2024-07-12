@@ -53,7 +53,7 @@ int32_t StorageDaemonProxy::Mount(std::string volId, uint32_t flags)
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::MOUNT), data, reply, option);
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::MOUNT), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -74,7 +74,7 @@ int32_t StorageDaemonProxy::UMount(std::string volId)
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::UMOUNT), data, reply, option);
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::UMOUNT), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -95,7 +95,7 @@ int32_t StorageDaemonProxy::Check(std::string volId)
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::CHECK), data, reply, option);
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::CHECK), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -120,7 +120,7 @@ int32_t StorageDaemonProxy::Format(std::string volId, std::string fsType)
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::FORMAT), data, reply, option);
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::FORMAT), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -145,7 +145,7 @@ int32_t StorageDaemonProxy::Partition(std::string diskId, int32_t type)
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::PARTITION), data, reply, option);
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::PARTITION), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -170,7 +170,7 @@ int32_t StorageDaemonProxy::SetVolumeDescription(std::string volId, std::string 
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::SET_VOL_DESC), data, reply, option);
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::SET_VOL_DESC), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -196,7 +196,7 @@ int32_t StorageDaemonProxy::PrepareUserDirs(int32_t userId, uint32_t flags)
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::PREPARE_USER_DIRS), data, reply, option);
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::PREPARE_USER_DIRS), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -222,7 +222,7 @@ int32_t StorageDaemonProxy::DestroyUserDirs(int32_t userId, uint32_t flags)
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::DESTROY_USER_DIRS), data, reply, option);
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::DESTROY_USER_DIRS), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -244,7 +244,7 @@ int32_t StorageDaemonProxy::StartUser(int32_t userId)
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::START_USER), data, reply, option);
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::START_USER), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -266,7 +266,7 @@ int32_t StorageDaemonProxy::StopUser(int32_t userId)
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::STOP_USER), data, reply, option);
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::STOP_USER), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -283,7 +283,7 @@ int32_t StorageDaemonProxy::InitGlobalKey(void)
         return E_WRITE_DESCRIPTOR_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::INIT_GLOBAL_KEY), data, reply, option);
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::INIT_GLOBAL_KEY), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -301,7 +301,7 @@ int32_t StorageDaemonProxy::InitGlobalUserKeys(void)
         return E_WRITE_DESCRIPTOR_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::INIT_GLOBAL_USER_KEYS), data, reply,
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::INIT_GLOBAL_USER_KEYS), data, reply,
         option);
     if (err != E_OK) {
         return err;
@@ -328,7 +328,7 @@ int32_t StorageDaemonProxy::GenerateUserKeys(uint32_t userId, uint32_t flags)
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_USER_KEYS), data, reply, option);
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_USER_KEYS), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -349,7 +349,7 @@ int32_t StorageDaemonProxy::DeleteUserKeys(uint32_t userId)
     if (!data.WriteUint32(userId)) {
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_USER_KEYS), data, reply, option);
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_USER_KEYS), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -386,7 +386,7 @@ int32_t StorageDaemonProxy::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_USER_AUTH), data, reply, option);
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_USER_AUTH), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -416,7 +416,7 @@ int32_t StorageDaemonProxy::ActiveUserKey(uint32_t userId,
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::ACTIVE_USER_KEY), data, reply, option);
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::ACTIVE_USER_KEY), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -437,7 +437,7 @@ int32_t StorageDaemonProxy::InactiveUserKey(uint32_t userId)
     if (!data.WriteUint32(userId)) {
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::INACTIVE_USER_KEY), data, reply, option);
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::INACTIVE_USER_KEY), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -458,7 +458,7 @@ int32_t StorageDaemonProxy::LockUserScreen(uint32_t userId)
     if (!data.WriteUint32(userId)) {
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::LOCK_USER_SCREEN), data, reply, option);
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::LOCK_USER_SCREEN), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -487,7 +487,8 @@ int32_t StorageDaemonProxy::UnlockUserScreen(uint32_t userId,
     if (!data.WriteUInt8Vector(secret)) {
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::UNLOCK_USER_SCREEN), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageDaemonInterfaceCode::UNLOCK_USER_SCREEN), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -508,7 +509,8 @@ int32_t StorageDaemonProxy::GetLockScreenStatus(uint32_t userId, bool &lockScree
     if (!data.WriteUint32(userId)) {
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::LOCK_SCREEN_STATUS), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageDaemonInterfaceCode::LOCK_SCREEN_STATUS), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -532,7 +534,8 @@ int32_t StorageDaemonProxy::GenerateAppkey(uint32_t userId, uint32_t appUid, std
     if (!data.WriteUint32(appUid)) {
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::GENERATE_APP_KEY), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageDaemonInterfaceCode::GENERATE_APP_KEY), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -556,7 +559,7 @@ int32_t StorageDaemonProxy::DeleteAppkey(uint32_t userId, const std::string keyI
     if (!data.WriteString(keyId)) {
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_APP_KEY), data, reply, option);
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_APP_KEY), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -576,7 +579,8 @@ int32_t StorageDaemonProxy::UpdateKeyContext(uint32_t userId)
     if (!data.WriteUint32(userId)) {
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_KEY_CONTEXT), data, reply, option);
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_KEY_CONTEXT), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -597,7 +601,7 @@ int32_t StorageDaemonProxy::MountCryptoPathAgain(uint32_t userId)
     if (!data.WriteUint32(userId)) {
         return E_WRITE_PARCEL_ERR;
     }
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::MOUNT_CRYPTO_PATH_AGAIN),
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::MOUNT_CRYPTO_PATH_AGAIN),
         data, reply, option);
     if (err != E_OK) {
         return err;
@@ -629,7 +633,7 @@ std::vector<int32_t> StorageDaemonProxy::CreateShareFile(const std::vector<std::
         return std::vector<int32_t>{E_WRITE_PARCEL_ERR};
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_SHARE_FILE), data, reply, option);
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_SHARE_FILE), data, reply, option);
     if (err != E_OK) {
         return std::vector<int32_t>{err};
     }
@@ -659,7 +663,7 @@ int32_t StorageDaemonProxy::DeleteShareFile(uint32_t tokenId, const std::vector<
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_SHARE_FILE), data, reply, option);
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_SHARE_FILE), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -693,7 +697,7 @@ int32_t StorageDaemonProxy::SetBundleQuota(const std::string &bundleName, int32_
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::SET_BUNDLE_QUOTA), data, reply, option);
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::SET_BUNDLE_QUOTA), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -718,7 +722,7 @@ int32_t StorageDaemonProxy::GetOccupiedSpace(int32_t idType, int32_t id, int64_t
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::GET_SPACE), data, reply, option);
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::GET_SPACE), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -753,7 +757,7 @@ int32_t StorageDaemonProxy::GetBundleStatsForIncrease(uint32_t userId, const std
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::GET_BUNDLE_STATS_INCREASE), data, reply,
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::GET_BUNDLE_STATS_INCREASE), data, reply,
         option);
     if (err != E_OK) {
         LOGE("StorageDaemonProxy::SendRequest call err = %{public}d", err);
@@ -786,7 +790,7 @@ int32_t StorageDaemonProxy::MountDfsDocs(int32_t userId, const std::string &rela
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::MOUNT_DFS_DOCS), data, reply, option);
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::MOUNT_DFS_DOCS), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -808,7 +812,7 @@ int32_t StorageDaemonProxy::UMountDfsDocs(int32_t userId, const std::string &rel
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::UMOUNT_DFS_DOCS), data, reply, option);
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::UMOUNT_DFS_DOCS), data, reply, option);
     if (err != E_OK) {
         return err;
     }
@@ -830,7 +834,7 @@ int32_t StorageDaemonProxy::UpdateMemoryPara(int32_t size, int32_t &oldSize)
         return E_WRITE_PARCEL_ERR;
     }
 
-    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_MEM_PARA), data, reply, option);
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_MEM_PARA), data, reply, option);
     if (err != E_OK) {
         return err;
     }
