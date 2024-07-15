@@ -165,7 +165,7 @@ int32_t StorageStatusService::GetBundleStatsForIncrease(uint32_t userId, const s
 int32_t StorageStatusService::GetCurrentBundleStats(BundleStats &bundleStats)
 {
     int userId = GetCurrentUserId();
-    LOGD("StorageStatusService::userId is:%d", userId);
+    LOGD("StorageStatusService::userId is: %{public}d", userId);
     std::string pkgName = GetCallingPkgName();
     return GetBundleStats(pkgName, userId, bundleStats);
 }
@@ -192,7 +192,7 @@ int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t
     }
     for (uint i = 0; i < bundleStats.size(); i++) {
         if (bundleStats[i] == E_ERR) {
-            LOGE("StorageStatusService::Failed to query %s data.", dataDir[i].c_str());
+            LOGE("StorageStatusService::Failed to query %{public}s data.", dataDir[i].c_str());
             bundleStats[i] = 0;
         }
     }
@@ -239,6 +239,8 @@ int32_t StorageStatusService::GetUserStorageStatsByType(int32_t userId, StorageS
     } else if (type == FILE_TYPE) {
         LOGD("GetUserStorageStatsByType file");
         err = GetFileStorageStats(userId, storageStats);
+    } else {
+        LOGD("GetUserStorageStatsByType type: %{public}s", type.c_str());
     }
 
     return err;
