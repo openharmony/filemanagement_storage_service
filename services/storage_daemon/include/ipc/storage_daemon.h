@@ -104,7 +104,7 @@ private:
                                              const std::vector<uint8_t> &secret);
     int32_t RestoreUserKey(int32_t userId, uint32_t flags);
     bool IsNeedRestorePathExist(uint32_t userId, bool needCheckEl1);
-    int32_t RestoreUserOneKey(int32_t userId, KeyType type);
+    int32_t RestoreOneUserKey(int32_t userId, KeyType type);
 #endif
     int32_t GetCryptoFlag(KeyType type, uint32_t &flags);
     int32_t GenerateKeyAndPrepareUserDirs(uint32_t userId, KeyType type,
