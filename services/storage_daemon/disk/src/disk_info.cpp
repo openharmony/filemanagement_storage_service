@@ -39,7 +39,7 @@ enum class Table {
     GPT,
 };
 
-DiskInfo::DiskInfo(std::string sysPath, std::string devPath, dev_t device, int flag)
+DiskInfo::DiskInfo(std::string &sysPath, std::string &devPath, dev_t device, int flag)
 {
     id_ = StringPrintf("disk-%d-%d", major(device), minor(device));
     sysPath_ = sysPath;
@@ -240,7 +240,7 @@ int32_t DiskInfo::CreateUnknownTabVol()
     return E_OK;
 }
 
-int32_t DiskInfo::ReadDiskLines(std::vector<std::string> lines, int32_t maxVols)
+int32_t DiskInfo::ReadDiskLines(std::vector<std::string> &lines, int32_t maxVols)
 {
     std::string lineToken = " ";
     bool foundPart = false;

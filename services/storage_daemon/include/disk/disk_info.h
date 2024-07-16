@@ -35,7 +35,7 @@ public:
         USB_FLAG = 2,
     };
 
-    DiskInfo(std::string sysPath_, std::string devPath_, dev_t device, int flag);
+    DiskInfo(std::string &sysPath_, std::string &devPath_, dev_t device, int flag);
     virtual ~DiskInfo();
     int Create();
     int Destroy();
@@ -63,7 +63,7 @@ private:
     dev_t device_ {};
     unsigned int flags_ {};
     std::list<std::string> volumeId_;
-    int32_t ReadDiskLines(std::vector<std::string> lines, int32_t maxVols);
+    int32_t ReadDiskLines(std::vector<std::string> &lines, int32_t maxVols);
     bool CreateMBRVolume(int32_t type, dev_t dev);
     int32_t CreateUnknownTabVol();
 };
