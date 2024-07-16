@@ -33,12 +33,12 @@ public:
 
     virtual int32_t Shutdown() = 0;
 
-    virtual int32_t Mount(std::string volId, uint32_t flags) = 0;
-    virtual int32_t UMount(std::string volId) = 0;
-    virtual int32_t Check(std::string volId) = 0;
-    virtual int32_t Format(std::string volId, std::string fsType) = 0;
-    virtual int32_t Partition(std::string diskId, int32_t type) = 0;
-    virtual int32_t SetVolumeDescription(std::string volId, std::string description) = 0;
+    virtual int32_t Mount(const std::string &volId, uint32_t flags) = 0;
+    virtual int32_t UMount(const std::string &volId) = 0;
+    virtual int32_t Check(const std::string &volId) = 0;
+    virtual int32_t Format(const std::string &volId, const std::string &fsType) = 0;
+    virtual int32_t Partition(const std::string &diskId, int32_t type) = 0;
+    virtual int32_t SetVolumeDescription(const std::string &volId, const std::string &description) = 0;
 
     virtual int32_t StartUser(int32_t userId) = 0;
     virtual int32_t StopUser(int32_t userId) = 0;
@@ -66,7 +66,7 @@ public:
     virtual int32_t GetLockScreenStatus(uint32_t user, bool &lockScreenStatus) = 0;
     virtual int32_t MountCryptoPathAgain(uint32_t userId) = 0;
     virtual int32_t GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId) = 0;
-    virtual int32_t DeleteAppkey(uint32_t userId, const std::string keyId) = 0;
+    virtual int32_t DeleteAppkey(uint32_t userId, const std::string &keyId) = 0;
 
     // app file share api
     virtual std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,

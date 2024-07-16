@@ -26,12 +26,12 @@ public:
     StorageDaemonProxy(const sptr<IRemoteObject> &impl);
     virtual int32_t Shutdown() override;
 
-    virtual int32_t Mount(std::string volId, uint32_t flags) override;
-    virtual int32_t UMount(std::string volId) override;
-    virtual int32_t Check(std::string volId) override;
-    virtual int32_t Format(std::string volId, std::string fsType) override;
-    virtual int32_t Partition(std::string diskId, int32_t type) override;
-    virtual int32_t SetVolumeDescription(std::string volId, std::string description) override;
+    virtual int32_t Mount(const std::string &volId, uint32_t flags) override;
+    virtual int32_t UMount(const std::string &volId) override;
+    virtual int32_t Check(const std::string &volId) override;
+    virtual int32_t Format(const std::string &volId, const std::string &fsType) override;
+    virtual int32_t Partition(const std::string &diskId, int32_t type) override;
+    virtual int32_t SetVolumeDescription(const std::string &volId, const std::string &description) override;
 
     virtual int32_t StartUser(int32_t userId) override;
     virtual int32_t StopUser(int32_t userId) override;
@@ -59,7 +59,7 @@ public:
     virtual int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus) override;
     virtual int32_t MountCryptoPathAgain(uint32_t userId) override;
     virtual int32_t GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId) override;
-    virtual int32_t DeleteAppkey(uint32_t userId, const std::string keyId) override;
+    virtual int32_t DeleteAppkey(uint32_t userId, const std::string &keyId) override;
 
     // app file share api
     virtual std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,
