@@ -19,6 +19,7 @@
 #include <type_traits>
 #include "file_sharing/endian.h"
 #include "securec.h"
+#include "storage_service_log.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -90,6 +91,7 @@ int Acl::InsertEntry(const AclXattrEntry &entry)
 {
     if (entries.size() >= ENTRIES_MAX_NUM) {
         errno = EAGAIN;
+        LOGE("fail to insert entry: entry size exceed max size accepted: %{public}d", ENTRIES_MAX_NUM);
         return -1;
     }
 

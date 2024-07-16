@@ -186,7 +186,7 @@ int DiskInfo::ReadPartition()
 {
     int maxVolumes = GetMaxVolume(device_);
     if (maxVolumes < 0) {
-        LOGE("Invaild maxVolumes");
+        LOGE("Invaild maxVolumes: %{public}d", maxVolumes);
         return E_ERR;
     }
 
@@ -219,7 +219,7 @@ bool DiskInfo::CreateMBRVolume(int32_t type, dev_t dev)
     // FAT16 || NTFS/EXFAT || W95 FAT32 || W95 FAT32 || W95 FAT16
     if (type == 0x06 || type == 0x07 || type == 0x0b || type == 0x0c || type == 0x0e) {
         if (CreateVolume(dev) == E_OK) {
-                return true;
+            return true;
         }
     }
     return false;
@@ -248,7 +248,9 @@ int32_t DiskInfo::ReadDiskLines(std::vector<std::string> lines, int32_t maxVols)
     for (auto &line : lines) {
         auto split = SplitLine(line, lineToken);
         auto it = split.begin();
-        if (it == split.end()) continue;
+        if (it == split.end()) {
+            continue;
+        }
         if (*it == "DISK") {
             if (++it == split.end()) {
                 continue;
@@ -262,7 +264,9 @@ int32_t DiskInfo::ReadDiskLines(std::vector<std::string> lines, int32_t maxVols)
                 continue;
             }
         } else if (*it == "PART") {
-            if (++it == split.end()) continue;
+            if (++it == split.end()) {
+                continue;
+            }
             int32_t index = std::stoi(*it);
             if (index > maxVols || index < 1) {
                 LOGE("Invalid partition %{public}d", index);
