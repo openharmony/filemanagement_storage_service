@@ -736,7 +736,8 @@ int32_t StorageDaemonProxy::GetOccupiedSpace(int32_t idType, int32_t id, int64_t
 }
 
 int32_t StorageDaemonProxy::GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
-    const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes)
+    const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes,
+    std::vector<int64_t> &incPkgFileSizes)
 {
     MessageParcel data;
     MessageParcel reply;
@@ -770,6 +771,10 @@ int32_t StorageDaemonProxy::GetBundleStatsForIncrease(uint32_t userId, const std
     }
     if (!reply.ReadInt64Vector(&pkgFileSizes)) {
         LOGE("StorageDaemonProxy::SendRequest read pkgFileSizes");
+        return E_WRITE_REPLY_ERR;
+    }
+    if (!reply.ReadInt64Vector(&incPkgFileSizes)) {
+        LOGE("StorageDaemonProxy::SendRequest read incPkgFileSizes");
         return E_WRITE_REPLY_ERR;
     }
 

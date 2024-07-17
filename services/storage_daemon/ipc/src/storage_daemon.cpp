@@ -700,10 +700,11 @@ int32_t StorageDaemon::GetOccupiedSpace(int32_t idType, int32_t id, int64_t &siz
 }
 
 int32_t StorageDaemon::GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
-    const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes)
+    const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes,
+    std::vector<int64_t> &incPkgFileSizes)
 {
     return QuotaManager::GetInstance()->GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes,
-        pkgFileSizes);
+        pkgFileSizes, incPkgFileSizes);
 }
 
 int32_t StorageDaemon::MountDfsDocs(int32_t userId, const std::string &relativePath,

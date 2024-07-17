@@ -494,8 +494,9 @@ static void WriteFileList(std::ofstream &statFile, struct FileStat fileStat, Bun
     // te file line
     statFile << fileLine << std::endl;
     if (fileStat.isIncre) {
-        paras.fileSizeSum += fileStat.fileSize;
+        paras.incFileSizeSum += fileStat.fileSize;
     }
+    paras.fileSizeSum += fileStat.fileSize;
 }
 
 static bool ExcludeFilter(std::map<std::string, bool> &excludesMap, const std::string &path)
@@ -779,16 +780,17 @@ static void DeduplicationPath(std::vector<std::string> &configPaths)
 }
 
 static void GetBundleStatsForIncreaseEach(uint32_t userId, std::string &bundleName, int64_t lastBackupTime,
-    std::vector<int64_t> &pkgFileSizes)
+    std::vector<int64_t> &pkgFileSizes, std::vector<int64_t> &incPkgFileSizes)
 {
     // input parameters
     BundleStatsParas paras = {.userId = userId, .bundleName = bundleName,
-                              .lastBackupTime = lastBackupTime, .fileSizeSum = 0};
+                              .lastBackupTime = lastBackupTime, .fileSizeSum = 0, .incFileSizeSum = 0};
 
     // obtain includes, excludes in backup extension config
     auto [includes, excludes] = ReadIncludesExcludesPath(bundleName, lastBackupTime, userId);
     if (includes.empty()) {
         pkgFileSizes.emplace_back(0);
+        incPkgFileSizes.emplace_back(0);
         return;
     }
     // physical paths
@@ -801,6 +803,7 @@ static void GetBundleStatsForIncreaseEach(uint32_t userId, std::string &bundleNa
     if (phyIncludes.empty()) {
         LOGE("Incorrect convert for include sandbox path for %{private}s", bundleName.c_str());
         pkgFileSizes.emplace_back(0);
+        incPkgFileSizes.emplace_back(0);
         return;
     }
 
@@ -822,6 +825,7 @@ static void GetBundleStatsForIncreaseEach(uint32_t userId, std::string &bundleNa
     if (!statFile.is_open()) {
         LOGE("creat file fail, errno:%{public}d.", errno);
         pkgFileSizes.emplace_back(0);
+        incPkgFileSizes.emplace_back(0);
         return;
     }
     statFile << VER_10_LINE1 << std::endl;
@@ -831,12 +835,14 @@ static void GetBundleStatsForIncreaseEach(uint32_t userId, std::string &bundleNa
     ScanExtensionPath(paras, phyIncludes, phyExcludes, pathMap, statFile);
     // calculate summary file sizes
     pkgFileSizes.emplace_back(paras.fileSizeSum);
+    incPkgFileSizes.emplace_back(paras.incFileSizeSum);
     LOGI("bundleName: %{public}s, size: %{public}lld", bundleName.c_str(), static_cast<long long>(paras.fileSizeSum));
     statFile.close();
 }
 
 int32_t QuotaManager::GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
-    const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes)
+    const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes,
+    std::vector<int64_t> &incPkgFileSizes)
 {
     LOGI("GetBundleStatsForIncrease start");
     if (bundleNames.size() != incrementalBackTimes.size()) {
@@ -847,7 +853,7 @@ int32_t QuotaManager::GetBundleStatsForIncrease(uint32_t userId, const std::vect
     for (size_t i = 0; i < bundleNames.size(); i++) {
         std::string bundleName = bundleNames[i];
         int64_t lastBackupTime = incrementalBackTimes[i];
-        GetBundleStatsForIncreaseEach(userId, bundleName, lastBackupTime, pkgFileSizes);
+        GetBundleStatsForIncreaseEach(userId, bundleName, lastBackupTime, pkgFileSizes, incPkgFileSizes);
     }
     return E_OK;
 }
