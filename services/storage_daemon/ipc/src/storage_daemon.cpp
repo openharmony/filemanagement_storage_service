@@ -554,7 +554,7 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
         LOGE("failed to delete appkey2");
         return -EFAULT;
     }
-    std::thread thread([userId]() { RestoreconElX(userId); });
+    std::thread thread([this, userId]() { RestoreconElX(userId); });
     thread.detach();
     if (updateFlag) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
@@ -563,7 +563,7 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
     AncoActiveCryptKey(userId);
     return ret;
 #else
-    std::thread thread([userId]() { RestoreconElX(userId); });
+    std::thread thread([this, userId]() { RestoreconElX(userId); });
     thread.detach();
     if (updateFlag) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
