@@ -40,6 +40,7 @@ using namespace OHOS::AAFwk;
 using namespace OHOS::AccountSA;
 namespace OHOS {
 namespace StorageManager {
+static constexpr int CONNECT_TIME = 3;
 static std::mutex userRecordLock;
 std::shared_ptr<DataShare::DataShareHelper> AccountSubscriber::mediaShare_ = nullptr;
 
@@ -159,7 +160,14 @@ void AccountSubscriber::GetSystemAbility()
         LOGE("GetSystemAbility remoteObj == nullptr");
         return;
     }
-    mediaShare_ = DataShare::DataShareHelper::Creator(remoteObj, "datashare:///media");
+    for (int i = 0; i < CONNECT_TIME; i++) {
+        mediaShare_ = DataShare::DataShareHelper::Creator(remoteObj, "datashare:///media");
+        if (mediaShare_ != nullptr) {
+            LOGI("connect media success.");
+            break;
+        }
+        LOGE("try to connect media again.");
+    }
 }
 
 bool AccountSubscriber::OnReceiveEventLockUserScreen(int32_t userId)
