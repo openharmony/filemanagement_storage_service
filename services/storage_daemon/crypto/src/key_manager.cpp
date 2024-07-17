@@ -1075,7 +1075,10 @@ int KeyManager::DeleteAppkey(uint32_t userId, const std::string keyId)
 
 int KeyManager::UnlockUserAppKeys(uint32_t userId, bool needGetAllAppKey)
 {
-    LOGI("UnlockUserAppKeys enter!");
+    if (!saveESecretStatus[userId]) {
+        LOGI("E type is not support");
+        return E_OK;
+    }
 #ifdef EL5_FILEKEY_MANAGER
     std::vector<std::pair<int, std::string>> keyInfo;
     std::vector<std::pair<std::string, bool>> loadInfos;

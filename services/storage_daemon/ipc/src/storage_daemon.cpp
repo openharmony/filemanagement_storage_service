@@ -18,6 +18,7 @@
 #include <dlfcn.h>
 #include <fcntl.h>
 #include <fstream>
+#include <thread>
 
 #ifdef USER_CRYPTO_MANAGER
 #include "crypto/anco_key_manager.h"
@@ -553,7 +554,8 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
         LOGE("failed to delete appkey2");
         return -EFAULT;
     }
-    RestoreconElX(userId);
+    std::thread thread([this, userId]() { RestoreconElX(userId); });
+    thread.detach();
     if (updateFlag) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
     }
@@ -561,7 +563,8 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
     AncoActiveCryptKey(userId);
     return ret;
 #else
-    RestoreconElX(userId);
+    std::thread thread([this, userId]() { RestoreconElX(userId); });
+    thread.detach();
     if (updateFlag) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
     }
