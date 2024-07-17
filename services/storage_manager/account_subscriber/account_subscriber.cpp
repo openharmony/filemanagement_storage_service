@@ -48,7 +48,7 @@ AccountSubscriber::AccountSubscriber(const EventFwk::CommonEventSubscribeInfo &s
 {}
 
 std::shared_ptr<AccountSubscriber> accountSubscriber_ = nullptr;
-bool AccountSubscriber::Subscriber(void)
+void AccountSubscriber::Subscriber(void)
 {
     if (accountSubscriber_ == nullptr) {
         EventFwk::MatchingSkills matchingSkills;
@@ -59,7 +59,6 @@ bool AccountSubscriber::Subscriber(void)
         accountSubscriber_ = std::make_shared<AccountSubscriber>(subscribeInfo);
         EventFwk::CommonEventManager::SubscribeCommonEvent(accountSubscriber_);
     }
-    return true;
 }
 
 static void MountCryptoPathAgain(int32_t userId)
@@ -68,7 +67,7 @@ static void MountCryptoPathAgain(int32_t userId)
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t err = sdCommunication->MountCryptoPathAgain(userId);
     if (err != 0) {
-        LOGI("mount crypto path failed err is %{public}d", err);
+        LOGE("mount crypto path failed err is %{public}d", err);
         return;
     }
     LOGI("MountCryptoPathAgain success");

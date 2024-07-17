@@ -37,7 +37,7 @@ class AccountSubscriber : public EventFwk::CommonEventSubscriber {
 public:
     AccountSubscriber() = default;
     explicit AccountSubscriber(const EventFwk::CommonEventSubscribeInfo &subscriberInfo);
-    static bool Subscriber(void);
+    static void Subscriber(void);
     virtual ~AccountSubscriber() = default;
     virtual void OnReceiveEvent(const EventFwk::CommonEventData &eventData) override;
     static void SetMediaShare(std::shared_ptr<DataShare::DataShareHelper> &sptr)
