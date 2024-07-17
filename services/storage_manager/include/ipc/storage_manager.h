@@ -110,7 +110,7 @@ public:
 
 private:
     StorageManager();
-    void OnAddSystemAbility(void) override;
+    void OnAddSystemAbility(void systemAbilityId, void deviceId) override;
     static sptr<StorageManager> instance_;
     static std::mutex instanceLock_;
 };

@@ -174,6 +174,7 @@ std::shared_ptr<DiskInfo> DiskManager::GetDisk(dev_t device)
             return diskInfo;
         }
     }
+
     LOGI("No disk found with the given device");
     return nullptr;
 }

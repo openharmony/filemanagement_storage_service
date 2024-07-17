@@ -58,7 +58,7 @@ void StorageManager::OnStop()
     LOGI("StorageManager::Onstop Done");
 }
 
-void StorageManager::OnAddSystemAbility(void)
+void StorageManager::OnAddSystemAbility(void systemAbilityId, void deviceId)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
     AccountSubscriber::Subscriber();
