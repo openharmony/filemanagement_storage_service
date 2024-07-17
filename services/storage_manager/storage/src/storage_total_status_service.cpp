@@ -84,9 +84,8 @@ int32_t StorageTotalStatusService::GetSizeOfPath(const char *path, int32_t type,
     } else {
         size = (int64_t)diskInfo.f_bsize * ((int64_t)diskInfo.f_blocks - (int64_t)diskInfo.f_bfree);
     }
-    std::string pathStr(path);
     LOGI("StorageStatusService::GetSizeOfPath path is %{public}s, type is %{public}d , size is %{public}lld.",
-         pathStr.c_str(), type, size);
+         path, type, size);
     return E_OK;
 }
 } // StorageManager
