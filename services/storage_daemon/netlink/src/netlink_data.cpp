@@ -22,7 +22,7 @@ constexpr int ACTION_PRE_LEN = 7;
 constexpr int DEVPATH_PRE_LEN = 8;
 constexpr int SUBSYSTEM_PRE_LEN = 10;
 constexpr int NL_PARAMS_MAX = 128;
-constexpr std::string EMPTY_STRING = "";
+const std::string EMPTY_STRING = "";
 
 namespace OHOS {
 namespace StorageDaemon {
