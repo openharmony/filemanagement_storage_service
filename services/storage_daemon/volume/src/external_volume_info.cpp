@@ -124,8 +124,7 @@ int32_t ExternalVolumeInfo::DoMount4Ntfs(uint32_t mountFlags)
         "-o",
         mountData.c_str()
     };
-    int32_t ret = ForkExec(cmd);
-    return ret;
+    return ForkExec(cmd);
 }
 
 int32_t ExternalVolumeInfo::DoMount4Exfat(uint32_t mountFlags)
@@ -142,28 +141,31 @@ int32_t ExternalVolumeInfo::DoMount4Exfat(uint32_t mountFlags)
         devPath_,
         mountPath_,
     };
-    int32_t ret = ForkExec(cmd);
-    return ret;
+    return ForkExec(cmd);
 }
 
 int32_t ExternalVolumeInfo::DoMount4OtherType(uint32_t mountFlags)
 {
     mountFlags |= MS_MGC_VAL;
     auto mountData = StringPrintf("uid=%d,gid=%d,dmask=0007,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
-    int32_t ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType_.c_str(), mountFlags, mountData.c_str());
-    return ret;
+    return mount(devPath_.c_str(), mountPath_.c_str(), fsType_.c_str(), mountFlags, mountData.c_str());
 }
 
 int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
 {
     int32_t ret = DoCheck();
-    struct stat statbuf;
+    if (ret != E_OK) {
+        LOGE("External volume uuid=%{public}s check failed.", GetAnonyString(GetFsUuid()).c_str());
+        return ret;
+    }
 
+    struct stat statbuf;
     mountPath_ = StringPrintf(mountPathDir_.c_str(), fsUuid_.c_str());
     if (!lstat(mountPath_.c_str(), &statbuf)) {
         LOGE("volume mount path %{public}s exists, please remove first", GetMountPath().c_str());
         return E_MOUNT;
     }
+
     ret = mkdir(mountPath_.c_str(), S_IRWXU | S_IRWXG | S_IXOTH);
     if (ret) {
         LOGE("the volume %{public}s create mount file %{public}s failed",
@@ -171,6 +173,7 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
         return E_MOUNT;
     }
 
+    LOGI("Ready to mount: external volume fstype is %{public}s, mountflag is %{public}d", fsType_.c_str(), mountFlags);
     if (fsType_ == "ext2" || fsType_ == "ext3" || fsType_ == "ext4") {
         ret = DoMount4Ext(mountFlags);
     } else if (fsType_ == "ntfs") {
@@ -186,6 +189,7 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
         remove(mountPath_.c_str());
         return E_MOUNT;
     }
+
     return E_OK;
 }
 
