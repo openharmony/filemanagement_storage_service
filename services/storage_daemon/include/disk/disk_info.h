@@ -35,6 +35,12 @@ public:
         USB_FLAG = 2,
     };
 
+    enum class Table {
+        UNKNOWN,
+        MBR,
+        GPT,
+    };
+
     DiskInfo(std::string &sysPath_, std::string &devPath_, dev_t device, int flag);
     virtual ~DiskInfo();
     int Create();
@@ -63,8 +69,10 @@ private:
     dev_t device_ {};
     unsigned int flags_ {};
     std::list<std::string> volumeId_;
-    void Case4Disk(std::vector<std::string> &split, std::vector<std::string>::iterator &it, Table &table)
-    void Case4Part(std::vector<std::string> &split, std::vector<std::string>::iterator &it, Table &table)
+    bool CreatePartition(std::vector<std::string> &split,
+                                   std::vector<std::string>::iterator &it,
+                                   Table &table,
+                                   dev_t partitionDev);
     int32_t ReadDiskLines(std::vector<std::string> &lines, int32_t maxVols);
     bool CreateMBRVolume(int32_t type, dev_t dev);
     int32_t CreateUnknownTabVol();
