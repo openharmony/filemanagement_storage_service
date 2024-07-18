@@ -397,6 +397,7 @@ int LoadAndSetPolicy(const char *keyDir, const char *dir)
     }
     if (pathBuf != NULL) {
         free(pathBuf);
+        pathBuf = NULL;
     }
 
     return ret;

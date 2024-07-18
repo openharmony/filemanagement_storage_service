@@ -189,7 +189,7 @@ std::string StorageDaemon::GetNeedRestoreFilePathByType(int32_t userId, KeyType 
     }
 }
 
-int32_t StorageDaemon::RestoreUserOneKey(int32_t userId, KeyType type)
+int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
 {
     uint32_t flags = 0;
     int32_t ret = GetCryptoFlag(type, flags);
@@ -198,11 +198,13 @@ int32_t StorageDaemon::RestoreUserOneKey(int32_t userId, KeyType type)
     }
 
     std::string elNeedRestorePath = GetNeedRestoreFilePathByType(userId, type);
-    if (elNeedRestorePath == "") {
+    if (elNeedRestorePath.empty()) {
         return E_KEY_TYPE_INVAL;
     }
 
-    if (std::filesystem::exists(elNeedRestorePath)) {
+    if (!std::filesystem::exists(elNeedRestorePath)) {
+        return E_OK;
+    } else {
         LOGI("start restore User %{public}u el%{public}u", userId, type);
         ret = KeyManager::GetInstance()->RestoreUserKey(userId, type);
         if (ret != E_OK) {
@@ -237,9 +239,9 @@ int32_t StorageDaemon::RestoreUserKey(int32_t userId, uint32_t flags)
         return -EEXIST;
     }
 
-    std::vector<KeyType> type = {EL1_KEY, EL2_KEY, EL3_KEY, EL4_KEY, EL5_KEY};
-    for (unsigned long i = 0; i < type.size(); i++) {
-        auto ret = RestoreUserOneKey(userId, type[i]);
+    std::vector<KeyType> keyTypes = {EL1_KEY, EL2_KEY, EL3_KEY, EL4_KEY, EL5_KEY};
+    for (KeyType type : keyTypes) {
+        auto ret = RestoreOneUserKey(userId, type);
         if (ret != E_OK) {
             return ret;
         }
@@ -433,7 +435,7 @@ int32_t StorageDaemon::GenerateKeyAndPrepareUserDirs(uint32_t userId, KeyType ty
                                                      const std::vector<uint8_t> &secret)
 {
 #ifdef USER_CRYPTO_MANAGER
-    int ret;
+    int32_t ret;
     uint32_t flags = 0;
 
     LOGI("enter:");
@@ -470,7 +472,7 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepare(uint32_t userId, KeyType type,
     if (ret != E_OK && ret != -ENOENT) {
 #ifdef USER_CRYPTO_MIGRATE_KEY
         std::string elNeedRestorePath = GetNeedRestoreFilePathByType(userId, type);
-        if (std::filesystem::exists(elNeedRestorePath) && (!token.empty() || !secret.empty())) {
+        if ((!token.empty() || !secret.empty()) && std::filesystem::exists(elNeedRestorePath)) {
             LOGI("start PrepareUserDirsAndUpdateUserAuth userId %{public}u, type %{public}u", userId, type);
             ret = PrepareUserDirsAndUpdateUserAuth(userId, type, token, secret);
         }
