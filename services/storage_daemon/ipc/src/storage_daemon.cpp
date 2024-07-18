@@ -79,7 +79,7 @@ int32_t StorageDaemon::Shutdown()
     return E_OK;
 }
 
-int32_t StorageDaemon::Mount(std::string volId, uint32_t flags)
+int32_t StorageDaemon::Mount(const std::string &volId, uint32_t flags)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle Mount");
@@ -89,7 +89,7 @@ int32_t StorageDaemon::Mount(std::string volId, uint32_t flags)
 #endif
 }
 
-int32_t StorageDaemon::UMount(std::string volId)
+int32_t StorageDaemon::UMount(const std::string &volId)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle UMount");
@@ -99,7 +99,7 @@ int32_t StorageDaemon::UMount(std::string volId)
 #endif
 }
 
-int32_t StorageDaemon::Check(std::string volId)
+int32_t StorageDaemon::Check(const std::string &volId)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle Check");
@@ -109,7 +109,7 @@ int32_t StorageDaemon::Check(std::string volId)
 #endif
 }
 
-int32_t StorageDaemon::Format(std::string volId, std::string fsType)
+int32_t StorageDaemon::Format(const std::string &volId, const std::string &fsType)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle Format");
@@ -119,7 +119,7 @@ int32_t StorageDaemon::Format(std::string volId, std::string fsType)
 #endif
 }
 
-int32_t StorageDaemon::Partition(std::string diskId, int32_t type)
+int32_t StorageDaemon::Partition(const std::string &diskId, int32_t type)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle Partition");
@@ -129,7 +129,7 @@ int32_t StorageDaemon::Partition(std::string diskId, int32_t type)
 #endif
 }
 
-int32_t StorageDaemon::SetVolumeDescription(std::string volId, std::string description)
+int32_t StorageDaemon::SetVolumeDescription(const std::string &volId, const std::string &description)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle SetVolumeDescription");
@@ -650,7 +650,7 @@ int32_t StorageDaemon::GenerateAppkey(uint32_t userId, uint32_t appUid, std::str
 #endif
 }
 
-int32_t StorageDaemon::DeleteAppkey(uint32_t userId, const std::string keyId)
+int32_t StorageDaemon::DeleteAppkey(uint32_t userId, const std::string &keyId)
 {
 #ifdef USER_CRYPTO_MANAGER
     return KeyManager::GetInstance()->DeleteAppkey(userId, keyId);
