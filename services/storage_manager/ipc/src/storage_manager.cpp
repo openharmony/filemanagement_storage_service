@@ -60,7 +60,8 @@ void StorageManager::OnStop()
 
 void StorageManager::OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId)
 {
-    LOGI("StorageManager::OnAddSystemAbility SA id %{public}d added", systemAbilityId);
+    (void) systemAbilityId;
+    (void) deviceId;
 #ifdef STORAGE_STATISTICS_MANAGER
     AccountSubscriber::Subscriber();
 #endif
