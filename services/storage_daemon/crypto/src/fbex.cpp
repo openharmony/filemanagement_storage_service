@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -47,9 +47,10 @@ const uint8_t FBEX_STATUS_REPORT = 0xC;
 const uint8_t FBEX_ADD_EL5 = 21;
 const uint8_t FBEX_READ_EL5 = 22;
 const uint8_t FBEX_WRITE_EL5 = 23;
-const uint8_t FBEX_DEL_EL5 = 24;
+const uint8_t FBEX_DEL_EL5_PINCODE = 24;
 const uint8_t FBEX_GENERATE_APP_KEY = 25;
 const uint8_t FBEX_CHANGE_PINCODE = 26;
+const uint8_t FBEX_LOCK_EL5 = 27;
 
 struct FbeOptStr {
     uint32_t user = 0;
@@ -61,7 +62,8 @@ struct FbeOptStr {
 using FbeOpts = FbeOptStr;
 
 struct FbeOptStrE {
-    uint32_t user = 0;
+    uint32_t userIdDouble = 0;
+    uint32_t userIdSingle = 0;
     uint32_t status = 0;
     uint32_t length = 0;
     uint8_t eBuffer[OHOS::StorageDaemon::FBEX_E_BUFFER_SIZE] = {0};
@@ -77,9 +79,10 @@ using FbeOptsE = FbeOptStrE;
 #define FBEX_READ_CLASS_E _IOWR(FBEX_IOC_MAGIC, FBEX_READ_EL5, FbeOptsE)
 #define FBEX_WRITE_CLASS_E _IOWR(FBEX_IOC_MAGIC, FBEX_WRITE_EL5, FbeOptsE)
 #define FBEX_ADD_CLASS_E _IOWR(FBEX_IOC_MAGIC, FBEX_ADD_EL5, FbeOptsE)
-#define FBEX_DEL_USER_PINCODE _IOWR(FBEX_IOC_MAGIC, FBEX_DEL_EL5, FbeOptsE)
+#define FBEX_DEL_USER_PINCODE _IOWR(FBEX_IOC_MAGIC, FBEX_DEL_EL5_PINCODE, FbeOptsE)
 #define FBEX_ADD_APPKEY2 _IOWR(FBEX_IOC_MAGIC, FBEX_GENERATE_APP_KEY, FbeOptsE)
 #define FBEX_CHANGE_PINCODE _IOWR(FBEX_IOC_MAGIC, FBEX_CHANGE_PINCODE, FbeOptsE)
+#define FBEX_LOCK_UECE _IOWR(FBEX_IOC_MAGIC, FBEX_LOCK_EL5, FbeOptsE)
 
 } // namespace
 
@@ -135,9 +138,9 @@ static inline bool CheckWriteBuffValid(const uint8_t *eBuffer, uint32_t size, ui
     return (eBuffer != nullptr) && (size == (GCM_NONCE_BYTES + AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES));
 }
 
-int FBEX::InstallEL5KeyToKernel(uint32_t userId, uint8_t flag)
+int FBEX::InstallEL5KeyToKernel(uint32_t userIdSingle, uint32_t userIdDouble, uint8_t flag)
 {
-    LOGI("InstallEL5KeyToKernel enter, userId: %{public}d, flag: %{public}u", userId, flag);
+    LOGI("InstallEL5KeyToKernel enter, userId: %{public}d, flag: %{public}u", userIdDouble, flag);
     int fd = open(FBEX_UECE_PATH, O_RDWR);
     if (fd < 0) {
         if (errno == ENOENT) {
@@ -148,7 +151,7 @@ int FBEX::InstallEL5KeyToKernel(uint32_t userId, uint8_t flag)
         return -errno;
     }
 
-    FbeOptsE ops{.user = userId};
+    FbeOptsE ops{ .userIdDouble = userIdDouble, .userIdSingle = userIdSingle };
     auto fbeRet = ioctl(fd, FBEX_ADD_CLASS_E, &ops);
     int ret = 0;
     if (fbeRet != 0) {
@@ -214,9 +217,9 @@ int FBEX::UninstallOrLockUserKeyToKernel(uint32_t userId, uint32_t type, uint8_t
     return ret;
 }
 
-int FBEX::UninstallOrLockUserKeyForEL5ToKernel(uint32_t userId, bool destroy)
+int FBEX::DeleteClassEPinCode(uint32_t userIdSingle, uint32_t userIdDouble)
 {
-    LOGI("enter, userId: %{public}d, flag: %{public}d", userId, destroy);
+    LOGI("enter, userId: %{public}d", userIdDouble);
     int fd = open(FBEX_UECE_PATH, O_RDWR);
     if (fd < 0) {
         if (errno == ENOENT) {
@@ -226,8 +229,8 @@ int FBEX::UninstallOrLockUserKeyForEL5ToKernel(uint32_t userId, bool destroy)
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
         return -errno;
     }
-    FbeOptsE ops{.user = userId};
-    auto fbeRet = ioctl(fd, destroy ? FBEX_DEL_USER_PINCODE : FBEX_IOC_USER_LOGOUT, &ops);
+    FbeOptsE ops{ .userIdDouble = userIdDouble, .userIdSingle = userIdSingle };
+    auto fbeRet = ioctl(fd, FBEX_DEL_USER_PINCODE, &ops);
     int ret = 0;
     if (fbeRet != 0) {
         LOGE("ioctl fbex_cmd failed, fbeRet: 0x%{public}x, errno: %{public}d", fbeRet, errno);
@@ -238,19 +241,20 @@ int FBEX::UninstallOrLockUserKeyForEL5ToKernel(uint32_t userId, bool destroy)
     return ret;
 }
 
-int FBEX::ChangePinCodeClassE(uint32_t userId)
+int FBEX::ChangePinCodeClassE(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupport)
 {
-    LOGI("enter, userId: %{public}d", userId);
+    LOGI("enter, userId: %{public}d", userIdDouble);
     int fd = open(FBEX_UECE_PATH, O_RDWR);
     if (fd < 0) {
         if (errno == ENOENT) {
             LOGE("fbex_uece does not exist, fbe not support this command!");
+            isFbeSupport = false;
             return 0;
         }
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
         return -errno;
     }
-    FbeOptsE ops{.user = userId};
+    FbeOptsE ops{ .userIdDouble = userIdDouble, .userIdSingle = userIdSingle };
     int ret = ioctl(fd, FBEX_CHANGE_PINCODE, &ops);
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
@@ -283,7 +287,8 @@ int FBEX::LockScreenToKernel(uint32_t userId)
     return ret;
 }
 
-int FBEX::GenerateAppkey(uint32_t userId, uint32_t appUid, std::unique_ptr<uint8_t[]> &appKey, uint32_t size)
+int FBEX::GenerateAppkey(UserIdToFbeStr &userIdToFbe, uint32_t appUid, std::unique_ptr<uint8_t[]> &appKey,
+                         uint32_t size)
 {
     LOGI("GenerateAppkey enter");
     int fd = open(FBEX_UECE_PATH, O_RDWR);
@@ -296,7 +301,9 @@ int FBEX::GenerateAppkey(uint32_t userId, uint32_t appUid, std::unique_ptr<uint8
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
         return -errno;
     }
-    FbeOptsE ops{.user = userId, .status = appUid, .length = size};
+    FbeOptsE ops{ .userIdDouble = userIdToFbe.userIds[DOUBLE_ID_INDEX],
+                  .userIdSingle = userIdToFbe.userIds[SINGLE_ID_INDEX],
+                  .status = appUid, .length = size };
     auto fbeRet = ioctl(fd, FBEX_ADD_APPKEY2, &ops);
     if (fbeRet != 0) {
         LOGE("ioctl fbex_cmd failed, fbeRet: 0x%{public}x, errno: %{public}d", fbeRet, errno);
@@ -307,6 +314,31 @@ int FBEX::GenerateAppkey(uint32_t userId, uint32_t appUid, std::unique_ptr<uint8
     close(fd);
     LOGI("GenerateAppkey success");
     return 0;
+}
+
+// for el5
+int FBEX::LockUece(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupport)
+{
+    LOGD("enter, userId: %{public}d", userIdDouble);
+
+    int fd = open(FBEX_UECE_PATH, O_RDWR);
+    if (fd < 0) {
+        if (errno == ENOENT) {
+            LOGE("fbex_uece does not exist, fbe not support this command!");
+            isFbeSupport = false;
+            return 0;
+        }
+        LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        return -errno;
+    }
+    FbeOptsE ops{ .userIdDouble = userIdDouble, .userIdSingle = userIdSingle };
+    int ret = ioctl(fd, FBEX_LOCK_UECE, &ops);
+    if (ret != 0) {
+        LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
+    }
+    close(fd);
+    LOGD("success");
+    return ret;
 }
 
 int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size)
@@ -338,9 +370,10 @@ int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint
     return ret;
 }
 
-int FBEX::ReadESecretToKernel(uint32_t userId, uint32_t status, uint8_t *eBuffer, uint32_t length, bool &isFbeSupport)
+int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uint8_t *eBuffer,
+                              uint32_t length, bool &isFbeSupport)
 {
-    LOGI("enter, userId: %{public}d, status: %{public}u", userId, status);
+    LOGI("enter, userId: %{public}d, status: %{public}u", userIdToFbe.userIds[DOUBLE_ID_INDEX], status);
     if (!CheckReadBuffValid(eBuffer, length, status)) {
         LOGE("read e secret param invalid");
         return -EINVAL;
@@ -357,7 +390,9 @@ int FBEX::ReadESecretToKernel(uint32_t userId, uint32_t status, uint8_t *eBuffer
         return -errno;
     }
     uint32_t bufferSize = AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES;
-    FbeOptsE ops{.user = userId, .status = status, .length = bufferSize};
+    FbeOptsE ops{ .userIdDouble = userIdToFbe.userIds[DOUBLE_ID_INDEX],
+                  .userIdSingle = userIdToFbe.userIds[SINGLE_ID_INDEX],
+                  .status = status, .length = bufferSize };
     (void)memcpy_s(ops.eBuffer, sizeof(ops.eBuffer), eBuffer, length);
     auto ret = ioctl(fd, FBEX_READ_CLASS_E, &ops);
     if (ret != 0) {
@@ -376,9 +411,9 @@ int FBEX::ReadESecretToKernel(uint32_t userId, uint32_t status, uint8_t *eBuffer
     return 0;
 }
 
-int FBEX::WriteESecretToKernel(uint32_t userId, uint32_t status, uint8_t *eBuffer, uint32_t length)
+int FBEX::WriteESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uint8_t *eBuffer, uint32_t length)
 {
-    LOGI("enter, userId: %{public}d, status: %{public}u", userId, status);
+    LOGI("enter, userId: %{public}d, status: %{public}u", userIdToFbe.userIds[DOUBLE_ID_INDEX], status);
     if (!CheckWriteBuffValid(eBuffer, length, status)) {
         LOGE("write e secret param invalid");
         return -EINVAL;
@@ -394,7 +429,9 @@ int FBEX::WriteESecretToKernel(uint32_t userId, uint32_t status, uint8_t *eBuffe
         return -errno;
     }
     uint32_t bufferSize = AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES;
-    FbeOptsE ops{.user = userId, .status = status, .length = bufferSize};
+    FbeOptsE ops{ .userIdDouble = userIdToFbe.userIds[DOUBLE_ID_INDEX],
+                  .userIdSingle = userIdToFbe.userIds[SINGLE_ID_INDEX],
+                  .status = status, .length = bufferSize };
     (void)memcpy_s(ops.eBuffer, sizeof(ops.eBuffer), eBuffer, length);
     auto ret = ioctl(fd, FBEX_WRITE_CLASS_E, &ops);
     if (ret != 0) {

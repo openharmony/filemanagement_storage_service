@@ -76,7 +76,7 @@ bool FscryptKeyV1::GenerateAppkey(uint32_t userId, uint32_t appUid, std::string 
     }
     // The ioctl does not support EL5, return empty character string
     if (appKey.data.get() == nullptr) {
-        LOGE("appKey.data.get() is unllptr!");
+        LOGE("appKey.data.get() is nullptr");
         keyDesc = "";
         return true;
     }
@@ -206,10 +206,10 @@ bool FscryptKeyV1::AddClassE(uint32_t status)
     return true;
 }
 
-bool FscryptKeyV1::DeleteClassE(uint32_t flag)
+bool FscryptKeyV1::DeleteClassEPinCode(uint32_t userId)
 {
     LOGI("DeleteClassE enter");
-    if (!fscryptV1Ext.DeleteClassE(flag)) {
+    if (!fscryptV1Ext.DeleteClassEPinCode(userId)) {
         LOGE("fscryptV1Ext DeleteClassE failed");
         return false;
     }
@@ -217,10 +217,10 @@ bool FscryptKeyV1::DeleteClassE(uint32_t flag)
     return true;
 }
 
-bool FscryptKeyV1::ChangePinCodeClassE(uint32_t userId)
+bool FscryptKeyV1::ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId)
 {
     LOGI("ChangePinCodeClassE enter, userId: %{public}d", userId);
-    if (!fscryptV1Ext.ChangePinCodeClassE(userId)) {
+    if (!fscryptV1Ext.ChangePinCodeClassE(userId, isFbeSupport)) {
         LOGE("fscryptV1Ext ChangePinCodeClassE failed");
         return false;
     }
@@ -430,6 +430,18 @@ bool FscryptKeyV1::LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::s
             LOGE("UninstallKeyToKeyring failed");
             ret = false;
         }
+    }
+    LOGD("finish");
+    return ret;
+}
+
+bool FscryptKeyV1::LockUece(bool &isFbeSupport)
+{
+    LOGD("enter");
+    bool ret = true;
+    if (!fscryptV1Ext.LockUeceExt(isFbeSupport)) {
+        LOGE("fscryptV1Ext InactiveKeyExt failed");
+        ret = false;
     }
     LOGD("finish");
     return ret;

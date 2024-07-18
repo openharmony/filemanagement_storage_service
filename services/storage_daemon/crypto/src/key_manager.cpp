@@ -19,7 +19,6 @@
 #include <string>
 
 #include "base_key.h"
-#include "common_timer_errors.h"
 #include "directory_ex.h"
 #include "file_ex.h"
 #include "fscrypt_key_v1.h"
@@ -218,6 +217,7 @@ int KeyManager::GenerateAndInstallEl5Key(uint32_t userId, const std::string &dir
         LOGE("user %{public}u el5 create error", userId);
         return -EFAULT;
     }
+    saveESecretStatus[userId] = (!auth.secret.IsEmpty() && !auth.token.IsEmpty());
     if ((!auth.secret.IsEmpty() && !auth.token.IsEmpty()) &&
         (!elKey->EncryptClassE(auth, saveESecretStatus[userId], userId, USER_ADD_AUTH))) {
         DoDeleteUserKeys(userId);
@@ -225,7 +225,6 @@ int KeyManager::GenerateAndInstallEl5Key(uint32_t userId, const std::string &dir
         return -EFAULT;
     }
     userEl5Key_[userId] = elKey;
-    saveESecretStatus[userId] = false;
     return 0;
 }
 
@@ -547,7 +546,7 @@ int KeyManager::GenerateUserKeyByType(unsigned int user, KeyType type,
         IamClient::GetInstance().GetSecureUid(user, secureUid);
         LOGE("token is exist, get secure uid.");
     }
-    UserAuth auth = {.token = token, .secret = secret, .secureUid = 0};
+    UserAuth auth = { .token = token, .secret = secret, .secureUid = secureUid };
     int ret = GenerateAndInstallUserKey(user, elUserKeyPath, auth, type);
     if (ret) {
         LOGE("user el create error, user %{public}u, type %{public}u", user, type);
@@ -682,7 +681,7 @@ int KeyManager::UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSe
         return -ENOENT;
     }
     if (tokenSecret.newSecret.empty()) {
-        if (!el5Key->DeleteClassE(user)) {
+        if (!el5Key->DeleteClassEPinCode(user)) {
             LOGE("user %{public}u DeleteClassE fail", user);
             return -EFAULT;
         }
@@ -690,11 +689,11 @@ int KeyManager::UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSe
         return 0;
     }
     if (!tokenSecret.newSecret.empty() && !tokenSecret.oldSecret.empty()) {
-        if (!el5Key->ChangePinCodeClassE(user)) {
+        saveESecretStatus[user] = true;
+        if (!el5Key->ChangePinCodeClassE(saveESecretStatus[user], user)) {
             LOGE("user %{public}u ChangePinCodeClassE fail", user);
             return -EFAULT;
         }
-        saveESecretStatus[user] = false;
         return 0;
     }
     uint32_t status = tokenSecret.oldSecret.empty() ? USER_ADD_AUTH : USER_CHANGE_AUTH;
@@ -1018,6 +1017,7 @@ int KeyManager::UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &toke
     }
     LOGI("DecryptClassE user %{public}u saveESecretStatus %{public}d", user, saveESecretStatus[user]);
     UserAuth auth = { .token = token, .secret = secret };
+    saveESecretStatus[user] = !auth.token.IsEmpty();
     auto el5Key = userEl5Key_[user];
     if (!el5Key->DecryptClassE(auth, saveESecretStatus[user], user, USER_UNLOCK)) {
         LOGE("Unlock user %{public}u uece failed", user);
@@ -1120,8 +1120,8 @@ int KeyManager::UnlockUserAppKeys(uint32_t userId, bool needGetAllAppKey)
         LOGE("Change User Appkeys LoadInfo fail.");
         return -EFAULT;
     }
-    LOGI("UnlockUserAppKeys success!");
 #endif
+    LOGI("UnlockUserAppKeys success!");
     return E_OK;
 }
 
@@ -1185,6 +1185,13 @@ int KeyManager::LockUserScreen(uint32_t user)
             saveLockScreenStatus[user]);
         return 0;
     }
+    if (HasElkey(user, EL5_KEY)) {
+        auto elKey = userEl5Key_[user];
+        if (saveESecretStatus[user] && !elKey->LockUece(saveESecretStatus[user])) {
+            LOGE("lock user %{public}u el5 key failed !", user);
+        }
+    }
+
     if (userEl4Key_.find(user) == userEl4Key_.end()) {
         LOGE("Have not found user %{public}u el3 or el4", user);
         return -ENOENT;
@@ -1194,7 +1201,6 @@ int KeyManager::LockUserScreen(uint32_t user)
         LOGE("Clear user %{public}u key failed", user);
         return -EFAULT;
     }
-    // todo 找IAM查询认证状态,如果不是人脸指纹就清除缓存中的值
 
     saveLockScreenStatus[user] = false;
     LOGI("LockUserScreen user %{public}u el3 and el4 success, saveLockScreenStatus is %{public}d",
