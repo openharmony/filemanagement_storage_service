@@ -240,6 +240,45 @@ int32_t DiskInfo::CreateUnknownTabVol()
     return E_OK;
 }
 
+void DiskInfo::Case4Disk(std::vector<std::string> &split, std::vector<std::string>::iterator &it, Table &table)
+{
+    if (++it == split.end()) {
+        continue;
+    }
+    if (*it == "mbr") {
+        table = Table::MBR;
+    } else if (*it == "gpt") {
+        table = Table::GPT;
+    } else {
+        LOGI("Unknown partition table %{public}s", (*it).c_str());
+        continue;
+    }
+}
+
+void DiskInfo::Case4Part(std::vector<std::string> &split, std::vector<std::string>::iterator &it, Table &table)
+{
+    if (++it == split.end()) {
+        continue;
+    }
+    int32_t index = std::stoi(*it);
+    if (index > maxVols || index < 1) {
+        LOGE("Invalid partition %{public}d", index);
+        continue;
+    }
+    dev_t partitionDev = makedev(major(device_), minor(device_) + static_cast<uint32_t>(index));
+    if (table == Table::MBR) {
+        if (++it == split.end()) {
+            continue;
+        }
+        int32_t type = std::stoi("0x0" + *it, 0, 16);
+        foundPart = CreateMBRVolume(type, partitionDev);
+    } else if (table == Table::GPT) {
+        if (CreateVolume(partitionDev) == E_OK) {
+            foundPart = true;
+        }
+    }
+}
+
 int32_t DiskInfo::ReadDiskLines(std::vector<std::string> &lines, int32_t maxVols)
 {
     std::string lineToken = " ";
@@ -250,36 +289,9 @@ int32_t DiskInfo::ReadDiskLines(std::vector<std::string> &lines, int32_t maxVols
         auto it = split.begin();
         if (it == split.end()) continue;
         if (*it == "DISK") {
-            if (++it == split.end()) {
-                continue;
-            }
-            if (*it == "mbr") {
-                table = Table::MBR;
-            } else if (*it == "gpt") {
-                table = Table::GPT;
-            } else {
-                LOGI("Unknown partition table %{public}s", (*it).c_str());
-                continue;
-            }
+            Case4Disk(split, it, table);
         } else if (*it == "PART") {
-            if (++it == split.end()) continue;
-            int32_t index = std::stoi(*it);
-            if (index > maxVols || index < 1) {
-                LOGE("Invalid partition %{public}d", index);
-                continue;
-            }
-            dev_t partitionDev = makedev(major(device_), minor(device_) + static_cast<uint32_t>(index));
-            if (table == Table::MBR) {
-                if (++it == split.end()) {
-                    continue;
-                }
-                int32_t type = std::stoi("0x0" + *it, 0, 16);
-                foundPart = CreateMBRVolume(type, partitionDev);
-            } else if (table == Table::GPT) {
-                if (CreateVolume(partitionDev) == E_OK) {
-                    foundPart = true;
-                }
-            }
+            Case4Part(split, it, table);
         }
     }
     if (table == Table::UNKNOWN || !foundPart) {
