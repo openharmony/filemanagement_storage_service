@@ -34,6 +34,7 @@
         "ability_base",
         "ability_runtime",
         "access_token",
+        "app_file_service",
         "bounds_checking_function",
         "bundle_framework",
         "c_utils",

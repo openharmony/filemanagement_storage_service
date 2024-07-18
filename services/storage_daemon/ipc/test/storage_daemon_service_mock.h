@@ -79,6 +79,18 @@ public:
         return E_OK;
     }
 
+    virtual int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,
+        const std::string &networkId, const std::string &deviceId) override
+    {
+        return E_OK;
+    }
+
+    virtual int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
+        const std::string &networkId, const std::string &deviceId) override
+    {
+        return E_OK;
+    }
+
     virtual int32_t PrepareUserDirs(int32_t userId, uint32_t flags) override
     {
         return E_OK;
@@ -136,18 +148,6 @@ public:
     virtual int32_t UnlockUserScreen(uint32_t userId,
                                      const std::vector<uint8_t> &token,
                                      const std::vector<uint8_t> &secret) override
-    {
-        return E_OK;
-    }
-
-    virtual int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,
-        const std::string &networkId, const std::string &deviceId) override
-    {
-        return E_OK;
-    }
-
-    virtual int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
-        const std::string &networkId, const std::string &deviceId) override
     {
         return E_OK;
     }

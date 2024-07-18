@@ -790,7 +790,7 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonTest_HandleDeleteAp
     MessageParcel reply2;
     EXPECT_CALL(mock, DeleteAppkey(testing::_, testing::_)).WillOnce(testing::Return(E_ERR));
     ret = mock.HandleDeleteAppkey(data2, reply2);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(ret == E_OK);
     err = reply2.ReadInt32();
     EXPECT_TRUE(err == E_ERR);
 

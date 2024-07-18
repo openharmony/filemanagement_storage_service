@@ -170,14 +170,14 @@ StorageManagerStub::StorageManagerStub()
         &StorageManagerStub::HandleUpdateMemoryPara;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_BUNDLE_STATS_INCREASE)] =
         &StorageManagerStub::HandleGetBundleStatsForIncrease;
-    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::MOUNT_DFS_DOCS)] =
-        &StorageManagerStub::HandleMountDfsDocs;
-    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::UMOUNT_DFS_DOCS)] =
-        &StorageManagerStub::HandleUMountDfsDocs;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GENERATE_APP_KEY)] =
         &StorageManagerStub::HandleGenerateAppkey;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::DELETE_APP_KEY)] =
         &StorageManagerStub::HandleDeleteAppkey;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::MOUNT_DFS_DOCS)] =
+        &StorageManagerStub::HandleMountDfsDocs;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::UMOUNT_DFS_DOCS)] =
+        &StorageManagerStub::HandleUMountDfsDocs;
 }
 
 int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,

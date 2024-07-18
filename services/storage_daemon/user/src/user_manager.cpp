@@ -14,8 +14,9 @@
  */
 
 #include "user/user_manager.h"
-#include <cstdlib>
 #include "bundle_mgr_client.h"
+#include <cstdlib>
+
 #ifdef USER_CRYPTO_MANAGER
 #include "crypto/key_manager.h"
 #endif
@@ -333,22 +334,22 @@ int32_t UserManager::DestroyEl1Dir(int32_t userId)
     return E_OK;
 }
 
-int32_t UserManager::CheckUserIdRange(int32_t userId)
-{
-    if ((userId < StorageService::START_USER_ID && userId != StorageService::ZERO_USER_ID)||
-        userId > StorageService::MAX_USER_ID) {
-        LOGE("UserManager: userId:%{public}d is out of range", userId);
-        return E_USERID_RANGE;
-    }
-    return E_OK;
-}
-
 void UserManager::CreateBundleDataDir(uint32_t userId)
 {
     OHOS::AppExecFwk::BundleMgrClient client;
     LOGI("CreateBundleDataDir start: userId %{public}u", userId);
     auto ret = client.CreateBundleDataDir(userId);
     LOGI("CreateBundleDataDir end: userId %{public}u, ret %{public}d", userId, ret);
+}
+
+int32_t UserManager::CheckUserIdRange(int32_t userId)
+{
+    if ((userId < StorageService::START_USER_ID && userId != StorageService::ZERO_USER) ||
+        userId > StorageService::MAX_USER_ID) {
+        LOGE("UserManager: userId:%{public}d is out of range", userId);
+        return E_USERID_RANGE;
+    }
+    return E_OK;
 }
 
 int32_t UserManager::CheckCrypto(int32_t userId, uint32_t flags)

@@ -60,7 +60,6 @@ ohos_shared_library("storage_manager_acl") {
 
   innerapi_tags = [
     "chipsetsdk_indirect",
-    "platformsdk",
   ]
   part_name = "storage_service"
   subsystem_name = "filemanagement"
