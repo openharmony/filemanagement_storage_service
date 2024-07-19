@@ -117,10 +117,18 @@ int32_t AncoKeyManager::CreatePolicyDir(const AncoDirInfo &ancoDirInfo,
         LOGE("AncoDirInfo.uid not found, uid = %{public}s", ancoDirInfo.uid.c_str());
         return E_JSON_PARSE_ERROR;
     }
+    if (iter->second.empty() || !std::all_of(iter->second.begin(), iter->second.end(), ::isdigit)) {
+        LOGE("Invalid uid: %{public}s", iter->second.c_str());
+        return E_JSON_PARSE_ERROR;
+    }
     auto uid = static_cast<uid_t>(std::stoi(iter->second));
     iter = AncoKeyManager::ownerMap_.find(ancoDirInfo.gid);
     if (iter == AncoKeyManager::ownerMap_.end()) {
         LOGE("AncoDirInfo.gid not found, gid = %{public}s", ancoDirInfo.gid.c_str());
+        return E_JSON_PARSE_ERROR;
+    }
+    if (iter->second.empty() || !std::all_of(iter->second.begin(), iter->second.end(), ::isdigit)) {
+        LOGE("Invalid gid: %{public}s", iter->second.c_str());
         return E_JSON_PARSE_ERROR;
     }
     auto gid = static_cast<gid_t>(std::stoi(iter->second));
