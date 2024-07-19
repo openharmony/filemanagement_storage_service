@@ -439,7 +439,7 @@ int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uint
     auto errBuffer = memcpy_s(eBuffer, length, ops.eBuffer, bufferSize);
     if (errBuffer != EOK) {
         LOGE("memcpy failed %{public}d", errBuffer);
-        return false;
+        return 0;
     }
     LOGI("ReadESecretToKernel success");
     return 0;
