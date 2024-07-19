@@ -100,16 +100,13 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
     /* get user status */
     uint32_t status = GetUserStatus(userId);
     /* update status */
-    switch (action) {
-        case EventFwk::CommonEventSupport::COMMON_EVENT_USER_UNLOCKED:
-            status = HandleUserSwitchedEvent(status);
-            break;
-        case EventFwk::CommonEventSupport::COMMON_EVENT_USER_SWITCHED:
-            status = HandleUserSwitchedEvent(status);
-            break;
-        case EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_LOCKED:
-            userId = HandleScreenLockedEvent();
-            return;
+    if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USER_UNLOCKED) {
+        status = HandleUserSwitchedEvent(status);
+    } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USER_SWITCHED) {
+        status = HandleUserSwitchedEvent(status);
+    } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_LOCKED) {
+        HandleScreenLockedEvent(userId);
+        return;
     }
     userId_ = userId;
     userRecord_[userId] = status;
@@ -157,7 +154,7 @@ uint32_t AccountSubscriber::HandleUserSwitchedEvent(uint32_t userStatus)
     return userStatus;
 }
 
-int32_t AccountSubscriber::HandleScreenLockedEvent()
+void AccountSubscriber::HandleScreenLockedEvent(int32_t &userId)
 {
     std::vector<int32_t> ids;
     int ret = AccountSA::OsAccountManager::QueryActiveOsAccountIds(ids);
@@ -165,13 +162,12 @@ int32_t AccountSubscriber::HandleScreenLockedEvent()
         LOGE("Query active userid failed, ret = %{public}u", ret);
         return;
     }
-    int32_t userId = ids[0];
+    userId = ids[0];
     if (!OnReceiveEventLockUserScreen(userId)) {
         LOGE("user %{public}u LockUserScreen fail", userId);
     }
     LOGI("Handle EventFwk::CommonEventSupport::Common_EVENT_SCREEN_LOCKED finished, userId is %{public}u",
         userId);
-    return userId;
 }
 
 void AccountSubscriber::GetSystemAbility()
