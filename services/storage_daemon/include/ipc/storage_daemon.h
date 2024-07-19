@@ -82,7 +82,8 @@ public:
     virtual int32_t GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size) override;
     virtual int32_t UpdateMemoryPara(int32_t size, int32_t &oldSize) override;
     virtual int32_t GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
-        const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes) override;
+        const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes,
+        std::vector<int64_t> &incPkgFileSizes) override;
     virtual int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId) override;
     virtual int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,

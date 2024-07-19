@@ -277,6 +277,7 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_GetBundleStatsForInc
     int64_t lastIncrementalTime = 0;
     incrementalBackTimes.emplace_back(lastIncrementalTime);
     std::vector<int64_t> pkgFileSizes;
+    std::vector<int64_t> incPkgFileSizes;
     // prepare config file
     mode_t mode = 0771;
     // backup_sa bundle path
@@ -310,9 +311,11 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_GetBundleStatsForInc
     }
     statFile.close();
     // invoke GetBundleStatsForIncrease
-    auto ret = quotaManager->GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes, pkgFileSizes);
+    auto ret = quotaManager->GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes, pkgFileSizes,
+        incPkgFileSizes);
     EXPECT_TRUE(ret == E_OK);
     EXPECT_GE(pkgFileSizes[0], 0);
+    EXPECT_GE(incPkgFileSizes[0], 0);
 
     if (StorageTest::StorageTestUtils::CheckDir(backupSaBundleDir)) {
         StorageTest::StorageTestUtils::RmDirRecurse(backupSaBundleDir);

@@ -537,12 +537,13 @@ int32_t StorageManager::SetBundleQuota(const std::string &bundleName, int32_t ui
 }
 
 int32_t StorageManager::GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
-    const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes)
+    const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes,
+    std::vector<int64_t> &incPkgFileSizes)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGI("StorageManger::GetBundleStatsForIncrease start");
     int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetBundleStatsForIncrease(userId,
-        bundleNames, incrementalBackTimes, pkgFileSizes);
+        bundleNames, incrementalBackTimes, pkgFileSizes, incPkgFileSizes);
     return err;
 #else
     return E_OK;

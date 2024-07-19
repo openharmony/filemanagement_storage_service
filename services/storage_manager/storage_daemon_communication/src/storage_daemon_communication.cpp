@@ -484,7 +484,7 @@ int32_t StorageDaemonCommunication::DeleteAppkey(uint32_t userId, const std::str
 
 int32_t StorageDaemonCommunication::GetBundleStatsForIncrease(uint32_t userId,
     const std::vector<std::string> &bundleNames, const std::vector<int64_t> &incrementalBackTimes,
-    std::vector<int64_t> &pkgFileSizes)
+    std::vector<int64_t> &pkgFileSizes, std::vector<int64_t> &incPkgFileSizes)
 {
     int32_t err = Connect();
     if (err != E_OK) {
@@ -495,7 +495,8 @@ int32_t StorageDaemonCommunication::GetBundleStatsForIncrease(uint32_t userId,
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes, pkgFileSizes);
+    return storageDaemon_->GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes, pkgFileSizes,
+        incPkgFileSizes);
 }
 
 int32_t StorageDaemonCommunication::UpdateMemoryPara(int32_t size, int32_t &oldSize)
