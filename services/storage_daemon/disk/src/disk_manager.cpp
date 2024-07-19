@@ -46,7 +46,7 @@ DiskManager::~DiskManager()
 void DiskManager::HandleDiskEvent(NetlinkData *data)
 {
     if (data == nullptr) {
-        LOGE("data is empty");
+        LOGE("data is nullptr");
         return;
     }
     std::lock_guard<std::mutex> lock(lock_);
@@ -90,7 +90,7 @@ void DiskManager::HandleDiskEvent(NetlinkData *data)
 std::shared_ptr<DiskInfo> DiskManager::MatchConfig(NetlinkData *data)
 {
     if (data == nullptr) {
-        LOGE("data is empty");
+        LOGE("data is nullptr");
         return nullptr;
     }
     std::string sysPath = data->GetSyspath();
@@ -100,7 +100,7 @@ std::shared_ptr<DiskInfo> DiskManager::MatchConfig(NetlinkData *data)
     dev_t device = makedev(major, minor);
 
     for (auto config : diskConfig_) {
-        if (config->IsMatch(devPath)) {
+        if ((config != nullptr) && config->IsMatch(devPath)) {
             uint32_t flag = static_cast<uint32_t>(config->GetFlag());
             if (major == DISK_MMC_MAJOR) {
                 flag |= DiskInfo::DeviceFlag::SD_FLAG;
@@ -119,12 +119,11 @@ std::shared_ptr<DiskInfo> DiskManager::MatchConfig(NetlinkData *data)
 void DiskManager::CreateDisk(std::shared_ptr<DiskInfo> &diskInfo)
 {
     if (diskInfo == nullptr) {
-        LOGE("data is empty");
+        LOGE("diskInfo is nullptr");
         return;
     }
-    int ret;
 
-    ret = diskInfo->Create();
+    int ret = diskInfo->Create();
     if (ret != E_OK) {
         LOGE("Create DiskInfo failed");
         return;
@@ -136,7 +135,7 @@ void DiskManager::CreateDisk(std::shared_ptr<DiskInfo> &diskInfo)
 void DiskManager::ChangeDisk(dev_t device)
 {
     for (auto &diskInfo : disk_) {
-        if (diskInfo->GetDevice() == device) {
+        if ((diskInfo != nullptr) && (diskInfo->GetDevice() == device)) {
             diskInfo->ReadMetadata();
             diskInfo->ReadPartition();
         }
