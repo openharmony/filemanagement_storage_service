@@ -96,7 +96,7 @@ int32_t ReadMetadata(const std::string &devPath, std::string &uuid, std::string 
         return E_ERR;
     }
     if (type == "hmfs" && label != "/data") {
-        LOGI("Failed to mount the partition: Unsupported");
+        LOGE("Failed to mount the partition: Unsupported");
         return E_ERR;
     }
     return E_OK;
