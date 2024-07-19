@@ -54,7 +54,7 @@ int AclEntryParseTag(const std::string &tagTxt, AclXattrEntry &entry)
 
 bool ParseNumericId(const std::string &idTxt, unsigned int &outId)
 {
-    char *p = NULL;
+    char *p = nullptr;
     long converted = strtol(idTxt.c_str(), &p, 10);
     if (*p == '\0' && converted >= 0 && converted <= UINT_MAX) {
         outId = static_cast<unsigned int>(converted);
