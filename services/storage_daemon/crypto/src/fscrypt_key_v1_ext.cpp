@@ -111,7 +111,7 @@ bool FscryptKeyV1Ext::GenerateAppkey(uint32_t user, uint32_t appUid, std::unique
     return true;
 }
 
-bool FscryptKeyV1Ext::AddClassE(uint32_t status)
+bool FscryptKeyV1Ext::AddClassE(bool &isSupport, uint32_t status)
 {
     if (!FBEX::IsFBEXSupported()) {
         return true;
@@ -119,7 +119,7 @@ bool FscryptKeyV1Ext::AddClassE(uint32_t status)
     LOGD("enter");
     uint32_t userIdDouble = GetMappedUserId(userId_, type_);
     LOGI("map userId %{public}u to %{public}u", userId_, userIdDouble);
-    if (FBEX::InstallEL5KeyToKernel(userId_, userIdDouble, status)) {
+    if (FBEX::InstallEL5KeyToKernel(userId_, userIdDouble, status, isSupport)) {
         LOGE("AddESecret failed, userId_ %{public}d, status is %{public}d", userId_, status);
         return false;
     }

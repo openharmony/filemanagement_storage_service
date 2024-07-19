@@ -39,7 +39,7 @@ public:
     bool GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId);
     bool DeleteAppkey(const std::string keyId);
     void DropCachesIfNeed();
-    bool AddClassE(uint32_t status = 0);
+    bool AddClassE(bool &isSupport, uint32_t status = 0);
     bool DeleteClassEPinCode(uint32_t userId = 0);
     bool ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId = 0);
     bool DecryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user = 0, uint32_t status = 0);
