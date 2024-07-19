@@ -18,6 +18,7 @@
 #include <dlfcn.h>
 #include <fcntl.h>
 #include <fstream>
+#include <thread>
 
 #ifdef USER_CRYPTO_MANAGER
 #include "crypto/anco_key_manager.h"
@@ -78,7 +79,7 @@ int32_t StorageDaemon::Shutdown()
     return E_OK;
 }
 
-int32_t StorageDaemon::Mount(std::string volId, uint32_t flags)
+int32_t StorageDaemon::Mount(const std::string &volId, uint32_t flags)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle Mount");
@@ -88,7 +89,7 @@ int32_t StorageDaemon::Mount(std::string volId, uint32_t flags)
 #endif
 }
 
-int32_t StorageDaemon::UMount(std::string volId)
+int32_t StorageDaemon::UMount(const std::string &volId)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle UMount");
@@ -98,7 +99,7 @@ int32_t StorageDaemon::UMount(std::string volId)
 #endif
 }
 
-int32_t StorageDaemon::Check(std::string volId)
+int32_t StorageDaemon::Check(const std::string &volId)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle Check");
@@ -108,7 +109,7 @@ int32_t StorageDaemon::Check(std::string volId)
 #endif
 }
 
-int32_t StorageDaemon::Format(std::string volId, std::string fsType)
+int32_t StorageDaemon::Format(const std::string &volId, const std::string &fsType)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle Format");
@@ -118,7 +119,7 @@ int32_t StorageDaemon::Format(std::string volId, std::string fsType)
 #endif
 }
 
-int32_t StorageDaemon::Partition(std::string diskId, int32_t type)
+int32_t StorageDaemon::Partition(const std::string &diskId, int32_t type)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle Partition");
@@ -128,7 +129,7 @@ int32_t StorageDaemon::Partition(std::string diskId, int32_t type)
 #endif
 }
 
-int32_t StorageDaemon::SetVolumeDescription(std::string volId, std::string description)
+int32_t StorageDaemon::SetVolumeDescription(const std::string &volId, const std::string &description)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle SetVolumeDescription");
@@ -188,7 +189,7 @@ std::string StorageDaemon::GetNeedRestoreFilePathByType(int32_t userId, KeyType 
     }
 }
 
-int32_t StorageDaemon::RestoreUserOneKey(int32_t userId, KeyType type)
+int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
 {
     uint32_t flags = 0;
     int32_t ret = GetCryptoFlag(type, flags);
@@ -197,11 +198,13 @@ int32_t StorageDaemon::RestoreUserOneKey(int32_t userId, KeyType type)
     }
 
     std::string elNeedRestorePath = GetNeedRestoreFilePathByType(userId, type);
-    if (elNeedRestorePath == "") {
+    if (elNeedRestorePath.empty()) {
         return E_KEY_TYPE_INVAL;
     }
 
-    if (std::filesystem::exists(elNeedRestorePath)) {
+    if (!std::filesystem::exists(elNeedRestorePath)) {
+        return E_OK;
+    } else {
         LOGI("start restore User %{public}u el%{public}u", userId, type);
         ret = KeyManager::GetInstance()->RestoreUserKey(userId, type);
         if (ret != E_OK) {
@@ -236,9 +239,9 @@ int32_t StorageDaemon::RestoreUserKey(int32_t userId, uint32_t flags)
         return -EEXIST;
     }
 
-    std::vector<KeyType> type = {EL1_KEY, EL2_KEY, EL3_KEY, EL4_KEY, EL5_KEY};
-    for (unsigned long i = 0; i < type.size(); i++) {
-        auto ret = RestoreUserOneKey(userId, type[i]);
+    std::vector<KeyType> keyTypes = {EL1_KEY, EL2_KEY, EL3_KEY, EL4_KEY, EL5_KEY};
+    for (KeyType type : keyTypes) {
+        auto ret = RestoreOneUserKey(userId, type);
         if (ret != E_OK) {
             return ret;
         }
@@ -432,7 +435,7 @@ int32_t StorageDaemon::GenerateKeyAndPrepareUserDirs(uint32_t userId, KeyType ty
                                                      const std::vector<uint8_t> &secret)
 {
 #ifdef USER_CRYPTO_MANAGER
-    int ret;
+    int32_t ret;
     uint32_t flags = 0;
 
     LOGI("enter:");
@@ -469,7 +472,7 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepare(uint32_t userId, KeyType type,
     if (ret != E_OK && ret != -ENOENT) {
 #ifdef USER_CRYPTO_MIGRATE_KEY
         std::string elNeedRestorePath = GetNeedRestoreFilePathByType(userId, type);
-        if (std::filesystem::exists(elNeedRestorePath) && (!token.empty() || !secret.empty())) {
+        if ((!token.empty() || !secret.empty()) && std::filesystem::exists(elNeedRestorePath)) {
             LOGI("start PrepareUserDirsAndUpdateUserAuth userId %{public}u, type %{public}u", userId, type);
             ret = PrepareUserDirsAndUpdateUserAuth(userId, type, token, secret);
         }
@@ -553,7 +556,8 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
         LOGE("failed to delete appkey2");
         return -EFAULT;
     }
-    RestoreconElX(userId);
+    std::thread thread([this, userId]() { RestoreconElX(userId); });
+    thread.detach();
     if (updateFlag) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
     }
@@ -561,7 +565,8 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
     AncoActiveCryptKey(userId);
     return ret;
 #else
-    RestoreconElX(userId);
+    std::thread thread([this, userId]() { RestoreconElX(userId); });
+    thread.detach();
     if (updateFlag) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
     }
@@ -645,7 +650,7 @@ int32_t StorageDaemon::GenerateAppkey(uint32_t userId, uint32_t appUid, std::str
 #endif
 }
 
-int32_t StorageDaemon::DeleteAppkey(uint32_t userId, const std::string keyId)
+int32_t StorageDaemon::DeleteAppkey(uint32_t userId, const std::string &keyId)
 {
 #ifdef USER_CRYPTO_MANAGER
     return KeyManager::GetInstance()->DeleteAppkey(userId, keyId);

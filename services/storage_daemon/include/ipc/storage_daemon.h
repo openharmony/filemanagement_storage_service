@@ -37,12 +37,12 @@ public:
     virtual ~StorageDaemon() = default;
 
     virtual int32_t Shutdown() override;
-    virtual int32_t Mount(std::string volId, uint32_t flags) override;
-    virtual int32_t UMount(std::string volId) override;
-    virtual int32_t Check(std::string volId) override;
-    virtual int32_t Format(std::string volId, std::string fsType) override;
-    virtual int32_t Partition(std::string diskId, int32_t type) override;
-    virtual int32_t SetVolumeDescription(std::string volId, std::string description) override;
+    virtual int32_t Mount(const std::string &volId, uint32_t flags) override;
+    virtual int32_t UMount(const std::string &volId) override;
+    virtual int32_t Check(const std::string &volId) override;
+    virtual int32_t Format(const std::string &volId, const std::string &fsType) override;
+    virtual int32_t Partition(const std::string &diskId, int32_t type) override;
+    virtual int32_t SetVolumeDescription(const std::string &volId, const std::string &description) override;
 
     virtual int32_t StartUser(int32_t userId) override;
     virtual int32_t StopUser(int32_t userId) override;
@@ -63,14 +63,14 @@ public:
                                   const std::vector<uint8_t> &secret) override;
     virtual int32_t InactiveUserKey(uint32_t userId) override;
     virtual int32_t UpdateKeyContext(uint32_t userId) override;
+    virtual int32_t MountCryptoPathAgain(uint32_t userId) override;
     virtual int32_t LockUserScreen(uint32_t userId) override;
     virtual int32_t UnlockUserScreen(uint32_t userId,
                                      const std::vector<uint8_t> &token,
                                      const std::vector<uint8_t> &secret) override;
     virtual int32_t GetLockScreenStatus(uint32_t user, bool &lockScreenStatus) override;
-    virtual int32_t MountCryptoPathAgain(uint32_t userId) override;
     virtual int32_t GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId) override;
-    virtual int32_t DeleteAppkey(uint32_t userId, const std::string keyId) override;
+    virtual int32_t DeleteAppkey(uint32_t userId, const std::string &keyId) override;
 
     // app file share api
     virtual std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,
@@ -105,7 +105,7 @@ private:
                                              const std::vector<uint8_t> &secret);
     int32_t RestoreUserKey(int32_t userId, uint32_t flags);
     bool IsNeedRestorePathExist(uint32_t userId, bool needCheckEl1);
-    int32_t RestoreUserOneKey(int32_t userId, KeyType type);
+    int32_t RestoreOneUserKey(int32_t userId, KeyType type);
 #endif
     int32_t GetCryptoFlag(KeyType type, uint32_t &flags);
     int32_t GenerateKeyAndPrepareUserDirs(uint32_t userId, KeyType type,

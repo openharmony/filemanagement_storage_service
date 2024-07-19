@@ -185,7 +185,6 @@ uint8_t KeyCtrlGetFscryptVersion(const char *mnt)
 
 bool KeyCtrlHasFscryptSyspara(void)
 {
-    FSCRYPT_LOGI("enter");
     char tmp[POLICY_BUF_SIZE] = { 0 };
     uint32_t len = POLICY_BUF_SIZE;
     int ret = GetFscryptParameter(FSCRYPT_POLICY_KEY, "", tmp, &len);

@@ -40,6 +40,7 @@ using namespace OHOS::AAFwk;
 using namespace OHOS::AccountSA;
 namespace OHOS {
 namespace StorageManager {
+static constexpr int CONNECT_TIME = 3;
 static std::mutex userRecordLock;
 std::shared_ptr<DataShare::DataShareHelper> AccountSubscriber::mediaShare_ = nullptr;
 
@@ -48,7 +49,7 @@ AccountSubscriber::AccountSubscriber(const EventFwk::CommonEventSubscribeInfo &s
 {}
 
 std::shared_ptr<AccountSubscriber> accountSubscriber_ = nullptr;
-bool AccountSubscriber::Subscriber(void)
+void AccountSubscriber::Subscriber(void)
 {
     if (accountSubscriber_ == nullptr) {
         EventFwk::MatchingSkills matchingSkills;
@@ -59,7 +60,6 @@ bool AccountSubscriber::Subscriber(void)
         accountSubscriber_ = std::make_shared<AccountSubscriber>(subscribeInfo);
         EventFwk::CommonEventManager::SubscribeCommonEvent(accountSubscriber_);
     }
-    return true;
 }
 
 static void MountCryptoPathAgain(int32_t userId)
@@ -68,7 +68,7 @@ static void MountCryptoPathAgain(int32_t userId)
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t err = sdCommunication->MountCryptoPathAgain(userId);
     if (err != 0) {
-        LOGI("mount crypto path failed err is %{public}d", err);
+        LOGE("mount crypto path failed err is %{public}d", err);
         return;
     }
     LOGI("MountCryptoPathAgain success");
@@ -159,7 +159,14 @@ void AccountSubscriber::GetSystemAbility()
         LOGE("GetSystemAbility remoteObj == nullptr");
         return;
     }
-    mediaShare_ = DataShare::DataShareHelper::Creator(remoteObj, "datashare:///media");
+    for (int i = 0; i < CONNECT_TIME; i++) {
+        mediaShare_ = DataShare::DataShareHelper::Creator(remoteObj, "datashare:///media");
+        if (mediaShare_ != nullptr) {
+            LOGI("connect media success.");
+            break;
+        }
+        LOGE("try to connect media again.");
+    }
 }
 
 bool AccountSubscriber::OnReceiveEventLockUserScreen(int32_t userId)

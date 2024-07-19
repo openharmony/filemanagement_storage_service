@@ -59,7 +59,7 @@ int32_t KeyManager::LockUserScreen(uint32_t user)
     return E_OK;
 }
 
-int32_t KeyManager::UnlockUserScreen(unsigned int user, const std::vector<uint8_t> &token,
+int32_t KeyManager::UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &token,
     const std::vector<uint8_t> &secret)
 {
     return E_OK;

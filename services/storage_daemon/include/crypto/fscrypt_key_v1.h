@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -40,10 +40,11 @@ public:
     bool DeleteAppkey(const std::string keyId);
     void DropCachesIfNeed();
     bool AddClassE(uint32_t status = 0);
-    bool DeleteClassE(uint32_t flag = 0);
-    bool ChangePinCodeClassE(uint32_t user = 0);
+    bool DeleteClassEPinCode(uint32_t userId = 0);
+    bool ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId = 0);
     bool DecryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user = 0, uint32_t status = 0);
     bool EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user = 0, uint32_t status = 0);
+    bool LockUece(bool &isFbeSupport);
 
 private:
     bool GenerateKeyDesc();
