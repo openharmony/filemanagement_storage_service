@@ -178,7 +178,11 @@ int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32
     }
 
     FbeOpts ops{.user = userId, .type = type, .len = size, .flag = flag};
-    (void)memcpy_s(ops.iv, sizeof(ops.iv), iv, size);
+    auto err = memcpy_s(ops.iv, sizeof(ops.iv), iv, size);
+    if (err != EOK) {
+        LOGE("memcpy failed %{public}d", err);
+        return false;
+    }
     int ret = ioctl(fd, FBEX_IOC_ADD_IV, &ops);
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
@@ -187,7 +191,11 @@ int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32
     }
     close(fd);
 
-    (void)memcpy_s(iv, size, ops.iv, sizeof(ops.iv));
+    auto errops = memcpy_s(iv, size, ops.iv, sizeof(ops.iv));
+    if (errops != EOK) {
+        LOGE("memcpy failed %{public}d", errops);
+        return false;
+    }
     LOGI("InstallKeyToKernel success");
     return ret;
 }
@@ -207,7 +215,11 @@ int FBEX::UninstallOrLockUserKeyToKernel(uint32_t userId, uint32_t type, uint8_t
     }
 
     FbeOpts ops{.user = userId, .type = type, .len = size};
-    (void)memcpy_s(ops.iv, sizeof(ops.iv), iv, size);
+    auto err = memcpy_s(ops.iv, sizeof(ops.iv), iv, size);
+    if (err != EOK) {
+        LOGE("memcpy failed %{public}d", err);
+        return false;
+    }
     int ret = ioctl(fd, destroy ? FBEX_IOC_DEL_IV : FBEX_IOC_USER_LOGOUT, &ops);
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
@@ -310,7 +322,12 @@ int FBEX::GenerateAppkey(UserIdToFbeStr &userIdToFbe, uint32_t appUid, std::uniq
         close(fd);
         return -errno;
     }
-    (void)memcpy_s(appKey.get(), size, ops.eBuffer, sizeof(ops.eBuffer));
+
+    auto err = memcpy_s(appKey.get(), size, ops.eBuffer, sizeof(ops.eBuffer));
+    if (err != EOK) {
+        LOGE("memcpy failed %{public}d", err);
+        return false;
+    }
     close(fd);
     LOGI("GenerateAppkey success");
     return 0;
@@ -356,7 +373,12 @@ int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint
     }
 
     FbeOpts ops{.user = userId, .type = type, .len = size};
-    (void)memcpy_s(ops.iv, sizeof(ops.iv), iv, size);
+
+    auto err = memcpy_s(ops.iv, sizeof(ops.iv), iv, size);
+    if (err != EOK) {
+        LOGE("memcpy failed %{public}d", err);
+        return false;
+    }
     int ret = ioctl(fd, FBEX_IOC_UNLOCK_SCREEN, &ops);
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
@@ -365,7 +387,11 @@ int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint
     }
     close(fd);
 
-    (void)memcpy_s(iv, size, ops.iv, sizeof(ops.iv));
+    auto errops = memcpy_s(iv, size, ops.iv, sizeof(ops.iv));
+    if (errops != EOK) {
+        LOGE("memcpy failed %{public}d", errops);
+        return false;
+    }
     LOGI("UnlockScreenToKernel success");
     return ret;
 }
@@ -393,7 +419,11 @@ int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uint
     FbeOptsE ops{ .userIdDouble = userIdToFbe.userIds[DOUBLE_ID_INDEX],
                   .userIdSingle = userIdToFbe.userIds[SINGLE_ID_INDEX],
                   .status = status, .length = bufferSize };
-    (void)memcpy_s(ops.eBuffer, sizeof(ops.eBuffer), eBuffer, length);
+    auto err = memcpy_s(ops.eBuffer, sizeof(ops.eBuffer), eBuffer, length);
+    if (err != EOK) {
+        LOGE("memcpy failed %{public}d", err);
+        return false;
+    }
     auto ret = ioctl(fd, FBEX_READ_CLASS_E, &ops);
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
@@ -406,7 +436,11 @@ int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uint
     } else {
         bufferSize = AES_256_HASH_RANDOM_SIZE;
     }
-    (void)memcpy_s(eBuffer, length, ops.eBuffer, bufferSize);
+    auto errBuffer = memcpy_s(eBuffer, length, ops.eBuffer, bufferSize);
+    if (errBuffer != EOK) {
+        LOGE("memcpy failed %{public}d", errBuffer);
+        return false;
+    }
     LOGI("ReadESecretToKernel success");
     return 0;
 }
@@ -432,7 +466,11 @@ int FBEX::WriteESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uin
     FbeOptsE ops{ .userIdDouble = userIdToFbe.userIds[DOUBLE_ID_INDEX],
                   .userIdSingle = userIdToFbe.userIds[SINGLE_ID_INDEX],
                   .status = status, .length = bufferSize };
-    (void)memcpy_s(ops.eBuffer, sizeof(ops.eBuffer), eBuffer, length);
+    auto err = memcpy_s(ops.eBuffer, sizeof(ops.eBuffer), eBuffer, length);
+    if (err != EOK) {
+        LOGE("memcpy failed %{public}d", err);
+        return false;
+    }
     auto ret = ioctl(fd, FBEX_WRITE_CLASS_E, &ops);
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
