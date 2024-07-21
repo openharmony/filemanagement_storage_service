@@ -148,9 +148,10 @@ bool FscryptKeyV2::DeleteAppkey(const std::string KeyId)
     return false;
 }
 
-bool FscryptKeyV2::AddClassE(uint32_t status)
+bool FscryptKeyV2::AddClassE(bool &isSupport, uint32_t status)
 {
     (void)status;
+    (void)isSupport;
     LOGI("Unsupported fscrypt v2");
     return true;
 }
