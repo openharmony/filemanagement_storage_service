@@ -46,8 +46,9 @@ static const uint32_t USER_ID_DIFF = 91;
  */
 uint32_t FscryptKeyV1Ext::GetMappedUserId(uint32_t userId, uint32_t type)
 {
-    if (!std::filesystem::exists(NEED_RESTORE_PATH)) {
-        LOGE("restore path not exists");
+    std::error_code errCode;
+    if (!std::filesystem::exists(NEED_RESTORE_PATH, errCode)) {
+        LOGE("restore path not exists, errCode = %{public}d", errCode.value());
         return userId;
     }
     if (type == TYPE_EL2 || type == TYPE_EL3 || type == TYPE_EL4 || type == TYPE_EL5) {
