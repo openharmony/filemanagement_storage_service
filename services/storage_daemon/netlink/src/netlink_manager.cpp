@@ -42,8 +42,8 @@ NetlinkManager* NetlinkManager::Instance()
 int32_t NetlinkManager::Start()
 {
     struct sockaddr_nl addr;
-    int32_t sz = 256*1024;
-    int32_t on = 1;
+    int32_t bufferSize = 256 * ONE_KB;
+    int32_t passCred = 1;
 
     (void)memset_s(&addr, sizeof(addr), 0, sizeof(addr));
     addr.nl_family = AF_NETLINK;
@@ -56,13 +56,13 @@ int32_t NetlinkManager::Start()
         return E_ERR;
     }
 
-    if (setsockopt(socketFd_, SOL_SOCKET, SO_RCVBUFFORCE, &sz, sizeof(sz)) != 0) {
+    if (setsockopt(socketFd_, SOL_SOCKET, SO_RCVBUFFORCE, &bufferSize, sizeof(bufferSize)) != 0) {
         LOGE("Set SO_RCVBUFFORCE failed, errno %{public}d", errno);
         (void)close(socketFd_);
         return E_ERR;
     }
 
-    if (setsockopt(socketFd_, SOL_SOCKET, SO_PASSCRED, &on, sizeof(on)) != 0) {
+    if (setsockopt(socketFd_, SOL_SOCKET, SO_PASSCRED, &passCred, sizeof(passCred)) != 0) {
         LOGE("Set SO_PASSCRED failed, errno %{public}d", errno);
         (void)close(socketFd_);
         return E_ERR;
