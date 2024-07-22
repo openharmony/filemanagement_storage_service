@@ -285,33 +285,40 @@ int KeyManager::RestoreUserKey(uint32_t userId, const std::string &dir, const Us
 bool KeyManager::HasElkey(uint32_t userId, KeyType type)
 {
     LOGI("enter");
-    if (type == EL1_KEY) {
-        if (userEl1Key_.find(userId) != userEl1Key_.end()) {
-            LOGD("user el1 key has existed");
-            return true;
-        }
-    } else if (type == EL2_KEY) {
-        if (userEl2Key_.find(userId) != userEl2Key_.end()) {
-            LOGD("user el2 key has existed");
-            return true;
-        }
-    } else if (type == EL3_KEY) {
-        if (userEl3Key_.find(userId) != userEl3Key_.end()) {
-            LOGD("user el3 key has existed");
-            return true;
-        }
-    } else if (type == EL4_KEY) {
-        if (userEl4Key_.find(userId) != userEl4Key_.end()) {
-            LOGD("user el4 key has existed");
-            return true;
-        }
-    } else if (type == EL5_KEY) {
-        if (userEl5Key_.find(userId) != userEl5Key_.end()) {
-            LOGD("user el5 key has existed");
-            return true;
-        }
-    } else {
-        LOGE("key type error");
+    switch (type) {
+        case EL1_KEY:
+            if (userEl1Key_.find(userId) != userEl1Key_.end()) {
+                LOGD("user el1 key has existed");
+                return true;
+            }
+            break;
+        case EL2_KEY:
+            if (userEl2Key_.find(userId) != userEl2Key_.end()) {
+                LOGD("user el2 key has existed");
+                return true;
+            }
+            break;
+        case EL3_KEY:
+            if (userEl3Key_.find(userId) != userEl3Key_.end()) {
+                LOGD("user el3 key has existed");
+                return true;
+            }
+            break;
+        case EL4_KEY:
+            if (userEl4Key_.find(userId) != userEl4Key_.end()) {
+                LOGD("user el4 key has existed");
+                return true;
+            }
+            break;
+        case EL5_KEY:
+            if (userEl5Key_.find(userId) != userEl5Key_.end()) {
+                LOGD("user el5 key has existed");
+                return true;
+            }
+            break;
+        default:
+            LOGE("key type error");
+            break;
     }
 
     return false;
@@ -362,7 +369,7 @@ int KeyManager::LoadAllUsersEl1Key(void)
     dirInfo.clear();
     ReadDigitDir(USER_EL1_DIR, dirInfo);
     UpgradeKeys(dirInfo);
-    for (auto item : dirInfo) {
+    for (auto &item : dirInfo) {
         if (RestoreUserKey(item.userId, item.path, NULL_KEY_AUTH, EL1_KEY) != 0) {
             LOGE("user %{public}u el1 key restore error", item.userId);
         }
@@ -1364,7 +1371,7 @@ int KeyManager::UpgradeKeys(const std::vector<FileList> &dirInfo)
     for (const auto &it : dirInfo) {
         std::shared_ptr<BaseKey> elKey = GetBaseKey(it.path);
         if (elKey == nullptr) {
-            LOGE("elKel feiled");
+            LOGE("Basekey memory failed");
             continue;
         }
         elKey->UpgradeKeys();

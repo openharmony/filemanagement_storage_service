@@ -105,6 +105,7 @@ bool BaseKey::GenerateKeyBlob(KeyBlob &blob, const uint32_t size)
 bool BaseKey::SaveKeyBlob(const KeyBlob &blob, const std::string &path)
 {
     if (blob.IsEmpty()) {
+        LOGE("blob is empty");
         return false;
     }
     LOGD("enter %{public}s, size=%{public}d", path.c_str(), blob.size);
@@ -223,7 +224,9 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
 {
     LOGI("enter");
     auto pathTemp = dir_ + PATH_KEY_TEMP;
-    MkDirRecurse(pathTemp, S_IRWXU);
+    if (!MkDirRecurse(pathTemp, S_IRWXU)) {
+        LOGE("MkDirRecurse failed!");
+    }
     if (!CheckAndUpdateVersion()) {
         return false;
     }

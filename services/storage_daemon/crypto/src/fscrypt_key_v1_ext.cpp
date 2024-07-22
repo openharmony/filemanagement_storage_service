@@ -46,8 +46,12 @@ static const uint32_t USER_ID_DIFF = 91;
  */
 uint32_t FscryptKeyV1Ext::GetMappedUserId(uint32_t userId, uint32_t type)
 {
-    if (std::filesystem::exists(NEED_RESTORE_PATH) &&
-        (type == TYPE_EL2 || type == TYPE_EL3 || type == TYPE_EL4 || type == TYPE_EL5)) {
+    std::error_code errCode;
+    if (!std::filesystem::exists(NEED_RESTORE_PATH, errCode)) {
+        LOGE("restore path not exists, errCode = %{public}d", errCode.value());
+        return userId;
+    }
+    if (type == TYPE_EL2 || type == TYPE_EL3 || type == TYPE_EL4 || type == TYPE_EL5) {
         if (userId == DEFAULT_SINGLE_FIRST_USER_ID) {
             return 0;
         }
@@ -225,7 +229,7 @@ bool FscryptKeyV1Ext::LockUserScreenExt(uint32_t flag, uint32_t &elType)
     uint32_t user = GetMappedUserId(userId_, type_);
     LOGD("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, user);
     if (FBEX::LockScreenToKernel(user)) {
-        LOGE("LockScreenToKernel failed, userId %{public}d", flag);
+        LOGE("LockScreenToKernel failed, userId %{public}d", user);
         return false;
     }
     //Used to associate el3 and el4 kernels.
