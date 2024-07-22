@@ -43,5 +43,6 @@
 [媒体库服务](https://gitee.com/openharmony/multimedia_medialibrary_standard)  
 [公共文件访问框架](https://gitee.com/openharmony/filemanagement_user_file_service)  
 [文件访问接口](https://gitee.com/openharmony/filemanagement_file_api)  
-[分布式文件服务](https://gitee.com/openharmony/filemanagement_dfs_service)    
+[分布式文件服务](https://gitee.com/openharmony/filemanagement_dfs_service)  
+[应用文件服务](https://gitee.com/openharmony/filemanagement_app_file_service)
 [**存储管理服务**](https://gitee.com/openharmony/filemanagement_storage_service)  

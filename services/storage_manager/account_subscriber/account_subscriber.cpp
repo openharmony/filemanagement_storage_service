@@ -96,7 +96,6 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
     std::string action = want.GetAction();
     int32_t userId = eventData.GetCode();
     std::unique_lock<std::mutex> lock(mutex_);
-    LOGI("OnReceiveEvent action:%{public}s, userId is %{public}d", action.c_str(), userId);
     /* get user status */
     uint32_t status = 0;
     auto entry = userRecord_.find(userId);
@@ -133,7 +132,7 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
     }
     userId_ = userId;
     userRecord_[userId] = status;
-    LOGI("userId %{public}d, status %{public}d", userId, status);
+    LOGI("action:%{public}s, userId:%{public}d status %{public}d", action.c_str(), userId, status);
     if (status != (1 << USER_UNLOCK_BIT | 1 << USER_SWITCH_BIT)) {
         return;
     }

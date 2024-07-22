@@ -162,13 +162,12 @@ int32_t FileSystemCrypto::GetLockScreenStatus(uint32_t userId, bool &lockScreenS
 
 int32_t FileSystemCrypto::GenerateAppkey(uint32_t appUid, std::string &keyId)
 {
-    std::vector<int32_t> ids;
-    int ret = AccountSA::OsAccountManager::QueryActiveOsAccountIds(ids);
-    if (ret != 0 || ids.empty()) {
-        LOGE("Query active userid failed, ret = %{public}u", ret);
+    int32_t userId = -1;
+    int ret = AccountSA::OsAccountManager::GetOsAccountLocalIdFromUid(appUid, userId);
+    if (ret != 0 || userId == -1) {
+        LOGE("Get os account userid from appUid failed, ret = %{public}u", ret);
         return ret;
     }
-    int32_t userId = ids[0];
     LOGI("UserId: %{public}u", userId);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
