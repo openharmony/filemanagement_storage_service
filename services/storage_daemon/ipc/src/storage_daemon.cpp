@@ -204,30 +204,30 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
 
     if (!std::filesystem::exists(elNeedRestorePath)) {
         return E_OK;
-    } else {
-        LOGI("start restore User %{public}u el%{public}u", userId, type);
-        ret = KeyManager::GetInstance()->RestoreUserKey(userId, type);
-        if (ret != E_OK) {
-            if (type != EL1_KEY) {
-                LOGE("userId %{public}u type %{public}u restore key failed, but return success, error = %{public}d",
-                     userId, type, ret);
-                return E_OK; // maybe need user key, so return E_OK to continue
-            }
-            LOGE("RestoreUserKey EL1_KEY failed, error = %{public}d, userId %{public}u", ret, userId);
-            return ret;
-        }
-
-        ret = UserManager::GetInstance()->PrepareUserDirs(userId, flags);
-        if (ret != E_OK) {
-            LOGE("PrepareUserDirs failed, userId %{public}u, flags %{public}u, error %{public}d", userId, flags, ret);
-            return ret;
-        }
-        (void)remove(elNeedRestorePath.c_str());
-        if (type == EL4_KEY) {
-            UserManager::GetInstance()->CreateBundleDataDir(userId);
-        }
-        LOGI("restore User %{public}u el%{public}u success", userId, type);
     }
+    LOGI("start restore User %{public}u el%{public}u", userId, type);
+    ret = KeyManager::GetInstance()->RestoreUserKey(userId, type);
+    if (ret != E_OK) {
+        if (type != EL1_KEY) {
+            LOGE("userId %{public}u type %{public}u restore key failed, but return success, error = %{public}d",
+                userId, type, ret);
+            return E_OK; // maybe need user key, so return E_OK to continue
+        }
+        LOGE("RestoreUserKey EL1_KEY failed, error = %{public}d, userId %{public}u", ret, userId);
+        return ret;
+    }
+
+    ret = UserManager::GetInstance()->PrepareUserDirs(userId, flags);
+    if (ret != E_OK) {
+        LOGE("PrepareUserDirs failed, userId %{public}u, flags %{public}u, error %{public}d", userId, flags, ret);
+        return ret;
+    }
+    (void)remove(elNeedRestorePath.c_str());
+    if (type == EL4_KEY) {
+        UserManager::GetInstance()->CreateBundleDataDir(userId);
+    }
+    LOGI("restore User %{public}u el%{public}u success", userId, type);
+
     return E_OK;
 }
 
