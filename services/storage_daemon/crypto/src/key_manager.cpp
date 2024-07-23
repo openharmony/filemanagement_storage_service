@@ -968,18 +968,9 @@ int KeyManager::CheckAndDeleteEmptyEl5Directory(std::string keyDir, unsigned int
         return -ENOENT;
     }
 
-    bool  deleteSuccess = false;
     if (IsDir(keyDir) && std::filesystem::is_empty(keyDir)) {
         OHOS::ForceRemoveDirectory(keyDir);
         LOGE("Have removed key dir %{public}u el5", user);
-        deleteSuccess = true;
-    }
-    if (IsDir(keyUeceDir) && std::filesystem::is_empty(keyUeceDir)) {
-        OHOS::ForceRemoveDirectory(keyUeceDir);
-        LOGE("Have removed key uece dir %{public}u el5", user);
-        deleteSuccess = true;
-    }
-    if (deleteSuccess) {
         return -ENOENT;
     }
     return 0;
