@@ -240,7 +240,6 @@ int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int32_t prjId, bool
     char *realPath = realpath(path.c_str(), nullptr);
     if (realPath == nullptr) {
         LOGE("realpath failed");
-        free(realPath);
         return E_SYS_CALL;
     }
 
