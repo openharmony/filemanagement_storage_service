@@ -798,7 +798,7 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::vector<uint8_t> &tok
         return -EFAULT;
     }
     if (ActiveCeSceSeceUserKey(user, EL5_KEY, token, secret) != 0) {
-        LOGI("Active user %{public}u el4 fail", user);
+        LOGI("Active user %{public}u el5 fail", user);
         return -EFAULT;
     }
     if (UnlockUserAppKeys(user, true) != E_OK) {
