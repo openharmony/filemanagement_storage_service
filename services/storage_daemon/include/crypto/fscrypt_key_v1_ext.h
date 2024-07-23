@@ -35,7 +35,7 @@ public:
     bool InactiveKeyExt(uint32_t flag);
     bool LockUserScreenExt(uint32_t flag, uint32_t &elType);
     bool UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_t size);
-    bool AddClassE(bool &isSupport, uint32_t status);
+    bool AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status);
     bool DeleteClassEPinCode(uint32_t userId);
     bool ChangePinCodeClassE(uint32_t userId, bool &isFbeSupport);
     bool ReadClassE(uint32_t status, uint8_t *classEBuffer, uint32_t length, bool &isFbeSupport);
