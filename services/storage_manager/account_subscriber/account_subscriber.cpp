@@ -97,37 +97,14 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
     int32_t userId = eventData.GetCode();
     std::unique_lock<std::mutex> lock(mutex_);
     /* get user status */
-    uint32_t status = 0;
-    auto entry = userRecord_.find(userId);
-    if (entry != userRecord_.end()) {
-        status = entry->second;
-    }
+    uint32_t status = GetUserStatus(userId);
     /* update status */
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USER_UNLOCKED) {
-        if (status == (1 << USER_UNLOCK_BIT | 1 << USER_SWITCH_BIT)) {
-            status = 0;
-        }
-        status |= 1 << USER_UNLOCK_BIT;
+        status = HandleUserSwitchedEvent(status);
     } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USER_SWITCHED) {
-        status |= 1 << USER_SWITCH_BIT;
-        /* clear previous user status */
-        auto oldEntry = userRecord_.find(userId_);
-        if (oldEntry != userRecord_.end()) {
-            userRecord_[userId_] = oldEntry->second & (~USER_SWITCH_BIT);
-        }
+        status = HandleUserSwitchedEvent(status);
     } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_LOCKED) {
-        std::vector<int32_t> ids;
-        int ret = AccountSA::OsAccountManager::QueryActiveOsAccountIds(ids);
-        if (ret != 0 || ids.empty()) {
-            LOGE("Query active userid failed, ret = %{public}u", ret);
-            return;
-        }
-        userId = ids[0];
-        if (!OnReceiveEventLockUserScreen(userId)) {
-            LOGE("user %{public}u LockUserScreen fail", userId);
-        }
-        LOGI("Handle EventFwk::CommonEventSupport::Common_EVENT_SCREEN_LOCKED finished, userId is %{public}u",
-            userId);
+        HandleScreenLockedEvent(userId);
         return;
     }
     userId_ = userId;
@@ -144,6 +121,52 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
 
     LOGI("connect %{public}d media library", userId);
     GetSystemAbility();
+}
+
+uint32_t AccountSubscriber::GetUserStatus(int32_t userId)
+{
+    uint32_t userStatus = 0;
+    auto entry = userRecord_.find(userId);
+    if (entry != userRecord_.end()) {
+        userStatus = entry->second;
+    }
+    return userStatus;
+}
+
+uint32_t AccountSubscriber::HandleUserUnlockEvent(uint32_t userStatus)
+{
+    if (userStatus == (1 << USER_UNLOCK_BIT | 1 << USER_SWITCH_BIT)) {
+        userStatus = 0;
+    }
+    userStatus |= 1 << USER_UNLOCK_BIT;
+    return userStatus;
+}
+
+uint32_t AccountSubscriber::HandleUserSwitchedEvent(uint32_t userStatus)
+{
+    userStatus |= 1 << USER_SWITCH_BIT;
+    /* clear previous user status */
+    auto oldEntry = userRecord_.find(userId_);
+    if (oldEntry != userRecord_.end()) {
+        userRecord_[userId_] = oldEntry->second & (~USER_SWITCH_BIT);
+    }
+    return userStatus;
+}
+
+void AccountSubscriber::HandleScreenLockedEvent(int32_t &userId)
+{
+    std::vector<int32_t> ids;
+    int ret = AccountSA::OsAccountManager::QueryActiveOsAccountIds(ids);
+    if (ret != 0 || ids.empty()) {
+        LOGE("Query active userid failed, ret = %{public}u", ret);
+        return;
+    }
+    userId = ids[0];
+    if (!OnReceiveEventLockUserScreen(userId)) {
+        LOGE("user %{public}u LockUserScreen fail", userId);
+    }
+    LOGI("Handle EventFwk::CommonEventSupport::Common_EVENT_SCREEN_LOCKED finished, userId is %{public}u",
+        userId);
 }
 
 void AccountSubscriber::GetSystemAbility()
