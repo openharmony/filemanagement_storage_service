@@ -30,7 +30,7 @@
 namespace {
 constexpr const char *FBEX_UFS_INLINE_SUPPORT_PREFIX = "/sys/devices/platform/";
 constexpr const char *FBEX_UFS_INLINE_SUPPORT_END = "/ufs_inline_stat";
-constexpr const char *FBEX_NVME_INLINE_SUPPORT_PATH = "/proc/nvme_crypto";
+constexpr const char *FBEX_NVME_INLINE_SUPPORT_PATH = "/sys/block/nvme_crypto";
 constexpr const char *FBEX_UFS_INLINE_BASE_ADDR = "/proc/bootdevice/name";
 constexpr const char *FBEX_INLINE_CRYPTO_V3 = "3\n";
 
