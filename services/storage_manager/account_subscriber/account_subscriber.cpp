@@ -100,7 +100,7 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
     uint32_t status = GetUserStatus(userId);
     /* update status */
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USER_UNLOCKED) {
-        status = HandleUserSwitchedEvent(status);
+        status = HandleUserUnlockEvent(status);
     } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USER_SWITCHED) {
         status = HandleUserSwitchedEvent(status);
     } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_LOCKED) {
