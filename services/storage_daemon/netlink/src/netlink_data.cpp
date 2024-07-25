@@ -18,14 +18,14 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 
+namespace OHOS {
+namespace StorageDaemon {
 constexpr int ACTION_PRE_LEN = 7;
 constexpr int DEVPATH_PRE_LEN = 8;
 constexpr int SUBSYSTEM_PRE_LEN = 10;
 constexpr int NL_PARAMS_MAX = 128;
 const std::string EMPTY_STRING = "";
 
-namespace OHOS {
-namespace StorageDaemon {
 void NetlinkData::Decode(const char *msg)
 {
     int32_t paramIdx = 0;
