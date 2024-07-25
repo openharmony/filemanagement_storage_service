@@ -240,27 +240,7 @@ int32_t DiskInfo::CreateUnknownTabVol()
     return E_OK;
 }
 
-bool DiskInfo::CreatePartition(std::vector<std::string> &split,
-                               std::vector<std::string>::iterator &it,
-                               Table &table,
-                               dev_t partitionDev)
-{
-    bool foundPart = false;
-    if (table == Table::MBR) {
-        if (++it == split.end()) {
-            return false;
-        }
-        int32_t type = std::stoi("0x0" + *it, 0, 16);
-        foundPart = CreateMBRVolume(type, partitionDev);
-    } else if (table == Table::GPT) {
-        if (CreateVolume(partitionDev) == E_OK) {
-            foundPart = true;
-        }
-    }
-    return foundPart;
-}
-
-int32_t DiskInfo::ReadDiskLines(std::vector<std::string> &lines, int32_t maxVols)
+int32_t DiskInfo::ReadDiskLines(std::vector<std::string> lines, int32_t maxVols)
 {
     std::string lineToken = " ";
     bool foundPart = false;
@@ -289,7 +269,17 @@ int32_t DiskInfo::ReadDiskLines(std::vector<std::string> &lines, int32_t maxVols
                 continue;
             }
             dev_t partitionDev = makedev(major(device_), minor(device_) + static_cast<uint32_t>(index));
-            foundPart = CreatePartition(split, it, table, partitionDev);
+            if (table == Table::MBR) {
+                if (++it == split.end()) {
+                    continue;
+                }
+                int32_t type = std::stoi("0x0" + *it, 0, 16);
+                foundPart = CreateMBRVolume(type, partitionDev);
+            } else if (table == Table::GPT) {
+                if (CreateVolume(partitionDev) == E_OK) {
+                    foundPart = true;
+                }
+            }
         }
     }
     if (table == Table::UNKNOWN || !foundPart) {
