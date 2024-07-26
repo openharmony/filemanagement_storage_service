@@ -195,10 +195,10 @@ bool FscryptKeyV1::UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std:
     return true;
 }
 
-bool FscryptKeyV1::AddClassE(bool &isSupport, uint32_t status)
+bool FscryptKeyV1::AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status)
 {
     LOGI("AddClassE enter");
-    if (!fscryptV1Ext.AddClassE(isSupport, status)) {
+    if (!fscryptV1Ext.AddClassE(isNeedEncryptClassE, isSupport, status)) {
         LOGE("fscryptV1Ext AddClassE failed");
         return false;
     }

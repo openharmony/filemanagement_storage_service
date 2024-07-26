@@ -51,6 +51,7 @@ const uint8_t FBEX_DEL_EL5_PINCODE = 24;
 const uint8_t FBEX_GENERATE_APP_KEY = 25;
 const uint8_t FBEX_CHANGE_PINCODE = 26;
 const uint8_t FBEX_LOCK_EL5 = 27;
+const uint32_t FILE_ENCRY_ERROR_UECE_ALREADY_CREATED = 0xFBE30031;
 
 struct FbeOptStr {
     uint32_t user = 0;
@@ -138,7 +139,8 @@ static inline bool CheckWriteBuffValid(const uint8_t *eBuffer, uint32_t size, ui
     return (eBuffer != nullptr) && (size == (GCM_NONCE_BYTES + AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES));
 }
 
-int FBEX::InstallEL5KeyToKernel(uint32_t userIdSingle, uint32_t userIdDouble, uint8_t flag, bool &isSupport)
+int FBEX::InstallEL5KeyToKernel(uint32_t userIdSingle, uint32_t userIdDouble, uint8_t flag,
+                                bool &isSupport, bool &isNeedEncryptClassE)
 {
     LOGI("InstallEL5KeyToKernel enter, userId: %{public}d, flag: %{public}u", userIdDouble, flag);
     int fd = open(FBEX_UECE_PATH, O_RDWR);
@@ -154,6 +156,11 @@ int FBEX::InstallEL5KeyToKernel(uint32_t userIdSingle, uint32_t userIdDouble, ui
 
     FbeOptsE ops{ .userIdDouble = userIdDouble, .userIdSingle = userIdSingle };
     auto fbeRet = ioctl(fd, FBEX_ADD_CLASS_E, &ops);
+    if (static_cast<uint32_t>(fbeRet) == FILE_ENCRY_ERROR_UECE_ALREADY_CREATED) {
+        LOGE("class uece has already create, ret: 0x%{public}x, errno: %{public}d", fbeRet, errno);
+        isNeedEncryptClassE = false;
+        return 0;
+    }
     int ret = 0;
     if (fbeRet != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", fbeRet, errno);

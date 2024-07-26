@@ -212,9 +212,10 @@ int KeyManager::GenerateAndInstallEl5Key(uint32_t userId, const std::string &dir
     if (elKey == nullptr) {
         return -EOPNOTSUPP;
     }
+    bool isNeedEncryptClassE = true;
     saveESecretStatus[userId] = true;
-    if (elKey->AddClassE(saveESecretStatus[userId], FIRST_CREATE_KEY) == false) {
-        DoDeleteUserKeys(userId);
+    if (elKey->AddClassE(isNeedEncryptClassE, saveESecretStatus[userId], FIRST_CREATE_KEY) == false) {
+        elKey->ClearKey();
         LOGE("user %{public}u el5 create error", userId);
         return -EFAULT;
     }
@@ -222,17 +223,21 @@ int KeyManager::GenerateAndInstallEl5Key(uint32_t userId, const std::string &dir
     if (keyDir == "") {
         return E_KEY_TYPE_INVAL;
     }
-    std::string keyUeceDir = UECE_DIR + "/" + std::to_string(userId);
     if (!saveESecretStatus[userId]) {
         OHOS::ForceRemoveDirectory(keyDir);
-        OHOS::ForceRemoveDirectory(keyUeceDir);
     }
     saveESecretStatus[userId] = (!auth.secret.IsEmpty() && !auth.token.IsEmpty());
-    if ((!auth.secret.IsEmpty() && !auth.token.IsEmpty()) &&
-        (!elKey->EncryptClassE(auth, saveESecretStatus[userId], userId, USER_ADD_AUTH))) {
-        DoDeleteUserKeys(userId);
-        LOGE("user %{public}u el5 create error", userId);
-        return -EFAULT;
+    if (isNeedEncryptClassE) {
+        if ((!auth.secret.IsEmpty() && !auth.token.IsEmpty()) &&
+            !elKey->EncryptClassE(auth, saveESecretStatus[userId], userId, USER_ADD_AUTH)) {
+            elKey->ClearKey();
+            LOGE("user %{public}u el5 create error", userId);
+            return -EFAULT;
+        }
+    } else {
+        if (!elKey->DecryptClassE(auth, saveESecretStatus[userId], userId, USER_UNLOCK)) {
+            LOGE("user %{public}u decrypt error", userId);
+        }
     }
     userEl5Key_[userId] = elKey;
     return 0;
@@ -968,18 +973,9 @@ int KeyManager::CheckAndDeleteEmptyEl5Directory(std::string keyDir, unsigned int
         return -ENOENT;
     }
 
-    bool  deleteSuccess = false;
     if (IsDir(keyDir) && std::filesystem::is_empty(keyDir)) {
         OHOS::ForceRemoveDirectory(keyDir);
         LOGE("Have removed key dir %{public}u el5", user);
-        deleteSuccess = true;
-    }
-    if (IsDir(keyUeceDir) && std::filesystem::is_empty(keyUeceDir)) {
-        OHOS::ForceRemoveDirectory(keyUeceDir);
-        LOGE("Have removed key uece dir %{public}u el5", user);
-        deleteSuccess = true;
-    }
-    if (deleteSuccess) {
         return -ENOENT;
     }
     return 0;

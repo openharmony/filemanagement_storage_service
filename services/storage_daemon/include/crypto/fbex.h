@@ -57,7 +57,8 @@ public:
     static int WriteESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uint8_t *eBuffer, uint32_t length);
     static bool IsMspReady();
     static int GetStatus();
-    static int InstallEL5KeyToKernel(uint32_t userIdSingle, uint32_t userIdDouble, uint8_t flag, bool &isSupport);
+    static int InstallEL5KeyToKernel(uint32_t userIdSingle, uint32_t userIdDouble, uint8_t flag,
+                                     bool &isSupport, bool &isNeedEncryptClassE);
     static int DeleteClassEPinCode(uint32_t userIdSingle, uint32_t userIdDouble);
     static int ChangePinCodeClassE(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupport);
     static int GenerateAppkey(UserIdToFbeStr &userIdToFbe, uint32_t appUid, std::unique_ptr<uint8_t[]> &keyId,
