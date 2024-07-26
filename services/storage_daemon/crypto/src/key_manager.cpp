@@ -223,7 +223,6 @@ int KeyManager::GenerateAndInstallEl5Key(uint32_t userId, const std::string &dir
     if (keyDir == "") {
         return E_KEY_TYPE_INVAL;
     }
-    std::string keyUeceDir = UECE_DIR + "/" + std::to_string(userId);
     if (!saveESecretStatus[userId]) {
         OHOS::ForceRemoveDirectory(keyDir);
     }
