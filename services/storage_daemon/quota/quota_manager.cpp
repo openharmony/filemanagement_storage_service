@@ -203,7 +203,12 @@ int32_t QuotaManager::SetBundleQuota(const std::string &bundleName, int32_t uid,
 
     std::string device = "";
     if (bundleDataDirPath.find(QUOTA_DEVICE_DATA_PATH) == 0) {
-        device = mQuotaReverseMounts[QUOTA_DEVICE_DATA_PATH];
+        auto iter = mQuotaReverseMounts.find(QUOTA_DEVICE_DATA_PATH);
+        if (iter == mQuotaReverseMounts.end()) {
+            LOGE("mQuotaReverseMounts error, key is %{public}s", iter->first.c_str());
+            return E_OK;
+        }
+        device = iter->second;
     }
     if (device.empty()) {
         LOGE("skip when device no quotas present");
