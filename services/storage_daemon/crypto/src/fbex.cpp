@@ -156,7 +156,7 @@ int FBEX::InstallEL5KeyToKernel(uint32_t userIdSingle, uint32_t userIdDouble, ui
 
     FbeOptsE ops{ .userIdDouble = userIdDouble, .userIdSingle = userIdSingle };
     auto fbeRet = ioctl(fd, FBEX_ADD_CLASS_E, &ops);
-    if (fbeRet == FILE_ENCRY_ERROR_UECE_ALREADY_CREATED) {
+    if (static_cast<uint32_t>(fbeRet) == FILE_ENCRY_ERROR_UECE_ALREADY_CREATED) {
         LOGE("class uece has already create, ret: 0x%{public}x, errno: %{public}d", fbeRet, errno);
         isNeedEncryptClassE = false;
         return 0;
