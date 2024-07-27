@@ -66,6 +66,12 @@ namespace {
         static_cast<int32_t>(StorageManagerInterfaceCode::GET_USER_STATS),
         static_cast<int32_t>(StorageManagerInterfaceCode::GET_ALL_VOLUMES),
         static_cast<int32_t>(StorageManagerInterfaceCode::GET_ALL_DISKS),
+        static_cast<int32_t>(StorageManagerInterfaceCode::LOCK_USER_SCREEN),
+        static_cast<int32_t>(StorageManagerInterfaceCode::UNLOCK_USER_SCREEN),
+        static_cast<int32_t>(StorageManagerInterfaceCode::LOCK_SCREEN_STATUS),
+        static_cast<int32_t>(StorageManagerInterfaceCode::SET_BUNDLE_QUOTA),
+        static_cast<int32_t>(StorageManagerInterfaceCode::GENERATE_APP_KEY),
+        static_cast<int32_t>(StorageManagerInterfaceCode::DELETE_APP_KEY),
     };
 }
 
@@ -190,6 +196,12 @@ HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemote
     EXPECT_CALL(mock, GetUserStorageStats(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, GetAllVolumes(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, GetAllDisks(testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, LockUserScreen(testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, UnlockUserScreen(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, GetLockScreenStatus(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, SetBundleQuota(testing::_, testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, GenerateAppkey(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, DeleteAppkey(testing::_)).WillOnce(testing::Return(E_OK));
 
     for (auto c : g_code) {
         MessageParcel data;
