@@ -68,6 +68,15 @@ namespace {
         static_cast<int32_t>(StorageManagerInterfaceCode::UNLOCK_USER_SCREEN),
         static_cast<int32_t>(StorageManagerInterfaceCode::GENERATE_APP_KEY),
         static_cast<int32_t>(StorageManagerInterfaceCode::DELETE_APP_KEY),
+        static_cast<int32_t>(StorageManagerInterfaceCode::LOCK_SCREEN_STATUS),
+        static_cast<int32_t>(StorageManagerInterfaceCode::SET_BUNDLE_QUOTA),
+        static_cast<int32_t>(StorageManagerInterfaceCode::CREATE_SHARE_FILE),
+        static_cast<int32_t>(StorageManagerInterfaceCode::DELETE_SHARE_FILE),
+        static_cast<int32_t>(StorageManagerInterfaceCode::GET_USER_STATS_BY_TYPE),
+        static_cast<int32_t>(StorageManagerInterfaceCode::UPDATE_MEM_PARA),
+        static_cast<int32_t>(StorageManagerInterfaceCode::GET_BUNDLE_STATS_INCREASE),
+        static_cast<int32_t>(StorageManagerInterfaceCode::MOUNT_DFS_DOCS),
+        static_cast<int32_t>(StorageManagerInterfaceCode::UMOUNT_DFS_DOCS)
     };
 
 } // namespace
