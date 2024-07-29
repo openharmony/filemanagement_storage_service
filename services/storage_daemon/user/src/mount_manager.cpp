@@ -435,18 +435,8 @@ int32_t MountManager::UMountAllPath(int32_t userId)
     if (res != E_OK) {
         return res;
     }
-    std::list<std::string> list = mountMap[MOUNT_POINT_TYPE_HMFS];
+    std::list<std::string> list = mountMap[MOUNT_POINT_TYPE_SHAREFS];
     int total = static_cast<int>(list.size());
-    LOGI("unmount hmfs path start, total %{public}d.", total);
-    for (const std::string &path: list) {
-        LOGD("unmount hmfs path %{public}s.", path.c_str());
-        res = UMount2(path.c_str(), MNT_DETACH);
-        if (res != E_OK) {
-            LOGE("failed to unmount hmfs path %{public}s, errno %{public}d.", path.c_str(), errno);
-        }
-    }
-    list = mountMap[MOUNT_POINT_TYPE_SHAREFS];
-    total = static_cast<int>(list.size());
     LOGI("unmount sharefs path start, total %{public}d.", total);
     for (const std::string &path: list) {
         LOGD("unmount sharefs path %{public}s.", path.c_str());
@@ -463,6 +453,16 @@ int32_t MountManager::UMountAllPath(int32_t userId)
         res = UMount2(path.c_str(), MNT_DETACH);
         if (res != E_OK) {
             LOGE("failed to unmount hmdfs path %{public}s, errno %{public}d.", path.c_str(), errno);
+        }
+    }
+    list = mountMap[MOUNT_POINT_TYPE_HMFS];
+    total = static_cast<int>(list.size());
+    LOGI("unmount hmfs path start, total %{public}d.", total);
+    for (const std::string &path: list) {
+        LOGD("unmount hmfs path %{public}s.", path.c_str());
+        res = UMount2(path.c_str(), MNT_DETACH);
+        if (res != E_OK) {
+            LOGE("failed to unmount hmfs path %{public}s, errno %{public}d.", path.c_str(), errno);
         }
     }
     return E_OK;
