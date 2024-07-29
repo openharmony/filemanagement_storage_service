@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,7 +20,7 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-// for openharmony kernel 5.10+, prefer using the the FSCRYPT_V2.
+// for openharmony kernel 5.10+, prefer using the FSCRYPT_V2.
 class FscryptKeyV2 final : public BaseKey {
 public:
     FscryptKeyV2() = delete;
@@ -34,13 +34,14 @@ public:
     bool InactiveKey(uint32_t flag = 0, const std::string &mnt = MNT_DATA);
     bool LockUserScreen(uint32_t flag = 0, uint32_t sdpClass = 0, const std::string &mnt = MNT_DATA);
     bool UnlockUserScreen(uint32_t flag = 0, uint32_t sdpClass = 0, const std::string &mnt = MNT_DATA);
-    bool AddClassE(uint32_t status = 0);
-    bool DeleteClassE(uint32_t user = 0);
-    bool ChangePinCodeClassE(uint32_t user = 0);
+    bool AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status = 0);
+    bool DeleteClassEPinCode(uint32_t userId = 0);
+    bool ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId = 0);
     bool DecryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user = 0, uint32_t status = 0);
     bool EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user = 0, uint32_t status = 0);
-    bool GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &KeyId);
+    bool GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId);
     bool DeleteAppkey(const std::string KeyId);
+    bool LockUece(bool &isFbeSupport);
 };
 } // namespace StorageDaemon
 } // namespace OHOS

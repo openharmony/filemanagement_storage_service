@@ -1162,7 +1162,8 @@ int32_t StorageManagerProxy::SetBundleQuota(const std::string &bundleName, int32
 
 
 int32_t StorageManagerProxy::GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
-    const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes)
+    const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes,
+    std::vector<int64_t> &incPkgFileSizes)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
@@ -1196,6 +1197,10 @@ int32_t StorageManagerProxy::GetBundleStatsForIncrease(uint32_t userId, const st
     }
     if (!reply.ReadInt64Vector(&pkgFileSizes)) {
         LOGE("StorageManagerProxy::SendRequest read pkgFileSizes");
+        return E_WRITE_REPLY_ERR;
+    }
+    if (!reply.ReadInt64Vector(&incPkgFileSizes)) {
+        LOGE("StorageManagerProxy::SendRequest read incPkgFileSizes");
         return E_WRITE_REPLY_ERR;
     }
 

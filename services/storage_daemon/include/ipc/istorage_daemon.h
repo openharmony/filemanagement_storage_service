@@ -33,12 +33,12 @@ public:
 
     virtual int32_t Shutdown() = 0;
 
-    virtual int32_t Mount(std::string volId, uint32_t flags) = 0;
-    virtual int32_t UMount(std::string volId) = 0;
-    virtual int32_t Check(std::string volId) = 0;
-    virtual int32_t Format(std::string volId, std::string fsType) = 0;
-    virtual int32_t Partition(std::string diskId, int32_t type) = 0;
-    virtual int32_t SetVolumeDescription(std::string volId, std::string description) = 0;
+    virtual int32_t Mount(const std::string &volId, uint32_t flags) = 0;
+    virtual int32_t UMount(const std::string &volId) = 0;
+    virtual int32_t Check(const std::string &volId) = 0;
+    virtual int32_t Format(const std::string &volId, const std::string &fsType) = 0;
+    virtual int32_t Partition(const std::string &diskId, int32_t type) = 0;
+    virtual int32_t SetVolumeDescription(const std::string &volId, const std::string &description) = 0;
 
     virtual int32_t StartUser(int32_t userId) = 0;
     virtual int32_t StopUser(int32_t userId) = 0;
@@ -59,14 +59,14 @@ public:
                                   const std::vector<uint8_t> &secret) = 0;
     virtual int32_t InactiveUserKey(uint32_t userId) = 0;
     virtual int32_t UpdateKeyContext(uint32_t userId) = 0;
+    virtual int32_t MountCryptoPathAgain(uint32_t userId) = 0;
     virtual int32_t LockUserScreen(uint32_t userId) = 0;
-    virtual int32_t UnlockUserScreen(uint32_t userId,
+    virtual int32_t UnlockUserScreen(uint32_t user,
                                      const std::vector<uint8_t> &token,
                                      const std::vector<uint8_t> &secret) = 0;
     virtual int32_t GetLockScreenStatus(uint32_t user, bool &lockScreenStatus) = 0;
-    virtual int32_t MountCryptoPathAgain(uint32_t userId) = 0;
     virtual int32_t GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId) = 0;
-    virtual int32_t DeleteAppkey(uint32_t userId, const std::string keyId) = 0;
+    virtual int32_t DeleteAppkey(uint32_t userId, const std::string &keyId) = 0;
 
     // app file share api
     virtual std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,
@@ -83,7 +83,8 @@ public:
 
     virtual int32_t UpdateMemoryPara(int32_t size, int32_t &oldSize) = 0;
     virtual int32_t GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
-        const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes) = 0;
+        const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes,
+        std::vector<int64_t> &incPkgFileSizes) = 0;
     virtual int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId) = 0;
     virtual int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,

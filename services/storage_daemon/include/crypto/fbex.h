@@ -27,7 +27,7 @@ constexpr uint32_t TYPE_EL1 = 0;
 constexpr uint32_t TYPE_EL2 = 1;
 constexpr uint32_t TYPE_EL3 = 3;
 constexpr uint32_t TYPE_EL4 = 2;
-constexpr uint32_t TYPE_EL5 = 5;
+constexpr uint32_t TYPE_EL5 = 6;
 constexpr uint32_t TYPE_GLOBAL_EL1 = 4;
 
 constexpr uint32_t FBEX_IV_SIZE = 64;
@@ -36,6 +36,14 @@ constexpr uint32_t FBEX_E_BUFFER_SIZE = 64;
 const uint32_t FBEX_UNSUPPORT_CODE = 0xfbe30203;
 const uint32_t UNLOCK_STATUS = 0x2;
 const int STORAGE_UNSUPPORT_CODE = 0;
+const int SINGLE_ID_INDEX = 0;
+const int DOUBLE_ID_INDEX = 1;
+const int USER_ID_SIZE = 2;
+
+struct UserIdToFbeStr {
+    uint32_t userIds[USER_ID_SIZE];
+    int size = USER_ID_SIZE;
+};
 
 class FBEX {
 public:
@@ -44,15 +52,18 @@ public:
     static int UninstallOrLockUserKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size, bool destroy);
     static int LockScreenToKernel(uint32_t userId);
     static int UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size);
-    static int ReadESecretToKernel(uint32_t userId, uint32_t status,
+    static int ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status,
                                    uint8_t *eBuffer, uint32_t length, bool &isFbeSupport);
-    static int WriteESecretToKernel(uint32_t userId, uint32_t status, uint8_t *eBuffer, uint32_t length);
+    static int WriteESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uint8_t *eBuffer, uint32_t length);
     static bool IsMspReady();
     static int GetStatus();
-    static int InstallEL5KeyToKernel(uint32_t userId, uint8_t flag);
-    static int UninstallOrLockUserKeyForEL5ToKernel(uint32_t userId, bool destroy);
-    static int ChangePinCodeClassE(uint32_t user);
-    static int GenerateAppkey(uint32_t userId, uint32_t appUid, std::unique_ptr<uint8_t[]> &keyId, uint32_t size);
+    static int InstallEL5KeyToKernel(uint32_t userIdSingle, uint32_t userIdDouble, uint8_t flag,
+                                     bool &isSupport, bool &isNeedEncryptClassE);
+    static int DeleteClassEPinCode(uint32_t userIdSingle, uint32_t userIdDouble);
+    static int ChangePinCodeClassE(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupport);
+    static int GenerateAppkey(UserIdToFbeStr &userIdToFbe, uint32_t appUid, std::unique_ptr<uint8_t[]> &keyId,
+                              uint32_t size);
+    static int LockUece(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupport);
 };
 } // namespace StorageDaemon
 } // namespace OHOS

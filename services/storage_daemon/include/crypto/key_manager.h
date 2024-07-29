@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -38,6 +38,7 @@ const std::string USER_EL3_DIR = FSCRYPT_EL_DIR + "/el3";
 const std::string USER_EL4_DIR = FSCRYPT_EL_DIR + "/el4";
 const std::string USER_EL5_DIR = FSCRYPT_EL_DIR + "/el5";
 const std::string UECE_DIR = "data/service/el5";
+
 class KeyManager {
 public:
     static KeyManager *GetInstance(void)
@@ -72,7 +73,7 @@ public:
     int UpdateCeEceSeceKeyContext(uint32_t userId, KeyType type);
     int getEceSeceKeyPath(unsigned int user, KeyType type, std::string &eceSeceKeyPath);
     int LockUserScreen(uint32_t user);
-    int UnlockUserScreen(unsigned int user, const std::vector<uint8_t> &token,
+    int UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &token,
                          const std::vector<uint8_t> &secret);
     int GetLockScreenStatus(uint32_t user, bool &lockScreenStatus);
     int GenerateAppkey(uint32_t user, uint32_t appUid, std::string &keyId);
@@ -119,6 +120,7 @@ private:
                                       const std::vector<uint8_t> &token, std::string keyDir,
                                       const std::vector<uint8_t> &secret, std::shared_ptr<BaseKey> elKey);
     int InactiveUserElKey(unsigned int user, std::map<unsigned int, std::shared_ptr<BaseKey>> &userElxKey_);
+    int CheckAndDeleteEmptyEl5Directory(std::string keyDir, unsigned int user);
 
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl1Key_;
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl2Key_;

@@ -362,6 +362,7 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
                 srcPath.c_str(), dstPath.c_str());
         }
     }
+    LOGI("mount crypto path success, userId is %{public}d", userId);
     return ret;
 }
 

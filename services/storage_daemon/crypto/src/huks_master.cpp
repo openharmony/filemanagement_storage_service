@@ -144,8 +144,8 @@ int HuksMaster::HdiGenerateKey(const HksBlob &keyAlias, const HksParamSet *param
         return HKS_ERROR_NULL_POINTER;
     }
 
-    uint8_t d = 0;
-    HksBlob keyIn = {1, &d};
+    uint8_t data = 0;
+    HksBlob keyIn = {1, &data};
     auto ret = halDevice_->HuksHdiGenerateKey(&keyAlias, paramSetIn, &keyIn, &keyOut);
     if (ret != HKS_SUCCESS) {
         LOGE("HuksHdiGenerateKey failed, ret %{public}d", ret);
@@ -336,6 +336,10 @@ static int AppendAeTag(KeyBlob &cipherText, HksParamSet *paramSet)
 {
     if (cipherText.size <= HKS_AE_TAG_LEN) {
         LOGE("cipherText size %{public}d is too small", cipherText.size);
+        return HKS_ERROR_INVALID_KEY_INFO;
+    }
+    if (cipherText.data.get() == nullptr) {
+        LOGE("cipherText data pointer is null");
         return HKS_ERROR_INVALID_KEY_INFO;
     }
 

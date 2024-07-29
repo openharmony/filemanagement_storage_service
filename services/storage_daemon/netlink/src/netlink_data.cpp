@@ -18,13 +18,14 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 
+namespace OHOS {
+namespace StorageDaemon {
 constexpr int ACTION_PRE_LEN = 7;
 constexpr int DEVPATH_PRE_LEN = 8;
 constexpr int SUBSYSTEM_PRE_LEN = 10;
 constexpr int NL_PARAMS_MAX = 128;
+const std::string EMPTY_STRING = "";
 
-namespace OHOS {
-namespace StorageDaemon {
 void NetlinkData::Decode(const char *msg)
 {
     int32_t paramIdx = 0;
@@ -54,17 +55,17 @@ void NetlinkData::Decode(const char *msg)
 
 std::string NetlinkData::GetSyspath()
 {
-    return sysPath_.empty() ? "" : sysPath_;
+    return sysPath_.empty() ? EMPTY_STRING : sysPath_;
 }
 
 std::string NetlinkData::GetDevpath()
 {
-    return devPath_.empty() ? "" : devPath_;
+    return devPath_.empty() ? EMPTY_STRING : devPath_;
 }
 
 std::string NetlinkData::GetSubsystem()
 {
-    return subSystem_.empty() ? "" : subSystem_;
+    return subSystem_.empty() ? EMPTY_STRING : subSystem_;
 }
 
 NetlinkData::Actions NetlinkData::GetAction()
@@ -84,7 +85,7 @@ const std::string NetlinkData::GetParam(const std::string paramName)
         }
     }
 
-    return "";
+    return EMPTY_STRING;
 }
-} // StorageDaemon
-} // OHOS
+} // namespace StorageDaemon
+} // namespace OHOS

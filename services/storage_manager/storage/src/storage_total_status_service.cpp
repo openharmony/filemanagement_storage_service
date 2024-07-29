@@ -17,6 +17,7 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <cinttypes>
 #include "hitrace_meter.h"
 #include <mntent.h>
 #include <singleton.h>
@@ -84,6 +85,8 @@ int32_t StorageTotalStatusService::GetSizeOfPath(const char *path, int32_t type,
     } else {
         size = (int64_t)diskInfo.f_bsize * ((int64_t)diskInfo.f_blocks - (int64_t)diskInfo.f_bfree);
     }
+    LOGI("StorageStatusService::GetSizeOfPath path is %{public}s, type is %{public}d, size is %{public}" PRId64,
+         path, type, size);
     return E_OK;
 }
 } // StorageManager

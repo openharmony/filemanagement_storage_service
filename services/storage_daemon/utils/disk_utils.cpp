@@ -89,13 +89,16 @@ int32_t ReadMetadata(const std::string &devPath, std::string &uuid, std::string 
     uuid = GetBlkidData(devPath, "UUID");
     type = GetBlkidData(devPath, "TYPE");
     label = GetBlkidData(devPath, "LABEL");
-
+    LOGI("ReadMetadata, fsUuid=%{public}s, fsType=%{public}s, fsLabel=%{public}s.", GetAnonyString(uuid).c_str(),
+        type.c_str(), label.c_str());
     if (uuid.empty() || type.empty()) {
         LOGE("External volume ReadMetadata error.");
         return E_ERR;
     }
-    LOGI("ReadMetadata, fsUuid=%{public}s, fsType=%{public}s, fsLabel=%{public}s.", GetAnonyString(uuid).c_str(),
-        type.c_str(), label.c_str());
+    if (type == "hmfs" && label != "/data") {
+        LOGE("Failed to mount the partition: Unsupported");
+        return E_ERR;
+    }
     return E_OK;
 }
 

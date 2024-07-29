@@ -36,7 +36,7 @@ int32_t StorageDaemonProxy::Shutdown()
     return SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::SHUTDOWN), data, reply, option);
 }
 
-int32_t StorageDaemonProxy::Mount(std::string volId, uint32_t flags)
+int32_t StorageDaemonProxy::Mount(const std::string &volId, uint32_t flags)
 {
     MessageParcel data;
     MessageParcel reply;
@@ -61,7 +61,7 @@ int32_t StorageDaemonProxy::Mount(std::string volId, uint32_t flags)
     return reply.ReadInt32();
 }
 
-int32_t StorageDaemonProxy::UMount(std::string volId)
+int32_t StorageDaemonProxy::UMount(const std::string &volId)
 {
     MessageParcel data;
     MessageParcel reply;
@@ -82,7 +82,7 @@ int32_t StorageDaemonProxy::UMount(std::string volId)
     return reply.ReadInt32();
 }
 
-int32_t StorageDaemonProxy::Check(std::string volId)
+int32_t StorageDaemonProxy::Check(const std::string &volId)
 {
     MessageParcel data;
     MessageParcel reply;
@@ -103,7 +103,7 @@ int32_t StorageDaemonProxy::Check(std::string volId)
     return reply.ReadInt32();
 }
 
-int32_t StorageDaemonProxy::Format(std::string volId, std::string fsType)
+int32_t StorageDaemonProxy::Format(const std::string &volId, const std::string &fsType)
 {
     MessageParcel data;
     MessageParcel reply;
@@ -128,7 +128,7 @@ int32_t StorageDaemonProxy::Format(std::string volId, std::string fsType)
     return reply.ReadInt32();
 }
 
-int32_t StorageDaemonProxy::Partition(std::string diskId, int32_t type)
+int32_t StorageDaemonProxy::Partition(const std::string &diskId, int32_t type)
 {
     MessageParcel data;
     MessageParcel reply;
@@ -153,7 +153,7 @@ int32_t StorageDaemonProxy::Partition(std::string diskId, int32_t type)
     return reply.ReadInt32();
 }
 
-int32_t StorageDaemonProxy::SetVolumeDescription(std::string volId, std::string description)
+int32_t StorageDaemonProxy::SetVolumeDescription(const std::string &volId, const std::string &description)
 {
     MessageParcel data;
     MessageParcel reply;
@@ -543,7 +543,7 @@ int32_t StorageDaemonProxy::GenerateAppkey(uint32_t userId, uint32_t appUid, std
     return reply.ReadInt32();
 }
 
-int32_t StorageDaemonProxy::DeleteAppkey(uint32_t userId, const std::string keyId)
+int32_t StorageDaemonProxy::DeleteAppkey(uint32_t userId, const std::string &keyId)
 {
     MessageParcel data;
     MessageParcel reply;
@@ -736,7 +736,8 @@ int32_t StorageDaemonProxy::GetOccupiedSpace(int32_t idType, int32_t id, int64_t
 }
 
 int32_t StorageDaemonProxy::GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
-    const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes)
+    const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes,
+    std::vector<int64_t> &incPkgFileSizes)
 {
     MessageParcel data;
     MessageParcel reply;
@@ -770,6 +771,10 @@ int32_t StorageDaemonProxy::GetBundleStatsForIncrease(uint32_t userId, const std
     }
     if (!reply.ReadInt64Vector(&pkgFileSizes)) {
         LOGE("StorageDaemonProxy::SendRequest read pkgFileSizes");
+        return E_WRITE_REPLY_ERR;
+    }
+    if (!reply.ReadInt64Vector(&incPkgFileSizes)) {
+        LOGE("StorageDaemonProxy::SendRequest read incPkgFileSizes");
         return E_WRITE_REPLY_ERR;
     }
 

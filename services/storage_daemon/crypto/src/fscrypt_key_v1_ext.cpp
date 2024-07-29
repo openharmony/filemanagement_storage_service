@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -46,8 +46,12 @@ static const uint32_t USER_ID_DIFF = 91;
  */
 uint32_t FscryptKeyV1Ext::GetMappedUserId(uint32_t userId, uint32_t type)
 {
-    if (std::filesystem::exists(NEED_RESTORE_PATH) &&
-        (type == TYPE_EL2 || type == TYPE_EL3 || type == TYPE_EL4 || type == TYPE_EL5)) {
+    std::error_code errCode;
+    if (!std::filesystem::exists(NEED_RESTORE_PATH, errCode)) {
+        LOGE("restore path not exists, errCode = %{public}d", errCode.value());
+        return userId;
+    }
+    if (type == TYPE_EL2 || type == TYPE_EL3 || type == TYPE_EL4 || type == TYPE_EL5) {
         if (userId == DEFAULT_SINGLE_FIRST_USER_ID) {
             return 0;
         }
@@ -102,55 +106,54 @@ bool FscryptKeyV1Ext::GenerateAppkey(uint32_t user, uint32_t appUid, std::unique
     }
     LOGD("enter");
     LOGI("map userId %{public}u to %{public}u", userId_, user);
-    uint32_t userId = GetMappedUserId(userId_, type_);
-    if (FBEX::GenerateAppkey(userId, appUid, appKey, size)) {
+    // 0--single id, 1--double id
+    UserIdToFbeStr userIdToFbe = { .userIds = { userId_, GetMappedUserId(userId_, type_) }, .size = USER_ID_SIZE };
+    if (FBEX::GenerateAppkey(userIdToFbe, appUid, appKey, size)) {
         LOGE("GenerateAppkey failed, user %{public}d", user);
         return false;
     }
     return true;
 }
 
-bool FscryptKeyV1Ext::AddClassE(uint32_t status)
+bool FscryptKeyV1Ext::AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status)
 {
     if (!FBEX::IsFBEXSupported()) {
         return true;
     }
     LOGD("enter");
-    uint32_t user = GetMappedUserId(userId_, type_);
-    LOGI("map userId %{public}u to %{public}u", userId_, user);
-    if (FBEX::InstallEL5KeyToKernel(user, status)) {
+    uint32_t userIdDouble = GetMappedUserId(userId_, type_);
+    LOGI("map userId %{public}u to %{public}u", userId_, userIdDouble);
+    if (FBEX::InstallEL5KeyToKernel(userId_, userIdDouble, status, isSupport, isNeedEncryptClassE)) {
         LOGE("AddESecret failed, userId_ %{public}d, status is %{public}d", userId_, status);
         return false;
     }
     return true;
 }
 
-bool FscryptKeyV1Ext::DeleteClassE(uint32_t flag)
+bool FscryptKeyV1Ext::DeleteClassEPinCode(uint32_t userId)
 {
     if (!FBEX::IsFBEXSupported()) {
         return true;
     }
     LOGD("enter");
-    bool destroy = !!flag;
-    uint32_t user = GetMappedUserId(userId_, type_);
-    LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, user);
-    if (FBEX::UninstallOrLockUserKeyForEL5ToKernel(user, destroy)) {
+    uint32_t userIdDouble = GetMappedUserId(userId_, type_);
+    LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, userIdDouble);
+    if (FBEX::DeleteClassEPinCode(userId_, userIdDouble)) {
         LOGE("UninstallOrLockUserKeyForEL5ToKernel failed, userId_ %{public}d", userId_);
         return false;
     }
     return true;
 }
 
-bool FscryptKeyV1Ext::ChangePinCodeClassE(uint32_t flag)
+bool FscryptKeyV1Ext::ChangePinCodeClassE(uint32_t userId, bool &isFbeSupport)
 {
-    (void)flag;
     if (!FBEX::IsFBEXSupported()) {
         return true;
     }
-    uint32_t userId = GetMappedUserId(userId_, type_);
-    LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, userId);
-    if (FBEX::ChangePinCodeClassE(userId)) {
-        LOGE("ChangePinCodeClassE failed, userId_ %{public}d", userId_);
+    uint32_t userIdDouble = GetMappedUserId(userId_, type_);
+    LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, userIdDouble);
+    if (FBEX::ChangePinCodeClassE(userId_, userIdDouble, isFbeSupport)) {
+        LOGE("ChangePinCodeClassE failed, userId_ %{public}d", userId);
         return false;
     }
     return true;
@@ -162,10 +165,11 @@ bool FscryptKeyV1Ext::ReadClassE(uint32_t status, uint8_t *classEBuffer, uint32_
         return true;
     }
     LOGD("enter");
-    uint32_t userId = GetMappedUserId(userId_, type_);
-    LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, userId);
-    if (FBEX::ReadESecretToKernel(userId, status, classEBuffer, length, isFbeSupport)) {
-        LOGE("ReadESecretToKernel failed, user %{public}d, status is %{public}d", userId, status);
+    // 0--single id, 1--double id
+    UserIdToFbeStr userIdToFbe = { .userIds = { userId_, GetMappedUserId(userId_, type_) }, .size = USER_ID_SIZE };
+    LOGI("type_: %{public}u, userId %{public}u to %{public}u", type_, userId_, userIdToFbe.userIds[DOUBLE_ID_INDEX]);
+    if (FBEX::ReadESecretToKernel(userIdToFbe, status, classEBuffer, length, isFbeSupport)) {
+        LOGE("ReadESecret failed, user %{public}d, status: %{public}d", userIdToFbe.userIds[DOUBLE_ID_INDEX], status);
         return false;
     }
     return true;
@@ -177,10 +181,12 @@ bool FscryptKeyV1Ext::WriteClassE(uint32_t status, uint8_t *classEBuffer, uint32
         return true;
     }
     LOGD("enter");
-    uint32_t userId = GetMappedUserId(userId_, type_);
-    LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, userId);
-    if (FBEX::WriteESecretToKernel(userId, status, classEBuffer, length)) {
-        LOGE("WriteESecretToKernel failed, user %{public}d, status is %{public}d", userId, status);
+    // 0--single id, 1--double id
+    UserIdToFbeStr userIdToFbe = { .userIds = { userId_, GetMappedUserId(userId_, type_) }, .size = USER_ID_SIZE };
+    LOGI("type_ is %{public}u, map userId %{public}u to %{public}u",
+         type_, userId_, userIdToFbe.userIds[DOUBLE_ID_INDEX]);
+    if (FBEX::WriteESecretToKernel(userIdToFbe, status, classEBuffer, length)) {
+        LOGE("WriteESecret failed,user %{public}d, status: %{public}d", userIdToFbe.userIds[DOUBLE_ID_INDEX], status);
         return false;
     }
     return true;
@@ -202,20 +208,14 @@ bool FscryptKeyV1Ext::InactiveKeyExt(uint32_t flag)
     buf[0] = 0xfb; // fitst byte const to kernel
     buf[1] = 0x30; // second byte const to kernel
 
-    uint32_t user = GetMappedUserId(userId_, type_);
+    // When double update single, el5 use single user id, like: 100  101  102 ...
+    // el1-el4 use double id, like 0 10 11 12 ...
+    uint32_t user = type_ == TYPE_EL5 ? userId_ : GetMappedUserId(userId_, type_);
     LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, user);
-    if (type_ == TYPE_EL5) {
-        if (FBEX::UninstallOrLockUserKeyForEL5ToKernel(user, destroy) != 0) {
-            LOGE("UninstallOrLockUserKeyForEL5ToKernel failed, userId %{public}d, destroy %{public}u",
-                 userId_,  destroy);
-            return false;
-        }
-    } else {
-        if (FBEX::UninstallOrLockUserKeyToKernel(user, type_, buf, FBEX_IV_SIZE, destroy) != 0) {
-            LOGE("UninstallOrLockUserKeyToKernel failed, userId %{public}d, type %{public}d, destroy %{public}u",
-                 userId_, type_, destroy);
-            return false;
-        }
+    if (FBEX::UninstallOrLockUserKeyToKernel(user, type_, buf, FBEX_IV_SIZE, destroy) != 0) {
+        LOGE("UninstallOrLockUserKeyToKernel failed, userId %{public}d, type %{public}d, destroy %{public}u",
+             userId_, type_, destroy);
+        return false;
     }
     return true;
 }
@@ -229,11 +229,26 @@ bool FscryptKeyV1Ext::LockUserScreenExt(uint32_t flag, uint32_t &elType)
     uint32_t user = GetMappedUserId(userId_, type_);
     LOGD("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, user);
     if (FBEX::LockScreenToKernel(user)) {
-        LOGE("LockScreenToKernel failed, userId %{public}d", flag);
+        LOGE("LockScreenToKernel failed, userId %{public}d", user);
         return false;
     }
     //Used to associate el3 and el4 kernels.
     elType = type_;
+    return true;
+}
+
+bool FscryptKeyV1Ext::LockUeceExt(bool &isFbeSupport)
+{
+    if (!FBEX::IsFBEXSupported()) {
+        return true;
+    }
+    LOGD("enter");
+    uint32_t userIdDouble = GetMappedUserId(userId_, type_);
+    LOGD("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, userIdDouble);
+    if (FBEX::LockUece(userId_, userIdDouble, isFbeSupport)) {
+        LOGE("LockUeceExt failed, userId");
+        return false;
+    }
     return true;
 }
 

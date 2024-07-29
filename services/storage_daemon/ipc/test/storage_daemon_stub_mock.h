@@ -25,12 +25,12 @@ class StorageDaemonStubMock : public StorageDaemonStub {
 public:
     MOCK_METHOD0(Shutdown, int32_t(void));
 
-    MOCK_METHOD2(Mount, int32_t(std::string, uint32_t));
-    MOCK_METHOD1(UMount, int32_t(std::string));
-    MOCK_METHOD1(Check, int32_t(std::string));
-    MOCK_METHOD2(Format, int32_t(std::string, std::string));
-    MOCK_METHOD2(Partition, int32_t(std::string, int32_t));
-    MOCK_METHOD2(SetVolumeDescription, int32_t(std::string, std::string));
+    MOCK_METHOD2(Mount, int32_t(const std::string &, uint32_t));
+    MOCK_METHOD1(UMount, int32_t(const std::string &));
+    MOCK_METHOD1(Check, int32_t(const std::string &));
+    MOCK_METHOD2(Format, int32_t(const std::string &, const std::string &));
+    MOCK_METHOD2(Partition, int32_t(const std::string &, int32_t));
+    MOCK_METHOD2(SetVolumeDescription, int32_t(const std::string &, const std::string &));
 
     MOCK_METHOD1(StartUser, int32_t(int32_t));
     MOCK_METHOD1(StopUser, int32_t(int32_t));
@@ -56,10 +56,10 @@ public:
     MOCK_METHOD4(MountDfsDocs, int32_t(int32_t, const std::string &, const std::string &, const std::string &));
     MOCK_METHOD4(UMountDfsDocs, int32_t(int32_t, const std::string &, const std::string &, const std::string &));
     MOCK_METHOD2(UpdateMemoryPara, int32_t (int32_t, int32_t &));
-    MOCK_METHOD4(GetBundleStatsForIncrease, int32_t(uint32_t, const std::vector<std::string> &,
-        const std::vector<int64_t> &, std::vector<int64_t> &));
+    MOCK_METHOD5(GetBundleStatsForIncrease, int32_t(uint32_t, const std::vector<std::string> &,
+        const std::vector<int64_t> &, std::vector<int64_t> &, std::vector<int64_t> &));
     MOCK_METHOD3(GenerateAppkey, int32_t (uint32_t, uint32_t, std::string &));
-    MOCK_METHOD2(DeleteAppkey, int32_t (uint32_t, const std::string));
+    MOCK_METHOD2(DeleteAppkey, int32_t (uint32_t, const std::string &));
 };
 }  // namespace StorageDaemon
 }  // namespace OHOS

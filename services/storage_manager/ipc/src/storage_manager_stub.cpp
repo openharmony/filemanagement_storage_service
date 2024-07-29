@@ -1005,11 +1005,16 @@ int32_t StorageManagerStub::HandleGetBundleStatsForIncrease(MessageParcel &data,
     }
 
     std::vector<int64_t> pkgFileSizes;
-    int32_t err = GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes, pkgFileSizes);
+    std::vector<int64_t> incPkgFileSizes;
+    int32_t err = GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes, pkgFileSizes, incPkgFileSizes);
     if (!reply.WriteUint32(err)) {
         return E_WRITE_REPLY_ERR;
     }
     if (!reply.WriteInt64Vector(pkgFileSizes)) {
+        LOGE("StorageManagerStub::HandleGetBundleStatsForIncrease call GetBundleStatsForIncrease failed");
+        return  E_WRITE_REPLY_ERR;
+    }
+    if (!reply.WriteInt64Vector(incPkgFileSizes)) {
         LOGE("StorageManagerStub::HandleGetBundleStatsForIncrease call GetBundleStatsForIncrease failed");
         return  E_WRITE_REPLY_ERR;
     }

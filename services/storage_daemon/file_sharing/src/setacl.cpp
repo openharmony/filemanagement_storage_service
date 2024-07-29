@@ -54,7 +54,7 @@ int AclEntryParseTag(const std::string &tagTxt, AclXattrEntry &entry)
 
 bool ParseNumericId(const std::string &idTxt, unsigned int &outId)
 {
-    char *p;
+    char *p = nullptr;
     long converted = strtol(idTxt.c_str(), &p, 10);
     if (*p == '\0' && converted >= 0 && converted <= UINT_MAX) {
         outId = static_cast<unsigned int>(converted);
@@ -225,7 +225,7 @@ Acl AclFromFile(const std::string &file)
 
 int AclSetAttribution(const std::string &targetFile, const std::string &entryTxt, const char *aclAttrName)
 {
-    if (strcmp(aclAttrName, ACL_XATTR_ACCESS) && !IsDir(targetFile)) {
+    if (strcmp(aclAttrName, ACL_XATTR_ACCESS) == 0 && !IsDir(targetFile)) {
         LOGE("Failed to confirm %{private}s is a directory: %{public}s",
             targetFile.c_str(),
             errno == 0 ? "file exists but isn't a directory" : std::strerror(errno));

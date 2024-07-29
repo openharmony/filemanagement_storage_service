@@ -88,7 +88,8 @@ public:
     int32_t UpdateMemoryPara(int32_t size, int32_t &oldSize) override;
 
     int32_t GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
-        const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes) override;
+        const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes,
+        std::vector<int64_t> &incPkgFileSizes) override;
 
     // dfs service
     int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,

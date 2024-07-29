@@ -412,7 +412,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_policy_set, TestSize.Level1)
     (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
     arg.v1.version = FSCRYPT_POLICY_V1;
     (void)memcpy_s(arg.v1.master_key_descriptor, FSCRYPT_KEY_DESCRIPTOR_SIZE, g_testKeyV1.keyInfo_.keyDesc.data.get(),
-        g_testKeyV1.keyInfo_.keyDesc.size);
+                   g_testKeyV1.keyInfo_.keyDesc.size);
     arg.v1.contents_encryption_mode = FSCRYPT_MODE_AES_256_XTS;
     arg.v1.filenames_encryption_mode = FSCRYPT_MODE_AES_256_CTS;
     arg.v1.flags = FSCRYPT_POLICY_FLAGS_PAD_32;
@@ -505,7 +505,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_set, TestSize.Level1)
     (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
     arg.v2.version = FSCRYPT_POLICY_V2;
     (void)memcpy_s(arg.v2.master_key_identifier, FSCRYPT_KEY_IDENTIFIER_SIZE, g_testKeyV2.keyInfo_.keyId.data.get(),
-                  g_testKeyV2.keyInfo_.keyId.size);
+                   g_testKeyV2.keyInfo_.keyId.size);
     arg.v2.contents_encryption_mode = FSCRYPT_MODE_AES_256_XTS;
     arg.v2.filenames_encryption_mode = FSCRYPT_MODE_AES_256_CTS;
     arg.v2.flags = FSCRYPT_POLICY_FLAGS_PAD_32;

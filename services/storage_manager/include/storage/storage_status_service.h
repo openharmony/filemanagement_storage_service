@@ -37,7 +37,8 @@ public:
     int32_t GetCurrentBundleStats(BundleStats &bundleStats);
     int32_t GetBundleStats(const std::string &pkgName, int32_t userId, BundleStats &bundleStats);
     int32_t GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
-        const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes);
+        const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes,
+        std::vector<int64_t> &incPkgFileSizes);
 
 private:
     int GetCurrentUserId();

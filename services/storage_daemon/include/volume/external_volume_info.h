@@ -54,10 +54,14 @@ private:
 
     const std::string devPathDir_ = "/dev/block/%s";
     const std::string mountPathDir_ = "/mnt/data/external/%s";
-    std::vector<std::string> supportMountType_ = { "ext2", "ext3", "ext4", "ntfs", "exfat", "vfat" };
+    std::vector<std::string> supportMountType_ = { "ext2", "ext3", "ext4", "ntfs", "exfat", "vfat", "hmfs" };
     std::map<std::string, std::string> supportFormatType_ = {{"exfat", "mkfs.exfat"}, {"vfat", "newfs_msdos"}};
 
     int32_t ReadMetadata();
+    int32_t DoMount4Ext(uint32_t mountFlags);
+    int32_t DoMount4Ntfs(uint32_t mountFlags);
+    int32_t DoMount4Exfat(uint32_t mountFlags);
+    int32_t DoMount4OtherType(uint32_t mountFlags);
 };
 } // STORAGE_DAEMON
 } // OHOS

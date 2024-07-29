@@ -90,9 +90,11 @@ bool StorageManagerProxyGetFuzzTest(const uint8_t *data, size_t size)
     std::vector<Disk> vecOfDisk;
     std::vector<int64_t> incrementalBackTimes;
     std::vector<int64_t> pkgFileSizes;
+    std::vector<int64_t> incPkgFileSizes;
     std::vector<std::string> bundleName;
     incrementalBackTimes.push_back(metaData4);
     pkgFileSizes.push_back(metaData4);
+    incPkgFileSizes.push_back(metaData4);
     bundleName.push_back(metaData);
     proxy->GetAllVolumes(vecOfVol);
     proxy->GetAllDisks(vecOfDisk);
@@ -108,7 +110,7 @@ bool StorageManagerProxyGetFuzzTest(const uint8_t *data, size_t size)
     proxy->GetVolumeById(metaData, vc1);
     proxy->GetFreeSizeOfVolume(metaData, metaData4);
     proxy->GetTotalSizeOfVolume(metaData, metaData4);
-    proxy->GetBundleStatsForIncrease(userId, bundleName, incrementalBackTimes, pkgFileSizes);
+    proxy->GetBundleStatsForIncrease(userId, bundleName, incrementalBackTimes, pkgFileSizes, incPkgFileSizes);
     return true;
 }
 } // namespace StorageManager

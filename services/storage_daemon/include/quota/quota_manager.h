@@ -37,6 +37,7 @@ struct BundleStatsParas {
     std::string &bundleName;
     int64_t lastBackupTime;
     int64_t fileSizeSum;
+    int64_t incFileSizeSum;
 };
 uint32_t CheckOverLongPath(const std::string &path);
 class QuotaManager final {
@@ -49,7 +50,8 @@ public:
     int32_t GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size);
     int32_t SetQuotaPrjId(const std::string &path, int32_t prjId, bool inherit);
     int32_t GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
-        const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes);
+        const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes,
+        std::vector<int64_t> &incPkgFileSizes);
 private:
     QuotaManager() = default;
     DISALLOW_COPY_AND_MOVE(QuotaManager);
