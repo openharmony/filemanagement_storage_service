@@ -284,7 +284,8 @@ bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info
 bool MountManager::CheckMaps(const std::string &path, const std::string &prefix)
 {
     bool found = false;
-    if (!std::filesystem::exists(path)) {
+    std::filesystem::path filepath = std::filesystem::canonical(path);
+    if (!std::filesystem::exists(filepath)) {
         return false;
     }
     std::ifstream inputStream(path.c_str(), std::ios::in);
