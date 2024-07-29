@@ -213,7 +213,9 @@ int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath, bool 
 
 int32_t MountManager::FindProcess(int32_t userId)
 {
-    if (userId <= 0) return E_OK;
+    if (userId <= 0) {
+        return E_OK;
+    }
     LOGI("FindProcess start, userId is %{public}d", userId);
     Utils::MountArgument argument(Utils::MountArgumentDescriptors::Alpha(userId, ""));
     const string &prefix = argument.GetMountPointPrefix();
@@ -234,14 +236,18 @@ int32_t MountManager::FindProcess(int32_t userId)
                 break;
             }
         }
-        if (!isNum) continue;
+        if (!isNum) {
+            continue;
+        }
         std::string pidPath = "/proc/" + name;
         bool found = false;
         found |= CheckMaps(pidPath + "/maps", prefix);
         found |= CheckSymlink(pidPath + "/cwd", prefix);
         found |= CheckSymlink(pidPath + "/root", prefix);
         found |= CheckSymlink(pidPath + "/exe", prefix);
-        if (!found) continue;
+        if (!found) {
+            continue;
+        }
         std::string filename = "/proc/" + name + "/stat";
         ProcessInfo info;
         if (GetProcessInfo(filename, info)) {
@@ -258,7 +264,8 @@ bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info
         return false;
     }
     std::filesystem::path filepath = std::filesystem::canonical(filename);
-    if (!std::filesystem::exists(filepath)) {
+    std::error_code errCode;
+    if (!std::filesystem::exists(filepath, errCode)) {
         return false;
     }
     std::ifstream inputStream(filename.c_str(), std::ios::in);
@@ -284,8 +291,9 @@ bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info
 bool MountManager::CheckMaps(const std::string &path, const std::string &prefix)
 {
     bool found = false;
-    std::filesystem::path filepath = std::filesystem::canonical(path);
-    if (!std::filesystem::exists(filepath)) {
+    std::filesystem::path filepath = std::filesystem::canonical(path);\
+    std::error_code errCode;
+    if (!std::filesystem::exists(filepath, errCode)) {
         return false;
     }
     std::ifstream inputStream(path.c_str(), std::ios::in);
