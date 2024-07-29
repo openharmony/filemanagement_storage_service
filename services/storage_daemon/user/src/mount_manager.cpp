@@ -258,7 +258,7 @@ bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info
         return false;
     }
     std::filesystem::path filepath = std::filesystem::canonical(filename);
-    if (!std::filesystem::exits(filepath)) {
+    if (!std::filesystem::exists(filepath)) {
         return false;
     }
     std::ifstream inputStream(filename.c_str(), std::ios::in);
@@ -285,7 +285,7 @@ bool MountManager::CheckMaps(const std::string &path, const std::string &prefix)
 {
     bool found = false;
     std::filesystem::path filepath = std::filesystem::canonical(filename);
-    if (!std::filesystem::exits(filepath)) {
+    if (!std::filesystem::exists(filepath)) {
         return false;
     }
     std::ifstream inputStream(path.c_str(), std::ios::in);
