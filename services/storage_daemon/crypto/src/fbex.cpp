@@ -233,7 +233,7 @@ int FBEX::UninstallOrLockUserKeyToKernel(uint32_t userId, uint32_t type, uint8_t
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
     }
     close(fd);
-    LOGI("UninstallOrLockUserKeyToKernel success");
+    LOGI("success");
     return ret;
 }
 
@@ -257,7 +257,7 @@ int FBEX::DeleteClassEPinCode(uint32_t userIdSingle, uint32_t userIdDouble)
         ret = -errno;
     }
     close(fd);
-    LOGI("UninstallOrLockUserKeyForEL5ToKernel success");
+    LOGI("success");
     return ret;
 }
 
@@ -303,7 +303,7 @@ int FBEX::LockScreenToKernel(uint32_t userId)
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
     }
     close(fd);
-    LOGI("LockScreenToKernel success");
+    LOGI("success");
     return ret;
 }
 
@@ -337,7 +337,7 @@ int FBEX::GenerateAppkey(UserIdToFbeStr &userIdToFbe, uint32_t appUid, std::uniq
         return 0;
     }
     close(fd);
-    LOGI("GenerateAppkey success");
+    LOGI("success");
     return 0;
 }
 
@@ -444,12 +444,14 @@ int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uint
     } else {
         bufferSize = AES_256_HASH_RANDOM_SIZE;
     }
+
     auto errBuffer = memcpy_s(eBuffer, length, ops.eBuffer, bufferSize);
     if (errBuffer != EOK) {
         LOGE("memcpy failed %{public}d", errBuffer);
         return 0;
     }
     LOGI("ReadESecretToKernel success");
+
     return 0;
 }
 
@@ -486,7 +488,7 @@ int FBEX::WriteESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uin
         return -errno;
     }
     close(fd);
-    LOGI("WriteESecretToKernel success");
+    LOGI("success");
     return 0;
 }
 
