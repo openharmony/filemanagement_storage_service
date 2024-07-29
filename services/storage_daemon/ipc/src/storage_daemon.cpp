@@ -544,7 +544,7 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
         if (ret != E_OK) {
             LOGE("ActiveUserKey fail, userId %{public}u, type %{public}u, tok empty %{public}d sec empty %{public}d",
                  userId, EL2_KEY, token.empty(), secret.empty());
-            return E_ACTIVE_EL2;
+            return E_ACTIVE_EL2_FAILED;
         }
     }
     ret = ActiveUserKeyAndPrepareElX(userId, token, secret);
