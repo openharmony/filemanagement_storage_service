@@ -127,7 +127,7 @@ int32_t AncoKeyManager::CreatePolicyDir(const AncoDirInfo &ancoDirInfo,
 
     if (ancoDirInfo.policy == ANCO_TYPE_NONE && type == ANCO_TYPE_SYS_EL1) {
         if (!PrepareDir(ancoDirInfo.path, mode, uid, gid)) {
-            LOGE("Prepare dir failed, path = %{public}s", ancoDirInfo.path.c_str());
+            LOGE("Prepare dir failed");
             return E_PREPARE_DIR;
         }
     }
@@ -139,7 +139,7 @@ int32_t AncoKeyManager::CreatePolicyDir(const AncoDirInfo &ancoDirInfo,
             vec.push_back(fileList);
         }
         if (!PrepareDir(ancoDirInfo.path, mode, uid, gid)) {
-            LOGE("Prepare dir failed, path = %{public}s", ancoDirInfo.path.c_str());
+            LOGE("Prepare dir failed");
             return E_PREPARE_DIR;
         }
     }

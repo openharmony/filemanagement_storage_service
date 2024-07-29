@@ -545,7 +545,7 @@ int KeyManager::GenerateUserKeyByType(unsigned int user, KeyType type,
     uint64_t secureUid = { 0 };
     if (!secret.empty() && !token.empty()) {
         IamClient::GetInstance().GetSecureUid(user, secureUid);
-        LOGE("token is exist, get secure uid.");
+        LOGE("token is exist, get secure uid");
     }
     UserAuth auth = {.token = token, .secret = secret, .secureUid = 0};
     int ret = GenerateAndInstallUserKey(user, elUserKeyPath, auth, type);
