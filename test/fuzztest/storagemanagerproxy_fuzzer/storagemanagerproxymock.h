@@ -274,6 +274,10 @@ public:
     {
         return E_OK;
     }
+    int32_t GetLockedStatus(uint32_t userId) override
+    {
+        return E_OK;
+    }
 };
 } // namespace StorageManager
 } // namespace OHOS

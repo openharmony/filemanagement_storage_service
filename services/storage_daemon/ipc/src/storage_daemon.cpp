@@ -725,6 +725,15 @@ int32_t StorageDaemon::UMountDfsDocs(int32_t userId, const std::string &relative
     return MountManager::GetInstance()->UMountDfsDocs(userId, relativePath, networkId, deviceId);
 }
 
+int32_t StorageDaemon::GetLockedStatus(uint32_t userId)
+{
+#ifdef USER_CRYPTO_MANAGER
+    return KeyManager::GetInstance()->GetLockedStatus(userId);
+#else
+    return E_OK;
+#endif
+}
+
 static bool ReadFileToString(const std::string& pathInst, std::string& oldContent)
 {
     std::fstream fd;

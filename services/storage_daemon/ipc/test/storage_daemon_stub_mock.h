@@ -60,6 +60,7 @@ public:
         const std::vector<int64_t> &, std::vector<int64_t> &, std::vector<int64_t> &));
     MOCK_METHOD3(GenerateAppkey, int32_t (uint32_t, uint32_t, std::string &));
     MOCK_METHOD2(DeleteAppkey, int32_t (uint32_t, const std::string &));
+    MOCK_METHOD1(GetLockedStatus, int32_t (uint32_t));
 };
 }  // namespace StorageDaemon
 }  // namespace OHOS

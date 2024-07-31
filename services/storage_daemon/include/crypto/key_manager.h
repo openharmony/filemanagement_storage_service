@@ -79,6 +79,7 @@ public:
     int GenerateAppkey(uint32_t user, uint32_t appUid, std::string &keyId);
     int DeleteAppkey(uint32_t user, const std::string keyId);
     int UnlockUserAppKeys(uint32_t userId, bool needGetAllAppKey);
+    int GetLockedStatus(uint32_t userId);
 #ifdef USER_CRYPTO_MIGRATE_KEY
     int RestoreUserKey(uint32_t userId, KeyType type);
 #endif

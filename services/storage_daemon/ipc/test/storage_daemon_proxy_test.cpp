@@ -20,6 +20,7 @@
 #include "ipc/storage_daemon_proxy.h"
 #include "storage_daemon_service_mock.h"
 #include "storage_service_errno.h"
+#include "storage_service_log.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -671,6 +672,27 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_UpdateMemoryPara_001, Te
     ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_MEM_PARA) == mock_->code_);
 
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_UpdateMemoryPara_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProxyTest_GetLockedStatus_001
+ * @tc.desc: Verify the UpdateMemoryPara function.
+ * @tc.type: FUNC
+ * @tc.require: I8ZBB3
+ */
+HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_GetLockedStatus_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_GetLockedStatus_001 start";
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
+    ASSERT_TRUE(proxy_ != nullptr);
+    int32_t ret = proxy_->GetLockedStatus(USER_ID1);
+    ASSERT_TRUE(ret == E_OK);
+    ASSERT_TRUE(mock_ != nullptr);
+    int m=static_cast<int32_t>(StorageDaemonInterfaceCode::GET_LOCKED_STATUS);
+    ASSERT_TRUE(m == mock_->code_);
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_GetLockedStatus_001 end";
 }
 
 } // STORAGE_DAEMON

@@ -89,6 +89,7 @@ public:
         const std::string &networkId, const std::string &deviceId) = 0;
     virtual int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId) = 0;
+    virtual int32_t GetLockedStatus(uint32_t userId) = 0;
 
     DECLARE_INTERFACE_DESCRIPTOR(u"ohos.StorageDaemon");
 };

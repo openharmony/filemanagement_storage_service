@@ -4,7 +4,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -252,10 +252,8 @@ int32_t StorageDaemonClient::DeleteUserKeys(uint32_t userId)
     return client->DeleteUserKeys(userId);
 }
 
-int32_t StorageDaemonClient::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
-                                            const std::vector<uint8_t> &token,
-                                            const std::vector<uint8_t> &oldSecret,
-                                            const std::vector<uint8_t> &newSecret)
+int32_t StorageDaemonClient::UpdateUserAuth(uint32_t userId, uint64_t secureUid, const std::vector<uint8_t> &token,
+    const std::vector<uint8_t> &oldSecret, const std::vector<uint8_t> &newSecret)
 {
     if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
         LOGE("service check failed");
@@ -271,9 +269,8 @@ int32_t StorageDaemonClient::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
     return client->UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
 }
 
-int32_t StorageDaemonClient::ActiveUserKey(uint32_t userId,
-                                           const std::vector<uint8_t> &token,
-                                           const std::vector<uint8_t> &secret)
+int32_t StorageDaemonClient::ActiveUserKey(uint32_t userId, const std::vector<uint8_t> &token,
+    const std::vector<uint8_t> &secret)
 {
     if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
         LOGE("service check failed");
@@ -322,7 +319,7 @@ int32_t StorageDaemonClient::LockUserScreen(uint32_t userId)
 }
 
 int32_t StorageDaemonClient::UnlockUserScreen(uint32_t userId, const std::vector<uint8_t> &token,
-                                              const std::vector<uint8_t> &secret)
+    const std::vector<uint8_t> &secret)
 {
     if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
         LOGE("service check failed");
@@ -402,8 +399,8 @@ int32_t StorageDaemonClient::DeleteAppkey(uint32_t userId, const std::string key
     return client->DeleteAppkey(userId, keyId);
 }
 
-int32_t StorageDaemonClient::MountDfsDocs(int32_t userId, const std::string &relativePath,
-    const std::string &networkId, const std::string &deviceId)
+int32_t StorageDaemonClient::MountDfsDocs(int32_t userId, const std::string &relativePath, const std::string &networkId,
+    const std::string &deviceId)
 {
     if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
         LOGE("Storage service flag check failed!");
@@ -447,6 +444,22 @@ int32_t StorageDaemonClient::FscryptEnable(const std::string &fscryptOptions)
 #endif
 
     return 0;
+}
+
+int32_t StorageDaemonClient::GetLockedStatus(uint32_t userId)
+{
+    if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
+        LOGE("Storage service flag check failed!");
+        return -ENOENT;
+    }
+
+    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
+    if (client == nullptr) {
+        LOGE("Get StorageDaemon service failed!");
+        return -ENOENT;
+    }
+
+    return client->GetLockedStatus(userId);
 }
 } // namespace StorageDaemon
 } // namespace OHOS

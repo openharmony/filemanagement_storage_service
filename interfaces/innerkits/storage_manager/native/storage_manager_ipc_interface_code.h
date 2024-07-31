@@ -82,6 +82,7 @@ namespace StorageManager {
         GET_BUNDLE_STATS_INCREASE,
         GENERATE_APP_KEY,
         DELETE_APP_KEY,
+        GET_LOCKED_STATUS
     };
 } // namespace StorageManager
 } // namespace OHOS

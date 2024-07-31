@@ -209,6 +209,21 @@ static int32_t UnlockUserScreen(const std::vector<std::string> &args)
     return OHOS::StorageDaemon::StorageDaemonClient::UnlockUserScreen(userId, {}, {});
 }
 
+int32_t GetLockedStatus(const std::vector<std::string> &args)
+{
+    if (args.size() < ARG_CNT_4) {
+        LOGE("Parameter nums is less than 4, please retry");
+        return -EINVAL;
+    }
+    uint32_t userId;
+    // 3 means take the fourth argument of args
+    if (OHOS::StorageDaemon::StringToUint32(args[INDEX_3], userId) == false) {
+        LOGE("Parameter input error, please retry");
+        return -EINVAL;
+    }
+    return OHOS::StorageDaemon::StorageDaemonClient::GetLockedStatus(userId);
+}
+
 static int32_t EnableFscrypt(const std::vector<std::string> &args)
 {
     if (args.size() < ARG_CNT_4) {
@@ -286,6 +301,7 @@ static const auto g_fscryptCmdHandler = std::map<std::string,
     {"unlock_user_screen", UnlockUserScreen},
     {"generate_app_key", GenerateAppkey},
     {"delete_app_key", DeleteAppkey},
+    {"Get_unlock_status", GetLockedStatus},
 #endif
 };
 

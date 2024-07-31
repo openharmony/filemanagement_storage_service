@@ -61,6 +61,7 @@ public:
         const std::string &networkId, const std::string &deviceId);
     static int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId);
+    static int32_t GetLockedStatus(uint32_t userId);
 
 private:
     static sptr<IStorageDaemon> GetStorageDaemonProxy(void);

@@ -178,6 +178,8 @@ StorageManagerStub::StorageManagerStub()
         &StorageManagerStub::HandleMountDfsDocs;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::UMOUNT_DFS_DOCS)] =
         &StorageManagerStub::HandleUMountDfsDocs;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_LOCKED_STATUS)] =
+        &StorageManagerStub::HandleGetLockedStatus;
 }
 
 int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
@@ -281,6 +283,8 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
             return HandleGenerateAppkey(data, reply);
         case static_cast<uint32_t>(StorageManagerInterfaceCode::DELETE_APP_KEY):
             return HandleDeleteAppkey(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_LOCKED_STATUS):
+            return HandleGetLockedStatus(data, reply);
         default:
             LOGE("Cannot response request %d: unknown tranction", code);
             return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
@@ -838,6 +842,21 @@ int32_t StorageManagerStub::HandleLockUserScreen(MessageParcel &data, MessagePar
     }
     uint32_t userId = data.ReadUint32();
     int32_t err = LockUserScreen(userId);
+    if (!reply.WriteInt32(err)) {
+        LOGE("Write reply error code failed");
+        return E_WRITE_REPLY_ERR;
+    }
+
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleGetLockedStatus(MessageParcel &data, MessageParcel &reply)
+{
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    uint32_t userId = data.ReadUint32();
+    int32_t err = GetLockedStatus(userId);
     if (!reply.WriteInt32(err)) {
         LOGE("Write reply error code failed");
         return E_WRITE_REPLY_ERR;

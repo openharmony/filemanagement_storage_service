@@ -55,7 +55,8 @@ namespace StorageDaemon {
         GENERATE_APP_KEY,
         DELETE_APP_KEY,
         MOUNT_DFS_DOCS,
-        UMOUNT_DFS_DOCS
+        UMOUNT_DFS_DOCS,
+        GET_LOCKED_STATUS
     };
 } // namespace StorageDaemon
 } // namespace OHOS

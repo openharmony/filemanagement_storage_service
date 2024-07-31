@@ -202,6 +202,10 @@ public:
     {
         return E_OK;
     }
+    virtual int32_t GetLockedStatus(uint32_t userId) override
+    {
+        return E_OK;
+    }
 };
 } // namespace StorageDaemon
 } // namespace OHOS

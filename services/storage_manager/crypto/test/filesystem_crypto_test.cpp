@@ -376,5 +376,25 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_UpdateKeyContext_0001, tes
 
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_UpdateKeyContext_0001";
 }
+
+/**
+ * @tc.number: SUB_Storage_manager_crypto_GetLockedStatus_0000
+ * @tc.name: Storage_manager_crypto_GetLockedStatus_0000
+ * @tc.desc: Test function of GetLockedStatus interface for Parameters ERROR which userId not in [101, 1099].
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_GetLockedStatus_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileSystemCryptoTest-start Storage_manager_crypto_UpdateKeyContext_0001";
+    std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
+        DelayedSingleton<FileSystemCrypto>::GetInstance();
+    uint32_t userId = 9999;
+    uint32_t ret = fileSystemCrypto_->GetLockedStatus(userId);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_GetLockedStatus_0000";
+}
 }
 }
