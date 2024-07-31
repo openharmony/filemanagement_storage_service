@@ -169,7 +169,7 @@ void DiskManager::DestroyDisk(dev_t device)
 std::shared_ptr<DiskInfo> DiskManager::GetDisk(dev_t device)
 {
     for (auto &diskInfo : disk_) {
-        if (diskInfo != nullptr && diskInfo->GetDevice() == device) {
+        if ((diskInfo != nullptr) && (diskInfo->GetDevice() == device)) {
             return diskInfo;
         }
     }
