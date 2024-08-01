@@ -1187,4 +1187,53 @@ HWTEST_F(CryptoKeyTest, fscrypt_libfscrypt_api, TestSize.Level1)
     EXPECT_NE(0, FscryptSetSysparam("2:abs-256-cts:bad-param"));
     EXPECT_NE(0, FscryptSetSysparam(NULL));
 }
+
+/**
+ * @tc.name: huks_master_encrypt_key
+ * @tc.desc: Verify the HuksMaster EncryptKey and DecrptyKey
+ * @tc.type: FUNC
+ * @tc.require: SR000H0CM9
+ */
+HWTEST_F(CryptoKeyTest, huks_master_encrypt_key, TestSize.Level1)
+{
+    HuksMaster huksMaster = HuksMaster::GetInstance();
+    ASSERT_TRUE(huksMaster != nullptr);
+
+    KeyContext ctx;
+    const UserAuth auth;
+    const KeyInfo key;
+    bool isNeedNewNonce = false;
+    KeyBlob rnd;
+
+    bool ret = huksMaster->EncryptKey(ctx, auth, key, isNeedNewNonce);
+    EXPECT_FALSE(ret);
+
+    ret = huksMaster->EncryptKeyEx(auth, rnd, ctx);
+    EXPECT_FALSE(ret);
+
+    ret = huksMaster->DecryptKey(ctx, auth, key, isNeedNewNonce);
+    EXPECT_FALSE(ret);
+
+    ret = huksMaster->DecryptKeyEx(ctx, auth, rnd);
+    EXPECT_FALSE(ret);
+}
+
+/**
+ * @tc.name: openssl_crypto_aes_encrypt
+ * @tc.desc: Verify the OpensslCrypto AESEncrypt and AESDecrypt
+ * @tc.type: FUNC
+ * @tc.require: SR000H0CM9
+ */
+HWTEST_F(CryptoKeyTest, huks_master_encrypt_key, TestSize.Level1)
+{
+    const KeyBlob preKey;
+    KeyContext keyContext;
+    KeyBlob plainText;
+
+    bool ret = OpensslCrypto::AESEncrypt(preKey, plainText, keyContext);
+    EXPECT_FALSE(ret);
+
+    ret = OpensslCrypto::AESDecrypt(preKey, keyContext, plainText);
+    EXPECT_FALSE(ret);
+}
 }
