@@ -19,6 +19,7 @@ ohos_unittest("AncoKeyManagerTest") {
   defines = [
     "STORAGE_LOG_TAG = \"StorageDaemon\"",
     "LOG_DOMAIN = 0xD004301",
+    "private=public",
   ]
 
   include_dirs = [
