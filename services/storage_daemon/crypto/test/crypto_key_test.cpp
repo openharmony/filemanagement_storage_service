@@ -1196,7 +1196,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_libfscrypt_api, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, huks_master_encrypt_key, TestSize.Level1)
 {
-    HuksMaster huksMaster = HuksMaster::GetInstance();
+    HuksMaster *huksMaster = HuksMaster::GetInstance();
     ASSERT_TRUE(huksMaster != nullptr);
 
     KeyContext ctx;
