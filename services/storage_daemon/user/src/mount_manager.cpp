@@ -241,7 +241,7 @@ int32_t MountManager::FindAndKillProcess(int userId)
         if (!isNum) {
             continue;
         }
-        std::string pidPath = "/pro/" + name;
+        std::string pidPath = "/proc/" + name;
         if (!PidUsingFlag(pidPath, prefix)) {
             continue;
         }
