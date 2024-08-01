@@ -15,6 +15,7 @@
 
 #include "key_manager.h"
 
+#include <fcntl.h>
 #include <filesystem>
 #include <string>
 
@@ -41,6 +42,7 @@ namespace OHOS {
 namespace StorageDaemon {
 const UserAuth NULL_KEY_AUTH = {};
 const std::string DEFAULT_NEED_RESTORE_VERSION = "1";
+constexpr const char *UECE_PATH = "/dev/fbex_uece";
 
 std::shared_ptr<BaseKey> KeyManager::GetBaseKey(const std::string& dir)
 {
@@ -1110,7 +1112,7 @@ int KeyManager::DeleteAppkey(uint32_t userId, const std::string keyId)
 
 int KeyManager::UnlockUserAppKeys(uint32_t userId, bool needGetAllAppKey)
 {
-    if (!saveESecretStatus[userId]) {
+    if (!IsUeceSupport()) {
         LOGI("E type is not support");
         return E_OK;
     }
@@ -1360,6 +1362,21 @@ int KeyManager::UpdateKeyContext(uint32_t userId)
     }
     LOGI("Basekey update key context success");
     return 0;
+}
+
+bool KeyManager::IsUeceSupport()
+{
+    int fd = open(UECE_PATH, O_RDWR);
+    if (fd < 0) {
+        if (errno == ENOENT) {
+            LOGE("uece does not support !");
+        }
+        LOGE("open uece failed, errno : %{public}d", errno);
+        return false;
+    }
+    close(fd);
+    LOGI("uece is support.");
+    return true;
 }
 
 int KeyManager::UpgradeKeys(const std::vector<FileList> &dirInfo)

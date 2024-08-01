@@ -121,6 +121,7 @@ private:
                                       const std::vector<uint8_t> &secret, std::shared_ptr<BaseKey> elKey);
     int InactiveUserElKey(unsigned int user, std::map<unsigned int, std::shared_ptr<BaseKey>> &userElxKey_);
     int CheckAndDeleteEmptyEl5Directory(std::string keyDir, unsigned int user);
+    bool IsUeceSupport();
 
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl1Key_;
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl2Key_;
