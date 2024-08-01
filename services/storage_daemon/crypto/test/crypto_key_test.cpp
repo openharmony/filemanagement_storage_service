@@ -1190,31 +1190,43 @@ HWTEST_F(CryptoKeyTest, fscrypt_libfscrypt_api, TestSize.Level1)
 
 /**
  * @tc.name: huks_master_encrypt_key
- * @tc.desc: Verify the HuksMaster EncryptKey and DecrptyKey
+ * @tc.desc: Verify the HuksMaster EncryptKey
  * @tc.type: FUNC
  * @tc.require: SR000H0CM9
  */
 HWTEST_F(CryptoKeyTest, huks_master_encrypt_key, TestSize.Level1)
 {
-    HuksMaster *huksMaster = HuksMaster::GetInstance();
-    ASSERT_TRUE(huksMaster != nullptr);
-
     KeyContext ctx;
     const UserAuth auth;
     const KeyInfo key;
     bool isNeedNewNonce = false;
     KeyBlob rnd;
 
-    bool ret = huksMaster->EncryptKey(ctx, auth, key, isNeedNewNonce);
+    bool ret = HuksMaster::GetInstance().EncryptKey(ctx, auth, key, isNeedNewNonce);
     EXPECT_FALSE(ret);
 
-    ret = huksMaster->EncryptKeyEx(auth, rnd, ctx);
+    ret = HuksMaster::GetInstance().EncryptKeyEx(auth, rnd, ctx);
+    EXPECT_FALSE(ret);
+}
+
+/**
+ * @tc.name: huks_master_decrypt_key
+ * @tc.desc: Verify the HuksMaster DecrptyKey
+ * @tc.type: FUNC
+ * @tc.require: SR000H0CM9
+ */
+HWTEST_F(CryptoKeyTest, huks_master_decrypt_key, TestSize.Level1)
+{
+    KeyContext ctx;
+    const UserAuth auth;
+    KeyInfo key;
+    bool isNeedNewNonce = false;
+    KeyBlob rnd;
+
+    bool ret = HuksMaster::GetInstance().DecryptKey(ctx, auth, key, isNeedNewNonce);
     EXPECT_FALSE(ret);
 
-    ret = huksMaster->DecryptKey(ctx, auth, key, isNeedNewNonce);
-    EXPECT_FALSE(ret);
-
-    ret = huksMaster->DecryptKeyEx(ctx, auth, rnd);
+    ret = HuksMaster::GetInstance().DecryptKeyEx(ctx, auth, rnd);
     EXPECT_FALSE(ret);
 }
 
