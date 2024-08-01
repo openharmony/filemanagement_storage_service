@@ -101,7 +101,7 @@ HWTEST_F(AncoKeyManagerTest, Set_Anco_Directory_El_Policy_utils_003, TestSize.Le
     GTEST_LOG_(INFO) << "AnKeyManagerTest_SetAnDirectoryElpolicy_0300 start";
     const std::string path = "/data/virt_serivce/rgm_manager/rgm_homs/config/storage/direnc.json";
     const std::string policyType = "encryption=Require_Sys_EL1";
-    const uint32_t user = 0;
+    uint32_t user = 0;
     auto result = AncoKeyManager::GetInstance()->SetAncoDirectoryElPolicy(path, policyType, user);
     EXPECT_EQ(result, OHOS::E_OK);
     user = 100;
@@ -121,8 +121,8 @@ HWTEST_F(AncoKeyManagerTest, Read_File_And_Create_Dir_utils_001, TestSize.Level1
     GTEST_LOG_(INFO) << "AnKeyManagerTest_ReadFileAndCreateDir_0100 start";
     const std::string path = "";
     const std::string policyType = "";
-    const uint32_t user = 0;
-    auto result = AncoKeyManager::GetInstance()->ReadFileAndCreateDir(path, policyType, user);
+    std::vector<FileList> fileList = {};
+    auto result = AncoKeyManager::GetInstance()->ReadFileAndCreateDir(path, policyType, fileList);
     EXPECT_EQ(result, OHOS::E_JSON_PARSE_ERROR);
     GTEST_LOG_(INFO) << "AnKeyManagerTest_ReadFileAndCreateDir_0100 end";
 }
@@ -138,8 +138,8 @@ HWTEST_F(AncoKeyManagerTest, Read_File_And_Create_Dir_utils_002, TestSize.Level1
     GTEST_LOG_(INFO) << "AnKeyManagerTest_ReadFileAndCreateDir_0200 start";
     const std::string path = "/data/virt_serivce/rgm_manager/rgm_homs/config/storage/test.json";
     const std::string policyType = "encryption=Require_Sys_EL1";
-    const uint32_t user = 0;
-    auto result = AncoKeyManager::GetInstance()->ReadFileAndCreateDir(path, policyType, user);
+    std::vector<FileList> fileList = {};
+    auto result = AncoKeyManager::GetInstance()->ReadFileAndCreateDir(path, policyType, fileList);
     EXPECT_NE(result, OHOS::E_OK);
     GTEST_LOG_(INFO) << "AnKeyManagerTest_ReadFileAndCreateDir_0200 end";
 }
