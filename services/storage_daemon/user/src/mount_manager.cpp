@@ -211,7 +211,7 @@ int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath, bool 
     return E_OK;
 }
 
-int32_t MountManager::FindProcess(int32_t userId)
+int32_t MountManager::FindAndKillProcess(int userId)
 {
     if (userId <= 0) {
         return E_OK;
@@ -219,15 +219,17 @@ int32_t MountManager::FindProcess(int32_t userId)
     LOGI("FindProcess start, userId is %{public}d", userId);
     Utils::MountArgument argument(Utils::MountArgumentDescriptors::Alpha(userId, ""));
     const string &prefix = argument.GetMountPointPrefix();
-    DIR *dir = opendir("/proc");
-    if (dir == nullptr) {
+    auto procDir = std::unique_ptr<DIR, int (*)(DTR*)>(opendir("/proc"), closedir);
+    if (!procDir) {
         LOGE("failed to open dir proc, err %{public}d", errno);
         return -errno;
     }
     std::vector<ProcessInfo> processInfos;
     struct dirent *entry;
-    while ((entry = readdir(dir)) != nullptr) {
-        if (entry->d_type != DT_DIR) continue;
+    while ((entry = readdir(procDir.get())) != nullptr) {
+        if (entry->d_type != DT_DIR) {
+            continue;
+        }
         std::string name = entry->d_name;
         bool isNum = true;
         for (char c : name) {
@@ -239,13 +241,8 @@ int32_t MountManager::FindProcess(int32_t userId)
         if (!isNum) {
             continue;
         }
-        std::string pidPath = "/proc/" + name;
-        bool found = false;
-        found |= CheckMaps(pidPath + "/maps", prefix);
-        found |= CheckSymlink(pidPath + "/cwd", prefix);
-        found |= CheckSymlink(pidPath + "/root", prefix);
-        found |= CheckSymlink(pidPath + "/exe", prefix);
-        if (!found) {
+        std::string pidPath = "/pro/" + name;
+        if (!PidUsingFlag(pidPath, prefix)) {
             continue;
         }
         std::string filename = "/proc/" + name + "/stat";
@@ -255,7 +252,43 @@ int32_t MountManager::FindProcess(int32_t userId)
             processInfos.push_back(info);
         }
     }
+    KillProcess(processInfo);
     return E_OK;
+}
+
+bool MountManager::PidUsingFlag(int &pidPath, const int &prefix)
+{
+    bool found = false;
+    found |= CheckMaps(pidPath + "/maps", prefix);
+    found |= CheckMaps(pidPath + "/cwd", prefix);
+    found |= CheckMaps(pidPath + "/root", prefix);
+    found |= CheckMaps(pidPath + "/exe", prefix);
+
+    std::string fdPath = pidPath + "/fd";
+    auto fdDir = std::unique_ptr<DIR, int (*)(DIR*)>(opendir(fdPath.c_str()), closedir);
+    if (!fdDir) {
+        LOGE("unable to open %{public}s, err %{public}d", fdPath.c_str(), error);
+    } else {
+        struct dirent* fdDirent;
+        while ((fdDirent = readdir(fdDir.get())) != nullptr) {
+            if (fdDirent->d_type != DT_LNK) {
+                continue;
+            }
+            found |= CheckSymlink(fdPath + "/" +fdDirent->d_name, prefix)
+        }
+    }
+    return found;
+}
+
+void MountManager::KillProcess(int &processInfo)
+{
+    if (processInfo.empty()) {
+        return;
+    }
+    for (const auto &item: processInfo) {
+        LOGI("KILL PID %{public}d", item.pid);
+        kill(item.pid, SIGKILL);
+    }
 }
 
 bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info)
@@ -276,6 +309,7 @@ bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info
     std::string line;
     std::getline(inputStream, line);
     if (line.empty()) {
+        inputStream.close();
         return false;
     }
     std::stringstream ss(line);
@@ -284,6 +318,7 @@ bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info
     std::string processName;
     ss >> processName;
     info.pid = std::stoi(pid);
+    inputStream.close();
     info.name = processName;
     return true;
 }
@@ -299,6 +334,7 @@ bool MountManager::CheckMaps(const std::string &path, const std::string &prefix)
     std::ifstream inputStream(path.c_str(), std::ios::in);
     if (!inputStream.is_open()) {
         LOGE("unable to open %{public}s, err %{public}d", path.c_str(), errno);
+        return false;
     }
     std::string tmpLine;
     while (std::getline(inputStream, tmpLine)) {
@@ -312,6 +348,7 @@ bool MountManager::CheckMaps(const std::string &path, const std::string &prefix)
             }
         }
     }
+    inputStream.close();
     return found;
 }
 
@@ -814,15 +851,24 @@ int32_t MountManager::LocalUMount(int32_t userId)
 
 int32_t MountManager::UmountByUser(int32_t userId)
 {
-    FindProcess(userId);
-    int32_t count = 0;
-    while (count < UMOUNT_RETRY_TIMES) {
-        int32_t err = E_OK;
-        if (!SupportHmdfs()) {
-            err = LocalUMount(userId);
-        } else {
+    LOGI("umount hmdfs mount point start.")FindProcess(userId);
+    int32_t err = E_OK;
+    if (!SupportHmdfs()) {
+        err = LocalUMount(userId);
+    } else {
+        err = UMountAllPath(userId);
+        if (err != E_OK) {
+            FindAndKillProcess(userId);
             err = UMountAllPath(userId);
         }
+    }
+    if (err != E_OK) {
+        LOGE("failed to umount hmdfs mount point, err %{public}d", err);
+        return E_UMOUNT;
+    }
+    LOGI("umount cloud mount point start.")
+    int32_t count = 0;
+    while (count < UMOUNT_RETRY_TIMES) {
         err = CloudUMount(userId);
         if (err == E_OK) {
             break;
@@ -830,7 +876,7 @@ int32_t MountManager::UmountByUser(int32_t userId)
             count++;
             continue;
         }
-        LOGE("failed to umount hmdfs, errno %{public}d", errno);
+        LOGE("failed to umount cloud mount point, err %{public}d", err);
         return E_UMOUNT;
     }
     return E_OK;

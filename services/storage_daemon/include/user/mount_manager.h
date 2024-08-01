@@ -54,6 +54,9 @@ constexpr uid_t OID_HWID = 7008;
 constexpr uid_t OID_DLP_CREDENTIAL = 3553;
 constexpr uid_t USER_ID_BASE = 200000;
 
+// Proprietary service, not for open
+constexpr uid_t OLD_TRUSTED_RING
+
 class MountManager final {
 public:
     MountManager();
@@ -79,10 +82,12 @@ public:
     int32_t FindMountPointsToMap(std::map<std::string, std::list<std::string>> &mountMap, int32_t userId);
     void MountPointToList(std::list<std::string> &hmdfsList, std::list<std::string> &hmfsList,
         std::list<std::string> &sharefsList, std::string &line, int32_t userId);
-    int32_t FindProcess(int32_t userId);
+    int32_t FindAndKillProcess(int32_t userId);
     bool CheckMaps(const std::string &path, const std::string &prefix);
     bool CheckSymlink(const std::string &path, const std::string &prefix);
     bool GetProcessInfo(const std::string &filename, ProcessInfo &info);
+    void KillProcess(std::vector<ProcessInfo> &processInfo);
+    bool PidUsingFlag(std::string &pidPath, const std::string &prefix);
 
 private:
     bool SupportHmdfs();
