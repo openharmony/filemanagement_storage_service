@@ -643,6 +643,11 @@ int KeyManager::DeleteUserKeys(unsigned int user)
     int ret = DoDeleteUserKeys(user);
     LOGI("delete user key end");
 
+    auto userTask = userLockScreenTask_.find(user);
+    if (userTask != userLockScreenTask_.end()) {
+        userLockScreenTask_.erase(userTask);
+        LOGI("Delete user %{public}u, erase user task", user);
+    }
     return ret;
 }
 
@@ -981,6 +986,22 @@ int KeyManager::CheckAndDeleteEmptyEl5Directory(std::string keyDir, unsigned int
     return 0;
 }
 
+bool KeyManager::GetUserDelayHandler(uint32_t userId, std::shared_ptr<DelayHandler> &delayHandler)
+{
+    LOGI("enter");
+    auto iterTask = userLockScreenTask_.find(userId);
+    if (iterTask == userLockScreenTask_.end()) {
+        std::shared_ptr<DelayHandler> lockScreenTask = std::make_shared<DelayHandler>(userId);
+        userLockScreenTask_[userId] = std::make_shared<DelayHandler>(userId);
+    }
+    delayHandler = userLockScreenTask_[userId];
+    if (delayHandler == nullptr) {
+        LOGE("user %{public}d delayHandler is nullptr !", userId);
+        return false;
+    }
+    return true;
+}
+
 int KeyManager::ActiveUeceUserKey(unsigned int user,
                                        const std::vector<uint8_t> &token,
                                        const std::vector<uint8_t> &secret, std::shared_ptr<BaseKey> elKey)
@@ -1025,6 +1046,10 @@ int KeyManager::ActiveElXUserKey(unsigned int user,
 int KeyManager::UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret)
 {
     LOGI("start");
+    std::shared_ptr<DelayHandler> userDelayHandler;
+    if (GetUserDelayHandler(user, userDelayHandler)) {
+        userDelayHandler->CancelDelayTask();
+    }
     auto iter = saveLockScreenStatus.find(user);
     if (iter == saveLockScreenStatus.end()) {
         saveLockScreenStatus.insert(std::make_pair(user, false));
@@ -1182,6 +1207,11 @@ int KeyManager::InActiveUserKey(unsigned int user)
         LOGE("Inactive userEl4Key_ failed");
         return ret;
     }
+    auto userTask = userLockScreenTask_.find(user);
+    if (userTask != userLockScreenTask_.end()) {
+        userLockScreenTask_.erase(userTask);
+        LOGI("InActive user %{public}u, erase user task", user);
+    }
     return 0;
 }
 
@@ -1232,9 +1262,9 @@ int KeyManager::LockUserScreen(uint32_t user)
         return -ENOENT;
     }
     auto elKey = userEl4Key_[user];
-    if (!elKey->LockUserScreen(user, FSCRYPT_SDP_ECE_CLASS)) {
-        LOGE("Clear user %{public}u key failed", user);
-        return -EFAULT;
+    std::shared_ptr<DelayHandler> userDelayHandler;
+    if (GetUserDelayHandler(user, userDelayHandler)) {
+        userDelayHandler->StartDelayTask(elKey);
     }
 
     saveLockScreenStatus[user] = false;
