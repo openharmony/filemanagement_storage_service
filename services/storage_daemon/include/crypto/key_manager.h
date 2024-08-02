@@ -123,6 +123,7 @@ private:
     int InactiveUserElKey(unsigned int user, std::map<unsigned int, std::shared_ptr<BaseKey>> &userElxKey_);
     int CheckAndDeleteEmptyEl5Directory(std::string keyDir, unsigned int user);
     bool GetUserDelayHandler(uint32_t userId, std::shared_ptr<DelayHandler> &delayHandler);
+    bool IsUeceSupport();
 
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl1Key_;
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl2Key_;
