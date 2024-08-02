@@ -27,10 +27,6 @@ class StorageRlMap : public NoCopyable {
 public:
     StorageRlMap() {}
     ~StorageRlMap() {}
-    V& operator[](const K& key)
-    {
-        return map_[key];
-    }
     V ReadVal(const K& key)
     {
         Utils::UniqueWriteGuard<Utils::RWLock> mapGuard(this->rl_);

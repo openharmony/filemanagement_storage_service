@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -26,12 +26,12 @@ public:
     StorageDaemonProxy(const sptr<IRemoteObject> &impl);
     virtual int32_t Shutdown() override;
 
-    virtual int32_t Mount(std::string volId, uint32_t flags) override;
-    virtual int32_t UMount(std::string volId) override;
-    virtual int32_t Check(std::string volId) override;
-    virtual int32_t Format(std::string volId, std::string fsType) override;
-    virtual int32_t Partition(std::string diskId, int32_t type) override;
-    virtual int32_t SetVolumeDescription(std::string volId, std::string description) override;
+    virtual int32_t Mount(const std::string &volId, uint32_t flags) override;
+    virtual int32_t UMount(const std::string &volId) override;
+    virtual int32_t Check(const std::string &volId) override;
+    virtual int32_t Format(const std::string &volId, const std::string &fsType) override;
+    virtual int32_t Partition(const std::string &diskId, int32_t type) override;
+    virtual int32_t SetVolumeDescription(const std::string &volId, const std::string &description) override;
 
     virtual int32_t StartUser(int32_t userId) override;
     virtual int32_t StopUser(int32_t userId) override;
@@ -52,14 +52,14 @@ public:
                                   const std::vector<uint8_t> &secret) override;
     virtual int32_t InactiveUserKey(uint32_t userId) override;
     virtual int32_t UpdateKeyContext(uint32_t userId) override;
+    virtual int32_t MountCryptoPathAgain(uint32_t userId) override;
     virtual int32_t LockUserScreen(uint32_t userId) override;
     virtual int32_t UnlockUserScreen(uint32_t userId,
                                      const std::vector<uint8_t> &token,
                                      const std::vector<uint8_t> &secret) override;
     virtual int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus) override;
-    virtual int32_t MountCryptoPathAgain(uint32_t userId) override;
     virtual int32_t GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId) override;
-    virtual int32_t DeleteAppkey(uint32_t userId, const std::string keyId) override;
+    virtual int32_t DeleteAppkey(uint32_t userId, const std::string &keyId) override;
 
     // app file share api
     virtual std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,
@@ -71,7 +71,8 @@ public:
     virtual int32_t GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size) override;
     virtual int32_t UpdateMemoryPara(int32_t size, int32_t &oldSize) override;
     virtual int32_t GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
-        const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes) override;
+        const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes,
+        std::vector<int64_t> &incPkgFileSizes) override;
     virtual int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId) override;
     virtual int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,

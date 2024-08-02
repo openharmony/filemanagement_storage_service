@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -60,10 +60,10 @@ private:
     int32_t HandleActiveUserKey(MessageParcel &data, MessageParcel &reply);
     int32_t HandleInactiveUserKey(MessageParcel &data, MessageParcel &reply);
     int32_t HandleUpdateKeyContext(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleMountCryptoPathAgain(MessageParcel &data, MessageParcel &reply);
     int32_t HandleLockUserScreen(MessageParcel &data, MessageParcel &reply);
     int32_t HandleUnlockUserScreen(MessageParcel &data, MessageParcel &reply);
     int32_t HandleGetLockScreenStatus(MessageParcel &data, MessageParcel &reply);
-    int32_t HandleMountCryptoPathAgain(MessageParcel &data, MessageParcel &reply);
     int32_t HandleGenerateAppkey(MessageParcel &data, MessageParcel &reply);
     int32_t HandleDeleteAppkey(MessageParcel &data, MessageParcel &reply);
 

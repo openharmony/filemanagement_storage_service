@@ -53,12 +53,12 @@ public:
                           const std::vector<uint8_t> &secret);
     int32_t InactiveUserKey(uint32_t userId);
     int32_t UpdateKeyContext(uint32_t userId);
+    int32_t MountCryptoPathAgain(int32_t userId);
     int32_t LockUserScreen(uint32_t userId);
     int32_t UnlockUserScreen(uint32_t userId,
                              const std::vector<uint8_t> &token,
                              const std::vector<uint8_t> &secret);
     int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus);
-    int32_t MountCryptoPathAgain(int32_t userId);
     int32_t GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId);
     int32_t DeleteAppkey(uint32_t userId, const std::string keyId);
 
@@ -74,7 +74,8 @@ public:
     int32_t UpdateMemoryPara(int32_t size, int32_t &oldSize);
 
     int32_t GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
-        const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes);
+        const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes,
+        std::vector<int64_t> &incPkgFileSizes);
 
     // dfs service
     int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,

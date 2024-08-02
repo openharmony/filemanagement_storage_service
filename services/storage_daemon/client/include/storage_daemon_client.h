@@ -55,12 +55,12 @@ public:
                                     const std::vector<uint8_t> &token,
                                     const std::vector<uint8_t> &secret);
     static int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus);
+    static int32_t GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId);
+    static int32_t DeleteAppkey(uint32_t userId, const std::string keyId);
     static int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId);
     static int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId);
-    static int32_t GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId);
-    static int32_t DeleteAppkey(uint32_t userId, const std::string keyId);
 
 private:
     static sptr<IStorageDaemon> GetStorageDaemonProxy(void);

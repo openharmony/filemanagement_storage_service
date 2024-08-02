@@ -19,7 +19,6 @@
 #include <string>
 
 #include "base_key.h"
-#include "common_timer_errors.h"
 #include "directory_ex.h"
 #include "file_ex.h"
 #include "fscrypt_key_v1.h"
@@ -213,19 +212,34 @@ int KeyManager::GenerateAndInstallEl5Key(uint32_t userId, const std::string &dir
     if (elKey == nullptr) {
         return -EOPNOTSUPP;
     }
-    if (elKey->AddClassE(FIRST_CREATE_KEY) == false) {
-        DoDeleteUserKeys(userId);
+    bool isNeedEncryptClassE = true;
+    saveESecretStatus[userId] = true;
+    if (elKey->AddClassE(isNeedEncryptClassE, saveESecretStatus[userId], FIRST_CREATE_KEY) == false) {
+        elKey->ClearKey();
         LOGE("user %{public}u el5 create error", userId);
         return -EFAULT;
     }
-    if ((!auth.secret.IsEmpty() && !auth.token.IsEmpty()) &&
-        (!elKey->EncryptClassE(auth, saveESecretStatus[userId], userId, USER_ADD_AUTH))) {
-        DoDeleteUserKeys(userId);
-        LOGE("user %{public}u el5 create error", userId);
-        return -EFAULT;
+    std::string keyDir = GetKeyDirByUserAndType(userId, EL5_KEY);
+    if (keyDir == "") {
+        return E_KEY_TYPE_INVAL;
+    }
+    if (!saveESecretStatus[userId]) {
+        OHOS::ForceRemoveDirectory(keyDir);
+    }
+    saveESecretStatus[userId] = (!auth.secret.IsEmpty() && !auth.token.IsEmpty());
+    if (isNeedEncryptClassE) {
+        if ((!auth.secret.IsEmpty() && !auth.token.IsEmpty()) &&
+            !elKey->EncryptClassE(auth, saveESecretStatus[userId], userId, USER_ADD_AUTH)) {
+            elKey->ClearKey();
+            LOGE("user %{public}u el5 create error", userId);
+            return -EFAULT;
+        }
+    } else {
+        if (!elKey->DecryptClassE(auth, saveESecretStatus[userId], userId, USER_UNLOCK)) {
+            LOGE("user %{public}u decrypt error", userId);
+        }
     }
     userEl5Key_[userId] = elKey;
-    saveESecretStatus[userId] = false;
     return 0;
 }
 
@@ -276,33 +290,40 @@ int KeyManager::RestoreUserKey(uint32_t userId, const std::string &dir, const Us
 bool KeyManager::HasElkey(uint32_t userId, KeyType type)
 {
     LOGI("enter");
-    if (type == EL1_KEY) {
-        if (userEl1Key_.find(userId) != userEl1Key_.end()) {
-            LOGD("user el1 key has existed");
-            return true;
-        }
-    } else if (type == EL2_KEY) {
-        if (userEl2Key_.find(userId) != userEl2Key_.end()) {
-            LOGD("user el2 key has existed");
-            return true;
-        }
-    } else if (type == EL3_KEY) {
-        if (userEl3Key_.find(userId) != userEl3Key_.end()) {
-            LOGD("user el3 key has existed");
-            return true;
-        }
-    } else if (type == EL4_KEY) {
-        if (userEl4Key_.find(userId) != userEl4Key_.end()) {
-            LOGD("user el4 key has existed");
-            return true;
-        }
-    } else if (type == EL5_KEY) {
-        if (userEl5Key_.find(userId) != userEl5Key_.end()) {
-            LOGD("user el5 key has existed");
-            return true;
-        }
-    } else {
-        LOGE("key type error");
+    switch (type) {
+        case EL1_KEY:
+            if (userEl1Key_.find(userId) != userEl1Key_.end()) {
+                LOGD("user el1 key has existed");
+                return true;
+            }
+            break;
+        case EL2_KEY:
+            if (userEl2Key_.find(userId) != userEl2Key_.end()) {
+                LOGD("user el2 key has existed");
+                return true;
+            }
+            break;
+        case EL3_KEY:
+            if (userEl3Key_.find(userId) != userEl3Key_.end()) {
+                LOGD("user el3 key has existed");
+                return true;
+            }
+            break;
+        case EL4_KEY:
+            if (userEl4Key_.find(userId) != userEl4Key_.end()) {
+                LOGD("user el4 key has existed");
+                return true;
+            }
+            break;
+        case EL5_KEY:
+            if (userEl5Key_.find(userId) != userEl5Key_.end()) {
+                LOGD("user el5 key has existed");
+                return true;
+            }
+            break;
+        default:
+            LOGE("key type error");
+            break;
     }
 
     return false;
@@ -353,7 +374,7 @@ int KeyManager::LoadAllUsersEl1Key(void)
     dirInfo.clear();
     ReadDigitDir(USER_EL1_DIR, dirInfo);
     UpgradeKeys(dirInfo);
-    for (auto item : dirInfo) {
+    for (auto &item : dirInfo) {
         if (RestoreUserKey(item.userId, item.path, NULL_KEY_AUTH, EL1_KEY) != 0) {
             LOGE("user %{public}u el1 key restore error", item.userId);
         }
@@ -545,9 +566,9 @@ int KeyManager::GenerateUserKeyByType(unsigned int user, KeyType type,
     uint64_t secureUid = { 0 };
     if (!secret.empty() && !token.empty()) {
         IamClient::GetInstance().GetSecureUid(user, secureUid);
-        LOGE("token is exist, get secure uid.");
+        LOGE("token is exist, get secure uid");
     }
-    UserAuth auth = {.token = token, .secret = secret, .secureUid = 0};
+    UserAuth auth = { .token = token, .secret = secret, .secureUid = secureUid };
     int ret = GenerateAndInstallUserKey(user, elUserKeyPath, auth, type);
     if (ret) {
         LOGE("user el create error, user %{public}u, type %{public}u", user, type);
@@ -682,7 +703,7 @@ int KeyManager::UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSe
         return -ENOENT;
     }
     if (tokenSecret.newSecret.empty()) {
-        if (!el5Key->DeleteClassE(user)) {
+        if (!el5Key->DeleteClassEPinCode(user)) {
             LOGE("user %{public}u DeleteClassE fail", user);
             return -EFAULT;
         }
@@ -690,11 +711,11 @@ int KeyManager::UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSe
         return 0;
     }
     if (!tokenSecret.newSecret.empty() && !tokenSecret.oldSecret.empty()) {
-        if (!el5Key->ChangePinCodeClassE(user)) {
+        saveESecretStatus[user] = true;
+        if (!el5Key->ChangePinCodeClassE(saveESecretStatus[user], user)) {
             LOGE("user %{public}u ChangePinCodeClassE fail", user);
             return -EFAULT;
         }
-        saveESecretStatus[user] = false;
         return 0;
     }
     uint32_t status = tokenSecret.oldSecret.empty() ? USER_ADD_AUTH : USER_CHANGE_AUTH;
@@ -782,7 +803,7 @@ int KeyManager::ActiveUserKey(unsigned int user, const std::vector<uint8_t> &tok
         return -EFAULT;
     }
     if (ActiveCeSceSeceUserKey(user, EL5_KEY, token, secret) != 0) {
-        LOGI("Active user %{public}u el4 fail", user);
+        LOGI("Active user %{public}u el5 fail", user);
         return -EFAULT;
     }
     if (UnlockUserAppKeys(user, true) != E_OK) {
@@ -913,12 +934,9 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
         LOGE("Have not found user %{public}u el", user);
         return -ENOENT;
     }
-    std::string keyUeceDir = UECE_DIR + "/" + std::to_string(user);
-    if ((type == EL5_KEY) && !IsDir(keyUeceDir)) {
-        LOGE("Have not found uece dir %{public}u el", user);
+    if ((type == EL5_KEY) && CheckAndDeleteEmptyEl5Directory(keyDir, user) != 0) {
         return -ENOENT;
     }
-
     std::shared_ptr<BaseKey> elKey = GetBaseKey(keyDir);
     if (elKey == nullptr) {
         LOGE("elKey failed");
@@ -944,6 +962,22 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
     }
     LOGI("Active user %{public}u el success", user);
     saveLockScreenStatus.insert(std::make_pair(user, true));
+    return 0;
+}
+
+int KeyManager::CheckAndDeleteEmptyEl5Directory(std::string keyDir, unsigned int user)
+{
+    std::string keyUeceDir = UECE_DIR + "/" + std::to_string(user);
+    if (!IsDir(keyDir) || !IsDir(keyUeceDir)) {
+        LOGE("Have not found dir %{public}u el5", user);
+        return -ENOENT;
+    }
+
+    if (IsDir(keyDir) && std::filesystem::is_empty(keyDir)) {
+        OHOS::ForceRemoveDirectory(keyDir);
+        LOGE("Have removed key dir %{public}u el5", user);
+        return -ENOENT;
+    }
     return 0;
 }
 
@@ -1018,6 +1052,7 @@ int KeyManager::UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &toke
     }
     LOGI("DecryptClassE user %{public}u saveESecretStatus %{public}d", user, saveESecretStatus[user]);
     UserAuth auth = { .token = token, .secret = secret };
+    saveESecretStatus[user] = !auth.token.IsEmpty();
     auto el5Key = userEl5Key_[user];
     if (!el5Key->DecryptClassE(auth, saveESecretStatus[user], user, USER_UNLOCK)) {
         LOGE("Unlock user %{public}u uece failed", user);
@@ -1075,7 +1110,10 @@ int KeyManager::DeleteAppkey(uint32_t userId, const std::string keyId)
 
 int KeyManager::UnlockUserAppKeys(uint32_t userId, bool needGetAllAppKey)
 {
-    LOGI("UnlockUserAppKeys enter!");
+    if (!saveESecretStatus[userId]) {
+        LOGI("E type is not support");
+        return E_OK;
+    }
 #ifdef EL5_FILEKEY_MANAGER
     std::vector<std::pair<int, std::string>> keyInfo;
     std::vector<std::pair<std::string, bool>> loadInfos;
@@ -1117,8 +1155,8 @@ int KeyManager::UnlockUserAppKeys(uint32_t userId, bool needGetAllAppKey)
         LOGE("Change User Appkeys LoadInfo fail.");
         return -EFAULT;
     }
-    LOGI("UnlockUserAppKeys success!");
 #endif
+    LOGI("UnlockUserAppKeys success!");
     return E_OK;
 }
 
@@ -1182,6 +1220,13 @@ int KeyManager::LockUserScreen(uint32_t user)
             saveLockScreenStatus[user]);
         return 0;
     }
+    if (HasElkey(user, EL5_KEY)) {
+        auto elKey = userEl5Key_[user];
+        if (saveESecretStatus[user] && !elKey->LockUece(saveESecretStatus[user])) {
+            LOGE("lock user %{public}u el5 key failed !", user);
+        }
+    }
+
     if (userEl4Key_.find(user) == userEl4Key_.end()) {
         LOGE("Have not found user %{public}u el3 or el4", user);
         return -ENOENT;
@@ -1191,7 +1236,6 @@ int KeyManager::LockUserScreen(uint32_t user)
         LOGE("Clear user %{public}u key failed", user);
         return -EFAULT;
     }
-    // todo 找IAM查询认证状态,如果不是人脸指纹就清除缓存中的值
 
     saveLockScreenStatus[user] = false;
     LOGI("LockUserScreen user %{public}u el3 and el4 success, saveLockScreenStatus is %{public}d",
@@ -1323,7 +1367,7 @@ int KeyManager::UpgradeKeys(const std::vector<FileList> &dirInfo)
     for (const auto &it : dirInfo) {
         std::shared_ptr<BaseKey> elKey = GetBaseKey(it.path);
         if (elKey == nullptr) {
-            LOGE("elKel feiled");
+            LOGE("Basekey memory failed");
             continue;
         }
         elKey->UpgradeKeys();

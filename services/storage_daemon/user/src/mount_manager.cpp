@@ -214,7 +214,9 @@ int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath, bool 
 
 int32_t MountManager::FindProcess(int32_t userId)
 {
-    if (userId <= 0) return E_OK;
+    if (userId <= 0) {
+        return E_OK;
+    }
     LOGI("FindProcess start, userId is %{public}d", userId);
     Utils::MountArgument argument(Utils::MountArgumentDescriptors::Alpha(userId, ""));
     const string &prefix = argument.GetMountPointPrefix();
@@ -235,14 +237,18 @@ int32_t MountManager::FindProcess(int32_t userId)
                 break;
             }
         }
-        if (!isNum) continue;
+        if (!isNum) {
+            continue;
+        }
         std::string pidPath = "/proc/" + name;
         bool found = false;
         found |= CheckMaps(pidPath + "/maps", prefix);
         found |= CheckSymlink(pidPath + "/cwd", prefix);
         found |= CheckSymlink(pidPath + "/root", prefix);
         found |= CheckSymlink(pidPath + "/exe", prefix);
-        if (!found) continue;
+        if (!found) {
+            continue;
+        }
         std::string filename = "/proc/" + name + "/stat";
         ProcessInfo info;
         if (GetProcessInfo(filename, info)) {
@@ -256,6 +262,11 @@ int32_t MountManager::FindProcess(int32_t userId)
 bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info)
 {
     if (filename.empty()) {
+        return false;
+    }
+    filesystem::path filepath(filename);
+    std::error_code errCode;
+    if (!exists(filepath, errCode)) {
         return false;
     }
     std::ifstream inputStream(filename.c_str(), std::ios::in);
@@ -281,6 +292,11 @@ bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info
 bool MountManager::CheckMaps(const std::string &path, const std::string &prefix)
 {
     bool found = false;
+    filesystem::path filepath(path);
+    std::error_code errCode;
+    if (!exists(filepath, errCode)) {
+        return false;
+    }
     std::ifstream inputStream(path.c_str(), std::ios::in);
     if (!inputStream.is_open()) {
         LOGE("unable to open %{public}s, err %{public}d", path.c_str(), errno);
@@ -469,6 +485,7 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
                 srcPath.c_str(), dstPath.c_str());
         }
     }
+    LOGI("mount crypto path success, userId is %{public}d", userId);
     return ret;
 }
 
@@ -541,18 +558,8 @@ int32_t MountManager::UMountAllPath(int32_t userId)
     if (res != E_OK) {
         return res;
     }
-    std::list<std::string> list = mountMap[MOUNT_POINT_TYPE_HMFS];
+    std::list<std::string> list = mountMap[MOUNT_POINT_TYPE_SHAREFS];
     int total = static_cast<int>(list.size());
-    LOGI("unmount hmfs path start, total %{public}d.", total);
-    for (const std::string &path: list) {
-        LOGD("unmount hmfs path %{public}s.", path.c_str());
-        res = UMount2(path.c_str(), MNT_DETACH);
-        if (res != E_OK) {
-            LOGE("failed to unmount hmfs path %{public}s, errno %{public}d.", path.c_str(), errno);
-        }
-    }
-    list = mountMap[MOUNT_POINT_TYPE_SHAREFS];
-    total = static_cast<int>(list.size());
     LOGI("unmount sharefs path start, total %{public}d.", total);
     for (const std::string &path: list) {
         LOGD("unmount sharefs path %{public}s.", path.c_str());
@@ -569,6 +576,16 @@ int32_t MountManager::UMountAllPath(int32_t userId)
         res = UMount2(path.c_str(), MNT_DETACH);
         if (res != E_OK) {
             LOGE("failed to unmount hmdfs path %{public}s, errno %{public}d.", path.c_str(), errno);
+        }
+    }
+    list = mountMap[MOUNT_POINT_TYPE_HMFS];
+    total = static_cast<int>(list.size());
+    LOGI("unmount hmfs path start, total %{public}d.", total);
+    for (const std::string &path: list) {
+        LOGD("unmount hmfs path %{public}s.", path.c_str());
+        res = UMount2(path.c_str(), MNT_DETACH);
+        if (res != E_OK) {
+            LOGE("failed to unmount hmfs path %{public}s, errno %{public}d.", path.c_str(), errno);
         }
     }
     return E_OK;

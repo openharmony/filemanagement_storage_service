@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -46,7 +46,7 @@ DiskManager::~DiskManager()
 void DiskManager::HandleDiskEvent(NetlinkData *data)
 {
     if (data == nullptr) {
-        LOGE("data is empty");
+        LOGE("data is nullptr");
         return;
     }
     std::lock_guard<std::mutex> lock(lock_);
@@ -90,7 +90,7 @@ void DiskManager::HandleDiskEvent(NetlinkData *data)
 std::shared_ptr<DiskInfo> DiskManager::MatchConfig(NetlinkData *data)
 {
     if (data == nullptr) {
-        LOGE("data is empty");
+        LOGE("data is nullptr");
         return nullptr;
     }
     std::string sysPath = data->GetSyspath();
@@ -100,7 +100,7 @@ std::shared_ptr<DiskInfo> DiskManager::MatchConfig(NetlinkData *data)
     dev_t device = makedev(major, minor);
 
     for (auto config : diskConfig_) {
-        if (config->IsMatch(devPath)) {
+        if ((config != nullptr) && config->IsMatch(devPath)) {
             uint32_t flag = static_cast<uint32_t>(config->GetFlag());
             if (major == DISK_MMC_MAJOR) {
                 flag |= DiskInfo::DeviceFlag::SD_FLAG;
@@ -112,18 +112,18 @@ std::shared_ptr<DiskInfo> DiskManager::MatchConfig(NetlinkData *data)
         }
     }
 
+    LOGI("No matching configuration found");
     return nullptr;
 }
 
 void DiskManager::CreateDisk(std::shared_ptr<DiskInfo> &diskInfo)
 {
     if (diskInfo == nullptr) {
-        LOGE("data is empty");
+        LOGE("diskInfo is nullptr");
         return;
     }
-    int ret;
 
-    ret = diskInfo->Create();
+    int ret = diskInfo->Create();
     if (ret != E_OK) {
         LOGE("Create DiskInfo failed");
         return;
@@ -135,7 +135,7 @@ void DiskManager::CreateDisk(std::shared_ptr<DiskInfo> &diskInfo)
 void DiskManager::ChangeDisk(dev_t device)
 {
     for (auto &diskInfo : disk_) {
-        if (diskInfo->GetDevice() == device) {
+        if ((diskInfo != nullptr) && (diskInfo->GetDevice() == device)) {
             diskInfo->ReadMetadata();
             diskInfo->ReadPartition();
         }
@@ -169,10 +169,12 @@ void DiskManager::DestroyDisk(dev_t device)
 std::shared_ptr<DiskInfo> DiskManager::GetDisk(dev_t device)
 {
     for (auto &diskInfo : disk_) {
-        if (diskInfo != nullptr && diskInfo->GetDevice() == device) {
+        if ((diskInfo != nullptr) && (diskInfo->GetDevice() == device)) {
             return diskInfo;
         }
     }
+
+    LOGI("No disk found with the given device");
     return nullptr;
 }
 
@@ -194,6 +196,10 @@ int32_t DiskManager::HandlePartition(std::string diskId)
     int32_t ret = E_NON_EXIST;
 
     for (auto i = disk_.begin(); i != disk_.end(); i++) {
+        if (*i == nullptr) {
+            continue;
+        }
+
         if ((*i)->GetId() == diskId) {
             ret = (*i)->Partition();
             break;

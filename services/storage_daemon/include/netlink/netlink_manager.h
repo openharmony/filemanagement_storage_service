@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -29,6 +29,7 @@ public:
     int32_t Stop();
 
 private:
+    static constexpr int32_t ONE_KB = 1024;
     static NetlinkManager *instance_;
     int32_t socketFd_ { -1 };
     NetlinkHandler *nlHandler_ = nullptr;

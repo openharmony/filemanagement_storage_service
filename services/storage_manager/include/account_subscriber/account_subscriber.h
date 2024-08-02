@@ -37,7 +37,7 @@ class AccountSubscriber : public EventFwk::CommonEventSubscriber {
 public:
     AccountSubscriber() = default;
     explicit AccountSubscriber(const EventFwk::CommonEventSubscribeInfo &subscriberInfo);
-    static bool Subscriber(void);
+    static void Subscriber(void);
     virtual ~AccountSubscriber() = default;
     virtual void OnReceiveEvent(const EventFwk::CommonEventData &eventData) override;
     static void SetMediaShare(std::shared_ptr<DataShare::DataShareHelper> &sptr)
@@ -52,8 +52,11 @@ private:
 
     int32_t userId_ = 0;
     std::unordered_map<int32_t, uint32_t> userRecord_;
+    uint32_t GetUserStatus(int32_t userId);
+    uint32_t HandleUserUnlockEvent(uint32_t userStatus);
+    uint32_t HandleUserSwitchedEvent(uint32_t userStatus);
+    void HandleScreenLockedEvent(int32_t &userId);
     bool OnReceiveEventLockUserScreen(int32_t userId);
-
     void GetSystemAbility();
 };
 }  // namespace StorageManager

@@ -105,6 +105,7 @@ bool BaseKey::GenerateKeyBlob(KeyBlob &blob, const uint32_t size)
 bool BaseKey::SaveKeyBlob(const KeyBlob &blob, const std::string &path)
 {
     if (blob.IsEmpty()) {
+        LOGE("blob is empty");
         return false;
     }
     LOGD("enter %{public}s, size=%{public}d", path.c_str(), blob.size);
@@ -223,7 +224,9 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
 {
     LOGI("enter");
     auto pathTemp = dir_ + PATH_KEY_TEMP;
-    MkDirRecurse(pathTemp, S_IRWXU);
+    if (!MkDirRecurse(pathTemp, S_IRWXU)) {
+        LOGE("MkDirRecurse failed!");
+    }
     if (!CheckAndUpdateVersion()) {
         return false;
     }
@@ -679,7 +682,6 @@ bool BaseKey::DoUpdateRestore(const UserAuth &auth, const std::string &keyPath)
         LOGE("Restore old failed !");
         return false;
     }
-
     uint64_t secureUid = { 0 };
     if (!IamClient::GetInstance().GetSecureUid(GetIdFromDir(), secureUid)) {
         LOGE("Get secure uid form iam failed, use default value.");
@@ -834,6 +836,7 @@ bool BaseKey::EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, K
     if (!MkDirRecurse(keyPath, S_IRWXU)) {
         LOGE("MkDirRecurse failed!");
     }
+
     LOGI("key path is exist : %{public}d", FileExists(keyPath));
     if (!HuksMaster::GetInstance().GenerateKey(auth, keyCtx.shield) ||
         !SaveKeyBlob(keyCtx.shield, keyPath + PATH_SHIELD)) {

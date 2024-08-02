@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -121,6 +121,13 @@ bool FscryptKeyV2::LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::s
     return true;
 }
 
+bool FscryptKeyV2::LockUece(bool &isFbeSupport)
+{
+    isFbeSupport = false;
+    LOGI("Unsupported fscrypt v2");
+    return true;
+}
+
 bool FscryptKeyV2::UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt)
 {
     (void)mnt;
@@ -129,7 +136,7 @@ bool FscryptKeyV2::UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std:
     return true;
 }
 
-bool FscryptKeyV2::GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &KeyId)
+bool FscryptKeyV2::GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId)
 {
     LOGI("Unsupported fscrypt v2");
     return false;
@@ -141,23 +148,26 @@ bool FscryptKeyV2::DeleteAppkey(const std::string KeyId)
     return false;
 }
 
-bool FscryptKeyV2::AddClassE(uint32_t status)
+bool FscryptKeyV2::AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status)
 {
+    (void)isNeedEncryptClassE;
     (void)status;
+    (void)isSupport;
     LOGI("Unsupported fscrypt v2");
     return true;
 }
 
-bool FscryptKeyV2::DeleteClassE(uint32_t user)
+bool FscryptKeyV2::DeleteClassEPinCode(uint32_t user)
 {
     (void)user;
     LOGI("Unsupported fscrypt v2");
     return true;
 }
 
-bool FscryptKeyV2::ChangePinCodeClassE(uint32_t user)
+bool FscryptKeyV2::ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId)
 {
-    (void)user;
+    (void)userId;
+    isFbeSupport = false;
     LOGI("Unsupported fscrypt v2");
     return true;
 }

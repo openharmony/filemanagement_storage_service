@@ -117,17 +117,25 @@ int32_t AncoKeyManager::CreatePolicyDir(const AncoDirInfo &ancoDirInfo,
         LOGE("AncoDirInfo.uid not found, uid = %{public}s", ancoDirInfo.uid.c_str());
         return E_JSON_PARSE_ERROR;
     }
+    if (iter->second.empty() || !std::all_of(iter->second.begin(), iter->second.end(), ::isdigit)) {
+        LOGE("Invalid uid: %{public}s", iter->second.c_str());
+        return E_JSON_PARSE_ERROR;
+    }
     auto uid = static_cast<uid_t>(std::stoi(iter->second));
     iter = AncoKeyManager::ownerMap_.find(ancoDirInfo.gid);
     if (iter == AncoKeyManager::ownerMap_.end()) {
         LOGE("AncoDirInfo.gid not found, gid = %{public}s", ancoDirInfo.gid.c_str());
         return E_JSON_PARSE_ERROR;
     }
+    if (iter->second.empty() || !std::all_of(iter->second.begin(), iter->second.end(), ::isdigit)) {
+        LOGE("Invalid gid: %{public}s", iter->second.c_str());
+        return E_JSON_PARSE_ERROR;
+    }
     auto gid = static_cast<gid_t>(std::stoi(iter->second));
 
     if (ancoDirInfo.policy == ANCO_TYPE_NONE && type == ANCO_TYPE_SYS_EL1) {
         if (!PrepareDir(ancoDirInfo.path, mode, uid, gid)) {
-            LOGE("Prepare dir failed, path = %{public}s", ancoDirInfo.path.c_str());
+            LOGE("Prepare dir failed");
             return E_PREPARE_DIR;
         }
     }
@@ -139,7 +147,7 @@ int32_t AncoKeyManager::CreatePolicyDir(const AncoDirInfo &ancoDirInfo,
             vec.push_back(fileList);
         }
         if (!PrepareDir(ancoDirInfo.path, mode, uid, gid)) {
-            LOGE("Prepare dir failed, path = %{public}s", ancoDirInfo.path.c_str());
+            LOGE("Prepare dir failed");
             return E_PREPARE_DIR;
         }
     }

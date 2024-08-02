@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -40,6 +40,7 @@ using namespace OHOS::AAFwk;
 using namespace OHOS::AccountSA;
 namespace OHOS {
 namespace StorageManager {
+static constexpr int CONNECT_TIME = 3;
 static std::mutex userRecordLock;
 std::shared_ptr<DataShare::DataShareHelper> AccountSubscriber::mediaShare_ = nullptr;
 
@@ -48,7 +49,7 @@ AccountSubscriber::AccountSubscriber(const EventFwk::CommonEventSubscribeInfo &s
 {}
 
 std::shared_ptr<AccountSubscriber> accountSubscriber_ = nullptr;
-bool AccountSubscriber::Subscriber(void)
+void AccountSubscriber::Subscriber(void)
 {
     if (accountSubscriber_ == nullptr) {
         EventFwk::MatchingSkills matchingSkills;
@@ -59,7 +60,6 @@ bool AccountSubscriber::Subscriber(void)
         accountSubscriber_ = std::make_shared<AccountSubscriber>(subscribeInfo);
         EventFwk::CommonEventManager::SubscribeCommonEvent(accountSubscriber_);
     }
-    return true;
 }
 
 static void MountCryptoPathAgain(int32_t userId)
@@ -68,7 +68,7 @@ static void MountCryptoPathAgain(int32_t userId)
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t err = sdCommunication->MountCryptoPathAgain(userId);
     if (err != 0) {
-        LOGI("mount crypto path failed err is %{public}d", err);
+        LOGE("mount crypto path failed err is %{public}d", err);
         return;
     }
     LOGI("MountCryptoPathAgain success");
@@ -96,44 +96,20 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
     std::string action = want.GetAction();
     int32_t userId = eventData.GetCode();
     std::unique_lock<std::mutex> lock(mutex_);
-    LOGI("OnReceiveEvent action:%{public}s, userId is %{public}d", action.c_str(), userId);
     /* get user status */
-    uint32_t status = 0;
-    auto entry = userRecord_.find(userId);
-    if (entry != userRecord_.end()) {
-        status = entry->second;
-    }
+    uint32_t status = GetUserStatus(userId);
     /* update status */
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USER_UNLOCKED) {
-        if (status == (1 << USER_UNLOCK_BIT | 1 << USER_SWITCH_BIT)) {
-            status = 0;
-        }
-        status |= 1 << USER_UNLOCK_BIT;
+        status = HandleUserUnlockEvent(status);
     } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USER_SWITCHED) {
-        status |= 1 << USER_SWITCH_BIT;
-        /* clear previous user status */
-        auto oldEntry = userRecord_.find(userId_);
-        if (oldEntry != userRecord_.end()) {
-            userRecord_[userId_] = oldEntry->second & (~USER_SWITCH_BIT);
-        }
+        status = HandleUserSwitchedEvent(status);
     } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_LOCKED) {
-        std::vector<int32_t> ids;
-        int ret = AccountSA::OsAccountManager::QueryActiveOsAccountIds(ids);
-        if (ret != 0 || ids.empty()) {
-            LOGE("Query active userid failed, ret = %{public}u", ret);
-            return;
-        }
-        userId = ids[0];
-        if (!OnReceiveEventLockUserScreen(userId)) {
-            LOGE("user %{public}u LockUserScreen fail", userId);
-        }
-        LOGI("Handle EventFwk::CommonEventSupport::Common_EVENT_SCREEN_LOCKED finished, userId is %{public}u",
-            userId);
+        HandleScreenLockedEvent(userId);
         return;
     }
     userId_ = userId;
     userRecord_[userId] = status;
-    LOGI("userId %{public}d, status %{public}d", userId, status);
+    LOGI("action:%{public}s, userId:%{public}d status %{public}d", action.c_str(), userId, status);
     if (status != (1 << USER_UNLOCK_BIT | 1 << USER_SWITCH_BIT)) {
         return;
     }
@@ -145,6 +121,52 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
 
     LOGI("connect %{public}d media library", userId);
     GetSystemAbility();
+}
+
+uint32_t AccountSubscriber::GetUserStatus(int32_t userId)
+{
+    uint32_t userStatus = 0;
+    auto entry = userRecord_.find(userId);
+    if (entry != userRecord_.end()) {
+        userStatus = entry->second;
+    }
+    return userStatus;
+}
+
+uint32_t AccountSubscriber::HandleUserUnlockEvent(uint32_t userStatus)
+{
+    if (userStatus == (1 << USER_UNLOCK_BIT | 1 << USER_SWITCH_BIT)) {
+        userStatus = 0;
+    }
+    userStatus |= 1 << USER_UNLOCK_BIT;
+    return userStatus;
+}
+
+uint32_t AccountSubscriber::HandleUserSwitchedEvent(uint32_t userStatus)
+{
+    userStatus |= 1 << USER_SWITCH_BIT;
+    /* clear previous user status */
+    auto oldEntry = userRecord_.find(userId_);
+    if (oldEntry != userRecord_.end()) {
+        userRecord_[userId_] = oldEntry->second & (~USER_SWITCH_BIT);
+    }
+    return userStatus;
+}
+
+void AccountSubscriber::HandleScreenLockedEvent(int32_t &userId)
+{
+    std::vector<int32_t> ids;
+    int ret = AccountSA::OsAccountManager::QueryActiveOsAccountIds(ids);
+    if (ret != 0 || ids.empty()) {
+        LOGE("Query active userid failed, ret = %{public}u", ret);
+        return;
+    }
+    userId = ids[0];
+    if (!OnReceiveEventLockUserScreen(userId)) {
+        LOGE("user %{public}u LockUserScreen fail", userId);
+    }
+    LOGI("Handle EventFwk::CommonEventSupport::Common_EVENT_SCREEN_LOCKED finished, userId is %{public}u",
+        userId);
 }
 
 void AccountSubscriber::GetSystemAbility()
@@ -159,7 +181,14 @@ void AccountSubscriber::GetSystemAbility()
         LOGE("GetSystemAbility remoteObj == nullptr");
         return;
     }
-    mediaShare_ = DataShare::DataShareHelper::Creator(remoteObj, "datashare:///media");
+    for (int i = 0; i < CONNECT_TIME; i++) {
+        mediaShare_ = DataShare::DataShareHelper::Creator(remoteObj, "datashare:///media");
+        if (mediaShare_ != nullptr) {
+            LOGI("connect media success.");
+            break;
+        }
+        LOGE("try to connect media again.");
+    }
 }
 
 bool AccountSubscriber::OnReceiveEventLockUserScreen(int32_t userId)

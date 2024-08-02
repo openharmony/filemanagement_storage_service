@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -52,10 +52,10 @@ namespace StorageDaemon {
         GET_SPACE,
         UPDATE_MEM_PARA,
         GET_BUNDLE_STATS_INCREASE,
-        MOUNT_DFS_DOCS,
-        UMOUNT_DFS_DOCS,
         GENERATE_APP_KEY,
         DELETE_APP_KEY,
+        MOUNT_DFS_DOCS,
+        UMOUNT_DFS_DOCS
     };
 } // namespace StorageDaemon
 } // namespace OHOS

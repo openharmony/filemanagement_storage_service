@@ -152,12 +152,13 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
 }
 
 int32_t StorageStatusService::GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
-    const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes)
+    const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes,
+    std::vector<int64_t> &incPkgFileSizes)
 {
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t err = sdCommunication->GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes,
-        pkgFileSizes);
+        pkgFileSizes, incPkgFileSizes);
     LOGI("StorageStatusService::GetBundleStatsForIncrease err is %{public}d", err);
     return err;
 }

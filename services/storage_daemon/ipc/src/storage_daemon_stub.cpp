@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -84,14 +84,14 @@ StorageDaemonStub::StorageDaemonStub()
         &StorageDaemonStub::HandleUpdateMemoryPara;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_BUNDLE_STATS_INCREASE)] =
         &StorageDaemonStub::HandleGetBundleStatsForIncrease;
-    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::MOUNT_DFS_DOCS)] =
-        &StorageDaemonStub::HandleMountDfsDocs;
-    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::UMOUNT_DFS_DOCS)] =
-            &StorageDaemonStub::HandleUMountDfsDocs;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::GENERATE_APP_KEY)] =
         &StorageDaemonStub::HandleGenerateAppkey;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::DELETE_APP_KEY)] =
         &StorageDaemonStub::HandleDeleteAppkey;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::MOUNT_DFS_DOCS)] =
+        &StorageDaemonStub::HandleMountDfsDocs;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::UMOUNT_DFS_DOCS)] =
+        &StorageDaemonStub::HandleUMountDfsDocs;
 }
 
 int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code,
@@ -640,11 +640,16 @@ int32_t StorageDaemonStub::HandleGetBundleStatsForIncrease(MessageParcel &data, 
     }
 
     std::vector<int64_t> pkgFileSizes;
-    int32_t err = GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes, pkgFileSizes);
+    std::vector<int64_t> incPkgFileSizes;
+    int32_t err = GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes, pkgFileSizes, incPkgFileSizes);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
     if (!reply.WriteInt64Vector(pkgFileSizes)) {
+        LOGE("StorageDaemonStub::HandleGetBundleStatsForIncrease call GetBundleStatsForIncrease failed");
+        return  E_WRITE_REPLY_ERR;
+    }
+    if (!reply.WriteInt64Vector(incPkgFileSizes)) {
         LOGE("StorageDaemonStub::HandleGetBundleStatsForIncrease call GetBundleStatsForIncrease failed");
         return  E_WRITE_REPLY_ERR;
     }

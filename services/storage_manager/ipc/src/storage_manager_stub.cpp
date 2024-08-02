@@ -170,14 +170,14 @@ StorageManagerStub::StorageManagerStub()
         &StorageManagerStub::HandleUpdateMemoryPara;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_BUNDLE_STATS_INCREASE)] =
         &StorageManagerStub::HandleGetBundleStatsForIncrease;
-    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::MOUNT_DFS_DOCS)] =
-        &StorageManagerStub::HandleMountDfsDocs;
-    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::UMOUNT_DFS_DOCS)] =
-        &StorageManagerStub::HandleUMountDfsDocs;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GENERATE_APP_KEY)] =
         &StorageManagerStub::HandleGenerateAppkey;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::DELETE_APP_KEY)] =
         &StorageManagerStub::HandleDeleteAppkey;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::MOUNT_DFS_DOCS)] =
+        &StorageManagerStub::HandleMountDfsDocs;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::UMOUNT_DFS_DOCS)] =
+        &StorageManagerStub::HandleUMountDfsDocs;
 }
 
 int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
@@ -1005,11 +1005,16 @@ int32_t StorageManagerStub::HandleGetBundleStatsForIncrease(MessageParcel &data,
     }
 
     std::vector<int64_t> pkgFileSizes;
-    int32_t err = GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes, pkgFileSizes);
+    std::vector<int64_t> incPkgFileSizes;
+    int32_t err = GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes, pkgFileSizes, incPkgFileSizes);
     if (!reply.WriteUint32(err)) {
         return E_WRITE_REPLY_ERR;
     }
     if (!reply.WriteInt64Vector(pkgFileSizes)) {
+        LOGE("StorageManagerStub::HandleGetBundleStatsForIncrease call GetBundleStatsForIncrease failed");
+        return  E_WRITE_REPLY_ERR;
+    }
+    if (!reply.WriteInt64Vector(incPkgFileSizes)) {
         LOGE("StorageManagerStub::HandleGetBundleStatsForIncrease call GetBundleStatsForIncrease failed");
         return  E_WRITE_REPLY_ERR;
     }

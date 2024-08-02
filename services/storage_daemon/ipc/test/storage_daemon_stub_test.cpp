@@ -45,6 +45,7 @@ namespace {
         static_cast<int32_t>(StorageDaemonInterfaceCode::STOP_USER),
         static_cast<int32_t>(StorageDaemonInterfaceCode::INIT_GLOBAL_KEY),
         static_cast<int32_t>(StorageDaemonInterfaceCode::INIT_GLOBAL_USER_KEYS),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::MOUNT_CRYPTO_PATH_AGAIN),
         static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_USER_KEYS),
         static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_USER_KEYS),
         static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_USER_AUTH),
@@ -56,6 +57,9 @@ namespace {
         static_cast<int32_t>(StorageDaemonInterfaceCode::LOCK_USER_SCREEN),
         static_cast<int32_t>(StorageDaemonInterfaceCode::UNLOCK_USER_SCREEN),
         static_cast<int32_t>(StorageDaemonInterfaceCode::LOCK_SCREEN_STATUS),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::SET_BUNDLE_QUOTA),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::GET_SPACE),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_MEM_PARA),
         static_cast<int32_t>(StorageDaemonInterfaceCode::GENERATE_APP_KEY),
         static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_APP_KEY),
     };
@@ -158,6 +162,9 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRe
     EXPECT_CALL(mock, GetLockScreenStatus(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, GenerateAppkey(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, DeleteAppkey(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, GetOccupiedSpace(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, MountCryptoPathAgain(testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, UpdateMemoryPara(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
 
     for (auto c : g_code) {
         MessageParcel data;
@@ -171,6 +178,88 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRe
     }
 
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_003 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_004
+ * @tc.desc: Verify the OnRemoteRequest function.
+ * @tc.type: FUNC
+ * @tc.require: IAFYZ9
+ */
+HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_004 start";
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    bool bRet = data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor());
+    EXPECT_TRUE(bRet) << "write token error";
+
+    StorageDaemonStubMock mock;
+    int32_t code = static_cast<int32_t>(StorageDaemonInterfaceCode::GET_BUNDLE_STATS_INCREASE);
+    EXPECT_TRUE(data.WriteInt32(100));
+    std::vector<string> bundleNames;
+    EXPECT_TRUE(data.WriteStringVector(bundleNames));
+    std::vector<int64_t> incrementalBackTimes;
+    EXPECT_TRUE(data.WriteInt64Vector(incrementalBackTimes));
+    EXPECT_CALL(mock, GetBundleStatsForIncrease(testing::_, testing::_, testing::_, testing::_, testing::_))
+        .WillOnce(testing::Return(E_OK));
+    auto ret = mock.OnRemoteRequest(code, data, reply, option);
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_004 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_005
+ * @tc.desc: Verify the OnRemoteRequest function.
+ * @tc.type: FUNC
+ * @tc.require: IAFYZ9
+ */
+HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_005 start";
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    bool bRet = data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor());
+    EXPECT_TRUE(bRet) << "write token error";
+
+    StorageDaemonStubMock mock;
+    int32_t code = static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_SHARE_FILE);
+    std::vector<string> uriList;
+    EXPECT_TRUE(data.WriteStringVector(uriList));
+    data.WriteUint32(100);
+    data.WriteUint32(3);
+    std::vector<int32_t> retList;
+    EXPECT_CALL(mock, CreateShareFile(testing::_, testing::_, testing::_)).WillOnce(testing::Return(retList));
+    auto ret = mock.OnRemoteRequest(code, data, reply, option);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_005 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_006
+ * @tc.desc: Verify the OnRemoteRequest function.
+ * @tc.type: FUNC
+ * @tc.require: IAFYZ9
+ */
+HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_006, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_006 start";
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    bool bRet = data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor());
+    EXPECT_TRUE(bRet) << "write token error";
+
+    StorageDaemonStubMock mock;
+    int32_t code = static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_SHARE_FILE);
+    std::vector<string> uriList;
+    EXPECT_TRUE(data.WriteStringVector(uriList));
+    EXPECT_CALL(mock, DeleteShareFile(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    auto ret = mock.OnRemoteRequest(code, data, reply, option);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_006 end";
 }
 
 /**
@@ -790,7 +879,7 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonTest_HandleDeleteAp
     MessageParcel reply2;
     EXPECT_CALL(mock, DeleteAppkey(testing::_, testing::_)).WillOnce(testing::Return(E_ERR));
     ret = mock.HandleDeleteAppkey(data2, reply2);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_TRUE(ret == E_OK);
     err = reply2.ReadInt32();
     EXPECT_TRUE(err == E_ERR);
 

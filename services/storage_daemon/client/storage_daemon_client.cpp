@@ -59,7 +59,7 @@ bool StorageDaemonClient::CheckServiceStatus(uint32_t serviceFlags)
 
     auto samgr = OHOS::SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (samgr == nullptr) {
-        LOGW("samgr empty, retry");
+        LOGW("samgr is nullptr, retry");
         for (uint32_t i = 0; i < CHECK_SERVICE_TIMES; i++) {
             samgr = OHOS::SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
             if (samgr != nullptr) {
@@ -69,7 +69,7 @@ bool StorageDaemonClient::CheckServiceStatus(uint32_t serviceFlags)
             std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_TIME_PRE_CHECK));
         }
         if (samgr == nullptr) {
-            LOGE("samgr empty error");
+            LOGE("samgr is nullptr, retry failed.");
             return false;
         }
     }
@@ -321,8 +321,7 @@ int32_t StorageDaemonClient::LockUserScreen(uint32_t userId)
     return client->LockUserScreen(userId);
 }
 
-int32_t StorageDaemonClient::UnlockUserScreen(uint32_t userId,
-                                              const std::vector<uint8_t> &token,
+int32_t StorageDaemonClient::UnlockUserScreen(uint32_t userId, const std::vector<uint8_t> &token,
                                               const std::vector<uint8_t> &secret)
 {
     if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
