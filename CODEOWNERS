@@ -11,5 +11,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-interfaces/innerkits/storage_manager/native/storage_manager_ipc_interface_code.h @leonchan5
-services/storage_daemon/include/ipc/storage_daemon_ipc_interface_code.h @leonchan5
+interfaces/innerkits/storage_manager/native/storage_manager_ipc_interface_code.h @leonchan5 @hobbycao @renguang1116
+services/storage_daemon/include/ipc/storage_daemon_ipc_interface_code.h @leonchan5 @hobbycao @renguang1116
