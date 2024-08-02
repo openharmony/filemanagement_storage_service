@@ -205,7 +205,7 @@ int32_t QuotaManager::SetBundleQuota(const std::string &bundleName, int32_t uid,
     if (bundleDataDirPath.find(QUOTA_DEVICE_DATA_PATH) == 0) {
         auto iter = mQuotaReverseMounts.find(QUOTA_DEVICE_DATA_PATH);
         if (iter == mQuotaReverseMounts.end()) {
-            LOGE("mQuotaReverseMounts error, key is %{public}s", iter->first.c_str());
+            LOGE("mQuotaReverseMounts error, key is not find");
             return E_OK;
         }
         device = iter->second;
