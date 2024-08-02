@@ -1236,7 +1236,7 @@ HWTEST_F(CryptoKeyTest, huks_master_decrypt_key, TestSize.Level1)
  * @tc.type: FUNC
  * @tc.require: SR000H0CM9
  */
-HWTEST_F(CryptoKeyTest, huks_master_encrypt_key, TestSize.Level1)
+HWTEST_F(CryptoKeyTest, openssl_crypto_aes_encrypt, TestSize.Level1)
 {
     const KeyBlob preKey;
     KeyContext keyContext;
