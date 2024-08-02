@@ -61,6 +61,7 @@ const string MOUNT_POINT_INFO = "/proc/mounts";
 const string MOUNT_POINT_TYPE_HMDFS = "hmdfs";
 const string MOUNT_POINT_TYPE_HMFS = "hmfs";
 const string MOUNT_POINT_TYPE_SHAREFS = "sharefs";
+const string EL2_BASE = "/data/storage/el2/base/";
 const set<string> SANDBOX_EXCLUDE_PATH = {
     "chipset",
     "system",
@@ -314,9 +315,31 @@ static void ParseSandboxPath(string &path, const string &userId, const string &b
     }
 }
 
+bool CheckDir(const string &path)
+{
+    LOGI("CheckDir start");
+    auto dir = std::unique_ptr<DIR, int (*)(DIR *)>(opendir(path.c_str()), closedir);
+    if (!dir) {
+        LOGE("unable to open %{public}s, err %{public}d", path.c_str(), errno);
+        return false;
+    }
+
+    struct dirent *ptr = nullptr;
+    while (!!(ptr = readdir(dir.get()))) {
+        // current dir OR parent dir
+        if ((strcmp(ptr->d_name, ".") == 0) || (strcmp(ptr->d_name, "..") == 0)) {
+            continue;
+        } else {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
 {
-    filesystem::path rootDir(SANDBOX_ROOT_PATH + "/" + to_string(userId));
+    filesystem::path rootDir(SANDBOX_ROOT_PATH + to_string(userId));
     std::error_code errCode;
     if (!exists(rootDir, errCode)) {
         LOGE("root path not exists, rootDir is %{public}s", SANDBOX_ROOT_PATH.c_str());
@@ -330,6 +353,12 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
             continue;
         }
 
+        string completePath =
+            SANDBOX_ROOT_PATH + to_string(userId) + "/" + bundleName.path().filename().generic_string() + EL2_BASE;
+        if (!CheckDir(completePath)) {
+            LOGE("The directory has been mounted, path is %{public}s", completePath.c_str());
+            continue;
+        }
         vector<string> cryptoSandboxPathVector = CRYPTO_SANDBOX_PATH;
         vector<string> cryptoSandboxSrcVector = CRYPTO_SRC_PATH;
         if (bundleName.path().filename().generic_string() == SCENE_BOARD_BUNDLE_NAME) {
