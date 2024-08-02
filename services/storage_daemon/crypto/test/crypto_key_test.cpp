@@ -60,7 +60,6 @@ const int32_t PARAMS_SIZE_3 = 3;
 const int32_t PARAMS_SIZE_4 = 4;
 OHOS::StorageDaemon::FscryptKeyV1 g_testKeyV1 {TEST_KEYPATH};
 OHOS::StorageDaemon::FscryptKeyV2 g_testKeyV2 {TEST_KEYPATH};
-OHOS::StorageDaemon::BaseKey g_testBaseKey {TEST_KEYPATH};
 }
 
 namespace OHOS::StorageDaemon {
@@ -1225,16 +1224,21 @@ HWTEST_F(CryptoKeyTest, base_key_generate_and_save_key_blob, TestSize.Level1)
 }
 
 /**
- * @tc.name: base_key_save_and_clean_key_buff
- * @tc.desc: Verify the BaseKey SaveAndCleanKeyBuff
+ * @tc.name: base_key_encrypt_key_blob
+ * @tc.desc: Verify the BaseKey EncryptKeyBlob
  * @tc.type: FUNC
  * @tc.require: SR000H0CM9
  */
-HWTEST_F(CryptoKeyTest, base_key_save_and_clean_key_buff, TestSize.Level1)
+HWTEST_F(CryptoKeyTest, base_key_encrypt_key_blob, TestSize.Level1)
 {
+    const UserAuth auth;
     const std::string keyPath;
-    KeyContext keyCtx;
-    bool ret = g_testBaseKey.SaveAndCleanKeyBuff(keyPath, keyCtx);
+    KeyBlob planKey;
+    KeyBlob encryptedKey;
+    bool ret = g_testKeyV1.EncryptKeyBlob(auth, keyPath, planKey, encryptedKey);
+    EXPECT_FALSE(ret);
+
+    ret = g_testKeyV1.DecryptKeyBlob(auth, keyPath, planKey, encryptedKey);
     EXPECT_FALSE(ret);
 }
 
