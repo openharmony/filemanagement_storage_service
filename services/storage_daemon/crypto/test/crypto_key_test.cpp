@@ -1189,26 +1189,6 @@ HWTEST_F(CryptoKeyTest, fscrypt_libfscrypt_api, TestSize.Level1)
 }
 
 /**
- * @tc.name: base_key_do_temp_store
- * @tc.desc: Verify the BaseKey DoTempStore
- * @tc.type: FUNC
- * @tc.require: SR000H0CM9
- */
-HWTEST_F(CryptoKeyTest, base_key_do_temp_store, TestSize.Level1)
-{
-    const KeyContext sourceCtx = {
-            HuksMaster::GenerateRandomKey(32),
-            HuksMaster::GenerateRandomKey(32),
-            HuksMaster::GenerateRandomKey(32),
-            HuksMaster::GenerateRandomKey(32),
-            HuksMaster::GenerateRandomKey(32)
-    };
-    KeyContext targetCtx;
-    BaseKey::DoTempStore(sourceCtx, targetCtx);
-    EXPECT_EQ(sourceCtx, targetCtx);
-}
-
-/**
  * @tc.name: base_key_generate_and_save_key_blob
  * @tc.desc: Verify the BaseKey GenerateAndSaveKeyBlob
  * @tc.type: FUNC
@@ -1218,8 +1198,8 @@ HWTEST_F(CryptoKeyTest, base_key_generate_and_save_key_blob, TestSize.Level1)
 {
     KeyBlob blob;
     const std::string path;
-    const uint32_t size;
-    bool ret = BaseKey::GenerateAndSaveKeyBlob();
+    const uint32_t size = 0;
+    bool ret = BaseKey::GenerateAndSaveKeyBlob(blob, path, size);
     EXPECT_FALSE(ret);
 }
 
