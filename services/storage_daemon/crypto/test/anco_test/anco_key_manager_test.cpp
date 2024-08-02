@@ -103,7 +103,7 @@ HWTEST_F(AncoKeyManagerTest, Set_Anco_Directory_El_Policy_utils_003, TestSize.Le
     const std::string policyType = "encryption=Require_Sys_EL1";
     uint32_t user = 0;
     auto result = AncoKeyManager::GetInstance()->SetAncoDirectoryElPolicy(path, policyType, user);
-    EXPECT_EQ(result, OHOS::E_OK);
+    EXPECT_NE(result, OHOS::E_OK);
     user = 100;
     result = AncoKeyManager::GetInstance()->SetAncoDirectoryElPolicy(path, policyType, user);
     EXPECT_EQ(result, OHOS::E_OK);

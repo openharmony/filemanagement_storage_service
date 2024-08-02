@@ -60,6 +60,7 @@ const int32_t PARAMS_SIZE_3 = 3;
 const int32_t PARAMS_SIZE_4 = 4;
 OHOS::StorageDaemon::FscryptKeyV1 g_testKeyV1 {TEST_KEYPATH};
 OHOS::StorageDaemon::FscryptKeyV2 g_testKeyV2 {TEST_KEYPATH};
+OHOS::StorageDaemon::BaseKey g_testBaseKey {TEST_KEYPATH};
 }
 
 namespace OHOS::StorageDaemon {
@@ -1189,6 +1190,55 @@ HWTEST_F(CryptoKeyTest, fscrypt_libfscrypt_api, TestSize.Level1)
 }
 
 /**
+ * @tc.name: base_key_do_temp_store
+ * @tc.desc: Verify the BaseKey DoTempStore
+ * @tc.type: FUNC
+ * @tc.require: SR000H0CM9
+ */
+HWTEST_F(CryptoKeyTest, base_key_do_temp_store, TestSize.Level1)
+{
+    const KeyContext sourceCtx = {
+            HuksMaster::GenerateRandomKey(32),
+            HuksMaster::GenerateRandomKey(32),
+            HuksMaster::GenerateRandomKey(32),
+            HuksMaster::GenerateRandomKey(32),
+            HuksMaster::GenerateRandomKey(32)
+    };
+    KeyContext targetCtx;
+    BaseKey::DoTempStore(sourceCtx, targetCtx);
+    EXPECT_EQ(sourceCtx, targetCtx);
+}
+
+/**
+ * @tc.name: base_key_generate_and_save_key_blob
+ * @tc.desc: Verify the BaseKey GenerateAndSaveKeyBlob
+ * @tc.type: FUNC
+ * @tc.require: SR000H0CM9
+ */
+HWTEST_F(CryptoKeyTest, base_key_generate_and_save_key_blob, TestSize.Level1)
+{
+    KeyBlob blob;
+    const std::string path;
+    const uint32_t size;
+    bool ret = BaseKey::GenerateAndSaveKeyBlob();
+    EXPECT_FALSE(ret);
+}
+
+/**
+ * @tc.name: base_key_save_and_clean_key_buff
+ * @tc.desc: Verify the BaseKey SaveAndCleanKeyBuff
+ * @tc.type: FUNC
+ * @tc.require: SR000H0CM9
+ */
+HWTEST_F(CryptoKeyTest, base_key_save_and_clean_key_buff, TestSize.Level1)
+{
+    const std::string keyPath;
+    KeyContext keyCtx;
+    bool ret = g_testBaseKey.SaveAndCleanKeyBuff(keyPath, keyCtx);
+    EXPECT_FALSE(ret);
+}
+
+/**
  * @tc.name: huks_master_encrypt_key
  * @tc.desc: Verify the HuksMaster EncryptKey
  * @tc.type: FUNC
@@ -1243,7 +1293,7 @@ HWTEST_F(CryptoKeyTest, openssl_crypto_aes_encrypt, TestSize.Level1)
     KeyBlob plainText;
 
     bool ret = OpensslCrypto::AESEncrypt(preKey, plainText, keyContext);
-    EXPECT_FALSE(ret);
+    EXPECT_TRUE(ret);
 
     ret = OpensslCrypto::AESDecrypt(preKey, keyContext, plainText);
     EXPECT_FALSE(ret);

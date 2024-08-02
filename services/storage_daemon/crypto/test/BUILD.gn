@@ -26,6 +26,7 @@ ohos_moduletest("CryptoSubTest") {
     "STORAGE_LOG_TAG = \"StorageDaemon\"",
     "LOG_DOMAIN = 0xD004301",
     "USER_CRYPTO_MIGRATE_KEY",
+    "private=public",
   ]
 
   include_dirs = [
