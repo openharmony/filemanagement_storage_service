@@ -315,37 +315,15 @@ static void ParseSandboxPath(string &path, const string &userId, const string &b
     }
 }
 
-bool MountManager::CheckDir(const std::string &path)
-{
-    LOGI("CheckDir start");
-    auto dir = std::unique_ptr<DIR, int (*)(DIR *)>(opendir(path.c_str()), closedir);
-    if (!dir) {
-        LOGE("unable to open %{public}s, err %{public}d", path.c_str(), errno);
-        return false;
-    }
-
-    struct dirent *ptr = nullptr;
-    while (!!(ptr = readdir(dir.get()))) {
-        // current dir OR parent dir
-        if ((strcmp(ptr->d_name, ".") == 0) || (strcmp(ptr->d_name, "..") == 0)) {
-            continue;
-        } else {
-            return false;
-        }
-    }
-
-    return true;
-}
-
 bool MountManager::CheckPathValid(const std::string &bundleNameStr, uint32_t userId)
 {
-        string completePath =
-            SANDBOX_ROOT_PATH + to_string(userId) + "/" + bundleNameStr + EL2_BASE;
-        if (!CheckDir(completePath)) {
-            LOGE("The directory has been mounted, path is %{public}s", completePath.c_str());
-            return false;
-        }
-        return true;
+    string completePath =
+        SANDBOX_ROOT_PATH + to_string(userId) + "/" + bundleNameStr + EL2_BASE;
+    if (!std::filesystem::is_empty(completePath)) {
+        LOGE("The directory has been mounted, path is %{public}s", completePath.c_str());
+        return false;
+    }
+    return true;
 }
 
 int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
