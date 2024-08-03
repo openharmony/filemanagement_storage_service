@@ -339,7 +339,7 @@ bool MountManager::CheckDir(const std::string &path)
 
 bool MountManager::CheckPathValid(const std::string &bundleNameStr, uint32_t userId)
 {
-     string completePath =
+        string completePath =
             SANDBOX_ROOT_PATH + to_string(userId) + "/" + bundleNameStr + EL2_BASE;
         if (!CheckDir(completePath)) {
             LOGE("The directory has been mounted, path is %{public}s", completePath.c_str());
@@ -363,8 +363,7 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
         if (SANDBOX_EXCLUDE_PATH.find(bundleName.path().filename()) != SANDBOX_EXCLUDE_PATH.end()) {
             continue;
         }
-        string bundleNameStr = bundleName.path().filename().generic_string();
-        if(!CheckPathValid(bundleNameStr, userId)) {
+        if (!CheckPathValid(bundleName.path().filename().generic_string(), userId)) {
             continue;
         }
         vector<string> cryptoSandboxPathVector = CRYPTO_SANDBOX_PATH;
