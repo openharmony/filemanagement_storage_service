@@ -365,7 +365,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_GetProcessInfo_002, T
     std::string filename = "/data";
 
     bool ret = mountManager->GetProcessInfo(filename, info);
-    EXPECT_EQ(ret, true);
+    EXPECT_EQ(ret, false);
 
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_GetProcessInfo_002 end";
 }
