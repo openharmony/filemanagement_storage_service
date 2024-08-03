@@ -364,7 +364,7 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
             continue;
         }
         string bundleNameStr = bundleName.path().filename().generic_string();
-        if(!CheckPathValid(bundleName, userId)) {
+        if(!CheckPathValid(bundleNameStr, userId)) {
             continue;
         }
         vector<string> cryptoSandboxPathVector = CRYPTO_SANDBOX_PATH;
