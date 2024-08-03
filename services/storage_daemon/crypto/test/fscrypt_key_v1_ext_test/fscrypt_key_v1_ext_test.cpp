@@ -62,13 +62,11 @@ void FscryptKeyV1ExtTest::TearDownTestCase(void)
 void FscryptKeyV1ExtTest::SetUp(void)
 {
     GTEST_LOG_(INFO) << "SetUp Start";
-   
 }
 
 void FscryptKeyV1ExtTest::TearDown(void)
 {
     GTEST_LOG_(INFO) << "TearDown Start";
-    
 }
 
 /**
