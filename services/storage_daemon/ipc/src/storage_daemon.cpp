@@ -658,6 +658,29 @@ int32_t StorageDaemon::DeleteAppkey(uint32_t userId, const std::string &keyId)
 #endif
 }
 
+int32_t StorageDaemon::CreateRecoverKey(uint32_t userId,
+                                        uint32_t userType,
+                                        const std::vector<uint8_t> &token,
+                                        const std::vector<uint8_t> &secret)
+{
+    LOGI("begin to CreateRecoverKey");
+#ifdef USER_CRYPTO_MANAGER
+    return E_OK;
+#else
+    return E_OK;
+#endif
+}
+
+int32_t StorageDaemon::SetRecoverKey(const std::vector<uint8_t> &key)
+{
+    LOGI("begin to SetRecoverKey");
+#ifdef USER_CRYPTO_MANAGER
+    return E_OK;
+#else
+    return E_OK;
+#endif
+}
+
 int32_t StorageDaemon::UpdateKeyContext(uint32_t userId)
 {
 #ifdef USER_CRYPTO_MANAGER

@@ -60,6 +60,9 @@ public:
         const std::vector<int64_t> &, std::vector<int64_t> &, std::vector<int64_t> &));
     MOCK_METHOD3(GenerateAppkey, int32_t (uint32_t, uint32_t, std::string &));
     MOCK_METHOD2(DeleteAppkey, int32_t (uint32_t, const std::string &));
+    MOCK_METHOD4(CreateRecoverKey, int32_t (uint32_t, uint32_t, const std::vector<uint8_t> &,
+                                            const std::vector<uint8_t> &));
+    MOCK_METHOD1(SetRecoverKey, int32_t (const std::vector<uint8_t> &));
 };
 }  // namespace StorageDaemon
 }  // namespace OHOS

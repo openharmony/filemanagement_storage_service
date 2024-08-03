@@ -501,6 +501,32 @@ int32_t StorageManager::DeleteAppkey(const std::string keyId)
 #endif
 }
 
+int32_t StorageManager::CreateRecoverKey(uint32_t userId,
+                                         uint32_t userType,
+                                         const std::vector<uint8_t> &token,
+                                         const std::vector<uint8_t> &secret)
+{
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("CreateRecoverKey enter");
+    LOGI("UserId :  %{public}u", userId);
+    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
+    return fsCrypto->CreateRecoverKey(userId, userType, token, secret);
+#else
+    return E_OK;
+#endif
+}
+
+int32_t StorageManager::SetRecoverKey(const std::vector<uint8_t> &key)
+{
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("SetRecoverKey enter");
+    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
+    return fsCrypto->SetRecoverKey(key);
+#else
+    return E_OK;
+#endif
+}
+
 int32_t StorageManager::UpdateKeyContext(uint32_t userId)
 {
 #ifdef USER_CRYPTO_MANAGER

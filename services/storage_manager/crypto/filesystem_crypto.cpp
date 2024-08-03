@@ -199,6 +199,42 @@ int32_t FileSystemCrypto::DeleteAppkey(const std::string keyId)
     return sdCommunication->DeleteAppkey(userId, keyId);
 }
 
+int32_t FileSystemCrypto::CreateRecoverKey(uint32_t userId,
+                                           uint32_t userType,
+                                           const std::vector<uint8_t> &token,
+                                           const std::vector<uint8_t> &secret)
+{
+    LOGI("UserId: %{public}u", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->CreateRecoverKey(userId, userType, token, secret);
+}
+
+int32_t FileSystemCrypto::SetRecoverKey(const std::vector<uint8_t> &key)
+{
+    std::vector<int32_t> ids;
+    int ret = AccountSA::OsAccountManager::QueryActiveOsAccountIds(ids);
+    if (ret != 0 || ids.empty()) {
+        LOGE("Query active userid failed, ret = %{public}u", ret);
+        return ret;
+    }
+    int32_t userId = ids[0];
+    LOGI("UserId: %{public}u", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->SetRecoverKey(key);
+}
+
 int32_t FileSystemCrypto::UpdateKeyContext(uint32_t userId)
 {
     LOGI("UserId: %{public}u", userId);
