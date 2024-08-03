@@ -91,6 +91,8 @@ private:
     void UMountCloudForUsers(void);
     void PrepareFileManagerDir(int32_t userId);
     int32_t CloudUMount(int32_t userId);
+    bool CheckPathValid(const std::string &bundleNameStr, uint32_t userId);
+    bool CheckDir(const std::string &path);
 
     DISALLOW_COPY_AND_MOVE(MountManager);
 

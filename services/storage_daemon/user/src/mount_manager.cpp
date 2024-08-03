@@ -315,7 +315,7 @@ static void ParseSandboxPath(string &path, const string &userId, const string &b
     }
 }
 
-bool CheckDir(const string &path)
+bool MountManager::CheckDir(const std::string &path)
 {
     LOGI("CheckDir start");
     auto dir = std::unique_ptr<DIR, int (*)(DIR *)>(opendir(path.c_str()), closedir);
@@ -337,6 +337,17 @@ bool CheckDir(const string &path)
     return true;
 }
 
+bool MountManager::CheckPathValid(const std::string &bundleNameStr, uint32_t userId)
+{
+     string completePath =
+            SANDBOX_ROOT_PATH + to_string(userId) + "/" + bundleNameStr + EL2_BASE;
+        if (!CheckDir(completePath)) {
+            LOGE("The directory has been mounted, path is %{public}s", completePath.c_str());
+            return false;
+        }
+        return true;
+}
+
 int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
 {
     filesystem::path rootDir(SANDBOX_ROOT_PATH + to_string(userId));
@@ -352,11 +363,8 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
         if (SANDBOX_EXCLUDE_PATH.find(bundleName.path().filename()) != SANDBOX_EXCLUDE_PATH.end()) {
             continue;
         }
-
-        string completePath =
-            SANDBOX_ROOT_PATH + to_string(userId) + "/" + bundleName.path().filename().generic_string() + EL2_BASE;
-        if (!CheckDir(completePath)) {
-            LOGE("The directory has been mounted, path is %{public}s", completePath.c_str());
+        string bundleNameStr = bundleName.path().filename().generic_string();
+        if(!CheckPathValid(bundleName, userId)) {
             continue;
         }
         vector<string> cryptoSandboxPathVector = CRYPTO_SANDBOX_PATH;
