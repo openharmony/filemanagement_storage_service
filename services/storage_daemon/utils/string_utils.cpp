@@ -122,5 +122,20 @@ bool SaveStringToFileSync(const std::string &path, const std::string &data)
     LOGD("enter %{public}s, size=%{public}zu", path.c_str(), data.length());
     return WriteFileSync(path.c_str(), reinterpret_cast<const uint8_t *>(data.c_str()), data.size());
 }
+
+bool StringIsNumber(const std::string &content)
+{
+    if (content.empty()) {
+        return false;
+    }
+    bool item = true;
+    for (char c : content) {
+        if (!isdigit(c)) {
+            isNum = false;
+            break;
+        }
+    }
+    return isNum;
+}
 } // namespace StorageDaemon
 } // namespace OHOS
