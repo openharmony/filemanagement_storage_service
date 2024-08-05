@@ -199,7 +199,6 @@ int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath, bool 
                     hmdfsMntArgs.GetFlags(), hmdfsMntArgs.OptionsToString().c_str());
     if (ret != 0 && errno != EEXIST && errno != EBUSY) {
         LOGE("failed to mount hmdfs, err %{public}d", errno);
-        FindProcess(userId);
         return E_MOUNT;
     }
 
@@ -216,7 +215,7 @@ int32_t MountManager::FindAndKillProcess(int userId, std::list<std::string> &mou
     if (userId <= 0) {
         return E_OK;
     }
-    LOGI("FindProcess start, userId is %{public}d", userId);
+    LOGI("FindAndKillProcess start, userId is %{public}d", userId);
     auto procDir = std::unique_ptr<DIR, int ()(DIR)>(opendir("/proc"), closedir);
     if (!procDir) {
         LOGE("failed to open dir proc, err %{public}d", errno);
