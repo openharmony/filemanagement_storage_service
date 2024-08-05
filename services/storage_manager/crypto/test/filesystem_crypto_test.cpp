@@ -376,5 +376,29 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_UpdateKeyContext_0001, tes
 
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_UpdateKeyContext_0001";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_crypto_GenerateAppkey_0000
+ * @tc.name: Storage_manager_crypto_GenerateAppkey_0000
+ * @tc.desc: Test function of GenerateAppkey interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_GenerateAppkey_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileSystemCryptoTest-start Storage_manager_crypto_GenerateAppkey_0000";
+    std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
+            DelayedSingleton<FileSystemCrypto>::GetInstance();
+    uint32_t appUid = 108;
+    std::string keyId = "keys"; // UserKeys type
+    ASSERT_TRUE(fileSystemCrypto_ != nullptr);
+    uint32_t result = fileSystemCrypto_->GenerateAppkey(appUid, keyId);
+    EXPECT_EQ(result, E_USERID_RANGE);
+
+    fileSystemCrypto_->DeleteAppkey(keyId);
+    GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_GenerateAppkey_0000";
+}
 }
 }
