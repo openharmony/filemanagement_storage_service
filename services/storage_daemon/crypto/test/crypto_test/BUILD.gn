@@ -1,4 +1,4 @@
-# Copyright (C) 2022-2024 Huawei Device Co., Ltd.
+# Copyright (C) 2024 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -13,49 +13,38 @@
 import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
-module_output_path = "storage_service/crypto"
-
-config("module_private_config") {
-  visibility = [ ":*" ]
-}
-
-ohos_moduletest("CryptoSubTest") {
-  module_out_path = module_output_path
+ohos_unittest("CryptoTest") {
+  module_out_path = "storage_service/storage_daemon"
 
   defines = [
     "STORAGE_LOG_TAG = \"StorageDaemon\"",
     "LOG_DOMAIN = 0xD004301",
-    "USER_CRYPTO_MIGRATE_KEY",
+    "private=public",
   ]
 
   include_dirs = [
-    "../../include",
-    "../../include/crypto",
-    "../../../common/include",
+    "${storage_daemon_path}/include",
+    "${storage_daemon_path}/include/crypto",
+    "${storage_service_common_path}/include",
   ]
 
-  sources = [ "crypto_key_test.cpp" ]
-
-  if (storage_service_crypto_test) {
-    defines += [ "CRYPTO_TEST" ]
-  }
-
-  configs = [ ":module_private_config" ]
+  sources = [ "crypto_test.cpp" ]
 
   deps = [ "//third_party/googletest:gtest_main" ]
+
   deps += [
+    "${storage_daemon_path}/crypto:libsdcrypto",
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
-    "../../crypto:libsdcrypto",
   ]
+
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
     "huks:libhukssdk",
-    "ipc:ipc_single",
   ]
 }
 
 group("crypto_test") {
   testonly = true
-  deps = [ ":CryptoSubTest" ]
+  deps = [ ":CryptoTest" ]
 }
