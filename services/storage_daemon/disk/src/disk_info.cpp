@@ -36,12 +36,6 @@ const std::string SGDISK_DUMP_CMD = "--ohos-dump";
 const std::string SGDISK_ZAP_CMD = "--zap-all";
 const std::string SGDISK_PART_CMD = "--new=0:0:-0 --typeconde=0:0c00 --gpttombr=1";
 
-enum class Table {
-    UNKNOWN,
-    MBR,
-    GPT,
-};
-
 DiskInfo::DiskInfo(std::string sysPath, std::string devPath, dev_t device, int flag)
 {
     id_ = StringPrintf("disk-%d-%d", major(device), minor(device));
