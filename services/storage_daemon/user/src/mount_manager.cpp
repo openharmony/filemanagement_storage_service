@@ -228,7 +228,7 @@ int32_t MountManager::FindAndKillProcess(int userId, std::list<std::string> &mou
             continue;
         }
         std::string name = entry->d_name;
-        if(!StringIsNumber(name)) {
+        if (!StringIsNumber(name)) {
             continue;
         }
         ProcessInfo info;
@@ -343,6 +343,7 @@ bool MountManager::CheckMaps(const std::string &path, const std::string &prefix,
                     LOGE("find a fd %{public}s", tmpLine.c_str());
                     inputStream.close();
                     return true;
+                }
             }
         }
     }
@@ -350,7 +351,8 @@ bool MountManager::CheckMaps(const std::string &path, const std::string &prefix,
     return found;
 }
 
-bool MountManager::CheckSymlink(const std::string &path, const std::string &prefix, std::list<std::string> &mountFailList)
+bool MountManager::CheckSymlink(const std::string &path,
+                                const std::string &prefix, std::list<std::string> &mountFailList)
 {
     char realPath[ONE_KB];
     int res = readlink(path.c_str(), realPath, sizeof(realPath) - 1);
@@ -1059,7 +1061,6 @@ int32_t MountManager::DestroyFileManagerDirs(int32_t userId)
 
     return err ? E_OK : E_DESTROY_DIR;
 }
-
 
 int32_t MountManager::SetFafQuotaProId(int32_t userId)
 {
