@@ -128,7 +128,7 @@ bool StringIsNumber(const std::string &content)
     if (content.empty()) {
         return false;
     }
-    bool item = true;
+    bool isNum = true;
     for (char c : content) {
         if (!isdigit(c)) {
             isNum = false;

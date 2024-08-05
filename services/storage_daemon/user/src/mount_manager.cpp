@@ -217,14 +217,14 @@ int32_t MountManager::FindAndKillProcess(int userId, std::list<std::string> &mou
         return E_OK;
     }
     LOGI("FindProcess start, userId is %{public}d", userId);
-    DIR &dir = opendir("/proc");
-    if (dir == nullptr) {
+    auto procDir = std::unique_ptr<DIR, int ()(DIR)>(opendir("/proc"), closedir);
+    if (!procDir) {
         LOGE("failed to open dir proc, err %{public}d", errno);
         return -errno;
     }
     std::vector<ProcessInfo> processInfos;
     struct dirent *entry;
-    while ((entry = readdir(dir)) != nullptr) {
+    while ((entry = readdir(procDir.get())) != nullptr) {
         if (entry ->d_type != DT_DTR) {
             continue;
         }
@@ -305,6 +305,7 @@ bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info
     std::getline(inputStream, line);
     if (line.empty()) {
         LOGE("line is empty");
+        inputStream.close();
         return false;
     }
     std::stringstream ss(line);
@@ -315,6 +316,7 @@ bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info
     info.pid = std::stoi(pid);
     info.name = processName;
     LOGE("GetProcessInfo pid is %{public}s and name is %{public}s", pid.c_str(), processName.c_str());
+    inputStream.close();
     return true;
 }
 
