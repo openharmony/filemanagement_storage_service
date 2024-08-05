@@ -135,7 +135,7 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_MountD
     std::string networkId = "testnetworkid";
     std::string deviceId = "testdevid";
     int32_t ret = storageDaemonClient_->MountDfsDocs(userId, relativePath, networkId, deviceId);
-    EXPECT_EQ(ret, E_PREPARE_DIR);
+    EXPECT_EQ(ret, E_MOUNT);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_MountDfsDocs_001 end";
 }
 
