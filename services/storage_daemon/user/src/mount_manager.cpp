@@ -216,7 +216,7 @@ int32_t MountManager::FindAndKillProcess(int userId, std::list<std::string> &mou
         return E_OK;
     }
     LOGI("FindAndKillProcess start, userId is %{public}d", userId);
-    auto procDir = std::unique_ptr<DIR, int ()(DIR)>(opendir("/proc"), closedir);
+    auto procDir = std::unique_ptr<DIR, int (*)(DIR*)>(opendir("/proc"), closedir);
     if (!procDir) {
         LOGE("failed to open dir proc, err %{public}d", errno);
         return -errno;
