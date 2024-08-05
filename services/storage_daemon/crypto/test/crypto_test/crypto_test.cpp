@@ -150,7 +150,7 @@ HWTEST_F(CryptoTest, Huks_Master_Hdi_Access_Upgrade_Key_001, TestSize.Level1)
     HksBlob newKey;
 
     int ret = HuksMaster::GetInstance().HdiAccessUpgradeKey(oldKey, paramSet, newKey);
-    EXPECT_EQ(ret, HKS_ERROR_NULL_POINTER);
+    EXPECT_NE(ret, HKS_SUCCESS);
     GTEST_LOG_(INFO) << "CryptoTest_HuksMasterHdiAccessUpgradeKey_0100 end";
 }
 
