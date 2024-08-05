@@ -229,4 +229,272 @@ HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_GenerateAppkey_001, TestSize.Level
     EXPECT_EQ(ext.GenerateAppkey(100, 100, appKey, 1), false);
     GTEST_LOG_(INFO) << "FscryptKeyV1Ext_GenerateAppkey_001 end";
 }
+
+/**
+ * @tc.name: FscryptKeyV1Ext_AddClassE_001
+ * @tc.desc: Verify the AddClassE function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_AddClassE_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_AddClassE_001 end";
+    bool isNeedEncryptClassE;
+    bool isSupport;
+    FscryptKeyV1Ext ext;
+    ext.userId_ = 100;
+    ext.type_ = TYPE_EL2;
+
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(false));
+    EXPECT_EQ(ext.AddClassE(isNeedEncryptClassE, isSupport, 0), true);
+
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*fbexMock_, InstallEL5KeyToKernel(_, _, _, _, _)).WillOnce(Return(0));
+    EXPECT_EQ(ext.AddClassE(isNeedEncryptClassE, isSupport, 0), true);
+
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*fbexMock_, InstallEL5KeyToKernel(_, _, _, _, _)).WillOnce(Return(1));
+    EXPECT_EQ(ext.AddClassE(isNeedEncryptClassE, isSupport, 0), false);
+    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_AddClassE_001 end";
+}
+
+/**
+ * @tc.name: FscryptKeyV1Ext_DeleteClassEPinCode_001
+ * @tc.desc: Verify the DeleteClassEPinCode function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_DeleteClassEPinCode_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_DeleteClassEPinCode_001 end";
+    FscryptKeyV1Ext ext;
+    ext.userId_ = 100;
+    ext.type_ = TYPE_EL2;
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(false));
+    EXPECT_EQ(ext.DeleteClassEPinCode(100), true);
+
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*fbexMock_, DeleteClassEPinCode(_, _)).WillOnce(Return(0));
+    EXPECT_EQ(ext.DeleteClassEPinCode(100), true);
+
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*fbexMock_, DeleteClassEPinCode(_, _)).WillOnce(Return(1));
+    EXPECT_EQ(ext.DeleteClassEPinCode(100), false);
+    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_DeleteClassEPinCode_001 end";
+}
+
+/**
+ * @tc.name: FscryptKeyV1Ext_ChangePinCodeClassE_001
+ * @tc.desc: Verify the ChangePinCodeClassE function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_ChangePinCodeClassE_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_ChangePinCodeClassE_001 end";
+    bool isFbeSupport;
+    FscryptKeyV1Ext ext;
+    ext.userId_ = 100;
+    ext.type_ = TYPE_EL2;
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(false));
+    EXPECT_EQ(ext.ChangePinCodeClassE(100, isFbeSupport), true);
+
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*fbexMock_, ChangePinCodeClassE(_, _, _)).WillOnce(Return(0));
+    EXPECT_EQ(ext.ChangePinCodeClassE(100, isFbeSupport), true);
+
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*fbexMock_, ChangePinCodeClassE(_, _, _)).WillOnce(Return(1));
+    EXPECT_EQ(ext.ChangePinCodeClassE(100, isFbeSupport), false);
+    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_ChangePinCodeClassE_001 end";
+}
+
+/**
+ * @tc.name: FscryptKeyV1Ext_ReadClassE_001
+ * @tc.desc: Verify the ReadClassE function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_ReadClassE_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_ReadClassE_001 end";
+    bool isFbeSupport;
+    uint8_t classEBuffer;
+    FscryptKeyV1Ext ext;
+    ext.userId_ = 100;
+    ext.type_ = TYPE_EL2;
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(false));
+    EXPECT_EQ(ext.ReadClassE(0, &classEBuffer, 1, isFbeSupport), true);
+
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*fbexMock_, ReadESecretToKernel(_, _, _, _, _)).WillOnce(Return(0));
+    EXPECT_EQ(ext.ReadClassE(0, &classEBuffer, 1, isFbeSupport), true);
+
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*fbexMock_, ReadESecretToKernel(_, _, _, _, _)).WillOnce(Return(1));
+    EXPECT_EQ(ext.ReadClassE(0, &classEBuffer, 1, isFbeSupport), false);
+    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_ReadClassE_001 end";
+}
+
+/**
+ * @tc.name: FscryptKeyV1Ext_WriteClassE_001
+ * @tc.desc: Verify the WriteClassE function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_WriteClassE_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_WriteClassE_001 end";
+    uint8_t classEBuffer;
+    FscryptKeyV1Ext ext;
+    ext.userId_ = 100;
+    ext.type_ = TYPE_EL2;
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(false));
+    EXPECT_EQ(ext.WriteClassE(0, &classEBuffer, 1), true);
+
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*fbexMock_, WriteESecretToKernel(_, _, _, _)).WillOnce(Return(0));
+    EXPECT_EQ(ext.WriteClassE(0, &classEBuffer, 1), true);
+
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*fbexMock_, WriteESecretToKernel(_, _, _, _)).WillOnce(Return(1));
+    EXPECT_EQ(ext.WriteClassE(0, &classEBuffer, 1), false);
+    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_WriteClassE_001 end";
+}
+
+/**
+ * @tc.name: FscryptKeyV1Ext_InactiveKeyExt_001
+ * @tc.desc: Verify the InactiveKeyExt function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_InactiveKeyExt_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_InactiveKeyExt_001 end";
+    uint32_t flag = 2;
+    FscryptKeyV1Ext ext;
+    ext.userId_ = 100;
+    ext.type_ = TYPE_EL2;
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(false));
+    EXPECT_EQ(ext.InactiveKeyExt(flag), true);
+
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*fbexMock_, UninstallOrLockUserKeyToKernel(_, _, _, _, _)).WillOnce(Return(0));
+    EXPECT_EQ(ext.InactiveKeyExt(flag), true);
+
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*fbexMock_, UninstallOrLockUserKeyToKernel(_, _, _, _, _)).WillOnce(Return(1));
+    EXPECT_EQ(ext.InactiveKeyExt(flag), false);
+    
+    ext.type_ = TYPE_EL5;
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
+    EXPECT_EQ(ext.InactiveKeyExt(0), true);
+
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*fbexMock_, UninstallOrLockUserKeyToKernel(_, _, _, _, _)).WillOnce(Return(0));
+    EXPECT_EQ(ext.InactiveKeyExt(flag), true);
+
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*fbexMock_, UninstallOrLockUserKeyToKernel(_, _, _, _, _)).WillOnce(Return(1));
+    EXPECT_EQ(ext.InactiveKeyExt(flag), false);
+    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_InactiveKeyExt_001 end";
+}
+
+/**
+ * @tc.name: FscryptKeyV1Ext_LockUserScreenExt_001
+ * @tc.desc: Verify the LockUserScreenExt function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_LockUserScreenExt_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_LockUserScreenExt_001 end";
+    uint32_t flag = 2;
+    uint32_t elType = TYPE_EL5;
+    FscryptKeyV1Ext ext;
+    ext.userId_ = 100;
+    ext.type_ = TYPE_EL2;
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(false));
+    EXPECT_EQ(ext.LockUserScreenExt(flag, elType), true);
+    EXPECT_EQ(elType, TYPE_EL5);
+
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*fbexMock_, LockScreenToKernel(_)).WillOnce(Return(1));
+    EXPECT_EQ(ext.LockUserScreenExt(flag, elType), false);
+    EXPECT_EQ(elType, TYPE_EL5);
+
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*fbexMock_, LockScreenToKernel(_)).WillOnce(Return(0));
+    EXPECT_EQ(ext.LockUserScreenExt(flag, elType), true);
+    EXPECT_EQ(elType, ext.type_);
+    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_LockUserScreenExt_001 end";
+}
+
+/**
+ * @tc.name: FscryptKeyV1Ext_LockUeceExt_001
+ * @tc.desc: Verify the LockUeceExt function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_LockUeceExt_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_LockUeceExt_001 end";
+    bool isFbeSupport;
+    FscryptKeyV1Ext ext;
+    ext.userId_ = 100;
+    ext.type_ = TYPE_EL2;
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(false));
+    EXPECT_EQ(ext.LockUeceExt(isFbeSupport), true);
+
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*fbexMock_, LockUece(_, _, _)).WillOnce(Return(1));
+    EXPECT_EQ(ext.LockUeceExt(isFbeSupport), false);
+
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*fbexMock_, LockUece(_, _, _)).WillOnce(Return(0));
+    EXPECT_EQ(ext.LockUeceExt(isFbeSupport), true);
+    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_LockUeceExt_001 end";
+}
+
+/**
+ * @tc.name: FscryptKeyV1Ext_GetUserIdFromDir_001
+ * @tc.desc: Verify the GetUserIdFromDir function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_GetUserIdFromDir_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_GetUserIdFromDir_001 end";
+    FscryptKeyV1Ext ext;
+    ext.dir_ = "test";
+    EXPECT_EQ(ext.GetUserIdFromDir(), 0);
+    
+    ext.dir_ = "/data/foo/bar/el1/100";
+    EXPECT_EQ(ext.GetUserIdFromDir(), 100);
+    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_GetUserIdFromDir_001 end";
+}
+
+/**
+ * @tc.name: FscryptKeyV1Ext_GetTypeFromDir_001
+ * @tc.desc: Verify the GetTypeFromDir function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_GetTypeFromDir_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_GetTypeFromDir_001 end";
+    FscryptKeyV1Ext ext;
+    ext.dir_ = "test";
+    EXPECT_EQ(ext.GetTypeFromDir(), TYPE_GLOBAL_EL1);
+    
+    ext.dir_ = "data/";
+    EXPECT_EQ(ext.GetTypeFromDir(), TYPE_GLOBAL_EL1);
+
+    ext.dir_ = "/data/foo/bar/el1/100";
+    EXPECT_EQ(ext.GetTypeFromDir(), TYPE_EL1);
+
+    ext.dir_ = "/data/foo/bar";
+    EXPECT_EQ(ext.GetTypeFromDir(), TYPE_GLOBAL_EL1);
+    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_GetTypeFromDir_001 end";
+}
 }
