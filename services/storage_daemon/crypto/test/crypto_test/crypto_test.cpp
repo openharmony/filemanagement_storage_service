@@ -127,7 +127,7 @@ HWTEST_F(CryptoTest, Huks_Master_Hdi_Access_Finish_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "CryptoTest_HuksMasterHdiAccessFinish_0100 start";
     const HksBlob handle {};
-    const HksParamSet paramSet = nullptr;
+    struct HksParamSet *paramSet = nullptr;;
     const HksBlob inData {};
     HksBlob outData;
 
@@ -146,7 +146,7 @@ HWTEST_F(CryptoTest, Huks_Master_Hdi_Access_Upgrade_Key_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "CryptoTest_HuksMasterHdiAccessUpgradeKey_0100 start";
     const HksBlob oldKey {};
-    const HksParamSet paramSet = nullptr;
+    struct HksParamSet *paramSet = nullptr;
     HksBlob newKey;
 
     int ret = HuksMaster::GetInstance().HdiAccessUpgradeKey(oldKey, paramSet, newKey);
