@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 Huawei Device Co., Ltd.
+ * Copyright (C) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -63,7 +63,9 @@ key_serial_t KeyCtrlAddAppAsdpKey(const char *type,
                                   struct EncryptAsdpKey *fsKey,
                                   const key_serial_t ringId)
 {
-    return syscall(__NR_add_key, type, description, (void *)(fsKey), sizeof(struct EncryptAsdpKey), ringId);
+    return syscall(__NR_add_key, type, description,
+                   (void *)(fsKey), sizeof(struct EncryptAsdpKey),
+                   ringId);
 }
 
 long KeyCtrlSearch(key_serial_t ringId, const char *type, const char *description,

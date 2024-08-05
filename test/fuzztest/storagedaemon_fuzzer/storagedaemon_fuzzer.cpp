@@ -18,15 +18,15 @@
 #include <cstdint>
 #include <cstring>
 
+#include "accesstoken_kit.h"
 #include "message_parcel.h"
+#include "nativetoken_kit.h"
+#include "securec.h"
+#include "storage_daemon.h"
 #include "storage_daemon_ipc_interface_code.h"
 #include "storage_daemon_stub.h"
-#include "storage_daemon.h"
-#include "securec.h"
-#include "user_manager.h"
-#include "nativetoken_kit.h"
 #include "token_setproc.h"
-#include "accesstoken_kit.h"
+#include "user_manager.h"
 
 using namespace OHOS::StorageDaemon;
 
@@ -35,11 +35,9 @@ constexpr uint8_t MAX_CALL_TRANSACTION = 32;
 constexpr size_t U32_AT_SIZE = 4;
 constexpr size_t FOO_MAX_LEN = 1024;
 
-std::shared_ptr<StorageDaemon::StorageDaemon> storageDaemon =
-    std::make_shared<StorageDaemon::StorageDaemon>();
-std::shared_ptr<StorageDaemon::UserManager> userManager =
-        StorageDaemon::UserManager::GetInstance();
-uint32_t GetU32Data(const char* ptr)
+std::shared_ptr<StorageDaemon::StorageDaemon> storageDaemon = std::make_shared<StorageDaemon::StorageDaemon>();
+std::shared_ptr<StorageDaemon::UserManager> userManager = StorageDaemon::UserManager::GetInstance();
+uint32_t GetU32Data(const char *ptr)
 {
     // 将第0个数字左移24位，将第1个数字左移16位，将第2个数字左移8位，第3个数字不左移
     return (ptr[0] << 24) | (ptr[1] << 16) | (ptr[2] << 8) | (ptr[3]);
@@ -81,9 +79,9 @@ bool StorageDaemonFuzzTest(std::unique_ptr<char[]> data, size_t size)
 {
     SetNativeToken();
     uint32_t code = GetU32Data(data.get());
-    if (code == 0
-        || code % MAX_CALL_TRANSACTION == static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_SHARE_FILE)
-        || code % MAX_CALL_TRANSACTION == static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_SHARE_FILE)) {
+    if (code == 0 ||
+        code % MAX_CALL_TRANSACTION == static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_SHARE_FILE) ||
+        code % MAX_CALL_TRANSACTION == static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_SHARE_FILE)) {
         return true;
     }
     MessageParcel datas;
@@ -316,7 +314,7 @@ bool UserManagerFuzzTest(const uint8_t *data, size_t size)
     userManager->CreateBundleDataDir(flag);
 
     return true;
-    }
+}
 } // namespace OHOS
 
 /* Fuzzer entry point */

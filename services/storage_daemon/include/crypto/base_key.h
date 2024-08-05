@@ -51,7 +51,7 @@ public:
     virtual bool LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt = MNT_DATA) = 0;
     virtual bool UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt = MNT_DATA) = 0;
     virtual bool GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId) = 0;
-    virtual bool DeleteAppkey(const std::string KeyId) = 0;
+    virtual bool DeleteAppkey(const std::string keyId) = 0;
     virtual bool AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status) = 0;
     virtual bool DeleteClassEPinCode(uint32_t userId) = 0;
     virtual bool DecryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status) = 0;

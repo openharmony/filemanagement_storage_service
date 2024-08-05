@@ -58,7 +58,6 @@
         "safwk",
         "samgr",
         "selinux_adapter",
-        "app_file_service",
         "os_account",
         "openssl",
         "user_auth_framework"

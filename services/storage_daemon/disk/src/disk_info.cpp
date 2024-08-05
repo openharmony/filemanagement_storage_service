@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -35,6 +35,12 @@ const std::string SGDISK_PATH = "/system/bin/sgdisk";
 const std::string SGDISK_DUMP_CMD = "--ohos-dump";
 const std::string SGDISK_ZAP_CMD = "--zap-all";
 const std::string SGDISK_PART_CMD = "--new=0:0:-0 --typeconde=0:0c00 --gpttombr=1";
+
+enum class Table {
+    UNKNOWN,
+    MBR,
+    GPT,
+};
 
 DiskInfo::DiskInfo(std::string sysPath, std::string devPath, dev_t device, int flag)
 {

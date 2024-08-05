@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,7 +23,7 @@ namespace OHOS {
 namespace StorageDaemon {
 class DiskInfoTestMock : public DiskInfo {
 public:
-    DiskInfoTestMock(std::string sysPath, std::string devPath, dev_t device, int flags)
+    DiskInfoTestMock(std::string &sysPath, std::string &devPath, dev_t device, int flags)
         :DiskInfo(sysPath, devPath, device, flags) {};
     ~DiskInfoTestMock() {};
     MOCK_METHOD0(Create, int(void));

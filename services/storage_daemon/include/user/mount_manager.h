@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -32,6 +32,11 @@ struct DirInfo {
     mode_t mode;
     uid_t uid;
     gid_t gid;
+};
+
+struct ProcessInfo {
+    int pid;
+    std::string name;
 };
 
 constexpr uid_t OID_ROOT = 0;
@@ -74,6 +79,10 @@ public:
     int32_t FindMountPointsToMap(std::map<std::string, std::list<std::string>> &mountMap, int32_t userId);
     void MountPointToList(std::list<std::string> &hmdfsList, std::list<std::string> &hmfsList,
         std::list<std::string> &sharefsList, std::string &line, int32_t userId);
+    int32_t FindProcess(int32_t userId);
+    bool CheckMaps(const std::string &path, const std::string &prefix);
+    bool CheckSymlink(const std::string &path, const std::string &prefix);
+    bool GetProcessInfo(const std::string &filename, ProcessInfo &info);
 
 private:
     bool SupportHmdfs();
@@ -91,6 +100,7 @@ private:
     void UMountCloudForUsers(void);
     void PrepareFileManagerDir(int32_t userId);
     int32_t CloudUMount(int32_t userId);
+    bool CheckPathValid(const std::string &bundleNameStr, uint32_t userId);
 
     DISALLOW_COPY_AND_MOVE(MountManager);
 

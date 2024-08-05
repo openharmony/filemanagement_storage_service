@@ -55,6 +55,7 @@ enum ErrNo {
     E_JSON_PARSE_ERROR,
     E_OPEN_JSON_FILE_ERROR,
     E_PARAMS_INVAL,
+    E_ACTIVE_EL2_FAILED,
 };
 
 enum JsErrCode {
