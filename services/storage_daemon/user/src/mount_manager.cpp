@@ -321,6 +321,9 @@ bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info
 
 bool MountManager::CheckMaps(const std::string &path, const std::string &prefix, std::list<std::string> &mountFailList)
 {
+    if (path.empty()) {
+        return false;
+    }
     std::ifstream inputStream(path.c_str(), std::ios::in);
     if (!inputStream.is_open()) {
         LOGE("unable to open %{public}s, err %{public}d", path.c_str(), errno);
@@ -330,20 +333,20 @@ bool MountManager::CheckMaps(const std::string &path, const std::string &prefix,
     std::string tmpLine;
     while (std::getline(inputStream, tmpLine)) {
         std::string::size_type pos = tmpLine.find("/");
-        if (pos != std::string::npos) {
-            tmpLine = tmpLine.substr(pos);
-            if (tmpLine.find(prefix) == 0) {
+        if (pos == std::string::npos) {
+            continue;
+        }
+        tmpLine = tmpLine.substr(pos);
+        if (tmpLine.find(prefix) == 0) {
+            LOGE("find a fd %{public}s", tmpLine.c_str());
+            inputStream.close();
+            found = true;
+        }
+        for (const auto &item: mountFailList) {
+            if (tmpLine.find(item) == 0) {
                 LOGE("find a fd %{public}s", tmpLine.c_str());
                 inputStream.close();
-                found = true;
-                break;
-            }
-            for (const auto &item: mountFailList) {
-                if (tmpLine.find(prefix) == 0) {
-                    LOGE("find a fd %{public}s", tmpLine.c_str());
-                    inputStream.close();
-                    return true;
-                }
+                return true;
             }
         }
     }
@@ -354,6 +357,9 @@ bool MountManager::CheckMaps(const std::string &path, const std::string &prefix,
 bool MountManager::CheckSymlink(const std::string &path,
                                 const std::string &prefix, std::list<std::string> &mountFailList)
 {
+    if (path.empty()) {
+        return false;
+    }
     char realPath[ONE_KB];
     int res = readlink(path.c_str(), realPath, sizeof(realPath) - 1);
     if (res < 0 || res >= ONE_KB) {
