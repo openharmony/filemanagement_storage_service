@@ -135,7 +135,7 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_MountD
     std::string networkId = "testnetworkid";
     std::string deviceId = "testdevid";
     int32_t ret = storageDaemonClient_->MountDfsDocs(userId, relativePath, networkId, deviceId);
-    EXPECT_EQ(ret, E_PREPARE_DIR);
+    EXPECT_EQ(ret, E_MOUNT);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_MountDfsDocs_001 end";
 }
 
@@ -238,6 +238,91 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Update
 
     storageDaemonClient_->DeleteUserKeys(userid);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UpdateKeyContext_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_StorageDaemonClientTest_UnlockUserScreen_001
+ * @tc.desc: Verify the UnlockUserScreen function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_UnlockUserScreen_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UnlockUserScreen_001 start";
+
+    ASSERT_TRUE(storageDaemonClient_ != nullptr);
+
+    int32_t userid = StorageTest::USER_ID1;
+
+    int32_t ret = storageDaemonClient_->LockUserScreen(userid);
+    ASSERT_TRUE(ret == E_OK);
+
+    ret = storageDaemonClient_->UnlockUserScreen(userid, {}, {});
+    ASSERT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UnlockUserScreen_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_StorageDaemonClientTest_GetLockScreenStatus_001
+ * @tc.desc: Verify the GetLockScreenStatus function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_GetLockScreenStatus_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_GetLockScreenStatus_001 start";
+
+    ASSERT_TRUE(storageDaemonClient_ != nullptr);
+
+    int32_t userid = StorageTest::USER_ID1;
+    bool lockScreenStatus = false;
+    int32_t ret = storageDaemonClient_->GetLockScreenStatus(userid, lockScreenStatus);
+    ASSERT_TRUE(ret == E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_GetLockScreenStatus_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_StorageDaemonClientTest_GenerateAppkey_001
+ * @tc.desc: Verify the GenerateAppkey function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_GenerateAppkey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_GenerateAppkey_001 start";
+
+    ASSERT_TRUE(storageDaemonClient_ != nullptr);
+
+    int32_t userid = StorageTest::USER_ID1;
+    uint32_t appUid = 0;
+    std::string keyId = "keyId";
+
+    int32_t ret = storageDaemonClient_->GenerateAppkey(userid, appUid, keyId);
+    EXPECT_EQ(ret, -ENOENT);
+
+    ret = storageDaemonClient_->DeleteAppkey(userid, keyId);
+    EXPECT_EQ(ret, -ENOENT);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_GenerateAppkey_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_StorageDaemonClientTest_FscryptEnable_001
+ * @tc.desc: Verify the FscryptEnable function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_FscryptEnable_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_FscryptEnable_001 start";
+
+    ASSERT_TRUE(storageDaemonClient_ != nullptr);
+
+    std::string fscryptOptions = "test";
+    int32_t ret = storageDaemonClient_->FscryptEnable(fscryptOptions);
+    EXPECT_EQ(ret, -EFAULT);
+
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_FscryptEnable_001 end";
 }
 }
 }
