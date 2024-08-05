@@ -237,7 +237,7 @@ int32_t MountManager::FindAndKillProcess(int userId, std::list<std::string> &mou
             LOGE("failed to get process info, pid is %{public}s.", name.c_str());
             continue;
         }
-        if (info.name == "(storage_manager)" || info.name == "(storage_daemon)") {
+        if (info.name == "(storage_daemon)") {
             continue;
         }
         Utils::MountArgument argument(Utils::MountArgumentDescriptors::Alpha(userId, ""));
@@ -257,9 +257,9 @@ bool MountManager::PidUsingFlag(int &pidPath, const int &prefix, std::list<std::
 {
     bool found = false;
     found |= CheckMaps(pidPath + "/maps", prefix, mountFailList);
-    found |= CheckMaps(pidPath + "/cwd", prefix, mountFailList);
-    found |= CheckMaps(pidPath + "/root", prefix, mountFailList);
-    found |= CheckMaps(pidPath + "/exe", prefix, mountFailList);
+    found |= CheckSymlink(pidPath + "/cwd", prefix, mountFailList);
+    found |= CheckSymlink(pidPath + "/root", prefix, mountFailList);
+    found |= CheckSymlink(pidPath + "/exe", prefix, mountFailList);
 
     std::string fdPath = pidPath + "/fd";
     auto fdDir = std::unique_ptr<DIR, int (*)(DIR*)>(opendir(fdPath.c_str()), closedir);
