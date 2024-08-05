@@ -62,6 +62,7 @@ const string MOUNT_POINT_INFO = "/proc/mounts";
 const string MOUNT_POINT_TYPE_HMDFS = "hmdfs";
 const string MOUNT_POINT_TYPE_HMFS = "hmfs";
 const string MOUNT_POINT_TYPE_SHAREFS = "sharefs";
+cosst string DIR_PROC = "/proc";
 const set<string> SANDBOX_EXCLUDE_PATH = {
     "chipset",
     "system",
@@ -216,7 +217,7 @@ int32_t MountManager::FindAndKillProcess(int userId, std::list<std::string> &mou
         return E_OK;
     }
     LOGI("FindAndKillProcess start, userId is %{public}d", userId);
-    auto procDir = std::unique_ptr<DIR, int (*)(DIR*)>(opendir("/proc"), closedir);
+    auto procDir = std::unique_ptr<DIR, int (*)(DIR*)>(opendir(DIR_PROC), closedir);
     if (!procDir) {
         LOGE("failed to open dir proc, err %{public}d", errno);
         return -errno;
@@ -224,7 +225,7 @@ int32_t MountManager::FindAndKillProcess(int userId, std::list<std::string> &mou
     std::vector<ProcessInfo> processInfos;
     struct dirent *entry;
     while ((entry = readdir(procDir.get())) != nullptr) {
-        if (entry ->d_type != DT_DTR) {
+        if (entry->d_type != DT_DIR) {
             continue;
         }
         std::string name = entry->d_name;
@@ -232,7 +233,7 @@ int32_t MountManager::FindAndKillProcess(int userId, std::list<std::string> &mou
             continue;
         }
         ProcessInfo info;
-        std::string filename = "/proc/" + name + "/stat";
+        std::string filename = DIR_PROC + "/" + name + "/stat";
         if (!GetProcessInfo(filename, info)) {
             LOGE("failed to get process info, pid is %{public}s.", name.c_str());
             continue;
@@ -242,7 +243,7 @@ int32_t MountManager::FindAndKillProcess(int userId, std::list<std::string> &mou
         }
         Utils::MountArgument argument(Utils::MountArgumentDescriptors::Alpha(userId, ""));
         const string &prefix = argument.GetMountPointPrefix();
-        std::string pidPath = "/proc/" + name;
+        std::string pidPath = DIR_PROC + "/" + name;
         if (!PidUsingFlag(pidPath, prefix, mountFailList)) {
             LOGE("find a link pid is %{public}d, processName is %{public}s.", info.pid, info.name.c_str());
             processInfos.push_back(info);
@@ -291,7 +292,6 @@ void MountManager::KillProcess(int &processInfo)
 bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info)
 {
     if (filename.empty()) {
-        LOGE("filename is empty");
         return false;
     }
     LOGE("GetProcessInfo path is %{public}s", filename.c_str());
