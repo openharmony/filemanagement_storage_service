@@ -15,6 +15,16 @@
 
 #include <gtest/gtest.h>
 
+#include <string>
+#include <vector>
+
+#include "base_key.h"
+#include "huks_master.h"
+#include "key_blob.h"
+#include "openssl_crypto.h"
+
+#include "storage_service_errno.h"
+
 namespace OHOS {
 namespace StorageDaemon {
 using namespace testing::ext;
