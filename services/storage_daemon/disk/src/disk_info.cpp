@@ -291,23 +291,19 @@ void DiskInfo::ProcessPartition(std::vector<std::string>::iterator &it, std::vec
     if (++it == end) {
         return;
     }
-
     int32_t index = std::stoi(*it);
     unsigned int majorId = major(device_);
     if ((index > maxVols && majorId == DISK_MMC_MAJOR) || index < 1) {
         LOGE("Invalid partition %{public}d", index);
         return;
     }
-
     dev_t partitionDev = (index > MAX_SCSI_VOLUMES) ?
         makedev(MAJORID_BLKEXT, minor(device_) + static_cast<uint32_t>(index) - MAX_PARTITION) :
         makedev(major(device_), minor(device_) + static_cast<uint32_t>(index));
-
     if (table == Table::MBR) {
         if (++it == end) {
             return;
         }
-
         int32_t type = std::stoi("0x0" + *it, 0, 16);
         foundPart = CreateMBRVolume(type, partitionDev);
     } else if (table == Table::GPT) {
