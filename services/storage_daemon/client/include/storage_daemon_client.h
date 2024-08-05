@@ -61,6 +61,11 @@ public:
         const std::string &networkId, const std::string &deviceId);
     static int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId);
+    static int32_t CreateRecoverKey(uint32_t userId,
+                                    uint32_t userType,
+                                    const std::vector<uint8_t> &token,
+                                    const std::vector<uint8_t> &secret);
+    static int32_t SetRecoverKey(const std::vector<uint8_t> &key);
 
 private:
     static sptr<IStorageDaemon> GetStorageDaemonProxy(void);

@@ -62,6 +62,8 @@ namespace {
         static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_MEM_PARA),
         static_cast<int32_t>(StorageDaemonInterfaceCode::GENERATE_APP_KEY),
         static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_APP_KEY),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_RECOVER_KEY),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::SET_RECOVER_KEY),
     };
 }
 
@@ -165,6 +167,8 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRe
     EXPECT_CALL(mock, GetOccupiedSpace(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, MountCryptoPathAgain(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, UpdateMemoryPara(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, CreateRecoverKey(testing::_, testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, SetRecoverKey(testing::_)).WillOnce(testing::Return(E_OK));
 
     for (auto c : g_code) {
         MessageParcel data;
@@ -884,6 +888,69 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonTest_HandleDeleteAp
     EXPECT_TRUE(err == E_ERR);
 
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_HandleDeleteAppkey_001 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_StorageDaemonTest_HandleCreateRecoverKey_001
+ * @tc.desc: Verify the HandleCreateRecoverKey function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonTest_HandleCreateRecoverKey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_HandleCreateRecoverKey_001 start";
+
+    StorageDaemonStubMock mock;
+
+    MessageParcel data1;
+    MessageParcel reply1;
+    EXPECT_CALL(mock, CreateRecoverKey(testing::_, testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    int32_t ret = mock.HandleCreateRecoverKey(data1, reply1);
+    EXPECT_TRUE(ret == E_OK);
+    int32_t err = reply1.ReadInt32();
+    EXPECT_TRUE(err == E_OK);
+
+    MessageParcel data2;
+    MessageParcel reply2;
+    EXPECT_CALL(mock, CreateRecoverKey(testing::_, testing::_, testing::_, testing::_)).WillOnce(
+        testing::Return(E_ERR));
+    ret = mock.HandleCreateRecoverKey(data2, reply2);
+    EXPECT_EQ(ret, E_OK);
+    err = reply2.ReadInt32();
+    EXPECT_TRUE(err == E_ERR);
+
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_HandleCreateRecoverKey_001 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_StorageDaemonTest_HandleSetRecoverKey_001
+ * @tc.desc: Verify the HandleSetRecoverKey function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonTest_HandleSetRecoverKey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_HandleSetRecoverKey_001 start";
+
+    StorageDaemonStubMock mock;
+
+    MessageParcel data1;
+    MessageParcel reply1;
+    EXPECT_CALL(mock, SetRecoverKey(testing::_)).WillOnce(testing::Return(E_OK));
+    int32_t ret = mock.HandleSetRecoverKey(data1, reply1);
+    EXPECT_TRUE(ret == E_OK);
+    int32_t err = reply1.ReadInt32();
+    EXPECT_TRUE(err == E_OK);
+
+    MessageParcel data2;
+    MessageParcel reply2;
+    EXPECT_CALL(mock, SetRecoverKey(testing::_)).WillOnce(testing::Return(E_ERR));
+    ret = mock.HandleSetRecoverKey(data2, reply2);
+    EXPECT_EQ(ret, E_OK);
+    err = reply2.ReadInt32();
+    EXPECT_TRUE(err == E_ERR);
+
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_HandleSetRecoverKey_001 end";
 }
 
 /**
