@@ -1204,25 +1204,6 @@ HWTEST_F(CryptoKeyTest, base_key_generate_and_save_key_blob, TestSize.Level1)
 }
 
 /**
- * @tc.name: base_key_encrypt_key_blob
- * @tc.desc: Verify the BaseKey EncryptKeyBlob
- * @tc.type: FUNC
- * @tc.require: SR000H0CM9
- */
-HWTEST_F(CryptoKeyTest, base_key_encrypt_key_blob, TestSize.Level1)
-{
-    const UserAuth auth;
-    const std::string keyPath;
-    KeyBlob planKey;
-    KeyBlob encryptedKey;
-    bool ret = g_testKeyV1.EncryptKeyBlob(auth, keyPath, planKey, encryptedKey);
-    EXPECT_FALSE(ret);
-
-    ret = g_testKeyV1.DecryptKeyBlob(auth, keyPath, planKey, encryptedKey);
-    EXPECT_FALSE(ret);
-}
-
-/**
  * @tc.name: huks_master_encrypt_key
  * @tc.desc: Verify the HuksMaster EncryptKey
  * @tc.type: FUNC

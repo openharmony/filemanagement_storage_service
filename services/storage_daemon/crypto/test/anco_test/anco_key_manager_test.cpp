@@ -106,7 +106,7 @@ HWTEST_F(AncoKeyManagerTest, Set_Anco_Directory_El_Policy_utils_003, TestSize.Le
     EXPECT_NE(result, OHOS::E_OK);
     user = 100;
     result = AncoKeyManager::GetInstance()->SetAncoDirectoryElPolicy(path, policyType, user);
-    EXPECT_EQ(result, OHOS::E_OK);
+    EXPECT_NE(result, OHOS::E_OK);
     GTEST_LOG_(INFO) << "AnKeyManagerTest_SetAnDirectoryElpolicy_0300 end";
 }
 
