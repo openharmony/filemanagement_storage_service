@@ -725,10 +725,10 @@ int32_t StorageDaemon::UMountDfsDocs(int32_t userId, const std::string &relative
     return MountManager::GetInstance()->UMountDfsDocs(userId, relativePath, networkId, deviceId);
 }
 
-int32_t StorageDaemon::GetLockedStatus(uint32_t userId)
+int32_t StorageDaemon::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
 {
 #ifdef USER_CRYPTO_MANAGER
-    return KeyManager::GetInstance()->GetLockedStatus(userId);
+    return KeyManager::GetInstance()->GetFileEncryptStatus(userId, isEncrypted);
 #else
     return E_OK;
 #endif

@@ -1422,47 +1422,32 @@ int KeyManager::UpgradeKeys(const std::vector<FileList> &dirInfo)
     return 0;
 }
 
-int KeyManager::GetLockedStatus(uint32_t userId)
+int KeyManager::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
 {
-    LOGI("Begin check lock status.");
-    const char rootPath_app[] = "/data/app/el2/";
-    const char rootPath_service[] = "/data/service/el2/";
-    const char rootPath_chipset[] = "/data/chipset/el2/";
-    const char *rootPath[] = {rootPath_app, rootPath_service, rootPath_chipset};
+    LOGI("Begin check encrypted status.");
+    isEncrypted = true;
+    const char rootPath[] = "/data/app/el2/";
     const char basePath[] = "/base";
-    for (auto &item : rootPath) {
-        size_t allPathSize = strlen(item) + strlen(basePath) + sizeof(userId);
-        char *path = reinterpret_cast<char *>(malloc(sizeof(char) * (allPathSize + 1)));
-        if (path == nullptr) {
-            LOGE("Failed to malloce path.");
-            free(path);
-            return -ENOENT;
-        }
-        int len = sprintf_s(path, sizeof(path), "%s%u", item, userId);
-        if (len < 0 || (size_t)len >= allPathSize) {
-            LOGE("Failed to get base path");
-            free(path);
-            return -ENOENT;
-        }
-        if (access(path, F_OK) != 0) {
-            LOGE("The user is not exist");
-            free(path);
-            return -ENOTDIR;
-        }
-        errno_t result = strncat_s(path, sizeof(path) - 1, basePath, strlen(basePath));
-        if (result != 0) {
-            LOGE("Failed to get base path");
-            free(path);
-            return -ENOENT;
-        }
-        if (access(path, F_OK) == 0) {
-            LOGI("This is unlock status");
-            free(path);
-            return E_OK;
-        }
-        free(path);
+    size_t allPathSize = strlen(rootPath) + strlen(basePath) + 1 + USER_ID_SIZE_VALUE;
+    char *path = reinterpret_cast<char *>(malloc(sizeof(char) * (allPathSize)));
+    if (path == nullptr) {
+        LOGE("Failed to malloce path.");
+        return -ENOENT;
     }
-    LOGI("This is lock status");
+    int len = sprintf_s(path, allPathSize, "%s%u%s", rootPath, userId, basePath);
+    if (len <= 0 || (size_t)len >= allPathSize) {
+        LOGE("Failed to get base path");
+        free(path);
+        return -ENOENT;
+    }
+    if (access(path, F_OK) == 0) {
+        LOGI("This is unencrypted status");
+        isEncrypted = false;
+        free(path);
+        return E_OK;
+    }
+    free(path);
+    LOGI("This is encrypted status");
     return E_PERMISSION_DENIED;
 }
 

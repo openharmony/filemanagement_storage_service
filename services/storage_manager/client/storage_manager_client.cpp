@@ -156,7 +156,7 @@ int32_t StorageManagerClient::UnlockUserScreen(uint32_t userId,
     return client->UnlockUserScreen(userId, token, secret);
 }
 
-int32_t StorageManagerClient::GetLockedStatus(uint32_t userId)
+int32_t StorageManagerClient::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
 {
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
@@ -164,7 +164,7 @@ int32_t StorageManagerClient::GetLockedStatus(uint32_t userId)
         return -EFAULT;
     }
 
-    return client->GetLockedStatus(userId);
+    return client->GetFileEncryptStatus(userId, isEncrypted);
 }
 
 int32_t StorageManagerClient::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)

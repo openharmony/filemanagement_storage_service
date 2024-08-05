@@ -75,7 +75,7 @@ public:
     MOCK_METHOD2(GenerateAppkey, int32_t(uint32_t, std::string &));
     MOCK_METHOD4(SetBundleQuota, int32_t(const std::string &, int32_t, const std::string &, int32_t));
     MOCK_METHOD1(DeleteAppkey, int32_t(const std::string keyId));
-    MOCK_METHOD1(GetLockedStatus, int32_t(uint32_t));
+    MOCK_METHOD2(GetFileEncryptStatus, int32_t(uint32_t, bool &));
 };
 }  // namespace StorageManager
 }  // namespace OHOS

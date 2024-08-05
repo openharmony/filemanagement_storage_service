@@ -30,6 +30,7 @@ const uid_t USER_ID_BASE = 200000;
 namespace StorageDaemon {
 constexpr uint32_t GLOBAL_USER_ID = 0;
 constexpr uint32_t ANCO_USER_ID = 100;
+constexpr uint32_t USER_ID_SIZE_VALUE = 16;
 constexpr char FILE_SEPARATOR_CHAR = '/';
 static const std::string FILE_CONTENT_SEPARATOR = ";";
 static const std::string WILDCARD_DEFAULT_INCLUDE = "*";

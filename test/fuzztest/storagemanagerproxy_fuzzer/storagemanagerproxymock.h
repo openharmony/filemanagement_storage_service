@@ -274,7 +274,7 @@ public:
     {
         return E_OK;
     }
-    int32_t GetLockedStatus(uint32_t userId) override
+    int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted) override
     {
         return E_OK;
     }

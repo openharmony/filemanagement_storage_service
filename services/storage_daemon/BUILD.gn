@@ -207,7 +207,7 @@ ohos_executable("sdc") {
     deps += [ "libfscrypt:libfscryptutils" ]
   }
 
-  if (true) {
+  if (build_variant == "root") {
     defines += [ "SDC_TEST_ENABLE" ]
   }
 

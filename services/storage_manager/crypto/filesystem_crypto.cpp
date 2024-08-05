@@ -147,7 +147,7 @@ int32_t FileSystemCrypto::UnlockUserScreen(uint32_t userId,
     return sdCommunication->UnlockUserScreen(userId, token, secret);
 }
 
-int32_t FileSystemCrypto::GetLockedStatus(uint32_t userId)
+int32_t FileSystemCrypto::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
 {
     LOGI("UserId: %{public}u", userId);
     int32_t err = CheckUserIdRange(userId);
@@ -157,7 +157,7 @@ int32_t FileSystemCrypto::GetLockedStatus(uint32_t userId)
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    return sdCommunication->GetLockedStatus(userId);
+    return sdCommunication->GetFileEncryptStatus(userId, isEncrypted);
 }
 
 int32_t FileSystemCrypto::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)

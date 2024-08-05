@@ -62,6 +62,7 @@ namespace {
         static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_MEM_PARA),
         static_cast<int32_t>(StorageDaemonInterfaceCode::GENERATE_APP_KEY),
         static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_APP_KEY),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::GET_FILE_ENCRYPT_STATUS),
     };
 }
 
@@ -165,9 +166,8 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRe
     EXPECT_CALL(mock, GetOccupiedSpace(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, MountCryptoPathAgain(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, UpdateMemoryPara(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(mock, GetLockedStatus(testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, GetFileEncryptStatus(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     
-
     for (auto c : g_code) {
         MessageParcel data;
         MessageParcel reply;

@@ -110,7 +110,7 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user, KeyType type,
     return E_OK;
 }
 
-int KeyManager::GetLockedStatus(uint32_t userId)
+int KeyManager::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
 {
     return E_OK;
 }
