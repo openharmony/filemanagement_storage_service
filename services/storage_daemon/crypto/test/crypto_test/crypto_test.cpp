@@ -67,7 +67,7 @@ HWTEST_F(CryptoTest, Generate_And_Save_Key_Blob_001, TestSize.Level1)
     const std::string path;
     const uint32_t size = 0;
     bool ret = BaseKey::GenerateAndSaveKeyBlob(blob, path, size);
-    EXPECT_FALSE(ret)
+    EXPECT_FALSE(ret);
     GTEST_LOG_(INFO) << "CryptoTest_GenerateAndSaveKeyBlob_0100 end";
 }
 
@@ -126,9 +126,9 @@ HWTEST_F(CryptoTest, Huks_Master_Decrypt_Key_001, TestSize.Level1)
 HWTEST_F(CryptoTest, Huks_Master_Hdi_Access_Finish_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "CryptoTest_HuksMasterHdiAccessFinish_0100 start";
-    const HksBlob handle;
+    const HksBlob handle {};
     const HksParamSet paramSet = nullptr;
-    const HksBlob inData;
+    const HksBlob inData {};
     HksBlob outData;
 
     int ret = HuksMaster::GetInstance().HdiAccessFinish(handle, paramSet, inData, outData);
@@ -145,7 +145,7 @@ HWTEST_F(CryptoTest, Huks_Master_Hdi_Access_Finish_001, TestSize.Level1)
 HWTEST_F(CryptoTest, Huks_Master_Hdi_Access_Upgrade_Key_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "CryptoTest_HuksMasterHdiAccessUpgradeKey_0100 start";
-    const HksBlob oldKey;
+    const HksBlob oldKey {};
     const HksParamSet paramSet = nullptr;
     HksBlob newKey;
 
