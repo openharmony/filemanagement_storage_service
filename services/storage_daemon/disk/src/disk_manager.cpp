@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -169,7 +169,7 @@ void DiskManager::DestroyDisk(dev_t device)
 std::shared_ptr<DiskInfo> DiskManager::GetDisk(dev_t device)
 {
     for (auto &diskInfo : disk_) {
-        if (diskInfo != nullptr && diskInfo->GetDevice() == device) {
+        if ((diskInfo != nullptr) && (diskInfo->GetDevice() == device)) {
             return diskInfo;
         }
     }
@@ -196,6 +196,10 @@ int32_t DiskManager::HandlePartition(std::string diskId)
     int32_t ret = E_NON_EXIST;
 
     for (auto i = disk_.begin(); i != disk_.end(); i++) {
+        if (*i == nullptr) {
+            continue;
+        }
+
         if ((*i)->GetId() == diskId) {
             ret = (*i)->Partition();
             break;

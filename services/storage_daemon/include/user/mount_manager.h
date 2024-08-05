@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -100,6 +100,7 @@ private:
     void UMountCloudForUsers(void);
     void PrepareFileManagerDir(int32_t userId);
     int32_t CloudUMount(int32_t userId);
+    bool CheckPathValid(const std::string &bundleNameStr, uint32_t userId);
 
     DISALLOW_COPY_AND_MOVE(MountManager);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -66,7 +66,7 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_GenerateUserKeys_0001, tes
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-start Storage_manager_crypto_GenerateUserKeys_0000";
     std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
         DelayedSingleton<FileSystemCrypto>::GetInstance();
-    uint32_t userId = 9999;
+    uint32_t userId = 19999;
     uint32_t flags = 2; // UserKeys type
     uint32_t ret = fileSystemCrypto_->GenerateUserKeys(userId, flags);
     EXPECT_EQ(ret, E_USERID_RANGE);
@@ -112,7 +112,7 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_DeleteUserKeys_0001, testi
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-start Storage_manager_crypto_DeleteUserKeys_0001";
     std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
         DelayedSingleton<FileSystemCrypto>::GetInstance();
-    uint32_t userId = 9999;
+    uint32_t userId = 19999;
     uint32_t ret = fileSystemCrypto_->DeleteUserKeys(userId);
     EXPECT_EQ(ret, E_USERID_RANGE);
 
@@ -158,7 +158,7 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_UpdateUserAuth_0001, testi
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-start Storage_manager_crypto_UpdateUserAuth_0001";
     std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
         DelayedSingleton<FileSystemCrypto>::GetInstance();
-    uint32_t userId = 9999;
+    uint32_t userId = 19999;
     uint32_t ret = fileSystemCrypto_->UpdateUserAuth(userId, 0, {}, {}, {});
     EXPECT_EQ(ret, E_USERID_RANGE);
 
@@ -204,7 +204,7 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_ActiveUserKey_0001, testin
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-start Storage_manager_crypto_ActiveUserKey_0001";
     std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
         DelayedSingleton<FileSystemCrypto>::GetInstance();
-    uint32_t userId = 9999;
+    uint32_t userId = 19999;
     uint32_t ret = fileSystemCrypto_->ActiveUserKey(userId, {}, {});
     EXPECT_EQ(ret, E_USERID_RANGE);
 
@@ -320,7 +320,7 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_InactiveUserKey_0001, test
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-start Storage_manager_crypto_InactiveUserKey_0001";
     std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
         DelayedSingleton<FileSystemCrypto>::GetInstance();
-    uint32_t userId = 9999;
+    uint32_t userId = 19999;
     uint32_t ret = fileSystemCrypto_->InactiveUserKey(userId);
     EXPECT_EQ(ret, E_USERID_RANGE);
 
@@ -370,7 +370,7 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_UpdateKeyContext_0001, tes
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-start Storage_manager_crypto_UpdateKeyContext_0001";
     std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
         DelayedSingleton<FileSystemCrypto>::GetInstance();
-    uint32_t userId = 9999;
+    uint32_t userId = 19999;
     uint32_t ret = fileSystemCrypto_->UpdateKeyContext(userId);
     EXPECT_EQ(ret, E_USERID_RANGE);
 
@@ -396,5 +396,27 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_GetLockedStatus_0000, test
     EXPECT_EQ(ret, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_GetLockedStatus_0000";
 }
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_crypto_GenerateAppkey_0000
+ * @tc.name: Storage_manager_crypto_GenerateAppkey_0000
+ * @tc.desc: Test function of GenerateAppkey interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_GenerateAppkey_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileSystemCryptoTest-start Storage_manager_crypto_GenerateAppkey_0000";
+    std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
+            DelayedSingleton<FileSystemCrypto>::GetInstance();
+    uint32_t appUid = 108;
+    std::string keyId = "keys"; // UserKeys type
+    ASSERT_TRUE(fileSystemCrypto_ != nullptr);
+    uint32_t result = fileSystemCrypto_->GenerateAppkey(appUid, keyId);
+    EXPECT_EQ(result, E_USERID_RANGE);
+
+    fileSystemCrypto_->DeleteAppkey(keyId);
+    GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_GenerateAppkey_0000";
 }
 }

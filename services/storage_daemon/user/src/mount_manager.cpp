@@ -62,6 +62,7 @@ const string MOUNT_POINT_INFO = "/proc/mounts";
 const string MOUNT_POINT_TYPE_HMDFS = "hmdfs";
 const string MOUNT_POINT_TYPE_HMFS = "hmfs";
 const string MOUNT_POINT_TYPE_SHAREFS = "sharefs";
+const string EL2_BASE = "/data/storage/el2/base/";
 const set<string> SANDBOX_EXCLUDE_PATH = {
     "chipset",
     "system",
@@ -263,9 +264,9 @@ bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info
     if (filename.empty()) {
         return false;
     }
-    std::filesystem::path filepath = std::filesystem::canonical(filename);
+    filesystem::path filepath(filename);
     std::error_code errCode;
-    if (!std::filesystem::exists(filepath, errCode)) {
+    if (!exists(filepath, errCode)) {
         return false;
     }
     std::ifstream inputStream(filename.c_str(), std::ios::in);
@@ -291,9 +292,9 @@ bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info
 bool MountManager::CheckMaps(const std::string &path, const std::string &prefix)
 {
     bool found = false;
-    std::filesystem::path filepath = std::filesystem::canonical(path);\
+    filesystem::path filepath(path);
     std::error_code errCode;
-    if (!std::filesystem::exists(filepath, errCode)) {
+    if (!exists(filepath, errCode)) {
         return false;
     }
     std::ifstream inputStream(path.c_str(), std::ios::in);
@@ -436,9 +437,20 @@ static void ParseSandboxPath(string &path, const string &userId, const string &b
     }
 }
 
+bool MountManager::CheckPathValid(const std::string &bundleNameStr, uint32_t userId)
+{
+    string completePath =
+        SANDBOX_ROOT_PATH + to_string(userId) + "/" + bundleNameStr + EL2_BASE;
+    if (!std::filesystem::is_empty(completePath)) {
+        LOGE("The directory has been mounted, path is %{public}s", completePath.c_str());
+        return false;
+    }
+    return true;
+}
+
 int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
 {
-    filesystem::path rootDir(SANDBOX_ROOT_PATH + "/" + to_string(userId));
+    filesystem::path rootDir(SANDBOX_ROOT_PATH + to_string(userId));
     std::error_code errCode;
     if (!exists(rootDir, errCode)) {
         LOGE("root path not exists, rootDir is %{public}s", SANDBOX_ROOT_PATH.c_str());
@@ -451,7 +463,9 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
         if (SANDBOX_EXCLUDE_PATH.find(bundleName.path().filename()) != SANDBOX_EXCLUDE_PATH.end()) {
             continue;
         }
-
+        if (!CheckPathValid(bundleName.path().filename().generic_string(), userId)) {
+            continue;
+        }
         vector<string> cryptoSandboxPathVector = CRYPTO_SANDBOX_PATH;
         vector<string> cryptoSandboxSrcVector = CRYPTO_SRC_PATH;
         if (bundleName.path().filename().generic_string() == SCENE_BOARD_BUNDLE_NAME) {
@@ -557,18 +571,8 @@ int32_t MountManager::UMountAllPath(int32_t userId)
     if (res != E_OK) {
         return res;
     }
-    std::list<std::string> list = mountMap[MOUNT_POINT_TYPE_HMFS];
+    std::list<std::string> list = mountMap[MOUNT_POINT_TYPE_SHAREFS];
     int total = static_cast<int>(list.size());
-    LOGI("unmount hmfs path start, total %{public}d.", total);
-    for (const std::string &path: list) {
-        LOGD("unmount hmfs path %{public}s.", path.c_str());
-        res = UMount2(path.c_str(), MNT_DETACH);
-        if (res != E_OK) {
-            LOGE("failed to unmount hmfs path %{public}s, errno %{public}d.", path.c_str(), errno);
-        }
-    }
-    list = mountMap[MOUNT_POINT_TYPE_SHAREFS];
-    total = static_cast<int>(list.size());
     LOGI("unmount sharefs path start, total %{public}d.", total);
     for (const std::string &path: list) {
         LOGD("unmount sharefs path %{public}s.", path.c_str());
@@ -585,6 +589,16 @@ int32_t MountManager::UMountAllPath(int32_t userId)
         res = UMount2(path.c_str(), MNT_DETACH);
         if (res != E_OK) {
             LOGE("failed to unmount hmdfs path %{public}s, errno %{public}d.", path.c_str(), errno);
+        }
+    }
+    list = mountMap[MOUNT_POINT_TYPE_HMFS];
+    total = static_cast<int>(list.size());
+    LOGI("unmount hmfs path start, total %{public}d.", total);
+    for (const std::string &path: list) {
+        LOGD("unmount hmfs path %{public}s.", path.c_str());
+        res = UMount2(path.c_str(), MNT_DETACH);
+        if (res != E_OK) {
+            LOGE("failed to unmount hmfs path %{public}s, errno %{public}d.", path.c_str(), errno);
         }
     }
     return E_OK;

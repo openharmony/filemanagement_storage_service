@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -39,7 +39,7 @@ enum class Table {
     GPT,
 };
 
-DiskInfo::DiskInfo(std::string sysPath, std::string devPath, dev_t device, int flag)
+DiskInfo::DiskInfo(std::string &sysPath, std::string &devPath, dev_t device, int flag)
 {
     id_ = StringPrintf("disk-%d-%d", major(device), minor(device));
     sysPath_ = sysPath;
