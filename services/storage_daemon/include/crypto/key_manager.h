@@ -22,6 +22,7 @@
 #include <mutex>
 
 #include "base_key.h"
+#include "crypto_delay_handler.h"
 #include "key_blob.h"
 #include "ipc/storage_daemon.h"
 #include "storage_service_constant.h"
@@ -121,12 +122,15 @@ private:
                                       const std::vector<uint8_t> &secret, std::shared_ptr<BaseKey> elKey);
     int InactiveUserElKey(unsigned int user, std::map<unsigned int, std::shared_ptr<BaseKey>> &userElxKey_);
     int CheckAndDeleteEmptyEl5Directory(std::string keyDir, unsigned int user);
+    bool GetUserDelayHandler(uint32_t userId, std::shared_ptr<DelayHandler> &delayHandler);
+    bool IsUeceSupport();
 
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl1Key_;
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl2Key_;
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl3Key_;
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl4Key_;
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl5Key_;
+    std::map<unsigned int, std::shared_ptr<DelayHandler>> userLockScreenTask_;
     std::shared_ptr<BaseKey> globalEl1Key_ { nullptr };
     std::map<unsigned int, bool> userPinProtect;
     std::map<unsigned int, bool> saveLockScreenStatus;

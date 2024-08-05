@@ -62,7 +62,8 @@ const string MOUNT_POINT_INFO = "/proc/mounts";
 const string MOUNT_POINT_TYPE_HMDFS = "hmdfs";
 const string MOUNT_POINT_TYPE_HMFS = "hmfs";
 const string MOUNT_POINT_TYPE_SHAREFS = "sharefs";
-cosst string DIR_PROC = "/proc";
+const string DIR_PROC = "/proc";
+const string EL2_BASE = "/data/storage/el2/base/";
 const set<string> SANDBOX_EXCLUDE_PATH = {
     "chipset",
     "system",
@@ -485,9 +486,20 @@ static void ParseSandboxPath(string &path, const string &userId, const string &b
     }
 }
 
+bool MountManager::CheckPathValid(const std::string &bundleNameStr, uint32_t userId)
+{
+    string completePath =
+        SANDBOX_ROOT_PATH + to_string(userId) + "/" + bundleNameStr + EL2_BASE;
+    if (!std::filesystem::is_empty(completePath)) {
+        LOGE("The directory has been mounted, path is %{public}s", completePath.c_str());
+        return false;
+    }
+    return true;
+}
+
 int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
 {
-    filesystem::path rootDir(SANDBOX_ROOT_PATH + "/" + to_string(userId));
+    filesystem::path rootDir(SANDBOX_ROOT_PATH + to_string(userId));
     std::error_code errCode;
     if (!exists(rootDir, errCode)) {
         LOGE("root path not exists, rootDir is %{public}s", SANDBOX_ROOT_PATH.c_str());
@@ -500,7 +512,9 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
         if (SANDBOX_EXCLUDE_PATH.find(bundleName.path().filename()) != SANDBOX_EXCLUDE_PATH.end()) {
             continue;
         }
-
+        if (!CheckPathValid(bundleName.path().filename().generic_string(), userId)) {
+            continue;
+        }
         vector<string> cryptoSandboxPathVector = CRYPTO_SANDBOX_PATH;
         vector<string> cryptoSandboxSrcVector = CRYPTO_SRC_PATH;
         if (bundleName.path().filename().generic_string() == SCENE_BOARD_BUNDLE_NAME) {
