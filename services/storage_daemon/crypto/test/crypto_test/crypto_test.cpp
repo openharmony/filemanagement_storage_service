@@ -45,8 +45,8 @@ void CryptoTest::TearDown(void) {
 }
 
 /**
- * @tc.name: base_key_generate_and_save_key_blob
- * @tc.desc: Verify the BaseKey GenerateAndSaveKeyBlob
+ * @tc.name: Generate_And_Save_Key_Blob_001
+ * @tc.desc: Verify the BaseKey GenerateAndSaveKeyBlob function.
  * @tc.type: FUNC
  * @tc.require: SR000H0CM9
  */
@@ -62,8 +62,8 @@ HWTEST_F(CryptoTest, Generate_And_Save_Key_Blob_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: huks_master_encrypt_key
- * @tc.desc: Verify the HuksMaster EncryptKey
+ * @tc.name: Huks_Master_Encrypt_Key_001
+ * @tc.desc: Verify the HuksMaster EncryptKey function.
  * @tc.type: FUNC
  * @tc.require: SR000H0CM9
  */
@@ -85,8 +85,8 @@ HWTEST_F(CryptoTest, Huks_Master_Encrypt_Key_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: huks_master_decrypt_key
- * @tc.desc: Verify the HuksMaster DecrptyKey
+ * @tc.name: Huks_Master_Decrypt_Key_001
+ * @tc.desc: Verify the HuksMaster DecrptyKey function.
  * @tc.type: FUNC
  * @tc.require: SR000H0CM9
  */
@@ -108,8 +108,45 @@ HWTEST_F(CryptoTest, Huks_Master_Decrypt_Key_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: openssl_crypto_aes_encrypt
- * @tc.desc: Verify the OpensslCrypto AESEncrypt and AESDecrypt
+ * @tc.name: Huks_Master_Hdi_Access_Finish_001
+ * @tc.desc: Verify the HuksMaster HdiAccessFinish function.
+ * @tc.type: FUNC
+ * @tc.require: SR000H0CM9
+ */
+HWTEST_F(CryptoTest, Huks_Master_Hdi_Access_Finish_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "CryptoTest_HuksMasterHdiAccessFinish_0100 start";
+    const HksBlob handle;
+    const HksParamSet paramSet = nullptr;
+    const HksBlob inData;
+    HksBlob outData;
+
+    int ret = HuksMaster::GetInstance().HdiAccessFinish(handle, paramSet, inData, outData);
+    EXPECT_EQ(ret, HKS_ERROR_NULL_POINTER);
+    GTEST_LOG_(INFO) << "CryptoTest_HuksMasterHdiAccessFinish_0100 end";
+}
+
+/**
+ * @tc.name: Huks_Master_Hdi_Access_Upgrade_Key_001
+ * @tc.desc: Verify the HuksMaster HdiAccessUpgradeKey function.
+ * @tc.type: FUNC
+ * @tc.require: SR000H0CM9
+ */
+HWTEST_F(CryptoTest, Huks_Master_Hdi_Access_Upgrade_Key_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "CryptoTest_HuksMasterHdiAccessUpgradeKey_0100 start";
+    const HksBlob oldKey;
+    const HksParamSet paramSet = nullptr;
+    HksBlob newKey;
+
+    int ret = HuksMaster::GetInstance().HdiAccessUpgradeKey(oldKey, paramSet, newKey);
+    EXPECT_EQ(ret, HKS_ERROR_NULL_POINTER);
+    GTEST_LOG_(INFO) << "CryptoTest_HuksMasterHdiAccessUpgradeKey_0100 end";
+}
+
+/**
+ * @tc.name: Openssl_Crypto_AES_Encrypt_001
+ * @tc.desc: Verify the OpensslCrypto AESEncrypt and AESDecrypt function.
  * @tc.type: FUNC
  * @tc.require: SR000H0CM9
  */
