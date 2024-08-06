@@ -15,6 +15,7 @@
 
 #include "user/mount_manager.h"
 #include <cstdlib>
+#include <csignal>
 #include <dirent.h>
 #include <fcntl.h>
 #include <set>
@@ -265,7 +266,7 @@ bool MountManager::PidUsingFlag(std::string &pidPath, const std::string &prefix,
     std::string fdPath = pidPath + "/fd";
     auto fdDir = std::unique_ptr<DIR, int (*)(DIR*)>(opendir(fdPath.c_str()), closedir);
     if (!fdDir) {
-        LOGE("unable to open %{public}s, err %{public}d", fdPath.c_str(), error);
+        LOGE("unable to open %{public}s, err %{public}d", fdPath.c_str(), errno);
     } else {
         struct dirent* fdDirent;
         while ((fdDirent = readdir(fdDir.get())) != nullptr) {
@@ -645,7 +646,7 @@ int32_t MountManager::UMountAllPath(int32_t userId, std::list<std::string> &moun
     }
     if (result != E_OK) {
         for (const auto &item: mountFailList) {
-            res = UMount2(path.c_str(), MNT_DETACH);
+            res = UMount2(item.c_str(), MNT_DETACH);
             if (res != E_OK) {
                 LOGE("failed to unmount with detach, path %{public}s, errno %{public}d.", item.c_str(), errno);
             }
