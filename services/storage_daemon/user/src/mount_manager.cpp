@@ -62,7 +62,6 @@ const string MOUNT_POINT_INFO = "/proc/mounts";
 const string MOUNT_POINT_TYPE_HMDFS = "hmdfs";
 const string MOUNT_POINT_TYPE_HMFS = "hmfs";
 const string MOUNT_POINT_TYPE_SHAREFS = "sharefs";
-const string DIR_PROC = "/proc";
 const string EL2_BASE = "/data/storage/el2/base/";
 const set<string> SANDBOX_EXCLUDE_PATH = {
     "chipset",
@@ -218,7 +217,7 @@ int32_t MountManager::FindAndKillProcess(int userId, std::list<std::string> &mou
         return E_OK;
     }
     LOGI("FindAndKillProcess start, userId is %{public}d", userId);
-    auto procDir = std::unique_ptr<DIR, int (*)(DIR*)>(opendir(DIR_PROC), closedir);
+    auto procDir = std::unique_ptr<DIR, int (*)(DIR*)>(opendir("/proc"), closedir);
     if (!procDir) {
         LOGE("failed to open dir proc, err %{public}d", errno);
         return -errno;
@@ -234,7 +233,7 @@ int32_t MountManager::FindAndKillProcess(int userId, std::list<std::string> &mou
             continue;
         }
         ProcessInfo info;
-        std::string filename = DIR_PROC + "/" + name + "/stat";
+        std::string filename = "/proc/" + name + "/stat";
         if (!GetProcessInfo(filename, info)) {
             LOGE("failed to get process info, pid is %{public}s.", name.c_str());
             continue;
@@ -244,14 +243,14 @@ int32_t MountManager::FindAndKillProcess(int userId, std::list<std::string> &mou
         }
         Utils::MountArgument argument(Utils::MountArgumentDescriptors::Alpha(userId, ""));
         const string &prefix = argument.GetMountPointPrefix();
-        std::string pidPath = DIR_PROC + "/" + name;
+        std::string pidPath = "/proc/" + name;
         if (!PidUsingFlag(pidPath, prefix, mountFailList)) {
             LOGE("find a link pid is %{public}d, processName is %{public}s.", info.pid, info.name.c_str());
             processInfos.push_back(info);
         }
     }
     LOGI("FindAndKillProcess end, total find %{public}d", static_cast<int>(processInfos.size()));
-    KillProcess(processInfo);
+    KillProcess(processInfos);
     return E_OK;
 }
 
