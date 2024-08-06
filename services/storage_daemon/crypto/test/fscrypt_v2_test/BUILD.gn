@@ -42,15 +42,15 @@ ohos_moduletest("FscryptKeyV2Test") {
     "../../../../common/include",
   ]
 
-  sources = [ 
-    "fscrypt_key_v2_test.cpp",
+  sources = [
     "${storage_daemon_path}/crypto/src/fscrypt_key_v2.cpp",
+    "fscrypt_key_v2_test.cpp",
   ]
 
   if (storage_service_crypto_test) {
-    defines += [ 
-        "CRYPTO_TEST",
-        "SUPPORT_FSCRYPT_V2",
+    defines += [
+      "CRYPTO_TEST",
+      "SUPPORT_FSCRYPT_V2",
     ]
   }
 
