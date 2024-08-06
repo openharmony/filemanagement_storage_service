@@ -13,7 +13,7 @@
 import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
-ohos_unittest("AncoKeyManagerTest") {
+ohos_unittest("CryptoTest") {
   module_out_path = "storage_service/storage_daemon"
 
   defines = [
@@ -28,7 +28,7 @@ ohos_unittest("AncoKeyManagerTest") {
     "${storage_service_common_path}/include",
   ]
 
-  sources = [ "anco_key_manager_test.cpp" ]
+  sources = [ "crypto_test.cpp" ]
 
   deps = [ "//third_party/googletest:gtest_main" ]
 
@@ -44,7 +44,7 @@ ohos_unittest("AncoKeyManagerTest") {
   ]
 }
 
-group("anco_crypto_test") {
+group("crypto_test") {
   testonly = true
-  deps = [ ":AncoKeyManagerTest" ]
+  deps = [ ":CryptoTest" ]
 }
