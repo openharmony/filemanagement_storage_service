@@ -333,7 +333,10 @@ group("storage_daemon_unit_test") {
   ]
 
   if (storage_service_user_crypto_manager) {
-    deps += [ "crypto/test:crypto_test" ]
+    deps += [
+      "crypto/test:crypto_test",
+      "crypto/test/fscrypt_v2_test:fscrypt_key_v2_test",
+    ]
   }
 
   if (storage_service_external_storage_manager) {

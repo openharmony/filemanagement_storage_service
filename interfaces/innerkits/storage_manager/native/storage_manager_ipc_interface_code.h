@@ -82,7 +82,9 @@ namespace StorageManager {
         GET_BUNDLE_STATS_INCREASE,
         GENERATE_APP_KEY,
         DELETE_APP_KEY,
-        GET_FILE_ENCRYPT_STATUS
+        GET_FILE_ENCRYPT_STATUS,
+        CREATE_RECOVER_KEY,
+        SET_RECOVER_KEY,
     };
 } // namespace StorageManager
 } // namespace OHOS

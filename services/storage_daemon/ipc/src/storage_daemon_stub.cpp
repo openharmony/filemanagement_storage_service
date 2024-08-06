@@ -94,6 +94,10 @@ StorageDaemonStub::StorageDaemonStub()
         &StorageDaemonStub::HandleUMountDfsDocs;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_FILE_ENCRYPT_STATUS)] =
         &StorageDaemonStub::HandleGetFileEncryptStatus;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::CREATE_RECOVER_KEY)] =
+        &StorageDaemonStub::HandleCreateRecoverKey;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::SET_RECOVER_KEY)] =
+        &StorageDaemonStub::HandleSetRecoverKey;
 }
 
 int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code,
@@ -532,6 +536,35 @@ int32_t StorageDaemonStub::HandleDeleteAppkey(MessageParcel &data, MessageParcel
     uint32_t userId = data.ReadUint32();
     std::string keyId = data.ReadString();
     int err = DeleteAppkey(userId, keyId);
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
+
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleCreateRecoverKey(MessageParcel &data, MessageParcel &reply)
+{
+    uint32_t userId = data.ReadUint32();
+    uint32_t userType = data.ReadUint32();
+
+    std::vector<uint8_t> token;
+    std::vector<uint8_t> secret;
+    data.ReadUInt8Vector(&token);
+    data.ReadUInt8Vector(&secret);
+    int err = CreateRecoverKey(userId, userType, token, secret);
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
+
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleSetRecoverKey(MessageParcel &data, MessageParcel &reply)
+{
+    std::vector<uint8_t> key;
+    data.ReadUInt8Vector(&key);
+    int err = SetRecoverKey(key);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }

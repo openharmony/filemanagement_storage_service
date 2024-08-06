@@ -180,6 +180,10 @@ StorageManagerStub::StorageManagerStub()
         &StorageManagerStub::HandleUMountDfsDocs;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_FILE_ENCRYPT_STATUS)] =
         &StorageManagerStub::HandleGetFileEncryptStatus;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::CREATE_RECOVER_KEY)] =
+        &StorageManagerStub::HandleCreateRecoverKey;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::SET_RECOVER_KEY)] =
+        &StorageManagerStub::HandleSetRecoverKey;
 }
 
 int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
@@ -931,6 +935,42 @@ int32_t StorageManagerStub::HandleDeleteAppkey(MessageParcel &data, MessageParce
     }
     std::string keyId = data.ReadString();
     int32_t err = DeleteAppkey(keyId);
+    if (!reply.WriteInt32(err)) {
+        LOGE("Write reply error code failed");
+        return E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleCreateRecoverKey(MessageParcel &data, MessageParcel &reply)
+{
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
+        return E_PERMISSION_DENIED;
+    }
+    uint32_t userId = data.ReadUint32();
+    uint32_t userType = data.ReadUint32();
+    std::vector<uint8_t> token;
+    std::vector<uint8_t> secret;
+    data.ReadUInt8Vector(&token);
+    data.ReadUInt8Vector(&secret);
+
+    int32_t err = CreateRecoverKey(userId, userType, token, secret);
+    if (!reply.WriteInt32(err)) {
+        LOGE("Write reply error code failed");
+        return E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleSetRecoverKey(MessageParcel &data, MessageParcel &reply)
+{
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
+        return E_PERMISSION_DENIED;
+    }
+    std::vector<uint8_t> key;
+    data.ReadUInt8Vector(&key);
+
+    int32_t err = SetRecoverKey(key);
     if (!reply.WriteInt32(err)) {
         LOGE("Write reply error code failed");
         return E_WRITE_REPLY_ERR;

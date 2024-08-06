@@ -88,6 +88,11 @@ public:
     int32_t GenerateAppkey(uint32_t appUid, std::string &keyId) override;
     int32_t DeleteAppkey(const std::string keyId) override;
     int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted) override;
+    int32_t CreateRecoverKey(uint32_t userId,
+                             uint32_t userType,
+                             const std::vector<uint8_t> &token,
+                             const std::vector<uint8_t> &secret) override;
+    int32_t SetRecoverKey(const std::vector<uint8_t> &key) override;
 
     // app file share api
     std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,

@@ -86,6 +86,11 @@ public:
     virtual int32_t GenerateAppkey(uint32_t appUid, std::string &keyId) = 0;
     virtual int32_t DeleteAppkey(const std::string keyId) = 0;
     virtual int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted) = 0;
+    virtual int32_t CreateRecoverKey(uint32_t userId,
+                                     uint32_t userType,
+                                     const std::vector<uint8_t> &token,
+                                     const std::vector<uint8_t> &secret) = 0;
+    virtual int32_t SetRecoverKey(const std::vector<uint8_t> &key) = 0;
 
     // app file share api
     virtual std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,

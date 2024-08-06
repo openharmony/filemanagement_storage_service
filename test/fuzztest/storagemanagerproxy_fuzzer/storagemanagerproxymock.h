@@ -235,6 +235,19 @@ public:
         return E_OK;
     }
 
+    int32_t CreateRecoverKey(uint32_t userId,
+                             uint32_t userType,
+                             const std::vector<uint8_t> &token,
+                             const std::vector<uint8_t> &secret) override
+    {
+        return E_OK;
+    }
+
+    int32_t SetRecoverKey(const std::vector<uint8_t> &key) override
+    {
+        return E_OK;
+    }
+
     int32_t UpdateKeyContext(uint32_t userId) override
     {
         return E_OK;

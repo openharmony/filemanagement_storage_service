@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -495,6 +495,31 @@ int32_t StorageDaemonCommunication::DeleteAppkey(uint32_t userId, const std::str
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->DeleteAppkey(userId, keyId);
+}
+
+int32_t StorageDaemonCommunication::CreateRecoverKey(uint32_t userId,
+                                                     uint32_t userType,
+                                                     const std::vector<uint8_t> &token,
+                                                     const std::vector<uint8_t> &secret)
+{
+    LOGI("enter");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    return storageDaemon_->CreateRecoverKey(userId, userType, token, secret);
+}
+
+int32_t StorageDaemonCommunication::SetRecoverKey(const std::vector<uint8_t> &key)
+{
+    LOGI("enter");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    return storageDaemon_->SetRecoverKey(key);
 }
 
 int32_t StorageDaemonCommunication::GetBundleStatsForIncrease(uint32_t userId,

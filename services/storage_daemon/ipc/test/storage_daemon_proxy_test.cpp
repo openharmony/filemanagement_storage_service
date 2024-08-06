@@ -551,6 +551,46 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_DeleteAppkey_001, TestSi
 }
 
 /**
+ * @tc.name: StorageDaemonProxyTest_CreateRecoverKey_001
+ * @tc.desc: Verify the CreateRecoverKey function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_CreateRecoverKey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_CreateRecoverKey_001 start";
+
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
+    int32_t ret = proxy_->CreateRecoverKey(USER_ID1, 10, {}, {});
+    ASSERT_TRUE(ret == E_OK);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_RECOVER_KEY) == mock_->code_);
+
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_CreateRecoverKey_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProxyTest_SetRecoverKey_001
+ * @tc.desc: Verify the SetRecoverKey function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_SetRecoverKey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_SetRecoverKey_001 start";
+
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
+    int32_t ret = proxy_->SetRecoverKey({});
+    ASSERT_TRUE(ret == E_OK);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::SET_RECOVER_KEY) == mock_->code_);
+
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_SetRecoverKey_001 end";
+}
+
+/**
  * @tc.name: StorageDaemonProxyTest_MountDfsDocs_001
  * @tc.desc: Verify the MountDfsDocs function.
  * @tc.type: FUNC

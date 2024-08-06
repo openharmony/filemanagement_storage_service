@@ -282,6 +282,38 @@ static int32_t DeleteAppkey(const std::vector<std::string> &args)
     std::string keyId = args[INDEX_4];
     return OHOS::StorageDaemon::StorageDaemonClient::DeleteAppkey(userId, keyId);
 }
+
+static int32_t CreateRecoverKey(const std::vector<std::string> &args)
+{
+    if (args.size() < ARG_CNT_4) {
+        LOGE("Parameter nums is less than 4, please retry");
+        return -EINVAL;
+    }
+    uint32_t userId;
+    uint32_t userType;
+
+    if (!OHOS::StorageDaemon::StringToUint32(args[INDEX_3], userId)) {
+        LOGE("Parameter input error, please retry");
+        return -EINVAL;
+    }
+    if (!OHOS::StorageDaemon::StringToUint32(args[INDEX_4], userType)) {
+        LOGE("Parameter input error, please retry");
+        return -EINVAL;
+    }
+    return OHOS::StorageDaemon::StorageDaemonClient::CreateRecoverKey(userId, userType, {}, {});
+}
+
+
+static int32_t SetRecoverKey(const std::vector<std::string> &args)
+{
+    if (args.size() < ARG_CNT_4) {
+        LOGE("SetRecoverKey Parameter nums is less than 4, please retry");
+        return -EINVAL;
+    }
+
+    std::vector<uint8_t> key(args[INDEX_3].begin(), args[INDEX_3].end());
+    return OHOS::StorageDaemon::StorageDaemonClient::SetRecoverKey(key);
+}
 #endif
 
 static const auto g_fscryptCmdHandler = std::map<std::string,
@@ -303,6 +335,8 @@ static const auto g_fscryptCmdHandler = std::map<std::string,
     {"generate_app_key", GenerateAppkey},
     {"delete_app_key", DeleteAppkey},
     {"Get_unlock_status", GetFileEncryptStatus},
+    {"create_recover_key", CreateRecoverKey},
+    {"set_recover_key", SetRecoverKey},
 #endif
 };
 

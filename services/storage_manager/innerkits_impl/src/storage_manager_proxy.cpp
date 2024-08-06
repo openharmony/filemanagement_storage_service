@@ -431,6 +431,69 @@ int32_t StorageManagerProxy::DeleteAppkey(const std::string keyId)
     return reply.ReadInt32();
 }
 
+int32_t StorageManagerProxy::CreateRecoverKey(uint32_t userId,
+                                              uint32_t userType,
+                                              const std::vector<uint8_t> &token,
+                                              const std::vector<uint8_t> &secret)
+{
+    LOGI("user ID: %{public}u", userId);
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("StorageManagerProxy::CreateRecoverKey, WriteInterfaceToken failed");
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+    if (!data.WriteUint32(userId)) {
+        LOGE("Write user id failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+    if (!data.WriteUint32(userType)) {
+        LOGE("Write user type failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+    if (!data.WriteUInt8Vector(token)) {
+        LOGE("Write token failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+    if (!data.WriteUInt8Vector(secret)) {
+        LOGE("Write recover secret failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::CREATE_RECOVER_KEY), data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+
+    return reply.ReadInt32();
+}
+
+int32_t StorageManagerProxy::SetRecoverKey(const std::vector<uint8_t> &key)
+{
+    LOGI("enter");
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("StorageManagerProxy::SetRecoverKey, WriteInterfaceToken failed");
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+    if (!data.WriteUInt8Vector(key)) {
+        LOGE("Write recover key failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::SET_RECOVER_KEY), data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+
+    return reply.ReadInt32();
+}
+
 int32_t StorageManagerProxy::GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize)
 {
     LOGI("StorageManagerProxy::GetFreeSizeOfVolume, volumeUuid:%{public}s",

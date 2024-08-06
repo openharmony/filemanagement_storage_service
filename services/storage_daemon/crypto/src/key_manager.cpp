@@ -1135,6 +1135,20 @@ int KeyManager::DeleteAppkey(uint32_t userId, const std::string keyId)
     return 0;
 }
 
+int KeyManager::CreateRecoverKey(uint32_t userId, uint32_t userType, const std::vector<uint8_t> &token,
+                                 const std::vector<uint8_t> &secret)
+{
+    LOGI("enter");
+    LOGI("userId %{public}u, userType%{public}u", userId, userType);
+    return E_OK;
+}
+
+int KeyManager::SetRecoverKey(const std::vector<uint8_t> &key)
+{
+    LOGI("enter");
+    return E_OK;
+}
+
 int KeyManager::UnlockUserAppKeys(uint32_t userId, bool needGetAllAppKey)
 {
     if (!IsUeceSupport()) {
