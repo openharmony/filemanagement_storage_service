@@ -122,6 +122,7 @@ MountManager::MountManager()
                   {"/mnt/hmdfs/%d/non_account", MODE_0711, OID_ROOT, OID_ROOT}},
       systemServiceDir_{{"/data/service/el2/%d/tee", MODE_0711, OID_TEE, OID_TEE},
                   {"/data/service/el2/%d/deviceauth", MODE_0711, OID_DEVICE_AUTH, OID_DEVICE_AUTH},
+                  {"/data/service/el3/%d/device_standby", MODE_0711, OID_RSS, OID_RSS},
                   {"/data/service/el2/%d/hwid_service", MODE_0711, OID_HWID, OID_HWID},
                   {"/data/service/el2/%d/huks_service", MODE_0711, OID_HUKS, OID_HUKS},
                   {"/data/service/el4/%d/huks_service", MODE_0711, OID_HUKS, OID_HUKS},
