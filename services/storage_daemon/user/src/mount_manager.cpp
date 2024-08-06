@@ -913,7 +913,7 @@ int32_t MountManager::UmountByUser(int32_t userId)
         }
     }
 
-    LOGI("umount cloud mount point start.")
+    LOGI("umount cloud mount point start.");
     int32_t count = 0;
     while (count < UMOUNT_RETRY_TIMES) {
         err = CloudUMount(userId);
