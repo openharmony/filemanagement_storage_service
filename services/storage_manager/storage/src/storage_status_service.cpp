@@ -105,7 +105,8 @@ std::string StorageStatusService::GetCallingPkgName()
     return tokenInfo.bundleName;
 }
 
-int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, BundleStats &bundleStats, int32_t appIndex)
+int32_t StorageStatusService::GetBundleStats(const std::string &pkgName,
+    BundleStats &bundleStats, int32_t appIndex)
 {
     int userId = GetCurrentUserId();
     LOGD("StorageStatusService::userId is:%d, appIndex is: %d", userId, appIndex);
