@@ -136,7 +136,7 @@ napi_value GetBundleStats(napi_env env, napi_callback_info info)
         return nullptr;
     }
     NFuncArg funcArg(env, info);
-    if (!funcArg.InitArgs((int)NARG_CNT::ONE, (int)NARG_CNT::TWO)) {
+    if (!funcArg.InitArgs((int)NARG_CNT::ONE, (int)NARG_CNT::THREE)) {
         NError(E_PARAMS).ThrowErr(env);
         return nullptr;
     }
@@ -148,11 +148,21 @@ napi_value GetBundleStats(napi_env env, napi_callback_info info)
         NError(E_PARAMS).ThrowErr(env);
         return nullptr;
     }
+    int32_t index = 0;
+    if (funcArg.GetArgc() == (uint)NARG_CNT::THREE) {
+        std::tie(succ, index) = NVal(env, funcArg[(int)NARG_POS::THIRD]).ToInt32();
+    } else if (NVal(env, funcArg[(int)NARG_POS::SECOND]).TypeIs(napi_number)) {
+        std::tie(succ, index) = NVal(env, funcArg[(int)NARG_POS::SECOND]).ToInt32();
+    }
+    if (!succ) {
+        NError(E_PARAMS).ThrowErr(env);
+        return nullptr;
+    }
     auto bundleStats = std::make_shared<BundleStats>();
     std::string nameString(name.get());
-    auto cbExec = [nameString, bundleStats]() -> NError {
+    auto cbExec = [nameString, bundleStats, index]() -> NError {
         int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetBundleStats(nameString,
-            *bundleStats);
+            *bundleStats, index);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
         }
@@ -171,7 +181,7 @@ napi_value GetBundleStats(napi_env env, napi_callback_info info)
     };
     std::string procedureName = "GetBundleStats";
     NVal thisVar(env, funcArg.GetThisVar());
-    if (funcArg.GetArgc() == (uint)NARG_CNT::ONE) {
+    if (funcArg.GetArgc() == (uint)NARG_CNT::ONE || NVal(env, funcArg[(int)NARG_POS::SECOND]).TypeIs(napi_number)) {
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
     } else {
         NVal cb(env, funcArg[(int)NARG_POS::SECOND]);

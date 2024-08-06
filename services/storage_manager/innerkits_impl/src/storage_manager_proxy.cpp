@@ -491,19 +491,27 @@ int32_t StorageManagerProxy::GetTotalSizeOfVolume(std::string volumeUuid, int64_
     return E_OK;
 }
 
-int32_t StorageManagerProxy::GetBundleStats(std::string pkgName, BundleStats &bundleStats)
+int32_t StorageManagerProxy::GetBundleStats(std::string pkgName, BundleStats &bundleStats, int32_t appIndex)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("StorageManagerProxy::GetBundleStats, WriteInterfaceToken failed");
         return E_WRITE_DESCRIPTOR_ERR;
     }
 
     if (!data.WriteString(pkgName)) {
+        LOGE("StorageManagerProxy::GetBundleStats, WriteString failed");
         return E_WRITE_PARCEL_ERR;
     }
+
+    if (!data.WriteInt32(appIndex)) {
+        LOGE("StorageManagerProxy::GetBundleStats, WriteInt32 failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+
     int32_t err = SendRequest(
         static_cast<int32_t>(StorageManagerInterfaceCode::GET_BUNDLE_STATUS), data, reply, option);
     if (err != E_OK) {

@@ -137,11 +137,11 @@ int32_t StorageManager::GetTotalSizeOfVolume(std::string volumeUuid, int64_t &to
 #endif
 }
 
-int32_t StorageManager::GetBundleStats(std::string pkgName, BundleStats &bundleStats)
+int32_t StorageManager::GetBundleStats(std::string pkgName, BundleStats &bundleStats, int32_t appIndex)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
-    LOGI("StorageManger::getBundleStats start, pkgName: %{public}s", pkgName.c_str());
-    int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetBundleStats(pkgName, bundleStats);
+    LOGI("StorageManger::getBundleStats start, pkgName: %{public}s, appIndex: %{public}d", pkgName.c_str(), appIndex);
+    int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetBundleStats(pkgName, bundleStats, appIndex);
     return err;
 #else
     return E_OK;

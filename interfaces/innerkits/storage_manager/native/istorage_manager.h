@@ -41,7 +41,7 @@ public:
     virtual int32_t StopUser(int32_t userId) = 0;
     virtual int32_t GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize) = 0;
     virtual int32_t GetTotalSizeOfVolume(std::string volumeUuid, int64_t &totalSize) = 0;
-    virtual int32_t GetBundleStats(std::string pkgName, BundleStats &bundleStats) = 0;
+    virtual int32_t GetBundleStats(std::string pkgName, BundleStats &bundleStats, int32_t appIndex) = 0;
     virtual int32_t GetSystemSize(int64_t &systemSize) = 0;
     virtual int32_t GetTotalSize(int64_t &totalSize) = 0;
     virtual int32_t GetFreeSize(int64_t &freeSize) = 0;

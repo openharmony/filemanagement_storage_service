@@ -392,8 +392,9 @@ int32_t StorageManagerStub::HandleGetBundleStatus(MessageParcel &data, MessagePa
         return E_PERMISSION_DENIED;
     }
     std::string pkgName = data.ReadString();
+    int32_t appIndex = data.ReadInt32();
     BundleStats bundleStats;
-    int32_t err = GetBundleStats(pkgName, bundleStats);
+    int32_t err = GetBundleStats(pkgName, bundleStats, appIndex);
     if (!reply.WriteInt32(err)) {
         return  E_WRITE_REPLY_ERR;
     }
