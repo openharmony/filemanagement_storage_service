@@ -1028,6 +1028,12 @@ uint32_t BaseKey::GetTypeFromDir()
         LOGE("bad dir %{public}s", dir_.c_str());
         return type;
     }
+
+    if (slashIndex == 0) {
+        LOGE("bad dir %{public}s", dir_.c_str());
+        return type;
+    }
+
     slashIndex = dir_.rfind('/', slashIndex - 1);
     if (slashIndex == std::string::npos) {
         LOGE("bad dir %{public}s", dir_.c_str());
