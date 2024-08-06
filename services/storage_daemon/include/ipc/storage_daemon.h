@@ -108,6 +108,7 @@ private:
     int32_t PrepareUserDirsAndUpdateUserAuth(uint32_t userId, KeyType type,
                                              const std::vector<uint8_t> &token,
                                              const std::vector<uint8_t> &secret);
+    int32_t PrepareUeceDir(uint32_t userId);
     int32_t RestoreUserKey(int32_t userId, uint32_t flags);
     bool IsNeedRestorePathExist(uint32_t userId, bool needCheckEl1);
     int32_t RestoreOneUserKey(int32_t userId, KeyType type);

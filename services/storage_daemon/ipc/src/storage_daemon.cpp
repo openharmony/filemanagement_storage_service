@@ -222,6 +222,9 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
         LOGE("PrepareUserDirs failed, userId %{public}u, flags %{public}u, error %{public}d", userId, flags, ret);
         return ret;
     }
+    if (type == EL2_KEY) {
+        PrepareUeceDir(userId);
+    }
     (void)remove(elNeedRestorePath.c_str());
     if (type == EL4_KEY) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
@@ -410,6 +413,9 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuth(uint32_t userId, KeyType
     if (ret != E_OK) {
         return ret;
     }
+    if (flags == IStorageDaemon::CRYPTO_FLAG_EL2) {
+        PrepareUeceDir(userId);
+    }
     LOGI("userId %{public}u type %{public}u sucess", userId, type);
     return E_OK;
 }
@@ -427,6 +433,15 @@ bool StorageDaemon::IsNeedRestorePathExist(uint32_t userId, bool needCheckEl1)
         isExist = isExist || std::filesystem::exists(el1NeedRestorePath);
     }
     return isExist;
+}
+
+int32_t StorageDaemon::PrepareUeceDir(uint32_t userId)
+{
+    int32_t ret = UserManager::GetInstance()->DestroyUserDirs(userId, IStorageDaemon::CRYPTO_FLAG_EL5);
+    LOGI("delete user %{public}u uece %{public}u, ret %{public}d", userId, IStorageDaemon::CRYPTO_FLAG_EL5, ret);
+    ret = UserManager::GetInstance()->PrepareUserDirs(userId, IStorageDaemon::CRYPTO_FLAG_EL5);
+    LOGI("prepare user %{public}u uece %{public}u, ret %{public}d", userId, IStorageDaemon::CRYPTO_FLAG_EL5, ret);
+    return ret;
 }
 #endif
 
@@ -449,6 +464,12 @@ int32_t StorageDaemon::GenerateKeyAndPrepareUserDirs(uint32_t userId, KeyType ty
     if (ret != E_OK) {
         return ret;
     }
+    std::string keyUeceDir = UECE_DIR + "/" + std::to_string(userId);
+    if ((flags & IStorageDaemon::CRYPTO_FLAG_EL5) && IsDir(keyUeceDir) && !std::filesystem::is_empty(keyUeceDir)) {
+        LOGE("uece has already create, do not need create !");
+        return ret;
+    }
+    (void)UserManager::GetInstance()->DestroyUserDirs(userId, flags);
     ret = UserManager::GetInstance()->PrepareUserDirs(userId, flags);
     if (ret != E_OK) {
         LOGE("upgrade scene:prepare user dirs fail, userId %{public}u, flags %{public}u, sec empty %{public}d",
