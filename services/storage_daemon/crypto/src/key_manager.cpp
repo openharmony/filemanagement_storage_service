@@ -967,8 +967,9 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
     } else {
         userPinProtect.insert(std::make_pair(user, true));
     }
+    saveLockScreenStatus[user] = true;
     LOGI("Active user %{public}u el success", user);
-    saveLockScreenStatus.insert(std::make_pair(user, true));
+    LOGI("saveLockScreenStatus is %{public}d", saveLockScreenStatus[user]);
     return 0;
 }
 
