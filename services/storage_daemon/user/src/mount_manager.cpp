@@ -908,7 +908,7 @@ int32_t MountManager::UmountByUser(int32_t userId)
         std::list<std::string> mountFailList;
         err = UMountAllPath(userId, mountFailList);
         if (err != E_OK) {
-            LOGE("failed to umount hmdfs mount point, err is %{public")
+            LOGE("failed to umount hmdfs mount point, err is %{public}d", err);
             FindAndKillProcess(userId, mountFailList);
         }
     }
