@@ -211,7 +211,7 @@ int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath, bool 
     return E_OK;
 }
 
-int32_t MountManager::FindAndKillProcess(int userId, std::list<std::string> &mountFailList)
+int32_t MountManager::FindAndKillProcess(int32_t userId, std::list<std::string> &mountFailList)
 {
     if (userId <= 0) {
         return E_OK;
@@ -254,7 +254,7 @@ int32_t MountManager::FindAndKillProcess(int userId, std::list<std::string> &mou
     return E_OK;
 }
 
-bool MountManager::PidUsingFlag(int &pidPath, const int &prefix, std::list<std::string> &mountFailList)
+bool MountManager::PidUsingFlag(std::string &pidPath, const std::string &prefix, std::list<std::string> &mountFailList)
 {
     bool found = false;
     found |= CheckMaps(pidPath + "/maps", prefix, mountFailList);
@@ -278,7 +278,7 @@ bool MountManager::PidUsingFlag(int &pidPath, const int &prefix, std::list<std::
     return found;
 }
 
-void MountManager::KillProcess(int &processInfo)
+void MountManager::KillProcess(std::vector<ProcessInfo> &processInfo)
 {
     if (processInfo.empty()) {
         return;
