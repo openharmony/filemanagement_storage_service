@@ -1454,15 +1454,15 @@ int KeyManager::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
         free(path);
         return -ENOENT;
     }
-    if (access(path, F_OK) == 0) {
-        LOGI("This is unencrypted status");
-        isEncrypted = false;
+    if (access(path, F_OK) != 0) {
         free(path);
+        LOGI("This is encrypted status");
         return E_OK;
     }
+    isEncrypted = false;
     free(path);
-    LOGI("This is encrypted status");
-    return E_PERMISSION_DENIED;
+    LOGI("This is unencrypted status");
+    return E_OK;
 }
 
 #ifdef USER_CRYPTO_MIGRATE_KEY
