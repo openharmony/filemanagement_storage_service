@@ -285,13 +285,6 @@ int32_t ExternalVolumeInfo::DoSetVolDesc(std::string description)
             description
         };
         err = ForkExec(cmd);
-    } else if (fsType_ == "hmfs") {
-        std::vector<std::string> cmd = {
-            "hmfslabel",
-            devPath_,
-            description
-        };
-        err = ForkExec(cmd);
     } else {
         LOGE("SetVolumeDescription fsType not support.");
         return E_NOT_SUPPORT;
