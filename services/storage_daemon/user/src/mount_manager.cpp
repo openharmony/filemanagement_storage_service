@@ -340,7 +340,7 @@ bool MountManager::CheckMaps(const std::string &path, const std::string &prefix,
         if (tmpLine.find(prefix) == 0) {
             LOGE("find a fd %{public}s", tmpLine.c_str());
             inputStream.close();
-            found = true;
+            return true;
         }
         for (const auto &item: mountFailList) {
             if (tmpLine.find(item) == 0) {
@@ -351,7 +351,7 @@ bool MountManager::CheckMaps(const std::string &path, const std::string &prefix,
         }
     }
     inputStream.close();
-    return found;
+    return false;
 }
 
 bool MountManager::CheckSymlink(const std::string &path,
