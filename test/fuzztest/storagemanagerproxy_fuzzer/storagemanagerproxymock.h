@@ -287,6 +287,10 @@ public:
     {
         return E_OK;
     }
+    int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted) override
+    {
+        return E_OK;
+    }
 };
 } // namespace StorageManager
 } // namespace OHOS

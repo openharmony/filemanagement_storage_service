@@ -483,5 +483,21 @@ int32_t StorageDaemonClient::FscryptEnable(const std::string &fscryptOptions)
 
     return 0;
 }
+
+int32_t StorageDaemonClient::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
+{
+    if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
+        LOGE("Storage service flag check failed!");
+        return -EAGAIN;
+    }
+
+    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
+    if (client == nullptr) {
+        LOGE("Get StorageDaemon service failed!");
+        return -EAGAIN;
+    }
+
+    return client->GetFileEncryptStatus(userId, isEncrypted);
+}
 } // namespace StorageDaemon
 } // namespace OHOS

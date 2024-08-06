@@ -82,6 +82,7 @@ public:
         const std::string &networkId, const std::string &deviceId) override;
     virtual int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId) override;
+    virtual int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted) override;
 private:
     static inline BrokerDelegator<StorageDaemonProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

@@ -1437,6 +1437,35 @@ int KeyManager::UpgradeKeys(const std::vector<FileList> &dirInfo)
     return 0;
 }
 
+int KeyManager::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
+{
+    LOGI("Begin check encrypted status.");
+    isEncrypted = true;
+    const char rootPath[] = "/data/app/el2/";
+    const char basePath[] = "/base";
+    size_t allPathSize = strlen(rootPath) + strlen(basePath) + 1 + USER_ID_SIZE_VALUE;
+    char *path = reinterpret_cast<char *>(malloc(sizeof(char) * (allPathSize)));
+    if (path == nullptr) {
+        LOGE("Failed to malloce path.");
+        return -ENOENT;
+    }
+    int len = sprintf_s(path, allPathSize, "%s%u%s", rootPath, userId, basePath);
+    if (len <= 0 || (size_t)len >= allPathSize) {
+        LOGE("Failed to get base path");
+        free(path);
+        return -ENOENT;
+    }
+    if (access(path, F_OK) != 0) {
+        free(path);
+        LOGI("This is encrypted status");
+        return E_OK;
+    }
+    isEncrypted = false;
+    free(path);
+    LOGI("This is unencrypted status");
+    return E_OK;
+}
+
 #ifdef USER_CRYPTO_MIGRATE_KEY
 int KeyManager::RestoreUserKey(uint32_t userId, KeyType type)
 {

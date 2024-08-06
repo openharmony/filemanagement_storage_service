@@ -93,6 +93,7 @@ public:
         const std::string &networkId, const std::string &deviceId) override;
     virtual int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId) override;
+    virtual int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted) override;
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
     public:
         SystemAbilityStatusChangeListener() = default;

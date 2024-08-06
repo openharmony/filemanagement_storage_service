@@ -92,6 +92,8 @@ StorageDaemonStub::StorageDaemonStub()
         &StorageDaemonStub::HandleMountDfsDocs;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::UMOUNT_DFS_DOCS)] =
         &StorageDaemonStub::HandleUMountDfsDocs;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_FILE_ENCRYPT_STATUS)] =
+        &StorageDaemonStub::HandleGetFileEncryptStatus;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::CREATE_RECOVER_KEY)] =
         &StorageDaemonStub::HandleCreateRecoverKey;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::SET_RECOVER_KEY)] =
@@ -142,6 +144,7 @@ int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code,
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::UMOUNT_DFS_DOCS):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::GENERATE_APP_KEY):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::DELETE_APP_KEY):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_FILE_ENCRYPT_STATUS):
             return OnRemoteRequestForApp(code, data, reply);
         default:
             LOGE("Cannot response request %d: unknown tranction", code);
@@ -234,6 +237,8 @@ int32_t StorageDaemonStub::OnRemoteRequestForApp(uint32_t code, MessageParcel &d
             return HandleGenerateAppkey(data, reply);
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::DELETE_APP_KEY):
             return HandleDeleteAppkey(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_FILE_ENCRYPT_STATUS):
+            return HandleGetFileEncryptStatus(data, reply);
         default:
             LOGE("Cannot response request %d: unknown tranction", code);
             return E_SYS_ERR;
@@ -716,6 +721,18 @@ int32_t StorageDaemonStub::HandleUMountDfsDocs(MessageParcel &data, MessageParce
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleGetFileEncryptStatus(MessageParcel &data, MessageParcel &reply)
+{
+    uint32_t userId = data.ReadUint32();
+    bool isEncrypted = true;
+    int err = GetFileEncryptStatus(userId, isEncrypted);
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
+
     return E_OK;
 }
 

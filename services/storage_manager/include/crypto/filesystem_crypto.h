@@ -43,6 +43,7 @@ public:
     int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus);
     int32_t GenerateAppkey(uint32_t appUid, std::string &keyId);
     int32_t DeleteAppkey(const std::string keyId);
+    int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted);
     int32_t CreateRecoverKey(uint32_t userId,
                              uint32_t userType,
                              const std::vector<uint8_t> &token,

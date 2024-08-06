@@ -62,6 +62,7 @@ namespace {
         static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_MEM_PARA),
         static_cast<int32_t>(StorageDaemonInterfaceCode::GENERATE_APP_KEY),
         static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_APP_KEY),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::GET_FILE_ENCRYPT_STATUS),
         static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_RECOVER_KEY),
         static_cast<int32_t>(StorageDaemonInterfaceCode::SET_RECOVER_KEY),
     };
@@ -167,6 +168,7 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRe
     EXPECT_CALL(mock, GetOccupiedSpace(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, MountCryptoPathAgain(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, UpdateMemoryPara(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, GetFileEncryptStatus(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, CreateRecoverKey(testing::_, testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, SetRecoverKey(testing::_)).WillOnce(testing::Return(E_OK));
 

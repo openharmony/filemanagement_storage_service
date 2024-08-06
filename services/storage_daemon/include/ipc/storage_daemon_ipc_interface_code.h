@@ -56,6 +56,7 @@ namespace StorageDaemon {
         DELETE_APP_KEY,
         MOUNT_DFS_DOCS,
         UMOUNT_DFS_DOCS,
+        GET_FILE_ENCRYPT_STATUS,
         CREATE_RECOVER_KEY,
         SET_RECOVER_KEY,
     };

@@ -921,5 +921,27 @@ int32_t StorageDaemonProxy::SendRequest(uint32_t code, MessageParcel &data, Mess
 
     return E_OK;
 }
+
+int32_t StorageDaemonProxy::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
+{
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+
+    if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    if (!data.WriteUint32(userId)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+    int32_t err =
+        SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::GET_FILE_ENCRYPT_STATUS), data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+    isEncrypted = reply.ReadBool();
+    return reply.ReadInt32();
+}
 } // StorageDaemon
 } // OHOS
