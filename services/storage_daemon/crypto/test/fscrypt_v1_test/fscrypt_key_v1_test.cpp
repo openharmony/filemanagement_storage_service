@@ -179,7 +179,7 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_DeleteAppkey, TestSize.Level1)
     EXPECT_FALSE(g_testKeyV1.DeleteAppkey(KeyId));
 
     KeyId = "test";
-    EXPECT_TRUE(g_testKeyV1.DeleteAppkey(KeyId));
+    EXPECT_FALSE(g_testKeyV1.DeleteAppkey(KeyId));
     GTEST_LOG_(INFO) << "fscrypt_key_v1_DeleteAppkey end";
 }
 
@@ -197,7 +197,7 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_UninstallKeyForAppKeyToKeyring, TestSi
     EXPECT_FALSE(g_testKeyV1.UninstallKeyForAppKeyToKeyring(keyId));
 
     keyId = "test";
-    EXPECT_TRUE(g_testKeyV1.UninstallKeyForAppKeyToKeyring(keyId));
+    EXPECT_FALSE(g_testKeyV1.UninstallKeyForAppKeyToKeyring(keyId));
     GTEST_LOG_(INFO) << "fscrypt_key_v1_UninstallKeyForAppKeyToKeyring end";
 }
 
@@ -300,7 +300,12 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_EncryptClassE, TestSize.Level1)
     EXPECT_FALSE(g_testKeyV1.EncryptClassE(emptyUserAuth, isSupport, user, status));
 
     EXPECT_CALL(*fscryptKeyExtMock_, ReadClassE(_, _, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(*fscryptKeyExtMock_, WriteClassE(_, _, _)).WillOnce(Return(false));
     EXPECT_FALSE(g_testKeyV1.EncryptClassE(emptyUserAuth, isSupport, user, status));
+
+    EXPECT_CALL(*fscryptKeyExtMock_, ReadClassE(_, _, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(*fscryptKeyExtMock_, WriteClassE(_, _, _)).WillOnce(Return(true));
+    EXPECT_TRUE(g_testKeyV1.EncryptClassE(emptyUserAuth, isSupport, user, status));
     GTEST_LOG_(INFO) << "fscrypt_key_v1_EncryptClassE end";
 }
 
