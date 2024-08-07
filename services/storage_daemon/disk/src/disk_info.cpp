@@ -28,16 +28,13 @@
 
 namespace OHOS {
 namespace StorageDaemon {
+constexpr int32_t MIN_LINES = 2;
+constexpr unsigned int MAJORID_BLKEXT = 259;
+constexpr unsigned int MAX_PARTITION = 16;
 const std::string SGDISK_PATH = "/system/bin/sgdisk";
 const std::string SGDISK_DUMP_CMD = "--ohos-dump";
 const std::string SGDISK_ZAP_CMD = "--zap-all";
 const std::string SGDISK_PART_CMD = "--new=0:0:-0 --typeconde=0:0c00 --gpttombr=1";
-
-enum class Table {
-    UNKNOWN,
-    MBR,
-    GPT,
-};
 
 DiskInfo::DiskInfo(std::string &sysPath, std::string &devPath, dev_t device, int flag)
 {
@@ -210,6 +207,18 @@ int DiskInfo::ReadPartition()
             lines.push_back(tmp);
     }
 
+    std::vector<std::string> hmfsLines;
+    if (lines.size() > MIN_LINES) {
+        auto userdataIt = std::find_if(lines.begin(), lines.end(), [](const std::string &str) {
+            return str.find("userdata") != std::string::npos;
+        });
+        if (userdataIt != lines.end()) {
+            hmfsLines.push_back(lines.front());
+            hmfsLines.push_back(*userdataIt);
+            status = sScan;
+            return ReadDiskLines(hmfsLines, maxVolumes);
+        }
+    }
     status = sScan;
     return ReadDiskLines(lines, maxVolumes);
 }
@@ -251,6 +260,7 @@ int32_t DiskInfo::ReadDiskLines(std::vector<std::string> lines, int32_t maxVols)
         if (it == split.end()) {
             continue;
         }
+
         if (*it == "DISK") {
             if (++it == split.end()) {
                 continue;
@@ -264,32 +274,43 @@ int32_t DiskInfo::ReadDiskLines(std::vector<std::string> lines, int32_t maxVols)
                 continue;
             }
         } else if (*it == "PART") {
-            if (++it == split.end()) {
-                continue;
-            }
-            int32_t index = std::stoi(*it);
-            if (index > maxVols || index < 1) {
-                LOGE("Invalid partition %{public}d", index);
-                continue;
-            }
-            dev_t partitionDev = makedev(major(device_), minor(device_) + static_cast<uint32_t>(index));
-            if (table == Table::MBR) {
-                if (++it == split.end()) {
-                    continue;
-                }
-                int32_t type = std::stoi("0x0" + *it, 0, 16);
-                foundPart = CreateMBRVolume(type, partitionDev);
-            } else if (table == Table::GPT) {
-                if (CreateVolume(partitionDev) == E_OK) {
-                    foundPart = true;
-                }
-            }
+            ProcessPartition(it, split.end(), table, maxVols, foundPart);
         }
     }
+
     if (table == Table::UNKNOWN || !foundPart) {
         return CreateUnknownTabVol();
     }
+
     return E_OK;
+}
+
+void DiskInfo::ProcessPartition(std::vector<std::string>::iterator &it, const std::vector<std::string>::iterator &end,
+                                Table table, int32_t maxVols, bool &foundPart)
+{
+    if (++it == end) {
+        return;
+    }
+    int32_t index = std::stoi(*it);
+    unsigned int majorId = major(device_);
+    if ((index > maxVols && majorId == DISK_MMC_MAJOR) || index < 1) {
+        LOGE("Invalid partition %{public}d", index);
+        return;
+    }
+    dev_t partitionDev = (index > MAX_SCSI_VOLUMES) ?
+        makedev(MAJORID_BLKEXT, minor(device_) + static_cast<uint32_t>(index) - MAX_PARTITION) :
+        makedev(major(device_), minor(device_) + static_cast<uint32_t>(index));
+    if (table == Table::MBR) {
+        if (++it == end) {
+            return;
+        }
+        int32_t type = std::stoi("0x0" + *it, 0, 16);
+        foundPart = CreateMBRVolume(type, partitionDev);
+    } else if (table == Table::GPT) {
+        if (CreateVolume(partitionDev) == E_OK) {
+            foundPart = true;
+        }
+    }
 }
 
 int DiskInfo::CreateVolume(dev_t dev)
