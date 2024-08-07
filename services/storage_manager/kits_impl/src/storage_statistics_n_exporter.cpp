@@ -129,25 +129,21 @@ napi_value GetFreeSizeOfVolume(napi_env env, napi_callback_info info)
     }
 }
 
-napi_value GetBundleStats(napi_env env, napi_callback_info info)
+std::tuple<std::string, int32_t> ExtractNameAndIndex(napi_env env, napi_callback_info info)
 {
-    if (!IsSystemApp()) {
-        NError(E_PERMISSION_SYS).ThrowErr(env);
-        return nullptr;
-    }
     NFuncArg funcArg(env, info);
     if (!funcArg.InitArgs((int)NARG_CNT::ONE, (int)NARG_CNT::THREE)) {
         NError(E_PARAMS).ThrowErr(env);
-        return nullptr;
+        return std::make_tuple(nullptr, -1);
     }
-
     bool succ = false;
     std::unique_ptr<char []> name;
-    tie(succ, name, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
+        tie(succ, name, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
     if (!succ) {
         NError(E_PARAMS).ThrowErr(env);
-        return nullptr;
+        return std::make_tuple(nullptr, -1);
     }
+    std::string nameString(name.get());
     int32_t index = 0;
     if (funcArg.GetArgc() == (uint)NARG_CNT::THREE) {
         std::tie(succ, index) = NVal(env, funcArg[(int)NARG_POS::THIRD]).ToInt32();
@@ -156,10 +152,25 @@ napi_value GetBundleStats(napi_env env, napi_callback_info info)
     }
     if (!succ) {
         NError(E_PARAMS).ThrowErr(env);
+        return std::make_tuple(nullptr, -1);
+    }
+    return std::make_tuple(nameString, index);
+}
+
+napi_value GetBundleStats(napi_env env, napi_callback_info info)
+{
+    if (!IsSystemApp()) {
+        NError(E_PERMISSION_SYS).ThrowErr(env);
         return nullptr;
     }
+    auto result = ExtractNameAndIndex(env, info);
+    if (std::get<0>(result).empty()) {
+        NError(E_PARAMS).ThrowErr(env);
+        return nullptr;
+    }
+    std::string nameString = std::get<0>(result);
+    int32_t index = std::get<1>(result);
     auto bundleStats = std::make_shared<BundleStats>();
-    std::string nameString(name.get());
     auto cbExec = [nameString, bundleStats, index]() -> NError {
         int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetBundleStats(nameString,
             *bundleStats, index);
@@ -180,6 +191,8 @@ napi_value GetBundleStats(napi_env env, napi_callback_info info)
         return bundleObject;
     };
     std::string procedureName = "GetBundleStats";
+    NFuncArg funcArg(env, info);
+    funcArg.InitArgs((int)NARG_CNT::ONE, (int)NARG_CNT::THREE);
     NVal thisVar(env, funcArg.GetThisVar());
     if (funcArg.GetArgc() == (uint)NARG_CNT::ONE || NVal(env, funcArg[(int)NARG_POS::SECOND]).TypeIs(napi_number)) {
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;

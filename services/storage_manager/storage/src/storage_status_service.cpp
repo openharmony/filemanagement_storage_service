@@ -172,7 +172,8 @@ int32_t StorageStatusService::GetCurrentBundleStats(BundleStats &bundleStats)
     return GetBundleStats(pkgName, userId, bundleStats, DEFAULT_APP_INDEX);
 }
 
-int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t userId, BundleStats &pkgStats, int32_t appIndex)
+int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t userId, 
+    BundleStats &pkgStats, int32_t appIndex)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     auto bundleMgr = DelayedSingleton<BundleMgrConnector>::GetInstance()->GetBundleMgrProxy();
