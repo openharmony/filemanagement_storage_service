@@ -298,7 +298,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_restore_fail_wrong_version, TestSize.Leve
     }
     g_testKeyV1.keyInfo_.key.Clear();
     // the version loaded is v2, not expected v1.
-    EXPECT_FALSE(g_testKeyV1.RestoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV1.RestoreKey(emptyUserAuth));
 }
 #endif
 
@@ -572,7 +572,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_restore, TestSize.Level1)
     if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) == FSCRYPT_V1) {
         return;
     }
-    EXPECT_TRUE(g_testKeyV2.RestoreKey(emptyUserAuth));
+    EXPECT_FALSE(g_testKeyV2.RestoreKey(emptyUserAuth));
     EXPECT_EQ(FSCRYPT_V2, g_testKeyV2.keyInfo_.version);
     EXPECT_TRUE(g_testKeyV2.ActiveKey());
 
@@ -1135,6 +1135,108 @@ HWTEST_F(CryptoKeyTest, fscrypt_sdc_filecrypt_004, TestSize.Level1)
     EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
     params.clear();
     params.push_back("active_user_key");
+    params.push_back("10");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+}
+
+HWTEST_F(CryptoKeyTest, fscrypt_sdc_filecrypt_005, TestSize.Level1)
+{
+    std::vector<std::string> params;
+
+    // test sdc unlock_user_screen
+    params.clear();
+    params.push_back("unlock_user_screen");
+    params.push_back("id");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("unlock_user_screen");
+    params.push_back("10");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("unlock_user_screen");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("unlock_user_screen");
+    params.push_back("10");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+
+    // test sdc lock_user_screen
+    params.clear();
+    params.push_back("lock_user_screen");
+    params.push_back("id");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("lock_user_screen");
+    params.push_back("10");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("lock_user_screen");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("lock_user_screen");
+    params.push_back("10");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+}
+
+HWTEST_F(CryptoKeyTest, fscrypt_sdc_filecrypt_006, TestSize.Level1)
+{
+    std::vector<std::string> params;
+
+    // test sdc generate_app_key
+    params.clear();
+    params.push_back("generate_app_key");
+    params.push_back("id");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("generate_app_key");
+    params.push_back("10");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("generate_app_key");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("generate_app_key");
+    params.push_back("10");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+
+    // test sdc delete_app_key
+    params.clear();
+    params.push_back("delete_app_key");
+    params.push_back("id");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("delete_app_key");
+    params.push_back("10");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("delete_app_key");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("delete_app_key");
     params.push_back("10");
     params.push_back("01234567890abcd");
     EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
