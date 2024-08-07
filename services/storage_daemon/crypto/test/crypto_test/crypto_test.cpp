@@ -72,6 +72,23 @@ HWTEST_F(CryptoTest, Generate_And_Save_Key_Blob_001, TestSize.Level1)
 }
 
 /**
+ * @tc.name: Generate_And_Save_Key_Blob_002
+ * @tc.desc: Verify the BaseKey GenerateAndSaveKeyBlob function.
+ * @tc.type: FUNC
+ * @tc.require: SR000H0CM9
+ */
+HWTEST_F(CryptoTest, Generate_And_Save_Key_Blob_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "CryptoTest_GenerateAndSaveKeyBlob_0200 start";
+    KeyBlob blob;
+    const std::string path = TEST_PATH;
+    const uint32_t size = CRYPTO_KEY_SECDISC_SIZE;
+    bool ret = BaseKey::GenerateAndSaveKeyBlob(blob, path, size);
+    EXPECT_TRUE(ret);
+    GTEST_LOG_(INFO) << "CryptoTest_GenerateAndSaveKeyBlob_0200 end";
+}
+
+/**
  * @tc.name: Huks_Master_Encrypt_Key_001
  * @tc.desc: Verify the HuksMaster EncryptKey function.
  * @tc.type: FUNC
@@ -92,6 +109,54 @@ HWTEST_F(CryptoTest, Huks_Master_Encrypt_Key_001, TestSize.Level1)
     ret = HuksMaster::GetInstance().EncryptKeyEx(auth, rnd, ctx);
     EXPECT_FALSE(ret);
     GTEST_LOG_(INFO) << "CryptoTest_HuksMasterEncryptKey_0100 end";
+}
+
+/**
+ * @tc.name: Huks_Master_Encrypt_Key_002
+ * @tc.desc: Verify the HuksMaster EncryptKey function.
+ * @tc.type: FUNC
+ * @tc.require: SR000H0CM9
+ */
+HWTEST_F(CryptoTest, Huks_Master_Encrypt_Key_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "CryptoTest_HuksMasterEncryptKey_0200 start";
+    KeyBlob testKeyblob = HuksMaster()::GetInstance().GenerateRandomKey(CRYPTO_KEY_ALIAS_SIZE);
+    KeyContext ctx { .shield = testKeyblob };
+    const UserAuth auth;
+    const KeyInfo key;
+    bool isNeedNewNonce = false;
+    KeyBlob rnd;
+
+    bool ret = HuksMaster::GetInstance().EncryptKey(ctx, auth, key, isNeedNewNonce);
+    EXPECT_FALSE(ret);
+
+    ret = HuksMaster::GetInstance().EncryptKeyEx(auth, rnd, ctx);
+    EXPECT_FALSE(ret);
+    GTEST_LOG_(INFO) << "CryptoTest_HuksMasterEncryptKey_0200 end";
+}
+
+/**
+ * @tc.name: Huks_Master_Encrypt_Key_003
+ * @tc.desc: Verify the HuksMaster EncryptKey function.
+ * @tc.type: FUNC
+ * @tc.require: SR000H0CM9
+ */
+HWTEST_F(CryptoTest, Huks_Master_Encrypt_Key_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "CryptoTest_HuksMasterEncryptKey_0300 start";
+    KeyBlob testKeyblob = HuksMaster()::GetInstance().GenerateRandomKey(CRYPTO_KEY_ALIAS_SIZE);
+    KeyContext ctx { .shield = testKeyblob };
+    const UserAuth auth;
+    KeyInfo key { .key = testKeyblob };
+    bool isNeedNewNonce = false;
+    KeyBlob rnd = testKeyblob;
+
+    bool ret = HuksMaster::GetInstance().EncryptKey(ctx, auth, key, isNeedNewNonce);
+    EXPECT_FALSE(ret);
+
+    ret = HuksMaster::GetInstance().EncryptKeyEx(auth, rnd, ctx);
+    EXPECT_FALSE(ret);
+    GTEST_LOG_(INFO) << "CryptoTest_HuksMasterEncryptKey_0300 end";
 }
 
 /**
@@ -118,22 +183,51 @@ HWTEST_F(CryptoTest, Huks_Master_Decrypt_Key_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: Huks_Master_Hdi_Access_Finish_001
- * @tc.desc: Verify the HuksMaster HdiAccessFinish function.
+ * @tc.name: Huks_Master_Decrypt_Key_002
+ * @tc.desc: Verify the HuksMaster DecrptyKey function.
  * @tc.type: FUNC
  * @tc.require: SR000H0CM9
  */
-HWTEST_F(CryptoTest, Huks_Master_Hdi_Access_Finish_001, TestSize.Level1)
+HWTEST_F(CryptoTest, Huks_Master_Decrypt_Key_002, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "CryptoTest_HuksMasterHdiAccessFinish_0100 start";
-    const HksBlob handle {};
-    struct HksParamSet *paramSet = nullptr;;
-    const HksBlob inData {};
-    HksBlob outData;
+    GTEST_LOG_(INFO) << "CryptoTest_HuksMasterDecryptKey_0200 start";
+    KeyBlob testKeyblob = HuksMaster()::GetInstance().GenerateRandomKey(CRYPTO_KEY_ALIAS_SIZE);
+    KeyContext ctx { .shield = testKeyblob };
+    const UserAuth auth;
+    KeyInfo key;
+    bool isNeedNewNonce = false;
+    KeyBlob rnd;
 
-    int ret = HuksMaster::GetInstance().HdiAccessFinish(handle, paramSet, inData, outData);
-    EXPECT_EQ(ret, HKS_ERROR_NULL_POINTER);
-    GTEST_LOG_(INFO) << "CryptoTest_HuksMasterHdiAccessFinish_0100 end";
+    bool ret = HuksMaster::GetInstance().DecryptKey(ctx, auth, key, isNeedNewNonce);
+    EXPECT_FALSE(ret);
+
+    ret = HuksMaster::GetInstance().DecryptKeyEx(ctx, auth, rnd);
+    EXPECT_FALSE(ret);
+    GTEST_LOG_(INFO) << "CryptoTest_HuksMasterDecryptKey_0200 end";
+}
+
+/**
+ * @tc.name: Huks_Master_Decrypt_Key_003
+ * @tc.desc: Verify the HuksMaster DecrptyKey function.
+ * @tc.type: FUNC
+ * @tc.require: SR000H0CM9
+ */
+HWTEST_F(CryptoTest, Huks_Master_Decrypt_Key_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "CryptoTest_HuksMasterDecryptKey_0300 start";
+    KeyBlob testKeyblob = HuksMaster()::GetInstance().GenerateRandomKey(CRYPTO_KEY_ALIAS_SIZE);
+    KeyContext ctx { .shield = testKeyblob, .rndEnc = testKeyblob };
+    const UserAuth auth;
+    KeyInfo key;
+    bool isNeedNewNonce = false;
+    KeyBlob rnd;
+
+    bool ret = HuksMaster::GetInstance().DecryptKey(ctx, auth, key, isNeedNewNonce);
+    EXPECT_FALSE(ret);
+
+    ret = HuksMaster::GetInstance().DecryptKeyEx(ctx, auth, rnd);
+    EXPECT_FALSE(ret);
+    GTEST_LOG_(INFO) << "CryptoTest_HuksMasterDecryptKey_0300 end";
 }
 
 /**
