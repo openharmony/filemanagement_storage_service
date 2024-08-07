@@ -71,7 +71,7 @@ private:
     int32_t ReadDiskLines(std::vector<std::string> lines, int32_t maxVols);
     bool CreateMBRVolume(int32_t type, dev_t dev);
     int32_t CreateUnknownTabVol();
-    void ProcessPartition(std::vector<std::string>::iterator &it, std::vector<std::string>::iterator &end,
+    void ProcessPartition(std::vector<std::string>::iterator &it, const std::vector<std::string>::iterator &end,
                           Table table, int32_t maxVols, bool &foundPart);
 };
 } // STORAGE_DAEMON
