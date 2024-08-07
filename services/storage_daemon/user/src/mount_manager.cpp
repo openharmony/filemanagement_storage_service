@@ -246,7 +246,7 @@ int32_t MountManager::FindAndKillProcess(int32_t userId, std::list<std::string> 
         Utils::MountArgument argument(Utils::MountArgumentDescriptors::Alpha(userId, ""));
         const string &prefix = argument.GetMountPointPrefix();
         std::string pidPath = "/proc/" + name;
-        if (!PidUsingFlag(pidPath, prefix, mountFailList)) {
+        if (PidUsingFlag(pidPath, prefix, mountFailList)) {
             LOGE("find a link pid is %{public}d, processName is %{public}s.", info.pid, info.name.c_str());
             processInfos.push_back(info);
         }
