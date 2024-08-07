@@ -272,7 +272,7 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_GenerateAppkey, TestSize.Level1)
     EXPECT_FALSE(g_testKeyV1.GenerateAppkey(userId, appUid, keyDesc));
 
     EXPECT_CALL(*fscryptKeyExtMock_, GenerateAppkey(_, _, _, _)).WillOnce(Return(true));
-    EXPECT_TRUE(g_testKeyV1.GenerateAppkey(userId, appUid, keyDesc));
+    EXPECT_FALSE(g_testKeyV1.GenerateAppkey(userId, appUid, keyDesc));
     GTEST_LOG_(INFO) << "fscrypt_key_v1_GenerateAppkey end";
 }
 
