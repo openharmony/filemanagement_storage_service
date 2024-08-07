@@ -33,6 +33,9 @@ using namespace OHOS::FileManagement::LibN;
 
 namespace OHOS {
 namespace StorageManager {
+const std::string EMPTY_STRING = "";
+constexpr int32_t INVALID_INDEX = -1;
+
 napi_value GetTotalSizeOfVolume(napi_env env, napi_callback_info info)
 {
     if (!IsSystemApp()) {
@@ -134,14 +137,14 @@ std::tuple<std::string, int32_t> ExtractNameAndIndex(napi_env env, napi_callback
     NFuncArg funcArg(env, info);
     if (!funcArg.InitArgs((int)NARG_CNT::ONE, (int)NARG_CNT::THREE)) {
         NError(E_PARAMS).ThrowErr(env);
-        return std::make_tuple(nullptr, -1);
+        return std::make_tuple(EMPTY_STRING, INVALID_INDEX);
     }
     bool succ = false;
     std::unique_ptr<char []> name;
-        tie(succ, name, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
+    tie(succ, name, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
     if (!succ) {
         NError(E_PARAMS).ThrowErr(env);
-        return std::make_tuple(nullptr, -1);
+        return std::make_tuple(EMPTY_STRING, INVALID_INDEX);
     }
     std::string nameString(name.get());
     int32_t index = 0;
@@ -152,7 +155,7 @@ std::tuple<std::string, int32_t> ExtractNameAndIndex(napi_env env, napi_callback
     }
     if (!succ) {
         NError(E_PARAMS).ThrowErr(env);
-        return std::make_tuple(nullptr, -1);
+        return std::make_tuple(EMPTY_STRING, INVALID_INDEX);
     }
     return std::make_tuple(nameString, index);
 }
@@ -165,6 +168,7 @@ napi_value GetBundleStats(napi_env env, napi_callback_info info)
     }
     auto result = ExtractNameAndIndex(env, info);
     if (std::get<0>(result).empty()) {
+        LOGE("Extract pkgName and index from arguments failed");
         NError(E_PARAMS).ThrowErr(env);
         return nullptr;
     }

@@ -172,7 +172,7 @@ int32_t StorageStatusService::GetCurrentBundleStats(BundleStats &bundleStats)
     return GetBundleStats(pkgName, userId, bundleStats, DEFAULT_APP_INDEX);
 }
 
-int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t userId, 
+int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t userId,
     BundleStats &pkgStats, int32_t appIndex)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
@@ -188,7 +188,7 @@ int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t
     }
 
     if (appIndex < 0 || appIndex > StorageService::MAX_APP_INDEX) {
-        LOGE("StorageStatusService::Invalid appIndex");
+        LOGE("StorageStatusService::Invalid appIndex: %{public}d", appIndex);
         return E_USERID_RANGE;
     }
     vector<int64_t> bundleStats;
