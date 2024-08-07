@@ -268,6 +268,21 @@ int32_t MountManager::FindAndKillProcess(int32_t userId, std::list<std::string> 
     return E_OK;
 }
 
+void MountManager::UmountFailRadar(std::vector<ProcessInfo> &processInfo)
+{
+    if (processInfos.empty()) {
+        return;
+    }
+    std::string ss;
+    int32_t ret = E_UMOUNT;
+    for (const auto &item:processInfos) {
+        ss += item.name +",";
+    }
+    if (StorageService::StorageRadar::GetInstance().UmountFail(ss, ret)) {
+        LOGE("StorageRadar UmountFail %{public}d, process is %{public}s", ret, ss.c_str());
+    }
+}
+
 bool MountManager::PidUsingFlag(std::string &pidPath, const std::string &prefix, std::list<std::string> &mountFailList)
 {
     bool found = false;

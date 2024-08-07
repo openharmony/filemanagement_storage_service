@@ -68,16 +68,16 @@ bool Storage::ActiveCurrentUser(int32_t errcode)
                 "BIZ_SCENE", static_cast<int32_t>(BizState::BIZ_STATE_END));
     } else {
         res = HisysEventWrite(
-                STORAGESERVICE_DOAMIN,
-                ACTIVE_CURRENT_USER_BEHAVIOR,
-                HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
-                "ORG_PKG", ORGPKGNAME,
-                "FUNC", "ActiveUserKey",
-                "BIZ_SCENE", static_cast<int32_t>(BizScene::STORAGE_START),
-                "BIZ_STAGE", static_cast<int32_t>(BizStage::BIZ_STAGE_SA_START),
-                "STAGE_RES", static_cast<int32_t>(StageRes::STAGE_FAIL),
-                "BIZ_SCENE", static_cast<int32_t>(BizState::BIZ_STATE_END),
-                "ERROR_CODE", errcode);
+            STORAGESERVICE_DOAMIN,
+            ACTIVE_CURRENT_USER_BEHAVIOR,
+            HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
+            "ORG_PKG", ORGPKGNAME,
+            "FUNC", "ActiveUserKey",
+            "BIZ_SCENE", static_cast<int32_t>(BizScene::STORAGE_START),
+            "BIZ_STAGE", static_cast<int32_t>(BizStage::BIZ_STAGE_SA_START),
+            "STAGE_RES", static_cast<int32_t>(StageRes::STAGE_FAIL),
+            "BIZ_SCENE", static_cast<int32_t>(BizState::BIZ_STATE_END),
+            "ERROR_CODE", errcode);
     }
     return true;
 }
@@ -98,20 +98,20 @@ bool Storage::UmountFail(std::string processName, int32_t errcode)
                 "BIZ_SCENE", static_cast<int32_t>(BizState::BIZ_STATE_END));
     } else {
         res = HisysEventWrite(
-                STORAGESERVICE_DOAMIN,
-                UMOUNT_FAIL_BEHAVIOR,
-                HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
-                "ORG_PKG", ORGPKGNAME,
-                "FUNC", "FindAndKillProcess",
-                "BIZ_SCENE", static_cast<int32_t>(BizScene::STORAGE_START),
-                "BIZ_STAGE", static_cast<int32_t>(BizStage::BIZ_STAGE_SA_START),
-                "STAGE_RES", static_cast<int32_t>(StageRes::STAGE_FAIL),
-                "BIZ_SCENE", static_cast<int32_t>(BizState::BIZ_STATE_END),
-                "ERROR_CODE", errcode,
-                "PROCESS_NAME", processName);
+            STORAGESERVICE_DOAMIN,
+            UMOUNT_FAIL_BEHAVIOR,
+            HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
+            "ORG_PKG", ORGPKGNAME,
+            "FUNC", "FindAndKillProcess",
+            "BIZ_SCENE", static_cast<int32_t>(BizScene::STORAGE_START),
+            "BIZ_STAGE", static_cast<int32_t>(BizStage::BIZ_STAGE_SA_START),
+            "STAGE_RES", static_cast<int32_t>(StageRes::STAGE_FAIL),
+            "BIZ_SCENE", static_cast<int32_t>(BizState::BIZ_STATE_END),
+            "ERROR_CODE", errcode,
+            "PROCESS_NAME", processName);
     }
     return true;
 }
 
 } // namespace StorageService
-}// namespace OHOS
+} // namespace OHOS
