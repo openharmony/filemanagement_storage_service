@@ -18,6 +18,10 @@
 #include <string>
 #include <vector>
 
+#include <cstdlib>
+#include <sys/wait.h>
+#include <unistd.h>
+
 #include "base_key.h"
 #include "huks_master.h"
 #include "key_blob.h"
@@ -52,6 +56,52 @@ void CryptoTest::SetUp(void) {
 
 void CryptoTest::TearDown(void) {
     // input testcase teardown step，teardown invoked after each testcases
+}
+
+int32_t CryptoTest::ExecSdcBinary(std::vector<std::string> params, int isCrypt)
+{
+    pid_t pid = fork();
+    if (pid < 0) {
+        return -EINVAL;
+    }
+    if (pid == 0) {
+        int ret = -EINVAL;
+        if (!isCrypt) {
+            char *const argv[] = {const_cast<char *>("/system/bin/sdc"), const_cast<char *>("nullcmd"), nullptr};
+            ret = execv(argv[0], argv);
+        } else if (params.size() == PARAMS_SIZE_0) {
+            char *const argv[] = {const_cast<char *>("/system/bin/sdc"), nullptr};
+            ret = execv(argv[0], argv);
+        } else if (params.size() == PARAMS_SIZE_1) {
+            char *const argv[] = {const_cast<char *>("/system/bin/sdc"), const_cast<char *>("filecrypt"),
+                                  const_cast<char *>(params[0].c_str()), nullptr};
+            ret = execv(argv[0], argv);
+        } else if (params.size() == PARAMS_SIZE_2) {
+            char *const argv[] = {const_cast<char *>("/system/bin/sdc"), const_cast<char *>("filecrypt"),
+                                  const_cast<char *>(params[0].c_str()), const_cast<char *>(params[1].c_str()), nullptr};
+            ret = execv(argv[0], argv);
+        } else if (params.size() == PARAMS_SIZE_3) {
+            char *const argv[] = {const_cast<char *>("/system/bin/sdc"), const_cast<char *>("filecrypt"),
+                                  const_cast<char *>(params[0].c_str()), const_cast<char *>(params[1].c_str()),
+                                  const_cast<char *>(params[2].c_str()), nullptr};
+            ret = execv(argv[0], argv);
+        } else if (params.size() == PARAMS_SIZE_4) {
+            char *const argv[] = {const_cast<char *>("/system/bin/sdc"), const_cast<char *>("filecrypt"),
+                                  const_cast<char *>(params[0].c_str()), const_cast<char *>(params[1].c_str()),
+                                  const_cast<char *>(params[2].c_str()), const_cast<char *>(params[3].c_str()), nullptr};
+            ret = execv(argv[0], argv);
+        }
+        if (ret) {
+            return -EINVAL;
+        }
+    }
+    int status;
+    pid_t ret = waitpid(pid, &status, 0);
+    if (ret != pid) {
+        return -EINVAL;
+    }
+
+    return 0;
 }
 
 /**
@@ -192,21 +242,21 @@ HWTEST_F(CryptoTest, Fscrypt_SDC_Filecrypt_001, TestSize.Level1)
     params.push_back("id");
     params.push_back("01234567890abcd");
     params.push_back("01234567890abcd");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    EXPECT_EQ(0, CryptoTest::ExecSdcBinary(params, 1));
     params.clear();
     params.push_back("unlock_user_screen");
     params.push_back("10");
     params.push_back("01234567890abcd");
     params.push_back("01234567890abcd");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    EXPECT_EQ(0, CryptoTest::ExecSdcBinary(params, 1));
     params.clear();
     params.push_back("unlock_user_screen");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    EXPECT_EQ(0, CryptoTest::ExecSdcBinary(params, 1));
     params.clear();
     params.push_back("unlock_user_screen");
     params.push_back("10");
     params.push_back("01234567890abcd");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    EXPECT_EQ(0, CryptoTest::ExecSdcBinary(params, 1));
     params.clear();
 
     // test sdc lock_user_screen
@@ -215,21 +265,21 @@ HWTEST_F(CryptoTest, Fscrypt_SDC_Filecrypt_001, TestSize.Level1)
     params.push_back("id");
     params.push_back("01234567890abcd");
     params.push_back("01234567890abcd");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    EXPECT_EQ(0, CryptoTest::ExecSdcBinary(params, 1));
     params.clear();
     params.push_back("lock_user_screen");
     params.push_back("10");
     params.push_back("01234567890abcd");
     params.push_back("01234567890abcd");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    EXPECT_EQ(0, CryptoTest::ExecSdcBinary(params, 1));
     params.clear();
     params.push_back("lock_user_screen");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    EXPECT_EQ(0, CryptoTest::ExecSdcBinary(params, 1));
     params.clear();
     params.push_back("lock_user_screen");
     params.push_back("10");
     params.push_back("01234567890abcd");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    EXPECT_EQ(0, CryptoTest::ExecSdcBinary(params, 1));
     params.clear();
     GTEST_LOG_(INFO) << "CryptoTest_Fscrypt_SDC_Filecrypt_0100 end";
 }
@@ -251,21 +301,21 @@ HWTEST_F(CryptoTest, Fscrypt_SDC_Filecrypt_002, TestSize.Level1)
     params.push_back("id");
     params.push_back("01234567890abcd");
     params.push_back("01234567890abcd");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    EXPECT_EQ(0, CryptoTest::ExecSdcBinary(params, 1));
     params.clear();
     params.push_back("generate_app_key");
     params.push_back("10");
     params.push_back("01234567890abcd");
     params.push_back("01234567890abcd");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    EXPECT_EQ(0, CryptoTest::ExecSdcBinary(params, 1));
     params.clear();
     params.push_back("generate_app_key");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    EXPECT_EQ(0, CryptoTest::ExecSdcBinary(params, 1));
     params.clear();
     params.push_back("generate_app_key");
     params.push_back("10");
     params.push_back("01234567890abcd");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    EXPECT_EQ(0, CryptoTest::ExecSdcBinary(params, 1));
     params.clear();
 
     // test sdc delete_app_key
@@ -274,21 +324,21 @@ HWTEST_F(CryptoTest, Fscrypt_SDC_Filecrypt_002, TestSize.Level1)
     params.push_back("id");
     params.push_back("01234567890abcd");
     params.push_back("01234567890abcd");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    EXPECT_EQ(0, CryptoTest::ExecSdcBinary(params, 1));
     params.clear();
     params.push_back("delete_app_key");
     params.push_back("10");
     params.push_back("01234567890abcd");
     params.push_back("01234567890abcd");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    EXPECT_EQ(0, CryptoTest::ExecSdcBinary(params, 1));
     params.clear();
     params.push_back("delete_app_key");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    EXPECT_EQ(0, CryptoTest::ExecSdcBinary(params, 1));
     params.clear();
     params.push_back("delete_app_key");
     params.push_back("10");
     params.push_back("01234567890abcd");
-    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    EXPECT_EQ(0, CryptoTest::ExecSdcBinary(params, 1));
     params.clear();
     GTEST_LOG_(INFO) << "CryptoTest_Fscrypt_SDC_Filecrypt_0200 end";
 }
