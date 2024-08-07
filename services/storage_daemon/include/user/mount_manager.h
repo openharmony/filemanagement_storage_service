@@ -87,6 +87,7 @@ public:
     bool GetProcessInfo(const std::string &filename, ProcessInfo &info);
     void KillProcess(std::vector<ProcessInfo> &processInfo);
     bool PidUsingFlag(std::string &pidPath, const std::string &prefix, std::list<std::string> &mountFailList);
+    void UmountFailRadar(std::vector<ProcessInfo> &processInfo);
 
 private:
     bool SupportHmdfs();

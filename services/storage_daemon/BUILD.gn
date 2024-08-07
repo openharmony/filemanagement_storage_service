@@ -253,12 +253,14 @@ ohos_shared_library("storage_common_utils") {
     "./utils/disk_utils.cpp",
     "./utils/file_utils.cpp",
     "./utils/mount_argument_utils.cpp",
+    "./utils/storage_radar.cpp",
     "./utils/string_utils.cpp",
   ]
 
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
+    "hisysevent:libhisysevent",
   ]
 
   if (build_selinux) {

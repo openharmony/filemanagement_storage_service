@@ -19,6 +19,8 @@
 #include <fcntl.h>
 #include <fstream>
 #include <thread>
+#include "hisysevent.h"
+#include "utils/storage_radar.h"
 
 #ifdef USER_CRYPTO_MANAGER
 #include "crypto/anco_key_manager.h"
@@ -265,6 +267,9 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
         return RestoreUserKey(userId, flags);
     }
 #endif
+    if (StorageService::StorageRadar::GetInstance().RecordPrepareUserDirsResult(ret)) {
+        LOGI("StorageRadar record PrepareUserDirs result success, ret = %{public}d", ret);
+    }
     if (ret != E_OK) {
         LOGE("Generate user %{public}d key error", userId);
         return ret;
@@ -568,6 +573,9 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
         }
     }
     ret = ActiveUserKeyAndPrepareElX(userId, token, secret);
+    if (StorageService::StorageRadar::GetInstance().RecordActiveUserKeyResult(ret)) {
+        LOGI("StorageRadar record ActiveUserKey result success, ret = %{public}d", ret);
+    }
     if (ret != E_OK) {
         LOGE("ActiveUserKey fail, userId %{public}u, type %{public}u", userId, EL4_KEY);
         return ret;
@@ -576,8 +584,7 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
         LOGE("failed to delete appkey2");
         return -EFAULT;
     }
-    std::thread thread([this, userId]() { RestoreconElX(userId); });
-    thread.detach();
+    std::thread([this, userId]() { RestoreconElX(userId); }).detach();
     if (updateFlag) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
     }
@@ -585,8 +592,7 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
     AncoActiveCryptKey(userId);
     return ret;
 #else
-    std::thread thread([this, userId]() { RestoreconElX(userId); });
-    thread.detach();
+    std::thread([this, userId]() { RestoreconElX(userId); }).detach();
     if (updateFlag) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
     }
