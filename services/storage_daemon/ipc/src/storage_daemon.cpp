@@ -267,7 +267,7 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
         return RestoreUserKey(userId, flags);
     }
 #endif
-    if (StorageService::StorageRadar::GetInstance().AddNewUser(ret)) {
+    if (StorageService::StorageRadar::GetInstance().RecordPrepareUserDirsResult(ret)) {
         LOGI("StorageRadar record PrepareUserDirs result success, ret = %{public}d", ret);
     }
     if (ret != E_OK) {
@@ -573,7 +573,7 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
         }
     }
     ret = ActiveUserKeyAndPrepareElX(userId, token, secret);
-    if (StorageService::StorageRadar::GetInstance().ActiveCurrentUser(ret)) {
+    if (StorageService::StorageRadar::GetInstance().RecordActiveUserKeyResult(ret)) {
         LOGI("StorageRadar record ActiveUserKey result success, ret = %{public}d", ret);
     }
     if (ret != E_OK) {
