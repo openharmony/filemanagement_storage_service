@@ -34,6 +34,12 @@ namespace StorageDaemon {
 using namespace testing::ext;
 using namespace OHOS::StorageDaemon;
 
+const int32_t PARAMS_SIZE_0 = 0;
+const int32_t PARAMS_SIZE_1 = 1;
+const int32_t PARAMS_SIZE_2 = 2;
+const int32_t PARAMS_SIZE_3 = 3;
+const int32_t PARAMS_SIZE_4 = 4;
+
 class CryptoTest : public testing::Test {
 public:
     static void SetUpTestCase(void);
