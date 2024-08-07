@@ -74,21 +74,21 @@ int32_t CryptoTest::ExecSdcBinary(std::vector<std::string> params, int isCrypt)
             ret = execv(argv[0], argv);
         } else if (params.size() == PARAMS_SIZE_1) {
             char *const argv[] = {const_cast<char *>("/system/bin/sdc"), const_cast<char *>("filecrypt"),
-                                  const_cast<char *>(params[0].c_str()), nullptr};
+                const_cast<char *>(params[0].c_str()), nullptr};
             ret = execv(argv[0], argv);
         } else if (params.size() == PARAMS_SIZE_2) {
             char *const argv[] = {const_cast<char *>("/system/bin/sdc"), const_cast<char *>("filecrypt"),
-                                  const_cast<char *>(params[0].c_str()), const_cast<char *>(params[1].c_str()), nullptr};
+                const_cast<char *>(params[0].c_str()), const_cast<char *>(params[1].c_str()), nullptr};
             ret = execv(argv[0], argv);
         } else if (params.size() == PARAMS_SIZE_3) {
             char *const argv[] = {const_cast<char *>("/system/bin/sdc"), const_cast<char *>("filecrypt"),
-                                  const_cast<char *>(params[0].c_str()), const_cast<char *>(params[1].c_str()),
-                                  const_cast<char *>(params[2].c_str()), nullptr};
+                const_cast<char *>(params[0].c_str()), const_cast<char *>(params[1].c_str()),
+                const_cast<char *>(params[2].c_str()), nullptr};
             ret = execv(argv[0], argv);
         } else if (params.size() == PARAMS_SIZE_4) {
             char *const argv[] = {const_cast<char *>("/system/bin/sdc"), const_cast<char *>("filecrypt"),
-                                  const_cast<char *>(params[0].c_str()), const_cast<char *>(params[1].c_str()),
-                                  const_cast<char *>(params[2].c_str()), const_cast<char *>(params[3].c_str()), nullptr};
+                const_cast<char *>(params[0].c_str()), const_cast<char *>(params[1].c_str()),
+                const_cast<char *>(params[2].c_str()), const_cast<char *>(params[3].c_str()), nullptr};
             ret = execv(argv[0], argv);
         }
         if (ret) {
