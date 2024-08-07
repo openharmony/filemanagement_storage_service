@@ -328,6 +328,8 @@ group("storage_daemon_unit_test") {
     "crypto/test/anco_test:anco_crypto_test",
     "crypto/test/crypto_test:crypto_test",
     "crypto/test/fscrypt_key_v1_ext_test:fscrypt_key_v1_ext_test",
+    "crypto/test/iam_client_test:iam_client_test",
+    "crypto/test/iam_client_user_auth_framework_test:iam_client_user_auth_framework_test",
     "file_sharing/test:file_sharing_test",
     "ipc/test:storage_daemon_ipc_test",
     "quota/test:storage_daemon_quota_test",
