@@ -47,6 +47,7 @@
         "file_api",
         "gptfdisk",
         "hilog",
+        "hisysevent",
         "hitrace",
         "huks",
         "init",
@@ -60,8 +61,7 @@
         "selinux_adapter",
         "os_account",
         "openssl",
-        "user_auth_framework",
-        "hisysevent"
+        "user_auth_framework"
       ],
       "third_party": [
         "e2fsprogs",

@@ -57,9 +57,9 @@ public:
     }
 
 public:
-    bool AddNewUser(int32_t errcode);
-    bool ActiveCurrentUser(int32_t errcode);
-    bool UmountFail(std::string processName, int32_t errcode);
+    bool RecordPrepareUserDirsResult(int32_t errcode);
+    bool RecordActiveUserKeyResult(int32_t errcode);
+    bool RecordKillProcessResult(std::string processName, int32_t errcode);
 
 private:
     StorageRadar() = default;

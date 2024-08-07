@@ -22,7 +22,7 @@
 
 namespace OHOS {
 namespace StorageService {
-bool StorageRadar::AddNewUser(int32_t errcode)
+bool StorageRadar::RecordPrepareUserDirsResult(int32_t errcode)
 {
     int32_t res = E_OK;
     if (errcode == E_OK) {
@@ -49,10 +49,14 @@ bool StorageRadar::AddNewUser(int32_t errcode)
             "BIZ_SCENE", static_cast<int32_t>(BizState::BIZ_STATE_END),
             "ERROR_CODE", errcode);
     }
+    if (res != E_OK) {
+        LOGE("StorageRadar ERROR, res :%{public}d", res);
+        return false;
+    }
     return true;
 }
 
-bool StorageRadar::ActiveCurrentUser(int32_t errcode)
+bool StorageRadar::RecordActiveUserKeyResult(int32_t errcode)
 {
     int32_t res = E_OK;
     if (errcode == E_OK) {
@@ -79,10 +83,14 @@ bool StorageRadar::ActiveCurrentUser(int32_t errcode)
             "BIZ_SCENE", static_cast<int32_t>(BizState::BIZ_STATE_END),
             "ERROR_CODE", errcode);
     }
+    if (res != E_OK) {
+        LOGE("StorageRadar ERROR, res :%{public}d", res);
+        return false;
+    }
     return true;
 }
 
-bool StorageRadar::UmountFail(std::string processName, int32_t errcode)
+bool StorageRadar::RecordKillProcessResult(std::string processName, int32_t errcode)
 {
     int32_t res = E_OK;
     if (errcode == E_OK) {
@@ -109,6 +117,10 @@ bool StorageRadar::UmountFail(std::string processName, int32_t errcode)
             "BIZ_SCENE", static_cast<int32_t>(BizState::BIZ_STATE_END),
             "ERROR_CODE", errcode,
             "PROCESS_NAME", processName);
+    }
+    if (res != E_OK) {
+        LOGE("StorageRadar ERROR, res :%{public}d", res);
+        return false;
     }
     return true;
 }

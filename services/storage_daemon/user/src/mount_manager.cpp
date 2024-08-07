@@ -267,10 +267,11 @@ void MountManager::UmountFailRadar(std::vector<ProcessInfo> &processInfo)
     std::string ss;
     int32_t ret = E_UMOUNT;
     for (const auto &item:processInfos) {
-        ss += item.name +",";
+        ss += item.name + ",";
     }
-    if (StorageService::StorageRadar::GetInstance().UmountFail(ss, ret)) {
-        LOGE("StorageRadar UmountFail %{public}d, process is %{public}s", ret, ss.c_str());
+    if (StorageService::StorageRadar::GetInstance().RecordKillProcessResult(ss, ret)) {
+        LOGI("StorageRadar record FindAndKillProcess result success, ret = %{public}d, process is %{public}s",
+             ret, ss.c_str());
     }
 }
 
