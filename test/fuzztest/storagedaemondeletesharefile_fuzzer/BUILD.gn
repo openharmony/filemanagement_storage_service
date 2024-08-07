@@ -43,6 +43,7 @@ ohos_fuzztest("StorageDaemonDeleteShareFileFuzzTest") {
     "${storage_daemon_path}/user/src/user_manager.cpp",
     "${storage_daemon_path}/utils/file_utils.cpp",
     "${storage_daemon_path}/utils/mount_argument_utils.cpp",
+    "${storage_daemon_path}/utils/storage_radar.cpp",
     "${storage_daemon_path}/utils/string_utils.cpp",
     "${storage_service_path}/test/fuzztest/storagedaemondeletesharefile_fuzzer/storagedaemondeletesharefile_fuzzer.cpp",
   ]
@@ -65,6 +66,7 @@ ohos_fuzztest("StorageDaemonDeleteShareFileFuzzTest") {
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "hilog:libhilog",
+    "hisysevent:libhisysevent",
     "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_single",
