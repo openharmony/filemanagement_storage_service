@@ -259,7 +259,7 @@ int32_t MountManager::FindAndKillProcess(int32_t userId, std::list<std::string> 
     return E_OK;
 }
 
-void MountManager::UmountFailRadar(std::vector<ProcessInfo> &processInfo)
+void MountManager::UmountFailRadar(std::vector<ProcessInfo> &processInfos)
 {
     if (processInfos.empty()) {
         return;
