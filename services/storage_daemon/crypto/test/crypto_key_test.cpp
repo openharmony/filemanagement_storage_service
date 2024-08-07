@@ -298,7 +298,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_restore_fail_wrong_version, TestSize.Leve
     }
     g_testKeyV1.keyInfo_.key.Clear();
     // the version loaded is v2, not expected v1.
-    EXPECT_TRUE(g_testKeyV1.RestoreKey(emptyUserAuth));
+    EXPECT_FALSE(g_testKeyV1.RestoreKey(emptyUserAuth));
 }
 #endif
 
@@ -572,9 +572,9 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_restore, TestSize.Level1)
     if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) == FSCRYPT_V1) {
         return;
     }
-    EXPECT_FALSE(g_testKeyV2.RestoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV2.RestoreKey(emptyUserAuth));
     EXPECT_EQ(FSCRYPT_V2, g_testKeyV2.keyInfo_.version);
-    EXPECT_FALSE(g_testKeyV2.ActiveKey());
+    EXPECT_TRUE(g_testKeyV2.ActiveKey());
 
     // the files is decrypted now
     EXPECT_TRUE(OHOS::FileExists(TEST_DIR_V2 + "/test_dir"));
