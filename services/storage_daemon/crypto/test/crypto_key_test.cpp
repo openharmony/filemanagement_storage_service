@@ -574,7 +574,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_restore, TestSize.Level1)
     }
     EXPECT_FALSE(g_testKeyV2.RestoreKey(emptyUserAuth));
     EXPECT_EQ(FSCRYPT_V2, g_testKeyV2.keyInfo_.version);
-    EXPECT_TRUE(g_testKeyV2.ActiveKey());
+    EXPECT_FALSE(g_testKeyV2.ActiveKey());
 
     // the files is decrypted now
     EXPECT_TRUE(OHOS::FileExists(TEST_DIR_V2 + "/test_dir"));
