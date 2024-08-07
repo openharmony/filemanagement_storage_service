@@ -492,6 +492,7 @@ bool MountManager::CheckPathValid(const std::string &bundleNameStr, uint32_t use
     string completePath =
         SANDBOX_ROOT_PATH + to_string(userId) + "/" + bundleNameStr + EL2_BASE;
     if (!IsDir(completePath)) {
+        LOGE("Invalid directory path: %{public}s", completePath.c_str());
         return false;
     }
     
