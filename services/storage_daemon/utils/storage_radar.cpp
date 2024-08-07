@@ -22,7 +22,7 @@
 
 namespace OHOS {
 namespace StorageService {
-bool Storage::AddNewUser(int32_t errcode)
+bool StorageRadar::AddNewUser(int32_t errcode)
 {
     int32_t res = E_OK;
     if (errcode == E_OK) {
@@ -52,7 +52,7 @@ bool Storage::AddNewUser(int32_t errcode)
     return true;
 }
 
-bool Storage::ActiveCurrentUser(int32_t errcode)
+bool StorageRadar::ActiveCurrentUser(int32_t errcode)
 {
     int32_t res = E_OK;
     if (errcode == E_OK) {
@@ -82,7 +82,7 @@ bool Storage::ActiveCurrentUser(int32_t errcode)
     return true;
 }
 
-bool Storage::UmountFail(std::string processName, int32_t errcode)
+bool StorageRadar::UmountFail(std::string processName, int32_t errcode)
 {
     int32_t res = E_OK;
     if (errcode == E_OK) {
