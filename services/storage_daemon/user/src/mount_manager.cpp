@@ -25,6 +25,8 @@
 #include <unistd.h>
 #include <regex>
 #include <filesystem>
+#include "hisysevent.h"
+#include "utils/storage_radar.h"
 #include "ipc/istorage_daemon.h"
 #include "parameter.h"
 #include "quota/quota_manager.h"
@@ -253,6 +255,16 @@ int32_t MountManager::FindAndKillProcess(int32_t userId, std::list<std::string> 
     }
     LOGI("FindAndKillProcess end, total find %{public}d", static_cast<int>(processInfos.size()));
     KillProcess(processInfos);
+    if (!processInfos.empty()) {
+        std::string ss;
+        int32_t ret = E_UMOUNT;
+        for (const auto &item:processInfos) {
+            ss += item.name +",";
+        }
+        if (StorageService::StorageRadar::GetInstance().UmountFail(ss, ret)) {
+            LOGE("StorageRadar UmountFail %{public}d, process is %{public}s", ret, ss.c_str());
+        }
+    }
     return E_OK;
 }
 
