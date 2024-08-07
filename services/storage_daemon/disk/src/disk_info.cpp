@@ -285,7 +285,7 @@ int32_t DiskInfo::ReadDiskLines(std::vector<std::string> lines, int32_t maxVols)
     return E_OK;
 }
 
-void DiskInfo::ProcessPartition(std::vector<std::string>::iterator &it, std::vector<std::string>::iterator &end,
+void DiskInfo::ProcessPartition(std::vector<std::string>::iterator &it, const std::vector<std::string>::iterator &end,
                                 Table table, int32_t maxVols, bool &foundPart)
 {
     if (++it == end) {
