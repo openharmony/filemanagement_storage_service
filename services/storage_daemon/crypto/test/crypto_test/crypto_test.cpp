@@ -122,7 +122,7 @@ HWTEST_F(CryptoTest, Huks_Master_Encrypt_Key_001, TestSize.Level1)
 HWTEST_F(CryptoTest, Huks_Master_Encrypt_Key_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "CryptoTest_HuksMasterEncryptKey_0200 start";
-    KeyBlob testKeyblob = HuksMaster()::GenerateRandomKey(CRYPTO_KEY_ALIAS_SIZE);
+    KeyBlob testKeyblob = HuksMaster::GenerateRandomKey(CRYPTO_KEY_ALIAS_SIZE);
     KeyContext ctx { .shield = testKeyblob };
     const UserAuth auth;
     const KeyInfo key;
@@ -146,7 +146,7 @@ HWTEST_F(CryptoTest, Huks_Master_Encrypt_Key_002, TestSize.Level1)
 HWTEST_F(CryptoTest, Huks_Master_Encrypt_Key_003, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "CryptoTest_HuksMasterEncryptKey_0300 start";
-    KeyBlob testKeyblob = HuksMaster()::GenerateRandomKey(CRYPTO_KEY_ALIAS_SIZE);
+    KeyBlob testKeyblob = HuksMaster::GenerateRandomKey(CRYPTO_KEY_ALIAS_SIZE);
     KeyContext ctx { .shield = testKeyblob };
     const UserAuth auth;
     KeyInfo key { .key = testKeyblob };
@@ -193,7 +193,7 @@ HWTEST_F(CryptoTest, Huks_Master_Decrypt_Key_001, TestSize.Level1)
 HWTEST_F(CryptoTest, Huks_Master_Decrypt_Key_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "CryptoTest_HuksMasterDecryptKey_0200 start";
-    KeyBlob testKeyblob = HuksMaster()::GenerateRandomKey(CRYPTO_KEY_ALIAS_SIZE);
+    KeyBlob testKeyblob = HuksMaster::GenerateRandomKey(CRYPTO_KEY_ALIAS_SIZE);
     KeyContext ctx { .shield = testKeyblob };
     const UserAuth auth;
     KeyInfo key;
@@ -217,7 +217,7 @@ HWTEST_F(CryptoTest, Huks_Master_Decrypt_Key_002, TestSize.Level1)
 HWTEST_F(CryptoTest, Huks_Master_Decrypt_Key_003, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "CryptoTest_HuksMasterDecryptKey_0300 start";
-    KeyBlob testKeyblob = HuksMaster()::GenerateRandomKey(CRYPTO_KEY_ALIAS_SIZE);
+    KeyBlob testKeyblob = HuksMaster::GenerateRandomKey(CRYPTO_KEY_ALIAS_SIZE);
     KeyContext ctx { .shield = testKeyblob, .rndEnc = testKeyblob };
     const UserAuth auth;
     KeyInfo key;
