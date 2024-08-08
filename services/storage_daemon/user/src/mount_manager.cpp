@@ -76,14 +76,26 @@ const vector<string> CRYPTO_SANDBOX_PATH = {
     "/data/storage/el2/database/",
     "/data/storage/el2/share/",
     "/data/storage/el2/log/",
-    "/data/storage/el2/distributedfiles/"
+    "/data/storage/el2/distributedfiles/",
+    "/data/storage/el3/base/",
+    "/data/storage/el3/database/",
+    "/data/storage/el4/base/",
+    "/data/storage/el4/database/",
+    "/data/storage/el5/base/",
+    "/data/storage/el5/database/"
 };
 const vector<string> CRYPTO_SRC_PATH = {
     "/data/app/el2/<currentUserId>/base/<bundleName>/",
     "/data/app/el2/<currentUserId>/database/<bundleName>/",
     "/mnt/share/<currentUserId>/<bundleName>/",
     "/data/app/el2/<currentUserId>/log/<bundleName>/",
-    "/mnt/hmdfs/<currentUserId>/account/merge_view/data/<bundleName>/"
+    "/mnt/hmdfs/<currentUserId>/account/merge_view/data/<bundleName>/",
+    "/data/app/el3/<currentUserId>/base/<bundleName>/",
+    "/data/app/el3/<currentUserId>/database/<bundleName>/",
+    "/data/app/el4/<currentUserId>/base/<bundleName>/",
+    "/data/app/el4/<currentUserId>/database/<bundleName>/",
+    "/data/app/el5/<currentUserId>/base/<bundleName>/",
+    "/data/app/el5/<currentUserId>/database/<bundleName>/"
 };
 const std::string HMDFS_SYS_CAP = "const.distributed_file_property.enabled";
 const int32_t HMDFS_VAL_LEN = 6;
