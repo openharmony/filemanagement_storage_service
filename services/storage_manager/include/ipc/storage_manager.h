@@ -38,7 +38,7 @@ public:
 
     int32_t GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize) override;
     int32_t GetTotalSizeOfVolume(std::string volumeUuid, int64_t &totalSize) override;
-    int32_t GetBundleStats(std::string pkgName, BundleStats &bundleStats) override;
+    int32_t GetBundleStats(std::string pkgName, BundleStats &bundleStats, int32_t appIndex) override;
     int32_t GetSystemSize(int64_t &systemSize) override;
     int32_t GetTotalSize(int64_t &totalSize) override;
     int32_t GetFreeSize(int64_t &freeSize) override;

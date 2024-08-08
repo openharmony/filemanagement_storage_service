@@ -64,7 +64,7 @@ int32_t StorageManagerConnect::Connect()
     return E_OK;
 }
 
-int32_t StorageManagerConnect::GetBundleStats(string pkgName, BundleStats &BundleStats)
+int32_t StorageManagerConnect::GetBundleStats(string pkgName, BundleStats &BundleStats, int32_t appIndex)
 {
     int32_t err = Connect();
     if (err != E_OK) {
@@ -75,7 +75,7 @@ int32_t StorageManagerConnect::GetBundleStats(string pkgName, BundleStats &Bundl
         LOGE("StorageManagerConnect::GetBundleStats service == nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageManager_->GetBundleStats(pkgName, BundleStats);
+    return storageManager_->GetBundleStats(pkgName, BundleStats, appIndex);
 }
 
 int32_t StorageManagerConnect::GetFreeSizeOfVolume(string volumeUuid, int64_t &freeSize)

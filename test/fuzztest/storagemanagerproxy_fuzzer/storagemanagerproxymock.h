@@ -62,7 +62,7 @@ public:
         return E_OK;
     }
 
-    int32_t GetBundleStats(std::string pkgName, BundleStats &bundleStats) override
+    int32_t GetBundleStats(std::string pkgName, BundleStats &bundleStats, int32_t appIndex) override
     {
         return E_OK;
     }
