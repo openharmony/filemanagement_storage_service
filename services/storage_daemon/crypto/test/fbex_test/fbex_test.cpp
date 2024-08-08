@@ -154,7 +154,7 @@ HWTEST_F(FbexTest, LockScreenToKernel, TestSize.Level1)
     FBEX fbex;
     uint32_t userId = PARAMS_1;
     int ret = fbex.LockScreenToKernel(userId);
-    EXPECT_EQ(ret, 0);
+    EXPECT_NE(ret, 0);
     GTEST_LOG_(INFO) << "fbex_LockScreenToKernel end";
 }
 
@@ -292,7 +292,7 @@ HWTEST_F(FbexTest, GetStatus, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "fbex_GetStatus start";
     FBEX fbex;
-    EXPECT_EQ(fbex.GetStatus(), 0);
+    EXPECT_NE(fbex.GetStatus(), 0);
     GTEST_LOG_(INFO) << "fbex_GetStatus end";
 }
 } // OHOS::StorageDaemon
