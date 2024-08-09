@@ -77,6 +77,7 @@ const vector<string> CRYPTO_SANDBOX_PATH = {
     "/data/storage/el2/share/",
     "/data/storage/el2/log/",
     "/data/storage/el2/distributedfiles/",
+    "/data/storage/el2/cloud/",
     "/data/storage/el3/base/",
     "/data/storage/el3/database/",
     "/data/storage/el4/base/",
@@ -90,6 +91,7 @@ const vector<string> CRYPTO_SRC_PATH = {
     "/mnt/share/<currentUserId>/<bundleName>/",
     "/data/app/el2/<currentUserId>/log/<bundleName>/",
     "/mnt/hmdfs/<currentUserId>/account/merge_view/data/<bundleName>/",
+    "/mnt/hmdfs/<currentUserId>/cloud/data/<bundleName>/",
     "/data/app/el3/<currentUserId>/base/<bundleName>/",
     "/data/app/el3/<currentUserId>/database/<bundleName>/",
     "/data/app/el4/<currentUserId>/base/<bundleName>/",
@@ -553,40 +555,60 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
         if (!CheckPathValid(bundleName.path().filename().generic_string(), userId)) {
             continue;
         }
-        vector<string> cryptoSandboxPathVector = CRYPTO_SANDBOX_PATH;
-        vector<string> cryptoSandboxSrcVector = CRYPTO_SRC_PATH;
+        vector<string> dstPaths = CRYPTO_SANDBOX_PATH;
+        vector<string> srcPaths = CRYPTO_SRC_PATH;
         if (bundleName.path().filename().generic_string() == SCENE_BOARD_BUNDLE_NAME) {
-            cryptoSandboxPathVector.push_back(PUBLIC_DIR_SANDBOX_PATH);
-            cryptoSandboxSrcVector.push_back(PUBLIC_DIR_SRC_PATH);
+            dstPaths.push_back(PUBLIC_DIR_SANDBOX_PATH);
+            srcPaths.push_back(PUBLIC_DIR_SRC_PATH);
         }
-
-        for (size_t i = 0; i < cryptoSandboxPathVector.size(); i++) {
-            string dstPath = bundleName.path().generic_string() + cryptoSandboxPathVector[i];
-            string srcPath = cryptoSandboxSrcVector[i];
-            ParseSandboxPath(srcPath, to_string(userId), bundleName.path().filename().generic_string());
-            LOGD("mount crypto path, srcPath is %{public}s, dstPath is %{public}s", srcPath.c_str(), dstPath.c_str());
-            ret = mount(srcPath.c_str(), dstPath.c_str(), nullptr, MS_BIND | MS_REC, nullptr);
-            if (ret != E_OK && errno == EBUSY) {
-                ret = mount(srcPath.c_str(), dstPath.c_str(), nullptr, MS_BIND | MS_REC, nullptr);
-                LOGI("mount again dstPath is %{public}s, ret is %{public}d.", dstPath.c_str(), ret);
-            }
-            if (ret != 0) {
-                LOGE("mount bind failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
-                    srcPath.c_str(), dstPath.c_str(), errno);
-                continue;
-            }
-            ret = mount(nullptr, dstPath.c_str(), nullptr, MS_SHARED, nullptr);
-            if (ret != 0) {
-                LOGE("mount to share failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
-                    srcPath.c_str(), dstPath.c_str(), errno);
-                continue;
-            }
-            LOGD("mount crypto path success, srcPath is %{public}s dstPath is %{public}s",
-                srcPath.c_str(), dstPath.c_str());
-        }
+        MountSandboxPath(srcPaths, dstPaths, bundleName.path().filename().generic_string(), to_string(userId));
     }
     LOGI("mount crypto path success, userId is %{public}d", userId);
     return ret;
+}
+
+void MountManager::MountSandboxPath(const std::vector<std::string> srcPaths, const std::vector<std::string> dstPaths,
+                              const std::string &bundleName, const std::string &userId)
+{
+    int srcCnt = static_cast<int>(srcPath.size());
+    int dstCnt = static_cast<int>(dstPath.size());
+    if (srcCnt == 0 || dstCnt == 0 || srcCnt != dstCnt) {
+        LOGE("invalid params, srcPaths total %{public}d, dstPaths total %{public}d", srcCnt, dstCnt);
+        return;
+    }
+    for (size_t i = 0; i < dstCnt; i++) {
+        std::string dstPath = SANDBOX_ROOT_PATH;
+        dstPath = dstPath.append(userId).append("/").append(bundleName).append(dstPaths[i]);
+        string srcPath = srcPaths[i];
+        ParseSandboxPath(srcPath, userId, bundleName);
+        if (!IsDir(dstPath)) {
+            LOGE("dstPath is not a dir: %{public}s", dstPath.c_str());
+            continue;
+        }
+        if (!IsDir(srcPath)) {
+            LOGE("srcPath is not a dir: %{public}s", srcPath.c_str());
+            continue;
+        }
+        LOGD("mount crypto path, srcPath is %{public}s, dstPath is %{public}s", srcPath.c_str(), dstPath.c_str());
+        int32_t ret = mount(srcPath.c_str(), dstPath.c_str(), nullptr, MS_BIND | MS_REC, nullptr);
+        if (ret != E_OK && errno == EBUSY) {
+            ret = mount(srcPath.c_str(), dstPath.c_str(), nullptr, MS_BIND | MS_REC, nullptr);
+            LOGI("mount again dstPath is %{public}s, ret is %{public}d.", dstPath.c_str(), ret);
+        }
+        if (ret != 0) {
+            LOGE("mount bind failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
+                 srcPath.c_str(), dstPath.c_str(), errno);
+            continue;
+        }
+        LOGI("bind mount path, srcPath is %{public}s, dstPath is %{public}s", srcPath.c_str(), dstPath.c_str());
+        ret = mount(nullptr, dstPath.c_str(), nullptr, MS_SHARED, nullptr);
+        if (ret != 0) {
+            LOGE("mount to share failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
+                 srcPath.c_str(), dstPath.c_str(), errno);
+            continue;
+        }
+        LOGI("shared mount success, dstPath is %{public}s", dstPath.c_str());
+    }
 }
 
 void MountManager::MountPointToList(std::list<std::string> &hmdfsList, std::list<std::string> &hmfsList,

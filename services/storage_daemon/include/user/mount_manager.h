@@ -89,6 +89,8 @@ public:
     void KillProcess(std::vector<ProcessInfo> &processInfo);
     bool PidUsingFlag(std::string &pidPath, const std::string &prefix, std::list<std::string> &mountFailList);
     void UmountFailRadar(std::vector<ProcessInfo> &processInfo);
+    void MountSandboxPath(const std::vector<std::string> srcPaths, const std::vector<std::string> dstPaths,
+                          const std::string &bundleName, const std::string &userId);
 
 private:
     bool SupportHmdfs();
