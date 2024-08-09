@@ -16,6 +16,7 @@
 #ifndef STORAGESTATUS_N_EXPORTER_H
 #define STORAGESTATUS_N_EXPORTER_H
 
+#include <tuple>
 #include "n_exporter.h"
 #include "storage_statistics_napi.h"
 
@@ -31,6 +32,8 @@ napi_value GetTotalSize(napi_env env, napi_callback_info info);
 napi_value GetFreeSize(napi_env env, napi_callback_info info);
 napi_value GetTotalSizeSync(napi_env env, napi_callback_info info);
 napi_value GetFreeSizeSync(napi_env env, napi_callback_info info);
+
+std::tuple<std::string, int32_t> ExtractNameAndIndex(napi_env env, napi_callback_info info);
 } // namespace StorageManager
 } // namespace OHOS
 #endif // STORAGESTATUS_N_EXPORTER_H

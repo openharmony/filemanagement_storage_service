@@ -160,5 +160,56 @@ HWTEST_F(AncoKeyManagerTest, Create_Policy_Dir_utils_001, TestSize.Level1)
     EXPECT_EQ(result, OHOS::E_JSON_PARSE_ERROR);
     GTEST_LOG_(INFO) << "AnKeyManagerTest_CreatePolicyDir_0100 end";
 }
+
+/**
+ * @tc.name: CreatePolicyDir_0200
+ * @tc.desc: Verify the CreatePolicyDir_0200 function.
+ * @tc.type: FUNC
+ * @tc.require: SR20231213615940
+ */
+HWTEST_F(AncoKeyManagerTest, Create_Policy_Dir_utils_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "AnKeyManagerTest_CreatePolicyDir_0200 start";
+    const AncoDirInfo ancoDirInfo { .mode = "test" };
+    const std::string policyType = "";
+    std::vector<FileList> fileList = {};
+    auto result = AncoKeyManager::GetInstance()->CreatePolicyDir(ancoDirInfo, policyType, fileList);
+    EXPECT_EQ(result, OHOS::E_JSON_PARSE_ERROR);
+    GTEST_LOG_(INFO) << "AnKeyManagerTest_CreatePolicyDir_0200 end";
+}
+
+/**
+ * @tc.name: CreatePolicyDir_0300
+ * @tc.desc: Verify the CreatePolicyDir_0300 function.
+ * @tc.type: FUNC
+ * @tc.require: SR20231213615940
+ */
+HWTEST_F(AncoKeyManagerTest, Create_Policy_Dir_utils_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "AnKeyManagerTest_CreatePolicyDir_0300 start";
+    const AncoDirInfo ancoDirInfo { .mode = "0711", .path = "aaabbbccc" };
+    const std::string policyType = "";
+    std::vector<FileList> fileList = {};
+    auto result = AncoKeyManager::GetInstance()->CreatePolicyDir(ancoDirInfo, policyType, fileList);
+    EXPECT_EQ(result, OHOS::E_JSON_PARSE_ERROR);
+    GTEST_LOG_(INFO) << "AnKeyManagerTest_CreatePolicyDir_0300 end";
+}
+
+/**
+ * @tc.name: CreatePolicyDir_0400
+ * @tc.desc: Verify the CreatePolicyDir_0400 function.
+ * @tc.type: FUNC
+ * @tc.require: SR20231213615940
+ */
+HWTEST_F(AncoKeyManagerTest, Create_Policy_Dir_utils_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "AnKeyManagerTest_CreatePolicyDir_0400 start";
+    const AncoDirInfo ancoDirInfo { .mode = "0711", .path = "/data/virt_serivce" };
+    const std::string policyType = "";
+    std::vector<FileList> fileList = {};
+    auto result = AncoKeyManager::GetInstance()->CreatePolicyDir(ancoDirInfo, policyType, fileList);
+    EXPECT_EQ(result, OHOS::E_JSON_PARSE_ERROR);
+    GTEST_LOG_(INFO) << "AnKeyManagerTest_CreatePolicyDir_0400 end";
+}
 } // namespace StorageDaemon
 } // namespace OHOS
