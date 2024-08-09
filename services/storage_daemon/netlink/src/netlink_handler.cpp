@@ -36,12 +36,12 @@ int32_t NetlinkHandler::Stop()
 
 void NetlinkHandler::OnEvent(char *msg)
 {
-    LOGI("NetlinkHandler::OnEvent msg is %{public}s", msg);
+    LOGI("OnEvent msg is %{public}s", msg);
     auto nlData = std::make_unique<NetlinkData>();
 
     nlData->Decode(msg);
-    LOGI("NetlinkHandler::OnEvent GetSyspath: %{public}s, GetDevpath: %{public}s, GetSubsystem: %{public}s,
-        GetAction: %{public}d", nlData->GetSyspath().c_str(), nlData->GetDevpath().c_str(),
+    LOGI("OnEvent GetSyspath: %{public}s, GetDevpath: %{public}s, GetSubsystem: %{public}s, GetAction: %{public}d", 
+        nlData->GetSyspath().c_str(), nlData->GetDevpath().c_str(),
         nlData->GetSubsystem().c_str(), nlData->GetAction());
     if (strcmp(nlData->GetSubsystem().c_str(), "block") == 0) {
         DiskManager::Instance()->HandleDiskEvent(nlData.get());
