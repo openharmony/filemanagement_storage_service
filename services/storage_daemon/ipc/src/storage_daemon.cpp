@@ -24,6 +24,7 @@
 
 #ifdef USER_CRYPTO_MANAGER
 #include "crypto/anco_key_manager.h"
+#include "crypto/app_clone_key_manager.h"
 #include "crypto/iam_client.h"
 #include "crypto/key_manager.h"
 #endif
@@ -227,7 +228,9 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
     if (type == EL2_KEY) {
         PrepareUeceDir(userId);
     }
-    (void)remove(elNeedRestorePath.c_str());
+    if (userId < START_APP_CLONE_USER_ID || userId > MAX_APP_CLONE_USER_ID) {
+        (void)remove(elNeedRestorePath.c_str());
+    }
     if (type == EL4_KEY) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
     }
@@ -588,7 +591,7 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
     if (updateFlag) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
     }
-
+    std::thread([this]() { ActiveAppCloneUserKey(); }).detach();
     AncoActiveCryptKey(userId);
     return ret;
 #else
@@ -860,6 +863,16 @@ void StorageDaemon::SystemAbilityStatusChangeListener::OnRemoveSystemAbility(int
     if (systemAbilityId == FILEMANAGEMENT_CLOUD_DAEMON_SERVICE_SA_ID) {
         MountManager::GetInstance()->SetCloudState(false);
     }
+}
+
+void StorageDaemon::ActiveAppCloneUserKey()
+{
+#ifdef USER_CRYPTO_MANAGER
+    auto ret = AppCloneKeyManager::GetInstance()->ActiveAppCloneUserKey();
+    if (ret != E_OK) {
+        LOGE("ActiveAppCloneUserKey failed, errNo %{public}d", ret);
+    }
+#endif
 }
 
 void StorageDaemon::AncoInitCryptKey()

@@ -42,6 +42,7 @@ ohos_static_library("libsdcrypto") {
 
   sources = [
     "src/anco_key_manager.cpp",
+    “src/app_clone_key_manager.cpp",
     "src/base_key.cpp",
     "src/crypto_delay_handler.cpp",
     "src/fbex.cpp",
