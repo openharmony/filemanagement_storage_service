@@ -567,7 +567,7 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
     return ret;
 }
 
-void MountManager::MountSandboxPath(const std::vector<std::string> srcPaths, const std::vector<std::string> dstPaths,
+void MountManager::MountSandboxPath(const std::vector<std::string> &srcPaths, const std::vector<std::string> &dstPaths,
     const std::string &bundleName, const std::string &userId)
 {
     int srcCnt = static_cast<int>(srcPaths.size());
