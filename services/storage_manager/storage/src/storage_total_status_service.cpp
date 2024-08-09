@@ -52,6 +52,7 @@ int32_t StorageTotalStatusService::GetSystemSize(int64_t &systemSize)
 int32_t StorageTotalStatusService::GetTotalSize(int64_t &totalSize)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
+    LOGE("StorageTotalStatusService::GetTotalSize start");
     int64_t dataSize = 0;
     int32_t ret = GetSizeOfPath(PATH_DATA, SizeType::TOTAL, dataSize);
     if (ret != E_OK) {
@@ -63,6 +64,7 @@ int32_t StorageTotalStatusService::GetTotalSize(int64_t &totalSize)
         return ret;
     }
     totalSize = GetRoundSize(dataSize + rootSize);
+    LOGE("StorageTotalStatusService::GetTotalSize end");
     return E_OK;
 }
 
