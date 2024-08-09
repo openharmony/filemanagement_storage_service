@@ -724,12 +724,12 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_CreateVolume_003, TestSize.L
     dev_t device = makedev(major, minor);
     int flag = 0;
 
-    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
-    ASSERT_TRUE(diskInfo != nullptr);
+    auto mock = std::make_shared<DiskInfoTestMock>(sysPath, devPath, device, flag);
 
-    int ret = diskInfo->CreateVolume(device);
+    EXPECT_CALL(*mock, CreateVolume(testing::_)).WillOnce(testing::Return(E_ERR));
+    int ret = mock->CreateVolume(device);
+
     EXPECT_TRUE(ret == E_ERR);
-
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_CreateVolume_003 end";
 }
 

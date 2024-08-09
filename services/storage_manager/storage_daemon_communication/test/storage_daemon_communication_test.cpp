@@ -328,9 +328,9 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountCryptoPathAga
             DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    int32_t uid = 100;
+    int32_t uid = 1990;
     int32_t ret = sdCommunication->MountCryptoPathAgain(uid);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(ret, -ENOENT);
 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_MountCryptoPathAgain_001 SUCCESS";
 }

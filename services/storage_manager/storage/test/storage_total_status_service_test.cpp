@@ -244,4 +244,57 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_StartStorageMonitorTask_0
     service->StartStorageMonitorTask();
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_StartStorageMonitorTask_0000";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_status_service_Execute_0000
+ * @tc.name: Storage_status_service_Execute_0000
+ * @tc.desc: Test function of Execute interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StorageTotalStatusServiceTest, Storage_status_Execute_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_Execute_0000";
+    std::shared_ptr<StorageMonitorService> service = DelayedSingleton<StorageMonitorService>::GetInstance();
+    ASSERT_TRUE(service != nullptr);
+    service->Execute();
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_Execute_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_status_service_CheckAndCleanBundleCache_0000
+ * @tc.name: Storage_status_service_CheckAndCleanBundleCache_0000
+ * @tc.desc: Test function of CheckAndCleanBundleCache interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StorageTotalStatusServiceTest, Storage_status_CheckAndCleanBundleCache_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_CheckAndCleanBundleCache_0000";
+    std::shared_ptr<StorageMonitorService> service = DelayedSingleton<StorageMonitorService>::GetInstance();
+    ASSERT_TRUE(service != nullptr);
+    service->CheckAndCleanBundleCache();
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_CheckAndCleanBundleCache_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_status_service_GetLowerThreshold_0000
+ * @tc.name: Storage_status_service_GetLowerThreshold_0000
+ * @tc.desc: Test function of GetLowerThreshold interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetLowerThreshold_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_GetLowerThreshold_0000";
+    std::shared_ptr<StorageMonitorService> service = DelayedSingleton<StorageMonitorService>::GetInstance();
+    ASSERT_TRUE(service != nullptr);
+    int64_t totalSize;
+    int32_t result = service->GetLowerThreshold(totalSize);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_GetLowerThreshold_0000";
+}
 } // namespace
