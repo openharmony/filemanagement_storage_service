@@ -292,7 +292,7 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetLowerThreshold_0000, t
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_GetLowerThreshold_0000";
     std::shared_ptr<StorageMonitorService> service = DelayedSingleton<StorageMonitorService>::GetInstance();
     ASSERT_TRUE(service != nullptr);
-    int64_t totalSize;
+    int64_t totalSize = 0;
     int32_t result = service->GetLowerThreshold(totalSize);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_GetLowerThreshold_0000";
