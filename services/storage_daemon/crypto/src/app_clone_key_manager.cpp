@@ -18,6 +18,8 @@
 
 #include "app_clone_key_manager.h"
 #include "crypto/key_manager.h"
+#include "utils/string_utils.h"
+#include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 
@@ -27,7 +29,8 @@ static const std::string NEED_RESTORE_PATH = "/data/service/el1/storage_daemon/s
 
 int AppCloneKeyManager::ActiveAppCloneUserKey()
 {
-    for (int userId = START_APP_CLONE_USER_ID; userId < MAX_APP_CLONE_USER_ID; userId ++) {
+    for (int userId = StorageService::START_APP_CLONE_USER_ID;
+         userId < StorageService::MAX_APP_CLONE_USER_ID; userId++) {
         std::string keyPath = StringPrintf(NEED_RESTORE_PATH.c_str(), userId);
         std::error_code errCode;
         if (!std::filesystem::exists(keyPath, errCode)) {
@@ -36,19 +39,21 @@ int AppCloneKeyManager::ActiveAppCloneUserKey()
         }
         if (KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL2_KEY, {}, {}) != 0) {
             LOGE("Active app clone user %{public}u el2 failed", userId);
-            return E_FAULT;
+            return -EFAULT;
         }
         if (KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL3_KEY, {}, {}) != 0) {
             LOGE("Active app clone user %{public}u el3 failed", userId);
-            return E_FAULT;
+            return -EFAULT;
         }
         if (KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL4_KEY, {}, {}) != 0) {
             LOGE("Active app clone user %{public}u el4 failed", userId);
-            return E_FAULT;
+            return -EFAULT;
         }
         LOGI("ActiveAppCloneUserKey::userkey %{public}u activated", userId);
         return 0;
     }
+    LOGE("ActiveAppCloneUserKey::Did not find app clone user in valid range");
+    return -EFAULT;
 }
 } // namespace StorageDaemon
 } // namespace OHOS

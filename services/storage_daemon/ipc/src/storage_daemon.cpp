@@ -228,7 +228,7 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
     if (type == EL2_KEY) {
         PrepareUeceDir(userId);
     }
-    if (userId < START_APP_CLONE_USER_ID || userId > MAX_APP_CLONE_USER_ID) {
+    if (userId < StorageService::START_APP_CLONE_USER_ID || userId > StorageService::MAX_APP_CLONE_USER_ID) {
         (void)remove(elNeedRestorePath.c_str());
     }
     if (type == EL4_KEY) {
@@ -561,8 +561,7 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
     int ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL2_KEY, token, secret);
     if (ret != E_OK) {
 #ifdef USER_CRYPTO_MIGRATE_KEY
-        LOGI("migrate, userId %{public}u, tok empty %{public}d sec empty %{public}d",
-             userId, token.empty(), secret.empty());
+        LOGI("Migrate usrId %{public}u, Emp_tok %{public}d Emp_sec %{public}d", userId, token.empty(), secret.empty());
         std::string el2NeedRestorePath = GetNeedRestoreFilePath(userId, USER_EL2_DIR);
         if (std::filesystem::exists(el2NeedRestorePath) && (!token.empty() || !secret.empty())) {
             updateFlag = true;
