@@ -253,12 +253,14 @@ ohos_shared_library("storage_common_utils") {
     "./utils/disk_utils.cpp",
     "./utils/file_utils.cpp",
     "./utils/mount_argument_utils.cpp",
+    "./utils/storage_radar.cpp",
     "./utils/string_utils.cpp",
   ]
 
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
+    "hisysevent:libhisysevent",
   ]
 
   if (build_selinux) {
@@ -324,6 +326,11 @@ group("storage_daemon_unit_test") {
   deps = [
     "client/test:storage_daemon_client_test",
     "crypto/test/anco_test:anco_crypto_test",
+    "crypto/test/crypto_test:crypto_test",
+    "crypto/test/fbex_test:fbex_test",
+    "crypto/test/fscrypt_key_v1_ext_test:fscrypt_key_v1_ext_test",
+    "crypto/test/iam_client_test:iam_client_test",
+    "crypto/test/iam_client_user_auth_framework_test:iam_client_user_auth_framework_test",
     "file_sharing/test:file_sharing_test",
     "ipc/test:storage_daemon_ipc_test",
     "quota/test:storage_daemon_quota_test",
@@ -332,7 +339,10 @@ group("storage_daemon_unit_test") {
   ]
 
   if (storage_service_user_crypto_manager) {
-    deps += [ "crypto/test:crypto_test" ]
+    deps += [
+      "crypto/test:crypto_test",
+      "crypto/test/fscrypt_v2_test:fscrypt_key_v2_test",
+    ]
   }
 
   if (storage_service_external_storage_manager) {

@@ -30,7 +30,7 @@ public:
 
     MOCK_METHOD2(GetFreeSizeOfVolume, int32_t(std::string, int64_t &));
     MOCK_METHOD2(GetTotalSizeOfVolume, int32_t(std::string, int64_t &));
-    MOCK_METHOD2(GetBundleStats, int32_t(std::string, BundleStats &));
+    MOCK_METHOD3(GetBundleStats, int32_t(std::string, BundleStats &, int32_t));
     MOCK_METHOD1(GetSystemSize, int32_t(int64_t &));
     MOCK_METHOD1(GetTotalSize, int32_t(int64_t &));
     MOCK_METHOD1(GetFreeSize, int32_t(int64_t &));
@@ -75,6 +75,10 @@ public:
     MOCK_METHOD2(GenerateAppkey, int32_t(uint32_t, std::string &));
     MOCK_METHOD4(SetBundleQuota, int32_t(const std::string &, int32_t, const std::string &, int32_t));
     MOCK_METHOD1(DeleteAppkey, int32_t(const std::string keyId));
+    MOCK_METHOD2(GetFileEncryptStatus, int32_t(uint32_t, bool &));
+    MOCK_METHOD4(CreateRecoverKey, int32_t(uint32_t, uint32_t, const std::vector<uint8_t> &,
+        const std::vector<uint8_t> &));
+    MOCK_METHOD1(SetRecoverKey, int32_t(const std::vector<uint8_t> &));
 };
 }  // namespace StorageManager
 }  // namespace OHOS

@@ -67,6 +67,11 @@ public:
     virtual int32_t GetLockScreenStatus(uint32_t user, bool &lockScreenStatus) = 0;
     virtual int32_t GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId) = 0;
     virtual int32_t DeleteAppkey(uint32_t userId, const std::string &keyId) = 0;
+    virtual int32_t CreateRecoverKey(uint32_t userId,
+                                     uint32_t userType,
+                                     const std::vector<uint8_t> &token,
+                                     const std::vector<uint8_t> &secret) = 0;
+    virtual int32_t SetRecoverKey(const std::vector<uint8_t> &key) = 0;
 
     // app file share api
     virtual std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,
@@ -89,6 +94,7 @@ public:
         const std::string &networkId, const std::string &deviceId) = 0;
     virtual int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId) = 0;
+    virtual int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted) = 0;
 
     DECLARE_INTERFACE_DESCRIPTOR(u"ohos.StorageDaemon");
 };

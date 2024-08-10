@@ -30,12 +30,12 @@ class StorageStatusService : public NoCopyable  {
     DECLARE_DELAYED_SINGLETON(StorageStatusService);
 
 public:
-    int32_t GetBundleStats(const std::string &pkgName, BundleStats &bundleStats);
+    int32_t GetBundleStats(const std::string &pkgName, BundleStats &bundleStats, int32_t appIndex);
     int32_t GetUserStorageStats(StorageStats &storageStats);
     int32_t GetUserStorageStats(int32_t userId, StorageStats &storageStats);
     int32_t GetUserStorageStatsByType(int32_t userId, StorageStats &storageStats, std::string type);
     int32_t GetCurrentBundleStats(BundleStats &bundleStats);
-    int32_t GetBundleStats(const std::string &pkgName, int32_t userId, BundleStats &bundleStats);
+    int32_t GetBundleStats(const std::string &pkgName, int32_t userId, BundleStats &bundleStats, int32_t appIndex);
     int32_t GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
         const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes,
         std::vector<int64_t> &incPkgFileSizes);
@@ -46,6 +46,7 @@ private:
     int32_t GetAppSize(int32_t userId, int64_t &size);
     const std::vector<std::string> dataDir = {"app", "local", "distributed", "database", "cache"};
     const int DEFAULT_USER_ID = 100;
+    const int DEFAULT_APP_INDEX = 0;
     enum BUNDLE_STATS {APP = 0, LOCAL, DISTRIBUTED, DATABASE, CACHE};
     enum BUNDLE_STATS_RESULT {APPSIZE = 0, CACHESIZE, DATASIZE};
 };

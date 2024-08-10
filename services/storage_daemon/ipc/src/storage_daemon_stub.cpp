@@ -92,6 +92,12 @@ StorageDaemonStub::StorageDaemonStub()
         &StorageDaemonStub::HandleMountDfsDocs;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::UMOUNT_DFS_DOCS)] =
         &StorageDaemonStub::HandleUMountDfsDocs;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_FILE_ENCRYPT_STATUS)] =
+        &StorageDaemonStub::HandleGetFileEncryptStatus;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::CREATE_RECOVER_KEY)] =
+        &StorageDaemonStub::HandleCreateRecoverKey;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::SET_RECOVER_KEY)] =
+        &StorageDaemonStub::HandleSetRecoverKey;
 }
 
 int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code,
@@ -138,6 +144,7 @@ int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code,
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::UMOUNT_DFS_DOCS):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::GENERATE_APP_KEY):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::DELETE_APP_KEY):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_FILE_ENCRYPT_STATUS):
             return OnRemoteRequestForApp(code, data, reply);
         default:
             LOGE("Cannot response request %d: unknown tranction", code);
@@ -230,6 +237,8 @@ int32_t StorageDaemonStub::OnRemoteRequestForApp(uint32_t code, MessageParcel &d
             return HandleGenerateAppkey(data, reply);
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::DELETE_APP_KEY):
             return HandleDeleteAppkey(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_FILE_ENCRYPT_STATUS):
+            return HandleGetFileEncryptStatus(data, reply);
         default:
             LOGE("Cannot response request %d: unknown tranction", code);
             return E_SYS_ERR;
@@ -534,6 +543,35 @@ int32_t StorageDaemonStub::HandleDeleteAppkey(MessageParcel &data, MessageParcel
     return E_OK;
 }
 
+int32_t StorageDaemonStub::HandleCreateRecoverKey(MessageParcel &data, MessageParcel &reply)
+{
+    uint32_t userId = data.ReadUint32();
+    uint32_t userType = data.ReadUint32();
+
+    std::vector<uint8_t> token;
+    std::vector<uint8_t> secret;
+    data.ReadUInt8Vector(&token);
+    data.ReadUInt8Vector(&secret);
+    int err = CreateRecoverKey(userId, userType, token, secret);
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
+
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleSetRecoverKey(MessageParcel &data, MessageParcel &reply)
+{
+    std::vector<uint8_t> key;
+    data.ReadUInt8Vector(&key);
+    int err = SetRecoverKey(key);
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
+
+    return E_OK;
+}
+
 int32_t StorageDaemonStub::HandleUpdateKeyContext(MessageParcel &data, MessageParcel &reply)
 {
     uint32_t userId = data.ReadUint32();
@@ -683,6 +721,18 @@ int32_t StorageDaemonStub::HandleUMountDfsDocs(MessageParcel &data, MessageParce
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleGetFileEncryptStatus(MessageParcel &data, MessageParcel &reply)
+{
+    uint32_t userId = data.ReadUint32();
+    bool isEncrypted = true;
+    int err = GetFileEncryptStatus(userId, isEncrypted);
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
+
     return E_OK;
 }
 

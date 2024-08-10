@@ -19,6 +19,7 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "test/common/help_utils.h"
+#include "user/mount_manager.h"
 #include "user/user_manager.h"
 #include "utils/file_utils.h"
 #include "crypto/key_manager.h"
@@ -165,7 +166,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirs_002, T
  */
 HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirs_003, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_PrepareUserDirs_002 start";
+    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_PrepareUserDirs_003 start";
 
     std::shared_ptr<UserManager> userManager = UserManager::GetInstance();
     ASSERT_TRUE(userManager != nullptr);
@@ -180,6 +181,27 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirs_003, T
     userManager->DestroyUserDirs(StorageTest::USER_ID5, flags);
     KeyManager::GetInstance()->DeleteUserKeys(StorageTest::USER_ID5);
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_PrepareUserDirs_003 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_UserManagerTest_PrepareUserDirs_004
+ * @tc.desc: check PrepareUserDirs when user id is invalid
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirs_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_PrepareUserDirs_004 start";
+
+    std::shared_ptr<UserManager> userManager = UserManager::GetInstance();
+    ASSERT_TRUE(userManager != nullptr);
+
+    int32_t userId = -1;
+    int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1 | IStorageDaemon::CRYPTO_FLAG_EL2 |
+                    IStorageDaemon::CRYPTO_FLAG_EL3 | IStorageDaemon::CRYPTO_FLAG_EL4;
+    auto ret = userManager->PrepareUserDirs(userId, flags);
+    EXPECT_FALSE(ret == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_PrepareUserDirs_004 end";
 }
 
 /**
@@ -324,6 +346,185 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StopUser_003, TestSize
     userManager->DestroyUserDirs(StorageTest::USER_ID3, flags);
     KeyManager::GetInstance()->DeleteUserKeys(StorageTest::USER_ID3);
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_StopUser_003 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_MountManagerTest_RestoreconSystemServiceDirs_001
+ * @tc.desc: Verify the CheckUserIdRange function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_CheckUserIdRange_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_CheckUserIdRange_001 start";
+
+    std::shared_ptr<UserManager> userManager = UserManager::GetInstance();
+    ASSERT_TRUE(userManager != nullptr);
+
+    int32_t userId = StorageService::START_USER_ID - 1;
+    auto ret = userManager->CheckUserIdRange(userId);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+
+    userId = StorageService::MAX_USER_ID + 1;
+    ret = userManager->CheckUserIdRange(userId);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+
+    userId = StorageService::ZERO_USER;
+    ret = userManager->CheckUserIdRange(userId);
+    EXPECT_EQ(ret, E_OK);
+
+    userId = 101;
+    ret = userManager->CheckUserIdRange(userId);
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_CheckUserIdRange_001 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_MountManagerTest_Instance_001
+ * @tc.desc: Verify the MountManager function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_GetProcessInfo_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_GetProcessInfo_001 start";
+
+    std::shared_ptr<MountManager> mountManager = MountManager::GetInstance();
+    ASSERT_TRUE(mountManager != nullptr);
+
+    ProcessInfo info;
+    std::string filename = "";
+
+    bool ret = mountManager->GetProcessInfo(filename, info);
+    EXPECT_EQ(ret, false);
+
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_GetProcessInfo_001 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_MountManagerTest_GetProcessInfo_002
+ * @tc.desc: Verify the MountManager function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_GetProcessInfo_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_GetProcessInfo_002 start";
+
+    std::shared_ptr<MountManager> mountManager = MountManager::GetInstance();
+    ASSERT_TRUE(mountManager != nullptr);
+    ProcessInfo info;
+    std::string filename = "/data";
+
+    bool ret = mountManager->GetProcessInfo(filename, info);
+    EXPECT_EQ(ret, false);
+
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_GetProcessInfo_002 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_MountManagerTest_MountCryptoPathAgain_001
+ * @tc.desc: Verify the MountManager function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_MountCryptoPathAgain_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountCryptoPathAgain_001 start";
+
+    std::shared_ptr<MountManager> mountManager = MountManager::GetInstance();
+    ASSERT_TRUE(mountManager != nullptr);
+    uint32_t userId = 100;
+
+    int32_t ret = mountManager->MountCryptoPathAgain(userId);
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountCryptoPathAgain_001 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_MountManagerTest_MountCloudForUsers_001
+ * @tc.desc: Verify the MountManager function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_SetCloudState_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_SetCloudState_001 start";
+
+    std::shared_ptr<MountManager> mountManager = MountManager::GetInstance();
+    ASSERT_TRUE(mountManager != nullptr);
+
+    mountManager->SetCloudState(true);
+    mountManager->SetCloudState(false);
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_SetCloudState_001 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_MountManagerTest_MountCloudForUsers_001
+ * @tc.desc: Verify the MountManager function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_LocalMount_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_LocalMount_001 start";
+
+    std::shared_ptr<MountManager> mountManager = MountManager::GetInstance();
+    ASSERT_TRUE(mountManager != nullptr);
+
+    int32_t userId = 100;
+    int32_t ret = mountManager->LocalMount(userId);
+    EXPECT_EQ(ret, E_OK);
+
+    ret = mountManager->LocalUMount(userId);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_LocalMmount_001 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_MountManagerTest_MountDfsDocs_001
+ * @tc.desc: Verify the MountDfsDocs function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_MountDfsDocs_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountDfsDocs_001 start";
+
+    std::shared_ptr<MountManager> mountManager = MountManager::GetInstance();
+    ASSERT_TRUE(mountManager != nullptr);
+
+    int32_t userId = 100;
+    std::string relativePath = "/data";
+    std::string deviceId = "f6d4c0864707aefte7a78f09473aa122ff57fc8";
+    int32_t ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    EXPECT_EQ(ret, E_MOUNT);
+
+    ret = mountManager->UMountDfsDocs(userId, relativePath, deviceId, deviceId);
+    EXPECT_EQ(ret, E_UMOUNT);
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountDfsDocs_001 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_MountManagerTest_RestoreconSystemServiceDirs_001
+ * @tc.desc: Verify the RestoreconSystemServiceDirs function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_RestoreconSystemServiceDirs_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_RestoreconSystemServiceDirs_001 start";
+
+    std::shared_ptr<MountManager> mountManager = MountManager::GetInstance();
+    ASSERT_TRUE(mountManager != nullptr);
+
+    int32_t userId = 100;
+    int32_t ret = mountManager->RestoreconSystemServiceDirs(userId);
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_RestoreconSystemServiceDirs_001 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

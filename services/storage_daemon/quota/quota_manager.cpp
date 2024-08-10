@@ -95,6 +95,16 @@ static bool InitialiseQuotaMounts()
     return true;
 }
 
+static std::string GetQuotaSrcMountPath(const std::string &target)
+{
+    std::lock_guard<std::recursive_mutex> lock(mMountsLock);
+    if (mQuotaReverseMounts.find(target) != mQuotaReverseMounts.end()) {
+        return mQuotaReverseMounts[target];
+    } else {
+        return "";
+    }
+}
+
 static int64_t GetOccupiedSpaceForUid(int32_t uid, int64_t &size)
 {
     if (InitialiseQuotaMounts() != true) {
@@ -103,7 +113,7 @@ static int64_t GetOccupiedSpaceForUid(int32_t uid, int64_t &size)
     }
 
     std::string device = "";
-    device = mQuotaReverseMounts[QUOTA_DEVICE_DATA_PATH];
+    device = GetQuotaSrcMountPath(QUOTA_DEVICE_DATA_PATH);
     if (device.empty()) {
         LOGE("skip when device no quotas present");
         return E_OK;
@@ -127,7 +137,7 @@ static int64_t GetOccupiedSpaceForGid(int32_t gid, int64_t &size)
     }
 
     std::string device = "";
-    device = mQuotaReverseMounts[QUOTA_DEVICE_DATA_PATH];
+    device = GetQuotaSrcMountPath(QUOTA_DEVICE_DATA_PATH);
     if (device.empty()) {
         LOGE("skip when device no quotas present");
         return E_OK;
@@ -152,7 +162,7 @@ static int64_t GetOccupiedSpaceForPrjId(int32_t prjId, int64_t &size)
     }
 
     std::string device = "";
-    device = mQuotaReverseMounts[QUOTA_DEVICE_DATA_PATH];
+    device = GetQuotaSrcMountPath(QUOTA_DEVICE_DATA_PATH);
     if (device.empty()) {
         LOGE("skip when device no quotas present");
         return E_OK;
@@ -203,7 +213,7 @@ int32_t QuotaManager::SetBundleQuota(const std::string &bundleName, int32_t uid,
 
     std::string device = "";
     if (bundleDataDirPath.find(QUOTA_DEVICE_DATA_PATH) == 0) {
-        device = mQuotaReverseMounts[QUOTA_DEVICE_DATA_PATH];
+        device = GetQuotaSrcMountPath(QUOTA_DEVICE_DATA_PATH);
     }
     if (device.empty()) {
         LOGE("skip when device no quotas present");
