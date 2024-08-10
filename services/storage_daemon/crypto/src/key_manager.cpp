@@ -1077,7 +1077,7 @@ int KeyManager::ActiveElXUserKey(unsigned int user,
 int KeyManager::UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret)
 {
     LOGI("start");
-    userPinProtect[user] = !secret.empty();
+    userPinProtect[user] = !secret.empty() || !token.empty();
     std::shared_ptr<DelayHandler> userDelayHandler;
     if (GetUserDelayHandler(user, userDelayHandler)) {
         userDelayHandler->CancelDelayTask();
