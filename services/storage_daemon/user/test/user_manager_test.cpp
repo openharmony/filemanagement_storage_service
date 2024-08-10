@@ -526,5 +526,83 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_RestoreconSystemServi
 
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_RestoreconSystemServiceDirs_001 end";
 }
+
+/**
+ * @tc.name: Storage_Manager_MountManagerTest_FindAndKillProcess_001
+ * @tc.desc: Verify the FindAndKillProcess function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_FindAndKillProcess_000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_FindAndKillProcess_000 start";
+
+    std::shared_ptr<MountManager> mountManager = MountManager::GetInstance();
+    ASSERT_TRUE(mountManager != nullptr);
+
+    int32_t userId = -1;
+    std::list<std::string> mountFailList;
+    mountFailList.push_back("test1");
+    mountFailList.push_back("test2");
+    int32_t ret = mountManager->FindAndKillProcess(userId, mountFailList);
+    EXPECT_EQ(ret, E_OK);
+
+    userId = 1990;
+    ret = mountManager->FindAndKillProcess(userId, mountFailList);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_FindAndKillProcess_000 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_MountManagerTest_UmountFailRadar_001
+ * @tc.desc: Verify the UmountFailRadar function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_UmountFailRadar_000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_UmountFailRadar_000 start";
+
+    std::shared_ptr<MountManager> mountManager = MountManager::GetInstance();
+    ASSERT_TRUE(mountManager != nullptr);
+
+    ProcessInfo processInfo;
+    processInfo.pid = 1234;
+    processInfo.name = "test";
+    std::vector<ProcessInfo> processInfos;
+    processInfos.push_back(processInfo);
+    mountManager->UmountFailRadar(processInfos);
+    mountManager->KillProcess(processInfos);
+
+    std::vector<ProcessInfo> processInfos1;
+    mountManager->KillProcess(processInfos1);
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_UmountFailRadar_000 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_MountManagerTest_CheckMaps_001
+ * @tc.desc: Verify the CheckMaps function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_CheckMaps_000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_UmountFailRadar_000 start";
+
+    std::shared_ptr<MountManager> mountManager = MountManager::GetInstance();
+    ASSERT_TRUE(mountManager != nullptr);
+
+    std::string path = "";
+    std::string prefix = "";
+    std::list<std::string> mountFailList;
+    mountFailList.push_back("test1");
+    mountManager->CheckMaps(path, prefix, mountFailList);
+    mountManager->CheckSymlink(path, prefix, mountFailList);
+
+    path = "file://data/file";
+    mountManager->CheckMaps(path, prefix, mountFailList);
+    mountManager->CheckSymlink(path, prefix, mountFailList);
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_UmountFailRadar_000 end";
+}
 } // STORAGE_DAEMON
 } // OHOS
