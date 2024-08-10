@@ -259,6 +259,9 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_LockUserScreen_0000, TestS
     int32_t ret = fileSystemCrypto_->LockUserScreen(userId);
     EXPECT_EQ(ret, E_OK);
 
+    userId = 19999;
+    ret = fileSystemCrypto_->LockUserScreen(userId);
+    EXPECT_EQ(ret, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_LockUserScreen_0000";
 }
 
@@ -281,6 +284,9 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_UnlockUserScreen_0000, Tes
     int32_t ret = fileSystemCrypto_->UnlockUserScreen(userId, {}, {});
     EXPECT_EQ(ret, E_OK);
 
+    userId = 19999;
+    ret = fileSystemCrypto_->UnlockUserScreen(userId, {}, {});
+    EXPECT_EQ(ret, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_UnlockUserScreen_0000";
 }
 
