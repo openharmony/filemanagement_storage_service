@@ -45,7 +45,7 @@ public:
 class FscryptKeyV2Moc : public IFscryptKeyV2Moc {
 public:
     MOCK_METHOD2(ActiveKey, bool(uint32_t flag, const std::string &mnt));
-    MOCK_METHOD3(GenerateAppkey, bool(uint32_t userId,uint32_t appUid, std::string &keyId));
+    MOCK_METHOD3(GenerateAppkey, bool(uint32_t userId, uint32_t appUid, std::string &keyId));
     MOCK_METHOD1(DeleteAppkey, bool(const std::string KeyId));
     MOCK_METHOD2(InactiveKey, bool(uint32_t flag, const std::string &mnt));
     MOCK_METHOD3(LockUserScreen, bool(uint32_t flag, uint32_t sdpClass, const std::string &mnt));
