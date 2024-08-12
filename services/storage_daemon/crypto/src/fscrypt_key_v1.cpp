@@ -76,7 +76,7 @@ bool FscryptKeyV1::GenerateAppkey(uint32_t userId, uint32_t appUid, std::string 
     }
     // The ioctl does not support EL5, return empty character string
     if (appKey.data.get() == nullptr) {
-        LOGE("appKey.data.get() is nullptr");
+        LOGE("appKey.data.get() is unllptr!");
         keyDesc = "";
         return true;
     }
@@ -118,13 +118,11 @@ bool FscryptKeyV1::InstallKeyForAppKeyToKeyring(uint32_t *appKey)
     }
     for (auto prefix : CRYPTO_NAME_PREFIXES) {
         std::string keyref = prefix + ":" + keyInfo_.keyDesc.ToString();
-        LOGI("InstallKeyToKeyring: keyref length: %{public}zu", keyref.length());
         key_serial_t ks =
             KeyCtrlAddAppAsdpKey("logon", keyref.c_str(), &fskey, krid);
         if (ks < 0) {
             // Addkey failed, need to process the error
-            LOGE("Failed to AddKey %{public}s into keyring %{public}d, errno %{public}d", keyref.c_str(), krid,
-                 errno);
+            LOGE("Failed to AddKey, errno %{public}d", errno);
         }
     }
     if (!SaveKeyBlob(keyInfo_.keyDesc, dir_ + PATH_KEYDESC)) {
@@ -161,10 +159,10 @@ bool FscryptKeyV1::UninstallKeyForAppKeyToKeyring(const std::string keyId)
         std::string keyref = prefix + ":" + keyId;
         key_serial_t ks = KeyCtrlSearch(krid, "logon", keyref.c_str(), 0);
         if (KeyCtrlUnlink(ks, krid) != 0) {
-            LOGE("Failed to unlink key with serial %{public}d ref %{public}s", krid, keyref.c_str());
+            LOGE("Failed to unlink key !");
         }
     }
-    LOGD("success");
+    LOGI("success");
     return true;
 }
 
@@ -328,15 +326,14 @@ bool FscryptKeyV1::InstallKeyToKeyring()
             KeyCtrlAddKeyEx("logon", keyref.c_str(), &fskey, krid);
         if (ks == -1) {
             // Addkey failed, need to process the error
-            LOGE("Failed to AddKey %{public}s into keyring %{public}d, errno %{public}d", keyref.c_str(), krid,
-                errno);
+            LOGE("Failed to AddKey into keyring, errno %{public}d", errno);
         }
     }
     if (!SaveKeyBlob(keyInfo_.keyDesc, dir_ + PATH_KEYDESC)) {
         return false;
     }
     keyInfo_.key.Clear();
-    LOGD("success");
+    LOGI("success");
     return true;
 }
 
@@ -371,14 +368,13 @@ bool FscryptKeyV1::InstallEceSeceKeyToKeyring(uint32_t sdpClass)
                 KeyCtrlAddKeySdp("logon", keyref.c_str(), &fskey, krid);
         if (ks == -1) {
             // Addkey failed, need to process the error
-            LOGE("Failed to AddKey %{public}s into keyring %{public}d, errno %{public}d", keyref.c_str(), krid,
-                 errno);
+            LOGE("Failed to AddKey into keyring, errno %{public}d", errno);
         }
     }
     if (!SaveKeyBlob(keyInfo_.keyDesc, dir_ + PATH_KEYDESC)) {
         return false;
     }
-    LOGD("success");
+    LOGI("success");
     return true;
 }
 
@@ -463,11 +459,11 @@ bool FscryptKeyV1::UninstallKeyToKeyring()
         std::string keyref = prefix + ":" + keyInfo_.keyDesc.ToString();
         key_serial_t ks = KeyCtrlSearch(krid, "logon", keyref.c_str(), 0);
         if (KeyCtrlUnlink(ks, krid) != 0) {
-            LOGE("Failed to unlink key with serial %{public}d ref %{public}s", krid, keyref.c_str());
+            LOGE("Failed to unlink key !");
         }
     }
 
-    LOGD("success");
+    LOGI("success");
     return true;
 }
 

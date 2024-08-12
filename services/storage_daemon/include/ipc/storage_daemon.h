@@ -71,6 +71,11 @@ public:
     virtual int32_t GetLockScreenStatus(uint32_t user, bool &lockScreenStatus) override;
     virtual int32_t GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId) override;
     virtual int32_t DeleteAppkey(uint32_t userId, const std::string &keyId) override;
+    virtual int32_t CreateRecoverKey(uint32_t userId,
+                             uint32_t userType,
+                             const std::vector<uint8_t> &token,
+                             const std::vector<uint8_t> &secret) override;
+    virtual int32_t SetRecoverKey(const std::vector<uint8_t> &key) override;
 
     // app file share api
     virtual std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,
@@ -88,6 +93,7 @@ public:
         const std::string &networkId, const std::string &deviceId) override;
     virtual int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId) override;
+    virtual int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted) override;
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
     public:
         SystemAbilityStatusChangeListener() = default;
@@ -103,6 +109,7 @@ private:
     int32_t PrepareUserDirsAndUpdateUserAuth(uint32_t userId, KeyType type,
                                              const std::vector<uint8_t> &token,
                                              const std::vector<uint8_t> &secret);
+    int32_t PrepareUeceDir(uint32_t userId);
     int32_t RestoreUserKey(int32_t userId, uint32_t flags);
     bool IsNeedRestorePathExist(uint32_t userId, bool needCheckEl1);
     int32_t RestoreOneUserKey(int32_t userId, KeyType type);
@@ -118,6 +125,7 @@ private:
                                        const std::vector<uint8_t> &token,
                                        const std::vector<uint8_t> &secret);
     int32_t RestoreconElX(uint32_t userId);
+    void ActiveAppCloneUserKey();
     void AncoInitCryptKey();
     void AncoActiveCryptKey(uint32_t userId);
 };

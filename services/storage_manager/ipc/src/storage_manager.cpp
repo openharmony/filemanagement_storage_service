@@ -137,11 +137,11 @@ int32_t StorageManager::GetTotalSizeOfVolume(std::string volumeUuid, int64_t &to
 #endif
 }
 
-int32_t StorageManager::GetBundleStats(std::string pkgName, BundleStats &bundleStats)
+int32_t StorageManager::GetBundleStats(std::string pkgName, BundleStats &bundleStats, int32_t appIndex)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
-    LOGI("StorageManger::getBundleStats start, pkgName: %{public}s", pkgName.c_str());
-    int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetBundleStats(pkgName, bundleStats);
+    LOGI("StorageManger::getBundleStats start, pkgName: %{public}s, appIndex: %{public}d", pkgName.c_str(), appIndex);
+    int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetBundleStats(pkgName, bundleStats, appIndex);
     return err;
 #else
     return E_OK;
@@ -454,6 +454,17 @@ int32_t StorageManager::LockUserScreen(uint32_t userId)
 #endif
 }
 
+int32_t StorageManager::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
+{
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("UserId: %{public}u", userId);
+    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
+    return fsCrypto->GetFileEncryptStatus(userId, isEncrypted);
+#else
+    return E_OK;
+#endif
+}
+
 int32_t StorageManager::UnlockUserScreen(uint32_t userId,
                                          const std::vector<uint8_t> &token,
                                          const std::vector<uint8_t> &secret)
@@ -496,6 +507,32 @@ int32_t StorageManager::DeleteAppkey(const std::string keyId)
     LOGI("keyId :  %{public}s", keyId.c_str());
     std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
     return fsCrypto->DeleteAppkey(keyId);
+#else
+    return E_OK;
+#endif
+}
+
+int32_t StorageManager::CreateRecoverKey(uint32_t userId,
+                                         uint32_t userType,
+                                         const std::vector<uint8_t> &token,
+                                         const std::vector<uint8_t> &secret)
+{
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("CreateRecoverKey enter");
+    LOGI("UserId :  %{public}u", userId);
+    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
+    return fsCrypto->CreateRecoverKey(userId, userType, token, secret);
+#else
+    return E_OK;
+#endif
+}
+
+int32_t StorageManager::SetRecoverKey(const std::vector<uint8_t> &key)
+{
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("SetRecoverKey enter");
+    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
+    return fsCrypto->SetRecoverKey(key);
 #else
     return E_OK;
 #endif

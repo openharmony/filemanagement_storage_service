@@ -214,6 +214,233 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountDfsDocs_001,
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UMountDfsDocs_001 SUCCESS";
 }
 
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_ResetSdProxy_001
+ * @tc.name: Daemon_communication_ResetSdProxy_001
+ * @tc.desc: Test function of ResetSdProxy interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ResetSdProxy_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_ResetSdProxy_001 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+            DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    int32_t ret = sdCommunication->ResetSdProxy();
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_ResetSdProxy_001 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_CreateShareFile_001
+ * @tc.name: Daemon_communication_CreateShareFile_001
+ * @tc.desc: Test function of CreateShareFile interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreateShareFile_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_CreateShareFile_001 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+            DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    uint32_t tokenId = 100;
+    uint32_t flag = 3;
+    vector<string> uriList(1, "testcreatefile");
+    std::vector<int32_t> result = sdCommunication->CreateShareFile(uriList, tokenId, flag);
+    ASSERT_TRUE(!result.empty());
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_CreateShareFile_001 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_DeleteShareFile_001
+ * @tc.name: Daemon_communication_DeleteShareFile_001
+ * @tc.desc: Test function of DeleteShareFile interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteShareFile_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_DeleteShareFile_001 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+            DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    std::vector<string> uriList;
+    uriList.push_back("testcreatefile");
+    uint32_t tokenId = 100;
+    int32_t ret = sdCommunication->DeleteShareFile(tokenId, uriList);
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_DeleteShareFile_001 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_SetBundleQuota_001
+ * @tc.name: Daemon_communication_SetBundleQuota_001
+ * @tc.desc: Test function of SetBundleQuota interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetBundleQuota_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_SetBundleQuota_001 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+            DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    int32_t limitSizeMb = 100;
+    int32_t uid = 100;
+    std::string bundleName = "testbundleName";
+    std::string bundleDataDirPath = "testbundleDataDirPath";
+    int32_t ret = sdCommunication->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_SetBundleQuota_001 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_MountCryptoPathAgain_001
+ * @tc.name: Daemon_communication_MountCryptoPathAgain_001
+ * @tc.desc: Test function of MountCryptoPathAgain interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountCryptoPathAgain_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_MountCryptoPathAgain_001 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+            DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    int32_t uid = 1990;
+    int32_t ret = sdCommunication->MountCryptoPathAgain(uid);
+    EXPECT_EQ(ret, -ENOENT);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_MountCryptoPathAgain_001 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_GenerateAppkey_001
+ * @tc.name: Daemon_communication_GenerateAppkey_001
+ * @tc.desc: Test function of GenerateAppkey interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GenerateAppkey_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GenerateAppkey_001 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+            DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    int32_t userId = 1999;
+    int32_t appUid = 100;
+    std::string keyId = "testkeyId";
+    int32_t ret = sdCommunication->GenerateAppkey(userId, appUid, keyId);
+    EXPECT_EQ(ret, -ENOENT);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GenerateAppkey_001 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_DeleteAppkey_001
+ * @tc.name: Daemon_communication_DeleteAppkey_001
+ * @tc.desc: Test function of DeleteAppkey interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteAppkey_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_DeleteAppkey_001 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+            DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    int32_t userId = 1999;
+    std::string keyId = "testkeyId";
+    int32_t ret = sdCommunication->DeleteAppkey(userId, keyId);
+    EXPECT_EQ(ret, -ENOENT);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_DeleteAppkey_001 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_GetBundleStatsForIncrease_001
+ * @tc.name: Daemon_communication_GetBundleStatsForIncrease_001
+ * @tc.desc: Test function of GetBundleStatsForIncrease interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetBundleStatsForIncrease, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Daemon_communication_GetBundleStatsForIncrease SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+            DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    int32_t userId = 100;
+    std::vector<std::string> bundleNames;
+    std::vector<std::int64_t> incrementalBackTimes;
+    std::vector<std::int64_t> pkgFileSizes;
+    std::vector<std::int64_t> incPkgFileSizes;
+
+    bundleNames.push_back("testbundleNames");
+    incrementalBackTimes.push_back(1);
+    pkgFileSizes.push_back(1);
+    incPkgFileSizes.push_back(1);
+
+    int32_t ret = sdCommunication->GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes,
+                                                             pkgFileSizes, incPkgFileSizes);
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetBundleStatsForIncrease SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_UpdateMemoryPara_001
+ * @tc.name: Daemon_communication_UpdateMemoryPara_001
+ * @tc.desc: Test function of UpdateMemoryPara interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateMemoryPara_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UpdateMemoryPara_001 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+            DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    int32_t size = 100;
+    int32_t oldsize = 100;
+    int32_t ret = sdCommunication->UpdateMemoryPara(size, oldsize);
+    EXPECT_EQ(ret, E_SYS_CALL);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UpdateMemoryPara_001 SUCCESS";
+}
 #ifdef EXTERNAL_STORAGE_MANAGER
 /**
  * @tc.number: SUB_STORAGE_Daemon_communication_Mount_0000

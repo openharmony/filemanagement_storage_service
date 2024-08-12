@@ -19,9 +19,12 @@
 #include <fcntl.h>
 #include <fstream>
 #include <thread>
+#include "hisysevent.h"
+#include "utils/storage_radar.h"
 
 #ifdef USER_CRYPTO_MANAGER
 #include "crypto/anco_key_manager.h"
+#include "crypto/app_clone_key_manager.h"
 #include "crypto/iam_client.h"
 #include "crypto/key_manager.h"
 #endif
@@ -222,7 +225,12 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
         LOGE("PrepareUserDirs failed, userId %{public}u, flags %{public}u, error %{public}d", userId, flags, ret);
         return ret;
     }
-    (void)remove(elNeedRestorePath.c_str());
+    if (type == EL2_KEY) {
+        PrepareUeceDir(userId);
+    }
+    if (userId < StorageService::START_APP_CLONE_USER_ID || userId > StorageService::MAX_APP_CLONE_USER_ID) {
+        (void)remove(elNeedRestorePath.c_str());
+    }
     if (type == EL4_KEY) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
     }
@@ -262,6 +270,9 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
         return RestoreUserKey(userId, flags);
     }
 #endif
+    if (StorageService::StorageRadar::GetInstance().RecordPrepareUserDirsResult(ret)) {
+        LOGI("StorageRadar record PrepareUserDirs result success, ret = %{public}d", ret);
+    }
     if (ret != E_OK) {
         LOGE("Generate user %{public}d key error", userId);
         return ret;
@@ -410,6 +421,9 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuth(uint32_t userId, KeyType
     if (ret != E_OK) {
         return ret;
     }
+    if (flags == IStorageDaemon::CRYPTO_FLAG_EL2) {
+        PrepareUeceDir(userId);
+    }
     LOGI("userId %{public}u type %{public}u sucess", userId, type);
     return E_OK;
 }
@@ -427,6 +441,15 @@ bool StorageDaemon::IsNeedRestorePathExist(uint32_t userId, bool needCheckEl1)
         isExist = isExist || std::filesystem::exists(el1NeedRestorePath);
     }
     return isExist;
+}
+
+int32_t StorageDaemon::PrepareUeceDir(uint32_t userId)
+{
+    int32_t ret = UserManager::GetInstance()->DestroyUserDirs(userId, IStorageDaemon::CRYPTO_FLAG_EL5);
+    LOGI("delete user %{public}u uece %{public}u, ret %{public}d", userId, IStorageDaemon::CRYPTO_FLAG_EL5, ret);
+    ret = UserManager::GetInstance()->PrepareUserDirs(userId, IStorageDaemon::CRYPTO_FLAG_EL5);
+    LOGI("prepare user %{public}u uece %{public}u, ret %{public}d", userId, IStorageDaemon::CRYPTO_FLAG_EL5, ret);
+    return ret;
 }
 #endif
 
@@ -449,6 +472,12 @@ int32_t StorageDaemon::GenerateKeyAndPrepareUserDirs(uint32_t userId, KeyType ty
     if (ret != E_OK) {
         return ret;
     }
+    std::string keyUeceDir = UECE_DIR + "/" + std::to_string(userId);
+    if ((flags & IStorageDaemon::CRYPTO_FLAG_EL5) && IsDir(keyUeceDir) && !std::filesystem::is_empty(keyUeceDir)) {
+        LOGE("uece has already create, do not need create !");
+        return ret;
+    }
+    (void)UserManager::GetInstance()->DestroyUserDirs(userId, flags);
     ret = UserManager::GetInstance()->PrepareUserDirs(userId, flags);
     if (ret != E_OK) {
         LOGE("upgrade scene:prepare user dirs fail, userId %{public}u, flags %{public}u, sec empty %{public}d",
@@ -532,8 +561,7 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
     int ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL2_KEY, token, secret);
     if (ret != E_OK) {
 #ifdef USER_CRYPTO_MIGRATE_KEY
-        LOGI("migrate, userId %{public}u, tok empty %{public}d sec empty %{public}d",
-             userId, token.empty(), secret.empty());
+        LOGI("Migrate usrId %{public}u, Emp_tok %{public}d Emp_sec %{public}d", userId, token.empty(), secret.empty());
         std::string el2NeedRestorePath = GetNeedRestoreFilePath(userId, USER_EL2_DIR);
         if (std::filesystem::exists(el2NeedRestorePath) && (!token.empty() || !secret.empty())) {
             updateFlag = true;
@@ -547,6 +575,9 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
         }
     }
     ret = ActiveUserKeyAndPrepareElX(userId, token, secret);
+    if (StorageService::StorageRadar::GetInstance().RecordActiveUserKeyResult(ret)) {
+        LOGI("StorageRadar record ActiveUserKey result success, ret = %{public}d", ret);
+    }
     if (ret != E_OK) {
         LOGE("ActiveUserKey fail, userId %{public}u, type %{public}u", userId, EL4_KEY);
         return ret;
@@ -555,17 +586,15 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
         LOGE("failed to delete appkey2");
         return -EFAULT;
     }
-    std::thread thread([this, userId]() { RestoreconElX(userId); });
-    thread.detach();
+    std::thread([this, userId]() { RestoreconElX(userId); }).detach();
     if (updateFlag) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
     }
-
+    std::thread([this]() { ActiveAppCloneUserKey(); }).detach();
     AncoActiveCryptKey(userId);
     return ret;
 #else
-    std::thread thread([this, userId]() { RestoreconElX(userId); });
-    thread.detach();
+    std::thread([this, userId]() { RestoreconElX(userId); }).detach();
     if (updateFlag) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
     }
@@ -658,6 +687,29 @@ int32_t StorageDaemon::DeleteAppkey(uint32_t userId, const std::string &keyId)
 #endif
 }
 
+int32_t StorageDaemon::CreateRecoverKey(uint32_t userId,
+                                        uint32_t userType,
+                                        const std::vector<uint8_t> &token,
+                                        const std::vector<uint8_t> &secret)
+{
+    LOGI("begin to CreateRecoverKey");
+#ifdef USER_CRYPTO_MANAGER
+    return E_OK;
+#else
+    return E_OK;
+#endif
+}
+
+int32_t StorageDaemon::SetRecoverKey(const std::vector<uint8_t> &key)
+{
+    LOGI("begin to SetRecoverKey");
+#ifdef USER_CRYPTO_MANAGER
+    return E_OK;
+#else
+    return E_OK;
+#endif
+}
+
 int32_t StorageDaemon::UpdateKeyContext(uint32_t userId)
 {
 #ifdef USER_CRYPTO_MANAGER
@@ -723,6 +775,15 @@ int32_t StorageDaemon::UMountDfsDocs(int32_t userId, const std::string &relative
 {
     LOGI("StorageDaemon::UMountDfsDocs start.");
     return MountManager::GetInstance()->UMountDfsDocs(userId, relativePath, networkId, deviceId);
+}
+
+int32_t StorageDaemon::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
+{
+#ifdef USER_CRYPTO_MANAGER
+    return KeyManager::GetInstance()->GetFileEncryptStatus(userId, isEncrypted);
+#else
+    return E_OK;
+#endif
 }
 
 static bool ReadFileToString(const std::string& pathInst, std::string& oldContent)
@@ -801,6 +862,16 @@ void StorageDaemon::SystemAbilityStatusChangeListener::OnRemoveSystemAbility(int
     if (systemAbilityId == FILEMANAGEMENT_CLOUD_DAEMON_SERVICE_SA_ID) {
         MountManager::GetInstance()->SetCloudState(false);
     }
+}
+
+void StorageDaemon::ActiveAppCloneUserKey()
+{
+#ifdef USER_CRYPTO_MANAGER
+    auto ret = AppCloneKeyManager::GetInstance()->ActiveAppCloneUserKey();
+    if (ret != E_OK) {
+        LOGE("ActiveAppCloneUserKey failed, errNo %{public}d", ret);
+    }
+#endif
 }
 
 void StorageDaemon::AncoInitCryptKey()

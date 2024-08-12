@@ -174,7 +174,7 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
     }
 
     LOGI("Ready to mount: external volume fstype is %{public}s, mountflag is %{public}d", fsType_.c_str(), mountFlags);
-    if (fsType_ == "ext2" || fsType_ == "ext3" || fsType_ == "ext4") {
+    if (fsType_ == "ext2" || fsType_ == "ext3" || fsType_ == "ext4" || fsType_ == "hmfs") {
         ret = DoMount4Ext(mountFlags);
     } else if (fsType_ == "ntfs") {
         ret = DoMount4Ntfs(mountFlags);
@@ -189,7 +189,7 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
         remove(mountPath_.c_str());
         return E_MOUNT;
     }
-
+    LOGI("external volume mount success");
     return E_OK;
 }
 
@@ -202,6 +202,7 @@ int32_t ExternalVolumeInfo::DoUMount(bool force)
         ps.KillProcess(SIGKILL);
         umount2(mountPath_.c_str(), MNT_DETACH);
         remove(mountPath_.c_str());
+        LOGI("External volume unmount success.");
         return E_OK;
     }
 
@@ -280,6 +281,13 @@ int32_t ExternalVolumeInfo::DoSetVolDesc(std::string description)
     } else if (fsType_ == "exfat") {
         std::vector<std::string> cmd = {
             "exfatlabel",
+            devPath_,
+            description
+        };
+        err = ForkExec(cmd);
+    } else if (fsType_ == "hmfs") {
+        std::vector<std::string> cmd = {
+            "hmfslabel",
             devPath_,
             description
         };

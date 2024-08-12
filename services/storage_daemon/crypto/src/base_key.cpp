@@ -828,6 +828,18 @@ bool BaseKey::UpgradeKeys()
     return true;
 }
 
+bool BaseKey::GetOriginKey(KeyBlob &originKey)
+{
+    LOGI("enter");
+    if (keyInfo_.key.IsEmpty()) {
+        LOGE("origin key is empty, need restore !");
+        return false;
+    }
+    KeyBlob key(keyInfo_.key);
+    originKey = std::move(key);
+    return true;
+}
+
 bool BaseKey::EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey,
                              KeyBlob &encryptedKey)
 {
@@ -1016,6 +1028,12 @@ uint32_t BaseKey::GetTypeFromDir()
         LOGE("bad dir %{public}s", dir_.c_str());
         return type;
     }
+
+    if (slashIndex == 0) {
+        LOGE("bad dir %{public}s", dir_.c_str());
+        return type;
+    }
+
     slashIndex = dir_.rfind('/', slashIndex - 1);
     if (slashIndex == std::string::npos) {
         LOGE("bad dir %{public}s", dir_.c_str());

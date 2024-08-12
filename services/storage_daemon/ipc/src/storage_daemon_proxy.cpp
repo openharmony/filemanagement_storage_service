@@ -566,6 +566,60 @@ int32_t StorageDaemonProxy::DeleteAppkey(uint32_t userId, const std::string &key
     return reply.ReadInt32();
 }
 
+int32_t StorageDaemonProxy::CreateRecoverKey(uint32_t userId,
+                                             uint32_t userType,
+                                             const std::vector<uint8_t> &token,
+                                             const std::vector<uint8_t> &secret)
+{
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+
+    if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    if (!data.WriteUint32(userId)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+    if (!data.WriteUint32(userType)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+    if (!data.WriteUInt8Vector(token)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+    if (!data.WriteUInt8Vector(secret)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_RECOVER_KEY), data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+
+    return reply.ReadInt32();
+}
+
+int32_t StorageDaemonProxy::SetRecoverKey(const std::vector<uint8_t> &key)
+{
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+
+    if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    if (!data.WriteUInt8Vector(key)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+    int err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::SET_RECOVER_KEY), data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+
+    return reply.ReadInt32();
+}
+
 int32_t StorageDaemonProxy::UpdateKeyContext(uint32_t userId)
 {
     MessageParcel data;
@@ -866,6 +920,28 @@ int32_t StorageDaemonProxy::SendRequest(uint32_t code, MessageParcel &data, Mess
     }
 
     return E_OK;
+}
+
+int32_t StorageDaemonProxy::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
+{
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+
+    if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    if (!data.WriteUint32(userId)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+    int32_t err =
+        SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::GET_FILE_ENCRYPT_STATUS), data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+    isEncrypted = reply.ReadBool();
+    return reply.ReadInt32();
 }
 } // StorageDaemon
 } // OHOS

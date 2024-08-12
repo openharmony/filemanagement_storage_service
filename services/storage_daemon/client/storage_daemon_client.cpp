@@ -402,6 +402,41 @@ int32_t StorageDaemonClient::DeleteAppkey(uint32_t userId, const std::string key
     return client->DeleteAppkey(userId, keyId);
 }
 
+int32_t StorageDaemonClient::CreateRecoverKey(uint32_t userId,
+                                              uint32_t userType,
+                                              const std::vector<uint8_t> &token,
+                                              const std::vector<uint8_t> &secret)
+{
+    if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
+        LOGE("service check failed");
+        return -EAGAIN;
+    }
+
+    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
+    if (client == nullptr) {
+        LOGE("get storage daemon service failed");
+        return -EAGAIN;
+    }
+
+    return client->CreateRecoverKey(userId, userType, token, secret);
+}
+
+int32_t StorageDaemonClient::SetRecoverKey(const std::vector<uint8_t> &key)
+{
+    if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
+        LOGE("service check failed");
+        return -EAGAIN;
+    }
+
+    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
+    if (client == nullptr) {
+        LOGE("get storage daemon service failed");
+        return -EAGAIN;
+    }
+
+    return client->SetRecoverKey(key);
+}
+
 int32_t StorageDaemonClient::MountDfsDocs(int32_t userId, const std::string &relativePath,
     const std::string &networkId, const std::string &deviceId)
 {
@@ -447,6 +482,22 @@ int32_t StorageDaemonClient::FscryptEnable(const std::string &fscryptOptions)
 #endif
 
     return 0;
+}
+
+int32_t StorageDaemonClient::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
+{
+    if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
+        LOGE("Storage service flag check failed!");
+        return -EAGAIN;
+    }
+
+    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
+    if (client == nullptr) {
+        LOGE("Get StorageDaemon service failed!");
+        return -EAGAIN;
+    }
+
+    return client->GetFileEncryptStatus(userId, isEncrypted);
 }
 } // namespace StorageDaemon
 } // namespace OHOS

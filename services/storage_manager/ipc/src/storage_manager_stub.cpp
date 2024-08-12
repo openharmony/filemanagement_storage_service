@@ -178,6 +178,12 @@ StorageManagerStub::StorageManagerStub()
         &StorageManagerStub::HandleMountDfsDocs;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::UMOUNT_DFS_DOCS)] =
         &StorageManagerStub::HandleUMountDfsDocs;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_FILE_ENCRYPT_STATUS)] =
+        &StorageManagerStub::HandleGetFileEncryptStatus;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::CREATE_RECOVER_KEY)] =
+        &StorageManagerStub::HandleCreateRecoverKey;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::SET_RECOVER_KEY)] =
+        &StorageManagerStub::HandleSetRecoverKey;
 }
 
 int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
@@ -281,6 +287,8 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
             return HandleGenerateAppkey(data, reply);
         case static_cast<uint32_t>(StorageManagerInterfaceCode::DELETE_APP_KEY):
             return HandleDeleteAppkey(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_FILE_ENCRYPT_STATUS):
+            return HandleGetFileEncryptStatus(data, reply);
         default:
             LOGE("Cannot response request %d: unknown tranction", code);
             return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
@@ -392,8 +400,9 @@ int32_t StorageManagerStub::HandleGetBundleStatus(MessageParcel &data, MessagePa
         return E_PERMISSION_DENIED;
     }
     std::string pkgName = data.ReadString();
+    int32_t appIndex = data.ReadInt32();
     BundleStats bundleStats;
-    int32_t err = GetBundleStats(pkgName, bundleStats);
+    int32_t err = GetBundleStats(pkgName, bundleStats, appIndex);
     if (!reply.WriteInt32(err)) {
         return  E_WRITE_REPLY_ERR;
     }
@@ -846,6 +855,22 @@ int32_t StorageManagerStub::HandleLockUserScreen(MessageParcel &data, MessagePar
     return E_OK;
 }
 
+int32_t StorageManagerStub::HandleGetFileEncryptStatus(MessageParcel &data, MessageParcel &reply)
+{
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    bool isEncrypted = true;
+    uint32_t userId = data.ReadUint32();
+    int32_t err = GetFileEncryptStatus(userId, isEncrypted);
+    if (!reply.WriteInt32(err)) {
+        LOGE("Write reply error code failed");
+        return E_WRITE_REPLY_ERR;
+    }
+
+    return E_OK;
+}
+
 int32_t StorageManagerStub::HandleUnlockUserScreen(MessageParcel &data, MessageParcel &reply)
 {
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
@@ -911,6 +936,42 @@ int32_t StorageManagerStub::HandleDeleteAppkey(MessageParcel &data, MessageParce
     }
     std::string keyId = data.ReadString();
     int32_t err = DeleteAppkey(keyId);
+    if (!reply.WriteInt32(err)) {
+        LOGE("Write reply error code failed");
+        return E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleCreateRecoverKey(MessageParcel &data, MessageParcel &reply)
+{
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
+        return E_PERMISSION_DENIED;
+    }
+    uint32_t userId = data.ReadUint32();
+    uint32_t userType = data.ReadUint32();
+    std::vector<uint8_t> token;
+    std::vector<uint8_t> secret;
+    data.ReadUInt8Vector(&token);
+    data.ReadUInt8Vector(&secret);
+
+    int32_t err = CreateRecoverKey(userId, userType, token, secret);
+    if (!reply.WriteInt32(err)) {
+        LOGE("Write reply error code failed");
+        return E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleSetRecoverKey(MessageParcel &data, MessageParcel &reply)
+{
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
+        return E_PERMISSION_DENIED;
+    }
+    std::vector<uint8_t> key;
+    data.ReadUInt8Vector(&key);
+
+    int32_t err = SetRecoverKey(key);
     if (!reply.WriteInt32(err)) {
         LOGE("Write reply error code failed");
         return E_WRITE_REPLY_ERR;

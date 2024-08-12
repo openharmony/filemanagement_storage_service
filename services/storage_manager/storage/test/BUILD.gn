@@ -47,6 +47,7 @@ ohos_unittest("storage_total_status_service_test") {
   defines = [
     "STORAGE_LOG_TAG = \"StorageManager\"",
     "LOG_DOMAIN = 0xD004300",
+    "private = public",
   ]
 
   deps = [ "//third_party/googletest:gtest_main" ]
@@ -59,6 +60,7 @@ ohos_unittest("storage_total_status_service_test") {
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "common_event_service:cesfwk_innerkits",
+    "eventhandler:libeventhandler",
     "hilog:libhilog",
     "hitrace:hitrace_meter",
     "ipc:ipc_single",

@@ -478,7 +478,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetBundleStats_0000, tes
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
     ASSERT_TRUE(proxy_ != nullptr) << "StorageManagerProxy failed";
-    int32_t result = proxy_->GetBundleStats(pkgName, bundleStats);
+    int32_t result = proxy_->GetBundleStats(pkgName, bundleStats, 0);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetBundleStats_0000";
 }
@@ -1360,6 +1360,48 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_DeleteAppkey_0000, testi
     uint32_t result = proxy_->DeleteAppkey(keyId);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_DeleteAppkey_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_CreateRecoverKey_0000
+ * @tc.name: Storage_manager_proxy_CreateRecoverKey_0000
+ * @tc.desc: Test function of CreateRecoverKey interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_CreateRecoverKey_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_CreateRecoverKey_0000";
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    uint32_t userId = 120;
+    uint32_t userType = 12;
+    uint32_t result = proxy_->CreateRecoverKey(userId, userType, {}, {});
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_CreateRecoverKey_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_SetRecoverKey_0000
+ * @tc.name: Storage_manager_proxy_SetRecoverKey_0000
+ * @tc.desc: Test function of SetRecoverKey interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_SetRecoverKey_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_SetRecoverKey_0000";
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    uint32_t result = proxy_->SetRecoverKey({});
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_SetRecoverKey_0000";
 }
 
 /**

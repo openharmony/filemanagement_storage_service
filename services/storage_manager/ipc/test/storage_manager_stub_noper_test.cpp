@@ -76,7 +76,9 @@ namespace {
         static_cast<int32_t>(StorageManagerInterfaceCode::UPDATE_MEM_PARA),
         static_cast<int32_t>(StorageManagerInterfaceCode::GET_BUNDLE_STATS_INCREASE),
         static_cast<int32_t>(StorageManagerInterfaceCode::MOUNT_DFS_DOCS),
-        static_cast<int32_t>(StorageManagerInterfaceCode::UMOUNT_DFS_DOCS)
+        static_cast<int32_t>(StorageManagerInterfaceCode::UMOUNT_DFS_DOCS),
+        static_cast<int32_t>(StorageManagerInterfaceCode::CREATE_RECOVER_KEY),
+        static_cast<int32_t>(StorageManagerInterfaceCode::SET_RECOVER_KEY),
     };
 
 } // namespace
