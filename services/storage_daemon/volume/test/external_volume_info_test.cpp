@@ -319,5 +319,85 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetMount
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetMountPath_001 end";
 }
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoMount4Ext_001
+ * @tc.desc: Verify the DoMount4Ext function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4Ext_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Ext_001 start";
+
+    ExternalVolumeInfo *evi = new ExternalVolumeInfo();
+    ASSERT_TRUE(evi != nullptr);
+    uint32_t mountFlags = 0;
+    int32_t ret = evi->DoMount4Ext(mountFlags);
+    GTEST_LOG_(INFO) << ret;
+    EXPECT_EQ(ret, E_ERR);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Ext_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoMount4Ntfs_001
+ * @tc.desc: Verify the DoMount4Ntfs function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4Ntfs_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Ntfs_001 start";
+
+    ExternalVolumeInfo *evi = new ExternalVolumeInfo();
+    ASSERT_TRUE(evi != nullptr);
+    uint32_t mountFlags = 0;
+    int32_t ret = evi->DoMount4Ntfs(mountFlags);
+    GTEST_LOG_(INFO) << ret;
+    EXPECT_TRUE(ret == 0);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Ntfs_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoMount4Exfat_001
+ * @tc.desc: Verify the DoMount4Exfat function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4Exfat_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Exfat_001 start";
+
+    ExternalVolumeInfo *evi = new ExternalVolumeInfo();
+    ASSERT_TRUE(evi != nullptr);
+    uint32_t mountFlags = 0;
+    int32_t ret = evi->DoMount4Exfat(mountFlags);
+    GTEST_LOG_(INFO) << ret;
+    EXPECT_TRUE(ret == 0);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Exfat_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoMount4OtherType_001
+ * @tc.desc: Verify the DoMount4OtherType function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4OtherType_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4OtherType_001 start";
+
+    ExternalVolumeInfo *evi = new ExternalVolumeInfo();
+    ASSERT_TRUE(evi != nullptr);
+    uint32_t mountFlags = 0;
+    int32_t ret = evi->DoMount4OtherType(mountFlags);
+    GTEST_LOG_(INFO) << ret;
+    EXPECT_EQ(ret, E_ERR);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4OtherType_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS
