@@ -62,7 +62,7 @@ public:
         return E_OK;
     }
 
-    int32_t GetBundleStats(std::string pkgName, BundleStats &bundleStats) override
+    int32_t GetBundleStats(std::string pkgName, BundleStats &bundleStats, int32_t appIndex) override
     {
         return E_OK;
     }
@@ -235,6 +235,19 @@ public:
         return E_OK;
     }
 
+    int32_t CreateRecoverKey(uint32_t userId,
+                             uint32_t userType,
+                             const std::vector<uint8_t> &token,
+                             const std::vector<uint8_t> &secret) override
+    {
+        return E_OK;
+    }
+
+    int32_t SetRecoverKey(const std::vector<uint8_t> &key) override
+    {
+        return E_OK;
+    }
+
     int32_t UpdateKeyContext(uint32_t userId) override
     {
         return E_OK;
@@ -271,6 +284,10 @@ public:
                                       const std::vector<int64_t> &incrementalBackTimes,
                                       std::vector<int64_t> &pkgFileSizes,
                                       std::vector<int64_t> &incPkgFileSizes) override
+    {
+        return E_OK;
+    }
+    int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted) override
     {
         return E_OK;
     }

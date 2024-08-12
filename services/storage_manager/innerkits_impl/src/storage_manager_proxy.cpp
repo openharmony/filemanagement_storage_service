@@ -431,6 +431,69 @@ int32_t StorageManagerProxy::DeleteAppkey(const std::string keyId)
     return reply.ReadInt32();
 }
 
+int32_t StorageManagerProxy::CreateRecoverKey(uint32_t userId,
+                                              uint32_t userType,
+                                              const std::vector<uint8_t> &token,
+                                              const std::vector<uint8_t> &secret)
+{
+    LOGI("user ID: %{public}u", userId);
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("StorageManagerProxy::CreateRecoverKey, WriteInterfaceToken failed");
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+    if (!data.WriteUint32(userId)) {
+        LOGE("Write user id failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+    if (!data.WriteUint32(userType)) {
+        LOGE("Write user type failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+    if (!data.WriteUInt8Vector(token)) {
+        LOGE("Write token failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+    if (!data.WriteUInt8Vector(secret)) {
+        LOGE("Write recover secret failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::CREATE_RECOVER_KEY), data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+
+    return reply.ReadInt32();
+}
+
+int32_t StorageManagerProxy::SetRecoverKey(const std::vector<uint8_t> &key)
+{
+    LOGI("enter");
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("StorageManagerProxy::SetRecoverKey, WriteInterfaceToken failed");
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+    if (!data.WriteUInt8Vector(key)) {
+        LOGE("Write recover key failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::SET_RECOVER_KEY), data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+
+    return reply.ReadInt32();
+}
+
 int32_t StorageManagerProxy::GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize)
 {
     LOGI("StorageManagerProxy::GetFreeSizeOfVolume, volumeUuid:%{public}s",
@@ -491,19 +554,27 @@ int32_t StorageManagerProxy::GetTotalSizeOfVolume(std::string volumeUuid, int64_
     return E_OK;
 }
 
-int32_t StorageManagerProxy::GetBundleStats(std::string pkgName, BundleStats &bundleStats)
+int32_t StorageManagerProxy::GetBundleStats(std::string pkgName, BundleStats &bundleStats, int32_t appIndex)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("StorageManagerProxy::GetBundleStats, WriteInterfaceToken failed");
         return E_WRITE_DESCRIPTOR_ERR;
     }
 
     if (!data.WriteString(pkgName)) {
+        LOGE("StorageManagerProxy::GetBundleStats, WriteString failed");
         return E_WRITE_PARCEL_ERR;
     }
+
+    if (!data.WriteInt32(appIndex)) {
+        LOGE("StorageManagerProxy::GetBundleStats, WriteInt32 failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+
     int32_t err = SendRequest(
         static_cast<int32_t>(StorageManagerInterfaceCode::GET_BUNDLE_STATUS), data, reply, option);
     if (err != E_OK) {
@@ -1336,5 +1407,30 @@ int32_t StorageManagerProxy::UMountDfsDocs(int32_t userId, const std::string &re
 
     return reply.ReadInt32();
 }
+
+int32_t StorageManagerProxy::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
+{
+    LOGI("user ID: %{public}u", userId);
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("WriteInterfaceToken failed");
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+    if (!data.WriteUint32(userId)) {
+        LOGE("Write user ID failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::GET_FILE_ENCRYPT_STATUS), data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+    isEncrypted = reply.ReadBool();
+    return reply.ReadInt32();
+}
+
 } // StorageManager
 } // OHOS

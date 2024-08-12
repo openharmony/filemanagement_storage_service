@@ -37,9 +37,9 @@ ohos_moduletest("FscryptKeyV2Test") {
   ]
 
   include_dirs = [
-    "../../../include",
-    "../../../include/crypto",
-    "../../../../common/include",
+    "${storage_daemon_path}/include",
+    "${storage_daemon_path}/include/crypto",
+    "${storage_service_common_path}/include",
   ]
 
   sources = [

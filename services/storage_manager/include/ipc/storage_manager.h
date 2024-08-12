@@ -38,7 +38,7 @@ public:
 
     int32_t GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize) override;
     int32_t GetTotalSizeOfVolume(std::string volumeUuid, int64_t &totalSize) override;
-    int32_t GetBundleStats(std::string pkgName, BundleStats &bundleStats) override;
+    int32_t GetBundleStats(std::string pkgName, BundleStats &bundleStats, int32_t appIndex) override;
     int32_t GetSystemSize(int64_t &systemSize) override;
     int32_t GetTotalSize(int64_t &totalSize) override;
     int32_t GetFreeSize(int64_t &freeSize) override;
@@ -87,6 +87,12 @@ public:
     int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus) override;
     int32_t GenerateAppkey(uint32_t appUid, std::string &keyId) override;
     int32_t DeleteAppkey(const std::string keyId) override;
+    int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted) override;
+    int32_t CreateRecoverKey(uint32_t userId,
+                             uint32_t userType,
+                             const std::vector<uint8_t> &token,
+                             const std::vector<uint8_t> &secret) override;
+    int32_t SetRecoverKey(const std::vector<uint8_t> &key) override;
 
     // app file share api
     std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,

@@ -270,6 +270,56 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeByUuid_0000, t
 }
 
 /**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_GetVolumeByUuid_0001
+ * @tc.name: Volume_manager_service_GetVolumeByUuid_0001
+ * @tc.desc: Test function of GetVolumeByUuid interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeByUuid_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Storage_manager_proxy_GetVolumeByUuid_0001";
+    std::shared_ptr<VolumeManagerService> vmService =
+            DelayedSingleton<VolumeManagerService>::GetInstance();
+    std::string volumeId = "vol-1-6";
+    int32_t fsType = 1;
+    std::string fsUuid = "uuid-1";
+    std::string path = "/";
+    std::string description = "description-1";
+    std::string diskId = "disk-1-6";
+    VolumeCore vc(volumeId, fsType, diskId);
+    vmService->OnVolumeCreated(vc);
+    vmService->OnVolumeMounted(volumeId, fsType, fsUuid, path, description);
+    VolumeExternal ve;
+    int32_t ret = vmService->GetVolumeByUuid(fsUuid, ve);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_GetVolumeByUuid_0001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_GetVolumeByUuid_0002
+ * @tc.name: Volume_manager_service_GetVolumeByUuid_0002
+ * @tc.desc: Test function of GetVolumeByUuid interface for ERROR which volumeUuid not exist.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeByUuid_0002, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Storage_manager_proxy_GetVolumeByUuid_0002";
+    std::shared_ptr<VolumeManagerService> vmService =
+            DelayedSingleton<VolumeManagerService>::GetInstance();
+    std::string fsUuid = "uuid-2";
+    VolumeExternal ve;
+    int32_t ret = vmService->GetVolumeByUuid(fsUuid, ve);
+    EXPECT_EQ(ret, E_NON_EXIST);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_GetVolumeByUuid_0002";
+}
+
+/**
  * @tc.number: SUB_STORAGE_Volume_manager_service_GetVolumeById_0000
  * @tc.name: Volume_manager_service_GetVolumeById_0000
  * @tc.desc: Test function of GetVolumeById interface for SUCCESS.

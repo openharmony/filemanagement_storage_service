@@ -38,7 +38,7 @@ const std::string USER_EL2_DIR = FSCRYPT_EL_DIR + "/el2";
 const std::string USER_EL3_DIR = FSCRYPT_EL_DIR + "/el3";
 const std::string USER_EL4_DIR = FSCRYPT_EL_DIR + "/el4";
 const std::string USER_EL5_DIR = FSCRYPT_EL_DIR + "/el5";
-const std::string UECE_DIR = "data/service/el5";
+const std::string UECE_DIR = "data/app/el5";
 
 class KeyManager {
 public:
@@ -80,6 +80,10 @@ public:
     int GenerateAppkey(uint32_t user, uint32_t appUid, std::string &keyId);
     int DeleteAppkey(uint32_t user, const std::string keyId);
     int UnlockUserAppKeys(uint32_t userId, bool needGetAllAppKey);
+    int GetFileEncryptStatus(uint32_t userId, bool &isEncrypted);
+    int CreateRecoverKey(uint32_t userId, uint32_t userType, const std::vector<uint8_t> &token,
+                         const std::vector<uint8_t> &secret);
+    int SetRecoverKey(const std::vector<uint8_t> &key);
 #ifdef USER_CRYPTO_MIGRATE_KEY
     int RestoreUserKey(uint32_t userId, KeyType type);
 #endif

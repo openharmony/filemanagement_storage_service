@@ -109,5 +109,10 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user, KeyType type,
 {
     return E_OK;
 }
+
+int KeyManager::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
+{
+    return E_OK;
+}
 } // namespace StorageDaemon
 } // namespace OHOS

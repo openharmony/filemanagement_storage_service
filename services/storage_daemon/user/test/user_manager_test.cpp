@@ -166,7 +166,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirs_002, T
  */
 HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirs_003, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_PrepareUserDirs_002 start";
+    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_PrepareUserDirs_003 start";
 
     std::shared_ptr<UserManager> userManager = UserManager::GetInstance();
     ASSERT_TRUE(userManager != nullptr);
@@ -181,6 +181,27 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirs_003, T
     userManager->DestroyUserDirs(StorageTest::USER_ID5, flags);
     KeyManager::GetInstance()->DeleteUserKeys(StorageTest::USER_ID5);
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_PrepareUserDirs_003 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_UserManagerTest_PrepareUserDirs_004
+ * @tc.desc: check PrepareUserDirs when user id is invalid
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirs_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_PrepareUserDirs_004 start";
+
+    std::shared_ptr<UserManager> userManager = UserManager::GetInstance();
+    ASSERT_TRUE(userManager != nullptr);
+
+    int32_t userId = -1;
+    int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1 | IStorageDaemon::CRYPTO_FLAG_EL2 |
+                    IStorageDaemon::CRYPTO_FLAG_EL3 | IStorageDaemon::CRYPTO_FLAG_EL4;
+    auto ret = userManager->PrepareUserDirs(userId, flags);
+    EXPECT_FALSE(ret == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_PrepareUserDirs_004 end";
 }
 
 /**
@@ -328,6 +349,38 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StopUser_003, TestSize
 }
 
 /**
+ * @tc.name: Storage_Manager_MountManagerTest_RestoreconSystemServiceDirs_001
+ * @tc.desc: Verify the CheckUserIdRange function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_CheckUserIdRange_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_CheckUserIdRange_001 start";
+
+    std::shared_ptr<UserManager> userManager = UserManager::GetInstance();
+    ASSERT_TRUE(userManager != nullptr);
+
+    int32_t userId = StorageService::START_USER_ID - 1;
+    auto ret = userManager->CheckUserIdRange(userId);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+
+    userId = StorageService::MAX_USER_ID + 1;
+    ret = userManager->CheckUserIdRange(userId);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+
+    userId = StorageService::ZERO_USER;
+    ret = userManager->CheckUserIdRange(userId);
+    EXPECT_EQ(ret, E_OK);
+
+    userId = 101;
+    ret = userManager->CheckUserIdRange(userId);
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_CheckUserIdRange_001 end";
+}
+
+/**
  * @tc.name: Storage_Manager_MountManagerTest_Instance_001
  * @tc.desc: Verify the MountManager function.
  * @tc.type: FUNC
@@ -472,6 +525,84 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_RestoreconSystemServi
     EXPECT_EQ(ret, E_OK);
 
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_RestoreconSystemServiceDirs_001 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_MountManagerTest_FindAndKillProcess_001
+ * @tc.desc: Verify the FindAndKillProcess function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_FindAndKillProcess_000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_FindAndKillProcess_000 start";
+
+    std::shared_ptr<MountManager> mountManager = MountManager::GetInstance();
+    ASSERT_TRUE(mountManager != nullptr);
+
+    int32_t userId = -1;
+    std::list<std::string> mountFailList;
+    mountFailList.push_back("test1");
+    mountFailList.push_back("test2");
+    int32_t ret = mountManager->FindAndKillProcess(userId, mountFailList);
+    EXPECT_EQ(ret, E_OK);
+
+    userId = 1990;
+    ret = mountManager->FindAndKillProcess(userId, mountFailList);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_FindAndKillProcess_000 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_MountManagerTest_UmountFailRadar_001
+ * @tc.desc: Verify the UmountFailRadar function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_UmountFailRadar_000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_UmountFailRadar_000 start";
+
+    std::shared_ptr<MountManager> mountManager = MountManager::GetInstance();
+    ASSERT_TRUE(mountManager != nullptr);
+
+    ProcessInfo processInfo;
+    processInfo.pid = 1234;
+    processInfo.name = "test";
+    std::vector<ProcessInfo> processInfos;
+    processInfos.push_back(processInfo);
+    mountManager->UmountFailRadar(processInfos);
+    mountManager->KillProcess(processInfos);
+
+    std::vector<ProcessInfo> processInfos1;
+    mountManager->KillProcess(processInfos1);
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_UmountFailRadar_000 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_MountManagerTest_CheckMaps_001
+ * @tc.desc: Verify the CheckMaps function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_CheckMaps_000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_UmountFailRadar_000 start";
+
+    std::shared_ptr<MountManager> mountManager = MountManager::GetInstance();
+    ASSERT_TRUE(mountManager != nullptr);
+
+    std::string path = "";
+    std::string prefix = "";
+    std::list<std::string> mountFailList;
+    mountFailList.push_back("test1");
+    mountManager->CheckMaps(path, prefix, mountFailList);
+    mountManager->CheckSymlink(path, prefix, mountFailList);
+
+    path = "file://data/file";
+    mountManager->CheckMaps(path, prefix, mountFailList);
+    mountManager->CheckSymlink(path, prefix, mountFailList);
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_UmountFailRadar_000 end";
 }
 } // STORAGE_DAEMON
 } // OHOS
