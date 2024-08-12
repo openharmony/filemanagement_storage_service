@@ -13,13 +13,7 @@
 import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
-module_output_path = "storage_service/crypto"
-
-config("module_private_config") {
-  visibility = [ ":*" ]
-}
-
-ohos_moduletest("FscryptKeyV2Test") {
+ohos_unittest("FbexTest") {
   branch_protector_ret = "pac_ret"
   sanitize = {
     integer_overflow = true
@@ -28,50 +22,39 @@ ohos_moduletest("FscryptKeyV2Test") {
     debug = false
     blocklist = "${storage_service_path}/cfi_blocklist.txt"
   }
-  module_out_path = module_output_path
+  module_out_path = "storage_service/storage_daemon"
 
   defines = [
     "STORAGE_LOG_TAG = \"StorageDaemon\"",
     "LOG_DOMAIN = 0xD004301",
-    "USER_CRYPTO_MIGRATE_KEY",
+    "private = public",
   ]
 
   include_dirs = [
-    "../../../include",
-    "../../../include/crypto",
-    "../../../../common/include",
+    "${storage_daemon_path}/include",
+    "${storage_daemon_path}/include/crypto",
+    "${storage_daemon_path}/include/mock",
+    "${storage_service_common_path}/include",
   ]
 
   sources = [
-    "${storage_daemon_path}/crypto/src/fscrypt_key_v2.cpp",
-    "fscrypt_key_v2_test.cpp",
+    "${storage_daemon_path}/crypto/src/fbex.cpp",
+    "fbex_test.cpp",
   ]
 
-  if (storage_service_crypto_test) {
-    defines += [
-      "CRYPTO_TEST",
-      "SUPPORT_FSCRYPT_V2",
-    ]
-  }
-
-  configs = [ ":module_private_config" ]
-
-  deps = [ "//third_party/googletest:gtest_main" ]
-
-  deps += [
-    "${storage_daemon_path}/crypto:libsdcrypto",
+  deps = [
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
+    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
     "huks:libhukssdk",
-    "ipc:ipc_single",
   ]
 }
 
-group("fscrypt_key_v2_test") {
+group("fbex_test") {
   testonly = true
-  deps = [ ":FscryptKeyV2Test" ]
+  deps = [ ":FbexTest" ]
 }
