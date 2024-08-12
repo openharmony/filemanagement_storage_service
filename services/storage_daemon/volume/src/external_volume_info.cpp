@@ -189,7 +189,6 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
         remove(mountPath_.c_str());
         return E_MOUNT;
     }
-    LOGI("external volume mount success");
     return E_OK;
 }
 
