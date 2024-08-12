@@ -116,12 +116,13 @@ int32_t VolumeInfo::Mount(uint32_t flags)
     }
     
     mountFlags_ |= flags;
+    LOGI("external volume mount start");
     err = DoMount(mountFlags_);
     if (err) {
         mountState_ = UNMOUNTED;
         return err;
     }
-
+    LOGI("external volume mount success");
     mountState_ = MOUNTED;
     return E_OK;
 }
