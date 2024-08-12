@@ -44,6 +44,7 @@ ohos_fuzztest("StorageDaemonCreateShareFileFuzzTest") {
     "${storage_daemon_path}/utils/file_utils.cpp",
     "${storage_daemon_path}/utils/mount_argument_utils.cpp",
     "${storage_daemon_path}/utils/storage_radar.cpp",
+    "${storage_daemon_path}/utils/storage_utils.cpp",
     "${storage_daemon_path}/utils/string_utils.cpp",
     "${storage_service_path}/test/fuzztest/storagedaemoncreatesharefile_fuzzer/storagedaemoncreatesharefile_fuzzer.cpp",
   ]
