@@ -1135,7 +1135,7 @@ int KeyManager::GetLockScreenStatus(uint32_t user, bool &lockScreenStatus)
     return 0;
 }
 
-int KeyManager::GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId)
+int KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId)
 {
     std::lock_guard<std::mutex> lock(keyMutex_);
     if (userEl2Key_.find(userId) == userEl2Key_.end()) {
@@ -1143,7 +1143,7 @@ int KeyManager::GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &ke
         return -ENOENT;
     }
     auto elKey = userEl2Key_[userId];
-    if (elKey->GenerateAppkey(userId, appUid, keyId) == false) {
+    if (elKey->GenerateAppkey(userId, hashId, keyId) == false) {
         LOGE("Failed to generate Appkey2");
         return -EFAULT;
     }

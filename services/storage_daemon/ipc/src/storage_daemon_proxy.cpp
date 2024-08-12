@@ -518,7 +518,7 @@ int32_t StorageDaemonProxy::GetLockScreenStatus(uint32_t userId, bool &lockScree
     return reply.ReadInt32();
 }
 
-int32_t StorageDaemonProxy::GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId)
+int32_t StorageDaemonProxy::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId)
 {
     MessageParcel data;
     MessageParcel reply;
@@ -531,7 +531,7 @@ int32_t StorageDaemonProxy::GenerateAppkey(uint32_t userId, uint32_t appUid, std
     if (!data.WriteUint32(userId)) {
         return E_WRITE_PARCEL_ERR;
     }
-    if (!data.WriteUint32(appUid)) {
+    if (!data.WriteUint32(hashId)) {
         return E_WRITE_PARCEL_ERR;
     }
     int32_t err = SendRequest(

@@ -173,14 +173,8 @@ int32_t FileSystemCrypto::GetLockScreenStatus(uint32_t userId, bool &lockScreenS
     return sdCommunication->GetLockScreenStatus(userId, lockScreenStatus);
 }
 
-int32_t FileSystemCrypto::GenerateAppkey(uint32_t appUid, std::string &keyId)
+int32_t FileSystemCrypto::GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId)
 {
-    int32_t userId = -1;
-    int ret = AccountSA::OsAccountManager::GetOsAccountLocalIdFromUid(appUid, userId);
-    if (ret != 0 || userId == -1) {
-        LOGE("Get os account userid from appUid failed, ret = %{public}u", ret);
-        return ret;
-    }
     LOGI("UserId: %{public}u", userId);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
@@ -189,7 +183,7 @@ int32_t FileSystemCrypto::GenerateAppkey(uint32_t appUid, std::string &keyId)
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    return sdCommunication->GenerateAppkey(userId, appUid, keyId);
+    return sdCommunication->GenerateAppkey(userId, hashId, keyId);
 }
 
 int32_t FileSystemCrypto::DeleteAppkey(const std::string keyId)

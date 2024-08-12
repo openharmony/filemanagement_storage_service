@@ -65,7 +65,7 @@ public:
                                      const std::vector<uint8_t> &token,
                                      const std::vector<uint8_t> &secret) = 0;
     virtual int32_t GetLockScreenStatus(uint32_t user, bool &lockScreenStatus) = 0;
-    virtual int32_t GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId) = 0;
+    virtual int32_t GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId) = 0;
     virtual int32_t DeleteAppkey(uint32_t userId, const std::string &keyId) = 0;
     virtual int32_t CreateRecoverKey(uint32_t userId,
                                      uint32_t userType,

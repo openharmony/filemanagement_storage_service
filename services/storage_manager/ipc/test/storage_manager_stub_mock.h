@@ -72,7 +72,7 @@ public:
     MOCK_METHOD2(UpdateMemoryPara, int32_t (int32_t, int32_t &));
     MOCK_METHOD5(GetBundleStatsForIncrease, int32_t(uint32_t, const std::vector<std::string> &,
         const std::vector<int64_t> &, std::vector<int64_t> &, std::vector<int64_t> &));
-    MOCK_METHOD2(GenerateAppkey, int32_t(uint32_t, std::string &));
+    MOCK_METHOD3(GenerateAppkey, int32_t(uint32_t, uint32_t, std::string &));
     MOCK_METHOD4(SetBundleQuota, int32_t(const std::string &, int32_t, const std::string &, int32_t));
     MOCK_METHOD1(DeleteAppkey, int32_t(const std::string keyId));
     MOCK_METHOD2(GetFileEncryptStatus, int32_t(uint32_t, bool &));

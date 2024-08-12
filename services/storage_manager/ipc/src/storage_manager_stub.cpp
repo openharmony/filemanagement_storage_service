@@ -915,9 +915,10 @@ int32_t StorageManagerStub::HandleGenerateAppkey(MessageParcel &data, MessagePar
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-    uint32_t appUid = data.ReadUint32();
+    uint32_t hashId = data.ReadUint32();
+    uint32_t userId = data.ReadUint32();
     std::string keyId;
-    int32_t err = GenerateAppkey(appUid, keyId);
+    int32_t err = GenerateAppkey(hashId, userId, keyId);
     if (!reply.WriteString(keyId)) {
         LOGE("Write reply lockScreenStatus failed");
         return E_WRITE_REPLY_ERR;

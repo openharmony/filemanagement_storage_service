@@ -157,7 +157,7 @@ public:
         return E_OK;
     }
 
-    virtual int32_t GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId) override
+    virtual int32_t GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId) override
     {
         return E_OK;
     }
