@@ -23,7 +23,7 @@ ohos_unittest("KeyManagerTest") {
     blocklist = "${storage_service_path}/cfi_blocklist.txt"
   }
   module_out_path = "storage_service/storage_daemon"
-
+1
   defines = [
     "STORAGE_LOG_TAG = \"StorageDaemon\"",
     "LOG_DOMAIN = 0xD004301",
