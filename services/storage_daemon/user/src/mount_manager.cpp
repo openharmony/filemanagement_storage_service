@@ -577,7 +577,7 @@ void MountManager::MountSandboxPath(const std::vector<std::string> &srcPaths, co
         LOGE("invalid params, srcPaths total %{public}d, dstPaths total %{public}d", srcCnt, dstCnt);
         return;
     }
-    for (size_t i = 0; i < dstCnt; i++) {
+    for (int i = 0; i < dstCnt; i++) {
         std::string dstPath = SANDBOX_ROOT_PATH;
         dstPath = dstPath.append(userId).append("/").append(bundleName).append(dstPaths[i]);
         string srcPath = srcPaths[i];

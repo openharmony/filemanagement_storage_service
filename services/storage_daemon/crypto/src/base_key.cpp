@@ -201,9 +201,11 @@ bool BaseKey::StoreKey(const UserAuth &auth)
 #endif
         // rename keypath/temp/ to keypath/version_xx/
         auto candidate = GetNextCandidateDir();
-        LOGD("rename %{public}s to %{public}s", pathTemp.c_str(), candidate.c_str());
+        LOGI("rename %{public}s to %{public}s", pathTemp.c_str(), candidate.c_str());
         if (rename(pathTemp.c_str(), candidate.c_str()) == 0) {
+            LOGI("start sync");
             SyncKeyDir();
+            LOGI("sync end");
             return true;
         }
         LOGE("rename fail return %{public}d, cleanup the temp dir", errno);
@@ -211,7 +213,9 @@ bool BaseKey::StoreKey(const UserAuth &auth)
         LOGE("DoStoreKey fail, cleanup the temp dir");
     }
     OHOS::ForceRemoveDirectory(pathTemp);
+    LOGI("start sync");
     SyncKeyDir();
+    LOGI("sync end");
     return false;
 }
 
