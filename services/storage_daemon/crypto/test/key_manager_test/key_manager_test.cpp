@@ -795,7 +795,7 @@ HWTEST_F(KeyManagerTest, KeyManager_InActiveUserKey_002, TestSize.Level1)
     EXPECT_TRUE(KeyManager::GetInstance()->userEl2Key_.find(user) == KeyManager::GetInstance()->userEl2Key_.end());
     EXPECT_TRUE(KeyManager::GetInstance()->userEl3Key_.find(user) == KeyManager::GetInstance()->userEl3Key_.end());
     EXPECT_TRUE(KeyManager::GetInstance()->userEl4Key_.find(user) == KeyManager::GetInstance()->userEl4Key_.end());
-    EXPECT_TRUE(KeyManager::GetInstance()->userLockScreenTask_.find(user) == 
+    EXPECT_TRUE(KeyManager::GetInstance()->userLockScreenTask_.find(user) ==
         KeyManager::GetInstance()->userLockScreenTask_.end());
 
     KeyManager::GetInstance()->userEl2Key_[user] = elKey;
