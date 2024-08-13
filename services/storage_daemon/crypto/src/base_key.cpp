@@ -807,7 +807,7 @@ void BaseKey::SyncKeyDir() const
         sync();
         return;
     }
-    LOGI("start syncfs, dir_ is %{public}%", dir_.c_str());
+    LOGI("start syncfs, dir_ is %{public}s", dir_.c_str());
     if (syncfs(fd) != 0) {
         LOGE("syncfs %{public}s failed, errno %{public}d", dir_.c_str(), errno);
         sync();
