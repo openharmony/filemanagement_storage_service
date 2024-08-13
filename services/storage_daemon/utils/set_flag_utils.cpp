@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "storage_service_log.h"
+#include "utils/set_flag_utils.h"
 
 #include <fcntl.h>
 #include <filesystem>
@@ -21,7 +21,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "utils/storage_utils.h"
+#include "storage_service_log.h"
 
 namespace OHOS {
 namespace StorageService {
@@ -29,9 +29,8 @@ namespace StorageService {
 #define HMFS_IOCTL_HW_GET_FLAGS _IOR(0XF5, 70, unsigned int)
 #define HMFS_IOCTL_HW_SET_FLAGS _IOR(0XF5, 71, unsigned int)
 
-void StorageUtils::ParseDirPath(const std::string &path)
+void SetFlagUtils::ParseDirPath(const std::string &path)
 {
-    LOGI("StorageUtils parse dirpath start.");
     SetDirDelFlags(path);
     std::filesystem::directory_iterator pathList(path);
     for (const auto& resPath : pathList) {
@@ -42,68 +41,68 @@ void StorageUtils::ParseDirPath(const std::string &path)
     }
 }
 
-void StorageUtils::SetFileDelFlags(const std::string &filepath)
+void SetFlagUtils::SetFileDelFlags(const std::string &filepath)
 {
-    LOGI("StorageUtils SetFileDelFlags for dirpath start.");
+    LOGI("SetFlagUtils SetFileDelFlags for filepath=%{public}s start.", filepath.c_str());
     char absPath[PATH_MAX] = {0};
     if (realpath(filepath.c_str(), absPath) == nullptr) {
-        LOGE("StorageUtils Failed to get realpath");
+        LOGE("SetFlagUtils Failed to get realpath");
         return;
     }
     int32_t fd = open(absPath, O_RDWR);
     if (fd < 0) {
-        LOGE("StorageUtils Failed to open dir, errno: %{public}d", errno);
+        LOGE("SetFlagUtils Failed to open dir, errno: %{public}d", errno);
         return;
     }
     unsigned int flags = 0;
     int32_t ret = ioctl(fd, HMFS_IOCTL_HW_GET_FLAGS, &flags);
     if (ret < 0) {
-        LOGE("StorageUtils Failed to get flags, errno: %{public}d", errno);
+        LOGE("SetFlagUtils Failed to get flags, errno: %{public}d", errno);
         close(fd);
         return;
     }
     if (flags & HMFS_MONITOR_FL) {
-        LOGE("StorageUtils Delete control flag ia already set");
+        LOGE("SetFlagUtils Delete control flag ia already set");
         close(fd);
         return;
     }
     flags |= HMFS_MONITOR_FL;
     ret  = ioctl(fd, HMFS_IOCTL_HW_SET_FLAGS, &flags);
     if (ret < 0) {
-        LOGE("StorageUtils Failed to set flags, errno: %{public}d", errno);
+        LOGE("SetFlagUtils Failed to set flags, errno: %{public}d", errno);
     }
     close(fd);
 }
 
-void StorageUtils::SetDirDelFlags(const std::string &dirpath)
+void SetFlagUtils::SetDirDelFlags(const std::string &dirpath)
 {
-    LOGI("StorageUtils SetDirDelFlags for dirpath start.");
+    LOGI("SetFlagUtils SetDirDelFlags for dirpath=%{public}s start.", dirpath.c_str());
     char absPath[PATH_MAX] = {0};
     if (realpath(dirpath.c_str(), absPath) == nullptr) {
-        LOGE("StorageUtils Failed to get realpath");
+        LOGE("SetFlagUtils Failed to get realpath");
         return;
     }
     int32_t fd = open(absPath, O_DIRECTORY);
     if (fd < 0) {
-        LOGE("StorageUtils Failed to open dir, errno: %{public}d", errno);
+        LOGE("SetFlagUtils Failed to open dir, errno: %{public}d", errno);
         return;
     }
     unsigned int flags = 0;
     int32_t ret = ioctl(fd, HMFS_IOCTL_HW_GET_FLAGS, &flags);
     if (ret < 0) {
-        LOGE("StorageUtils Failed to get flags, errno: %{public}d", errno);
+        LOGE("SetFlagUtils Failed to get flags, errno: %{public}d", errno);
         close(fd);
         return;
     }
     if (flags & HMFS_MONITOR_FL) {
-        LOGE("StorageUtils Delete control flag ia already set");
+        LOGE("SetFlagUtils Delete control flag ia already set");
         close(fd);
         return;
     }
     flags |= HMFS_MONITOR_FL;
     ret  = ioctl(fd, HMFS_IOCTL_HW_SET_FLAGS, &flags);
     if (ret < 0) {
-        LOGE("StorageUtils Failed to set flags, errno: %{public}d", errno);
+        LOGE("SetFlagUtils Failed to set flags, errno: %{public}d", errno);
     }
     close(fd);
 }
