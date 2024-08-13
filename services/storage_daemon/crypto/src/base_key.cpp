@@ -803,14 +803,16 @@ void BaseKey::SyncKeyDir() const
 {
     int fd = open(dir_.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
     if (fd < 0) {
-        LOGE("open %{private}s failed, errno %{public}d", dir_.c_str(), errno);
+        LOGE("open %{public}s failed, errno %{public}d", dir_.c_str(), errno);
         sync();
         return;
     }
+    LOGI("start syncfs, dir_ is %{public}%", dir_.c_str());
     if (syncfs(fd) != 0) {
-        LOGE("syncfs %{private}s failed, errno %{public}d", dir_.c_str(), errno);
+        LOGE("syncfs %{public}s failed, errno %{public}d", dir_.c_str(), errno);
         sync();
     }
+    LOGI("syncfs end");
     (void)close(fd);
 }
 
