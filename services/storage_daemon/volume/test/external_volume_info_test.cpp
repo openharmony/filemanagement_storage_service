@@ -28,9 +28,24 @@ class ExternalVolumeInfoTest : public testing::Test {
 public:
     static void SetUpTestCase(void) {};
     static void TearDownTestCase(void) {};
-    void SetUp() {};
-    void TearDown() {};
+    void SetUp();
+    void TearDown();
+
+    ExternalVolumeInfo* externalVolumeInfo_;
 };
+
+void ExternalVolumeInfoTest::SetUp()
+{
+    externalVolumeInfo_ = new ExternalVolumeInfo();
+}
+
+void ExternalVolumeInfoTest::TearDown(void)
+{
+    if (externalVolumeInfo_ != nullptr) {
+        delete externalVolumeInfo_;
+        externalVolumeInfo_ = nullptr;
+    }
+}
 
 /**
  * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoCreate_001
@@ -254,9 +269,8 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetFsTyp
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetFsType_001 start";
 
-    ExternalVolumeInfo *evi = new ExternalVolumeInfo();
-    ASSERT_TRUE(evi != nullptr);
-    auto ret = evi->GetFsType();
+    ASSERT_TRUE(externalVolumeInfo_ != nullptr);
+    auto ret = externalVolumeInfo_->GetFsType();
     GTEST_LOG_(INFO) << ret;
     EXPECT_TRUE(ret == E_ERR);
 
@@ -273,9 +287,8 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetFsUui
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetFsUuid_001 start";
 
-    ExternalVolumeInfo *evi = new ExternalVolumeInfo();
-    ASSERT_TRUE(evi != nullptr);
-    std::string ret = evi->GetFsUuid();
+    ASSERT_TRUE(externalVolumeInfo_ != nullptr);
+    std::string ret = externalVolumeInfo_->GetFsUuid();
     GTEST_LOG_(INFO) << ret;
     EXPECT_TRUE(ret.empty());
 
@@ -292,9 +305,8 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetFsLab
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetFsLabel_001 start";
 
-    ExternalVolumeInfo *evi = new ExternalVolumeInfo();
-    ASSERT_TRUE(evi != nullptr);
-    std::string ret = evi->GetFsLabel();
+    ASSERT_TRUE(externalVolumeInfo_ != nullptr);
+    std::string ret = externalVolumeInfo_->GetFsLabel();
     GTEST_LOG_(INFO) << ret;
     EXPECT_TRUE(ret.empty());
 
@@ -311,13 +323,88 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetMount
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetMountPath_001 start";
 
-    ExternalVolumeInfo *evi = new ExternalVolumeInfo();
-    ASSERT_TRUE(evi != nullptr);
-    std::string ret = evi->GetMountPath();
+    ASSERT_TRUE(externalVolumeInfo_ != nullptr);
+    std::string ret = externalVolumeInfo_->GetMountPath();
     GTEST_LOG_(INFO) << ret;
     EXPECT_TRUE(ret.empty());
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetMountPath_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoMount4Ext_001
+ * @tc.desc: Verify the DoMount4Ext function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4Ext_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Ext_001 start";
+
+    ASSERT_TRUE(externalVolumeInfo_ != nullptr);
+    uint32_t mountFlags = 0;
+    int32_t ret = externalVolumeInfo_->DoMount4Ext(mountFlags);
+    GTEST_LOG_(INFO) << ret;
+    EXPECT_EQ(ret, E_ERR);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Ext_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoMount4Ntfs_001
+ * @tc.desc: Verify the DoMount4Ntfs function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4Ntfs_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Ntfs_001 start";
+
+    ASSERT_TRUE(externalVolumeInfo_ != nullptr);
+    uint32_t mountFlags = 0;
+    int32_t ret = externalVolumeInfo_->DoMount4Ntfs(mountFlags);
+    GTEST_LOG_(INFO) << ret;
+    EXPECT_TRUE(ret == 0);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Ntfs_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoMount4Exfat_001
+ * @tc.desc: Verify the DoMount4Exfat function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4Exfat_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Exfat_001 start";
+
+    ASSERT_TRUE(externalVolumeInfo_ != nullptr);
+    uint32_t mountFlags = 0;
+    int32_t ret = externalVolumeInfo_->DoMount4Exfat(mountFlags);
+    GTEST_LOG_(INFO) << ret;
+    EXPECT_TRUE(ret == 0);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Exfat_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoMount4OtherType_001
+ * @tc.desc: Verify the DoMount4OtherType function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4OtherType_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4OtherType_001 start";
+
+    ASSERT_TRUE(externalVolumeInfo_ != nullptr);
+    uint32_t mountFlags = 0;
+    int32_t ret = externalVolumeInfo_->DoMount4OtherType(mountFlags);
+    GTEST_LOG_(INFO) << ret;
+    EXPECT_EQ(ret, E_ERR);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4OtherType_001 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

@@ -27,7 +27,10 @@ ohos_unittest("external_volume_info_test") {
   }
   module_out_path = "storage_service/storage_daemon"
 
-  defines = [ "STORAGE_LOG_TAG = \"StorageDaemon\"" ]
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "private=public",
+  ]
 
   include_dirs = [
     "$ROOT_DIR/storage_daemon/include",
