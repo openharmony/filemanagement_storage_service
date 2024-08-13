@@ -23,7 +23,7 @@ ohos_unittest("KeyManagerTest") {
     blocklist = "${storage_service_path}/cfi_blocklist.txt"
   }
   module_out_path = "storage_service/storage_daemon"
-1
+
   defines = [
     "STORAGE_LOG_TAG = \"StorageDaemon\"",
     "LOG_DOMAIN = 0xD004301",
@@ -44,6 +44,7 @@ ohos_unittest("KeyManagerTest") {
     "${storage_daemon_path}/crypto/src/fbex.cpp",
     "${storage_daemon_path}/crypto/src/fscrypt_key_v1.cpp",
     "${storage_daemon_path}/crypto/src/fscrypt_key_v1_ext.cpp",
+    "${storage_daemon_path}/crypto/src/iam_client.cpp",
     "${storage_daemon_path}/crypto/src/key_manager.cpp",
     "${storage_daemon_path}/mock/base_key_mock.cpp",
     "${storage_daemon_path}/mock/fscrypt_control_mock.cpp",
