@@ -37,3 +37,19 @@ bool KeyCtrlHasFscryptSyspara(void)
     }
     return IFscryptControlMoc::fscryptControlMoc->KeyCtrlHasFscryptSyspara();
 }
+
+int LoadAndSetPolicy(const char *keyDir, const char *dir)
+{
+    if (IFscryptControlMoc::fscryptControlMoc == nullptr) {
+        return false;
+    }
+    return IFscryptControlMoc::fscryptControlMoc->LoadAndSetPolicy(keyDir, dir);
+}
+
+int LoadAndSetEceAndSecePolicy(const char *keyDir, const char *dir, int type)
+{
+    if (IFscryptControlMoc::fscryptControlMoc == nullptr) {
+        return false;
+    }
+    return IFscryptControlMoc::fscryptControlMoc->LoadAndSetEceAndSecePolicy(keyDir, dir, type);
+}
