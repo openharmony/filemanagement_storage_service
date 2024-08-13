@@ -20,6 +20,7 @@
 #include <fstream>
 #include <thread>
 #include "hisysevent.h"
+#include "utils/set_flag_utils.h"
 #include "utils/storage_radar.h"
 
 #ifdef USER_CRYPTO_MANAGER
@@ -345,7 +346,15 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
 #ifdef USER_CRYPTO_MANAGER
     AncoInitCryptKey();
 #endif
+    std::thread thread([this]() { SetDeleteFlag4KeyFiles(); });
+    thread.detach();
     return result;
+}
+
+void StorageDaemon::SetDeleteFlag4KeyFiles()
+{
+    StorageService::SetFlagUtils::ParseDirPath(DATA_SERVICE_EL0_STORAGE_DAEMON_SD);
+    StorageService::SetFlagUtils::ParseDirPath(DATA_SERVICE_EL1_PUBLIC_STORAGE_DAEMON_SD);
 }
 
 int32_t StorageDaemon::GenerateUserKeys(uint32_t userId, uint32_t flags)

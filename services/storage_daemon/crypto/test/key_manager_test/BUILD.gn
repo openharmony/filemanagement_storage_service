@@ -13,13 +13,7 @@
 import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
-module_output_path = "storage_service/crypto"
-
-config("module_private_config") {
-  visibility = [ ":*" ]
-}
-
-ohos_moduletest("FscryptKeyV2Test") {
+ohos_unittest("KeyManagerTest") {
   branch_protector_ret = "pac_ret"
   sanitize = {
     integer_overflow = true
@@ -28,50 +22,59 @@ ohos_moduletest("FscryptKeyV2Test") {
     debug = false
     blocklist = "${storage_service_path}/cfi_blocklist.txt"
   }
-  module_out_path = module_output_path
+  module_out_path = "storage_service/storage_daemon"
 
   defines = [
     "STORAGE_LOG_TAG = \"StorageDaemon\"",
     "LOG_DOMAIN = 0xD004301",
     "USER_CRYPTO_MIGRATE_KEY",
+    "private = public",
   ]
 
   include_dirs = [
     "${storage_daemon_path}/include",
     "${storage_daemon_path}/include/crypto",
+    "${storage_daemon_path}/include/libfscrypt",
+    "${storage_daemon_path}/include/mock",
     "${storage_service_common_path}/include",
   ]
 
   sources = [
-    "${storage_daemon_path}/crypto/src/fscrypt_key_v2.cpp",
-    "fscrypt_key_v2_test.cpp",
+    "${storage_daemon_path}/crypto/src/crypto_delay_handler.cpp",
+    "${storage_daemon_path}/crypto/src/fbex.cpp",
+    "${storage_daemon_path}/crypto/src/fscrypt_key_v1.cpp",
+    "${storage_daemon_path}/crypto/src/fscrypt_key_v1_ext.cpp",
+    "${storage_daemon_path}/crypto/src/iam_client.cpp",
+    "${storage_daemon_path}/crypto/src/key_manager.cpp",
+    "${storage_daemon_path}/mock/base_key_mock.cpp",
+    "${storage_daemon_path}/mock/fscrypt_control_mock.cpp",
+    "${storage_daemon_path}/mock/fscrypt_key_v2_mock.cpp",
+    "${storage_daemon_path}/mock/key_control_mock.cpp",
+    "key_manager_test.cpp",
   ]
 
-  if (storage_service_crypto_test) {
-    defines += [
-      "CRYPTO_TEST",
-      "SUPPORT_FSCRYPT_V2",
-    ]
-  }
-
-  configs = [ ":module_private_config" ]
-
-  deps = [ "//third_party/googletest:gtest_main" ]
+  deps = [
+    "//third_party/googletest:gmock_main",
+    "//third_party/googletest:gtest_main",
+  ]
 
   deps += [
-    "${storage_daemon_path}/crypto:libsdcrypto",
-    "${storage_daemon_path}/libfscrypt:libfscryptutils",
+    "${storage_daemon_path}:storage_common_utils",
+    #"${storage_daemon_path}/libfscrypt:libfscryptutils",
   ]
 
   external_deps = [
     "c_utils:utils",
+    "eventhandler:libeventhandler",
     "hilog:libhilog",
     "huks:libhukssdk",
+    "init:libbegetutil",
     "ipc:ipc_single",
+    "openssl:libcrypto_shared",
   ]
 }
 
-group("fscrypt_key_v2_test") {
+group("key_manager_test") {
   testonly = true
-  deps = [ ":FscryptKeyV2Test" ]
+  deps = [ ":KeyManagerTest" ]
 }

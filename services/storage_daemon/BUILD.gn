@@ -253,6 +253,7 @@ ohos_shared_library("storage_common_utils") {
     "./utils/disk_utils.cpp",
     "./utils/file_utils.cpp",
     "./utils/mount_argument_utils.cpp",
+    "./utils/set_flag_utils.cpp",
     "./utils/storage_radar.cpp",
     "./utils/string_utils.cpp",
   ]
@@ -331,6 +332,7 @@ group("storage_daemon_unit_test") {
     "crypto/test/fscrypt_key_v1_ext_test:fscrypt_key_v1_ext_test",
     "crypto/test/iam_client_test:iam_client_test",
     "crypto/test/iam_client_user_auth_framework_test:iam_client_user_auth_framework_test",
+    "crypto/test/key_manager_test:key_manager_test",
     "file_sharing/test:file_sharing_test",
     "ipc/test:storage_daemon_ipc_test",
     "quota/test:storage_daemon_quota_test",

@@ -490,6 +490,9 @@ HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_GetTypeFromDir_001, TestSize.Level
     ext.dir_ = "data/";
     EXPECT_EQ(ext.GetTypeFromDir(), TYPE_GLOBAL_EL1);
 
+    ext.dir_ = "/data";
+    EXPECT_EQ(ext.GetTypeFromDir(), TYPE_GLOBAL_EL1);
+
     ext.dir_ = "/data/foo/bar/el1/100";
     EXPECT_EQ(ext.GetTypeFromDir(), TYPE_EL1);
 
