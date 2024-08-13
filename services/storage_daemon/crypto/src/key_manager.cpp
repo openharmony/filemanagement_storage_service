@@ -1138,12 +1138,12 @@ int KeyManager::GetLockScreenStatus(uint32_t user, bool &lockScreenStatus)
 int KeyManager::GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId)
 {
     std::lock_guard<std::mutex> lock(keyMutex_);
-    if (userEl2Key_.find(userId) == userEl2Key_.end()) {
-        LOGD("userEl2Key_ has not existed");
+    auto el2Key = GetUserElKey(userId, EL2_KEY);
+    if (el2Key == nullptr) {
+        LOGE("userEl2Key_ has not existed");
         return -ENOENT;
     }
-    auto elKey = userEl2Key_[userId];
-    if (elKey->GenerateAppkey(userId, appUid, keyId) == false) {
+    if (!el2Key->GenerateAppkey(userId, appUid, keyId)) {
         LOGE("Failed to generate Appkey2");
         return -EFAULT;
     }
@@ -1153,12 +1153,12 @@ int KeyManager::GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &ke
 int KeyManager::DeleteAppkey(uint32_t userId, const std::string keyId)
 {
     std::lock_guard<std::mutex> lock(keyMutex_);
-    if (userEl2Key_.find(userId) == userEl2Key_.end()) {
-        LOGD("userEl2Key_ has not existed");
+    auto el2Key = GetUserElKey(userId, EL2_KEY);
+    if (el2Key == nullptr) {
+        LOGE("userEl2Key_ has not existed");
         return -ENOENT;
     }
-    auto elKey = userEl2Key_[userId];
-    if (elKey->DeleteAppkey(keyId) == false) {
+    if (!el2Key->DeleteAppkey(keyId)) {
         LOGE("Failed to delete Appkey2");
         return -EFAULT;
     }
