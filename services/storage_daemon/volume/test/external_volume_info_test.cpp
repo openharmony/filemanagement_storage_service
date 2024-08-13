@@ -28,8 +28,8 @@ class ExternalVolumeInfoTest : public testing::Test {
 public:
     static void SetUpTestCase(void) {};
     static void TearDownTestCase(void) {};
-    void SetUp() {};
-    void TearDown() {};
+    void SetUp();
+    void TearDown();
 
     ExternalVolumeInfo* externalVolumeInfo_;
 };
@@ -360,7 +360,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4
 {
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Ntfs_001 start";
 
-    ASSERT_TRUE(evi != nullptr);
+    ASSERT_TRUE(externalVolumeInfo_ != nullptr);
     uint32_t mountFlags = 0;
     int32_t ret = externalVolumeInfo_->DoMount4Ntfs(mountFlags);
     GTEST_LOG_(INFO) << ret;
