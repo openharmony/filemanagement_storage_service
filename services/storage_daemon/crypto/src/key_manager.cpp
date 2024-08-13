@@ -1143,7 +1143,7 @@ int KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &ke
         LOGE("userEl2Key_ has not existed");
         return -ENOENT;
     }
-    if (!el2Key->GenerateAppkey(userId, appUid, keyId)) {
+    if (!el2Key->GenerateAppkey(userId, hashId, keyId)) {
         LOGE("Failed to generate Appkey2");
         return -EFAULT;
     }
