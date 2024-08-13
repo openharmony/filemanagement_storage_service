@@ -13,15 +13,15 @@
  * limitations under the License.
  */
 
-#ifndef OHOS_STORAGE_UTILS_H
-#define OHOS_STORAGE_UTILS_H
+#ifndef OHOS_SET_FLAG_UTILS_H
+#define OHOS_SET_FLAG_UTILS_H
 
 #include <string>
 
 namespace OHOS {
 namespace StorageService {
 
-class StorageUtils {
+class SetFlagUtils {
 public:
     static void ParseDirPath(const std::string &path);
     static void SetDirDelFlags(const std::string &dirpath);
@@ -30,4 +30,4 @@ public:
 
 } // namespace StorageService
 } // namespace OHOS
-#endif // OHOS_STORAGE_UTILS_H
+#endif // OHOS_SET_FLAG_UTILS_H
