@@ -26,6 +26,8 @@ public:
 public:
     virtual uint8_t GetFscryptVersionFromPolicy(void) = 0;
     virtual bool KeyCtrlHasFscryptSyspara(void) = 0;
+    virtual int LoadAndSetPolicy(const char *keyDir, const char *dir) = 0;
+    virtual int LoadAndSetEceAndSecePolicy(const char *keyDir, const char *dir, int type) = 0;
 public:
     static inline std::shared_ptr<IFscryptControlMoc> fscryptControlMoc = nullptr;
 };
@@ -34,6 +36,8 @@ class FscryptControlMoc : public IFscryptControlMoc {
 public:
     MOCK_METHOD0(GetFscryptVersionFromPolicy, uint8_t());
     MOCK_METHOD0(KeyCtrlHasFscryptSyspara, bool());
+    MOCK_METHOD2(LoadAndSetPolicy, int(const char *keyDir, const char *dir));
+    MOCK_METHOD3(LoadAndSetEceAndSecePolicy, int(const char *keyDir, const char *dir, int type));
 };
 }
 }
