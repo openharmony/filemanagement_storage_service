@@ -38,7 +38,7 @@ const std::string USER_EL2_DIR = FSCRYPT_EL_DIR + "/el2";
 const std::string USER_EL3_DIR = FSCRYPT_EL_DIR + "/el3";
 const std::string USER_EL4_DIR = FSCRYPT_EL_DIR + "/el4";
 const std::string USER_EL5_DIR = FSCRYPT_EL_DIR + "/el5";
-const std::string UECE_DIR = "data/service/el5";
+const std::string UECE_DIR = "data/app/el5";
 
 class KeyManager {
 public:
