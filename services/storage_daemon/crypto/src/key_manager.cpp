@@ -705,6 +705,15 @@ int KeyManager::UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSe
 {
     LOGI("UpdateESecret enter");
     std::shared_ptr<BaseKey> el5Key = GetUserElKey(user, EL5_KEY);
+    std::string el5Path = USER_EL5_DIR + "/" + std::to_string(user);
+    if (IsUeceSupport() && el5Key == nullptr) {
+        if (!MkDirRecurse(el5Path, S_IRWXU)) {
+            LOGE("MkDirRecurse %{public}u failed!", user);
+            return -EFAULT;
+        }
+        LOGI("MkDirRecurse %{public}u success!", user);
+        el5Key = GetUserElKey(user, EL5_KEY);
+    }
     if (el5Key == nullptr) {
         LOGE("Have not found user %{public}u el key", user);
         return -ENOENT;
