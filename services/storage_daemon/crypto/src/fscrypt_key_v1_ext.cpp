@@ -99,7 +99,7 @@ bool FscryptKeyV1Ext::UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_t s
     return true;
 }
 
-bool FscryptKeyV1Ext::GenerateAppkey(uint32_t user, uint32_t appUid, std::unique_ptr<uint8_t[]> &appKey, uint32_t size)
+bool FscryptKeyV1Ext::GenerateAppkey(uint32_t user, uint32_t hashId, std::unique_ptr<uint8_t[]> &appKey, uint32_t size)
 {
     if (!FBEX::IsFBEXSupported()) {
         return true;
@@ -108,7 +108,7 @@ bool FscryptKeyV1Ext::GenerateAppkey(uint32_t user, uint32_t appUid, std::unique
     LOGI("map userId %{public}u to %{public}u", userId_, user);
     // 0--single id, 1--double id
     UserIdToFbeStr userIdToFbe = { .userIds = { userId_, GetMappedUserId(userId_, type_) }, .size = USER_ID_SIZE };
-    if (FBEX::GenerateAppkey(userIdToFbe, appUid, appKey, size)) {
+    if (FBEX::GenerateAppkey(userIdToFbe, hashId, appKey, size)) {
         LOGE("GenerateAppkey failed, user %{public}d", user);
         return false;
     }

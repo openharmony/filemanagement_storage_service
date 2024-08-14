@@ -678,10 +678,10 @@ int32_t StorageDaemon::GetLockScreenStatus(uint32_t userId, bool &lockScreenStat
 #endif
 }
 
-int32_t StorageDaemon::GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId)
+int32_t StorageDaemon::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId)
 {
 #ifdef USER_CRYPTO_MANAGER
-    return KeyManager::GetInstance()->GenerateAppkey(userId, appUid, keyId);
+    return KeyManager::GetInstance()->GenerateAppkey(userId, hashId, keyId);
 #else
     return E_OK;
 #endif

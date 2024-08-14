@@ -265,14 +265,14 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_GenerateAppkey, TestSize.Level1)
     GTEST_LOG_(INFO) << "fscrypt_key_v1_GenerateAppkey start";
     OHOS::StorageDaemon::FscryptKeyV1 g_testKeyV1 {TEST_KEYPATH};
     uint32_t userId = 100;
-    uint32_t appUid = 2;
+    uint32_t hashId = 2;
     std::string keyDesc = "test";
     
     EXPECT_CALL(*fscryptKeyExtMock_, GenerateAppkey(_, _, _, _)).WillOnce(Return(false));
-    EXPECT_FALSE(g_testKeyV1.GenerateAppkey(userId, appUid, keyDesc));
+    EXPECT_FALSE(g_testKeyV1.GenerateAppkey(userId, hashId, keyDesc));
 
     EXPECT_CALL(*fscryptKeyExtMock_, GenerateAppkey(_, _, _, _)).WillOnce(Return(true));
-    EXPECT_FALSE(g_testKeyV1.GenerateAppkey(userId, appUid, keyDesc));
+    EXPECT_FALSE(g_testKeyV1.GenerateAppkey(userId, hashId, keyDesc));
     GTEST_LOG_(INFO) << "fscrypt_key_v1_GenerateAppkey end";
 }
 

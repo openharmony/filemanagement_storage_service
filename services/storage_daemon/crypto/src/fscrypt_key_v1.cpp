@@ -67,16 +67,16 @@ bool FscryptKeyV1::ActiveKey(uint32_t flag, const std::string &mnt)
     return true;
 }
 
-bool FscryptKeyV1::GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyDesc)
+bool FscryptKeyV1::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyDesc)
 {
     KeyBlob appKey(FBEX_KEYID_SIZE);
-    if (!fscryptV1Ext.GenerateAppkey(userId, appUid, appKey.data, appKey.size)) {
+    if (!fscryptV1Ext.GenerateAppkey(userId, hashId, appKey.data, appKey.size)) {
         LOGE("fscryptV1Ext GenerateAppkey failed");
         return false;
     }
     // The ioctl does not support EL5, return empty character string
     if (appKey.data.get() == nullptr) {
-        LOGE("appKey.data.get() is unllptr!");
+        LOGE("appKey.data.get() is nullptr");
         keyDesc = "";
         return true;
     }

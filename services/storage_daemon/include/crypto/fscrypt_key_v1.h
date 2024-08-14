@@ -36,7 +36,7 @@ public:
     bool InactiveKey(uint32_t flag = 0, const std::string &mnt = MNT_DATA);
     bool LockUserScreen(uint32_t flag = 0, uint32_t sdpClass = 0, const std::string &mnt = MNT_DATA);
     bool UnlockUserScreen(uint32_t flag = 0, uint32_t sdpClass = 0, const std::string &mnt = MNT_DATA);
-    bool GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId);
+    bool GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId);
     bool DeleteAppkey(const std::string keyId);
     void DropCachesIfNeed();
     bool AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status = 0);

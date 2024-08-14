@@ -469,7 +469,7 @@ int32_t StorageDaemonCommunication::MountCryptoPathAgain(int32_t userId)
     return storageDaemon_->MountCryptoPathAgain(userId);
 }
 
-int32_t StorageDaemonCommunication::GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId)
+int32_t StorageDaemonCommunication::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId)
 {
     int32_t err = Connect();
     if (err != E_OK) {
@@ -480,7 +480,7 @@ int32_t StorageDaemonCommunication::GenerateAppkey(uint32_t userId, uint32_t app
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->GenerateAppkey(userId, appUid, keyId);
+    return storageDaemon_->GenerateAppkey(userId, hashId, keyId);
 }
 
 int32_t StorageDaemonCommunication::DeleteAppkey(uint32_t userId, const std::string keyId)
