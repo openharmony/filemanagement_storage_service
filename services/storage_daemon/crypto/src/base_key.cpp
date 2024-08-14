@@ -201,9 +201,11 @@ bool BaseKey::StoreKey(const UserAuth &auth)
 #endif
         // rename keypath/temp/ to keypath/version_xx/
         auto candidate = GetNextCandidateDir();
-        LOGD("rename %{public}s to %{public}s", pathTemp.c_str(), candidate.c_str());
+        LOGI("rename %{public}s to %{public}s", pathTemp.c_str(), candidate.c_str());
         if (rename(pathTemp.c_str(), candidate.c_str()) == 0) {
+            LOGI("start sync");
             SyncKeyDir();
+            LOGI("sync end");
             return true;
         }
         LOGE("rename fail return %{public}d, cleanup the temp dir", errno);
@@ -211,7 +213,9 @@ bool BaseKey::StoreKey(const UserAuth &auth)
         LOGE("DoStoreKey fail, cleanup the temp dir");
     }
     OHOS::ForceRemoveDirectory(pathTemp);
+    LOGI("start sync");
     SyncKeyDir();
+    LOGI("sync end");
     return false;
 }
 
@@ -799,14 +803,16 @@ void BaseKey::SyncKeyDir() const
 {
     int fd = open(dir_.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
     if (fd < 0) {
-        LOGE("open %{private}s failed, errno %{public}d", dir_.c_str(), errno);
+        LOGE("open %{public}s failed, errno %{public}d", dir_.c_str(), errno);
         sync();
         return;
     }
+    LOGI("start syncfs, dir_ is %{public}s", dir_.c_str());
     if (syncfs(fd) != 0) {
-        LOGE("syncfs %{private}s failed, errno %{public}d", dir_.c_str(), errno);
+        LOGE("syncfs %{public}s failed, errno %{public}d", dir_.c_str(), errno);
         sync();
     }
+    LOGI("syncfs end");
     (void)close(fd);
 }
 

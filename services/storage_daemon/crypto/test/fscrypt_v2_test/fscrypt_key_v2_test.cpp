@@ -24,12 +24,14 @@
 #include "file_ex.h"
 #include "fscrypt_key_v2.h"
 #include "key_blob.h"
+#include "libfscrypt/fscrypt_control.h"
 #include "storage_service_errno.h"
 
 using namespace testing::ext;
 
 namespace {
 const std::string TEST_MNT = "/data";
+const std::string TEST_DIR_LEGACY = "/data/test/crypto_dir_legacy";
 const std::string TEST_DIR_V2 = "/data/test/crypto_dir";
 const std::string TEST_KEYPATH = "/data/test/key/el2/80";
 
@@ -83,6 +85,11 @@ HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_active_support, TestSize.Level1)
     EXPECT_FALSE(g_testKeyV2.ActiveKey(flag, TEST_MNT));
 
     g_testKeyV2.ClearKey();
+    std::string emptyStr;
+    g_testKeyV2.keyInfo_.key.Alloc(FSCRYPT_MAX_KEY_SIZE);
+    EXPECT_FALSE(g_testKeyV2.ActiveKey(flag, emptyStr));
+
+    g_testKeyV2.ClearKey();
     g_testKeyV2.keyInfo_.keyId.Clear();
     g_testKeyV2.keyInfo_.key.Alloc(FSCRYPT_MAX_KEY_SIZE);
     g_testKeyV2.keyInfo_.keyId.Alloc(FSCRYPT_KEY_IDENTIFIER_SIZE + 1);
@@ -93,8 +100,6 @@ HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_active_support, TestSize.Level1)
     g_testKeyV2.keyInfo_.key.Alloc(FSCRYPT_MAX_KEY_SIZE);
     g_testKeyV2.keyInfo_.keyId.Alloc(FSCRYPT_KEY_IDENTIFIER_SIZE);
     EXPECT_FALSE(g_testKeyV2.ActiveKey(flag, TEST_MNT));
-    g_testKeyV2.ClearKey();
-    g_testKeyV2.keyInfo_.keyId.Clear();
     GTEST_LOG_(INFO) << "fscrypt_key_v2_active_support end";
 }
 
@@ -207,4 +212,59 @@ HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_DecryptClassE_EncryptClassE_DeleteClas
     GTEST_LOG_(INFO) << "fscrypt_key_v2_DecryptClassE_EncryptClassE_DeleteClassEPinCode end";
 }
 
+/**
+ * @tc.name: fscrypt_key_v2_LoadAndSetPolicy
+ * @tc.desc: Verify the fscrypt V2 LoadAndSetPolicy
+ * @tc.type: FUNC
+ * @tc.require: AR000GK0BP
+ */
+HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_LoadAndSetPolicy, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "fscrypt_key_v2_LoadAndSetPolicy start";
+    OHOS::ForceRemoveDirectory(TEST_DIR_V2);
+    OHOS::ForceCreateDirectory(TEST_DIR_V2);
+    OHOS::ForceRemoveDirectory(TEST_DIR_LEGACY);
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(TEST_DIR_LEGACY));
+    std::string testVersionFile = TEST_DIR_LEGACY + "/fscrypt_version";
+    EXPECT_TRUE(OHOS::SaveStringToFile(testVersionFile, "2\n"));
+    EXPECT_NE(0, LoadAndSetPolicy(TEST_DIR_LEGACY.c_str(), TEST_DIR_V2.c_str()));
+    GTEST_LOG_(INFO) << "fscrypt_key_v2_LoadAndSetPolicy end";
+}
+
+/**
+ * @tc.name: fscrypt_key_v2_LoadAndSetEceAndSecePolicy
+ * @tc.desc: Verify the fscrypt V2 LoadAndSetEceAndSecePolicy
+ * @tc.type: FUNC
+ * @tc.require: AR000GK0BP
+ */
+HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_LoadAndSetEceAndSecePolicy, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "fscrypt_key_v2_LoadAndSetPolicy start";
+    int type = 1;
+    const char* dir = TEST_MNT.c_str();
+    EXPECT_EQ(LoadAndSetEceAndSecePolicy(nullptr, nullptr, type), -EINVAL);
+    EXPECT_EQ(LoadAndSetEceAndSecePolicy(TEST_DIR_LEGACY.c_str(), nullptr, type), -EINVAL);
+    EXPECT_EQ(LoadAndSetEceAndSecePolicy(nullptr, dir, type), -EINVAL);
+    EXPECT_EQ(LoadAndSetEceAndSecePolicy(TEST_DIR_LEGACY.c_str(), dir, type), 0);
+
+    OHOS::ForceRemoveDirectory(TEST_DIR_LEGACY);
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(TEST_DIR_LEGACY));
+    std::string testVersionFile = TEST_DIR_LEGACY + "/fscrypt_version";
+    EXPECT_TRUE(OHOS::SaveStringToFile(testVersionFile, "1\n"));
+    EXPECT_EQ(LoadAndSetEceAndSecePolicy(TEST_DIR_LEGACY.c_str(), dir, type), 0);
+    EXPECT_EQ(type, 1);
+
+    type = 3;
+    EXPECT_NE(LoadAndSetEceAndSecePolicy(TEST_DIR_LEGACY.c_str(), dir, type), 0);
+
+    type = 4;
+    EXPECT_NE(LoadAndSetEceAndSecePolicy(TEST_DIR_LEGACY.c_str(), dir, type), 0);
+
+    OHOS::ForceRemoveDirectory(TEST_DIR_LEGACY);
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(TEST_DIR_LEGACY));
+    testVersionFile = TEST_DIR_LEGACY + "/fscrypt_version";
+    EXPECT_TRUE(OHOS::SaveStringToFile(testVersionFile, "2\n"));
+    EXPECT_EQ(LoadAndSetEceAndSecePolicy(TEST_DIR_LEGACY.c_str(), dir, type), 0);
+    GTEST_LOG_(INFO) << "fscrypt_key_v2_LoadAndSetEceAndSecePolicy end";
+}
 } // OHOS::StorageDaemon
