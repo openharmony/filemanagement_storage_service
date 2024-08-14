@@ -202,10 +202,10 @@ int32_t ExternalVolumeInfo::DoUMount(bool force)
         ps.KillProcess(SIGKILL);
         umount2(mountPath_.c_str(), MNT_DETACH);
         remove(mountPath_.c_str());
-        LOGI("External volume unmount success.");
+        LOGI("External volume force to unmount success.");
         return E_OK;
     }
-
+    LOGI("External volume start unmount.");
     int ret = umount(mountPath_.c_str());
     int err = remove(mountPath_.c_str());
     if (err && ret) {
@@ -217,6 +217,7 @@ int32_t ExternalVolumeInfo::DoUMount(bool force)
         LOGE("failed to call remove(%{public}s) error, errno = %{public}d", mountPath_.c_str(), errno);
         return E_SYS_CALL;
     }
+    LOGI("External volume unmount success.");
     return E_OK;
 }
 
