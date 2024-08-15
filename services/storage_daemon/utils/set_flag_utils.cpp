@@ -32,16 +32,16 @@ namespace StorageService {
 
 void SetFlagUtils::ParseDirPath(const std::string &path)
 {
-    if (!IsDir(path)) {
+    if (!StorageDaemon::IsDir(path)) {
         LOGE("Input path is not a directory.");
         return;
     }
     SetDirDelFlags(path);
     std::filesystem::directory_iterator pathList(path);
     for (const auto& resPath : pathList) {
-        if (IsDir(resPath.path())) {
+        if (StorageDaemon::IsDir(resPath.path())) {
             ParseDirPath(resPath.path().c_str());
-        } else if (IsFile(resPath.path())) {
+        } else if (StorageDaemon::IsFile(resPath.path())) {
             SetFileDelFlags(resPath.path().c_str());
         } else {
             LOGE("Invalid file path.");
