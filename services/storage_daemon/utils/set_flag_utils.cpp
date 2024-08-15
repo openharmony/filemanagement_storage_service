@@ -39,15 +39,12 @@ void SetFlagUtils::ParseDirPath(const std::string &path)
     SetDirDelFlags(path);
     std::filesystem::directory_iterator pathList(path);
     for (const auto& resPath : pathList) {
-        if (std::filesystem::is_directory(resPath)) {
-            if (IsDir(resPath.path())) {
-                ParseDirPath(resPath.path().c_str());
-            } else if (IsFile(resPath.path())) {
-                SetFileDelFlags(resPath.path().c_str());
-            } else {
-                LOGE("Invalid file path.");
-            }
+        if (IsDir(resPath.path())) {
+            ParseDirPath(resPath.path().c_str());
+        } else if (IsFile(resPath.path())) {
             SetFileDelFlags(resPath.path().c_str());
+        } else {
+            LOGE("Invalid file path.");
         }
     }
 }
