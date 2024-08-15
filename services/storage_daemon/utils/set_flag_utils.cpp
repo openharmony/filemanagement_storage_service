@@ -32,7 +32,7 @@ namespace StorageService {
 
 void SetFlagUtils::ParseDirPath(const std::string &path)
 {
-    if (isDir(path)) {
+    if (!isDir(path)) {
         LOGE("Input path is not a directory.");
         return;
     }
