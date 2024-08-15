@@ -42,6 +42,7 @@ struct AncoDirInfo {
 int32_t ChMod(const std::string &path, mode_t mode);
 int32_t MkDir(const std::string &path, mode_t mode);
 bool IsDir(const std::string &path);
+bool IsFile(const std::string &path);
 bool PrepareDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid);
 bool DestroyDir(const std::string &path);
 bool MkDirRecurse(const std::string& path, mode_t mode);

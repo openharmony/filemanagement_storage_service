@@ -85,6 +85,16 @@ bool IsDir(const std::string &path)
     return S_ISDIR(st.st_mode);
 }
 
+bool IsFile(const std::string &path)
+{
+    // check whether the path exists
+    struct stat buf = {};
+    if (stat(path.c_str(), &buf) != 0) {
+        return false;
+    }
+    return S_ISREG(buf.st_mode);
+}
+
 bool MkDirRecurse(const std::string& path, mode_t mode)
 {
     std::string::size_type index = 0;
