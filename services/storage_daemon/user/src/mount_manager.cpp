@@ -421,7 +421,6 @@ int32_t MountManager::CloudMount(int32_t userId, const string& path)
 {
     LOGI("cloud mount start");
 #ifdef DFS_SERVICE
-    int fd = -1;
     string opt;
     int ret;
     if (!cloudReady_) {
@@ -429,7 +428,12 @@ int32_t MountManager::CloudMount(int32_t userId, const string& path)
         return E_MOUNT;
     }
 
-    fd = open("/dev/fuse", O_RDWR);
+    FILE *f = fopen("/dev/fuse", "rw");
+    if (f == nullptr) {
+        LOGE("open /dev/fuse fail");
+        return E_MOUNT;
+    }
+    int fd = fileno(f);
     if (fd < 0) {
         LOGE("open /dev/fuse fail");
         return E_MOUNT;
@@ -447,7 +451,7 @@ int32_t MountManager::CloudMount(int32_t userId, const string& path)
     ret = Mount("/dev/fuse", path.c_str(), "fuse", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_NOATIME, opt.c_str());
     if (ret) {
         LOGE("failed to mount fuse, err %{public}d %{public}d %{public}s", errno, ret, path.c_str());
-        close(fd);
+        fclose(f);
         return ret;
     }
     LOGI("start cloud daemon fuse");
@@ -457,7 +461,7 @@ int32_t MountManager::CloudMount(int32_t userId, const string& path)
         UMount(path.c_str());
     }
     LOGI("mount %{public}s success", path.c_str());
-    close(fd);
+    fclose(f);
     return ret;
 #else
     return E_OK;

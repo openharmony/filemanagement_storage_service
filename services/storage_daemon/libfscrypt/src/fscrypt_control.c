@@ -17,6 +17,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include <stdbool.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -284,18 +285,23 @@ static int ReadKeyFile(const char *path, char *buf, size_t len)
         return -EFAULT;
     }
 
-    int fd = open(realPath, O_RDONLY);
+    FILE *f = fopen(realPath, "r");
     free(realPath);
+    if (f == nullptr) {
+        FSCRYPT_LOGE("key file read open failed");
+        return -EFAULT;
+    }
+    int fd = fileno(f);
     if (fd < 0) {
         FSCRYPT_LOGE("key file read open failed");
         return -EFAULT;
     }
     if (read(fd, buf, len) != (ssize_t)len) {
         FSCRYPT_LOGE("bad file content");
-        (void)close(fd);
+        (void)fclose(f);
         return -EBADF;
     }
-    (void)close(fd);
+    (void)fclose(f);
 
     return 0;
 }
@@ -419,6 +425,7 @@ static int ActSetFileXattrActSetFileXattr(const char *path, char *keyDesc, int s
         return -errno;
     }
     int fd = open((char *)path, O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+    //opendir直接跟随符号链接 无法设置O_NOFOLLOW，不使用。使用fdopendir只能关闭dir，无意义不使用
     if (fd < 0) {
         FSCRYPT_LOGE("install File or Directory open failed: %{public}d", errno);
         return -errno;

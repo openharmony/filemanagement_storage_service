@@ -20,6 +20,8 @@
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <stdio.h>
+#include <dirent.h>
 
 #include "storage_service_log.h"
 
@@ -46,32 +48,37 @@ void SetFlagUtils::SetFileDelFlags(const std::string &filepath)
     LOGI("SetFlagUtils SetFileDelFlags for filepath=%{public}s start.", filepath.c_str());
     char absPath[PATH_MAX] = {0};
     if (realpath(filepath.c_str(), absPath) == nullptr) {
-        LOGE("SetFlagUtils Failed to get realpath");
+        LOGE("SetFlagUtils Failed to get file realpath");
         return;
     }
-    int32_t fd = open(absPath, O_RDWR);
+    FILE *f = fopen(absPath, "rw");
+    if (f == nullptr) {
+        LOGE("SetFlagUtils Failed to open file, errno: %{public}d", errno);
+        return;
+    }
+    int fd = fileno(f);
     if (fd < 0) {
-        LOGE("SetFlagUtils Failed to open dir, errno: %{public}d", errno);
+        LOGE("SetFlagUtils Failed to open file, errno: %{public}d", errno);
         return;
     }
     unsigned int flags = 0;
     int32_t ret = ioctl(fd, HMFS_IOCTL_HW_GET_FLAGS, &flags);
     if (ret < 0) {
-        LOGE("SetFlagUtils Failed to get flags, errno: %{public}d", errno);
-        close(fd);
+        LOGE("SetFlagUtils Failed to get file flags, errno: %{public}d", errno);
+        fclose(f);
         return;
     }
     if (flags & HMFS_MONITOR_FL) {
-        LOGE("SetFlagUtils Delete control flag ia already set");
-        close(fd);
+        LOGE("SetFlagUtils Delete file control flag is already set");
+        fclose(f);
         return;
     }
     flags |= HMFS_MONITOR_FL;
     ret  = ioctl(fd, HMFS_IOCTL_HW_SET_FLAGS, &flags);
     if (ret < 0) {
-        LOGE("SetFlagUtils Failed to set flags, errno: %{public}d", errno);
+        LOGE("SetFlagUtils Failed to set file flags, errno: %{public}d", errno);
     }
-    close(fd);
+    fclose(f);
 }
 
 void SetFlagUtils::SetDirDelFlags(const std::string &dirpath)
@@ -82,7 +89,12 @@ void SetFlagUtils::SetDirDelFlags(const std::string &dirpath)
         LOGE("SetFlagUtils Failed to get realpath");
         return;
     }
-    int32_t fd = open(absPath, O_DIRECTORY);
+    DIR *dir = opendir(absPath);
+    if (dir == nullptr) {
+        LOGE("SetFlagUtils Failed to open dir, errno: %{public}d", errno);
+        return;
+    }
+    int fd = dirfd(dir);
     if (fd < 0) {
         LOGE("SetFlagUtils Failed to open dir, errno: %{public}d", errno);
         return;
@@ -91,12 +103,12 @@ void SetFlagUtils::SetDirDelFlags(const std::string &dirpath)
     int32_t ret = ioctl(fd, HMFS_IOCTL_HW_GET_FLAGS, &flags);
     if (ret < 0) {
         LOGE("SetFlagUtils Failed to get flags, errno: %{public}d", errno);
-        close(fd);
+        closedir(dir);
         return;
     }
     if (flags & HMFS_MONITOR_FL) {
-        LOGE("SetFlagUtils Delete control flag ia already set");
-        close(fd);
+        LOGE("SetFlagUtils Delete control flag is already set");
+        closedir(dir);
         return;
     }
     flags |= HMFS_MONITOR_FL;
@@ -104,7 +116,7 @@ void SetFlagUtils::SetDirDelFlags(const std::string &dirpath)
     if (ret < 0) {
         LOGE("SetFlagUtils Failed to set flags, errno: %{public}d", errno);
     }
-    close(fd);
+    closedir(dir);
 }
 }
 }

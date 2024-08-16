@@ -25,6 +25,8 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <linux/keyctl.h>
+#include <stdio.h>
+#include <dirent.h>
 
 #include "fscrypt_log.h"
 #include "fscrypt_sysparam.h"
@@ -89,6 +91,7 @@ static bool FsIoctl(const char *mnt, unsigned long cmd, void *arg)
     }
 
     int fd = open(realPath, O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+    //opendir直接跟随符号链接 无法设置O_NOFOLLOW，不使用。使用fdopendir只能关闭dir，无意义不使用
     free(realPath);
     if (fd < 0) {
         FSCRYPT_LOGE("open %s failed, errno:%d", mnt, errno);
@@ -150,8 +153,13 @@ static uint8_t CheckKernelFscrypt(const char *mnt)
         return FSCRYPT_INVALID;
     }
 
-    int fd = open(realPath, O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+    DIR *dir = opendir(realPath);
     free(realPath);
+    if (dir == nullptr) {
+        FSCRYPT_LOGE("open policy file failed, errno: %d", errno);
+        return FSCRYPT_INVALID;
+    }
+    int fd = dirfd(dir);
     if (fd < 0) {
         FSCRYPT_LOGE("open policy file failed, errno: %d", errno);
         return FSCRYPT_INVALID;
@@ -160,7 +168,7 @@ static uint8_t CheckKernelFscrypt(const char *mnt)
 #ifdef SUPPORT_FSCRYPT_V2
     errno = 0;
     (void)ioctl(fd, FS_IOC_ADD_ENCRYPTION_KEY, NULL);
-    (void)close(fd);
+    (void)closedir(dir);
     if (errno == EOPNOTSUPP) {
         FSCRYPT_LOGE("Kernel doesn't support fscrypt v1 or v2.");
         return FSCRYPT_INVALID;
@@ -174,7 +182,7 @@ static uint8_t CheckKernelFscrypt(const char *mnt)
     FSCRYPT_LOGE("Unexpected errno: %d", errno);
     return FSCRYPT_INVALID;
 #else
-    (void)close(fd);
+    (void)closedir(dir);
     return FSCRYPT_V1;
 #endif
 }

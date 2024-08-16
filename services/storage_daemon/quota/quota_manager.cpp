@@ -35,6 +35,8 @@
 #include <tuple>
 #include <unique_fd.h>
 #include <unistd.h>
+#include <stdio.h>
+#include <dirent.h>
 
 #include "file_uri.h"
 #include "sandbox_helper.h"
@@ -253,15 +255,20 @@ int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int32_t prjId, bool
         return E_SYS_CALL;
     }
 
-    int fd = open(realPath, O_RDONLY | O_CLOEXEC);
+    FILE *f = fopen(realPath, "r");
     free(realPath);
+    if (f = nullptr) {
+        LOGE("Failed to open %{public}s, errno: %{public}d", path.c_str(), errno);
+        return E_SYS_CALL;
+    }
+    int fd = fileno(f);
     if (fd < 0) {
         LOGE("Failed to open %{public}s, errno: %{public}d", path.c_str(), errno);
         return E_SYS_CALL;
     }
     if (ioctl(fd, FS_IOC_FSGETXATTR, &fsx) == -1) {
         LOGE("Failed to get extended attributes of %{public}s, errno: %{public}d", path.c_str(), errno);
-        (void)close(fd);
+        (void)fclose(f);
         return E_SYS_CALL;
     }
     uint32_t uintprjId = static_cast<uint32_t>(prjId);
@@ -271,7 +278,7 @@ int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int32_t prjId, bool
     fsx.fsx_projid = static_cast<uint32_t>(prjId);
     if (ioctl(fd, FS_IOC_FSSETXATTR, &fsx) == -1) {
         LOGE("Failed to set project id for %{public}s, errno: %{public}d", path.c_str(), errno);
-        (void)close(fd);
+        (void)fclose(f);
         return E_SYS_CALL;
     }
 
@@ -279,13 +286,13 @@ int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int32_t prjId, bool
         uint32_t flags;
         if (ioctl(fd, FS_IOC_GETFLAGS, &flags) == -1) {
             LOGE("Failed to get flags for %{public}s, errno:%{public}d", path.c_str(), errno);
-            (void)close(fd);
+            (void)fclose(f);
             return E_SYS_CALL;
         }
         flags |= FS_PROJINHERIT_FL;
         if (ioctl(fd, FS_IOC_SETFLAGS, &flags) == -1) {
             LOGE("Failed to set flags for %{public}s, errno:%{public}d", path.c_str(), errno);
-            (void)close(fd);
+            (void)fclose(f);
             return E_SYS_CALL;
         }
     }
