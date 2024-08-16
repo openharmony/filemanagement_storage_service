@@ -453,6 +453,7 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
         }
 
         waitpid(pid, &status, 0);
+        (void)close(pipe_fd[0]);
         if (errno == ECHILD) {
             return E_NO_CHILD;
         }
