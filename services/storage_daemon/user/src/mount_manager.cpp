@@ -25,6 +25,7 @@
 #include <unistd.h>
 #include <regex>
 #include <filesystem>
+#include <stdio.h>
 #include "hisysevent.h"
 #include "utils/storage_radar.h"
 #include "ipc/istorage_daemon.h"
