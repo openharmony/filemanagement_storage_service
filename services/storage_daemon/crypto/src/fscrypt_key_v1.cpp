@@ -402,7 +402,7 @@ bool FscryptKeyV1::InactiveKey(uint32_t flag, const std::string &mnt)
 void FscryptKeyV1::DropCachesIfNeed()
 {
     DIR *dir= opendir(MNT_DATA.c_str());
-    if (dir == NULL) {
+    if (dir == nullptr) {
         sync();
     }
     int fd = dirfd(dir);
