@@ -155,7 +155,7 @@ static uint8_t CheckKernelFscrypt(const char *mnt)
 
     DIR *dir = opendir(realPath);
     free(realPath);
-    if (dir == nullptr) {
+    if (dir == NULL) {
         FSCRYPT_LOGE("open policy file failed, errno: %d", errno);
         return FSCRYPT_INVALID;
     }
