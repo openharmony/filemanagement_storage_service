@@ -449,6 +449,7 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
                 LOGI("get result %{public}s", buf);
                 output->push_back(buf);
             }
+            (void)close(pipe_fd[0]);
             return E_OK;
         }
 
