@@ -31,6 +31,7 @@
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "user/mount_manager.h"
 #ifdef EL5_FILEKEY_MANAGER
 #include "el5_filekey_manager_kit.h"
 #endif
@@ -1496,8 +1497,12 @@ int KeyManager::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
         LOGI("This is encrypted status");
         return E_OK;
     }
-    isEncrypted = false;
     free(path);
+    if (!MountManager::GetInstance()->CheckMountFileByUser(userId)) {
+        LOGI("The virturalDir is not exists.");
+        return E_OK;
+    }
+    isEncrypted = false;
     LOGI("This is unencrypted status");
     return E_OK;
 }

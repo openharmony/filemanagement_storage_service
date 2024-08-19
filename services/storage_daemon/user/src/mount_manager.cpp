@@ -1152,5 +1152,18 @@ int32_t MountManager::SetFafQuotaProId(int32_t userId)
     QuotaManager::GetInstance()->SetQuotaPrjId(StringPrintf(SHARE_PATH.c_str(), userId), prjId, true);
     return E_OK;
 }
+
+bool MountManager::CheckMountFileByUser(int32_t userId)
+{
+    for (const DirInfo &dir : virtualDir_) {
+        std::string path = StringPrintf(dir.path.c_str(), userId);
+        if (access(path.c_str(), 0) != 0) {
+            LOGI("VirtualDir : %{public}s is not exists", path.c_str());
+            return false;
+        }
+    }
+    LOGI("MountFile is exists");
+    return true;
+}
 } // namespace StorageDaemon
 } // namespace OHOS

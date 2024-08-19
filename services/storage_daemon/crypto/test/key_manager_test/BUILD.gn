@@ -50,6 +50,7 @@ ohos_unittest("KeyManagerTest") {
     "${storage_daemon_path}/mock/fscrypt_control_mock.cpp",
     "${storage_daemon_path}/mock/fscrypt_key_v2_mock.cpp",
     "${storage_daemon_path}/mock/key_control_mock.cpp",
+    "${storage_daemon_path}/user/src/mount_manager.cpp",
     "key_manager_test.cpp",
   ]
 
