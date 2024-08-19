@@ -449,10 +449,12 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
                 LOGI("get result %{public}s", buf);
                 output->push_back(buf);
             }
+            (void)close(pipe_fd[0]);
             return E_OK;
         }
 
         waitpid(pid, &status, 0);
+        (void)close(pipe_fd[0]);
         if (errno == ECHILD) {
             return E_NO_CHILD;
         }
