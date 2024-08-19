@@ -25,7 +25,7 @@
 #include <unistd.h>
 #include <regex>
 #include <filesystem>
-#include <stdio.h>
+#include <cstdio>
 #include "hisysevent.h"
 #include "utils/storage_radar.h"
 #include "ipc/istorage_daemon.h"
@@ -452,7 +452,7 @@ int32_t MountManager::CloudMount(int32_t userId, const string& path)
     ret = Mount("/dev/fuse", path.c_str(), "fuse", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_NOATIME, opt.c_str());
     if (ret) {
         LOGE("failed to mount fuse, err %{public}d %{public}d %{public}s", errno, ret, path.c_str());
-        fclose(f);
+        (void)fclose(f);
         return ret;
     }
     LOGI("start cloud daemon fuse");
@@ -462,7 +462,7 @@ int32_t MountManager::CloudMount(int32_t userId, const string& path)
         UMount(path.c_str());
     }
     LOGI("mount %{public}s success", path.c_str());
-    fclose(f);
+    (void)fclose(f);
     return ret;
 #else
     return E_OK;

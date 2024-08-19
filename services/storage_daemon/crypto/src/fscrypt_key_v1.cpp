@@ -18,7 +18,7 @@
 #include <fcntl.h>
 #include <openssl/sha.h>
 #include <unistd.h>
-#include <stdio.h>
+#include <cstdio>
 #include <dirent.h>
 
 #include "file_ex.h"
@@ -401,7 +401,7 @@ bool FscryptKeyV1::InactiveKey(uint32_t flag, const std::string &mnt)
 
 void FscryptKeyV1::DropCachesIfNeed()
 {
-    DIR *dir= opendir(MNT_DATA.c_str());
+    DIR *dir = opendir(MNT_DATA.c_str());
     if (dir == nullptr) {
         sync();
     }

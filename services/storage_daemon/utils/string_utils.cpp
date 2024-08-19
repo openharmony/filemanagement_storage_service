@@ -21,7 +21,7 @@
 #include <fcntl.h>
 #include <vector>
 #include <unistd.h>
-#include <stdio.h>
+#include <cstdio>
 #include <dirent.h>
 
 #include "securec.h"

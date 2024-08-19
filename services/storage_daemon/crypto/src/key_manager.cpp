@@ -18,7 +18,7 @@
 #include <fcntl.h>
 #include <filesystem>
 #include <string>
-#include <stdio.h>
+#include <cstdio>
 
 #include "base_key.h"
 #include "directory_ex.h"
@@ -1455,7 +1455,7 @@ bool KeyManager::IsUeceSupport()
         LOGE("open uece failed, errno : %{public}d", errno);
         return false;
     }
-    fclose(f);
+    (void)fclose(f);
     LOGI("uece is support.");
     return true;
 }

@@ -19,7 +19,7 @@
 #include <cstdio>
 #include <fcntl.h>
 #include <securec.h>
-#include <stdio.h>
+#include <cstdio>
 #include <dirent.h>
 #include <string>
 #include <sys/ioctl.h>
@@ -178,7 +178,7 @@ int FBEX::InstallEL5KeyToKernel(uint32_t userIdSingle, uint32_t userIdDouble, ui
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", fbeRet, errno);
         ret = -errno;
     }
-    fclose(f);
+    (void)fclose(f);
     LOGI("InstallEL5KeyToKernel success");
     return ret;
 }
@@ -211,10 +211,10 @@ int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32
     int ret = ioctl(fd, FBEX_IOC_ADD_IV, &ops);
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
-        fclose(f);
+        (void)fclose(f);
         return ret;
     }
-    fclose(f);
+    (void)fclose(f);
 
     auto errops = memcpy_s(iv, size, ops.iv, sizeof(ops.iv));
     if (errops != EOK) {
@@ -254,7 +254,7 @@ int FBEX::UninstallOrLockUserKeyToKernel(uint32_t userId, uint32_t type, uint8_t
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
     }
-    fclose(f);
+    (void)fclose(f);
     LOGI("success");
     return ret;
 }
@@ -287,7 +287,7 @@ int FBEX::DeleteClassEPinCode(uint32_t userIdSingle, uint32_t userIdDouble)
         LOGE("ioctl fbex_cmd failed, fbeRet: 0x%{public}x, errno: %{public}d", fbeRet, errno);
         ret = -errno;
     }
-    fclose(f);
+    (void)fclose(f);
     LOGI("success");
     return ret;
 }
@@ -321,7 +321,7 @@ int FBEX::ChangePinCodeClassE(uint32_t userIdSingle, uint32_t userIdDouble, bool
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
         ret = -errno;
     }
-    fclose(f);
+    (void)fclose(f);
     LOGI("change pincode classE finish.");
     return ret;
 }
@@ -348,7 +348,7 @@ int FBEX::LockScreenToKernel(uint32_t userId)
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
     }
-    fclose(f);
+    (void)fclose(f);
     LOGI("success");
     return ret;
 }
@@ -383,7 +383,7 @@ int FBEX::GenerateAppkey(UserIdToFbeStr &userIdToFbe, uint32_t hashId, std::uniq
     auto fbeRet = ioctl(fd, FBEX_ADD_APPKEY2, &ops);
     if (fbeRet != 0) {
         LOGE("ioctl fbex_cmd failed, fbeRet: 0x%{public}x, errno: %{public}d", fbeRet, errno);
-        fclose(f);
+        (void)fclose(f);
         return -errno;
     }
 
@@ -392,7 +392,7 @@ int FBEX::GenerateAppkey(UserIdToFbeStr &userIdToFbe, uint32_t hashId, std::uniq
         LOGE("memcpy failed %{public}d", err);
         return 0;
     }
-    fclose(f);
+    (void)fclose(f);
     LOGI("success");
     return 0;
 }
@@ -427,7 +427,7 @@ int FBEX::LockUece(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupp
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
     }
-    fclose(f);
+    (void)fclose(f);
     LOGD("success");
     return ret;
 }
@@ -461,10 +461,10 @@ int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint
     int ret = ioctl(fd, FBEX_IOC_UNLOCK_SCREEN, &ops);
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
-        fclose(f);
+        (void)fclose(f);
         return ret;
     }
-    fclose(f);
+    (void)fclose(f);
 
     auto errops = memcpy_s(iv, size, ops.iv, sizeof(ops.iv));
     if (errops != EOK) {
@@ -516,10 +516,10 @@ int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uint
     auto ret = ioctl(fd, FBEX_READ_CLASS_E, &ops);
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
-        fclose(f);
+        (void)fclose(f);
         return -errno;
     }
-    fclose(f);
+    (void)fclose(f);
     if (status == UNLOCK_STATUS) {
         bufferSize = AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES;
     } else {
@@ -574,10 +574,10 @@ int FBEX::WriteESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uin
     auto ret = ioctl(fd, FBEX_WRITE_CLASS_E, &ops);
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
-        fclose(f);
+        (void)fclose(f);
         return -errno;
     }
-    fclose(f);
+    (void)fclose(f);
     LOGI("success");
     return 0;
 }
@@ -604,7 +604,7 @@ int FBEX::GetStatus()
 
     FbeOpts ops;
     int ret = ioctl(fd, FBEX_IOC_STATUS_REPORT, &ops);
-    fclose(f);
+    (void)fclose(f);
     return ret;
 }
 } // namespace StorageDaemon

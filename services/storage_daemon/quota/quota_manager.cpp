@@ -35,8 +35,7 @@
 #include <tuple>
 #include <unique_fd.h>
 #include <unistd.h>
-#include <stdio.h>
-#include <dirent.h>
+#include <cstdio>
 
 #include "file_uri.h"
 #include "sandbox_helper.h"

@@ -17,9 +17,10 @@
 
 #include <fcntl.h>
 #include <fstream>
-#include <stdio.h>
+#include <cstdio>
 #include <string>
 #include <unistd.h>
+#include <dirent.h>
 
 #include "directory_ex.h"
 #include "fbex.h"
@@ -801,7 +802,7 @@ void BaseKey::WipingActionDir(std::string &path)
             LOGE("F2FS_IOC_SET_PIN_FILE ioctl is %{public}u", ret);
         }
         LOGI("WipingActionDir success");
-        fclose(f);
+        (void)fclose(f);
     }
 }
 

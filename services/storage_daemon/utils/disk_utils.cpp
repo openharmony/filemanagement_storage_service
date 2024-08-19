@@ -17,7 +17,7 @@
 
 #include <cerrno>
 #include <fcntl.h>
-#include <stdio.h>
+#include <cstdio>
 #include <sys/stat.h>
 #include <sys/sysmacros.h>
 #include <unistd.h>

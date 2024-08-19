@@ -20,7 +20,7 @@
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <stdio.h>
+#include <cstdio>
 #include <dirent.h>
 
 #include "storage_service_log.h"
@@ -65,12 +65,12 @@ void SetFlagUtils::SetFileDelFlags(const std::string &filepath)
     int32_t ret = ioctl(fd, HMFS_IOCTL_HW_GET_FLAGS, &flags);
     if (ret < 0) {
         LOGE("SetFlagUtils Failed to get file flags, errno: %{public}d", errno);
-        fclose(f);
+        (void)fclose(f);
         return;
     }
     if (flags & HMFS_MONITOR_FL) {
         LOGE("SetFlagUtils Delete file control flag is already set");
-        fclose(f);
+        (void)fclose(f);
         return;
     }
     flags |= HMFS_MONITOR_FL;
@@ -78,7 +78,7 @@ void SetFlagUtils::SetFileDelFlags(const std::string &filepath)
     if (ret < 0) {
         LOGE("SetFlagUtils Failed to set file flags, errno: %{public}d", errno);
     }
-    fclose(f);
+    (void)fclose(f);
 }
 
 void SetFlagUtils::SetDirDelFlags(const std::string &dirpath)
