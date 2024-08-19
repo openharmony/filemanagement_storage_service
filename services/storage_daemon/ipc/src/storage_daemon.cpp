@@ -24,7 +24,6 @@
 #include "utils/storage_radar.h"
 
 #ifdef USER_CRYPTO_MANAGER
-#include "crypto/anco_key_manager.h"
 #include "crypto/app_clone_key_manager.h"
 #include "crypto/iam_client.h"
 #include "crypto/key_manager.h"
@@ -67,11 +66,6 @@ static const std::string VFS_CACHE_PRESSURE = "/proc/sys/vm/vfs_cache_pressure";
 const std::string DATA_SERVICE_EL2 = "/data/service/el2/";
 const std::string DATA_SERVICE_EL3 = "/data/service/el3/";
 const std::string DATA_SERVICE_EL4 = "/data/service/el4/";
-const std::string CONFIG_FILE_PATH = "/data/virt_service/rgm_manager/rgm_hmos/config/storage/direnc.json";
-const std::string USER_PATH = "/data/app/el1/100";
-const std::string ANCO_TYPE_SYS_EL1 = "encryption=Require_Sys_EL1";
-const std::string ANCO_TYPE_USER_EL1 = "encryption=Require_User_EL1";
-const std::string ANCO_TYPE_USER_EL2 = "encryption=Require_User_EL2";
 const std::string DATA_SERVICE_EL1_PUBLIC_STORAGE_DAEMON_SD = "/data/service/el1/public/storage_daemon/sd";
 const std::string DATA_SERVICE_EL0_STORAGE_DAEMON_SD = "/data/service/el0/storage_daemon/sd";
 
@@ -343,9 +337,7 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
     RestoreconRecurse(DATA_SERVICE_EL1_PUBLIC_STORAGE_DAEMON_SD.c_str());
 #endif
     auto result = UserManager::GetInstance()->PrepareUserDirs(GLOBAL_USER_ID, CRYPTO_FLAG_EL1);
-#ifdef USER_CRYPTO_MANAGER
-    AncoInitCryptKey();
-#endif
+
     std::thread thread([this]() { SetDeleteFlag4KeyFiles(); });
     thread.detach();
     return result;
@@ -600,16 +592,12 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
         UserManager::GetInstance()->CreateBundleDataDir(userId);
     }
     std::thread([this]() { ActiveAppCloneUserKey(); }).detach();
-    AncoActiveCryptKey(userId);
     return ret;
 #else
     std::thread([this, userId]() { RestoreconElX(userId); }).detach();
     if (updateFlag) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
     }
-#ifdef USER_CRYPTO_MANAGER
-    AncoActiveCryptKey(userId);
-#endif
     return E_OK;
 #endif
 }
@@ -879,41 +867,6 @@ void StorageDaemon::ActiveAppCloneUserKey()
     auto ret = AppCloneKeyManager::GetInstance()->ActiveAppCloneUserKey();
     if (ret != E_OK) {
         LOGE("ActiveAppCloneUserKey failed, errNo %{public}d", ret);
-    }
-#endif
-}
-
-void StorageDaemon::AncoInitCryptKey()
-{
-#ifdef USER_CRYPTO_MANAGER
-    std::error_code errorCode;
-    if (std::filesystem::exists(CONFIG_FILE_PATH, errorCode)) {
-        auto ret = AncoKeyManager::GetInstance()->SetAncoDirectoryElPolicy(CONFIG_FILE_PATH, ANCO_TYPE_SYS_EL1,
-                                                                           GLOBAL_USER_ID);
-        if (ret != E_OK) {
-            LOGE("SetAncoDirectoryElPolicy failed, ret = %{public}d", ret);
-        }
-        if (std::filesystem::exists(USER_PATH, errorCode)) {
-            ret = AncoKeyManager::GetInstance()->SetAncoDirectoryElPolicy(CONFIG_FILE_PATH, ANCO_TYPE_USER_EL1,
-                                                                          ANCO_USER_ID);
-            if (ret != E_OK) {
-                LOGE("SetAncoDirectoryElPolicy failed, ret = %{public}d", ret);
-            }
-        }
-    }
-#endif
-}
-
-void StorageDaemon::AncoActiveCryptKey(uint32_t userId)
-{
-#ifdef USER_CRYPTO_MANAGER
-    std::error_code errorCode;
-    if (std::filesystem::exists(CONFIG_FILE_PATH, errorCode)) {
-        auto ret = AncoKeyManager::GetInstance()->SetAncoDirectoryElPolicy(CONFIG_FILE_PATH, ANCO_TYPE_USER_EL2,
-                                                                           userId);
-        if (ret != E_OK) {
-            LOGE("SetAncoDirectoryElPolicy failed, ret = %{public}d", ret);
-        }
     }
 #endif
 }
