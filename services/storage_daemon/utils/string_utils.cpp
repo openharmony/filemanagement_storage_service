@@ -95,7 +95,7 @@ bool WriteFileSync(const char *path, const uint8_t *data, size_t size)
         LOGE("open %{public}s failed, errno %{public}d", path, errno);
         return false;
     }
-    chMod(path, S_IRUSR | S_IWUSR);
+    ChMod(path, S_IRUSR | S_IWUSR);
     int fd = fileno(f);
     if (fd == -1) {
         LOGE("open %{public}s failed, errno %{public}d", path, errno);
