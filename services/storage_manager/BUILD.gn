@@ -64,7 +64,10 @@ ohos_shared_library("storage_manager") {
 
   configs = [ ":storage_manager_config" ]
 
-  deps = [ "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy" ]
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
+  ]
 
   external_deps = [
     "ability_base:base",

@@ -20,6 +20,7 @@ ohos_fuzztest("StorageTotalStatusServiceFuzzTest") {
   fuzz_config_file =
       "${storage_service_path}/test/fuzztest/storagetotalstatusservice_fuzzer"
   include_dirs = [
+    "${storage_daemon_path}/include",
     "${storage_service_common_path}/include",
     "${storage_manager_path}/include",
   ]
@@ -35,7 +36,10 @@ ohos_fuzztest("StorageTotalStatusServiceFuzzTest") {
     "./storagetotalstatusservice_fuzzer.cpp",
   ]
   defines = [ "STORAGE_LOG_TAG = \"storage_service\"" ]
-  deps = [ "${bundlemanager_framework_path}/services/bundlemgr:libbms" ]
+  deps = [
+    "${bundlemanager_framework_path}/services/bundlemgr:libbms",
+    "${storage_daemon_path}:storage_common_utils",
+  ]
 
   external_deps = [
     "c_utils:utils",

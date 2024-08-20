@@ -531,7 +531,7 @@ bool MountManager::CheckPathValid(const std::string &bundleNameStr, uint32_t use
         LOGE("Invalid directory path: %{public}s", completePath.c_str());
         return false;
     }
-    
+
     if (!std::filesystem::is_empty(completePath)) {
         LOGE("The directory has been mounted, path is %{public}s", completePath.c_str());
         return false;

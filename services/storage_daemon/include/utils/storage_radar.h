@@ -22,11 +22,16 @@ namespace OHOS {
 namespace StorageService {
 const std::string ORGPKGNAME = "storageService";
 const std::string ADD_NEW_USER_BEHAVIOR = "ADD_NEW_USER_BEHAVIOR";
-const std::string ACTIVE_CURRENT_USER_BEHAVIOR = "ACTIVE_CURRENT_USER_BEHAVIOR";
+const std::string FILE_STORAGE_MANAGER_FAULT_BEHAVIOR  = "FILE_STORAGE_MANAGER_FAULT";
 const std::string UMOUNT_FAIL_BEHAVIOR = "UMOUNT_FAIL_BEHAVIOR";
-constexpr char STORAGESERVICE_DOAMIN[] = "STORAGE_SERVICE";
+constexpr char STORAGESERVICE_DOAMIN[] = "FILEMANAGEMENT";
+const int32_t USERID = 100;
 enum class BizScene : int32_t {
-    STORAGE_START = 1,
+    STORAGE_START = 0,
+    USER_MOUNT_MANAGER,
+    USER_KEY_ENCRYPTION,
+    SPACE_STATISTICS,
+    EXTERNAL_VOLUME_MANAGER,
 };
 
 enum class StageRes : int32_t {
@@ -46,6 +51,35 @@ enum class BizStage : int32_t {
     BIZ_STAGE_CONNECT = 2,
     BIZ_STAGE_ENABLE = 3,
     BIZ_STAGE_SA_STOP = 4,
+
+    BIZ_STAGE_PREPARE_ADD_USER = 11,
+    BIZ_STAGE_START_USER,
+    BIZ_STAGE_STOP_USER,
+    BIZ_STAGE_REMOVE_USER,
+
+    BIZ_STAGE_GENERATE_USER_KEYS = 20,
+    BIZ_STAGE_ACTIVE_USER_KEY,
+    BIZ_STAGE_UPDATE_USER_AUTH,
+    BIZ_STAGE_INACTIVE_USER_KEY,
+    BIZ_STAGE_DELETE_USER_KEYS,
+    BIZ_STAGE_CREATE_RECOVERY_KEY,
+    BIZ_STAGE_LOCK_USER_SCREEN,
+    BIZ_STAGE_UNLOCK_USER_SCREEN,
+    BIZ_STAGE_GET_FILE_ENCRYPT_STATUS,
+    BIZ_STAGE_UPDATE_KEY_CONTEXT,
+
+    BIZ_STAGE_GET_TOTAL_SIZE = 31,
+    BIZ_STAGE_GET_FREE_SIZE,
+    BIZ_STAGE_GET_SYSTEM_SIZE,
+    BIZ_STAGE_GET_BUNDLE_STATS,
+    BIZ_STAGE_GET_USER_STORAGE_STATS,
+
+    BIZ_STAGE_MOUNT = 41,
+    BIZ_STAGE_UNMOUNT,
+    BIZ_STAGE_PARTITION,
+    BIZ_STAGE_FORMAT,
+    BIZ_STAGE_SET_VOLUME_DESCRIPTION,
+    BIZ_STAGE_GET_ALL_VOLUMES,
 };
 
 class StorageRadar {
@@ -57,9 +91,12 @@ public:
     }
 
 public:
-    bool RecordPrepareUserDirsResult(int32_t errcode);
-    bool RecordActiveUserKeyResult(int32_t errcode);
     bool RecordKillProcessResult(std::string processName, int32_t errcode);
+    bool RecordFuctionResult(std::string func,
+                             enum BizScene bizScene,
+                             enum BizStage bizStage,
+                             std::string keyElxLevel,
+                             int32_t errorCode);
 
 private:
     StorageRadar() = default;
