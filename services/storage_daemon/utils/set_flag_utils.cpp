@@ -51,7 +51,7 @@ void SetFlagUtils::SetFileDelFlags(const std::string &filepath)
         LOGE("SetFlagUtils Failed to get file realpath");
         return;
     }
-    FILE *f = fopen(absPath, "rw");
+    FILE *f = fopen(absPath, "r+");
     if (f == nullptr) {
         LOGE("SetFlagUtils Failed to open file, errno: %{public}d", errno);
         return;

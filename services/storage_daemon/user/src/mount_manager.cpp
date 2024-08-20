@@ -429,7 +429,7 @@ int32_t MountManager::CloudMount(int32_t userId, const string& path)
         return E_MOUNT;
     }
 
-    FILE *f = fopen("/dev/fuse", "rw");
+    FILE *f = fopen("/dev/fuse", "r+");
     if (f == nullptr) {
         LOGE("open /dev/fuse fail");
         return E_MOUNT;

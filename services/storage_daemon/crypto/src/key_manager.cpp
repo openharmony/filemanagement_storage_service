@@ -1439,7 +1439,7 @@ int KeyManager::UpdateKeyContext(uint32_t userId)
 
 bool KeyManager::IsUeceSupport()
 {
-    FILE *f = fopen(UECE_PATH, "rw");
+    FILE *f = fopen(UECE_PATH, "r+");
     if (f == nullptr) {
         if (errno == ENOENT) {
             LOGE("uece does not support !");
