@@ -31,7 +31,7 @@ const uint32_t USER_ADD_AUTH = 0x0;
 const uint32_t USER_CHANGE_AUTH = 0x1;
 const std::string SUFFIX_NEED_UPDATE = "/need_update";
 const std::vector<uint8_t> NULL_SECRET = { '!' };
-class BaseKey {
+class BaseKey : public std::enable_shared_from_this<BaseKey> {
 public:
     BaseKey() = delete;
     BaseKey(const std::string &dir, uint8_t keyLen = CRYPTO_AES_256_XTS_KEY_SIZE);

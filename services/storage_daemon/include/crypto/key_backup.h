@@ -43,13 +43,17 @@ public:
 
     void CreateBackup(const std::string &from, const std::string &to, bool removeOld = true);
     int32_t RemoveNode(const std::string &pathName);
-    int32_t TryRestoreKey(std::shared_ptr<BaseKey> &baseKey, const UserAuth &auth);
+    int32_t TryRestoreKey(const std::shared_ptr<BaseKey> &baseKey, const UserAuth &auth);
+    int32_t TryRestoreUeceKey(const std::shared_ptr<BaseKey> &baseKey,
+                              const UserAuth &auth,
+                              KeyBlob &planKey,
+                              KeyBlob &decryptedKey);
     int32_t GetBackupDir(std::string &origDir, std::string &backupDir);
     void ListAndCheckDir(std::string &origDir);
 
 private:
-    KeyBackup();
-    ~KeyBackup();
+    KeyBackup() {};
+    ~KeyBackup() {};
     KeyBackup(const KeyBackup &) = delete;
     KeyBackup &operator=(const KeyBackup &) = delete;
 
