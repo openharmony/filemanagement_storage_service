@@ -14,6 +14,7 @@
  */
 
 #include "utils/set_flag_utils.h"
+#include "utils/file_utils.h"
 
 #include <fcntl.h>
 #include <filesystem>
@@ -31,13 +32,20 @@ namespace StorageService {
 
 void SetFlagUtils::ParseDirPath(const std::string &path)
 {
+    if (!StorageDaemon::IsDir(path)) {
+        LOGE("Input path is not a directory.");
+        return;
+    }
     SetDirDelFlags(path);
     std::filesystem::directory_iterator pathList(path);
     for (const auto& resPath : pathList) {
-        if (std::filesystem::is_directory(resPath)) {
+        if (StorageDaemon::IsDir(resPath.path())) {
             ParseDirPath(resPath.path().c_str());
+        } else if (StorageDaemon::IsFile(resPath.path())) {
+            SetFileDelFlags(resPath.path().c_str());
+        } else {
+            LOGE("Invalid file path.");
         }
-        SetFileDelFlags(resPath.path().c_str());
     }
 }
 
