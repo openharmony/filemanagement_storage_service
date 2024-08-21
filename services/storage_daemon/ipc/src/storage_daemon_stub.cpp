@@ -121,6 +121,7 @@ int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code,
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::DESTROY_USER_DIRS):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::START_USER):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::STOP_USER):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::COMPLETE_ADD_USER):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::INIT_GLOBAL_KEY):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::INIT_GLOBAL_USER_KEYS):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::CREATE_USER_KEYS):
@@ -185,6 +186,8 @@ int32_t StorageDaemonStub::OnRemoteRequestForUser(uint32_t code, MessageParcel &
             return HandleStartUser(data, reply);
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::STOP_USER):
             return HandleStopUser(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::COMPLETE_ADD_USER):
+            return HandleCompleteAddUser(data, reply);
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::INIT_GLOBAL_KEY):
             return HandleInitGlobalKey(data, reply);
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::INIT_GLOBAL_USER_KEYS):
@@ -370,6 +373,18 @@ int32_t StorageDaemonStub::HandleStopUser(MessageParcel &data, MessageParcel &re
     int32_t userId = data.ReadInt32();
 
     int32_t err = StopUser(userId);
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
+
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleCompleteAddUser(MessageParcel &data, MessageParcel &reply)
+{
+    int32_t userId = data.ReadInt32();
+
+    int32_t err = CompleteAddUser(userId);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }

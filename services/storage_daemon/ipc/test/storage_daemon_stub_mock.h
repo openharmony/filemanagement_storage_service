@@ -34,6 +34,7 @@ public:
 
     MOCK_METHOD1(StartUser, int32_t(int32_t));
     MOCK_METHOD1(StopUser, int32_t(int32_t));
+    MOCK_METHOD1(CompleteAddUser, int32_t(int32_t));
     MOCK_METHOD2(PrepareUserDirs, int32_t(int32_t, uint32_t));
     MOCK_METHOD2(DestroyUserDirs, int32_t(int32_t, uint32_t));
 

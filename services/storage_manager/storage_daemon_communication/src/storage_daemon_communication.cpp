@@ -129,6 +129,21 @@ int32_t StorageDaemonCommunication::StopUser(int32_t userId)
     return storageDaemon_->StopUser(userId);
 }
 
+int32_t StorageDaemonCommunication::CompleteAddUser(int32_t userId)
+{
+    LOGI("StorageDaemonCommunication::CompleteAddUser start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::CompleteAddUser connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::CompleteAddUser service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->CompleteAddUser(userId);
+}
+
 int32_t StorageDaemonCommunication::Mount(std::string volumeId, int32_t flag)
 {
     LOGI("StorageDaemonCommunication::mount start");

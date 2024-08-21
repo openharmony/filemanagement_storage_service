@@ -163,6 +163,29 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_StopUser_001, TestSize.L
 }
 
 /**
+ * @tc.name: StorageDaemonProxyTest_StopUser_001
+ * @tc.desc: Verify the StopUser function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_CompleteAddUser_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_CompleteAddUser_001 start";
+
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
+
+    ASSERT_TRUE(proxy_ != nullptr);
+    int32_t ret = proxy_->CompleteAddUser(USER_ID1);
+    ASSERT_TRUE(ret == E_OK);
+    ASSERT_TRUE(mock_ != nullptr);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::COMPLETE_ADD_USER) == mock_->code_);
+
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_CompleteAddUser_001 end";
+}
+
+/**
  * @tc.name: StorageDaemonProxyTest_Mount_001
  * @tc.desc: Verify the Mount function.
  * @tc.type: FUNC
