@@ -93,6 +93,7 @@ public:
     void UmountFailRadar(std::vector<ProcessInfo> &processInfo);
     void MountSandboxPath(const std::vector<std::string> &srcPaths, const std::vector<std::string> &dstPaths,
                           const std::string &bundleName, const std::string &userId);
+    bool CheckMountFileByUser(int32_t userId);
 
 private:
     bool SupportHmdfs();

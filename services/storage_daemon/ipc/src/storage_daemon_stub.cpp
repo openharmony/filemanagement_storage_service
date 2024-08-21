@@ -732,7 +732,9 @@ int32_t StorageDaemonStub::HandleGetFileEncryptStatus(MessageParcel &data, Messa
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
-
+    if (!reply.WriteBool(isEncrypted)) {
+        return E_WRITE_REPLY_ERR;
+    }
     return E_OK;
 }
 
