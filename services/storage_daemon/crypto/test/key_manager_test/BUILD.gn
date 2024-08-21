@@ -73,6 +73,11 @@ ohos_unittest("KeyManagerTest") {
     "ipc:ipc_single",
     "openssl:libcrypto_shared",
   ]
+
+  if (enable_user_auth_framework) {
+    defines += [ "USER_AUTH_FRAMEWORK" ]
+    external_deps += [ "user_auth_framework:userauth_client" ]
+  }
 }
 
 group("key_manager_test") {

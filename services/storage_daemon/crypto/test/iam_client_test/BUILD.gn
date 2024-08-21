@@ -52,6 +52,11 @@ ohos_unittest("IamClientTest") {
     "hilog:libhilog",
     "huks:libhukssdk",
   ]
+
+  if (enable_user_auth_framework) {
+    defines += [ "USER_AUTH_FRAMEWORK" ]
+    external_deps += [ "user_auth_framework:userauth_client" ]
+  }
 }
 
 group("iam_client_test") {
