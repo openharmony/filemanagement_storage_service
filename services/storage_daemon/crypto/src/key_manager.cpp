@@ -1331,6 +1331,14 @@ int KeyManager::LockUserScreen(uint32_t user)
 {
     LOGD("start");
     std::lock_guard<std::mutex> lock(keyMutex_);
+    bool isExist = false;
+    if (IamClient::GetInstance().HasFaceFinger(user, isExist) == 0 && !isExist) {
+        LOGI("Toke info is not exist.");
+        auto el3Key = GetUserElKey(user, EL3_KEY);
+        el3Key->ClearMemoryKeyCtx();
+        auto el4Key = GetUserElKey(user, EL4_KEY);
+        el4Key->ClearMemoryKeyCtx();
+    }
     auto iter = userPinProtect.find(user);
     if (iter == userPinProtect.end() || iter->second == false) {
         LOGI("saveLockScreenStatus is %{public}d", saveLockScreenStatus[user]);

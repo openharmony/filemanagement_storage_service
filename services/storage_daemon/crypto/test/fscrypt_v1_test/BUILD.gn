@@ -75,6 +75,11 @@ ohos_moduletest("FscryptKeyV1Test") {
     "openssl:libcrypto_shared",
     "samgr:samgr_proxy",
   ]
+
+  if (enable_user_auth_framework) {
+    defines += [ "USER_AUTH_FRAMEWORK" ]
+    external_deps += [ "user_auth_framework:userauth_client" ]
+  }
 }
 
 group("fscrypt_key_v1_test") {
