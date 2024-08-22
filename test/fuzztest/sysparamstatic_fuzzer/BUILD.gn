@@ -35,6 +35,7 @@ ohos_fuzztest("SysparamStaticFuzzTest") {
   ]
   external_deps = [
     "bounds_checking_function:libsec_shared",
+    "hilog:libhilog",
     "init:libbegetutil",
   ]
 }
