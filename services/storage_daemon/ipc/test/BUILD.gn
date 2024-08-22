@@ -86,6 +86,7 @@ ohos_unittest("storage_daemon_test") {
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "dfs_service:cloud_daemon_kit_inner",
+    "eventhandler:libeventhandler",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "huks:libhukssdk",
