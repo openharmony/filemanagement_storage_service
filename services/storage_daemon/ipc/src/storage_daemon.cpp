@@ -655,8 +655,6 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
     if (ret != E_OK) {
 #ifdef USER_CRYPTO_MIGRATE_KEY
         LOGI("Migrate usrId %{public}u, Emp_tok %{public}d Emp_sec %{public}d", userId, token.empty(), secret.empty());
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "ActiveCeSceSeceUserKey", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_ACTIVE_USER_KEY, "EL4", ret);
         std::string el2NeedRestorePath = GetNeedRestoreFilePath(userId, USER_EL2_DIR);
         if (std::filesystem::exists(el2NeedRestorePath) && (!token.empty() || !secret.empty())) {
             updateFlag = true;
@@ -666,6 +664,8 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
         if (ret != E_OK) {
             LOGE("ActiveUserKey fail, userId %{public}u, type %{public}u, tok empty %{public}d sec empty %{public}d",
                  userId, EL2_KEY, token.empty(), secret.empty());
+            StorageService::StorageRadar::GetInstance().RecordFuctionResult("PrepareUserDirsAndUpdateUserAuth",
+                BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_ACTIVE_USER_KEY, "EL2", ret);
             return E_ACTIVE_EL2_FAILED;
         }
     }
@@ -677,6 +677,8 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
     ret = KeyManager::GetInstance()->UnlockUserAppKeys(userId, true);
     if (ret != E_OK) {
         LOGE("failed to delete appkey2");
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
+            "UnlockUserAppKeys", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_ACTIVE_USER_KEY, "EL2", ret);
         return -EFAULT;
     }
     std::thread([this, userId]() { RestoreconElX(userId); }).detach();
