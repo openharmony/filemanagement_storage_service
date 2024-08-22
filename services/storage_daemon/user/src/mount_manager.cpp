@@ -623,6 +623,7 @@ void MountManager::MountPointToList(std::list<std::string> &hmdfsList, std::list
     const string &hmdfsPrefix = hmdfsMntArgs.GetMountPointPrefix();
     const string &hmfsPrefix = hmdfsMntArgs.GetSandboxPath();
     const string &sharefsPrefix = hmdfsMntArgs.GetShareSrc();
+    const string &cloudPrefix = hmdfsMntArgs.GetFullCloud();
     std::stringstream ss(line);
     std::string src;
     ss >> src;
@@ -632,6 +633,9 @@ void MountManager::MountPointToList(std::list<std::string> &hmdfsList, std::list
     ss >> type;
     if (type == MOUNT_POINT_TYPE_HMDFS) {
         if (src.length() >= hmdfsPrefix.length() && src.substr(0, hmdfsPrefix.length()) == hmdfsPrefix) {
+            hmdfsList.push_front(dst);
+        }
+        if (src.length() >= cloudPrefix.length() && src.substr(0, cloudPrefix.length()) == cloudPrefix) {
             hmdfsList.push_front(dst);
         }
         return;
