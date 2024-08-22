@@ -130,7 +130,7 @@ int FscryptSetSysparam(const char *policy)
 
     char *tmp = strdup(policy);
     if (!tmp) {
-        FSCRYPT_LOGE("No memory for policy option");
+        LOGE("No memory for policy option");
         return -ENOMEM;
     }
     int optNums = 0;
@@ -140,7 +140,7 @@ int FscryptSetSysparam(const char *policy)
         return -ENOMEM;
     }
     if (optNums != FSCRYPT_OPTIONS_MAX) {
-        FSCRYPT_LOGE("Mount fscrypt option setting error, not enabled crypto!");
+        LOGE("Mount fscrypt option setting error, not enabled crypto!");
         FreeStringVector(options, optNums);
         return -EFAULT;
     }
@@ -149,7 +149,7 @@ int FscryptSetSysparam(const char *policy)
     for (enum FscryptOptins i = FSCRYPT_VERSION_NUM; i < FSCRYPT_OPTIONS_MAX; i++) {
         char *temp = options[i];
         if (!IsSupportedPolicy(temp, i)) {
-            FSCRYPT_LOGE("Not supported policy, %s", temp);
+            LOGE("Not supported policy, %s", temp);
             FreeStringVector(options, optNums);
             return -ENOTSUP;
         }
@@ -158,7 +158,7 @@ int FscryptSetSysparam(const char *policy)
 
     int ret = SetFscryptParameter(FSCRYPT_POLICY_KEY, policy);
     if (ret < 0) {
-        FSCRYPT_LOGE("Set fscrypt system parameter failed %d", ret);
+        LOGE("Set fscrypt system parameter failed %d", ret);
         return ret;
     }
     g_fscryptEnabled = true;
@@ -179,7 +179,7 @@ static void PraseOnePloicyValue(uint8_t *value, const char *key,
             return;
         }
     }
-    FSCRYPT_LOGE("Have not found value for the key!");
+    LOGE("Have not found value for the key!");
 }
 #endif
 
@@ -187,24 +187,24 @@ int InitFscryptPolicy(void)
 {
 #ifdef USER_CRYPTO_MANAGER
     if (g_fscryptInited) {
-        FSCRYPT_LOGI("Have been init");
+        LOGI("Have been init");
         return 0;
     }
     char policy[POLICY_BUF_SIZE];
     uint32_t len = POLICY_BUF_SIZE - 1;
     int ret = GetFscryptParameter(FSCRYPT_POLICY_KEY, "", policy, &len);
     if (ret != 0) {
-        FSCRYPT_LOGI("Get fscrypt policy failed");
+        LOGI("Get fscrypt policy failed");
         return -ENOTSUP;
     }
     int count = 0;
     char **option = SplitStringExt(policy, ":", &count, FSCRYPT_OPTIONS_MAX);
     if (!option) {
-        FSCRYPT_LOGE("Fscrypt setting error");
+        LOGE("Fscrypt setting error");
         return -ENOTSUP;
     }
     if (count != FSCRYPT_OPTIONS_MAX) {
-        FSCRYPT_LOGE("Fscrypt policy count error");
+        LOGE("Fscrypt policy count error");
         FreeStringVector(option, count);
         return -ENOTSUP;
     }
@@ -218,7 +218,7 @@ int InitFscryptPolicy(void)
 
     FreeStringVector(option, count);
     g_fscryptInited = true;
-    FSCRYPT_LOGI("Fscrypt policy init success");
+    LOGI("Fscrypt policy init success");
 #endif
 
     return 0;
@@ -236,12 +236,12 @@ static int SpliceKeyPath(const char *path, size_t pathLen,
                          const char *name, size_t nameLen,
                          char **buf)
 {
-    FSCRYPT_LOGI("key path %s, name %s", path, name);
+    LOGI("key path %s, name %s", path, name);
     *buf = NULL;
     size_t bufMax = pathLen + nameLen + 1;
     char *tmpBuf = (char *)malloc(bufMax);
     if (!tmpBuf) {
-        FSCRYPT_LOGE("No memory for fscrypt v1 path buffer");
+        LOGE("No memory for fscrypt v1 path buffer");
         return -ENOMEM;
     }
     tmpBuf[0] = '\0';
@@ -249,13 +249,13 @@ static int SpliceKeyPath(const char *path, size_t pathLen,
     int ret = strncat_s(tmpBuf, bufMax, path, pathLen);
     if (ret != 0) {
         free(tmpBuf);
-        FSCRYPT_LOGE("splic previous path error");
+        LOGE("splic previous path error");
         return ret;
     }
     ret = strncat_s(tmpBuf, bufMax, name, nameLen);
     if (ret != 0) {
         free(tmpBuf);
-        FSCRYPT_LOGE("splic later path error");
+        LOGE("splic later path error");
         return ret;
     }
     *buf = tmpBuf;
@@ -266,32 +266,32 @@ static int SpliceKeyPath(const char *path, size_t pathLen,
 static int ReadKeyFile(const char *path, char *buf, size_t len)
 {
     if (!path || !buf) {
-        FSCRYPT_LOGE("path or buf is null");
+        LOGE("path or buf is null");
         return -EINVAL;
     }
     struct stat st = {0};
     if (stat(path, &st) != 0) {
-        FSCRYPT_LOGE("stat file failed");
+        LOGE("stat file failed");
         return -EFAULT;
     }
     if ((size_t)st.st_size != len) {
-        FSCRYPT_LOGE("target file size is not equal to buf len");
+        LOGE("target file size is not equal to buf len");
         return -EFAULT;
     }
     char *realPath = realpath(path, NULL);
     if (realPath == NULL) {
-        FSCRYPT_LOGE("realpath failed");
+        LOGE("realpath failed");
         return -EFAULT;
     }
 
     int fd = open(realPath, O_RDONLY);
     free(realPath);
     if (fd < 0) {
-        FSCRYPT_LOGE("key file read open failed");
+        LOGE("key file read open failed");
         return -EFAULT;
     }
     if (read(fd, buf, len) != (ssize_t)len) {
-        FSCRYPT_LOGE("bad file content");
+        LOGE("bad file content");
         (void)close(fd);
         return -EBADF;
     }
@@ -313,11 +313,11 @@ static int SetPolicyLegacy(const char *keyDescPath,
     ret = memcpy_s(arg->v1.master_key_descriptor,
         FSCRYPT_KEY_DESCRIPTOR_SIZE, keyDesc, FSCRYPT_KEY_DESCRIPTOR_SIZE);
     if (ret != 0) {
-        FSCRYPT_LOGE("memcpy_s copy failed");
+        LOGE("memcpy_s copy failed");
         return ret;
     }
     if (!KeyCtrlSetPolicy(toEncrypt, arg)) {
-        FSCRYPT_LOGE("Set Policy v1 failed");
+        LOGE("Set Policy v1 failed");
         return -EFAULT;
     }
     return 0;
@@ -337,11 +337,11 @@ static int SetPolicyV2(const char *keyIdPath,
     ret = memcpy_s(arg->v2.master_key_identifier,
         FSCRYPT_KEY_IDENTIFIER_SIZE, keyId, FSCRYPT_KEY_IDENTIFIER_SIZE);
     if (ret != 0) {
-        FSCRYPT_LOGE("memcpy_s copy failed");
+        LOGE("memcpy_s copy failed");
         return ret;
     }
     if (!KeyCtrlSetPolicy(toEncrypt, arg)) {
-        FSCRYPT_LOGE("Set Policy v2 failed");
+        LOGE("Set Policy v2 failed");
         return -EFAULT;
     }
     return 0;
@@ -351,12 +351,12 @@ static int SetPolicyV2(const char *keyIdPath,
 int LoadAndSetPolicy(const char *keyDir, const char *dir)
 {
     if (!keyDir || !dir) {
-        FSCRYPT_LOGE("set policy parameters is null");
+        LOGE("set policy parameters is null");
         return -EINVAL;
     }
     int ret = InitFscryptPolicy();
     if (ret != 0) {
-        FSCRYPT_LOGE("Get fscrypt policy error %d", ret);
+        LOGE("Get fscrypt policy error %d", ret);
         return ret;
     }
 
@@ -374,24 +374,24 @@ int LoadAndSetPolicy(const char *keyDir, const char *dir)
         ret = SpliceKeyPath(keyDir, strlen(keyDir), PATH_KEYDESC,
             strlen(PATH_KEYDESC), &pathBuf);
         if (ret != 0) {
-            FSCRYPT_LOGE("path splice error");
+            LOGE("path splice error");
             return ret;
         }
         ret = SetPolicyLegacy(pathBuf, dir, &arg);
         if (ret != 0) {
-            FSCRYPT_LOGE("SetPolicyLegacy fail, ret: %d", ret);
+            LOGE("SetPolicyLegacy fail, ret: %d", ret);
         }
 #ifdef SUPPORT_FSCRYPT_V2
     } else if (fscryptVer == FSCRYPT_V2) {
         ret = SpliceKeyPath(keyDir, strlen(keyDir), PATH_KEYID,
             strlen(PATH_KEYID), &pathBuf);
         if (ret != 0) {
-            FSCRYPT_LOGE("path splice error");
+            LOGE("path splice error");
             return ret;
         }
         ret = SetPolicyV2(pathBuf, dir, &arg);
         if (ret != 0) {
-            FSCRYPT_LOGE("SetPolicyV2 fail, ret: %d", ret);
+            LOGE("SetPolicyV2 fail, ret: %d", ret);
         }
 #endif
     }
@@ -415,17 +415,17 @@ static int ActSetFileXattrActSetFileXattr(const char *path, char *keyDesc, int s
     int ret = memcpy_s((char *)PolicySDP.masterKeyDescriptor, FS_KEY_DESC_SIZE, (char *)keyDesc,
                        FSCRYPT_KEY_DESCRIPTOR_SIZE);
     if (ret != 0) {
-        FSCRYPT_LOGE("memcpy_s copy failed");
+        LOGE("memcpy_s copy failed");
         return -errno;
     }
     int fd = open((char *)path, O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
     if (fd < 0) {
-        FSCRYPT_LOGE("install File or Directory open failed: %{public}d", errno);
+        LOGE("install File or Directory open failed: %{public}d", errno);
         return -errno;
     }
     ret = ioctl(fd, F2FS_IOC_SET_SDP_ENCRYPTION_POLICY, &PolicySDP);
     if (ret != 0) {
-        FSCRYPT_LOGE("ioctl fbex_cmd failed, ret: 0x%{public}X, errno: %{public}d", ret, errno);
+        LOGE("ioctl fbex_cmd failed, ret: 0x%{public}X, errno: %{public}d", ret, errno);
         close(fd);
         return ret;
     }
@@ -438,13 +438,13 @@ int LoadAndSetEceAndSecePolicy(const char *keyDir, const char *dir, int type)
     int el3Key = 3; // el3
     int el4Key = 4; // el4
     if (!keyDir || !dir) {
-        FSCRYPT_LOGE("set policy parameters is null");
+        LOGE("set policy parameters is null");
         return -EINVAL;
     }
     char *pathBuf = NULL;
     int ret = SpliceKeyPath(keyDir, strlen(keyDir), PATH_KEYDESC, strlen(PATH_KEYDESC), &pathBuf);
     if (ret != 0) {
-        FSCRYPT_LOGE("path splice error");
+        LOGE("path splice error");
         return ret;
     }
 
@@ -463,7 +463,7 @@ int LoadAndSetEceAndSecePolicy(const char *keyDir, const char *dir, int type)
             }
             ret = ActSetFileXattrActSetFileXattr(dir, keyDesc, type);
             if (ret != 0) {
-                FSCRYPT_LOGE("ActSetFileXattr failed");
+                LOGE("ActSetFileXattr failed");
                 return ret;
             }
         }
@@ -481,7 +481,7 @@ int LoadAndSetEceAndSecePolicy(const char *keyDir, const char *dir, int type)
 int SetGlobalEl1DirPolicy(const char *dir)
 {
     if (!g_fscryptEnabled) {
-        FSCRYPT_LOGI("Fscrypt have not enabled");
+        LOGI("Fscrypt have not enabled");
         return 0;
     }
     for (size_t i = 0; i < ARRAY_LEN(GLOBAL_FSCRYPT_DIR); i++) {
