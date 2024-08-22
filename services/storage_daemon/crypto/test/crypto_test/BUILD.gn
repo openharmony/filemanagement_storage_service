@@ -41,6 +41,7 @@ ohos_unittest("CryptoTest") {
     "c_utils:utils",
     "hilog:libhilog",
     "huks:libhukssdk",
+    "init:libbegetutil",
   ]
 }
 
