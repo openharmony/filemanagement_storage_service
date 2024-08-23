@@ -54,6 +54,7 @@ ohos_unittest("FscryptKeyV1ExtTest") {
     "c_utils:utils",
     "hilog:libhilog",
     "huks:libhukssdk",
+    "init:libbegetutil",
   ]
 }
 

@@ -19,7 +19,6 @@ config("fscrypt_utils_config") {
 
   include_dirs = [
     "../include/libfscrypt",
-    "${start_init_services_path}/log",
     "${storage_service_common_path}/include",
   ]
 
@@ -66,8 +65,14 @@ ohos_static_library("libfscryptutils") {
 
   configs = [ ":fscrypt_utils_config" ]
 
+  defines += [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "LOG_DOMAIN = 0xD004301",
+  ]
+
   external_deps = [
     "c_utils:utils",
+    "hilog:libhilog",
     "init:libbegetutil",
   ]
 
@@ -101,9 +106,15 @@ ohos_static_library("libfscryptutils_static") {
   configs = [ ":fscrypt_utils_config" ]
   public_configs = [ ":fscrypt_utils_public_config" ]
 
+  defines += [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "LOG_DOMAIN = 0xD004301",
+  ]
+
   external_deps = [
     "bounds_checking_function:libsec_static",
     "c_utils:utils",
+    "hilog:libhilog",
     "init:libbegetutil",
   ]
 

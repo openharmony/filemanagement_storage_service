@@ -45,6 +45,7 @@ ohos_unittest("KeyManagerTest") {
     "${storage_daemon_path}/crypto/src/fscrypt_key_v1.cpp",
     "${storage_daemon_path}/crypto/src/fscrypt_key_v1_ext.cpp",
     "${storage_daemon_path}/crypto/src/iam_client.cpp",
+    "${storage_daemon_path}/crypto/src/key_backup.cpp",
     "${storage_daemon_path}/crypto/src/key_manager.cpp",
     "${storage_daemon_path}/mock/base_key_mock.cpp",
     "${storage_daemon_path}/mock/fscrypt_control_mock.cpp",
@@ -68,11 +69,17 @@ ohos_unittest("KeyManagerTest") {
     "c_utils:utils",
     "eventhandler:libeventhandler",
     "hilog:libhilog",
+    "hisysevent:libhisysevent",
     "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_single",
     "openssl:libcrypto_shared",
   ]
+
+  if (enable_user_auth_framework) {
+    defines += [ "USER_AUTH_FRAMEWORK" ]
+    external_deps += [ "user_auth_framework:userauth_client" ]
+  }
 }
 
 group("key_manager_test") {

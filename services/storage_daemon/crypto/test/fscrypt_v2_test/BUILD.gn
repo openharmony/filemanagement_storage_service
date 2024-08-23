@@ -67,6 +67,7 @@ ohos_moduletest("FscryptKeyV2Test") {
     "c_utils:utils",
     "hilog:libhilog",
     "huks:libhukssdk",
+    "init:libbegetutil",
     "ipc:ipc_single",
   ]
 }
