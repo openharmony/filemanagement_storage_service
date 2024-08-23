@@ -15,8 +15,6 @@
 
 #include "netlink/netlink_listener.h"
 
-#include <cerrno>
-#include <iostream>
 #include <memory>
 #include <sys/socket.h>
 #include <unistd.h>
