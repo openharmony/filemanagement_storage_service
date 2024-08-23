@@ -114,9 +114,6 @@ int32_t StorageManager::CompleteAddUser(int32_t userId)
     LOGI("StorageManger::CompleteAddUser start, userId: %{public}d", userId);
     std::shared_ptr<MultiUserManagerService> userManager = DelayedSingleton<MultiUserManagerService>::GetInstance();
     int32_t err = userManager->CompleteAddUser(userId);
-    if (err != E_USERID_RANGE) {
-        ResetUserEventRecord(userId);
-    }
     return err;
 }
 
