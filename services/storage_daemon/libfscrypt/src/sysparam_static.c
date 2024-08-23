@@ -20,7 +20,7 @@
 int GetFscryptParameter(const char *key, const char *def, char *value, unsigned int *len)
 {
     if (!key || !value || !len) {
-        FSCRYPT_LOGE("GetFscryptParameter: there is null param");
+        LOGE("GetFscryptParameter: there is null param");
         return -EINVAL;
     }
     return SystemReadParam(key, value, len);

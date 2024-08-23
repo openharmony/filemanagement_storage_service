@@ -867,7 +867,10 @@ int32_t StorageManagerStub::HandleGetFileEncryptStatus(MessageParcel &data, Mess
         LOGE("Write reply error code failed");
         return E_WRITE_REPLY_ERR;
     }
-
+    if (!reply.WriteBool(isEncrypted)) {
+        LOGE("Write reply isEncrypted failed");
+        return E_WRITE_REPLY_ERR;
+    }
     return E_OK;
 }
 

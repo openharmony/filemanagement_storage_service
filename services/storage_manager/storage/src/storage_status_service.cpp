@@ -27,6 +27,7 @@
 #include "application_info.h"
 #include "iservice_registry.h"
 #include "system_ability_definition.h"
+#include "utils/storage_radar.h"
 #include "utils/storage_utils.h"
 #ifdef STORAGE_SERVICE_GRAPHIC
 #include "media_library_manager.h"
@@ -34,7 +35,7 @@
 #endif
 
 using namespace std;
-
+using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageManager {
 using namespace OHOS::StorageService;
@@ -129,6 +130,8 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
     int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetTotalSize(totalSize);
     if (err != E_OK) {
         LOGE("StorageStatusService::GetUserStorageStats getTotalSize failed");
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
+            "GetTotalSize", BizScene::SPACE_STATISTICS, BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS, "EL1", err);
         return err;
     }
     // appSize
@@ -137,6 +140,8 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
     err = GetAppSize(userId, appSize);
     if (err != E_OK) {
         LOGE("StorageStatusService::GetUserStorageStats getAppSize failed");
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
+            "GetAppSize", BizScene::SPACE_STATISTICS, BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS, "EL1", err);
         return err;
     }
 
@@ -147,10 +152,17 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
     err = GetMediaStorageStats(storageStats);
     if (err != E_OK) {
         LOGE("StorageStatusService::GetUserStorageStats getMedia failed");
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
+            "GetMediaStorageStats", BizScene::SPACE_STATISTICS, BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS, "EL1", err);
         return err;
     }
     // fileSize
     err = GetFileStorageStats(userId, storageStats);
+    if (err != E_OK) {
+        LOGE("StorageStatusService::GetUserStorageStats GetFileStorageStats failed");
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
+            "GetFileStorageStats", BizScene::SPACE_STATISTICS, BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS, "EL1", err);
+    }
     return err;
 }
 
@@ -171,7 +183,13 @@ int32_t StorageStatusService::GetCurrentBundleStats(BundleStats &bundleStats)
     int userId = GetCurrentUserId();
     LOGD("StorageStatusService::userId is: %{public}d", userId);
     std::string pkgName = GetCallingPkgName();
-    return GetBundleStats(pkgName, userId, bundleStats, DEFAULT_APP_INDEX);
+    int32_t ret = GetBundleStats(pkgName, userId, bundleStats, DEFAULT_APP_INDEX);
+    if (ret != E_OK) {
+        LOGE("storage status service GetBundleStats failed, please check");
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
+            "GetBundleStats", BizScene::SPACE_STATISTICS, BizStage::BIZ_STAGE_GET_BUNDLE_STATS, "EL1", ret);
+    }
+    return ret;
 }
 
 int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t userId,

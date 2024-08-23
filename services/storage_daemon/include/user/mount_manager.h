@@ -51,6 +51,7 @@ constexpr uid_t OID_DEVICE_AUTH = 3333;
 constexpr uid_t OID_HUKS = 3510;
 constexpr uid_t OID_DDMS = 3012;
 constexpr uid_t OID_HWID = 7008;
+constexpr uid_t OID_HEALTH_SPORT = 7259;
 constexpr uid_t OID_DLP_CREDENTIAL = 3553;
 constexpr uid_t OID_RSS = 1096;
 constexpr uid_t OID_HIVIEW = 1201;
@@ -93,6 +94,7 @@ public:
     void UmountFailRadar(std::vector<ProcessInfo> &processInfo);
     void MountSandboxPath(const std::vector<std::string> &srcPaths, const std::vector<std::string> &dstPaths,
                           const std::string &bundleName, const std::string &userId);
+    bool CheckMountFileByUser(int32_t userId);
 
 private:
     bool SupportHmdfs();

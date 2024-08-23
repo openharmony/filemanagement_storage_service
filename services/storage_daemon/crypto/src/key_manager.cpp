@@ -31,6 +31,7 @@
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "user/mount_manager.h"
 #ifdef EL5_FILEKEY_MANAGER
 #include "el5_filekey_manager_kit.h"
 #endif
@@ -1330,6 +1331,14 @@ int KeyManager::LockUserScreen(uint32_t user)
 {
     LOGD("start");
     std::lock_guard<std::mutex> lock(keyMutex_);
+    bool isExist = false;
+    if (IamClient::GetInstance().HasFaceFinger(user, isExist) == 0 && !isExist) {
+        LOGI("Toke info is not exist.");
+        auto el3Key = GetUserElKey(user, EL3_KEY);
+        el3Key->ClearMemoryKeyCtx();
+        auto el4Key = GetUserElKey(user, EL4_KEY);
+        el4Key->ClearMemoryKeyCtx();
+    }
     auto iter = userPinProtect.find(user);
     if (iter == userPinProtect.end() || iter->second == false) {
         LOGI("saveLockScreenStatus is %{public}d", saveLockScreenStatus[user]);
@@ -1540,8 +1549,12 @@ int KeyManager::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
         LOGI("This is encrypted status");
         return E_OK;
     }
-    isEncrypted = false;
     free(path);
+    if (!MountManager::GetInstance()->CheckMountFileByUser(userId)) {
+        LOGI("The virturalDir is not exists.");
+        return E_OK;
+    }
+    isEncrypted = false;
     LOGI("This is unencrypted status");
     return E_OK;
 }

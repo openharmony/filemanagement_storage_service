@@ -102,7 +102,7 @@ int32_t KeyBackup::RemoveNode(const std::string &pathName)
     return rmdir(pathName.c_str());
 }
 
-int32_t KeyBackup::TryRestoreKey(std::shared_ptr<BaseKey> &baseKey, const UserAuth &auth)
+int32_t KeyBackup::TryRestoreKey(const std::shared_ptr<BaseKey> &baseKey, const UserAuth &auth)
 {
     if (baseKey == nullptr) {
         LOGE("basekey is nullptr");
@@ -113,15 +113,45 @@ int32_t KeyBackup::TryRestoreKey(std::shared_ptr<BaseKey> &baseKey, const UserAu
     GetBackupDir(keyDir, backupDir);
     if (baseKey->DoRestoreKeyEx(auth, keyDir + PATH_LATEST)) {
         CheckAndFixFiles(keyDir, backupDir);
+        LOGI("Restore by main key success !");
         return 0;
     }
-    LOGI("origKey failed, try backupKey");
+    LOGE("origKey failed, try backupKey");
     if (baseKey->DoRestoreKeyEx(auth, backupDir + PATH_LATEST)) {
         CheckAndFixFiles(backupDir, keyDir);
+        LOGI("Restore by back key success !");
         return 0;
     }
 
-    LOGI("origKey failed, backupKey failed, so mix key");
+    LOGE("origKey failed, backupKey failed, so mix key");
+    return -1;
+}
+
+int32_t KeyBackup::TryRestoreUeceKey(const std::shared_ptr<BaseKey> &baseKey,
+                                     const UserAuth &auth,
+                                     KeyBlob &planKey,
+                                     KeyBlob &decryptedKey)
+{
+    if (baseKey == nullptr) {
+        LOGE("basekey is nullptr");
+        return -1;
+    }
+    std::string keyDir = baseKey->GetDir();
+    std::string backupDir;
+    GetBackupDir(keyDir, backupDir);
+    if (baseKey->DecryptKeyBlob(auth, keyDir + PATH_LATEST, planKey, decryptedKey)) {
+        CheckAndFixFiles(keyDir, backupDir);
+        LOGI("Restore uece by main key success !");
+        return 0;
+    }
+    LOGE("origKey failed, try backupKey");
+    if (baseKey->DecryptKeyBlob(auth, backupDir + PATH_LATEST, planKey, decryptedKey)) {
+        CheckAndFixFiles(backupDir, keyDir);
+        LOGI("Restore uece by back key success !");
+        return 0;
+    }
+
+    LOGE("origKey failed, backupKey failed, so mix key");
     return -1;
 }
 
