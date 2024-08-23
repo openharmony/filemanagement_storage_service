@@ -1341,8 +1341,12 @@ int KeyManager::LockUserScreen(uint32_t user)
     }
     auto iter = userPinProtect.find(user);
     if (iter == userPinProtect.end() || iter->second == false) {
-        LOGI("saveLockScreenStatus is %{public}d", saveLockScreenStatus[user]);
-        return 0;
+        if (!IamClient::GetInstance().HasPinProtect(user)) {
+            LOGI("Has no pin protect, saveLockScreenStatus is %{public}d", saveLockScreenStatus[user]);
+            return 0;
+        }
+        userPinProtect.erase(user);
+        userPinProtect.insert(std::make_pair(user, true));
     }
     iter = saveLockScreenStatus.find(user);
     if (iter == saveLockScreenStatus.end()) {
