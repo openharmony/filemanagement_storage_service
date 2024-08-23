@@ -83,7 +83,7 @@ bool StorageRadar::RecordFuctionResult(std::string func,
         res = HiSysEventWrite(
             STORAGESERVICE_DOAMIN,
             FILE_STORAGE_MANAGER_FAULT_BEHAVIOR,
-            HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
+            HiviewDFX::HiSysEvent::EventType::FAULT,
             "ORG_PKG", ORGPKGNAME,
             "USER_ID", USERID,
             "FUNC", func,
