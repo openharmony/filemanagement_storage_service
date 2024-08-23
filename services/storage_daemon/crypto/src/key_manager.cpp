@@ -1331,13 +1331,9 @@ int KeyManager::LockUserScreen(uint32_t user)
 {
     LOGD("start");
     std::lock_guard<std::mutex> lock(keyMutex_);
-    bool isExist = false;
-    if (IamClient::GetInstance().HasFaceFinger(user, isExist) == 0 && !isExist) {
-        LOGI("Toke info is not exist.");
-        auto el3Key = GetUserElKey(user, EL3_KEY);
-        el3Key->ClearMemoryKeyCtx();
-        auto el4Key = GetUserElKey(user, EL4_KEY);
-        el4Key->ClearMemoryKeyCtx();
+    if (!CheckTokenInfo(user)) {
+        LOGI("CheckTokenInfo failed.");
+        return -ENOENT;
     }
     auto iter = userPinProtect.find(user);
     if (iter == userPinProtect.end() || iter->second == false) {
@@ -1568,6 +1564,27 @@ bool KeyManager::IsUserCeDecrypt(uint32_t userId)
         return false;
     }
     LOGI("User %{public}d de decrypted.", userId);
+    return true;
+}
+
+bool KeyManager::CheckTokenInfo(uint32_t user)
+{
+    bool isExist = false;
+    if (IamClient::GetInstance().HasFaceFinger(user, isExist) == 0 && !isExist) {
+        LOGI("Toke info is not exist.");
+        auto el3Key = GetUserElKey(user, EL3_KEY);
+        if (el3Key == nullptr) {
+            LOGE("Have not found user %{public}u el3", user);
+            return false;
+        }
+        el3Key->ClearMemoryKeyCtx();
+        auto el4Key = GetUserElKey(user, EL4_KEY);
+        if (el4Key == nullptr) {
+            LOGE("Have not found user %{public}u el4", user);
+            return false;
+        }
+        el4Key->ClearMemoryKeyCtx();
+    }
     return true;
 }
 
