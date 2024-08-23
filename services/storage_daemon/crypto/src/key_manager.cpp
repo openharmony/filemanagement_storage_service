@@ -1487,7 +1487,7 @@ int KeyManager::UpdateKeyContext(uint32_t userId)
         LOGE("Basekey update EL4 newest context failed");
         return ret;
     }
-    if (saveESecretStatus[userId]) {
+    if (IsUeceSupport() && saveESecretStatus[userId]) {
         ret = UpdateCeEceSeceKeyContext(userId, EL5_KEY);
     }
     if (ret != 0) {
