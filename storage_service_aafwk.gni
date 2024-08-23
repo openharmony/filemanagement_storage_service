@@ -37,6 +37,12 @@ declare_args() {
   } else {
     enable_user_auth_framework = false
   }
+  if (defined(global_parts_info) &&
+      defined(global_parts_info.theme_screenlock_mgr)) {
+    enable_screenlock_manager = true
+  } else {
+    enable_screenlock_manager = false
+  }
 }
 storage_manager_path =
     "//foundation/filemanagement/storage_service/services/storage_manager"
