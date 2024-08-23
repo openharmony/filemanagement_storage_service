@@ -133,6 +133,24 @@ int IamClient::HasFaceFinger(uint32_t userId, bool &isExist)
     return 0;
 }
 
+bool IamClient::HasPinProtect(uint32_t userId)
+{
+    UserIam::UserAuth::SecUserInfo info;
+    if (!GetSecUserInfo(userId, info)) {
+        LOGE("Get SecUserInfo failed!");
+        return false;
+    }
+    std::vector<UserIam::UserAuth::EnrolledInfo> enrollInfo = info.enrolledInfo;
+    for (auto &item : enrollInfo) {
+        if (item.authType == UserIam::UserAuth::PIN) {
+            LOGI("The device have pin protect for userId = %{public}d.", userId);
+            return true;
+        }
+    }
+    LOGI("The device has no pin protect for userId = %{public}d.", userId);
+    return false;
+}
+
 int32_t IamClient::NotifyGetSecUserInfo()
 {
     std::lock_guard<std::mutex> lock(iamMutex_);
