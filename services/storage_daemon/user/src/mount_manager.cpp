@@ -141,6 +141,7 @@ MountManager::MountManager()
                   {"/data/service/el2/%d/deviceauth", MODE_0711, OID_DEVICE_AUTH, OID_DEVICE_AUTH},
                   {"/data/service/el3/%d/device_standby", MODE_0711, OID_RSS, OID_RSS},
                   {"/data/service/el2/%d/hwid_service", MODE_0711, OID_HWID, OID_HWID},
+                  {"/data/service/el2/%d/healthsport", MODE_0711, OID_HEALTH_SPORT, OID_HEALTH_SPORT},
                   {"/data/service/el2/%d/huks_service", MODE_0711, OID_HUKS, OID_HUKS},
                   {"/data/service/el2/%d/parentcontrol", MODE_0711, OID_PARENT_CONTROL, OID_PARENT_CONTROL},
                   {"/data/service/el4/%d/huks_service", MODE_0711, OID_HUKS, OID_HUKS},
