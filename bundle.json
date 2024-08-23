@@ -58,6 +58,7 @@
         "relational_store",
         "safwk",
         "samgr",
+        "screenlock_mgr",
         "selinux_adapter",
         "os_account",
         "openssl",
