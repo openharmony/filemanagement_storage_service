@@ -33,7 +33,7 @@ int GetFscryptParameter(const char *key, const char *def, char *value, unsigned 
 int SetFscryptParameter(const char *policy, const char *value)
 {
     if (!policy || !value) {
-        FSCRYPT_LOGE("SetFscryptParameter: there is null param");
+        LOGE("SetFscryptParameter: there is null param");
         return -EINVAL;
     }
     return SetParameter(policy, value);
