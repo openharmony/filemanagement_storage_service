@@ -553,6 +553,10 @@ int32_t StorageDaemonCommunication::CreateRecoverKey(uint32_t userId,
         LOGE("Connect failed");
         return err;
     }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
     return storageDaemon_->CreateRecoverKey(userId, userType, token, secret);
 }
 
@@ -563,6 +567,10 @@ int32_t StorageDaemonCommunication::SetRecoverKey(const std::vector<uint8_t> &ke
     if (err != E_OK) {
         LOGE("Connect failed");
         return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->SetRecoverKey(key);
 }
