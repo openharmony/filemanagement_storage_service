@@ -119,8 +119,6 @@ private:
                                        const std::vector<uint8_t> &token,
                                        const std::vector<uint8_t> &secret);
     int32_t RestoreconElX(uint32_t userId);
-    void AncoInitCryptKey();
-    void AncoActiveCryptKey(uint32_t userId);
 };
 } // StorageDaemon
 } // OHOS
