@@ -201,6 +201,8 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
             return HandlePrepareStartUser(data, reply);
         case static_cast<uint32_t>(StorageManagerInterfaceCode::STOP_USER):
             return HandleStopUser(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::COMPLETE_ADD_USER):
+            return HandleCompleteAddUser(data, reply);
         case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_TOTAL):
             return HandleGetTotal(data, reply);
         case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_FREE):
@@ -352,6 +354,21 @@ int32_t StorageManagerStub::HandleStopUser(MessageParcel &data, MessageParcel &r
     int err = StopUser(userId);
     if (!reply.WriteUint32(err)) {
         LOGE("StorageManagerStub::HandleStopUser call StopUser failed");
+        return E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleCompleteAddUser(MessageParcel &data, MessageParcel &reply)
+{
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    int32_t userId = data.ReadInt32();
+    LOGI("StorageManagerStub::HandleCompleteAddUser, userId:%{public}d", userId);
+    int err = CompleteAddUser(userId);
+    if (!reply.WriteUint32(err)) {
+        LOGE("StorageManagerStub::HandleCompleteAddUser call CompleteAddUser failed");
         return E_WRITE_REPLY_ERR;
     }
     return E_OK;

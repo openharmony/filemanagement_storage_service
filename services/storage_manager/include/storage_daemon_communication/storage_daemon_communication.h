@@ -33,6 +33,7 @@ public:
     int32_t RemoveUser(int32_t userId, uint32_t flags);
     int32_t PrepareStartUser(int32_t userId);
     int32_t StopUser(int32_t userId);
+    int32_t CompleteAddUser(int32_t userId);
 
     int32_t Mount(std::string volumeId, int32_t flag);
     int32_t Unmount(std::string volumeId);
