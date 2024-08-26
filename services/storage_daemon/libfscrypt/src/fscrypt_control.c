@@ -298,7 +298,7 @@ static int ReadKeyFile(const char *path, char *buf, size_t len)
     }
     if (read(fd, buf, len) != (ssize_t)len) {
         LOGE("bad file content");
-        (void)close(fd);
+        (void)fclose(f);
         return -EBADF;
     }
     (void)fclose(f);
