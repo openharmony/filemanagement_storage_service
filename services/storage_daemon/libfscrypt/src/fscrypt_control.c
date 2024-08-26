@@ -288,7 +288,7 @@ static int ReadKeyFile(const char *path, char *buf, size_t len)
     FILE *f = fopen(realPath, "r");
     free(realPath);
     if (f == NULL) {
-        FSCRYPT_LOGE("key file read open failed");
+        LOGE("key file read open failed");
         return -EFAULT;
     }
     int fd = fileno(f);
