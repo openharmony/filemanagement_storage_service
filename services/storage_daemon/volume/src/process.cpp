@@ -56,9 +56,6 @@ std::string Process::Readlink(std::string path)
         buf.assign(std::string(size, '\0'));
         len = readlink(path.c_str(), buf.data(), size);
         if (len == -1) {
-            if (errno != ENOENT) {
-                LOGE("readlink %{public}s failed, errno: %{public}d", path.c_str(), errno);
-            }
             return "";
         }
     } while (size <= len);
