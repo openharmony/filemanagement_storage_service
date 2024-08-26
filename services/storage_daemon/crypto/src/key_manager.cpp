@@ -1000,6 +1000,7 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
     }
 
     SaveUserElKey(user, type, elKey);
+    userPinProtect.erase(user);
     if (secret.empty()) {
         userPinProtect.insert(std::make_pair(user, false));
     } else {
@@ -1331,10 +1332,11 @@ int KeyManager::LockUserScreen(uint32_t user)
 {
     LOGD("start");
     std::lock_guard<std::mutex> lock(keyMutex_);
-    if (!CheckTokenInfo(user)) {
-        LOGI("CheckTokenInfo failed.");
-        return -ENOENT;
+    if (!IsUserCeDecrypt(user)) {
+        LOGE("user ce does not decrypt, skip");
+        return 0;
     }
+    CheckAndClearTokenInfo(user);
     auto iter = userPinProtect.find(user);
     if (iter == userPinProtect.end() || iter->second == false) {
         if (!IamClient::GetInstance().HasPinProtect(user)) {
@@ -1347,10 +1349,6 @@ int KeyManager::LockUserScreen(uint32_t user)
     iter = saveLockScreenStatus.find(user);
     if (iter == saveLockScreenStatus.end()) {
         saveLockScreenStatus.insert(std::make_pair(user, false));
-    }
-    if (!IsUserCeDecrypt(user)) {
-        LOGE("user ce does not decrypt, skip");
-        return 0;
     }
     if (!KeyCtrlHasFscryptSyspara()) {
         saveLockScreenStatus[user] = false;
@@ -1571,25 +1569,18 @@ bool KeyManager::IsUserCeDecrypt(uint32_t userId)
     return true;
 }
 
-bool KeyManager::CheckTokenInfo(uint32_t user)
+void KeyManager::CheckAndClearTokenInfo(uint32_t user)
 {
     bool isExist = false;
     if (IamClient::GetInstance().HasFaceFinger(user, isExist) == 0 && !isExist) {
         LOGI("Toke info is not exist.");
-        auto el3Key = GetUserElKey(user, EL3_KEY);
-        if (el3Key == nullptr) {
-            LOGE("Have not found user %{public}u el3", user);
-            return false;
+        if ((userEl3Key_.find(user) != userEl3Key_.end()) && (userEl3Key_[user] != nullptr)) {
+            userEl3Key_[user]->ClearMemoryKeyCtx();
         }
-        el3Key->ClearMemoryKeyCtx();
-        auto el4Key = GetUserElKey(user, EL4_KEY);
-        if (el4Key == nullptr) {
-            LOGE("Have not found user %{public}u el4", user);
-            return false;
+        if ((userEl4Key_.find(user) != userEl4Key_.end()) && (userEl4Key_[user] != nullptr)) {
+            userEl4Key_[user]->ClearMemoryKeyCtx();
         }
-        el4Key->ClearMemoryKeyCtx();
     }
-    return true;
 }
 
 #ifdef USER_CRYPTO_MIGRATE_KEY

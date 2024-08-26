@@ -131,7 +131,7 @@ private:
     bool IsUserCeDecrypt(uint32_t userId);
     bool UnlockEceSece(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret, int &ret);
     bool UnlockUece(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret, int &ret);
-    bool CheckTokenInfo(uint32_t user);
+    void CheckAndClearTokenInfo(uint32_t user);
 
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl1Key_;
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl2Key_;
