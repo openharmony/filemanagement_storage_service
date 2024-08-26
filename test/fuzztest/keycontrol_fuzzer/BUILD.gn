@@ -29,7 +29,11 @@ ohos_fuzztest("KeyControlFuzzTest") {
   ]
   sources = [ "${storage_service_path}/test/fuzztest/keycontrol_fuzzer/keycontrol_fuzzer.cpp" ]
   deps = [ "${storage_daemon_path}/libfscrypt:libfscryptutils" ]
-  external_deps = [ "bounds_checking_function:libsec_shared" ]
+  external_deps = [
+    "bounds_checking_function:libsec_shared",
+    "hilog:libhilog",
+    "init:libbegetutil",
+  ]
 }
 
 ###############################################################################

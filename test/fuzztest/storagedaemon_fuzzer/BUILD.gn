@@ -35,7 +35,6 @@ ohos_fuzztest("StorageDaemonFuzzTest") {
     "-fno-omit-frame-pointer",
   ]
   sources = [
-    "${storage_daemon_path}/crypto/src/anco_key_manager.cpp",
     "${storage_daemon_path}/crypto/src/key_manager.cpp",
     "${storage_daemon_path}/ipc/src/storage_daemon.cpp",
     "${storage_daemon_path}/ipc/src/storage_daemon_stub.cpp",
@@ -70,6 +69,7 @@ ohos_fuzztest("StorageDaemonFuzzTest") {
     "app_file_service:sandbox_helper_native",
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
+    "eventhandler:libeventhandler",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "huks:libhukssdk",

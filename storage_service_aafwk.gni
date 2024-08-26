@@ -37,6 +37,12 @@ declare_args() {
   } else {
     enable_user_auth_framework = false
   }
+  if (defined(global_parts_info) &&
+      defined(global_parts_info.theme_screenlock_mgr)) {
+    enable_screenlock_manager = true
+  } else {
+    enable_screenlock_manager = false
+  }
 }
 storage_manager_path =
     "//foundation/filemanagement/storage_service/services/storage_manager"
@@ -49,7 +55,6 @@ storage_service_common_path =
 storage_service_path = "//foundation/filemanagement/storage_service"
 bundlemanager_framework_path = "//foundation/bundlemanager/bundle_framework"
 multimedia_library_path = "//foundation/multimedia/media_library"
-start_init_services_path = "//base/startup/init/services"
 start_init_interfaces_path = "//base/startup/init/interfaces"
 security_huks_frameworks_path = "//base/security/huks/frameworks/huks_standard"
 c_utils_base_path = "//commonlibrary/c_utils/base"

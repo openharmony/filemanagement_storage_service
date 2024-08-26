@@ -142,9 +142,11 @@ MountManager::MountManager()
                   {"/data/service/el2/%d/deviceauth", MODE_0711, OID_DEVICE_AUTH, OID_DEVICE_AUTH},
                   {"/data/service/el3/%d/device_standby", MODE_0711, OID_RSS, OID_RSS},
                   {"/data/service/el2/%d/hwid_service", MODE_0711, OID_HWID, OID_HWID},
+                  {"/data/service/el2/%d/healthsport", MODE_0711, OID_HEALTH_SPORT, OID_HEALTH_SPORT},
                   {"/data/service/el2/%d/huks_service", MODE_0711, OID_HUKS, OID_HUKS},
                   {"/data/service/el2/%d/parentcontrol", MODE_0711, OID_PARENT_CONTROL, OID_PARENT_CONTROL},
                   {"/data/service/el4/%d/huks_service", MODE_0711, OID_HUKS, OID_HUKS},
+                  {"/data/service/el2/%d/account", MODE_0711, OID_ACCOUNT, OID_ACCOUNT},
                   {"/data/service/el2/%d/dlp_credential_service", MODE_0711, OID_DLP_CREDENTIAL, OID_DLP_CREDENTIAL},
                   {"/data/service/el2/%d/xpower", MODE_0711, OID_HIVIEW, OID_HIVIEW}},
       fileManagerDir_{{"/data/service/el2/%d/hmdfs/account/files/Docs", MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
@@ -535,7 +537,7 @@ bool MountManager::CheckPathValid(const std::string &bundleNameStr, uint32_t use
         LOGE("Invalid directory path: %{public}s", completePath.c_str());
         return false;
     }
-    
+
     if (!std::filesystem::is_empty(completePath)) {
         LOGE("The directory has been mounted, path is %{public}s", completePath.c_str());
         return false;
@@ -627,6 +629,7 @@ void MountManager::MountPointToList(std::list<std::string> &hmdfsList, std::list
     const string &hmdfsPrefix = hmdfsMntArgs.GetMountPointPrefix();
     const string &hmfsPrefix = hmdfsMntArgs.GetSandboxPath();
     const string &sharefsPrefix = hmdfsMntArgs.GetShareSrc();
+    const string &cloudPrefix = hmdfsMntArgs.GetFullCloud();
     std::stringstream ss(line);
     std::string src;
     ss >> src;
@@ -636,6 +639,9 @@ void MountManager::MountPointToList(std::list<std::string> &hmdfsList, std::list
     ss >> type;
     if (type == MOUNT_POINT_TYPE_HMDFS) {
         if (src.length() >= hmdfsPrefix.length() && src.substr(0, hmdfsPrefix.length()) == hmdfsPrefix) {
+            hmdfsList.push_front(dst);
+        }
+        if (src.length() >= cloudPrefix.length() && src.substr(0, cloudPrefix.length()) == cloudPrefix) {
             hmdfsList.push_front(dst);
         }
         return;
@@ -1156,6 +1162,19 @@ int32_t MountManager::SetFafQuotaProId(int32_t userId)
     }
     QuotaManager::GetInstance()->SetQuotaPrjId(StringPrintf(SHARE_PATH.c_str(), userId), prjId, true);
     return E_OK;
+}
+
+bool MountManager::CheckMountFileByUser(int32_t userId)
+{
+    for (const DirInfo &dir : virtualDir_) {
+        std::string path = StringPrintf(dir.path.c_str(), userId);
+        if (access(path.c_str(), 0) != 0) {
+            LOGI("VirtualDir : %{public}s is not exists", path.c_str());
+            return false;
+        }
+    }
+    LOGI("MountFile is exists");
+    return true;
 }
 } // namespace StorageDaemon
 } // namespace OHOS

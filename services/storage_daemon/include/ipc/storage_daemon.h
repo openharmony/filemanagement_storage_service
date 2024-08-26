@@ -48,6 +48,7 @@ public:
     virtual int32_t StopUser(int32_t userId) override;
     virtual int32_t PrepareUserDirs(int32_t userId, uint32_t flags) override;
     virtual int32_t DestroyUserDirs(int32_t userId, uint32_t flags) override;
+    virtual int32_t CompleteAddUser(int32_t userId) override;
 
     // fscrypt api, add fs mutex in KeyManager
     virtual int32_t InitGlobalKey(void) override;
@@ -126,8 +127,6 @@ private:
                                        const std::vector<uint8_t> &secret);
     int32_t RestoreconElX(uint32_t userId);
     void ActiveAppCloneUserKey();
-    void AncoInitCryptKey();
-    void AncoActiveCryptKey(uint32_t userId);
     void SetDeleteFlag4KeyFiles();
 };
 } // StorageDaemon

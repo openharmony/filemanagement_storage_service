@@ -55,7 +55,7 @@ void StorageManager::OnStart()
 
 void StorageManager::OnStop()
 {
-    LOGI("StorageManager::Onstop Done");
+    LOGI("StorageManager::OnStop Done");
 }
 
 void StorageManager::OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId)
@@ -106,6 +106,14 @@ int32_t StorageManager::StopUser(int32_t userId)
     if (err != E_USERID_RANGE) {
         ResetUserEventRecord(userId);
     }
+    return err;
+}
+
+int32_t StorageManager::CompleteAddUser(int32_t userId)
+{
+    LOGI("StorageManger::CompleteAddUser start, userId: %{public}d", userId);
+    std::shared_ptr<MultiUserManagerService> userManager = DelayedSingleton<MultiUserManagerService>::GetInstance();
+    int32_t err = userManager->CompleteAddUser(userId);
     return err;
 }
 

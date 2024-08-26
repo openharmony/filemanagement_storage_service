@@ -86,7 +86,7 @@ static bool FsIoctl(const char *mnt, unsigned long cmd, void *arg)
 {
     char *realPath = realpath(mnt, NULL);
     if (realPath == NULL) {
-        FSCRYPT_LOGE("realpath failed");
+        LOGE("realpath failed");
         return false;
     }
 
@@ -94,54 +94,54 @@ static bool FsIoctl(const char *mnt, unsigned long cmd, void *arg)
     //opendir直接跟随符号链接 无法设置O_NOFOLLOW，不使用。使用fdopendir只能关闭dir，无意义不使用
     free(realPath);
     if (fd < 0) {
-        FSCRYPT_LOGE("open %s failed, errno:%d", mnt, errno);
+        LOGE("open %s failed, errno:%d", mnt, errno);
         return false;
     }
     if (ioctl(fd, cmd, arg) != 0) {
-        FSCRYPT_LOGE("ioctl to %s failed, errno:%d", mnt, errno);
+        LOGE("ioctl to %s failed, errno:%d", mnt, errno);
         (void)close(fd);
         return false;
     }
     (void)close(fd);
-    FSCRYPT_LOGI("success");
+    LOGI("success");
     return true;
 }
 
 #ifdef SUPPORT_FSCRYPT_V2
 bool KeyCtrlInstallKey(const char *mnt, struct fscrypt_add_key_arg *arg)
 {
-    FSCRYPT_LOGI("enter");
+    LOGI("enter");
     return FsIoctl(mnt, FS_IOC_ADD_ENCRYPTION_KEY, (void *)(arg));
 }
 
 bool KeyCtrlRemoveKey(const char *mnt, struct fscrypt_remove_key_arg *arg)
 {
-    FSCRYPT_LOGI("enter");
+    LOGI("enter");
     return FsIoctl(mnt, FS_IOC_REMOVE_ENCRYPTION_KEY, (void *)arg);
 }
 
 bool KeyCtrlGetKeyStatus(const char *mnt, struct fscrypt_get_key_status_arg *arg)
 {
-    FSCRYPT_LOGI("enter");
+    LOGI("enter");
     return FsIoctl(mnt, FS_IOC_GET_ENCRYPTION_KEY_STATUS, (void *)(arg));
 }
 
 bool KeyCtrlGetPolicyEx(const char *path, struct fscrypt_get_policy_ex_arg *policy)
 {
-    FSCRYPT_LOGI("enter");
+    LOGI("enter");
     return FsIoctl(path, FS_IOC_GET_ENCRYPTION_POLICY_EX, (void *)(policy));
 }
 #endif
 
 bool KeyCtrlSetPolicy(const char *path, union FscryptPolicy *policy)
 {
-    FSCRYPT_LOGI("enter");
+    LOGI("enter");
     return FsIoctl(path, FS_IOC_SET_ENCRYPTION_POLICY, (void *)(policy));
 }
 
 bool KeyCtrlGetPolicy(const char *path, struct fscrypt_policy *policy)
 {
-    FSCRYPT_LOGI("enter");
+    LOGI("enter");
     return FsIoctl(path, FS_IOC_GET_ENCRYPTION_POLICY, (void *)(policy));
 }
 
@@ -149,7 +149,7 @@ static uint8_t CheckKernelFscrypt(const char *mnt)
 {
     char *realPath = realpath(mnt, NULL);
     if (realPath == NULL) {
-        FSCRYPT_LOGE("realpath failed");
+        LOGE("realpath failed");
         return FSCRYPT_INVALID;
     }
 
@@ -161,7 +161,7 @@ static uint8_t CheckKernelFscrypt(const char *mnt)
     }
     int fd = dirfd(dir);
     if (fd < 0) {
-        FSCRYPT_LOGE("open policy file failed, errno: %d", errno);
+        LOGE("open policy file failed, errno: %d", errno);
         return FSCRYPT_INVALID;
     }
 
@@ -170,16 +170,16 @@ static uint8_t CheckKernelFscrypt(const char *mnt)
     (void)ioctl(fd, FS_IOC_ADD_ENCRYPTION_KEY, NULL);
     (void)closedir(dir);
     if (errno == EOPNOTSUPP) {
-        FSCRYPT_LOGE("Kernel doesn't support fscrypt v1 or v2.");
+        LOGE("Kernel doesn't support fscrypt v1 or v2.");
         return FSCRYPT_INVALID;
     } else if (errno == ENOTTY) {
-        FSCRYPT_LOGE("Kernel doesn't support fscrypt v2, pls use v1.");
+        LOGE("Kernel doesn't support fscrypt v2, pls use v1.");
         return FSCRYPT_V1;
     } else if (errno == EFAULT) {
-        FSCRYPT_LOGI("Kernel is support fscrypt v2.");
+        LOGI("Kernel is support fscrypt v2.");
         return FSCRYPT_V2;
     }
-    FSCRYPT_LOGE("Unexpected errno: %d", errno);
+    LOGE("Unexpected errno: %d", errno);
     return FSCRYPT_INVALID;
 #else
     (void)closedir(dir);
@@ -199,7 +199,7 @@ bool KeyCtrlHasFscryptSyspara(void)
     uint32_t len = POLICY_BUF_SIZE;
     int ret = GetFscryptParameter(FSCRYPT_POLICY_KEY, "", tmp, &len);
     if (ret != 0) {
-        FSCRYPT_LOGE("fscrypt config parameter not set, not enable fscrypt");
+        LOGE("fscrypt config parameter not set, not enable fscrypt");
         return false;
     }
 
@@ -209,43 +209,43 @@ bool KeyCtrlHasFscryptSyspara(void)
 uint8_t KeyCtrlLoadVersion(const char *keyPath)
 {
     if (!keyPath) {
-        FSCRYPT_LOGE("key path is null");
+        LOGE("key path is null");
         return FSCRYPT_INVALID;
     }
     char pathLen = strlen(keyPath) + strlen(PATH_FSCRYPT_VER) + 1;
     char *path = (char *)malloc(pathLen);
     if (!path) {
-        FSCRYPT_LOGE("no memory for full key path");
+        LOGE("no memory for full key path");
         return FSCRYPT_INVALID;
     }
     path[0] = '\0';
     if (strncat_s(path, pathLen - strlen(PATH_FSCRYPT_VER), keyPath, strlen(keyPath)) != EOK) {
         free(path);
-        FSCRYPT_LOGE("KEY path strcat error");
+        LOGE("KEY path strcat error");
         return FSCRYPT_INVALID;
     }
     if (strncat_s(path, pathLen, PATH_FSCRYPT_VER, strlen(PATH_FSCRYPT_VER)) != EOK) {
         free(path);
-        FSCRYPT_LOGE("version path strcat error");
+        LOGE("version path strcat error");
         return FSCRYPT_INVALID;
     }
 
     char *buf = ReadFileToBuf(path);
     free(path);
     if (!buf) {
-        FSCRYPT_LOGE("read fscrypt version file failed");
+        LOGE("read fscrypt version file failed");
         return FSCRYPT_INVALID;
     }
     if (isdigit(*buf)) {
         int ver = atoi(buf);
         if (ver == FSCRYPT_V1 || ver == FSCRYPT_V2) {
             free(buf);
-            FSCRYPT_LOGI("version %d loaded", ver);
+            LOGI("version %d loaded", ver);
             return ver;
         }
     }
     free(buf);
 
-    FSCRYPT_LOGE("bad version content");
+    LOGE("bad version content");
     return FSCRYPT_INVALID;
 }

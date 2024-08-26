@@ -22,6 +22,7 @@
 #include <dirent.h>
 
 #include "file_ex.h"
+#include "key_backup.h"
 #include "libfscrypt/key_control.h"
 #include "storage_service_log.h"
 
@@ -249,7 +250,7 @@ bool FscryptKeyV1::DecryptClassE(const UserAuth &auth, bool &isSupport, uint32_t
     }
     LOGI("Decrypt keyPath is %{public}s", (dir_ + PATH_LATEST).c_str());
     KeyBlob decryptedKey(AES_256_HASH_RANDOM_SIZE);
-    if (!DecryptKeyBlob(auth, dir_ + PATH_LATEST, eSecretFBE, decryptedKey)) {
+    if (KeyBackup::GetInstance().TryRestoreUeceKey(shared_from_this(), auth, eSecretFBE, decryptedKey) != 0) {
         LOGE("DecryptKeyBlob Decrypt failed");
         eSecretFBE.Clear();
         return false;

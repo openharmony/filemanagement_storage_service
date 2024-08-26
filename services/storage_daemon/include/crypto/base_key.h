@@ -31,7 +31,7 @@ const uint32_t USER_ADD_AUTH = 0x0;
 const uint32_t USER_CHANGE_AUTH = 0x1;
 const std::string SUFFIX_NEED_UPDATE = "/need_update";
 const std::vector<uint8_t> NULL_SECRET = { '!' };
-class BaseKey {
+class BaseKey : public std::enable_shared_from_this<BaseKey> {
 public:
     BaseKey() = delete;
     BaseKey(const std::string &dir, uint8_t keyLen = CRYPTO_AES_256_XTS_KEY_SIZE);
@@ -58,6 +58,7 @@ public:
     virtual bool EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status) = 0;
     virtual bool ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId) = 0;
     virtual bool LockUece(bool &isFbeSupport) = 0;
+    bool DoRestoreKeyEx(const UserAuth &auth, const std::string &keypath);
     bool EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey, KeyBlob &encryptedKey);
     bool DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey, KeyBlob &decryptedKey);
     bool RenameKeyPath(const std::string &keyPath);
@@ -95,7 +96,6 @@ private:
     bool DoRestoreKeyDe(const UserAuth &auth, const std::string &path);
     bool DoRestoreKeyOld(const UserAuth &auth, const std::string &keypath);
     bool DoUpdateRestore(const UserAuth &auth, const std::string &keyPath);
-    bool DoRestoreKeyEx(const UserAuth &auth, const std::string &keypath);
     static bool GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size);
     static bool GenerateKeyBlob(KeyBlob &blob, const uint32_t size);
     static bool LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size);

@@ -263,42 +263,6 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_PrepareDir_003, TestSize.Level1)
 }
 
 /**
- * @tc.name: StorageRadarTest_RecordActiveUserKeyResult_000
- * @tc.desc: Verify the StorageRadar function.
- * @tc.type: FUNC
- * @tc.require: AR000GK4HB
- */
-HWTEST_F(FileUtilsTest, StorageRadarTest_RecordActiveUserKeyResult_000, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "RecordPrepareUserDirsResult_000 start";
-
-    bool ret = StorageService::StorageRadar::GetInstance().RecordActiveUserKeyResult(E_OK);
-    ASSERT_TRUE(ret == true);
-
-    ret = StorageService::StorageRadar::GetInstance().RecordActiveUserKeyResult(E_ERR);
-    ASSERT_TRUE(ret == true);
-    GTEST_LOG_(INFO) << "StorageRadarTest_RecordActiveUserKeyResult_000 end";
-}
-
-/**
- * @tc.name: StorageRadarTest_RecordPrepareUserDirsResult_000
- * @tc.desc: Verify the StorageRadar function.
- * @tc.type: FUNC
- * @tc.require: AR000GK4HB
- */
-HWTEST_F(FileUtilsTest, StorageRadarTest_RecordPrepareUserDirsResult_000, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageRadarTest_RecordPrepareUserDirsResult_000 start";
-
-    bool ret = StorageService::StorageRadar::GetInstance().RecordPrepareUserDirsResult(E_OK);
-    ASSERT_TRUE(ret == true);
-
-    ret = StorageService::StorageRadar::GetInstance().RecordPrepareUserDirsResult(E_ERR);
-    ASSERT_TRUE(ret == true);
-    GTEST_LOG_(INFO) << "StorageRadarTest_RecordPrepareUserDirsResult_000 end";
-}
-
-/**
  * @tc.name: StorageRadarTest_RecordKillProcessResult_000
  * @tc.desc: Verify the StorageRadar function.
  * @tc.type: FUNC

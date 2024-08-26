@@ -52,6 +52,7 @@ ohos_unittest("IamClientUserAuthFrameworkTest") {
     "c_utils:utils",
     "hilog:libhilog",
     "huks:libhukssdk",
+    "init:libbegetutil",
     "user_auth_framework:userauth_client",
   ]
 }

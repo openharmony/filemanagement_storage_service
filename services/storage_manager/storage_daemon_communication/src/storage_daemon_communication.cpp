@@ -21,6 +21,10 @@
 #include "ipc/istorage_daemon.h"
 #include "ipc/storage_daemon.h"
 #include "ipc/storage_daemon_proxy.h"
+#include "os_account_manager.h"
+#ifdef ENABLE_SCREENLOCK_MANAGER
+#include "screenlock_manager.h"
+#endif
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 
@@ -127,6 +131,21 @@ int32_t StorageDaemonCommunication::StopUser(int32_t userId)
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->StopUser(userId);
+}
+
+int32_t StorageDaemonCommunication::CompleteAddUser(int32_t userId)
+{
+    LOGI("StorageDaemonCommunication::CompleteAddUser start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::CompleteAddUser connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::CompleteAddUser service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->CompleteAddUser(userId);
 }
 
 int32_t StorageDaemonCommunication::Mount(std::string volumeId, int32_t flag)
@@ -388,9 +407,35 @@ int32_t StorageDaemonCommunication::ResetSdProxy()
     return E_OK;
 }
 
+void StorageDaemonCommunication::ForceLockUserScreen()
+{
+    LOGI("StorageDaemonCommunication::ForceLockUserScreen, storage_daemon process maybe has died.");
+#ifdef ENABLE_SCREENLOCK_MANAGER
+    std::vector<int32_t> ids;
+    int32_t ret = AccountSA::OsAccountManager::QueryActiveOsAccountIds(ids);
+    if (ret != ERR_OK || ids.empty()) {
+        LOGE("Query active userid failed, ret = %{public}u", ret);
+        return;
+    }
+    int reasonFlag = static_cast<int>(ScreenLock::StrongAuthReasonFlags::ACTIVE_REQUEST);
+    ret = ScreenLock::ScreenLockManager::GetInstance()->RequestStrongAuth(reasonFlag, ids[0]);
+    if (ret != ScreenLock::E_SCREENLOCK_OK) {
+        LOGE("Request strong auth by screen lock manager failed.");
+        return;
+    }
+    ret = ScreenLock::ScreenLockManager::GetInstance()->Lock(ids[0]);
+    if (ret != ScreenLock::E_SCREENLOCK_OK) {
+        LOGE("Lock user screen by screen lock manager failed.");
+    }
+    LOGI("Force lock user screen and request strong auth success for userId = %{public}d.", ids[0]);
+#endif
+}
+
 void SdDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
 {
+    LOGE("StorageDaemonCommunication::OnRemoteDied, storage_daemon process has died.");
     DelayedSingleton<StorageDaemonCommunication>::GetInstance()->ResetSdProxy();
+    DelayedSingleton<StorageDaemonCommunication>::GetInstance()->ForceLockUserScreen();
 }
 
 std::vector<int32_t> StorageDaemonCommunication::CreateShareFile(const std::vector<std::string> &uriList,

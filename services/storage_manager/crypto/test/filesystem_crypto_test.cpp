@@ -421,7 +421,7 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_GenerateAppkey_0000, testi
     uint32_t hashId = 108;
     std::string keyId = "keys"; // UserKeys type
     ASSERT_TRUE(fileSystemCrypto_ != nullptr);
-    uint32_t result = fileSystemCrypto_->GenerateAppkey(userId, hashId, keyId);
+    uint32_t result = fileSystemCrypto_->GenerateAppkey(hashId, userId, keyId);
     EXPECT_EQ(result, E_USERID_RANGE);
 
     fileSystemCrypto_->DeleteAppkey(keyId);
