@@ -323,7 +323,6 @@ group("storage_daemon_unit_test") {
   testonly = true
   deps = [
     "client/test:storage_daemon_client_test",
-    "crypto/test/anco_test:anco_crypto_test",
     "file_sharing/test:file_sharing_test",
     "ipc/test:storage_daemon_ipc_test",
     "quota/test:storage_daemon_quota_test",
