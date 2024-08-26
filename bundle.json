@@ -60,6 +60,7 @@
         "samgr",
         "screenlock_mgr",
         "selinux_adapter",
+        "tee_client",
         "os_account",
         "openssl",
         "user_auth_framework"
