@@ -49,6 +49,7 @@ ohos_static_library("libsdcrypto") {
     "src/fscrypt_key_v2.cpp",
     "src/huks_master.cpp",
     "src/iam_client.cpp",
+    "src/key_backup.cpp",
     "src/key_manager.cpp",
     "src/openssl_crypto.cpp",
   ]

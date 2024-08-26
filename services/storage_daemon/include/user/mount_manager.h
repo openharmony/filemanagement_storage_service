@@ -73,16 +73,23 @@ public:
         const std::string &networkId, const std::string &deviceId);
     int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId);
-    int32_t UMountAllPath(int32_t userId);
+    int32_t UMountAllPath(int32_t userId, std::list<std::string> &mountFailList);
+    int32_t UMountByList(std::list<std::string> &list, std::list<std::string> &mountFailList);
     void SetCloudState(bool active);
     int32_t RestoreconSystemServiceDirs(int32_t userId);
     int32_t FindMountPointsToMap(std::map<std::string, std::list<std::string>> &mountMap, int32_t userId);
     void MountPointToList(std::list<std::string> &hmdfsList, std::list<std::string> &hmfsList,
         std::list<std::string> &sharefsList, std::string &line, int32_t userId);
-    int32_t FindProcess(int32_t userId);
-    bool CheckMaps(const std::string &path, const std::string &prefix);
-    bool CheckSymlink(const std::string &path, const std::string &prefix);
+    int32_t FindAndKillProcess(int32_t userId, std::list<std::string> &mountFailList);
+    bool CheckMaps(const std::string &path, const std::string &prefix, std::list<std::string> &mountFailList);
+    bool CheckSymlink(const std::string &path, const std::string &prefix, std::list<std::string> &mountFailList);
     bool GetProcessInfo(const std::string &filename, ProcessInfo &info);
+    void KillProcess(std::vector<ProcessInfo> &processInfo);
+    bool PidUsingFlag(std::string &pidPath, const std::string &prefix, std::list<std::string> &mountFailList);
+    void UmountFailRadar(std::vector<ProcessInfo> &processInfo);
+    void MountSandboxPath(const std::vector<std::string> &srcPaths, const std::vector<std::string> &dstPaths,
+                          const std::string &bundleName, const std::string &userId);
+    bool CheckMountFileByUser(int32_t userId);
 
 private:
     bool SupportHmdfs();
@@ -100,6 +107,7 @@ private:
     void UMountCloudForUsers(void);
     void PrepareFileManagerDir(int32_t userId);
     int32_t CloudUMount(int32_t userId);
+    bool CheckPathValid(const std::string &bundleNameStr, uint32_t userId);
 
     DISALLOW_COPY_AND_MOVE(MountManager);
 

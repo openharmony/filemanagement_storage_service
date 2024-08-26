@@ -19,6 +19,7 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "test/common/help_utils.h"
+#include "user/mount_manager.h"
 #include "user/user_manager.h"
 #include "utils/file_utils.h"
 #include "crypto/key_manager.h"

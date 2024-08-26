@@ -35,6 +35,7 @@ ohos_unittest("file_utils_test") {
   ]
 
   sources = [
+    "${storage_daemon_path}/utils/storage_radar.cpp",
     "common/help_utils.cpp",
     "file_utils_test.cpp",
   ]
@@ -47,6 +48,7 @@ ohos_unittest("file_utils_test") {
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
+    "hisysevent:libhisysevent",
     "huks:libhukssdk",
     "ipc:ipc_single",
     "ipc:libdbinder",
