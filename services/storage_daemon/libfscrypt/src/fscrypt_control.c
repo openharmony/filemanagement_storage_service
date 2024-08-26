@@ -425,7 +425,6 @@ static int ActSetFileXattrActSetFileXattr(const char *path, char *keyDesc, int s
         return -errno;
     }
     int fd = open((char *)path, O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
-    //opendir直接跟随符号链接 无法设置O_NOFOLLOW，不使用。使用fdopendir只能关闭dir，无意义不使用
     if (fd < 0) {
         LOGE("install File or Directory open failed: %{public}d", errno);
         return -errno;
