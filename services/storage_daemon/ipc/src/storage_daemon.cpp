@@ -52,6 +52,7 @@
 #include "policycoreutils.h"
 #endif
 
+using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
 #ifdef DFS_SERVICE
