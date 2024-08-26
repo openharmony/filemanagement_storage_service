@@ -182,7 +182,7 @@ int32_t StorageStatusService::GetCurrentBundleStats(BundleStats &bundleStats)
     int userId = GetCurrentUserId();
     LOGD("StorageStatusService::userId is: %{public}d", userId);
     std::string pkgName = GetCallingPkgName();
-    int32_t ret = GetBundleStats(pkgName, userId, bundleStats, DEFAULT_APP_INDEX);
+    int32_t ret = GetBundleStats(pkgName, userId, bundleStats);
     if (ret != E_OK) {
         LOGE("storage status service GetBundleStats failed, please check");
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
