@@ -57,6 +57,7 @@ constexpr uid_t OID_RSS = 1096;
 constexpr uid_t OID_HIVIEW = 1201;
 constexpr uid_t OID_PARENT_CONTROL = 7007;
 constexpr uid_t OID_ACCOUNT = 3058;
+constexpr uid_t OID_COLLABORATION_FWK = 5520;
 constexpr uid_t USER_ID_BASE = 200000;
 
 class MountManager final {
