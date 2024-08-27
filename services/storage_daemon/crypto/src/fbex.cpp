@@ -171,7 +171,7 @@ int FBEX::InstallEL5KeyToKernel(uint32_t userIdSingle, uint32_t userIdDouble, ui
     if (static_cast<uint32_t>(fbeRet) == FILE_ENCRY_ERROR_UECE_ALREADY_CREATED) {
         LOGE("class uece has already create, ret: 0x%{public}x, errno: %{public}d", fbeRet, errno);
         isNeedEncryptClassE = false;
-        close(fd);
+        (void)fclose(f);
         return 0;
     }
     int ret = 0;
