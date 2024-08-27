@@ -347,7 +347,7 @@ int FBEX::GenerateAppkey(UserIdToFbeStr &userIdToFbe, uint32_t hashId, std::uniq
 // for el5
 int FBEX::LockUece(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupport)
 {
-    LOGD("enter, userId: %{public}d", userIdDouble);
+    LOGI("enter, userId: %{public}d", userIdDouble);
 
     int fd = open(FBEX_UECE_PATH, O_RDWR);
     if (fd < 0) {
@@ -365,7 +365,7 @@ int FBEX::LockUece(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupp
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
     }
     close(fd);
-    LOGD("success");
+    LOGI("success");
     return ret;
 }
 

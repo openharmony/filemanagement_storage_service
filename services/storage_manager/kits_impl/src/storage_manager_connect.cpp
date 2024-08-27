@@ -33,7 +33,7 @@ StorageManagerConnect::~StorageManagerConnect() {}
 
 int32_t StorageManagerConnect::Connect()
 {
-    LOGD("StorageManagerConnect::Connect start");
+    LOGI("StorageManagerConnect::Connect start");
     std::lock_guard<std::mutex> lock(mutex_);
     if (storageManager_ == nullptr) {
         auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
@@ -60,7 +60,7 @@ int32_t StorageManagerConnect::Connect()
             storageManager_->AsObject()->AddDeathRecipient(deathRecipient_);
         }
     }
-    LOGD("StorageManagerConnect::Connect end");
+    LOGI("StorageManagerConnect::Connect end");
     return E_OK;
 }
 
@@ -305,7 +305,7 @@ int32_t StorageManagerConnect::Partition(std::string diskId, int32_t type)
 
 int32_t StorageManagerConnect::ResetProxy()
 {
-    LOGD("enter");
+    LOGI("enter");
     std::lock_guard<std::mutex> lock(mutex_);
     if ((storageManager_ != nullptr) && (storageManager_->AsObject() != nullptr)) {
         storageManager_->AsObject()->RemoveDeathRecipient(deathRecipient_);

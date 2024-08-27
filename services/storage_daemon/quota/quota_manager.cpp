@@ -316,7 +316,7 @@ static std::tuple<std::vector<std::string>, std::vector<std::string>> ReadInclud
         std::string line;
         std::getline(incExcFile, line);
         if (line.empty()) {
-            LOGD("Read Complete");
+            LOGI("Read Complete");
             break;
         }
         if (line == BACKUP_INCLUDE) {
@@ -555,7 +555,7 @@ static std::tuple<bool, bool> CheckIfDirForIncludes(const std::string &path, Bun
         return {false, false};
     }
     if (S_ISDIR(fileStatInfo.st_mode)) {
-        LOGD("%{private}s exists and is a directory", path.c_str());
+        LOGI("%{private}s exists and is a directory", path.c_str());
         return {true, true};
     } else {
         std::string sandboxPath = path;

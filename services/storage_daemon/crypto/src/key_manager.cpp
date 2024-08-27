@@ -101,7 +101,7 @@ int KeyManager::RestoreDeviceKey(const std::string &dir)
 {
     LOGI("enter");
     if (globalEl1Key_ != nullptr) {
-        LOGD("device key has existed");
+        LOGI("device key has existed");
         return 0;
     }
 
@@ -144,7 +144,7 @@ int KeyManager::InitGlobalDeviceKey(void)
 
     std::lock_guard<std::mutex> lock(keyMutex_);
     if (hasGlobalDeviceKey_ || globalEl1Key_ != nullptr) {
-        LOGD("glabal device el1 have existed");
+        LOGI("glabal device el1 have existed");
         return 0;
     }
 
@@ -170,7 +170,7 @@ int KeyManager::GenerateAndInstallUserKey(uint32_t userId, const std::string &di
 {
     LOGI("enter");
     if (HasElkey(userId, type)) {
-        LOGD("The user %{public}u el %{public}u have existed", userId, type);
+        LOGI("The user %{public}u el %{public}u have existed", userId, type);
         return 0;
     }
     auto elKey = GetBaseKey(dir);
@@ -250,7 +250,7 @@ int KeyManager::RestoreUserKey(uint32_t userId, const std::string &dir, const Us
 {
     LOGI("enter");
     if (HasElkey(userId, type)) {
-        LOGD("The user %{public}u el %{public}u have existed", userId, type);
+        LOGI("The user %{public}u el %{public}u have existed", userId, type);
         return 0;
     }
 
@@ -296,31 +296,31 @@ bool KeyManager::HasElkey(uint32_t userId, KeyType type)
     switch (type) {
         case EL1_KEY:
             if (userEl1Key_.find(userId) != userEl1Key_.end()) {
-                LOGD("user el1 key has existed");
+                LOGI("user el1 key has existed");
                 return true;
             }
             break;
         case EL2_KEY:
             if (userEl2Key_.find(userId) != userEl2Key_.end()) {
-                LOGD("user el2 key has existed");
+                LOGI("user el2 key has existed");
                 return true;
             }
             break;
         case EL3_KEY:
             if (userEl3Key_.find(userId) != userEl3Key_.end()) {
-                LOGD("user el3 key has existed");
+                LOGI("user el3 key has existed");
                 return true;
             }
             break;
         case EL4_KEY:
             if (userEl4Key_.find(userId) != userEl4Key_.end()) {
-                LOGD("user el4 key has existed");
+                LOGI("user el4 key has existed");
                 return true;
             }
             break;
         case EL5_KEY:
             if (userEl5Key_.find(userId) != userEl5Key_.end()) {
-                LOGD("user el5 key has existed");
+                LOGI("user el5 key has existed");
                 return true;
             }
             break;
@@ -488,7 +488,7 @@ int KeyManager::GenerateUserKeys(unsigned int user, uint32_t flags)
     std::lock_guard<std::mutex> lock(keyMutex_);
     if ((!IsDir(USER_EL1_DIR)) || (!IsDir(USER_EL2_DIR)) || (!IsDir(USER_EL3_DIR)) ||
         (!IsDir(USER_EL4_DIR)) || (!IsDir(USER_EL5_DIR))) {
-        LOGD("El storage dir is not existed");
+        LOGI("El storage dir is not existed");
         return -ENOENT;
     }
     int ret = GenerateElxAndInstallUserKey(user);
@@ -1330,7 +1330,7 @@ int KeyManager::InactiveUserElKey(unsigned int user, std::map<unsigned int, std:
 
 int KeyManager::LockUserScreen(uint32_t user)
 {
-    LOGD("start");
+    LOGI("start");
     std::lock_guard<std::mutex> lock(keyMutex_);
     if (!IsUserCeDecrypt(user)) {
         LOGE("user ce does not decrypt, skip");
@@ -1429,14 +1429,14 @@ int KeyManager::getEceSeceKeyPath(unsigned int user, KeyType type, std::string &
 {
     if (type == EL3_KEY) {
         if (userEl3Key_.find(user) == userEl3Key_.end()) {
-            LOGD("Have not found user %{public}u el3 key, not enable el3", user);
+            LOGI("Have not found user %{public}u el3 key, not enable el3", user);
             return -ENOENT;
         }
         eceSeceKeyPath = userEl3Key_[user]->GetDir();
     }
     if (type == EL4_KEY) {
         if (userEl4Key_.find(user) == userEl4Key_.end()) {
-            LOGD("Have not found user %{public}u el4 key, not enable el4", user);
+            LOGI("Have not found user %{public}u el4 key, not enable el4", user);
             return -ENOENT;
         }
         eceSeceKeyPath = userEl4Key_[user]->GetDir();

@@ -109,7 +109,7 @@ char **SplitStringExt(char *buffer, const char *del, int *returnCount, int maxIt
     while (p != NULL) {
         if (count > itemCounts - 1) {
             itemCounts += (itemCounts / 2) + 1; // 2 Request to increase the original memory by half.
-            LOGD("Too many items,expand size");
+            LOGI("Too many items,expand size");
 
             char **expand = (char **)malloc(sizeof(char*) * itemCounts);
             FSCRYPT_ERROR_CHECK(expand != NULL, FreeStringVector(items, count);
@@ -118,7 +118,7 @@ char **SplitStringExt(char *buffer, const char *del, int *returnCount, int maxIt
             if (ret != 0) {
                 FreeStringVector(items, count);
                 FreeStringVector(expand, itemCounts);
-                LOGD("Too many items,expand size");
+                LOGI("Too many items,expand size");
                 return NULL;
             }
             items = expand;

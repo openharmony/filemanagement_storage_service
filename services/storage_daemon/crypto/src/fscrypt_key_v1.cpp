@@ -140,7 +140,7 @@ bool FscryptKeyV1::DeleteAppkey(const std::string KeyId)
         LOGE("FscryptKeyV1 Delete Appkey2 failed");
         return false;
     }
-    LOGD("success");
+    LOGI("success");
     return true;
 }
 
@@ -382,7 +382,7 @@ bool FscryptKeyV1::InstallEceSeceKeyToKeyring(uint32_t sdpClass)
 bool FscryptKeyV1::InactiveKey(uint32_t flag, const std::string &mnt)
 {
     (void)mnt;
-    LOGD("enter");
+    LOGI("enter");
     bool ret = true;
 
     if (!UninstallKeyToKeyring()) {
@@ -394,7 +394,7 @@ bool FscryptKeyV1::InactiveKey(uint32_t flag, const std::string &mnt)
         ret = false;
     }
     DropCachesIfNeed();
-    LOGD("finish");
+    LOGI("finish");
     return ret;
 }
 
@@ -416,7 +416,7 @@ bool FscryptKeyV1::LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::s
 {
     uint32_t elType;
     (void)mnt;
-    LOGD("enter");
+    LOGI("enter");
     bool ret = true;
     if (!fscryptV1Ext.LockUserScreenExt(flag, elType)) {
         LOGE("fscryptV1Ext InactiveKeyExt failed");
@@ -428,19 +428,19 @@ bool FscryptKeyV1::LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::s
             ret = false;
         }
     }
-    LOGD("finish");
+    LOGI("finish");
     return ret;
 }
 
 bool FscryptKeyV1::LockUece(bool &isFbeSupport)
 {
-    LOGD("enter");
+    LOGI("enter");
     bool ret = true;
     if (!fscryptV1Ext.LockUeceExt(isFbeSupport)) {
         LOGE("fscryptV1Ext InactiveKeyExt failed");
         ret = false;
     }
-    LOGD("finish");
+    LOGI("finish");
     return ret;
 }
 
