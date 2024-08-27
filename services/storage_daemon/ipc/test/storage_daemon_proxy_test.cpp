@@ -586,7 +586,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_CreateRecoverKey_001, Te
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
-    int32_t ret = proxy_->CreateRecoverKey(USER_ID1, 10, {}, {});
+    int32_t ret = proxy_->CreateRecoverKey(USER_ID1, 100, {}, {});
     ASSERT_TRUE(ret == E_OK);
     ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_RECOVER_KEY) == mock_->code_);
 

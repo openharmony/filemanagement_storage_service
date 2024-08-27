@@ -85,6 +85,17 @@ int32_t KeyManager::UnlockUserAppKeys(uint32_t userId, bool needGetAllAppKey)
     return E_OK;
 }
 
+int32_t KeyManager::CreateRecoverKey(uint32_t userId, uint32_t userType, const std::vector<uint8_t> &token,
+    const std::vector<uint8_t> &secret)
+{
+    return E_OK;
+}
+
+int32_t KeyManager::SetRecoverKey(const std::vector<uint8_t> &key)
+{
+    return E_OK;
+}
+
 int32_t KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type,
     const std::vector<FileList> &vec)
 {

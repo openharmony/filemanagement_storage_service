@@ -131,6 +131,8 @@ int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code,
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::INACTIVE_USER_KEY):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::LOCK_USER_SCREEN):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::UNLOCK_USER_SCREEN):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::CREATE_RECOVER_KEY):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::SET_RECOVER_KEY):
             return OnRemoteRequestForUser(code, data, reply);
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::LOCK_SCREEN_STATUS):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::UPDATE_KEY_CONTEXT):
@@ -206,6 +208,10 @@ int32_t StorageDaemonStub::OnRemoteRequestForUser(uint32_t code, MessageParcel &
             return HandleLockUserScreen(data, reply);
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::UNLOCK_USER_SCREEN):
             return HandleUnlockUserScreen(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::CREATE_RECOVER_KEY):
+            return HandleCreateRecoverKey(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::SET_RECOVER_KEY):
+            return HandleSetRecoverKey(data, reply);
         default:
             LOGE("Cannot response request %d: unknown tranction", code);
             return E_SYS_ERR;

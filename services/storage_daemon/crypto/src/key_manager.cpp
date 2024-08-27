@@ -28,6 +28,7 @@
 #include "libfscrypt/fscrypt_control.h"
 #include "libfscrypt/key_control.h"
 #include "parameter.h"
+#include "recover_manager.h"
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -1220,13 +1221,51 @@ int KeyManager::CreateRecoverKey(uint32_t userId, uint32_t userType, const std::
                                  const std::vector<uint8_t> &secret)
 {
     LOGI("enter");
-    LOGI("userId %{public}u, userType%{public}u", userId, userType);
+    std::string globalUserEl1Path = USER_EL1_DIR + "/" + std::to_string(GLOBAL_USER_ID);
+    std::string el1Path = USER_EL1_DIR + "/" + std::to_string(userId);
+    std::string el2Path = USER_EL2_DIR + "/" + std::to_string(userId);
+    std::string el3Path = USER_EL3_DIR + "/" + std::to_string(userId);
+    std::string el4Path = USER_EL4_DIR + "/" + std::to_string(userId);
+    std::vector<std::string> elKeyDirs = { DEVICE_EL1_DIR, globalUserEl1Path, el1Path, el2Path, el3Path, el4Path };
+    std::vector<KeyBlob> originKeys;
+    for (const auto &elxKeyDir : elKeyDirs) {
+        if (!IsDir(elxKeyDir)) {
+            LOGE("Have not found type %{public}s el", elxKeyDir.c_str());
+            return -ENOENT;
+        }
+        std::shared_ptr<BaseKey> elxKey = GetBaseKey(elxKeyDir);
+        if (elxKey == nullptr) {
+            LOGE("load elx key failed , key path is %{public}s", elxKeyDir.c_str());
+            return -EOPNOTSUPP;
+        }
+        UserAuth auth = { token, secret };
+        if ((elxKey->RestoreKey(auth) == false) && (elxKey->RestoreKey(NULL_KEY_AUTH) == false)) {
+            LOGE("Restore el failed");
+            return -EFAULT;
+        }
+        KeyBlob originKey;
+        if (!elxKey->GetOriginKey(originKey)) {
+            LOGE("get origin key failed !");
+            return -ENOENT;
+        }
+        originKeys.push_back(std::move(originKey));
+    }
+    if (RecoveryManager::GetInstance().CreateRecoverKey(userId, userType, token, secret, originKeys) != E_OK) {
+        LOGE("Create recovery key failed !");
+        return -ENOENT;
+    }
+    originKeys.clear();
     return E_OK;
 }
 
 int KeyManager::SetRecoverKey(const std::vector<uint8_t> &key)
 {
     LOGI("enter");
+    std::vector<KeyBlob> originIvs;
+    if (RecoveryManager::GetInstance().SetRecoverKey(key) != E_OK) {
+        LOGE("Set recovery key filed !");
+        return -ENOENT;
+    }
     return E_OK;
 }
 
