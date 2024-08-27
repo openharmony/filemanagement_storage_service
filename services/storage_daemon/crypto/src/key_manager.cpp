@@ -1597,7 +1597,12 @@ int KeyManager::RestoreUserKey(uint32_t userId, KeyType type)
         LOGE("dir not exist");
         return -ENOENT;
     }
-    return RestoreUserKey(userId, dir, NULL_KEY_AUTH, type);
+    int32_t ret = RestoreUserKey(userId, dir, NULL_KEY_AUTH, type);
+    if (ret == 0 && type != EL1_KEY) {
+        saveLockScreenStatus[userId] = true;
+        LOGI("user is %{public}u , saveLockScreenStatus", userId);
+    }
+    return ret;
 }
 #endif
 } // namespace StorageDaemon
