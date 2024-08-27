@@ -25,8 +25,6 @@
 #include "volume/volume_manager_service.h"
 #endif
 
-using namespace std;
-
 namespace OHOS {
 namespace StorageManager {
 VolumeStorageStatusService::VolumeStorageStatusService() {}
@@ -47,9 +45,9 @@ std::string VolumeStorageStatusService::GetVolumePath(std::string volumeUuid)
 #endif
 }
 
-int32_t VolumeStorageStatusService::GetFreeSizeOfVolume(string volumeUuid, int64_t &freeSize)
+int32_t VolumeStorageStatusService::GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize)
 {
-    string path = GetVolumePath(volumeUuid);
+    std::string path = GetVolumePath(volumeUuid);
     LOGI("VolumeStorageStatusService::GetFreeSizeOfVolume path is %{public}s", GetAnonyString(path).c_str());
     if (path == "") {
         return E_NON_EXIST;
@@ -63,9 +61,9 @@ int32_t VolumeStorageStatusService::GetFreeSizeOfVolume(string volumeUuid, int64
     return E_OK;
 }
 
-int32_t VolumeStorageStatusService::GetTotalSizeOfVolume(string volumeUuid, int64_t &totalSize)
+int32_t VolumeStorageStatusService::GetTotalSizeOfVolume(std::string volumeUuid, int64_t &totalSize)
 {
-    string path = GetVolumePath(volumeUuid);
+    std::string path = GetVolumePath(volumeUuid);
     if (path == "") {
         return E_NON_EXIST;
     }

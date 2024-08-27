@@ -17,6 +17,7 @@
 #include <gtest/gtest.h>
 
 #include "storage/bundle_manager_connector.h"
+#include "storage/storage_monitor_service.h"
 #include "storage/storage_status_service.h"
 #include "storage/storage_total_status_service.h"
 #include "storage_service_errno.h"

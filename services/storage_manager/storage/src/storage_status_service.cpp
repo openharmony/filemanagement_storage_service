@@ -35,7 +35,7 @@
 #endif
 
 using namespace std;
-
+using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageManager {
 using namespace OHOS::StorageService;

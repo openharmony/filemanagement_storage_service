@@ -29,6 +29,7 @@
 #include "utils/storage_radar.h"
 #include "utils/storage_utils.h"
 
+using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageManager {
 StorageTotalStatusService::StorageTotalStatusService() {}
