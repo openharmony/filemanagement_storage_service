@@ -524,23 +524,24 @@ int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uint
         return -errno;
     }
     (void)fclose(f);
-    UnlockSendSecret(status, bufferSize);
-    auto errBuffer = memcpy_s(eBuffer, length, ops.eBuffer, bufferSize);
-    if (errBuffer != EOK) {
-        LOGE("memcpy failed %{public}d", errBuffer);
-        return 0;
-    }
+    UnlockSendSecret(status, bufferSize, length, eBuffer, ops.eBuffer);
     LOGI("ReadESecretToKernel success");
     return 0;
 }
 
-int FBEX::UnlockSendSecret(uint32_t status,uint32_t bufferSize)
+int FBEX::UnlockSendSecret(uint32_t status, uint32_t bufferSize, uint32_t length, uint8_t *eBuffer, uint8_t *opseBuffer)
 {
     if (status == UNLOCK_STATUS) {
         bufferSize = AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES;
     } else {
         bufferSize = AES_256_HASH_RANDOM_SIZE;
     }
+    auto errBuffer = memcpy_s(eBuffer, length, opseBuffer, bufferSize);
+    if (errBuffer != EOK) {
+        LOGE("memcpy failed %{public}d", errBuffer);
+        return 0;
+    }
+    return 0;
 }
 
 int FBEX::WriteESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uint8_t *eBuffer, uint32_t length)
