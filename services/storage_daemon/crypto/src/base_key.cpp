@@ -37,6 +37,7 @@ namespace {
 const std::string PATH_LATEST_BACKUP = "/latest_bak";
 const std::string PATH_KEY_VERSION = "/version_";
 const std::string PATH_KEY_TEMP = "/temp";
+const std::string PATH_NEED_RESTORE_SUFFIX = "/latest/need_restore";
 
 #ifndef F2FS_IOCTL_MAGIC
 #define F2FS_IOCTL_MAGIC 0xf5
@@ -690,6 +691,10 @@ bool BaseKey::DoUpdateRestore(const UserAuth &auth, const std::string &keyPath)
     if (!DoRestoreKeyOld(auth, keyPath)) {
         LOGE("Restore old failed !");
         return false;
+    }
+    if (std::filesystem::exists(dir_ + PATH_NEED_RESTORE_SUFFIX)) {
+        LOGE("Double 2 single, skip huks -> huks-openssl !");
+        return true;
     }
     uint64_t secureUid = { 0 };
     if (!IamClient::GetInstance().GetSecureUid(GetIdFromDir(), secureUid)) {
