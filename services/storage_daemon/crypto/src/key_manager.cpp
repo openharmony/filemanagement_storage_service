@@ -1181,6 +1181,10 @@ int KeyManager::GetLockScreenStatus(uint32_t user, bool &lockScreenStatus)
 
 int KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId)
 {
+    if (!IsUeceSupport()) {
+        LOGI("Not support uece !");
+        return -ENOTSUP;
+    }
     std::lock_guard<std::mutex> lock(keyMutex_);
     if (!IsUserCeDecrypt(userId)) {
         LOGE("user ce does not decrypt, skip");
