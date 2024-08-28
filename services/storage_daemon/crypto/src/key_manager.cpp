@@ -18,6 +18,7 @@
 #include <fcntl.h>
 #include <filesystem>
 #include <string>
+#include <cstdio>
 
 #include "base_key.h"
 #include "directory_ex.h"
@@ -1537,7 +1538,15 @@ int KeyManager::UpdateKeyContext(uint32_t userId)
 
 bool KeyManager::IsUeceSupport()
 {
-    int fd = open(UECE_PATH, O_RDWR);
+    FILE *f = fopen(UECE_PATH, "r+");
+    if (f == nullptr) {
+        if (errno == ENOENT) {
+            LOGE("uece does not support !");
+        }
+        LOGE("open uece failed, errno : %{public}d", errno);
+        return false;
+    }
+    int fd = fileno(f);
     if (fd < 0) {
         if (errno == ENOENT) {
             LOGE("uece does not support !");
@@ -1545,7 +1554,7 @@ bool KeyManager::IsUeceSupport()
         LOGE("open uece failed, errno : %{public}d", errno);
         return false;
     }
-    close(fd);
+    (void)fclose(f);
     LOGI("uece is support.");
     return true;
 }

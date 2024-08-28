@@ -17,8 +17,10 @@
 
 #include <fcntl.h>
 #include <fstream>
+#include <cstdio>
 #include <string>
 #include <unistd.h>
+#include <dirent.h>
 
 #include "directory_ex.h"
 #include "fbex.h"
@@ -777,7 +779,12 @@ void BaseKey::WipingActionDir(std::string &path)
     LOGI("WipingActionDir path.c_str() is %{public}s", path.c_str());
     OpenSubFile(path.c_str(), fileList);
     for (const auto &it: fileList) {
-        int fd = open(it.c_str(), O_WRONLY | O_CLOEXEC);
+        FILE *f = fopen(it.c_str(), "w");
+        if (f == nullptr) {
+            LOGE("open %{public}s failed, errno %{public}u", it.c_str(), errno);
+            return;
+        }
+        int fd = fileno(f);
         if (fd < 0) {
             LOGE("open %{public}s failed, errno %{public}u", it.c_str(), errno);
             return;
@@ -805,13 +812,18 @@ void BaseKey::WipingActionDir(std::string &path)
             LOGE("F2FS_IOC_SET_PIN_FILE ioctl is %{public}u", ret);
         }
         LOGI("WipingActionDir success");
-        close(fd);
+        (void)fclose(f);
     }
 }
 
 void BaseKey::SyncKeyDir() const
 {
-    int fd = open(dir_.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+    DIR *dir = opendir(dir_.c_str());
+    if (dir == nullptr) {
+        LOGE("open %{public}s failed, errno %{public}u", dir_.c_str(), errno);
+        return;
+    }
+    int fd = dirfd(dir);
     if (fd < 0) {
         LOGE("open %{public}s failed, errno %{public}d", dir_.c_str(), errno);
         sync();
@@ -823,7 +835,7 @@ void BaseKey::SyncKeyDir() const
         sync();
     }
     LOGI("syncfs end");
-    (void)close(fd);
+    (void)closedir(dir);
 }
 
 bool BaseKey::UpgradeKeys()

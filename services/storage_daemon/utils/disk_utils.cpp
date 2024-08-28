@@ -17,6 +17,7 @@
 
 #include <cerrno>
 #include <fcntl.h>
+#include <cstdio>
 #include <sys/stat.h>
 #include <sys/sysmacros.h>
 #include <unistd.h>
@@ -53,7 +54,12 @@ int DestroyDiskNode(const std::string &path)
 int GetDevSize(const std::string &path, uint64_t *size)
 {
     const char *kPath = path.c_str();
-    int fd = open(kPath, O_RDONLY);
+    FILE *f = fopen(kPath, "r");
+    if (f == nullptr) {
+        LOGE("open %{private}s failed", path.c_str());
+        return E_ERR;
+    }
+    int fd = fileno(f);
     if (fd < 0) {
         LOGE("open %{private}s failed", path.c_str());
         return E_ERR;
@@ -61,11 +67,11 @@ int GetDevSize(const std::string &path, uint64_t *size)
 
     if (ioctl(fd, BLKGETSIZE64, size)) {
         LOGE("get device %{private}s size failed", path.c_str());
-        (void)close(fd);
+        (void)fclose(f);
         return E_ERR;
     }
 
-    (void)close(fd);
+    (void)fclose(f);
     return E_OK;
 }
 
