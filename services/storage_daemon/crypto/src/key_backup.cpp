@@ -389,7 +389,7 @@ int32_t KeyBackup::CopySameFilesToTempDir(const std::string &backupDir, std::str
 
 int32_t KeyBackup::CreateTempDirForMixFiles(const std::string &backupDir, std::string &tempDir)
 {
-    int32_t pos = backupDir.rfind("/");
+    auto pos = backupDir.rfind("/");
     std::string parentDir = backupDir.substr(0, pos);
     tempDir = parentDir + "/temp";
 
@@ -442,16 +442,21 @@ void KeyBackup::CheckAndFixFiles(const std::string &from, const std::string &to)
 void KeyBackup::FsyncDirectory(const std::string &dirName)
 {
     LOGI("sync directory dirName %s", dirName.c_str());
-    UniqueFd fd(open(dirName.c_str(), O_RDONLY | O_CLOEXEC));
+    std::string realPath;
+    if (!GetRealPath(dirName, realPath)) {
+        return;
+    }
+
+    UniqueFd fd(open(realPath.c_str(), O_RDONLY | O_CLOEXEC));
     if (fd < 0) {
-        LOGE("failed to open %s", dirName.c_str());
+        LOGE("failed to open %s", realPath.c_str());
         return;
     }
     if (fsync(fd) == -1) {
         if (errno == EROFS || errno == EINVAL) {
-            LOGE("file system does not support sync, dirName: %s", dirName.c_str());
+            LOGE("file system does not support sync, dirName: %s", realPath.c_str());
         } else {
-            LOGE("sync failed: %s", dirName.c_str());
+            LOGE("sync failed: %s", realPath.c_str());
         }
     }
     return;
@@ -479,9 +484,13 @@ int32_t KeyBackup::MkdirParent(const std::string &pathName, mode_t mode)
 void KeyBackup::CleanFile(const std::string &path)
 {
     LOGI("clean file path %s", path.c_str());
-    int fd = open(path.c_str(), O_WRONLY);
+    std::string realPath;
+    if (!GetRealPath(path, realPath)) {
+        return;
+    }
+    int fd = open(realPath.c_str(), O_WRONLY);
     if (fd < 0) {
-        LOGE("open %s failed", path.c_str());
+        LOGE("open %s failed", realPath.c_str());
         return;
     }
 
@@ -490,10 +499,10 @@ void KeyBackup::CleanFile(const std::string &path)
 
     lseek(fd, 0, SEEK_SET);
     if (write(fd, data.c_str(), data.size()) < 0) {
-        LOGE("failed to write file %s", path.c_str());
+        LOGE("failed to write file %s", realPath.c_str());
     }
     if (fsync(fd) == -1) {
-        LOGE("failed to sync file %s", path.c_str());
+        LOGE("failed to sync file %s", realPath.c_str());
     }
     close(fd);
     return;
