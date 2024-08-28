@@ -560,7 +560,7 @@ bool HuksMaster::HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *p
     ret = HdiAccessFinish(hksHandle, paramSet2, hksIn, hksOut);
     if (ret != HKS_SUCCESS) {
         if (ret == HKS_ERROR_KEY_AUTH_TIME_OUT) {
-            ForceLockUserScreen();
+            StorageService::KeyCryptoUtils::ForceLockUserScreen();
             LOGE("HdiAccessFinish failed because authToken timeout, force lock user screen.");
         }
         LOGE("HdiAccessFinish failed ret %{public}d", ret);
