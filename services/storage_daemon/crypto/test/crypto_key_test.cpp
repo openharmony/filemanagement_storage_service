@@ -58,7 +58,7 @@ const int32_t PARAMS_SIZE_1 = 1;
 const int32_t PARAMS_SIZE_2 = 2;
 const int32_t PARAMS_SIZE_3 = 3;
 const int32_t PARAMS_SIZE_4 = 4;
-auto g_testKeyV1 = std::make_shared<OHOS::StorageDaemon::FscryptKeyV1>(TEST_KEYPATH)
+auto g_testKeyV1 = std::make_shared<OHOS::StorageDaemon::FscryptKeyV1>(TEST_KEYPATH);
 OHOS::StorageDaemon::FscryptKeyV2 g_testKeyV2 {TEST_KEYPATH};
 }
 
