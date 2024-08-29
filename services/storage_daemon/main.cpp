@@ -104,7 +104,7 @@ static const int32_t SLEEP_TIME_INTERVAL_3MS = 3 * 1000;
 
 int main()
 {
-    LOGI("storage_daemon startn");
+    LOGI("storage_daemon start");
 #ifdef EXTERNAL_STORAGE_MANAGER
     StorageDaemon::NetlinkManager *nm = StorageDaemon::NetlinkManager::Instance();
     if (!nm) {
