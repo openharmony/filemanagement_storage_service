@@ -46,6 +46,7 @@ ohos_moduletest("FscryptKeyV1Test") {
     "${storage_daemon_path}/crypto/src/huks_master.cpp",
     "${storage_daemon_path}/crypto/src/iam_client.cpp",
     "${storage_daemon_path}/crypto/src/key_backup.cpp",
+    "${storage_daemon_path}/crypto/src/key_crypto_utils.cpp",
     "${storage_daemon_path}/crypto/src/key_manager.cpp",
     "${storage_daemon_path}/crypto/src/openssl_crypto.cpp",
     "${storage_daemon_path}/crypto/test/fscrypt_v1_test/fscrypt_key_v1_test.cpp",
@@ -73,6 +74,7 @@ ohos_moduletest("FscryptKeyV1Test") {
     "init:libbegetutil",
     "ipc:ipc_single",
     "openssl:libcrypto_shared",
+    "os_account:os_account_innerkits",
     "samgr:samgr_proxy",
   ]
 
@@ -83,6 +85,11 @@ ohos_moduletest("FscryptKeyV1Test") {
   if (enable_user_auth_framework) {
     defines += [ "USER_AUTH_FRAMEWORK" ]
     external_deps += [ "user_auth_framework:userauth_client" ]
+  }
+
+  if (enable_screenlock_manager) {
+    defines += [ "ENABLE_SCREENLOCK_MANAGER" ]
+    external_deps += [ "screenlock_mgr:screenlock_client" ]
   }
 }
 
