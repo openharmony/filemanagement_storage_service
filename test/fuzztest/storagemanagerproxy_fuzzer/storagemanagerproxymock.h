@@ -52,6 +52,11 @@ public:
         return E_OK;
     }
 
+    int32_t CompleteAddUser(int32_t userId) override
+    {
+        return E_OK;
+    }
+
     int32_t GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize) override
     {
         return E_OK;
@@ -225,7 +230,7 @@ public:
         return E_OK;
     }
 
-    int32_t GenerateAppkey(uint32_t appUid, std::string &keyId) override
+    int32_t GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId) override
     {
         return E_OK;
     }

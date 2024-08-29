@@ -18,8 +18,11 @@
 #include <fcntl.h>
 #include <openssl/sha.h>
 #include <unistd.h>
+#include <cstdio>
+#include <dirent.h>
 
 #include "file_ex.h"
+#include "key_backup.h"
 #include "libfscrypt/key_control.h"
 #include "storage_service_log.h"
 
@@ -67,16 +70,16 @@ bool FscryptKeyV1::ActiveKey(uint32_t flag, const std::string &mnt)
     return true;
 }
 
-bool FscryptKeyV1::GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyDesc)
+bool FscryptKeyV1::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyDesc)
 {
     KeyBlob appKey(FBEX_KEYID_SIZE);
-    if (!fscryptV1Ext.GenerateAppkey(userId, appUid, appKey.data, appKey.size)) {
+    if (!fscryptV1Ext.GenerateAppkey(userId, hashId, appKey.data, appKey.size)) {
         LOGE("fscryptV1Ext GenerateAppkey failed");
         return false;
     }
     // The ioctl does not support EL5, return empty character string
     if (appKey.data.get() == nullptr) {
-        LOGE("appKey.data.get() is unllptr!");
+        LOGE("appKey.data.get() is nullptr");
         keyDesc = "";
         return true;
     }
@@ -247,7 +250,7 @@ bool FscryptKeyV1::DecryptClassE(const UserAuth &auth, bool &isSupport, uint32_t
     }
     LOGI("Decrypt keyPath is %{public}s", (dir_ + PATH_LATEST).c_str());
     KeyBlob decryptedKey(AES_256_HASH_RANDOM_SIZE);
-    if (!DecryptKeyBlob(auth, dir_ + PATH_LATEST, eSecretFBE, decryptedKey)) {
+    if (KeyBackup::GetInstance().TryRestoreUeceKey(shared_from_this(), auth, eSecretFBE, decryptedKey) != 0) {
         LOGE("DecryptKeyBlob Decrypt failed");
         eSecretFBE.Clear();
         return false;
@@ -399,7 +402,11 @@ bool FscryptKeyV1::InactiveKey(uint32_t flag, const std::string &mnt)
 
 void FscryptKeyV1::DropCachesIfNeed()
 {
-    int fd = open(MNT_DATA.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+    DIR *dir = opendir(MNT_DATA.c_str());
+    if (dir == nullptr) {
+        sync();
+    }
+    int fd = dirfd(dir);
     if (fd < 0 || syncfs(fd)) {
         sync();
     }
@@ -407,7 +414,7 @@ void FscryptKeyV1::DropCachesIfNeed()
     if (!SaveStringToFile("/proc/sys/vm/drop_caches", "2")) {
         LOGE("Failed to drop cache during key eviction");
     }
-    (void)close(fd);
+    (void)closedir(dir);
     LOGI("drop cache success");
 }
 

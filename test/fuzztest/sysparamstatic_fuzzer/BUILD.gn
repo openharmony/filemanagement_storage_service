@@ -33,7 +33,11 @@ ohos_fuzztest("SysparamStaticFuzzTest") {
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
     "${storage_daemon_path}/libfscrypt:libfscryptutils_static",
   ]
-  external_deps = [ "bounds_checking_function:libsec_shared" ]
+  external_deps = [
+    "bounds_checking_function:libsec_shared",
+    "hilog:libhilog",
+    "init:libbegetutil",
+  ]
 }
 
 ###############################################################################

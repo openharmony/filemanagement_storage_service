@@ -70,7 +70,7 @@ int32_t KeyManager::GetLockScreenStatus(uint32_t user, bool &lockScreenStatus)
     return E_OK;
 }
 
-int32_t KeyManager::GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId)
+int32_t KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId)
 {
     return E_OK;
 }
@@ -81,6 +81,17 @@ int32_t KeyManager::DeleteAppkey(uint32_t userId, const std::string keyId)
 }
 
 int32_t KeyManager::UnlockUserAppKeys(uint32_t userId, bool needGetAllAppKey)
+{
+    return E_OK;
+}
+
+int32_t KeyManager::CreateRecoverKey(uint32_t userId, uint32_t userType, const std::vector<uint8_t> &token,
+    const std::vector<uint8_t> &secret)
+{
+    return E_OK;
+}
+
+int32_t KeyManager::SetRecoverKey(const std::vector<uint8_t> &key)
 {
     return E_OK;
 }

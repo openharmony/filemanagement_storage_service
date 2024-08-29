@@ -27,6 +27,7 @@
 #include "application_info.h"
 #include "iservice_registry.h"
 #include "system_ability_definition.h"
+#include "utils/storage_radar.h"
 #include "utils/storage_utils.h"
 #ifdef STORAGE_SERVICE_GRAPHIC
 #include "media_library_manager.h"
@@ -34,7 +35,7 @@
 #endif
 
 using namespace std;
-
+using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageManager {
 using namespace OHOS::StorageService;
@@ -50,6 +51,7 @@ StorageStatusService::~StorageStatusService() {}
 int32_t GetMediaStorageStats(StorageStats &storageStats)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
+    LOGI("GetMediaStorageStats start");
 #ifdef STORAGE_SERVICE_GRAPHIC
     Media::MediaLibraryManager mgr;
     Media::MediaVolume mediaVol;
@@ -73,19 +75,20 @@ int32_t GetMediaStorageStats(StorageStats &storageStats)
     storageStats.video_ = mediaVol.GetVideosSize();
     storageStats.image_ = mediaVol.GetImagesSize();
 #endif
-
+    LOGI("GetMediaStorageStats end");
     return E_OK;
 }
 
 int32_t GetFileStorageStats(int32_t userId, StorageStats &storageStats)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
+    LOGI("GetFileStorageStats start");
     int32_t err = E_OK;
     int32_t prjId = userId * USER_ID_BASE + UID_FILE_MANAGER;
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->GetOccupiedSpace(StorageDaemon::USRID, prjId, storageStats.file_);
-
+    LOGI("GetFileStorageStats end");
     return err;
 }
 
@@ -127,6 +130,8 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
     int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetTotalSize(totalSize);
     if (err != E_OK) {
         LOGE("StorageStatusService::GetUserStorageStats getTotalSize failed");
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
+            "GetTotalSize", BizScene::SPACE_STATISTICS, BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS, "EL1", err);
         return err;
     }
     // appSize
@@ -135,6 +140,8 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
     err = GetAppSize(userId, appSize);
     if (err != E_OK) {
         LOGE("StorageStatusService::GetUserStorageStats getAppSize failed");
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
+            "GetAppSize", BizScene::SPACE_STATISTICS, BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS, "EL1", err);
         return err;
     }
 
@@ -145,10 +152,17 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
     err = GetMediaStorageStats(storageStats);
     if (err != E_OK) {
         LOGE("StorageStatusService::GetUserStorageStats getMedia failed");
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
+            "GetMediaStorageStats", BizScene::SPACE_STATISTICS, BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS, "EL1", err);
         return err;
     }
     // fileSize
     err = GetFileStorageStats(userId, storageStats);
+    if (err != E_OK) {
+        LOGE("StorageStatusService::GetUserStorageStats GetFileStorageStats failed");
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
+            "GetFileStorageStats", BizScene::SPACE_STATISTICS, BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS, "EL1", err);
+    }
     return err;
 }
 
@@ -169,7 +183,13 @@ int32_t StorageStatusService::GetCurrentBundleStats(BundleStats &bundleStats)
     int userId = GetCurrentUserId();
     LOGD("StorageStatusService::userId is: %{public}d", userId);
     std::string pkgName = GetCallingPkgName();
-    return GetBundleStats(pkgName, userId, bundleStats, DEFAULT_APP_INDEX);
+    int32_t ret = GetBundleStats(pkgName, userId, bundleStats, DEFAULT_APP_INDEX);
+    if (ret != E_OK) {
+        LOGE("storage status service GetBundleStats failed, please check");
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
+            "GetBundleStats", BizScene::SPACE_STATISTICS, BizStage::BIZ_STAGE_GET_BUNDLE_STATS, "EL1", ret);
+    }
+    return ret;
 }
 
 int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t userId,
@@ -212,6 +232,7 @@ int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t
 int32_t StorageStatusService::GetAppSize(int32_t userId, int64_t &appSize)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
+    LOGI("StorageStatusService::GetAppSize start");
     auto bundleMgr = DelayedSingleton<BundleMgrConnector>::GetInstance()->GetBundleMgrProxy();
     if (bundleMgr == nullptr) {
         LOGE("StorageStatusService::GetUserStorageStats connect bundlemgr failed");
@@ -229,8 +250,7 @@ int32_t StorageStatusService::GetAppSize(int32_t userId, int64_t &appSize)
     for (uint i = 0; i < bundleStats.size(); i++) {
         appSize += bundleStats[i];
     }
-
-    LOGD("StorageStatusService:: userId %{public}d", userId);
+    LOGI("StorageStatusService::GetAppSize end");
     return E_OK;
 }
 

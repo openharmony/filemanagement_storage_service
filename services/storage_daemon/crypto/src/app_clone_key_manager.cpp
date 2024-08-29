@@ -25,7 +25,7 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-static const std::string NEED_RESTORE_PATH = "/data/service/el1/storage_daemon/sd/el1/%d/latest/need_restore";
+static const std::string NEED_RESTORE_PATH = "/data/service/el1/public/storage_daemon/sd/el1/%d/latest/need_restore";
 
 int AppCloneKeyManager::ActiveAppCloneUserKey()
 {

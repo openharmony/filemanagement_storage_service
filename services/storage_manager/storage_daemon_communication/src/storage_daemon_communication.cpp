@@ -21,6 +21,10 @@
 #include "ipc/istorage_daemon.h"
 #include "ipc/storage_daemon.h"
 #include "ipc/storage_daemon_proxy.h"
+#include "os_account_manager.h"
+#ifdef ENABLE_SCREENLOCK_MANAGER
+#include "screenlock_manager.h"
+#endif
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 
@@ -127,6 +131,21 @@ int32_t StorageDaemonCommunication::StopUser(int32_t userId)
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->StopUser(userId);
+}
+
+int32_t StorageDaemonCommunication::CompleteAddUser(int32_t userId)
+{
+    LOGI("StorageDaemonCommunication::CompleteAddUser start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::CompleteAddUser connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::CompleteAddUser service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->CompleteAddUser(userId);
 }
 
 int32_t StorageDaemonCommunication::Mount(std::string volumeId, int32_t flag)
@@ -388,9 +407,35 @@ int32_t StorageDaemonCommunication::ResetSdProxy()
     return E_OK;
 }
 
+void StorageDaemonCommunication::ForceLockUserScreen()
+{
+    LOGI("StorageDaemonCommunication::ForceLockUserScreen, storage_daemon process maybe has died.");
+#ifdef ENABLE_SCREENLOCK_MANAGER
+    std::vector<int32_t> ids;
+    int32_t ret = AccountSA::OsAccountManager::QueryActiveOsAccountIds(ids);
+    if (ret != ERR_OK || ids.empty()) {
+        LOGE("Query active userid failed, ret = %{public}u", ret);
+        return;
+    }
+    int reasonFlag = static_cast<int>(ScreenLock::StrongAuthReasonFlags::ACTIVE_REQUEST);
+    ret = ScreenLock::ScreenLockManager::GetInstance()->RequestStrongAuth(reasonFlag, ids[0]);
+    if (ret != ScreenLock::E_SCREENLOCK_OK) {
+        LOGE("Request strong auth by screen lock manager failed.");
+        return;
+    }
+    ret = ScreenLock::ScreenLockManager::GetInstance()->Lock(ids[0]);
+    if (ret != ScreenLock::E_SCREENLOCK_OK) {
+        LOGE("Lock user screen by screen lock manager failed.");
+    }
+    LOGI("Force lock user screen and request strong auth success for userId = %{public}d.", ids[0]);
+#endif
+}
+
 void SdDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
 {
+    LOGE("StorageDaemonCommunication::OnRemoteDied, storage_daemon process has died.");
     DelayedSingleton<StorageDaemonCommunication>::GetInstance()->ResetSdProxy();
+    DelayedSingleton<StorageDaemonCommunication>::GetInstance()->ForceLockUserScreen();
 }
 
 std::vector<int32_t> StorageDaemonCommunication::CreateShareFile(const std::vector<std::string> &uriList,
@@ -469,7 +514,7 @@ int32_t StorageDaemonCommunication::MountCryptoPathAgain(int32_t userId)
     return storageDaemon_->MountCryptoPathAgain(userId);
 }
 
-int32_t StorageDaemonCommunication::GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId)
+int32_t StorageDaemonCommunication::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId)
 {
     int32_t err = Connect();
     if (err != E_OK) {
@@ -480,7 +525,7 @@ int32_t StorageDaemonCommunication::GenerateAppkey(uint32_t userId, uint32_t app
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->GenerateAppkey(userId, appUid, keyId);
+    return storageDaemon_->GenerateAppkey(userId, hashId, keyId);
 }
 
 int32_t StorageDaemonCommunication::DeleteAppkey(uint32_t userId, const std::string keyId)
@@ -508,6 +553,10 @@ int32_t StorageDaemonCommunication::CreateRecoverKey(uint32_t userId,
         LOGE("Connect failed");
         return err;
     }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
     return storageDaemon_->CreateRecoverKey(userId, userType, token, secret);
 }
 
@@ -518,6 +567,10 @@ int32_t StorageDaemonCommunication::SetRecoverKey(const std::vector<uint8_t> &ke
     if (err != E_OK) {
         LOGE("Connect failed");
         return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->SetRecoverKey(key);
 }

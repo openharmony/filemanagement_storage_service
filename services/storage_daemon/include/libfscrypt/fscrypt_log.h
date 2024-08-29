@@ -16,19 +16,25 @@
 #define FSCRYPT_LOG
 
 #include <errno.h>
+#include "hilog/log.h"
 
-#include "init_log.h"
+#define LOG_DOMAIN 0xD004301
+#define STORAGE_LOG_TAG "StorageDaemon"
 
-#define FSCRYPT_LOG_FILE "fscrypt.log"
-#define FSCRYPT_LABEL "FSCRYPT"
-#define FSCRYPT_LOGI(fmt, ...) INIT_LOGI(fmt, ##__VA_ARGS__)
-#define FSCRYPT_LOGE(fmt, ...) INIT_LOGE(fmt, ##__VA_ARGS__)
-#define FSCRYPT_LOGV(fmt, ...) INIT_LOGV(fmt, ##__VA_ARGS__)
+#define LOGI(fmt, ...) \
+    ((void)HILOG_IMPL(LOG_CORE, LOG_INFO, LOG_DOMAIN, STORAGE_LOG_TAG, \
+    "[%{public}s:%{public}d] " fmt, __FUNCTION__, __LINE__, ##__VA_ARGS__))
+#define LOGD(fmt, ...) \
+    ((void)HILOG_IMPL(LOG_CORE, LOG_DEBUG, LOG_DOMAIN, STORAGE_LOG_TAG, \
+    "[%{public}s:%{public}d] " fmt, __FUNCTION__, __LINE__, ##__VA_ARGS__))
+#define LOGE(fmt, ...) \
+    ((void)HILOG_IMPL(LOG_CORE, LOG_ERROR, LOG_DOMAIN, STORAGE_LOG_TAG, \
+    "[%{public}s:%{public}d] " fmt, __FUNCTION__, __LINE__, ##__VA_ARGS__))
 
 #define FSCRYPT_ERROR_CHECK(ret, statement, format, ...) \
     do {                                                  \
         if (!(ret)) {                                     \
-            FSCRYPT_LOGE(format, ##__VA_ARGS__);             \
+            LOGE(format, ##__VA_ARGS__);             \
             statement;                                    \
         }                                                 \
     } while (0)

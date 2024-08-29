@@ -51,7 +51,6 @@ ohos_unittest("storage_daemon_test") {
   ]
 
   sources = [
-    "$ROOT_DIR/crypto/src/anco_key_manager.cpp",
     "$ROOT_DIR/crypto/src/app_clone_key_manager.cpp",
     "$ROOT_DIR/crypto/test/key_manager_mock.cpp",
     "$ROOT_DIR/disk/src/disk_config.cpp",
@@ -87,7 +86,9 @@ ohos_unittest("storage_daemon_test") {
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "dfs_service:cloud_daemon_kit_inner",
+    "eventhandler:libeventhandler",
     "hilog:libhilog",
+    "hisysevent:libhisysevent",
     "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_single",

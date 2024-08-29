@@ -96,5 +96,19 @@ int32_t MultiUserManagerService::StopUser(int32_t userId)
     err = sdCommunication->StopUser(userId);
     return err;
 }
+
+int32_t MultiUserManagerService::CompleteAddUser(int32_t userId)
+{
+    LOGI("MultiUserManagerService::CompleteAddUser, userId:%{public}d", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("MultiUserManagerService::CompleteAddUser userId %{public}d out of range", userId);
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    err = sdCommunication->CompleteAddUser(userId);
+    return err;
+}
 } // StorageManager
 } // OHOS

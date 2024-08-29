@@ -37,6 +37,7 @@ public:
     virtual int32_t StopUser(int32_t userId) override;
     virtual int32_t PrepareUserDirs(int32_t userId, uint32_t flags) override;
     virtual int32_t DestroyUserDirs(int32_t userId, uint32_t flags) override;
+    virtual int32_t CompleteAddUser(int32_t userId) override;
 
     // fscrypt api
     virtual int32_t InitGlobalKey(void) override;
@@ -58,7 +59,7 @@ public:
                                      const std::vector<uint8_t> &token,
                                      const std::vector<uint8_t> &secret) override;
     virtual int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus) override;
-    virtual int32_t GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId) override;
+    virtual int32_t GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId) override;
     virtual int32_t DeleteAppkey(uint32_t userId, const std::string &keyId) override;
     virtual int32_t CreateRecoverKey(uint32_t userId,
                                      uint32_t userType,

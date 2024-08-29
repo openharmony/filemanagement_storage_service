@@ -29,7 +29,6 @@
 #include "system_ability_definition.h"
 #include "user/user_manager.h"
 #include "utils/string_utils.h"
-#include "system_ability_definition.h"
 #ifdef DFS_SERVICE
 #include "cloud_daemon_manager.h"
 #endif

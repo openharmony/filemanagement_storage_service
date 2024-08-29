@@ -30,8 +30,9 @@ const uint32_t USER_UNLOCK = 0x2;
 const uint32_t USER_ADD_AUTH = 0x0;
 const uint32_t USER_CHANGE_AUTH = 0x1;
 const std::string SUFFIX_NEED_UPDATE = "/need_update";
+const std::string SUFFIX_NEED_RESTORE = "/need_restore";
 const std::vector<uint8_t> NULL_SECRET = { '!' };
-class BaseKey {
+class BaseKey : public std::enable_shared_from_this<BaseKey> {
 public:
     BaseKey() = delete;
     BaseKey(const std::string &dir, uint8_t keyLen = CRYPTO_AES_256_XTS_KEY_SIZE);
@@ -50,7 +51,7 @@ public:
     virtual bool InactiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
     virtual bool LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt = MNT_DATA) = 0;
     virtual bool UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt = MNT_DATA) = 0;
-    virtual bool GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId) = 0;
+    virtual bool GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId) = 0;
     virtual bool DeleteAppkey(const std::string keyId) = 0;
     virtual bool AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status) = 0;
     virtual bool DeleteClassEPinCode(uint32_t userId) = 0;
@@ -58,6 +59,7 @@ public:
     virtual bool EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status) = 0;
     virtual bool ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId) = 0;
     virtual bool LockUece(bool &isFbeSupport) = 0;
+    bool DoRestoreKeyEx(const UserAuth &auth, const std::string &keypath);
     bool EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey, KeyBlob &encryptedKey);
     bool DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey, KeyBlob &decryptedKey);
     bool RenameKeyPath(const std::string &keyPath);
@@ -95,7 +97,6 @@ private:
     bool DoRestoreKeyDe(const UserAuth &auth, const std::string &path);
     bool DoRestoreKeyOld(const UserAuth &auth, const std::string &keypath);
     bool DoUpdateRestore(const UserAuth &auth, const std::string &keyPath);
-    bool DoRestoreKeyEx(const UserAuth &auth, const std::string &keypath);
     static bool GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size);
     static bool GenerateKeyBlob(KeyBlob &blob, const uint32_t size);
     static bool LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size);

@@ -77,7 +77,7 @@ public:
     int UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &token,
                          const std::vector<uint8_t> &secret);
     int GetLockScreenStatus(uint32_t user, bool &lockScreenStatus);
-    int GenerateAppkey(uint32_t user, uint32_t appUid, std::string &keyId);
+    int GenerateAppkey(uint32_t user, uint32_t hashId, std::string &keyId);
     int DeleteAppkey(uint32_t user, const std::string keyId);
     int UnlockUserAppKeys(uint32_t userId, bool needGetAllAppKey);
     int GetFileEncryptStatus(uint32_t userId, bool &isEncrypted);
@@ -128,6 +128,10 @@ private:
     int CheckAndDeleteEmptyEl5Directory(std::string keyDir, unsigned int user);
     bool GetUserDelayHandler(uint32_t userId, std::shared_ptr<DelayHandler> &delayHandler);
     bool IsUeceSupport();
+    bool IsUserCeDecrypt(uint32_t userId);
+    bool UnlockEceSece(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret, int &ret);
+    bool UnlockUece(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret, int &ret);
+    void CheckAndClearTokenInfo(uint32_t user);
 
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl1Key_;
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl2Key_;

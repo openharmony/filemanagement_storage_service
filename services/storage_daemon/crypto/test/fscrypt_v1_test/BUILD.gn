@@ -38,7 +38,6 @@ ohos_moduletest("FscryptKeyV1Test") {
   ]
 
   sources = [
-    "${storage_daemon_path}/crypto/src/anco_key_manager.cpp",
     "${storage_daemon_path}/crypto/src/base_key.cpp",
     "${storage_daemon_path}/crypto/src/crypto_delay_handler.cpp",
     "${storage_daemon_path}/crypto/src/fbex.cpp",
@@ -46,6 +45,7 @@ ohos_moduletest("FscryptKeyV1Test") {
     "${storage_daemon_path}/crypto/src/fscrypt_key_v2.cpp",
     "${storage_daemon_path}/crypto/src/huks_master.cpp",
     "${storage_daemon_path}/crypto/src/iam_client.cpp",
+    "${storage_daemon_path}/crypto/src/key_backup.cpp",
     "${storage_daemon_path}/crypto/src/key_manager.cpp",
     "${storage_daemon_path}/crypto/src/openssl_crypto.cpp",
     "${storage_daemon_path}/crypto/test/fscrypt_v1_test/fscrypt_key_v1_test.cpp",
@@ -75,6 +75,15 @@ ohos_moduletest("FscryptKeyV1Test") {
     "openssl:libcrypto_shared",
     "samgr:samgr_proxy",
   ]
+
+  if (enable_tee_client) {
+    defines += [ "RECOVER_KEY_TEE_ENVIRONMENT" ]
+    external_deps += [ "tee_client:libteec" ]
+  }
+  if (enable_user_auth_framework) {
+    defines += [ "USER_AUTH_FRAMEWORK" ]
+    external_deps += [ "user_auth_framework:userauth_client" ]
+  }
 }
 
 group("fscrypt_key_v1_test") {

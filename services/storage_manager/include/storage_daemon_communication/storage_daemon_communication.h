@@ -33,6 +33,7 @@ public:
     int32_t RemoveUser(int32_t userId, uint32_t flags);
     int32_t PrepareStartUser(int32_t userId);
     int32_t StopUser(int32_t userId);
+    int32_t CompleteAddUser(int32_t userId);
 
     int32_t Mount(std::string volumeId, int32_t flag);
     int32_t Unmount(std::string volumeId);
@@ -60,7 +61,7 @@ public:
                              const std::vector<uint8_t> &secret);
     int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted);
     int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus);
-    int32_t GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId);
+    int32_t GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId);
     int32_t DeleteAppkey(uint32_t userId, const std::string keyId);
     int32_t CreateRecoverKey(uint32_t userId,
                              uint32_t userType,
@@ -69,6 +70,7 @@ public:
     int32_t SetRecoverKey(const std::vector<uint8_t> &key);
 
     int32_t ResetSdProxy();
+    void ForceLockUserScreen();
 
     // app file share api
     std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList, uint32_t tokenId, uint32_t flag);

@@ -262,9 +262,9 @@ static int32_t GenerateAppkey(const std::vector<std::string> &args)
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }
-    uint32_t appUid = 0;
+    uint32_t hashId = 0;
     std::string keyId;
-    return OHOS::StorageDaemon::StorageDaemonClient::GenerateAppkey(userId, appUid, keyId);
+    return OHOS::StorageDaemon::StorageDaemonClient::GenerateAppkey(userId, hashId, keyId);
 }
 
 static int32_t DeleteAppkey(const std::vector<std::string> &args)

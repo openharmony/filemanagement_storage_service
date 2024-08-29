@@ -21,7 +21,6 @@ namespace StorageDaemon {
 IamClient::IamClient()
 {
     LOGD("enter");
-    secureUidStatus_ = FAILED;
 }
 
 IamClient::~IamClient()
@@ -41,6 +40,19 @@ uint64_t UserSecCallback::GetSecureUid()
 {
     LOGI("enter");
     return secureUid_;
+}
+
+void UserEnrollCallback::OnSecUserInfo(const UserIam::UserAuth::SecUserInfo &info)
+{
+    LOGI("enter");
+    info_ = info;
+    IamClient::GetInstance().NotifyGetSecUserInfo();
+}
+
+UserIam::UserAuth::SecUserInfo UserEnrollCallback::GetSecUserInfo()
+{
+    LOGI("enter");
+    return info_;
 }
 #endif
 
@@ -70,6 +82,80 @@ bool IamClient::GetSecureUid(uint32_t userId, uint64_t &secureUid)
 #endif
     LOGI("finish");
     return true;
+}
+
+bool IamClient::GetSecUserInfo(uint32_t userId, UserIam::UserAuth::SecUserInfo &info)
+{
+    LOGI("enter");
+#ifdef USER_AUTH_FRAMEWORK
+    LOGI("Get SecUserInfo real !");
+    secUserInfoState_ = SEC_USER_INFO_FAILED;
+    std::shared_ptr<UserEnrollCallback> userEnrollCallback = std::make_shared<UserEnrollCallback>();
+    if (UserIam::UserAuth::UserIdmClient::GetInstance().GetSecUserInfo(userId, userEnrollCallback) !=
+        UserIam::UserAuth::ResultCode::SUCCESS) {
+        LOGE("Get SecUserInfo failed !");
+        return false;
+    }
+    std::unique_lock<std::mutex> lock(iamMutex_);
+    iamCon_.wait_for(lock, std::chrono::seconds(GET_SEC_TIMEOUT),
+                     [this] { return (this->secUserInfoState_ == SEC_USER_INFO_SUCCESS); });
+    if (secUserInfoState_ == SEC_USER_INFO_FAILED) {
+        LOGE("Get SecUserInfo failed, use default !");
+    }
+    info = userEnrollCallback->GetSecUserInfo();
+#else
+    LOGI("iam not support, use default !");
+    info = {};
+#endif
+    LOGI("finish");
+    return true;
+}
+
+int IamClient::HasFaceFinger(uint32_t userId, bool &isExist)
+{
+    isExist = false;
+    UserIam::UserAuth::SecUserInfo info;
+    if (!GetSecUserInfo(userId, info)) {
+        LOGE("Get SecUserInfo failed!");
+        return -ENOENT;
+    }
+    std::vector<UserIam::UserAuth::EnrolledInfo> enrollInfo = info.enrolledInfo;
+    for (auto &item : enrollInfo) {
+        LOGI("EnrollInfo authType is : %{public}d", item.authType);
+        if (item.authType == UserIam::UserAuth::FACE || item.authType == UserIam::UserAuth::FINGERPRINT) {
+            LOGI("The user: %{public}d have authType: %{public}d", userId, item.authType);
+            isExist = true;
+            return 0;
+        }
+    }
+    LOGI("The Face And FingerPrint are not exist !");
+    return 0;
+}
+
+bool IamClient::HasPinProtect(uint32_t userId)
+{
+    UserIam::UserAuth::SecUserInfo info;
+    if (!GetSecUserInfo(userId, info)) {
+        LOGE("Get SecUserInfo failed!");
+        return false;
+    }
+    std::vector<UserIam::UserAuth::EnrolledInfo> enrollInfo = info.enrolledInfo;
+    for (auto &item : enrollInfo) {
+        if (item.authType == UserIam::UserAuth::PIN) {
+            LOGI("The device have pin protect for userId = %{public}d.", userId);
+            return true;
+        }
+    }
+    LOGI("The device has no pin protect for userId = %{public}d.", userId);
+    return false;
+}
+
+int32_t IamClient::NotifyGetSecUserInfo()
+{
+    std::lock_guard<std::mutex> lock(iamMutex_);
+    secUserInfoState_ = SEC_USER_INFO_SUCCESS;
+    iamCon_.notify_one();
+    return 0;
 }
 
 int32_t IamClient::NotifyGetSecureUid()

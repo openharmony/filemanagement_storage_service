@@ -41,7 +41,6 @@ ohos_static_library("libsdcrypto") {
   }
 
   sources = [
-    "src/anco_key_manager.cpp",
     "src/app_clone_key_manager.cpp",
     "src/base_key.cpp",
     "src/crypto_delay_handler.cpp",
@@ -51,8 +50,10 @@ ohos_static_library("libsdcrypto") {
     "src/fscrypt_key_v2.cpp",
     "src/huks_master.cpp",
     "src/iam_client.cpp",
+    "src/key_backup.cpp",
     "src/key_manager.cpp",
     "src/openssl_crypto.cpp",
+    "src/recover_manager.cpp",
   ]
 
   defines = [
@@ -89,6 +90,11 @@ ohos_static_library("libsdcrypto") {
   if (enable_user_auth_framework) {
     defines += [ "USER_AUTH_FRAMEWORK" ]
     external_deps += [ "user_auth_framework:userauth_client" ]
+  }
+
+  if (enable_tee_client) {
+    defines += [ "RECOVER_KEY_TEE_ENVIRONMENT" ]
+    external_deps += [ "tee_client:libteec" ]
   }
 
   subsystem_name = "filemanagement"

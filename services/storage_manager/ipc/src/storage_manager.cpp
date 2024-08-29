@@ -55,7 +55,7 @@ void StorageManager::OnStart()
 
 void StorageManager::OnStop()
 {
-    LOGI("StorageManager::Onstop Done");
+    LOGI("StorageManager::OnStop Done");
 }
 
 void StorageManager::OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId)
@@ -106,6 +106,14 @@ int32_t StorageManager::StopUser(int32_t userId)
     if (err != E_USERID_RANGE) {
         ResetUserEventRecord(userId);
     }
+    return err;
+}
+
+int32_t StorageManager::CompleteAddUser(int32_t userId)
+{
+    LOGI("StorageManger::CompleteAddUser start, userId: %{public}d", userId);
+    std::shared_ptr<MultiUserManagerService> userManager = DelayedSingleton<MultiUserManagerService>::GetInstance();
+    int32_t err = userManager->CompleteAddUser(userId);
     return err;
 }
 
@@ -489,12 +497,12 @@ int32_t StorageManager::GetLockScreenStatus(uint32_t userId, bool &lockScreenSta
 #endif
 }
 
-int32_t StorageManager::GenerateAppkey(uint32_t appUid, std::string &keyId)
+int32_t StorageManager::GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId)
 {
 #ifdef USER_CRYPTO_MANAGER
-    LOGI("appUid: %{public}u", appUid);
+    LOGI("hashId: %{public}u", hashId);
     std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    return fsCrypto->GenerateAppkey(appUid, keyId);
+    return fsCrypto->GenerateAppkey(hashId, userId, keyId);
 #else
     return E_OK;
 #endif

@@ -201,6 +201,8 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
             return HandlePrepareStartUser(data, reply);
         case static_cast<uint32_t>(StorageManagerInterfaceCode::STOP_USER):
             return HandleStopUser(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::COMPLETE_ADD_USER):
+            return HandleCompleteAddUser(data, reply);
         case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_TOTAL):
             return HandleGetTotal(data, reply);
         case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_FREE):
@@ -289,6 +291,10 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
             return HandleDeleteAppkey(data, reply);
         case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_FILE_ENCRYPT_STATUS):
             return HandleGetFileEncryptStatus(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::CREATE_RECOVER_KEY):
+            return HandleCreateRecoverKey(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::SET_RECOVER_KEY):
+            return HandleSetRecoverKey(data, reply);
         default:
             LOGE("Cannot response request %d: unknown tranction", code);
             return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
@@ -352,6 +358,21 @@ int32_t StorageManagerStub::HandleStopUser(MessageParcel &data, MessageParcel &r
     int err = StopUser(userId);
     if (!reply.WriteUint32(err)) {
         LOGE("StorageManagerStub::HandleStopUser call StopUser failed");
+        return E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleCompleteAddUser(MessageParcel &data, MessageParcel &reply)
+{
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    int32_t userId = data.ReadInt32();
+    LOGI("StorageManagerStub::HandleCompleteAddUser, userId:%{public}d", userId);
+    int err = CompleteAddUser(userId);
+    if (!reply.WriteUint32(err)) {
+        LOGE("StorageManagerStub::HandleCompleteAddUser call CompleteAddUser failed");
         return E_WRITE_REPLY_ERR;
     }
     return E_OK;
@@ -867,7 +888,10 @@ int32_t StorageManagerStub::HandleGetFileEncryptStatus(MessageParcel &data, Mess
         LOGE("Write reply error code failed");
         return E_WRITE_REPLY_ERR;
     }
-
+    if (!reply.WriteBool(isEncrypted)) {
+        LOGE("Write reply isEncrypted failed");
+        return E_WRITE_REPLY_ERR;
+    }
     return E_OK;
 }
 
@@ -915,9 +939,10 @@ int32_t StorageManagerStub::HandleGenerateAppkey(MessageParcel &data, MessagePar
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-    uint32_t appUid = data.ReadUint32();
+    uint32_t hashId = data.ReadUint32();
+    uint32_t userId = data.ReadUint32();
     std::string keyId;
-    int32_t err = GenerateAppkey(appUid, keyId);
+    int32_t err = GenerateAppkey(hashId, userId, keyId);
     if (!reply.WriteString(keyId)) {
         LOGE("Write reply lockScreenStatus failed");
         return E_WRITE_REPLY_ERR;

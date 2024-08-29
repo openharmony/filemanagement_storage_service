@@ -52,10 +52,13 @@ constexpr uid_t OID_HUKS = 3510;
 constexpr uid_t OID_ASSET = 6226;
 constexpr uid_t OID_DDMS = 3012;
 constexpr uid_t OID_HWID = 7008;
+constexpr uid_t OID_HEALTH_SPORT = 7259;
 constexpr uid_t OID_DLP_CREDENTIAL = 3553;
 constexpr uid_t OID_RSS = 1096;
 constexpr uid_t OID_HIVIEW = 1201;
 constexpr uid_t OID_PARENT_CONTROL = 7007;
+constexpr uid_t OID_ACCOUNT = 3058;
+constexpr uid_t OID_COLLABORATION_FWK = 5520;
 constexpr uid_t USER_ID_BASE = 200000;
 
 class MountManager final {
@@ -93,6 +96,7 @@ public:
     void UmountFailRadar(std::vector<ProcessInfo> &processInfo);
     void MountSandboxPath(const std::vector<std::string> &srcPaths, const std::vector<std::string> &dstPaths,
                           const std::string &bundleName, const std::string &userId);
+    bool CheckMountFileByUser(int32_t userId);
 
 private:
     bool SupportHmdfs();

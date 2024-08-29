@@ -79,6 +79,11 @@ public:
         return E_OK;
     }
 
+    virtual int32_t CompleteAddUser(int32_t userId) override
+    {
+        return E_OK;
+    }
+
     virtual int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId) override
     {
@@ -157,7 +162,7 @@ public:
         return E_OK;
     }
 
-    virtual int32_t GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId) override
+    virtual int32_t GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId) override
     {
         return E_OK;
     }
