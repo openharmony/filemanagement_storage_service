@@ -21,7 +21,6 @@ namespace StorageDaemon {
 IamClient::IamClient()
 {
     LOGI("enter");
-    secureUidStatus_ = FAILED;
 }
 
 IamClient::~IamClient()

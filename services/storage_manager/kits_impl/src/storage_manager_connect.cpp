@@ -33,7 +33,7 @@ StorageManagerConnect::~StorageManagerConnect() {}
 
 int32_t StorageManagerConnect::Connect()
 {
-    LOGI("StorageManagerConnect::Connect start");
+    LOGD("StorageManagerConnect::Connect start");
     std::lock_guard<std::mutex> lock(mutex_);
     if (storageManager_ == nullptr) {
         auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
@@ -60,7 +60,7 @@ int32_t StorageManagerConnect::Connect()
             storageManager_->AsObject()->AddDeathRecipient(deathRecipient_);
         }
     }
-    LOGI("StorageManagerConnect::Connect end");
+    LOGD("StorageManagerConnect::Connect end");
     return E_OK;
 }
 

@@ -43,7 +43,7 @@ StorageDaemonCommunication::~StorageDaemonCommunication()
 
 int32_t StorageDaemonCommunication::Connect()
 {
-    LOGI("StorageDaemonCommunication::Connect start");
+    LOGD("StorageDaemonCommunication::Connect start");
     std::lock_guard<std::mutex> lock(mutex_);
     if (storageDaemon_ == nullptr) {
         auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
@@ -69,7 +69,7 @@ int32_t StorageDaemonCommunication::Connect()
 
         storageDaemon_->AsObject()->AddDeathRecipient(deathRecipient_);
     }
-    LOGI("StorageDaemonCommunication::Connect end");
+    LOGD("StorageDaemonCommunication::Connect end");
     return E_OK;
 }
 
