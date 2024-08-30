@@ -291,6 +291,10 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
             return HandleDeleteAppkey(data, reply);
         case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_FILE_ENCRYPT_STATUS):
             return HandleGetFileEncryptStatus(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::CREATE_RECOVER_KEY):
+            return HandleCreateRecoverKey(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::SET_RECOVER_KEY):
+            return HandleSetRecoverKey(data, reply);
         default:
             LOGE("Cannot response request %d: unknown tranction", code);
             return IPCObjectStub::OnRemoteRequest(code, data, reply, option);

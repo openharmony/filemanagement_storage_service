@@ -25,6 +25,7 @@
 #include <unistd.h>
 #include <regex>
 #include <filesystem>
+#include <cstdio>
 #include "hisysevent.h"
 #include "utils/storage_radar.h"
 #include "ipc/istorage_daemon.h"
@@ -145,9 +146,11 @@ MountManager::MountManager()
                   {"/data/service/el2/%d/huks_service", MODE_0711, OID_HUKS, OID_HUKS},
                   {"/data/service/el2/%d/parentcontrol", MODE_0711, OID_PARENT_CONTROL, OID_PARENT_CONTROL},
                   {"/data/service/el4/%d/huks_service", MODE_0711, OID_HUKS, OID_HUKS},
+                  {"/data/service/el2/%d/asset_service", MODE_0711, OID_ASSET, OID_ASSET},
                   {"/data/service/el2/%d/account", MODE_0711, OID_ACCOUNT, OID_ACCOUNT},
                   {"/data/service/el2/%d/dlp_credential_service", MODE_0711, OID_DLP_CREDENTIAL, OID_DLP_CREDENTIAL},
-                  {"/data/service/el2/%d/xpower", MODE_0711, OID_HIVIEW, OID_HIVIEW}},
+                  {"/data/service/el2/%d/xpower", MODE_0711, OID_HIVIEW, OID_HIVIEW},
+                  {"/data/service/el2/%d/iShare", MODE_0711, OID_COLLABORATION_FWK, OID_COLLABORATION_FWK}},
       fileManagerDir_{{"/data/service/el2/%d/hmdfs/account/files/Docs", MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
                    {"/data/service/el2/%d/hmdfs/account/files/Docs/Documents",
                    MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
@@ -423,7 +426,6 @@ int32_t MountManager::CloudMount(int32_t userId, const string& path)
 {
     LOGI("cloud mount start");
 #ifdef DFS_SERVICE
-    int fd = -1;
     string opt;
     int ret;
     if (!cloudReady_) {
@@ -431,7 +433,12 @@ int32_t MountManager::CloudMount(int32_t userId, const string& path)
         return E_MOUNT;
     }
 
-    fd = open("/dev/fuse", O_RDWR);
+    FILE *f = fopen("/dev/fuse", "r+");
+    if (f == nullptr) {
+        LOGE("open /dev/fuse fail");
+        return E_MOUNT;
+    }
+    int fd = fileno(f);
     if (fd < 0) {
         LOGE("open /dev/fuse fail");
         return E_MOUNT;
@@ -449,7 +456,7 @@ int32_t MountManager::CloudMount(int32_t userId, const string& path)
     ret = Mount("/dev/fuse", path.c_str(), "fuse", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_NOATIME, opt.c_str());
     if (ret) {
         LOGE("failed to mount fuse, err %{public}d %{public}d %{public}s", errno, ret, path.c_str());
-        close(fd);
+        (void)fclose(f);
         return ret;
     }
     LOGI("start cloud daemon fuse");
@@ -459,7 +466,7 @@ int32_t MountManager::CloudMount(int32_t userId, const string& path)
         UMount(path.c_str());
     }
     LOGI("mount %{public}s success", path.c_str());
-    close(fd);
+    (void)fclose(f);
     return ret;
 #else
     return E_OK;

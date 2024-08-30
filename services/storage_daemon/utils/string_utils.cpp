@@ -14,6 +14,7 @@
  */
 
 #include "utils/string_utils.h"
+#include "utils/file_utils.h"
 
 #include <cstdarg>
 #include <cstdio>
@@ -21,6 +22,8 @@
 #include <fcntl.h>
 #include <vector>
 #include <unistd.h>
+#include <cstdio>
+#include <dirent.h>
 
 #include "securec.h"
 #include "storage_service_log.h"
@@ -87,7 +90,13 @@ std::vector<std::string> SplitLine(std::string &line, std::string &token)
 
 bool WriteFileSync(const char *path, const uint8_t *data, size_t size)
 {
-    int fd = open(path, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
+    FILE *f = fopen(path, "w");
+    if (f == nullptr) {
+        LOGE("open %{public}s failed, errno %{public}d", path, errno);
+        return false;
+    }
+    ChMod(path, S_IRUSR | S_IWUSR);
+    int fd = fileno(f);
     if (fd == -1) {
         LOGE("open %{public}s failed, errno %{public}d", path, errno);
         return false;
@@ -96,21 +105,21 @@ bool WriteFileSync(const char *path, const uint8_t *data, size_t size)
     long len = write(fd, data, size);
     if (len < 0) {
         LOGE("write %{public}s failed, errno %{public}d", path, errno);
-        (void)close(fd);
+        (void)fclose(f);
         return false;
     }
     if (static_cast<size_t>(len) != size) {
         LOGE("write return len %{public}ld, not equal to content length %{public}zu", len, size);
-        (void)close(fd);
+        (void)fclose(f);
         return false;
     }
 
     if (fsync(fd) != 0) {
         LOGE("fsync %{public}s failed, errno %{public}d", path, errno);
-        (void)close(fd);
+        (void)fclose(f);
         return false;
     }
-    (void)close(fd);
+    (void)fclose(f);
     return true;
 }
 

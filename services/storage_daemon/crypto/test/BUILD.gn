@@ -55,7 +55,18 @@ ohos_moduletest("CryptoSubTest") {
     "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_single",
+    "os_account:os_account_innerkits",
   ]
+
+  if (enable_tee_client) {
+    defines += [ "RECOVER_KEY_TEE_ENVIRONMENT" ]
+    external_deps += [ "tee_client:libteec" ]
+  }
+
+  if (enable_screenlock_manager) {
+    defines += [ "ENABLE_SCREENLOCK_MANAGER" ]
+    external_deps += [ "screenlock_mgr:screenlock_client" ]
+  }
 }
 
 group("crypto_test") {

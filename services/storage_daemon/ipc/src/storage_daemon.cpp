@@ -809,7 +809,7 @@ int32_t StorageDaemon::CreateRecoverKey(uint32_t userId,
 {
     LOGI("begin to CreateRecoverKey");
 #ifdef USER_CRYPTO_MANAGER
-    return E_OK;
+    return KeyManager::GetInstance()->CreateRecoverKey(userId, userType, token, secret);
 #else
     return E_OK;
 #endif
@@ -819,7 +819,7 @@ int32_t StorageDaemon::SetRecoverKey(const std::vector<uint8_t> &key)
 {
     LOGI("begin to SetRecoverKey");
 #ifdef USER_CRYPTO_MANAGER
-    return E_OK;
+    return KeyManager::GetInstance()->SetRecoverKey(key);
 #else
     return E_OK;
 #endif

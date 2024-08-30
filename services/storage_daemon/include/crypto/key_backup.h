@@ -91,7 +91,7 @@ private:
 
 private:
     constexpr static mode_t DEFAULT_DIR_PERM = 0700;
-    constexpr static mode_t DEFAULT_WRITE_FILE_PERM = 0666;
+    constexpr static mode_t DEFAULT_WRITE_FILE_PERM = 0644;
     constexpr static uint32_t MAX_FILE_NUM = 5;
 };
 } // namespace StorageDaemon

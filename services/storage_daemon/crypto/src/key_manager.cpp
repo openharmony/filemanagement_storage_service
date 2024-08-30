@@ -18,6 +18,7 @@
 #include <fcntl.h>
 #include <filesystem>
 #include <string>
+#include <cstdio>
 
 #include "base_key.h"
 #include "directory_ex.h"
@@ -28,6 +29,7 @@
 #include "libfscrypt/fscrypt_control.h"
 #include "libfscrypt/key_control.h"
 #include "parameter.h"
+#include "recover_manager.h"
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -1074,7 +1076,8 @@ int KeyManager::ActiveElXUserKey(unsigned int user,
         return -EFAULT;
     }
     std::string NEED_UPDATE_PATH = keyDir + PATH_LATEST + SUFFIX_NEED_UPDATE;
-    if (!FileExists(NEED_UPDATE_PATH) && (elKey->StoreKey(auth) == false)) {
+    std::string NEED_RESTORE_PATH = keyDir + PATH_LATEST + SUFFIX_NEED_RESTORE;
+    if (!FileExists(NEED_RESTORE_PATH) && !FileExists(NEED_UPDATE_PATH) && (elKey->StoreKey(auth) == false)) {
         LOGE("Store el failed");
         return -EFAULT;
     }
@@ -1180,6 +1183,10 @@ int KeyManager::GetLockScreenStatus(uint32_t user, bool &lockScreenStatus)
 
 int KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId)
 {
+    if (!IsUeceSupport()) {
+        LOGI("Not support uece !");
+        return -ENOTSUP;
+    }
     std::lock_guard<std::mutex> lock(keyMutex_);
     if (!IsUserCeDecrypt(userId)) {
         LOGE("user ce does not decrypt, skip");
@@ -1220,13 +1227,51 @@ int KeyManager::CreateRecoverKey(uint32_t userId, uint32_t userType, const std::
                                  const std::vector<uint8_t> &secret)
 {
     LOGI("enter");
-    LOGI("userId %{public}u, userType%{public}u", userId, userType);
+    std::string globalUserEl1Path = USER_EL1_DIR + "/" + std::to_string(GLOBAL_USER_ID);
+    std::string el1Path = USER_EL1_DIR + "/" + std::to_string(userId);
+    std::string el2Path = USER_EL2_DIR + "/" + std::to_string(userId);
+    std::string el3Path = USER_EL3_DIR + "/" + std::to_string(userId);
+    std::string el4Path = USER_EL4_DIR + "/" + std::to_string(userId);
+    std::vector<std::string> elKeyDirs = { DEVICE_EL1_DIR, globalUserEl1Path, el1Path, el2Path, el3Path, el4Path };
+    std::vector<KeyBlob> originKeys;
+    for (const auto &elxKeyDir : elKeyDirs) {
+        if (!IsDir(elxKeyDir)) {
+            LOGE("Have not found type %{public}s el", elxKeyDir.c_str());
+            return -ENOENT;
+        }
+        std::shared_ptr<BaseKey> elxKey = GetBaseKey(elxKeyDir);
+        if (elxKey == nullptr) {
+            LOGE("load elx key failed , key path is %{public}s", elxKeyDir.c_str());
+            return -EOPNOTSUPP;
+        }
+        UserAuth auth = { token, secret };
+        if ((elxKey->RestoreKey(auth) == false) && (elxKey->RestoreKey(NULL_KEY_AUTH) == false)) {
+            LOGE("Restore el failed");
+            return -EFAULT;
+        }
+        KeyBlob originKey;
+        if (!elxKey->GetOriginKey(originKey)) {
+            LOGE("get origin key failed !");
+            return -ENOENT;
+        }
+        originKeys.push_back(std::move(originKey));
+    }
+    if (RecoveryManager::GetInstance().CreateRecoverKey(userId, userType, token, secret, originKeys) != E_OK) {
+        LOGE("Create recovery key failed !");
+        return -ENOENT;
+    }
+    originKeys.clear();
     return E_OK;
 }
 
 int KeyManager::SetRecoverKey(const std::vector<uint8_t> &key)
 {
     LOGI("enter");
+    std::vector<KeyBlob> originIvs;
+    if (RecoveryManager::GetInstance().SetRecoverKey(key) != E_OK) {
+        LOGE("Set recovery key filed !");
+        return -ENOENT;
+    }
     return E_OK;
 }
 
@@ -1498,7 +1543,15 @@ int KeyManager::UpdateKeyContext(uint32_t userId)
 
 bool KeyManager::IsUeceSupport()
 {
-    int fd = open(UECE_PATH, O_RDWR);
+    FILE *f = fopen(UECE_PATH, "r+");
+    if (f == nullptr) {
+        if (errno == ENOENT) {
+            LOGE("uece does not support !");
+        }
+        LOGE("open uece failed, errno : %{public}d", errno);
+        return false;
+    }
+    int fd = fileno(f);
     if (fd < 0) {
         if (errno == ENOENT) {
             LOGE("uece does not support !");
@@ -1506,7 +1559,7 @@ bool KeyManager::IsUeceSupport()
         LOGE("open uece failed, errno : %{public}d", errno);
         return false;
     }
-    close(fd);
+    (void)fclose(f);
     LOGI("uece is support.");
     return true;
 }
@@ -1597,7 +1650,12 @@ int KeyManager::RestoreUserKey(uint32_t userId, KeyType type)
         LOGE("dir not exist");
         return -ENOENT;
     }
-    return RestoreUserKey(userId, dir, NULL_KEY_AUTH, type);
+    int32_t ret = RestoreUserKey(userId, dir, NULL_KEY_AUTH, type);
+    if (ret == 0 && type != EL1_KEY) {
+        saveLockScreenStatus[userId] = true;
+        LOGI("user is %{public}u , saveLockScreenStatus", userId);
+    }
+    return ret;
 }
 #endif
 } // namespace StorageDaemon

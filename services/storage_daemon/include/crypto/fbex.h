@@ -57,6 +57,8 @@ public:
     static int WriteESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uint8_t *eBuffer, uint32_t length);
     static bool IsMspReady();
     static int GetStatus();
+    static int UnlockSendSecret(uint32_t status, uint32_t bufferSize, uint32_t length, uint8_t *eBuffer,
+                                uint8_t *opseBuffer);
     static int InstallEL5KeyToKernel(uint32_t userIdSingle, uint32_t userIdDouble, uint8_t flag,
                                      bool &isSupport, bool &isNeedEncryptClassE);
     static int DeleteClassEPinCode(uint32_t userIdSingle, uint32_t userIdDouble);

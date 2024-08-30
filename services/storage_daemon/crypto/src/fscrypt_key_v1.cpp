@@ -18,6 +18,8 @@
 #include <fcntl.h>
 #include <openssl/sha.h>
 #include <unistd.h>
+#include <cstdio>
+#include <dirent.h>
 
 #include "file_ex.h"
 #include "key_backup.h"
@@ -400,7 +402,11 @@ bool FscryptKeyV1::InactiveKey(uint32_t flag, const std::string &mnt)
 
 void FscryptKeyV1::DropCachesIfNeed()
 {
-    int fd = open(MNT_DATA.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+    DIR *dir = opendir(MNT_DATA.c_str());
+    if (dir == nullptr) {
+        sync();
+    }
+    int fd = dirfd(dir);
     if (fd < 0 || syncfs(fd)) {
         sync();
     }
@@ -408,7 +414,7 @@ void FscryptKeyV1::DropCachesIfNeed()
     if (!SaveStringToFile("/proc/sys/vm/drop_caches", "2")) {
         LOGE("Failed to drop cache during key eviction");
     }
-    (void)close(fd);
+    (void)closedir(dir);
     LOGI("drop cache success");
 }
 
