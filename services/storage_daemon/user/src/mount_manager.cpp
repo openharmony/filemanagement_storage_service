@@ -15,6 +15,7 @@
 
 #include "user/mount_manager.h"
 #include <cstdlib>
+#include <csignal>
 #include <dirent.h>
 #include <fcntl.h>
 #include <set>
@@ -24,6 +25,8 @@
 #include <unistd.h>
 #include <regex>
 #include <filesystem>
+#include "hisysevent.h"
+#include "utils/storage_radar.h"
 #include "ipc/istorage_daemon.h"
 #include "parameter.h"
 #include "quota/quota_manager.h"
@@ -62,6 +65,7 @@ const string MOUNT_POINT_INFO = "/proc/mounts";
 const string MOUNT_POINT_TYPE_HMDFS = "hmdfs";
 const string MOUNT_POINT_TYPE_HMFS = "hmfs";
 const string MOUNT_POINT_TYPE_SHAREFS = "sharefs";
+const string EL2_BASE = "/data/storage/el2/base/";
 const set<string> SANDBOX_EXCLUDE_PATH = {
     "chipset",
     "system",
@@ -72,14 +76,28 @@ const vector<string> CRYPTO_SANDBOX_PATH = {
     "/data/storage/el2/database/",
     "/data/storage/el2/share/",
     "/data/storage/el2/log/",
-    "/data/storage/el2/distributedfiles/"
+    "/data/storage/el2/distributedfiles/",
+    "/data/storage/el2/cloud/",
+    "/data/storage/el3/base/",
+    "/data/storage/el3/database/",
+    "/data/storage/el4/base/",
+    "/data/storage/el4/database/",
+    "/data/storage/el5/base/",
+    "/data/storage/el5/database/"
 };
 const vector<string> CRYPTO_SRC_PATH = {
     "/data/app/el2/<currentUserId>/base/<bundleName>/",
     "/data/app/el2/<currentUserId>/database/<bundleName>/",
     "/mnt/share/<currentUserId>/<bundleName>/",
     "/data/app/el2/<currentUserId>/log/<bundleName>/",
-    "/mnt/hmdfs/<currentUserId>/account/merge_view/data/<bundleName>/"
+    "/mnt/hmdfs/<currentUserId>/account/merge_view/data/<bundleName>/",
+    "/mnt/hmdfs/<currentUserId>/cloud/data/<bundleName>/",
+    "/data/app/el3/<currentUserId>/base/<bundleName>/",
+    "/data/app/el3/<currentUserId>/database/<bundleName>/",
+    "/data/app/el4/<currentUserId>/base/<bundleName>/",
+    "/data/app/el4/<currentUserId>/database/<bundleName>/",
+    "/data/app/el5/<currentUserId>/base/<bundleName>/",
+    "/data/app/el5/<currentUserId>/database/<bundleName>/"
 };
 const std::string HMDFS_SYS_CAP = "const.distributed_file_property.enabled";
 const int32_t HMDFS_VAL_LEN = 6;
@@ -200,7 +218,6 @@ int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath, bool 
                     hmdfsMntArgs.GetFlags(), hmdfsMntArgs.OptionsToString().c_str());
     if (ret != 0 && errno != EEXIST && errno != EBUSY) {
         LOGE("failed to mount hmdfs, err %{public}d", errno);
-        FindProcess(userId);
         return E_MOUNT;
     }
 
@@ -212,51 +229,99 @@ int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath, bool 
     return E_OK;
 }
 
-int32_t MountManager::FindProcess(int32_t userId)
+int32_t MountManager::FindAndKillProcess(int32_t userId, std::list<std::string> &mountFailList)
 {
     if (userId <= 0) {
         return E_OK;
     }
-    LOGI("FindProcess start, userId is %{public}d", userId);
-    Utils::MountArgument argument(Utils::MountArgumentDescriptors::Alpha(userId, ""));
-    const string &prefix = argument.GetMountPointPrefix();
-    DIR *dir = opendir("/proc");
-    if (dir == nullptr) {
+    LOGI("FindAndKillProcess start, userId is %{public}d", userId);
+    auto procDir = std::unique_ptr<DIR, int (*)(DIR*)>(opendir("/proc"), closedir);
+    if (!procDir) {
         LOGE("failed to open dir proc, err %{public}d", errno);
         return -errno;
     }
     std::vector<ProcessInfo> processInfos;
     struct dirent *entry;
-    while ((entry = readdir(dir)) != nullptr) {
-        if (entry->d_type != DT_DIR) continue;
+    while ((entry = readdir(procDir.get())) != nullptr) {
+        if (entry->d_type != DT_DIR) {
+            continue;
+        }
         std::string name = entry->d_name;
-        bool isNum = true;
-        for (char c : name) {
-            if (!isdigit(c)) {
-                isNum = false;
-                break;
-            }
-        }
-        if (!isNum) {
+        if (!StringIsNumber(name)) {
             continue;
         }
-        std::string pidPath = "/proc/" + name;
-        bool found = false;
-        found |= CheckMaps(pidPath + "/maps", prefix);
-        found |= CheckSymlink(pidPath + "/cwd", prefix);
-        found |= CheckSymlink(pidPath + "/root", prefix);
-        found |= CheckSymlink(pidPath + "/exe", prefix);
-        if (!found) {
-            continue;
-        }
-        std::string filename = "/proc/" + name + "/stat";
         ProcessInfo info;
-        if (GetProcessInfo(filename, info)) {
+        std::string filename = "/proc/" + name + "/stat";
+        if (!GetProcessInfo(filename, info)) {
+            LOGE("failed to get process info, pid is %{public}s.", name.c_str());
+            continue;
+        }
+        if (info.name == "(storage_daemon)") {
+            continue;
+        }
+        Utils::MountArgument argument(Utils::MountArgumentDescriptors::Alpha(userId, ""));
+        const string &prefix = argument.GetMountPointPrefix();
+        std::string pidPath = "/proc/" + name;
+        if (PidUsingFlag(pidPath, prefix, mountFailList)) {
             LOGE("find a link pid is %{public}d, processName is %{public}s.", info.pid, info.name.c_str());
             processInfos.push_back(info);
         }
     }
+    LOGI("FindAndKillProcess end, total find %{public}d", static_cast<int>(processInfos.size()));
+    KillProcess(processInfos);
+    UmountFailRadar(processInfos);
     return E_OK;
+}
+
+void MountManager::UmountFailRadar(std::vector<ProcessInfo> &processInfos)
+{
+    if (processInfos.empty()) {
+        return;
+    }
+    std::string ss;
+    int32_t ret = E_UMOUNT;
+    for (const auto &item:processInfos) {
+        ss += item.name + ",";
+    }
+    if (StorageService::StorageRadar::GetInstance().RecordKillProcessResult(ss, ret)) {
+        LOGI("StorageRadar record FindAndKillProcess result success, ret = %{public}d, process is %{public}s",
+             ret, ss.c_str());
+    }
+}
+
+bool MountManager::PidUsingFlag(std::string &pidPath, const std::string &prefix, std::list<std::string> &mountFailList)
+{
+    bool found = false;
+    found |= CheckMaps(pidPath + "/maps", prefix, mountFailList);
+    found |= CheckSymlink(pidPath + "/cwd", prefix, mountFailList);
+    found |= CheckSymlink(pidPath + "/root", prefix, mountFailList);
+    found |= CheckSymlink(pidPath + "/exe", prefix, mountFailList);
+
+    std::string fdPath = pidPath + "/fd";
+    auto fdDir = std::unique_ptr<DIR, int (*)(DIR*)>(opendir(fdPath.c_str()), closedir);
+    if (!fdDir) {
+        LOGE("unable to open %{public}s, err %{public}d", fdPath.c_str(), errno);
+    } else {
+        struct dirent* fdDirent;
+        while ((fdDirent = readdir(fdDir.get())) != nullptr) {
+            if (fdDirent->d_type != DT_LNK) {
+                continue;
+            }
+            found |= CheckSymlink(fdPath + "/" +fdDirent->d_name, prefix, mountFailList);
+        }
+    }
+    return found;
+}
+
+void MountManager::KillProcess(std::vector<ProcessInfo> &processInfo)
+{
+    if (processInfo.empty()) {
+        return;
+    }
+    for (const auto &item: processInfo) {
+        LOGI("KILL PID %{public}d", item.pid);
+        kill(item.pid, SIGKILL);
+    }
 }
 
 bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info)
@@ -264,11 +329,7 @@ bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info
     if (filename.empty()) {
         return false;
     }
-    filesystem::path filepath(filename);
-    std::error_code errCode;
-    if (!exists(filepath, errCode)) {
-        return false;
-    }
+    LOGE("GetProcessInfo path is %{public}s", filename.c_str());
     std::ifstream inputStream(filename.c_str(), std::ios::in);
     if (!inputStream.is_open()) {
         LOGE("unable to open %{public}s, err %{public}d", filename.c_str(), errno);
@@ -277,6 +338,8 @@ bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info
     std::string line;
     std::getline(inputStream, line);
     if (line.empty()) {
+        LOGE("line is empty");
+        inputStream.close();
         return false;
     }
     std::stringstream ss(line);
@@ -286,38 +349,52 @@ bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info
     ss >> processName;
     info.pid = std::stoi(pid);
     info.name = processName;
+    LOGE("GetProcessInfo pid is %{public}s and name is %{public}s", pid.c_str(), processName.c_str());
+    inputStream.close();
     return true;
 }
 
-bool MountManager::CheckMaps(const std::string &path, const std::string &prefix)
+bool MountManager::CheckMaps(const std::string &path, const std::string &prefix, std::list<std::string> &mountFailList)
 {
-    bool found = false;
-    filesystem::path filepath(path);
-    std::error_code errCode;
-    if (!exists(filepath, errCode)) {
+    if (path.empty()) {
         return false;
     }
     std::ifstream inputStream(path.c_str(), std::ios::in);
     if (!inputStream.is_open()) {
         LOGE("unable to open %{public}s, err %{public}d", path.c_str(), errno);
+        return false;
     }
+    LOGE("CheckMaps path is %{public}s", path.c_str());
     std::string tmpLine;
     while (std::getline(inputStream, tmpLine)) {
         std::string::size_type pos = tmpLine.find("/");
-        if (pos != std::string::npos) {
-            tmpLine = tmpLine.substr(pos);
-            if (tmpLine.find(prefix) == 0) {
+        if (pos == std::string::npos) {
+            continue;
+        }
+        tmpLine = tmpLine.substr(pos);
+        if (tmpLine.find(prefix) == 0) {
+            LOGE("find a fd %{public}s", tmpLine.c_str());
+            inputStream.close();
+            return true;
+        }
+        for (const auto &item: mountFailList) {
+            if (tmpLine.find(item) == 0) {
                 LOGE("find a fd %{public}s", tmpLine.c_str());
-                found = true;
-                break;
+                inputStream.close();
+                return true;
             }
         }
     }
-    return found;
+    inputStream.close();
+    return false;
 }
 
-bool MountManager::CheckSymlink(const std::string &path, const std::string &prefix)
+bool MountManager::CheckSymlink(const std::string &path,
+                                const std::string &prefix, std::list<std::string> &mountFailList)
 {
+    if (path.empty()) {
+        return false;
+    }
     char realPath[ONE_KB];
     int res = readlink(path.c_str(), realPath, sizeof(realPath) - 1);
     if (res < 0 || res >= ONE_KB) {
@@ -328,6 +405,12 @@ bool MountManager::CheckSymlink(const std::string &path, const std::string &pref
     if (realPathStr.find(prefix) == 0) {
         LOGE("find a fd %{public}s", realPathStr.c_str());
         return true;
+    }
+    for (const auto &item: mountFailList) {
+        if (realPathStr.find(item) == 0) {
+            LOGE("find a fd %{public}s", realPathStr.c_str());
+            return true;
+        }
     }
     return false;
 }
@@ -437,9 +520,25 @@ static void ParseSandboxPath(string &path, const string &userId, const string &b
     }
 }
 
+bool MountManager::CheckPathValid(const std::string &bundleNameStr, uint32_t userId)
+{
+    string completePath =
+        SANDBOX_ROOT_PATH + to_string(userId) + "/" + bundleNameStr + EL2_BASE;
+    if (!IsDir(completePath)) {
+        LOGE("Invalid directory path: %{public}s", completePath.c_str());
+        return false;
+    }
+
+    if (!std::filesystem::is_empty(completePath)) {
+        LOGE("The directory has been mounted, path is %{public}s", completePath.c_str());
+        return false;
+    }
+    return true;
+}
+
 int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
 {
-    filesystem::path rootDir(SANDBOX_ROOT_PATH + "/" + to_string(userId));
+    filesystem::path rootDir(SANDBOX_ROOT_PATH + to_string(userId));
     std::error_code errCode;
     if (!exists(rootDir, errCode)) {
         LOGE("root path not exists, rootDir is %{public}s", SANDBOX_ROOT_PATH.c_str());
@@ -452,41 +551,63 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
         if (SANDBOX_EXCLUDE_PATH.find(bundleName.path().filename()) != SANDBOX_EXCLUDE_PATH.end()) {
             continue;
         }
-
-        vector<string> cryptoSandboxPathVector = CRYPTO_SANDBOX_PATH;
-        vector<string> cryptoSandboxSrcVector = CRYPTO_SRC_PATH;
+        if (!CheckPathValid(bundleName.path().filename().generic_string(), userId)) {
+            continue;
+        }
+        vector<string> dstPaths = CRYPTO_SANDBOX_PATH;
+        vector<string> srcPaths = CRYPTO_SRC_PATH;
         if (bundleName.path().filename().generic_string() == SCENE_BOARD_BUNDLE_NAME) {
-            cryptoSandboxPathVector.push_back(PUBLIC_DIR_SANDBOX_PATH);
-            cryptoSandboxSrcVector.push_back(PUBLIC_DIR_SRC_PATH);
+            dstPaths.push_back(PUBLIC_DIR_SANDBOX_PATH);
+            srcPaths.push_back(PUBLIC_DIR_SRC_PATH);
         }
-
-        for (size_t i = 0; i < cryptoSandboxPathVector.size(); i++) {
-            string dstPath = bundleName.path().generic_string() + cryptoSandboxPathVector[i];
-            string srcPath = cryptoSandboxSrcVector[i];
-            ParseSandboxPath(srcPath, to_string(userId), bundleName.path().filename().generic_string());
-            LOGD("mount crypto path, srcPath is %{public}s, dstPath is %{public}s", srcPath.c_str(), dstPath.c_str());
-            ret = mount(srcPath.c_str(), dstPath.c_str(), nullptr, MS_BIND | MS_REC, nullptr);
-            if (ret != E_OK && errno == EBUSY) {
-                ret = mount(srcPath.c_str(), dstPath.c_str(), nullptr, MS_BIND | MS_REC, nullptr);
-                LOGI("mount again dstPath is %{public}s, ret is %{public}d.", dstPath.c_str(), ret);
-            }
-            if (ret != 0) {
-                LOGE("mount bind failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
-                    srcPath.c_str(), dstPath.c_str(), errno);
-                continue;
-            }
-            ret = mount(nullptr, dstPath.c_str(), nullptr, MS_SHARED, nullptr);
-            if (ret != 0) {
-                LOGE("mount to share failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
-                    srcPath.c_str(), dstPath.c_str(), errno);
-                continue;
-            }
-            LOGD("mount crypto path success, srcPath is %{public}s dstPath is %{public}s",
-                srcPath.c_str(), dstPath.c_str());
-        }
+        MountSandboxPath(srcPaths, dstPaths, bundleName.path().filename().generic_string(), to_string(userId));
     }
     LOGI("mount crypto path success, userId is %{public}d", userId);
     return ret;
+}
+
+void MountManager::MountSandboxPath(const std::vector<std::string> &srcPaths, const std::vector<std::string> &dstPaths,
+    const std::string &bundleName, const std::string &userId)
+{
+    int srcCnt = static_cast<int>(srcPaths.size());
+    int dstCnt = static_cast<int>(dstPaths.size());
+    if (srcCnt == 0 || dstCnt == 0 || srcCnt != dstCnt) {
+        LOGE("invalid params, srcPaths total %{public}d, dstPaths total %{public}d", srcCnt, dstCnt);
+        return;
+    }
+    for (int i = 0; i < dstCnt; i++) {
+        std::string dstPath = SANDBOX_ROOT_PATH;
+        dstPath = dstPath.append(userId).append("/").append(bundleName).append(dstPaths[i]);
+        string srcPath = srcPaths[i];
+        ParseSandboxPath(srcPath, userId, bundleName);
+        if (!IsDir(dstPath)) {
+            LOGE("dstPath is not a dir: %{public}s", dstPath.c_str());
+            continue;
+        }
+        if (!IsDir(srcPath)) {
+            LOGE("srcPath is not a dir: %{public}s", srcPath.c_str());
+            continue;
+        }
+        LOGD("mount crypto path, srcPath is %{public}s, dstPath is %{public}s", srcPath.c_str(), dstPath.c_str());
+        int32_t ret = mount(srcPath.c_str(), dstPath.c_str(), nullptr, MS_BIND | MS_REC, nullptr);
+        if (ret != E_OK && errno == EBUSY) {
+            ret = mount(srcPath.c_str(), dstPath.c_str(), nullptr, MS_BIND | MS_REC, nullptr);
+            LOGI("mount again dstPath is %{public}s, ret is %{public}d.", dstPath.c_str(), ret);
+        }
+        if (ret != 0) {
+            LOGE("mount bind failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
+                 srcPath.c_str(), dstPath.c_str(), errno);
+            continue;
+        }
+        LOGI("bind mount path, srcPath is %{public}s, dstPath is %{public}s", srcPath.c_str(), dstPath.c_str());
+        ret = mount(nullptr, dstPath.c_str(), nullptr, MS_SHARED, nullptr);
+        if (ret != 0) {
+            LOGE("mount to share failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
+                 srcPath.c_str(), dstPath.c_str(), errno);
+            continue;
+        }
+        LOGI("shared mount success, dstPath is %{public}s", dstPath.c_str());
+    }
 }
 
 void MountManager::MountPointToList(std::list<std::string> &hmdfsList, std::list<std::string> &hmfsList,
@@ -499,6 +620,7 @@ void MountManager::MountPointToList(std::list<std::string> &hmdfsList, std::list
     const string &hmdfsPrefix = hmdfsMntArgs.GetMountPointPrefix();
     const string &hmfsPrefix = hmdfsMntArgs.GetSandboxPath();
     const string &sharefsPrefix = hmdfsMntArgs.GetShareSrc();
+    const string &cloudPrefix = hmdfsMntArgs.GetFullCloud();
     std::stringstream ss(line);
     std::string src;
     ss >> src;
@@ -508,6 +630,9 @@ void MountManager::MountPointToList(std::list<std::string> &hmdfsList, std::list
     ss >> type;
     if (type == MOUNT_POINT_TYPE_HMDFS) {
         if (src.length() >= hmdfsPrefix.length() && src.substr(0, hmdfsPrefix.length()) == hmdfsPrefix) {
+            hmdfsList.push_front(dst);
+        }
+        if (src.length() >= cloudPrefix.length() && src.substr(0, cloudPrefix.length()) == cloudPrefix) {
             hmdfsList.push_front(dst);
         }
         return;
@@ -551,44 +676,67 @@ int32_t MountManager::FindMountPointsToMap(std::map<std::string, std::list<std::
     return E_OK;
 }
 
-int32_t MountManager::UMountAllPath(int32_t userId)
+int32_t MountManager::UMountAllPath(int32_t userId, std::list<std::string> &mountFailList)
 {
     std::map<std::string, std::list<std::string>> mountMap;
     int32_t res = FindMountPointsToMap(mountMap, userId);
     if (res != E_OK) {
         return res;
     }
+    int32_t result = 0;
     std::list<std::string> list = mountMap[MOUNT_POINT_TYPE_SHAREFS];
     int total = static_cast<int>(list.size());
     LOGI("unmount sharefs path start, total %{public}d.", total);
-    for (const std::string &path: list) {
-        LOGD("unmount sharefs path %{public}s.", path.c_str());
-        res = UMount2(path.c_str(), MNT_DETACH);
-        if (res != E_OK) {
-            LOGE("failed to unmount sharefs path %{public}s, errno %{public}d.", path.c_str(), errno);
-        }
+    res = UMountByList(list, mountFailList);
+    if (res != E_OK) {
+        result = res;
     }
+
     list = mountMap[MOUNT_POINT_TYPE_HMDFS];
     total = static_cast<int>(list.size());
     LOGI("unmount hmdfs path start, total %{public}d.", total);
-    for (const std::string &path: list) {
-        LOGD("unmount hmdfs path %{public}s.", path.c_str());
-        res = UMount2(path.c_str(), MNT_DETACH);
-        if (res != E_OK) {
-            LOGE("failed to unmount hmdfs path %{public}s, errno %{public}d.", path.c_str(), errno);
-        }
+    res = UMountByList(list, mountFailList);
+    if (res != E_OK) {
+        result = res;
     }
+    LOGI("result is %{public}d.", result);
     list = mountMap[MOUNT_POINT_TYPE_HMFS];
     total = static_cast<int>(list.size());
     LOGI("unmount hmfs path start, total %{public}d.", total);
+    res = UMountByList(list, mountFailList);
+    if (res != E_OK) {
+        result = res;
+    }
+    if (result != E_OK) {
+        for (const auto &item: mountFailList) {
+            res = UMount2(item.c_str(), MNT_DETACH);
+            if (res != E_OK) {
+                LOGE("failed to unmount with detach, path %{public}s, errno %{public}d.", item.c_str(), errno);
+            }
+        }
+        return result;
+    }
+    LOGI("UMountAllPath success");
+    return E_OK;
+}
+
+int32_t MountManager::UMountByList(std::list<std::string> &list, std::list<std::string> &mountFailList)
+{
+    if (list.empty()) {
+        return E_OK;
+    }
+    int32_t result = E_OK;
     for (const std::string &path: list) {
-        LOGD("unmount hmfs path %{public}s.", path.c_str());
-        res = UMount2(path.c_str(), MNT_DETACH);
+        LOGD("umount path %{public}s.", path.c_str());
+        int32_t res = UMount(path);
         if (res != E_OK) {
-            LOGE("failed to unmount hmfs path %{public}s, errno %{public}d.", path.c_str(), errno);
+            LOGE("failed to unmount path %{public}s, errno %{public}d.", path.c_str(), errno);
+            result = errno;
+            mountFailList.push_back(path);
         }
     }
-    return E_OK;
+    LOGI("UMountByList result is %{public}d.", result);
+    return result;
 }
 
 void MountManager::MountCloudForUsers(void)
@@ -815,15 +963,22 @@ int32_t MountManager::LocalUMount(int32_t userId)
 
 int32_t MountManager::UmountByUser(int32_t userId)
 {
-    FindProcess(userId);
+    LOGI("umount hmdfs mount point start.");
+    int32_t err = E_OK;
+    if (!SupportHmdfs()) {
+        err = LocalUMount(userId);
+    } else {
+        std::list<std::string> mountFailList;
+        err = UMountAllPath(userId, mountFailList);
+        if (err != E_OK) {
+            LOGE("failed to umount hmdfs mount point, err is %{public}d", err);
+            FindAndKillProcess(userId, mountFailList);
+        }
+    }
+
+    LOGI("umount cloud mount point start.");
     int32_t count = 0;
     while (count < UMOUNT_RETRY_TIMES) {
-        int32_t err = E_OK;
-        if (!SupportHmdfs()) {
-            err = LocalUMount(userId);
-        } else {
-            err = UMountAllPath(userId);
-        }
         err = CloudUMount(userId);
         if (err == E_OK) {
             break;
@@ -831,7 +986,7 @@ int32_t MountManager::UmountByUser(int32_t userId)
             count++;
             continue;
         }
-        LOGE("failed to umount hmdfs, errno %{public}d", errno);
+        LOGE("failed to umount cloud mount point, err %{public}d", err);
         return E_UMOUNT;
     }
     return E_OK;
@@ -990,7 +1145,6 @@ int32_t MountManager::DestroyFileManagerDirs(int32_t userId)
     return err ? E_OK : E_DESTROY_DIR;
 }
 
-
 int32_t MountManager::SetFafQuotaProId(int32_t userId)
 {
     int32_t prjId = 0;
@@ -999,6 +1153,19 @@ int32_t MountManager::SetFafQuotaProId(int32_t userId)
     }
     QuotaManager::GetInstance()->SetQuotaPrjId(StringPrintf(SHARE_PATH.c_str(), userId), prjId, true);
     return E_OK;
+}
+
+bool MountManager::CheckMountFileByUser(int32_t userId)
+{
+    for (const DirInfo &dir : virtualDir_) {
+        std::string path = StringPrintf(dir.path.c_str(), userId);
+        if (access(path.c_str(), 0) != 0) {
+            LOGI("VirtualDir : %{public}s is not exists", path.c_str());
+            return false;
+        }
+    }
+    LOGI("MountFile is exists");
+    return true;
 }
 } // namespace StorageDaemon
 } // namespace OHOS

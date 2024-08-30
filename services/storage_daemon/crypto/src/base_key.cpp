@@ -25,6 +25,7 @@
 #include "file_ex.h"
 #include "huks_master.h"
 #include "iam_client.h"
+#include "key_backup.h"
 #include "libfscrypt/key_control.h"
 #include "openssl_crypto.h"
 #include "storage_service_log.h"
@@ -201,9 +202,11 @@ bool BaseKey::StoreKey(const UserAuth &auth)
 #endif
         // rename keypath/temp/ to keypath/version_xx/
         auto candidate = GetNextCandidateDir();
-        LOGD("rename %{public}s to %{public}s", pathTemp.c_str(), candidate.c_str());
+        LOGI("rename %{public}s to %{public}s", pathTemp.c_str(), candidate.c_str());
         if (rename(pathTemp.c_str(), candidate.c_str()) == 0) {
+            LOGI("start sync");
             SyncKeyDir();
+            LOGI("sync end");
             return true;
         }
         LOGE("rename fail return %{public}d, cleanup the temp dir", errno);
@@ -211,7 +214,9 @@ bool BaseKey::StoreKey(const UserAuth &auth)
         LOGE("DoStoreKey fail, cleanup the temp dir");
     }
     OHOS::ForceRemoveDirectory(pathTemp);
+    LOGI("start sync");
     SyncKeyDir();
+    LOGI("sync end");
     return false;
 }
 
@@ -396,6 +401,10 @@ bool BaseKey::UpdateKey(const std::string &keypath)
         }
     }
 
+    std::string backupDir;
+    KeyBackup::GetInstance().GetBackupDir(dir_, backupDir);
+    KeyBackup::GetInstance().CreateBackup(dir_, backupDir, true);
+
     SyncKeyDir();
     return true;
 }
@@ -468,7 +477,7 @@ bool BaseKey::RestoreKey(const UserAuth &auth)
     auto candidate = GetCandidateDir();
     if (candidate.empty()) {
         // no candidate dir, just restore from the latest
-        return DoRestoreKeyEx(auth, dir_ + PATH_LATEST);
+        return KeyBackup::GetInstance().TryRestoreKey(shared_from_this(), auth) == 0;
     }
 
     if (DoRestoreKeyEx(auth, candidate)) {
@@ -656,7 +665,7 @@ bool BaseKey::DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &pat
 bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
 {
     std::string encryptType;
-    LoadStringFromFile(dir_ + PATH_LATEST + SUFFIX_NEED_UPDATE, encryptType);
+    LoadStringFromFile(path + SUFFIX_NEED_UPDATE, encryptType);
     LOGI("encrypt type : %{public}s, keyInfo empty: %{public}u", encryptType.c_str(), keyInfo_.key.IsEmpty());
 
     uint32_t keyType = GetTypeFromDir();
@@ -753,6 +762,11 @@ bool BaseKey::ClearKey(const std::string &mnt)
     InactiveKey(USER_DESTROY, mnt);
     keyInfo_.key.Clear();
     WipingActionDir(dir_);
+    std::string backupDir;
+    KeyBackup::GetInstance().GetBackupDir(dir_, backupDir);
+    WipingActionDir(backupDir);
+    KeyBackup::GetInstance().RemoveNode(backupDir);
+    OHOS::ForceRemoveDirectory(backupDir);
     return OHOS::ForceRemoveDirectory(dir_);
     // use F2FS_IOC_SEC_TRIM_FILE
 }
@@ -799,14 +813,16 @@ void BaseKey::SyncKeyDir() const
 {
     int fd = open(dir_.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
     if (fd < 0) {
-        LOGE("open %{private}s failed, errno %{public}d", dir_.c_str(), errno);
+        LOGE("open %{public}s failed, errno %{public}d", dir_.c_str(), errno);
         sync();
         return;
     }
+    LOGI("start syncfs, dir_ is %{public}s", dir_.c_str());
     if (syncfs(fd) != 0) {
-        LOGE("syncfs %{private}s failed, errno %{public}d", dir_.c_str(), errno);
+        LOGE("syncfs %{public}s failed, errno %{public}d", dir_.c_str(), errno);
         sync();
     }
+    LOGI("syncfs end");
     (void)close(fd);
 }
 
@@ -1016,6 +1032,12 @@ uint32_t BaseKey::GetTypeFromDir()
         LOGE("bad dir %{public}s", dir_.c_str());
         return type;
     }
+
+    if (slashIndex == 0) {
+        LOGE("bad dir %{public}s", dir_.c_str());
+        return type;
+    }
+
     slashIndex = dir_.rfind('/', slashIndex - 1);
     if (slashIndex == std::string::npos) {
         LOGE("bad dir %{public}s", dir_.c_str());

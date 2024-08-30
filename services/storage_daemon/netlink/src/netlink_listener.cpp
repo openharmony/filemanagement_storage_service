@@ -15,8 +15,6 @@
 
 #include "netlink/netlink_listener.h"
 
-#include <cerrno>
-#include <iostream>
 #include <memory>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -127,9 +125,9 @@ void NetlinkListener::RunListener()
 {
     struct pollfd ufds[2];
     int32_t idleTime = POLL_IDLE_TIME;
+
     while (1) {
         int32_t fdCount = 0;
-
         ufds[fdCount].fd = socketPipe_[0];
         ufds[fdCount].events = POLLIN;
         ufds[fdCount].revents = 0;
@@ -148,7 +146,7 @@ void NetlinkListener::RunListener()
                 continue;
             }
             break;
-        } else if (fdEventCount >= 0) {
+        } else if (fdEventCount == 0) {
             continue;
         }
 

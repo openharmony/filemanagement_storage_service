@@ -85,6 +85,16 @@ bool IsDir(const std::string &path)
     return S_ISDIR(st.st_mode);
 }
 
+bool IsFile(const std::string &path)
+{
+    // check whether the path exists
+    struct stat buf = {};
+    if (stat(path.c_str(), &buf) != 0) {
+        return false;
+    }
+    return S_ISREG(buf.st_mode);
+}
+
 bool MkDirRecurse(const std::string& path, mode_t mode)
 {
     std::string::size_type index = 0;
@@ -439,10 +449,12 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
                 LOGI("get result %{public}s", buf);
                 output->push_back(buf);
             }
+            (void)close(pipe_fd[0]);
             return E_OK;
         }
 
         waitpid(pid, &status, 0);
+        (void)close(pipe_fd[0]);
         if (errno == ECHILD) {
             return E_NO_CHILD;
         }
