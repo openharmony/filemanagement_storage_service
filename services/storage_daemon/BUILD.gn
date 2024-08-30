@@ -27,6 +27,7 @@ ohos_prebuilt_etc("storage_daemon_cfg") {
 config("storage_daemon_config") {
   include_dirs = [
     "include",
+    "include/utils",
     "../storage_manager/include",
     "${storage_interface_path}/innerkits/storage_manager/native",
     "../common/include",
@@ -243,6 +244,7 @@ ohos_shared_library("storage_common_utils") {
 
   include_dirs = [
     "./include",
+    "./include/utils",
     "../common/include",
   ]
 
@@ -254,16 +256,19 @@ ohos_shared_library("storage_common_utils") {
   sources = [
     "./utils/disk_utils.cpp",
     "./utils/file_utils.cpp",
+    "./utils/hi_audit.cpp",
     "./utils/mount_argument_utils.cpp",
     "./utils/set_flag_utils.cpp",
     "./utils/storage_radar.cpp",
     "./utils/string_utils.cpp",
+    "./utils/zip_util.cpp",
   ]
 
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
+    "zlib:shared_libz",
   ]
 
   if (build_selinux) {

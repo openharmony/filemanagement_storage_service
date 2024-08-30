@@ -46,6 +46,7 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/include/crypto",
     "$ROOT_DIR/utils",
     "$ROOT_DIR/../storage_manager/include",
+    "${storage_daemon_path}/include/utils",
     "${storage_interface_path}/innerkits/storage_manager/native",
     "${storage_service_common_path}/include",
   ]
