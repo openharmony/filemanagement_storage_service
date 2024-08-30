@@ -49,6 +49,7 @@ constexpr uid_t OID_DFS_SHARE = 3822;
 constexpr uid_t OID_TEE = 6668;
 constexpr uid_t OID_DEVICE_AUTH = 3333;
 constexpr uid_t OID_HUKS = 3510;
+constexpr uid_t OID_ASSET = 6226;
 constexpr uid_t OID_DDMS = 3012;
 constexpr uid_t OID_HWID = 7008;
 constexpr uid_t OID_HEALTH_SPORT = 7259;
