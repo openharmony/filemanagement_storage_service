@@ -70,7 +70,7 @@ bool FscryptKeyV1Ext::ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, ui
         return true;
     }
 
-    LOGD("enter");
+    LOGI("enter");
     uint32_t user = GetMappedUserId(userId_, type_);
     LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, user);
     // iv buffer returns derived keys
@@ -89,7 +89,7 @@ bool FscryptKeyV1Ext::UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_t s
     if (!FBEX::IsFBEXSupported()) {
         return true;
     }
-    LOGD("enter");
+    LOGI("enter");
     uint32_t user = GetMappedUserId(userId_, type_);
     LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, user);
     if (FBEX::UnlockScreenToKernel(user, type_, iv, size)) {
@@ -104,7 +104,7 @@ bool FscryptKeyV1Ext::GenerateAppkey(uint32_t user, uint32_t hashId, std::unique
     if (!FBEX::IsFBEXSupported()) {
         return true;
     }
-    LOGD("enter");
+    LOGI("enter");
     LOGI("map userId %{public}u to %{public}u", userId_, user);
     // 0--single id, 1--double id
     UserIdToFbeStr userIdToFbe = { .userIds = { userId_, GetMappedUserId(userId_, type_) }, .size = USER_ID_SIZE };
@@ -120,7 +120,7 @@ bool FscryptKeyV1Ext::AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint
     if (!FBEX::IsFBEXSupported()) {
         return true;
     }
-    LOGD("enter");
+    LOGI("enter");
     uint32_t userIdDouble = GetMappedUserId(userId_, type_);
     LOGI("map userId %{public}u to %{public}u", userId_, userIdDouble);
     if (FBEX::InstallEL5KeyToKernel(userId_, userIdDouble, status, isSupport, isNeedEncryptClassE)) {
@@ -135,7 +135,7 @@ bool FscryptKeyV1Ext::DeleteClassEPinCode(uint32_t userId)
     if (!FBEX::IsFBEXSupported()) {
         return true;
     }
-    LOGD("enter");
+    LOGI("enter");
     uint32_t userIdDouble = GetMappedUserId(userId_, type_);
     LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, userIdDouble);
     if (FBEX::DeleteClassEPinCode(userId_, userIdDouble)) {
@@ -164,7 +164,7 @@ bool FscryptKeyV1Ext::ReadClassE(uint32_t status, uint8_t *classEBuffer, uint32_
     if (!FBEX::IsFBEXSupported()) {
         return true;
     }
-    LOGD("enter");
+    LOGI("enter");
     // 0--single id, 1--double id
     UserIdToFbeStr userIdToFbe = { .userIds = { userId_, GetMappedUserId(userId_, type_) }, .size = USER_ID_SIZE };
     LOGI("type_: %{public}u, userId %{public}u to %{public}u", type_, userId_, userIdToFbe.userIds[DOUBLE_ID_INDEX]);
@@ -180,7 +180,7 @@ bool FscryptKeyV1Ext::WriteClassE(uint32_t status, uint8_t *classEBuffer, uint32
     if (!FBEX::IsFBEXSupported()) {
         return true;
     }
-    LOGD("enter");
+    LOGI("enter");
     // 0--single id, 1--double id
     UserIdToFbeStr userIdToFbe = { .userIds = { userId_, GetMappedUserId(userId_, type_) }, .size = USER_ID_SIZE };
     LOGI("type_ is %{public}u, map userId %{public}u to %{public}u",
@@ -198,10 +198,10 @@ bool FscryptKeyV1Ext::InactiveKeyExt(uint32_t flag)
         return true;
     }
 
-    LOGD("enter");
+    LOGI("enter");
     bool destroy = !!flag;
     if ((type_ != TYPE_EL2) && !destroy) {
-        LOGD("not el2, no need to inactive");
+        LOGI("not el2, no need to inactive");
         return true;
     }
     uint8_t buf[FBEX_IV_SIZE] = {0};
@@ -225,9 +225,9 @@ bool FscryptKeyV1Ext::LockUserScreenExt(uint32_t flag, uint32_t &elType)
     if (!FBEX::IsFBEXSupported()) {
         return true;
     }
-    LOGD("enter");
+    LOGI("enter");
     uint32_t user = GetMappedUserId(userId_, type_);
-    LOGD("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, user);
+    LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, user);
     if (FBEX::LockScreenToKernel(user)) {
         LOGE("LockScreenToKernel failed, userId %{public}d", user);
         return false;
@@ -242,9 +242,9 @@ bool FscryptKeyV1Ext::LockUeceExt(bool &isFbeSupport)
     if (!FBEX::IsFBEXSupported()) {
         return true;
     }
-    LOGD("enter");
+    LOGI("enter");
     uint32_t userIdDouble = GetMappedUserId(userId_, type_);
-    LOGD("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, userIdDouble);
+    LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, userIdDouble);
     if (FBEX::LockUece(userId_, userIdDouble, isFbeSupport)) {
         LOGE("LockUeceExt failed, userId");
         return false;

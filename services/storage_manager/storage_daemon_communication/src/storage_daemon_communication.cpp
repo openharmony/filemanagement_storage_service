@@ -320,7 +320,7 @@ int32_t StorageDaemonCommunication::InactiveUserKey(uint32_t userId)
 
 int32_t StorageDaemonCommunication::LockUserScreen(uint32_t userId)
 {
-    LOGD("enter");
+    LOGI("enter");
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("Connect failed");
@@ -335,7 +335,7 @@ int32_t StorageDaemonCommunication::LockUserScreen(uint32_t userId)
 
 int32_t StorageDaemonCommunication::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
 {
-    LOGD("enter");
+    LOGI("enter");
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("Connect failed");
@@ -397,7 +397,7 @@ int32_t StorageDaemonCommunication::UpdateKeyContext(uint32_t userId)
 
 int32_t StorageDaemonCommunication::ResetSdProxy()
 {
-    LOGD("enter");
+    LOGI("enter");
     std::lock_guard<std::mutex> lock(mutex_);
     if ((storageDaemon_ != nullptr) && (storageDaemon_->AsObject() != nullptr)) {
         storageDaemon_->AsObject()->RemoveDeathRecipient(deathRecipient_);

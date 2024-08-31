@@ -511,7 +511,7 @@ int IsSameGidUid(const std::string &dir, uid_t uid, gid_t gid)
 
 bool MoveDataShell(const std::string &from, const std::string &to)
 {
-    LOGD("MoveDataShell start");
+    LOGI("MoveDataShell start");
     if (TEMP_FAILURE_RETRY(access(from.c_str(), F_OK)) != 0) {
         return true;
     }

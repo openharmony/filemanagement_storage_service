@@ -128,7 +128,7 @@ bool SaveStringToFileSync(const std::string &path, const std::string &data)
     if (path.empty() || data.empty()) {
         return false;
     }
-    LOGD("enter %{public}s, size=%{public}zu", path.c_str(), data.length());
+    LOGI("enter %{public}s, size=%{public}zu", path.c_str(), data.length());
     return WriteFileSync(path.c_str(), reinterpret_cast<const uint8_t *>(data.c_str()), data.size());
 }
 

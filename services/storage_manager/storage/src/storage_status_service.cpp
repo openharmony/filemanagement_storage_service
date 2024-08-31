@@ -181,7 +181,7 @@ int32_t StorageStatusService::GetBundleStatsForIncrease(uint32_t userId, const s
 int32_t StorageStatusService::GetCurrentBundleStats(BundleStats &bundleStats)
 {
     int userId = GetCurrentUserId();
-    LOGD("StorageStatusService::userId is: %{public}d", userId);
+    LOGI("StorageStatusService::userId is: %{public}d", userId);
     std::string pkgName = GetCallingPkgName();
     int32_t ret = GetBundleStats(pkgName, userId, bundleStats, DEFAULT_APP_INDEX);
     if (ret != E_OK) {
@@ -261,13 +261,13 @@ int32_t StorageStatusService::GetUserStorageStatsByType(int32_t userId, StorageS
     storageStats.file_ = 0;
     int32_t err = E_OK;
     if (type == MEDIA_TYPE) {
-        LOGD("GetUserStorageStatsByType media");
+        LOGI("GetUserStorageStatsByType media");
         err = GetMediaStorageStats(storageStats);
     } else if (type == FILE_TYPE) {
-        LOGD("GetUserStorageStatsByType file");
+        LOGI("GetUserStorageStatsByType file");
         err = GetFileStorageStats(userId, storageStats);
     } else {
-        LOGD("GetUserStorageStatsByType type: %{public}s", type.c_str());
+        LOGI("GetUserStorageStatsByType type: %{public}s", type.c_str());
     }
 
     return err;

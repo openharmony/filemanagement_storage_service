@@ -28,7 +28,7 @@ const std::string CLEAR_TASK_NAME = "clear_ece_sece_key";
 DelayHandler::DelayHandler(uint32_t userId) : userId_(userId) {}
 DelayHandler::~DelayHandler()
 {
-    LOGD("DelayHandler Destructor.");
+    LOGI("DelayHandler Destructor.");
     std::unique_lock<std::mutex> lock(eventMutex_);
     if ((eventHandler_ != nullptr) && (eventHandler_->GetEventRunner() != nullptr)) {
         eventHandler_->RemoveAllEvents();
