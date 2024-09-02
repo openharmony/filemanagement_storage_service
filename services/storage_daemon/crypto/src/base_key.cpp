@@ -40,6 +40,7 @@ const std::string PATH_LATEST_BACKUP = "/latest_bak";
 const std::string PATH_KEY_VERSION = "/version_";
 const std::string PATH_KEY_TEMP = "/temp";
 const std::string PATH_NEED_RESTORE_SUFFIX = "/latest/need_restore";
+const std::string PATH_USER_EL1_DIR = "/data/service/el1/public/storage_daemon/sd/el1/";
 
 #ifndef F2FS_IOCTL_MAGIC
 #define F2FS_IOCTL_MAGIC 0xf5
@@ -768,14 +769,27 @@ bool BaseKey::ClearKey(const std::string &mnt)
     LOGI("enter, dir_ = %{public}s", dir_.c_str());
     InactiveKey(USER_DESTROY, mnt);
     keyInfo_.key.Clear();
-    WipingActionDir(dir_);
-    std::string backupDir;
-    KeyBackup::GetInstance().GetBackupDir(dir_, backupDir);
-    WipingActionDir(backupDir);
-    KeyBackup::GetInstance().RemoveNode(backupDir);
-    OHOS::ForceRemoveDirectory(backupDir);
-    return OHOS::ForceRemoveDirectory(dir_);
-    // use F2FS_IOC_SEC_TRIM_FILE
+    bool needClearFlag = true;
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    std::string elNeedRestorePath = PATH_USER_EL1_DIR + std::to_string(GetIdFromDir()) + PATH_NEED_RESTORE_SUFFIX;
+    if (std::filesystem::exists(elNeedRestorePath)) {
+        needClearFlag = false;
+        LOGI("needRestore flag exist, do not remove secret.");
+    }
+#endif
+    if (needClearFlag) {
+        LOGI("do clear key.");
+        WipingActionDir(dir_);
+        std::string backupDir;
+        KeyBackup::GetInstance().GetBackupDir(dir_, backupDir);
+        WipingActionDir(backupDir);
+        KeyBackup::GetInstance().RemoveNode(backupDir);
+        OHOS::ForceRemoveDirectory(backupDir);
+        return OHOS::ForceRemoveDirectory(dir_);
+        // use F2FS_IOC_SEC_TRIM_FILE
+    }
+    LOGI("do not clear key.");
+    return true;
 }
 
 void BaseKey::WipingActionDir(std::string &path)
