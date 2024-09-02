@@ -480,6 +480,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_active, TestSize.Level1)
     g_testKeyV2.ClearKey();
     EXPECT_TRUE(g_testKeyV2.InitKey(true));
     EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV2.UpdateKey());
     EXPECT_TRUE(g_testKeyV2.ActiveKey());
 
     // raw key should be erase after install to kernel.
