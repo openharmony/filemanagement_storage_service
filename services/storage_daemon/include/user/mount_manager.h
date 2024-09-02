@@ -53,6 +53,7 @@ constexpr uid_t OID_DDMS = 3012;
 constexpr uid_t OID_HWID = 7008;
 constexpr uid_t OID_DLP_CREDENTIAL = 3553;
 constexpr uid_t OID_ACCOUNT = 3058;
+constexpr uid_t OID_PARENT_CONTROL = 7007;
 constexpr uid_t USER_ID_BASE = 200000;
 
 class MountManager final {
