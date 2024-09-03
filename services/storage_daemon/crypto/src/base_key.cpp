@@ -701,7 +701,7 @@ bool BaseKey::DoUpdateRestore(const UserAuth &auth, const std::string &keyPath)
         LOGE("Restore old failed !");
         return false;
     }
-    if (std::filesystem::exists(dir_ + PATH_NEED_RESTORE_SUFFIX)) {
+    if (std::filesystem::exists(dir_ + PATH_NEED_RESTORE_SUFFIX) && !auth.token.IsEmpty()) {
         LOGE("Double 2 single, skip huks -> huks-openssl !");
         return true;
     }
