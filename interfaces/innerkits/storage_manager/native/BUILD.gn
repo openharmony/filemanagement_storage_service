@@ -56,6 +56,11 @@ ohos_shared_library("storage_manager_sa_proxy") {
   configs = [ ":private_config" ]
   public_configs = [ ":public_config" ]
 
+  cflags = [
+    "-D_FORTIFY_SOURCE=2",
+    "-fstack-protector-strong",
+  ]
+
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
