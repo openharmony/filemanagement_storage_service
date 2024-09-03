@@ -664,6 +664,12 @@ bool BaseKey::DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &pat
 
 bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
 {
+    auto ver = KeyCtrlLoadVersion(dir_.c_str());
+    if (ver == FSCRYPT_INVALID || ver != keyInfo_.version) {
+        LOGE("RestoreKey fail. bad version loaded %{public}u not expected %{public}u", ver, keyInfo_.version);
+        return false;
+    }
+
     std::string encryptType;
     LoadStringFromFile(path + SUFFIX_NEED_UPDATE, encryptType);
     LOGI("encrypt type : %{public}s, keyInfo empty: %{public}u", encryptType.c_str(), keyInfo_.key.IsEmpty());
