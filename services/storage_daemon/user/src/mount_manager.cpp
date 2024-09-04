@@ -67,7 +67,7 @@ const string MOUNT_POINT_TYPE_HMDFS = "hmdfs";
 const string MOUNT_POINT_TYPE_HMFS = "hmfs";
 const string MOUNT_POINT_TYPE_SHAREFS = "sharefs";
 const string EL2_BASE = "/data/storage/el2/base/";
-const string MOUNT_SUFFIX = "";
+const string MOUNT_SUFFIX = "_locked";
 const set<string> SANDBOX_EXCLUDE_PATH = {
     "chipset",
     "system",
