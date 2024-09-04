@@ -33,6 +33,9 @@ using namespace OHOS::FileManagement::LibN;
 
 namespace OHOS {
 namespace StorageManager {
+const std::string EMPTY_STRING = "";
+constexpr int32_t INVALID_INDEX = -1;
+
 napi_value GetTotalSizeOfVolume(napi_env env, napi_callback_info info)
 {
     if (!IsSystemApp()) {
@@ -129,30 +132,52 @@ napi_value GetFreeSizeOfVolume(napi_env env, napi_callback_info info)
     }
 }
 
+std::tuple<std::string, int32_t> ExtractNameAndIndex(napi_env env, napi_callback_info info)
+{
+    NFuncArg funcArg(env, info);
+    if (!funcArg.InitArgs((int)NARG_CNT::ONE, (int)NARG_CNT::THREE)) {
+        NError(E_PARAMS).ThrowErr(env);
+        return std::make_tuple(EMPTY_STRING, INVALID_INDEX);
+    }
+    bool succ = false;
+    std::unique_ptr<char []> name;
+    tie(succ, name, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
+    if (!succ) {
+        NError(E_PARAMS).ThrowErr(env);
+        return std::make_tuple(EMPTY_STRING, INVALID_INDEX);
+    }
+    std::string nameString(name.get());
+    int32_t index = 0;
+    if (funcArg.GetArgc() == (uint)NARG_CNT::THREE) {
+        std::tie(succ, index) = NVal(env, funcArg[(int)NARG_POS::THIRD]).ToInt32();
+    } else if (NVal(env, funcArg[(int)NARG_POS::SECOND]).TypeIs(napi_number)) {
+        std::tie(succ, index) = NVal(env, funcArg[(int)NARG_POS::SECOND]).ToInt32();
+    }
+    if (!succ) {
+        NError(E_PARAMS).ThrowErr(env);
+        return std::make_tuple(EMPTY_STRING, INVALID_INDEX);
+    }
+    return std::make_tuple(nameString, index);
+}
+
 napi_value GetBundleStats(napi_env env, napi_callback_info info)
 {
     if (!IsSystemApp()) {
         NError(E_PERMISSION_SYS).ThrowErr(env);
         return nullptr;
     }
-    NFuncArg funcArg(env, info);
-    if (!funcArg.InitArgs((int)NARG_CNT::ONE, (int)NARG_CNT::TWO)) {
+    auto result = ExtractNameAndIndex(env, info);
+    if (std::get<0>(result).empty()) {
+        LOGE("Extract pkgName and index from arguments failed");
         NError(E_PARAMS).ThrowErr(env);
         return nullptr;
     }
-
-    bool succ = false;
-    std::unique_ptr<char []> name;
-    tie(succ, name, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
-    if (!succ) {
-        NError(E_PARAMS).ThrowErr(env);
-        return nullptr;
-    }
+    std::string nameString = std::get<0>(result);
+    int32_t index = std::get<1>(result);
     auto bundleStats = std::make_shared<BundleStats>();
-    std::string nameString(name.get());
-    auto cbExec = [nameString, bundleStats]() -> NError {
+    auto cbExec = [nameString, bundleStats, index]() -> NError {
         int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetBundleStats(nameString,
-            *bundleStats);
+            *bundleStats, index);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
         }
@@ -170,8 +195,10 @@ napi_value GetBundleStats(napi_env env, napi_callback_info info)
         return bundleObject;
     };
     std::string procedureName = "GetBundleStats";
+    NFuncArg funcArg(env, info);
+    funcArg.InitArgs((int)NARG_CNT::ONE, (int)NARG_CNT::THREE);
     NVal thisVar(env, funcArg.GetThisVar());
-    if (funcArg.GetArgc() == (uint)NARG_CNT::ONE) {
+    if (funcArg.GetArgc() == (uint)NARG_CNT::ONE || NVal(env, funcArg[(int)NARG_POS::SECOND]).TypeIs(napi_number)) {
         return NAsyncWorkPromise(env, thisVar).Schedule(procedureName, cbExec, cbComplete).val_;
     } else {
         NVal cb(env, funcArg[(int)NARG_POS::SECOND]);

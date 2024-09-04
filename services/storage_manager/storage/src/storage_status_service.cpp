@@ -108,11 +108,12 @@ std::string StorageStatusService::GetCallingPkgName()
     return tokenInfo.bundleName;
 }
 
-int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, BundleStats &bundleStats)
+int32_t StorageStatusService::GetBundleStats(const std::string &pkgName,
+    BundleStats &bundleStats, int32_t appIndex)
 {
     int userId = GetCurrentUserId();
-    LOGD("StorageStatusService::userId is:%d", userId);
-    return GetBundleStats(pkgName, userId, bundleStats);
+    LOGD("StorageStatusService::userId is:%d, appIndex is: %d", userId, appIndex);
+    return GetBundleStats(pkgName, userId, bundleStats, appIndex);
 }
 
 int32_t StorageStatusService::GetUserStorageStats(StorageStats &storageStats)
@@ -182,7 +183,7 @@ int32_t StorageStatusService::GetCurrentBundleStats(BundleStats &bundleStats)
     int userId = GetCurrentUserId();
     LOGD("StorageStatusService::userId is: %{public}d", userId);
     std::string pkgName = GetCallingPkgName();
-    int32_t ret = GetBundleStats(pkgName, userId, bundleStats);
+    int32_t ret = GetBundleStats(pkgName, userId, bundleStats, DEFAULT_APP_INDEX);
     if (ret != E_OK) {
         LOGE("storage status service GetBundleStats failed, please check");
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
@@ -191,7 +192,8 @@ int32_t StorageStatusService::GetCurrentBundleStats(BundleStats &bundleStats)
     return ret;
 }
 
-int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t userId, BundleStats &pkgStats)
+int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t userId,
+    BundleStats &pkgStats, int32_t appIndex)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     auto bundleMgr = DelayedSingleton<BundleMgrConnector>::GetInstance()->GetBundleMgrProxy();
@@ -205,8 +207,12 @@ int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t
         return E_USERID_RANGE;
     }
 
+    if (appIndex < 0 || appIndex > StorageService::MAX_APP_INDEX) {
+        LOGE("StorageStatusService::Invalid appIndex: %{public}d", appIndex);
+        return E_USERID_RANGE;
+    }
     vector<int64_t> bundleStats;
-    bool res = bundleMgr->GetBundleStats(pkgName, userId, bundleStats);
+    bool res = bundleMgr->GetBundleStats(pkgName, userId, bundleStats, appIndex);
     if (!res || bundleStats.size() != dataDir.size()) {
         LOGE("StorageStatusService::An error occurred in querying bundle stats.");
         return E_BUNDLEMGR_ERROR;

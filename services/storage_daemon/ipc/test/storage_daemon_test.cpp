@@ -20,6 +20,7 @@
 #include <mntent.h>
 #include <unordered_map>
 
+#include "crypto/app_clone_key_manager.h"
 #include "ipc/istorage_daemon.h"
 #include "ipc/storage_daemon.h"
 #include "storage_service_errno.h"

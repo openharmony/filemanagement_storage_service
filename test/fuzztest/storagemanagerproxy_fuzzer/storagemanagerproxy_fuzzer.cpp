@@ -102,7 +102,7 @@ bool StorageManagerProxyGetFuzzTest(const uint8_t *data, size_t size)
     proxy->GetTotalSize(metaData4);
     proxy->GetFreeSize(metaData4);
     proxy->GetUserStorageStats(storageStats);
-    proxy->GetBundleStats(metaData, bundleStats);
+    proxy->GetBundleStats(metaData, bundleStats, 0);
     proxy->GetCurrentBundleStats(bundleStats);
     proxy->GetUserStorageStats(userId, storageStats);
     proxy->GetUserStorageStatsByType(userId, storageStats, metaData);
