@@ -20,6 +20,7 @@
 #include <unistd.h>
 
 #include "file_ex.h"
+#include "key_backup.h"
 #include "libfscrypt/key_control.h"
 #include "storage_service_log.h"
 
@@ -118,13 +119,11 @@ bool FscryptKeyV1::InstallKeyForAppKeyToKeyring(uint32_t *appKey)
     }
     for (auto prefix : CRYPTO_NAME_PREFIXES) {
         std::string keyref = prefix + ":" + keyInfo_.keyDesc.ToString();
-        LOGI("InstallKeyToKeyring: keyref length: %{public}zu", keyref.length());
         key_serial_t ks =
             KeyCtrlAddAppAsdpKey("logon", keyref.c_str(), &fskey, krid);
         if (ks < 0) {
             // Addkey failed, need to process the error
-            LOGE("Failed to AddKey %{public}s into keyring %{public}d, errno %{public}d", keyref.c_str(), krid,
-                 errno);
+            LOGE("Failed to AddKey, errno %{public}d", errno);
         }
     }
     if (!SaveKeyBlob(keyInfo_.keyDesc, dir_ + PATH_KEYDESC)) {
@@ -161,10 +160,10 @@ bool FscryptKeyV1::UninstallKeyForAppKeyToKeyring(const std::string keyId)
         std::string keyref = prefix + ":" + keyId;
         key_serial_t ks = KeyCtrlSearch(krid, "logon", keyref.c_str(), 0);
         if (KeyCtrlUnlink(ks, krid) != 0) {
-            LOGE("Failed to unlink key with serial %{public}d ref %{public}s", krid, keyref.c_str());
+            LOGE("Failed to unlink key !");
         }
     }
-    LOGD("success");
+    LOGI("success");
     return true;
 }
 
@@ -249,7 +248,7 @@ bool FscryptKeyV1::DecryptClassE(const UserAuth &auth, bool &isSupport, uint32_t
     }
     LOGI("Decrypt keyPath is %{public}s", (dir_ + PATH_LATEST).c_str());
     KeyBlob decryptedKey(AES_256_HASH_RANDOM_SIZE);
-    if (!DecryptKeyBlob(auth, dir_ + PATH_LATEST, eSecretFBE, decryptedKey)) {
+    if (KeyBackup::GetInstance().TryRestoreUeceKey(shared_from_this(), auth, eSecretFBE, decryptedKey) != 0) {
         LOGE("DecryptKeyBlob Decrypt failed");
         eSecretFBE.Clear();
         return false;
@@ -328,15 +327,14 @@ bool FscryptKeyV1::InstallKeyToKeyring()
             KeyCtrlAddKeyEx("logon", keyref.c_str(), &fskey, krid);
         if (ks == -1) {
             // Addkey failed, need to process the error
-            LOGE("Failed to AddKey %{public}s into keyring %{public}d, errno %{public}d", keyref.c_str(), krid,
-                errno);
+            LOGE("Failed to AddKey into keyring, errno %{public}d", errno);
         }
     }
     if (!SaveKeyBlob(keyInfo_.keyDesc, dir_ + PATH_KEYDESC)) {
         return false;
     }
     keyInfo_.key.Clear();
-    LOGD("success");
+    LOGI("success");
     return true;
 }
 
@@ -371,14 +369,13 @@ bool FscryptKeyV1::InstallEceSeceKeyToKeyring(uint32_t sdpClass)
                 KeyCtrlAddKeySdp("logon", keyref.c_str(), &fskey, krid);
         if (ks == -1) {
             // Addkey failed, need to process the error
-            LOGE("Failed to AddKey %{public}s into keyring %{public}d, errno %{public}d", keyref.c_str(), krid,
-                 errno);
+            LOGE("Failed to AddKey into keyring, errno %{public}d", errno);
         }
     }
     if (!SaveKeyBlob(keyInfo_.keyDesc, dir_ + PATH_KEYDESC)) {
         return false;
     }
-    LOGD("success");
+    LOGI("success");
     return true;
 }
 
@@ -463,11 +460,11 @@ bool FscryptKeyV1::UninstallKeyToKeyring()
         std::string keyref = prefix + ":" + keyInfo_.keyDesc.ToString();
         key_serial_t ks = KeyCtrlSearch(krid, "logon", keyref.c_str(), 0);
         if (KeyCtrlUnlink(ks, krid) != 0) {
-            LOGE("Failed to unlink key with serial %{public}d ref %{public}s", krid, keyref.c_str());
+            LOGE("Failed to unlink key !");
         }
     }
 
-    LOGD("success");
+    LOGI("success");
     return true;
 }
 

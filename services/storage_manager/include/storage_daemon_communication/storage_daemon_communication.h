@@ -63,6 +63,7 @@ public:
     int32_t DeleteAppkey(uint32_t userId, const std::string keyId);
 
     int32_t ResetSdProxy();
+    void ForceLockUserScreen();
 
     // app file share api
     std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList, uint32_t tokenId, uint32_t flag);

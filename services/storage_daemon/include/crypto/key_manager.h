@@ -80,6 +80,7 @@ public:
     int GenerateAppkey(uint32_t user, uint32_t appUid, std::string &keyId);
     int DeleteAppkey(uint32_t user, const std::string keyId);
     int UnlockUserAppKeys(uint32_t userId, bool needGetAllAppKey);
+    int GetFileEncryptStatus(uint32_t userId, bool &isEncrypted);
 #ifdef USER_CRYPTO_MIGRATE_KEY
     int RestoreUserKey(uint32_t userId, KeyType type);
 #endif
@@ -124,6 +125,10 @@ private:
     int CheckAndDeleteEmptyEl5Directory(std::string keyDir, unsigned int user);
     bool GetUserDelayHandler(uint32_t userId, std::shared_ptr<DelayHandler> &delayHandler);
     bool IsUeceSupport();
+    bool IsUserCeDecrypt(uint32_t userId);
+    bool UnlockEceSece(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret, int &ret);
+    bool UnlockUece(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret, int &ret);
+    void CheckTokenInfo(uint32_t user);
 
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl1Key_;
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl2Key_;

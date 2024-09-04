@@ -63,6 +63,7 @@ ohos_unittest("user_manager_test") {
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "hilog:libhilog",
+    "hisysevent:libhisysevent",
     "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_single",

@@ -159,6 +159,7 @@ int FBEX::InstallEL5KeyToKernel(uint32_t userIdSingle, uint32_t userIdDouble, ui
     if (static_cast<uint32_t>(fbeRet) == FILE_ENCRY_ERROR_UECE_ALREADY_CREATED) {
         LOGE("class uece has already create, ret: 0x%{public}x, errno: %{public}d", fbeRet, errno);
         isNeedEncryptClassE = false;
+        close(fd);
         return 0;
     }
     int ret = 0;
@@ -189,6 +190,7 @@ int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32
     auto err = memcpy_s(ops.iv, sizeof(ops.iv), iv, size);
     if (err != EOK) {
         LOGE("memcpy failed %{public}d", err);
+        close(fd);
         return 0;
     }
     int ret = ioctl(fd, FBEX_IOC_ADD_IV, &ops);
@@ -226,6 +228,7 @@ int FBEX::UninstallOrLockUserKeyToKernel(uint32_t userId, uint32_t type, uint8_t
     auto err = memcpy_s(ops.iv, sizeof(ops.iv), iv, size);
     if (err != EOK) {
         LOGE("memcpy failed %{public}d", err);
+        close(fd);
         return 0;
     }
     int ret = ioctl(fd, destroy ? FBEX_IOC_DEL_IV : FBEX_IOC_USER_LOGOUT, &ops);
@@ -385,6 +388,7 @@ int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint
     auto err = memcpy_s(ops.iv, sizeof(ops.iv), iv, size);
     if (err != EOK) {
         LOGE("memcpy failed %{public}d", err);
+        close(fd);
         return 0;
     }
     int ret = ioctl(fd, FBEX_IOC_UNLOCK_SCREEN, &ops);
@@ -430,6 +434,7 @@ int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uint
     auto err = memcpy_s(ops.eBuffer, sizeof(ops.eBuffer), eBuffer, length);
     if (err != EOK) {
         LOGE("memcpy failed %{public}d", err);
+        close(fd);
         return 0;
     }
     auto ret = ioctl(fd, FBEX_READ_CLASS_E, &ops);
@@ -479,6 +484,7 @@ int FBEX::WriteESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uin
     auto err = memcpy_s(ops.eBuffer, sizeof(ops.eBuffer), eBuffer, length);
     if (err != EOK) {
         LOGE("memcpy failed %{public}d", err);
+        close(fd);
         return 0;
     }
     auto ret = ioctl(fd, FBEX_WRITE_CLASS_E, &ops);

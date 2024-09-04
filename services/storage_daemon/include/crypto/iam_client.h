@@ -36,6 +36,11 @@ enum UserSecStatus {
     FAILED
 };
 
+enum SecUserInfoState {
+    SEC_USER_INFO_SUCCESS,
+    SEC_USER_INFO_FAILED
+};
+
 #ifdef USER_AUTH_FRAMEWORK
 class UserSecCallback : public UserIam::UserAuth::GetSecUserInfoCallback {
 public:
@@ -53,6 +58,24 @@ public:
 private:
     uint64_t secureUid_;
 };
+
+class UserEnrollCallback : public UserIam::UserAuth::GetSecUserInfoCallback {
+public:
+    UserEnrollCallback()
+    {
+        info_ = {};
+    }
+    virtual ~UserEnrollCallback()
+    {
+        info_ = {};
+    }
+    void OnSecUserInfo(const UserIam::UserAuth::SecUserInfo &info) override;
+    UserIam::UserAuth::SecUserInfo GetSecUserInfo();
+
+private:
+    UserIam::UserAuth::SecUserInfo info_;
+};
+
 #endif
 
 class IamClient {
@@ -64,8 +87,12 @@ public:
     }
 
     bool GetSecureUid(uint32_t userId, uint64_t &secureUid);
+    bool GetSecUserInfo(uint32_t userId, UserIam::UserAuth::SecUserInfo &info);
+    bool HasPinProtect(uint32_t userId);
+    int HasFaceFinger(uint32_t userId, bool &isExist);
 
     int32_t NotifyGetSecureUid();
+    int32_t NotifyGetSecUserInfo();
 
 private:
     IamClient();
@@ -73,6 +100,7 @@ private:
     IamClient(const IamClient &) = delete;
     IamClient &operator=(const IamClient &) = delete;
 
+    SecUserInfoState secUserInfoState_;
     UserSecStatus secureUidStatus_;
     std::condition_variable iamCon_;
     std::mutex iamMutex_;

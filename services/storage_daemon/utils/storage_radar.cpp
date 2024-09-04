@@ -28,7 +28,7 @@ bool StorageRadar::RecordKillProcessResult(std::string processName, int32_t errc
         res = HiSysEventWrite(
             STORAGESERVICE_DOAMIN,
             UMOUNT_FAIL_BEHAVIOR,
-            HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
+            HiviewDFX::HiSysEvent::EventType::FAULT,
             "ORG_PKG", ORGPKGNAME,
             "FUNC", "FindAndKillProcess",
             "BIZ_SCENE", static_cast<int32_t>(BizScene::STORAGE_START),
@@ -39,7 +39,7 @@ bool StorageRadar::RecordKillProcessResult(std::string processName, int32_t errc
         res = HiSysEventWrite(
             STORAGESERVICE_DOAMIN,
             UMOUNT_FAIL_BEHAVIOR,
-            HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
+            HiviewDFX::HiSysEvent::EventType::FAULT,
             "ORG_PKG", ORGPKGNAME,
             "FUNC", "FindAndKillProcess",
             "BIZ_SCENE", static_cast<int32_t>(BizScene::STORAGE_START),
@@ -67,7 +67,7 @@ bool StorageRadar::RecordFuctionResult(std::string func,
         res = HiSysEventWrite(
             STORAGESERVICE_DOAMIN,
             FILE_STORAGE_MANAGER_FAULT_BEHAVIOR,
-            HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
+            HiviewDFX::HiSysEvent::EventType::FAULT,
             "ORG_PKG", ORGPKGNAME,
             "USER_ID", USERID,
             "FUNC", func,
