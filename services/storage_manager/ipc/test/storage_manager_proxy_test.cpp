@@ -478,7 +478,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetBundleStats_0000, tes
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
     ASSERT_TRUE(proxy_ != nullptr) << "StorageManagerProxy failed";
-    int32_t result = proxy_->GetBundleStats(pkgName, bundleStats);
+    int32_t result = proxy_->GetBundleStats(pkgName, bundleStats, 0);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetBundleStats_0000";
 }

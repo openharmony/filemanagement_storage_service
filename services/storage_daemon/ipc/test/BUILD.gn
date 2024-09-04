@@ -51,6 +51,7 @@ ohos_unittest("storage_daemon_test") {
   ]
 
   sources = [
+    "$ROOT_DIR/crypto/src/app_clone_key_manager.cpp",
     "$ROOT_DIR/crypto/test/key_manager_mock.cpp",
     "$ROOT_DIR/disk/src/disk_config.cpp",
     "$ROOT_DIR/disk/src/disk_info.cpp",

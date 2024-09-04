@@ -21,6 +21,7 @@
 #include <thread>
 
 #ifdef USER_CRYPTO_MANAGER
+#include "crypto/app_clone_key_manager.h"
 #include "crypto/iam_client.h"
 #include "crypto/key_manager.h"
 #endif
@@ -219,7 +220,9 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
     if (type == EL2_KEY) {
         PrepareUeceDir(userId);
     }
-    (void)remove(elNeedRestorePath.c_str());
+    if (userId < StorageService::START_APP_CLONE_USER_ID || userId > StorageService::MAX_APP_CLONE_USER_ID) {
+        (void)remove(elNeedRestorePath.c_str());
+    }
     if (type == EL4_KEY) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
     }
@@ -544,8 +547,7 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
     int ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL2_KEY, token, secret);
     if (ret != E_OK) {
 #ifdef USER_CRYPTO_MIGRATE_KEY
-        LOGI("migrate, userId %{public}u, tok empty %{public}d sec empty %{public}d",
-             userId, token.empty(), secret.empty());
+        LOGI("Migrate usrId %{public}u, Emp_tok %{public}d Emp_sec %{public}d", userId, token.empty(), secret.empty());
         std::string el2NeedRestorePath = GetNeedRestoreFilePath(userId, USER_EL2_DIR);
         if (std::filesystem::exists(el2NeedRestorePath) && (!token.empty() || !secret.empty())) {
             updateFlag = true;
@@ -572,7 +574,7 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
     if (updateFlag) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
     }
-
+    std::thread([this]() { ActiveAppCloneUserKey(); }).detach();
     return ret;
 #else
     std::thread thread([this, userId]() { RestoreconElX(userId); });
@@ -809,6 +811,16 @@ void StorageDaemon::SystemAbilityStatusChangeListener::OnRemoveSystemAbility(int
     if (systemAbilityId == FILEMANAGEMENT_CLOUD_DAEMON_SERVICE_SA_ID) {
         MountManager::GetInstance()->SetCloudState(false);
     }
+}
+
+void StorageDaemon::ActiveAppCloneUserKey()
+{
+#ifdef USER_CRYPTO_MANAGER
+    auto ret = AppCloneKeyManager::GetInstance()->ActiveAppCloneUserKey();
+    if (ret != E_OK) {
+        LOGE("ActiveAppCloneUserKey failed, errNo %{public}d", ret);
+    }
+#endif
 }
 } // namespace StorageDaemon
 } // namespace OHOS

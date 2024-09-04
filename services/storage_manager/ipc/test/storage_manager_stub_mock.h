@@ -30,7 +30,7 @@ public:
 
     MOCK_METHOD2(GetFreeSizeOfVolume, int32_t(std::string, int64_t &));
     MOCK_METHOD2(GetTotalSizeOfVolume, int32_t(std::string, int64_t &));
-    MOCK_METHOD2(GetBundleStats, int32_t(std::string, BundleStats &));
+    MOCK_METHOD3(GetBundleStats, int32_t(std::string, BundleStats &, int32_t));
     MOCK_METHOD1(GetSystemSize, int32_t(int64_t &));
     MOCK_METHOD1(GetTotalSize, int32_t(int64_t &));
     MOCK_METHOD1(GetFreeSize, int32_t(int64_t &));
