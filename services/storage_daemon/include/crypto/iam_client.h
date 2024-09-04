@@ -100,8 +100,8 @@ private:
     IamClient(const IamClient &) = delete;
     IamClient &operator=(const IamClient &) = delete;
 
-    SecUserInfoState secUserInfoState_;
-    UserSecStatus secureUidStatus_;
+    SecUserInfoState secUserInfoState_ = SEC_USER_INFO_FAILED;
+    UserSecStatus secureUidStatus_ = FAILED;
     std::condition_variable iamCon_;
     std::mutex iamMutex_;
 };
