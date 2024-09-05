@@ -1035,7 +1035,6 @@ bool KeyManager::GetUserDelayHandler(uint32_t userId, std::shared_ptr<DelayHandl
     LOGI("enter");
     auto iterTask = userLockScreenTask_.find(userId);
     if (iterTask == userLockScreenTask_.end()) {
-        std::shared_ptr<DelayHandler> lockScreenTask = std::make_shared<DelayHandler>(userId);
         userLockScreenTask_[userId] = std::make_shared<DelayHandler>(userId);
     }
     delayHandler = userLockScreenTask_[userId];
