@@ -330,10 +330,6 @@ group("storage_daemon_unit_test") {
     "utils/test:storage_daemon_utils_test",
   ]
 
-  if (storage_service_user_crypto_manager) {
-    deps += [ "crypto/test:crypto_test" ]
-  }
-
   if (storage_service_external_storage_manager) {
     deps += [
       "disk/test:storage_daemon_disk_test",
