@@ -140,11 +140,11 @@ bool IamClient::HasPinProtect(uint32_t userId)
         return false;
     }
     std::vector<UserIam::UserAuth::EnrolledInfo> enrollInfo = info.enrolledInfo;
-    if (std::any_of(enrollInfo.begin(), enrollInfo.end(), [](const UserIam::UserAuth::EnrolledInfo& item) {
-        return item.authType == UserIam::UserAuth::PIN;
-    })) {
-        LOGI("The device have pin protect for userId = %{public}d.", userId);
-        return true;
+    for (auto &item : enrollInfo) {
+        if (item.authType == UserIam::UserAuth::PIN) {
+            LOGI("The device have pin protect for userId = %{public}d.", userId);
+            return true;
+        }
     }
     LOGI("The device has no pin protect for userId = %{public}d.", userId);
     return false;
