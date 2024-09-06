@@ -12,30 +12,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <string>
-
-#include <sys/xattr.h>
-
-#include "file_sharing/acl.h"
-#include "storage_service_log.h"
-#include "utils/file_utils.h"
+#include "file_sharing/file_sharing.h"
 
 namespace OHOS {
 namespace StorageDaemon {
-namespace {
-const std::string FSCRYPT_EL1_PUBLIC = "/data/service/el1/public";
-const std::string STORAGE_DAEMON_DIR = FSCRYPT_EL1_PUBLIC + "/storage_daemon";
-const std::string FILE_SHARING_DIR = STORAGE_DAEMON_DIR + "/share";
-const std::string PUBLIC_DIR = FILE_SHARING_DIR + "/public";
-constexpr mode_t STORAGE_DAEMON_DIR_MODE = 0711;
-constexpr mode_t FILE_SHARING_DIR_MODE = 0750;
-constexpr mode_t PUBLIC_DIR_MODE = 02770;
-constexpr uid_t FILE_MANAGER_UID = 1006;
-constexpr gid_t FILE_MANAGER_GID = 1006;
-constexpr uid_t ROOT_UID = 0;
-constexpr gid_t ROOT_GID = 0;
-}
-
 int SetupFileSharingDir()
 {
     if (!IsDir(FSCRYPT_EL1_PUBLIC)) {
@@ -43,37 +23,102 @@ int SetupFileSharingDir()
         return -1;
     }
 
-    bool success = PrepareDir(STORAGE_DAEMON_DIR, STORAGE_DAEMON_DIR_MODE,
-                              ROOT_UID, ROOT_GID);
-    if (!success) {
-        LOGE("Failed to properly set up directory of storage daemon");
+    std::string fsShareParam = GetFileShareDefineParameter();
+    if (PrepareFileSharingDir(fsShareParam) != 0) {
+        LOGE("Failed to prepare file sharing directory of storage daemon");
         return -1;
     }
 
-    success = PrepareDir(FILE_SHARING_DIR, FILE_SHARING_DIR_MODE,
-                         FILE_MANAGER_UID, FILE_MANAGER_GID);
+    return SetupDirAcl(fsShareParam);
+}
+
+int PrepareFileSharingDir(const std::string &fsShareParam)
+{
+    bool success = PrepareDir(STORAGE_DAEMON_EL1_DIR, STORAGE_DAEMON_DIR_MODE, ROOT_UID, ROOT_GID);
     if (!success) {
-        LOGE("Failed to properly set up directory of file sharing");
+        LOGE("Prepare directory of storage daemon failed, path = %{public}s", STORAGE_DAEMON_EL1_DIR.c_str());
         return -1;
     }
 
-    success = PrepareDir(PUBLIC_DIR, PUBLIC_DIR_MODE,
-                         FILE_MANAGER_UID, FILE_MANAGER_GID);
-    if (!success) {
-        LOGE("Failed to properly set up directory of public file sharing");
-        return -1;
+    if (fsShareParam == TOB_SCENE || fsShareParam == TOD_SCENE) {
+        success = PrepareDir(SHARE_TOB_DIR, SHARE_TOB_DIR_MODE, SHARE_TOB_UID, SHARE_TOB_GID);
+        if (!success) {
+            LOGE("Prepare directory for path = %{public}s failed, fsShareParam = %{public}s",
+                 SHARE_TOB_DIR.c_str(), fsShareParam.c_str());
+            return -1;
+        }
     }
 
-    /* Skip setting default ACL if it's been done */
-    if (getxattr(PUBLIC_DIR.c_str(), ACL_XATTR_DEFAULT, nullptr, 0) > 0) {
-        return 0;
+    if (fsShareParam == TOC_SCENE || fsShareParam == TOD_SCENE) {
+        success = PrepareDir(FILE_SHARING_DIR, FILE_SHARING_DIR_MODE, FILE_MANAGER_UID, FILE_MANAGER_GID);
+        if (!success) {
+            LOGE("Prepare directory for path = %{public}s failed, fsShareParam = %{public}s",
+                 FILE_SHARING_DIR.c_str(), fsShareParam.c_str());
+            return -1;
+        }
+
+        success = PrepareDir(PUBLIC_DIR, PUBLIC_DIR_MODE, FILE_MANAGER_UID, FILE_MANAGER_GID);
+        if (!success) {
+            LOGE("Prepare directory for path = %{public}s failed, fsShareParam = %{public}s",
+                 PUBLIC_DIR.c_str(), fsShareParam.c_str());
+            return -1;
+        }
+    }
+    LOGI("Prepare file sharing directory success");
+    return 0;
+}
+
+int SetupDirAcl(const std::string &fsShareParam)
+{
+    if (fsShareParam == TOB_SCENE || fsShareParam == TOD_SCENE) {
+        if (getxattr(SHARE_TOB_DIR.c_str(), ACL_XATTR_DEFAULT, nullptr, 0) <= 0) {
+            int rc = AclSetDefault(SHARE_TOB_DIR, "g:7017:rwx");
+            if (rc != 0) {
+                LOGE("Set acl for dir = %{public}s failed, fsShareParam = %{public}s",
+                     SHARE_TOB_DIR.c_str(), fsShareParam.c_str());
+                return -1;
+            }
+        }
     }
 
-    /*
-     * We have to use numeric id (1006) instead of character string ("file_manager")
-     * here due to the name-id mismatch in the in-house system.
-     */
-    return AclSetDefault(PUBLIC_DIR, "g:1006:rwx");
+    if (fsShareParam == TOC_SCENE || fsShareParam == TOD_SCENE) {
+        if (getxattr(PUBLIC_DIR.c_str(), ACL_XATTR_DEFAULT, nullptr, 0) <= 0) {
+            int rc = AclSetDefault(PUBLIC_DIR, "g:1006:rwx");
+            if (rc != 0) {
+                LOGE("Set acl for dir = %{public}s failed, fsShareParam = %{public}s",
+                     PUBLIC_DIR.c_str(), fsShareParam.c_str());
+                return -1;
+            }
+        }
+    }
+    LOGI("Set acl success");
+    return 0;
+}
+
+std::string GetFileShareDefineParameter()
+{
+    char fsShareParam[] = "2c_share";
+    int ret = GetParameter(SHARE_DIR_ENABLE_PARAMETER, "", fsShareParam, MAX_FS_DEFINE_VAL_LEN);
+    if (ret <= 0) {
+        LOGE("GetParameter name = %{public}s error, ret = %{public}d, return default value",
+             SHARE_DIR_ENABLE_PARAMETER, ret);
+        return TOC_SCENE;
+    }
+
+    if ((strlen(fsShareParam) == 0) || (strlen(fsShareParam) > MAX_FS_DEFINE_VAL_LEN)) {
+        LOGE("GetParameter success, but fsShareParam = %{public}s is invalid, return default value",
+             fsShareParam);
+        return TOC_SCENE;
+    }
+
+    if ((fsShareParam != TOB_SCENE) && (fsShareParam != TOC_SCENE) && (fsShareParam != TOD_SCENE)) {
+        LOGE("GetParameter success, but fsShareParam = %{public}s is not expected, return default value",
+             fsShareParam);
+        return TOC_SCENE;
+    }
+    LOGI("GetParameter success, fsShareParam = %{public}s", fsShareParam);
+    return fsShareParam;
 }
 } // namespace StorageDaemon
 } // namespace OHOS
+
