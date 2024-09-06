@@ -126,6 +126,7 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
 
     if ((status & USER_UNLOCK_BIT) == USER_UNLOCK_BIT) {
         MountCryptoPathAgain(userId);
+        userRecord_.erase(userId);
     }
     lock.unlock();
 
