@@ -1000,6 +1000,7 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
     }
 
     SaveUserElKey(user, type, elKey);
+    userPinProtect.erase(user);
     if (secret.empty()) {
         userPinProtect.insert(std::make_pair(user, false));
     } else {
@@ -1321,7 +1322,7 @@ int KeyManager::LockUserScreen(uint32_t user)
         LOGE("user ce does not decrypt, skip");
         return 0;
     }
-    CheckTokenInfo(user);
+    CheckAndClearTokenInfo(user);
     auto iter = userPinProtect.find(user);
     if (iter == userPinProtect.end() || iter->second == false) {
         if (!IamClient::GetInstance().HasPinProtect(user)) {
@@ -1553,15 +1554,15 @@ bool KeyManager::IsUserCeDecrypt(uint32_t userId)
     return true;
 }
 
-void KeyManager::CheckTokenInfo(uint32_t user)
+void KeyManager::CheckAndClearTokenInfo(uint32_t user)
 {
     bool isExist = false;
     if (IamClient::GetInstance().HasFaceFinger(user, isExist) == 0 && !isExist) {
         LOGI("Toke info is not exist.");
-        if ((userEl3Key_.find(user) == userEl3Key_.end()) && (userEl3Key_[user] != nullptr)) {
+        if ((userEl3Key_.find(user) != userEl3Key_.end()) && (userEl3Key_[user] != nullptr)) {
             userEl3Key_[user]->ClearMemoryKeyCtx();
         }
-        if ((userEl4Key_.find(user) == userEl4Key_.end()) && (userEl4Key_[user] != nullptr)) {
+        if ((userEl4Key_.find(user) != userEl4Key_.end()) && (userEl4Key_[user] != nullptr)) {
             userEl4Key_[user]->ClearMemoryKeyCtx();
         }
     }
