@@ -986,6 +986,9 @@ int32_t MountManager::UmountByUser(int32_t userId)
     int32_t err = E_OK;
     if (!SupportHmdfs()) {
         err = LocalUMount(userId);
+        if (err != E_OK) {
+            LOGE("failed to umount locally, err is %{public}d", err);
+        }
     } else {
         std::list<std::string> mountFailList;
         err = UMountAllPath(userId, mountFailList);

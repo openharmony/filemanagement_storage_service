@@ -597,6 +597,9 @@ int KeyManager::DoDeleteUserCeEceSeceKeys(unsigned int user,
         saveLockScreenStatus.erase(user);
     } else {
         std::string elPath = USER_DIR + "/" + std::to_string(user);
+        if (!IsDir(elPath)) {
+            return ret;
+        }
         std::shared_ptr<BaseKey> elKey = GetBaseKey(elPath);
         if (elKey == nullptr) {
             LOGE("Malloc el1 Basekey memory failed");
@@ -1035,7 +1038,6 @@ bool KeyManager::GetUserDelayHandler(uint32_t userId, std::shared_ptr<DelayHandl
     LOGI("enter");
     auto iterTask = userLockScreenTask_.find(userId);
     if (iterTask == userLockScreenTask_.end()) {
-        std::shared_ptr<DelayHandler> lockScreenTask = std::make_shared<DelayHandler>(userId);
         userLockScreenTask_[userId] = std::make_shared<DelayHandler>(userId);
     }
     delayHandler = userLockScreenTask_[userId];

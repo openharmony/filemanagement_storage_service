@@ -207,12 +207,12 @@ int DiskInfo::ReadPartition()
             lines.push_back(tmp);
     }
 
-    std::vector<std::string> hmfsLines;
     if (lines.size() > MIN_LINES) {
         auto userdataIt = std::find_if(lines.begin(), lines.end(), [](const std::string &str) {
             return str.find("userdata") != std::string::npos;
         });
         if (userdataIt != lines.end()) {
+            std::vector<std::string> hmfsLines;
             hmfsLines.push_back(lines.front());
             hmfsLines.push_back(*userdataIt);
             status = sScan;
