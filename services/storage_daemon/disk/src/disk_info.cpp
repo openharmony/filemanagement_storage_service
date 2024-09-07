@@ -187,6 +187,12 @@ int DiskInfo::ReadPartition()
         return E_ERR;
     }
 
+    int res;
+    res = Destroy();
+    if (res != E_OK) {
+        LOGE("Destroy failed in ReadPartition");
+    }
+    
     std::vector<std::string> cmd;
     std::vector<std::string> output;
     std::vector<std::string> lines;

@@ -71,7 +71,7 @@ void DiskManager::HandleDiskEvent(NetlinkData *data)
             break;
         }
         case NetlinkData::Actions::CHANGE: {
-            ChangeDisk(device);
+            ChangeDisk(device, data);
             LOGI("Handle Disk Change Event");
             break;
         }
@@ -128,17 +128,24 @@ void DiskManager::CreateDisk(std::shared_ptr<DiskInfo> &diskInfo)
         LOGE("Create DiskInfo failed");
         return;
     }
-
     disk_.push_back(diskInfo);
 }
 
-void DiskManager::ChangeDisk(dev_t device)
+void DiskManager::ChangeDisk(dev_t device, NetlinkData *data)
 {
     for (auto &diskInfo : disk_) {
         if ((diskInfo != nullptr) && (diskInfo->GetDevice() == device)) {
             diskInfo->ReadMetadata();
             diskInfo->ReadPartition();
+            return;
         }
+    }
+    auto diskInfo = MatchConfig(data);
+    if (diskInfo == nullptr) {
+        LOGI("Can't match config, devPath is %{public}s", data->GetDevpath().c_str());
+    } else {
+        CreateDisk(diskInfo);
+        LOGI("Handle Disk Add Event");
     }
 }
 
