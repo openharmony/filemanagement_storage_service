@@ -31,7 +31,7 @@ public:
     virtual int UninstallOrLockUserKeyToKernel(uint32_t, uint32_t, uint8_t *, uint32_t, bool) = 0;
     virtual int LockScreenToKernel(uint32_t userId) = 0;
     virtual int UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size) = 0;
-    virtual int ReadESecretToKernel(UserIdToFbeStr &, uint32_t, uint8_t *, uint32_t, bool &) = 0;
+    virtual int ReadESecretToKernel(UserIdToFbeStr &, uint32_t,  std::unique_ptr<uint8_t[]> &, uint32_t, bool &) = 0;
     virtual int WriteESecretToKernel(UserIdToFbeStr &, uint32_t, uint8_t *, uint32_t length) = 0;
     virtual bool IsMspReady() = 0;
     virtual int GetStatus() = 0;
@@ -51,7 +51,7 @@ public:
     MOCK_METHOD5(UninstallOrLockUserKeyToKernel, int(uint32_t, uint32_t, uint8_t *, uint32_t, bool));
     MOCK_METHOD1(LockScreenToKernel, int(uint32_t userId));
     MOCK_METHOD4(UnlockScreenToKernel, int(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size));
-    MOCK_METHOD5(ReadESecretToKernel, int(UserIdToFbeStr &, uint32_t, uint8_t *, uint32_t, bool &));
+    MOCK_METHOD5(ReadESecretToKernel, int(UserIdToFbeStr &, uint32_t, std::unique_ptr<uint8_t[]> &, uint32_t, bool &));
     MOCK_METHOD4(WriteESecretToKernel, int(UserIdToFbeStr &, uint32_t, uint8_t *, uint32_t length));
     MOCK_METHOD0(IsMspReady, bool());
     MOCK_METHOD0(GetStatus, int());

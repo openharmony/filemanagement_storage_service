@@ -211,15 +211,13 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_InstallKeyForAppKeyToKeyring, TestSize
 {
     GTEST_LOG_(INFO) << "fscrypt_key_v1_InstallKeyForAppKeyToKeyring start";
     auto g_testKeyV1 = std::make_shared<OHOS::StorageDaemon::FscryptKeyV1>(TEST_KEYPATH);
-    uint32_t *appKeyraw = new uint32_t[17];
-    EXPECT_FALSE(g_testKeyV1->InstallKeyForAppKeyToKeyring(appKeyraw));
-    delete[] appKeyraw;
-    appKeyraw = nullptr;
+    KeyBlob appKeyRaw(17);
+    EXPECT_FALSE(g_testKeyV1->InstallKeyForAppKeyToKeyring(appKeyRaw));
+    appKeyRaw.Clear();
 
-    uint32_t *appKey = new uint32_t[10];
+    KeyBlob appKey(10);
     EXPECT_FALSE(g_testKeyV1->InstallKeyForAppKeyToKeyring(appKey));
-    delete[] appKey;
-    appKey = nullptr;
+    appKey.Clear();
     GTEST_LOG_(INFO) << "fscrypt_key_v1_InstallKeyForAppKeyToKeyring end";
 }
 

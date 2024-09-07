@@ -1420,7 +1420,8 @@ int KeyManager::LockUserScreen(uint32_t user)
     }
 
     auto el5Key = GetUserElKey(user, EL5_KEY);
-    if (el5Key != nullptr && saveESecretStatus[user] && !el5Key->LockUece(saveESecretStatus[user])) {
+    saveESecretStatus[user] = true;
+    if (el5Key != nullptr && !el5Key->LockUece(saveESecretStatus[user])) {
         LOGE("lock user %{public}u el5 key failed !", user);
     }
     auto el4Key = GetUserElKey(user, EL4_KEY);
