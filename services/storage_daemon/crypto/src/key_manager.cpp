@@ -705,19 +705,14 @@ int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTo
 }
 
 int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,
-                                                 const std::vector<uint8_t> &newSecret,
-                                                 uint64_t secureUid,
-                                                 uint32_t userId,
-                                                 std::vector<std::vector<uint8_t>> &plainText)
+    const std::vector<uint8_t> &newSecret, uint64_t secureUid, uint32_t userId,
+    std::vector<std::vector<uint8_t>> &plainText)
 {
     LOGI("start, user:%{public}d", userId);
     if (!KeyCtrlHasFscryptSyspara()) {
         return 0;
     }
     std::lock_guard<std::mutex> lock(keyMutex_);
-
-    LOGI("enter");
-
     // 解密 C类 B类 A类
     std::string el2Path = USER_EL2_DIR + "/" + std::string(userId);
     std::string el3Path = USER_EL3_DIR + "/" + std::string(userId);
@@ -737,7 +732,6 @@ int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &aut
         }
 
         if (plainText.size() < elKeyDirs.size()) {
-            LEGE("plain Text size error");
             return -EFAULT;
         }
         KeyBlob originKey(plainText[i]);

@@ -102,10 +102,8 @@ StorageDaemonStub::StorageDaemonStub()
         &StorageDaemonStub::HandleSetRecoverKey;
 }
 
-int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code,
-                                           MessageParcel &data,
-                                           MessageParcel &reply,
-                                           MessageOption &option)
+int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
+                                           MessageParcel &reply, MessageOption &option)
 {
     if (data.ReadInterfaceToken() != GetDescriptor()) {
         return E_PERMISSION_DENIED;
@@ -485,7 +483,7 @@ int32_t StorageDaemonStub::HandleUpdateUseAuthWithRecoveryKey(MessageParcel &dat
         plainText.push_back(iv);
     }
 
-    int err = UpdateUseAuthWithRecoveryKey(token, newSecret, secureUid. userId, plainText);
+    int err = UpdateUseAuthWithRecoveryKey(token, newSecret, secureUid, userId, plainText);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }

@@ -893,7 +893,7 @@ bool BaseKey::GetOriginKey(KeyBlob &originKey)
     return true;
 }
 
-bool BaseKey::SetOriginKey(KeyBlob &originKey)
+void BaseKey::SetOriginKey(KeyBlob &originKey)
 {
     LOGI("enter");
     keyInfo_.key = std::move(originKey);

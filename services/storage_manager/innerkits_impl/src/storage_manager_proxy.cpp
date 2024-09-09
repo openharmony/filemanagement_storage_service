@@ -252,7 +252,7 @@ int32_t StorageManagerProxy::UpdateUseAuthWithRecoveryKey(const std::vector<uint
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
-    if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("WriteInterfaceToken failed");
         return E_WRITE_DESCRIPTOR_ERR;
     }
