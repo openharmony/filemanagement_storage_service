@@ -710,15 +710,15 @@ int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &aut
 {
     LOGI("start, user:%{public}d", userId);
     // 解密 C类 B类 A类
-    std::string el2Path = USER_EL2_DIR + "/" + std::string(userId);
-    std::string el3Path = USER_EL3_DIR + "/" + std::string(userId);
-    std::string el4Path = USER_EL4_DIR + "/" + std::string(userId);
+    std::string el2Path = USER_EL2_DIR + "/" + std::to_string(userId);
+    std::string el3Path = USER_EL3_DIR + "/" + std::to_string(userId);
+    std::string el4Path = USER_EL4_DIR + "/" + std::to_string(userId);
     std::vector<std::string> elKeyDirs = {el2Path, el3Path, el4Path};
 
     uint32_t i = 0;
     for (const auto &elxKeyDir : elKeyDirs) {
         if (!IsDir(elxKeyDir)) {
-            LOGE("Have not found type %{publicc}s", elKeyDirs.c_str());
+            LOGE("Have not found type %{publicc}s", elxKeyDir.c_str());
             return -EOPNOTSUPP;
         }
         std::shared_ptr<BaseKey> elxKey = GetBaseKey(elxKeyDir);
@@ -732,7 +732,7 @@ int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &aut
             return -EFAULT;
         }
         KeyBlob originKey(plainText[i]);
-        elKey->SetOriginKey(originKey);
+        elxKey->SetOriginKey(originKey);
         i++;
 
         if (elxKey->StoreKey({authToken, newSecret, secureUid}) == false) {
