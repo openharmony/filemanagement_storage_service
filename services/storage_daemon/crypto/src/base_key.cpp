@@ -893,6 +893,13 @@ bool BaseKey::GetOriginKey(KeyBlob &originKey)
     return true;
 }
 
+bool BaseKey::SetOriginKey(KeyBlob &originKey)
+{
+    LOGI("enter");
+    keyInfo_.key = std::move(originKey);
+    return;
+}
+
 bool BaseKey::EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey,
                              KeyBlob &encryptedKey)
 {

@@ -55,6 +55,11 @@ public:
                                    const std::vector<uint8_t> &token,
                                    const std::vector<uint8_t> &oldSecret,
                                    const std::vector<uint8_t> &newSecret) = 0;
+    virtual int32_t UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,
+                                                 const std::vector<uint8_t> &newSecret,
+                                                 uint64_t secureUid,
+                                                 uint32_t userId,
+                                                 std::vector<std::vector<uint8_t>> &plainText) = 0;
     virtual int32_t ActiveUserKey(uint32_t userId,
                                   const std::vector<uint8_t> &token,
                                   const std::vector<uint8_t> &secret) = 0;

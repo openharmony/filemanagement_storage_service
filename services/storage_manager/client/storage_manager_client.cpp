@@ -97,6 +97,21 @@ int32_t StorageManagerClient::UpdateUserAuth(uint32_t userId, uint64_t secureUid
     return client->UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
 }
 
+int32_t StorageManagerClient::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,
+                                                           const std::vector<uint8_t> &newSecret,
+                                                           uint64_t secureUid,
+                                                           uint32_t userId,
+                                                           std::vector<std::vector<uint8_t>> &plainText)
+{
+    sptr<IStorageManager> client = GetStorageManagerProxy();
+    if (client == nullptr) {
+        LOGE("get storage manager service failed");
+        return -EFAULT;
+    }
+
+    return client->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId, plainText);
+}
+
 int32_t StorageManagerClient::ActiveUserKey(uint32_t userId,
                                             const std::vector<uint8_t> &token,
                                             const std::vector<uint8_t> &secret)

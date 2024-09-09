@@ -482,6 +482,20 @@ int32_t StorageDaemon::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
 #endif
 }
 
+int32_t StorageDaemon::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,
+                                                    const std::vector<uint8_t> &newSecret,
+                                                    uint64_t secureUid,
+                                                    uint32_t userId,
+                                                    std::vector<std::vector<uint8_t>> &plainText)
+{
+    LOGI("begin to UpdateUseAuthWithRecoveryKey");
+#ifdef USER_CRYPTO_MANAGER
+    return KeyManager::GetInstance()->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId, plainText);
+#else
+    return E_OK;
+#endif
+}
+
 #ifdef USER_CRYPTO_MIGRATE_KEY
 int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuth(uint32_t userId, KeyType type,
     const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret)

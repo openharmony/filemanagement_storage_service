@@ -58,6 +58,7 @@ private:
     int32_t HandleGenerateUserKeys(MessageParcel &data, MessageParcel &reply);
     int32_t HandleDeleteUserKeys(MessageParcel &data, MessageParcel &reply);
     int32_t HandleUpdateUserAuth(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleUpdateUseAuthWithRecoveryKey(MessageParcel &data, MessageParcel &reply);
     int32_t HandleActiveUserKey(MessageParcel &data, MessageParcel &reply);
     int32_t HandleInactiveUserKey(MessageParcel &data, MessageParcel &reply);
     int32_t HandleUpdateKeyContext(MessageParcel &data, MessageParcel &reply);

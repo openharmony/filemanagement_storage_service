@@ -241,6 +241,53 @@ int32_t StorageManagerProxy::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
     return reply.ReadInt32();
 }
 
+int32_t StorageManagerProxy::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,
+                                                          const std::vector<uint8_t> &newSecret,
+                                                          uint64_t secureUid,
+                                                          uint32_t userId,
+                                                          std::vector<std::vector<uint8_t>> &plainText)
+{
+    LOGI("user ID: %{public}u", userId);
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
+        LOGE("WriteInterfaceToken failed");
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    if (!data.WriteUint32(userId)) {
+        LOGE("Write user ID failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+    if (!data.WriteUint64(secureUid)) {
+        LOGE("Write secure UID failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+    if (!data.WriteUInt8Vector(authToken)) {
+        LOGE("Write token failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+    if (!data.WriteUInt8Vector(newSecret)) {
+        LOGE("Write new secret failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+    for (uint32_t i = 0; i < plainText.size(); i++) {
+        if (!data.WriteUInt8Vector(plainText[i])) {
+            return E_WRITE_PARCEL_ERR;
+        }
+    }
+
+    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::UPDATE_USER_AUTH_RECOVER_KEY), data, reply,
+                          option);
+    if (err != E_OK) {
+        return err;
+    }
+
+    return reply.ReadInt32();
+}
+
 int32_t StorageManagerProxy::ActiveUserKey(uint32_t userId,
                                            const std::vector<uint8_t> &token,
                                            const std::vector<uint8_t> &secret)
