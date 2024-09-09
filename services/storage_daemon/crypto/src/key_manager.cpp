@@ -752,6 +752,10 @@ int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &aut
                 LOGE("user %{public}u Encrypt E fail", userId);
                 return -EFAULT;
             }
+            if (!el5Key->UpdateKey()) {
+                LOGE("Update key error");
+                return -EFAULT;
+            }
             if (!el5Key->LockUece(tempUeceSupport)) {
                 LOGE("lock user %{public}u key failed !", userId);
             }
