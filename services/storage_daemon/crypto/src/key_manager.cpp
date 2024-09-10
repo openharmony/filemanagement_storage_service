@@ -708,7 +708,7 @@ int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &aut
     const std::vector<uint8_t> &newSecret, uint64_t secureUid, uint32_t userId,
     std::vector<std::vector<uint8_t>> &plainText)
 {
-    LOGI("start, user:%{public}d", userId);
+    LOGI("enter UpdateUseAuthWithRecoveryKey start, user:%{public}d", userId);
     // 解密 C类 B类 A类
     std::string el2Path = USER_EL2_DIR + "/" + std::to_string(userId);
     std::string el3Path = USER_EL3_DIR + "/" + std::to_string(userId);
@@ -734,7 +734,7 @@ int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &aut
         KeyBlob originKey(plainText[i]);
         elxKey->SetOriginKey(originKey);
         i++;
-        
+
         if (elxKey->StoreKey({authToken, newSecret, secureUid}) == false) {
             return -EFAULT;
         }
