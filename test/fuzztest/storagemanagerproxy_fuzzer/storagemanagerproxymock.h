@@ -205,7 +205,7 @@ public:
                                          const std::vector<uint8_t> &newSecret,
                                          uint64_t secureUid,
                                          uint32_t userId,
-                                         std::vector<std::vector<uint8_t>> &plainText)
+                                         std::vector<std::vector<uint8_t>> &plainText) override
     {
         return E_OK;
     }
