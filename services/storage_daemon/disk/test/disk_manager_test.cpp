@@ -203,7 +203,7 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_ChangeDisk_001, TestSi
     unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
 
-    diskManager->ChangeDisk(device);
+    diskManager->ChangeDisk(device,data);
 
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_ChangeDisk_001 end";
 }
