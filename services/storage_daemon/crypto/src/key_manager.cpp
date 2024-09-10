@@ -734,34 +734,32 @@ int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &aut
         KeyBlob originKey(plainText[i]);
         elxKey->SetOriginKey(originKey);
         i++;
-
+        
         if (elxKey->StoreKey({authToken, newSecret, secureUid}) == false) {
-            LOGE("Store key error");
             return -EFAULT;
         }
         if (elxKey->UpdateKey() == false) {
+            return -EFAULT;
+        }
+    }
+    if (IsUeceSupport()) {
+        std::shared_ptr<BaseKey> el5Key = GetBaseKey(USER_EL5_DIR + "/" + std::to_string(userId));
+        bool tempUeceSupport = true;
+        UserAuth userAuth = {.token = authToken, .secret = newSecret, .secureUid = secureUid};
+        if (!el5Key->EncryptClassE(userAuth, tempUeceSupport, userId, USER_ADD_AUTH)) {
+            el5Key->ClearKey();
+            LOGE("user %{public}u Encrypt E fail", userId);
+            return -EFAULT;
+        }
+        if (!el5Key->UpdateKey()) {
             LOGE("Update key error");
             return -EFAULT;
         }
-        if (IsUeceSupport()) {
-            std::shared_ptr<BaseKey> el5Key = GetBaseKey(USER_EL5_DIR + "/" + std::to_string(userId));
-            bool tempUeceSupport = true;
-            UserAuth userAuth = {.token = authToken, .secret = newSecret, .secureUid = secureUid};
-            if (!el5Key->EncryptClassE(userAuth, tempUeceSupport, userId, USER_ADD_AUTH)) {
-                el5Key->ClearKey();
-                LOGE("user %{public}u Encrypt E fail", userId);
-                return -EFAULT;
-            }
-            if (!el5Key->UpdateKey()) {
-                LOGE("Update key error");
-                return -EFAULT;
-            }
-            if (!el5Key->LockUece(tempUeceSupport)) {
-                LOGE("lock user %{public}u key failed !", userId);
-            }
+        if (!el5Key->LockUece(tempUeceSupport)) {
+            LOGE("lock user %{public}u key failed !", userId);
         }
-        return E_OK;
     }
+    return E_OK;
 }
 
 int KeyManager::UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSecret)
