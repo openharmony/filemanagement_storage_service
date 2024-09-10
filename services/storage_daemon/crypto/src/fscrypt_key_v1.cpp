@@ -87,7 +87,7 @@ bool FscryptKeyV1::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string 
         LOGE("GenerateAppKeyDesc failed");
         return false;
     }
-    if (!InstallKeyForAppKeyToKeyring(reinterpret_cast<uint32_t *>(appKey.data.get()))) {
+    if (!InstallKeyForAppKeyToKeyring(appKey)) {
         LOGE("InstallKeyForAppKeyToKeyring failed");
         return false;
     }
@@ -98,14 +98,13 @@ bool FscryptKeyV1::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string 
     return true;
 }
 
-bool FscryptKeyV1::InstallKeyForAppKeyToKeyring(uint32_t *appKey)
+bool FscryptKeyV1::InstallKeyForAppKeyToKeyring(KeyBlob &appKey)
 {
     LOGI("InstallKeyForAppKeyToKeyring enter");
     EncryptAsdpKey fskey;
-    const size_t keySize = sizeof(*appKey);
-    fskey.size = keySize;
+    fskey.size = appKey.size;
     fskey.version = 0;
-    auto err = memcpy_s(fskey.raw, FSCRYPT_MAX_KEY_SIZE, appKey, keySize);
+    auto err = memcpy_s(fskey.raw, FSCRYPT_MAX_KEY_SIZE, appKey.data.get(), appKey.size);
     if (err != EOK) {
         LOGE("memcpy failed ret %{public}d", err);
         return false;
@@ -234,11 +233,11 @@ bool FscryptKeyV1::DecryptClassE(const UserAuth &auth, bool &isSupport, uint32_t
     LOGI("enter");
     KeyBlob eSecretFBE(AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES);
     bool isFbeSupport = true;
-    if (!fscryptV1Ext.ReadClassE(status, eSecretFBE.data.get(), eSecretFBE.size, isFbeSupport)) {
+    if (!fscryptV1Ext.ReadClassE(status, eSecretFBE.data, eSecretFBE.size, isFbeSupport)) {
         LOGE("fscryptV1Ext ReadClassE failed");
         return false;
     }
-    if (auth.token.IsEmpty() && auth.secret.IsEmpty()) {
+    if ((auth.token.IsEmpty() && auth.secret.IsEmpty()) || eSecretFBE.IsEmpty()) {
         LOGE("Token and secret is invalid, do not deal.");
         eSecretFBE.Clear();
         return true;
@@ -271,7 +270,7 @@ bool FscryptKeyV1::EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t
     LOGI("enter");
     KeyBlob eSecretFBE(AES_256_HASH_RANDOM_SIZE);
     bool isFbeSupport = true;
-    if (!fscryptV1Ext.ReadClassE(status, eSecretFBE.data.get(), eSecretFBE.size, isFbeSupport)) {
+    if (!fscryptV1Ext.ReadClassE(status, eSecretFBE.data, eSecretFBE.size, isFbeSupport)) {
         LOGE("fscryptV1Ext ReadClassE failed");
         return false;
     }

@@ -27,7 +27,8 @@ public:
     virtual ~IFscryptKeyV1Ext() = default;
     virtual bool LockUeceExt(bool &isFbeSupport) = 0;
     virtual bool LockUserScreenExt(uint32_t flag, uint32_t &elType) = 0;
-    virtual bool ReadClassE(uint32_t status, uint8_t *classEBuffer, uint32_t length, bool &isFbeSupport) = 0;
+    virtual bool ReadClassE(uint32_t status, std::unique_ptr<uint8_t[]> &classEBuffer, uint32_t length,
+                            bool &isFbeSupport) = 0;
     virtual bool WriteClassE(uint32_t status, uint8_t *classEBuffer, uint32_t length) = 0;
     virtual bool ChangePinCodeClassE(uint32_t userId, bool &isFbeSupport) = 0;
     virtual bool AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status) = 0;
@@ -43,7 +44,7 @@ class FscryptKeyV1ExtMock : public IFscryptKeyV1Ext {
 public:
     MOCK_METHOD1(LockUeceExt, bool(bool &));
     MOCK_METHOD2(LockUserScreenExt, bool(uint32_t, uint32_t &));
-    MOCK_METHOD4(ReadClassE, bool(uint32_t, uint8_t *, uint32_t, bool &));
+    MOCK_METHOD4(ReadClassE, bool(uint32_t, std::unique_ptr<uint8_t[]> &, uint32_t, bool &));
     MOCK_METHOD3(WriteClassE, bool(uint32_t, uint8_t *, uint32_t));
     MOCK_METHOD2(ChangePinCodeClassE, bool(uint32_t, bool &));
     MOCK_METHOD3(AddClassE, bool(bool &, bool &, uint32_t));
