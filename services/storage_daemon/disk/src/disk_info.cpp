@@ -186,9 +186,7 @@ int DiskInfo::ReadPartition()
         LOGE("Invaild maxVolumes: %{public}d", maxVolumes);
         return E_ERR;
     }
-
-    int res;
-    res = Destroy();
+    int res = Destroy();
     if (res != E_OK) {
         LOGE("Destroy failed in ReadPartition");
     }
