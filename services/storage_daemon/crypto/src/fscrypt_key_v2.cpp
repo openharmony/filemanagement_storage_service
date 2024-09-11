@@ -52,10 +52,7 @@ bool FscryptKeyV2::ActiveKey(uint32_t flag, const std::string &mnt)
         LOGE("memcpy_s failed ret %{public}d", ret);
         return false;
     }
-    auto res = (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
-    if (res != 0) {
-        LOGE("memset failed res %{public}d", res);
-    }
+    (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
 
     LOGI("success. key_id len:%{public}d, data(hex):%{private}s", keyInfo_.keyId.size,
         keyInfo_.keyId.ToString().c_str());
