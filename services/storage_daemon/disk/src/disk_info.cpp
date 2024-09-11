@@ -186,11 +186,14 @@ int DiskInfo::ReadPartition()
         LOGE("Invaild maxVolumes: %{public}d", maxVolumes);
         return E_ERR;
     }
-
+    int res = Destroy();
+    if (res != E_OK) {
+        LOGE("Destroy failed in ReadPartition");
+    }
+    
     std::vector<std::string> cmd;
     std::vector<std::string> output;
     std::vector<std::string> lines;
-    int res;
 
     cmd.push_back(SGDISK_PATH);
     cmd.push_back(SGDISK_DUMP_CMD);
