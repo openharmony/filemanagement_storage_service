@@ -736,9 +736,7 @@ int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &aut
         i++;
 
         if (elxKey->StoreKey({authToken, newSecret, secureUid}) == false) {
-            return -EFAULT;
-        }
-        if (elxKey->UpdateKey() == false) {
+            LOGE("Store key error");
             return -EFAULT;
         }
     }
@@ -749,10 +747,6 @@ int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &aut
         if (!el5Key->EncryptClassE(userAuth, tempUeceSupport, userId, USER_ADD_AUTH)) {
             el5Key->ClearKey();
             LOGE("user %{public}u Encrypt E fail", userId);
-            return -EFAULT;
-        }
-        if (!el5Key->UpdateKey()) {
-            LOGE("Update key error");
             return -EFAULT;
         }
         if (!el5Key->LockUece(tempUeceSupport)) {
