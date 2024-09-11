@@ -66,6 +66,7 @@ const string MOUNT_POINT_TYPE_HMDFS = "hmdfs";
 const string MOUNT_POINT_TYPE_HMFS = "hmfs";
 const string MOUNT_POINT_TYPE_SHAREFS = "sharefs";
 const string EL2_BASE = "/data/storage/el2/base/";
+const string MOUNT_SUFFIX = "_locked";
 const set<string> SANDBOX_EXCLUDE_PATH = {
     "chipset",
     "system",
@@ -553,16 +554,23 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
         if (SANDBOX_EXCLUDE_PATH.find(bundleName.path().filename()) != SANDBOX_EXCLUDE_PATH.end()) {
             continue;
         }
-        if (!CheckPathValid(bundleName.path().filename().generic_string(), userId)) {
+        std::string bundleNameStr = bundleName.path().filename().generic_string();
+        int32_t point = bundleNameStr.find(MOUNT_SUFFIX);
+        if (point == -1) {
+            LOGI("bundleName do not need to mount: %{public}s", bundleNameStr.c_str());
+            continue;
+        }
+        bundleNameStr = bundleNameStr.substr(0, point);
+        if (!CheckPathValid(bundleNameStr, userId)) {
             continue;
         }
         vector<string> dstPaths = CRYPTO_SANDBOX_PATH;
         vector<string> srcPaths = CRYPTO_SRC_PATH;
-        if (bundleName.path().filename().generic_string() == SCENE_BOARD_BUNDLE_NAME) {
+        if (bundleNameStr == SCENE_BOARD_BUNDLE_NAME) {
             dstPaths.push_back(PUBLIC_DIR_SANDBOX_PATH);
             srcPaths.push_back(PUBLIC_DIR_SRC_PATH);
         }
-        MountSandboxPath(srcPaths, dstPaths, bundleName.path().filename().generic_string(), to_string(userId));
+        MountSandboxPath(srcPaths, dstPaths, bundleNameStr, to_string(userId));
     }
     LOGI("mount crypto path success, userId is %{public}d", userId);
     return ret;

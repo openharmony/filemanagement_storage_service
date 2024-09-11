@@ -595,6 +595,9 @@ int KeyManager::DoDeleteUserCeEceSeceKeys(unsigned int user,
         saveLockScreenStatus.erase(user);
     } else {
         std::string elPath = USER_DIR + "/" + std::to_string(user);
+        if (IsDir(elPath)) {
+            return ret;
+        }
         std::shared_ptr<BaseKey> elKey = GetBaseKey(elPath);
         if (elKey == nullptr) {
             LOGE("Malloc el1 Basekey memory failed");
