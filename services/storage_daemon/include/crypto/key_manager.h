@@ -130,6 +130,10 @@ private:
     bool UnlockUece(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret, int &ret);
     void CheckAndClearTokenInfo(uint32_t user);
 
+#ifdef EL5_FILEKEY_MANAGER
+    int GenerateAndLoadAppKeyInfo(uint32_t userId, const std::vector<std::pair<int, std::string>> &keyInfo);
+#endif
+
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl1Key_;
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl2Key_;
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl3Key_;
