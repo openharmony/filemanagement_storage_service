@@ -271,6 +271,26 @@ int32_t StorageDaemonClient::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
     return client->UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
 }
 
+int32_t StorageDaemonClient::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,
+                                                          const std::vector<uint8_t> &newSecret,
+                                                          uint64_t secureUid,
+                                                          uint32_t userId,
+                                                          std::vector<std::vector<uint8_t>> &plainText)
+{
+    if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
+        LOGE("service check failed");
+        return -EAGAIN;
+    }
+
+    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
+    if (client == nullptr) {
+        LOGE("get storage daemon service failed");
+        return -EAGAIN;
+    }
+
+    return client->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId, plainText);
+}
+
 int32_t StorageDaemonClient::ActiveUserKey(uint32_t userId,
                                            const std::vector<uint8_t> &token,
                                            const std::vector<uint8_t> &secret)

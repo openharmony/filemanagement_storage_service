@@ -707,6 +707,58 @@ int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTo
     return ret;
 }
 
+int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,
+    const std::vector<uint8_t> &newSecret, uint64_t secureUid, uint32_t userId,
+    std::vector<std::vector<uint8_t>> &plainText)
+{
+    LOGI("enter UpdateUseAuthWithRecoveryKey start, user:%{public}d", userId);
+    // 解密 C类 B类 A类
+    std::string el2Path = USER_EL2_DIR + "/" + std::to_string(userId);
+    std::string el3Path = USER_EL3_DIR + "/" + std::to_string(userId);
+    std::string el4Path = USER_EL4_DIR + "/" + std::to_string(userId);
+    std::vector<std::string> elKeyDirs = {el2Path, el3Path, el4Path};
+
+    uint32_t i = 0;
+    for (const auto &elxKeyDir : elKeyDirs) {
+        if (!IsDir(elxKeyDir)) {
+            LOGE("Have not found type %{publicc}s", elxKeyDir.c_str());
+            return -EOPNOTSUPP;
+        }
+        std::shared_ptr<BaseKey> elxKey = GetBaseKey(elxKeyDir);
+        if (elxKey == nullptr) {
+            LOGE("load elx key failed , key path is %{public}s", elxKeyDir.c_str());
+            return -EOPNOTSUPP;
+        }
+
+        if (plainText.size() < elKeyDirs.size()) {
+            LOGE("plain text size error");
+            return -EFAULT;
+        }
+        KeyBlob originKey(plainText[i]);
+        elxKey->SetOriginKey(originKey);
+        i++;
+
+        if (elxKey->StoreKey({authToken, newSecret, secureUid}) == false) {
+            LOGE("Store key error");
+            return -EFAULT;
+        }
+    }
+    if (IsUeceSupport()) {
+        std::shared_ptr<BaseKey> el5Key = GetBaseKey(USER_EL5_DIR + "/" + std::to_string(userId));
+        bool tempUeceSupport = true;
+        UserAuth userAuth = {.token = authToken, .secret = newSecret, .secureUid = secureUid};
+        if (!el5Key->EncryptClassE(userAuth, tempUeceSupport, userId, USER_ADD_AUTH)) {
+            el5Key->ClearKey();
+            LOGE("user %{public}u Encrypt E fail", userId);
+            return -EFAULT;
+        }
+        if (!el5Key->LockUece(tempUeceSupport)) {
+            LOGE("lock user %{public}u key failed !", userId);
+        }
+    }
+    return E_OK;
+}
+
 int KeyManager::UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSecret)
 {
     LOGI("UpdateESecret enter");

@@ -68,6 +68,8 @@ public:
     void WipingActionDir(std::string &path);
     bool UpgradeKeys();
     bool GetOriginKey(KeyBlob &originKey);
+    void SetOriginKey(KeyBlob &originKey);
+    
     KeyInfo keyInfo_;
     std::string GetDir() const
     {

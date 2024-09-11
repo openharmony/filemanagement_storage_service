@@ -286,6 +286,25 @@ int32_t StorageDaemonCommunication::UpdateUserAuth(uint32_t userId, uint64_t sec
     return storageDaemon_->UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
 }
 
+int32_t StorageDaemonCommunication::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,
+                                                                 const std::vector<uint8_t> &newSecret,
+                                                                 uint64_t secureUid,
+                                                                 uint32_t userId,
+                                                                 std::vector<std::vector<uint8_t>> &plainText)
+{
+    LOGI("enter");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId, plainText);
+}
+
 int32_t StorageDaemonCommunication::ActiveUserKey(uint32_t userId,
                                                   const std::vector<uint8_t> &token,
                                                   const std::vector<uint8_t> &secret)

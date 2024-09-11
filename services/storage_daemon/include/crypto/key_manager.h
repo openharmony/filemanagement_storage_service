@@ -63,6 +63,11 @@ public:
                                 KeyType type);
 
 #endif
+    int UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,
+                                     const std::vector<uint8_t> &newSecret,
+                                     uint64_t secureUid,
+                                     uint32_t userId,
+                                     std::vector<std::vector<uint8_t>> &plainText);
     int ActiveUserKey(unsigned int user, const std::vector<uint8_t> &token,
                       const std::vector<uint8_t> &secret);
     int ActiveCeSceSeceUserKey(unsigned int user, KeyType type, const std::vector<uint8_t> &token,

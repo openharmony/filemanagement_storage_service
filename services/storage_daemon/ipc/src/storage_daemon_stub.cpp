@@ -58,6 +58,8 @@ StorageDaemonStub::StorageDaemonStub()
         &StorageDaemonStub::HandleDeleteUserKeys;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::UPDATE_USER_AUTH)] =
         &StorageDaemonStub::HandleUpdateUserAuth;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::UPDATE_USER_AUTH_RECOVER_KEY)] =
+        &StorageDaemonStub::HandleUpdateUseAuthWithRecoveryKey;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::ACTIVE_USER_KEY)] =
         &StorageDaemonStub::HandleActiveUserKey;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::INACTIVE_USER_KEY)] =
@@ -100,10 +102,8 @@ StorageDaemonStub::StorageDaemonStub()
         &StorageDaemonStub::HandleSetRecoverKey;
 }
 
-int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code,
-                                           MessageParcel &data,
-                                           MessageParcel &reply,
-                                           MessageOption &option)
+int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
+                                           MessageParcel &reply, MessageOption &option)
 {
     if (data.ReadInterfaceToken() != GetDescriptor()) {
         return E_PERMISSION_DENIED;
@@ -127,6 +127,7 @@ int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code,
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::CREATE_USER_KEYS):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::DELETE_USER_KEYS):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::UPDATE_USER_AUTH):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::UPDATE_USER_AUTH_RECOVER_KEY):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::ACTIVE_USER_KEY):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::INACTIVE_USER_KEY):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::LOCK_USER_SCREEN):
@@ -200,6 +201,8 @@ int32_t StorageDaemonStub::OnRemoteRequestForUser(uint32_t code, MessageParcel &
             return HandleDeleteUserKeys(data, reply);
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::UPDATE_USER_AUTH):
             return HandleUpdateUserAuth(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::UPDATE_USER_AUTH_RECOVER_KEY):
+            return HandleUpdateUseAuthWithRecoveryKey(data, reply);
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::ACTIVE_USER_KEY):
             return HandleActiveUserKey(data, reply);
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::INACTIVE_USER_KEY):
@@ -456,6 +459,31 @@ int32_t StorageDaemonStub::HandleUpdateUserAuth(MessageParcel &data, MessageParc
     data.ReadUInt8Vector(&newSecret);
 
     int err = UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
+
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleUpdateUseAuthWithRecoveryKey(MessageParcel &data, MessageParcel &reply)
+{
+    uint32_t userId = data.ReadUint32();
+    uint64_t secureUid = data.ReadUint64();
+
+    std::vector<uint8_t> token;
+    std::vector<uint8_t> newSecret;
+    data.ReadUInt8Vector(&token);
+    data.ReadUInt8Vector(&newSecret);
+    std::vector<std::vector<uint8_t>> plainText;
+    const int CKEY_NUMS = 6;
+    for (uint32_t i = 0; i < CKEY_NUMS; i++) {
+        std::vector<uint8_t> iv;
+        data.ReadUInt8Vector(&iv);
+        plainText.push_back(iv);
+    }
+
+    int err = UpdateUseAuthWithRecoveryKey(token, newSecret, secureUid, userId, plainText);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
