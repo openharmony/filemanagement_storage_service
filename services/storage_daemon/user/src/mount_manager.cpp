@@ -109,7 +109,7 @@ static constexpr int MODE_0771 = 0771;
 static constexpr int MODE_02771 = 02771;
 MountManager::MountManager()
     : hmdfsDirVec_{{"/data/service/el2/%d/share", MODE_0711, OID_SYSTEM, OID_SYSTEM},
-                   {"/data/service/el2/%d/hmdfs", MODE_0711, OID_SYSTEM, OID_SYSTEM},
+                   {"/data/service/el2/%d/hmdfs", MODE_0711, OID_DFS, OID_DFS},
                    {"/data/service/el2/%d/hmdfs/account", MODE_0711, OID_SYSTEM, OID_SYSTEM},
                    {"/data/service/el2/%d/hmdfs/account/files", MODE_02771, OID_USER_DATA_RW, OID_USER_DATA_RW},
                    {"/data/service/el2/%d/hmdfs/account/data", MODE_0711, OID_SYSTEM, OID_SYSTEM},
@@ -119,6 +119,7 @@ MountManager::MountManager()
                    {"/data/service/el2/%d/hmdfs/cloud", MODE_0711, OID_DFS, OID_DFS},
                    {"/data/service/el2/%d/hmdfs/cloud/data", MODE_0711, OID_DFS, OID_DFS},
                    {"/data/service/el2/%d/hmdfs/cache", MODE_0711, OID_DFS, OID_DFS},
+                   {"/data/service/el2/%d/hmdfs/cloudfile_manager", MODE_0711, OID_DFS, OID_DFS},
                    {"/data/service/el2/%d/hmdfs/cache/account_cache", MODE_0711, OID_DFS, OID_DFS},
                    {"/data/service/el2/%d/hmdfs/cache/non_account_cache", MODE_0711, OID_DFS, OID_DFS},
                    {"/data/service/el2/%d/hmdfs/cache/cloud_cache", MODE_0711, OID_DFS, OID_DFS},
