@@ -124,6 +124,14 @@ int32_t StorageStatusService::GetUserStorageStats(StorageStats &storageStats)
 
 int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &storageStats)
 {
+    bool isCeEncrypt = false;
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int ret = sdCommunication->GetFileEncryptStatus(userId, isCeEncrypt);
+    if (ret != E_OK || isCeEncrypt) {
+        LOGE("User %{public}d de has not decrypt.", userId);
+        return ret;
+    }
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     // totalSize
     int64_t totalSize = 0;
