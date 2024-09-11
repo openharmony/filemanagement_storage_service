@@ -223,6 +223,10 @@ int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32
         LOGE("memcpy failed %{public}d", errops);
         return 0;
     }
+    auto res = (void)memset_s(&ops.iv, sizeof(ops.iv), 0, sizeof(ops.iv));
+    if (res != 0) {
+        LOGE("memset failed res %{public}d", res);
+    }
     LOGI("InstallKeyToKernel success");
     return ret;
 }
