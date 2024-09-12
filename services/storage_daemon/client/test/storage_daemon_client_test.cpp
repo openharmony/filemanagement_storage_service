@@ -15,6 +15,8 @@
 
 #include <gtest/gtest.h>
 
+#include "directory_ex.h"
+
 #include "storage_daemon_client.h"
 #include "ipc/istorage_daemon.h"
 #include "storage_service_errno.h"
@@ -134,8 +136,15 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_MountD
     std::string relativePath = "account";
     std::string networkId = "testnetworkid";
     std::string deviceId = "testdevid";
+    std::string path = "/mnt/data/" + std::to_string(userId) + "/hmdfs/";
+    OHOS::ForceRemoveDirectory(path);
     int32_t ret = storageDaemonClient_->MountDfsDocs(userId, relativePath, networkId, deviceId);
+    EXPECT_EQ(ret, E_PREPARE_DIR);
+
+    OHOS::ForceCreateDirectory(path);
+    ret = storageDaemonClient_->MountDfsDocs(userId, relativePath, networkId, deviceId);
     EXPECT_EQ(ret, E_MOUNT);
+    OHOS::ForceRemoveDirectory(path);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_MountDfsDocs_001 end";
 }
 
@@ -299,7 +308,7 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Genera
     std::string keyId = "keyId";
 
     int32_t ret = storageDaemonClient_->GenerateAppkey(userid, appUid, keyId);
-    EXPECT_EQ(ret, -ENOENT);
+    EXPECT_EQ(ret, -ENOTSUP);
 
     ret = storageDaemonClient_->DeleteAppkey(userid, keyId);
     EXPECT_EQ(ret, -ENOENT);
