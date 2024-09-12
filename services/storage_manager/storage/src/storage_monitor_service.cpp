@@ -23,10 +23,14 @@
 #include <sys/statvfs.h>
 #include <unordered_set>
 
+#include "cJSON.h"
+#include "common_event_data.h"
+#include "common_event_manager.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "storage/bundle_manager_connector.h"
 #include "storage/storage_total_status_service.h"
+#include "want.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -37,6 +41,14 @@ constexpr int32_t WAIT_THREAD_TIMEOUT_MS = 5;
 constexpr int32_t DEFAULT_CHECK_INTERVAL = 60 * 1000; // 60s
 constexpr int32_t STORAGE_THRESHOLD_PERCENTAGE = 5; // 5%
 constexpr int64_t STORAGE_THRESHOLD_MAX_BYTES = 500 * 1024 * 1024; // 500M
+constexpr int64_t STORAGE_THRESHOLD_1G = 1000 * 1024 * 1024; // 1G
+constexpr int32_t STORAGE_LEFT_SIZE_THRESHOLD = 10; // 10%
+constexpr int32_t SEND_EVENT_INTERVAL = 24; // 24H
+const std::string PUBLISH_SYSTEM_COMMON_EVENT = "ohos.permission.PUBLISH_SYSTEM_COMMON_EVENT";
+const std::string SMART_BUNDLE_NAME = "com.ohos.hmos.hiviewcare";
+const std::string SMART_ACTION = "hicare.event.SMART_NOTIFICATION";
+const std::string FAULT_ID_ONE = "845010021";
+const std::string FAULT_ID_TWO = "845010022";
 
 StorageMonitorService::StorageMonitorService() {}
 
@@ -111,7 +123,9 @@ void StorageMonitorService::CheckAndCleanBundleCache()
         LOGE("Get device free size failed.");
         return;
     }
-
+    if (freeSize < (totalSize * STORAGE_LEFT_SIZE_THRESHOLD) / CONST_NUM_ONE_HUNDRED) {
+        CheckAndEventNotify(freeSize, totalSize);
+    }
     int64_t lowThreshold = GetLowerThreshold(totalSize);
     if (lowThreshold <= 0) {
         LOGE("Lower threshold value is invalid.");
@@ -141,6 +155,55 @@ int64_t StorageMonitorService::GetLowerThreshold(int64_t totalSize)
 {
     int64_t lowBytes = (totalSize * STORAGE_THRESHOLD_PERCENTAGE) / CONST_NUM_ONE_HUNDRED;
     return (lowBytes < STORAGE_THRESHOLD_MAX_BYTES) ? lowBytes : STORAGE_THRESHOLD_MAX_BYTES;
+}
+
+void StorageMonitorService::CheckAndEventNotify(int64_t freeSize, int64_t totalSize)
+{
+    LOGI("StorageMonitorService, start CheckAndEventNotify.");
+    auto currentTime = std::chrono::steady_clock::now();
+    int32_t duration = static_cast<int32_t>(std::chrono::duration_cast<std::chrono::hours>
+            (currentTime - lastNotificationTime_).count());
+    LOGI("StorageMonitorService, duration is %{public}d", duration);
+    if (duration >= SEND_EVENT_INTERVAL) {
+        if (freeSize >= STORAGE_THRESHOLD_1G) {
+            SendSmartNotificationEvent(FAULT_ID_ONE);
+        } else {
+            SendSmartNotificationEvent(FAULT_ID_TWO);
+        }
+        lastNotificationTime_ = currentTime;
+    }
+}
+
+void StorageMonitorService::SendSmartNotificationEvent(const std::string &faultId)
+{
+    LOGI("StorageMonitorService, start SendSmartNotificationEvent.");
+    EventFwk::CommonEventPublishInfo publishInfo;
+    const std::string permission = PUBLISH_SYSTEM_COMMON_EVENT;
+    std::vector<std::string> permissions;
+    permissions.emplace_back(permission);
+    publishInfo.SetSubscriberPermissions(permissions);
+    publishInfo.SetOrdered(false);
+    publishInfo.SetSticky(false);
+    publishInfo.SetBundleName(SMART_BUNDLE_NAME);
+
+    AAFwk::Want want;
+    want.SetAction(SMART_ACTION);
+    EventFwk::CommonEventData eventData;
+    eventData.SetWant(want);
+
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddStringToObject(root, "faultDescription", faultId.c_str());
+    cJSON_AddStringToObject(root, "faultSuggestion", faultId.c_str());
+
+    char *json_string = cJSON_Print(root);
+    std::string eventDataStr(json_string);
+    eventDataStr.erase(remove(eventDataStr.begin(), eventDataStr.end(), '\n'), eventDataStr.end());
+    eventDataStr.erase(remove(eventDataStr.begin(), eventDataStr.end(), '\t'), eventDataStr.end());
+
+    LOGI("send message is %{public}s", eventDataStr.c_str());
+    eventData.SetData(eventDataStr);
+    cJSON_Delete(root);
+    EventFwk::CommonEventManager::PublishCommonEvent(eventData, publishInfo, nullptr);
 }
 } // StorageManager
 } // OHOS

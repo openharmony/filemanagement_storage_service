@@ -25,6 +25,7 @@
 
 namespace OHOS {
 namespace StorageManager {
+const int SMART_EVENT_INTERVAL = 24; // 24h
 class StorageMonitorService : public NoCopyable  {
     DECLARE_DELAYED_SINGLETON(StorageMonitorService);
 
@@ -36,11 +37,16 @@ private:
     void Execute();
     void CheckAndCleanBundleCache();
     int64_t GetLowerThreshold(int64_t totalSize);
+    void CheckAndEventNotify(int64_t freeSize, int64_t totalSize);
+    void SendSmartNotificationEvent(const std::string &faultId);
 
     std::mutex eventMutex_;
     std::thread eventThread_;
     std::condition_variable eventCon_;
     std::shared_ptr<AppExecFwk::EventHandler> eventHandler_ = nullptr;
+    std::chrono::steady_clock::time_point lastNotificationTime_ =
+            std::chrono::time_point_cast<std::chrono::steady_clock::duration>(
+                    std::chrono::steady_clock::now()) - std::chrono::hours(SMART_EVENT_INTERVAL);
 };
 } // StorageManager
 } // OHOS
