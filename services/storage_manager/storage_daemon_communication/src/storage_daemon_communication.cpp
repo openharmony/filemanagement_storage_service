@@ -436,6 +436,11 @@ void StorageDaemonCommunication::ForceLockUserScreen()
         LOGE("Query active userid failed, ret = %{public}u", ret);
         return;
     }
+    ret = AccountSA::OsAccountManager::SetOsAccountIsVerified(ids[0], false);
+    if (ret != ERR_OK) {
+        LOGE("Set os account IsVerified status failed, ret = %{public}u", ret);
+        return;
+    }
     int reasonFlag = static_cast<int>(ScreenLock::StrongAuthReasonFlags::ACTIVE_REQUEST);
     ret = ScreenLock::ScreenLockManager::GetInstance()->RequestStrongAuth(reasonFlag, ids[0]);
     if (ret != ScreenLock::E_SCREENLOCK_OK) {
@@ -445,6 +450,7 @@ void StorageDaemonCommunication::ForceLockUserScreen()
     ret = ScreenLock::ScreenLockManager::GetInstance()->Lock(ids[0]);
     if (ret != ScreenLock::E_SCREENLOCK_OK) {
         LOGE("Lock user screen by screen lock manager failed.");
+        return;
     }
     LOGI("Force lock user screen and request strong auth success for userId = %{public}d.", ids[0]);
 #endif
