@@ -251,6 +251,11 @@ ohos_shared_library("storage_common_utils") {
     "LOG_DOMAIN = 0xD004301",
   ]
 
+  cflags = [
+    "-D_FORTIFY_SOURCE=2",
+    "-fstack-protector-strong",
+  ]
+
   sources = [
     "./utils/disk_utils.cpp",
     "./utils/file_utils.cpp",
