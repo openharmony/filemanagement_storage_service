@@ -41,6 +41,11 @@ ohos_shared_library("storagestatistics") {
     "${storage_service_path}/services/common/include",
   ]
 
+  cflags = [
+    "-D_FORTIFY_SOURCE=2",
+    "-fstack-protector-strong",
+  ]
+
   sources = [
     "${storage_service_path}/services/storage_manager/kits_impl/src/storage_manager_connect.cpp",
     "${storage_service_path}/services/storage_manager/kits_impl/src/storage_statistics_n_exporter.cpp",
@@ -82,6 +87,11 @@ ohos_shared_library("volumemanager") {
     "${storage_service_path}/services/storage_manager/include",
     "${storage_service_path}/interfaces/innerkits/storage_manager/native",
     "${storage_service_path}/services/common/include",
+  ]
+
+  cflags = [
+    "-D_FORTIFY_SOURCE=2",
+    "-fstack-protector-strong",
   ]
 
   sources = [

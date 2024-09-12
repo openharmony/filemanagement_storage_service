@@ -555,8 +555,8 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
             continue;
         }
         std::string bundleNameStr = bundleName.path().filename().generic_string();
-        int32_t point = bundleNameStr.find(MOUNT_SUFFIX);
-        if (point == -1) {
+        std::string::size_type point = bundleNameStr.find(MOUNT_SUFFIX);
+        if (point == std::string::npos) {
             LOGI("bundleName do not need to mount: %{public}s", bundleNameStr.c_str());
             continue;
         }
