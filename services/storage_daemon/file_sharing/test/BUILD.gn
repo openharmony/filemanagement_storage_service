@@ -59,10 +59,44 @@ ohos_moduletest("SetAclTest") {
   ]
 }
 
+ohos_moduletest("FileSharingTest") {
+  module_out_path = "storage_service/storage_daemon"
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "LOG_DOMAIN = 0xD004301",
+  ]
+
+  include_dirs = [
+    "../../file_sharing",
+    "../../include",
+    "${storage_service_common_path}/include",
+  ]
+
+  sources = [
+    "../src/acl.cpp",
+    "../src/file_sharing.cpp",
+    "../src/setacl.cpp",
+    "filesharing_test.cpp",
+  ]
+
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
+    "//third_party/googletest:gtest_main",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+    "init:libbegetutil",
+  ]
+}
+
 group("file_sharing_test") {
   testonly = true
   deps = [
     ":AclTest",
+    ":FileSharingTest",
     ":SetAclTest",
   ]
 }
