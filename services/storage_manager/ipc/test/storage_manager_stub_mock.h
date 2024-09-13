@@ -27,6 +27,7 @@ public:
     MOCK_METHOD2(RemoveUser, int32_t(int32_t, uint32_t));
     MOCK_METHOD1(PrepareStartUser, int32_t(int32_t));
     MOCK_METHOD1(StopUser, int32_t(int32_t));
+    MOCK_METHOD1(CompleteAddUser, int32_t(int32_t));
 
     MOCK_METHOD2(GetFreeSizeOfVolume, int32_t(std::string, int64_t &));
     MOCK_METHOD2(GetTotalSizeOfVolume, int32_t(std::string, int64_t &));

@@ -44,6 +44,7 @@ public:
     virtual int32_t StopUser(int32_t userId) = 0;
     virtual int32_t PrepareUserDirs(int32_t userId, uint32_t flags) = 0;
     virtual int32_t DestroyUserDirs(int32_t userId, uint32_t flags) = 0;
+    virtual int32_t CompleteAddUser(int32_t userId) = 0;
 
     // fscrypt api
     virtual int32_t InitGlobalKey(void) = 0;
