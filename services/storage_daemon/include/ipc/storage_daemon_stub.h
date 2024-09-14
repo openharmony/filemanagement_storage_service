@@ -50,6 +50,7 @@ private:
     int32_t HandleStopUser(MessageParcel &data, MessageParcel &reply);
     int32_t HandlePrepareUserDirs(MessageParcel &data, MessageParcel &reply);
     int32_t HandleDestroyUserDirs(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleCompleteAddUser(MessageParcel &data, MessageParcel &reply);
 
     // fscrypt api
     int32_t HandleInitGlobalKey(MessageParcel &data, MessageParcel &reply);

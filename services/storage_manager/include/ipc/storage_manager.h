@@ -35,6 +35,7 @@ public:
     int32_t RemoveUser(int32_t userId, uint32_t flags) override;
     int32_t PrepareStartUser(int32_t userId) override;
     int32_t StopUser(int32_t userId) override;
+    int32_t CompleteAddUser(int32_t userId) override;
 
     int32_t GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize) override;
     int32_t GetTotalSizeOfVolume(std::string volumeUuid, int64_t &totalSize) override;
