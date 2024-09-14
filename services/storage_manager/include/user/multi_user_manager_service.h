@@ -29,7 +29,6 @@ public:
     int32_t RemoveUser(int32_t userId, uint32_t flags);
     int32_t PrepareStartUser(int32_t userId);
     int32_t StopUser(int32_t userId);
-    int32_t CompleteAddUser(int32_t userId);
 
 private:
     int32_t CheckUserIdRange(int32_t userId);
