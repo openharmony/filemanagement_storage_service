@@ -110,6 +110,17 @@ int32_t ExternalVolumeInfo::DoMount4Ext(uint32_t mountFlags)
     return ret;
 }
 
+int32_t ExternalVolumeInfo::DoMount4Hmfs(uint32_t mountFlags)
+{
+    mode_t mode = 0777;
+    const char *fsType = "hmfs";
+    int32_t ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType, mountFlags, "");
+    if (!ret) {
+        TravelChmod(mountPath_, mode);
+    }
+    return ret;
+}
+
 int32_t ExternalVolumeInfo::DoMount4Ntfs(uint32_t mountFlags)
 {
     auto mountData = StringPrintf("rw,uid=%d,gid=%d,dmask=0007,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
@@ -174,8 +185,10 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
     }
 
     LOGI("Ready to mount: external volume fstype is %{public}s, mountflag is %{public}d", fsType_.c_str(), mountFlags);
-    if (fsType_ == "ext2" || fsType_ == "ext3" || fsType_ == "ext4" || fsType_ == "hmfs") {
+    if (fsType_ == "ext2" || fsType_ == "ext3" || fsType_ == "ext4") {
         ret = DoMount4Ext(mountFlags);
+    } else if (fsType_ == "hmfs" || fsType_ == "f2fs") {
+        ret = DoMount4Hmfs(mountFlags);
     } else if (fsType_ == "ntfs") {
         ret = DoMount4Ntfs(mountFlags);
     } else if (fsType_ == "exfat") {
