@@ -1241,9 +1241,23 @@ int KeyManager::UnlockUserAppKeys(uint32_t userId, bool needGetAllAppKey)
         }
         LOGI("get User Appkeys success.");
     }
+    int ret = GenerateAndLoadAppKeyInfo(userId, keyInfo);
+    if (ret != E_OK) {
+        LOGE("UnlockUserAppKeys fail.");
+        return ret;
+    }
+#endif
+    LOGI("UnlockUserAppKeys success!");
+    return E_OK;
+}
+
+#ifdef EL5_FILEKEY_MANAGER
+int KeyManager::GenerateAndLoadAppKeyInfo(uint32_t userId, const std::vector<std::pair<int, std::string>> &keyInfo)
+{
+    std::vector<std::pair<std::string, bool>> loadInfos;
     if (keyInfo.size() == 0) {
         LOGE("The keyInfo is empty!");
-        return 0;
+        return E_OK;
     }
     if (userEl5Key_.find(userId) == userEl5Key_.end()) {
         LOGE("userEl5Key_ has not existed");
@@ -1255,10 +1269,12 @@ int KeyManager::UnlockUserAppKeys(uint32_t userId, bool needGetAllAppKey)
         if (elKey->GenerateAppkey(userId, keyInfoAppUid.first, keyId) == false) {
             LOGE("Failed to Generate Appkey2!");
             loadInfos.push_back(std::make_pair(keyInfoAppUid.second, false));
+            continue;
         }
         if (keyInfoAppUid.second != keyId) {
             LOGE("The keyId check fails!");
             loadInfos.push_back(std::make_pair(keyInfoAppUid.second, false));
+            continue;
         }
         loadInfos.push_back(std::make_pair(keyInfoAppUid.second, true));
     }
@@ -1266,10 +1282,9 @@ int KeyManager::UnlockUserAppKeys(uint32_t userId, bool needGetAllAppKey)
         LOGE("Change User Appkeys LoadInfo fail.");
         return -EFAULT;
     }
-#endif
-    LOGI("UnlockUserAppKeys success!");
     return E_OK;
 }
+#endif
 
 int KeyManager::InActiveUserKey(unsigned int user)
 {
