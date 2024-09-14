@@ -39,7 +39,6 @@ namespace StorageManager {
         REMOVE_USER,
         PREPARE_START_USER,
         STOP_USER,
-        COMPLETE_ADD_USER,
         GET_TOTAL,
         GET_FREE,
         GET_BUNDLE_STATUS,

@@ -52,11 +52,6 @@ public:
         return E_OK;
     }
 
-    int32_t CompleteAddUser(int32_t userId) override
-    {
-        return E_OK;
-    }
-
     int32_t GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize) override
     {
         return E_OK;
