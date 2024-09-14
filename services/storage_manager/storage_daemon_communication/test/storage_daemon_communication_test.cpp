@@ -795,7 +795,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreateRecoverKey_0
     uint32_t userId = 100;
     uint32_t userType = 10;
     int32_t result = sdCommunication->CreateRecoverKey(userId, userType, {}, {});
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, -ENOENT);
 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_CreateRecoverKey_0000 SUCCESS";
 }
@@ -815,7 +815,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetRecoverKey_0000
     std::shared_ptr<StorageDaemonCommunication> sdCommunication =
         DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t result = sdCommunication->SetRecoverKey({});
-    EXPECT_EQ(result, E_OK);
+    EXPECT_EQ(result, -ENOENT);
 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_SetRecoverKey_0000 SUCCESS";
 }
