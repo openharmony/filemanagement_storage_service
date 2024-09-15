@@ -356,12 +356,6 @@ int32_t StorageDaemon::StopUser(int32_t userId)
     return ret;
 }
 
-int32_t StorageDaemon::CompleteAddUser(int32_t userId)
-{
-    LOGI("CompleteAddUser enter.");
-    return E_OK;
-}
-
 int32_t StorageDaemon::InitGlobalKey(void)
 {
 #ifdef USER_CRYPTO_MANAGER

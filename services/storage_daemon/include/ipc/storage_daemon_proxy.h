@@ -37,7 +37,6 @@ public:
     virtual int32_t StopUser(int32_t userId) override;
     virtual int32_t PrepareUserDirs(int32_t userId, uint32_t flags) override;
     virtual int32_t DestroyUserDirs(int32_t userId, uint32_t flags) override;
-    virtual int32_t CompleteAddUser(int32_t userId) override;
 
     // fscrypt api
     virtual int32_t InitGlobalKey(void) override;

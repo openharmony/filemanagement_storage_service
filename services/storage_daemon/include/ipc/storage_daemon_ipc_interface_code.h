@@ -34,7 +34,6 @@ namespace StorageDaemon {
         DESTROY_USER_DIRS,
         START_USER,
         STOP_USER,
-        COMPLETE_ADD_USER,
         INIT_GLOBAL_KEY,
         INIT_GLOBAL_USER_KEYS,
         CREATE_USER_KEYS,

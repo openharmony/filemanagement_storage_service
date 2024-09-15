@@ -122,29 +122,6 @@ int32_t StorageManagerProxy::StopUser(int32_t userId)
     return reply.ReadUint32();
 }
 
-int32_t StorageManagerProxy::CompleteAddUser(int32_t userId)
-{
-    LOGI("StorageManagerProxy::CompleteAddUser, userId:%{public}d", userId);
-    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
-    MessageParcel data;
-    MessageParcel reply;
-    MessageOption option(MessageOption::TF_SYNC);
-    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
-        LOGE("StorageManagerProxy::CompleteAddUser, WriteInterfaceToken failed");
-        return E_WRITE_DESCRIPTOR_ERR;
-    }
-    if (!data.WriteInt32(userId)) {
-        LOGE("StorageManagerProxy::CompleteAddUser, WriteInt32 failed");
-        return E_WRITE_PARCEL_ERR;
-    }
-    int32_t err = SendRequest(
-        static_cast<int32_t>(StorageManagerInterfaceCode::COMPLETE_ADD_USER), data, reply, option);
-    if (err != E_OK) {
-        return err;
-    }
-    return reply.ReadUint32();
-}
-
 int32_t StorageManagerProxy::GenerateUserKeys(uint32_t userId, uint32_t flags)
 {
     LOGI("user ID: %{public}u, flags: %{public}u", userId, flags);
