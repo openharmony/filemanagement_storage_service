@@ -274,28 +274,6 @@ int32_t StorageDaemonProxy::StopUser(int32_t userId)
     return reply.ReadUint32();
 }
 
-int32_t StorageDaemonProxy::CompleteAddUser(int32_t userId)
-{
-    MessageParcel data;
-    MessageParcel reply;
-    MessageOption option(MessageOption::TF_SYNC);
-
-    if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
-        return E_WRITE_DESCRIPTOR_ERR;
-    }
-
-    if (!data.WriteInt32(userId)) {
-        return E_WRITE_PARCEL_ERR;
-    }
-
-    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::COMPLETE_ADD_USER), data, reply, option);
-    if (err != E_OK) {
-        return err;
-    }
-
-    return reply.ReadUint32();
-}
-
 int32_t StorageDaemonProxy::InitGlobalKey(void)
 {
     MessageParcel data;
