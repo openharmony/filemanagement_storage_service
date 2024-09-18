@@ -77,7 +77,7 @@ void SetFlagUtils::SetFileDelFlags(const std::string &filepath)
         return;
     }
     if (flags & HMFS_MONITOR_FL) {
-        LOGE("SetFlagUtils Delete file control flag is already set");
+        LOGI("SetFlagUtils Delete file control flag is already set");
         (void)fclose(f);
         return;
     }
@@ -115,7 +115,7 @@ void SetFlagUtils::SetDirDelFlags(const std::string &dirpath)
         return;
     }
     if (flags & HMFS_MONITOR_FL) {
-        LOGE("SetFlagUtils Delete control flag is already set");
+        LOGI("SetFlagUtils Delete control flag is already set");
         closedir(dir);
         return;
     }
