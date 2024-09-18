@@ -112,7 +112,7 @@ private:
     int InitUserElkeyStorageDir(void);
     bool HasElkey(uint32_t userId, KeyType type);
     int DoDeleteUserKeys(unsigned int user);
-    int DoDeleteUserCeEceSeceKeys(unsigned int user, const std::string USER_DIR,
+    int DoDeleteUserCeEceSeceKeys(unsigned int user, const std::string userDir,
                                   std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_);
     int UpgradeKeys(const std::vector<FileList> &dirInfo);
     int UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSecret);

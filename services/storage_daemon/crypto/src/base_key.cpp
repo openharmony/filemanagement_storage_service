@@ -773,7 +773,12 @@ bool BaseKey::Decrypt(const UserAuth &auth)
 bool BaseKey::ClearKey(const std::string &mnt)
 {
     LOGI("enter, dir_ = %{public}s", dir_.c_str());
-    InactiveKey(USER_DESTROY, mnt);
+    bool ret = true;
+    bool res = InactiveKey(USER_DESTROY, mnt);
+    if (!res) {
+        LOGI("InactiveKey failed.");
+        ret = res;
+    }
     keyInfo_.key.Clear();
     bool needClearFlag = true;
 #ifdef USER_CRYPTO_MIGRATE_KEY
@@ -790,12 +795,17 @@ bool BaseKey::ClearKey(const std::string &mnt)
         KeyBackup::GetInstance().GetBackupDir(dir_, backupDir);
         WipingActionDir(backupDir);
         KeyBackup::GetInstance().RemoveNode(backupDir);
+        LOGI("force remove backupDir, %{public}s.", backupDir.c_str());
         OHOS::ForceRemoveDirectory(backupDir);
-        return OHOS::ForceRemoveDirectory(dir_);
+        LOGI("force remove dir_, %{public}s.", dir_.c_str());
+        res = OHOS::ForceRemoveDirectory(dir_);
+        if (!res) {
+            LOGI("ForceRemoveDirectory failed.");
+            ret = res;
+        }
         // use F2FS_IOC_SEC_TRIM_FILE
     }
-    LOGI("do not clear key.");
-    return true;
+    return ret;
 }
 
 void BaseKey::WipingActionDir(std::string &path)

@@ -585,21 +585,22 @@ int KeyManager::GenerateUserKeyByType(unsigned int user, KeyType type,
 }
 
 int KeyManager::DoDeleteUserCeEceSeceKeys(unsigned int user,
-                                          const std::string USER_DIR,
+                                          const std::string userDir,
                                           std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_)
 {
+    LOGI("enter, userDir is %{public}s", userDir.c_str());
     int ret = 0;
     auto it = userElKey_.find(user);
     if (it != userElKey_.end()) {
         auto elKey = it->second;
-        elKey->ClearKey();
+        if (!elKey->ClearKey()) {
+            LOGE("clear key failed");
+            ret = -E_CLEAR_KEY_FAILED;
+        }
         userElKey_.erase(user);
         saveLockScreenStatus.erase(user);
     } else {
-        std::string elPath = USER_DIR + "/" + std::to_string(user);
-        if (!IsDir(elPath)) {
-            return ret;
-        }
+        std::string elPath = userDir + "/" + std::to_string(user);
         std::shared_ptr<BaseKey> elKey = GetBaseKey(elPath);
         if (elKey == nullptr) {
             LOGE("Malloc el1 Basekey memory failed");
@@ -607,35 +608,40 @@ int KeyManager::DoDeleteUserCeEceSeceKeys(unsigned int user,
         }
         if (!elKey->ClearKey()) {
             LOGE("Delete el1 key failed");
-            ret = -EFAULT;
+            ret = -E_CLEAR_KEY_FAILED;
         }
     }
+    LOGI("end, ret is %{public}d", ret);
     return ret;
 }
 
 int KeyManager::DoDeleteUserKeys(unsigned int user)
 {
     int ret = 0;
-    ret = DoDeleteUserCeEceSeceKeys(user, USER_EL1_DIR, userEl1Key_);
-    if (ret != 0) {
+    int res = DoDeleteUserCeEceSeceKeys(user, USER_EL1_DIR, userEl1Key_);
+    if (res != 0) {
         LOGE("Delete el1 key failed");
+        ret = res;
     }
-    ret = DoDeleteUserCeEceSeceKeys(user, USER_EL2_DIR, userEl2Key_);
-    if (ret != 0) {
+    res = DoDeleteUserCeEceSeceKeys(user, USER_EL2_DIR, userEl2Key_);
+    if (res != 0) {
         LOGE("Delete el2 key failed");
+        ret = res;
     }
-    ret = DoDeleteUserCeEceSeceKeys(user, USER_EL3_DIR, userEl3Key_);
-    if (ret != 0) {
+    res = DoDeleteUserCeEceSeceKeys(user, USER_EL3_DIR, userEl3Key_);
+    if (res != 0) {
         LOGE("Delete el3 key failed");
+        ret = res;
     }
-    ret = DoDeleteUserCeEceSeceKeys(user, USER_EL4_DIR, userEl4Key_);
-    if (ret != 0) {
+    res = DoDeleteUserCeEceSeceKeys(user, USER_EL4_DIR, userEl4Key_);
+    if (res != 0) {
         LOGE("Delete el4 key failed");
+        ret = res;
     }
-    ret = DoDeleteUserCeEceSeceKeys(user, USER_EL5_DIR, userEl5Key_);
-    if (ret != 0) {
+    res = DoDeleteUserCeEceSeceKeys(user, USER_EL5_DIR, userEl5Key_);
+    if (res != 0) {
         LOGE("Delete el5 key failed");
-        ret = -EFAULT;
+        ret = res;
     }
     return ret;
 }
