@@ -453,7 +453,7 @@ bool FscryptKeyV1::UninstallKeyToKeyring()
 {
     if (keyInfo_.keyDesc.IsEmpty()) {
         LOGE("keyDesc is null, key not installed?");
-        return false;
+        return true;
     }
 
     key_serial_t krid = KeyCtrlSearch(KEY_SPEC_SESSION_KEYRING, "keyring", "fscrypt", 0);
