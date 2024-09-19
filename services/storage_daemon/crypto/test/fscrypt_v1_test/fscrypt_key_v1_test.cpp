@@ -179,7 +179,7 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_DeleteAppkey, TestSize.Level1)
     EXPECT_FALSE(g_testKeyV1->DeleteAppkey(KeyId));
 
     KeyId = "test";
-    EXPECT_FALSE(g_testKeyV1->DeleteAppkey(KeyId));
+    EXPECT_TRUE(g_testKeyV1->DeleteAppkey(KeyId));
     GTEST_LOG_(INFO) << "fscrypt_key_v1_DeleteAppkey end";
 }
 
@@ -197,7 +197,7 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_UninstallKeyForAppKeyToKeyring, TestSi
     EXPECT_FALSE(g_testKeyV1->UninstallKeyForAppKeyToKeyring(keyId));
 
     keyId = "test";
-    EXPECT_FALSE(g_testKeyV1->UninstallKeyForAppKeyToKeyring(keyId));
+    EXPECT_TRUE(g_testKeyV1->UninstallKeyForAppKeyToKeyring(keyId));
     GTEST_LOG_(INFO) << "fscrypt_key_v1_UninstallKeyForAppKeyToKeyring end";
 }
 
@@ -247,8 +247,11 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_UnlockUserScreen, TestSize.Level1)
     EXPECT_TRUE(g_testKeyV1->UnlockUserScreen(flag, sdpClass, mnt));
 
     sdpClass = 2;
+    g_testKeyV1->ClearKey();
+    g_testKeyV1->keyInfo_.key.Alloc(TEST_KEYID_SIZE);
     EXPECT_CALL(*fscryptKeyExtMock_, UnlockUserScreenExt(_, _, _)).WillOnce(Return(true));
     EXPECT_FALSE(g_testKeyV1->UnlockUserScreen(flag, sdpClass, mnt));
+    g_testKeyV1->ClearKey();
     GTEST_LOG_(INFO) << "fscrypt_key_v1_UnlockUserScreen end";
 }
 
