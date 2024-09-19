@@ -386,7 +386,7 @@ bool FscryptKeyV1::InactiveKey(uint32_t flag, const std::string &mnt)
     LOGI("enter");
     bool ret = true;
 
-    if (!UninstallKeyToKeyring()) {
+    if (!keyInfo_.keyDesc.IsEmpty() && !UninstallKeyToKeyring()) {
         LOGE("UninstallKeyToKeyring failed");
         ret = false;
     }
@@ -453,7 +453,7 @@ bool FscryptKeyV1::UninstallKeyToKeyring()
 {
     if (keyInfo_.keyDesc.IsEmpty()) {
         LOGE("keyDesc is null, key not installed?");
-        return true;
+        return false;
     }
 
     key_serial_t krid = KeyCtrlSearch(KEY_SPEC_SESSION_KEYRING, "keyring", "fscrypt", 0);
