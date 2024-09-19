@@ -386,7 +386,7 @@ bool FscryptKeyV1::InactiveKey(uint32_t flag, const std::string &mnt)
     LOGI("enter");
     bool ret = true;
 
-    if (!UninstallKeyToKeyring()) {
+    if (!keyInfo_.keyDesc.IsEmpty() && !UninstallKeyToKeyring()) {
         LOGE("UninstallKeyToKeyring failed");
         ret = false;
     }
