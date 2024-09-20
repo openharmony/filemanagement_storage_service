@@ -62,6 +62,15 @@ void AccountSubscriber::Subscriber(void)
     }
 }
 
+static void SendSecondMountedEvent()
+{
+    AAFwk::Want want;
+    want.SetAction("usual.event.SECOND_MOUNTED");
+    EventFwk::CommonEventData commonData { want };
+    EventFwk::CommonEventManager::PublishCommonEvent(commonData);
+    LOGI("Send usual.event.SECOND_MOUNTED event success.");
+}
+
 static void MountCryptoPathAgain(int32_t userId)
 {
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
@@ -71,6 +80,7 @@ static void MountCryptoPathAgain(int32_t userId)
         LOGE("mount crypto path failed err is %{public}d", err);
         return;
     }
+    SendSecondMountedEvent();
     LOGI("MountCryptoPathAgain success");
 }
 
