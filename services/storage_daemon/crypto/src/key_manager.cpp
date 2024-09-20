@@ -621,33 +621,33 @@ int KeyManager::DoDeleteUserCeEceSeceKeys(unsigned int user,
 
 int KeyManager::DoDeleteUserKeys(unsigned int user)
 {
-    int ret = 0;
-    int res = DoDeleteUserCeEceSeceKeys(user, USER_EL1_DIR, userEl1Key_);
-    if (res != 0) {
+    int errCode = 0;
+    int deleteRet = DoDeleteUserCeEceSeceKeys(user, USER_EL1_DIR, userEl1Key_);
+    if (deleteRet != 0) {
         LOGE("Delete el1 key failed");
-        ret = res;
+        errCode = deleteRet;
     }
-    res = DoDeleteUserCeEceSeceKeys(user, USER_EL2_DIR, userEl2Key_);
-    if (res != 0) {
+    deleteRet = DoDeleteUserCeEceSeceKeys(user, USER_EL2_DIR, userEl2Key_);
+    if (deleteRet != 0) {
         LOGE("Delete el2 key failed");
-        ret = res;
+        errCode = deleteRet;
     }
-    res = DoDeleteUserCeEceSeceKeys(user, USER_EL3_DIR, userEl3Key_);
-    if (res != 0) {
+    deleteRet = DoDeleteUserCeEceSeceKeys(user, USER_EL3_DIR, userEl3Key_);
+    if (deleteRet != 0) {
         LOGE("Delete el3 key failed");
-        ret = res;
+        errCode = deleteRet;
     }
-    res = DoDeleteUserCeEceSeceKeys(user, USER_EL4_DIR, userEl4Key_);
-    if (res != 0) {
+    deleteRet = DoDeleteUserCeEceSeceKeys(user, USER_EL4_DIR, userEl4Key_);
+    if (deleteRet != 0) {
         LOGE("Delete el4 key failed");
-        ret = res;
+        errCode = deleteRet;
     }
-    res = DoDeleteUserCeEceSeceKeys(user, USER_EL5_DIR, userEl5Key_);
-    if (res != 0) {
+    deleteRet = DoDeleteUserCeEceSeceKeys(user, USER_EL5_DIR, userEl5Key_);
+    if (deleteRet != 0) {
         LOGE("Delete el5 key failed");
-        ret = res;
+        errCode = deleteRet;
     }
-    return ret;
+    return errCode;
 }
 
 int KeyManager::DeleteUserKeys(unsigned int user)
@@ -659,7 +659,7 @@ int KeyManager::DeleteUserKeys(unsigned int user)
 
     std::lock_guard<std::mutex> lock(keyMutex_);
     int ret = DoDeleteUserKeys(user);
-    LOGI("delete user key end");
+    LOGI("delete user key end, ret is %{public}d", ret);
 
     auto userTask = userLockScreenTask_.find(user);
     if (userTask != userLockScreenTask_.end()) {

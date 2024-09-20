@@ -773,11 +773,9 @@ bool BaseKey::Decrypt(const UserAuth &auth)
 bool BaseKey::ClearKey(const std::string &mnt)
 {
     LOGI("enter, dir_ = %{public}s", dir_.c_str());
-    bool ret = true;
-    bool res = InactiveKey(USER_DESTROY, mnt);
-    if (!res) {
-        LOGI("InactiveKey failed.");
-        ret = res;
+    bool ret = InactiveKey(USER_DESTROY, mnt);
+    if (!ret) {
+        LOGE("InactiveKey failed.");
     }
     keyInfo_.key.Clear();
     bool needClearFlag = true;
@@ -798,10 +796,10 @@ bool BaseKey::ClearKey(const std::string &mnt)
         LOGI("force remove backupDir, %{public}s.", backupDir.c_str());
         OHOS::ForceRemoveDirectory(backupDir);
         LOGI("force remove dir_, %{public}s.", dir_.c_str());
-        res = OHOS::ForceRemoveDirectory(dir_);
-        if (!res) {
-            LOGI("ForceRemoveDirectory failed.");
-            ret = res;
+        bool removeRet = OHOS::ForceRemoveDirectory(dir_);
+        if (!removeRet) {
+            LOGE("ForceRemoveDirectory failed.");
+            return removeRet;
         }
         // use F2FS_IOC_SEC_TRIM_FILE
     }
