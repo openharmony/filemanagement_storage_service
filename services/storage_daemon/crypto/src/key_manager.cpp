@@ -583,19 +583,24 @@ int KeyManager::GenerateUserKeyByType(unsigned int user, KeyType type,
 }
 
 int KeyManager::DoDeleteUserCeEceSeceKeys(unsigned int user,
-                                          const std::string USER_DIR,
+                                          const std::string userDir,
                                           std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_)
 {
+    LOGI("enter, userDir is %{public}s", userDir.c_str());
     int ret = 0;
     auto it = userElKey_.find(user);
     if (it != userElKey_.end()) {
         auto elKey = it->second;
-        elKey->ClearKey();
+        if (!elKey->ClearKey()) {
+            LOGE("clear key failed");
+            ret = -E_CLEAR_KEY_FAILED;
+        }
         userElKey_.erase(user);
         saveLockScreenStatus.erase(user);
     } else {
-        std::string elPath = USER_DIR + "/" + std::to_string(user);
+        std::string elPath = userDir + "/" + std::to_string(user);
         if (IsDir(elPath)) {
+            LOGE("dir not exist, do not need to clear key");
             return ret;
         }
         std::shared_ptr<BaseKey> elKey = GetBaseKey(elPath);
@@ -604,38 +609,43 @@ int KeyManager::DoDeleteUserCeEceSeceKeys(unsigned int user,
             return -ENOMEM;
         }
         if (!elKey->ClearKey()) {
-            LOGE("Delete el1 key failed");
-            ret = -EFAULT;
+            LOGE("clear key failed");
+            ret = -E_CLEAR_KEY_FAILED;
         }
     }
+    LOGI("end, ret is %{public}d", ret);
     return ret;
 }
 
 int KeyManager::DoDeleteUserKeys(unsigned int user)
 {
-    int ret = 0;
-    ret = DoDeleteUserCeEceSeceKeys(user, USER_EL1_DIR, userEl1Key_);
-    if (ret != 0) {
+    int errCode = 0;
+    int deleteRet = DoDeleteUserCeEceSeceKeys(user, USER_EL1_DIR, userEl1Key_);
+    if (deleteRet != 0) {
         LOGE("Delete el1 key failed");
+        errCode = deleteRet;
     }
-    ret = DoDeleteUserCeEceSeceKeys(user, USER_EL2_DIR, userEl2Key_);
-    if (ret != 0) {
+    deleteRet = DoDeleteUserCeEceSeceKeys(user, USER_EL2_DIR, userEl2Key_);
+    if (deleteRet != 0) {
         LOGE("Delete el2 key failed");
+        errCode = deleteRet;
     }
-    ret = DoDeleteUserCeEceSeceKeys(user, USER_EL3_DIR, userEl3Key_);
-    if (ret != 0) {
+    deleteRet = DoDeleteUserCeEceSeceKeys(user, USER_EL3_DIR, userEl3Key_);
+    if (deleteRet != 0) {
         LOGE("Delete el3 key failed");
+        errCode = deleteRet;
     }
-    ret = DoDeleteUserCeEceSeceKeys(user, USER_EL4_DIR, userEl4Key_);
-    if (ret != 0) {
+    deleteRet = DoDeleteUserCeEceSeceKeys(user, USER_EL4_DIR, userEl4Key_);
+    if (deleteRet != 0) {
         LOGE("Delete el4 key failed");
+        errCode = deleteRet;
     }
-    ret = DoDeleteUserCeEceSeceKeys(user, USER_EL5_DIR, userEl5Key_);
-    if (ret != 0) {
+    deleteRet = DoDeleteUserCeEceSeceKeys(user, USER_EL5_DIR, userEl5Key_);
+    if (deleteRet != 0) {
         LOGE("Delete el5 key failed");
-        ret = -EFAULT;
+        errCode = deleteRet;
     }
-    return ret;
+    return errCode;
 }
 
 int KeyManager::DeleteUserKeys(unsigned int user)
@@ -647,7 +657,7 @@ int KeyManager::DeleteUserKeys(unsigned int user)
 
     std::lock_guard<std::mutex> lock(keyMutex_);
     int ret = DoDeleteUserKeys(user);
-    LOGI("delete user key end");
+    LOGI("delete user key end, ret is %{public}d", ret);
 
     auto userTask = userLockScreenTask_.find(user);
     if (userTask != userLockScreenTask_.end()) {
