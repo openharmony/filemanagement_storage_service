@@ -793,13 +793,17 @@ bool BaseKey::ClearKey(const std::string &mnt)
         KeyBackup::GetInstance().GetBackupDir(dir_, backupDir);
         WipingActionDir(backupDir);
         KeyBackup::GetInstance().RemoveNode(backupDir);
-        LOGI("force remove backupDir, %{public}s.", backupDir.c_str());
-        OHOS::ForceRemoveDirectory(backupDir);
-        LOGI("force remove dir_, %{public}s.", dir_.c_str());
-        bool removeRet = OHOS::ForceRemoveDirectory(dir_);
-        if (!removeRet) {
-            LOGE("ForceRemoveDirectory failed.");
-            return removeRet;
+        if (IsDir(backupDir)) {
+            LOGI("force remove backupDir, %{public}s.", backupDir.c_str());
+            OHOS::ForceRemoveDirectory(backupDir);
+        }
+        if (IsDir(dir_)) {
+            LOGI("force remove dir_, %{public}s.", dir_.c_str());
+            bool removeRet = OHOS::ForceRemoveDirectory(dir_);
+            if (!removeRet) {
+                LOGE("ForceRemoveDirectory failed.");
+                return removeRet;
+            }
         }
         // use F2FS_IOC_SEC_TRIM_FILE
     }
