@@ -770,6 +770,10 @@ bool BaseKey::ClearKey(const std::string &mnt)
         LOGE("InactiveKey failed.");
     }
     keyInfo_.key.Clear();
+    if (!IsDir(dir_)) {
+        LOGE("dir not exist, do not need to remove dir");
+        return ret;
+    }
     WipingActionDir(dir_);
     std::string backupDir;
     KeyBackup::GetInstance().GetBackupDir(dir_, backupDir);
