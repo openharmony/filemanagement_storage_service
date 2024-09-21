@@ -312,25 +312,28 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
 
 int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
 {
+    int errCode = 0;
     //CRYPTO_FLAG_EL3 destroy el3,  CRYPTO_FLAG_EL4 destroy el4
     flags = flags | IStorageDaemon::CRYPTO_FLAG_EL3 | IStorageDaemon::CRYPTO_FLAG_EL4 | IStorageDaemon::CRYPTO_FLAG_EL5;
-    int32_t ret = UserManager::GetInstance()->DestroyUserDirs(userId, flags);
-    if (ret != E_OK) {
+    int32_t destroyUserRet = UserManager::GetInstance()->DestroyUserDirs(userId, flags);
+    if (destroyUserRet != E_OK) {
+        errCode = destroyUserRet;
         LOGW("Destroy user %{public}d dirs failed, please check", userId);
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "DestroyUserDirs", BizScene::USER_MOUNT_MANAGER, BizStage::BIZ_STAGE_REMOVE_USER, "EL1", ret);
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult("DestroyUserDirs", BizScene::USER_MOUNT_MANAGER,
+            BizStage::BIZ_STAGE_REMOVE_USER, "EL1", destroyUserRet);
     }
 
 #ifdef USER_CRYPTO_MANAGER
-    ret = KeyManager::GetInstance()->DeleteUserKeys(userId);
-    if (ret != E_OK) {
+    destroyUserRet = KeyManager::GetInstance()->DeleteUserKeys(userId);
+    if (destroyUserRet != E_OK) {
+        errCode = destroyUserRet;
         LOGW("DeleteUserKeys failed, please check");
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "DeleteUserKeys", BizScene::USER_MOUNT_MANAGER, BizStage::BIZ_STAGE_REMOVE_USER, "EL1", ret);
+            "DeleteUserKeys", BizScene::USER_MOUNT_MANAGER, BizStage::BIZ_STAGE_REMOVE_USER, "EL1", errCode);
     }
-    return ret;
+    return errCode;
 #else
-    return ret;
+    return errCode;
 #endif
 }
 

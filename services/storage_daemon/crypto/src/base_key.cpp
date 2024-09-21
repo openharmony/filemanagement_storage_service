@@ -765,16 +765,27 @@ bool BaseKey::Decrypt(const UserAuth &auth)
 bool BaseKey::ClearKey(const std::string &mnt)
 {
     LOGI("enter, dir_ = %{public}s", dir_.c_str());
-    InactiveKey(USER_DESTROY, mnt);
+    bool ret = InactiveKey(USER_DESTROY, mnt);
+    if (!ret) {
+        LOGE("InactiveKey failed.");
+    }
     keyInfo_.key.Clear();
     WipingActionDir(dir_);
     std::string backupDir;
     KeyBackup::GetInstance().GetBackupDir(dir_, backupDir);
     WipingActionDir(backupDir);
     KeyBackup::GetInstance().RemoveNode(backupDir);
+    LOGI("force remove backupDir, %{public}s.", backupDir.c_str());
     OHOS::ForceRemoveDirectory(backupDir);
     return OHOS::ForceRemoveDirectory(dir_);
+    LOGI("force remove dir_, %{public}s.", dir_.c_str());
+    bool removeRet = OHOS::ForceRemoveDirectory(dir_);
+    if (!removeRet) {
+        LOGI("ForceRemoveDirectory failed.");
+        return removeRet;
+    }
     // use F2FS_IOC_SEC_TRIM_FILE
+    return ret;
 }
 
 void BaseKey::WipingActionDir(std::string &path)
