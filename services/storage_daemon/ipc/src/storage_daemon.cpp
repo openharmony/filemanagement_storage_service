@@ -325,7 +325,7 @@ int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
 
 #ifdef USER_CRYPTO_MANAGER
     destroyUserRet = KeyManager::GetInstance()->DeleteUserKeys(userId);
-    if (ret != E_OK) {
+    if (destroyUserRet != E_OK) {
         errCode = destroyUserRet;
         LOGW("DeleteUserKeys failed, please check");
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
