@@ -770,6 +770,10 @@ bool BaseKey::ClearKey(const std::string &mnt)
         LOGE("InactiveKey failed.");
     }
     keyInfo_.key.Clear();
+    if (!IsDir(dir_)) {
+        LOGE("dir not exist, do not need to remove dir");
+        return ret;
+    }
     WipingActionDir(dir_);
     std::string backupDir;
     KeyBackup::GetInstance().GetBackupDir(dir_, backupDir);
@@ -777,7 +781,6 @@ bool BaseKey::ClearKey(const std::string &mnt)
     KeyBackup::GetInstance().RemoveNode(backupDir);
     LOGI("force remove backupDir, %{public}s.", backupDir.c_str());
     OHOS::ForceRemoveDirectory(backupDir);
-    return OHOS::ForceRemoveDirectory(dir_);
     LOGI("force remove dir_, %{public}s.", dir_.c_str());
     bool removeRet = OHOS::ForceRemoveDirectory(dir_);
     if (!removeRet) {
