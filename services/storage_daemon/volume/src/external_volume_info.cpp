@@ -38,7 +38,7 @@ namespace StorageDaemon {
 int32_t ExternalVolumeInfo::ReadMetadata()
 {
     int32_t ret = OHOS::StorageDaemon::ReadMetadata(devPath_, fsUuid_, fsType_, fsLabel_);
-    if (fsType_ == "ntfs") {
+    if (fsType_ == "ntfs" && (fsLabel_.find('?') != std::string::npos || fsLabel_ == "")) {
         std::vector<std::string> cmd;
         cmd = {
             "ntfslabel",
