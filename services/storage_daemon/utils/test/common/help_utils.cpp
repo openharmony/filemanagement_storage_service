@@ -145,7 +145,7 @@ bool StorageTestUtils::CreateFile(const std::string &path)
     if (fd == -1) {
         return false;
     }
-    (void)close(f);
+    (void)fclose(f);
     return true;
 }
 
