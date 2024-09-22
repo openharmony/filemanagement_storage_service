@@ -510,7 +510,7 @@ void KeyBackup::CleanFile(const std::string &path)
     if (fsync(fd) == -1) {
         LOGE("failed to sync file %s", realPath.c_str());
     }
-    fclose(f);
+    (void) fclose(f);
     return;
 }
 
@@ -622,7 +622,7 @@ bool KeyBackup::ReadFileToString(const std::string &filePath, std::string &conte
         p += n;
         remaining -= n;
     }
-    fclose(f);
+    (void) fclose(f);
     return readStatus;
 }
 
