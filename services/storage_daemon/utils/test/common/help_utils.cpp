@@ -16,6 +16,7 @@
 #include "help_utils.h"
 
 #include <cerrno>
+#include <cstdio>
 #include <dirent.h>
 #include <fcntl.h>
 #include <mntent.h>
@@ -136,11 +137,15 @@ bool StorageTestUtils::CheckUserDir(int32_t userId, uint32_t flags)
 bool StorageTestUtils::CreateFile(const std::string &path)
 {
     (void)RmDirRecurse(path);
-    int fd = open(path.c_str(), O_RDWR | O_CREAT | O_TRUNC, MODE);
+    FILE *f = fopen(path.c_str(), "w+");
+    if (f == nullptr) {
+        return false;
+    }
+    int fd = fileno(f);
     if (fd == -1) {
         return false;
     }
-    (void)close(fd);
+    (void)close(f);
     return true;
 }
 

@@ -15,6 +15,7 @@
 
 #include "key_backup.h"
 
+#include <cstdio>
 #include <dirent.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -488,7 +489,12 @@ void KeyBackup::CleanFile(const std::string &path)
     if (!GetRealPath(path, realPath)) {
         return;
     }
-    int fd = open(realPath.c_str(), O_WRONLY);
+    FILE *f = fopen(realPath.c_str(), "w");
+    if (f == nullptr) {
+        LOGE("open %s failed", realPath.c_str());
+        return;
+    }
+    int fd = fileno(f);
     if (fd < 0) {
         LOGE("open %s failed", realPath.c_str());
         return;
@@ -504,7 +510,7 @@ void KeyBackup::CleanFile(const std::string &path)
     if (fsync(fd) == -1) {
         LOGE("failed to sync file %s", realPath.c_str());
     }
-    close(fd);
+    fclose(f);
     return;
 }
 
@@ -588,7 +594,12 @@ bool KeyBackup::ReadFileToString(const std::string &filePath, std::string &conte
     if (!GetRealPath(filePath, realPath)) {
         return false;
     }
-    int fd = open(realPath.c_str(), O_RDONLY | O_CLOEXEC);
+    FILE *f = fopen(realPath.c_str(), "r");
+    if (f == nullptr) {
+        LOGE("%s realpath failed", realPath.c_str());
+        return false;
+    }
+    int fd = fileno(f);
     if (fd < 0) {
         LOGE("%s realpath failed", realPath.c_str());
         return false;
@@ -611,7 +622,7 @@ bool KeyBackup::ReadFileToString(const std::string &filePath, std::string &conte
         p += n;
         remaining -= n;
     }
-    close(fd);
+    fclose(f);
     return readStatus;
 }
 
