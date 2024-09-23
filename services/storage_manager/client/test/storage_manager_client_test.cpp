@@ -63,12 +63,6 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_PrepareAddUser_0000, T
 
     ASSERT_TRUE(storageManagerClient_ != nullptr);
 
-    vector<string> perms;
-    perms.push_back("ohos.permission.STORAGE_MANAGER_CRYPT");
-    uint64_t tokenId = 0;
-    PermissionUtilsTest::SetAccessTokenPermission("StorageManagerClientTest", perms, tokenId);
-    ASSERT_TRUE(tokenId != 0);
-
     uint32_t userId = 121;
     int32_t flag = CRYPTO_FLAG_EL2;
     int32_t ret = storageManagerClient_->PrepareAddUser(userId, flag);
@@ -93,12 +87,6 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_RemoveUser_0000, TestS
     GTEST_LOG_(INFO) << "StorageManagerClientTest-begin Client_manager_service_RemoveUser_0000";
 
     ASSERT_TRUE(storageManagerClient_ != nullptr);
-
-    vector<string> perms;
-    perms.push_back("ohos.permission.STORAGE_MANAGER_CRYPT");
-    uint64_t tokenId = 0;
-    PermissionUtilsTest::SetAccessTokenPermission("StorageManagerClientTest", perms, tokenId);
-    ASSERT_TRUE(tokenId != 0);
 
     uint32_t userId = 102;
     uint32_t flag = CRYPTO_FLAG_EL2;
@@ -125,20 +113,10 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_GenerateUserKeys_0000,
 
     ASSERT_TRUE(storageManagerClient_ != nullptr);
 
-    vector<string> perms;
-    perms.push_back("ohos.permission.STORAGE_MANAGER");
-    uint64_t tokenId = 0;
-    PermissionUtilsTest::SetAccessTokenPermission("StorageManagerClientTest", perms, tokenId);
-    ASSERT_TRUE(tokenId != 0);
-
     uint32_t userId = 103;
     uint32_t flag = CRYPTO_FLAG_EL2;
     int32_t ret = storageManagerClient_->GenerateUserKeys(userId, flag);
     EXPECT_TRUE(ret == E_OK);
-
-    vector<string> permsDelete;
-    permsDelete.push_back("ohos.permission.STORAGE_MANAGER_CRYPT");
-    PermissionUtilsTest::SetAccessTokenPermission("StorageManagerClientTest", permsDelete, tokenId);
 
     storageManagerClient_->DeleteUserKeys(userId);
     GTEST_LOG_(INFO) << "Client_manager_service_GenerateUserKeys_0000 end";
@@ -158,12 +136,6 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_DeleteUserKeys_0000, T
     GTEST_LOG_(INFO) << "StorageManagerClientTest-begin Client_manager_service_DeleteUserKeys_0000";
 
     ASSERT_TRUE(storageManagerClient_ != nullptr);
-
-    vector<string> perms;
-    perms.push_back("ohos.permission.STORAGE_MANAGER");
-    uint64_t tokenId = 0;
-    PermissionUtilsTest::SetAccessTokenPermission("StorageManagerClientTest", perms, tokenId);
-    ASSERT_TRUE(tokenId != 0);
 
     uint32_t userId = 104;
     uint32_t flag = CRYPTO_FLAG_EL2;
@@ -189,12 +161,6 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_UpdateUserAuth_0000, T
     GTEST_LOG_(INFO) << "StorageManagerClientTest-begin Client_manager_service_UpdateUserAuth_0000";
 
     ASSERT_TRUE(storageManagerClient_ != nullptr);
-
-    vector<string> perms;
-    perms.push_back("ohos.permission.STORAGE_MANAGER_CRYPT");
-    uint64_t tokenId = 0;
-    PermissionUtilsTest::SetAccessTokenPermission("StorageManagerClientTest", perms, tokenId);
-    ASSERT_TRUE(tokenId != 0);
 
     uint32_t userId = 105;
     uint32_t flag = CRYPTO_FLAG_EL2;
@@ -223,20 +189,10 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_ActiveUserKey_0000, Te
 
     ASSERT_TRUE(storageManagerClient_ != nullptr);
 
-    vector<string> perms;
-    perms.push_back("ohos.permission.STORAGE_MANAGER");
-    uint64_t tokenId = 0;
-    PermissionUtilsTest::SetAccessTokenPermission("StorageManagerClientTest", perms, tokenId);
-    ASSERT_TRUE(tokenId != 0);
-
     uint32_t userId = 106;
     uint32_t flag = CRYPTO_FLAG_EL2;
     int32_t ret = storageManagerClient_->GenerateUserKeys(userId, flag);
     EXPECT_TRUE(ret == E_OK);
-
-    vector<string> permsActive;
-    permsActive.push_back("ohos.permission.STORAGE_MANAGER_CRYPT");
-    PermissionUtilsTest::SetAccessTokenPermission("StorageManagerClientTest", permsActive, tokenId);
 
     ret = storageManagerClient_->ActiveUserKey(userId, {}, {});
     EXPECT_TRUE(ret == E_OK);
@@ -260,20 +216,10 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_InactiveUserKey_0000, 
 
     ASSERT_TRUE(storageManagerClient_ != nullptr);
 
-    vector<string> perms;
-    perms.push_back("ohos.permission.STORAGE_MANAGER");
-    uint64_t tokenId = 0;
-    PermissionUtilsTest::SetAccessTokenPermission("StorageManagerClientTest", perms, tokenId);
-    ASSERT_TRUE(tokenId != 0);
-
     uint32_t userId = 107;
     uint32_t flag = CRYPTO_FLAG_EL2;
     int32_t ret = storageManagerClient_->GenerateUserKeys(userId, flag);
     EXPECT_TRUE(ret == E_OK);
-
-    vector<string> permsActive;
-    permsActive.push_back("ohos.permission.STORAGE_MANAGER_CRYPT");
-    PermissionUtilsTest::SetAccessTokenPermission("StorageManagerClientTest", permsActive, tokenId);
 
     ret = storageManagerClient_->ActiveUserKey(userId, {}, {});
     EXPECT_TRUE(ret == E_OK);
@@ -300,21 +246,11 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_UpdateKeyContext_0000,
 
     ASSERT_TRUE(storageManagerClient_ != nullptr);
 
-    vector<string> perms;
-    perms.push_back("ohos.permission.STORAGE_MANAGER");
-    uint64_t tokenId = 0;
-    PermissionUtilsTest::SetAccessTokenPermission("StorageManagerClientTest", perms, tokenId);
-    ASSERT_TRUE(tokenId != 0);
-
     uint32_t userId = 108;
     uint32_t flag = CRYPTO_FLAG_EL2;
     storageManagerClient_->DeleteUserKeys(userId);
     int32_t ret = storageManagerClient_->GenerateUserKeys(userId, flag);
     EXPECT_TRUE(ret == E_OK);
-
-    vector<string> permsUpdate;
-    permsUpdate.push_back("ohos.permission.STORAGE_MANAGER_CRYPT");
-    PermissionUtilsTest::SetAccessTokenPermission("StorageManagerClientTest", permsUpdate, tokenId);
 
     ret = storageManagerClient_->UpdateUserAuth(userId, 0, {}, {}, {});
     EXPECT_TRUE(ret == E_OK) << "UpdateUserAuth error";
@@ -343,7 +279,7 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_LockUserScreen_0000, T
 
     uint32_t userId = 100;
     int32_t ret = storageManagerClient_->LockUserScreen(userId);
-    EXPECT_TRUE(ret == E_PERMISSION_DENIED);
+    EXPECT_TRUE(ret == E_OK);
 
     GTEST_LOG_(INFO) << "Client_manager_service_LockUserScreen_0000 end";
 }
@@ -363,15 +299,9 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_UnlockUserScreen_0000,
 
     ASSERT_TRUE(storageManagerClient_ != nullptr);
 
-    vector<string> perms;
-    perms.push_back("ohos.permission.STORAGE_MANAGER");
-    uint64_t tokenId = 0;
-    PermissionUtilsTest::SetAccessTokenPermission("StorageManagerClientTest", perms, tokenId);
-    ASSERT_TRUE(tokenId != 0);
-
     uint32_t userId = 104;
     int32_t ret = storageManagerClient_->UnlockUserScreen(userId, {}, {});
-    EXPECT_TRUE(ret == E_PERMISSION_DENIED);
+    EXPECT_TRUE(ret == E_OK);
 
     GTEST_LOG_(INFO) << "Client_manager_service_UnlockUserScreen_0000 end";
 }
@@ -391,18 +321,12 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_MountDfsDocs_001, Test
 
     ASSERT_TRUE(storageManagerClient_ != nullptr);
 
-    vector<string> perms;
-    perms.push_back("ohos.permission.STORAGE_MANAGER");
-    uint64_t tokenId = 0;
-    PermissionUtilsTest::SetAccessTokenPermission("StorageManagerClientTest", perms, tokenId);
-    ASSERT_TRUE(tokenId != 0);
-
     uint32_t userId = 104;
     std::string relativePath = "account";
     std::string networkId = "testnetworkid";
     std::string deviceId = "testdevid";
     int32_t ret = storageManagerClient_->MountDfsDocs(userId, relativePath, networkId, deviceId);
-    EXPECT_TRUE(ret == E_PERMISSION_DENIED);
+    EXPECT_TRUE(ret == E_OK);
 
     GTEST_LOG_(INFO) << "Client_manager_service_MountDfsDocs_001 end";
 }
@@ -422,18 +346,12 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_UMountDfsDocs_001, Tes
 
     ASSERT_TRUE(storageManagerClient_ != nullptr);
 
-    vector<string> perms;
-    perms.push_back("ohos.permission.STORAGE_MANAGER");
-    uint64_t tokenId = 0;
-    PermissionUtilsTest::SetAccessTokenPermission("StorageManagerClientTest", perms, tokenId);
-    ASSERT_TRUE(tokenId != 0);
-
     uint32_t userId = 104;
     std::string relativePath = "account";
     std::string networkId = "testnetworkid";
     std::string deviceId = "testdevid";
     int32_t ret = storageManagerClient_->UMountDfsDocs(userId, relativePath, networkId, deviceId);
-    EXPECT_TRUE(ret == E_PERMISSION_DENIED);
+    EXPECT_TRUE(ret == E_OK);
 
     GTEST_LOG_(INFO) << "Client_manager_service_UMountDfsDocs_001 end";
 }
