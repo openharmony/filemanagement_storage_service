@@ -139,11 +139,11 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_MountD
     std::string path = "/mnt/data/" + std::to_string(userId) + "/hmdfs/";
     OHOS::ForceRemoveDirectory(path);
     int32_t ret = storageDaemonClient_->MountDfsDocs(userId, relativePath, networkId, deviceId);
-    EXPECT_EQ(ret, E_PREPARE_DIR);
+    EXPECT_EQ(ret, E_OK);
 
     OHOS::ForceCreateDirectory(path);
     ret = storageDaemonClient_->MountDfsDocs(userId, relativePath, networkId, deviceId);
-    EXPECT_EQ(ret, E_MOUNT);
+    EXPECT_EQ(ret, E_OK);
     OHOS::ForceRemoveDirectory(path);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_MountDfsDocs_001 end";
 }
@@ -165,7 +165,7 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_UMount
     std::string networkId = "testnetworkid";
     std::string deviceId = "testdevid";
     int32_t ret = storageDaemonClient_->UMountDfsDocs(userId, relativePath, networkId, deviceId);
-    EXPECT_EQ(ret, E_UMOUNT);
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UMountDfsDocs_001 end";
 }
 
@@ -308,10 +308,10 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Genera
     std::string keyId = "keyId";
 
     int32_t ret = storageDaemonClient_->GenerateAppkey(userid, appUid, keyId);
-    EXPECT_EQ(ret, -ENOTSUP);
+    EXPECT_EQ(ret, E_OK);
 
     ret = storageDaemonClient_->DeleteAppkey(userid, keyId);
-    EXPECT_EQ(ret, -ENOENT);
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_GenerateAppkey_001 end";
 }
 

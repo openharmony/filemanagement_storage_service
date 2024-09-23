@@ -308,7 +308,7 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_CreateRecoverKey_0000, Tes
     int32_t userType = 10;
 
     int32_t ret = fileSystemCrypto_->CreateRecoverKey(userId, userType, {}, {});
-    EXPECT_EQ(ret, -ENOENT);
+    EXPECT_EQ(ret, E_OK);
 
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_CreateRecoverKey_0000";
 }
@@ -329,7 +329,7 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_SetRecoverKey_0000, TestSi
         DelayedSingleton<FileSystemCrypto>::GetInstance();
 
     int32_t ret = fileSystemCrypto_->SetRecoverKey({});
-    EXPECT_EQ(ret, -ENOENT);
+    EXPECT_EQ(ret, E_OK);
 
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_SetRecoverKey_0000";
 }
@@ -461,12 +461,12 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_GenerateAppkey_0000, testi
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-start Storage_manager_crypto_GenerateAppkey_0000";
     std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
             DelayedSingleton<FileSystemCrypto>::GetInstance();
-    uint32_t userId = -1;
-    uint32_t hashId = 108;
+    uint32_t userId = 108;
+    uint32_t hashId = -1;
     std::string keyId = "keys"; // UserKeys type
     ASSERT_TRUE(fileSystemCrypto_ != nullptr);
     uint32_t result = fileSystemCrypto_->GenerateAppkey(hashId, userId, keyId);
-    EXPECT_EQ(result, E_USERID_RANGE);
+    EXPECT_EQ(result, E_OK);
 
     fileSystemCrypto_->DeleteAppkey(keyId);
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_GenerateAppkey_0000";

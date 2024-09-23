@@ -37,6 +37,7 @@ ohos_unittest("storage_daemon_clt_test") {
     "${storage_daemon_path}/include",
     "${storage_daemon_path}/client/include",
     "${storage_daemon_path}/utils/test/common",
+    "${storage_manager_path}/include",
     "${storage_service_common_path}/include",
   ]
 
@@ -44,6 +45,7 @@ ohos_unittest("storage_daemon_clt_test") {
     "${storage_daemon_path}/client/storage_daemon_client.cpp",
     "${storage_daemon_path}/client/test/storage_daemon_client_test.cpp",
     "${storage_daemon_path}/utils/test/common/help_utils.cpp",
+    "${storage_manager_path}/mock/storage_daemon_proxy_mock.cpp",
   ]
 
   deps = [
@@ -58,7 +60,6 @@ ohos_unittest("storage_daemon_clt_test") {
     "init:libbegetutil",
     "ipc:ipc_single",
     "samgr:samgr_proxy",
-    "storage_service:storage_manager_sa_proxy",
   ]
 }
 

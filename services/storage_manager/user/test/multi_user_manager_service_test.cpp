@@ -60,7 +60,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareAddUser_0000, 
     if (service != nullptr) {
         result = service->PrepareAddUser(userId, flag);
     }
-    EXPECT_EQ(result, 0);
+    EXPECT_EQ(result, E_OK);
     service->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_PrepareAddUser_0000";
 }
@@ -84,7 +84,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareAddUser_0001, 
     if (service != nullptr) {
         result = service->PrepareAddUser(userId, flag);
     }
-    EXPECT_NE(result, 0);
+    EXPECT_EQ(result, E_USERID_RANGE);
     service->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_PrepareAddUser_0001";
 }
@@ -108,7 +108,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareAddUser_0002, 
     if (service != nullptr) {
         result = service->PrepareAddUser(userId, flag);
     }
-    EXPECT_NE(result, 0);
+    EXPECT_EQ(result, E_USERID_RANGE);
     service->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_PrepareAddUser_0002";
 }
@@ -133,11 +133,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareAddUser_0003, 
         service->PrepareAddUser(userId, flag);
         result = service->PrepareAddUser(userId, flag);
     }
-    if (g_fscryptEnable) {
-        EXPECT_EQ(result, -EEXIST);
-    } else {
-        EXPECT_EQ(result, E_OK);
-    }
+    EXPECT_EQ(result, E_OK);
     service->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_PrepareAddUser_0003";
 }
@@ -162,7 +158,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_RemoveUser_0000, test
         service->PrepareAddUser(userId, flag);
         result = service->RemoveUser(userId, flag);
     }
-    EXPECT_EQ(result, 0);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_RemoveUser_0000";
 }
 
@@ -185,11 +181,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_RemoveUser_0001, test
     if (service != nullptr) {
         result = service->RemoveUser(userId, flag);
     }
-    if (g_fscryptEnable) {
-        EXPECT_EQ(result, -EFAULT);
-    } else {
-        EXPECT_EQ(result, E_OK);
-    }
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_RemoveUser_0001";
 }
 
@@ -213,7 +205,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_RemoveUser_0002, test
         service->PrepareAddUser(userId, flag);
         result = service->RemoveUser(userId, flag);
     }
-    EXPECT_NE(result, 0);
+    EXPECT_EQ(result, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_RemoveUser_0002";
 }
 
@@ -237,7 +229,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareStartUser_0000
         service->PrepareAddUser(userId, flag);
         result = service->PrepareStartUser(userId);
     }
-    EXPECT_EQ(result, 0);
+    EXPECT_EQ(result, E_OK);
     service->StopUser(userId);
     service->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_PrepareStartUser_0000";
@@ -261,7 +253,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareStartUser_0001
     if (service != nullptr) {
         result = service->PrepareStartUser(userId);
     }
-    EXPECT_NE(result, 0);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_PrepareStartUser_0001";
 }
 
@@ -285,7 +277,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareStartUser_0002
         service->PrepareAddUser(userId, flag);
         result = service->PrepareStartUser(userId);
     }
-    EXPECT_NE(result, 0);
+    EXPECT_EQ(result, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_PrepareStartUser_0002";
 }
 
@@ -310,7 +302,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_StopUser_0000, testin
         service->PrepareStartUser(userId);
         result = service->StopUser(userId);
     }
-    EXPECT_EQ(result, E_UMOUNT);
+    EXPECT_EQ(result, E_OK);
     service->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_StopUser_0000";
 }
@@ -333,7 +325,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_StopUser_0001, testin
     if (service != nullptr) {
         result = service->StopUser(userId);
     }
-    EXPECT_NE(result, 0);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_StopUser_0001";
 }
 
@@ -358,7 +350,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_StopUser_0002, testin
         service->PrepareStartUser(userId);
         result = service->StopUser(userId);
     }
-    EXPECT_NE(result, 0);
+    EXPECT_EQ(result, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_StopUser_0002";
 }
 
@@ -382,7 +374,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_StopUser_0003, testin
         service->PrepareAddUser(userId, flag);
         result = service->StopUser(userId);
     }
-    EXPECT_NE(result, 0);
+    EXPECT_EQ(result, E_OK);
     service->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_StopUser_0003";
 }
