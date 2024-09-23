@@ -53,6 +53,10 @@ void ChownRecursion(const std::string &dir, uid_t uid, gid_t gid);
 int IsSameGidUid(const std::string &dir, uid_t uid, gid_t gid);
 void MoveFileManagerData(const std::string &filesPath);
 void OpenSubFile(const std::string &path, std::vector<std::string>  &dirInfo);
+void DelTemp(const std::string &path);
+bool IsTempFolder(const std::string &path, const std::string &sub);
+bool DeleteFile(const std::string &path);
+std::vector<std::string> Split(std::string str, std::string pattern);
 }
 }
 

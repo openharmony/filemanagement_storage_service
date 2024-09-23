@@ -552,5 +552,85 @@ void ChownRecursion(const std::string &dir, uid_t uid, gid_t gid)
     }
 }
 
+std::vector<std::string> Split(std::string str, std::string pattern)
+{
+    int32_t pos;
+    std::vector<std::string> result;
+    str += pattern;
+    int32_t size = str.size();
+    for (int32_t i = 0; i < size; i++) {
+        pos = str.find(pattern, i);
+        if (pos < size) {
+            std::string s = str.substr(i, pos - i);
+            result.push_back(s);
+            i = pos + pattern.size() - 1;
+        }
+    }
+    return result;
+}
+
+bool DeleteFile(const std::string &path)
+{
+    DIR *dir;
+    struct dirent *dirinfo;
+    struct stat statbuf;
+    lstat(path.c_str(), &statbuf);
+
+    if (S_ISREG(statbuf.st_mode)) {
+        remove(path.c_str());
+    } else if (S_ISDIR(statbuf.st_mode)) {
+        if ((dir = opendir(path.c_str())) == NULL)
+            return 1;
+        while ((dirinfo = readdir(dir)) != NULL) {
+            std::string filepath;
+            filepath.append(path).append("/").append(dirinfo->d_name);
+            if (strcmp(dirinfo->d_name, ".") == 0 || strcmp(dirinfo->d_name, "..") == 0) {
+                continue;
+            }
+            DeleteFile(filepath);
+            rmdir(filepath.c_str());
+        }
+        closedir(dir);
+    }
+    return 0;
+}
+
+bool IsTempFolder(const std::string &path, const std::string &sub)
+{
+    bool result = false;
+    if (IsDir(path)) {
+        std::vector<std::string> paths = Split(path, "/");
+        std::string filePath = paths.back();
+        if (filePath.find(sub) == 0) {
+            result = true;
+        }
+    }
+    return result;
+}
+
+void DelTemp(const std::string &path)
+{
+    DIR *dir;
+    struct dirent *dirinfo;
+    if (!IsDir(path)) {
+        return;
+    }
+    if ((dir = opendir(path.c_str())) != NULL) {
+        {
+            while ((dirinfo = readdir(dir)) != NULL) {
+                if (strcmp(dirinfo->d_name, ".") == 0 || strcmp(dirinfo->d_name, "..") == 0) {
+                    continue;
+                }
+                std::string filePath;
+                filePath.append(path).append("/").append(dirinfo->d_name);
+                if (IsTempFolder(filePath, "simple-mtpfs")) {
+                    DeleteFile(filePath.c_str());
+                    rmdir(filePath.c_str());
+                }
+            }
+            closedir(dir);
+        }
+    }
+}
 } // STORAGE_DAEMON
 } // OHOS
