@@ -66,6 +66,10 @@ bool FscryptKeyV2::ActiveKey(uint32_t flag, const std::string &mnt)
 bool FscryptKeyV2::InactiveKey(uint32_t flag, const std::string &mnt)
 {
     LOGD("enter");
+    if (keyInfo_.keyId.size == 0) {
+        LOGE("keyId size is 0");
+        return true;
+    }
     if (keyInfo_.keyId.size != FSCRYPT_KEY_IDENTIFIER_SIZE) {
         LOGE("keyId is invalid, %{public}u", keyInfo_.keyId.size);
         return false;
