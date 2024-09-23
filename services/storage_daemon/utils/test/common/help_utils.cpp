@@ -141,6 +141,7 @@ bool StorageTestUtils::CreateFile(const std::string &path)
     if (f == nullptr) {
         return false;
     }
+    ChMod(path.c_str(), MODE);
     int fd = fileno(f);
     if (fd == -1) {
         return false;
