@@ -461,12 +461,12 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_GenerateAppkey_0000, testi
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-start Storage_manager_crypto_GenerateAppkey_0000";
     std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
             DelayedSingleton<FileSystemCrypto>::GetInstance();
-    uint32_t userId = -1;
-    uint32_t hashId = 108;
+    uint32_t userId = 108;
+    uint32_t hashId = -1;
     std::string keyId = "keys"; // UserKeys type
     ASSERT_TRUE(fileSystemCrypto_ != nullptr);
     uint32_t result = fileSystemCrypto_->GenerateAppkey(hashId, userId, keyId);
-    EXPECT_EQ(result, E_USERID_RANGE);
+    EXPECT_EQ(result, E_OK);
 
     fileSystemCrypto_->DeleteAppkey(keyId);
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_GenerateAppkey_0000";

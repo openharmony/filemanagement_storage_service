@@ -34,6 +34,7 @@ ohos_unittest("storage_manager_clt_test") {
   include_dirs = [
     "${storage_manager_path}/include",
     "${storage_service_common_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   defines = [

@@ -84,7 +84,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_PrepareAddUser_0001, 
     if (service != nullptr) {
         result = service->PrepareAddUser(userId, flag);
     }
-    EXPECT_EQresult, E_USERID_RANGE);
+    EXPECT_EQ(result, E_USERID_RANGE);
     service->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_PrepareAddUser_0001";
 }
