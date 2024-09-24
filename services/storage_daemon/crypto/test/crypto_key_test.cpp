@@ -1244,6 +1244,84 @@ HWTEST_F(CryptoKeyTest, fscrypt_sdc_filecrypt_006, TestSize.Level1)
     params.clear();
 }
 
+HWTEST_F(CryptoKeyTest, fscrypt_sdc_filecrypt_007, TestSize.Level1)
+{
+    std::vector<std::string> params;
+
+    // test sdc Get_unlock_status
+    params.clear();
+    params.push_back("Get_unlock_status");
+    params.push_back("id");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("Get_unlock_status");
+    params.push_back("10");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("Get_unlock_status");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("Get_unlock_status");
+    params.push_back("10");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+}
+
+HWTEST_F(CryptoKeyTest, fscrypt_sdc_filecrypt_008, TestSize.Level1)
+{
+    std::vector<std::string> params;
+
+    // test sdc create_recover_key
+    params.clear();
+    params.push_back("create_recover_key");
+    params.push_back("id");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("create_recover_key");
+    params.push_back("10");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("create_recover_key");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("create_recover_key");
+    params.push_back("10");
+    params.push_back("11");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+}
+
+HWTEST_F(CryptoKeyTest, fscrypt_sdc_filecrypt_009, TestSize.Level1)
+{
+    std::vector<std::string> params;
+
+    // test sdc set_recover_key
+    params.clear();
+    params.push_back("set_recover_key");
+    params.push_back("id");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("set_recover_key");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("set_recover_key");
+    params.push_back("10");
+    params.push_back("11");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+}
+
 /**
  * @tc.name: libfscrypt api test
  * @tc.desc: Verify the libfscrypt interface.
