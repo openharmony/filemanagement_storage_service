@@ -636,10 +636,12 @@ int KeyManager::DoDeleteUserKeys(unsigned int user)
         LOGE("Delete el4 key failed");
         errCode = deleteRet;
     }
-    deleteRet = DoDeleteUserCeEceSeceKeys(user, USER_EL5_DIR, userEl5Key_);
-    if (deleteRet != 0) {
-        LOGE("Delete el5 key failed");
-        errCode = deleteRet;
+    if (IsUeceSupportWithErrno() != ENOENT) {
+        deleteRet = DoDeleteUserCeEceSeceKeys(user, USER_EL5_DIR, userEl5Key_);
+        if (deleteRet != 0) {
+            LOGE("Delete el5 key failed");
+            errCode = deleteRet;
+        }
     }
     return errCode;
 }
@@ -1503,6 +1505,31 @@ bool KeyManager::IsUeceSupport()
     close(fd);
     LOGI("uece is support.");
     return true;
+}
+
+int KeyManager::IsUeceSupportWithErrno()
+{
+    FILE *f = fopen(UECE_PATH, "r+");
+    if (f == nullptr) {
+        if (errno == ENOENT) {
+            LOGE("uece does not support !");
+            return ENOENT;
+        }
+        LOGE("open uece failed, errno : %{public}d", errno);
+        return errno;
+    }
+    int fd = fileno(f);
+    if (fd < 0) {
+        if (errno == ENOENT) {
+            LOGE("uece does not support !");
+            return ENOENT;
+        }
+        LOGE("open uece failed, errno : %{public}d", errno);
+        return errno;
+    }
+    (void)fclose(f);
+    LOGI("uece is support.");
+    return E_OK;
 }
 
 int KeyManager::UpgradeKeys(const std::vector<FileList> &dirInfo)
