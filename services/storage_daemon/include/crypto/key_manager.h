@@ -125,6 +125,7 @@ private:
     int CheckAndDeleteEmptyEl5Directory(std::string keyDir, unsigned int user);
     bool GetUserDelayHandler(uint32_t userId, std::shared_ptr<DelayHandler> &delayHandler);
     bool IsUeceSupport();
+    int IsUeceSupportWithErrno();
     bool IsUserCeDecrypt(uint32_t userId);
     bool UnlockEceSece(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret, int &ret);
     bool UnlockUece(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret, int &ret);
