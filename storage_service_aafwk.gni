@@ -48,6 +48,12 @@ declare_args() {
   } else {
     enable_screenlock_manager = false
   }
+  if (defined(global_parts_info) &&
+      defined(global_parts_info.open_source_libmtp)) {
+    support_open_source_libmtp = true
+  } else {
+    support_open_source_libmtp = false
+  }
 }
 storage_manager_path =
     "//foundation/filemanagement/storage_service/services/storage_manager"
