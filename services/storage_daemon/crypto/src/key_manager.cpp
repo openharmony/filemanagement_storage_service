@@ -1524,16 +1524,25 @@ bool KeyManager::IsUeceSupport()
 
 int KeyManager::IsUeceSupportWithErrno()
 {
-    int fd = open(UECE_PATH, O_RDWR);
-    if (fd < 0) {
+    FILE *f = fopen(UECE_PATH, "r+");
+    if (f == nullptr) {
         if (errno == ENOENT) {
             LOGE("uece does not support !");
-            return ENOENT
+            return ENOENT;
         }
         LOGE("open uece failed, errno : %{public}d", errno);
         return errno;
     }
-    close(fd);
+    int fd = fileno(f);
+    if (fd < 0) {
+        if (errno == ENOENT) {
+            LOGE("uece does not support !");
+            return ENOENT;
+        }
+        LOGE("open uece failed, errno : %{public}d", errno);
+        return errno;
+    }
+    (void)fclose(f);
     LOGI("uece is support.");
     return E_OK;
 }
