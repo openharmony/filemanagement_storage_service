@@ -1,0 +1,81 @@
+# Copyright (c) 2024 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/ohos.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
+
+ohos_executable("mtpfs") {
+  branch_protector_ret = "pac_ret"
+
+  sanitize = {
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+
+  include_dirs = [
+    "./include",
+    "${storage_daemon_path}/include/utils",
+    "${storage_service_common_path}/include",
+  ]
+
+  if (support_open_source_libmtp) {
+    sources = [
+      "./src/mtpfs_fuse.cpp",
+      "./src/mtpfs_libmtp.cpp",
+      "./src/mtpfs_main.cpp",
+      "./src/mtpfs_mtp_device.cpp",
+      "./src/mtpfs_sha.cpp",
+      "./src/mtpfs_tmp_files_pool.cpp",
+      "./src/mtpfs_type_dir.cpp",
+      "./src/mtpfs_type_file.cpp",
+      "./src/mtpfs_type_tmp_file.cpp",
+      "./src/mtpfs_util.cpp",
+    ]
+  } else {
+    sources = [ "./src/mtpfs_main_virtual.cpp" ]
+  }
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "LOG_DOMAIN = 0xD004301",
+  ]
+
+  cflags = [
+    "-w",
+    "-DFUSE_USE_VERSION=31",
+    "-D_FILE_OFFSET_BITS=64",
+    "-std=c++11",
+  ]
+
+  deps = [ "${storage_daemon_path}:storage_common_utils" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+    "libfuse:libfuse",
+    "libusb:libusb",
+  ]
+
+  if (support_open_source_libmtp) {
+    defines += [ "SUPPORT_OPEN_SOURCE_LIBMTP" ]
+    external_deps += [ "libmtp:libmtp" ]
+  }
+
+  subsystem_name = "filemanagement"
+  part_name = "storage_service"
+  install_enable = true
+}
