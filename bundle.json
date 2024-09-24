@@ -53,6 +53,7 @@
         "huks",
         "init",
         "ipc",
+        "libmtp",
         "media_library",
         "napi",
         "ntfs-3g",

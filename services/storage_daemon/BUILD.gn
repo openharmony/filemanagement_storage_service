@@ -160,6 +160,11 @@ ohos_executable("storage_daemon") {
     external_deps += [ "screenlock_mgr:screenlock_client" ]
   }
 
+  if (support_open_source_libmtp) {
+    defines += [ "SUPPORT_OPEN_SOURCE_LIBMTP" ]
+    external_deps += [ "libmtp:libmtp" ]
+  }
+
   ldflags = [
     "-Wl,-z,max-page-size=4096",
     "-Wl,-z,separate-code",
