@@ -49,6 +49,7 @@ ohos_moduletest("FscryptKeyV1Test") {
     "${storage_daemon_path}/crypto/src/key_crypto_utils.cpp",
     "${storage_daemon_path}/crypto/src/key_manager.cpp",
     "${storage_daemon_path}/crypto/src/openssl_crypto.cpp",
+    "${storage_daemon_path}/crypto/src/recover_manager.cpp",
     "${storage_daemon_path}/crypto/test/fscrypt_v1_test/fscrypt_key_v1_test.cpp",
     "${storage_daemon_path}/crypto/test/mock/fscrypt_key_v1_ext_mock.cpp",
   ]
