@@ -1183,7 +1183,8 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_DeleteUserKeys_0000, tes
  * @tc.level Level 1
  * @tc.require: AR000H0FG3
  */
-HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_UpdateUseAuthWithRecoveryKey_0000, testing::ext::TestSize.Level1)
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_UpdateUseAuthWithRecoveryKey_0000,
+    testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_UpdateUseAuthWithRecoveryKey_0000";
     ASSERT_TRUE(mock_ != nullptr) << "StorageManagerServiceMock failed";
