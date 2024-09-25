@@ -1175,8 +1175,8 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_DeleteUserKeys_0000, tes
 }
 
 /**
- * @tc.number: SUB_STORAGE_Storage_manager_proxy_UpdateUseAuthWithRecoveryKey_0000
- * @tc.name: Storage_manager_proxy_UpdateUseAuthWithRecoveryKey_0000
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_UpdateUseAuthWithRecoveryKey_0001
+ * @tc.name: Storage_manager_proxy_UpdateUseAuthWithRecoveryKey_0001
  * @tc.desc: Test function of UpdateUseAuthWithRecoveryKey interface for SUCCESS.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
