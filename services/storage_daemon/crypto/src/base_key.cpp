@@ -360,6 +360,10 @@ bool BaseKey::UpdateKey(const std::string &keypath)
 {
     LOGI("enter");
     auto candidate = keypath.empty() ? GetCandidateDir() : keypath;
+    if (candidate.empty() && GetTypeFromDir() == TYPE_EL5) {
+        LOGI("no uece candidate dir, do not need updateKey.");
+        return true;
+    }
     if (candidate.empty()) {
         LOGE("no candidate dir");
         return false;
