@@ -1193,7 +1193,8 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_UpdateUseAuthWithRecover
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
     uint32_t userId = 114;
     ASSERT_TRUE(proxy_ != nullptr) << "StorageManagerProxy failed";
-    uint32_t result = proxy_->UpdateUseAuthWithRecoveryKey({}, {}, 0, userId, {{}});
+    std::vector<std::vector<uint8_t>> plainText;
+    uint32_t result = proxy_->UpdateUseAuthWithRecoveryKey({}, {}, 0, userId, plainText);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_UpdateUseAuthWithRecoveryKey_0000";
 }
