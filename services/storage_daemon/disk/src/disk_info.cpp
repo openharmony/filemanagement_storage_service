@@ -186,11 +186,14 @@ int DiskInfo::ReadPartition()
         LOGE("Invaild maxVolumes: %{public}d", maxVolumes);
         return E_ERR;
     }
-
+    int res = Destroy();
+    if (res != E_OK) {
+        LOGE("Destroy failed in ReadPartition");
+    }
+    
     std::vector<std::string> cmd;
     std::vector<std::string> output;
     std::vector<std::string> lines;
-    int res;
 
     cmd.push_back(SGDISK_PATH);
     cmd.push_back(SGDISK_DUMP_CMD);
@@ -207,12 +210,12 @@ int DiskInfo::ReadPartition()
             lines.push_back(tmp);
     }
 
-    std::vector<std::string> hmfsLines;
     if (lines.size() > MIN_LINES) {
         auto userdataIt = std::find_if(lines.begin(), lines.end(), [](const std::string &str) {
             return str.find("userdata") != std::string::npos;
         });
         if (userdataIt != lines.end()) {
+            std::vector<std::string> hmfsLines;
             hmfsLines.push_back(lines.front());
             hmfsLines.push_back(*userdataIt);
             status = sScan;
@@ -225,8 +228,8 @@ int DiskInfo::ReadPartition()
 
 bool DiskInfo::CreateMBRVolume(int32_t type, dev_t dev)
 {
-    // FAT16 || NTFS/EXFAT || W95 FAT32 || W95 FAT32 || W95 FAT16 || EFI FAT32
-    if (type == 0x06 || type == 0x07 || type == 0x0b || type == 0x0c || type == 0x0e || type == 0x1b) {
+    // FAT16 || NTFS/EXFAT || W95 FAT32 || W95 FAT32 || W95 FAT16 || EFI FAT32 || EXT 2/3/4
+    if (type == 0x06 || type == 0x07 || type == 0x0b || type == 0x0c || type == 0x0e || type == 0x1b || type == 0x83) {
         if (CreateVolume(dev) == E_OK) {
             return true;
         }

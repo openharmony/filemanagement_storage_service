@@ -197,13 +197,13 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_ChangeDisk_001, TestSi
                         \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
                         \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
                         \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
-    auto data = std::make_unique<NetlinkData>();
-    data->Decode(msg);
-    unsigned int major = std::stoi(data->GetParam("MAJOR"));
-    unsigned int minor = std::stoi(data->GetParam("MINOR"));
+    auto nlData = std::make_unique<NetlinkData>();
+    nlData->Decode(msg);
+    NetlinkData *data = nlData.get();
+    unsigned int major = (unsigned int)std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = (unsigned int)std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
-
-    diskManager->ChangeDisk(device);
+    diskManager->ChangeDisk(device, data);
 
     GTEST_LOG_(INFO) << "Storage_Service_DiskManagerTest_ChangeDisk_001 end";
 }

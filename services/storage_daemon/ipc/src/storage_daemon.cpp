@@ -284,7 +284,9 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
         PrepareUeceDir(userId);
     }
     if (userId < StorageService::START_APP_CLONE_USER_ID || userId > StorageService::MAX_APP_CLONE_USER_ID) {
-        (void)remove(elNeedRestorePath.c_str());
+        if (type != EL1_KEY) {
+            (void)remove(elNeedRestorePath.c_str());
+        }
     }
     if (type == EL4_KEY) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
@@ -344,29 +346,32 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
 
 int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
 {
+    int32_t errCode = 0;
     //CRYPTO_FLAG_EL3 destroy el3,  CRYPTO_FLAG_EL4 destroy el4
     flags = flags | IStorageDaemon::CRYPTO_FLAG_EL3 | IStorageDaemon::CRYPTO_FLAG_EL4 | IStorageDaemon::CRYPTO_FLAG_EL5;
-    int32_t ret = UserManager::GetInstance()->DestroyUserDirs(userId, flags);
-    if (ret != E_OK) {
+    int32_t destroyUserRet = UserManager::GetInstance()->DestroyUserDirs(userId, flags);
+    if (destroyUserRet != E_OK) {
+        errCode = destroyUserRet;
         LOGW("Destroy user %{public}d dirs failed, please check", userId);
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "DestroyUserDirs", BizScene::USER_MOUNT_MANAGER, BizStage::BIZ_STAGE_REMOVE_USER, "EL1", ret);
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult("DestroyUserDirs", BizScene::USER_MOUNT_MANAGER,
+            BizStage::BIZ_STAGE_REMOVE_USER, "EL1", errCode);
         AuditLog storageAuditLog = { false, "FAILED TO DestroyUserDirs", "DEL", "DestroyUserDirs", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
     }
 
 #ifdef USER_CRYPTO_MANAGER
-    ret = KeyManager::GetInstance()->DeleteUserKeys(userId);
-    if (ret != E_OK) {
+    destroyUserRet = KeyManager::GetInstance()->DeleteUserKeys(userId);
+    if (destroyUserRet != E_OK) {
+        errCode = destroyUserRet;
         LOGW("DeleteUserKeys failed, please check");
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "DeleteUserKeys", BizScene::USER_MOUNT_MANAGER, BizStage::BIZ_STAGE_REMOVE_USER, "EL1", ret);
+            "DeleteUserKeys", BizScene::USER_MOUNT_MANAGER, BizStage::BIZ_STAGE_REMOVE_USER, "EL1", errCode);
         AuditLog storageAuditLog = { false, "FAILED TO DeleteUserKeys", "DEL", "DeleteUserKeys", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
     }
-    return ret;
+    return errCode;
 #else
-    return ret;
+    return errCode;
 #endif
 }
 
@@ -405,6 +410,16 @@ int32_t StorageDaemon::StopUser(int32_t userId)
 int32_t StorageDaemon::CompleteAddUser(int32_t userId)
 {
     LOGI("CompleteAddUser enter.");
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    std::string elNeedRestorePath = GetNeedRestoreFilePathByType(userId, EL1_KEY);
+    if (elNeedRestorePath.empty() || !std::filesystem::exists(elNeedRestorePath)) {
+        return E_OK;
+    }
+    (void)remove(elNeedRestorePath.c_str());
+    LOGI("CompleteAddUser remove el1 needRestore flag");
+    StorageService::StorageRadar::GetInstance().RecordFuctionResult(
+        "CompleteAddUser", BizScene::USER_MOUNT_MANAGER, BizStage::BIZ_STAGE_GENERATE_USER_KEYS, "EL1", E_OK);
+#endif
     return E_OK;
 }
 
@@ -523,6 +538,20 @@ int32_t StorageDaemon::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
         HiAudit::GetInstance().Write(storageAuditLog);
     }
     return ret;
+#else
+    return E_OK;
+#endif
+}
+
+int32_t StorageDaemon::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,
+                                                    const std::vector<uint8_t> &newSecret,
+                                                    uint64_t secureUid,
+                                                    uint32_t userId,
+                                                    std::vector<std::vector<uint8_t>> &plainText)
+{
+    LOGI("begin to UpdateUseAuthWithRecoveryKey");
+#ifdef USER_CRYPTO_MANAGER
+    return KeyManager::GetInstance()->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId, plainText);
 #else
     return E_OK;
 #endif
@@ -888,7 +917,7 @@ int32_t StorageDaemon::CreateRecoverKey(uint32_t userId,
 {
     LOGI("begin to CreateRecoverKey");
 #ifdef USER_CRYPTO_MANAGER
-    return E_OK;
+    return KeyManager::GetInstance()->CreateRecoverKey(userId, userType, token, secret);
 #else
     return E_OK;
 #endif
@@ -898,7 +927,7 @@ int32_t StorageDaemon::SetRecoverKey(const std::vector<uint8_t> &key)
 {
     LOGI("begin to SetRecoverKey");
 #ifdef USER_CRYPTO_MANAGER
-    return E_OK;
+    return KeyManager::GetInstance()->SetRecoverKey(key);
 #else
     return E_OK;
 #endif

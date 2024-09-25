@@ -17,8 +17,10 @@
 
 #include <fcntl.h>
 #include <fstream>
+#include <cstdio>
 #include <string>
 #include <unistd.h>
+#include <dirent.h>
 
 #include "directory_ex.h"
 #include "fbex.h"
@@ -37,6 +39,8 @@ namespace {
 const std::string PATH_LATEST_BACKUP = "/latest_bak";
 const std::string PATH_KEY_VERSION = "/version_";
 const std::string PATH_KEY_TEMP = "/temp";
+const std::string PATH_NEED_RESTORE_SUFFIX = "/latest/need_restore";
+const std::string PATH_USER_EL1_DIR = "/data/service/el1/public/storage_daemon/sd/el1/";
 
 #ifndef F2FS_IOCTL_MAGIC
 #define F2FS_IOCTL_MAGIC 0xf5
@@ -81,7 +85,7 @@ static void DoTempStore(const KeyContext &sourceCtx, KeyContext &targetCtx)
 
 bool BaseKey::InitKey(bool needGenerateKey)
 {
-    LOGD("enter");
+    LOGI("enter");
     if (keyInfo_.version == FSCRYPT_INVALID || keyInfo_.version > KeyCtrlGetFscryptVersion(MNT_DATA.c_str())) {
         LOGE("invalid version %{public}u", keyInfo_.version);
         return false;
@@ -109,7 +113,7 @@ bool BaseKey::SaveKeyBlob(const KeyBlob &blob, const std::string &path)
         LOGE("blob is empty");
         return false;
     }
-    LOGD("enter %{public}s, size=%{public}d", path.c_str(), blob.size);
+    LOGI("enter %{public}s, size=%{public}d", path.c_str(), blob.size);
     return WriteFileSync(path.c_str(), blob.data.get(), blob.size);
 }
 
@@ -123,7 +127,7 @@ bool BaseKey::GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &path, con
 
 bool BaseKey::LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size = 0)
 {
-    LOGD("enter %{public}s, size=%{public}d", path.c_str(), size);
+    LOGI("enter %{public}s, size=%{public}d", path.c_str(), size);
     std::ifstream file(path, std::ios::binary);
     if (file.fail()) {
         LOGE("open %{public}s failed, errno %{public}d", path.c_str(), errno);
@@ -164,7 +168,7 @@ int BaseKey::GetCandidateVersion() const
             }
         }
     }
-    LOGD("candidate key version is %{public}d", candidate);
+    LOGI("candidate key version is %{public}d", candidate);
     return candidate;
 }
 
@@ -193,7 +197,7 @@ bool BaseKey::StoreKey(const UserAuth &auth, bool needGenerateShield)
 bool BaseKey::StoreKey(const UserAuth &auth)
 #endif
 {
-    LOGD("enter");
+    LOGI("enter");
     auto pathTemp = dir_ + PATH_KEY_TEMP;
 #ifdef USER_CRYPTO_MIGRATE_KEY
     if (DoStoreKey(auth, needGenerateShield)) {
@@ -354,7 +358,7 @@ bool BaseKey::LoadAndSaveShield(const UserAuth &auth, const std::string &pathShi
 // update the latest and do cleanups.
 bool BaseKey::UpdateKey(const std::string &keypath)
 {
-    LOGD("enter");
+    LOGI("enter");
     auto candidate = keypath.empty() ? GetCandidateDir() : keypath;
     if (candidate.empty()) {
         LOGE("no candidate dir");
@@ -371,7 +375,7 @@ bool BaseKey::UpdateKey(const std::string &keypath)
                    pathLatestBak.c_str()) != 0) {
             LOGE("backup the latest fail errno:%{public}d", errno);
         }
-        LOGD("backup the latest success");
+        LOGI("backup the latest success");
     }
 
     // rename {candidate} to latest
@@ -390,7 +394,7 @@ bool BaseKey::UpdateKey(const std::string &keypath)
         SyncKeyDir();
         return false;
     }
-    LOGD("rename candidate %{public}s to latest success", candidate.c_str());
+    LOGI("rename candidate %{public}s to latest success", candidate.c_str());
 
     // cleanup backup and other versions
     std::vector<std::string> files;
@@ -473,7 +477,7 @@ bool BaseKey::EncryptEceSece(const UserAuth &auth, const uint32_t keyType, KeyCo
 
 bool BaseKey::RestoreKey(const UserAuth &auth)
 {
-    LOGD("enter");
+    LOGI("enter");
     auto candidate = GetCandidateDir();
     if (candidate.empty()) {
         // no candidate dir, just restore from the latest
@@ -512,7 +516,7 @@ bool BaseKey::RestoreKey(const UserAuth &auth)
 
 bool BaseKey::DoRestoreKeyEx(const UserAuth &auth, const std::string &keyPath)
 {
-    LOGD("enter restore key ex");
+    LOGI("enter restore key ex");
     if (!DoRestoreKey(auth, keyPath)) {
         LOGE("First restore failed !");
         return false;
@@ -556,7 +560,7 @@ bool BaseKey::DoRestoreKeyEx(const UserAuth &auth, const std::string &keyPath)
 
 bool BaseKey::DoRestoreKeyOld(const UserAuth &auth, const std::string &path)
 {
-    LOGD("enter, path = %{public}s", path.c_str());
+    LOGI("enter, path = %{public}s", path.c_str());
     const std::string NEED_UPDATE_PATH = dir_ + PATH_LATEST + SUFFIX_NEED_UPDATE;
     if (!auth.secret.IsEmpty() && FileExists(NEED_UPDATE_PATH)) {
         keyEncryptType_ = KeyEncryptType::KEY_CRYPT_OPENSSL;
@@ -664,6 +668,12 @@ bool BaseKey::DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &pat
 
 bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
 {
+    auto ver = KeyCtrlLoadVersion(dir_.c_str());
+    if (ver == FSCRYPT_INVALID || ver != keyInfo_.version) {
+        LOGE("RestoreKey fail. bad version loaded %{public}u not expected %{public}u", ver, keyInfo_.version);
+        return false;
+    }
+
     std::string encryptType;
     LoadStringFromFile(path + SUFFIX_NEED_UPDATE, encryptType);
     LOGI("encrypt type : %{public}s, keyInfo empty: %{public}u", encryptType.c_str(), keyInfo_.key.IsEmpty());
@@ -690,6 +700,10 @@ bool BaseKey::DoUpdateRestore(const UserAuth &auth, const std::string &keyPath)
     if (!DoRestoreKeyOld(auth, keyPath)) {
         LOGE("Restore old failed !");
         return false;
+    }
+    if (std::filesystem::exists(dir_ + PATH_NEED_RESTORE_SUFFIX) && !auth.token.IsEmpty()) {
+        LOGE("Double 2 single, skip huks -> huks-openssl !");
+        return true;
     }
     uint64_t secureUid = { 0 };
     if (!IamClient::GetInstance().GetSecureUid(GetIdFromDir(), secureUid)) {
@@ -758,17 +772,42 @@ bool BaseKey::Decrypt(const UserAuth &auth)
 
 bool BaseKey::ClearKey(const std::string &mnt)
 {
-    LOGD("enter, dir_ = %{public}s", dir_.c_str());
-    InactiveKey(USER_DESTROY, mnt);
+    LOGI("enter, dir_ = %{public}s", dir_.c_str());
+    bool ret = InactiveKey(USER_DESTROY, mnt);
+    if (!ret) {
+        LOGE("InactiveKey failed.");
+    }
     keyInfo_.key.Clear();
-    WipingActionDir(dir_);
-    std::string backupDir;
-    KeyBackup::GetInstance().GetBackupDir(dir_, backupDir);
-    WipingActionDir(backupDir);
-    KeyBackup::GetInstance().RemoveNode(backupDir);
-    OHOS::ForceRemoveDirectory(backupDir);
-    return OHOS::ForceRemoveDirectory(dir_);
-    // use F2FS_IOC_SEC_TRIM_FILE
+    bool needClearFlag = true;
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    std::string elNeedRestorePath = PATH_USER_EL1_DIR + std::to_string(GetIdFromDir()) + PATH_NEED_RESTORE_SUFFIX;
+    if (std::filesystem::exists(elNeedRestorePath)) {
+        needClearFlag = false;
+        LOGI("needRestore flag exist, do not remove secret.");
+    }
+#endif
+    if (needClearFlag) {
+        LOGI("do clear key.");
+        if (!IsDir(dir_)) {
+            LOGE("dir not exist, do not need to remove dir");
+            return ret;
+        }
+        WipingActionDir(dir_);
+        std::string backupDir;
+        KeyBackup::GetInstance().GetBackupDir(dir_, backupDir);
+        WipingActionDir(backupDir);
+        KeyBackup::GetInstance().RemoveNode(backupDir);
+        LOGI("force remove backupDir, %{public}s.", backupDir.c_str());
+        OHOS::ForceRemoveDirectory(backupDir);
+        LOGI("force remove dir_, %{public}s.", dir_.c_str());
+        bool removeRet = OHOS::ForceRemoveDirectory(dir_);
+        if (!removeRet) {
+            LOGE("ForceRemoveDirectory failed.");
+            return removeRet;
+        }
+        // use F2FS_IOC_SEC_TRIM_FILE
+    }
+    return ret;
 }
 
 void BaseKey::WipingActionDir(std::string &path)
@@ -777,7 +816,12 @@ void BaseKey::WipingActionDir(std::string &path)
     LOGI("WipingActionDir path.c_str() is %{public}s", path.c_str());
     OpenSubFile(path.c_str(), fileList);
     for (const auto &it: fileList) {
-        int fd = open(it.c_str(), O_WRONLY | O_CLOEXEC);
+        FILE *f = fopen(it.c_str(), "w");
+        if (f == nullptr) {
+            LOGE("open %{public}s failed, errno %{public}u", it.c_str(), errno);
+            return;
+        }
+        int fd = fileno(f);
         if (fd < 0) {
             LOGE("open %{public}s failed, errno %{public}u", it.c_str(), errno);
             return;
@@ -805,13 +849,18 @@ void BaseKey::WipingActionDir(std::string &path)
             LOGE("F2FS_IOC_SET_PIN_FILE ioctl is %{public}u", ret);
         }
         LOGI("WipingActionDir success");
-        close(fd);
+        (void)fclose(f);
     }
 }
 
 void BaseKey::SyncKeyDir() const
 {
-    int fd = open(dir_.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+    DIR *dir = opendir(dir_.c_str());
+    if (dir == nullptr) {
+        LOGE("open %{public}s failed, errno %{public}u", dir_.c_str(), errno);
+        return;
+    }
+    int fd = dirfd(dir);
     if (fd < 0) {
         LOGE("open %{public}s failed, errno %{public}d", dir_.c_str(), errno);
         sync();
@@ -823,7 +872,7 @@ void BaseKey::SyncKeyDir() const
         sync();
     }
     LOGI("syncfs end");
-    (void)close(fd);
+    (void)closedir(dir);
 }
 
 bool BaseKey::UpgradeKeys()
@@ -856,10 +905,17 @@ bool BaseKey::GetOriginKey(KeyBlob &originKey)
     return true;
 }
 
+void BaseKey::SetOriginKey(KeyBlob &originKey)
+{
+    LOGI("enter");
+    keyInfo_.key = std::move(originKey);
+    return;
+}
+
 bool BaseKey::EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey,
                              KeyBlob &encryptedKey)
 {
-    LOGD("enter");
+    LOGI("enter");
     KeyContext keyCtx;
     if (!MkDirRecurse(keyPath, S_IRWXU)) {
         LOGE("MkDirRecurse failed!");
@@ -885,14 +941,14 @@ bool BaseKey::EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, K
     CombKeyBlob(keyCtx.rndEnc, keyCtx.nonce, encryptedKey);
 
     ClearKeyContext(keyCtx);
-    LOGD("finish");
+    LOGI("finish");
     return true;
 }
 
 bool BaseKey::DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey,
                              KeyBlob &decryptedKey)
 {
-    LOGD("enter");
+    LOGI("enter");
     KeyContext keyCtx;
     auto candidate = GetCandidateDir();
     std::string path = candidate.empty() ? keyPath : candidate;
@@ -920,7 +976,7 @@ bool BaseKey::DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath, K
     decryptedKey = std::move(planKeyInfo.key);
     planKeyInfo.key.Clear();
     ClearKeyContext(keyCtx);
-    LOGD("finish");
+    LOGI("finish");
     return true;
 }
 
@@ -928,7 +984,7 @@ bool BaseKey::RenameKeyPath(const std::string &keyPath)
 {
     // rename keypath/temp/ to keypath/version_xx/
     auto candidate = GetNextCandidateDir();
-    LOGD("rename %{public}s to %{public}s", keyPath.c_str(), candidate.c_str());
+    LOGI("rename %{public}s to %{public}s", keyPath.c_str(), candidate.c_str());
     if (rename(keyPath.c_str(), candidate.c_str()) != 0) {
         LOGE("rename %{public}s to %{public}s failed!", keyPath.c_str(), candidate.c_str());
         return false;
@@ -968,7 +1024,7 @@ void BaseKey::ClearMemoryKeyCtx()
 
 void BaseKey::ClearKeyContext(KeyContext &keyCtx)
 {
-    LOGD("enter clear");
+    LOGI("enter clear");
     keyCtx.aad.Clear();
     keyCtx.nonce.Clear();
     keyCtx.shield.Clear();

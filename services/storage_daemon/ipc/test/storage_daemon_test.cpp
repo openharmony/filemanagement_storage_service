@@ -20,6 +20,8 @@
 #include <mntent.h>
 #include <unordered_map>
 
+#include "directory_ex.h"
+
 #include "crypto/app_clone_key_manager.h"
 #include "ipc/istorage_daemon.h"
 #include "ipc/storage_daemon.h"
@@ -311,8 +313,17 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_MountDfsDocs_001, 
     std::string relativePath = "account";
     std::string networkId = "testnetworkid";
     std::string deviceId = "testdevid";
+
+    std::string path = "/mnt/data/" + std::to_string(userId) + "/hmdfs/";
+    OHOS::ForceRemoveDirectory(path);
     auto ret = storageDaemon_->MountDfsDocs(userId, relativePath, networkId, deviceId);
     EXPECT_EQ(ret, E_PREPARE_DIR);
+
+    OHOS::ForceCreateDirectory(path);
+    ret = storageDaemon_->MountDfsDocs(userId, relativePath, networkId, deviceId);
+    EXPECT_EQ(ret, E_MOUNT);
+
+    OHOS::ForceRemoveDirectory(path);
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_MountDfsDocs_001 end";
 }
 

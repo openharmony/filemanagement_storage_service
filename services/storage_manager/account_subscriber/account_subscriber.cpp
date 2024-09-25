@@ -40,7 +40,7 @@ using namespace OHOS::AAFwk;
 using namespace OHOS::AccountSA;
 namespace OHOS {
 namespace StorageManager {
-static constexpr int CONNECT_TIME = 3;
+static constexpr int CONNECT_TIME = 10;
 static std::mutex userRecordLock;
 std::shared_ptr<DataShare::DataShareHelper> AccountSubscriber::mediaShare_ = nullptr;
 
@@ -62,6 +62,15 @@ void AccountSubscriber::Subscriber(void)
     }
 }
 
+static void SendSecondMountedEvent()
+{
+    AAFwk::Want want;
+    want.SetAction("usual.event.SECOND_MOUNTED");
+    EventFwk::CommonEventData commonData { want };
+    EventFwk::CommonEventManager::PublishCommonEvent(commonData);
+    LOGI("Send usual.event.SECOND_MOUNTED event success.");
+}
+
 static void MountCryptoPathAgain(int32_t userId)
 {
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
@@ -71,6 +80,7 @@ static void MountCryptoPathAgain(int32_t userId)
         LOGE("mount crypto path failed err is %{public}d", err);
         return;
     }
+    SendSecondMountedEvent();
     LOGI("MountCryptoPathAgain success");
 }
 
@@ -116,6 +126,7 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
 
     if ((status & USER_UNLOCK_BIT) == USER_UNLOCK_BIT) {
         MountCryptoPathAgain(userId);
+        userRecord_.erase(userId);
     }
     lock.unlock();
 

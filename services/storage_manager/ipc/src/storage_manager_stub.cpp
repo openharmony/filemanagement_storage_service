@@ -148,6 +148,8 @@ StorageManagerStub::StorageManagerStub()
         &StorageManagerStub::HandleDeleteUserKeys;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::UPDATE_USER_AUTH)] =
         &StorageManagerStub::HandleUpdateUserAuth;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::UPDATE_USER_AUTH_RECOVER_KEY)] =
+        &StorageManagerStub::HandleUpdateUseAuthWithRecoveryKey;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::ACTIVE_USER_KEY)] =
         &StorageManagerStub::HandleActiveUserKey;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::INACTIVE_USER_KEY)] =
@@ -259,6 +261,8 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
             return HandleDeleteUserKeys(data, reply);
         case static_cast<uint32_t>(StorageManagerInterfaceCode::UPDATE_USER_AUTH):
             return HandleUpdateUserAuth(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::UPDATE_USER_AUTH_RECOVER_KEY):
+            return HandleUpdateUseAuthWithRecoveryKey(data, reply);
         case static_cast<uint32_t>(StorageManagerInterfaceCode::ACTIVE_USER_KEY):
             return HandleActiveUserKey(data, reply);
         case static_cast<uint32_t>(StorageManagerInterfaceCode::INACTIVE_USER_KEY):
@@ -291,6 +295,10 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
             return HandleDeleteAppkey(data, reply);
         case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_FILE_ENCRYPT_STATUS):
             return HandleGetFileEncryptStatus(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::CREATE_RECOVER_KEY):
+            return HandleCreateRecoverKey(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::SET_RECOVER_KEY):
+            return HandleSetRecoverKey(data, reply);
         default:
             LOGE("Cannot response request %d: unknown tranction", code);
             return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
@@ -816,6 +824,34 @@ int32_t StorageManagerStub::HandleUpdateUserAuth(MessageParcel &data, MessagePar
     data.ReadUInt8Vector(&newSecret);
 
     int32_t err = UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
+    if (!reply.WriteInt32(err)) {
+        LOGE("Write reply error code failed");
+        return E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleUpdateUseAuthWithRecoveryKey(MessageParcel &data, MessageParcel &reply)
+{
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
+        return E_PERMISSION_DENIED;
+    }
+    uint32_t userId = data.ReadUint32();
+    uint64_t secureUid = data.ReadUint64();
+
+    std::vector<uint8_t> token;
+    std::vector<uint8_t> newSecret;
+    data.ReadUInt8Vector(&token);
+    data.ReadUInt8Vector(&newSecret);
+    std::vector<std::vector<uint8_t>> plainText;
+    const int CKEY_NUMS = 6;
+    for (uint32_t i = 0; i < CKEY_NUMS; i++) {
+        std::vector<uint8_t> iv;
+        data.ReadUInt8Vector(&iv);
+        plainText.push_back(iv);
+    }
+
+    int32_t err = UpdateUseAuthWithRecoveryKey(token, newSecret, secureUid, userId, plainText);
     if (!reply.WriteInt32(err)) {
         LOGE("Write reply error code failed");
         return E_WRITE_REPLY_ERR;

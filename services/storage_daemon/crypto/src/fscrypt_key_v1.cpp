@@ -18,6 +18,8 @@
 #include <fcntl.h>
 #include <openssl/sha.h>
 #include <unistd.h>
+#include <cstdio>
+#include <dirent.h>
 
 #include "file_ex.h"
 #include "key_backup.h"
@@ -85,7 +87,7 @@ bool FscryptKeyV1::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string 
         LOGE("GenerateAppKeyDesc failed");
         return false;
     }
-    if (!InstallKeyForAppKeyToKeyring(reinterpret_cast<uint32_t *>(appKey.data.get()))) {
+    if (!InstallKeyForAppKeyToKeyring(appKey)) {
         LOGE("InstallKeyForAppKeyToKeyring failed");
         return false;
     }
@@ -96,14 +98,13 @@ bool FscryptKeyV1::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string 
     return true;
 }
 
-bool FscryptKeyV1::InstallKeyForAppKeyToKeyring(uint32_t *appKey)
+bool FscryptKeyV1::InstallKeyForAppKeyToKeyring(KeyBlob &appKey)
 {
     LOGI("InstallKeyForAppKeyToKeyring enter");
     EncryptAsdpKey fskey;
-    const size_t keySize = sizeof(*appKey);
-    fskey.size = keySize;
+    fskey.size = appKey.size;
     fskey.version = 0;
-    auto err = memcpy_s(fskey.raw, FSCRYPT_MAX_KEY_SIZE, appKey, keySize);
+    auto err = memcpy_s(fskey.raw, FSCRYPT_MAX_KEY_SIZE, appKey.data.get(), appKey.size);
     if (err != EOK) {
         LOGE("memcpy failed ret %{public}d", err);
         return false;
@@ -140,7 +141,7 @@ bool FscryptKeyV1::DeleteAppkey(const std::string KeyId)
         LOGE("FscryptKeyV1 Delete Appkey2 failed");
         return false;
     }
-    LOGD("success");
+    LOGI("success");
     return true;
 }
 
@@ -232,11 +233,11 @@ bool FscryptKeyV1::DecryptClassE(const UserAuth &auth, bool &isSupport, uint32_t
     LOGI("enter");
     KeyBlob eSecretFBE(AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES);
     bool isFbeSupport = true;
-    if (!fscryptV1Ext.ReadClassE(status, eSecretFBE.data.get(), eSecretFBE.size, isFbeSupport)) {
+    if (!fscryptV1Ext.ReadClassE(status, eSecretFBE.data, eSecretFBE.size, isFbeSupport)) {
         LOGE("fscryptV1Ext ReadClassE failed");
         return false;
     }
-    if (auth.token.IsEmpty() && auth.secret.IsEmpty()) {
+    if ((auth.token.IsEmpty() && auth.secret.IsEmpty()) || eSecretFBE.IsEmpty()) {
         LOGE("Token and secret is invalid, do not deal.");
         eSecretFBE.Clear();
         return true;
@@ -269,7 +270,7 @@ bool FscryptKeyV1::EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t
     LOGI("enter");
     KeyBlob eSecretFBE(AES_256_HASH_RANDOM_SIZE);
     bool isFbeSupport = true;
-    if (!fscryptV1Ext.ReadClassE(status, eSecretFBE.data.get(), eSecretFBE.size, isFbeSupport)) {
+    if (!fscryptV1Ext.ReadClassE(status, eSecretFBE.data, eSecretFBE.size, isFbeSupport)) {
         LOGE("fscryptV1Ext ReadClassE failed");
         return false;
     }
@@ -382,10 +383,10 @@ bool FscryptKeyV1::InstallEceSeceKeyToKeyring(uint32_t sdpClass)
 bool FscryptKeyV1::InactiveKey(uint32_t flag, const std::string &mnt)
 {
     (void)mnt;
-    LOGD("enter");
+    LOGI("enter");
     bool ret = true;
 
-    if (!UninstallKeyToKeyring()) {
+    if (!keyInfo_.keyDesc.IsEmpty() && !UninstallKeyToKeyring()) {
         LOGE("UninstallKeyToKeyring failed");
         ret = false;
     }
@@ -394,13 +395,17 @@ bool FscryptKeyV1::InactiveKey(uint32_t flag, const std::string &mnt)
         ret = false;
     }
     DropCachesIfNeed();
-    LOGD("finish");
+    LOGI("finish");
     return ret;
 }
 
 void FscryptKeyV1::DropCachesIfNeed()
 {
-    int fd = open(MNT_DATA.c_str(), O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+    DIR *dir = opendir(MNT_DATA.c_str());
+    if (dir == nullptr) {
+        sync();
+    }
+    int fd = dirfd(dir);
     if (fd < 0 || syncfs(fd)) {
         sync();
     }
@@ -408,7 +413,7 @@ void FscryptKeyV1::DropCachesIfNeed()
     if (!SaveStringToFile("/proc/sys/vm/drop_caches", "2")) {
         LOGE("Failed to drop cache during key eviction");
     }
-    (void)close(fd);
+    (void)closedir(dir);
     LOGI("drop cache success");
 }
 
@@ -416,7 +421,7 @@ bool FscryptKeyV1::LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::s
 {
     uint32_t elType;
     (void)mnt;
-    LOGD("enter");
+    LOGI("enter");
     bool ret = true;
     if (!fscryptV1Ext.LockUserScreenExt(flag, elType)) {
         LOGE("fscryptV1Ext InactiveKeyExt failed");
@@ -428,19 +433,19 @@ bool FscryptKeyV1::LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::s
             ret = false;
         }
     }
-    LOGD("finish");
+    LOGI("finish");
     return ret;
 }
 
 bool FscryptKeyV1::LockUece(bool &isFbeSupport)
 {
-    LOGD("enter");
+    LOGI("enter");
     bool ret = true;
     if (!fscryptV1Ext.LockUeceExt(isFbeSupport)) {
         LOGE("fscryptV1Ext InactiveKeyExt failed");
         ret = false;
     }
-    LOGD("finish");
+    LOGI("finish");
     return ret;
 }
 

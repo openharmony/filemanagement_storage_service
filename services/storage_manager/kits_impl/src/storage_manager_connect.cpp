@@ -305,7 +305,7 @@ int32_t StorageManagerConnect::Partition(std::string diskId, int32_t type)
 
 int32_t StorageManagerConnect::ResetProxy()
 {
-    LOGD("enter");
+    LOGI("enter");
     std::lock_guard<std::mutex> lock(mutex_);
     if ((storageManager_ != nullptr) && (storageManager_->AsObject() != nullptr)) {
         storageManager_->AsObject()->RemoveDeathRecipient(deathRecipient_);

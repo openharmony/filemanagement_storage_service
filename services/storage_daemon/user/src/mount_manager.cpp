@@ -25,6 +25,7 @@
 #include <unistd.h>
 #include <regex>
 #include <filesystem>
+#include <cstdio>
 #include "hisysevent.h"
 #include "utils/storage_radar.h"
 #include "ipc/istorage_daemon.h"
@@ -66,6 +67,7 @@ const string MOUNT_POINT_TYPE_HMDFS = "hmdfs";
 const string MOUNT_POINT_TYPE_HMFS = "hmfs";
 const string MOUNT_POINT_TYPE_SHAREFS = "sharefs";
 const string EL2_BASE = "/data/storage/el2/base/";
+const string MOUNT_SUFFIX = "_locked";
 const set<string> SANDBOX_EXCLUDE_PATH = {
     "chipset",
     "system",
@@ -108,7 +110,7 @@ static constexpr int MODE_0771 = 0771;
 static constexpr int MODE_02771 = 02771;
 MountManager::MountManager()
     : hmdfsDirVec_{{"/data/service/el2/%d/share", MODE_0711, OID_SYSTEM, OID_SYSTEM},
-                   {"/data/service/el2/%d/hmdfs", MODE_0711, OID_SYSTEM, OID_SYSTEM},
+                   {"/data/service/el2/%d/hmdfs", MODE_0711, OID_DFS, OID_DFS},
                    {"/data/service/el2/%d/hmdfs/account", MODE_0711, OID_SYSTEM, OID_SYSTEM},
                    {"/data/service/el2/%d/hmdfs/account/files", MODE_02771, OID_USER_DATA_RW, OID_USER_DATA_RW},
                    {"/data/service/el2/%d/hmdfs/account/data", MODE_0711, OID_SYSTEM, OID_SYSTEM},
@@ -118,6 +120,7 @@ MountManager::MountManager()
                    {"/data/service/el2/%d/hmdfs/cloud", MODE_0711, OID_DFS, OID_DFS},
                    {"/data/service/el2/%d/hmdfs/cloud/data", MODE_0711, OID_DFS, OID_DFS},
                    {"/data/service/el2/%d/hmdfs/cache", MODE_0711, OID_DFS, OID_DFS},
+                   {"/data/service/el2/%d/hmdfs/cloudfile_manager", MODE_0711, OID_DFS, OID_DFS},
                    {"/data/service/el2/%d/hmdfs/cache/account_cache", MODE_0711, OID_DFS, OID_DFS},
                    {"/data/service/el2/%d/hmdfs/cache/non_account_cache", MODE_0711, OID_DFS, OID_DFS},
                    {"/data/service/el2/%d/hmdfs/cache/cloud_cache", MODE_0711, OID_DFS, OID_DFS},
@@ -145,9 +148,12 @@ MountManager::MountManager()
                   {"/data/service/el2/%d/huks_service", MODE_0711, OID_HUKS, OID_HUKS},
                   {"/data/service/el2/%d/parentcontrol", MODE_0711, OID_PARENT_CONTROL, OID_PARENT_CONTROL},
                   {"/data/service/el4/%d/huks_service", MODE_0711, OID_HUKS, OID_HUKS},
+                  {"/data/service/el2/%d/asset_service", MODE_0711, OID_ASSET, OID_ASSET},
                   {"/data/service/el2/%d/account", MODE_0711, OID_ACCOUNT, OID_ACCOUNT},
                   {"/data/service/el2/%d/dlp_credential_service", MODE_0711, OID_DLP_CREDENTIAL, OID_DLP_CREDENTIAL},
-                  {"/data/service/el2/%d/xpower", MODE_0711, OID_HIVIEW, OID_HIVIEW}},
+                  {"/data/service/el2/%d/xpower", MODE_0711, OID_HIVIEW, OID_HIVIEW},
+                  {"/data/service/el2/%d/iShare", MODE_0711, OID_COLLABORATION_FWK, OID_COLLABORATION_FWK},
+                  {"/data/service/el2/%d/av_session", MODE_0711, OID_AV_SESSION, OID_AV_SESSION}},
       fileManagerDir_{{"/data/service/el2/%d/hmdfs/account/files/Docs", MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
                    {"/data/service/el2/%d/hmdfs/account/files/Docs/Documents",
                    MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
@@ -423,7 +429,6 @@ int32_t MountManager::CloudMount(int32_t userId, const string& path)
 {
     LOGI("cloud mount start");
 #ifdef DFS_SERVICE
-    int fd = -1;
     string opt;
     int ret;
     if (!cloudReady_) {
@@ -431,7 +436,12 @@ int32_t MountManager::CloudMount(int32_t userId, const string& path)
         return E_MOUNT;
     }
 
-    fd = open("/dev/fuse", O_RDWR);
+    FILE *f = fopen("/dev/fuse", "r+");
+    if (f == nullptr) {
+        LOGE("open /dev/fuse fail");
+        return E_MOUNT;
+    }
+    int fd = fileno(f);
     if (fd < 0) {
         LOGE("open /dev/fuse fail");
         return E_MOUNT;
@@ -449,7 +459,7 @@ int32_t MountManager::CloudMount(int32_t userId, const string& path)
     ret = Mount("/dev/fuse", path.c_str(), "fuse", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_NOATIME, opt.c_str());
     if (ret) {
         LOGE("failed to mount fuse, err %{public}d %{public}d %{public}s", errno, ret, path.c_str());
-        close(fd);
+        (void)fclose(f);
         return ret;
     }
     LOGI("start cloud daemon fuse");
@@ -459,7 +469,7 @@ int32_t MountManager::CloudMount(int32_t userId, const string& path)
         UMount(path.c_str());
     }
     LOGI("mount %{public}s success", path.c_str());
-    close(fd);
+    (void)fclose(f);
     return ret;
 #else
     return E_OK;
@@ -555,16 +565,23 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
         if (SANDBOX_EXCLUDE_PATH.find(bundleName.path().filename()) != SANDBOX_EXCLUDE_PATH.end()) {
             continue;
         }
-        if (!CheckPathValid(bundleName.path().filename().generic_string(), userId)) {
+        std::string bundleNameStr = bundleName.path().filename().generic_string();
+        int32_t point = bundleNameStr.find(MOUNT_SUFFIX);
+        if (point == -1) {
+            LOGI("bundleName do not need to mount: %{public}s", bundleNameStr.c_str());
+            continue;
+        }
+        bundleNameStr = bundleNameStr.substr(0, point);
+        if (!CheckPathValid(bundleNameStr, userId)) {
             continue;
         }
         vector<string> dstPaths = CRYPTO_SANDBOX_PATH;
         vector<string> srcPaths = CRYPTO_SRC_PATH;
-        if (bundleName.path().filename().generic_string() == SCENE_BOARD_BUNDLE_NAME) {
+        if (bundleNameStr == SCENE_BOARD_BUNDLE_NAME) {
             dstPaths.push_back(PUBLIC_DIR_SANDBOX_PATH);
             srcPaths.push_back(PUBLIC_DIR_SRC_PATH);
         }
-        MountSandboxPath(srcPaths, dstPaths, bundleName.path().filename().generic_string(), to_string(userId));
+        MountSandboxPath(srcPaths, dstPaths, bundleNameStr, to_string(userId));
     }
     LOGI("mount crypto path success, userId is %{public}d", userId);
     return ret;
@@ -971,6 +988,9 @@ int32_t MountManager::UmountByUser(int32_t userId)
     int32_t err = E_OK;
     if (!SupportHmdfs()) {
         err = LocalUMount(userId);
+        if (err != E_OK) {
+            LOGE("failed to umount locally, err is %{public}d", err);
+        }
     } else {
         std::list<std::string> mountFailList;
         err = UMountAllPath(userId, mountFailList);

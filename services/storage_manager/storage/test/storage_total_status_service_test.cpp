@@ -16,16 +16,46 @@
 #include <cstdio>
 #include <gtest/gtest.h>
 
+#include "directory_ex.h"
 #include "storage/bundle_manager_connector.h"
 #include "storage/storage_monitor_service.h"
 #include "storage/storage_status_service.h"
 #include "storage/storage_total_status_service.h"
 #include "storage_service_errno.h"
+#include "utils/string_utils.h"
 
 namespace {
 using namespace std;
 using namespace OHOS;
 using namespace StorageManager;
+using namespace StorageDaemon;
+struct DirInfo {
+    const std::string path;
+    mode_t mode;
+    uid_t uid;
+    gid_t gid;
+};
+constexpr uid_t OID_ROOT = 0;
+static constexpr int MODE_0711 = 0711;
+constexpr uid_t OID_FILE_MANAGER = 1006;
+constexpr uid_t OID_USER_DATA_RW = 1008;
+constexpr uid_t OID_DFS = 1009;
+const std::vector<DirInfo> virtualDir_{{"/storage/media/%d", MODE_0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
+        {"/storage/media/%d/local", MODE_0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
+        {"/storage/cloud", MODE_0711, OID_ROOT, OID_ROOT},
+        {"/storage/cloud/%d", MODE_0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
+        {"/mnt/share/", MODE_0711, OID_ROOT, OID_ROOT},
+        {"/mnt/share/%d/", MODE_0711, OID_ROOT, OID_ROOT},
+        {"/mnt/data/%d/", MODE_0711, OID_ROOT, OID_ROOT},
+        {"/mnt/data/%d/cloud", MODE_0711, OID_ROOT, OID_ROOT},
+        {"/mnt/data/%d/cloud_fuse", MODE_0711, OID_DFS, OID_DFS},
+        {"/mnt/data/%d/hmdfs", MODE_0711, OID_FILE_MANAGER, OID_FILE_MANAGER},
+        {"/mnt/hmdfs/", MODE_0711, OID_ROOT, OID_ROOT},
+        {"/mnt/hmdfs/%d/", MODE_0711, OID_ROOT, OID_ROOT},
+        {"/mnt/hmdfs/%d/cloud", MODE_0711, OID_ROOT, OID_ROOT},
+        {"/mnt/hmdfs/%d/account", MODE_0711, OID_ROOT, OID_ROOT},
+        {"/mnt/hmdfs/%d/non_account", MODE_0711, OID_ROOT, OID_ROOT}};
+
 class StorageTotalStatusServiceTest : public testing::Test {
 public:
     static void SetUpTestCase(void) {};
@@ -105,6 +135,16 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetUserStorageStats_0000,
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_GetUserStorageStats_0000";
     std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
     StorageStats storageStats;
+    int32_t userId = 100;
+    string basePath = "/data/app/el2/" + to_string(userId);
+    string path = basePath + "/base";
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(path));
+    userId = 0;
+    for (const DirInfo &dir : virtualDir_) {
+        path = StringPrintf(dir.path.c_str(), userId);
+        GTEST_LOG_(INFO) << "path is " << path;
+        EXPECT_TRUE(OHOS::ForceCreateDirectory(path));
+    }
     int32_t result = service->GetUserStorageStats(storageStats);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_GetUserStorageStats_0000";

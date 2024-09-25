@@ -40,6 +40,7 @@ namespace StorageDaemon {
         CREATE_USER_KEYS,
         DELETE_USER_KEYS,
         UPDATE_USER_AUTH,
+        UPDATE_USER_AUTH_RECOVER_KEY,
         ACTIVE_USER_KEY,
         INACTIVE_USER_KEY,
         UPDATE_KEY_CONTEXT,

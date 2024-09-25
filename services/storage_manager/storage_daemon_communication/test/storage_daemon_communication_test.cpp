@@ -134,6 +134,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_PrepareStartUser_0
         sdCommunication->PrepareAddUser(userId, flag);
         result = sdCommunication->PrepareStartUser(userId);
     }
+    EXPECT_EQ(result, E_OK);
     sdCommunication->StopUser(userId);
     sdCommunication->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_PrepareStartUser_0000";
@@ -161,7 +162,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_StopUser_0000, tes
         sdCommunication->PrepareStartUser(userId);
         result = sdCommunication->StopUser(userId);
     }
-    EXPECT_EQ(result, E_UMOUNT);
+    EXPECT_EQ(result, E_OK);
     sdCommunication->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_StopUser_0000 SUCCESS";
 }
@@ -185,7 +186,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountDfsDocs_001, 
     std::string networkId = "testnetworkid";
     std::string deviceId = "testdevid";
     int32_t result = sdCommunication->MountDfsDocs(userId, relativePath, networkId, deviceId);
-    EXPECT_EQ(result, E_MOUNT);
+    EXPECT_EQ(result, E_OK);
 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_MountDfsDocs_001 SUCCESS";
 }
@@ -209,7 +210,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountDfsDocs_001,
     std::string networkId = "testnetworkid";
     std::string deviceId = "testdevid";
     int32_t result = sdCommunication->UMountDfsDocs(userId, relativePath, networkId, deviceId);
-    EXPECT_EQ(result, E_UMOUNT);
+    EXPECT_EQ(result, E_OK);
 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UMountDfsDocs_001 SUCCESS";
 }
@@ -330,7 +331,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountCryptoPathAga
 
     int32_t uid = 1990;
     int32_t ret = sdCommunication->MountCryptoPathAgain(uid);
-    EXPECT_EQ(ret, -ENOENT);
+    EXPECT_EQ(ret, E_OK);
 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_MountCryptoPathAgain_001 SUCCESS";
 }
@@ -355,7 +356,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GenerateAppkey_001
     int32_t appUid = 100;
     std::string keyId = "testkeyId";
     int32_t ret = sdCommunication->GenerateAppkey(userId, appUid, keyId);
-    EXPECT_EQ(ret, -ENOENT);
+    EXPECT_EQ(ret, E_OK);
 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GenerateAppkey_001 SUCCESS";
 }
@@ -379,7 +380,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteAppkey_001, 
     int32_t userId = 1999;
     std::string keyId = "testkeyId";
     int32_t ret = sdCommunication->DeleteAppkey(userId, keyId);
-    EXPECT_EQ(ret, -ENOENT);
+    EXPECT_EQ(ret, E_OK);
 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_DeleteAppkey_001 SUCCESS";
 }
@@ -437,7 +438,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateMemoryPara_0
     int32_t size = 100;
     int32_t oldsize = 100;
     int32_t ret = sdCommunication->UpdateMemoryPara(size, oldsize);
-    EXPECT_EQ(ret, E_SYS_CALL);
+    EXPECT_EQ(ret, E_OK);
 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UpdateMemoryPara_001 SUCCESS";
 }
@@ -462,7 +463,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Mount_0000, testin
     if (sdCommunication != nullptr) {
         result = sdCommunication->Mount(volumeId, flag);
     }
-    EXPECT_EQ(result, E_NON_EXIST);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Mount_0000 SUCCESS";
 }
 
@@ -485,7 +486,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Unmount_0000, test
     if (sdCommunication != nullptr) {
         result = sdCommunication->Unmount(volumeId);
     }
-    EXPECT_EQ(result, E_NON_EXIST);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Unmount_0000 SUCCESS";
 }
 
@@ -508,7 +509,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Check_0000, testin
     if (sdCommunication != nullptr) {
         result = sdCommunication->Check(volumeId);
     }
-    EXPECT_EQ(result, E_NON_EXIST);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Check_0000 SUCCESS";
 }
 
@@ -532,7 +533,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Partition_0000, te
     if (sdCommunication != nullptr) {
         result = sdCommunication->Partition(diskId, type);
     }
-    EXPECT_EQ(result, E_NON_EXIST);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Partition_0000 SUCCESS";
 }
 
@@ -556,7 +557,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Format_0000, testi
     if (sdCommunication != nullptr) {
         result = sdCommunication->Format(volumeId, fsType);
     }
-    EXPECT_EQ(result, E_NON_EXIST);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Format_0000 SUCCESS";
 }
 
@@ -580,7 +581,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetVolumeDescripti
     if (sdCommunication != nullptr) {
         result = sdCommunication->SetVolumeDescription(fsUuid, description);
     }
-    EXPECT_EQ(result, E_NON_EXIST);
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_SetVolumeDescription_0000 SUCCESS";
 }
 #endif
@@ -691,18 +692,10 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateKeyContext_0
         result = sdCommunication->PrepareAddUser(userId, flags);
         EXPECT_EQ(result, E_OK);
         result = sdCommunication->UpdateKeyContext(userId);
-        if (g_fscryptEnable) {
-            EXPECT_EQ(result, -EFAULT);
-        } else {
-            EXPECT_EQ(result, E_OK);
-        }
+        EXPECT_EQ(result, E_OK);
         sdCommunication->RemoveUser(userId, flags);
     }
-    if (g_fscryptEnable) {
-        EXPECT_EQ(result, -EFAULT);
-    } else {
-        EXPECT_EQ(result, E_OK);
-    }
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UpdateKeyContext_0000 SUCCESS";
 }
 
@@ -776,6 +769,48 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UnlockUserScreen_0
     EXPECT_EQ(result, E_OK);
 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UnlockUserScreen_0000 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_CreateRecoverKey_0000
+ * @tc.name: Daemon_communication_CreateRecoverKey_0000
+ * @tc.desc: Test function of CreateRecoverKey interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0FG3
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreateRecoverKey_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_CreateRecoverKey_0000 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    uint32_t userId = 100;
+    uint32_t userType = 10;
+    int32_t result = sdCommunication->CreateRecoverKey(userId, userType, {}, {});
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_CreateRecoverKey_0000 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_SetRecoverKey_0000
+ * @tc.name: Daemon_communication_SetRecoverKey_0000
+ * @tc.desc: Test function of SetRecoverKey interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0FG3
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetRecoverKey_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_SetRecoverKey_0000 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t result = sdCommunication->SetRecoverKey({});
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_SetRecoverKey_0000 SUCCESS";
 }
 
 /**

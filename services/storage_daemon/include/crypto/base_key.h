@@ -30,6 +30,7 @@ const uint32_t USER_UNLOCK = 0x2;
 const uint32_t USER_ADD_AUTH = 0x0;
 const uint32_t USER_CHANGE_AUTH = 0x1;
 const std::string SUFFIX_NEED_UPDATE = "/need_update";
+const std::string SUFFIX_NEED_RESTORE = "/need_restore";
 const std::vector<uint8_t> NULL_SECRET = { '!' };
 class BaseKey : public std::enable_shared_from_this<BaseKey> {
 public:
@@ -67,6 +68,8 @@ public:
     void WipingActionDir(std::string &path);
     bool UpgradeKeys();
     bool GetOriginKey(KeyBlob &originKey);
+    void SetOriginKey(KeyBlob &originKey);
+    
     KeyInfo keyInfo_;
     std::string GetDir() const
     {

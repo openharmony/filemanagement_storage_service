@@ -21,30 +21,30 @@
 #include <openssl/sha.h>
 
 #include "hks_param.h"
-
+#include "key_crypto_utils.h"
 #include "storage_service_log.h"
 
 namespace OHOS {
 namespace StorageDaemon {
 HuksMaster::HuksMaster()
 {
-    LOGD("enter");
+    LOGI("enter");
     HdiCreate();
     HdiModuleInit();
-    LOGD("finish");
+    LOGI("finish");
 }
 
 HuksMaster::~HuksMaster()
 {
-    LOGD("enter");
+    LOGI("enter");
     HdiModuleDestroy();
     HdiDestroy();
-    LOGD("finish");
+    LOGI("finish");
 }
 
 bool HuksMaster::HdiCreate()
 {
-    LOGD("enter");
+    LOGI("enter");
     if (hdiHandle_ != nullptr || halDevice_ != nullptr) {
         return true;
     }
@@ -70,13 +70,13 @@ bool HuksMaster::HdiCreate()
         hdiHandle_ = nullptr;
         return false;
     }
-    LOGD("success");
+    LOGI("success");
     return true;
 }
 
 void HuksMaster::HdiDestroy()
 {
-    LOGD("enter");
+    LOGI("enter");
     if (hdiHandle_ == nullptr) {
         LOGI("hdiHandle_ is nullptr, already destroyed");
         return;
@@ -90,12 +90,12 @@ void HuksMaster::HdiDestroy()
     dlclose(hdiHandle_);
     hdiHandle_ = nullptr;
     halDevice_ = nullptr;
-    LOGD("finish");
+    LOGI("finish");
 }
 
 int HuksMaster::HdiModuleInit()
 {
-    LOGD("enter");
+    LOGI("enter");
     if (halDevice_ == nullptr) {
         LOGE("halDevice_ is nullptr");
         return HKS_ERROR_NULL_POINTER;
@@ -114,7 +114,7 @@ int HuksMaster::HdiModuleInit()
 
 int HuksMaster::HdiModuleDestroy()
 {
-    LOGD("enter");
+    LOGI("enter");
     if (halDevice_ == nullptr) {
         LOGE("halDevice_ is nullptr");
         return HKS_ERROR_NULL_POINTER;
@@ -134,7 +134,7 @@ int HuksMaster::HdiModuleDestroy()
 int HuksMaster::HdiGenerateKey(const HksBlob &keyAlias, const HksParamSet *paramSetIn,
                                HksBlob &keyOut)
 {
-    LOGD("enter");
+    LOGI("enter");
     if (halDevice_ == nullptr) {
         LOGE("halDevice_ is nullptr");
         return HKS_ERROR_NULL_POINTER;
@@ -156,7 +156,7 @@ int HuksMaster::HdiGenerateKey(const HksBlob &keyAlias, const HksParamSet *param
 int HuksMaster::HdiAccessInit(const HksBlob &key, const HksParamSet *paramSet,
                               HksBlob &handle, HksBlob &token)
 {
-    LOGD("enter");
+    LOGI("enter");
     if (halDevice_ == nullptr) {
         LOGE("halDevice_ is nullptr");
         return HKS_ERROR_NULL_POINTER;
@@ -176,7 +176,7 @@ int HuksMaster::HdiAccessInit(const HksBlob &key, const HksParamSet *paramSet,
 int HuksMaster::HdiAccessFinish(const HksBlob &handle, const HksParamSet *paramSet,
                                 const HksBlob &inData, HksBlob &outData)
 {
-    LOGD("enter");
+    LOGI("enter");
     if (halDevice_ == nullptr) {
         LOGE("halDevice_ is nullptr");
         return HKS_ERROR_NULL_POINTER;
@@ -195,7 +195,7 @@ int HuksMaster::HdiAccessFinish(const HksBlob &handle, const HksParamSet *paramS
 
 int HuksMaster::HdiAccessUpgradeKey(const HksBlob &oldKey, const HksParamSet *paramSet, struct HksBlob &newKey)
 {
-    LOGD("enter");
+    LOGI("enter");
     if (halDevice_ == nullptr) {
         LOGE("halDevice_ is nullptr");
         return HKS_ERROR_NULL_POINTER;
@@ -214,7 +214,7 @@ int HuksMaster::HdiAccessUpgradeKey(const HksBlob &oldKey, const HksParamSet *pa
 
 KeyBlob HuksMaster::GenerateRandomKey(uint32_t keyLen)
 {
-    LOGD("enter, size %{public}d", keyLen);
+    LOGI("enter, size %{public}d", keyLen);
     KeyBlob out(keyLen);
     if (out.IsEmpty()) {
         return out;
@@ -265,7 +265,7 @@ static const HksParam g_generateKeyParam[] = {
 
 bool HuksMaster::GenerateKey(const UserAuth &auth, KeyBlob &keyOut)
 {
-    LOGD("enter");
+    LOGI("enter");
 
     HksParamSet *paramSet = nullptr;
     int ret = HKS_SUCCESS;
@@ -559,6 +559,10 @@ bool HuksMaster::HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *p
 
     ret = HdiAccessFinish(hksHandle, paramSet2, hksIn, hksOut);
     if (ret != HKS_SUCCESS) {
+        if (ret == HKS_ERROR_KEY_AUTH_TIME_OUT) {
+            StorageService::KeyCryptoUtils::ForceLockUserScreen();
+            LOGE("HdiAccessFinish failed because authToken timeout, force lock user screen.");
+        }
         LOGE("HdiAccessFinish failed ret %{public}d", ret);
         return false;
     }
@@ -604,7 +608,7 @@ bool HuksMaster::EncryptKeyEx(const UserAuth &auth, const KeyBlob &rnd, KeyConte
 
 bool HuksMaster::EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo &key, bool isNeedNewNonce)
 {
-    LOGD("enter");
+    LOGI("enter");
     if (ctx.shield.IsEmpty()) {
         LOGE("bad shield input, size %{public}d", ctx.shield.size);
         return false;
@@ -631,13 +635,13 @@ bool HuksMaster::EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo
         LOGE("HuksHalTripleStage failed");
     }
     HksFreeParamSet(&paramSet2);
-    LOGD("finish");
+    LOGI("finish");
     return ret;
 }
 
 bool HuksMaster::DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key, bool isNeedNewNonce)
 {
-    LOGD("enter");
+    LOGI("enter");
     if (ctx.shield.IsEmpty()) {
         LOGE("bad shield input, size %{public}d", ctx.shield.size);
         return false;

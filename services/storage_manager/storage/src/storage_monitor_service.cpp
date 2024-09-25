@@ -54,7 +54,7 @@ StorageMonitorService::StorageMonitorService() {}
 
 StorageMonitorService::~StorageMonitorService()
 {
-    LOGD("StorageMonitorService Destructor.");
+    LOGI("StorageMonitorService Destructor.");
     std::unique_lock<std::mutex> lock(eventMutex_);
     if ((eventHandler_ != nullptr) && (eventHandler_->GetEventRunner() != nullptr)) {
         eventHandler_->RemoveAllEvents();
@@ -132,10 +132,10 @@ void StorageMonitorService::CheckAndCleanBundleCache()
         return;
     }
 
-    LOGD("Device storage freeSize=%{public}lld, threshold=%{public}lld", static_cast<long long>(freeSize),
+    LOGI("Device storage freeSize=%{public}lld, threshold=%{public}lld", static_cast<long long>(freeSize),
         static_cast<long long>(lowThreshold));
     if (freeSize >= (lowThreshold * CONST_NUM_THREE) / CONST_NUM_TWO) {
-        LOGD("The cache clean threshold had not been reached, skip this clean task.");
+        LOGI("The cache clean threshold had not been reached, skip this clean task.");
         return;
     }
 
@@ -144,7 +144,7 @@ void StorageMonitorService::CheckAndCleanBundleCache()
         LOGE("Connect bundle manager sa proxy failed.");
         return;
     }
-    LOGD("Device storage free size not enough, start clean bundle cache files automatic.");
+    LOGI("Device storage free size not enough, start clean bundle cache files automatic.");
     auto ret = bundleMgr->CleanBundleCacheFilesAutomatic(lowThreshold * CONST_NUM_TWO);
     if (ret != ERR_OK) {
         LOGE("Invoke bundleMgr interface to clean bundle cache files automatic failed.");

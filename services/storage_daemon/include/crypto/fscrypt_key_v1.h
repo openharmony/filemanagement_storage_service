@@ -52,7 +52,7 @@ private:
     bool InstallEceSeceKeyToKeyring(uint32_t sdpClass);
     bool UninstallKeyToKeyring();
     FscryptKeyV1Ext fscryptV1Ext;
-    bool InstallKeyForAppKeyToKeyring(uint32_t *keyId);
+    bool InstallKeyForAppKeyToKeyring(KeyBlob &appKey);
     bool UninstallKeyForAppKeyToKeyring(const std::string keyId);
     bool GenerateAppKeyDesc(KeyBlob appKey);
 };

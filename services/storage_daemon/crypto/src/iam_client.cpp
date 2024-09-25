@@ -20,13 +20,12 @@ namespace OHOS {
 namespace StorageDaemon {
 IamClient::IamClient()
 {
-    LOGD("enter");
-    secureUidStatus_ = FAILED;
+    LOGI("enter");
 }
 
 IamClient::~IamClient()
 {
-    LOGD("enter");
+    LOGI("enter");
 }
 
 #ifdef USER_AUTH_FRAMEWORK

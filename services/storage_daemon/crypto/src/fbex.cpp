@@ -19,6 +19,8 @@
 #include <cstdio>
 #include <fcntl.h>
 #include <securec.h>
+#include <cstdio>
+#include <dirent.h>
 #include <string>
 #include <sys/ioctl.h>
 #include <unistd.h>
@@ -143,7 +145,17 @@ int FBEX::InstallEL5KeyToKernel(uint32_t userIdSingle, uint32_t userIdDouble, ui
                                 bool &isSupport, bool &isNeedEncryptClassE)
 {
     LOGI("InstallEL5KeyToKernel enter, userId: %{public}d, flag: %{public}u", userIdDouble, flag);
-    int fd = open(FBEX_UECE_PATH, O_RDWR);
+    FILE *f = fopen(FBEX_UECE_PATH, "r+");
+    if (f == nullptr) {
+        if (errno == ENOENT) {
+            LOGE("fbex_uece does not exist, fbe not support this command!");
+            isSupport = false;
+            return 0;
+        }
+        LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        return -errno;
+    }
+    int fd = fileno(f);
     if (fd < 0) {
         if (errno == ENOENT) {
             LOGE("fbex_uece does not exist, fbe not support this command!");
@@ -159,7 +171,7 @@ int FBEX::InstallEL5KeyToKernel(uint32_t userIdSingle, uint32_t userIdDouble, ui
     if (static_cast<uint32_t>(fbeRet) == FILE_ENCRY_ERROR_UECE_ALREADY_CREATED) {
         LOGE("class uece has already create, ret: 0x%{public}x, errno: %{public}d", fbeRet, errno);
         isNeedEncryptClassE = false;
-        close(fd);
+        (void)fclose(f);
         return 0;
     }
     int ret = 0;
@@ -167,7 +179,7 @@ int FBEX::InstallEL5KeyToKernel(uint32_t userIdSingle, uint32_t userIdDouble, ui
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", fbeRet, errno);
         ret = -errno;
     }
-    close(fd);
+    (void)fclose(f);
     LOGI("InstallEL5KeyToKernel success");
     return ret;
 }
@@ -180,7 +192,12 @@ int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32
         return -EINVAL;
     }
 
-    int fd = open(FBEX_CMD_PATH, O_RDWR);
+    FILE *f = fopen(FBEX_CMD_PATH, "r+");
+    if (f == nullptr) {
+        LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        return -errno;
+    }
+    int fd = fileno(f);
     if (fd < 0) {
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
         return -errno;
@@ -190,22 +207,23 @@ int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32
     auto err = memcpy_s(ops.iv, sizeof(ops.iv), iv, size);
     if (err != EOK) {
         LOGE("memcpy failed %{public}d", err);
-        close(fd);
+        (void)fclose(f);
         return 0;
     }
     int ret = ioctl(fd, FBEX_IOC_ADD_IV, &ops);
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
-        close(fd);
+        (void)fclose(f);
         return ret;
     }
-    close(fd);
+    (void)fclose(f);
 
     auto errops = memcpy_s(iv, size, ops.iv, sizeof(ops.iv));
     if (errops != EOK) {
         LOGE("memcpy failed %{public}d", errops);
         return 0;
     }
+    (void)memset_s(&ops.iv, sizeof(ops.iv), 0, sizeof(ops.iv));
     LOGI("InstallKeyToKernel success");
     return ret;
 }
@@ -218,7 +236,12 @@ int FBEX::UninstallOrLockUserKeyToKernel(uint32_t userId, uint32_t type, uint8_t
         return -EINVAL;
     }
 
-    int fd = open(FBEX_CMD_PATH, O_RDWR);
+    FILE *f = fopen(FBEX_CMD_PATH, "r+");
+    if (f == nullptr) {
+        LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        return -errno;
+    }
+    int fd = fileno(f);
     if (fd < 0) {
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
         return -errno;
@@ -228,14 +251,14 @@ int FBEX::UninstallOrLockUserKeyToKernel(uint32_t userId, uint32_t type, uint8_t
     auto err = memcpy_s(ops.iv, sizeof(ops.iv), iv, size);
     if (err != EOK) {
         LOGE("memcpy failed %{public}d", err);
-        close(fd);
+        (void)fclose(f);
         return 0;
     }
     int ret = ioctl(fd, destroy ? FBEX_IOC_DEL_IV : FBEX_IOC_USER_LOGOUT, &ops);
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
     }
-    close(fd);
+    (void)fclose(f);
     LOGI("success");
     return ret;
 }
@@ -243,7 +266,16 @@ int FBEX::UninstallOrLockUserKeyToKernel(uint32_t userId, uint32_t type, uint8_t
 int FBEX::DeleteClassEPinCode(uint32_t userIdSingle, uint32_t userIdDouble)
 {
     LOGI("enter, userId: %{public}d", userIdDouble);
-    int fd = open(FBEX_UECE_PATH, O_RDWR);
+    FILE *f = fopen(FBEX_UECE_PATH, "r+");
+    if (f == nullptr) {
+        if (errno == ENOENT) {
+            LOGE("fbex_uece does not exist, fbe not support this command!");
+            return 0;
+        }
+        LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        return -errno;
+    }
+    int fd = fileno(f);
     if (fd < 0) {
         if (errno == ENOENT) {
             LOGE("fbex_uece does not exist, fbe not support this command!");
@@ -259,7 +291,7 @@ int FBEX::DeleteClassEPinCode(uint32_t userIdSingle, uint32_t userIdDouble)
         LOGE("ioctl fbex_cmd failed, fbeRet: 0x%{public}x, errno: %{public}d", fbeRet, errno);
         ret = -errno;
     }
-    close(fd);
+    (void)fclose(f);
     LOGI("success");
     return ret;
 }
@@ -267,7 +299,17 @@ int FBEX::DeleteClassEPinCode(uint32_t userIdSingle, uint32_t userIdDouble)
 int FBEX::ChangePinCodeClassE(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupport)
 {
     LOGI("enter, userId: %{public}d", userIdDouble);
-    int fd = open(FBEX_UECE_PATH, O_RDWR);
+    FILE *f = fopen(FBEX_UECE_PATH, "r+");
+    if (f == nullptr) {
+        if (errno == ENOENT) {
+            LOGE("fbex_uece does not exist, fbe not support this command!");
+            isFbeSupport = false;
+            return 0;
+        }
+        LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        return -errno;
+    }
+    int fd = fileno(f);
     if (fd < 0) {
         if (errno == ENOENT) {
             LOGE("fbex_uece does not exist, fbe not support this command!");
@@ -283,7 +325,7 @@ int FBEX::ChangePinCodeClassE(uint32_t userIdSingle, uint32_t userIdDouble, bool
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
         ret = -errno;
     }
-    close(fd);
+    (void)fclose(f);
     LOGI("change pincode classE finish.");
     return ret;
 }
@@ -293,7 +335,12 @@ int FBEX::LockScreenToKernel(uint32_t userId)
 {
     LOGI("enter, userId: %{public}d", userId);
 
-    int fd = open(FBEX_CMD_PATH, O_RDWR);
+    FILE *f = fopen(FBEX_CMD_PATH, "r+");
+    if (f == nullptr) {
+        LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        return -errno;
+    }
+    int fd = fileno(f);
     if (fd < 0) {
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
         return -errno;
@@ -305,7 +352,7 @@ int FBEX::LockScreenToKernel(uint32_t userId)
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
     }
-    close(fd);
+    (void)fclose(f);
     LOGI("success");
     return ret;
 }
@@ -314,7 +361,17 @@ int FBEX::GenerateAppkey(UserIdToFbeStr &userIdToFbe, uint32_t hashId, std::uniq
                          uint32_t size)
 {
     LOGI("GenerateAppkey enter");
-    int fd = open(FBEX_UECE_PATH, O_RDWR);
+    FILE *f = fopen(FBEX_UECE_PATH, "r+");
+    if (f == nullptr) {
+        if (errno == ENOENT) {
+            LOGE("fbex_uece does not exist, fbe not support this command!");
+            appKey.reset(nullptr);
+            return 0;
+        }
+        LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        return -errno;
+    }
+    int fd = fileno(f);
     if (fd < 0) {
         if (errno == ENOENT) {
             LOGE("fbex_uece does not exist, fbe not support this command!");
@@ -330,7 +387,7 @@ int FBEX::GenerateAppkey(UserIdToFbeStr &userIdToFbe, uint32_t hashId, std::uniq
     auto fbeRet = ioctl(fd, FBEX_ADD_APPKEY2, &ops);
     if (fbeRet != 0) {
         LOGE("ioctl fbex_cmd failed, fbeRet: 0x%{public}x, errno: %{public}d", fbeRet, errno);
-        close(fd);
+        (void)fclose(f);
         return -errno;
     }
 
@@ -339,7 +396,7 @@ int FBEX::GenerateAppkey(UserIdToFbeStr &userIdToFbe, uint32_t hashId, std::uniq
         LOGE("memcpy failed %{public}d", err);
         return 0;
     }
-    close(fd);
+    (void)fclose(f);
     LOGI("success");
     return 0;
 }
@@ -347,9 +404,19 @@ int FBEX::GenerateAppkey(UserIdToFbeStr &userIdToFbe, uint32_t hashId, std::uniq
 // for el5
 int FBEX::LockUece(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupport)
 {
-    LOGD("enter, userId: %{public}d", userIdDouble);
+    LOGI("enter, userId: %{public}d", userIdDouble);
 
-    int fd = open(FBEX_UECE_PATH, O_RDWR);
+    FILE *f = fopen(FBEX_UECE_PATH, "r+");
+    if (f == nullptr) {
+        if (errno == ENOENT) {
+            LOGE("fbex_uece does not exist, fbe not support this command!");
+            isFbeSupport = false;
+            return 0;
+        }
+        LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        return -errno;
+    }
+    int fd = fileno(f);
     if (fd < 0) {
         if (errno == ENOENT) {
             LOGE("fbex_uece does not exist, fbe not support this command!");
@@ -364,8 +431,8 @@ int FBEX::LockUece(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupp
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
     }
-    close(fd);
-    LOGD("success");
+    (void)fclose(f);
+    LOGI("success");
     return ret;
 }
 
@@ -377,7 +444,12 @@ int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint
         return -EINVAL;
     }
 
-    int fd = open(FBEX_CMD_PATH, O_RDWR);
+    FILE *f = fopen(FBEX_CMD_PATH, "r+");
+    if (f == nullptr) {
+        LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        return -errno;
+    }
+    int fd = fileno(f);
     if (fd < 0) {
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
         return -errno;
@@ -388,16 +460,16 @@ int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint
     auto err = memcpy_s(ops.iv, sizeof(ops.iv), iv, size);
     if (err != EOK) {
         LOGE("memcpy failed %{public}d", err);
-        close(fd);
+        (void)fclose(f);
         return 0;
     }
     int ret = ioctl(fd, FBEX_IOC_UNLOCK_SCREEN, &ops);
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
-        close(fd);
+        (void)fclose(f);
         return ret;
     }
-    close(fd);
+    (void)fclose(f);
 
     auto errops = memcpy_s(iv, size, ops.iv, sizeof(ops.iv));
     if (errops != EOK) {
@@ -408,19 +480,26 @@ int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint
     return ret;
 }
 
-int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uint8_t *eBuffer,
+int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, std::unique_ptr<uint8_t[]> &eBuffer,
                               uint32_t length, bool &isFbeSupport)
 {
     LOGI("enter, userId: %{public}d, status: %{public}u", userIdToFbe.userIds[DOUBLE_ID_INDEX], status);
-    if (!CheckReadBuffValid(eBuffer, length, status)) {
+    if (!CheckReadBuffValid(eBuffer.get(), length, status)) {
         LOGE("read e secret param invalid");
         return -EINVAL;
     }
-
-    int fd = open(FBEX_UECE_PATH, O_RDWR);
+    FILE *f = fopen(FBEX_UECE_PATH, "r+");
+    if (f == nullptr) {
+        if (errno == ENOENT) {
+            isFbeSupport = false;
+            return 0;
+        }
+        LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        return -errno;
+    }
+    int fd = fileno(f);
     if (fd < 0) {
         if (errno == ENOENT) {
-            LOGE("fbex_uece does not exist, fbe not support this command!");
             isFbeSupport = false;
             return 0;
         }
@@ -429,34 +508,43 @@ int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uint
     }
     uint32_t bufferSize = AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES;
     FbeOptsE ops{ .userIdDouble = userIdToFbe.userIds[DOUBLE_ID_INDEX],
-                  .userIdSingle = userIdToFbe.userIds[SINGLE_ID_INDEX],
-                  .status = status, .length = bufferSize };
-    auto err = memcpy_s(ops.eBuffer, sizeof(ops.eBuffer), eBuffer, length);
+                  .userIdSingle = userIdToFbe.userIds[SINGLE_ID_INDEX], .status = status, .length = bufferSize };
+    auto err = memcpy_s(ops.eBuffer, sizeof(ops.eBuffer), eBuffer.get(), length);
     if (err != EOK) {
         LOGE("memcpy failed %{public}d", err);
-        close(fd);
+        (void)fclose(f);
         return 0;
     }
     auto ret = ioctl(fd, FBEX_READ_CLASS_E, &ops);
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
-        close(fd);
+        (void)fclose(f);
         return -errno;
     }
-    close(fd);
+    (void)fclose(f);
+    if (ops.length == 0) {
+        (void)memset_s(eBuffer.get(), sizeof(eBuffer.get()), 0, sizeof(eBuffer.get()));
+        eBuffer.reset(nullptr);
+        LOGE("ops length is 0, skip");
+        return 0;
+    }
+    UnlockSendSecret(status, bufferSize, length, eBuffer.get(), ops.eBuffer);
+    LOGI("ReadESecretToKernel success");
+    return 0;
+}
+
+int FBEX::UnlockSendSecret(uint32_t status, uint32_t bufferSize, uint32_t length, uint8_t *eBuffer, uint8_t *opseBuffer)
+{
     if (status == UNLOCK_STATUS) {
         bufferSize = AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES;
     } else {
         bufferSize = AES_256_HASH_RANDOM_SIZE;
     }
-
-    auto errBuffer = memcpy_s(eBuffer, length, ops.eBuffer, bufferSize);
+    auto errBuffer = memcpy_s(eBuffer, length, opseBuffer, bufferSize);
     if (errBuffer != EOK) {
         LOGE("memcpy failed %{public}d", errBuffer);
         return 0;
     }
-    LOGI("ReadESecretToKernel success");
-
     return 0;
 }
 
@@ -468,7 +556,16 @@ int FBEX::WriteESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uin
         return -EINVAL;
     }
 
-    int fd = open(FBEX_UECE_PATH, O_RDWR);
+    FILE *f = fopen(FBEX_UECE_PATH, "r+");
+    if (f == nullptr) {
+        if (errno == ENOENT) {
+            LOGE("fbex_uece does not exist, fbe not support this command!");
+            return 0;
+        }
+        LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        return -errno;
+    }
+    int fd = fileno(f);
     if (fd < 0) {
         if (errno == ENOENT) {
             LOGE("fbex_uece does not exist, fbe not support this command!");
@@ -484,16 +581,16 @@ int FBEX::WriteESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uin
     auto err = memcpy_s(ops.eBuffer, sizeof(ops.eBuffer), eBuffer, length);
     if (err != EOK) {
         LOGE("memcpy failed %{public}d", err);
-        close(fd);
+        (void)fclose(f);
         return 0;
     }
     auto ret = ioctl(fd, FBEX_WRITE_CLASS_E, &ops);
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
-        close(fd);
+        (void)fclose(f);
         return -errno;
     }
-    close(fd);
+    (void)fclose(f);
     LOGI("success");
     return 0;
 }
@@ -507,7 +604,12 @@ bool FBEX::IsMspReady()
 
 int FBEX::GetStatus()
 {
-    int fd = open(FBEX_CMD_PATH, O_RDWR);
+    FILE *f = fopen(FBEX_CMD_PATH, "r+");
+    if (f == nullptr) {
+        LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        return -errno;
+    }
+    int fd = fileno(f);
     if (fd < 0) {
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
         return -errno;
@@ -515,7 +617,7 @@ int FBEX::GetStatus()
 
     FbeOpts ops;
     int ret = ioctl(fd, FBEX_IOC_STATUS_REPORT, &ops);
-    close(fd);
+    (void)fclose(f);
     return ret;
 }
 } // namespace StorageDaemon

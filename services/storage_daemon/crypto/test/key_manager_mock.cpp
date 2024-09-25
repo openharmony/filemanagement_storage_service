@@ -43,6 +43,13 @@ int32_t KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &us
     return E_OK;
 }
 
+int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,
+    const std::vector<uint8_t> &newSecret, uint64_t secureUid, uint32_t userId,
+    std::vector<std::vector<uint8_t>> &plainText)
+{
+    return E_OK;
+}
+
 int32_t KeyManager::ActiveUserKey(unsigned int user, const std::vector<uint8_t> &token,
     const std::vector<uint8_t> &secret)
 {
@@ -81,6 +88,17 @@ int32_t KeyManager::DeleteAppkey(uint32_t userId, const std::string keyId)
 }
 
 int32_t KeyManager::UnlockUserAppKeys(uint32_t userId, bool needGetAllAppKey)
+{
+    return E_OK;
+}
+
+int32_t KeyManager::CreateRecoverKey(uint32_t userId, uint32_t userType, const std::vector<uint8_t> &token,
+    const std::vector<uint8_t> &secret)
+{
+    return E_OK;
+}
+
+int32_t KeyManager::SetRecoverKey(const std::vector<uint8_t> &key)
 {
     return E_OK;
 }

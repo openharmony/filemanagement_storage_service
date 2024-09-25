@@ -39,11 +39,13 @@ ohos_unittest("IamClientTest") {
 
   sources = [
     "${storage_daemon_path}/crypto/src/iam_client.cpp",
+    "${storage_daemon_path}/mock/user_idm_client_impl_mock.cpp",
     "iam_client_test.cpp",
   ]
 
   deps = [
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
+    "//third_party/googletest:gmock_main",
     "//third_party/googletest:gtest_main",
   ]
 

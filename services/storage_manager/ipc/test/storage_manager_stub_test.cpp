@@ -47,6 +47,7 @@ namespace {
         static_cast<int32_t>(StorageManagerInterfaceCode::CREATE_USER_KEYS),
         static_cast<int32_t>(StorageManagerInterfaceCode::DELETE_USER_KEYS),
         static_cast<int32_t>(StorageManagerInterfaceCode::UPDATE_USER_AUTH),
+        static_cast<int32_t>(StorageManagerInterfaceCode::UPDATE_USER_AUTH_RECOVER_KEY),
         static_cast<int32_t>(StorageManagerInterfaceCode::ACTIVE_USER_KEY),
         static_cast<int32_t>(StorageManagerInterfaceCode::INACTIVE_USER_KEY),
         static_cast<int32_t>(StorageManagerInterfaceCode::UPDATE_KEY_CONTEXT),

@@ -42,7 +42,13 @@ ohos_unittest("CryptoTest") {
     "hilog:libhilog",
     "huks:libhukssdk",
     "init:libbegetutil",
+    "os_account:os_account_innerkits",
   ]
+
+  if (enable_screenlock_manager) {
+    defines += [ "ENABLE_SCREENLOCK_MANAGER" ]
+    external_deps += [ "screenlock_mgr:screenlock_client" ]
+  }
 }
 
 group("crypto_test") {

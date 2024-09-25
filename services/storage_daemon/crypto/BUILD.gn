@@ -51,8 +51,10 @@ ohos_static_library("libsdcrypto") {
     "src/huks_master.cpp",
     "src/iam_client.cpp",
     "src/key_backup.cpp",
+    "src/key_crypto_utils.cpp",
     "src/key_manager.cpp",
     "src/openssl_crypto.cpp",
+    "src/recover_manager.cpp",
   ]
 
   defines = [
@@ -78,6 +80,7 @@ ohos_static_library("libsdcrypto") {
     "init:libbegetutil",
     "ipc:ipc_single",
     "openssl:libcrypto_shared",
+    "os_account:os_account_innerkits",
     "samgr:samgr_proxy",
   ]
 
@@ -89,6 +92,16 @@ ohos_static_library("libsdcrypto") {
   if (enable_user_auth_framework) {
     defines += [ "USER_AUTH_FRAMEWORK" ]
     external_deps += [ "user_auth_framework:userauth_client" ]
+  }
+
+  if (enable_tee_client) {
+    defines += [ "RECOVER_KEY_TEE_ENVIRONMENT" ]
+    external_deps += [ "tee_client:libteec" ]
+  }
+
+  if (enable_screenlock_manager) {
+    defines += [ "ENABLE_SCREENLOCK_MANAGER" ]
+    external_deps += [ "screenlock_mgr:screenlock_client" ]
   }
 
   subsystem_name = "filemanagement"

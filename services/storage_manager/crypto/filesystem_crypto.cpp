@@ -89,6 +89,24 @@ int32_t FileSystemCrypto::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
     return err;
 }
 
+int32_t FileSystemCrypto::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,
+                                                       const std::vector<uint8_t> &newSecret,
+                                                       uint64_t secureUid,
+                                                       uint32_t userId,
+                                                       std::vector<std::vector<uint8_t>> &plainText)
+{
+    LOGI("UserId: %{public}u", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    err = sdCommunication->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId, plainText);
+    return err;
+}
+
 int32_t FileSystemCrypto::ActiveUserKey(uint32_t userId,
                                         const std::vector<uint8_t> &token,
                                         const std::vector<uint8_t> &secret)
@@ -121,7 +139,7 @@ int32_t FileSystemCrypto::InactiveUserKey(uint32_t userId)
 
 int32_t FileSystemCrypto::LockUserScreen(uint32_t userId)
 {
-    LOGD("UserId: %{public}u", userId);
+    LOGI("UserId: %{public}u", userId);
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("User ID out of range");

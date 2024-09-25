@@ -291,6 +291,53 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_UnlockUserScreen_0000, Tes
 }
 
 /**
+ * @tc.number: SUB_STORAGE_Storage_manager_crypto_CreateRecoverKey_0000
+ * @tc.name: Storage_manager_crypto_CreateRecoverKey_0000
+ * @tc.desc: Test function of CreateRecoverKey interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_CreateRecoverKey_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileSystemCryptoTest-start Storage_manager_crypto_CreateRecoverKey_0000";
+    std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
+        DelayedSingleton<FileSystemCrypto>::GetInstance();
+    int32_t userId = 100;
+    int32_t userType = 10;
+
+    int32_t ret = fileSystemCrypto_->CreateRecoverKey(userId, userType, {}, {});
+    EXPECT_EQ(ret, E_OK);
+
+    userId = 19999;
+    ret = fileSystemCrypto_->CreateRecoverKey(userId, userType, {}, {});
+    EXPECT_EQ(ret, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_CreateRecoverKey_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_crypto_SetRecoverKey_0000
+ * @tc.name: Storage_manager_crypto_SetRecoverKey_0000
+ * @tc.desc: Test function of SetRecoverKey interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_SetRecoverKey_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileSystemCryptoTest-start Storage_manager_crypto_SetRecoverKey_0000";
+    std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
+        DelayedSingleton<FileSystemCrypto>::GetInstance();
+
+    int32_t ret = fileSystemCrypto_->SetRecoverKey({});
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_SetRecoverKey_0000";
+}
+
+/**
  * @tc.number: SUB_STORAGE_Storage_manager_crypto_GetLockScreenStatus_0000
  * @tc.name: Storage_manager_crypto_GetLockScreenStatus_0000
  * @tc.desc: Test function of GetLockScreenStatus interface for SUCCESS.
@@ -309,6 +356,9 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_GetLockScreenStatus_0000, 
     int32_t ret = fileSystemCrypto_->GetLockScreenStatus(userId, lockScreenStatus);
     EXPECT_EQ(ret, E_OK);
 
+    userId = 19999;
+    ret = fileSystemCrypto_->GetLockScreenStatus(userId, lockScreenStatus);
+    EXPECT_EQ(ret, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_GetLockScreenStatus_0000";
 }
 
@@ -401,6 +451,10 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_GetFileEncryptStatus_0000,
     bool isEncrypted = true;
     uint32_t ret = fileSystemCrypto_->GetFileEncryptStatus(userId, isEncrypted);
     EXPECT_EQ(ret, E_USERID_RANGE);
+
+    userId = 800;
+    ret = fileSystemCrypto_->GetFileEncryptStatus(userId, isEncrypted);
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_GetFileEncryptStatus_0000";
 }
 /**
@@ -417,15 +471,46 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_GenerateAppkey_0000, testi
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-start Storage_manager_crypto_GenerateAppkey_0000";
     std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
             DelayedSingleton<FileSystemCrypto>::GetInstance();
-    uint32_t userId = -1;
-    uint32_t hashId = 108;
+    uint32_t userId = 108;
+    uint32_t hashId = -1;
     std::string keyId = "keys"; // UserKeys type
     ASSERT_TRUE(fileSystemCrypto_ != nullptr);
     uint32_t result = fileSystemCrypto_->GenerateAppkey(hashId, userId, keyId);
-    EXPECT_EQ(result, E_USERID_RANGE);
+    EXPECT_EQ(result, E_OK);
 
     fileSystemCrypto_->DeleteAppkey(keyId);
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_GenerateAppkey_0000";
+}
+
+/**
+ * @tc.number: Storage_manager_crypto_UpdateUseAuthWithRecoveryKey_0000
+ * @tc.name: Storage_manager_crypto_UpdateUseAuthWithRecoveryKey_0000
+ * @tc.desc: Test function of UpdateUseAuthWithRecoveryKey interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_UpdateUseAuthWithRecoveryKey_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileSystemCryptoTest-start Storage_manager_crypto_UpdateUseAuthWithRecoveryKey_0000";
+    std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
+            DelayedSingleton<FileSystemCrypto>::GetInstance();
+    uint32_t userId = -1;
+    std::vector<uint8_t> authToken;
+    std::vector<uint8_t> newSecret;
+    uint64_t secureUid = 0;
+    std::vector<std::vector<uint8_t>> plainText;
+    ASSERT_TRUE(fileSystemCrypto_ != nullptr);
+    uint32_t result = fileSystemCrypto_->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid,
+        userId, plainText);
+    EXPECT_EQ(result, E_USERID_RANGE);
+
+    userId = 800;
+    result = fileSystemCrypto_->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid,
+        userId, plainText);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_UpdateUseAuthWithRecoveryKey_0000";
 }
 }
 }

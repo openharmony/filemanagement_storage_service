@@ -286,6 +286,25 @@ int32_t StorageDaemonCommunication::UpdateUserAuth(uint32_t userId, uint64_t sec
     return storageDaemon_->UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
 }
 
+int32_t StorageDaemonCommunication::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,
+                                                                 const std::vector<uint8_t> &newSecret,
+                                                                 uint64_t secureUid,
+                                                                 uint32_t userId,
+                                                                 std::vector<std::vector<uint8_t>> &plainText)
+{
+    LOGI("enter");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId, plainText);
+}
+
 int32_t StorageDaemonCommunication::ActiveUserKey(uint32_t userId,
                                                   const std::vector<uint8_t> &token,
                                                   const std::vector<uint8_t> &secret)
@@ -320,7 +339,7 @@ int32_t StorageDaemonCommunication::InactiveUserKey(uint32_t userId)
 
 int32_t StorageDaemonCommunication::LockUserScreen(uint32_t userId)
 {
-    LOGD("enter");
+    LOGI("enter");
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("Connect failed");
@@ -335,7 +354,7 @@ int32_t StorageDaemonCommunication::LockUserScreen(uint32_t userId)
 
 int32_t StorageDaemonCommunication::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
 {
-    LOGD("enter");
+    LOGI("enter");
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("Connect failed");
@@ -397,7 +416,7 @@ int32_t StorageDaemonCommunication::UpdateKeyContext(uint32_t userId)
 
 int32_t StorageDaemonCommunication::ResetSdProxy()
 {
-    LOGD("enter");
+    LOGI("enter");
     std::lock_guard<std::mutex> lock(mutex_);
     if ((storageDaemon_ != nullptr) && (storageDaemon_->AsObject() != nullptr)) {
         storageDaemon_->AsObject()->RemoveDeathRecipient(deathRecipient_);
@@ -417,6 +436,11 @@ void StorageDaemonCommunication::ForceLockUserScreen()
         LOGE("Query active userid failed, ret = %{public}u", ret);
         return;
     }
+    ret = AccountSA::OsAccountManager::SetOsAccountIsVerified(ids[0], false);
+    if (ret != ERR_OK) {
+        LOGE("Set os account IsVerified status failed, ret = %{public}u", ret);
+        return;
+    }
     int reasonFlag = static_cast<int>(ScreenLock::StrongAuthReasonFlags::ACTIVE_REQUEST);
     ret = ScreenLock::ScreenLockManager::GetInstance()->RequestStrongAuth(reasonFlag, ids[0]);
     if (ret != ScreenLock::E_SCREENLOCK_OK) {
@@ -426,6 +450,7 @@ void StorageDaemonCommunication::ForceLockUserScreen()
     ret = ScreenLock::ScreenLockManager::GetInstance()->Lock(ids[0]);
     if (ret != ScreenLock::E_SCREENLOCK_OK) {
         LOGE("Lock user screen by screen lock manager failed.");
+        return;
     }
     LOGI("Force lock user screen and request strong auth success for userId = %{public}d.", ids[0]);
 #endif
@@ -553,6 +578,10 @@ int32_t StorageDaemonCommunication::CreateRecoverKey(uint32_t userId,
         LOGE("Connect failed");
         return err;
     }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
     return storageDaemon_->CreateRecoverKey(userId, userType, token, secret);
 }
 
@@ -563,6 +592,10 @@ int32_t StorageDaemonCommunication::SetRecoverKey(const std::vector<uint8_t> &ke
     if (err != E_OK) {
         LOGE("Connect failed");
         return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->SetRecoverKey(key);
 }

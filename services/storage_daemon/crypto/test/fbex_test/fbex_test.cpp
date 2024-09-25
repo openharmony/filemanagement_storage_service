@@ -22,6 +22,7 @@
 #include "directory_ex.h"
 #include "fbex.h"
 #include "file_ex.h"
+#include "key_blob.h"
 #include "storage_service_errno.h"
 
 using namespace testing::ext;
@@ -350,34 +351,34 @@ HWTEST_F(FbexTest, ReadESecretToKernel, TestSize.Level1)
 
     uint32_t status = PARAMS_1;
     bool isFbeSupport = true;
-    EXPECT_EQ(fbex.ReadESecretToKernel(userIdToFbe, status, nullptr, VALID_SIZE, isFbeSupport), -EINVAL);
+    std::unique_ptr<uint8_t []> nullBuffer;
+    EXPECT_EQ(fbex.ReadESecretToKernel(userIdToFbe, status, nullBuffer, VALID_SIZE, isFbeSupport), -EINVAL);
 
     status = UNLOCK_STATUS;
-    int ret = fbex.ReadESecretToKernel(userIdToFbe, status, nullptr, VALID_SIZE, isFbeSupport);
+    int ret = fbex.ReadESecretToKernel(userIdToFbe, status, nullBuffer, VALID_SIZE, isFbeSupport);
     EXPECT_EQ(ret, -EINVAL);
 
-    uint8_t *eBuffer = new uint8_t[VALID_SIZE];
+    KeyBlob eBuffer(VALID_SIZE);
     isFbeSupport = true;
     OHOS::ForceRemoveDirectory(FBEX_UECE_PATH);
     OHOS::ForceCreateDirectory(FBEX_UECE_PATH);
-    ret = fbex.ReadESecretToKernel(userIdToFbe, status, eBuffer, VALID_SIZE, isFbeSupport);
+    ret = fbex.ReadESecretToKernel(userIdToFbe, status, eBuffer.data, VALID_SIZE, isFbeSupport);
     EXPECT_NE(ret, 0);
     EXPECT_EQ(isFbeSupport, true);
 
     isFbeSupport = true;
     OHOS::ForceRemoveDirectory(FBEX_UECE_PATH);
-    ret = fbex.ReadESecretToKernel(userIdToFbe, status, eBuffer, VALID_SIZE, isFbeSupport);
+    ret = fbex.ReadESecretToKernel(userIdToFbe, status, eBuffer.data, VALID_SIZE, isFbeSupport);
     EXPECT_EQ(ret, 0);
     EXPECT_EQ(isFbeSupport, false);
 
     isFbeSupport = true;
     std::ofstream file(FBEX_UECE_PATH);
-    ret = fbex.ReadESecretToKernel(userIdToFbe, status, eBuffer, VALID_SIZE, isFbeSupport);
+    ret = fbex.ReadESecretToKernel(userIdToFbe, status, eBuffer.data, VALID_SIZE, isFbeSupport);
     EXPECT_NE(ret, 0);
     EXPECT_EQ(isFbeSupport, true);
     EXPECT_TRUE(OHOS::RemoveFile(FBEX_UECE_PATH));
-    delete[] eBuffer;
-    eBuffer = nullptr;
+    eBuffer.Clear();
     GTEST_LOG_(INFO) << "fbex_ReadESecretToKernel end";
 }
 

@@ -53,10 +53,12 @@ public:
     static int LockScreenToKernel(uint32_t userId);
     static int UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size);
     static int ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status,
-                                   uint8_t *eBuffer, uint32_t length, bool &isFbeSupport);
+                                   std::unique_ptr<uint8_t[]> &eBuffer, uint32_t length, bool &isFbeSupport);
     static int WriteESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uint8_t *eBuffer, uint32_t length);
     static bool IsMspReady();
     static int GetStatus();
+    static int UnlockSendSecret(uint32_t status, uint32_t bufferSize, uint32_t length, uint8_t *eBuffer,
+                                uint8_t *opseBuffer);
     static int InstallEL5KeyToKernel(uint32_t userIdSingle, uint32_t userIdDouble, uint8_t flag,
                                      bool &isSupport, bool &isNeedEncryptClassE);
     static int DeleteClassEPinCode(uint32_t userIdSingle, uint32_t userIdDouble);
