@@ -1183,10 +1183,10 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_DeleteUserKeys_0000, tes
  * @tc.level Level 1
  * @tc.require: AR000H0FG3
  */
-HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_UpdateUseAuthWithRecoveryKey_0000,
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_UpdateUseAuthWithRecoveryKey_0001,
     testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_UpdateUseAuthWithRecoveryKey_0000";
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_UpdateUseAuthWithRecoveryKey_0001";
     ASSERT_TRUE(mock_ != nullptr) << "StorageManagerServiceMock failed";
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
@@ -1196,7 +1196,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_UpdateUseAuthWithRecover
     std::vector<std::vector<uint8_t>> plainText;
     uint32_t result = proxy_->UpdateUseAuthWithRecoveryKey({}, {}, 0, userId, plainText);
     EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_UpdateUseAuthWithRecoveryKey_0000";
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_UpdateUseAuthWithRecoveryKey_0001";
 }
 
 /**
