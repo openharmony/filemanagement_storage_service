@@ -19,6 +19,7 @@
 #include <fcntl.h>
 #include <fstream>
 #include <thread>
+#include "hi_audit.h"
 #include "hisysevent.h"
 #include "utils/set_flag_utils.h"
 #include "utils/storage_radar.h"
@@ -87,6 +88,11 @@ int32_t StorageDaemon::Mount(const std::string &volId, uint32_t flags)
         LOGW("Mount failed, please check");
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
             "Mount", BizScene::EXTERNAL_VOLUME_MANAGER, BizStage::BIZ_STAGE_MOUNT, "EL1", ret);
+        AuditLog storageAuditLog = { false, "FAILED TO Mount", "ADD", "Mount", 1, "FAIL" };
+        HiAudit::GetInstance().Write(storageAuditLog);
+    } else {
+        AuditLog storageAuditLog = { false, "SUCCESS TO Mount", "ADD", "Mount", 1, "SUCCESS" };
+        HiAudit::GetInstance().Write(storageAuditLog);
     }
     return ret;
 #else
@@ -103,6 +109,11 @@ int32_t StorageDaemon::UMount(const std::string &volId)
         LOGW("UMount failed, please check");
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
             "UMount", BizScene::EXTERNAL_VOLUME_MANAGER, BizStage::BIZ_STAGE_UNMOUNT, "EL1", ret);
+        AuditLog storageAuditLog = { false, "FAILED TO UMount", "DEL", "UMount", 1, "FAIL" };
+        HiAudit::GetInstance().Write(storageAuditLog);
+    } else {
+        AuditLog storageAuditLog = { false, "SUCCESS TO UMount", "DEL", "UMount", 1, "SUCCESS" };
+        HiAudit::GetInstance().Write(storageAuditLog);
     }
     return ret;
 #else
@@ -129,6 +140,11 @@ int32_t StorageDaemon::Format(const std::string &volId, const std::string &fsTyp
         LOGW("Format failed, please check");
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
             "Format", BizScene::EXTERNAL_VOLUME_MANAGER, BizStage::BIZ_STAGE_FORMAT, "EL1", ret);
+        AuditLog storageAuditLog = { true, "FAILED TO Format", "UPDATE", "Format", 1, "FAIL" };
+        HiAudit::GetInstance().Write(storageAuditLog);
+    } else {
+        AuditLog storageAuditLog = { true, "SUCCESS TO Format", "UPDATE", "Format", 1, "SUCCESS" };
+        HiAudit::GetInstance().Write(storageAuditLog);
     }
     return ret;
 #else
@@ -145,6 +161,11 @@ int32_t StorageDaemon::Partition(const std::string &diskId, int32_t type)
         LOGW("HandlePartition failed, please check");
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
             "HandlePartition", BizScene::EXTERNAL_VOLUME_MANAGER, BizStage::BIZ_STAGE_PARTITION, "EL1", ret);
+        AuditLog storageAuditLog = { true, "FAILED TO Partition", "UPDATE", "Partition", 1, "FAIL" };
+        HiAudit::GetInstance().Write(storageAuditLog);
+    } else {
+        AuditLog storageAuditLog = { true, "SUCCESS TO Partition", "UPDATE", "Partition", 1, "SUCCESS" };
+        HiAudit::GetInstance().Write(storageAuditLog);
     }
     return ret;
 #else
@@ -162,6 +183,13 @@ int32_t StorageDaemon::SetVolumeDescription(const std::string &volId, const std:
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
             "SetVolumeDescription", BizScene::EXTERNAL_VOLUME_MANAGER, BizStage::BIZ_STAGE_SET_VOLUME_DESCRIPTION,
             "EL1", ret);
+        AuditLog storageAuditLog = { true,  "FAILED TO SetVolumeDescription", "UPDATE", "SetVolumeDescription", 1,
+            "FAIL" };
+        HiAudit::GetInstance().Write(storageAuditLog);
+    } else {
+        AuditLog storageAuditLog = { true, "SUCCESS TO SetVolumeDescription", "UPDATE", "SetVolumeDescription", 1,
+            "SUCCESS" };
+        HiAudit::GetInstance().Write(storageAuditLog);
     }
     return ret;
 #else
@@ -298,6 +326,8 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
     if (ret == -EEXIST) {
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
             "GenerateUserKeys", BizScene::USER_MOUNT_MANAGER, BizStage::BIZ_STAGE_PREPARE_ADD_USER, "EL1", ret);
+        AuditLog storageAuditLog = { false, "FAILED TO GenerateUserKeys", "ADD", "GenerateUserKeys", 1, "FAIL" };
+        HiAudit::GetInstance().Write(storageAuditLog);
         return RestoreUserKey(userId, flags);
     }
 #endif
@@ -305,6 +335,8 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
         LOGE("Generate user %{public}d key error", userId);
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
             "GenerateUserKeys", BizScene::USER_MOUNT_MANAGER, BizStage::BIZ_STAGE_PREPARE_ADD_USER, "EL1", ret);
+        AuditLog storageAuditLog = { false, "FAILED TO GenerateUserKeys", "ADD", "GenerateUserKeys", 1, "FAIL" };
+        HiAudit::GetInstance().Write(storageAuditLog);
         return ret;
     }
 #endif
@@ -323,6 +355,8 @@ int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
         LOGW("Destroy user %{public}d dirs failed, please check", userId);
         StorageService::StorageRadar::GetInstance().RecordFuctionResult("DestroyUserDirs", BizScene::USER_MOUNT_MANAGER,
             BizStage::BIZ_STAGE_REMOVE_USER, "EL1", errCode);
+        AuditLog storageAuditLog = { false, "FAILED TO DestroyUserDirs", "DEL", "DestroyUserDirs", 1, "FAIL" };
+        HiAudit::GetInstance().Write(storageAuditLog);
     }
 
 #ifdef USER_CRYPTO_MANAGER
@@ -332,6 +366,8 @@ int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
         LOGW("DeleteUserKeys failed, please check");
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
             "DeleteUserKeys", BizScene::USER_MOUNT_MANAGER, BizStage::BIZ_STAGE_REMOVE_USER, "EL1", errCode);
+        AuditLog storageAuditLog = { false, "FAILED TO DeleteUserKeys", "DEL", "DeleteUserKeys", 1, "FAIL" };
+        HiAudit::GetInstance().Write(storageAuditLog);
     }
     return errCode;
 #else
@@ -346,6 +382,11 @@ int32_t StorageDaemon::StartUser(int32_t userId)
         LOGE("StartUser failed, please check");
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
             "StartUser", BizScene::USER_MOUNT_MANAGER, BizStage::BIZ_STAGE_START_USER, "EL1", ret);
+        AuditLog storageAuditLog = { false, "FAILED TO StartUser", "ADD", "StartUser", 1, "FAIL" };
+        HiAudit::GetInstance().Write(storageAuditLog);
+    } else {
+        AuditLog storageAuditLog = { false, "SUCCESS TO StartUser", "ADD", "StartUser", 1, "SUCCESS" };
+        HiAudit::GetInstance().Write(storageAuditLog);
     }
     return ret;
 }
@@ -357,6 +398,11 @@ int32_t StorageDaemon::StopUser(int32_t userId)
         LOGE("StartUser failed, please check");
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
             "StopUser", BizScene::USER_MOUNT_MANAGER, BizStage::BIZ_STAGE_STOP_USER, "EL1", ret);
+        AuditLog storageAuditLog = { false, "FAILED TO StopUser", "DEL", "StopUser", 1, "FAIL" };
+        HiAudit::GetInstance().Write(storageAuditLog);
+    } else {
+        AuditLog storageAuditLog = { false, "SUCCESS TO StopUser", "DEL", "StopUser", 1, "SUCCESS" };
+        HiAudit::GetInstance().Write(storageAuditLog);
     }
     return ret;
 }
@@ -385,6 +431,8 @@ int32_t StorageDaemon::InitGlobalKey(void)
         LOGE("InitGlobalDeviceKey failed, please check");
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
             "InitGlobalDeviceKey", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_GENERATE_USER_KEYS, "EL1", ret);
+        AuditLog storageAuditLog = { false, "FAILED TO InitGlobalDeviceKey", "ADD", "InitGlobalDeviceKey", 1, "FAIL" };
+        HiAudit::GetInstance().Write(storageAuditLog);
     }
 #ifdef USE_LIBRESTORECON
     RestoreconRecurse(DATA_SERVICE_EL0_STORAGE_DAEMON_SD.c_str());
@@ -411,6 +459,8 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
         LOGE("Init global users els failed");
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
             "InitGlobalUserKeys", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_GENERATE_USER_KEYS, "EL1", ret);
+        AuditLog storageAuditLog = { false, "FAILED TO InitGlobalUserKeys", "ADD", "InitGlobalUserKeys", 1, "FAIL" };
+        HiAudit::GetInstance().Write(storageAuditLog);
         return ret;
     }
 #endif
@@ -422,6 +472,8 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
         LOGE("PrepareUserDirs failed, please check");
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
             "PrepareUserDirs", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_GENERATE_USER_KEYS, "EL1", result);
+        AuditLog storageAuditLog = { false, "FAILED TO PrepareUserDirs", "ADD", "PrepareUserDirs", 1, "FAIL" };
+        HiAudit::GetInstance().Write(storageAuditLog);
     }
 
     std::thread thread([this]() { SetDeleteFlag4KeyFiles(); });
@@ -443,6 +495,8 @@ int32_t StorageDaemon::GenerateUserKeys(uint32_t userId, uint32_t flags)
         LOGE("GenerateUserKeys failed, please check");
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
             "GenerateUserKeys", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_GENERATE_USER_KEYS, "EL1", ret);
+        AuditLog storageAuditLog = { false, "FAILED TO GenerateUserKeys", "ADD", "GenerateUserKeys", 1, "FAIL" };
+        HiAudit::GetInstance().Write(storageAuditLog);
     }
     return ret;
 #else
@@ -458,6 +512,8 @@ int32_t StorageDaemon::DeleteUserKeys(uint32_t userId)
         LOGE("DeleteUserKeys failed, please check");
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
             "DeleteUserKeys", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_DELETE_USER_KEYS, "EL1", ret);
+        AuditLog storageAuditLog = { false, "FAILED TO DeleteUserKeys", "DEL", "DeleteUserKeys", 1, "FAIL" };
+        HiAudit::GetInstance().Write(storageAuditLog);
     }
     return ret;
 #else
@@ -478,6 +534,8 @@ int32_t StorageDaemon::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
         LOGE("UpdateUserAuth failed, please check");
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
             "UpdateUserAuth", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_UPDATE_USER_AUTH, "EL1", ret);
+        AuditLog storageAuditLog = { false, "FAILED TO UpdateUserAuth", "CP", "UpdateUserAuth", 1, "FAIL" };
+        HiAudit::GetInstance().Write(storageAuditLog);
     }
     return ret;
 #else
@@ -657,6 +715,9 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepareElX(uint32_t userId,
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
             "ActiveUserKeyAndPrepare", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_ACTIVE_USER_KEY, "EL3",
             ret);
+        AuditLog storageAuditLog = { false, "FAILED TO ActiveUserKeyAndPrepare", "ADD", "ActiveUserKeyAndPrepare", 1,
+            "FAIL" };
+        HiAudit::GetInstance().Write(storageAuditLog);
         return ret;
     }
     ret = ActiveUserKeyAndPrepare(userId, EL4_KEY, token, secret);
@@ -665,6 +726,9 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepareElX(uint32_t userId,
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
             "ActiveUserKeyAndPrepare", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_ACTIVE_USER_KEY, "EL4",
             ret);
+        AuditLog storageAuditLog = { false, "FAILED TO ActiveUserKeyAndPrepare", "ADD", "ActiveUserKeyAndPrepare", 1,
+            "FAIL" };
+        HiAudit::GetInstance().Write(storageAuditLog);
         return ret;
     }
     ret = ActiveUserKeyAndPrepare(userId, EL5_KEY, token, secret);
@@ -673,6 +737,9 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepareElX(uint32_t userId,
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
             "ActiveUserKeyAndPrepare", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_ACTIVE_USER_KEY, "EL5",
             ret);
+        AuditLog storageAuditLog = { false, "FAILED TO ActiveUserKeyAndPrepare", "ADD", "ActiveUserKeyAndPrepare", 1,
+            "FAIL" };
+        HiAudit::GetInstance().Write(storageAuditLog);
         return ret;
     }
 #endif
@@ -765,6 +832,8 @@ int32_t StorageDaemon::InactiveUserKey(uint32_t userId)
         LOGE("InActiveUserKey failed, please check");
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
             "InActiveUserKey", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_INACTIVE_USER_KEY, "EL1", ret);
+        AuditLog storageAuditLog = { false, "FAILED TO InActiveUserKey", "DEL", "InActiveUserKey", 1, "FAIL" };
+        HiAudit::GetInstance().Write(storageAuditLog);
     }
     return ret;
 #else
@@ -780,6 +849,11 @@ int32_t StorageDaemon::LockUserScreen(uint32_t userId)
         LOGE("LockUserScreen failed, please check");
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
             "LockUserScreen", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_LOCK_USER_SCREEN, "EL1", ret);
+        AuditLog storageAuditLog = { true, "FAILED TO LockUserScreen", "UPDATE", "LockUserScreen", 1, "FAIL" };
+        HiAudit::GetInstance().Write(storageAuditLog);
+    } else {
+        AuditLog storageAuditLog = { true, "SUCCESS TO LockUserScreen", "UPDATE", "LockUserScreen", 1, "SUCCESS" };
+        HiAudit::GetInstance().Write(storageAuditLog);
     }
     return ret;
 #else
@@ -797,6 +871,11 @@ int32_t StorageDaemon::UnlockUserScreen(uint32_t userId,
         LOGE("UnlockUserScreen failed, please check");
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
             "UnlockUserScreen", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_UNLOCK_USER_SCREEN, "EL1", ret);
+        AuditLog storageAuditLog = { true, "FAILED TO UnlockUserScreen", "UPDATE", "UnlockUserScreen", 1, "FAILED" };
+        HiAudit::GetInstance().Write(storageAuditLog);
+    } else {
+        AuditLog storageAuditLog = { true, "SUCCESS TO UnlockUserScreen", "UPDATE", "UnlockUserScreen", 1, "SUCCESS" };
+        HiAudit::GetInstance().Write(storageAuditLog);
     }
     return ret;
 #else
@@ -862,6 +941,11 @@ int32_t StorageDaemon::UpdateKeyContext(uint32_t userId)
         LOGE("UpdateKeyContext failed, please check");
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
             "UpdateKeyContext", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_UPDATE_KEY_CONTEXT, "EL1", ret);
+        AuditLog storageAuditLog = { true, "FAILED TO UpdateKeyContext", "UPDATE", "UpdateKeyContext", 1, "FAILED" };
+        HiAudit::GetInstance().Write(storageAuditLog);
+    } else {
+        AuditLog storageAuditLog = { true, "SUCCESS TO UpdateKeyContext", "UPDATE", "UpdateKeyContext", 1, "SUCCESS" };
+        HiAudit::GetInstance().Write(storageAuditLog);
     }
     return ret;
 #else
@@ -936,6 +1020,9 @@ int32_t StorageDaemon::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
             "GetFileEncryptStatus", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_GET_FILE_ENCRYPT_STATUS, "EL1",
             ret);
+        AuditLog storageAuditLog = { false, "FAILED TO GetFileEncryptStatus", "SELECT", "GetFileEncryptStatus", 1,
+            "FAILED" };
+        HiAudit::GetInstance().Write(storageAuditLog);
     }
     return ret;
 #else
