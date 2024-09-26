@@ -39,6 +39,10 @@ void SetFlagUtils::ParseDirPath(const std::string &path)
         return;
     }
     SetDirDelFlags(path);
+    if (!std::filesystem::exists(path)) {
+        LOGE("Invalid file path.");
+        return;
+    }
     std::filesystem::directory_iterator pathList(path);
     for (const auto& resPath : pathList) {
         if (StorageDaemon::IsDir(resPath.path())) {
