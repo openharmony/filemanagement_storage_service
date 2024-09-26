@@ -154,6 +154,7 @@ void HiAudit::CleanOldAuditFile()
     while (true) {
         struct dirent* ptr = readdir(dir);
         if (ptr == nullptr) {
+            closedir(dir);
             break;
         }
         if (std::string(ptr->d_name).find(HIAUDIT_CONFIG.logName) != std::string::npos &&
@@ -172,7 +173,6 @@ void HiAudit::CleanOldAuditFile()
             }
         }
     }
-    closedir(dir);
     if (zipFileSize > HIAUDIT_CONFIG.fileCount) {
         remove(oldestAuditFile.c_str());
     }
