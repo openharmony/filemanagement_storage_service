@@ -151,30 +151,28 @@ void HiAudit::CleanOldAuditFile()
     uint32_t zipFileSize = 0;
     std::string oldestAuditFile;
     DIR* dir = opendir(HIAUDIT_CONFIG.logPath.c_str());
-    if (dir != nullptr) {
-        while (true) {
-            struct dirent* ptr = readdir(dir);
-            if (ptr == nullptr) {
-                closedir(dir);
-                break;
+    while (true) {
+        struct dirent* ptr = readdir(dir);
+        if (ptr == nullptr) {
+            break;
+        }
+        if (std::string(ptr->d_name).find(HIAUDIT_CONFIG.logName) != std::string::npos &&
+            std::string(ptr->d_name).find("zip") != std::string::npos) {
+            zipFileSize = zipFileSize + 1;
+            if (oldestAuditFile.empty()) {
+                oldestAuditFile = HIAUDIT_CONFIG.logPath + std::string(ptr->d_name);
+                continue;
             }
-            if (std::string(ptr->d_name).find(HIAUDIT_CONFIG.logName) != std::string::npos &&
-                std::string(ptr->d_name).find("zip") != std::string::npos) {
-                zipFileSize = zipFileSize + 1;
-                if (oldestAuditFile.empty()) {
-                    oldestAuditFile = HIAUDIT_CONFIG.logPath + std::string(ptr->d_name);
-                    continue;
-                }
-                struct stat st;
-                stat((HIAUDIT_CONFIG.logPath + std::string(ptr->d_name)).c_str(), &st);
-                struct stat oldestSt;
-                stat(oldestAuditFile.c_str(), &oldestSt);
-                if (st.st_mtime < oldestSt.st_mtime) {
-                    oldestAuditFile = HIAUDIT_CONFIG.logPath + std::string(ptr->d_name);
-                }
+            struct stat st;
+            stat((HIAUDIT_CONFIG.logPath + std::string(ptr->d_name)).c_str(), &st);
+            struct stat oldestSt;
+            stat(oldestAuditFile.c_str(), &oldestSt);
+            if (st.st_mtime < oldestSt.st_mtime) {
+                oldestAuditFile = HIAUDIT_CONFIG.logPath + std::string(ptr->d_name);
             }
         }
     }
+    closedir(dir);
     if (zipFileSize > HIAUDIT_CONFIG.fileCount) {
         remove(oldestAuditFile.c_str());
     }
