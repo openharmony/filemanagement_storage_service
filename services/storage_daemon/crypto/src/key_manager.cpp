@@ -1191,17 +1191,24 @@ int KeyManager::GetLockScreenStatus(uint32_t user, bool &lockScreenStatus)
 
 int KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId)
 {
-    std::lock_guard<std::mutex> lock(keyMutex_);
-    if (!IsUserCeDecrypt(userId)) {
-        LOGE("user ce does not decrypt, skip");
+    if (!IsUeceSupport()) {
+        LOGI("Not support uece !");
+        return -ENOTSUP;
+    }
+    if (userEl4Key_.find(userId) == userEl4Key_.end()) {
+        LOGE("userEl4Key_ has not existed");
+        if (!IsUserCeDecrypt(userId)) {
+            LOGE("user ce does not decrypt, skip");
+            return -ENOENT;
+        }
+        GetUserElKey(userId, EL4_KEY);
+    }
+    auto el4Key = userEl4Key_[userId];
+    if (el4Key == nullptr) {
+        LOGE("el4Key_ is nullptr");
         return -ENOENT;
     }
-    auto el2Key = GetUserElKey(userId, EL2_KEY);
-    if (el2Key == nullptr) {
-        LOGE("userEl2Key_ has not existed");
-        return -ENOENT;
-    }
-    if (!el2Key->GenerateAppkey(userId, hashId, keyId)) {
+    if (el4Key->GenerateAppkey(userId, hashId, keyId) == false) {
         LOGE("Failed to generate Appkey2");
         return -EFAULT;
     }
@@ -1211,16 +1218,20 @@ int KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &ke
 int KeyManager::DeleteAppkey(uint32_t userId, const std::string keyId)
 {
     std::lock_guard<std::mutex> lock(keyMutex_);
-    if (!IsUserCeDecrypt(userId)) {
-        LOGE("user ce does not decrypt, skip");
+    if (userEl4Key_.find(userId) == userEl4Key_.end()) {
+        LOGE("userEl4Key_ has not existed");
+        if (!IsUserCeDecrypt(userId)) {
+            LOGE("user ce does not decrypt, skip");
+            return -ENOENT;
+        }
+        GetUserElKey(userId, EL4_KEY);
+    }
+    auto el4Key = userEl4Key_[userId];
+    if (el4Key == nullptr) {
+        LOGE("el4Key_ is nullptr");
         return -ENOENT;
     }
-    auto el2Key = GetUserElKey(userId, EL2_KEY);
-    if (el2Key == nullptr) {
-        LOGE("userEl2Key_ has not existed");
-        return -ENOENT;
-    }
-    if (!el2Key->DeleteAppkey(keyId)) {
+    if (el4Key->DeleteAppkey(keyId) == false) {
         LOGE("Failed to delete Appkey2");
         return -EFAULT;
     }
