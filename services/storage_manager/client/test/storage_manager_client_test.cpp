@@ -263,6 +263,30 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_UpdateKeyContext_0000,
 }
 
 /**
+ * @tc.number: SUB_STORAGE_Client_manager_UpdateUseAuthWithRecoveryKey_0000
+ * @tc.name: Client_manager_service_UpdateUseAuthWithRecoveryKey_0000
+ * @tc.desc: Test function of UpdateUseAuthWithRecoveryKey interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(StorageManagerClientTest, Client_manager_service_UpdateUseAuthWithRecoveryKey_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerClientTest-begin Client_manager_service_UpdateUseAuthWithRecoveryKey_0000";
+
+    ASSERT_TRUE(storageManagerClient_ != nullptr);
+
+    uint32_t userId = 108;
+    uint64_t secureUid = 0;
+    std::vector<std::vector<uint8_t>> plainText;
+    int32_t ret = storageManagerClient_->UpdateUseAuthWithRecoveryKey({}, {}, secureUid, userId, plainText);
+    EXPECT_TRUE(ret == E_OK) << "UpdateUseAuthWithRecoveryKey error";
+
+    GTEST_LOG_(INFO) << "Client_manager_service_UpdateUseAuthWithRecoveryKey_0000 end";
+}
+
+/**
  * @tc.number: SUB_STORAGE_Client_manager_LockUserScreen_0000
  * @tc.name: Client_manager_service_LockUserScreen_0000
  * @tc.desc: Test function of LockUserScreen interface for SUCCESS.
