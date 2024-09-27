@@ -47,7 +47,8 @@ UserManager::UserManager()
                  {"/data/app/el2/%d/log", MODE_0711, OID_ROOT, OID_ROOT}},
       el1DirVec_{{"/data/service/el1/%d/distributeddata", MODE_0711, OID_DDMS, OID_DDMS},
                  {"/data/service/el1/%d/backup", MODE_02771, OID_BACKUP, OID_BACKUP},
-                 {"/data/service/el1/%d/backup/bundles", MODE_0711, OID_BACKUP, OID_BACKUP}}
+                 {"/data/service/el1/%d/backup/bundles", MODE_0711, OID_BACKUP, OID_BACKUP},
+                 {"/data/service/el1/%d/utdtypes", MODE_0711, OID_SYSTEM, OID_SYSTEM}}
 {
 }
 
