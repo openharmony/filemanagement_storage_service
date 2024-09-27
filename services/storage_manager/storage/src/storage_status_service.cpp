@@ -40,7 +40,7 @@ using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageManager {
 using namespace OHOS::StorageService;
-static constexpr int32_t GET_DATA_SHARE_HELPER_TIMES = 5;
+
 namespace {
 const string MEDIA_TYPE = "media";
 const string FILE_TYPE = "file";
