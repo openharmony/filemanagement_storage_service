@@ -925,7 +925,6 @@ HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys_000, TestSize.Leve
  */
 HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys_001, TestSize.Level1)
 {
-    uint32_t userId = 81;
     const string USER_EL1_DIR = "/data/test/user/el1";
     const string USER_EL2_DIR = "/data/test/user/el2";
 
