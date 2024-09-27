@@ -30,8 +30,9 @@
 #include "utils/storage_radar.h"
 #include "utils/storage_utils.h"
 #ifdef STORAGE_SERVICE_GRAPHIC
-#include "media_library_manager.h"
-#include "media_volume.h"
+#include "datashare_abs_result_set.h"
+#include "datashare_helper.h"
+#include "datashare_predicates.h"
 #endif
 
 using namespace std;
@@ -43,37 +44,94 @@ using namespace OHOS::StorageService;
 namespace {
 const string MEDIA_TYPE = "media";
 const string FILE_TYPE = "file";
+const string MEDIALIBRARY_DATA_URI = "datashare:///media";
+const string MEDIA_QUERYOPRN_QUERYVOLUME = "query_media_volume";
+#ifdef STORAGE_SERVICE_GRAPHIC
+const int MEDIA_TYPE_IMAGE = 1;
+const int MEDIA_TYPE_AUDIO = 3;
+const int MEDIA_TYPE_VIDEO = 2;
+const int32_t GET_DATA_SHARE_HELPER_TIMES = 5;
+#endif
 } // namespace
 
 StorageStatusService::StorageStatusService() {}
 StorageStatusService::~StorageStatusService() {}
+
+#ifdef STORAGE_SERVICE_GRAPHIC
+void GetMediaTypeAndSize(const std::shared_ptr<DataShare::DataShareResultSet> &resultSet, StorageStats &storageStats)
+{
+    if (resultSet == nullptr) {
+        LOGE("StorageStatusService::GetMediaTypeAndSize, input resultSet is nullptr.");
+        return;
+    }
+    int thumbnailType = -1;
+    while (resultSet->GoToNextRow() == E_OK) {
+        int32_t index = 0;
+        int mediatype = 0;
+        int64_t size = 0;
+        if (resultSet->GetColumnIndex("media_type", index) || resultSet->GetInt(index, mediatype)) {
+            LOGE("get media_type column index or int value err.");
+            continue;
+        }
+        if (resultSet->GetColumnIndex("size", index) || resultSet->GetLong(index, size)) {
+            LOGE("get size column index or long value err.");
+            continue;
+        }
+        LOGI("media_type: %{public}d, size: %{public}lld", mediatype, static_cast<long long>(size));
+        if (mediatype == MEDIA_TYPE_IMAGE || mediatype == thumbnailType) {
+            storageStats.image_ += size;
+        } else if (mediatype == MEDIA_TYPE_AUDIO) {
+            storageStats.audio_ = size;
+        } else if (mediatype == MEDIA_TYPE_VIDEO) {
+            storageStats.video_ = size;
+        } else {
+            LOGD("unsupprted media_type: %{public}d", mediatype);
+        }
+    }
+}
+#endif
 
 int32_t GetMediaStorageStats(StorageStats &storageStats)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     LOGI("GetMediaStorageStats start");
 #ifdef STORAGE_SERVICE_GRAPHIC
-    Media::MediaLibraryManager mgr;
-    Media::MediaVolume mediaVol;
     auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (sam == nullptr) {
-        LOGE("StorageStatusService::GetUserStorageStats samgr == nullptr");
+        LOGE("StorageStatusService::GetMediaStorageStats samgr == nullptr");
         return E_SA_IS_NULLPTR;
     }
     auto remoteObj = sam->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
     if (remoteObj == nullptr) {
-        LOGE("StorageStatusService::GetUserStorageStats remoteObj == nullptr");
+        LOGE("StorageStatusService::GetMediaStorageStats remoteObj == nullptr");
         return E_REMOTE_IS_NULLPTR;
     }
-    mgr.InitMediaLibraryManager(remoteObj);
-    if (mgr.QueryTotalSize(mediaVol)) {
-        LOGE("StorageStatusService::GetUserStorageStats an error occured in querying mediaSize");
+    int32_t tryCount = 0;
+    auto dataShareHelper = DataShare::DataShareHelper::Creator(remoteObj, MEDIALIBRARY_DATA_URI);
+    while (dataShareHelper == nullptr && tryCount++ < GET_DATA_SHARE_HELPER_TIMES) {
+        LOGW("dataShareHelper is retrying, attempt %{public}d", tryCount);
+        dataShareHelper = DataShare::DataShareHelper::Creator(remoteObj, MEDIALIBRARY_DATA_URI);
+    }
+    if (dataShareHelper == nullptr) {
+        LOGE("dataShareHelper is null!");
         return E_MEDIALIBRARY_ERROR;
     }
-
-    storageStats.audio_ = mediaVol.GetAudiosSize();
-    storageStats.video_ = mediaVol.GetVideosSize();
-    storageStats.image_ = mediaVol.GetImagesSize();
+    vector<string> columns;
+    Uri uri(MEDIALIBRARY_DATA_URI + "/" + MEDIA_QUERYOPRN_QUERYVOLUME + "/" + MEDIA_QUERYOPRN_QUERYVOLUME);
+    DataShare::DataSharePredicates predicates;
+    auto queryResultSet = dataShareHelper->Query(uri, predicates, columns);
+    if (queryResultSet == nullptr) {
+        LOGE("queryResultSet is null!");
+        return E_MEDIALIBRARY_ERROR;
+    }
+    auto count = 0;
+    auto ret = queryResultSet->GetRowCount(count);
+    if ((ret != E_OK) || (count < 0)) {
+        LOGE("get row count from rdb failed");
+        return E_MEDIALIBRARY_ERROR;
+    }
+    GetMediaTypeAndSize(queryResultSet, storageStats);
+    dataShareHelper->Release();
 #endif
     LOGI("GetMediaStorageStats end");
     return E_OK;
