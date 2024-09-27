@@ -46,10 +46,12 @@ const string MEDIA_TYPE = "media";
 const string FILE_TYPE = "file";
 const string MEDIALIBRARY_DATA_URI = "datashare:///media";
 const string MEDIA_QUERYOPRN_QUERYVOLUME = "query_media_volume";
+#ifdef STORAGE_SERVICE_GRAPHIC
 const int MEDIA_TYPE_IMAGE = 1;
 const int MEDIA_TYPE_AUDIO = 3;
 const int MEDIA_TYPE_VIDEO = 2;
 const int32_t GET_DATA_SHARE_HELPER_TIMES = 5;
+#endif
 } // namespace
 
 StorageStatusService::StorageStatusService() {}
