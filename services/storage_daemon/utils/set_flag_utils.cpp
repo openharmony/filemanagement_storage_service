@@ -18,6 +18,7 @@
 
 #include <fcntl.h>
 #include <filesystem>
+#include <regex>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -34,15 +35,20 @@ namespace StorageService {
 
 void SetFlagUtils::ParseDirPath(const std::string &path)
 {
+    std::regex pattern("/data/service/el1/public/storage_daemon/sd.*|/data/service/el0/storage_daemon/sd.*");
+    if (!std::regex_match(path, pattern)) {
+        LOGE("Invalid file path.");
+        return;
+    }
+    if (!std::filesystem::exists(path)) {
+        LOGE("Invalid file path.");
+        return;
+    }
     if (!StorageDaemon::IsDir(path)) {
         LOGE("Input path is not a directory.");
         return;
     }
     SetDirDelFlags(path);
-    if (!std::filesystem::exists(path)) {
-        LOGE("Invalid file path.");
-        return;
-    }
     std::filesystem::directory_iterator pathList(path);
     for (const auto& resPath : pathList) {
         if (StorageDaemon::IsDir(resPath.path())) {
