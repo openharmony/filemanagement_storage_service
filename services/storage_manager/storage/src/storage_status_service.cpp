@@ -33,7 +33,6 @@
 #include "datashare_abs_result_set.h"
 #include "datashare_helper.h"
 #include "datashare_predicates.h"
-#include "userfile_manager_types.h"
 #endif
 
 using namespace std;
@@ -47,6 +46,10 @@ const string MEDIA_TYPE = "media";
 const string FILE_TYPE = "file";
 const string MEDIALIBRARY_DATA_URI = "datashare:///media";
 const string MEDIA_QUERYOPRN_QUERYVOLUME = "query_media_volume";
+const int MEDIA_TYPE_IMAGE = 1;
+const int MEDIA_TYPE_AUDIO = 3;
+const int MEDIA_TYPE_VIDEO = 2;
+const int32_t GET_DATA_SHARE_HELPER_TIMES = 5;
 } // namespace
 
 StorageStatusService::StorageStatusService() {}
@@ -73,11 +76,11 @@ void GetMediaTypeAndSize(const std::shared_ptr<DataShare::DataShareResultSet> &r
             continue;
         }
         LOGI("media_type: %{public}d, size: %{public}lld", mediatype, static_cast<long long>(size));
-        if (mediatype == Media::MEDIA_TYPE_IMAGE || mediatype == thumbnailType) {
+        if (mediatype == MEDIA_TYPE_IMAGE || mediatype == thumbnailType) {
             storageStats.image_ += size;
-        } else if (mediatype == Media::MEDIA_TYPE_AUDIO) {
+        } else if (mediatype == MEDIA_TYPE_AUDIO) {
             storageStats.audio_ = size;
-        } else if (mediatype == Media::MEDIA_TYPE_VIDEO) {
+        } else if (mediatype == MEDIA_TYPE_VIDEO) {
             storageStats.video_ = size;
         } else {
             LOGD("unsupprted media_type: %{public}d", mediatype);
