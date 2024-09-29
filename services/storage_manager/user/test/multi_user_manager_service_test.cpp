@@ -378,4 +378,32 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_StopUser_0003, testin
     service->RemoveUser(userId, flag);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_StopUser_0003";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_User_manager_service_CompleteAddUser_0000
+ * @tc.name: User_manager_service_CompleteAddUser_0000
+ * @tc.desc: Test function of CompleteAddUser success.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(MultiUserManagerServiceTest, User_manager_service_CompleteAddUser_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-begin User_manager_service_CompleteAddUser_0000";
+    std::shared_ptr<MultiUserManagerService> service = DelayedSingleton<MultiUserManagerService>::GetInstance();
+    int32_t userId = -1;
+    int32_t result;
+    if (service != nullptr) {
+        result = service->CompleteAddUser(userId);
+    }
+    EXPECT_EQ(result, E_USERID_RANGE);
+
+    userId = 100;
+    if (service != nullptr) {
+        result = service->CompleteAddUser(userId);
+    }
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_CompleteAddUser_0000";
+}
 } // namespace

@@ -442,6 +442,29 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateMemoryPara_0
 
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UpdateMemoryPara_001 SUCCESS";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_CompleteAddUser_000
+ * @tc.name: Daemon_communication_CompleteAddUser_000
+ * @tc.desc: Test function of CompleteAddUser interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CompleteAddUser_000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_CompleteAddUser_000 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    int32_t userId = 100;
+    int32_t ret = sdCommunication->CompleteAddUser(userId);
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_CompleteAddUser_000 SUCCESS";
+}
 #ifdef EXTERNAL_STORAGE_MANAGER
 /**
  * @tc.number: SUB_STORAGE_Daemon_communication_Mount_0000
