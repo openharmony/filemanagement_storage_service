@@ -16,6 +16,7 @@
 #include "huks_master.h"
 
 #include <dlfcn.h>
+#include <unistd.h>
 #include <openssl/err.h>
 #include <openssl/rand.h>
 #include <openssl/sha.h>
@@ -26,6 +27,8 @@
 
 namespace OHOS {
 namespace StorageDaemon {
+const uint8_t MAX_RETRY_TIME = 3;
+const uint16_t RETRY_INTERVAL_MS = 50 * 1000;
 HuksMaster::HuksMaster()
 {
     LOGI("enter");
@@ -106,10 +109,26 @@ int HuksMaster::HdiModuleInit()
     }
 
     int ret = halDevice_->HuksHdiModuleInit();
-    if (ret != HKS_SUCCESS) {
-        LOGE("HuksHdiModuleInit failed, ret %{public}d", ret);
+    if (ret == HKS_SUCCESS) {
+        LOGI("HuksHdiModuleInit success, ret %{public}d", ret);
+        return ret;
     }
-    return ret;
+
+    if (ret != HKS_ERROR_RETRYABLE_ERROR) {
+        LOGE("HuksHdiModuleInit failed, ret %{public}d", ret);
+        return ret;
+    }
+    int retryRet = 0;
+    for (int i = 0; i < MAX_RETRY_TIME; ++i) {
+        usleep(RETRY_INTERVAL_MS);
+        retryRet = halDevice_->HuksHdiModuleInit();
+        LOGE("HuksHdiModuleInit has retry %{public}d times, retryRet %{public}d", i, retryRet);
+        if (retryRet == HKS_SUCCESS) {
+            break;
+        }
+    }
+    LOGE("HuksHdiModuleInit end, retryRet %{public}d", retryRet);
+    return retryRet;
 }
 
 int HuksMaster::HdiModuleDestroy()
@@ -125,10 +144,26 @@ int HuksMaster::HdiModuleDestroy()
     }
 
     int ret = halDevice_->HuksHdiModuleDestroy();
-    if (ret != HKS_SUCCESS) {
-        LOGE("HuksHdiModuleDestroy failed, ret %{public}d", ret);
+    if (ret == HKS_SUCCESS) {
+        LOGI("HuksHdiModuleDestroy success, ret %{public}d", ret);
+        return ret;
     }
-    return ret;
+
+    if (ret != HKS_ERROR_RETRYABLE_ERROR) {
+        LOGE("HuksHdiModuleDestroy failed, ret %{public}d", ret);
+        return ret;
+    }
+    int retryRet = 0;
+    for (int i = 0; i < MAX_RETRY_TIME; ++i) {
+        usleep(RETRY_INTERVAL_MS);
+        retryRet = halDevice_->HuksHdiModuleDestroy();
+        LOGE("HuksHdiModuleDestroy has retry %{public}d times, retryRet %{public}d", i, retryRet);
+        if (retryRet == HKS_SUCCESS) {
+            break;
+        }
+    }
+    LOGE("HuksHdiModuleDestroy end, retryRet %{public}d", retryRet);
+    return retryRet;
 }
 
 int HuksMaster::HdiGenerateKey(const HksBlob &keyAlias, const HksParamSet *paramSetIn,
@@ -147,10 +182,26 @@ int HuksMaster::HdiGenerateKey(const HksBlob &keyAlias, const HksParamSet *param
     uint8_t data = 0;
     HksBlob keyIn = {1, &data};
     auto ret = halDevice_->HuksHdiGenerateKey(&keyAlias, paramSetIn, &keyIn, &keyOut);
-    if (ret != HKS_SUCCESS) {
-        LOGE("HuksHdiGenerateKey failed, ret %{public}d", ret);
+    if (ret == HKS_SUCCESS) {
+        LOGI("HuksHdiGenerateKey success, ret %{public}d", ret);
+        return ret;
     }
-    return ret;
+
+    if (ret != HKS_ERROR_RETRYABLE_ERROR) {
+        LOGE("HuksHdiGenerateKey failed, ret %{public}d", ret);
+        return ret;
+    }
+    int retryRet = 0;
+    for (int i = 0; i < MAX_RETRY_TIME; ++i) {
+        usleep(RETRY_INTERVAL_MS);
+        retryRet = halDevice_->HuksHdiGenerateKey(&keyAlias, paramSetIn, &keyIn, &keyOut);
+        LOGE("HuksHdiGenerateKey has retry %{public}d times, retryRet %{public}d", i, retryRet);
+        if (retryRet == HKS_SUCCESS) {
+            break;
+        }
+    }
+    LOGE("HuksHdiGenerateKey end, retryRet %{public}d", retryRet);
+    return retryRet;
 }
 
 int HuksMaster::HdiAccessInit(const HksBlob &key, const HksParamSet *paramSet,
@@ -167,10 +218,26 @@ int HuksMaster::HdiAccessInit(const HksBlob &key, const HksParamSet *paramSet,
     }
 
     auto ret = halDevice_->HuksHdiInit(&key, paramSet, &handle, &token);
-    if (ret != HKS_SUCCESS) {
-        LOGE("HuksHdiInit failed, ret %{public}d", ret);
+    if (ret == HKS_SUCCESS) {
+        LOGI("HuksHdiInit success, ret %{public}d", ret);
+        return ret;
     }
-    return ret;
+
+    if (ret != HKS_ERROR_RETRYABLE_ERROR) {
+        LOGE("HuksHdiInit failed, ret %{public}d", ret);
+        return ret;
+    }
+    int retryRet = 0;
+    for (int i = 0; i < MAX_RETRY_TIME; ++i) {
+        usleep(RETRY_INTERVAL_MS);
+        retryRet = halDevice_->HuksHdiInit(&key, paramSet, &handle, &token);
+        LOGE("HuksHdiInit has retry %{public}d times, retryRet %{public}d", i, retryRet);
+        if (retryRet == HKS_SUCCESS) {
+            break;
+        }
+    }
+    LOGE("HuksHdiInit end, retryRet %{public}d", retryRet);
+    return retryRet;
 }
 
 int HuksMaster::HdiAccessFinish(const HksBlob &handle, const HksParamSet *paramSet,
@@ -187,10 +254,26 @@ int HuksMaster::HdiAccessFinish(const HksBlob &handle, const HksParamSet *paramS
     }
 
     auto ret = halDevice_->HuksHdiFinish(&handle, paramSet, &inData, &outData);
-    if (ret != HKS_SUCCESS) {
-        LOGE("HuksHdiFinish failed, ret %{public}d", ret);
+    if (ret == HKS_SUCCESS) {
+        LOGI("HuksHdiFinish success, ret %{public}d", ret);
+        return ret;
     }
-    return ret;
+
+    if (ret != HKS_ERROR_RETRYABLE_ERROR) {
+        LOGE("HuksHdiFinish failed, ret %{public}d", ret);
+        return ret;
+    }
+    int retryRet = 0;
+    for (int i = 0; i < MAX_RETRY_TIME; ++i) {
+        usleep(RETRY_INTERVAL_MS);
+        retryRet = halDevice_->HuksHdiFinish(&handle, paramSet, &inData, &outData);
+        LOGE("HuksHdiFinish has retry %{public}d times, retryRet %{public}d", i, retryRet);
+        if (retryRet == HKS_SUCCESS) {
+            break;
+        }
+    }
+    LOGE("HuksHdiFinish end, retryRet %{public}d", retryRet);
+    return retryRet;
 }
 
 int HuksMaster::HdiAccessUpgradeKey(const HksBlob &oldKey, const HksParamSet *paramSet, struct HksBlob &newKey)
@@ -206,10 +289,26 @@ int HuksMaster::HdiAccessUpgradeKey(const HksBlob &oldKey, const HksParamSet *pa
     }
 
     auto ret = halDevice_->HuksHdiUpgradeKey(&oldKey, paramSet, &newKey);
-    if (ret != HKS_SUCCESS) {
-        LOGI("HuksHdiUpgradeKey ret %{public}d", ret);
+    if (ret == HKS_SUCCESS) {
+        LOGI("HuksHdiUpgradeKey success, ret %{public}d", ret);
+        return ret;
     }
-    return ret;
+
+    if (ret != HKS_ERROR_RETRYABLE_ERROR) {
+        LOGE("HuksHdiUpgradeKey failed, ret %{public}d", ret);
+        return ret;
+    }
+    int retryRet = 0;
+    for (int i = 0; i < MAX_RETRY_TIME; ++i) {
+        usleep(RETRY_INTERVAL_MS);
+        retryRet = halDevice_->HuksHdiUpgradeKey(&oldKey, paramSet, &newKey);
+        LOGE("HuksHdiUpgradeKey has retry %{public}d times, retryRet %{public}d", i, retryRet);
+        if (retryRet == HKS_SUCCESS) {
+            break;
+        }
+    }
+    LOGE("HuksHdiUpgradeKey end, retryRet %{public}d", retryRet);
+    return retryRet;
 }
 
 KeyBlob HuksMaster::GenerateRandomKey(uint32_t keyLen)

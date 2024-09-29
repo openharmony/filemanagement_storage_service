@@ -436,11 +436,6 @@ void StorageDaemonCommunication::ForceLockUserScreen()
         LOGE("Query active userid failed, ret = %{public}u", ret);
         return;
     }
-    ret = AccountSA::OsAccountManager::SetOsAccountIsVerified(ids[0], false);
-    if (ret != ERR_OK) {
-        LOGE("Set os account IsVerified status failed, ret = %{public}u", ret);
-        return;
-    }
     int reasonFlag = static_cast<int>(ScreenLock::StrongAuthReasonFlags::ACTIVE_REQUEST);
     ret = ScreenLock::ScreenLockManager::GetInstance()->RequestStrongAuth(reasonFlag, ids[0]);
     if (ret != ScreenLock::E_SCREENLOCK_OK) {
