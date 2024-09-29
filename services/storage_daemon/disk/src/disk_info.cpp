@@ -39,7 +39,7 @@ enum class Table {
     GPT,
 };
 
-DiskInfo::DiskInfo(std::string &sysPath, std::string &devPath, dev_t device, int flag)
+DiskInfo::DiskInfo(std::string sysPath, std::string devPath, dev_t device, int flag)
 {
     id_ = StringPrintf("disk-%d-%d", major(device), minor(device));
     sysPath_ = sysPath;
