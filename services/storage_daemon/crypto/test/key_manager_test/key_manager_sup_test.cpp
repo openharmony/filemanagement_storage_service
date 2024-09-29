@@ -149,12 +149,13 @@ HWTEST_F(KeyManagerSupTest, KeyManager_GenerateAppkey_001, TestSize.Level1)
 
     shared_ptr<FscryptKeyV2> elKey = make_shared<FscryptKeyV2>("/data/test");
     KeyManager::GetInstance()->userEl4Key_.erase(user);
-    EXPECT_EQ(KeyManager::GetInstance()->GenerateAppkey(user, 100, keyId), -ENOENT);
 
     string basePath = "/data/app/el2/" + to_string(user);
     string path = basePath + "/base";
+    OHOS::ForceRemoveDirectory(basePath);
+    EXPECT_EQ(KeyManager::GetInstance()->GenerateAppkey(user, 100, keyId), -ENOENT);
+
     EXPECT_TRUE(OHOS::ForceCreateDirectory(path));
-    EXPECT_CALL(*mountManagerMoc_, CheckMountFileByUser(_)).WillOnce(Return(true));
     string keyDir = KeyManager::GetInstance()->GetKeyDirByUserAndType(user, EL4_KEY);
     ASSERT_TRUE(OHOS::ForceCreateDirectory(keyDir));
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
@@ -169,9 +170,6 @@ HWTEST_F(KeyManagerSupTest, KeyManager_GenerateAppkey_001, TestSize.Level1)
     KeyManager::GetInstance()->userEl4Key_[user] = nullptr;
     EXPECT_EQ(KeyManager::GetInstance()->GenerateAppkey(user, 100, keyId), -ENOENT);
 
-    KeyManager::GetInstance()->userEl4Key_.erase(user);
-    EXPECT_CALL(*mountManagerMoc_, CheckMountFileByUser(_)).WillOnce(Return(false));
-    EXPECT_EQ(KeyManager::GetInstance()->GenerateAppkey(user, 100, keyId), -ENOENT);
     EXPECT_TRUE(OHOS::ForceRemoveDirectory(basePath));
     ASSERT_TRUE(OHOS::ForceRemoveDirectory(keyDir));
     if (!existUece) {
