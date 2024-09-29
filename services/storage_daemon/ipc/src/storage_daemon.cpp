@@ -431,8 +431,7 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
 
 void StorageDaemon::SetDeleteFlag4KeyFiles()
 {
-    StorageService::SetFlagUtils::ParseDirPath(DATA_SERVICE_EL0_STORAGE_DAEMON_SD);
-    StorageService::SetFlagUtils::ParseDirPath(DATA_SERVICE_EL1_PUBLIC_STORAGE_DAEMON_SD);
+    StorageService::SetFlagUtils::ParseDirPath2();
 }
 
 int32_t StorageDaemon::GenerateUserKeys(uint32_t userId, uint32_t flags)
