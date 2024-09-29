@@ -23,7 +23,7 @@ namespace StorageService {
 
 class SetFlagUtils {
 public:
-    static void ParseDirPath2();
+    static void ParseDirAllPath();
 private:
     static void ParseDirPath(const std::string &path);
     static void SetDirDelFlags(const std::string &dirpath);
