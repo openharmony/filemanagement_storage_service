@@ -18,7 +18,6 @@
 
 #include <fcntl.h>
 #include <filesystem>
-#include <regex>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <unistd.h>
