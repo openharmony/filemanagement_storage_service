@@ -98,6 +98,7 @@ public:
     void MountSandboxPath(const std::vector<std::string> &srcPaths, const std::vector<std::string> &dstPaths,
                           const std::string &bundleName, const std::string &userId);
     bool CheckMountFileByUser(int32_t userId);
+    bool CloudDirFlag(const std::string &path);
 
 private:
     bool SupportHmdfs();

@@ -985,7 +985,7 @@ int32_t StorageDaemonProxy::SendRequest(uint32_t code, MessageParcel &data, Mess
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
+int32_t StorageDaemonProxy::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
 {
     MessageParcel data;
     MessageParcel reply;
@@ -996,6 +996,9 @@ int32_t StorageDaemonProxy::GetFileEncryptStatus(uint32_t userId, bool &isEncryp
     }
 
     if (!data.WriteUint32(userId)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+    if (!data.WriteBool(needCheckDirMount)) {
         return E_WRITE_PARCEL_ERR;
     }
     int32_t err =

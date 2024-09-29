@@ -352,7 +352,7 @@ int32_t StorageDaemonCommunication::LockUserScreen(uint32_t userId)
     return storageDaemon_->LockUserScreen(userId);
 }
 
-int32_t StorageDaemonCommunication::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
+int32_t StorageDaemonCommunication::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
 {
     LOGI("enter");
     int32_t err = Connect();
@@ -364,7 +364,7 @@ int32_t StorageDaemonCommunication::GetFileEncryptStatus(uint32_t userId, bool &
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->GetFileEncryptStatus(userId, isEncrypted);
+    return storageDaemon_->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
 }
 
 int32_t StorageDaemonCommunication::UnlockUserScreen(uint32_t userId,

@@ -1183,6 +1183,9 @@ bool MountManager::CheckMountFileByUser(int32_t userId)
 {
     for (const DirInfo &dir : virtualDir_) {
         std::string path = StringPrintf(dir.path.c_str(), userId);
+        if (CloudDirFlag(path)) {
+            continue;
+        }
         if (access(path.c_str(), 0) != 0) {
             LOGI("VirtualDir : %{public}s is not exists", path.c_str());
             return false;
@@ -1190,6 +1193,22 @@ bool MountManager::CheckMountFileByUser(int32_t userId)
     }
     LOGI("MountFile is exists");
     return true;
+}
+
+bool MountManager::CloudDirFlag(const std::string &path)
+{
+    if (path.empty()) {
+        return true;
+    }
+    std::regex cloudPattern("\\/mnt\\/data.*cloud");
+    if (std::regex_match(path.c_str(), cloudPattern)) {
+        return true;
+    }
+    std::regex cloudFusePattern("\\/mnt\\/data.*cloud_fuse");
+    if (std::regex_match(path.c_str(), cloudFusePattern)) {
+        return true;
+    }
+    return false;
 }
 } // namespace StorageDaemon
 } // namespace OHOS

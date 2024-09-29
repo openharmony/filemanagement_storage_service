@@ -776,8 +776,9 @@ int32_t StorageDaemonStub::HandleUMountDfsDocs(MessageParcel &data, MessageParce
 int32_t StorageDaemonStub::HandleGetFileEncryptStatus(MessageParcel &data, MessageParcel &reply)
 {
     uint32_t userId = data.ReadUint32();
+    bool needCheckDirMount = data.ReadBool();
     bool isEncrypted = true;
-    int err = GetFileEncryptStatus(userId, isEncrypted);
+    int err = GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }

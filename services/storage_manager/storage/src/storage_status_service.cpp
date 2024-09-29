@@ -127,7 +127,7 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
     bool isCeEncrypt = false;
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int ret = sdCommunication->GetFileEncryptStatus(userId, isCeEncrypt);
+    int ret = sdCommunication->GetFileEncryptStatus(userId, isCeEncrypt, true);
     if (ret != E_OK || isCeEncrypt) {
         LOGE("User %{public}d de has not decrypt.", userId);
         return ret;
