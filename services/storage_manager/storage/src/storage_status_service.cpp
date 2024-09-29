@@ -196,8 +196,14 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
     int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetTotalSize(totalSize);
     if (err != E_OK) {
         LOGE("StorageStatusService::GetUserStorageStats getTotalSize failed");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "GetTotalSize", BizScene::SPACE_STATISTICS, BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS, "EL1", err);
+        RadarParameter parameterRes = {.orgPkg = DEFAULT_ORGPKGNAME,
+                                       .userId = userId,
+                                       .funcName = "GetTotalSize",
+                                       .bizScene = BizScene::SPACE_STATISTICS,
+                                       .bizStage = BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS,
+                                       .keyElxLevel = "EL1",
+                                       .errorCode = err};
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
         return err;
     }
     // appSize
@@ -206,8 +212,14 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
     err = GetAppSize(userId, appSize);
     if (err != E_OK) {
         LOGE("StorageStatusService::GetUserStorageStats getAppSize failed");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "GetAppSize", BizScene::SPACE_STATISTICS, BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS, "EL1", err);
+        RadarParameter parameterRes = {.orgPkg = DEFAULT_ORGPKGNAME,
+                                       .userId = userId,
+                                       .funcName = "GetAppSize",
+                                       .bizScene = BizScene::SPACE_STATISTICS,
+                                       .bizStage = BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS,
+                                       .keyElxLevel = "EL1",
+                                       .errorCode = err};
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
         return err;
     }
 
@@ -218,16 +230,28 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
     err = GetMediaStorageStats(storageStats);
     if (err != E_OK) {
         LOGE("StorageStatusService::GetUserStorageStats getMedia failed");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "GetMediaStorageStats", BizScene::SPACE_STATISTICS, BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS, "EL1", err);
+        RadarParameter parameterRes = {.orgPkg = DEFAULT_ORGPKGNAME,
+                                       .userId = userId,
+                                       .funcName = "GetMediaStorageStats",
+                                       .bizScene = BizScene::SPACE_STATISTICS,
+                                       .bizStage = BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS,
+                                       .keyElxLevel = "EL1",
+                                       .errorCode = err};
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
         return err;
     }
     // fileSize
     err = GetFileStorageStats(userId, storageStats);
     if (err != E_OK) {
         LOGE("StorageStatusService::GetUserStorageStats GetFileStorageStats failed");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "GetFileStorageStats", BizScene::SPACE_STATISTICS, BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS, "EL1", err);
+        RadarParameter parameterRes = {.orgPkg = DEFAULT_ORGPKGNAME,
+                                       .userId = userId,
+                                       .funcName = "GetFileStorageStats",
+                                       .bizScene = BizScene::SPACE_STATISTICS,
+                                       .bizStage = BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS,
+                                       .keyElxLevel = "EL1",
+                                       .errorCode = err};
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
     }
     return err;
 }
@@ -252,8 +276,14 @@ int32_t StorageStatusService::GetCurrentBundleStats(BundleStats &bundleStats)
     int32_t ret = GetBundleStats(pkgName, userId, bundleStats, DEFAULT_APP_INDEX);
     if (ret != E_OK) {
         LOGE("storage status service GetBundleStats failed, please check");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "GetBundleStats", BizScene::SPACE_STATISTICS, BizStage::BIZ_STAGE_GET_BUNDLE_STATS, "EL1", ret);
+        RadarParameter parameterRes = {.orgPkg = DEFAULT_ORGPKGNAME,
+                                       .userId = DEFAULT_USER_ID,
+                                       .funcName = "GetBundleStats",
+                                       .bizScene = BizScene::SPACE_STATISTICS,
+                                       .bizStage = BizStage::BIZ_STAGE_GET_BUNDLE_STATS,
+                                       .keyElxLevel = "EL1",
+                                       .errorCode = ret};
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
     }
     return ret;
 }

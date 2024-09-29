@@ -41,16 +41,28 @@ int32_t StorageTotalStatusService::GetSystemSize(int64_t &systemSize)
     int32_t ret = GetTotalSize(roundSize);
     if (ret != E_OK) {
         LOGE("storage total status service GetTotalSize failed, please check");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "GetTotalSize", BizScene::SPACE_STATISTICS, BizStage::BIZ_STAGE_GET_SYSTEM_SIZE, "EL1", ret);
+        RadarParameter parameterRes = {.orgPkg = DEFAULT_ORGPKGNAME,
+                                       .userId = DEFAULT_USERID,
+                                       .funcName = "GetTotalSize",
+                                       .bizScene = BizScene::SPACE_STATISTICS,
+                                       .bizStage = BizStage::BIZ_STAGE_GET_SYSTEM_SIZE,
+                                       .keyElxLevel = "EL1",
+                                       .errorCode = ret};
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
         return ret;
     }
     int64_t totalSize = 0;
     ret = GetSizeOfPath(PATH_DATA, SizeType::TOTAL, totalSize);
     if (ret != E_OK) {
         LOGE("storage total status service GetSizeOfPath failed, please check");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "GetSizeOfPath", BizScene::SPACE_STATISTICS, BizStage::BIZ_STAGE_GET_SYSTEM_SIZE, "EL1", ret);
+        RadarParameter parameterRes = {.orgPkg = DEFAULT_ORGPKGNAME,
+                                       .userId = DEFAULT_USERID,
+                                       .funcName = "GetSizeOfPath",
+                                       .bizScene = BizScene::SPACE_STATISTICS,
+                                       .bizStage = BizStage::BIZ_STAGE_GET_SYSTEM_SIZE,
+                                       .keyElxLevel = "EL1",
+                                       .errorCode = ret};
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
         return ret;
     }
     systemSize = roundSize - totalSize;
@@ -65,18 +77,28 @@ int32_t StorageTotalStatusService::GetTotalSize(int64_t &totalSize)
     int32_t ret = GetSizeOfPath(PATH_DATA, SizeType::TOTAL, dataSize);
     if (ret != E_OK) {
         LOGE("GetSizeOfPath of data size failed, please check");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult("GetTotalSize GetSizeOfPath for dataSize",
-                                                                        BizScene::SPACE_STATISTICS,
-                                                                        BizStage::BIZ_STAGE_GET_TOTAL_SIZE, "EL1", ret);
+        RadarParameter parameterRes = {.orgPkg = DEFAULT_ORGPKGNAME,
+                                       .userId = DEFAULT_USERID,
+                                       .funcName = "GetTotalSize GetSizeOfPath for dataSize",
+                                       .bizScene = BizScene::SPACE_STATISTICS,
+                                       .bizStage = BizStage::BIZ_STAGE_GET_TOTAL_SIZE,
+                                       .keyElxLevel = "EL1",
+                                       .errorCode = ret};
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
         return ret;
     }
     int64_t rootSize = 0;
     ret = GetSizeOfPath(PATH_ROOT, SizeType::TOTAL, rootSize);
     if (ret != E_OK) {
         LOGE("GetSizeOfPath of root size failed, please check");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult("GetTotalSize GetSizeOfPath for rootSize",
-                                                                        BizScene::SPACE_STATISTICS,
-                                                                        BizStage::BIZ_STAGE_GET_TOTAL_SIZE, "EL1", ret);
+        RadarParameter parameterRes = {.orgPkg = DEFAULT_ORGPKGNAME,
+                                       .userId = DEFAULT_USERID,
+                                       .funcName = "GetTotalSize GetSizeOfPath for rootSize",
+                                       .bizScene = BizScene::SPACE_STATISTICS,
+                                       .bizStage = BizStage::BIZ_STAGE_GET_TOTAL_SIZE,
+                                       .keyElxLevel = "EL1",
+                                       .errorCode = ret};
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
         return ret;
     }
     totalSize = GetRoundSize(dataSize + rootSize);
@@ -89,9 +111,14 @@ int32_t StorageTotalStatusService::GetFreeSize(int64_t &freeSize)
     int32_t ret = GetSizeOfPath(PATH_DATA, SizeType::FREE, freeSize);
     if (ret != E_OK) {
         LOGE("GetFreeSize failed, please check");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult("GetFreeSize",
-                                                                        BizScene::SPACE_STATISTICS,
-                                                                        BizStage::BIZ_STAGE_GET_FREE_SIZE, "EL1", ret);
+        RadarParameter parameterRes = {.orgPkg = DEFAULT_ORGPKGNAME,
+                                       .userId = DEFAULT_USERID,
+                                       .funcName = "GetFreeSize",
+                                       .bizScene = BizScene::SPACE_STATISTICS,
+                                       .bizStage = BizStage::BIZ_STAGE_GET_FREE_SIZE,
+                                       .keyElxLevel = "EL1",
+                                       .errorCode = ret};
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
     }
     return ret;
 }
