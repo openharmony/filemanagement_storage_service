@@ -20,12 +20,12 @@
 
 namespace OHOS {
 namespace StorageService {
-const std::string ORGPKGNAME = "storageService";
+const std::string DEFAULT_ORGPKGNAME = "storageService";
 const std::string ADD_NEW_USER_BEHAVIOR = "ADD_NEW_USER_BEHAVIOR";
 const std::string FILE_STORAGE_MANAGER_FAULT_BEHAVIOR  = "FILE_STORAGE_MANAGER_FAULT";
 const std::string UMOUNT_FAIL_BEHAVIOR = "UMOUNT_FAIL_BEHAVIOR";
 constexpr char STORAGESERVICE_DOAMIN[] = "FILEMANAGEMENT";
-const int32_t USERID = 100;
+const int32_t DEFAULT_USERID = 100;
 enum class BizScene : int32_t {
     STORAGE_START = 0,
     USER_MOUNT_MANAGER,
@@ -67,6 +67,7 @@ enum class BizStage : int32_t {
     BIZ_STAGE_UNLOCK_USER_SCREEN,
     BIZ_STAGE_GET_FILE_ENCRYPT_STATUS,
     BIZ_STAGE_UPDATE_KEY_CONTEXT,
+    BIZ_STAGE_INIT_GLOBAL_KEY,
 
     BIZ_STAGE_GET_TOTAL_SIZE = 31,
     BIZ_STAGE_GET_FREE_SIZE,
@@ -82,6 +83,16 @@ enum class BizStage : int32_t {
     BIZ_STAGE_GET_ALL_VOLUMES,
 };
 
+struct RadarParameter {
+    std::string orgPkg;
+    int32_t userId;
+    std::string funcName;
+    enum BizScene bizScene;
+    enum BizStage bizStage;
+    std::string keyElxLevel;
+    int32_t errorCode;
+};
+
 class StorageRadar {
 public:
     static StorageRadar &GetInstance()
@@ -92,11 +103,15 @@ public:
 
 public:
     bool RecordKillProcessResult(std::string processName, int32_t errcode);
-    bool RecordFuctionResult(std::string func,
-                             enum BizScene bizScene,
-                             enum BizStage bizStage,
-                             std::string keyElxLevel,
-                             int32_t errorCode);
+    bool RecordFuctionResult(const RadarParameter &parameterRes);
+    static void ReportActiveUserKey(const std::string &funcName, uint32_t userId, int ret,
+        const std::string &keyElxLevel);
+    static void ReportGetStorageStatus(const std::string &funcName, uint32_t userId, int ret,
+        const std::string &orgPkg);
+    static void ReportVolumeOperation(const std::string &funcName, int ret);
+    static void ReportInitGlobalKey(const std::string &funcName, uint32_t userId, int ret,
+        const std::string &keyElxLevel);
+    static void ReportUserManager(const std::string &funcName, uint32_t userId, int ret, enum BizStage bizStage);
 
 private:
     StorageRadar() = default;
