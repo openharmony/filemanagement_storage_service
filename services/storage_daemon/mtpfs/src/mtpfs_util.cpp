@@ -18,23 +18,18 @@
 #include <config.h>
 #include <cstdio>
 #include <cstring>
-
-#ifdef HAVE_LIBUSB1
 #include <iomanip>
 #include <sstream>
-#endif // HAVE_LIBUSB1
 
 #include <dirent.h>
 #include <libgen.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#ifdef HAVE_LIBUSB1
 #include <climits>
 #include <libmtp.h>
 #include <libusb.h>
 
-#endif // HAVE_LIBUSB1
 #include "file_utils.h"
 #include "storage_service_log.h"
 
@@ -189,7 +184,6 @@ bool SmtpfsUsbDevPath(const std::string &path, uint8_t *bnum, uint8_t *dnum)
     return true;
 }
 
-#ifdef HAVE_LIBUSB1
 LIBMTP_raw_device_t *smtpfs_raw_device_new_priv(libusb_device *usb_device)
 {
     if (!usb_device) {
@@ -298,7 +292,6 @@ void SmtpfsRawDeviceFree(LIBMTP_raw_device_t *device)
     free(static_cast<void *>(device->device_entry.product));
     free(static_cast<void *>(device));
 }
-#endif // HAVE_LIBUSB1
 
 bool SmtpfsCheckDir(const std::string &path)
 {

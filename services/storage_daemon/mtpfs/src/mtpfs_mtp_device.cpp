@@ -142,19 +142,6 @@ bool MtpFsDevice::ConnectPriv(int devNo, const std::string &devFile)
         return false;
     }
 
-#ifndef HAVE_LIBUSB1
-    if (!devFile.empty()) {
-        devNo = rawDevicesCnt;
-        HandleDevNum(devFile, devNo, rawDevicesCnt, rawDevices);
-
-        if (devNo == rawDevicesCnt) {
-            LOGE("Can not open such device: %{public}s", devFile.c_str());
-            free(static_cast<void *>(rawDevices));
-            return false;
-        }
-    }
-#endif // !HAVE_LIBUSB1
-
     if (devNo < 0 || devNo >= rawDevicesCnt) {
         LOGE("Can not connect to device no %{public}d", devNo + 1);
         free(static_cast<void *>(rawDevices));
@@ -180,7 +167,6 @@ bool MtpFsDevice::Connect(int devNo)
     return ConnectPriv(devNo, std::string());
 }
 
-#ifdef HAVE_LIBUSB1
 bool MtpFsDevice::Connect(const std::string &devFile)
 {
     if (device_) {
@@ -198,12 +184,6 @@ bool MtpFsDevice::Connect(const std::string &devFile)
     SmtpfsRawDeviceFree(rawDevice);
     return rval;
 }
-#else
-bool MtpFsDevice::Connect(const std::string &devFile)
-{
-    return ConnectPriv(-1, devFile);
-}
-#endif
 
 void MtpFsDevice::Disconnect()
 {

@@ -20,9 +20,7 @@
 #include <cstdint>
 #include <string>
 
-#ifdef HAVE_LIBUSB1
 #include <libmtp.h>
-#endif // HAVE_LIBUSB1
 
 class MtpFsUtil {
 public:
@@ -47,10 +45,8 @@ bool SmtpfsRemoveDir(const std::string &dirName);
 bool SmtpfsCheckDir(const std::string &path);
 bool SmtpfsUsbDevPath(const std::string &path, uint8_t *bnum, uint8_t *dnum);
 
-#ifdef HAVE_LIBUSB1
 LIBMTP_raw_device_t *SmtpfsRawDeviceNew(const std::string &path);
 void SmtpfsRawDeviceFree(LIBMTP_raw_device_t *device);
 bool SmtpfsResetDevice(LIBMTP_raw_device_t *device);
-#endif // HAVE_LIBUSB1
 
 #endif // MTPFS_UTIL_H
