@@ -321,7 +321,8 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
     //CRYPTO_FLAG_EL3 create el3,  CRYPTO_FLAG_EL4 create el4
     flags = flags | IStorageDaemon::CRYPTO_FLAG_EL3 | IStorageDaemon::CRYPTO_FLAG_EL4 | IStorageDaemon::CRYPTO_FLAG_EL5;
 #ifdef USER_CRYPTO_MANAGER
-    int32_t ret = KeyManager::GetInstance()->GenerateUserKeys(userId, flags);
+    uint32_t integrity = 0;
+    int32_t ret = KeyManager::GetInstance()->GenerateUserKeys(userId, flags, integrity);
 #ifdef USER_CRYPTO_MIGRATE_KEY
     if (ret == -EEXIST) {
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
@@ -329,6 +330,11 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
         AuditLog storageAuditLog = { false, "FAILED TO GenerateUserKeys", "ADD", "GenerateUserKeys", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
         return RestoreUserKey(userId, flags);
+    }
+
+    if (ret == -FILE_INTEGRITY_STATUS && integrity != 0) {
+        LOGI("user %{public}d el is not integrity, create start", userId);
+        return GenerateIntegrityDirs(userId, integrity);
     }
 #endif
     if (ret != E_OK) {
@@ -342,6 +348,33 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
 #endif
 
     return UserManager::GetInstance()->PrepareUserDirs(userId, flags);
+}
+
+int32_t StorageDaemon::GenerateIntegrityDirs(int32_t userId, uint32_t integrity)
+{
+    std::vector<KeyType> keyTypes = {EL1_KEY, EL2_KEY, EL3_KEY, EL4_KEY, EL5_KEY};
+    int32_t ret = E_OK;
+    for (auto type : keyTypes) {
+        uint32_t flag_type = 0;
+        int32_t errNo = E_OK;
+        LOGI(" GenerateIntegrityDirs dir,KeyType %{public}u", type)；
+        errNo = GetCryptoFlag(type, flag_type);
+        if (errNo == E_OK && (flag_type & integrity) > 0) {
+            ret = KeyManager::GetInstance()->GenerateUserKeyByType(userId, type, {}, {});
+            if (ret != E_OK) {
+                LOGE("upgrade scene:generate user key fail, userId %{public}u, KeyType %{public}u", userId, type);
+                return ret;
+            }
+            LOGI("try to destory dir first, user %{public}u, flag %{public}u", userId, flag_type);
+            (void)UserManager::GetInstance()->DestroyUserDirs(userId, flag_type);
+            ret = UserManager::GetInstance()->PrepareUserDirs(userId, flag_type);
+            if (ret != E_OK) {
+                LOGE("upgrade scene:prepare user dirs fail, userId %{public}u, flag %{public}u", userId, flag_type);
+                return ret;
+            }
+        }
+    }
+    return ret;
 }
 
 int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
@@ -490,7 +523,8 @@ void StorageDaemon::SetDeleteFlag4KeyFiles()
 int32_t StorageDaemon::GenerateUserKeys(uint32_t userId, uint32_t flags)
 {
 #ifdef USER_CRYPTO_MANAGER
-    int32_t ret = KeyManager::GetInstance()->GenerateUserKeys(userId, flags);
+    uint32_t integrity = 0;
+    int32_t ret = KeyManager::GetInstance()->GenerateUserKeys(userId, flags, integrity);
     if (ret != E_OK) {
         LOGE("GenerateUserKeys failed, please check");
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(

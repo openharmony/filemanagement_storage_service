@@ -1582,13 +1582,14 @@ HWTEST_F(KeyManagerTest, KeyManager_GenerateUserKeys_001, TestSize.Level1)
     GTEST_LOG_(INFO) << "KeyManager_GenerateUserKeys_0100 start";
     uint32_t userId = 124;
     uint32_t flags = 1;
+    uint32_t integrity = 0;
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false));
-    auto ret = KeyManager::GetInstance()->GenerateUserKeys(userId, flags);
+    auto ret = KeyManager::GetInstance()->GenerateUserKeys(userId, flags, integrity);
     EXPECT_EQ(ret, 0);
 
     flags = 0;
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false));
-    ret = KeyManager::GetInstance()->GenerateUserKeys(userId, flags);
+    ret = KeyManager::GetInstance()->GenerateUserKeys(userId, flags, integrity);
     EXPECT_EQ(ret, 0);
     GTEST_LOG_(INFO) << "KeyManager_GenerateUserKeys_0100 end";
 }

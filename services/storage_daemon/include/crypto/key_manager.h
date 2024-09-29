@@ -39,6 +39,11 @@ const std::string USER_EL3_DIR = FSCRYPT_EL_DIR + "/el3";
 const std::string USER_EL4_DIR = FSCRYPT_EL_DIR + "/el4";
 const std::string USER_EL5_DIR = FSCRYPT_EL_DIR + "/el5";
 const std::string UECE_DIR = "data/app/el5";
+const std::string FSCRYPT_VERSION_DIR = "/fsctypt_version";
+const std::string ENCRYPT_VERSION_DIR = "/latest/encrypted";
+const std::string NEED_UPDATE_DIR = "/latest/need_update";
+const std::string SEC_DISCARD_DIR = "/latest/sec_discard";
+const std::string SHIELD_DIR = "/latest/shield";
 
 class KeyManager {
 public:
@@ -49,7 +54,7 @@ public:
     }
     int InitGlobalDeviceKey(void);
     int InitGlobalUserKeys(void);
-    int GenerateUserKeys(unsigned int user, uint32_t flags);
+    int GenerateUserKeys(unsigned int user, uint32_t flags, uint32_t &integrity);
     int DeleteUserKeys(unsigned int user);
 
 #ifdef USER_CRYPTO_MIGRATE_KEY
@@ -122,7 +127,7 @@ private:
     void SaveUserElKey(unsigned int user, KeyType type, std::shared_ptr<BaseKey> elKey);
     bool IsNeedClearKeyFile(std::string file);
     void ProcUpgradeKey(const std::vector<FileList> &dirInfo);
-    int GenerateElxAndInstallUserKey(unsigned int user);
+    int GenerateElxAndInstallUserKey(unsigned int user, uint32_t &integrity);
     int ActiveUeceUserKey(unsigned int user,
                           const std::vector<uint8_t> &token,
                           const std::vector<uint8_t> &secret, std::shared_ptr<BaseKey> elKey);
@@ -138,7 +143,7 @@ private:
     bool UnlockEceSece(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret, int &ret);
     bool UnlockUece(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret, int &ret);
     void CheckAndClearTokenInfo(uint32_t user);
-
+    int CheckSinglDirectoryIntegrity(std::string elXRootPath, uint32_t type, std::string user_dir, unsigned int user);
 #ifdef EL5_FILEKEY_MANAGER
     int GenerateAndLoadAppKeyInfo(uint32_t userId, const std::vector<std::pair<int, std::string>> &keyInfo);
 #endif
