@@ -33,7 +33,9 @@ namespace StorageService {
 #define HMFS_IOCTL_HW_SET_FLAGS _IOR(0XF5, 71, unsigned int)
 const std::string PATH_EL0 = "/data/service/el0/storage_daemon/sd";
 const std::string PATH_EL1 = "/data/service/el1/public/storage_daemon/sd";
-void SetFlagUtils::ParseDirPath2(){
+
+void SetFlagUtils::ParseDirPath2()
+{
     ParseDirPath(PATH_EL0);
     ParseDirPath(PATH_EL1);
 }
