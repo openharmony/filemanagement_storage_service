@@ -305,7 +305,7 @@ int32_t StorageDaemon::RestoreUserKey(int32_t userId, uint32_t flags)
     }
 
     std::vector<KeyType> keyTypes = {EL1_KEY, EL2_KEY, EL3_KEY, EL4_KEY, EL5_KEY};
-    for (auto type : keyTypes) {
+    for (KeyType type : keyTypes) {
         auto ret = RestoreOneUserKey(userId, type);
         if (ret != E_OK) {
             return ret;
