@@ -161,7 +161,7 @@ char *Acl::Serialize(size_t &bufSize)
 
 int Acl::DeSerialize(const char *p, size_t size)
 {
-    if (p == nullptr || size > BUF_MAX_SIZE || size < sizeof(AclXattrHeader)) {
+    if (size > BUF_MAX_SIZE || size < sizeof(AclXattrHeader)) {
         errno = EINVAL;
         return -1;
     }

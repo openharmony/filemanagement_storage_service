@@ -196,10 +196,6 @@ int32_t DiskManager::HandlePartition(std::string diskId)
     int32_t ret = E_NON_EXIST;
 
     for (auto i = disk_.begin(); i != disk_.end(); i++) {
-        if (*i == nullptr) {
-            continue;
-        }
-
         if ((*i)->GetId() == diskId) {
             ret = (*i)->Partition();
             break;
