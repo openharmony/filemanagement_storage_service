@@ -1011,10 +1011,10 @@ int32_t StorageDaemon::UMountDfsDocs(int32_t userId, const std::string &relative
     return MountManager::GetInstance()->UMountDfsDocs(userId, relativePath, networkId, deviceId);
 }
 
-int32_t StorageDaemon::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
+int32_t StorageDaemon::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
 {
 #ifdef USER_CRYPTO_MANAGER
-    int32_t ret = KeyManager::GetInstance()->GetFileEncryptStatus(userId, isEncrypted);
+    int32_t ret = KeyManager::GetInstance()->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
     if (ret != E_OK) {
         LOGE("GetFileEncryptStatus failed, please check");
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(

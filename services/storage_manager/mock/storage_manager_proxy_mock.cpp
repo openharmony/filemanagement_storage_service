@@ -300,7 +300,7 @@ int32_t StorageManagerProxy::UMountDfsDocs(int32_t userId, const std::string &re
     return E_OK;
 }
 
-int32_t StorageManagerProxy::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
+int32_t StorageManagerProxy::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
 {
     return E_OK;
 }

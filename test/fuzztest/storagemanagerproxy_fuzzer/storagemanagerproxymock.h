@@ -301,7 +301,7 @@ public:
     {
         return E_OK;
     }
-    int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted) override
+    int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false) override
     {
         return E_OK;
     }

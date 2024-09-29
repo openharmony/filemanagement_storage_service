@@ -66,7 +66,7 @@ public:
         const std::string &networkId, const std::string &deviceId);
     static int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId);
-    static int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted);
+    static int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false);
     static int32_t CreateRecoverKey(uint32_t userId,
                                     uint32_t userType,
                                     const std::vector<uint8_t> &token,

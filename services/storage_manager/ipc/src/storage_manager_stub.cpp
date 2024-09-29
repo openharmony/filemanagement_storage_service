@@ -915,7 +915,8 @@ int32_t StorageManagerStub::HandleGetFileEncryptStatus(MessageParcel &data, Mess
     }
     bool isEncrypted = true;
     uint32_t userId = data.ReadUint32();
-    int32_t err = GetFileEncryptStatus(userId, isEncrypted);
+    bool needCheckDirMount = data.ReadBool();
+    int32_t err = GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
     if (!reply.WriteInt32(err)) {
         LOGE("Write reply error code failed");
         return E_WRITE_REPLY_ERR;

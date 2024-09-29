@@ -128,7 +128,7 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user, KeyType type,
     return E_OK;
 }
 
-int KeyManager::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
+int KeyManager::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
 {
     return E_OK;
 }

@@ -91,7 +91,7 @@ public:
     virtual int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus) = 0;
     virtual int32_t GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId) = 0;
     virtual int32_t DeleteAppkey(const std::string keyId) = 0;
-    virtual int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted) = 0;
+    virtual int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false) = 0;
     virtual int32_t CreateRecoverKey(uint32_t userId,
                                      uint32_t userType,
                                      const std::vector<uint8_t> &token,

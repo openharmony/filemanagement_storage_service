@@ -231,7 +231,7 @@ int32_t StorageDaemonProxy::SendRequest(uint32_t code, MessageParcel &data, Mess
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
+int32_t StorageDaemonProxy::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
 {
     return E_OK;
 }

@@ -504,7 +504,7 @@ int32_t StorageDaemonClient::FscryptEnable(const std::string &fscryptOptions)
     return 0;
 }
 
-int32_t StorageDaemonClient::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
+int32_t StorageDaemonClient::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
 {
     if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
         LOGE("Storage service flag check failed!");
@@ -517,7 +517,7 @@ int32_t StorageDaemonClient::GetFileEncryptStatus(uint32_t userId, bool &isEncry
         return -EAGAIN;
     }
 
-    return client->GetFileEncryptStatus(userId, isEncrypted);
+    return client->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
 }
 } // namespace StorageDaemon
 } // namespace OHOS

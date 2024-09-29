@@ -171,7 +171,7 @@ int32_t StorageManagerClient::UnlockUserScreen(uint32_t userId,
     return client->UnlockUserScreen(userId, token, secret);
 }
 
-int32_t StorageManagerClient::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
+int32_t StorageManagerClient::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
 {
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
@@ -179,7 +179,7 @@ int32_t StorageManagerClient::GetFileEncryptStatus(uint32_t userId, bool &isEncr
         return -EFAULT;
     }
 
-    return client->GetFileEncryptStatus(userId, isEncrypted);
+    return client->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
 }
 
 int32_t StorageManagerClient::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)

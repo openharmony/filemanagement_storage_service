@@ -211,7 +211,7 @@ static int32_t UnlockUserScreen(const std::vector<std::string> &args)
 
 int32_t GetFileEncryptStatus(const std::vector<std::string> &args)
 {
-    if (args.size() < ARG_CNT_4) {
+    if (args.size() < ARG_CNT_5) {
         LOGE("Parameter nums is less than 4, please retry");
         return -EINVAL;
     }
@@ -221,8 +221,14 @@ int32_t GetFileEncryptStatus(const std::vector<std::string> &args)
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }
+    uint32_t judge;
+    if (OHOS::StorageDaemon::StringToUint32(args[INDEX_4], judge) == false) {
+        LOGE("Parameter input error, please retry");
+        return -EINVAL;
+    }
     bool isEncrypted = true;
-    return OHOS::StorageDaemon::StorageDaemonClient::GetFileEncryptStatus(userId, isEncrypted);
+    bool judgeFlag = judge != 0;
+    return OHOS::StorageDaemon::StorageDaemonClient::GetFileEncryptStatus(userId, isEncrypted, judgeFlag);
 }
 
 static int32_t EnableFscrypt(const std::vector<std::string> &args)
