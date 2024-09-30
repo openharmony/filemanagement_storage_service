@@ -299,6 +299,18 @@ bool HandleUpdateKeyContextFuzzTest(const uint8_t *data, size_t size)
     return true;
 }
 
+bool HandleDeleteAppkeyFuzzTest(const uint8_t *data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
+    datas.WriteBuffer(data, size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageDaemon->HandleDeleteAppkey(datas, reply);
+    return true;
+}
+
 bool UserManagerFuzzTest(const uint8_t *data, size_t size)
 {
     if ((data == nullptr) || (size < sizeof(int32_t))) {
@@ -354,5 +366,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     OHOS::HandleActiveUserKeyFuzzTest(data, size);
     OHOS::HandleInactiveUserKeyFuzzTest(data, size);
     OHOS::HandleUpdateKeyContextFuzzTest(data, size);
+    OHOS::HandleDeleteAppkeyFuzzTest(data, size);
     return 0;
 }
