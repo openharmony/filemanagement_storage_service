@@ -887,7 +887,8 @@ HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys, TestSize.Level1)
 
     OHOS::ForceRemoveDirectory(USER_KEY_EL1_DIR);
     OHOS::ForceRemoveDirectory(USER_KEY_EL2_DIR);
-    EXPECT_EQ(-ENOENT, KeyManager::GetInstance()->GenerateUserKeys(userId, 0)); // no user_el1_dir
+    uint32_t integrity = 0;
+    EXPECT_EQ(-ENOENT, KeyManager::GetInstance()->GenerateUserKeys(userId, 0, integrity)); // no user_el1_dir
 
     KeyManager::GetInstance()->InitGlobalDeviceKey();
     KeyManager::GetInstance()->InitGlobalUserKeys();
@@ -898,8 +899,8 @@ HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys, TestSize.Level1)
     KeyManager::GetInstance()->UpdateUserAuth(userId, userTokenSecret);
     KeyManager::GetInstance()->InActiveUserKey(userId);                      // may fail on some platforms
 #else
-    EXPECT_EQ(0, KeyManager::GetInstance()->GenerateUserKeys(userId, 0));
-    EXPECT_EQ(-EEXIST, KeyManager::GetInstance()->GenerateUserKeys(userId, 0)); // key existed
+    EXPECT_EQ(0, KeyManager::GetInstance()->GenerateUserKeys(userId, 0, integrity));
+    EXPECT_EQ(-EEXIST, KeyManager::GetInstance()->GenerateUserKeys(userId, 0, integrity)); // key existed
     EXPECT_EQ(0, KeyManager::GetInstance()->SetDirectoryElPolicy(userId, EL1_KEY, {{userId, USER_EL1_DIR}}));
     EXPECT_EQ(0, KeyManager::GetInstance()->SetDirectoryElPolicy(userId, EL2_KEY, {{userId, USER_EL2_DIR}}));
     EXPECT_EQ(0, KeyManager::GetInstance()->UpdateUserAuth(userId, userTokenSecretNull));

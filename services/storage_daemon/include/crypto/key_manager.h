@@ -144,6 +144,7 @@ private:
     bool UnlockUece(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret, int &ret);
     void CheckAndClearTokenInfo(uint32_t user);
     int CheckSinglDirectoryIntegrity(std::string elXRootPath, uint32_t type, std::string user_dir, unsigned int user);
+    int verifyIntegrity(uint32_t integrity, unsigned int user);
 #ifdef EL5_FILEKEY_MANAGER
     int GenerateAndLoadAppKeyInfo(uint32_t userId, const std::vector<std::pair<int, std::string>> &keyInfo);
 #endif

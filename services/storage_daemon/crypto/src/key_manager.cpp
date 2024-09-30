@@ -511,16 +511,8 @@ int KeyManager::GenerateElxAndInstallUserKey(unsigned int user, uint32_t &integr
     std::string el5Path = USER_EL5_DIR + "/" + std::to_string(user);
     if (IsDir(el1Path) || IsDir(el2Path) || IsDir(el3Path) || IsDir(el4Path) || IsDir(el5Path)) {
         integrity = CheckSinglDirectoryIntegrity(el1Path, IStorageDaemon::CRYPTO_FLAG_EL1, USER_EL1_DIR, user) |
-                    CheckSinglDirectoryIntegrity(el2Path, IStorageDaemon::CRYPTO_FLAG_EL2, USER_EL2_DIR, user) |
-                    CheckSinglDirectoryIntegrity(el3Path, IStorageDaemon::CRYPTO_FLAG_EL3, USER_EL3_DIR, user) |
-                    CheckSinglDirectoryIntegrity(el4Path, IStorageDaemon::CRYPTO_FLAG_EL4, USER_EL4_DIR, user) |
-                    CheckSinglDirectoryIntegrity(el5Path, IStorageDaemon::CRYPTO_FLAG_EL5, USER_EL5_DIR, user);
-        if (integrity != 0) {
-            LOGE("user %{public}d el is not integrity. create error", user);
-            return -FILE_INTEGRITY_STATUS;
-        }
-        LOGE("user %{public}d el key have existed, create error", user);
-        return -EEXIST;
+                    CheckSinglDirectoryIntegrity(el2Path, IStorageDaemon::CRYPTO_FLAG_EL2, USER_EL2_DIR, user);
+        return verifyIntegrity(integrity, user);
     }
     int ret = GenerateAndInstallUserKey(user, el1Path, NULL_KEY_AUTH, EL1_KEY);
     if (ret) {
@@ -556,7 +548,19 @@ int KeyManager::GenerateElxAndInstallUserKey(unsigned int user, uint32_t &integr
     return ret;
 }
 
-int KeyManager::CheckSinglDirectoryIntegrity(std::string elXRootPath, uint32_t type, std::string user_dir, unsigned int user)
+int KeyManager::verifyIntegrity(uint32_t integrity, unsigned int user) {
+    if (integrity != 0) {
+        LOGE("user %{public}d el is not integrity. create error", user);
+        return -FILE_INTEGRITY_STATUS;
+    }
+    LOGE("user %{public}d el key have existed, create error", user);
+    return -EEXIST;
+}
+
+int KeyManager::CheckSinglDirectoryIntegrity(std::string elXRootPath,
+                                             uint32_t type,
+                                             std::string user_dir,
+                                             unsigned int user)
 {
     std::string fsctryptVersionPath = elXRootPath + FSCRYPT_VERSION_DIR;
     std::string encryptedPath = elXRootPath + ENCRYPT_VERSION_DIR;

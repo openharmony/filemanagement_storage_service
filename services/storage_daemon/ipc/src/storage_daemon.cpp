@@ -352,12 +352,13 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
 
 int32_t StorageDaemon::GenerateIntegrityDirs(int32_t userId, uint32_t integrity)
 {
-    std::vector<KeyType> keyTypes = {EL1_KEY, EL2_KEY, EL3_KEY, EL4_KEY, EL5_KEY};
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    std::vector<KeyType> keyTypes = {EL1_KEY, EL2_KEY};
     int32_t ret = E_OK;
     for (auto type : keyTypes) {
         uint32_t flag_type = 0;
         int32_t errNo = E_OK;
-        LOGI(" GenerateIntegrityDirs dir,KeyType %{public}u", type)；
+        LOGI(" GenerateIntegrityDirs dir,KeyType %{public}u", type);
         errNo = GetCryptoFlag(type, flag_type);
         if (errNo == E_OK && (flag_type & integrity) > 0) {
             ret = KeyManager::GetInstance()->GenerateUserKeyByType(userId, type, {}, {});
@@ -375,6 +376,9 @@ int32_t StorageDaemon::GenerateIntegrityDirs(int32_t userId, uint32_t integrity)
         }
     }
     return ret;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)

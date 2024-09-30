@@ -173,7 +173,8 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirs_003, T
 
     int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1 | IStorageDaemon::CRYPTO_FLAG_EL2 |
                     IStorageDaemon::CRYPTO_FLAG_EL3 | IStorageDaemon::CRYPTO_FLAG_EL4;
-    auto ret = KeyManager::GetInstance()->GenerateUserKeys(StorageTest::USER_ID5, flags);
+    uint32_t integrity = 0;
+    auto ret = KeyManager::GetInstance()->GenerateUserKeys(StorageTest::USER_ID5, flags, integrity);
     EXPECT_EQ(ret, E_OK);
 
     ret = userManager->PrepareUserDirs(StorageTest::USER_ID5, flags);
@@ -219,7 +220,8 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StartUser_001, TestSiz
     userManager->StopUser(StorageTest::USER_ID3);
 
     int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1 | IStorageDaemon::CRYPTO_FLAG_EL2;
-    auto ret = KeyManager::GetInstance()->GenerateUserKeys(StorageTest::USER_ID3, flags);
+    uint32_t integrity = 0;
+    auto ret = KeyManager::GetInstance()->GenerateUserKeys(StorageTest::USER_ID3, flags, integrity);
     EXPECT_EQ(ret, E_OK);
     ret = userManager->PrepareUserDirs(StorageTest::USER_ID3, flags);
     EXPECT_TRUE(ret == E_OK) << "create user dirs error";
@@ -264,7 +266,8 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_DestroyUserDirs_001, T
     ASSERT_TRUE(userManager != nullptr);
 
     int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1 | IStorageDaemon::CRYPTO_FLAG_EL2;
-    auto ret = KeyManager::GetInstance()->GenerateUserKeys(StorageTest::USER_ID4, flags);
+    uint32_t integrity = 0;
+    auto ret = KeyManager::GetInstance()->GenerateUserKeys(StorageTest::USER_ID4, flags, integrity);
     EXPECT_EQ(ret, E_OK);
     ret = userManager->PrepareUserDirs(StorageTest::USER_ID4, flags);
     EXPECT_TRUE(ret == E_OK);
@@ -308,7 +311,8 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StopUser_002, TestSize
     ASSERT_TRUE(userManager != nullptr);
 
     int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1 | IStorageDaemon::CRYPTO_FLAG_EL2;
-    auto ret = KeyManager::GetInstance()->GenerateUserKeys(StorageTest::USER_ID4, flags);
+    uint32_t integrity = 0;
+    auto ret = KeyManager::GetInstance()->GenerateUserKeys(StorageTest::USER_ID4, flags, integrity);
     EXPECT_EQ(ret, E_OK);
     ret = userManager->PrepareUserDirs(StorageTest::USER_ID4, flags);
     EXPECT_TRUE(ret == E_OK) << "create user dirs error";
@@ -335,7 +339,8 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StopUser_003, TestSize
     ASSERT_TRUE(userManager != nullptr);
 
     int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL2;
-    auto ret = KeyManager::GetInstance()->GenerateUserKeys(StorageTest::USER_ID3, flags);
+    uint32_t integrity = 0;
+    auto ret = KeyManager::GetInstance()->GenerateUserKeys(StorageTest::USER_ID3, flags, integrity);
     EXPECT_EQ(ret, E_OK);
     ret = userManager->PrepareUserDirs(StorageTest::USER_ID3, flags);
     EXPECT_TRUE(ret == E_OK) << "create user dirs error";
