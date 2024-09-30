@@ -451,7 +451,12 @@ bool FscryptKeyV1::LockUece(bool &isFbeSupport)
 
 bool FscryptKeyV1::UninstallKeyToKeyring()
 {
+    if (keyInfo_.keyDesc.IsEmpty() && !LoadKeyBlob(keyInfo_.keyDesc, dir_ + PATH_KEYDESC)) {
+        LOGE("Load keyDesc failed !");
+        return false;
+    }
     if (keyInfo_.keyDesc.IsEmpty()) {
+        DropCachesIfNeed();
         LOGE("keyDesc is null, key not installed?");
         return false;
     }

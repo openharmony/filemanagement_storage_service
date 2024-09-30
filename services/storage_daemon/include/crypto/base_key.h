@@ -83,6 +83,7 @@ public:
     
 protected:
     static bool SaveKeyBlob(const KeyBlob &blob, const std::string &path);
+    static bool LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size = 0);
     std::string dir_ {};
 
 private:
@@ -101,7 +102,6 @@ private:
     bool DoUpdateRestore(const UserAuth &auth, const std::string &keyPath);
     static bool GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size);
     static bool GenerateKeyBlob(KeyBlob &blob, const uint32_t size);
-    static bool LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size);
     bool EncryptDe(const UserAuth &auth, const std::string &path);
     bool EncryptEceSece(const UserAuth &auth, const uint32_t keyType, KeyContext &keyCtx);
     bool Decrypt(const UserAuth &auth);
