@@ -31,9 +31,21 @@ namespace StorageService {
 #define HMFS_MONITOR_FL 0x00000002
 #define HMFS_IOCTL_HW_GET_FLAGS _IOR(0XF5, 70, unsigned int)
 #define HMFS_IOCTL_HW_SET_FLAGS _IOR(0XF5, 71, unsigned int)
+const std::string PATH_EL0 = "/data/service/el0/storage_daemon/sd";
+const std::string PATH_EL1 = "/data/service/el1/public/storage_daemon/sd";
+
+void SetFlagUtils::ParseDirAllPath()
+{
+    ParseDirPath(PATH_EL0);
+    ParseDirPath(PATH_EL1);
+}
 
 void SetFlagUtils::ParseDirPath(const std::string &path)
 {
+    if (!std::filesystem::exists(path)) {
+        LOGE("Invalid file path.");
+        return;
+    }
     if (!StorageDaemon::IsDir(path)) {
         LOGE("Input path is not a directory.");
         return;
