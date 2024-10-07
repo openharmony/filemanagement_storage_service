@@ -108,11 +108,8 @@ const string SHARE_PATH = "/data/service/el1/public/storage_daemon/share/public"
 static constexpr int MODE_0711 = 0711;
 static constexpr int MODE_0771 = 0771;
 static constexpr int MODE_02771 = 02771;
-MountManager::MountManager()
-    : hmdfsDirVec_(InitHmdfsDirVec()),
-      virtualDir_(InitVirtualDir()),
-      systemServiceDir_(InitSystemServiceDir()),
-      fileManagerDir_(InitFileManagerDir())
+MountManager::MountManager() : hmdfsDirVec_(InitHmdfsDirVec()), virtualDir_(InitVirtualDir()),
+    systemServiceDir_(InitSystemServiceDir()), fileManagerDir_(InitFileManagerDir())
 {
 }
 
