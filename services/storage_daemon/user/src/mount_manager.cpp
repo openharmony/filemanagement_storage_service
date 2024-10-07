@@ -27,6 +27,7 @@
 #include <filesystem>
 #include <cstdio>
 #include "hisysevent.h"
+#include "crypto/key_manager.h"
 #include "utils/storage_radar.h"
 #include "ipc/istorage_daemon.h"
 #include "parameter.h"
@@ -949,7 +950,12 @@ static void ClearRedundantResources(int32_t userId)
 
 int32_t MountManager::MountByUser(int32_t userId)
 {
-    int ret = E_OK;
+    bool isCeEncrypt = false;
+    int ret = KeyManager::GetInstance()->GetFileEncryptStatus(userId, isCeEncrypt);
+    if (ret != E_OK || isCeEncrypt) {
+        LOGE("User %{public}d de has not decrypt.", userId);
+        return E_KEY_NOT_ACTIVED;
+    }
     // The Documnets and Download directories are managed by the File access framework,
     // and the UID GID is changed to filemanager
     std::thread thread([userId]() { ClearRedundantResources(userId); });
