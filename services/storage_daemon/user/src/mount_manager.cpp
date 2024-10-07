@@ -262,7 +262,7 @@ int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath, bool 
         LOGI("path has mounted, %{public}s", dst.c_str());
         return E_OK;
     }
-    int ret = Mount(mountSrcPath, dst, "hmdfs",hmdfsMntArgs.GetFlags(), hmdfsMntArgs.OptionsToString().c_str());
+    int ret = Mount(mountSrcPath, dst, "hmdfs", hmdfsMntArgs.GetFlags(), hmdfsMntArgs.OptionsToString().c_str());
     if (ret != 0 && errno != EEXIST && errno != EBUSY) {
         LOGE("failed to mount hmdfs, err %{public}d", errno);
         return E_MOUNT;
@@ -463,11 +463,6 @@ bool MountManager::CheckSymlink(const std::string &path,
 
 int32_t MountManager::CloudMount(int32_t userId, const string& path)
 {
-    std::string tmpPath = path;
-    if (IsPathMounted(tmpPath)) {
-        LOGI("path has mounted, %{public}s", path.c_str());
-        return E_OK;
-    }
     LOGI("cloud mount start");
 #ifdef DFS_SERVICE
     string opt;
@@ -520,13 +515,31 @@ int32_t MountManager::CloudMount(int32_t userId, const string& path)
 int32_t MountManager::CloudTwiceMount(int32_t userId)
 {
     LOGI("mount cloud twice start");
+    int32_t ret = E_OK;
 #ifdef DFS_SERVICE
     Utils::MountArgument cloudMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
-    const string cloudPath = cloudMntArgs.GetFullCloud();
-    const string cloudMediaPath = cloudMntArgs.GetFullMediaCloud();
-    return (CloudMount(userId, cloudPath) | CloudMount(userId, cloudMediaPath));
+    string cloudPath = cloudMntArgs.GetFullCloud();
+    string cloudMediaPath = cloudMntArgs.GetFullMediaCloud();
+    int32_t mountRet = E_OK;
+    if (IsPathMounted(cloudPath)) {
+        LOGI("path has mounted, %{public}s", cloudPath.c_str());
+    } else {
+        mountRet = CloudMount(userId, cloudPath);
+        if (mountRet != E_OK) {
+            ret = mountRet;
+        }
+    }
+    if (IsPathMounted(cloudPath)) {
+        LOGI("path has mounted, %{public}s", cloudPath.c_str());
+    } else {
+        mountRet = CloudMount(userId, cloudMediaPath);
+        if (mountRet != E_OK) {
+            ret = mountRet;
+        }
+    }
+    return ret;
 #else
-    return E_OK;
+    return ret;
 #endif
 }
 
