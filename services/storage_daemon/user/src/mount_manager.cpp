@@ -987,6 +987,7 @@ int32_t MountManager::MountByUser(int32_t userId)
         LOGE("create system service dir error");
         return E_PREPARE_DIR;
     }
+    LOGI("MountByUser success, userId is %{public}d.", userId);
     return E_OK;
 }
 
