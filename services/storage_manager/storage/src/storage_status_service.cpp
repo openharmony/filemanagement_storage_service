@@ -106,11 +106,12 @@ int32_t GetMediaStorageStats(StorageStats &storageStats)
         LOGE("StorageStatusService::GetMediaStorageStats remoteObj == nullptr");
         return E_REMOTE_IS_NULLPTR;
     }
-    int32_t tryCount = 0;
+    int32_t tryCount = 1;
     auto dataShareHelper = DataShare::DataShareHelper::Creator(remoteObj, MEDIALIBRARY_DATA_URI);
-    while (dataShareHelper == nullptr && tryCount++ < GET_DATA_SHARE_HELPER_TIMES) {
+    while (dataShareHelper == nullptr && tryCount < GET_DATA_SHARE_HELPER_TIMES) {
         LOGW("dataShareHelper is retrying, attempt %{public}d", tryCount);
         dataShareHelper = DataShare::DataShareHelper::Creator(remoteObj, MEDIALIBRARY_DATA_URI);
+        tryCount++;
     }
     if (dataShareHelper == nullptr) {
         LOGE("dataShareHelper is null!");
