@@ -530,8 +530,8 @@ int32_t MountManager::CloudTwiceMount(int32_t userId)
             ret = mountRet;
         }
     }
-    if (IsPathMounted(cloudPath)) {
-        LOGI("path has mounted, %{public}s", cloudPath.c_str());
+    if (IsPathMounted(cloudMediaPath)) {
+        LOGI("path has mounted, %{public}s", cloudMediaPath.c_str());
     } else {
         mountRet = CloudMount(userId, cloudMediaPath);
         if (mountRet != E_OK) {
