@@ -653,7 +653,7 @@ bool IsPathMounted(std::string &path)
         std::string dst;
         ss >> dst;
         ss >> dst;
-        if (tmpLine == dst) {
+        if (path == dst) {
             inputStream.close();
             return true;
         }
