@@ -63,7 +63,7 @@ void IamClientTest::TearDown(void)
  * @tc.name: iam_client_GetSecureUid
  * @tc.desc: Verify the iam_client GetSecureUid.
  * @tc.type: FUNC
- * @tc.require: AR000GK0BP
+ * @tc.require: IAVEX9
  */
 HWTEST_F(IamClientTest, iam_client_GetSecureUid, TestSize.Level1)
 {
@@ -85,7 +85,7 @@ HWTEST_F(IamClientTest, iam_client_GetSecureUid, TestSize.Level1)
  * @tc.name: iam_client_GetSecureUid
  * @tc.desc: Verify the iam_client GetSecureUid.
  * @tc.type: FUNC
- * @tc.require: AR000GK0BP
+ * @tc.require: IAVEX9
  */
 HWTEST_F(IamClientTest, iam_client_GetSecureUid_failed, TestSize.Level1)
 {
@@ -94,9 +94,30 @@ HWTEST_F(IamClientTest, iam_client_GetSecureUid_failed, TestSize.Level1)
     uint64_t secureUid = 1;
 
     EXPECT_CALL(*userIdmClientImplMock_, GetSecUserInfo(_, _))
-        .WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL));
+        .WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL)).WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL))
+        .WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL)).WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL));
     IamClient &client = IamClient::GetInstance();
     EXPECT_FALSE(client.GetSecureUid(userId, secureUid));
+    GTEST_LOG_(INFO) << "iam_client_GetSecureUid_failed end";
+}
+
+/**
+ * @tc.name: iam_client_GetSecureUid
+ * @tc.desc: Verify the iam_client GetSecureUid.
+ * @tc.type: FUNC
+ * @tc.require: IAVEX9
+ */
+HWTEST_F(IamClientTest, iam_client_GetSecureUid_succ, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "iam_client_GetSecureUid_failed start";
+    uint32_t userId = 100;
+    uint64_t secureUid = 1;
+
+    EXPECT_CALL(*userIdmClientImplMock_, GetSecUserInfo(_, _))
+        .WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL)).WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL))
+        .WillOnce(Return(UserIam::UserAuth::ResultCode::SUCCESS));
+    IamClient &client = IamClient::GetInstance();
+    EXPECT_TRUE(client.GetSecureUid(userId, secureUid));
     GTEST_LOG_(INFO) << "iam_client_GetSecureUid_failed end";
 }
 #endif
@@ -105,7 +126,7 @@ HWTEST_F(IamClientTest, iam_client_GetSecureUid_failed, TestSize.Level1)
  * @tc.name: iam_client_NotifyGetSecureUid
  * @tc.desc: Verify the iam_client NotifyGetSecureUid.
  * @tc.type: FUNC
- * @tc.require: AR000GK0BP
+ * @tc.require: IAVEX9
  */
 HWTEST_F(IamClientTest, iam_client_NotifyGetSecureUid, TestSize.Level1)
 {
