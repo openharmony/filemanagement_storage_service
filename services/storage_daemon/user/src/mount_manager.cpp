@@ -27,6 +27,7 @@
 #include <filesystem>
 #include <cstdio>
 #include "hisysevent.h"
+#include "crypto/key_manager.h"
 #include "utils/storage_radar.h"
 #include "ipc/istorage_daemon.h"
 #include "parameter.h"
@@ -108,62 +109,8 @@ const string SHARE_PATH = "/data/service/el1/public/storage_daemon/share/public"
 static constexpr int MODE_0711 = 0711;
 static constexpr int MODE_0771 = 0771;
 static constexpr int MODE_02771 = 02771;
-MountManager::MountManager()
-    : hmdfsDirVec_{{"/data/service/el2/%d/share", MODE_0711, OID_SYSTEM, OID_SYSTEM},
-                   {"/data/service/el2/%d/hmdfs", MODE_0711, OID_DFS, OID_DFS},
-                   {"/data/service/el2/%d/hmdfs/account", MODE_0711, OID_SYSTEM, OID_SYSTEM},
-                   {"/data/service/el2/%d/hmdfs/account/files", MODE_02771, OID_USER_DATA_RW, OID_USER_DATA_RW},
-                   {"/data/service/el2/%d/hmdfs/account/data", MODE_0711, OID_SYSTEM, OID_SYSTEM},
-                   {"/data/service/el2/%d/hmdfs/non_account", MODE_0711, OID_SYSTEM, OID_SYSTEM},
-                   {"/data/service/el2/%d/hmdfs/non_account/files", MODE_0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
-                   {"/data/service/el2/%d/hmdfs/non_account/data", MODE_0711, OID_SYSTEM, OID_SYSTEM},
-                   {"/data/service/el2/%d/hmdfs/cloud", MODE_0711, OID_DFS, OID_DFS},
-                   {"/data/service/el2/%d/hmdfs/cloud/data", MODE_0711, OID_DFS, OID_DFS},
-                   {"/data/service/el2/%d/hmdfs/cache", MODE_0711, OID_DFS, OID_DFS},
-                   {"/data/service/el2/%d/hmdfs/cloudfile_manager", MODE_0711, OID_DFS, OID_DFS},
-                   {"/data/service/el2/%d/hmdfs/cache/account_cache", MODE_0711, OID_DFS, OID_DFS},
-                   {"/data/service/el2/%d/hmdfs/cache/non_account_cache", MODE_0711, OID_DFS, OID_DFS},
-                   {"/data/service/el2/%d/hmdfs/cache/cloud_cache", MODE_0711, OID_DFS, OID_DFS},
-                   {"/data/service/el2/%d/hmdfs/account/services", MODE_0771, OID_DFS_SHARE, OID_DFS_SHARE}},
-      virtualDir_{{"/storage/media/%d", MODE_0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
-                  {"/storage/media/%d/local", MODE_0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
-                  {"/storage/cloud", MODE_0711, OID_ROOT, OID_ROOT},
-                  {"/storage/cloud/%d", MODE_0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
-                  {"/mnt/share/", MODE_0711, OID_ROOT, OID_ROOT},
-                  {"/mnt/share/%d/", MODE_0711, OID_ROOT, OID_ROOT},
-                  {"/mnt/data/%d/", MODE_0711, OID_ROOT, OID_ROOT},
-                  {"/mnt/data/%d/cloud", MODE_0711, OID_ROOT, OID_ROOT},
-                  {"/mnt/data/%d/cloud_fuse", MODE_0711, OID_DFS, OID_DFS},
-                  {"/mnt/data/%d/hmdfs", MODE_0711, OID_FILE_MANAGER, OID_FILE_MANAGER},
-                  {"/mnt/hmdfs/", MODE_0711, OID_ROOT, OID_ROOT},
-                  {"/mnt/hmdfs/%d/", MODE_0711, OID_ROOT, OID_ROOT},
-                  {"/mnt/hmdfs/%d/cloud", MODE_0711, OID_ROOT, OID_ROOT},
-                  {"/mnt/hmdfs/%d/account", MODE_0711, OID_ROOT, OID_ROOT},
-                  {"/mnt/hmdfs/%d/non_account", MODE_0711, OID_ROOT, OID_ROOT}},
-      systemServiceDir_{{"/data/service/el2/%d/tee", MODE_0711, OID_TEE, OID_TEE},
-                  {"/data/service/el2/%d/deviceauth", MODE_0711, OID_DEVICE_AUTH, OID_DEVICE_AUTH},
-                  {"/data/service/el3/%d/device_standby", MODE_0711, OID_RSS, OID_RSS},
-                  {"/data/service/el2/%d/hwid_service", MODE_0711, OID_HWID, OID_HWID},
-                  {"/data/service/el2/%d/healthsport", MODE_0711, OID_HEALTH_SPORT, OID_HEALTH_SPORT},
-                  {"/data/service/el2/%d/huks_service", MODE_0711, OID_HUKS, OID_HUKS},
-                  {"/data/service/el2/%d/parentcontrol", MODE_0711, OID_PARENT_CONTROL, OID_PARENT_CONTROL},
-                  {"/data/service/el4/%d/huks_service", MODE_0711, OID_HUKS, OID_HUKS},
-                  {"/data/service/el2/%d/asset_service", MODE_0711, OID_ASSET, OID_ASSET},
-                  {"/data/service/el2/%d/account", MODE_0711, OID_ACCOUNT, OID_ACCOUNT},
-                  {"/data/service/el2/%d/dlp_credential_service", MODE_0711, OID_DLP_CREDENTIAL, OID_DLP_CREDENTIAL},
-                  {"/data/service/el2/%d/xpower", MODE_0711, OID_HIVIEW, OID_HIVIEW},
-                  {"/data/service/el2/%d/iShare", MODE_0711, OID_COLLABORATION_FWK, OID_COLLABORATION_FWK},
-                  {"/data/service/el2/%d/av_session", MODE_0711, OID_AV_SESSION, OID_AV_SESSION}},
-      fileManagerDir_{{"/data/service/el2/%d/hmdfs/account/files/Docs", MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
-                   {"/data/service/el2/%d/hmdfs/account/files/Docs/Documents",
-                   MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
-                   {"/data/service/el2/%d/hmdfs/account/files/Docs/Download",
-                   MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
-                   {"/data/service/el2/%d/hmdfs/account/files/Docs/Desktop",
-                   MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
-                   {"/data/service/el2/%d/hmdfs/account/files/Docs/.Trash",
-                   MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
-                   {"/data/service/el2/%d/hmdfs/account/files/.Recent", MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER}}
+MountManager::MountManager() : hmdfsDirVec_(InitHmdfsDirVec()), virtualDir_(InitVirtualDir()),
+    systemServiceDir_(InitSystemServiceDir()), fileManagerDir_(InitFileManagerDir())
 {
 }
 
@@ -175,28 +122,110 @@ std::shared_ptr<MountManager> MountManager::GetInstance()
     return instance_;
 }
 
-int32_t MountManager::HmdfsTwiceMount(int32_t userId, std::string relativePath)
+std::vector<DirInfo> MountManager::InitHmdfsDirVec()
+{
+    return {{"/data/service/el2/%d/share", MODE_0711, OID_SYSTEM, OID_SYSTEM},
+            {"/data/service/el2/%d/hmdfs", MODE_0711, OID_DFS, OID_DFS},
+            {"/data/service/el2/%d/hmdfs/account", MODE_0711, OID_SYSTEM, OID_SYSTEM},
+            {"/data/service/el2/%d/hmdfs/account/files", MODE_02771, OID_USER_DATA_RW, OID_USER_DATA_RW},
+            {"/data/service/el2/%d/hmdfs/account/data", MODE_0711, OID_SYSTEM, OID_SYSTEM},
+            {"/data/service/el2/%d/hmdfs/non_account", MODE_0711, OID_SYSTEM, OID_SYSTEM},
+            {"/data/service/el2/%d/hmdfs/non_account/files", MODE_0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
+            {"/data/service/el2/%d/hmdfs/non_account/data", MODE_0711, OID_SYSTEM, OID_SYSTEM},
+            {"/data/service/el2/%d/hmdfs/cloud", MODE_0711, OID_DFS, OID_DFS},
+            {"/data/service/el2/%d/hmdfs/cloud/data", MODE_0711, OID_DFS, OID_DFS},
+            {"/data/service/el2/%d/hmdfs/cache", MODE_0711, OID_DFS, OID_DFS},
+            {"/data/service/el2/%d/hmdfs/cloudfile_manager", MODE_0711, OID_DFS, OID_DFS},
+            {"/data/service/el2/%d/hmdfs/cache/account_cache", MODE_0711, OID_DFS, OID_DFS},
+            {"/data/service/el2/%d/hmdfs/cache/non_account_cache", MODE_0711, OID_DFS, OID_DFS},
+            {"/data/service/el2/%d/hmdfs/cache/cloud_cache", MODE_0711, OID_DFS, OID_DFS},
+            {"/data/service/el2/%d/hmdfs/account/services", MODE_0771, OID_DFS_SHARE, OID_DFS_SHARE}};
+}
+
+std::vector<DirInfo> MountManager::InitVirtualDir()
+{
+    return {{"/storage/media/%d", MODE_0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
+            {"/storage/media/%d/local", MODE_0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
+            {"/storage/cloud", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/storage/cloud/%d", MODE_0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
+            {"/mnt/share/", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/mnt/share/%d/", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/mnt/data/%d/", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/mnt/data/%d/cloud", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/mnt/data/%d/cloud_fuse", MODE_0711, OID_DFS, OID_DFS},
+            {"/mnt/data/%d/hmdfs", MODE_0711, OID_FILE_MANAGER, OID_FILE_MANAGER},
+            {"/mnt/hmdfs/", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/mnt/hmdfs/%d/", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/mnt/hmdfs/%d/cloud", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/mnt/hmdfs/%d/account", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/mnt/hmdfs/%d/non_account", MODE_0711, OID_ROOT, OID_ROOT}};
+}
+
+std::vector<DirInfo> MountManager::InitSystemServiceDir()
+{
+    return {{"/data/service/el2/%d/tee", MODE_0711, OID_TEE, OID_TEE},
+            {"/data/service/el2/%d/deviceauth", MODE_0711, OID_DEVICE_AUTH, OID_DEVICE_AUTH},
+            {"/data/service/el3/%d/device_standby", MODE_0711, OID_RSS, OID_RSS},
+            {"/data/service/el2/%d/hwid_service", MODE_0711, OID_HWID, OID_HWID},
+            {"/data/service/el2/%d/healthsport", MODE_0711, OID_HEALTH_SPORT, OID_HEALTH_SPORT},
+            {"/data/service/el2/%d/huks_service", MODE_0711, OID_HUKS, OID_HUKS},
+            {"/data/service/el2/%d/parentcontrol", MODE_0711, OID_PARENT_CONTROL, OID_PARENT_CONTROL},
+            {"/data/service/el4/%d/huks_service", MODE_0711, OID_HUKS, OID_HUKS},
+            {"/data/service/el2/%d/asset_service", MODE_0711, OID_ASSET, OID_ASSET},
+            {"/data/service/el2/%d/account", MODE_0711, OID_ACCOUNT, OID_ACCOUNT},
+            {"/data/service/el2/%d/dlp_credential_service", MODE_0711, OID_DLP_CREDENTIAL, OID_DLP_CREDENTIAL},
+            {"/data/service/el2/%d/xpower", MODE_0711, OID_HIVIEW, OID_HIVIEW},
+            {"/data/service/el2/%d/iShare", MODE_0711, OID_COLLABORATION_FWK, OID_COLLABORATION_FWK},
+            {"/data/service/el2/%d/av_session", MODE_0711, OID_AV_SESSION, OID_AV_SESSION}};
+}
+
+std::vector<DirInfo> MountManager::InitFileManagerDir()
+{
+    return {{"/data/service/el2/%d/hmdfs/account/files/Docs", MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
+            {"/data/service/el2/%d/hmdfs/account/files/Docs/Documents",
+                                                              MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
+            {"/data/service/el2/%d/hmdfs/account/files/Docs/Download",
+                                                              MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
+            {"/data/service/el2/%d/hmdfs/account/files/Docs/Desktop",
+                                                              MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
+            {"/data/service/el2/%d/hmdfs/account/files/Docs/.Trash",
+                                                              MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
+            {"/data/service/el2/%d/hmdfs/account/files/.Recent", MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER}};
+}
+
+int32_t MountManager::HmdfsTwiceMount(int32_t userId, const std::string &relativePath)
 {
     int32_t ret = HmdfsMount(userId, relativePath);
-
     // bind mount
     Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, relativePath));
-    ret += Mount(hmdfsMntArgs.GetFullDst() + "/device_view/", hmdfsMntArgs.GetCommFullPath(),
-                 nullptr, MS_BIND, nullptr);
-    if (ret != 0 && errno != EEXIST && errno != EBUSY) {
-        LOGE("failed to bind mount device_view, err %{public}d", errno);
-        return E_MOUNT;
+    std::string dst = hmdfsMntArgs.GetCommFullPath();
+    if (IsPathMounted(dst)) {
+        LOGI("path has mounted, %{public}s", dst.c_str());
+    } else {
+        ret += Mount(hmdfsMntArgs.GetFullDst() + "/device_view/", dst, nullptr, MS_BIND, nullptr);
+        if (ret != 0 && errno != EEXIST && errno != EBUSY) {
+            LOGE("failed to bind mount device_view, err %{public}d", errno);
+            return E_MOUNT;
+        }
     }
-    ret += Mount(hmdfsMntArgs.GetFullDst() + "/cloud_merge_view/", hmdfsMntArgs.GetCloudFullPath(),
-                 nullptr, MS_BIND, nullptr);
-    if (ret != 0 && errno != EEXIST && errno != EBUSY) {
-        LOGE("failed to bind mount cloud_merge_view, err %{public}d", errno);
-        return E_MOUNT;
+    dst = hmdfsMntArgs.GetCloudFullPath();
+    if (IsPathMounted(dst)) {
+        LOGI("path has mounted, %{public}s", dst.c_str());
+    } else {
+        ret += Mount(hmdfsMntArgs.GetFullDst() + "/cloud_merge_view/", dst, nullptr, MS_BIND, nullptr);
+        if (ret != 0 && errno != EEXIST && errno != EBUSY) {
+            LOGE("failed to bind mount cloud_merge_view, err %{public}d", errno);
+            return E_MOUNT;
+        }
     }
-
-    if (Mount(hmdfsMntArgs.GetLocalDocsPath(), hmdfsMntArgs.GetCloudDocsPath(),
-              nullptr, MS_BIND, nullptr)) {
-        LOGE("failed to bind mount docs, err %{public}d", errno);
+    dst = hmdfsMntArgs.GetCloudDocsPath();
+    if (IsPathMounted(dst)) {
+        LOGI("path has mounted, %{public}s", dst.c_str());
+    } else {
+        ret += Mount(hmdfsMntArgs.GetLocalDocsPath(), dst, nullptr, MS_BIND, nullptr);
+        if (ret != 0 && errno != EEXIST && errno != EBUSY) {
+            LOGE("failed to bind mount docs, err %{public}d", errno);
+        }
     }
     return E_OK;
 }
@@ -204,11 +233,16 @@ int32_t MountManager::HmdfsTwiceMount(int32_t userId, std::string relativePath)
 int32_t MountManager::SharefsMount(int32_t userId)
 {
     Utils::MountArgument sharefsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
-    int ret = Mount(sharefsMntArgs.GetShareSrc(), sharefsMntArgs.GetShareDst(), "sharefs",
-                    sharefsMntArgs.GetFlags(), sharefsMntArgs.GetUserIdPara().c_str());
-    if (ret != 0 && errno != EEXIST && errno != EBUSY) {
-        LOGE("failed to mount sharefs, err %{public}d", errno);
-        return E_MOUNT;
+    std::string dst = sharefsMntArgs.GetShareDst();
+    if (IsPathMounted(dst)) {
+        LOGI("path has mounted, %{public}s", dst.c_str());
+    } else {
+        int ret = Mount(sharefsMntArgs.GetShareSrc(), dst, "sharefs", sharefsMntArgs.GetFlags(),
+                        sharefsMntArgs.GetUserIdPara().c_str());
+        if (ret != 0 && errno != EEXIST && errno != EBUSY) {
+            LOGE("failed to mount sharefs, err %{public}d", errno);
+            return E_MOUNT;
+        }
     }
     return E_OK;
 }
@@ -224,8 +258,12 @@ int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath, bool 
         mountSrcPath = hmdfsMntArgs.GetFullCloud();
     }
 
-    int ret = Mount(mountSrcPath, hmdfsMntArgs.GetFullDst(), "hmdfs",
-                    hmdfsMntArgs.GetFlags(), hmdfsMntArgs.OptionsToString().c_str());
+    std::string dst = hmdfsMntArgs.GetFullDst();
+    if (IsPathMounted(dst)) {
+        LOGI("path has mounted, %{public}s", dst.c_str());
+        return E_OK;
+    }
+    int ret = Mount(mountSrcPath, dst, "hmdfs", hmdfsMntArgs.GetFlags(), hmdfsMntArgs.OptionsToString().c_str());
     if (ret != 0 && errno != EEXIST && errno != EBUSY) {
         LOGE("failed to mount hmdfs, err %{public}d", errno);
         return E_MOUNT;
@@ -235,7 +273,6 @@ int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath, bool 
     if (ret != 0) {
         LOGE("failed to chown hmdfs sysfs node, err %{public}d", errno);
     }
-
     return E_OK;
 }
 
@@ -479,13 +516,31 @@ int32_t MountManager::CloudMount(int32_t userId, const string& path)
 int32_t MountManager::CloudTwiceMount(int32_t userId)
 {
     LOGI("mount cloud twice start");
+    int32_t ret = E_OK;
 #ifdef DFS_SERVICE
     Utils::MountArgument cloudMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
-    const string cloudPath = cloudMntArgs.GetFullCloud();
-    const string cloudMediaPath = cloudMntArgs.GetFullMediaCloud();
-    return (CloudMount(userId, cloudPath) | CloudMount(userId, cloudMediaPath));
+    string cloudPath = cloudMntArgs.GetFullCloud();
+    string cloudMediaPath = cloudMntArgs.GetFullMediaCloud();
+    int32_t mountRet = E_OK;
+    if (IsPathMounted(cloudPath)) {
+        LOGI("path has mounted, %{public}s", cloudPath.c_str());
+    } else {
+        mountRet = CloudMount(userId, cloudPath);
+        if (mountRet != E_OK) {
+            ret = mountRet;
+        }
+    }
+    if (IsPathMounted(cloudPath)) {
+        LOGI("path has mounted, %{public}s", cloudPath.c_str());
+    } else {
+        mountRet = CloudMount(userId, cloudMediaPath);
+        if (mountRet != E_OK) {
+            ret = mountRet;
+        }
+    }
+    return ret;
 #else
-    return E_OK;
+    return ret;
 #endif
 }
 
@@ -895,7 +950,12 @@ static void ClearRedundantResources(int32_t userId)
 
 int32_t MountManager::MountByUser(int32_t userId)
 {
-    int ret = E_OK;
+    bool isCeEncrypt = false;
+    int ret = KeyManager::GetInstance()->GetFileEncryptStatus(userId, isCeEncrypt);
+    if (ret != E_OK || isCeEncrypt) {
+        LOGE("User %{public}d de has not decrypt.", userId);
+        return E_KEY_NOT_ACTIVED;
+    }
     // The Documnets and Download directories are managed by the File access framework,
     // and the UID GID is changed to filemanager
     std::thread thread([userId]() { ClearRedundantResources(userId); });
@@ -1023,7 +1083,6 @@ int32_t MountManager::PrepareHmdfsDirs(int32_t userId)
             return E_PREPARE_DIR;
         }
     }
-
     return E_OK;
 }
 
@@ -1042,11 +1101,14 @@ int32_t MountManager::PrepareFileManagerDirs(int32_t userId)
 int32_t MountManager::CreateVirtualDirs(int32_t userId)
 {
     for (const DirInfo &dir : virtualDir_) {
-        if (!PrepareDir(StringPrintf(dir.path.c_str(), userId), dir.mode, dir.uid, dir.gid)) {
+        std::string path = StringPrintf(dir.path.c_str(), userId);
+        if (CloudDirFlag(path) && IsDir(path)) {
+            continue;
+        }
+        if (!PrepareDir(path, dir.mode, dir.uid, dir.gid)) {
             return E_PREPARE_DIR;
         }
     }
-
     return E_OK;
 }
 

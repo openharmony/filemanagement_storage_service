@@ -36,6 +36,7 @@ namespace OHOS {
 namespace StorageDaemon {
 constexpr uint32_t ALL_PERMS = (S_ISUID | S_ISGID | S_ISVTX | S_IRWXU | S_IRWXG | S_IRWXO);
 const int BUF_LEN = 1024;
+const std::string MOUNT_POINT_INFO = "/proc/mounts";
 
 int32_t ChMod(const std::string &path, mode_t mode)
 {
@@ -631,6 +632,34 @@ void DelTemp(const std::string &path)
             closedir(dir);
         }
     }
+}
+
+bool IsPathMounted(std::string &path)
+{
+    if (path.empty()) {
+        return true;
+    }
+    if (path.back() == '/') {
+        path.pop_back();
+    }
+    std::ifstream inputStream(MOUNT_POINT_INFO.c_str(), std::ios::in);
+    if (!inputStream.is_open()) {
+        LOGE("unable to open /proc/mounts, errno is %{public}d", errno);
+        return false;
+    }
+    std::string tmpLine;
+    while (std::getline(inputStream, tmpLine)) {
+        std::stringstream ss(tmpLine);
+        std::string dst;
+        ss >> dst;
+        ss >> dst;
+        if (tmpLine == dst) {
+            inputStream.close();
+            return true;
+        }
+    }
+    inputStream.close();
+    return false;
 }
 } // STORAGE_DAEMON
 } // OHOS

@@ -68,6 +68,10 @@ public:
     MountManager();
     virtual ~MountManager() = default;
     static std::shared_ptr<MountManager> GetInstance();
+    static std::vector<DirInfo> InitHmdfsDirVec();
+    static std::vector<DirInfo> InitVirtualDir();
+    static std::vector<DirInfo> InitSystemServiceDir();
+    static std::vector<DirInfo> InitFileManagerDir();
     int32_t MountByUser(int32_t userId);
     int32_t UmountByUser(int32_t userId);
     int32_t PrepareHmdfsDirs(int32_t userId);
@@ -106,7 +110,7 @@ private:
     int32_t CreateVirtualDirs(int32_t userId);
     int32_t HmdfsMount(int32_t userId);
     int32_t HmdfsMount(int32_t userId, std::string relativePath, bool mountCloudDisk = false);
-    int32_t HmdfsTwiceMount(int32_t userId, std::string relativePath);
+    int32_t HmdfsTwiceMount(int32_t userId, const std::string &relativePath);
     int32_t HmdfsUMount(int32_t userId, std::string relativePath);
     int32_t SharefsMount(int32_t userId);
     int32_t LocalMount(int32_t userId);

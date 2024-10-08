@@ -486,7 +486,7 @@ int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
 int32_t StorageDaemon::StartUser(int32_t userId)
 {
     int32_t ret = UserManager::GetInstance()->StartUser(userId);
-    if (ret != E_OK) {
+    if (ret != E_OK && ret != E_KEY_NOT_ACTIVED) {
         LOGE("StartUser failed, please check");
         RadarParameter parameterRes = {
             .orgPkg = DEFAULT_ORGPKGNAME,
