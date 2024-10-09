@@ -24,22 +24,18 @@ bool CmdUtils::RunCmd(const std::string &cmd, std::vector<std::string> &result)
 {
     char buffer[1024] = {0};
     result.clear();
-
     if (cmd.empty()) {
         return false;
     }
-
     FILE *fp = popen(cmd.c_str(), "r");
     if (fp == NULL) {
         return false;
     }
-
     while (!feof(fp)) {
         if (fgets(buffer, sizeof(buffer), fp) != nullptr) {
             result.push_back(buffer);
         }
     }
-
     pclose(fp);
     return true;
 }
