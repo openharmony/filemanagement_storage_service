@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Huawei Device Co., Ltd.
+ * Copyright (C) 2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -12,104 +12,97 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <algorithm>
+
+#include "mtp/mtp_device_manager.h"
+
 #include <config.h>
 #include <dirent.h>
 #include <iostream>
-#include <csignal>
 #include <cstdio>
 #include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include "ipc/storage_manager_client.h"
-#include "simple-mtpfs-fuse.h"
-#include "simple-mtpfs-util.h"
+#include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "mtp/mtp_device_manager.h"
 #include "utils/cmd_utils.h"
 #include "utils/file_utils.h"
-using namespace std;
+
 namespace OHOS {
 namespace StorageDaemon {
-bool MtpDeviceManager::MountMtp(std::string id, std::string devlinks, std::string path)
+MtpDeviceManager::MtpDeviceManager() {}
+
+MtpDeviceManager::~MtpDeviceManager()
 {
-    LOGI("Mtp  MountMtp id:%{public}s devlinks:%{public}s path:%{public}s", id.c_str(), devlinks.c_str(), path.c_str());
-    bool success = false;
-    if (!isMounting) {
-        isMounting = true;
-        if (PrepareDir(path,PUBLIC_DIR_MODE,FILE_MANAGER_UID,FILE_MANAGER_GID)) {
-            string cmd = "exec-simple-mtpfs ";
-            cmd.append("-o uid=")
-            .append(std::to_string(FILE_MANAGER_UID))
-            .append(" ")
-            .append("-o gid=")
-            .append(std::to_string(FILE_MANAGER_GID))
-            .append(" ")
-            .append("-o allow_other")
-            .append(" ")
-            .append("-o enable-move")
-            .append(" ")
-            .append("-o hard_remove")
-            .append(" ")   
-            .append(devlinks)
-            .append(" ")
-            .append(path);
-            LOGI("MountMtp cmd: %{public}s", cmd.c_str());
-            vector<string> result;
-            bool cmdSuccess = CmdUtils::GetInstance().RunCmd(cmd, result);
-            for (auto str : result) {
-                LOGI("MountMtp result: %{public}s", str.c_str());
-            }
-            if (cmdSuccess && (result.size() == 0)) {
-                success = true;
-            }
-        }
-        if(!success){
-            DelFolder(path);
+    LOGI("MtpDeviceManager Destructor.");
+}
+
+int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
+{
+    LOGI("MountDevice: start mount mtp device, path=%{public}s", device.path.c_str());
+    if (isMounting) {
+        LOGI("MountDevice: mtp device is mounting, try again later.");
+        return E_MTP_IS_MOUNTING;
+    }
+    isMounting = true;
+    if (!IsDir(device.path)) {
+        LOGI("MountDevice: mtp device mount path directory is not exist, create it first.");
+        bool ret = PrepareDir(device.path, PUBLIC_DIR_MODE, FILE_MANAGER_UID, FILE_MANAGER_GID);
+        if (!ret) {
+            LOGE("Prepare directory for mtp device path = %{public}s failed.", device.path.c_str());
+            return E_MTP_PREPARE_DIR_ERR;
         }
     }
-    StorageManagerClient client;
-    client.NotifyMtpMounted(id, devlinks, path, success);
+
+    std::string cmd = "mtpfs";
+    cmd.append("-o uid=")
+    .append(std::to_string(FILE_MANAGER_UID))
+    .append(" ")
+    .append("-o gid=")
+    .append(std::to_string(FILE_MANAGER_GID))
+    .append(" ")
+    .append("--device ")
+    .append("1")
+    .append(" ")
+    .append(device.path);
+    LOGI("MountDevice: append cmd: %{public}s", cmd.c_str());
+
+    std::vector<std::string> result;
+    bool success = CmdUtils::GetInstance().RunCmd(cmd, result);
+    for (auto str : result) {
+        LOGI("MountDevice result: %{public}s", str.c_str());
+    }
+    if (!success || (result.size() != 0)) {
+        LOGE("Run mtpfs cmd to mount mtp device failed.");
+        DelFolder(device.path);
+        isMounting = false;
+        return E_MTP_MOUNT_FAILED;
+    }
+
+    LOGI("Run mtpfs cmd to mount mtp device success.");
     isMounting = false;
-    return success;
+    StorageManagerClient client;
+    client.NotifyMtpMounted(device.id, device.path);
+    return E_OK;
 }
 
-bool MtpDeviceManager::UnMountMtp(std::string id, string path)
+int32_t MtpDeviceManager::UmountDevice(const MtpDeviceInfo &device)
 {
-    LOGI("Mtp  UnMountMtp id:%{public}s path:%{public}s", id.c_str(), path.c_str());
-    bool success = false;
-    string cmd = "umount " + path;
-    vector<string> result;
-    bool runSuccess = CmdUtils::GetInstance().RunCmd(cmd, result);
-    if (runSuccess && result.size() == 0) {
-        success = DelFolder(path);
+    LOGI("MountDevice: start umount mtp device, path=%{public}s", device.path.c_str());
+    std::string cmd = "umount " + device.path;
+    std::vector<std::string> result;
+    bool success = CmdUtils::GetInstance().RunCmd(cmd, result);
+    if (!success || (result.size() != 0)) {
+        LOGE("Run mtpfs cmd to umount mtp device failed.");
+        return E_MTP_UMOUNT_FAILED;
     }
-    StorageManagerClient client;
-    client.NofifyMtpUnMounted(id, path, success);
-    return success;
-}
 
-bool MtpDeviceManager::UnMountMtpAll(string path)
-{
-    LOGI("Mtp  UnMountMtpAll path:%{public}s", path.c_str());
-    DIR *dir;
-    if ((dir = opendir(path.c_str())) == nullptr) {
-        return false;
-    }
-    for (dirent *dp = readdir(dir); dp != nullptr; dp = readdir(dir)) {
-        std::string fileName = dp->d_name;
-        if (fileName == "." || fileName == "..") {
-            continue;
-        }
-        if ((dp->d_type == DT_DIR) && (fileName.find("mtp-") == 0)) {
-            MtpDeviceManager::GetInstance().UnMountMtp("", path + fileName);
-        }
-    }
-    closedir(dir);
+    LOGI("Run mtpfs cmd to umount mtp device success.");
     StorageManagerClient client;
-    client.NofityMtpUMountAll();
-    return true;
+    client.NotifyMtpUnmounted(device.id, device.path);
+    DelFolder(device.path);
+    return E_OK;
 }
 } // namespace StorageDaemon
 } // namespace OHOS
