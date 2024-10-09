@@ -185,11 +185,7 @@ HWTEST_F(MultiUserManagerServiceTest, User_manager_service_RemoveUser_0001, test
     if (service != nullptr) {
         result = service->RemoveUser(userId, flag);
     }
-    if (g_fscryptEnable) {
-        EXPECT_EQ(result, -EFAULT);
-    } else {
-        EXPECT_EQ(result, E_OK);
-    }
+    EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "MultiUserManagerServiceTest-end User_manager_service_RemoveUser_0001";
 }
 
