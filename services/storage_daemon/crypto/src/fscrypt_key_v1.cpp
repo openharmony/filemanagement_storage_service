@@ -127,9 +127,6 @@ bool FscryptKeyV1::InstallKeyForAppKeyToKeyring(KeyBlob &appKey)
             LOGE("Failed to AddKey, errno %{public}d", errno);
         }
     }
-    if (!SaveKeyBlob(keyInfo_.keyDesc, dir_ + PATH_KEYDESC)) {
-        return false;
-    }
     LOGI("success");
     return true;
 }
