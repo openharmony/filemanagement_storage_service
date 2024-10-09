@@ -14,50 +14,33 @@
  */
 #ifndef OHOS_STORAGE_DAEMON_MTP_DEVICE_MONITOR_H
 #define OHOS_STORAGE_DAEMON_MTP_DEVICE_MONITOR_H
+
 #include <memory>
+#include <nocopyable.h>
+#include <singleton.h>
 #include <string>
 #include <thread>
 #include <vector>
-#include "libudev.h"
-#include "singleton.h"
-#include "simple-mtpfs-fuse.h"
-#include "simple-mtpfs-util.h"
+#include <libmtp.h>
+#include "mtp/mtp_device_manager.h"
+
 namespace OHOS {
 namespace StorageDaemon {
-class MtpMonitor  : public Singleton<MtpMonitor> {
+class MtpDeviceMonitor : public NoCopyable  {
+    DECLARE_DELAYED_SINGLETON(MtpDeviceMonitor);
 public:
-    struct UdevInfo {
-        std::string id;
-        std::string action;
-        std::string major;
-        std::string minor;
-        std::string idMtpDevice;
-        std::string devlinks;
-        std::string path;
-    };
+    void StartMonitor();
 
-    static bool Monitor();
-   
-    static std::vector<MtpMonitor::UdevInfo> addMtpDevices;
-    static void GetUdevInfoList(std::vector<MtpMonitor::UdevInfo> &infos);
 private:
-    static bool udevExit;
-    const static std::string MTP_ROOT_PATH;
+    void MonitorDevice();
+    void MountMtpDevice(const std::vector<MtpDeviceInfo> &monitorDevices);
+    void CheckAndUmountRemovedMtpDevice();
+    void UmountAllMtpDevice();
+    bool HasMounted(const MtpDeviceInfo &device);
 
-    static std::vector<MtpMonitor::UdevInfo> umountFailDevices;
-    static void SigHandler(int signum);
-    static void MonitorDevice(struct udev &udev);
-    static bool ContainMtpInfo(const std::string &devlinks, const std::vector<MtpMonitor::UdevInfo> &mtpInfos);
-    static void GetUdevInfos(struct udev_device &device,
-                             std::vector<MtpMonitor::UdevInfo> &mtpInfos,
-                             std::vector<MtpMonitor::UdevInfo> &removeInfos);
-    static bool MtpDeviceControl(const std::vector<MtpMonitor::UdevInfo> &mtpDevices,
-                                 const std::vector<MtpMonitor::UdevInfo> &removeDevices);
-    static bool MountMtpDevice(const std::vector<MtpMonitor::UdevInfo> &udevInfos);
-    static bool UnMountMtpDevice(const std::vector<MtpMonitor::UdevInfo> &udevInfos);
-    static bool HadMount(const UdevInfo &info, const std::vector<MtpMonitor::UdevInfo> &infos);
-    static bool UmountDevices();
-    static void MonitorMtp(bool &success);
+private:
+    std::mutex listMutex_;
+    std::vector<MtpDeviceInfo> lastestMtpDevList_;
 };
 } // namespace StorageDaemon
 } // namespace OHOS
