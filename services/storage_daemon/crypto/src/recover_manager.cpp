@@ -267,9 +267,9 @@ bool RecoveryManager::GenerateKeyDesc(const KeyBlob &ivBlob, KeyBlob &keyDesc)
 
 bool RecoveryManager::InstallKeyDescToKeyring(size_t keyType, const KeyBlob &key2Blob, const KeyBlob &keyDesc)
 {
-    if (keyType == USER_EL3 || keyType == USER_EL4) {
+    if (keyType == TYPE_EL3 || keyType == TYPE_EL4) {
         uint32_t sdpClass;
-        if (keyType == USER_EL3) {
+        if (keyType == TYPE_EL3) {
             sdpClass = FSCRYPT_SDP_SECE_CLASS;
         } else {
             sdpClass = FSCRYPT_SDP_ECE_CLASS;
