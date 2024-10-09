@@ -52,7 +52,7 @@ void MtpDeviceMonitor::StartMonitor()
 void MtpDeviceMonitor::MonitorDevice()
 {
     LOGI("MonitorDevice: mtp device monitor thread begin.");
-    while (g_keepMonitoring ) {
+    while (g_keepMonitoring) {
         sleep(SLEEP_TIME);
         CheckAndUmountRemovedMtpDevice();
 
