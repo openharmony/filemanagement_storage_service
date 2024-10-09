@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Huawei Device Co., Ltd.
+ * Copyright (C) 2021 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -56,7 +56,7 @@ int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
     }
 
     std::string cmd = "mtpfs";
-    cmd.append("-o uid=")
+    cmd.append(" -o uid=")
     .append(std::to_string(FILE_MANAGER_UID))
     .append(" ")
     .append("-o gid=")
