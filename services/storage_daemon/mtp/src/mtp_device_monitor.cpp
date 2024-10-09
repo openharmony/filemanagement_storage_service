@@ -33,6 +33,7 @@ namespace OHOS {
 namespace StorageDaemon {
 static constexpr int32_t SLEEP_TIME = 1;
 const std::string MTP_ROOT_PATH = "/mnt/data/external/";
+bool keepMonitoring = true;
 
 MtpDeviceMonitor::MtpDeviceMonitor() {}
 
@@ -51,7 +52,7 @@ void MtpDeviceMonitor::StartMonitor()
 void MtpDeviceMonitor::MonitorDevice()
 {
     LOGI("MonitorDevice: mtp device monitor thread begin.");
-    while (true) {
+    while (keepMonitoring) {
         sleep(SLEEP_TIME);
         CheckAndUmountRemovedMtpDevice();
 
