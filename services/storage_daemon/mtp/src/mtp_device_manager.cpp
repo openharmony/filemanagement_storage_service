@@ -35,7 +35,7 @@ MtpDeviceManager::MtpDeviceManager() {}
 
 MtpDeviceManager::~MtpDeviceManager()
 {
-    LOGI("MtpDeviceManager Destructor.");   
+    LOGI("MtpDeviceManager Destructor.");
 }
 
 int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
