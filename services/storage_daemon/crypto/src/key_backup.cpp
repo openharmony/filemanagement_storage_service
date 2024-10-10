@@ -26,6 +26,8 @@
 namespace OHOS {
 namespace StorageDaemon {
 const uint32_t INVALID_LOOP_NUM = 0xFFFFFFFF;
+const uint8_t BACK_MAX_RETRY_TIME = 3;
+const uint16_t BACK_RETRY_INTERVAL_MS = 50 * 1000;
 
 struct FileNode {
     std::string baseName;
@@ -49,7 +51,9 @@ void KeyBackup::CreateBackup(const std::string &from, const std::string &to, boo
             }
         }
     } else {
-        if (MkdirParent(to, DEFAULT_DIR_PERM) != 0) {
+        int32_t ret = MkdirParentWithRetry(to, DEFAULT_DIR_PERM);
+        if (ret != 0) {
+            LOGE("CreateBackup failed, path is %s", to.c_str());
             return;
         }
     }
@@ -461,6 +465,25 @@ void KeyBackup::FsyncDirectory(const std::string &dirName)
     }
     return;
 }
+
+int32_t KeyBackup::MkdirParentWithRetry(const std::string &pathName, mode_t mode)
+{
+    int32_t ret = MkdirParent(pathName, DEFAULT_DIR_PERM);
+    if (ret == 0) {
+        LOGI("succeed");
+        return 0;
+    }
+    LOGE("CreateBackup failed start retry, path is %s", pathName.c_str());
+    for (int i = 0; i < BACK_MAX_RETRY_TIME; ++i) {
+        usleep(BACK_RETRY_INTERVAL_MS);
+        ret = MkdirParent(pathName, DEFAULT_DIR_PERM);
+        LOGE("CreateBackup has retry %{public}d times, retryRet %{public}d", i, ret);
+        if (ret == 0) {
+            break;
+        }
+    }
+    return ret;
+}
     
 int32_t KeyBackup::MkdirParent(const std::string &pathName, mode_t mode)
 {
@@ -525,7 +548,18 @@ void KeyBackup::CheckAndCopyFiles(const std::string &from, const std::string &to
         return;
     }
 
-    HandleCopyDir(from, to);
+    int32_t ret = HandleCopyDir(from, to);
+    if (ret != 0) {
+        LOGE("CheckAndCopyFiles failed start retry, path is %s", to.c_str());
+        for (int i = 0; i < BACK_MAX_RETRY_TIME; ++i) {
+            usleep(BACK_RETRY_INTERVAL_MS);
+            ret = HandleCopyDir(from, to);
+            LOGE("CheckAndCopyFiles has retry %{public}d times, retryRet %{public}d", i, ret);
+            if (ret == 0) {
+                break;
+            }
+        }
+    }
     DIR *dir = opendir(from.c_str());
     if (dir == nullptr) {
         LOGE("open dr failed, %s", from.c_str());
