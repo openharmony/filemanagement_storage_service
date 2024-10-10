@@ -62,8 +62,8 @@ public:
     ~MtpFsDevice();
 
     bool Connect(LIBMTP_raw_device_t *dev);
-    bool Connect(int devNo = 0);
-    bool Connect(const std::string &devFile);
+    bool ConnectByDevNo(int devNo = 0);
+    bool ConnectByDevFile(const std::string &devFile);
     void Disconnect();
 
     void EnableMove(bool e = true)
