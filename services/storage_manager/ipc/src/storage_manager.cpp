@@ -55,7 +55,7 @@ void StorageManager::OnStart()
 
 void StorageManager::OnStop()
 {
-    LOGI("StorageManager::Onstop Done");
+    LOGI("StorageManager::OnStop Done");
 }
 
 void StorageManager::OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId)

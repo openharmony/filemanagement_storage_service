@@ -135,7 +135,7 @@ void DiskManager::CreateDisk(std::shared_ptr<DiskInfo> &diskInfo)
 void DiskManager::ChangeDisk(dev_t device)
 {
     for (auto &diskInfo : disk_) {
-        if ((diskInfo != nullptr) && (diskInfo->GetDevice() == device)) {
+        if (diskInfo->GetDevice() == device) {
             diskInfo->ReadMetadata();
             diskInfo->ReadPartition();
         }
