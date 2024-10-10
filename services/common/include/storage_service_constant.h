@@ -56,7 +56,6 @@ static const std::string FILE_SAND_PREFIX = "/storage/Users";
 static const std::string MEDIA_CLOUD_SAND_PREFIX = "/storage/cloud";
 static const std::string MEDIA_SAND_PREFIX = "/storage/media";
 static const std::string FILE_AUTHORITY = "docs";
-static const int FILE_INTEGRITY_STATUS = 128;
 
 // backup stat file version
 static const std::string VER_10_LINE1 = "version=1.0&attrNum=8";

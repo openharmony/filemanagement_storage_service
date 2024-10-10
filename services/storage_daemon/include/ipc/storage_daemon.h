@@ -133,7 +133,6 @@ private:
     int32_t RestoreconElX(uint32_t userId);
     void ActiveAppCloneUserKey();
     void SetDeleteFlag4KeyFiles();
-    int32_t GenerateIntegrityDirs(int32_t userId, uint32_t integrity);
 };
 } // StorageDaemon
 } // OHOS

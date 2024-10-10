@@ -481,7 +481,7 @@ int KeyManager::InitGlobalUserKeys(void)
     return 0;
 }
 
-int KeyManager::GenerateUserKeys(unsigned int user, uint32_t flags, uint32_t &integrity)
+int KeyManager::GenerateUserKeys(unsigned int user, uint32_t flags)
 {
     LOGI("start, user:%{public}u", user);
     if (!KeyCtrlHasFscryptSyspara()) {
@@ -493,7 +493,7 @@ int KeyManager::GenerateUserKeys(unsigned int user, uint32_t flags, uint32_t &in
         LOGI("El storage dir is not existed");
         return -ENOENT;
     }
-    int ret = GenerateElxAndInstallUserKey(user, integrity);
+    int ret = GenerateElxAndInstallUserKey(user);
     if (ret != E_OK) {
         LOGE("Generate ELX failed!");
         return ret;
@@ -502,7 +502,7 @@ int KeyManager::GenerateUserKeys(unsigned int user, uint32_t flags, uint32_t &in
     return ret;
 }
 
-int KeyManager::GenerateElxAndInstallUserKey(unsigned int user, uint32_t &integrity)
+int KeyManager::GenerateElxAndInstallUserKey(unsigned int user)
 {
     std::string el1Path = USER_EL1_DIR + "/" + std::to_string(user);
     std::string el2Path = USER_EL2_DIR + "/" + std::to_string(user);
@@ -510,9 +510,8 @@ int KeyManager::GenerateElxAndInstallUserKey(unsigned int user, uint32_t &integr
     std::string el4Path = USER_EL4_DIR + "/" + std::to_string(user);
     std::string el5Path = USER_EL5_DIR + "/" + std::to_string(user);
     if (IsDir(el1Path) || IsDir(el2Path) || IsDir(el3Path) || IsDir(el4Path) || IsDir(el5Path)) {
-        integrity = CheckSinglDirectoryIntegrity(el1Path, IStorageDaemon::CRYPTO_FLAG_EL1, USER_EL1_DIR, user) |
-                    CheckSinglDirectoryIntegrity(el2Path, IStorageDaemon::CRYPTO_FLAG_EL2, USER_EL2_DIR, user);
-        return verifyIntegrity(integrity, user);
+        LOGE("user %{public}d el key have existed, create error", user);
+        return -EEXIST;
     }
     int ret = GenerateAndInstallUserKey(user, el1Path, NULL_KEY_AUTH, EL1_KEY);
     if (ret) {
@@ -546,39 +545,6 @@ int KeyManager::GenerateElxAndInstallUserKey(unsigned int user, uint32_t &integr
     }
     saveLockScreenStatus[user] = true;
     return ret;
-}
-
-int KeyManager::verifyIntegrity(uint32_t integrity, unsigned int user) {
-    if (integrity != 0) {
-        LOGE("user %{public}d el is not integrity. create error", user);
-        return -FILE_INTEGRITY_STATUS;
-    }
-    LOGE("user %{public}d el key have existed, create error", user);
-    return -EEXIST;
-}
-
-int KeyManager::CheckSinglDirectoryIntegrity(std::string elXRootPath,
-                                             uint32_t type,
-                                             std::string user_dir,
-                                             unsigned int user)
-{
-    std::string fsctryptVersionPath = elXRootPath + FSCRYPT_VERSION_DIR;
-    std::string encryptedPath = elXRootPath + ENCRYPT_VERSION_DIR;
-    std::string needUpdatePath = elXRootPath + NEED_UPDATE_DIR;
-    std::string secDiscardPath = elXRootPath + SEC_DISCARD_DIR;
-    std::string shieldPath = elXRootPath + SHIELD_DIR;
-    if (std::filesystem::exists(fsctryptVersionPath) && std::filesystem::exists(encryptedPath) &&
-        std::filesystem::exists(needUpdatePath) && std::filesystem::exists(secDiscardPath) &&
-        std::filesystem::exists(shieldPath)) {
-        return 0;
-    }
-    LOGI("Dir is not integrity %{public}u", type);
-    std::map<unsigned int, std::shared_ptr<BaseKey>> emptyKey;
-    int deleteRet = DoDeleteUserCeEceSeceKeys(user, user_dir, emptyKey);
-    if (deleteRet != 0) {
-        LOGE("Delete %{public}u key failed", type);
-    }
-    return type;
 }
 
 int KeyManager::GenerateUserKeyByType(unsigned int user, KeyType type,
