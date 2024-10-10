@@ -30,7 +30,6 @@ const int32_t BS_SIZE = 1024;
 const int32_t ARG_SIZE = 2;
 
 int WrapGetattr(const char *path, struct stat *buf, struct fuse_file_info *fi)
-
 {
     LOGI("mtp WrapGetattr");
     return DelayedSingleton<MtpFileSystem>::GetInstance()->GetAttr(path, buf, fi);
@@ -331,12 +330,12 @@ bool MtpFileSystem::Exec()
 
     if (options_.deviceFile_) {
         // Try to use device file first, if provided
-        if (!device_.Connect(options_.deviceFile_)) {
+        if (!device_.ConnectByDevFile(options_.deviceFile_)) {
             return false;
         }
     } else {
         // Connect to MTP device by order number, if no device file supplied
-        if (!device_.Connect(options_.deviceNo_)) {
+        if (!device_.ConnectByDevFile(options_.deviceNo_)) {
             return false;
         }
     }
