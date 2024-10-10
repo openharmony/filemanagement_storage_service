@@ -125,13 +125,13 @@ int32_t VolumeManager::Mount(const std::string volId, uint32_t flags)
         return E_NON_EXIST;
 #endif
     }
- 
+
     int32_t err = info->Mount(flags);
     if (err != E_OK) {
         LOGE("the volume %{public}s mount failed.", volId.c_str());
         return err;
     }
- 
+
     StorageManagerClient client;
     err = client.NotifyVolumeMounted(info);
     if (err) {
@@ -151,6 +151,14 @@ int32_t VolumeManager::UMount(const std::string volId)
         return E_NON_EXIST;
 #endif
     }
+
+    int32_t err = info->UMount();
+    if (err != E_OK) {
+        LOGE("the volume %{public}s mount failed.", volId.c_str());
+        return err;
+    }
+    return E_OK;
+}
 
 int32_t VolumeManager::Format(const std::string volId, const std::string fsType)
 {
