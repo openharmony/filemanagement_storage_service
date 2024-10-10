@@ -383,9 +383,9 @@ int32_t StorageManagerProxy::UpdateKeyContext(uint32_t userId)
     return reply.ReadInt32();
 }
 
-int32_t StorageManagerProxy::GenerateAppkey(uint32_t appUid, std::string &keyId)
+int32_t StorageManagerProxy::GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId)
 {
-    LOGI("appUid ID: %{public}u", appUid);
+    LOGI("userId ID: %{public}u", userId);
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
@@ -394,7 +394,11 @@ int32_t StorageManagerProxy::GenerateAppkey(uint32_t appUid, std::string &keyId)
         LOGE("WriteInterfaceToken failed");
         return E_WRITE_DESCRIPTOR_ERR;
     }
-    if (!data.WriteUint32(appUid)) {
+    if (!data.WriteUint32(hashId)) {
+        LOGE("Write hashId failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+    if (!data.WriteUint32(userId)) {
         LOGE("Write appUid failed");
         return E_WRITE_PARCEL_ERR;
     }

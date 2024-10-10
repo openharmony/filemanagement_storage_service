@@ -509,9 +509,9 @@ int32_t StorageDaemonStub::HandleGetLockScreenStatus(MessageParcel &data, Messag
 int32_t StorageDaemonStub::HandleGenerateAppkey(MessageParcel &data, MessageParcel &reply)
 {
     uint32_t userId = data.ReadUint32();
-    uint32_t appUid = data.ReadUint32();
+    uint32_t hashId = data.ReadUint32();
     std::string keyId;
-    int err = GenerateAppkey(userId, appUid, keyId);
+    int err = GenerateAppkey(userId, hashId, keyId);
     if (!reply.WriteString(keyId)) {
         return E_WRITE_REPLY_ERR;
     }
