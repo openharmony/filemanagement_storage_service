@@ -87,6 +87,7 @@ int32_t ExternalVolumeInfo::DoCreate(dev_t dev)
         LOGE("External volume DoCreate error.");
         return E_ERR;
     }
+
     return E_OK;
 }
 
@@ -165,7 +166,6 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
         LOGE("volume mount path %{public}s exists, please remove first", GetMountPath().c_str());
         return E_MOUNT;
     }
-
     ret = mkdir(mountPath_.c_str(), S_IRWXU | S_IRWXG | S_IXOTH);
     if (ret) {
         LOGE("the volume %{public}s create mount file %{public}s failed",
@@ -202,9 +202,10 @@ int32_t ExternalVolumeInfo::DoUMount(bool force)
         ps.KillProcess(SIGKILL);
         umount2(mountPath_.c_str(), MNT_DETACH);
         remove(mountPath_.c_str());
+        LOGI("External volume force to unmount success.");
         return E_OK;
     }
-
+    LOGI("External volume start to unmount.");
     int ret = umount(mountPath_.c_str());
     int err = remove(mountPath_.c_str());
     if (err && ret) {
@@ -216,6 +217,7 @@ int32_t ExternalVolumeInfo::DoUMount(bool force)
         LOGE("failed to call remove(%{public}s) error, errno = %{public}d", mountPath_.c_str(), errno);
         return E_SYS_CALL;
     }
+    LOGI("External volume unmount success.");
     return E_OK;
 }
 
