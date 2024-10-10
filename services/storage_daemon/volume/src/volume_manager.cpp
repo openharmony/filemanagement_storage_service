@@ -19,6 +19,7 @@
 #include <sys/sysmacros.h>
 
 #include "ipc/storage_manager_client.h"
+#include "mtp/mtp_device_monitor.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/string_utils.h"
@@ -29,7 +30,6 @@ using namespace std;
 namespace OHOS {
 namespace StorageDaemon {
 VolumeManager* VolumeManager::instance_ = nullptr;
-
 
 VolumeManager* VolumeManager::Instance()
 {
@@ -118,16 +118,20 @@ int32_t VolumeManager::Mount(const std::string volId, uint32_t flags)
 {
     std::shared_ptr<VolumeInfo> info = GetVolume(volId);
     if (info == nullptr) {
+#ifdef SUPPORT_OPEN_SOURCE_MTP_DEVICE
+        return DelayedSingleton<OHOS::StorageDaemon::MtpDeviceMonitor>::GetInstance()->Mount(volId);
+#else
         LOGE("the volume %{public}s does not exist.", volId.c_str());
         return E_NON_EXIST;
+#endif
     }
-
+ 
     int32_t err = info->Mount(flags);
     if (err != E_OK) {
         LOGE("the volume %{public}s mount failed.", volId.c_str());
         return err;
     }
-
+ 
     StorageManagerClient client;
     err = client.NotifyVolumeMounted(info);
     if (err) {
@@ -140,17 +144,13 @@ int32_t VolumeManager::UMount(const std::string volId)
 {
     std::shared_ptr<VolumeInfo> info = GetVolume(volId);
     if (info == nullptr) {
+#ifdef SUPPORT_OPEN_SOURCE_MTP_DEVICE
+        return DelayedSingleton<OHOS::StorageDaemon::MtpDeviceMonitor>::GetInstance()->Umount(volId);
+#else
         LOGE("the volume %{public}s does not exist.", volId.c_str());
         return E_NON_EXIST;
+#endif
     }
-
-    int32_t err = info->UMount();
-    if (err != E_OK) {
-        LOGE("the volume %{public}s mount failed.", volId.c_str());
-        return err;
-    }
-    return E_OK;
-}
 
 int32_t VolumeManager::Format(const std::string volId, const std::string fsType)
 {
