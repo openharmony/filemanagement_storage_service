@@ -29,12 +29,12 @@ MtpFsDevice::MtpFsDevice() : device_(nullptr), capabilities_(), deviceMutex_(), 
 {
     MtpFsUtil::Off();
     LIBMTP_Init();
-    
     MtpFsUtil::On();
 }
 
 MtpFsDevice::~MtpFsDevice()
 {
+    LOGI("MtpFsDevice Destructor.");
     Disconnect();
 }
 
@@ -65,7 +65,7 @@ bool MtpFsDevice::Connect(LIBMTP_raw_device_t *dev)
     return true;
 }
 
-bool MtpFsDevice::ConnectPrivJudgeErr(LIBMTP_error_number_t err)
+bool MtpFsDevice::ConvertErrorCode(LIBMTP_error_number_t err)
 {
     if (err != LIBMTP_ERROR_NONE) {
         switch (err) {
@@ -92,24 +92,6 @@ bool MtpFsDevice::ConnectPrivJudgeErr(LIBMTP_error_number_t err)
     return true;
 }
 
-bool MtpFsDevice::ConnectPrivInner()
-{
-    if (!device_) {
-        LOGE("device_ is nullptr");
-        LIBMTP_Dump_Errorstack(device_);
-        return false;
-    }
-
-    if (!EnumStorages()) {
-        LOGE("EnumStorages fail");
-        return false;
-    }
-    // Retrieve capabilities.
-    capabilities_ = MtpFsDevice::GetCapabilities(*this);
-    LOGI("Connected");
-    return true;
-}
-
 void MtpFsDevice::HandleDevNum(const std::string &devFile, int &devNo, int rawDevicesCnt,
     LIBMTP_raw_device_t *rawDevices)
 {
@@ -124,22 +106,19 @@ void MtpFsDevice::HandleDevNum(const std::string &devFile, int &devNo, int rawDe
     }
 }
 
-bool MtpFsDevice::ConnectPriv(int devNo, const std::string &devFile)
+bool MtpFsDevice::ConnectByDevNo(int devNo)
 {
+    LOGI("Start to connect by device number = %{public}d.", devNo);
     if (device_) {
         LOGI("Already connected");
         return true;
     }
-
     int rawDevicesCnt;
     LIBMTP_raw_device_t *rawDevices;
-
-    // Do not output LIBMTP debug stuff
     MtpFsUtil::Off();
     LIBMTP_error_number_t err = LIBMTP_Detect_Raw_Devices(&rawDevices, &rawDevicesCnt);
     MtpFsUtil::On();
-
-    if (!ConnectPrivJudgeErr(err)) {
+    if (!ConvertErrorCode(err)) {
         return false;
     }
 
@@ -148,27 +127,27 @@ bool MtpFsDevice::ConnectPriv(int devNo, const std::string &devFile)
         free(static_cast<void *>(rawDevices));
         return false;
     }
-
     LIBMTP_raw_device_t *rawDevice = &rawDevices[devNo];
-
-    // Do not output LIBMTP debug stuff
+    
     MtpFsUtil::Off();
     device_ = LIBMTP_Open_Raw_Device_Uncached(rawDevice);
     MtpFsUtil::On();
     free(static_cast<void *>(rawDevices));
-
-    if (!ConnectPrivInner()) {
+    if (!device_) {
+        LOGE("device_ is nullptr");
+        LIBMTP_Dump_Errorstack(device_);
         return false;
     }
+    if (!EnumStorages()) {
+        LOGE("EnumStorages failed.");
+        return false;
+    }
+    capabilities_ = MtpFsDevice::GetCapabilities(*this);
+    LOGI("Connect by device number success.");
     return true;
 }
-
-bool MtpFsDevice::Connect(int devNo)
-{
-    return ConnectPriv(devNo, std::string());
-}
-
-bool MtpFsDevice::Connect(const std::string &devFile)
+ 
+bool MtpFsDevice::ConnectByDevFile(const std::string &devFile)
 {
     if (device_) {
         LOGE("Already connected");
@@ -216,15 +195,17 @@ uint64_t MtpFsDevice::StorageFreeSize() const
 
 bool MtpFsDevice::EnumStorages()
 {
+    LOGI("Start to enum mtp device storages.");
     CriticalEnter();
     LIBMTP_Clear_Errorstack(device_);
     if (LIBMTP_Get_Storage(device_, LIBMTP_STORAGE_SORTBY_NOTSORTED) < 0) {
-        LOGE("Could not retrieve device storage. Exiting");
+        LOGE("Could not retrieve device storage.");
         LIBMTP_Dump_Errorstack(device_);
         LIBMTP_Clear_Errorstack(device_);
         return false;
     }
     CriticalLeave();
+    LOGI("Enum mtp device storages success.");
     return true;
 }
 
@@ -664,7 +645,6 @@ MtpFsDevice::Capabilities MtpFsDevice::GetCapabilities() const
 MtpFsDevice::Capabilities MtpFsDevice::GetCapabilities(const MtpFsDevice &device)
 {
     MtpFsDevice::Capabilities capabilities;
-
 #ifdef HAVE_LIBMTP_CHECK_CAPABILITY
     if (device.device_) {
         capabilities.SetCanGetPartialObject(
@@ -675,6 +655,5 @@ MtpFsDevice::Capabilities MtpFsDevice::GetCapabilities(const MtpFsDevice &device
             static_cast<bool>(LIBMTP_Check_Capability(device.device_, LIBMTP_DEVICECAP_EditObjects)));
     }
 #endif
-
     return capabilities;
 }
