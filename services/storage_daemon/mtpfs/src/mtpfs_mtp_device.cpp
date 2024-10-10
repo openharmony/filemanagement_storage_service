@@ -29,6 +29,7 @@ MtpFsDevice::MtpFsDevice() : device_(nullptr), capabilities_(), deviceMutex_(), 
 {
     MtpFsUtil::Off();
     LIBMTP_Init();
+    
     MtpFsUtil::On();
 }
 

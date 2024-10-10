@@ -90,6 +90,7 @@ public:
                              const std::vector<uint8_t> &secret) override;
     int32_t SetRecoverKey(const std::vector<uint8_t> &key) override;
 
+
     // app file share api
     std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,
                                         uint32_t tokenId, uint32_t flag) override;

@@ -40,6 +40,7 @@ MtpDeviceMonitor::MtpDeviceMonitor() {}
 MtpDeviceMonitor::~MtpDeviceMonitor()
 {
     LOGI("MtpDeviceMonitor Destructor.");
+    
     UmountAllMtpDevice();
 }
 

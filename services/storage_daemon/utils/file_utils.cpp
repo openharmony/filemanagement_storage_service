@@ -661,5 +661,36 @@ bool IsPathMounted(std::string &path)
     inputStream.close();
     return false;
 }
+
+bool CreateFolder(const std::string &path)
+{
+    if (!access(path.c_str(), F_OK) || path == "") {
+        return true;
+    }
+ 
+    size_t pos = path.rfind("/");
+    if (pos == std::string::npos) {
+        return false;
+    }
+ 
+    std::string upperPath = path.substr(0, pos);
+    if (CreateFolder(upperPath)) {
+        if (mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO)) {
+            if (errno != EEXIST) {
+                return false;
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+bool DelFolder(const std::string &path)
+{
+    if (rmdir(path.c_str()) == 0) {
+        return true;
+    }
+    return false;
+}
 } // STORAGE_DAEMON
 } // OHOS

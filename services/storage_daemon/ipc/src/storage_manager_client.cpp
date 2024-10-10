@@ -126,5 +126,31 @@ int32_t StorageManagerClient::NotifyVolumeStateChanged(std::string volId, Storag
 
     return E_OK;
 }
+
+int32_t StorageManagerClient::NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc)
+ 
+{
+    LOGI("NotifyMtpMounted: id = %{public}s, path = %{public}s, desc = %{public}s", id.c_str(),
+        path.c_str(), desc.c_str());
+    if (GetClient() != E_OK) {
+        return E_SERVICE_IS_NULLPTR;
+    }
+    if (storageManager_ != nullptr) {
+        storageManager_->NotifyMtpMounted(id, path, desc);
+    }
+    return E_OK;
+}
+ 
+int32_t StorageManagerClient::NotifyMtpUnmounted(const std::string &id, const std::string &path)
+{
+    LOGI("NotifyMtpUnmounted: id = %{public}s, path = %{public}s", id.c_str(), path.c_str());
+    if (GetClient() != E_OK) {
+        return E_SERVICE_IS_NULLPTR;
+    }
+    if (storageManager_ != nullptr) {
+        storageManager_->NotifyMtpUnmounted(id, path);
+    }
+    return E_OK;
+}
 } // StorageDaemon
 } // OHOS

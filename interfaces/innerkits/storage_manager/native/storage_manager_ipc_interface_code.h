@@ -87,6 +87,8 @@ namespace StorageManager {
         GET_FILE_ENCRYPT_STATUS,
         CREATE_RECOVER_KEY,
         SET_RECOVER_KEY,
+        NOTIFY_MTP_MOUNT,
+        NOTIFY_MTP_UNMOUNT,
     };
 } // namespace StorageManager
 } // namespace OHOS

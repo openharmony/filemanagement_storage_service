@@ -1378,6 +1378,69 @@ int32_t StorageManagerProxy::UpdateMemoryPara(int32_t size, int32_t &oldSize)
     return E_OK;
 }
 
+int32_t StorageManagerProxy::NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc)
+{
+    LOGI("StorageManagerProxy::NotifyMtpMounted, path:%{public}s", path.c_str());
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("StorageManagerProxy::NotifyMtpMounted, WriteInterfaceToken failed");
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+ 
+    if (!data.WriteString(id)) {
+        LOGE("StorageManagerProxy::NotifyMtpMounted id, WriteInterfaceToken failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+ 
+    if (!data.WriteString(path)) {
+        LOGE("StorageManagerProxy::NotifyMtpMounted path, WriteInterfaceToken failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+ 
+    if (!data.WriteString(desc)) {
+        LOGE("StorageManagerProxy::NotifyMtpMounted desc, WriteInterfaceToken failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+ 
+    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_MTP_MOUNT), data, reply, option);
+    if (err != E_OK) {
+        LOGE("StorageManagerProxy::NotifyMtpMounted, SendRequest failed");
+        return err;
+    }
+    return reply.ReadInt32();
+}
+ 
+int32_t StorageManagerProxy::NotifyMtpUnmounted(const std::string &id, const std::string &path)
+{
+    LOGI("StorageManagerProxy::NotifyMtpUnmounted, path:%{public}s", path.c_str());
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("StorageManagerProxy::NotifyMtpUnmounted, WriteInterfaceToken failed");
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    if (!data.WriteString(id)) {
+        LOGE("StorageManagerProxy::NotifyMtpUnmounted id, WriteInterfaceToken failed");
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    if (!data.WriteString(path)) {
+        LOGE("StorageManagerProxy::NotifyMtpUnmounted path, WriteInterfaceToken failed");
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_MTP_UNMOUNT), data, reply, option);
+    if (err != E_OK) {
+        LOGE("StorageManagerProxy::NotifyMtpUnmounted, SendRequest failed");
+        return err;
+    }
+    return reply.ReadInt32();
+}
+
 int32_t StorageManagerProxy::SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {

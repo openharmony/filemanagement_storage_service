@@ -71,6 +71,8 @@ public:
                                      const std::vector<uint8_t> &token,
                                      const std::vector<uint8_t> &secret) override;
     virtual int32_t SetRecoverKey(const std::vector<uint8_t> &key) override;
+    int32_t NotifyMtpMounted(std::string id, std::string path) override;
+    int32_t NotifyMtpUnmounted(std::string id, std::string path) override;
 
     // app file share api
     virtual std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,

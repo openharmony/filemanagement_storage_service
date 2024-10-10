@@ -32,7 +32,9 @@
 #ifdef DFS_SERVICE
 #include "cloud_daemon_manager.h"
 #endif
-
+#ifdef SUPPORT_OPEN_SOURCE_MTP_DEVICE
+#include "mtp/mtp_device_monitor.h"
+#endif
 using namespace OHOS;
 #ifdef DFS_SERVICE
 using namespace OHOS::FileManagement::CloudFile;
@@ -127,6 +129,10 @@ int main()
         LOGE("Paras config failed");
         return -1;
     }
+#endif
+
+#ifdef SUPPORT_OPEN_SOURCE_MTP_DEVICE
+    DelayedSingleton<OHOS::StorageDaemon::MtpDeviceMonitor>::GetInstance()->StartMonitor();
 #endif
 
     do {

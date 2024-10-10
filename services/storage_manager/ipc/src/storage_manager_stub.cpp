@@ -186,6 +186,10 @@ StorageManagerStub::StorageManagerStub()
         &StorageManagerStub::HandleCreateRecoverKey;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::SET_RECOVER_KEY)] =
         &StorageManagerStub::HandleSetRecoverKey;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::NOTIFY_MTP_MOUNT)] =
+        &StorageManagerStub::HandleNotifyMtpMount;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::NOTIFY_MTP_UNMOUNT)] =
+        &StorageManagerStub::HandleNotifyMtpUnmount;
 }
 
 int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
@@ -299,6 +303,10 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
             return HandleCreateRecoverKey(data, reply);
         case static_cast<uint32_t>(StorageManagerInterfaceCode::SET_RECOVER_KEY):
             return HandleSetRecoverKey(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::NOTIFY_MTP_MOUNT):
+            return HandleNotifyMtpMount(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::NOTIFY_MTP_UNMOUNT):
+            return HandleNotifyMtpUnmount(data, reply);
         default:
             LOGE("Cannot response request %d: unknown tranction", code);
             return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
@@ -1156,7 +1164,7 @@ int32_t StorageManagerStub::HandleGetUserStorageStatsByType(MessageParcel &data,
         return E_WRITE_REPLY_ERR;
     }
     if (!storageStats.Marshalling(reply)) {
-        return  E_WRITE_REPLY_ERR;
+        return E_WRITE_REPLY_ERR;
     }
     return E_OK;
 }
@@ -1219,6 +1227,35 @@ int32_t StorageManagerStub::HandleUMountDfsDocs(MessageParcel &data, MessageParc
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleNotifyMtpMount(MessageParcel &data, MessageParcel &reply)
+{
+    std::string id = data.ReadString();
+    std::string path = data.ReadString();
+    std::string desc = data.ReadString();
+    int32_t err = NotifyMtpMounted(id, path, desc);
+    if (!reply.WriteInt32(err)) {
+        LOGE("Write reply error code failed");
+        return E_WRITE_REPLY_ERR;
+    }
+
+    LOGI("StorageManagerStub::HandleNotifyMtpMount");
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleNotifyMtpUnmount(MessageParcel &data, MessageParcel &reply)
+{
+    std::string id = data.ReadString();
+    std::string path = data.ReadString();
+    int32_t err = NotifyMtpUnmounted(id, path);
+    if (!reply.WriteInt32(err)) {
+        LOGE("Write reply error code failed");
+        return E_WRITE_REPLY_ERR;
+    }
+
+    LOGI("StorageManagerStub::HandleNotifyMtpUnmount");
     return E_OK;
 }
 } // StorageManager
