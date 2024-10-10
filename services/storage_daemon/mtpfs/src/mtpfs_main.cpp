@@ -23,6 +23,7 @@ int main(int argc, char **argv)
         LOGE("mtp wrong usage! See ` %{public}s -h' for details", SmtpfsBaseName(argv[0]).c_str());
         return 1;
     }
+    
     bool success = DelayedSingleton<MtpFileSystem>::GetInstance()->Exec();
     return !success;
 }

@@ -63,6 +63,9 @@ private:
     int32_t HandleFormat(MessageParcel &data, MessageParcel &reply);
     int32_t HandleGetDiskById(MessageParcel &data, MessageParcel &reply);
 
+    int32_t HandleNotifyMtpMount(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleNotifyMtpUnmount(MessageParcel &data, MessageParcel &reply);
+
     // fscrypt api
     int32_t HandleGenerateUserKeys(MessageParcel &data, MessageParcel &reply);
     int32_t HandleDeleteUserKeys(MessageParcel &data, MessageParcel &reply);

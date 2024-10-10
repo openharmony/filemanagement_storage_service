@@ -29,7 +29,7 @@
 #define HAVE_LIBMTP 1
 
 /* Check device capabilities */
-#undef HAVE_LIBMTP_CHECK_CAPABILITY
+#define HAVE_LIBMTP_CHECK_CAPABILITY
 
 /* Define to 1 if you have the <libmtp.h> header file. */
 #define HAVE_LIBMTP_H 1
