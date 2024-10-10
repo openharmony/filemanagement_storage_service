@@ -29,7 +29,7 @@ int32_t KeyManager::InitGlobalUserKeys(void)
     return E_OK;
 }
 
-int32_t KeyManager::GenerateUserKeys(unsigned int user, uint32_t flags, uint32_t &integrity)
+int32_t KeyManager::GenerateUserKeys(unsigned int user, uint32_t flags)
 {
     return E_OK;
 }
