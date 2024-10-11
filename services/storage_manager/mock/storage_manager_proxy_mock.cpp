@@ -305,5 +305,14 @@ int32_t StorageManagerProxy::GetFileEncryptStatus(uint32_t userId, bool &isEncry
     return E_OK;
 }
 
+int32_t StorageManagerProxy::NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc)
+{
+    return E_OK;
+}
+ 
+int32_t StorageManagerProxy::NotifyMtpUnmounted(const std::string &id, const std::string &path)
+{
+    return E_OK;
+}
 } // StorageManager
 } // OHOS

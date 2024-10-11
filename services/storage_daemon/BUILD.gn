@@ -65,6 +65,7 @@ ohos_executable("storage_daemon") {
     "quota/quota_manager.cpp",
     "user/src/mount_manager.cpp",
     "user/src/user_manager.cpp",
+    "utils/cmd_utils.cpp",
     "utils/disk_utils.cpp",
     "utils/mount_argument_utils.cpp",
   ]
@@ -162,7 +163,11 @@ ohos_executable("storage_daemon") {
   }
 
   if (support_open_source_libmtp) {
-    defines += [ "SUPPORT_OPEN_SOURCE_LIBMTP" ]
+    defines += [ "SUPPORT_OPEN_SOURCE_MTP_DEVICE" ]
+    sources += [
+      "mtp/src/mtp_device_manager.cpp",
+      "mtp/src/mtp_device_monitor.cpp",
+    ]
     external_deps += [ "libmtp:libmtp" ]
   }
 

@@ -75,6 +75,8 @@ int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
     }
     if (!success || (result.size() != 0)) {
         LOGE("Run mtpfs cmd to mount mtp device failed.");
+        std::vector<std::string> result;
+        CmdUtils::GetInstance().RunCmd("umount " + device.path, result);
         DelFolder(device.path);
         isMounting = false;
         return E_MTP_MOUNT_FAILED;
@@ -83,7 +85,7 @@ int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
     LOGI("Run mtpfs cmd to mount mtp device success.");
     isMounting = false;
     StorageManagerClient client;
-    client.NotifyMtpMounted(device.id, device.path);
+    client.NotifyMtpMounted(device.id, device.path, device.vendor + " " + device.product);
     return E_OK;
 }
 

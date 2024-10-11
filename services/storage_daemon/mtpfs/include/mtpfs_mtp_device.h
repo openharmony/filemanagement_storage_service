@@ -61,8 +61,8 @@ public:
     ~MtpFsDevice();
 
     bool Connect(LIBMTP_raw_device_t *dev);
-    bool Connect(int devNo = 0);
-    bool Connect(const std::string &devFile);
+    bool ConnectByDevNo(int devNo = 0);
+    bool ConnectByDevFile(const std::string &devFile);
     void Disconnect();
 
     void EnableMove(bool e = true)
@@ -101,9 +101,7 @@ private:
 
     bool EnumStorages();
     static Capabilities GetCapabilities(const MtpFsDevice &device);
-    bool ConnectPriv(int devNo, const std::string &devFile);
-    bool ConnectPrivJudgeErr(LIBMTP_error_number_t err);
-    bool ConnectPrivInner();
+    bool ConvertErrorCode(LIBMTP_error_number_t err);
     const void HandleDir(LIBMTP_file_t *content, MtpFsTypeDir *dir);
     void HandleDevNum(const std::string &devFile, int &devNo, int rawDevicesCnt, LIBMTP_raw_device_t *rawDevices);
     int ReNameInner(const std::string &oldPath, const std::string &newPath);

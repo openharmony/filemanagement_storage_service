@@ -305,6 +305,14 @@ public:
     {
         return E_OK;
     }
+    int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc) override
+    {
+        return E_OK;
+    }
+    int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path) override
+    {
+        return E_OK;
+    }
 };
 } // namespace StorageManager
 } // namespace OHOS

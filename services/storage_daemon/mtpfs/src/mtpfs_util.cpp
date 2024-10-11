@@ -113,7 +113,6 @@ std::string SmtpfsGetTmpDir()
 {
     const char *cTmp = "/data/mtp_tmp";
     OHOS::StorageDaemon::DelTemp(cTmp);
-    LOGI("SmtpfsGetTmpDir cTmp:'", cTmp);
     std::string tmpDir;
     if (cTmp) {
         tmpDir = SmtpfsRealPath(cTmp);
@@ -124,11 +123,8 @@ std::string SmtpfsGetTmpDir()
         }
         tmpDir = SmtpfsRealPath(cTmp);
     }
-
     tmpDir += "/simple-mtpfs-XXXXXX";
-
     char *cTmpDir = ::mkdtemp(::strdup(tmpDir.c_str()));
-    LOGI("SmtpfsGetTmpDir cTmpDir:'", cTmpDir);
     tmpDir.assign(cTmpDir);
     ::free(static_cast<void *>(cTmpDir));
     return tmpDir;

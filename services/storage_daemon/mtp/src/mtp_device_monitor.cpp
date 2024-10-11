@@ -19,6 +19,7 @@
 #include <dirent.h>
 #include <filesystem>
 #include <iostream>
+#include <libmtp.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -140,16 +141,14 @@ void MtpDeviceMonitor::CheckAndUmountRemovedMtpDevice()
     std::lock_guard<std::mutex> lock(listMutex_);
     for (auto iter = lastestMtpDevList_.begin(); iter != lastestMtpDevList_.end();) {
         int res = LIBMTP_Check_Specific_Device(iter->busLocation, iter->devNum);
-        LOGI("LIBMTP_Check_Specific_Device result=%{public}d", res);
-        bool ret2 = !std::filesystem::is_empty(iter->path);
-        bool ret1 = IsDir(iter->path);
-        LOGI("ret1=%{public}d, ret2=%{public}d", ret1, ret2);
-        if (IsDir(iter->path) && !std::filesystem::is_empty(iter->path)) {
+        LOGI("Check mtp device state result=%{public}d, devNum=%{public}d, busLocation=%{public}d.", res,
+            iter->devNum, iter->busLocation);
+        if (IsDir(iter->path) && !std::filesystem::is_empty(iter->path) && (res > 0)) {
             iter++;
             continue;
         }
 
-        LOGI("Mtp device mount path=%{public}s is not exist or directory empty, umount it.", (iter->path).c_str());
+        LOGI("Mtp device mount path=%{public}s is not exist or removed, umount it.", (iter->path).c_str());
         int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->UmountDevice(*iter);
         if (ret == E_OK) {
             iter = lastestMtpDevList_.erase(iter);
@@ -158,6 +157,44 @@ void MtpDeviceMonitor::CheckAndUmountRemovedMtpDevice()
             iter++;
         }
     }
+}
+
+int32_t MtpDeviceMonitor::Mount(const std::string &id)
+{
+    LOGI("MtpDeviceMonitor: start mount mtp device by id=%{public}s", id.c_str());
+    std::lock_guard<std::mutex> lock(listMutex_);
+    for (auto iter = lastestMtpDevList_.begin(); iter != lastestMtpDevList_.end(); iter++) {
+        if (iter->id != id) {
+            continue;
+        }
+        int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->MountDevice(*iter);
+        if (ret != E_OK) {
+            LOGE("MountMtpDevice: mtp device mount failed.");
+        }
+        return ret;
+    }
+    LOGE("the volume id %{public}s does not exist.", id.c_str());
+    return E_NON_EXIST;
+}
+ 
+int32_t MtpDeviceMonitor::Umount(const std::string &id)
+{
+    LOGI("MtpDeviceMonitor: start umount mtp device by id=%{public}s", id.c_str());
+    std::lock_guard<std::mutex> lock(listMutex_);
+    for (auto iter = lastestMtpDevList_.begin(); iter != lastestMtpDevList_.end(); iter++) {
+        if (iter->id != id) {
+            continue;
+        }
+        int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->UmountDevice(*iter);
+        if (ret == E_OK) {
+            lastestMtpDevList_.erase(iter);
+        } else {
+            LOGE("Umount mtp device failed, path=%{public}s", (iter->path).c_str());
+        }
+        return ret;
+    }
+    LOGE("the volume id %{public}s does not exist.", id.c_str());
+    return E_NON_EXIST;
 }
 }  // namespace StorageDaemon
 }  // namespace OHOS

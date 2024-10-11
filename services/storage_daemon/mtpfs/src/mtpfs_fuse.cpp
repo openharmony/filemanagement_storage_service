@@ -330,12 +330,12 @@ bool MtpFileSystem::Exec()
 
     if (options_.deviceFile_) {
         // Try to use device file first, if provided
-        if (!device_.Connect(options_.deviceFile_)) {
+        if (!device_.ConnectByDevFile(options_.deviceFile_)) {
             return false;
         }
     } else {
         // Connect to MTP device by order number, if no device file supplied
-        if (!device_.Connect(options_.deviceNo_)) {
+        if (!device_.ConnectByDevFile(options_.deviceNo_)) {
             return false;
         }
     }
