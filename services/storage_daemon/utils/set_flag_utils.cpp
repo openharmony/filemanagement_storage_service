@@ -105,7 +105,7 @@ bool SetFlagUtils::SetFileDelFlags(const std::string &filepath)
     return true;
 }
 
-void SetFlagUtils::SetDirDelFlags(const std::string &dirpath)
+bool SetFlagUtils::SetDirDelFlags(const std::string &dirpath)
 {
     LOGI("SetFlagUtils SetDirDelFlags for dirpath=%{public}s start.", dirpath.c_str());
     char absPath[PATH_MAX] = {0};
