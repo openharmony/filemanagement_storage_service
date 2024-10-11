@@ -33,6 +33,7 @@ namespace {
 constexpr const char *FBEX_UFS_INLINE_SUPPORT_PREFIX = "/sys/devices/platform/";
 constexpr const char *FBEX_UFS_INLINE_SUPPORT_END = "/ufs_inline_stat";
 constexpr const char *FBEX_NVME_INLINE_SUPPORT_PATH = "/sys/block/nvme_crypto";
+constexpr const char *FBEX_EMMC_INLINE_SUPPORT_PATH = "/sys/block/emmc_crypto";
 constexpr const char *FBEX_UFS_INLINE_BASE_ADDR = "/proc/bootdevice/name";
 constexpr const char *FBEX_INLINE_CRYPTO_V3 = "3\n";
 
@@ -101,11 +102,12 @@ bool FBEX::IsFBEXSupported()
 
     std::string path = FBEX_UFS_INLINE_SUPPORT_PREFIX + baseAddr + FBEX_UFS_INLINE_SUPPORT_END;
     std::string nvmePath = FBEX_NVME_INLINE_SUPPORT_PATH;
+    std::string emmcPath = FBEX_EMMC_INLINE_SUPPORT_PATH;
     std::string rpath(PATH_MAX + 1, '\0');
 
     if ((path.length() > PATH_MAX) || (realpath(path.c_str(), rpath.data()) == nullptr)) {
         LOGE("realpath of %{public}s failed, errno: %{public}d", path.c_str(), errno);
-        return access(nvmePath.c_str(), F_OK) == 0;
+        return ((access(nvmePath.c_str(), F_OK) == 0) || (access(emmcPath.c_str(), F_OK) == 0));
     }
     if (rpath.rfind(FBEX_UFS_INLINE_SUPPORT_PREFIX) != 0) {
         LOGE("rpath %{public}s is invalid", rpath.c_str());
