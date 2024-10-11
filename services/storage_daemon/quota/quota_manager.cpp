@@ -269,8 +269,7 @@ int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int32_t prjId, bool
         (void)fclose(f);
         return E_SYS_CALL;
     }
-    uint32_t uintprjId = static_cast<uint32_t>(prjId);
-    if (fsx.fsx_projid == uintprjId) {
+    if (fsx.fsx_projid == static_cast<uint32_t>(prjId)) {
         (void)fclose(f);
         return E_OK;
     }
