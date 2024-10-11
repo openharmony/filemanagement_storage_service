@@ -21,7 +21,6 @@
 #include <string>
 #include <thread>
 #include <vector>
-#include <libmtp.h>
 #include "mtp/mtp_device_manager.h"
 
 namespace OHOS {
@@ -30,6 +29,8 @@ class MtpDeviceMonitor : public NoCopyable  {
     DECLARE_DELAYED_SINGLETON(MtpDeviceMonitor);
 public:
     void StartMonitor();
+    int32_t Mount(const std::string &id);
+    int32_t Umount(const std::string &id);
 
 private:
     void MonitorDevice();

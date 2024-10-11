@@ -19,6 +19,7 @@
 #include <sys/sysmacros.h>
 
 #include "ipc/storage_manager_client.h"
+#include "mtp/mtp_device_monitor.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/string_utils.h"
@@ -118,8 +119,12 @@ int32_t VolumeManager::Mount(const std::string volId, uint32_t flags)
 {
     std::shared_ptr<VolumeInfo> info = GetVolume(volId);
     if (info == nullptr) {
+#ifdef SUPPORT_OPEN_SOURCE_MTP_DEVICE
+        return DelayedSingleton<OHOS::StorageDaemon::MtpDeviceMonitor>::GetInstance()->Mount(volId);
+#else
         LOGE("the volume %{public}s does not exist.", volId.c_str());
         return E_NON_EXIST;
+#endif
     }
 
     int32_t err = info->Mount(flags);
@@ -140,8 +145,12 @@ int32_t VolumeManager::UMount(const std::string volId)
 {
     std::shared_ptr<VolumeInfo> info = GetVolume(volId);
     if (info == nullptr) {
+#ifdef SUPPORT_OPEN_SOURCE_MTP_DEVICE
+        return DelayedSingleton<OHOS::StorageDaemon::MtpDeviceMonitor>::GetInstance()->Umount(volId);
+#else
         LOGE("the volume %{public}s does not exist.", volId.c_str());
         return E_NON_EXIST;
+#endif
     }
 
     int32_t err = info->UMount();
