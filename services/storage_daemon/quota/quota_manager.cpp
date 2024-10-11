@@ -253,7 +253,6 @@ int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int32_t prjId, bool
         LOGE("realpath failed");
         return E_SYS_CALL;
     }
-
     FILE *f = fopen(realPath, "r");
     free(realPath);
     if (f == nullptr) {
@@ -272,6 +271,7 @@ int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int32_t prjId, bool
     }
     uint32_t uintprjId = static_cast<uint32_t>(prjId);
     if (fsx.fsx_projid == uintprjId) {
+        (void)fclose(f);
         return E_OK;
     }
     fsx.fsx_projid = static_cast<uint32_t>(prjId);
@@ -280,7 +280,6 @@ int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int32_t prjId, bool
         (void)fclose(f);
         return E_SYS_CALL;
     }
-
     if (inherit) {
         uint32_t flags;
         if (ioctl(fd, FS_IOC_GETFLAGS, &flags) == -1) {
@@ -295,6 +294,7 @@ int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int32_t prjId, bool
             return E_SYS_CALL;
         }
     }
+    (void)fclose(f);
     return E_OK;
 }
 
