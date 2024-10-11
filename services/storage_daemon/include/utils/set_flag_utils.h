@@ -26,8 +26,8 @@ public:
     static void ParseDirAllPath();
 private:
     static void ParseDirPath(const std::string &path);
-    static void SetDirDelFlags(const std::string &dirpath);
-    static void SetFileDelFlags(const std::string &dirpath);
+    static bool SetDirDelFlags(const std::string &dirpath);
+    static bool SetFileDelFlags(const std::string &dirpath);
 };
 
 } // namespace StorageService
