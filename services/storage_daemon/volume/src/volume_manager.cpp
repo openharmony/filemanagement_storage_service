@@ -31,7 +31,6 @@ namespace OHOS {
 namespace StorageDaemon {
 VolumeManager* VolumeManager::instance_ = nullptr;
 
-
 VolumeManager* VolumeManager::Instance()
 {
     if (instance_ == nullptr) {
