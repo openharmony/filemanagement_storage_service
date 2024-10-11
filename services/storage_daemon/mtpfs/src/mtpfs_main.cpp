@@ -23,7 +23,6 @@ int main(int argc, char **argv)
     if (!DelayedSingleton<MtpFileSystem>::GetInstance()->ParseOptions(argc, argv)) {
         LOGE("mtpfs wrong usage, see %{public}s -h for details.", SmtpfsBaseName(argv[0]).c_str());
         std::cout << "mtpfs wrong usage, see " << SmtpfsBaseName(argv[0]) << " -h for details.\n";
-        LOGE("mtp wrong usage! See ` %{public}s -h' for details", SmtpfsBaseName(argv[0]).c_str());
         return 1;
     }
     
