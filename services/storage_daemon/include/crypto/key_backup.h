@@ -59,6 +59,7 @@ private:
 
     void FsyncDirectory(const std::string &dirName);
     int32_t MkdirParent(const std::string &pathName, mode_t mode);
+    int32_t MkdirParentWithRetry(const std::string &pathName, mode_t mode);
     void CleanFile(const std::string &path);
     void CheckAndCopyFiles(const std::string &from, const std::string &to);
     int32_t CheckAndCopyOneFile(const std::string &from, const std::string &to);

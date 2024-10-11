@@ -13,11 +13,15 @@
  * limitations under the License.
  */
 
+#include <unistd.h>
+
 #include "iam_client.h"
 #include "storage_service_log.h"
 
 namespace OHOS {
 namespace StorageDaemon {
+const uint8_t IAM_MAX_RETRY_TIME = 3;
+const uint16_t IAM_RETRY_INTERVAL_MS = 50 * 1000;
 IamClient::IamClient()
 {
     LOGD("enter");
@@ -63,8 +67,18 @@ bool IamClient::GetSecureUid(uint32_t userId, uint64_t &secureUid)
     LOGI("get secure uid real !");
     secureUidStatus_ = FAILED;
     std::shared_ptr<UserSecCallback> secCallback = std::make_shared<UserSecCallback>();
-    if (UserIam::UserAuth::UserIdmClient::GetInstance().GetSecUserInfo(userId, secCallback) !=
-        UserIam::UserAuth::ResultCode::SUCCESS) {
+    int32_t retCode = UserIam::UserAuth::UserIdmClient::GetInstance().GetSecUserInfo(userId, secCallback);
+    if (retCode != UserIam::UserAuth::ResultCode::SUCCESS) {
+        for (int i = 0; i < IAM_MAX_RETRY_TIME; ++i) {
+            usleep(IAM_RETRY_INTERVAL_MS);
+            retCode = UserIam::UserAuth::UserIdmClient::GetInstance().GetSecUserInfo(userId, secCallback);
+            LOGE("GetSecureUid has retry %{public}d times, retryRet %{public}d", i, retCode);
+            if (retCode == UserIam::UserAuth::ResultCode::SUCCESS) {
+                break;
+            }
+        }
+    }
+    if (retCode != UserIam::UserAuth::ResultCode::SUCCESS) {
         LOGE("Get secure uid failed !");
         return false;
     }
@@ -91,8 +105,18 @@ bool IamClient::GetSecUserInfo(uint32_t userId, UserIam::UserAuth::SecUserInfo &
     LOGI("Get SecUserInfo real !");
     secUserInfoState_ = SEC_USER_INFO_FAILED;
     std::shared_ptr<UserEnrollCallback> userEnrollCallback = std::make_shared<UserEnrollCallback>();
-    if (UserIam::UserAuth::UserIdmClient::GetInstance().GetSecUserInfo(userId, userEnrollCallback) !=
-        UserIam::UserAuth::ResultCode::SUCCESS) {
+    int32_t retCode = UserIam::UserAuth::UserIdmClient::GetInstance().GetSecUserInfo(userId, userEnrollCallback);
+    if (retCode != UserIam::UserAuth::ResultCode::SUCCESS) {
+        for (int i = 0; i < IAM_MAX_RETRY_TIME; ++i) {
+            usleep(IAM_RETRY_INTERVAL_MS);
+            retCode = UserIam::UserAuth::UserIdmClient::GetInstance().GetSecUserInfo(userId, userEnrollCallback);
+            LOGE("GetSecureUid has retry %{public}d times, retryRet %{public}d", i, retCode);
+            if (retCode == UserIam::UserAuth::ResultCode::SUCCESS) {
+                break;
+            }
+        }
+    }
+    if (retCode != UserIam::UserAuth::ResultCode::SUCCESS) {
         LOGE("Get SecUserInfo failed !");
         return false;
     }
