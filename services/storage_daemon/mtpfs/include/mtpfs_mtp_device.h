@@ -27,7 +27,6 @@ public:
 
         void SetCanGetPartialObject(bool b)
         {
-            
             getPartialObject_ = b;
         }
         void SetCanSendPartialobject(bool b)
