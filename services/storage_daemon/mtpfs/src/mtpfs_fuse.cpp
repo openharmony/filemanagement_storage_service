@@ -30,7 +30,6 @@ const int32_t BS_SIZE = 1024;
 const int32_t ARG_SIZE = 2;
 
 int WrapGetattr(const char *path, struct stat *buf, struct fuse_file_info *fi)
-
 {
     LOGI("mtp WrapGetattr");
     return DelayedSingleton<MtpFileSystem>::GetInstance()->GetAttr(path, buf, fi);
