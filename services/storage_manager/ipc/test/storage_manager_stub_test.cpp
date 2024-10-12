@@ -73,6 +73,8 @@ namespace {
         static_cast<int32_t>(StorageManagerInterfaceCode::SET_BUNDLE_QUOTA),
         static_cast<int32_t>(StorageManagerInterfaceCode::GENERATE_APP_KEY),
         static_cast<int32_t>(StorageManagerInterfaceCode::DELETE_APP_KEY),
+        static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_MTP_MOUNT),
+        static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_MTP_UNMOUNT),
     };
 }
 

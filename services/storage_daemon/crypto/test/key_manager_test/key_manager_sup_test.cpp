@@ -197,7 +197,6 @@ HWTEST_F(KeyManagerSupTest, KeyManager_DeleteAppkey_001, TestSize.Level1)
     string basePath = "/data/app/el2/" + to_string(user);
     string path = basePath + "/base";
     EXPECT_TRUE(OHOS::ForceCreateDirectory(path));
-    EXPECT_CALL(*mountManagerMoc_, CheckMountFileByUser(_)).WillOnce(Return(true));
     string keyDir = KeyManager::GetInstance()->GetKeyDirByUserAndType(user, EL4_KEY);
     ASSERT_TRUE(OHOS::ForceCreateDirectory(keyDir));
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));

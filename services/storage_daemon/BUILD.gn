@@ -356,6 +356,7 @@ group("storage_daemon_unit_test") {
     "client/test:storage_daemon_client_test",
     "crypto/test/crypto_test:crypto_test",
     "crypto/test/fscrypt_key_v1_ext_test:fscrypt_key_v1_ext_test",
+    "crypto/test/huks_master_test:huks_master_test",
     "crypto/test/iam_client_test:iam_client_test",
     "crypto/test/iam_client_user_auth_framework_test:iam_client_user_auth_framework_test",
     "crypto/test/key_backup_test:key_backup_test",
