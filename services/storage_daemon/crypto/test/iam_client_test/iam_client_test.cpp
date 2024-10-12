@@ -80,6 +80,26 @@ HWTEST_F(IamClientTest, iam_client_GetSecureUid, TestSize.Level1)
     GTEST_LOG_(INFO) << "iam_client_GetSecureUid end";
 }
 
+/**
+ * @tc.name: iam_client_GetSecUserInfo
+ * @tc.desc: Verify the iam_client GetSecureUid.
+ * @tc.type: FUNC
+ * @tc.require: IAVEX9
+ */
+HWTEST_F(IamClientTest, iam_client_GetSecUserInfo, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo start";
+    uint32_t userId = 100;
+    UserIam::UserAuth::SecUserInfo info;
+    #ifdef USER_AUTH_FRAMEWORK
+    EXPECT_CALL(*userIdmClientImplMock_, GetSecUserInfo(_, _))
+        .WillOnce(Return(UserIam::UserAuth::ResultCode::SUCCESS));
+    #endif
+    IamClient &client = IamClient::GetInstance();
+    EXPECT_TRUE(client.GetSecUserInfo(userId, info));
+    GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo end";
+}
+
 #ifdef USER_AUTH_FRAMEWORK
 /**
  * @tc.name: iam_client_GetSecureUid
@@ -119,6 +139,114 @@ HWTEST_F(IamClientTest, iam_client_GetSecureUid_succ, TestSize.Level1)
     IamClient &client = IamClient::GetInstance();
     EXPECT_TRUE(client.GetSecureUid(userId, secureUid));
     GTEST_LOG_(INFO) << "iam_client_GetSecureUid_failed end";
+}
+
+/**
+ * @tc.name: iam_client_GetSecUserInfo
+ * @tc.desc: Verify the iam_client GetSecUserInfo.
+ * @tc.type: FUNC
+ * @tc.require: IAVEX9
+ */
+HWTEST_F(IamClientTest, iam_client_GetSecUserInfo_failed, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo_failed start";
+    uint32_t userId = 100;
+    UserIam::UserAuth::SecUserInfo info;
+
+    EXPECT_CALL(*userIdmClientImplMock_, GetSecUserInfo(_, _))
+        .WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL)).WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL))
+        .WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL)).WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL));
+    IamClient &client = IamClient::GetInstance();
+    EXPECT_FALSE(client.GetSecUserInfo(userId, info));
+    GTEST_LOG_(INFO) << "iam_client_GetSecureUid_failed end";
+}
+
+/**
+ * @tc.name: iam_client_GetSecUserInfo
+ * @tc.desc: Verify the iam_client GetSecUserInfo.
+ * @tc.type: FUNC
+ * @tc.require: IAVEX9
+ */
+HWTEST_F(IamClientTest, iam_client_GetSecUserInfo_succ, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "iam_client_GetSecUserInfo_failed start";
+    uint32_t userId = 100;
+    UserIam::UserAuth::SecUserInfo info;
+
+    EXPECT_CALL(*userIdmClientImplMock_, GetSecUserInfo(_, _))
+        .WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL)).WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL))
+        .WillOnce(Return(UserIam::UserAuth::ResultCode::SUCCESS));
+    IamClient &client = IamClient::GetInstance();
+    EXPECT_TRUE(client.GetSecUserInfo(userId, info));
+    GTEST_LOG_(INFO) << "iam_client_GetSecureUid_failed end";
+}
+
+/**
+ * @tc.name: iam_client_HasPinProtect_001
+ * @tc.desc: Verify the iam_client HasPinProtect.
+ * @tc.type: FUNC
+ * @tc.require: IAVEX9
+ */
+HWTEST_F(IamClientTest, iam_client_HasPinProtect_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "iam_client_HasPinProtect_001 start";
+    uint32_t userId = 100;
+    EXPECT_CALL(*userIdmClientImplMock_, GetSecUserInfo(_, _))
+        .WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL)).WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL))
+        .WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL)).WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL));
+    EXPECT_EQ(IamClient::GetInstance().HasPinProtect(userId), false);
+    GTEST_LOG_(INFO) << "iam_client_HasPinProtect_001 end";
+}
+
+/**
+ * @tc.name: iam_client_HasPinProtect_002
+ * @tc.desc: Verify the iam_client HasPinProtect.
+ * @tc.type: FUNC
+ * @tc.require: IAVEX9
+ */
+HWTEST_F(IamClientTest, iam_client_HasPinProtect_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "iam_client_HasPinProtect_002 start";
+    uint32_t userId = 100;
+    EXPECT_CALL(*userIdmClientImplMock_, GetSecUserInfo(_, _))
+        .WillOnce(Return(UserIam::UserAuth::ResultCode::SUCCESS));
+    EXPECT_EQ(IamClient::GetInstance().HasPinProtect(userId), false);
+    GTEST_LOG_(INFO) << "iam_client_HasPinProtect_002 end";
+}
+
+/**
+ * @tc.name: iam_client_HasFaceFinger_001
+ * @tc.desc: Verify the iam_client HasFaceFinger.
+ * @tc.type: FUNC
+ * @tc.require: IAVEX9
+ */
+HWTEST_F(IamClientTest, iam_client_HasFaceFinger_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "iam_client_HasFaceFinger_001 start";
+    uint32_t userId = 100;
+    bool isExist;
+    EXPECT_CALL(*userIdmClientImplMock_, GetSecUserInfo(_, _))
+        .WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL)).WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL))
+        .WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL)).WillOnce(Return(UserIam::UserAuth::ResultCode::FAIL));
+    EXPECT_EQ(IamClient::GetInstance().HasFaceFinger(userId, isExist), -ENOENT);
+    GTEST_LOG_(INFO) << "iam_client_HasFaceFinger_001 end";
+}
+
+/**
+ * @tc.name: iam_client_HasFaceFinger_002
+ * @tc.desc: Verify the iam_client HasFaceFinger.
+ * @tc.type: FUNC
+ * @tc.require: IAVEX9
+ */
+HWTEST_F(IamClientTest, iam_client_HasFaceFinger_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "iam_client_HasFaceFinger_002 start";
+    uint32_t userId = 100;
+    bool isExist;
+    EXPECT_CALL(*userIdmClientImplMock_, GetSecUserInfo(_, _))
+        .WillOnce(Return(UserIam::UserAuth::ResultCode::SUCCESS));
+    EXPECT_EQ(IamClient::GetInstance().HasFaceFinger(userId, isExist), 0);
+    GTEST_LOG_(INFO) << "iam_client_HasFaceFinger_002 end";
 }
 #endif
 
