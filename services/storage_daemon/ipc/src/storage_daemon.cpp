@@ -497,6 +497,10 @@ int32_t StorageDaemon::StopUser(int32_t userId)
 int32_t StorageDaemon::CompleteAddUser(int32_t userId)
 {
     LOGI("CompleteAddUser enter.");
+    if (userId >= StorageService::START_APP_CLONE_USER_ID && userId < StorageService::MAX_APP_CLONE_USER_ID) {
+        LOGE("User %{public}d is app clone user, do not delete el1 need_restore.", userId);
+        return E_OK;
+    }
 #ifdef USER_CRYPTO_MIGRATE_KEY
     std::string elNeedRestorePath = GetNeedRestoreFilePathByType(userId, EL1_KEY);
     if (elNeedRestorePath.empty() || !std::filesystem::exists(elNeedRestorePath)) {
