@@ -135,3 +135,11 @@ bool BaseKey::SaveKeyBlob(const KeyBlob &blob, const std::string &path)
     }
     return IBaseKeyMoc::baseKeyMoc->SaveKeyBlob(blob, path);
 }
+
+bool BaseKey::LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size)
+{
+    if (IBaseKeyMoc::baseKeyMoc == nullptr) {
+        return false;
+    }
+    return IBaseKeyMoc::baseKeyMoc->LoadKeyBlob(blob, path, size);
+}

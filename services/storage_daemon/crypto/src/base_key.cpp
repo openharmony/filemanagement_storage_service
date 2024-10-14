@@ -125,7 +125,7 @@ bool BaseKey::GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &path, con
     return SaveKeyBlob(blob, path);
 }
 
-bool BaseKey::LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size = 0)
+bool BaseKey::LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size)
 {
     LOGI("enter %{public}s, size=%{public}d", path.c_str(), size);
     std::ifstream file(path, std::ios::binary);
