@@ -35,7 +35,11 @@ ohos_moduletest("CryptoSubTest") {
     "../../../common/include",
   ]
 
-  sources = [ "crypto_key_test.cpp" ]
+  sources = [
+    "${storage_daemon_path}/user/src/mount_manager.cpp",
+    "${storage_daemon_path}/user/src/user_manager.cpp",
+    "crypto_key_test.cpp",
+  ]
 
   if (storage_service_crypto_test) {
     defines += [ "CRYPTO_TEST" ]
@@ -50,6 +54,7 @@ ohos_moduletest("CryptoSubTest") {
     "//third_party/googletest:gtest_main",
   ]
   external_deps = [
+    "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "hilog:libhilog",
     "huks:libhukssdk",
