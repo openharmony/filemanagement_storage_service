@@ -256,7 +256,9 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
         PrepareUeceDir(userId);
     }
     if (userId < StorageService::START_APP_CLONE_USER_ID || userId > StorageService::MAX_APP_CLONE_USER_ID) {
-        (void)remove(elNeedRestorePath.c_str());
+        if (type != EL1_KEY) {
+            (void)remove(elNeedRestorePath.c_str());
+        }
     }
     if (type == EL4_KEY) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
@@ -363,6 +365,16 @@ int32_t StorageDaemon::CompleteAddUser(int32_t userId)
 {
     LOGI("CompleteAddUser enter.");
     return E_OK;
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    std::string elNeedRestorePath = GetNeedRestoreFilePathByType(userId, EL1_KEY);
+    if (elNeedRestorePath.empty() || !std::filesystem::exists(elNeedRestorePath)) {
+        return E_OK;
+    }
+    (void)remove(elNeedRestorePath.c_str());
+    LOGI("CompleteAddUser remove el1 needRestore flag");
+    StorageService::StorageRadar::GetInstance().RecordFuctionResult(
+        "CompleteAddUser", BizScene::USER_MOUNT_MANAGER, BizStage::BIZ_STAGE_GENERATE_USER_KEYS, "EL1", E_OK);
+#endif
 }
 
 int32_t StorageDaemon::InitGlobalKey(void)
