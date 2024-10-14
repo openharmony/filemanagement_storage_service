@@ -31,7 +31,6 @@ public:
     void StartMonitor();
     int32_t Mount(const std::string &id);
     int32_t Umount(const std::string &id);
-    
 
 private:
     void MonitorDevice();
@@ -43,6 +42,7 @@ private:
 private:
     std::mutex listMutex_;
     std::vector<MtpDeviceInfo> lastestMtpDevList_;
+    std::vector<MtpDeviceInfo> invalidMtpDevices_;
 };
 } // namespace StorageDaemon
 } // namespace OHOS
