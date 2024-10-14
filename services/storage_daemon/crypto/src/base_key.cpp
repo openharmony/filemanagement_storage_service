@@ -37,6 +37,7 @@ namespace {
 const std::string PATH_LATEST_BACKUP = "/latest_bak";
 const std::string PATH_KEY_VERSION = "/version_";
 const std::string PATH_KEY_TEMP = "/temp";
+const std::string PATH_NEED_RESTORE_SUFFIX = "/latest/need_restore";
 const std::string PATH_USER_EL1_DIR = "/data/service/el1/public/storage_daemon/sd/el1/";
 
 #ifndef F2FS_IOCTL_MAGIC
