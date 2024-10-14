@@ -109,6 +109,14 @@ int32_t StorageManager::StopUser(int32_t userId)
     return err;
 }
 
+int32_t StorageManager::CompleteAddUser(int32_t userId)
+{
+    LOGI("StorageManger::CompleteAddUser start, userId: %{public}d", userId);
+    std::shared_ptr<MultiUserManagerService> userManager = DelayedSingleton<MultiUserManagerService>::GetInstance();
+    int32_t err = userManager->CompleteAddUser(userId);
+    return err;
+}
+
 int32_t StorageManager::GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
