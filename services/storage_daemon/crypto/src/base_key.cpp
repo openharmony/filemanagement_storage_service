@@ -794,7 +794,6 @@ bool BaseKey::ClearKey(const std::string &mnt)
     LOGI("do not clear key.");
     return true;
 }
-}
 
 void BaseKey::WipingActionDir(std::string &path)
 {
