@@ -1282,10 +1282,11 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GenerateAppkey_0000, tes
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
     GTEST_LOG_(INFO) << proxy_;
-    uint32_t appUid = 0;
+    uint32_t hashId = 0;
+    uint32_t userId = 0;
     std::string keyId;
     ASSERT_TRUE(proxy_ != nullptr) << "StorageManagerProxy failed";
-    uint32_t result = proxy_->GenerateAppkey(appUid, keyId);
+    uint32_t result = proxy_->GenerateAppkey(hashId, userId, keyId);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "Storage_manager_proxy_GenerateAppkey_0000 end";
 }

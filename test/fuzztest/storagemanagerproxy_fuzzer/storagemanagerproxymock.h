@@ -225,7 +225,7 @@ public:
         return E_OK;
     }
 
-    int32_t GenerateAppkey(uint32_t appUid, std::string &keyId) override
+    int32_t GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId) override
     {
         return E_OK;
     }

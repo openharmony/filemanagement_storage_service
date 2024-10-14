@@ -478,12 +478,12 @@ int32_t StorageManager::GetLockScreenStatus(uint32_t userId, bool &lockScreenSta
 #endif
 }
 
-int32_t StorageManager::GenerateAppkey(uint32_t appUid, std::string &keyId)
+int32_t StorageManager::GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId)
 {
 #ifdef USER_CRYPTO_MANAGER
-    LOGI("appUid: %{public}u", appUid);
+    LOGI("hashId: %{public}u", hashId);
     std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    return fsCrypto->GenerateAppkey(appUid, keyId);
+    return fsCrypto->GenerateAppkey(hashId, userId, keyId);
 #else
     return E_OK;
 #endif

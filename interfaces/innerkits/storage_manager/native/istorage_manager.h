@@ -83,7 +83,7 @@ public:
                                      const std::vector<uint8_t> &token,
                                      const std::vector<uint8_t> &secret) = 0;
     virtual int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus) = 0;
-    virtual int32_t GenerateAppkey(uint32_t appUid, std::string &keyId) = 0;
+    virtual int32_t GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId) = 0;
     virtual int32_t DeleteAppkey(const std::string keyId) = 0;
 
     // app file share api
