@@ -31,6 +31,7 @@ public:
     void StartMonitor();
     int32_t Mount(const std::string &id);
     int32_t Umount(const std::string &id);
+    
 
 private:
     void MonitorDevice();
