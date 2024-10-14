@@ -65,7 +65,6 @@ ohos_executable("storage_daemon") {
     "quota/quota_manager.cpp",
     "user/src/mount_manager.cpp",
     "user/src/user_manager.cpp",
-    "utils/cmd_utils.cpp",
     "utils/disk_utils.cpp",
     "utils/mount_argument_utils.cpp",
   ]

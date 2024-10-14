@@ -26,7 +26,6 @@
 #include <thread>
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "utils/cmd_utils.h"
 #include "utils/file_utils.h"
 
 using namespace std;
@@ -71,9 +70,12 @@ void MtpDeviceMonitor::MonitorDevice()
                 LOGE("MonitorDevice: rawDevice is nullptr.");
                 continue;
             }
-            std::string cmd = "cat /proc/sys/kernel/random/uuid";
-            std::vector<string> uuids;
-            CmdUtils::GetInstance().RunCmd(cmd, uuids);
+            std::vector<std::string> cmd = {
+                "cat",
+                "/proc/sys/kernel/random/uuid",
+            };
+            std::vector<std::string> uuids;
+            ForkExec(cmd, &uuids);
 
             MtpDeviceInfo devInfo;
             devInfo.uuid = uuids.front();
@@ -103,11 +105,24 @@ void MtpDeviceMonitor::MountMtpDevice(const std::vector<MtpDeviceInfo> &monitorD
             LOGI("MountMtpDevice: mtp device has mounted.");
             continue;
         }
+        bool isInvalidDev = false;
+        for (auto inDev : invalidMtpDevices_) {
+            if ((device.vendorId == inDev.vendorId) && (device.productId == inDev.productId) &&
+                (device.devNum == inDev.devNum)) {
+                isInvalidDev = true;
+                break;
+            }
+        }
+        if (isInvalidDev) {
+            LOGE("MountMtpDevice: invalid mtp device, no need to mount.");
+            continue;
+        }
         int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->MountDevice(device);
         if (ret == E_OK) {
             lastestMtpDevList_.push_back(device);
         } else {
             LOGE("MountMtpDevice: mtp device mount failed.");
+            invalidMtpDevices_.push_back(device);
         }
     }
 }
@@ -127,12 +142,13 @@ void MtpDeviceMonitor::UmountAllMtpDevice()
 {
     std::lock_guard<std::mutex> lock(listMutex_);
     for (auto iter = lastestMtpDevList_.begin(); iter != lastestMtpDevList_.end(); iter++) {
-        int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->UmountDevice(*iter);
+        int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->UmountDevice(*iter, true);
         if (ret != E_OK) {
             LOGE("UmountAllMtpDevice: umount mtp device failed, path=%{public}s", (iter->path).c_str());
         }
     }
     lastestMtpDevList_.clear();
+    invalidMtpDevices_.clear();
 }
 
 void MtpDeviceMonitor::CheckAndUmountRemovedMtpDevice()
@@ -149,7 +165,7 @@ void MtpDeviceMonitor::CheckAndUmountRemovedMtpDevice()
         }
 
         LOGI("Mtp device mount path=%{public}s is not exist or removed, umount it.", (iter->path).c_str());
-        int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->UmountDevice(*iter);
+        int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->UmountDevice(*iter, true);
         if (ret == E_OK) {
             iter = lastestMtpDevList_.erase(iter);
         } else {
@@ -176,7 +192,7 @@ int32_t MtpDeviceMonitor::Mount(const std::string &id)
     LOGE("the volume id %{public}s does not exist.", id.c_str());
     return E_NON_EXIST;
 }
- 
+
 int32_t MtpDeviceMonitor::Umount(const std::string &id)
 {
     LOGI("MtpDeviceMonitor: start umount mtp device by id=%{public}s", id.c_str());
@@ -185,7 +201,7 @@ int32_t MtpDeviceMonitor::Umount(const std::string &id)
         if (iter->id != id) {
             continue;
         }
-        int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->UmountDevice(*iter);
+        int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->UmountDevice(*iter, true);
         if (ret == E_OK) {
             lastestMtpDevList_.erase(iter);
         } else {
