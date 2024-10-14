@@ -124,6 +124,7 @@ ohos_executable("storage_daemon") {
     "hisysevent:libhisysevent",
     "init:libbegetutil",
     "ipc:ipc_single",
+    "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
@@ -152,6 +153,11 @@ ohos_executable("storage_daemon") {
   if (build_selinux) {
     defines += [ "USE_LIBRESTORECON" ]
     external_deps += [ "selinux_adapter:librestorecon" ]
+  }
+
+  if (enable_screenlock_manager) {
+    defines += [ "ENABLE_SCREENLOCK_MANAGER" ]
+    external_deps += [ "screenlock_mgr:screenlock_client" ]
   }
 
   ldflags = [
