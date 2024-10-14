@@ -26,7 +26,6 @@
 #include "ipc/storage_manager_client.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "utils/cmd_utils.h"
 #include "utils/file_utils.h"
 
 namespace OHOS {
