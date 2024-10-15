@@ -159,7 +159,8 @@ bool FscryptKeyV1Ext::ChangePinCodeClassE(uint32_t userId, bool &isFbeSupport)
     return true;
 }
 
-bool FscryptKeyV1Ext::ReadClassE(uint32_t status, uint8_t *classEBuffer, uint32_t length, bool &isFbeSupport)
+bool FscryptKeyV1Ext::ReadClassE(uint32_t status, std::unique_ptr<uint8_t[]> &classEBuffer, uint32_t length,
+                                 bool &isFbeSupport)
 {
     if (!FBEX::IsFBEXSupported()) {
         return true;
