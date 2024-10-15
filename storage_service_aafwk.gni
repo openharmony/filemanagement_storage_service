@@ -49,7 +49,9 @@ declare_args() {
     enable_screenlock_manager = false
   }
   if (defined(global_parts_info) &&
-      defined(global_parts_info.open_source_libmtp)) {
+      defined(global_parts_info.open_source_libmtp) &&
+      defined(global_parts_info.thirdparty_libusb) &&
+      defined(global_parts_info.thirdparty_libfuse)) {
     support_open_source_libmtp = true
   } else {
     support_open_source_libmtp = false
