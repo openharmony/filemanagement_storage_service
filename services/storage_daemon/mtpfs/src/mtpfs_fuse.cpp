@@ -32,123 +32,163 @@ const int32_t ARG_SIZE = 2;
 int WrapGetattr(const char *path, struct stat *buf, struct fuse_file_info *fi)
 {
     LOGI("mtp WrapGetattr");
-    return DelayedSingleton<MtpFileSystem>::GetInstance()->GetAttr(path, buf, fi);
+    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->GetAttr(path, buf, fi);
+    LOGI("GetAttr ret = %{public}d.", ret);
+    return ret;
 }
 
 int WrapMkNod(const char *path, mode_t mode, dev_t dev)
 {
     LOGI("mtp WrapMkNod");
-    return DelayedSingleton<MtpFileSystem>::GetInstance()->MkNod(path, mode, dev);
+    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->MkNod(path, mode, dev);
+    LOGI("MkNod ret = %{public}d.", ret);
+    return ret;
 }
 
 int WrapMkDir(const char *path, mode_t mode)
 {
     LOGI("mtp WrapMkDir");
-    return DelayedSingleton<MtpFileSystem>::GetInstance()->MkDir(path, mode);
+    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->MkDir(path, mode);
+    LOGI("MkDir ret = %{public}d.", ret);
+    return ret;
 }
 
 int WrapUnLink(const char *path)
 {
     LOGI("mtp WrapUnLink");
-    return DelayedSingleton<MtpFileSystem>::GetInstance()->UnLink(path);
+    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->UnLink(path);
+    LOGI("UnLink ret = %{public}d.", ret);
+    return ret;
 }
 
 int WrapRmDir(const char *path)
 {
     LOGI("mtp WrapRmDir");
-    return DelayedSingleton<MtpFileSystem>::GetInstance()->RmDir(path);
+    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->RmDir(path);
+    LOGI("RmDir ret = %{public}d.", ret);
+    return ret;
 }
 
 int WrapReName(const char *path, const char *newpath, unsigned int flags)
 {
     LOGI("mtp WrapReName");
-    return DelayedSingleton<MtpFileSystem>::GetInstance()->ReName(path, newpath, flags);
+    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->ReName(path, newpath, flags);
+    LOGI("ReName ret = %{public}d.", ret);
+    return ret;
 }
 
 int WrapChMod(const char *path, mode_t mode, struct fuse_file_info *fi)
 {
     LOGI("mtp WrapChMod");
-    return DelayedSingleton<MtpFileSystem>::GetInstance()->ChMods(path, mode, fi);
+    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->ChMods(path, mode, fi);
+    LOGI("ChMods ret = %{public}d.", ret);
+    return ret;
 }
 
 int WrapChown(const char *path, uid_t uid, gid_t gid, struct fuse_file_info *fi)
 {
     LOGE("mtp WrapChown path:%{public}s ,uid:%{public}lu, gid:%{public}lu", path, uid, gid);
-    return DelayedSingleton<MtpFileSystem>::GetInstance()->Chown(path, uid, gid, fi);
+    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Chown(path, uid, gid, fi);
+    LOGI("Chown ret = %{public}d.", ret);
+    return ret;
 }
 
 
 int WrapUTimens(const char *path, const struct timespec tv[2], struct fuse_file_info *fi)
 {
     LOGI("mtp WrapUTimens");
-    return DelayedSingleton<MtpFileSystem>::GetInstance()->UTimens(path, tv, fi);
+    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->UTimens(path, tv, fi);
+    LOGI("UTimens ret = %{public}d.", ret);
+    return ret;
 }
 
 int WrapOpen(const char *path, struct fuse_file_info *fileInfo)
 {
     LOGI("mtp WrapOpen");
-    return DelayedSingleton<MtpFileSystem>::GetInstance()->Open(path, fileInfo);
+    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Open(path, fileInfo);
+    LOGI("Open ret = %{public}d.", ret);
+    return ret;
 }
 
 int WrapRead(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fileInfo)
 {
     LOGI("mtp WrapRead");
-    return DelayedSingleton<MtpFileSystem>::GetInstance()->Read(path, buf, size, offset, fileInfo);
+    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Read(path, buf, size, offset, fileInfo);
+    LOGI("Read ret = %{public}d.", ret);
+    return ret;
 }
 
 int WrapWrite(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fileInfo)
 {
     LOGI("mtp WrapWrite");
-    return DelayedSingleton<MtpFileSystem>::GetInstance()->Write(path, buf, size, offset, fileInfo);
+    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Write(path, buf, size, offset, fileInfo);
+    LOGI("Write ret = %{public}d.", ret);
+    return ret;
 }
 
 int WrapStatfs(const char *path, struct statvfs *statInfo)
 {
     LOGI("mtp WrapStatfs");
-    return DelayedSingleton<MtpFileSystem>::GetInstance()->Statfs(path, statInfo);
+    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Statfs(path, statInfo);
+    LOGI("Statfs ret = %{public}d.", ret);
+    return ret;
 }
 
 int WrapFlush(const char *path, struct fuse_file_info *fileInfo)
 {
     LOGI("mtp WrapFlush");
-    return DelayedSingleton<MtpFileSystem>::GetInstance()->Flush(path, fileInfo);
+    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Flush(path, fileInfo);
+    LOGI("Flush ret = %{public}d.", ret);
+    return ret;
 }
 
 int WrapRelease(const char *path, struct fuse_file_info *fileInfo)
 {
     LOGI("mtp WrapRelease");
-    return DelayedSingleton<MtpFileSystem>::GetInstance()->Release(path, fileInfo);
+    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Release(path, fileInfo);
+    LOGI("Release ret = %{public}d.", ret);
+    return ret;
 }
 
 int WrapFSync(const char *path, int datasync, struct fuse_file_info *fileInfo)
 {
     LOGI("mtp WrapFSync");
-    return DelayedSingleton<MtpFileSystem>::GetInstance()->FSync(path, datasync, fileInfo);
+    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->FSync(path, datasync, fileInfo);
+    LOGI("FSync ret = %{public}d.", ret);
+    return ret;
 }
 
 int WrapOpenDir(const char *path, struct fuse_file_info *fileInfo)
 {
     LOGI("mtp WrapOpenDir");
-    return DelayedSingleton<MtpFileSystem>::GetInstance()->OpenDir(path, fileInfo);
+    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->OpenDir(path, fileInfo);
+    LOGI("OpenDir ret = %{public}d.", ret);
+    return ret;
 }
 
 int WrapReadDir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fileInfo,
     enum fuse_readdir_flags flag)
 {
     LOGI("mtp WrapReadDir");
-    return DelayedSingleton<MtpFileSystem>::GetInstance()->ReadDir(path, buf, filler, offset, fileInfo, flag);
+    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->ReadDir(path, buf, filler, offset, fileInfo, flag);
+    LOGI("ReadDir ret = %{public}d.", ret);
+    return ret;
 }
 
 int WrapReleaseDir(const char *path, struct fuse_file_info *fileInfo)
 {
     LOGI("mtp WrapReleaseDir");
-    return DelayedSingleton<MtpFileSystem>::GetInstance()->ReleaseDir(path, fileInfo);
+    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->ReleaseDir(path, fileInfo);
+    LOGI("ReleaseDir ret = %{public}d.", ret);
+    return ret;
 }
 
 int WrapFSyncDir(const char *path, int datasync, struct fuse_file_info *fileInfo)
 {
     LOGI("mtp WrapFSyncDir");
-    return DelayedSingleton<MtpFileSystem>::GetInstance()->FSyncDir(path, datasync, fileInfo);
+    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->FSyncDir(path, datasync, fileInfo);
+    LOGI("FSyncDir ret = %{public}d.", ret);
+    return ret;
 }
 
 void *WrapInit(struct fuse_conn_info *conn, struct fuse_config *cfg)
@@ -160,13 +200,71 @@ void *WrapInit(struct fuse_conn_info *conn, struct fuse_config *cfg)
 int WrapCreate(const char *path, mode_t mode, fuse_file_info *fileInfo)
 {
     LOGI("mtp WrapCreate");
-    return DelayedSingleton<MtpFileSystem>::GetInstance()->Create(path, mode, fileInfo);
+    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Create(path, mode, fileInfo);
+    LOGI("Create ret = %{public}d.", ret);
+    return ret;
 }
 
 int WrapTruncate(const char *path, off_t offset, struct fuse_file_info *fileInfo)
 {
     LOGI("mtp WrapTruncate");
-    return DelayedSingleton<MtpFileSystem>::GetInstance()->Truncate(path, offset, fileInfo);
+    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Truncate(path, offset, fileInfo);
+    LOGI("Truncate ret = %{public}d.", ret);
+    return ret;
+}
+
+int WrapReadLink(const char *path, char *out, size_t size)
+{
+    LOGI("mtp WrapReadLink");
+    return 0;
+}
+
+int WrapSymLink(const char *path, const char * mode)
+{
+    LOGI("mtp WrapSymLink");
+    return 0;
+}
+
+int WrapLink(const char *path, const char *out)
+{
+    LOGI("mtp WrapLink");
+    return 0;
+}
+
+int WrapSetXAttr(const char *path, const char *in, const char *out, size_t size, int flag)
+{
+    LOGI("mtp WrapSetXAttr");
+    return 0;
+}
+
+int WrapGetXAttr(const char *path, const char *in, char *out, size_t size)
+{
+    LOGI("mtp WrapGetXAttr");
+    return 0;
+}
+
+int WrapListXAttr(const char *path, char *in, size_t size)
+{
+    LOGI("mtp WrapListXAttr");
+    return 0;
+}
+
+int WrapRemoveXAttr(const char *path, const char *in)
+{
+    LOGI("mtp WrapRemoveXAttr");
+    return 0;
+}
+
+void WrapDestroy(void *path)
+{
+    LOGI("mtp WrapDestroy");
+    return;
+}
+
+int WrapAccess(const char *path, int size)
+{
+    LOGI("mtp WrapAccess");
+    return 0;
 }
 
 MtpFileSystem::MtpFileSystemOptions::MtpFileSystemOptions()
@@ -208,14 +306,14 @@ MtpFileSystem::MtpFileSystem() : args_(), tmpFilesPool_(), options_(), device_()
 {
     LOGI("mtp MtpFileSystem");
     fuseOperations_.getattr = WrapGetattr;
-    fuseOperations_.readlink = nullptr;
+    fuseOperations_.readlink = WrapReadLink;
     fuseOperations_.mknod = WrapMkNod;
     fuseOperations_.mkdir = WrapMkDir;
     fuseOperations_.unlink = WrapUnLink;
     fuseOperations_.rmdir = WrapRmDir;
-    fuseOperations_.symlink = nullptr;
+    fuseOperations_.symlink = WrapSymLink;
     fuseOperations_.rename = WrapReName;
-    fuseOperations_.link = nullptr;
+    fuseOperations_.link = WrapLink;
     fuseOperations_.chmod = WrapChMod;
     fuseOperations_.chown = WrapChown;
     fuseOperations_.truncate = WrapTruncate;
@@ -227,17 +325,17 @@ MtpFileSystem::MtpFileSystem() : args_(), tmpFilesPool_(), options_(), device_()
     fuseOperations_.flush = WrapFlush;
     fuseOperations_.release = WrapRelease;
     fuseOperations_.fsync = WrapFSync;
-    fuseOperations_.setxattr = nullptr;
-    fuseOperations_.getxattr = nullptr;
-    fuseOperations_.listxattr = nullptr;
-    fuseOperations_.removexattr = nullptr;
+    fuseOperations_.setxattr = WrapSetXAttr;
+    fuseOperations_.getxattr = WrapGetXAttr;
+    fuseOperations_.listxattr = WrapListXAttr;
+    fuseOperations_.removexattr = WrapRemoveXAttr;
     fuseOperations_.opendir = WrapOpenDir;
     fuseOperations_.readdir = WrapReadDir;
     fuseOperations_.releasedir = WrapReleaseDir;
     fuseOperations_.fsyncdir = WrapFSyncDir;
     fuseOperations_.init = WrapInit;
-    fuseOperations_.destroy = nullptr;
-    fuseOperations_.access = nullptr;
+    fuseOperations_.destroy = WrapDestroy;
+    fuseOperations_.access = WrapAccess;
     fuseOperations_.create = WrapCreate;
 }
 
@@ -335,7 +433,7 @@ bool MtpFileSystem::Exec()
         }
     } else {
         // Connect to MTP device by order number, if no device file supplied
-        if (!device_.ConnectByDevFile(options_.deviceNo_)) {
+        if (!device_.ConnectByDevNo(options_.deviceNo_)) {
             return false;
         }
     }
@@ -360,7 +458,7 @@ void *MtpFileSystem::Init(struct fuse_conn_info *conn, struct fuse_config *cfg
 
 int MtpFileSystem::GetAttr(const char *path, struct stat *buf, struct fuse_file_info *fi)
 {
-    LOGI("mtp GetAttr path:%{public}s", path);
+    LOGI("MtpFileSystem: GetAttr enter, path: %{public}s", path);
     if (memset_s(buf, sizeof(struct stat), 0, sizeof(struct stat)) != EOK) {
         LOGE("memset stat fail");
     }
@@ -376,6 +474,7 @@ int MtpFileSystem::GetAttr(const char *path, struct stat *buf, struct fuse_file
         std::string tmpFile(SmtpfsBaseName(path));
         const MtpFsTypeDir *content = device_.DirFetchContent(tmpPath);
         if (!content) {
+            LOGE("MtpFileSystem: GetAttr error, content is null, path: %{public}s", path);
             return -ENOENT;
         }
 
@@ -396,10 +495,11 @@ int MtpFileSystem::GetAttr(const char *path, struct stat *buf, struct fuse_file
             buf->st_ctime = buf->st_mtime;
             buf->st_atime = buf->st_mtime;
         } else {
+            LOGE("MtpFileSystem: GetAttr error, content dir is null, path: %{public}s", path);
             return -ENOENT;
         }
     }
-
+    LOGI("MtpFileSystem: GetAttr success, path: %{public}s", path);
     return 0;
 }
 
@@ -470,7 +570,6 @@ int MtpFileSystem::ReName(const char *path, const char *newpath, unsigned int fl
 int MtpFileSystem::ChMods(const char *path, mode_t mode, struct fuse_file_info *fi)
 {
     int res;
-
     if (fi) {
         res = fchmod(fi->fh, mode);
     } else {
@@ -484,9 +583,8 @@ int MtpFileSystem::ChMods(const char *path, mode_t mode, struct fuse_file_info 
 
 int MtpFileSystem::Chown(const char *path, uid_t uid, gid_t gid, struct fuse_file_info *fi)
 {
-    LOGE("mtp Chown path:%{public}s ,uid:%{public}lu, gid:%{public}lu", path, uid, gid);
+    LOGI("mtp Chown path:%{public}s ,uid:%{public}lu, gid:%{public}lu", path, uid, gid);
     int res;
-
     if (fi) {
         res = fchown(fi->fh, uid, gid);
     } else {
@@ -555,7 +653,6 @@ int MtpFileSystem::UTimens(const char *path, const struct timespec tv[2], struct
 int MtpFileSystem::Create(const char *path, mode_t mode, fuse_file_info *fileInfo)
 {
     const std::string tmpPath = tmpFilesPool_.MakeTmpPath(std::string(path));
-
     int rval = ::creat(tmpPath.c_str(), mode);
     if (rval < 0) {
         return -errno;
@@ -572,6 +669,7 @@ int MtpFileSystem::Create(const char *path, mode_t mode, fuse_file_info *fileInf
 
 int MtpFileSystem::Open(const char *path, struct fuse_file_info *fileInfo)
 {
+    LOGI("MtpFileSystem: Open enter, path: %{public}s", path);
     if (fileInfo->flags & O_WRONLY) {
         fileInfo->flags |= O_TRUNC;
     }
@@ -584,7 +682,6 @@ int MtpFileSystem::Open(const char *path, struct fuse_file_info *fileInfo)
         tmpPath = tmpFile->PathTmp();
     } else {
         tmpPath = tmpFilesPool_.MakeTmpPath(stdPath);
-
         // only copy the file if needed
         if (!HasPartialObjectSupport()) {
             int rval = device_.FilePull(stdPath, tmpPath);
@@ -602,6 +699,7 @@ int MtpFileSystem::Open(const char *path, struct fuse_file_info *fileInfo)
     int fd = ::open(tmpPath.c_str(), fileInfo->flags);
     if (fd < 0) {
         ::unlink(tmpPath.c_str());
+        LOGE("MtpFileSystem: Open error, errno=%{public}d", errno);
         return -errno;
     }
 
@@ -612,11 +710,13 @@ int MtpFileSystem::Open(const char *path, struct fuse_file_info *fileInfo)
     } else {
         tmpFilesPool_.AddFile(MtpFsTypeTmpFile(stdPath, tmpPath, fd));
     }
+    LOGI("MtpFileSystem: Open success, path: %{public}s", path);
     return 0;
 }
 
 int MtpFileSystem::Read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fileInfo)
 {
+    LOGI("MtpFileSystem: Read enter, path: %{public}s", path);
     int rval = 0;
     if (HasPartialObjectSupport()) {
         const std::string stdPath(path);
@@ -624,15 +724,18 @@ int MtpFileSystem::Read(const char *path, char *buf, size_t size, off_t offset, 
     } else {
         rval = ::pread(fileInfo->fh, buf, size, offset);
         if (rval < 0) {
+            LOGE("MtpFileSystem: Read error, errno=%{public}d", errno);
             return -errno;
         }
     }
+    LOGI("MtpFileSystem: Open success, path: %{public}s, rval=%{public}d", path, rval);
     return rval;
 }
 
 int MtpFileSystem::Write(const char *path, const char *buf, size_t size, off_t offset,
     struct fuse_file_info *fileInfo)
 {
+    LOGI("MtpFileSystem: Write enter, path: %{public}s", path);
     int rval = 0;
     if (HasPartialObjectSupport()) {
         const std::string stdPath(path);
@@ -640,21 +743,26 @@ int MtpFileSystem::Write(const char *path, const char *buf, size_t size, off_t o
     } else {
         const MtpFsTypeTmpFile *tmpFile = tmpFilesPool_.GetFile(std::string(path));
         if (!tmpFile) {
+            LOGE("MtpFileSystem: Write tmpFile error.");
             return -EINVAL;
         }
         rval = ::pwrite(fileInfo->fh, buf, size, offset);
         if (rval < 0) {
+            LOGE("MtpFileSystem: Write pwrite error, errno=%{public}d", errno);
             return -errno;
         }
         const_cast<MtpFsTypeTmpFile *>(tmpFile)->SetModified();
     }
+    LOGI("MtpFileSystem: Write success, path: %{public}s, rval=%{public}d", path, rval);
     return rval;
 }
 
 int MtpFileSystem::Release(const char *path, struct fuse_file_info *fileInfo)
 {
+    LOGI("MtpFileSystem: Release enter, path: %{public}s", path);
     int rval = ::close(fileInfo->fh);
     if (rval < 0) {
+        LOGE("MtpFileSystem: Release close error, errno=%{public}d", errno);
         return -errno;
     }
     const std::string stdPath(path);
@@ -676,9 +784,8 @@ int MtpFileSystem::Release(const char *path, struct fuse_file_info *fileInfo)
             return -rval;
         }
     }
-
     ::unlink(tmpPath.c_str());
-
+    LOGI("MtpFileSystem: Release success, path: %{public}s", path);
     return 0;
 }
 
