@@ -1687,4 +1687,57 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_UpdateUseAuthWithRecover
     EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_UpdateUseAuthWithRecoveryKey_0000";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_NotifyMtpMounted_0000
+ * @tc.name: Storage_manager_proxy_NotifyMtpMounted_0001
+ * @tc.desc: Test function of NotifyMtpMounted interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyMtpMounted_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_NotifyMtpMounted_0000";
+    std::string id = "vol-1-18";
+    std::string path = "/";
+    std::string description = "description-1";
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    ASSERT_TRUE(samgr != nullptr) << "Storage_manager_proxy_NotifyMtpMounted_0000 \
+    fail to get GetSystemAbilityManager";
+    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    ASSERT_TRUE(remote != nullptr) << "GetSystemAbility failed";
+    auto proxy = iface_cast<IStorageManager>(remote);
+    ASSERT_TRUE(proxy != nullptr) << "fail to get proxy";
+    int64_t result = proxy->NotifyMtpMounted(id, path, description);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << result;
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_NotifyMtpMounted_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_proxy_NotifyMtpUnmounted_0000
+ * @tc.name: Storage_manager_proxy_NotifyMtpUnmounted_0001
+ * @tc.desc: Test function of NotifyMtpUnmounted interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyMtpUnmounted_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_NotifyMtpUnmounted_0000";
+    std::string id = "vol-1-18";
+    std::string path = "/";
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    ASSERT_TRUE(samgr != nullptr) << "Storage_manager_proxy_NotifyMtpUnmounted_0000 \
+    fail to get GetSystemAbilityManager";
+    auto remote = samgr->GetSystemAbility(STORAGE_MANAGER_MANAGER_ID);
+    ASSERT_TRUE(remote != nullptr) << "GetSystemAbility failed";
+    auto proxy = iface_cast<IStorageManager>(remote);
+    ASSERT_TRUE(proxy != nullptr) << "fail to get proxy";
+    int64_t result = proxy->NotifyMtpUnmounted(id, path);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << result;
+    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_NotifyMtpUnmounted_0000";
+}
 } // namespace
