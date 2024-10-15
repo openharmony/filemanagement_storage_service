@@ -334,6 +334,8 @@ group("storage_daemon_unit_test") {
   deps = [
     "client/test:storage_daemon_client_test",
     "crypto/test/fscrypt_key_v1_ext_test:fscrypt_key_v1_ext_test",
+    "crypto/test/iam_client_test:iam_client_test",
+    "crypto/test/iam_client_user_auth_framework_test:iam_client_user_auth_framework_test",
     "crypto/test/key_manager_test:key_manager_test",
     "file_sharing/test:file_sharing_test",
     "ipc/test:storage_daemon_ipc_test",
@@ -341,6 +343,13 @@ group("storage_daemon_unit_test") {
     "user/test:storage_daemon_user_test",
     "utils/test:storage_daemon_utils_test",
   ]
+
+  if (storage_service_user_crypto_manager) {
+    deps += [
+      "crypto/test:crypto_test",
+      "crypto/test/fscrypt_v2_test:fscrypt_key_v2_test",
+    ]
+  }
 
   if (storage_service_external_storage_manager) {
     deps += [

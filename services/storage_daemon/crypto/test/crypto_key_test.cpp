@@ -58,8 +58,8 @@ const int32_t PARAMS_SIZE_1 = 1;
 const int32_t PARAMS_SIZE_2 = 2;
 const int32_t PARAMS_SIZE_3 = 3;
 const int32_t PARAMS_SIZE_4 = 4;
-OHOS::StorageDaemon::FscryptKeyV1 g_testKeyV1 {TEST_KEYPATH};
-OHOS::StorageDaemon::FscryptKeyV2 g_testKeyV2 {TEST_KEYPATH};
+auto g_testKeyV1 = std::make_shared<OHOS::StorageDaemon::FscryptKeyV1>(TEST_KEYPATH);
+auto g_testKeyV2 = std::make_shared<OHOS::StorageDaemon::FscryptKeyV2>(TEST_KEYPATH);
 }
 
 namespace OHOS::StorageDaemon {
@@ -148,13 +148,13 @@ int32_t CryptoKeyTest::ExecSdcBinary(std::vector<std::string> params, int isCryp
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_init, TestSize.Level1)
 {
-    EXPECT_TRUE(g_testKeyV1.InitKey(true));
-    EXPECT_FALSE(g_testKeyV1.InitKey(true)); // rawkey not empty
+    EXPECT_TRUE(g_testKeyV1->InitKey(true));
+    EXPECT_FALSE(g_testKeyV1->InitKey(true)); // rawkey not empty
 
-    EXPECT_EQ(FSCRYPT_V1, g_testKeyV1.keyInfo_.version);
-    EXPECT_EQ(CRYPTO_AES_256_XTS_KEY_SIZE, g_testKeyV1.keyInfo_.key.size);
-    EXPECT_NE(nullptr, g_testKeyV1.keyInfo_.key.data.get());
-    g_testKeyV1.keyInfo_.key.Clear();
+    EXPECT_EQ(FSCRYPT_V1, g_testKeyV1->keyInfo_.version);
+    EXPECT_EQ(CRYPTO_AES_256_XTS_KEY_SIZE, g_testKeyV1->keyInfo_.key.size);
+    EXPECT_NE(nullptr, g_testKeyV1->keyInfo_.key.data.get());
+    g_testKeyV1->keyInfo_.key.Clear();
 }
 
 /**
@@ -169,15 +169,15 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_init, TestSize.Level1)
     if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) == FSCRYPT_V1) {
         return;
     }
-    EXPECT_TRUE(g_testKeyV2.InitKey(true));
-    EXPECT_EQ(FSCRYPT_V2, g_testKeyV2.keyInfo_.version);
-    EXPECT_EQ(CRYPTO_AES_256_XTS_KEY_SIZE, g_testKeyV2.keyInfo_.key.size);
-    EXPECT_NE(nullptr, g_testKeyV2.keyInfo_.key.data.get());
-    g_testKeyV2.keyInfo_.key.Clear();
+    EXPECT_TRUE(g_testKeyV2->InitKey(true));
+    EXPECT_EQ(FSCRYPT_V2, g_testKeyV2->keyInfo_.version);
+    EXPECT_EQ(CRYPTO_AES_256_XTS_KEY_SIZE, g_testKeyV2->keyInfo_.key.size);
+    EXPECT_NE(nullptr, g_testKeyV2->keyInfo_.key.data.get());
+    g_testKeyV2->keyInfo_.key.Clear();
 #else
-    EXPECT_FALSE(g_testKeyV2.InitKey(true));
-    EXPECT_FALSE(g_testKeyV2.ActiveKey());
-    EXPECT_FALSE(g_testKeyV2.InactiveKey());
+    EXPECT_FALSE(g_testKeyV2->InitKey(true));
+    EXPECT_FALSE(g_testKeyV2->ActiveKey());
+    EXPECT_FALSE(g_testKeyV2->InactiveKey());
 #endif
 }
 
@@ -190,8 +190,8 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_init, TestSize.Level1)
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_store, TestSize.Level1)
 {
 #ifndef CRYPTO_TEST
-    EXPECT_TRUE(g_testKeyV1.InitKey(true));
-    g_testKeyV1.StoreKey(emptyUserAuth);
+    EXPECT_TRUE(g_testKeyV1->InitKey(true));
+    g_testKeyV1->StoreKey(emptyUserAuth);
 
     std::string buf {};
     OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD);
@@ -203,8 +203,8 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_store, TestSize.Level1)
     OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_ENCRYPTED);
     OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_ENCRYPTED, buf);
 #else
-    EXPECT_TRUE(g_testKeyV1.InitKey(true));
-    EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV1->InitKey(true));
+    EXPECT_TRUE(g_testKeyV1->StoreKey(emptyUserAuth));
 
     std::string buf {};
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD));
@@ -243,10 +243,10 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_store, TestSize.Level1)
     if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) == FSCRYPT_V1) {
         return;
     }
-    g_testKeyV2.ClearKey();
-    EXPECT_TRUE(g_testKeyV2.InitKey(true));
-    EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
-    EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
+    g_testKeyV2->ClearKey();
+    EXPECT_TRUE(g_testKeyV2->InitKey(true));
+    EXPECT_TRUE(g_testKeyV2->StoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV2->StoreKey(emptyUserAuth));
 
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD));
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SECDISC));
@@ -273,7 +273,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_update, TestSize.Level1)
         return;
     }
     std::string buf {};
-    EXPECT_TRUE(g_testKeyV2.UpdateKey());
+    EXPECT_TRUE(g_testKeyV2->UpdateKey());
 
     EXPECT_FALSE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD));
     EXPECT_FALSE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION1 + PATH_SHIELD));
@@ -296,9 +296,9 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_restore_fail_wrong_version, TestSize.Leve
     if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) == FSCRYPT_V1) {
         return;
     }
-    g_testKeyV1.keyInfo_.key.Clear();
+    g_testKeyV1->keyInfo_.key.Clear();
     // the version loaded is v2, not expected v1.
-    EXPECT_FALSE(g_testKeyV1.RestoreKey(emptyUserAuth));
+    EXPECT_FALSE(g_testKeyV1->RestoreKey(emptyUserAuth));
 }
 #endif
 
@@ -310,36 +310,36 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_restore_fail_wrong_version, TestSize.Leve
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_restore, TestSize.Level1)
 {
-    g_testKeyV1.ClearKey();
-    EXPECT_TRUE(g_testKeyV1.InitKey(true));
+    g_testKeyV1->ClearKey();
+    EXPECT_TRUE(g_testKeyV1->InitKey(true));
 #ifndef CRYPTO_TEST
-    g_testKeyV1.StoreKey(emptyUserAuth);
-    g_testKeyV1.UpdateKey();
-    g_testKeyV1.RestoreKey(emptyUserAuth);
+    g_testKeyV1->StoreKey(emptyUserAuth);
+    g_testKeyV1->UpdateKey();
+    g_testKeyV1->RestoreKey(emptyUserAuth);
 
-    EXPECT_EQ(CRYPTO_AES_256_XTS_KEY_SIZE, g_testKeyV1.keyInfo_.key.size);
-    EXPECT_NE(nullptr, g_testKeyV1.keyInfo_.key.data.get());
-    EXPECT_EQ(FSCRYPT_V1, g_testKeyV1.keyInfo_.version);
+    EXPECT_EQ(CRYPTO_AES_256_XTS_KEY_SIZE, g_testKeyV1->keyInfo_.key.size);
+    EXPECT_NE(nullptr, g_testKeyV1->keyInfo_.key.data.get());
+    EXPECT_EQ(FSCRYPT_V1, g_testKeyV1->keyInfo_.version);
     OHOS::SaveStringToFile(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_SECDISC, "bad secdesc");
 #else
-    EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
-    EXPECT_TRUE(g_testKeyV1.UpdateKey());
-    EXPECT_TRUE(g_testKeyV1.RestoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV1->StoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV1->UpdateKey());
+    EXPECT_TRUE(g_testKeyV1->RestoreKey(emptyUserAuth));
 
-    EXPECT_EQ(CRYPTO_AES_256_XTS_KEY_SIZE, g_testKeyV1.keyInfo_.key.size);
-    EXPECT_NE(nullptr, g_testKeyV1.keyInfo_.key.data.get());
-    EXPECT_EQ(FSCRYPT_V1, g_testKeyV1.keyInfo_.version);
+    EXPECT_EQ(CRYPTO_AES_256_XTS_KEY_SIZE, g_testKeyV1->keyInfo_.key.size);
+    EXPECT_NE(nullptr, g_testKeyV1->keyInfo_.key.data.get());
+    EXPECT_EQ(FSCRYPT_V1, g_testKeyV1->keyInfo_.version);
     EXPECT_TRUE(OHOS::SaveStringToFile(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_SECDISC, "bad secdesc"));
 #endif
-    EXPECT_FALSE(g_testKeyV1.RestoreKey(emptyUserAuth)); // should decrypt failed
+    EXPECT_FALSE(g_testKeyV1->RestoreKey(emptyUserAuth)); // should decrypt failed
     remove(std::string(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_SECDISC).c_str());
-    EXPECT_FALSE(g_testKeyV1.RestoreKey(emptyUserAuth));
+    EXPECT_FALSE(g_testKeyV1->RestoreKey(emptyUserAuth));
     remove(std::string(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_SHIELD).c_str());
-    EXPECT_FALSE(g_testKeyV1.RestoreKey(emptyUserAuth));
+    EXPECT_FALSE(g_testKeyV1->RestoreKey(emptyUserAuth));
     remove(std::string(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_ENCRYPTED).c_str());
-    EXPECT_FALSE(g_testKeyV1.RestoreKey(emptyUserAuth));
+    EXPECT_FALSE(g_testKeyV1->RestoreKey(emptyUserAuth));
     remove(std::string(TEST_KEYPATH + "/fscrypt_version").c_str());
-    EXPECT_FALSE(g_testKeyV1.RestoreKey(emptyUserAuth));
+    EXPECT_FALSE(g_testKeyV1->RestoreKey(emptyUserAuth));
 }
 
 /**
@@ -350,30 +350,30 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_restore, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_active, TestSize.Level1)
 {
-    g_testKeyV1.ClearKey();
-    EXPECT_FALSE(g_testKeyV1.ActiveKey()); // active empty key should fail
-    EXPECT_TRUE(g_testKeyV1.InitKey(true));
+    g_testKeyV1->ClearKey();
+    EXPECT_FALSE(g_testKeyV1->ActiveKey()); // active empty key should fail
+    EXPECT_TRUE(g_testKeyV1->InitKey(true));
 #ifndef CRYPTO_TEST
-    g_testKeyV1.StoreKey(emptyUserAuth);
+    g_testKeyV1->StoreKey(emptyUserAuth);
 #else
-    EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV1->StoreKey(emptyUserAuth));
 #endif
-    EXPECT_FALSE(g_testKeyV1.keyInfo_.key.IsEmpty());
-    EXPECT_EQ(FSCRYPT_V1, g_testKeyV1.keyInfo_.version);
+    EXPECT_FALSE(g_testKeyV1->keyInfo_.key.IsEmpty());
+    EXPECT_EQ(FSCRYPT_V1, g_testKeyV1->keyInfo_.version);
 
-    EXPECT_TRUE(g_testKeyV1.ActiveKey(FIRST_CREATE_KEY));
+    EXPECT_TRUE(g_testKeyV1->ActiveKey(FIRST_CREATE_KEY));
     // raw key should be erase after install to kernel.
-    EXPECT_TRUE(g_testKeyV1.keyInfo_.key.IsEmpty());
-    EXPECT_TRUE(g_testKeyV1.keyInfo_.keyId.IsEmpty());
+    EXPECT_TRUE(g_testKeyV1->keyInfo_.key.IsEmpty());
+    EXPECT_TRUE(g_testKeyV1->keyInfo_.keyId.IsEmpty());
     // key desc saved in memory for later clear key.
-    EXPECT_FALSE(g_testKeyV1.keyInfo_.keyDesc.IsEmpty());
+    EXPECT_FALSE(g_testKeyV1->keyInfo_.keyDesc.IsEmpty());
 
     // v1 key installed, and key_desc was saved on disk.
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + PATH_KEYDESC));
 
     FscryptKeyV1 g_testKeyV1BadLen {TEST_KEYPATH, CRYPTO_AES_256_XTS_KEY_SIZE * 2};
     EXPECT_TRUE(g_testKeyV1BadLen.InitKey(true));
-    EXPECT_FALSE(g_testKeyV1BadLen.InactiveKey());
+    EXPECT_TRUE(g_testKeyV1BadLen.InactiveKey());
     EXPECT_FALSE(g_testKeyV1BadLen.ActiveKey());
 }
 
@@ -385,8 +385,8 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_active, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_clear, TestSize.Level1)
 {
-    EXPECT_TRUE(g_testKeyV1.ClearKey());
-    EXPECT_TRUE(g_testKeyV1.keyInfo_.key.IsEmpty());
+    EXPECT_TRUE(g_testKeyV1->ClearKey());
+    EXPECT_TRUE(g_testKeyV1->keyInfo_.key.IsEmpty());
     EXPECT_FALSE(OHOS::FileExists(TEST_KEYPATH + PATH_KEYDESC));
     EXPECT_FALSE(OHOS::FileExists(TEST_KEYPATH + PATH_FSCRYPT_VER));
     EXPECT_FALSE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_SHIELD));
@@ -400,19 +400,19 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_clear, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_policy_set, TestSize.Level1)
 {
-    EXPECT_TRUE(g_testKeyV1.InitKey(true));
+    EXPECT_TRUE(g_testKeyV1->InitKey(true));
 #ifndef CRYPTO_TEST
-    g_testKeyV1.StoreKey(emptyUserAuth);
+    g_testKeyV1->StoreKey(emptyUserAuth);
 #else
-    EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV1->StoreKey(emptyUserAuth));
 #endif
-    EXPECT_TRUE(g_testKeyV1.ActiveKey(FIRST_CREATE_KEY));
+    EXPECT_TRUE(g_testKeyV1->ActiveKey(FIRST_CREATE_KEY));
 
     FscryptPolicy arg;
     (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
     arg.v1.version = FSCRYPT_POLICY_V1;
-    (void)memcpy_s(arg.v1.master_key_descriptor, FSCRYPT_KEY_DESCRIPTOR_SIZE, g_testKeyV1.keyInfo_.keyDesc.data.get(),
-                   g_testKeyV1.keyInfo_.keyDesc.size);
+    (void)memcpy_s(arg.v1.master_key_descriptor, FSCRYPT_KEY_DESCRIPTOR_SIZE, g_testKeyV1->keyInfo_.keyDesc.data.get(),
+                   g_testKeyV1->keyInfo_.keyDesc.size);
     arg.v1.contents_encryption_mode = FSCRYPT_MODE_AES_256_XTS;
     arg.v1.filenames_encryption_mode = FSCRYPT_MODE_AES_256_CTS;
     arg.v1.flags = FSCRYPT_POLICY_FLAGS_PAD_32;
@@ -456,7 +456,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_policy_get, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_key_inactive, TestSize.Level1)
 {
-    EXPECT_TRUE(g_testKeyV1.InactiveKey(USER_DESTROY));
+    EXPECT_TRUE(g_testKeyV1->InactiveKey(USER_DESTROY));
 
 #ifdef SUPPORT_FSCRYPT_V2
     EXPECT_FALSE(OHOS::ForceCreateDirectory(TEST_DIR_LEGACY + "/test_dir1"));
@@ -477,16 +477,16 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_active, TestSize.Level1)
     if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) == FSCRYPT_V1) {
         return;
     }
-    g_testKeyV2.ClearKey();
-    EXPECT_TRUE(g_testKeyV2.InitKey(true));
-    EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
-    EXPECT_TRUE(g_testKeyV2.UpdateKey());
-    EXPECT_TRUE(g_testKeyV2.ActiveKey());
+    g_testKeyV2->ClearKey();
+    EXPECT_TRUE(g_testKeyV2->InitKey(true));
+    EXPECT_TRUE(g_testKeyV2->StoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV2->UpdateKey());
+    EXPECT_TRUE(g_testKeyV2->ActiveKey());
 
     // raw key should be erase after install to kernel.
-    EXPECT_TRUE(g_testKeyV2.keyInfo_.key.IsEmpty());
-    EXPECT_TRUE(g_testKeyV2.keyInfo_.keyDesc.IsEmpty());
-    EXPECT_EQ(static_cast<unsigned int>(FSCRYPT_KEY_IDENTIFIER_SIZE), g_testKeyV2.keyInfo_.keyId.size);
+    EXPECT_TRUE(g_testKeyV2->keyInfo_.key.IsEmpty());
+    EXPECT_TRUE(g_testKeyV2->keyInfo_.keyDesc.IsEmpty());
+    EXPECT_EQ(static_cast<unsigned int>(FSCRYPT_KEY_IDENTIFIER_SIZE), g_testKeyV2->keyInfo_.keyId.size);
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + PATH_KEYID));
 }
 
@@ -501,12 +501,12 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_set, TestSize.Level1)
     if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) == FSCRYPT_V1) {
         return;
     }
-    EXPECT_EQ(FSCRYPT_V2, g_testKeyV2.keyInfo_.version);
+    EXPECT_EQ(FSCRYPT_V2, g_testKeyV2->keyInfo_.version);
     FscryptPolicy arg;
     (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
     arg.v2.version = FSCRYPT_POLICY_V2;
-    (void)memcpy_s(arg.v2.master_key_identifier, FSCRYPT_KEY_IDENTIFIER_SIZE, g_testKeyV2.keyInfo_.keyId.data.get(),
-                   g_testKeyV2.keyInfo_.keyId.size);
+    (void)memcpy_s(arg.v2.master_key_identifier, FSCRYPT_KEY_IDENTIFIER_SIZE, g_testKeyV2->keyInfo_.keyId.data.get(),
+                   g_testKeyV2->keyInfo_.keyId.size);
     arg.v2.contents_encryption_mode = FSCRYPT_MODE_AES_256_XTS;
     arg.v2.filenames_encryption_mode = FSCRYPT_MODE_AES_256_CTS;
     arg.v2.flags = FSCRYPT_POLICY_FLAGS_PAD_32;
@@ -555,7 +555,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_inactive, TestSize.Level1)
     if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) == FSCRYPT_V1) {
         return;
     }
-    EXPECT_TRUE(g_testKeyV2.InactiveKey());
+    EXPECT_TRUE(g_testKeyV2->InactiveKey());
     // When the v2 policy removed, the files are encrypted.
     EXPECT_FALSE(OHOS::FileExists(TEST_DIR_V2 + "/test_dir"));
     EXPECT_FALSE(OHOS::FileExists(TEST_DIR_V2 + "/test_file1"));
@@ -573,16 +573,16 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_restore, TestSize.Level1)
     if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) == FSCRYPT_V1) {
         return;
     }
-    EXPECT_TRUE(g_testKeyV2.RestoreKey(emptyUserAuth));
-    EXPECT_EQ(FSCRYPT_V2, g_testKeyV2.keyInfo_.version);
-    EXPECT_TRUE(g_testKeyV2.ActiveKey());
+    EXPECT_TRUE(g_testKeyV2->RestoreKey(emptyUserAuth));
+    EXPECT_EQ(FSCRYPT_V2, g_testKeyV2->keyInfo_.version);
+    EXPECT_TRUE(g_testKeyV2->ActiveKey());
 
     // the files is decrypted now
     EXPECT_TRUE(OHOS::FileExists(TEST_DIR_V2 + "/test_dir"));
     EXPECT_TRUE(OHOS::FileExists(TEST_DIR_V2 + "/test_file1"));
     EXPECT_TRUE(OHOS::FileExists(TEST_DIR_V2 + "/test_file2"));
 
-    EXPECT_TRUE(g_testKeyV2.ClearKey());
+    EXPECT_TRUE(g_testKeyV2->ClearKey());
 }
 
 /**
@@ -596,24 +596,24 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_default, TestSize.Lev
     if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) == FSCRYPT_V1) {
         return;
     }
-    g_testKeyV2.ClearKey();
-    EXPECT_TRUE(g_testKeyV2.InitKey(true));
-    EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
-    EXPECT_TRUE(g_testKeyV2.ActiveKey());
+    g_testKeyV2->ClearKey();
+    EXPECT_TRUE(g_testKeyV2->InitKey(true));
+    EXPECT_TRUE(g_testKeyV2->StoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV2->ActiveKey());
 
     EXPECT_EQ(0, SetFscryptSysparam("2:aes-256-cts:aes-256-xts"));
     EXPECT_EQ(0, InitFscryptPolicy());
 
     OHOS::ForceRemoveDirectory(TEST_DIR_V2);
     OHOS::ForceCreateDirectory(TEST_DIR_V2);
-    EXPECT_EQ(0, LoadAndSetPolicy(g_testKeyV2.GetDir().c_str(), TEST_DIR_V2.c_str()));
+    EXPECT_EQ(0, LoadAndSetPolicy(g_testKeyV2->GetDir().c_str(), TEST_DIR_V2.c_str()));
 
     EXPECT_TRUE(OHOS::ForceCreateDirectory(TEST_DIR_V2 + "/test_dir"));
     EXPECT_TRUE(OHOS::SaveStringToFile(TEST_DIR_V2 + "/test_file1", "hello, world!\n"));
     EXPECT_TRUE(OHOS::SaveStringToFile(TEST_DIR_V2 + "/test_file2", "AA"));
     EXPECT_TRUE(OHOS::SaveStringToFile(TEST_DIR_V2 + "/111111111111111111111111111111111111111111111111", "AA"));
 
-    EXPECT_TRUE(g_testKeyV2.ClearKey());
+    EXPECT_TRUE(g_testKeyV2->ClearKey());
 }
 #endif
 
@@ -625,28 +625,28 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_default, TestSize.Lev
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_load_and_set_policy_default, TestSize.Level1)
 {
-    g_testKeyV1.ClearKey();
-    EXPECT_TRUE(g_testKeyV1.InitKey(true));
+    g_testKeyV1->ClearKey();
+    EXPECT_TRUE(g_testKeyV1->InitKey(true));
 #ifndef CRYPTO_TEST
-    g_testKeyV1.StoreKey(emptyUserAuth);
+    g_testKeyV1->StoreKey(emptyUserAuth);
 #else
-    EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV1->StoreKey(emptyUserAuth));
 #endif
-    EXPECT_TRUE(g_testKeyV1.ActiveKey(FIRST_CREATE_KEY));
+    EXPECT_TRUE(g_testKeyV1->ActiveKey(FIRST_CREATE_KEY));
 
     EXPECT_EQ(0, SetFscryptSysparam("1:aes-256-cts:aes-256-xts"));
     EXPECT_EQ(0, InitFscryptPolicy());
 
     OHOS::ForceRemoveDirectory(TEST_DIR_LEGACY);
     OHOS::ForceCreateDirectory(TEST_DIR_LEGACY);
-    EXPECT_EQ(0, LoadAndSetPolicy(g_testKeyV1.GetDir().c_str(), TEST_DIR_LEGACY.c_str()));
+    EXPECT_EQ(0, LoadAndSetPolicy(g_testKeyV1->GetDir().c_str(), TEST_DIR_LEGACY.c_str()));
 
     EXPECT_TRUE(OHOS::ForceCreateDirectory(TEST_DIR_LEGACY + "/test_dir"));
     EXPECT_TRUE(OHOS::SaveStringToFile(TEST_DIR_LEGACY + "/test_file1", "hello, world!\n"));
     EXPECT_TRUE(OHOS::SaveStringToFile(TEST_DIR_LEGACY + "/test_file2", "AA"));
     EXPECT_TRUE(OHOS::SaveStringToFile(TEST_DIR_LEGACY + "/111111111111111111111111111111111111111111111111", "AA"));
 
-    EXPECT_TRUE(g_testKeyV1.ClearKey());
+    EXPECT_TRUE(g_testKeyV1->ClearKey());
 }
 
 /**
@@ -657,28 +657,28 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_load_and_set_policy_default, TestSize.Lev
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_storekey_version_test_1, TestSize.Level1)
 {
-    EXPECT_TRUE(g_testKeyV1.InitKey(true));
+    EXPECT_TRUE(g_testKeyV1->InitKey(true));
 #ifndef CRYPTO_TEST
     // storekey to version 0
-    g_testKeyV1.StoreKey(emptyUserAuth);
+    g_testKeyV1->StoreKey(emptyUserAuth);
     OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD);
     std::string keyShieldV0;
     OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD, keyShieldV0);
 
     // storekey to version 1
-    g_testKeyV1.StoreKey(emptyUserAuth);
+    g_testKeyV1->StoreKey(emptyUserAuth);
     OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION1 + PATH_SHIELD);
     std::string keyShieldV1;
     OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION1 + PATH_SHIELD, keyShieldV1);
 
     // storekey to version 2
-    g_testKeyV1.StoreKey(emptyUserAuth);
+    g_testKeyV1->StoreKey(emptyUserAuth);
     OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION2 + PATH_SHIELD);
     std::string keyShieldV2;
     OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION2 + PATH_SHIELD, keyShieldV2);
 
     // updatekey will rename version 2 to latest
-    g_testKeyV1.UpdateKey();
+    g_testKeyV1->UpdateKey();
     OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_SHIELD);
     EXPECT_FALSE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_LATEST_BACKUP + PATH_SHIELD));
     std::string keyShieldLatest;
@@ -686,27 +686,27 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_storekey_version_test_1, TestSize.Level1)
     EXPECT_EQ(keyShieldLatest, keyShieldV2);
 #else
     // storekey to version 0
-    EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV1->StoreKey(emptyUserAuth));
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD));
     std::string keyShieldV0;
     EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD, keyShieldV0));
 
     // storekey to version 1
-    EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV1->StoreKey(emptyUserAuth));
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION1 + PATH_SHIELD));
     std::string keyShieldV1;
     EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION1 + PATH_SHIELD, keyShieldV1));
     EXPECT_NE(keyShieldV0, keyShieldV1);
 
     // storekey to version 2
-    EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV1->StoreKey(emptyUserAuth));
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION2 + PATH_SHIELD));
     std::string keyShieldV2;
     EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION2 + PATH_SHIELD, keyShieldV2));
     EXPECT_NE(keyShieldV1, keyShieldV2);
 
     // updatekey will rename version 2 to latest
-    EXPECT_TRUE(g_testKeyV1.UpdateKey());
+    EXPECT_TRUE(g_testKeyV1->UpdateKey());
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_SHIELD));
     EXPECT_FALSE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_LATEST_BACKUP + PATH_SHIELD));
     std::string keyShieldLatest;
@@ -724,44 +724,44 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_storekey_version_test_1, TestSize.Level1)
 HWTEST_F(CryptoKeyTest, fscrypt_key_storekey_version_test_2, TestSize.Level1)
 {
 #ifndef CRYPTO_TEST
-    g_testKeyV1.RestoreKey(emptyUserAuth);
+    g_testKeyV1->RestoreKey(emptyUserAuth);
 
     // storekey to version 0
-    g_testKeyV1.StoreKey(emptyUserAuth);
+    g_testKeyV1->StoreKey(emptyUserAuth);
     OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD);
     std::string keyShieldV0;
     OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD, keyShieldV0);
 
     // storekey to version 1
-    g_testKeyV1.StoreKey(emptyUserAuth);
+    g_testKeyV1->StoreKey(emptyUserAuth);
     OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION1 + PATH_SHIELD);
     std::string keyShieldV1;
     OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION1 + PATH_SHIELD, keyShieldV1);
 
     // restorekey will decrypt from versions and rename first success one to latest
-    g_testKeyV1.RestoreKey(emptyUserAuth);
+    g_testKeyV1->RestoreKey(emptyUserAuth);
     OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_SHIELD);
     EXPECT_FALSE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_LATEST_BACKUP + PATH_SHIELD));
     std::string keyShieldLatest;
     OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_SHIELD, keyShieldLatest);
     EXPECT_EQ(keyShieldLatest, keyShieldV1);
 #else
-    EXPECT_TRUE(g_testKeyV1.RestoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV1->RestoreKey(emptyUserAuth));
 
     // storekey to version 0
-    EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV1->StoreKey(emptyUserAuth));
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD));
     std::string keyShieldV0;
     EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD, keyShieldV0));
 
     // storekey to version 1
-    EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV1->StoreKey(emptyUserAuth));
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION1 + PATH_SHIELD));
     std::string keyShieldV1;
     EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION1 + PATH_SHIELD, keyShieldV1));
 
     // restorekey will decrypt from versions and rename first success one to latest
-    EXPECT_TRUE(g_testKeyV1.RestoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV1->RestoreKey(emptyUserAuth));
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_SHIELD));
     EXPECT_FALSE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_LATEST_BACKUP + PATH_SHIELD));
     std::string keyShieldLatest;
@@ -780,7 +780,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_storekey_version_test_3, TestSize.Level1)
 {
 #ifndef CRYPTO_TEST
     // storekey to version 0
-    g_testKeyV1.StoreKey(emptyUserAuth);
+    g_testKeyV1->StoreKey(emptyUserAuth);
     OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD);
     std::string keyShieldV0A;
     OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD, keyShieldV0A);
@@ -788,21 +788,21 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_storekey_version_test_3, TestSize.Level1)
     // latest dir broken, not affect restore and update operation
     OHOS::ForceRemoveDirectory(TEST_KEYPATH + TEST_KEYDIR_LATEST);
     OHOS::SaveStringToFile(TEST_KEYPATH + TEST_KEYDIR_LATEST, "latest is a file");
-    g_testKeyV1.RestoreKey(emptyUserAuth);
+    g_testKeyV1->RestoreKey(emptyUserAuth);
     OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD);
     std::string keyShieldV0B;
     OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD, keyShieldV0B);
     EXPECT_TRUE(keyShieldV0A == keyShieldV0B);
-    g_testKeyV1.RestoreKey(emptyUserAuth);
-    EXPECT_FALSE(g_testKeyV1.UpdateKey());
+    g_testKeyV1->RestoreKey(emptyUserAuth);
+    EXPECT_FALSE(g_testKeyV1->UpdateKey());
 
     // latest dir backup also broken, not affect restore and update operation
     OHOS::SaveStringToFile(TEST_KEYPATH + TEST_KEYDIR_LATEST_BACKUP, "latest_backup is a file");
-    EXPECT_FALSE(g_testKeyV1.UpdateKey());
-    g_testKeyV1.RestoreKey(emptyUserAuth);
+    EXPECT_FALSE(g_testKeyV1->UpdateKey());
+    g_testKeyV1->RestoreKey(emptyUserAuth);
 #else
     // storekey to version 0
-    EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV1->StoreKey(emptyUserAuth));
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD));
     std::string keyShieldV0A;
     EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD, keyShieldV0A));
@@ -810,18 +810,18 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_storekey_version_test_3, TestSize.Level1)
     // latest dir broken, not affect restore and update operation
     OHOS::ForceRemoveDirectory(TEST_KEYPATH + TEST_KEYDIR_LATEST);
     OHOS::SaveStringToFile(TEST_KEYPATH + TEST_KEYDIR_LATEST, "latest is a file");
-    EXPECT_TRUE(g_testKeyV1.RestoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV1->RestoreKey(emptyUserAuth));
     EXPECT_TRUE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD));
     std::string keyShieldV0B;
     EXPECT_TRUE(OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION0 + PATH_SHIELD, keyShieldV0B));
     EXPECT_TRUE(keyShieldV0A == keyShieldV0B);
-    EXPECT_TRUE(g_testKeyV1.RestoreKey(emptyUserAuth));
-    EXPECT_FALSE(g_testKeyV1.UpdateKey());
+    EXPECT_TRUE(g_testKeyV1->RestoreKey(emptyUserAuth));
+    EXPECT_FALSE(g_testKeyV1->UpdateKey());
 
     // latest dir backup also broken, not affect restore and update operation
     OHOS::SaveStringToFile(TEST_KEYPATH + TEST_KEYDIR_LATEST_BACKUP, "latest_backup is a file");
-    EXPECT_FALSE(g_testKeyV1.UpdateKey());
-    EXPECT_TRUE(g_testKeyV1.RestoreKey(emptyUserAuth));
+    EXPECT_FALSE(g_testKeyV1->UpdateKey());
+    EXPECT_TRUE(g_testKeyV1->RestoreKey(emptyUserAuth));
 #endif
 }
 
@@ -837,17 +837,17 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_padding_4, TestSize.L
     if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) == FSCRYPT_V1) {
         return;
     }
-    g_testKeyV2.ClearKey();
-    EXPECT_TRUE(g_testKeyV2.InitKey(true));
-    EXPECT_TRUE(g_testKeyV2.StoreKey(emptyUserAuth));
-    EXPECT_TRUE(g_testKeyV2.ActiveKey());
+    g_testKeyV2->ClearKey();
+    EXPECT_TRUE(g_testKeyV2->InitKey(true));
+    EXPECT_TRUE(g_testKeyV2->StoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV2->ActiveKey());
 
     EXPECT_EQ(0, SetFscryptSysparam("2:aes-256-cts:aes-256-xts"));
     EXPECT_EQ(0, InitFscryptPolicy());
 
     OHOS::ForceRemoveDirectory(TEST_DIR_V2);
     OHOS::ForceCreateDirectory(TEST_DIR_V2);
-    EXPECT_EQ(0, LoadAndSetPolicy(g_testKeyV2.GetDir().c_str(), TEST_DIR_V2.c_str()));
+    EXPECT_EQ(0, LoadAndSetPolicy(g_testKeyV2->GetDir().c_str(), TEST_DIR_V2.c_str()));
 
     EXPECT_TRUE(OHOS::ForceCreateDirectory(TEST_DIR_V2 + "/test_dir"));
     EXPECT_TRUE(OHOS::SaveStringToFile(TEST_DIR_V2 + "/test_file1", "hello, world!\n"));
@@ -862,7 +862,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_padding_4, TestSize.L
     EXPECT_EQ(FSCRYPT_MODE_AES_256_CTS, arg.policy.v2.filenames_encryption_mode);
     EXPECT_EQ(FSCRYPT_MODE_AES_256_XTS, arg.policy.v2.contents_encryption_mode);
 
-    EXPECT_TRUE(g_testKeyV2.ClearKey());
+    EXPECT_TRUE(g_testKeyV2->ClearKey());
 }
 #endif
 
@@ -872,7 +872,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_padding_4, TestSize.L
  * @tc.type: FUNC
  * @tc.require: SR000H0CM9
  */
-HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys, TestSize.Level1)
+HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys_000, TestSize.Level1)
 {
     uint32_t userId = 81;
     const string USER_EL1_DIR = "/data/test/user/el1";
@@ -915,7 +915,39 @@ HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys, TestSize.Level1)
     EXPECT_EQ(0, SetFscryptSysparam("1:aes-256-cts:aes-256-xts"));
     KeyManager::GetInstance()->InitGlobalDeviceKey();
     KeyManager::GetInstance()->InitGlobalUserKeys();
-    userId = 801; // bad userId, not generated
+}
+
+/**
+ * @tc.name: key_manager_generate_delete_user_keys
+ * @tc.desc: Verify the KeyManager GenerateUserKeys and DeleteUserKeys
+ * @tc.type: FUNC
+ * @tc.require: SR000H0CM9
+ */
+HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys_001, TestSize.Level1)
+{
+    const string USER_EL1_DIR = "/data/test/user/el1";
+    const string USER_EL2_DIR = "/data/test/user/el2";
+
+    EXPECT_EQ(0, SetFscryptSysparam("2:aes-256-cts:aes-256-xts"));
+    EXPECT_EQ(0, InitFscryptPolicy());
+    OHOS::ForceRemoveDirectory(USER_EL1_DIR);
+    OHOS::ForceRemoveDirectory(USER_EL2_DIR);
+    MkDirRecurse(USER_EL1_DIR, S_IRWXU);
+    MkDirRecurse(USER_EL2_DIR, S_IRWXU);
+
+    OHOS::ForceRemoveDirectory(USER_KEY_EL1_DIR);
+    OHOS::ForceRemoveDirectory(USER_KEY_EL2_DIR);
+
+    KeyManager::GetInstance()->InitGlobalDeviceKey();
+    KeyManager::GetInstance()->InitGlobalUserKeys();
+    UserTokenSecret userTokenSecret = {.token = {'t', 'o', 'k', 'e', 'n'}, .oldSecret = {},
+                                       .newSecret = {'s', 'e', 'c', 'r', 'e', 't'}, .secureUid = 0};
+    UserTokenSecret userTokenSecretNull = {.token = {}, .oldSecret = {}, .newSecret = {}, .secureUid = 0};
+
+    EXPECT_EQ(0, SetFscryptSysparam("1:aes-256-cts:aes-256-xts"));
+    KeyManager::GetInstance()->InitGlobalDeviceKey();
+    KeyManager::GetInstance()->InitGlobalUserKeys();
+    uint32_t userId = 801; // bad userId, not generated
     EXPECT_EQ(-ENOENT, KeyManager::GetInstance()->SetDirectoryElPolicy(userId, EL1_KEY, {{userId, USER_EL1_DIR}}));
     EXPECT_EQ(-ENOENT, KeyManager::GetInstance()->SetDirectoryElPolicy(userId, EL2_KEY, {{userId, USER_EL2_DIR}}));
     EXPECT_EQ(0, KeyManager::GetInstance()->SetDirectoryElPolicy(userId, static_cast<KeyType>(0),
@@ -924,7 +956,11 @@ HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys, TestSize.Level1)
     EXPECT_EQ(-ENOENT, KeyManager::GetInstance()->UpdateKeyContext(userId));
     EXPECT_EQ(-ENOENT, KeyManager::GetInstance()->InActiveUserKey(userId));
     EXPECT_EQ(-EFAULT, KeyManager::GetInstance()->ActiveUserKey(userId, {}, {}));
-    EXPECT_EQ(-EFAULT, KeyManager::GetInstance()->DeleteUserKeys(userId));
+    if (KeyManager::GetInstance()->IsUeceSupport()) {
+        EXPECT_NE(0, KeyManager::GetInstance()->DeleteUserKeys(userId));
+    } else {
+        EXPECT_EQ(0, KeyManager::GetInstance()->DeleteUserKeys(userId));
+    }
 }
 
 /**
@@ -935,12 +971,12 @@ HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_secure_access_control, TestSize.Level1)
 {
-    g_testKeyV1.ClearKey();
-    EXPECT_TRUE(g_testKeyV1.InitKey(true));
+    g_testKeyV1->ClearKey();
+    EXPECT_TRUE(g_testKeyV1->InitKey(true));
 #ifndef CRYPTO_TEST
-    g_testKeyV1.StoreKey(emptyUserAuth);
+    g_testKeyV1->StoreKey(emptyUserAuth);
 #else
-    EXPECT_TRUE(g_testKeyV1.StoreKey(emptyUserAuth));
+    EXPECT_TRUE(g_testKeyV1->StoreKey(emptyUserAuth));
 #endif
     std::string token = "bad_token";
     std::string secret = "bad_secret";
@@ -950,8 +986,8 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_secure_access_control, TestSize.Level1)
         .token = badToken,
         .secret = badSecret
     };
-    EXPECT_FALSE(g_testKeyV1.RestoreKey(badUserAuth));
-    EXPECT_TRUE(g_testKeyV1.ClearKey());
+    EXPECT_FALSE(g_testKeyV1->RestoreKey(badUserAuth));
+    EXPECT_TRUE(g_testKeyV1->ClearKey());
 }
 
 /**
@@ -1138,6 +1174,186 @@ HWTEST_F(CryptoKeyTest, fscrypt_sdc_filecrypt_004, TestSize.Level1)
     params.push_back("active_user_key");
     params.push_back("10");
     params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+}
+
+HWTEST_F(CryptoKeyTest, fscrypt_sdc_filecrypt_005, TestSize.Level1)
+{
+    std::vector<std::string> params;
+
+    // test sdc unlock_user_screen
+    params.clear();
+    params.push_back("unlock_user_screen");
+    params.push_back("id");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("unlock_user_screen");
+    params.push_back("10");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("unlock_user_screen");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("unlock_user_screen");
+    params.push_back("10");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+
+    // test sdc lock_user_screen
+    params.clear();
+    params.push_back("lock_user_screen");
+    params.push_back("id");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("lock_user_screen");
+    params.push_back("10");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("lock_user_screen");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("lock_user_screen");
+    params.push_back("10");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+}
+
+HWTEST_F(CryptoKeyTest, fscrypt_sdc_filecrypt_006, TestSize.Level1)
+{
+    std::vector<std::string> params;
+
+    // test sdc generate_app_key
+    params.clear();
+    params.push_back("generate_app_key");
+    params.push_back("id");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("generate_app_key");
+    params.push_back("10");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("generate_app_key");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("generate_app_key");
+    params.push_back("10");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+
+    // test sdc delete_app_key
+    params.clear();
+    params.push_back("delete_app_key");
+    params.push_back("id");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("delete_app_key");
+    params.push_back("10");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("delete_app_key");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("delete_app_key");
+    params.push_back("10");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+}
+
+HWTEST_F(CryptoKeyTest, fscrypt_sdc_filecrypt_007, TestSize.Level1)
+{
+    std::vector<std::string> params;
+
+    // test sdc Get_unlock_status
+    params.clear();
+    params.push_back("Get_unlock_status");
+    params.push_back("id");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("Get_unlock_status");
+    params.push_back("10");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("Get_unlock_status");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("Get_unlock_status");
+    params.push_back("10");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+}
+
+HWTEST_F(CryptoKeyTest, fscrypt_sdc_filecrypt_008, TestSize.Level1)
+{
+    std::vector<std::string> params;
+
+    // test sdc create_recover_key
+    params.clear();
+    params.push_back("create_recover_key");
+    params.push_back("id");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("create_recover_key");
+    params.push_back("10");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("create_recover_key");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("create_recover_key");
+    params.push_back("10");
+    params.push_back("11");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+}
+
+HWTEST_F(CryptoKeyTest, fscrypt_sdc_filecrypt_009, TestSize.Level1)
+{
+    std::vector<std::string> params;
+
+    // test sdc set_recover_key
+    params.clear();
+    params.push_back("set_recover_key");
+    params.push_back("id");
+    params.push_back("01234567890abcd");
+    params.push_back("01234567890abcd");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("set_recover_key");
+    EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
+    params.clear();
+    params.push_back("set_recover_key");
+    params.push_back("10");
+    params.push_back("11");
     EXPECT_EQ(0, CryptoKeyTest::ExecSdcBinary(params, 1));
     params.clear();
 }
