@@ -38,7 +38,10 @@ const std::string PATH_LATEST_BACKUP = "/latest_bak";
 const std::string PATH_KEY_VERSION = "/version_";
 const std::string PATH_KEY_TEMP = "/temp";
 <<<<<<< HEAD
+<<<<<<< HEAD
 const std::string PATH_NEED_RESTORE_SUFFIX = "/latest/need_restore";
+=======
+>>>>>>> parent of ab97affa (update services/storage_daemon/crypto/src/base_key.cpp.)
 const std::string PATH_USER_EL1_DIR = "/data/service/el1/public/storage_daemon/sd/el1/";
 =======
 >>>>>>> parent of 3e51dc58 (DeleteUser删除用户需考虑need_restore标识+分身用户区分)
