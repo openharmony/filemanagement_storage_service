@@ -40,11 +40,6 @@ const std::string PATH_KEY_TEMP = "/temp";
 <<<<<<< HEAD
 <<<<<<< HEAD
 const std::string PATH_NEED_RESTORE_SUFFIX = "/latest/need_restore";
-=======
->>>>>>> parent of ab97affa (update services/storage_daemon/crypto/src/base_key.cpp.)
-const std::string PATH_USER_EL1_DIR = "/data/service/el1/public/storage_daemon/sd/el1/";
-=======
->>>>>>> parent of 3e51dc58 (DeleteUser删除用户需考虑need_restore标识+分身用户区分)
 
 #ifndef F2FS_IOCTL_MAGIC
 #define F2FS_IOCTL_MAGIC 0xf5
@@ -795,14 +790,8 @@ bool BaseKey::ClearKey(const std::string &mnt)
         LOGI("ForceRemoveDirectory failed.");
         return removeRet;
     }
-<<<<<<< HEAD
-    LOGI("do not clear key.");
-    return true;
-=======
     // use F2FS_IOC_SEC_TRIM_FILE
     return ret;
->>>>>>> parent of 3e51dc58 (DeleteUser删除用户需考虑need_restore标识+分身用户区分)
-}
 }
 
 void BaseKey::WipingActionDir(std::string &path)
