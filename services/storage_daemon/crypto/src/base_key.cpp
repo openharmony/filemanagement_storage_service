@@ -803,6 +803,7 @@ bool BaseKey::ClearKey(const std::string &mnt)
     return ret;
 >>>>>>> parent of 3e51dc58 (DeleteUser删除用户需考虑need_restore标识+分身用户区分)
 }
+}
 
 void BaseKey::WipingActionDir(std::string &path)
 {
