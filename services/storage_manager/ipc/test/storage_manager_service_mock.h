@@ -307,8 +307,8 @@ public:
         return E_OK;
     }
 
-    virtual int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc) override
-    
+    virtual int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
+                                     const std::string &uuid) override
     {
         return E_OK;
     }
