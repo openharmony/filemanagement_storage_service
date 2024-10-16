@@ -306,6 +306,7 @@ public:
         return E_OK;
     }
     int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc) override
+    
     {
         return E_OK;
     }

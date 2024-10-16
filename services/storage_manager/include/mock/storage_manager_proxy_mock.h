@@ -90,6 +90,7 @@ public:
                              const std::vector<uint8_t> &secret) override;
     int32_t SetRecoverKey(const std::vector<uint8_t> &key) override;
     int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc) override;
+    
     int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path) override;
 
     // app file share api

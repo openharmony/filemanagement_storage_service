@@ -39,6 +39,7 @@ public:
     int32_t GetVolumeById(std::string volumeId, VolumeExternal &vc);
     int32_t SetVolumeDescription(std::string fsUuid, std::string description);
     int32_t Format(std::string volumeId, std::string fsType);
+    
     void NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc);
     void NotifyMtpUnmounted(const std::string &id, const std::string &path);
 

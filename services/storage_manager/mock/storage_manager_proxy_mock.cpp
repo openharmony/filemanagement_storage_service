@@ -307,6 +307,7 @@ int32_t StorageManagerProxy::GetFileEncryptStatus(uint32_t userId, bool &isEncry
 
 int32_t StorageManagerProxy::NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc)
 {
+    
     return E_OK;
 }
  

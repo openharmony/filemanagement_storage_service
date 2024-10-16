@@ -1381,6 +1381,7 @@ int32_t StorageManagerProxy::UpdateMemoryPara(int32_t size, int32_t &oldSize)
 int32_t StorageManagerProxy::NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc)
 {
     LOGI("StorageManagerProxy::NotifyMtpMounted, path:%{public}s", path.c_str());
+    
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);

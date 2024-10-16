@@ -650,6 +650,7 @@ int32_t StorageManager::UMountDfsDocs(int32_t userId, const std::string &relativ
 }
 
 int32_t StorageManager::NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc)
+
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::NotifyMtpMounted start, id: %{public}s, path: %{public}s", id.c_str(), path.c_str());

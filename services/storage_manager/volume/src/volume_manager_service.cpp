@@ -251,6 +251,7 @@ int32_t VolumeManagerService::Format(std::string volumeId, std::string fsType)
 void VolumeManagerService::NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc)
 {
     LOGI("VolumeManagerService NotifyMtpMounted");
+    
     VolumeCore core(id, 0, "");
     auto volumePtr = make_shared<VolumeExternal>(core);
     volumePtr->SetPath(path);

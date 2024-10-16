@@ -85,6 +85,7 @@ int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
     isMounting = false;
     StorageManagerClient client;
     client.NotifyMtpMounted(device.id, device.path, device.vendor);
+    
     return E_OK;
 }
 
