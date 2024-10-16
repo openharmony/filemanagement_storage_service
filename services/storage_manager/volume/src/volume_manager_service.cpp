@@ -248,15 +248,16 @@ int32_t VolumeManagerService::Format(std::string volumeId, std::string fsType)
     return sdCommunication->Format(volumeId, fsType);
 }
 
-void VolumeManagerService::NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc)
+void VolumeManagerService::NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
+                                            const std::string &uuid)
 {
     LOGI("VolumeManagerService NotifyMtpMounted");
-    
     VolumeCore core(id, 0, "");
     auto volumePtr = make_shared<VolumeExternal>(core);
     volumePtr->SetPath(path);
     volumePtr->SetFsType(FsType::MTP);
     volumePtr->SetDescription(desc);
+    volumePtr->SetFsUuid(uuid);
     volumeMap_.Insert(volumePtr->GetId(), volumePtr);
     VolumeStateNotify(VolumeState::MOUNTED, volumePtr);
 }
