@@ -362,31 +362,7 @@ int32_t StorageDaemon::StopUser(int32_t userId)
 int32_t StorageDaemon::CompleteAddUser(int32_t userId)
 {
     LOGI("CompleteAddUser enter.");
-<<<<<<< HEAD
-<<<<<<< HEAD
-    if (userId >= StorageService::START_APP_CLONE_USER_ID && userId < StorageService::MAX_APP_CLONE_USER_ID) {
-        LOGE("User %{public}d is app clone user, do not delete el1 need_restore.", userId);
-        return E_OK;
-    }
-=======
     return E_OK;
->>>>>>> parent of 8ed41663 (update services/storage_daemon/ipc/src/storage_daemon.cpp.)
-#ifdef USER_CRYPTO_MIGRATE_KEY
-    std::string elNeedRestorePath = GetNeedRestoreFilePathByType(userId, EL1_KEY);
-    if (elNeedRestorePath.empty() || !std::filesystem::exists(elNeedRestorePath)) {
-        return E_OK;
-    }
-    (void)remove(elNeedRestorePath.c_str());
-    LOGI("CompleteAddUser remove el1 needRestore flag");
-    StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-        "CompleteAddUser", BizScene::USER_MOUNT_MANAGER, BizStage::BIZ_STAGE_GENERATE_USER_KEYS, "EL1", E_OK);
-#endif
-<<<<<<< HEAD
-=======
->>>>>>> parent of 3e51dc58 (DeleteUser删除用户需考虑need_restore标识+分身用户区分)
-    return E_OK;
-=======
->>>>>>> parent of 8ed41663 (update services/storage_daemon/ipc/src/storage_daemon.cpp.)
 }
 
 int32_t StorageDaemon::InitGlobalKey(void)
