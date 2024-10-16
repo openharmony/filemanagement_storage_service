@@ -84,8 +84,7 @@ int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
     LOGI("Run mtpfs cmd to mount mtp device success.");
     isMounting = false;
     StorageManagerClient client;
-    client.NotifyMtpMounted(device.id, device.path, device.vendor);
-    
+    client.NotifyMtpMounted(device.id, device.path, device.vendor, device.uuid);
     return E_OK;
 }
 
