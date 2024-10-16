@@ -38,7 +38,7 @@ public:
     bool AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status);
     bool DeleteClassEPinCode(uint32_t userId);
     bool ChangePinCodeClassE(uint32_t userId, bool &isFbeSupport);
-    bool ReadClassE(uint32_t status, uint8_t *classEBuffer, uint32_t length, bool &isFbeSupport);
+    bool ReadClassE(uint32_t status, std::unique_ptr<uint8_t[]> &classEBuffer, uint32_t length, bool &isFbeSupport);
     bool WriteClassE(uint32_t status, uint8_t *classEBuffer, uint32_t length);
     bool GenerateAppkey(uint32_t userId, uint32_t appUid, std::unique_ptr<uint8_t[]> &keyId, uint32_t size);
     bool LockUeceExt(bool &isFbeSupport);

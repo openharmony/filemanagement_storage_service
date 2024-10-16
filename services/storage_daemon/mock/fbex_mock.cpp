@@ -74,7 +74,7 @@ int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint
     return IFbexMoc::fbexMoc->UnlockScreenToKernel(userId, type, iv, size);
 }
 
-int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uint8_t *eBuffer,
+int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, std::unique_ptr<uint8_t[]> &eBuffer,
                               uint32_t length, bool &isFbeSupport)
 {
     return IFbexMoc::fbexMoc->ReadESecretToKernel(userIdToFbe, status, eBuffer, length, isFbeSupport);

@@ -408,19 +408,17 @@ int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint
     return ret;
 }
 
-int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uint8_t *eBuffer,
+int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, std::unique_ptr<uint8_t[]> &eBuffer,
                               uint32_t length, bool &isFbeSupport)
 {
     LOGI("enter, userId: %{public}d, status: %{public}u", userIdToFbe.userIds[DOUBLE_ID_INDEX], status);
-    if (!CheckReadBuffValid(eBuffer, length, status)) {
+    if (!CheckReadBuffValid(eBuffer.get(), length, status)) {
         LOGE("read e secret param invalid");
         return -EINVAL;
     }
-
     int fd = open(FBEX_UECE_PATH, O_RDWR);
     if (fd < 0) {
         if (errno == ENOENT) {
-            LOGE("fbex_uece does not exist, fbe not support this command!");
             isFbeSupport = false;
             return 0;
         }
@@ -429,9 +427,8 @@ int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uint
     }
     uint32_t bufferSize = AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES;
     FbeOptsE ops{ .userIdDouble = userIdToFbe.userIds[DOUBLE_ID_INDEX],
-                  .userIdSingle = userIdToFbe.userIds[SINGLE_ID_INDEX],
-                  .status = status, .length = bufferSize };
-    auto err = memcpy_s(ops.eBuffer, sizeof(ops.eBuffer), eBuffer, length);
+                  .userIdSingle = userIdToFbe.userIds[SINGLE_ID_INDEX], .status = status, .length = bufferSize };
+    auto err = memcpy_s(ops.eBuffer, sizeof(ops.eBuffer), eBuffer.get(), length);
     if (err != EOK) {
         LOGE("memcpy failed %{public}d", err);
         close(fd);
@@ -444,19 +441,23 @@ int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uint
         return -errno;
     }
     close(fd);
+    if (ops.length == 0) {
+        (void)memset_s(eBuffer.get(), sizeof(eBuffer.get()), 0, sizeof(eBuffer.get()));
+        eBuffer.reset(nullptr);
+        LOGE("ops length is 0, skip");
+        return 0;
+    }
     if (status == UNLOCK_STATUS) {
         bufferSize = AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES;
     } else {
         bufferSize = AES_256_HASH_RANDOM_SIZE;
     }
-
-    auto errBuffer = memcpy_s(eBuffer, length, ops.eBuffer, bufferSize);
+    auto errBuffer = memcpy_s(eBuffer.get(), length, ops.eBuffer, bufferSize);
     if (errBuffer != EOK) {
         LOGE("memcpy failed %{public}d", errBuffer);
         return 0;
     }
     LOGI("ReadESecretToKernel success");
-
     return 0;
 }
 
