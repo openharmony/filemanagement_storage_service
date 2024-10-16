@@ -1235,8 +1235,8 @@ int32_t StorageManagerStub::HandleNotifyMtpMount(MessageParcel &data, MessagePar
     std::string id = data.ReadString();
     std::string path = data.ReadString();
     std::string desc = data.ReadString();
-    int32_t err = NotifyMtpMounted(id, path, desc);
-    
+    std::string uuid = data.ReadString();
+    int32_t err = NotifyMtpMounted(id, path, desc, uuid);
     if (!reply.WriteInt32(err)) {
         LOGE("Write reply error code failed");
         return E_WRITE_REPLY_ERR;
