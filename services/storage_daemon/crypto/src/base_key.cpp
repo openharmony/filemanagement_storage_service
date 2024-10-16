@@ -37,8 +37,11 @@ namespace {
 const std::string PATH_LATEST_BACKUP = "/latest_bak";
 const std::string PATH_KEY_VERSION = "/version_";
 const std::string PATH_KEY_TEMP = "/temp";
+<<<<<<< HEAD
 const std::string PATH_NEED_RESTORE_SUFFIX = "/latest/need_restore";
 const std::string PATH_USER_EL1_DIR = "/data/service/el1/public/storage_daemon/sd/el1/";
+=======
+>>>>>>> parent of 3e51dc58 (DeleteUser删除用户需考虑need_restore标识+分身用户区分)
 
 #ifndef F2FS_IOCTL_MAGIC
 #define F2FS_IOCTL_MAGIC 0xf5
@@ -772,27 +775,30 @@ bool BaseKey::ClearKey(const std::string &mnt)
         LOGE("InactiveKey failed.");
     }
     keyInfo_.key.Clear();
-    bool needClearFlag = true;
-#ifdef USER_CRYPTO_MIGRATE_KEY
-    std::string elNeedRestorePath = PATH_USER_EL1_DIR + std::to_string(GetIdFromDir()) + PATH_NEED_RESTORE_SUFFIX;
-    if (std::filesystem::exists(elNeedRestorePath)) {
-        needClearFlag = false;
-        LOGI("needRestore flag exist, do not remove secret.");
+    if (!IsDir(dir_)) {
+        LOGE("dir not exist, do not need to remove dir");
+        return ret;
     }
-#endif
-    if (needClearFlag) {
-        LOGI("do clear key.");
-        WipingActionDir(dir_);
-        std::string backupDir;
-        KeyBackup::GetInstance().GetBackupDir(dir_, backupDir);
-        WipingActionDir(backupDir);
-        KeyBackup::GetInstance().RemoveNode(backupDir);
-        OHOS::ForceRemoveDirectory(backupDir);
-        return OHOS::ForceRemoveDirectory(dir_);
-        // use F2FS_IOC_SEC_TRIM_FILE
+    WipingActionDir(dir_);
+    std::string backupDir;
+    KeyBackup::GetInstance().GetBackupDir(dir_, backupDir);
+    WipingActionDir(backupDir);
+    KeyBackup::GetInstance().RemoveNode(backupDir);
+    LOGI("force remove backupDir, %{public}s.", backupDir.c_str());
+    OHOS::ForceRemoveDirectory(backupDir);
+    LOGI("force remove dir_, %{public}s.", dir_.c_str());
+    bool removeRet = OHOS::ForceRemoveDirectory(dir_);
+    if (!removeRet) {
+        LOGI("ForceRemoveDirectory failed.");
+        return removeRet;
     }
+<<<<<<< HEAD
     LOGI("do not clear key.");
     return true;
+=======
+    // use F2FS_IOC_SEC_TRIM_FILE
+    return ret;
+>>>>>>> parent of 3e51dc58 (DeleteUser删除用户需考虑need_restore标识+分身用户区分)
 }
 
 void BaseKey::WipingActionDir(std::string &path)
