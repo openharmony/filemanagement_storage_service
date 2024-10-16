@@ -104,7 +104,7 @@ int32_t NetlinkListener::ReadMsg(int32_t fd_count, struct pollfd ufds[2])
                 return E_ERR;
             }
             if (msg == 0) {
-                LOGE("Stop listener");
+                LOGI("Stop listener");
                 return E_ERR;
             }
         } else if (ufds[i].fd == socketFd_) {
@@ -124,33 +124,34 @@ int32_t NetlinkListener::ReadMsg(int32_t fd_count, struct pollfd ufds[2])
 void NetlinkListener::RunListener()
 {
     struct pollfd ufds[2];
-    int32_t idleTime = POLL_IDLE_TIME;
+    int32_t idle_time = POLL_IDLE_TIME;
 
     while (1) {
-        int32_t fdCount = 0;
-        ufds[fdCount].fd = socketPipe_[0];
-        ufds[fdCount].events = POLLIN;
-        ufds[fdCount].revents = 0;
-        fdCount++;
+        int32_t fd_count = 0;
+
+        ufds[fd_count].fd = socketPipe_[0];
+        ufds[fd_count].events = POLLIN;
+        ufds[fd_count].revents = 0;
+        fd_count++;
 
         if (socketFd_ > -1) {
-            ufds[fdCount].fd = socketFd_;
-            ufds[fdCount].events = POLLIN;
-            ufds[fdCount].revents = 0;
-            fdCount++;
+            ufds[fd_count].fd = socketFd_;
+            ufds[fd_count].events = POLLIN;
+            ufds[fd_count].revents = 0;
+            fd_count++;
         }
 
-        int32_t fdEventCount = poll(ufds, fdCount, idleTime);
-        if (fdEventCount < 0) {
+        int32_t n = poll(ufds, fd_count, idle_time);
+        if (n < 0) {
             if (errno == EAGAIN || errno == EINTR) {
                 continue;
             }
             break;
-        } else if (fdEventCount == 0) {
+        } else if (!n) {
             continue;
         }
 
-        if (ReadMsg(fdCount, ufds) != 0) {
+        if (ReadMsg(fd_count, ufds) != 0) {
             return;
         }
     }
@@ -159,18 +160,16 @@ void NetlinkListener::RunListener()
 void NetlinkListener::EventProcess(void *object)
 {
     if (object == nullptr) {
-        LOGE("object is NULL");
         return;
     }
 
-    NetlinkListener* client = reinterpret_cast<NetlinkListener *>(object);
-    client->RunListener();
+    NetlinkListener* me = reinterpret_cast<NetlinkListener *>(object);
+    me->RunListener();
 }
 
 int32_t NetlinkListener::StartListener()
 {
     if (socketFd_ < 0) {
-        LOGE("socketFD < 0");
         return E_ERR;
     }
 
@@ -182,8 +181,7 @@ int32_t NetlinkListener::StartListener()
     if (socketThread_ == nullptr) {
         (void)close(socketPipe_[0]);
         (void)close(socketPipe_[1]);
-        socketPipe_[0] = -1;
-        socketPipe_[1] = -1;
+        socketPipe_[0] = socketPipe_[1] = -1;
         return E_ERR;
     }
 
@@ -201,8 +199,7 @@ int32_t NetlinkListener::StopListener()
 
     (void)close(socketPipe_[0]);
     (void)close(socketPipe_[1]);
-    socketPipe_[0] = -1;
-    socketPipe_[1] = -1;
+    socketPipe_[0] = socketPipe_[1] = -1;
 
     return E_OK;
 }

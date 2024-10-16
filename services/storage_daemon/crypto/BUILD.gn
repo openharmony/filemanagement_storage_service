@@ -51,6 +51,7 @@ ohos_static_library("libsdcrypto") {
     "src/huks_master.cpp",
     "src/iam_client.cpp",
     "src/key_backup.cpp",
+    "src/key_crypto_utils.cpp",
     "src/key_manager.cpp",
     "src/openssl_crypto.cpp",
   ]
@@ -78,6 +79,7 @@ ohos_static_library("libsdcrypto") {
     "init:libbegetutil",
     "ipc:ipc_single",
     "openssl:libcrypto_shared",
+    "os_account:os_account_innerkits",
     "samgr:samgr_proxy",
   ]
 
