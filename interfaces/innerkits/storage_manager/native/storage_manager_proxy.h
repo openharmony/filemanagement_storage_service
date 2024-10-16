@@ -59,8 +59,8 @@ public:
     int32_t Format(std::string volumeId, std::string fsType) override;
     int32_t GetDiskById(std::string diskId, Disk &disk) override;
 
-    int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc) override;
-    
+    int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
+                             const std::string &uuid) override;
     int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path) override;
 
     // fscrypt api
