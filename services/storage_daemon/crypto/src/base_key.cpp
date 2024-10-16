@@ -37,9 +37,6 @@ namespace {
 const std::string PATH_LATEST_BACKUP = "/latest_bak";
 const std::string PATH_KEY_VERSION = "/version_";
 const std::string PATH_KEY_TEMP = "/temp";
-<<<<<<< HEAD
-<<<<<<< HEAD
-const std::string PATH_NEED_RESTORE_SUFFIX = "/latest/need_restore";
 
 #ifndef F2FS_IOCTL_MAGIC
 #define F2FS_IOCTL_MAGIC 0xf5
