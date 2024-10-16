@@ -82,7 +82,7 @@ public:
     MOCK_METHOD4(CreateRecoverKey, int32_t(uint32_t, uint32_t, const std::vector<uint8_t> &,
         const std::vector<uint8_t> &));
     MOCK_METHOD1(SetRecoverKey, int32_t(const std::vector<uint8_t> &));
-    MOCK_METHOD3(NotifyMtpMounted, int32_t(const std::string &, const std::string &, const std::string &,
+    MOCK_METHOD4(NotifyMtpMounted, int32_t(const std::string &, const std::string &, const std::string &,
         const std::string &));
     MOCK_METHOD2(NotifyMtpUnmounted, int32_t(const std::string &, const std::string &));
 };
