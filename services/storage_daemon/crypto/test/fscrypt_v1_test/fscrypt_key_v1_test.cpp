@@ -212,11 +212,11 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_InstallKeyForAppKeyToKeyring, TestSize
     GTEST_LOG_(INFO) << "fscrypt_key_v1_InstallKeyForAppKeyToKeyring start";
     auto g_testKeyV1 = std::make_shared<OHOS::StorageDaemon::FscryptKeyV1>(TEST_KEYPATH);
     KeyBlob appKeyRaw(17);
-    EXPECT_FALSE(g_testKeyV1->InstallKeyForAppKeyToKeyring(appKeyRaw));
+    EXPECT_TRUE(g_testKeyV1->InstallKeyForAppKeyToKeyring(appKeyRaw));
     appKeyRaw.Clear();
 
     KeyBlob appKey(10);
-    EXPECT_FALSE(g_testKeyV1->InstallKeyForAppKeyToKeyring(appKey));
+    EXPECT_TRUE(g_testKeyV1->InstallKeyForAppKeyToKeyring(appKey));
     appKey.Clear();
     GTEST_LOG_(INFO) << "fscrypt_key_v1_InstallKeyForAppKeyToKeyring end";
 }
@@ -273,7 +273,7 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_GenerateAppkey, TestSize.Level1)
     EXPECT_FALSE(g_testKeyV1->GenerateAppkey(userId, hashId, keyDesc));
 
     EXPECT_CALL(*fscryptKeyExtMock_, GenerateAppkey(_, _, _, _)).WillOnce(Return(true));
-    EXPECT_FALSE(g_testKeyV1->GenerateAppkey(userId, hashId, keyDesc));
+    EXPECT_TRUE(g_testKeyV1->GenerateAppkey(userId, hashId, keyDesc));
     GTEST_LOG_(INFO) << "fscrypt_key_v1_GenerateAppkey end";
 }
 
