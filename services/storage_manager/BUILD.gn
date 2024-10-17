@@ -112,10 +112,7 @@ ohos_shared_library("storage_manager") {
 
     if (storage_service_graphic) {
       defines += [ "STORAGE_SERVICE_GRAPHIC" ]
-      external_deps += [
-        "media_library:media_library",
-        "media_library:media_library_manager",
-      ]
+      external_deps += [ "data_share:datashare_common" ]
     }
   }
 
