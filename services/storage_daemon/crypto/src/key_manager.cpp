@@ -1031,6 +1031,10 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
     if (!KeyCtrlHasFscryptSyspara()) {
         return 0;
     }
+    if (CheckUserPinProtect(user, token, secret)) {
+        LOGE("IAM & Storage mismatch, wait user input pin.");
+        return -EFAULT;
+    }
     std::lock_guard<std::mutex> lock(keyMutex_);
     if (HasElkey(user, type)) {
         LOGE("The user %{public}u el have been actived, key type is %{public}u", user, type);
@@ -1059,7 +1063,7 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
         }
         return 0;
     }
-    if (ActiveElXUserKey(user, token, keyDir, secret, elKey) != 0) {
+    if (ActiveElXUserKey(user, token, type, secret, elKey) != 0) {
         LOGE("ActiveElXUserKey failed");
         return -EFAULT;
     }
@@ -1116,16 +1120,19 @@ int KeyManager::ActiveUeceUserKey(unsigned int user,
     LOGI("userId %{public}u, token empty %{public}d sec empty %{public}d", user, token.empty(), secret.empty());
     userEl5Key_[user] = elKey;
     UserAuth auth = { .token = token, .secret = secret };
-    if (!elKey->DecryptClassE(auth, saveESecretStatus[user], user, USER_UNLOCK)) {
-        LOGE("Unlock user %{public}u E_Class failed", user);
-        return -EFAULT;
+    if (!elKey->DecryptClassE(auth, saveESecretStatus[user], user, USER_UNLOCK) &&
+        elKey->DecryptClassE({} , saveESecretStatus[user], user, USER_UNLOCK)) {
+        if (TryToFixUeceKey(user, token, secret) != E_OK) {
+            LOGE("TryToFixUeceKey el5 failed !");
+            return -EFAULT;
+        }
     }
     LOGI("ActiveCeSceSeceUserKey user %{public}u, saveESecretStatus %{public}d", user, saveESecretStatus[user]);
     return 0;
 }
 
 int KeyManager::ActiveElXUserKey(unsigned int user,
-                                 const std::vector<uint8_t> &token, std::string keyDir,
+                                 const std::vector<uint8_t> &token, KeyType keyType,
                                  const std::vector<uint8_t> &secret, std::shared_ptr<BaseKey> elKey)
 {
     if (elKey->InitKey(false) == false) {
@@ -1133,6 +1140,15 @@ int KeyManager::ActiveElXUserKey(unsigned int user,
         return -EFAULT;
     }
     UserAuth auth = { token, secret };
+    // if device has pwd and decrypt success, continue.otherwise try no pwd and fix situation.
+    if (!elKey->RestoreKey(auth) && elKey->RestoreKey(NULL_KEY_AUTH)) {
+        if (TryToFixUserCeEceSeceKey(user, keyType, token, secret) != E_OK) {
+            LOGE("TryToFixUserCeEceSeceKey elx failed, type %{public}u", keyType);
+            return -EFAULT;
+        }
+    }
+    std:string NEED_UPDATE_PATH = GetKeyDirByUserAndType(user, keyType) + PATH_LATEST + SUFFIX_NEED_UPDATE;
+    std::string NEED_RESTORE_PATH = GETKeyDirByUserAndType(user, keyType) + PATH_LATEST + SUFFIX_NEED_RESTORE;
     if ((elKey->RestoreKey(auth) == false) && (elKey->RestoreKey(NULL_KEY_AUTH) == false)) {
         LOGE("Restore el failed");
         return -EFAULT;
@@ -1736,6 +1752,85 @@ void KeyManager::CheckAndClearTokenInfo(uint32_t user)
             userEl4Key_[user]->ClearMemoryKeyCtx();
         }
     }
+}
+
+int KeyManager::CheckUserPinProtect(unsigned int userId,
+                                    const std::vector<uint8_t> &token,
+                                    const std::vector<uint8_t> &scret)
+{
+    LOGI("enter CheckUserPinProtect");
+    // judge if device has PIN protect
+    if((token.emty() && secret.empty()) && IamClient::GetInstance().hasPinProtect(userId)) {
+        LOGE("User %{public}d has pin code protect.", userId);
+        return E_ERR;
+    }
+    return E_OK;
+}
+
+int KeyManager::TryToFixUserCeEceSeceKey(unsigned int userId,
+                                         KeyType keyType,
+                                         const std::vector<uint8_t> &token,
+                                         const std::vector<uint8_t> &secret)
+{
+    LOGI("enter TryToFixUserCeEceSeceKey");
+    keyMutex_.unlock();
+    if(!IamClient::GetInstance().hasPinProtect(userId)) {
+        LOGE("User %{public}d has pin code protect.",userId);
+        return E_OK;
+    }
+
+    uint64_t secureUid = { 0 };
+    if(!secret.empty() && !token.empty()) {
+        IamClient::GetInstance().getSecureUid(userId, secureUid);
+        LOGE("Pin code is exist, get secure uid.");
+    }
+    UserAuth auth = { .token = token, .secret=secret, .secureUid = secureUid };
+    UserTokenSecret userTokenSecret = { .token=token, .oldSecret={}, .newSecret=secret, .secureUid = secureUid };
+};
+
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    if(!UpdateCeEceSeceKey(userId, userTokenSecret, keyType, false) != E_OK) {
+#else
+    if(UpdateCeEceSeceKey(userId, userTokenSecret, keyType) != E_OK) {
+#endif
+        LOGE("try to fix elx key failed !");
+        return -EFAULT;
+    }
+    if (UpdateCeEceSecreKeyContext(userId, keyType ) != E_OK) {
+        LOGE("try to fix elx key context failed !");
+        return -EFAULT;
+    }
+    return E_OK;
+}
+
+int KeyManager::TryToFixUeceKey(unsigned int userId,
+                                const std::vector<uint8_t> &token,
+                                const std::vector<uint8_t> &secret)
+{
+    LOGI("enter TryToFixUeceKey");
+    keyMutex_.unlock();
+    if(!IamClient::GetInstance().hasPinProtect(userId)) {
+        LOGE("User %{public}d has pin code protect.", userId);
+        return E_OK;
+    }
+
+    uint64_t secureUid = { 0 };
+    if(!secret.empty() && !token.empty()) {
+        IamClient::GetInstance().getSecureUid(userId, secureUid);
+        LOGE("Pin code is exist, get secure uid.");
+    }
+    UserAuth auth = { .token=token, .secret=secret, .secureUid = secureUid };
+    UserTokenSecret tokenSecret = { .token = token, .oldSecret = {"!"}, .newSecret = secret, .secureUid = secureUid};
+
+    if (UpdateESecret(userId, tokenSecret) != E_OK) {
+        LOGE("try to fix elx key failed !");
+        return -EFAULT;
+    }
+    if (UpdateCeEceSeceKeyContext(userId, EL5_KEY) != E_OK) {
+        LOGE("try to fix elx key context failed !");
+        return -EFAULT;
+    }
+    return E_OK;
 }
 
 #ifdef USER_CRYPTO_MIGRATE_KEY
