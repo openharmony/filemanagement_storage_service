@@ -1836,7 +1836,7 @@ int KeyManager::TryToFixUserCeEceSeceKey(unsigned int userId,
 
     uint64_t secureUid = { 0 };
     if (!secret.empty() && !token.empty()) {
-        IamClient::GetInstance().getSecureUid(userId, secureUid);
+        IamClient::GetInstance().GetSecureUid(userId, secureUid);
         LOGE("Pin code is exist, get secure uid.");
     }
     UserAuth auth = { .token = token, .secret = secret, .secureUid = secureUid };
@@ -1850,7 +1850,7 @@ int KeyManager::TryToFixUserCeEceSeceKey(unsigned int userId,
         LOGE("try to fix elx key failed !");
         return -EFAULT;
     }
-    if (UpdateCeEceSecreKeyContext(userId, keyType) != E_OK) {
+    if (UpdateCeEceSeceKeyContext(userId, keyType) != E_OK) {
         LOGE("try to fix elx key context failed !");
         return -EFAULT;
     }
@@ -1870,7 +1870,7 @@ int KeyManager::TryToFixUeceKey(unsigned int userId,
 
     uint64_t secureUid = { 0 };
     if (!secret.empty() && !token.empty()) {
-        IamClient::GetInstance().getSecureUid(userId, secureUid);
+        IamClient::GetInstance().GetSecureUid(userId, secureUid);
         LOGE("Pin code is exist, get secure uid.");
     }
     UserAuth auth = { .token=token, .secret=secret, .secureUid = secureUid };
