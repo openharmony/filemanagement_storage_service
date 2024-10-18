@@ -1501,7 +1501,7 @@ HWTEST_F(KeyManagerTest, KeyManager_Generate_And_Install_El5_Key_003, TestSize.L
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*fscryptKeyMock_, AddClassE(_, _, _))
         .WillOnce(DoAll(SetArgReferee<0>(false), SetArgReferee<1>(false), Return(true)));
-    EXPECT_CALL(*fscryptKeyMock_, DecryptClassE(_, _, _, _)).WillOnce(Return(false));
+    EXPECT_CALL(*fscryptKeyMock_, DecryptClassE(_, _, _, _, _)).WillOnce(Return(false));
     auto ret = KeyManager::GetInstance()->GenerateAndInstallEl5Key(userId, TEST_DIR, badUserAuth);
     EXPECT_EQ(ret, 0);
 
@@ -1509,7 +1509,7 @@ HWTEST_F(KeyManagerTest, KeyManager_Generate_And_Install_El5_Key_003, TestSize.L
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*fscryptKeyMock_, AddClassE(_, _, _))
         .WillOnce(DoAll(SetArgReferee<0>(false), SetArgReferee<1>(false), Return(true)));
-    EXPECT_CALL(*fscryptKeyMock_, DecryptClassE(_, _, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(*fscryptKeyMock_, DecryptClassE(_, _, _, _, _)).WillOnce(Return(true));
     ret = KeyManager::GetInstance()->GenerateAndInstallEl5Key(userId, TEST_DIR, badUserAuth);
     EXPECT_EQ(ret, 0);
     GTEST_LOG_(INFO) << "KeyManager_Generate_And_Install_El5_Key_003 end";
