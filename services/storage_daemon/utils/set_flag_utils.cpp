@@ -69,18 +69,18 @@ bool SetFlagUtils::SetFileDelFlags(const std::string &filepath)
     LOGI("SetFlagUtils SetFileDelFlags for filepath=%{public}s start.", filepath.c_str());
     char absPath[PATH_MAX] = {0};
     if (realpath(filepath.c_str(), absPath) == nullptr) {
-        LOGE("SetFlagUtils Failed to get realpath");
+        LOGE("SetFlagUtils Failed to get file realpath");
         return false;
     }
     int32_t fd = open(absPath, O_RDWR);
     if (fd < 0) {
-        LOGE("SetFlagUtils Failed to open dir, errno: %{public}d", errno);
+        LOGE("SetFlagUtils Failed to open file, errno: %{public}d", errno);
         return false;
     }
     unsigned int flags = 0;
     int32_t ret = ioctl(fd, HMFS_IOCTL_HW_GET_FLAGS, &flags);
     if (ret < 0) {
-        LOGE("SetFlagUtils Failed to get flags, errno: %{public}d", errno);
+        LOGE("SetFlagUtils Failed to get file flags, errno: %{public}d", errno);
         close(fd);
         return false;
     }
@@ -92,7 +92,7 @@ bool SetFlagUtils::SetFileDelFlags(const std::string &filepath)
     flags |= HMFS_MONITOR_FL;
     ret  = ioctl(fd, HMFS_IOCTL_HW_SET_FLAGS, &flags);
     if (ret < 0) {
-        LOGE("SetFlagUtils Failed to set flags, errno: %{public}d", errno);
+        LOGE("SetFlagUtils Failed to set file flags, errno: %{public}d", errno);
     }
     close(fd);
     return true;
