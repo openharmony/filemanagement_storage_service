@@ -97,7 +97,7 @@ public:
     int GenerateUserKeyByType(unsigned int user, KeyType type,
                               const std::vector<uint8_t> &token,
                               const std::vector<uint8_t> &secret);
-    int TryToFixUserCeEceSeceKey(unsigned int user,KeyType type,
+    int TryToFixUserCeEceSeceKey(unsigned int user, KeyType type,
                                  const std::vector<uint8_t> &token,
                                  const std::vector<uint8_t> &secret);
     int TryToFixUeceKey(unsigned int userId,

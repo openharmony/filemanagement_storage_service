@@ -1121,7 +1121,7 @@ int KeyManager::ActiveUeceUserKey(unsigned int user,
     userEl5Key_[user] = elKey;
     UserAuth auth = { .token = token, .secret = secret };
     if (!elKey->DecryptClassE(auth, saveESecretStatus[user], user, USER_UNLOCK) &&
-        elKey->DecryptClassE({} , saveESecretStatus[user], user, USER_UNLOCK)) {
+        elKey->DecryptClassE({}, saveESecretStatus[user], user, USER_UNLOCK)) {
         if (TryToFixUeceKey(user, token, secret) != E_OK) {
             LOGE("TryToFixUeceKey el5 failed !");
             return -EFAULT;
@@ -1147,8 +1147,8 @@ int KeyManager::ActiveElXUserKey(unsigned int user,
             return -EFAULT;
         }
     }
-    std:string NEED_UPDATE_PATH = GetKeyDirByUserAndType(user, keyType) + PATH_LATEST + SUFFIX_NEED_UPDATE;
-    std::string NEED_RESTORE_PATH = GETKeyDirByUserAndType(user, keyType) + PATH_LATEST + SUFFIX_NEED_RESTORE;
+    std::string NEED_UPDATE_PATH = GetKeyDirByUserAndType(user, keyType) + PATH_LATEST + SUFFIX_NEED_UPDATE;
+    std::string NEED_RESTORE_PATH = GetKeyDirByUserAndType(user, keyType) + PATH_LATEST + SUFFIX_NEED_RESTORE;
     if ((elKey->RestoreKey(auth) == false) && (elKey->RestoreKey(NULL_KEY_AUTH) == false)) {
         LOGE("Restore el failed");
         return -EFAULT;
@@ -1760,7 +1760,7 @@ int KeyManager::CheckUserPinProtect(unsigned int userId,
 {
     LOGI("enter CheckUserPinProtect");
     // judge if device has PIN protect
-    if((token.emty() && secret.empty()) && IamClient::GetInstance().hasPinProtect(userId)) {
+    if ((token.emty() && secret.empty()) && IamClient::GetInstance().hasPinProtect(userId)) {
         LOGE("User %{public}d has pin code protect.", userId);
         return E_ERR;
     }
@@ -1774,13 +1774,13 @@ int KeyManager::TryToFixUserCeEceSeceKey(unsigned int userId,
 {
     LOGI("enter TryToFixUserCeEceSeceKey");
     keyMutex_.unlock();
-    if(!IamClient::GetInstance().hasPinProtect(userId)) {
-        LOGE("User %{public}d has pin code protect.",userId);
+    if (!IamClient::GetInstance().hasPinProtect(userId)) {
+        LOGE("User %{public}d has pin code protect.", userId);
         return E_OK;
     }
 
     uint64_t secureUid = { 0 };
-    if(!secret.empty() && !token.empty()) {
+    if (!secret.empty() && !token.empty()) {
         IamClient::GetInstance().getSecureUid(userId, secureUid);
         LOGE("Pin code is exist, get secure uid.");
     }
@@ -1789,14 +1789,14 @@ int KeyManager::TryToFixUserCeEceSeceKey(unsigned int userId,
 };
 
 #ifdef USER_CRYPTO_MIGRATE_KEY
-    if(!UpdateCeEceSeceKey(userId, userTokenSecret, keyType, false) != E_OK) {
+    if (!UpdateCeEceSeceKey(userId, userTokenSecret, keyType, false) != E_OK) {
 #else
-    if(UpdateCeEceSeceKey(userId, userTokenSecret, keyType) != E_OK) {
+    if (UpdateCeEceSeceKey(userId, userTokenSecret, keyType) != E_OK) {
 #endif
         LOGE("try to fix elx key failed !");
         return -EFAULT;
     }
-    if (UpdateCeEceSecreKeyContext(userId, keyType ) != E_OK) {
+    if (UpdateCeEceSecreKeyContext(userId, keyType) != E_OK) {
         LOGE("try to fix elx key context failed !");
         return -EFAULT;
     }
@@ -1809,13 +1809,13 @@ int KeyManager::TryToFixUeceKey(unsigned int userId,
 {
     LOGI("enter TryToFixUeceKey");
     keyMutex_.unlock();
-    if(!IamClient::GetInstance().hasPinProtect(userId)) {
+    if (!IamClient::GetInstance().hasPinProtect(userId)) {
         LOGE("User %{public}d has pin code protect.", userId);
         return E_OK;
     }
 
     uint64_t secureUid = { 0 };
-    if(!secret.empty() && !token.empty()) {
+    if (!secret.empty() && !token.empty()) {
         IamClient::GetInstance().getSecureUid(userId, secureUid);
         LOGE("Pin code is exist, get secure uid.");
     }
