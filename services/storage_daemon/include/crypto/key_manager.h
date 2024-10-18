@@ -104,7 +104,7 @@ public:
     int GenerateUserKeyByType(unsigned int user, KeyType type,
                               const std::vector<uint8_t> &token,
                               const std::vector<uint8_t> &secret);
-    int TryToFixUserCeEceSeceKey(unsigned int user, KeyType type,
+    int TryToFixUserCeEceSeceKey(unsigned int userId, KeyType type,
                                  const std::vector<uint8_t> &token,
                                  const std::vector<uint8_t> &secret);
     int TryToFixUeceKey(unsigned int userId,
@@ -140,7 +140,7 @@ private:
                           const std::vector<uint8_t> &token,
                           const std::vector<uint8_t> &secret, std::shared_ptr<BaseKey> elKey);
     int ActiveElXUserKey(unsigned int user,
-                         const std::vector<uint8_t> &token, KeyType keyTpype,
+                         const std::vector<uint8_t> &token, KeyType keyType,
                          const std::vector<uint8_t> &secret, std::shared_ptr<BaseKey> elKey);
     int InactiveUserElKey(unsigned int user, std::map<unsigned int, std::shared_ptr<BaseKey>> &userElxKey_);
     int CheckAndDeleteEmptyEl5Directory(std::string keyDir, unsigned int user);

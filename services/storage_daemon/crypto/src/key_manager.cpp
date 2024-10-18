@@ -1097,7 +1097,7 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
     if (!KeyCtrlHasFscryptSyspara()) {
         return 0;
     }
-    if (CheckUserPinProtect(user, token, secret)) {
+    if (CheckUserPinProtect(user, token, secret) != E_OK) {
         LOGE("IAM & Storage mismatch, wait user input pin.");
         return -EFAULT;
     }
@@ -1183,12 +1183,9 @@ int KeyManager::ActiveUeceUserKey(unsigned int user,
     userEl5Key_[user] = elKey;
     UserAuth auth = { .token = token, .secret = secret };
     bool eBufferStatue = false;
-    if (!elKey->DecryptClassE(auth, saveESecretStatus[user], eBufferStatue, user, USER_UNLOCK) &&
-        elKey->DecryptClassE({}, saveESecretStatus[user], user, USER_UNLOCK)) {
-        if (TryToFixUeceKey(user, token, secret) != E_OK) {
-            LOGE("TryToFixUeceKey el5 failed !");
-            return -EFAULT;
-        }
+    if (!elKey->DecryptClassE(auth, saveESecretStatus[user], eBufferStatue, user, USER_UNLOCK)) {
+        LOGE("Unlock user %{public}u E_Class failed", user);
+        return -EFAULT;
     }
 
     if (!token.empty() && !secret.empty() && eBufferStatue) {
@@ -1840,7 +1837,7 @@ int KeyManager::TryToFixUserCeEceSeceKey(unsigned int userId,
     LOGI("enter TryToFixUserCeEceSeceKey");
     keyMutex_.unlock();
     if (!IamClient::GetInstance().HasPinProtect(userId)) {
-        LOGE("User %{public}d has pin code protect.", userId);
+        LOGE("User %{public}d has no pin code protect.", userId);
         return E_OK;
     }
 
@@ -1874,7 +1871,7 @@ int KeyManager::TryToFixUeceKey(unsigned int userId,
     LOGI("enter TryToFixUeceKey");
     keyMutex_.unlock();
     if (!IamClient::GetInstance().HasPinProtect(userId)) {
-        LOGE("User %{public}d has pin code protect.", userId);
+        LOGE("User %{public}d has no pin code protect.", userId);
         return E_OK;
     }
 
@@ -1884,7 +1881,7 @@ int KeyManager::TryToFixUeceKey(unsigned int userId,
         LOGE("Pin code is exist, get secure uid.");
     }
     UserAuth auth = { .token=token, .secret=secret, .secureUid = secureUid };
-    UserTokenSecret tokenSecret = { .token = token, .oldSecret = {'!'}, .newSecret = secret, .secureUid = secureUid};
+    UserTokenSecret tokenSecret = { .token = token, .oldSecret = { }, .newSecret = secret, .secureUid = secureUid};
 
     if (UpdateESecret(userId, tokenSecret) != E_OK) {
         LOGE("try to fix elx key failed !");
