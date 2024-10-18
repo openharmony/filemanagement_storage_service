@@ -42,7 +42,6 @@ void KeyCryptoUtils::ForceLockUserScreen()
     ret = ScreenLock::ScreenLockManager::GetInstance()->Lock(ids[0]);
     if (ret != ScreenLock::E_SCREENLOCK_OK) {
         LOGE("Lock user screen by screen lock manager failed.");
-        return;
     }
     LOGI("Force lock user screen and request strong auth success for userId = %{public}d.", ids[0]);
 #endif

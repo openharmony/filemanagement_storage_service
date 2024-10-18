@@ -47,7 +47,7 @@ ohos_unittest("file_utils_test") {
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
-    "hisysevent:libhisysevent",
+    "huks:libhukssdk",
     "ipc:ipc_single",
     "ipc:libdbinder",
   ]
