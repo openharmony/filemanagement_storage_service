@@ -72,9 +72,9 @@ void VolumeManagerService::OnVolumeMounted(std::string volumeId, int fsType, std
     volumePtr->SetFsUuid(fsUuid);
     volumePtr->SetPath(path);
     std::string des = description;
-    if (des == "") {
-        auto disk = DelayedSingleton<DiskManagerService>::GetInstance()->GetDiskById(volumePtr->GetDiskId());
-        if (disk != nullptr) {
+    auto disk = DelayedSingleton<DiskManagerService>::GetInstance()->GetDiskById(volumePtr->GetDiskId());
+    if (disk != nullptr) {
+        if (des == "") {
             if (disk->GetFlag() == SD_FLAG) {
                 des = "MySDCard";
             } else if (disk->GetFlag() == USB_FLAG) {
@@ -83,6 +83,7 @@ void VolumeManagerService::OnVolumeMounted(std::string volumeId, int fsType, std
                 des = "Default";
             }
         }
+        volumePtr->SetFlags(disk->GetFlag());
     }
     volumePtr->SetDescription(des);
     volumePtr->SetState(VolumeState::MOUNTED);
