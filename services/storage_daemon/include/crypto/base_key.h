@@ -69,6 +69,7 @@ public:
     bool UpgradeKeys();
     bool GetOriginKey(KeyBlob &originKey);
     void SetOriginKey(KeyBlob &originKey);
+    bool KeyDesclsEmpty();
     
     KeyInfo keyInfo_;
     std::string GetDir() const
