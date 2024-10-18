@@ -66,6 +66,7 @@ namespace {
         static_cast<int32_t>(StorageDaemonInterfaceCode::GET_FILE_ENCRYPT_STATUS),
         static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_RECOVER_KEY),
         static_cast<int32_t>(StorageDaemonInterfaceCode::SET_RECOVER_KEY),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::COMPLETE_ADD_USER),
     };
 }
 
@@ -985,6 +986,37 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonTest_HandleUpdateKe
     EXPECT_TRUE(err == E_ERR);
 
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_HandleUpdateKeyContext_001 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_StorageDaemonTest_HandleCompleteAddUser_001
+ * @tc.desc: Verify the HandleCompleteAddUser function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonTest_HandleCompleteAddUser_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_HandleCompleteAddUser_001 start";
+
+    StorageDaemonStubMock mock;
+
+    MessageParcel data1;
+    MessageParcel reply1;
+    EXPECT_CALL(mock, CompleteAddUser(testing::_)).WillOnce(testing::Return(E_OK));
+    int32_t ret = mock.HandleCompleteAddUser(data1, reply1);
+    EXPECT_TRUE(ret == E_OK);
+    int32_t err = reply1.ReadInt32();
+    EXPECT_TRUE(err == E_OK);
+
+    MessageParcel data2;
+    MessageParcel reply2;
+    EXPECT_CALL(mock, HandleCompleteAddUser(testing::_)).WillOnce(testing::Return(E_ERR));
+    ret = mock.HandleCompleteAddUser(data2, reply2);
+    EXPECT_TRUE(ret == E_OK);
+    err = reply2.ReadInt32();
+    EXPECT_TRUE(err == E_ERR);
+
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_HandleCompleteAddUser_001 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

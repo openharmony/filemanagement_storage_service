@@ -333,5 +333,47 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Fscryp
 
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_FscryptEnable_001 end";
 }
+
+/**
+ * @tc.name: Storage_Service_StorageDaemonClientTest_UpdateUseAuthWithRecoveryKey_001
+ * @tc.desc: Verify the UpdateUseAuthWithRecoveryKey function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_UpdateUseAuthWithRecoveryKey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UpdateUseAuthWithRecoveryKey_001 start";
+
+    ASSERT_TRUE(storageDaemonClient_ != nullptr);
+
+    uint64_t secureUid = 1;
+    uint32_t userId = 100
+    std::vector<std::vector<uint8_t>> plainText;
+    int32_t ret = storageDaemonClient_->UpdateUseAuthWithRecoveryKey({}, {}, secureUid, userId, plainText);
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UpdateUseAuthWithRecoveryKey_001 end";
+}
+GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
+/**
+ * @tc.name: Storage_Service_StorageDaemonClientTest_GetFileEncryptStatus_001
+ * @tc.desc: Verify the GetFileEncryptStatus function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_GetFileEncryptStatus_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_GetFileEncryptStatus_001 start";
+
+    ASSERT_TRUE(storageDaemonClient_ != nullptr);
+
+    uint32_t userId = 100;
+    bool isEncrypted = true;
+    bool needCheckDirMount = true;
+    int32_t ret = storageDaemonClient_->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_GetFileEncryptStatus_001 end";
+}
 }
 }
