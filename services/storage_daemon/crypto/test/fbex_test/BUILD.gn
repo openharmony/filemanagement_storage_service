@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Huawei Device Co., Ltd.
+# Copyright (C) 2024 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -10,50 +10,52 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
-ohos_unittest("file_utils_test") {
+ohos_unittest("FbexTest") {
   branch_protector_ret = "pac_ret"
   sanitize = {
     integer_overflow = true
     cfi = true
     cfi_cross_dso = true
     debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
   }
   module_out_path = "storage_service/storage_daemon"
 
   defines = [
     "STORAGE_LOG_TAG = \"StorageDaemon\"",
     "LOG_DOMAIN = 0xD004301",
+    "private = public",
   ]
 
   include_dirs = [
     "${storage_daemon_path}/include",
+    "${storage_daemon_path}/include/crypto",
+    "${storage_daemon_path}/include/mock",
     "${storage_service_common_path}/include",
   ]
 
   sources = [
-    "common/help_utils.cpp",
-    "file_utils_test.cpp",
+    "${storage_daemon_path}/crypto/src/fbex.cpp",
+    "fbex_test.cpp",
   ]
 
   deps = [
-    "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}/libfscrypt:libfscryptutils",
     "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
-    "hisysevent:libhisysevent",
-    "ipc:ipc_single",
-    "ipc:libdbinder",
+    "huks:libhukssdk",
+    "init:libbegetutil",
   ]
 }
 
-group("storage_daemon_utils_test") {
+group("fbex_test") {
   testonly = true
-  deps = [ ":file_utils_test" ]
+  deps = [ ":FbexTest" ]
 }

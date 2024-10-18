@@ -23,6 +23,7 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/file_utils.h"
+#include "utils/storage_radar.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -259,6 +260,24 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_PrepareDir_003, TestSize.Level1)
     EXPECT_TRUE(st.st_gid == gid);
 
     GTEST_LOG_(INFO) << "FileUtilsTest_PrepareDir_003 end";
+}
+
+/**
+ * @tc.name: StorageRadarTest_RecordKillProcessResult_000
+ * @tc.desc: Verify the StorageRadar function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(FileUtilsTest, StorageRadarTest_RecordKillProcessResult, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageRadarTest_RecordKillProcessResult_000 start";
+
+    bool ret = StorageService::StorageRadar::GetInstance().RecordKillProcessResult("", E_OK);
+    ASSERT_TRUE(ret == true);
+
+    ret = StorageService::StorageRadar::GetInstance().RecordKillProcessResult("", E_ERR);
+    ASSERT_TRUE(ret == true);
+    GTEST_LOG_(INFO) << "StorageRadarTest_RecordKillProcessResult_000 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

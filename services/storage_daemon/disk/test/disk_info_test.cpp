@@ -603,5 +603,167 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetDevFlag_001, TestSize.Lev
 
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetDevPath_001 end";
 }
+
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_GetDevInfo_001
+ * @tc.desc: Verify the GetDevInfo function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetDevInfo_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetDevInfo_001 start";
+
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+                        \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
+                        \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
+                        \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    std::string sysPath = data->GetSyspath();
+    std::string devPath = data->GetDevpath();
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
+    dev_t device = makedev(major, minor);
+    int flag = 0;
+
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    diskInfo->GetDevice();
+    diskInfo->GetDevPath();
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_GetDevInfo_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_Partition_003
+ * @tc.desc: Verify the Partition function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Partition_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_Partition_003 start";
+
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+                            \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
+                            \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
+                            \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    std::string sysPath = data->GetSyspath();
+    std::string devPath = data->GetDevpath();
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
+    dev_t device = makedev(major, minor);
+    int flag = 0;
+
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+
+    ASSERT_TRUE(diskInfo != nullptr);
+    int ret = diskInfo->Partition();
+
+    EXPECT_TRUE(ret == E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_Partition_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_Destroy_003
+ * @tc.desc: Verify the Destroy function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Destroy_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_Destroy_003 start";
+
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+                            \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
+                            \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
+                            \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    std::string sysPath = data->GetSyspath();
+    std::string devPath = data->GetDevpath();
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
+    dev_t device = makedev(major, minor);
+    int flag = 0;
+
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    int ret = diskInfo->Destroy();
+    EXPECT_TRUE(ret == E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_Destroy_003 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_CreateVolume_003
+ * @tc.desc: Verify the CreateVolume function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_CreateVolume_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_CreateVolume_003 start";
+
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+                        \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
+                        \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
+                        \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    std::string sysPath = data->GetSyspath();
+    std::string devPath = data->GetDevpath();
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
+    dev_t device = makedev(major, minor);
+    int flag = 0;
+
+    auto mock = std::make_shared<DiskInfoTestMock>(sysPath, devPath, device, flag);
+
+    EXPECT_CALL(*mock, CreateVolume(testing::_)).WillOnce(testing::Return(E_ERR));
+    int ret = mock->CreateVolume(device);
+
+    EXPECT_TRUE(ret == E_ERR);
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_CreateVolume_003 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_Partition_004
+ * @tc.desc: Verify the Partition function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Partition_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_Partition_004 start";
+
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+                        \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
+                        \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
+                        \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    std::string sysPath = data->GetSyspath();
+    std::string devPath = data->GetDevpath();
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
+    dev_t device = makedev(major, minor);
+    int flag = 0;
+
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    int ret = diskInfo->Partition();
+    EXPECT_TRUE(ret == E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_Partition_004 end";
+}
 }
 }
