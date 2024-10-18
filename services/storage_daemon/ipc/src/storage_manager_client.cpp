@@ -130,7 +130,7 @@ int32_t StorageManagerClient::NotifyVolumeStateChanged(std::string volId, Storag
 int32_t StorageManagerClient::NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
                                                const std::string &uuid)
 {
-    LOGI("NotifyMtpMounted: id = %{public}s, path = %{public}s, desc = %{public}s, uuid = %{public}s", id.c_str(),
+    LOGI("NotifyMtpMounted: id = %{public}s, path = %{public}s, desc = %{public}s, uuid = %{private}s", id.c_str(),
         path.c_str(), desc.c_str(), uuid.c_str());
     if (GetClient() != E_OK) {
         return E_SERVICE_IS_NULLPTR;
