@@ -242,7 +242,7 @@ int KeyManager::GenerateAndInstallEl5Key(uint32_t userId, const std::string &dir
         }
     } else {
         bool eBufferStatue = false;
-        if (!elKey->DecryptClassE(auth, saveESecretStatus[userId] ,eBufferStatue, userId, USER_UNLOCK)) {
+        if (!elKey->DecryptClassE(auth, saveESecretStatus[userId] , eBufferStatue, userId, USER_UNLOCK)) {
             LOGE("user %{public}u decrypt error", userId);
         }
     }
