@@ -340,7 +340,8 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Fscryp
  * @tc.type: FUNC
  * @tc.require: AR000H0F7I
  */
-HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_UpdateUseAuthWithRecoveryKey_001, TestSize.Level1)
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_UpdateUseAuthWithRecoveryKey_001,
+    TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UpdateUseAuthWithRecoveryKey_001 start";
 
