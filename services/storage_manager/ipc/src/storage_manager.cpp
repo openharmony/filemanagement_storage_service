@@ -653,7 +653,7 @@ int32_t StorageManager::NotifyMtpMounted(const std::string &id, const std::strin
                                          const std::string &uuid)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
-    LOGI("StorageManger::NotifyMtpMounted start, id: %{public}s, path: %{public}s, uuid: %{public}s", id.c_str(),
+    LOGI("StorageManger::NotifyMtpMounted start, id: %{public}s, path: %{public}s, uuid: %{private}s", id.c_str(),
          path.c_str(), uuid.c_str());
     DelayedSingleton<VolumeManagerService>::GetInstance()->NotifyMtpMounted(id, path, desc, uuid);
 #endif
