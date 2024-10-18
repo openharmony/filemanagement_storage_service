@@ -439,7 +439,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_Unmount_0000, testing::e
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->UUnmount(volumeId);
+    result = proxy_->Unmount(volumeId);
     EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_Unmount_0000";
 }
