@@ -59,6 +59,7 @@ constexpr uid_t OID_HIVIEW = 1201;
 constexpr uid_t OID_PARENT_CONTROL = 7007;
 constexpr uid_t OID_ACCOUNT = 3058;
 constexpr uid_t OID_COLLABORATION_FWK = 5520;
+constexpr uid_t OID_CLOUD_BACK = 5206;
 constexpr uid_t OID_AV_SESSION = 6700;
 constexpr uid_t USER_ID_BASE = 200000;
 constexpr uid_t OID_FOUNDATION = 5523;

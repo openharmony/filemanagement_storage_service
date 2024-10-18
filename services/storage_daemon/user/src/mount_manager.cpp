@@ -164,6 +164,7 @@ std::vector<DirInfo> MountManager::InitVirtualDir()
 std::vector<DirInfo> MountManager::InitSystemServiceDir()
 {
     return {{"/data/service/el2/%d/tee", MODE_0711, OID_TEE, OID_TEE},
+            {"/data/service/el2/%d/cloud_backup_service", MODE_0711, OID_CLOUD_BACK, OID_CLOUD_BACK},
             {"/data/service/el2/%d/deviceauth", MODE_0711, OID_DEVICE_AUTH, OID_DEVICE_AUTH},
             {"/data/service/el3/%d/device_standby", MODE_0711, OID_RSS, OID_RSS},
             {"/data/service/el2/%d/hwid_service", MODE_0711, OID_HWID, OID_HWID},
