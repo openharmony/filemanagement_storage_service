@@ -1815,7 +1815,7 @@ int KeyManager::CheckUserPinProtect(unsigned int userId,
 {
     LOGI("enter CheckUserPinProtect");
     // judge if device has PIN protect
-    if ((token.empty() && secret.empty()) && IamClient::GetInstance().hasPinProtect(userId)) {
+    if ((token.empty() && secret.empty()) && IamClient::GetInstance().HasPinProtect(userId)) {
         LOGE("User %{public}d has pin code protect.", userId);
         return E_ERR;
     }
@@ -1829,7 +1829,7 @@ int KeyManager::TryToFixUserCeEceSeceKey(unsigned int userId,
 {
     LOGI("enter TryToFixUserCeEceSeceKey");
     keyMutex_.unlock();
-    if (!IamClient::GetInstance().hasPinProtect(userId)) {
+    if (!IamClient::GetInstance().HasPinProtect(userId)) {
         LOGE("User %{public}d has pin code protect.", userId);
         return E_OK;
     }
@@ -1864,7 +1864,7 @@ int KeyManager::TryToFixUeceKey(unsigned int userId,
 {
     LOGI("enter TryToFixUeceKey");
     keyMutex_.unlock();
-    if (!IamClient::GetInstance().hasPinProtect(userId)) {
+    if (!IamClient::GetInstance().HasPinProtect(userId)) {
         LOGE("User %{public}d has pin code protect.", userId);
         return E_OK;
     }
