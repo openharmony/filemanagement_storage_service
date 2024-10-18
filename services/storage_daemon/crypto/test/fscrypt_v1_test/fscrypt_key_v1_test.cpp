@@ -345,20 +345,21 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_DecryptClassE, TestSize.Level1)
     GTEST_LOG_(INFO) << "fscrypt_key_v1_DecryptClassE start";
     auto g_testKeyV1 = std::make_shared<OHOS::StorageDaemon::FscryptKeyV1>(TEST_KEYPATH);
     bool isSupport = true;
+    bool eBufferStatue = true;
     uint32_t user = 1;
     uint32_t status = 1;
 
     EXPECT_CALL(*fscryptKeyExtMock_, ReadClassE(_, _, _, _)).WillOnce(Return(false));
-    EXPECT_FALSE(g_testKeyV1->DecryptClassE(emptyUserAuth, isSupport, user, status));
+    EXPECT_FALSE(g_testKeyV1->DecryptClassE(emptyUserAuth, isSupport, eBufferStatue, user, status));
 
     g_testKeyV1->ClearKey();
     EXPECT_CALL(*fscryptKeyExtMock_, ReadClassE(_, _, _, _)).WillOnce(Return(true));
-    EXPECT_TRUE(g_testKeyV1->DecryptClassE(emptyUserAuth, isSupport, user, status));
+    EXPECT_TRUE(g_testKeyV1->DecryptClassE(emptyUserAuth, isSupport, eBufferStatue, user, status));
 
     g_testKeyV1->ClearKey();
     const UserAuth auth{KeyBlob(8), KeyBlob(8), 0};
     EXPECT_CALL(*fscryptKeyExtMock_, ReadClassE(_, _, _, _)).WillOnce(Return(true));
-    EXPECT_FALSE(g_testKeyV1->DecryptClassE(auth, isSupport, user, status));
+    EXPECT_FALSE(g_testKeyV1->DecryptClassE(auth, isSupport, eBufferStatue, user, status));
     GTEST_LOG_(INFO) << "fscrypt_key_v1_DecryptClassE end";
 }
 

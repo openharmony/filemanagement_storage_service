@@ -36,7 +36,8 @@ public:
     virtual bool AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status) = 0;
     virtual bool DeleteClassEPinCode(uint32_t user) = 0;
     virtual bool ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId) = 0;
-    virtual bool DecryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status) = 0;
+    virtual bool DecryptClassE(const UserAuth &auth, bool &isSupport,
+                               bool &eBufferStatue, uint32_t user, uint32_t status) = 0;
     virtual bool EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status) = 0;
 public:
     static inline std::shared_ptr<IFscryptKeyV2Moc> fscryptKeyV2Moc = nullptr;
@@ -54,7 +55,8 @@ public:
     MOCK_METHOD3(AddClassE, bool(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status));
     MOCK_METHOD1(DeleteClassEPinCode, bool(uint32_t user));
     MOCK_METHOD2(ChangePinCodeClassE, bool(bool &isFbeSupport, uint32_t userId));
-    MOCK_METHOD4(DecryptClassE, bool(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status));
+    MOCK_METHOD5(DecryptClassE, bool(const UserAuth &auth, bool &isSupport,
+                                     bool &eBufferStatue, uint32_t user, uint32_t status));
     MOCK_METHOD4(EncryptClassE, bool(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status));
 };
 }
