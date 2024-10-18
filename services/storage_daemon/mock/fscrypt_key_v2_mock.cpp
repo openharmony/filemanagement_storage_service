@@ -98,7 +98,8 @@ bool FscryptKeyV2::ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId)
     return IFscryptKeyV2Moc::fscryptKeyV2Moc->ChangePinCodeClassE(isFbeSupport, userId);
 }
 
-bool FscryptKeyV2::DecryptClassE(const UserAuth &auth, bool &isSupport, bool &eBufferStatue, uint32_t user, uint32_t status)
+bool FscryptKeyV2::DecryptClassE(const UserAuth &auth, bool &isSupport,
+                                 bool &eBufferStatue, uint32_t user, uint32_t status)
 {
     if (IFscryptKeyV2Moc::fscryptKeyV2Moc == nullptr) {
         return false;
