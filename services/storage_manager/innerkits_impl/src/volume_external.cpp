@@ -22,6 +22,11 @@ VolumeExternal::VolumeExternal() {}
 VolumeExternal::VolumeExternal(VolumeCore vc)
     : VolumeExternal::VolumeCore(vc.GetId(), vc.GetType(), vc.GetDiskId(), vc.GetState()) {}
 
+void VolumeExternal::SetFlags(int32_t flags)
+{
+    flags_ = flags;
+}
+
 void VolumeExternal::SetFsType(int32_t fsType)
 {
     fsType_ = fsType;
@@ -40,6 +45,11 @@ void VolumeExternal::SetPath(std::string path)
 void VolumeExternal::SetDescription(std::string description)
 {
     description_ = description;
+}
+
+int32_t VolumeExternal::GetFlags()
+{
+    return flags_;
 }
 
 int32_t VolumeExternal::GetFsType()
