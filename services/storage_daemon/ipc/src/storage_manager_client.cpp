@@ -22,6 +22,7 @@
 #include "disk.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "utils/disk_utils.h"
 #include "volume/external_volume_info.h"
 
 namespace OHOS {
