@@ -231,7 +231,7 @@ napi_value GetVolumeByUuid(napi_env env, napi_callback_info info)
         volumeObject.AddProp("removable", NVal::CreateBool(env, (bool)true).val_);
         volumeObject.AddProp("state", NVal::CreateInt32(env, volumeInfo->GetState()).val_);
         volumeObject.AddProp("path", NVal::CreateUTF8String(env, volumeInfo->GetPath()).val_);
-        volumeInfoObject.AddProp("fsType", NVal::CreateUTF8String(env, volumeInfo->GetFsTypeString()).val_);
+        volumeObject.AddProp("fsType", NVal::CreateUTF8String(env, volumeInfo->GetFsTypeString()).val_);
         return volumeObject;
     };
 
