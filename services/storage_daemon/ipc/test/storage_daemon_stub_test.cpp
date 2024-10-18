@@ -1010,7 +1010,7 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonTest_HandleComplete
 
     MessageParcel data2;
     MessageParcel reply2;
-    EXPECT_CALL(mock, HandleCompleteAddUser(testing::_)).WillOnce(testing::Return(E_ERR));
+    EXPECT_CALL(mock, CompleteAddUser(testing::_)).WillOnce(testing::Return(E_ERR));
     ret = mock.HandleCompleteAddUser(data2, reply2);
     EXPECT_TRUE(ret == E_OK);
     err = reply2.ReadInt32();

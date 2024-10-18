@@ -775,7 +775,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_UpdateUseAuthWithRecover
     uint64_t secureUid = 1;
     uint32_t userId = 102;
     std::vector<std::vector<uint8_t>> plainText;
-    int32_t ret = proxy_->GetFileEncryptStatus({}, {}, secureUid, userId, plainText);
+    int32_t ret = proxy_->UpdateUseAuthWithRecoveryKey({}, {}, secureUid, userId, plainText);
     ASSERT_TRUE(ret == E_OK);
     ASSERT_TRUE(mock_ != nullptr);
     int m = static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_USER_AUTH_RECOVER_KEY);
@@ -783,29 +783,6 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_UpdateUseAuthWithRecover
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_UpdateUseAuthWithRecoveryKey_001 end";
 }
 
-/**
- * @tc.name: StorageDaemonProxyTest_UpdateUseAuthWithRecoveryKey_001
- * @tc.desc: Verify the UpdateUseAuthWithRecoveryKey function.
- * @tc.type: FUNC
- * @tc.require: I8ZBB3
- */
-HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_UpdateUseAuthWithRecoveryKey_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_UpdateUseAuthWithRecoveryKey_001 start";
-    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
-        .Times(1)
-        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
-    ASSERT_TRUE(proxy_ != nullptr);
-    uint64_t secureUid = 1;
-    uint32_t userId = 102;
-    std::vector<std::vector<uint8_t>> plainText;
-    int32_t ret = proxy_->GetFileEncryptStatus({}, {}, secureUid, userId, plainText);
-    ASSERT_TRUE(ret == E_OK);
-    ASSERT_TRUE(mock_ != nullptr);
-    int m = static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_USER_AUTH_RECOVER_KEY);
-    ASSERT_TRUE(m == mock_->code_);
-    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_UpdateUseAuthWithRecoveryKey_001 end";
-}
 
 /**
  * @tc.name: StorageDaemonProxyTest_GetLockScreenStatus_001
@@ -835,8 +812,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_GetLockScreenStatus_001,
  * @tc.desc: Verify the MountCryptoPathAgain function.
  * @tc.type: FUNC
  * @tc.require: I8ZBB3
-     */
-    HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_MountCryptoPathAgain_001, TestSize.Level1)
+ */
+HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_MountCryptoPathAgain_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_MountCryptoPathAgain_001 start";
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
@@ -868,7 +845,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_CreateShareFile_001, Tes
     uint32_t tokenId = 1;
     uint32_t flag = 1;
     std::vector<std::string> uriList;
-    int32_t ret = proxy_->CreateShareFile(uriList, tokenId, flag);
+    auto ret = proxy_->CreateShareFile(uriList, tokenId, flag);
     ASSERT_TRUE(ret.empty());
     ASSERT_TRUE(mock_ != nullptr);
     int m = static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_SHARE_FILE);
@@ -884,7 +861,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_CreateShareFile_001, Tes
  */
 HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_DeleteShareFile_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_CreateShareFile_001 start";
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_DeleteShareFile_001 start";
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));

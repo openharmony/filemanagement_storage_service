@@ -13,6 +13,15 @@
 * limitations under the License.
 */
 
+#include <gtest/gtest.h>
+#include <memory>
+
+#include "ipc/storage_manager_client.h"
+#include "disk/disk_info.h"
+#include "storage_service_errno.h"
+#include "volume_core.h"
+#include "volume/external_volume_info.h"
+
 namespace OHOS {
 namespace StorageDaemon {
 using namespace testing;
@@ -182,6 +191,6 @@ HWTEST_F(StorageManagerClientTest, StorageManagerClientTest_NotifyMtpUnmounted_0
 
     GTEST_LOG_(INFO) << "StorageManagerClientTest_NotifyMtpUnmounted_001 end";
 }
-} // STORAGE_DAEMON
+} // StorageDaemon
 } // OHOS
 
