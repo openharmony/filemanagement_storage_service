@@ -1702,6 +1702,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyMtpMounted_0000, t
     std::string id = "vol-1-18";
     std::string path = "/";
     std::string description = "description-1";
+    std::string uuid = "uuid-1";
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     ASSERT_TRUE(samgr != nullptr) << "Storage_manager_proxy_NotifyMtpMounted_0000 \
     fail to get GetSystemAbilityManager";
@@ -1709,7 +1710,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyMtpMounted_0000, t
     ASSERT_TRUE(remote != nullptr) << "GetSystemAbility failed";
     auto proxy = iface_cast<IStorageManager>(remote);
     ASSERT_TRUE(proxy != nullptr) << "fail to get proxy";
-    int64_t result = proxy->NotifyMtpMounted(id, path, description);
+    int64_t result = proxy->NotifyMtpMounted(id, path, description, uuid);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << result;
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_NotifyMtpMounted_0000";

@@ -22,6 +22,7 @@
 #include "disk.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "utils/disk_utils.h"
 #include "volume/external_volume_info.h"
 
 namespace OHOS {
@@ -127,16 +128,16 @@ int32_t StorageManagerClient::NotifyVolumeStateChanged(std::string volId, Storag
     return E_OK;
 }
 
-int32_t StorageManagerClient::NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc)
- 
+int32_t StorageManagerClient::NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
+                                               const std::string &uuid)
 {
-    LOGI("NotifyMtpMounted: id = %{public}s, path = %{public}s, desc = %{public}s", id.c_str(),
-        path.c_str(), desc.c_str());
+    LOGI("NotifyMtpMounted: id = %{public}s, path = %{public}s, desc = %{public}s, uuid = %{public}s", id.c_str(),
+        path.c_str(), desc.c_str(), GetAnonyString(uuid).c_str());
     if (GetClient() != E_OK) {
         return E_SERVICE_IS_NULLPTR;
     }
     if (storageManager_ != nullptr) {
-        storageManager_->NotifyMtpMounted(id, path, desc);
+        storageManager_->NotifyMtpMounted(id, path, desc, uuid);
     }
     return E_OK;
 }
