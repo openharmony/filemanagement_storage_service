@@ -474,7 +474,7 @@ int32_t StorageDaemon::StopUser(int32_t userId)
 {
     int32_t ret = UserManager::GetInstance()->StopUser(userId);
     if (ret != E_OK) {
-        LOGE("StartUser failed, please check");
+        LOGE("StopUser failed, please check");
         RadarParameter parameterRes = {
             .orgPkg = DEFAULT_ORGPKGNAME,
             .userId = userId,
