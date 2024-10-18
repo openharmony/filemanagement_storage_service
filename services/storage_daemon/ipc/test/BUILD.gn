@@ -207,11 +207,65 @@ ohos_unittest("storage_daemon_stub_test") {
   }
 }
 
+ohos_unittest("storage_manager_clt_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
+  }
+  module_out_path = "storage_service/storage_daemon"
+
+  sources = [
+    "${storage_daemon_path}/disk/src/disk_info.cpp",
+    "${storage_daemon_path}/ipc/src/storage_manager_client.cpp",
+    "${storage_daemon_path}/volume/src/external_volume_info.cpp",
+    "${storage_daemon_path}/volume/src/process.cpp",
+    "${storage_daemon_path}/volume/src/volume_info.cpp",
+    "${storage_manager_path}/innerkits_impl/src/disk.cpp",
+    "${storage_manager_path}/innerkits_impl/src/volume_core.cpp",
+    "${storage_manager_path}/innerkits_impl/src/volume_external.cpp",
+    "${storage_manager_path}/mock/storage_manager_proxy_mock.cpp",
+    "storage_manager_client_test.cpp",
+  ]
+
+  include_dirs = [
+    "${storage_daemon_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+    "${storage_manager_path}/include",
+    "${storage_service_common_path}/include",
+  ]
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "LOG_DOMAIN = 0xD004301",
+    "private = public",
+  ]
+
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
+    "//third_party/googletest:gtest_main",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+    "init:libbegetutil",
+    "ipc:ipc_single",
+    "os_account:os_account_innerkits",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+  ]
+}
+
 group("storage_daemon_ipc_test") {
   testonly = true
   deps = [
     ":storage_daemon_proxy_test",
     ":storage_daemon_stub_test",
     ":storage_daemon_test",
+    ":storage_manager_clt_test",
   ]
 }
