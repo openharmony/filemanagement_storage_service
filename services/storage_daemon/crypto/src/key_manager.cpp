@@ -1149,12 +1149,6 @@ int KeyManager::ActiveElXUserKey(unsigned int user,
     }
     std::string NEED_UPDATE_PATH = GetKeyDirByUserAndType(user, keyType) + PATH_LATEST + SUFFIX_NEED_UPDATE;
     std::string NEED_RESTORE_PATH = GetKeyDirByUserAndType(user, keyType) + PATH_LATEST + SUFFIX_NEED_RESTORE;
-    if ((elKey->RestoreKey(auth) == false) && (elKey->RestoreKey(NULL_KEY_AUTH) == false)) {
-        LOGE("Restore el failed");
-        return -EFAULT;
-    }
-    std::string NEED_UPDATE_PATH = keyDir + PATH_LATEST + SUFFIX_NEED_UPDATE;
-    std::string NEED_RESTORE_PATH = keyDir + PATH_LATEST + SUFFIX_NEED_RESTORE;
     if (!FileExists(NEED_RESTORE_PATH) && !FileExists(NEED_UPDATE_PATH) && (elKey->StoreKey(auth) == false)) {
         LOGE("Store el failed");
         return -EFAULT;
