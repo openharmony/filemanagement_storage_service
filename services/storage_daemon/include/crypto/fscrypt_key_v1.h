@@ -42,7 +42,7 @@ public:
     bool AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status = 0);
     bool DeleteClassEPinCode(uint32_t userId = 0);
     bool ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId = 0);
-    bool DecryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user = 0, uint32_t status = 0);
+    bool DecryptClassE(const UserAuth &auth, bool &isSupport, bool &eBufferStatue, uint32_t user = 0, uint32_t status = 0);
     bool EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user = 0, uint32_t status = 0);
     bool LockUece(bool &isFbeSupport);
 

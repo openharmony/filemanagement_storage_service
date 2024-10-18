@@ -241,7 +241,8 @@ int KeyManager::GenerateAndInstallEl5Key(uint32_t userId, const std::string &dir
             return -EFAULT;
         }
     } else {
-        if (!elKey->DecryptClassE(auth, saveESecretStatus[userId], userId, USER_UNLOCK)) {
+        bool eBufferStatue = false;
+        if (!elKey->DecryptClassE(auth, saveESecretStatus[userId] ,eBufferStatue, userId, USER_UNLOCK)) {
             LOGE("user %{public}u decrypt error", userId);
         }
     }
@@ -1181,8 +1182,16 @@ int KeyManager::ActiveUeceUserKey(unsigned int user,
     LOGI("userId %{public}u, token empty %{public}d sec empty %{public}d", user, token.empty(), secret.empty());
     userEl5Key_[user] = elKey;
     UserAuth auth = { .token = token, .secret = secret };
-    if (!elKey->DecryptClassE(auth, saveESecretStatus[user], user, USER_UNLOCK) &&
+    bool eBufferStatue = false;
+    if (!elKey->DecryptClassE(auth, saveESecretStatus[user], eBufferStatue, user, USER_UNLOCK) &&
         elKey->DecryptClassE({}, saveESecretStatus[user], user, USER_UNLOCK)) {
+        if (TryToFixUeceKey(user, token, secret) != E_OK) {
+            LOGE("TryToFixUeceKey el5 failed !");
+            return -EFAULT;
+        }
+    }
+
+    if (!token.empty() && !secret.empty() && eBufferStatue) {
         if (TryToFixUeceKey(user, token, secret) != E_OK) {
             LOGE("TryToFixUeceKey el5 failed !");
             return -EFAULT;
@@ -1291,7 +1300,8 @@ bool KeyManager::UnlockUece(uint32_t user,
     UserAuth auth = {.token = token, .secret = secret};
     saveESecretStatus[user] = !auth.token.IsEmpty();
     auto el5Key = GetUserElKey(user, EL5_KEY);
-    if (el5Key != nullptr && !el5Key->DecryptClassE(auth, saveESecretStatus[user], user, USER_UNLOCK)) {
+    bool eBufferStatue = false;
+    if (el5Key != nullptr && !el5Key->DecryptClassE(auth, saveESecretStatus[user], eBufferStatue, user, USER_UNLOCK)) {
         LOGE("Unlock user %{public}u uece failed", user);
         ret = -EFAULT;
         return false;
@@ -1843,7 +1853,7 @@ int KeyManager::TryToFixUserCeEceSeceKey(unsigned int userId,
     UserTokenSecret userTokenSecret = { .token = token, .oldSecret = {}, .newSecret = secret, .secureUid = secureUid };
 
 #ifdef USER_CRYPTO_MIGRATE_KEY
-    if (!UpdateCeEceSeceUserAuth(userId, userTokenSecret, keyType, false) != E_OK) {
+    if (UpdateCeEceSeceUserAuth(userId, userTokenSecret, keyType, false) != E_OK) {
 #else
     if (UpdateCeEceSeceUserAuth(userId, userTokenSecret, keyType) != E_OK) {
 #endif
