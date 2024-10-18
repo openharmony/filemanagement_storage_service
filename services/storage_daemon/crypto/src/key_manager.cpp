@@ -1843,9 +1843,9 @@ int KeyManager::TryToFixUserCeEceSeceKey(unsigned int userId,
     UserTokenSecret userTokenSecret = { .token = token, .oldSecret = {}, .newSecret = secret, .secureUid = secureUid };
 
 #ifdef USER_CRYPTO_MIGRATE_KEY
-    if (!UpdateCeEceSeceKey(userId, userTokenSecret, keyType, false) != E_OK) {
+    if (!UpdateCeEceSeceUserAuth(userId, userTokenSecret, keyType, false) != E_OK) {
 #else
-    if (UpdateCeEceSeceKey(userId, userTokenSecret, keyType) != E_OK) {
+    if (UpdateCeEceSeceUserAuth(userId, userTokenSecret, keyType) != E_OK) {
 #endif
         LOGE("try to fix elx key failed !");
         return -EFAULT;
