@@ -1841,7 +1841,6 @@ int KeyManager::TryToFixUserCeEceSeceKey(unsigned int userId,
     }
     UserAuth auth = { .token = token, .secret = secret, .secureUid = secureUid };
     UserTokenSecret userTokenSecret = { .token = token, .oldSecret = {}, .newSecret = secret, .secureUid = secureUid };
-};
 
 #ifdef USER_CRYPTO_MIGRATE_KEY
     if (!UpdateCeEceSeceKey(userId, userTokenSecret, keyType, false) != E_OK) {
@@ -1875,7 +1874,7 @@ int KeyManager::TryToFixUeceKey(unsigned int userId,
         LOGE("Pin code is exist, get secure uid.");
     }
     UserAuth auth = { .token=token, .secret=secret, .secureUid = secureUid };
-    UserTokenSecret tokenSecret = { .token = token, .oldSecret = {"!"}, .newSecret = secret, .secureUid = secureUid};
+    UserTokenSecret tokenSecret = { .token = token, .oldSecret = {'!'}, .newSecret = secret, .secureUid = secureUid};
 
     if (UpdateESecret(userId, tokenSecret) != E_OK) {
         LOGE("try to fix elx key failed !");
