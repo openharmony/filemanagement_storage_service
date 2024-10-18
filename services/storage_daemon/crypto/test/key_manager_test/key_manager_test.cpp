@@ -1632,7 +1632,7 @@ HWTEST_F(KeyManagerTest, KeyManager_Generate_Elx_And_Install_User_key_101, TestS
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID))
         .WillOnce(Return(FSCRYPT_INVALID));
     auto ret = KeyManager::GetInstance()->GenerateElxAndInstallUserKey(userId);
-    EXPECT_EQ(ret, -ENOMEM);
+    EXPECT_EQ(ret, -EEXIST);
 
     RmDirRecurse(EL1_PATH);
     MkDir(EL2_PATH, S_IRWXU);
@@ -1641,7 +1641,7 @@ HWTEST_F(KeyManagerTest, KeyManager_Generate_Elx_And_Install_User_key_101, TestS
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID))
         .WillOnce(Return(FSCRYPT_INVALID));
     ret = KeyManager::GetInstance()->GenerateElxAndInstallUserKey(userId);
-    EXPECT_EQ(ret, -ENOMEM);
+    EXPECT_EQ(ret, -EEXIST);
 
     RmDirRecurse(EL2_PATH);
     MkDir(EL3_PATH, S_IRWXU);
@@ -1650,7 +1650,7 @@ HWTEST_F(KeyManagerTest, KeyManager_Generate_Elx_And_Install_User_key_101, TestS
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID))
         .WillOnce(Return(FSCRYPT_INVALID));
     ret = KeyManager::GetInstance()->GenerateElxAndInstallUserKey(userId);
-    EXPECT_EQ(ret, -ENOMEM);
+    EXPECT_EQ(ret, -EEXIST);
 
     RmDirRecurse(EL3_PATH);
     MkDir(EL4_PATH, S_IRWXU);
@@ -1659,7 +1659,7 @@ HWTEST_F(KeyManagerTest, KeyManager_Generate_Elx_And_Install_User_key_101, TestS
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID))
         .WillOnce(Return(FSCRYPT_INVALID));
     ret = KeyManager::GetInstance()->GenerateElxAndInstallUserKey(userId);
-    EXPECT_EQ(ret, -ENOMEM);
+    EXPECT_EQ(ret, -EEXIST);
 
     RmDirRecurse(EL4_PATH);
     MkDir(EL5_PATH, S_IRWXU);
@@ -1668,7 +1668,7 @@ HWTEST_F(KeyManagerTest, KeyManager_Generate_Elx_And_Install_User_key_101, TestS
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID))
         .WillOnce(Return(FSCRYPT_INVALID));
     ret = KeyManager::GetInstance()->GenerateElxAndInstallUserKey(userId);
-    EXPECT_EQ(ret, -ENOMEM);
+    EXPECT_EQ(ret, -EEXIST);
     GTEST_LOG_(INFO) << "KeyManager_GenerateElxAndInstallUserKey_0101 end";
 }
 
