@@ -41,6 +41,7 @@ void Notification::NotifyVolumeChange(VolumeState notifyCode, std::shared_ptr<Vo
     wantParams.SetParam("id", AAFwk::String::Box(volume->GetId()));
     wantParams.SetParam("diskId", AAFwk::String::Box(volume->GetDiskId()));
     wantParams.SetParam("fsUuid", AAFwk::String::Box(volume->GetUuid()));
+    wantParams.SetParam("flags", AAFwk::Integer::Box(volume->GetFlags()));
     switch (notifyCode) {
         case VolumeState::REMOVED:
             LOGI("notifycode: VOLUME_REMOVED");

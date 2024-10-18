@@ -72,9 +72,9 @@ void VolumeManagerService::OnVolumeMounted(std::string volumeId, int fsType, std
     volumePtr->SetFsUuid(fsUuid);
     volumePtr->SetPath(path);
     std::string des = description;
-    if (des == "") {
-        auto disk = DelayedSingleton<DiskManagerService>::GetInstance()->GetDiskById(volumePtr->GetDiskId());
-        if (disk != nullptr) {
+    auto disk = DelayedSingleton<DiskManagerService>::GetInstance()->GetDiskById(volumePtr->GetDiskId());
+    if (disk != nullptr) {
+        if (des == "") {
             if (disk->GetFlag() == SD_FLAG) {
                 des = "MySDCard";
             } else if (disk->GetFlag() == USB_FLAG) {
@@ -83,6 +83,7 @@ void VolumeManagerService::OnVolumeMounted(std::string volumeId, int fsType, std
                 des = "Default";
             }
         }
+        volumePtr->SetFlags(disk->GetFlag());
     }
     volumePtr->SetDescription(des);
     volumePtr->SetState(VolumeState::MOUNTED);
@@ -248,7 +249,8 @@ int32_t VolumeManagerService::Format(std::string volumeId, std::string fsType)
     return sdCommunication->Format(volumeId, fsType);
 }
 
-void VolumeManagerService::NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc)
+void VolumeManagerService::NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
+                                            const std::string &uuid)
 {
     LOGI("VolumeManagerService NotifyMtpMounted");
     VolumeCore core(id, 0, "");
@@ -256,6 +258,7 @@ void VolumeManagerService::NotifyMtpMounted(const std::string &id, const std::st
     volumePtr->SetPath(path);
     volumePtr->SetFsType(FsType::MTP);
     volumePtr->SetDescription(desc);
+    volumePtr->SetFsUuid(uuid);
     volumeMap_.Insert(volumePtr->GetId(), volumePtr);
     VolumeStateNotify(VolumeState::MOUNTED, volumePtr);
 }

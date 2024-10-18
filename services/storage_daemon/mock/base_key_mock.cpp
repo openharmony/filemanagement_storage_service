@@ -112,7 +112,10 @@ bool BaseKey::RenameKeyPath(const std::string &keyPath)
     
 void BaseKey::ClearMemoryKeyCtx()
 {
-    return;
+    keyContext_.rndEnc.Clear();
+    keyContext_.shield.Clear();
+    keyContext_.nonce.Clear();
+    keyContext_.aad.Clear();
 }
 
 void BaseKey::WipingActionDir(std::string &path)

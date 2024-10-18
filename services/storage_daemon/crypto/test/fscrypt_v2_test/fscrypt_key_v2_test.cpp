@@ -20,8 +20,9 @@
 #include <vector>
 
 #include "directory_ex.h"
-#include "fbex.h"
 #include "file_ex.h"
+
+#include "fbex.h"
 #include "fscrypt_key_v2.h"
 #include "key_blob.h"
 #include "libfscrypt/fscrypt_control.h"
@@ -241,7 +242,7 @@ HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_LoadAndSetPolicy, TestSize.Level1)
  */
 HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_LoadAndSetEceAndSecePolicy, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "fscrypt_key_v2_LoadAndSetPolicy start";
+    GTEST_LOG_(INFO) << "fscrypt_key_v2_LoadAndSetEceAndSecePolicy start";
     int type = 1;
     const char* dir = TEST_MNT.c_str();
     EXPECT_EQ(LoadAndSetEceAndSecePolicy(nullptr, nullptr, type), -EINVAL);
@@ -268,5 +269,108 @@ HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_LoadAndSetEceAndSecePolicy, TestSize.L
     EXPECT_TRUE(OHOS::SaveStringToFile(testVersionFile, "2\n"));
     EXPECT_EQ(LoadAndSetEceAndSecePolicy(TEST_DIR_LEGACY.c_str(), dir, type), 0);
     GTEST_LOG_(INFO) << "fscrypt_key_v2_LoadAndSetEceAndSecePolicy end";
+}
+
+/**
+ * @tc.name: fscrypt_key_v2_GetOriginKey
+ * @tc.desc: Verify the fscrypt V2 SetOriginKey/GetOriginKey.
+ * @tc.type: FUNC
+ * @tc.require: IAXJFK
+ */
+HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_GetOriginKey, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "fscrypt_key_v2_GetOriginKey start";
+    KeyBlob appKey(10);
+    g_testKeyV2.SetOriginKey(appKey);
+    KeyBlob originKey;
+    EXPECT_TRUE(g_testKeyV2.GetOriginKey(originKey));
+    EXPECT_FALSE(originKey.IsEmpty());
+
+    originKey.Clear();
+    g_testKeyV2.SetOriginKey(originKey);
+    KeyBlob testKey;
+    EXPECT_FALSE(g_testKeyV2.GetOriginKey(testKey));
+    GTEST_LOG_(INFO) << "fscrypt_key_v2_GetOriginKey end";
+}
+
+/**
+ * @tc.name: fscrypt_key_v2_KeyEncryptTypeToString
+ * @tc.desc: Verify the fscrypt V2 KeyEncryptTypeToString.
+ * @tc.type: FUNC
+ * @tc.require: IAXJFK
+ */
+HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_KeyEncryptTypeToString, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "fscrypt_key_v2_KeyEncryptTypeToString start";
+    EXPECT_EQ(g_testKeyV2.KeyEncryptTypeToString(BaseKey::KeyEncryptType::KEY_CRYPT_OPENSSL), "KEY_CRYPT_OPENSSL");
+    EXPECT_EQ(g_testKeyV2.KeyEncryptTypeToString(BaseKey::KeyEncryptType::KEY_CRYPT_HUKS), "KEY_CRYPT_HUKS");
+    EXPECT_EQ(g_testKeyV2.KeyEncryptTypeToString(
+        BaseKey::KeyEncryptType::KEY_CRYPT_HUKS_OPENSSL), "KEY_CRYPT_HUKS_OPENSSL");
+    GTEST_LOG_(INFO) << "fscrypt_key_v2_KeyEncryptTypeToString end";
+}
+
+/**
+ * @tc.name: fscrypt_key_v2_CombKeyCtx
+ * @tc.desc: Verify the fscrypt V2 CombKeyCtx.
+ * @tc.type: FUNC
+ * @tc.require: IAXJFK
+ */
+HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_CombKeyCtx, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "fscrypt_key_v2_CombKeyCtx start";
+    std::vector<uint8_t> nonceVct(5, 1);
+    std::vector<uint8_t> rndEncVct(3, 2);
+    std::vector<uint8_t> aadVct(4, 3);
+    KeyBlob nonce(nonceVct);
+    KeyBlob rndEnc(rndEncVct);
+    KeyBlob aad(aadVct);
+    KeyBlob keyOut(nonceVct.size() + rndEncVct.size() + aadVct.size());
+    EXPECT_TRUE(g_testKeyV2.CombKeyCtx(nonce, rndEnc, aad, keyOut));
+    std::vector<uint8_t> keyOutVct(keyOut.data.get(), keyOut.data.get() + keyOut.size);
+    std::vector<uint8_t> keyOutVctEpt;
+    keyOutVctEpt.insert(keyOutVctEpt.end(), nonceVct.begin(), nonceVct.end());
+    keyOutVctEpt.insert(keyOutVctEpt.end(), rndEncVct.begin(), rndEncVct.end());
+    keyOutVctEpt.insert(keyOutVctEpt.end(), aadVct.begin(), aadVct.end());
+    EXPECT_EQ(keyOutVct, keyOutVctEpt);
+    keyOut.Clear();
+    rndEnc.Clear();
+    EXPECT_FALSE(g_testKeyV2.CombKeyCtx(nonce, rndEnc, aad, keyOut));
+    EXPECT_TRUE(keyOut.IsEmpty());
+
+    aad.Clear();
+    EXPECT_FALSE(g_testKeyV2.CombKeyCtx(nonce, rndEnc, aad, keyOut));
+    EXPECT_TRUE(keyOut.IsEmpty());
+
+    nonce.Clear();
+    EXPECT_FALSE(g_testKeyV2.CombKeyCtx(nonce, rndEnc, aad, keyOut));
+    EXPECT_TRUE(keyOut.IsEmpty());
+    GTEST_LOG_(INFO) << "fscrypt_key_v2_CombKeyCtx end";
+}
+
+/**
+ * @tc.name: fscrypt_key_v2_SplitKeyCtx
+ * @tc.desc: Verify the fscrypt V2 SplitKeyCtx.
+ * @tc.type: FUNC
+ * @tc.require: IAXJFK
+ */
+HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_SplitKeyCtx, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "fscrypt_key_v2_SplitKeyCtx start";
+    std::vector<uint8_t> nonceVct(5, 1);
+    std::vector<uint8_t> aadVct(4, 3);
+    KeyBlob nonce(nonceVct);
+    KeyBlob aad(aadVct);
+    KeyBlob keyIn;
+    KeyBlob rndEnc;
+    EXPECT_FALSE(g_testKeyV2.SplitKeyCtx(keyIn, nonce, rndEnc, aad));
+
+    std::vector<uint8_t> keyInVct(11, 2);
+    KeyBlob keyIn2(keyInVct);
+    EXPECT_TRUE(g_testKeyV2.SplitKeyCtx(keyIn2, nonce, rndEnc, aad));
+    EXPECT_EQ(rndEnc.size, 2);
+    std::vector<uint8_t> rndEncVct(rndEnc.data.get(), rndEnc.data.get() + rndEnc.size);
+    std::vector<uint8_t> rndEncVctEpt(2, 2);
+    EXPECT_EQ(rndEncVct, rndEncVctEpt);
+    GTEST_LOG_(INFO) << "fscrypt_key_v2_SplitKeyCtx end";
 }
 } // OHOS::StorageDaemon

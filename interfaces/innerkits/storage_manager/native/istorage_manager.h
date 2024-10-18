@@ -67,7 +67,8 @@ public:
     virtual int32_t Format(std::string volumeId, std::string fsType) = 0;
     virtual int32_t GetDiskById(std::string diskId, Disk &disk) = 0;
 
-    virtual int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc) = 0;
+    virtual int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
+                                     const std::string &uuid) = 0;
     virtual int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path) = 0;
 
     // fscrypt api

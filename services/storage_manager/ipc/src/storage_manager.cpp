@@ -649,11 +649,13 @@ int32_t StorageManager::UMountDfsDocs(int32_t userId, const std::string &relativ
     return sdCommunication->UMountDfsDocs(userId, relativePath, networkId, deviceId);
 }
 
-int32_t StorageManager::NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc)
+int32_t StorageManager::NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
+                                         const std::string &uuid)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
-    LOGI("StorageManger::NotifyMtpMounted start, id: %{public}s, path: %{public}s", id.c_str(), path.c_str());
-    DelayedSingleton<VolumeManagerService>::GetInstance()->NotifyMtpMounted(id, path, desc);
+    LOGI("StorageManger::NotifyMtpMounted start, id: %{public}s, path: %{public}s, uuid: %{public}s", id.c_str(),
+         path.c_str(), GetAnonyString(uuid).c_str());
+    DelayedSingleton<VolumeManagerService>::GetInstance()->NotifyMtpMounted(id, path, desc, uuid);
 #endif
     return E_OK;
 }
