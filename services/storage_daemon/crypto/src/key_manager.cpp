@@ -1750,11 +1750,11 @@ void KeyManager::CheckAndClearTokenInfo(uint32_t user)
 
 int KeyManager::CheckUserPinProtect(unsigned int userId,
                                     const std::vector<uint8_t> &token,
-                                    const std::vector<uint8_t> &scret)
+                                    const std::vector<uint8_t> &secret)
 {
     LOGI("enter CheckUserPinProtect");
     // judge if device has PIN protect
-    if ((token.emty() && secret.empty()) && IamClient::GetInstance().hasPinProtect(userId)) {
+    if ((token.empty() && secret.empty()) && IamClient::GetInstance().hasPinProtect(userId)) {
         LOGE("User %{public}d has pin code protect.", userId);
         return E_ERR;
     }
@@ -1778,8 +1778,8 @@ int KeyManager::TryToFixUserCeEceSeceKey(unsigned int userId,
         IamClient::GetInstance().getSecureUid(userId, secureUid);
         LOGE("Pin code is exist, get secure uid.");
     }
-    UserAuth auth = { .token = token, .secret=secret, .secureUid = secureUid };
-    UserTokenSecret userTokenSecret = { .token=token, .oldSecret={}, .newSecret=secret, .secureUid = secureUid };
+    UserAuth auth = { .token = token, .secret = secret, .secureUid = secureUid };
+    UserTokenSecret userTokenSecret = { .token = token, .oldSecret = {}, .newSecret = secret, .secureUid = secureUid };
 };
 
 #ifdef USER_CRYPTO_MIGRATE_KEY
