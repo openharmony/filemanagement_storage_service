@@ -1050,9 +1050,6 @@ int32_t StorageDaemon::LockUserScreen(uint32_t userId)
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
         AuditLog storageAuditLog = { true, "FAILED TO LockUserScreen", "UPDATE", "LockUserScreen", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
-    } else {
-        AuditLog storageAuditLog = { true, "SUCCESS TO LockUserScreen", "UPDATE", "LockUserScreen", 1, "SUCCESS" };
-        HiAudit::GetInstance().Write(storageAuditLog);
     }
     return ret;
 #else
@@ -1079,9 +1076,6 @@ int32_t StorageDaemon::UnlockUserScreen(uint32_t userId,
         };
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
         AuditLog storageAuditLog = { true, "FAILED TO UnlockUserScreen", "UPDATE", "UnlockUserScreen", 1, "FAILED" };
-        HiAudit::GetInstance().Write(storageAuditLog);
-    } else {
-        AuditLog storageAuditLog = { true, "SUCCESS TO UnlockUserScreen", "UPDATE", "UnlockUserScreen", 1, "SUCCESS" };
         HiAudit::GetInstance().Write(storageAuditLog);
     }
     return ret;
