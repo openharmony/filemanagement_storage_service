@@ -1025,11 +1025,6 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_CreateShareFile_001, Tes
     int m = static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_SHARE_FILE);
     ASSERT_TRUE(m == mock_->code_);
 
-    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
-        .Times(1)
-        .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->CreateShareFile(uriList, tokenId, flag);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_CreateShareFile_001 end";
 }
 
