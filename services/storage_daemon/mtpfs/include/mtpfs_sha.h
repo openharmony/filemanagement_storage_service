@@ -35,14 +35,14 @@ private:
     static const unsigned int BLOCK_INTS = 16; /* number of 32bit integers per MtpFsSha block */
     static const unsigned int BLOCK_BYTES = BLOCK_INTS * 4;
 
-    uint32 digest_[DIGEST_INTS];
+    uint64 digest_[DIGEST_INTS];
     std::string buffer_;
     uint64 transforms_;
 
     void Reset();
-    void Transform(uint32 block[BLOCK_BYTES]);
+    void Transform(uint64 block[BLOCK_BYTES]);
 
-    static void BufferToBlock(const std::string &buffer, uint32 block[BLOCK_BYTES]);
+    static void BufferToBlock(const std::string &buffer, uint64 block[BLOCK_BYTES]);
     static void Read(std::istream &is, std::string &s, const int max);
 };
 
