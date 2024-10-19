@@ -70,8 +70,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_Shutdown_001, TestSize.L
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->Shutdown();
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->Shutdown();
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_Shutdown_001 end";
 }
 
@@ -98,8 +98,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_PrepareUserDirs_001, Tes
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->PrepareUserDirs(USER_ID1, IStorageDaemon::CRYPTO_FLAG_EL1);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->PrepareUserDirs(USER_ID1, IStorageDaemon::CRYPTO_FLAG_EL1);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_PrepareUserDirs_001 end";
 }
 
@@ -126,8 +126,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_DestroyUserDirs_001, Tes
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->DestroyUserDirs(USER_ID1, IStorageDaemon::CRYPTO_FLAG_EL1);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->DestroyUserDirs(USER_ID1, IStorageDaemon::CRYPTO_FLAG_EL1);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_DestroyUserDirs_001 end";
 }
 
@@ -154,8 +154,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_StartUser_001, TestSize.
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->StartUser(USER_ID1);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->StartUser(USER_ID1);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_StartUser_001 end";
 }
 
@@ -182,8 +182,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_StopUser_001, TestSize.L
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->StopUser(USER_ID1);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->StopUser(USER_ID1);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_StopUser_001 end";
 }
 
@@ -210,8 +210,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_CompleteAddUser_001, Tes
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->CompleteAddUser(USER_ID1);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->CompleteAddUser(USER_ID1);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_CompleteAddUser_001 end";
 }
 
@@ -239,8 +239,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_Mount_001, TestSize.Leve
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->Mount(volId, flag);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->Mount(volId, flag);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_Mount_001 end";
 }
 
@@ -267,8 +267,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_UMount_001, TestSize.Lev
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->UMount(volId);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->UMount(volId);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_UMount_001 end";
 }
 
@@ -295,8 +295,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_Check_001, TestSize.Leve
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->Check(volId);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->Check(volId);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_Check_001 end";
 }
 
@@ -324,8 +324,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_Format_001, TestSize.Lev
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->Format(volId, fsType);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->Format(volId, fsType);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_Format_001 end";
 }
 
@@ -353,8 +353,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_Partition_001, TestSize.
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->Partition(diskId, type);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->Partition(diskId, type);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_Partition_001 end";
 }
 
@@ -382,8 +382,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_SetVolumeDescription_001
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->SetVolumeDescription(volId, description);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->SetVolumeDescription(volId, description);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_SetVolumeDescription_001 end";
 }
 
@@ -409,8 +409,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_InitGlobalKey_001, TestS
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->InitGlobalKey();
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->InitGlobalKey();
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_InitGlobalKey_001 end";
 }
 
@@ -436,8 +436,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_InitGlobalUserKeys_001, 
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->InitGlobalUserKeys();
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->InitGlobalUserKeys();
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_InitGlobalUserKeys_001 end";
 }
 
@@ -463,8 +463,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_GenerateUserKeys_001, Te
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->GenerateUserKeys(USER_ID1, IStorageDaemon::CRYPTO_FLAG_EL1);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->GenerateUserKeys(USER_ID1, IStorageDaemon::CRYPTO_FLAG_EL1);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_GenerateUserKeys_001 end";
 }
 
@@ -490,8 +490,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_DeleteUserKeys_001, Test
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->DeleteUserKeys(USER_ID1);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->DeleteUserKeys(USER_ID1);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_DeleteUserKeys_001 end";
 }
 
@@ -517,8 +517,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_UpdateUserAuth_001, Test
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->UpdateUserAuth(USER_ID1, 0, {}, {}, {});
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->UpdateUserAuth(USER_ID1, 0, {}, {}, {});
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_UpdateUserAuth_001 end";
 }
 
@@ -544,8 +544,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_ActiveUserKey_001, TestS
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->ActiveUserKey(USER_ID1, {}, {});
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->ActiveUserKey(USER_ID1, {}, {});
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_ActiveUserKey_001 end";
 }
 
@@ -571,8 +571,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_InactiveUserKey_001, Tes
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->InactiveUserKey(USER_ID1);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->InactiveUserKey(USER_ID1);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_InactiveUserKey_001 end";
 }
 
@@ -598,8 +598,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_LockUserScreen_001, Test
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->LockUserScreen(USER_ID1);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->LockUserScreen(USER_ID1);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_LockUserScreen_001 end";
 }
 
@@ -625,8 +625,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_UnlockUserScreen_001, Te
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->UnlockUserScreen(USER_ID1, {}, {});
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->UnlockUserScreen(USER_ID1, {}, {});
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_UnlockUserScreen_001 end";
 }
 
@@ -654,8 +654,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_GenerateAppkey_001, Test
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->GenerateAppkey(USER_ID1, hashId, keyId);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->GenerateAppkey(USER_ID1, hashId, keyId);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_GenerateAppkey_001 end";
 }
 
@@ -683,8 +683,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_DeleteAppkey_001, TestSi
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->DeleteAppkey(USER_ID1, keyId);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->DeleteAppkey(USER_ID1, keyId);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_DeleteAppkey_001 end";
 }
 
@@ -708,8 +708,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_CreateRecoverKey_001, Te
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->CreateRecoverKey(USER_ID1, 100, {}, {});
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->CreateRecoverKey(USER_ID1, 100, {}, {});
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_CreateRecoverKey_001 end";
 }
 
@@ -733,8 +733,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_SetRecoverKey_001, TestS
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->SetRecoverKey({});
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->SetRecoverKey({});
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_SetRecoverKey_001 end";
 }
 
@@ -764,8 +764,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_MountDfsDocs_001, TestSi
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->MountDfsDocs(USER_ID1, relativePath, networkId, deviceId);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->MountDfsDocs(USER_ID1, relativePath, networkId, deviceId);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_MountDfsDocs_001 end";
 }
 
@@ -795,8 +795,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_UMountDfsDocs_001, TestS
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->UMountDfsDocs(USER_ID1, relativePath, networkId, deviceId);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->UMountDfsDocs(USER_ID1, relativePath, networkId, deviceId);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_UMountDfsDocs_001 end";
 }
 
@@ -822,8 +822,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_UpdateKeyContext_001, Te
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->UpdateKeyContext(USER_ID1);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->UpdateKeyContext(USER_ID1);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_UpdateKeyContext_001 end";
 }
 
@@ -853,8 +853,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_SetBundleQuota_001, Test
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_SetBundleQuota_001 end";
 }
 
@@ -882,8 +882,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_UpdateMemoryPara_001, Te
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->UpdateMemoryPara(size, oldSize);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->UpdateMemoryPara(size, oldSize);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_UpdateMemoryPara_001 end";
 }
 
@@ -910,8 +910,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_GetFileEncryptStatus_001
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->GetFileEncryptStatus(USER_ID1, isEncrypted);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->GetFileEncryptStatus(USER_ID1, isEncrypted);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_GetFileEncryptStatus_001 end";
 }
 
@@ -940,8 +940,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_UpdateUseAuthWithRecover
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->UpdateUseAuthWithRecoveryKey({}, {}, secureUid, userId, plainText);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->UpdateUseAuthWithRecoveryKey({}, {}, secureUid, userId, plainText);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_UpdateUseAuthWithRecoveryKey_001 end";
 }
 
@@ -970,8 +970,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_GetLockScreenStatus_001,
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->GetLockScreenStatus(userId, lockScreenStatus);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->GetLockScreenStatus(userId, lockScreenStatus);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_GetLockScreenStatus_001 end";
 }
 
@@ -998,8 +998,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_MountCryptoPathAgain_001
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->MountCryptoPathAgain(userId);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->MountCryptoPathAgain(userId);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_MountCryptoPathAgain_001 end";
 }
 
@@ -1051,8 +1051,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_DeleteShareFile_001, Tes
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->DeleteShareFile(tokenId, {});
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->DeleteShareFile(tokenId, {});
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_DeleteShareFile_001 end";
 }
 
@@ -1081,8 +1081,8 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_GetBundleStatsForIncreas
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->GetBundleStatsForIncrease(userId, {}, {}, pkgFileSizes, incPkgFileSizes);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    ret = proxy_->GetBundleStatsForIncrease(userId, {}, {}, pkgFileSizes, incPkgFileSizes);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_GetBundleStatsForIncrease_001 end";
 }
 } // STORAGE_DAEMON
