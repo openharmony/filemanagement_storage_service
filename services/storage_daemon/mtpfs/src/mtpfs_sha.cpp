@@ -18,6 +18,8 @@
 #include <iomanip>
 #include <sstream>
 
+#include "storage_service_log.h"
+
 const int32_t DIGEST_TWO = 2;
 const int32_t DIGEST_THREE = 3;
 const int32_t DIGEST_FOUR = 4;
@@ -50,7 +52,7 @@ void MtpFsSha::Update(std::istream &is)
     buffer_ += restOfBuffer;
 
     while (is) {
-        uint32 block[BLOCK_INTS];
+        uint64 block[BLOCK_INTS];
         BufferToBlock(buffer_, block);
         Transform(block);
         Read(is, buffer_, BLOCK_BYTES);
@@ -66,19 +68,21 @@ std::string MtpFsSha::Final()
         buffer_ += static_cast<char>(0x00);
     }
 
-    uint32 block[BLOCK_INTS];
+    uint64 block[BLOCK_INTS];
     BufferToBlock(buffer_, block);
 
     if (origSize > BLOCK_BYTES - BLOCK_BYTES_EIGHT) {
+        LOGI("MtpFsSha: origSize oversize BLOCK_BYTES, Transform block");
         Transform(block);
         for (unsigned int i = 0; i < BLOCK_INTS - BLOCK_INTS_TWO; ++i) {
             block[i] = 0;
         }
+    } else {
+        block[BLOCK_INTS - 1] = totalBits;
+        block[BLOCK_INTS - BLOCK_INTS_TWO] = (totalBits >> BIT_OFFSET);
+        LOGI("MtpFsSha: Transform block");
+        Transform(block);
     }
-
-    block[BLOCK_INTS - 1] = totalBits;
-    block[BLOCK_INTS - BLOCK_INTS_TWO] = (totalBits >> BIT_OFFSET);
-    Transform(block);
 
     std::ostringstream result;
     for (unsigned int i = 0; i < DIGEST_INTS; ++i) {
@@ -102,13 +106,13 @@ void MtpFsSha::Reset()
     buffer_ = "";
 }
 
-void MtpFsSha::Transform(uint32 block[BLOCK_BYTES])
+void MtpFsSha::Transform(uint64 block[BLOCK_BYTES])
 {
-    uint32 a = digest_[0];
-    uint32 b = digest_[1];
-    uint32 c = digest_[DIGEST_TWO];
-    uint32 d = digest_[DIGEST_THREE];
-    uint32 e = digest_[DIGEST_FOUR];
+    uint64 a = digest_[0];
+    uint64 b = digest_[1];
+    uint64 c = digest_[DIGEST_TWO];
+    uint64 d = digest_[DIGEST_THREE];
+    uint64 e = digest_[DIGEST_FOUR];
 
 #define rol(value, bits) (((value) << (bits)) | (((value)&0xffffffff) >> (BIT_OFFSET - (bits))))
 #define blk(i) \
@@ -134,82 +138,6 @@ void MtpFsSha::Transform(uint32 block[BLOCK_BYTES])
     R0(e, a, b, c, d, 1);
     R0(d, e, a, b, c, 2);
     R0(c, d, e, a, b, 3);
-    R0(b, c, d, e, a, 4);
-    R0(a, b, c, d, e, 5);
-    R0(e, a, b, c, d, 6);
-    R0(d, e, a, b, c, 7);
-    R0(c, d, e, a, b, 8);
-    R0(b, c, d, e, a, 9);
-    R0(a, b, c, d, e, 10);
-    R0(e, a, b, c, d, 11);
-    R0(d, e, a, b, c, 12);
-    R0(c, d, e, a, b, 13);
-    R0(b, c, d, e, a, 14);
-    R0(a, b, c, d, e, 15);
-    R1(e, a, b, c, d, 16);
-    R1(d, e, a, b, c, 17);
-    R1(c, d, e, a, b, 18);
-    R1(b, c, d, e, a, 19);
-    R2(a, b, c, d, e, 20);
-    R2(e, a, b, c, d, 21);
-    R2(d, e, a, b, c, 22);
-    R2(c, d, e, a, b, 23);
-    R2(b, c, d, e, a, 24);
-    R2(a, b, c, d, e, 25);
-    R2(e, a, b, c, d, 26);
-    R2(d, e, a, b, c, 27);
-    R2(c, d, e, a, b, 28);
-    R2(b, c, d, e, a, 29);
-    R2(a, b, c, d, e, 30);
-    R2(e, a, b, c, d, 31);
-    R2(d, e, a, b, c, 32);
-    R2(c, d, e, a, b, 33);
-    R2(b, c, d, e, a, 34);
-    R2(a, b, c, d, e, 35);
-    R2(e, a, b, c, d, 36);
-    R2(d, e, a, b, c, 37);
-    R2(c, d, e, a, b, 38);
-    R2(b, c, d, e, a, 39);
-    R3(a, b, c, d, e, 40);
-    R3(e, a, b, c, d, 41);
-    R3(d, e, a, b, c, 42);
-    R3(c, d, e, a, b, 43);
-    R3(b, c, d, e, a, 44);
-    R3(a, b, c, d, e, 45);
-    R3(e, a, b, c, d, 46);
-    R3(d, e, a, b, c, 47);
-    R3(c, d, e, a, b, 48);
-    R3(b, c, d, e, a, 49);
-    R3(a, b, c, d, e, 50);
-    R3(e, a, b, c, d, 51);
-    R3(d, e, a, b, c, 52);
-    R3(c, d, e, a, b, 53);
-    R3(b, c, d, e, a, 54);
-    R3(a, b, c, d, e, 55);
-    R3(e, a, b, c, d, 56);
-    R3(d, e, a, b, c, 57);
-    R3(c, d, e, a, b, 58);
-    R3(b, c, d, e, a, 59);
-    R4(a, b, c, d, e, 60);
-    R4(e, a, b, c, d, 61);
-    R4(d, e, a, b, c, 62);
-    R4(c, d, e, a, b, 63);
-    R4(b, c, d, e, a, 64);
-    R4(a, b, c, d, e, 65);
-    R4(e, a, b, c, d, 66);
-    R4(d, e, a, b, c, 67);
-    R4(c, d, e, a, b, 68);
-    R4(b, c, d, e, a, 69);
-    R4(a, b, c, d, e, 70);
-    R4(e, a, b, c, d, 71);
-    R4(d, e, a, b, c, 72);
-    R4(c, d, e, a, b, 73);
-    R4(b, c, d, e, a, 74);
-    R4(a, b, c, d, e, 75);
-    R4(e, a, b, c, d, 76);
-    R4(d, e, a, b, c, 77);
-    R4(c, d, e, a, b, 78);
-    R4(b, c, d, e, a, 79);
 
     digest_[0] += a;
     digest_[1] += b;
@@ -220,7 +148,7 @@ void MtpFsSha::Transform(uint32 block[BLOCK_BYTES])
     transforms_++;
 }
 
-void MtpFsSha::BufferToBlock(const std::string &buffer, uint32 block[BLOCK_BYTES])
+void MtpFsSha::BufferToBlock(const std::string &buffer, uint64 block[BLOCK_BYTES])
 {
     for (unsigned int i = 0; i < BLOCK_INTS; ++i) {
         block[i] = (buffer[BUFFER_FACTOR * i + BUFFER_THREE] & 0xff) |
