@@ -1207,8 +1207,15 @@ int KeyManager::ActiveElXUserKey(unsigned int user,
         return -EFAULT;
     }
     UserAuth auth = { token, secret };
+    bool keyResult = elKey->RestoreKey(auth);
+    bool noKeyResult = !keyResult && elKey->RestoreKey(NULL_KEY_AUTH);
+    // key and no-key situation all failed, include upgrade situation, return err
+    if (!keyResult && !noKeyResult) {
+        LOGE("Restore el failed, type: %{public}u", keyType);
+        return -EFAULT;
+    }
     // if device has pwd and decrypt success, continue.otherwise try no pwd and fix situation.
-    if (!elKey->RestoreKey(auth) && elKey->RestoreKey(NULL_KEY_AUTH)) {
+    if (!keyResult && noKeyResult) {
         if (TryToFixUserCeEceSeceKey(user, keyType, token, secret) != E_OK) {
             LOGE("TryToFixUserCeEceSeceKey elx failed, type %{public}u", keyType);
             return -EFAULT;
