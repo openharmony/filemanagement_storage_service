@@ -1149,19 +1149,14 @@ bool KeyManager::HashElxActived(unsigned int user, KeyType type)
     switch (type) {
         case EL1_KEY:
             return HasElxDesc(userEl1Key_, type, user);
-            break;
         case EL2_KEY:
             return HasElxDesc(userEl2Key_, type, user);
-            break;
         case EL3_KEY:
             return HasElxDesc(userEl3Key_, type, user);
-            break;
         case EL4_KEY:
             return HasElxDesc(userEl4Key_, type, user);
-            break;
         case EL5_KEY:
             return HasElxDesc(userEl5Key_, type, user);
-            break;
         default:
             LOGE("key type error");
             break;
