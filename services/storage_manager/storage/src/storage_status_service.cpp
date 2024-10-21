@@ -77,15 +77,18 @@ void GetMediaTypeAndSize(const std::shared_ptr<DataShare::DataShareResultSet> &r
             LOGE("get size column index or long value err.");
             continue;
         }
-        LOGI("media_type: %{public}d, size: %{public}lld", mediatype, static_cast<long long>(size));
+
         if (mediatype == MEDIA_TYPE_IMAGE || mediatype == thumbnailType) {
+            LOGE("media_type: IMAGE, size: %{public}lld", static_cast<long long>(size));
             storageStats.image_ += size;
         } else if (mediatype == MEDIA_TYPE_AUDIO) {
+            LOGE("media_type: AUDIO, size: %{public}lld", static_cast<long long>(size));
             storageStats.audio_ = size;
         } else if (mediatype == MEDIA_TYPE_VIDEO) {
+            LOGE("media_type: VIDEO, size: %{public}lld", static_cast<long long>(size));
             storageStats.video_ = size;
         } else {
-            LOGD("unsupprted media_type: %{public}d", mediatype);
+            LOGE("unsupprted media_type: %{public}d", mediatype);
         }
     }
 }
@@ -171,7 +174,7 @@ int32_t StorageStatusService::GetBundleStats(const std::string &pkgName,
     BundleStats &bundleStats, int32_t appIndex)
 {
     int userId = GetCurrentUserId();
-    LOGD("StorageStatusService::userId is:%d, appIndex is: %d", userId, appIndex);
+
     return GetBundleStats(pkgName, userId, bundleStats, appIndex);
 }
 
@@ -272,7 +275,7 @@ int32_t StorageStatusService::GetBundleStatsForIncrease(uint32_t userId, const s
 int32_t StorageStatusService::GetCurrentBundleStats(BundleStats &bundleStats)
 {
     int userId = GetCurrentUserId();
-    LOGI("StorageStatusService::userId is: %{public}d", userId);
+
     std::string pkgName = GetCallingPkgName();
     int32_t ret = GetBundleStats(pkgName, userId, bundleStats, DEFAULT_APP_INDEX);
     if (ret != E_OK) {

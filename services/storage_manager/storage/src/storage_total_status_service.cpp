@@ -72,7 +72,7 @@ int32_t StorageTotalStatusService::GetSystemSize(int64_t &systemSize)
 int32_t StorageTotalStatusService::GetTotalSize(int64_t &totalSize)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
-    LOGE("StorageTotalStatusService::GetTotalSize start");
+
     int64_t dataSize = 0;
     int32_t ret = GetSizeOfPath(PATH_DATA, SizeType::TOTAL, dataSize);
     if (ret != E_OK) {
@@ -102,7 +102,7 @@ int32_t StorageTotalStatusService::GetTotalSize(int64_t &totalSize)
         return ret;
     }
     totalSize = GetRoundSize(dataSize + rootSize);
-    LOGE("StorageTotalStatusService::GetTotalSize end");
+
     return E_OK;
 }
 
@@ -132,13 +132,18 @@ int32_t StorageTotalStatusService::GetSizeOfPath(const char *path, int32_t type,
     }
     if (type == SizeType::TOTAL) {
         size = (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_blocks;
+        LOGE("StorageStatusService::GetSizeOfPath path is %{public}s, type is total space, size is %{public}MB." PRId64,
+             path, size);
     } else if (type == SizeType::FREE) {
         size = (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_bfree;
+        LOGE("StorageStatusService::GetSizeOfPath path is %{public}s, type is free space, size is %{public}MB." PRId64,
+             path, size);
     } else {
         size = (int64_t)diskInfo.f_bsize * ((int64_t)diskInfo.f_blocks - (int64_t)diskInfo.f_bfree);
+        LOGE("StorageStatusService::GetSizeOfPath path is %{public}s, type is used space, size is %{public}MB." PRId64,
+             path, size);
     }
-    LOGI("StorageStatusService::GetSizeOfPath path is %{public}s, type is %{public}d, size is %{public}" PRId64,
-         path, type, size);
+
     return E_OK;
 }
 } // StorageManager
