@@ -132,15 +132,15 @@ int32_t StorageTotalStatusService::GetSizeOfPath(const char *path, int32_t type,
     }
     if (type == SizeType::TOTAL) {
         size = (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_blocks;
-        LOGE("StorageStatusService::GetSizeOfPath path is %{public}s, type is total space, size is %{public}MB." PRId64,
+        LOGE("StorageStatusService::GetSizeOfPath path is %{public}s, type is total space, size is %{public}." PRId64,
              path, size);
     } else if (type == SizeType::FREE) {
         size = (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_bfree;
-        LOGE("StorageStatusService::GetSizeOfPath path is %{public}s, type is free space, size is %{public}MB." PRId64,
+        LOGE("StorageStatusService::GetSizeOfPath path is %{public}s, type is free space, size is %{public}." PRId64,
              path, size);
     } else {
         size = (int64_t)diskInfo.f_bsize * ((int64_t)diskInfo.f_blocks - (int64_t)diskInfo.f_bfree);
-        LOGE("StorageStatusService::GetSizeOfPath path is %{public}s, type is used space, size is %{public}MB." PRId64,
+        LOGE("StorageStatusService::GetSizeOfPath path is %{public}s, type is used space, size is %{public}." PRId64,
              path, size);
     }
 
