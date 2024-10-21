@@ -1102,7 +1102,7 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
         return -EFAULT;
     }
     std::lock_guard<std::mutex> lock(keyMutex_);
-    if (HasElkey(user, type)) {
+    if (HasElkey(user, type) && type != EL5_KEY && HashElxActived(user, type)) {
         LOGE("The user %{public}u el have been actived, key type is %{public}u", user, type);
         return 0;
     }
@@ -1141,6 +1141,45 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
     LOGI("Active user %{public}u el success", user);
     LOGI("saveLockScreenStatus is %{public}d", saveLockScreenStatus[user]);
     return 0;
+}
+
+bool KeyManager::HashElxActived(unsigned int user, KeyType type)
+{
+    LOGI("enter");
+    switch (type) {
+        case EL1_KEY:
+            return HasElxDesc(userEl1Key_, type, user);
+            break;
+        case EL2_KEY:
+            return HasElxDesc(userEl2Key_, type, user);
+            break;
+        case EL3_KEY:
+            return HasElxDesc(userEl3Key_, type, user);
+            break;
+        case EL4_KEY:
+            return HasElxDesc(userEl4Key_, type, user);
+            break;
+        case EL5_KEY:
+            return HasElxDesc(userEl5Key_, type, user);
+            break;
+        default:
+            LOGE("key type error");
+            break;
+    }
+    return false;
+}
+
+bool KeyManager::HasElxDesc(std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_,
+                            KeyType type,
+                            unsigned int user)
+{
+    auto it = userElKey_.find(user);
+    auto elKey = it->second;
+    if (it != userElKey_.end() && !elKey->KeyDesclsEmpty()) {
+        LOGI("user el%{public}u key desc has existed", type);
+        return true;
+    }
+    return false;
 }
 
 int KeyManager::CheckAndDeleteEmptyEl5Directory(std::string keyDir, unsigned int user)
@@ -1516,6 +1555,11 @@ int KeyManager::InActiveUserKey(unsigned int user)
     ret = InactiveUserElKey(user, userEl4Key_);
     if (ret != E_OK) {
         LOGE("Inactive userEl4Key_ failed");
+        return ret;
+    }
+    ret = InactiveUserElKey(user, userEl5Key_);
+    if (ret != E_OK) {
+        LOGE("Inactive userEl5Key_ failed");
         return ret;
     }
     auto userTask = userLockScreenTask_.find(user);

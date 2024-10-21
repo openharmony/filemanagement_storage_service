@@ -155,6 +155,8 @@ private:
     bool IsWorkDirExist(std::string type, int32_t userId);
     int GenerateIntegrityDirs(int32_t userId, KeyType type);
     int CheckAndFixUserKeyDirectory(unsigned int user);
+    bool HashElxActived(unsigned int user, KeyType type);
+    bool HasElxDesc(std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_, KeyType type, unsigned int user);
 #ifdef EL5_FILEKEY_MANAGER
     int GenerateAndLoadAppKeyInfo(uint32_t userId, const std::vector<std::pair<int, std::string>> &keyInfo);
 #endif

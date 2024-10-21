@@ -1141,5 +1141,10 @@ uint32_t BaseKey::GetIdFromDir()
     LOGI("dir_: %{public}s, get userId is %{public}d", dir_.c_str(), userId);
     return static_cast<uint32_t>(userId);
 }
+
+bool BaseKey::KeyDesclsEmpty()
+{
+    return keyInfo_.keyDesc.IsEmpty();
+}
 } // namespace StorageDaemon
 } // namespace OHOS
