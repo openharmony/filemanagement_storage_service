@@ -15,6 +15,7 @@
 
 #include "storage/storage_status_service.h"
 #include "accesstoken_kit.h"
+#include <cinttypes>
 #include "ipc_skeleton.h"
 #include "hap_token_info.h"
 #include "hitrace_meter.h"
@@ -97,7 +98,7 @@ void GetMediaTypeAndSize(const std::shared_ptr<DataShare::DataShareResultSet> &r
 int32_t GetMediaStorageStats(StorageStats &storageStats)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
-    LOGI("GetMediaStorageStats start");
+    LOGD("GetMediaStorageStats start");
 #ifdef STORAGE_SERVICE_GRAPHIC
     auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (sam == nullptr) {
@@ -137,20 +138,20 @@ int32_t GetMediaStorageStats(StorageStats &storageStats)
     GetMediaTypeAndSize(queryResultSet, storageStats);
     dataShareHelper->Release();
 #endif
-    LOGI("GetMediaStorageStats end");
+    LOGD("GetMediaStorageStats end");
     return E_OK;
 }
 
 int32_t GetFileStorageStats(int32_t userId, StorageStats &storageStats)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
-    LOGI("GetFileStorageStats start");
+    LOGD("GetFileStorageStats start");
     int32_t err = E_OK;
     int32_t prjId = userId * USER_ID_BASE + UID_FILE_MANAGER;
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->GetOccupiedSpace(StorageDaemon::USRID, prjId, storageStats.file_);
-    LOGI("GetFileStorageStats end");
+    LOGD("GetFileStorageStats end");
     return err;
 }
 
@@ -211,7 +212,7 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
         return err;
     }
     // appSize
-    LOGI("StorageStatusService::GetUserStorageStats userId is %{public}d", userId);
+    LOGD("StorageStatusService::GetUserStorageStats userId is %{public}d", userId);
     int64_t appSize = 0;
     err = GetAppSize(userId, appSize);
     if (err != E_OK) {
@@ -257,6 +258,11 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
                                        .errorCode = err};
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
     }
+
+    LOGE("StorageStatusService::GetUserStorageStats success for userId=%{public}d, totalSize=%{public}" PRId64
+         ", appSize=%{public}" PRId64 ", videoSize=%{public}" PRId64 ", audioSize=%{public}" PRId64
+         ", imageSize=%{public}" PRId64 ", fileSize=%{public}" PRId64, userId, storageStats.total_, storageStats.app_,
+         storageStats.video_, storageStats.audio_, storageStats.image_, storageStats.file_);
     return err;
 }
 
@@ -326,13 +332,16 @@ int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t
     pkgStats.appSize_ = bundleStats[APP];
     pkgStats.cacheSize_ = bundleStats[CACHE];
     pkgStats.dataSize_ = bundleStats[LOCAL] + bundleStats[DISTRIBUTED] + bundleStats[DATABASE];
+    LOGE("StorageStatusService::GetBundleStats success for pkgName=%{public}s, userId=%{public}d, appIndex=%{public}d"
+        ", appSize=%{public}" PRId64 ", cacheSize=%{public}" PRId64 ", dataSize=%{public}" PRId64, pkgName.c_str(),
+        userId, appIndex, pkgStats.appSize_, pkgStats.cacheSize_, pkgStats.dataSize_);
     return E_OK;
 }
 
 int32_t StorageStatusService::GetAppSize(int32_t userId, int64_t &appSize)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
-    LOGI("StorageStatusService::GetAppSize start");
+    LOGD("StorageStatusService::GetAppSize start");
     auto bundleMgr = DelayedSingleton<BundleMgrConnector>::GetInstance()->GetBundleMgrProxy();
     if (bundleMgr == nullptr) {
         LOGE("StorageStatusService::GetUserStorageStats connect bundlemgr failed");
@@ -350,7 +359,7 @@ int32_t StorageStatusService::GetAppSize(int32_t userId, int64_t &appSize)
     for (uint i = 0; i < bundleStats.size(); i++) {
         appSize += bundleStats[i];
     }
-    LOGI("StorageStatusService::GetAppSize end");
+    LOGD("StorageStatusService::GetAppSize end");
     return E_OK;
 }
 

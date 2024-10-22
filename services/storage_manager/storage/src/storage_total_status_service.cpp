@@ -66,6 +66,8 @@ int32_t StorageTotalStatusService::GetSystemSize(int64_t &systemSize)
         return ret;
     }
     systemSize = roundSize - totalSize;
+    LOGE("StorageTotalStatusService::GetSystemSize success, roundSize=%{public}" PRId64
+         ",(/data)totalSize=%{public}" PRId64 ",systemSize=%{public}" PRId64, roundSize, totalSize, systemSize);
     return E_OK;
 }
 
@@ -102,7 +104,9 @@ int32_t StorageTotalStatusService::GetTotalSize(int64_t &totalSize)
         return ret;
     }
     totalSize = GetRoundSize(dataSize + rootSize);
-
+    LOGE("StorageTotalStatusService::GetTotalSize success, roundSize=%{public}" PRId64
+         ", (/data)totalDataSize=%{public}" PRId64 ", (/)totalRootSize=%{public}" PRId64,
+         totalSize, dataSize, rootSize);
     return E_OK;
 }
 
@@ -120,6 +124,7 @@ int32_t StorageTotalStatusService::GetFreeSize(int64_t &freeSize)
                                        .errorCode = ret};
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
     }
+    LOGE("StorageTotalStatusService::GetFreeSize success, (/data)freeSize=%{public}" PRId64, freeSize);
     return ret;
 }
 
@@ -130,20 +135,19 @@ int32_t StorageTotalStatusService::GetSizeOfPath(const char *path, int32_t type,
     if (ret != E_OK) {
         return E_ERR;
     }
+    std::string typeStr = "";
     if (type == SizeType::TOTAL) {
         size = (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_blocks;
-        LOGE("StorageStatusService::GetSizeOfPath path is %{public}s, type is total space, size is %{public}." PRId64,
-             path, size);
+        typeStr = "total space";
     } else if (type == SizeType::FREE) {
         size = (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_bfree;
-        LOGE("StorageStatusService::GetSizeOfPath path is %{public}s, type is free space, size is %{public}." PRId64,
-             path, size);
+        typeStr = "free space";
     } else {
         size = (int64_t)diskInfo.f_bsize * ((int64_t)diskInfo.f_blocks - (int64_t)diskInfo.f_bfree);
-        LOGE("StorageStatusService::GetSizeOfPath path is %{public}s, type is used space, size is %{public}." PRId64,
-             path, size);
+        typeStr = "used space";
     }
-
+    LOGE("StorageStatusService::GetSizeOfPath path is %{public}s, type is %{public}s, size is %{public}." PRId64,
+         path, typeStr.c_str(), size);
     return E_OK;
 }
 } // StorageManager

@@ -159,7 +159,7 @@ int32_t StorageManager::GetBundleStats(std::string pkgName, BundleStats &bundleS
 int32_t StorageManager::GetSystemSize(int64_t &systemSize)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
-    LOGI("StorageManger::getSystemSize start");
+    LOGD("StorageManger::getSystemSize start");
     int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetSystemSize(systemSize);
     return err;
 #else
@@ -170,7 +170,7 @@ int32_t StorageManager::GetSystemSize(int64_t &systemSize)
 int32_t StorageManager::GetTotalSize(int64_t &totalSize)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
-    LOGI("StorageManger::getTotalSize start");
+    LOGD("StorageManger::getTotalSize start");
     int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetTotalSize(totalSize);
     return err;
 #else
@@ -181,7 +181,7 @@ int32_t StorageManager::GetTotalSize(int64_t &totalSize)
 int32_t StorageManager::GetFreeSize(int64_t &freeSize)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
-    LOGI("StorageManger::getFreeSize start");
+    LOGD("StorageManger::getFreeSize start");
     int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetFreeSize(freeSize);
     return err;
 #else
@@ -192,7 +192,7 @@ int32_t StorageManager::GetFreeSize(int64_t &freeSize)
 int32_t StorageManager::GetUserStorageStats(StorageStats &storageStats)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
-    LOGI("StorageManger::GetUserStorageStats start");
+    LOGD("StorageManger::GetUserStorageStats start");
     int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetUserStorageStats(storageStats);
     return err;
 #else
@@ -203,7 +203,7 @@ int32_t StorageManager::GetUserStorageStats(StorageStats &storageStats)
 int32_t StorageManager::GetUserStorageStats(int32_t userId, StorageStats &storageStats)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
-    LOGI("StorageManger::GetUserStorageStats start");
+    LOGD("StorageManger::GetUserStorageStats start");
     int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetUserStorageStats(userId, storageStats);
     return err;
 #else
@@ -214,7 +214,7 @@ int32_t StorageManager::GetUserStorageStats(int32_t userId, StorageStats &storag
 int32_t StorageManager::GetCurrentBundleStats(BundleStats &bundleStats)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
-    LOGI("StorageManger::GetCurrentBundleStats start");
+    LOGD("StorageManger::GetCurrentBundleStats start");
     int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetCurrentBundleStats(bundleStats);
     return err;
 #else

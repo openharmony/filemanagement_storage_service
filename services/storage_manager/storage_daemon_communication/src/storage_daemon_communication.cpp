@@ -105,7 +105,7 @@ int32_t StorageDaemonCommunication::RemoveUser(int32_t userId, uint32_t flags)
 
 int32_t StorageDaemonCommunication::PrepareStartUser(int32_t userId)
 {
-    LOGI("StorageDaemonCommunication::PrepareStartUser start");
+    LOGD("StorageDaemonCommunication::PrepareStartUser start");
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("StorageDaemonCommunication::PrepareStartUser connect failed");
@@ -240,7 +240,7 @@ int32_t StorageDaemonCommunication::SetVolumeDescription(std::string volumeId, s
 
 int32_t StorageDaemonCommunication::GenerateUserKeys(uint32_t userId, uint32_t flags)
 {
-    LOGI("enter");
+    LOGD("enter");
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("Connect failed");
@@ -255,7 +255,7 @@ int32_t StorageDaemonCommunication::GenerateUserKeys(uint32_t userId, uint32_t f
 
 int32_t StorageDaemonCommunication::DeleteUserKeys(uint32_t userId)
 {
-    LOGI("enter");
+    LOGD("enter");
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("Connect failed");
@@ -309,7 +309,7 @@ int32_t StorageDaemonCommunication::ActiveUserKey(uint32_t userId,
                                                   const std::vector<uint8_t> &token,
                                                   const std::vector<uint8_t> &secret)
 {
-    LOGI("enter");
+    LOGD("enter");
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("Connect failed");
@@ -324,7 +324,7 @@ int32_t StorageDaemonCommunication::ActiveUserKey(uint32_t userId,
 
 int32_t StorageDaemonCommunication::InactiveUserKey(uint32_t userId)
 {
-    LOGI("enter");
+    LOGD("enter");
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("Connect failed");
@@ -354,7 +354,7 @@ int32_t StorageDaemonCommunication::LockUserScreen(uint32_t userId)
 
 int32_t StorageDaemonCommunication::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
 {
-    LOGI("enter");
+    LOGD("enter");
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("Connect failed");
@@ -492,7 +492,7 @@ int32_t StorageDaemonCommunication::DeleteShareFile(uint32_t tokenId, const std:
 int32_t StorageDaemonCommunication::SetBundleQuota(const std::string &bundleName, int32_t uid,
     const std::string &bundleDataDirPath, int32_t limitSizeMb)
 {
-    LOGI("enter");
+    LOGD("enter");
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("Connect failed");
@@ -507,7 +507,7 @@ int32_t StorageDaemonCommunication::SetBundleQuota(const std::string &bundleName
 
 int32_t StorageDaemonCommunication::GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size)
 {
-    LOGI("enter");
+    LOGD("enter");
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("Connect failed");
