@@ -260,9 +260,9 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
     }
 
     LOGE("StorageStatusService::GetUserStorageStats success for userId=%{public}d, totalSize=%{public}" PRId64
-         ", appSize=%{public}" PRId64 ", videoSize=%{public}" PRId64 ", audioSize=%{public}" PRId64
-         ", imageSize=%{public}" PRId64 ", fileSize=%{public}" PRId64, userId, storageStats.total_, storageStats.app_,
-         storageStats.video_, storageStats.audio_, storageStats.image_, storageStats.file_);
+        ", appSize=%{public}" PRId64 ", videoSize=%{public}" PRId64 ", audioSize=%{public}" PRId64
+        ", imageSize=%{public}" PRId64 ", fileSize=%{public}" PRId64, userId, storageStats.total_, storageStats.app_,
+        storageStats.video_, storageStats.audio_, storageStats.image_, storageStats.file_);
     return err;
 }
 

@@ -67,7 +67,7 @@ int32_t StorageTotalStatusService::GetSystemSize(int64_t &systemSize)
     }
     systemSize = roundSize - totalSize;
     LOGE("StorageTotalStatusService::GetSystemSize success, roundSize=%{public}" PRId64
-         ",(/data)totalSize=%{public}" PRId64 ",systemSize=%{public}" PRId64, roundSize, totalSize, systemSize);
+        ",(/data)totalSize=%{public}" PRId64 ",systemSize=%{public}" PRId64, roundSize, totalSize, systemSize);
     return E_OK;
 }
 
@@ -105,8 +105,7 @@ int32_t StorageTotalStatusService::GetTotalSize(int64_t &totalSize)
     }
     totalSize = GetRoundSize(dataSize + rootSize);
     LOGE("StorageTotalStatusService::GetTotalSize success, roundSize=%{public}" PRId64
-         ", (/data)totalDataSize=%{public}" PRId64 ", (/)totalRootSize=%{public}" PRId64,
-         totalSize, dataSize, rootSize);
+        ", (/data)totalDataSize=%{public}" PRId64 ", (/)totalRootSize=%{public}" PRId64, totalSize, dataSize, rootSize);
     return E_OK;
 }
 
@@ -147,7 +146,7 @@ int32_t StorageTotalStatusService::GetSizeOfPath(const char *path, int32_t type,
         typeStr = "used space";
     }
     LOGE("StorageStatusService::GetSizeOfPath path is %{public}s, type is %{public}s, size is %{public}." PRId64,
-         path, typeStr.c_str(), size);
+        path, typeStr.c_str(), size);
     return E_OK;
 }
 } // StorageManager
