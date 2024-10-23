@@ -89,6 +89,12 @@ public:
     int GenerateUserKeyByType(unsigned int user, KeyType type,
                               const std::vector<uint8_t> &token,
                               const std::vector<uint8_t> &secret);
+    int TryToFixUserCeEceSeceKey(unsigned int userId, KeyType type,
+                                 const std::vector<uint8_t> &token,
+                                 const std::vector<uint8_t> &secret);
+    int TryToFixUeceKey(unsigned int userId,
+                        const std::vector<uint8_t> &token,
+                        const std::vector<uint8_t> &secret);
 private:
     KeyManager()
     {
@@ -119,8 +125,8 @@ private:
                           const std::vector<uint8_t> &token,
                           const std::vector<uint8_t> &secret, std::shared_ptr<BaseKey> elKey);
     int ActiveElXUserKey(unsigned int user,
-                                      const std::vector<uint8_t> &token, std::string keyDir,
-                                      const std::vector<uint8_t> &secret, std::shared_ptr<BaseKey> elKey);
+                         const std::vector<uint8_t> &token, KeyType keyType,
+                         const std::vector<uint8_t> &secret, std::shared_ptr<BaseKey> elKey);
     int InactiveUserElKey(unsigned int user, std::map<unsigned int, std::shared_ptr<BaseKey>> &userElxKey_);
     int CheckAndDeleteEmptyEl5Directory(std::string keyDir, unsigned int user);
     bool GetUserDelayHandler(uint32_t userId, std::shared_ptr<DelayHandler> &delayHandler);
@@ -130,6 +136,7 @@ private:
     bool UnlockEceSece(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret, int &ret);
     bool UnlockUece(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret, int &ret);
     void CheckAndClearTokenInfo(uint32_t user);
+    int CheckUserPinProtect(unsigned int userId, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret);
 
 #ifdef EL5_FILEKEY_MANAGER
     int GenerateAndLoadAppKeyInfo(uint32_t userId, const std::vector<std::pair<int, std::string>> &keyInfo);

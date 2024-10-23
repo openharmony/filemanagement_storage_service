@@ -54,7 +54,8 @@ public:
     virtual bool DeleteAppkey(const std::string keyId) = 0;
     virtual bool AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status) = 0;
     virtual bool DeleteClassEPinCode(uint32_t userId) = 0;
-    virtual bool DecryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status) = 0;
+    virtual bool DecryptClassE(const UserAuth &auth, bool &isSupport, bool &eBufferStatue, uint32_t user,
+                               uint32_t status) = 0;
     virtual bool EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status) = 0;
     virtual bool ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId) = 0;
     virtual bool LockUece(bool &isFbeSupport) = 0;
