@@ -12,8 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef STORAGE_DAEMON_ElX_FILEKEYMANAGER_KIT_MOCK_H
-#define STORAGE_DAEMON_ElX_FILEKEYMANAGER_KIT_MOCK_H
+#ifndef STORAGE_DAEMON_FILEKEYMANAGER_KIT_MOCK_H
+#define STORAGE_DAEMON_FILEKEYMANAGER_KIT_MOCK_H
 
 #include <gmock/gmock.h>
 #include <memory>

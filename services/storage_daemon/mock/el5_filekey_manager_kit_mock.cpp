@@ -48,5 +48,3 @@ int32_t El5FilekeyManagerKit::GetUserAllAppKey(int32_t userId, std::vector<std::
     return IEl5FilekeyManagerKitMoc::el5FilekeyManagerKitMoc->GetUserAllAppKey(userId, keyInfos);
 }
 #endif
-
-
