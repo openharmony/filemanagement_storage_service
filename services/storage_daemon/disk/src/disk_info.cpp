@@ -308,7 +308,11 @@ void DiskInfo::ProcessPartition(std::vector<std::string>::iterator &it, const st
             return;
         }
         int32_t type = std::stoi("0x0" + *it, 0, 16);
-        foundPart = CreateMBRVolume(type, partitionDev);
+        if (!CreateMBRVolume(type, partitionDev)) {
+            LOGE("Create MBR Volume failed");
+        } else {
+            foundPart = true;
+        }
     } else if (table == Table::GPT) {
         if (CreateVolume(partitionDev) == E_OK) {
             foundPart = true;
