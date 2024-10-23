@@ -313,7 +313,6 @@ void DiskInfo::ProcessPartition(std::vector<std::string>::iterator &it, const st
         } else {
             foundPart = true;
         }
-        foundPart = true;
     } else if (table == Table::GPT) {
         if (CreateVolume(partitionDev) == E_OK) {
             foundPart = true;
