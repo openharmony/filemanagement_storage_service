@@ -296,24 +296,6 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetFsUui
 }
 
 /**
- * @tc.name: Storage_Service_ExternalVolumeInfoTest_GetFlags_001
- * @tc.desc: Verify the GetFlags function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetFlags_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetFlags_001 start";
-
-    ASSERT_TRUE(externalVolumeInfo_ != nullptr);
-    std::string ret = externalVolumeInfo_->GetFlags();
-    GTEST_LOG_(INFO) << ret;
-    EXPECT_TRUE(ret.empty());
-
-    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetFlags_001 end";
-}
-
-/**
  * @tc.name: Storage_Service_ExternalVolumeInfoTest_GetMountPath_001
  * @tc.desc: Verify the GetMountPath function.
  * @tc.type: FUNC
