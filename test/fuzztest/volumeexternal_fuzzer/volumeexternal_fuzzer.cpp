@@ -32,7 +32,7 @@ bool FileUtilFuzzTest(const uint8_t *data, size_t size)
     volumeexternal.SetFsUuid(metaData);
     volumeexternal.SetPath(metaData);
     volumeexternal.SetDescription(metaData);
-    volumeexternal.GetFlags();;
+    volumeexternal.GetFlags();
     volumeexternal.GetFsType();
     volumeexternal.GetUuid();
     volumeexternal.GetPath();
