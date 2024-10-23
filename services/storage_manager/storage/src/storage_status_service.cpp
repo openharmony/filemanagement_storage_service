@@ -15,7 +15,6 @@
 
 #include "storage/storage_status_service.h"
 #include "accesstoken_kit.h"
-#include <cinttypes>
 #include "ipc_skeleton.h"
 #include "hap_token_info.h"
 #include "hitrace_meter.h"
