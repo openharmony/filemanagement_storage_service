@@ -373,4 +373,99 @@ HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_SplitKeyCtx, TestSize.Level1)
     EXPECT_EQ(rndEncVct, rndEncVctEpt);
     GTEST_LOG_(INFO) << "fscrypt_key_v2_SplitKeyCtx end";
 }
+
+/**
+ * @tc.name: fscrypt_key_v2_CombKeyBlob
+ * @tc.desc: Verify the fscrypt V2 CombKeyBlob.
+ * @tc.type: FUNC
+ * @tc.require: IAXJFK
+ */
+HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_CombKeyBlob, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "fscrypt_key_v2_CombKeyBlob start";
+    std::vector<uint8_t> encAadVec{1, 2, 3, 4, 5};
+    std::vector<uint8_t> endVec{6, 7, 8};
+    KeyBlob encAad(encAadVec);
+    KeyBlob end(endVec);
+    KeyBlob keyOut(encAad.size + end.size);
+
+    std::vector<uint8_t> expect{1, 2, 3, 4, 5, 6, 7, 8};
+    g_testKeyV2.CombKeyBlob(encAad, end, keyOut);
+    std::vector<uint8_t> result(keyOut.data.get(), keyOut.data.get() + keyOut.size);
+    EXPECT_EQ(result, expect);
+    GTEST_LOG_(INFO) << "fscrypt_key_v2_CombKeyBlob end";
+}
+
+/**
+ * @tc.name: fscrypt_key_v2_SplitKeyBlob
+ * @tc.desc: Verify the fscrypt V2 SplitKeyBlob.
+ * @tc.type: FUNC
+ * @tc.require: IAXJFK
+ */
+HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_SplitKeyBlob, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "fscrypt_key_v2_SplitKeyBlob start";
+    std::vector<uint8_t> keyInVct{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    KeyBlob encAad;
+    KeyBlob nonce;
+    KeyBlob keyIn(keyInVct);
+    uint32_t start = 6;
+
+    g_testKeyV2.SplitKeyBlob(keyIn, encAad, nonce, start);
+    std::vector<uint8_t> encAadVct(encAad.data.get(), encAad.data.get() + encAad.size);
+    std::vector<uint8_t> encAadVctEpt{1, 2, 3, 4, 5, 6};
+    EXPECT_EQ(encAadVct, encAadVct);
+
+    std::vector<uint8_t> nonceVct(nonce.data.get(), nonce.data.get() + nonce.size);
+    std::vector<uint8_t> nonceVctEpt{7, 8, 9, 10};
+    EXPECT_EQ(nonceVct, nonceVctEpt);
+    GTEST_LOG_(INFO) << "fscrypt_key_v2_SplitKeyBlob end";
+}
+
+/**
+ * @tc.name: fscrypt_key_v2_ClearMemoryKeyCtx
+ * @tc.desc: Verify the fscrypt V2 SplitKeyBlob.
+ * @tc.type: FUNC
+ * @tc.require: IAXJFK
+ */
+HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_ClearMemoryKeyCtx, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "fscrypt_key_v2_ClearMemoryKeyCtx start";
+    g_testKeyV2.keyContext_.rndEnc.Alloc(5);
+    g_testKeyV2.keyContext_.shield.Alloc(5);
+    g_testKeyV2.keyContext_.nonce.Alloc(5);
+    g_testKeyV2.keyContext_.aad.Alloc(5);
+
+    g_testKeyV2.ClearMemoryKeyCtx();
+    EXPECT_TRUE(g_testKeyV2.keyContext_.rndEnc.IsEmpty());
+    EXPECT_TRUE(g_testKeyV2.keyContext_.shield.IsEmpty());
+    EXPECT_TRUE(g_testKeyV2.keyContext_.nonce.IsEmpty());
+    EXPECT_TRUE(g_testKeyV2.keyContext_.aad.IsEmpty());
+    GTEST_LOG_(INFO) << "fscrypt_key_v2_ClearMemoryKeyCtx end";
+}
+
+/**
+ * @tc.name: fscrypt_key_v2_ClearKeyContext
+ * @tc.desc: Verify the fscrypt V2 ClearKeyContext.
+ * @tc.type: FUNC
+ * @tc.require: IAXJFK
+ */
+HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_ClearKeyContext, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "fscrypt_key_v2_ClearKeyContext start";
+    KeyContext keyCtx;
+    keyCtx.rndEnc.Alloc(5);
+    keyCtx.shield.Alloc(5);
+    keyCtx.nonce.Alloc(5);
+    keyCtx.aad.Alloc(5);
+    keyCtx.secDiscard.Alloc(5);
+
+    g_testKeyV2.ClearKeyContext(keyCtx);
+    EXPECT_TRUE(keyCtx.rndEnc.IsEmpty());
+    EXPECT_TRUE(keyCtx.shield.IsEmpty());
+    EXPECT_TRUE(keyCtx.nonce.IsEmpty());
+    EXPECT_TRUE(keyCtx.aad.IsEmpty());
+    EXPECT_TRUE(keyCtx.secDiscard.IsEmpty());
+    GTEST_LOG_(INFO) << "fscrypt_key_v2_ClearKeyContext end";
+}
 } // OHOS::StorageDaemon
