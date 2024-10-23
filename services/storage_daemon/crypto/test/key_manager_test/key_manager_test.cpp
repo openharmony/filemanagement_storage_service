@@ -1627,7 +1627,7 @@ HWTEST_F(KeyManagerTest, KeyManager_Generate_Elx_And_Install_User_key_101, TestS
     const std::string EL2_PATH = USER_EL1_DIR + "/" + std::to_string(userId);
     const std::string EL3_PATH = USER_EL1_DIR + "/" + std::to_string(userId);
     const std::string EL4_PATH = USER_EL1_DIR + "/" + std::to_string(userId);
-    const std::string EL5_PATH = USER_EL1_DIR + "/" + std::to_string(userId);
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false)).WillOnce(Return(false));
     MkDir(EL1_PATH, S_IRWXU);
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_INVALID))
         .WillOnce(Return(FSCRYPT_INVALID));
@@ -1637,6 +1637,7 @@ HWTEST_F(KeyManagerTest, KeyManager_Generate_Elx_And_Install_User_key_101, TestS
     EXPECT_EQ(ret, -EEXIST);
 
     RmDirRecurse(EL1_PATH);
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false)).WillOnce(Return(false));
     MkDir(EL2_PATH, S_IRWXU);
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_INVALID))
         .WillOnce(Return(FSCRYPT_INVALID));
@@ -1646,6 +1647,7 @@ HWTEST_F(KeyManagerTest, KeyManager_Generate_Elx_And_Install_User_key_101, TestS
     EXPECT_EQ(ret, -EEXIST);
 
     RmDirRecurse(EL2_PATH);
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false)).WillOnce(Return(false));
     MkDir(EL3_PATH, S_IRWXU);
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_INVALID))
         .WillOnce(Return(FSCRYPT_INVALID));
@@ -1655,6 +1657,7 @@ HWTEST_F(KeyManagerTest, KeyManager_Generate_Elx_And_Install_User_key_101, TestS
     EXPECT_EQ(ret, -EEXIST);
 
     RmDirRecurse(EL3_PATH);
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false)).WillOnce(Return(false));
     MkDir(EL4_PATH, S_IRWXU);
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_INVALID))
         .WillOnce(Return(FSCRYPT_INVALID));
@@ -1664,14 +1667,29 @@ HWTEST_F(KeyManagerTest, KeyManager_Generate_Elx_And_Install_User_key_101, TestS
     EXPECT_EQ(ret, -EEXIST);
 
     RmDirRecurse(EL4_PATH);
+    GTEST_LOG_(INFO) << "KeyManager_GenerateElxAndInstallUserKey_0101 end";
+}
+
+/**
+ * @tc.name: KeyManager_Generate_Elx_And_Install_User_key_102
+ * @tc.desc: Verify the KeyManager GenerateElxAndInstallUserKey function.
+ * @tc.type: FUNC
+ * @tc.require: SR000H0CM9
+ */
+HWTEST_F(KeyManagerTest, KeyManager_Generate_Elx_And_Install_User_key_102, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_GenerateElxAndInstallUserKey_0102 start";
+    uint32_t userId = 125;
+    const std::string EL5_PATH = USER_EL1_DIR + "/" + std::to_string(userId);
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false)).WillOnce(Return(false));
     MkDir(EL5_PATH, S_IRWXU);
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_INVALID))
         .WillOnce(Return(FSCRYPT_INVALID));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID))
         .WillOnce(Return(FSCRYPT_INVALID));
-    ret = KeyManager::GetInstance()->GenerateElxAndInstallUserKey(userId);
+    auto ret = KeyManager::GetInstance()->GenerateElxAndInstallUserKey(userId);
     EXPECT_EQ(ret, -EEXIST);
-    GTEST_LOG_(INFO) << "KeyManager_GenerateElxAndInstallUserKey_0101 end";
+    GTEST_LOG_(INFO) << "KeyManager_GenerateElxAndInstallUserKey_0102 end";
 }
 
 /**
