@@ -438,7 +438,7 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
         (void)close(pipe_fd[1]);
         execvp(args[0], const_cast<char **>(args.data()));
         LOGE("execvp failed errno: %{public}d", errno);
-        exit(0);
+        exit(1);
     } else {
         (void)close(pipe_fd[1]);
         if (output) {
@@ -449,12 +449,10 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
                 LOGI("get result %{public}s", buf);
                 output->push_back(buf);
             }
-            (void)close(pipe_fd[0]);
-            return E_OK;
         }
 
-        waitpid(pid, &status, 0);
         (void)close(pipe_fd[0]);
+        waitpid(pid, &status, 0);
         if (errno == ECHILD) {
             return E_NO_CHILD;
         }

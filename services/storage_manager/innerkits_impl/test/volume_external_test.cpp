@@ -42,6 +42,7 @@ public:
 HWTEST_F(VolumeExternalTest, Volume_external_Get_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "VolumeExternalTest-begin Volume_external_Get_0000";
+    int32_t flags = 1;
     int32_t fsType = 1;
     std::string fsUuid = "100";
     std::string path = "/";
@@ -51,6 +52,7 @@ HWTEST_F(VolumeExternalTest, Volume_external_Get_0000, testing::ext::TestSize.Le
     volumeexternal.SetFsUuid(fsUuid);
     volumeexternal.SetPath(path);
     volumeexternal.SetDescription(description);
+    volumeexternal.SetFlags(flags);
     auto result1 = volumeexternal.GetFsType();
     EXPECT_EQ(result1, fsType);
     auto result2 = volumeexternal.GetUuid();
@@ -66,6 +68,8 @@ HWTEST_F(VolumeExternalTest, Volume_external_Get_0000, testing::ext::TestSize.Le
     volumeexternal.SetFsType(FsType::UNDEFINED);
     auto result6 = volumeexternal.GetFsTypeString();
     EXPECT_EQ(result6, "undefined");
+    auto result7 = volumeexternal.GetFlags();
+    EXPECT_EQ(result7, flags);
     volumeexternal.Reset();
     GTEST_LOG_(INFO) << "VolumeExternalTest-end Volume_external_Get_0000";
 }

@@ -44,12 +44,12 @@ bool StorageStatusServiceFuzzTest(const uint8_t *data, size_t size)
     incrementalBackTimes.push_back(metaData2);
     pkgFileSizes.push_back(metaData2);
     incPkgFileSizes.push_back(metaData2);
-    service->GetBundleStats(pkgName, bundleStats, 0);
+    service->GetBundleStats(pkgName, bundleStats, 0, 0);
     service->GetUserStorageStats(storageStats);
     service->GetUserStorageStats(userId, storageStats);
     service->GetUserStorageStatsByType(userId, storageStats, type);
-    service->GetCurrentBundleStats(bundleStats);
-    service->GetBundleStats(pkgName, userId, bundleStats, 0);
+    service->GetCurrentBundleStats(bundleStats, 0);
+    service->GetBundleStats(pkgName, userId, bundleStats, 0, 0);
     service->GetBundleStatsForIncrease(userId, bundleName, incrementalBackTimes, pkgFileSizes, incPkgFileSizes);
     DelayedSingleton<BundleMgrConnector>::GetInstance()->ResetBundleMgrProxy();
     return true;
