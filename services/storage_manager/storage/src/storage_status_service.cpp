@@ -79,16 +79,13 @@ void GetMediaTypeAndSize(const std::shared_ptr<DataShare::DataShareResultSet> &r
         }
 
         if (mediatype == MEDIA_TYPE_IMAGE || mediatype == thumbnailType) {
-            LOGE("media_type: IMAGE, size: %{public}lld", static_cast<long long>(size));
             storageStats.image_ += size;
         } else if (mediatype == MEDIA_TYPE_AUDIO) {
-            LOGE("media_type: AUDIO, size: %{public}lld", static_cast<long long>(size));
             storageStats.audio_ = size;
         } else if (mediatype == MEDIA_TYPE_VIDEO) {
-            LOGE("media_type: VIDEO, size: %{public}lld", static_cast<long long>(size));
             storageStats.video_ = size;
         } else {
-            LOGE("unsupprted media_type: %{public}d", mediatype);
+            LOGD("unsupprted media_type: %{public}d", mediatype);
         }
     }
 }
