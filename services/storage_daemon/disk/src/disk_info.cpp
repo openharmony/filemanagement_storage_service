@@ -228,8 +228,8 @@ int DiskInfo::ReadPartition()
 
 bool DiskInfo::CreateMBRVolume(int32_t type, dev_t dev)
 {
-    // FAT16 || NTFS/EXFAT || W95 FAT32 || W95 FAT32 || W95 FAT16 || EXT 2/3/4
-    if (type == 0x06 || type == 0x07 || type == 0x0b || type == 0x0c || type == 0x0e || type == 0x83) {
+    // FAT16 || NTFS/EXFAT || W95 FAT32 || W95 FAT32 || W95 FAT16 || EFI FAT32 || EXT 2/3/4
+    if (type == 0x06 || type == 0x07 || type == 0x0b || type == 0x0c || type == 0x0e || type == 0x1b || type == 0x83) {
         if (CreateVolume(dev) == E_OK) {
             return true;
         }
@@ -310,6 +310,8 @@ void DiskInfo::ProcessPartition(std::vector<std::string>::iterator &it, const st
         int32_t type = std::stoi("0x0" + *it, 0, 16);
         if (!CreateMBRVolume(type, partitionDev)) {
             LOGE("Create MBR Volume failed");
+        } else {
+            foundPart = true;
         }
         foundPart = true;
     } else if (table == Table::GPT) {
