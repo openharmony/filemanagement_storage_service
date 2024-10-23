@@ -259,10 +259,12 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
     }
 
-    LOGE("StorageStatusService::GetUserStorageStats success for userId=%{public}d, totalSize=%{public}" PRId64
-        ", appSize=%{public}" PRId64 ", videoSize=%{public}" PRId64 ", audioSize=%{public}" PRId64
-        ", imageSize=%{public}" PRId64 ", fileSize=%{public}" PRId64, userId, storageStats.total_, storageStats.app_,
-        storageStats.video_, storageStats.audio_, storageStats.image_, storageStats.file_);
+    LOGE("StorageStatusService::GetUserStorageStats success for userId=%{public}d, "
+        "totalSize=%{public}lld, appSize=%{public}lld, videoSize=%{public}lld, audioSize=%{public}lld, "
+        "imageSize=%{public}lld, fileSize=%{public}lld",
+        userId, static_cast<long long>(storageStats.total_), static_cast<long long>(storageStats.app_),
+        static_cast<long long>(storageStats.video_), static_cast<long long>(storageStats.audio_),
+        static_cast<long long>(storageStats.image_), static_cast<long long>(storageStats.file_));
     return err;
 }
 
@@ -333,8 +335,9 @@ int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t
     pkgStats.cacheSize_ = bundleStats[CACHE];
     pkgStats.dataSize_ = bundleStats[LOCAL] + bundleStats[DISTRIBUTED] + bundleStats[DATABASE];
     LOGE("StorageStatusService::GetBundleStats success for pkgName=%{public}s, userId=%{public}d, appIndex=%{public}d"
-        ", appSize=%{public}" PRId64 ", cacheSize=%{public}" PRId64 ", dataSize=%{public}" PRId64, pkgName.c_str(),
-        userId, appIndex, pkgStats.appSize_, pkgStats.cacheSize_, pkgStats.dataSize_);
+        ", appSize=%{public}lld, cacheSize=%{public}lld, dataSize=%{public}lld",
+        pkgName.c_str(), userId, appIndex, static_cast<long long>(pkgStats.appSize_),
+        static_cast<long long>(pkgStats.cacheSize_), static_cast<long long>(pkgStats.dataSize_));
     return E_OK;
 }
 
