@@ -105,6 +105,19 @@ void MtpDeviceMonitor::MountMtpDevice(const std::vector<MtpDeviceInfo> &monitorD
             LOGI("MountMtpDevice: mtp device has mounted.");
             continue;
         }
+
+        bool isEjected = false;
+        for (auto ejectDev: hasEjectedDevices_) {
+            if (device.id == ejectDev.id) {
+                LOGI("Device %{public}s has been ejected", (device.id).c_str());
+                isEjected = true;
+                break;
+            }
+        }
+        if (isEjected) {
+            continue;
+        }
+
         bool isInvalidDev = false;
         for (auto inDev : invalidMtpDevices_) {
             if ((device.vendorId == inDev.vendorId) && (device.productId == inDev.productId) &&
@@ -149,12 +162,24 @@ void MtpDeviceMonitor::UmountAllMtpDevice()
     }
     lastestMtpDevList_.clear();
     invalidMtpDevices_.clear();
+    hasEjectedDevices_.clear();
 }
 
 void MtpDeviceMonitor::CheckAndUmountRemovedMtpDevice()
 {
     LOGI("Start check and umount removed mtp devices, lastestMtpDevList size=%{public}zu", lastestMtpDevList_.size());
     std::lock_guard<std::mutex> lock(listMutex_);
+
+    for (auto it = hasEjectedDevices_.begin(); it != hasEjectedDevices_.end();) {
+        int res = LIBMTP_Check_Specific_Device(it->busLocation, it->devNum);
+        if (res <= 0) {
+            LOGI("Device %{public}s has removed by force", (it->id).c_str());
+            it = hasEjectedDevices_.erase(it);
+        } else {
+            it++;
+        }
+    }
+
     for (auto iter = lastestMtpDevList_.begin(); iter != lastestMtpDevList_.end();) {
         int res = LIBMTP_Check_Specific_Device(iter->busLocation, iter->devNum);
         LOGI("Check mtp device state result=%{public}d, devNum=%{public}d, busLocation=%{public}d.", res,
@@ -203,6 +228,7 @@ int32_t MtpDeviceMonitor::Umount(const std::string &id)
         }
         int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->UmountDevice(*iter, true);
         if (ret == E_OK) {
+            hasEjectedDevices_.push_back(*iter);
             lastestMtpDevList_.erase(iter);
         } else {
             LOGE("Umount mtp device failed, path=%{public}s", (iter->path).c_str());
