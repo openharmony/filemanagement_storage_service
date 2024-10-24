@@ -823,12 +823,12 @@ int32_t MountManager::DeleteSceneDir(int32_t userId)
 {
     std::string path = SANDBOX_ROOT_PATH + to_string(userId) + "/" + SCENE_BOARD_BUNDLE_NAME + PUBLIC_DIR_SANDBOX_PATH;
     if (rmdir(path.c_str())) {
-        LOGE("failed to rm dir %{public}s, errno &{public}d", path.c_str(), errno);
+        LOGE("failed to rm dir %{public}s, errno %{public}d", path.c_str(), errno);
         return false;
     }
     path = SANDBOX_ROOT_PATH + to_string(userId) + "/" + SCENE_BOARD_BUNDLE_NAME + STORAGE_USERS_PATH;
     if (rmdir(path.c_str())) {
-        LOGE("failed to rm dir %{public}s, errno &{public}d", path.c_str(), errno);
+        LOGE("failed to rm dir %{public}s, errno %{public}d", path.c_str(), errno);
         return false;
     }
     return E_OK;
