@@ -56,7 +56,7 @@ void OpenSubFile(const std::string &path, std::vector<std::string>  &dirInfo);
 void DelTemp(const std::string &path);
 bool IsTempFolder(const std::string &path, const std::string &sub);
 bool DeleteFile(const std::string &path);
-std::vector<std::string> Split(std::string str, std::string pattern);
+std::vector<std::string> Split(std::string str, const std::string &pattern);
 bool IsPathMounted(std::string &path);
 bool CreateFolder(const std::string &path);
 bool DelFolder(const std::string &path);

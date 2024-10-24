@@ -553,14 +553,13 @@ void ChownRecursion(const std::string &dir, uid_t uid, gid_t gid)
     }
 }
 
-std::vector<std::string> Split(std::string str, std::string pattern)
+std::vector<std::string> Split(std::string str, const std::string &pattern)
 {
-    int32_t pos;
     std::vector<std::string> result;
     str += pattern;
-    int32_t size = str.size();
-    for (int32_t i = 0; i < size; i++) {
-        pos = str.find(pattern, i);
+    size_t size = str.size();
+    for (size_t i = 0; i < size; i++) {
+        size_t pos = str.find(pattern, i);
         if (pos < size) {
             std::string s = str.substr(i, pos - i);
             result.push_back(s);
@@ -612,12 +611,12 @@ bool IsTempFolder(const std::string &path, const std::string &sub)
 void DelTemp(const std::string &path)
 {
     DIR *dir;
-    struct dirent *dirinfo;
     if (!IsDir(path)) {
         return;
     }
     if ((dir = opendir(path.c_str())) != NULL) {
         {
+            struct dirent *dirinfo;
             while ((dirinfo = readdir(dir)) != NULL) {
                 if (strcmp(dirinfo->d_name, ".") == 0 || strcmp(dirinfo->d_name, "..") == 0) {
                     continue;
