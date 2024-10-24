@@ -19,10 +19,12 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "string_ex.h"
+#include "utils/storage_xcollie.h"
 
 namespace OHOS {
 namespace StorageDaemon {
 using namespace std;
+const unsigned int LOCAL_TIME_OUT_SECONDS = 10;
 
 StorageDaemonStub::StorageDaemonStub()
 {
@@ -425,8 +427,9 @@ int32_t StorageDaemonStub::HandleGenerateUserKeys(MessageParcel &data, MessagePa
 {
     uint32_t userId = data.ReadUint32();
     uint32_t flags = data.ReadUint32();
-
+    int timerId = StorageXCollie::SetTimer("storage:GenerateUserKeys", LOCAL_TIME_OUT_SECONDS);
     int err = GenerateUserKeys(userId, flags);
+    StorageXCollie::CancelTimer(timerId);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
@@ -437,8 +440,9 @@ int32_t StorageDaemonStub::HandleGenerateUserKeys(MessageParcel &data, MessagePa
 int32_t StorageDaemonStub::HandleDeleteUserKeys(MessageParcel &data, MessageParcel &reply)
 {
     uint32_t userId = data.ReadUint32();
-
+    int timerId = StorageXCollie::SetTimer("storage:DeleteUserKeys", LOCAL_TIME_OUT_SECONDS);
     int err = DeleteUserKeys(userId);
+    StorageXCollie::CancelTimer(timerId);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
@@ -458,7 +462,9 @@ int32_t StorageDaemonStub::HandleUpdateUserAuth(MessageParcel &data, MessageParc
     data.ReadUInt8Vector(&oldSecret);
     data.ReadUInt8Vector(&newSecret);
 
+    int timerId = StorageXCollie::SetTimer("storage:UpdateUserAuth", LOCAL_TIME_OUT_SECONDS);
     int err = UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
+    StorageXCollie::CancelTimer(timerId);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
@@ -500,7 +506,9 @@ int32_t StorageDaemonStub::HandleActiveUserKey(MessageParcel &data, MessageParce
     data.ReadUInt8Vector(&token);
     data.ReadUInt8Vector(&secret);
 
+    int timerId = StorageXCollie::SetTimer("storage:ActiveUserKey", LOCAL_TIME_OUT_SECONDS);
     int err = ActiveUserKey(userId, token, secret);
+    StorageXCollie::CancelTimer(timerId);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
@@ -512,7 +520,9 @@ int32_t StorageDaemonStub::HandleInactiveUserKey(MessageParcel &data, MessagePar
 {
     uint32_t userId = data.ReadUint32();
 
+    int timerId = StorageXCollie::SetTimer("storage:InactiveUserKey", LOCAL_TIME_OUT_SECONDS);
     int err = InactiveUserKey(userId);
+    StorageXCollie::CancelTimer(timerId);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
@@ -524,7 +534,9 @@ int32_t StorageDaemonStub::HandleLockUserScreen(MessageParcel &data, MessageParc
 {
     uint32_t userId = data.ReadUint32();
 
+    int timerId = StorageXCollie::SetTimer("storage:LockUserScreen", LOCAL_TIME_OUT_SECONDS);
     int err = LockUserScreen(userId);
+    StorageXCollie::CancelTimer(timerId);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
@@ -541,7 +553,9 @@ int32_t StorageDaemonStub::HandleUnlockUserScreen(MessageParcel &data, MessagePa
     data.ReadUInt8Vector(&token);
     data.ReadUInt8Vector(&secret);
 
+    int timerId = StorageXCollie::SetTimer("storage:UnlockUserScreen", LOCAL_TIME_OUT_SECONDS);
     int err = UnlockUserScreen(userId, token, secret);
+    StorageXCollie::CancelTimer(timerId);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
@@ -553,7 +567,9 @@ int32_t StorageDaemonStub::HandleGetLockScreenStatus(MessageParcel &data, Messag
 {
     uint32_t userId = data.ReadUint32();
     bool lockScreenStatus = false;
+    int timerId = StorageXCollie::SetTimer("storage:GetLockScreenStatus", LOCAL_TIME_OUT_SECONDS);
     int err = GetLockScreenStatus(userId, lockScreenStatus);
+    StorageXCollie::CancelTimer(timerId);
     if (!reply.WriteBool(lockScreenStatus)) {
         return E_WRITE_REPLY_ERR;
     }
@@ -569,7 +585,9 @@ int32_t StorageDaemonStub::HandleGenerateAppkey(MessageParcel &data, MessageParc
     uint32_t userId = data.ReadUint32();
     uint32_t hashId = data.ReadUint32();
     std::string keyId;
+    int timerId = StorageXCollie::SetTimer("storage:GenerateAppkey", LOCAL_TIME_OUT_SECONDS);
     int err = GenerateAppkey(userId, hashId, keyId);
+    StorageXCollie::CancelTimer(timerId);
     if (!reply.WriteString(keyId)) {
         return E_WRITE_REPLY_ERR;
     }
@@ -584,7 +602,9 @@ int32_t StorageDaemonStub::HandleDeleteAppkey(MessageParcel &data, MessageParcel
 {
     uint32_t userId = data.ReadUint32();
     std::string keyId = data.ReadString();
+    int timerId = StorageXCollie::SetTimer("storage:DeleteAppkey", LOCAL_TIME_OUT_SECONDS);
     int err = DeleteAppkey(userId, keyId);
+    StorageXCollie::CancelTimer(timerId);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
@@ -624,7 +644,9 @@ int32_t StorageDaemonStub::HandleSetRecoverKey(MessageParcel &data, MessageParce
 int32_t StorageDaemonStub::HandleUpdateKeyContext(MessageParcel &data, MessageParcel &reply)
 {
     uint32_t userId = data.ReadUint32();
+    int timerId = StorageXCollie::SetTimer("storage:UpdateKeyContext", LOCAL_TIME_OUT_SECONDS);
     int err = UpdateKeyContext(userId);
+    StorageXCollie::CancelTimer(timerId);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
@@ -778,7 +800,9 @@ int32_t StorageDaemonStub::HandleGetFileEncryptStatus(MessageParcel &data, Messa
     uint32_t userId = data.ReadUint32();
     bool needCheckDirMount = data.ReadBool();
     bool isEncrypted = true;
+    int timerId = StorageXCollie::SetTimer("storage:GetFileEncryptStatus", LOCAL_TIME_OUT_SECONDS);
     int err = GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
+    StorageXCollie::CancelTimer(timerId);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
