@@ -27,10 +27,12 @@ bool FileUtilFuzzTest(const uint8_t *data, size_t size)
     StorageManager::VolumeExternal volumeexternal;
     int32_t fsType = *(reinterpret_cast<const int32_t *>(data));
     std::string metaData(reinterpret_cast<const char *>(data), size);
+    volumeexternal.SetFlags(fsType);
     volumeexternal.SetFsType(fsType);
     volumeexternal.SetFsUuid(metaData);
     volumeexternal.SetPath(metaData);
     volumeexternal.SetDescription(metaData);
+    volumeexternal.GetFlags();
     volumeexternal.GetFsType();
     volumeexternal.GetUuid();
     volumeexternal.GetPath();
