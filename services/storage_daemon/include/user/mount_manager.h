@@ -89,6 +89,7 @@ public:
         const std::string &networkId, const std::string &deviceId);
     int32_t UMountAllPath(int32_t userId, std::list<std::string> &mountFailList);
     int32_t UMountByList(std::list<std::string> &list, std::list<std::string> &mountFailList);
+    int32_t DeleteSceneDir(int32_t userId);
     void SetCloudState(bool active);
     int32_t RestoreconSystemServiceDirs(int32_t userId);
     int32_t FindMountPointsToMap(std::map<std::string, std::list<std::string>> &mountMap, int32_t userId);
