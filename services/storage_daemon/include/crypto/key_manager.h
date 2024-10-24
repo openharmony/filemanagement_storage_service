@@ -148,8 +148,8 @@ private:
     bool IsUeceSupport();
     int IsUeceSupportWithErrno();
     bool IsUserCeDecrypt(uint32_t userId);
-    bool UnlockEceSece(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret, int &ret);
-    bool UnlockUece(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret, int &ret);
+    int32_t UnlockEceSece(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret);
+    int32_t UnlockUece(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret);
     void CheckAndClearTokenInfo(uint32_t user);
     int CheckUserPinProtect(unsigned int userId, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret);
     bool IsWorkDirExist(std::string type, int32_t userId);

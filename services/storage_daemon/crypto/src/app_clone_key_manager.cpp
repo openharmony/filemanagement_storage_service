@@ -18,11 +18,13 @@
 
 #include "app_clone_key_manager.h"
 #include "crypto/key_manager.h"
+#include "utils/storage_radar.h"
 #include "utils/string_utils.h"
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 
+using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
 static const std::string NEED_RESTORE_PATH = "/data/service/el1/public/storage_daemon/sd/el1/%d/latest/need_restore";
@@ -34,26 +36,32 @@ int AppCloneKeyManager::ActiveAppCloneUserKey()
         std::string keyPath = StringPrintf(NEED_RESTORE_PATH.c_str(), userId);
         std::error_code errCode;
         if (!std::filesystem::exists(keyPath, errCode)) {
-            LOGE("restore path do not exist, errCode %{public}d", errCode.value());
+            LOGD("restore path do not exist, errCode %{public}d", errCode.value());
             continue;
         }
-        if (KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL2_KEY, {}, {}) != 0) {
-            LOGE("Active app clone user %{public}u el2 failed", userId);
-            return -EFAULT;
+        int ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL2_KEY, {}, {});
+        if (ret != E_OK) {
+            LOGE("Active app clone user %{public}u el2 failed, ret=%{public}d.", userId, ret);
+            StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveAppCloneUserKey", userId, ret, "EL2");
+            return ret;
         }
-        if (KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL3_KEY, {}, {}) != 0) {
-            LOGE("Active app clone user %{public}u el3 failed", userId);
-            return -EFAULT;
+        ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL3_KEY, {}, {});
+        if (ret != E_OK) {
+            LOGE("Active app clone user %{public}u el3 failed, ret=%{public}d.", userId, ret);
+            StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveAppCloneUserKey", userId, ret, "EL3");
+            return ret;
         }
-        if (KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL4_KEY, {}, {}) != 0) {
-            LOGE("Active app clone user %{public}u el4 failed", userId);
-            return -EFAULT;
+        ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL4_KEY, {}, {});
+        if (ret != E_OK) {
+            LOGE("Active app clone user %{public}u el4 failed, ret=%{public}d.", userId, ret);
+            StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveAppCloneUserKey", userId, ret, "EL4");
+            return ret;
         }
         LOGI("ActiveAppCloneUserKey::userkey %{public}u activated", userId);
-        return 0;
+        return E_OK;
     }
-    LOGE("ActiveAppCloneUserKey::Did not find app clone user in valid range");
-    return -EFAULT;
+    LOGE("ActiveAppCloneUserKey::Did not find app clone userId in valid range = {219 ~ 239}.");
+    return E_NOT_SUPPORT;
 }
 } // namespace StorageDaemon
 } // namespace OHOS

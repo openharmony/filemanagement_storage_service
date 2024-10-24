@@ -21,6 +21,35 @@
 
 namespace OHOS {
 namespace StorageService {
+void StorageRadar::ReportActiveUserKey(const std::string &funcName, uint32_t userId, int ret,
+    const std::string &keyElxLevel)
+{
+    RadarParameter param = {
+        .orgPkg = "account_mgr",
+        .userId = userId,
+        .funcName = funcName,
+        .bizScene = BizScene::USER_KEY_ENCRYPTION,
+        .bizStage = BizStage::BIZ_STAGE_ACTIVE_USER_KEY,
+        .keyElxLevel = keyElxLevel,
+        .errorCode = ret
+    };
+    StorageRadar::GetInstance().RecordFuctionResult(param);
+}
+
+void StorageRadar::ReportGetStorageStatus(const std::string &funcName, uint32_t userId, int ret,
+    const std::string &orgPkg)
+{
+    RadarParameter param = {
+        .orgPkg = orgPkg,
+        .userId = userId,
+        .funcName = funcName,
+        .bizScene = BizScene::SPACE_STATISTICS,
+        .bizStage = BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS,
+        .keyElxLevel = "NA",
+        .errorCode = ret
+    };
+    StorageRadar::GetInstance().RecordFuctionResult(param);
+}
 bool StorageRadar::RecordKillProcessResult(std::string processName, int32_t errcode)
 {
     int32_t res = E_OK;

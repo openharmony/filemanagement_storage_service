@@ -857,17 +857,8 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepareElX(uint32_t userId,
 #ifdef USER_CRYPTO_MANAGER
     int ret = ActiveUserKeyAndPrepare(userId, EL3_KEY, token, secret);
     if (ret != E_OK) {
-        LOGE("ActiveUserKey fail, userId %{public}u, type %{public}u", userId, EL3_KEY);
-        RadarParameter parameterRes = {
-            .orgPkg = DEFAULT_ORGPKGNAME,
-            .userId = userId,
-            .funcName = "ActiveUserKeyAndPrepare",
-            .bizScene = BizScene::USER_KEY_ENCRYPTION,
-            .bizStage = BizStage::BIZ_STAGE_ACTIVE_USER_KEY,
-            .keyElxLevel = "EL3",
-            .errorCode = ret
-        };
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
+        LOGE("ActiveUserKeyAndPrepare failed, userId %{public}u, type %{public}u", userId, EL3_KEY);
+        StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveUserKeyAndPrepare", userId, ret, "EL3");
         AuditLog storageAuditLog = { false, "FAILED TO ActiveUserKeyAndPrepare", "ADD", "ActiveUserKeyAndPrepare", 1,
             "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
@@ -875,17 +866,8 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepareElX(uint32_t userId,
     }
     ret = ActiveUserKeyAndPrepare(userId, EL4_KEY, token, secret);
     if (ret != E_OK) {
-        LOGE("ActiveUserKey fail, userId %{public}u, type %{public}u", userId, EL4_KEY);
-        RadarParameter parameterRes = {
-            .orgPkg = DEFAULT_ORGPKGNAME,
-            .userId = userId,
-            .funcName = "ActiveUserKeyAndPrepare",
-            .bizScene = BizScene::USER_KEY_ENCRYPTION,
-            .bizStage = BizStage::BIZ_STAGE_ACTIVE_USER_KEY,
-            .keyElxLevel = "EL4",
-            .errorCode = ret
-        };
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
+        LOGE("ActiveUserKeyAndPrepare failed, userId %{public}u, type %{public}u", userId, EL4_KEY);
+        StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveUserKeyAndPrepare", userId, ret, "EL4");
         AuditLog storageAuditLog = { false, "FAILED TO ActiveUserKeyAndPrepare", "ADD", "ActiveUserKeyAndPrepare", 1,
             "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
@@ -893,17 +875,8 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepareElX(uint32_t userId,
     }
     ret = ActiveUserKeyAndPrepare(userId, EL5_KEY, token, secret);
     if (ret != E_OK) {
-        LOGE("ActiveUserKey fail, userId %{public}u, type %{public}u", userId, EL5_KEY);
-        RadarParameter parameterRes = {
-            .orgPkg = DEFAULT_ORGPKGNAME,
-            .userId = userId,
-            .funcName = "ActiveUserKeyAndPrepare",
-            .bizScene = BizScene::USER_KEY_ENCRYPTION,
-            .bizStage = BizStage::BIZ_STAGE_ACTIVE_USER_KEY,
-            .keyElxLevel = "EL5",
-            .errorCode = ret
-        };
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
+        LOGE("ActiveUserKeyAndPrepare failed, userId %{public}u, type %{public}u", userId, EL5_KEY);
+        StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveUserKeyAndPrepare", userId, ret, "EL5");
         AuditLog storageAuditLog = { false, "FAILED TO ActiveUserKeyAndPrepare", "ADD", "ActiveUserKeyAndPrepare", 1,
             "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
@@ -917,10 +890,11 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
                                      const std::vector<uint8_t> &token,
                                      const std::vector<uint8_t> &secret)
 {
+    int ret = E_OK;
     bool updateFlag = false;
 #ifdef USER_CRYPTO_MANAGER
     LOGI("userId %{public}u, tok empty %{public}d sec empty %{public}d", userId, token.empty(), secret.empty());
-    int ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL2_KEY, token, secret);
+    ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL2_KEY, token, secret);
     if (ret != E_OK) {
 #ifdef USER_CRYPTO_MIGRATE_KEY
         LOGI("Migrate usrId %{public}u, Emp_tok %{public}d Emp_sec %{public}d", userId, token.empty(), secret.empty());
@@ -933,52 +907,30 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
         if (ret != E_OK) {
             LOGE("ActiveUserKey fail, userId %{public}u, type %{public}u, tok empty %{public}d sec empty %{public}d",
                  userId, EL2_KEY, token.empty(), secret.empty());
-            RadarParameter parameterRes = {
-                .orgPkg = DEFAULT_ORGPKGNAME,
-                .userId = userId,
-                .funcName = "PrepareUserDirsAndUpdateUserAuth",
-                .bizScene = BizScene::USER_KEY_ENCRYPTION,
-                .bizStage = BizStage::BIZ_STAGE_ACTIVE_USER_KEY,
-                .keyElxLevel = "EL2",
-                .errorCode = ret
-            };
-            StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
+            if (!token.empty() && !secret.empty()) {
+                StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveUserKey", userId, ret, "EL2");
+            }
             return E_ACTIVE_EL2_FAILED;
         }
     }
     ret = ActiveUserKeyAndPrepareElX(userId, token, secret);
     if (ret != E_OK) {
-        LOGE("ActiveUserKey fail, userId %{public}u, type %{public}u", userId, EL4_KEY);
+        LOGE("ActiveUserKeyAndPrepare failed, userId %{public}u.", userId);
         return ret;
     }
     ret = KeyManager::GetInstance()->UnlockUserAppKeys(userId, true);
     if (ret != E_OK) {
-        LOGE("failed to delete appkey2");
-        RadarParameter parameterRes = {
-            .orgPkg = DEFAULT_ORGPKGNAME,
-            .userId = userId,
-            .funcName = "UnlockUserAppKeys",
-            .bizScene = BizScene::USER_KEY_ENCRYPTION,
-            .bizStage = BizStage::BIZ_STAGE_ACTIVE_USER_KEY,
-            .keyElxLevel = "EL2",
-            .errorCode = ret
-        };
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
-        return -EFAULT;
+        LOGE("UnlockUserAppKeys failed, userId %{public}u.", userId);
+        StorageRadar::ReportActiveUserKey("ActiveUserKey::UnlockUserAppKeys", userId, ret, "EL2");
+        return E_UNLOCK_APP_KEY2_FAILED;
     }
-    std::thread([this, userId]() { RestoreconElX(userId); }).detach();
+#endif
     if (updateFlag) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
     }
+    std::thread([this, userId]() { RestoreconElX(userId); }).detach();
     std::thread([this]() { ActiveAppCloneUserKey(); }).detach();
     return ret;
-#else
-    std::thread([this, userId]() { RestoreconElX(userId); }).detach();
-    if (updateFlag) {
-        UserManager::GetInstance()->CreateBundleDataDir(userId);
-    }
-    return E_OK;
-#endif
 }
 
 int32_t StorageDaemon::RestoreconElX(uint32_t userId)
@@ -1064,14 +1016,14 @@ int32_t StorageDaemon::UnlockUserScreen(uint32_t userId,
 #ifdef USER_CRYPTO_MANAGER
     int32_t ret = KeyManager::GetInstance()->UnlockUserScreen(userId, token, secret);
     if (ret != E_OK) {
-        LOGE("UnlockUserScreen failed, please check");
+        LOGE("UnlockUserScreen failed, userId=%{public}u, ret=%{public}d", userId, ret);
         RadarParameter parameterRes = {
             .orgPkg = DEFAULT_ORGPKGNAME,
             .userId = userId,
             .funcName = "UnlockUserScreen",
             .bizScene = BizScene::USER_KEY_ENCRYPTION,
             .bizStage = BizStage::BIZ_STAGE_UNLOCK_USER_SCREEN,
-            .keyElxLevel = "EL1",
+            .keyElxLevel = (ret == E_UNLOCK_APP_KEY2_FAILED)? "EL5" : "EL3/EL4",
             .errorCode = ret
         };
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
@@ -1328,7 +1280,7 @@ void StorageDaemon::ActiveAppCloneUserKey()
 {
 #ifdef USER_CRYPTO_MANAGER
     auto ret = AppCloneKeyManager::GetInstance()->ActiveAppCloneUserKey();
-    if (ret != E_OK) {
+    if (ret != E_OK && (ret != E_NOT_SUPPORT)) {
         LOGE("ActiveAppCloneUserKey failed, errNo %{public}d", ret);
     }
 #endif
