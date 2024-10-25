@@ -77,7 +77,7 @@ void GetMediaTypeAndSize(const std::shared_ptr<DataShare::DataShareResultSet> &r
             LOGE("get size column index or long value err.");
             continue;
         }
-
+        LOGI("media_type: %{public}d, size: %{public}lld", mediatype, static_cast<long long>(size));
         if (mediatype == MEDIA_TYPE_IMAGE || mediatype == thumbnailType) {
             storageStats.image_ += size;
         } else if (mediatype == MEDIA_TYPE_AUDIO) {
@@ -94,7 +94,7 @@ void GetMediaTypeAndSize(const std::shared_ptr<DataShare::DataShareResultSet> &r
 int32_t GetMediaStorageStats(StorageStats &storageStats)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
-    LOGD("GetMediaStorageStats start");
+    LOGI("GetMediaStorageStats start");
 #ifdef STORAGE_SERVICE_GRAPHIC
     auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (sam == nullptr) {
@@ -134,20 +134,20 @@ int32_t GetMediaStorageStats(StorageStats &storageStats)
     GetMediaTypeAndSize(queryResultSet, storageStats);
     dataShareHelper->Release();
 #endif
-    LOGD("GetMediaStorageStats end");
+    LOGI("GetMediaStorageStats end");
     return E_OK;
 }
 
 int32_t GetFileStorageStats(int32_t userId, StorageStats &storageStats)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
-    LOGD("GetFileStorageStats start");
+    LOGI("GetFileStorageStats start");
     int32_t err = E_OK;
     int32_t prjId = userId * USER_ID_BASE + UID_FILE_MANAGER;
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->GetOccupiedSpace(StorageDaemon::USRID, prjId, storageStats.file_);
-    LOGD("GetFileStorageStats end");
+    LOGI("GetFileStorageStats end");
     return err;
 }
 
@@ -171,7 +171,7 @@ int32_t StorageStatusService::GetBundleStats(const std::string &pkgName,
     BundleStats &bundleStats, int32_t appIndex)
 {
     int userId = GetCurrentUserId();
-
+    LOGD("StorageStatusService::userId is:%d, appIndex is: %d", userId, appIndex);
     return GetBundleStats(pkgName, userId, bundleStats, appIndex);
 }
 
@@ -197,30 +197,16 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
     int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetTotalSize(totalSize);
     if (err != E_OK) {
         LOGE("StorageStatusService::GetUserStorageStats getTotalSize failed");
-        RadarParameter parameterRes = {.orgPkg = DEFAULT_ORGPKGNAME,
-                                       .userId = userId,
-                                       .funcName = "GetTotalSize",
-                                       .bizScene = BizScene::SPACE_STATISTICS,
-                                       .bizStage = BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS,
-                                       .keyElxLevel = "EL1",
-                                       .errorCode = err};
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
+        StorageRadar::ReportGetStorageStatus("GetUserStorageStats::GetTotalSize", userId, ret, GetCallingPkgName());
         return err;
     }
     // appSize
-    LOGD("StorageStatusService::GetUserStorageStats userId is %{public}d", userId);
+    LOGI("StorageStatusService::GetUserStorageStats userId is %{public}d", userId);
     int64_t appSize = 0;
     err = GetAppSize(userId, appSize);
     if (err != E_OK) {
         LOGE("StorageStatusService::GetUserStorageStats getAppSize failed");
-        RadarParameter parameterRes = {.orgPkg = DEFAULT_ORGPKGNAME,
-                                       .userId = userId,
-                                       .funcName = "GetAppSize",
-                                       .bizScene = BizScene::SPACE_STATISTICS,
-                                       .bizStage = BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS,
-                                       .keyElxLevel = "EL1",
-                                       .errorCode = err};
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
+        StorageRadar::ReportGetStorageStatus("GetUserStorageStats::GetAppSize", userId, ret, GetCallingPkgName());
         return err;
     }
 
@@ -230,37 +216,18 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
     // mediaSize
     err = GetMediaStorageStats(storageStats);
     if (err != E_OK) {
-        LOGE("StorageStatusService::GetUserStorageStats getMedia failed");
-        RadarParameter parameterRes = {.orgPkg = DEFAULT_ORGPKGNAME,
-                                       .userId = userId,
-                                       .funcName = "GetMediaStorageStats",
-                                       .bizScene = BizScene::SPACE_STATISTICS,
-                                       .bizStage = BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS,
-                                       .keyElxLevel = "EL1",
-                                       .errorCode = err};
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
+        LOGE("StorageStatusService::GetUserStorageStats GetMediaStorageStats failed");
+        StorageRadar::ReportGetStorageStatus("GetUserStorageStats::GetMediaStorageStats", userId, ret,
+            GetCallingPkgName());
         return err;
     }
     // fileSize
     err = GetFileStorageStats(userId, storageStats);
     if (err != E_OK) {
         LOGE("StorageStatusService::GetUserStorageStats GetFileStorageStats failed");
-        RadarParameter parameterRes = {.orgPkg = DEFAULT_ORGPKGNAME,
-                                       .userId = userId,
-                                       .funcName = "GetFileStorageStats",
-                                       .bizScene = BizScene::SPACE_STATISTICS,
-                                       .bizStage = BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS,
-                                       .keyElxLevel = "EL1",
-                                       .errorCode = err};
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
+        StorageRadar::ReportGetStorageStatus("GetUserStorageStats::GetFileStorageStats", userId, ret,
+            GetCallingPkgName());
     }
-
-    LOGE("StorageStatusService::GetUserStorageStats success for userId=%{public}d, "
-        "totalSize=%{public}lld, appSize=%{public}lld, videoSize=%{public}lld, audioSize=%{public}lld, "
-        "imageSize=%{public}lld, fileSize=%{public}lld",
-        userId, static_cast<long long>(storageStats.total_), static_cast<long long>(storageStats.app_),
-        static_cast<long long>(storageStats.video_), static_cast<long long>(storageStats.audio_),
-        static_cast<long long>(storageStats.image_), static_cast<long long>(storageStats.file_));
     return err;
 }
 
@@ -279,7 +246,7 @@ int32_t StorageStatusService::GetBundleStatsForIncrease(uint32_t userId, const s
 int32_t StorageStatusService::GetCurrentBundleStats(BundleStats &bundleStats)
 {
     int userId = GetCurrentUserId();
-
+    LOGI("StorageStatusService::userId is: %{public}d", userId);
     std::string pkgName = GetCallingPkgName();
     int32_t ret = GetBundleStats(pkgName, userId, bundleStats, DEFAULT_APP_INDEX);
     if (ret != E_OK) {
@@ -330,17 +297,13 @@ int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t
     pkgStats.appSize_ = bundleStats[APP];
     pkgStats.cacheSize_ = bundleStats[CACHE];
     pkgStats.dataSize_ = bundleStats[LOCAL] + bundleStats[DISTRIBUTED] + bundleStats[DATABASE];
-    LOGE("StorageStatusService::GetBundleStats success for pkgName=%{public}s, userId=%{public}d, appIndex=%{public}d"
-        ", appSize=%{public}lld, cacheSize=%{public}lld, dataSize=%{public}lld",
-        pkgName.c_str(), userId, appIndex, static_cast<long long>(pkgStats.appSize_),
-        static_cast<long long>(pkgStats.cacheSize_), static_cast<long long>(pkgStats.dataSize_));
     return E_OK;
 }
 
 int32_t StorageStatusService::GetAppSize(int32_t userId, int64_t &appSize)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
-    LOGD("StorageStatusService::GetAppSize start");
+    LOGI("StorageStatusService::GetAppSize start");
     auto bundleMgr = DelayedSingleton<BundleMgrConnector>::GetInstance()->GetBundleMgrProxy();
     if (bundleMgr == nullptr) {
         LOGE("StorageStatusService::GetUserStorageStats connect bundlemgr failed");
@@ -358,7 +321,7 @@ int32_t StorageStatusService::GetAppSize(int32_t userId, int64_t &appSize)
     for (uint i = 0; i < bundleStats.size(); i++) {
         appSize += bundleStats[i];
     }
-    LOGD("StorageStatusService::GetAppSize end");
+    LOGI("StorageStatusService::GetAppSize end");
     return E_OK;
 }
 

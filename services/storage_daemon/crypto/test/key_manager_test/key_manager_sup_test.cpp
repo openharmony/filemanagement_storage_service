@@ -384,37 +384,28 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UnlockEceSece_001, TestSize.Level1)
     unsigned int user = 800;
     std::vector<uint8_t> token;
     std::vector<uint8_t> secret;
-    int ret;
     KeyManager::GetInstance()->userEl4Key_.erase(user);
     string keyDir = KeyManager::GetInstance()->GetKeyDirByUserAndType(user, EL4_KEY);
     OHOS::ForceRemoveDirectory(keyDir);
-    EXPECT_EQ(KeyManager::GetInstance()->UnlockEceSece(user, token, secret, ret), false);
-    EXPECT_EQ(ret, 0);
+    EXPECT_EQ(KeyManager::GetInstance()->UnlockEceSece(user, token, secret), E_NON_EXIST);
 
     ASSERT_TRUE(OHOS::ForceCreateDirectory(keyDir));
     EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(false)).WillOnce(Return(false));
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
-    EXPECT_EQ(KeyManager::GetInstance()->UnlockEceSece(user, token, secret, ret), false);
-    EXPECT_EQ(ret, -EFAULT);
+    EXPECT_EQ(KeyManager::GetInstance()->UnlockEceSece(user, token, secret), E_RESTORE_KEY_FAILED);
 
-    ret = 0;
     EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(true));
     EXPECT_CALL(*fscryptKeyMock_, UnlockUserScreen(_, _, _)).WillOnce(Return(false));
-    EXPECT_EQ(KeyManager::GetInstance()->UnlockEceSece(user, token, secret, ret), false);
-    EXPECT_EQ(ret, -EFAULT);
+    EXPECT_EQ(KeyManager::GetInstance()->UnlockEceSece(user, token, secret), E_UNLOCK_SCREEN_FAILED);
 
-    ret = 0;
     EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(true));
     EXPECT_CALL(*fscryptKeyMock_, UnlockUserScreen(_, _, _)).WillOnce(Return(true));
-    EXPECT_EQ(KeyManager::GetInstance()->UnlockEceSece(user, token, secret, ret), true);
-    EXPECT_EQ(ret, 0);
+    EXPECT_EQ(KeyManager::GetInstance()->UnlockEceSece(user, token, secret), E_OK);
 
-    ret = 0;
     EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(false)).WillOnce(Return(true));
     EXPECT_CALL(*fscryptKeyMock_, UnlockUserScreen(_, _, _)).WillOnce(Return(false));
-    EXPECT_EQ(KeyManager::GetInstance()->UnlockEceSece(user, token, secret, ret), false);
-    EXPECT_EQ(ret, -EFAULT);
+    EXPECT_EQ(KeyManager::GetInstance()->UnlockEceSece(user, token, secret), E_UNLOCK_SCREEN_FAILED);
     OHOS::ForceRemoveDirectory(keyDir);
     GTEST_LOG_(INFO) << "KeyManager_UnlockEceSece_001 end";
 }
@@ -524,16 +515,13 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UnlockUece_001, TestSize.Level1)
     unsigned int user = 800;
     std::vector<uint8_t> token;
     std::vector<uint8_t> secret;
-    int ret = 0;
     string keyDir = KeyManager::GetInstance()->GetKeyDirByUserAndType(user, EL5_KEY);
     OHOS::ForceCreateDirectory(keyDir);
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*fscryptKeyMock_, DecryptClassE(_, _, _, _, _)).WillOnce(Return(false));
-    EXPECT_EQ(KeyManager::GetInstance()->UnlockUece(user, token, secret, ret), false);
-    EXPECT_EQ(ret, -EFAULT);
+    EXPECT_EQ(KeyManager::GetInstance()->UnlockUece(user, token, secret), E_UNLOCK_APP_KEY2_FAILED);
 
-    ret = 0;
     EXPECT_CALL(*fscryptKeyMock_, DecryptClassE(_, _, _, _, _)).WillOnce(Return(true));
     if (access(UECE_PATH, F_OK) == 0) {
         #ifdef EL5_FILEKEY_MANAGER
@@ -543,16 +531,13 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UnlockUece_001, TestSize.Level1)
         keyInfo.push_back(make_pair(3, "test3"));
 
         EXPECT_CALL(*el5FilekeyManagerKitMoc_, GetUserAppKey(_, _)).WillOnce(Return(-1));
-        EXPECT_EQ(KeyManager::GetInstance()->UnlockUece(user, token, secret, ret), false);
-        EXPECT_EQ(ret, -EFAULT);
-
-        ret = 0;
+        EXPECT_EQ(KeyManager::GetInstance()->UnlockUece(user, token, secret), E_UNLOCK_APP_KEY2_FAILED);
         EXPECT_CALL(*fscryptKeyMock_, DecryptClassE(_, _, _, _, _)).WillOnce(Return(true));
         EXPECT_CALL(*el5FilekeyManagerKitMoc_, GetUserAppKey(_, _)).WillOnce(Return(0));
         #endif
     }
 
-    EXPECT_EQ(KeyManager::GetInstance()->UnlockUece(user, token, secret, ret), true);
+    EXPECT_EQ(KeyManager::GetInstance()->UnlockUece(user, token, secret), E_OK);
     GTEST_LOG_(INFO) << "KeyManager_UnlockUece_001 end";
 }
 }

@@ -81,6 +81,7 @@ enum class BizStage : int32_t {
     BIZ_STAGE_SET_VOLUME_DESCRIPTION,
     BIZ_STAGE_GET_ALL_VOLUMES,
 };
+
 struct RadarParameter {
     std::string orgPkg;
     int32_t userId;
@@ -90,6 +91,7 @@ struct RadarParameter {
     std::string keyElxLevel;
     int32_t errorCode;
 };
+
 class StorageRadar {
 public:
     static StorageRadar &GetInstance()
@@ -101,6 +103,10 @@ public:
 public:
     bool RecordKillProcessResult(std::string processName, int32_t errcode);
     bool RecordFuctionResult(const RadarParameter &parameterRes);
+    static void ReportActiveUserKey(const std::string &funcName, uint32_t userId, int ret,
+        const std::string &keyElxLevel);
+    static void ReportGetStorageStatus(const std::string &funcName, uint32_t userId, int ret,
+        const std::string &orgPkg);
 
 private:
     StorageRadar() = default;
