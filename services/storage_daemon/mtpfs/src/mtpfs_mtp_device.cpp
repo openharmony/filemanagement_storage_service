@@ -496,8 +496,9 @@ int MtpFsDevice::FileWrite(const std::string &path, const char *buf, size_t size
     }
 
     // all systems clear
-    char *tmp = reinterpret_cast<char *>(buf);
-    int rval = LIBMTP_SendPartialObject(device_, fileToFetch->Id(), offset, reinterpret_cast<unsigned char *>(tmp), size);
+    char *tmp = const_cast<char *>(buf);
+    int rval = LIBMTP_SendPartialObject(device_, fileToFetch->Id(), offset,
+        reinterpret_cast<unsigned char *>(tmp), size);
     if (rval < 0) {
         return -EIO;
     }
