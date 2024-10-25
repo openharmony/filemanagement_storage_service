@@ -47,6 +47,7 @@
         "FreeBSD",
         "file_api",
         "gptfdisk",
+        "hicollie",
         "hilog",
         "hisysevent",
         "hitrace",
