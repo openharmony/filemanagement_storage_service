@@ -740,6 +740,7 @@ int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTo
 int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret)
 #endif
 {
+    std::lock_guard<std::mutex> lock(keyMutex_);
 #ifdef USER_CRYPTO_MIGRATE_KEY
     int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL2_KEY, needGenerateShield);
     if (ret != 0) {
@@ -892,7 +893,6 @@ int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
     if (!KeyCtrlHasFscryptSyspara()) {
         return 0;
     }
-    std::lock_guard<std::mutex> lock(keyMutex_);
     std::shared_ptr<BaseKey> item = GetUserElKey(user, type);
     if (item == nullptr) {
         LOGE("Have not found user %{public}u el key", user);
