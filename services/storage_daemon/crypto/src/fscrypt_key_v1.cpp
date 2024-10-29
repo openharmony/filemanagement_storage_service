@@ -227,7 +227,8 @@ bool FscryptKeyV1::ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId)
     return true;
 }
 
-bool FscryptKeyV1::DecryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status)
+bool FscryptKeyV1::DecryptClassE(const UserAuth &auth, bool &isSupport,
+                                 bool &eBufferStatue, uint32_t user, uint32_t status)
 {
     LOGI("enter");
     KeyBlob eSecretFBE(AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES);
@@ -238,6 +239,7 @@ bool FscryptKeyV1::DecryptClassE(const UserAuth &auth, bool &isSupport, uint32_t
     }
     if (auth.token.IsEmpty() && auth.secret.IsEmpty()) {
         LOGE("Token and secret is invalid, do not deal.");
+        eBufferStatue = eSecretFBE.IsEmpty();
         eSecretFBE.Clear();
         return true;
     }
