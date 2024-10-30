@@ -67,6 +67,7 @@ enum class BizStage : int32_t {
     BIZ_STAGE_UNLOCK_USER_SCREEN,
     BIZ_STAGE_GET_FILE_ENCRYPT_STATUS,
     BIZ_STAGE_UPDATE_KEY_CONTEXT,
+    BIZ_STAGE_INIT_GLOBAL_KEY,
 
     BIZ_STAGE_GET_TOTAL_SIZE = 31,
     BIZ_STAGE_GET_FREE_SIZE,
@@ -107,6 +108,10 @@ public:
         const std::string &keyElxLevel);
     static void ReportGetStorageStatus(const std::string &funcName, uint32_t userId, int ret,
         const std::string &orgPkg);
+    static void ReportVolumeOperation(const std::string &funcName, int ret);
+    static void ReportInitGlobalKey(const std::string &funcName, uint32_t userId, int ret,
+        const std::string &keyElxLevel);
+    static void ReportUserManager(const std::string &funcName, uint32_t userId, int ret, enum BizStage bizStage);
 
 private:
     StorageRadar() = default;
