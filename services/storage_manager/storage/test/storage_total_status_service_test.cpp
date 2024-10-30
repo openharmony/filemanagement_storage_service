@@ -206,7 +206,7 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetBundleStats_0001, test
     int userId = 100;
     string pkgName = "com.test";
     BundleStats bundleStats;
-    int32_t result = service->GetBundleStats(pkgName, userId, bundleStats, 0);
+    int32_t result = service->GetBundleStats(pkgName, userId, bundleStats, 0, 0);
     EXPECT_EQ(result, E_BUNDLEMGR_ERROR);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_GetBundleStats_0001";
 }
