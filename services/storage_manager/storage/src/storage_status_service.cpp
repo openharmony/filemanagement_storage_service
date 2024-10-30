@@ -172,7 +172,8 @@ int32_t StorageStatusService::GetBundleStats(const std::string &pkgName,
 {
     int userId = GetCurrentUserId();
     LOGD("StorageStatusService::userId is:%d, appIndex is: %d", userId, appIndex);
-    return GetBundleStats(pkgName, userId, bundleStats, appIndex);
+    return GetBundleStats(pkgName, userId, bundleStats, appIndex,
+        AppExecFwk::Constants::NoGetBundleStatsFlag::GET_BUNDLE_WITH_ALL_SIZE);
 }
 
 int32_t StorageStatusService::GetUserStorageStats(StorageStats &storageStats)
@@ -248,7 +249,8 @@ int32_t StorageStatusService::GetCurrentBundleStats(BundleStats &bundleStats)
     int userId = GetCurrentUserId();
     LOGI("StorageStatusService::userId is: %{public}d", userId);
     std::string pkgName = GetCallingPkgName();
-    int32_t ret = GetBundleStats(pkgName, userId, bundleStats, DEFAULT_APP_INDEX);
+    int32_t ret = GetBundleStats(pkgName, userId, bundleStats, DEFAULT_APP_INDEX,
+        AppExecFwk::Constants::NoGetBundleStatsFlag::GET_BUNDLE_WITHOUT_CACHE_SIZE);
     if (ret != E_OK) {
         LOGE("storage status service GetBundleStats failed, please check");
         RadarParameter parameterRes = {.orgPkg = DEFAULT_ORGPKGNAME,
@@ -264,7 +266,7 @@ int32_t StorageStatusService::GetCurrentBundleStats(BundleStats &bundleStats)
 }
 
 int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t userId,
-    BundleStats &pkgStats, int32_t appIndex)
+    BundleStats &pkgStats, int32_t appIndex, uint32_t statFlag)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     auto bundleMgr = DelayedSingleton<BundleMgrConnector>::GetInstance()->GetBundleMgrProxy();
@@ -283,7 +285,7 @@ int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t
         return E_USERID_RANGE;
     }
     vector<int64_t> bundleStats;
-    bool res = bundleMgr->GetBundleStats(pkgName, userId, bundleStats, appIndex);
+    bool res = bundleMgr->GetBundleStats(pkgName, userId, bundleStats, appIndex, statFlag);
     if (!res || bundleStats.size() != dataDir.size()) {
         LOGE("StorageStatusService::An error occurred in querying bundle stats.");
         return E_BUNDLEMGR_ERROR;
