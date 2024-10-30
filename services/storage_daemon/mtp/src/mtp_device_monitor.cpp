@@ -167,9 +167,7 @@ void MtpDeviceMonitor::UmountAllMtpDevice()
 
 void MtpDeviceMonitor::CheckAndUmountRemovedMtpDevice()
 {
-    LOGI("Start check and umount removed mtp devices, lastestMtpDevList size=%{public}zu", lastestMtpDevList_.size());
     std::lock_guard<std::mutex> lock(listMutex_);
-
     for (auto it = hasEjectedDevices_.begin(); it != hasEjectedDevices_.end();) {
         int res = LIBMTP_Check_Specific_Device(it->busLocation, it->devNum);
         if (res <= 0) {

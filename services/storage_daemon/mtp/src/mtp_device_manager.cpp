@@ -65,6 +65,8 @@ int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
         "allow_other",
         "-o",
         "default_permissions",
+        "-o",
+        "context=u:object_r:mnt_external_file:s0",
         "--device",
         std::to_string(DEFAULT_DEV_INDEX),
         device.path,
