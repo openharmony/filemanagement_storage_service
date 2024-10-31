@@ -144,6 +144,7 @@ MountManager::MountManager()
                   {"/data/service/el2/%d/hwid_service", MODE_0711, OID_HWID, OID_HWID},
                   {"/data/service/el2/%d/huks_service", MODE_0711, OID_HUKS, OID_HUKS},
                   {"/data/service/el4/%d/huks_service", MODE_0711, OID_HUKS, OID_HUKS},
+                  {"/data/service/el2/%d/asset_service", MODE_0711, OID_ASSET, OID_ASSET},
                   {"/data/service/el2/%d/account", MODE_0711, OID_ACCOUNT, OID_ACCOUNT},
                   {"/data/service/el2/%d/parentcontrol", MODE_0711, OID_PARENT_CONTROL, OID_PARENT_CONTROL},
                   {"/data/service/el2/%d/dlp_credential_service", MODE_0711, OID_DLP_CREDENTIAL, OID_DLP_CREDENTIAL},
