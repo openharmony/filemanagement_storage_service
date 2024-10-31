@@ -1363,6 +1363,19 @@ int KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &ke
         LOGI("Not support uece !");
         return -ENOTSUP;
     }
+    if (userId == 300) {
+        LOGE("GenerateAppKey when RecoverKey! ------");
+        auto el4Key = GetBaseKey(GetKeyDirByUserAndType(userId, EL4_KEY));
+        if (el4Key == nullptr) {
+            LOGE("el4Key_ is nullptr");
+            return -ENOENT;
+        }
+        if (el4Key->GenerateAppkey(userId, hashId, keyId) == false) {
+            LOGE("Failed to generate Appkey2");
+            return -EFAULT;
+        }
+        return 0;
+    }
     if (userEl4Key_.find(userId) == userEl4Key_.end()) {
         LOGE("userEl4Key_ has not existed");
         if (!IsUserCeDecrypt(userId)) {
