@@ -617,10 +617,7 @@ int MtpFileSystem::Truncate(const char *path, off_t new_size, struct fuse_file_i
         ::unlink(tmpPath.c_str());
         return -rval;
     }
-
     rval = device_.FilePush(tmpPath, std::string(path));
-    ::unlink(tmpPath.c_str());
-
     if (rval != 0) {
         return -rval;
     }
