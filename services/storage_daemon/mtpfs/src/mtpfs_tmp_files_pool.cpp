@@ -37,7 +37,7 @@ std::string GetSha256Hash(const std::string &input)
     SHA256_CTX ctx;
     SHA256_Init(&ctx);
     SHA256_Update(&ctx, input.c_str(), input.size());
-    SHA256_Final(static_cast<unsigned char *>(hash), &ctx);
+    SHA256_Final(hash, &ctx);
 
     char res[SHA256_DIGEST_LENGTH * sha256HashBitNum + 1];
     for (int i = 0; i < SHA256_DIGEST_LENGTH; ++i) {
