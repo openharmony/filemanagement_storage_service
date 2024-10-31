@@ -63,6 +63,7 @@ private:
     int32_t DoMount4Ntfs(uint32_t mountFlags);
     int32_t DoMount4Exfat(uint32_t mountFlags);
     int32_t DoMount4OtherType(uint32_t mountFlags);
+    int32_t DoMount4Vfat(uint32_t mountFlags);
 };
 } // STORAGE_DAEMON
 } // OHOS
