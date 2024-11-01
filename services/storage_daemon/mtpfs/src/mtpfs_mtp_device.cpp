@@ -548,7 +548,7 @@ int MtpFsDevice::FilePush(const std::string &src, const std::string &dst)
         LOGE("Can not fetch %{public}s", dst.c_str());
         return -EINVAL;
     }
-    if (dirParent && fileToRemove) {
+    if (fileToRemove) {
         CriticalEnter();
         int rval = LIBMTP_Delete_Object(device_, fileToRemove->Id());
         CriticalLeave();
