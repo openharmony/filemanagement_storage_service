@@ -816,6 +816,11 @@ int MtpFileSystem::FSync(const char *path, int datasync, struct fuse_file_info *
     if (rval != 0) {
         return -errno;
     }
+    const std::string stdPath(path);
+    MtpFsTypeTmpFile *tmpFile = const_cast<MtpFsTypeTmpFile *>(tmpFilesPool_.GetFile(stdPath));
+    if (tmpFile) {
+        tmpFile->RemoveFileDescriptor(fi->fh);
+    }
     return 0;
 }
 
