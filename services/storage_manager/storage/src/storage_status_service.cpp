@@ -257,7 +257,7 @@ int32_t StorageStatusService::GetCurrentBundleStats(BundleStats &bundleStats)
 
     std::string pkgName = GetCallingPkgName();
     int32_t ret = GetBundleStats(pkgName, userId, bundleStats, DEFAULT_APP_INDEX,
-        AppExecFwk::Constants::NoGetBundleStatsFlag::GET_BUNDLE_WITHOUT_CACHE_SIZE);
+        AppExecFwk::Constants::NoGetBundleStatsFlag::GET_BUNDLE_WITH_ALL_SIZE);
     if (ret != E_OK) {
         LOGE("storage status service GetBundleStats failed, please check");
         RadarParameter parameterRes = {.orgPkg = DEFAULT_ORGPKGNAME,
