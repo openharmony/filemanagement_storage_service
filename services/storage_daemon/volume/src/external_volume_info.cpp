@@ -296,12 +296,18 @@ int32_t ExternalVolumeInfo::DoSetVolDesc(std::string description)
 {
     int32_t err = 0;
     if (fsType_ == "ntfs") {
-        std::vector<std::string> cmd = {
+        std::vector<std::string> fixCmd = {
+            "ntfsfix",
+            "-d",
+            devPath_
+        };
+        err = ForkExec(fixCmd);
+        std::vector<std::string> labelCmd = {
             "ntfslabel",
             devPath_,
             description
         };
-        err = ForkExec(cmd);
+        err = ForkExec(labelCmd);
     } else if (fsType_ == "exfat") {
         std::vector<std::string> cmd = {
             "exfatlabel",
