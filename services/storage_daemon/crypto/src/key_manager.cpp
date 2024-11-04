@@ -1140,8 +1140,7 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
     SaveUserElKey(user, type, elKey);
     userPinProtect[user] = !secret.empty();
     saveLockScreenStatus[user] = true;
-    LOGI("Active user %{public}u el success", user);
-    LOGI("saveLockScreenStatus is %{public}d", saveLockScreenStatus[user]);
+    LOGI("Active user %{public}u el success, saveLockScreenStatus is %{public}d", user, saveLockScreenStatus[user]);
     return 0;
 }
 
