@@ -1133,10 +1133,12 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
         LOGE("ActiveElXUserKey failed");
         return -EFAULT;
     }
-
+    std::shared_ptr<DelayHandler> userDelayHandler;
+    if (GetUserDelayHandler(user, userDelayHandler)) {
+        userDelayHandler->CancelDelayTask();
+    }
     SaveUserElKey(user, type, elKey);
-    userPinProtect.erase(user);
-    userPinProtect.insert(std::make_pair(user, !secret.empty()));
+    userPinProtect[user] = !secret.empty();
     saveLockScreenStatus[user] = true;
     LOGI("Active user %{public}u el success", user);
     LOGI("saveLockScreenStatus is %{public}d", saveLockScreenStatus[user]);
