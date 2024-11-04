@@ -63,6 +63,7 @@ constexpr uid_t OID_CLOUD_BACK = 5206;
 constexpr uid_t OID_AV_SESSION = 6700;
 constexpr uid_t USER_ID_BASE = 200000;
 constexpr uid_t OID_FOUNDATION = 5523;
+constexpr uid_t OID_PRINT = 3823;
 
 class MountManager final {
 public:
