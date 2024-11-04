@@ -313,6 +313,7 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
         LOGE("RestoreUserKey EL1_KEY failed, error = %{public}d, userId %{public}u", ret, userId);
         return ret;
     }
+
     ret = UserManager::GetInstance()->PrepareUserDirs(userId, flags);
     if (ret != E_OK) {
         LOGE("PrepareUserDirs failed, userId %{public}u, flags %{public}u, error %{public}d", userId, flags, ret);
