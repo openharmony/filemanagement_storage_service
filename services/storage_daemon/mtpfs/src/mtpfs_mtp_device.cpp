@@ -382,13 +382,13 @@ int MtpFsDevice::ReNameInner(const std::string &oldPath, const std::string &newP
     const MtpFsTypeBasic *objectToReName = dirToReName ? static_cast<const MtpFsTypeBasic *>(dirToReName) :
                                                              static_cast<const MtpFsTypeBasic *>(fileToReName);
 
-    LOGD("objectToReName:%{public}s", objectToReName);
-    LOGD("objectToReName->id:%{public}d", objectToReName->Id());
-
     if (!objectToReName) {
         LOGE("No such file or directory to rename/move!");
         return -ENOENT;
     }
+
+    LOGD("objectToReName:%{public}s", objectToReName);
+    LOGD("objectToReName->id:%{public}d", objectToReName->Id());
 
     if (tmpOldDirName != tmpNewDirName) {
         CriticalEnter();
@@ -496,7 +496,9 @@ int MtpFsDevice::FileWrite(const std::string &path, const char *buf, size_t size
     }
 
     // all systems clear
-    int rval = LIBMTP_SendPartialObject(device_, fileToFetch->Id(), offset, (unsigned char *)buf, size);
+    char *tmp = const_cast<char *>(buf);
+    int rval = LIBMTP_SendPartialObject(device_, fileToFetch->Id(), offset,
+        reinterpret_cast<unsigned char *>(tmp), size);
     if (rval < 0) {
         return -EIO;
     }
@@ -542,7 +544,11 @@ int MtpFsDevice::FilePush(const std::string &src, const std::string &dst)
     const std::string dstDirName(SmtpfsDirName(dst));
     const MtpFsTypeDir *dirParent = DirFetchContent(dstDirName);
     const MtpFsTypeFile *fileToRemove = dirParent ? dirParent->File(dstBaseName) : nullptr;
-    if (dirParent && fileToRemove) {
+    if (!dirParent) {
+        LOGE("Can not fetch %{public}s", dst.c_str());
+        return -EINVAL;
+    }
+    if (fileToRemove) {
         CriticalEnter();
         int rval = LIBMTP_Delete_Object(device_, fileToRemove->Id());
         CriticalLeave();

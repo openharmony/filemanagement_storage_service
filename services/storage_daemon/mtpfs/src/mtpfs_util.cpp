@@ -111,7 +111,7 @@ std::string SmtpfsRealPath(const std::string &path)
 
 std::string SmtpfsGetTmpDir()
 {
-    const char *cTmp = "/data/mtp_tmp";
+    const char *cTmp = "/data/local/mtp_tmp";
     OHOS::StorageDaemon::DelTemp(cTmp);
     std::string tmpDir;
     if (cTmp) {

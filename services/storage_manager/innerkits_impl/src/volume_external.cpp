@@ -92,6 +92,10 @@ bool VolumeExternal::Marshalling(Parcel &parcel) const
         return false;
     }
 
+    if (!parcel.WriteInt32(flags_)) {
+        return false;
+    }
+
     if (!parcel.WriteInt32(fsType_)) {
         return false;
     }
@@ -114,6 +118,7 @@ bool VolumeExternal::Marshalling(Parcel &parcel) const
 std::unique_ptr<VolumeExternal> VolumeExternal::Unmarshalling(Parcel &parcel)
 {
     auto obj = std::make_unique<VolumeExternal>(*VolumeCore::Unmarshalling(parcel));
+    obj->flags_ = parcel.ReadInt32();
     obj->fsType_ = parcel.ReadInt32();
     obj->fsUuid_ = parcel.ReadString();
     obj->path_ = parcel.ReadString();

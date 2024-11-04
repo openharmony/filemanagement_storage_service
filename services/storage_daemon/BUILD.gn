@@ -121,6 +121,7 @@ ohos_executable("storage_daemon") {
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "eventhandler:libeventhandler",
+    "hicollie:libhicollie",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "init:libbegetutil",
@@ -280,12 +281,14 @@ ohos_shared_library("storage_common_utils") {
     "./utils/mount_argument_utils.cpp",
     "./utils/set_flag_utils.cpp",
     "./utils/storage_radar.cpp",
+    "./utils/storage_xcollie.cpp",
     "./utils/string_utils.cpp",
     "./utils/zip_util.cpp",
   ]
 
   external_deps = [
     "c_utils:utils",
+    "hicollie:libhicollie",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "zlib:shared_libz",

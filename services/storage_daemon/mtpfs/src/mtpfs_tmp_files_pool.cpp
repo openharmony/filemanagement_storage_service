@@ -15,14 +15,39 @@
 
 #include "mtpfs_tmp_files_pool.h"
 
+#include <openssl/sha.h>
+#include <securec.h>
 #include <sstream>
 
-#include "mtpfs_sha.h"
 #include "mtpfs_util.h"
+#include "storage_service_log.h"
 
 MtpFsTmpFilesPool::MtpFsTmpFilesPool() : tmpDir_(SmtpfsGetTmpDir()), pool_() {}
 
 MtpFsTmpFilesPool::~MtpFsTmpFilesPool() {}
+
+std::string GetSha256Hash(const std::string &input)
+{
+    const int32_t sha256HashBitNum = 2;
+    if (input.size() == 0) {
+        LOGE("Input param invalied.");
+        return "";
+    }
+    unsigned char hash[SHA256_DIGEST_LENGTH * sha256HashBitNum + 1] = "";
+    SHA256_CTX ctx;
+    SHA256_Init(&ctx);
+    SHA256_Update(&ctx, input.c_str(), input.size());
+    SHA256_Final(hash, &ctx);
+
+    char res[SHA256_DIGEST_LENGTH * sha256HashBitNum + 1];
+    for (int i = 0; i < SHA256_DIGEST_LENGTH; ++i) {
+        if (sprintf_s(&res[i * sha256HashBitNum], sizeof(res), "%02x", hash[i]) < 0) {
+            LOGE("sprintf_s error");
+            return "";
+        }
+    }
+    return std::string(res);
+}
 
 void MtpFsTmpFilesPool::RemoveFile(const std::string &path)
 {
@@ -47,7 +72,7 @@ std::string MtpFsTmpFilesPool::MakeTmpPath(const std::string &pathDevice) const
     static int cnt = 0;
     std::stringstream ss;
     ss << pathDevice << ++cnt;
-    return tmpDir_ + std::string("/") + MtpFsSha::SumString(ss.str());
+    return tmpDir_ + std::string("/") + GetSha256Hash(pathDevice);
 }
 
 bool MtpFsTmpFilesPool::CreateTmpDir()

@@ -29,7 +29,7 @@ const int32_t FILE_SIZE = 512;
 const int32_t BS_SIZE = 1024;
 const int32_t ARG_SIZE = 2;
 
-int WrapGetattr(const char *path, struct stat *buf, struct fuse_file_info *fi)
+int WrapGetattr(const char *path, struct stat *buf, struct fuse_file_info *fi)
 {
     LOGI("mtp WrapGetattr");
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->GetAttr(path, buf, fi);
@@ -77,7 +77,7 @@ int WrapReName(const char *path, const char *newpath, unsigned int flags)
     return ret;
 }
 
-int WrapChMod(const char *path, mode_t mode, struct fuse_file_info *fi)
+int WrapChMod(const char *path, mode_t mode, struct fuse_file_info *fi)
 {
     LOGI("mtp WrapChMod");
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->ChMods(path, mode, fi);
@@ -85,7 +85,7 @@ int WrapChMod(const char *path, mode_t mode, struct fuse_file_info *fi)
     return ret;
 }
 
-int WrapChown(const char *path, uid_t uid, gid_t gid, struct fuse_file_info *fi)
+int WrapChown(const char *path, uid_t uid, gid_t gid, struct fuse_file_info *fi)
 {
     LOGE("mtp WrapChown path:%{public}s ,uid:%{public}lu, gid:%{public}lu", path, uid, gid);
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Chown(path, uid, gid, fi);
@@ -94,7 +94,7 @@ int WrapChown(const char *path, uid_t uid, gid_t gid, struct fuse_file_info *fi
 }
 
 
-int WrapUTimens(const char *path, const struct timespec tv[2], struct fuse_file_info *fi)
+int WrapUTimens(const char *path, const struct timespec tv[2], struct fuse_file_info *fi)
 {
     LOGI("mtp WrapUTimens");
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->UTimens(path, tv, fi);
@@ -191,7 +191,7 @@ int WrapFSyncDir(const char *path, int datasync, struct fuse_file_info *fileInfo
     return ret;
 }
 
-void *WrapInit(struct fuse_conn_info *conn, struct fuse_config *cfg)
+void *WrapInit(struct fuse_conn_info *conn, struct fuse_config *cfg)
 {
     LOGI("mtp WrapInit");
     return DelayedSingleton<MtpFileSystem>::GetInstance()->Init(conn, cfg);
@@ -451,12 +451,12 @@ bool MtpFileSystem::Exec()
     return true;
 }
 
-void *MtpFileSystem::Init(struct fuse_conn_info *conn, struct fuse_config *cfg)
+void *MtpFileSystem::Init(struct fuse_conn_info *conn, struct fuse_config *cfg)
 {
     return nullptr;
 }
 
-int MtpFileSystem::GetAttr(const char *path, struct stat *buf, struct fuse_file_info *fi)
+int MtpFileSystem::GetAttr(const char *path, struct stat *buf, struct fuse_file_info *fi)
 {
     LOGI("MtpFileSystem: GetAttr enter, path: %{public}s", path);
     if (memset_s(buf, sizeof(struct stat), 0, sizeof(struct stat)) != EOK) {
@@ -567,7 +567,7 @@ int MtpFileSystem::ReName(const char *path, const char *newpath, unsigned int fl
     return 0;
 }
 
-int MtpFileSystem::ChMods(const char *path, mode_t mode, struct fuse_file_info *fi)
+int MtpFileSystem::ChMods(const char *path, mode_t mode, struct fuse_file_info *fi)
 {
     int res;
     if (fi) {
@@ -581,7 +581,7 @@ int MtpFileSystem::ChMods(const char *path, mode_t mode, struct fuse_file_info 
     return 0;
 }
 
-int MtpFileSystem::Chown(const char *path, uid_t uid, gid_t gid, struct fuse_file_info *fi)
+int MtpFileSystem::Chown(const char *path, uid_t uid, gid_t gid, struct fuse_file_info *fi)
 {
     LOGI("mtp Chown path:%{public}s ,uid:%{public}lu, gid:%{public}lu", path, uid, gid);
     int res;
@@ -617,17 +617,14 @@ int MtpFileSystem::Truncate(const char *path, off_t new_size, struct fuse_file_i
         ::unlink(tmpPath.c_str());
         return -rval;
     }
-
     rval = device_.FilePush(tmpPath, std::string(path));
-    ::unlink(tmpPath.c_str());
-
     if (rval != 0) {
         return -rval;
     }
     return 0;
 }
 
-int MtpFileSystem::UTimens(const char *path, const struct timespec tv[2], struct fuse_file_info *fi)
+int MtpFileSystem::UTimens(const char *path, const struct timespec tv[2], struct fuse_file_info *fi)
 {
     std::string tmpBaseName(SmtpfsBaseName(std::string(path)));
     std::string tmpDirName(SmtpfsDirName(std::string(path)));
@@ -819,6 +816,11 @@ int MtpFileSystem::FSync(const char *path, int datasync, struct fuse_file_info *
     if (rval != 0) {
         return -errno;
     }
+    const std::string stdPath(path);
+    MtpFsTypeTmpFile *tmpFile = const_cast<MtpFsTypeTmpFile *>(tmpFilesPool_.GetFile(stdPath));
+    if (tmpFile) {
+        tmpFile->RemoveFileDescriptor(fi->fh);
+    }
     return 0;
 }
 
@@ -832,7 +834,7 @@ int MtpFileSystem::OpenDir(const char *path, struct fuse_file_info *fileInfo)
 }
 
 int MtpFileSystem::ReadDir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset,
-    struct fuse_file_info *fileInfo, enum fuse_readdir_flags flag)
+    struct fuse_file_info *fileInfo, enum fuse_readdir_flags flag)
 {
     enum fuse_fill_dir_flags fillFlags = FUSE_FILL_DIR_PLUS;
     const MtpFsTypeDir *content = device_.DirFetchContent(std::string(path));

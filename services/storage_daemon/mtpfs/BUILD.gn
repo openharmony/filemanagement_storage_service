@@ -57,7 +57,6 @@ ohos_executable("mtpfs") {
       "./src/mtpfs_libmtp.cpp",
       "./src/mtpfs_main.cpp",
       "./src/mtpfs_mtp_device.cpp",
-      "./src/mtpfs_sha.cpp",
       "./src/mtpfs_tmp_files_pool.cpp",
       "./src/mtpfs_type_dir.cpp",
       "./src/mtpfs_type_file.cpp",
@@ -68,6 +67,7 @@ ohos_executable("mtpfs") {
       "libfuse:libfuse",
       "libmtp:libmtp",
       "libusb:libusb",
+      "openssl:libcrypto_shared",
     ]
   } else {
     sources = [ "./src/mtpfs_main_virtual.cpp" ]

@@ -258,6 +258,7 @@ void VolumeManagerService::NotifyMtpMounted(const std::string &id, const std::st
     volumePtr->SetPath(path);
     volumePtr->SetFsType(FsType::MTP);
     volumePtr->SetDescription(desc);
+    volumePtr->SetState(MOUNTED);
     volumePtr->SetFsUuid(uuid);
     volumeMap_.Insert(volumePtr->GetId(), volumePtr);
     VolumeStateNotify(VolumeState::MOUNTED, volumePtr);

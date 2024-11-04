@@ -41,68 +41,45 @@ int32_t StorageTotalStatusService::GetSystemSize(int64_t &systemSize)
     int32_t ret = GetTotalSize(roundSize);
     if (ret != E_OK) {
         LOGE("storage total status service GetTotalSize failed, please check");
-        RadarParameter parameterRes = {.orgPkg = DEFAULT_ORGPKGNAME,
-                                       .userId = DEFAULT_USERID,
-                                       .funcName = "GetTotalSize",
-                                       .bizScene = BizScene::SPACE_STATISTICS,
-                                       .bizStage = BizStage::BIZ_STAGE_GET_SYSTEM_SIZE,
-                                       .keyElxLevel = "EL1",
-                                       .errorCode = ret};
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
+        StorageRadar::ReportGetStorageStatus("GetSystemSize::GetTotalSize", DEFAULT_USERID, ret, "setting");
         return ret;
     }
     int64_t totalSize = 0;
     ret = GetSizeOfPath(PATH_DATA, SizeType::TOTAL, totalSize);
     if (ret != E_OK) {
         LOGE("storage total status service GetSizeOfPath failed, please check");
-        RadarParameter parameterRes = {.orgPkg = DEFAULT_ORGPKGNAME,
-                                       .userId = DEFAULT_USERID,
-                                       .funcName = "GetSizeOfPath",
-                                       .bizScene = BizScene::SPACE_STATISTICS,
-                                       .bizStage = BizStage::BIZ_STAGE_GET_SYSTEM_SIZE,
-                                       .keyElxLevel = "EL1",
-                                       .errorCode = ret};
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
+        StorageRadar::ReportGetStorageStatus("GetSystemSize::GetSizeOfPath", DEFAULT_USERID, ret, "setting");
         return ret;
     }
     systemSize = roundSize - totalSize;
+    LOGE("StorageTotalStatusService::GetSystemSize success, roundSize=%{public}lld, (/data)totalSize=%{public}lld, "
+        "systemSize=%{public}lld",
+        static_cast<long long>(roundSize), static_cast<long long>(totalSize), static_cast<long long>(systemSize));
     return E_OK;
 }
 
 int32_t StorageTotalStatusService::GetTotalSize(int64_t &totalSize)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
-    LOGE("StorageTotalStatusService::GetTotalSize start");
+
     int64_t dataSize = 0;
     int32_t ret = GetSizeOfPath(PATH_DATA, SizeType::TOTAL, dataSize);
     if (ret != E_OK) {
         LOGE("GetSizeOfPath of data size failed, please check");
-        RadarParameter parameterRes = {.orgPkg = DEFAULT_ORGPKGNAME,
-                                       .userId = DEFAULT_USERID,
-                                       .funcName = "GetTotalSize GetSizeOfPath for dataSize",
-                                       .bizScene = BizScene::SPACE_STATISTICS,
-                                       .bizStage = BizStage::BIZ_STAGE_GET_TOTAL_SIZE,
-                                       .keyElxLevel = "EL1",
-                                       .errorCode = ret};
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
+        StorageRadar::ReportGetStorageStatus("GetTotalSize::GetSizeOfDataPath", DEFAULT_USERID, ret, "setting");
         return ret;
     }
     int64_t rootSize = 0;
     ret = GetSizeOfPath(PATH_ROOT, SizeType::TOTAL, rootSize);
     if (ret != E_OK) {
         LOGE("GetSizeOfPath of root size failed, please check");
-        RadarParameter parameterRes = {.orgPkg = DEFAULT_ORGPKGNAME,
-                                       .userId = DEFAULT_USERID,
-                                       .funcName = "GetTotalSize GetSizeOfPath for rootSize",
-                                       .bizScene = BizScene::SPACE_STATISTICS,
-                                       .bizStage = BizStage::BIZ_STAGE_GET_TOTAL_SIZE,
-                                       .keyElxLevel = "EL1",
-                                       .errorCode = ret};
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
+        StorageRadar::ReportGetStorageStatus("GetSystemSize::GetSizeOfRootPath", DEFAULT_USERID, ret, "setting");
         return ret;
     }
     totalSize = GetRoundSize(dataSize + rootSize);
-    LOGE("StorageTotalStatusService::GetTotalSize end");
+    LOGE("StorageTotalStatusService::GetTotalSize success, roundSize=%{public}lld, (/data)totalDataSize=%{public}lld,"
+        " (/)totalRootSize=%{public}lld",
+        static_cast<long long>(totalSize), static_cast<long long>(dataSize), static_cast<long long>(rootSize));
     return E_OK;
 }
 
@@ -111,15 +88,10 @@ int32_t StorageTotalStatusService::GetFreeSize(int64_t &freeSize)
     int32_t ret = GetSizeOfPath(PATH_DATA, SizeType::FREE, freeSize);
     if (ret != E_OK) {
         LOGE("GetFreeSize failed, please check");
-        RadarParameter parameterRes = {.orgPkg = DEFAULT_ORGPKGNAME,
-                                       .userId = DEFAULT_USERID,
-                                       .funcName = "GetFreeSize",
-                                       .bizScene = BizScene::SPACE_STATISTICS,
-                                       .bizStage = BizStage::BIZ_STAGE_GET_FREE_SIZE,
-                                       .keyElxLevel = "EL1",
-                                       .errorCode = ret};
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
+        StorageRadar::ReportGetStorageStatus("GetFreeSize", DEFAULT_USERID, ret, "setting");
     }
+    LOGE("StorageTotalStatusService::GetFreeSize success, (/data)freeSize=%{public}lld",
+        static_cast<long long>(freeSize));
     return ret;
 }
 
@@ -130,15 +102,19 @@ int32_t StorageTotalStatusService::GetSizeOfPath(const char *path, int32_t type,
     if (ret != E_OK) {
         return E_ERR;
     }
+    std::string typeStr = "";
     if (type == SizeType::TOTAL) {
         size = (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_blocks;
+        typeStr = "total space";
     } else if (type == SizeType::FREE) {
         size = (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_bfree;
+        typeStr = "free space";
     } else {
         size = (int64_t)diskInfo.f_bsize * ((int64_t)diskInfo.f_blocks - (int64_t)diskInfo.f_bfree);
+        typeStr = "used space";
     }
-    LOGI("StorageStatusService::GetSizeOfPath path is %{public}s, type is %{public}d, size is %{public}" PRId64,
-         path, type, size);
+    LOGI("StorageStatusService::GetSizeOfPath path is %{public}s, type is %{public}s, size is %{public}lld.",
+        path, typeStr.c_str(), static_cast<long long>(size));
     return E_OK;
 }
 } // StorageManager

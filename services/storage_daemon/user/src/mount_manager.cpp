@@ -61,6 +61,7 @@ const string SANDBOX_ROOT_PATH = "/mnt/sandbox/";
 const string CURRENT_USER_ID_FLAG = "<currentUserId>";
 const string PACKAGE_NAME_FLAG = "<bundleName>";
 const string SCENE_BOARD_BUNDLE_NAME = "com.ohos.sceneboard";
+const string STORAGE_USERS_PATH = "/storage/Users";
 const string PUBLIC_DIR_SANDBOX_PATH = "/storage/Users/currentUser";
 const string PUBLIC_DIR_SRC_PATH = "/storage/media/<currentUserId>/local/files/Docs";
 const string MOUNT_POINT_INFO = "/proc/mounts";
@@ -794,6 +795,7 @@ int32_t MountManager::UMountAllPath(int32_t userId, std::list<std::string> &moun
         }
         return result;
     }
+    DeleteSceneDir(userId);
     LOGI("UMountAllPath success");
     return E_OK;
 }
@@ -815,6 +817,21 @@ int32_t MountManager::UMountByList(std::list<std::string> &list, std::list<std::
     }
     LOGI("UMountByList result is %{public}d.", result);
     return result;
+}
+
+int32_t MountManager::DeleteSceneDir(int32_t userId)
+{
+    std::string path = SANDBOX_ROOT_PATH + to_string(userId) + "/" + SCENE_BOARD_BUNDLE_NAME + PUBLIC_DIR_SANDBOX_PATH;
+    if (rmdir(path.c_str())) {
+        LOGE("failed to rm dir %{public}s, errno %{public}d", path.c_str(), errno);
+        return false;
+    }
+    path = SANDBOX_ROOT_PATH + to_string(userId) + "/" + SCENE_BOARD_BUNDLE_NAME + STORAGE_USERS_PATH;
+    if (rmdir(path.c_str())) {
+        LOGE("failed to rm dir %{public}s, errno %{public}d", path.c_str(), errno);
+        return false;
+    }
+    return E_OK;
 }
 
 void MountManager::MountCloudForUsers(void)
