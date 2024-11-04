@@ -487,8 +487,8 @@ int MtpFileSystem::GetAttr(const char *path, struct stat *buf, struct fuse_file_
         } else if (content->File(tmpFile)) {
             const MtpFsTypeFile *file = content->File(tmpFile);
             buf->st_ino = file->Id();
-            buf->st_size = file->Size();
-            buf->st_blocks = (file->Size() / FILE_SIZE) + (file->Size() % FILE_SIZE > 0 ? 1 : 0);
+            buf->st_size = static_cast<ssize_t>(file->Size());
+            buf->st_blocks = static_cast<ssize_t>(file->Size() / FILE_SIZE) + (file->Size() % FILE_SIZE > 0 ? 1 : 0);
             buf->st_nlink = 1;
             buf->st_mode = S_IFREG | PERMISSION_TWO;
             buf->st_mtime = file->ModificationDate();
@@ -655,7 +655,7 @@ int MtpFileSystem::Create(const char *path, mode_t mode, fuse_file_info *fileInf
         return -errno;
     }
 
-    fileInfo->fh = rval;
+    fileInfo->fh = static_cast<uint32_t>(rval);
     tmpFilesPool_.AddFile(MtpFsTypeTmpFile(std::string(path), tmpPath, rval, true));
     rval = device_.FilePush(tmpPath, std::string(path));
     if (rval != 0) {
@@ -667,8 +667,8 @@ int MtpFileSystem::Create(const char *path, mode_t mode, fuse_file_info *fileInf
 int MtpFileSystem::Open(const char *path, struct fuse_file_info *fileInfo)
 {
     LOGI("MtpFileSystem: Open enter, path: %{public}s", path);
-    if (fileInfo->flags & O_WRONLY) {
-        fileInfo->flags |= O_TRUNC;
+    if (fileInfo->flags & static_cast<int>(O_WRONLY)) {
+        fileInfo->flags |= static_cast<int>(O_TRUNC);
     }
     const std::string stdPath(path);
 
@@ -700,7 +700,7 @@ int MtpFileSystem::Open(const char *path, struct fuse_file_info *fileInfo)
         return -errno;
     }
 
-    fileInfo->fh = fd;
+    fileInfo->fh = static_cast<uint32_t>(fd);
 
     if (tmpFile) {
         tmpFile->AddFileDescriptor(fd);
@@ -767,6 +767,10 @@ int MtpFileSystem::Release(const char *path, struct fuse_file_info *fileInfo)
         return 0;
     }
     MtpFsTypeTmpFile *tmpFile = const_cast<MtpFsTypeTmpFile *>(tmpFilesPool_.GetFile(stdPath));
+    if (!tmpFile) {
+        LOGE("failed to get tmpFile.");
+        return -EINVAL;
+    }
     tmpFile->RemoveFileDescriptor(fileInfo->fh);
     if (tmpFile->RefCnt() != 0) {
         return 0;

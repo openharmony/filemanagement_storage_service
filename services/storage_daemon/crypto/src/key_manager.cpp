@@ -822,7 +822,9 @@ int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &aut
         std::shared_ptr<BaseKey> el5Key = GetBaseKey(USER_EL5_DIR + "/" + std::to_string(userId));
         bool tempUeceSupport = true;
         UserAuth userAuth = {.token = authToken, .secret = newSecret, .secureUid = secureUid};
-        if (!el5Key->EncryptClassE(userAuth, tempUeceSupport, userId, USER_ADD_AUTH)) {
+        if (!el5Key) {
+            return -EOPNOTSUPP;
+        } else if (!el5Key->EncryptClassE(userAuth, tempUeceSupport, userId, USER_ADD_AUTH)) {
             el5Key->ClearKey();
             LOGE("user %{public}u Encrypt E fail", userId);
             return -EFAULT;

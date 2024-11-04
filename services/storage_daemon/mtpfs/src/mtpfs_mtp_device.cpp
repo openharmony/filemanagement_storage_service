@@ -297,7 +297,9 @@ int MtpFsDevice::DirCreateNew(const std::string &path)
             ->AddDir(MtpFsTypeDir(newId, dirParent->Id(), dirParent->StorageId(), tmpBaseName));
         LOGI("Directory %{public}s created", path.c_str());
     }
-    free(static_cast<void *>(cName));
+    if (cName) {
+        free(static_cast<void *>(cName));
+    }
     return newId != 0 ? 0 : -EINVAL;
 }
 
