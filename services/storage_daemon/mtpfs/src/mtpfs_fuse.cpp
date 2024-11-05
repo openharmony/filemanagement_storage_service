@@ -337,6 +337,16 @@ MtpFileSystem::MtpFileSystem() : args_(), tmpFilesPool_(), options_(), device_()
     fuseOperations_.destroy = WrapDestroy;
     fuseOperations_.access = WrapAccess;
     fuseOperations_.create = WrapCreate;
+    fuseOperations_.ioctl = nullptr;
+    fuseOperations_.bmap = nullptr;
+    fuseOperations_.read_buf = nullptr;
+    fuseOperations_.lseek = nullptr;
+    fuseOperations_.copy_file_range = nullptr;
+    fuseOperations_.fallocate = nullptr;
+    fuseOperations_.lock = nullptr;
+    fuseOperations_.flock = nullptr;
+    fuseOperations_.poll = nullptr;
+    fuseOperations_.write_buf = nullptr;
 }
 
 MtpFileSystem::~MtpFileSystem()
