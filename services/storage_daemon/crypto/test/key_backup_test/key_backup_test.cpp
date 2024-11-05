@@ -16,7 +16,6 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include<sys/stat.h>
 
 #include "directory_ex.h"
 
