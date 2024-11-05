@@ -128,7 +128,7 @@ bool MtpFsDevice::ConnectByDevNo(int devNo)
         return false;
     }
     LIBMTP_raw_device_t *rawDevice = &rawDevices[devNo];
-    
+
     MtpFsUtil::Off();
     device_ = LIBMTP_Open_Raw_Device_Uncached(rawDevice);
     MtpFsUtil::On();
@@ -146,7 +146,7 @@ bool MtpFsDevice::ConnectByDevNo(int devNo)
     LOGI("Connect by device number success.");
     return true;
 }
- 
+
 bool MtpFsDevice::ConnectByDevFile(const std::string &devFile)
 {
     if (device_) {
@@ -275,6 +275,14 @@ const MtpFsTypeDir *MtpFsDevice::DirFetchContent(std::string path)
     return dir;
 }
 
+static uint64_t GetFormattedTimestampEndWithMilli()
+{
+    auto now = std::chrono::system_clock::now();
+    auto millisecs = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
+    uint64_t milliSeconds = millisecs.count();
+    return milliSeconds;
+}
+
 int MtpFsDevice::DirCreateNew(const std::string &path)
 {
     const std::string tmpBaseName(SmtpfsBaseName(path));
@@ -293,8 +301,11 @@ int MtpFsDevice::DirCreateNew(const std::string &path)
         LIBMTP_Dump_Errorstack(device_);
         LIBMTP_Clear_Errorstack(device_);
     } else {
-        const_cast<MtpFsTypeDir *>(dirParent)
-            ->AddDir(MtpFsTypeDir(newId, dirParent->Id(), dirParent->StorageId(), tmpBaseName));
+        MtpFsTypeDir dirToUpload(newId, dirParent->Id(), dirParent->StorageId(), tmpBaseName);
+        constexpr int32_t SECOND_TO_MILLISECOND = 1000;
+        uint64_t time = GetFormattedTimestampEndWithMilli()/SECOND_TO_MILLISECOND;
+        dirToUpload.SetModificationDate(time);
+        const_cast<MtpFsTypeDir *>(dirParent)->AddDir(dirToUpload);
         LOGI("Directory %{public}s created", path.c_str());
     }
     if (cName) {
