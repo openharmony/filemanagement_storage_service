@@ -382,9 +382,11 @@ group("storage_daemon_unit_test") {
     deps += [
       "disk/test:storage_daemon_disk_test",
       "mtp/test:storage_daemon_mtp_test",
-      "mtpfs/test:storage_daemon_mtpfs_test",
       "netlink/test:storage_daemon_netlink_test",
       "volume/test:storage_daemon_volume_test",
     ]
+  }
+  if (support_open_source_libmtp) {
+    deps += [ "mtpfs/test:storage_daemon_mtpfs_test" ]
   }
 }
