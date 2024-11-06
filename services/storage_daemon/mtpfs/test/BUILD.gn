@@ -11,30 +11,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import("//build/ohos.gni")
+import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
-ohos_executable("mtpfs") {
-  branch_protector_ret = "pac_ret"
+ROOT_DIR = "${storage_service_path}/services"
 
+ohos_unittest("mtpfs_fuse_test") {
+  branch_protector_ret = "pac_ret"
   sanitize = {
     integer_overflow = true
-    ubsan = true
-    boundary_sanitize = true
     cfi = true
     cfi_cross_dso = true
     debug = false
   }
-
-  include_dirs = [
-    "./include",
-    "${storage_daemon_path}/include/utils",
-    "${storage_service_common_path}/include",
-  ]
+  module_out_path = "storage_service/storage_daemon"
 
   defines = [
     "STORAGE_LOG_TAG = \"StorageDaemon\"",
-    "LOG_DOMAIN = 0xD004301",
+    "private = public",
+  ]
+
+  include_dirs = [
+    "${storage_daemon_path}/mtpfs/include",
+    "${storage_daemon_path}/include/utils",
+    "${storage_service_common_path}/include",
   ]
 
   cflags = [
@@ -44,7 +44,10 @@ ohos_executable("mtpfs") {
     "-std=c++11",
   ]
 
-  deps = [ "${storage_daemon_path}:storage_common_utils" ]
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
+    "//third_party/googletest:gtest_main",
+  ]
 
   external_deps = [
     "c_utils:utils",
@@ -53,15 +56,15 @@ ohos_executable("mtpfs") {
 
   if (support_open_source_libmtp) {
     sources = [
-      "./src/mtpfs_fuse.cpp",
-      "./src/mtpfs_libmtp.cpp",
-      "./src/mtpfs_main.cpp",
-      "./src/mtpfs_mtp_device.cpp",
-      "./src/mtpfs_tmp_files_pool.cpp",
-      "./src/mtpfs_type_dir.cpp",
-      "./src/mtpfs_type_file.cpp",
-      "./src/mtpfs_type_tmp_file.cpp",
-      "./src/mtpfs_util.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_fuse.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_libmtp.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_mtp_device.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_tmp_files_pool.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_type_dir.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_type_file.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_type_tmp_file.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_util.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/test/mtpfs_fuse_test.cpp",
     ]
     external_deps += [
       "libfuse:libfuse",
@@ -70,10 +73,15 @@ ohos_executable("mtpfs") {
       "openssl:libcrypto_shared",
     ]
   } else {
-    sources = [ "./src/mtpfs_main_virtual.cpp" ]
+    sources = [ "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_main_virtual.cpp" ]
   }
 
   subsystem_name = "filemanagement"
   part_name = "storage_service"
   install_enable = true
+}
+
+group("storage_daemon_mtpfs_test") {
+    testonly = true
+    deps = [ ":mtpfs_fuse_test" ]
 }
