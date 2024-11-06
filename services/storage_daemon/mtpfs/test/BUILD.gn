@@ -82,8 +82,6 @@ ohos_unittest("mtpfs_fuse_test") {
 }
 
 group("storage_daemon_mtpfs_test") {
-  if (support_open_source_libmtp) {
-    testonly = true
-    deps = [ ":mtpfs_fuse_test" ]
-  }
+  testonly = true
+  deps = [ ":mtpfs_fuse_test" ]
 }
