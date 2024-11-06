@@ -61,7 +61,6 @@ ohos_unittest("mtp_device_manager_test") {
     "c_utils:utils",
     "hilog:libhilog",
     "ipc:ipc_single",
-    "libmtp:libmtp",
     "samgr:samgr_proxy",
   ]
 }
