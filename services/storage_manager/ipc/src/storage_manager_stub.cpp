@@ -1232,6 +1232,9 @@ int32_t StorageManagerStub::HandleUMountDfsDocs(MessageParcel &data, MessageParc
 
 int32_t StorageManagerStub::HandleNotifyMtpMount(MessageParcel &data, MessageParcel &reply)
 {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
 
     std::string id = data.ReadString();
     std::string path = data.ReadString();
@@ -1249,7 +1252,10 @@ int32_t StorageManagerStub::HandleNotifyMtpMount(MessageParcel &data, MessagePar
 
 int32_t StorageManagerStub::HandleNotifyMtpUnmount(MessageParcel &data, MessageParcel &reply)
 {
-    
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+
     std::string id = data.ReadString();
     std::string path = data.ReadString();
     int32_t err = NotifyMtpUnmounted(id, path);
