@@ -1468,7 +1468,7 @@ int32_t MountManager::PrepareAppdataDirByUserId(int32_t userId)
 
 int32_t MountManager::MountAppdataAndSharefs(int32_t userId)
 {
-    LOGI("mount appdata start");
+    LOGI("mount appdata start, userId is %{public}d.", userId);
     MountAppdata(to_string(userId));
 
     LOGI("mount currentUser/other");
