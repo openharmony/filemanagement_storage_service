@@ -1345,15 +1345,15 @@ int32_t MountManager::SharedMount(const std::string &path)
 {
     if (path.empty() || !IsDir(path)) {
         LOGE("path invalid, %{public}s", path.c_str());
-        return ENOENT;
+        return E_OK;
     }
     errno = 0;
-    int32_t ret = Mount(path, path, nullptr, MS_BIND | MS_REC, nullptr);
+    int32_t ret = mount(path.c_str(), path.c_str(), nullptr, MS_BIND | MS_REC, nullptr);
     if (ret != 0) {
         LOGE("SharedMount failed, path is %{public}s, errno is %{public}d.", path.c_str(), errno);
         return ret;
     }
-    ret = Mount(nullptr, path, nullptr, MS_SHARED, nullptr);
+    ret = mount(nullptr, path.c_str(), nullptr, MS_SHARED, nullptr);
     if (ret != 0) {
         LOGE("SharedMount shared failed, path is %{public}s, errno is %{public}d.", path.c_str(), errno);
         return ret;
@@ -1365,24 +1365,24 @@ int32_t MountManager::BindAndRecMount(std::string &srcPath, std::string &dstPath
 {
     if (srcPath.empty() || !IsDir(srcPath)) {
         LOGE("path invalid, %{public}s", srcPath.c_str());
-        return ENOENT;
+        return E_OK;
     }
     if (dstPath.empty() || !IsDir(dstPath)) {
         LOGE("path invalid, %{public}s", dstPath.c_str());
-        return ENOENT;
+        return E_OK;
     }
     if (IsPathMounted(dstPath)) {
         LOGE("path has mounted, %{public}s", dstPath.c_str());
         return E_OK;
     }
-    int32_t ret = Mount(srcPath, dstPath, nullptr, MS_BIND | MS_REC, nullptr);
+    int32_t ret = mount(srcPath.c_str(), dstPath.c_str(), nullptr, MS_BIND | MS_REC, nullptr);
     if (ret != 0) {
         LOGE("bind and rec mount failed, srcPath is %{public}s, dstPath is %{public}s, errno is %{public}d.",
              srcPath.c_str(), dstPath.c_str(), errno);
         return ret;
     }
     if (isUseSlave) {
-        ret = Mount(nullptr, dstPath, nullptr, MS_SLAVE, nullptr);
+        ret = mount(nullptr, dstPath.c_str(), nullptr, MS_SLAVE, nullptr);
         if (ret != 0) {
             LOGE("mount to slave failed, path is %{public}s, errno is %{public}d.", dstPath.c_str(), errno);
             return ret;
@@ -1462,14 +1462,14 @@ int32_t MountManager::PrepareAppdataDirByUserId(int32_t userId)
             return E_PREPARE_DIR;
         }
     }
-//    MountSharefsAndNoSharefs(userId);
+    MountSharefsAndNoSharefs(userId);
     return E_OK;
 }
 
 int32_t MountManager::MountAppdataAndSharefs(int32_t userId)
 {
     LOGI("mount appdata start, userId is %{public}d.", userId);
-//    MountAppdata(to_string(userId));
+    MountAppdata(to_string(userId));
 
     LOGI("mount currentUser/other");
     Utils::MountArgument mountArgument(Utils::MountArgumentDescriptors::Alpha(userId, ""));
