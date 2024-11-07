@@ -1048,7 +1048,7 @@ int32_t MountManager::MountByUser(int32_t userId)
     if (ret != E_OK) {
         LOGE("sharefs mount error");
     }
-//    MountAppdataAndSharefs(userId);
+    MountAppdataAndSharefs(userId);
     SetFafQuotaProId(userId);
     if (CreateSystemServiceDirs(userId) != E_OK) {
         LOGE("create system service dir error");
