@@ -288,13 +288,13 @@ int32_t MountManager::SharefsMount(int32_t userId)
 
 int32_t MountManager::HmSharefsMount(int32_t userId, std::string &srcPath, std::string &dstPath)
 {
-    if (IsDir(srcPath)) {
+    if (!IsDir(srcPath)) {
         LOGE("srcPath not exist, %{public}s", srcPath.c_str());
-        return ENOENT;
+        return E_OK;
     }
-    if (IsDir(dstPath)) {
-        LOGE("srcPath not exist, %{public}s", dstPath.c_str());
-        return ENOENT;
+    if (!IsDir(dstPath)) {
+        LOGE("dstPath not exist, %{public}s", dstPath.c_str());
+        return E_OK;
     }
     if (IsPathMounted(dstPath)) {
         LOGI("path has mounted, %{public}s", dstPath.c_str());
@@ -1347,11 +1347,9 @@ int32_t MountManager::SharedMount(const std::string &path)
         LOGE("path invalid, %{public}s", path.c_str());
         return E_OK;
     }
-    errno = 0;
     int32_t ret = mount(path.c_str(), path.c_str(), nullptr, MS_BIND | MS_REC, nullptr);
     if (ret != 0) {
-        LOGE("SharedMount failed, path is %{public}s, ret is %{public}d, errno is %{public}d.",
-             path.c_str(), ret, errno);
+        LOGE("SharedMount failed, path is %{public}s, errno is %{public}d.", path.c_str(), errno);
         return ret;
     }
     ret = mount(nullptr, path.c_str(), nullptr, MS_SHARED, nullptr);
@@ -1469,9 +1467,6 @@ int32_t MountManager::PrepareAppdataDirByUserId(int32_t userId)
 
 int32_t MountManager::MountAppdataAndSharefs(int32_t userId)
 {
-    LOGI("mount appdata start, userId is %{public}d.", userId);
-    MountAppdata(to_string(userId));
-
     LOGI("mount currentUser/other");
     Utils::MountArgument mountArgument(Utils::MountArgumentDescriptors::Alpha(userId, ""));
     std::string mediaDocPath = mountArgument.GetMediaDocsPath();
