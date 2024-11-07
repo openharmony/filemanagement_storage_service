@@ -55,21 +55,19 @@ using namespace OHOS::FileManagement::CloudFile;
 using namespace OHOS::StorageService;
 constexpr int32_t UMOUNT_RETRY_TIMES = 3;
 constexpr int32_t ONE_KB = 1024;
+constexpr int32_t DEFAULT_USERID = 100;
 std::shared_ptr<MountManager> MountManager::instance_ = nullptr;
 
 const string SANDBOX_ROOT_PATH = "/mnt/sandbox/";
 const string CURRENT_USER_ID_FLAG = "<currentUserId>";
 const string PACKAGE_NAME_FLAG = "<bundleName>";
-const string SCENE_BOARD_BUNDLE_NAME = "com.ohos.sceneboard";
-const string STORAGE_USERS_PATH = "/storage/Users";
-const string PUBLIC_DIR_SANDBOX_PATH = "/storage/Users/currentUser";
-const string PUBLIC_DIR_SRC_PATH = "/storage/media/<currentUserId>/local/files/Docs";
 const string MOUNT_POINT_INFO = "/proc/mounts";
 const string MOUNT_POINT_TYPE_HMDFS = "hmdfs";
 const string MOUNT_POINT_TYPE_HMFS = "hmfs";
 const string MOUNT_POINT_TYPE_SHAREFS = "sharefs";
 const string EL2_BASE = "/data/storage/el2/base/";
 const string MOUNT_SUFFIX = "_locked";
+const string APP_EL1_PATH = "/data/app/el1";
 const set<string> SANDBOX_EXCLUDE_PATH = {
     "chipset",
     "system",
@@ -103,6 +101,21 @@ const vector<string> CRYPTO_SRC_PATH = {
     "/data/app/el5/<currentUserId>/base/<bundleName>/",
     "/data/app/el5/<currentUserId>/database/<bundleName>/"
 };
+
+const vector<string> APPDATA_DST_PATH = {
+    "/mnt/user/<currentUserId>/nosharefs/appdata/el1/base/",
+    "/mnt/user/<currentUserId>/nosharefs/appdata/el2/base/",
+    "/mnt/user/<currentUserId>/nosharefs/appdata/el2/cloud/",
+    "/mnt/user/<currentUserId>/nosharefs/appdata/el2/distributedfiles/"
+};
+
+const vector<string> APPDATA_SRC_PATH = {
+    "/data/app/el1/<currentUserId>/base/",
+    "/data/app/el2/<currentUserId>/base/",
+    "/mnt/hmdfs/<currentUserId>/cloud/data/",
+    "/mnt/hmdfs/<currentUserId>/account/merge_view/data/"
+};
+
 const std::string HMDFS_SYS_CAP = "const.distributed_file_property.enabled";
 const int32_t HMDFS_VAL_LEN = 6;
 const int32_t HMDFS_TRUE_LEN = 5;
@@ -111,7 +124,7 @@ static constexpr int MODE_0711 = 0711;
 static constexpr int MODE_0771 = 0771;
 static constexpr int MODE_02771 = 02771;
 MountManager::MountManager() : hmdfsDirVec_(InitHmdfsDirVec()), virtualDir_(InitVirtualDir()),
-    systemServiceDir_(InitSystemServiceDir()), fileManagerDir_(InitFileManagerDir())
+    systemServiceDir_(InitSystemServiceDir()), fileManagerDir_(InitFileManagerDir()), appdataDir_(InitAppdataDir())
 {
 }
 
@@ -197,6 +210,28 @@ std::vector<DirInfo> MountManager::InitFileManagerDir()
             {"/data/service/el2/%d/hmdfs/account/files/.Recent", MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER}};
 }
 
+std::vector<DirInfo> MountManager::InitAppdataDir()
+{
+    return {{"/mnt/user", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/mnt/user/%d", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/mnt/user/%d/nosharefs", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/mnt/user/%d/nosharefs/docs", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/mnt/user/%d/nosharefs/docs/currentUser", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/mnt/user/%d/nosharefs/appdata", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/mnt/user/%d/nosharefs/appdata/el1", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/mnt/user/%d/nosharefs/appdata/el1/base", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/mnt/user/%d/nosharefs/appdata/el2", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/mnt/user/%d/nosharefs/appdata/el2/base", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/mnt/user/%d/nosharefs/appdata/el2/cloud", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/mnt/user/%d/nosharefs/appdata/el2/distributedfiles", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/mnt/user/%d/sharefs", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/mnt/user/%d/sharefs/docs", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/mnt/user/%d/sharefs/docs/currentUser", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/mnt/user/%d/currentUser", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/mnt/user/%d/currentUser/filemgr", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/mnt/user/%d/currentUser/other", MODE_0711, OID_ROOT, OID_ROOT}};
+}
+
 int32_t MountManager::HmdfsTwiceMount(int32_t userId, const std::string &relativePath)
 {
     int32_t ret = HmdfsMount(userId, relativePath);
@@ -247,6 +282,30 @@ int32_t MountManager::SharefsMount(int32_t userId)
             LOGE("failed to mount sharefs, err %{public}d", errno);
             return E_MOUNT;
         }
+    }
+    return E_OK;
+}
+
+int32_t MountManager::HmSharefsMount(int32_t userId, std::string &srcPath, std::string &dstPath)
+{
+    if (IsDir(srcPath)) {
+        LOGE("srcPath not exist, %{public}s", srcPath.c_str());
+        return ENOENT;
+    }
+    if (IsDir(dstPath)) {
+        LOGE("srcPath not exist, %{public}s", dstPath.c_str());
+        return ENOENT;
+    }
+    if (IsPathMounted(dstPath)) {
+        LOGI("path has mounted, %{public}s", dstPath.c_str());
+        return E_OK;
+    }
+    Utils::MountArgument sharefsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
+    int ret = Mount(srcPath, dstPath, "sharefs", sharefsMntArgs.GetFlags(),
+                    sharefsMntArgs.GetHmUserIdPara().c_str());
+    if (ret != 0) {
+        LOGE("failed to mount hmSharefs, err %{public}d", errno);
+        return E_MOUNT;
     }
     return E_OK;
 }
@@ -636,10 +695,6 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
         }
         vector<string> dstPaths = CRYPTO_SANDBOX_PATH;
         vector<string> srcPaths = CRYPTO_SRC_PATH;
-        if (bundleNameStr == SCENE_BOARD_BUNDLE_NAME) {
-            dstPaths.push_back(PUBLIC_DIR_SANDBOX_PATH);
-            srcPaths.push_back(PUBLIC_DIR_SRC_PATH);
-        }
         MountSandboxPath(srcPaths, dstPaths, bundleNameStr, to_string(userId));
     }
     LOGI("mount crypto path success, userId is %{public}d", userId);
@@ -699,6 +754,7 @@ void MountManager::MountPointToList(std::list<std::string> &hmdfsList, std::list
     Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
     const string &hmdfsPrefix = hmdfsMntArgs.GetMountPointPrefix();
     const string &hmfsPrefix = hmdfsMntArgs.GetSandboxPath();
+    const string &mntUserPrefix = hmdfsMntArgs.GetMntUserPath();
     const string &sharefsPrefix = hmdfsMntArgs.GetShareSrc();
     const string &cloudPrefix = hmdfsMntArgs.GetFullCloud();
     std::stringstream ss(line);
@@ -721,11 +777,16 @@ void MountManager::MountPointToList(std::list<std::string> &hmdfsList, std::list
         if (dst.length() >= hmfsPrefix.length() && dst.substr(0, hmfsPrefix.length()) == hmfsPrefix) {
             hmfsList.push_front(dst);
         }
+        if (dst.length() >= mntUserPrefix.length() && dst.substr(0, mntUserPrefix.length()) == mntUserPrefix) {
+            hmfsList.push_front(dst);
+        }
         return;
     }
     if (type == MOUNT_POINT_TYPE_SHAREFS) {
-        if (src.length() >= sharefsPrefix.length() &&
-            src.substr(0, sharefsPrefix.length()) == sharefsPrefix) {
+        if (src.length() >= sharefsPrefix.length() && src.substr(0, sharefsPrefix.length()) == sharefsPrefix) {
+            sharefsList.push_front(dst);
+        }
+        if (src.length() >= mntUserPrefix.length() && src.substr(0, mntUserPrefix.length()) == mntUserPrefix) {
             sharefsList.push_front(dst);
         }
         return;
@@ -772,14 +833,6 @@ int32_t MountManager::UMountAllPath(int32_t userId, std::list<std::string> &moun
         result = res;
     }
 
-    list = mountMap[MOUNT_POINT_TYPE_HMDFS];
-    total = static_cast<int>(list.size());
-    LOGI("unmount hmdfs path start, total %{public}d.", total);
-    res = UMountByList(list, mountFailList);
-    if (res != E_OK) {
-        result = res;
-    }
-    LOGI("result is %{public}d.", result);
     list = mountMap[MOUNT_POINT_TYPE_HMFS];
     total = static_cast<int>(list.size());
     LOGI("unmount hmfs path start, total %{public}d.", total);
@@ -787,16 +840,25 @@ int32_t MountManager::UMountAllPath(int32_t userId, std::list<std::string> &moun
     if (res != E_OK) {
         result = res;
     }
+    UmountMntUserTmpfs(userId);
+
+    list = mountMap[MOUNT_POINT_TYPE_HMDFS];
+    total = static_cast<int>(list.size());
+    LOGI("unmount hmdfs path start, total %{public}d.", total);
+    res = UMountByList(list, mountFailList);
+    if (res != E_OK) {
+        result = res;
+    }
+
     if (result != E_OK) {
         for (const auto &item: mountFailList) {
             res = UMount2(item.c_str(), MNT_DETACH);
-            if (res != E_OK) {
+            if (res != E_OK && errno == EBUSY) {
                 LOGE("failed to unmount with detach, path %{public}s, errno %{public}d.", item.c_str(), errno);
             }
         }
         return result;
     }
-    DeleteSceneDir(userId);
     LOGI("UMountAllPath success");
     return E_OK;
 }
@@ -818,21 +880,6 @@ int32_t MountManager::UMountByList(std::list<std::string> &list, std::list<std::
     }
     LOGI("UMountByList result is %{public}d.", result);
     return result;
-}
-
-int32_t MountManager::DeleteSceneDir(int32_t userId)
-{
-    std::string path = SANDBOX_ROOT_PATH + to_string(userId) + "/" + SCENE_BOARD_BUNDLE_NAME + PUBLIC_DIR_SANDBOX_PATH;
-    if (rmdir(path.c_str())) {
-        LOGE("failed to rm dir %{public}s, errno %{public}d", path.c_str(), errno);
-        return false;
-    }
-    path = SANDBOX_ROOT_PATH + to_string(userId) + "/" + SCENE_BOARD_BUNDLE_NAME + STORAGE_USERS_PATH;
-    if (rmdir(path.c_str())) {
-        LOGE("failed to rm dir %{public}s, errno %{public}d", path.c_str(), errno);
-        return false;
-    }
-    return E_OK;
 }
 
 void MountManager::MountCloudForUsers(void)
@@ -1001,8 +1048,8 @@ int32_t MountManager::MountByUser(int32_t userId)
     if (ret != E_OK) {
         LOGE("sharefs mount error");
     }
+//    MountAppdataAndSharefs(userId);
     SetFafQuotaProId(userId);
-
     if (CreateSystemServiceDirs(userId) != E_OK) {
         LOGE("create system service dir error");
         return E_PREPARE_DIR;
@@ -1292,6 +1339,200 @@ bool MountManager::CloudDirFlag(const std::string &path)
         return true;
     }
     return false;
+}
+
+int32_t MountManager::SharedMount(const std::string &path)
+{
+//    if (path.empty() || !IsDir(path)) {
+//        LOGE("path invalid, %{public}s", path.c_str());
+//        return ENOENT;
+//    }
+//    errno = 0;
+//    int32_t ret = Mount(path, path, nullptr, MS_BIND | MS_REC, nullptr);
+//    if (ret != 0) {
+//        LOGE("SharedMount failed, path is %{public}s, errno is %{public}d.", path.c_str(), errno);
+//        return ret;
+//    }
+//    ret = Mount(nullptr, path, nullptr, MS_SHARED, nullptr);
+//    if (ret != 0) {
+//        LOGE("SharedMount shared failed, path is %{public}s, errno is %{public}d.", path.c_str(), errno);
+//        return ret;
+//    }
+    return E_OK;
+}
+
+int32_t MountManager::BindAndRecMount(std::string &srcPath, std::string &dstPath, bool isUseSlave)
+{
+    if (srcPath.empty() || !IsDir(srcPath)) {
+        LOGE("path invalid, %{public}s", srcPath.c_str());
+        return ENOENT;
+    }
+    if (dstPath.empty() || !IsDir(dstPath)) {
+        LOGE("path invalid, %{public}s", dstPath.c_str());
+        return ENOENT;
+    }
+    if (IsPathMounted(dstPath)) {
+        LOGE("path has mounted, %{public}s", dstPath.c_str());
+        return E_OK;
+    }
+    int32_t ret = Mount(srcPath, dstPath, nullptr, MS_BIND | MS_REC, nullptr);
+    if (ret != 0) {
+        LOGE("bind and rec mount failed, srcPath is %{public}s, dstPath is %{public}s, errno is %{public}d.",
+             srcPath.c_str(), dstPath.c_str(), errno);
+        return ret;
+    }
+    if (isUseSlave) {
+        ret = Mount(nullptr, dstPath, nullptr, MS_SLAVE, nullptr);
+        if (ret != 0) {
+            LOGE("mount to slave failed, path is %{public}s, errno is %{public}d.", dstPath.c_str(), errno);
+            return ret;
+        }
+    }
+    return E_OK;
+}
+
+void MountManager::GetAllUserId(std::vector<int32_t> &userIds)
+{
+    const std::string &path = APP_EL1_PATH;
+    if (!DirExist(path)) {
+        return;
+    }
+    for (const auto &entry : filesystem::directory_iterator(path)) {
+        if (!entry.is_directory()) {
+            continue;
+        }
+        std::string subPath = entry.path().filename().string();
+        if (!StringIsNumber(subPath)) {
+            continue;
+        }
+        int32_t userId = stoi(subPath);
+        if (userId < DEFAULT_USERID) {
+            continue;
+        }
+        userIds.push_back(userId);
+    }
+}
+
+bool MountManager::DirExist(const std::string &dir)
+{
+    filesystem::path filePath(dir);
+    std::error_code errCode;
+    if (!exists(filePath, errCode)) {
+        LOGE("dir not exists, %{public}s", dir.c_str());
+        return false;
+    }
+    return true;
+}
+
+int32_t MountManager::MountAppdata(const std::string &userId)
+{
+    std::vector<std::string> appdataSrc = APPDATA_SRC_PATH;
+    std::vector<std::string> appdataDst = APPDATA_DST_PATH;
+    int count = static_cast<int>(appdataSrc.size());
+    for (int i = 1; i < count; ++i) {
+        std::string src = appdataSrc[i];
+        std::string dst = appdataDst[i];
+        ParseSandboxPath(src, userId, "");
+        ParseSandboxPath(dst, userId, "");
+        BindAndRecMount(src, dst);
+    }
+    return E_OK;
+}
+
+int32_t MountManager::MountSharefsAndNoSharefs(int32_t userId)
+{
+    Utils::MountArgument mountArgument(Utils::MountArgumentDescriptors::Alpha(userId, ""));
+    std::string path = mountArgument.GetNoSharefsDocPath();
+    SharedMount(path);
+    path = mountArgument.GetSharefsDocPath();
+    SharedMount(path);
+
+    std::string src = APPDATA_SRC_PATH[0];
+    std::string dst = APPDATA_DST_PATH[0];
+    ParseSandboxPath(src, to_string(userId), "");
+    ParseSandboxPath(dst, to_string(userId), "");
+    BindAndRecMount(src, dst);
+    return E_OK;
+}
+
+int32_t MountManager::PrepareAppdataDirByUserId(int32_t userId)
+{
+    for (const DirInfo &dir: appdataDir_) {
+        if (!PrepareDir(StringPrintf(dir.path.c_str(), userId), dir.mode, dir.uid, dir.gid)) {
+            return E_PREPARE_DIR;
+        }
+    }
+    MountSharefsAndNoSharefs(userId);
+    return E_OK;
+}
+
+int32_t MountManager::MountAppdataAndSharefs(int32_t userId)
+{
+    LOGI("mount appdata start");
+    MountAppdata(to_string(userId));
+
+    LOGI("mount currentUser/other");
+    Utils::MountArgument mountArgument(Utils::MountArgumentDescriptors::Alpha(userId, ""));
+    std::string mediaDocPath = mountArgument.GetMediaDocsPath();
+    std::string curOtherPath = mountArgument.GetCurOtherPath();
+    BindAndRecMount(mediaDocPath, curOtherPath);
+
+    LOGI("mount currentUser/other/appdata");
+    std::string noSharefsAppdataPath = mountArgument.GetNoSharefsAppdataPath();
+    std::string curOtherAppdataPath = mountArgument.GetCurOtherAppdataPath();
+    MkDir(curOtherAppdataPath, MODE_0711);
+    BindAndRecMount(noSharefsAppdataPath, curOtherAppdataPath);
+
+    LOGI("mount currentUser/filemgr");
+    std::string curFileMgrPath = mountArgument.GetCurFileMgrPath();
+    BindAndRecMount(mediaDocPath, curFileMgrPath);
+
+    LOGI("mount currentUser/filemgr/appdata");
+    std::string curFileMgrAppdataPath = mountArgument.GetCurFileMgrAppdataPath();
+    MkDir(curFileMgrAppdataPath, MODE_0711);
+    HmSharefsMount(userId, noSharefsAppdataPath, curFileMgrAppdataPath);
+
+    LOGI("mount sharefs/docs/currentUser");
+    std::string sharefsDocCurPath = mountArgument.GetSharefsDocCurPath();
+    BindAndRecMount(curOtherPath, sharefsDocCurPath);
+
+    LOGI("mount nosharefs/docs/currentUser");
+    std::string noSharefsDocCurPath = mountArgument.GetNoSharefsDocCurPath();
+    BindAndRecMount(curFileMgrPath, noSharefsDocCurPath);
+    return E_OK;
+}
+
+int32_t MountManager::PrepareAppdataDir(int32_t userId)
+{
+    if (userId == 0) {
+        std::vector<int32_t> userIds;
+        GetAllUserId(userIds);
+        if (userIds.empty()) {
+            return E_OK;
+        }
+        for (const int32_t &item: userIds) {
+            PrepareAppdataDirByUserId(item);
+        }
+    } else {
+        PrepareAppdataDirByUserId(userId);
+    }
+    return E_OK;
+}
+
+int32_t MountManager::UmountMntUserTmpfs(int32_t userId)
+{
+    Utils::MountArgument mountArgument(Utils::MountArgumentDescriptors::Alpha(userId, ""));
+    std::string path = mountArgument.GetSharefsDocCurPath() + "/appdata";
+    int32_t res = UMount2(path, MNT_DETACH);
+    if (res != E_OK) {
+        LOGE("failed to umount with detach, path %{public}s, errno {public}d.", path.c_str(), errno);
+    }
+    path = mountArgument.GetCurOtherAppdataPath();
+    res = UMount2(path, MNT_DETACH);
+    if (res != E_OK) {
+        LOGE("failed to umount with detach, path %{public}s, errno {public}d.", path.c_str(), errno);
+    }
+    return E_OK;
 }
 } // namespace StorageDaemon
 } // namespace OHOS

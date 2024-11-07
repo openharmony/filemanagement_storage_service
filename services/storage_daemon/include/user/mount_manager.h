@@ -74,10 +74,12 @@ public:
     static std::vector<DirInfo> InitVirtualDir();
     static std::vector<DirInfo> InitSystemServiceDir();
     static std::vector<DirInfo> InitFileManagerDir();
+    static std::vector<DirInfo> InitAppdataDir();
     int32_t MountByUser(int32_t userId);
     int32_t UmountByUser(int32_t userId);
     int32_t PrepareHmdfsDirs(int32_t userId);
     int32_t PrepareFileManagerDirs(int32_t userId);
+    int32_t PrepareAppdataDir(int32_t userId);
     int32_t DestroyHmdfsDirs(int32_t userId);
     int32_t DestroyFileManagerDirs(int32_t userId);
     int32_t DestroySystemServiceDirs(int32_t userId);
@@ -90,7 +92,6 @@ public:
         const std::string &networkId, const std::string &deviceId);
     int32_t UMountAllPath(int32_t userId, std::list<std::string> &mountFailList);
     int32_t UMountByList(std::list<std::string> &list, std::list<std::string> &mountFailList);
-    int32_t DeleteSceneDir(int32_t userId);
     void SetCloudState(bool active);
     int32_t RestoreconSystemServiceDirs(int32_t userId);
     int32_t FindMountPointsToMap(std::map<std::string, std::list<std::string>> &mountMap, int32_t userId);
@@ -116,6 +117,7 @@ private:
     int32_t HmdfsTwiceMount(int32_t userId, const std::string &relativePath);
     int32_t HmdfsUMount(int32_t userId, std::string relativePath);
     int32_t SharefsMount(int32_t userId);
+    int32_t HmSharefsMount(int32_t userId, std::string &srcPath, std::string &dstPath);
     int32_t LocalMount(int32_t userId);
     int32_t LocalUMount(int32_t userId);
     int32_t SetFafQuotaProId(int32_t userId);
@@ -125,6 +127,15 @@ private:
     void PrepareFileManagerDir(int32_t userId);
     int32_t CloudUMount(int32_t userId);
     bool CheckPathValid(const std::string &bundleNameStr, uint32_t userId);
+    int32_t MountAppdataAndSharefs(int32_t userId);
+    int32_t MountAppdata(const std::string &userId);
+    bool DirExist(const std::string &dir);
+    void GetAllUserId(std::vector<int32_t> &userIds);
+    int32_t PrepareAppdataDirByUserId(int32_t userId);
+    int32_t MountSharefsAndNoSharefs(int32_t userId);
+    int32_t SharedMount(const std::string &path);
+    int32_t BindAndRecMount(std::string &srcPath, std::string &dstPath, bool isUseSlave = true);
+    int32_t UmountMntUserTmpfs(int32_t userId);
 
     DISALLOW_COPY_AND_MOVE(MountManager);
 
@@ -133,6 +144,7 @@ private:
     const std::vector<DirInfo> virtualDir_;
     const std::vector<DirInfo> systemServiceDir_;
     const std::vector<DirInfo> fileManagerDir_;
+    const std::vector<DirInfo> appdataDir_;
     std::mutex mountMutex_;
     std::vector<int32_t> fuseToMountUsers_;
     std::vector<int32_t> fuseMountedUsers_;
