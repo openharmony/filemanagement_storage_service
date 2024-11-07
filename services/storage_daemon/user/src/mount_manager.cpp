@@ -1343,21 +1343,21 @@ bool MountManager::CloudDirFlag(const std::string &path)
 
 int32_t MountManager::SharedMount(const std::string &path)
 {
-//    if (path.empty() || !IsDir(path)) {
-//        LOGE("path invalid, %{public}s", path.c_str());
-//        return ENOENT;
-//    }
-//    errno = 0;
-//    int32_t ret = Mount(path, path, nullptr, MS_BIND | MS_REC, nullptr);
-//    if (ret != 0) {
-//        LOGE("SharedMount failed, path is %{public}s, errno is %{public}d.", path.c_str(), errno);
-//        return ret;
-//    }
-//    ret = Mount(nullptr, path, nullptr, MS_SHARED, nullptr);
-//    if (ret != 0) {
-//        LOGE("SharedMount shared failed, path is %{public}s, errno is %{public}d.", path.c_str(), errno);
-//        return ret;
-//    }
+    if (path.empty() || !IsDir(path)) {
+        LOGE("path invalid, %{public}s", path.c_str());
+        return ENOENT;
+    }
+    errno = 0;
+    int32_t ret = Mount(path, path, nullptr, MS_BIND | MS_REC, nullptr);
+    if (ret != 0) {
+        LOGE("SharedMount failed, path is %{public}s, errno is %{public}d.", path.c_str(), errno);
+        return ret;
+    }
+    ret = Mount(nullptr, path, nullptr, MS_SHARED, nullptr);
+    if (ret != 0) {
+        LOGE("SharedMount shared failed, path is %{public}s, errno is %{public}d.", path.c_str(), errno);
+        return ret;
+    }
     return E_OK;
 }
 
@@ -1429,7 +1429,7 @@ int32_t MountManager::MountAppdata(const std::string &userId)
     std::vector<std::string> appdataSrc = APPDATA_SRC_PATH;
     std::vector<std::string> appdataDst = APPDATA_DST_PATH;
     int count = static_cast<int>(appdataSrc.size());
-    for (int i = 1; i < count; ++i) {
+    for (int i = 1; i < count; i++) {
         std::string src = appdataSrc[i];
         std::string dst = appdataDst[i];
         ParseSandboxPath(src, userId, "");
