@@ -1048,12 +1048,12 @@ int32_t MountManager::MountByUser(int32_t userId)
     if (ret != E_OK) {
         LOGE("sharefs mount error");
     }
-    MountAppdataAndSharefs(userId);
     SetFafQuotaProId(userId);
     if (CreateSystemServiceDirs(userId) != E_OK) {
         LOGE("create system service dir error");
         return E_PREPARE_DIR;
     }
+    MountAppdataAndSharefs(userId);
     LOGI("MountByUser success, userId is %{public}d.", userId);
     return E_OK;
 }
@@ -1469,7 +1469,7 @@ int32_t MountManager::PrepareAppdataDirByUserId(int32_t userId)
 int32_t MountManager::MountAppdataAndSharefs(int32_t userId)
 {
     LOGI("mount appdata start, userId is %{public}d.", userId);
-    MountAppdata(to_string(userId));
+//    MountAppdata(to_string(userId));
 
     LOGI("mount currentUser/other");
     Utils::MountArgument mountArgument(Utils::MountArgumentDescriptors::Alpha(userId, ""));
