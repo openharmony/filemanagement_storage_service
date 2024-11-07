@@ -1462,7 +1462,7 @@ int32_t MountManager::PrepareAppdataDirByUserId(int32_t userId)
             return E_PREPARE_DIR;
         }
     }
-    MountSharefsAndNoSharefs(userId);
+//    MountSharefsAndNoSharefs(userId);
     return E_OK;
 }
 
