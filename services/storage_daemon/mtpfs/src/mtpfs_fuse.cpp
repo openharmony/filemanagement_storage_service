@@ -574,6 +574,17 @@ int MtpFileSystem::ReName(const char *path, const char *newpath, unsigned int fl
     if (rval != 0) {
         return -rval;
     }
+    const std::string tmpBaseName(SmtpfsBaseName(newpath));
+    const std::string tmpDirName(SmtpfsDirName(newpath));
+    const MtpFsTypeDir *dirParent = device_.DirFetchContent(tmpDirName);
+    const int32_t factor = 1000;
+    auto now = std::chrono::system_clock::now();
+    auto millisecs = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
+    uint64_t time = millisecs.count() / factor;
+    if (dirParent != nullptr) {
+        LOGI("MtpFileSystem: file cutted, update dirParent mtime");
+        const_cast<MtpFsTypeDir *>(dirParent)->SetModificationDate(time);
+    }
     return 0;
 }
 
@@ -638,21 +649,17 @@ int MtpFileSystem::UTimens(const char *path, const struct timespec tv[2], struct
 {
     std::string tmpBaseName(SmtpfsBaseName(std::string(path)));
     std::string tmpDirName(SmtpfsDirName(std::string(path)));
-
-    int ret = utimensat(0, path, tv, AT_SYMLINK_NOFOLLOW);
-    if (ret == -1) {
-        return -ENOENT;
-    }
     const MtpFsTypeDir *parent = device_.DirFetchContent(tmpDirName);
     if (!parent) {
+        LOGE("MtpFileSystem: UTimens parent is nullptr");
         return -ENOENT;
     }
-    const MtpFsTypeFile *file = parent->File(tmpBaseName);
-    if (!file) {
+    const MtpFsTypeDir *dir = parent->Dir(tmpBaseName);
+    if (!dir) {
+        LOGE("MtpFileSystem: UTimens dir is nullptr");
         return -ENOENT;
     }
-    const_cast<MtpFsTypeFile *>(file)->SetModificationDate(tv->tv_sec);
-
+    const_cast<MtpFsTypeDir *>(dir)->SetModificationDate(tv[1].tv_sec);
     return 0;
 }
 

@@ -275,12 +275,13 @@ const MtpFsTypeDir *MtpFsDevice::DirFetchContent(std::string path)
     return dir;
 }
 
-static uint64_t GetFormattedTimestampEndWithMilli()
+static uint64_t GetFormattedTimestamp()
 {
+    const int32_t secFactor = 1000;
     auto now = std::chrono::system_clock::now();
     auto millisecs = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
     uint64_t milliSeconds = millisecs.count();
-    return milliSeconds;
+    return milliSeconds / secFactor;
 }
 
 int MtpFsDevice::DirCreateNew(const std::string &path)
@@ -302,9 +303,9 @@ int MtpFsDevice::DirCreateNew(const std::string &path)
         LIBMTP_Clear_Errorstack(device_);
     } else {
         MtpFsTypeDir dirToUpload(newId, dirParent->Id(), dirParent->StorageId(), tmpBaseName);
-        constexpr int32_t SECOND_TO_MILLISECOND = 1000;
-        uint64_t time = GetFormattedTimestampEndWithMilli()/SECOND_TO_MILLISECOND;
+        uint64_t time = GetFormattedTimestamp();
         dirToUpload.SetModificationDate(time);
+        const_cast<MtpFsTypeDir *>(dirParent)->SetModificationDate(time);
         const_cast<MtpFsTypeDir *>(dirParent)->AddDir(dirToUpload);
         LOGI("Directory %{public}s created", path.c_str());
     }
@@ -336,6 +337,8 @@ int MtpFsDevice::DirRemove(const std::string &path)
         LIBMTP_Clear_Errorstack(device_);
         return -EINVAL;
     }
+    uint64_t time = GetFormattedTimestamp();
+    const_cast<MtpFsTypeDir *>(dirParent)->SetModificationDate(time);
     const_cast<MtpFsTypeDir *>(dirParent)->RemoveDir(*dirToRemove);
     LOGI("Folder %{public}s removed", path.c_str());
     return 0;
@@ -621,6 +624,8 @@ int MtpFsDevice::FileRemove(const std::string &path)
         LOGE("Could not remove the directory %{public}s", path.c_str());
         return -EINVAL;
     }
+    uint64_t time = GetFormattedTimestamp();
+    const_cast<MtpFsTypeDir *>(dirParent)->SetModificationDate(time);
     const_cast<MtpFsTypeDir *>(dirParent)->RemoveFile(*fileToRemove);
     LOGI("File %{public}s removed", path.c_str());
     return 0;
