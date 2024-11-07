@@ -154,3 +154,8 @@ bool BaseKey::LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t
     }
     return IBaseKeyMoc::baseKeyMoc->LoadKeyBlob(blob, path, size);
 }
+
+void BaseKey::SetOriginKey(KeyBlob &originKey)
+{
+    return;
+}
