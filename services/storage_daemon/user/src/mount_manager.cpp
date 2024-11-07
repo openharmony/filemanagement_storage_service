@@ -1350,7 +1350,8 @@ int32_t MountManager::SharedMount(const std::string &path)
     errno = 0;
     int32_t ret = mount(path.c_str(), path.c_str(), nullptr, MS_BIND | MS_REC, nullptr);
     if (ret != 0) {
-        LOGE("SharedMount failed, path is %{public}s, errno is %{public}d.", path.c_str(), errno);
+        LOGE("SharedMount failed, path is %{public}s, ret is %{public}d, errno is %{public}d.",
+             path.c_str(), ret, errno);
         return ret;
     }
     ret = mount(nullptr, path.c_str(), nullptr, MS_SHARED, nullptr);
