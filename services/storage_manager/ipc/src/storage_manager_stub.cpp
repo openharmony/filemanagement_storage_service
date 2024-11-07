@@ -434,8 +434,9 @@ int32_t StorageManagerStub::HandleGetBundleStatus(MessageParcel &data, MessagePa
     }
     std::string pkgName = data.ReadString();
     int32_t appIndex = data.ReadInt32();
+    uint32_t statFlag = data.ReadUint32();
     BundleStats bundleStats;
-    int32_t err = GetBundleStats(pkgName, bundleStats, appIndex);
+    int32_t err = GetBundleStats(pkgName, bundleStats, appIndex, statFlag);
     if (!reply.WriteInt32(err)) {
         return  E_WRITE_REPLY_ERR;
     }
@@ -532,7 +533,8 @@ int32_t StorageManagerStub::HandleGetUserStorageStats(MessageParcel &data, Messa
 int32_t StorageManagerStub::HandleGetCurrentBundleStats(MessageParcel &data, MessageParcel &reply)
 {
     BundleStats bundleStats;
-    int32_t err = GetCurrentBundleStats(bundleStats);
+    uint32_t statFlag = data.ReadUint32();
+    int32_t err = GetCurrentBundleStats(bundleStats, statFlag);
     if (!reply.WriteInt32(err)) {
         return  E_WRITE_REPLY_ERR;
     }

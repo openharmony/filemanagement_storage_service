@@ -185,7 +185,7 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetBundleStats_0000, test
     std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
     string pkgName = "com.test";
     BundleStats bundleStats;
-    int32_t result = service->GetBundleStats(pkgName, bundleStats, 0);
+    int32_t result = service->GetBundleStats(pkgName, bundleStats, 0, 0);
     EXPECT_EQ(result, E_BUNDLEMGR_ERROR);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_GetBundleStats_0000";
 }
@@ -225,7 +225,7 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetCurrentBundleStats_000
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_GetCurrentBundleStats_0000";
     std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
     BundleStats bundleStats;
-    int32_t result = service->GetCurrentBundleStats(bundleStats);
+    int32_t result = service->GetCurrentBundleStats(bundleStats, 0);
     EXPECT_EQ(result, E_BUNDLEMGR_ERROR);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_GetCurrentBundleStats_0000";
 }

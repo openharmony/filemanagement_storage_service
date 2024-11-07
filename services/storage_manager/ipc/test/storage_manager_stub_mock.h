@@ -31,14 +31,14 @@ public:
 
     MOCK_METHOD2(GetFreeSizeOfVolume, int32_t(std::string, int64_t &));
     MOCK_METHOD2(GetTotalSizeOfVolume, int32_t(std::string, int64_t &));
-    MOCK_METHOD3(GetBundleStats, int32_t(std::string, BundleStats &, int32_t));
+    MOCK_METHOD4(GetBundleStats, int32_t(std::string, BundleStats &, int32_t, uint32_t));
     MOCK_METHOD1(GetSystemSize, int32_t(int64_t &));
     MOCK_METHOD1(GetTotalSize, int32_t(int64_t &));
     MOCK_METHOD1(GetFreeSize, int32_t(int64_t &));
     MOCK_METHOD1(GetUserStorageStats, int32_t(StorageStats &));
     MOCK_METHOD2(GetUserStorageStats, int32_t(int32_t, StorageStats &));
     MOCK_METHOD3(GetUserStorageStatsByType, int32_t(int32_t, StorageStats &, std::string));
-    MOCK_METHOD1(GetCurrentBundleStats, int32_t(BundleStats &));
+    MOCK_METHOD2(GetCurrentBundleStats, int32_t(BundleStats &, uint32_t));
 
     MOCK_METHOD1(NotifyVolumeCreated, int32_t(VolumeCore));
     MOCK_METHOD5(NotifyVolumeMounted, int32_t(std::string, int32_t, std::string, std::string, std::string));
