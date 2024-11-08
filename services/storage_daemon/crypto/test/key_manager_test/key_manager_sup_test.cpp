@@ -538,7 +538,259 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UnlockUece_001, TestSize.Level1)
     }
 
     EXPECT_EQ(KeyManager::GetInstance()->UnlockUece(user, token, secret), E_OK);
+    OHOS::ForceRemoveDirectory(keyDir);
     GTEST_LOG_(INFO) << "KeyManager_UnlockUece_001 end";
+}
+
+/**
+ * @tc.name: KeyManager_UpdateUseAuthWithRecoveryKey_001
+ * @tc.desc: Verify the UpdateUseAuthWithRecoveryKey function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyManagerSupTest, KeyManager_UpdateUseAuthWithRecoveryKey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_UpdateUseAuthWithRecoveryKey_001 Start";
+    unsigned int userId = 888;
+    std::vector<uint8_t> authToken;
+    std::vector<uint8_t> newSecret;
+    uint64_t secureUid = 1;
+    std::vector<std::vector<uint8_t>> plainText;
+    std::string el2Path = USER_EL2_DIR + "/" + std::to_string(userId);
+    OHOS::ForceRemoveDirectory(el2Path);
+    EXPECT_EQ(KeyManager::GetInstance()->UpdateUseAuthWithRecoveryKey(
+        authToken, newSecret, secureUid, userId, plainText), -EOPNOTSUPP);
+
+    OHOS::ForceCreateDirectory(el2Path);
+    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID));
+    EXPECT_EQ(KeyManager::GetInstance()->UpdateUseAuthWithRecoveryKey(
+        authToken, newSecret, secureUid, userId, plainText), -EOPNOTSUPP);
+
+    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
+    EXPECT_EQ(KeyManager::GetInstance()->UpdateUseAuthWithRecoveryKey(
+        authToken, newSecret, secureUid, userId, plainText), -EFAULT);
+    
+    std::vector<std::vector<uint8_t>> plainText2(3);
+    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
+    #ifdef USER_CRYPTO_MIGRATE_KEY
+    EXPECT_CALL(*baseKeyMock_, StoreKey(_, _)).WillOnce(Return(false));
+    #else
+    EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(false));
+    #endif
+    EXPECT_EQ(KeyManager::GetInstance()->UpdateUseAuthWithRecoveryKey(
+        authToken, newSecret, secureUid, userId, plainText2), -EFAULT);
+    OHOS::ForceRemoveDirectory(el2Path);
+    GTEST_LOG_(INFO) << "KeyManager_UpdateUseAuthWithRecoveryKey_001 end";
+}
+
+/**
+ * @tc.name: KeyManager_UpdateUseAuthWithRecoveryKey_002
+ * @tc.desc: Verify the UpdateUseAuthWithRecoveryKey function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyManagerSupTest, KeyManager_UpdateUseAuthWithRecoveryKey_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_UpdateUseAuthWithRecoveryKey_002 Start";
+    unsigned int userId = 888;
+    std::vector<uint8_t> authToken;
+    std::vector<uint8_t> newSecret;
+    uint64_t secureUid = 1;
+    std::vector<std::vector<uint8_t>> plainText(3);
+    std::string el2Path = USER_EL2_DIR + "/" + std::to_string(userId);
+    std::string el3Path = USER_EL3_DIR + "/" + std::to_string(userId);
+    std::string el4Path = USER_EL4_DIR + "/" + std::to_string(userId);
+
+    OHOS::ForceCreateDirectory(el2Path);
+    OHOS::ForceCreateDirectory(el3Path);
+    OHOS::ForceCreateDirectory(el4Path);
+    
+    bool existUece = true;
+    if (access(UECE_PATH, F_OK) != 0) {
+        existUece = false;
+        EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2))
+            .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
+        EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2))
+            .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
+        #ifdef USER_CRYPTO_MIGRATE_KEY
+        EXPECT_CALL(*baseKeyMock_, StoreKey(_, _)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
+        #else
+        EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
+        #endif
+
+        EXPECT_EQ(KeyManager::GetInstance()->UpdateUseAuthWithRecoveryKey(
+            authToken, newSecret, secureUid, userId, plainText), E_OK);
+
+        std::ofstream file(UECE_PATH);
+        EXPECT_GT(open(UECE_PATH, O_RDWR), 0);
+    }
+    
+    if (!existUece) {
+        OHOS::RemoveFile(UECE_PATH);
+    }
+    OHOS::ForceRemoveDirectory(el2Path);
+    OHOS::ForceRemoveDirectory(el3Path);
+    OHOS::ForceRemoveDirectory(el4Path);
+    GTEST_LOG_(INFO) << "KeyManager_UpdateUseAuthWithRecoveryKey_002 end";
+}
+
+/**
+ * @tc.name: KeyManager_UpdateUseAuthWithRecoveryKey_003
+ * @tc.desc: Verify the UpdateUseAuthWithRecoveryKey function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyManagerSupTest, KeyManager_UpdateUseAuthWithRecoveryKey_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_UpdateUseAuthWithRecoveryKey_003 Start";
+    unsigned int userId = 888;
+    std::vector<uint8_t> authToken;
+    std::vector<uint8_t> newSecret;
+    uint64_t secureUid = 1;
+    std::vector<std::vector<uint8_t>> plainText(3);
+    std::string el2Path = USER_EL2_DIR + "/" + std::to_string(userId);
+    std::string el3Path = USER_EL3_DIR + "/" + std::to_string(userId);
+    std::string el4Path = USER_EL4_DIR + "/" + std::to_string(userId);
+
+    OHOS::ForceCreateDirectory(el2Path);
+    OHOS::ForceCreateDirectory(el3Path);
+    OHOS::ForceCreateDirectory(el4Path);
+    
+    bool existUece = true;
+    if (access(UECE_PATH, F_OK) != 0) {
+        existUece = false;
+        std::ofstream file(UECE_PATH);
+        EXPECT_GT(open(UECE_PATH, O_RDWR), 0);
+    }
+
+    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2))
+        .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2))
+        .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
+    #ifdef USER_CRYPTO_MIGRATE_KEY
+    EXPECT_CALL(*baseKeyMock_, StoreKey(_, _)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
+    #else
+    EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
+    #endif
+    EXPECT_CALL(*fscryptKeyMock_, EncryptClassE(_, _, _, _)).WillOnce(Return(false));
+    EXPECT_CALL(*baseKeyMock_, ClearKey(_)).WillOnce(Return(true));
+    EXPECT_EQ(KeyManager::GetInstance()->UpdateUseAuthWithRecoveryKey(
+        authToken, newSecret, secureUid, userId, plainText), -EFAULT);
+    
+    if (!existUece) {
+        OHOS::RemoveFile(UECE_PATH);
+    }
+    OHOS::ForceRemoveDirectory(el2Path);
+    OHOS::ForceRemoveDirectory(el3Path);
+    OHOS::ForceRemoveDirectory(el4Path);
+    GTEST_LOG_(INFO) << "KeyManager_UpdateUseAuthWithRecoveryKey_003 end";
+}
+
+/**
+ * @tc.name: KeyManager_UpdateUseAuthWithRecoveryKey_004
+ * @tc.desc: Verify the UpdateUseAuthWithRecoveryKey function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyManagerSupTest, KeyManager_UpdateUseAuthWithRecoveryKey_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_UpdateUseAuthWithRecoveryKey_004 Start";
+    unsigned int userId = 888;
+    std::vector<uint8_t> authToken;
+    std::vector<uint8_t> newSecret;
+    uint64_t secureUid = 1;
+    std::vector<std::vector<uint8_t>> plainText(3);
+    std::string el2Path = USER_EL2_DIR + "/" + std::to_string(userId);
+    std::string el3Path = USER_EL3_DIR + "/" + std::to_string(userId);
+    std::string el4Path = USER_EL4_DIR + "/" + std::to_string(userId);
+
+    OHOS::ForceCreateDirectory(el2Path);
+    OHOS::ForceCreateDirectory(el3Path);
+    OHOS::ForceCreateDirectory(el4Path);
+    
+    bool existUece = true;
+    if (access(UECE_PATH, F_OK) != 0) {
+        existUece = false;
+        std::ofstream file(UECE_PATH);
+        EXPECT_GT(open(UECE_PATH, O_RDWR), 0);
+    }
+
+    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2))
+        .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2))
+        .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
+    #ifdef USER_CRYPTO_MIGRATE_KEY
+    EXPECT_CALL(*baseKeyMock_, StoreKey(_, _)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
+    #else
+    EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
+    #endif
+    EXPECT_CALL(*fscryptKeyMock_, EncryptClassE(_, _, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(*fscryptKeyMock_, LockUece(_)).WillOnce(Return(false));
+    EXPECT_EQ(KeyManager::GetInstance()->UpdateUseAuthWithRecoveryKey(
+        authToken, newSecret, secureUid, userId, plainText), E_OK);
+
+    if (!existUece) {
+        OHOS::RemoveFile(UECE_PATH);
+    }
+    OHOS::ForceRemoveDirectory(el2Path);
+    OHOS::ForceRemoveDirectory(el3Path);
+    OHOS::ForceRemoveDirectory(el4Path);
+    GTEST_LOG_(INFO) << "KeyManager_UpdateUseAuthWithRecoveryKey_004 end";
+}
+
+/**
+ * @tc.name: KeyManager_UpdateUseAuthWithRecoveryKey_005
+ * @tc.desc: Verify the UpdateUseAuthWithRecoveryKey function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyManagerSupTest, KeyManager_UpdateUseAuthWithRecoveryKey_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_UpdateUseAuthWithRecoveryKey_005 Start";
+    unsigned int userId = 888;
+    std::vector<uint8_t> authToken;
+    std::vector<uint8_t> newSecret;
+    uint64_t secureUid = 1;
+    std::vector<std::vector<uint8_t>> plainText(3);
+    std::string el2Path = USER_EL2_DIR + "/" + std::to_string(userId);
+    std::string el3Path = USER_EL3_DIR + "/" + std::to_string(userId);
+    std::string el4Path = USER_EL4_DIR + "/" + std::to_string(userId);
+
+    OHOS::ForceCreateDirectory(el2Path);
+    OHOS::ForceCreateDirectory(el3Path);
+    OHOS::ForceCreateDirectory(el4Path);
+    
+    bool existUece = true;
+    if (access(UECE_PATH, F_OK) != 0) {
+        existUece = false;
+        std::ofstream file(UECE_PATH);
+        EXPECT_GT(open(UECE_PATH, O_RDWR), 0);
+    }
+
+    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2))
+        .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2))
+        .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
+    #ifdef USER_CRYPTO_MIGRATE_KEY
+    EXPECT_CALL(*baseKeyMock_, StoreKey(_, _)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
+    #else
+    EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
+    #endif
+    EXPECT_CALL(*fscryptKeyMock_, EncryptClassE(_, _, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(*fscryptKeyMock_, LockUece(_)).WillOnce(Return(true));
+    EXPECT_EQ(KeyManager::GetInstance()->UpdateUseAuthWithRecoveryKey(
+        authToken, newSecret, secureUid, userId, plainText), E_OK);
+
+    if (!existUece) {
+        OHOS::RemoveFile(UECE_PATH);
+    }
+    OHOS::ForceRemoveDirectory(el2Path);
+    OHOS::ForceRemoveDirectory(el3Path);
+    OHOS::ForceRemoveDirectory(el4Path);
+    GTEST_LOG_(INFO) << "KeyManager_UpdateUseAuthWithRecoveryKey_005 end";
 }
 }
 
