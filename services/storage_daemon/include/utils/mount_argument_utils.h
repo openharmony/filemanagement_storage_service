@@ -38,6 +38,7 @@ struct MountArgument final {
     std::string GetShareSrc() const;
     std::string GetShareDst() const;
     std::string GetUserIdPara() const;
+    std::string GetHmUserIdPara() const;
     std::string GetCommFullPath() const;
     std::string GetCloudFullPath() const;
     std::string GetCachePath() const;
@@ -49,6 +50,17 @@ struct MountArgument final {
     std::string GetLocalDocsPath() const;
     std::string GetMountPointPrefix() const;
     std::string GetSandboxPath() const;
+    std::string GetMntUserPath() const;
+    std::string GetMediaDocsPath() const;
+    std::string GetNoSharefsDocPath() const;
+    std::string GetNoSharefsDocCurPath() const;
+    std::string GetSharefsDocPath() const;
+    std::string GetSharefsDocCurPath() const;
+    std::string GetCurOtherPath() const;
+    std::string GetCurOtherAppdataPath() const;
+    std::string GetCurFileMgrPath() const;
+    std::string GetCurFileMgrAppdataPath() const;
+    std::string GetNoSharefsAppdataPath() const;
     unsigned long GetFlags() const;
 };
 

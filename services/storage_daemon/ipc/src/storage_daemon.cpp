@@ -332,8 +332,9 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
         return ret;
     }
 #endif
-
-    return UserManager::GetInstance()->PrepareUserDirs(userId, flags);
+    int32_t prepareRet = UserManager::GetInstance()->PrepareUserDirs(userId, flags);
+    MountManager::GetInstance()->PrepareAppdataDir(userId);
+    return prepareRet;
 }
 
 int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
@@ -463,7 +464,7 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
         AuditLog storageAuditLog = { false, "FAILED TO PrepareUserDirs", "ADD", "PrepareUserDirs", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
     }
-
+    MountManager::GetInstance()->PrepareAppdataDir(GLOBAL_USER_ID);
     std::thread thread([this]() { SetDeleteFlag4KeyFiles(); });
     thread.detach();
     return result;
