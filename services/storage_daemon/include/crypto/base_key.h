@@ -67,6 +67,7 @@ public:
     void ClearMemoryKeyCtx();
     void WipingActionDir(std::string &path);
     bool UpgradeKeys();
+    bool KeyDesclsEmpty();
     KeyInfo keyInfo_;
     std::string GetDir() const
     {

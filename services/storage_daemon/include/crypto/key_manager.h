@@ -137,7 +137,8 @@ private:
     bool UnlockUece(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret, int &ret);
     void CheckAndClearTokenInfo(uint32_t user);
     int CheckUserPinProtect(unsigned int userId, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret);
-
+    bool HashElxActived(unsigned int user, KeyType type);
+    bool HasElxDesc(std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_, KeyType type, unsigned int user);
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl1Key_;
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl2Key_;
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl3Key_;
