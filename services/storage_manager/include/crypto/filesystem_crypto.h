@@ -43,6 +43,7 @@ public:
     int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus);
     int32_t GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId);
     int32_t DeleteAppkey(const std::string keyId);
+    int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false);
 private:
     int32_t CheckUserIdRange(int32_t userId);
 };

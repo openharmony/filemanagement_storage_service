@@ -889,6 +889,32 @@ int32_t StorageDaemon::UMountDfsDocs(int32_t userId, const std::string &relative
     return MountManager::GetInstance()->UMountDfsDocs(userId, relativePath, networkId, deviceId);
 }
 
+int32_t StorageDaemon::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
+{
+#ifdef USER_CRYPTO_MANAGER
+    int32_t ret = KeyManager::GetInstance()->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
+    if (ret != E_OK) {
+        LOGE("GetFileEncryptStatus failed, please check");
+        RadarParameter parameterRes = {
+            .orgPkg = DEFAULT_ORGPKGNAME,
+            .userId = userId,
+            .funcName = "GetFileEncryptStatus",
+            .bizScene = BizScene::USER_KEY_ENCRYPTION,
+            .bizStage = BizStage::BIZ_STAGE_GET_FILE_ENCRYPT_STATUS,
+            .keyElxLevel = "EL1",
+            .errorCode = ret
+        };
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
+        AuditLog storageAuditLog = { false, "FAILED TO GetFileEncryptStatus", "SELECT", "GetFileEncryptStatus", 1,
+            "FAILED" };
+        HiAudit::GetInstance().Write(storageAuditLog);
+    }
+    return ret;
+#else
+    return E_OK;
+#endif
+}
+
 static bool ReadFileToString(const std::string& pathInst, std::string& oldContent)
 {
     std::fstream fd;

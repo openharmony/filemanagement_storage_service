@@ -59,6 +59,7 @@ public:
     int32_t UnlockUserScreen(uint32_t userId,
                              const std::vector<uint8_t> &token,
                              const std::vector<uint8_t> &secret);
+    int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false);
     int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus);
     int32_t GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId);
     int32_t DeleteAppkey(uint32_t userId, const std::string keyId);

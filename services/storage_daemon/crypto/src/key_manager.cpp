@@ -1568,9 +1568,10 @@ int KeyManager::UpgradeKeys(const std::vector<FileList> &dirInfo)
     return 0;
 }
 
-int KeyManager::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
+int KeyManager::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
 {
-    LOGI("Begin check encrypted status.");
+    LOGI("Begin check encrypted status, userId is %{public}d, needCheckDirMount is %{public}d",
+         userId, needCheckDirMount);
     isEncrypted = true;
     const char rootPath[] = "/data/app/el2/";
     const char basePath[] = "/base";
@@ -1582,8 +1583,8 @@ int KeyManager::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
     }
     int len = sprintf_s(path, allPathSize, "%s%u%s", rootPath, userId, basePath);
     if (len <= 0 || (size_t)len >= allPathSize) {
-        LOGE("Failed to get base path");
         free(path);
+        LOGE("Failed to get base path");
         return -ENOENT;
     }
     if (access(path, F_OK) != 0) {
@@ -1592,7 +1593,7 @@ int KeyManager::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted)
         return E_OK;
     }
     free(path);
-    if (!MountManager::GetInstance()->CheckMountFileByUser(userId)) {
+    if (needCheckDirMount && !MountManager::GetInstance()->CheckMountFileByUser(userId)) {
         LOGI("The virturalDir is not exists.");
         return E_OK;
     }

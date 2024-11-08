@@ -137,6 +137,7 @@ private:
     bool UnlockUece(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret, int &ret);
     void CheckAndClearTokenInfo(uint32_t user);
     int CheckUserPinProtect(unsigned int userId, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret);
+    int GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false);
 
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl1Key_;
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl2Key_;
