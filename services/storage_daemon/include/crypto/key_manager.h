@@ -39,6 +39,13 @@ const std::string USER_EL3_DIR = FSCRYPT_EL_DIR + "/el3";
 const std::string USER_EL4_DIR = FSCRYPT_EL_DIR + "/el4";
 const std::string USER_EL5_DIR = FSCRYPT_EL_DIR + "/el5";
 const std::string UECE_DIR = "data/app/el5";
+const std::string DATA_DIR = "data/app/";
+const std::string SERVICE_DIR = "data/service/";
+const std::string FSCRYPT_VERSION_DIR = "/fscrypt_version";
+const std::string ENCRYPT_VERSION_DIR = "/latest/encrypted";
+const std::string SEC_DISCARD_DIR = "/latest/sec_discard";
+const std::string SHIELD_DIR = "/latest/shield";
+const std::string RESTORE_DIR = "/latest/need_restore";
 
 class KeyManager {
 public:
@@ -138,6 +145,9 @@ private:
     void CheckAndClearTokenInfo(uint32_t user);
     int CheckUserPinProtect(unsigned int userId, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret);
     int GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false);
+    bool IsWorkDirExist(std::string type, int32_t userId);
+    int GenerateIntegrityDirs(int32_t userId, KeyType type);
+    int CheckAndFixUserKeyDirectory(unsigned int user);
 
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl1Key_;
     std::map<unsigned int, std::shared_ptr<BaseKey>> userEl2Key_;
