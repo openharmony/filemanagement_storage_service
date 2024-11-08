@@ -286,7 +286,7 @@ int MtpFileSystem::MtpFileSystemOptions::OptProc(void *data, const char *arg, in
 {
     MtpFileSystemOptions *options = static_cast<MtpFileSystemOptions *>(data);
 
-    if (key == FUSE_OPT_KEY_NONOPT) {
+    if (key == FUSE_OPT_KEY_NONOPT && options != nullptr) {
         if (options->mountPoint_ && options->deviceFile_) {
             // Unknown positional argument supplied
             return -1;
@@ -473,6 +473,10 @@ int MtpFileSystem::GetAttr(const char *path, struct stat *buf, struct fuse_file_
         LOGE("memset stat fail");
     }
     struct fuse_context *fc = fuse_get_context();
+    if (buf == nullptr || fc == nullptr) {
+        LOGE("MtpFileSystem: buf is null or get file contxt failed");
+        return -ENOENT;
+    }
     buf->st_uid = fc->uid;
     buf->st_gid = fc->gid;
     if (path == std::string("/")) {
@@ -483,18 +487,16 @@ int MtpFileSystem::GetAttr(const char *path, struct stat *buf, struct fuse_file_
         std::string tmpPath(SmtpfsDirName(path));
         std::string tmpFile(SmtpfsBaseName(path));
         const MtpFsTypeDir *content = device_.DirFetchContent(tmpPath);
-        if (!content) {
+        if (content == nullptr) {
             LOGE("MtpFileSystem: GetAttr error, content is null, path: %{public}s", path);
             return -ENOENT;
-        }
-
-        if (content->Dir(tmpFile)) {
+        } else if (content->Dir(tmpFile) != nullptr) {
             const MtpFsTypeDir *dir = content->Dir(tmpFile);
             buf->st_ino = dir->Id();
             buf->st_mode = S_IFDIR | PERMISSION_ONE;
             buf->st_nlink = ST_NLINK_TWO;
             buf->st_mtime = dir->ModificationDate();
-        } else if (content->File(tmpFile)) {
+        } else if (content->File(tmpFile) != nullptr) {
             const MtpFsTypeFile *file = content->File(tmpFile);
             buf->st_ino = file->Id();
             buf->st_size = static_cast<ssize_t>(file->Size());
@@ -591,7 +593,7 @@ int MtpFileSystem::ReName(const char *path, const char *newpath, unsigned int fl
 int MtpFileSystem::ChMods(const char *path, mode_t mode, struct fuse_file_info *fi)
 {
     int res;
-    if (fi) {
+    if (fi != nullptr) {
         res = fchmod(fi->fh, mode);
     } else {
         res = chmod(path, mode);
@@ -606,7 +608,7 @@ int MtpFileSystem::Chown(const char *path, uid_t uid, gid_t gid, struct fuse_fil
 {
     LOGI("mtp Chown path:%{public}s ,uid:%{public}lu, gid:%{public}lu", path, uid, gid);
     int res;
-    if (fi) {
+    if (fi != nullptr) {
         res = fchown(fi->fh, uid, gid);
     } else {
         res = lchown(path, uid, gid);
@@ -650,12 +652,12 @@ int MtpFileSystem::UTimens(const char *path, const struct timespec tv[2], struct
     std::string tmpBaseName(SmtpfsBaseName(std::string(path)));
     std::string tmpDirName(SmtpfsDirName(std::string(path)));
     const MtpFsTypeDir *parent = device_.DirFetchContent(tmpDirName);
-    if (!parent) {
+    if (parent == nullptr) {
         LOGE("MtpFileSystem: UTimens parent is nullptr");
         return -ENOENT;
     }
     const MtpFsTypeDir *dir = parent->Dir(tmpBaseName);
-    if (!dir) {
+    if (dir == nullptr) {
         LOGE("MtpFileSystem: UTimens dir is nullptr");
         return -ENOENT;
     }
@@ -671,8 +673,9 @@ int MtpFileSystem::Create(const char *path, mode_t mode, fuse_file_info *fileInf
     if (rval < 0) {
         return -errno;
     }
-
-    fileInfo->fh = static_cast<uint32_t>(rval);
+    if (fileInfo != nullptr) {
+        fileInfo->fh = static_cast<uint32_t>(rval);
+    }
     tmpFilesPool_.AddFile(MtpFsTypeTmpFile(std::string(path), tmpPath, rval, true));
     rval = device_.FilePush(tmpPath, std::string(path));
     if (rval != 0) {
@@ -684,15 +687,19 @@ int MtpFileSystem::Create(const char *path, mode_t mode, fuse_file_info *fileInf
 int MtpFileSystem::Open(const char *path, struct fuse_file_info *fileInfo)
 {
     LOGI("MtpFileSystem: Open enter, path: %{public}s", path);
-    if (fileInfo->flags & static_cast<int>(O_WRONLY)) {
-        fileInfo->flags |= static_cast<int>(O_TRUNC);
+    if (fileInfo == nullptr) {
+        LOGE("Missing FileInfo");
+        return -ENOENT;
+    }
+    if (static_cast<unsigned int>(fileInfo->flags) & O_WRONLY) {
+        static_cast<unsigned int>(fileInfo->flags) |= O_TRUNC;
     }
     const std::string stdPath(path);
 
     MtpFsTypeTmpFile *tmpFile = const_cast<MtpFsTypeTmpFile *>(tmpFilesPool_.GetFile(stdPath));
 
     std::string tmpPath;
-    if (tmpFile) {
+    if (tmpFile != nullptr) {
         tmpPath = tmpFile->PathTmp();
     } else {
         tmpPath = tmpFilesPool_.MakeTmpPath(stdPath);
@@ -719,7 +726,7 @@ int MtpFileSystem::Open(const char *path, struct fuse_file_info *fileInfo)
 
     fileInfo->fh = static_cast<uint32_t>(fd);
 
-    if (tmpFile) {
+    if (tmpFile != nullptr) {
         tmpFile->AddFileDescriptor(fd);
     } else {
         tmpFilesPool_.AddFile(MtpFsTypeTmpFile(stdPath, tmpPath, fd));
@@ -731,6 +738,10 @@ int MtpFileSystem::Open(const char *path, struct fuse_file_info *fileInfo)
 int MtpFileSystem::Read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fileInfo)
 {
     LOGI("MtpFileSystem: Read enter, path: %{public}s", path);
+    if (fileInfo == nullptr) {
+        LOGE("Missing FileInfo");
+        return -ENOENT;
+    }
     int rval = 0;
     if (HasPartialObjectSupport()) {
         const std::string stdPath(path);
@@ -750,13 +761,17 @@ int MtpFileSystem::Write(const char *path, const char *buf, size_t size, off_t o
     struct fuse_file_info *fileInfo)
 {
     LOGI("MtpFileSystem: Write enter, path: %{public}s", path);
+    if (fileInfo == nullptr) {
+        LOGE("Missing FileInfo");
+        return -ENOENT;
+    }
     int rval = 0;
     if (HasPartialObjectSupport()) {
         const std::string stdPath(path);
         rval = device_.FileWrite(stdPath, buf, size, offset);
     } else {
         const MtpFsTypeTmpFile *tmpFile = tmpFilesPool_.GetFile(std::string(path));
-        if (!tmpFile) {
+        if (tmpFile == nullptr) {
             LOGE("MtpFileSystem: Write tmpFile error.");
             return -EINVAL;
         }
@@ -774,6 +789,10 @@ int MtpFileSystem::Write(const char *path, const char *buf, size_t size, off_t o
 int MtpFileSystem::Release(const char *path, struct fuse_file_info *fileInfo)
 {
     LOGI("MtpFileSystem: Release enter, path: %{public}s", path);
+    if (fileInfo == nullptr) {
+        LOGE("Missing FileInfo");
+        return -ENOENT;
+    }
     int rval = ::close(fileInfo->fh);
     if (rval < 0) {
         LOGE("MtpFileSystem: Release close error, errno=%{public}d", errno);
@@ -784,7 +803,7 @@ int MtpFileSystem::Release(const char *path, struct fuse_file_info *fileInfo)
         return 0;
     }
     MtpFsTypeTmpFile *tmpFile = const_cast<MtpFsTypeTmpFile *>(tmpFilesPool_.GetFile(stdPath));
-    if (!tmpFile) {
+    if (tmpFile == nullptr) {
         LOGE("failed to get tmpFile.");
         return -EINVAL;
     }
@@ -810,6 +829,10 @@ int MtpFileSystem::Release(const char *path, struct fuse_file_info *fileInfo)
 int MtpFileSystem::Statfs(const char *path, struct statvfs *statInfo)
 {
     uint64_t bs = BS_SIZE;
+    if (statInfo == nullptr) {
+        LOGE("Missing statInfo");
+        return -ENOENT;
+    }
     // XXX: linux coreutils still use bsize member to calculate free space
     statInfo->f_bsize = static_cast<unsigned long>(bs);
     statInfo->f_frsize = static_cast<unsigned long>(bs);
@@ -827,6 +850,10 @@ int MtpFileSystem::Flush(const char *path, struct fuse_file_info *fileInfo)
 int MtpFileSystem::FSync(const char *path, int datasync, struct fuse_file_info *fi)
 {
     int rval = -1;
+    if (fi == nullptr) {
+        LOGE("Missing FileInfo");
+        return -ENOENT;
+    }
 #ifdef HAVE_FDATASYNC
     if (datasync) {
         rval = ::fdatasync(fi->fh);
@@ -839,7 +866,7 @@ int MtpFileSystem::FSync(const char *path, int datasync, struct fuse_file_info *
     }
     const std::string stdPath(path);
     MtpFsTypeTmpFile *tmpFile = const_cast<MtpFsTypeTmpFile *>(tmpFilesPool_.GetFile(stdPath));
-    if (tmpFile) {
+    if (tmpFile != nullptr) {
         tmpFile->RemoveFileDescriptor(fi->fh);
     }
     return 0;
@@ -848,7 +875,7 @@ int MtpFileSystem::FSync(const char *path, int datasync, struct fuse_file_info *
 int MtpFileSystem::OpenDir(const char *path, struct fuse_file_info *fileInfo)
 {
     const MtpFsTypeDir *content = device_.DirFetchContent(std::string(path));
-    if (!content) {
+    if (content == nullptr) {
         return -ENOENT;
     }
     return 0;
@@ -859,7 +886,7 @@ int MtpFileSystem::ReadDir(const char *path, void *buf, fuse_fill_dir_t filler, 
 {
     enum fuse_fill_dir_flags fillFlags = FUSE_FILL_DIR_PLUS;
     const MtpFsTypeDir *content = device_.DirFetchContent(std::string(path));
-    if (!content) {
+    if (content == nullptr) {
         return -ENOENT;
     }
     const std::set<MtpFsTypeDir> dirs = content->Dirs();

@@ -47,7 +47,7 @@ MtpFsTypeDir::MtpFsTypeDir(const MtpFsTypeDir &copy)
 LIBMTP_folder_t *MtpFsTypeDir::ToLIBMTPFolder() const
 {
     LIBMTP_folder_t *f = static_cast<LIBMTP_folder_t *>(malloc(sizeof(LIBMTP_folder_t)));
-    if (!f) {
+    if (f == nullptr) {
         return nullptr;
     }
     f->folder_id = id_;
