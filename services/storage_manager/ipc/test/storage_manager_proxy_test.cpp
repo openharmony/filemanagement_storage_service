@@ -276,13 +276,13 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetBundleStats_0000, tes
 
     std::string pkgName = "ohos.acts.storage.volume";
     BundleStats bundleStats;
-    int32_t result = proxy_->GetBundleStats(pkgName, bundleStats, 0);
+    int32_t result = proxy_->GetBundleStats(pkgName, bundleStats, 0, 0);
     EXPECT_EQ(result, E_OK);
 
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->GetBundleStats(pkgName, bundleStats, 0);
+    result = proxy_->GetBundleStats(pkgName, bundleStats, 0, 0);
     EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetBundleStats_0000";
 }
@@ -1448,13 +1448,13 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetCurrentBundleStats_00
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
     BundleStats bundleStats;
     ASSERT_TRUE(proxy_ != nullptr) << "StorageManagerProxy failed";
-    int32_t result = proxy_->GetCurrentBundleStats(bundleStats);
+    int32_t result = proxy_->GetCurrentBundleStats(bundleStats, 0);
     EXPECT_EQ(result, E_OK);
 
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->GetCurrentBundleStats(bundleStats);
+    result = proxy_->GetCurrentBundleStats(bundleStats, 0);
     EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetCurrentBundleStats_0000";
 }

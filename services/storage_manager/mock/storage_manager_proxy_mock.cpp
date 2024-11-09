@@ -137,7 +137,8 @@ int32_t StorageManagerProxy::GetTotalSizeOfVolume(std::string volumeUuid, int64_
     return E_OK;
 }
 
-int32_t StorageManagerProxy::GetBundleStats(std::string pkgName, BundleStats &bundleStats, int32_t appIndex)
+int32_t StorageManagerProxy::GetBundleStats(std::string pkgName, BundleStats &bundleStats,
+    int32_t appIndex, uint32_t statFlag)
 {
     return E_OK;
 }
@@ -218,7 +219,7 @@ int32_t StorageManagerProxy::GetUserStorageStats(int32_t userId, StorageStats &s
     return E_OK;
 }
 
-int32_t StorageManagerProxy::GetCurrentBundleStats(BundleStats &bundleStats)
+int32_t StorageManagerProxy::GetCurrentBundleStats(BundleStats &bundleStats, uint32_t statFlag)
 {
     return E_OK;
 }

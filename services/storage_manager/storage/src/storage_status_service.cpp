@@ -168,12 +168,11 @@ std::string StorageStatusService::GetCallingPkgName()
 }
 
 int32_t StorageStatusService::GetBundleStats(const std::string &pkgName,
-    BundleStats &bundleStats, int32_t appIndex)
+    BundleStats &bundleStats, int32_t appIndex, uint32_t statFlag)
 {
     int userId = GetCurrentUserId();
     LOGD("StorageStatusService::userId is:%d, appIndex is: %d", userId, appIndex);
-    return GetBundleStats(pkgName, userId, bundleStats, appIndex,
-        AppExecFwk::Constants::NoGetBundleStatsFlag::GET_BUNDLE_WITH_ALL_SIZE);
+    return GetBundleStats(pkgName, userId, bundleStats, appIndex, statFlag);
 }
 
 int32_t StorageStatusService::GetUserStorageStats(StorageStats &storageStats)
@@ -251,13 +250,12 @@ int32_t StorageStatusService::GetBundleStatsForIncrease(uint32_t userId, const s
     return err;
 }
 
-int32_t StorageStatusService::GetCurrentBundleStats(BundleStats &bundleStats)
+int32_t StorageStatusService::GetCurrentBundleStats(BundleStats &bundleStats, uint32_t statFlag)
 {
     int userId = GetCurrentUserId();
 
     std::string pkgName = GetCallingPkgName();
-    int32_t ret = GetBundleStats(pkgName, userId, bundleStats, DEFAULT_APP_INDEX,
-        AppExecFwk::Constants::NoGetBundleStatsFlag::GET_BUNDLE_WITH_ALL_SIZE);
+    int32_t ret = GetBundleStats(pkgName, userId, bundleStats, DEFAULT_APP_INDEX, statFlag);
     if (ret != E_OK) {
         LOGE("storage status service GetBundleStats failed, please check");
         RadarParameter parameterRes = {.orgPkg = DEFAULT_ORGPKGNAME,

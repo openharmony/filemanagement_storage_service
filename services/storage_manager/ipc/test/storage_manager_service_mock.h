@@ -70,7 +70,8 @@ public:
         return E_OK;
     }
 
-    virtual int32_t GetBundleStats(std::string pkgName, BundleStats &bundleStats, int32_t appIndex) override
+    virtual int32_t GetBundleStats(std::string pkgName, BundleStats &bundleStats,
+        int32_t appIndex, uint32_t statFlag) override
     {
         return E_OK;
     }
@@ -105,7 +106,7 @@ public:
         return E_OK;
     }
 
-    virtual int32_t GetCurrentBundleStats(BundleStats &bundleStats) override
+    virtual int32_t GetCurrentBundleStats(BundleStats &bundleStats, uint32_t statFlag) override
     {
         return E_OK;
     }
