@@ -853,7 +853,7 @@ int32_t MountManager::UMountAllPath(int32_t userId, std::list<std::string> &moun
     if (result != E_OK) {
         for (const auto &item: mountFailList) {
             res = UMount2(item.c_str(), MNT_DETACH);
-            if (res != E_OK && errno == EBUSY) {
+            if (res != E_OK) {
                 LOGE("failed to unmount with detach, path %{public}s, errno %{public}d.", item.c_str(), errno);
             }
         }
@@ -872,7 +872,7 @@ int32_t MountManager::UMountByList(std::list<std::string> &list, std::list<std::
     for (const std::string &path: list) {
         LOGD("umount path %{public}s.", path.c_str());
         int32_t res = UMount(path);
-        if (res != E_OK) {
+        if (res != E_OK && errno == EBUSY) {
             LOGE("failed to unmount path %{public}s, errno %{public}d.", path.c_str(), errno);
             result = errno;
             mountFailList.push_back(path);
@@ -1428,7 +1428,7 @@ int32_t MountManager::MountAppdata(const std::string &userId)
     std::vector<std::string> appdataSrc = APPDATA_SRC_PATH;
     std::vector<std::string> appdataDst = APPDATA_DST_PATH;
     int count = static_cast<int>(appdataSrc.size());
-    for (int i = 1; i < count; i++) {
+    for (int i = 0; i < count; i++) {
         std::string src = appdataSrc[i];
         std::string dst = appdataDst[i];
         ParseSandboxPath(src, userId, "");
