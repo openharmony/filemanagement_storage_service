@@ -36,6 +36,7 @@ namespace {
         static_cast<int32_t>(StorageManagerInterfaceCode::REMOVE_USER),
         static_cast<int32_t>(StorageManagerInterfaceCode::PREPARE_START_USER),
         static_cast<int32_t>(StorageManagerInterfaceCode::STOP_USER),
+        static_cast<int32_t>(StorageManagerInterfaceCode::COMPLETE_ADD_USER),
         static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_VOLUME_CREATED),
         static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_VOLUME_MOUNTED),
         static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_VOLUME_STATE_CHANGED),
@@ -73,6 +74,9 @@ namespace {
         static_cast<int32_t>(StorageManagerInterfaceCode::SET_BUNDLE_QUOTA),
         static_cast<int32_t>(StorageManagerInterfaceCode::GENERATE_APP_KEY),
         static_cast<int32_t>(StorageManagerInterfaceCode::DELETE_APP_KEY),
+        static_cast<int32_t>(StorageManagerInterfaceCode::GET_FILE_ENCRYPT_STATUS),
+        static_cast<uint32_t>(StorageManagerInterfaceCode::CREATE_RECOVER_KEY),
+        static_cast<uint32_t>(StorageManagerInterfaceCode::SET_RECOVER_KEY),
         static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_MTP_MOUNT),
         static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_MTP_UNMOUNT),
     };
@@ -167,6 +171,7 @@ HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemote
     EXPECT_CALL(mock, RemoveUser(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, PrepareStartUser(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, StopUser(testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, CompleteAddUser(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, NotifyVolumeCreated(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, NotifyVolumeMounted(testing::_, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return(E_OK));
@@ -207,6 +212,9 @@ HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemote
     EXPECT_CALL(mock, DeleteAppkey(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, UpdateUseAuthWithRecoveryKey(testing::_, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, GetFileEncryptStatus(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, CreateRecoverKey(testing::_, testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, SetRecoverKey(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, NotifyMtpMounted(testing::_, testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, NotifyMtpUnmounted(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
 
