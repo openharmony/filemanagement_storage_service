@@ -52,6 +52,7 @@ ohos_unittest("KeyManagerTest") {
     "${storage_daemon_path}/mock/fscrypt_key_v2_mock.cpp",
     "${storage_daemon_path}/mock/key_control_mock.cpp",
     "${storage_daemon_path}/user/src/mount_manager.cpp",
+    "${storage_daemon_path}/user/src/user_manager.cpp",
     "key_manager_test.cpp",
   ]
 
@@ -66,6 +67,7 @@ ohos_unittest("KeyManagerTest") {
   ]
 
   external_deps = [
+    "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "eventhandler:libeventhandler",
     "hilog:libhilog",
