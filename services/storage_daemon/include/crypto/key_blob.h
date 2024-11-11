@@ -126,6 +126,9 @@ public:
     std::string ToString() const
     {
         std::string hex;
+        if (IsEmpty()) {
+            return hex;
+        }
         const char *hexMap = "0123456789abcdef";
         static_assert(sizeof(data[0]) == sizeof(char));
         for (size_t i = 0; i < size; i++) {
