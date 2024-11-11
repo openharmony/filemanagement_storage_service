@@ -49,7 +49,6 @@ constexpr int32_t SEND_EVENT_INTERVAL_HIGH_FREQ = 5; // 5m
 const std::string PUBLISH_SYSTEM_COMMON_EVENT = "ohos.permission.PUBLISH_SYSTEM_COMMON_EVENT";
 const std::string SMART_BUNDLE_NAME = "com.ohos.hmos.hiviewcare";
 const std::string SMART_ACTION = "hicare.event.SMART_NOTIFICATION";
-const std::string FAULT_SUGGESTION_PARAM = "100M";
 const std::string FAULT_ID_ONE = "845010021";
 const std::string FAULT_ID_TWO = "845010022";
 const std::string FAULT_ID_THREE = "845010023";
@@ -206,7 +205,7 @@ void StorageMonitorService::SendSmartNotificationEvent(const std::string &faultD
     cJSON_AddStringToObject(root, "faultDescription", faultDesc.c_str());
     cJSON_AddStringToObject(root, "faultSuggestion", faultSuggest.c_str());
     if (isHighFreq) {
-        cJSON *faultSuggestionParam = cJSON_CreateString(FAULT_SUGGESTION_PARAM);
+        cJSON *faultSuggestionParam = cJSON_CreateString("100M");
         cJSON *faultSuggestionArray = cJSON_CreateArray();
         cJSON_AddItemToArray(faultSuggestionArray, faultSuggestionParam);
         cJSON_AddItemToObject(root, "faultSuggestionParams", faultSuggestionArray);
