@@ -82,6 +82,8 @@ namespace {
         static_cast<int32_t>(StorageManagerInterfaceCode::GET_FILE_ENCRYPT_STATUS),
         static_cast<int32_t>(StorageManagerInterfaceCode::CREATE_RECOVER_KEY),
         static_cast<int32_t>(StorageManagerInterfaceCode::SET_RECOVER_KEY),
+        static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_MTP_MOUNT),
+        static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_MTP_UNMOUNT),
     };
 
 } // namespace
