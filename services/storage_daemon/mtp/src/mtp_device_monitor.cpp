@@ -60,6 +60,9 @@ void MtpDeviceMonitor::MonitorDevice()
         LIBMTP_raw_device_t *rawDevices;
         LIBMTP_error_number_t err = LIBMTP_Detect_Raw_Devices(&rawDevices, &rawDevSize);
         if ((err == LIBMTP_ERROR_NO_DEVICE_ATTACHED) || (rawDevices == nullptr) || (rawDevSize <= 0)) {
+            if (rawDevices != nullptr) {
+                free(static_cast<void *>(rawDevices));
+            }
             continue;
         }
 
