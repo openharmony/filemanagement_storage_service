@@ -102,6 +102,10 @@ StorageDaemonStub::StorageDaemonStub()
         &StorageDaemonStub::HandleCreateRecoverKey;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::SET_RECOVER_KEY)] =
         &StorageDaemonStub::HandleSetRecoverKey;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::MOUNT_MEDIA_FUSE)] =
+        &StorageDaemonStub::HandleMountMediaFuse;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::UMOUNT_MEDIA_FUSE)] =
+        &StorageDaemonStub::HandleUMountMediaFuse;
 }
 
 int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
@@ -151,6 +155,8 @@ int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::GENERATE_APP_KEY):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::DELETE_APP_KEY):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_FILE_ENCRYPT_STATUS):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::MOUNT_MEDIA_FUSE):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::UMOUNT_MEDIA_FUSE):
             return OnRemoteRequestForApp(code, data, reply);
         default:
             LOGE("Cannot response request %d: unknown tranction", code);
@@ -253,6 +259,10 @@ int32_t StorageDaemonStub::OnRemoteRequestForApp(uint32_t code, MessageParcel &d
             return HandleDeleteAppkey(data, reply);
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_FILE_ENCRYPT_STATUS):
             return HandleGetFileEncryptStatus(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::MOUNT_MEDIA_FUSE):
+            return HandleMountMediaFuse(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::UMOUNT_MEDIA_FUSE):
+            return HandleUMountMediaFuse(data, reply);
         default:
             LOGE("Cannot response request %d: unknown tranction", code);
             return E_SYS_ERR;
@@ -812,5 +822,41 @@ int32_t StorageDaemonStub::HandleGetFileEncryptStatus(MessageParcel &data, Messa
     return E_OK;
 }
 
+int32_t StorageDaemonStub::HandleMountMediaFuse(MessageParcel &data, MessageParcel &reply)
+{
+    LOGI("StorageDaemonStub::HandleMountMediaFuse start.");
+
+    int32_t userId = data.ReadInt32();
+    int32_t fd = -1;
+    int32_t ret = MountMediaFuse(userId, fd);
+    if (!reply.WriteInt32(ret)) {
+        LOGE("Write reply error code failed");
+        if (ret == E_OK) {
+            close(fd);
+        }
+        return E_WRITE_REPLY_ERR;
+    }
+    if (ret == E_OK && fd > 0) {
+        if (!reply.WriteFileDescriptor(fd)) {
+            LOGE("Write reply fd failed");
+            close(fd);
+            return E_WRITE_REPLY_ERR;
+        }
+        close(fd);
+    }
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleUMountMediaFuse(MessageParcel &data, MessageParcel &reply)
+{
+    LOGI("StorageDaemonStub::HandleUMountMediaFuse start.");
+
+    int32_t userId = data.ReadInt32();
+    int32_t ret = UMountMediaFuse(userId);
+    if (!reply.WriteInt32(ret)) {
+        return E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
 } // StorageDaemon
 } // OHOS

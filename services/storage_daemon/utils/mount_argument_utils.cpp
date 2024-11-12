@@ -296,6 +296,13 @@ unsigned long MountArgument::GetFlags() const
     return MS_NODEV;
 }
 
+string MountArgument::GetFullMediaFuse() const
+{
+    stringstream ss;
+    ss << TMPFS_MNT_DATA << userId_ << "/" << "media_fuse";
+    return ss.str();
+}
+
 MountArgument MountArgumentDescriptors::Alpha(int userId, string relativePath)
 {
     MountArgument mountArgument = {

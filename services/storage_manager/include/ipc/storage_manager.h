@@ -122,6 +122,11 @@ public:
         const std::string &networkId, const std::string &deviceId) override;
     int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId) override;
+
+    // media fuse
+    int32_t MountMediaFuse(int32_t userId, int32_t &devFd) override;
+    int32_t UMountMediaFuse(int32_t userId) override;
+
     // reset user event record api
     void ResetUserEventRecord(int32_t userId);
 

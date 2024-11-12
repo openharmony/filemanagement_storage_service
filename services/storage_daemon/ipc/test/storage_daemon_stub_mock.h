@@ -67,6 +67,9 @@ public:
     MOCK_METHOD4(CreateRecoverKey, int32_t (uint32_t, uint32_t, const std::vector<uint8_t> &,
                                             const std::vector<uint8_t> &));
     MOCK_METHOD1(SetRecoverKey, int32_t (const std::vector<uint8_t> &));
+
+    MOCK_METHOD2(MountMediaFuse, int32_t (int32_t, int32_t &));
+    MOCK_METHOD1(UMountMediaFuse, int32_t (int32_t));
 };
 }  // namespace StorageDaemon
 }  // namespace OHOS

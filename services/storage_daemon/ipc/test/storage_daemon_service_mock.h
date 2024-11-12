@@ -233,6 +233,16 @@ public:
     {
         return E_OK;
     }
+
+    virtual int32_t MountMediaFuse(int32_t userId, int32_t &devFd) override
+    {
+        return E_OK;
+    }
+
+    virtual int32_t UMountMediaFuse(int32_t userId) override
+    {
+        return E_OK;
+    }
 };
 } // namespace StorageDaemon
 } // namespace OHOS

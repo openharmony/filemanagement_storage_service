@@ -316,5 +316,15 @@ int32_t StorageManagerProxy::NotifyMtpUnmounted(const std::string &id, const std
 {
     return E_OK;
 }
+
+int32_t StorageManagerProxy::MountMediaFuse(int32_t userId, int32_t &devFd)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::UMountMediaFuse(int32_t userId)
+{
+    return E_OK;
+}
 } // StorageManager
 } // OHOS

@@ -95,6 +95,10 @@ public:
         const std::string &networkId, const std::string &deviceId);
     int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId);
+
+    // media fuse mount
+    int32_t MountMediaFuse(int32_t userId, int32_t &devFd);
+    int32_t UMountMediaFuse(int32_t userId);
 private:
     sptr<OHOS::StorageDaemon::IStorageDaemon> storageDaemon_;
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;

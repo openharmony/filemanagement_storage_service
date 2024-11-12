@@ -109,6 +109,10 @@ public:
         void OnRemoveSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;
     };
 
+    // media fuse
+    virtual int32_t MountMediaFuse(int32_t userId, int32_t &devFd) override;
+    virtual int32_t UMountMediaFuse(int32_t userId) override;
+
 private:
 #ifdef USER_CRYPTO_MIGRATE_KEY
     std::string GetNeedRestoreFilePath(int32_t userId, const std::string &user_dir);

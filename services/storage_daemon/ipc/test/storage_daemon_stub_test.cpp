@@ -67,6 +67,8 @@ namespace {
         static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_RECOVER_KEY),
         static_cast<int32_t>(StorageDaemonInterfaceCode::SET_RECOVER_KEY),
         static_cast<int32_t>(StorageDaemonInterfaceCode::COMPLETE_ADD_USER),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::MOUNT_MEDIA_FUSE),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::UMOUNT_MEDIA_FUSE),
     };
 }
 
@@ -173,6 +175,8 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRe
     EXPECT_CALL(mock, GetFileEncryptStatus(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, CreateRecoverKey(testing::_, testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, SetRecoverKey(testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, MountMediaFuse(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, UMountMediaFuse(testing::_)).WillOnce(testing::Return(E_OK));
 
     for (auto c : g_code) {
         MessageParcel data;
