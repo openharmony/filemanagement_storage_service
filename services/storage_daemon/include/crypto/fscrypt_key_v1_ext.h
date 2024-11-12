@@ -32,6 +32,7 @@ public:
         type_ = GetTypeFromDir();
     }
     bool ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, uint32_t &elType);
+    bool ActiveDoubleKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, uint32_t &elType);
     bool InactiveKeyExt(uint32_t flag);
     bool LockUserScreenExt(uint32_t flag, uint32_t &elType);
     bool UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_t size);
@@ -47,6 +48,7 @@ private:
     uint32_t GetUserIdFromDir();
     uint32_t GetTypeFromDir();
     uint32_t GetMappedUserId(uint32_t userId, uint32_t type);
+    uint32_t GetMappedDeUserId(uint32_t userId);
 
     std::string dir_;
     uint32_t userId_ = 0;

@@ -19,12 +19,14 @@
 #include <vector>
 
 #include "fbex.h"
+#include "file_ex.h"
 #include "storage_service_log.h"
 #include "string_ex.h"
 
 namespace OHOS {
 namespace StorageDaemon {
 static const std::string NEED_RESTORE_PATH = "/data/service/el0/storage_daemon/sd/latest/need_restore";
+static const std::string NEW_DOUBLE_2_SINGLE = "2";
 static const uint32_t DEFAULT_SINGLE_FIRST_USER_ID = 100;
 static const uint32_t USER_ID_DIFF = 91;
 
@@ -64,6 +66,18 @@ uint32_t FscryptKeyV1Ext::GetMappedUserId(uint32_t userId, uint32_t type)
     return userId;
 }
 
+uint32_t FscryptKeyV1Ext::GetMappedDeUserId(uint32_t userId)
+{
+    if (userId == DEFAULT_SINGLE_FIRST_USER_ID) {
+        return 0;
+    }
+
+    if (userId > DEFAULT_SINGLE_FIRST_USER_ID) {
+        return userId - USER_ID_DIFF;
+    }
+    return userId;
+}
+
 bool FscryptKeyV1Ext::ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, uint32_t &elType)
 {
     if (!FBEX::IsFBEXSupported()) {
@@ -71,6 +85,15 @@ bool FscryptKeyV1Ext::ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, ui
     }
 
     LOGI("enter");
+    std::error_code errCode;
+    std::string updateVersion;
+    int ret = OHOS::LoadStringFromFile(NEED_RESTORE_PATH, updateVersion);
+    LOGI("restore version: %{public}s, ret: %{public}d", updateVersion.c_str(), ret);
+    if (type_ == TYPE_EL1 && std::filesystem::exists(NEED_RESTORE_PATH, errCode) &&
+        updateVersion == NEW_DOUBLE_2_SINGLE) {
+        LOGI("restore path exists, deal double DE, errCode = %{public}d", errCode.value());
+        return ActiveDoubleKeyExt(flag, iv, size, elType);
+    }
     uint32_t user = GetMappedUserId(userId_, type_);
     LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, user);
     // iv buffer returns derived keys
@@ -80,6 +103,18 @@ bool FscryptKeyV1Ext::ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, ui
     }
 
     //Used to associate el3 and el4 kernels.
+    elType = type_;
+    return true;
+}
+
+bool FscryptKeyV1Ext::ActiveDoubleKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, uint32_t &elType)
+{
+    LOGI("enter");
+    UserIdToFbeStr userIdToFbe = { .userIds = { userId_, GetMappedDeUserId(userId_) }, .size = USER_ID_SIZE };
+    if (FBEX::InstallDoubleDeKeyToKernel(userIdToFbe, iv, size, flag)) {
+        LOGE("DoubleDeKeyToKernel failed, user %{public}d, type %{public}d, flag %{public}u", userId_, type_, flag);
+        return false;
+    }
     elType = type_;
     return true;
 }
