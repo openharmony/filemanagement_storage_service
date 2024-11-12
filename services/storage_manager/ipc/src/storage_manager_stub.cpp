@@ -888,22 +888,6 @@ int32_t StorageManagerStub::HandleGetFileEncryptStatus(MessageParcel &data, Mess
     return E_OK;
 }
 
-int32_t StorageManagerStub::HandleGetFileEncryptStatus(MessageParcel &data, MessageParcel &reply)
-{
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
-        return E_PERMISSION_DENIED;
-    }
-    bool isEncrypted = true;
-    uint32_t userId = data.ReadUint32();
-    int32_t err = GetFileEncryptStatus(userId, isEncrypted);
-    if (!reply.WriteInt32(err)) {
-        LOGE("Write reply error code failed");
-        return E_WRITE_REPLY_ERR;
-    }
-
-    return E_OK;
-}
-
 int32_t StorageManagerStub::HandleUnlockUserScreen(MessageParcel &data, MessageParcel &reply)
 {
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {

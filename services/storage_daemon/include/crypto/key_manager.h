@@ -87,7 +87,7 @@ public:
     int GenerateAppkey(uint32_t user, uint32_t hashId, std::string &keyId);
     int DeleteAppkey(uint32_t user, const std::string keyId);
     int UnlockUserAppKeys(uint32_t userId, bool needGetAllAppKey);
-    int GetFileEncryptStatus(uint32_t userId, bool &isEncrypted);
+    int GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false);
 #ifdef USER_CRYPTO_MIGRATE_KEY
     int RestoreUserKey(uint32_t userId, KeyType type);
 #endif
@@ -144,7 +144,6 @@ private:
     bool UnlockUece(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret, int &ret);
     void CheckAndClearTokenInfo(uint32_t user);
     int CheckUserPinProtect(unsigned int userId, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret);
-    int GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false);
     bool HashElxActived(unsigned int user, KeyType type);
     bool HasElxDesc(std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_, KeyType type, unsigned int user);
     bool IsWorkDirExist(std::string type, int32_t userId);

@@ -711,9 +711,7 @@ int32_t StorageDaemonStub::HandleGetFileEncryptStatus(MessageParcel &data, Messa
     uint32_t userId = data.ReadUint32();
     bool needCheckDirMount = data.ReadBool();
     bool isEncrypted = true;
-    int timerId = StorageXCollie::SetTimer("storage:GetFileEncryptStatus", LOCAL_TIME_OUT_SECONDS);
     int err = GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
-    StorageXCollie::CancelTimer(timerId);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
