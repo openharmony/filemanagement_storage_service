@@ -123,7 +123,7 @@ void StorageMonitorService::CheckAndCleanBundleCache()
 
     int64_t freeSize;
     err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetFreeSize(freeSize);
-    if ((err != E_OK) || (freeSize <= 0)) {
+    if ((err != E_OK) || (freeSize < 0)) {
         LOGE("Get device free size failed.");
         return;
     }
