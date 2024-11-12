@@ -130,9 +130,17 @@ std::string SmtpfsGetTmpDir()
         tmpDir = SmtpfsRealPath(cTmp);
     }
     tmpDir += "/simple-mtpfs-XXXXXX";
-    std::unique_ptr<char, decltype(&free)> cTmpDirFree(::strdup(tmpDir.c_str()), &free);
-    char *cTmpDir = ::mkdtemp(cTmpDirFree.get());
+    char *cTmpDir = ::strdup(tmpDir.c_str());
+    if (cTmpDir == nullptr) {
+        return nullptr;
+    }
+    char *cTmpDirFree = ::mkdtemp(cTmpDir);
+    if (cTmpDirFree == nullptr) {
+        ::free(static_cast<void *>(cTmpDir));
+        return nullptr;
+    }
     tmpDir.assign(cTmpDir);
+    ::free(static_cast<void *>(cTmpDirFree));
     return tmpDir;
 }
 
