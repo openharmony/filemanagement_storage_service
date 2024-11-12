@@ -145,6 +145,8 @@ private:
     void CheckAndClearTokenInfo(uint32_t user);
     int CheckUserPinProtect(unsigned int userId, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret);
     int GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false);
+    bool HashElxActived(unsigned int user, KeyType type);
+    bool HasElxDesc(std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_, KeyType type, unsigned int user);
     bool IsWorkDirExist(std::string type, int32_t userId);
     int GenerateIntegrityDirs(int32_t userId, KeyType type);
     int CheckAndFixUserKeyDirectory(unsigned int user);
