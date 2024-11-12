@@ -263,7 +263,7 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
         if (type != EL1_KEY) {
             LOGE("userId %{public}u type %{public}u restore key failed, but return success, error = %{public}d",
                 userId, type, ret);
-            return E_OK; // maybe need user key, so return E_OK to continue
+            return E_MIGRETE_ELX_FAILED; // maybe need user key, so return E_OK to continue
         }
         LOGE("RestoreUserKey EL1_KEY failed, error = %{public}d, userId %{public}u", ret, userId);
         return ret;
@@ -301,6 +301,10 @@ int32_t StorageDaemon::RestoreUserKey(int32_t userId, uint32_t flags)
     std::vector<KeyType> keyTypes = {EL1_KEY, EL2_KEY, EL3_KEY, EL4_KEY, EL5_KEY};
     for (KeyType type : keyTypes) {
         auto ret = RestoreOneUserKey(userId, type);
+        if (ret == E_MIGRETE_ELX_FAILED) {
+            LOGE("Try restore user: %{public}d type: %{public}d migrate key, wait user pin !", userId, type);
+            break;
+        }
         if (ret != E_OK) {
             return ret;
         }

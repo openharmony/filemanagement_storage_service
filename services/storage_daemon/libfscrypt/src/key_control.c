@@ -239,5 +239,5 @@ uint8_t KeyCtrlLoadVersion(const char *keyPath)
     }
     LOGE("bad version content. buf = %s", buf);
     free(buf);
-    return FSCRYPT_INVALID;
+    return FSCRYPT_V1;
 }
