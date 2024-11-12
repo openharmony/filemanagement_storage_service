@@ -35,7 +35,7 @@ MtpFsTypeFile::MtpFsTypeFile(const MtpFsTypeFile &copy)
 LIBMTP_file_t *MtpFsTypeFile::ToLIBMTPFile() const
 {
     LIBMTP_file_t *f = static_cast<LIBMTP_file_t *>(malloc(sizeof(LIBMTP_file_t)));
-    if (!f) {
+    if (f == nullptr) {
         return nullptr;
     }
     f->item_id = id_;

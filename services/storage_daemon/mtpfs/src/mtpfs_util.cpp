@@ -130,9 +130,17 @@ std::string SmtpfsGetTmpDir()
         tmpDir = SmtpfsRealPath(cTmp);
     }
     tmpDir += "/simple-mtpfs-XXXXXX";
-    char *cTmpDir = ::mkdtemp(::strdup(tmpDir.c_str()));
+    char *cTmpDir = ::strdup(tmpDir.c_str());
+    if (cTmpDir == nullptr) {
+        return "";
+    }
+    char *cTmpDirFree = ::mkdtemp(cTmpDir);
+    if (cTmpDirFree == nullptr) {
+        ::free(static_cast<void *>(cTmpDir));
+        return "";
+    }
     tmpDir.assign(cTmpDir);
-    ::free(static_cast<void *>(cTmpDir));
+    ::free(static_cast<void *>(cTmpDirFree));
     return tmpDir;
 }
 
@@ -148,7 +156,7 @@ bool SmtpfsRemoveDir(const std::string &dirName)
     std::string path;
 
     dir = ::opendir(dirName.c_str());
-    if (!dir) {
+    if (dir == nullptr) {
         return false;
     }
     while ((entry = ::readdir(dir))) {
@@ -194,7 +202,7 @@ LIBMTP_raw_device_t *smtpfs_raw_device_new_priv(libusb_device *usb_device)
 
     LIBMTP_raw_device_t *device = static_cast<LIBMTP_raw_device_t *>(malloc(sizeof(LIBMTP_raw_device_t)));
 
-    if (!device) {
+    if (device == nullptr) {
         return nullptr;
     }
 
@@ -255,6 +263,11 @@ LIBMTP_raw_device_t *SmtpfsRawDeviceNew(const std::string &path)
 
 bool SmtpfsResetDevice(LIBMTP_raw_device_t *device)
 {
+    if (device == nullptr) {
+        LOGE("device is null");
+        return false;
+    }
+
     if (libusb_init(NULL) != 0) {
         return false;
     }
@@ -286,7 +299,7 @@ bool SmtpfsResetDevice(LIBMTP_raw_device_t *device)
 
 void SmtpfsRawDeviceFree(LIBMTP_raw_device_t *device)
 {
-    if (!device) {
+    if (device == nullptr) {
         return;
     }
 

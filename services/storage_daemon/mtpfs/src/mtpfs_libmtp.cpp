@@ -20,11 +20,11 @@
 extern "C" {
 void LIBMTPFreeFilesAndFolders(LIBMTP_file_t **files)
 {
-    if (!files || !*files) {
+    if (files == nullptr || *files == nullptr) {
         return;
     }
     LIBMTP_file_t *f = *files;
-    while (f) {
+    while (f != nullptr) {
         LIBMTP_file_t *tmp = f;
         char *filename = f->filename;
         f = f->next;
