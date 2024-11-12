@@ -452,7 +452,8 @@ static void ConvertSandboxRealPath(const uint32_t userId, const std::string &bun
     }
 
     if (!uriString.empty()) {
-        uriString += sandboxPathStr;
+        std::string sandboxPathUriStr = AppFileService::SandboxHelper::Encode(sandboxPathStr);
+        uriString += sandboxPathUriStr;
         AppFileService::ModuleFileUri::FileUri uri(uriString);
         // files
         std::string physicalPath;
