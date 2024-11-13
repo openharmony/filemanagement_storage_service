@@ -56,8 +56,8 @@ void MtpDeviceMonitor::MonitorDevice()
         sleep(SLEEP_TIME);
         CheckAndUmountRemovedMtpDevice();
 
-        int rawDevSize;
-        LIBMTP_raw_device_t *rawDevices;
+        int rawDevSize = 0;
+        LIBMTP_raw_device_t *rawDevices = nullptr;
         LIBMTP_error_number_t err = LIBMTP_Detect_Raw_Devices(&rawDevices, &rawDevSize);
         if ((err == LIBMTP_ERROR_NO_DEVICE_ATTACHED) || (rawDevices == nullptr) || (rawDevSize <= 0)) {
             if (rawDevices != nullptr) {
