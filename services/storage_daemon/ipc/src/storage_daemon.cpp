@@ -19,10 +19,12 @@
 #include <fcntl.h>
 #include <fstream>
 #include <thread>
+#include "file_ex.h"
 #include "hi_audit.h"
 #include "hisysevent.h"
 #include "utils/set_flag_utils.h"
 #include "utils/storage_radar.h"
+#include "utils/string_utils.h"
 
 #ifdef USER_CRYPTO_MANAGER
 #include "crypto/app_clone_key_manager.h"
@@ -70,6 +72,8 @@ const std::string DATA_SERVICE_EL3 = "/data/service/el3/";
 const std::string DATA_SERVICE_EL4 = "/data/service/el4/";
 const std::string DATA_SERVICE_EL1_PUBLIC_STORAGE_DAEMON_SD = "/data/service/el1/public/storage_daemon/sd";
 const std::string DATA_SERVICE_EL0_STORAGE_DAEMON_SD = "/data/service/el0/storage_daemon/sd";
+const std::string NEED_RESTORE_SUFFIX = "/latest/need_restore";
+const std::string NEW_DOUBLE_2_SINGELE = "2";
 
 typedef int32_t (*CreateShareFileFunc)(const std::vector<std::string> &, uint32_t, uint32_t, std::vector<int32_t> &);
 typedef int32_t (*DeleteShareFileFunc)(uint32_t, const std::vector<std::string> &);
@@ -449,6 +453,19 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
 #endif
 
 #ifdef USER_CRYPTO_MANAGER
+
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    std::string el2NeedRestorePath = GetNeedRestoreFilePath(START_USER_ID, USER_EL2_DIR);
+    if (std::filesystem::exists(el2NeedRestorePath)) {
+        LOGE("USER_EL2_DIR is exist, update NEW_DOUBLE_2_SINGLE");
+        std::string EL0_NEED_RESTORE = DATA_SERVICE_EL0_STORAGE_DAEMON_SD + NEED_RESTORE_SUFFIX;
+        if (!SaveStringToFile(EL0_NEED_RESTORE, NEW_DOUBLE_2_SINGELE)) {
+            LOGE("Save NEW_DOUBLE_2_SINGELE file failed");
+            return false;
+        }
+    }
+#endif
+
     int ret = KeyManager::GetInstance()->InitGlobalUserKeys();
     if (ret) {
         LOGE("Init global users els failed");
@@ -772,6 +789,11 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
         if (std::filesystem::exists(el2NeedRestorePath) && (!token.empty() || !secret.empty())) {
             updateFlag = true;
             ret = PrepareUserDirsAndUpdateUserAuth(userId, EL2_KEY, token, secret);
+            std::string EL0_NEED_RESTORE = DATA_SERVICE_EL0_STORAGE_DAEMON_SD + NEED_RESTORE_SUFFIX;
+            if (!SaveStringToFile(EL0_NEED_RESTORE, NEW_DOUBLE_2_SINGELE)) {
+                LOGE("Save key type file failed");
+                return false;
+            }
         }
 #endif
         if (ret != E_OK) {

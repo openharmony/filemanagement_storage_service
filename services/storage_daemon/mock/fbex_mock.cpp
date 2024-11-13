@@ -40,6 +40,11 @@ int FBEX::UninstallOrLockUserKeyToKernel(uint32_t userId, uint32_t type, uint8_t
     return IFbexMoc::fbexMoc->UninstallOrLockUserKeyToKernel(userId, type, iv, size, destroy);
 }
 
+int FBEX::InstallDoubleDeKeyToKernel(UserIdToFbeStr &userIdToFbe, uint8_t *iv, uint32_t size, uint8_t flag)
+{
+    return IFbexMoc::fbexMoc->InstallDoubleDeKeyToKernel(userIdToFbe, iv, size, flag);
+}
+
 int FBEX::DeleteClassEPinCode(uint32_t userIdSingle, uint32_t userIdDouble)
 {
     return IFbexMoc::fbexMoc->DeleteClassEPinCode(userIdSingle, userIdDouble);
