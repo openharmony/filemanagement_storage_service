@@ -156,14 +156,15 @@ int KeyManager::InitGlobalDeviceKey(void)
         LOGE("create storage daemon dir error");
         return ret;
     }
-    ret = MkDir(DEVICE_EL1_DIR, S_IRWXU);
-    if (ret) {
-        if (errno != EEXIST) {
-            LOGE("make device el1 dir error");
-            return ret;
-        }
+    std::error_code errCode;
+    if (std::filesystem::exists(DEVICE_EL1_DIR, errCode) && !std::filesystem::is_empty(DEVICE_EL1_DIR)) {
         UpgradeKeys({{0, DEVICE_EL1_DIR}});
         return RestoreDeviceKey(DEVICE_EL1_DIR);
+    }
+    ret = MkDir(DEVICE_EL1_DIR, S_IRWXU);
+    if (ret && errno != EEXIST) {
+        LOGE("create device el1 key dir = (/data/service/el0/storage_daemon/sd) error");
+        return ret;
     }
 
     return GenerateAndInstallDeviceKey(DEVICE_EL1_DIR);
