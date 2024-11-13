@@ -27,13 +27,20 @@ namespace OHOS::StorageDaemon {
 constexpr static mode_t DEFAULT_WRITE_FILE_PERM = 0644;
 constexpr static uint32_t MAX_FILE_NUM = 5;
 constexpr uint32_t INVALID_LOOP_NUM = 0xFFFFFFFF;
-const string TEST_PATH = "/data/tdd/";
+const string TEST_PATH = "/data/tdd";
 class KeyBackupTest : public testing::Test {
 public:
     static void SetUpTestCase(void);
     static void TearDownTestCase(void);
     void SetUp();
     void TearDown();
+};
+
+struct FileNode {
+    std::string baseName;
+    std::string origFile;
+    std::string backFile;
+    bool isSame;
 };
 
 void KeyBackupTest::SetUpTestCase(void)
@@ -166,12 +173,12 @@ HWTEST_F(KeyBackupTest, KeyBackup_GetRealPath_001, TestSize.Level1)
 HWTEST_F(KeyBackupTest, KeyBackup_WriteStringToFile_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "KeyBackup_WriteStringToFile_001 Start";
-    std::string path = TEST_PATH + "test/test.txt";
+    std::string path = TEST_PATH + "/test/test.txt";
     std::string payload = "this is a test content";
     EXPECT_FALSE(KeyBackup::GetInstance().WriteStringToFile(payload, path));
     path.clear();
 
-    path = TEST_PATH + "test.txt";
+    path = TEST_PATH + "/test.txt";
     EXPECT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, path));
     unlink(path.c_str());
     GTEST_LOG_(INFO) << "KeyBackup_WriteStringToFile_001 end";
@@ -186,7 +193,7 @@ HWTEST_F(KeyBackupTest, KeyBackup_WriteStringToFile_001, TestSize.Level1)
 HWTEST_F(KeyBackupTest, KeyBackup_ReadFileToString_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "KeyBackup_ReadFileToString_001 Start";
-    std::string path = TEST_PATH + "test.txt";
+    std::string path = TEST_PATH + "/test.txt";
     unlink(path.c_str());
     std::string content;
     EXPECT_FALSE(KeyBackup::GetInstance().ReadFileToString(path, content));
@@ -209,8 +216,8 @@ HWTEST_F(KeyBackupTest, KeyBackup_ReadFileToString_001, TestSize.Level1)
 HWTEST_F(KeyBackupTest, KeyBackup_CompareFile_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "KeyBackup_CompareFile_001 Start";
-    std::string path = TEST_PATH + "test.txt";
-    std::string path2 = TEST_PATH + "test2.txt";
+    std::string path = TEST_PATH + "/test.txt";
+    std::string path2 = TEST_PATH + "/test2.txt";
     unlink(path.c_str());
     unlink(path2.c_str());
     std::string content;
@@ -237,7 +244,7 @@ HWTEST_F(KeyBackupTest, KeyBackup_CompareFile_001, TestSize.Level1)
 HWTEST_F(KeyBackupTest, KeyBackup_CopyRegfileData_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "KeyBackup_CopyRegfileData_001 Start";
-    std::string path = TEST_PATH + "test.txt";
+    std::string path = TEST_PATH + "/test.txt";
     std::string path2 = "/data/tdd2/test2.txt";
     unlink(path.c_str());
     unlink(path2.c_str());
@@ -250,7 +257,7 @@ HWTEST_F(KeyBackupTest, KeyBackup_CopyRegfileData_001, TestSize.Level1)
     EXPECT_EQ(KeyBackup::GetInstance().CopyRegfileData(path, path2), -1);
 
     path2.clear();
-    path2 = TEST_PATH + "test2.txt";
+    path2 = TEST_PATH + "/test2.txt";
     EXPECT_EQ(KeyBackup::GetInstance().CopyRegfileData(path, path2), 0);
     EXPECT_EQ(KeyBackup::GetInstance().CompareFile(path, path2), 0);
     unlink(path.c_str());
@@ -267,8 +274,8 @@ HWTEST_F(KeyBackupTest, KeyBackup_CopyRegfileData_001, TestSize.Level1)
 HWTEST_F(KeyBackupTest, KeyBackup_CheckAndCopyOneFile_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "KeyBackup_CheckAndCopyOneFile_001 Start";
-    std::string path = TEST_PATH + "test.txt";
-    std::string path2 = TEST_PATH + "test2.txt";
+    std::string path = TEST_PATH + "/test.txt";
+    std::string path2 = TEST_PATH + "/test2.txt";
     unlink(path.c_str());
     unlink(path2.c_str());
     std::string content;
@@ -296,7 +303,7 @@ HWTEST_F(KeyBackupTest, KeyBackup_CheckAndCopyOneFile_001, TestSize.Level1)
 HWTEST_F(KeyBackupTest, KeyBackup_CleanFile_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "KeyBackup_CleanFile_001 Start";
-    std::string path = TEST_PATH + "test.txt";
+    std::string path = TEST_PATH + "/test.txt";
     unlink(path.c_str());
 
     KeyBackup::GetInstance().CleanFile(path);
@@ -323,7 +330,7 @@ HWTEST_F(KeyBackupTest, KeyBackup_CleanFile_001, TestSize.Level1)
 HWTEST_F(KeyBackupTest, KeyBackup_FsyncDirectory_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "KeyBackup_FsyncDirectory_001 Start";
-    std::string path = TEST_PATH + "test.txt";
+    std::string path = TEST_PATH + "/test.txt";
     unlink(path.c_str());
 
     KeyBackup::GetInstance().FsyncDirectory(path);
@@ -345,7 +352,7 @@ HWTEST_F(KeyBackupTest, KeyBackup_FsyncDirectory_001, TestSize.Level1)
 HWTEST_F(KeyBackupTest, KeyBackup_RemoveNode_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "KeyBackup_RemoveNode_001 Start";
-    std::string path = TEST_PATH + "test.txt";
+    std::string path = TEST_PATH + "/test.txt";
     unlink(path.c_str());
 
     EXPECT_EQ(KeyBackup::GetInstance().RemoveNode(path), 0);
@@ -366,16 +373,18 @@ HWTEST_F(KeyBackupTest, KeyBackup_RemoveNode_001, TestSize.Level1)
 HWTEST_F(KeyBackupTest, KeyBackup_RemoveNode_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "KeyBackup_RemoveNode_002 Start";
-    std::string path = TEST_PATH + "test.txt";
-    string baseDir = path + "test";
-    string subDir = baseDir + "node";
+    std::string path = TEST_PATH + "/test.txt";
+    string baseDir = TEST_PATH + "/test";
+    string subDir = baseDir + "/node";
     EXPECT_EQ(KeyBackup::GetInstance().MkdirParent(subDir, DEFAULT_WRITE_FILE_PERM), 0);
    
-    std::string fileName = baseDir + "test.txt";
+    std::string fileName = baseDir + "/test.txt";
     std::string payload = "this is a test content";
     ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, fileName));
     EXPECT_EQ(KeyBackup::GetInstance().RemoveNode(baseDir), 0);
     EXPECT_NE(access(baseDir.c_str(), 0), 0);
+    EXPECT_NE(access(subDir.c_str(), 0), 0);
+    EXPECT_NE(access(fileName.c_str(), 0), 0);
     GTEST_LOG_(INFO) << "KeyBackup_RemoveNode_002 end";
 }
 
@@ -388,8 +397,8 @@ HWTEST_F(KeyBackupTest, KeyBackup_RemoveNode_002, TestSize.Level1)
 HWTEST_F(KeyBackupTest, KeyBackup_CheckAndCopyFiles_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "KeyBackup_CheckAndCopyFiles_001 Start";
-    std::string path = TEST_PATH + "test.txt";
-    std::string path2 = TEST_PATH + "bak.txt";
+    std::string path = TEST_PATH + "/test.txt";
+    std::string path2 = TEST_PATH + "/bak.txt";
 
     KeyBackup::GetInstance().CheckAndCopyFiles(path, path2);
     EXPECT_NE(access(path.c_str(), 0), 0);
@@ -400,7 +409,7 @@ HWTEST_F(KeyBackupTest, KeyBackup_CheckAndCopyFiles_001, TestSize.Level1)
     KeyBackup::GetInstance().CheckAndCopyFiles(path, path2);
     EXPECT_EQ(KeyBackup::GetInstance().CompareFile(path, path2), 0);
     
-    string bakDir = TEST_PATH + "bak/test";
+    string bakDir = TEST_PATH + "/bak/test";
     KeyBackup::GetInstance().CheckAndCopyFiles(TEST_PATH, bakDir);
     EXPECT_NE(access(bakDir.c_str(), 0), 0);
     
@@ -432,8 +441,8 @@ HWTEST_F(KeyBackupTest, KeyBackup_CheckAndCopyFiles_001, TestSize.Level1)
 HWTEST_F(KeyBackupTest, KeyBackup_CreateBackup_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "KeyBackup_CreateBackup_001 Start";
-    std::string path = TEST_PATH + "test.txt";
-    std::string path2 = TEST_PATH + "test2.txt";
+    std::string path = TEST_PATH + "/test.txt";
+    std::string path2 = TEST_PATH + "/test2.txt";
     unlink(path.c_str());
     unlink(path2.c_str());
     KeyBackup::GetInstance().CreateBackup(path, path2, true);
@@ -464,7 +473,7 @@ HWTEST_F(KeyBackupTest, KeyBackup_CreateBackup_001, TestSize.Level1)
 HWTEST_F(KeyBackupTest, KeyBackup_CreateBackup_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "KeyBackup_CreateBackup_002 Start";
-    std::string path = TEST_PATH + "test.txt";
+    std::string path = TEST_PATH + "/test.txt";
     std::string payload = "this is a test content";
     ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, path));
     std::string baseDir = "/data/bak";
@@ -475,5 +484,352 @@ HWTEST_F(KeyBackupTest, KeyBackup_CreateBackup_002, TestSize.Level1)
     unlink(path.c_str());
     EXPECT_EQ(KeyBackup::GetInstance().RemoveNode(baseDir), 0);
     GTEST_LOG_(INFO) << "KeyBackup_CreateBackup_002 end";
+}
+
+/**
+ * @tc.name: KeyBackup_IsRegFile_001
+ * @tc.desc: Verify the IsRegFile function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyBackupTest, KeyBackup_IsRegFile_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyBackup_IsRegFile_001 Start";
+    std::string path = TEST_PATH + "/test.txt";
+    unlink(path.c_str());
+    EXPECT_FALSE(KeyBackup::GetInstance().IsRegFile(path));
+    EXPECT_FALSE(KeyBackup::GetInstance().IsRegFile(TEST_PATH));
+
+    std::string payload = "this is a test content";
+    ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, path));
+    EXPECT_TRUE(KeyBackup::GetInstance().IsRegFile(path));
+    GTEST_LOG_(INFO) << "KeyBackup_IsRegFile_001 end";
+}
+
+/**
+ * @tc.name: KeyBackup_ListAndCheckDir_001
+ * @tc.desc: Verify the ListAndCheckDir function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyBackupTest, KeyBackup_ListAndCheckDir_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyBackup_ListAndCheckDir_001 Start";
+    std::string errPath = "test";
+    KeyBackup::GetInstance().ListAndCheckDir(errPath);
+
+    std::string path = TEST_PATH + "/test.txt";
+    unlink(path.c_str());
+    KeyBackup::GetInstance().ListAndCheckDir(path);
+
+    std::string bkpDir = TEST_PATH + "_bak";
+    std::string bkpPath = bkpDir + "/test.txt";
+    EXPECT_NE(access(path.c_str(), 0), 0);
+    ForceCreateDirectory(bkpDir);
+    std::string payload = "this is a test22222 content";
+    ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, bkpPath));
+    KeyBackup::GetInstance().ListAndCheckDir(path);
+    EXPECT_EQ(access(path.c_str(), 0), 0);
+    EXPECT_EQ(KeyBackup::GetInstance().CompareFile(path, bkpPath), 0);
+
+    KeyBackup::GetInstance().ListAndCheckDir(path);
+    unlink(path.c_str());
+    unlink(bkpPath.c_str());
+    ForceRemoveDirectory(bkpDir);
+    GTEST_LOG_(INFO) << "KeyBackup_ListAndCheckDir_001 end";
+}
+
+/**
+ * @tc.name: KeyBackup_AddOrigFileToList_001
+ * @tc.desc: Verify the AddOrigFileToList function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyBackupTest, KeyBackup_AddOrigFileToList_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyBackup_AddOrigFileToList_001 Start";
+    std::string fileName = ".";
+    std::string origDir = TEST_PATH;
+    std::vector<struct FileNode> fileList;
+    KeyBackup::GetInstance().AddOrigFileToList(fileName, origDir, fileList);
+    EXPECT_EQ(fileList.size(), 0);
+
+    fileName = "..";
+    KeyBackup::GetInstance().AddOrigFileToList(fileName, origDir, fileList);
+    EXPECT_EQ(fileList.size(), 0);
+
+    fileName = "test.txt";
+    std::string filePath = origDir + "/" + fileName;
+    unlink(filePath.c_str());
+    KeyBackup::GetInstance().AddOrigFileToList(fileName, origDir, fileList);
+    EXPECT_EQ(fileList.size(), 0);
+
+    std::string payload = "this is a test content";
+    ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, filePath));
+    KeyBackup::GetInstance().AddOrigFileToList(fileName, origDir, fileList);
+    EXPECT_EQ(fileList.size(), 1);
+    unlink(filePath.c_str());
+    GTEST_LOG_(INFO) << "KeyBackup_AddOrigFileToList_001 end";
+}
+
+/**
+ * @tc.name: KeyBackup_AddBackupFileToList_001
+ * @tc.desc: Verify the AddBackupFileToList function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyBackupTest, KeyBackup_AddBackupFileToList_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyBackup_AddBackupFileToList_001 Start";
+    std::string fileName = ".";
+    std::string origDir = TEST_PATH;
+    std::vector<struct FileNode> fileList;
+    struct FileNode fl;
+    fl.baseName = "test2.txt";
+    fl.origFile = "";
+    fl.backFile = origDir + "/" + fl.baseName;
+    fl.isSame = false;
+    fileList.push_back(fl);
+    
+    KeyBackup::GetInstance().AddBackupFileToList(fileName, origDir, fileList);
+    EXPECT_EQ(fileList.size(), 1);
+
+    fileName = "..";
+    KeyBackup::GetInstance().AddBackupFileToList(fileName, origDir, fileList);
+    EXPECT_EQ(fileList.size(), 1);
+
+    fileName = "test.txt";
+    std::string filePath = origDir + "/" + fileName;
+    unlink(filePath.c_str());
+    KeyBackup::GetInstance().AddBackupFileToList(fileName, origDir, fileList);
+    EXPECT_EQ(fileList.size(), 1);
+
+    std::string payload = "this is a test content";
+    ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, filePath));
+    KeyBackup::GetInstance().AddBackupFileToList(fileName, origDir, fileList);
+    EXPECT_EQ(fileList.size(), 2);
+    EXPECT_EQ(fileList[1].isSame, false);
+
+    KeyBackup::GetInstance().AddBackupFileToList(fileName, origDir, fileList);
+    EXPECT_EQ(fileList.size(), 2);
+    EXPECT_EQ(fileList[1].isSame, false);
+
+    fileList[1].origFile = filePath;
+    KeyBackup::GetInstance().AddBackupFileToList(fileName, origDir, fileList);
+    EXPECT_EQ(fileList.size(), 2);
+    EXPECT_EQ(fileList[1].isSame, true);
+    unlink(filePath.c_str());
+    GTEST_LOG_(INFO) << "KeyBackup_AddBackupFileToList_001 end";
+}
+
+/**
+ * @tc.name: KeyBackup_GetDiffFilesNum_001
+ * @tc.desc: Verify the GetDiffFilesNum function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyBackupTest, KeyBackup_GetDiffFilesNum_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyBackup_GetDiffFilesNum_001 Start";
+    std::string fileName = ".";
+    std::string origDir = TEST_PATH;
+    std::vector<struct FileNode> fileList;
+    struct FileNode fl;
+    fl.baseName = "test2.txt";
+    fl.origFile = "";
+    fl.backFile = origDir + "/" + fl.baseName;
+    fl.isSame = false;
+    fileList.push_back(fl);
+
+    fl.baseName = "test.txt";
+    fl.origFile = "";
+    fl.backFile = origDir + "/" + fl.baseName;
+    fl.isSame = true;
+    fileList.push_back(fl);
+
+    EXPECT_EQ(KeyBackup::GetInstance().GetDiffFilesNum(fileList), 1);
+    GTEST_LOG_(INFO) << "KeyBackup_GetDiffFilesNum_001 end";
+}
+
+/**
+ * @tc.name: KeyBackup_CreateTempDirForMixFiles_001
+ * @tc.desc: Verify the CreateTempDirForMixFiles function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyBackupTest, KeyBackup_CreateTempDirForMixFiles_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyBackup_CreateTempDirForMixFiles_001 Start";
+    std::string backupDir = TEST_PATH + "/test/test.txt";
+    std::string tempDir;
+    std::string eptDir = TEST_PATH + "/test/temp";
+
+    EXPECT_NE(KeyBackup::GetInstance().CreateTempDirForMixFiles(backupDir, tempDir), 0);
+    EXPECT_EQ(tempDir, eptDir);
+    tempDir.clear();
+    eptDir = TEST_PATH + "/temp";
+    backupDir = TEST_PATH + "/test.txt";
+    EXPECT_EQ(KeyBackup::GetInstance().CreateTempDirForMixFiles(backupDir, tempDir), 0);
+    EXPECT_EQ(tempDir, eptDir);
+    EXPECT_EQ(access(tempDir.c_str(), 0), 0);
+    GTEST_LOG_(INFO) << "KeyBackup_CreateTempDirForMixFiles_001 end";
+}
+
+/**
+ * @tc.name: KeyBackup_CopySameFilesToTempDir_001
+ * @tc.desc: Verify the CopySameFilesToTempDir function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyBackupTest, KeyBackup_CopySameFilesToTempDir_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyBackup_CopySameFilesToTempDir_001 Start";
+    std::string backupDir = TEST_PATH + "/test/test.txt";
+    std::string tempDir;
+    std::vector<struct FileNode> fileList;
+    struct FileNode fl;
+    fl.baseName = "test2.txt";
+    fl.origFile = "";
+    fl.backFile = TEST_PATH + "/" + fl.baseName;
+    fl.isSame = false;
+    fileList.push_back(fl);
+    EXPECT_EQ(KeyBackup::GetInstance().CopySameFilesToTempDir(backupDir, tempDir, fileList), -1);
+
+    tempDir.clear();
+    backupDir = TEST_PATH + "/test.txt";
+    EXPECT_EQ(KeyBackup::GetInstance().CopySameFilesToTempDir(backupDir, tempDir, fileList), -1);
+    EXPECT_NE(access(tempDir.c_str(), 0), 0);
+
+    std::string payload = "this is a test content";
+    ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, fl.backFile));
+    EXPECT_EQ(KeyBackup::GetInstance().CopySameFilesToTempDir(backupDir, tempDir, fileList), 0);
+    std::string tmpFile = tempDir + "/" + fl.baseName;
+    EXPECT_EQ(KeyBackup::GetInstance().CompareFile(fl.backFile, tmpFile), 0);
+    KeyBackup::GetInstance().RemoveNode(tempDir);
+    unlink(fl.backFile.c_str());
+    GTEST_LOG_(INFO) << "KeyBackup_CreateTempDirForMixFiles_001 end";
+}
+
+/**
+ * @tc.name: KeyBackup_CopySameFilesToTempDir_002
+ * @tc.desc: Verify the CopySameFilesToTempDir function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyBackupTest, KeyBackup_CopySameFilesToTempDir_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyBackup_CopySameFilesToTempDir_002 Start";
+    std::string backupDir = TEST_PATH + "/test1.txt";
+    std::string tempDir;
+    std::vector<struct FileNode> fileList;
+    struct FileNode fl;
+    fl.baseName = "test2.txt";
+    std::string file1 = TEST_PATH + "/" + fl.baseName;
+    fl.origFile = file1;
+    fl.backFile = "";
+    fl.isSame = true;
+    fileList.push_back(fl);
+
+    fl.baseName = "test1.txt";
+    std::string file2 = TEST_PATH + "/" + fl.baseName;
+    fl.origFile = file2;
+    fl.backFile = "";
+    fl.isSame = false;
+    fileList.push_back(fl);
+
+    fl.baseName = "test.txt";
+    std::string file3 = TEST_PATH + "/" + fl.baseName;
+    fl.origFile = file3;
+    fl.backFile = file3;
+    fl.isSame = false;
+    fileList.push_back(fl);
+    EXPECT_EQ(KeyBackup::GetInstance().CopySameFilesToTempDir(backupDir, tempDir, fileList), -1);
+    
+    std::string payload = "this is a test content";
+    ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, file1));
+    ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, file2));
+    EXPECT_EQ(KeyBackup::GetInstance().CopySameFilesToTempDir(backupDir, tempDir, fileList), 0);
+    EXPECT_EQ(fileList.size(), 1);
+    KeyBackup::GetInstance().RemoveNode(tempDir);
+    unlink(file2.c_str());
+    unlink(file1.c_str());
+    GTEST_LOG_(INFO) << "KeyBackup_CopySameFilesToTempDir_002 end";
+}
+
+/**
+ * @tc.name: KeyBackup_CopyMixFilesToTempDir_001
+ * @tc.desc: Verify the CopyMixFilesToTempDir function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyBackupTest, KeyBackup_CopyMixFilesToTempDir_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyBackup_CopyMixFilesToTempDir_001 Start";
+    uint32_t diffNum = 2;
+    uint32_t num = 2;
+    std::string tempDir = TEST_PATH + "/temp";
+    std::vector<struct FileNode> fileList;
+    struct FileNode fl;
+    fl.baseName = "test2.txt";
+    std::string file1 = TEST_PATH + "/" + fl.baseName;
+    fl.origFile = file1;
+    fl.backFile = "";
+    fl.isSame = true;
+    fileList.push_back(fl);
+
+    fl.baseName = "test1.txt";
+    std::string file2 = TEST_PATH + "/" + fl.baseName;
+    fl.origFile = "";
+    fl.backFile = file2;
+    fl.isSame = false;
+    fileList.push_back(fl);
+
+    EXPECT_EQ(KeyBackup::GetInstance().CopyMixFilesToTempDir(diffNum, num, tempDir, fileList), -1);
+
+    std::string payload = "this is a test content";
+    ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, file1));
+    ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, file2));
+    ForceCreateDirectory(tempDir);
+    EXPECT_EQ(KeyBackup::GetInstance().CopyMixFilesToTempDir(diffNum, num, tempDir, fileList), 0);
+    KeyBackup::GetInstance().RemoveNode(tempDir);
+    unlink(file2.c_str());
+    unlink(file1.c_str());
+    GTEST_LOG_(INFO) << "KeyBackup_CopyMixFilesToTempDir_001 end";
+}
+
+/**
+ * @tc.name: KeyBackup_GetFileList_001
+ * @tc.desc: Verify the GetFileList function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyBackupTest, KeyBackup_GetFileList_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyBackup_GetFileList_001 Start";
+    std::string origDir;
+    std::string backDir;
+    std::vector<struct FileNode> fileList;
+    uint32_t diffNum = 0;
+    EXPECT_EQ(KeyBackup::GetInstance().GetFileList(origDir, backDir, fileList, diffNum), -1);
+
+    origDir = TEST_PATH;
+    backDir = "/data/temp";
+    EXPECT_EQ(KeyBackup::GetInstance().GetFileList(origDir, backDir, fileList, diffNum), -1);
+    ForceCreateDirectory(backDir);
+    
+    std::string f1 = TEST_PATH + "/test1.txt";
+    std::string f2 = TEST_PATH + "/test2.txt";
+    std::string f3 = backDir + "/test3.txt";
+    std::string f4 = backDir + "/test4.txt";
+    std::string payload = "this is a test content";
+    ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, f1));
+    ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, f2));
+    ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, f3));
+    ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, f4));
+    EXPECT_EQ(KeyBackup::GetInstance().GetFileList(origDir, backDir, fileList, diffNum), 0);
+    KeyBackup::GetInstance().RemoveNode(backDir);
+    unlink(f1.c_str());
+    unlink(f2.c_str());
+    GTEST_LOG_(INFO) << "KeyBackup_GetFileList_001 end";
 }
 }

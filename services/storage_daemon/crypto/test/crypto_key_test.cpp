@@ -956,11 +956,7 @@ HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys_001, TestSize.Leve
     EXPECT_EQ(-ENOENT, KeyManager::GetInstance()->UpdateKeyContext(userId));
     EXPECT_EQ(-ENOENT, KeyManager::GetInstance()->InActiveUserKey(userId));
     EXPECT_EQ(-EFAULT, KeyManager::GetInstance()->ActiveUserKey(userId, {}, {}));
-    if (KeyManager::GetInstance()->IsUeceSupport()) {
-        EXPECT_NE(0, KeyManager::GetInstance()->DeleteUserKeys(userId));
-    } else {
-        EXPECT_EQ(0, KeyManager::GetInstance()->DeleteUserKeys(userId));
-    }
+    EXPECT_EQ(0, KeyManager::GetInstance()->DeleteUserKeys(userId));
 }
 
 /**
@@ -1386,14 +1382,14 @@ HWTEST_F(CryptoKeyTest, fscrypt_libfscrypt_api, TestSize.Level1)
     EXPECT_TRUE(OHOS::ForceCreateDirectory(TEST_DIR_LEGACY));
     std::string testVersionFile = TEST_DIR_LEGACY + "/fscrypt_version";
     EXPECT_TRUE(OHOS::SaveStringToFile(testVersionFile, "not-digit\n"));
-    EXPECT_EQ(FSCRYPT_INVALID, KeyCtrlLoadVersion(TEST_DIR_LEGACY.c_str()));
+    EXPECT_EQ(FSCRYPT_V1, KeyCtrlLoadVersion(TEST_DIR_LEGACY.c_str()));
 
     // bad version
     OHOS::ForceRemoveDirectory(TEST_DIR_LEGACY);
     EXPECT_TRUE(OHOS::ForceCreateDirectory(TEST_DIR_LEGACY));
     testVersionFile = TEST_DIR_LEGACY + "/fscrypt_version";
     EXPECT_TRUE(OHOS::SaveStringToFile(testVersionFile, "10\n"));
-    EXPECT_EQ(FSCRYPT_INVALID, KeyCtrlLoadVersion(TEST_DIR_LEGACY.c_str()));
+    EXPECT_EQ(FSCRYPT_V1, KeyCtrlLoadVersion(TEST_DIR_LEGACY.c_str()));
 
     key_serial_t id = 1;
     EXPECT_NE(0, KeyCtrlGetKeyringId(id, 0));
