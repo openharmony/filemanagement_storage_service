@@ -147,17 +147,15 @@ int KeyManager::InitGlobalDeviceKey(void)
 
     std::lock_guard<std::mutex> lock(keyMutex_);
     if (hasGlobalDeviceKey_ || globalEl1Key_ != nullptr) {
-        LOGI("global device el1 key already exists");
+        LOGI("glabal device el1 have existed");
         return 0;
     }
 
-    ret = MkDir(STORAGE_DAEMON_DIR, S_IRWXU); //  /data/service/el0/storage_daemon
+    ret = MkDir(STORAGE_DAEMON_DIR, S_IRWXU); // para.0700: root only
     if (ret && errno != EEXIST) {
-        LOGE("create storage daemon dir = (/data/service/el0/storage_daemon) error");
+        LOGE("create storage daemon dir error");
         return ret;
     }
-    // if /data/service/el0/storage_daemon/sd exist and not empty,it is upgrade or not first time to open.
-    // otherwise create dir and secret.
     std::error_code errCode;
     if (std::filesystem::exists(DEVICE_EL1_DIR, errCode) && !std::filesystem::is_empty(DEVICE_EL1_DIR)) {
         UpgradeKeys({{0, DEVICE_EL1_DIR}});
