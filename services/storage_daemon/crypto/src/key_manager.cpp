@@ -166,7 +166,7 @@ int KeyManager::InitGlobalDeviceKey(void)
     ret = MkDir(DEVICE_EL1_DIR, S_IRWXU);
     if (ret && errno != EEXIST) {
         LOGE("create device el1 key dir = (/data/service/el0/storage_daemon/sd) error");
-        retrun ret;
+        return ret;
     }
 
     return GenerateAndInstallDeviceKey(DEVICE_EL1_DIR);
