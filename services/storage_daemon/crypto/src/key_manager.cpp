@@ -340,7 +340,8 @@ bool KeyManager::HasElkey(uint32_t userId, KeyType type)
 bool KeyManager::IsNeedClearKeyFile(std::string file)
 {
     LOGI("enter:");
-    if (!std::filesystem::exists(file)) {
+    std::error_code errCode;
+    if (!std::filesystem::exists(file, errCode)) {
         LOGE("file not exist, file is %{private}s", file.c_str());
         return false;
     }

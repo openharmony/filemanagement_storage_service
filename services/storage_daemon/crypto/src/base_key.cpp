@@ -705,7 +705,8 @@ bool BaseKey::DoUpdateRestore(const UserAuth &auth, const std::string &keyPath)
         LOGE("Restore old failed !");
         return false;
     }
-    if (std::filesystem::exists(dir_ + PATH_NEED_RESTORE_SUFFIX) && !auth.token.IsEmpty()) {
+    std::error_code errCode;
+    if (std::filesystem::exists(dir_ + PATH_NEED_RESTORE_SUFFIX, errCode) && !auth.token.IsEmpty()) {
         LOGE("Double 2 single, skip huks -> huks-openssl !");
         return true;
     }
@@ -784,8 +785,9 @@ bool BaseKey::ClearKey(const std::string &mnt)
     keyInfo_.key.Clear();
     bool needClearFlag = true;
 #ifdef USER_CRYPTO_MIGRATE_KEY
+    std::error_code errCode;
     std::string elNeedRestorePath = PATH_USER_EL1_DIR + std::to_string(GetIdFromDir()) + PATH_NEED_RESTORE_SUFFIX;
-    if (std::filesystem::exists(elNeedRestorePath)) {
+    if (std::filesystem::exists(elNeedRestorePath, errCode)) {
         needClearFlag = false;
         LOGI("needRestore flag exist, do not remove secret.");
     }
