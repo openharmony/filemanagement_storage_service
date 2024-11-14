@@ -461,10 +461,6 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
             LOGE("Process exits abnormally");
             return E_ERR;
         }
-        if (!WEXITSTATUS(status)) {
-            LOGE("Process exited with an error");
-            return E_ERR;
-        }
     }
     return E_OK;
 }
