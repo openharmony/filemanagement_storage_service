@@ -118,6 +118,14 @@ bool BaseKey::KeyDescIsEmpty()
     return IBaseKeyMoc::baseKeyMoc->KeyDescIsEmpty();
 }
 
+std::string BaseKey::GetKeyDir()
+{
+    if (IBaseKeyMoc::baseKeyMoc == nullptr) {
+        return "";
+    }
+    return IBaseKeyMoc::baseKeyMoc->GetKeyDir();
+}
+
 void BaseKey::ClearMemoryKeyCtx()
 {
     keyContext_.rndEnc.Clear();

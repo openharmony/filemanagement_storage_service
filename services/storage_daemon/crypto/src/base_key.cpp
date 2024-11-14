@@ -1127,6 +1127,26 @@ uint32_t BaseKey::GetTypeFromDir()
     return type;
 }
 
+std::string BaseKey::GetKeyDir()
+{
+    uint32_t type = GetTypeFromDir();
+    switch (type) {
+        case TYPE_EL1:
+            return "el1";
+        case TYPE_EL2:
+            return "el2";
+        case TYPE_EL3:
+            return "el3";
+        case TYPE_EL4:
+            return "el4";
+        case TYPE_EL5:
+            return "el5";
+        default:
+            LOGE("type is error");
+            return "";
+    }
+}
+
 uint32_t BaseKey::GetIdFromDir()
 {
     int userId = USERID_GLOBAL_EL1; // default to global el1
