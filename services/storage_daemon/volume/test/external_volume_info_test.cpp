@@ -205,7 +205,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     EXPECT_EQ(ret, E_OK);
     std::string flag = "vfat";
     ret = vol.Format(flag);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(ret, E_ERR);
     ret = vol.Destroy();
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_002 end";
@@ -364,7 +364,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4
     uint32_t mountFlags = 0;
     int32_t ret = externalVolumeInfo_->DoMount4Ntfs(mountFlags);
     GTEST_LOG_(INFO) << ret;
-    EXPECT_TRUE(ret == 0);
+    EXPECT_EQ(ret, E_ERR);
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Ntfs_001 end";
 }
@@ -383,7 +383,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4
     uint32_t mountFlags = 0;
     int32_t ret = externalVolumeInfo_->DoMount4Exfat(mountFlags);
     GTEST_LOG_(INFO) << ret;
-    EXPECT_TRUE(ret == 0);
+    EXPECT_EQ(ret, E_ERR);
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Exfat_001 end";
 }

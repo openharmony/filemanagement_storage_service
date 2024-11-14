@@ -434,12 +434,12 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
         (void)close(pipe_fd[0]);
         if (dup2(pipe_fd[1], STDOUT_FILENO) == -1) {
             LOGE("dup2 failed");
-            exit(1);
+            _exit(1);
         }
         (void)close(pipe_fd[1]);
         execvp(args[0], const_cast<char **>(args.data()));
         LOGE("execvp failed errno: %{public}d", errno);
-        exit(1);
+        _exit(1);
     } else {
         (void)close(pipe_fd[1]);
         if (output) {
@@ -459,6 +459,10 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
         }
         if (!WIFEXITED(status)) {
             LOGE("Process exits abnormally");
+            return E_ERR;
+        }
+        if (WEXITSTATUS(status) != 0) {
+            LOGE("Process exited with an error");
             return E_ERR;
         }
     }
