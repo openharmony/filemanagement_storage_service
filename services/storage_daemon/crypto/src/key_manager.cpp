@@ -1589,6 +1589,13 @@ int KeyManager::InactiveUserElKey(unsigned int user, std::map<unsigned int, std:
         return -EFAULT;
     }
     userElxKey_.erase(user);
+    auto elx = elKey->GetKeyDir();
+    if (!elx.empty() && elx != "el1") {
+        std::string descElx = FSCRYPT_EL_DIR + "/" + elx + "/" + std::to_string(user) + DESC_DIR;
+        (void)remove(descElx.c_str());
+        LOGI("remove desc.");
+    }
+
     LOGI("Inactive user %{public}u elX success", user);
     return 0;
 }

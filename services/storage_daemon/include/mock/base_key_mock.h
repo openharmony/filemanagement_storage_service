@@ -40,6 +40,7 @@ public:
     virtual bool SaveKeyBlob(const KeyBlob &blob, const std::string &path) = 0;
     virtual bool LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size) = 0;
     virtual bool KeyDescIsEmpty() = 0;
+    virtual std::string GetKeyDir() = 0;
 public:
     static inline std::shared_ptr<IBaseKeyMoc> baseKeyMoc = nullptr;
 };
@@ -54,6 +55,7 @@ public:
     MOCK_METHOD1(RestoreKey, bool(const UserAuth &auth));
     MOCK_METHOD0(UpgradeKeys, bool());
     MOCK_METHOD0(KeyDescIsEmpty, bool());
+    MOCK_METHOD0(GetKeyDir, std::string());
     MOCK_METHOD4(DecryptKeyBlob, bool(const UserAuth &, const std::string &, KeyBlob &, KeyBlob &));
     MOCK_METHOD4(EncryptKeyBlob, bool(const UserAuth &, const std::string &, KeyBlob &, KeyBlob &));
     MOCK_METHOD1(RenameKeyPath, bool(const std::string &keypath));
