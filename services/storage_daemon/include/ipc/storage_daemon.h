@@ -113,9 +113,17 @@ private:
 #ifdef USER_CRYPTO_MIGRATE_KEY
     std::string GetNeedRestoreFilePath(int32_t userId, const std::string &user_dir);
     std::string GetNeedRestoreFilePathByType(int32_t userId, KeyType type);
+    std::string GetNeedRestoreVersion(uint32_t userId, KeyType type);
     int32_t PrepareUserDirsAndUpdateUserAuth(uint32_t userId, KeyType type,
                                              const std::vector<uint8_t> &token,
                                              const std::vector<uint8_t> &secret);
+    int32_t PrepareUserDirsAndUpdateUserAuthOld(uint32_t userId, KeyType type,
+                                             const std::vector<uint8_t> &token,
+                                             const std::vector<uint8_t> &secret);
+    int32_t PrepareUserDirsAndUpdateUserAuthVx(uint32_t userId, KeyType type,
+                                             const std::vector<uint8_t> &token,
+                                             const std::vector<uint8_t> &secret,
+                                             const std::string needRestoreVersion);
     int32_t PrepareUeceDir(uint32_t userId);
     int32_t RestoreUserKey(int32_t userId, uint32_t flags);
     bool IsNeedRestorePathExist(uint32_t userId, bool needCheckEl1);

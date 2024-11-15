@@ -317,14 +317,14 @@ bool BaseKey::SaveAndCleanKeyBuff(const std::string &keyPath, KeyContext &keyCtx
         return false;
     }
 
+    storeKey.Clear();
+    ClearKeyContext(keyCtx);
     const std::string NEED_UPDATE_PATH = keyPath + SUFFIX_NEED_UPDATE;
     if (!SaveStringToFile(NEED_UPDATE_PATH, KeyEncryptTypeToString(keyEncryptType_))) {
         LOGE("Save key type file failed");
         return false;
     }
 
-    storeKey.Clear();
-    ClearKeyContext(keyCtx);
     return true;
 }
 
@@ -691,10 +691,24 @@ bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
     if (encryptType == KeyEncryptTypeToString(KeyEncryptType::KEY_CRYPT_HUKS_OPENSSL)) {
         LOGI("Restore ce ece sece key.");
         ret = DoRestoreKeyCeEceSece(auth, path, keyType);
-    } else {
-        ret = DoUpdateRestore(auth, path);
     }
-    LOGI("end ret %{public}u", ret);
+    std::error_code errCode;
+    std::string need_restore;
+    LoadStringFromFile(path + SUFFIX_NEED_RESTORE, need_restore);
+    uint32_t restore_version = std::atoi(need_restore.c_str());
+    UpdateVersion update_version = static_cast<UpdateVersion>(std::atoi(need_restore.c_str()) + 1);
+    LOGI("NeedRestore Path is: %{public}s, restore_version: %{public}u", path.c_str(), restore_version);
+    if (std::filesystem::exists(path + SUFFIX_NEED_RESTORE, errCode)) {
+        if (restore_version < 3) {
+            LOGI("Old DOUBLE_2_SINGLE.");
+            ret = DoUpdateRestore(auth, path);
+        }
+        else {
+            LOGI("New DOUBLE_2_SINGLE.");
+            ret = DoUpdateRestoreVx(auth, path, update_version);
+        }
+    }
+    LOGI("end ret %{public}u, filepath isExist: %{public}u", ret, errCode.value());
     return ret != 0;
 }
 
@@ -714,6 +728,33 @@ bool BaseKey::DoUpdateRestore(const UserAuth &auth, const std::string &keyPath)
         LOGE("Get secure uid form iam failed, use default value.");
     }
 
+    if (!StoreKey({ auth.token, auth.secret, secureUid })) {
+        LOGE("Store old failed !");
+        return false;
+    }
+    if (!UpdateKey()) {
+        LOGE("Update old failed !");
+        return false;
+    }
+    LOGI("finish");
+    return true;
+}
+bool BaseKey::DoUpdateRestoreVx(const UserAuth &auth, const std::string &keyPath, UpdateVersion update_version)
+{
+    LOGI("enter");
+    LOGI("Restore version %{public}u", update_version);
+    if (!DoRestoreKeyCeEceSece(auth, keyPath, GetTypeFromDir())) {
+        LOGE("Restore ce ece sece failed !");
+        return false;
+    }
+    uint64_t secureUid = { 0 };
+    
+    if (IamClient::GetInstance().HasPinProtect(GetIdFromDir())) {
+        if (!IamClient::GetInstance().GetSecureUid(GetIdFromDir(), secureUid)) {
+            LOGE("Get secure uid form iam failed, use default value.");
+        }
+        LOGI("PIN protect exist.");
+    }
     if (!StoreKey({ auth.token, auth.secret, secureUid })) {
         LOGE("Store old failed !");
         return false;
@@ -1164,6 +1205,7 @@ uint32_t BaseKey::GetIdFromDir()
 
 bool BaseKey::KeyDescIsEmpty()
 {
+    LOGI("The keyBlob is null? %{public}d", keyInfo_.keyDesc.IsEmpty());
     return keyInfo_.keyDesc.IsEmpty();
 }
 } // namespace StorageDaemon

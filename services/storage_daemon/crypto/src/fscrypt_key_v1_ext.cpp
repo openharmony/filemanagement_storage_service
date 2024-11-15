@@ -88,9 +88,10 @@ bool FscryptKeyV1Ext::ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, ui
     std::error_code errCode;
     std::string updateVersion;
     int ret = OHOS::LoadStringFromFile(NEED_RESTORE_PATH, updateVersion);
+    const int BASE = 2;
     LOGI("restore version: %{public}s, ret: %{public}d", updateVersion.c_str(), ret);
     if (type_ == TYPE_EL1 && std::filesystem::exists(NEED_RESTORE_PATH, errCode) &&
-        updateVersion == NEW_DOUBLE_2_SINGLE) {
+        std::atoi(updateVersion.c_str()) % BASE == 0) {
         LOGI("restore path exists, deal double DE, errCode = %{public}d", errCode.value());
         return ActiveDoubleKeyExt(flag, iv, size, elType);
     }

@@ -32,6 +32,11 @@ const uint32_t USER_CHANGE_AUTH = 0x1;
 const std::string SUFFIX_NEED_UPDATE = "/need_update";
 const std::string SUFFIX_NEED_RESTORE = "/need_restore";
 const std::vector<uint8_t> NULL_SECRET = { '!' };
+enum UpdateVersion {
+    UPDATE_V2 = 2,
+    UPDATE_V4 = 4
+};
+
 class BaseKey : public std::enable_shared_from_this<BaseKey> {
 public:
     BaseKey() = delete;
@@ -103,6 +108,7 @@ private:
     bool DoRestoreKeyDe(const UserAuth &auth, const std::string &path);
     bool DoRestoreKeyOld(const UserAuth &auth, const std::string &keypath);
     bool DoUpdateRestore(const UserAuth &auth, const std::string &keyPath);
+    bool DoUpdateRestoreVx(const UserAuth &auth, const std::string &KeyPath, UpdateVersion update_version);
     static bool GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size);
     static bool GenerateKeyBlob(KeyBlob &blob, const uint32_t size);
     bool EncryptDe(const UserAuth &auth, const std::string &path);
