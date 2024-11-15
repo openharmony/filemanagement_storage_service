@@ -1371,5 +1371,33 @@ int32_t StorageManagerProxy::UMountDfsDocs(int32_t userId, const std::string &re
 
     return reply.ReadInt32();
 }
+
+int32_t StorageManagerProxy::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
+{
+    LOGI("user ID: %{public}u", userId);
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("WriteInterfaceToken failed");
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+    if (!data.WriteUint32(userId)) {
+        LOGE("Write user ID failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+    if (!data.WriteBool(needCheckDirMount)) {
+        LOGE("Write user ID failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::GET_FILE_ENCRYPT_STATUS), data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+    isEncrypted = reply.ReadBool();
+    return reply.ReadInt32();
+}
 } // StorageManager
 } // OHOS

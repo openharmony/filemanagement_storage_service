@@ -461,6 +461,17 @@ int32_t StorageManager::LockUserScreen(uint32_t userId)
 #endif
 }
 
+int32_t StorageManager::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
+{
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("UserId: %{public}u", userId);
+    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
+    return fsCrypto->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
+#else
+    return E_OK;
+#endif
+}
+
 int32_t StorageManager::UnlockUserScreen(uint32_t userId,
                                          const std::vector<uint8_t> &token,
                                          const std::vector<uint8_t> &secret)
