@@ -37,6 +37,10 @@
 #include "system_ability_definition.h"
 #include "utils/storage_utils.h"
 #include "user/multi_user_manager_service.h"
+#include "appspawn.h"
+
+constexpr int32_t DECRYPTED = 0;
+constexpr int32_t ENCRYPTED = 1;
 
 namespace OHOS {
 namespace StorageManager {
@@ -442,6 +446,45 @@ int32_t StorageManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> 
 #endif
 }
 
+int32_t StorageManager::SendEncryptedStatusToAppSpawn(uint32_t userId, int32_t encrypted)
+{
+    std::string value = std::to_string(userId) + ":" + std::to_string(encrypted);
+    LOGI("Encrypted status MSG to Appspawn: %{public}s", value.c_str());
+    AppSpawnReqMsgHandle regHandle;
+    int ret = AppSpawnReqMsgCreate(MSG_LOCK_STATUS, "storage_manager", &regHandle);
+    if (ret != E_OK) {
+        LOGE("Appspawn failed to create message, ret=%{public}d", ret);
+        return ret;
+    }
+    ret = AppSpawnRegMsgAddStringInfo(reqHandle, "lockstatus". value.c_str());
+    if (ret != E_OK) {
+        AppSpawnRegMsgFree(regHandle);
+        LOGE("Appspawn failed to add lockstatus message, ret=%{public}d", ret);
+        return ret;
+    }
+
+    AppSpawnClientHandle clientHandle;
+    ret = AppSpawnClientInit(APPSPAWN_SERVER_NAME, &clientHandle);
+    if (ret != E_OK) {
+        AppSpawnRegMsgFree(regHandle);
+        LOGE("Appspawn client failed to init, ret=%{public}d", ret);
+        return ret;
+    }
+    AppSpawnResult result = {0};
+    ret = AppSpawnClientSendMsg(clientHandle, reqHandle, &result);
+    AppSpawnClientDestroy(clientHandle);
+    if (ret != E_OK) {
+        LOGE("Appspawn failed to send message, ret=%{public}d", ret);
+        return ret;
+    }
+    if (result.result != E_OK) {
+        LOGE("Appspawn failed to kill process, result=%{public}d", result.result);
+        return result.result;
+    }
+    LOGI("Appspawn SendEncrytedStatus success");
+    return E_OK;
+}
+
 int32_t StorageManager::ActiveUserKey(uint32_t userId,
                                       const std::vector<uint8_t> &token,
                                       const std::vector<uint8_t> &secret)
@@ -450,8 +493,13 @@ int32_t StorageManager::ActiveUserKey(uint32_t userId,
     LOGI("UserId: %{public}u", userId);
     std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
     int32_t err = fsCrypto->ActiveUserKey(userId, token, secret);
+    if (err == E_OK) {
+        SendEncryptedStatusToAppSpawn(userId, DECRYPTED);
+        LOGI("Send encrypt status userId: %{public}d, status is %{public}d", userId, DECRYPTED);
+    }
     return err;
 #else
+    SendEncryptedStatusToAppSpawn(userId, DECRYPTED);
     return E_OK;
 #endif
 }
@@ -462,6 +510,10 @@ int32_t StorageManager::InactiveUserKey(uint32_t userId)
     LOGI("UserId: %{public}u", userId);
     std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
     int32_t err = fsCrypto->InactiveUserKey(userId);
+    if (err == E_OK) {
+        SendEncryptedStatusToAppSpawn(userId, ENCRYPTED);
+        LOGI("Send encrypt status userId: %{public}d, status is %{public}d", userId, ENCRYPTED);
+    }
     return err;
 #else
     return E_OK;

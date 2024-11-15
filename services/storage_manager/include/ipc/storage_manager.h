@@ -85,6 +85,7 @@ public:
                                          uint64_t secureUid,
                                          uint32_t userId,
                                          std::vector<std::vector<uint8_t>> &plainText) override;
+    int32_t SendEncryptedStatusToAppSpawn(uint32_t userId, int32_t encrypted);
     int32_t ActiveUserKey(uint32_t userId,
                           const std::vector<uint8_t> &token,
                           const std::vector<uint8_t> &secret) override;
