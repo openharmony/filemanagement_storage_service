@@ -24,6 +24,7 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <future>
 
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -35,6 +36,7 @@
 using namespace std;
 namespace OHOS {
 namespace StorageDaemon {
+constexpr int32_t WAIT_THREAD_TIMEOUT_S = 5;
 int32_t ExternalVolumeInfo::ReadMetadata()
 {
     int32_t ret = OHOS::StorageDaemon::ReadMetadata(devPath_, fsUuid_, fsType_, fsLabel_);
@@ -192,19 +194,25 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
         return E_MOUNT;
     }
 
-    LOGI("Ready to mount: external volume fstype is %{public}s, mountflag is %{public}d", fsType_.c_str(), mountFlags);
-    if (fsType_ == "ext2" || fsType_ == "ext3" || fsType_ == "ext4") {
-        ret = DoMount4Ext(mountFlags);
-    } else if (fsType_ == "hmfs" || fsType_ == "f2fs") {
-        ret = DoMount4Hmfs(mountFlags);
-    } else if (fsType_ == "ntfs") {
-        ret = DoMount4Ntfs(mountFlags);
-    } else if (fsType_ == "exfat") {
-        ret = DoMount4Exfat(mountFlags);
-    } else if (fsType_ == "vfat" || fsType_ == "fat32") {
-        ret = DoMount4Vfat(mountFlags);
+    auto mountTask = [this, mountFlags]() {
+        LOGI("Ready to mount: external volume fstype is %{public}s, mountflag is %{public}d",
+             fsType_.c_str(), mountFlags);
+        if (fsType_ == "ext2" || fsType_ == "ext3" || fsType_ == "ext4") return DoMount4Ext(mountFlags);
+        if (fsType_ == "hmfs" || fsType_ == "f2fs") return DoMount4Hmfs(mountFlags);
+        if (fsType_ == "ntfs") return DoMount4Ntfs(mountFlags);
+        if (fsType_ == "exfat") return DoMount4Exfat(mountFlags);
+        if (fsType_ == "vfat" || fsType_ == "fat32") return DoMount4Vfat(mountFlags);
+        return DoMount4OtherType(mountFlags);
+    };
+
+    std::future<int32_t> future = std::async(std::launch::async, mountTask);
+    auto status = future.wait_for(std::chrono::seconds(WAIT_THREAD_TIMEOUT_S));
+    if (status == std::future_status::ready) {
+        ret = future.get();
     } else {
-        ret = DoMount4OtherType(mountFlags);
+        LOGE("Mount timed out");
+        remove(mountPath_.c_str());
+        return E_MOUNT;
     }
 
     if (ret) {
