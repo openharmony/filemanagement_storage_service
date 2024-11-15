@@ -854,12 +854,12 @@ void BaseKey::SyncKeyDir() const
         sync();
         return;
     }
-    LOGI("start syncfs, dir_ is %{public}s", dir_.c_str());
-    if (syncfs(fd) != 0) {
-        LOGE("syncfs %{public}s failed, errno %{public}d", dir_.c_str(), errno);
-        sync();
+    LOGI("start fsync, dir_ is %{public}s", dir_.c_str());
+    if (fsync(fd) != 0) {
+        LOGE("fsync %{public}s failed, errno %{public}d", dir_.c_str(), errno);
+        syncfs(fd);
     }
-    LOGI("syncfs end");
+    LOGI("fsync end");
     (void)close(fd);
 }
 
@@ -1105,6 +1105,11 @@ uint32_t BaseKey::GetIdFromDir()
 
     LOGI("dir_: %{public}s, get userId is %{public}d", dir_.c_str(), userId);
     return static_cast<uint32_t>(userId);
+}
+
+bool BaseKey::KeyDesclsEmpty()
+{
+    return keyInfo_.keyDesc.IsEmpty();
 }
 } // namespace StorageDaemon
 } // namespace OHOS

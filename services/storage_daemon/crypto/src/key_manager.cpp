@@ -32,6 +32,7 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "user/mount_manager.h"
+#include "user/user_manager.h"
 #ifdef EL5_FILEKEY_MANAGER
 #include "el5_filekey_manager_kit.h"
 #endif
@@ -487,7 +488,6 @@ int KeyManager::GenerateUserKeys(unsigned int user, uint32_t flags)
     if (!KeyCtrlHasFscryptSyspara()) {
         return 0;
     }
-    std::lock_guard<std::mutex> lock(keyMutex_);
     if ((!IsDir(USER_EL1_DIR)) || (!IsDir(USER_EL2_DIR)) || (!IsDir(USER_EL3_DIR)) ||
         (!IsDir(USER_EL4_DIR)) || (!IsDir(USER_EL5_DIR))) {
         LOGI("El storage dir is not existed");
@@ -510,9 +510,9 @@ int KeyManager::GenerateElxAndInstallUserKey(unsigned int user)
     std::string el4Path = USER_EL4_DIR + "/" + std::to_string(user);
     std::string el5Path = USER_EL5_DIR + "/" + std::to_string(user);
     if (IsDir(el1Path) || IsDir(el2Path) || IsDir(el3Path) || IsDir(el4Path) || IsDir(el5Path)) {
-        LOGE("user %{public}d el key have existed, create error", user);
-        return -EEXIST;
+        return CheckAndFixUserKeyDirectory(user);
     }
+    std::lock_guard<std::mutex> lock(keyMutex_);
     int ret = GenerateAndInstallUserKey(user, el1Path, NULL_KEY_AUTH, EL1_KEY);
     if (ret) {
         LOGE("user el1 create error");
@@ -545,6 +545,71 @@ int KeyManager::GenerateElxAndInstallUserKey(unsigned int user)
     }
     saveLockScreenStatus[user] = true;
     return ret;
+}
+
+int KeyManager::CheckAndFixUserKeyDirectory(unsigned int user)
+{
+    std::string el1NeedRestorePath = USER_EL1_DIR + "/" + std::to_string(user) + RESTORE_DIR;
+    std::error_code errCode;
+    if (std::filesystem::exists(el1NeedRestorePath, errCode)) {
+        LOGE("el1 need_restore file is existed, upgrade scene not support.");
+        return -EEXIST;
+    }
+    int ret = GenerateIntegrityDirs(user, EL1_KEY);
+    if (ret != -EEXIST) {
+        LOGE("GenerateIntegrityDirs el1 failed.");
+    }
+    ret = GenerateIntegrityDirs(user, EL2_KEY);
+    if (ret != -EEXIST) {
+        LOGE("GenerateIntegrityDirs el2 failed.");
+    }
+    return ret;
+}
+
+int KeyManager::GenerateIntegrityDirs(int32_t userId, KeyType type)
+{
+    std::string dirType = (type == EL1_KEY) ? EL1 : EL2;
+    std::string userDir = FSCRYPT_EL_DIR + "/" + dirType;
+    uint32_t flag_type = (type == EL1_KEY) ? IStorageDaemon::CRYPTO_FLAG_EL1 : IStorageDaemon::CRYPTO_FLAG_EL2;
+    std::string versionElx = userDir + "/" + std::to_string(userId) + FSCRYPT_VERSION_DIR;
+    std::string encryptElx = userDir + "/" + std::to_string(userId) + ENCRYPT_VERSION_DIR;
+    std::string discardElx = userDir + "/" + std::to_string(userId) + SEC_DISCARD_DIR;
+    std::string shieldElx = userDir + "/" + std::to_string(userId) + SHIELD_DIR;
+    std::error_code errCode;
+    if (!std::filesystem::exists(versionElx, errCode) || !std::filesystem::exists(encryptElx, errCode) ||
+        !std::filesystem::exists(shieldElx, errCode) || !std::filesystem::exists(discardElx, errCode) ||
+        !IsWorkDirExist(dirType, userId)) {
+        LOGE("user %{public}d el %{public}d is not integrity. create error", userId, type);
+        int ret = DoDeleteUserCeEceSeceKeys(userId, userDir, type == EL1_KEY ? userEl1Key_ : userEl2Key_);
+        if (ret != E_OK) {
+            LOGE("Delete userId=%{public}d el %{public}d key failed", userId, type);
+        }
+
+        ret = GenerateUserKeyByType(userId, type, {}, {});
+        if (ret != E_OK) {
+            LOGE("upgrade scene:generate user key fail, userId %{public}d, KeyType %{public}d", userId, type);
+            return ret;
+        }
+
+        LOGI("try to destory dir first, user %{public}d, Type %{public}d", userId, type);
+        (void)UserManager::GetInstance()->DestroyUserDirs(userId, flag_type);
+        ret = UserManager::GetInstance()->PrepareUserDirs(userId, flag_type);
+        if (ret != E_OK) {
+            LOGE("upgrade scene:prepare user dirs fail, userId %{public}d, type %{public}d", userId, type);
+            return ret;
+        }
+    }
+    LOGI("userId=%{public}d el %{public}d directory is existed, no need fix.", userId, type);
+    return -EEXIST;
+}
+
+bool KeyManager::IsWorkDirExist(std::string type, int32_t userId)
+{
+    std::string dataDir = DATA_DIR + type + "/" + std::to_string(userId);
+    std::string serviceDir = SERVICE_DIR + type + "/" + std::to_string(userId);
+    std::error_code errCode;
+    bool isExist = std::filesystem::exists(dataDir, errCode) && std::filesystem::exists(serviceDir, errCode);
+    return isExist;
 }
 
 int KeyManager::GenerateUserKeyByType(unsigned int user, KeyType type,
@@ -674,6 +739,7 @@ int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTo
 int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret)
 #endif
 {
+    std::lock_guard<std::mutex> lock(keyMutex_);
 #ifdef USER_CRYPTO_MIGRATE_KEY
     int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL2_KEY, needGenerateShield);
     if (ret != 0) {
@@ -774,7 +840,6 @@ int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
     if (!KeyCtrlHasFscryptSyspara()) {
         return 0;
     }
-    std::lock_guard<std::mutex> lock(keyMutex_);
     std::shared_ptr<BaseKey> item = GetUserElKey(user, type);
     if (item == nullptr) {
         LOGE("Have not found user %{public}u el key", user);
@@ -984,7 +1049,7 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
         return -EFAULT;
     }
     std::lock_guard<std::mutex> lock(keyMutex_);
-    if (HasElkey(user, type)) {
+    if (HasElkey(user, type) && type != EL5_KEY && HashElxActived(user, type)) {
         LOGE("The user %{public}u el have been actived, key type is %{public}u", user, type);
         return 0;
     }
@@ -1023,6 +1088,45 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
     LOGI("Active user %{public}u el success", user);
     LOGI("saveLockScreenStatus is %{public}d", saveLockScreenStatus[user]);
     return 0;
+}
+
+bool KeyManager::HashElxActived(unsigned int user, KeyType type)
+{
+    LOGI("enter");
+    switch (type) {
+        case EL1_KEY:
+            return HasElxDesc(userEl1Key_, type, user);
+            break;
+        case EL2_KEY:
+            return HasElxDesc(userEl2Key_, type, user);
+            break;
+        case EL3_KEY:
+            return HasElxDesc(userEl3Key_, type, user);
+            break;
+        case EL4_KEY:
+            return HasElxDesc(userEl4Key_, type, user);
+            break;
+        case EL5_KEY:
+            return HasElxDesc(userEl5Key_, type, user);
+            break;
+        default:
+            LOGE("key type error");
+            break;
+    }
+    return false;
+}
+
+bool KeyManager::HasElxDesc(std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_,
+                            KeyType type,
+                            unsigned int user)
+{
+    auto it = userElKey_.find(user);
+    auto elKey = it->second;
+    if (it != userElKey_.end() && !elKey->KeyDesclsEmpty()) {
+        LOGI("user el%{public}u key desc has existed", type);
+        return true;
+    }
+    return false;
 }
 
 int KeyManager::CheckAndDeleteEmptyEl5Directory(std::string keyDir, unsigned int user)
@@ -1331,6 +1435,11 @@ int KeyManager::InActiveUserKey(unsigned int user)
     ret = InactiveUserElKey(user, userEl4Key_);
     if (ret != E_OK) {
         LOGE("Inactive userEl4Key_ failed");
+        return ret;
+    }
+    ret = InactiveUserElKey(user, userEl5Key_);
+    if (ret != E_OK) {
+        LOGE("Inactive userEl5Key_ failed");
         return ret;
     }
     auto userTask = userLockScreenTask_.find(user);
