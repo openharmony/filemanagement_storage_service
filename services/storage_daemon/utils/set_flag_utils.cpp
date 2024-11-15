@@ -42,7 +42,8 @@ void SetFlagUtils::ParseDirAllPath()
 
 void SetFlagUtils::ParseDirPath(const std::string &path)
 {
-    if (!std::filesystem::exists(path)) {
+    std::error_code errCode;
+    if (!std::filesystem::exists(path, errCode)) {
         LOGE("Invalid file path.");
         return;
     }
