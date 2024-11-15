@@ -209,7 +209,8 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
     auto status = future.wait_for(std::chrono::seconds(WAIT_THREAD_TIMEOUT_S));
     if (status == std::future_status::ready) {
         ret = future.get();
-        LOGE("Mount operation timed out, cancelling.");
+    } else {
+        LOGE("Mount timed out");
         remove(mountPath_.c_str());
         return E_MOUNT;
     }
