@@ -73,8 +73,7 @@ const std::string DATA_SERVICE_EL4 = "/data/service/el4/";
 const std::string DATA_SERVICE_EL1_PUBLIC_STORAGE_DAEMON_SD = "/data/service/el1/public/storage_daemon/sd";
 const std::string DATA_SERVICE_EL0_STORAGE_DAEMON_SD = "/data/service/el0/storage_daemon/sd";
 const std::string NEED_RESTORE_SUFFIX = "/latest/need_restore";
-const std::string NEW_DOUBLE_2_SINGELE = "2";
-
+const std::string NEW_DOUBLE_2_SINGLE = "2";
 typedef int32_t (*CreateShareFileFunc)(const std::vector<std::string> &, uint32_t, uint32_t, std::vector<int32_t> &);
 typedef int32_t (*DeleteShareFileFunc)(uint32_t, const std::vector<std::string> &);
 
@@ -262,7 +261,10 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
     if (!std::filesystem::exists(elNeedRestorePath, errCode)) {
         return E_OK;
     }
-    LOGI("start restore User %{public}u el%{public}u", userId, type);
+    std::string SINGLE_RESTORE_VERSION;
+    (void) OHOS::LoadStringFromFile(elNeedRestorePath, SINGLE_RESTORE_VERSION);
+    LOGI("start restore User %{public}u el%{public}u, restore version = %{public}s", userId, type,
+        SINGLE_RESTORE_VERSION.c_str());
     ret = KeyManager::GetInstance()->RestoreUserKey(userId, type);
     if (ret != E_OK) {
         if (type != EL1_KEY) {
@@ -461,8 +463,13 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
     std::string el2NeedRestorePath = GetNeedRestoreFilePath(START_USER_ID, USER_EL2_DIR);
     if (std::filesystem::exists(el2NeedRestorePath, errCode)) {
         LOGE("USER_EL2_DIR is exist, update NEW_DOUBLE_2_SINGLE");
-        std::string EL0_NEED_RESTORE = DATA_SERVICE_EL0_STORAGE_DAEMON_SD + NEED_RESTORE_SUFFIX;
-        if (!SaveStringToFile(EL0_NEED_RESTORE, NEW_DOUBLE_2_SINGELE)) {
+        std::string DOUBLE_VERSION;
+        std::string EL0_NEED_RESTORE_PATH = DATA_SERVICE_EL0_STORAGE_DAEMON_SD + NEED_RESTORE_SUFFIX;
+        bool isRead = OHOS::LoadStringFromFile(EL0_NEED_RESTORE_PATH, DOUBLE_VERSION);
+        int NEW_SINGLE_VERSION = std::atoi(DOUBLE_VERSION.c_str()) + 1;
+        LOGI("Process NEW_DOUBLE(version:%{public}s}) ——> SINGLE Frame(version:%{public}d), ret: %{public}d",
+            DOUBLE_VERSION.c_str(), NEW_SINGLE_VERSION, isRead);
+        if (!SaveStringToFile(EL0_NEED_RESTORE_PATH, std::to_string(NEW_SINGLE_VERSION))) {
             LOGE("Save NEW_DOUBLE_2_SINGELE file failed");
             return false;
         }
@@ -594,7 +601,31 @@ int32_t StorageDaemon::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &
 }
 
 #ifdef USER_CRYPTO_MIGRATE_KEY
+std::string StorageDaemon::GetNeedRestoreVersion(uint32_t userId, KeyType type)
+{
+    std::string need_restore_path = KeyManager::GetInstance()->GetKeyDirByUserAndType(userId, type) + RESTORE_DIR;
+    std::string need_restore_version;
+    OHOS::LoadStringFromFile(need_restore_path, need_restore_version);
+    return need_restore_version;
+}
+
 int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuth(uint32_t userId, KeyType type,
+    const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret)
+{
+    int32_t ret = E_OK;
+    std::string need_restore_version = GetNeedRestoreVersion(userId, type);
+    int32_t OLD_UPDATE_VERSION_MAXLIMIT = std::atoi(NEW_DOUBLE_2_SINGLE.c_str());
+    if (std::atoi(need_restore_version.c_str()) <= OLD_UPDATE_VERSION_MAXLIMIT) {
+        LOGI("Old DOUBLE_2_SINGLE::PrepareUserDirsAndUpdateUserAuth.");
+        ret = PrepareUserDirsAndUpdateUserAuthOld(userId, type, token, secret);
+    } else {
+        LOGI("New DOUBLE_2_SINGLE::PrepareUserDirsAndUpdateUserAuth.");
+        ret = PrepareUserDirsAndUpdateUserAuthVx(userId, type, token, secret, need_restore_version);
+    }
+    return ret;
+}
+
+int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthOld(uint32_t userId, KeyType type,
     const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret)
 {
     LOGI("start userId %{public}u KeyType %{public}u", userId, type);
@@ -628,6 +659,42 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuth(uint32_t userId, KeyType
         return ret;
     }
 
+    LOGI("try to destory dir first, user %{public}u, flags %{public}u", userId, flags);
+    (void)UserManager::GetInstance()->DestroyUserDirs(userId, flags);
+    ret = UserManager::GetInstance()->PrepareUserDirs(userId, flags);
+    if (ret != E_OK) {
+        return ret;
+    }
+    if (flags == IStorageDaemon::CRYPTO_FLAG_EL2) {
+        PrepareUeceDir(userId);
+    }
+    LOGI("userId %{public}u type %{public}u sucess", userId, type);
+    return E_OK;
+}
+
+int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthVx(uint32_t userId, KeyType type,
+    const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret,
+    const std::string needRestoreVersion)
+{
+    LOGI("start userId %{public}u KeyType %{public}u", userId, type);
+    int32_t ret = E_OK;
+    uint32_t flags = 0;
+
+    ret = GetCryptoFlag(type, flags);
+    if (ret != E_OK) {
+        return ret;
+    }
+    std::string need_restore_path = KeyManager::GetInstance()->GetKeyDirByUserAndType(userId, type) + RESTORE_DIR;
+    uint32_t new_need_restore = std::atoi(needRestoreVersion.c_str()) + 1;
+    if (!SaveStringToFileSync(need_restore_path, std::to_string(new_need_restore))) {
+        LOGE("Write userId: %{public}d, El%{public}d need_restore failed.", userId, type);
+    }
+    LOGI("New DOUBLE_2_SINGLE::ActiveCeSceSeceUserKey.");
+    ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, type, token, {'!'});
+    if (ret != E_OK) {
+        LOGE("Active user %{public}u key fail, type %{public}u, flags %{public}u", userId, type, flags);
+        return ret;
+    }
     LOGI("try to destory dir first, user %{public}u, flags %{public}u", userId, flags);
     (void)UserManager::GetInstance()->DestroyUserDirs(userId, flags);
     ret = UserManager::GetInstance()->PrepareUserDirs(userId, flags);
@@ -796,7 +863,7 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
             updateFlag = true;
             ret = PrepareUserDirsAndUpdateUserAuth(userId, EL2_KEY, token, secret);
             std::string EL0_NEED_RESTORE = DATA_SERVICE_EL0_STORAGE_DAEMON_SD + NEED_RESTORE_SUFFIX;
-            if (!SaveStringToFile(EL0_NEED_RESTORE, NEW_DOUBLE_2_SINGELE)) {
+            if (!SaveStringToFile(EL0_NEED_RESTORE, NEW_DOUBLE_2_SINGLE)) {
                 LOGE("Save key type file failed");
                 return false;
             }

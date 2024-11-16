@@ -1101,6 +1101,15 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
     if (!KeyCtrlHasFscryptSyspara()) {
         return 0;
     }
+    std::string need_restore_path = GetKeyDirByUserAndType(user, type) = RESTORE_DIR;
+    std::error_code errCode;
+    std::string restore_version;
+    (void)OHOS::LoadStringFromFile(need_restore_path, restore_version);
+    if (std::filesystem::exists(need_restore_path, errCode) && std::atoi(restore_version.c_str()) == 3) {
+        LOGI("NEED_RESTORE path exist: %{public}s, errorcode: %{public}d", need_restore_path.c_str(),
+            errCode.value());
+        return type == EL5_KEY ? -ENONET : -EFAULT;
+    }
     if (CheckUserPinProtect(user, token, secret) != E_OK) {
         LOGE("IAM & Storage mismatch, wait user input pin.");
         return -EFAULT;
@@ -1173,9 +1182,15 @@ bool KeyManager::HasElxDesc(std::map<unsigned int, std::shared_ptr<BaseKey>> &us
                             KeyType type,
                             unsigned int user)
 {
+    LOGI("Enter.");
     auto it = userElKey_.find(user);
     if (it != userElKey_.end()) {
         auto elKey = it->second;
+        if (elKey == nullptr) {
+            LOGI("The ElKey is nullptr: %{public}d", elKey == nullptr);
+            return false;
+        }
+        
         if (it != userElKey_.end() && !elKey->KeyDescIsEmpty()) {
             LOGI("user el%{public}u key desc has existed", type);
             return true;
