@@ -1229,7 +1229,7 @@ HWTEST_F(KeyManagerTest, KeyManager_InActiveUserKey_002, TestSize.Level1)
     KeyManager::GetInstance()->userEl5Key_[user] = elKey;
     KeyManager::GetInstance()->userLockScreenTask_[user] = std::make_shared<DelayHandler>(user);
     EXPECT_CALL(*fscryptKeyMock_, InactiveKey(_, _)).WillOnce(Return(true)).WillOnce(Return(true))
-        .WillOnce(Return(true).WillOnce(Return(true));
+        .WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
     EXPECT_EQ(KeyManager::GetInstance()->InActiveUserKey(user), -ENOENT);
     EXPECT_TRUE(KeyManager::GetInstance()->userEl2Key_.find(user) == KeyManager::GetInstance()->userEl2Key_.end());
@@ -1243,7 +1243,7 @@ HWTEST_F(KeyManagerTest, KeyManager_InActiveUserKey_002, TestSize.Level1)
     KeyManager::GetInstance()->userEl4Key_[user] = elKey;
     KeyManager::GetInstance()->userEl5Key_[user] = elKey;
     EXPECT_CALL(*fscryptKeyMock_, InactiveKey(_, _)).WillOnce(Return(true)).WillOnce(Return(true))
-        .WillOnce(Return(true)).WillOnce(Return(true);
+        .WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
     EXPECT_EQ(KeyManager::GetInstance()->InActiveUserKey(user), -ENOENT);
     EXPECT_TRUE(KeyManager::GetInstance()->userEl2Key_.find(user) == KeyManager::GetInstance()->userEl2Key_.end());
