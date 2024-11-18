@@ -341,13 +341,13 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_PrepareAppdataDir_001
     EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(false));
     auto ret = MountManager::GetInstance()->PrepareAppdataDir(userId);
     EXPECT_EQ(ret, E_OK);
-    
+
     std::vector<int32_t> userIds;
     MountManager::GetInstance()->GetAllUserId(userIds);
     if (!userIds.empty()) {
         EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillRepeatedly(Return(false));
-    } 
-    
+    }
+
     ret = MountManager::GetInstance()->PrepareAppdataDir(0);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_PrepareAppdataDir_001 end";
