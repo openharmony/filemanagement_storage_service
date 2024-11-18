@@ -323,6 +323,54 @@ bool HandleGenerateAppkeyFuzzTest(const uint8_t *data, size_t size)
     return true;
 }
 
+bool HandleUnlockUserScreenFuzzTest(const uint8_t *data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
+    datas.WriteBuffer(data, size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageDaemon->HandleUnlockUserScreen(datas, reply);
+    return true;
+}
+
+bool HandleLockUserScreenFuzzTest(const uint8_t *data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
+    datas.WriteBuffer(data, size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageDaemon->HandleLockUserScreen(datas, reply);
+    return true;
+}
+
+bool HandleUpdateMemoryParaFuzzTest(const uint8_t *data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
+    datas.WriteBuffer(data, size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageDaemon->HandleUpdateMemoryPara(datas, reply);
+    return true;
+}
+
+bool HandleShutdownFuzzTest(const uint8_t *data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
+    datas.WriteBuffer(data, size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageDaemon->HandleShutdown(datas, reply);
+    return true;
+}
+
 bool UserManagerFuzzTest(const uint8_t *data, size_t size)
 {
     if ((data == nullptr) || (size < sizeof(int32_t))) {
@@ -380,5 +428,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     OHOS::HandleUpdateKeyContextFuzzTest(data, size);
     OHOS::HandleDeleteAppkeyFuzzTest(data, size);
     OHOS::HandleGenerateAppkeyFuzzTest(data, size);
+    OHOS::HandleUnlockUserScreenFuzzTest(data, size);
+    OHOS::HandleLockUserScreenFuzzTest(data, size);
+    OHOS::HandleUpdateMemoryParaFuzzTest(data, size);
+    OHOS::HandleShutdownFuzzTest(data, size);
     return 0;
 }
