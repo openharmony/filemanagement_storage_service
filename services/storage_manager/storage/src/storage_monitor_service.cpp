@@ -26,6 +26,8 @@
 #include "cJSON.h"
 #include "common_event_data.h"
 #include "common_event_manager.h"
+#include "parameter.h"
+#include "param_wrapper.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "storage/bundle_manager_connector.h"
@@ -44,11 +46,14 @@ constexpr int64_t STORAGE_THRESHOLD_MAX_BYTES = 500 * 1024 * 1024; // 500M
 constexpr int64_t STORAGE_THRESHOLD_100M = 100 * 1024 * 1024; // 100M
 constexpr int64_t STORAGE_THRESHOLD_1G = 1000 * 1024 * 1024; // 1G
 constexpr int32_t STORAGE_LEFT_SIZE_THRESHOLD = 10; // 10%
-constexpr int32_t SEND_EVENT_INTERVAL = 24; // 24H
+constexpr int32_t SEND_EVENT_INTERVAL = 24; // day
+constexpr int32_t CLEAN_CACHE_WEEK = 7 * 24; // week
 constexpr int32_t SEND_EVENT_INTERVAL_HIGH_FREQ = 5; // 5m
 const std::string PUBLISH_SYSTEM_COMMON_EVENT = "ohos.permission.PUBLISH_SYSTEM_COMMON_EVENT";
 const std::string SMART_BUNDLE_NAME = "com.ohos.hmos.hiviewcare";
 const std::string SMART_ACTION = "hicare.event.SMART_NOTIFICATION";
+const std::string TIMESTAMP_DAY = "persist.storage_manager.timestamp.day";
+const std::string TIMESTAMP_WEEK = "persist.storage_manager.timestamp.week";
 const std::string FAULT_ID_ONE = "845010021";
 const std::string FAULT_ID_TWO = "845010022";
 const std::string FAULT_ID_THREE = "845010023";
@@ -107,12 +112,12 @@ void StorageMonitorService::Execute()
         LOGE("event handler is nullptr.");
         return;
     }
-    CheckAndCleanBundleCache();
+    MonitorAndManageStorage();
     auto executeFunc = [this] { Execute(); };
     eventHandler_->PostTask(executeFunc, DEFAULT_CHECK_INTERVAL);
 }
 
-void StorageMonitorService::CheckAndCleanBundleCache()
+void StorageMonitorService::MonitorAndManageStorage()
 {
     int64_t totalSize;
     int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetTotalSize(totalSize);
@@ -129,7 +134,12 @@ void StorageMonitorService::CheckAndCleanBundleCache()
     }
     if (freeSize < (totalSize * STORAGE_LEFT_SIZE_THRESHOLD) / CONST_NUM_ONE_HUNDRED) {
         CheckAndEventNotify(freeSize, totalSize);
+        CheckAndCleanCache(freeSize, totalSize);
     }
+}
+
+void StorageMonitorService::CheckAndCleanCache(int64_t freeSize, int64_t totalSize)
+{
     int64_t lowThreshold = GetLowerThreshold(totalSize);
     if (lowThreshold <= 0) {
         LOGE("Lower threshold value is invalid.");
@@ -137,12 +147,43 @@ void StorageMonitorService::CheckAndCleanBundleCache()
     }
 
     LOGI("Device storage freeSize=%{public}lld, threshold=%{public}lld", static_cast<long long>(freeSize),
-        static_cast<long long>(lowThreshold));
-    if (freeSize >= (lowThreshold * CONST_NUM_THREE) / CONST_NUM_TWO) {
-        LOGI("The cache clean threshold had not been reached, skip this clean task.");
+         static_cast<long long>(lowThreshold));
+
+    if (freeSize < (lowThreshold * CONST_NUM_THREE) / CONST_NUM_TWO) {
+        CleanBundleCache(lowThreshold);
         return;
     }
 
+    if (freeSize > (totalSize * STORAGE_THRESHOLD_PERCENTAGE) / CONST_NUM_ONE_HUNDRED) {
+        CleanBundleCacheByInterval(TIMESTAMP_WEEK, lowThreshold, CLEAN_CACHE_WEEK);
+    } else {
+        CleanBundleCacheByInterval(TIMESTAMP_DAY, lowThreshold, SEND_EVENT_INTERVAL);
+    }
+}
+
+void StorageMonitorService::CleanBundleCacheByInterval(const std::string &timestamp,
+                                                       int64_t lowThreshold, int32_t checkInterval)
+{
+    auto currentTime = std::chrono::system_clock::now();
+    auto curTimePoint =
+            std::chrono::time_point_cast<std::chrono::hours>(currentTime).time_since_epoch().count();
+    std::string param = system::GetParameter(timestamp, "");
+    if (param.empty()) {
+        LOGI("Not found timestamp from system parameter");
+        return;
+    }
+    uint64_t lastCleanCacheTime = std::stoull(param);
+    auto duration = std::chrono::duration_cast<std::chrono::hours>(currentTime -
+            std::chrono::system_clock::time_point(std::chrono::hours(lastCleanCacheTime))).count();
+    LOGI("CleanBundleCache timestamp is %{public}s, duration is %{public}ld", timestamp.c_str(), duration);
+    if (duration >= checkInterval) {
+        CleanBundleCache(lowThreshold);
+        system::SetParameter(timestamp, std::to_string(curTimePoint));
+    }
+}
+
+void StorageMonitorService::CleanBundleCache(int64_t lowThreshold)
+{
     auto bundleMgr = DelayedSingleton<BundleMgrConnector>::GetInstance()->GetBundleMgrProxy();
     if (bundleMgr == nullptr) {
         LOGE("Connect bundle manager sa proxy failed.");

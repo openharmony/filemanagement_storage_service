@@ -67,6 +67,7 @@ ohos_unittest("storage_total_status_service_test") {
     "eventhandler:libeventhandler",
     "hilog:libhilog",
     "hitrace:hitrace_meter",
+    "init:libbegetutil",
     "ipc:ipc_single",
     "os_account:os_account_innerkits",
     "relational_store:native_dataability",

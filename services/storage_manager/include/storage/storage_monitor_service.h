@@ -36,12 +36,15 @@ public:
 private:
     void StartEventHandler();
     void Execute();
-    void CheckAndCleanBundleCache();
+    void MonitorAndManageStorage();
+    void CleanBundleCache(int64_t lowThreshold);
     int64_t GetLowerThreshold(int64_t totalSize);
+    void CheckAndCleanCache(int64_t freeSize, int64_t totalSize);
     void CheckAndEventNotify(int64_t freeSize, int64_t totalSize);
     void SendSmartNotificationEvent(const std::string &faultDesc, const std::string &faultSuggest, bool isHighFreq);
     void EventNotifyHighFreqHandler();
-
+    void CleanBundleCacheByInterval(const std::string &timestamp,
+                                                           int64_t lowThreshold, int32_t checkInterval);
     std::mutex eventMutex_;
     std::thread eventThread_;
     std::condition_variable eventCon_;
