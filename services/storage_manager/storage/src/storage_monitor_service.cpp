@@ -26,7 +26,7 @@
 #include "cJSON.h"
 #include "common_event_data.h"
 #include "common_event_manager.h"
-#include "parameter.h"
+#include "parameters.h"
 #include "param_wrapper.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
