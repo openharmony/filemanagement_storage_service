@@ -41,14 +41,18 @@ constexpr int32_t WAIT_THREAD_TIMEOUT_MS = 5;
 constexpr int32_t DEFAULT_CHECK_INTERVAL = 60 * 1000; // 60s
 constexpr int32_t STORAGE_THRESHOLD_PERCENTAGE = 5; // 5%
 constexpr int64_t STORAGE_THRESHOLD_MAX_BYTES = 500 * 1024 * 1024; // 500M
+constexpr int64_t STORAGE_THRESHOLD_100M = 100 * 1024 * 1024; // 100M
 constexpr int64_t STORAGE_THRESHOLD_1G = 1000 * 1024 * 1024; // 1G
 constexpr int32_t STORAGE_LEFT_SIZE_THRESHOLD = 10; // 10%
 constexpr int32_t SEND_EVENT_INTERVAL = 24; // 24H
+constexpr int32_t SEND_EVENT_INTERVAL_HIGH_FREQ = 5; // 5m
 const std::string PUBLISH_SYSTEM_COMMON_EVENT = "ohos.permission.PUBLISH_SYSTEM_COMMON_EVENT";
 const std::string SMART_BUNDLE_NAME = "com.ohos.hmos.hiviewcare";
 const std::string SMART_ACTION = "hicare.event.SMART_NOTIFICATION";
 const std::string FAULT_ID_ONE = "845010021";
 const std::string FAULT_ID_TWO = "845010022";
+const std::string FAULT_ID_THREE = "845010023";
+const std::string FAULT_SUGGEST_THREE = "545010023";
 
 StorageMonitorService::StorageMonitorService() {}
 
@@ -119,7 +123,7 @@ void StorageMonitorService::CheckAndCleanBundleCache()
 
     int64_t freeSize;
     err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetFreeSize(freeSize);
-    if ((err != E_OK) || (freeSize <= 0)) {
+    if ((err != E_OK) || (freeSize < 0)) {
         LOGE("Get device free size failed.");
         return;
     }
@@ -160,21 +164,27 @@ int64_t StorageMonitorService::GetLowerThreshold(int64_t totalSize)
 void StorageMonitorService::CheckAndEventNotify(int64_t freeSize, int64_t totalSize)
 {
     LOGI("StorageMonitorService, start CheckAndEventNotify.");
+    if (freeSize < STORAGE_THRESHOLD_100M) {
+        EventNotifyHighFreqHandler();
+        return;
+    }
     auto currentTime = std::chrono::steady_clock::now();
     int32_t duration = static_cast<int32_t>(std::chrono::duration_cast<std::chrono::hours>
             (currentTime - lastNotificationTime_).count());
     LOGI("StorageMonitorService, duration is %{public}d", duration);
     if (duration >= SEND_EVENT_INTERVAL) {
         if (freeSize >= STORAGE_THRESHOLD_1G) {
-            SendSmartNotificationEvent(FAULT_ID_ONE);
+            SendSmartNotificationEvent(FAULT_ID_ONE, FAULT_ID_ONE, false);
         } else {
-            SendSmartNotificationEvent(FAULT_ID_TWO);
+            SendSmartNotificationEvent(FAULT_ID_TWO, FAULT_ID_TWO, false);
         }
         lastNotificationTime_ = currentTime;
     }
 }
 
-void StorageMonitorService::SendSmartNotificationEvent(const std::string &faultId)
+void StorageMonitorService::SendSmartNotificationEvent(const std::string &faultDesc,
+                                                       const std::string &faultSuggest,
+                                                       bool isHighFreq)
 {
     LOGI("StorageMonitorService, start SendSmartNotificationEvent.");
     EventFwk::CommonEventPublishInfo publishInfo;
@@ -192,9 +202,14 @@ void StorageMonitorService::SendSmartNotificationEvent(const std::string &faultI
     eventData.SetWant(want);
 
     cJSON *root = cJSON_CreateObject();
-    cJSON_AddStringToObject(root, "faultDescription", faultId.c_str());
-    cJSON_AddStringToObject(root, "faultSuggestion", faultId.c_str());
-
+    cJSON_AddStringToObject(root, "faultDescription", faultDesc.c_str());
+    cJSON_AddStringToObject(root, "faultSuggestion", faultSuggest.c_str());
+    if (isHighFreq) {
+        cJSON *faultSuggestionParam = cJSON_CreateString("100M");
+        cJSON *faultSuggestionArray = cJSON_CreateArray();
+        cJSON_AddItemToArray(faultSuggestionArray, faultSuggestionParam);
+        cJSON_AddItemToObject(root, "faultSuggestionParams", faultSuggestionArray);
+    }
     char *json_string = cJSON_Print(root);
     std::string eventDataStr(json_string);
     eventDataStr.erase(remove(eventDataStr.begin(), eventDataStr.end(), '\n'), eventDataStr.end());
@@ -204,6 +219,18 @@ void StorageMonitorService::SendSmartNotificationEvent(const std::string &faultI
     eventData.SetData(eventDataStr);
     cJSON_Delete(root);
     EventFwk::CommonEventManager::PublishCommonEvent(eventData, publishInfo, nullptr);
+}
+
+void StorageMonitorService::EventNotifyHighFreqHandler()
+{
+    auto currentTime = std::chrono::steady_clock::now();
+    int32_t duration = static_cast<int32_t>(std::chrono::duration_cast<std::chrono::minutes>
+            (currentTime - lastNotificationTimeHighFreq_).count());
+    LOGI("StorageMonitorService high frequency, duration is %{public}d", duration);
+    if (duration >= SEND_EVENT_INTERVAL_HIGH_FREQ) {
+        SendSmartNotificationEvent(FAULT_ID_THREE, FAULT_SUGGEST_THREE, true);
+        lastNotificationTimeHighFreq_ = currentTime;
+    }
 }
 } // StorageManager
 } // OHOS
