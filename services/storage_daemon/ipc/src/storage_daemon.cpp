@@ -316,7 +316,7 @@ int32_t StorageDaemon::RestoreUserKey(int32_t userId, uint32_t flags)
             return ret;
         }
     }
-
+    MountManager::GetInstance()->PrepareAppdataDir(userId);
     return E_OK;
 }
 #endif
