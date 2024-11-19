@@ -29,7 +29,6 @@
 using namespace OHOS::StorageManager;
 
 namespace OHOS::StorageManager {
-constexpr size_t FOO_MAX_LEN = 1024;
 constexpr uint8_t MAX_CALL_TRANSACTION = 64;
 constexpr size_t U32_AT_SIZE = 4;
 constexpr int32_t SERVICE_ID = 5003;
@@ -341,7 +340,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     }
 
     /* Validate the length of size */
-    if (size < OHOS::StorageManager::U32_AT_SIZE || size > OHOS::StorageManager::FOO_MAX_LEN) {
+    if (size < OHOS::StorageManager::U32_AT_SIZE) {
         return 0;
     }
 

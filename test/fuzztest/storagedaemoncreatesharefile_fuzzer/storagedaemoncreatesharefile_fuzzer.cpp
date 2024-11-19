@@ -27,7 +27,6 @@
 using namespace OHOS::StorageDaemon;
 
 namespace OHOS {
-constexpr size_t FOO_MAX_LEN = 1024;
 constexpr size_t U32_AT_SIZE = 4;
 
 std::shared_ptr<StorageDaemon::StorageDaemon> storageDaemon =
@@ -63,7 +62,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     }
 
     /* Validate the length of size */
-    if (size < OHOS::U32_AT_SIZE || size > OHOS::FOO_MAX_LEN) {
+    if (size < OHOS::U32_AT_SIZE) {
         return 0;
     }
 
