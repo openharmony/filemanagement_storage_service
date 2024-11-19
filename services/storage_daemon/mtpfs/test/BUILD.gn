@@ -48,8 +48,8 @@ ohos_unittest("mtpfs_fuse_test") {
 
   external_deps = [
     "c_utils:utils",
-    "hilog:libhilog",
     "googletest:gtest_main",
+    "hilog:libhilog",
   ]
 
   if (support_open_source_libmtp) {
