@@ -792,5 +792,116 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UpdateUseAuthWithRecoveryKey_005, TestSiz
     OHOS::ForceRemoveDirectory(el4Path);
     GTEST_LOG_(INFO) << "KeyManager_UpdateUseAuthWithRecoveryKey_005 end";
 }
+
+/**
+ * @tc.name: KeyManager_HasElxDesc_001
+ * @tc.desc: Verify the HasElxDesc function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyManagerSupTest, KeyManager_HasElxDesc_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_HasElxDesc_001 Start";
+    unsigned int user = 800;
+    std::map<unsigned int, std::shared_ptr<BaseKey>> userElxKey_;
+    EXPECT_FALSE(KeyManager::GetInstance()->HasElxDesc(userElxKey_, EL1_KEY, user));
+
+    userElxKey_[user] = nullptr;
+    EXPECT_FALSE(KeyManager::GetInstance()->HasElxDesc(userElxKey_, EL1_KEY, user));
+    userElxKey_.erase(user);
+
+    shared_ptr<FscryptKeyV2> elKey = make_shared<FscryptKeyV2>("/data/test");
+    userElxKey_[user] = elKey;
+    EXPECT_CALL(*baseKeyMock_, KeyDescIsEmpty()).WillOnce(Return(true));
+    EXPECT_FALSE(KeyManager::GetInstance()->HasElxDesc(userElxKey_, EL1_KEY, user));
+
+    EXPECT_CALL(*baseKeyMock_, KeyDescIsEmpty()).WillOnce(Return(false));
+    EXPECT_TRUE(KeyManager::GetInstance()->HasElxDesc(userElxKey_, EL1_KEY, user));
+    userElxKey_.erase(user);
+    GTEST_LOG_(INFO) << "KeyManager_HasElxDesc_001 end";
+}
+
+/**
+ * @tc.name: KeyManager_HashElxActived_001
+ * @tc.desc: Verify the HashElxActived function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyManagerSupTest, KeyManager_HashElxActived_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_HashElxActived_001 Start";
+    unsigned int user = 800;
+    KeyManager::GetInstance()->userEl1Key_.erase(user);
+    EXPECT_FALSE(KeyManager::GetInstance()->HashElxActived(user, EL1_KEY));
+
+    std::shared_ptr<BaseKey> tmpKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>("test"));
+    KeyManager::GetInstance()->userEl1Key_[user] = tmpKey;
+    EXPECT_CALL(*baseKeyMock_, KeyDescIsEmpty()).WillOnce(Return(false));
+    EXPECT_TRUE(KeyManager::GetInstance()->HashElxActived(user, EL1_KEY));
+    KeyManager::GetInstance()->userEl1Key_.erase(user);
+
+    KeyManager::GetInstance()->userEl2Key_.erase(user);
+    EXPECT_FALSE(KeyManager::GetInstance()->HashElxActived(user, EL2_KEY));
+
+    KeyManager::GetInstance()->userEl2Key_[user] = tmpKey;
+    EXPECT_CALL(*baseKeyMock_, KeyDescIsEmpty()).WillOnce(Return(false));
+    EXPECT_TRUE(KeyManager::GetInstance()->HashElxActived(user, EL2_KEY));
+    KeyManager::GetInstance()->userEl2Key_.erase(user);
+    GTEST_LOG_(INFO) << "KeyManager_HashElxActived_001 end";
+}
+
+/**
+ * @tc.name: KeyManager_HashElxActived_002
+ * @tc.desc: Verify the HashElxActived function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyManagerSupTest, KeyManager_HashElxActived_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_HashElxActived_002 Start";
+    unsigned int user = 800;
+    KeyManager::GetInstance()->userEl3Key_.erase(user);
+    EXPECT_FALSE(KeyManager::GetInstance()->HashElxActived(user, EL3_KEY));
+
+    std::shared_ptr<BaseKey> tmpKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>("test"));
+    KeyManager::GetInstance()->userEl3Key_[user] = tmpKey;
+    EXPECT_CALL(*baseKeyMock_, KeyDescIsEmpty()).WillOnce(Return(false));
+    EXPECT_TRUE(KeyManager::GetInstance()->HashElxActived(user, EL3_KEY));
+    KeyManager::GetInstance()->userEl3Key_.erase(user);
+
+    KeyManager::GetInstance()->userEl4Key_.erase(user);
+    EXPECT_FALSE(KeyManager::GetInstance()->HashElxActived(user, EL4_KEY));
+
+    KeyManager::GetInstance()->userEl4Key_[user] = tmpKey;
+    EXPECT_CALL(*baseKeyMock_, KeyDescIsEmpty()).WillOnce(Return(false));
+    EXPECT_TRUE(KeyManager::GetInstance()->HashElxActived(user, EL4_KEY));
+    KeyManager::GetInstance()->userEl4Key_.erase(user);
+    GTEST_LOG_(INFO) << "KeyManager_HashElxActived_002 end";
+}
+
+/**
+ * @tc.name: KeyManager_HashElxActived_003
+ * @tc.desc: Verify the HashElxActived function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyManagerSupTest, KeyManager_HashElxActived_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_HashElxActived_003 Start";
+    unsigned int user = 800;
+    KeyManager::GetInstance()->userEl5Key_.erase(user);
+    EXPECT_FALSE(KeyManager::GetInstance()->HashElxActived(user, EL5_KEY));
+
+    std::shared_ptr<BaseKey> tmpKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>("test"));
+    KeyManager::GetInstance()->userEl5Key_[user] = tmpKey;
+    EXPECT_CALL(*baseKeyMock_, KeyDescIsEmpty()).WillOnce(Return(false));
+    EXPECT_TRUE(KeyManager::GetInstance()->HashElxActived(user, EL5_KEY));
+    KeyManager::GetInstance()->userEl5Key_.erase(user);
+    
+    int eL6Key = 6;
+    KeyType type = static_cast<KeyType>(eL6Key);
+    EXPECT_FALSE(KeyManager::GetInstance()->HashElxActived(user, type));
+    GTEST_LOG_(INFO) << "KeyManager_HashElxActived_003 end";
+}
 }
 
