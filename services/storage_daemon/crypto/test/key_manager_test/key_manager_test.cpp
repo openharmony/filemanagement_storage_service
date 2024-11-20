@@ -1235,7 +1235,7 @@ HWTEST_F(KeyManagerTest, KeyManager_InActiveUserKey_001, TestSize.Level1)
     KeyManager::GetInstance()->userEl2Key_[user] = elKey;
     EXPECT_CALL(*fscryptKeyMock_, InactiveKey(_, _)).WillOnce(Return(true));
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
-     EXPECT_CALL(*baseKeyMock_, GetKeyDir()).WillOnce(Return("el1"));
+    EXPECT_CALL(*baseKeyMock_, GetKeyDir()).WillOnce(Return("el1"));
     EXPECT_EQ(KeyManager::GetInstance()->InActiveUserKey(user), -ENOENT);
     EXPECT_TRUE(KeyManager::GetInstance()->userEl2Key_.find(user) == KeyManager::GetInstance()->userEl2Key_.end());
 
