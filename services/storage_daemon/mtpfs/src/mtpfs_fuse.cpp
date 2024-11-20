@@ -208,9 +208,7 @@ int WrapCreate(const char *path, mode_t mode, fuse_file_info *fileInfo)
 int WrapTruncate(const char *path, off_t offset, struct fuse_file_info *fileInfo)
 {
     LOGI("mtp WrapTruncate");
-    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Truncate(path, offset, fileInfo);
-    LOGI("Truncate ret = %{public}d.", ret);
-    return ret;
+    return 0;
 }
 
 int WrapReadLink(const char *path, char *out, size_t size)
@@ -641,6 +639,7 @@ int MtpFileSystem::Truncate(const char *path, off_t new_size, struct fuse_file_i
         return -rval;
     }
     rval = device_.FilePush(tmpPath, std::string(path));
+    ::unlink(tmpPath.c_str());
     if (rval != 0) {
         return -rval;
     }
@@ -863,11 +862,6 @@ int MtpFileSystem::FSync(const char *path, int datasync, struct fuse_file_info *
 #endif
     if (rval != 0) {
         return -errno;
-    }
-    const std::string stdPath(path);
-    MtpFsTypeTmpFile *tmpFile = const_cast<MtpFsTypeTmpFile *>(tmpFilesPool_.GetFile(stdPath));
-    if (tmpFile != nullptr) {
-        tmpFile->RemoveFileDescriptor(fi->fh);
     }
     return 0;
 }
