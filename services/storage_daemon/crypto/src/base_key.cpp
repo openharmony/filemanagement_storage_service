@@ -696,7 +696,7 @@ bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
     std::string need_restore;
     LoadStringFromFile(path + SUFFIX_NEED_RESTORE, need_restore);
     uint32_t restore_version = std::atoi(need_restore.c_str());
-    UpdateVersion update_version = static_cast<UpdateVersion>(std::atoi(need_restore.c_str()) + 1);
+    UpdateVersion update_version = static_cast<UpdateVersion>(std::atoi(need_restore.c_str()));
     LOGI("NeedRestore Path is: %{public}s, restore_version: %{public}u", path.c_str(), restore_version);
     if (std::filesystem::exists(path + SUFFIX_NEED_RESTORE, errCode)) {
         if (restore_version < 3) {
