@@ -1101,7 +1101,7 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
     if (!KeyCtrlHasFscryptSyspara()) {
         return 0;
     }
-    std::string need_restore_path = GetKeyDirByUserAndType(user, type) = RESTORE_DIR;
+    std::string need_restore_path = GetKeyDirByUserAndType(user, type) + RESTORE_DIR;
     std::error_code errCode;
     std::string restore_version;
     (void)OHOS::LoadStringFromFile(need_restore_path, restore_version);
