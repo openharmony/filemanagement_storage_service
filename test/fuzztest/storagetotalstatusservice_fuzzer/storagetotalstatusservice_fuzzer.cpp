@@ -18,26 +18,16 @@
 #include "storage_service_errno.h"
 namespace OHOS {
 namespace StorageManager {
-constexpr size_t NUM_PARA = 3;
-template<typename T>
-T TypeCast(const uint8_t *data, int *pos)
-{
-    if (pos) {
-        *pos += sizeof(T);
-    }
-    return *(reinterpret_cast<const T*>(data));
-}
-
 bool StorageTotalStatusServiceFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size < sizeof(uint64_t) * NUM_PARA)) {
-        return true;
+    if ((data == nullptr) || (size == 0) {
+        return false;
     }
 
     std::shared_ptr<StorageTotalStatusService> service = DelayedSingleton<StorageTotalStatusService>::GetInstance();
-    int64_t totalSize = TypeCast<int64_t>(data, nullptr);
-    int64_t systemSize = TypeCast<int64_t>(data + sizeof(int64_t), nullptr);
-    int64_t freeSize = TypeCast<int64_t>(data + sizeof(int64_t) * 2, nullptr);
+    int64_t totalSize;
+    int64_t systemSize;
+    int64_t freeSize;
     int32_t result = service->GetTotalSize(totalSize);
     if (result != E_OK) {
         LOGI("Storage total status service fuzz test of interface StorageTotalStatusService::GetTotalSize failed!");
