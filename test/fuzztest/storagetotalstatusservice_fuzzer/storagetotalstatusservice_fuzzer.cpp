@@ -18,6 +18,7 @@
 #include "storage_service_errno.h"
 namespace OHOS {
 namespace StorageManager {
+constexpr size_t NUM_PARA = 3;
 template<typename T>
 T TypeCast(const uint8_t *data, int *pos)
 {
@@ -29,7 +30,7 @@ T TypeCast(const uint8_t *data, int *pos)
 
 bool StorageTotalStatusServiceFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size < sizeof(uint64_t) * 3)) {
+    if ((data == nullptr) || (size < sizeof(uint64_t) * NUM_PARA)) {
         return true;
     }
 
