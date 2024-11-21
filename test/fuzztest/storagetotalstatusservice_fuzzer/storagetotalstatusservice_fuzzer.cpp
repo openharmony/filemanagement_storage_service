@@ -29,13 +29,14 @@ T TypeCast(const uint8_t *data, int *pos)
 
 bool StorageTotalStatusServiceFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size == 0)) {
-        return false;
+    if ((data == nullptr) || (size < sizeof(uint64_t) * 3)) {
+        return true;
     }
+
     std::shared_ptr<StorageTotalStatusService> service = DelayedSingleton<StorageTotalStatusService>::GetInstance();
-    int64_t totalSize;
-    int64_t systemSize;
-    int64_t freeSize;
+    int64_t totalSize = TypeCast<int64_t>(data, nullptr);
+    int64_t systemSize = TypeCast<int64_t>(data + sizeof(int64_t), nullptr);
+    int64_t freeSize = TypeCast<int64_t>(data + sizeof(int64_t) * 2, nullptr);
     int32_t result = service->GetTotalSize(totalSize);
     if (result != E_OK) {
         LOGI("Storage total status service fuzz test of interface StorageTotalStatusService::GetTotalSize failed!");
