@@ -254,11 +254,13 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
 
     std::string elNeedRestorePath = GetNeedRestoreFilePathByType(userId, type);
     if (elNeedRestorePath.empty()) {
+        LOGI("elNeedRestorePath is empty, type = %{public}d", type);
         return E_KEY_TYPE_INVAL;
     }
 
     std::error_code errCode;
     if (!std::filesystem::exists(elNeedRestorePath, errCode)) {
+        LOGI("elNeedRestorePath not exist, type = %{public}d", type);
         return E_OK;
     }
     std::string SINGLE_RESTORE_VERSION;
