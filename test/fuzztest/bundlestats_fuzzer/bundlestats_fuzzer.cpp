@@ -29,13 +29,16 @@ T TypeCast(const uint8_t *data, int *pos)
 
 bool FileUtilFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size <sizeof(uint64_t) * 6)) {
+    if ((data == nullptr) || (size < sizeof(uint64_t) * 3)) {
         return true;
     }
 
-    int64_t total = TypeCast<int64_t>(data, nullptr);
+    int64_t appSize = TypeCast<int64_t>(data, nullptr);
+    int64_t cacheSize = TypeCast<int64_t>(data + sizeof(int64_t), nullptr);
+    int64_t dataSize = TypeCast<int64_t>(data + sizeof(int64_t) * 2, nullptr);
+
     Parcel parcel;
-    StorageManager::BundleStats bundlestats;
+    StorageManager::BundleStats bundlestats(appSize, cacheSize, dataSize);
     bundlestats.Marshalling(parcel);
     bundlestats.Unmarshalling(parcel);
     return true;
