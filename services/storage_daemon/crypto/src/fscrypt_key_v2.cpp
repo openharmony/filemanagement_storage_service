@@ -179,11 +179,11 @@ bool FscryptKeyV2::ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId)
 }
 
 bool FscryptKeyV2::DecryptClassE(const UserAuth &auth, bool &isSupport,
-                                 bool &eBufferStatue, uint32_t user, uint32_t status)
+                                 bool &eBufferStatue, uint32_t user, bool needSyncCandidate)
 {
     (void)auth;
     (void)user;
-    (void)status;
+    (void)needSyncCandidate;
     isSupport = false;
     eBufferStatue = false;
     LOGI("Unsupported fscrypt v2");

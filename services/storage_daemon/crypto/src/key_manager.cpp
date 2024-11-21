@@ -243,7 +243,7 @@ int KeyManager::GenerateAndInstallEl5Key(uint32_t userId, const std::string &dir
         }
     } else {
         bool eBufferStatue = false;
-        if (!elKey->DecryptClassE(auth, saveESecretStatus[userId], eBufferStatue, userId, USER_UNLOCK)) {
+        if (!elKey->DecryptClassE(auth, saveESecretStatus[userId], eBufferStatue, userId, false)) {
             LOGE("user %{public}u decrypt error", userId);
         }
     }
@@ -1239,7 +1239,7 @@ int KeyManager::ActiveUeceUserKey(unsigned int user,
     userEl5Key_[user] = elKey;
     UserAuth auth = { .token = token, .secret = secret };
     bool eBufferStatue = false;
-    if (!elKey->DecryptClassE(auth, saveESecretStatus[user], eBufferStatue, user, USER_UNLOCK)) {
+    if (!elKey->DecryptClassE(auth, saveESecretStatus[user], eBufferStatue, user, true)) {
         LOGE("Unlock user %{public}u E_Class failed", user);
         return -EFAULT;
     }
@@ -1336,7 +1336,7 @@ int32_t KeyManager::UnlockEceSece(uint32_t user,
              saveLockScreenStatus[user]);
         return E_NON_EXIST;
     }
-    if (!el4Key->RestoreKey({token, secret}) && !el4Key->RestoreKey(NULL_KEY_AUTH)) {
+    if (!el4Key->RestoreKey({ token, secret }, false) && !el4Key->RestoreKey(NULL_KEY_AUTH, false)) {
         LOGE("Restore user %{public}u el4 key failed", user);
         return E_RESTORE_KEY_FAILED;
     }
@@ -1356,7 +1356,7 @@ int32_t KeyManager::UnlockUece(uint32_t user,
     saveESecretStatus[user] = !auth.token.IsEmpty();
     auto el5Key = GetUserElKey(user, EL5_KEY);
     bool eBufferStatue = false;
-    if (el5Key != nullptr && !el5Key->DecryptClassE(auth, saveESecretStatus[user], eBufferStatue, user, USER_UNLOCK)) {
+    if (el5Key != nullptr && !el5Key->DecryptClassE(auth, saveESecretStatus[user], eBufferStatue, user, false)) {
         LOGE("Unlock user %{public}u uece failed", user);
         return E_UNLOCK_APP_KEY2_FAILED;
     }
@@ -1461,7 +1461,7 @@ int KeyManager::CreateRecoverKey(uint32_t userId, uint32_t userType, const std::
             return -EOPNOTSUPP;
         }
         UserAuth auth = { token, secret };
-        if ((elxKey->RestoreKey(auth) == false) && (elxKey->RestoreKey(NULL_KEY_AUTH) == false)) {
+        if ((elxKey->RestoreKey(auth, false) == false) && (elxKey->RestoreKey(NULL_KEY_AUTH, false) == false)) {
             LOGE("Restore el failed");
             return -EFAULT;
         }

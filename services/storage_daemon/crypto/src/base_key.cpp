@@ -37,7 +37,6 @@
 
 namespace {
 const std::string PATH_LATEST_BACKUP = "/latest_bak";
-const std::string PATH_KEY_VERSION = "/version_";
 const std::string PATH_KEY_TEMP = "/temp";
 const std::string PATH_NEED_RESTORE_SUFFIX = "/latest/need_restore";
 const std::string PATH_USER_EL1_DIR = "/data/service/el1/public/storage_daemon/sd/el1/";
@@ -356,9 +355,13 @@ bool BaseKey::LoadAndSaveShield(const UserAuth &auth, const std::string &pathShi
 }
 
 // update the latest and do cleanups.
-bool BaseKey::UpdateKey(const std::string &keypath)
+bool BaseKey::UpdateKey(const std::string &keypath, bool needSyncCandidate)
 {
     LOGI("enter");
+    if (!needSyncCandidate) {
+        LOGE("Do not update candidate file !");
+        return true;
+    }
     auto candidate = keypath.empty() ? GetCandidateDir() : keypath;
     if (candidate.empty() && GetTypeFromDir() == TYPE_EL5) {
         LOGI("no uece candidate dir, do not need updateKey.");
@@ -368,7 +371,40 @@ bool BaseKey::UpdateKey(const std::string &keypath)
         LOGE("no candidate dir");
         return false;
     }
+    DoLatestBackUp();
+    bool hasLatest = IsDir(dir_ + PATH_LATEST);
+    OHOS::ForceRemoveDirectory(dir_ + PATH_LATEST);
+    if (rename(candidate.c_str(), (dir_ + PATH_LATEST).c_str()) != 0) { // rename {candidate} to latest
+        LOGE("rename candidate to latest fail return %{public}d", errno);
+        if (hasLatest) { // revert from the backup
+            if (rename((dir_ + PATH_LATEST_BACKUP).c_str(), (dir_ + PATH_LATEST).c_str()) != 0) {
+                LOGE("restore the latest_backup fail errno:%{public}d", errno);
+            } else {
+                LOGI("restore the latest_backup success");
+            }
+        }
+        SyncKeyDir();
+        return false;
+    }
+    LOGI("rename candidate %{public}s to latest success", candidate.c_str());
 
+    std::vector<std::string> files;
+    GetSubDirs(dir_, files);
+    for (const auto &it: files) { // cleanup backup and other versions
+        if (it != PATH_LATEST.substr(1)) {
+            OHOS::ForceRemoveDirectory(dir_ + "/" + it);
+        }
+    }
+
+    std::string backupDir;
+    KeyBackup::GetInstance().GetBackupDir(dir_, backupDir);
+    KeyBackup::GetInstance().CreateBackup(dir_, backupDir, true);
+    SyncKeyDir();
+    return true;
+}
+
+void BaseKey::DoLatestBackUp() const
+{
     // backup the latest
     std::string pathLatest = dir_ + PATH_LATEST;
     std::string pathLatestBak = dir_ + PATH_LATEST_BACKUP;
@@ -381,40 +417,6 @@ bool BaseKey::UpdateKey(const std::string &keypath)
         }
         LOGI("backup the latest success");
     }
-
-    // rename {candidate} to latest
-    OHOS::ForceRemoveDirectory(dir_ + PATH_LATEST);
-    if (rename(candidate.c_str(), pathLatest.c_str()) != 0) {
-        LOGE("rename candidate to latest fail return %{public}d", errno);
-        if (hasLatest) {
-            // revert from the backup
-            if (rename(pathLatestBak.c_str(),
-                       pathLatest.c_str()) != 0) {
-                LOGE("restore the latest_backup fail errno:%{public}d", errno);
-            } else {
-                LOGI("restore the latest_backup success");
-            }
-        }
-        SyncKeyDir();
-        return false;
-    }
-    LOGI("rename candidate %{public}s to latest success", candidate.c_str());
-
-    // cleanup backup and other versions
-    std::vector<std::string> files;
-    GetSubDirs(dir_, files);
-    for (const auto &it: files) {
-        if (it != PATH_LATEST.substr(1)) {
-            OHOS::ForceRemoveDirectory(dir_ + "/" + it);
-        }
-    }
-
-    std::string backupDir;
-    KeyBackup::GetInstance().GetBackupDir(dir_, backupDir);
-    KeyBackup::GetInstance().CreateBackup(dir_, backupDir, true);
-
-    SyncKeyDir();
-    return true;
 }
 
 // 针对De只通过Huks加密
@@ -479,7 +481,7 @@ bool BaseKey::EncryptEceSece(const UserAuth &auth, const uint32_t keyType, KeyCo
     return true;
 }
 
-bool BaseKey::RestoreKey(const UserAuth &auth)
+bool BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate)
 {
     LOGI("enter");
     auto candidate = GetCandidateDir();
@@ -490,7 +492,7 @@ bool BaseKey::RestoreKey(const UserAuth &auth)
 
     if (DoRestoreKeyEx(auth, candidate)) {
         // update the latest with the candidate
-        UpdateKey();
+        UpdateKey("", needSyncCandidate);
         return true;
     }
 
@@ -510,7 +512,7 @@ bool BaseKey::RestoreKey(const UserAuth &auth)
     for (const auto &it: files) {
         if (it != candidate) {
             if (DoRestoreKeyEx(auth, dir_ + "/" + it)) {
-                UpdateKey(it);
+                UpdateKey(it, needSyncCandidate);
                 return true;
             }
         }

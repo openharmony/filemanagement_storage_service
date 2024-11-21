@@ -41,6 +41,7 @@ public:
     virtual bool LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size) = 0;
     virtual bool KeyDescIsEmpty() = 0;
     virtual std::string GetKeyDir() = 0;
+    virtual std::string GetCandidateDir() = 0;
 public:
     static inline std::shared_ptr<IBaseKeyMoc> baseKeyMoc = nullptr;
 };
@@ -62,6 +63,7 @@ public:
     MOCK_METHOD1(GetOriginKey, bool(KeyBlob &originKey));
     MOCK_METHOD2(SaveKeyBlob, bool(const KeyBlob &blob, const std::string &path));
     MOCK_METHOD3(LoadKeyBlob, bool(KeyBlob &blob, const std::string &path, const uint32_t size));
+    MOCK_METHOD0(GetCandidateDir, std::string());
 };
 }
 }
