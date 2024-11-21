@@ -18,6 +18,15 @@
 #include "storage_service_errno.h"
 namespace OHOS {
 namespace StorageManager {
+template<typename T>
+T TypeCast(const uint8_t *data, int *pos)
+{
+    if (pos) {
+        *pos += sizeof(T);
+    }
+    return *(reinterpret_cast<const T*>(data));
+}
+
 bool StorageTotalStatusServiceFuzzTest(const uint8_t *data, size_t size)
 {
     if ((data == nullptr) || (size == 0)) {
