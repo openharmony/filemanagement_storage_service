@@ -23,7 +23,6 @@ bool StorageTotalStatusServiceFuzzTest(const uint8_t *data, size_t size)
     if ((data == nullptr) || (size == 0)) {
         return false;
     }
-
     std::shared_ptr<StorageTotalStatusService> service = DelayedSingleton<StorageTotalStatusService>::GetInstance();
     int64_t totalSize;
     int64_t systemSize;
