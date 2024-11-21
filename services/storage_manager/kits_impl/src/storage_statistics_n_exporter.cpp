@@ -35,6 +35,7 @@ namespace OHOS {
 namespace StorageManager {
 const std::string EMPTY_STRING = "";
 constexpr int32_t INVALID_INDEX = -1;
+constexpr int32_t INVALID_STATFLAG = -1;
 
 napi_value GetTotalSizeOfVolume(napi_env env, napi_callback_info info)
 {
@@ -132,32 +133,41 @@ napi_value GetFreeSizeOfVolume(napi_env env, napi_callback_info info)
     }
 }
 
-std::tuple<std::string, int32_t> ExtractNameAndIndex(napi_env env, napi_callback_info info)
+std::tuple<std::string, int32_t, uint32_t> ExtractNameAndIndex(napi_env env, napi_callback_info info)
 {
     NFuncArg funcArg(env, info);
-    if (!funcArg.InitArgs((int)NARG_CNT::ONE, (int)NARG_CNT::THREE)) {
+    if (!funcArg.InitArgs((int)NARG_CNT::ONE, (int)NARG_CNT::FOUR)) {
         NError(E_PARAMS).ThrowErr(env);
-        return std::make_tuple(EMPTY_STRING, INVALID_INDEX);
+        return std::make_tuple(EMPTY_STRING, INVALID_INDEX, INVALID_STATFLAG);
     }
     bool succ = false;
     std::unique_ptr<char []> name;
     tie(succ, name, std::ignore) = NVal(env, funcArg[(int)NARG_POS::FIRST]).ToUTF8String();
     if (!succ) {
         NError(E_PARAMS).ThrowErr(env);
-        return std::make_tuple(EMPTY_STRING, INVALID_INDEX);
+        return std::make_tuple(EMPTY_STRING, INVALID_INDEX, INVALID_STATFLAG);
     }
     std::string nameString(name.get());
     int32_t index = 0;
-    if (funcArg.GetArgc() == (uint)NARG_CNT::THREE) {
+    uint32_t statFlag = 0;
+    if (funcArg.GetArgc() == (uint)NARG_CNT::FOUR) {
         std::tie(succ, index) = NVal(env, funcArg[(int)NARG_POS::THIRD]).ToInt32();
+        std::tie(succ, statFlag) = NVal(env, funcArg[(int)NARG_POS::FOURTH]).ToUint32();
+    } else if (funcArg.GetArgc() == (uint)NARG_CNT::THREE) {
+        if (NVal(env, funcArg[(int)NARG_POS::SECOND]).TypeIs(napi_number)) {
+            std::tie(succ, index) = NVal(env, funcArg[(int)NARG_POS::SECOND]).ToInt32();
+            std::tie(succ, statFlag) = NVal(env, funcArg[(int)NARG_POS::THIRD]).ToUint32();
+        } else {
+            std::tie(succ, index) = NVal(env, funcArg[(int)NARG_POS::THIRD]).ToInt32();
+        }
     } else if (NVal(env, funcArg[(int)NARG_POS::SECOND]).TypeIs(napi_number)) {
         std::tie(succ, index) = NVal(env, funcArg[(int)NARG_POS::SECOND]).ToInt32();
     }
     if (!succ) {
         NError(E_PARAMS).ThrowErr(env);
-        return std::make_tuple(EMPTY_STRING, INVALID_INDEX);
+        return std::make_tuple(EMPTY_STRING, INVALID_INDEX, INVALID_STATFLAG);
     }
-    return std::make_tuple(nameString, index);
+    return std::make_tuple(nameString, index, statFlag);
 }
 
 napi_value GetBundleStats(napi_env env, napi_callback_info info)
@@ -174,10 +184,11 @@ napi_value GetBundleStats(napi_env env, napi_callback_info info)
     }
     std::string nameString = std::get<0>(result);
     int32_t index = std::get<1>(result);
+    int32_t statFlag = std::get<2>(result);
     auto bundleStats = std::make_shared<BundleStats>();
-    auto cbExec = [nameString, bundleStats, index]() -> NError {
+    auto cbExec = [nameString, bundleStats, index, statFlag]() -> NError {
         int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetBundleStats(nameString,
-            *bundleStats, index);
+            *bundleStats, index, statFlag);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
         }
@@ -214,8 +225,22 @@ napi_value GetCurrentBundleStats(napi_env env, napi_callback_info info)
         return nullptr;
     }
     auto bundleStats = std::make_shared<BundleStats>();
-    auto cbExec = [bundleStats]() -> NError {
-        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetCurrentBundleStats(*bundleStats);
+    uint32_t statFlag = 0;
+        if (funcArg.GetArgc() >= 1) {
+        NVal flag(env, NVal(env, funcArg[(int)NARG_POS::SECOND]).val_);
+        if (flag.TypeIs(napi_number)) {
+            bool succ = false;
+            std::tie(succ, statFlag) = NVal(env, funcArg[(int)NARG_POS::SECOND]).ToUint32();
+            if (!succ) {
+                NError(E_PARAMS).ThrowErr(env);
+                return nullptr;
+            }
+        }
+    }
+
+    auto cbExec = [bundleStats, statFlag]() -> NError {
+        int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetCurrentBundleStats(*bundleStats,
+            statFlag);
         if (errNum != E_OK) {
             return NError(Convert2JsErrNum(errNum));
         }

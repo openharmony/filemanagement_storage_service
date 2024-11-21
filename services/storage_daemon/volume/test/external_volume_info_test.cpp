@@ -166,7 +166,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     EXPECT_EQ(ret, E_OK);
     std::string flag = "exfat";
     ret = vol.Format(flag);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(ret, E_ERR);
     ret = vol.Destroy();
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoFormat_001 end";

@@ -34,14 +34,15 @@ public:
     int32_t CompleteAddUser(int32_t userId) override;
     int32_t GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize) override;
     int32_t GetTotalSizeOfVolume(std::string volumeUuid, int64_t &totalSize) override;
-    int32_t GetBundleStats(std::string pkgName, BundleStats &bundleStats, int32_t appIndex) override;
+    int32_t GetBundleStats(std::string pkgName, BundleStats &bundleStats, int32_t appIndex,
+                           uint32_t statFlag) override;
     int32_t GetSystemSize(int64_t &systemSize) override;
     int32_t GetTotalSize(int64_t &totalSize) override;
     int32_t GetFreeSize(int64_t &freeSize) override;
     int32_t GetUserStorageStats(StorageStats &storageStats) override;
     int32_t GetUserStorageStats(int32_t userId, StorageStats &storageStats) override;
     int32_t GetUserStorageStatsByType(int32_t userId, StorageStats &storageStats, std::string type) override;
-    int32_t GetCurrentBundleStats(BundleStats &bundleStats) override;
+    int32_t GetCurrentBundleStats(BundleStats &bundleStats, uint32_t statFlag) override;
     int32_t NotifyVolumeCreated(VolumeCore vc) override;
     int32_t NotifyVolumeMounted(std::string volumeId, int32_t fsType, std::string fsUuid,
                              std::string path, std::string description) override;

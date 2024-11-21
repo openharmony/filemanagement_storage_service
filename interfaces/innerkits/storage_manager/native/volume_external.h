@@ -43,10 +43,12 @@ public:
     VolumeExternal();
     VolumeExternal(VolumeCore vc);
 
+    void SetFlags(int32_t flags);
     void SetFsType(int32_t fsType);
     void SetFsUuid(std::string fsUuid);
     void SetPath(std::string path);
     void SetDescription(std::string description);
+    int32_t GetFlags();
     int32_t GetFsType();
     std::string GetFsTypeString();
     std::string GetUuid();
@@ -58,6 +60,7 @@ public:
     static std::unique_ptr<VolumeExternal> Unmarshalling(Parcel &parcel);
 private:
     int32_t fsType_ { UNDEFINED };
+    int32_t flags_ {};
     std::string fsUuid_;
     std::string path_;
     std::string description_;

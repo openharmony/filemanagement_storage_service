@@ -34,6 +34,11 @@ public:
         SD_FLAG = 1,
         USB_FLAG = 2,
     };
+    enum class Table {
+        UNKNOWN,
+        MBR,
+        GPT,
+    };
 
     DiskInfo(std::string sysPath_, std::string devPath_, dev_t device, int flag);
     virtual ~DiskInfo();
@@ -66,6 +71,8 @@ private:
     int32_t ReadDiskLines(std::vector<std::string> lines, int32_t maxVols);
     bool CreateMBRVolume(int32_t type, dev_t dev);
     int32_t CreateUnknownTabVol();
+    void ProcessPartition(std::vector<std::string>::iterator &it, const std::vector<std::string>::iterator &end,
+                          Table table, int32_t maxVols, bool &foundPart);
 };
 } // STORAGE_DAEMON
 } // OHOS

@@ -42,14 +42,15 @@ public:
     virtual int32_t CompleteAddUser(int32_t userId) = 0;
     virtual int32_t GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize) = 0;
     virtual int32_t GetTotalSizeOfVolume(std::string volumeUuid, int64_t &totalSize) = 0;
-    virtual int32_t GetBundleStats(std::string pkgName, BundleStats &bundleStats, int32_t appIndex = 0) = 0;
+    virtual int32_t GetBundleStats(std::string pkgName, BundleStats &bundleStats,
+                                   int32_t appIndex = 0, uint32_t statFlag = 0) = 0;
     virtual int32_t GetSystemSize(int64_t &systemSize) = 0;
     virtual int32_t GetTotalSize(int64_t &totalSize) = 0;
     virtual int32_t GetFreeSize(int64_t &freeSize) = 0;
     virtual int32_t GetUserStorageStats(StorageStats &storageStats) = 0;
     virtual int32_t GetUserStorageStats(int32_t userId, StorageStats &storageStats) = 0;
     virtual int32_t GetUserStorageStatsByType(int32_t userId, StorageStats &storageStats, std::string type) = 0;
-    virtual int32_t GetCurrentBundleStats(BundleStats &bundleStats) = 0;
+    virtual int32_t GetCurrentBundleStats(BundleStats &bundleStats, uint32_t statFlag = 0) = 0;
     virtual int32_t NotifyVolumeCreated(VolumeCore vc) = 0;
     virtual int32_t NotifyVolumeMounted(std::string volumeId, int fsType, std::string fsUuid,
                                      std::string path, std::string description) = 0;
