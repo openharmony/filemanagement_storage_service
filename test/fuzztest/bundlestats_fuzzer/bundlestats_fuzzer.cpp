@@ -18,13 +18,28 @@
 #include <cstdint>
 
 namespace OHOS {
+constexpr size_t NUM_PARA = 3;
+template<typename T>
+T TypeCast(const uint8_t *data, int *pos)
+{
+    if (pos) {
+        *pos += sizeof(T);
+    }
+    return *(reinterpret_cast<const T*>(data));
+}
+
 bool FileUtilFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size == 0)) {
-        return false;
+    if ((data == nullptr) || (size < sizeof(uint64_t) * NUM_PARA)) {
+        return true;
     }
+
+    int64_t appSize = TypeCast<int64_t>(data, nullptr);
+    int64_t cacheSize = TypeCast<int64_t>(data + sizeof(int64_t), nullptr);
+    int64_t dataSize = TypeCast<int64_t>(data + sizeof(int64_t) * 2, nullptr);
+
     Parcel parcel;
-    StorageManager::BundleStats bundlestats;
+    StorageManager::BundleStats bundlestats(appSize, cacheSize, dataSize);
     bundlestats.Marshalling(parcel);
     bundlestats.Unmarshalling(parcel);
     return true;

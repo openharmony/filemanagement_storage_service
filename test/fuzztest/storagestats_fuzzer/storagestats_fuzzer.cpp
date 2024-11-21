@@ -18,13 +18,31 @@
 #include <cstdint>
 
 namespace OHOS {
+constexpr size_t NUM_PARA = 6;
+template<typename T>
+T TypeCast(const uint8_t *data, int *pos)
+{
+    if (pos) {
+        *pos += sizeof(T);
+    }
+    return *(reinterpret_cast<const T*>(data));
+}
+
 bool FileUtilFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size == 0)) {
-        return false;
+    if ((data == nullptr) || (size < sizeof(uint64_t) * NUM_PARA)) {
+        return true;
     }
+
+    int64_t total = TypeCast<int64_t>(data, nullptr);
+    int64_t audio = TypeCast<int64_t>(data + sizeof(int64_t), nullptr);
+    int64_t video = TypeCast<int64_t>(data + sizeof(int64_t) * 2, nullptr);
+    int64_t image = TypeCast<int64_t>(data + sizeof(int64_t) * 3, nullptr);
+    int64_t file = TypeCast<int64_t>(data + sizeof(int64_t) * 4, nullptr);
+    int64_t app = TypeCast<int64_t>(data + sizeof(int64_t) * 5, nullptr);
+
     Parcel parcel;
-    StorageManager::StorageStats storagestats;
+    StorageManager::StorageStats storagestats(total, audio, video, image, file, app);
     storagestats.Marshalling(parcel);
     storagestats.Unmarshalling(parcel);
     return true;
