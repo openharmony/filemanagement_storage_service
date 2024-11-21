@@ -18,6 +18,7 @@
 #include <cstdint>
 
 namespace OHOS {
+constexpr size_t NUM_PARA = 6;
 template<typename T>
 T TypeCast(const uint8_t *data, int *pos)
 {
@@ -29,7 +30,7 @@ T TypeCast(const uint8_t *data, int *pos)
 
 bool FileUtilFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size < sizeof(uint64_t) * 6)) {
+    if ((data == nullptr) || (size < sizeof(uint64_t) * NUM_PARA)) {
         return true;
     }
 
