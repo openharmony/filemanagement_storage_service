@@ -72,6 +72,9 @@ void MtpDeviceMonitor::MonitorDevice()
 {
     LOGI("MonitorDevice: mtp device monitor thread begin.");
     while (g_keepMonitoring) {
+        if (IsNeedDisableMtp()) {
+            break;
+        }
         sleep(SLEEP_TIME);
         CheckAndUmountRemovedMtpDevice();
 
@@ -151,6 +154,10 @@ void MtpDeviceMonitor::MountMtpDevice(const std::vector<MtpDeviceInfo> &monitorD
         if (isInvalidDev) {
             LOGE("MountMtpDevice: invalid mtp device, no need to mount.");
             continue;
+        }
+        if (lastestMtpDevList_.size() > 0) {
+            LOGW("Multiple devices detected. Only one device is supported. Ignoring additional devices.");
+            return;
         }
         int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->MountDevice(device);
         if (ret == E_OK) {
