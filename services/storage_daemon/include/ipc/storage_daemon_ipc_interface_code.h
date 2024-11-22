@@ -61,6 +61,8 @@ namespace StorageDaemon {
         GET_FILE_ENCRYPT_STATUS,
         CREATE_RECOVER_KEY,
         SET_RECOVER_KEY,
+        MOUNT_MEDIA_FUSE,
+        UMOUNT_MEDIA_FUSE,
     };
 } // namespace StorageDaemon
 } // namespace OHOS

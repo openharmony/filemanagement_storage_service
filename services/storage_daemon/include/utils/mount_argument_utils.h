@@ -62,6 +62,7 @@ struct MountArgument final {
     std::string GetCurFileMgrAppdataPath() const;
     std::string GetNoSharefsAppdataPath() const;
     unsigned long GetFlags() const;
+    std::string GetFullMediaFuse() const;
 };
 
 struct MountArgumentDescriptors final {

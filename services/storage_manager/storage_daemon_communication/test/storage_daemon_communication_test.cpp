@@ -216,6 +216,47 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountDfsDocs_001,
 }
 
 /**
+ * @tc.number: SUB_STORAGE_Daemon_communication_MountMediaFuse_001
+ * @tc.name: Daemon_communication_MountMediaFuse_001
+ * @tc.desc: Test function of MountMediaFuse interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountMediaFuse_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_MountMediaFuse_001 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t userId = 130;
+    int32_t devFd = 140;
+    int32_t result = sdCommunication->MountMediaFuse(userId, devFd);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_MountMediaFuse_001 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_UMountMediaFus_001
+ * @tc.name: Daemon_communication_UMountMediaFuse_001
+ * @tc.desc: Test function of UMountMediaFuse interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountMediaFuse_001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UMountMediaFuse_001 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+            DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t userId = 130;
+    int32_t result = sdCommunication->UMountMediaFuse(userId);
+    EXPECT_EQ(result, E_OK);
+
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UMountMediaFuse_001 SUCCESS";
+}
+
+/**
  * @tc.number: SUB_STORAGE_Daemon_communication_ResetSdProxy_001
  * @tc.name: Daemon_communication_ResetSdProxy_001
  * @tc.desc: Test function of ResetSdProxy interface for SUCCESS.

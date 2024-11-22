@@ -1085,5 +1085,60 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_GetBundleStatsForIncreas
     EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_GetBundleStatsForIncrease_001 end";
 }
+
+/**
+ * @tc.name: StorageDaemonProxyTest_MountMediaFuse_001
+ * @tc.desc: Verify the MountMediaFuse function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_MountMediaFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_MountMediaFuse_001 start";
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
+    ASSERT_TRUE(proxy_ != nullptr);
+    int32_t userId = 100;
+    int32_t devFd = -1;
+    int32_t ret = proxy_->MountMediaFuse(userId, devFd);
+    ASSERT_TRUE(ret == E_OK);
+    ASSERT_TRUE(mock_ != nullptr);
+    int m = static_cast<int32_t>(StorageDaemonInterfaceCode::MOUNT_MEDIA_FUSE);
+    ASSERT_TRUE(m == mock_->code_);
+
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
+    ret = proxy_->MountMediaFuse(userId, devFd);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_MountMediaFuse_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProxyTest_UMountMediaFuse_001
+ * @tc.desc: Verify the UMountMediaFuse function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_UMountMediaFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_UMountMediaFuse_001 start";
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
+    ASSERT_TRUE(proxy_ != nullptr);
+    int32_t userId = 100;
+    int32_t ret = proxy_->UMountMediaFuse(userId);
+    ASSERT_TRUE(ret == E_OK);
+    ASSERT_TRUE(mock_ != nullptr);
+    int m = static_cast<int32_t>(StorageDaemonInterfaceCode::UMOUNT_MEDIA_FUSE);
+    ASSERT_TRUE(m == mock_->code_);
+
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
+    ret = proxy_->UMountMediaFuse(userId);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_UMountMediaFuse_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS

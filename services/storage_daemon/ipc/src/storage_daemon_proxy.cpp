@@ -1009,5 +1009,56 @@ int32_t StorageDaemonProxy::GetFileEncryptStatus(uint32_t userId, bool &isEncryp
     isEncrypted = reply.ReadBool();
     return reply.ReadInt32();
 }
+
+int32_t StorageDaemonProxy::MountMediaFuse(int32_t userId, int32_t &devFd)
+{
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+
+    if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
+        LOGE("WriteInterfaceToken failed");
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    if (!data.WriteInt32(userId)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::MOUNT_MEDIA_FUSE), data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+
+    int32_t ret = reply.ReadInt32();
+    if (ret == E_OK) {
+        devFd = reply.ReadFileDescriptor();
+    }
+
+    return ret;
+}
+
+int32_t StorageDaemonProxy::UMountMediaFuse(int32_t userId)
+{
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+
+    if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
+        LOGE("WriteInterfaceToken failed");
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    if (!data.WriteInt32(userId)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::UMOUNT_MEDIA_FUSE), data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+
+    return reply.ReadInt32();
+}
 } // StorageDaemon
 } // OHOS

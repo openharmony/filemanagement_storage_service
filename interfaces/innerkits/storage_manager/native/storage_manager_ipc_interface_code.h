@@ -89,6 +89,8 @@ namespace StorageManager {
         SET_RECOVER_KEY,
         NOTIFY_MTP_MOUNT,
         NOTIFY_MTP_UNMOUNT,
+        MOUNT_MEDIA_FUSE,
+        UMOUNT_MEDIA_FUSE,
     };
 } // namespace StorageManager
 } // namespace OHOS

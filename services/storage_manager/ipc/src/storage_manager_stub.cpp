@@ -16,6 +16,7 @@
 #include "ipc/storage_manager_stub.h"
 #include "accesstoken_kit.h"
 #include "ipc_skeleton.h"
+#include "storage/bundle_manager_connector.h"
 #include "storage_manager_ipc_interface_code.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -28,6 +29,7 @@ constexpr pid_t ACCOUNT_UID = 3058;
 constexpr pid_t BACKUP_SA_UID = 1089;
 constexpr pid_t FOUNDATION_UID = 5523;
 constexpr pid_t DFS_UID = 1009;
+const std::string MEDIALIBRARY_BUNDLE_NAME = "com.ohos.medialibrary.medialibrarydata";
 const std::string PERMISSION_STORAGE_MANAGER_CRYPT = "ohos.permission.STORAGE_MANAGER_CRYPT";
 const std::string PERMISSION_STORAGE_MANAGER = "ohos.permission.STORAGE_MANAGER";
 const std::string PERMISSION_MOUNT_MANAGER = "ohos.permission.MOUNT_UNMOUNT_MANAGER";
@@ -190,6 +192,10 @@ StorageManagerStub::StorageManagerStub()
         &StorageManagerStub::HandleNotifyMtpMount;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::NOTIFY_MTP_UNMOUNT)] =
         &StorageManagerStub::HandleNotifyMtpUnmount;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::MOUNT_MEDIA_FUSE)] =
+        &StorageManagerStub::HandleMountMediaFuse;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::UMOUNT_MEDIA_FUSE)] =
+        &StorageManagerStub::HandleUMountMediaFuse;
 }
 
 int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
@@ -307,6 +313,10 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
             return HandleNotifyMtpMount(data, reply);
         case static_cast<uint32_t>(StorageManagerInterfaceCode::NOTIFY_MTP_UNMOUNT):
             return HandleNotifyMtpUnmount(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::MOUNT_MEDIA_FUSE):
+            return HandleMountMediaFuse(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::UMOUNT_MEDIA_FUSE):
+            return HandleUMountMediaFuse(data, reply);
         default:
             LOGE("Cannot response request %d: unknown tranction", code);
             return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
@@ -1267,6 +1277,79 @@ int32_t StorageManagerStub::HandleNotifyMtpUnmount(MessageParcel &data, MessageP
     }
 
     LOGI("StorageManagerStub::HandleNotifyMtpUnmount");
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleMountMediaFuse(MessageParcel &data, MessageParcel &reply)
+{
+    LOGI("StorageManagerStub::HandleMountMediaFuse start.");
+
+    // Only for medialibrary to mount fuse.
+    std::string bundleName;
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    auto bundleMgr = DelayedSingleton<BundleMgrConnector>::GetInstance()->GetBundleMgrProxy();
+    if (bundleMgr == nullptr) {
+        LOGE("Connect bundle manager sa proxy failed.");
+        return E_BUNDLEMGR_ERROR;
+    }
+    if (!bundleMgr->GetBundleNameForUid(uid, bundleName)) {
+        LOGE("Invoke bundleMgr interface to get bundle name failed.");
+        return E_BUNDLEMGR_ERROR;
+    }
+    if (bundleName != MEDIALIBRARY_BUNDLE_NAME) {
+        LOGE("permissionCheck error, caller is %{public}s(%{public}d), should be %{public}s",
+            bundleName.c_str(), uid, MEDIALIBRARY_BUNDLE_NAME.c_str());
+        return E_PERMISSION_DENIED;
+    }
+
+    int32_t userId = data.ReadInt32();
+    int32_t fd = -1;
+    int32_t ret = MountMediaFuse(userId, fd);
+    if (!reply.WriteInt32(ret)) {
+        LOGE("Write reply error code failed");
+        if (ret == E_OK) {
+            close(fd);
+        }
+        return E_WRITE_REPLY_ERR;
+    }
+    if (ret == E_OK) {
+        if (!reply.WriteFileDescriptor(fd)) {
+            LOGE("Write reply fd failed");
+            close(fd);
+            return E_WRITE_REPLY_ERR;
+        }
+        close(fd);
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleUMountMediaFuse(MessageParcel &data, MessageParcel &reply)
+{
+    LOGI("StorageManagerStub::HandleUMountMediaFuse start.");
+
+    // Only for medialibrary to mount fuse.
+    std::string bundleName;
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    auto bundleMgr = DelayedSingleton<BundleMgrConnector>::GetInstance()->GetBundleMgrProxy();
+    if (bundleMgr == nullptr) {
+        LOGE("Connect bundle manager sa proxy failed.");
+        return E_BUNDLEMGR_ERROR;
+    }
+    if (!bundleMgr->GetBundleNameForUid(uid, bundleName)) {
+        LOGE("Invoke bundleMgr interface to get bundle name failed.");
+        return E_BUNDLEMGR_ERROR;
+    }
+    if (bundleName != MEDIALIBRARY_BUNDLE_NAME) {
+        LOGE("permissionCheck error, caller is %{public}s(%{public}d), should be %{public}s",
+            bundleName.c_str(), uid, MEDIALIBRARY_BUNDLE_NAME.c_str());
+        return E_PERMISSION_DENIED;
+    }
+
+    int32_t userId = data.ReadInt32();
+    int32_t ret = UMountMediaFuse(userId);
+    if (!reply.WriteInt32(ret)) {
+        return E_WRITE_REPLY_ERR;
+    }
     return E_OK;
 }
 } // StorageManager

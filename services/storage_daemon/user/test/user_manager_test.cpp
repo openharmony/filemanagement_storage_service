@@ -583,7 +583,6 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_UmountFailRadar_000, 
  * @tc.name: Storage_Manager_MountManagerTest_CheckMaps_001
  * @tc.desc: Verify the CheckMaps function.
  * @tc.type: FUNC
- * @tc.require: AR000GK4HB
  */
 HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_CheckMaps_000, TestSize.Level1)
 {
@@ -603,6 +602,28 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_CheckMaps_000, TestSi
     mountManager->CheckMaps(path, prefix, mountFailList);
     mountManager->CheckSymlink(path, prefix, mountFailList);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_UmountFailRadar_000 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_MountManagerTest_MountMediaFuse_001
+ * @tc.desc: Verify the MountMediaFuse function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_MountMediaFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountMediaFuse_001 start";
+
+    std::shared_ptr<MountManager> mountManager = MountManager::GetInstance();
+    ASSERT_TRUE(mountManager != nullptr);
+
+    int32_t userId = 101;
+    int32_t devFd = -1;
+    int32_t ret = mountManager->MountMediaFuse(userId, devFd);
+    EXPECT_EQ(ret, E_MOUNT);
+
+    ret = mountManager->UMountMediaFuse(userId);
+    EXPECT_EQ(ret, E_UMOUNT);
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountMediaFuse_001 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

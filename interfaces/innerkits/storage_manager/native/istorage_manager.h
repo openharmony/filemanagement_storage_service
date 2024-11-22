@@ -125,6 +125,10 @@ public:
     virtual int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId) = 0;
 
+    // media fuse
+    virtual int32_t MountMediaFuse(int32_t userId, int32_t &devFd) = 0;
+    virtual int32_t UMountMediaFuse(int32_t userId) = 0;
+
     DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.StorageManager.IStorageManager");
 };
 } // StorageManager

@@ -659,5 +659,33 @@ int32_t StorageDaemonCommunication::UMountDfsDocs(int32_t userId, const std::str
     return storageDaemon_->UMountDfsDocs(userId, relativePath, networkId, deviceId);
 }
 
+int32_t StorageDaemonCommunication::MountMediaFuse(int32_t userId, int32_t &devFd)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->MountMediaFuse(userId, devFd);
+}
+
+int32_t StorageDaemonCommunication::UMountMediaFuse(int32_t userId)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->UMountMediaFuse(userId);
+}
+
 } // namespace StorageManager
 } // namespace OHOS

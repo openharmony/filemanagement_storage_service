@@ -549,5 +549,40 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_GetBundleStatsForI
 
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_GetBundleStatsForIncrease_001 end";
 }
+
+/**
+ * @tc.name: Storage_Manager_StorageDaemonTest_MountMediaFuse_001
+ * @tc.desc: check the MountMediaFuse function normal
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_MountMediaFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_MountMediaFuse_001 start";
+
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+    int32_t userId = 105;
+    int32_t devFd = -1;
+    auto ret = storageDaemon_->MountMediaFuse(userId, devFd);
+    EXPECT_EQ(ret, E_MOUNT);
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_MountMediaFuse_001 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_StorageDaemonTest_UMountMediaFuse_001
+ * @tc.desc: check the UMountMediaFuse function normal
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_UMountMediaFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_UMountMediaFuse_001 start";
+
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+    int32_t userId = 105;
+    auto ret = storageDaemon_->UMountMediaFuse(userId);
+    EXPECT_EQ(ret, E_UMOUNT);
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_UMountMediaFuse_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS

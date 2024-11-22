@@ -85,6 +85,9 @@ public:
     MOCK_METHOD4(NotifyMtpMounted, int32_t(const std::string &, const std::string &, const std::string &,
         const std::string &));
     MOCK_METHOD2(NotifyMtpUnmounted, int32_t(const std::string &, const std::string &));
+
+    MOCK_METHOD2(MountMediaFuse, int32_t (int32_t, int32_t &));
+    MOCK_METHOD1(UMountMediaFuse, int32_t (int32_t));
 };
 }  // namespace StorageManager
 }  // namespace OHOS

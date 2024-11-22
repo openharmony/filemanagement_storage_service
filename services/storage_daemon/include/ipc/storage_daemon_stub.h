@@ -83,6 +83,9 @@ private:
     int32_t HandleGetBundleStatsForIncrease(MessageParcel &data, MessageParcel &reply);
     int32_t HandleMountDfsDocs(MessageParcel &data, MessageParcel &reply);
     int32_t HandleUMountDfsDocs(MessageParcel &data, MessageParcel &reply);
+
+    int32_t HandleMountMediaFuse(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleUMountMediaFuse(MessageParcel &data, MessageParcel &reply);
 };
 } // StorageDaemon
 } // OHOS

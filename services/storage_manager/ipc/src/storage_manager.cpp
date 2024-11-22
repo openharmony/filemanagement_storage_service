@@ -669,5 +669,19 @@ int32_t StorageManager::NotifyMtpUnmounted(const std::string &id, const std::str
 #endif
     return E_OK;
 }
+
+int32_t StorageManager::MountMediaFuse(int32_t userId, int32_t &devFd)
+{
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->MountMediaFuse(userId, devFd);
+}
+
+int32_t StorageManager::UMountMediaFuse(int32_t userId)
+{
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->UMountMediaFuse(userId);
+}
 }
 }

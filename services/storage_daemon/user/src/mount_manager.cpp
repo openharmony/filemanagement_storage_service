@@ -167,6 +167,7 @@ std::vector<DirInfo> MountManager::InitVirtualDir()
             {"/mnt/data/%d/", MODE_0711, OID_ROOT, OID_ROOT},
             {"/mnt/data/%d/cloud", MODE_0711, OID_ROOT, OID_ROOT},
             {"/mnt/data/%d/cloud_fuse", MODE_0711, OID_DFS, OID_DFS},
+            {"/mnt/data/%d/media_fuse", MODE_0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
             {"/mnt/data/%d/hmdfs", MODE_0711, OID_FILE_MANAGER, OID_FILE_MANAGER},
             {"/mnt/hmdfs/", MODE_0711, OID_ROOT, OID_ROOT},
             {"/mnt/hmdfs/%d/", MODE_0711, OID_ROOT, OID_ROOT},
@@ -1141,6 +1142,20 @@ int32_t MountManager::UmountByUser(int32_t userId)
         LOGE("failed to umount cloud mount point, err %{public}d", err);
         return E_UMOUNT;
     }
+
+    LOGI("umount media fuse mount point start.");
+    count = 0;
+    while (count < UMOUNT_RETRY_TIMES) {
+        err = UMountMediaFuse(userId);
+        if (err == E_OK) {
+            break;
+        } else if (errno == EBUSY) {
+            count++;
+            continue;
+        }
+        LOGE("failed to umount media fuse mount point, err %{public}d", err);
+        return E_UMOUNT;
+    }
     return E_OK;
 }
 
@@ -1528,6 +1543,63 @@ int32_t MountManager::UmountMntUserTmpfs(int32_t userId)
     if (res != E_OK) {
         LOGE("failed to umount with detach, path %{public}s, errno {public}d.", path.c_str(), errno);
     }
+    return E_OK;
+}
+
+int32_t MountManager::MountMediaFuse(int32_t userId, int32_t &devFd)
+{
+    LOGI("start mount media fuse");
+
+    // umount mountpoint first
+    Utils::MountArgument mediaMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
+    const string path = mediaMntArgs.GetFullMediaFuse();
+    if (E_OK != UMount2(path.c_str(), MNT_DETACH)) {
+        LOGE("UMount media fuse mountpoint failed, errno = %{public}d", errno);
+    }
+
+    // open fuse
+    devFd = open("/dev/fuse", O_RDWR);
+    if (devFd < 0) {
+        LOGE("open /dev/fuse fail");
+        return E_MOUNT;
+    }
+
+    // mount fuse mountpoint
+    string opt = StringPrintf("fd=%i,"
+                              "rootmode=40000,"
+                              "default_permissions,"
+                              "allow_other,"
+                              "user_id=0,group_id=0,"
+                              "context=\"u:object_r:hmdfs:s0\","
+                              "fscontext=u:object_r:hmdfs:s0",
+                              devFd);
+    int ret = Mount("/dev/fuse", path.c_str(), "fuse", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_NOATIME, opt.c_str());
+    if (ret) {
+        LOGE("failed to mount fuse, err %{public}d %{public}d %{public}s", errno, ret, path.c_str());
+        close(devFd);
+        return E_MOUNT;
+    }
+
+    LOGI("mount %{public}s success", path.c_str());
+    return E_OK;
+}
+
+int32_t MountManager::UMountMediaFuse(int32_t userId)
+{
+    int32_t err = E_OK;
+
+    LOGI("start umount media fuse");
+
+    Utils::MountArgument mediaMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
+    const string path = mediaMntArgs.GetFullMediaFuse();
+
+    err = UMount2(path, MNT_DETACH);
+    if (err != E_OK) {
+        LOGE("fuse umount2 failed, errno %{public}d, fuse dst %{public}s", errno, path.c_str());
+        return E_UMOUNT;
+    }
+
+    LOGI("umount %{public}s success", path.c_str());
     return E_OK;
 }
 } // namespace StorageDaemon
