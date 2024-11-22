@@ -20,7 +20,7 @@
 #include <filesystem>
 #include <iostream>
 #include <libmtp.h>
-
+#include "parameter.h"
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -34,6 +34,9 @@ namespace OHOS {
 namespace StorageDaemon {
 static constexpr int32_t SLEEP_TIME = 1;
 const std::string MTP_ROOT_PATH = "/mnt/data/external/";
+const int32_t MTP_VAL_LEN = 6;
+const int32_t MTP_TRUE_LEN = 5;
+const std::string SYS_PARAM_SERVICE_FORCE_ENABLE = "const.pc_security.fileguard_force_enable";
 bool g_keepMonitoring = true;
 
 MtpDeviceMonitor::MtpDeviceMonitor() {}
@@ -47,7 +50,22 @@ MtpDeviceMonitor::~MtpDeviceMonitor()
 void MtpDeviceMonitor::StartMonitor()
 {
     LOGI("MtpDeviceMonitor, start mtp device monitor.");
+    if (IsNeedDisableMtp()) {
+        LOGE("HWIT does not support MTP functionality.");
+        return;
+    }
     std::thread([this]() { MonitorDevice(); }).detach();
+}
+
+bool MtpDeviceMonitor::IsNeedDisableMtp()
+{
+    char mtpEnable[MTP_VAL_LEN + 1] = {"false"};
+    int ret = GetParameter(SYS_PARAM_SERVICE_FORCE_ENABLE.c_str(), "", mtpEnable, MTP_VAL_LEN);
+    LOGI("GetParameter mtpEnable %{public}s, ret %{public}d", mtpEnable, ret);
+    if (strncmp(mtpEnable, "true", MTP_TRUE_LEN) == 0) {
+        return true;
+    }
+    return false;
 }
 
 void MtpDeviceMonitor::MonitorDevice()
