@@ -20,6 +20,7 @@
 #include <filesystem>
 #include <iostream>
 #include <libmtp.h>
+#include "parameter.h"
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -33,6 +34,9 @@ namespace OHOS {
 namespace StorageDaemon {
 static constexpr int32_t SLEEP_TIME = 1;
 const std::string MTP_ROOT_PATH = "/mnt/data/external/";
+const int32_t MTP_VAL_LEN = 6;
+const int32_t MTP_TRUE_LEN = 5;
+const std::string SYS_PARAM_SERVICE_FORCE_ENABLE = "const.pc_security.fileguard_force_enable";
 bool g_keepMonitoring = true;
 
 MtpDeviceMonitor::MtpDeviceMonitor() {}
@@ -46,13 +50,31 @@ MtpDeviceMonitor::~MtpDeviceMonitor()
 void MtpDeviceMonitor::StartMonitor()
 {
     LOGI("MtpDeviceMonitor, start mtp device monitor.");
+    if (IsNeedDisableMtp()) {
+        LOGE("This device cannot support MTP.");
+        return;
+    }
     std::thread([this]() { MonitorDevice(); }).detach();
+}
+
+bool MtpDeviceMonitor::IsNeedDisableMtp()
+{
+    char mtpEnable[MTP_VAL_LEN + 1] = {"false"};
+    int ret = GetParameter(SYS_PARAM_SERVICE_FORCE_ENABLE.c_str(), "", mtpEnable, MTP_VAL_LEN);
+    LOGI("GetParameter mtpEnable %{public}s, ret %{public}d", mtpEnable, ret);
+    if (strncmp(mtpEnable, "true", MTP_TRUE_LEN) == 0) {
+        return true;
+    }
+    return false;
 }
 
 void MtpDeviceMonitor::MonitorDevice()
 {
     LOGI("MonitorDevice: mtp device monitor thread begin.");
     while (g_keepMonitoring) {
+        if (IsNeedDisableMtp()) {
+            break;
+        }
         sleep(SLEEP_TIME);
         CheckAndUmountRemovedMtpDevice();
 
@@ -132,6 +154,10 @@ void MtpDeviceMonitor::MountMtpDevice(const std::vector<MtpDeviceInfo> &monitorD
         if (isInvalidDev) {
             LOGE("MountMtpDevice: invalid mtp device, no need to mount.");
             continue;
+        }
+        if (lastestMtpDevList_.size() > 0) {
+            LOGW("Multiple devices detected. Only one device is supported. Ignoring additional devices.");
+            return;
         }
         int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->MountDevice(device);
         if (ret == E_OK) {
