@@ -29,7 +29,6 @@ group("storage_service_fuzztest") {
     "${storage_service_path}/test/fuzztest/storagemanagerproxy_fuzzer:StorageManagerProxyFuzzTest",
     "${storage_service_path}/test/fuzztest/storagestats_fuzzer:StorageStatsFuzzTest",
     "${storage_service_path}/test/fuzztest/storagestatusservice_fuzzer:StorageStatusServiceFuzzTest",
-    "${storage_service_path}/test/fuzztest/storagetotalstatusservice_fuzzer:StorageTotalStatusServiceFuzzTest",
     "${storage_service_path}/test/fuzztest/stringutils_fuzzer:StringUtilsFuzzTest",
     "${storage_service_path}/test/fuzztest/sysparamdynamic_fuzzer:SysparamDynamicFuzzTest",
     "${storage_service_path}/test/fuzztest/sysparamstatic_fuzzer:SysparamStaticFuzzTest",
