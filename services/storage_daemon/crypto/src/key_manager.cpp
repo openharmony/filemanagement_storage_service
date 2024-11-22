@@ -46,6 +46,7 @@ namespace OHOS {
 namespace StorageDaemon {
 const UserAuth NULL_KEY_AUTH = {};
 const std::string DEFAULT_NEED_RESTORE_VERSION = "1";
+const std::string DEFAULT_NEED_RESTORE_UPDATE_VERSION = "3";
 constexpr const char *UECE_PATH = "/dev/fbex_uece";
 
 std::shared_ptr<BaseKey> KeyManager::GetBaseKey(const std::string& dir)
@@ -352,7 +353,7 @@ bool KeyManager::IsNeedClearKeyFile(std::string file)
         return false;
     }
 
-    if (version != DEFAULT_NEED_RESTORE_VERSION) {
+    if (version != DEFAULT_NEED_RESTORE_VERSION && version != DEFAULT_NEED_RESTORE_UPDATE_VERSION) {
         LOGE("need to clear, file is %{private}s, version is %{public}s.", file.c_str(), version.c_str());
         return true;
     }
