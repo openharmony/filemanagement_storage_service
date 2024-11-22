@@ -51,7 +51,7 @@ void MtpDeviceMonitor::StartMonitor()
 {
     LOGI("MtpDeviceMonitor, start mtp device monitor.");
     if (IsNeedDisableMtp()) {
-        LOGE("HWIT does not support MTP functionality.");
+        LOGE("This device cannot support MTP.");
         return;
     }
     std::thread([this]() { MonitorDevice(); }).detach();
