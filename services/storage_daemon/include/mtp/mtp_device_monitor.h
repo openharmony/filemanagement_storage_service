@@ -38,6 +38,7 @@ private:
     void CheckAndUmountRemovedMtpDevice();
     void UmountAllMtpDevice();
     bool HasMounted(const MtpDeviceInfo &device);
+    
 
 private:
     std::mutex listMutex_;
