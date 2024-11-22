@@ -303,20 +303,20 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_Execute_0000, testing::ex
 }
 
 /**
- * @tc.number: SUB_STORAGE_Storage_status_service_CheckAndCleanBundleCache_0000
- * @tc.name: Storage_status_service_CheckAndCleanBundleCache_0000
- * @tc.desc: Test function of CheckAndCleanBundleCache interface for SUCCESS.
+ * @tc.number: SUB_STORAGE_Storage_status_service_MonitorAndManageStorage_0000
+ * @tc.name: Storage_status_service_MonitorAndManageStorage_0000
+ * @tc.desc: Test function of MonitorAndManageStorage interface for SUCCESS.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
  */
-HWTEST_F(StorageTotalStatusServiceTest, Storage_status_CheckAndCleanBundleCache_0000, testing::ext::TestSize.Level1)
+HWTEST_F(StorageTotalStatusServiceTest, Storage_status_MonitorAndManageStorage_0000, testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_CheckAndCleanBundleCache_0000";
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_MonitorAndManageStorage_0000";
     std::shared_ptr<StorageMonitorService> service = DelayedSingleton<StorageMonitorService>::GetInstance();
     ASSERT_TRUE(service != nullptr);
-    service->CheckAndCleanBundleCache();
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_CheckAndCleanBundleCache_0000";
+    service->MonitorAndManageStorage();
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_MonitorAndManageStorage_0000";
 }
 
 /**

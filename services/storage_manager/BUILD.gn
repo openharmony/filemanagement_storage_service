@@ -107,8 +107,10 @@ ohos_shared_library("storage_manager") {
       "bundle_framework:appexecfwk_core",
       "data_share:datashare_consumer",
       "eventhandler:libeventhandler",
+      "init:libbegetutil",
       "relational_store:native_rdb",
     ]
+    deps += [ ":storage_manager_monitor_config" ]
 
     if (storage_service_graphic) {
       defines += [ "STORAGE_SERVICE_GRAPHIC" ]
@@ -124,6 +126,27 @@ ohos_shared_library("storage_manager") {
   subsystem_name = "filemanagement"
   part_name = "storage_service"
   install_enable = true
+}
+
+ohos_prebuilt_etc("storage_manager_config.para") {
+  source = "storage_manager_config.para"
+  part_name = "storage_service"
+  subsystem_name = "filemanagement"
+  module_install_dir = "etc/param"
+}
+
+ohos_prebuilt_etc("storage_manager_config.para.dac") {
+  source = "storage_manager_config.para.dac"
+  part_name = "storage_service"
+  subsystem_name = "filemanagement"
+  module_install_dir = "etc/param"
+}
+
+group("storage_manager_monitor_config") {
+  deps = [
+    ":storage_manager_config.para",
+    ":storage_manager_config.para.dac",
+  ]
 }
 
 group("storage_manager_unit_test") {
