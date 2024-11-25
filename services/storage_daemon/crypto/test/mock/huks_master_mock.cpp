@@ -55,7 +55,7 @@ bool HuksMaster::EncryptKeyEx(const UserAuth &auth, const KeyBlob &rnd, KeyConte
     if (IHuksMaster::huksMasterMock == nullptr) {
         return true;
     }
-    return IHuksMaster::huksMasterMock->EncryptKeyEx(auth, rnd, ctx);  
+    return IHuksMaster::huksMasterMock->EncryptKeyEx(auth, rnd, ctx);
 }
 
 bool HuksMaster::UpgradeKey(KeyContext &ctx)

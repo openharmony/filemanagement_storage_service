@@ -21,7 +21,7 @@
 #include <string>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <vector> 
+#include <vector>
 #include <unistd.h>
 
 #include "directory_ex.h"
@@ -90,7 +90,7 @@ void BaseKeyTest::TearDown(void)
  */
 HWTEST_F(BaseKeyTest, BaseKey_Decrypt_001, TestSize.Level1)
 {
-     GTEST_LOG_(INFO) << "BaseKey_Decrypt_001 start";
+    GTEST_LOG_(INFO) << "BaseKey_Decrypt_001 start";
     std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
     UserAuth emptyUserAuth;
     elKey->keyEncryptType_ = BaseKey::KeyEncryptType::KEY_CRYPT_OPENSSL;
