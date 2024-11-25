@@ -355,7 +355,6 @@ MtpFileSystem::~MtpFileSystem()
 bool MtpFileSystem::ParseOptionsInner()
 {
     fuse_opt_add_arg(&args_, options_.mountPoint_);
-    fuse_opt_add_arg(&args_, "-s");
 
     if (options_.verBose_) {
         fuse_opt_add_arg(&args_, "-f");
