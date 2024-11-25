@@ -684,8 +684,8 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
             continue;
         }
         std::string bundleNameStr = bundleName.path().filename().generic_string();
-        int32_t point = bundleNameStr.find(MOUNT_SUFFIX);
-        if (point == -1) {
+        std::string::size_type point = bundleNameStr.find(MOUNT_SUFFIX);
+        if (point == std::string::npos) {
             LOGI("bundleName do not need to mount: %{public}s", bundleNameStr.c_str());
             continue;
         }
@@ -1521,12 +1521,12 @@ int32_t MountManager::UmountMntUserTmpfs(int32_t userId)
     std::string path = mountArgument.GetSharefsDocCurPath() + "/appdata";
     int32_t res = UMount2(path, MNT_DETACH);
     if (res != E_OK) {
-        LOGE("failed to umount with detach, path %{public}s, errno {public}d.", path.c_str(), errno);
+        LOGE("failed to umount with detach, path %{public}s, errno %{public}d.", path.c_str(), errno);
     }
     path = mountArgument.GetCurOtherAppdataPath();
     res = UMount2(path, MNT_DETACH);
     if (res != E_OK) {
-        LOGE("failed to umount with detach, path %{public}s, errno {public}d.", path.c_str(), errno);
+        LOGE("failed to umount with detach, path %{public}s, errno %{public}d.", path.c_str(), errno);
     }
     return E_OK;
 }
