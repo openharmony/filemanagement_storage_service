@@ -27,6 +27,7 @@
 
 #include "file_ex.h"
 #include "storage_service_log.h"
+
 #include "openssl_crypto.h"
 
 namespace {

@@ -318,7 +318,7 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
         case static_cast<uint32_t>(StorageManagerInterfaceCode::UMOUNT_MEDIA_FUSE):
             return HandleUMountMediaFuse(data, reply);
         default:
-            LOGE("Cannot response request %d: unknown tranction", code);
+            LOGE("Cannot response request %{public}d: unknown tranction", code);
             return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
     }
 }

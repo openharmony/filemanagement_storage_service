@@ -18,6 +18,7 @@
 #include "iam_client.h"
 #include "storage_service_log.h"
 
+
 namespace OHOS {
 namespace StorageDaemon {
 const uint8_t IAM_MAX_RETRY_TIME = 3;

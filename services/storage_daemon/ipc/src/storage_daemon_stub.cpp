@@ -154,6 +154,7 @@ int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::UMOUNT_DFS_DOCS):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::GENERATE_APP_KEY):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::DELETE_APP_KEY):
+        
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_FILE_ENCRYPT_STATUS):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::MOUNT_MEDIA_FUSE):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::UMOUNT_MEDIA_FUSE):

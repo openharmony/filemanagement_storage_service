@@ -39,6 +39,7 @@ struct FileNode {
 
 void KeyBackup::CreateBackup(const std::string &from, const std::string &to, bool removeOld)
 {
+    
     LOGI("create backup from: %s to: %s removeOld: %d", from.c_str(), to.c_str(), removeOld ? 1 : 0);
     if (access(from.c_str(), 0) != 0) {
         LOGE("from path s not exist, path is %s", from.c_str());

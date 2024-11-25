@@ -92,6 +92,7 @@ static bool FsIoctl(const char *mnt, unsigned long cmd, void *arg)
     free(realPath);
     if (fd < 0) {
         LOGE("open %s failed, errno:%d", mnt, errno);
+        
         return false;
     }
     if (ioctl(fd, cmd, arg) != 0) {
