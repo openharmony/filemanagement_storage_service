@@ -356,6 +356,7 @@ group("storage_daemon_unit_test") {
   testonly = true
   deps = [
     "client/test:storage_daemon_client_test",
+    "crypto/test/base_key_test:base_key_test",
     "crypto/test/crypto_test:crypto_test",
     "crypto/test/fscrypt_key_v1_ext_test:fscrypt_key_v1_ext_test",
     "crypto/test/huks_master_test:huks_master_test",
