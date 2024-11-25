@@ -25,6 +25,7 @@
 #include "key_crypto_utils.h"
 #include "storage_service_log.h"
 
+
 namespace OHOS {
 namespace StorageDaemon {
 const uint8_t MAX_RETRY_TIME = 3;

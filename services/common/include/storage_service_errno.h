@@ -64,6 +64,7 @@ enum ErrNo {
     E_MTP_MOUNT_FAILED,
     E_MTP_UMOUNT_FAILED,
     E_MIGRETE_ELX_FAILED,
+    
 };
 
 enum JsErrCode {

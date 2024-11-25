@@ -31,6 +31,7 @@ char *ReadFileToBuf(const char *configFile)
         if (stat(configFile, &fileStat) != 0 ||
             fileStat.st_size <= 0 || fileStat.st_size > MAX_FILE_LEN) {
             LOGE("Unexpected config file \" %s \", check if it exist. if exist, check file size", configFile);
+            
             break;
         }
         fd = fopen(configFile, "r");

@@ -66,6 +66,7 @@ void StorageRadar::ReportVolumeOperation(const std::string &funcName, int ret)
 }
 
 void StorageRadar::ReportInitGlobalKey(const std::string &funcName, uint32_t userId, int ret,
+
     const std::string &keyLevel)
 {
     RadarParameter param = {

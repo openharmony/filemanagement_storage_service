@@ -19,6 +19,7 @@
 
 #include "storage_service_log.h"
 
+
 namespace OHOS {
 namespace StorageDaemon {
 constexpr int32_t WAIT_THREAD_TIMEOUT_MS = 5;

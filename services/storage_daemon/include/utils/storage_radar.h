@@ -91,6 +91,7 @@ struct RadarParameter {
     enum BizStage bizStage;
     std::string keyElxLevel;
     int32_t errorCode;
+    
 };
 
 class StorageRadar {
