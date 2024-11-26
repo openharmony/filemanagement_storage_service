@@ -94,7 +94,7 @@ void GetMediaTypeAndSize(const std::shared_ptr<DataShare::DataShareResultSet> &r
 int32_t GetMediaStorageStats(StorageStats &storageStats)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
-    LOGD("GetMediaStorageStats start");
+    LOGI("GetMediaStorageStats start");
 #ifdef STORAGE_SERVICE_GRAPHIC
     auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (sam == nullptr) {
@@ -134,20 +134,20 @@ int32_t GetMediaStorageStats(StorageStats &storageStats)
     GetMediaTypeAndSize(queryResultSet, storageStats);
     dataShareHelper->Release();
 #endif
-    LOGD("GetMediaStorageStats end");
+    LOGI("GetMediaStorageStats end");
     return E_OK;
 }
 
 int32_t GetFileStorageStats(int32_t userId, StorageStats &storageStats)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
-    LOGD("GetFileStorageStats start");
+    LOGI("GetFileStorageStats start");
     int32_t err = E_OK;
     int32_t prjId = userId * USER_ID_BASE + UID_FILE_MANAGER;
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->GetOccupiedSpace(StorageDaemon::USRID, prjId, storageStats.file_);
-    LOGD("GetFileStorageStats end");
+    LOGI("GetFileStorageStats end");
     return err;
 }
 
