@@ -172,8 +172,8 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_DestroyDisk_001, TestS
                         \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
     auto data = std::make_unique<NetlinkData>();
     data->Decode(msg);
-    unsigned int major = (unsigned int) std::stoi(data.get()->GetParam("MAJOR"));
-    unsigned int minor = (unsigned int) std::stoi(data.get()->GetParam("MINOR"));
+    unsigned int major = (unsigned int) std::atoi(data.get()->GetParam("MAJOR").c_str());
+    unsigned int minor = (unsigned int) std::atoi(data.get()->GetParam("MINOR").c_str());
     dev_t device = makedev(major, minor);
     diskManager->DestroyDisk(device);
 
@@ -200,8 +200,8 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_ChangeDisk_001, TestSi
     auto nlData = std::make_unique<NetlinkData>();
     nlData->Decode(msg);
     NetlinkData *data = nlData.get();
-    unsigned int major = (unsigned int)std::stoi(data->GetParam("MAJOR"));
-    unsigned int minor = (unsigned int)std::stoi(data->GetParam("MINOR"));
+    unsigned int major = (unsigned int) std::atoi(data.get()->GetParam("MAJOR").c_str());
+    unsigned int minor = (unsigned int) std::atoi(data.get()->GetParam("MINOR").c_str());
     dev_t device = makedev(major, minor);
     diskManager->ChangeDisk(device, data);
 
@@ -227,8 +227,8 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_GetDisk_001, TestSize.
                         \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
     auto data = std::make_unique<NetlinkData>();
     data->Decode(msg);
-    unsigned int major = std::stoi(data->GetParam("MAJOR"));
-    unsigned int minor = std::stoi(data->GetParam("MINOR"));
+    unsigned int major = std::atoi(data->GetParam("MAJOR").c_str());
+    unsigned int minor = std::atoi(data->GetParam("MINOR").c_str());
     dev_t device = makedev(major, minor);
 
     auto diskInfo = diskManager->GetDisk(device);
@@ -256,8 +256,8 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_GetDisk_002, TestSize.
                         \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
     auto data = std::make_unique<NetlinkData>();
     data->Decode(msg);
-    unsigned int major = std::stoi(data->GetParam("MAJOR"));
-    unsigned int minor = std::stoi(data->GetParam("MINOR"));
+    unsigned int major = std::atoi(data->GetParam("MAJOR").c_str());
+    unsigned int minor = std::atoi(data->GetParam("MINOR").c_str());
     dev_t device = makedev(major, minor);
 
     auto diskInfo = diskManager->MatchConfig(data.get());
