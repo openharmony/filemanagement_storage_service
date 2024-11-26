@@ -65,6 +65,8 @@ ohos_unittest("mtp_device_manager_test") {
   ]
 }
 
+
+
 group("storage_daemon_mtp_test") {
   testonly = true
   deps = [ ":mtp_device_manager_test" ]
