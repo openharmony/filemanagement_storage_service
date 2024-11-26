@@ -15,6 +15,7 @@
 
 #include "disk/disk_info.h"
 
+#include <charconv>
 #include <sys/sysmacros.h>
 
 #include "disk/disk_manager.h"
@@ -294,7 +295,8 @@ void DiskInfo::ProcessPartition(std::vector<std::string>::iterator &it, const st
     if (++it == end) {
         return;
     }
-    int32_t index = std::atoi(it->data().c_str());
+    int32_t index;
+    std::from_chars(it->data(), it->data() + it->size(), index);
     unsigned int majorId = major(device_);
     if ((index > maxVols && majorId == DISK_MMC_MAJOR) || index < 1) {
         LOGE("Invalid partition %{public}d", index);
