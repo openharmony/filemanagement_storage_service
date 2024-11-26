@@ -15,6 +15,7 @@
 
 #include "gtest/gtest.h"
 #include "mtp/mtp_device_manager.h"
+#include "mtp/mtp_device_monitor.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/file_utils.h"
@@ -23,106 +24,242 @@
 namespace OHOS {
 namespace StorageDaemon {
 using namespace testing::ext;
-class MtpDeviceManagerTest : public testing::Test {
-protected:
-    MtpDeviceInfo deviceInfo;
+class MtpDeviceMonitorTest : public testing::Test {
 
 public:
-    static void SetUpTestCase(void){};
-    static void TearDownTestCase(void){};
-    void SetUp()
-    {
-        deviceInfo.path = "/test/path";
-        deviceInfo.id = 1;
-        deviceInfo.vendor = "TestVendor";
-        deviceInfo.uuid = "TestUUID";
-    }
+    static void SetUpTestCase(void) {};
+    static void TearDownTestCase(void) {};
 
-    void TearDown() {}
+    void SetUp(){};
+    void TearDown(){};
 };
 
 /**
- * @tc.name  : MountDeviceTest_001
- * @tc.number: MountDeviceTest_001
- * @tc.desc  : Test when device is mounting
+ * @tc.name: HasMounted_001
+ * @tc.desc: Verify the Decode function of Devpath and Syspath.
+ * @tc.type: FUNC
  */
-HWTEST_F(MtpDeviceManagerTest, MountDeviceTest_001, TestSize.Level1)
+HWTEST_F(MtpDeviceMonitorTest, HasMounted_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "MountDeviceTest_001 start";
+    GTEST_LOG_(INFO) << "HasMounted_001 start";
 
-    auto manager = DelayedSingleton<MtpDeviceManager>::GetInstance();
-    manager->isMounting = true;
-    int32_t result = manager->MountDevice(deviceInfo);
-    EXPECT_EQ(result, E_MTP_IS_MOUNTING);
+    auto monitor = DelayedSingleton<MtpDeviceMonitor>::GetInstance();
+    MtpDeviceInfo device;
+    device.id = 1;
+    int32_t result = monitor->HasMounted(device);
+    EXPECT_FALSE(result);
 
-    GTEST_LOG_(INFO) << "MountDeviceTest_001 end";
+    GTEST_LOG_(INFO) << "HasMounted_001 end";
 }
 
 /**
- * @tc.name  : MountDeviceTest_002
- * @tc.number: MountDeviceTest_002
- * @tc.desc  : Test when device is not mounting
+ * @tc.name: HasMounted_002
+ * @tc.desc: Verify the Decode function of Devpath and Syspath.
+ * @tc.type: FUNC
  */
-HWTEST_F(MtpDeviceManagerTest, MountDeviceTest_002, TestSize.Level1)
+HWTEST_F(MtpDeviceMonitorTest, HasMounted_002, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "MountDeviceTest_002 start";
+    GTEST_LOG_(INFO) << "HasMounted_002 start";
 
-    auto manager = DelayedSingleton<MtpDeviceManager>::GetInstance();
-    manager->isMounting = false;
-    int32_t result = manager->MountDevice(deviceInfo);
+    auto monitor = DelayedSingleton<MtpDeviceMonitor>::GetInstance();
+    MtpDeviceInfo device;
+    device.id = "1";
+    monitor->lastestMtpDevList_.push_back(device);
+    int32_t result = monitor->HasMounted(device);
+    EXPECT_TRUE(result);
+    monitor->lastestMtpDevList_.clear();
+
+    GTEST_LOG_(INFO) << "HasMounted_002 end";
+}
+
+/**
+ * @tc.name: MountTest_001
+ * @tc.desc: Test when the device does not exist, Mount method should return E_NON_EXIST.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpDeviceMonitorTest, MountTest_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MountTest_001 start";
+
+    auto monitor = DelayedSingleton<MtpDeviceMonitor>::GetInstance();
+    std::string id = "test_id";
+    MtpDeviceInfo device;
+    device.id = id;
+    monitor->lastestMtpDevList_.push_back(device);
+    int32_t result = monitor->Mount(id);
     EXPECT_EQ(result, E_MTP_PREPARE_DIR_ERR);
+    monitor->lastestMtpDevList_.clear();
 
-    GTEST_LOG_(INFO) << "MountDeviceTest_002 end";
+    GTEST_LOG_(INFO) << "MountTest_001 end";
 }
 
 /**
- * @tc.name  : MountDeviceTest_003
- * @tc.number: MountDeviceTest_003
- * @tc.desc  : Test when device is not mounting
+ * @tc.name: MountTest_002
+ * @tc.desc: Test when MountDevice fails, Mount method should return an error code.
+ * @tc.type: FUNC
  */
-HWTEST_F(MtpDeviceManagerTest, MountDeviceTest_003, TestSize.Level1)
+HWTEST_F(MtpDeviceMonitorTest, MountTest_002, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "MountDeviceTest_003 start";
+    GTEST_LOG_(INFO) << "MountTest_002 start";
 
-    auto manager = DelayedSingleton<MtpDeviceManager>::GetInstance();
-    manager->isMounting = false;
-    deviceInfo.path = "/mnt/data/external";
-    int32_t result = manager->MountDevice(deviceInfo);
-    EXPECT_EQ(result, E_OK);
+    auto monitor = DelayedSingleton<MtpDeviceMonitor>::GetInstance();
+    std::string id = "test_id";
+    MtpDeviceInfo device;
+    device.id = id;
+    int32_t result = monitor->Mount(id);
+    EXPECT_EQ(result, E_NON_EXIST);
 
-    GTEST_LOG_(INFO) << "MountDeviceTest_003 end";
+    GTEST_LOG_(INFO) << "MountTest_002 end";
 }
 
 /**
- * @tc.name  : UmountDeviceTest_001
- * @tc.number: UmountDeviceTest_001
- * @tc.desc  : Test when umount and remove both succeed
+ * @tc.name: UmountTest_001
+ * @tc.desc: Test Umount method returns error when UmountDevice fails.
+ * @tc.type: FUNC
  */
-HWTEST_F(MtpDeviceManagerTest, UmountDeviceTest_001, TestSize.Level1)
+HWTEST_F(MtpDeviceMonitorTest, UmountTest_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "UmountDeviceTest_001 start";
+    GTEST_LOG_(INFO) << "UmountTest_001 start";
 
-    auto manager = DelayedSingleton<MtpDeviceManager>::GetInstance();
-    deviceInfo.path = "/test/path";
-    EXPECT_EQ(manager->UmountDevice(deviceInfo, false), E_MTP_UMOUNT_FAILED);
+    auto monitor = DelayedSingleton<MtpDeviceMonitor>::GetInstance();
+    std::string id = "test_id";
+    MtpDeviceInfo device;
+    device.id = id;
+    monitor->lastestMtpDevList_.push_back(device);
+    int32_t result = monitor->Umount(id);
+    EXPECT_EQ(result, E_MTP_UMOUNT_FAILED);
+    monitor->lastestMtpDevList_.clear();
 
-    GTEST_LOG_(INFO) << "UmountDeviceTest_001 end";
+    GTEST_LOG_(INFO) << "UmountTest_001 end";
 }
 
 /**
- * @tc.name  : UmountDeviceTest_002
- * @tc.number: UmountDeviceTest_002
- * @tc.desc  : Test when umount and remove both succeed
+ * @tc.name: UmountTest_002
+ * @tc.desc: Test Umount method returns error when UmountDevice fails.
+ * @tc.type: FUNC
  */
-HWTEST_F(MtpDeviceManagerTest, UmountDeviceTest_002, TestSize.Level1)
+HWTEST_F(MtpDeviceMonitorTest, UmountTest_002, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "UmountDeviceTest_002 start";
+    GTEST_LOG_(INFO) << "UmountTest_002 start";
 
-    auto manager = DelayedSingleton<MtpDeviceManager>::GetInstance();
-    deviceInfo.path = "/test/path";
-    EXPECT_EQ(manager->UmountDevice(deviceInfo, true), E_MTP_UMOUNT_FAILED);
+    auto monitor = DelayedSingleton<MtpDeviceMonitor>::GetInstance();
+    std::string id = "test_id";
+    MtpDeviceInfo device;
+    device.id = id;
+    int32_t result = monitor->Umount(id);
+    EXPECT_EQ(result, E_NON_EXIST);
 
-    GTEST_LOG_(INFO) << "UmountDeviceTest_002 end";
+    GTEST_LOG_(INFO) << "UmountTest_002 end";
+}
+
+/**
+ * @tc.name: MountMtpDeviceTest_001
+ * @tc.desc: Test when device is already mounted, MountMtpDevice should not mount it again.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpDeviceMonitorTest, MountMtpDeviceTest_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MountMtpDeviceTest_001 start";
+
+    auto monitor = DelayedSingleton<MtpDeviceMonitor>::GetInstance();
+    std::vector<MtpDeviceInfo> devices;
+    MtpDeviceInfo device;
+    device.id = "123";
+    devices.push_back(device);
+    monitor->lastestMtpDevList_.push_back(device);
+    monitor->MountMtpDevice(devices);
+    std::vector<MtpDeviceInfo> lastestMtpDevList = monitor->lastestMtpDevList_;
+    EXPECT_EQ(lastestMtpDevList.size(), 1);
+    monitor->lastestMtpDevList_.clear();
+
+    GTEST_LOG_(INFO) << "MountMtpDeviceTest_001 end";
+}
+
+/**
+ * @tc.name: MountMtpDeviceTest_002
+ * @tc.desc: Test when device is ejected, MountMtpDevice should not mount it.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpDeviceMonitorTest, MountMtpDeviceTest_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MountMtpDeviceTest_002 start";
+
+    auto monitor = DelayedSingleton<MtpDeviceMonitor>::GetInstance();
+    std::vector<MtpDeviceInfo> devices;
+    MtpDeviceInfo device;
+    device.id = "123";
+    devices.push_back(device);
+    monitor->hasEjectedDevices_.push_back(device);
+    monitor->MountMtpDevice(devices);
+    std::vector<MtpDeviceInfo> lastestMtpDevList = monitor->lastestMtpDevList_;
+    EXPECT_EQ(lastestMtpDevList.size(), 0);
+    monitor->hasEjectedDevices_.clear();
+
+    GTEST_LOG_(INFO) << "MountMtpDeviceTest_002 end";
+}
+
+/**
+ * @tc.name: MountMtpDeviceTest_003
+ * @tc.desc:  Test when device is invalid, MountMtpDevice should not mount it.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpDeviceMonitorTest, MountMtpDeviceTest_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MountMtpDeviceTest_003 start";
+
+    auto monitor = DelayedSingleton<MtpDeviceMonitor>::GetInstance();
+    std::vector<MtpDeviceInfo> devices;
+    MtpDeviceInfo device;
+    device.id = "123";
+    devices.push_back(device);
+    monitor->invalidMtpDevices_.push_back(device);
+    monitor->MountMtpDevice(devices);
+    std::vector<MtpDeviceInfo> lastestMtpDevList = monitor->lastestMtpDevList_;
+    EXPECT_EQ(lastestMtpDevList.size(), 0);
+    monitor->invalidMtpDevices_.clear();
+
+    GTEST_LOG_(INFO) << "MountMtpDeviceTest_003 end";
+}
+
+/**
+ * @tc.name: MountMtpDeviceTest_004
+ * @tc.desc: Test when device is valid, MountMtpDevice should mount it.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpDeviceMonitorTest, MountMtpDeviceTest_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MountMtpDeviceTest_004 start";
+
+    auto monitor = DelayedSingleton<MtpDeviceMonitor>::GetInstance();
+    std::vector<MtpDeviceInfo> devices;
+    MtpDeviceInfo device1;
+    device1.id = "123";
+    MtpDeviceInfo device2;
+    device2.id = "456";
+    devices.push_back(device1);
+    devices.push_back(device2);
+    monitor->lastestMtpDevList_.push_back(device1);
+    monitor->MountMtpDevice(devices);
+    std::vector<MtpDeviceInfo> lastestMtpDevList = monitor->lastestMtpDevList_;
+    EXPECT_EQ(lastestMtpDevList.size(), 1);
+
+    GTEST_LOG_(INFO) << "MountMtpDeviceTest_004 end";
+}
+
+/**
+ * @tc.name: IsNeedDisableMtp_001
+ * @tc.desc: Test when mtpEnable is "false", IsNeedDisableMtp should return false
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpDeviceMonitorTest, IsNeedDisableMtp_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "IsNeedDisableMtp_001 start";
+
+    auto monitor = DelayedSingleton<MtpDeviceMonitor>::GetInstance();
+    bool result = monitor->IsNeedDisableMtp();
+    EXPECT_FALSE(result);
+
+    GTEST_LOG_(INFO) << "IsNeedDisableMtp_001 end";
 }
 } // STORAGE_DAEMON
 } // OHOS
