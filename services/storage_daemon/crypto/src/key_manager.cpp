@@ -1133,12 +1133,7 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
         return -EOPNOTSUPP;
     }
     if (type == EL5_KEY) {
-        if (ActiveUeceUserKey(user, token, secret, elKey) != 0) {
-            LOGE("ActiveUeceUserKey failed");
-            return -EFAULT;
-        }
-        saveLockScreenStatus[user] = true;
-        return 0;
+        return activeUece(user, elKey, token, secret);
     }
     if (ActiveElXUserKey(user, token, type, secret, elKey) != 0) {
         LOGE("ActiveElXUserKey failed");
@@ -1148,6 +1143,19 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
     userPinProtect[user] = !secret.empty();
     saveLockScreenStatus[user] = true;
     LOGI("Active user %{public}u el success, saveLockScreenStatus is %{public}d", user, saveLockScreenStatus[user]);
+    return 0;
+}
+
+int KeyManager::activeUece(unsigned int user,
+                           std::shared_ptr<BaseKey> elKey,
+                           const std::vector<uint8_t> &token,
+                           const std::vector<uint8_t> &secret)
+{
+    if (ActiveUeceUserKey(user, token, secret, elKey) != 0) {
+        LOGE("ActiveUeceUserKey failed");
+        return -EFAULT;
+    }
+    saveLockScreenStatus[user] = true;
     return 0;
 }
 
