@@ -24,12 +24,11 @@
 namespace OHOS {
 namespace StorageDaemon {
 using namespace testing::ext;
-class MtpDeviceMonitorTest : public testing::Test {
 
+class MtpDeviceMonitorTest : public testing::Test {
 public:
     static void SetUpTestCase(void) {};
     static void TearDownTestCase(void) {};
-
     void SetUp(){};
     void TearDown(){};
 };
