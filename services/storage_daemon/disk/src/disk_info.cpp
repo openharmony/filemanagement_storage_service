@@ -314,7 +314,7 @@ void DiskInfo::ProcessPartition(std::vector<std::string>::iterator &it, const st
         int base = 16;
         auto result = std::from_chars(str.data(), str.size() + str.size(), type, base);
         if (result.ec != std::errc()) {
-            LOGE("Volume type conversion failed"); //先不返回，因为createMRBVolume有校验
+            LOGE("Volume type conversion failed");
         }
         if (CreateMBRVolume(type, partitionDev)) {
             foundPart = true;
