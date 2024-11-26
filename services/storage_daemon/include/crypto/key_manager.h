@@ -135,6 +135,7 @@ private:
     std::shared_ptr<BaseKey> GetUserElKey(unsigned int user, KeyType type);
     void SaveUserElKey(unsigned int user, KeyType type, std::shared_ptr<BaseKey> elKey);
     bool IsNeedClearKeyFile(std::string file);
+    bool checkDir(KeyType type, std::string keyDir, unsigned int user);
     void ProcUpgradeKey(const std::vector<FileList> &dirInfo);
     int GenerateElxAndInstallUserKey(unsigned int user);
     int ActiveUeceUserKey(unsigned int user,

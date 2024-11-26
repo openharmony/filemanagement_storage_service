@@ -1116,19 +1116,15 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
         return -EFAULT;
     }
     std::lock_guard<std::mutex> lock(keyMutex_);
-    if (HasElkey(user, type) && type != EL5_KEY && HashElxActived(user, type)) {
-        LOGE("The user %{public}u el have been actived, key type is %{public}u", user, type);
-        return 0;
+    std::shared_ptr<DelayHandler> userDelayHandler;
+    if (GetUserDelayHandler(user, userDelayHandler)) {
+        userDelayHandler->CancelDelayTask();
     }
     std::string keyDir = GetKeyDirByUserAndType(user, type);
     if (keyDir == "") {
         return E_KEY_TYPE_INVAL;
     }
-    if ((type != EL5_KEY) && !IsDir(keyDir)) {
-        LOGE("Have not found user %{public}u el", user);
-        return -ENOENT;
-    }
-    if ((type == EL5_KEY) && CheckAndDeleteEmptyEl5Directory(keyDir, user) != 0) {
+    if (!checkDir(type, keyDir, user)) {
         return -ENOENT;
     }
     std::shared_ptr<BaseKey> elKey = GetBaseKey(keyDir);
@@ -1141,21 +1137,30 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
             LOGE("ActiveUeceUserKey failed");
             return -EFAULT;
         }
+        saveLockScreenStatus[user] = true;
         return 0;
     }
     if (ActiveElXUserKey(user, token, type, secret, elKey) != 0) {
         LOGE("ActiveElXUserKey failed");
         return -EFAULT;
     }
-    std::shared_ptr<DelayHandler> userDelayHandler;
-    if (GetUserDelayHandler(user, userDelayHandler)) {
-        userDelayHandler->CancelDelayTask();
-    }
     SaveUserElKey(user, type, elKey);
     userPinProtect[user] = !secret.empty();
     saveLockScreenStatus[user] = true;
     LOGI("Active user %{public}u el success, saveLockScreenStatus is %{public}d", user, saveLockScreenStatus[user]);
     return 0;
+}
+
+bool KeyManager::checkDir(KeyType type, std::string keyDir, unsigned int user)
+{
+    if ((type != EL5_KEY) && !IsDir(keyDir)) {
+        LOGE("Have not found user %{public}u el", user);
+        return false;
+    }
+    if ((type == EL5_KEY) && CheckAndDeleteEmptyEl5Directory(keyDir, user) != 0) {
+        return false;
+    }
+    return true;
 }
 
 bool KeyManager::HashElxActived(unsigned int user, KeyType type)
