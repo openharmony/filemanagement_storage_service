@@ -1209,7 +1209,7 @@ int32_t StorageDaemon::UpdateMemoryPara(int32_t size, int32_t &oldSize)
         LOGE("Failed to read");
     }
     if (!oldContent.empty()) {
-        oldSize = std::stoi(oldContent);
+        oldSize = std::atoi(oldContent.c_str());
     } else {
         oldSize = DEFAULT_VFS_CACHE_PRESSURE;
     }

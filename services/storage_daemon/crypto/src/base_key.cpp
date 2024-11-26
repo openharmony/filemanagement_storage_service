@@ -507,7 +507,9 @@ bool BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate)
             return a.length() > b.length();
         }
         // make sure a.length() >= PATH_KEY_VERSION.length() && b.length() >= PATH_KEY_VERSION.length()
-        return std::stoi(a.substr(PATH_KEY_VERSION.size() - 1)) > std::stoi(b.substr(PATH_KEY_VERSION.size() - 1));
+        auto a_len = std::atoi((a.substr(PATH_KEY_VERSION.size() - 1)).c_str());
+        auto b_len = std::atoi((b.substr(PATH_KEY_VERSION.size() - 1)).c_str());
+        return a_len > b_len;
     });
     for (const auto &it: files) {
         if (it != candidate) {
