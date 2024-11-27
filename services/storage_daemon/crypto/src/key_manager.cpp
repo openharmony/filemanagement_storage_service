@@ -771,6 +771,13 @@ int KeyManager::DeleteUserKeys(unsigned int user)
     return ret;
 }
 
+std::string checkSecretStatus(struct UserTokenSecret &userTokenSecret)
+{
+    std::string isOldEmy = userTokenSecret.oldSecret.empty() ? "true" : "false";
+    std::string isNewEmy = userTokenSecret.newSecret.empty() ? "true" : "false";
+    return "oldSecret isEmpty = " + isOldEmy + ", newSecret isEmpty = " + isNewEmy;
+}
+
 #ifdef USER_CRYPTO_MIGRATE_KEY
 int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret,
                                bool needGenerateShield)
@@ -779,9 +786,7 @@ int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTo
 #endif
 {
     std::lock_guard<std::mutex> lock(keyMutex_);
-    std::string isOldEmy = userTokenSecret.oldSecret.empty() ? "true" : "false";
-    std::string isNewEmy = userTokenSecret.newSecret.empty() ? "true" : "false";
-    std::string secretInfo = "oldSecret isEmpty = " + isOldEmy + ", newSecret isEmpty = " + isNewEmy;
+    std::string secretInfo = checkSecretStatus(userTokenSecret);
 #ifdef USER_CRYPTO_MIGRATE_KEY
     int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL2_KEY, needGenerateShield);
     if (ret != 0) {
