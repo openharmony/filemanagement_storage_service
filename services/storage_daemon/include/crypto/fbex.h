@@ -67,7 +67,7 @@ public:
     static int GenerateAppkey(UserIdToFbeStr &userIdToFbe, uint32_t hashId, std::unique_ptr<uint8_t[]> &keyId,
                               uint32_t size);
     static int LockUece(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupport);
-    
+    static uint32_t GetBufferSize(uint32_t status);
 };
 } // namespace StorageDaemon
 } // namespace OHOS
