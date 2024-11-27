@@ -562,7 +562,7 @@ bool FBEX::CheckPreconditions(UserIdToFbeStr &userIdToFbe, uint32_t status, std:
 }
 
 void FBEX::HandleIoctlError(int ret, int errnoVal, const std::string &cmd, uint32_t userIdSingle,
-                      uint32_t userIdDouble)
+                            uint32_t userIdDouble)
 {
     LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errnoVal);
     std::string extraData = "ioctl cmd=" + cmd + ", userIdSingle=" + std::to_string(userIdSingle)
