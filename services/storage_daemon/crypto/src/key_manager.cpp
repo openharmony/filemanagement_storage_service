@@ -778,6 +778,13 @@ std::string CheckSecretStatus(struct UserTokenSecret &userTokenSecret)
     return "oldSecret isEmpty = " + isOldEmy + ", newSecret isEmpty = " + isNewEmy;
 }
 
+void HandleEl2Error(int ret, unsigned int user, const std::string &secretInfo,
+                    const std::string &reportPrefix, const std::string &level)
+{
+    LOGE("user %{public}u UpdateUserAuth el2 key fail", user);
+    StorageRadar::ReportUpdateUserAuth(reportPrefix, user, ret, level, secretInfo);
+}
+
 #ifdef USER_CRYPTO_MIGRATE_KEY
 int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret,
                                bool needGenerateShield)
@@ -786,13 +793,11 @@ int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTo
 #endif
 {
     std::lock_guard<std::mutex> lock(keyMutex_);
-    std::string secretInfo = CheckSecretStatus(userTokenSecret);
+    std::string secretInfo = checkSecretStatus(userTokenSecret);
 #ifdef USER_CRYPTO_MIGRATE_KEY
     int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL2_KEY, needGenerateShield);
     if (ret != 0) {
-        LOGE("user %{public}u UpdateUserAuth el2 key fail", user);
-        StorageRadar::ReportUpdateUserAuth("UpdateUserAuth::UpdateCeEceSeceUserAuth_Migrate",
-            user, ret, "EL2", secretInfo);
+        HandleEl2Error(ret, user, secretInfo, "UpdateUserAuth::UpdateCeEceSeceUserAuth_Migrate", "EL2");
         return ret;
     }
     ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL3_KEY, needGenerateShield);
@@ -812,8 +817,7 @@ int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTo
 #else
     int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL2_KEY);
     if (ret != 0) {
-        LOGE("user %{public}u UpdateUserAuth el2 key fail", user);
-        StorageRadar::ReportUpdateUserAuth("UpdateUserAuth::UpdateCeEceSeceUserAuth", user, ret, "EL2", secretInfo);
+        HandleEl2Error(ret, user, secretInfo, "UpdateUserAuth::UpdateCeEceSeceUserAuth", "EL2");
         return ret;
     }
     ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL3_KEY);
