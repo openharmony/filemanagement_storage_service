@@ -18,8 +18,10 @@
 #include <pthread.h>
 
 #include "storage_service_log.h"
-
-
+#include "storage_service_errno.h"
+#include "utils/storage_radar.h"
+ 
+using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
 constexpr int32_t WAIT_THREAD_TIMEOUT_MS = 5;
@@ -99,10 +101,12 @@ void DelayHandler::ClearEceSeceKey()
     LOGI("enter");
     if (el4Key_ == nullptr) {
         LOGI("elKey is nullptr do not clean.");
+        StorageRadar::ReportUpdateUserAuth("ClearEceSeceKey", userId_, E_PARAMS_INVAL, "EL4", "");
         return;
     }
     if (!el4Key_->LockUserScreen(userId_, FSCRYPT_SDP_ECE_CLASS)) {
         LOGE("Clear user %{public}u key failed", userId_);
+        StorageRadar::ReportUpdateUserAuth("ClearEceSeceKey::LockUserScreen", userId_, E_SYS_ERR, "EL4", "");
         return;
     }
     LOGI("success");
