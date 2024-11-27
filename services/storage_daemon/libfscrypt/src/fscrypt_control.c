@@ -150,7 +150,7 @@ int FscryptSetSysparam(const char *policy)
     for (enum FscryptOptins i = FSCRYPT_VERSION_NUM; i < FSCRYPT_OPTIONS_MAX; i++) {
         char *temp = options[i];
         if (!IsSupportedPolicy(temp, i)) {
-            LOGE("Not supported policy, %s", temp);
+            LOGE("Not supported policy, %{public}s", temp);
             
             FreeStringVector(options, optNums);
             return -ENOTSUP;
@@ -160,7 +160,7 @@ int FscryptSetSysparam(const char *policy)
 
     int ret = SetFscryptParameter(FSCRYPT_POLICY_KEY, policy);
     if (ret < 0) {
-        LOGE("Set fscrypt system parameter failed %d", ret);
+        LOGE("Set fscrypt system parameter failed %{public}d", ret);
         return ret;
     }
     g_fscryptEnabled = true;
@@ -238,7 +238,7 @@ static int SpliceKeyPath(const char *path, size_t pathLen,
                          const char *name, size_t nameLen,
                          char **buf)
 {
-    LOGI("key path %s, name %s", path, name);
+    LOGI("key path %{public}s, name %{public}s", path, name);
     *buf = NULL;
     size_t bufMax = pathLen + nameLen + 1;
     char *tmpBuf = (char *)malloc(bufMax);
@@ -363,7 +363,7 @@ int LoadAndSetPolicy(const char *keyDir, const char *dir)
     }
     int ret = InitFscryptPolicy();
     if (ret != 0) {
-        LOGE("Get fscrypt policy error %d", ret);
+        LOGE("Get fscrypt policy error %{public}d", ret);
         return ret;
     }
 
@@ -386,7 +386,7 @@ int LoadAndSetPolicy(const char *keyDir, const char *dir)
         }
         ret = SetPolicyLegacy(pathBuf, dir, &arg);
         if (ret != 0) {
-            LOGE("SetPolicyLegacy fail, ret: %d", ret);
+            LOGE("SetPolicyLegacy fail, ret: %{public}d", ret);
         }
 #ifdef SUPPORT_FSCRYPT_V2
     } else if (fscryptVer == FSCRYPT_V2) {
@@ -398,7 +398,7 @@ int LoadAndSetPolicy(const char *keyDir, const char *dir)
         }
         ret = SetPolicyV2(pathBuf, dir, &arg);
         if (ret != 0) {
-            LOGE("SetPolicyV2 fail, ret: %d", ret);
+            LOGE("SetPolicyV2 fail, ret: %{public}d", ret);
         }
 #endif
     }
