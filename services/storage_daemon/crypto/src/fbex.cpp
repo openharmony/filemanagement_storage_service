@@ -551,7 +551,7 @@ int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint
 }
 
 bool FBEX::CheckPreconditions(UserIdToFbeStr &userIdToFbe, uint32_t status, std::unique_ptr<uint8_t[]> &eBuffer,
-                        uint32_t length, bool &isFbeSupport)
+                              uint32_t length, bool &isFbeSupport)
 {
     LOGI("enter, userId: %{public}d, status: %{public}u", userIdToFbe.userIds[DOUBLE_ID_INDEX], status);
     if (!CheckReadBuffValid(eBuffer.get(), length, status)) {
