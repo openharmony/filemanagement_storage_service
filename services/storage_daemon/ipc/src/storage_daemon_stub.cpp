@@ -160,7 +160,7 @@ int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::UMOUNT_MEDIA_FUSE):
             return OnRemoteRequestForApp(code, data, reply);
         default:
-            LOGE("Cannot response request %d: unknown tranction", code);
+            LOGE("Cannot response request %{public}d: unknown tranction", code);
             return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
     }
 }
@@ -183,7 +183,7 @@ int32_t StorageDaemonStub::OnRemoteRequestForBase(uint32_t code, MessageParcel &
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::SET_VOL_DESC):
             return HandleSetVolDesc(data, reply);
         default:
-            LOGE("Cannot response request %d: unknown tranction", code);
+            LOGE("Cannot response request %{public}d: unknown tranction", code);
             return E_SYS_ERR;
     }
 }
@@ -225,7 +225,7 @@ int32_t StorageDaemonStub::OnRemoteRequestForUser(uint32_t code, MessageParcel &
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::SET_RECOVER_KEY):
             return HandleSetRecoverKey(data, reply);
         default:
-            LOGE("Cannot response request %d: unknown tranction", code);
+            LOGE("Cannot response request %{public}d: unknown tranction", code);
             return E_SYS_ERR;
     }
 }
@@ -265,7 +265,7 @@ int32_t StorageDaemonStub::OnRemoteRequestForApp(uint32_t code, MessageParcel &d
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::UMOUNT_MEDIA_FUSE):
             return HandleUMountMediaFuse(data, reply);
         default:
-            LOGE("Cannot response request %d: unknown tranction", code);
+            LOGE("Cannot response request %{public}d: unknown tranction", code);
             return E_SYS_ERR;
     }
 }
