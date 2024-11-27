@@ -436,7 +436,7 @@ int32_t StorageDaemon::InitGlobalKey(void)
     int ret = KeyManager::GetInstance()->InitGlobalDeviceKey();
     if (ret != E_OK) {
         LOGE("InitGlobalDeviceKey failed, please check");
-        StorageRadar::ReportInitGlobalKey("InitGlobalKey", 0, ret, "EL1");
+        StorageRadar::ReportUserKeyResult("InitGlobalKey::InitGlobalDeviceKey", 0, ret, "EL1", "");
         AuditLog storageAuditLog = { false, "FAILED TO InitGlobalDeviceKey", "ADD", "InitGlobalDeviceKey", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
     }
@@ -482,7 +482,7 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
     int ret = KeyManager::GetInstance()->InitGlobalUserKeys();
     if (ret) {
         LOGE("Init global users els failed");
-        StorageRadar::ReportInitGlobalKey("InitGlobalUserKeys", GLOBAL_USER_ID, ret, "EL1");
+        StorageRadar::ReportUserKeyResult("InitGlobalUserKeys", GLOBAL_USER_ID, ret, "EL1", "");
         AuditLog storageAuditLog = { false, "FAILED TO InitGlobalUserKeys", "ADD", "InitGlobalUserKeys", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
         return ret;
@@ -494,7 +494,7 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
     auto result = UserManager::GetInstance()->PrepareUserDirs(GLOBAL_USER_ID, CRYPTO_FLAG_EL1);
     if (result != E_OK) {
         LOGE("PrepareUserDirs failed, please check");
-        StorageRadar::ReportInitGlobalKey("InitGlobalUserKeys::PrepareUserDirs", GLOBAL_USER_ID, result, "EL1");
+        StorageRadar::ReportUserKeyResult("InitGlobalUserKeys::PrepareUserDirs", GLOBAL_USER_ID, result, "EL1", "");
         AuditLog storageAuditLog = { false, "FAILED TO PrepareUserDirs", "ADD", "PrepareUserDirs", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
     }
@@ -571,12 +571,12 @@ int32_t StorageDaemon::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
     if (ret != E_OK) {
         LOGE("UpdateUserAuth failed, please check");
         RadarParameter parameterRes = {
-            .orgPkg = DEFAULT_ORGPKGNAME,
+            .orgPkg = "account_mgr",
             .userId = userId,
             .funcName = "UpdateUserAuth",
             .bizScene = BizScene::USER_KEY_ENCRYPTION,
             .bizStage = BizStage::BIZ_STAGE_UPDATE_USER_AUTH,
-            .keyElxLevel = "EL1",
+            .keyElxLevel = "ELx",
             .errorCode = ret
         };
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
@@ -654,11 +654,18 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthOld(uint32_t userId, KeyT
                                         .secureUid = secureUid };
     ret = KeyManager::GetInstance()->UpdateCeEceSeceUserAuth(userId, userTokenSecret, type, false);
     if (ret != E_OK) {
+        std::string isOldEmy = userTokenSecret.oldSecret.empty() ? "true" : "false";
+        std::string isNewEmy = userTokenSecret.newSecret.empty() ? "true" : "false";
+        std::string secretInfo = "oldSecret isEmpty = " + isOldEmy + ", newSecret isEmpty = " + isNewEmy;
+        StorageRadar::ReportUpdateUserAuth("PrepareUserDirsAndUpdateUserAuth::UpdateCeEceSeceUserAuth",
+            userId, ret, std::to_string(type), secretInfo);
         return ret;
     }
 
     ret = KeyManager::GetInstance()->UpdateCeEceSeceKeyContext(userId, type);
     if (ret != E_OK) {
+        StorageRadar::ReportUpdateUserAuth("PrepareUserDirsAndUpdateUserAuth::UpdateCeEceSeceKeyContext",
+            userId, ret, std::to_string(type), "");
         return ret;
     }
 
@@ -1061,12 +1068,12 @@ int32_t StorageDaemon::UpdateKeyContext(uint32_t userId)
     if (ret != E_OK) {
         LOGE("UpdateKeyContext failed, please check");
         RadarParameter parameterRes = {
-            .orgPkg = DEFAULT_ORGPKGNAME,
+            .orgPkg = "account_mgr",
             .userId = userId,
             .funcName = "UpdateKeyContext",
             .bizScene = BizScene::USER_KEY_ENCRYPTION,
             .bizStage = BizStage::BIZ_STAGE_UPDATE_KEY_CONTEXT,
-            .keyElxLevel = "EL1",
+            .keyElxLevel = "EL2",
             .errorCode = ret
         };
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
