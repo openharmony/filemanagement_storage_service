@@ -92,7 +92,6 @@ static bool FsIoctl(const char *mnt, unsigned long cmd, void *arg)
     free(realPath);
     if (fd < 0) {
         LOGE("open %{public}s failed, errno:%{public}d", mnt, errno);
-        
         return false;
     }
     if (ioctl(fd, cmd, arg) != 0) {
