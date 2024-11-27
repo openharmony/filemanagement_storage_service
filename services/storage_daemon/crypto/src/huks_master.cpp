@@ -24,8 +24,9 @@
 #include "hks_param.h"
 #include "key_crypto_utils.h"
 #include "storage_service_log.h"
-
-
+#include "utils/storage_radar.h"
+ 
+using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
 const uint8_t MAX_RETRY_TIME = 3;
@@ -117,6 +118,7 @@ int HuksMaster::HdiModuleInit()
 
     if (ret != HKS_ERROR_RETRYABLE_ERROR) {
         LOGE("HuksHdiModuleInit failed, ret %{public}d", ret);
+        StorageRadar::ReportHuksResult("HuksHdiModuleInit", ret);
         return ret;
     }
     int retryRet = 0;
@@ -129,6 +131,9 @@ int HuksMaster::HdiModuleInit()
         }
     }
     LOGE("HuksHdiModuleInit end, retryRet %{public}d", retryRet);
+    if (retryRet != HKS_SUCCESS) {
+        StorageRadar::ReportHuksResult("HuksHdiModuleInit_Retry", retryRet);
+    }
     return retryRet;
 }
 
@@ -152,6 +157,7 @@ int HuksMaster::HdiModuleDestroy()
 
     if (ret != HKS_ERROR_RETRYABLE_ERROR) {
         LOGE("HuksHdiModuleDestroy failed, ret %{public}d", ret);
+        StorageRadar::ReportHuksResult("HuksHdiModuleDestroy", ret);
         return ret;
     }
     int retryRet = 0;
@@ -164,6 +170,9 @@ int HuksMaster::HdiModuleDestroy()
         }
     }
     LOGE("HuksHdiModuleDestroy end, retryRet %{public}d", retryRet);
+    if (retryRet != HKS_SUCCESS) {
+        StorageRadar::ReportHuksResult("HuksHdiModuleDestroy_Retry", retryRet);
+    }
     return retryRet;
 }
 
@@ -190,6 +199,7 @@ int HuksMaster::HdiGenerateKey(const HksBlob &keyAlias, const HksParamSet *param
 
     if (ret != HKS_ERROR_RETRYABLE_ERROR) {
         LOGE("HuksHdiGenerateKey failed, ret %{public}d", ret);
+        StorageRadar::ReportHuksResult("HuksHdiGenerateKey", ret);
         return ret;
     }
     int retryRet = 0;
@@ -202,6 +212,9 @@ int HuksMaster::HdiGenerateKey(const HksBlob &keyAlias, const HksParamSet *param
         }
     }
     LOGE("HuksHdiGenerateKey end, retryRet %{public}d", retryRet);
+    if (retryRet != HKS_SUCCESS) {
+        StorageRadar::ReportHuksResult("HuksHdiGenerateKey_Retry", retryRet);
+    }
     return retryRet;
 }
 
@@ -238,6 +251,9 @@ int HuksMaster::HdiAccessInit(const HksBlob &key, const HksParamSet *paramSet,
         }
     }
     LOGE("HuksHdiInit end, retryRet %{public}d", retryRet);
+    if (retryRet != HKS_SUCCESS) {
+        StorageRadar::ReportHuksResult("HuksHdiInit_Retry", retryRet);
+    }
     return retryRet;
 }
 
@@ -274,6 +290,9 @@ int HuksMaster::HdiAccessFinish(const HksBlob &handle, const HksParamSet *paramS
         }
     }
     LOGE("HuksHdiFinish end, retryRet %{public}d", retryRet);
+    if (retryRet != HKS_SUCCESS) {
+        StorageRadar::ReportHuksResult("HuksHdiFinish_Retry", retryRet);
+    }
     return retryRet;
 }
 
@@ -297,6 +316,7 @@ int HuksMaster::HdiAccessUpgradeKey(const HksBlob &oldKey, const HksParamSet *pa
 
     if (ret != HKS_ERROR_RETRYABLE_ERROR) {
         LOGE("HuksHdiUpgradeKey failed, ret %{public}d", ret);
+        StorageRadar::ReportHuksResult("HuksHdiUpgradeKey", ret);
         return ret;
     }
     int retryRet = 0;
@@ -309,6 +329,9 @@ int HuksMaster::HdiAccessUpgradeKey(const HksBlob &oldKey, const HksParamSet *pa
         }
     }
     LOGE("HuksHdiUpgradeKey end, retryRet %{public}d", retryRet);
+    if (retryRet != HKS_SUCCESS) {
+        StorageRadar::ReportHuksResult("HuksHdiUpgradeKey_Retry", retryRet);
+    }
     return retryRet;
 }
 
