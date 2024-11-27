@@ -386,7 +386,6 @@ int32_t StorageDaemon::StartUser(int32_t userId)
     if (ret != E_OK && ret != E_KEY_NOT_ACTIVED) {
         LOGE("StartUser failed, please check");
         StorageRadar::ReportUserManager("StartUser", userId, ret, BizStage::BIZ_STAGE_START_USER);
-        
         AuditLog storageAuditLog = { false, "FAILED TO StartUser", "ADD", "StartUser", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
     } else {
