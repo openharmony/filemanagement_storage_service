@@ -793,7 +793,7 @@ int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTo
 #endif
 {
     std::lock_guard<std::mutex> lock(keyMutex_);
-    std::string secretInfo = checkSecretStatus(userTokenSecret);
+    std::string secretInfo = CheckSecretStatus(userTokenSecret);
 #ifdef USER_CRYPTO_MIGRATE_KEY
     int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL2_KEY, needGenerateShield);
     if (ret != 0) {
