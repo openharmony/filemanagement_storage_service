@@ -29,7 +29,9 @@
 #include "storage_service_log.h"
 
 #include "openssl_crypto.h"
-
+#include "utils/storage_radar.h"
+ 
+using namespace OHOS::StorageService;
 namespace {
 constexpr const char *FBEX_UFS_INLINE_SUPPORT_PREFIX = "/sys/devices/platform/";
 constexpr const char *FBEX_UFS_INLINE_SUPPORT_END = "/ufs_inline_stat";
@@ -183,6 +185,9 @@ int FBEX::InstallEL5KeyToKernel(uint32_t userIdSingle, uint32_t userIdDouble, ui
     int ret = 0;
     if (fbeRet != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", fbeRet, errno);
+        std::string extraData = "ioctl cmd=FBEX_ADD_CLASS_E, userIdSingle=" + std::to_string(userIdSingle)
+            + ", userIdDouble=" + std::to_string(userIdDouble) + ", errno=" + std::to_string(errno);
+        StorageRadar::ReportFbexResult("InstallEL5KeyToKernel", userIdSingle, fbeRet, "EL5", extraData);
         ret = -errno;
     }
     (void)fclose(f);
@@ -219,6 +224,8 @@ int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32
     int ret = ioctl(fd, FBEX_IOC_ADD_IV, &ops);
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
+        std::string extraData = "ioctl cmd=FBEX_IOC_ADD_IV, errno=" + std::to_string(errno);
+        StorageRadar::ReportFbexResult("InstallKeyToKernel", userId, ret, std::to_string(type), extraData);
         (void)fclose(f);
         return ret;
     }
@@ -262,6 +269,9 @@ int FBEX::InstallDoubleDeKeyToKernel(UserIdToFbeStr &userIdToFbe, uint8_t *iv, u
     int ret = ioctl(fd, FBEX_IOC_ADD_DOUBLE_DE_IV, &ops);
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
+        std::string extraData = "ioctl cmd=FBEX_IOC_ADD_DOUBLE_DE_IV, userIdSingle=" + std::to_string(ops.userIdSingle)
+            + ", userIdDouble=" + std::to_string(ops.userIdDouble) + ", errno=" + std::to_string(errno);
+        StorageRadar::ReportFbexResult("InstallDoubleDeKeyToKernel", ops.userIdSingle, ret, "EL1", extraData);
         close(fd);
         return ret;
     }
@@ -305,6 +315,9 @@ int FBEX::UninstallOrLockUserKeyToKernel(uint32_t userId, uint32_t type, uint8_t
     int ret = ioctl(fd, destroy ? FBEX_IOC_DEL_IV : FBEX_IOC_USER_LOGOUT, &ops);
     if (ret != 0 && static_cast<uint32_t>(ret) != FILE_ENCRY_ERROR_NOT_FOUND_UECE) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
+        std::string febxCmd = destroy ? "FBEX_IOC_DEL_IV" : "FBEX_IOC_USER_LOGOUT";
+        std::string extraData = "ioctl cmd=" + febxCmd + ", errno=" + std::to_string(errno);
+        StorageRadar::ReportFbexResult("UninstallOrLockUserKeyToKernel", userId, ret, std::to_string(type), extraData);
         (void)fclose(f);
         return ret;
     }
@@ -339,6 +352,9 @@ int FBEX::DeleteClassEPinCode(uint32_t userIdSingle, uint32_t userIdDouble)
     int ret = 0;
     if (fbeRet != 0) {
         LOGE("ioctl fbex_cmd failed, fbeRet: 0x%{public}x, errno: %{public}d", fbeRet, errno);
+        std::string extraData = "ioctl cmd=FBEX_DEL_USER_PINCODE, userIdSingle=" + std::to_string(userIdSingle)
+            + ", userIdDouble=" + std::to_string(userIdDouble) + ", errno=" + std::to_string(errno);
+        StorageRadar::ReportFbexResult("DeleteClassEPinCode", userIdSingle, ret, "EL5", extraData);
         ret = -errno;
     }
     (void)fclose(f);
@@ -373,6 +389,9 @@ int FBEX::ChangePinCodeClassE(uint32_t userIdSingle, uint32_t userIdDouble, bool
     int ret = ioctl(fd, FBEX_CHANGE_PINCODE, &ops);
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
+        std::string extraData = "ioctl cmd=FBEX_CHANGE_PINCODE, userIdSingle=" + std::to_string(userIdSingle)
+            + ", userIdDouble=" + std::to_string(userIdDouble) + ", errno=" + std::to_string(errno);
+        StorageRadar::ReportFbexResult("ChangePinCodeClassE", userIdSingle, ret, "EL5", extraData);
         ret = -errno;
     }
     (void)fclose(f);
@@ -516,6 +535,8 @@ int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint
     int ret = ioctl(fd, FBEX_IOC_UNLOCK_SCREEN, &ops);
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
+        std::string extraData = "ioctl cmd=FBEX_IOC_UNLOCK_SCREEN, errno=" + std::to_string(errno);
+        StorageRadar::ReportFbexResult("UnlockScreenToKernel", userId, ret, std::to_string(type), extraData);
         (void)fclose(f);
         return ret;
     }
@@ -568,6 +589,9 @@ int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, std:
     auto ret = ioctl(fd, FBEX_READ_CLASS_E, &ops);
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
+        std::string extraData = "ioctl cmd=FBEX_READ_CLASS_E, userIdSingle=" + std::to_string(ops.userIdSingle)
+            + ", userIdDouble=" + std::to_string(ops.userIdDouble) + ", errno=" + std::to_string(errno);
+        StorageRadar::ReportFbexResult("InstallDoubleDeKeyToKernel", ops.userIdSingle, ret, "EL5", extraData);
         (void)fclose(f);
         return -errno;
     }
@@ -637,6 +661,9 @@ int FBEX::WriteESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uin
     auto ret = ioctl(fd, FBEX_WRITE_CLASS_E, &ops);
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
+        std::string extraData = "ioctl cmd=FBEX_WRITE_CLASS_E, userIdSingle=" + std::to_string(ops.userIdSingle)
+            + ", userIdDouble=" + std::to_string(ops.userIdDouble) + ", errno=" + std::to_string(errno);
+        StorageRadar::ReportFbexResult("InstallDoubleDeKeyToKernel", ops.userIdSingle, ret, "EL5", extraData);
         (void)fclose(f);
         return -errno;
     }
