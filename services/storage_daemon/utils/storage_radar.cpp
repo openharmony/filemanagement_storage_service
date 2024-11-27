@@ -65,9 +65,8 @@ void StorageRadar::ReportVolumeOperation(const std::string &funcName, int ret)
     StorageRadar::GetInstance().RecordFuctionResult(param);
 }
 
-void StorageRadar::ReportInitGlobalKey(const std::string &funcName, uint32_t userId, int ret,
-
-    const std::string &keyLevel)
+void StorageRadar::ReportUserKeyResult(const std::string &funcName, uint32_t userId, int ret,
+    const std::string &keyLevel, const std::string &extraData)
 {
     RadarParameter param = {
         .orgPkg = "init",
@@ -76,7 +75,8 @@ void StorageRadar::ReportInitGlobalKey(const std::string &funcName, uint32_t use
         .bizScene = BizScene::USER_KEY_ENCRYPTION,
         .bizStage = BizStage::BIZ_STAGE_INIT_GLOBAL_KEY,
         .keyElxLevel = keyLevel,
-        .errorCode = ret
+        .errorCode = ret,
+        .extraData = extraData
     };
     StorageRadar::GetInstance().RecordFuctionResult(param);
 }
@@ -96,6 +96,66 @@ void StorageRadar::ReportUserManager(const std::string &funcName, uint32_t userI
     StorageRadar::GetInstance().RecordFuctionResult(param);
 }
 
+void StorageRadar::ReportUpdateUserAuth(const std::string &funcName, uint32_t userId, int ret,
+    const std::string &keyLevel, const std::string &extraData)
+{
+    RadarParameter param = {
+        .orgPkg = "account_mgr",
+        .userId = userId,
+        .funcName = funcName,
+        .bizScene = BizScene::USER_KEY_ENCRYPTION,
+        .bizStage = BizStage::BIZ_STAGE_UPDATE_USER_AUTH,
+        .keyElxLevel = keyLevel,
+        .errorCode = ret,
+        .extraData = extraData
+    };
+    StorageRadar::GetInstance().RecordFuctionResult(param);
+}
+ 
+void StorageRadar::ReportFbexResult(const std::string &funcName, uint32_t userId, int ret, const std::string &keyLevel,
+    const std::string &extraData)
+{
+    RadarParameter param = {
+        .orgPkg = "fbex",
+        .userId = userId,
+        .funcName = funcName,
+        .bizScene = BizScene::USER_KEY_ENCRYPTION,
+        .bizStage = BizStage::BIZ_STAGE_ACTIVE_USER_KEY,
+        .keyElxLevel = keyLevel,
+        .errorCode = ret,
+        .extraData = extraData
+    };
+    StorageRadar::GetInstance().RecordFuctionResult(param);
+}
+ 
+void StorageRadar::ReportIamResult(const std::string &funcName, uint32_t userId, int ret)
+{
+    RadarParameter param = {
+        .orgPkg = "iam",
+        .userId = userId,
+        .funcName = funcName,
+        .bizScene = BizScene::USER_KEY_ENCRYPTION,
+        .bizStage = BizStage::BIZ_STAGE_ACTIVE_USER_KEY,
+        .keyElxLevel = "NA",
+        .errorCode = ret
+    };
+    StorageRadar::GetInstance().RecordFuctionResult(param);
+}
+ 
+void StorageRadar::ReportHuksResult(const std::string &funcName, int ret)
+{
+    RadarParameter param = {
+        .orgPkg = "huks",
+        .userId = DEFAULT_USERID,
+        .funcName = funcName,
+        .bizScene = BizScene::USER_KEY_ENCRYPTION,
+        .bizStage = BizStage::BIZ_STAGE_ACTIVE_USER_KEY,
+        .keyElxLevel = "NA",
+        .errorCode = ret
+    };
+    StorageRadar::GetInstance().RecordFuctionResult(param);
+}
+ 
 bool StorageRadar::RecordKillProcessResult(std::string processName, int32_t errcode)
 {
     int32_t res = E_OK;
@@ -147,7 +207,7 @@ bool StorageRadar::RecordFuctionResult(const RadarParameter &parRes)
             "kEY_ELX_LEVEL", parRes.keyElxLevel,
             "TO_CALL_PKG", "FBEX, HUKS, KEY_RING, BUNDLE_MANAGER, HMDFS",
             "DISK_VOLUME_INFO", "{\"diskId\":\"ab12\", \"volumeId\":\"34cd\", \"fsType\":\"ntfs\"}",
-            "FILE_STATUS", "{\"status\":\"encrypted\", \"path\":\"/data/storage/el2/base/\"}",
+            "FILE_STATUS", parRes.extraData,
             "STAGE_RES", static_cast<int32_t>(StageRes::STAGE_SUCC),
             "BIZ_STATE", static_cast<int32_t>(BizState::BIZ_STATE_START));
     } else {
@@ -163,7 +223,7 @@ bool StorageRadar::RecordFuctionResult(const RadarParameter &parRes)
             "kEY_ELX_LEVEL", parRes.keyElxLevel,
             "TO_CALL_PKG", "FBEX, HUKS, KEY_RING, BUNDLE_MANAGER, HMDFS",
             "DISK_VOLUME_INFO", "{\"diskId\":\"ab12\", \"volumeId\":\"34cd\", \"fsType\":\"ntfs\"}",
-            "FILE_STATUS", "{\"status\":\"encrypted\", \"path\":\"/data/storage/el2/base/\"}",
+            "FILE_STATUS", parRes.extraData,
             "STAGE_RES", static_cast<int32_t>(StageRes::STAGE_FAIL),
             "BIZ_STATE", static_cast<int32_t>(BizState::BIZ_STATE_START),
             "ERROR_CODE", parRes.errorCode);
