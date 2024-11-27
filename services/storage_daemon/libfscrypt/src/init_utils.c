@@ -30,25 +30,24 @@ char *ReadFileToBuf(const char *configFile)
     do {
         if (stat(configFile, &fileStat) != 0 ||
             fileStat.st_size <= 0 || fileStat.st_size > MAX_FILE_LEN) {
-            LOGE("Unexpected config file \" %s \", check if it exist. if exist, check file size", configFile);
-            
+            LOGE("Unexpected config file \" %{public}s \", check if it exist. if exist, check file size", configFile);
             break;
         }
         fd = fopen(configFile, "r");
         if (fd == NULL) {
-            LOGE("Open %s failed. err = %d", configFile, errno);
+            LOGE("Open %{public}s failed. err = %{public}d", configFile, errno);
             break;
         }
         buffer = (char*)malloc((size_t)(fileStat.st_size + 1));
         if (buffer == NULL) {
-            LOGE("Failed to allocate memory for config file, err = %d", errno);
+            LOGE("Failed to allocate memory for config file, err = %{public}d", errno);
             break;
         }
 
         if (fread(buffer, fileStat.st_size, 1, fd) != 1) {
             free(buffer);
             buffer = NULL;
-            LOGE("Failed to read config file, err = %d", errno);
+            LOGE("Failed to read config file, err = %{public}d", errno);
             break;
         }
         buffer[fileStat.st_size] = '\0';
