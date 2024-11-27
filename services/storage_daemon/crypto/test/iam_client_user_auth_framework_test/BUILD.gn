@@ -44,7 +44,7 @@ ohos_unittest("IamClientUserAuthFrameworkTest") {
   ]
 
   deps = [
-    
+    "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
     "//third_party/googletest:gtest_main",
   ]
