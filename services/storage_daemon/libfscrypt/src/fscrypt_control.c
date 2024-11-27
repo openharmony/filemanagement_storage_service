@@ -151,7 +151,6 @@ int FscryptSetSysparam(const char *policy)
         char *temp = options[i];
         if (!IsSupportedPolicy(temp, i)) {
             LOGE("Not supported policy, %{public}s", temp);
-            
             FreeStringVector(options, optNums);
             return -ENOTSUP;
         }
