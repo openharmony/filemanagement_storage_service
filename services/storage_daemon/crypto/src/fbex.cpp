@@ -561,6 +561,15 @@ bool FBEX::CheckPreconditions(UserIdToFbeStr &userIdToFbe, uint32_t status, std:
     return true;
 }
 
+void FBEX::HandleIoctlError(int ret, int errnoVal, const std::string &cmd, uint32_t userIdSingle,
+                      uint32_t userIdDouble)
+{
+    LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errnoVal);
+    std::string extraData = "ioctl cmd=" + cmd + ", userIdSingle=" + std::to_string(userIdSingle)
+                            + ", userIdDouble=" + std::to_string(userIdDouble) + ", errno=" + std::to_string(errnoVal);
+    StorageRadar::ReportFbexResult("InstallDoubleDeKeyToKernel", userIdSingle, ret, "EL5", extraData);
+}
+
 int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, std::unique_ptr<uint8_t[]> &eBuffer,
                               uint32_t length, bool &isFbeSupport)
 {
@@ -596,10 +605,7 @@ int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, std:
     }
     auto ret = ioctl(fd, FBEX_READ_CLASS_E, &ops);
     if (ret != 0) {
-        LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
-        std::string extraData = "ioctl cmd=FBEX_READ_CLASS_E, userIdSingle=" + std::to_string(ops.userIdSingle)
-            + ", userIdDouble=" + std::to_string(ops.userIdDouble) + ", errno=" + std::to_string(errno);
-        StorageRadar::ReportFbexResult("InstallDoubleDeKeyToKernel", ops.userIdSingle, ret, "EL5", extraData);
+        HandleIoctlError(ret, errno, "FBEX_READ_CLASS_E", ops.userIdSingle, ops.userIdDouble);
         (void)fclose(f);
         return -errno;
     }
