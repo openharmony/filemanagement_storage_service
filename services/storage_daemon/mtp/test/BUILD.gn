@@ -55,17 +55,73 @@ ohos_unittest("mtp_device_manager_test") {
     "$ROOT_DIR/storage_daemon/utils/file_utils.cpp",
   ]
 
-  deps = [ "//third_party/googletest:gtest_main" ]
-
   external_deps = [
     "c_utils:utils",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "ipc:ipc_single",
     "samgr:samgr_proxy",
   ]
 }
 
+ohos_unittest("mtp_device_monitor_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+  module_out_path = "storage_service/storage_daemon"
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "private = public",
+  ]
+
+  cflags = [
+    "-w",
+    "-DFUSE_USE_VERSION=31",
+    "-D_FILE_OFFSET_BITS=64",
+    "-std=c++11",
+  ]
+
+  include_dirs = [
+    "${storage_daemon_path}/mtpfs/include",
+    "${storage_service_common_path}/include",
+    "${storage_daemon_path}/include",
+    "${storage_service_path}/utils/include",
+    "${storage_service_path}/storage_manager/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+  ]
+
+  sources = [
+    "$ROOT_DIR/storage_daemon/ipc/src/storage_manager_client.cpp",
+    "$ROOT_DIR/storage_daemon/mtp/src/mtp_device_manager.cpp",
+    "$ROOT_DIR/storage_daemon/mtp/src/mtp_device_monitor.cpp",
+    "$ROOT_DIR/storage_daemon/mtp/test/mtp_device_monitor_test.cpp",
+    "$ROOT_DIR/storage_daemon/utils/disk_utils.cpp",
+    "$ROOT_DIR/storage_daemon/utils/file_utils.cpp",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "init:libbegetutil",
+    "ipc:ipc_single",
+    "samgr:samgr_proxy",
+  ]
+
+  if (support_open_source_libmtp) {
+    external_deps += [ "libmtp:libmtp" ]
+  }
+}
+
 group("storage_daemon_mtp_test") {
   testonly = true
-  deps = [ ":mtp_device_manager_test" ]
+  deps = [
+    ":mtp_device_manager_test",
+    ":mtp_device_monitor_test",
+  ]
 }
