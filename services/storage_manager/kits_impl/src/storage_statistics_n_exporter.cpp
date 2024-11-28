@@ -184,7 +184,7 @@ napi_value GetBundleStats(napi_env env, napi_callback_info info)
     }
     std::string nameString = std::get<0>(result);
     int32_t index = std::get<1>(result);
-    int32_t statFlag = std::get<2>(result);
+    int32_t statFlag = static_cast<int32_t>(std::get<2>(result));
     auto bundleStats = std::make_shared<BundleStats>();
     auto cbExec = [nameString, bundleStats, index, statFlag]() -> NError {
         int32_t errNum = DelayedSingleton<StorageManagerConnect>::GetInstance()->GetBundleStats(nameString,
