@@ -210,7 +210,7 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
         else if (fsType_ == "ntfs") retValue = DoMount4Ntfs(mountFlags);
         else if (fsType_ == "exfat") retValue = DoMount4Exfat(mountFlags);
         else if (fsType_ == "vfat" || fsType_ == "fat32") retValue = DoMount4Vfat(mountFlags);
-        else retValue = DoMount4OtherType(mountFlags);
+        else if (fsType_ != "hmfs" && fsType_ != "f2fs") retValue = DoMount4OtherType(mountFlags);
         p.set_value(retValue);
     });
 
