@@ -16,6 +16,34 @@
 #include <gtest/gtest.h>
 #include <fuse_opt.h>
 #include "mtpfs_libmtp.h"
+#include <libmtp.h>
+#include <cstdlib>
 #include <unistd.h>
 #include "mtpfs_util.h"
 #include "storage_service_log.h"
+
+using namespace std;
+using namespace testing::ext;
+using namespace testing;
+
+class MtpfsLibmtpTest : public testing::Test {
+public:
+    static void SetUpTestCase(void){};
+    static void TearDownTestCase(void){};
+    void SetUp(){};
+    void TearDown(){};
+};
+
+/**
+ * @tc.name: Mtpfs_LIBMTPFreeFilesAndFolders_001
+ * @tc.desc: Verify the LIBMTPFreeFilesAndFolders function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsLibmtpTest, MtpfsLibmtpTest_LIBMTPFreeFilesAndFolders_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsLibmtpTest_LIBMTPFreeFilesAndFolders_001 start";
+    LIBMTP_file_t** file = nullptr;
+    LIBMTPFreeFilesAndFolders(file);
+    EXPECT_EQ(file, nullptr);
+    GTEST_LOG_(INFO) << "MtpfsLibmtpTest_LIBMTPFreeFilesAndFolders_001 end";
+}

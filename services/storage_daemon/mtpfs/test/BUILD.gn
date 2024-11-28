@@ -79,11 +79,6 @@ ohos_unittest("mtpfs_fuse_test") {
   install_enable = true
 }
 
-group("storage_daemon_mtpfs_test") {
-  testonly = true
-  deps = [ ":mtpfs_fuse_test" ]
-}
-
 ohos_unittest("mtpfs_libmtp_test") {
   branch_protector_ret = "pac_ret"
   sanitize = {
@@ -130,7 +125,7 @@ ohos_unittest("mtpfs_libmtp_test") {
       "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_type_file.cpp",
       "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_type_tmp_file.cpp",
       "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_util.cpp",
-      "$ROOT_DIR/storage_daemon/mtpfs/test/mtpfs_fuse_test.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/test/mtpfs_libmtp_test.cpp",
     ]
     external_deps += [
       "libfuse:libfuse",
@@ -149,8 +144,14 @@ ohos_unittest("mtpfs_libmtp_test") {
 
 group("storage_daemon_mtpfs_test") {
   testonly = true
-  deps = [ ":mtpfs_libmtp_test" ]
+  deps = [
+    ":mtpfs_fuse_test",
+    ":mtpfs_libmtp_test",
+    ":mtpfs_tmp_files_pool_test",
+  ]
 }
+
+
 
 ohos_unittest("mtpfs_mtp_device_test") {
   branch_protector_ret = "pac_ret"
@@ -283,7 +284,3 @@ ohos_unittest("mtpfs_tmp_files_pool_test") {
   install_enable = true
 }
 
-group("storage_daemon_mtpfs_test") {
-  testonly = true
-  deps = [ ":mtpfs_tmp_files_pool_test" ]
-}
