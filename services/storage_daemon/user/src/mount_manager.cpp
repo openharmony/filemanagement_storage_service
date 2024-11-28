@@ -458,7 +458,7 @@ bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info
     ss >> pid;
     std::string processName;
     ss >> processName;
-    info.pid = std::stoi(pid);
+    info.pid = std::atoi(pid.c_str());
     info.name = processName;
     LOGE("GetProcessInfo pid is %{public}s and name is %{public}s", pid.c_str(), processName.c_str());
     inputStream.close();
@@ -1419,7 +1419,7 @@ void MountManager::GetAllUserId(std::vector<int32_t> &userIds)
         if (!StringIsNumber(subPath)) {
             continue;
         }
-        int32_t userId = stoi(subPath);
+        int32_t userId = atoi(subPath.c_str());
         if (userId < DEFAULT_USERID) {
             continue;
         }
