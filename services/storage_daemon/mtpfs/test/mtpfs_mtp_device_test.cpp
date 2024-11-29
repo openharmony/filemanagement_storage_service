@@ -55,7 +55,7 @@ HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_Connect_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MtpfsDeviceTest_Connect_001 start";
     LIBMTP_raw_device_t *dev = nullptr;
-    auto mtpfsdevice = std::make_shared<MtpfsDevice>();
+    auto mtpfsdevice = std::make_shared<MtpFsDevice>();
     bool result = mtpfsdevice->Connect(dev);
     EXPECT_EQ(result, false);
     GTEST_LOG_(INFO) << "MtpfsDeviceTest_Connect_001 end";
@@ -69,7 +69,7 @@ HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_Connect_001, TestSize.Level1)
 HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_ConvertErrorCode_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MtpfsDeviceTest_ConvertErrorCode_001 start";
-    auto mtpfsdevice = std::make_shared<MtpfsDevice>();
+    auto mtpfsdevice = std::make_shared<MtpFsDevice>();
     LIBMTP_error_number_t err = LIBMTP_ERROR_NONE;
     bool result = mtpfsdevice->ConvertErrorCode(err);
     EXPECT_EQ(result, false);
@@ -108,7 +108,7 @@ HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_ConnectByDevNo_001, TestSize.Level1)
     int devNo = 3;
     int rawDevicesCnt = 3;
     LIBMTP_raw_device_t *rawDevices = nullptr;
-    auto mtpfsdevice = std::make_shared<MtpfsDevice>();
+    auto mtpfsdevice = std::make_shared<MtpFsDevice>();
     bool result = mtpfsdevice->ConnectByDevNo(dev);
     EXPECT_EQ(result, false);
     GTEST_LOG_(INFO) << "MtpfsDeviceTest_ConnectByDevNo_001 end";
@@ -126,7 +126,7 @@ HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_ConnectByDevFile_001, TestSize.Level1)
     const std::string &devFile = "test";
     uint8_t bnum = 0;
     uint8_t dnum = 0;
-    auto mtpfsdevice = std::make_shared<MtpfsDevice>();
+    auto mtpfsdevice = std::make_shared<MtpFsDevice>();
     bool result = mtpfsdevice->ConnectByDevFile(devFile);
     EXPECT_EQ(result, false);
     GTEST_LOG_(INFO) << "MtpfsDeviceTest_ConnectByDevFile_001 end";
@@ -141,7 +141,7 @@ HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_Disconnect_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MtpfsDeviceTest_Disconnect_001 start";
     LIBMTP_mtpdevice_t *device_ = nullptr;
-    auto mtpfsdevice = std::make_shared<MtpfsDevice>();
+    auto mtpfsdevice = std::make_shared<MtpFsDevice>();
     bool result = mtpfsdevice->Disconnect();
     EXPECT_EQ(device_, nullptr);
     GTEST_LOG_(INFO) << "MtpfsDeviceTest_Disconnect_001 end";
@@ -157,7 +157,7 @@ HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_HandleDir_001, TestSize.Level1)
     GTEST_LOG_(INFO) << "MtpfsDeviceTest_HandleDir_001 start";
     LIBMTP_file_t *content = nullptr;
     MtpFsTypeDir *dir = nullptr;
-    auto mtpfsdevice = std::make_shared<MtpfsDevice>();
+    auto mtpfsdevice = std::make_shared<MtpFsDevice>();
     mtpfsdevice->HandleDir(content, dir);
     EXPECT_EQ(content, nullptr);
     GTEST_LOG_(INFO) << "MtpfsDeviceTest_HandleDir_001 end";
