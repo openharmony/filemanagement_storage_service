@@ -109,7 +109,7 @@ HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_ConnectByDevNo_001, TestSize.Level1)
     int rawDevicesCnt = 3;
     LIBMTP_raw_device_t *rawDevices = nullptr;
     auto mtpfsdevice = std::make_shared<MtpFsDevice>();
-    bool result = mtpfsdevice->ConnectByDevNo(dev);
+    bool result = mtpfsdevice->ConnectByDevNo(devNo);
     EXPECT_EQ(result, false);
     GTEST_LOG_(INFO) << "MtpfsDeviceTest_ConnectByDevNo_001 end";
 }
