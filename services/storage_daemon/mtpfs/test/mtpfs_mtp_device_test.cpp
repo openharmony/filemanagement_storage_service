@@ -12,10 +12,57 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
  */
+#include <libmtp.h>
+#include <cstdlib>
 #include <fstream>
+#include <sstream>
 #include <gtest/gtest.h>
 #include <fuse_opt.h>
-#include "mtpfs_libmtp.h"
 #include <unistd.h>
+#include "mtpfs_mtp_device.h"
+#include "mtpfs_libmtp.h"
 #include "mtpfs_util.h"
+#include "mtpfs_fuse.h"
 #include "storage_service_log.h"
+
+LIBMTP_mtpdevice_t *LIBMTP_Open_Raw_Device_Uncached(LIBMTP_raw_device_t *rawdevice)
+{
+    if (rawdevice == nullptr) {
+        return nullptr;
+    }
+}
+
+namespace OHOS {
+namespace StorageDaemon {
+using namespace std;
+using namespace testing::ext;
+using namespace testing;
+
+class MtpfsFuseTest : public testing::Test {
+public:
+    static void SetUpTestCase(void){};
+    static void TearDownTestCase(void){};
+    void SetUp(){};
+    void TearDown(){};
+};
+
+/**
+ * @tc.name: Mtpfs_Connect_001
+ * @tc.desc: Verify the Connect function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_Connect_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsDeviceTest_Connect_001 start";
+    LIBMTP_raw_device_t *dev = nullptr;
+    auto mtpfsdevice = std::make_shared<MtpfsDevice>();
+    bool result = mtpfsdevice->Connect(dev);
+    EXPECT_EQ(result, false);
+    GTEST_LOG_(INFO) << "MtpfsDeviceTest_Connect_001 end";
+}
+
+
+
+}
+}
+
