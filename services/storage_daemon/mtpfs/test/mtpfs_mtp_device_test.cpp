@@ -97,6 +97,22 @@ HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_ConvertErrorCode_001, TestSize.Level1)
     GTEST_LOG_(INFO) << "MtpfsDeviceTest_ConvertErrorCode_001 end";
 }
 
+/**
+ * @tc.name: Mtpfs_ConnectByDevNo_001
+ * @tc.desc: Verify the Connect function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_ConnectByDevNo_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsDeviceTest_ConnectByDevNo_001 start";
+    int devNo = 3;
+    int rawDevicesCnt = 3;
+    LIBMTP_raw_device_t *rawDevices = nullptr;
+    auto mtpfsdevice = std::make_shared<MtpfsDevice>();
+    bool result = mtpfsdevice->ConnectByDevNo(dev);
+    EXPECT_EQ(result, false);
+    GTEST_LOG_(INFO) << "MtpfsDeviceTest_ConnectByDevNo_001 end";
+}
 
 
 }
