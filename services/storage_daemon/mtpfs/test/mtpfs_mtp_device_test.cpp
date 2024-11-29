@@ -162,10 +162,5 @@ HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_HandleDir_001, TestSize.Level1)
     EXPECT_EQ(content, nullptr);
     GTEST_LOG_(INFO) << "MtpfsDeviceTest_HandleDir_001 end";
 }
-
-
-
-
 }
 }
-
