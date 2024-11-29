@@ -72,27 +72,27 @@ HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_ConvertErrorCode_001, TestSize.Level1)
     auto mtpfsdevice = std::make_shared<MtpFsDevice>();
     LIBMTP_error_number_t err = LIBMTP_ERROR_NONE;
     bool result = mtpfsdevice->ConvertErrorCode(err);
-    EXPECT_EQ(result, false);
+    EXPECT_EQ(result, true);
 
     LIBMTP_error_number_t err1 = LIBMTP_ERROR_NO_DEVICE_ATTACHED;
     bool result1 = mtpfsdevice->ConvertErrorCode(err1);
-    EXPECT_EQ(result1, true);
+    EXPECT_EQ(result1, false);
 
     LIBMTP_error_number_t err2 = LIBMTP_ERROR_CONNECTING;
     bool result2 = mtpfsdevice->ConvertErrorCode(err2);
-    EXPECT_EQ(result2, true);
+    EXPECT_EQ(result2, false);
 
     LIBMTP_error_number_t err3 = LIBMTP_ERROR_MEMORY_ALLOCATION;
     bool result3 = mtpfsdevice->ConvertErrorCode(err3);
-    EXPECT_EQ(result3, true);
+    EXPECT_EQ(result3, false);
 
     LIBMTP_error_number_t err4 = LIBMTP_ERROR_GENERAL;
     bool result4 = mtpfsdevice->ConvertErrorCode(err4);
-    EXPECT_EQ(result4, true);
+    EXPECT_EQ(result4, false);
 
     LIBMTP_error_number_t err5 = LIBMTP_ERROR_USB_LAYER;
     bool result5 = mtpfsdevice->ConvertErrorCode(err5);
-    EXPECT_EQ(result5, true);
+    EXPECT_EQ(result5, false);
 
     GTEST_LOG_(INFO) << "MtpfsDeviceTest_ConvertErrorCode_001 end";
 }
