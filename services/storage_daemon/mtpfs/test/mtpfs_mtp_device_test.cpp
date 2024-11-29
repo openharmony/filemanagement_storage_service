@@ -132,7 +132,20 @@ HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_ConnectByDevFile_001, TestSize.Level1)
     GTEST_LOG_(INFO) << "MtpfsDeviceTest_ConnectByDevFile_001 end";
 }
 
-
+/**
+ * @tc.name: Mtpfs_Disconnect_001
+ * @tc.desc: Verify the Disconnect function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_Disconnect_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsDeviceTest_Disconnect_001 start";
+    LIBMTP_mtpdevice_t *device_ = nullptr;
+    auto mtpfsdevice = std::make_shared<MtpfsDevice>();
+    bool result = mtpfsdevice->Disconnect();
+    EXPECT_EQ(device_, nullptr);
+    GTEST_LOG_(INFO) << "MtpfsDeviceTest_Disconnect_001 end";
+}
 
 
 }
