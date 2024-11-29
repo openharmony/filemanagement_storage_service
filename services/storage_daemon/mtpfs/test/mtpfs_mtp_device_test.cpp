@@ -38,7 +38,7 @@ using namespace std;
 using namespace testing::ext;
 using namespace testing;
 
-class MtpfsFuseTest : public testing::Test {
+class MtpfsDeviceTest : public testing::Test {
 public:
     static void SetUpTestCase(void){};
     static void TearDownTestCase(void){};

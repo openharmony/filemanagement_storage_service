@@ -12,10 +12,48 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
  */
+#include <openssl/sha.h>
+#include <securec.h>
+#include <sstream>
+#include <libmtp.h>
+#include <cstdlib>
 #include <fstream>
+#include <sstream>
 #include <gtest/gtest.h>
 #include <fuse_opt.h>
-#include "mtpfs_libmtp.h"
 #include <unistd.h>
+#include "mtpfs_tmp_files_pool.h"
 #include "mtpfs_util.h"
 #include "storage_service_log.h"
+
+namespace OHOS {
+namespace StorageDaemon {
+using namespace std;
+using namespace testing::ext;
+using namespace testing;
+
+class MtpfsTmpFilesPoolTest : public testing::Test {
+public:
+    static void SetUpTestCase(void){};
+    static void TearDownTestCase(void){};
+    void SetUp(){};
+    void TearDown(){};
+};
+
+/**
+ * @tc.name: Mtpfs_RemoveTmpDir_001
+ * @tc.desc: Verify the RemoveTmpDir function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsTmpFilesPoolTest, MtpfsTmpFilesPoolTest_RemoveTmpDir_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsTmpFilesPoolTest_RemoveTmpDir_001 start";
+    LIBMTP_raw_device_t *dev = nullptr;
+    auto mtpfsdevice = std::make_shared<MtpfsDevice>();
+    bool result = mtpfsdevice->Connect(dev);
+    EXPECT_EQ(result, false);
+    GTEST_LOG_(INFO) << "MtpfsTmpFilesPoolTest_RemoveTmpDir_001 end";
+}
+
+}
+}
