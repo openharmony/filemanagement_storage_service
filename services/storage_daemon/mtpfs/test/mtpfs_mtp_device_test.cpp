@@ -115,6 +115,26 @@ HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_ConnectByDevNo_001, TestSize.Level1)
 }
 
 
+/**
+ * @tc.name: Mtpfs_ConnectByDevFile_001
+ * @tc.desc: Verify the ConnectByDevFile function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_ConnectByDevFile_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsDeviceTest_ConnectByDevFile_001 start";
+    const std::string &devFile = "test";
+    uint8_t bnum = 0;
+    uint8_t dnum = 0;
+    auto mtpfsdevice = std::make_shared<MtpfsDevice>();
+    bool result = mtpfsdevice->ConnectByDevFile(devFile);
+    EXPECT_EQ(result, false);
+    GTEST_LOG_(INFO) << "MtpfsDeviceTest_ConnectByDevFile_001 end";
+}
+
+
+
+
 }
 }
 
