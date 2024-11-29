@@ -187,10 +187,16 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
         return E_MOUNT;
     }
 
-    ret = mkdir(mountPath_.c_str(), S_IRWXU | S_IRWXG | S_IXOTH);
-    if (ret) {
+    if (mkdir(mountPath_.c_str(), S_IRWXU | S_IRWXG | S_IXOTH)) {
         LOGE("the volume %{public}s create mount file %{public}s failed",
             GetVolumeId().c_str(), GetMountPath().c_str());
+        return E_MOUNT;
+    }
+
+    if (fsType_ == "hmfs" || fsType_ == "f2fs") ret = DoMount4Hmfs(mountFlags);
+    if (ret) {
+        LOGE("External volume DoMount error, errno = %{public}d", errno);
+        remove(mountPath_.c_str());
         return E_MOUNT;
     }
 
@@ -199,18 +205,16 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
     std::thread mountThread ([this, mountFlags, p = std::move(promise)]() mutable {
         LOGI("Ready to mount: external volume fstype is %{public}s, mountflag is %{public}d",
              fsType_.c_str(), mountFlags);
-        int retValue = E_MOUNT;
+        int retValue = E_OK;
         if (fsType_ == "ext2" || fsType_ == "ext3" || fsType_ == "ext4") retValue = DoMount4Ext(mountFlags);
-        else if (fsType_ == "hmfs" || fsType_ == "f2fs") retValue = DoMount4Hmfs(mountFlags);
         else if (fsType_ == "ntfs") retValue = DoMount4Ntfs(mountFlags);
         else if (fsType_ == "exfat") retValue = DoMount4Exfat(mountFlags);
         else if (fsType_ == "vfat" || fsType_ == "fat32") retValue = DoMount4Vfat(mountFlags);
-        else retValue = DoMount4OtherType(mountFlags);
+        else if (fsType_ != "hmfs" && fsType_ != "f2fs") retValue = DoMount4OtherType(mountFlags);
         p.set_value(retValue);
     });
 
-    auto status = future.wait_for(std::chrono::seconds(WAIT_THREAD_TIMEOUT_S));
-    if (status == std::future_status::timeout) {
+    if (future.wait_for(std::chrono::seconds(WAIT_THREAD_TIMEOUT_S)) == std::future_status::timeout) {
         LOGE("Mount timed out");
         remove(mountPath_.c_str());
         mountThread.detach();
