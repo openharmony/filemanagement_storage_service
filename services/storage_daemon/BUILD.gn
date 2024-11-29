@@ -75,6 +75,10 @@ ohos_executable("storage_daemon") {
     "KMSG_LOG",
   ]
 
+  cflags = [
+    "-fstack-protector-strong",
+  ]
+
   if (storage_service_user_file_sharing) {
     defines += [ "USER_FILE_SHARING" ]
     sources += [
@@ -212,6 +216,10 @@ ohos_executable("sdc") {
     "STORAGE_LOG_TAG = \"StorageDaemon\"",
     "LOG_DOMAIN = 0xD004301",
     "KMSG_LOG",
+  ]
+
+  cflags = [
+    "-fstack-protector-strong",
   ]
 
   configs = [ ":sdc_config" ]
