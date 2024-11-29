@@ -41,6 +41,21 @@ public:
 };
 
 /**
+ * @tc.name: Mtpfs_CreateTmpDir_001
+ * @tc.desc: Verify the CreateTmpDir function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsTmpFilesPoolTest, MtpfsTmpFilesPoolTest_CreateTmpDir_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsTmpFilesPoolTest_CreateTmpDir_001 start";
+    auto mtptmpfilespool = std::make_shared<MtpfsTmpFilesPool>();
+    mtptmpfilespool->tmpDir_ = "";
+    bool result = mtptmpfilespool->CreateTmpDir();
+    EXPECT_EQ(result, false);
+    GTEST_LOG_(INFO) << "MtpfsTmpFilesPoolTest_CreateTmpDir_001 end";
+}
+
+/**
  * @tc.name: Mtpfs_RemoveTmpDir_001
  * @tc.desc: Verify the RemoveTmpDir function.
  * @tc.type: FUNC
@@ -48,12 +63,11 @@ public:
 HWTEST_F(MtpfsTmpFilesPoolTest, MtpfsTmpFilesPoolTest_RemoveTmpDir_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MtpfsTmpFilesPoolTest_RemoveTmpDir_001 start";
-    LIBMTP_raw_device_t *dev = nullptr;
-    auto mtpfsdevice = std::make_shared<MtpfsDevice>();
-    bool result = mtpfsdevice->Connect(dev);
+    auto mtptmpfilespool = std::make_shared<MtpfsTmpFilesPool>();
+    mtptmpfilespool->tmpDir_ = "";
+    bool result = mtptmpfilespool->RemoveTmpDir();
     EXPECT_EQ(result, false);
     GTEST_LOG_(INFO) << "MtpfsTmpFilesPoolTest_RemoveTmpDir_001 end";
 }
-
 }
 }
