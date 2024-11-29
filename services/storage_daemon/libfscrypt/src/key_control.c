@@ -91,11 +91,11 @@ static bool FsIoctl(const char *mnt, unsigned long cmd, void *arg)
     int fd = open(realPath, O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
     free(realPath);
     if (fd < 0) {
-        LOGE("open %s failed, errno:%d", mnt, errno);
+        LOGE("open %{public}s failed, errno:%{public}d", mnt, errno);
         return false;
     }
     if (ioctl(fd, cmd, arg) != 0) {
-        LOGE("ioctl to %s failed, errno:%d", mnt, errno);
+        LOGE("ioctl to %{public}s failed, errno:%{public}d", mnt, errno);
         (void)close(fd);
         return false;
     }
@@ -153,7 +153,7 @@ static uint8_t CheckKernelFscrypt(const char *mnt)
     int fd = open(realPath, O_RDONLY | O_DIRECTORY | O_CLOEXEC);
     free(realPath);
     if (fd < 0) {
-        LOGE("open policy file failed, errno: %d", errno);
+        LOGE("open policy file failed, errno: %{public}d", errno);
         return FSCRYPT_INVALID;
     }
 
@@ -171,7 +171,7 @@ static uint8_t CheckKernelFscrypt(const char *mnt)
         LOGI("Kernel is support fscrypt v2.");
         return FSCRYPT_V2;
     }
-    LOGE("Unexpected errno: %d", errno);
+    LOGE("Unexpected errno: %{public}d", errno);
     return FSCRYPT_INVALID;
 #else
     (void)close(fd);
@@ -200,44 +200,7 @@ bool KeyCtrlHasFscryptSyspara(void)
 
 uint8_t KeyCtrlLoadVersion(const char *keyPath)
 {
-    if (!keyPath) {
-        LOGE("key path is null");
-        return FSCRYPT_INVALID;
-    }
-    char pathLen = strlen(keyPath) + strlen(PATH_FSCRYPT_VER) + 1;
-    char *path = (char *)malloc(pathLen);
-    if (!path) {
-        LOGE("no memory for full key path");
-        return FSCRYPT_INVALID;
-    }
-    path[0] = '\0';
-    if (strncat_s(path, pathLen - strlen(PATH_FSCRYPT_VER), keyPath, strlen(keyPath)) != EOK) {
-        free(path);
-        LOGE("KEY path strcat error");
-        return FSCRYPT_INVALID;
-    }
-    if (strncat_s(path, pathLen, PATH_FSCRYPT_VER, strlen(PATH_FSCRYPT_VER)) != EOK) {
-        free(path);
-        LOGE("version path strcat error");
-        return FSCRYPT_INVALID;
-    }
-
-    char *buf = ReadFileToBuf(path);
-    free(path);
-    if (!buf) {
-        LOGE("read fscrypt version file failed");
-        return FSCRYPT_INVALID;
-    }
-    if (isdigit(*buf)) {
-        int ver = atoi(buf);
-        if (ver == FSCRYPT_V1 || ver == FSCRYPT_V2) {
-            free(buf);
-            LOGI("version %d loaded", ver);
-            return ver;
-        }
-        LOGE("version loaded failed. ver = %d", ver);
-    }
-    LOGE("bad version content. buf = %s", buf);
-    free(buf);
-    return FSCRYPT_V1;
+    (void)keyPath;
+    LOGI("load key control version enter.");
+    return FSCRYPT_V2;
 }

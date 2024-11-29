@@ -67,6 +67,9 @@ public:
                                 KeyType type, bool needGenerateShield);
 #else
     int UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret);
+    std::string CheckSecretStatus(struct UserTokenSecret &userTokenSecret);
+    void HandleEl2Error(int ret, unsigned int user, const std::string &secretInfo,
+                        const std::string &reportPrefix, const std::string &level);
     int UpdateCeEceSeceUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret,
                                 KeyType type);
 

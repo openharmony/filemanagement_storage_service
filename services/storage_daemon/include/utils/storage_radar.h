@@ -91,6 +91,7 @@ struct RadarParameter {
     enum BizStage bizStage;
     std::string keyElxLevel;
     int32_t errorCode;
+    std::string extraData;
 };
 
 class StorageRadar {
@@ -109,9 +110,15 @@ public:
     static void ReportGetStorageStatus(const std::string &funcName, uint32_t userId, int ret,
         const std::string &orgPkg);
     static void ReportVolumeOperation(const std::string &funcName, int ret);
-    static void ReportInitGlobalKey(const std::string &funcName, uint32_t userId, int ret,
-        const std::string &keyElxLevel);
-    static void ReportUserManager(const std::string &funcName, uint32_t userId, int ret, enum BizStage bizStage);
+    static void ReportUserKeyResult(const std::string &funcName, uint32_t userId, int ret,
+        const std::string &keyElxLevel, const std::string &extraData);
+    static void ReportUserManager(const std::string &funcName, uint32_t userId, int ret, enum BizStage stage);
+    static void ReportUpdateUserAuth(const std::string &funcName, uint32_t userId, int ret, const std::string &keyLevel,
+        const std::string &extraData);
+    static void ReportFbexResult(const std::string &funcName, uint32_t userId, int ret, const std::string &keyLevel,
+        const std::string &extraData);
+    static void ReportIamResult(const std::string &funcName, uint32_t userId, int ret);
+    static void ReportHuksResult(const std::string &funcName, int ret);
 
 private:
     StorageRadar() = default;
