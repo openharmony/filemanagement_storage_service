@@ -79,7 +79,201 @@ ohos_unittest("mtpfs_fuse_test") {
   install_enable = true
 }
 
+ohos_unittest("mtpfs_libmtp_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+  module_out_path = "storage_service/storage_daemon"
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "private = public",
+  ]
+
+  include_dirs = [
+    "${storage_daemon_path}/mtpfs/include",
+    "${storage_daemon_path}/include/utils",
+    "${storage_service_common_path}/include",
+  ]
+
+  cflags = [
+    "-w",
+    "-DFUSE_USE_VERSION=31",
+    "-D_FILE_OFFSET_BITS=64",
+    "-std=c++11",
+  ]
+
+  deps = [ "${storage_daemon_path}:storage_common_utils" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+  ]
+
+  if (support_open_source_libmtp) {
+    sources = [
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_fuse.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_libmtp.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_mtp_device.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_tmp_files_pool.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_type_dir.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_type_file.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_type_tmp_file.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_util.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/test/mtpfs_libmtp_test.cpp",
+    ]
+    external_deps += [
+      "libfuse:libfuse",
+      "libmtp:libmtp",
+      "libusb:libusb",
+      "openssl:libcrypto_shared",
+    ]
+  } else {
+    sources = [ "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_main_virtual.cpp" ]
+  }
+
+  subsystem_name = "filemanagement"
+  part_name = "storage_service"
+  install_enable = true
+}
+
+ohos_unittest("mtpfs_mtp_device_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+  module_out_path = "storage_service/storage_daemon"
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "private = public",
+  ]
+
+  include_dirs = [
+    "${storage_daemon_path}/mtpfs/include",
+    "${storage_daemon_path}/include/utils",
+    "${storage_service_common_path}/include",
+  ]
+
+  cflags = [
+    "-w",
+    "-DFUSE_USE_VERSION=31",
+    "-D_FILE_OFFSET_BITS=64",
+    "-std=c++11",
+  ]
+
+  deps = [ "${storage_daemon_path}:storage_common_utils" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+  ]
+
+  if (support_open_source_libmtp) {
+    sources = [
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_fuse.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_libmtp.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_mtp_device.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_tmp_files_pool.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_type_dir.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_type_file.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_type_tmp_file.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_util.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/test/mtpfs_mtp_device_test.cpp",
+    ]
+    external_deps += [
+      "libfuse:libfuse",
+      "libmtp:libmtp",
+      "libusb:libusb",
+      "openssl:libcrypto_shared",
+    ]
+  } else {
+    sources = [ "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_main_virtual.cpp" ]
+  }
+
+  subsystem_name = "filemanagement"
+  part_name = "storage_service"
+  install_enable = true
+}
+
+ohos_unittest("mtpfs_tmp_files_pool_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+  module_out_path = "storage_service/storage_daemon"
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "private = public",
+  ]
+
+  include_dirs = [
+    "${storage_daemon_path}/mtpfs/include",
+    "${storage_daemon_path}/include/utils",
+    "${storage_service_common_path}/include",
+  ]
+
+  cflags = [
+    "-w",
+    "-DFUSE_USE_VERSION=31",
+    "-D_FILE_OFFSET_BITS=64",
+    "-std=c++11",
+  ]
+
+  deps = [ "${storage_daemon_path}:storage_common_utils" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+  ]
+
+  if (support_open_source_libmtp) {
+    sources = [
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_fuse.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_libmtp.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_mtp_device.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_tmp_files_pool.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_type_dir.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_type_file.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_type_tmp_file.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_util.cpp",
+      "$ROOT_DIR/storage_daemon/mtpfs/test/mtpfs_tmp_files_pool_test.cpp",
+    ]
+    external_deps += [
+      "libfuse:libfuse",
+      "libmtp:libmtp",
+      "libusb:libusb",
+      "openssl:libcrypto_shared",
+    ]
+  } else {
+    sources = [ "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_main_virtual.cpp" ]
+  }
+
+  subsystem_name = "filemanagement"
+  part_name = "storage_service"
+  install_enable = true
+}
+
 group("storage_daemon_mtpfs_test") {
   testonly = true
-  deps = [ ":mtpfs_fuse_test" ]
+  deps = [
+    ":mtpfs_fuse_test",
+    ":mtpfs_libmtp_test",
+    ":mtpfs_mtp_device_test",
+    ":mtpfs_tmp_files_pool_test",
+  ]
 }
