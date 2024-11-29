@@ -142,7 +142,7 @@ HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_Disconnect_001, TestSize.Level1)
     GTEST_LOG_(INFO) << "MtpfsDeviceTest_Disconnect_001 start";
     LIBMTP_mtpdevice_t *device_ = nullptr;
     auto mtpfsdevice = std::make_shared<MtpFsDevice>();
-    bool result = mtpfsdevice->Disconnect();
+    mtpfsdevice->Disconnect();
     EXPECT_EQ(device_, nullptr);
     GTEST_LOG_(INFO) << "MtpfsDeviceTest_Disconnect_001 end";
 }
