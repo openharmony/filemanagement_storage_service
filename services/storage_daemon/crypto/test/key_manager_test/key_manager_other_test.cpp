@@ -22,11 +22,13 @@
 #include <string>
 #include <vector>
 
-#include "iam_client_mock.h"
 #include "directory_ex.h"
+
+#include "iam_client_mock.h"
+#include "key_control_mock.h"
 #include "fscrypt_control_mock.h"
 #include "fscrypt_key_v1.h"
-#include "fscrypt_key_v2.h"
+#include "fscrypt_key_v2_mock.h"
 #include "storage_service_errno.h"
 #include "utils/file_utils.h"
 
@@ -43,6 +45,8 @@ public:
     void TearDown();
     static inline shared_ptr<IamClientMoc> iamClientMoc_ = nullptr;
     static inline shared_ptr<FscryptControlMoc> fscryptControlMock_ = nullptr;
+    static inline shared_ptr<FscryptKeyV2Moc> fscryptKeyMock_ = nullptr;
+    static inline shared_ptr<KeyControlMoc> keyControlMock_ = nullptr;
 };
 void KeyManagerOtherTest::SetUpTestCase(void)
 {
@@ -51,6 +55,10 @@ void KeyManagerOtherTest::SetUpTestCase(void)
     IamClientMoc::iamClientMoc = iamClientMoc_;
     fscryptControlMock_ = make_shared<FscryptControlMoc>();
     FscryptControlMoc::fscryptControlMoc = fscryptControlMock_;
+    fscryptKeyMock_ = make_shared<FscryptKeyV2Moc>();
+    FscryptKeyV2Moc::fscryptKeyV2Moc = fscryptKeyMock_;
+    keyControlMock_ = make_shared<KeyControlMoc>();
+    KeyControlMoc::keyControlMoc = keyControlMock_;
 }
 
 void KeyManagerOtherTest::TearDownTestCase(void)
@@ -60,6 +68,10 @@ void KeyManagerOtherTest::TearDownTestCase(void)
     iamClientMoc_ = nullptr;
     FscryptControlMoc::fscryptControlMoc = nullptr;
     fscryptControlMock_ = nullptr;
+    FscryptKeyV2Moc::fscryptKeyV2Moc = nullptr;
+    fscryptKeyMock_ = nullptr;
+    KeyControlMoc::keyControlMoc = nullptr;
+    keyControlMock_ = nullptr;
 }
 
 void KeyManagerOtherTest::SetUp(void)
@@ -188,5 +200,123 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_LockUserScreen_000, TestSize.Level1)
     EXPECT_EQ(KeyManager::GetInstance()->saveLockScreenStatus[user], false);
     ForceRemoveDirectory(basePath);
     GTEST_LOG_(INFO) << "KeyManager_LockUserScreen_000 end";
+}
+
+/**
+ * @tc.name: KeyManager_TryToFixUserCeEceSeceKey_000
+ * @tc.desc: Verify the TryToFixUserCeEceSeceKey function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyManagerOtherTest, KeyManager_TryToFixUserCeEceSeceKey_000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_TryToFixUserCeEceSeceKey_000 Start";
+    uint32_t user = 800;
+    std::vector<uint8_t> token;
+    std::vector<uint8_t> secret;
+    EXPECT_CALL(*iamClientMoc_, HasPinProtect(_)).WillOnce(Return(false));
+    EXPECT_EQ(KeyManager::GetInstance()->TryToFixUserCeEceSeceKey(user, EL2_KEY, token, secret), E_OK);
+
+    EXPECT_CALL(*iamClientMoc_, HasPinProtect(_)).WillOnce(Return(true));
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false)).WillOnce(Return(false));
+    EXPECT_EQ(KeyManager::GetInstance()->TryToFixUserCeEceSeceKey(user, EL2_KEY, token, secret), E_OK);
+
+    EXPECT_CALL(*iamClientMoc_, HasPinProtect(_)).WillOnce(Return(true));
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
+    auto dir = KeyManager::GetInstance()->GetKeyDirByUserAndType(user, EL2_KEY);
+    ForceRemoveDirectory(dir);
+    EXPECT_EQ(KeyManager::GetInstance()->TryToFixUserCeEceSeceKey(user, EL2_KEY, token, secret), -EFAULT);
+
+    EXPECT_CALL(*iamClientMoc_, HasPinProtect(_)).WillOnce(Return(true));
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false)).WillOnce(Return(true));
+    KeyManager::GetInstance()->userEl2Key_.erase(user);
+    EXPECT_EQ(KeyManager::GetInstance()->TryToFixUserCeEceSeceKey(user, EL2_KEY, token, secret), -EFAULT);
+    GTEST_LOG_(INFO) << "KeyManager_TryToFixUserCeEceSeceKey_000 end";
+}
+
+/**
+ * @tc.name: KeyManager_TryToFixUserCeEceSeceKey_001
+ * @tc.desc: Verify the TryToFixUserCeEceSeceKey function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyManagerOtherTest, KeyManager_TryToFixUserCeEceSeceKey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_TryToFixUserCeEceSeceKey_001 Start";
+    uint32_t user = 800;
+    std::vector<uint8_t> token{1, 2, 3, 4, 5};
+    std::vector<uint8_t> secretEmpty;
+    EXPECT_CALL(*iamClientMoc_, HasPinProtect(_)).WillOnce(Return(true));
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false)).WillOnce(Return(false));
+    EXPECT_EQ(KeyManager::GetInstance()->TryToFixUserCeEceSeceKey(user, EL2_KEY, token, secretEmpty), E_OK);
+
+    std::vector<uint8_t> secret{1, 2, 3, 4, 5, 6};
+    EXPECT_CALL(*iamClientMoc_, HasPinProtect(_)).WillOnce(Return(true));
+    EXPECT_CALL(*iamClientMoc_, GetSecureUid(_, _)).WillOnce(Return(true));
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false)).WillOnce(Return(false));
+    EXPECT_EQ(KeyManager::GetInstance()->TryToFixUserCeEceSeceKey(user, EL2_KEY, token, secret), E_OK);
+    GTEST_LOG_(INFO) << "KeyManager_TryToFixUserCeEceSeceKey_001 end";
+}
+
+/**
+ * @tc.name: KeyManager_TryToFixUeceKey_000
+ * @tc.desc: Verify the TryToFixUeceKey function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyManagerOtherTest, KeyManager_TryToFixUeceKey_000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_TryToFixUeceKey_000 Start";
+    uint32_t user = 800;
+    std::vector<uint8_t> token;
+    std::vector<uint8_t> secret;
+    EXPECT_CALL(*iamClientMoc_, HasPinProtect(_)).WillOnce(Return(false));
+    EXPECT_EQ(KeyManager::GetInstance()->TryToFixUeceKey(user, token, secret), E_OK);
+
+    EXPECT_CALL(*iamClientMoc_, HasPinProtect(_)).WillOnce(Return(true));
+    std::string keyDir = KeyManager::GetInstance()->GetKeyDirByUserAndType(user, EL5_KEY);
+    ForceRemoveDirectory(keyDir);
+    EXPECT_EQ(KeyManager::GetInstance()->TryToFixUeceKey(user, token, secret), -EFAULT);
+
+    EXPECT_CALL(*iamClientMoc_, HasPinProtect(_)).WillOnce(Return(true));
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(keyDir));
+    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
+    EXPECT_CALL(*fscryptKeyMock_, DeleteClassEPinCode(_)).WillOnce(Return(true));
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false));
+    KeyManager::GetInstance()->userEl2Key_.erase(user);
+    EXPECT_EQ(KeyManager::GetInstance()->TryToFixUeceKey(user, token, secret), E_OK);
+
+    EXPECT_CALL(*iamClientMoc_, HasPinProtect(_)).WillOnce(Return(true));
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(keyDir));
+    EXPECT_CALL(*fscryptKeyMock_, DeleteClassEPinCode(_)).WillOnce(Return(true));
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
+    KeyManager::GetInstance()->userEl2Key_.erase(user);
+    EXPECT_EQ(KeyManager::GetInstance()->TryToFixUeceKey(user, token, secret),  -EFAULT);
+    ForceRemoveDirectory(keyDir);
+    KeyManager::GetInstance()->userEl5Key_.erase(user);
+    GTEST_LOG_(INFO) << "KeyManager_TryToFixUeceKey_000 end";
+}
+
+/**
+ * @tc.name: KeyManager_TryToFixUeceKey_001
+ * @tc.desc: Verify the TryToFixUeceKey function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyManagerOtherTest, KeyManager_TryToFixUeceKey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_TryToFixUeceKey_001 Start";
+    uint32_t user = 800;
+    std::vector<uint8_t> token{1, 2, 3, 4, 5};
+    std::vector<uint8_t> secretEmpty;
+    EXPECT_CALL(*iamClientMoc_, HasPinProtect(_)).WillOnce(Return(true));
+    EXPECT_EQ(KeyManager::GetInstance()->TryToFixUeceKey(user, token, secretEmpty), -EFAULT);
+
+    std::vector<uint8_t> secret{1, 2, 3, 4, 5, 6};
+    EXPECT_CALL(*iamClientMoc_, HasPinProtect(_)).WillOnce(Return(true));
+    EXPECT_CALL(*iamClientMoc_, GetSecureUid(_, _)).WillOnce(Return(true));
+    EXPECT_EQ(KeyManager::GetInstance()->TryToFixUeceKey(user, token, secret), -EFAULT);
+    GTEST_LOG_(INFO) << "KeyManager_TryToFixUeceKey_001 end";
 }
 }
