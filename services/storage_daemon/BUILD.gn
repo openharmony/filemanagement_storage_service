@@ -75,9 +75,7 @@ ohos_executable("storage_daemon") {
     "KMSG_LOG",
   ]
 
-  cflags = [
-    "-fstack-protector-strong",
-  ]
+  cflags = [ "-fstack-protector-strong" ]
 
   if (storage_service_user_file_sharing) {
     defines += [ "USER_FILE_SHARING" ]
@@ -218,9 +216,7 @@ ohos_executable("sdc") {
     "KMSG_LOG",
   ]
 
-  cflags = [
-    "-fstack-protector-strong",
-  ]
+  cflags = [ "-fstack-protector-strong" ]
 
   configs = [ ":sdc_config" ]
 
