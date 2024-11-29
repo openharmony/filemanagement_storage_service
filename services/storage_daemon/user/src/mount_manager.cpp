@@ -1185,7 +1185,7 @@ int32_t MountManager::CreateVirtualDirs(int32_t userId)
 {
     for (const DirInfo &dir : virtualDir_) {
         std::string path = StringPrintf(dir.path.c_str(), userId);
-        if (CloudDirFlag(path) && IsDir(path)) {
+        if (CloudAndFuseDirFlag(path) && IsDir(path)) {
             continue;
         }
         if (!PrepareDir(path, dir.mode, dir.uid, dir.gid)) {
@@ -1328,7 +1328,7 @@ bool MountManager::CheckMountFileByUser(int32_t userId)
 {
     for (const DirInfo &dir : virtualDir_) {
         std::string path = StringPrintf(dir.path.c_str(), userId);
-        if (CloudDirFlag(path)) {
+        if (CloudAndFuseDirFlag(path)) {
             continue;
         }
         if (access(path.c_str(), 0) != 0) {
@@ -1340,7 +1340,7 @@ bool MountManager::CheckMountFileByUser(int32_t userId)
     return true;
 }
 
-bool MountManager::CloudDirFlag(const std::string &path)
+bool MountManager::CloudAndFuseDirFlag(const std::string &path)
 {
     if (path.empty()) {
         return true;
@@ -1351,6 +1351,10 @@ bool MountManager::CloudDirFlag(const std::string &path)
     }
     std::regex cloudFusePattern("\\/mnt\\/data.*cloud_fuse");
     if (std::regex_match(path.c_str(), cloudFusePattern)) {
+        return true;
+    }
+    std::regex mediaFusePattern("\\/mnt\\/data.*media_fuse");
+    if (std::regex_match(path.c_str(), mediaFusePattern)) {
         return true;
     }
     return false;
@@ -1594,7 +1598,7 @@ int32_t MountManager::UMountMediaFuse(int32_t userId)
     const string path = mediaMntArgs.GetFullMediaFuse();
 
     err = UMount2(path, MNT_DETACH);
-    if (err != E_OK) {
+    if (err != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("fuse umount2 failed, errno %{public}d, fuse dst %{public}s", errno, path.c_str());
         return E_UMOUNT;
     }
