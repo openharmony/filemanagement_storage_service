@@ -147,6 +147,24 @@ HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_Disconnect_001, TestSize.Level1)
     GTEST_LOG_(INFO) << "MtpfsDeviceTest_Disconnect_001 end";
 }
 
+/**
+ * @tc.name: Mtpfs_HandleDir_001
+ * @tc.desc: Verify the HandleDir function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_HandleDir_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsDeviceTest_HandleDir_001 start";
+    LIBMTP_file_t *content = nullptr;
+    MtpFsTypeDir *dir = nullptr;
+    auto mtpfsdevice = std::make_shared<MtpfsDevice>();
+    mtpfsdevice->HandleDir(content, dir);
+    EXPECT_EQ(content, nullptr);
+    GTEST_LOG_(INFO) << "MtpfsDeviceTest_HandleDir_001 end";
+}
+
+
+
 
 }
 }
