@@ -32,6 +32,7 @@ enum class BizScene : int32_t {
     USER_KEY_ENCRYPTION,
     SPACE_STATISTICS,
     EXTERNAL_VOLUME_MANAGER,
+    STORAGE_USAGE_MANAGER,
 };
 
 enum class StageRes : int32_t {
@@ -81,6 +82,10 @@ enum class BizStage : int32_t {
     BIZ_STAGE_FORMAT,
     BIZ_STAGE_SET_VOLUME_DESCRIPTION,
     BIZ_STAGE_GET_ALL_VOLUMES,
+
+    BIZ_STAGE_THRESHOLD_TEN_PERCENT = 51,
+    BIZ_STAGE_THRESHOLD_FIVE_PERCENT,
+    BIZ_STAGE_THRESHOLD_MINIMAL,
 };
 
 struct RadarParameter {
@@ -119,6 +124,7 @@ public:
         const std::string &extraData);
     static void ReportIamResult(const std::string &funcName, uint32_t userId, int ret);
     static void ReportHuksResult(const std::string &funcName, int ret);
+    static void ReportStorageUsage(enum BizStage stage, const std::string &extraData);
 
 private:
     StorageRadar() = default;

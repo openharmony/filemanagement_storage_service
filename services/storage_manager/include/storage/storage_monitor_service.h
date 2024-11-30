@@ -22,6 +22,7 @@
 #include <thread>
 #include <vector>
 #include "event_handler.h"
+#include "utils/storage_radar.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -45,6 +46,8 @@ private:
     void EventNotifyHighFreqHandler();
     void CleanBundleCacheByInterval(const std::string &timestamp,
                                                            int64_t lowThreshold, int32_t checkInterval);
+    void ReportRadarStorageUsage(enum StorageService::BizStage stage, const std::string &extraData);
+
     std::mutex eventMutex_;
     std::thread eventThread_;
     std::condition_variable eventCon_;
@@ -55,6 +58,9 @@ private:
     std::chrono::steady_clock::time_point lastNotificationTimeHighFreq_ =
             std::chrono::time_point_cast<std::chrono::steady_clock::duration>(
                     std::chrono::steady_clock::now()) - std::chrono::minutes(SMART_EVENT_INTERVAL_HIGH_FREQ);
+    std::chrono::steady_clock::time_point lastReportRadarTime_ =
+            std::chrono::time_point_cast<std::chrono::steady_clock::duration>(
+                    std::chrono::steady_clock::now()) - std::chrono::hours(SMART_EVENT_INTERVAL);
 };
 } // StorageManager
 } // OHOS

@@ -155,7 +155,22 @@ void StorageRadar::ReportHuksResult(const std::string &funcName, int ret)
     };
     StorageRadar::GetInstance().RecordFuctionResult(param);
 }
- 
+
+void StorageRadar::ReportStorageUsage(enum BizStage stage, const std::string &extraData)
+{
+    RadarParameter param = {
+        .orgPkg = DEFAULT_ORGPKGNAME,
+        .userId = DEFAULT_USERID,
+        .funcName = "CheckAndCleanCache",
+        .bizScene = BizScene::STORAGE_USAGE_MANAGER,
+        .bizStage = stage,
+        .keyElxLevel = "NA",
+        .errorCode = E_STORAGE_USAGE_NOT_ENOUGH,
+        .extraData = extraData
+    };
+    StorageRadar::GetInstance().RecordFuctionResult(param);
+}
+
 bool StorageRadar::RecordKillProcessResult(std::string processName, int32_t errcode)
 {
     int32_t res = E_OK;

@@ -32,6 +32,7 @@
 #include "storage_service_log.h"
 #include "storage/bundle_manager_connector.h"
 #include "storage/storage_total_status_service.h"
+#include "utils/storage_radar.h"
 #include "want.h"
 
 namespace OHOS {
@@ -58,6 +59,7 @@ const std::string FAULT_ID_ONE = "845010021";
 const std::string FAULT_ID_TWO = "845010022";
 const std::string FAULT_ID_THREE = "845010023";
 const std::string FAULT_SUGGEST_THREE = "545010023";
+constexpr int RETRY_MAX_TIMES = 3;
 
 StorageMonitorService::StorageMonitorService() {}
 
@@ -149,15 +151,23 @@ void StorageMonitorService::CheckAndCleanCache(int64_t freeSize, int64_t totalSi
     LOGI("Device storage freeSize=%{public}lld, threshold=%{public}lld", static_cast<long long>(freeSize),
          static_cast<long long>(lowThreshold));
 
+    std::string freeSizeStr = std::to_string(freeSize);
+    std::string totalSizeStr = std::to_string(totalSize);
+    std::string lowThresholdStr = std::to_string(lowThreshold);
+    std::string storageUsage = "storage usage not enough:freeSize = " + freeSizeStr + ", totalSize = " + totalSizeStr +
+                               ", lowThreshold = " + lowThresholdStr;
     if (freeSize < (lowThreshold * CONST_NUM_THREE) / CONST_NUM_TWO) {
         CleanBundleCache(lowThreshold);
+        ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_MINIMAL, storageUsage);
         return;
     }
 
     if (freeSize > (totalSize * STORAGE_THRESHOLD_PERCENTAGE) / CONST_NUM_ONE_HUNDRED) {
         CleanBundleCacheByInterval(TIMESTAMP_WEEK, lowThreshold, CLEAN_CACHE_WEEK);
+        ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_TEN_PERCENT, storageUsage);
     } else {
         CleanBundleCacheByInterval(TIMESTAMP_DAY, lowThreshold, SEND_EVENT_INTERVAL);
+        ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_FIVE_PERCENT, storageUsage);
     }
 }
 
@@ -182,6 +192,17 @@ void StorageMonitorService::CleanBundleCacheByInterval(const std::string &timest
     }
 }
 
+void StorageMonitorService::ReportRadarStorageUsage(enum StorageService::BizStage stage, const std::string &extraData)
+{
+    auto currentTime = std::chrono::steady_clock::now();
+    int32_t duration = static_cast<int32_t>(std::chrono::duration_cast<std::chrono::hours>
+            (currentTime - lastReportRadarTime_).count());
+    if (duration >= SEND_EVENT_INTERVAL) {
+        StorageService::StorageRadar::ReportStorageUsage(stage, extraData);
+        lastReportRadarTime_ = currentTime;
+    }
+}
+
 void StorageMonitorService::CleanBundleCache(int64_t lowThreshold)
 {
     auto bundleMgr = DelayedSingleton<BundleMgrConnector>::GetInstance()->GetBundleMgrProxy();
@@ -190,10 +211,16 @@ void StorageMonitorService::CleanBundleCache(int64_t lowThreshold)
         return;
     }
     LOGI("Device storage free size not enough, start clean bundle cache files automatic.");
-    auto ret = bundleMgr->CleanBundleCacheFilesAutomatic(lowThreshold * CONST_NUM_TWO);
-    if (ret != ERR_OK) {
-        LOGE("Invoke bundleMgr interface to clean bundle cache files automatic failed.");
-    }
+    int retryCount = 0;
+    do {
+        auto ret = bundleMgr->CleanBundleCacheFilesAutomatic(lowThreshold * CONST_NUM_TWO);
+        if (ret == ERR_OK) {
+            LOGI("Invoke bundleMgr interface to clean bundle cache files automatic success.");
+            break;
+        }
+        retryCount ++;
+        LOGE("Invoke bundleMgr interface to clean bundle cache files automatic failed. Retry.");
+    } while (retryCount < RETRY_MAX_TIMES);
 }
 
 int64_t StorageMonitorService::GetLowerThreshold(int64_t totalSize)
