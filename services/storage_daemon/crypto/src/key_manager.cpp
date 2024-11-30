@@ -1987,6 +1987,12 @@ int KeyManager::CheckUserPinProtect(unsigned int userId,
                                     const std::vector<uint8_t> &secret)
 {
     LOGI("enter CheckUserPinProtect");
+    std::error_code errCode;
+    std::string restorePath = USER_EL2_DIR + "/" + std::to_string(userId) + RESTORE_DIR;
+    if (!std::filesystem::exists(restorePath, errCode)) {
+        LOGI("Do not check pin code.");
+        return E_OK;
+    }
     // judge if device has PIN protect
     if ((token.empty() && secret.empty()) && IamClient::GetInstance().HasPinProtect(userId)) {
         LOGE("User %{public}d has pin code protect.", userId);
