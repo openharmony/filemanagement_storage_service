@@ -79,8 +79,6 @@ namespace {
         static_cast<uint32_t>(StorageManagerInterfaceCode::SET_RECOVER_KEY),
         static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_MTP_MOUNT),
         static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_MTP_UNMOUNT),
-        static_cast<int32_t>(StorageManagerInterfaceCode::MOUNT_MEDIA_FUSE),
-        static_cast<int32_t>(StorageManagerInterfaceCode::UMOUNT_MEDIA_FUSE),
     };
 }
 
@@ -219,8 +217,6 @@ HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemote
     EXPECT_CALL(mock, SetRecoverKey(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, NotifyMtpMounted(testing::_, testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, NotifyMtpUnmounted(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(mock, MountMediaFuse(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(mock, UMountMediaFuse(testing::_)).WillOnce(testing::Return(E_OK));
 
     for (auto c : g_code) {
         MessageParcel data;

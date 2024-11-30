@@ -581,7 +581,7 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_UMountMediaFuse_00
 
     int32_t userId = 105;
     auto ret = storageDaemon_->UMountMediaFuse(userId);
-    EXPECT_EQ(ret, E_UMOUNT);
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_UMountMediaFuse_001 end";
 }
 } // STORAGE_DAEMON

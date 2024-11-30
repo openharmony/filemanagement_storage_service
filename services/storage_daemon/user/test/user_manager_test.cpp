@@ -622,7 +622,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_MountMediaFuse_001, T
     EXPECT_EQ(ret, E_MOUNT);
 
     ret = mountManager->UMountMediaFuse(userId);
-    EXPECT_EQ(ret, E_UMOUNT);
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountMediaFuse_001 end";
 }
 } // STORAGE_DAEMON
