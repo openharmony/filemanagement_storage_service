@@ -169,6 +169,7 @@ ohos_executable("storage_daemon") {
     sources += [
       "mtp/src/mtp_device_manager.cpp",
       "mtp/src/mtp_device_monitor.cpp",
+      
     ]
     external_deps += [ "libmtp:libmtp" ]
   }
