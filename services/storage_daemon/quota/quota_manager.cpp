@@ -108,6 +108,7 @@ static std::string GetQuotaSrcMountPath(const std::string &target)
 
 static int64_t GetOccupiedSpaceForUid(int32_t uid, int64_t &size)
 {
+    LOGE("GetOccupiedSpaceForUid uid:%{public}d", uid);
     if (InitialiseQuotaMounts() != true) {
         LOGE("Failed to initialise quota mounts");
         return E_SYS_ERR;
@@ -127,11 +128,13 @@ static int64_t GetOccupiedSpaceForUid(int32_t uid, int64_t &size)
     }
 
     size = static_cast<int64_t>(dq.dqb_curspace);
+    LOGE("GetOccupiedSpaceForUid size:%{public}ld", size);
     return E_OK;
 }
 
 static int64_t GetOccupiedSpaceForGid(int32_t gid, int64_t &size)
 {
+    LOGE("GetOccupiedSpaceForGid gid:%{public}d", gid);
     if (InitialiseQuotaMounts() != true) {
         LOGE("Failed to initialise quota mounts");
         return E_SYS_ERR;
@@ -151,12 +154,14 @@ static int64_t GetOccupiedSpaceForGid(int32_t gid, int64_t &size)
     }
 
     size = static_cast<int64_t>(dq.dqb_curspace);
+    LOGE("GetOccupiedSpaceForGid size:%{public}ld", size);
     return E_OK;
 }
 
 
 static int64_t GetOccupiedSpaceForPrjId(int32_t prjId, int64_t &size)
 {
+    LOGE("GetOccupiedSpaceForPrjId prjId:%{public}d", prjId);
     if (InitialiseQuotaMounts() != true) {
         LOGE("Failed to initialise quota mounts");
         return E_SYS_ERR;
@@ -176,6 +181,7 @@ static int64_t GetOccupiedSpaceForPrjId(int32_t prjId, int64_t &size)
     }
 
     size = static_cast<int64_t>(dq.dqb_curspace);
+    LOGE("GetOccupiedSpaceForPrjId size:%{public}ld", size);
     return E_OK;
 }
 
