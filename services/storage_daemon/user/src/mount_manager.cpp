@@ -948,13 +948,13 @@ int32_t MountManager::CloudUMount(int32_t userId)
     err = UMount2(cloudFusePath, MNT_DETACH);
     if (err != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("cloud fuse umount failed, errno is %{public}d.", errno);
-        return E_CLOUD_FUSE_UMOUNT;
+        return E_UMOUNT_CLOUD_FUSE;
     }
     const string cloudPath = cloudMntArgs.GetFullMediaCloud();
     err = UMount2(cloudPath, MNT_DETACH);
     if (err != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("cloud umount failed, errno %{public}d", errno);
-        return E_CLOUD_UMOUNT;
+        return E_UMOUNT_CLOUD;
     }
     LOGI("cloud umount success");
     return E_OK;
@@ -1597,7 +1597,7 @@ int32_t MountManager::UMountMediaFuse(int32_t userId)
     err = UMount2(path, MNT_DETACH);
     if (err != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("media fuse umount failed, errno %{public}d", errno);
-        return E_MEDIA_FUSE_UMOUNT;
+        return E_UMOUNT_MEDIA_FUSE;
     }
     LOGI("umount media fuse success");
     return E_OK;
