@@ -432,6 +432,7 @@ bool FscryptKeyV1::InactiveKey(uint32_t flag, const std::string &mnt)
         LOGE("UninstallKeyToKeyring failed");
         ret = false;
     }
+    DropCachesIfNeed();
     if (!fscryptV1Ext.InactiveKeyExt(flag)) {
         LOGE("fscryptV1Ext InactiveKeyExt failed");
         ret = false;
@@ -443,20 +444,26 @@ bool FscryptKeyV1::InactiveKey(uint32_t flag, const std::string &mnt)
 
 void FscryptKeyV1::DropCachesIfNeed()
 {
+    LOGE("drop cache if need enter.");
     DIR *dir = opendir(MNT_DATA.c_str());
     if (dir == nullptr) {
+        LOGE("dir is null, sync start.");
         sync();
+        LOGE("sync success with dir is null.");
     }
     int fd = dirfd(dir);
+    LOGE("open /data dir fd success, syncfs start.");
     if (fd < 0 || syncfs(fd)) {
+        LOGE("fd < 0 or syncfs failed, sync start.");
         sync();
+        LOGE("sync success with syncfs failed.");
     }
-    LOGI("drop cache start.");
+    LOGE("syncfs success, drop cache start.");
     if (!SaveStringToFile("/proc/sys/vm/drop_caches", "2")) {
         LOGE("Failed to drop cache during key eviction");
     }
     (void)closedir(dir);
-    LOGI("drop cache success");
+    LOGE("drop cache success");
 }
 
 bool FscryptKeyV1::LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt)
