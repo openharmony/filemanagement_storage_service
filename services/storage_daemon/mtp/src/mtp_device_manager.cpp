@@ -66,9 +66,12 @@ int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
         "-o",
         "enable-move",
         "-o",
+        "max_idle_threads=10",
+        "-o",
+        "max_threads=20",
+        "-o",
         "context=u:object_r:mnt_external_file:s0",
         "--device",
-        
         std::to_string(DEFAULT_DEV_INDEX),
         device.path,
     };
