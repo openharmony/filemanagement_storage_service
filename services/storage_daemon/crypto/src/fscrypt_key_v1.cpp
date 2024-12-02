@@ -449,14 +449,14 @@ void FscryptKeyV1::DropCachesIfNeed()
     if (dir == nullptr) {
         LOGE("dir is null, sync start.");
         sync();
-        LOGE("sync success.");
+        LOGE("sync success with dir is null.");
     }
     int fd = dirfd(dir);
     LOGE("open /data dir fd success, syncfs start.");
     if (fd < 0 || syncfs(fd)) {
         LOGE("fd < 0 or syncfs failed, sync start.");
         sync();
-        LOGE("sync success.");
+        LOGE("sync success with syncfs failed.");
     }
     LOGE("syncfs success, drop cache start.");
     if (!SaveStringToFile("/proc/sys/vm/drop_caches", "2")) {
