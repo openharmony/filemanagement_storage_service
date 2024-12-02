@@ -12,20 +12,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef OHOS_STORAGE_DAEMON_MTP_DEVICE_MONITOR_H
-#define OHOS_STORAGE_DAEMON_MTP_DEVICE_MONITOR_H
-
-#include <memory>
-#include <nocopyable.h>
-#include <singleton.h>
+#ifndef OHOS_STORAGE_DAEMON_USB_EVENT_SUBSCRIBER_H
+#define OHOS_STORAGE_DAEMON_USB_EVENT_SUBSCRIBER_H
+ 
 #include <string>
-#include <thread>
-#include <vector>
-#include "mtp/mtp_device_manager.h"
-
+ 
+#include "common_event_manager.h"
+#include "common_event_subscriber.h"
+#include "common_event_support.h"
+ 
 namespace OHOS {
 namespace StorageDaemon {
-class MtpDeviceMonitor : public NoCopyable  {
-    DECLARE_DELAYED_SINGLETON(MtpDeviceMonitor);
-
+using CommonEventSubscriber = OHOS::EventFwk::CommonEventSubscriber;
+using CommonEventData = OHOS::EventFwk::CommonEventData;
+using CommonEventSubscribeInfo = OHOS::EventFwk::CommonEventSubscribeInfo;
+ 
+class UsbEventSubscriber : public OHOS::EventFwk::CommonEventSubscriber {
+public:
+    UsbEventSubscriber() = default;
+    explicit UsbEventSubscriber(const EventFwk::CommonEventSubscribeInfo &info);
+    virtual ~UsbEventSubscriber() = default;
+ 
+    void OnReceiveEvent(const OHOS::EventFwk::CommonEventData &data) override;
+    static void SubscribeCommonEvent(void);
+ 
+private:
+    void GetValueFromUsbDataInfo(const std::string &jsonStr, uint8_t &devNum, uint32_t &busLoc);
+};
+} // namespace UsbEventSubscriber
+} // namespace OHOS
+ 
 #endif
