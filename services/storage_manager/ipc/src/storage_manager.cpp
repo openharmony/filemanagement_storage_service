@@ -456,7 +456,7 @@ int32_t StorageManager::SendEncryptedStatusToAppSpawn(uint32_t userId, int32_t e
         LOGE("Appspawn failed to create message, ret=%{public}d", ret);
         return ret;
     }
-    ret = AppSpawnRegMsgAddStringInfo(reqHandle, "lockstatus", value.c_str());
+    ret = AppSpawnReqMsgAddStringInfo(reqHandle, "lockstatus", value.c_str());
     if (ret != E_OK) {
         AppSpawnReqMsgFree(reqHandle);
         LOGE("Appspawn failed to add lockstatus message, ret=%{public}d", ret);
