@@ -478,7 +478,7 @@ int32_t StorageManager::SendEncryptedStatusToAppSpawn(uint32_t userId, int32_t e
         return ret;
     }
     if (result.result != E_OK) {
-        LOGE("Appspawn failed to kill process, result=%{public}d", result.result);
+        LOGE("Appspawn failed to handle message, result=%{public}d", result.result);
         return result.result;
     }
     LOGI("Appspawn SendEncrytedStatus success");
