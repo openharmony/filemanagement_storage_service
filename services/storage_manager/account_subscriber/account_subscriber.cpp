@@ -204,6 +204,7 @@ void AccountSubscriber::GetSystemAbility()
 
 bool AccountSubscriber::OnReceiveEventLockUserScreen(int32_t userId)
 {
+#ifdef USER_CRYPTO_MANAGER
     std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
     if (fsCrypto != nullptr) {
         int ret = fsCrypto->LockUserScreen(userId);
@@ -215,6 +216,7 @@ bool AccountSubscriber::OnReceiveEventLockUserScreen(int32_t userId)
         LOGE("fsCrypto is nullptr");
         return false;
     }
+#endif
     return true;
 }
 }  // namespace StorageManager
