@@ -128,7 +128,7 @@ static int64_t GetOccupiedSpaceForUid(int32_t uid, int64_t &size)
     }
 
     size = static_cast<int64_t>(dq.dqb_curspace);
-    LOGE("GetOccupiedSpaceForUid size:%{public}s", size.c_str());
+    LOGE("GetOccupiedSpaceForUid size:%{public}s", std::to_string(size).c_str());
     return E_OK;
 }
 
@@ -154,7 +154,7 @@ static int64_t GetOccupiedSpaceForGid(int32_t gid, int64_t &size)
     }
 
     size = static_cast<int64_t>(dq.dqb_curspace);
-    LOGE("GetOccupiedSpaceForGid size:%{public}s", size.c_str());
+    LOGE("GetOccupiedSpaceForGid size:%{public}s", std::to_string(size).c_str());
     return E_OK;
 }
 
@@ -181,7 +181,7 @@ static int64_t GetOccupiedSpaceForPrjId(int32_t prjId, int64_t &size)
     }
 
     size = static_cast<int64_t>(dq.dqb_curspace);
-    LOGE("GetOccupiedSpaceForPrjId size:%{public}s", size.c_str());
+    LOGE("GetOccupiedSpaceForPrjId size:%{public}s", std::to_string(size).c_str());
     return E_OK;
 }
 
