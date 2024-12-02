@@ -12,259 +12,90 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#include "mtp/mtp_device_monitor.h"
-
-#include <cstdio>
-#include <dirent.h>
-#include <filesystem>
-#include <iostream>
-#include <libmtp.h>
-#include "parameter.h"
-#include <sys/stat.h>
-#include <sys/types.h>
+ 
+#include "mtp/usb_event_subscriber.h"
 #include <unistd.h>
-#include <thread>
+#include "cJSON.h"
+#include "mtp/mtp_device_monitor.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "utils/file_utils.h"
-
-using namespace std;
+ 
 namespace OHOS {
 namespace StorageDaemon {
-static constexpr int32_t SLEEP_TIME = 1;
-const std::string MTP_ROOT_PATH = "/mnt/data/external/";
-const int32_t MTP_VAL_LEN = 6;
-const int32_t MTP_TRUE_LEN = 5;
-const std::string SYS_PARAM_SERVICE_FORCE_ENABLE = "const.pc_security.fileguard_force_enable";
-bool g_keepMonitoring = true;
-
-MtpDeviceMonitor::MtpDeviceMonitor() {}
-
-MtpDeviceMonitor::~MtpDeviceMonitor()
+const std::string BUS_NUM_KEY = "busNum";
+const std::string DEV_ADDRESS_KEY = "devAddress";
+ 
+UsbEventSubscriber::UsbEventSubscriber(const EventFwk::CommonEventSubscribeInfo &info)
+    : EventFwk::CommonEventSubscriber(info)
+{}
+ 
+std::shared_ptr<UsbEventSubscriber> usbEventSubscriber_ = nullptr;
+void UsbEventSubscriber::SubscribeCommonEvent(void)
 {
-    LOGI("MtpDeviceMonitor Destructor.");
-    UmountAllMtpDevice();
+    if (usbEventSubscriber_ == nullptr) {
+        EventFwk::MatchingSkills matchingSkills;
+        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USB_STATE);
+        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USB_PORT_CHANGED);
+        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USB_DEVICE_ATTACHED);
+        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USB_DEVICE_DETACHED);
+        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USB_ACCESSORY_ATTACHED);
+        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USB_ACCESSORY_DETACHED);
+        EventFwk::CommonEventSubscribeInfo subscribeInfo(matchingSkills);
+        usbEventSubscriber_ = std::make_shared<UsbEventSubscriber>(subscribeInfo);
+        if (!EventFwk::CommonEventManager::SubscribeCommonEvent(usbEventSubscriber_)) {
+            usbEventSubscriber_ = nullptr;
+            LOGE("UsbEventSubscriber subscribe common event failed.");
+        }
+    }
 }
-
-void MtpDeviceMonitor::StartMonitor()
+ 
+void UsbEventSubscriber::OnReceiveEvent(const OHOS::EventFwk::CommonEventData &data)
 {
-    LOGI("MtpDeviceMonitor, start mtp device monitor.");
-    if (IsNeedDisableMtp()) {
-        LOGE("This device cannot support MTP.");
+    LOGI("UsbEventSubscriber::OnReceiveEvent.");
+    auto want = data.GetWant();
+    std::string action = want.GetAction();
+    if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USB_STATE) {
+        LOGI("OnReceiveEvent COMMON_EVENT_USB_STATE, data=%{public}s", data.GetData().c_str());
+    }
+    if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USB_PORT_CHANGED) {
+        LOGI("OnReceiveEvent COMMON_EVENT_USB_PORT_CHANGED, data=%{public}s", data.GetData().c_str());
+    }
+    if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USB_ACCESSORY_ATTACHED) {
+        LOGI("OnReceiveEvent COMMON_EVENT_USB_ACCESSORY_ATTACHED, data=%{public}s", data.GetData().c_str());
+    }
+    if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USB_ACCESSORY_DETACHED) {
+        LOGI("OnReceiveEvent COMMON_EVENT_USB_ACCESSORY_DETACHED, data=%{public}s", data.GetData().c_str());
+    }
+    if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USB_DEVICE_ATTACHED) {
+        LOGI("OnReceiveEvent COMMON_EVENT_USB_DEVICE_ATTACHED, data=%{public}s", data.GetData().c_str());
+    }
+    if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USB_DEVICE_DETACHED) {
+        LOGI("OnReceiveEvent COMMON_EVENT_USB_DEVICE_DETACHED, data=%{public}s", data.GetData().c_str());
+#ifdef SUPPORT_OPEN_SOURCE_MTP_DEVICE
+        uint8_t devNum = 0;
+        uint32_t busLoc = 0;
+        GetValueFromUsbDataInfo(data.GetData(), devNum, busLoc);
+        DelayedSingleton<MtpDeviceMonitor>::GetInstance()->UmountDetachedMtpDevice(devNum, busLoc);
+#endif
+    }
+}
+ 
+void UsbEventSubscriber::GetValueFromUsbDataInfo(const std::string &jsonStr, uint8_t &devNum, uint32_t &busLoc)
+{
+    cJSON *usbJson = cJSON_Parse(jsonStr.c_str());
+    if (usbJson == nullptr) {
+        LOGE("GetValueFromUsbDataInfo failed, parse json object is nullptr.");
         return;
     }
-    std::thread([this]() { MonitorDevice(); }).detach();
-}
-
-bool MtpDeviceMonitor::IsNeedDisableMtp()
-{
-    char mtpEnable[MTP_VAL_LEN + 1] = {"false"};
-    int ret = GetParameter(SYS_PARAM_SERVICE_FORCE_ENABLE.c_str(), "", mtpEnable, MTP_VAL_LEN);
-    LOGI("GetParameter mtpEnable %{public}s, ret %{public}d", mtpEnable, ret);
-    if (strncmp(mtpEnable, "true", MTP_TRUE_LEN) == 0) {
-        return true;
+    cJSON *busLocObj = cJSON_GetObjectItemCaseSensitive(usbJson, DEV_ADDRESS_KEY.c_str());
+    if (busLocObj != nullptr && cJSON_IsNumber(busLocObj)) {
+        devNum = static_cast<uint8_t>(busLocObj->valueint);
     }
-    return false;
-}
-
-void MtpDeviceMonitor::MonitorDevice()
-{
-    
-    LOGI("MonitorDevice: mtp device monitor thread begin.");
-    while (g_keepMonitoring) {
-        if (IsNeedDisableMtp()) {
-            break;
-        }
-        sleep(SLEEP_TIME);
-        CheckAndUmountRemovedMtpDevice();
-
-        int rawDevSize = 0;
-        LIBMTP_raw_device_t *rawDevices = nullptr;
-        LIBMTP_error_number_t err = LIBMTP_Detect_Raw_Devices(&rawDevices, &rawDevSize);
-        if ((err == LIBMTP_ERROR_NO_DEVICE_ATTACHED) || (rawDevices == nullptr) || (rawDevSize <= 0)) {
-            if (rawDevices != nullptr) {
-                free(static_cast<void *>(rawDevices));
-            }
-            continue;
-        }
-
-        std::vector<MtpDeviceInfo> devInfos;
-        for (int index = 0; index < rawDevSize; ++index) {
-            LIBMTP_raw_device_t *rawDevice = &rawDevices[index];
-            if (rawDevice == nullptr) {
-                LOGE("MonitorDevice: rawDevice is nullptr.");
-                continue;
-            }
-            std::vector<std::string> cmd = {
-                "cat",
-                "/proc/sys/kernel/random/uuid",
-            };
-            std::vector<std::string> uuids;
-            ForkExec(cmd, &uuids);
-
-            MtpDeviceInfo devInfo;
-            devInfo.uuid = uuids.front();
-            devInfo.devNum = rawDevice->devnum;
-            devInfo.busLocation = rawDevice->bus_location;
-            devInfo.vendor = rawDevice->device_entry.vendor;
-            devInfo.product = rawDevice->device_entry.product;
-            devInfo.vendorId = rawDevice->device_entry.vendor_id;
-            devInfo.productId = rawDevice->device_entry.product_id;
-            devInfo.id = "mtp-" + std::to_string(devInfo.vendorId) + "-" + std::to_string(devInfo.productId);
-            devInfo.path = MTP_ROOT_PATH + devInfo.id;
-            devInfos.push_back(devInfo);
-            LOGI("Detect new mtp device: id=%{public}s, vendor=%{public}s, product=%{public}s, devNum=%{public}d",
-                (devInfo.id).c_str(), (devInfo.vendor).c_str(), (devInfo.product).c_str(), devInfo.devNum);
-        }
-        MountMtpDevice(devInfos);
-        free(static_cast<void *>(rawDevices));
+    cJSON *devNumObj = cJSON_GetObjectItemCaseSensitive(usbJson, BUS_NUM_KEY.c_str());
+    if (devNumObj != nullptr && cJSON_IsNumber(devNumObj)) {
+        busLoc = static_cast<uint32_t>(devNumObj->valueint);
     }
-    LOGI("MonitorDevice: mtp device monitor thread end.");
-}
-
-void MtpDeviceMonitor::MountMtpDevice(const std::vector<MtpDeviceInfo> &monitorDevices)
-{
-    LOGI("MountMtpDevice: start mount mtp device.");
-    for (auto device : monitorDevices) {
-        if (HasMounted(device)) {
-            LOGI("MountMtpDevice: mtp device has mounted.");
-            continue;
-        }
-
-        bool isEjected = false;
-        for (auto ejectDev: hasEjectedDevices_) {
-            if (device.id == ejectDev.id) {
-                LOGI("Device %{public}s has been ejected", (device.id).c_str());
-                isEjected = true;
-                break;
-            }
-        }
-        if (isEjected) {
-            continue;
-        }
-
-        bool isInvalidDev = false;
-        for (auto inDev : invalidMtpDevices_) {
-            if ((device.vendorId == inDev.vendorId) && (device.productId == inDev.productId) &&
-                (device.devNum == inDev.devNum)) {
-                isInvalidDev = true;
-                break;
-            }
-        }
-        if (isInvalidDev) {
-            LOGE("MountMtpDevice: invalid mtp device, no need to mount.");
-            continue;
-        }
-        if (lastestMtpDevList_.size() > 0) {
-            LOGW("Multiple devices detected. Only one device is supported. Ignoring additional devices.");
-            return;
-        }
-        int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->MountDevice(device);
-        if (ret == E_OK) {
-            lastestMtpDevList_.push_back(device);
-        } else {
-            LOGE("MountMtpDevice: mtp device mount failed.");
-            invalidMtpDevices_.push_back(device);
-        }
-    }
-}
-
-bool MtpDeviceMonitor::HasMounted(const MtpDeviceInfo &device)
-{
-    std::lock_guard<std::mutex> lock(listMutex_);
-    for (auto iter = lastestMtpDevList_.begin(); iter != lastestMtpDevList_.end(); iter++) {
-        if (iter != lastestMtpDevList_.end() && (iter->id == device.id)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-void MtpDeviceMonitor::UmountAllMtpDevice()
-{
-    std::lock_guard<std::mutex> lock(listMutex_);
-    for (auto iter = lastestMtpDevList_.begin(); iter != lastestMtpDevList_.end(); iter++) {
-        int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->UmountDevice(*iter, true);
-        if (ret != E_OK) {
-            LOGE("UmountAllMtpDevice: umount mtp device failed, path=%{public}s", (iter->path).c_str());
-        }
-    }
-    lastestMtpDevList_.clear();
-    invalidMtpDevices_.clear();
-    hasEjectedDevices_.clear();
-}
-
-void MtpDeviceMonitor::CheckAndUmountRemovedMtpDevice()
-{
-    std::lock_guard<std::mutex> lock(listMutex_);
-    for (auto it = hasEjectedDevices_.begin(); it != hasEjectedDevices_.end();) {
-        int res = LIBMTP_Check_Specific_Device(it->busLocation, it->devNum);
-        if (res <= 0) {
-            LOGI("Device %{public}s has removed by force", (it->id).c_str());
-            it = hasEjectedDevices_.erase(it);
-        } else {
-            it++;
-        }
-    }
-
-    for (auto iter = lastestMtpDevList_.begin(); iter != lastestMtpDevList_.end();) {
-        int res = LIBMTP_Check_Specific_Device(iter->busLocation, iter->devNum);
-        LOGI("Check mtp device state result=%{public}d, devNum=%{public}d, busLocation=%{public}d.", res,
-            iter->devNum, iter->busLocation);
-        if (IsDir(iter->path) && !std::filesystem::is_empty(iter->path) && (res > 0)) {
-            iter++;
-            continue;
-        }
-
-        LOGI("Mtp device mount path=%{public}s is not exist or removed, umount it.", (iter->path).c_str());
-        int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->UmountDevice(*iter, true);
-        if (ret == E_OK) {
-            iter = lastestMtpDevList_.erase(iter);
-        } else {
-            LOGE("Umount mtp device failed, path=%{public}s", (iter->path).c_str());
-            iter++;
-        }
-    }
-}
-
-int32_t MtpDeviceMonitor::Mount(const std::string &id)
-{
-    LOGI("MtpDeviceMonitor: start mount mtp device by id=%{public}s", id.c_str());
-    std::lock_guard<std::mutex> lock(listMutex_);
-    for (auto iter = lastestMtpDevList_.begin(); iter != lastestMtpDevList_.end(); iter++) {
-        if (iter->id != id) {
-            continue;
-        }
-        int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->MountDevice(*iter);
-        if (ret != E_OK) {
-            LOGE("MountMtpDevice: mtp device mount failed.");
-        }
-        return ret;
-    }
-    LOGE("the volume id %{public}s does not exist.", id.c_str());
-    return E_NON_EXIST;
-}
-
-int32_t MtpDeviceMonitor::Umount(const std::string &id)
-{
-    LOGI("MtpDeviceMonitor: start umount mtp device by id=%{public}s", id.c_str());
-    std::lock_guard<std::mutex> lock(listMutex_);
-    for (auto iter = lastestMtpDevList_.begin(); iter != lastestMtpDevList_.end(); iter++) {
-        if (iter->id != id) {
-            continue;
-        }
-        int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->UmountDevice(*iter, true);
-        if (ret == E_OK) {
-            hasEjectedDevices_.push_back(*iter);
-            lastestMtpDevList_.erase(iter);
-        } else {
-            LOGE("Umount mtp device failed, path=%{public}s", (iter->path).c_str());
-        }
-        return ret;
-    }
-    LOGE("the volume id %{public}s does not exist.", id.c_str());
-    return E_NON_EXIST;
+    cJSON_Delete(usbJson);
 }
 }  // namespace StorageDaemon
 }  // namespace OHOS
