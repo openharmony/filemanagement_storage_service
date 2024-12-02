@@ -831,7 +831,7 @@ int32_t MountManager::UMountAllPath(int32_t userId, std::list<std::string> &moun
     LOGI("unmount sharefs path start, total %{public}d.", total);
     res = UMountByList(list, mountFailList);
     if (res != E_OK) {
-        result = res;
+        result = E_UMOUNT_SHAREFS;
     }
 
     list = mountMap[MOUNT_POINT_TYPE_HMFS];
@@ -839,7 +839,7 @@ int32_t MountManager::UMountAllPath(int32_t userId, std::list<std::string> &moun
     LOGI("unmount hmfs path start, total %{public}d.", total);
     res = UMountByList(list, mountFailList);
     if (res != E_OK) {
-        result = res;
+        result = E_UMOUNT_HMFS;
     }
     UmountMntUserTmpfs(userId);
 
@@ -848,7 +848,7 @@ int32_t MountManager::UMountAllPath(int32_t userId, std::list<std::string> &moun
     LOGI("unmount hmdfs path start, total %{public}d.", total);
     res = UMountByList(list, mountFailList);
     if (res != E_OK) {
-        result = res;
+        result = E_UMOUNT_HMDFS;
     }
 
     if (result != E_OK) {
@@ -873,7 +873,7 @@ int32_t MountManager::UMountByList(std::list<std::string> &list, std::list<std::
     for (const std::string &path: list) {
         LOGD("umount path %{public}s.", path.c_str());
         int32_t res = UMount(path);
-        if (res != E_OK && errno == EBUSY) {
+        if (res != E_OK && errno != ENOENT && errno != EINVAL) {
             LOGE("failed to unmount path %{public}s, errno %{public}d.", path.c_str(), errno);
             result = errno;
             mountFailList.push_back(path);
@@ -937,26 +937,26 @@ int32_t MountManager::HmdfsUMount(int32_t userId, std::string relativePath)
 
 int32_t MountManager::CloudUMount(int32_t userId)
 {
+    if (!cloudReady_) {
+        LOGE("cloud service not ready.");
+        return E_CLOUD_NOT_READY;
+    }
 #ifdef DFS_SERVICE
     int32_t err = E_OK;
     Utils::MountArgument cloudMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
-    const string path = cloudMntArgs.GetFullCloud();
-    const string mediaCloudPath = cloudMntArgs.GetFullMediaCloud();
-
-    HmdfsUMount(userId, "cloud");
-
-    err = UMount2(path, MNT_DETACH);
-    if (err != E_OK) {
-        LOGE("fuse umount2 failed, errno %{public}d, fuse dst %{public}s", errno, path.c_str());
-        return E_UMOUNT;
+    const string cloudFusePath = cloudMntArgs.GetFullCloud();
+    err = UMount2(cloudFusePath, MNT_DETACH);
+    if (err != E_OK && errno != ENOENT && errno != EINVAL) {
+        LOGE("cloud fuse umount failed, errno is %{public}d.", errno);
+        return E_CLOUD_FUSE_UMOUNT;
     }
-
-    err = UMount2(mediaCloudPath, MNT_DETACH);
-    if (err != E_OK) {
-        LOGE("fuse umount2 failed, errno %{public}d, fuse dst %{public}s", errno, mediaCloudPath.c_str());
-        return E_UMOUNT;
+    const string cloudPath = cloudMntArgs.GetFullMediaCloud();
+    err = UMount2(cloudPath, MNT_DETACH);
+    if (err != E_OK && errno != ENOENT && errno != EINVAL) {
+        LOGE("cloud umount failed, errno %{public}d", errno);
+        return E_CLOUD_UMOUNT;
     }
-    LOGI("umount2 media cloud path:%{public}s  cloud path:%{public}s success", mediaCloudPath.c_str(), path.c_str());
+    LOGI("cloud umount success");
     return E_OK;
 #else
     return E_OK;
@@ -1140,7 +1140,7 @@ int32_t MountManager::UmountByUser(int32_t userId)
             continue;
         }
         LOGE("failed to umount cloud mount point, err %{public}d", err);
-        return E_UMOUNT;
+        return err;
     }
 
     LOGI("umount media fuse mount point start.");
@@ -1154,7 +1154,7 @@ int32_t MountManager::UmountByUser(int32_t userId)
             continue;
         }
         LOGE("failed to umount media fuse mount point, err %{public}d", err);
-        return E_UMOUNT;
+        return err;
     }
     return E_OK;
 }
@@ -1558,7 +1558,7 @@ int32_t MountManager::MountMediaFuse(int32_t userId, int32_t &devFd)
     Utils::MountArgument mediaMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
     const string path = mediaMntArgs.GetFullMediaFuse();
     if (E_OK != UMount2(path.c_str(), MNT_DETACH)) {
-        LOGE("UMount media fuse mountpoint failed, errno = %{public}d", errno);
+        LOGE("UMount media fuse mount point failed, errno = %{public}d", errno);
     }
 
     // open fuse
@@ -1591,19 +1591,15 @@ int32_t MountManager::MountMediaFuse(int32_t userId, int32_t &devFd)
 int32_t MountManager::UMountMediaFuse(int32_t userId)
 {
     int32_t err = E_OK;
-
     LOGI("start umount media fuse");
-
     Utils::MountArgument mediaMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
     const string path = mediaMntArgs.GetFullMediaFuse();
-
     err = UMount2(path, MNT_DETACH);
     if (err != E_OK && errno != ENOENT && errno != EINVAL) {
-        LOGE("fuse umount2 failed, errno %{public}d, fuse dst %{public}s", errno, path.c_str());
-        return E_UMOUNT;
+        LOGE("media fuse umount failed, errno %{public}d", errno);
+        return E_MEDIA_FUSE_UMOUNT;
     }
-
-    LOGI("umount %{public}s success", path.c_str());
+    LOGI("umount media fuse success");
     return E_OK;
 }
 } // namespace StorageDaemon
