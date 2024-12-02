@@ -215,7 +215,6 @@ void MtpDeviceMonitor::UmountDetachedMtpDevice(uint8_t devNum, uint32_t busLoc)
     }
 
     for (auto iter = lastestMtpDevList_.begin(); iter != lastestMtpDevList_.end();) {
-        LOGI("Check mtp device state, devNum=%{public}d, busLocation=%{public}d.", iter->devNum, iter->busLocation);
         LOGI("Mtp device mount path=%{public}s is not exist or removed, umount it.", (iter->path).c_str());
         int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->UmountDevice(*iter, true);
         if (ret == E_OK) {
