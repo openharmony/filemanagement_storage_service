@@ -477,7 +477,7 @@ int32_t StorageManager::SendEncryptedStatusToAppSpawn(uint32_t userId, int32_t e
         LOGE("Appspawn failed to send message, ret=%{public}d", ret);
         return ret;
     }
-    if (result.result != E_OK) {
+    if (result.result != 0) {
         LOGE("Appspawn failed to handle message, result=%{public}d", result.result);
         return result.result;
     }
