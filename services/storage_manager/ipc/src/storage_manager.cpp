@@ -516,6 +516,7 @@ int32_t StorageManager::InactiveUserKey(uint32_t userId)
     }
     return err;
 #else
+    SendEncryptStatusToAppSpawn(userId, DECRYPTED);
     return E_OK;
 #endif
 }
