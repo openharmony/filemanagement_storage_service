@@ -24,10 +24,11 @@ constexpr size_t MIN_STORAGE_SIZE = sizeof(uint16_t) * 3 + sizeof(uint32_t) + si
 constexpr size_t MIN_EXTENSION_SIZE = sizeof(char *) + sizeof(int) * 2;
 constexpr size_t MIN_MTPDEVICE_SIZE = sizeof(uint8_t) * 2 + sizeof(uint32_t) * 8 + sizeof(int);
 constexpr size_t MIN_SIZE = std::max({MIN_STORAGE_SIZE, MIN_EXTENSION_SIZE, MIN_MTPDEVICE_SIZE});
-constexpr size_t MIN_RAWDEVICE_SIZE = sizeof(uint32_t) * 2 + sizeof(uint16_t) * 2
-                                      + sizeof(uint8_t) + sizeof(int) + sizeof(char *) * 2;
+constexpr size_t MIN_RAWDEVICE_SIZE = sizeof(uint32_t) * 2 + sizeof(uint16_t) * 2 +
+                                      sizeof(uint8_t) + sizeof(int) + sizeof(char *) * 2;
 constexpr size_t MIN_FOLDER_SIZE = sizeof(uint32_t) * 3 + sizeof(char *);
-constexpr size_t MIN_FILE_SIZE = sizeof(uint32_t) * 3 + sizeof(uint64_t) + sizeof(char *) + sizeof(time_t) + sizeof(LIBMTP_filetype_t);
+constexpr size_t MIN_FILE_SIZE = sizeof(uint32_t) * 3 + sizeof(uint64_t) + sizeof(char *) +
+                                 sizeof(time_t) + sizeof(LIBMTP_filetype_t);
  
 template<class T>
 T TypeCast(const uint8_t *data, int *pos = nullptr)
@@ -131,11 +132,11 @@ int ConstructFile(const uint8_t *data, size_t size, int pos, LIBMTP_file_t *file
     file->filetype = TypeCast<LIBMTP_filetype_t>(data + pos);
     file->next = nullptr;
 }
-//LXY
  
 bool CheckSpecificDeviceFuzzTest(const uint8_t *data, size_t size)
 {
-    if (data == nullptr || size <= sizeof(int) * 2) {
+    int num32 = 2;
+    if (data == nullptr || size <= sizeof(int) * num32) {
         return false;
     }
  
@@ -195,7 +196,8 @@ bool ReleaseDeviceTest(const uint8_t *data, size_t size)
  
 bool GetFilesAndFoldersTest(const uint8_t *data, size_t size)
 {
-    if (data == nullptr || size <= MIN_SIZE + sizeof(uint32_t) * 2) {
+    int num32 = 2;
+    if (data == nullptr || size <= MIN_SIZE + sizeof(uint32_t) * num32) {
         return false;
     }
     LIBMTP_mtpdevice_t mtpDevice;
@@ -211,15 +213,16 @@ bool GetFilesAndFoldersTest(const uint8_t *data, size_t size)
  
 bool CreateFolderTest(const uint8_t *data, size_t size)
 {
-    if (data == nullptr || size <= MIN_SIZE + sizeof(uint32_t) * 2 + sizeof(char*)) {
+    int num32 = 2;
+    if (data == nullptr || size <= MIN_SIZE + sizeof(uint32_t) * num32 + sizeof(char*)) {
         return false;
     }
     LIBMTP_mtpdevice_t mtpDevice;
     int pos = ConstructMtpDevice(data, size, &mtpDevice);
     char* name = TypeCast<char*>(data + pos);
-    uint32_t parent_id = TypeCast<uint32_t>(data + pos);
-    uint32_t storage_id = TypeCast<uint32_t>(data + pos);
-    uint32_t ret = LIBMTP_Create_Folder(&mtpDevice, name, parent_id, storage_id);
+    uint32_t parentId = TypeCast<uint32_t>(data + pos);
+    uint32_t storageId = TypeCast<uint32_t>(data + pos);
+    uint32_t ret = LIBMTP_Create_Folder(&mtpDevice, name, parentId, storageId);
     if (ret == 0) {
         return false;
     }
@@ -255,9 +258,9 @@ bool GetFileToFileTest(const uint8_t *data, size_t size)
     uint32_t id = TypeCast<uint32_t>(data + pos);
     char const *const path = TypeCast<char const *const>(data + pos);
     LIBMTP_progressfunc_t const callback = TypeCast<LIBMTP_progressfunc_t const>(data + pos);
-    void const * const user_data = TypeCast<void const * const>(data + pos);
+    void const * const userData = TypeCast<void const * const>(data + pos);
  
-    int ret = LIBMTP_Get_File_To_File(&mtpDevice, id, path, callback, user_data);
+    int ret = LIBMTP_Get_File_To_File(&mtpDevice, id, path, callback, userData);
     if (ret != 0) {
         return false;
     }
@@ -276,9 +279,9 @@ bool SendFileFromFileTest(const uint8_t *data, size_t size)
     char const *const path = TypeCast<char const *const>(data + pos);
     pos = ConstructFile(data, size, pos, &file);
     LIBMTP_progressfunc_t const callback = TypeCast<LIBMTP_progressfunc_t const>(data + pos);
-    void const * const user_data = TypeCast<void const * const>(data + pos);
+    void const * const userData = TypeCast<void const * const>(data + pos);
  
-    int ret = LIBMTP_Send_File_From_File(&mtpDevice, path, &file, callback, user_data);
+    int ret = LIBMTP_Send_File_From_File(&mtpDevice, path, &file, callback, userData);
     if (ret != 0) {
         return false;
     }
@@ -310,9 +313,9 @@ bool DeleteObjectTest(const uint8_t *data, size_t size)
     }
     LIBMTP_mtpdevice_t mtpDevice;
     int pos = ConstructMtpDevice(data, size, &mtpDevice);
-    uint32_t object_id = TypeCast<uint32_t>(data + pos);
+    uint32_t objectId = TypeCast<uint32_t>(data + pos);
  
-    int ret = LIBMTP_Delete_Object(&mtpDevice, object_id);
+    int ret = LIBMTP_Delete_Object(&mtpDevice, objectId);
     if (ret != 0) {
         return false;
     }
@@ -321,17 +324,17 @@ bool DeleteObjectTest(const uint8_t *data, size_t size)
  
 bool SetObjectU32Test(const uint8_t *data, size_t size)
 {
-    int num_para_32 = 2;
-    if (data == nullptr || size <= MIN_SIZE + sizeof(uint32_t const) * num_para_32 + sizeof(LIBMTP_property_t const)) {
+    int num32 = 2;
+    if (data == nullptr || size <= MIN_SIZE + sizeof(uint32_t const) * num32 + sizeof(LIBMTP_property_t const)) {
         return false;
     }
     LIBMTP_mtpdevice_t mtpDevice;
     int pos = ConstructMtpDevice(data, size, &mtpDevice);
-    uint32_t const object_id = TypeCast<uint32_t const>(data + pos);
-    LIBMTP_property_t const attribute_id = TypeCast<LIBMTP_property_t const>(data + pos);
+    uint32_t const objectId = TypeCast<uint32_t const>(data + pos);
+    LIBMTP_property_t const attributeId = TypeCast<LIBMTP_property_t const>(data + pos);
     uint32_t const value = TypeCast<uint32_t const>(data + pos);
  
-    int ret = LIBMTP_Set_Object_u32(&mtpDevice, object_id, attribute_id, value);
+    int ret = LIBMTP_Set_Object_u32(&mtpDevice, objectId, attributeId, value);
     if (ret != 0) {
         return false;
     }
@@ -340,17 +343,17 @@ bool SetObjectU32Test(const uint8_t *data, size_t size)
  
 bool SetObjectStringTest(const uint8_t *data, size_t size)
 {
-    int num_para_32 = 2;
-    if (data == nullptr || size <= MIN_SIZE + sizeof(uint32_t const) + sizeof(LIBMTP_property_t const) + sizeof(char const *const)) {
+    if (data == nullptr || size <= MIN_SIZE + sizeof(uint32_t const) + 
+        sizeof(LIBMTP_property_t const) + sizeof(char const *const)) {
         return false;
     }
     LIBMTP_mtpdevice_t mtpDevice;
     int pos = ConstructMtpDevice(data, size, &mtpDevice);
-    uint32_t const object_id = TypeCast<uint32_t const>(data + pos);
-    LIBMTP_property_t const attribute_id = TypeCast<LIBMTP_property_t const>(data + pos);
+    uint32_t const objectId = TypeCast<uint32_t const>(data + pos);
+    LIBMTP_property_t const attributeId = TypeCast<LIBMTP_property_t const>(data + pos);
     char const * const string = TypeCast<char const * const>(data + pos);
  
-    int ret = LIBMTP_Set_Object_String(&mtpDevice, object_id, attribute_id, string);
+    int ret = LIBMTP_Set_Object_String(&mtpDevice, objectId, attributeId, string);
     if (ret != 0) {
         return false;
     }
@@ -359,10 +362,10 @@ bool SetObjectStringTest(const uint8_t *data, size_t size)
  
 bool GetPartialObjectTest(const uint8_t *data, size_t size)
 {
-    int num_para_32 = 2;
-    size_t size_required = MIN_SIZE + sizeof(uint32_t const) * num_para_32
-                           + sizeof(uint64_t const) + sizeof(unsigned int) + sizeof(unsigned char*);
-    if (data == nullptr || size <= size_required) {
+    int num32 = 2;
+    size_t sizeReq = MIN_SIZE + sizeof(uint32_t const) * num32 +
+                           sizeof(uint64_t const) + sizeof(unsigned int) + sizeof(unsigned char*);
+    if (data == nullptr || size <= sizeReq) {
         return false;
     }
     LIBMTP_mtpdevice_t mtpDevice;
@@ -370,10 +373,10 @@ bool GetPartialObjectTest(const uint8_t *data, size_t size)
     uint32_t const id = TypeCast<uint32_t const>(data + pos);
     uint64_t offset = TypeCast<uint64_t>(data + pos);
     uint32_t maxbytes = TypeCast<uint32_t>(data + pos);
-    unsigned char* para_data = TypeCast<unsigned char*>(data + pos);
-    unsigned int para_size = TypeCast<unsigned int>(data + pos);
+    unsigned char* paraData = TypeCast<unsigned char*>(data + pos);
+    unsigned int paraSize = TypeCast<unsigned int>(data + pos);
  
-    int ret = LIBMTP_GetPartialObject(&mtpDevice, id, offset, maxbytes, &para_data, &para_size);
+    int ret = LIBMTP_GetPartialObject(&mtpDevice, id, offset, maxbytes, &paraData, &paraSize);
     if (ret == -1) {
         return false;
     }
@@ -382,19 +385,19 @@ bool GetPartialObjectTest(const uint8_t *data, size_t size)
  
 bool SendPartialObjectTest(const uint8_t *data, size_t size)
 {
-    size_t size_required = MIN_SIZE + sizeof(uint32_t const) + sizeof(uint64_t const)
-                           + sizeof(unsigned int) + sizeof(unsigned char);
-    if (data == nullptr || size <= size_required) {
+    size_t sizeReq = MIN_SIZE + sizeof(uint32_t const) + sizeof(uint64_t const) +
+                     sizeof(unsigned int) + sizeof(unsigned char);
+    if (data == nullptr || size <= sizeReq) {
         return false;
     }
     LIBMTP_mtpdevice_t mtpDevice;
     int pos = ConstructMtpDevice(data, size, &mtpDevice);
     uint32_t const id = TypeCast<uint32_t const>(data + pos);
     uint64_t offset = TypeCast<uint64_t>(data + pos);
-    unsigned char para_data = TypeCast<unsigned char>(data + pos);
-    unsigned int para_size = TypeCast<unsigned int>(data + pos);
+    unsigned char paraData = TypeCast<unsigned char>(data + pos);
+    unsigned int paraSize = TypeCast<unsigned int>(data + pos);
  
-    int ret = LIBMTP_SendPartialObject(&mtpDevice, id, offset, &para_data, para_size);
+    int ret = LIBMTP_SendPartialObject(&mtpDevice, id, offset, &paraData, paraSize);
     if (ret == -1) {
         return false;
     }
