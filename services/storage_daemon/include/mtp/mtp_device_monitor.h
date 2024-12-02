@@ -27,7 +27,6 @@ namespace OHOS {
 namespace StorageDaemon {
 class MtpDeviceMonitor : public NoCopyable  {
     DECLARE_DELAYED_SINGLETON(MtpDeviceMonitor);
-
 public:
     void StartMonitor();
     void UmountDetachedMtpDevice(uint8_t devNum, uint32_t busLoc);
