@@ -25,6 +25,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <thread>
+#include "mtp/usb_event_subscriber.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/file_utils.h"
@@ -68,57 +69,59 @@ bool MtpDeviceMonitor::IsNeedDisableMtp()
     return false;
 }
 
+void MtpDeviceMonitor::MountMtpDeviceByBroadcast()
+{
+    int rawDevSize = 0;
+    LIBMTP_raw_device_t *rawDevices = nullptr;
+    LIBMTP_error_number_t err = LIBMTP_Detect_Raw_Devices(&rawDevices, &rawDevSize);
+    if ((err == LIBMTP_ERROR_NO_DEVICE_ATTACHED) || (rawDevices == nullptr) || (rawDevSize <= 0)) {
+        if (rawDevices != nullptr) {
+            free(static_cast<void *>(rawDevices));
+        }
+        return;
+    }
+
+    std::vector<MtpDeviceInfo> devInfos;
+    for (int index = 0; index < rawDevSize; ++index) {
+        LIBMTP_raw_device_t *rawDevice = &rawDevices[index];
+        if (rawDevice == nullptr) {
+            LOGE("MonitorDevice: rawDevice is nullptr.");
+            continue;
+        }
+        std::vector<std::string> cmd = {
+            "cat",
+            "/proc/sys/kernel/random/uuid",
+        };
+        std::vector<std::string> uuids;
+        ForkExec(cmd, &uuids);
+
+        MtpDeviceInfo devInfo;
+        devInfo.uuid = uuids.front();
+        devInfo.devNum = rawDevice->devnum;
+        devInfo.busLocation = rawDevice->bus_location;
+        devInfo.vendor = rawDevice->device_entry.vendor;
+        devInfo.product = rawDevice->device_entry.product;
+        devInfo.vendorId = rawDevice->device_entry.vendor_id;
+        devInfo.productId = rawDevice->device_entry.product_id;
+        devInfo.id = "mtp-" + std::to_string(devInfo.vendorId) + "-" + std::to_string(devInfo.productId);
+        devInfo.path = MTP_ROOT_PATH + devInfo.id;
+        devInfos.push_back(devInfo);
+        LOGI("Detect new mtp device: id=%{public}s, vendor=%{public}s, product=%{public}s, devNum=%{public}d",
+            (devInfo.id).c_str(), (devInfo.vendor).c_str(), (devInfo.product).c_str(), devInfo.devNum);
+    }
+    MountMtpDevice(devInfos);
+    free(static_cast<void *>(rawDevices));
+}
+
 void MtpDeviceMonitor::MonitorDevice()
 {
-    
     LOGI("MonitorDevice: mtp device monitor thread begin.");
     while (g_keepMonitoring) {
         if (IsNeedDisableMtp()) {
             break;
         }
         sleep(SLEEP_TIME);
-        CheckAndUmountRemovedMtpDevice();
-
-        int rawDevSize = 0;
-        LIBMTP_raw_device_t *rawDevices = nullptr;
-        LIBMTP_error_number_t err = LIBMTP_Detect_Raw_Devices(&rawDevices, &rawDevSize);
-        if ((err == LIBMTP_ERROR_NO_DEVICE_ATTACHED) || (rawDevices == nullptr) || (rawDevSize <= 0)) {
-            if (rawDevices != nullptr) {
-                free(static_cast<void *>(rawDevices));
-            }
-            continue;
-        }
-
-        std::vector<MtpDeviceInfo> devInfos;
-        for (int index = 0; index < rawDevSize; ++index) {
-            LIBMTP_raw_device_t *rawDevice = &rawDevices[index];
-            if (rawDevice == nullptr) {
-                LOGE("MonitorDevice: rawDevice is nullptr.");
-                continue;
-            }
-            std::vector<std::string> cmd = {
-                "cat",
-                "/proc/sys/kernel/random/uuid",
-            };
-            std::vector<std::string> uuids;
-            ForkExec(cmd, &uuids);
-
-            MtpDeviceInfo devInfo;
-            devInfo.uuid = uuids.front();
-            devInfo.devNum = rawDevice->devnum;
-            devInfo.busLocation = rawDevice->bus_location;
-            devInfo.vendor = rawDevice->device_entry.vendor;
-            devInfo.product = rawDevice->device_entry.product;
-            devInfo.vendorId = rawDevice->device_entry.vendor_id;
-            devInfo.productId = rawDevice->device_entry.product_id;
-            devInfo.id = "mtp-" + std::to_string(devInfo.vendorId) + "-" + std::to_string(devInfo.productId);
-            devInfo.path = MTP_ROOT_PATH + devInfo.id;
-            devInfos.push_back(devInfo);
-            LOGI("Detect new mtp device: id=%{public}s, vendor=%{public}s, product=%{public}s, devNum=%{public}d",
-                (devInfo.id).c_str(), (devInfo.vendor).c_str(), (devInfo.product).c_str(), devInfo.devNum);
-        }
-        MountMtpDevice(devInfos);
-        free(static_cast<void *>(rawDevices));
+        UsbEventSubscriber::SubscribeCommonEvent();
     }
     LOGI("MonitorDevice: mtp device monitor thread end.");
 }
@@ -163,6 +166,8 @@ void MtpDeviceMonitor::MountMtpDevice(const std::vector<MtpDeviceInfo> &monitorD
         int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->MountDevice(device);
         if (ret == E_OK) {
             lastestMtpDevList_.push_back(device);
+        } else if (ret == E_MTP_PREPARE_DIR_ERR) {
+            LOGE("MountMtpDevice: /mnt/data/external director not ready.");
         } else {
             LOGE("MountMtpDevice: mtp device mount failed.");
             invalidMtpDevices_.push_back(device);
@@ -195,9 +200,10 @@ void MtpDeviceMonitor::UmountAllMtpDevice()
     hasEjectedDevices_.clear();
 }
 
-void MtpDeviceMonitor::CheckAndUmountRemovedMtpDevice()
+void MtpDeviceMonitor::UmountDetachedMtpDevice(uint8_t devNum, uint32_t busLoc)
 {
     std::lock_guard<std::mutex> lock(listMutex_);
+    LOGI("MtpDeviceMonitor::Umount detached mtp device, devNum=%{public}d, busLoc=%{public}d.", devNum, busLoc);
     for (auto it = hasEjectedDevices_.begin(); it != hasEjectedDevices_.end();) {
         int res = LIBMTP_Check_Specific_Device(it->busLocation, it->devNum);
         if (res <= 0) {
@@ -209,18 +215,12 @@ void MtpDeviceMonitor::CheckAndUmountRemovedMtpDevice()
     }
 
     for (auto iter = lastestMtpDevList_.begin(); iter != lastestMtpDevList_.end();) {
-        int res = LIBMTP_Check_Specific_Device(iter->busLocation, iter->devNum);
-        LOGI("Check mtp device state result=%{public}d, devNum=%{public}d, busLocation=%{public}d.", res,
-            iter->devNum, iter->busLocation);
-        if (IsDir(iter->path) && !std::filesystem::is_empty(iter->path) && (res > 0)) {
-            iter++;
-            continue;
-        }
-
+        LOGI("Check mtp device state, devNum=%{public}d, busLocation=%{public}d.", iter->devNum, iter->busLocation);
         LOGI("Mtp device mount path=%{public}s is not exist or removed, umount it.", (iter->path).c_str());
         int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->UmountDevice(*iter, true);
         if (ret == E_OK) {
             iter = lastestMtpDevList_.erase(iter);
+            invalidMtpDevices_.clear();
         } else {
             LOGE("Umount mtp device failed, path=%{public}s", (iter->path).c_str());
             iter++;
