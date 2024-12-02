@@ -37,7 +37,6 @@ public:
 private:
     void MonitorDevice();
     void MountMtpDevice(const std::vector<MtpDeviceInfo> &monitorDevices);
-    void CheckAndUmountRemovedMtpDevice();
     void UmountAllMtpDevice();
     bool HasMounted(const MtpDeviceInfo &device);
     bool IsNeedDisableMtp();
