@@ -27,26 +27,5 @@ namespace OHOS {
 namespace StorageDaemon {
 class MtpDeviceMonitor : public NoCopyable  {
     DECLARE_DELAYED_SINGLETON(MtpDeviceMonitor);
-public:
-    void StartMonitor();
-    int32_t Mount(const std::string &id);
-    int32_t Umount(const std::string &id);
-    
 
-private:
-    void MonitorDevice();
-    void MountMtpDevice(const std::vector<MtpDeviceInfo> &monitorDevices);
-    void CheckAndUmountRemovedMtpDevice();
-    void UmountAllMtpDevice();
-    bool HasMounted(const MtpDeviceInfo &device);
-    bool IsNeedDisableMtp();
-
-private:
-    std::mutex listMutex_;
-    std::vector<MtpDeviceInfo> lastestMtpDevList_;
-    std::vector<MtpDeviceInfo> invalidMtpDevices_;
-    std::vector<MtpDeviceInfo> hasEjectedDevices_;
-};
-} // namespace StorageDaemon
-} // namespace OHOS
 #endif
