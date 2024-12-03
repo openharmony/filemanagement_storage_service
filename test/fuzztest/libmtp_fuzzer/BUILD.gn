@@ -10,11 +10,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
- 
+
 import("//build/config/features.gni")
 import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
- 
+
 ohos_fuzztest("LibmtpFuzzTest") {
   module_out_path = "storage_service/storage_service"
   fuzz_config_file = "${storage_service_path}/test/fuzztest/libmtp_fuzzer"
@@ -39,7 +39,7 @@ ohos_fuzztest("LibmtpFuzzTest") {
     ]
   }
 }
- 
+
 group("fuzztest") {
   testonly = true
   deps = [ ":LibmtpFuzzTest" ]
