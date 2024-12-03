@@ -312,7 +312,7 @@ void DiskInfo::ProcessPartition(std::vector<std::string>::iterator &it, const st
         std::string str = "0x0" + *it;
         int32_t type;
         int base = 16;
-        auto result = std::from_chars(str.data(), str.data() + str.size(), type, base);
+        auto result = std::from_chars(str.data(), str.size() + str.size(), type, base);
         if (result.ec != std::errc()) {
             LOGE("Volume type conversion failed");
         }
