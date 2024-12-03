@@ -64,6 +64,7 @@ const string PACKAGE_NAME_FLAG = "<bundleName>";
 const string MOUNT_POINT_INFO = "/proc/mounts";
 const string MOUNT_POINT_TYPE_HMDFS = "hmdfs";
 const string MOUNT_POINT_TYPE_HMFS = "hmfs";
+const string MOUNT_POINT_TYPE_F2FS = "f2fs";
 const string MOUNT_POINT_TYPE_SHAREFS = "sharefs";
 const string EL2_BASE = "/data/storage/el2/base/";
 const string MOUNT_SUFFIX = "_locked";
@@ -774,7 +775,7 @@ void MountManager::MountPointToList(std::list<std::string> &hmdfsList, std::list
         }
         return;
     }
-    if (type == MOUNT_POINT_TYPE_HMFS) {
+    if (type == MOUNT_POINT_TYPE_HMFS || type == MOUNT_POINT_TYPE_F2FS) {
         if (dst.length() >= hmfsPrefix.length() && dst.substr(0, hmfsPrefix.length()) == hmfsPrefix) {
             hmfsList.push_front(dst);
         }
