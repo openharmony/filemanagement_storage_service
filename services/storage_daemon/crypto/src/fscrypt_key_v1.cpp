@@ -426,13 +426,13 @@ bool FscryptKeyV1::InactiveKey(uint32_t flag, const std::string &mnt)
 {
     (void)mnt;
     LOGI("enter");
-    bool ret = true;
+    DropCachesIfNeed();
 
+    bool ret = true;
     if (!keyInfo_.keyDesc.IsEmpty() && !UninstallKeyToKeyring()) {
         LOGE("UninstallKeyToKeyring failed");
         ret = false;
     }
-    DropCachesIfNeed();
     if (!fscryptV1Ext.InactiveKeyExt(flag)) {
         LOGE("fscryptV1Ext InactiveKeyExt failed");
         ret = false;
