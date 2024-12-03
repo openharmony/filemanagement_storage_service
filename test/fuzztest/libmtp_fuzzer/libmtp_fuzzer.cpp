@@ -135,8 +135,8 @@ int ConstructFile(const uint8_t *data, size_t size, int pos, LIBMTP_file_t *file
  
 bool CheckSpecificDeviceFuzzTest(const uint8_t *data, size_t size)
 {
-    int num32 = 2;
-    if (data == nullptr || size <= sizeof(int) * num32) {
+    int numPara32 = 2;
+    if (data == nullptr || size <= sizeof(int) * numPara32) {
         return false;
     }
  
@@ -196,8 +196,8 @@ bool ReleaseDeviceTest(const uint8_t *data, size_t size)
  
 bool GetFilesAndFoldersTest(const uint8_t *data, size_t size)
 {
-    int num32 = 2;
-    if (data == nullptr || size <= MIN_SIZE + sizeof(uint32_t) * num32) {
+    int numPara32 = 2;
+    if (data == nullptr || size <= MIN_SIZE + sizeof(uint32_t) * numPara32) {
         return false;
     }
     LIBMTP_mtpdevice_t mtpDevice;
@@ -213,8 +213,8 @@ bool GetFilesAndFoldersTest(const uint8_t *data, size_t size)
  
 bool CreateFolderTest(const uint8_t *data, size_t size)
 {
-    int num32 = 2;
-    if (data == nullptr || size <= MIN_SIZE + sizeof(uint32_t) * num32 + sizeof(char*)) {
+    int numPara32 = 2;
+    if (data == nullptr || size <= MIN_SIZE + sizeof(uint32_t) * numPara32 + sizeof(char*)) {
         return false;
     }
     LIBMTP_mtpdevice_t mtpDevice;
@@ -324,8 +324,8 @@ bool DeleteObjectTest(const uint8_t *data, size_t size)
  
 bool SetObjectU32Test(const uint8_t *data, size_t size)
 {
-    int num32 = 2;
-    if (data == nullptr || size <= MIN_SIZE + sizeof(uint32_t const) * num32 + sizeof(LIBMTP_property_t const)) {
+    int numPara32 = 2;
+    if (data == nullptr || size <= MIN_SIZE + sizeof(uint32_t const) * numPara32 + sizeof(LIBMTP_property_t const)) {
         return false;
     }
     LIBMTP_mtpdevice_t mtpDevice;
@@ -362,9 +362,9 @@ bool SetObjectStringTest(const uint8_t *data, size_t size)
  
 bool GetPartialObjectTest(const uint8_t *data, size_t size)
 {
-    int num32 = 2;
-    size_t sizeReq = MIN_SIZE + sizeof(uint32_t const) * num32 +
-                           sizeof(uint64_t const) + sizeof(unsigned int) + sizeof(unsigned char*);
+    int numPara32 = 2;
+    size_t sizeReq = MIN_SIZE + sizeof(uint32_t const) * numPara32 +
+                     sizeof(uint64_t const) + sizeof(unsigned int) + sizeof(unsigned char*);
     if (data == nullptr || size <= sizeReq) {
         return false;
     }
