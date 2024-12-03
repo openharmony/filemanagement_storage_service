@@ -68,6 +68,9 @@ void UsbEventSubscriber::OnReceiveEvent(const OHOS::EventFwk::CommonEventData &d
     }
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USB_DEVICE_ATTACHED) {
         LOGI("OnReceiveEvent COMMON_EVENT_USB_DEVICE_ATTACHED, data=%{public}s", data.GetData().c_str());
+#ifdef SUPPORT_OPEN_SOURCE_MTP_DEVICE
+        DelayedSingleton<MtpDeviceMonitor>::GetInstance()->MountMtpDeviceByBroadcast();
+#endif
     }
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USB_DEVICE_DETACHED) {
         LOGI("OnReceiveEvent COMMON_EVENT_USB_DEVICE_DETACHED, data=%{public}s", data.GetData().c_str());
