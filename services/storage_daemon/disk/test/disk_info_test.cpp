@@ -57,8 +57,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Create_001, TestSize.Level1)
     data->Decode(msg);
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
-    unsigned int major = std::atoi(data->GetParam("MAJOR").c_str());
-    unsigned int minor = std::atoi(data->GetParam("MINOR").c_str());
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
 
@@ -90,8 +90,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Create_002, TestSize.Level1)
     data->Decode(msg);
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
-    unsigned int major = std::atoi(data->GetParam("MAJOR").c_str());
-    unsigned int minor = std::atoi(data->GetParam("MINOR").c_str());
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
 
@@ -123,8 +123,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Destroy_001, TestSize.Level1
     data->Decode(msg);
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
-    unsigned int major = std::atoi(data->GetParam("MAJOR").c_str());
-    unsigned int minor = std::atoi(data->GetParam("MINOR").c_str());
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
 
@@ -156,8 +156,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Destroy_002, TestSize.Level1
     data->Decode(msg);
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
-    unsigned int major = std::atoi(data->GetParam("MAJOR").c_str());
-    unsigned int minor = std::atoi(data->GetParam("MINOR").c_str());
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
 
@@ -189,8 +189,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_001, TestSize.
     data->Decode(msg);
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
-    unsigned int major = std::atoi(data->GetParam("MAJOR").c_str());
-    unsigned int minor = std::atoi(data->GetParam("MINOR").c_str());
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
 
@@ -222,8 +222,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_002, TestSize.
     data->Decode(msg);
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
-    unsigned int major = std::atoi(data->GetParam("MAJOR").c_str());
-    unsigned int minor = std::atoi(data->GetParam("MINOR").c_str());
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
 
@@ -255,8 +255,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_CreateVolume_001, TestSize.L
     data->Decode(msg);
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
-    unsigned int major = std::atoi(data->GetParam("MAJOR").c_str());
-    unsigned int minor = std::atoi(data->GetParam("MINOR").c_str());
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
 
@@ -288,8 +288,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_CreateVolume_002, TestSize.L
     data->Decode(msg);
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
-    unsigned int major = std::atoi(data->GetParam("MAJOR").c_str());
-    unsigned int minor = std::atoi(data->GetParam("MINOR").c_str());
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
 
@@ -321,8 +321,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Partition_001, TestSize.Leve
     data->Decode(msg);
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
-    unsigned int major = std::atoi(data->GetParam("MAJOR").c_str());
-    unsigned int minor = std::atoi(data->GetParam("MINOR").c_str());
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
 
@@ -354,8 +354,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Partition_002, TestSize.Leve
     data->Decode(msg);
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
-    unsigned int major = std::atoi(data->GetParam("MAJOR").c_str());
-    unsigned int minor = std::atoi(data->GetParam("MINOR").c_str());
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
 
@@ -387,8 +387,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetDevice_001, TestSize.Leve
     data->Decode(msg);
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
-    unsigned int major = std::atoi(data->GetParam("MAJOR").c_str());
-    unsigned int minor = std::atoi(data->GetParam("MINOR").c_str());
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
 
@@ -420,8 +420,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetId_001, TestSize.Level1)
     data->Decode(msg);
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
-    unsigned int major = std::atoi(data->GetParam("MAJOR").c_str());
-    unsigned int minor = std::atoi(data->GetParam("MINOR").c_str());
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
 
@@ -454,8 +454,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetDevPath_001, TestSize.Lev
     data->Decode(msg);
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
-    unsigned int major = std::atoi(data->GetParam("MAJOR").c_str());
-    unsigned int minor = std::atoi(data->GetParam("MINOR").c_str());
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
 
@@ -487,8 +487,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetDevDSize_001, TestSize.Le
     data->Decode(msg);
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
-    unsigned int major = std::atoi(data->GetParam("MAJOR").c_str());
-    unsigned int minor = std::atoi(data->GetParam("MINOR").c_str());
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
 
@@ -521,8 +521,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetSysPath_001, TestSize.Lev
     data->Decode(msg);
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
-    unsigned int major = std::atoi(data->GetParam("MAJOR").c_str());
-    unsigned int minor = std::atoi(data->GetParam("MINOR").c_str());
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
 
@@ -554,8 +554,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetDevVendor_001, TestSize.L
     data->Decode(msg);
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
-    unsigned int major = std::atoi(data->GetParam("MAJOR").c_str());
-    unsigned int minor = std::atoi(data->GetParam("MINOR").c_str());
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
     std::string path(sysPath + "/device/manfid");
@@ -589,8 +589,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetDevFlag_001, TestSize.Lev
     data->Decode(msg);
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
-    unsigned int major = std::atoi(data->GetParam("MAJOR").c_str());
-    unsigned int minor = std::atoi(data->GetParam("MINOR").c_str());
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
 
@@ -622,8 +622,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_GetDevInfo_001, TestSize.Lev
     data->Decode(msg);
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
-    unsigned int major = std::atoi(data->GetParam("MAJOR").c_str());
-    unsigned int minor = std::atoi(data->GetParam("MINOR").c_str());
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
 
@@ -654,8 +654,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Partition_003, TestSize.Leve
     data->Decode(msg);
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
-    unsigned int major = std::atoi(data->GetParam("MAJOR").c_str());
-    unsigned int minor = std::atoi(data->GetParam("MINOR").c_str());
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
 
@@ -687,8 +687,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Destroy_003, TestSize.Level1
     data->Decode(msg);
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
-    unsigned int major = std::atoi(data->GetParam("MAJOR").c_str());
-    unsigned int minor = std::atoi(data->GetParam("MINOR").c_str());
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
 
@@ -719,8 +719,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_CreateVolume_003, TestSize.L
     data->Decode(msg);
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
-    unsigned int major = std::atoi(data->GetParam("MAJOR").c_str());
-    unsigned int minor = std::atoi(data->GetParam("MINOR").c_str());
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
 
@@ -751,8 +751,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Partition_004, TestSize.Leve
     data->Decode(msg);
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
-    unsigned int major = std::atoi(data->GetParam("MAJOR").c_str());
-    unsigned int minor = std::atoi(data->GetParam("MINOR").c_str());
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
     dev_t device = makedev(major, minor);
     int flag = 0;
 
