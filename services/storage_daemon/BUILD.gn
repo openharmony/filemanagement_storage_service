@@ -174,7 +174,7 @@ ohos_executable("storage_daemon") {
     external_deps += [
       "cJSON:cjson",
       "common_event_service:cesfwk_innerkits",
-      "libmtp:libmtp"
+      "libmtp:libmtp",
     ]
   }
 
