@@ -169,8 +169,13 @@ ohos_executable("storage_daemon") {
     sources += [
       "mtp/src/mtp_device_manager.cpp",
       "mtp/src/mtp_device_monitor.cpp",
+      "mtp/src/usb_event_subscriber.cpp",
     ]
-    external_deps += [ "libmtp:libmtp" ]
+    external_deps += [
+      "cJSON:cjson",
+      "common_event_service:cesfwk_innerkits",
+      "libmtp:libmtp",
+    ]
   }
 
   ldflags = [

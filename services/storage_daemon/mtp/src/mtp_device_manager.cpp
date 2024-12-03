@@ -39,6 +39,19 @@ MtpDeviceManager::~MtpDeviceManager()
     LOGI("MtpDeviceManager Destructor.");
 }
 
+int32_t MtpDeviceManager::PrepareMtpMountPath(const std::string &path)
+{
+    if (!IsDir(path)) {
+        LOGI("PrepareMtpMountPath: mtp device mount path directory does not exist, creating it.");
+        bool ret = PrepareDir(path, PUBLIC_DIR_MODE, FILE_MANAGER_UID, FILE_MANAGER_GID);
+        if (!ret) {
+            LOGE("Prepare directory for mtp device path = %{public}s failed.", path.c_str());
+            return E_MTP_PREPARE_DIR_ERR;
+        }
+    }
+    return E_OK;
+}
+
 int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
 {
     LOGI("MountDevice: start mount mtp device, path=%{public}s", device.path.c_str());
@@ -47,13 +60,10 @@ int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
         return E_MTP_IS_MOUNTING;
     }
     isMounting = true;
-    if (!IsDir(device.path)) {
-        LOGI("MountDevice: mtp device mount path directory is not exist, create it first.");
-        bool ret = PrepareDir(device.path, PUBLIC_DIR_MODE, FILE_MANAGER_UID, FILE_MANAGER_GID);
-        if (!ret) {
-            LOGE("Prepare directory for mtp device path = %{public}s failed.", device.path.c_str());
-            return E_MTP_PREPARE_DIR_ERR;
-        }
+    int32_t ret = PrepareMtpMountPath(device.path);
+    if (ret != E_OK) {
+        isMounting = false;
+        return ret;
     }
     std::vector<std::string> cmdVec = {
         "mtpfs",
@@ -65,6 +75,10 @@ int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
         "allow_other",
         "-o",
         "enable-move",
+        "-o",
+        "max_idle_threads=10",
+        "-o",
+        "max_threads=20",
         "-o",
         "context=u:object_r:mnt_external_file:s0",
         "--device",
