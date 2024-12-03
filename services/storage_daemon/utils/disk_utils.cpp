@@ -84,7 +84,7 @@ int GetMaxVolume(dev_t device)
             LOGE("Get MmcMaxVolumes failed");
             return E_ERR;
         }
-        return std::atoi(str.c_str());
+        return std::stoi(str);
     } else {
         return MAX_SCSI_VOLUMES;
     }

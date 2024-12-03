@@ -143,7 +143,7 @@ void DiskInfo::ReadMetadata()
             LOGE("open file %{public}s failed", path.c_str());
             return;
         }
-        int manfid = std::atoi(str.c_str());
+        int manfid = std::stoi(str);
         switch (manfid) {
             case 0x000003: {
                 vendor_ = "SanDisk";
@@ -294,7 +294,7 @@ void DiskInfo::ProcessPartition(std::vector<std::string>::iterator &it, const st
     if (++it == end) {
         return;
     }
-    int32_t index = std::atoi(it->data().c_str());
+    int32_t index = std::stoi(*it);
     unsigned int majorId = major(device_);
     if ((index > maxVols && majorId == DISK_MMC_MAJOR) || index < 1) {
         LOGE("Invalid partition %{public}d", index);
@@ -307,12 +307,7 @@ void DiskInfo::ProcessPartition(std::vector<std::string>::iterator &it, const st
         if (++it == end) {
             return;
         }
-        std::string str = "0x0" + *it;
-        int32_t type;
-        auto result = std::from_chars(str.data(), str.size() + str.size(), type, 16);
-        if (result.ec != std::errc()) {
-            LOGE("Volume type conversion failed"); //先不返回，因为createMRBVolume有校验
-        }
+        int32_t type = std::stoi("0x0" + *it, 0, 16);
         if (CreateMBRVolume(type, partitionDev)) {
             foundPart = true;
         } else {
