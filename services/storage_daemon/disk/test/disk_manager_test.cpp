@@ -200,8 +200,8 @@ HWTEST_F(DiskManagerTest, Storage_Service_DiskManagerTest_ChangeDisk_001, TestSi
     auto nlData = std::make_unique<NetlinkData>();
     nlData->Decode(msg);
     NetlinkData *data = nlData.get();
-    unsigned int major = std::atoi(data->GetParam("MAJOR").c_str());
-    unsigned int minor = std::atoi(data->GetParam("MINOR").c_str());
+    unsigned int major = (unsigned int) std::atoi(data.get()->GetParam("MAJOR").c_str());
+    unsigned int minor = (unsigned int) std::atoi(data.get()->GetParam("MINOR").c_str());
     dev_t device = makedev(major, minor);
     diskManager->ChangeDisk(device, data);
 
