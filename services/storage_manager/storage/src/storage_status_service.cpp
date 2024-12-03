@@ -94,7 +94,7 @@ void GetMediaTypeAndSize(const std::shared_ptr<DataShare::DataShareResultSet> &r
 int32_t GetMediaStorageStats(StorageStats &storageStats)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
-    LOGI("GetMediaStorageStats start");
+    LOGE("GetMediaStorageStats start");
 #ifdef STORAGE_SERVICE_GRAPHIC
     auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (sam == nullptr) {
@@ -107,6 +107,7 @@ int32_t GetMediaStorageStats(StorageStats &storageStats)
         return E_REMOTE_IS_NULLPTR;
     }
     int32_t tryCount = 1;
+    LOGE("GetMediaStorageStats start Creator");
     auto dataShareHelper = DataShare::DataShareHelper::Creator(remoteObj, MEDIALIBRARY_DATA_URI);
     while (dataShareHelper == nullptr && tryCount < GET_DATA_SHARE_HELPER_TIMES) {
         LOGW("dataShareHelper is retrying, attempt %{public}d", tryCount);
@@ -120,6 +121,7 @@ int32_t GetMediaStorageStats(StorageStats &storageStats)
     vector<string> columns;
     Uri uri(MEDIALIBRARY_DATA_URI + "/" + MEDIA_QUERYOPRN_QUERYVOLUME + "/" + MEDIA_QUERYOPRN_QUERYVOLUME);
     DataShare::DataSharePredicates predicates;
+    LOGE("GetMediaStorageStats start Query");
     auto queryResultSet = dataShareHelper->Query(uri, predicates, columns);
     if (queryResultSet == nullptr) {
         LOGE("queryResultSet is null!");
@@ -134,20 +136,20 @@ int32_t GetMediaStorageStats(StorageStats &storageStats)
     GetMediaTypeAndSize(queryResultSet, storageStats);
     dataShareHelper->Release();
 #endif
-    LOGI("GetMediaStorageStats end");
+    LOGE("GetMediaStorageStats end");
     return E_OK;
 }
 
 int32_t GetFileStorageStats(int32_t userId, StorageStats &storageStats)
 {
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
-    LOGI("GetFileStorageStats start");
+    LOGE("GetFileStorageStats start");
     int32_t err = E_OK;
     int32_t prjId = userId * USER_ID_BASE + UID_FILE_MANAGER;
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     err = sdCommunication->GetOccupiedSpace(StorageDaemon::USRID, prjId, storageStats.file_);
-    LOGI("GetFileStorageStats end");
+    LOGE("GetFileStorageStats end");
     return err;
 }
 

@@ -48,7 +48,7 @@ public:
 HWTEST_F(MtpfsTmpFilesPoolTest, MtpfsTmpFilesPoolTest_CreateTmpDir_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MtpfsTmpFilesPoolTest_CreateTmpDir_001 start";
-    auto mtptmpfilespool = std::make_shared<MtpfsTmpFilesPool>();
+    auto mtptmpfilespool = std::make_shared<MtpFsTmpFilesPool>();
     mtptmpfilespool->tmpDir_ = "";
     bool result = mtptmpfilespool->CreateTmpDir();
     EXPECT_EQ(result, false);
@@ -63,7 +63,7 @@ HWTEST_F(MtpfsTmpFilesPoolTest, MtpfsTmpFilesPoolTest_CreateTmpDir_001, TestSize
 HWTEST_F(MtpfsTmpFilesPoolTest, MtpfsTmpFilesPoolTest_RemoveTmpDir_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MtpfsTmpFilesPoolTest_RemoveTmpDir_001 start";
-    auto mtptmpfilespool = std::make_shared<MtpfsTmpFilesPool>();
+    auto mtptmpfilespool = std::make_shared<MtpFsTmpFilesPool>();
     mtptmpfilespool->tmpDir_ = "";
     bool result = mtptmpfilespool->RemoveTmpDir();
     EXPECT_EQ(result, false);
