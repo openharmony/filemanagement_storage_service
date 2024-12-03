@@ -343,7 +343,7 @@ bool SetObjectU32Test(const uint8_t *data, size_t size)
  
 bool SetObjectStringTest(const uint8_t *data, size_t size)
 {
-    if (data == nullptr || size <= MIN_SIZE + sizeof(uint32_t const) + 
+    if (data == nullptr || size <= MIN_SIZE + sizeof(uint32_t const) +
         sizeof(LIBMTP_property_t const) + sizeof(char const *const)) {
         return false;
     }
