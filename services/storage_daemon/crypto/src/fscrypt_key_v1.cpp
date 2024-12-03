@@ -254,7 +254,7 @@ bool FscryptKeyV1::DoDecryptClassE(const UserAuth &auth, KeyBlob &eSecretFBE, Ke
         }
         // make sure a.length() >= PATH_KEY_VERSION.length() && b.length() >= PATH_KEY_VERSION.length()
         auto a_len = std::atoi((a.substr(PATH_KEY_VERSION.size() - 1)).c_str());
-        auto b_len = std::atoi((b.substr(PATH_KEY_VERSION.size() - 1)).c_str());
+        auto b_len = std::atoi((b.substr(PATH_KEY_VERSION.size() - 1)).c_str())
         return a_len > b_len;
     });
     for (const auto &it: files) {
