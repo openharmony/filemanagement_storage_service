@@ -1539,12 +1539,12 @@ int32_t MountManager::UmountMntUserTmpfs(int32_t userId)
     Utils::MountArgument mountArgument(Utils::MountArgumentDescriptors::Alpha(userId, ""));
     std::string path = mountArgument.GetSharefsDocCurPath() + "/appdata";
     int32_t res = UMount2(path, MNT_DETACH);
-    if (res != E_OK) {
+    if (res != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("failed to umount with detach, path %{public}s, errno %{public}d.", path.c_str(), errno);
     }
     path = mountArgument.GetCurOtherAppdataPath();
     res = UMount2(path, MNT_DETACH);
-    if (res != E_OK) {
+    if (res != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("failed to umount with detach, path %{public}s, errno %{public}d.", path.c_str(), errno);
     }
     return E_OK;
