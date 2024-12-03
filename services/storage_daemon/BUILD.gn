@@ -175,6 +175,7 @@ ohos_executable("storage_daemon") {
       "cJSON:cjson",
       "common_event_service:cesfwk_innerkits",
       "libmtp:libmtp"
+    ]
   }
 
   ldflags = [
