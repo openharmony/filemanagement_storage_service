@@ -43,6 +43,7 @@ ohos_unittest("BaseKeyTest") {
   sources = [
     "${storage_daemon_path}/crypto/src/base_key.cpp",
     "${storage_daemon_path}/crypto/src/fscrypt_key_v2.cpp",
+    "${storage_daemon_path}/crypto/src/iam_client.cpp",
     "${storage_daemon_path}/crypto/src/key_backup.cpp",
     "${storage_daemon_path}/crypto/test/mock/huks_master_mock.cpp",
     "${storage_daemon_path}/crypto/test/mock/openssl_crypto_mock.cpp",

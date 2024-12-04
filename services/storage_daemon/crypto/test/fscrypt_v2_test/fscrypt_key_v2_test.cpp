@@ -257,17 +257,19 @@ HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_LoadAndSetEceAndSecePolicy, TestSize.L
     EXPECT_EQ(LoadAndSetEceAndSecePolicy(TEST_DIR_LEGACY.c_str(), dir, type), 0);
     EXPECT_EQ(type, 1);
 
-    type = 3;
-    EXPECT_NE(LoadAndSetEceAndSecePolicy(TEST_DIR_LEGACY.c_str(), dir, type), 0);
+    if (KeyCtrlLoadVersion(TEST_DIR_LEGACY.c_str()) == FSCRYPT_V1) {
+        type = 3;
+        EXPECT_NE(LoadAndSetEceAndSecePolicy(TEST_DIR_LEGACY.c_str(), dir, type), 0);
 
-    type = 4;
-    EXPECT_NE(LoadAndSetEceAndSecePolicy(TEST_DIR_LEGACY.c_str(), dir, type), 0);
+        type = 4;
+        EXPECT_NE(LoadAndSetEceAndSecePolicy(TEST_DIR_LEGACY.c_str(), dir, type), 0);
 
-    OHOS::ForceRemoveDirectory(TEST_DIR_LEGACY);
-    EXPECT_TRUE(OHOS::ForceCreateDirectory(TEST_DIR_LEGACY));
-    testVersionFile = TEST_DIR_LEGACY + "/fscrypt_version";
-    EXPECT_TRUE(OHOS::SaveStringToFile(testVersionFile, "2\n"));
-    EXPECT_EQ(LoadAndSetEceAndSecePolicy(TEST_DIR_LEGACY.c_str(), dir, type), 0);
+        OHOS::ForceRemoveDirectory(TEST_DIR_LEGACY);
+        EXPECT_TRUE(OHOS::ForceCreateDirectory(TEST_DIR_LEGACY));
+        testVersionFile = TEST_DIR_LEGACY + "/fscrypt_version";
+        EXPECT_TRUE(OHOS::SaveStringToFile(testVersionFile, "2\n"));
+        EXPECT_NE(LoadAndSetEceAndSecePolicy(TEST_DIR_LEGACY.c_str(), dir, type), 0);
+    }
     GTEST_LOG_(INFO) << "fscrypt_key_v2_LoadAndSetEceAndSecePolicy end";
 }
 

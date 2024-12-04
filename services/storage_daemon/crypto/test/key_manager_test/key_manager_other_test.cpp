@@ -35,7 +35,11 @@
 using namespace std;
 using namespace testing::ext;
 using namespace testing;
- 
+
+namespace {
+constexpr const char *UECE_PATH = "/dev/fbex_uece";
+}
+
 namespace OHOS::StorageDaemon {
 class KeyManagerOtherTest : public testing::Test {
 public:
@@ -105,7 +109,6 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_CheckAndClearTokenInfo_000, TestSize.Le
     KeyManager::GetInstance()->userEl4Key_.erase(userId);
     EXPECT_CALL(*iamClientMoc_, HasFaceFinger(_, _)).WillOnce(DoAll(SetArgReferee<1>(false), Return(0)));
     KeyManager::GetInstance()->CheckAndClearTokenInfo(userId);
-
 
     KeyManager::GetInstance()->userEl3Key_[userId] = nullptr;
     KeyManager::GetInstance()->userEl4Key_[userId] = nullptr;
@@ -270,31 +273,38 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_TryToFixUeceKey_000, TestSize.Level1)
     uint32_t user = 800;
     std::vector<uint8_t> token;
     std::vector<uint8_t> secret;
+    bool existUece = true;
+    if (access(UECE_PATH, F_OK) != 0) {
+        existUece = false;
+        std::ofstream file(UECE_PATH);
+        EXPECT_GT(open(UECE_PATH, O_RDWR), 0);
+    }
     EXPECT_CALL(*iamClientMoc_, HasPinProtect(_)).WillOnce(Return(false));
     EXPECT_EQ(KeyManager::GetInstance()->TryToFixUeceKey(user, token, secret), E_OK);
 
     EXPECT_CALL(*iamClientMoc_, HasPinProtect(_)).WillOnce(Return(true));
+    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_INVALID));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID));
     std::string keyDir = KeyManager::GetInstance()->GetKeyDirByUserAndType(user, EL5_KEY);
     ForceRemoveDirectory(keyDir);
     EXPECT_EQ(KeyManager::GetInstance()->TryToFixUeceKey(user, token, secret), -EFAULT);
 
     EXPECT_CALL(*iamClientMoc_, HasPinProtect(_)).WillOnce(Return(true));
-    EXPECT_TRUE(OHOS::ForceCreateDirectory(keyDir));
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*fscryptKeyMock_, DeleteClassEPinCode(_)).WillOnce(Return(true));
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false));
-    KeyManager::GetInstance()->userEl2Key_.erase(user);
     EXPECT_EQ(KeyManager::GetInstance()->TryToFixUeceKey(user, token, secret), E_OK);
 
     EXPECT_CALL(*iamClientMoc_, HasPinProtect(_)).WillOnce(Return(true));
-    EXPECT_TRUE(OHOS::ForceCreateDirectory(keyDir));
     EXPECT_CALL(*fscryptKeyMock_, DeleteClassEPinCode(_)).WillOnce(Return(true));
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
-    KeyManager::GetInstance()->userEl2Key_.erase(user);
     EXPECT_EQ(KeyManager::GetInstance()->TryToFixUeceKey(user, token, secret),  -EFAULT);
     ForceRemoveDirectory(keyDir);
     KeyManager::GetInstance()->userEl5Key_.erase(user);
+    if (!existUece) {
+        OHOS::RemoveFile(UECE_PATH);
+    }
     GTEST_LOG_(INFO) << "KeyManager_TryToFixUeceKey_000 end";
 }
 
@@ -310,13 +320,28 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_TryToFixUeceKey_001, TestSize.Level1)
     uint32_t user = 800;
     std::vector<uint8_t> token{1, 2, 3, 4, 5};
     std::vector<uint8_t> secretEmpty;
+    bool existUece = true;
+    if (access(UECE_PATH, F_OK) != 0) {
+        existUece = false;
+        std::ofstream file(UECE_PATH);
+        EXPECT_GT(open(UECE_PATH, O_RDWR), 0);
+    }
     EXPECT_CALL(*iamClientMoc_, HasPinProtect(_)).WillOnce(Return(true));
+    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_INVALID));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID));
     EXPECT_EQ(KeyManager::GetInstance()->TryToFixUeceKey(user, token, secretEmpty), -EFAULT);
 
     std::vector<uint8_t> secret{1, 2, 3, 4, 5, 6};
     EXPECT_CALL(*iamClientMoc_, HasPinProtect(_)).WillOnce(Return(true));
     EXPECT_CALL(*iamClientMoc_, GetSecureUid(_, _)).WillOnce(Return(true));
+    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_INVALID))
+        .WillOnce(Return(FSCRYPT_INVALID));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID))
+        .WillOnce(Return(FSCRYPT_INVALID));
     EXPECT_EQ(KeyManager::GetInstance()->TryToFixUeceKey(user, token, secret), -EFAULT);
+    if (!existUece) {
+        OHOS::RemoveFile(UECE_PATH);
+    }
     GTEST_LOG_(INFO) << "KeyManager_TryToFixUeceKey_001 end";
 }
 }
