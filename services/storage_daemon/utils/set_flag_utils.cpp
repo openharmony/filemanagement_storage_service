@@ -18,6 +18,7 @@
 
 #include <fcntl.h>
 #include <filesystem>
+#include <regex>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -28,6 +29,8 @@
 
 namespace OHOS {
 namespace StorageService {
+const int START_USER_ID = 100;
+const int MAX_USER_ID = 10736;
 #define HMFS_MONITOR_FL 0x00000002
 #define HMFS_IOCTL_HW_GET_FLAGS _IOR(0XF5, 70, unsigned int)
 #define HMFS_IOCTL_HW_SET_FLAGS _IOR(0XF5, 71, unsigned int)
@@ -55,6 +58,22 @@ void SetFlagUtils::ParseDirPath(const std::string &path)
         LOGE("path not exist.");
         return;
     }
+    std::regex pathRegex("/temp");
+    if (std::regex_match(path, pathRegex)) {
+        LOGE("Invalid file path.");
+        return;
+    }
+
+    std::regex idRegex("/storage_daemon/sd/(\\d+)/");
+    std::smatch match;
+    if (std::regex_search(path, match, idRegex)) {
+        int userId = std::stoi(match[1].str());
+        if (userId < START_USER_ID || userId > MAX_USER_ID) {
+            LOGE("Invalid file path, userid:%{public}d", userId);
+            return;
+        }
+    }
+
     std::filesystem::directory_iterator pathList(path);
     for (const auto& resPath : pathList) {
         if (StorageDaemon::IsDir(resPath.path())) {
