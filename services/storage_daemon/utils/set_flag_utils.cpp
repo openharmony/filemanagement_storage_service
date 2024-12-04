@@ -63,7 +63,8 @@ void SetFlagUtils::ParseDirPath(const std::string &path)
         LOGE("Invalid file path.");
         return;
     }
-    std::regex pathRegex("/storage_daemon/sd/(\\d+)/");
+
+    std::regex idRegex("/storage_daemon/sd/(\\d+)/");
     std::smatch match;
     if (std::regex_search(path, match, idRegex)) {
         int userId = std::stoi(match[1].str());
