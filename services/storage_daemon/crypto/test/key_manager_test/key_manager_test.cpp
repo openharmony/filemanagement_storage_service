@@ -126,12 +126,12 @@ HWTEST_F(KeyManagerTest, KeyManager_GenerateAndInstallDeviceKey_001, TestSize.Le
     GTEST_LOG_(INFO) << "KeyManager_GenerateAndInstallDeviceKey_001 Start";
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID));
-    EXPECT_EQ(KeyManager::GetInstance()->GenerateAndInstallDeviceKey("/data/test"), -EOPNOTSUPP);
+    EXPECT_EQ(KeyManager::GetInstance()->GenerateAndInstallDeviceKey("/data/test"), E_GLOBAL_KEY_NULLPTR);
 
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*baseKeyMock_, InitKey(_)).WillOnce(Return(false));
-    EXPECT_EQ(KeyManager::GetInstance()->GenerateAndInstallDeviceKey("/data/test"), -EFAULT);
+    EXPECT_EQ(KeyManager::GetInstance()->GenerateAndInstallDeviceKey("/data/test"), E_GLOBAL_KEY_INIT_ERROR);
     EXPECT_EQ(KeyManager::GetInstance()->globalEl1Key_, nullptr);
 
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
@@ -143,7 +143,7 @@ HWTEST_F(KeyManagerTest, KeyManager_GenerateAndInstallDeviceKey_001, TestSize.Le
     EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(false));
     #endif
     EXPECT_CALL(*baseKeyMock_, ClearKey(_)).WillOnce(Return(true));
-    EXPECT_EQ(KeyManager::GetInstance()->GenerateAndInstallDeviceKey("/data/test"), -EFAULT);
+    EXPECT_EQ(KeyManager::GetInstance()->GenerateAndInstallDeviceKey("/data/test"), E_GLOBAL_KEY_STORE_ERROR);
     EXPECT_EQ(KeyManager::GetInstance()->globalEl1Key_, nullptr);
 
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
@@ -156,7 +156,7 @@ HWTEST_F(KeyManagerTest, KeyManager_GenerateAndInstallDeviceKey_001, TestSize.Le
     #endif
     EXPECT_CALL(*baseKeyMock_, ClearKey(_)).WillOnce(Return(true));
     EXPECT_CALL(*fscryptKeyMock_, ActiveKey(_, _)).WillOnce(Return(false));
-    EXPECT_EQ(KeyManager::GetInstance()->GenerateAndInstallDeviceKey("/data/test"), -EFAULT);
+    EXPECT_EQ(KeyManager::GetInstance()->GenerateAndInstallDeviceKey("/data/test"), E_GLOBAL_KEY_ACTIVE_ERROR);
     EXPECT_EQ(KeyManager::GetInstance()->globalEl1Key_, nullptr);
     GTEST_LOG_(INFO) << "KeyManager_GetBaseKey_001 end";
 }
@@ -198,19 +198,19 @@ HWTEST_F(KeyManagerTest, KeyManager_RestoreDeviceKey_001, TestSize.Level1)
     KeyManager::GetInstance()->globalEl1Key_ = nullptr;
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID));
-    EXPECT_EQ(KeyManager::GetInstance()->RestoreDeviceKey("/data/test"), -EOPNOTSUPP);
+    EXPECT_EQ(KeyManager::GetInstance()->RestoreDeviceKey("/data/test"), E_GLOBAL_KEY_NULLPTR);
 
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*baseKeyMock_, InitKey(_)).WillOnce(Return(false));
-    EXPECT_EQ(KeyManager::GetInstance()->RestoreDeviceKey("/data/test"), -EFAULT);
+    EXPECT_EQ(KeyManager::GetInstance()->RestoreDeviceKey("/data/test"), E_GLOBAL_KEY_INIT_ERROR);
     EXPECT_EQ(KeyManager::GetInstance()->globalEl1Key_, nullptr);
 
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*baseKeyMock_, InitKey(_)).WillOnce(Return(true));
     EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(false));
-    EXPECT_EQ(KeyManager::GetInstance()->RestoreDeviceKey("/data/test"), -EFAULT);
+    EXPECT_EQ(KeyManager::GetInstance()->RestoreDeviceKey("/data/test"), E_GLOBAL_KEY_STORE_ERROR);
     EXPECT_EQ(KeyManager::GetInstance()->globalEl1Key_, nullptr);
 
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
@@ -218,7 +218,7 @@ HWTEST_F(KeyManagerTest, KeyManager_RestoreDeviceKey_001, TestSize.Level1)
     EXPECT_CALL(*baseKeyMock_, InitKey(_)).WillOnce(Return(true));
     EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(true));
     EXPECT_CALL(*fscryptKeyMock_, ActiveKey(_, _)).WillOnce(Return(false));
-    EXPECT_EQ(KeyManager::GetInstance()->RestoreDeviceKey("/data/test"), -EFAULT);
+    EXPECT_EQ(KeyManager::GetInstance()->RestoreDeviceKey("/data/test"), E_GLOBAL_KEY_ACTIVE_ERROR);
     EXPECT_EQ(KeyManager::GetInstance()->globalEl1Key_, nullptr);
     GTEST_LOG_(INFO) << "KeyManager_RestoreDeviceKey_001 end";
 }
@@ -521,7 +521,7 @@ HWTEST_F(KeyManagerTest, KeyManager_UpdateCeEceSeceKeyContext, TestSize.Level1)
 
     KeyManager::GetInstance()->userEl1Key_.erase(userId);
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
-    EXPECT_EQ(KeyManager::GetInstance()->UpdateCeEceSeceKeyContext(userId, type), -ENOENT);
+    EXPECT_EQ(KeyManager::GetInstance()->UpdateCeEceSeceKeyContext(userId, type), E_PARAMS_INVAL);
 
     std::shared_ptr<BaseKey> tmpKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>("test"));
     KeyManager::GetInstance()->userEl1Key_[userId] = tmpKey;
@@ -548,17 +548,17 @@ HWTEST_F(KeyManagerTest, KeyManager_UpdateKeyContext, TestSize.Level1)
 
     KeyManager::GetInstance()->userEl2Key_.erase(userId);
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
-    EXPECT_EQ(KeyManager::GetInstance()->UpdateKeyContext(userId), -ENOENT);
+    EXPECT_EQ(KeyManager::GetInstance()->UpdateKeyContext(userId), E_PARAMS_INVAL);
 
     KeyManager::GetInstance()->userEl3Key_.erase(userId);
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).Times(2).WillOnce(Return(false))\
         .WillOnce(Return(true));
-    EXPECT_EQ(KeyManager::GetInstance()->UpdateKeyContext(userId), -ENOENT);
+    EXPECT_EQ(KeyManager::GetInstance()->UpdateKeyContext(userId), E_PARAMS_INVAL);
 
     KeyManager::GetInstance()->userEl4Key_.erase(userId);
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).Times(3).WillOnce(Return(false))\
         .WillOnce(Return(false)).WillOnce(Return(true));
-    EXPECT_EQ(KeyManager::GetInstance()->UpdateKeyContext(userId), -ENOENT);
+    EXPECT_EQ(KeyManager::GetInstance()->UpdateKeyContext(userId), E_PARAMS_INVAL);
 
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).Times(3).WillOnce(Return(false))\
         .WillOnce(Return(false)).WillOnce(Return(false));
@@ -598,7 +598,7 @@ HWTEST_F(KeyManagerTest, KeyManager_UpdateKeyContext_001, TestSize.Level1)
     KeyManager::GetInstance()->saveESecretStatus[userId] = true;
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).Times(4).WillOnce(Return(false))\
         .WillOnce(Return(false)).WillOnce(Return(false)).WillOnce(Return(true));
-    EXPECT_EQ(KeyManager::GetInstance()->UpdateKeyContext(userId), -ENOENT);
+    EXPECT_EQ(KeyManager::GetInstance()->UpdateKeyContext(userId), E_PARAMS_INVAL);
 
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).Times(4).WillOnce(Return(false))\
         .WillOnce(Return(false)).WillOnce(Return(false)).WillOnce(Return(false));
@@ -648,7 +648,7 @@ HWTEST_F(KeyManagerTest, KeyManager_RestoreUserKey_000, TestSize.Level1)
     #ifdef USER_CRYPTO_MIGRATE_KEY
     int eL6Key = 6;
     type = static_cast<KeyType>(eL6Key);
-    EXPECT_EQ(KeyManager::GetInstance()->RestoreUserKey(userId, type), -EFAULT);
+    EXPECT_EQ(KeyManager::GetInstance()->RestoreUserKey(userId, type), E_PARAMS_INVAL);
 
     type = EL1_KEY;
     EXPECT_EQ(KeyManager::GetInstance()->RestoreUserKey(userId, type), -ENOENT);
@@ -674,12 +674,14 @@ HWTEST_F(KeyManagerTest, KeyManager_GenerateAndInstallUserKey_001, TestSize.Leve
     KeyManager::GetInstance()->userEl1Key_.erase(800);
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID));
-    EXPECT_EQ(KeyManager::GetInstance()->GenerateAndInstallUserKey(800, "/data/test", auth, EL1_KEY), -EOPNOTSUPP);
+    EXPECT_EQ(KeyManager::GetInstance()->GenerateAndInstallUserKey(800, "/data/test", auth, EL1_KEY),
+        E_GLOBAL_KEY_NULLPTR);
 
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*baseKeyMock_, InitKey(_)).WillOnce(Return(false));
-    EXPECT_EQ(KeyManager::GetInstance()->GenerateAndInstallUserKey(800, "/data/test", auth, EL1_KEY), -EFAULT);
+    EXPECT_EQ(KeyManager::GetInstance()->GenerateAndInstallUserKey(800, "/data/test", auth, EL1_KEY),
+        E_ELX_KEY_INIT_ERROR);
 
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
@@ -690,7 +692,8 @@ HWTEST_F(KeyManagerTest, KeyManager_GenerateAndInstallUserKey_001, TestSize.Leve
     EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(false));
     #endif
     EXPECT_CALL(*baseKeyMock_, ClearKey(_)).WillOnce(Return(true));
-    EXPECT_EQ(KeyManager::GetInstance()->GenerateAndInstallUserKey(800, "/data/test", auth, EL1_KEY), -EFAULT);
+    EXPECT_EQ(KeyManager::GetInstance()->GenerateAndInstallUserKey(800, "/data/test", auth, EL1_KEY),
+        E_ELX_KEY_STORE_ERROR);
 
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
@@ -702,7 +705,8 @@ HWTEST_F(KeyManagerTest, KeyManager_GenerateAndInstallUserKey_001, TestSize.Leve
     #endif
     EXPECT_CALL(*fscryptKeyMock_, ActiveKey(_, _)).WillOnce(Return(false));
     EXPECT_CALL(*baseKeyMock_, ClearKey(_)).WillOnce(Return(true));
-    EXPECT_EQ(KeyManager::GetInstance()->GenerateAndInstallUserKey(800, "/data/test", auth, EL1_KEY), -EFAULT);
+    EXPECT_EQ(KeyManager::GetInstance()->GenerateAndInstallUserKey(800, "/data/test", auth, EL1_KEY),
+        E_ELX_KEY_ACTIVE_ERROR);
     GTEST_LOG_(INFO) << "KeyManager_GenerateAndInstallUserKey_001 end";
 }
 
@@ -805,25 +809,25 @@ HWTEST_F(KeyManagerTest, KeyManager_RestoreUserKey_001, TestSize.Level1)
     KeyManager::GetInstance()->userEl1Key_.erase(800);
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID));
-    EXPECT_EQ(KeyManager::GetInstance()->RestoreUserKey(800, "/data/test", auth, EL1_KEY), -EOPNOTSUPP);
+    EXPECT_EQ(KeyManager::GetInstance()->RestoreUserKey(800, "/data/test", auth, EL1_KEY), E_GLOBAL_KEY_NULLPTR);
 
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*baseKeyMock_, InitKey(_)).WillOnce(Return(false));
-    EXPECT_EQ(KeyManager::GetInstance()->RestoreUserKey(800, "/data/test", auth, EL1_KEY), -EFAULT);
+    EXPECT_EQ(KeyManager::GetInstance()->RestoreUserKey(800, "/data/test", auth, EL1_KEY), E_ELX_KEY_INIT_ERROR);
 
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*baseKeyMock_, InitKey(_)).WillOnce(Return(true));
     EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(false));
-    EXPECT_EQ(KeyManager::GetInstance()->RestoreUserKey(800, "/data/test", auth, EL1_KEY), -EFAULT);
+    EXPECT_EQ(KeyManager::GetInstance()->RestoreUserKey(800, "/data/test", auth, EL1_KEY), E_ELX_KEY_STORE_ERROR);
 
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*baseKeyMock_, InitKey(_)).WillOnce(Return(true));
     EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(true));
     EXPECT_CALL(*fscryptKeyMock_, ActiveKey(_, _)).WillOnce(Return(false));
-    EXPECT_EQ(KeyManager::GetInstance()->RestoreUserKey(800, "/data/test", auth, EL1_KEY), -EFAULT);
+    EXPECT_EQ(KeyManager::GetInstance()->RestoreUserKey(800, "/data/test", auth, EL1_KEY), E_ELX_KEY_ACTIVE_ERROR);
     GTEST_LOG_(INFO) << "KeyManager_GenerateAndInstallUserKey_001 end";
 }
 
@@ -1164,13 +1168,13 @@ HWTEST_F(KeyManagerTest, KeyManager_InactiveUserElKey_001, TestSize.Level1)
     unsigned int user = 800;
     string keyId;
     std::map<unsigned int, std::shared_ptr<BaseKey>> userElxKey_;
-    EXPECT_EQ(KeyManager::GetInstance()->InactiveUserElKey(user, userElxKey_), -ENOENT);
+    EXPECT_EQ(KeyManager::GetInstance()->InactiveUserElKey(user, userElxKey_), E_PARAMS_INVAL);
 
     shared_ptr<FscryptKeyV2> elKey = make_shared<FscryptKeyV2>("/data/test");
     userElxKey_[user] = elKey;
 
     EXPECT_CALL(*fscryptKeyMock_, InactiveKey(_, _)).WillOnce(Return(false));
-    EXPECT_EQ(KeyManager::GetInstance()->InactiveUserElKey(user, userElxKey_), -EFAULT);
+    EXPECT_EQ(KeyManager::GetInstance()->InactiveUserElKey(user, userElxKey_), E_ELX_KEY_INACTIVE_ERROR);
 
     EXPECT_CALL(*fscryptKeyMock_, InactiveKey(_, _)).WillOnce(Return(true));
     EXPECT_CALL(*baseKeyMock_, GetKeyDir()).WillOnce(Return(""));
@@ -1211,34 +1215,34 @@ HWTEST_F(KeyManagerTest, KeyManager_InActiveUserKey_001, TestSize.Level1)
     EXPECT_EQ(KeyManager::GetInstance()->InActiveUserKey(user), 0);
 
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
-    EXPECT_EQ(KeyManager::GetInstance()->InActiveUserKey(user), -ENOENT);
+    EXPECT_EQ(KeyManager::GetInstance()->InActiveUserKey(user), E_PARAMS_INVAL);
 
     shared_ptr<FscryptKeyV2> elKey = make_shared<FscryptKeyV2>("/data/test");
     KeyManager::GetInstance()->userEl2Key_[user] = elKey;
     EXPECT_CALL(*fscryptKeyMock_, InactiveKey(_, _)).WillOnce(Return(false));
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
-    EXPECT_EQ(KeyManager::GetInstance()->InActiveUserKey(user), -EFAULT);
+    EXPECT_EQ(KeyManager::GetInstance()->InActiveUserKey(user), E_ELX_KEY_INACTIVE_ERROR);
     EXPECT_FALSE(KeyManager::GetInstance()->userEl2Key_.find(user) == KeyManager::GetInstance()->userEl2Key_.end());
 
     KeyManager::GetInstance()->userEl2Key_[user] = elKey;
     EXPECT_CALL(*fscryptKeyMock_, InactiveKey(_, _)).WillOnce(Return(true));
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
     EXPECT_CALL(*baseKeyMock_, GetKeyDir()).WillOnce(Return(""));
-    EXPECT_EQ(KeyManager::GetInstance()->InActiveUserKey(user), -ENOENT);
+    EXPECT_EQ(KeyManager::GetInstance()->InActiveUserKey(user), E_PARAMS_INVAL);
     EXPECT_TRUE(KeyManager::GetInstance()->userEl2Key_.find(user) == KeyManager::GetInstance()->userEl2Key_.end());
 
     KeyManager::GetInstance()->userEl2Key_[user] = elKey;
     EXPECT_CALL(*fscryptKeyMock_, InactiveKey(_, _)).WillOnce(Return(true));
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
     EXPECT_CALL(*baseKeyMock_, GetKeyDir()).WillOnce(Return("el1"));
-    EXPECT_EQ(KeyManager::GetInstance()->InActiveUserKey(user), -ENOENT);
+    EXPECT_EQ(KeyManager::GetInstance()->InActiveUserKey(user), E_PARAMS_INVAL);
     EXPECT_TRUE(KeyManager::GetInstance()->userEl2Key_.find(user) == KeyManager::GetInstance()->userEl2Key_.end());
 
     KeyManager::GetInstance()->userEl2Key_[user] = elKey;
     EXPECT_CALL(*fscryptKeyMock_, InactiveKey(_, _)).WillOnce(Return(true));
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
     EXPECT_CALL(*baseKeyMock_, GetKeyDir()).WillOnce(Return("el2"));
-    EXPECT_EQ(KeyManager::GetInstance()->InActiveUserKey(user), -ENOENT);
+    EXPECT_EQ(KeyManager::GetInstance()->InActiveUserKey(user), E_PARAMS_INVAL);
     EXPECT_TRUE(KeyManager::GetInstance()->userEl2Key_.find(user) == KeyManager::GetInstance()->userEl2Key_.end());
     GTEST_LOG_(INFO) << "KeyManager_InactiveUserElKey_001 end";
 }
@@ -1259,7 +1263,7 @@ HWTEST_F(KeyManagerTest, KeyManager_InActiveUserKey_002, TestSize.Level1)
     EXPECT_CALL(*fscryptKeyMock_, InactiveKey(_, _)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
     EXPECT_CALL(*baseKeyMock_, GetKeyDir()).WillOnce(Return("")).WillOnce(Return(""));
-    EXPECT_EQ(KeyManager::GetInstance()->InActiveUserKey(user), -ENOENT);
+    EXPECT_EQ(KeyManager::GetInstance()->InActiveUserKey(user), E_PARAMS_INVAL);
     EXPECT_TRUE(KeyManager::GetInstance()->userEl2Key_.find(user) == KeyManager::GetInstance()->userEl2Key_.end());
     EXPECT_TRUE(KeyManager::GetInstance()->userEl3Key_.find(user) == KeyManager::GetInstance()->userEl3Key_.end());
 
@@ -1270,7 +1274,7 @@ HWTEST_F(KeyManagerTest, KeyManager_InActiveUserKey_002, TestSize.Level1)
         .WillOnce(Return(true));
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
     EXPECT_CALL(*baseKeyMock_, GetKeyDir()).WillOnce(Return("")).WillOnce(Return("")).WillOnce(Return(""));
-    EXPECT_EQ(KeyManager::GetInstance()->InActiveUserKey(user), -ENOENT);
+    EXPECT_EQ(KeyManager::GetInstance()->InActiveUserKey(user), E_PARAMS_INVAL);
     EXPECT_TRUE(KeyManager::GetInstance()->userEl2Key_.find(user) == KeyManager::GetInstance()->userEl2Key_.end());
     EXPECT_TRUE(KeyManager::GetInstance()->userEl3Key_.find(user) == KeyManager::GetInstance()->userEl3Key_.end());
     EXPECT_TRUE(KeyManager::GetInstance()->userEl4Key_.find(user) == KeyManager::GetInstance()->userEl4Key_.end());
@@ -1503,14 +1507,14 @@ HWTEST_F(KeyManagerTest, KeyManager_Generate_And_Install_El5_Key_001, TestSize.L
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID));
     auto ret = KeyManager::GetInstance()->GenerateAndInstallEl5Key(userId, USER_EL5_DIR, badUserAuth);
-    EXPECT_EQ(ret, -EOPNOTSUPP);
+    EXPECT_EQ(ret, E_GLOBAL_KEY_NULLPTR);
 
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*fscryptKeyMock_, AddClassE(_, _, _)).WillOnce(Return(false));
     EXPECT_CALL(*baseKeyMock_, ClearKey(_)).WillOnce(Return(true));
     ret = KeyManager::GetInstance()->GenerateAndInstallEl5Key(userId, USER_EL5_DIR, badUserAuth);
-    EXPECT_EQ(ret, -EFAULT);
+    EXPECT_EQ(ret, E_EL5_ADD_CLASS_ERROR);
     GTEST_LOG_(INFO) << "KeyManager_GenerateAndInstallEl5Key_0100 end";
 }
 
@@ -1554,7 +1558,7 @@ HWTEST_F(KeyManagerTest, KeyManager_Generate_And_Install_El5_Key_002, TestSize.L
     EXPECT_CALL(*fscryptKeyMock_, EncryptClassE(_, _, _, _)).WillOnce(Return(false));
     EXPECT_CALL(*baseKeyMock_, ClearKey(_)).WillOnce(Return(true));
     ret = KeyManager::GetInstance()->GenerateAndInstallEl5Key(userId, TEST_DIR, badUserAuth);
-    EXPECT_EQ(ret, -EFAULT);
+    EXPECT_EQ(ret, E_EL5_ENCRYPT_CLASS_ERROR);
 
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
