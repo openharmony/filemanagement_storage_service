@@ -200,7 +200,7 @@ bool FscryptKeyV1::AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_
         LOGE("fscryptV1Ext AddClassE failed");
         return false;
     }
-    LOGI("AddClassE finish");
+    LOGW("AddClassE finish");
     return true;
 }
 
@@ -211,7 +211,7 @@ bool FscryptKeyV1::DeleteClassEPinCode(uint32_t userId)
         LOGE("fscryptV1Ext DeleteClassE failed");
         return false;
     }
-    LOGI("DeleteClassE finish");
+    LOGW("DeleteClassE finish");
     return true;
 }
 
@@ -222,7 +222,7 @@ bool FscryptKeyV1::ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId)
         LOGE("fscryptV1Ext ChangePinCodeClassE failed");
         return false;
     }
-    LOGI("ChangePinCodeClassE finish");
+    LOGW("ChangePinCodeClassE finish");
     return true;
 }
 
@@ -375,7 +375,7 @@ bool FscryptKeyV1::InstallKeyToKeyring()
         return false;
     }
     keyInfo_.key.Clear();
-    LOGI("success");
+    LOGW("success");
     return true;
 }
 
@@ -416,7 +416,7 @@ bool FscryptKeyV1::InstallEceSeceKeyToKeyring(uint32_t sdpClass)
     if (!SaveKeyBlob(keyInfo_.keyDesc, dir_ + PATH_KEYDESC)) {
         return false;
     }
-    LOGI("success");
+    LOGW("success");
     return true;
 }
 
@@ -521,7 +521,7 @@ bool FscryptKeyV1::UninstallKeyToKeyring()
         }
     }
 
-    LOGI("success");
+    LOGW("success");
     return true;
 }
 

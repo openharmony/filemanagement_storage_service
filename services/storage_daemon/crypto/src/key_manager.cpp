@@ -50,6 +50,7 @@ const UserAuth NULL_KEY_AUTH = {};
 const std::string DEFAULT_NEED_RESTORE_VERSION = "1";
 const std::string DEFAULT_NEED_RESTORE_UPDATE_VERSION = "3";
 constexpr const char *UECE_PATH = "/dev/fbex_uece";
+const uint32_t KEY_RECOVERY_USER_ID = 300;
 
 std::shared_ptr<BaseKey> KeyManager::GetBaseKey(const std::string& dir)
 {
@@ -71,7 +72,7 @@ std::shared_ptr<BaseKey> KeyManager::GetBaseKey(const std::string& dir)
 
 int KeyManager::GenerateAndInstallDeviceKey(const std::string &dir)
 {
-    LOGI("enter");
+    LOGW("enter");
     globalEl1Key_ = GetBaseKey(dir);
     if (globalEl1Key_ == nullptr) {
         StorageRadar::ReportUserKeyResult("GenerateAndInstallDeviceKey", 0, E_GLOBAL_KEY_NULLPTR, "EL1", "");
@@ -105,7 +106,7 @@ int KeyManager::GenerateAndInstallDeviceKey(const std::string &dir)
         StorageRadar::ReportUserKeyResult("GenerateAndInstallDeviceKey", 0, E_GLOBAL_KEY_UPDATE_ERROR, "EL1", "");
     }
     hasGlobalDeviceKey_ = true;
-    LOGI("key create success");
+    LOGW("key create success");
     return 0;
 }
 
@@ -151,7 +152,7 @@ int KeyManager::RestoreDeviceKey(const std::string &dir)
 
 int KeyManager::InitGlobalDeviceKey(void)
 {
-    LOGI("enter");
+    LOGW("enter");
     int ret = InitFscryptPolicy();
     if (ret < 0) {
         LOGE("fscrypt init failed, fscrypt will not be enabled");
@@ -190,7 +191,7 @@ int KeyManager::InitGlobalDeviceKey(void)
 
 int KeyManager::GenerateAndInstallUserKey(uint32_t userId, const std::string &dir, const UserAuth &auth, KeyType type)
 {
-    LOGI("enter");
+    LOGW("enter");
     if (HasElkey(userId, type)) {
         LOGI("The user %{public}u el %{public}u have existed", userId, type);
         return 0;
@@ -514,7 +515,7 @@ int KeyManager::InitGlobalUserKeys(void)
 
 int KeyManager::GenerateUserKeys(unsigned int user, uint32_t flags)
 {
-    LOGI("start, user:%{public}u", user);
+    LOGW("start, user:%{public}u", user);
     if (!KeyCtrlHasFscryptSyspara()) {
         return 0;
     }
@@ -528,7 +529,7 @@ int KeyManager::GenerateUserKeys(unsigned int user, uint32_t flags)
         LOGE("Generate ELX failed!");
         return ret;
     }
-    LOGI("Create user el success");
+    LOGW("Create user el success");
     return ret;
 }
 
@@ -847,7 +848,6 @@ int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &aut
     std::vector<std::vector<uint8_t>> &plainText)
 {
     LOGI("enter UpdateUseAuthWithRecoveryKey start, user:%{public}d", userId);
-    // 解密 C类 B类 A类
     std::string el2Path = USER_EL2_DIR + "/" + std::to_string(userId);
     std::string el3Path = USER_EL3_DIR + "/" + std::to_string(userId);
     std::string el4Path = USER_EL4_DIR + "/" + std::to_string(userId);
@@ -898,7 +898,7 @@ int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &aut
 
 int KeyManager::UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSecret)
 {
-    LOGI("UpdateESecret enter");
+    LOGW("UpdateESecret enter");
     std::shared_ptr<BaseKey> el5Key = GetUserElKey(user, EL5_KEY);
     std::string el5Path = USER_EL5_DIR + "/" + std::to_string(user);
     if (IsUeceSupport() && el5Key == nullptr) {
@@ -937,7 +937,7 @@ int KeyManager::UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSe
         LOGE("user %{public}u EncryptClassE fail", user);
         return -EFAULT;
     }
-    LOGI("saveESecretStatus is %{public}u", saveESecretStatus[user]);
+    LOGW("saveESecretStatus is %{public}u", saveESecretStatus[user]);
     return 0;
 }
 
@@ -951,7 +951,7 @@ int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
                                         KeyType type)
 #endif
 {
-    LOGI("start, user:%{public}d", user);
+    LOGW("start, user:%{public}d", user);
     if (!KeyCtrlHasFscryptSyspara()) {
         return 0;
     }
@@ -962,6 +962,8 @@ int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
     }
 
     UserAuth auth = { {}, userTokenSecret.oldSecret, userTokenSecret.secureUid };
+    LOGW("param status token:%{public}d, oldSec:%{public}d, newSec:%{public}d", userTokenSecret.token.empty(),
+        userTokenSecret.oldSecret.empty(), userTokenSecret.newSecret.empty());
     if (!userTokenSecret.oldSecret.empty()) {
         KeyBlob token(userTokenSecret.token);
         auth.token = std::move(token);
@@ -1190,7 +1192,7 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
         return -EOPNOTSUPP;
     }
     if (type == EL5_KEY) {
-        return activeUece(user, elKey, token, secret);
+        return ActiveUece(user, elKey, token, secret);
     }
     if (ActiveElXUserKey(user, token, type, secret, elKey) != 0) {
         LOGE("ActiveElXUserKey failed");
@@ -1203,7 +1205,7 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
     return 0;
 }
 
-int KeyManager::activeUece(unsigned int user,
+int KeyManager::ActiveUece(unsigned int user,
                            std::shared_ptr<BaseKey> elKey,
                            const std::vector<uint8_t> &token,
                            const std::vector<uint8_t> &secret)
@@ -1306,7 +1308,7 @@ int KeyManager::ActiveUeceUserKey(unsigned int user,
                                        const std::vector<uint8_t> &secret, std::shared_ptr<BaseKey> elKey)
 {
     saveESecretStatus[user] = !secret.empty();
-    LOGI("userId %{public}u, token empty %{public}d sec empty %{public}d", user, token.empty(), secret.empty());
+    LOGW("userId %{public}u, token empty %{public}d sec empty %{public}d", user, token.empty(), secret.empty());
     userEl5Key_[user] = elKey;
     UserAuth auth = { .token = token, .secret = secret };
     bool eBufferStatue = false;
@@ -1321,7 +1323,7 @@ int KeyManager::ActiveUeceUserKey(unsigned int user,
             return -EFAULT;
         }
     }
-    LOGI("ActiveCeSceSeceUserKey user %{public}u, saveESecretStatus %{public}d", user, saveESecretStatus[user]);
+    LOGW("ActiveCeSceSeceUserKey user %{public}u, saveESecretStatus %{public}d", user, saveESecretStatus[user]);
     return 0;
 }
 
@@ -1396,7 +1398,7 @@ int KeyManager::UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &toke
         return ret;
     }
     saveLockScreenStatus[user] = true;
-    LOGI("UnlockUserScreen user %{public}u el3 and el4 success and saveLockScreenStatus is %{public}d", user,
+    LOGW("UnlockUserScreen user %{public}u el3 and el4 success and saveLockScreenStatus is %{public}d", user,
          saveLockScreenStatus[user]);
     return 0;
 }
@@ -1449,7 +1451,7 @@ int KeyManager::GetLockScreenStatus(uint32_t user, bool &lockScreenStatus)
     std::lock_guard<std::mutex> lock(keyMutex_);
     auto iter = saveLockScreenStatus.find(user);
     lockScreenStatus = (iter == saveLockScreenStatus.end()) ? false: iter->second;
-    LOGI("lockScreenStatus is %{public}d", lockScreenStatus);
+    LOGW("lockScreenStatus is %{public}d", lockScreenStatus);
     return 0;
 }
 
@@ -1459,33 +1461,27 @@ int KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &ke
         LOGI("Not support uece !");
         return -ENOTSUP;
     }
-    if (userId == 300) {
-        LOGE("GenerateAppKey when RecoverKey! ------");
-        auto el4Key = GetBaseKey(GetKeyDirByUserAndType(userId, EL4_KEY));
-        if (el4Key == nullptr) {
-            LOGE("el4Key_ is nullptr");
+    LOGI("enter");
+    std::lock_guard<std::mutex> lock(keyMutex_);
+    if (userId == KEY_RECOVERY_USER_ID) {
+        LOGI("GenerateAppKey when RecoverKey");
+        auto el5Key = GetBaseKey(GetKeyDirByUserAndType(userId, EL5_KEY));
+        if (el5Key == nullptr) {
+            LOGE("el5Key is nullptr");
             return -ENOENT;
         }
-        if (el4Key->GenerateAppkey(userId, hashId, keyId) == false) {
+        if (el5Key->GenerateAppkey(userId, hashId, keyId) == false) {
             LOGE("Failed to generate Appkey2");
             return -EFAULT;
         }
         return 0;
     }
-    if (userEl4Key_.find(userId) == userEl4Key_.end()) {
-        LOGE("userEl4Key_ has not existed");
-        if (!IsUserCeDecrypt(userId)) {
-            LOGE("user ce does not decrypt, skip");
-            return -ENOENT;
-        }
-        GetUserElKey(userId, EL4_KEY);
-    }
-    auto el4Key = userEl4Key_[userId];
-    if (el4Key == nullptr) {
-        LOGE("el4Key_ is nullptr");
+    auto el5Key = GetBaseKey(GetKeyDirByUserAndType(userId, EL5_KEY));
+    if (el5Key == nullptr) {
+        LOGE("el5Key is nullptr");
         return -ENOENT;
     }
-    if (el4Key->GenerateAppkey(userId, hashId, keyId) == false) {
+    if (el5Key->GenerateAppkey(userId, hashId, keyId) == false) {
         LOGE("Failed to generate Appkey2");
         return -EFAULT;
     }
@@ -1495,20 +1491,12 @@ int KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &ke
 int KeyManager::DeleteAppkey(uint32_t userId, const std::string keyId)
 {
     std::lock_guard<std::mutex> lock(keyMutex_);
-    if (userEl4Key_.find(userId) == userEl4Key_.end()) {
-        LOGE("userEl4Key_ has not existed");
-        if (!IsUserCeDecrypt(userId)) {
-            LOGE("user ce does not decrypt, skip");
-            return -ENOENT;
-        }
-        GetUserElKey(userId, EL4_KEY);
-    }
-    auto el4Key = userEl4Key_[userId];
-    if (el4Key == nullptr) {
-        LOGE("el4Key_ is nullptr");
+    auto el5Key = GetBaseKey(GetKeyDirByUserAndType(userId, EL5_KEY));
+    if (el5Key == nullptr) {
+        LOGE("el5Key is nullptr");
         return -ENOENT;
     }
-    if (el4Key->DeleteAppkey(keyId) == false) {
+    if (el5Key->DeleteAppkey(keyId) == false) {
         LOGE("Failed to delete Appkey2");
         return -EFAULT;
     }
@@ -1791,7 +1779,7 @@ int KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type, const std:
             }
         }
     }
-    LOGI("Set user %{public}u el policy success", user);
+    LOGW("Set user %{public}u el policy success", user);
     return 0;
 }
 
@@ -1861,7 +1849,7 @@ int KeyManager::UpdateKeyContext(uint32_t userId)
     if (IsUeceSupport() && saveESecretStatus[userId]) {
         ret = UpdateCeEceSeceKeyContext(userId, EL5_KEY);
     }
-    if (ret != 0) {
+    if (ret != 0 && ((userId < START_APP_CLONE_USER_ID || userId > MAX_APP_CLONE_USER_ID))) {
         LOGE("Basekey update EL5 newest context failed");
         StorageRadar::ReportUpdateUserAuth("UpdateKeyContext::UpdateCeEceSeceKeyContext", userId, ret, "EL5", "");
         return ret;
@@ -1986,7 +1974,7 @@ int KeyManager::CheckUserPinProtect(unsigned int userId,
                                     const std::vector<uint8_t> &token,
                                     const std::vector<uint8_t> &secret)
 {
-    LOGI("enter CheckUserPinProtect");
+    LOGI("enter CheckUserPinProtect.");
     std::error_code errCode;
     std::string restorePath = USER_EL2_DIR + "/" + std::to_string(userId) + RESTORE_DIR;
     if (!std::filesystem::exists(restorePath, errCode)) {

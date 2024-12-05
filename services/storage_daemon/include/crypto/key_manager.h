@@ -139,7 +139,7 @@ private:
     void SaveUserElKey(unsigned int user, KeyType type, std::shared_ptr<BaseKey> elKey);
     bool IsNeedClearKeyFile(std::string file);
     bool checkDir(KeyType type, std::string keyDir, unsigned int user);
-    int activeUece(unsigned int user,
+    int ActiveUece(unsigned int user,
                    std::shared_ptr<BaseKey> elKey,
                    const std::vector<uint8_t> &token,
                    const std::vector<uint8_t> &secret);

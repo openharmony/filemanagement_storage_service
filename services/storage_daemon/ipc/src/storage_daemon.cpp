@@ -294,7 +294,7 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
     if (type == EL4_KEY) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
     }
-    LOGI("restore User %{public}u el%{public}u success", userId, type);
+    LOGW("restore User %{public}u el%{public}u success", userId, type);
 
     return E_OK;
 }
@@ -618,10 +618,10 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuth(uint32_t userId, KeyType
     std::string need_restore_version = GetNeedRestoreVersion(userId, type);
     int32_t OLD_UPDATE_VERSION_MAXLIMIT = std::atoi(NEW_DOUBLE_2_SINGLE.c_str());
     if (std::atoi(need_restore_version.c_str()) <= OLD_UPDATE_VERSION_MAXLIMIT) {
-        LOGI("Old DOUBLE_2_SINGLE::PrepareUserDirsAndUpdateUserAuth.");
+        LOGW("Old DOUBLE_2_SINGLE::PrepareUserDirsAndUpdateUserAuth.");
         ret = PrepareUserDirsAndUpdateUserAuthOld(userId, type, token, secret);
     } else {
-        LOGI("New DOUBLE_2_SINGLE::PrepareUserDirsAndUpdateUserAuth.");
+        LOGW("New DOUBLE_2_SINGLE::PrepareUserDirsAndUpdateUserAuth.");
         ret = PrepareUserDirsAndUpdateUserAuthVx(userId, type, token, secret, need_restore_version);
     }
     return ret;
@@ -630,7 +630,7 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuth(uint32_t userId, KeyType
 int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthOld(uint32_t userId, KeyType type,
     const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret)
 {
-    LOGI("start userId %{public}u KeyType %{public}u", userId, type);
+    LOGW("start userId %{public}u KeyType %{public}u", userId, type);
     int32_t ret = E_OK;
     uint32_t flags = 0;
 
@@ -668,7 +668,7 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthOld(uint32_t userId, KeyT
         return ret;
     }
 
-    LOGI("try to destory dir first, user %{public}u, flags %{public}u", userId, flags);
+    LOGW("try to destory dir first, user %{public}u, flags %{public}u", userId, flags);
     (void)UserManager::GetInstance()->DestroyUserDirs(userId, flags);
     ret = UserManager::GetInstance()->PrepareUserDirs(userId, flags);
     if (ret != E_OK) {
@@ -677,7 +677,7 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthOld(uint32_t userId, KeyT
     if (flags == IStorageDaemon::CRYPTO_FLAG_EL2) {
         PrepareUeceDir(userId);
     }
-    LOGI("userId %{public}u type %{public}u sucess", userId, type);
+    LOGW("userId %{public}u type %{public}u sucess", userId, type);
     return E_OK;
 }
 
@@ -685,7 +685,7 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthVx(uint32_t userId, KeyTy
     const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret,
     const std::string needRestoreVersion)
 {
-    LOGI("start userId %{public}u KeyType %{public}u", userId, type);
+    LOGW("start userId %{public}u KeyType %{public}u", userId, type);
     int32_t ret = E_OK;
     uint32_t flags = 0;
 
@@ -699,13 +699,13 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthVx(uint32_t userId, KeyTy
         !SaveStringToFileSync(need_restore_path, std::to_string(new_need_restore))) {
         LOGE("Write userId: %{public}d, El%{public}d need_restore failed.", userId, type);
     }
-    LOGI("New DOUBLE_2_SINGLE::ActiveCeSceSeceUserKey.");
+    LOGW("New DOUBLE_2_SINGLE::ActiveCeSceSeceUserKey.");
     ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, type, token, secret);
     if (ret != E_OK) {
         LOGE("Active user %{public}u key fail, type %{public}u, flags %{public}u", userId, type, flags);
         return ret;
     }
-    LOGI("try to destory dir first, user %{public}u, flags %{public}u", userId, flags);
+    LOGW("try to destory dir first, user %{public}u, flags %{public}u", userId, flags);
     (void)UserManager::GetInstance()->DestroyUserDirs(userId, flags);
     ret = UserManager::GetInstance()->PrepareUserDirs(userId, flags);
     if (ret != E_OK) {
@@ -714,7 +714,7 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthVx(uint32_t userId, KeyTy
     if (flags == IStorageDaemon::CRYPTO_FLAG_EL2) {
         PrepareUeceDir(userId);
     }
-    LOGI("userId %{public}u type %{public}u sucess", userId, type);
+    LOGW("userId %{public}u type %{public}u sucess", userId, type);
     return E_OK;
 }
 
@@ -786,14 +786,14 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepare(uint32_t userId, KeyType type,
                                                const std::vector<uint8_t> &secret)
 {
 #ifdef USER_CRYPTO_MANAGER
-    LOGI("ActiveUserKey with type %{public}u enter", type);
+    LOGW("ActiveUserKey with type %{public}u enter", type);
     int ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, type, token, secret);
     if (ret != E_OK && ret != -ENOENT) {
 #ifdef USER_CRYPTO_MIGRATE_KEY
         std::error_code errCode;
         std::string elNeedRestorePath = GetNeedRestoreFilePathByType(userId, type);
         if ((!token.empty() || !secret.empty()) && std::filesystem::exists(elNeedRestorePath, errCode)) {
-            LOGI("start PrepareUserDirsAndUpdateUserAuth userId %{public}u, type %{public}u", userId, type);
+            LOGW("Migrate PrepareUserDirsAndUpdateUserAuth userId %{public}u, type %{public}u", userId, type);
             ret = PrepareUserDirsAndUpdateUserAuth(userId, type, token, secret);
         }
 #endif
@@ -803,7 +803,7 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepare(uint32_t userId, KeyType type,
             return ret;
         }
     } else if (ret == -ENOENT) {
-        LOGI("start GenerateKeyAndPrepareUserDirs userId %{public}u, type %{public}u sec empty %{public}d",
+        LOGW("start GenerateKeyAndPrepareUserDirs userId %{public}u, type %{public}u sec empty %{public}d",
              userId, type, secret.empty());
         ret = GenerateKeyAndPrepareUserDirs(userId, type, token, secret);
         if (ret != E_OK) {
@@ -862,11 +862,11 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
     int ret = E_OK;
     bool updateFlag = false;
 #ifdef USER_CRYPTO_MANAGER
-    LOGI("userId %{public}u, tok empty %{public}d sec empty %{public}d", userId, token.empty(), secret.empty());
+    LOGW("userId %{public}u, tok empty %{public}d sec empty %{public}d", userId, token.empty(), secret.empty());
     ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL2_KEY, token, secret);
     if (ret != E_OK) {
 #ifdef USER_CRYPTO_MIGRATE_KEY
-        LOGI("Migrate usrId %{public}u, Emp_tok %{public}d Emp_sec %{public}d", userId, token.empty(), secret.empty());
+        LOGW("Migrate usrId %{public}u, Emp_tok %{public}d Emp_sec %{public}d", userId, token.empty(), secret.empty());
         std::error_code errCode;
         std::string el2NeedRestorePath = GetNeedRestoreFilePath(userId, USER_EL2_DIR);
         if (std::filesystem::exists(el2NeedRestorePath, errCode) && (!token.empty() || !secret.empty())) {
