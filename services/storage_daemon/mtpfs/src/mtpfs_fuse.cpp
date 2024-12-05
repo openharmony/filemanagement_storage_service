@@ -579,7 +579,7 @@ int MtpFileSystem::ReName(const char *path, const char *newpath, unsigned int fl
     const int32_t factor = 1000;
     auto now = std::chrono::system_clock::now();
     auto millisecs = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
-    uint64_t time = millisecs.count() / factor;
+    time_t time = static_cast<time_t>(millisecs.count() / factor);
     if (dirParent != nullptr) {
         LOGI("MtpFileSystem: file cutted, update dirParent mtime");
         const_cast<MtpFsTypeDir *>(dirParent)->SetModificationDate(time);
@@ -689,9 +689,11 @@ int MtpFileSystem::Open(const char *path, struct fuse_file_info *fileInfo)
         LOGE("Missing FileInfo");
         return -ENOENT;
     }
-    if (static_cast<unsigned int>(fileInfo->flags) & O_WRONLY) {
-        static_cast<unsigned int>(fileInfo->flags) |= O_TRUNC;
+    unsigned int flags = static_cast<unsigned int>(fileInfo->flags);
+    if (flags & O_WRONLY) {
+        flags |= O_TRUNC;
     }
+    fileInfo->flags = static_cast<int>(flags);
     const std::string stdPath(path);
 
     MtpFsTypeTmpFile *tmpFile = const_cast<MtpFsTypeTmpFile *>(tmpFilesPool_.GetFile(stdPath));

@@ -277,11 +277,11 @@ const MtpFsTypeDir *MtpFsDevice::DirFetchContent(std::string path)
 
 static uint64_t GetFormattedTimestamp()
 {
-    const int32_t secFactor = 1000;
+    const int64_t secFactor = 1000;
     auto now = std::chrono::system_clock::now();
     auto millisecs = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
-    uint64_t milliSeconds = millisecs.count();
-    return milliSeconds / secFactor;
+    uint64_t milliSeconds = static_cast<uint64_t>(millisecs.count() / secFactor);
+    return milliSeconds;
 }
 
 int MtpFsDevice::DirCreateNew(const std::string &path)
