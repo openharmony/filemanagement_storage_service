@@ -16,14 +16,50 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
+#include "accesstoken_kit.h"
 #include "storage_manager_ipc_interface_code.h"
 #include "storage_manager_proxy.h"
 #include "ipc/storage_manager_stub.h"
+#include "ipc_skeleton.h"
 #include "storage_manager_stub_mock.h"
-#include "get_self_permissions.h"
 
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+
+namespace OHOS::Security::AccessToken {
+ATokenTypeEnum AccessTokenKit::GetTokenTypeFlag(AccessTokenID tokenID)
+{
+    return Security::AccessToken::TOKEN_NATIVE;
+}
+
+int AccessTokenKit::VerifyAccessToken(AccessTokenID tokenID, const std::string& permissionName)
+{
+    return Security::AccessToken::PermissionState::PERMISSION_GRANTED;
+}
+
+int AccessTokenKit::GetNativeTokenInfo(AccessTokenID tokenID, NativeTokenInfo& nativeTokenInfoRes)
+{
+    nativeTokenInfoRes.processName = "foundation";
+    return 0;
+}
+} // namespace OHOS::Security::AccessToken
+
+namespace OHOS {
+#ifdef CONFIG_IPC_SINGLE
+using namespace IPC_SINGLE;
+#endif
+pid_t IPCSkeleton::GetCallingUid()
+{
+    pid_t callingUid = 5523;
+    return callingUid;
+}
+
+uint32_t IPCSkeleton::GetCallingTokenID()
+{
+    uint32_t callingTokenID = 100;
+    return callingTokenID;
+}
+} // namespace OHOS
 
 namespace OHOS {
 namespace StorageManager {
@@ -100,16 +136,7 @@ HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemote
 {
     GTEST_LOG_(INFO) << "Storage_Manager_StorageManagerStubTest_OnRemoteRequest_001 start";
 
-    std::vector<string> perms;
-    perms.push_back("ohos.permission.STORAGE_MANAGER");
-    perms.push_back("ohos.permission.MOUNT_UNMOUNT_MANAGER");
-    perms.push_back("ohos.permission.MOUNT_FORMAT_MANAGER");
-    uint64_t tokenId = 0;
-    PermissionUtilsTest::SetAccessTokenPermission("StorageManagerPxyTest", perms, tokenId);
-    ASSERT_TRUE(tokenId != 0);
-
     StorageManagerStubMock mock;
-
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -159,14 +186,6 @@ HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemote
     GTEST_LOG_(INFO) << "Storage_Manager_StorageManagerStubTest_OnRemoteRequest_003 start";
 
     StorageManagerStubMock mock;
-    std::vector<string> perms;
-    perms.push_back("ohos.permission.STORAGE_MANAGER");
-    perms.push_back("ohos.permission.STORAGE_MANAGER_CRYPT");
-    perms.push_back("ohos.permission.MOUNT_UNMOUNT_MANAGER");
-    perms.push_back("ohos.permission.MOUNT_FORMAT_MANAGER");
-    uint64_t tokenId = 0;
-    PermissionUtilsTest::SetAccessTokenPermission("StorageManagerPxyTest", perms, tokenId);
-    ASSERT_TRUE(tokenId != 0);
     EXPECT_CALL(mock, PrepareAddUser(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, RemoveUser(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, PrepareStartUser(testing::_)).WillOnce(testing::Return(E_OK));

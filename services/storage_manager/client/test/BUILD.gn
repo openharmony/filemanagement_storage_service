@@ -26,7 +26,6 @@ ohos_unittest("storage_manager_clt_test") {
 
   sources = [
     "${storage_manager_path}/client/storage_manager_client.cpp",
-    "${storage_manager_path}/client/test/get_self_permissions.cpp",
     "${storage_manager_path}/client/test/storage_manager_client_test.cpp",
     "${storage_manager_path}/mock/storage_manager_proxy_mock.cpp",
   ]
@@ -46,8 +45,6 @@ ohos_unittest("storage_manager_clt_test") {
 
   external_deps = [
     "access_token:libaccesstoken_sdk",
-    "access_token:libnativetoken",
-    "access_token:libtoken_setproc",
     "c_utils:utils",
     "hilog:libhilog",
     "ipc:ipc_single",

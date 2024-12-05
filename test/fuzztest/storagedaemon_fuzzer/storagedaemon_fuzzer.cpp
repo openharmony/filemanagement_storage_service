@@ -20,12 +20,10 @@
 
 #include "accesstoken_kit.h"
 #include "message_parcel.h"
-#include "nativetoken_kit.h"
 #include "securec.h"
 #include "storage_daemon.h"
 #include "storage_daemon_ipc_interface_code.h"
 #include "storage_daemon_stub.h"
-#include "token_setproc.h"
 #include "user_manager.h"
 
 using namespace OHOS::StorageDaemon;
@@ -42,41 +40,8 @@ uint32_t GetU32Data(const char *ptr)
     return (ptr[0] << 24) | (ptr[1] << 16) | (ptr[2] << 8) | (ptr[3]);
 }
 
-enum {
-    TOKEN_INDEX_ONE = 0,
-    TOKEN_INDEX_TWO,
-    TOKEN_INDEX_THREE,
-};
-
-void SetNativeToken()
-{
-    uint64_t tokenId;
-    const char **perms = new const char *[3];
-    perms[TOKEN_INDEX_ONE] = "ohos.permission.STORAGE_MANAGER";
-    perms[TOKEN_INDEX_TWO] = "ohos.permission.MOUNT_UNMOUNT_MANAGER";
-    perms[TOKEN_INDEX_THREE] = "ohos.permission.MOUNT_FORMAT_MANAGER";
-    NativeTokenInfoParams infoInstance = {
-        .dcapsNum = 0,
-        .permsNum = 1,
-        .aclsNum = 0,
-        .dcaps = nullptr,
-        .perms = perms,
-        .acls = nullptr,
-        .aplStr = "system_core",
-    };
-
-    infoInstance.processName = "StorageDaemonFuzzTest";
-    tokenId = GetAccessTokenId(&infoInstance);
-    const uint64_t systemAppMask = (static_cast<uint64_t>(1) << 32);
-    tokenId |= systemAppMask;
-    SetSelfTokenID(tokenId);
-    OHOS::Security::AccessToken::AccessTokenKit::ReloadNativeTokenInfo();
-    delete[] perms;
-}
-
 bool StorageDaemonFuzzTest(std::unique_ptr<char[]> data, size_t size)
 {
-    SetNativeToken();
     uint32_t code = GetU32Data(data.get());
     if (code == 0 ||
         code % MAX_CALL_TRANSACTION == static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_SHARE_FILE) ||
