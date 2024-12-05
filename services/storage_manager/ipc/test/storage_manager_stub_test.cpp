@@ -16,13 +16,50 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
+#include "accesstoken_kit.h"
 #include "storage_manager_ipc_interface_code.h"
 #include "storage_manager_proxy.h"
 #include "ipc/storage_manager_stub.h"
+#include "ipc_skeleton.h"
 #include "storage_manager_stub_mock.h"
 
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+
+namespace OHOS::Security::AccessToken {
+ATokenTypeEnum AccessTokenKit::GetTokenTypeFlag(AccessTokenID tokenID)
+{
+    return Security::AccessToken::TOKEN_NATIVE;
+}
+
+int AccessTokenKit::VerifyAccessToken(AccessTokenID tokenID, const std::string& permissionName)
+{
+    return Security::AccessToken::PermissionState::PERMISSION_GRANTED;
+}
+
+int AccessTokenKit::GetNativeTokenInfo(AccessTokenID tokenID, NativeTokenInfo& nativeTokenInfoRes)
+{
+    nativeTokenInfoRes.processName = "foundation";
+    return 0;
+}
+} // namespace OHOS::Security::AccessToken
+
+namespace OHOS {
+#ifdef CONFIG_IPC_SINGLE
+using namespace IPC_SINGLE;
+#endif
+pid_t IPCSkeleton::GetCallingUid()
+{
+    pid_t callingUid = 5523;
+    return callingUid;
+}
+
+uint32_t IPCSkeleton::GetCallingTokenID()
+{
+    uint32_t callingTokenID = 100;
+    return callingTokenID;
+}
+} // namespace OHOS
 
 namespace OHOS {
 namespace StorageManager {

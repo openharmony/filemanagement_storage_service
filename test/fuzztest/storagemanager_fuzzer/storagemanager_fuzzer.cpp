@@ -18,13 +18,49 @@
 #include <cstdint>
 #include <cstring>
 
+#include "accesstoken_kit.h"
+#include "ipc_skeleton.h"
 #include "message_parcel.h"
 #include "storage_manager_stub.h"
 #include "storage_manager.h"
 #include "securec.h"
-#include "accesstoken_kit.h"
 
 using namespace OHOS::StorageManager;
+
+namespace OHOS::Security::AccessToken {
+ATokenTypeEnum AccessTokenKit::GetTokenTypeFlag(AccessTokenID tokenID)
+{
+    return Security::AccessToken::TOKEN_NATIVE;
+}
+
+int AccessTokenKit::VerifyAccessToken(AccessTokenID tokenID, const std::string& permissionName)
+{
+    return Security::AccessToken::PermissionState::PERMISSION_GRANTED;
+}
+
+int AccessTokenKit::GetNativeTokenInfo(AccessTokenID tokenID, NativeTokenInfo& nativeTokenInfoRes)
+{
+    nativeTokenInfoRes.processName = "foundation";
+    return 0;
+}
+} // namespace OHOS::Security::AccessToken
+
+namespace OHOS {
+#ifdef CONFIG_IPC_SINGLE
+using namespace IPC_SINGLE;
+#endif
+pid_t IPCSkeleton::GetCallingUid()
+{
+    pid_t callingUid = 5523;
+    return callingUid;
+}
+
+uint32_t IPCSkeleton::GetCallingTokenID()
+{
+    uint32_t callingTokenID = 100;
+    return callingTokenID;
+}
+} // namespace OHOS
 
 namespace OHOS::StorageManager {
 constexpr uint8_t MAX_CALL_TRANSACTION = 64;
