@@ -22,8 +22,6 @@
 #include "storage_manager_stub.h"
 #include "storage_manager.h"
 #include "securec.h"
-#include "nativetoken_kit.h"
-#include "token_setproc.h"
 #include "accesstoken_kit.h"
 
 using namespace OHOS::StorageManager;
@@ -42,41 +40,8 @@ uint32_t GetU32Data(const char* ptr)
     return (ptr[0] << 24) | (ptr[1] << 16) | (ptr[2] << 8) | (ptr[3]);
 }
 
-enum {
-    TOKEN_INDEX_ONE = 0,
-    TOKEN_INDEX_TWO,
-    TOKEN_INDEX_THREE,
-};
-
-void SetNativeToken()
-{
-    uint64_t tokenId;
-    const char **perms = new const char *[3];
-    perms[TOKEN_INDEX_ONE] = "ohos.permission.STORAGE_MANAGER";
-    perms[TOKEN_INDEX_TWO] = "ohos.permission.MOUNT_UNMOUNT_MANAGER";
-    perms[TOKEN_INDEX_THREE] = "ohos.permission.MOUNT_FORMAT_MANAGER";
-    NativeTokenInfoParams infoInstance = {
-        .dcapsNum = 0,
-        .permsNum = 1,
-        .aclsNum = 0,
-        .dcaps = nullptr,
-        .perms = perms,
-        .acls = nullptr,
-        .aplStr = "system_core",
-    };
-
-    infoInstance.processName = "StorageManagerFuzzTest";
-    tokenId = GetAccessTokenId(&infoInstance);
-    const uint64_t systemAppMask = (static_cast<uint64_t>(1) << 32);
-    tokenId |= systemAppMask;
-    SetSelfTokenID(tokenId);
-    OHOS::Security::AccessToken::AccessTokenKit::ReloadNativeTokenInfo();
-    delete[] perms;
-}
-
 bool StorageManagerFuzzTest(std::unique_ptr<char[]> data, size_t size)
 {
-    SetNativeToken();
     uint32_t code = GetU32Data(data.get());
     if (code == 0) {
         return true;
