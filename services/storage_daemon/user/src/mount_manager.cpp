@@ -1486,13 +1486,13 @@ int32_t MountManager::PrepareAppdataDirByUserId(int32_t userId)
 
 int32_t MountManager::MountAppdataAndSharefs(int32_t userId)
 {
-    LOGI("mount currentUser/other");
+    LOGI("mount currentUser/other.");
     Utils::MountArgument mountArgument(Utils::MountArgumentDescriptors::Alpha(userId, ""));
     std::string mediaDocPath = mountArgument.GetMediaDocsPath();
     std::string curOtherPath = mountArgument.GetCurOtherPath();
     BindAndRecMount(mediaDocPath, curOtherPath);
 
-    LOGI("mount currentUser/other/appdata");
+    LOGI("mount currentUser/other/appdata.");
     std::string noSharefsAppdataPath = mountArgument.GetNoSharefsAppdataPath();
     std::string curOtherAppdataPath = mountArgument.GetCurOtherAppdataPath();
     if (!IsDir(curOtherAppdataPath)) {
@@ -1504,18 +1504,18 @@ int32_t MountManager::MountAppdataAndSharefs(int32_t userId)
     }
     BindAndRecMount(noSharefsAppdataPath, curOtherAppdataPath);
 
-    LOGI("mount currentUser/filemgr");
+    LOGI("mount currentUser/filemgr.");
     std::string curFileMgrPath = mountArgument.GetCurFileMgrPath();
     BindAndRecMount(mediaDocPath, curFileMgrPath);
 
-    LOGI("mount currentUser/filemgr/appdata");
+    LOGI("mount currentUser/filemgr/appdata.");
     HmSharefsMount(userId, noSharefsAppdataPath, curFileMgrAppdataPath);
 
-    LOGI("mount sharefs/docs/currentUser");
+    LOGI("mount sharefs/docs/currentUser.");
     std::string sharefsDocCurPath = mountArgument.GetSharefsDocCurPath();
     BindAndRecMount(curOtherPath, sharefsDocCurPath);
 
-    LOGI("mount nosharefs/docs/currentUser");
+    LOGI("mount nosharefs/docs/currentUser.");
     std::string noSharefsDocCurPath = mountArgument.GetNoSharefsDocCurPath();
     BindAndRecMount(curFileMgrPath, noSharefsDocCurPath);
     return E_OK;
