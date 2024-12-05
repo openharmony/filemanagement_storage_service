@@ -141,6 +141,7 @@ std::string SmtpfsGetTmpDir()
     }
     tmpDir.assign(cTmpDir);
     ::free(static_cast<void *>(cTmpDirFree));
+    ::free(static_cast<void *>(cTmpDir));
     return tmpDir;
 }
 

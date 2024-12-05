@@ -182,7 +182,7 @@ void StorageMonitorService::CleanBundleCacheByInterval(const std::string &timest
         LOGI("Not found timestamp from system parameter");
         return;
     }
-    uint64_t lastCleanCacheTime = static_cast<uint64_t>(std::atoull(param.c_str()));
+    uint64_t lastCleanCacheTime = static_cast<uint64_t>(std::atoll(param.c_str()));
     auto duration = std::chrono::duration_cast<std::chrono::hours>(currentTime -
             std::chrono::system_clock::time_point(std::chrono::hours(lastCleanCacheTime))).count();
     LOGI("CleanBundleCache timestamp is %{public}s, duration is %{public}ld", timestamp.c_str(), duration);
