@@ -1495,7 +1495,13 @@ int32_t MountManager::MountAppdataAndSharefs(int32_t userId)
     LOGI("mount currentUser/other/appdata");
     std::string noSharefsAppdataPath = mountArgument.GetNoSharefsAppdataPath();
     std::string curOtherAppdataPath = mountArgument.GetCurOtherAppdataPath();
-    MkDir(curOtherAppdataPath, MODE_0711);
+    if (!IsDir(curOtherAppdataPath)) {
+        MkDir(curOtherAppdataPath, MODE_0711);
+    }
+    std::string curFileMgrAppdataPath = mountArgument.GetCurFileMgrAppdataPath();
+    if (!IsDir(curFileMgrAppdataPath)) {
+        MkDir(curFileMgrAppdataPath, MODE_0711);
+    }
     BindAndRecMount(noSharefsAppdataPath, curOtherAppdataPath);
 
     LOGI("mount currentUser/filemgr");
@@ -1503,8 +1509,6 @@ int32_t MountManager::MountAppdataAndSharefs(int32_t userId)
     BindAndRecMount(mediaDocPath, curFileMgrPath);
 
     LOGI("mount currentUser/filemgr/appdata");
-    std::string curFileMgrAppdataPath = mountArgument.GetCurFileMgrAppdataPath();
-    MkDir(curFileMgrAppdataPath, MODE_0711);
     HmSharefsMount(userId, noSharefsAppdataPath, curFileMgrAppdataPath);
 
     LOGI("mount sharefs/docs/currentUser");
