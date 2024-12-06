@@ -24,7 +24,8 @@
       "storage_service_user_crypto_manager",
       "storage_service_external_storage_manager",
       "storage_service_storage_statistics_manager",
-      "storage_service_crypto_test"
+      "storage_service_crypto_test",
+      "storage_service_external_storage_qos_trans"
     ],
     "adapted_system_type": [ "small", "standard" ],
     "rom": "4096KB",
@@ -69,7 +70,8 @@
         "os_account",
         "openssl",
         "user_auth_framework",
-        "zlib"
+        "zlib",
+        "qos_manager"
       ],
       "third_party": [
         "e2fsprogs",

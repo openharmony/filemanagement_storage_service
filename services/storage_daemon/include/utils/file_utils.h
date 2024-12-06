@@ -48,6 +48,9 @@ void ReadDigitDir(const std::string &path, std::vector<FileList> &dirInfo);
 bool StringToUint32(const std::string &str, uint32_t &num);
 bool ReadFile(const std::string &path, std::string *str);
 int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output = nullptr);
+#ifdef EXTERNAL_STORAGE_QOS_TRANS
+int ExtStorageMountForkExec(std::vector<std::string> &cmd);
+#endif
 void TraverseDirUevent(const std::string &path, bool flag);
 void ChownRecursion(const std::string &dir, uid_t uid, gid_t gid);
 int IsSameGidUid(const std::string &dir, uid_t uid, gid_t gid);
