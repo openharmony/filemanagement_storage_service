@@ -800,7 +800,7 @@ int32_t MountManager::FindMountPointsToMap(std::map<std::string, std::list<std::
     std::ifstream inputStream(MOUNT_POINT_INFO.c_str(), std::ios::in);
     if (!inputStream.is_open()) {
         LOGE("unable to open /proc/mounts, errno is %{public}d", errno);
-        return -errno;
+        return E_UMOUNT_PROC_OPEN;
     }
     std::list<std::string> hmdfsList;
     std::list<std::string> hmfsList;
@@ -826,12 +826,13 @@ int32_t MountManager::UMountAllPath(int32_t userId, std::list<std::string> &moun
     if (res != E_OK) {
         return res;
     }
-    int32_t result = 0;
+    int32_t result = E_OK;
     std::list<std::string> list = mountMap[MOUNT_POINT_TYPE_SHAREFS];
     int total = static_cast<int>(list.size());
     LOGI("unmount sharefs path start, total %{public}d.", total);
     res = UMountByList(list, mountFailList);
     if (res != E_OK) {
+        LOGE("failed to umount sharefs mount point, res is %{public}d", res);
         result = E_UMOUNT_SHAREFS;
     }
 
@@ -840,6 +841,7 @@ int32_t MountManager::UMountAllPath(int32_t userId, std::list<std::string> &moun
     LOGI("unmount hmfs path start, total %{public}d.", total);
     res = UMountByList(list, mountFailList);
     if (res != E_OK) {
+        LOGE("failed to umount hmfs mount point, res is %{public}d", res);
         result = E_UMOUNT_HMFS;
     }
     UmountMntUserTmpfs(userId);
@@ -849,20 +851,11 @@ int32_t MountManager::UMountAllPath(int32_t userId, std::list<std::string> &moun
     LOGI("unmount hmdfs path start, total %{public}d.", total);
     res = UMountByList(list, mountFailList);
     if (res != E_OK) {
+        LOGE("failed to umount hmdfs mount point, res is %{public}d", res);
         result = E_UMOUNT_HMDFS;
     }
-
-    if (result != E_OK) {
-        for (const auto &item: mountFailList) {
-            res = UMount2(item.c_str(), MNT_DETACH);
-            if (res != E_OK) {
-                LOGE("failed to unmount with detach, path %{public}s, errno %{public}d.", item.c_str(), errno);
-            }
-        }
-        return result;
-    }
-    LOGI("UMountAllPath success");
-    return E_OK;
+    LOGI("UMountAllPath end");
+    return result;
 }
 
 int32_t MountManager::UMountByList(std::list<std::string> &list, std::list<std::string> &mountFailList)
@@ -880,7 +873,6 @@ int32_t MountManager::UMountByList(std::list<std::string> &list, std::list<std::
             mountFailList.push_back(path);
         }
     }
-    LOGI("UMountByList result is %{public}d.", result);
     return result;
 }
 
@@ -922,18 +914,6 @@ void MountManager::SetCloudState(bool active)
     }
     mountMutex_.unlock();
     LOGI("set cloud state end");
-}
-
-int32_t MountManager::HmdfsUMount(int32_t userId, std::string relativePath)
-{
-    Utils::MountArgument hmdfsAuthMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, relativePath));
-    int32_t ret = UMount2(hmdfsAuthMntArgs.GetFullDst().c_str(), MNT_DETACH);
-    if (ret != E_OK) {
-        LOGE("umount auth hmdfs, errno %{public}d, auth hmdfs dst %{public}s", errno,
-             hmdfsAuthMntArgs.GetFullDst().c_str());
-        return E_UMOUNT;
-    }
-    return E_OK;
 }
 
 int32_t MountManager::CloudUMount(int32_t userId)
@@ -1100,12 +1080,12 @@ int32_t MountManager::LocalUMount(int32_t userId)
 {
     Utils::MountArgument LocalMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, "account"));
     int err = UMount(LocalMntArgs.GetCommFullPath() + "local/");
-    if (err != E_OK) {
+    if (err != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("failed to un bind mount, errno %{public}d, ComDataDir dst %{public}s", errno,
              LocalMntArgs.GetCommFullPath().c_str());
     }
     err = UMount(LocalMntArgs.GetCloudFullPath());
-    if (err != E_OK) {
+    if (err != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("failed to un bind mount, errno %{public}d, CloudDataDir dst %{public}s", errno,
              LocalMntArgs.GetCloudFullPath().c_str());
     }
@@ -1114,50 +1094,46 @@ int32_t MountManager::LocalUMount(int32_t userId)
 
 int32_t MountManager::UmountByUser(int32_t userId)
 {
-    LOGI("umount hmdfs mount point start.");
-    int32_t err = E_OK;
-    if (!SupportHmdfs()) {
-        err = LocalUMount(userId);
-        if (err != E_OK) {
-            LOGE("failed to umount locally, err is %{public}d", err);
+    if (!SupportHmdfs() && LocalUMount(userId) != E_OK) {
+        return E_UMOUNT_LOCAL;
+    }
+    LOGI("umount all path start.");
+    int32_t res = E_OK;
+    std::list<std::string> mountFailList;
+    int32_t uMountAllPathRes = UMountAllPath(userId, mountFailList);
+    if (uMountAllPathRes != E_OK) {
+        FindAndKillProcess(userId, mountFailList);
+        if (uMountAllPathRes == E_UMOUNT_PROC_OPEN) {
+            res = uMountAllPathRes;
         }
-    } else {
-        std::list<std::string> mountFailList;
-        err = UMountAllPath(userId, mountFailList);
-        if (err != E_OK) {
-            LOGE("failed to umount hmdfs mount point, err is %{public}d", err);
-            FindAndKillProcess(userId, mountFailList);
+        if (UMountWithDetachByList(mountFailList) != E_OK) {
+            res = uMountAllPathRes;
         }
     }
-
     LOGI("umount cloud mount point start.");
-    int32_t count = 0;
-    while (count < UMOUNT_RETRY_TIMES) {
-        err = CloudUMount(userId);
-        if (err == E_OK) {
-            break;
-        } else if (errno == EBUSY) {
-            count++;
-            continue;
-        }
-        LOGE("failed to umount cloud mount point, err %{public}d", err);
-        return err;
+    int32_t cloudUnMountRes = CloudUMount(userId);
+    if (cloudUnMountRes != E_OK) {
+        res = cloudUnMountRes;
     }
+    UMountMediaFuse(userId);
+    return res;
+}
 
-    LOGI("umount media fuse mount point start.");
-    count = 0;
-    while (count < UMOUNT_RETRY_TIMES) {
-        err = UMountMediaFuse(userId);
-        if (err == E_OK) {
-            break;
-        } else if (errno == EBUSY) {
-            count++;
-            continue;
-        }
-        LOGE("failed to umount media fuse mount point, err %{public}d", err);
-        return err;
+int32_t MountManager::UMountWithDetachByList(std::list<std::string> &mountPoints)
+{
+    if (mountPoints.empty()) {
+        return E_OK;
     }
-    return E_OK;
+    int32_t res = E_OK;
+    for (const auto &item: mountPoints) {
+        LOGE("umount path with detach: %{public}s.", item.c_str());
+        int32_t umountRes = UMount2(item.c_str(), MNT_DETACH);
+        if (umountRes != E_OK && errno != ENOENT && errno != EINVAL) {
+            LOGE("failed to unmount with detach, path %{public}s, errno %{public}d.", item.c_str(), errno);
+            res = umountRes;
+        }
+    }
+    return res;
 }
 
 int32_t MountManager::PrepareHmdfsDirs(int32_t userId)

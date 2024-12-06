@@ -88,6 +88,9 @@ enum ErrNo {
     E_UMOUNT_SHAREFS = 304,
     E_UMOUNT_HMFS = 305,
     E_UMOUNT_HMDFS = 306,
+    E_UMOUNT_LOCAL = 307,
+    E_UMOUNT_ALL = 308,
+    E_UMOUNT_PROC_OPEN = 309,
 };
 
 enum JsErrCode {
