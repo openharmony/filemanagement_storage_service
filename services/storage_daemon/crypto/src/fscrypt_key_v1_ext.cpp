@@ -99,8 +99,11 @@ bool FscryptKeyV1Ext::ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, ui
     LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, user);
     // iv buffer returns derived keys
     if (FBEX::InstallKeyToKernel(user, type_, iv, size, static_cast<uint8_t>(flag)) != 0) {
-        LOGE("InstallKeyToKernel failed, user %{public}d, type %{public}d, flag %{public}u", user, type_, flag);
-        return false;
+        LOGE("InstallKeyToKernel first failed, user %{public}d, type %{public}d, flag %{public}u", user, type_, flag);
+        if (flag == 0 && FBEX::InstallKeyToKernel(user, type_, iv, size, static_cast<uint8_t>(flag)) != 0) {
+            LOGE("InstallKeyToKernel failed, user %{public}d, type %{public}d, flag %{public}u", user, type_, flag);
+            return false;
+        }
     }
 
     //Used to associate el3 and el4 kernels.
