@@ -1097,7 +1097,7 @@ int32_t MountManager::UmountByUser(int32_t userId)
     if (!SupportHmdfs() && LocalUMount(userId) != E_OK) {
         return E_UMOUNT_LOCAL;
     }
-    LOGI("umount all path start.");
+    LOGI("umount all path start");
     int32_t res = E_OK;
     std::list<std::string> mountFailList;
     int32_t uMountAllPathRes = UMountAllPath(userId, mountFailList);
@@ -1110,7 +1110,7 @@ int32_t MountManager::UmountByUser(int32_t userId)
             res = uMountAllPathRes;
         }
     }
-    LOGI("umount cloud mount point start.");
+    LOGI("umount cloud mount point start");
     int32_t cloudUnMountRes = CloudUMount(userId);
     if (cloudUnMountRes != E_OK) {
         res = cloudUnMountRes;
