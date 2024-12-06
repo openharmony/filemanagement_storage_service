@@ -17,6 +17,7 @@
 #define MTPFS_FUSE_H
 
 #include "fuse.h"
+#include <mutex>
 #include <singleton.h>
 
 #include "mtpfs_mtp_device.h"
@@ -92,6 +93,7 @@ private:
     MtpFsTmpFilesPool tmpFilesPool_;
     MtpFileSystemOptions options_;
     MtpFsDevice device_;
+    std::mutex fuseMutex_;
 };
 
 #endif // MTPFS_FUSE_H

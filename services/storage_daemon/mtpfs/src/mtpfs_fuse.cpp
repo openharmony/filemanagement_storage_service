@@ -684,6 +684,7 @@ int MtpFileSystem::Create(const char *path, mode_t mode, fuse_file_info *fileInf
 
 int MtpFileSystem::Open(const char *path, struct fuse_file_info *fileInfo)
 {
+    std::lock_guard<std::mutex>lock(fuseMutex_);
     LOGI("MtpFileSystem: Open enter, path: %{public}s", path);
     if (fileInfo == nullptr) {
         LOGE("Missing FileInfo");
@@ -788,6 +789,7 @@ int MtpFileSystem::Write(const char *path, const char *buf, size_t size, off_t o
 
 int MtpFileSystem::Release(const char *path, struct fuse_file_info *fileInfo)
 {
+    std::lock_guard<std::mutex>lock(fuseMutex_);
     LOGI("MtpFileSystem: Release enter, path: %{public}s", path);
     if (fileInfo == nullptr) {
         LOGE("Missing FileInfo");
