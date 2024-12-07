@@ -32,9 +32,15 @@
 #ifdef USE_LIBRESTORECON
 #include "policycoreutils.h"
 #endif
+#ifdef EXTERNAL_STORAGE_QOS_TRANS
+#include "concurrent_task_client.h"
+#endif
 namespace OHOS {
 namespace StorageDaemon {
 constexpr uint32_t ALL_PERMS = (S_ISUID | S_ISGID | S_ISVTX | S_IRWXU | S_IRWXG | S_IRWXO);
+#ifdef EXTERNAL_STORAGE_QOS_TRANS
+constexpr int SET_SCHED_LOAD_TRANS_TYPE = 10001;
+#endif
 const int BUF_LEN = 1024;
 const std::string MOUNT_POINT_INFO = "/proc/mounts";
 
@@ -468,6 +474,71 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
     }
     return E_OK;
 }
+#ifdef EXTERNAL_STORAGE_QOS_TRANS
+static void ReportExecutorPidEvent(std::vector<std::string> &cmd, int32_t pid)
+{
+    std::unordered_map<std::string, std::string> payloads;
+    if (!cmd.empty() && (cmd[0] == "mount.ntfs" || cmd[0] == "mount.exfat")) {
+        payloads["value"] = std::to_string(1);
+        payloads["pid"] = std::to_string(pid);
+        OHOS::ConcurrentTask::ConcurrentTaskClient::GetInstance().ReportSceneInfo(
+            SET_SCHED_LOAD_TRANS_TYPE, payloads);
+    }
+}
+
+int ExtStorageMountForkExec(std::vector<std::string> &cmd)
+{
+    int pipe_fd[2];
+    pid_t pid;
+    int status;
+    auto args = FromatCmd(cmd);
+
+    if (pipe(pipe_fd) < 0) {
+        LOGE("creat pipe failed");
+        return E_ERR;
+    }
+
+    pid = fork();
+    if (pid == -1) {
+        LOGE("fork failed");
+        return E_ERR;
+    } else if (pid == 0) {
+        (void)close(pipe_fd[0]);
+        int send_pid = (int)getpid();
+        if (write(pipe_fd[1], &send_pid, sizeof(int)) == -1) {
+            LOGE("write pipe failed");
+            _exit(1);
+        }
+        (void)close(pipe_fd[1]);
+        execvp(args[0], const_cast<char **>(args.data()));
+        LOGE("execvp failed errno: %{public}d", errno);
+        _exit(1);
+    } else {
+        (void)close(pipe_fd[1]);
+        int recv_pid;
+        while (read(pipe_fd[0], &recv_pid, sizeof(int)) > 0) {
+            LOGI("read child pid: %{public}d", recv_pid);
+        }
+
+        (void)close(pipe_fd[0]);
+        ReportExecutorPidEvent(cmd, recv_pid);
+
+        waitpid(pid, &status, 0);
+        if (errno == ECHILD) {
+            return E_NO_CHILD;
+        }
+        if (!WIFEXITED(status)) {
+            LOGE("Process exits abnormally");
+            return E_ERR;
+        }
+        if (WEXITSTATUS(status) != 0) {
+            LOGE("Process exited with an error");
+            return E_ERR;
+        }
+    }
+    return E_OK;
+}
+#endif
 
 void TraverseDirUevent(const std::string &path, bool flag)
 {
