@@ -461,6 +461,7 @@ int32_t StorageManager::ActiveUserKey(uint32_t userId,
     return err;
 #else
     return E_OK;
+#endif
 }
 
 int32_t StorageManager::InactiveUserKey(uint32_t userId)
