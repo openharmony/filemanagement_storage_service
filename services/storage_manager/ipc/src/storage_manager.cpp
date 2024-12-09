@@ -455,7 +455,7 @@ int32_t StorageManager::ActiveUserKey(uint32_t userId,
     std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
     int32_t err = fsCrypto->ActiveUserKey(userId, token, secret);
     if (err == E_OK) {
-        err = AppSpawnClientSendUserLockStatus(userId, ENCRYPTED);
+        err = AppSpawnClientSendUserLockStatus(userId, DECRYPTED);
         LOGE("send decrypted status userId: %{public}d, err is %{public}d", userId, err);
     }
     return err;
@@ -470,7 +470,7 @@ int32_t StorageManager::InactiveUserKey(uint32_t userId)
     std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
     int32_t err = fsCrypto->InactiveUserKey(userId);
     if (err == E_OK) {
-        err = AppSpawnClientSendUserLockStatus(userId, true);
+        err = AppSpawnClientSendUserLockStatus(userId, ENCRYPTED);
         LOGE("send encrypted status: userId: %{public}d, err is %{public}d", userId, err);
     }
     return err;
