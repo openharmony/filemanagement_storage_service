@@ -27,6 +27,7 @@ namespace {
 constexpr int READ_MORE_LENGTH = 100 * 1024;
 constexpr int ERROR_MEMSET_STRUCT = 1001;
 constexpr int ERROR_GET_HANDLE = 1002;
+constexpr int ERROR_ZIP_OPEN = 1003;
 };
 
 zipFile ZipUtil::CreateZipFile(const std::string& zipPath, int32_t zipMode)
@@ -54,8 +55,12 @@ int ZipUtil::AddFileInZip(
         return ERROR_GET_HANDLE;
     }
     std::string srcFileName = GetDestFilePath(srcFile, destFileName, keepParentPathStatus);
-    zipOpenNewFileInZip(
+    int err = zipOpenNewFileInZip(
         zipfile, srcFileName.c_str(), &zipInfo, nullptr, 0, nullptr, 0, nullptr, Z_DEFLATED, Z_DEFAULT_COMPRESSION);
+    if (err != ZIP_OK) {
+        LOGE("Minizip failed to zipOpenNewFileInZip,file = %{public}s, errno: %{public}d.", srcFile.c_str(), err);
+        return ERROR_ZIP_OPEN;
+    }
 
     int errcode = 0;
     char buf[READ_MORE_LENGTH] = {0};
