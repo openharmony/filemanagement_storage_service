@@ -856,7 +856,7 @@ int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &aut
     uint32_t i = 0;
     for (const auto &elxKeyDir : elKeyDirs) {
         if (!IsDir(elxKeyDir)) {
-            LOGE("Have not found type %{publicc}s", elxKeyDir.c_str());
+            LOGE("Have not found type %{public}s", elxKeyDir.c_str());
             return -EOPNOTSUPP;
         }
         std::shared_ptr<BaseKey> elxKey = GetBaseKey(elxKeyDir);
