@@ -113,7 +113,8 @@ ohos_unittest("mtp_device_monitor_test") {
     "samgr:samgr_proxy",
   ]
 
-  if (support_open_source_libmtp) {
+  if (support_open_source_libmtp &&
+      storage_service_external_storage_qos_trans) {
     external_deps += [ "libmtp:libmtp" ]
   }
 }
