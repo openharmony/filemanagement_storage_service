@@ -152,12 +152,7 @@ int32_t ExternalVolumeInfo::DoMount4Ntfs(uint32_t mountFlags)
 
 int32_t ExternalVolumeInfo::DoMount4Exfat(uint32_t mountFlags)
 {
-#ifdef EXTERNAL_STORAGE_QOS_TRANS
-    auto mountData = StringPrintf("rw,big_writes,uid=%d,gid=%d,dmask=0007,fmask=0007",
-        UID_FILE_MANAGER, UID_FILE_MANAGER);
-#else
     auto mountData = StringPrintf("rw,uid=%d,gid=%d,dmask=0007,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
-#endif
     if (mountFlags & MS_RDONLY) {
         mountData = StringPrintf("ro,uid=%d,gid=%d,dmask=0007,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
     }

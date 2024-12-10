@@ -35,7 +35,8 @@ group("storage_service_fuzztest") {
     "${storage_service_path}/test/fuzztest/volumecore_fuzzer:VolumeCoreFuzzTest",
     "${storage_service_path}/test/fuzztest/volumeexternal_fuzzer:VolumeExternalFuzzTest",
   ]
-  if (support_open_source_libmtp) {
+  if (support_open_source_libmtp &&
+      storage_service_external_storage_qos_trans) {
     deps +=
         [ "${storage_service_path}/test/fuzztest/libmtp_fuzzer:LibmtpFuzzTest" ]
   }
