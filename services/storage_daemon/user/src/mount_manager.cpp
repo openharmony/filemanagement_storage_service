@@ -196,7 +196,7 @@ std::vector<DirInfo> MountManager::InitSystemServiceDir()
             {"/data/service/el2/%d/file_transfer_service", MODE_0711, 7017, 7017},
             {"/data/service/el2/%d/print_service", MODE_0711, OID_PRINT, OID_PRINT},
             {"/data/service/el2/%d/database", MODE_0711, OID_DDMS, OID_DDMS},
-            {"/data/service/el2/%d/database/pasteboard_service", MODE_0771, OID_PASTEBOARD, OID_DDMS}};
+            {"/data/service/el2/%d/database/pasteboard_service", MODE_02771, OID_PASTEBOARD, OID_DDMS}};
 }
 
 std::vector<DirInfo> MountManager::InitFileManagerDir()
