@@ -28,8 +28,8 @@
 
 namespace {
 constexpr uint32_t STORAGE_DAEMON_SFIFT = 1;
-constexpr uint32_t CHECK_SERVICE_TIMES = 1000;
-constexpr uint32_t SLEEP_TIME_PRE_CHECK = 10; // 10ms
+constexpr uint32_t CHECK_SERVICE_TIMES = 200;
+constexpr uint32_t SLEEP_TIME_PRE_CHECK = 50; // 50ms
 constexpr uint32_t STORAGE_SERVICE_FLAG = (1 << STORAGE_DAEMON_SFIFT);
 constexpr int32_t STORAGE_DAEMON_SAID = OHOS::STORAGE_MANAGER_DAEMON_ID;
 }
