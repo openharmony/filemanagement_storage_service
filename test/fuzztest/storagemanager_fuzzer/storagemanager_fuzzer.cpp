@@ -739,26 +739,8 @@ bool HandleNotifyDiskDestroyedFuzzTest(const uint8_t *data, size_t size)
 }
 } // namespace OHOS::StorageManager
 
-/* Fuzzer entry point */
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
+void FuzzerTest1(const uint8_t *data, size_t size)
 {
-    /* Run your code on data */
-    if (data == nullptr) {
-        return 0;
-    }
-
-    /* Validate the length of size */
-    if (size < OHOS::StorageManager::U32_AT_SIZE) {
-        return 0;
-    }
-
-    auto str = std::make_unique<char[]>(size + 1);
-    (void)memset_s(str.get(), size + 1, 0x00, size + 1);
-    if (memcpy_s(str.get(), size, data, size) != EOK) {
-        return 0;
-    }
-
-    OHOS::StorageManager::StorageManagerFuzzTest(move(str), size);
     OHOS::StorageManager::HandlePrepareAddUserFuzzTest(data, size);
     OHOS::StorageManager::HandleRemoveUserFuzzTest(data, size);
     OHOS::StorageManager::HandlePrepareStartUserFuzzTest(data, size);
@@ -794,6 +776,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     OHOS::StorageManager::HandleNotifyVolumeCreatedFuzzTest(data, size);
     OHOS::StorageManager::HandleNotifyVolumeMountedFuzzTest(data, size);
     OHOS::StorageManager::HandleNotifyVolumeStateChangedFuzzTest(data, size);
+}
+
+void FuzzerTest2(const uint8_t *data, size_t size)
+{
     OHOS::StorageManager::HandleNotifyDiskCreatedFuzzTest(data, size);
     OHOS::StorageManager::HandleGetAllDisksFuzzTest(data, size);
     OHOS::StorageManager::HandleGetVolumeByUuidFuzzTest(data, size);
@@ -813,5 +799,29 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     OHOS::StorageManager::HandleNotifyMtpMountFuzzTest(data, size);
     OHOS::StorageManager::HandleNotifyMtpUnmountFuzzTest(data, size);
     OHOS::StorageManager::HandleNotifyDiskDestroyedFuzzTest(data, size);
+}
+
+/* Fuzzer entry point */
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
+{
+    /* Run your code on data */
+    if (data == nullptr) {
+        return 0;
+    }
+
+    /* Validate the length of size */
+    if (size < OHOS::StorageManager::U32_AT_SIZE) {
+        return 0;
+    }
+
+    auto str = std::make_unique<char[]>(size + 1);
+    (void)memset_s(str.get(), size + 1, 0x00, size + 1);
+    if (memcpy_s(str.get(), size, data, size) != EOK) {
+        return 0;
+    }
+
+    OHOS::StorageManager::StorageManagerFuzzTest(move(str), size);
+    FuzzerTest1(data, size);
+    FuzzerTest2(data, size);
     return 0;
 }
