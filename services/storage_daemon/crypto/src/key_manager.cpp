@@ -471,7 +471,7 @@ int KeyManager::InitUserElkeyStorageDir(void)
 
 int KeyManager::InitGlobalUserKeys(void)
 {
-    LOGI("enter");
+    LOGW("enter");
     if (!KeyCtrlHasFscryptSyspara()) {
         return 0;
     }
@@ -508,7 +508,7 @@ int KeyManager::InitGlobalUserKeys(void)
         LOGE("Load all users el1 failed");
         return ret;
     }
-    LOGI("Init global user key success");
+    LOGW("Init global user key success");
 
     return 0;
 }
