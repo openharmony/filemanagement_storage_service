@@ -65,7 +65,9 @@ bool StorageDaemonClient::CheckServiceStatus(uint32_t serviceFlags)
             if (samgr != nullptr) {
                 break;
             }
-            LOGW("check samgr %{public}u times", i);
+            if (i % LOG_CHECK_INTERVAL == 0) {
+                LOGW("check samgr %{public}u times", i);
+            }
             std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_TIME_PRE_CHECK));
         }
         if (samgr == nullptr) {
@@ -81,7 +83,9 @@ bool StorageDaemonClient::CheckServiceStatus(uint32_t serviceFlags)
             if (object != nullptr) {
                 break;
             }
-            LOGW("check storage daemon status %{public}u times", i);
+            if (i % LOG_CHECK_INTERVAL == 0) {
+                LOGW("check storage daemon status %{public}u times", i);
+            }
             std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_TIME_PRE_CHECK));
         }
         if (exist == false) {
@@ -192,12 +196,14 @@ int32_t StorageDaemonClient::InitGlobalKey(void)
 {
     if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
         LOGE("service check failed");
+        StorageRadar::ReportUserKeyResult("InitGlobalKey::CheckServiceStatus", 0, -EAGAIN, "EL1", "");
         return -EAGAIN;
     }
 
     sptr<IStorageDaemon> client = GetStorageDaemonProxy();
     if (client == nullptr) {
         LOGE("get storage daemon service failed");
+        StorageRadar::ReportUserKeyResult("InitGlobalKey::GetStorageDaemonProxy", 0, -EAGAIN, "EL1", "");
         return -EAGAIN;
     }
 
@@ -208,12 +214,14 @@ int32_t StorageDaemonClient::InitGlobalUserKeys(void)
 {
     if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
         LOGE("service check failed");
+        StorageRadar::ReportUserKeyResult("InitGlobalUserKeys::CheckServiceStatus", 0, -EAGAIN, "EL1", "");
         return -EAGAIN;
     }
 
     sptr<IStorageDaemon> client = GetStorageDaemonProxy();
     if (client == nullptr) {
         LOGE("get storage daemon service failed");
+        StorageRadar::ReportUserKeyResult("InitGlobalUserKeys::GetStorageDaemonProxy", 0, -EAGAIN, "EL1", "");
         return -EAGAIN;
     }
 
