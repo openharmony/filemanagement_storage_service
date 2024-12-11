@@ -330,6 +330,437 @@ bool HandleSetBundleQuotaFuzzTest(std::unique_ptr<char[]> data, size_t size)
     storageManagerPtr->HandleSetBundleQuota(datas, reply);
     return true;
 }
+
+bool HandleUpdateMemoryParaFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleUpdateMemoryPara(datas, reply);
+    return true;
+}
+
+bool HandleDeleteAppkeyFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleDeleteAppkey(datas, reply);
+    return true;
+}
+
+bool HandleCompleteAddUserFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleCompleteAddUser(datas, reply);
+    return true;
+}
+
+bool HandleGetTotalFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleGetTotal(datas, reply);
+    return true;
+}
+
+bool HandleGetFreeFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleGetFree(datas, reply);
+    return true;
+}
+
+bool HandleGetBundleStatusFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleGetBundleStatus(datas, reply);
+    return true;
+}
+
+bool HandleGetSystemSizeFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleGetSystemSize(datas, reply);
+    return true;
+}
+
+bool HandleGetTotalSizeFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleGetTotalSize(datas, reply);
+    return true;
+}
+bool HandleGetFreeSizeFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleGetFreeSize(datas, reply);
+    return true;
+}
+
+bool HandleGetCurrUserStorageStatsFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleGetCurrUserStorageStats(datas, reply);
+    return true;
+}
+
+bool HandleGetUserStorageStatsFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleGetUserStorageStats(datas, reply);
+    return true;
+}
+
+bool HandleGetAllVolumesFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleGetAllVolumes(datas, reply);
+    return true;
+}
+
+bool HandleNotifyVolumeCreatedFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleNotifyVolumeCreated(datas, reply);
+    return true;
+}
+
+bool HandleNotifyVolumeMountedFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleNotifyVolumeMounted(datas, reply);
+    return true;
+}
+
+bool HandleNotifyVolumeStateChangedFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleNotifyVolumeStateChanged(datas, reply);
+    return true;
+}
+
+bool HandleNotifyDiskCreatedFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleNotifyDiskCreated(datas, reply);
+    return true;
+}
+
+bool HandleGetAllDisksFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleGetAllDisks(datas, reply);
+    return true;
+}
+
+bool HandleGetVolumeByUuidFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleGetVolumeByUuid(datas, reply);
+    return true;
+}
+
+bool HandleGetVolumeByIdFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleGetVolumeById(datas, reply);
+    return true;
+}
+
+bool HandleSetVolDescFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleSetVolDesc(datas, reply);
+    return true;
+}
+
+bool HandleGetDiskByIdFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleGetDiskById(datas, reply);
+    return true;
+}
+
+bool HandleUpdateUseAuthWithRecoveryKeyFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleUpdateUseAuthWithRecoveryKey(datas, reply);
+    return true;
+}
+
+bool HandleGetFileEncryptStatusFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleGetFileEncryptStatus(datas, reply);
+    return true;
+}
+
+bool HandleGetLockScreenStatusFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleGetLockScreenStatus(datas, reply);
+    return true;
+}
+
+bool HandleGenerateAppkeyFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleGenerateAppkey(datas, reply);
+    return true;
+}
+
+bool HandleCreateRecoverKeyFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleCreateRecoverKey(datas, reply);
+    return true;
+}
+
+bool HandleSetRecoverKeyFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleSetRecoverKey(datas, reply);
+    return true;
+}
+
+bool HandleGetBundleStatsForIncreaseFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleGetBundleStatsForIncrease(datas, reply);
+    return true;
+}
+
+bool HandleGetUserStorageStatsByTypeFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleGetUserStorageStatsByType(datas, reply);
+    return true;
+}
+
+bool HandleMountDfsDocsFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleMountDfsDocs(datas, reply);
+    return true;
+}
+
+bool HandleUMountDfsDocsFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleUMountDfsDocs(datas, reply);
+    return true;
+}
+
+bool HandleNotifyMtpMountFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleNotifyMtpMount(datas, reply);
+    return true;
+}
+
+bool HandleNotifyMtpUnmountFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleNotifyMtpUnmount(datas, reply);
+    return true;
+}
+
+bool HandleMountMediaFuseFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleMountMediaFuse(datas, reply);
+    return true;
+}
+
+bool HandleUMountMediaFuseFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleUMountMediaFuse(datas, reply);
+    return true;
+}
+
+bool HandleNotifyDiskDestroyedFuzzTest(std::unique_ptr<char[]> data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data.get(), size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleNotifyDiskDestroyed(datas, reply);
+    return true;
+}
 } // namespace OHOS::StorageManager
 
 /* Fuzzer entry point */
@@ -372,5 +803,41 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     OHOS::StorageManager::HandleCreateShareFileFuzzTest(move(str), size);
     OHOS::StorageManager::HandleDeleteShareFileFuzzTest(move(str), size);
     OHOS::StorageManager::HandleSetBundleQuotaFuzzTest(move(str), size);
+    OHOS::StorageManager::HandleUpdateMemoryParaFuzzTest;
+    OHOS::StorageManager::HandleDeleteAppkeyFuzzTest;
+    OHOS::StorageManager::HandleCompleteAddUserFuzzTest;
+    OHOS::StorageManager::HandleGetTotalFuzzTest;
+    OHOS::StorageManager::HandleGetFreeFuzzTest;
+    OHOS::StorageManager::HandleGetBundleStatusFuzzTest;
+    OHOS::StorageManager::HandleGetSystemSizeFuzzTest;
+    OHOS::StorageManager::HandleGetTotalSizeFuzzTest;
+    OHOS::StorageManager::HandleGetFreeSizeFuzzTest;
+    OHOS::StorageManager::HandleGetCurrUserStorageStatsFuzzTest;
+    OHOS::StorageManager::HandleGetUserStorageStatsFuzzTest;
+    OHOS::StorageManager::HandleGetAllVolumesFuzzTest;
+    OHOS::StorageManager::HandleNotifyVolumeCreatedFuzzTest;
+    OHOS::StorageManager::HandleNotifyVolumeMountedFuzzTest;
+    OHOS::StorageManager::HandleNotifyVolumeStateChangedFuzzTest;
+    OHOS::StorageManager::HandleNotifyDiskCreatedFuzzTest;
+    OHOS::StorageManager::HandleGetAllDisksFuzzTest;
+    OHOS::StorageManager::HandleGetVolumeByUuidFuzzTest;
+    OHOS::StorageManager::HandleGetVolumeByIdFuzzTest;
+    OHOS::StorageManager::HandleSetVolDescFuzzTest;
+    OHOS::StorageManager::HandleGetDiskByIdFuzzTest;
+    OHOS::StorageManager::HandleUpdateUseAuthWithRecoveryKeyFuzzTest;
+    OHOS::StorageManager::HandleGetFileEncryptStatusFuzzTest;
+    OHOS::StorageManager::HandleGetLockScreenStatusFuzzTest;
+    OHOS::StorageManager::HandleGenerateAppkeyFuzzTest;
+    OHOS::StorageManager::HandleCreateRecoverKeyFuzzTest;
+    OHOS::StorageManager::HandleSetRecoverKeyFuzzTest;
+    OHOS::StorageManager::HandleGetBundleStatsForIncreaseFuzzTest;
+    OHOS::StorageManager::HandleGetUserStorageStatsByTypeFuzzTest;
+    OHOS::StorageManager::HandleMountDfsDocsFuzzTest;
+    OHOS::StorageManager::HandleUMountDfsDocsFuzzTest;
+    OHOS::StorageManager::HandleNotifyMtpMountFuzzTest;
+    OHOS::StorageManager::HandleNotifyMtpUnmountFuzzTest;
+    OHOS::StorageManager::HandleMountMediaFuseFuzzTest;
+    OHOS::StorageManager::HandleUMountMediaFuseFuzzTest;
+    OHOS::StorageManager::HandleNotifyDiskDestroyedFuzzTest;
     return 0;
 }
