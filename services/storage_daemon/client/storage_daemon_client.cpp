@@ -25,7 +25,9 @@
 #include "libfscrypt/fscrypt_utils.h"
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
+#include "utils/storage_radar.h"
 
+using namespace OHOS::StorageService;
 namespace {
 constexpr uint32_t STORAGE_DAEMON_SFIFT = 1;
 constexpr uint32_t CHECK_SERVICE_TIMES = 1000;
