@@ -157,19 +157,31 @@ HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_ActiveKeyExt_001, TestSize.Level1)
     GTEST_LOG_(INFO) << "FscryptKeyV1Ext_ActiveKeyExt_001 end";
     uint8_t iv = 1;
     uint32_t size = 1;
-    uint32_t elType = TYPE_EL5;
+    uint32_t elType = 0;
     FscryptKeyV1Ext ext;
     ext.userId_ = 100;
     ext.type_ = TYPE_EL2;
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(false));
     EXPECT_EQ(ext.ActiveKeyExt(0, &iv, size, elType), true);
-    EXPECT_EQ(elType, TYPE_EL5);
+    EXPECT_EQ(elType, 0);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
-    EXPECT_CALL(*fbexMock_, InstallKeyToKernel(_, _, _, _, _)).WillOnce(Return(1));
+    EXPECT_CALL(*fbexMock_, InstallKeyToKernel(_, _, _, _, _)).WillOnce(Return(1)).WillOnce(Return(1));
     EXPECT_EQ(ext.ActiveKeyExt(0, &iv, size, elType), false);
-    EXPECT_EQ(elType, TYPE_EL5);
+    EXPECT_EQ(elType, 0);
 
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*fbexMock_, InstallKeyToKernel(_, _, _, _, _)).WillOnce(Return(1)).WillOnce(Return(0));
+    EXPECT_EQ(ext.ActiveKeyExt(0, &iv, size, elType), true);
+    EXPECT_EQ(elType, TYPE_EL2);
+
+    elType = 0;
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*fbexMock_, InstallKeyToKernel(_, _, _, _, _)).WillOnce(Return(1));
+    EXPECT_EQ(ext.ActiveKeyExt(1, &iv, size, elType), true);
+    EXPECT_EQ(elType, TYPE_EL2);
+    
+    elType = 0;
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, InstallKeyToKernel(_, _, _, _, _)).WillOnce(Return(0));
     EXPECT_EQ(ext.ActiveKeyExt(0, &iv, size, elType), true);
