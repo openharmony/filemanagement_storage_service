@@ -36,6 +36,7 @@
         "ability_runtime",
         "access_token",
         "app_file_service",
+        "appspawn",
         "bounds_checking_function",
         "bundle_framework",
         "cJSON",
