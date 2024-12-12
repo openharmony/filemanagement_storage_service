@@ -28,6 +28,7 @@
 #include <cstdio>
 #include "hisysevent.h"
 #include "crypto/key_manager.h"
+#include "utils/disk_utils.h"
 #include "utils/storage_radar.h"
 #include "ipc/istorage_daemon.h"
 #include "parameter.h"
@@ -1217,7 +1218,7 @@ int32_t MountManager::MountDfsDocs(int32_t userId, const std::string &relativePa
     int32_t ret = Mount(srcPath, dstPath, nullptr, MS_BIND, nullptr);
     if (ret != 0 && errno != EEXIST && errno != EBUSY) {
         LOGE("MountDfsDocs mount bind failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
-            srcPath.c_str(), dstPath.c_str(), errno);
+             GetAnonyString(srcPath).c_str(), dstPath.c_str(), errno);
         return E_MOUNT;
     }
     return E_OK;
@@ -1234,7 +1235,7 @@ int32_t MountManager::UMountDfsDocs(int32_t userId, const std::string &relativeP
         return E_UMOUNT;
     }
 
-    std::string dstPath = StringPrintf("/mnt/data/%d/hmdfs/%s", userId, deviceId.c_str());
+    std::string dstPath = StringPrintf("/mnt/data/%d/hmdfs/%s", userId, GetAnonyString(deviceId).c_str());
     sync();
     int32_t ret = UMount2(dstPath, MNT_FORCE);
     if (ret != E_OK) {
