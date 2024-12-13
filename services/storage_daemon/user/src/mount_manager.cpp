@@ -53,7 +53,6 @@ using namespace std;
 using namespace OHOS::FileManagement::CloudFile;
 #endif
 using namespace OHOS::StorageService;
-constexpr int32_t UMOUNT_RETRY_TIMES = 3;
 constexpr int32_t ONE_KB = 1024;
 constexpr int32_t DEFAULT_USERID = 100;
 std::shared_ptr<MountManager> MountManager::instance_ = nullptr;
@@ -854,7 +853,7 @@ int32_t MountManager::UMountAllPath(int32_t userId, std::list<std::string> &moun
         LOGE("failed to umount hmdfs mount point, res is %{public}d", res);
         result = E_UMOUNT_HMDFS;
     }
-    LOGI("UMountAllPath end");
+    LOGI("UMountAllPath end, res is %{public}d", result);
     return result;
 }
 
@@ -918,10 +917,6 @@ void MountManager::SetCloudState(bool active)
 
 int32_t MountManager::CloudUMount(int32_t userId)
 {
-    if (!cloudReady_) {
-        LOGE("cloud service not ready.");
-        return E_CLOUD_NOT_READY;
-    }
 #ifdef DFS_SERVICE
     int32_t err = E_OK;
     Utils::MountArgument cloudMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
@@ -1078,44 +1073,43 @@ void MountManager::PrepareFileManagerDir(int32_t userId)
 
 int32_t MountManager::LocalUMount(int32_t userId)
 {
+    int res = E_OK;
     Utils::MountArgument LocalMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, "account"));
-    int err = UMount(LocalMntArgs.GetCommFullPath() + "local/");
-    if (err != E_OK && errno != ENOENT && errno != EINVAL) {
-        LOGE("failed to un bind mount, errno %{public}d, ComDataDir dst %{public}s", errno,
-             LocalMntArgs.GetCommFullPath().c_str());
+    std::string path = LocalMntArgs.GetCommFullPath() + "local/";
+    int unMountRes = UMount(path);
+    if (unMountRes != E_OK && errno != ENOENT && errno != EINVAL) {
+        LOGE("failed to unmount local, errno %{public}d, path is %{public}s", errno, path.c_str());
+        res = unMountRes;
     }
-    err = UMount(LocalMntArgs.GetCloudFullPath());
-    if (err != E_OK && errno != ENOENT && errno != EINVAL) {
-        LOGE("failed to un bind mount, errno %{public}d, CloudDataDir dst %{public}s", errno,
-             LocalMntArgs.GetCloudFullPath().c_str());
+    path = LocalMntArgs.GetCloudFullPath();
+    unMountRes = UMount(path);
+    if (unMountRes != E_OK && errno != ENOENT && errno != EINVAL) {
+        LOGE("failed to unmount local, errno %{public}d, path is %{public}s", errno, path.c_str());
+        res = unMountRes;
     }
-    return err;
+    return res;
 }
 
 int32_t MountManager::UmountByUser(int32_t userId)
 {
-    if (!SupportHmdfs() && LocalUMount(userId) != E_OK) {
-        return E_UMOUNT_LOCAL;
-    }
-    LOGI("umount all path start.");
     int32_t res = E_OK;
-    std::list<std::string> mountFailList;
-    int32_t uMountAllPathRes = UMountAllPath(userId, mountFailList);
-    if (uMountAllPathRes != E_OK) {
-        FindAndKillProcess(userId, mountFailList);
-        if (uMountAllPathRes == E_UMOUNT_PROC_OPEN) {
-            res = uMountAllPathRes;
-        }
-        if (UMountWithDetachByList(mountFailList) != E_OK) {
-            res = uMountAllPathRes;
+    if (!SupportHmdfs() && LocalUMount(userId) != E_OK) {
+        res = E_UMOUNT_LOCAL;
+    } else {
+        LOGI("umount all path start.");
+        std::list<std::string> mountFailList;
+        int32_t unMountRes = UMountAllPath(userId, mountFailList);
+        if (unMountRes != E_OK && unMountRes != E_UMOUNT_PROC_OPEN) {
+            FindAndKillProcess(userId, mountFailList);
+            std::list<std::string> tempList;
+            res = UMountByList(mountFailList, tempList);
         }
     }
+
     LOGI("umount cloud mount point start.");
-    int32_t cloudUnMountRes = CloudUMount(userId);
-    if (cloudUnMountRes != E_OK) {
-        res = cloudUnMountRes;
-    }
+    res = CloudUMount(userId);
     UMountMediaFuse(userId);
+    LOGI("unmount end, res is %{public}d.", res);
     return res;
 }
 
