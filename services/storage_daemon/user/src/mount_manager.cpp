@@ -1512,21 +1512,15 @@ int32_t MountManager::UmountMntUserTmpfs(int32_t userId)
 int32_t MountManager::MountMediaFuse(int32_t userId, int32_t &devFd)
 {
     LOGI("start mount media fuse");
-
-    // umount mountpoint first
+    UMountMediaFuse(userId);
     Utils::MountArgument mediaMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
     const string path = mediaMntArgs.GetFullMediaFuse();
-    if (E_OK != UMount2(path.c_str(), MNT_DETACH)) {
-        LOGE("UMount media fuse mount point failed, errno = %{public}d", errno);
-    }
-
     // open fuse
     devFd = open("/dev/fuse", O_RDWR);
     if (devFd < 0) {
         LOGE("open /dev/fuse fail");
         return E_MOUNT;
     }
-
     // mount fuse mountpoint
     string opt = StringPrintf("fd=%i,"
                               "rootmode=40000,"
@@ -1542,8 +1536,7 @@ int32_t MountManager::MountMediaFuse(int32_t userId, int32_t &devFd)
         close(devFd);
         return E_MOUNT;
     }
-
-    LOGI("mount %{public}s success", path.c_str());
+    LOGI("mount media fuse success, path is %{public}s", path.c_str());
     return E_OK;
 }
 
