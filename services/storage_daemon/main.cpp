@@ -25,6 +25,7 @@
 #include "ipc/storage_daemon.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
+#include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
 #include "user/user_manager.h"
