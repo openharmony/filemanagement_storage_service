@@ -137,7 +137,6 @@ private:
     int32_t SharedMount(const std::string &path);
     int32_t BindAndRecMount(std::string &srcPath, std::string &dstPath, bool isUseSlave = true);
     int32_t UmountMntUserTmpfs(int32_t userId);
-    int32_t UMountWithDetachByList(std::list<std::string> &mountPoints);
 
     DISALLOW_COPY_AND_MOVE(MountManager);
 

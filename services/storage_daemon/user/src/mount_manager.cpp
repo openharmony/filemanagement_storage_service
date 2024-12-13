@@ -1113,23 +1113,6 @@ int32_t MountManager::UmountByUser(int32_t userId)
     return res;
 }
 
-int32_t MountManager::UMountWithDetachByList(std::list<std::string> &mountPoints)
-{
-    if (mountPoints.empty()) {
-        return E_OK;
-    }
-    int32_t res = E_OK;
-    for (const auto &item: mountPoints) {
-        LOGE("umount path with detach: %{public}s.", item.c_str());
-        int32_t umountRes = UMount2(item.c_str(), MNT_DETACH);
-        if (umountRes != E_OK && errno != ENOENT && errno != EINVAL) {
-            LOGE("failed to unmount with detach, path %{public}s, errno %{public}d.", item.c_str(), errno);
-            res = umountRes;
-        }
-    }
-    return res;
-}
-
 int32_t MountManager::PrepareHmdfsDirs(int32_t userId)
 {
     for (const DirInfo &dir : hmdfsDirVec_) {
