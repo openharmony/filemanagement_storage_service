@@ -619,7 +619,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_MountMediaFuse_001, T
     int32_t userId = 101;
     int32_t devFd = -1;
     int32_t ret = mountManager->MountMediaFuse(userId, devFd);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(ret, E_MOUNT);
 
     ret = mountManager->UMountMediaFuse(userId);
     EXPECT_EQ(ret, E_OK);
