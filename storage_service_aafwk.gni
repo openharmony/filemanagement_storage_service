@@ -43,10 +43,14 @@ declare_args() {
   enable_tee_client = !is_emulator
 }
 
-storage_manager_path = "//foundation/filemanagement/storage_service/services/storage_manager"
-storage_daemon_path = "//foundation/filemanagement/storage_service/services/storage_daemon"
-storage_interface_path = "//foundation/filemanagement/storage_service/interfaces"
-storage_service_common_path = "//foundation/filemanagement/storage_service/services/common"
+storage_manager_path =
+    "//foundation/filemanagement/storage_service/services/storage_manager"
+storage_daemon_path =
+    "//foundation/filemanagement/storage_service/services/storage_daemon"
+storage_interface_path =
+    "//foundation/filemanagement/storage_service/interfaces"
+storage_service_common_path =
+    "//foundation/filemanagement/storage_service/services/common"
 storage_service_path = "//foundation/filemanagement/storage_service"
 bundlemanager_framework_path = "//foundation/bundlemanager/bundle_framework"
 multimedia_library_path = "//foundation/multimedia/media_library"
