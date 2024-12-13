@@ -65,6 +65,7 @@ constexpr uid_t USER_ID_BASE = 200000;
 constexpr uid_t OID_FOUNDATION = 5523;
 constexpr uid_t OID_PASTEBOARD = 3816;
 constexpr uid_t OID_PRINT = 3823;
+constexpr uid_t OID_FINDNETWORK = 7518;
 
 class MountManager final {
 public:
