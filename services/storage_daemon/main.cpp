@@ -107,7 +107,7 @@ static const int32_t SLEEP_TIME_INTERVAL_3MS = 3 * 1000;
 
 int main()
 {
-    LOGE("storage_daemon start");
+    LOGW("storage_daemon start");
     do {
         auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
         if (samgr != nullptr) {
@@ -124,7 +124,7 @@ int main()
         }
         usleep(SLEEP_TIME_INTERVAL_3MS);
     } while (true);
-    LOGE("samgr GetSystemAbilityManager finish");
+    LOGW("samgr GetSystemAbilityManager finish");
 
 #ifdef EXTERNAL_STORAGE_MANAGER
     StorageDaemon::NetlinkManager *nm = StorageDaemon::NetlinkManager::Instance();
@@ -140,7 +140,7 @@ int main()
 #ifdef SUPPORT_OPEN_SOURCE_MTP_DEVICE
     DelayedSingleton<OHOS::StorageDaemon::MtpDeviceMonitor>::GetInstance()->StartMonitor();
 #endif
-
+    LOGW("storage_daemon main function execute finish.");
     IPCSkeleton::JoinWorkThread();
     return 0;
 }
