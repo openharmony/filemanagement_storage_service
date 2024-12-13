@@ -198,9 +198,10 @@ int32_t StorageDaemonClient::DestroyUserSpace(uint32_t userId, const std::string
 
 int32_t StorageDaemonClient::InitGlobalKey(void)
 {
-    if (CheckServiceStatus(STORAGE_SERVICE_FLAG) != E_OK) {
+    int32_t status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
+    if (status != E_OK) {
         LOGE("service check failed");
-        StorageRadar::ReportUserKeyResult("InitGlobalKey::CheckServiceStatus", 0, -EAGAIN, "EL1", "");
+        StorageRadar::ReportUserKeyResult("InitGlobalKey::CheckServiceStatus", 0, status, "EL1", "");
         return -EAGAIN;
     }
 
@@ -216,9 +217,10 @@ int32_t StorageDaemonClient::InitGlobalKey(void)
 
 int32_t StorageDaemonClient::InitGlobalUserKeys(void)
 {
-    if (CheckServiceStatus(STORAGE_SERVICE_FLAG) != E_OK) {
+    int32_t status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
+    if (status != E_OK) {
         LOGE("service check failed");
-        StorageRadar::ReportUserKeyResult("InitGlobalUserKeys::CheckServiceStatus", 0, -EAGAIN, "EL1", "");
+        StorageRadar::ReportUserKeyResult("InitGlobalUserKeys::CheckServiceStatus", 0, status, "EL1", "");
         return -EAGAIN;
     }
 
