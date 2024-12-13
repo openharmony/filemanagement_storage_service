@@ -117,13 +117,13 @@ int32_t KeyBackup::TryRestoreKey(const std::shared_ptr<BaseKey> &baseKey, const 
     std::string keyDir = baseKey->GetDir();
     std::string backupDir;
     GetBackupDir(keyDir, backupDir);
-    if (baseKey->DoRestoreKeyEx(auth, keyDir + PATH_LATEST)) {
+    if (baseKey->DoRestoreKey(auth, keyDir + PATH_LATEST)) {
         CheckAndFixFiles(keyDir, backupDir);
         LOGI("Restore by main key success !");
         return 0;
     }
     LOGE("origKey failed, try backupKey");
-    if (baseKey->DoRestoreKeyEx(auth, backupDir + PATH_LATEST)) {
+    if (baseKey->DoRestoreKey(auth, backupDir + PATH_LATEST)) {
         CheckAndFixFiles(backupDir, keyDir);
         LOGI("Restore by back key success !");
         return 0;
@@ -237,7 +237,7 @@ int32_t KeyBackup::DoResotreKeyMix(std::shared_ptr<BaseKey> &baseKey, const User
             LOGE("copy mix files to temp dir failed");
             continue;
         }
-        if (baseKey->DoRestoreKeyEx(auth, tempKeyDir)) {
+        if (baseKey->DoRestoreKey(auth, tempKeyDir)) {
             LOGI("mix key files descrpt succ, fix orig and backup");
             CheckAndFixFiles(tempKeyDir, origKeyDir);
             CheckAndFixFiles(tempKeyDir, backupKeyDir);

@@ -488,7 +488,7 @@ bool BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate)
         return KeyBackup::GetInstance().TryRestoreKey(shared_from_this(), auth) == 0;
     }
 
-    if (DoRestoreKeyEx(auth, candidate)) {
+    if (DoRestoreKey(auth, candidate)) {
         // update the latest with the candidate
         UpdateKey("", needSyncCandidate);
         return true;
@@ -509,57 +509,13 @@ bool BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate)
     });
     for (const auto &it: files) {
         if (it != candidate) {
-            if (DoRestoreKeyEx(auth, dir_ + "/" + it)) {
+            if (DoRestoreKey(auth, dir_ + "/" + it)) {
                 UpdateKey(it, needSyncCandidate);
                 return true;
             }
         }
     }
     return false;
-}
-
-bool BaseKey::DoRestoreKeyEx(const UserAuth &auth, const std::string &keyPath)
-{
-    LOGI("enter restore key ex");
-    if (!DoRestoreKey(auth, keyPath)) {
-        LOGE("First restore failed !");
-        return false;
-    }
-    if (keyEncryptType_ == KeyEncryptType::KEY_CRYPT_HUKS) {
-        LOGE("Key encrypted by huks, skip !");
-        return true;
-    }
-
-    KeyBlob tempEnc(keyContext_.rndEnc.size);
-    if (!LoadKeyBlob(tempEnc, keyPath + PATH_ENCRYPTED)) {
-        LOGE("key encrypted by huks, skip !");
-        return true;
-    }
-
-    uint32_t ivSum = 0;
-    for (size_t i = 0; i < GCM_NONCE_BYTES; ++i) {
-        ivSum += tempEnc.data[i];
-    }
-    if (ivSum != 0) {
-        LOGE("key already update, skip !");
-        tempEnc.Clear();
-        return true;
-    }
-    tempEnc.Clear();
-    
-    if (!StoreKey(auth)) {
-        LOGE("Store key failed !");
-        return false;
-    }
-    if (!UpdateKey()) {
-        LOGE("Update key context failed !");
-        return false;
-    }
-    if (!DoRestoreKey(auth, keyPath)) {
-        LOGE("Second restore failed !");
-        return false;
-    }
-    return true;
 }
 
 bool BaseKey::DoRestoreKeyOld(const UserAuth &auth, const std::string &path)
