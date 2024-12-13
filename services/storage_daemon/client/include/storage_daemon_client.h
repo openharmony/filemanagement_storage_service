@@ -75,7 +75,7 @@ public:
 
 private:
     static sptr<IStorageDaemon> GetStorageDaemonProxy(void);
-    static bool CheckServiceStatus(uint32_t serviceFlags);
+    static int32_t CheckServiceStatus(uint32_t serviceFlags);
 };
 } // StorageDaemon
 } // OHOS

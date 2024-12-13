@@ -23,6 +23,7 @@
 #include "iremote_proxy.h"
 #include "iservice_registry.h"
 #include "libfscrypt/fscrypt_utils.h"
+#include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
 #include "utils/storage_radar.h"
@@ -56,7 +57,7 @@ sptr<IStorageDaemon> StorageDaemonClient::GetStorageDaemonProxy(void)
     return iface_cast<IStorageDaemon>(object);
 }
 
-bool StorageDaemonClient::CheckServiceStatus(uint32_t serviceFlags)
+int32_t StorageDaemonClient::CheckServiceStatus(uint32_t serviceFlags)
 {
     LOGW("CheckServiceStatus start");
 
