@@ -19,44 +19,32 @@ declare_args() {
   storage_service_external_storage_manager = true
   storage_service_storage_statistics_manager = true
   storage_service_crypto_test = false
-  if (defined(global_parts_info) &&
-      defined(global_parts_info.filemanagement_dfs_service)) {
-    storage_service_dfs_service = true
-  } else {
-    storage_service_dfs_service = false
-  }
-  if (defined(global_parts_info) &&
-      defined(global_parts_info.accesscontrol_el5_filekey_policy)) {
-    storage_service_el5_filekey_manager = true
-  } else {
-    storage_service_el5_filekey_manager = false
-  }
-  if (defined(global_parts_info) &&
-      defined(global_parts_info.useriam_user_auth_framework)) {
-    enable_user_auth_framework = true
-  } else {
-    enable_user_auth_framework = false
-  }
-  if (is_emulator) {
-    enable_tee_client = false
-  } else {
-    enable_tee_client = true
-  }
-  if (defined(global_parts_info) &&
-      defined(global_parts_info.theme_screenlock_mgr)) {
-    enable_screenlock_manager = true
-  } else {
-    enable_screenlock_manager = false
-  }
-  if (defined(global_parts_info) &&
-      defined(global_parts_info.open_source_libmtp) &&
-      defined(global_parts_info.thirdparty_libusb) &&
-      defined(global_parts_info.thirdparty_libfuse)) {
-    support_open_source_libmtp = true
-  } else {
-    support_open_source_libmtp = false
-  }
+  storage_service_user_file_sharing = true
+  storage_service_fstools = true
+
+  storage_service_dfs_service =
+      defined(global_parts_info) &&
+      defined(global_parts_info.filemanagement_dfs_service)
+
+  storage_service_el5_filekey_manager =
+      defined(global_parts_info) &&
+      defined(global_parts_info.accesscontrol_el5_filekey_policy)
+
+  enable_user_auth_framework =
+      defined(global_parts_info) &&
+      defined(global_parts_info.useriam_user_auth_framework)
+
+  enable_screenlock_manager = defined(global_parts_info) &&
+                              defined(global_parts_info.theme_screenlock_mgr)
+
+  support_open_source_libmtp = defined(global_parts_info) &&
+                               defined(global_parts_info.open_source_libmtp) &&
+                               defined(global_parts_info.thirdparty_libusb) &&
+                               defined(global_parts_info.thirdparty_libfuse)
+
+  enable_tee_client = !is_emulator
 }
+
 storage_manager_path =
     "//foundation/filemanagement/storage_service/services/storage_manager"
 storage_daemon_path =
