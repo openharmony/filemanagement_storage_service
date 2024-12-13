@@ -67,7 +67,6 @@ ohos_executable("storage_daemon") {
     "user/src/user_manager.cpp",
     "utils/disk_utils.cpp",
     "utils/mount_argument_utils.cpp",
-    "utils/zip_util.cpp",
   ]
 
   defines = [
@@ -136,7 +135,6 @@ ohos_executable("storage_daemon") {
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
-    "zlib:shared_libz",
   ]
 
   if (storage_service_user_crypto_manager) {
