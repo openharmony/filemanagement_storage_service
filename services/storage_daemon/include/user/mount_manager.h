@@ -119,7 +119,6 @@ private:
     int32_t HmdfsMount(int32_t userId);
     int32_t HmdfsMount(int32_t userId, std::string relativePath, bool mountCloudDisk = false);
     int32_t HmdfsTwiceMount(int32_t userId, const std::string &relativePath);
-    int32_t HmdfsUMount(int32_t userId, std::string relativePath);
     int32_t SharefsMount(int32_t userId);
     int32_t HmSharefsMount(int32_t userId, std::string &srcPath, std::string &dstPath);
     int32_t LocalMount(int32_t userId);
