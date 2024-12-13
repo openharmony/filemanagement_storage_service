@@ -112,13 +112,15 @@ HWTEST_F(KeyManagerSupTest, KeyManager_GetFileEncryptStatus_000, TestSize.Level1
     string basePath = "/data/app/el2/" + to_string(userId);
     string path = basePath + "/base";
     EXPECT_TRUE(OHOS::ForceCreateDirectory(path));
-
-    EXPECT_CALL(*mountManagerMoc_, CheckMountFileByUser(_)).WillOnce(Return(true));
     EXPECT_EQ(KeyManager::GetInstance()->GetFileEncryptStatus(userId, isEncrypted), E_OK);
     EXPECT_EQ(isEncrypted, false);
 
+    EXPECT_CALL(*mountManagerMoc_, CheckMountFileByUser(_)).WillOnce(Return(true));
+    EXPECT_EQ(KeyManager::GetInstance()->GetFileEncryptStatus(userId, isEncrypted, true), E_OK);
+    EXPECT_EQ(isEncrypted, false);
+
     EXPECT_CALL(*mountManagerMoc_, CheckMountFileByUser(_)).WillOnce(Return(false));
-    EXPECT_EQ(KeyManager::GetInstance()->GetFileEncryptStatus(userId, isEncrypted), E_OK);
+    EXPECT_EQ(KeyManager::GetInstance()->GetFileEncryptStatus(userId, isEncrypted, true), E_OK);
     EXPECT_EQ(isEncrypted, true);
     EXPECT_TRUE(OHOS::ForceRemoveDirectory(basePath));
     GTEST_LOG_(INFO) << "KeyManager_GetFileEncryptStatus_000 end";

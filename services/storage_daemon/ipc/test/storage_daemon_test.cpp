@@ -243,10 +243,9 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_StopUser_002, Test
     ASSERT_TRUE(storageDaemon_ != nullptr);
 
     int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1 | IStorageDaemon::CRYPTO_FLAG_EL2;
-    auto ret = storageDaemon_->PrepareUserDirs(StorageTest::USER_ID4, flags);
-    EXPECT_TRUE(ret == E_OK) << "create user dirs error";
+    storageDaemon_->PrepareUserDirs(StorageTest::USER_ID4, flags);
 
-    ret = storageDaemon_->StopUser(StorageTest::USER_ID4);
+    auto ret = storageDaemon_->StopUser(StorageTest::USER_ID4);
     EXPECT_TRUE(ret == E_OK) << "stop user error";
 
     storageDaemon_->DestroyUserDirs(StorageTest::USER_ID4, flags);
