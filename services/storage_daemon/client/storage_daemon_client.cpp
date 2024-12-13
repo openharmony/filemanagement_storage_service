@@ -76,7 +76,7 @@ int32_t StorageDaemonClient::CheckServiceStatus(uint32_t serviceFlags)
         }
         if (samgr == nullptr) {
             LOGE("samgr is nullptr, retry failed.");
-            return false;
+            return E_SYS_ERR;
         }
     }
 
@@ -94,7 +94,7 @@ int32_t StorageDaemonClient::CheckServiceStatus(uint32_t serviceFlags)
         }
         if (exist == false) {
             LOGE("storage daemon service system ability error");
-            return false;
+            return E_SA_IS_NULLPTR;
         }
     }
     LOGW("CheckServiceStatus end, success");
