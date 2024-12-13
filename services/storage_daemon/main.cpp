@@ -25,6 +25,7 @@
 #include "ipc/storage_daemon.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
+#include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
 #include "user/user_manager.h"
@@ -106,35 +107,7 @@ static const int32_t SLEEP_TIME_INTERVAL_3MS = 3 * 1000;
 
 int main()
 {
-    LOGI("storage_daemon start");
-#ifdef EXTERNAL_STORAGE_MANAGER
-    StorageDaemon::NetlinkManager *nm = StorageDaemon::NetlinkManager::Instance();
-    if (!nm) {
-        LOGE("Unable to create NetlinkManager");
-        return -1;
-    };
-
-    if (nm->Start()) {
-        LOGE("Unable to start NetlinkManager");
-        return -1;
-    }
-
-    StorageDaemon::DiskManager *dm = StorageDaemon::DiskManager::Instance();
-    if (!dm) {
-        LOGE("Unable to create DiskManger");
-        return -1;
-    }
-
-    if (!ParasConfig(dm)) {
-        LOGE("Paras config failed");
-        return -1;
-    }
-#endif
-
-#ifdef SUPPORT_OPEN_SOURCE_MTP_DEVICE
-    DelayedSingleton<OHOS::StorageDaemon::MtpDeviceMonitor>::GetInstance()->StartMonitor();
-#endif
-
+    LOGW("storage_daemon start");
     do {
         auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
         if (samgr != nullptr) {
@@ -151,8 +124,23 @@ int main()
         }
         usleep(SLEEP_TIME_INTERVAL_3MS);
     } while (true);
-    LOGE("samgr GetSystemAbilityManager finish");
-    IPCSkeleton::JoinWorkThread();
+    LOGW("samgr GetSystemAbilityManager finish");
 
+#ifdef EXTERNAL_STORAGE_MANAGER
+    StorageDaemon::NetlinkManager *nm = StorageDaemon::NetlinkManager::Instance();
+    if ((nm == nullptr) || (nm->Start() != E_OK)) {
+        LOGE("Unable to create or start NetlinkManager");
+    };
+    StorageDaemon::DiskManager *dm = StorageDaemon::DiskManager::Instance();
+    if ((dm == nullptr) || !ParasConfig(dm)) {
+        LOGE("Unable to create DiskManger or parse config failed.");
+    };
+#endif
+
+#ifdef SUPPORT_OPEN_SOURCE_MTP_DEVICE
+    DelayedSingleton<OHOS::StorageDaemon::MtpDeviceMonitor>::GetInstance()->StartMonitor();
+#endif
+    LOGW("storage_daemon main function execute finish.");
+    IPCSkeleton::JoinWorkThread();
     return 0;
 }

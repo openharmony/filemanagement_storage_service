@@ -469,7 +469,7 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
         std::string EL0_NEED_RESTORE_PATH = DATA_SERVICE_EL0_STORAGE_DAEMON_SD + NEED_RESTORE_SUFFIX;
         bool isRead = OHOS::LoadStringFromFile(EL0_NEED_RESTORE_PATH, DOUBLE_VERSION);
         int NEW_SINGLE_VERSION = std::atoi(DOUBLE_VERSION.c_str()) + 1;
-        LOGI("Process NEW_DOUBLE(version:%{public}s}) ——> SINGLE Frame(version:%{public}d), ret: %{public}d",
+        LOGW("Process NEW_DOUBLE(version:%{public}s}) ——> SINGLE Frame(version:%{public}d), ret: %{public}d",
             DOUBLE_VERSION.c_str(), NEW_SINGLE_VERSION, isRead);
         if (!SaveStringToFile(EL0_NEED_RESTORE_PATH, std::to_string(NEW_SINGLE_VERSION))) {
             LOGE("Save NEW_DOUBLE_2_SINGELE file failed");
