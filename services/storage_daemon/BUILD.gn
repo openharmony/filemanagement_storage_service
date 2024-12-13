@@ -238,7 +238,6 @@ ohos_executable("sdc") {
   install_enable = true
 }
 
-
 ohos_shared_library("storage_common_utils") {
   branch_protector_ret = "pac_ret"
   sanitize = {
