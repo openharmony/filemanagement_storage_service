@@ -1102,12 +1102,17 @@ int32_t MountManager::UmountByUser(int32_t userId)
         if (unMountRes != E_OK && unMountRes != E_UMOUNT_PROC_OPEN) {
             FindAndKillProcess(userId, mountFailList);
             std::list<std::string> tempList;
-            res = UMountByList(mountFailList, tempList);
+            if (UMountByList(mountFailList, tempList) != E_OK) {
+                res = unMountRes;
+            }
         }
     }
 
     LOGI("umount cloud mount point start.");
-    res = CloudUMount(userId);
+    int32_t cloudUMount = CloudUMount(userId);
+    if (cloudUMount != E_OK) {
+        res = cloudUMount;
+    }
     UMountMediaFuse(userId);
     LOGI("unmount end, res is %{public}d.", res);
     return res;
