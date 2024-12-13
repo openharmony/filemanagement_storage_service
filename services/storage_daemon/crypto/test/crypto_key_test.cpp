@@ -18,6 +18,7 @@
 #include <vector>
 
 #include <cstdlib>
+#include <fcntl.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -36,6 +37,7 @@
 #include "libfscrypt/key_control.h"
 #include "securec.h"
 #include "storage_service_errno.h"
+#include "utils/init_utils.h"
 
 using namespace testing::ext;
 
@@ -59,6 +61,8 @@ const int32_t PARAMS_SIZE_1 = 1;
 const int32_t PARAMS_SIZE_2 = 2;
 const int32_t PARAMS_SIZE_3 = 3;
 const int32_t PARAMS_SIZE_4 = 4;
+constexpr int MAX_WORD_NUM = 3;
+constexpr int MAX_WORD_LEN = 20;
 auto g_testKeyV1 = std::make_shared<OHOS::StorageDaemon::FscryptKeyV1>(TEST_KEYPATH);
 auto g_testKeyV2 = std::make_shared<OHOS::StorageDaemon::FscryptKeyV2>(TEST_KEYPATH);
 }
@@ -1388,5 +1392,62 @@ HWTEST_F(CryptoKeyTest, fscrypt_libfscrypt_api, TestSize.Level1)
     EXPECT_NE(0, FscryptSetSysparam("2:abs-256-cts"));
     EXPECT_NE(0, FscryptSetSysparam("2:abs-256-cts:bad-param"));
     EXPECT_NE(0, FscryptSetSysparam(NULL));
+}
+
+/**
+ * @tc.name: libfscrypt api test
+ * @tc.desc: Verify the init_utils.c ReadFileToBuf.
+ * @tc.type: FUNC
+ * @tc.require: IBAH0D
+ */
+HWTEST_F(CryptoKeyTest, fscrypt_libfscrypt_ReadFileToBuf, TestSize.Level1)
+{
+    auto result = ReadFileToBuf(NULL);
+    EXPECT_EQ(NULL, result);
+
+    std::string fileName;
+    result = ReadFileToBuf(fileName.c_str());
+    EXPECT_EQ(NULL, result);
+
+    fileName = "/data/test/test1.txt";
+    result = ReadFileToBuf(fileName.c_str());
+    EXPECT_EQ(NULL, result);
+
+    auto fd = open(fileName.c_str(), O_RDWR | O_CREAT);
+    ASSERT_GT(fd, 0);
+    result = ReadFileToBuf(fileName.c_str());
+    EXPECT_EQ(NULL, result);
+
+    std::string content = "this is a test";
+    (void)write(fd, content.c_str(), content.size());
+    close(fd);
+    result = ReadFileToBuf(fileName.c_str());
+    EXPECT_NE(NULL, result);
+    free(result);
+    ASSERT_EQ(remove(fileName.c_str()), 0);
+}
+
+/**
+ * @tc.name: libfscrypt api test
+ * @tc.desc: Verify the init_utils.c SplitString.
+ * @tc.type: FUNC
+ * @tc.require: IBAH0D
+ */
+HWTEST_F(CryptoKeyTest, fscrypt_libfscrypt_SplitString, TestSize.Level1)
+{
+    auto result = SplitString(NULL, NULL, NULL, MAX_WORD_NUM);
+    EXPECT_EQ(result, -1);
+
+    char fileName[] = "a/data/test/test1.txt";
+    result = SplitString(fileName, NULL, NULL, MAX_WORD_NUM);
+    EXPECT_EQ(result, -1);
+
+    char del = '/';
+    result = SplitString(fileName, &del, NULL, MAX_WORD_NUM);
+    EXPECT_EQ(result, -1);
+
+    char spiltArr[MAX_WORD_NUM][MAX_WORD_LEN];
+    result = SplitString(fileName, &del, (char **)spiltArr, MAX_WORD_NUM);
+    EXPECT_EQ(result, MAX_WORD_NUM);
 }
 }

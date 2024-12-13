@@ -426,4 +426,205 @@ HWTEST_F(BaseKeyTest, BaseKey_GetKeyDir_000, TestSize.Level1)
     EXPECT_EQ(elKey->GetKeyDir(), "el5");
     GTEST_LOG_(INFO) << "BaseKey_GetKeyDir_000 end";
 }
+
+/**
+ * @tc.name: BaseKey_EncryptKeyBlob_000
+ * @tc.desc: Verify the EncryptKeyBlob function.
+ * @tc.type: FUNC
+ * @tc.require: IAXJFK
+ */
+HWTEST_F(BaseKeyTest, BaseKey_EncryptKeyBlob_000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_EncryptKeyBlob_000 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+
+    KeyBlob planKey;
+    KeyBlob encryptedKey;
+    UserAuth auth;
+    std::string path = "/data/test/test1";
+    EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(Return(false));
+    EXPECT_FALSE(elKey->EncryptKeyBlob(auth, path, planKey, encryptedKey));
+    
+    std::vector<uint8_t> vec{1, 2, 3, 4, 5};
+    KeyBlob keyOut(vec);
+    EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(Return(true));
+    EXPECT_FALSE(elKey->EncryptKeyBlob(auth, path, planKey, encryptedKey));
+
+    EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(DoAll(WithArgs<1>(Invoke([](KeyBlob &value) {
+        std::vector<uint8_t> vecIn{1, 2, 3, 4, 5};
+        value.Alloc(vecIn.size());
+        std::copy(vecIn.begin(), vecIn.end(), value.data.get());
+    })), Return(true)));
+    std::string test = "1234567890";
+    string pathShield = path + PATH_SHIELD;
+    ASSERT_TRUE(SaveStringToFileSync(pathShield, test));
+    EXPECT_CALL(*huksMasterMock_, GenerateRandomKey(_)).WillOnce(Return(keyOut));
+    EXPECT_CALL(*huksMasterMock_, EncryptKey(_, _, _, _)).WillOnce(Return(false));
+    EXPECT_FALSE(elKey->EncryptKeyBlob(auth, path, planKey, encryptedKey));
+    
+    string pathSecdisc = path + PATH_SECDISC;
+    std::string testSec(CRYPTO_KEY_SECDISC_SIZE, 'c');
+    ASSERT_TRUE(SaveStringToFileSync(pathSecdisc, testSec));
+    EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(DoAll(WithArgs<1>(Invoke([](KeyBlob &value) {
+        std::vector<uint8_t> vecIn{1, 2, 3, 4, 5};
+        value.Alloc(vecIn.size());
+        std::copy(vecIn.begin(), vecIn.end(), value.data.get());
+    })), Return(true)));
+    EXPECT_CALL(*huksMasterMock_, GenerateRandomKey(_)).WillOnce(Return(keyOut));
+    EXPECT_CALL(*huksMasterMock_, EncryptKey(_, _, _, _)).WillOnce(Return(true));
+    EXPECT_TRUE(elKey->EncryptKeyBlob(auth, path, planKey, encryptedKey));
+    auto ret = unlink(pathShield.c_str());
+    ASSERT_TRUE(ret != -1) << "Failed to delete file in BaseKey_EncryptKeyBlob_000! " << errno;
+    ret = unlink(pathSecdisc.c_str());
+    ASSERT_TRUE(ret != -1) << "Failed to delete file in BaseKey_EncryptKeyBlob_000! " << errno;
+    OHOS::ForceRemoveDirectory(path);
+    GTEST_LOG_(INFO) << "BaseKey_EncryptKeyBlob_000 end";
+}
+
+/**
+ * @tc.name: BaseKey_DecryptKeyBlob_000
+ * @tc.desc: Verify the DecryptKeyBlob function.
+ * @tc.type: FUNC
+ * @tc.require: IAXJFK
+ */
+HWTEST_F(BaseKeyTest, BaseKey_DecryptKeyBlob_000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_DecryptKeyBlob_000 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+    std::string path = "/data/test";
+    string pathShield = path + PATH_SHIELD;
+    std::string test = "1234567890";
+    ASSERT_TRUE(SaveStringToFileSync(pathShield, test));
+
+    uint32_t vecSize = AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + 10;
+    std::vector<uint8_t> vecIn(vecSize, 5);
+    KeyBlob planKey(vecIn);
+    UserAuth auth;
+    KeyBlob decryptedKey;
+    EXPECT_FALSE(elKey->DecryptKeyBlob(auth, path, planKey, decryptedKey));
+
+    string pathSecdisc = path + PATH_SECDISC;
+    std::string testSec(CRYPTO_KEY_SECDISC_SIZE, 'c');
+    ASSERT_TRUE(SaveStringToFileSync(pathSecdisc, testSec));
+    EXPECT_CALL(*huksMasterMock_, DecryptKey(_, _, _, _)).WillOnce(Return(false));
+    EXPECT_FALSE(elKey->DecryptKeyBlob(auth, path, planKey, decryptedKey));
+
+    EXPECT_CALL(*huksMasterMock_, DecryptKey(_, _, _, _)).WillOnce(Return(true));
+    EXPECT_TRUE(elKey->DecryptKeyBlob(auth, path, planKey, decryptedKey));
+
+    auto ret = unlink(pathShield.c_str());
+    ASSERT_TRUE(ret != -1) << "Failed to delete file in BaseKey_DecryptKeyBlob_000! " << errno;
+    ret = unlink(pathSecdisc.c_str());
+    ASSERT_TRUE(ret != -1) << "Failed to delete file in BaseKey_DecryptKeyBlob_000! " << errno;
+    GTEST_LOG_(INFO) << "BaseKey_DecryptKeyBlob_000 end";
+}
+
+/**
+ * @tc.name: BaseKey_DoRestoreKeyOld_000
+ * @tc.desc: Verify the DoRestoreKeyOld function.
+ * @tc.type: FUNC
+ * @tc.require: IAXJFK
+ */
+HWTEST_F(BaseKeyTest, BaseKey_DoRestoreKeyOld_000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_DoRestoreKeyOld_000 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+    std::string path = "/data/test";
+    std::string test = "1234567890";
+    elKey->keyInfo_.version = FSCRYPT_INVALID;
+
+    UserAuth auth;
+    EXPECT_FALSE(elKey->DoRestoreKeyOld(auth, path));
+
+    elKey->keyInfo_.version = KeyCtrlLoadVersion(elKey->GetDir().c_str());
+    EXPECT_FALSE(elKey->DoRestoreKeyOld(auth, path));
+
+    string pathEncrpted = path + PATH_ENCRYPTED;
+    ASSERT_TRUE(SaveStringToFileSync(pathEncrpted, test));
+    EXPECT_FALSE(elKey->DoRestoreKeyOld(auth, path));
+
+    string pathShield = path + PATH_SHIELD;
+    ASSERT_TRUE(SaveStringToFileSync(pathShield, test));
+    EXPECT_FALSE(elKey->DoRestoreKeyOld(auth, path));
+
+    string pathSecdisc = path + PATH_SECDISC;
+    std::string testSec(CRYPTO_KEY_SECDISC_SIZE, 'c');
+    ASSERT_TRUE(SaveStringToFileSync(pathSecdisc, testSec));
+    EXPECT_CALL(*huksMasterMock_, DecryptKey(_, _, _, _)).WillOnce(Return(true));
+    EXPECT_TRUE(elKey->DoRestoreKeyOld(auth, path));
+
+    auto ret = unlink(pathShield.c_str());
+    ASSERT_TRUE(ret != -1) << "Failed to delete file in BaseKey_DoRestoreKeyOld_000! " << errno;
+    ret = unlink(pathSecdisc.c_str());
+    ASSERT_TRUE(ret != -1) << "Failed to delete file in BaseKey_DoRestoreKeyOld_000! " << errno;
+    ret = unlink(pathEncrpted.c_str());
+    ASSERT_TRUE(ret != -1) << "Failed to delete file in BaseKey_DoRestoreKeyOld_000! " << errno;
+    GTEST_LOG_(INFO) << "BaseKey_DoRestoreKeyOld_000 end";
+}
+
+/**
+ * @tc.name: BaseKey_DoRestoreKeyOld_001
+ * @tc.desc: Verify the DoRestoreKeyOld function.
+ * @tc.type: FUNC
+ * @tc.require: IAXJFK
+ */
+HWTEST_F(BaseKeyTest, BaseKey_DoRestoreKeyOld_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_DoRestoreKeyOld_001 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+    std::string path = "/data/test";
+    std::string test = "1234567890";
+    elKey->keyInfo_.version = FSCRYPT_INVALID;
+
+    UserAuth auth;
+    EXPECT_FALSE(elKey->DoRestoreKeyOld(auth, path));
+
+    std::vector<uint8_t> vec{1, 2, 3, 4, 5};
+    auth.secret.Alloc(vec.size());
+    std::copy(vec.begin(), vec.end(), auth.secret.data.get());
+    EXPECT_FALSE(elKey->DoRestoreKeyOld(auth, path));
+    GTEST_LOG_(INFO) << "BaseKey_DoRestoreKeyOld_001 end";
+}
+
+/**
+ * @tc.name: BaseKey_DoRestoreKeyOld_002
+ * @tc.desc: Verify the DoRestoreKeyOld function.
+ * @tc.type: FUNC
+ * @tc.require: IAXJFK
+ */
+HWTEST_F(BaseKeyTest, BaseKey_DoRestoreKeyOld_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_DoRestoreKeyOld_002 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+    const std::string needUpdataDir = elKey->GetDir() + PATH_LATEST;
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(needUpdataDir));
+
+    std::string test = "1234567890";
+    string needUpdataPath = needUpdataDir + SUFFIX_NEED_UPDATE;
+    ASSERT_TRUE(SaveStringToFileSync(needUpdataPath, test));
+    elKey->keyInfo_.version = KeyCtrlLoadVersion(elKey->GetDir().c_str());
+    
+    std::string path = "/data/test";
+    string pathEncrpted = path + PATH_ENCRYPTED;
+    ASSERT_TRUE(SaveStringToFileSync(pathEncrpted, test));
+    string pathSecdisc = path + PATH_SECDISC;
+    std::string testSec(CRYPTO_KEY_SECDISC_SIZE, 'c');
+    ASSERT_TRUE(SaveStringToFileSync(pathSecdisc, testSec));
+
+    UserAuth auth;
+    std::vector<uint8_t> vec{1, 2, 3, 4, 5};
+    auth.secret.Alloc(vec.size());
+    std::copy(vec.begin(), vec.end(), auth.secret.data.get());
+
+    EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(true));
+    EXPECT_TRUE(elKey->DoRestoreKeyOld(auth, path));
+    auto ret = unlink(needUpdataPath.c_str());
+    ASSERT_TRUE(ret != -1) << "Failed to delete file in BaseKey_DoRestoreKeyOld_002! " << errno;
+    ret = unlink(pathSecdisc.c_str());
+    ASSERT_TRUE(ret != -1) << "Failed to delete file in BaseKey_DoRestoreKeyOld_002! " << errno;
+    ret = unlink(pathEncrpted.c_str());
+    ASSERT_TRUE(ret != -1) << "Failed to delete file in BaseKey_DoRestoreKeyOld_002! " << errno;
+    EXPECT_TRUE(OHOS::ForceRemoveDirectory(needUpdataDir));
+    GTEST_LOG_(INFO) << "BaseKey_DoRestoreKeyOld_002 end";
+}
 } // OHOS::StorageDaemon
