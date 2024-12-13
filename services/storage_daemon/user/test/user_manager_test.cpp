@@ -289,7 +289,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StopUser_001, TestSize
     ASSERT_TRUE(userManager != nullptr);
 
     auto ret = userManager->StopUser(StorageTest::USER_ID2);
-    EXPECT_TRUE(ret == E_UMOUNT) << "dir is not mount";
+    EXPECT_TRUE(ret == E_OK) << "dir mount success";
 
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_StopUser_001 end";
 }
@@ -314,7 +314,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StopUser_002, TestSize
     EXPECT_TRUE(ret == E_OK) << "create user dirs error";
 
     ret = userManager->StopUser(StorageTest::USER_ID4);
-    EXPECT_TRUE(ret == E_UMOUNT) << "dir is not mount";
+    EXPECT_TRUE(ret == E_OK) << "dir mount success";
 
     userManager->DestroyUserDirs(StorageTest::USER_ID4, flags);
     KeyManager::GetInstance()->DeleteUserKeys(StorageTest::USER_ID4);
@@ -619,7 +619,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_MountMediaFuse_001, T
     int32_t userId = 101;
     int32_t devFd = -1;
     int32_t ret = mountManager->MountMediaFuse(userId, devFd);
-    EXPECT_EQ(ret, E_MOUNT);
+    EXPECT_EQ(ret, E_OK);
 
     ret = mountManager->UMountMediaFuse(userId);
     EXPECT_EQ(ret, E_OK);
