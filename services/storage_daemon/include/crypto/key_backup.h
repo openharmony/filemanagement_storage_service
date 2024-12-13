@@ -57,7 +57,7 @@ private:
     KeyBackup(const KeyBackup &) = delete;
     KeyBackup &operator=(const KeyBackup &) = delete;
 
-    void FsyncDirectory(const std::string &dirName);
+    void FsyncFile(const std::string &dirName);
     int32_t MkdirParent(const std::string &pathName, mode_t mode);
     int32_t MkdirParentWithRetry(const std::string &pathName, mode_t mode);
     void CleanFile(const std::string &path);
@@ -68,7 +68,6 @@ private:
     bool WriteStringToFd(int fd, const std::string &content);
     bool WriteStringToFile(const std::string &payload, const std::string &fileName);
     int32_t CompareFile(const std::string &fileA, const std::string fileB);
-    int32_t CopyRegfileData(const std::string &from, const std::string &to);
     int32_t GetAttr(const std::string &path, struct FileAttr &attr);
     int32_t SetAttr(const std::string &path, struct FileAttr &attr);
     int32_t HandleCopyDir(const std::string &from, const std::string &to);
