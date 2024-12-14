@@ -57,8 +57,6 @@ namespace {
         static_cast<int32_t>(StorageManagerInterfaceCode::GET_DISK_BY_ID),
         static_cast<int32_t>(StorageManagerInterfaceCode::GET_TOTAL),
         static_cast<int32_t>(StorageManagerInterfaceCode::GET_FREE),
-        static_cast<int32_t>(StorageManagerInterfaceCode::GET_SYSTEM_SIZE),
-        static_cast<int32_t>(StorageManagerInterfaceCode::GET_TOTAL_SIZE),
         static_cast<int32_t>(StorageManagerInterfaceCode::GET_FREE_SIZE),
         static_cast<int32_t>(StorageManagerInterfaceCode::GET_BUNDLE_STATUS),
         static_cast<int32_t>(StorageManagerInterfaceCode::GET_CURR_USER_STATS),
