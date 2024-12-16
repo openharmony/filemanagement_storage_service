@@ -36,7 +36,7 @@
 using namespace std;
 namespace OHOS {
 namespace StorageDaemon {
-constexpr int32_t WAIT_THREAD_TIMEOUT_S = 12;
+constexpr int32_t WAIT_THREAD_TIMEOUT_S = 15;
 int32_t ExternalVolumeInfo::ReadMetadata()
 {
     int32_t ret = OHOS::StorageDaemon::ReadMetadata(devPath_, fsUuid_, fsType_, fsLabel_);
