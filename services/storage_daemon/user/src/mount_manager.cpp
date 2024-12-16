@@ -880,6 +880,23 @@ int32_t MountManager::UMountByList(std::list<std::string> &list, std::list<std::
     return result;
 }
 
+int32_t MountManager::UMountByListWithDetach(std::list<std::string> &list)
+{
+    if (list.empty()) {
+        return E_OK;
+    }
+    int32_t result = E_OK;
+    for (const std::string &path: list) {
+        LOGD("umount path %{public}s.", path.c_str());
+        int32_t res = UMount2(path, MNT_DETACH);
+        if (res != E_OK && errno != ENOENT && errno != EINVAL) {
+            LOGE("failed to unmount path %{public}s, errno %{public}d.", path.c_str(), errno);
+            result = errno;
+        }
+    }
+    return result;
+}
+
 void MountManager::MountCloudForUsers(void)
 {
     for (auto it = fuseToMountUsers_.begin(); it != fuseToMountUsers_.end();) {
@@ -1106,8 +1123,7 @@ int32_t MountManager::UmountByUser(int32_t userId)
         int32_t unMountRes = UMountAllPath(userId, mountFailList);
         if (unMountRes != E_OK && unMountRes != E_UMOUNT_PROC_OPEN) {
             FindAndKillProcess(userId, mountFailList);
-            std::list<std::string> tempList;
-            if (UMountByList(mountFailList, tempList) != E_OK) {
+            if (UMountByListWithDetach(mountFailList) != E_OK) {
                 res = unMountRes;
             }
         }

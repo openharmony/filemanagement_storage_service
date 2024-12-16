@@ -89,6 +89,7 @@ enum ErrNo {
     E_UMOUNT_HMDFS = 305,
     E_UMOUNT_LOCAL = 306,
     E_UMOUNT_PROC_OPEN = 307,
+    E_UMOUNT_ALL_PATH = 308,
 };
 
 enum JsErrCode {
