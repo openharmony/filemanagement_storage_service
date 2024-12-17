@@ -473,6 +473,7 @@ int FBEX::GenerateAppkey(UserIdToFbeStr &userIdToFbe, uint32_t hashId, std::uniq
     auto err = memcpy_s(appKey.get(), size, ops.eBuffer, sizeof(ops.eBuffer));
     if (err != EOK) {
         LOGE("memcpy failed %{public}d", err);
+        (void)fclose(f);
         return 0;
     }
     (void)fclose(f);
