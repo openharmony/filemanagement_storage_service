@@ -89,56 +89,6 @@ void KeyManagerOtherTest::TearDown(void)
 }
 
 /**
- * @tc.name: KeyManager_CheckAndClearTokenInfo_000
- * @tc.desc: Verify the CheckAndClearTokenInfo function.
- * @tc.type: FUNC
- * @tc.require: IAHHWW
- */
-HWTEST_F(KeyManagerOtherTest, KeyManager_CheckAndClearTokenInfo_000, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "KeyManager_CheckAndClearTokenInfo_000 Start";
-    unsigned int userId = 888;
-
-    EXPECT_CALL(*iamClientMoc_, HasFaceFinger(_, _)).WillOnce(Return(1));
-    KeyManager::GetInstance()->CheckAndClearTokenInfo(userId);
-
-    EXPECT_CALL(*iamClientMoc_, HasFaceFinger(_, _)).WillOnce(DoAll(SetArgReferee<1>(true), Return(0)));
-    KeyManager::GetInstance()->CheckAndClearTokenInfo(userId);
-
-    KeyManager::GetInstance()->userEl3Key_.erase(userId);
-    KeyManager::GetInstance()->userEl4Key_.erase(userId);
-    EXPECT_CALL(*iamClientMoc_, HasFaceFinger(_, _)).WillOnce(DoAll(SetArgReferee<1>(false), Return(0)));
-    KeyManager::GetInstance()->CheckAndClearTokenInfo(userId);
-
-    KeyManager::GetInstance()->userEl3Key_[userId] = nullptr;
-    KeyManager::GetInstance()->userEl4Key_[userId] = nullptr;
-    EXPECT_CALL(*iamClientMoc_, HasFaceFinger(_, _)).WillOnce(DoAll(SetArgReferee<1>(false), Return(0)));
-    KeyManager::GetInstance()->CheckAndClearTokenInfo(userId);
-
-    KeyManager::GetInstance()->userEl3Key_.erase(userId);
-    KeyManager::GetInstance()->userEl4Key_.erase(userId);
-    std::shared_ptr<BaseKey> tmpKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV1>("test"));
-    std::shared_ptr<BaseKey> tmpKey2 = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV1>("test2"));
-    KeyManager::GetInstance()->userEl3Key_[userId] = tmpKey;
-    KeyManager::GetInstance()->userEl4Key_[userId] = tmpKey2;
-
-    KeyManager::GetInstance()->userEl3Key_[userId]->keyContext_.rndEnc.Alloc(1);
-    KeyManager::GetInstance()->userEl4Key_[userId]->keyContext_.rndEnc.Alloc(1);
-    EXPECT_FALSE(KeyManager::GetInstance()->userEl3Key_[userId]->keyContext_.rndEnc.IsEmpty());
-    EXPECT_FALSE(KeyManager::GetInstance()->userEl4Key_[userId]->keyContext_.rndEnc.IsEmpty());
-    EXPECT_CALL(*iamClientMoc_, HasFaceFinger(_, _)).WillOnce(DoAll(SetArgReferee<1>(false), Return(0)));
-    KeyManager::GetInstance()->CheckAndClearTokenInfo(userId);
-    EXPECT_TRUE(KeyManager::GetInstance()->userEl3Key_[userId]->keyContext_.rndEnc.IsEmpty());
-    EXPECT_TRUE(KeyManager::GetInstance()->userEl4Key_[userId]->keyContext_.rndEnc.IsEmpty());
-    GTEST_LOG_(INFO) << KeyManager::GetInstance()->userEl3Key_[userId]->keyContext_.rndEnc.size;
-    GTEST_LOG_(INFO) << KeyManager::GetInstance()->userEl4Key_[userId]->keyContext_.rndEnc.size;
-
-    KeyManager::GetInstance()->userEl3Key_.erase(userId);
-    KeyManager::GetInstance()->userEl4Key_.erase(userId);
-    GTEST_LOG_(INFO) << "KeyManager_CheckAndClearTokenInfo_000 end";
-}
-
-/**
  * @tc.name: KeyManager_LoadAllUsersEl1Key_000
  * @tc.desc: Verify the LoadAllUsersEl1Key function.
  * @tc.type: FUNC

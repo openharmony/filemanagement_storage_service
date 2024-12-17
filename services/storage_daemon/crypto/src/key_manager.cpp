@@ -1692,7 +1692,7 @@ int KeyManager::LockUserScreen(uint32_t user)
         LOGE("user ce does not decrypt, skip");
         return 0;
     }
-    CheckAndClearTokenInfo(user);
+
     auto iter = userPinProtect.find(user);
     if (iter == userPinProtect.end() || iter->second == false) {
         if (!IamClient::GetInstance().HasPinProtect(user)) {
@@ -1714,8 +1714,7 @@ int KeyManager::LockUserScreen(uint32_t user)
     }
 
     auto el5Key = GetUserElKey(user, EL5_KEY);
-    saveESecretStatus[user] = true;
-    if (el5Key != nullptr && !el5Key->LockUece(saveESecretStatus[user])) {
+    if (el5Key == nullptr) {
         LOGE("lock user %{public}u el5 key failed !", user);
     }
     auto el4Key = GetUserElKey(user, EL4_KEY);
@@ -1726,7 +1725,7 @@ int KeyManager::LockUserScreen(uint32_t user)
     }
     std::shared_ptr<DelayHandler> userDelayHandler;
     if (GetUserDelayHandler(user, userDelayHandler)) {
-        userDelayHandler->StartDelayTask(el4Key);
+        userDelayHandler->StartDelayTask(el4Key, el5Key);
     }
 
     saveLockScreenStatus[user] = false;
@@ -1954,20 +1953,6 @@ bool KeyManager::IsUserCeDecrypt(uint32_t userId)
     }
     LOGI("User %{public}d de decrypted.", userId);
     return true;
-}
-
-void KeyManager::CheckAndClearTokenInfo(uint32_t user)
-{
-    bool isExist = false;
-    if (IamClient::GetInstance().HasFaceFinger(user, isExist) == 0 && !isExist) {
-        LOGI("Toke info is not exist.");
-        if ((userEl3Key_.find(user) != userEl3Key_.end()) && (userEl3Key_[user] != nullptr)) {
-            userEl3Key_[user]->ClearMemoryKeyCtx();
-        }
-        if ((userEl4Key_.find(user) != userEl4Key_.end()) && (userEl4Key_[user] != nullptr)) {
-            userEl4Key_[user]->ClearMemoryKeyCtx();
-        }
-    }
 }
 
 int KeyManager::CheckUserPinProtect(unsigned int userId,

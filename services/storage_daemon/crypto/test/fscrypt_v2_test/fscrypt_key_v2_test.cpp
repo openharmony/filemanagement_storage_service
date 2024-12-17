@@ -425,28 +425,6 @@ HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_SplitKeyBlob, TestSize.Level1)
 }
 
 /**
- * @tc.name: fscrypt_key_v2_ClearMemoryKeyCtx
- * @tc.desc: Verify the fscrypt V2 SplitKeyBlob.
- * @tc.type: FUNC
- * @tc.require: IAXJFK
- */
-HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_ClearMemoryKeyCtx, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "fscrypt_key_v2_ClearMemoryKeyCtx start";
-    g_testKeyV2.keyContext_.rndEnc.Alloc(5);
-    g_testKeyV2.keyContext_.shield.Alloc(5);
-    g_testKeyV2.keyContext_.nonce.Alloc(5);
-    g_testKeyV2.keyContext_.aad.Alloc(5);
-
-    g_testKeyV2.ClearMemoryKeyCtx();
-    EXPECT_TRUE(g_testKeyV2.keyContext_.rndEnc.IsEmpty());
-    EXPECT_TRUE(g_testKeyV2.keyContext_.shield.IsEmpty());
-    EXPECT_TRUE(g_testKeyV2.keyContext_.nonce.IsEmpty());
-    EXPECT_TRUE(g_testKeyV2.keyContext_.aad.IsEmpty());
-    GTEST_LOG_(INFO) << "fscrypt_key_v2_ClearMemoryKeyCtx end";
-}
-
-/**
  * @tc.name: fscrypt_key_v2_ClearKeyContext
  * @tc.desc: Verify the fscrypt V2 ClearKeyContext.
  * @tc.type: FUNC
