@@ -440,6 +440,7 @@ bool MtpFileSystem::Exec()
         }
     } else {
         // Connect to MTP device by order number, if no device file supplied
+        
         if (!device_.ConnectByDevNo(options_.deviceNo_)) {
             return false;
         }
