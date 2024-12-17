@@ -167,9 +167,11 @@ int FBEX::InstallEL5KeyToKernel(uint32_t userIdSingle, uint32_t userIdDouble, ui
         if (errno == ENOENT) {
             LOGE("fbex_uece does not exist, fbe not support this command!");
             isSupport = false;
+            (void)fclose(f);
             return 0;
         }
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        (void)fclose(f);
         return -errno;
     }
 
@@ -210,6 +212,7 @@ int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32
     int fd = fileno(f);
     if (fd < 0) {
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        (void)fclose(f);
         return -errno;
     }
 
@@ -301,6 +304,7 @@ int FBEX::UninstallOrLockUserKeyToKernel(uint32_t userId, uint32_t type, uint8_t
     int fd = fileno(f);
     if (fd < 0) {
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        (void)fclose(f);
         return -errno;
     }
 
@@ -341,9 +345,11 @@ int FBEX::DeleteClassEPinCode(uint32_t userIdSingle, uint32_t userIdDouble)
     if (fd < 0) {
         if (errno == ENOENT) {
             LOGE("fbex_uece does not exist, fbe not support this command!");
+            (void)fclose(f);
             return 0;
         }
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        (void)fclose(f);
         return -errno;
     }
     FbeOptsE ops{ .userIdDouble = userIdDouble, .userIdSingle = userIdSingle };
@@ -379,9 +385,11 @@ int FBEX::ChangePinCodeClassE(uint32_t userIdSingle, uint32_t userIdDouble, bool
         if (errno == ENOENT) {
             LOGE("fbex_uece does not exist, fbe not support this command!");
             isFbeSupport = false;
+            (void)fclose(f);
             return 0;
         }
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        (void)fclose(f);
         return -errno;
     }
     FbeOptsE ops{ .userIdDouble = userIdDouble, .userIdSingle = userIdSingle };
@@ -411,6 +419,7 @@ int FBEX::LockScreenToKernel(uint32_t userId)
     int fd = fileno(f);
     if (fd < 0) {
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        (void)fclose(f);
         return -errno;
     }
     FbeOpts ops;
@@ -444,9 +453,11 @@ int FBEX::GenerateAppkey(UserIdToFbeStr &userIdToFbe, uint32_t hashId, std::uniq
         if (errno == ENOENT) {
             LOGE("fbex_uece does not exist, fbe not support this command!");
             appKey.reset(nullptr);
+            (void)fclose(f);
             return 0;
         }
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        (void)fclose(f);
         return -errno;
     }
     FbeOptsE ops{ .userIdDouble = userIdToFbe.userIds[DOUBLE_ID_INDEX],
@@ -489,9 +500,11 @@ int FBEX::LockUece(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupp
         if (errno == ENOENT) {
             LOGE("fbex_uece does not exist, fbe not support this command!");
             isFbeSupport = false;
+            (void)fclose(f);
             return 0;
         }
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        (void)fclose(f);
         return -errno;
     }
     FbeOptsE ops{ .userIdDouble = userIdDouble, .userIdSingle = userIdSingle };
@@ -520,6 +533,7 @@ int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint
     int fd = fileno(f);
     if (fd < 0) {
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        (void)fclose(f);
         return -errno;
     }
 
@@ -589,9 +603,11 @@ int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, std:
     if (fd < 0) {
         if (errno == ENOENT) {
             isFbeSupport = false;
+            (void)fclose(f);
             return 0;
         }
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        (void)fclose(f);
         return -errno;
     }
     uint32_t bufferSize = AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES;
@@ -657,9 +673,11 @@ int FBEX::WriteESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uin
     if (fd < 0) {
         if (errno == ENOENT) {
             LOGE("fbex_uece does not exist, fbe not support this command!");
+            (void)fclose(f);
             return 0;
         }
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        (void)fclose(f);
         return -errno;
     }
     uint32_t bufferSize = AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES;
@@ -703,6 +721,7 @@ int FBEX::GetStatus()
     int fd = fileno(f);
     if (fd < 0) {
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        (void)fclose(f);
         return -errno;
     }
 

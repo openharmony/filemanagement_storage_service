@@ -519,6 +519,7 @@ void KeyBackup::CleanFile(const std::string &path)
     int fd = fileno(f);
     if (fd < 0) {
         LOGE("open %{public}s failed", realPath.c_str());
+        (void)fclose(f);
         return;
     }
 
@@ -647,6 +648,7 @@ bool KeyBackup::ReadFileToString(const std::string &filePath, std::string &conte
     int fd = fileno(f);
     if (fd < 0) {
         LOGE("%{public}s realpath failed", realPath.c_str());
+        (void)fclose(f);
         return false;
     }
     struct stat sb {};

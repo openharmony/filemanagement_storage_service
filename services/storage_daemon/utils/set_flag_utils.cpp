@@ -102,6 +102,7 @@ bool SetFlagUtils::SetFileDelFlags(const std::string &filepath)
     int fd = fileno(f);
     if (fd < 0) {
         LOGE("SetFlagUtils Failed to open file, errno: %{public}d", errno);
+        (void)fclose(f);
         return false;
     }
     unsigned int flags = 0;

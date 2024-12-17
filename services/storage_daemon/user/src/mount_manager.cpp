@@ -550,6 +550,7 @@ int32_t MountManager::CloudMount(int32_t userId, const string& path)
     int fd = fileno(f);
     if (fd < 0) {
         LOGE("open /dev/fuse fail");
+        (void)fclose(f);
         return E_MOUNT;
     }
     LOGI("open fuse end");
