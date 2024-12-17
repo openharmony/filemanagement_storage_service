@@ -337,7 +337,7 @@ int DiskInfo::CreateVolume(dev_t dev)
 
 int DiskInfo::Partition()
 {
-    LOGI("disk in Partition.");
+    LOGI("Partitioning the disk.");
     std::vector<std::string> cmd;
     int res;
 
