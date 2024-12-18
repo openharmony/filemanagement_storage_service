@@ -126,14 +126,6 @@ std::string BaseKey::GetKeyDir()
     return IBaseKeyMoc::baseKeyMoc->GetKeyDir();
 }
 
-void BaseKey::ClearMemoryKeyCtx()
-{
-    keyContext_.rndEnc.Clear();
-    keyContext_.shield.Clear();
-    keyContext_.nonce.Clear();
-    keyContext_.aad.Clear();
-}
-
 void BaseKey::WipingActionDir(std::string &path)
 {
     return;

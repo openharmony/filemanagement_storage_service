@@ -1018,15 +1018,6 @@ void BaseKey::SplitKeyBlob(const KeyBlob &keyIn, KeyBlob &encAad, KeyBlob &nonce
     inVct.clear();
 }
 
-void BaseKey::ClearMemoryKeyCtx()
-{
-    LOGI("enter, dir_ = %{public}s", dir_.c_str());
-    keyContext_.rndEnc.Clear();
-    keyContext_.shield.Clear();
-    keyContext_.nonce.Clear();
-    keyContext_.aad.Clear();
-}
-
 void BaseKey::ClearKeyContext(KeyContext &keyCtx)
 {
     LOGI("enter clear");

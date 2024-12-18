@@ -44,14 +44,15 @@ DelayHandler::~DelayHandler()
     LOGI("success");
 }
 
-void DelayHandler::StartDelayTask(std::shared_ptr<BaseKey> &elKey)
+void DelayHandler::StartDelayTask(std::shared_ptr<BaseKey> &el4Key, std::shared_ptr<BaseKey> &el5Key)
 {
     CancelDelayTask();
-    if (elKey == nullptr) {
+    if (el4Key == nullptr) {
         LOGI("elKey is nullptr do not clean.");
         return;
     }
-    el4Key_ = elKey;
+    el4Key_ = el4Key;
+    el5Key_ = el5Key;
 
     LOGI("StartDelayTask, start delay clear key task.");
     std::unique_lock<std::mutex> lock(eventMutex_);
@@ -62,7 +63,7 @@ void DelayHandler::StartDelayTask(std::shared_ptr<BaseKey> &elKey)
         });
     }
 
-    auto executeFunc = [this] { ClearEceSeceKey(); };
+    auto executeFunc = [this] { DeactiveEl3El4El5(); };
     eventHandler_->PostTask(executeFunc, CLEAR_TASK_NAME, DEFAULT_CHECK_INTERVAL,
                             AppExecFwk::EventHandler::Priority::IMMEDIATE);
     LOGI("success");
@@ -96,20 +97,24 @@ void DelayHandler::CancelDelayTask()
     LOGI("success");
 }
 
-void DelayHandler::ClearEceSeceKey()
+void DelayHandler::DeactiveEl3El4El5()
 {
     LOGI("enter");
     if (el4Key_ == nullptr) {
         LOGI("elKey is nullptr do not clean.");
-        StorageRadar::ReportUpdateUserAuth("ClearEceSeceKey", userId_, E_PARAMS_INVAL, "EL4", "");
+        StorageRadar::ReportUpdateUserAuth("DeactiveEl3El4El5", userId_, E_PARAMS_INVAL, "EL4", "");
         return;
+    }
+    bool isFbeSupport;
+    if (el5Key_ != nullptr && !el5Key_->LockUece(isFbeSupport)) {
+        LOGE("lock user el5 key failed !");
     }
     if (!el4Key_->LockUserScreen(userId_, FSCRYPT_SDP_ECE_CLASS)) {
         LOGE("Clear user %{public}u key failed", userId_);
-        StorageRadar::ReportUpdateUserAuth("ClearEceSeceKey::LockUserScreen", userId_, E_SYS_ERR, "EL4", "");
+        StorageRadar::ReportUpdateUserAuth("DeactiveEl3El4El5::LockUserScreen", userId_, E_SYS_ERR, "EL4", "");
         return;
     }
-    LOGI("success");
+    LOGW("success");
 }
 } // StorageDaemon
 } // OHOS
