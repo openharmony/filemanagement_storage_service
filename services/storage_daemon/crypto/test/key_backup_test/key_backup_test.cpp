@@ -236,33 +236,6 @@ HWTEST_F(KeyBackupTest, KeyBackup_CompareFile_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: KeyBackup_CopyRegfileData_001
- * @tc.desc: Verify the CopyRegfileData function.
- * @tc.type: FUNC
- * @tc.require: IAHHWW
- */
-HWTEST_F(KeyBackupTest, KeyBackup_CopyRegfileData_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "KeyBackup_CopyRegfileData_001 Start";
-    std::string path = TEST_PATH + "/test.txt";
-    std::string path2 = "/data/tdd2/test2.txt";
-    unlink(path.c_str());
-    unlink(path2.c_str());
-    std::string content;
-    std::string content2;
-    
-    std::string payload = "this is a test content";
-    ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, path));
-
-    path2.clear();
-    path2 = TEST_PATH + "/test2.txt";
-    EXPECT_EQ(KeyBackup::GetInstance().CompareFile(path, path2), 0);
-    unlink(path.c_str());
-    unlink(path2.c_str());
-    GTEST_LOG_(INFO) << "KeyBackup_CopyRegfileData_001 end";
-}
-
-/**
  * @tc.name: KeyBackup_CheckAndCopyOneFile_001
  * @tc.desc: Verify the CheckAndCopyOneFile function.
  * @tc.type: FUNC

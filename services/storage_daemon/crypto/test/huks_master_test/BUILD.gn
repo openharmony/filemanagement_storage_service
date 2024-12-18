@@ -39,6 +39,7 @@ ohos_unittest("HuksMasterTest") {
 
   sources = [
     "${storage_daemon_path}/crypto/src/huks_master.cpp",
+    "${storage_daemon_path}/crypto/src/key_crypto_utils.cpp",
     "huks_master_test.cpp",
   ]
 
@@ -55,6 +56,7 @@ ohos_unittest("HuksMasterTest") {
     "huks:libhukssdk",
     "init:libbegetutil",
     "openssl:libcrypto_shared",
+    "os_account:os_account_innerkits",
   ]
 
   if (enable_user_auth_framework) {
