@@ -99,6 +99,7 @@ bool WriteFileSync(const char *path, const uint8_t *data, size_t size)
     int fd = fileno(f);
     if (fd == -1) {
         LOGE("open %{public}s failed, errno %{public}d", path, errno);
+        (void)fclose(f);
         return false;
     }
 

@@ -1874,6 +1874,7 @@ bool KeyManager::IsUeceSupport()
             LOGE("uece does not support !");
         }
         LOGE("open uece failed, errno : %{public}d", errno);
+        (void)fclose(f);
         return false;
     }
     (void)fclose(f);

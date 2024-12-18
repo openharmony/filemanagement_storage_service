@@ -267,7 +267,7 @@ int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int32_t prjId, bool
     }
     int fd = fileno(f);
     if (fd < 0) {
-        LOGE("Failed to open %{public}s, errno: %{public}d", path.c_str(), errno);
+        (void)fclose(f);
         return E_SYS_CALL;
     }
     if (ioctl(fd, FS_IOC_FSGETXATTR, &fsx) == -1) {
