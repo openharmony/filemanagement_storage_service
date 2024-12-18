@@ -412,6 +412,96 @@ HWTEST_F(KeyManagerTest, KeyManager_ActiveElXUserKey, TestSize.Level1)
 }
 
 /**
+ * @tc.name: KeyManager_ActiveElXUserKey_002
+ * @tc.desc: Verify the ActiveElXUserKey function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyManagerTest, KeyManager_ActiveElXUserKey_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_ActiveElXUserKey_002 Start";
+    unsigned int user = 888;
+    const std::vector<uint8_t> token = {};
+    const std::vector<uint8_t> secret = {};
+    std::shared_ptr<BaseKey> elKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>("test"));
+
+    std::string latestPath = KeyManager::GetInstance()->GetKeyDirByUserAndType(user, EL1_KEY) +
+        PATH_LATEST;
+    OHOS::ForceRemoveDirectory(latestPath);
+    EXPECT_CALL(*baseKeyMock_, InitKey(_)).WillOnce(Return(true));
+    EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(true));
+    #ifdef USER_CRYPTO_MIGRATE_KEY
+    EXPECT_CALL(*baseKeyMock_, StoreKey(_, _)).WillOnce(Return(false));
+    #else
+    EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(false));
+    #endif
+    EXPECT_EQ(KeyManager::GetInstance()->ActiveElXUserKey(user, token, EL1_KEY, secret, elKey), -EFAULT);
+
+    EXPECT_CALL(*baseKeyMock_, InitKey(_)).WillOnce(Return(true));
+    EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(true));
+    #ifdef USER_CRYPTO_MIGRATE_KEY
+    EXPECT_CALL(*baseKeyMock_, StoreKey(_, _)).WillOnce(Return(true));
+    #else
+    EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(true));
+    #endif
+    EXPECT_CALL(*fscryptKeyMock_, ActiveKey(_, _)).WillOnce(Return(false));
+    EXPECT_EQ(KeyManager::GetInstance()->ActiveElXUserKey(user, token, EL1_KEY, secret, elKey), -EFAULT);
+
+    EXPECT_CALL(*baseKeyMock_, InitKey(_)).WillOnce(Return(true));
+    EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(true));
+    #ifdef USER_CRYPTO_MIGRATE_KEY
+    EXPECT_CALL(*baseKeyMock_, StoreKey(_, _)).WillOnce(Return(true));
+    #else
+    EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(true));
+    #endif
+    EXPECT_CALL(*fscryptKeyMock_, ActiveKey(_, _)).WillOnce(Return(true));
+    EXPECT_EQ(KeyManager::GetInstance()->ActiveElXUserKey(user, token, EL1_KEY, secret, elKey), E_OK);
+    GTEST_LOG_(INFO) << "KeyManager_ActiveElXUserKey_002 end";
+}
+
+/**
+ * @tc.name: KeyManager_ActiveElXUserKey_003
+ * @tc.desc: Verify the ActiveElXUserKey function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyManagerTest, KeyManager_ActiveElXUserKey_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_ActiveElXUserKey_003 Start";
+    unsigned int user = 888;
+    const std::vector<uint8_t> token = {};
+    const std::vector<uint8_t> secret = {};
+    std::shared_ptr<BaseKey> elKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>("test"));
+
+    std::string latestPath = KeyManager::GetInstance()->GetKeyDirByUserAndType(user, EL1_KEY) +
+        PATH_LATEST;
+    OHOS::ForceRemoveDirectory(latestPath);
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(latestPath));
+    std::string fileUpdate = latestPath + SUFFIX_NEED_UPDATE;
+    auto fd = open(fileUpdate.c_str(), O_RDWR | O_CREAT);
+    ASSERT_GT(fd, 0);
+    close(fd);
+    EXPECT_CALL(*baseKeyMock_, InitKey(_)).WillOnce(Return(true));
+    EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(true));
+    EXPECT_CALL(*fscryptKeyMock_, ActiveKey(_, _)).WillOnce(Return(true));
+    EXPECT_EQ(KeyManager::GetInstance()->ActiveElXUserKey(user, token, EL1_KEY, secret, elKey), E_OK);
+
+    std::string fileRestore = latestPath + SUFFIX_NEED_RESTORE;
+    fd = open(fileRestore.c_str(), O_RDWR | O_CREAT);
+    ASSERT_GT(fd, 0);
+    close(fd);
+    EXPECT_CALL(*baseKeyMock_, InitKey(_)).WillOnce(Return(true));
+    EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(true));
+    EXPECT_CALL(*fscryptKeyMock_, ActiveKey(_, _)).WillOnce(Return(true));
+    EXPECT_EQ(KeyManager::GetInstance()->ActiveElXUserKey(user, token, EL1_KEY, secret, elKey), E_OK);
+
+    ASSERT_EQ(remove(fileRestore.c_str()), 0);
+    ASSERT_EQ(remove(fileUpdate.c_str()), 0);
+    OHOS::ForceRemoveDirectory(latestPath);
+    GTEST_LOG_(INFO) << "KeyManager_ActiveElXUserKey_003 end";
+}
+
+/**
  * @tc.name: KeyManager_UnlockUserScreen
  * @tc.desc: Verify the UnlockUserScreen function.
  * @tc.type: FUNC
