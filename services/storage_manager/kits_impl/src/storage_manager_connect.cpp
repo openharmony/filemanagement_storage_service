@@ -316,6 +316,18 @@ int32_t StorageManagerConnect::ResetProxy()
     return E_OK;
 }
 
+int32_t StorageManagerConnect::LockUserScreen()
+{
+    LOGI("enter");
+    std::lock_guard<std::mutex> lock(mutex_);
+    if ((storageManager_ != nullptr) && (storageManager_->AsObject() != nullptr)) {
+        storageManager_->AsObject()->RemoveDeathRecipient(deathRecipient_);
+    }
+    storageManager_ = nullptr;
+
+    return E_OK;
+}
+
 void SmDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
 {
     LOGI("SmDeathRecipient::OnRemoteDied reset proxy.");
