@@ -235,6 +235,10 @@ int32_t KeyBackup::DoResotreKeyMix(std::shared_ptr<BaseKey> &baseKey, const User
             LOGE("copy mix files to temp dir failed");
             continue;
         }
+        if (baseKey == nullptr) {
+            LOGE("basekey is nullptr");
+            return -1;
+        }
         if (baseKey->DoRestoreKey(auth, tempKeyDir)) {
             LOGI("mix key files descrpt succ, fix orig and backup");
             CheckAndFixFiles(tempKeyDir, origKeyDir);
