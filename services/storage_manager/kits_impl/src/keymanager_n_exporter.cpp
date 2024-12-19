@@ -31,7 +31,7 @@ using namespace OHOS::FileManagement::LibN;
 namespace OHOS {
 namespace StorageManager {
  
-napi_value DeactiveUserKey(napi_env env, napi_callback_info info)
+napi_value DeactivateUserKey(napi_env env, napi_callback_info info)
 {
     if (!IsSystemApp()) {
         NError(E_PERMISSION_SYS).ThrowErr(env);
