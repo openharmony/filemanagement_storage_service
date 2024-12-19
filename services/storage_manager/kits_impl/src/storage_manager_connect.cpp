@@ -316,16 +316,18 @@ int32_t StorageManagerConnect::ResetProxy()
     return E_OK;
 }
 
-int32_t StorageManagerConnect::LockUserScreen()
+int32_t StorageManagerConnect::LockUserScreen(uint32_t userId)
 {
-    LOGI("enter");
-    std::lock_guard<std::mutex> lock(mutex_);
-    if ((storageManager_ != nullptr) && (storageManager_->AsObject() != nullptr)) {
-        storageManager_->AsObject()->RemoveDeathRecipient(deathRecipient_);
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::LockUserScreen:Connect error");
+        return err;
     }
-    storageManager_ = nullptr;
-
-    return E_OK;
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::LockUserScreen service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->LockUserScreen(userId);
 }
 
 void SmDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
