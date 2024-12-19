@@ -21,7 +21,7 @@
  
 namespace OHOS {
 namespace StorageManager {
-napi_value DeactiveUserKeySync(napi_env env, napi_callback_info info);
+napi_value DeactiveUserKey(napi_env env, napi_callback_info info);
 } // namespace StorageManager
 } // namespace OHOS
 #endif //KEYMANAGER_N_EXPORTER_H
