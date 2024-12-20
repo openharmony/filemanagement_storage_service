@@ -21,6 +21,7 @@
 #include <unistd.h>
 
 #include "securec.h"
+#include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "unique_fd.h"
 
@@ -213,7 +214,7 @@ int32_t KeyBackup::DoResotreKeyMix(std::shared_ptr<BaseKey> &baseKey, const User
     int32_t ret = GetFileList(origKeyDir, backupKeyDir, fileList, diffNum);
     if (ret != 0 || diffNum <= 1) {
         LOGE("get file list failed or diffNum too least, ret: %{public}d, diffNum: %{public}d", ret, diffNum);
-        return -1;
+        return E_ERR;
     }
 
     std::string tempKeyDir;
@@ -226,7 +227,7 @@ int32_t KeyBackup::DoResotreKeyMix(std::shared_ptr<BaseKey> &baseKey, const User
     uint32_t loopNum = GetLoopMaxNum(diffNum);
     if (loopNum == INVALID_LOOP_NUM) {
         RemoveNode(tempKeyDir);
-        return -1;
+        return E_ERR;
     }
     for (uint32_t i = 0; i <= loopNum; i++) {
         LOGI("try mix key files to decrypt i: %{public}d loopNum: %{public}d", i, loopNum);
@@ -237,7 +238,7 @@ int32_t KeyBackup::DoResotreKeyMix(std::shared_ptr<BaseKey> &baseKey, const User
         }
         if (baseKey == nullptr) {
             LOGE("basekey is nullptr");
-            return -1;
+            return E_ERR;
         }
         if (baseKey->DoRestoreKey(auth, tempKeyDir)) {
             LOGI("mix key files descrpt succ, fix orig and backup");
@@ -248,7 +249,7 @@ int32_t KeyBackup::DoResotreKeyMix(std::shared_ptr<BaseKey> &baseKey, const User
         }
     }
     RemoveNode(tempKeyDir);
-    return -1;
+    return E_ERR;
 }
 
 int32_t KeyBackup::GetFileList(const std::string &origDir, const std::string &backDir,
