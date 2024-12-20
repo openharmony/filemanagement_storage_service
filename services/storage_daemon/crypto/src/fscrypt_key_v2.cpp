@@ -23,7 +23,7 @@ namespace StorageDaemon {
 #ifdef SUPPORT_FSCRYPT_V2
 bool FscryptKeyV2::ActiveKey(uint32_t flag, const std::string &mnt)
 {
-    LOGD("enter");
+    LOGI("enter");
     if (keyInfo_.key.IsEmpty()) {
         LOGE("rawkey is null");
         return false;
@@ -53,19 +53,19 @@ bool FscryptKeyV2::ActiveKey(uint32_t flag, const std::string &mnt)
         return false;
     }
 
-    LOGD("success. key_id len:%{public}d, data(hex):%{private}s", keyInfo_.keyId.size,
+    LOGI("success. key_id len:%{public}d, data(hex):%{private}s", keyInfo_.keyId.size,
         keyInfo_.keyId.ToString().c_str());
     if (!SaveKeyBlob(keyInfo_.keyId, dir_ + PATH_KEYID)) {
         return false;
     }
     keyInfo_.key.Clear();
-    LOGD("success");
+    LOGI("success");
     return true;
 }
 
 bool FscryptKeyV2::InactiveKey(uint32_t flag, const std::string &mnt)
 {
-    LOGD("enter");
+    LOGI("enter");
     if (keyInfo_.keyId.size == 0) {
         LOGE("keyId size is 0");
         return true;
@@ -94,7 +94,7 @@ bool FscryptKeyV2::InactiveKey(uint32_t flag, const std::string &mnt)
         LOGE("Some files using this key are still in-use");
     }
 
-    LOGD("success");
+    LOGI("success");
     keyInfo_.keyId.Clear();
     return true;
 }
@@ -177,11 +177,11 @@ bool FscryptKeyV2::ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId)
 }
 
 bool FscryptKeyV2::DecryptClassE(const UserAuth &auth, bool &isSupport,
-                                 bool &eBufferStatue, uint32_t user, uint32_t status)
+                                 bool &eBufferStatue, uint32_t user, bool needSyncCandidate)
 {
     (void)auth;
     (void)user;
-    (void)status;
+    (void)needSyncCandidate;
     isSupport = false;
     eBufferStatue = false;
     LOGI("Unsupported fscrypt v2");

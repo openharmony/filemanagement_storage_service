@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -61,7 +60,7 @@ bool BaseKey::ClearKey(const std::string &mnt)
     return IBaseKeyMoc::baseKeyMoc->ClearKey(mnt);
 }
 
-bool BaseKey::UpdateKey(const std::string &keypath)
+bool BaseKey::UpdateKey(const std::string &keypath, bool needSyncCandidate)
 {
     if (IBaseKeyMoc::baseKeyMoc == nullptr) {
         return false;
@@ -69,7 +68,7 @@ bool BaseKey::UpdateKey(const std::string &keypath)
     return IBaseKeyMoc::baseKeyMoc->UpdateKey(keypath);
 }
 
-bool BaseKey::RestoreKey(const UserAuth &auth)
+bool BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate)
 {
     if (IBaseKeyMoc::baseKeyMoc == nullptr) {
         return false;
@@ -111,12 +110,12 @@ bool BaseKey::RenameKeyPath(const std::string &keyPath)
     return IBaseKeyMoc::baseKeyMoc->RenameKeyPath(keyPath);
 }
 
-bool BaseKey::KeyDesclsEmpty()
+bool BaseKey::KeyDescIsEmpty()
 {
     if (IBaseKeyMoc::baseKeyMoc == nullptr) {
         return false;
     }
-    return IBaseKeyMoc::baseKeyMoc->KeyDesclsEmpty();
+    return IBaseKeyMoc::baseKeyMoc->KeyDescIsEmpty();
 }
 
 void BaseKey::ClearMemoryKeyCtx()
@@ -135,4 +134,20 @@ bool BaseKey::SaveKeyBlob(const KeyBlob &blob, const std::string &path)
         return false;
     }
     return IBaseKeyMoc::baseKeyMoc->SaveKeyBlob(blob, path);
+}
+
+bool BaseKey::LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size)
+{
+    if (IBaseKeyMoc::baseKeyMoc == nullptr) {
+        return false;
+    }
+    return IBaseKeyMoc::baseKeyMoc->LoadKeyBlob(blob, path, size);
+}
+
+std::string BaseKey::GetCandidateDir() const
+{
+    if (IBaseKeyMoc::baseKeyMoc == nullptr) {
+        return "";
+    }
+    return IBaseKeyMoc::baseKeyMoc->GetCandidateDir();
 }

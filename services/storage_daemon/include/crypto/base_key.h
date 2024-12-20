@@ -30,6 +30,8 @@ const uint32_t USER_UNLOCK = 0x2;
 const uint32_t USER_ADD_AUTH = 0x0;
 const uint32_t USER_CHANGE_AUTH = 0x1;
 const std::string SUFFIX_NEED_UPDATE = "/need_update";
+const std::string SUFFIX_NEED_RESTORE = "/need_restore";
+const std::string PATH_KEY_VERSION = "/version_";
 const std::vector<uint8_t> NULL_SECRET = { '!' };
 class BaseKey : public std::enable_shared_from_this<BaseKey> {
 public:
@@ -44,8 +46,8 @@ public:
 #else
     bool StoreKey(const UserAuth &auth);
 #endif
-    bool UpdateKey(const std::string &keypath = "");
-    bool RestoreKey(const UserAuth &auth);
+    bool UpdateKey(const std::string &keypath = "", bool needSyncCandidate = true);
+    bool RestoreKey(const UserAuth &auth, bool needSyncCandidate = true);
     virtual bool ActiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
     virtual bool InactiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
     virtual bool LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt = MNT_DATA) = 0;
@@ -55,7 +57,7 @@ public:
     virtual bool AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status) = 0;
     virtual bool DeleteClassEPinCode(uint32_t userId) = 0;
     virtual bool DecryptClassE(const UserAuth &auth, bool &isSupport, bool &eBufferStatue, uint32_t user,
-                               uint32_t status) = 0;
+                               bool needSyncCandidate) = 0;
     virtual bool EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status) = 0;
     virtual bool ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId) = 0;
     virtual bool LockUece(bool &isFbeSupport) = 0;
@@ -67,7 +69,7 @@ public:
     void ClearMemoryKeyCtx();
     void WipingActionDir(std::string &path);
     bool UpgradeKeys();
-    bool KeyDesclsEmpty();
+    bool KeyDescIsEmpty();
     KeyInfo keyInfo_;
     std::string GetDir() const
     {
@@ -81,6 +83,8 @@ public:
     
 protected:
     static bool SaveKeyBlob(const KeyBlob &blob, const std::string &path);
+    static bool LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size = 0);
+    std::string GetCandidateDir() const;
     std::string dir_ {};
 
 private:
@@ -99,7 +103,6 @@ private:
     bool DoUpdateRestore(const UserAuth &auth, const std::string &keyPath);
     static bool GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size);
     static bool GenerateKeyBlob(KeyBlob &blob, const uint32_t size);
-    static bool LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size);
     bool EncryptDe(const UserAuth &auth, const std::string &path);
     bool EncryptEceSece(const UserAuth &auth, const uint32_t keyType, KeyContext &keyCtx);
     bool Decrypt(const UserAuth &auth);
@@ -112,9 +115,9 @@ private:
     void ClearKeyContext(KeyContext &keyCtx);
     bool InitKeyContext(const UserAuth &auth, const std::string &keyPath, KeyContext &keyCtx);
     int GetCandidateVersion() const;
-    std::string GetCandidateDir() const;
     std::string GetNextCandidateDir() const;
     void SyncKeyDir() const;
+    void DoLatestBackUp() const;
     uint32_t GetTypeFromDir();
     uint32_t GetIdFromDir();
 
