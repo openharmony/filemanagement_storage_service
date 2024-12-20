@@ -49,7 +49,7 @@ napi_value DeactivateUserKey(napi_env env, napi_callback_info info)
         NError(E_PARAMS).ThrowErr(env);
         return nullptr;
     }
-    auto err = DelayedSingleton<StorageManagerConnect>::GetInstance()->LockUserScreen(userId);
+    auto err = DelayedSingleton<StorageManagerConnect>::GetInstance()->DeactivateUserKey(userId);
     if (err != E_OK) {
         NError(Convert2JsErrNum(err)).ThrowErr(env);
         return nullptr;
