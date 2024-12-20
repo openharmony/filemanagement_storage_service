@@ -316,6 +316,20 @@ int32_t StorageManagerConnect::ResetProxy()
     return E_OK;
 }
 
+int32_t StorageManagerConnect::DeactivateUserKey(uint32_t userId)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageManagerConnect::DeactivateUserKey:Connect error");
+        return err;
+    }
+    if (storageManager_ == nullptr) {
+        LOGE("StorageManagerConnect::DeactivateUserKey service == nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageManager_->LockUserScreen(userId);
+}
+
 void SmDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
 {
     LOGI("SmDeathRecipient::OnRemoteDied reset proxy.");
