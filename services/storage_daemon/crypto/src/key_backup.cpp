@@ -19,6 +19,7 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <thread>
 
 #include "securec.h"
 #include "storage_service_log.h"
@@ -122,7 +123,8 @@ int32_t KeyBackup::TryRestoreKey(const std::shared_ptr<BaseKey> &baseKey, const 
     }
     LOGE("origKey failed, try backupKey");
     if (baseKey->DoRestoreKey(auth, backupDir + PATH_LATEST)) {
-        CheckAndFixFiles(backupDir, keyDir);
+        std::thread fixFileThread([this, backupDir, keyDir]() { CheckAndFixFiles(backupDir, keyDir) ;});
+        fixFileThread.detach();
         LOGI("Restore by back key success !");
         return 0;
     }

@@ -1166,8 +1166,7 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
     std::string restore_version;
     (void)OHOS::LoadStringFromFile(need_restore_path, restore_version);
     if (std::filesystem::exists(need_restore_path, errCode) && std::atoi(restore_version.c_str()) == 3) {
-        LOGI("NEED_RESTORE path exist: %{public}s, errorcode: %{public}d", need_restore_path.c_str(),
-            errCode.value());
+        LOGI("NEED_RESTORE path exist: %{public}s, errcode: %{public}d", need_restore_path.c_str(), errCode.value());
         return type == EL5_KEY ? -ENONET : -EFAULT;
     }
     if (CheckUserPinProtect(user, token, secret) != E_OK) {
@@ -1175,6 +1174,10 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
         return -EFAULT;
     }
     std::lock_guard<std::mutex> lock(keyMutex_);
+    if (HasElkey(user, type) && HashElxActived(user, type)) {
+        LOGE("The user %{public}u el have been actived, key type is %{public}u", user, type);
+        return 0;
+    }
     std::shared_ptr<DelayHandler> userDelayHandler;
     if (GetUserDelayHandler(user, userDelayHandler)) {
         userDelayHandler->CancelDelayTask();
@@ -1183,7 +1186,7 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
     if (keyDir == "") {
         return E_KEY_TYPE_INVAL;
     }
-    if (!checkDir(type, keyDir, user)) {
+    if (!CheckDir(type, keyDir, user)) {
         return -ENOENT;
     }
     std::shared_ptr<BaseKey> elKey = GetBaseKey(keyDir);
@@ -1218,7 +1221,7 @@ int KeyManager::ActiveUece(unsigned int user,
     return 0;
 }
 
-bool KeyManager::checkDir(KeyType type, std::string keyDir, unsigned int user)
+bool KeyManager::CheckDir(KeyType type, std::string keyDir, unsigned int user)
 {
     if ((type != EL5_KEY) && !IsDir(keyDir)) {
         LOGE("Have not found user %{public}u el", user);
