@@ -77,7 +77,7 @@ void GetMediaTypeAndSize(const std::shared_ptr<DataShare::DataShareResultSet> &r
             LOGE("get size column index or long value err.");
             continue;
         }
-
+        LOGI("media type: %{public}d, size: %{public}lld", mediatype, static_cast<long long>(size));
         if (mediatype == MEDIA_TYPE_IMAGE || mediatype == thumbnailType) {
             storageStats.image_ += size;
         } else if (mediatype == MEDIA_TYPE_AUDIO) {
