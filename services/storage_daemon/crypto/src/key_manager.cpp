@@ -314,6 +314,26 @@ int KeyManager::RestoreUserKey(uint32_t userId, const std::string &dir, const Us
     return 0;
 }
 
+#ifdef USER_CRYPTO_MIGRATE_KEY
+int32_t KeyManager::ClearAppCloneUserNeedRestore(unsigned int userId, std::string elNeedRestorePath)
+{
+    LOGI("enter");
+    if (userId < StorageService::START_APP_CLONE_USER_ID || userId >= StorageService::MAX_APP_CLONE_USER_ID) {
+        LOGI("Clear userId %{public}d out of range", userId);
+        return E_USERID_RANGE;
+    }
+
+    LOGE("User %{public}d is app clone user, do delete elx need_restore.", userId);
+    std::error_code errCode;
+    if (!std::filesystem::exists(elNeedRestorePath, errCode)) {
+        LOGI("need_restore don't exist, not need to delete.");
+    }
+    (void)remove(elNeedRestorePath.c_str());
+    LOGI("Complete delete need_restore.");
+    return E_OK;
+}
+#endif
+
 bool KeyManager::HasElkey(uint32_t userId, KeyType type)
 {
     LOGI("enter");
@@ -696,6 +716,12 @@ int KeyManager::DoDeleteUserCeEceSeceKeys(unsigned int user,
     LOGI("enter, userDir is %{public}s", userDir.c_str());
     int ret = 0;
     auto it = userElKey_.find(user);
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    if (userDir == USER_EL1_DIR) {
+        std::string elNeedRestorePath = USER_EL1_DIR + "/" + std::to_string(user) + RESTORE_DIR;
+        (void)ClearAppCloneUserNeedRestore(user, elNeedRestorePath);
+    }
+#endif
     if (it != userElKey_.end()) {
         auto elKey = it->second;
         if (!elKey->ClearKey()) {

@@ -102,6 +102,7 @@ public:
     int SetRecoverKey(const std::vector<uint8_t> &key);
 #ifdef USER_CRYPTO_MIGRATE_KEY
     int RestoreUserKey(uint32_t userId, KeyType type);
+    int32_t ClearAppCloneUserNeedRestore(unsigned int userId, std::string elNeedRestorePath);
 #endif
     std::string GetKeyDirByUserAndType(unsigned int user, KeyType type);
     std::string GetKeyDirByType(KeyType type);
