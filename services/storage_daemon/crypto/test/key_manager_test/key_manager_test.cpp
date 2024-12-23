@@ -752,6 +752,31 @@ HWTEST_F(KeyManagerTest, KeyManager_RestoreUserKey_000, TestSize.Level1)
 }
 
 /**
+ * @tc.name: KeyManager_ClearAppCloneUserNeedRestore_000
+ * @tc.desc: Verify the ClearAppCloneUserNeedRestore function.
+ * @tc.type: FUNC
+ * @tc.require: IBCTXL
+ */
+#ifdef USER_CRYPTO_MIGRATE_KEY
+HWTEST_F(KeyManagerTest, KeyManager_ClearAppCloneUserNeedRestore_000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_ClearAppCloneUserNeedRestore_000 Start";
+    uint32_t userId = 228;
+    const string USER_EL1_DIR = "data/test/user/el1";
+    std::string keyEl1Dir = USER_EL1_DIR + "/" + std::to_string(userId);
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(keyEl1Dir));
+    std::ofstream el1_need_restore(keyEl1Dir + RESTORE_DIR);
+    if (el1_need_restore.is_open()) {
+        el1_need_restore << "1";
+        el1_need_restore.close();
+    }
+    std::string elNeedRestorePath = keyEl1Dir + RESTORE_DIR;
+    EXPECT_EQ(KeyManager::GetInstance()->ClearAppCloneUserNeedRestore(userId, elNeedRestorePath), E_OK);
+    GTEST_LOG_(INFO) << "KeyManager_ClearAppCloneUserNeedRestore_000 end";
+}
+#endif
+
+/**
  * @tc.name: KeyManager_GenerateAndInstallUserKey_001
  * @tc.desc: Verify the GenerateAndInstallUserKey function.
  * @tc.type: FUNC
