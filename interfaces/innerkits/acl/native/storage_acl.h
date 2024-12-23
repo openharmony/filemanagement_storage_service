@@ -22,6 +22,7 @@ namespace OHOS {
 namespace StorageDaemon {
 
 int AclSetAccess(const std::string &targetFile, const std::string &entryTxt);
+int AclSetDefault(const std::string &targetFile, const std::string &entryTxt);
 
 } // StorageDaemon
 } // OHOS
