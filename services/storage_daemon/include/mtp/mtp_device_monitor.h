@@ -44,8 +44,6 @@ private:
 private:
     std::mutex listMutex_;
     std::vector<MtpDeviceInfo> lastestMtpDevList_;
-    std::vector<MtpDeviceInfo> invalidMtpDevices_;
-    std::vector<MtpDeviceInfo> hasEjectedDevices_;
 };
 } // namespace StorageDaemon
 } // namespace OHOS
