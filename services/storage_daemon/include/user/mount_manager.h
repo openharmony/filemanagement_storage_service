@@ -111,6 +111,7 @@ public:
                           const std::string &bundleName, const std::string &userId);
     bool CheckMountFileByUser(int32_t userId);
     bool CloudAndFuseDirFlag(const std::string &path);
+    bool MediaFuseDirFlag(const std::string &path);
     int32_t MountMediaFuse(int32_t userId, int32_t &devFd);
     int32_t UMountMediaFuse(int32_t userId);
 

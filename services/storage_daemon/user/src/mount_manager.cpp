@@ -1169,6 +1169,10 @@ int32_t MountManager::CreateVirtualDirs(int32_t userId)
         if (CloudAndFuseDirFlag(path) && IsDir(path)) {
             continue;
         }
+        /* 只要错误码不是ENOENT， 能够保证目录已经创建 */
+        if (MediaFuseDirFlag(path) && (IsDir(path) || (errno != ENOENT))) {
+            continue;
+        }
         if (!PrepareDir(path, dir.mode, dir.uid, dir.gid)) {
             return E_PREPARE_DIR;
         }
@@ -1309,7 +1313,7 @@ bool MountManager::CheckMountFileByUser(int32_t userId)
 {
     for (const DirInfo &dir : virtualDir_) {
         std::string path = StringPrintf(dir.path.c_str(), userId);
-        if (CloudAndFuseDirFlag(path)) {
+        if (CloudAndFuseDirFlag(path) || MediaFuseDirFlag(path)) {
             continue;
         }
         if (access(path.c_str(), 0) != 0) {
@@ -1332,6 +1336,14 @@ bool MountManager::CloudAndFuseDirFlag(const std::string &path)
     }
     std::regex cloudFusePattern("\\/mnt\\/data.*cloud_fuse");
     if (std::regex_match(path.c_str(), cloudFusePattern)) {
+        return true;
+    }
+    return false;
+}
+
+bool MountManager::MediaFuseDirFlag(const std::string &path)
+{
+    if (path.empty()) {
         return true;
     }
     std::regex mediaFusePattern("\\/mnt\\/data.*media_fuse");
