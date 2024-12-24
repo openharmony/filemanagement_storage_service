@@ -44,7 +44,7 @@ DelayHandler::~DelayHandler()
     LOGI("success");
 }
 
-void DelayHandler::StartDelayTask(std::shared_ptr<BaseKey> &el4Key, std::shared_ptr<BaseKey> &el5Key)
+void DelayHandler::StartDelayTask(std::shared_ptr<BaseKey> &el4Key)
 {
     CancelDelayTask();
     if (el4Key == nullptr) {
@@ -52,7 +52,6 @@ void DelayHandler::StartDelayTask(std::shared_ptr<BaseKey> &el4Key, std::shared_
         return;
     }
     el4Key_ = el4Key;
-    el5Key_ = el5Key;
 
     LOGI("StartDelayTask, start delay clear key task.");
     std::unique_lock<std::mutex> lock(eventMutex_);
@@ -104,10 +103,6 @@ void DelayHandler::DeactiveEl3El4El5()
         LOGI("elKey is nullptr do not clean.");
         StorageRadar::ReportUpdateUserAuth("DeactiveEl3El4El5", userId_, E_PARAMS_INVAL, "EL4", "");
         return;
-    }
-    bool isFbeSupport;
-    if (el5Key_ != nullptr && !el5Key_->LockUece(isFbeSupport)) {
-        LOGE("lock user el5 key failed !");
     }
     if (!el4Key_->LockUserScreen(userId_, FSCRYPT_SDP_ECE_CLASS)) {
         LOGE("Clear user %{public}u key failed", userId_);
