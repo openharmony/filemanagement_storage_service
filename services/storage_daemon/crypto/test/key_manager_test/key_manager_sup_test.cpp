@@ -392,6 +392,50 @@ HWTEST_F(KeyManagerSupTest, KeyManager_DoDeleteUserKeys_001, TestSize.Level1)
 }
 
 /**
+ * @tc.name: KeyManager_DoDeleteUserKeys_002
+ * @tc.desc: Verify the DoDeleteUserKeys function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyManagerSupTest, KeyManager_DoDeleteUserKeys_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_DoDeleteUserKeys_002 Start";
+    std::shared_ptr<BaseKey> tmpKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>("test"));
+    unsigned int user = 800;
+    std::string userDir = "/data/test/";
+    std::map<unsigned int, std::shared_ptr<BaseKey>> userElKey;
+    bool existUece = true;
+    if (access(UECE_PATH, F_OK) != 0) {
+        existUece = false;
+        std::ofstream file(UECE_PATH);
+        EXPECT_GT(open(UECE_PATH, O_RDWR), 0);
+    }
+
+    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_INVALID))
+        .WillOnce(Return(FSCRYPT_INVALID)).WillOnce(Return(FSCRYPT_INVALID)).WillOnce(Return(FSCRYPT_INVALID))
+        .WillOnce(Return(FSCRYPT_INVALID));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID))
+        .WillOnce(Return(FSCRYPT_INVALID)).WillOnce(Return(FSCRYPT_INVALID)).WillOnce(Return(FSCRYPT_INVALID))
+        .WillOnce(Return(FSCRYPT_INVALID));
+    EXPECT_EQ(KeyManager::GetInstance()->DoDeleteUserKeys(user), -ENOMEM);
+
+    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2))
+        .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2))
+        .WillOnce(Return(FSCRYPT_V2));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2))
+        .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2))
+        .WillOnce(Return(FSCRYPT_V2));
+    EXPECT_CALL(*baseKeyMock_, ClearKey(_)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true))
+        .WillOnce(Return(true)).WillOnce(Return(true));
+    EXPECT_EQ(KeyManager::GetInstance()->DoDeleteUserKeys(user), 0);
+
+    if (!existUece) {
+        OHOS::RemoveFile(UECE_PATH);
+    }
+    GTEST_LOG_(INFO) << "KeyManager_DoDeleteUserKeys_002 end";
+}
+
+/**
  * @tc.name: KeyManager_UnlockEceSece_001
  * @tc.desc: Verify the UnlockEceSece function.
  * @tc.type: FUNC
