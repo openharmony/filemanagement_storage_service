@@ -28,6 +28,8 @@ using namespace testing;
  
 namespace OHOS::StorageDaemon {
 const std::string NEED_RESTORE_PATH = "/data/service/el0/storage_daemon/sd/latest/need_restore";
+static const uint32_t DEFAULT_SINGLE_FIRST_USER_ID = 100;
+static const uint32_t USER_ID_DIFF = 91;
 class FscryptKeyV1ExtTest : public testing::Test {
 public:
     static void SetUpTestCase(void);
@@ -118,7 +120,6 @@ HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_GetMappedUserId_003, TestSize.Leve
 {
     GTEST_LOG_(INFO) << "FscryptKeyV1Ext_GetMappedUserId_003 Start";
     uint32_t userId = 101;
-    const uint32_t USER_ID_DIFF = 91;
     auto rlt = userId - USER_ID_DIFF;
     FscryptKeyV1Ext ext;
     EXPECT_EQ(ext.GetMappedUserId(userId, TYPE_EL2), rlt);
@@ -511,5 +512,49 @@ HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_GetTypeFromDir_001, TestSize.Level
     ext.dir_ = "/data/foo/bar";
     EXPECT_EQ(ext.GetTypeFromDir(), TYPE_GLOBAL_EL1);
     GTEST_LOG_(INFO) << "FscryptKeyV1Ext_GetTypeFromDir_001 end";
+}
+
+/**
+ * @tc.name: FscryptKeyV1Ext_GetMappedDeUserId_001
+ * @tc.desc: Verify the GetMappedDeUserId function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_GetMappedDeUserId_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_GetMappedDeUserId_001 end";
+    FscryptKeyV1Ext ext;
+    EXPECT_EQ(ext.GetMappedDeUserId(DEFAULT_SINGLE_FIRST_USER_ID), 0);
+
+    uint32_t userId = DEFAULT_SINGLE_FIRST_USER_ID + 5;
+    EXPECT_EQ(ext.GetMappedDeUserId(userId), userId - USER_ID_DIFF);
+
+    userId = DEFAULT_SINGLE_FIRST_USER_ID - 5;
+    EXPECT_EQ(ext.GetMappedDeUserId(userId), userId);
+    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_GetMappedDeUserId_001 end";
+}
+
+/**
+ * @tc.name: FscryptKeyV1Ext_ActiveDoubleKeyExt_001
+ * @tc.desc: Verify the ActiveDoubleKeyExt function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_ActiveDoubleKeyExt_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_ActiveDoubleKeyExt_001 end";
+    uint8_t iv = 1;
+    uint32_t size = 1;
+    uint32_t elType = 0;
+    FscryptKeyV1Ext ext;
+    ext.userId_ = 100;
+    ext.type_ = TYPE_EL2;
+    EXPECT_CALL(*fbexMock_, InstallDoubleDeKeyToKernel(_, _, _, _)).WillOnce(Return(true));
+    EXPECT_EQ(ext.ActiveDoubleKeyExt(0, &iv, size, elType), false);
+
+    EXPECT_CALL(*fbexMock_, InstallDoubleDeKeyToKernel(_, _, _, _)).WillOnce(Return(false));
+    EXPECT_EQ(ext.ActiveDoubleKeyExt(0, &iv, size, elType), true);
+    EXPECT_EQ(elType, TYPE_EL2);
+    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_ActiveDoubleKeyExt_001 end";
 }
 }
