@@ -37,6 +37,7 @@ static constexpr int32_t SLEEP_TIME = 1;
 const std::string MTP_ROOT_PATH = "/mnt/data/external/";
 const int32_t MTP_VAL_LEN = 6;
 const int32_t MTP_TRUE_LEN = 5;
+const int32_t DETECT_CNT = 4;
 const std::string SYS_PARAM_SERVICE_FORCE_ENABLE = "const.pc_security.fileguard_force_enable";
 bool g_keepMonitoring = true;
 
@@ -116,6 +117,12 @@ void MtpDeviceMonitor::MountMtpDeviceByBroadcast()
 void MtpDeviceMonitor::MonitorDevice()
 {
     LOGI("MonitorDevice: mtp device monitor thread begin.");
+    int32_t cnt = DETECT_CNT;
+    while (cnt > 0) {
+        MountMtpDeviceByBroadcast();
+        cnt--;
+        sleep(SLEEP_TIME);
+    }
     while (g_keepMonitoring) {
         if (IsNeedDisableMtp()) {
             break;
@@ -135,30 +142,6 @@ void MtpDeviceMonitor::MountMtpDevice(const std::vector<MtpDeviceInfo> &monitorD
             continue;
         }
 
-        bool isEjected = false;
-        for (auto ejectDev: hasEjectedDevices_) {
-            if (device.id == ejectDev.id) {
-                LOGI("Device %{public}s has been ejected", (device.id).c_str());
-                isEjected = true;
-                break;
-            }
-        }
-        if (isEjected) {
-            continue;
-        }
-
-        bool isInvalidDev = false;
-        for (auto inDev : invalidMtpDevices_) {
-            if ((device.vendorId == inDev.vendorId) && (device.productId == inDev.productId) &&
-                (device.devNum == inDev.devNum)) {
-                isInvalidDev = true;
-                break;
-            }
-        }
-        if (isInvalidDev) {
-            LOGE("MountMtpDevice: invalid mtp device, no need to mount.");
-            continue;
-        }
         if (lastestMtpDevList_.size() > 0) {
             LOGW("Multiple devices detected. Only one device is supported. Ignoring additional devices.");
             return;
@@ -168,9 +151,6 @@ void MtpDeviceMonitor::MountMtpDevice(const std::vector<MtpDeviceInfo> &monitorD
             lastestMtpDevList_.push_back(device);
         } else if (ret == E_MTP_PREPARE_DIR_ERR) {
             LOGE("MountMtpDevice: /mnt/data/external director not ready.");
-        } else {
-            LOGE("MountMtpDevice: mtp device mount failed.");
-            invalidMtpDevices_.push_back(device);
         }
     }
 }
@@ -196,30 +176,18 @@ void MtpDeviceMonitor::UmountAllMtpDevice()
         }
     }
     lastestMtpDevList_.clear();
-    invalidMtpDevices_.clear();
-    hasEjectedDevices_.clear();
 }
 
 void MtpDeviceMonitor::UmountDetachedMtpDevice(uint8_t devNum, uint32_t busLoc)
 {
     std::lock_guard<std::mutex> lock(listMutex_);
     LOGI("MtpDeviceMonitor::Umount detached mtp device, devNum=%{public}d, busLoc=%{public}d.", devNum, busLoc);
-    for (auto it = hasEjectedDevices_.begin(); it != hasEjectedDevices_.end();) {
-        int res = LIBMTP_Check_Specific_Device(it->busLocation, it->devNum);
-        if (res <= 0) {
-            LOGI("Device %{public}s has removed by force", (it->id).c_str());
-            it = hasEjectedDevices_.erase(it);
-        } else {
-            it++;
-        }
-    }
 
     for (auto iter = lastestMtpDevList_.begin(); iter != lastestMtpDevList_.end();) {
         LOGI("Mtp device mount path=%{public}s is not exist or removed, umount it.", (iter->path).c_str());
         int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->UmountDevice(*iter, true);
         if (ret == E_OK) {
             iter = lastestMtpDevList_.erase(iter);
-            invalidMtpDevices_.clear();
         } else {
             LOGE("Umount mtp device failed, path=%{public}s", (iter->path).c_str());
             iter++;
@@ -255,7 +223,6 @@ int32_t MtpDeviceMonitor::Umount(const std::string &id)
         }
         int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->UmountDevice(*iter, true);
         if (ret == E_OK) {
-            hasEjectedDevices_.push_back(*iter);
             lastestMtpDevList_.erase(iter);
         } else {
             LOGE("Umount mtp device failed, path=%{public}s", (iter->path).c_str());
