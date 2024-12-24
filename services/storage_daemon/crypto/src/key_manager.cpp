@@ -1743,7 +1743,8 @@ int KeyManager::LockUserScreen(uint32_t user)
     }
 
     auto el5Key = GetUserElKey(user, EL5_KEY);
-    if (el5Key == nullptr) {
+    saveESecretStatus[user] = true;
+    if (el5Key != nullptr && !el5Key->LockUece(saveESecretStatus[user])) {
         LOGE("lock user %{public}u el5 key failed !", user);
     }
     auto el4Key = GetUserElKey(user, EL4_KEY);
@@ -1754,7 +1755,7 @@ int KeyManager::LockUserScreen(uint32_t user)
     }
     std::shared_ptr<DelayHandler> userDelayHandler;
     if (GetUserDelayHandler(user, userDelayHandler)) {
-        userDelayHandler->StartDelayTask(el4Key, el5Key);
+        userDelayHandler->StartDelayTask(el4Key);
     }
 
     saveLockScreenStatus[user] = false;
