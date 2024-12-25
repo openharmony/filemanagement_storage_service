@@ -393,7 +393,7 @@ void MountManager::UmountFailRadar(std::vector<ProcessInfo> &processInfos, int32
     }
     std::string info = PrccessToString(processInfos);
     LOGE("record process, ret = %{public}d, process is %{public}s", radar, info.c_str());
-    StorageService::StorageRadar::GetInstance().RecordKillProcessResult(info, radar)
+    StorageService::StorageRadar::GetInstance().RecordKillProcessResult(info, radar);
 }
 
 bool MountManager::PidUsingFlag(std::string &pidPath, const std::string &prefix, std::list<std::string> &mountFailList)
