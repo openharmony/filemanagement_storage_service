@@ -824,6 +824,7 @@ int32_t StorageDaemonStub::HandleGetFileEncryptStatus(MessageParcel &data, Messa
 
 int32_t StorageDaemonStub::HandleMountMediaFuse(MessageParcel &data, MessageParcel &reply)
 {
+#ifdef STORAGE_SERVICE_MEDIA_FUSE
     LOGI("StorageDaemonStub::HandleMountMediaFuse start.");
 
     int32_t userId = data.ReadInt32();
@@ -844,11 +845,13 @@ int32_t StorageDaemonStub::HandleMountMediaFuse(MessageParcel &data, MessageParc
         }
         close(fd);
     }
+#endif
     return E_OK;
 }
 
 int32_t StorageDaemonStub::HandleUMountMediaFuse(MessageParcel &data, MessageParcel &reply)
 {
+#ifdef STORAGE_SERVICE_MEDIA_FUSE
     LOGI("StorageDaemonStub::HandleUMountMediaFuse start.");
 
     int32_t userId = data.ReadInt32();
@@ -856,6 +859,7 @@ int32_t StorageDaemonStub::HandleUMountMediaFuse(MessageParcel &data, MessagePar
     if (!reply.WriteInt32(ret)) {
         return E_WRITE_REPLY_ERR;
     }
+#endif
     return E_OK;
 }
 } // StorageDaemon

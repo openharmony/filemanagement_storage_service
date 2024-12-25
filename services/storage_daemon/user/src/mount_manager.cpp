@@ -1561,6 +1561,7 @@ int32_t MountManager::UmountMntUserTmpfs(int32_t userId)
 
 int32_t MountManager::MountMediaFuse(int32_t userId, int32_t &devFd)
 {
+#ifdef STORAGE_SERVICE_MEDIA_FUSE
     LOGI("start mount media fuse");
 
     // umount mountpoint first
@@ -1594,11 +1595,13 @@ int32_t MountManager::MountMediaFuse(int32_t userId, int32_t &devFd)
     }
 
     LOGI("mount %{public}s success", path.c_str());
+#endif
     return E_OK;
 }
 
 int32_t MountManager::UMountMediaFuse(int32_t userId)
 {
+#ifdef STORAGE_SERVICE_MEDIA_FUSE
     int32_t err = E_OK;
 
     LOGI("start umount media fuse");
@@ -1613,6 +1616,7 @@ int32_t MountManager::UMountMediaFuse(int32_t userId)
     }
 
     LOGI("umount %{public}s success", path.c_str());
+#endif
     return E_OK;
 }
 } // namespace StorageDaemon

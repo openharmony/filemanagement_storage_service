@@ -16,7 +16,9 @@
 #include "ipc/storage_manager_stub.h"
 #include "accesstoken_kit.h"
 #include "ipc_skeleton.h"
+#ifdef STORAGE_SERVICE_MEDIA_FUSE
 #include "storage/bundle_manager_connector.h"
+#endif
 #include "storage_manager_ipc_interface_code.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -1276,6 +1278,7 @@ int32_t StorageManagerStub::HandleNotifyMtpUnmount(MessageParcel &data, MessageP
 
 int32_t StorageManagerStub::HandleMountMediaFuse(MessageParcel &data, MessageParcel &reply)
 {
+#ifdef STORAGE_SERVICE_MEDIA_FUSE
     LOGI("StorageManagerStub::HandleMountMediaFuse start.");
 
     // Only for medialibrary to mount fuse.
@@ -1314,11 +1317,13 @@ int32_t StorageManagerStub::HandleMountMediaFuse(MessageParcel &data, MessagePar
         }
         close(fd);
     }
+#endif
     return E_OK;
 }
 
 int32_t StorageManagerStub::HandleUMountMediaFuse(MessageParcel &data, MessageParcel &reply)
 {
+#ifdef STORAGE_SERVICE_MEDIA_FUSE
     LOGI("StorageManagerStub::HandleUMountMediaFuse start.");
 
     // Only for medialibrary to mount fuse.
@@ -1344,6 +1349,7 @@ int32_t StorageManagerStub::HandleUMountMediaFuse(MessageParcel &data, MessagePa
     if (!reply.WriteInt32(ret)) {
         return E_WRITE_REPLY_ERR;
     }
+#endif
     return E_OK;
 }
 } // StorageManager
