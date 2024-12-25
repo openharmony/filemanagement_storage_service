@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 #include "fileutils_fuzzer.h"
+#include "fuzzer/FuzzedDataProvider.h"
 #include "utils/file_utils.h"
 #include <cstddef>
 #include <cstdint>
@@ -23,9 +24,10 @@ bool FileUtilFuzzTest(const uint8_t *data, size_t size)
     if ((data == nullptr) || (size < sizeof(uint32_t))) {
         return false;
     }
-    unsigned int ustate = *(reinterpret_cast<const unsigned int *>(data));
-    uint32_t state32 = *(reinterpret_cast<const uint32_t *>(data));
-    std::string metaData(reinterpret_cast<const char *>(data), size);
+    FuzzedDataProvider fdp(data, size);
+    unsigned int ustate = fdp.ConsumeIntegral<unsigned int >();
+    uint32_t state32 = fdp.ConsumeIntegral<uint32_t>();
+    std::string metaData(fdp.ConsumeRandomLengthString(size));
     struct StorageDaemon::FileList list = {ustate, metaData};
     std::vector<std::string> metaData2;
     metaData2.push_back(metaData);
