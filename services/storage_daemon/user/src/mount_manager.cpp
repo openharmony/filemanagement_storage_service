@@ -39,7 +39,6 @@
 #include "utils/mount_argument_utils.h"
 #include "utils/string_utils.h"
 #include "system_ability_definition.h"
-#include "process_utils.h"
 #ifdef DFS_SERVICE
 #include "cloud_daemon_manager.h"
 #endif
