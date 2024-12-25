@@ -661,6 +661,7 @@ int32_t StorageDaemonCommunication::UMountDfsDocs(int32_t userId, const std::str
 
 int32_t StorageDaemonCommunication::MountMediaFuse(int32_t userId, int32_t &devFd)
 {
+#ifdef STORAGE_SERVICE_MEDIA_FUSE
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("Connect failed");
@@ -671,10 +672,14 @@ int32_t StorageDaemonCommunication::MountMediaFuse(int32_t userId, int32_t &devF
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->MountMediaFuse(userId, devFd);
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageDaemonCommunication::UMountMediaFuse(int32_t userId)
 {
+#ifdef STORAGE_SERVICE_MEDIA_FUSE
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("Connect failed");
@@ -685,6 +690,9 @@ int32_t StorageDaemonCommunication::UMountMediaFuse(int32_t userId)
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->UMountMediaFuse(userId);
+#else
+    return E_OK;
+#endif
 }
 
 } // namespace StorageManager

@@ -1591,6 +1591,7 @@ int32_t StorageManagerProxy::GetFileEncryptStatus(uint32_t userId, bool &isEncry
 
 int32_t StorageManagerProxy::MountMediaFuse(int32_t userId, int32_t &devFd)
 {
+#ifdef STORAGE_SERVICE_MEDIA_FUSE
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -1617,10 +1618,14 @@ int32_t StorageManagerProxy::MountMediaFuse(int32_t userId, int32_t &devFd)
     }
 
     return ret;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageManagerProxy::UMountMediaFuse(int32_t userId)
 {
+#ifdef STORAGE_SERVICE_MEDIA_FUSE
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
@@ -1642,6 +1647,9 @@ int32_t StorageManagerProxy::UMountMediaFuse(int32_t userId)
     }
 
     return reply.ReadInt32();
+#else
+    return E_OK;
+#endif
 }
 } // StorageManager
 } // OHOS
