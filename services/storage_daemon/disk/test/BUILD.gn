@@ -121,6 +121,57 @@ ohos_unittest("disk_info_test") {
   ]
 }
 
+ohos_unittest("disk_info_sup_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
+  }
+  module_out_path = "storage_service/storage_daemon"
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "LOG_DOMAIN = 0xD004301",
+    "private=public",
+  ]
+
+  include_dirs = [
+    "$ROOT_DIR/include",
+    "${storage_service_path}/utils/include",
+    "${storage_manager_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+    "${storage_service_common_path}/include",
+  ]
+
+  sources = [
+    "$ROOT_DIR/disk/src/disk_info.cpp",
+    "$ROOT_DIR/disk/test/disk_info_sup_test.cpp",
+    "$ROOT_DIR/ipc/src/storage_manager_client.cpp",
+    "$ROOT_DIR/netlink/src/netlink_data.cpp",
+    "$ROOT_DIR/volume/src/external_volume_info.cpp",
+    "$ROOT_DIR/volume/src/process.cpp",
+    "$ROOT_DIR/volume/src/volume_info.cpp",
+    "$ROOT_DIR/volume/src/volume_manager.cpp",
+  ]
+
+  deps = [ "$ROOT_DIR:storage_common_utils" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "init:libbegetutil",
+    "ipc:ipc_single",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+    "storage_service:storage_manager_sa_proxy",
+  ]
+}
+
 ohos_unittest("disk_config_test") {
   branch_protector_ret = "pac_ret"
   sanitize = {
@@ -164,6 +215,7 @@ group("storage_daemon_disk_test") {
   testonly = true
   deps = [
     ":disk_config_test",
+    ":disk_info_sup_test",
     ":disk_info_test",
     ":disk_manager_test",
   ]

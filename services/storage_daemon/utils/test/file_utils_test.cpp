@@ -263,6 +263,90 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_PrepareDir_003, TestSize.Level1)
 }
 
 /**
+ * @tc.name: FileUtilsTest_Split_001
+ * @tc.desc: Verify the Split function.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_Split_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_Split_001 start";
+
+    std::string test = "this is a good idea";
+    std::string pattern = " ";
+    std::vector<std::string> expectVec{ "this", "is", "a", "good", "idea" };
+    auto ret = Split(test, pattern);
+    EXPECT_EQ(ret, expectVec);
+    GTEST_LOG_(INFO) << "FileUtilsTest_Split_001 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_DelFolder_001
+ * @tc.desc: Verify the DelFolder function.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_DelFolder_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_DelFolder_001 start";
+
+    std::string testPath = "/data/test/tdd";
+    EXPECT_TRUE(CreateFolder(testPath));
+    EXPECT_TRUE(DelFolder(testPath));
+    EXPECT_FALSE(DelFolder(testPath));
+    GTEST_LOG_(INFO) << "FileUtilsTest_DelFolder_001 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_IsFile_001
+ * @tc.desc: Verify the IsFile function.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_IsFile_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_IsFile_001 start";
+
+    std::string testPath = "/data/test/tdd";
+    EXPECT_TRUE(CreateFolder(testPath));
+    std::string fileName = testPath + "/test.txt";
+    auto fd = open(fileName.c_str(), O_RDWR | O_CREAT);
+    ASSERT_GT(fd, 0);
+    close(fd);
+    EXPECT_TRUE(IsFile(fileName));
+    EXPECT_TRUE(DeleteFile(fileName) == 0);
+    EXPECT_FALSE(IsFile(fileName));
+    EXPECT_TRUE(DelFolder(testPath));
+    GTEST_LOG_(INFO) << "FileUtilsTest_IsFile_001 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_TravelChmod_001
+ * @tc.desc: Verify the IsFile function.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_TravelChmod_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_TravelChmod_001 start";
+    std::string basePath = "/data/test/tdd";
+    std::string testPath = basePath + "/fold";
+    EXPECT_TRUE(CreateFolder(testPath));
+    std::string fileName = basePath + "/test.txt";
+    auto fd = open(fileName.c_str(), O_RDWR | O_CREAT);
+    ASSERT_GT(fd, 0);
+    close(fd);
+
+    mode_t mode = 0777;
+    TravelChmod(basePath, mode);
+    TravelChmod(fileName, mode);
+    EXPECT_TRUE(DeleteFile(basePath) == 0);
+    EXPECT_TRUE(DelFolder(basePath));
+    TravelChmod(basePath, mode);
+    GTEST_LOG_(INFO) << "FileUtilsTest_TravelChmod_001 end";
+}
+
+/**
  * @tc.name: StorageRadarTest_RecordKillProcessResult_000
  * @tc.desc: Verify the StorageRadar function.
  * @tc.type: FUNC
