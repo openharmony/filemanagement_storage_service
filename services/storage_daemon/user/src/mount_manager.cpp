@@ -36,10 +36,10 @@
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "utils/file_utils.h"
 #include "utils/mount_argument_utils.h"
 #include "utils/string_utils.h"
 #include "system_ability_definition.h"
+#include "process_utils.h"
 #ifdef DFS_SERVICE
 #include "cloud_daemon_manager.h"
 #endif
@@ -345,7 +345,8 @@ int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath, bool 
     return E_OK;
 }
 
-int32_t MountManager::FindAndKillProcess(int32_t userId, std::list<std::string> &mountFailList)
+int32_t MountManager::FindProcess(int32_t userId, std::list<std::string> &unMountFailList,
+    std::vector<ProcessInfo> &processInfos)
 {
     if (userId <= 0) {
         return E_OK;
@@ -354,9 +355,8 @@ int32_t MountManager::FindAndKillProcess(int32_t userId, std::list<std::string> 
     auto procDir = std::unique_ptr<DIR, int (*)(DIR*)>(opendir("/proc"), closedir);
     if (!procDir) {
         LOGE("failed to open dir proc, err %{public}d", errno);
-        return -errno;
+        return E_UMOUNT_PROC_OPEN;
     }
-    std::vector<ProcessInfo> processInfos;
     struct dirent *entry;
     while ((entry = readdir(procDir.get())) != nullptr) {
         if (entry->d_type != DT_DIR) {
@@ -378,41 +378,27 @@ int32_t MountManager::FindAndKillProcess(int32_t userId, std::list<std::string> 
         Utils::MountArgument argument(Utils::MountArgumentDescriptors::Alpha(userId, ""));
         const string &prefix = argument.GetMountPointPrefix();
         std::string pidPath = "/proc/" + name;
-        if (PidUsingFlag(pidPath, prefix, mountFailList)) {
-            LOGE("find a link pid is %{public}d, processName is %{public}s.", info.pid, info.name.c_str());
+        LOGD("check pid using start, pid is %{public}d, processName is %{public}s.", info.pid, info.name.c_str());
+        if (PidUsingFlag(pidPath, prefix, unMountFailList)) {
             processInfos.push_back(info);
         }
     }
-    LOGI("FindAndKillProcess end, total find %{public}d", static_cast<int>(processInfos.size()));
-    KillProcess(processInfos);
-    UmountFailRadar(processInfos);
+    LOGE("FindAndKillProcess end, total find %{public}d", static_cast<int>(processInfos.size()));
     return E_OK;
 }
 
-void MountManager::UmountFailRadar(std::vector<ProcessInfo> &processInfos)
+void MountManager::UmountFailRadar(std::vector<ProcessInfo> &processInfos, int32_t radar)
 {
     if (processInfos.empty()) {
         return;
     }
-    std::string ss;
-    int32_t ret = E_UMOUNT;
-    for (const auto &item:processInfos) {
-        ss += item.name + ",";
-    }
-    if (StorageService::StorageRadar::GetInstance().RecordKillProcessResult(ss, ret)) {
-        LOGI("StorageRadar record FindAndKillProcess result success, ret = %{public}d, process is %{public}s",
-             ret, ss.c_str());
-    }
+    std::string info = PrccessToString(processInfos);
+    LOGE("record process, ret = %{public}d, process is %{public}s", radar, info.c_str());
+    StorageService::StorageRadar::GetInstance().RecordKillProcessResult(info, radar)
 }
 
 bool MountManager::PidUsingFlag(std::string &pidPath, const std::string &prefix, std::list<std::string> &mountFailList)
 {
-    bool found = false;
-    found |= CheckMaps(pidPath + "/maps", prefix, mountFailList);
-    found |= CheckSymlink(pidPath + "/cwd", prefix, mountFailList);
-    found |= CheckSymlink(pidPath + "/root", prefix, mountFailList);
-    found |= CheckSymlink(pidPath + "/exe", prefix, mountFailList);
-
     std::string fdPath = pidPath + "/fd";
     auto fdDir = std::unique_ptr<DIR, int (*)(DIR*)>(opendir(fdPath.c_str()), closedir);
     if (!fdDir) {
@@ -423,19 +409,34 @@ bool MountManager::PidUsingFlag(std::string &pidPath, const std::string &prefix,
             if (fdDirent->d_type != DT_LNK) {
                 continue;
             }
-            found |= CheckSymlink(fdPath + "/" +fdDirent->d_name, prefix, mountFailList);
+            if (CheckSymlink(fdPath + "/" +fdDirent->d_name, mountFailList)) {
+                return true;
+            }
         }
     }
-    return found;
+    if (CheckMaps(pidPath + "/maps", mountFailList)) {
+        return true;
+    }
+    if (CheckSymlink(pidPath + "/cwd", mountFailList)) {
+        return true;
+    }
+    if (CheckSymlink(pidPath + "/root", mountFailList)) {
+        return true;
+    }
+    if (CheckSymlink(pidPath + "/exe", mountFailList)) {
+        return true;
+    }
+    return false;
 }
 
-void MountManager::KillProcess(std::vector<ProcessInfo> &processInfo)
+void MountManager::KillProcess111(std::vector<ProcessInfo> &processInfo)
 {
     if (processInfo.empty()) {
         return;
     }
     for (const auto &item: processInfo) {
         LOGI("KILL PID %{public}d", item.pid);
+
         kill(item.pid, SIGKILL);
     }
 }
@@ -445,7 +446,6 @@ bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info
     if (filename.empty()) {
         return false;
     }
-    LOGE("GetProcessInfo path is %{public}s", filename.c_str());
     std::ifstream inputStream(filename.c_str(), std::ios::in);
     if (!inputStream.is_open()) {
         LOGE("unable to open %{public}s, err %{public}d", filename.c_str(), errno);
@@ -470,7 +470,7 @@ bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info
     return true;
 }
 
-bool MountManager::CheckMaps(const std::string &path, const std::string &prefix, std::list<std::string> &mountFailList)
+bool MountManager::CheckMaps(const std::string &path, std::list<std::string> &mountFailList)
 {
     if (path.empty()) {
         return false;
@@ -480,22 +480,16 @@ bool MountManager::CheckMaps(const std::string &path, const std::string &prefix,
         LOGE("unable to open %{public}s, err %{public}d", path.c_str(), errno);
         return false;
     }
-    LOGE("CheckMaps path is %{public}s", path.c_str());
     std::string tmpLine;
     while (std::getline(inputStream, tmpLine)) {
-        std::string::size_type pos = tmpLine.find("/");
+        std::string::size_type pos = tmpLine.find('/');
         if (pos == std::string::npos) {
             continue;
         }
         tmpLine = tmpLine.substr(pos);
-        if (tmpLine.find(prefix) == 0) {
-            LOGE("find a fd %{public}s", tmpLine.c_str());
-            inputStream.close();
-            return true;
-        }
         for (const auto &item: mountFailList) {
             if (tmpLine.find(item) == 0) {
-                LOGE("find a fd %{public}s", tmpLine.c_str());
+                LOGE("find a fd from maps, %{public}s", tmpLine.c_str());
                 inputStream.close();
                 return true;
             }
@@ -505,8 +499,7 @@ bool MountManager::CheckMaps(const std::string &path, const std::string &prefix,
     return false;
 }
 
-bool MountManager::CheckSymlink(const std::string &path,
-                                const std::string &prefix, std::list<std::string> &mountFailList)
+bool MountManager::CheckSymlink(const std::string &path, std::list<std::string> &mountFailList)
 {
     if (path.empty()) {
         return false;
@@ -518,13 +511,9 @@ bool MountManager::CheckSymlink(const std::string &path,
     }
     realPath[res] = '\0';
     std::string realPathStr(realPath);
-    if (realPathStr.find(prefix) == 0) {
-        LOGE("find a fd %{public}s", realPathStr.c_str());
-        return true;
-    }
     for (const auto &item: mountFailList) {
         if (realPathStr.find(item) == 0) {
-            LOGE("find a fd %{public}s", realPathStr.c_str());
+            LOGE("find a fd from link, %{public}s", realPathStr.c_str());
             return true;
         }
     }
@@ -805,7 +794,7 @@ int32_t MountManager::FindMountPointsToMap(std::map<std::string, std::list<std::
     std::ifstream inputStream(MOUNT_POINT_INFO.c_str(), std::ios::in);
     if (!inputStream.is_open()) {
         LOGE("unable to open /proc/mounts, errno is %{public}d", errno);
-        return E_UMOUNT_PROC_OPEN;
+        return E_UMOUNT_PROC_MOUNTS_OPEN;
     }
     std::list<std::string> hmdfsList;
     std::list<std::string> hmfsList;
@@ -824,7 +813,7 @@ int32_t MountManager::FindMountPointsToMap(std::map<std::string, std::list<std::
     return E_OK;
 }
 
-int32_t MountManager::UMountAllPath(int32_t userId, std::list<std::string> &mountFailList)
+int32_t MountManager::UMountAllPath(int32_t userId, std::list<std::string> &unMountFailList)
 {
     std::map<std::string, std::list<std::string>> mountMap;
     int32_t res = FindMountPointsToMap(mountMap, userId);
@@ -835,7 +824,7 @@ int32_t MountManager::UMountAllPath(int32_t userId, std::list<std::string> &moun
     std::list<std::string> list = mountMap[MOUNT_POINT_TYPE_SHAREFS];
     int total = static_cast<int>(list.size());
     LOGI("unmount sharefs path start, total %{public}d.", total);
-    res = UMountByList(list, mountFailList);
+    res = UMountByList(list, unMountFailList);
     if (res != E_OK) {
         LOGE("failed to umount sharefs mount point, res is %{public}d", res);
         result = E_UMOUNT_SHAREFS;
@@ -844,7 +833,7 @@ int32_t MountManager::UMountAllPath(int32_t userId, std::list<std::string> &moun
     list = mountMap[MOUNT_POINT_TYPE_HMFS];
     total = static_cast<int>(list.size());
     LOGI("unmount hmfs path start, total %{public}d.", total);
-    res = UMountByList(list, mountFailList);
+    res = UMountByList(list, unMountFailList);
     if (res != E_OK) {
         LOGE("failed to umount hmfs mount point, res is %{public}d", res);
         result = E_UMOUNT_HMFS;
@@ -854,7 +843,7 @@ int32_t MountManager::UMountAllPath(int32_t userId, std::list<std::string> &moun
     list = mountMap[MOUNT_POINT_TYPE_HMDFS];
     total = static_cast<int>(list.size());
     LOGI("unmount hmdfs path start, total %{public}d.", total);
-    res = UMountByList(list, mountFailList);
+    res = UMountByList(list, unMountFailList);
     if (res != E_OK) {
         LOGE("failed to umount hmdfs mount point, res is %{public}d", res);
         result = E_UMOUNT_HMDFS;
@@ -863,7 +852,7 @@ int32_t MountManager::UMountAllPath(int32_t userId, std::list<std::string> &moun
     return result;
 }
 
-int32_t MountManager::UMountByList(std::list<std::string> &list, std::list<std::string> &mountFailList)
+int32_t MountManager::UMountByList(std::list<std::string> &list, std::list<std::string> &unMountFailList)
 {
     if (list.empty()) {
         return E_OK;
@@ -875,7 +864,7 @@ int32_t MountManager::UMountByList(std::list<std::string> &list, std::list<std::
         if (res != E_OK && errno != ENOENT && errno != EINVAL) {
             LOGE("failed to unmount path %{public}s, errno %{public}d.", path.c_str(), errno);
             result = errno;
-            mountFailList.push_back(path);
+            unMountFailList.push_back(path);
         }
     }
     return result;
@@ -1119,14 +1108,9 @@ int32_t MountManager::UmountByUser(int32_t userId)
     if (!SupportHmdfs() && LocalUMount(userId) != E_OK) {
         res = E_UMOUNT_LOCAL;
     } else {
-        LOGI("umount all path start.");
-        std::list<std::string> mountFailList;
-        int32_t unMountRes = UMountAllPath(userId, mountFailList);
-        if (unMountRes != E_OK && unMountRes != E_UMOUNT_PROC_OPEN) {
-            FindAndKillProcess(userId, mountFailList);
-            if (UMountByListWithDetach(mountFailList) != E_OK) {
-                res = unMountRes;
-            }
+        int unMount = UmountFileSystem(userId);
+        if (unMount != E_OK) {
+            res = unMount;
         }
     }
 
@@ -1138,6 +1122,61 @@ int32_t MountManager::UmountByUser(int32_t userId)
     UMountMediaFuse(userId);
     LOGI("unmount end, res is %{public}d.", res);
     return res;
+}
+
+int32_t MountManager::UmountFileSystem(int32_t userId)
+{
+    int32_t res = E_OK;
+    LOGI("try to force umount all path start.");
+    std::list<std::string> unMountFailList;
+    int32_t unMountRes = UMountAllPath(userId, unMountFailList);
+    if (unMountRes == E_OK || unMountRes == E_UMOUNT_PROC_MOUNTS_OPEN) {
+        return E_OK;
+    }
+    LOGE("force umount failed, try to kill process, res is %{public}d.", unMountRes);
+    int32_t findAndKill = FindAndKillProcess(userId, unMountFailList, unMountRes);
+    if (findAndKill == E_UMOUNT_NO_PROCESS_FIND || findAndKill == E_UMOUNT_PROCESS_KILL) {
+        int32_t umountDetach = UMountByListWithDetach(unMountFailList);
+        if (umountDetach != E_OK) {
+            LOGE("unmount by detach failed, res is %{public}d.", umountDetach);
+            res = E_UMOUNT_DETACH;
+        }
+        return res;
+    }
+    LOGE("try to force umount again.", unMountRes);
+    std::list<std::string> tempList;
+    int32_t unMountAgain = UMountByList(unMountFailList, tempList);
+    if (unMountAgain == E_OK) {
+        return res;
+    }
+    LOGE("force umount again failed, try to kill process again, res is %{public}d.", unMountAgain);
+    FindAndKillProcess(userId, unMountFailList, unMountAgain);
+    LOGE("try to umount by detach.", unMountRes);
+    int32_t umountDetach = UMountByListWithDetach(unMountFailList);
+    if (umountDetach != E_OK) {
+        LOGE("unmount by detach failed again, res is %{public}d.", umountDetach);
+        res = E_UMOUNT_DETACH;
+    }
+    return res;
+}
+
+int32_t MountManager::FindAndKillProcess(int32_t userId, std::list<std::string> &unMountFailList, int32_t radar)
+{
+    std::vector<ProcessInfo> processInfos;
+    FindProcess(userId, unMountFailList, processInfos);
+    if (processInfos.empty()) {
+        LOGE("no process find.");
+        return E_UMOUNT_NO_PROCESS_FIND;
+    }
+    UmountFailRadar(processInfos, radar);
+    std::vector<ProcessInfo> killFailList;
+    KillProcess(processInfos, killFailList);
+    if (!killFailList.empty()) {
+        std::string info = PrccessToString(killFailList);
+        LOGE("kill process failed, res is %{public}d.", info.c_str());
+        return E_UMOUNT_PROCESS_KILL;
+    }
+    return E_OK;
 }
 
 int32_t MountManager::PrepareHmdfsDirs(int32_t userId)

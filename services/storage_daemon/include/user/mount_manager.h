@@ -25,6 +25,8 @@
 #include <sys/types.h>
 #include <nocopyable.h>
 
+#include "utils/file_utils.h"
+
 namespace OHOS {
 namespace StorageDaemon {
 struct DirInfo {
@@ -32,11 +34,6 @@ struct DirInfo {
     mode_t mode;
     uid_t uid;
     gid_t gid;
-};
-
-struct ProcessInfo {
-    int pid;
-    std::string name;
 };
 
 constexpr uid_t OID_ROOT = 0;
@@ -92,27 +89,27 @@ public:
         const std::string &networkId, const std::string &deviceId);
     int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId);
-    int32_t UMountAllPath(int32_t userId, std::list<std::string> &mountFailList);
-    int32_t UMountByList(std::list<std::string> &list, std::list<std::string> &mountFailList);
+    int32_t UMountAllPath(int32_t userId, std::list<std::string> &unMountFailList);
+    int32_t UMountByList(std::list<std::string> &list, std::list<std::string> &unMountFailList);
     int32_t UMountByListWithDetach(std::list<std::string> &list);
     void SetCloudState(bool active);
     int32_t RestoreconSystemServiceDirs(int32_t userId);
     int32_t FindMountPointsToMap(std::map<std::string, std::list<std::string>> &mountMap, int32_t userId);
     void MountPointToList(std::list<std::string> &hmdfsList, std::list<std::string> &hmfsList,
         std::list<std::string> &sharefsList, std::string &line, int32_t userId);
-    int32_t FindAndKillProcess(int32_t userId, std::list<std::string> &mountFailList);
-    bool CheckMaps(const std::string &path, const std::string &prefix, std::list<std::string> &mountFailList);
-    bool CheckSymlink(const std::string &path, const std::string &prefix, std::list<std::string> &mountFailList);
+    bool CheckMaps(const std::string &path, std::list<std::string> &mountFailList);
+    bool CheckSymlink(const std::string &path, std::list<std::string> &mountFailList);
     bool GetProcessInfo(const std::string &filename, ProcessInfo &info);
-    void KillProcess(std::vector<ProcessInfo> &processInfo);
+    void KillProcess111(std::vector<ProcessInfo> &processInfo);
     bool PidUsingFlag(std::string &pidPath, const std::string &prefix, std::list<std::string> &mountFailList);
-    void UmountFailRadar(std::vector<ProcessInfo> &processInfo);
+    void UmountFailRadar(std::vector<ProcessInfo> &processInfo, int32_t radar);
     void MountSandboxPath(const std::vector<std::string> &srcPaths, const std::vector<std::string> &dstPaths,
                           const std::string &bundleName, const std::string &userId);
     bool CheckMountFileByUser(int32_t userId);
     bool CloudAndFuseDirFlag(const std::string &path);
     int32_t MountMediaFuse(int32_t userId, int32_t &devFd);
     int32_t UMountMediaFuse(int32_t userId);
+    int32_t FindAndKillProcess(int32_t userId, std::list<std::string> &unMountFailList, int32_t radar);
 
 private:
     bool SupportHmdfs();
@@ -140,6 +137,8 @@ private:
     int32_t SharedMount(const std::string &path);
     int32_t BindAndRecMount(std::string &srcPath, std::string &dstPath, bool isUseSlave = true);
     int32_t UmountMntUserTmpfs(int32_t userId);
+    int32_t UmountFileSystem(int32_t userId);
+    int32_t FindProcess(int32_t userId, std::list<std::string> &unMountFailList, std::vector<ProcessInfo> &processInfos);
 
     DISALLOW_COPY_AND_MOVE(MountManager);
 

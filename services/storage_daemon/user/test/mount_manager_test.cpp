@@ -183,13 +183,12 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_CheckSymlink_001, Tes
 {
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckSymlink_001 start";
     std::string path;
-    std::string prefix;
-    std::list<std::string> mountFailList;
-    auto ret = MountManager::GetInstance()->CheckSymlink(path, prefix, mountFailList);
+    std::list<std::string> unMountFailList;
+    auto ret = MountManager::GetInstance()->CheckSymlink(path, unMountFailList);
     EXPECT_EQ(ret, false);
 
     path = "/data/test/tdd/test.txt";
-    ret = MountManager::GetInstance()->CheckSymlink(path, prefix, mountFailList);
+    ret = MountManager::GetInstance()->CheckSymlink(path, unMountFailList);
     EXPECT_EQ(ret, false);
 
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckSymlink_001 end";

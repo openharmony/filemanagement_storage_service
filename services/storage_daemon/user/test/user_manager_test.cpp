@@ -541,15 +541,11 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_FindAndKillProcess_00
     ASSERT_TRUE(mountManager != nullptr);
 
     int32_t userId = -1;
-    std::list<std::string> mountFailList;
-    mountFailList.push_back("test1");
-    mountFailList.push_back("test2");
-    int32_t ret = mountManager->FindAndKillProcess(userId, mountFailList);
-    EXPECT_EQ(ret, E_OK);
-
-    userId = 1990;
-    ret = mountManager->FindAndKillProcess(userId, mountFailList);
-    EXPECT_EQ(ret, E_OK);
+    std::list<std::string> unMountFailList;
+    unMountFailList.push_back("test1");
+    unMountFailList.push_back("test2");
+    int32_t ret = mountManager->FindAndKillProcess(userId, unMountFailList, E_UMOUNT);
+    EXPECT_EQ(ret, E_UMOUNT_NO_PROCESS_FIND);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_FindAndKillProcess_000 end";
 }
 
@@ -569,13 +565,10 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_UmountFailRadar_000, 
     ProcessInfo processInfo;
     processInfo.pid = 1234;
     processInfo.name = "test";
+    int32_t radar = E_UMOUNT;
     std::vector<ProcessInfo> processInfos;
     processInfos.push_back(processInfo);
-    mountManager->UmountFailRadar(processInfos);
-    mountManager->KillProcess(processInfos);
-
-    std::vector<ProcessInfo> processInfos1;
-    mountManager->KillProcess(processInfos1);
+    mountManager->UmountFailRadar(processInfos, E_UMOUNT);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_UmountFailRadar_000 end";
 }
 
@@ -592,15 +585,14 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_CheckMaps_000, TestSi
     ASSERT_TRUE(mountManager != nullptr);
 
     std::string path = "";
-    std::string prefix = "";
-    std::list<std::string> mountFailList;
-    mountFailList.push_back("test1");
-    mountManager->CheckMaps(path, prefix, mountFailList);
-    mountManager->CheckSymlink(path, prefix, mountFailList);
+    std::list<std::string> unMountFailList;
+    unMountFailList.push_back("test1");
+    mountManager->CheckMaps(path, unMountFailList);
+    mountManager->CheckSymlink(path, unMountFailList);
 
-    path = "file://data/file";
-    mountManager->CheckMaps(path, prefix, mountFailList);
-    mountManager->CheckSymlink(path, prefix, mountFailList);
+    path = "/data/file";
+    mountManager->CheckMaps(path, unMountFailList);
+    mountManager->CheckSymlink(path, unMountFailList);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_UmountFailRadar_000 end";
 }
 
