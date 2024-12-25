@@ -27,7 +27,7 @@ bool FileUtilFuzzTest(const uint8_t *data, size_t size)
     FuzzedDataProvider fdp(data, size);
     unsigned int ustate = fdp.ConsumeIntegral<unsigned int >();
     uint32_t state32 = fdp.ConsumeIntegral<uint32_t>();
-    std::string metaData(fdp.ConsumeRandomLengthString(size))
+    std::string metaData(fdp.ConsumeRandomLengthString(size));
     struct StorageDaemon::FileList list = {ustate, metaData};
     std::vector<std::string> metaData2;
     metaData2.push_back(metaData);
