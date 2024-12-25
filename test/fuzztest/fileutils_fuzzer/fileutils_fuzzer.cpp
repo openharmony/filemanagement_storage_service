@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 #include "fileutils_fuzzer.h"
+#include "fuzzer/FuzzedDataProvider.h"
 #include "utils/file_utils.h"
 #include <cstddef>
 #include <cstdint>
