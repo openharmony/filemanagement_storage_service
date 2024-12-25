@@ -210,7 +210,7 @@ bool GenerateAppkeyFuzzTest(const uint8_t *data, size_t size)
 
     int pos = 0;
     uint32_t hashId = TypeCast<uint32_t>(data, &pos);
-    uint32_t userId = TypeCast<uint32_t>(data, &pos);
+    uint32_t userId = TypeCast<uint32_t>(data + pos);
     std::string keyId;
     int32_t result = fileSystem->GenerateAppkey(hashId, userId, keyId);
     if (result != E_OK) {
