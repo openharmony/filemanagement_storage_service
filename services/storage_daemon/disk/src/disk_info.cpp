@@ -337,6 +337,7 @@ int DiskInfo::CreateVolume(dev_t dev)
 
 int DiskInfo::Partition()
 {
+    LOGI("Partitioning the disk.");
     std::vector<std::string> cmd;
     int res;
 
@@ -348,6 +349,7 @@ int DiskInfo::Partition()
     cmd.push_back(SGDISK_PATH);
     cmd.push_back(SGDISK_ZAP_CMD);
     cmd.push_back(devPath_);
+    LOGI("Partition executing command.");
     res = ForkExec(cmd);
     if (res != E_OK) {
         LOGE("sgdisk: zap fail");

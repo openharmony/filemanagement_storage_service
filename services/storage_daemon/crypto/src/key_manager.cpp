@@ -314,6 +314,26 @@ int KeyManager::RestoreUserKey(uint32_t userId, const std::string &dir, const Us
     return 0;
 }
 
+#ifdef USER_CRYPTO_MIGRATE_KEY
+int32_t KeyManager::ClearAppCloneUserNeedRestore(unsigned int userId, std::string elNeedRestorePath)
+{
+    LOGI("enter");
+    if (userId < StorageService::START_APP_CLONE_USER_ID || userId >= StorageService::MAX_APP_CLONE_USER_ID) {
+        LOGI("Clear userId %{public}d out of range", userId);
+        return E_USERID_RANGE;
+    }
+
+    LOGE("User %{public}d is app clone user, do delete elx need_restore.", userId);
+    std::error_code errCode;
+    if (!std::filesystem::exists(elNeedRestorePath, errCode)) {
+        LOGI("need_restore don't exist, not need to delete.");
+    }
+    (void)remove(elNeedRestorePath.c_str());
+    LOGI("Complete delete need_restore.");
+    return E_OK;
+}
+#endif
+
 bool KeyManager::HasElkey(uint32_t userId, KeyType type)
 {
     LOGI("enter");
@@ -696,6 +716,12 @@ int KeyManager::DoDeleteUserCeEceSeceKeys(unsigned int user,
     LOGI("enter, userDir is %{public}s", userDir.c_str());
     int ret = 0;
     auto it = userElKey_.find(user);
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    if (userDir == USER_EL1_DIR) {
+        std::string elNeedRestorePath = USER_EL1_DIR + "/" + std::to_string(user) + RESTORE_DIR;
+        (void)ClearAppCloneUserNeedRestore(user, elNeedRestorePath);
+    }
+#endif
     if (it != userElKey_.end()) {
         auto elKey = it->second;
         if (!elKey->ClearKey()) {
@@ -1166,8 +1192,7 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
     std::string restore_version;
     (void)OHOS::LoadStringFromFile(need_restore_path, restore_version);
     if (std::filesystem::exists(need_restore_path, errCode) && std::atoi(restore_version.c_str()) == 3) {
-        LOGI("NEED_RESTORE path exist: %{public}s, errorcode: %{public}d", need_restore_path.c_str(),
-            errCode.value());
+        LOGI("NEED_RESTORE path exist: %{public}s, errcode: %{public}d", need_restore_path.c_str(), errCode.value());
         return type == EL5_KEY ? -ENONET : -EFAULT;
     }
     if (CheckUserPinProtect(user, token, secret) != E_OK) {
@@ -1175,6 +1200,10 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
         return -EFAULT;
     }
     std::lock_guard<std::mutex> lock(keyMutex_);
+    if (HasElkey(user, type) && HashElxActived(user, type)) {
+        LOGE("The user %{public}u el have been actived, key type is %{public}u", user, type);
+        return 0;
+    }
     std::shared_ptr<DelayHandler> userDelayHandler;
     if (GetUserDelayHandler(user, userDelayHandler)) {
         userDelayHandler->CancelDelayTask();
@@ -1183,7 +1212,7 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
     if (keyDir == "") {
         return E_KEY_TYPE_INVAL;
     }
-    if (!checkDir(type, keyDir, user)) {
+    if (!CheckDir(type, keyDir, user)) {
         return -ENOENT;
     }
     std::shared_ptr<BaseKey> elKey = GetBaseKey(keyDir);
@@ -1218,7 +1247,7 @@ int KeyManager::ActiveUece(unsigned int user,
     return 0;
 }
 
-bool KeyManager::checkDir(KeyType type, std::string keyDir, unsigned int user)
+bool KeyManager::CheckDir(KeyType type, std::string keyDir, unsigned int user)
 {
     if ((type != EL5_KEY) && !IsDir(keyDir)) {
         LOGE("Have not found user %{public}u el", user);
@@ -1692,7 +1721,7 @@ int KeyManager::LockUserScreen(uint32_t user)
         LOGE("user ce does not decrypt, skip");
         return 0;
     }
-    CheckAndClearTokenInfo(user);
+
     auto iter = userPinProtect.find(user);
     if (iter == userPinProtect.end() || iter->second == false) {
         if (!IamClient::GetInstance().HasPinProtect(user)) {
@@ -1874,6 +1903,7 @@ bool KeyManager::IsUeceSupport()
             LOGE("uece does not support !");
         }
         LOGE("open uece failed, errno : %{public}d", errno);
+        (void)fclose(f);
         return false;
     }
     (void)fclose(f);
@@ -1954,20 +1984,6 @@ bool KeyManager::IsUserCeDecrypt(uint32_t userId)
     }
     LOGI("User %{public}d de decrypted.", userId);
     return true;
-}
-
-void KeyManager::CheckAndClearTokenInfo(uint32_t user)
-{
-    bool isExist = false;
-    if (IamClient::GetInstance().HasFaceFinger(user, isExist) == 0 && !isExist) {
-        LOGI("Toke info is not exist.");
-        if ((userEl3Key_.find(user) != userEl3Key_.end()) && (userEl3Key_[user] != nullptr)) {
-            userEl3Key_[user]->ClearMemoryKeyCtx();
-        }
-        if ((userEl4Key_.find(user) != userEl4Key_.end()) && (userEl4Key_[user] != nullptr)) {
-            userEl4Key_[user]->ClearMemoryKeyCtx();
-        }
-    }
 }
 
 int KeyManager::CheckUserPinProtect(unsigned int userId,

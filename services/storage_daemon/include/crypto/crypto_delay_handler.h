@@ -32,12 +32,12 @@ static const uint8_t START_CLEAR_ECE_SECE_TASK = 1;
 public:
     DelayHandler(uint32_t userId);
     ~DelayHandler();
-    void StartDelayTask(std::shared_ptr<BaseKey> &elKey);
+    void StartDelayTask(std::shared_ptr<BaseKey> &el4Key);
     void CancelDelayTask();
 
 private:
     void StartDelayHandler();
-    void ClearEceSeceKey();
+    void DeactiveEl3El4El5();
 
     std::mutex eventMutex_;
     std::thread eventThread_;

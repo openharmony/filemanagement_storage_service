@@ -94,6 +94,7 @@ public:
         const std::string &networkId, const std::string &deviceId);
     int32_t UMountAllPath(int32_t userId, std::list<std::string> &mountFailList);
     int32_t UMountByList(std::list<std::string> &list, std::list<std::string> &mountFailList);
+    int32_t UMountByListWithDetach(std::list<std::string> &list);
     void SetCloudState(bool active);
     int32_t RestoreconSystemServiceDirs(int32_t userId);
     int32_t FindMountPointsToMap(std::map<std::string, std::list<std::string>> &mountMap, int32_t userId);
@@ -110,6 +111,7 @@ public:
                           const std::string &bundleName, const std::string &userId);
     bool CheckMountFileByUser(int32_t userId);
     bool CloudAndFuseDirFlag(const std::string &path);
+    bool MediaFuseDirFlag(const std::string &path);
     int32_t MountMediaFuse(int32_t userId, int32_t &devFd);
     int32_t UMountMediaFuse(int32_t userId);
 
@@ -119,7 +121,6 @@ private:
     int32_t HmdfsMount(int32_t userId);
     int32_t HmdfsMount(int32_t userId, std::string relativePath, bool mountCloudDisk = false);
     int32_t HmdfsTwiceMount(int32_t userId, const std::string &relativePath);
-    int32_t HmdfsUMount(int32_t userId, std::string relativePath);
     int32_t SharefsMount(int32_t userId);
     int32_t HmSharefsMount(int32_t userId, std::string &srcPath, std::string &dstPath);
     int32_t LocalMount(int32_t userId);

@@ -19,8 +19,10 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <thread>
 
 #include "securec.h"
+#include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "unique_fd.h"
 
@@ -59,9 +61,7 @@ void KeyBackup::CreateBackup(const std::string &from, const std::string &to, boo
             return;
         }
     }
-
     CheckAndCopyFiles(from, to);
-    FsyncDirectory(to);
 }
 
 int32_t KeyBackup::RemoveNode(const std::string &pathName)
@@ -124,7 +124,8 @@ int32_t KeyBackup::TryRestoreKey(const std::shared_ptr<BaseKey> &baseKey, const 
     }
     LOGE("origKey failed, try backupKey");
     if (baseKey->DoRestoreKey(auth, backupDir + PATH_LATEST)) {
-        CheckAndFixFiles(backupDir, keyDir);
+        std::thread fixFileThread([this, backupDir, keyDir]() { CheckAndFixFiles(backupDir, keyDir) ;});
+        fixFileThread.detach();
         LOGI("Restore by back key success !");
         return 0;
     }
@@ -215,7 +216,7 @@ int32_t KeyBackup::DoResotreKeyMix(std::shared_ptr<BaseKey> &baseKey, const User
     int32_t ret = GetFileList(origKeyDir, backupKeyDir, fileList, diffNum);
     if (ret != 0 || diffNum <= 1) {
         LOGE("get file list failed or diffNum too least, ret: %{public}d, diffNum: %{public}d", ret, diffNum);
-        return -1;
+        return E_ERR;
     }
 
     std::string tempKeyDir;
@@ -228,7 +229,7 @@ int32_t KeyBackup::DoResotreKeyMix(std::shared_ptr<BaseKey> &baseKey, const User
     uint32_t loopNum = GetLoopMaxNum(diffNum);
     if (loopNum == INVALID_LOOP_NUM) {
         RemoveNode(tempKeyDir);
-        return -1;
+        return E_ERR;
     }
     for (uint32_t i = 0; i <= loopNum; i++) {
         LOGI("try mix key files to decrypt i: %{public}d loopNum: %{public}d", i, loopNum);
@@ -236,6 +237,10 @@ int32_t KeyBackup::DoResotreKeyMix(std::shared_ptr<BaseKey> &baseKey, const User
         if (ret != 0) {
             LOGE("copy mix files to temp dir failed");
             continue;
+        }
+        if (baseKey == nullptr) {
+            LOGE("basekey is nullptr");
+            return E_ERR;
         }
         if (baseKey->DoRestoreKey(auth, tempKeyDir)) {
             LOGI("mix key files descrpt succ, fix orig and backup");
@@ -246,7 +251,7 @@ int32_t KeyBackup::DoResotreKeyMix(std::shared_ptr<BaseKey> &baseKey, const User
         }
     }
     RemoveNode(tempKeyDir);
-    return -1;
+    return E_ERR;
 }
 
 int32_t KeyBackup::GetFileList(const std::string &origDir, const std::string &backDir,
@@ -443,10 +448,9 @@ void KeyBackup::CheckAndFixFiles(const std::string &from, const std::string &to)
 {
     LOGI("check fix files from: %{public}s to: %{public}s", from.c_str(), to.c_str());
     CreateBackup(from, to, false);
-    FsyncDirectory(to);
 }
 
-void KeyBackup::FsyncDirectory(const std::string &dirName)
+void KeyBackup::FsyncFile(const std::string &dirName)
 {
     LOGI("sync directory dirName %{public}s", dirName.c_str());
     std::string realPath;
@@ -522,6 +526,7 @@ void KeyBackup::CleanFile(const std::string &path)
     int fd = fileno(f);
     if (fd < 0) {
         LOGE("open %{public}s failed", realPath.c_str());
+        (void)fclose(f);
         return;
     }
 
@@ -604,23 +609,35 @@ int32_t KeyBackup::HandleCopyDir(const std::string &from, const std::string &to)
     return 0;
 }
 
-int32_t KeyBackup::CheckAndCopyOneFile(const std::string &from, const std::string &to)
+int32_t KeyBackup::CheckAndCopyOneFile(const std::string &srcFile, const std::string &dstFile)
 {
-    LOGI("check and copy one file from: %{public}s to: %{public}s", from.c_str(), to.c_str());
-    if (CompareFile(from, to) == 0) {
+    LOGI("check and copy one file srcFile: %{public}s dstFile: %{public}s", srcFile.c_str(), dstFile.c_str());
+    std::string srcData;
+    if (!ReadFileToString(srcFile, srcData)) {
+        LOGE("failed to read srcFile %{public}s", srcFile.c_str());
+        return -1;
+    }
+
+    std::string dstData;
+    if (!ReadFileToString(dstFile, dstData)) {
+        LOGE("failed to read dstFile %{public}s", dstFile.c_str());
+    }
+
+    if (srcData.compare(dstData) == 0) {
         return 0;
     }
 
-    if (CopyRegfileData(from, to) != 0) {
-        LOGE("copy from: %{public}s to file: %{public}s failed", from.c_str(), to.c_str());
+    if (!WriteStringToFile(srcData, dstFile)) {
+        LOGE("failed to write dstFile file: %{public}s", dstFile.c_str());
         return -1;
     }
 
     struct FileAttr attr;
-    if (GetAttr(from, attr) == 0) {
-        SetAttr(to, attr);
+    if (GetAttr(srcFile, attr) == 0) {
+        SetAttr(dstFile, attr);
     }
-    LOGI("copy from: %{public}s to file %{public}s succ", from.c_str(), to.c_str());
+    FsyncFile(dstFile);
+    LOGW("copy srcFile: %{public}s dstFile file %{public}s succ", srcFile.c_str(), dstFile.c_str());
     return 0;
 }
 
@@ -638,6 +655,7 @@ bool KeyBackup::ReadFileToString(const std::string &filePath, std::string &conte
     int fd = fileno(f);
     if (fd < 0) {
         LOGE("%{public}s realpath failed", realPath.c_str());
+        (void)fclose(f);
         return false;
     }
     struct stat sb {};
@@ -728,21 +746,6 @@ int32_t KeyBackup::CompareFile(const std::string &fileA, const std::string fileB
     }
 
     return dataA.compare(dataB);
-}
-
-int32_t KeyBackup::CopyRegfileData(const std::string &from, const std::string &to)
-{
-    std::string data;
-    if (!ReadFileToString(from, data)) {
-        LOGE("failed to read from: %{public}s", from.c_str());
-        return -1;
-    }
-
-    if (!WriteStringToFile(data, to)) {
-        LOGE("failed to write file: %{public}s", to.c_str());
-        return -1;
-    }
-    return 0;
 }
 
 int32_t KeyBackup::GetAttr(const std::string &path, struct FileAttr &attr)

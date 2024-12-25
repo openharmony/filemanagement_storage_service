@@ -236,36 +236,6 @@ HWTEST_F(KeyBackupTest, KeyBackup_CompareFile_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: KeyBackup_CopyRegfileData_001
- * @tc.desc: Verify the CopyRegfileData function.
- * @tc.type: FUNC
- * @tc.require: IAHHWW
- */
-HWTEST_F(KeyBackupTest, KeyBackup_CopyRegfileData_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "KeyBackup_CopyRegfileData_001 Start";
-    std::string path = TEST_PATH + "/test.txt";
-    std::string path2 = "/data/tdd2/test2.txt";
-    unlink(path.c_str());
-    unlink(path2.c_str());
-    std::string content;
-    std::string content2;
-    EXPECT_EQ(KeyBackup::GetInstance().CopyRegfileData(path, path2), -1);
-    
-    std::string payload = "this is a test content";
-    ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, path));
-    EXPECT_EQ(KeyBackup::GetInstance().CopyRegfileData(path, path2), -1);
-
-    path2.clear();
-    path2 = TEST_PATH + "/test2.txt";
-    EXPECT_EQ(KeyBackup::GetInstance().CopyRegfileData(path, path2), 0);
-    EXPECT_EQ(KeyBackup::GetInstance().CompareFile(path, path2), 0);
-    unlink(path.c_str());
-    unlink(path2.c_str());
-    GTEST_LOG_(INFO) << "KeyBackup_CopyRegfileData_001 end";
-}
-
-/**
  * @tc.name: KeyBackup_CheckAndCopyOneFile_001
  * @tc.desc: Verify the CheckAndCopyOneFile function.
  * @tc.type: FUNC
@@ -322,25 +292,25 @@ HWTEST_F(KeyBackupTest, KeyBackup_CleanFile_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: KeyBackup_FsyncDirectory_001
- * @tc.desc: Verify the FsyncDirectory function.
+ * @tc.name: KeyBackup_FsyncFile_001
+ * @tc.desc: Verify the FsyncFile function.
  * @tc.type: FUNC
  * @tc.require: IAHHWW
  */
-HWTEST_F(KeyBackupTest, KeyBackup_FsyncDirectory_001, TestSize.Level1)
+HWTEST_F(KeyBackupTest, KeyBackup_FsyncFile_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "KeyBackup_FsyncDirectory_001 Start";
+    GTEST_LOG_(INFO) << "KeyBackup_FsyncFile_001 Start";
     std::string path = TEST_PATH + "/test.txt";
     unlink(path.c_str());
 
-    KeyBackup::GetInstance().FsyncDirectory(path);
-    KeyBackup::GetInstance().FsyncDirectory(TEST_PATH);
+    KeyBackup::GetInstance().FsyncFile(path);
+    KeyBackup::GetInstance().FsyncFile(TEST_PATH);
     
     std::string payload = "this is a test content";
     ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, path));
-    KeyBackup::GetInstance().FsyncDirectory(path);
+    KeyBackup::GetInstance().FsyncFile(path);
     unlink(path.c_str());
-    GTEST_LOG_(INFO) << "KeyBackup_FsyncDirectory_001 end";
+    GTEST_LOG_(INFO) << "KeyBackup_FsyncFile_001 end";
 }
 
 /**
@@ -361,7 +331,7 @@ HWTEST_F(KeyBackupTest, KeyBackup_RemoveNode_001, TestSize.Level1)
     ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, path));
     EXPECT_EQ(KeyBackup::GetInstance().RemoveNode(path), 0);
     EXPECT_NE(access(path.c_str(), 0), 0);
-    GTEST_LOG_(INFO) << "KeyBackup_FsyncDirectory_001 end";
+    GTEST_LOG_(INFO) << "KeyBackup_FsyncFile_001 end";
 }
 
 /**

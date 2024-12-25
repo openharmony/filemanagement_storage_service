@@ -86,6 +86,7 @@ private:
 
     int32_t HandleMountMediaFuse(MessageParcel &data, MessageParcel &reply);
     int32_t HandleUMountMediaFuse(MessageParcel &data, MessageParcel &reply);
+    std::mutex mutex_;
 };
 } // StorageDaemon
 } // OHOS

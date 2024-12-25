@@ -59,6 +59,7 @@ int ZipUtil::AddFileInZip(
         zipfile, srcFileName.c_str(), &zipInfo, nullptr, 0, nullptr, 0, nullptr, Z_DEFLATED, Z_DEFAULT_COMPRESSION);
     if (err != ZIP_OK) {
         LOGE("Minizip failed to zipOpenNewFileInZip,file = %{public}s, errno: %{public}d.", srcFile.c_str(), err);
+        (void)fclose(srcFp);
         return ERROR_ZIP_OPEN;
     }
 

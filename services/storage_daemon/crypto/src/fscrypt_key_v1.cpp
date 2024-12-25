@@ -294,12 +294,19 @@ bool FscryptKeyV1::DecryptClassE(const UserAuth &auth, bool &isSupport, bool &eB
         eSecretFBE.Clear();
         return false;
     }
+    keyInfo_.key.Alloc(eSecretFBE.size);
+    auto err = memcpy_s(keyInfo_.key.data.get(), keyInfo_.key.size, eSecretFBE.data.get(), eSecretFBE.size);
+    if (err != 0) {
+        LOGE("memcpy_s failed ret: %{public}d", err);
+    }
     eSecretFBE.Clear();
     LOGI("Decrypt end!");
     if (!fscryptV1Ext.WriteClassE(USER_UNLOCK, decryptedKey.data.get(), decryptedKey.size)) {
         LOGE("fscryptV1Ext WriteClassE failed");
         return false;
     }
+    GenerateKeyDesc();
+    keyInfo_.key.Clear();
     decryptedKey.Clear();
     LOGI("finish");
     return true;

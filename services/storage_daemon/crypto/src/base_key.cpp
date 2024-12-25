@@ -827,6 +827,7 @@ void BaseKey::WipingActionDir(std::string &path)
         int fd = fileno(f);
         if (fd < 0) {
             LOGE("open %{public}s failed, errno %{public}u", it.c_str(), errno);
+            (void)fclose(f);
             return;
         }
         uint32_t  set = 1;
@@ -867,6 +868,7 @@ void BaseKey::SyncKeyDir() const
     if (fd < 0) {
         LOGE("open %{public}s failed, errno %{public}d", dir_.c_str(), errno);
         sync();
+        (void)closedir(dir);
         return;
     }
     LOGW("start fsync, dir_ is %{public}s", dir_.c_str());
@@ -1014,15 +1016,6 @@ void BaseKey::SplitKeyBlob(const KeyBlob &keyIn, KeyBlob &encAad, KeyBlob &nonce
     std::copy(inVct.begin(), inVct.begin() + start, encAad.data.get());
     std::copy(inVct.begin() + start, inVct.end(), nonce.data.get());
     inVct.clear();
-}
-
-void BaseKey::ClearMemoryKeyCtx()
-{
-    LOGI("enter, dir_ = %{public}s", dir_.c_str());
-    keyContext_.rndEnc.Clear();
-    keyContext_.shield.Clear();
-    keyContext_.nonce.Clear();
-    keyContext_.aad.Clear();
 }
 
 void BaseKey::ClearKeyContext(KeyContext &keyCtx)

@@ -353,6 +353,7 @@ int32_t StorageDaemonStub::HandleSetVolDesc(MessageParcel &data, MessageParcel &
 
 int32_t StorageDaemonStub::HandlePrepareUserDirs(MessageParcel &data, MessageParcel &reply)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     int32_t userId = data.ReadInt32();
     uint32_t flags = data.ReadUint32();
 
@@ -366,6 +367,7 @@ int32_t StorageDaemonStub::HandlePrepareUserDirs(MessageParcel &data, MessagePar
 
 int32_t StorageDaemonStub::HandleDestroyUserDirs(MessageParcel &data, MessageParcel &reply)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     int32_t userId = data.ReadInt32();
     uint32_t flags = data.ReadUint32();
 
@@ -415,6 +417,7 @@ int32_t StorageDaemonStub::HandleCompleteAddUser(MessageParcel &data, MessagePar
 
 int32_t StorageDaemonStub::HandleInitGlobalKey(MessageParcel &data, MessageParcel &reply)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     int err = InitGlobalKey();
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
@@ -425,6 +428,7 @@ int32_t StorageDaemonStub::HandleInitGlobalKey(MessageParcel &data, MessageParce
 
 int32_t StorageDaemonStub::HandleInitGlobalUserKeys(MessageParcel &data, MessageParcel &reply)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     int err = InitGlobalUserKeys();
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
@@ -473,6 +477,7 @@ int32_t StorageDaemonStub::HandleUpdateUserAuth(MessageParcel &data, MessageParc
     data.ReadUInt8Vector(&newSecret);
 
     int timerId = StorageXCollie::SetTimer("storage:UpdateUserAuth", LOCAL_TIME_OUT_SECONDS);
+    std::lock_guard<std::mutex> lock(mutex_);
     int err = UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
     StorageXCollie::CancelTimer(timerId);
     if (!reply.WriteInt32(err)) {
@@ -517,6 +522,7 @@ int32_t StorageDaemonStub::HandleActiveUserKey(MessageParcel &data, MessageParce
     data.ReadUInt8Vector(&secret);
 
     int timerId = StorageXCollie::SetTimer("storage:ActiveUserKey", LOCAL_TIME_OUT_SECONDS);
+    std::lock_guard<std::mutex> lock(mutex_);
     int err = ActiveUserKey(userId, token, secret);
     StorageXCollie::CancelTimer(timerId);
     if (!reply.WriteInt32(err)) {
@@ -531,6 +537,7 @@ int32_t StorageDaemonStub::HandleInactiveUserKey(MessageParcel &data, MessagePar
     uint32_t userId = data.ReadUint32();
 
     int timerId = StorageXCollie::SetTimer("storage:InactiveUserKey", LOCAL_TIME_OUT_SECONDS);
+    std::lock_guard<std::mutex> lock(mutex_);
     int err = InactiveUserKey(userId);
     StorageXCollie::CancelTimer(timerId);
     if (!reply.WriteInt32(err)) {
@@ -545,6 +552,7 @@ int32_t StorageDaemonStub::HandleLockUserScreen(MessageParcel &data, MessageParc
     uint32_t userId = data.ReadUint32();
 
     int timerId = StorageXCollie::SetTimer("storage:LockUserScreen", LOCAL_TIME_OUT_SECONDS);
+    std::lock_guard<std::mutex> lock(mutex_);
     int err = LockUserScreen(userId);
     StorageXCollie::CancelTimer(timerId);
     if (!reply.WriteInt32(err)) {
@@ -564,6 +572,7 @@ int32_t StorageDaemonStub::HandleUnlockUserScreen(MessageParcel &data, MessagePa
     data.ReadUInt8Vector(&secret);
 
     int timerId = StorageXCollie::SetTimer("storage:UnlockUserScreen", LOCAL_TIME_OUT_SECONDS);
+    std::lock_guard<std::mutex> lock(mutex_);
     int err = UnlockUserScreen(userId, token, secret);
     StorageXCollie::CancelTimer(timerId);
     if (!reply.WriteInt32(err)) {
@@ -578,6 +587,7 @@ int32_t StorageDaemonStub::HandleGetLockScreenStatus(MessageParcel &data, Messag
     uint32_t userId = data.ReadUint32();
     bool lockScreenStatus = false;
     int timerId = StorageXCollie::SetTimer("storage:GetLockScreenStatus", LOCAL_TIME_OUT_SECONDS);
+    std::lock_guard<std::mutex> lock(mutex_);
     int err = GetLockScreenStatus(userId, lockScreenStatus);
     StorageXCollie::CancelTimer(timerId);
     if (!reply.WriteBool(lockScreenStatus)) {
@@ -613,6 +623,7 @@ int32_t StorageDaemonStub::HandleDeleteAppkey(MessageParcel &data, MessageParcel
     uint32_t userId = data.ReadUint32();
     std::string keyId = data.ReadString();
     int timerId = StorageXCollie::SetTimer("storage:DeleteAppkey", LOCAL_TIME_OUT_SECONDS);
+    std::lock_guard<std::mutex> lock(mutex_);
     int err = DeleteAppkey(userId, keyId);
     StorageXCollie::CancelTimer(timerId);
     if (!reply.WriteInt32(err)) {
@@ -655,6 +666,7 @@ int32_t StorageDaemonStub::HandleUpdateKeyContext(MessageParcel &data, MessagePa
 {
     uint32_t userId = data.ReadUint32();
     int timerId = StorageXCollie::SetTimer("storage:UpdateKeyContext", LOCAL_TIME_OUT_SECONDS);
+    std::lock_guard<std::mutex> lock(mutex_);
     int err = UpdateKeyContext(userId);
     StorageXCollie::CancelTimer(timerId);
     if (!reply.WriteInt32(err)) {
@@ -811,6 +823,7 @@ int32_t StorageDaemonStub::HandleGetFileEncryptStatus(MessageParcel &data, Messa
     bool needCheckDirMount = data.ReadBool();
     bool isEncrypted = true;
     int timerId = StorageXCollie::SetTimer("storage:GetFileEncryptStatus", LOCAL_TIME_OUT_SECONDS);
+    std::lock_guard<std::mutex> lock(mutex_);
     int err = GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
     StorageXCollie::CancelTimer(timerId);
     if (!reply.WriteInt32(err)) {

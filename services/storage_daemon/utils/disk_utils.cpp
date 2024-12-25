@@ -62,6 +62,7 @@ int GetDevSize(const std::string &path, uint64_t *size)
     int fd = fileno(f);
     if (fd < 0) {
         LOGE("open %{private}s failed", path.c_str());
+        (void)fclose(f);
         return E_ERR;
     }
 

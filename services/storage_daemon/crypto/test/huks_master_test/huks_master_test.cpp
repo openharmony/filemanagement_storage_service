@@ -229,4 +229,67 @@ HWTEST_F(HuksMasterTest, HuksMaster_HdiAccessUpgradeKey_001, TestSize.Level1)
     EXPECT_EQ(HuksMaster::GetInstance().HdiAccessUpgradeKey(oldKey, paramSet, newKey), HKS_ERROR_NULL_POINTER);
     GTEST_LOG_(INFO) << "HuksMaster_HdiAccessUpgradeKey_001 end";
 }
+
+/**
+ * @tc.name: HuksMaster_EncryptKeyEx_001
+ * @tc.desc: Verify the EncryptKeyEx.
+ * @tc.type: FUNC
+ * @tc.require: IAUK5E
+ */
+HWTEST_F(HuksMasterTest, HuksMaster_EncryptKeyEx_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "HuksMaster_EncryptKeyEx_001 start";
+    UserAuth auth;
+    KeyBlob rnd;
+    KeyContext ctx;
+    EXPECT_EQ(HuksMaster::GetInstance().EncryptKeyEx(auth, rnd, ctx), false);
+    
+    std::vector<uint8_t> blobVec{1, 2, 3, 4, 5};
+    ctx.shield.Alloc(blobVec.size());
+    std::copy(blobVec.begin(), blobVec.end(), ctx.shield.data.get());
+    EXPECT_EQ(HuksMaster::GetInstance().EncryptKeyEx(auth, rnd, ctx), false);
+
+    rnd.Alloc(blobVec.size());
+    std::copy(blobVec.begin(), blobVec.end(), rnd.data.get());
+    EXPECT_EQ(HuksMaster::GetInstance().EncryptKeyEx(auth, rnd, ctx), false);
+
+    auth.secret.Alloc(blobVec.size());
+    std::copy(blobVec.begin(), blobVec.end(), auth.secret.data.get());
+    EXPECT_EQ(HuksMaster::GetInstance().EncryptKeyEx(auth, rnd, ctx), false);
+
+    auth.token.Alloc(blobVec.size());
+    std::copy(blobVec.begin(), blobVec.end(), auth.token.data.get());
+    EXPECT_EQ(HuksMaster::GetInstance().EncryptKeyEx(auth, rnd, ctx), false);
+    GTEST_LOG_(INFO) << "HuksMaster_EncryptKeyEx_001 end";
+}
+
+/**
+ * @tc.name: HuksMaster_EncryptKey_001
+ * @tc.desc: Verify the EncryptKey.
+ * @tc.type: FUNC
+ * @tc.require: IAUK5E
+ */
+HWTEST_F(HuksMasterTest, HuksMaster_EncryptKey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "HuksMaster_EncryptKey_001 start";
+    UserAuth auth;
+    KeyContext ctx;
+    KeyInfo key;
+    bool isNeedNewNonce = false;
+    EXPECT_EQ(HuksMaster::GetInstance().EncryptKey(ctx, auth, key, isNeedNewNonce), false);
+    
+    std::vector<uint8_t> blobVec{1, 2, 3, 4, 5};
+    ctx.shield.Alloc(blobVec.size());
+    std::copy(blobVec.begin(), blobVec.end(), ctx.shield.data.get());
+    EXPECT_EQ(HuksMaster::GetInstance().EncryptKey(ctx, auth, key, isNeedNewNonce), false);
+
+    key.key.Alloc(blobVec.size());
+    std::copy(blobVec.begin(), blobVec.end(), key.key.data.get());
+    EXPECT_EQ(HuksMaster::GetInstance().EncryptKey(ctx, auth, key, isNeedNewNonce), false);
+
+    HuksMaster::GetInstance().HdiDestroy();
+    EXPECT_EQ(HuksMaster::GetInstance().HdiCreate(), true);
+    EXPECT_EQ(HuksMaster::GetInstance().EncryptKey(ctx, auth, key, isNeedNewNonce), false);
+    GTEST_LOG_(INFO) << "HuksMaster_EncryptKey_001 end";
+}
 } // OHOS::StorageDaemon

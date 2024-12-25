@@ -102,6 +102,7 @@ public:
     int SetRecoverKey(const std::vector<uint8_t> &key);
 #ifdef USER_CRYPTO_MIGRATE_KEY
     int RestoreUserKey(uint32_t userId, KeyType type);
+    int32_t ClearAppCloneUserNeedRestore(unsigned int userId, std::string elNeedRestorePath);
 #endif
     std::string GetKeyDirByUserAndType(unsigned int user, KeyType type);
     std::string GetKeyDirByType(KeyType type);
@@ -138,7 +139,7 @@ private:
     std::shared_ptr<BaseKey> GetUserElKey(unsigned int user, KeyType type);
     void SaveUserElKey(unsigned int user, KeyType type, std::shared_ptr<BaseKey> elKey);
     bool IsNeedClearKeyFile(std::string file);
-    bool checkDir(KeyType type, std::string keyDir, unsigned int user);
+    bool CheckDir(KeyType type, std::string keyDir, unsigned int user);
     int ActiveUece(unsigned int user,
                    std::shared_ptr<BaseKey> elKey,
                    const std::vector<uint8_t> &token,
@@ -159,7 +160,6 @@ private:
     bool IsUserCeDecrypt(uint32_t userId);
     int32_t UnlockEceSece(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret);
     int32_t UnlockUece(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret);
-    void CheckAndClearTokenInfo(uint32_t user);
     int CheckUserPinProtect(unsigned int userId, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret);
     bool IsWorkDirExist(std::string type, int32_t userId);
     int GenerateIntegrityDirs(int32_t userId, KeyType type);

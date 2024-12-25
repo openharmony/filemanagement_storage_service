@@ -79,6 +79,17 @@ enum ErrNo {
     E_ELX_KEY_INACTIVE_ERROR,
 
     E_STORAGE_USAGE_NOT_ENOUGH = 250,
+
+    // only for use mount and unmount
+    E_UMOUNT_CLOUD_FUSE = 300,
+    E_UMOUNT_CLOUD = 301,
+    E_UMOUNT_MEDIA_FUSE = 302,
+    E_UMOUNT_SHAREFS = 303,
+    E_UMOUNT_HMFS = 304,
+    E_UMOUNT_HMDFS = 305,
+    E_UMOUNT_LOCAL = 306,
+    E_UMOUNT_PROC_OPEN = 307,
+    E_UMOUNT_ALL_PATH = 308,
 };
 
 enum JsErrCode {

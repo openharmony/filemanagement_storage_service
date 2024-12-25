@@ -145,6 +145,7 @@ bool SmtpfsRemoveDir(const std::string &dirName)
         if (strcmp(entry->d_name, ".") && strcmp(entry->d_name, "..")) {
             path = dirName + "/" + entry->d_name;
             if (entry->d_type == DT_DIR) {
+                ::closedir(dir);
                 return SmtpfsRemoveDir(path);
             }
             ::unlink(path.c_str());
