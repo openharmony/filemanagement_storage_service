@@ -345,7 +345,7 @@ int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath, bool 
 }
 
 int32_t MountManager::FindProcess(int32_t userId, std::list<std::string> &unMountFailList,
-    std::vector<ProcessInfo> &processInfos)
+    std::vector<ProcessInfo> &proInfos)
 {
     if (userId <= 0) {
         return E_OK;
@@ -379,10 +379,10 @@ int32_t MountManager::FindProcess(int32_t userId, std::list<std::string> &unMoun
         std::string pidPath = "/proc/" + name;
         LOGD("check pid using start, pid is %{public}d, processName is %{public}s.", info.pid, info.name.c_str());
         if (PidUsingFlag(pidPath, prefix, unMountFailList)) {
-            processInfos.push_back(info);
+            proInfos.push_back(info);
         }
     }
-    LOGE("FindAndKillProcess end, total find %{public}d", static_cast<int>(processInfos.size()));
+    LOGE("FindAndKillProcess end, total find %{public}d", static_cast<int>(proInfos.size()));
     return E_OK;
 }
 
@@ -426,18 +426,6 @@ bool MountManager::PidUsingFlag(std::string &pidPath, const std::string &prefix,
         return true;
     }
     return false;
-}
-
-void MountManager::KillProcess111(std::vector<ProcessInfo> &processInfo)
-{
-    if (processInfo.empty()) {
-        return;
-    }
-    for (const auto &item: processInfo) {
-        LOGI("KILL PID %{public}d", item.pid);
-
-        kill(item.pid, SIGKILL);
-    }
 }
 
 bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info)
