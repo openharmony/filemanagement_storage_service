@@ -1142,7 +1142,7 @@ int32_t MountManager::UmountFileSystem(int32_t userId)
         }
         return res;
     }
-    LOGE("try to force umount again.", unMountRes);
+    LOGE("try to force umount again.");
     std::list<std::string> tempList;
     int32_t unMountAgain = UMountByList(unMountFailList, tempList);
     if (unMountAgain == E_OK) {
@@ -1150,7 +1150,7 @@ int32_t MountManager::UmountFileSystem(int32_t userId)
     }
     LOGE("force umount again failed, try to kill process again, res is %{public}d.", unMountAgain);
     FindAndKillProcess(userId, unMountFailList, unMountAgain);
-    LOGE("try to umount by detach.", unMountRes);
+    LOGE("try to umount by detach.");
     int32_t umountDetach = UMountByListWithDetach(unMountFailList);
     if (umountDetach != E_OK) {
         LOGE("unmount by detach failed again, res is %{public}d.", umountDetach);
@@ -1172,7 +1172,7 @@ int32_t MountManager::FindAndKillProcess(int32_t userId, std::list<std::string> 
     KillProcess(processInfos, killFailList);
     if (!killFailList.empty()) {
         std::string info = PrccessToString(killFailList);
-        LOGE("kill process failed, res is %{public}d.", info.c_str());
+        LOGE("kill process failed, process is %{public}s.", info.c_str());
         return E_UMOUNT_PROCESS_KILL;
     }
     return E_OK;
