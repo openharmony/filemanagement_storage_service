@@ -452,7 +452,6 @@ bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info
     ss >> processName;
     info.pid = std::stoi(pid);
     info.name = processName;
-    LOGE("GetProcessInfo pid is %{public}s and name is %{public}s", pid.c_str(), processName.c_str());
     inputStream.close();
     return true;
 }
