@@ -568,7 +568,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_UmountFailRadar_000, 
     int32_t radar = E_UMOUNT;
     std::vector<ProcessInfo> processInfos;
     processInfos.push_back(processInfo);
-    mountManager->UmountFailRadar(processInfos, E_UMOUNT);
+    mountManager->UmountFailRadar(processInfos, radar);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_UmountFailRadar_000 end";
 }
 
