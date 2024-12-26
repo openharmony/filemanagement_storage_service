@@ -71,4 +71,8 @@ ohos_shared_library("storage_manager_sa_proxy") {
   part_name = "storage_service"
   innerapi_tags = [ "platformsdk" ]
   subsystem_name = "filemanagement"
+
+  if (storage_service_media_fuse) {
+    defines +=[ "STORAGE_SERVICE_MEDIA_FUSE" ]
+  }
 }

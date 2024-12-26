@@ -107,6 +107,10 @@ ohos_executable("storage_daemon") {
     defines += [ "EXTERNAL_STORAGE_QOS_TRANS" ]
   }
 
+  if (storage_service_media_fuse) {
+    defines +=[ "STORAGE_SERVICE_MEDIA_FUSE" ]
+  }
+
   configs = [ ":storage_daemon_config" ]
 
   deps = [
@@ -238,6 +242,10 @@ ohos_executable("sdc") {
   if (storage_service_user_crypto_manager) {
     defines += [ "USER_CRYPTO_MANAGER" ]
     deps += [ "libfscrypt:libfscryptutils" ]
+  }
+
+  if (storage_service_media_fuse) {
+    defines +=[ "STORAGE_SERVICE_MEDIA_FUSE" ]
   }
 
   if (build_variant == "root") {
