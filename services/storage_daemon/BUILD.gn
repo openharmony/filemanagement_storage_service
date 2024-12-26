@@ -108,7 +108,7 @@ ohos_executable("storage_daemon") {
   }
 
   if (storage_service_media_fuse) {
-    defines +=[ "STORAGE_SERVICE_MEDIA_FUSE" ]
+    defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
   }
 
   configs = [ ":storage_daemon_config" ]
@@ -245,7 +245,7 @@ ohos_executable("sdc") {
   }
 
   if (storage_service_media_fuse) {
-    defines +=[ "STORAGE_SERVICE_MEDIA_FUSE" ]
+    defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
   }
 
   if (build_variant == "root") {
