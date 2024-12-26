@@ -55,7 +55,7 @@ ohos_shared_library("storagestatistics") {
   deps = [ "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy" ]
 
   external_deps = [
-    "access_token:libtokenid_sdk",
+    "access_token:libaccesstoken_sdk",
     "c_utils:utils",
     "file_api:filemgmt_libhilog",
     "file_api:filemgmt_libn",
@@ -108,7 +108,7 @@ ohos_shared_library("volumemanager") {
   deps = [ "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy" ]
 
   external_deps = [
-    "access_token:libtokenid_sdk",
+    "access_token:libaccesstoken_sdk",
     "c_utils:utils",
     "file_api:filemgmt_libhilog",
     "file_api:filemgmt_libn",
@@ -161,7 +161,7 @@ ohos_shared_library("keymanager") {
   deps = [ "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy" ]
 
   external_deps = [
-    "access_token:libtokenid_sdk",
+    "access_token:libaccesstoken_sdk",
     "c_utils:utils",
     "file_api:filemgmt_libhilog",
     "file_api:filemgmt_libn",

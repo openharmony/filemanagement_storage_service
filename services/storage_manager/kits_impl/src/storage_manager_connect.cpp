@@ -18,11 +18,11 @@
 #include <iservice_registry.h>
 #include <system_ability_definition.h>
 
+#include "accesstoken_kit.h"
 #include "storage_manager_proxy.h"
 #include "ipc_skeleton.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "tokenid_kit.h"
 
 using namespace std;
 
@@ -339,7 +339,7 @@ void SmDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
 bool IsSystemApp()
 {
     uint64_t fullTokenId = OHOS::IPCSkeleton::GetCallingFullTokenID();
-    return Security::AccessToken::TokenIdKit::IsSystemAppByFullTokenID(fullTokenId);
+    return Security::AccessToken::AccessTokenKit::IsSystemAppByFullTokenID(fullTokenId);
 }
 
 int32_t Convert2JsErrNum(int32_t errNum)
