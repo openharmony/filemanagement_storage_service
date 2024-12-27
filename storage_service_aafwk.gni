@@ -36,15 +36,13 @@ declare_args() {
       defined(global_parts_info) &&
       defined(global_parts_info.useriam_user_auth_framework)
 
-  enable_screenlock_manager =
-      defined(global_parts_info) &&
-      defined(global_parts_info.theme_screenlock_mgr)
+  enable_screenlock_manager = defined(global_parts_info) &&
+                              defined(global_parts_info.theme_screenlock_mgr)
 
-  support_open_source_libmtp =
-      defined(global_parts_info) &&
-      defined(global_parts_info.open_source_libmtp) &&
-      defined(global_parts_info.thirdparty_libusb) &&
-      defined(global_parts_info.thirdparty_libfuse)
+  support_open_source_libmtp = defined(global_parts_info) &&
+                               defined(global_parts_info.open_source_libmtp) &&
+                               defined(global_parts_info.thirdparty_libusb) &&
+                               defined(global_parts_info.thirdparty_libfuse)
 
   enable_tee_client = !is_emulator
 }
