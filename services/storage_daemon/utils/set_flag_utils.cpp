@@ -142,6 +142,7 @@ bool SetFlagUtils::SetDirDelFlags(const std::string &dirpath)
     int fd = dirfd(dir);
     if (fd < 0) {
         LOGE("SetFlagUtils Failed to open dir, errno: %{public}d", errno);
+        closedir(dir);
         return false;
     }
     unsigned int flags = 0;
