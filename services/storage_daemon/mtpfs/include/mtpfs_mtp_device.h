@@ -18,6 +18,7 @@
 
 #include "mtpfs_type_dir.h"
 #include "mtpfs_type_file.h"
+#include <map>
 
 class MtpFsDevice {
 public:
@@ -86,6 +87,10 @@ public:
     int FilePush(const std::string &src, const std::string &dst);
     int FileRemove(const std::string &path);
     int FileRename(const std::string &oldPath, const std::string &newPath);
+    void AddUploadRecord(const std::string path, bool value);
+    void RemoveUploadRecord(const std::string path);
+    void SetUploadRecord(const std::string path, bool value);
+    std::tuple<std::string, bool> FindUploadRecord(const std::string path);
 
     Capabilities GetCapabilities() const;
 
@@ -115,6 +120,8 @@ private:
     bool moveEnabled_;
     static uint32_t rootNode_;
     bool eventFlag_ = true;
+    std::mutex uploadRecordMutex_;
+    std::map<std::string, bool> uploadRecordMap_;
 };
 
 #endif // MTPFS_MTP_DEVICE_H

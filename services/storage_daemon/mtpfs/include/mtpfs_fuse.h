@@ -84,6 +84,8 @@ public:
     int Truncate(const char *path, off_t offset, struct fuse_file_info *fileInfo);
     void *Init(struct fuse_conn_info *conn, struct fuse_config  *cfg);
     int Create(const char *path, mode_t mode, fuse_file_info *fileInfo);
+    int SetXAttr(const char *path, const char *in);
+    int GetXAttr(const char *path, const char *in, char *out, size_t size);
 
 private:
     bool HasPartialObjectSupport();

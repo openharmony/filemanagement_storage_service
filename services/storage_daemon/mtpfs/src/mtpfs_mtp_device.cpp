@@ -699,3 +699,57 @@ MtpFsDevice::Capabilities MtpFsDevice::GetCapabilities(const MtpFsDevice &device
 #endif
     return capabilities;
 }
+
+void MtpFsDevice::AddUploadRecord(const std::string path, bool value)
+{
+    std::unique_lock<std::mutex> lock(uploadRecordMutex_);
+    auto it = uploadRecordMap_.find(path);
+    if (it == uploadRecordMap_.end()) {
+        LOGI("uploadRecordMap_ add %{public}s to %{public}d", path.c_str(), value);
+        uploadRecordMap_[path] = value;
+        return;
+    }
+
+    LOGI("uploadRecordMap_ set path %{public}s to %{public}d", path.c_str(), value);
+    it->second = value;
+    return;
+}
+
+void MtpFsDevice::RemoveUploadRecord(const std::string path)
+{
+    std::unique_lock<std::mutex> lock(uploadRecordMutex_);
+    auto it = uploadRecordMap_.find(path);
+    if (it == uploadRecordMap_.end()) {
+        LOGE("uploadRecordMap_ not contain %{public}s", path.c_str());
+        return;
+    }
+
+    LOGI("uploadRecordMap_ remove %{public}s", path.c_str());
+    uploadRecordMap_.erase(it);
+    return;
+}
+
+void MtpFsDevice::SetUploadRecord(const std::string path, bool value)
+{
+    std::unique_lock<std::mutex> lock(uploadRecordMutex_);
+    auto it = uploadRecordMap_.find(path);
+    if (it == uploadRecordMap_.end()) {
+        LOGE("uploadRecordMap_ not contain %{public}s", path.c_str());
+        return;
+    }
+
+    LOGI("uploadRecordMap_ set path %{public}s to %{public}d", path.c_str(), value);
+    it->second = value;
+    return;
+}
+
+std::tuple<std::string, bool> MtpFsDevice::FindUploadRecord(const std::string path)
+{
+    std::unique_lock<std::mutex> lock(uploadRecordMutex_);
+    auto it = uploadRecordMap_.find(path);
+    if (it == uploadRecordMap_.end()) {
+        LOGE("uploadRecordMap_ not contain %{public}s", path.c_str());
+        return {"", false};
+    }
+    return {it->first, it->second};
+}

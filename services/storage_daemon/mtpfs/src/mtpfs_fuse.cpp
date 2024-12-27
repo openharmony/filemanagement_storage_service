@@ -24,6 +24,9 @@
 #define PERMISSION_ONE 0775
 #define PERMISSION_TWO 0644
 
+constexpr int UPLOAD_RECORD_FALSE_LEN = 5;
+constexpr int UPLOAD_RECORD_TRUE_LEN = 4;
+
 const int32_t ST_NLINK_TWO = 2;
 const int32_t FILE_SIZE = 512;
 const int32_t BS_SIZE = 1024;
@@ -232,13 +235,17 @@ int WrapLink(const char *path, const char *out)
 int WrapSetXAttr(const char *path, const char *in, const char *out, size_t size, int flag)
 {
     LOGI("mtp WrapSetXAttr");
-    return 0;
+    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->SetXAttr(path, in);
+    LOGI("WrapSetXAttr ret = %{public}d.", ret);
+    return ret;
 }
 
 int WrapGetXAttr(const char *path, const char *in, char *out, size_t size)
 {
     LOGI("mtp WrapGetXAttr");
-    return 0;
+    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->GetXAttr(path, in, out, size);
+    LOGI("WrapGetXAttr ret = %{public}d.", ret);
+    return ret;
 }
 
 int WrapListXAttr(const char *path, char *in, size_t size)
@@ -446,7 +453,9 @@ bool MtpFileSystem::Exec()
         }
     }
     device_.EnableMove(options_.enableMove_);
-    if (fuse_main(args_.argc, args_.argv, &fuseOperations_, nullptr) > 0) {
+    int ret = fuse_main(args_.argc, args_.argv, &fuseOperations_, nullptr);
+    if (ret > 0) {
+        LOGE("fuse_main fail, ret = %{public}d", ret);
         return false;
     }
     device_.Disconnect();
@@ -818,7 +827,9 @@ int MtpFileSystem::Release(const char *path, struct fuse_file_info *fileInfo)
     const std::string tmpPath = tmpFile->PathTmp();
     tmpFilesPool_.RemoveFile(stdPath);
     if (modIf) {
+        device_.SetUploadRecord(stdPath, false);
         rval = device_.FilePush(tmpPath, stdPath);
+        device_.SetUploadRecord(stdPath, true);
         if (rval != 0) {
             ::unlink(tmpPath.c_str());
             return -rval;
@@ -926,4 +937,55 @@ bool MtpFileSystem::HasPartialObjectSupport()
 {
     MtpFsDevice::Capabilities caps = device_.GetCapabilities();
     return (caps.CanGetPartialObject() && caps.CanSendPartialObject());
+}
+
+int MtpFileSystem::SetXAttr(const char *path, const char *in)
+{
+    if (path == nullptr || in == nullptr) {
+        LOGE("Param is null.");
+        return -ENOENT;
+    }
+    if (strcmp(in, "user.isUploadCompleted") != 0) {
+        LOGE("attrKey error, attrKey=%{public}s", in);
+        return -ENOENT;
+    }
+    device_.AddUploadRecord(std::string(path), false);
+    return 0;
+}
+
+int MtpFileSystem::GetXAttr(const char *path, const char *in, char *out, size_t size)
+{
+    if (path == nullptr || in == nullptr) {
+        LOGE("Param is null.");
+        return 0;
+    }
+    if (strcmp(in, "user.isUploadCompleted") != 0) {
+        LOGE("attrKey error, attrKey=%{public}s", in);
+        return 0;
+    }
+    if (out == nullptr || size <= 0) {
+        return UPLOAD_RECORD_FALSE_LEN;
+    }
+    auto [firstParam, secondParam] = device_.FindUploadRecord(std::string(path));
+    if (firstParam.empty()) {
+        LOGE("No record, path=%{public}s", path);
+        return 0;
+    }
+    int ret;
+    if (secondParam) {
+        ret = memcpy_s(out, size, "true", UPLOAD_RECORD_TRUE_LEN);
+        if (ret != 0) {
+            LOGE("copy fail, ret=%{public}d", ret);
+            return 0;
+        }
+        device_.RemoveUploadRecord(path);
+        return UPLOAD_RECORD_TRUE_LEN;
+    } else {
+        ret = memcpy_s(out, size, "false", UPLOAD_RECORD_FALSE_LEN);
+        if (ret != 0) {
+            LOGE("copy fail, ret=%{public}d", ret);
+            return 0;
+        }
+        return UPLOAD_RECORD_FALSE_LEN;
+    }
 }
