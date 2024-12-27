@@ -110,6 +110,7 @@ private:
     const void HandleDir(LIBMTP_file_t *content, MtpFsTypeDir *dir);
     void HandleDevNum(const std::string &devFile, int &devNo, int rawDevicesCnt, LIBMTP_raw_device_t *rawDevices);
     int ReNameInner(const std::string &oldPath, const std::string &newPath);
+    void ReadEvent();
 
 private:
     LIBMTP_mtpdevice_t *device_;
@@ -118,6 +119,7 @@ private:
     MtpFsTypeDir rootDir_;
     bool moveEnabled_;
     static uint32_t rootNode_;
+    bool eventFlag_ = true;
     std::mutex uploadRecordMutex_;
     std::map<std::string, bool> uploadRecordMap_;
 };

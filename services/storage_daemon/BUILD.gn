@@ -14,7 +14,7 @@
 import("//build/ohos.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
-## Install storage_daemon.cfg to /system/etc/init/storage_daemon.cfg {{{
+## Install storage_daemon.cfg to /system/etc/init/storage_daemon.cfg
 ohos_prebuilt_etc("storage_daemon_cfg") {
   source = "storage_daemon.cfg"
   relative_install_dir = "init"
@@ -22,8 +22,7 @@ ohos_prebuilt_etc("storage_daemon_cfg") {
   subsystem_name = "filemanagement"
 }
 
-## Install storage_daemon.cfg to /system/etc/init/storage_daemon.cfg }}}
-
+## Install storage_daemon.cfg to /system/etc/init/storage_daemon.cfg
 config("storage_daemon_config") {
   include_dirs = [
     "include",
@@ -34,16 +33,12 @@ config("storage_daemon_config") {
   ]
 }
 
-## Install disk_config to /system/etc/storage_daemon/disk_config {{{
+## Install disk_config to /system/etc/storage_daemon/disk_config
 ohos_prebuilt_etc("storage_daemon_disk_config") {
   source = "disk_config"
   relative_install_dir = "storage_daemon"
   part_name = "storage_service"
   subsystem_name = "filemanagement"
-}
-
-declare_args() {
-  storage_service_user_file_sharing = true
 }
 
 ohos_executable("storage_daemon") {
@@ -105,6 +100,10 @@ ohos_executable("storage_daemon") {
 
   if (storage_service_external_storage_qos_trans) {
     defines += [ "EXTERNAL_STORAGE_QOS_TRANS" ]
+  }
+
+  if (storage_service_media_fuse) {
+    defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
   }
 
   configs = [ ":storage_daemon_config" ]
@@ -240,6 +239,10 @@ ohos_executable("sdc") {
     deps += [ "libfscrypt:libfscryptutils" ]
   }
 
+  if (storage_service_media_fuse) {
+    defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
+  }
+
   if (build_variant == "root") {
     defines += [ "SDC_TEST_ENABLE" ]
   }
@@ -255,10 +258,6 @@ ohos_executable("sdc") {
   subsystem_name = "filemanagement"
   part_name = "storage_service"
   install_enable = true
-}
-
-declare_args() {
-  storage_service_fstools = true
 }
 
 ohos_shared_library("storage_common_utils") {
