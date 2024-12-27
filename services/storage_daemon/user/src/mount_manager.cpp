@@ -1112,7 +1112,6 @@ int32_t MountManager::UmountByUser(int32_t userId)
 
 int32_t MountManager::UmountFileSystem(int32_t userId)
 {
-    int32_t res = E_OK;
     LOGI("try to force umount all path start.");
     std::list<std::string> unMountFailList;
     int32_t unMountRes = UMountAllPath(userId, unMountFailList);
@@ -1122,28 +1121,18 @@ int32_t MountManager::UmountFileSystem(int32_t userId)
     LOGE("force umount failed, try to kill process, res is %{public}d.", unMountRes);
     int32_t findAndKill = FindAndKillProcess(userId, unMountFailList, unMountRes);
     if (findAndKill == E_UMOUNT_NO_PROCESS_FIND || findAndKill == E_UMOUNT_PROCESS_KILL) {
-        int32_t umountDetach = UMountByListWithDetach(unMountFailList);
-        if (umountDetach != E_OK) {
-            LOGE("unmount by detach failed, res is %{public}d.", umountDetach);
-            res = E_UMOUNT_DETACH;
-        }
-        return res;
+        return UMountByListWithDetach(unMountFailList) == E_OK ? E_OK : E_UMOUNT_DETACH;
     }
     LOGE("try to force umount again.");
     std::list<std::string> tempList;
     int32_t unMountAgain = UMountByList(unMountFailList, tempList);
     if (unMountAgain == E_OK) {
-        return res;
+        return E_OK;
     }
     LOGE("force umount again failed, try to kill process again, res is %{public}d.", unMountAgain);
     FindAndKillProcess(userId, unMountFailList, unMountAgain);
     LOGE("try to umount by detach.");
-    int32_t umountDetach = UMountByListWithDetach(unMountFailList);
-    if (umountDetach != E_OK) {
-        LOGE("unmount by detach failed again, res is %{public}d.", umountDetach);
-        res = E_UMOUNT_DETACH;
-    }
-    return res;
+    return UMountByListWithDetach(unMountFailList) == E_OK ? E_OK : E_UMOUNT_DETACH;
 }
 
 int32_t MountManager::FindAndKillProcess(int32_t userId, std::list<std::string> &unMountFailList, int32_t radar)
