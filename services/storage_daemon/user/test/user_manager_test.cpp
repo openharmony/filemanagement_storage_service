@@ -603,7 +603,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_CheckMaps_000, TestSi
     mountManager->CheckSymlink(path, prefix, mountFailList);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_UmountFailRadar_000 end";
 }
-
+#ifdef STORAGE_SERVICE_MEDIA_FUSE
 /**
  * @tc.name: Storage_Manager_MountManagerTest_MountMediaFuse_001
  * @tc.desc: Verify the MountMediaFuse function.
@@ -625,5 +625,6 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_MountMediaFuse_001, T
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountMediaFuse_001 end";
 }
+#endif
 } // STORAGE_DAEMON
 } // OHOS

@@ -1085,7 +1085,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_GetBundleStatsForIncreas
     EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_GetBundleStatsForIncrease_001 end";
 }
-
+#ifdef STORAGE_SERVICE_MEDIA_FUSE
 /**
  * @tc.name: StorageDaemonProxyTest_MountMediaFuse_001
  * @tc.desc: Verify the MountMediaFuse function.
@@ -1140,5 +1140,6 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_UMountMediaFuse_001, Tes
     EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_UMountMediaFuse_001 end";
 }
+#endif
 } // STORAGE_DAEMON
 } // OHOS
