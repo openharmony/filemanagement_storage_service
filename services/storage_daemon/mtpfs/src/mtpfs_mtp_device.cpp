@@ -16,6 +16,7 @@
 #include "mtpfs_mtp_device.h"
 
 #include <sstream>
+#include <thread>
 #include <unistd.h>
 
 #include "mtpfs_fuse.h"
@@ -35,6 +36,7 @@ MtpFsDevice::MtpFsDevice() : device_(nullptr), capabilities_(), deviceMutex_(), 
 MtpFsDevice::~MtpFsDevice()
 {
     LOGI("MtpFsDevice Destructor.");
+    eventFlag_ = false;
     Disconnect();
 }
 
@@ -106,6 +108,12 @@ void MtpFsDevice::HandleDevNum(const std::string &devFile, int &devNo, int rawDe
     }
 }
 
+static void Libmtp_event_cb_fn(int ret, LIBMTP_event_t event, uint32_t param, void *data)
+{
+    (void)data;
+    LOGI("LIBMTP_event_cb_fn, ret=%{public}d, event=%{public}d, param=%{public}d.", ret, event, param);
+}
+
 bool MtpFsDevice::ConnectByDevNo(int devNo)
 {
     LOGI("Start to connect by device number = %{public}d.", devNo);
@@ -143,8 +151,18 @@ bool MtpFsDevice::ConnectByDevNo(int devNo)
         return false;
     }
     capabilities_ = MtpFsDevice::GetCapabilities(*this);
+    std::thread([this]() { ReadEvent(); }).detach();
     LOGI("Connect by device number success.");
     return true;
+}
+
+void MtpFsDevice::ReadEvent()
+{
+    eventFlag_ = true;
+    while (eventFlag_) {
+        int ret = LIBMTP_Read_Event_Async(device_, Libmtp_event_cb_fn, nullptr);
+    }
+    LOGI("Device detached, read event end");
 }
 
 bool MtpFsDevice::ConnectByDevFile(const std::string &devFile)
