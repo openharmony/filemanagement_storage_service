@@ -80,7 +80,7 @@ static void MountCryptoPathAgain(int32_t userId)
         LOGE("mount crypto path failed err is %{public}d", err);
         return;
     }
-    SendSecondMountedEvent();
+    SendSecondMountedEvent(userId);
     LOGI("MountCryptoPathAgain success");
 }
 
