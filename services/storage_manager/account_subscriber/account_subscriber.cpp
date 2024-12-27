@@ -30,11 +30,13 @@
 #include "common_event_manager.h"
 #include "common_event_support.h"
 #include "iservice_registry.h"
+#include "int_wrapper.h"
 #include "os_account_manager.h"
 #include "storage_daemon_communication/storage_daemon_communication.h"
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
 #include "want.h"
+#include "want_params.h"
 
 using namespace OHOS::AAFwk;
 using namespace OHOS::AccountSA;
@@ -62,10 +64,13 @@ void AccountSubscriber::Subscriber(void)
     }
 }
 
-static void SendSecondMountedEvent()
+static void SendSecondMountedEvent(int32_t userId)
 {
     AAFwk::Want want;
+    AAFwk::WantParams wantParams;
+    wantParams.SetParam("userId", AAFwk::Integer::Box(userId));
     want.SetAction("usual.event.SECOND_MOUNTED");
+    want.SetParams(wantParams);
     EventFwk::CommonEventData commonData { want };
     EventFwk::CommonEventManager::PublishCommonEvent(commonData);
     LOGI("Send usual.event.SECOND_MOUNTED event success.");
