@@ -68,9 +68,9 @@ std::vector<std::string> Split(std::string str, const std::string &pattern);
 bool IsPathMounted(std::string &path);
 bool CreateFolder(const std::string &path);
 bool DelFolder(const std::string &path);
-void KillProcess(std::vector<ProcessInfo> &processList, std::vector<ProcessInfo> &killFailList);
+void KillProcess(const std::vector<ProcessInfo> &processList, std::vector<ProcessInfo> &killFailList);
 bool IsProcessAlive(int pid);
-std::string PrccessToString(std::vector<ProcessInfo> &processList);
+std::string ProcessToString(std::vector<ProcessInfo> &processList);
 }
 }
 

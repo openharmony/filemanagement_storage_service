@@ -767,7 +767,7 @@ bool DelFolder(const std::string &path)
     return false;
 }
 
-void KillProcess(std::vector<ProcessInfo> &processList, std::vector<ProcessInfo> &killFailList)
+void KillProcess(const std::vector<ProcessInfo> &processList, std::vector<ProcessInfo> &killFailList)
 {
     if (processList.empty()) {
         return;
@@ -786,6 +786,7 @@ void KillProcess(std::vector<ProcessInfo> &processList, std::vector<ProcessInfo>
             usleep(KILL_RETRY_INTERVAL_MS);
         }
         if (isAlive) {
+            LOGE("kill pid %{public}d failed.", pid);
             killFailList.push_back(item);
         }
     }
@@ -797,29 +798,23 @@ bool IsProcessAlive(int pid)
     procPath << "/proc/" << pid << "/stat";
     std::ifstream statFile(procPath.str());
     if (!statFile) {
+        statFile.close();
         return false;
     }
+    statFile.close();
     return true;
 }
 
-std::string PrccessToString(std::vector<ProcessInfo> &processList)
+std::string ProcessToString(std::vector<ProcessInfo> &processList)
 {
     if (processList.empty()) {
         return "";
     }
-    int total = static_cast<int>(processList.size());
-    std::string res;
-    for (int i = 0; i < total; i++) {
-        ProcessInfo info = processList[i];
-        std::string temp;
-        temp.append(std::to_string(info.pid)).append("_").append(info.name);
-        if (i == total - 1) {
-            res.append(temp);
-        } else {
-            res.append(temp).append(",");
-        }
+    std::string result;
+    for (auto & iter : processList) {
+        result += std::to_string(iter.pid) + "_" + iter.name + ",";
     }
-    return res;
+    return result.empty() ? "" : result.substr(0, result.length() -1);
 }
 } // STORAGE_DAEMON
 } // OHOS

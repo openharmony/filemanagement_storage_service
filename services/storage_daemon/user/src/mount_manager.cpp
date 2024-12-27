@@ -391,7 +391,7 @@ void MountManager::UmountFailRadar(std::vector<ProcessInfo> &processInfos, int32
     if (processInfos.empty()) {
         return;
     }
-    std::string info = PrccessToString(processInfos);
+    std::string info = ProcessToString(processInfos);
     LOGE("record process, ret = %{public}d, process is %{public}s", radar, info.c_str());
     StorageService::StorageRadar::GetInstance().RecordKillProcessResult(info, radar);
 }
@@ -1147,7 +1147,7 @@ int32_t MountManager::FindAndKillProcess(int32_t userId, std::list<std::string> 
     std::vector<ProcessInfo> killFailList;
     KillProcess(processInfos, killFailList);
     if (!killFailList.empty()) {
-        std::string info = PrccessToString(killFailList);
+        std::string info = ProcessToString(killFailList);
         LOGE("kill process failed, process is %{public}s.", info.c_str());
         return E_UMOUNT_PROCESS_KILL;
     }
