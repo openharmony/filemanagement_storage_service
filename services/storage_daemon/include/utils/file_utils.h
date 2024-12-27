@@ -30,6 +30,11 @@ struct FileList {
     std::string path;
 };
 
+struct ProcessInfo {
+    int pid;
+    std::string name;
+};
+
 int32_t ChMod(const std::string &path, mode_t mode);
 int32_t MkDir(const std::string &path, mode_t mode);
 bool IsDir(const std::string &path);
@@ -63,6 +68,9 @@ std::vector<std::string> Split(std::string str, const std::string &pattern);
 bool IsPathMounted(std::string &path);
 bool CreateFolder(const std::string &path);
 bool DelFolder(const std::string &path);
+void KillProcess(const std::vector<ProcessInfo> &processList, std::vector<ProcessInfo> &killFailList);
+bool IsProcessAlive(int pid);
+std::string ProcessToString(std::vector<ProcessInfo> &processList);
 }
 }
 

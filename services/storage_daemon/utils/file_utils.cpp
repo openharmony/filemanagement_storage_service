@@ -42,6 +42,8 @@ constexpr uint32_t ALL_PERMS = (S_ISUID | S_ISGID | S_ISVTX | S_IRWXU | S_IRWXG 
 constexpr int SET_SCHED_LOAD_TRANS_TYPE = 10001;
 #endif
 const int BUF_LEN = 1024;
+const uint8_t KILL_RETRY_TIME = 5;
+const uint16_t KILL_RETRY_INTERVAL_MS = 50 * 1000;
 const std::string MOUNT_POINT_INFO = "/proc/mounts";
 
 int32_t ChMod(const std::string &path, mode_t mode)
@@ -763,6 +765,56 @@ bool DelFolder(const std::string &path)
         return true;
     }
     return false;
+}
+
+void KillProcess(const std::vector<ProcessInfo> &processList, std::vector<ProcessInfo> &killFailList)
+{
+    if (processList.empty()) {
+        return;
+    }
+    for (const auto &item: processList) {
+        int pid = item.pid;
+        LOGI("kill pid %{public}d", pid);
+        kill(pid, SIGKILL);
+        bool isAlive = true;
+        for (int i = 0; i < KILL_RETRY_TIME; i++) {
+            if (!IsProcessAlive(pid)) {
+                LOGI("kill pid %{public}d success.", pid);
+                isAlive = false;
+                break;
+            }
+            usleep(KILL_RETRY_INTERVAL_MS);
+        }
+        if (isAlive) {
+            LOGE("kill pid %{public}d failed.", pid);
+            killFailList.push_back(item);
+        }
+    }
+}
+
+bool IsProcessAlive(int pid)
+{
+    std::stringstream procPath;
+    procPath << "/proc/" << pid << "/stat";
+    std::ifstream statFile(procPath.str());
+    if (!statFile) {
+        statFile.close();
+        return false;
+    }
+    statFile.close();
+    return true;
+}
+
+std::string ProcessToString(std::vector<ProcessInfo> &processList)
+{
+    if (processList.empty()) {
+        return "";
+    }
+    std::string result;
+    for (auto & iter : processList) {
+        result += std::to_string(iter.pid) + "_" + iter.name + ",";
+    }
+    return result.empty() ? "" : result.substr(0, result.length() -1);
 }
 } // STORAGE_DAEMON
 } // OHOS

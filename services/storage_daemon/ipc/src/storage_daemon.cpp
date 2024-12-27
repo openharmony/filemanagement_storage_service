@@ -398,15 +398,12 @@ int32_t StorageDaemon::StartUser(int32_t userId)
 int32_t StorageDaemon::StopUser(int32_t userId)
 {
     int32_t ret = UserManager::GetInstance()->StopUser(userId);
-    if (ret != E_OK) {
-        LOGE("StopUser failed, please check");
-        StorageRadar::ReportUserManager("StopUser", userId, ret, BizStage::BIZ_STAGE_STOP_USER);
-        AuditLog storageAuditLog = { false, "FAILED TO StopUser", "DEL", "StopUser", 1, "FAIL" };
-        HiAudit::GetInstance().Write(storageAuditLog);
-    } else {
-        AuditLog storageAuditLog = { false, "SUCCESS TO StopUser", "DEL", "StopUser", 1, "SUCCESS" };
-        HiAudit::GetInstance().Write(storageAuditLog);
-    }
+    LOGE("StopUser end, ret is %{public}d.", ret);
+    StorageRadar::ReportUserManager("StopUser", userId, ret, BizStage::BIZ_STAGE_STOP_USER);
+    std::string status = ret == E_OK ? "SUCCESS" : "FAIL";
+    std::string cause = ret == E_OK ? "SUCCESS TO StopUser" : "FAILED TO StopUser";
+    AuditLog storageAuditLog = { false, cause, "DEL", "StopUser", 1, status };
+    HiAudit::GetInstance().Write(storageAuditLog);
     return ret;
 }
 
