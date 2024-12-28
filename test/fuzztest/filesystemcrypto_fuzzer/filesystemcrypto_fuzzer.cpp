@@ -204,7 +204,7 @@ bool GetLockScreenStatusFuzzTest(const uint8_t *data, size_t size)
 
 bool GenerateAppkeyFuzzTest(const uint8_t *data, size_t size)
 {
-    if (data == nullptr || size <= sizeof(uint32_t)) {
+    if (data == nullptr || size <= sizeof(uint32_t) + sizeof(uint32_t)) {
         return false;
     }
 
