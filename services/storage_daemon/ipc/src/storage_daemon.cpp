@@ -459,16 +459,16 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
 
 #ifdef USER_CRYPTO_MIGRATE_KEY
     std::error_code errCode;
-    std::string el2NeedRestorePath = GetNeedRestoreFilePath(START_USER_ID, USER_EL2_DIR);
-    if (std::filesystem::exists(el2NeedRestorePath, errCode)) {
-        LOGE("USER_EL2_DIR is exist, update NEW_DOUBLE_2_SINGLE");
-        std::string DOUBLE_VERSION;
-        std::string EL0_NEED_RESTORE_PATH = DATA_SERVICE_EL0_STORAGE_DAEMON_SD + NEED_RESTORE_SUFFIX;
-        bool isRead = OHOS::LoadStringFromFile(EL0_NEED_RESTORE_PATH, DOUBLE_VERSION);
-        int NEW_SINGLE_VERSION = std::atoi(DOUBLE_VERSION.c_str()) + 1;
+    std::string el1NeedRestorePath = GetNeedRestoreFilePath(START_USER_ID, USER_EL1_DIR);
+    if (std::filesystem::exists(el1NeedRestorePath, errCode)) {
+        LOGE("USER_EL1_DIR is exist, update NEW_DOUBLE_2_SINGLE");
+        std::string doubleVersion;
+        std::string el0NeedRestorePath = DATA_SERVICE_EL0_STORAGE_DAEMON_SD + NEED_RESTORE_SUFFIX;
+        bool isRead = OHOS::LoadStringFromFile(el0NeedRestorePath, doubleVersion);
+        int newSingleVersion = std::atoi(doubleVersion.c_str()) + 1;
         LOGW("Process NEW_DOUBLE(version:%{public}s}) ——> SINGLE Frame(version:%{public}d), ret: %{public}d",
-            DOUBLE_VERSION.c_str(), NEW_SINGLE_VERSION, isRead);
-        if (!SaveStringToFile(EL0_NEED_RESTORE_PATH, std::to_string(NEW_SINGLE_VERSION))) {
+            doubleVersion.c_str(), newSingleVersion, isRead);
+        if (!SaveStringToFile(el0NeedRestorePath, std::to_string(newSingleVersion))) {
             LOGE("Save NEW_DOUBLE_2_SINGELE file failed");
             return false;
         }

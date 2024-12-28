@@ -27,6 +27,7 @@ namespace OHOS {
 namespace StorageDaemon {
 static const std::string NEED_RESTORE_PATH = "/data/service/el0/storage_daemon/sd/latest/need_restore";
 static const std::string NEW_DOUBLE_2_SINGLE = "2";
+static const uint32_t NEW_DOUBLE_2_SINGLE_BASE_VERSION = 2;
 static const uint32_t DEFAULT_SINGLE_FIRST_USER_ID = 100;
 static const uint32_t USER_ID_DIFF = 91;
 
@@ -88,10 +89,9 @@ bool FscryptKeyV1Ext::ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, ui
     std::error_code errCode;
     std::string updateVersion;
     int ret = OHOS::LoadStringFromFile(NEED_RESTORE_PATH, updateVersion);
-    const int BASE = 2;
     LOGI("restore version: %{public}s, ret: %{public}d", updateVersion.c_str(), ret);
     if (type_ == TYPE_EL1 && std::filesystem::exists(NEED_RESTORE_PATH, errCode) &&
-        std::atoi(updateVersion.c_str()) % BASE == 0) {
+        std::atoi(updateVersion.c_str()) >= NEW_DOUBLE_2_SINGLE_BASE_VERSION) {
         LOGI("restore path exists, deal double DE, errCode = %{public}d", errCode.value());
         return ActiveDoubleKeyExt(flag, iv, size, elType);
     }
