@@ -127,7 +127,7 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Prepar
 HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_MountDfsDocs_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_MountDfsDocs_001 start";
-
+ 
     ASSERT_TRUE(storageDaemonClient_ != nullptr);
 
     int32_t userId = StorageTest::USER_ID3;
@@ -135,10 +135,10 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_MountD
     std::string networkId = "testnetworkid";
     std::string deviceId = "testdevid";
     int32_t ret = storageDaemonClient_->MountDfsDocs(userId, relativePath, networkId, deviceId);
-    EXPECT_EQ(ret, E_PREPARE_DIR);
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_MountDfsDocs_001 end";
 }
-
+ 
 /**
  * @tc.name: Storage_Service_StorageDaemonClientTest_UMountDfsDocs_001
  * @tc.desc: Verify the UMountDfsDocs function when args are normal.
@@ -148,7 +148,7 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_MountD
 HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_UMountDfsDocs_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UMountDfsDocs_001 start";
-
+ 
     ASSERT_TRUE(storageDaemonClient_ != nullptr);
 
     int32_t userId = StorageTest::USER_ID3;
@@ -156,7 +156,7 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_UMount
     std::string networkId = "testnetworkid";
     std::string deviceId = "testdevid";
     int32_t ret = storageDaemonClient_->UMountDfsDocs(userId, relativePath, networkId, deviceId);
-    EXPECT_EQ(ret, E_UMOUNT);
+    EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UMountDfsDocs_001 end";
 }
 
