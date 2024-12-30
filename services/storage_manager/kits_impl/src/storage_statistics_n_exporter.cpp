@@ -438,10 +438,6 @@ napi_value GetFreeSize(napi_env env, napi_callback_info info)
 
 napi_value GetTotalSizeSync(napi_env env, napi_callback_info info)
 {
-    if (!IsSystemApp()) {
-        NError(E_PERMISSION_SYS).ThrowErr(env);
-        return nullptr;
-    }
     NFuncArg funcArg(env, info);
     if (!funcArg.InitArgs((int)NARG_CNT::ZERO)) {
         NError(E_PARAMS).ThrowErr(env);
@@ -461,10 +457,6 @@ napi_value GetTotalSizeSync(napi_env env, napi_callback_info info)
 
 napi_value GetFreeSizeSync(napi_env env, napi_callback_info info)
 {
-    if (!IsSystemApp()) {
-        NError(E_PERMISSION_SYS).ThrowErr(env);
-        return nullptr;
-    }
     NFuncArg funcArg(env, info);
     if (!funcArg.InitArgs((int)NARG_CNT::ZERO)) {
         NError(E_PARAMS).ThrowErr(env);
