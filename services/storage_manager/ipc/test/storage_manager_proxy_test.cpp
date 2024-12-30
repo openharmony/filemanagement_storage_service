@@ -1707,7 +1707,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyMtpUnmounted_0000,
     EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_NotifyMtpUnmounted_0000";
 }
-
+#ifdef STORAGE_SERVICE_MEDIA_FUSE
 /**
  * @tc.number: SUB_STORAGE_Storage_manager_proxy_MountMediaFuse_0000
  * @tc.name: Storage_manager_proxy_MountMediaFuse_0000
@@ -1764,4 +1764,5 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_UMountMediaFuse_0000, te
     EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_UMountMediaFuse_0000";
 }
+#endif
 } // namespace

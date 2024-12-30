@@ -550,6 +550,7 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_GetBundleStatsForI
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_GetBundleStatsForIncrease_001 end";
 }
 
+#ifdef STORAGE_SERVICE_MEDIA_FUSE
 /**
  * @tc.name: Storage_Manager_StorageDaemonTest_MountMediaFuse_001
  * @tc.desc: check the MountMediaFuse function normal
@@ -584,5 +585,6 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_UMountMediaFuse_00
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_UMountMediaFuse_001 end";
 }
+#endif
 } // STORAGE_DAEMON
 } // OHOS
