@@ -100,7 +100,7 @@ public:
     bool CheckMaps(const std::string &path, std::list<std::string> &mountFailList);
     bool CheckSymlink(const std::string &path, std::list<std::string> &mountFailList);
     bool GetProcessInfo(const std::string &filename, ProcessInfo &info);
-    bool PidUsingFlag(std::string &pidPath, const std::string &prefix, std::list<std::string> &mountFailList);
+    bool PidUsingFlag(std::string &pidPath, std::list<std::string> &mountFailList);
     void UmountFailRadar(std::vector<ProcessInfo> &processInfo, int32_t radar);
     void MountSandboxPath(const std::vector<std::string> &srcPaths, const std::vector<std::string> &dstPaths,
                           const std::string &bundleName, const std::string &userId);
@@ -138,7 +138,9 @@ private:
     int32_t BindAndRecMount(std::string &srcPath, std::string &dstPath, bool isUseSlave = true);
     int32_t UmountMntUserTmpfs(int32_t userId);
     int32_t UmountFileSystem(int32_t userId);
-    int32_t FindProcess(int32_t userId, std::list<std::string> &unMountFailList, std::vector<ProcessInfo> &proInfos);
+    int32_t FindProcess(std::list<std::string> &unMountFailList, std::vector<ProcessInfo> &proInfos,
+        std::list<std::string> &excludeProcess);
+    int32_t FindSaFd(int32_t userId);
 
     DISALLOW_COPY_AND_MOVE(MountManager);
 

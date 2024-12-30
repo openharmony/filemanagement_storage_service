@@ -94,6 +94,7 @@ enum ErrNo {
     E_UMOUNT_DETACH = 310,
     E_UMOUNT_NO_PROCESS_FIND = 311,
     E_UMOUNT_PROCESS_KILL = 312,
+    E_UMOUNT_FIND_FD = 313,
 };
 
 enum JsErrCode {
