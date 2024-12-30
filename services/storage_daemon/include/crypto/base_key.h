@@ -64,7 +64,6 @@ public:
     bool DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey, KeyBlob &decryptedKey);
     bool RenameKeyPath(const std::string &keyPath);
     bool ClearKey(const std::string &mnt = MNT_DATA);
-    void ClearMemoryKeyCtx();
     void WipingActionDir(std::string &path);
     bool UpgradeKeys();
     bool KeyDesclsEmpty();

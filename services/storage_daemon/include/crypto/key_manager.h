@@ -142,7 +142,6 @@ private:
     bool IsUserCeDecrypt(uint32_t userId);
     bool UnlockEceSece(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret, int &ret);
     bool UnlockUece(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret, int &ret);
-    void CheckAndClearTokenInfo(uint32_t user);
     int CheckUserPinProtect(unsigned int userId, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret);
     bool HashElxActived(unsigned int user, KeyType type);
     bool HasElxDesc(std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_, KeyType type, unsigned int user);
