@@ -188,11 +188,9 @@ HWTEST_F(MtpDeviceMonitorTest, MountMtpDeviceTest_002, TestSize.Level1)
     MtpDeviceInfo device;
     device.id = "123";
     devices.push_back(device);
-    monitor->hasEjectedDevices_.push_back(device);
     monitor->MountMtpDevice(devices);
     std::vector<MtpDeviceInfo> lastestMtpDevList = monitor->lastestMtpDevList_;
     EXPECT_EQ(lastestMtpDevList.size(), 0);
-    monitor->hasEjectedDevices_.clear();
 
     GTEST_LOG_(INFO) << "MountMtpDeviceTest_002 end";
 }
@@ -211,11 +209,9 @@ HWTEST_F(MtpDeviceMonitorTest, MountMtpDeviceTest_003, TestSize.Level1)
     MtpDeviceInfo device;
     device.id = "123";
     devices.push_back(device);
-    monitor->invalidMtpDevices_.push_back(device);
     monitor->MountMtpDevice(devices);
     std::vector<MtpDeviceInfo> lastestMtpDevList = monitor->lastestMtpDevList_;
     EXPECT_EQ(lastestMtpDevList.size(), 0);
-    monitor->invalidMtpDevices_.clear();
 
     GTEST_LOG_(INFO) << "MountMtpDeviceTest_003 end";
 }
