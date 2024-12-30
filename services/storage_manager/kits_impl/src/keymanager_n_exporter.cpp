@@ -30,7 +30,7 @@ using namespace OHOS::FileManagement::LibN;
  
 namespace OHOS {
 namespace StorageManager {
- 
+
 napi_value DeactivateUserKey(napi_env env, napi_callback_info info)
 {
     if (!IsSystemApp()) {

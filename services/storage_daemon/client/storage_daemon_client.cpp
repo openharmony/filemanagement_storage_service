@@ -343,13 +343,13 @@ int32_t StorageDaemonClient::LockUserScreen(uint32_t userId)
 {
     if (CheckServiceStatus(STORAGE_SERVICE_FLAG) != E_OK) {
         LOGE("service check failed");
-        return -EAGAIN;
+        return E_SERVICE_IS_NULLPTR;
     }
 
     sptr<IStorageDaemon> client = GetStorageDaemonProxy();
     if (client == nullptr) {
         LOGE("get storage daemon service failed");
-        return -EAGAIN;
+        return E_SA_IS_NULLPTR;
     }
 
     return client->LockUserScreen(userId);
