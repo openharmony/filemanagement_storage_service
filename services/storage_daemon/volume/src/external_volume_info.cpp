@@ -152,6 +152,13 @@ int32_t ExternalVolumeInfo::DoMount4OtherType(uint32_t mountFlags)
     return mount(devPath_.c_str(), mountPath_.c_str(), fsType_.c_str(), mountFlags, mountData.c_str());
 }
 
+int32_t ExternalVolumeInfo::DoMount4Vfat(uint32_t mountFlags)
+{
+    mountFlags |= MS_MGC_VAL;
+    auto mountData = StringPrintf("uid=%d,gid=%d,dmask=0007,fmask=0007,utf8", UID_FILE_MANAGER, UID_FILE_MANAGER);
+    return mount(devPath_.c_str(), mountPath_.c_str(), fsType_.c_str(), mountFlags, mountData.c_str());
+}
+
 int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
 {
     int32_t ret = DoCheck();
@@ -180,6 +187,8 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
         ret = DoMount4Ntfs(mountFlags);
     } else if (fsType_ == "exfat") {
         ret = DoMount4Exfat(mountFlags);
+    } else if (fsType_ == "vfat" || fsType_ == "fat32") {
+        ret = DoMount4Vfat(mountFlags);
     } else {
         ret = DoMount4OtherType(mountFlags);
     }
