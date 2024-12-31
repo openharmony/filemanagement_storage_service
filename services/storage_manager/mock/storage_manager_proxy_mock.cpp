@@ -61,15 +61,6 @@ int32_t StorageManagerProxy::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
     return E_OK;
 }
 
-int32_t StorageManagerProxy::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,
-                                                          const std::vector<uint8_t> &newSecret,
-                                                          uint64_t secureUid,
-                                                          uint32_t userId,
-                                                          std::vector<std::vector<uint8_t>> &plainText)
-{
-    return E_OK;
-}
-
 int32_t StorageManagerProxy::ActiveUserKey(uint32_t userId,
                                            const std::vector<uint8_t> &token,
                                            const std::vector<uint8_t> &secret)
@@ -110,19 +101,6 @@ int32_t StorageManagerProxy::GenerateAppkey(uint32_t hashId, uint32_t userId, st
 }
 
 int32_t StorageManagerProxy::DeleteAppkey(const std::string keyId)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::CreateRecoverKey(uint32_t userId,
-                                              uint32_t userType,
-                                              const std::vector<uint8_t> &token,
-                                              const std::vector<uint8_t> &secret)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::SetRecoverKey(const std::vector<uint8_t> &key)
 {
     return E_OK;
 }
@@ -302,27 +280,6 @@ int32_t StorageManagerProxy::UMountDfsDocs(int32_t userId, const std::string &re
 }
 
 int32_t StorageManagerProxy::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
-                                              const std::string &uuid)
-{
-    return E_OK;
-}
- 
-int32_t StorageManagerProxy::NotifyMtpUnmounted(const std::string &id, const std::string &path)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::MountMediaFuse(int32_t userId, int32_t &devFd)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::UMountMediaFuse(int32_t userId)
 {
     return E_OK;
 }

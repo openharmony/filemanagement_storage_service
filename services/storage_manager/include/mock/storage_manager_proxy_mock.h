@@ -67,11 +67,6 @@ public:
                            const std::vector<uint8_t> &token,
                            const std::vector<uint8_t> &oldSecret,
                            const std::vector<uint8_t> &newSecret) override;
-    int32_t UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,
-                                         const std::vector<uint8_t> &newSecret,
-                                         uint64_t secureUid,
-                                         uint32_t userId,
-                                         std::vector<std::vector<uint8_t>> &plainText) override;
     int32_t ActiveUserKey(uint32_t userId,
                           const std::vector<uint8_t> &token,
                           const std::vector<uint8_t> &secret) override;
@@ -85,14 +80,6 @@ public:
     int32_t GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId) override;
     int32_t DeleteAppkey(const std::string keyId) override;
     int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false) override;
-    int32_t CreateRecoverKey(uint32_t userId,
-                             uint32_t userType,
-                             const std::vector<uint8_t> &token,
-                             const std::vector<uint8_t> &secret) override;
-    int32_t SetRecoverKey(const std::vector<uint8_t> &key) override;
-    int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
-                             const std::string &uuid) override;
-    int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path) override;
 
     // app file share api
     std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,
@@ -113,8 +100,6 @@ public:
 
     int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId) override;
-    int32_t MountMediaFuse(int32_t userId, int32_t &devFd) override;
-    int32_t UMountMediaFuse(int32_t userId) override;
 private:
     static inline BrokerDelegator<StorageManagerProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

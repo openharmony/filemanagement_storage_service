@@ -109,15 +109,6 @@ int32_t StorageDaemonProxy::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,
-                                                         const std::vector<uint8_t> &newSecret,
-                                                         uint64_t secureUid,
-                                                         uint32_t userId,
-                                                         std::vector<std::vector<uint8_t>> &plainText)
-{
-    return E_OK;
-}
-
 int32_t StorageDaemonProxy::ActiveUserKey(uint32_t userId,
                                           const std::vector<uint8_t> &token,
                                           const std::vector<uint8_t> &secret)
@@ -153,19 +144,6 @@ int32_t StorageDaemonProxy::GenerateAppkey(uint32_t userId, uint32_t hashId, std
 }
 
 int32_t StorageDaemonProxy::DeleteAppkey(uint32_t userId, const std::string &keyId)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::CreateRecoverKey(uint32_t userId,
-                                             uint32_t userType,
-                                             const std::vector<uint8_t> &token,
-                                             const std::vector<uint8_t> &secret)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::SetRecoverKey(const std::vector<uint8_t> &key)
 {
     return E_OK;
 }
@@ -232,16 +210,6 @@ int32_t StorageDaemonProxy::SendRequest(uint32_t code, MessageParcel &data, Mess
 }
 
 int32_t StorageDaemonProxy::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::MountMediaFuse(int32_t userId, int32_t &devFd)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::UMountMediaFuse(int32_t userId)
 {
     return E_OK;
 }
