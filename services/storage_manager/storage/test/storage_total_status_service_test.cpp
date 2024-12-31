@@ -229,19 +229,19 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetUserStorageStatsByType
 }
 
 /**
-* @tc.number: SUB_STORAGE_Storage_status_service_StartStorageMonitorTask_0000
-* @tc.name: Storage_status_service_StartStorageMonitorTask_0000
-* @tc.desc: Test function of StartStorageMonitorTask interface for SUCCESS.
-* @tc.size: MEDIUM
-* @tc.type: FUNC
-* @tc.level Level 1
-*/
+ * @tc.number: SUB_STORAGE_Storage_status_service_StartStorageMonitorTask_0000
+ * @tc.name: Storage_status_service_StartStorageMonitorTask_0000
+ * @tc.desc: Test function of StartStorageMonitorTask interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
 HWTEST_F(StorageTotalStatusServiceTest, Storage_status_StartStorageMonitorTask_0000, testing::ext::TestSize.Level1)
 {
-   GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_StartStorageMonitorTask_0000";
-   std::shared_ptr<StorageMonitorService> service = DelayedSingleton<StorageMonitorService>::GetInstance();
-   ASSERT_TRUE(service != nullptr);
-   service->StartStorageMonitorTask();
-   GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_StartStorageMonitorTask_0000";
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_StartStorageMonitorTask_0000";
+    std::shared_ptr<StorageMonitorService> service = DelayedSingleton<StorageMonitorService>::GetInstance();
+    ASSERT_TRUE(service != nullptr);
+    service->StartStorageMonitorTask();
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_StartStorageMonitorTask_0000";
 }
 } // namespace
