@@ -1243,7 +1243,6 @@ int KeyManager::ActiveUece(unsigned int user,
         LOGE("ActiveUeceUserKey failed");
         return -EFAULT;
     }
-    saveLockScreenStatus[user] = true;
     return 0;
 }
 
