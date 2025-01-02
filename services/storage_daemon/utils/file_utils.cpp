@@ -43,7 +43,7 @@ constexpr int SET_SCHED_LOAD_TRANS_TYPE = 10001;
 #endif
 const int BUF_LEN = 1024;
 const uint8_t KILL_RETRY_TIME = 5;
-const uint16_t KILL_RETRY_INTERVAL_MS = 50 * 1000;
+const uint32_t KILL_RETRY_INTERVAL_MS = 100 * 1000;
 const std::string MOUNT_POINT_INFO = "/proc/mounts";
 
 int32_t ChMod(const std::string &path, mode_t mode)

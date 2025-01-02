@@ -116,6 +116,14 @@ const vector<string> APPDATA_SRC_PATH = {
     "/mnt/hmdfs/<currentUserId>/account/merge_view/data/"
 };
 
+const vector<string> FD_PATH = {
+    "/data/service/el2/<currentUserId>",
+    "/data/service/el3/<currentUserId>",
+    "/data/service/el4/<currentUserId>",
+    "/data/service/el5/<currentUserId>",
+    "/storage/media/<currentUserId>"
+};
+
 const std::string HMDFS_SYS_CAP = "const.distributed_file_property.enabled";
 const int32_t HMDFS_VAL_LEN = 6;
 const int32_t HMDFS_TRUE_LEN = 5;
@@ -344,13 +352,10 @@ int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath, bool 
     return E_OK;
 }
 
-int32_t MountManager::FindProcess(int32_t userId, std::list<std::string> &unMountFailList,
-    std::vector<ProcessInfo> &proInfos)
+int32_t MountManager::FindProcess(std::list<std::string> &unMountFailList, std::vector<ProcessInfo> &proInfos,
+    std::list<std::string> &excludeProcess)
 {
-    if (userId <= 0) {
-        return E_OK;
-    }
-    LOGI("FindAndKillProcess start, userId is %{public}d", userId);
+    LOGI("find process start.");
     auto procDir = std::unique_ptr<DIR, int (*)(DIR*)>(opendir("/proc"), closedir);
     if (!procDir) {
         LOGE("failed to open dir proc, err %{public}d", errno);
@@ -371,18 +376,16 @@ int32_t MountManager::FindProcess(int32_t userId, std::list<std::string> &unMoun
             LOGE("failed to get process info, pid is %{public}s.", name.c_str());
             continue;
         }
-        if (info.name == "(storage_daemon)") {
+        if (IsStringExist(excludeProcess, info.name)) {
             continue;
         }
-        Utils::MountArgument argument(Utils::MountArgumentDescriptors::Alpha(userId, ""));
-        const string &prefix = argument.GetMountPointPrefix();
         std::string pidPath = "/proc/" + name;
         LOGD("check pid using start, pid is %{public}d, processName is %{public}s.", info.pid, info.name.c_str());
-        if (PidUsingFlag(pidPath, prefix, unMountFailList)) {
+        if (PidUsingFlag(pidPath, unMountFailList)) {
             proInfos.push_back(info);
         }
     }
-    LOGE("FindAndKillProcess end, total find %{public}d", static_cast<int>(proInfos.size()));
+    LOGE("find process end, total find %{public}d", static_cast<int>(proInfos.size()));
     return E_OK;
 }
 
@@ -396,7 +399,7 @@ void MountManager::UmountFailRadar(std::vector<ProcessInfo> &processInfos, int32
     StorageService::StorageRadar::GetInstance().RecordKillProcessResult(info, radar);
 }
 
-bool MountManager::PidUsingFlag(std::string &pidPath, const std::string &prefix, std::list<std::string> &mountFailList)
+bool MountManager::PidUsingFlag(std::string &pidPath, std::list<std::string> &mountFailList)
 {
     std::string fdPath = pidPath + "/fd";
     auto fdDir = std::unique_ptr<DIR, int (*)(DIR*)>(opendir(fdPath.c_str()), closedir);
@@ -668,7 +671,6 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
         std::string bundleNameStr = bundleName.path().filename().generic_string();
         int32_t point = bundleNameStr.find(MOUNT_SUFFIX);
         if (point == -1) {
-            LOGI("bundleName do not need to mount: %{public}s", bundleNameStr.c_str());
             continue;
         }
         bundleNameStr = bundleNameStr.substr(0, point);
@@ -1106,8 +1108,28 @@ int32_t MountManager::UmountByUser(int32_t userId)
         res = cloudUMount;
     }
     UMountMediaFuse(userId);
+    FindSaFd(userId);
     LOGI("unmount end, res is %{public}d.", res);
     return res;
+}
+
+int32_t MountManager::FindSaFd(int32_t userId)
+{
+    LOGI("find sa fd start.");
+    std::list<std::string> list;
+    for (const std::string &item: FD_PATH) {
+        std::string temp = item;
+        ParseSandboxPath(temp, to_string(userId), "");
+        list.push_back(temp);
+    }
+    std::vector<ProcessInfo> proInfos;
+    std::list<std::string> excludeProcess;
+    FindProcess(list, proInfos, excludeProcess);
+    if (!proInfos.empty()) {
+        UmountFailRadar(proInfos, E_UMOUNT_FIND_FD);
+    }
+    LOGI("find sa fd end.");
+    return E_OK;
 }
 
 int32_t MountManager::UmountFileSystem(int32_t userId)
@@ -1138,7 +1160,8 @@ int32_t MountManager::UmountFileSystem(int32_t userId)
 int32_t MountManager::FindAndKillProcess(int32_t userId, std::list<std::string> &unMountFailList, int32_t radar)
 {
     std::vector<ProcessInfo> processInfos;
-    FindProcess(userId, unMountFailList, processInfos);
+    std::list<std::string> excludeProcess = {"(storage_daemon)"};
+    FindProcess(unMountFailList, processInfos, excludeProcess);
     if (processInfos.empty()) {
         LOGE("no process find.");
         return E_UMOUNT_NO_PROCESS_FIND;
