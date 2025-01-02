@@ -16,6 +16,7 @@
 #include "ipc/storage_manager.h"
 
 #include <singleton.h>
+#include "utils/storage_radar.h"
 #ifdef STORAGE_STATISTICS_MANAGER
 #include <storage/storage_monitor_service.h>
 #include <storage/storage_status_service.h>
@@ -43,6 +44,7 @@
 constexpr bool DECRYPTED = false;
 constexpr bool ENCRYPTED = true;
 
+using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageManager {
 REGISTER_SYSTEM_ABILITY_BY_ID(StorageManager, STORAGE_MANAGER_MANAGER_ID, true);
@@ -130,6 +132,10 @@ int32_t StorageManager::GetFreeSizeOfVolume(std::string volumeUuid, int64_t &fre
     std::shared_ptr<VolumeStorageStatusService> volumeStatsManager =
         DelayedSingleton<VolumeStorageStatusService>::GetInstance();
     int32_t err = volumeStatsManager->GetFreeSizeOfVolume(volumeUuid, freeSize);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("VolumeStorageStatusService::GetFreeSizeOfVolume", DEFAULT_USERID, err,
+            "setting");
+    }
     return err;
 #else
     return E_OK;
@@ -144,6 +150,10 @@ int32_t StorageManager::GetTotalSizeOfVolume(std::string volumeUuid, int64_t &to
     std::shared_ptr<VolumeStorageStatusService> volumeStatsManager =
         DelayedSingleton<VolumeStorageStatusService>::GetInstance();
     int32_t err = volumeStatsManager->GetTotalSizeOfVolume(volumeUuid, totalSize);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("VolumeStorageStatusService::GetTotalSizeOfVolume", DEFAULT_USERID, err,
+            "setting");
+    }
     return err;
 #else
     return E_OK;
@@ -156,6 +166,10 @@ int32_t StorageManager::GetBundleStats(std::string pkgName, BundleStats &bundleS
 #ifdef STORAGE_STATISTICS_MANAGER
     int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetBundleStats(pkgName, bundleStats,
         appIndex, statFlag);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("StorageStatusService::GetBundleStats", DEFAULT_USERID, err,
+            "setting");
+    }
     return err;
 #else
     return E_OK;
@@ -167,6 +181,10 @@ int32_t StorageManager::GetSystemSize(int64_t &systemSize)
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGD("StorageManger::getSystemSize start");
     int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetSystemSize(systemSize);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("StorageTotalStatusService::GetSystemSize", DEFAULT_USERID, err,
+            "setting");
+    }
     return err;
 #else
     return E_OK;
@@ -178,6 +196,10 @@ int32_t StorageManager::GetTotalSize(int64_t &totalSize)
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGD("StorageManger::getTotalSize start");
     int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetTotalSize(totalSize);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("StorageTotalStatusService::GetTotalSize", DEFAULT_USERID, err,
+            "setting");
+    }
     return err;
 #else
     return E_OK;
@@ -189,6 +211,10 @@ int32_t StorageManager::GetFreeSize(int64_t &freeSize)
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGD("StorageManger::getFreeSize start");
     int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetFreeSize(freeSize);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("StorageTotalStatusService::GetFreeSize", DEFAULT_USERID, err,
+            "setting");
+    }
     return err;
 #else
     return E_OK;
@@ -200,6 +226,10 @@ int32_t StorageManager::GetUserStorageStats(StorageStats &storageStats)
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGD("StorageManger::GetUserStorageStats start");
     int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetUserStorageStats(storageStats);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("StorageStatusService::GetUserStorageStats", DEFAULT_USERID, err,
+            "setting");
+    }
     return err;
 #else
     return E_OK;
@@ -211,6 +241,10 @@ int32_t StorageManager::GetUserStorageStats(int32_t userId, StorageStats &storag
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGD("StorageManger::GetUserStorageStats start");
     int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetUserStorageStats(userId, storageStats);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("StorageStatusService::GetUserStorageStats", DEFAULT_USERID, err,
+            "setting");
+    }
     return err;
 #else
     return E_OK;
@@ -222,6 +256,10 @@ int32_t StorageManager::GetCurrentBundleStats(BundleStats &bundleStats, uint32_t
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGD("StorageManger::GetCurrentBundleStats start");
     int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetCurrentBundleStats(bundleStats, statFlag);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("StorageStatusService::GetCurrentBundleStats", DEFAULT_USERID, err,
+            "setting");
+    }
     return err;
 #else
     return E_OK;
@@ -341,6 +379,9 @@ int32_t StorageManager::GetVolumeByUuid(std::string fsUuid, VolumeExternal &vc)
     LOGI("StorageManger::GetVolumeByUuid start, uuid: %{public}s",
         GetAnonyString(fsUuid).c_str());
     int32_t err = DelayedSingleton<VolumeManagerService>::GetInstance()->GetVolumeByUuid(fsUuid, vc);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeManagerService::GetVolumeByUuid", err);
+    }
     return err;
 #else
     return E_OK;
@@ -352,6 +393,9 @@ int32_t StorageManager::GetVolumeById(std::string volumeId, VolumeExternal &vc)
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::GetVolumeById start, volId: %{public}s", volumeId.c_str());
     int32_t err = DelayedSingleton<VolumeManagerService>::GetInstance()->GetVolumeById(volumeId, vc);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeManagerService::GetVolumeById", err);
+    }
     return err;
 #else
     return E_OK;
@@ -386,6 +430,9 @@ int32_t StorageManager::GetDiskById(std::string diskId, Disk &disk)
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::GetDiskById start, diskId: %{public}s", diskId.c_str());
     int32_t err = DelayedSingleton<DiskManagerService>::GetInstance()->GetDiskById(diskId, disk);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("DiskManagerService::GetDiskById", err);
+    }
     return err;
 #else
     return E_OK;
@@ -621,6 +668,10 @@ int32_t StorageManager::GetBundleStatsForIncrease(uint32_t userId, const std::ve
     LOGI("StorageManger::GetBundleStatsForIncrease start");
     int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetBundleStatsForIncrease(userId,
         bundleNames, incrementalBackTimes, pkgFileSizes, incPkgFileSizes);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("StorageStatusService::GetBundleStatsForIncrease", userId, err,
+            "setting");
+    }
     return err;
 #else
     return E_OK;
@@ -634,6 +685,10 @@ int32_t StorageManager::GetUserStorageStatsByType(int32_t userId, StorageStats &
     LOGI("StorageManger::GetUserStorageStatsByType start");
     int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetUserStorageStatsByType(userId,
         storageStats, type);
+    if (err != E_OK) {
+        StorageRadar::ReportGetStorageStatus("StorageStatusService::GetUserStorageStatsByType", DEFAULT_USERID, err,
+            "setting");
+    }
     return err;
 #else
     return E_OK;
@@ -644,7 +699,20 @@ int32_t StorageManager::UpdateMemoryPara(int32_t size, int32_t &oldSize)
 {
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    return sdCommunication->UpdateMemoryPara(size, oldSize);
+    int32_t err = sdCommunication->UpdateMemoryPara(size, oldSize);
+    if (err != E_OK) {
+        RadarParameter parameterRes = {
+            .orgPkg = DEFAULT_ORGPKGNAME,
+            .userId = DEFAULT_USERID,
+            .funcName = "StorageDaemon::UpdateMemoryPara",
+            .bizScene = BizScene::DISTRIBUTED_FILE,
+            .bizStage = BizStage::BIZ_STAGE_GET_FILE_ENCRYPT_STATUS,
+            .keyElxLevel = "EL1",
+            .errorCode = err
+        };
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
+    }
+    return err;
 }
 
 int32_t StorageManager::MountDfsDocs(int32_t userId, const std::string &relativePath,
@@ -675,7 +743,7 @@ int32_t StorageManager::NotifyMtpMounted(const std::string &id, const std::strin
 #endif
     return E_OK;
 }
- 
+
 int32_t StorageManager::NotifyMtpUnmounted(const std::string &id, const std::string &path)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
