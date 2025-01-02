@@ -26,8 +26,6 @@
 namespace OHOS {
 namespace StorageDaemon {
 static const std::string NEED_RESTORE_PATH = "/data/service/el0/storage_daemon/sd/latest/need_restore";
-static const std::string NEW_DOUBLE_2_SINGLE = "2";
-static const uint32_t NEW_DOUBLE_2_SINGLE_BASE_VERSION = 2;
 static const uint32_t DEFAULT_SINGLE_FIRST_USER_ID = 100;
 static const uint32_t USER_ID_DIFF = 91;
 
