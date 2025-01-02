@@ -158,5 +158,15 @@ bool DelFolder(const std::string &path)
 {
     return IFileUtilMoc::fileUtilMoc->DelFolder(path);
 }
+
+std::string ProcessToString(std::vector<ProcessInfo> &processList)
+{
+    return IFileUtilMoc::fileUtilMoc->ProcessToString(processList);
+}
+
+void KillProcess(const std::vector<ProcessInfo> &processList, std::vector<ProcessInfo> &killFailList)
+{
+    return;
+}
 }
 }

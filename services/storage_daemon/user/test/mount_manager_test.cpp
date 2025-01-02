@@ -14,6 +14,7 @@
  */
 #include "user/mount_manager.h"
 
+#include <fcntl.h>
 #include <gtest/gtest.h>
 
 #include "directory_ex.h"
@@ -401,6 +402,136 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_CheckPathValid_001, T
     EXPECT_FALSE(ret);
     ForceRemoveDirectory(basePath);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckPathValid_001 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerTest_CheckMaps_001
+ * @tc.desc: Verify the CheckMaps function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_CheckMaps_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckMaps_001 start";
+    std::string path;
+    std::list<std::string> mountFailList;
+    auto ret = MountManager::GetInstance()->CheckMaps("", mountFailList);
+    EXPECT_FALSE(ret);
+
+    string baseDir = "/data/test/tdd";
+    ForceCreateDirectory(baseDir);
+    path = baseDir + "test.txt";
+    ret = MountManager::GetInstance()->CheckMaps(path, mountFailList);
+    EXPECT_FALSE(ret);
+
+    auto fd = open(path.c_str(), O_RDWR | O_CREAT);
+    ASSERT_GT(fd, 0);
+
+    std::string content = "this is a test\n/data/test/tdd";
+    (void)write(fd, content.c_str(), content.size());
+    close(fd);
+    ret = MountManager::GetInstance()->CheckMaps(path, mountFailList);
+    EXPECT_FALSE(ret);
+
+    mountFailList.push_back(baseDir);
+    ret = MountManager::GetInstance()->CheckMaps(path, mountFailList);
+    EXPECT_TRUE(ret);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckMaps_001 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerTest_MountSandboxPath_001
+ * @tc.desc: Verify the MountSandboxPath function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_MountSandboxPath_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_MountSandboxPath_001 start";
+    std::vector<std::string> srcPathEmpty;
+    std::vector<std::string> dstPathEmpty;
+    std::string bundleName = "test";
+    std::string userId = "100";
+    MountManager::GetInstance()->MountSandboxPath(srcPathEmpty, dstPathEmpty, bundleName, userId);
+
+    std::vector<std::string> srcPaths {
+        "/data/test/tdd1",
+        "/data/test/tdd2"
+    };
+    MountManager::GetInstance()->MountSandboxPath(srcPaths, dstPathEmpty, bundleName, userId);
+    
+    std::vector<std::string> dstPaths {
+        "/data/test/tdd3"
+    };
+    MountManager::GetInstance()->MountSandboxPath(srcPaths, dstPaths, bundleName, userId);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_MountSandboxPath_001 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerTest_MountSandboxPath_002
+ * @tc.desc: Verify the MountSandboxPath function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_MountSandboxPath_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_MountSandboxPath_002 start";
+    std::string bundleName = "test";
+    std::string userId = "100";
+
+    std::vector<std::string> srcPaths {
+        "/data/test/tdd1",
+    };
+    
+    std::vector<std::string> dstPaths {
+        "/data/test/tdd2"
+    };
+    
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false));
+    MountManager::GetInstance()->MountSandboxPath(srcPaths, dstPaths, bundleName, userId);
+    
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(false));
+    MountManager::GetInstance()->MountSandboxPath(srcPaths, dstPaths, bundleName, userId);
+    
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(1));
+    MountManager::GetInstance()->MountSandboxPath(srcPaths, dstPaths, bundleName, userId);
+
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(1));
+    MountManager::GetInstance()->MountSandboxPath(srcPaths, dstPaths, bundleName, userId);
+
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(0));
+    MountManager::GetInstance()->MountSandboxPath(srcPaths, dstPaths, bundleName, userId);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_MountSandboxPath_002 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerTest_UMountByListWithDetach_001
+ * @tc.desc: Verify the UMountByListWithDetach function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_UMountByListWithDetach_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_UMountByListWithDetach_001 start";
+    std::list<std::string> list;
+    EXPECT_EQ(MountManager::GetInstance()->UMountByListWithDetach(list), E_OK);
+    
+    list.push_back("test");
+    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(1));
+    auto ret = MountManager::GetInstance()->UMountByListWithDetach(list);
+    if (errno != ENOENT && errno != EINVAL) {
+        EXPECT_EQ(ret, errno);
+    } else {
+        EXPECT_EQ(ret, E_OK);
+    }
+    
+    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(0));
+    ret = MountManager::GetInstance()->UMountByListWithDetach(list);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_UMountByListWithDetach_001 end";
 }
 } // STORAGE_DAEMON
 } // OHOS
