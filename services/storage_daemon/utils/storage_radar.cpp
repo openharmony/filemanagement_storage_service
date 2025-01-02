@@ -21,6 +21,80 @@
 
 namespace OHOS {
 namespace StorageService {
+void StorageRadar::ReportActiveUserKey(const std::string &funcName, uint32_t userId, int ret,
+    const std::string &keyElxLevel)
+{
+    RadarParameter param = {
+        .orgPkg = "account_mgr",
+        .userId = userId,
+        .funcName = funcName,
+        .bizScene = BizScene::USER_KEY_ENCRYPTION,
+        .bizStage = BizStage::BIZ_STAGE_ACTIVE_USER_KEY,
+        .keyElxLevel = keyElxLevel,
+        .errorCode = ret
+    };
+    StorageRadar::GetInstance().RecordFuctionResult(param);
+}
+
+void StorageRadar::ReportGetStorageStatus(const std::string &funcName, uint32_t userId, int ret,
+    const std::string &orgPkg)
+{
+    RadarParameter param = {
+        .orgPkg = orgPkg,
+        .userId = userId,
+        .funcName = funcName,
+        .bizScene = BizScene::SPACE_STATISTICS,
+        .bizStage = BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS,
+        .keyElxLevel = "NA",
+        .errorCode = ret
+    };
+    StorageRadar::GetInstance().RecordFuctionResult(param);
+}
+
+void StorageRadar::ReportVolumeOperation(const std::string &funcName, int ret)
+{
+    RadarParameter param = {
+        .orgPkg = DEFAULT_ORGPKGNAME,
+        .userId = DEFAULT_USERID,
+        .funcName = funcName,
+        .bizScene = BizScene::EXTERNAL_VOLUME_MANAGER,
+        .bizStage = BizStage::BIZ_STAGE_MOUNT,
+        .keyElxLevel = "NA",
+        .errorCode = ret
+    };
+    StorageRadar::GetInstance().RecordFuctionResult(param);
+}
+
+void StorageRadar::ReportInitGlobalKey(const std::string &funcName, uint32_t userId, int ret,
+    const std::string &keyLevel)
+{
+    RadarParameter param = {
+        .orgPkg = "init",
+        .userId = userId,
+        .funcName = funcName,
+        .bizScene = BizScene::USER_KEY_ENCRYPTION,
+        .bizStage = BizStage::BIZ_STAGE_INIT_GLOBAL_KEY,
+        .keyElxLevel = keyLevel,
+        .errorCode = ret
+    };
+    StorageRadar::GetInstance().RecordFuctionResult(param);
+}
+
+void StorageRadar::ReportUserManager(const std::string &funcName, uint32_t userId, int ret,
+    enum BizStage stage)
+{
+    RadarParameter param = {
+        .orgPkg = "account_mgr",
+        .userId = userId,
+        .funcName = funcName,
+        .bizScene = BizScene::USER_MOUNT_MANAGER,
+        .bizStage = stage,
+        .keyElxLevel = "ELx",
+        .errorCode = ret
+    };
+    StorageRadar::GetInstance().RecordFuctionResult(param);
+}
+
 bool StorageRadar::RecordKillProcessResult(std::string processName, int32_t errcode)
 {
     int32_t res = E_OK;
@@ -28,8 +102,8 @@ bool StorageRadar::RecordKillProcessResult(std::string processName, int32_t errc
         res = HiSysEventWrite(
             STORAGESERVICE_DOAMIN,
             UMOUNT_FAIL_BEHAVIOR,
-            HiviewDFX::HiSysEvent::EventType::FAULT,
-            "ORG_PKG", ORGPKGNAME,
+            HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
+            "ORG_PKG", DEFAULT_ORGPKGNAME,
             "FUNC", "FindAndKillProcess",
             "BIZ_SCENE", static_cast<int32_t>(BizScene::STORAGE_START),
             "BIZ_STAGE", static_cast<int32_t>(BizStage::BIZ_STAGE_SA_START),
@@ -39,8 +113,8 @@ bool StorageRadar::RecordKillProcessResult(std::string processName, int32_t errc
         res = HiSysEventWrite(
             STORAGESERVICE_DOAMIN,
             UMOUNT_FAIL_BEHAVIOR,
-            HiviewDFX::HiSysEvent::EventType::FAULT,
-            "ORG_PKG", ORGPKGNAME,
+            HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
+            "ORG_PKG", DEFAULT_ORGPKGNAME,
             "FUNC", "FindAndKillProcess",
             "BIZ_SCENE", static_cast<int32_t>(BizScene::STORAGE_START),
             "BIZ_STAGE", static_cast<int32_t>(BizStage::BIZ_STAGE_SA_START),
@@ -56,24 +130,20 @@ bool StorageRadar::RecordKillProcessResult(std::string processName, int32_t errc
     return true;
 }
 
-bool StorageRadar::RecordFuctionResult(std::string func,
-                                       enum BizScene bizScene,
-                                       enum BizStage bizStage,
-                                       std::string keyElxLevel,
-                                       int32_t errorCode)
+bool StorageRadar::RecordFuctionResult(const RadarParameter &parRes)
 {
     int32_t res = E_OK;
-    if (errorCode == E_OK) {
+    if (parRes.errorCode == E_OK) {
         res = HiSysEventWrite(
             STORAGESERVICE_DOAMIN,
             FILE_STORAGE_MANAGER_FAULT_BEHAVIOR,
-            HiviewDFX::HiSysEvent::EventType::FAULT,
-            "ORG_PKG", ORGPKGNAME,
-            "USER_ID", USERID,
-            "FUNC", func,
-            "BIZ_SCENE", static_cast<int32_t>(bizScene),
-            "BIZ_STAGE", static_cast<int32_t>(bizStage),
-            "kEY_ELX_LEVEL", keyElxLevel,
+            HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
+            "ORG_PKG", parRes.orgPkg,
+            "USER_ID", parRes.userId,
+            "FUNC", parRes.funcName,
+            "BIZ_SCENE", static_cast<int32_t>(parRes.bizScene),
+            "BIZ_STAGE", static_cast<int32_t>(parRes.bizStage),
+            "kEY_ELX_LEVEL", parRes.keyElxLevel,
             "TO_CALL_PKG", "FBEX, HUKS, KEY_RING, BUNDLE_MANAGER, HMDFS",
             "DISK_VOLUME_INFO", "{\"diskId\":\"ab12\", \"volumeId\":\"34cd\", \"fsType\":\"ntfs\"}",
             "FILE_STATUS", "{\"status\":\"encrypted\", \"path\":\"/data/storage/el2/base/\"}",
@@ -84,18 +154,18 @@ bool StorageRadar::RecordFuctionResult(std::string func,
             STORAGESERVICE_DOAMIN,
             FILE_STORAGE_MANAGER_FAULT_BEHAVIOR,
             HiviewDFX::HiSysEvent::EventType::FAULT,
-            "ORG_PKG", ORGPKGNAME,
-            "USER_ID", USERID,
-            "FUNC", func,
-            "BIZ_SCENE", static_cast<int32_t>(bizScene),
-            "BIZ_STAGE", static_cast<int32_t>(bizStage),
-            "kEY_ELX_LEVEL", keyElxLevel,
+            "ORG_PKG", parRes.orgPkg,
+            "USER_ID", parRes.userId,
+            "FUNC", parRes.funcName,
+            "BIZ_SCENE", static_cast<int32_t>(parRes.bizScene),
+            "BIZ_STAGE", static_cast<int32_t>(parRes.bizStage),
+            "kEY_ELX_LEVEL", parRes.keyElxLevel,
             "TO_CALL_PKG", "FBEX, HUKS, KEY_RING, BUNDLE_MANAGER, HMDFS",
             "DISK_VOLUME_INFO", "{\"diskId\":\"ab12\", \"volumeId\":\"34cd\", \"fsType\":\"ntfs\"}",
             "FILE_STATUS", "{\"status\":\"encrypted\", \"path\":\"/data/storage/el2/base/\"}",
             "STAGE_RES", static_cast<int32_t>(StageRes::STAGE_FAIL),
             "BIZ_STATE", static_cast<int32_t>(BizState::BIZ_STATE_START),
-            "ERROR_CODE", errorCode);
+            "ERROR_CODE", parRes.errorCode);
     }
     if (res != E_OK) {
         LOGE("StorageRadar ERROR, res :%{public}d", res);
