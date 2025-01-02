@@ -162,5 +162,91 @@ HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_HandleDir_001, TestSize.Level1)
     EXPECT_EQ(content, nullptr);
     GTEST_LOG_(INFO) << "MtpfsDeviceTest_HandleDir_001 end";
 }
+
+/**
+ * @tc.name: Mtpfs_AddUploadRecord_001
+ * @tc.desc: Verify the AddUploadRecord function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_AddUploadRecord_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsDeviceTest_AddUploadRecord_001 start";
+    const char *path = "/mnt/data/external";
+    auto mtpfsdevice = std::make_shared<MtpFsDevice>();
+    mtpfsdevice->AddUploadRecord(path, false);
+    auto it = mtpfsdevice->uploadRecordMap_.find(path);
+    EXPECT_EQ(it->second, false);
+
+    mtpfsdevice->AddUploadRecord(path, true);
+    it = mtpfsdevice->uploadRecordMap_.find(path);
+    EXPECT_EQ(it->second, true);
+    GTEST_LOG_(INFO) << "MtpfsDeviceTest_AddUploadRecord_001 end";
+}
+
+/**
+ * @tc.name: Mtpfs_RemoveUploadRecord_001
+ * @tc.desc: Verify the RemoveUploadRecord function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_RemoveUploadRecord_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsDeviceTest_RemoveUploadRecord_001 start";
+    const char *path0 = "/mnt/data/external";
+    const char *path1 = "/mnt/data/exter";
+    auto mtpfsdevice = std::make_shared<MtpFsDevice>();
+    mtpfsdevice->AddUploadRecord(path0, true);
+
+    mtpfsdevice->RemoveUploadRecord(path1);
+    auto it = mtpfsdevice->uploadRecordMap_.find(path0);
+    EXPECT_EQ(it->second, true);
+
+    mtpfsdevice->RemoveUploadRecord(path0);
+    it = mtpfsdevice->uploadRecordMap_.find(path0);
+    EXPECT_EQ(it, mtpfsdevice->uploadRecordMap_.end());
+    GTEST_LOG_(INFO) << "MtpfsDeviceTest_RemoveUploadRecord_001 end";
+}
+
+/**
+ * @tc.name: Mtpfs_SetUploadRecord_001
+ * @tc.desc: Verify the SetUploadRecord function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_SetUploadRecord_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsDeviceTest_SetUploadRecord_001 start";
+    const char *path = "/mnt/data/external";
+    auto mtpfsdevice = std::make_shared<MtpFsDevice>();
+
+    mtpfsdevice->SetUploadRecord(path, false);
+    auto it = mtpfsdevice->uploadRecordMap_.find(path);
+    EXPECT_EQ(it, mtpfsdevice->uploadRecordMap_.end());
+
+    mtpfsdevice->AddUploadRecord(path, false);
+    mtpfsdevice->SetUploadRecord(path, true);
+    it = mtpfsdevice->uploadRecordMap_.find(path);
+    EXPECT_EQ(it->second, true);
+    GTEST_LOG_(INFO) << "MtpfsDeviceTest_SetUploadRecord_001 end";
+}
+
+/**
+ * @tc.name: Mtpfs_FindUploadRecord_001
+ * @tc.desc: Verify the FindUploadRecord function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_FindUploadRecord_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsDeviceTest_FindUploadRecord_001 start";
+    const char *path = "/mnt/data/external";
+    std::tuple<std::string, bool> ret;
+    auto mtpfsdevice = std::make_shared<MtpFsDevice>();
+
+    ret = mtpfsdevice->FindUploadRecord(path);
+    EXPECT_EQ(std::get<0>(ret).empty(), true);
+
+    mtpfsdevice->AddUploadRecord(path, true);
+    ret = mtpfsdevice->FindUploadRecord(path);
+    EXPECT_EQ(std::get<1>(ret), true);
+    GTEST_LOG_(INFO) << "MtpfsDeviceTest_FindUploadRecord_001 end";
+}
 }
 }

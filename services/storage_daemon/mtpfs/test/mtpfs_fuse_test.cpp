@@ -27,6 +27,8 @@ const int32_t ST_NLINK_TWO = 2;
 const int32_t FILE_SIZE = 512;
 const int32_t BS_SIZE = 1024;
 const int32_t ARG_SIZE = 2;
+constexpr int UPLOAD_RECORD_FALSE_LEN = 5;
+constexpr int UPLOAD_RECORD_TRUE_LEN = 4;
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -279,6 +281,66 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_OptProc_004, TestSize.Level1)
     EXPECT_EQ(result, 1);
 
     GTEST_LOG_(INFO) << "MtpfsFuseTest_OptProc_004 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_SetXAttr_001
+ * @tc.desc: Test SetXAttr function when path is valid
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_SetXAttr_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_SetXAttr_001 start";
+
+    const char *path = "/mnt/data/external";
+    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
+    int ret = mtpFileSystem->SetXAttr(NULL, NULL);
+    EXPECT_EQ(ret, -ENOENT);
+
+    ret = mtpFileSystem->SetXAttr(path, "user.uploadCompleted");
+    EXPECT_EQ(ret, -ENOENT);
+
+    ret = mtpFileSystem->SetXAttr(path, "user.isUploadCompleted");
+    EXPECT_EQ(ret, 0);
+
+    mtpFileSystem->device_.RemoveUploadRecord(path);
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_SetXAttr_001 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_GetXAttr_001
+ * @tc.desc: Test GetXAttr function when path is valid
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttr_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_GetXAttr_001 start";
+
+    const char *path = "/mnt/data/external";
+    char out[UPLOAD_RECORD_FALSE_LEN + 1] = { 0 };
+ 
+    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
+    int ret = mtpFileSystem->GetXAttr(NULL, NULL, NULL, 0);
+    EXPECT_EQ(ret, 0);
+
+    ret = mtpFileSystem->GetXAttr(path, "user.uploadCompleted", NULL, 0);
+    EXPECT_EQ(ret, 0);
+
+    ret = mtpFileSystem->GetXAttr(path, "user.isUploadCompleted", NULL, 0);
+    EXPECT_EQ(ret, UPLOAD_RECORD_FALSE_LEN);
+
+    ret = mtpFileSystem->GetXAttr(path, "user.isUploadCompleted", out, sizeof(out));
+    EXPECT_EQ(ret, 0);
+
+    mtpFileSystem->SetXAttr(path, "user.isUploadCompleted");
+    ret = mtpFileSystem->GetXAttr(path, "user.isUploadCompleted", out, sizeof(out));
+    EXPECT_EQ(ret, UPLOAD_RECORD_FALSE_LEN);
+
+    mtpFileSystem->device_.SetUploadRecord(path, true);
+    ret = mtpFileSystem->GetXAttr(path, "user.isUploadCompleted", out, sizeof(out));
+    EXPECT_EQ(ret, UPLOAD_RECORD_TRUE_LEN);
+
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_GetXAttr_001 end";
 }
 } // STORAGE_DAEMON
 } // OHOS
