@@ -355,7 +355,7 @@ int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath, bool 
 int32_t MountManager::FindProcess(std::list<std::string> &unMountFailList, std::vector<ProcessInfo> &proInfos,
     std::list<std::string> &excludeProcess)
 {
-    LOGI("FindAndKillProcess start.");
+    LOGI("find process start.");
     auto procDir = std::unique_ptr<DIR, int (*)(DIR*)>(opendir("/proc"), closedir);
     if (!procDir) {
         LOGE("failed to open dir proc, err %{public}d", errno);
@@ -385,7 +385,7 @@ int32_t MountManager::FindProcess(std::list<std::string> &unMountFailList, std::
             proInfos.push_back(info);
         }
     }
-    LOGE("FindAndKillProcess end, total find %{public}d", static_cast<int>(proInfos.size()));
+    LOGE("find process end, total find %{public}d", static_cast<int>(proInfos.size()));
     return E_OK;
 }
 
@@ -671,7 +671,6 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
         std::string bundleNameStr = bundleName.path().filename().generic_string();
         int32_t point = bundleNameStr.find(MOUNT_SUFFIX);
         if (point == -1) {
-            LOGI("bundleName do not need to mount: %{public}s", bundleNameStr.c_str());
             continue;
         }
         bundleNameStr = bundleNameStr.substr(0, point);
