@@ -1123,7 +1123,7 @@ bool KeyManager::HasElxDesc(std::map<unsigned int, std::shared_ptr<BaseKey>> &us
 {
     auto it = userElKey_.find(user);
     auto elKey = it->second;
-    if (it != userElKey_.end() && !elKey->KeyDesclsEmpty()) {
+    if (it != userElKey_.end() && !elKey->KeyDescIsEmpty()) {
         LOGI("user el%{public}u key desc has existed", type);
         return true;
     }

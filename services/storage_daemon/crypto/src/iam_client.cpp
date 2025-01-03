@@ -106,17 +106,21 @@ bool IamClient::GetSecUserInfo(uint32_t userId, UserIam::UserAuth::SecUserInfo &
     secUserInfoState_ = SEC_USER_INFO_FAILED;
     std::shared_ptr<UserEnrollCallback> userEnrollCallback = std::make_shared<UserEnrollCallback>();
     int32_t retCode = UserIam::UserAuth::UserIdmClient::GetInstance().GetSecUserInfo(userId, userEnrollCallback);
-    if (retCode != UserIam::UserAuth::ResultCode::SUCCESS) {
+    if (retCode != UserIam::UserAuth::ResultCode::SUCCESS && retCode != UserIam::UserAuth::ResultCode::NOT_ENROLLED &&
+        retCode != UserIam::UserAuth::ResultCode::GENERAL_ERROR) {
         for (int i = 0; i < IAM_MAX_RETRY_TIME; ++i) {
             usleep(IAM_RETRY_INTERVAL_MS);
             retCode = UserIam::UserAuth::UserIdmClient::GetInstance().GetSecUserInfo(userId, userEnrollCallback);
             LOGE("GetSecureUid has retry %{public}d times, retryRet %{public}d", i, retCode);
-            if (retCode == UserIam::UserAuth::ResultCode::SUCCESS) {
+            if (retCode == UserIam::UserAuth::ResultCode::SUCCESS ||
+                retCode == UserIam::UserAuth::ResultCode::NOT_ENROLLED ||
+                retCode == UserIam::UserAuth::ResultCode::GENERAL_ERROR) {
                 break;
             }
         }
     }
-    if (retCode != UserIam::UserAuth::ResultCode::SUCCESS) {
+    if (retCode != UserIam::UserAuth::ResultCode::SUCCESS && retCode != UserIam::UserAuth::ResultCode::NOT_ENROLLED &&
+        retCode != UserIam::UserAuth::ResultCode::GENERAL_ERROR) {
         LOGE("Get SecUserInfo failed !");
         return false;
     }

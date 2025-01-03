@@ -1099,7 +1099,7 @@ uint32_t BaseKey::GetIdFromDir()
     return static_cast<uint32_t>(userId);
 }
 
-bool BaseKey::KeyDesclsEmpty()
+bool BaseKey::KeyDescIsEmpty()
 {
     return keyInfo_.keyDesc.IsEmpty();
 }

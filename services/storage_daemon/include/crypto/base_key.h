@@ -66,7 +66,7 @@ public:
     bool ClearKey(const std::string &mnt = MNT_DATA);
     void WipingActionDir(std::string &path);
     bool UpgradeKeys();
-    bool KeyDesclsEmpty();
+    bool KeyDescIsEmpty();
     KeyInfo keyInfo_;
     std::string GetDir() const
     {
