@@ -18,6 +18,7 @@
 #include "iremote_proxy.h"
 #include "iservice_registry.h"
 #include "storage_service_log.h"
+#include "storage_service_errno.h"
 #include "system_ability_definition.h"
 
 namespace OHOS {
@@ -152,7 +153,7 @@ int32_t StorageManagerClient::LockUserScreen(uint32_t userId)
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
-        return -EFAULT;
+        return E_SA_IS_NULLPTR;
     }
 
     return client->LockUserScreen(userId);
