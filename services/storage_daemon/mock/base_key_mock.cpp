@@ -111,12 +111,12 @@ bool BaseKey::RenameKeyPath(const std::string &keyPath)
     return IBaseKeyMoc::baseKeyMoc->RenameKeyPath(keyPath);
 }
 
-bool BaseKey::KeyDesclsEmpty()
+bool BaseKey::KeyDescIsEmpty()
 {
     if (IBaseKeyMoc::baseKeyMoc == nullptr) {
         return false;
     }
-    return IBaseKeyMoc::baseKeyMoc->KeyDesclsEmpty();
+    return IBaseKeyMoc::baseKeyMoc->KeyDescIsEmpty();
 }
 
 void BaseKey::ClearMemoryKeyCtx()
