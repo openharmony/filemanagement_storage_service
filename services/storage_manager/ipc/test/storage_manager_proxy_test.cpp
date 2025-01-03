@@ -1707,7 +1707,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyMtpUnmounted_0000,
     EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_NotifyMtpUnmounted_0000";
 }
-#ifdef STORAGE_SERVICE_MEDIA_FUSE
+
 /**
  * @tc.number: SUB_STORAGE_Storage_manager_proxy_MountMediaFuse_0000
  * @tc.name: Storage_manager_proxy_MountMediaFuse_0000
@@ -1719,21 +1719,25 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyMtpUnmounted_0000,
 HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_MountMediaFuse_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_MountMediaFuse_0000";
+    #ifdef STORAGE_SERVICE_MEDIA_FUSE
     ASSERT_TRUE(mock_ != nullptr) << "StorageManagerServiceMock failed";
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    #endif
     int32_t userId = 130;
     int32_t devFd = 140;
     ASSERT_TRUE(proxy_ != nullptr) << "StorageManagerProxy failed";
     int32_t result = proxy_->MountMediaFuse(userId, devFd);
     EXPECT_EQ(result, E_OK);
-
+    
+    #ifdef STORAGE_SERVICE_MEDIA_FUSE
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
     result = proxy_->MountMediaFuse(userId, devFd);
     EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    #endif
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_MountMediaFuse_0000";
 }
 
@@ -1748,21 +1752,24 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_MountMediaFuse_0000, tes
 HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_UMountMediaFuse_0000, testing::ext::TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_UMountMediaFuse_0000";
+    #ifdef STORAGE_SERVICE_MEDIA_FUSE
     ASSERT_TRUE(mock_ != nullptr) << "StorageManagerServiceMock failed";
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageManagerServiceMock::InvokeSendRequest));
+    #endif
     int32_t userId = 130;
     ASSERT_TRUE(proxy_ != nullptr) << "StorageManagerProxy failed";
     int32_t result = proxy_->UMountMediaFuse(userId);
     EXPECT_EQ(result, E_OK);
-
+    
+    #ifdef STORAGE_SERVICE_MEDIA_FUSE
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
     result = proxy_->UMountMediaFuse(userId);
-    EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
+    EXPET_EQ(result, E_WRITE_PARCEL_ERR);
+    #endif
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_UMountMediaFuse_0000";
 }
-#endif
 } // namespace

@@ -347,6 +347,71 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_TravelChmod_001, TestSize.Level1)
 }
 
 /**
+ * @tc.name: FileUtilsTest_IsTempFolder_001
+ * @tc.desc: Verify the IsTempFolder function.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_IsTempFolder_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_IsTempFolder_001 start";
+    std::string basePath = "/data/test/tdd/fold";
+    std::string sub = "fold";
+    std::string sub2 = "temp";
+    EXPECT_TRUE(CreateFolder(basePath));
+    EXPECT_TRUE(IsTempFolder(basePath, sub));
+    EXPECT_FALSE(IsTempFolder(basePath, sub2));
+    EXPECT_TRUE(DeleteFile(basePath) == 0);
+    EXPECT_TRUE(DelFolder(basePath));
+    GTEST_LOG_(INFO) << "FileUtilsTest_IsTempFolder_001 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_DelTemp_001
+ * @tc.desc: Verify the DelTemp function.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_DelTemp_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_DelTemp_001 start";
+    std::string basePath = "/data/test/tdd";
+    std::string subPath1 = basePath + "/fold";
+    std::string subPath2 = basePath + "/simple-mtpfs";
+    EXPECT_TRUE(CreateFolder(subPath1));
+    EXPECT_TRUE(CreateFolder(subPath2));
+    DelTemp(basePath);
+    EXPECT_TRUE(IsDir(subPath1));
+    EXPECT_FALSE(IsDir(subPath2));
+    EXPECT_TRUE(DeleteFile(basePath) == 0);
+    EXPECT_TRUE(DelFolder(basePath));
+    GTEST_LOG_(INFO) << "FileUtilsTest_DelTemp_001 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_KillProcess_001
+ * @tc.desc: Verify the KillProcess function.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_KillProcess_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_KillProcess_001 start";
+    std::vector<ProcessInfo> processList;
+    std::vector<ProcessInfo> killFailList;
+    KillProcess(processList, killFailList);
+    
+    ProcessInfo info1 {.name = "test1", .pid = 65300 };
+    ProcessInfo info2 {.name = "test2", .pid = 65301 };
+    processList.push_back(info1);
+    processList.push_back(info2);
+
+    KillProcess(processList, killFailList);
+    EXPECT_EQ(killFailList.size(), 0);
+    GTEST_LOG_(INFO) << "FileUtilsTest_KillProcess_001 end";
+}
+
+/**
  * @tc.name: StorageRadarTest_RecordKillProcessResult_000
  * @tc.desc: Verify the StorageRadar function.
  * @tc.type: FUNC

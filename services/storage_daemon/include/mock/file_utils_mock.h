@@ -48,6 +48,7 @@ public:
     virtual bool IsPathMounted(std::string &path) = 0;
     virtual bool CreateFolder(const std::string &path) = 0;
     virtual bool DelFolder(const std::string &path) = 0;
+    virtual std::string ProcessToString(std::vector<ProcessInfo> &processList) = 0;
 public:
     static inline std::shared_ptr<IFileUtilMoc> fileUtilMoc = nullptr;
 };
@@ -76,6 +77,7 @@ public:
     MOCK_METHOD1(IsPathMounted, bool(std::string &path));
     MOCK_METHOD1(CreateFolder, bool(const std::string &path));
     MOCK_METHOD1(DelFolder, bool(const std::string &path));
+    MOCK_METHOD1(ProcessToString, std::string(std::vector<ProcessInfo> &processList));
 };
 }
 }
