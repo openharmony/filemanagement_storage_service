@@ -338,7 +338,8 @@ bool KeyManager::HasElkey(uint32_t userId, KeyType type)
 bool KeyManager::IsNeedClearKeyFile(std::string file)
 {
     LOGI("enter:");
-    if (!std::filesystem::exists(file)) {
+    std::error_code errCode;
+    if (!std::filesystem::exists(file, errCode)) {
         LOGE("file not exist, file is %{private}s", file.c_str());
         return false;
     }
@@ -1467,7 +1468,6 @@ int KeyManager::LockUserScreen(uint32_t user)
         LOGE("user ce does not decrypt, skip");
         return 0;
     }
-    CheckAndClearTokenInfo(user);
     auto iter = userPinProtect.find(user);
     if (iter == userPinProtect.end() || iter->second == false) {
         if (!IamClient::GetInstance().HasPinProtect(user)) {
@@ -1715,20 +1715,6 @@ bool KeyManager::IsUserCeDecrypt(uint32_t userId)
     }
     LOGI("User %{public}d de decrypted.", userId);
     return true;
-}
-
-void KeyManager::CheckAndClearTokenInfo(uint32_t user)
-{
-    bool isExist = false;
-    if (IamClient::GetInstance().HasFaceFinger(user, isExist) == 0 && !isExist) {
-        LOGI("Toke info is not exist.");
-        if ((userEl3Key_.find(user) != userEl3Key_.end()) && (userEl3Key_[user] != nullptr)) {
-            userEl3Key_[user]->ClearMemoryKeyCtx();
-        }
-        if ((userEl4Key_.find(user) != userEl4Key_.end()) && (userEl4Key_[user] != nullptr)) {
-            userEl4Key_[user]->ClearMemoryKeyCtx();
-        }
-    }
 }
 
 int KeyManager::CheckUserPinProtect(unsigned int userId,

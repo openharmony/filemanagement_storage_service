@@ -778,8 +778,9 @@ bool BaseKey::ClearKey(const std::string &mnt)
     keyInfo_.key.Clear();
     bool needClearFlag = true;
 #ifdef USER_CRYPTO_MIGRATE_KEY
+    std::error_code errCode;
     std::string elNeedRestorePath = PATH_USER_EL1_DIR + std::to_string(GetIdFromDir()) + PATH_NEED_RESTORE_SUFFIX;
-    if (std::filesystem::exists(elNeedRestorePath)) {
+    if (std::filesystem::exists(elNeedRestorePath, errCode)) {
         needClearFlag = false;
         LOGI("needRestore flag exist, do not remove secret.");
     }
@@ -980,15 +981,6 @@ void BaseKey::SplitKeyBlob(const KeyBlob &keyIn, KeyBlob &encAad, KeyBlob &nonce
     std::copy(inVct.begin(), inVct.begin() + start, encAad.data.get());
     std::copy(inVct.begin() + start, inVct.end(), nonce.data.get());
     inVct.clear();
-}
-
-void BaseKey::ClearMemoryKeyCtx()
-{
-    LOGI("enter, dir_ = %{public}s", dir_.c_str());
-    keyContext_.rndEnc.Clear();
-    keyContext_.shield.Clear();
-    keyContext_.nonce.Clear();
-    keyContext_.aad.Clear();
 }
 
 void BaseKey::ClearKeyContext(KeyContext &keyCtx)

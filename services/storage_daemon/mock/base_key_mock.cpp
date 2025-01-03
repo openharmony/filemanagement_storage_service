@@ -119,11 +119,6 @@ bool BaseKey::KeyDesclsEmpty()
     return IBaseKeyMoc::baseKeyMoc->KeyDesclsEmpty();
 }
 
-void BaseKey::ClearMemoryKeyCtx()
-{
-    return;
-}
-
 void BaseKey::WipingActionDir(std::string &path)
 {
     return;

@@ -63,6 +63,7 @@ enum ErrNo {
     E_MTP_PREPARE_DIR_ERR,
     E_MTP_MOUNT_FAILED,
     E_MTP_UMOUNT_FAILED,
+    E_MIGRATE_ELX_FAILED,
 
     // only use for anco
     E_JSON_PARSE_ERROR = 100,
