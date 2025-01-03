@@ -44,6 +44,7 @@ const uint8_t FBEX_LOCK_SCREEN = 0x3;
 const uint8_t FBEX_UNLOCK_SCREEN = 0x4;
 const uint8_t FBEX_USER_LOGOUT = 0x8;
 const uint8_t FBEX_STATUS_REPORT = 0xC;
+const uint8_t FBEX_ADD_DOUBLE_DE_IV = 20;
 const uint8_t FBEX_ADD_EL5 = 21;
 const uint8_t FBEX_READ_EL5 = 22;
 const uint8_t FBEX_WRITE_EL5 = 23;
@@ -72,6 +73,7 @@ struct FbeOptStrE {
 using FbeOptsE = FbeOptStrE;
 
 #define FBEX_IOC_ADD_IV _IOWR(FBEX_IOC_MAGIC, FBEX_ADD_IV, FbeOpts)
+#define FBEX_IOC_ADD_DOUBLE_DE_IV _IOWR(FBEX_IOC_MAGIC, FBEX_ADD_DOUBLE_DE_IV, FbeOpts)
 #define FBEX_IOC_DEL_IV _IOW(FBEX_IOC_MAGIC, FBEX_DEL_IV, FbeOpts)
 #define FBEX_IOC_LOCK_SCREEN _IOW(FBEX_IOC_MAGIC, FBEX_LOCK_SCREEN, FbeOpts)
 #define FBEX_IOC_UNLOCK_SCREEN _IOWR(FBEX_IOC_MAGIC, FBEX_UNLOCK_SCREEN, FbeOpts)
@@ -209,6 +211,48 @@ int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32
     LOGI("InstallKeyToKernel success");
     return ret;
 }
+
+int FBEX::InstallDoubleDeKeyToKernel(UserIdToFbeStr &userIdToFbe, uint8_t *iv, uint32_t size, uint8_t flag)
+{
+    LOGI("id-single: %{public}d, id-double: %{public}d, flag: %{public}u",
+        userIdToFbe.userIds[SINGLE_ID_INDEX], userIdToFbe.userIds[DOUBLE_ID_INDEX], flag);
+    if (!CheckIvValid(iv, size)) {
+        LOGE("install key param invalid");
+        return -EINVAL;
+    }
+
+    int fd = open(FBEX_UECE_PATH, O_RDWR);
+    if (fd < 0) {
+        LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        return -errno;
+    }
+    
+    FbeOptsE ops{ .userIdDouble = userIdToFbe.userIds[DOUBLE_ID_INDEX],
+                  .userIdSingle = userIdToFbe.userIds[SINGLE_ID_INDEX],
+                  .status = flag,
+                  .length = size };
+    // eBuffer -> iv
+    auto err = memcpy_s(ops.eBuffer, sizeof(ops.eBuffer), iv, size);
+    if (err != EOK) {
+        LOGE("memcpy failed %{public}d", err);
+        return 0;
+    }
+    int ret = ioctl(fd, FBEX_IOC_ADD_DOUBLE_DE_IV, &ops);
+    if (ret != 0) {
+        LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
+        close(fd);
+        return ret;
+    }
+    close(fd);
+    auto errops = memcpy_s(iv, size, ops.eBuffer, sizeof(ops.eBuffer));
+    if (errops != EOK) {
+        LOGE("memcpy failed %{public}d", errops);
+        return 0;
+    }
+    LOGI("InstallDoubleDeKeyToKernel success");
+    return ret;
+}
+
 
 int FBEX::UninstallOrLockUserKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size, bool destroy)
 {

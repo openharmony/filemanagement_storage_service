@@ -17,6 +17,7 @@
 #include <gtest/gtest.h>
 
 #include "storage/bundle_manager_connector.h"
+#include "storage/storage_monitor_service.h"
 #include "storage/storage_status_service.h"
 #include "storage/storage_total_status_service.h"
 #include "storage_service_errno.h"
@@ -225,5 +226,22 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetUserStorageStatsByType
     int32_t result = service->GetUserStorageStatsByType(userId, storageStats, type);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_GetUserStorageStatsByType_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_status_service_StartStorageMonitorTask_0000
+ * @tc.name: Storage_status_service_StartStorageMonitorTask_0000
+ * @tc.desc: Test function of StartStorageMonitorTask interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ */
+HWTEST_F(StorageTotalStatusServiceTest, Storage_status_StartStorageMonitorTask_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_StartStorageMonitorTask_0000";
+    std::shared_ptr<StorageMonitorService> service = DelayedSingleton<StorageMonitorService>::GetInstance();
+    ASSERT_TRUE(service != nullptr);
+    service->StartStorageMonitorTask();
+    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_StartStorageMonitorTask_0000";
 }
 } // namespace

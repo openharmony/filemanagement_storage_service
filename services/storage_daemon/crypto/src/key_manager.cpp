@@ -1244,10 +1244,10 @@ int KeyManager::UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &toke
     }
     std::lock_guard<std::mutex> lock(keyMutex_);
     int ret = 0;
-    if (!UnlockEceSece(user, token, secret, ret)) {
+    if ((ret = UnlockEceSece(user, token, secret)) != E_OK) {
         return ret;
     }
-    if (!UnlockUece(user, token, secret, ret)) {
+    if ((ret = UnlockUece(user, token, secret)) != E_OK) {
         return ret;
     }
     saveLockScreenStatus[user] = true;
@@ -1256,37 +1256,32 @@ int KeyManager::UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &toke
     return 0;
 }
 
-bool KeyManager::UnlockEceSece(uint32_t user,
+int32_t KeyManager::UnlockEceSece(uint32_t user,
                             const std::vector<uint8_t> &token,
-                            const std::vector<uint8_t> &secret,
-                            int &ret)
+                            const std::vector<uint8_t> &secret)
 {
     auto el4Key = GetUserElKey(user, EL4_KEY);
     if (el4Key == nullptr) {
         saveLockScreenStatus[user] = true;
         LOGE("The user %{public}u not been actived and saveLockScreenStatus is %{public}d", user,
              saveLockScreenStatus[user]);
-        ret = 0;
-        return false;
+        return E_NON_EXIST;
     }
     if (!el4Key->RestoreKey({token, secret}) && !el4Key->RestoreKey(NULL_KEY_AUTH)) {
         LOGE("Restore user %{public}u el4 key failed", user);
-        ret = -EFAULT;
-        return false;
+        return E_RESTORE_KEY_FAILED;
     }
     if (!el4Key->UnlockUserScreen(user, FSCRYPT_SDP_ECE_CLASS)) {
         LOGE("UnlockUserScreen user %{public}u el4 key failed", user);
-        ret = -EFAULT;
-        return false;
+        return E_UNLOCK_SCREEN_FAILED;
     }
     LOGI("DecryptClassE user %{public}u saveESecretStatus %{public}d", user, saveESecretStatus[user]);
-    return true;
+    return E_OK;
 }
 
-bool KeyManager::UnlockUece(uint32_t user,
+int32_t KeyManager::UnlockUece(uint32_t user,
                             const std::vector<uint8_t> &token,
-                            const std::vector<uint8_t> &secret,
-                            int &ret)
+                            const std::vector<uint8_t> &secret)
 {
     UserAuth auth = {.token = token, .secret = secret};
     saveESecretStatus[user] = !auth.token.IsEmpty();
@@ -1294,15 +1289,13 @@ bool KeyManager::UnlockUece(uint32_t user,
     bool eBufferStatue = false;
     if (el5Key != nullptr && !el5Key->DecryptClassE(auth, saveESecretStatus[user], eBufferStatue, user, USER_UNLOCK)) {
         LOGE("Unlock user %{public}u uece failed", user);
-        ret = -EFAULT;
-        return false;
+        return E_UNLOCK_APP_KEY2_FAILED;
     }
     if (UnlockUserAppKeys(user, false) != E_OK) {
         LOGE("failed to delete appkey2");
-        ret = -EFAULT;
-        return false;
+        return E_UNLOCK_APP_KEY2_FAILED;
     }
-    return true;
+    return E_OK;
 }
 
 int KeyManager::GetLockScreenStatus(uint32_t user, bool &lockScreenStatus)

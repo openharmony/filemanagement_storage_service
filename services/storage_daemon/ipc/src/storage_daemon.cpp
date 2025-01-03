@@ -19,9 +19,11 @@
 #include <fcntl.h>
 #include <fstream>
 #include <thread>
+#include "file_ex.h"
 #include "hisysevent.h"
 #include "utils/set_flag_utils.h"
 #include "utils/storage_radar.h"
+#include "utils/string_utils.h"
 
 #ifdef USER_CRYPTO_MANAGER
 #include "crypto/app_clone_key_manager.h"
@@ -69,6 +71,8 @@ const std::string DATA_SERVICE_EL3 = "/data/service/el3/";
 const std::string DATA_SERVICE_EL4 = "/data/service/el4/";
 const std::string DATA_SERVICE_EL1_PUBLIC_STORAGE_DAEMON_SD = "/data/service/el1/public/storage_daemon/sd";
 const std::string DATA_SERVICE_EL0_STORAGE_DAEMON_SD = "/data/service/el0/storage_daemon/sd";
+const std::string NEED_RESTORE_SUFFIX = "/latest/need_restore";
+const std::string NEW_DOUBLE_2_SINGELE = "2";
 
 typedef int32_t (*CreateShareFileFunc)(const std::vector<std::string> &, uint32_t, uint32_t, std::vector<int32_t> &);
 typedef int32_t (*DeleteShareFileFunc)(uint32_t, const std::vector<std::string> &);
@@ -85,8 +89,7 @@ int32_t StorageDaemon::Mount(const std::string &volId, uint32_t flags)
     int32_t ret = VolumeManager::Instance()->Mount(volId, flags);
     if (ret != E_OK) {
         LOGW("Mount failed, please check");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "Mount", BizScene::EXTERNAL_VOLUME_MANAGER, BizStage::BIZ_STAGE_MOUNT, "EL1", ret);
+        StorageRadar::ReportVolumeOperation("VolumeManager::Mount", ret);
     }
     return ret;
 #else
@@ -101,8 +104,7 @@ int32_t StorageDaemon::UMount(const std::string &volId)
     int32_t ret = VolumeManager::Instance()->UMount(volId);
     if (ret != E_OK) {
         LOGW("UMount failed, please check");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "UMount", BizScene::EXTERNAL_VOLUME_MANAGER, BizStage::BIZ_STAGE_UNMOUNT, "EL1", ret);
+        StorageRadar::ReportVolumeOperation("VolumeManager::UMount", ret);
     }
     return ret;
 #else
@@ -127,8 +129,7 @@ int32_t StorageDaemon::Format(const std::string &volId, const std::string &fsTyp
     int32_t ret = VolumeManager::Instance()->Format(volId, fsType);
     if (ret != E_OK) {
         LOGW("Format failed, please check");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "Format", BizScene::EXTERNAL_VOLUME_MANAGER, BizStage::BIZ_STAGE_FORMAT, "EL1", ret);
+        StorageRadar::ReportVolumeOperation("VolumeManager::Format", ret);
     }
     return ret;
 #else
@@ -143,8 +144,7 @@ int32_t StorageDaemon::Partition(const std::string &diskId, int32_t type)
     int32_t ret = DiskManager::Instance()->HandlePartition(diskId);
     if (ret != E_OK) {
         LOGW("HandlePartition failed, please check");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "HandlePartition", BizScene::EXTERNAL_VOLUME_MANAGER, BizStage::BIZ_STAGE_PARTITION, "EL1", ret);
+        StorageRadar::ReportVolumeOperation("VolumeManager::Partition", ret);
     }
     return ret;
 #else
@@ -159,9 +159,7 @@ int32_t StorageDaemon::SetVolumeDescription(const std::string &volId, const std:
     int32_t ret = VolumeManager::Instance()->SetVolumeDescription(volId, description);
     if (ret != E_OK) {
         LOGW("SetVolumeDescription failed, please check");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "SetVolumeDescription", BizScene::EXTERNAL_VOLUME_MANAGER, BizStage::BIZ_STAGE_SET_VOLUME_DESCRIPTION,
-            "EL1", ret);
+        StorageRadar::ReportVolumeOperation("VolumeManager::SetVolumeDescription", ret);
     }
     return ret;
 #else
@@ -278,7 +276,7 @@ int32_t StorageDaemon::RestoreUserKey(int32_t userId, uint32_t flags)
     }
 
     std::vector<KeyType> keyTypes = {EL1_KEY, EL2_KEY, EL3_KEY, EL4_KEY, EL5_KEY};
-    for (KeyType type : keyTypes) {
+    for (auto type : keyTypes) {
         auto ret = RestoreOneUserKey(userId, type);
         if (ret == E_MIGRATE_ELX_FAILED) {
             LOGE("Try restore user: %{public}d type: %{public}d migrate key, wait user pin !", userId, type);
@@ -301,15 +299,13 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
     int32_t ret = KeyManager::GetInstance()->GenerateUserKeys(userId, flags);
 #ifdef USER_CRYPTO_MIGRATE_KEY
     if (ret == -EEXIST) {
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "GenerateUserKeys", BizScene::USER_MOUNT_MANAGER, BizStage::BIZ_STAGE_PREPARE_ADD_USER, "EL1", ret);
         return RestoreUserKey(userId, flags);
     }
 #endif
     if (ret != E_OK) {
         LOGE("Generate user %{public}d key error", userId);
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "GenerateUserKeys", BizScene::USER_MOUNT_MANAGER, BizStage::BIZ_STAGE_PREPARE_ADD_USER, "EL1", ret);
+        StorageRadar::ReportUserManager("PrepareUserDirs::UserManager::GenerateUserKeys", userId, ret,
+            BizStage::BIZ_STAGE_PREPARE_ADD_USER);
         return ret;
     }
 #endif
@@ -319,15 +315,14 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
 
 int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
 {
-    int errCode = 0;
+    int32_t errCode = 0;
     //CRYPTO_FLAG_EL3 destroy el3,  CRYPTO_FLAG_EL4 destroy el4
     flags = flags | IStorageDaemon::CRYPTO_FLAG_EL3 | IStorageDaemon::CRYPTO_FLAG_EL4 | IStorageDaemon::CRYPTO_FLAG_EL5;
     int32_t destroyUserRet = UserManager::GetInstance()->DestroyUserDirs(userId, flags);
     if (destroyUserRet != E_OK) {
         errCode = destroyUserRet;
         LOGW("Destroy user %{public}d dirs failed, please check", userId);
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult("DestroyUserDirs", BizScene::USER_MOUNT_MANAGER,
-            BizStage::BIZ_STAGE_REMOVE_USER, "EL1", destroyUserRet);
+        StorageRadar::ReportUserManager("DestroyUserDirs", userId, errCode, BizStage::BIZ_STAGE_REMOVE_USER);
     }
 
 #ifdef USER_CRYPTO_MANAGER
@@ -335,8 +330,8 @@ int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
     if (destroyUserRet != E_OK) {
         errCode = destroyUserRet;
         LOGW("DeleteUserKeys failed, please check");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "DeleteUserKeys", BizScene::USER_MOUNT_MANAGER, BizStage::BIZ_STAGE_REMOVE_USER, "EL1", errCode);
+        StorageRadar::ReportUserManager("DestroyUserDirs::DeleteUserKeys", userId, errCode,
+            BizStage::BIZ_STAGE_REMOVE_USER);
     }
     return errCode;
 #else
@@ -349,8 +344,7 @@ int32_t StorageDaemon::StartUser(int32_t userId)
     int32_t ret = UserManager::GetInstance()->StartUser(userId);
     if (ret != E_OK) {
         LOGE("StartUser failed, please check");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "StartUser", BizScene::USER_MOUNT_MANAGER, BizStage::BIZ_STAGE_START_USER, "EL1", ret);
+        StorageRadar::ReportUserManager("StartUser", userId, ret, BizStage::BIZ_STAGE_START_USER);
     }
     return ret;
 }
@@ -359,9 +353,8 @@ int32_t StorageDaemon::StopUser(int32_t userId)
 {
     int32_t ret = UserManager::GetInstance()->StopUser(userId);
     if (ret != E_OK) {
-        LOGE("StartUser failed, please check");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "StopUser", BizScene::USER_MOUNT_MANAGER, BizStage::BIZ_STAGE_STOP_USER, "EL1", ret);
+        LOGE("StopUser failed, please check");
+        StorageRadar::ReportUserManager("StopUser", userId, ret, BizStage::BIZ_STAGE_STOP_USER);
     }
     return ret;
 }
@@ -377,8 +370,6 @@ int32_t StorageDaemon::CompleteAddUser(int32_t userId)
     }
     (void)remove(elNeedRestorePath.c_str());
     LOGI("CompleteAddUser remove el1 needRestore flag");
-    StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-        "CompleteAddUser", BizScene::USER_MOUNT_MANAGER, BizStage::BIZ_STAGE_GENERATE_USER_KEYS, "EL1", E_OK);
 #endif
     return E_OK;
 }
@@ -389,8 +380,7 @@ int32_t StorageDaemon::InitGlobalKey(void)
     int ret = KeyManager::GetInstance()->InitGlobalDeviceKey();
     if (ret != E_OK) {
         LOGE("InitGlobalDeviceKey failed, please check");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "InitGlobalDeviceKey", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_GENERATE_USER_KEYS, "EL1", ret);
+        StorageRadar::ReportInitGlobalKey("InitGlobalKey", 0, ret, "EL1");
     }
 #ifdef USE_LIBRESTORECON
     RestoreconRecurse(DATA_SERVICE_EL0_STORAGE_DAEMON_SD.c_str());
@@ -412,11 +402,23 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
 #endif
 
 #ifdef USER_CRYPTO_MANAGER
+
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    std::string el2NeedRestorePath = GetNeedRestoreFilePath(START_USER_ID, USER_EL2_DIR);
+    if (std::filesystem::exists(el2NeedRestorePath)) {
+        LOGE("USER_EL2_DIR is exist, update NEW_DOUBLE_2_SINGLE");
+        std::string EL0_NEED_RESTORE = DATA_SERVICE_EL0_STORAGE_DAEMON_SD + NEED_RESTORE_SUFFIX;
+        if (!SaveStringToFile(EL0_NEED_RESTORE, NEW_DOUBLE_2_SINGELE)) {
+            LOGE("Save NEW_DOUBLE_2_SINGELE file failed");
+            return false;
+        }
+    }
+#endif
+
     int ret = KeyManager::GetInstance()->InitGlobalUserKeys();
     if (ret) {
         LOGE("Init global users els failed");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "InitGlobalUserKeys", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_GENERATE_USER_KEYS, "EL1", ret);
+        StorageRadar::ReportInitGlobalKey("InitGlobalUserKeys", GLOBAL_USER_ID, ret, "EL1");
         return ret;
     }
 #endif
@@ -426,8 +428,7 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
     auto result = UserManager::GetInstance()->PrepareUserDirs(GLOBAL_USER_ID, CRYPTO_FLAG_EL1);
     if (result != E_OK) {
         LOGE("PrepareUserDirs failed, please check");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "PrepareUserDirs", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_GENERATE_USER_KEYS, "EL1", result);
+        StorageRadar::ReportInitGlobalKey("InitGlobalUserKeys::PrepareUserDirs", GLOBAL_USER_ID, result, "EL1");
     }
 
     std::thread thread([this]() { SetDeleteFlag4KeyFiles(); });
@@ -446,8 +447,16 @@ int32_t StorageDaemon::GenerateUserKeys(uint32_t userId, uint32_t flags)
     int32_t ret = KeyManager::GetInstance()->GenerateUserKeys(userId, flags);
     if (ret != E_OK) {
         LOGE("GenerateUserKeys failed, please check");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "GenerateUserKeys", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_GENERATE_USER_KEYS, "EL1", ret);
+        RadarParameter parameterRes = {
+            .orgPkg = DEFAULT_ORGPKGNAME,
+            .userId = userId,
+            .funcName = "GenerateUserKeys",
+            .bizScene = BizScene::USER_KEY_ENCRYPTION,
+            .bizStage = BizStage::BIZ_STAGE_GENERATE_USER_KEYS,
+            .keyElxLevel = "EL1",
+            .errorCode = ret
+        };
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
     }
     return ret;
 #else
@@ -461,8 +470,16 @@ int32_t StorageDaemon::DeleteUserKeys(uint32_t userId)
     int32_t ret = KeyManager::GetInstance()->DeleteUserKeys(userId);
     if (ret != E_OK) {
         LOGE("DeleteUserKeys failed, please check");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "DeleteUserKeys", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_DELETE_USER_KEYS, "EL1", ret);
+        RadarParameter parameterRes = {
+            .orgPkg = DEFAULT_ORGPKGNAME,
+            .userId = userId,
+            .funcName = "DeleteUserKeys",
+            .bizScene = BizScene::USER_KEY_ENCRYPTION,
+            .bizStage = BizStage::BIZ_STAGE_DELETE_USER_KEYS,
+            .keyElxLevel = "EL1",
+            .errorCode = ret
+        };
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
     }
     return ret;
 #else
@@ -481,8 +498,16 @@ int32_t StorageDaemon::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
     int32_t ret = KeyManager::GetInstance()->UpdateUserAuth(userId, userTokenSecret);
     if (ret != E_OK) {
         LOGE("UpdateUserAuth failed, please check");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "UpdateUserAuth", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_UPDATE_USER_AUTH, "EL1", ret);
+        RadarParameter parameterRes = {
+            .orgPkg = DEFAULT_ORGPKGNAME,
+            .userId = userId,
+            .funcName = "UpdateUserAuth",
+            .bizScene = BizScene::USER_KEY_ENCRYPTION,
+            .bizStage = BizStage::BIZ_STAGE_UPDATE_USER_AUTH,
+            .keyElxLevel = "EL1",
+            .errorCode = ret
+        };
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
     }
     return ret;
 #else
@@ -646,26 +671,20 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepareElX(uint32_t userId,
 #ifdef USER_CRYPTO_MANAGER
     int ret = ActiveUserKeyAndPrepare(userId, EL3_KEY, token, secret);
     if (ret != E_OK) {
-        LOGE("ActiveUserKey fail, userId %{public}u, type %{public}u", userId, EL3_KEY);
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "ActiveUserKeyAndPrepare", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_ACTIVE_USER_KEY, "EL3",
-            ret);
+        LOGE("ActiveUserKeyAndPrepare failed, userId %{public}u, type %{public}u", userId, EL3_KEY);
+        StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveUserKeyAndPrepare", userId, ret, "EL3");
         return ret;
     }
     ret = ActiveUserKeyAndPrepare(userId, EL4_KEY, token, secret);
     if (ret != E_OK) {
-        LOGE("ActiveUserKey fail, userId %{public}u, type %{public}u", userId, EL4_KEY);
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "ActiveUserKeyAndPrepare", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_ACTIVE_USER_KEY, "EL4",
-            ret);
+        LOGE("ActiveUserKeyAndPrepare failed, userId %{public}u, type %{public}u", userId, EL4_KEY);
+        StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveUserKeyAndPrepare", userId, ret, "EL4");
         return ret;
     }
     ret = ActiveUserKeyAndPrepare(userId, EL5_KEY, token, secret);
     if (ret != E_OK) {
-        LOGE("ActiveUserKey fail, userId %{public}u, type %{public}u", userId, EL5_KEY);
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "ActiveUserKeyAndPrepare", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_ACTIVE_USER_KEY, "EL5",
-            ret);
+        LOGE("ActiveUserKeyAndPrepare failed, userId %{public}u, type %{public}u", userId, EL5_KEY);
+        StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveUserKeyAndPrepare", userId, ret, "EL5");
         return ret;
     }
 #endif
@@ -676,10 +695,11 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
                                      const std::vector<uint8_t> &token,
                                      const std::vector<uint8_t> &secret)
 {
+    int ret = E_OK;
     bool updateFlag = false;
 #ifdef USER_CRYPTO_MANAGER
     LOGI("userId %{public}u, tok empty %{public}d sec empty %{public}d", userId, token.empty(), secret.empty());
-    int ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL2_KEY, token, secret);
+    ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL2_KEY, token, secret);
     if (ret != E_OK) {
 #ifdef USER_CRYPTO_MIGRATE_KEY
         LOGI("Migrate usrId %{public}u, Emp_tok %{public}d Emp_sec %{public}d", userId, token.empty(), secret.empty());
@@ -688,41 +708,40 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
         if (std::filesystem::exists(el2NeedRestorePath, errCode) && (!token.empty() || !secret.empty())) {
             updateFlag = true;
             ret = PrepareUserDirsAndUpdateUserAuth(userId, EL2_KEY, token, secret);
+            std::string EL0_NEED_RESTORE = DATA_SERVICE_EL0_STORAGE_DAEMON_SD + NEED_RESTORE_SUFFIX;
+            if (!SaveStringToFile(EL0_NEED_RESTORE, NEW_DOUBLE_2_SINGELE)) {
+                LOGE("Save key type file failed");
+                return false;
+            }
         }
 #endif
         if (ret != E_OK) {
             LOGE("ActiveUserKey fail, userId %{public}u, type %{public}u, tok empty %{public}d sec empty %{public}d",
                  userId, EL2_KEY, token.empty(), secret.empty());
-            StorageService::StorageRadar::GetInstance().RecordFuctionResult("PrepareUserDirsAndUpdateUserAuth",
-                BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_ACTIVE_USER_KEY, "EL2", ret);
+            if (!token.empty() && !secret.empty()) {
+                StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveUserKey", userId, ret, "EL2");
+            }
             return E_ACTIVE_EL2_FAILED;
         }
     }
     ret = ActiveUserKeyAndPrepareElX(userId, token, secret);
     if (ret != E_OK) {
-        LOGE("ActiveUserKey fail, userId %{public}u, type %{public}u", userId, EL4_KEY);
+        LOGE("ActiveUserKeyAndPrepare failed, userId %{public}u.", userId);
         return ret;
     }
     ret = KeyManager::GetInstance()->UnlockUserAppKeys(userId, true);
     if (ret != E_OK) {
-        LOGE("failed to delete appkey2");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "UnlockUserAppKeys", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_ACTIVE_USER_KEY, "EL2", ret);
-        return -EFAULT;
+        LOGE("UnlockUserAppKeys failed, userId %{public}u.", userId);
+        StorageRadar::ReportActiveUserKey("ActiveUserKey::UnlockUserAppKeys", userId, ret, "EL2");
+        return E_UNLOCK_APP_KEY2_FAILED;
     }
-    std::thread([this, userId]() { RestoreconElX(userId); }).detach();
+#endif
     if (updateFlag) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
     }
+    std::thread([this, userId]() { RestoreconElX(userId); }).detach();
     std::thread([this]() { ActiveAppCloneUserKey(); }).detach();
     return ret;
-#else
-    std::thread([this, userId]() { RestoreconElX(userId); }).detach();
-    if (updateFlag) {
-        UserManager::GetInstance()->CreateBundleDataDir(userId);
-    }
-    return E_OK;
-#endif
 }
 
 int32_t StorageDaemon::RestoreconElX(uint32_t userId)
@@ -757,8 +776,16 @@ int32_t StorageDaemon::InactiveUserKey(uint32_t userId)
     int32_t ret = KeyManager::GetInstance()->InActiveUserKey(userId);
     if (ret != E_OK) {
         LOGE("InActiveUserKey failed, please check");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "InActiveUserKey", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_INACTIVE_USER_KEY, "EL1", ret);
+        RadarParameter parameterRes = {
+            .orgPkg = DEFAULT_ORGPKGNAME,
+            .userId = userId,
+            .funcName = "InActiveUserKey",
+            .bizScene = BizScene::USER_KEY_ENCRYPTION,
+            .bizStage = BizStage::BIZ_STAGE_INACTIVE_USER_KEY,
+            .keyElxLevel = "EL1",
+            .errorCode = ret
+        };
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
     }
     return ret;
 #else
@@ -772,8 +799,16 @@ int32_t StorageDaemon::LockUserScreen(uint32_t userId)
     int32_t ret = KeyManager::GetInstance()->LockUserScreen(userId);
     if (ret != E_OK) {
         LOGE("LockUserScreen failed, please check");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "LockUserScreen", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_LOCK_USER_SCREEN, "EL1", ret);
+        RadarParameter parameterRes = {
+            .orgPkg = DEFAULT_ORGPKGNAME,
+            .userId = userId,
+            .funcName = "LockUserScreen",
+            .bizScene = BizScene::USER_KEY_ENCRYPTION,
+            .bizStage = BizStage::BIZ_STAGE_LOCK_USER_SCREEN,
+            .keyElxLevel = "EL1",
+            .errorCode = ret
+        };
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
     }
     return ret;
 #else
@@ -788,9 +823,17 @@ int32_t StorageDaemon::UnlockUserScreen(uint32_t userId,
 #ifdef USER_CRYPTO_MANAGER
     int32_t ret = KeyManager::GetInstance()->UnlockUserScreen(userId, token, secret);
     if (ret != E_OK) {
-        LOGE("UnlockUserScreen failed, please check");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "UnlockUserScreen", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_UNLOCK_USER_SCREEN, "EL1", ret);
+        LOGE("UnlockUserScreen failed, userId=%{public}u, ret=%{public}d", userId, ret);
+        RadarParameter parameterRes = {
+            .orgPkg = DEFAULT_ORGPKGNAME,
+            .userId = userId,
+            .funcName = "UnlockUserScreen",
+            .bizScene = BizScene::USER_KEY_ENCRYPTION,
+            .bizStage = BizStage::BIZ_STAGE_UNLOCK_USER_SCREEN,
+            .keyElxLevel = (ret == E_UNLOCK_APP_KEY2_FAILED)? "EL5" : "EL3/EL4",
+            .errorCode = ret
+        };
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
     }
     return ret;
 #else
@@ -831,8 +874,16 @@ int32_t StorageDaemon::UpdateKeyContext(uint32_t userId)
     int32_t ret = KeyManager::GetInstance()->UpdateKeyContext(userId);
     if (ret != E_OK) {
         LOGE("UpdateKeyContext failed, please check");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "UpdateKeyContext", BizScene::USER_KEY_ENCRYPTION, BizStage::BIZ_STAGE_UPDATE_KEY_CONTEXT, "EL1", ret);
+        RadarParameter parameterRes = {
+            .orgPkg = DEFAULT_ORGPKGNAME,
+            .userId = userId,
+            .funcName = "UpdateKeyContext",
+            .bizScene = BizScene::USER_KEY_ENCRYPTION,
+            .bizStage = BizStage::BIZ_STAGE_UPDATE_KEY_CONTEXT,
+            .keyElxLevel = "EL1",
+            .errorCode = ret
+        };
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
     }
     return ret;
 #else
@@ -901,7 +952,21 @@ int32_t StorageDaemon::UMountDfsDocs(int32_t userId, const std::string &relative
 int32_t StorageDaemon::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
 {
 #ifdef USER_CRYPTO_MANAGER
-    return KeyManager::GetInstance()->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
+    int32_t ret = KeyManager::GetInstance()->GetFileEncryptStatus(userId, isEncrypted);
+    if (ret != E_OK) {
+        LOGE("GetFileEncryptStatus failed, please check");
+        RadarParameter parameterRes = {
+            .orgPkg = DEFAULT_ORGPKGNAME,
+            .userId = userId,
+            .funcName = "GetFileEncryptStatus",
+            .bizScene = BizScene::USER_KEY_ENCRYPTION,
+            .bizStage = BizStage::BIZ_STAGE_GET_FILE_ENCRYPT_STATUS,
+            .keyElxLevel = "EL1",
+            .errorCode = ret
+        };
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
+    }
+    return ret;
 #else
     return E_OK;
 #endif
@@ -989,7 +1054,7 @@ void StorageDaemon::ActiveAppCloneUserKey()
 {
 #ifdef USER_CRYPTO_MANAGER
     auto ret = AppCloneKeyManager::GetInstance()->ActiveAppCloneUserKey();
-    if (ret != E_OK) {
+    if (ret != E_OK && (ret != E_NOT_SUPPORT)) {
         LOGE("ActiveAppCloneUserKey failed, errNo %{public}d", ret);
     }
 #endif

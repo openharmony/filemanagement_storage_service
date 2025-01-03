@@ -77,7 +77,7 @@ void GetMediaTypeAndSize(const std::shared_ptr<DataShare::DataShareResultSet> &r
             LOGE("get size column index or long value err.");
             continue;
         }
-
+        LOGI("media_type: %{public}d, size: %{public}lld", mediatype, static_cast<long long>(size));
         if (mediatype == MEDIA_TYPE_IMAGE || mediatype == thumbnailType) {
             storageStats.image_ += size;
         } else if (mediatype == MEDIA_TYPE_AUDIO) {
@@ -183,14 +183,14 @@ int32_t StorageStatusService::GetUserStorageStats(StorageStats &storageStats)
 
 int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &storageStats)
 {
+    int ret = 0;
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     // totalSize
     int64_t totalSize = 0;
     int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetTotalSize(totalSize);
     if (err != E_OK) {
         LOGE("StorageStatusService::GetUserStorageStats getTotalSize failed");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "GetTotalSize", BizScene::SPACE_STATISTICS, BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS, "EL1", err);
+        StorageRadar::ReportGetStorageStatus("GetUserStorageStats::GetTotalSize", userId, ret, GetCallingPkgName());
         return err;
     }
     // appSize
@@ -199,8 +199,7 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
     err = GetAppSize(userId, appSize);
     if (err != E_OK) {
         LOGE("StorageStatusService::GetUserStorageStats getAppSize failed");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "GetAppSize", BizScene::SPACE_STATISTICS, BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS, "EL1", err);
+        StorageRadar::ReportGetStorageStatus("GetUserStorageStats::GetAppSize", userId, ret, GetCallingPkgName());
         return err;
     }
 
@@ -210,17 +209,17 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
     // mediaSize
     err = GetMediaStorageStats(storageStats);
     if (err != E_OK) {
-        LOGE("StorageStatusService::GetUserStorageStats getMedia failed");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "GetMediaStorageStats", BizScene::SPACE_STATISTICS, BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS, "EL1", err);
+        LOGE("StorageStatusService::GetUserStorageStats GetMediaStorageStats failed");
+        StorageRadar::ReportGetStorageStatus("GetUserStorageStats::GetMediaStorageStats", userId, ret,
+            GetCallingPkgName());
         return err;
     }
     // fileSize
     err = GetFileStorageStats(userId, storageStats);
     if (err != E_OK) {
         LOGE("StorageStatusService::GetUserStorageStats GetFileStorageStats failed");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "GetFileStorageStats", BizScene::SPACE_STATISTICS, BizStage::BIZ_STAGE_GET_USER_STORAGE_STATS, "EL1", err);
+        StorageRadar::ReportGetStorageStatus("GetUserStorageStats::GetFileStorageStats", userId, ret,
+            GetCallingPkgName());
     }
 
     LOGE("StorageStatusService::GetUserStorageStats success for userId=%{public}d, "
@@ -252,8 +251,14 @@ int32_t StorageStatusService::GetCurrentBundleStats(BundleStats &bundleStats, ui
     int32_t ret = GetBundleStats(pkgName, userId, bundleStats, DEFAULT_APP_INDEX, statFlag);
     if (ret != E_OK) {
         LOGE("storage status service GetBundleStats failed, please check");
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(
-            "GetBundleStats", BizScene::SPACE_STATISTICS, BizStage::BIZ_STAGE_GET_BUNDLE_STATS, "EL1", ret);
+        RadarParameter parameterRes = {.orgPkg = DEFAULT_ORGPKGNAME,
+                                       .userId = DEFAULT_USER_ID,
+                                       .funcName = "GetBundleStats",
+                                       .bizScene = BizScene::SPACE_STATISTICS,
+                                       .bizStage = BizStage::BIZ_STAGE_GET_BUNDLE_STATS,
+                                       .keyElxLevel = "EL1",
+                                       .errorCode = ret};
+        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
     }
     return ret;
 }
