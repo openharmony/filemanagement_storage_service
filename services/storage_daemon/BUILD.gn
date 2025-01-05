@@ -57,6 +57,7 @@ ohos_executable("storage_daemon") {
     "ipc/src/storage_daemon_stub.cpp",
     "ipc/src/storage_manager_client.cpp",
     "main.cpp",
+    "observer/appstate_observer.cpp",
     "quota/quota_manager.cpp",
     "user/src/mount_manager.cpp",
     "user/src/user_manager.cpp",
@@ -100,10 +101,6 @@ ohos_executable("storage_daemon") {
 
   if (storage_service_external_storage_qos_trans) {
     defines += [ "EXTERNAL_STORAGE_QOS_TRANS" ]
-  }
-
-  if (storage_service_media_fuse) {
-    defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
   }
 
   configs = [ ":storage_daemon_config" ]
@@ -180,6 +177,11 @@ ohos_executable("storage_daemon") {
       "common_event_service:cesfwk_innerkits",
       "libmtp:libmtp",
     ]
+  }
+
+  if (storage_service_media_fuse) {
+    defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
+    external_deps += [ "ability_runtime:app_manager" ]
   }
 
   ldflags = [

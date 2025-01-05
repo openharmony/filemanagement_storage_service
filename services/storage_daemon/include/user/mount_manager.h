@@ -93,6 +93,7 @@ public:
     int32_t UMountByList(std::list<std::string> &list, std::list<std::string> &unMountFailList);
     int32_t UMountByListWithDetach(std::list<std::string> &list);
     void SetCloudState(bool active);
+    void SetMediaObserverState(bool active);
     int32_t RestoreconSystemServiceDirs(int32_t userId);
     int32_t FindMountPointsToMap(std::map<std::string, std::list<std::string>> &mountMap, int32_t userId);
     void MountPointToList(std::list<std::string> &hmdfsList, std::list<std::string> &hmfsList,
@@ -110,6 +111,9 @@ public:
     int32_t MountMediaFuse(int32_t userId, int32_t &devFd);
     int32_t UMountMediaFuse(int32_t userId);
     int32_t FindAndKillProcess(int32_t userId, std::list<std::string> &unMountFailList, int32_t radar);
+    int32_t FindAndKillProcessWithoutRadar(int32_t userId, std::list<std::string> &killList);
+    int32_t CheckProcessUserId(int32_t userId, std::vector<ProcessInfo> &proInfos,
+                               std::vector<ProcessInfo> &processKillInfos);
 
 private:
     bool SupportHmdfs();
