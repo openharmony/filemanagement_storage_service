@@ -55,6 +55,7 @@ enum ErrNo {
     E_PARAMS_INVAL,
     E_ACTIVE_EL2_FAILED,
     E_CLEAR_KEY_FAILED,
+    E_KEY_NOT_ACTIVED,
     E_MIGRATE_ELX_FAILED,
 
     // only use for anco
