@@ -137,5 +137,11 @@ bool StringIsNumber(const std::string &content)
     }
     return isNum;
 }
+
+bool IsStringExist(const std::list<std::string> &strList, const std::string &content)
+{
+    auto it = std::find(strList.begin(), strList.end(), content);
+    return it != strList.end();
+}
 } // namespace StorageDaemon
 } // namespace OHOS

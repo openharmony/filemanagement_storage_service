@@ -285,7 +285,7 @@ int32_t StorageDaemon::RestoreUserKey(int32_t userId, uint32_t flags)
             return ret;
         }
     }
-
+    MountManager::GetInstance()->PrepareAppdataDir(userId);
     return E_OK;
 }
 #endif
@@ -310,8 +310,9 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
         return ret;
     }
 #endif
-
-    return UserManager::GetInstance()->PrepareUserDirs(userId, flags);
+    int32_t prepareRet = UserManager::GetInstance()->PrepareUserDirs(userId, flags);
+    MountManager::GetInstance()->PrepareAppdataDir(userId);
+    return prepareRet;
 }
 
 int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
@@ -356,7 +357,7 @@ int32_t StorageDaemon::StopUser(int32_t userId)
 {
     int32_t ret = UserManager::GetInstance()->StopUser(userId);
     if (ret != E_OK) {
-        LOGE("StartUser failed, please check");
+        LOGE("StopUser failed, please check");
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(
             "StopUser", BizScene::USER_MOUNT_MANAGER, BizStage::BIZ_STAGE_STOP_USER, "EL1", ret);
     }

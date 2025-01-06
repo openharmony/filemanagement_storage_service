@@ -36,6 +36,9 @@ namespace OHOS {
 namespace StorageDaemon {
 constexpr uint32_t ALL_PERMS = (S_ISUID | S_ISGID | S_ISVTX | S_IRWXU | S_IRWXG | S_IRWXO);
 const int BUF_LEN = 1024;
+const uint8_t KILL_RETRY_TIME = 5;
+const uint32_t KILL_RETRY_INTERVAL_MS = 100 * 1000;
+const std::string MOUNT_POINT_INFO = "/proc/mounts";
 
 int32_t ChMod(const std::string &path, mode_t mode)
 {
@@ -509,7 +512,7 @@ int IsSameGidUid(const std::string &dir, uid_t uid, gid_t gid)
 
 bool MoveDataShell(const std::string &from, const std::string &to)
 {
-    LOGD("MoveDataShell start");
+    LOGI("MoveDataShell start");
     if (TEMP_FAILURE_RETRY(access(from.c_str(), F_OK)) != 0) {
         return true;
     }
@@ -550,5 +553,82 @@ void ChownRecursion(const std::string &dir, uid_t uid, gid_t gid)
     }
 }
 
+bool IsPathMounted(std::string &path)
+{
+    if (path.empty()) {
+        return true;
+    }
+    if (path.back() == '/') {
+        path.pop_back();
+    }
+    std::ifstream inputStream(MOUNT_POINT_INFO.c_str(), std::ios::in);
+    if (!inputStream.is_open()) {
+        LOGE("unable to open /proc/mounts, errno is %{public}d", errno);
+        return false;
+    }
+    std::string tmpLine;
+    while (std::getline(inputStream, tmpLine)) {
+        std::stringstream ss(tmpLine);
+        std::string dst;
+        ss >> dst;
+        ss >> dst;
+        if (path == dst) {
+            inputStream.close();
+            return true;
+        }
+    }
+    inputStream.close();
+    return false;
+}
+
+void KillProcess(const std::vector<ProcessInfo> &processList, std::vector<ProcessInfo> &killFailList)
+{
+    if (processList.empty()) {
+        return;
+    }
+    for (const auto &item: processList) {
+        int pid = item.pid;
+        LOGI("kill pid %{public}d", pid);
+        kill(pid, SIGKILL);
+        bool isAlive = true;
+        for (int i = 0; i < KILL_RETRY_TIME; i++) {
+            if (!IsProcessAlive(pid)) {
+                LOGI("kill pid %{public}d success.", pid);
+                isAlive = false;
+                break;
+            }
+            usleep(KILL_RETRY_INTERVAL_MS);
+        }
+        if (isAlive) {
+            LOGE("kill pid %{public}d failed.", pid);
+            killFailList.push_back(item);
+        }
+    }
+}
+
+bool IsProcessAlive(int pid)
+{
+    std::stringstream procPath;
+    procPath << "/proc/" << pid << "/stat";
+    std::ifstream statFile(procPath.str());
+    if (!statFile) {
+        statFile.close();
+        return false;
+    }
+    statFile.close();
+    return true;
+}
+
+std::string ProcessToString(std::vector<ProcessInfo> &processList)
+{
+    if (processList.empty()) {
+        return "";
+    }
+    std::string result;
+    for (auto & iter : processList) {
+        result += std::to_string(iter.pid) + "_" + iter.name + ",";
+    }
+    return result.empty() ? "" : result.substr(0, result.length() -1);
+}
 } // STORAGE_DAEMON
 } // OHOS
