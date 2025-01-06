@@ -289,7 +289,7 @@ int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int32_t prjId, bool
             return E_SYS_CALL;
         }
     }
-	(void)close(fd);
+    (void)close(fd);
     return E_OK;
 }
 
