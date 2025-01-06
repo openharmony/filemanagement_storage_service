@@ -53,6 +53,7 @@ const uint8_t FBEX_GENERATE_APP_KEY = 25;
 const uint8_t FBEX_CHANGE_PINCODE = 26;
 const uint8_t FBEX_LOCK_EL5 = 27;
 const uint32_t FILE_ENCRY_ERROR_UECE_ALREADY_CREATED = 0xFBE30031;
+const uint32_t FILE_ENCRY_ERROR_NOT_FOUND_UECE = 0xFBE30033;
 
 struct FbeOptStr {
     uint32_t user = 0;
@@ -276,12 +277,14 @@ int FBEX::UninstallOrLockUserKeyToKernel(uint32_t userId, uint32_t type, uint8_t
         return 0;
     }
     int ret = ioctl(fd, destroy ? FBEX_IOC_DEL_IV : FBEX_IOC_USER_LOGOUT, &ops);
-    if (ret != 0) {
+    if (ret != 0 && static_cast<uint32_t>(ret) != FILE_ENCRY_ERROR_NOT_FOUND_UECE) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
+		close(fd);
+		return ret;
     }
     close(fd);
     LOGI("success");
-    return ret;
+    return 0;
 }
 
 int FBEX::DeleteClassEPinCode(uint32_t userIdSingle, uint32_t userIdDouble)

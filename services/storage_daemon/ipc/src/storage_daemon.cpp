@@ -286,7 +286,7 @@ int32_t StorageDaemon::RestoreUserKey(int32_t userId, uint32_t flags)
             return ret;
         }
     }
-
+    MountManager::GetInstance()->PrepareAppdataDir(userId);
     return E_OK;
 }
 #endif
@@ -309,8 +309,9 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
         return ret;
     }
 #endif
-
-    return UserManager::GetInstance()->PrepareUserDirs(userId, flags);
+    int32_t prepareRet = UserManager::GetInstance()->PrepareUserDirs(userId, flags);
+    MountManager::GetInstance()->PrepareAppdataDir(userId);
+    return prepareRet;
 }
 
 int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)

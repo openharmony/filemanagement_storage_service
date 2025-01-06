@@ -15,6 +15,7 @@
 #ifndef STORAGE_DAEMON_UTILS_STRING_UTILS_H
 #define STORAGE_DAEMON_UTILS_STRING_UTILS_H
 
+#include <list>
 #include <string>
 #include <sys/types.h>
 
@@ -31,6 +32,7 @@ std::vector<std::string> SplitLine(std::string &line, std::string &token);
 bool WriteFileSync(const char *path, const uint8_t *data, size_t size);
 bool SaveStringToFileSync(const std::string &path, const std::string &data);
 bool StringIsNumber(const std::string &content);
+bool IsStringExist(const std::list<std::string> &strList, const std::string &content);
 } // namespace StorageDaemon
 } // namespace OHOS
 #endif // STORAGE_DAEMON_UTILS_STRING_UTILS_H
