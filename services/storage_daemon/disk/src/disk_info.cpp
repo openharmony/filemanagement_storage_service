@@ -15,6 +15,8 @@
 
 #include "disk/disk_info.h"
 
+#include <dirent.h>
+#include <sys/stat.h>
 #include <sys/sysmacros.h>
 
 #include "disk/disk_manager.h"
@@ -29,12 +31,15 @@
 namespace OHOS {
 namespace StorageDaemon {
 constexpr int32_t MIN_LINES = 2;
-constexpr unsigned int MAJORID_BLKEXT = 259;
-constexpr unsigned int MAX_PARTITION = 16;
+constexpr int32_t VOL_LENGTH = 3;
+constexpr int32_t MAJORID_BLKEXT = 259;
+constexpr int32_t MAX_PARTITION = 16;
+constexpr int32_t MAX_INTERVAL_PARTITION = 15;
 const std::string SGDISK_PATH = "/system/bin/sgdisk";
 const std::string SGDISK_DUMP_CMD = "--ohos-dump";
 const std::string SGDISK_ZAP_CMD = "--zap-all";
 const std::string SGDISK_PART_CMD = "--new=0:0:-0 --typeconde=0:0c00 --gpttombr=1";
+const std::string BLOCK_PATH = "/dev/block";
 
 DiskInfo::DiskInfo(std::string &sysPath, std::string &devPath, dev_t device, int flag)
 {
@@ -300,9 +305,20 @@ void DiskInfo::ProcessPartition(std::vector<std::string>::iterator &it, const st
         LOGE("Invalid partition %{public}d", index);
         return;
     }
-    dev_t partitionDev = (index > MAX_SCSI_VOLUMES) ?
-        makedev(MAJORID_BLKEXT, minor(device_) + static_cast<uint32_t>(index) - MAX_PARTITION) :
-        makedev(major(device_), minor(device_) + static_cast<uint32_t>(index));
+    dev_t partitionDev;
+    if (index > MAX_SCSI_VOLUMES) {
+        int32_t maxMinor = GetMaxMinor(MAJORID_BLKEXT);
+        if (maxMinor == -1 && minor(device_) == 0) {
+            partitionDev = makedev(MAJORID_BLKEXT, minor(device_) + static_cast<uint32_t>(index) - MAX_PARTITION);
+        } else if (maxMinor == -1 && minor(device_) == MAX_PARTITION) {
+            partitionDev = makedev(MAJORID_BLKEXT, static_cast<uint32_t>(index) - MAX_PARTITION);
+        } else {
+            partitionDev = makedev(MAJORID_BLKEXT, maxMinor + static_cast<uint32_t>(index) - MAX_INTERVAL_PARTITION);
+        }
+    } else {
+        partitionDev = makedev(major(device_), minor(device_) + static_cast<uint32_t>(index));
+    }
+
     if (table == Table::MBR) {
         if (++it == end) {
             return;
@@ -318,6 +334,34 @@ void DiskInfo::ProcessPartition(std::vector<std::string>::iterator &it, const st
             foundPart = true;
         }
     }
+}
+
+int32_t DiskInfo::GetMaxMinor(int32_t major)
+{
+    DIR* dir;
+    struct dirent* entry;
+    int maxMinor = -1;
+    if ((dir = opendir(BLOCK_PATH.c_str())) == nullptr) {
+        LOGE("fail to open %{public}s", BLOCK_PATH.c_str());
+        return E_ERR;
+    }
+    while ((entry = readdir(dir)) != nullptr) {
+        if (entry->d_name[0] == '.' || strncmp(entry->d_name, "vol", VOL_LENGTH) != 0) {
+            continue;
+        }
+        std::string devicePath = std::string(BLOCK_PATH) + "/" + entry->d_name;
+        struct stat statbuf;
+        if (stat(devicePath.c_str(), &statbuf) == 0) {
+            int majorNum = major(statbuf.st_rdev);
+            int minorNum = minor(statbuf.st_rdev);
+
+            if (majorNum == major) {
+                maxMinor = minorNum > maxMinor ? minorNum : maxMinor;
+            }
+        }
+    }
+    closedir(dir);
+    return maxMinor;
 }
 
 int DiskInfo::CreateVolume(dev_t dev)

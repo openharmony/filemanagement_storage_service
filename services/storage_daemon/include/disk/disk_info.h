@@ -73,6 +73,7 @@ private:
     int32_t CreateUnknownTabVol();
     void ProcessPartition(std::vector<std::string>::iterator &it, const std::vector<std::string>::iterator &end,
                           Table table, int32_t maxVols, bool &foundPart);
+    int32_t GetMaxMinor(int32_t major);
 };
 } // STORAGE_DAEMON
 } // OHOS
