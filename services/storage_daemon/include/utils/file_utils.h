@@ -30,6 +30,11 @@ struct FileList {
     std::string path;
 };
 
+struct ProcessInfo {
+    int pid;
+    std::string name;
+};
+
 int32_t ChMod(const std::string &path, mode_t mode);
 int32_t MkDir(const std::string &path, mode_t mode);
 bool IsDir(const std::string &path);
@@ -53,6 +58,10 @@ void ChownRecursion(const std::string &dir, uid_t uid, gid_t gid);
 int IsSameGidUid(const std::string &dir, uid_t uid, gid_t gid);
 void MoveFileManagerData(const std::string &filesPath);
 void OpenSubFile(const std::string &path, std::vector<std::string>  &dirInfo);
+bool IsPathMounted(std::string &path);
+void KillProcess(const std::vector<ProcessInfo> &processList, std::vector<ProcessInfo> &killFailList);
+bool IsProcessAlive(int pid);
+std::string ProcessToString(std::vector<ProcessInfo> &processList);
 }
 }
 
