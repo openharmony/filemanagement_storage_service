@@ -68,6 +68,22 @@ enum ErrNo {
     // only use for anco
     E_JSON_PARSE_ERROR = 100,
     E_OPEN_JSON_FILE_ERROR,
+	
+	// only for use mount and unmount
+    E_UMOUNT_CLOUD_FUSE = 300,
+    E_UMOUNT_CLOUD = 301,
+    E_UMOUNT_MEDIA_FUSE = 302,
+    E_UMOUNT_SHAREFS = 303,
+    E_UMOUNT_HMFS = 304,
+    E_UMOUNT_HMDFS = 305,
+    E_UMOUNT_LOCAL = 306,
+    E_UMOUNT_PROC_MOUNTS_OPEN = 307,
+    E_UMOUNT_ALL_PATH = 308,
+    E_UMOUNT_PROC_OPEN = 309,
+    E_UMOUNT_DETACH = 310,
+    E_UMOUNT_NO_PROCESS_FIND = 311,
+    E_UMOUNT_PROCESS_KILL = 312,
+    E_UMOUNT_FIND_FD = 313,
 };
 
 enum JsErrCode {

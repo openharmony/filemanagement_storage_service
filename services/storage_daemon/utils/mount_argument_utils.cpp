@@ -34,6 +34,17 @@ namespace {
     static const std::string TMPFS_MNT_DATA = "/mnt/data/";
     static const std::string HMDFS_DEVICE_VIEW_LOCAL_DOCS_PATH = "/device_view/local" + RELATIVE_DOCS_PATH;
     static const std::string SANDBOX_PATH = "/mnt/sandbox/";
+    static const std::string MNT_USER_PATH = "/mnt/user/";
+    static const std::string NOSHAREFS_DOC_PATH = "/nosharefs/docs";
+    static const std::string SHAREFS_DOC_PATH = "/sharefs/docs";
+    static const std::string NOSHAREFS_DOC_CUR_PATH = "/nosharefs/docs/currentUser";
+    static const std::string SHAREFS_DOC_CUR_PATH = "/sharefs/docs/currentUser";
+    static const std::string LOCAL_FILE_DOCS_PATH = "/local/files/Docs";
+    static const std::string CUR_OTHER_PATH = "/currentUser/other";
+    static const std::string CUR_OTHER_APPDATA_PATH = "/currentUser/other/appdata";
+    static const std::string CUR_FILEMGR_PATH = "/currentUser/filemgr";
+    static const std::string CUR_FILEMGR_APPDATA_PATH = "/currentUser/filemgr/appdata";
+    static const std::string NOSHAREFS_APPDATA_PATH = "/nosharefs/appdata";
 } // namespace
 
 string MountArgument::GetFullSrc() const
@@ -81,6 +92,13 @@ string MountArgument::GetUserIdPara() const
     stringstream ss;
     ss << "user_id=" << userId_;
 
+    return ss.str();
+}
+
+string MountArgument::GetHmUserIdPara() const
+{
+    stringstream ss;
+    ss << "override_support_delete,user_id=" << userId_;
     return ss.str();
 }
 
@@ -193,6 +211,83 @@ string MountArgument::OptionsToString() const
     if (!enableOfflineStash_) {
         ss << ",no_offline_stash";
     }
+    return ss.str();
+}
+
+string MountArgument::GetMediaDocsPath() const
+{
+    stringstream ss;
+    ss << COMM_DATA_POINT << userId_ << LOCAL_FILE_DOCS_PATH;
+    return ss.str();
+}
+
+string MountArgument::GetNoSharefsAppdataPath() const
+{
+    stringstream ss;
+    ss << MNT_USER_PATH << userId_ << NOSHAREFS_APPDATA_PATH;
+    return ss.str();
+}
+
+string MountArgument::GetNoSharefsDocPath() const
+{
+    stringstream ss;
+    ss << MNT_USER_PATH << userId_ << NOSHAREFS_DOC_PATH;
+    return ss.str();
+}
+
+string MountArgument::GetNoSharefsDocCurPath() const
+{
+    stringstream ss;
+    ss << MNT_USER_PATH << userId_ << NOSHAREFS_DOC_CUR_PATH;
+    return ss.str();
+}
+
+string MountArgument::GetSharefsDocPath() const
+{
+    stringstream ss;
+    ss << MNT_USER_PATH << userId_ << SHAREFS_DOC_PATH;
+    return ss.str();
+}
+
+string MountArgument::GetSharefsDocCurPath() const
+{
+    stringstream ss;
+    ss << MNT_USER_PATH << userId_ << SHAREFS_DOC_CUR_PATH;
+    return ss.str();
+}
+
+string MountArgument::GetCurOtherAppdataPath() const
+{
+    stringstream ss;
+    ss << MNT_USER_PATH << userId_ << CUR_OTHER_APPDATA_PATH;
+    return ss.str();
+}
+
+string MountArgument::GetMntUserPath() const
+{
+    stringstream ss;
+    ss << MNT_USER_PATH << userId_;
+    return ss.str();
+}
+
+string MountArgument::GetCurOtherPath() const
+{
+    stringstream ss;
+    ss << MNT_USER_PATH << userId_ << CUR_OTHER_PATH;
+    return ss.str();
+}
+
+string MountArgument::GetCurFileMgrPath() const
+{
+    stringstream ss;
+    ss << MNT_USER_PATH << userId_ << CUR_FILEMGR_PATH;
+    return ss.str();
+}
+
+string MountArgument::GetCurFileMgrAppdataPath() const
+{
+    stringstream ss;
+    ss << MNT_USER_PATH << userId_ << CUR_FILEMGR_APPDATA_PATH;
     return ss.str();
 }
 
