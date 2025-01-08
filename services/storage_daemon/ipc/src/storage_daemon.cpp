@@ -63,10 +63,7 @@ namespace StorageDaemon {
 using namespace OHOS::FileManagement::CloudFile;
 #endif
 
-constexpr int32_t DEFAULT_VFS_CACHE_PRESSURE = 100;
-constexpr int32_t MAX_VFS_CACHE_PRESSURE = 10000;
 static const std::string DATA = "/data";
-static const std::string VFS_CACHE_PRESSURE = "/proc/sys/vm/vfs_cache_pressure";
 const std::string DATA_SERVICE_EL2 = "/data/service/el2/";
 const std::string DATA_SERVICE_EL3 = "/data/service/el3/";
 const std::string DATA_SERVICE_EL4 = "/data/service/el4/";
@@ -1202,26 +1199,6 @@ static bool SaveStringToFile(const std::string& pathInst, const std::string& con
 
 int32_t StorageDaemon::UpdateMemoryPara(int32_t size, int32_t &oldSize)
 {
-    LOGI("StorageDaemon::UpdateMemoryPara");
-    if (size > MAX_VFS_CACHE_PRESSURE || size < 0) {
-        LOGE("size is invalid");
-        return E_NOT_SUPPORT;
-    }
-    // Get old data
-    std::string oldContent;
-    if (!ReadFileToString(VFS_CACHE_PRESSURE, oldContent)) {
-        LOGE("Failed to read");
-    }
-    if (!oldContent.empty()) {
-        oldSize = std::stoi(oldContent);
-    } else {
-        oldSize = DEFAULT_VFS_CACHE_PRESSURE;
-    }
-    // Update new data
-    if (!SaveStringToFile(VFS_CACHE_PRESSURE, std::to_string(size))) {
-        LOGE("Failed to write");
-        return E_SYS_KERNEL_ERR;
-    }
     return E_OK;
 }
 
