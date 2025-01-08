@@ -1167,36 +1167,6 @@ int32_t StorageDaemon::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, 
 #endif
 }
 
-static bool ReadFileToString(const std::string& pathInst, std::string& oldContent)
-{
-    std::fstream fd;
-    fd.open(pathInst.c_str(), std::ios::in);
-    if (!fd.is_open()) {
-        LOGE("open fail!");
-        return false;
-    }
-    // Get Old data
-    std::getline(fd, oldContent);
-    LOGE("StorageDaemon::ReadFileToString %{public}s", oldContent.c_str());
-    fd.close();
-    return true;
-}
-
-static bool SaveStringToFile(const std::string& pathInst, const std::string& content)
-{
-    std::fstream fd;
-    fd.open(pathInst.c_str(), std::ios::out);
-    if (!fd.is_open()) {
-        LOGE("open fail!");
-        return false;
-    }
-    LOGI("StorageDaemon::SaveStringToFile %{public}s", content.c_str());
-    // Write New data
-    fd << content;
-    fd.close();
-    return true;
-}
-
 int32_t StorageDaemon::UpdateMemoryPara(int32_t size, int32_t &oldSize)
 {
     return E_OK;
