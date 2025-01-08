@@ -106,14 +106,16 @@ const vector<string> APPDATA_DST_PATH = {
     "/mnt/user/<currentUserId>/nosharefs/appdata/el1/base/",
     "/mnt/user/<currentUserId>/nosharefs/appdata/el2/base/",
     "/mnt/user/<currentUserId>/nosharefs/appdata/el2/cloud/",
-    "/mnt/user/<currentUserId>/nosharefs/appdata/el2/distributedfiles/"
+    "/mnt/user/<currentUserId>/nosharefs/appdata/el2/distributedfiles/",
+    "/mnt/user/<currentUserId>/nosharefs/appdata/el5/base/"
 };
 
 const vector<string> APPDATA_SRC_PATH = {
     "/data/app/el1/<currentUserId>/base/",
     "/data/app/el2/<currentUserId>/base/",
     "/mnt/hmdfs/<currentUserId>/cloud/data/",
-    "/mnt/hmdfs/<currentUserId>/account/merge_view/data/"
+    "/mnt/hmdfs/<currentUserId>/account/merge_view/data/",
+    "/data/app/el5/<currentUserId>/base/"
 };
 
 const vector<string> FD_PATH = {
@@ -237,6 +239,8 @@ std::vector<DirInfo> MountManager::InitAppdataDir()
             {"/mnt/user/%d/nosharefs/appdata/el2/base", MODE_0711, OID_ROOT, OID_ROOT},
             {"/mnt/user/%d/nosharefs/appdata/el2/cloud", MODE_0711, OID_ROOT, OID_ROOT},
             {"/mnt/user/%d/nosharefs/appdata/el2/distributedfiles", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/mnt/user/%d/nosharefs/appdata/el5", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/mnt/user/%d/nosharefs/appdata/el5/base", MODE_0711, OID_ROOT, OID_ROOT},
             {"/mnt/user/%d/sharefs", MODE_0711, OID_ROOT, OID_ROOT},
             {"/mnt/user/%d/sharefs/docs", MODE_0711, OID_ROOT, OID_ROOT},
             {"/mnt/user/%d/sharefs/docs/currentUser", MODE_0711, OID_ROOT, OID_ROOT},
