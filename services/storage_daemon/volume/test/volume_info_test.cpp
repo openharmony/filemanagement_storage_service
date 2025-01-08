@@ -185,7 +185,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_002, TestSize.Leve
     dev_t device = MKDEV(1, 6); // 1 is major device number, 6 is minor device number
     EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, DoCheck()).Times(1).WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(mock, DoMount(testing::_)).Times(1).WillOnce(testing::Return(E_MOUNT));
+    EXPECT_CALL(mock, DoMount(testing::_)).Times(1).WillOnce(testing::Return(E_VOL_MOUNT_ERR));
 
     auto ret = mock.Create(volId, diskId, device);
     EXPECT_TRUE(ret == E_OK);
@@ -194,7 +194,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_002, TestSize.Leve
 
     uint32_t mountFlags = 0;
     ret = mock.Mount(mountFlags);
-    EXPECT_TRUE(ret == E_MOUNT);
+    EXPECT_TRUE(ret == E_VOL_MOUNT_ERR);
 
     StorageTestUtils::RmDirRecurse("/mnt/data/external/" + volId);
     GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Mount_002 end";

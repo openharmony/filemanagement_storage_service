@@ -146,7 +146,7 @@ int32_t VolumeInfo::UMount(bool force)
     }
 
     if (mountState_ == EJECTING && !force) {
-        return E_WAIT;
+        return E_UMOUNT_BUSY;
     }
 
     mountState_ = EJECTING;

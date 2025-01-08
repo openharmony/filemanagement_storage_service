@@ -115,7 +115,7 @@ int32_t MtpDeviceManager::UmountDevice(const MtpDeviceInfo &device, bool needNot
     }
     if (err) {
         LOGE("failed to call remove(%{public}s) error, errno=%{public}d", device.path.c_str(), errno);
-        return E_SYS_CALL;
+        return E_SYS_KERNEL_ERR;
     }
     LOGI("Mtp device unmount success.");
     if (needNotify) {

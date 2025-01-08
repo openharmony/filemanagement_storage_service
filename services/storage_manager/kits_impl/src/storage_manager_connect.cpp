@@ -54,7 +54,7 @@ int32_t StorageManagerConnect::Connect()
         deathRecipient_ = new (std::nothrow) SmDeathRecipient();
         if (!deathRecipient_) {
             LOGE("StorageManagerConnect::Connect failed to create death recipient");
-            return E_DEATH_RECIPIENT_IS_NULLPTR;
+            return E_SERVICE_IS_NULLPTR;
         }
         if (storageManager_->AsObject() != nullptr) {
             storageManager_->AsObject()->AddDeathRecipient(deathRecipient_);
@@ -347,27 +347,23 @@ int32_t Convert2JsErrNum(int32_t errNum)
     static std::unordered_map<int32_t, int32_t> errCodeTable {
         { E_PERMISSION_DENIED, E_PERMISSION },
         { E_WRITE_DESCRIPTOR_ERR, E_IPCSS},
-        { E_EXIST, E_PREPARE},
-        { E_WRONG_TYPE, E_WRONG_TYPE},
-        { E_USER_STATE, E_USER_STATE},
         { E_NON_EXIST, E_NOOBJECT},
         { E_PREPARE_DIR, E_PREPARE_DIR},
         { E_DESTROY_DIR, E_DESTROY_DIR},
-        { E_MOUNT, E_MOUNT_ERR},
-        { E_UMOUNT, E_UNMOUNT},
+        { E_VOL_MOUNT_ERR, E_MOUNT_ERR},
+        { E_VOL_UMOUNT_ERR, E_UNMOUNT},
         { E_SET_POLICY, E_SET_POLICY},
         { E_USERID_RANGE, E_OUTOFRANGE},
         { E_VOL_STATE, E_VOLUMESTATE},
-        { E_WAIT, E_VOLUMESTATE},
+        { E_UMOUNT_BUSY, E_VOLUMESTATE},
         { E_NOT_SUPPORT, E_SUPPORTEDFS},
-        { E_SYS_CALL, E_UNMOUNT},
+        { E_SYS_KERNEL_ERR, E_UNMOUNT},
         { E_NO_CHILD, E_NO_CHILD},
         { E_WRITE_PARCEL_ERR, E_IPCSS},
         { E_WRITE_REPLY_ERR, E_IPCSS},
         { E_SA_IS_NULLPTR, E_IPCSS},
         { E_REMOTE_IS_NULLPTR, E_IPCSS},
         { E_SERVICE_IS_NULLPTR, E_IPCSS},
-        { E_DEATH_RECIPIENT_IS_NULLPTR, E_IPCSS},
         { E_BUNDLEMGR_ERROR, E_IPCSS},
         { E_MEDIALIBRARY_ERROR, E_IPCSS},
     };

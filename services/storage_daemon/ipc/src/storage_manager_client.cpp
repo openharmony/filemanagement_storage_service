@@ -90,7 +90,7 @@ int32_t StorageManagerClient::NotifyVolumeCreated(std::shared_ptr<VolumeInfo> in
         return E_SERVICE_IS_NULLPTR;
     }
     if (info == nullptr) {
-        return E_PARAMS_INVAL;
+        return E_PARAMS_INVALID;
     }
 
     StorageManager::VolumeCore vc(info->GetVolumeId(), info->GetVolumeType(),
@@ -106,7 +106,7 @@ int32_t StorageManagerClient::NotifyVolumeMounted(std::shared_ptr<VolumeInfo> vo
         return E_SERVICE_IS_NULLPTR;
     }
     if (volumeInfo == nullptr) {
-        return E_PARAMS_INVAL;
+        return E_PARAMS_INVALID;
     }
 
     std::shared_ptr<ExternalVolumeInfo> info = std::static_pointer_cast<ExternalVolumeInfo>(volumeInfo);

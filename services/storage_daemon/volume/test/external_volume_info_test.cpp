@@ -103,9 +103,9 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount_
     ExternalVolumeInfoMock mock;
     uint32_t mountFlags = 0;
 
-    EXPECT_CALL(mock, DoMount(testing::_)).Times(1).WillOnce(testing::Return(E_MOUNT));
+    EXPECT_CALL(mock, DoMount(testing::_)).Times(1).WillOnce(testing::Return(E_VOL_MOUNT_ERR));
     auto ret = mock.DoMount(mountFlags);
-    EXPECT_TRUE(ret == E_MOUNT);
+    EXPECT_TRUE(ret == E_VOL_MOUNT_ERR);
 
     EXPECT_CALL(mock, DoMount(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
     ret = mock.DoMount(mountFlags);
@@ -126,13 +126,13 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUMount
     ExternalVolumeInfoMock mock;
     bool force = true;
 
-    EXPECT_CALL(mock, DoUMount(testing::_)).Times(1).WillOnce(testing::Return(E_UMOUNT));
+    EXPECT_CALL(mock, DoUMount(testing::_)).Times(1).WillOnce(testing::Return(E_VOL_UMOUNT_ERR));
     auto ret = mock.DoUMount(force);
-    EXPECT_TRUE(ret == E_UMOUNT);
+    EXPECT_TRUE(ret == E_VOL_UMOUNT_ERR);
 
-    EXPECT_CALL(mock, DoUMount(testing::_)).Times(1).WillOnce(testing::Return(E_SYS_CALL));
+    EXPECT_CALL(mock, DoUMount(testing::_)).Times(1).WillOnce(testing::Return(E_SYS_KERNEL_ERR));
     ret = mock.DoUMount(force);
-    EXPECT_TRUE(ret == E_SYS_CALL);
+    EXPECT_TRUE(ret == E_SYS_KERNEL_ERR);
 
     EXPECT_CALL(mock, DoUMount(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
     ret = mock.DoUMount(force);

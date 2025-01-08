@@ -103,7 +103,7 @@ int32_t VolumeManagerService::Mount(std::string volumeId)
     }
     if (volumePtr->GetState() != VolumeState::UNMOUNTED) {
         LOGE("VolumeManagerService::The type of volume(Id %{public}s) is not unmounted", volumeId.c_str());
-        return E_MOUNT;
+        return E_VOL_MOUNT_ERR;
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
@@ -132,7 +132,7 @@ int32_t VolumeManagerService::Unmount(std::string volumeId)
     }
     if (volumePtr->GetState() != VolumeState::MOUNTED) {
         LOGE("VolumeManagerService::The type of volume(Id %{public}s) is not mounted", volumeId.c_str());
-        return E_UMOUNT;
+        return E_VOL_UMOUNT_ERR;
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();

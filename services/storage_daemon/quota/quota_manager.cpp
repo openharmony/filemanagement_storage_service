@@ -111,7 +111,7 @@ static int64_t GetOccupiedSpaceForUid(int32_t uid, int64_t &size)
     LOGE("GetOccupiedSpaceForUid uid:%{public}d", uid);
     if (InitialiseQuotaMounts() != true) {
         LOGE("Failed to initialise quota mounts");
-        return E_SYS_ERR;
+        return E_INIT_QUOTA_MOUNTS_FAILED;
     }
 
     std::string device = "";
@@ -124,7 +124,7 @@ static int64_t GetOccupiedSpaceForUid(int32_t uid, int64_t &size)
     struct dqblk dq;
     if (quotactl(QCMD(Q_GETQUOTA, USRQUOTA), device.c_str(), uid, reinterpret_cast<char*>(&dq)) != 0) {
         LOGE("Failed to get quotactl, errno : %{public}d", errno);
-        return E_SYS_ERR;
+        return E_QUOTA_CTL_KERNEL_ERR;
     }
 
     size = static_cast<int64_t>(dq.dqb_curspace);
@@ -137,7 +137,7 @@ static int64_t GetOccupiedSpaceForGid(int32_t gid, int64_t &size)
     LOGE("GetOccupiedSpaceForGid gid:%{public}d", gid);
     if (InitialiseQuotaMounts() != true) {
         LOGE("Failed to initialise quota mounts");
-        return E_SYS_ERR;
+        return E_INIT_QUOTA_MOUNTS_FAILED;
     }
 
     std::string device = "";
@@ -150,7 +150,7 @@ static int64_t GetOccupiedSpaceForGid(int32_t gid, int64_t &size)
     struct dqblk dq;
     if (quotactl(QCMD(Q_GETQUOTA, GRPQUOTA), device.c_str(), gid, reinterpret_cast<char*>(&dq)) != 0) {
         LOGE("Failed to get quotactl, errno : %{public}d", errno);
-        return E_SYS_ERR;
+        return E_QUOTA_CTL_KERNEL_ERR;
     }
 
     size = static_cast<int64_t>(dq.dqb_curspace);
@@ -164,7 +164,7 @@ static int64_t GetOccupiedSpaceForPrjId(int32_t prjId, int64_t &size)
     LOGE("GetOccupiedSpaceForPrjId prjId:%{public}d", prjId);
     if (InitialiseQuotaMounts() != true) {
         LOGE("Failed to initialise quota mounts");
-        return E_SYS_ERR;
+        return E_INIT_QUOTA_MOUNTS_FAILED;
     }
 
     std::string device = "";
@@ -177,7 +177,7 @@ static int64_t GetOccupiedSpaceForPrjId(int32_t prjId, int64_t &size)
     struct dqblk dq;
     if (quotactl(QCMD(Q_GETQUOTA, PRJQUOTA), device.c_str(), prjId, reinterpret_cast<char*>(&dq)) != 0) {
         LOGE("Failed to get quotactl, errno : %{public}d", errno);
-        return E_SYS_ERR;
+        return E_QUOTA_CTL_KERNEL_ERR;
     }
 
     size = static_cast<int64_t>(dq.dqb_curspace);
@@ -208,14 +208,14 @@ int32_t QuotaManager::SetBundleQuota(const std::string &bundleName, int32_t uid,
 {
     if (bundleName.empty() || bundleDataDirPath.empty() || uid < 0 || limitSizeMb < 0) {
         LOGE("Calling the function SetBundleQuota with invalid param");
-        return E_NON_EXIST;
+        return E_PARAMS_INVALID;
     }
 
     LOGE("SetBundleQuota Start, bundleName is %{public}s, uid is %{public}d, bundleDataDirPath is %{public}s, "
          "limit is %{public}d.", bundleName.c_str(), uid, bundleDataDirPath.c_str(), limitSizeMb);
     if (InitialiseQuotaMounts() != true) {
         LOGE("Failed to initialise quota mounts");
-        return E_NON_EXIST;
+        return E_INIT_QUOTA_MOUNTS_FAILED;
     }
 
     std::string device = "";
@@ -230,21 +230,21 @@ int32_t QuotaManager::SetBundleQuota(const std::string &bundleName, int32_t uid,
     struct dqblk dq;
     if (quotactl(QCMD(Q_GETQUOTA, USRQUOTA), device.c_str(), uid, reinterpret_cast<char*>(&dq)) != 0) {
         LOGE("Failed to get hard quota, errno : %{public}d", errno);
-        return E_SYS_CALL;
+        return E_QUOTA_CTL_KERNEL_ERR;
     }
 
     // dqb_bhardlimit is count of 1kB blocks, dqb_curspace is bytes
     struct statvfs stat;
     if (statvfs(bundleDataDirPath.c_str(), &stat) != 0) {
         LOGE("Failed to statvfs, errno : %{public}d", errno);
-        return E_SYS_CALL;
+        return E_STAT_VFS_KERNEL_ERR;
     }
 
     dq.dqb_valid = QIF_LIMITS;
     dq.dqb_bhardlimit = (uint32_t)limitSizeMb * ONE_MB;
     if (quotactl(QCMD(Q_SETQUOTA, USRQUOTA), device.c_str(), uid, reinterpret_cast<char*>(&dq)) != 0) {
         LOGE("Failed to set hard quota, errno : %{public}d", errno);
-        return E_SYS_CALL;
+        return E_QUOTA_CTL_KERNEL_ERR;
     } else {
         LOGE("Applied hard quotas ok");
         return E_OK;
@@ -257,23 +257,23 @@ int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int32_t prjId, bool
     char *realPath = realpath(path.c_str(), nullptr);
     if (realPath == nullptr) {
         LOGE("realpath failed");
-        return E_SYS_CALL;
+        return E_PARAMS_NULLPTR_ERR;
     }
     FILE *f = fopen(realPath, "r");
     free(realPath);
     if (f == nullptr) {
         LOGE("Failed to open %{public}s, errno: %{public}d", path.c_str(), errno);
-        return E_SYS_CALL;
+        return E_SYS_KERNEL_ERR;
     }
     int fd = fileno(f);
     if (fd < 0) {
         (void)fclose(f);
-        return E_SYS_CALL;
+        return E_SYS_KERNEL_ERR;
     }
     if (ioctl(fd, FS_IOC_FSGETXATTR, &fsx) == -1) {
         LOGE("Failed to get extended attributes of %{public}s, errno: %{public}d", path.c_str(), errno);
         (void)fclose(f);
-        return E_SYS_CALL;
+        return E_SYS_KERNEL_ERR;
     }
     if (fsx.fsx_projid == static_cast<uint32_t>(prjId)) {
         (void)fclose(f);
@@ -283,20 +283,20 @@ int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int32_t prjId, bool
     if (ioctl(fd, FS_IOC_FSSETXATTR, &fsx) == -1) {
         LOGE("Failed to set project id for %{public}s, errno: %{public}d", path.c_str(), errno);
         (void)fclose(f);
-        return E_SYS_CALL;
+        return E_SYS_KERNEL_ERR;
     }
     if (inherit) {
         uint32_t flags;
         if (ioctl(fd, FS_IOC_GETFLAGS, &flags) == -1) {
             LOGE("Failed to get flags for %{public}s, errno:%{public}d", path.c_str(), errno);
             (void)fclose(f);
-            return E_SYS_CALL;
+            return E_SYS_KERNEL_ERR;
         }
         flags |= FS_PROJINHERIT_FL;
         if (ioctl(fd, FS_IOC_SETFLAGS, &flags) == -1) {
             LOGE("Failed to set flags for %{public}s, errno:%{public}d", path.c_str(), errno);
             (void)fclose(f);
-            return E_SYS_CALL;
+            return E_SYS_KERNEL_ERR;
         }
     }
     (void)fclose(f);
@@ -869,7 +869,7 @@ int32_t QuotaManager::GetBundleStatsForIncrease(uint32_t userId, const std::vect
     LOGI("GetBundleStatsForIncrease start");
     if (bundleNames.size() != incrementalBackTimes.size()) {
         LOGE("Invalid paramters, size of bundleNames should match incrementalBackTimes.");
-        return E_SYS_ERR;
+        return E_PARAMS_INVALID;
     }
 
     for (size_t i = 0; i < bundleNames.size(); i++) {

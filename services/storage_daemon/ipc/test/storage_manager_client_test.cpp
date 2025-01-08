@@ -105,7 +105,7 @@ HWTEST_F(StorageManagerClientTest, StorageManagerClientTest_NotifyVolumeCreated_
 
     std::shared_ptr<VolumeInfo> info = nullptr;
     auto ret = storageManagerClient_->NotifyVolumeCreated(info);
-    EXPECT_TRUE(ret == E_PARAMS_INVAL);
+    EXPECT_TRUE(ret == E_PARAMS_INVALID);
 
     info = std::make_shared<ExternalVolumeInfo>();
     ret = storageManagerClient_->NotifyVolumeCreated(info);
@@ -128,7 +128,7 @@ HWTEST_F(StorageManagerClientTest, StorageManagerClientTest_NotifyVolumeMounted_
 
     std::shared_ptr<VolumeInfo> info = nullptr;
     auto ret = storageManagerClient_->NotifyVolumeMounted(info);
-    EXPECT_TRUE(ret == E_PARAMS_INVAL);
+    EXPECT_TRUE(ret == E_PARAMS_INVALID);
 
     info = std::make_shared<ExternalVolumeInfo>();
     ret = storageManagerClient_->NotifyVolumeMounted(info);

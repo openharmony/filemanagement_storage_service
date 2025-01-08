@@ -245,7 +245,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StartUser_002, TestSiz
     ASSERT_TRUE(userManager != nullptr);
 
     int32_t ret = userManager->StartUser(StorageTest::USER_ID1);
-    EXPECT_TRUE(ret == E_MOUNT) << "user's dirs are not prepare";
+    EXPECT_TRUE(ret == E_USER_MOUNT_ERR) << "user's dirs are not prepare";
 
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_StartUser_002 end";
 }
@@ -500,10 +500,10 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_MountDfsDocs_001, Tes
     std::string relativePath = "/data";
     std::string deviceId = "f6d4c0864707aefte7a78f09473aa122ff57fc8";
     int32_t ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
-    EXPECT_EQ(ret, E_MOUNT);
+    EXPECT_EQ(ret, E_USER_MOUNT_ERR);
 
     ret = mountManager->UMountDfsDocs(userId, relativePath, deviceId, deviceId);
-    EXPECT_EQ(ret, E_UMOUNT);
+    EXPECT_EQ(ret, E_USER_UMOUNT_ERR);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountDfsDocs_001 end";
 }
 
@@ -544,7 +544,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_FindAndKillProcess_00
     std::list<std::string> unMountFailList;
     unMountFailList.push_back("test1");
     unMountFailList.push_back("test2");
-    int32_t ret = mountManager->FindAndKillProcess(userId, unMountFailList, E_UMOUNT);
+    int32_t ret = mountManager->FindAndKillProcess(userId, unMountFailList, E_USER_UMOUNT_ERR);
     EXPECT_EQ(ret, E_UMOUNT_NO_PROCESS_FIND);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_FindAndKillProcess_000 end";
 }
@@ -565,7 +565,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_UmountFailRadar_000, 
     ProcessInfo processInfo;
     processInfo.pid = 1234;
     processInfo.name = "test";
-    int32_t radar = E_UMOUNT;
+    int32_t radar = E_USER_UMOUNT_ERR;
     std::vector<ProcessInfo> processInfos;
     processInfos.push_back(processInfo);
     mountManager->UmountFailRadar(processInfos, radar);
@@ -611,7 +611,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_MountMediaFuse_001, T
     int32_t userId = 101;
     int32_t devFd = -1;
     int32_t ret = mountManager->MountMediaFuse(userId, devFd);
-    EXPECT_EQ(ret, E_MOUNT);
+    EXPECT_EQ(ret, E_USER_MOUNT_ERR);
 
     ret = mountManager->UMountMediaFuse(userId);
     EXPECT_EQ(ret, E_OK);
