@@ -197,20 +197,22 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
     mountPath_ = StringPrintf(mountPathDir_.c_str(), fsUuid_.c_str());
     if (!lstat(mountPath_.c_str(), &statbuf)) {
         LOGE("volume mount path %{public}s exists, please remove first", GetMountPath().c_str());
-        return E_MOUNT;
+        return E_SYS_KERNEL_ERR;
     }
 
     if (mkdir(mountPath_.c_str(), S_IRWXU | S_IRWXG | S_IXOTH)) {
         LOGE("the volume %{public}s create mount file %{public}s failed",
             GetVolumeId().c_str(), GetMountPath().c_str());
-        return E_MOUNT;
+        return E_SYS_KERNEL_ERR;
     }
 
-    if (fsType_ == "hmfs" || fsType_ == "f2fs") ret = DoMount4Hmfs(mountFlags);
+    if (fsType_ == "hmfs" || fsType_ == "f2fs") {
+        ret = DoMount4Hmfs(mountFlags);
+    }
     if (ret) {
         LOGE("External volume DoMount error, errno = %{public}d", errno);
         remove(mountPath_.c_str());
-        return E_MOUNT;
+        return E_VOL_MOUNT_ERR;
     }
 
     std::promise<int32_t> promise;
@@ -231,7 +233,7 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
         LOGE("Mount timed out");
         remove(mountPath_.c_str());
         mountThread.detach();
-        return E_MOUNT;
+        return E_SYS_KERNEL_ERR;
     }
     ret = future.get();
     mountThread.join();
@@ -239,7 +241,7 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
     if (ret) {
         LOGE("External volume DoMount error, errno = %{public}d", errno);
         remove(mountPath_.c_str());
-        return E_MOUNT;
+        return E_SYS_KERNEL_ERR;
     }
     LOGI("external volume mount success");
     return E_OK;
@@ -262,12 +264,12 @@ int32_t ExternalVolumeInfo::DoUMount(bool force)
     int err = remove(mountPath_.c_str());
     if (err && ret) {
         LOGE("External volume DoUmount error.");
-        return E_UMOUNT;
+        return E_VOL_UMOUNT_ERR;
     }
 
     if (err) {
         LOGE("failed to call remove(%{public}s) error, errno = %{public}d", mountPath_.c_str(), errno);
-        return E_SYS_CALL;
+        return E_SYS_KERNEL_ERR;
     }
     LOGI("External volume unmount success.");
     return E_OK;

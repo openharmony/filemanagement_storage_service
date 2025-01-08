@@ -872,7 +872,7 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
             std::string EL0_NEED_RESTORE = DATA_SERVICE_EL0_STORAGE_DAEMON_SD + NEED_RESTORE_SUFFIX;
             if (!SaveStringToFile(EL0_NEED_RESTORE, NEW_DOUBLE_2_SINGLE)) {
                 LOGE("Save key type file failed");
-                return false;
+                return E_SYS_KERNEL_ERR;
             }
         }
 #endif
@@ -1220,7 +1220,7 @@ int32_t StorageDaemon::UpdateMemoryPara(int32_t size, int32_t &oldSize)
     // Update new data
     if (!SaveStringToFile(VFS_CACHE_PRESSURE, std::to_string(size))) {
         LOGE("Failed to write");
-        return E_SYS_CALL;
+        return E_SYS_KERNEL_ERR;
     }
     return E_OK;
 }

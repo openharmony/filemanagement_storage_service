@@ -82,12 +82,12 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_HmdfsTwiceMount_001, 
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(true)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
     ret = MountManager::GetInstance()->HmdfsTwiceMount(userId, relativePath);
-    EXPECT_EQ(ret, E_MOUNT);
+    EXPECT_EQ(ret, E_USER_MOUNT_ERR);
 
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(true)).WillOnce(Return(false)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(1));
     ret = MountManager::GetInstance()->HmdfsTwiceMount(userId, relativePath);
-    EXPECT_EQ(ret, E_MOUNT);
+    EXPECT_EQ(ret, E_USER_MOUNT_ERR);
 
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(true)).WillOnce(Return(false))
         .WillOnce(Return(false)).WillOnce(Return(false));
@@ -122,7 +122,7 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_SharefsMount_001, Tes
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
     ret = MountManager::GetInstance()->SharefsMount(userId);
-    EXPECT_EQ(ret, E_MOUNT);
+    EXPECT_EQ(ret, E_USER_MOUNT_ERR);
 
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
@@ -164,7 +164,7 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_HmSharefsMount_001, T
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
     ret = MountManager::GetInstance()->HmSharefsMount(userId, srcPath, dstPath);
-    EXPECT_EQ(ret, E_MOUNT);
+    EXPECT_EQ(ret, E_USER_MOUNT_ERR);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));

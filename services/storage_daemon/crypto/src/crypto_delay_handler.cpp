@@ -106,7 +106,7 @@ void DelayHandler::DeactiveEl3El4El5()
     }
     if (!el4Key_->LockUserScreen(userId_, FSCRYPT_SDP_ECE_CLASS)) {
         LOGE("Clear user %{public}u key failed", userId_);
-        StorageRadar::ReportUpdateUserAuth("DeactiveEl3El4El5::LockUserScreen", userId_, E_SYS_ERR, "EL4", "");
+        StorageRadar::ReportUpdateUserAuth("DeactiveEl3El4El5::LockUserScreen", userId_, E_SYS_KERNEL_ERR, "EL4", "");
         return;
     }
     LOGW("success");

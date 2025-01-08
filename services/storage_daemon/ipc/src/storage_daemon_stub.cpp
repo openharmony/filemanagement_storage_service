@@ -183,7 +183,7 @@ int32_t StorageDaemonStub::OnRemoteRequestForBase(uint32_t code, MessageParcel &
             return HandleSetVolDesc(data, reply);
         default:
             LOGE("Cannot response request %{public}d: unknown tranction", code);
-            return E_SYS_ERR;
+            return E_SYS_KERNEL_ERR;
     }
 }
 int32_t StorageDaemonStub::OnRemoteRequestForUser(uint32_t code, MessageParcel &data, MessageParcel &reply)
@@ -225,7 +225,7 @@ int32_t StorageDaemonStub::OnRemoteRequestForUser(uint32_t code, MessageParcel &
             return HandleSetRecoverKey(data, reply);
         default:
             LOGE("Cannot response request %{public}d: unknown tranction", code);
-            return E_SYS_ERR;
+            return E_SYS_KERNEL_ERR;
     }
 }
 int32_t StorageDaemonStub::OnRemoteRequestForApp(uint32_t code, MessageParcel &data, MessageParcel &reply)
@@ -265,7 +265,7 @@ int32_t StorageDaemonStub::OnRemoteRequestForApp(uint32_t code, MessageParcel &d
             return HandleUMountMediaFuse(data, reply);
         default:
             LOGE("Cannot response request %{public}d: unknown tranction", code);
-            return E_SYS_ERR;
+            return E_SYS_KERNEL_ERR;
     }
 }
 

@@ -257,7 +257,7 @@ int32_t MountManager::HmdfsTwiceMount(int32_t userId, const std::string &relativ
         ret += Mount(hmdfsMntArgs.GetFullDst() + "/device_view/", dst, nullptr, MS_BIND, nullptr);
         if (ret != 0 && errno != EEXIST && errno != EBUSY) {
             LOGE("failed to bind mount device_view, err %{public}d", errno);
-            return E_MOUNT;
+            return E_USER_MOUNT_ERR;
         }
     }
     dst = hmdfsMntArgs.GetCloudFullPath();
@@ -267,7 +267,7 @@ int32_t MountManager::HmdfsTwiceMount(int32_t userId, const std::string &relativ
         ret += Mount(hmdfsMntArgs.GetFullDst() + "/cloud_merge_view/", dst, nullptr, MS_BIND, nullptr);
         if (ret != 0 && errno != EEXIST && errno != EBUSY) {
             LOGE("failed to bind mount cloud_merge_view, err %{public}d", errno);
-            return E_MOUNT;
+            return E_USER_MOUNT_ERR;
         }
     }
     dst = hmdfsMntArgs.GetCloudDocsPath();
@@ -293,7 +293,7 @@ int32_t MountManager::SharefsMount(int32_t userId)
                         sharefsMntArgs.GetUserIdPara().c_str());
         if (ret != 0 && errno != EEXIST && errno != EBUSY) {
             LOGE("failed to mount sharefs, err %{public}d", errno);
-            return E_MOUNT;
+            return E_USER_MOUNT_ERR;
         }
     }
     return E_OK;
@@ -318,7 +318,7 @@ int32_t MountManager::HmSharefsMount(int32_t userId, std::string &srcPath, std::
                     sharefsMntArgs.GetHmUserIdPara().c_str());
     if (ret != 0) {
         LOGE("failed to mount hmSharefs, err %{public}d", errno);
-        return E_MOUNT;
+        return E_USER_MOUNT_ERR;
     }
     return E_OK;
 }
@@ -342,7 +342,7 @@ int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath, bool 
     int ret = Mount(mountSrcPath, dst, "hmdfs", hmdfsMntArgs.GetFlags(), hmdfsMntArgs.OptionsToString().c_str());
     if (ret != 0 && errno != EEXIST && errno != EBUSY) {
         LOGE("failed to mount hmdfs, err %{public}d", errno);
-        return E_MOUNT;
+        return E_USER_MOUNT_ERR;
     }
 
     ret = chown(hmdfsMntArgs.GetCtrlPath().c_str(), OID_DFS, OID_SYSTEM);
@@ -517,19 +517,19 @@ int32_t MountManager::CloudMount(int32_t userId, const string& path)
     int ret;
     if (!cloudReady_) {
         LOGI("Cloud Service has not started");
-        return E_MOUNT;
+        return E_USER_MOUNT_ERR;
     }
 
     FILE *f = fopen("/dev/fuse", "r+");
     if (f == nullptr) {
         LOGE("open /dev/fuse fail");
-        return E_MOUNT;
+        return E_USER_MOUNT_ERR;
     }
     int fd = fileno(f);
     if (fd < 0) {
         LOGE("open /dev/fuse fail");
         (void)fclose(f);
-        return E_MOUNT;
+        return E_USER_MOUNT_ERR;
     }
     LOGI("open fuse end");
     opt = StringPrintf("fd=%i,"
@@ -603,7 +603,7 @@ int32_t MountManager::HmdfsMount(int32_t userId)
 
     ret += HmdfsMount(userId, "non_account");
     if (ret != E_OK) {
-        return E_MOUNT;
+        return E_USER_MOUNT_ERR;
     }
 
     LOGI("ready to mount cloud");
@@ -956,12 +956,12 @@ int32_t MountManager::LocalMount(int32_t userId)
     if (Mount(LocalMntArgs.GetFullSrc(), LocalMntArgs.GetCommFullPath() + "local/",
               nullptr, MS_BIND, nullptr)) {
         LOGE("failed to bind mount, err %{public}d", errno);
-        return E_MOUNT;
+        return E_USER_MOUNT_ERR;
     }
     if (Mount(LocalMntArgs.GetFullSrc(), LocalMntArgs.GetCloudFullPath(),
               nullptr, MS_BIND, nullptr)) {
         LOGE("failed to bind mount, err %{public}d", errno);
-        return E_MOUNT;
+        return E_USER_MOUNT_ERR;
     }
     return E_OK;
 }
@@ -1055,7 +1055,7 @@ void MountManager::PrepareFileManagerDir(int32_t userId)
             continue;
         }
         // system error
-        if (ret == E_SYS_ERR) {
+        if (ret == E_SYS_KERNEL_ERR) {
             LOGE("system err %{public}s ", path.c_str());
             continue;
         }
@@ -1229,7 +1229,7 @@ int32_t MountManager::MountDfsDocs(int32_t userId, const std::string &relativePa
     std::regex pathRegex("^[a-zA-Z0-9_/]+$");
     if (relativePath.empty() || relativePath.length() > PATH_MAX || !std::regex_match(relativePath, pathRegex)) {
         LOGE("[MountDfsDocs]invalid relativePath");
-        return E_MOUNT;
+        return E_PARAMS_INVALID;
     }
 
     Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, relativePath));
@@ -1238,7 +1238,7 @@ int32_t MountManager::MountDfsDocs(int32_t userId, const std::string &relativePa
     if (ret != 0 && errno != EEXIST && errno != EBUSY) {
         LOGE("MountDfsDocs mount bind failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
              GetAnonyString(srcPath).c_str(), dstPath.c_str(), errno);
-        return E_MOUNT;
+        return E_USER_MOUNT_ERR;
     }
     return E_OK;
 }
@@ -1251,7 +1251,7 @@ int32_t MountManager::UMountDfsDocs(int32_t userId, const std::string &relativeP
     std::regex pathRegex("^[a-zA-Z0-9_/]+$");
     if (relativePath.empty() || relativePath.length() > PATH_MAX || !std::regex_match(relativePath, pathRegex)) {
         LOGE("[UMountDfsDocs]invalid relativePath");
-        return E_UMOUNT;
+        return E_PARAMS_INVALID;
     }
 
     std::string dstPath = StringPrintf("/mnt/data/%d/hmdfs/%s", userId, GetAnonyString(deviceId).c_str());
@@ -1260,12 +1260,12 @@ int32_t MountManager::UMountDfsDocs(int32_t userId, const std::string &relativeP
     if (ret != E_OK) {
         LOGE("UMountDfsDocs unmount bind failed, srcPath is %{public}s errno is %{public}d",
              dstPath.c_str(), errno);
-        return E_UMOUNT;
+        return E_USER_UMOUNT_ERR;
     }
     LOGI("MountManager::UMountDfsDocs end.");
     if (!filesystem::is_empty(dstPath)) {
         LOGE("[UMountDfsDocs] Failed to umount");
-        return E_UMOUNT;
+        return E_NOT_EMPTY_TO_UMOUNT;
     }
     if (!RmDirRecurse(dstPath)) {
         LOGE("Failed to remove dir %{public}s", dstPath.c_str());
@@ -1595,7 +1595,7 @@ int32_t MountManager::MountMediaFuse(int32_t userId, int32_t &devFd)
     devFd = open("/dev/fuse", O_RDWR);
     if (devFd < 0) {
         LOGE("open /dev/fuse fail");
-        return E_MOUNT;
+        return E_USER_MOUNT_ERR;
     }
     // mount fuse mountpoint
     string opt = StringPrintf("fd=%i,"
@@ -1610,7 +1610,7 @@ int32_t MountManager::MountMediaFuse(int32_t userId, int32_t &devFd)
     if (ret) {
         LOGE("failed to mount fuse, err %{public}d %{public}d %{public}s", errno, ret, path.c_str());
         close(devFd);
-        return E_MOUNT;
+        return E_USER_MOUNT_ERR;
     }
     LOGI("mount media fuse success, path is %{public}s", path.c_str());
 #endif

@@ -187,7 +187,7 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_SetBundleQuota_005, 
     std::string bundleDataDirPath = BUNDLE_PATH;
     int32_t limitSizeMb = LIMITSIZE;
     int32_t result = quotaManager->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
-    EXPECT_EQ(result, E_SYS_CALL);
+    EXPECT_EQ(result, E_QUOTA_CTL_KERNEL_ERR);
 
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_SetBundleQuota_005 end";
 }
@@ -227,7 +227,7 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_GetOccupiedSpace_001
     int32_t uid = -1;
     int64_t size = 0;
     int32_t result = quotaManager->GetOccupiedSpace(idType, uid, size);
-    EXPECT_EQ(result, E_SYS_ERR);
+    EXPECT_EQ(result, E_QUOTA_CTL_KERNEL_ERR);
     uid = UID;
     result = quotaManager->GetOccupiedSpace(idType, uid, size);
     EXPECT_EQ(result, E_OK);
@@ -235,7 +235,7 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_GetOccupiedSpace_001
     idType = GRPID;
     int32_t gid = -1;
     result = quotaManager->GetOccupiedSpace(idType, gid, size);
-    EXPECT_EQ(result, E_SYS_ERR);
+    EXPECT_EQ(result, E_QUOTA_CTL_KERNEL_ERR);
     gid = 1006;
     result = quotaManager->GetOccupiedSpace(idType, gid, size);
     EXPECT_EQ(result, E_OK);
@@ -243,7 +243,7 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_GetOccupiedSpace_001
     idType = PRJID;
     int32_t prjid = -1;
     result = quotaManager->GetOccupiedSpace(idType, prjid, size);
-    EXPECT_EQ(result, E_SYS_ERR);
+    EXPECT_EQ(result, E_QUOTA_CTL_KERNEL_ERR);
     prjid = 0;
     result = quotaManager->GetOccupiedSpace(idType, prjid, size);
     EXPECT_EQ(result, E_OK);

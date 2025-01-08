@@ -1950,7 +1950,7 @@ int KeyManager::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool ne
     char *path = reinterpret_cast<char *>(malloc(sizeof(char) * (allPathSize)));
     if (path == nullptr) {
         LOGE("Failed to malloce path.");
-        return E_SYS_ERR;
+        return E_MEMORY_OPERATION_ERR;
     }
     int len = sprintf_s(path, allPathSize, "%s%u%s", rootPath, userId, basePath);
     if (len <= 0 || (size_t)len >= allPathSize) {

@@ -580,7 +580,7 @@ int IsSameGidUid(const std::string &dir, uid_t uid, gid_t gid)
         if (errno == ENOENT) {
             return E_NON_EXIST;
         }
-        return E_SYS_ERR;
+        return E_SYS_KERNEL_ERR;
     }
     return (st.st_uid == uid) && (st.st_gid == gid) ? E_OK : E_DIFF_UID_GID;
 }
