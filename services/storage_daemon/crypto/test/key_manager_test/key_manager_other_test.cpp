@@ -137,7 +137,7 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_LockUserScreen_000, TestSize.Level1)
     EXPECT_EQ(KeyManager::GetInstance()->saveLockScreenStatus[user], false);
 
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
-    EXPECT_EQ(KeyManager::GetInstance()->LockUserScreen(user), -ENOENT);
+    EXPECT_EQ(KeyManager::GetInstance()->LockUserScreen(user), E_NON_EXIST);
 
     KeyManager::GetInstance()->userPinProtect[user] = false;
     EXPECT_CALL(*iamClientMoc_, HasPinProtect(_)).WillOnce(Return(false));
