@@ -1693,7 +1693,7 @@ int KeyManager::InactiveUserElKey(unsigned int user, std::map<unsigned int, std:
 {
     if (userElxKey_.find(user) == userElxKey_.end()) {
         LOGE("Have not found user %{public}u el2", user);
-        return E_PARAMS_INVAL;
+        return E_PARAMS_INVALID;
     }
     auto elKey = userElxKey_[user];
     if (elKey->InactiveKey(USER_LOGOUT) == false) {
@@ -1839,7 +1839,7 @@ int KeyManager::UpdateCeEceSeceKeyContext(uint32_t userId, KeyType type)
     std::lock_guard<std::mutex> lock(keyMutex_);
     if (HasElkey(userId, type) == false) {
         LOGE("Have not found user %{public}u el%{public}u", userId, type);
-        return E_PARAMS_INVAL;
+        return E_PARAMS_INVALID;
     }
     std::shared_ptr<BaseKey> elKey = GetUserElKey(userId, type);
     if (elKey == nullptr) {
@@ -2079,7 +2079,7 @@ int KeyManager::RestoreUserKey(uint32_t userId, KeyType type)
     std::string dir = GetKeyDirByUserAndType(userId, type);
     if (dir == "") {
         LOGE("type is invalid, %{public}u", type);
-        return E_PARAMS_INVAL;
+        return E_PARAMS_INVALID;
     }
 
     if (!IsDir(dir)) {

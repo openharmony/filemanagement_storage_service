@@ -962,8 +962,8 @@ HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys_001, TestSize.Leve
     EXPECT_EQ(0, KeyManager::GetInstance()->SetDirectoryElPolicy(userId, static_cast<KeyType>(0),
                                                                  {{userId, USER_EL2_DIR}})); // bad keytype
     EXPECT_EQ(-ENOENT, KeyManager::GetInstance()->UpdateUserAuth(userId, userTokenSecretNull));
-    EXPECT_EQ(E_PARAMS_INVAL, KeyManager::GetInstance()->UpdateKeyContext(userId));
-    EXPECT_EQ(E_PARAMS_INVAL, KeyManager::GetInstance()->InActiveUserKey(userId));
+    EXPECT_EQ(E_PARAMS_INVALID, KeyManager::GetInstance()->UpdateKeyContext(userId));
+    EXPECT_EQ(E_PARAMS_INVALID, KeyManager::GetInstance()->InActiveUserKey(userId));
     EXPECT_EQ(-EFAULT, KeyManager::GetInstance()->ActiveUserKey(userId, {}, {}));
     EXPECT_EQ(0, KeyManager::GetInstance()->DeleteUserKeys(userId));
 }

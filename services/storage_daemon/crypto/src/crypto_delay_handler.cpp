@@ -101,7 +101,7 @@ void DelayHandler::DeactiveEl3El4El5()
     LOGI("enter");
     if (el4Key_ == nullptr) {
         LOGI("elKey is nullptr do not clean.");
-        StorageRadar::ReportUpdateUserAuth("DeactiveEl3El4El5", userId_, E_PARAMS_INVAL, "EL4", "");
+        StorageRadar::ReportUpdateUserAuth("DeactiveEl3El4El5", userId_, E_PARAMS_INVALID, "EL4", "");
         return;
     }
     if (!el4Key_->LockUserScreen(userId_, FSCRYPT_SDP_ECE_CLASS)) {
