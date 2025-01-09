@@ -1024,6 +1024,20 @@ int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
     return 0;
 }
 
+int KeyManager::CheckNeedRestoreVersion(unsigned int user, KeyType type)
+{
+    std::error_code errCode;
+    std::string restore_version;
+    std::string need_restore_path = GetKeyDirByUserAndType(user, type) + RESTORE_DIR;
+    (void)OHOS::LoadStringFromFile(need_restore_path, restore_version);
+    if (std::filesystem::exists(need_restore_path, errCode) &&
+        restore_version == DEFAULT_NEED_RESTORE_UPDATE_VERSION && !IsAppCloneUser(user)) {
+        LOGI("NEED_RESTORE path exist: %{public}s, errcode: %{public}d", need_restore_path.c_str(), errCode.value());
+        return type == EL5_KEY ? -ENONET : -EFAULT;
+    }
+    return E_OK;
+}
+
 int KeyManager::ActiveUserKey(unsigned int user, const std::vector<uint8_t> &token,
                               const std::vector<uint8_t> &secret)
 {
@@ -1191,13 +1205,9 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
     if (!KeyCtrlHasFscryptSyspara()) {
         return 0;
     }
-    std::string need_restore_path = GetKeyDirByUserAndType(user, type) + RESTORE_DIR;
-    std::error_code errCode;
-    std::string restore_version;
-    (void)OHOS::LoadStringFromFile(need_restore_path, restore_version);
-    if (std::filesystem::exists(need_restore_path, errCode) && std::atoi(restore_version.c_str()) == 3) {
-        LOGI("NEED_RESTORE path exist: %{public}s, errcode: %{public}d", need_restore_path.c_str(), errCode.value());
-        return type == EL5_KEY ? -ENONET : -EFAULT;
+    int ret = CheckNeedRestoreVersion(user, type);
+    if (ret == -EFAULT || ret == -ENOENT) {
+        return ret;
     }
     if (CheckUserPinProtect(user, token, secret) != E_OK) {
         LOGE("IAM & Storage mismatch, wait user input pin.");
@@ -1302,6 +1312,10 @@ bool KeyManager::HasElxDesc(std::map<unsigned int, std::shared_ptr<BaseKey>> &us
         }
     }
     return false;
+}
+
+bool KeyManager::IsAppCloneUser(unsigned int user) {
+    return user >= START_APP_CLONE_USER_ID && user <= MAX_APP_CLONE_USER_ID;
 }
 
 int KeyManager::CheckAndDeleteEmptyEl5Directory(std::string keyDir, unsigned int user)
