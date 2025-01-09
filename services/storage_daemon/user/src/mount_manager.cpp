@@ -399,17 +399,17 @@ int32_t MountManager::FindProcess(std::list<std::string> &unMountFailList, std::
     return E_OK;
 }
 
-void MountManager::UmountFailRadar(std::vector<ProcessInfo> &processInfos, int32_t radar)
+void MountManager::FindProcessRadar(std::vector<ProcessInfo> &processInfos, int32_t radar)
 {
     if (processInfos.empty()) {
         return;
     }
     std::string info = ProcessToString(processInfos);
     LOGE("record process, ret = %{public}d, process is %{public}s", radar, info.c_str());
-    StorageService::StorageRadar::GetInstance().RecordKillProcessResult(info, radar);
+    StorageService::StorageRadar::GetInstance().RecordFindProcess(info, radar);
 }
 
-void MountManager::MountFailRadar(std::string &mountPath, int32_t errorCode)
+void MountManager::MountFailRadar(const std::string &mountPath, int32_t errorCode)
 {
     if (mountPath.empty()) {
         return;
@@ -417,7 +417,15 @@ void MountManager::MountFailRadar(std::string &mountPath, int32_t errorCode)
     StorageService::StorageRadar::GetInstance().RecordMountFail(mountPath, errorCode);
 }
 
-void MountManager::PrepareDirFailRadar(std::string &dir, int32_t errorCode)
+void MountManager::UMountFailRadar(const std::string &path, int32_t errorCode)
+{
+    if (path.empty()) {
+        return;
+    }
+    StorageService::StorageRadar::GetInstance().RecordUMountFail(path, errorCode);
+}
+
+void MountManager::PrepareDirFailRadar(const std::string &dir, int32_t errorCode)
 {
     if (dir.empty()) {
         return;
@@ -883,6 +891,7 @@ int32_t MountManager::UMountByList(std::list<std::string> &list, std::list<std::
             LOGE("failed to unmount path %{public}s, errno %{public}d.", path.c_str(), errno);
             result = errno;
             unMountFailList.push_back(path);
+            UMountFailRadar(path, errno);
         }
     }
     return result;
@@ -900,6 +909,7 @@ int32_t MountManager::UMountByListWithDetach(std::list<std::string> &list)
         if (res != E_OK && errno != ENOENT && errno != EINVAL) {
             LOGE("failed to unmount path %{public}s, errno %{public}d.", path.c_str(), errno);
             result = errno;
+            UMountFailRadar(path, errno);
         }
     }
     return result;
@@ -954,12 +964,14 @@ int32_t MountManager::CloudUMount(int32_t userId)
     err = UMount2(cloudFusePath, MNT_DETACH);
     if (err != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("cloud fuse umount failed, errno is %{public}d.", errno);
+        UMountFailRadar(cloudFusePath, errno);
         return E_UMOUNT_CLOUD_FUSE;
     }
     const string cloudPath = cloudMntArgs.GetFullMediaCloud();
     err = UMount2(cloudPath, MNT_DETACH);
     if (err != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("cloud umount failed, errno %{public}d", errno);
+        UMountFailRadar(cloudPath, errno);
         return E_UMOUNT_CLOUD;
     }
     LOGI("cloud umount success");
@@ -1112,12 +1124,14 @@ int32_t MountManager::LocalUMount(int32_t userId)
     int unMountRes = UMount(path);
     if (unMountRes != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("failed to unmount local, errno %{public}d, path is %{public}s", errno, path.c_str());
+        UMountFailRadar(path, errno);
         res = unMountRes;
     }
     path = LocalMntArgs.GetCloudFullPath();
     unMountRes = UMount(path);
     if (unMountRes != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("failed to unmount local, errno %{public}d, path is %{public}s", errno, path.c_str());
+        UMountFailRadar(path, errno);
         res = unMountRes;
     }
     return res;
@@ -1159,7 +1173,7 @@ int32_t MountManager::FindSaFd(int32_t userId)
     std::list<std::string> excludeProcess;
     FindProcess(list, proInfos, excludeProcess);
     if (!proInfos.empty()) {
-        UmountFailRadar(proInfos, E_UMOUNT_FIND_FD);
+        FindProcessRadar(proInfos, E_UMOUNT_FIND_FD);
     }
     LOGI("find sa fd end.");
     return E_OK;
@@ -1199,7 +1213,7 @@ int32_t MountManager::FindAndKillProcess(int32_t userId, std::list<std::string> 
         LOGE("no process find.");
         return E_UMOUNT_NO_PROCESS_FIND;
     }
-    UmountFailRadar(processInfos, radar);
+    FindProcessRadar(processInfos, radar);
     std::vector<ProcessInfo> killFailList;
     KillProcess(processInfos, killFailList);
     if (!killFailList.empty()) {
@@ -1650,6 +1664,7 @@ int32_t MountManager::MountMediaFuse(int32_t userId, int32_t &devFd)
     if (ret) {
         LOGE("failed to mount fuse, err %{public}d %{public}d %{public}s", errno, ret, path.c_str());
         close(devFd);
+        MountFailRadar(path, errno);
         return E_USER_MOUNT_ERR;
     }
     LOGI("mount media fuse success, path is %{public}s", path.c_str());
@@ -1667,6 +1682,7 @@ int32_t MountManager::UMountMediaFuse(int32_t userId)
     err = UMount2(path, MNT_DETACH);
     if (err != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("media fuse umount failed, errno %{public}d", errno);
+        UMountFailRadar(path, errno);
         return E_UMOUNT_MEDIA_FUSE;
     }
     LOGI("umount media fuse success");

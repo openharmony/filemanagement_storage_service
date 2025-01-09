@@ -31,13 +31,14 @@ const int32_t DEFAULT_USERID = 100;
 enum class BizScene : int32_t {
     STORAGE_START = 0,
     USER_MOUNT_MANAGER,
+    USER_UMOUNT_MANAGER,
     USER_KEY_ENCRYPTION,
     SPACE_STATISTICS,
     EXTERNAL_VOLUME_MANAGER,
     STORAGE_USAGE_MANAGER,
     DISTRIBUTED_FILE,
-    MOUNT_FAIL,
-    PREPARE_DIR_FAIL,
+    USER_DIR_MANAGER,
+    PROCESS_MANAGER,
 };
 
 enum class StageRes : int32_t {
@@ -92,8 +93,10 @@ enum class BizStage : int32_t {
     BIZ_STAGE_THRESHOLD_FIVE_PERCENT,
     BIZ_STAGE_THRESHOLD_MINIMAL,
 
-    BIZ_STAGE_MOUNT_FAIL = 61,
-    BIZ_STAGE_PREPARE_DIR_FAIL = 62,
+    BIZ_STAGE_USER_MOUNT = 61,
+    BIZ_STAGE_USER_UMOUNT = 62,
+    BIZ_STAGE_USER_DIR = 63,
+    BIZ_STAGE_FIND_PROCESS = 64,
 };
 
 struct RadarParameter {
@@ -116,9 +119,10 @@ public:
     }
 
 public:
-    bool RecordKillProcessResult(std::string processName, int32_t errcode);
-    bool RecordMountFail(std::string mountPath, int32_t errcode);
-    bool RecordPrepareDirFail(std::string dir, int32_t errcode);
+    bool RecordFindProcess(const std::string &extraData, int32_t errcode);
+    void RecordMountFail(const std::string &extraData, int32_t errcode);
+    void RecordUMountFail(const std::string &extraData, int32_t errcode);
+    void RecordPrepareDirFail(const std::string &extraData, int32_t errcode);
     bool RecordFuctionResult(const RadarParameter &parameterRes);
     static void ReportActiveUserKey(const std::string &funcName, uint32_t userId, int ret,
         const std::string &keyElxLevel);

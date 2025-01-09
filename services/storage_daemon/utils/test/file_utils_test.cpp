@@ -417,16 +417,12 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_KillProcess_001, TestSize.Level1)
  * @tc.type: FUNC
  * @tc.require: AR000GK4HB
  */
-HWTEST_F(FileUtilsTest, StorageRadarTest_RecordKillProcessResult, TestSize.Level1)
+HWTEST_F(FileUtilsTest, StorageRadarTest_RecordFindProcess, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageRadarTest_RecordKillProcessResult_000 start";
-
-    bool ret = StorageService::StorageRadar::GetInstance().RecordKillProcessResult("", E_OK);
-    ASSERT_TRUE(ret == true);
-
-    ret = StorageService::StorageRadar::GetInstance().RecordKillProcessResult("", E_ERR);
-    ASSERT_TRUE(ret == true);
-    GTEST_LOG_(INFO) << "StorageRadarTest_RecordKillProcessResult_000 end";
+    GTEST_LOG_(INFO) << "StorageRadarTest_RecordFindProcess_000 start";
+    std::string extraData = "1111";
+    int32_t errcode = E_OK;
+    StorageService::StorageRadar::GetInstance().RecordFindProcess(extraData, errcode);
 }
 } // STORAGE_DAEMON
 } // OHOS

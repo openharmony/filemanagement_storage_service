@@ -171,39 +171,64 @@ void StorageRadar::ReportStorageUsage(enum BizStage stage, const std::string &ex
     StorageRadar::GetInstance().RecordFuctionResult(param);
 }
 
-bool StorageRadar::RecordKillProcessResult(std::string processName, int32_t errcode)
+void StorageRadar::RecordMountFail(const std::string &extraData, int32_t errcode)
 {
-    int32_t res = E_OK;
-    if (errcode == E_OK) {
-        res = HiSysEventWrite(
-            STORAGESERVICE_DOAMIN,
-            UMOUNT_FAIL_BEHAVIOR,
-            HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
-            "ORG_PKG", DEFAULT_ORGPKGNAME,
-            "FUNC", "FindAndKillProcess",
-            "BIZ_SCENE", static_cast<int32_t>(BizScene::STORAGE_START),
-            "BIZ_STAGE", static_cast<int32_t>(BizStage::BIZ_STAGE_SA_START),
-            "STAGE_RES", static_cast<int32_t>(StageRes::STAGE_SUCC),
-            "BIZ_STATE", static_cast<int32_t>(BizState::BIZ_STATE_END));
-    } else {
-        res = HiSysEventWrite(
-            STORAGESERVICE_DOAMIN,
-            UMOUNT_FAIL_BEHAVIOR,
-            HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
-            "ORG_PKG", DEFAULT_ORGPKGNAME,
-            "FUNC", "FindAndKillProcess",
-            "BIZ_SCENE", static_cast<int32_t>(BizScene::STORAGE_START),
-            "BIZ_STAGE", static_cast<int32_t>(BizStage::BIZ_STAGE_SA_START),
-            "STAGE_RES", static_cast<int32_t>(StageRes::STAGE_FAIL),
-            "BIZ_STATE", static_cast<int32_t>(BizState::BIZ_STATE_END),
-            "ERROR_CODE", errcode,
-            "PROCESS_NAME", processName);
-    }
-    if (res != E_OK) {
-        LOGE("StorageRadar ERROR, res :%{public}d", res);
-        return false;
-    }
-    return true;
+    RadarParameter param = {
+            .orgPkg = DEFAULT_ORGPKGNAME,
+            .userId = DEFAULT_USERID,
+            .funcName = "Mount",
+            .bizScene = BizScene::USER_MOUNT_MANAGER,
+            .bizStage = BizStage::BIZ_STAGE_USER_MOUNT,
+            .keyElxLevel = "NA",
+            .errorCode = errcode,
+            .extraData = extraData
+    };
+    StorageRadar::GetInstance().RecordFuctionResult(param);
+}
+
+void StorageRadar::RecordUMountFail(const std::string &extraData, int32_t errcode)
+{
+    RadarParameter param = {
+            .orgPkg = DEFAULT_ORGPKGNAME,
+            .userId = DEFAULT_USERID,
+            .funcName = "Mount",
+            .bizScene = BizScene::USER_UMOUNT_MANAGER,
+            .bizStage = BizStage::BIZ_STAGE_USER_UMOUNT,
+            .keyElxLevel = "NA",
+            .errorCode = errcode,
+            .extraData = extraData
+    };
+    StorageRadar::GetInstance().RecordFuctionResult(param);
+}
+
+void StorageRadar::RecordPrepareDirFail(const std::string &extraData, int32_t errcode)
+{
+    RadarParameter param = {
+            .orgPkg = DEFAULT_ORGPKGNAME,
+            .userId = DEFAULT_USERID,
+            .funcName = "Mount",
+            .bizScene = BizScene::USER_DIR_MANAGER,
+            .bizStage = BizStage::BIZ_STAGE_USER_DIR,
+            .keyElxLevel = "NA",
+            .errorCode = errcode,
+            .extraData = extraData
+    };
+    StorageRadar::GetInstance().RecordFuctionResult(param);
+}
+
+bool StorageRadar::RecordFindProcess(const std::string &extraData, int32_t errcode)
+{
+    RadarParameter param = {
+            .orgPkg = DEFAULT_ORGPKGNAME,
+            .userId = DEFAULT_USERID,
+            .funcName = "FindProcess",
+            .bizScene = BizScene::PROCESS_MANAGER,
+            .bizStage = BizStage::BIZ_STAGE_FIND_PROCESS,
+            .keyElxLevel = "NA",
+            .errorCode = errcode,
+            .extraData = extraData
+    };
+    StorageRadar::GetInstance().RecordFuctionResult(param);
 }
 
 bool StorageRadar::RecordFuctionResult(const RadarParameter &parRes)
@@ -245,48 +270,6 @@ bool StorageRadar::RecordFuctionResult(const RadarParameter &parRes)
     }
     if (res != E_OK) {
         LOGE("StorageRadar ERROR, res :%{public}d", res);
-        return false;
-    }
-    return true;
-}
-
-bool StorageRadar::RecordMountFail(std::string mountPath, int32_t errcode)
-{
-    int32_t res = HiSysEventWrite(
-        STORAGESERVICE_DOAMIN,
-        MOUNT_FAIL_BEHAVIOR,
-        HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
-        "ORG_PKG", DEFAULT_ORGPKGNAME,
-        "FUNC", "Mount",
-        "BIZ_SCENE", static_cast<int32_t>(BizScene::MOUNT_FAIL),
-        "BIZ_STAGE", static_cast<int32_t>(BizStage::BIZ_STAGE_MOUNT_FAIL),
-        "STAGE_RES", static_cast<int32_t>(StageRes::STAGE_FAIL),
-        "BIZ_STATE", static_cast<int32_t>(BizState::BIZ_STATE_END),
-        "ERROR_CODE", errcode,
-        "MOUNT_PATH", mountPath);
-    if (res != E_OK) {
-        LOGE("storage radar failed, res is %{public}d", res);
-        return false;
-    }
-    return true;
-}
-
-bool StorageRadar::RecordPrepareDirFail(std::string dir, int32_t errcode)
-{
-    int32_t res = HiSysEventWrite(
-        STORAGESERVICE_DOAMIN,
-        PREPARE_DIR_FAIL_BEHAVIOR,
-        HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
-        "ORG_PKG", DEFAULT_ORGPKGNAME,
-        "FUNC", "Mkdir",
-        "BIZ_SCENE", static_cast<int32_t>(BizScene::PREPARE_DIR_FAIL),
-        "BIZ_STAGE", static_cast<int32_t>(BizStage::BIZ_STAGE_PREPARE_DIR_FAIL),
-        "STAGE_RES", static_cast<int32_t>(StageRes::STAGE_FAIL),
-        "BIZ_STATE", static_cast<int32_t>(BizState::BIZ_STATE_END),
-        "ERROR_CODE", errcode,
-        "PREPARE_DIR", dir);
-    if (res != E_OK) {
-        LOGE("storage radar failed, res is %{public}d", res);
         return false;
     }
     return true;
