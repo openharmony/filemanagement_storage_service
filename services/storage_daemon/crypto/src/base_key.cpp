@@ -30,6 +30,7 @@
 #include "key_backup.h"
 #include "libfscrypt/key_control.h"
 #include "openssl_crypto.h"
+#include "storage_service_constant.h"
 #include "storage_service_log.h"
 #include "string_ex.h"
 #include "utils/file_utils.h"
@@ -681,7 +682,9 @@ bool BaseKey::DoUpdateRestore(const UserAuth &auth, const std::string &keyPath)
         return true;
     }
     uint64_t secureUid = { 0 };
-    if (!IamClient::GetInstance().GetSecureUid(GetIdFromDir(), secureUid)) {
+    uint32_t userId = GetIdFromDir();
+    if ((userId < StorageService::START_APP_CLONE_USER_ID || userId >= StorageService::MAX_APP_CLONE_USER_ID) &&
+        !IamClient::GetInstance().GetSecureUid(userId, secureUid)) {
         LOGE("Get secure uid form iam failed, use default value.");
     }
 
@@ -706,7 +709,9 @@ bool BaseKey::DoUpdateRestoreVx(const UserAuth &auth, const std::string &keyPath
     }
     uint64_t secureUid = { 0 };
     
-    if (IamClient::GetInstance().HasPinProtect(GetIdFromDir())) {
+    uint32_t userId = GetIdFromDir();
+    if ((userId < StorageService::START_APP_CLONE_USER_ID || userId >= StorageService::MAX_APP_CLONE_USER_ID) &&
+        IamClient::GetInstance().HasPinProtect(userId)) {
         if (!IamClient::GetInstance().GetSecureUid(GetIdFromDir(), secureUid)) {
             LOGE("Get secure uid form iam failed, use default value.");
         }

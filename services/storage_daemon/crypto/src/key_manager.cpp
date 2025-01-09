@@ -638,6 +638,10 @@ int KeyManager::GenerateIntegrityDirs(int32_t userId, KeyType type)
         !std::filesystem::exists(shieldElx, errCode) || !std::filesystem::exists(discardElx, errCode) ||
         !IsWorkDirExist(dirType, userId)) {
         LOGE("user %{public}d el %{public}d is not integrity. create error", userId, type);
+        std::string extraData =
+            "dir is not Integrity , userId =" + std::to_string(userId) + ", type = " + std::to_string(type);
+        StorageRadar::ReportUserKeyResult("GenerateIntegrityDirs", userId, E_MEMORY_OPERRATION_ERROR, dirType,
+                                          extraData);
         int ret = DoDeleteUserCeEceSeceKeys(userId, userDir, type == EL1_KEY ? userEl1Key_ : userEl2Key_);
         if (ret != E_OK) {
             LOGE("Delete userId=%{public}d el %{public}d key failed", userId, type);
