@@ -116,7 +116,7 @@ public:
     }
 
 public:
-    bool RecordFindProcess(const std::string &extraData, int32_t errcode);
+    void RecordFindProcess(const std::string &extraData, int32_t errcode);
     void RecordMountFail(const std::string &extraData, int32_t errcode);
     void RecordUMountFail(const std::string &extraData, int32_t errcode);
     void RecordPrepareDirFail(const std::string &extraData, int32_t errcode);

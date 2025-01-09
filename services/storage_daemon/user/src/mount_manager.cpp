@@ -1004,7 +1004,7 @@ int32_t MountManager::LocalMount(int32_t userId)
         return E_USER_MOUNT_ERR;
     }
     dstPath = LocalMntArgs.GetCloudFullPath();
-    ret = Mount(srcPath, dstPath, nullptr, MS_BIND, nullptr)
+    ret = Mount(srcPath, dstPath, nullptr, MS_BIND, nullptr);
     if (ret != 0 && errno != EEXIST && errno != EBUSY) {
         LOGE("failed to mount local path, %{public}s, err is %{public}d", srcPath.c_str(), errno);
         MountFailRadar(dstPath, errno);

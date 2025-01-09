@@ -216,7 +216,7 @@ void StorageRadar::RecordPrepareDirFail(const std::string &extraData, int32_t er
     StorageRadar::GetInstance().RecordFuctionResult(param);
 }
 
-bool StorageRadar::RecordFindProcess(const std::string &extraData, int32_t errcode)
+void StorageRadar::RecordFindProcess(const std::string &extraData, int32_t errcode)
 {
     RadarParameter param = {
         .orgPkg = DEFAULT_ORGPKGNAME,
