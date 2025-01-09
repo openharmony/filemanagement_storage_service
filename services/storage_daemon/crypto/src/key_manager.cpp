@@ -1030,7 +1030,7 @@ int KeyManager::CheckNeedRestoreVersion(unsigned int user, KeyType type)
     std::string restore_version;
     std::string need_restore_path = GetKeyDirByUserAndType(user, type) + RESTORE_DIR;
     (void)OHOS::LoadStringFromFile(need_restore_path, restore_version);
-    if (std::filesystem::exists(need_restore_path, errCode) && 
+    if (std::filesystem::exists(need_restore_path, errCode) &&
         restore_version == DEFAULT_NEED_RESTORE_UPDATE_VERSION && !IsAppCloneUser(user)) {
         LOGI("NEED_RESTORE path exist: %{public}s, errcode: %{public}d", need_restore_path.c_str(), errCode.value());
         return type == EL5_KEY ? -ENONET : -EFAULT;
