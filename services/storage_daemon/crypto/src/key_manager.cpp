@@ -1195,7 +1195,8 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
     std::error_code errCode;
     std::string restore_version;
     (void)OHOS::LoadStringFromFile(need_restore_path, restore_version);
-    if (std::filesystem::exists(need_restore_path, errCode) && std::atoi(restore_version.c_str()) == 3) {
+    if (std::filesystem::exists(need_restore_path, errCode) && restore_version == DEFAULT_NEED_RESTORE_UPDATE_VERSION &&
+        !IsAppCloneUser(user)) {
         LOGI("NEED_RESTORE path exist: %{public}s, errcode: %{public}d", need_restore_path.c_str(), errCode.value());
         return type == EL5_KEY ? -ENONET : -EFAULT;
     }
@@ -1302,6 +1303,10 @@ bool KeyManager::HasElxDesc(std::map<unsigned int, std::shared_ptr<BaseKey>> &us
         }
     }
     return false;
+}
+
+bool IsAppCloneUser(unsigned int user) {
+    return user >= START_APP_CLONE_USER_ID && user <= MAX_APP_CLONE_USER_ID;
 }
 
 int KeyManager::CheckAndDeleteEmptyEl5Directory(std::string keyDir, unsigned int user)
