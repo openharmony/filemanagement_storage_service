@@ -1305,7 +1305,7 @@ bool KeyManager::HasElxDesc(std::map<unsigned int, std::shared_ptr<BaseKey>> &us
     return false;
 }
 
-bool IsAppCloneUser(unsigned int user) {
+bool KeyManager::IsAppCloneUser(unsigned int user) {
     return user >= START_APP_CLONE_USER_ID && user <= MAX_APP_CLONE_USER_ID;
 }
 
