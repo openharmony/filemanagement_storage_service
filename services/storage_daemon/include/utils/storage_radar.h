@@ -23,9 +23,6 @@ namespace StorageService {
 const std::string DEFAULT_ORGPKGNAME = "storageService";
 const std::string ADD_NEW_USER_BEHAVIOR = "ADD_NEW_USER_BEHAVIOR";
 const std::string FILE_STORAGE_MANAGER_FAULT_BEHAVIOR  = "FILE_STORAGE_MANAGER_FAULT";
-const std::string UMOUNT_FAIL_BEHAVIOR = "UMOUNT_FAIL_BEHAVIOR";
-const std::string MOUNT_FAIL_BEHAVIOR = "MOUNT_FAIL_BEHAVIOR";
-const std::string PREPARE_DIR_FAIL_BEHAVIOR = "PREPARE_DIR_FAIL_BEHAVIOR";
 constexpr char STORAGESERVICE_DOAMIN[] = "FILEMANAGEMENT";
 const int32_t DEFAULT_USERID = 100;
 enum class BizScene : int32_t {
