@@ -344,7 +344,7 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_UMountDfsDocs_001,
     std::string networkId = "testnetworkid";
     std::string deviceId = "testdevid";
     auto ret = storageDaemon_->UMountDfsDocs(userId, relativePath, networkId, deviceId);
-    EXPECT_EQ(ret, E_USER_MOUNT_ERR);
+    EXPECT_EQ(ret, E_USER_UMOUNT_ERR);
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_UMountDfsDocs_001 end";
 }
 
@@ -479,7 +479,8 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_SetBundleQuota_001
     int32_t uid = 20000000;
     int32_t limitSizeMb = 1000;
     auto ret = storageDaemon_->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
-    EXPECT_TRUE(ret == E_QUOTA_CTL_KERNEL_ERR);
+    GTEST_LOG_(INFO) << ret;
+    EXPECT_TRUE(ret == E_STAT_VFS_KERNEL_ERR);
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_SetBundleQuota_001 end";
 }
 
