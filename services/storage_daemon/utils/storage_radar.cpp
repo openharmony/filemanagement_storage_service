@@ -249,5 +249,47 @@ bool StorageRadar::RecordFuctionResult(const RadarParameter &parRes)
     }
     return true;
 }
+
+bool StorageRadar::RecordMountFail(std::string mountPath, int32_t errcode)
+{
+    int32_t res = HiSysEventWrite(
+        STORAGESERVICE_DOAMIN,
+        MOUNT_FAIL_BEHAVIOR,
+        HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
+        "ORG_PKG", DEFAULT_ORGPKGNAME,
+        "FUNC", "Mount",
+        "BIZ_SCENE", static_cast<int32_t>(BizScene::MOUNT_FAIL),
+        "BIZ_STAGE", static_cast<int32_t>(BizStage::BIZ_STAGE_MOUNT_FAIL),
+        "STAGE_RES", static_cast<int32_t>(StageRes::STAGE_FAIL),
+        "BIZ_STATE", static_cast<int32_t>(BizState::BIZ_STATE_END),
+        "ERROR_CODE", errcode,
+        "MOUNT_PATH", mountPath);
+    if (res != E_OK) {
+        LOGE("storage radar failed, res is %{public}d", res);
+        return false;
+    }
+    return true;
+}
+
+bool StorageRadar::RecordPrepareDirFail(std::string dir, int32_t errcode)
+{
+    int32_t res = HiSysEventWrite(
+        STORAGESERVICE_DOAMIN,
+        PREPARE_DIR_FAIL_BEHAVIOR,
+        HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
+        "ORG_PKG", DEFAULT_ORGPKGNAME,
+        "FUNC", "Mkdir",
+        "BIZ_SCENE", static_cast<int32_t>(BizScene::PREPARE_DIR_FAIL),
+        "BIZ_STAGE", static_cast<int32_t>(BizStage::BIZ_STAGE_PREPARE_DIR_FAIL),
+        "STAGE_RES", static_cast<int32_t>(StageRes::STAGE_FAIL),
+        "BIZ_STATE", static_cast<int32_t>(BizState::BIZ_STATE_END),
+        "ERROR_CODE", errcode,
+        "PREPARE_DIR", dir);
+    if (res != E_OK) {
+        LOGE("storage radar failed, res is %{public}d", res);
+        return false;
+    }
+    return true;
+}
 } // namespace StorageService
 } // namespace OHOS

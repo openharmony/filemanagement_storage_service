@@ -110,6 +110,7 @@ public:
     int32_t MountMediaFuse(int32_t userId, int32_t &devFd);
     int32_t UMountMediaFuse(int32_t userId);
     int32_t FindAndKillProcess(int32_t userId, std::list<std::string> &unMountFailList, int32_t radar);
+    void PrepareDirFailRadar(std::string &dir, int32_t errorCode);
 
 private:
     bool SupportHmdfs();
@@ -141,6 +142,7 @@ private:
     int32_t FindProcess(std::list<std::string> &unMountFailList, std::vector<ProcessInfo> &proInfos,
         std::list<std::string> &excludeProcess);
     int32_t FindSaFd(int32_t userId);
+    void MountFailRadar(std::string &mountPath, int32_t errorCode);
 
     DISALLOW_COPY_AND_MOVE(MountManager);
 

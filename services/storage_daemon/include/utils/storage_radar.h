@@ -24,6 +24,8 @@ const std::string DEFAULT_ORGPKGNAME = "storageService";
 const std::string ADD_NEW_USER_BEHAVIOR = "ADD_NEW_USER_BEHAVIOR";
 const std::string FILE_STORAGE_MANAGER_FAULT_BEHAVIOR  = "FILE_STORAGE_MANAGER_FAULT";
 const std::string UMOUNT_FAIL_BEHAVIOR = "UMOUNT_FAIL_BEHAVIOR";
+const std::string MOUNT_FAIL_BEHAVIOR = "MOUNT_FAIL_BEHAVIOR";
+const std::string PREPARE_DIR_FAIL_BEHAVIOR = "PREPARE_DIR_FAIL_BEHAVIOR";
 constexpr char STORAGESERVICE_DOAMIN[] = "FILEMANAGEMENT";
 const int32_t DEFAULT_USERID = 100;
 enum class BizScene : int32_t {
@@ -34,6 +36,8 @@ enum class BizScene : int32_t {
     EXTERNAL_VOLUME_MANAGER,
     STORAGE_USAGE_MANAGER,
     DISTRIBUTED_FILE,
+    MOUNT_FAIL,
+    PREPARE_DIR_FAIL,
 };
 
 enum class StageRes : int32_t {
@@ -87,6 +91,9 @@ enum class BizStage : int32_t {
     BIZ_STAGE_THRESHOLD_TEN_PERCENT = 51,
     BIZ_STAGE_THRESHOLD_FIVE_PERCENT,
     BIZ_STAGE_THRESHOLD_MINIMAL,
+
+    BIZ_STAGE_MOUNT_FAIL = 61,
+    BIZ_STAGE_PREPARE_DIR_FAIL = 62,
 };
 
 struct RadarParameter {
@@ -110,6 +117,8 @@ public:
 
 public:
     bool RecordKillProcessResult(std::string processName, int32_t errcode);
+    bool RecordMountFail(std::string mountPath, int32_t errcode);
+    bool RecordPrepareDirFail(std::string dir, int32_t errcode);
     bool RecordFuctionResult(const RadarParameter &parameterRes);
     static void ReportActiveUserKey(const std::string &funcName, uint32_t userId, int ret,
         const std::string &keyElxLevel);
