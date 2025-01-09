@@ -82,6 +82,7 @@ napi_value GetAllVolumes(napi_env env, napi_callback_info info)
             volumeInfoObject.AddProp("state", NVal::CreateInt32(env, (*volumeInfo)[i].GetState()).val_);
             volumeInfoObject.AddProp("path", NVal::CreateUTF8String(env, (*volumeInfo)[i].GetPath()).val_);
             volumeInfoObject.AddProp("fsType", NVal::CreateUTF8String(env, (*volumeInfo)[i].GetFsTypeString()).val_);
+            volumeInfoObject.AddProp("diskType", NVal::CreateInt32(env, (*volumeInfo)[i].GetFlags()).val_);
             status = napi_set_element(env, volumeInfoArray, i, volumeInfoObject.val_);
             if (status != napi_ok) {
                 return { env, NError(status).GetNapiErr(env) };
@@ -232,6 +233,7 @@ napi_value GetVolumeByUuid(napi_env env, napi_callback_info info)
         volumeObject.AddProp("state", NVal::CreateInt32(env, volumeInfo->GetState()).val_);
         volumeObject.AddProp("path", NVal::CreateUTF8String(env, volumeInfo->GetPath()).val_);
         volumeObject.AddProp("fsType", NVal::CreateUTF8String(env, volumeInfo->GetFsTypeString()).val_);
+        volumeObject.AddProp("diskType", NVal::CreateInt32(env, volumeInfo->GetFlags()).val_);
         return volumeObject;
     };
 
@@ -284,7 +286,8 @@ napi_value GetVolumeById(napi_env env, napi_callback_info info)
         volumeObject.AddProp("removable", NVal::CreateBool(env, (bool)true).val_);
         volumeObject.AddProp("state", NVal::CreateInt32(env, volumeInfo->GetState()).val_);
         volumeObject.AddProp("path", NVal::CreateUTF8String(env, volumeInfo->GetPath()).val_);
-
+        volumeObject.AddProp("diskType", NVal::CreateInt32(env, volumeInfo->GetFlags()).val_);
+        
         return volumeObject;
     };
 
