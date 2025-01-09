@@ -1098,6 +1098,7 @@ void MountManager::PrepareFileManagerDir(int32_t userId)
         }
         // Dir not exist
         if (ret == E_NON_EXIST && !PrepareDir(path, dir.mode, dirUid, dir.gid)) {
+            PrepareDirFailRadar(path, errno);
             LOGE("failed to prepareDir %{public}s ", path.c_str());
         }
     }
@@ -1225,11 +1226,12 @@ int32_t MountManager::PrepareFileManagerDirs(int32_t userId)
 {
     for (const DirInfo &dir : fileManagerDir_) {
         uid_t dirUid = GetFileManagerUid(dir.uid, userId);
-        if (!PrepareDir(StringPrintf(dir.path.c_str(), userId), dir.mode, dirUid, dir.gid)) {
+        std::string path = StringPrintf(dir.path.c_str(), userId);
+        if (!PrepareDir(path, dir.mode, dirUid, dir.gid)) {
+            PrepareDirFailRadar(path, errno);
             return E_PREPARE_DIR;
         }
     }
-
     return E_OK;
 }
 
