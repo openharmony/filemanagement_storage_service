@@ -16,6 +16,7 @@
 #ifndef OHOS_KEY_CRYPTO_UTILS_H
 #define OHOS_KEY_CRYPTO_UTILS_H
 
+#include <cstdint>
 #include <string>
 
 namespace OHOS {
@@ -24,6 +25,7 @@ namespace StorageService {
 class KeyCryptoUtils {
 public:
     static void ForceLockUserScreen();
+    static int32_t CheckAccountExists(unsigned int userId, bool &isOsAccountExists);
 };
 
 } // namespace StorageService
