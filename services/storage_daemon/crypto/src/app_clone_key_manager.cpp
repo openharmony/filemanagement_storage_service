@@ -29,7 +29,7 @@ namespace OHOS {
 namespace StorageDaemon {
 static const std::string NEED_RESTORE_PATH = "/data/service/el1/public/storage_daemon/sd/el1/%d/latest/need_restore";
 
-int AppCloneKeyManager::ActiveAppCloneUserKey()
+int AppCloneKeyManager::ActiveAppCloneUserKey(unsigned int &failedUserId)
 {
     for (int userId = StorageService::START_APP_CLONE_USER_ID;
          userId < StorageService::MAX_APP_CLONE_USER_ID; userId++) {
@@ -41,18 +41,21 @@ int AppCloneKeyManager::ActiveAppCloneUserKey()
         }
         int ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL2_KEY, {}, {});
         if (ret != E_OK) {
+            failedUserId = userId;
             LOGE("Active app clone user %{public}u el2 failed, ret=%{public}d.", userId, ret);
             StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveAppCloneUserKey", userId, ret, "EL2");
             return ret;
         }
         ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL3_KEY, {}, {});
         if (ret != E_OK) {
+            failedUserId = userId;
             LOGE("Active app clone user %{public}u el3 failed, ret=%{public}d.", userId, ret);
             StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveAppCloneUserKey", userId, ret, "EL3");
             return ret;
         }
         ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL4_KEY, {}, {});
         if (ret != E_OK) {
+            failedUserId = userId;
             LOGE("Active app clone user %{public}u el4 failed, ret=%{public}d.", userId, ret);
             StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveAppCloneUserKey", userId, ret, "EL4");
             return ret;

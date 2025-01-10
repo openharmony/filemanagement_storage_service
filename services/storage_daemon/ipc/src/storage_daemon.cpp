@@ -28,8 +28,9 @@
 
 #ifdef USER_CRYPTO_MANAGER
 #include "crypto/app_clone_key_manager.h"
-#include "crypto/iam_client.h"
+#include "crypto/key_crypto_utils.h"
 #include "crypto/key_manager.h"
+#include "crypto/iam_client.h"
 #endif
 #ifdef EXTERNAL_STORAGE_MANAGER
 #include "disk/disk_manager.h"
@@ -1198,9 +1199,25 @@ void StorageDaemon::SystemAbilityStatusChangeListener::OnRemoveSystemAbility(int
 void StorageDaemon::ActiveAppCloneUserKey()
 {
 #ifdef USER_CRYPTO_MANAGER
-    auto ret = AppCloneKeyManager::GetInstance()->ActiveAppCloneUserKey();
+    unsigned int failedUserId = 0;
+    auto ret = AppCloneKeyManager::GetInstance()->ActiveAppCloneUserKey(failedUserId);
     if (ret != E_OK && (ret != E_NOT_SUPPORT)) {
         LOGE("ActiveAppCloneUserKey failed, errNo %{public}d", ret);
+#ifdef USER_CRYPTO_MIGRATE_KEY
+        uint32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1 | IStorageDaemon::CRYPTO_FLAG_EL2 |
+                         IStorageDaemon::CRYPTO_FLAG_EL3 | IStorageDaemon::CRYPTO_FLAG_EL4;
+        bool isOsAccountExists = true;
+        int32_t checkRet = StorageService::KeyCryptoUtils::CheckAccountExists(failedUserId, isOsAccountExists);
+        std::error_code errCode;
+        std::string el4NeedRestorePath = GetNeedRestoreFilePathByType(failedUserId, EL4_KEY);
+        if ((failedUserId >= START_APP_CLONE_USER_ID || failedUserId <= MAX_APP_CLONE_USER_ID) &&
+            (checkRet == E_OK && !isOsAccountExists) && !std::filesystem::exists(el4NeedRestorePath, errCode)) {
+            ret = UserManager::GetInstance()->DestroyUserDirs(failedUserId, flags);
+            LOGW("Destroy user %{public}d dirs, ret is: %{public}d", failedUserId, ret);
+            ret = KeyManager::GetInstance()->DeleteUserKeys(failedUserId);
+            LOGW("Delete user %{public}d keys, ret is: %{public}d", failedUserId, ret);
+        }
+#endif
     }
 #endif
 }
