@@ -61,7 +61,7 @@ bool BaseKey::ClearKey(const std::string &mnt)
     return IBaseKeyMoc::baseKeyMoc->ClearKey(mnt);
 }
 
-bool BaseKey::UpdateKey(const std::string &keypath)
+bool BaseKey::UpdateKey(const std::string &keypath, bool needSyncCandidate)
 {
     if (IBaseKeyMoc::baseKeyMoc == nullptr) {
         return false;
@@ -69,7 +69,7 @@ bool BaseKey::UpdateKey(const std::string &keypath)
     return IBaseKeyMoc::baseKeyMoc->UpdateKey(keypath);
 }
 
-bool BaseKey::RestoreKey(const UserAuth &auth)
+bool BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate)
 {
     if (IBaseKeyMoc::baseKeyMoc == nullptr) {
         return false;
@@ -130,4 +130,11 @@ bool BaseKey::SaveKeyBlob(const KeyBlob &blob, const std::string &path)
         return false;
     }
     return IBaseKeyMoc::baseKeyMoc->SaveKeyBlob(blob, path);
+}
+
+std::string BaseKey::GetCandidateDir() const
+{
+    if (IBaseKeyMoc::baseKeyMoc == nullptr) {
+        return "";
+    }
 }

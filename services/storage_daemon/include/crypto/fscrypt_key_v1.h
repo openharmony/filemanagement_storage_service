@@ -43,7 +43,7 @@ public:
     bool DeleteClassEPinCode(uint32_t userId = 0);
     bool ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId = 0);
     bool DecryptClassE(const UserAuth &auth, bool &isSupport, bool &eBufferStatue, uint32_t user = 0,
-                       uint32_t status = 0);
+                       bool needSyncCandidate = true);
     bool EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user = 0, uint32_t status = 0);
     bool LockUece(bool &isFbeSupport);
 
@@ -56,6 +56,9 @@ private:
     bool InstallKeyForAppKeyToKeyring(KeyBlob &appKey);
     bool UninstallKeyForAppKeyToKeyring(const std::string keyId);
     bool GenerateAppKeyDesc(KeyBlob appKey);
+    bool DoDecryptClassE(const UserAuth &auth, KeyBlob &eSecretFBE, KeyBlob &decryptedKey,
+                         bool needSyncCandidate = true);
+    FscryptKeyV1Ext fscryptKeyV1Ext;
 };
 } // namespace StorageDaemon
 } // namespace OHOS

@@ -125,7 +125,7 @@ bool BaseKey::GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &path, con
 
 bool BaseKey::LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size = 0)
 {
-    LOGI("enter %{public}s, size=%{public}d", path.c_str(), size);
+    LOGW("enter %{public}s, size=%{public}d", path.c_str(), size);
     std::ifstream file(path, std::ios::binary);
     if (file.fail()) {
         LOGE("open %{public}s failed, errno %{public}d", path.c_str(), errno);
@@ -166,7 +166,7 @@ int BaseKey::GetCandidateVersion() const
             }
         }
     }
-    LOGI("candidate key version is %{public}d", candidate);
+    LOGW("candidate key version is %{public}d", candidate);
     return candidate;
 }
 
@@ -241,9 +241,9 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
     if (keyType == TYPE_EL1 || keyType == TYPE_GLOBAL_EL1) {
         return EncryptDe(auth, pathTemp);
     }
-    if ((auth.token.IsEmpty() && auth.secret.IsEmpty()) || // OOBE首次开机  删除密码(ABC)
-        !auth.token.IsEmpty()) {  // 新增密码  修改密码(ABC)
-        LOGI("Encrypt huks openssl.");
+    if ((auth.token.IsEmpty() && auth.secret.IsEmpty()) || // Create user/Delete pincode(EL2-4)
+        !auth.token.IsEmpty()) {  // add/change pin code (EL2-4)
+        LOGE("Encrypt huks openssl.");
         KeyContext keyCtx = {};
         if (!InitKeyContext(auth, pathTemp, keyCtx)) {
             LOGE("init key context failed !");
@@ -354,9 +354,13 @@ bool BaseKey::LoadAndSaveShield(const UserAuth &auth, const std::string &pathShi
 }
 
 // update the latest and do cleanups.
-bool BaseKey::UpdateKey(const std::string &keypath)
+bool BaseKey::UpdateKey(const std::string &keypath, bool needSyncCandidate)
 {
     LOGI("enter");
+    if (!needSyncCandidate) {
+        LOGE("Do not update candidate file !");
+        return true;
+    }
     auto candidate = keypath.empty() ? GetCandidateDir() : keypath;
     if (candidate.empty() && GetTypeFromDir() == TYPE_EL5) {
         LOGI("no uece candidate dir, do not need updateKey.");
@@ -366,7 +370,40 @@ bool BaseKey::UpdateKey(const std::string &keypath)
         LOGE("no candidate dir");
         return false;
     }
+    DoLatestBackUp();
+    bool hasLatest = IsDir(dir_ + PATH_LATEST);
+    OHOS::ForceRemoveDirectory(dir_ + PATH_LATEST);
+    if (rename(candidate.c_str(), (dir_ + PATH_LATEST).c_str()) != 0) { // rename {candidate} to latest
+        LOGE("rename candidate to latest fail return %{public}d", errno);
+        if (hasLatest) { // revert from the backup
+            if (rename((dir_ + PATH_LATEST_BACKUP).c_str(), (dir_ + PATH_LATEST).c_str()) != 0) {
+                LOGE("restore the latest_backup fail errno:%{public}d", errno);
+            } else {
+                LOGI("restore the latest_backup success");
+            }
+        }
+        SyncKeyDir();
+        return false;
+    }
+    LOGI("rename candidate %{public}s to latest success", candidate.c_str());
 
+    std::vector<std::string> files;
+    GetSubDirs(dir_, files);
+    for (const auto &it: files) { // cleanup backup and other versions
+        if (it != PATH_LATEST.substr(1)) {
+            OHOS::ForceRemoveDirectory(dir_ + "/" + it);
+        }
+    }
+
+    std::string backupDir;
+    KeyBackup::GetInstance().GetBackupDir(dir_, backupDir);
+    KeyBackup::GetInstance().CreateBackup(dir_, backupDir, true);
+    SyncKeyDir();
+    return true;
+}
+
+void BaseKey::DoLatestBackUp() const
+{
     // backup the latest
     std::string pathLatest = dir_ + PATH_LATEST;
     std::string pathLatestBak = dir_ + PATH_LATEST_BACKUP;
@@ -379,43 +416,8 @@ bool BaseKey::UpdateKey(const std::string &keypath)
         }
         LOGI("backup the latest success");
     }
-
-    // rename {candidate} to latest
-    OHOS::ForceRemoveDirectory(dir_ + PATH_LATEST);
-    if (rename(candidate.c_str(), pathLatest.c_str()) != 0) {
-        LOGE("rename candidate to latest fail return %{public}d", errno);
-        if (hasLatest) {
-            // revert from the backup
-            if (rename(pathLatestBak.c_str(),
-                       pathLatest.c_str()) != 0) {
-                LOGE("restore the latest_backup fail errno:%{public}d", errno);
-            } else {
-                LOGI("restore the latest_backup success");
-            }
-        }
-        SyncKeyDir();
-        return false;
-    }
-    LOGI("rename candidate %{public}s to latest success", candidate.c_str());
-
-    // cleanup backup and other versions
-    std::vector<std::string> files;
-    GetSubDirs(dir_, files);
-    for (const auto &it: files) {
-        if (it != PATH_LATEST.substr(1)) {
-            OHOS::ForceRemoveDirectory(dir_ + "/" + it);
-        }
-    }
-
-    std::string backupDir;
-    KeyBackup::GetInstance().GetBackupDir(dir_, backupDir);
-    KeyBackup::GetInstance().CreateBackup(dir_, backupDir, true);
-
-    SyncKeyDir();
-    return true;
 }
 
-// 针对De只通过Huks加密
 bool BaseKey::EncryptDe(const UserAuth &auth, const std::string &path)
 {
     LOGI("enter");
@@ -444,7 +446,6 @@ bool BaseKey::EncryptDe(const UserAuth &auth, const std::string &path)
     return true;
 }
 
-// 不针对RND_ENC 会将传入的keyCtx 加密  HKS->OpenSSL
 bool BaseKey::EncryptEceSece(const UserAuth &auth, const uint32_t keyType, KeyContext &keyCtx)
 {
     LOGI("enter");
@@ -453,7 +454,7 @@ bool BaseKey::EncryptEceSece(const UserAuth &auth, const uint32_t keyType, KeyCo
         LOGE("Encrypt by hks failed.");
         return false;
     }
-    LOGI("Huks encrypt end.");
+    LOGE("Huks encrypt end.");
 
     UserAuth mUserAuth = auth;
     if (auth.secret.IsEmpty()) {
@@ -470,16 +471,16 @@ bool BaseKey::EncryptEceSece(const UserAuth &auth, const uint32_t keyType, KeyCo
         LOGE("Encrypt by openssl failed.");
         return false;
     }
-    LOGI("Encrypt by openssl end");
+    LOGE("Encrypt by openssl end");
     rndEnc.Clear();
     keyEncryptType_ = KeyEncryptType::KEY_CRYPT_HUKS_OPENSSL;
     LOGI("finish");
     return true;
 }
 
-bool BaseKey::RestoreKey(const UserAuth &auth)
+bool BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate)
 {
-    LOGI("enter");
+    LOGW("enter");
     auto candidate = GetCandidateDir();
     if (candidate.empty()) {
         // no candidate dir, just restore from the latest
@@ -488,7 +489,7 @@ bool BaseKey::RestoreKey(const UserAuth &auth)
 
     if (DoRestoreKeyEx(auth, candidate)) {
         // update the latest with the candidate
-        UpdateKey();
+        UpdateKey("", needSyncCandidate);
         return true;
     }
 
@@ -508,7 +509,7 @@ bool BaseKey::RestoreKey(const UserAuth &auth)
     for (const auto &it: files) {
         if (it != candidate) {
             if (DoRestoreKeyEx(auth, dir_ + "/" + it)) {
-                UpdateKey(it);
+                UpdateKey(it, needSyncCandidate);
                 return true;
             }
         }
@@ -562,7 +563,7 @@ bool BaseKey::DoRestoreKeyEx(const UserAuth &auth, const std::string &keyPath)
 
 bool BaseKey::DoRestoreKeyOld(const UserAuth &auth, const std::string &path)
 {
-    LOGI("enter, path = %{public}s", path.c_str());
+    LOGW("enter, path = %{public}s", path.c_str());
     const std::string NEED_UPDATE_PATH = dir_ + PATH_LATEST + SUFFIX_NEED_UPDATE;
     if (!auth.secret.IsEmpty() && FileExists(NEED_UPDATE_PATH)) {
         keyEncryptType_ = KeyEncryptType::KEY_CRYPT_OPENSSL;
@@ -596,7 +597,7 @@ bool BaseKey::DoRestoreKeyOld(const UserAuth &auth, const std::string &path)
 bool BaseKey::DoRestoreKeyDe(const UserAuth &auth, const std::string &path)
 {
     LOGI("enter");
-    KeyContext ctxNone;  // 1.设备级,用户el1  无token  无secret    d
+    KeyContext ctxNone;
     if (!LoadKeyBlob(ctxNone.rndEnc, path + PATH_ENCRYPTED)) {
         LOGE("Load rndEnc failed !");
         return false;
@@ -609,7 +610,7 @@ bool BaseKey::DoRestoreKeyDe(const UserAuth &auth, const std::string &path)
         return false;
     }
 
-    LOGI("Decrypt by hks start.");    // keyCtx.rndEnc 80 -> 64
+    LOGW("Decrypt by hks start.");  // keyCtx.rndEnc 80 -> 64
     if (!HuksMaster::GetInstance().DecryptKey(ctxNone, auth, keyInfo_, true)) {
         LOGE("Decrypt by hks failed.");
         ClearKeyContext(ctxNone);
@@ -623,8 +624,8 @@ bool BaseKey::DoRestoreKeyDe(const UserAuth &auth, const std::string &path)
 bool BaseKey::DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &path, const uint32_t keyType)
 {
     LOGI("enter");
-    if ((auth.secret.IsEmpty() && auth.token.IsEmpty()) ||  // 无密码Avtive  新增密码,用空密码解密(ABC)
-        (!auth.secret.IsEmpty() && !auth.token.IsEmpty())) { // 有密码Avtive 修改密码,老密码解密(ABC)  Pin码解锁(AB)
+    if ((auth.secret.IsEmpty() && auth.token.IsEmpty()) ||
+        (!auth.secret.IsEmpty() && !auth.token.IsEmpty())) {
         KeyContext ctxNone;
         if (!LoadKeyBlob(ctxNone.rndEnc, path + PATH_ENCRYPTED)) {
             LOGE("Load rndEnc failed !");
@@ -647,7 +648,7 @@ bool BaseKey::DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &pat
         return DecryptReal(auth, keyType, ctxNone);
     }
 
-    // 人脸指纹场景  有token  无secret(AB)
+    // face/finger (EL3 EL4)
     if (auth.secret.IsEmpty() && !auth.token.IsEmpty()) {
         if (!keyContext_.shield.IsEmpty() || !keyContext_.rndEnc.IsEmpty()) {
             LOGI("Restore key by face/finger");
@@ -702,6 +703,11 @@ bool BaseKey::DoUpdateRestore(const UserAuth &auth, const std::string &keyPath)
     if (!DoRestoreKeyOld(auth, keyPath)) {
         LOGE("Restore old failed !");
         return false;
+    }
+    std::error_code errCode;
+    if (std::filesystem::exists(dir_ + PATH_NEED_RESTORE_SUFFIX, errCode) && !auth.token.IsEmpty()) {
+        LOGE("Double 2 single, skip huks -> huks-openssl !");
+        return true;
     }
     uint64_t secureUid = { 0 };
     if (!IamClient::GetInstance().GetSecureUid(GetIdFromDir(), secureUid)) {
@@ -855,12 +861,12 @@ void BaseKey::SyncKeyDir() const
         sync();
         return;
     }
-    LOGI("start fsync, dir_ is %{public}s", dir_.c_str());
+    LOGW("start fsync, dir_ is %{public}s", dir_.c_str());
     if (fsync(fd) != 0) {
         LOGE("fsync %{public}s failed, errno %{public}d", dir_.c_str(), errno);
         syncfs(fd);
     }
-    LOGI("fsync end");
+    LOGW("fsync end");
     (void)close(fd);
 }
 
@@ -891,7 +897,7 @@ bool BaseKey::EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, K
         LOGE("MkDirRecurse failed!");
     }
 
-    LOGI("key path is exist : %{public}d", FileExists(keyPath));
+    LOGW("key path is exist : %{public}d", FileExists(keyPath));
     if (!HuksMaster::GetInstance().GenerateKey(auth, keyCtx.shield) ||
         !SaveKeyBlob(keyCtx.shield, keyPath + PATH_SHIELD)) {
         LOGE("GenerateKey and save shield failed!");

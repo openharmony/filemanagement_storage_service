@@ -262,7 +262,7 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
     if (type == EL4_KEY) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
     }
-    LOGI("restore User %{public}u el%{public}u success", userId, type);
+    LOGW("restore User %{public}u el%{public}u success", userId, type);
 
     return E_OK;
 }
@@ -405,8 +405,9 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
 #ifdef USER_CRYPTO_MANAGER
 
 #ifdef USER_CRYPTO_MIGRATE_KEY
+    std::error_code errCode;
     std::string el2NeedRestorePath = GetNeedRestoreFilePath(START_USER_ID, USER_EL2_DIR);
-    if (std::filesystem::exists(el2NeedRestorePath)) {
+    if (std::filesystem::exists(el2NeedRestorePath, errCode)) {
         LOGE("USER_EL2_DIR is exist, update NEW_DOUBLE_2_SINGLE");
         std::string EL0_NEED_RESTORE = DATA_SERVICE_EL0_STORAGE_DAEMON_SD + NEED_RESTORE_SUFFIX;
         if (!SaveStringToFile(EL0_NEED_RESTORE, NEW_DOUBLE_2_SINGELE)) {

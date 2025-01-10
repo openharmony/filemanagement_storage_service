@@ -100,12 +100,12 @@ bool FscryptKeyV2::ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId)
 }
 
 bool FscryptKeyV2::DecryptClassE(const UserAuth &auth, bool &isSupport,
-                                 bool &eBufferStatue, uint32_t user, uint32_t status)
+                                 bool &eBufferStatue, uint32_t user, bool needSyncCandidate)
 {
     if (IFscryptKeyV2Moc::fscryptKeyV2Moc == nullptr) {
         return false;
     }
-    return IFscryptKeyV2Moc::fscryptKeyV2Moc->DecryptClassE(auth, isSupport, eBufferStatue, user, status);
+    return IFscryptKeyV2Moc::fscryptKeyV2Moc->DecryptClassE(auth, isSupport, eBufferStatue, user, needSyncCandidate);
 }
 
 bool FscryptKeyV2::EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status)

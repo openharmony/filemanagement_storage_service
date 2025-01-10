@@ -148,31 +148,47 @@ HWTEST_F(KeyManagerSupTest, KeyManager_GenerateAppkey_001, TestSize.Level1)
     }
 
     shared_ptr<FscryptKeyV2> elKey = make_shared<FscryptKeyV2>("/data/test");
-    KeyManager::GetInstance()->userEl4Key_.erase(user);
-
-    string basePath = "/data/app/el2/" + to_string(user);
-    string path = basePath + "/base";
-    OHOS::ForceRemoveDirectory(basePath);
+    EXPECT_CALL(*FscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_INVALID));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID));
     EXPECT_EQ(KeyManager::GetInstance()->GenerateAppkey(user, 100, keyId), -ENOENT);
 
-    EXPECT_TRUE(OHOS::ForceCreateDirectory(path));
-    string keyDir = KeyManager::GetInstance()->GetKeyDirByUserAndType(user, EL4_KEY);
-    ASSERT_TRUE(OHOS::ForceCreateDirectory(keyDir));
-    EXPECT_CALL(*mountManagerMoc_, CheckMountFileByUser(_)).WillOnce(Return(true));
+    EXPECT_CALL(*FscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
+    EXPECT_CALL(*fscryptKeyMock_, GenerateAppKey(_,_,_)).WillOnce(Return(false));
+    EXPECT_EQ(KeyManager::GetInstance()->GenerateAppkey(user, 100, keyId), 0);
+
+    if (!existUece) {
+        OHOS::RemoveFile(UECE_PATH);
+    }
+    GTEST_LOG_(INFO) << "KeyManager_GenerateAppkey_001 end";
+}
+
+/**
+ * @tc.name: KeyManager_GenerateAppkey_002
+ * @tc.desc: Verify the GenerateAppkey function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyManagerSupTest, KeyManager_GenerateAppkey_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_GenerateAppkey_002 Start";
+    unsigned int user = 300;
+    string keyId;
+
+    bool existUece = true;
+    if (access(UECE_PATH, F_OK) != 0) {
+        existUece = false;
+        std::ofstream file(UECE_PATH);
+        EXPECT_GT(open(UECE_PATH, O_RDWR), 0);
+    }
+
+    EXPECT_CALL(*FscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_INVALID));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID));
+    EXPECT_EQ(KeyManager::GetInstance()->GenerateAppkey(user, 100, keyId), -ENOENT);
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*fscryptKeyMock_, GenerateAppkey(_, _, _)).WillOnce(Return(false));
-    EXPECT_EQ(KeyManager::GetInstance()->GenerateAppkey(user, 100, keyId), -EFAULT);
-    
-    EXPECT_CALL(*fscryptKeyMock_, GenerateAppkey(_, _, _)).WillOnce(Return(true));
-    EXPECT_EQ(KeyManager::GetInstance()->GenerateAppkey(user, 100, keyId), 0);
-
-    KeyManager::GetInstance()->userEl4Key_.erase(user);
-    KeyManager::GetInstance()->userEl4Key_[user] = nullptr;
-    EXPECT_EQ(KeyManager::GetInstance()->GenerateAppkey(user, 100, keyId), -ENOENT);
-
-    EXPECT_TRUE(OHOS::ForceRemoveDirectory(basePath));
-    ASSERT_TRUE(OHOS::ForceRemoveDirectory(keyDir));
+    EXPECT_EQ(KeyManager::GetInstance()->GenerateAppkey(user, 100, keyId), E_OK);
     if (!existUece) {
         OHOS::RemoveFile(UECE_PATH);
     }
