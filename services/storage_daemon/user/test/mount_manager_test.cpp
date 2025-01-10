@@ -243,7 +243,7 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_BindAndRecMount_001, 
     std::string dstPath;
     int32_t userId = 100;
     bool isUseSlave = true;
-    auto ret = MountManager::GetInstance()->BindAndRecMount(srcPath, dstPath, isUseSlave);
+    auto ret = MountManager::GetInstance()->BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
     EXPECT_EQ(ret, E_OK);
 
     srcPath = "srcPath";
