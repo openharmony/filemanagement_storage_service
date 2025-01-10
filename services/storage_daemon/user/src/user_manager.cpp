@@ -335,12 +335,16 @@ int32_t UserManager::DestroyEl1Dir(int32_t userId)
     return E_OK;
 }
 
-void UserManager::CreateBundleDataDir(uint32_t userId)
+void UserManager::CreateElxBundleDataDir(uint32_t userId, uint8_t elx)
 {
+    LOGI("CreateElxBundleDataDir start: userId %{public}u, elx is %{public}d", userId, elx);
+    if(elx == EL1_KEY){
+        LOGW("CreateBundleDataDir pass: userId %{public}u, elx is %{public}d", userId, elx)
+        return;
+    }
     OHOS::AppExecFwk::BundleMgrClient client;
-    LOGI("CreateBundleDataDir start: userId %{public}u", userId);
-    auto ret = client.CreateBundleDataDir(userId);
-    LOGI("CreateBundleDataDir end: userId %{public}u, ret %{public}d", userId, ret);
+    auto ret = client.CreateBundleDataDirWithEl(userId, static_cast<OHOS::AppExecFwk::DataDirEl>(elx));
+    LOGI("CreateElxBundleDataDir end: userId %{public}u, elx is %{public}d, ret %{public}d", userId, elx, ret);
 }
 
 int32_t UserManager::CheckUserIdRange(int32_t userId)

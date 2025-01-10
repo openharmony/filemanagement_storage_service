@@ -347,7 +347,7 @@ bool UserManagerFuzzTest(const uint8_t *data, size_t size)
     userManager->DestroyUserDirs(userId, flag);
     userManager->StartUser(userId);
     userManager->StopUser(userId);
-    userManager->CreateBundleDataDir(flag);
+    userManager->CreateElxBundleDataDir(userId, static_cast<uint8_t>(flag));
 
     return true;
 }
