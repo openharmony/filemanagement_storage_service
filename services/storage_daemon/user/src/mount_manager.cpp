@@ -759,7 +759,8 @@ void MountManager::MountSandboxPath(const std::vector<std::string> &srcPaths, co
         if (ret != 0) {
             LOGE("mount bind failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
                  srcPath.c_str(), dstPath.c_str(), errno);
-            MountFailRadar(dstPath, errno);
+            RadarInfo info = {atoi(userId.c_str()), srcPath, dstPath, "", E_MOUNT_SANDBOX, errno};
+            MountFailRadar(info);
             continue;
         }
         LOGI("bind mount path, srcPath is %{public}s, dstPath is %{public}s", srcPath.c_str(), dstPath.c_str());
@@ -767,7 +768,6 @@ void MountManager::MountSandboxPath(const std::vector<std::string> &srcPaths, co
         if (ret != 0) {
             LOGE("mount to share failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
                  srcPath.c_str(), dstPath.c_str(), errno);
-            MountFailRadar(dstPath, errno);
             continue;
         }
         LOGI("shared mount success, dstPath is %{public}s", dstPath.c_str());
@@ -1694,8 +1694,9 @@ int32_t MountManager::MountMediaFuse(int32_t userId, int32_t &devFd)
     if (ret) {
         LOGE("failed to mount fuse, err %{public}d %{public}d %{public}s", errno, ret, path.c_str());
         close(devFd);
-        MountFailRadar(path, errno);
-        return E_USER_MOUNT_ERR;
+        RadarInfo info = {userId, "/dev/fuse", path, "", E_MOUNT_MEDIA_FUSE, errno};
+        MountFailRadar(info);
+        return E_MOUNT_MEDIA_FUSE;
     }
     LOGI("mount media fuse success, path is %{public}s", path.c_str());
 #endif
