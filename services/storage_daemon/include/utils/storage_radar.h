@@ -116,10 +116,10 @@ public:
     }
 
 public:
-    void RecordFindProcess(const std::string &extraData, int32_t errcode);
-    void RecordMountFail(const std::string &extraData, int32_t errcode);
-    void RecordUMountFail(const std::string &extraData, int32_t errcode);
-    void RecordPrepareDirFail(const std::string &extraData, int32_t errcode);
+    void RecordFindProcess(int32_t userId, const std::string &extraData, int32_t errcode);
+    void RecordMountFail(int32_t userId, const std::string &extraData, int32_t errcode);
+    void RecordUMountFail(int32_t userId, const std::string &extraData, int32_t errcode);
+    void RecordPrepareDirFail(int32_t userId, const std::string &extraData, int32_t errcode);
     bool RecordFuctionResult(const RadarParameter &parameterRes);
     static void ReportActiveUserKey(const std::string &funcName, uint32_t userId, int ret,
         const std::string &keyElxLevel);

@@ -153,5 +153,17 @@ bool IsStringExist(const std::list<std::string> &strList, const std::string &con
     auto it = std::find(strList.begin(), strList.end(), content);
     return it != strList.end();
 }
+
+std::string ListToString(const std::list<std::string> &strList)
+{
+    if (strList.empty()) {
+        return "";
+    }
+    std::string result;
+    for (auto &iter : strList) {
+        result += iter + ",";
+    }
+    return result.empty() ? "" : result.substr(0, result.length() -1);
+}
 } // namespace StorageDaemon
 } // namespace OHOS

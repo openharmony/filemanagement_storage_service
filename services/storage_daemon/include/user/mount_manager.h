@@ -36,6 +36,15 @@ struct DirInfo {
     gid_t gid;
 };
 
+struct RadarInfo {
+    int32_t userId;
+    const std::string srcPath;
+    const std::string dstPath;
+    const std::string dirPath;
+    int32_t errorCode;
+    int32_t kernelCode;
+};
+
 constexpr uid_t OID_ROOT = 0;
 constexpr uid_t OID_SYSTEM = 1000;
 constexpr uid_t OID_FILE_MANAGER = 1006;
@@ -101,7 +110,7 @@ public:
     bool CheckSymlink(const std::string &path, std::list<std::string> &mountFailList);
     bool GetProcessInfo(const std::string &filename, ProcessInfo &info);
     bool PidUsingFlag(std::string &pidPath, std::list<std::string> &mountFailList);
-    void FindProcessRadar(std::vector<ProcessInfo> &processInfo, int32_t radar);
+    void FindProcessRadar(int32_t userId, std::vector<ProcessInfo> &processInfo, int32_t radar);
     void MountSandboxPath(const std::vector<std::string> &srcPaths, const std::vector<std::string> &dstPaths,
                           const std::string &bundleName, const std::string &userId);
     bool CheckMountFileByUser(int32_t userId);
@@ -110,7 +119,7 @@ public:
     int32_t MountMediaFuse(int32_t userId, int32_t &devFd);
     int32_t UMountMediaFuse(int32_t userId);
     int32_t FindAndKillProcess(int32_t userId, std::list<std::string> &unMountFailList, int32_t radar);
-    void PrepareDirFailRadar(const std::string &dir, int32_t errorCode);
+    void PrepareDirFailRadar(RadarInfo radarInfo);
 
 private:
     bool SupportHmdfs();
@@ -136,14 +145,14 @@ private:
     int32_t PrepareAppdataDirByUserId(int32_t userId);
     int32_t MountSharefsAndNoSharefs(int32_t userId);
     int32_t SharedMount(const std::string &path);
-    int32_t BindAndRecMount(std::string &srcPath, std::string &dstPath, bool isUseSlave = true);
+    int32_t BindAndRecMount(int32_t userId, std::string &srcPath, std::string &dstPath, bool isUseSlave = true);
     int32_t UmountMntUserTmpfs(int32_t userId);
     int32_t UmountFileSystem(int32_t userId);
     int32_t FindProcess(std::list<std::string> &unMountFailList, std::vector<ProcessInfo> &proInfos,
         std::list<std::string> &excludeProcess);
     int32_t FindSaFd(int32_t userId);
-    void MountFailRadar(const std::string &mountPath, int32_t errorCode);
-    void UMountFailRadar(const std::string &path, int32_t errorCode);
+    void MountFailRadar(RadarInfo radarInfo);
+    void UMountFailRadar(RadarInfo radarInfo);
 
     DISALLOW_COPY_AND_MOVE(MountManager);
 
