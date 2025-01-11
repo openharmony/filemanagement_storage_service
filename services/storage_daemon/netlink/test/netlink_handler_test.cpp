@@ -97,7 +97,6 @@ int32_t StartSocket(int32_t& socketFd)
     (void)memset_s(&addr, sizeof(addr), 0, sizeof(addr));
     addr.nl_family = AF_NETLINK;
     addr.nl_pid = getprocpid();
-    addr.nl_groups = 0xffffffff;
 
     socketFd = socket(PF_NETLINK, SOCK_DGRAM | SOCK_CLOEXEC, NETLINK_KOBJECT_UEVENT);
     if (socketFd < 0) {

@@ -70,17 +70,21 @@ bool IamClient::GetSecureUid(uint32_t userId, uint64_t &secureUid)
     secureUidStatus_ = FAILED;
     std::shared_ptr<UserSecCallback> secCallback = std::make_shared<UserSecCallback>();
     int32_t retCode = UserIam::UserAuth::UserIdmClient::GetInstance().GetSecUserInfo(userId, secCallback);
-    if (retCode != UserIam::UserAuth::ResultCode::SUCCESS) {
+    if (retCode != UserIam::UserAuth::ResultCode::SUCCESS && retCode != UserIam::UserAuth::ResultCode::NOT_ENROLLED &&
+        retCode != UserIam::UserAuth::ResultCode::GENERAL_ERROR) {
         for (int i = 0; i < IAM_MAX_RETRY_TIME; ++i) {
             usleep(IAM_RETRY_INTERVAL_MS);
             retCode = UserIam::UserAuth::UserIdmClient::GetInstance().GetSecUserInfo(userId, secCallback);
             LOGE("GetSecureUid has retry %{public}d times, retryRet %{public}d", i, retCode);
-            if (retCode == UserIam::UserAuth::ResultCode::SUCCESS) {
+            if (retCode == UserIam::UserAuth::ResultCode::SUCCESS ||
+                retCode == UserIam::UserAuth::ResultCode::NOT_ENROLLED ||
+                retCode == UserIam::UserAuth::ResultCode::GENERAL_ERROR) {
                 break;
             }
         }
     }
-    if (retCode != UserIam::UserAuth::ResultCode::SUCCESS) {
+    if (retCode != UserIam::UserAuth::ResultCode::SUCCESS && retCode != UserIam::UserAuth::ResultCode::NOT_ENROLLED &&
+        retCode != UserIam::UserAuth::ResultCode::GENERAL_ERROR) {
         LOGE("Get secure uid failed !");
         StorageRadar::ReportIamResult("GetSecureUid", userId, retCode);
         return false;

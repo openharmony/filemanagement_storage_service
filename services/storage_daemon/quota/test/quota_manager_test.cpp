@@ -95,7 +95,7 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_SetBundleQuota_001, 
     std::string bundleDataDirPath = BUNDLE_PATH;
     int32_t limitSizeMb = LIMITSIZE;
     int32_t result = quotaManager->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
-    EXPECT_EQ(result, E_NON_EXIST);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
 
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_SetBundleQuota_001 end";
 }
@@ -118,7 +118,7 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_SetBundleQuota_002, 
     std::string bundleDataDirPath = BUNDLE_PATH;
     int32_t limitSizeMb = LIMITSIZE;
     int32_t result = quotaManager->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
-    EXPECT_EQ(result, E_NON_EXIST);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
 
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_SetBundleQuota_002 end";
 }
@@ -141,7 +141,7 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_SetBundleQuota_003, 
     std::string bundleDataDirPath = EMPTY_STRING;
     int32_t limitSizeMb = LIMITSIZE;
     int32_t result = quotaManager->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
-    EXPECT_EQ(result, E_NON_EXIST);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
 
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_SetBundleQuota_003 end";
 }
@@ -164,7 +164,7 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_SetBundleQuota_004, 
     std::string bundleDataDirPath = BUNDLE_PATH;
     int32_t limitSizeMb = -1;
     int32_t result = quotaManager->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
-    EXPECT_EQ(result, E_NON_EXIST);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
 
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_SetBundleQuota_004 end";
 }
@@ -187,7 +187,7 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_SetBundleQuota_005, 
     std::string bundleDataDirPath = BUNDLE_PATH;
     int32_t limitSizeMb = LIMITSIZE;
     int32_t result = quotaManager->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
-    EXPECT_EQ(result, E_QUOTA_CTL_KERNEL_ERR);
+    EXPECT_EQ(result, E_STAT_VFS_KERNEL_ERR);
 
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_SetBundleQuota_005 end";
 }

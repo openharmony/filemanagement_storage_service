@@ -24,7 +24,7 @@ public:
         static AppCloneKeyManager instance;
         return &instance;
     }
-    int ActiveAppCloneUserKey();
+    int ActiveAppCloneUserKey(unsigned int &failedUserId);
 };
 } // namespace StorageDaemon
 } // namespace OHOS

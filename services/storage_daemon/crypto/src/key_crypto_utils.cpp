@@ -47,5 +47,19 @@ void KeyCryptoUtils::ForceLockUserScreen()
     LOGI("Force lock user screen and request strong auth success for userId = %{public}d.", ids[0]);
 #endif
 }
+
+int32_t KeyCryptoUtils::CheckAccountExists(unsigned int userId, bool &isOsAccountExists)
+{
+    LOGW("CheckAccountExists");
+#ifdef ENABLE_SCREENLOCK_MANAGER
+    int32_t ret = AccountSA::OsAccountManager::IsOsAccountExists(userId, isOsAccountExists);
+    if (ret != ERR_OK) {
+        LOGE("Check userId failed, ret = %{public}u", ret);
+        return ret;
+    }
+    LOGW("account %{public}d, is exists: %{public}d", userId, isOsAccountExists);
+#endif
+    return 0;
+}
 }
 }

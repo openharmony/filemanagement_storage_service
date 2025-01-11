@@ -345,7 +345,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4
     uint32_t mountFlags = 0;
     int32_t ret = externalVolumeInfo_->DoMount4Ext(mountFlags);
     GTEST_LOG_(INFO) << ret;
-    EXPECT_EQ(ret, E_ERR);
+    EXPECT_EQ(ret, E_EXT_MOUNT);
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Ext_001 end";
 }
@@ -364,7 +364,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4
     uint32_t mountFlags = 0;
     int32_t ret = externalVolumeInfo_->DoMount4Ntfs(mountFlags);
     GTEST_LOG_(INFO) << ret;
-    EXPECT_EQ(ret, E_ERR);
+    EXPECT_EQ(ret, E_NTFS_MOUNT);
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Ntfs_001 end";
 }
@@ -383,7 +383,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4
     uint32_t mountFlags = 0;
     int32_t ret = externalVolumeInfo_->DoMount4Exfat(mountFlags);
     GTEST_LOG_(INFO) << ret;
-    EXPECT_EQ(ret, E_ERR);
+    EXPECT_EQ(ret, E_EXFAT_MOUNT);
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4Exfat_001 end";
 }
@@ -402,7 +402,7 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoMount4
     uint32_t mountFlags = 0;
     int32_t ret = externalVolumeInfo_->DoMount4OtherType(mountFlags);
     GTEST_LOG_(INFO) << ret;
-    EXPECT_EQ(ret, E_ERR);
+    EXPECT_EQ(ret, E_OTHER_MOUNT);
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoMount4OtherType_001 end";
 }

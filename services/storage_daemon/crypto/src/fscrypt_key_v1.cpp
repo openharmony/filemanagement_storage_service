@@ -473,22 +473,21 @@ void FscryptKeyV1::DropCachesIfNeed()
 
 bool FscryptKeyV1::LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt)
 {
+    LOGI("enter FscryptKeyV1::LockUserScreen");
+    // uninstall KeyRing
+    if (!UninstallKeyToKeyring()) {
+        LOGE("UninstallKeyToKeyring failed");
+        return false;
+    }
+
+    // uninstall FBE
     uint32_t elType;
-    (void)mnt;
-    LOGI("enter");
-    bool ret = true;
     if (!fscryptV1Ext.LockUserScreenExt(flag, elType)) {
         LOGE("fscryptV1Ext InactiveKeyExt failed");
-        ret = false;
+        return false;
     }
-    if (elType == TYPE_EL4) {
-        if (!UninstallKeyToKeyring()) {
-            LOGE("UninstallKeyToKeyring failed");
-            ret = false;
-        }
-    }
-    LOGI("finish");
-    return ret;
+    LOGI("finish FscryptKeyV1::LockUserScreen");
+    return true;
 }
 
 bool FscryptKeyV1::LockUece(bool &isFbeSupport)
