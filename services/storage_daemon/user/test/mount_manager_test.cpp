@@ -204,31 +204,29 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_CheckSymlink_001, Tes
 HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_SharedMount_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_SharedMount_001 start";
-    std::string srcPath;
-    std::string dstPath;
+    std::string path;
     int32_t userId = 100;
-    auto ret = MountManager::GetInstance()->SharedMount(userId, srcPath, dstPath);
+    auto ret = MountManager::GetInstance()->SharedMount(userId, path);
     EXPECT_EQ(ret, E_OK);
 
-    srcPath = "test1";
-    dstPath = "test2";
+    path = "test1";
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false));
-    ret = MountManager::GetInstance()->SharedMount(userId, srcPath, dstPath);
+    ret = MountManager::GetInstance()->SharedMount(userId, path);
     EXPECT_EQ(ret, E_OK);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(1));
-    ret = MountManager::GetInstance()->SharedMount(userId, srcPath, dstPath);
+    ret = MountManager::GetInstance()->SharedMount(userId, path);
     EXPECT_EQ(ret, E_MOUNT_SHARED);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true).WillOnce(Return(true));
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(1));
-    ret = MountManager::GetInstance()->SharedMount(userId, srcPath, dstPath);
+    ret = MountManager::GetInstance()->SharedMount(userId, path);
     EXPECT_EQ(ret, E_MOUNT_SHARED);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(0));
-    ret = MountManager::GetInstance()->SharedMount(userId, srcPath, dstPath);
+    ret = MountManager::GetInstance()->SharedMount(userId, path);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckSymlink_001 end";
 }

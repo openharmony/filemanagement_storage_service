@@ -1562,10 +1562,10 @@ int32_t MountManager::MountSharefsAndNoSharefs(int32_t userId)
 {
     Utils::MountArgument mountArgument(Utils::MountArgumentDescriptors::Alpha(userId, ""));
     std::string path = mountArgument.GetNoSharefsDocPath();
-    SharedMount(userId, path, path);
+    SharedMount(userId, path);
 
     path = mountArgument.GetSharefsDocPath();
-    SharedMount(userId, path, path);
+    SharedMount(userId, path);
 
     std::string src = APPDATA_SRC_PATH[0];
     std::string dst = APPDATA_DST_PATH[0];
