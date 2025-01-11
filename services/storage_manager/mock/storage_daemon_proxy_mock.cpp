@@ -46,6 +46,11 @@ int32_t StorageDaemonProxy::Format(const std::string &volId, const std::string &
     return E_OK;
 }
 
+int32_t StorageDaemonProxy::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
+{
+    return E_OK;
+}
+
 int32_t StorageDaemonProxy::Partition(const std::string &diskId, int32_t type)
 {
     return E_OK;
@@ -205,11 +210,6 @@ int32_t StorageDaemonProxy::UpdateMemoryPara(int32_t size, int32_t &oldSize)
 }
 
 int32_t StorageDaemonProxy::SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemonProxy::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
 {
     return E_OK;
 }

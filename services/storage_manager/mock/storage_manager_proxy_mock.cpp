@@ -115,6 +115,12 @@ int32_t StorageManagerProxy::GetTotalSizeOfVolume(std::string volumeUuid, int64_
     return E_OK;
 }
 
+
+int32_t StorageManagerProxy::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
+{
+    return E_OK;
+}
+
 int32_t StorageManagerProxy::GetBundleStats(std::string pkgName, BundleStats &bundleStats,
     int32_t appIndex, uint32_t statFlag)
 {
@@ -275,11 +281,6 @@ int32_t StorageManagerProxy::MountDfsDocs(int32_t userId, const std::string &rel
 
 int32_t StorageManagerProxy::UMountDfsDocs(int32_t userId, const std::string &relativePath,
     const std::string &networkId, const std::string &deviceId)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
 {
     return E_OK;
 }
