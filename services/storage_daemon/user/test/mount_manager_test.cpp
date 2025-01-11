@@ -164,7 +164,7 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_HmSharefsMount_001, T
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
     ret = MountManager::GetInstance()->HmSharefsMount(userId, srcPath, dstPath);
-    EXPECT_EQ(ret, E_USER_MOUNT_ERR);
+    EXPECT_EQ(ret, E_MOUNT_HM_SHAREFS);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
@@ -216,7 +216,7 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_SharedMount_001, Test
     ret = MountManager::GetInstance()->SharedMount(userId, srcPath, dstPath);
     EXPECT_EQ(ret, E_NON_EXIST);
 
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true).WillOnce(Return(true));
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(1));
     ret = MountManager::GetInstance()->SharedMount(userId, srcPath, dstPath);
     EXPECT_EQ(ret, E_MOUNT_SHARED);

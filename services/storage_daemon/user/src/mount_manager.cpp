@@ -542,7 +542,7 @@ int32_t MountManager::CloudMount(int32_t userId, const string& path)
     int ret;
     if (!cloudReady_) {
         LOGI("Cloud Service has not started");
-        return E_USER_MOUNT_ERR;
+        return E_CLOUD_NOT_READY;
     }
 
     FILE *f = fopen("/dev/fuse", "r+");
@@ -598,7 +598,7 @@ int32_t MountManager::CloudTwiceMount(int32_t userId)
         LOGI("path has mounted, %{public}s", cloudPath.c_str());
     } else {
         mountRet = CloudMount(userId, cloudPath);
-        if (mountRet != E_OK) {
+        if (mountRet != E_OK && mountRet != E_CLOUD_NOT_READY) {
             std::string extraData = "dstPath=" + cloudPath + ",kernelCode=" + to_string(mountRet);
             StorageService::StorageRadar::GetInstance().RecordUserManagerRadar(userId, "CloudTwiceMount",
                 extraData, E_MOUNT_CLOUD_FUSE);
@@ -610,7 +610,7 @@ int32_t MountManager::CloudTwiceMount(int32_t userId)
         LOGI("path has mounted, %{public}s", cloudMediaPath.c_str());
     } else {
         mountRet = CloudMount(userId, cloudMediaPath);
-        if (mountRet != E_OK) {
+        if (mountRet != E_OK && mountRet != E_CLOUD_NOT_READY) {
             std::string extraData = "dstPath=" + cloudMediaPath + ",kernelCode=" + to_string(mountRet);
             StorageService::StorageRadar::GetInstance().RecordUserManagerRadar(userId, "CloudTwiceMount",
                 extraData, E_MOUNT_CLOUD);
@@ -1055,16 +1055,13 @@ int32_t MountManager::MountFileSystem(int32_t userId)
             return ret;
         }
         mountMutex_.lock();
-        ret = CloudTwiceMount(userId);
-        if (ret == E_OK) {
+        if (CloudTwiceMount(userId) == E_OK) {
             fuseMountedUsers_.push_back(userId);
         } else {
             fuseToMountUsers_.push_back(userId);
-            mountMutex_.unlock();
-            return ret;
         }
         mountMutex_.unlock();
-        ret = HmdfsMount(userId, "cloud", true);
+        HmdfsMount(userId, "cloud", true);
     } else {
         ret = LocalMount(userId);
     }
@@ -1702,6 +1699,9 @@ int32_t MountManager::MountMediaFuse(int32_t userId, int32_t &devFd)
     if (ret) {
         LOGE("failed to mount fuse, err %{public}d %{public}d %{public}s", errno, ret, path.c_str());
         close(devFd);
+        std::string extraData = "dstPath=" + path + ",kernelCode=" + to_string(errno);
+        StorageService::StorageRadar::GetInstance().RecordUserManagerRadar(userId, "MountMediaFuse",
+            extraData, E_MOUNT_MEDIA_FUSE);
         return E_MOUNT_MEDIA_FUSE;
     }
     LOGI("mount media fuse success, path is %{public}s", path.c_str());
@@ -1719,6 +1719,9 @@ int32_t MountManager::UMountMediaFuse(int32_t userId)
     err = UMount2(path, MNT_DETACH);
     if (err != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("media fuse umount failed, errno %{public}d", errno);
+        std::string extraData = "dstPath=" + path + ",kernelCode=" + to_string(errno);
+        StorageService::StorageRadar::GetInstance().RecordUserManagerRadar(userId, "UMountMediaFuse",
+            extraData, E_UMOUNT_MEDIA_FUSE);
         return E_UMOUNT_MEDIA_FUSE;
     }
     LOGI("umount media fuse success");
