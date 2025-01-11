@@ -110,7 +110,6 @@ public:
     bool CheckSymlink(const std::string &path, std::list<std::string> &mountFailList);
     bool GetProcessInfo(const std::string &filename, ProcessInfo &info);
     bool PidUsingFlag(std::string &pidPath, std::list<std::string> &mountFailList);
-    void FindProcessRadar(int32_t userId, std::vector<ProcessInfo> &processInfo, int32_t radar);
     void MountSandboxPath(const std::vector<std::string> &srcPaths, const std::vector<std::string> &dstPaths,
                           const std::string &bundleName, const std::string &userId);
     bool CheckMountFileByUser(int32_t userId);
@@ -119,12 +118,10 @@ public:
     int32_t MountMediaFuse(int32_t userId, int32_t &devFd);
     int32_t UMountMediaFuse(int32_t userId);
     int32_t FindAndKillProcess(int32_t userId, std::list<std::string> &unMountFailList, int32_t radar);
-    void PrepareDirFailRadar(RadarInfo radarInfo);
 
 private:
     bool SupportHmdfs();
     int32_t CreateVirtualDirs(int32_t userId);
-    int32_t HmdfsMount(int32_t userId);
     int32_t HmdfsMount(int32_t userId, std::string relativePath, bool mountCloudDisk = false);
     int32_t HmdfsTwiceMount(int32_t userId, const std::string &relativePath);
     int32_t SharefsMount(int32_t userId);
@@ -144,15 +141,15 @@ private:
     void GetAllUserId(std::vector<int32_t> &userIds);
     int32_t PrepareAppdataDirByUserId(int32_t userId);
     int32_t MountSharefsAndNoSharefs(int32_t userId);
-    int32_t SharedMount(const std::string &path);
+    int32_t SharedMount(int32_t userId, const std::string &srcPath, const std::string &dstPath);
     int32_t BindAndRecMount(int32_t userId, std::string &srcPath, std::string &dstPath, bool isUseSlave = true);
     int32_t UmountMntUserTmpfs(int32_t userId);
     int32_t UmountFileSystem(int32_t userId);
+    int32_t MountFileSystem(int32_t userId);
     int32_t FindProcess(std::list<std::string> &unMountFailList, std::vector<ProcessInfo> &proInfos,
         std::list<std::string> &excludeProcess);
     int32_t FindSaFd(int32_t userId);
-    void MountFailRadar(RadarInfo radarInfo);
-    void UMountFailRadar(RadarInfo radarInfo);
+    int32_t BindMount(std::string &srcPath, std::string &dstPath);
 
     DISALLOW_COPY_AND_MOVE(MountManager);
 

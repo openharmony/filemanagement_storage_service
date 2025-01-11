@@ -34,8 +34,6 @@ enum class BizScene : int32_t {
     EXTERNAL_VOLUME_MANAGER,
     STORAGE_USAGE_MANAGER,
     DISTRIBUTED_FILE,
-    USER_DIR_MANAGER,
-    PROCESS_MANAGER,
 };
 
 enum class StageRes : int32_t {
@@ -91,9 +89,6 @@ enum class BizStage : int32_t {
     BIZ_STAGE_THRESHOLD_MINIMAL,
 
     BIZ_STAGE_USER_MOUNT = 61,
-    BIZ_STAGE_USER_UMOUNT = 62,
-    BIZ_STAGE_USER_DIR = 63,
-    BIZ_STAGE_FIND_PROCESS = 64,
 };
 
 struct RadarParameter {
@@ -116,10 +111,8 @@ public:
     }
 
 public:
-    void RecordFindProcess(int32_t userId, const std::string &extraData, int32_t errcode);
-    void RecordMountFail(int32_t userId, const std::string &extraData, int32_t errcode);
-    void RecordUMountFail(int32_t userId, const std::string &extraData, int32_t errcode);
-    void RecordPrepareDirFail(int32_t userId, const std::string &extraData, int32_t errcode);
+    void RecordUserManagerRadar(int32_t userId, const std::string &funcName,
+        const std::string &extraData, int32_t errcode);
     bool RecordFuctionResult(const RadarParameter &parameterRes);
     static void ReportActiveUserKey(const std::string &funcName, uint32_t userId, int ret,
         const std::string &keyElxLevel);

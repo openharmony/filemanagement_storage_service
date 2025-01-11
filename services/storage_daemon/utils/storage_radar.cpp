@@ -171,62 +171,18 @@ void StorageRadar::ReportStorageUsage(enum BizStage stage, const std::string &ex
     StorageRadar::GetInstance().RecordFuctionResult(param);
 }
 
-void StorageRadar::RecordMountFail(int32_t userId, const std::string &extraData, int32_t errcode)
+void StorageRadar::RecordUserManagerRadar(int32_t userId, const std::string &funcName,
+    const std::string &extraData, int32_t errcode)
 {
     RadarParameter param = {
-        .orgPkg = DEFAULT_ORGPKGNAME,
-        .userId = userId,
-        .funcName = "Mount",
-        .bizScene = BizScene::USER_MOUNT_MANAGER,
-        .bizStage = BizStage::BIZ_STAGE_USER_MOUNT,
-        .keyElxLevel = "NA",
-        .errorCode = errcode,
-        .extraData = extraData
-    };
-    StorageRadar::GetInstance().RecordFuctionResult(param);
-}
-
-void StorageRadar::RecordUMountFail(int32_t userId, const std::string &extraData, int32_t errcode)
-{
-    RadarParameter param = {
-        .orgPkg = DEFAULT_ORGPKGNAME,
-        .userId = userId,
-        .funcName = "UMount",
-        .bizScene = BizScene::USER_UMOUNT_MANAGER,
-        .bizStage = BizStage::BIZ_STAGE_USER_UMOUNT,
-        .keyElxLevel = "NA",
-        .errorCode = errcode,
-        .extraData = extraData
-    };
-    StorageRadar::GetInstance().RecordFuctionResult(param);
-}
-
-void StorageRadar::RecordPrepareDirFail(int32_t userId, const std::string &extraData, int32_t errcode)
-{
-    RadarParameter param = {
-        .orgPkg = DEFAULT_ORGPKGNAME,
-        .userId = userId,
-        .funcName = "PrepareDir",
-        .bizScene = BizScene::USER_DIR_MANAGER,
-        .bizStage = BizStage::BIZ_STAGE_USER_DIR,
-        .keyElxLevel = "NA",
-        .errorCode = errcode,
-        .extraData = extraData
-    };
-    StorageRadar::GetInstance().RecordFuctionResult(param);
-}
-
-void StorageRadar::RecordFindProcess(int32_t userId, const std::string &extraData, int32_t errcode)
-{
-    RadarParameter param = {
-        .orgPkg = DEFAULT_ORGPKGNAME,
-        .userId = userId,
-        .funcName = "FindProcess",
-        .bizScene = BizScene::PROCESS_MANAGER,
-        .bizStage = BizStage::BIZ_STAGE_FIND_PROCESS,
-        .keyElxLevel = "NA",
-        .errorCode = errcode,
-        .extraData = extraData
+            .orgPkg = DEFAULT_ORGPKGNAME,
+            .userId = userId,
+            .funcName = funcName,
+            .bizScene = BizScene::USER_MOUNT_MANAGER,
+            .bizStage = BizStage::BIZ_STAGE_USER_MOUNT,
+            .keyElxLevel = "NA",
+            .errorCode = errcode,
+            .extraData = extraData
     };
     StorageRadar::GetInstance().RecordFuctionResult(param);
 }
