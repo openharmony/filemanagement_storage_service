@@ -36,6 +36,7 @@
 #include "user/mount_manager.h"
 #include "user/user_manager.h"
 #include "utils/storage_radar.h"
+#include "utils/string_utils.h"
 #ifdef EL5_FILEKEY_MANAGER
 #include "el5_filekey_manager_kit.h"
 #endif
@@ -1978,16 +1979,24 @@ int KeyManager::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool ne
     }
     if (access(path, F_OK) != 0) {
         free(path);
-        LOGI("This is encrypted status");
+        LOGE("Can not access el2 dir, user %{public}d el2 is encrypted.", userId);
+        return E_OK;
+    }
+    std::string el2Path(path);
+    if (!SaveStringToFile(el2Path + EL2_ENCRYPT_TMP_FILE, " ")) {
+        free(path);
+        LOGE("Can not save el2 file, user %{public}d el2 is encrypted.", userId);
         return E_OK;
     }
     free(path);
+    int ret = remove((el2Path + EL2_ENCRYPT_TMP_FILE).c_str());
+    LOGE("remove ret = %{public}d", ret);
     if (needCheckDirMount && !MountManager::GetInstance()->CheckMountFileByUser(userId)) {
         LOGI("The virturalDir is not exists.");
         return E_OK;
     }
     isEncrypted = false;
-    LOGI("This is unencrypted status");
+    LOGI("This is decrypted status");
     return E_OK;
 }
 
@@ -1996,10 +2005,10 @@ bool KeyManager::IsUserCeDecrypt(uint32_t userId)
     bool isCeEncrypt = false;
     int ret = GetFileEncryptStatus(userId, isCeEncrypt);
     if (ret != E_OK || isCeEncrypt) {
-        LOGE("User %{public}d de has not decrypt.", userId);
+        LOGE("User %{public}d el2 has not decrypt.", userId);
         return false;
     }
-    LOGI("User %{public}d de decrypted.", userId);
+    LOGI("User %{public}d el2 decrypted.", userId);
     return true;
 }
 

@@ -1207,11 +1207,11 @@ void StorageDaemon::ActiveAppCloneUserKey()
         uint32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1 | IStorageDaemon::CRYPTO_FLAG_EL2 |
                          IStorageDaemon::CRYPTO_FLAG_EL3 | IStorageDaemon::CRYPTO_FLAG_EL4;
         bool isOsAccountExists = true;
-        int32_t checkRet = StorageService::KeyCryptoUtils::CheckAccountExists(failedUserId, isOsAccountExists);
+        StorageService::KeyCryptoUtils::CheckAccountExists(failedUserId, isOsAccountExists);
         std::error_code errCode;
         std::string el4NeedRestorePath = GetNeedRestoreFilePathByType(failedUserId, EL4_KEY);
-        if ((failedUserId >= START_APP_CLONE_USER_ID || failedUserId <= MAX_APP_CLONE_USER_ID) &&
-            (checkRet == E_OK && !isOsAccountExists) && !std::filesystem::exists(el4NeedRestorePath, errCode)) {
+        if ((failedUserId >= START_APP_CLONE_USER_ID && failedUserId <= MAX_APP_CLONE_USER_ID) &&
+            !isOsAccountExists && !std::filesystem::exists(el4NeedRestorePath, errCode)) {
             ret = UserManager::GetInstance()->DestroyUserDirs(failedUserId, flags);
             LOGW("Destroy user %{public}d dirs, ret is: %{public}d", failedUserId, ret);
             ret = KeyManager::GetInstance()->DeleteUserKeys(failedUserId);
