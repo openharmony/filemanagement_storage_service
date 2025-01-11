@@ -36,15 +36,6 @@ struct DirInfo {
     gid_t gid;
 };
 
-struct RadarInfo {
-    int32_t userId;
-    const std::string srcPath;
-    const std::string dstPath;
-    const std::string dirPath;
-    int32_t errorCode;
-    int32_t kernelCode;
-};
-
 constexpr uid_t OID_ROOT = 0;
 constexpr uid_t OID_SYSTEM = 1000;
 constexpr uid_t OID_FILE_MANAGER = 1006;
