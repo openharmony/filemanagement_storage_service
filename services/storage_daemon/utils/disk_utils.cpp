@@ -104,10 +104,6 @@ int32_t ReadMetadata(const std::string &devPath, std::string &uuid, std::string 
         LOGE("External volume ReadMetadata error.");
         return E_READMETADATA;
     }
-    if (type == "hmfs" && label != "/data") {
-        LOGE("Failed to mount the partition: Unsupported");
-        return E_UNSUPPORTED;
-    }
     return E_OK;
 }
 
