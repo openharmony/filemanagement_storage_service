@@ -32,7 +32,6 @@ enum class BizScene : int32_t {
     SPACE_STATISTICS,
     EXTERNAL_VOLUME_MANAGER,
     STORAGE_USAGE_MANAGER,
-    DISTRIBUTED_FILE,
 };
 
 enum class StageRes : int32_t {

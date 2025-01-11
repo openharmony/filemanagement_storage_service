@@ -302,6 +302,9 @@ int32_t StorageManager::Mount(std::string volumeId)
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::Mount start");
     int result = DelayedSingleton<VolumeManagerService>::GetInstance()->Mount(volumeId);
+    if (result != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeManagerService::Mount", result);
+    }
     return result;
 #else
     return E_OK;
@@ -313,6 +316,9 @@ int32_t StorageManager::Unmount(std::string volumeId)
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::Unmount start");
     int result = DelayedSingleton<VolumeManagerService>::GetInstance()->Unmount(volumeId);
+    if (result != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeManagerService::Unmount", result);
+    }
     return result;
 #else
     return E_OK;
@@ -357,6 +363,9 @@ int32_t StorageManager::Partition(std::string diskId, int32_t type)
     LOGI("StorageManager::Partition start, diskId: %{public}s", diskId.c_str());
     std::shared_ptr<DiskManagerService> diskManager = DelayedSingleton<DiskManagerService>::GetInstance();
     int32_t err = diskManager->Partition(diskId, type);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("DiskManagerService::Partition", err);
+    }
     return err;
 #else
     return E_OK;
@@ -408,6 +417,9 @@ int32_t StorageManager::SetVolumeDescription(std::string fsUuid, std::string des
     LOGI("StorageManger::SetVolumeDescription start, uuid: %{public}s",
         GetAnonyString(fsUuid).c_str());
     int32_t err = DelayedSingleton<VolumeManagerService>::GetInstance()->SetVolumeDescription(fsUuid, description);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeManagerService::SetVolumeDescription", err);
+    }
     return err;
 #else
     return E_OK;
@@ -419,6 +431,9 @@ int32_t StorageManager::Format(std::string volumeId, std::string fsType)
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::Format start, volumeId: %{public}s, fsType: %{public}s", volumeId.c_str(), fsType.c_str());
     int32_t err = DelayedSingleton<VolumeManagerService>::GetInstance()->Format(volumeId, fsType);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeManagerService::Format", err);
+    }
     return err;
 #else
     return E_OK;
@@ -699,20 +714,7 @@ int32_t StorageManager::UpdateMemoryPara(int32_t size, int32_t &oldSize)
 {
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    int32_t err = sdCommunication->UpdateMemoryPara(size, oldSize);
-    if (err != E_OK) {
-        RadarParameter parameterRes = {
-            .orgPkg = DEFAULT_ORGPKGNAME,
-            .userId = DEFAULT_USERID,
-            .funcName = "StorageDaemon::UpdateMemoryPara",
-            .bizScene = BizScene::DISTRIBUTED_FILE,
-            .bizStage = BizStage::BIZ_STAGE_GET_FILE_ENCRYPT_STATUS,
-            .keyElxLevel = "EL1",
-            .errorCode = err
-        };
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
-    }
-    return err;
+    return sdCommunication->UpdateMemoryPara(size, oldSize);
 }
 
 int32_t StorageManager::MountDfsDocs(int32_t userId, const std::string &relativePath,

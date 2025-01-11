@@ -176,7 +176,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Check_001, TestSiz
     dev_t device = MKDEV(1, 3); // 1 is major device number, 3 is minor device number
     std::string volId = volumeManager->CreateVolume(diskId, device);
     int32_t result = volumeManager->Check(volId);
-    EXPECT_EQ(result, E_ERR);
+    EXPECT_EQ(result, E_CHECK);
 
     volumeManager->DestroyVolume(volId);
 

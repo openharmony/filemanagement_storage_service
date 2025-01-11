@@ -124,7 +124,12 @@ int32_t StorageDaemon::Check(const std::string &volId)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle Check");
-    return VolumeManager::Instance()->Check(volId);
+    int32_t ret = VolumeManager::Instance()->Check(volId);
+    if (ret != E_OK) {
+        LOGW("Check failed, please check");
+        StorageRadar::ReportVolumeOperation("VolumeManager::Check", ret);
+    }
+    return ret;
 #else
     return E_OK;
 #endif

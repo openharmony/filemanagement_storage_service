@@ -64,7 +64,7 @@ int32_t StorageDaemonCommunication::Connect()
         deathRecipient_ = new (std::nothrow) SdDeathRecipient();
         if (!deathRecipient_) {
             LOGE("StorageDaemonCommunication::Connect failed to create death recipient");
-            return E_SERVICE_IS_NULLPTR;
+            return E_DEATHRECIPIENT_IS_NULLPTR;
         }
 
         storageDaemon_->AsObject()->AddDeathRecipient(deathRecipient_);
