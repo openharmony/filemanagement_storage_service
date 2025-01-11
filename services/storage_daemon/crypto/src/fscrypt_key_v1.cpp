@@ -265,7 +265,7 @@ bool FscryptKeyV1::DoDecryptClassE(const UserAuth &auth, KeyBlob &eSecretFBE, Ke
 }
 
 bool FscryptKeyV1::DecryptClassE(const UserAuth &auth, bool &isSupport, bool &eBufferStatue,
-                                 uint32_t user, uint32_t needSyncCandidate)
+                                 uint32_t user, bool needSyncCandidate)
 {
     LOGI("enter");
     KeyBlob eSecretFBE(AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES);

@@ -59,9 +59,10 @@ bool FscryptKeyV1Ext::ChangePinCodeClassE(uint32_t userId, bool &isFbeSupport)
     return IFscryptKeyV1Ext::fscryptKeyV1ExtMock->ChangePinCodeClassE(userId, isFbeSupport);
 }
 
-bool FscryptKeyV1Ext::ReadClassE(uint32_t status, uint8_t *classEBuffer, uint32_t length, bool &isFbeSupport)
+bool FscryptKeyV1Ext::ReadClassE(uint32_t status, uint8_t *classEBuffer, uint32_t length,
+                                 bool &isFbeSupport)
 {
-    return IFscryptKeyV1Ext::fscryptKeyV1ExtMock->ReadClassE(status, classEBuffer, length, isFbeSupport);
+    return IFscryptKeyV1Ext::fscryptKeyV1ExtMock->ReadClassE(status, std::unique_ptr<uint8_t[]> &classEBuffer, length, isFbeSupport);
 }
 
 bool FscryptKeyV1Ext::WriteClassE(uint32_t status, uint8_t *classEBuffer, uint32_t length)

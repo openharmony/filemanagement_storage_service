@@ -1609,7 +1609,8 @@ int KeyManager::UpdateKeyContext(uint32_t userId)
     if (IsUeceSupport() && saveESecretStatus[userId]) {
         ret = UpdateCeEceSeceKeyContext(userId, EL5_KEY);
     }
-    if (ret != 0 && ((userId < StorageService::START_APP_CLONE_USER_ID || userId > StorageService::MAX_APP_CLONE_USER_ID))) {
+    if (ret != 0 && ((userId < StorageService::START_APP_CLONE_USER_ID ||
+                      userId > StorageService::MAX_APP_CLONE_USER_ID))) {
         LOGE("Basekey update EL5 newest context failed");
         return ret;
     }
