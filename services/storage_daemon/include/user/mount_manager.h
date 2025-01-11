@@ -132,7 +132,7 @@ private:
     void GetAllUserId(std::vector<int32_t> &userIds);
     int32_t PrepareAppdataDirByUserId(int32_t userId);
     int32_t MountSharefsAndNoSharefs(int32_t userId);
-    int32_t SharedMount(int32_t userId, const std::string &srcPath, const std::string &dstPath);
+    int32_t SharedMount(int32_t userId, const std::string &path);
     int32_t BindAndRecMount(int32_t userId, std::string &srcPath, std::string &dstPath, bool isUseSlave = true);
     int32_t UmountMntUserTmpfs(int32_t userId);
     int32_t UmountFileSystem(int32_t userId);

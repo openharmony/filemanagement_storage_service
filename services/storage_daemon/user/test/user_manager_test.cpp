@@ -479,7 +479,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_MountManagerTest_LocalMount_001, TestS
     EXPECT_EQ(ret, E_OK);
 
     ret = mountManager->LocalUMount(userId);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(ret, E_UMOUNT_LOCAL_CLOUD);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_LocalMmount_001 end";
 }
 

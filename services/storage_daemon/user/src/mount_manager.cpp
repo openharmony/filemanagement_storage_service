@@ -1452,28 +1452,23 @@ bool MountManager::MediaFuseDirFlag(const std::string &path)
     return false;
 }
 
-int32_t MountManager::SharedMount(int32_t userId, const std::string &srcPath, const std::string &dstPath)
+int32_t MountManager::SharedMount(int32_t userId, const std::string &path)
 {
-    if (srcPath.empty() || !IsDir(srcPath)) {
-        LOGE("path invalid, %{public}s", srcPath.c_str());
-        return E_NON_EXIST;
+    if (path.empty() || !IsDir(path)) {
+        LOGE("path invalid, %{public}s", path.c_str());
+        return E_OK;
     }
-    if (dstPath.empty() || !IsDir(dstPath)) {
-        LOGE("path invalid, %{public}s", dstPath.c_str());
-        return E_NON_EXIST;
-    }
-    int32_t ret = mount(srcPath.c_str(), dstPath.c_str(), nullptr, MS_BIND | MS_REC, nullptr);
-    if (ret != 0 && errno != EEXIST && errno != EBUSY) {
-        LOGE("SharedMount failed, srcPath is %{public}s, dstPath is %{public}s, errno is %{public}d.",
-            srcPath.c_str(), dstPath.c_str(), errno);
-        std::string extraData = "srcPath=" + srcPath + ",dstPath=" + dstPath + ",kernelCode=" + to_string(errno);
+    int32_t ret = mount(path.c_str(), path.c_str(), nullptr, MS_BIND | MS_REC, nullptr);
+    if (ret != 0) {
+        LOGE("SharedMount failed, path is %{public}s, errno is %{public}d.", path.c_str(), errno);
+        std::string extraData = "path=" + path + ",kernelCode=" + to_string(errno);
         StorageService::StorageRadar::GetInstance().RecordUserManagerRadar(userId, "SharedMount",
             extraData, E_MOUNT_SHARED);
         return E_MOUNT_SHARED;
     }
-    ret = mount(nullptr, dstPath.c_str(), nullptr, MS_SHARED, nullptr);
-    if (ret != 0 && errno != EEXIST && errno != EBUSY) {
-        LOGE("SharedMount shared failed, dstPath is %{public}s, errno is %{public}d.", dstPath.c_str(), errno);
+    ret = mount(nullptr, path.c_str(), nullptr, MS_SHARED, nullptr);
+    if (ret != 0) {
+        LOGE("SharedMount shared failed, path is %{public}s, errno is %{public}d.", path.c_str(), errno);
         return E_MOUNT_SHARED;
     }
     return E_OK;
@@ -1632,11 +1627,11 @@ int32_t MountManager::MountAppdataAndSharefs(int32_t userId)
 
     LOGI("mount sharefs/docs/currentUser");
     std::string sharefsDocCurPath = mountArgument.GetSharefsDocCurPath();
-    BindAndRecMount(userId, curOtherPath, sharefsDocCurPath);
+    BindAndRecMount(userId, curOtherPath, sharefsDocCurPath, false);
 
     LOGI("mount nosharefs/docs/currentUser");
     std::string noSharefsDocCurPath = mountArgument.GetNoSharefsDocCurPath();
-    BindAndRecMount(userId, curFileMgrPath, noSharefsDocCurPath);
+    BindAndRecMount(userId, curFileMgrPath, noSharefsDocCurPath, false);
     return E_OK;
 }
 
