@@ -175,14 +175,14 @@ void StorageRadar::RecordUserManagerRadar(int32_t userId, const std::string &fun
     const std::string &extraData, int32_t errcode)
 {
     RadarParameter param = {
-            .orgPkg = DEFAULT_ORGPKGNAME,
-            .userId = userId,
-            .funcName = funcName,
-            .bizScene = BizScene::USER_MOUNT_MANAGER,
-            .bizStage = BizStage::BIZ_STAGE_USER_MOUNT,
-            .keyElxLevel = "NA",
-            .errorCode = errcode,
-            .extraData = extraData
+        .orgPkg = DEFAULT_ORGPKGNAME,
+        .userId = userId,
+        .funcName = funcName,
+        .bizScene = BizScene::USER_MOUNT_MANAGER,
+        .bizStage = BizStage::BIZ_STAGE_USER_MOUNT,
+        .keyElxLevel = "NA",
+        .errorCode = errcode,
+        .extraData = extraData
     };
     StorageRadar::GetInstance().RecordFuctionResult(param);
 }

@@ -599,7 +599,7 @@ int32_t MountManager::CloudTwiceMount(int32_t userId)
     } else {
         mountRet = CloudMount(userId, cloudPath);
         if (mountRet != E_OK) {
-            std::string extraData = "srcPath=/dev/fuse" + ",dstPath=" + cloudPath + ",kernelCode=" + to_string(mountRet);
+            std::string extraData = "dstPath=" + cloudPath + ",kernelCode=" + to_string(mountRet);
             StorageService::StorageRadar::GetInstance().RecordUserManagerRadar(userId, "CloudTwiceMount",
                 extraData, E_MOUNT_CLOUD_FUSE);
             ret = E_MOUNT_CLOUD_FUSE;
@@ -611,8 +611,7 @@ int32_t MountManager::CloudTwiceMount(int32_t userId)
     } else {
         mountRet = CloudMount(userId, cloudMediaPath);
         if (mountRet != E_OK) {
-            std::string extraData = "srcPath=/dev/fuse" + ",dstPath=" + cloudMediaPath +
-                ",kernelCode=" + to_string(mountRet);
+            std::string extraData = "dstPath=" + cloudMediaPath + ",kernelCode=" + to_string(mountRet);
             StorageService::StorageRadar::GetInstance().RecordUserManagerRadar(userId, "CloudTwiceMount",
                 extraData, E_MOUNT_CLOUD);
             ret = E_MOUNT_CLOUD;
