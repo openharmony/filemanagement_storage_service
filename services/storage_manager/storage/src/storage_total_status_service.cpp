@@ -100,7 +100,7 @@ int32_t StorageTotalStatusService::GetSizeOfPath(const char *path, int32_t type,
     struct statvfs diskInfo;
     int ret = statvfs(path, &diskInfo);
     if (ret != E_OK) {
-        return E_ERR;
+        return E_STATVFS;
     }
     std::string typeStr = "";
     if (type == SizeType::TOTAL) {

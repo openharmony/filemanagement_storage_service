@@ -30,10 +30,12 @@
 #include "storage_service_log.h"
 #include "utils/disk_utils.h"
 #include "utils/file_utils.h"
+#include "utils/storage_radar.h"
 #include "utils/string_utils.h"
 #include "volume/process.h"
 
 using namespace std;
+using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
 constexpr int32_t WAIT_THREAD_TIMEOUT_S = 15;
@@ -120,6 +122,7 @@ int32_t ExternalVolumeInfo::DoMount4Hmfs(uint32_t mountFlags)
     int32_t ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType, mountFlags, mountData.c_str());
     if (!ret) {
         TravelChmod(mountPath_, mode);
+        StorageRadar::ReportVolumeOperation("ExternalVolumeInfo::DoMount4Hmfs", ret);
     }
     return ret;
 }
@@ -280,7 +283,7 @@ int32_t ExternalVolumeInfo::DoCheck()
     int32_t ret = ExternalVolumeInfo::ReadMetadata();
     if (ret) {
         LOGE("External volume uuid=%{public}s DoCheck failed.", GetAnonyString(GetFsUuid()).c_str());
-        return E_ERR;
+        return E_CHECK;
     }
 
     // check fstype

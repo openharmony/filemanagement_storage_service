@@ -26,8 +26,10 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/file_utils.h"
+#include "utils/storage_radar.h"
 
 using namespace std;
+using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
 static constexpr int32_t NODE_PERM = 0660;
@@ -100,11 +102,11 @@ int32_t ReadMetadata(const std::string &devPath, std::string &uuid, std::string 
         type.c_str(), label.c_str());
     if (uuid.empty() || type.empty()) {
         LOGE("External volume ReadMetadata error.");
-        return E_ERR;
+        return E_READMETADATA;
     }
     if (type == "hmfs" && label != "/data") {
         LOGE("Failed to mount the partition: Unsupported");
-        return E_ERR;
+        return E_UNSUPPORTED;
     }
     return E_OK;
 }
@@ -129,6 +131,7 @@ std::string GetBlkidDataByCmd(std::vector<std::string> &cmd)
 
     int32_t err = ForkExec(cmd, &output);
     if (err) {
+        StorageRadar::ReportVolumeOperation("ForkExec", err);
         return "";
     }
 

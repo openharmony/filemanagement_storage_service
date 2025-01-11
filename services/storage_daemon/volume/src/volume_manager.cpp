@@ -22,11 +22,12 @@
 #include "mtp/mtp_device_monitor.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "utils/storage_radar.h"
 #include "utils/string_utils.h"
 #include "volume/external_volume_info.h"
 
 using namespace std;
-
+using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
 VolumeManager* VolumeManager::instance_ = nullptr;
@@ -171,6 +172,7 @@ int32_t VolumeManager::Format(const std::string volId, const std::string fsType)
     int32_t err = info->Format(fsType);
     if (err != E_OK) {
         LOGE("the volume %{public}s format failed.", volId.c_str());
+        StorageRadar::ReportVolumeOperation("VolumeInfo::Format", err);
         return err;
     }
 
@@ -188,6 +190,7 @@ int32_t VolumeManager::SetVolumeDescription(const std::string volId, const std::
     int32_t err = info->SetVolumeDescription(description);
     if (err != E_OK) {
         LOGE("the volume %{public}s setVolumeDescription failed.", volId.c_str());
+        StorageRadar::ReportVolumeOperation("VolumeInfo::SetVolumeDescription", err);
         return err;
     }
 

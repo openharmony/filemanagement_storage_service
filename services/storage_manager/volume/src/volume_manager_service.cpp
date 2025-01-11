@@ -21,11 +21,12 @@
 #include "storage_daemon_communication/storage_daemon_communication.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "utils/storage_radar.h"
 #include "utils/storage_utils.h"
 #include "volume/notification.h"
 
 using namespace std;
-
+using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageManager {
 VolumeManagerService::VolumeManagerService() {}
@@ -99,7 +100,7 @@ int32_t VolumeManagerService::Mount(std::string volumeId)
     std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeId);
     if (volumePtr == nullptr) {
         LOGE("volumePtr is nullptr for volumeId");
-        return -EFAULT;
+        return E_VOLUMEEX_IS_NULLPTR;
     }
     if (volumePtr->GetState() != VolumeState::UNMOUNTED) {
         LOGE("VolumeManagerService::The type of volume(Id %{public}s) is not unmounted", volumeId.c_str());
@@ -115,6 +116,7 @@ int32_t VolumeManagerService::Mount(std::string volumeId)
         }
     } else {
         volumePtr->SetState(VolumeState::UNMOUNTED);
+        StorageRadar::ReportVolumeOperation("VolumeManagerService::Check", result);
     }
     return result;
 }
@@ -128,7 +130,7 @@ int32_t VolumeManagerService::Unmount(std::string volumeId)
     std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeId);
     if (volumePtr == nullptr) {
         LOGE("volumePtr is nullptr for volumeId");
-        return -EFAULT;
+        return E_VOLUMEEX_IS_NULLPTR;
     }
     if (volumePtr->GetState() != VolumeState::MOUNTED) {
         LOGE("VolumeManagerService::The type of volume(Id %{public}s) is not mounted", volumeId.c_str());
@@ -152,7 +154,7 @@ int32_t VolumeManagerService::Check(std::string volumeId)
     std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeId);
     if (volumePtr == nullptr) {
         LOGE("volumePtr is nullptr for volumeId");
-        return -EFAULT;
+        return E_VOLUMEEX_IS_NULLPTR;
     }
     volumePtr->SetState(VolumeState::CHECKING);
     if (volumePtr->GetFsType() == FsType::MTP) {

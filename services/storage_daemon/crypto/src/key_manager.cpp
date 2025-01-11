@@ -1295,7 +1295,7 @@ bool KeyManager::HasElxDesc(std::map<unsigned int, std::shared_ptr<BaseKey>> &us
             LOGI("The ElKey is nullptr: %{public}d", elKey == nullptr);
             return false;
         }
-        
+
         if (it != userElKey_.end() && !elKey->KeyDescIsEmpty()) {
             LOGI("user el%{public}u key desc has existed", type);
             return true;
@@ -1960,7 +1960,7 @@ int KeyManager::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool ne
     if (len <= 0 || (size_t)len >= allPathSize) {
         free(path);
         LOGE("Failed to get base path");
-        return -ENOENT;
+        return E_PARAMS_INVALID;
     }
     if (access(path, F_OK) != 0) {
         free(path);
