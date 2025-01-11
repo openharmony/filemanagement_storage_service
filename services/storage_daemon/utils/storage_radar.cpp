@@ -171,39 +171,20 @@ void StorageRadar::ReportStorageUsage(enum BizStage stage, const std::string &ex
     StorageRadar::GetInstance().RecordFuctionResult(param);
 }
 
-bool StorageRadar::RecordKillProcessResult(std::string processName, int32_t errcode)
+void StorageRadar::RecordUserManagerRadar(int32_t userId, const std::string &funcName,
+    const std::string &extraData, int32_t errcode)
 {
-    int32_t res = E_OK;
-    if (errcode == E_OK) {
-        res = HiSysEventWrite(
-            STORAGESERVICE_DOAMIN,
-            UMOUNT_FAIL_BEHAVIOR,
-            HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
-            "ORG_PKG", DEFAULT_ORGPKGNAME,
-            "FUNC", "FindAndKillProcess",
-            "BIZ_SCENE", static_cast<int32_t>(BizScene::STORAGE_START),
-            "BIZ_STAGE", static_cast<int32_t>(BizStage::BIZ_STAGE_SA_START),
-            "STAGE_RES", static_cast<int32_t>(StageRes::STAGE_SUCC),
-            "BIZ_STATE", static_cast<int32_t>(BizState::BIZ_STATE_END));
-    } else {
-        res = HiSysEventWrite(
-            STORAGESERVICE_DOAMIN,
-            UMOUNT_FAIL_BEHAVIOR,
-            HiviewDFX::HiSysEvent::EventType::BEHAVIOR,
-            "ORG_PKG", DEFAULT_ORGPKGNAME,
-            "FUNC", "FindAndKillProcess",
-            "BIZ_SCENE", static_cast<int32_t>(BizScene::STORAGE_START),
-            "BIZ_STAGE", static_cast<int32_t>(BizStage::BIZ_STAGE_SA_START),
-            "STAGE_RES", static_cast<int32_t>(StageRes::STAGE_FAIL),
-            "BIZ_STATE", static_cast<int32_t>(BizState::BIZ_STATE_END),
-            "ERROR_CODE", errcode,
-            "PROCESS_NAME", processName);
-    }
-    if (res != E_OK) {
-        LOGE("StorageRadar ERROR, res :%{public}d", res);
-        return false;
-    }
-    return true;
+    RadarParameter param = {
+        .orgPkg = DEFAULT_ORGPKGNAME,
+        .userId = userId,
+        .funcName = funcName,
+        .bizScene = BizScene::USER_MOUNT_MANAGER,
+        .bizStage = BizStage::BIZ_STAGE_USER_MOUNT,
+        .keyElxLevel = "NA",
+        .errorCode = errcode,
+        .extraData = extraData
+    };
+    StorageRadar::GetInstance().RecordFuctionResult(param);
 }
 
 bool StorageRadar::RecordFuctionResult(const RadarParameter &parRes)

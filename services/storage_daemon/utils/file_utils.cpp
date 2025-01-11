@@ -811,7 +811,7 @@ std::string ProcessToString(std::vector<ProcessInfo> &processList)
         return "";
     }
     std::string result;
-    for (auto & iter : processList) {
+    for (auto &iter : processList) {
         result += std::to_string(iter.pid) + "_" + iter.name + ",";
     }
     return result.empty() ? "" : result.substr(0, result.length() -1);

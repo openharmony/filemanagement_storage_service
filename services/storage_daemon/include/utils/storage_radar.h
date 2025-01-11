@@ -23,7 +23,6 @@ namespace StorageService {
 const std::string DEFAULT_ORGPKGNAME = "storageService";
 const std::string ADD_NEW_USER_BEHAVIOR = "ADD_NEW_USER_BEHAVIOR";
 const std::string FILE_STORAGE_MANAGER_FAULT_BEHAVIOR  = "FILE_STORAGE_MANAGER_FAULT";
-const std::string UMOUNT_FAIL_BEHAVIOR = "UMOUNT_FAIL_BEHAVIOR";
 constexpr char STORAGESERVICE_DOAMIN[] = "FILEMANAGEMENT";
 const int32_t DEFAULT_USERID = 100;
 enum class BizScene : int32_t {
@@ -87,6 +86,8 @@ enum class BizStage : int32_t {
     BIZ_STAGE_THRESHOLD_TEN_PERCENT = 51,
     BIZ_STAGE_THRESHOLD_FIVE_PERCENT,
     BIZ_STAGE_THRESHOLD_MINIMAL,
+
+    BIZ_STAGE_USER_MOUNT = 61,
 };
 
 struct RadarParameter {
@@ -109,7 +110,8 @@ public:
     }
 
 public:
-    bool RecordKillProcessResult(std::string processName, int32_t errcode);
+    void RecordUserManagerRadar(int32_t userId, const std::string &funcName,
+        const std::string &extraData, int32_t errcode);
     bool RecordFuctionResult(const RadarParameter &parameterRes);
     static void ReportActiveUserKey(const std::string &funcName, uint32_t userId, int ret,
         const std::string &keyElxLevel);
