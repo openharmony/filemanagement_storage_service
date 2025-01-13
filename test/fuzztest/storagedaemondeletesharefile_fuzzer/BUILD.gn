@@ -43,7 +43,6 @@ ohos_fuzztest("StorageDaemonDeleteShareFileFuzzTest") {
     "${storage_daemon_path}/utils/file_utils.cpp",
     "${storage_daemon_path}/utils/hi_audit.cpp",
     "${storage_daemon_path}/utils/mount_argument_utils.cpp",
-    "${storage_daemon_path}/utils/set_flag_utils.cpp",
     "${storage_daemon_path}/utils/storage_radar.cpp",
     "${storage_daemon_path}/utils/storage_xcollie.cpp",
     "${storage_daemon_path}/utils/string_utils.cpp",

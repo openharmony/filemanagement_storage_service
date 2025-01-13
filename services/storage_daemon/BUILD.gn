@@ -292,7 +292,6 @@ ohos_shared_library("storage_common_utils") {
     "./utils/file_utils.cpp",
     "./utils/hi_audit.cpp",
     "./utils/mount_argument_utils.cpp",
-    "./utils/set_flag_utils.cpp",
     "./utils/storage_radar.cpp",
     "./utils/storage_xcollie.cpp",
     "./utils/string_utils.cpp",
