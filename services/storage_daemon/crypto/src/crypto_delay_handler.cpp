@@ -101,10 +101,12 @@ void DelayHandler::ClearEceSeceKey()
     LOGI("enter");
     if (el4Key_ == nullptr) {
         LOGI("elKey is nullptr do not clean.");
+        StorageRadar::ReportUpdateUserAuth("ClearEceKey", userId_, E_PARAMS_INVAL, "EL4", "");
         return;
     }
     if (!el4Key_->LockUserScreen(userId_, FSCRYPT_SDP_ECE_CLASS)) {
         LOGE("Clear user %{public}u key failed", userId_);
+        StorageRadar::ReportUpdateUserAuth("ClearEceSeceKey::LockUserScreen", userId_, E_SYS_ERR, "EL4", "");
         return;
     }
     LOGI("success");

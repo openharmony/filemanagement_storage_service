@@ -44,6 +44,7 @@ ohos_unittest("IamClientTest") {
   ]
 
   deps = [
+    "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
     "//third_party/googletest:gmock_main",
     "//third_party/googletest:gtest_main",
