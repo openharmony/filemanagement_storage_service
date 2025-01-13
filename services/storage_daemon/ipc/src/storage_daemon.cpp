@@ -22,7 +22,6 @@
 #include "file_ex.h"
 #include "hi_audit.h"
 #include "hisysevent.h"
-#include "utils/set_flag_utils.h"
 #include "utils/storage_radar.h"
 #include "utils/string_utils.h"
 
@@ -498,14 +497,7 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
         HiAudit::GetInstance().Write(storageAuditLog);
     }
     MountManager::GetInstance()->PrepareAppdataDir(GLOBAL_USER_ID);
-    std::thread thread([this]() { SetDeleteFlag4KeyFiles(); });
-    thread.detach();
     return result;
-}
-
-void StorageDaemon::SetDeleteFlag4KeyFiles()
-{
-    StorageService::SetFlagUtils::ParseDirAllPath();
 }
 
 int32_t StorageDaemon::GenerateUserKeys(uint32_t userId, uint32_t flags)
