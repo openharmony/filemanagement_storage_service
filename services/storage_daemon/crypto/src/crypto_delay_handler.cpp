@@ -18,7 +18,10 @@
 #include <pthread.h>
 
 #include "storage_service_log.h"
+#include "storage_service_errno.h"
+#include "utils/storage_radar.h"
 
+using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
 constexpr int32_t WAIT_THREAD_TIMEOUT_MS = 5;
