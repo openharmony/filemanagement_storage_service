@@ -35,11 +35,13 @@
 #include "storage_daemon_communication/storage_daemon_communication.h"
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
+#include "utils/storage_radar.h"
 #include "want.h"
 #include "want_params.h"
 
 using namespace OHOS::AAFwk;
 using namespace OHOS::AccountSA;
+using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageManager {
 static constexpr int CONNECT_TIME = 10;
@@ -175,6 +177,7 @@ void AccountSubscriber::HandleScreenLockedEvent(int32_t &userId)
     int ret = AccountSA::OsAccountManager::QueryActiveOsAccountIds(ids);
     if (ret != 0 || ids.empty()) {
         LOGE("Query active userid failed, ret = %{public}u", ret);
+        StorageRadar::ReportOsAccountResult("HandleScreenLockedEvent::QueryActiveOsAccountIds", ret, DEFAULT_USERID);
         return;
     }
     userId = ids[0];

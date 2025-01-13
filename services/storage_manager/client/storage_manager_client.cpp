@@ -45,7 +45,7 @@ int32_t StorageManagerClient::PrepareAddUser(uint32_t userId, uint32_t flags)
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
-        return -EFAULT;
+        return E_SA_IS_NULLPTR;
     }
 
     return client->PrepareAddUser(userId, flags);
@@ -56,7 +56,7 @@ int32_t StorageManagerClient::RemoveUser(uint32_t userId, uint32_t flags)
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
-        return -EFAULT;
+        return E_SA_IS_NULLPTR;
     }
 
     return client->RemoveUser(userId, flags);
@@ -67,7 +67,7 @@ int32_t StorageManagerClient::GenerateUserKeys(uint32_t userId, uint32_t flags)
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
-        return -EFAULT;
+        return E_SA_IS_NULLPTR;
     }
 
     return client->GenerateUserKeys(userId, flags);
@@ -78,7 +78,7 @@ int32_t StorageManagerClient::DeleteUserKeys(uint32_t userId)
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
-        return -EFAULT;
+        return E_SA_IS_NULLPTR;
     }
 
     return client->DeleteUserKeys(userId);
@@ -92,7 +92,7 @@ int32_t StorageManagerClient::UpdateUserAuth(uint32_t userId, uint64_t secureUid
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
-        return -EFAULT;
+        return E_SA_IS_NULLPTR;
     }
 
     return client->UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
@@ -107,7 +107,7 @@ int32_t StorageManagerClient::UpdateUseAuthWithRecoveryKey(const std::vector<uin
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
-        return -EFAULT;
+        return E_SA_IS_NULLPTR;
     }
 
     return client->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId, plainText);
@@ -120,7 +120,7 @@ int32_t StorageManagerClient::ActiveUserKey(uint32_t userId,
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
-        return -EFAULT;
+        return E_SA_IS_NULLPTR;
     }
 
     return client->ActiveUserKey(userId, token, secret);
@@ -131,7 +131,7 @@ int32_t StorageManagerClient::InactiveUserKey(uint32_t userId)
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
-        return -EFAULT;
+        return E_SA_IS_NULLPTR;
     }
 
     return client->InactiveUserKey(userId);
@@ -142,7 +142,7 @@ int32_t StorageManagerClient::UpdateKeyContext(uint32_t userId)
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
-        return -EFAULT;
+        return E_SA_IS_NULLPTR;
     }
 
     return client->UpdateKeyContext(userId);
@@ -166,7 +166,7 @@ int32_t StorageManagerClient::UnlockUserScreen(uint32_t userId,
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
-        return -EFAULT;
+        return E_SA_IS_NULLPTR;
     }
 
     return client->UnlockUserScreen(userId, token, secret);
@@ -177,7 +177,7 @@ int32_t StorageManagerClient::GetFileEncryptStatus(uint32_t userId, bool &isEncr
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
-        return -EFAULT;
+        return E_SA_IS_NULLPTR;
     }
 
     return client->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
@@ -188,7 +188,7 @@ int32_t StorageManagerClient::GetLockScreenStatus(uint32_t userId, bool &lockScr
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
-        return -EFAULT;
+        return E_SA_IS_NULLPTR;
     }
 
     return client->GetLockScreenStatus(userId, lockScreenStatus);
@@ -200,7 +200,7 @@ int32_t StorageManagerClient::MountDfsDocs(int32_t userId, const std::string &re
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
-        return -EFAULT;
+        return E_SA_IS_NULLPTR;
     }
 
     return client->MountDfsDocs(userId, relativePath, networkId, deviceId);
@@ -212,7 +212,7 @@ int32_t StorageManagerClient::UMountDfsDocs(int32_t userId, const std::string &r
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
-        return -EFAULT;
+        return E_SA_IS_NULLPTR;
     }
 
     return client->UMountDfsDocs(userId, relativePath, networkId, deviceId);

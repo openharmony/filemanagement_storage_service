@@ -26,7 +26,9 @@
 #include "libfscrypt/key_control.h"
 #include "storage_service_log.h"
 #include "utils/file_utils.h"
+#include "utils/storage_radar.h"
 
+using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
 static const std::string CRYPTO_NAME_PREFIXES[] = {"ext4", "f2fs", "fscrypt"};
@@ -116,13 +118,15 @@ bool FscryptKeyV1::InstallKeyForAppKeyToKeyring(KeyBlob &appKey)
         krid = KeyCtrlAddKey("keyring", "fscrypt", KEY_SPEC_SESSION_KEYRING);
         if (krid < 0) {
             LOGE("failed to add session keyring");
+            std::string extraData = "keyring cmd=KEY_SPEC_SESSION_KEYRING,errno=" + std::to_string(errno) +
+                ",appKey=" + appKey.ToString();
+            StorageRadar::ReportKeyRingResult("InstallKeyForAppKeyToKeyring::KeyCtrlAddKey", krid, extraData);
             return false;
         }
     }
     for (auto prefix : CRYPTO_NAME_PREFIXES) {
         std::string keyref = prefix + ":" + keyInfo_.keyDesc.ToString();
-        key_serial_t ks =
-            KeyCtrlAddAppAsdpKey("logon", keyref.c_str(), &fskey, krid);
+        key_serial_t ks = KeyCtrlAddAppAsdpKey("logon", keyref.c_str(), &fskey, krid);
         if (ks < 0) {
             // Addkey failed, need to process the error
             LOGE("Failed to AddKey, errno %{public}d", errno);
@@ -153,6 +157,8 @@ bool FscryptKeyV1::UninstallKeyForAppKeyToKeyring(const std::string keyId)
     key_serial_t krid = KeyCtrlSearch(KEY_SPEC_SESSION_KEYRING, "keyring", "fscrypt", 0);
     if (krid == -1) {
         LOGE("Error searching session keyring for fscrypt-provisioning key for fscrypt");
+        std::string extraData = "cmd=KEY_SPEC_SESSION_KEYRING,errno=" + std::to_string(errno) + ",keyId=" + keyId;
+        StorageRadar::ReportKeyRingResult("UninstallKeyForAppKeyToKeyring::KeyCtrlSearch", krid, extraData);
         return false;
     }
     for (auto prefix : CRYPTO_NAME_PREFIXES) {
@@ -364,6 +370,8 @@ bool FscryptKeyV1::InstallKeyToKeyring()
         krid = KeyCtrlAddKey("keyring", "fscrypt", KEY_SPEC_SESSION_KEYRING);
         if (krid == -1) {
             LOGE("failed to add session keyring");
+            std::string extraData = "cmd=KEY_SPEC_SESSION_KEYRING,errno=" + std::to_string(errno);
+            StorageRadar::ReportKeyRingResult("InstallKeyToKeyring::KeyCtrlAddKey", krid, extraData);
             return false;
         }
     }
@@ -408,6 +416,9 @@ bool FscryptKeyV1::InstallEceSeceKeyToKeyring(uint32_t sdpClass)
         krid = KeyCtrlAddKey("keyring", "fscrypt", KEY_SPEC_SESSION_KEYRING);
         if (krid == -1) {
             LOGE("failed to add session keyring");
+            std::string extraData = "cmd=KEY_SPEC_SESSION_KEYRING,errno=" + std::to_string(errno) +
+                ",sdpClass=" + std::to_string(sdpClass);
+            StorageRadar::ReportKeyRingResult("InstallEceSeceKeyToKeyring::KeyCtrlAddKey", krid, extraData);
             return false;
         }
     }
@@ -517,6 +528,8 @@ bool FscryptKeyV1::UninstallKeyToKeyring()
     key_serial_t krid = KeyCtrlSearch(KEY_SPEC_SESSION_KEYRING, "keyring", "fscrypt", 0);
     if (krid == -1) {
         LOGE("Error searching session keyring for fscrypt-provisioning key for fscrypt");
+        std::string extraData = "cmd=KEY_SPEC_SESSION_KEYRING,errno=" + std::to_string(errno);
+        StorageRadar::ReportKeyRingResult("UninstallKeyToKeyring::KeyCtrlSearch", krid, extraData);
         return false;
     }
     for (auto prefix : CRYPTO_NAME_PREFIXES) {

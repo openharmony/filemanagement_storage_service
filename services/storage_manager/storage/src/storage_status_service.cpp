@@ -255,19 +255,12 @@ int32_t StorageStatusService::GetBundleStatsForIncrease(uint32_t userId, const s
 int32_t StorageStatusService::GetCurrentBundleStats(BundleStats &bundleStats, uint32_t statFlag)
 {
     int userId = GetCurrentUserId();
-
     std::string pkgName = GetCallingPkgName();
     int32_t ret = GetBundleStats(pkgName, userId, bundleStats, DEFAULT_APP_INDEX, statFlag);
     if (ret != E_OK) {
         LOGE("storage status service GetBundleStats failed, please check");
-        RadarParameter parameterRes = {.orgPkg = DEFAULT_ORGPKGNAME,
-                                       .userId = DEFAULT_USER_ID,
-                                       .funcName = "GetBundleStats",
-                                       .bizScene = BizScene::SPACE_STATISTICS,
-                                       .bizStage = BizStage::BIZ_STAGE_GET_BUNDLE_STATS,
-                                       .keyElxLevel = "EL1",
-                                       .errorCode = ret};
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
+        std::string extraData = "pkgName=" + pkgName + ",statFlag=" + std::to_string(statFlag);
+        StorageRadar::ReportBundleMgrResult("GetCurrentBundleStats::GetBundleStats", ret, userId, extraData);
     }
     return ret;
 }
@@ -297,15 +290,7 @@ int32_t StorageStatusService::GetBundleStats(const std::string &pkgName, int32_t
         LOGE("StorageStatusService::An error occurred in querying bundle stats.");
         std::string extraData = "bundleStats size=" + std::to_string(bundleStats.size())
             + ", dataDir size=" + std::to_string(dataDir.size());
-        RadarParameter parameterRes = {.orgPkg = DEFAULT_ORGPKGNAME,
-                                       .userId = userId,
-                                       .funcName = "BundleMgrConnector::GetBundleStats",
-                                       .bizScene = BizScene::SPACE_STATISTICS,
-                                       .bizStage = BizStage::BIZ_STAGE_GET_BUNDLE_STATS,
-                                       .keyElxLevel = "EL1",
-                                       .errorCode = res,
-                                       .extraData = extraData};
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
+        StorageRadar::ReportBundleMgrResult("GetBundleStats", res, userId, extraData);
         return E_BUNDLEMGR_ERROR;
     }
     for (uint i = 0; i < bundleStats.size(); i++) {
@@ -341,15 +326,7 @@ int32_t StorageStatusService::GetAppSize(int32_t userId, int64_t &appSize)
              res, bundleStats.size());
         std::string extraData = "bundleStats size=" + std::to_string(bundleStats.size())
             + ", dataDir size=" + std::to_string(dataDir.size());
-        RadarParameter parameterRes = {.orgPkg = DEFAULT_ORGPKGNAME,
-                                       .userId = userId,
-                                       .funcName = "BundleMgrConnector::GetBundleStats",
-                                       .bizScene = BizScene::SPACE_STATISTICS,
-                                       .bizStage = BizStage::BIZ_STAGE_GET_BUNDLE_STATS,
-                                       .keyElxLevel = "EL1",
-                                       .errorCode = res,
-                                       .extraData = extraData};
-        StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
+        StorageRadar::ReportBundleMgrResult("GetAppSize::GetAllBundleStats", res, userId, extraData);
         return E_BUNDLEMGR_ERROR;
     }
 

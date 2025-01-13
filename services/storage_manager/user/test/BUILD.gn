@@ -43,7 +43,10 @@ ohos_unittest("multi_user_manager_service_test") {
     "LOG_DOMAIN = 0xD004300",
   ]
 
-  deps = [ "//third_party/googletest:gtest_main" ]
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
+    "//third_party/googletest:gtest_main",
+  ]
 
   external_deps = [
     "c_utils:utils",

@@ -50,12 +50,6 @@ int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &aut
     return E_OK;
 }
 
-int32_t KeyManager::ActiveUserKey(unsigned int user, const std::vector<uint8_t> &token,
-    const std::vector<uint8_t> &secret)
-{
-    return E_OK;
-}
-
 int32_t KeyManager::InActiveUserKey(unsigned int user)
 {
     return E_OK;

@@ -21,8 +21,10 @@
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "utils/storage_radar.h"
 
 using namespace OHOS::AccountSA;
+using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageManager {
 FileSystemCrypto::FileSystemCrypto()
@@ -210,6 +212,7 @@ int32_t FileSystemCrypto::DeleteAppkey(const std::string keyId)
     int ret = AccountSA::OsAccountManager::QueryActiveOsAccountIds(ids);
     if (ret != 0 || ids.empty()) {
         LOGE("Query active userid failed, ret = %{public}u", ret);
+        StorageRadar::ReportOsAccountResult("DeleteAppkey::QueryActiveOsAccountIds", ret, DEFAULT_USERID);
         return ret;
     }
     int32_t userId = ids[0];
@@ -246,6 +249,7 @@ int32_t FileSystemCrypto::SetRecoverKey(const std::vector<uint8_t> &key)
     int ret = AccountSA::OsAccountManager::QueryActiveOsAccountIds(ids);
     if (ret != 0 || ids.empty()) {
         LOGE("Query active userid failed, ret = %{public}u", ret);
+        StorageRadar::ReportOsAccountResult("SetRecoverKey::QueryActiveOsAccountIds", ret, DEFAULT_USERID);
         return ret;
     }
     int32_t userId = ids[0];

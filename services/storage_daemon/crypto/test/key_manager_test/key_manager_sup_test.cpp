@@ -324,13 +324,13 @@ HWTEST_F(KeyManagerSupTest, KeyManager_DoDeleteUserCeEceSeceKeys_001, TestSize.L
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_INVALID));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID));
     EXPECT_EQ(KeyManager::GetInstance()->DoDeleteUserCeEceSeceKeys(user, userDir, userElKey),
-        -ENOMEM);
+        E_PARAMS_NULLPTR_ERR);
 
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*baseKeyMock_, ClearKey(_)).WillOnce(Return(false));
     EXPECT_EQ(KeyManager::GetInstance()->DoDeleteUserCeEceSeceKeys(user, userDir, userElKey),
-        -E_CLEAR_KEY_FAILED);
+        E_CLEAR_KEY_FAILED);
 
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
@@ -340,7 +340,7 @@ HWTEST_F(KeyManagerSupTest, KeyManager_DoDeleteUserCeEceSeceKeys_001, TestSize.L
     userElKey.insert(make_pair(user, tmpKey));
     EXPECT_CALL(*baseKeyMock_, ClearKey(_)).WillOnce(Return(false));
     EXPECT_EQ(KeyManager::GetInstance()->DoDeleteUserCeEceSeceKeys(user, userDir, userElKey),
-        -E_CLEAR_KEY_FAILED);
+        E_CLEAR_KEY_FAILED);
     EXPECT_EQ(userElKey.find(user), userElKey.end());
 
     userElKey.insert(make_pair(user, tmpKey));

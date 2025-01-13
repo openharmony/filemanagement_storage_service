@@ -17,8 +17,11 @@
 
 #include <openssl/sha.h>
 #include <unistd.h>
+#include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "utils/storage_radar.h"
 
+using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
 static const std::string CRYPTO_NAME_PREFIXES[] = {"ext4", "f2fs", "fscrypt"};
@@ -53,7 +56,7 @@ int RecoveryManager::CreateRecoverKey(uint32_t userId,
     TEEC_Session createKeySession = {};
     if (!OpenSession(createKeyContext, createKeySession)) {
         LOGE("Open session failed !");
-        return -EFAULT;
+        return E_RECOVERY_KEY_OPEN_SESSION_ERR;
     }
     uint32_t createKeyOrigin = 0;
     TEEC_Operation operation = { 0 };
@@ -67,17 +70,15 @@ int RecoveryManager::CreateRecoverKey(uint32_t userId,
     if (!token.empty()) {
         auto err = memcpy_s(recoverKeyStr.authToken, AUTH_TOKEN_LEN, token.data(), token.size());
         if (err != EOK) {
-            LOGE("memcpy failed err %{public}d", err);
             CloseSession(createKeyContext, createKeySession);
-            return -EFAULT;
+            return E_MEMORY_OPERATION_ERR;
         }
     }
     for (size_t i = 0; i < originIv.size(); ++i) {
         auto err = memcpy_s(recoverKeyStr.rndToTee[i], RND_AND_KEY2_LEN, originIv[i].data.get(), originIv[i].size);
         if (err != EOK) {
-            LOGE("memcpy failed err %{public}d, index: %{public}zu", err, i);
             CloseSession(createKeyContext, createKeySession);
-            return -EFAULT;
+            return E_MEMORY_OPERATION_ERR;
         }
     }
     operation.params[TEE_PARAM_INDEX_0].tmpref.buffer = static_cast<void *>(&recoverKeyStr);
@@ -88,7 +89,10 @@ int RecoveryManager::CreateRecoverKey(uint32_t userId,
     if (ret != TEEC_SUCCESS) {
         LOGE("InvokeCmd failed, ret: %{public}d, origin: %{public}d", ret, createKeyOrigin);
         CloseSession(createKeyContext, createKeySession);
-        return -EFAULT;
+        std::string extraData = "cmd=RK_CMD_ID_GEN_RECOVERY_KEY,ret=" + std::to_string(ret) +
+            ",origin=" + std::to_string(createKeyOrigin);
+        StorageRadar::ReportTEEClientResult("TEEC_InvokeCommand", E_TEEC_GEN_RECOVERY_KEY_ERR, userId, extraData);
+        return E_TEEC_GEN_RECOVERY_KEY_ERR;
     }
     CloseSession(createKeyContext, createKeySession);
 #endif
@@ -100,20 +104,21 @@ int RecoveryManager::SetRecoverKey(const std::vector<uint8_t> &key)
 {
 #ifdef RECOVER_KEY_TEE_ENVIRONMENT
     SetRecoverKeyStr setRecoverKeyStr;
-    if (SetRecoverKeyToTee(key, setRecoverKeyStr) != 0) {
+    int ret = SetRecoverKeyToTee(key, setRecoverKeyStr);
+    if (ret != 0) {
         LOGE("Set recover key to tee failed !");
-        return -EFAULT;
+        return ret;
     }
 
     if (sizeof(setRecoverKeyStr.key2FromTee) != sizeof(setRecoverKeyStr.rndFromTee)) {
         LOGE("key2 size dose not match iv size !");
-        return -EFAULT;
+        return E_PARAMS_INVALID;
     }
     int rndNum = sizeof(setRecoverKeyStr.rndFromTee) / RND_AND_KEY2_LEN;
     int key2Num = sizeof(setRecoverKeyStr.key2FromTee) / RND_AND_KEY2_LEN;
     if (rndNum != RND_AND_KEY2_NUMS || key2Num != RND_AND_KEY2_NUMS) {
         LOGE("rnd and key2 num is not match ! rndNum: %{public}d, key2Num: %{public}d", rndNum, key2Num);
-        return -EFAULT;
+        return E_PARAMS_INVALID;
     }
 
     for (int i = 0; i < rndNum; ++i) {
@@ -127,14 +132,14 @@ int RecoveryManager::SetRecoverKey(const std::vector<uint8_t> &key)
 
         if (!GenerateKeyDesc(ivBlob, keyDesc)) {
             LOGE("Generate key desc failed !");
-            return -ENOENT;
+            return E_RECOVERY_KEY_GEN_KEY_DESC_ERR;
         }
         if (!InstallKeyDescToKeyring(ELX_TYPE_ARR[i], key2Blob, keyDesc)) {
             ivBlob.Clear();
             keyDesc.Clear();
             key2Blob.Clear();
             LOGE("install type %{public}d to keyring failed !", ELX_TYPE_ARR[i]);
-            return -ENOENT;
+            return E_RECOVERY_KEY_INS_KEY_DESC_ERR;
         }
         ivBlob.Clear();
         keyDesc.Clear();
@@ -153,7 +158,7 @@ int RecoveryManager::SetRecoverKeyToTee(const std::vector<uint8_t> &key, SetReco
     TEEC_Session setKeySession = {};
     if (!OpenSession(setKeyContext, setKeySession)) {
         LOGE("Open session failed !");
-        return -EFAULT;
+        return E_RECOVERY_KEY_OPEN_SESSION_ERR;
     }
     TEEC_Operation operation = { 0 };
     operation.started = SESSION_START_DEFAULT;
@@ -169,7 +174,11 @@ int RecoveryManager::SetRecoverKeyToTee(const std::vector<uint8_t> &key, SetReco
     if (ret != TEEC_SUCCESS) {
         LOGE("InvokeCmd failed, ret: %{public}d, origin: %{public}d", ret, setKeyOrigin);
         CloseSession(setKeyContext, setKeySession);
-        return -EFAULT;
+        std::string extraData = "cmd=RK_CMD_ID_DECRYPT_CLASS_KEY,ret=" + std::to_string(ret) +
+            ",origin=" + std::to_string(setKeyOrigin);
+        StorageRadar::ReportTEEClientResult("SetRecoverKeyToTee::TEEC_InvokeCommand", E_TEEC_DECRYPT_CLASS_KEY_ERR,
+            DEFAULT_USERID, extraData);
+        return E_TEEC_DECRYPT_CLASS_KEY_ERR;
     }
     CloseSession(setKeyContext, setKeySession);
 #endif
@@ -189,6 +198,7 @@ bool RecoveryManager::OpenSession(TEEC_Context &context, TEEC_Session &session)
         LOGE("recovery tee ctx init failed !");
         TEEC_FinalizeContext(&context);
         isSessionOpened = false;
+        StorageRadar::ReportTEEClientResult("OpenSession::TEEC_InitializeContext", ret, DEFAULT_USERID, "");
         return false;
     }
     TEEC_Operation operation;
@@ -219,6 +229,7 @@ bool RecoveryManager::OpenSession(TEEC_Context &context, TEEC_Session &session)
     if (ret != TEEC_SUCCESS) {
         LOGE("open session failed !");
         CloseSession(context, session);
+        StorageRadar::ReportTEEClientResult("OpenSession::TEEC_OpenSession", ret, DEFAULT_USERID, "");
         return false;
     }
     isSessionOpened = true;

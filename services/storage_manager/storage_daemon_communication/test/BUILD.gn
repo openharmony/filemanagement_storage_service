@@ -51,7 +51,10 @@ ohos_unittest("storage_daemon_communication_test") {
     defines += [ "EXTERNAL_STORAGE_MANAGER" ]
   }
 
-  deps = [ "//third_party/googletest:gtest_main" ]
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
+    "//third_party/googletest:gtest_main",
+  ]
 
   external_deps = [
     "c_utils:utils",
