@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -105,7 +105,7 @@ int32_t StorageDaemonCommunication::RemoveUser(int32_t userId, uint32_t flags)
 
 int32_t StorageDaemonCommunication::PrepareStartUser(int32_t userId)
 {
-    LOGD("StorageDaemonCommunication::PrepareStartUser start");
+    LOGI("StorageDaemonCommunication::PrepareStartUser start");
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("StorageDaemonCommunication::PrepareStartUser connect failed");
@@ -240,7 +240,7 @@ int32_t StorageDaemonCommunication::SetVolumeDescription(std::string volumeId, s
 
 int32_t StorageDaemonCommunication::GenerateUserKeys(uint32_t userId, uint32_t flags)
 {
-    LOGD("enter");
+    LOGI("enter");
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("Connect failed");
@@ -255,7 +255,7 @@ int32_t StorageDaemonCommunication::GenerateUserKeys(uint32_t userId, uint32_t f
 
 int32_t StorageDaemonCommunication::DeleteUserKeys(uint32_t userId)
 {
-    LOGD("enter");
+    LOGI("enter");
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("Connect failed");
@@ -290,7 +290,7 @@ int32_t StorageDaemonCommunication::ActiveUserKey(uint32_t userId,
                                                   const std::vector<uint8_t> &token,
                                                   const std::vector<uint8_t> &secret)
 {
-    LOGD("enter");
+    LOGI("enter");
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("Connect failed");
@@ -305,7 +305,7 @@ int32_t StorageDaemonCommunication::ActiveUserKey(uint32_t userId,
 
 int32_t StorageDaemonCommunication::InactiveUserKey(uint32_t userId)
 {
-    LOGD("enter");
+    LOGI("enter");
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("Connect failed");
@@ -397,7 +397,7 @@ int32_t StorageDaemonCommunication::UpdateKeyContext(uint32_t userId)
 
 int32_t StorageDaemonCommunication::ResetSdProxy()
 {
-    LOGI("enter");
+    LOGD("enter");
     std::lock_guard<std::mutex> lock(mutex_);
     if ((storageDaemon_ != nullptr) && (storageDaemon_->AsObject() != nullptr)) {
         storageDaemon_->AsObject()->RemoveDeathRecipient(deathRecipient_);
@@ -472,7 +472,7 @@ int32_t StorageDaemonCommunication::DeleteShareFile(uint32_t tokenId, const std:
 int32_t StorageDaemonCommunication::SetBundleQuota(const std::string &bundleName, int32_t uid,
     const std::string &bundleDataDirPath, int32_t limitSizeMb)
 {
-    LOGD("enter");
+    LOGI("enter");
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("Connect failed");
@@ -487,7 +487,7 @@ int32_t StorageDaemonCommunication::SetBundleQuota(const std::string &bundleName
 
 int32_t StorageDaemonCommunication::GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size)
 {
-    LOGD("enter");
+    LOGI("enter");
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("Connect failed");

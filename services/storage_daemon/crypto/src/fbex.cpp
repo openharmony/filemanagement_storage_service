@@ -248,6 +248,7 @@ int FBEX::InstallDoubleDeKeyToKernel(UserIdToFbeStr &userIdToFbe, uint8_t *iv, u
     auto errops = memcpy_s(iv, size, ops.eBuffer, sizeof(ops.eBuffer));
     if (errops != EOK) {
         LOGE("memcpy failed %{public}d", errops);
+        close(fd);
         return 0;
     }
     LOGI("InstallDoubleDeKeyToKernel success");

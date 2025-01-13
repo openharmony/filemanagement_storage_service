@@ -65,7 +65,6 @@ void KeyManagerSupTest::SetUpTestCase(void)
     FscryptControlMoc::fscryptControlMoc = fscryptControlMock_;
     keyControlMock_ = make_shared<KeyControlMoc>();
     KeyControlMoc::keyControlMoc = keyControlMock_;
-
 }
 
 void KeyManagerSupTest::TearDownTestCase(void)
@@ -79,7 +78,6 @@ void KeyManagerSupTest::TearDownTestCase(void)
     fscryptControlMock_ = nullptr;
     KeyControlMoc::keyControlMoc = nullptr;
     keyControlMock_ = nullptr;
-
 }
 
 void KeyManagerSupTest::SetUp(void)
@@ -157,7 +155,7 @@ HWTEST_F(KeyManagerSupTest, KeyManager_GenerateAppkey_001, TestSize.Level1)
 
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
-    EXPECT_CALL(*fscryptKeyMock_, GenerateAppKey(_, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(*fscryptKeyMock_, GenerateAppkey(_, _, _)).WillOnce(Return(true));
     EXPECT_EQ(KeyManager::GetInstance()->GenerateAppkey(user, 100, keyId), 0);
 
     if (!existUece) {
