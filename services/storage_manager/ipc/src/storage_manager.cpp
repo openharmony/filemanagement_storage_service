@@ -520,8 +520,7 @@ int32_t StorageManager::ActiveUserKey(uint32_t userId,
     if (err == E_OK) {
         err = AppSpawnClientSendUserLockStatus(userId, DECRYPTED);
         LOGE("Send DECRYPTED status: userId: %{public}d, err is %{public}d", userId, err);
-        StorageService::StorageRadar::ReportActiveUserKey(
-            "StorageManager::ActiveUserKey::AppSpawnClientSendUserLockStatus:DECRYPT", userId, err, "EL2-EL5");
+        StorageRadar::ReportActiveUserKey("AppSpawnClientSendUserLockStatus:DECRYPT", userId, err, "EL2-EL5");
     }
     return err;
 #else
@@ -537,8 +536,7 @@ int32_t StorageManager::InactiveUserKey(uint32_t userId)
     int32_t err = fsCrypto->InactiveUserKey(userId);
     err = AppSpawnClientSendUserLockStatus(userId, ENCRYPTED);
     LOGE("send encrypted status: userId: %{public}d, err is %{public}d", userId, err);
-    StorageService::StorageRadar::ReportActiveUserKey(
-        "StorageManager::ActiveUserKey::AppSpawnClientSendUserLockStatus:ENCRYPT", userId, err, "EL2-EL5");
+    StorageRadar::ReportActiveUserKey("AppSpawnClientSendUserLockStatus:ENCRYPT", userId, err, "EL2-EL5");
     return err;
 #else
     return E_OK;

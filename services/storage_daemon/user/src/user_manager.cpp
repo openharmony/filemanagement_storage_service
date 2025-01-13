@@ -24,10 +24,11 @@
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "utils/storage_radar.h"
 #include "utils/string_utils.h"
 
 using namespace std;
-
+using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
 static constexpr int MODE_0711 = 0711;
@@ -340,7 +341,9 @@ void UserManager::CreateBundleDataDir(uint32_t userId)
     OHOS::AppExecFwk::BundleMgrClient client;
     LOGI("CreateBundleDataDir start: userId %{public}u", userId);
     auto ret = client.CreateBundleDataDir(userId);
-    LOGI("CreateBundleDataDir end: userId %{public}u, ret %{public}d", userId, ret);
+    if (ret != E_OK) {
+        StorageRadar::ReportBundleMgrResult("CreateBundleDataDir", ret, userId, "");
+    }
 }
 
 int32_t UserManager::CheckUserIdRange(int32_t userId)

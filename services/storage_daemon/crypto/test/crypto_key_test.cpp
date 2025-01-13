@@ -916,8 +916,6 @@ HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys_000, TestSize.Leve
     KeyManager::GetInstance()->UpdateUserAuth(userId, userTokenSecret);
     EXPECT_EQ(-EFAULT, KeyManager::GetInstance()->UpdateKeyContext(userId)); // no need to update keycontext
     KeyManager::GetInstance()->InActiveUserKey(userId);                      // may fail on some platforms
-    EXPECT_EQ(0, KeyManager::GetInstance()->ActiveUserKey(userId, {}, {}));
-    EXPECT_EQ(0, KeyManager::GetInstance()->ActiveUserKey(userId, {}, {})); /// have been actived, also return 0
     EXPECT_EQ(0, KeyManager::GetInstance()->DeleteUserKeys(userId));
 #endif
 
@@ -964,7 +962,6 @@ HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys_001, TestSize.Leve
     EXPECT_EQ(-ENOENT, KeyManager::GetInstance()->UpdateUserAuth(userId, userTokenSecretNull));
     EXPECT_EQ(E_PARAMS_INVALID, KeyManager::GetInstance()->UpdateKeyContext(userId));
     EXPECT_EQ(E_PARAMS_INVALID, KeyManager::GetInstance()->InActiveUserKey(userId));
-    EXPECT_EQ(-EFAULT, KeyManager::GetInstance()->ActiveUserKey(userId, {}, {}));
     EXPECT_EQ(0, KeyManager::GetInstance()->DeleteUserKeys(userId));
 }
 

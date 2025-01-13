@@ -35,6 +35,7 @@
 #include "utils/storage_radar.h"
 #include "want.h"
 
+using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageManager {
 constexpr int32_t CONST_NUM_TWO = 2;
@@ -198,7 +199,7 @@ void StorageMonitorService::ReportRadarStorageUsage(enum StorageService::BizStag
     int32_t duration = static_cast<int32_t>(std::chrono::duration_cast<std::chrono::hours>
             (currentTime - lastReportRadarTime_).count());
     if (duration >= SEND_EVENT_INTERVAL) {
-        StorageService::StorageRadar::ReportStorageUsage(stage, extraData);
+        StorageRadar::ReportStorageUsage(stage, extraData);
         lastReportRadarTime_ = currentTime;
     }
 }
@@ -211,16 +212,18 @@ void StorageMonitorService::CleanBundleCache(int64_t lowThreshold)
         return;
     }
     LOGI("Device storage free size not enough, start clean bundle cache files automatic.");
+    int32_t ret = E_OK;
     int retryCount = 0;
     do {
-        auto ret = bundleMgr->CleanBundleCacheFilesAutomatic(lowThreshold * CONST_NUM_TWO);
+        ret = bundleMgr->CleanBundleCacheFilesAutomatic(lowThreshold * CONST_NUM_TWO);
         if (ret == ERR_OK) {
             LOGI("Invoke bundleMgr interface to clean bundle cache files automatic success.");
-            break;
+            return;
         }
         retryCount ++;
         LOGE("Invoke bundleMgr interface to clean bundle cache files automatic failed. Retry.");
     } while (retryCount < RETRY_MAX_TIMES);
+    StorageRadar::ReportBundleMgrResult("CleanBundleCacheFilesAutomatic", ret, DEFAULT_USERID, "");
 }
 
 int64_t StorageMonitorService::GetLowerThreshold(int64_t totalSize)

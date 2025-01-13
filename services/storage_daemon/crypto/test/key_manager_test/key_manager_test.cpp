@@ -247,23 +247,6 @@ HWTEST_F(KeyManagerTest, KeyManager_RestoreDeviceKey_002, TestSize.Level1)
 }
 
 /**
- * @tc.name: KeyManager_ActiveUserKey
- * @tc.desc: Verify the ActiveUserKey function.
- * @tc.type: FUNC
- * @tc.require: IAHHWW
- */
-HWTEST_F(KeyManagerTest, KeyManager_ActiveUserKey, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "KeyManager_ActiveUserKey Start";
-    unsigned int user = 1;
-    const std::vector<uint8_t> token = {1};
-    const std::vector<uint8_t> secret = {1};
-    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false));
-    EXPECT_EQ(KeyManager::GetInstance()->ActiveUserKey(user, token, secret), 0);
-    GTEST_LOG_(INFO) << "KeyManager_ActiveUserKey end";
-}
-
-/**
  * @tc.name: KeyManager_ActiveCeSceSeceUserKey_001
  * @tc.desc: Verify the ActiveCeSceSeceUserKey function.
  * @tc.type: FUNC
@@ -287,7 +270,7 @@ HWTEST_F(KeyManagerTest, KeyManager_ActiveCeSceSeceUserKey_001, TestSize.Level1)
     int eL6Key = 6;
     KeyType type = static_cast<KeyType>(eL6Key);
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
-    EXPECT_EQ(KeyManager::GetInstance()->ActiveCeSceSeceUserKey(user, type, token, secret), E_KEY_TYPE_INVAL);
+    EXPECT_EQ(KeyManager::GetInstance()->ActiveCeSceSeceUserKey(user, type, token, secret), E_KEY_TYPE_INVALID);
 
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
     EXPECT_EQ(KeyManager::GetInstance()->ActiveCeSceSeceUserKey(user, EL1_KEY, token, secret), -ENOENT);

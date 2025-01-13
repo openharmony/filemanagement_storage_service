@@ -25,7 +25,7 @@ void StorageRadar::ReportActiveUserKey(const std::string &funcName, uint32_t use
     const std::string &keyElxLevel)
 {
     RadarParameter param = {
-        .orgPkg = "account_mgr",
+        .orgPkg = "os_account",
         .userId = userId,
         .funcName = funcName,
         .bizScene = BizScene::USER_KEY_ENCRYPTION,
@@ -82,16 +82,17 @@ void StorageRadar::ReportUserKeyResult(const std::string &funcName, uint32_t use
 }
 
 void StorageRadar::ReportUserManager(const std::string &funcName, uint32_t userId, int ret,
-    enum BizStage stage)
+    const std::string &extraData)
 {
     RadarParameter param = {
-        .orgPkg = "account_mgr",
+        .orgPkg = DEFAULT_ORGPKGNAME,
         .userId = userId,
         .funcName = funcName,
         .bizScene = BizScene::USER_MOUNT_MANAGER,
-        .bizStage = stage,
-        .keyElxLevel = "ELx",
-        .errorCode = ret
+        .bizStage = BizStage::BIZ_STAGE_USER_MOUNT,
+        .keyElxLevel = "NA",
+        .errorCode = ret,
+        .extraData = extraData
     };
     StorageRadar::GetInstance().RecordFuctionResult(param);
 }
@@ -100,7 +101,7 @@ void StorageRadar::ReportUpdateUserAuth(const std::string &funcName, uint32_t us
     const std::string &keyLevel, const std::string &extraData)
 {
     RadarParameter param = {
-        .orgPkg = "account_mgr",
+        .orgPkg = "os_account",
         .userId = userId,
         .funcName = funcName,
         .bizScene = BizScene::USER_KEY_ENCRYPTION,
@@ -116,14 +117,15 @@ void StorageRadar::ReportFbexResult(const std::string &funcName, uint32_t userId
     const std::string &extraData)
 {
     RadarParameter param = {
-        .orgPkg = "fbex",
+        .orgPkg = DEFAULT_ORGPKGNAME,
         .userId = userId,
         .funcName = funcName,
         .bizScene = BizScene::USER_KEY_ENCRYPTION,
         .bizStage = BizStage::BIZ_STAGE_ACTIVE_USER_KEY,
         .keyElxLevel = keyLevel,
         .errorCode = ret,
-        .extraData = extraData
+        .extraData = extraData,
+        .toCallPkg = "fbex"
     };
     StorageRadar::GetInstance().RecordFuctionResult(param);
 }
@@ -131,13 +133,14 @@ void StorageRadar::ReportFbexResult(const std::string &funcName, uint32_t userId
 void StorageRadar::ReportIamResult(const std::string &funcName, uint32_t userId, int ret)
 {
     RadarParameter param = {
-        .orgPkg = "iam",
+        .orgPkg = DEFAULT_ORGPKGNAME,
         .userId = userId,
         .funcName = funcName,
         .bizScene = BizScene::USER_KEY_ENCRYPTION,
         .bizStage = BizStage::BIZ_STAGE_ACTIVE_USER_KEY,
         .keyElxLevel = "NA",
-        .errorCode = ret
+        .errorCode = ret,
+        .toCallPkg = "iam"
     };
     StorageRadar::GetInstance().RecordFuctionResult(param);
 }
@@ -145,13 +148,93 @@ void StorageRadar::ReportIamResult(const std::string &funcName, uint32_t userId,
 void StorageRadar::ReportHuksResult(const std::string &funcName, int ret)
 {
     RadarParameter param = {
-        .orgPkg = "huks",
+        .orgPkg = DEFAULT_ORGPKGNAME,
         .userId = DEFAULT_USERID,
         .funcName = funcName,
         .bizScene = BizScene::USER_KEY_ENCRYPTION,
         .bizStage = BizStage::BIZ_STAGE_ACTIVE_USER_KEY,
         .keyElxLevel = "NA",
-        .errorCode = ret
+        .errorCode = ret,
+        .toCallPkg = "huks"
+    };
+    StorageRadar::GetInstance().RecordFuctionResult(param);
+}
+
+void StorageRadar::ReportKeyRingResult(const std::string &funcName, int ret, const std::string &extraData)
+{
+    RadarParameter param = {
+        .orgPkg = DEFAULT_ORGPKGNAME,
+        .userId = DEFAULT_USERID,
+        .funcName = funcName,
+        .bizScene = BizScene::USER_KEY_ENCRYPTION,
+        .bizStage = BizStage::BIZ_STAGE_ACTIVE_USER_KEY,
+        .keyElxLevel = "NA",
+        .errorCode = ret,
+        .extraData = extraData
+    };
+    StorageRadar::GetInstance().RecordFuctionResult(param);
+}
+
+void StorageRadar::ReportOsAccountResult(const std::string &funcName, int32_t ret, unsigned int userId)
+{
+    RadarParameter param = {
+        .orgPkg = DEFAULT_ORGPKGNAME,
+        .userId = userId,
+        .funcName = funcName,
+        .bizScene = BizScene::USER_KEY_ENCRYPTION,
+        .bizStage = BizStage::BIZ_STAGE_ACTIVE_USER_KEY,
+        .keyElxLevel = "NA",
+        .errorCode = ret,
+        .toCallPkg = "os_account"
+    };
+    StorageRadar::GetInstance().RecordFuctionResult(param);
+}
+
+void StorageRadar::ReportEl5KeyMgrResult(const std::string &funcName, int32_t ret, unsigned int userId)
+{
+    RadarParameter param = {
+        .orgPkg = DEFAULT_ORGPKGNAME,
+        .userId = userId,
+        .funcName = funcName,
+        .bizScene = BizScene::USER_KEY_ENCRYPTION,
+        .bizStage = BizStage::BIZ_STAGE_UNLOCK_USER_SCREEN,
+        .keyElxLevel = "EL5",
+        .errorCode = ret,
+        .toCallPkg = "el5_file_key_manager"
+    };
+    StorageRadar::GetInstance().RecordFuctionResult(param);
+}
+
+void StorageRadar::ReportTEEClientResult(const std::string &funcName, int32_t ret, unsigned int userId,
+    const std::string &extraData)
+{
+    RadarParameter param = {
+        .orgPkg = DEFAULT_ORGPKGNAME,
+        .userId = userId,
+        .funcName = funcName,
+        .bizScene = BizScene::USER_KEY_ENCRYPTION,
+        .bizStage = BizStage::BIZ_STAGE_UNLOCK_USER_SCREEN,
+        .keyElxLevel = "NA",
+        .errorCode = ret,
+        .extraData = extraData,
+        .toCallPkg = "tee_client"
+    };
+    StorageRadar::GetInstance().RecordFuctionResult(param);
+}
+
+void StorageRadar::ReportBundleMgrResult(const std::string &funcName, int32_t ret, unsigned int userId,
+    const std::string &extraData)
+{
+    RadarParameter param = {
+        .orgPkg = DEFAULT_ORGPKGNAME,
+        .userId = userId,
+        .funcName = "CreateBundleDataDir",
+        .bizScene = BizScene::SPACE_STATISTICS,
+        .bizStage = BizStage::BIZ_STAGE_GET_BUNDLE_STATS,
+        .keyElxLevel = "NA",
+        .errorCode = ret,
+        .extraData = extraData,
+        .toCallPkg = "bundle_mgr"
     };
     StorageRadar::GetInstance().RecordFuctionResult(param);
 }
@@ -171,22 +254,6 @@ void StorageRadar::ReportStorageUsage(enum BizStage stage, const std::string &ex
     StorageRadar::GetInstance().RecordFuctionResult(param);
 }
 
-void StorageRadar::RecordUserManagerRadar(int32_t userId, const std::string &funcName,
-    const std::string &extraData, int32_t errcode)
-{
-    RadarParameter param = {
-        .orgPkg = DEFAULT_ORGPKGNAME,
-        .userId = userId,
-        .funcName = funcName,
-        .bizScene = BizScene::USER_MOUNT_MANAGER,
-        .bizStage = BizStage::BIZ_STAGE_USER_MOUNT,
-        .keyElxLevel = "NA",
-        .errorCode = errcode,
-        .extraData = extraData
-    };
-    StorageRadar::GetInstance().RecordFuctionResult(param);
-}
-
 bool StorageRadar::RecordFuctionResult(const RadarParameter &parRes)
 {
     int32_t res = E_OK;
@@ -201,7 +268,7 @@ bool StorageRadar::RecordFuctionResult(const RadarParameter &parRes)
             "BIZ_SCENE", static_cast<int32_t>(parRes.bizScene),
             "BIZ_STAGE", static_cast<int32_t>(parRes.bizStage),
             "kEY_ELX_LEVEL", parRes.keyElxLevel,
-            "TO_CALL_PKG", "FBEX, HUKS, KEY_RING, BUNDLE_MANAGER, HMDFS",
+            "TO_CALL_PKG", parRes.toCallPkg,
             "DISK_VOLUME_INFO", "{\"diskId\":\"ab12\", \"volumeId\":\"34cd\", \"fsType\":\"ntfs\"}",
             "FILE_STATUS", parRes.extraData,
             "STAGE_RES", static_cast<int32_t>(StageRes::STAGE_SUCC),
@@ -217,7 +284,7 @@ bool StorageRadar::RecordFuctionResult(const RadarParameter &parRes)
             "BIZ_SCENE", static_cast<int32_t>(parRes.bizScene),
             "BIZ_STAGE", static_cast<int32_t>(parRes.bizStage),
             "kEY_ELX_LEVEL", parRes.keyElxLevel,
-            "TO_CALL_PKG", "FBEX, HUKS, KEY_RING, BUNDLE_MANAGER, HMDFS",
+            "TO_CALL_PKG", parRes.toCallPkg,
             "DISK_VOLUME_INFO", "{\"diskId\":\"ab12\", \"volumeId\":\"34cd\", \"fsType\":\"ntfs\"}",
             "FILE_STATUS", parRes.extraData,
             "STAGE_RES", static_cast<int32_t>(StageRes::STAGE_FAIL),
