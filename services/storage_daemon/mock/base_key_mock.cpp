@@ -137,4 +137,5 @@ std::string BaseKey::GetCandidateDir() const
     if (IBaseKeyMoc::baseKeyMoc == nullptr) {
         return "";
     }
+    return IBaseKeyMoc::baseKeyMoc->GetCandidateDir();
 }

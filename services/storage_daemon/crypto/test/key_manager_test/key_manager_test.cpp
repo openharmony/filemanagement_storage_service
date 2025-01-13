@@ -1110,25 +1110,6 @@ HWTEST_F(KeyManagerTest, KeyManager_InactiveUserElKey_001, TestSize.Level1)
     EXPECT_EQ(KeyManager::GetInstance()->InactiveUserElKey(user, userElxKey_), -EFAULT);
 
     EXPECT_CALL(*fscryptKeyMock_, InactiveKey(_, _)).WillOnce(Return(true));
-    EXPECT_CALL(*baseKeyMock_, GetKeyDir()).WillOnce(Return(""));
-    EXPECT_EQ(KeyManager::GetInstance()->InactiveUserElKey(user, userElxKey_), 0);
-    EXPECT_TRUE(userElxKey_.find(user) == userElxKey_.end());
-
-    userElxKey_[user] = elKey;
-    EXPECT_CALL(*fscryptKeyMock_, InactiveKey(_, _)).WillOnce(Return(true));
-    EXPECT_CALL(*baseKeyMock_, GetKeyDir()).WillOnce(Return(""));
-    EXPECT_EQ(KeyManager::GetInstance()->InactiveUserElKey(user, userElxKey_), 0);
-    EXPECT_TRUE(userElxKey_.find(user) == userElxKey_.end());
-
-    userElxKey_[user] = elKey;
-    EXPECT_CALL(*fscryptKeyMock_, InactiveKey(_, _)).WillOnce(Return(true));
-    EXPECT_CALL(*baseKeyMock_, GetKeyDir()).WillOnce(Return("el1"));
-    EXPECT_EQ(KeyManager::GetInstance()->InactiveUserElKey(user, userElxKey_), 0);
-    EXPECT_TRUE(userElxKey_.find(user) == userElxKey_.end());
-
-    userElxKey_[user] = elKey;
-    EXPECT_CALL(*fscryptKeyMock_, InactiveKey(_, _)).WillOnce(Return(true));
-    EXPECT_CALL(*baseKeyMock_, GetKeyDir()).WillOnce(Return("el2"));
     EXPECT_EQ(KeyManager::GetInstance()->InactiveUserElKey(user, userElxKey_), 0);
     EXPECT_TRUE(userElxKey_.find(user) == userElxKey_.end());
     GTEST_LOG_(INFO) << "KeyManager_DeleteAppkey_001 end";

@@ -28,7 +28,6 @@
 #include "fscrypt_key_v2_mock.h"
 #include "fscrypt_key_v2.h"
 #include "key_control_mock.h"
-#include "fscrypt_key_v2.h"
 #include "mount_manager_mock.h"
 #include "storage_service_errno.h"
 #include "utils/file_utils.h"
@@ -40,7 +39,7 @@ using namespace testing;
 namespace {
 constexpr const char *UECE_PATH = "/dev/fbex_uece";
 }
- 
+
 namespace OHOS::StorageDaemon {
 class KeyManagerSupTest : public testing::Test {
 public:
@@ -51,7 +50,7 @@ public:
     static inline shared_ptr<MountManagerMoc> mountManagerMoc_ = nullptr;
     static inline shared_ptr<FscryptKeyV2Moc> fscryptKeyMock_ = nullptr;
     static inline shared_ptr<KeyControlMoc> keyControlMock_ = nullptr;
-    static inline shared_ptr<BaseKeyMoc> baseKeyMock_ = nullptr;
+
     static inline shared_ptr<FscryptControlMoc> fscryptControlMock_ = nullptr;
 };
 
@@ -66,8 +65,7 @@ void KeyManagerSupTest::SetUpTestCase(void)
     FscryptControlMoc::fscryptControlMoc = fscryptControlMock_;
     keyControlMock_ = make_shared<KeyControlMoc>();
     KeyControlMoc::keyControlMoc = keyControlMock_;
-    baseKeyMock_ = make_shared<BaseKeyMoc>();
-    BaseKeyMoc::baseKeyMoc = baseKeyMock_;
+
 }
 
 void KeyManagerSupTest::TearDownTestCase(void)
@@ -81,8 +79,7 @@ void KeyManagerSupTest::TearDownTestCase(void)
     fscryptControlMock_ = nullptr;
     KeyControlMoc::keyControlMoc = nullptr;
     keyControlMock_ = nullptr;
-    BaseKeyMoc::baseKeyMoc = nullptr;
-    baseKeyMock_ = nullptr;
+
 }
 
 void KeyManagerSupTest::SetUp(void)
@@ -149,16 +146,16 @@ HWTEST_F(KeyManagerSupTest, KeyManager_GenerateAppkey_001, TestSize.Level1)
 
     shared_ptr<FscryptKeyV2> elKey = make_shared<FscryptKeyV2>("/data/test");
 
-    EXPECT_CALL(*FscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_INVALID));
+    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_INVALID));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID));
     EXPECT_EQ(KeyManager::GetInstance()->GenerateAppkey(user, 100, keyId), -ENOENT);
 
-    EXPECT_CALL(*FscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
+    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*fscryptKeyMock_, GenerateAppKey(_, _, _)).WillOnce(Return(false));
     EXPECT_EQ(KeyManager::GetInstance()->GenerateAppkey(user, 100, keyId), -EFAULT);
 
-    EXPECT_CALL(*FscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
+    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*fscryptKeyMock_, GenerateAppKey(_, _, _)).WillOnce(Return(true));
     EXPECT_EQ(KeyManager::GetInstance()->GenerateAppkey(user, 100, keyId), 0);
@@ -188,11 +185,11 @@ HWTEST_F(KeyManagerSupTest, KeyManager_GenerateAppkey_002, TestSize.Level1)
         EXPECT_GT(open(UECE_PATH, O_RDWR), 0);
     }
 
-    EXPECT_CALL(*FscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_INVALID));
+    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_INVALID));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID));
     EXPECT_EQ(KeyManager::GetInstance()->GenerateAppkey(user, 100, keyId), -ENOENT);
 
-    EXPECT_CALL(*FscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
+    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*fscryptKeyMock_, GenerateAppKey(_, _, _)).WillOnce(Return(false));
     EXPECT_EQ(KeyManager::GetInstance()->GenerateAppkey(user, 100, keyId), -EFAULT);
