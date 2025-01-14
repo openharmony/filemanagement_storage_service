@@ -388,7 +388,7 @@ int32_t StorageDaemonClient::GetLockScreenStatus(uint32_t userId, bool &lockScre
     return client->GetLockScreenStatus(userId, lockScreenStatus);
 }
 
-int32_t StorageDaemonClient::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey = false)
+int32_t StorageDaemonClient::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
     if (CheckServiceStatus(STORAGE_SERVICE_FLAG) != E_OK) {
         LOGE("service check failed");
