@@ -264,7 +264,7 @@ int32_t FileSystemCrypto::SetRecoverKey(const std::vector<uint8_t> &key)
     return sdCommunication->SetRecoverKey(key);
 }
 
-int32_t FileSystemCrypto::UpdateKeyContext(uint32_t userId)
+int32_t FileSystemCrypto::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
     LOGI("UserId: %{public}u", userId);
     int32_t err = CheckUserIdRange(userId);
@@ -274,7 +274,7 @@ int32_t FileSystemCrypto::UpdateKeyContext(uint32_t userId)
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    err = sdCommunication->UpdateKeyContext(userId);
+    err = sdCommunication->UpdateKeyContext(userId, needRemoveTmpKey);
     return err;
 }
 }

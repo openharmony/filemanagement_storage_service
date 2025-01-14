@@ -170,7 +170,7 @@ int32_t StorageDaemonProxy::SetRecoverKey(const std::vector<uint8_t> &key)
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::UpdateKeyContext(uint32_t userId)
+int32_t StorageDaemonProxy::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
     return E_OK;
 }

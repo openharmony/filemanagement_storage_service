@@ -41,7 +41,7 @@ public:
                                  const std::vector<uint8_t> &token,
                                  const std::vector<uint8_t> &secret);
     static int32_t InactiveUserKey(uint32_t userId);
-    static int32_t UpdateKeyContext(uint32_t userId);
+    static int32_t UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey = false);
     static int32_t LockUserScreen(uint32_t userId);
     static int32_t UnlockUserScreen(uint32_t userId,
                                     const std::vector<uint8_t> &token,

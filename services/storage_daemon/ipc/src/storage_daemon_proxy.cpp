@@ -683,7 +683,7 @@ int32_t StorageDaemonProxy::SetRecoverKey(const std::vector<uint8_t> &key)
     return reply.ReadInt32();
 }
 
-int32_t StorageDaemonProxy::UpdateKeyContext(uint32_t userId)
+int32_t StorageDaemonProxy::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
     MessageParcel data;
     MessageParcel reply;
@@ -696,6 +696,10 @@ int32_t StorageDaemonProxy::UpdateKeyContext(uint32_t userId)
     if (!data.WriteUint32(userId)) {
         return E_WRITE_PARCEL_ERR;
     }
+    if (!data.WriteBool(needRemoveTmpKey)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+
     int32_t err = SendRequest(
         static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_KEY_CONTEXT), data, reply, option);
     if (err != E_OK) {

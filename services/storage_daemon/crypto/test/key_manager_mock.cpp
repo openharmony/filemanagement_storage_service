@@ -103,7 +103,7 @@ int32_t KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type,
     return E_OK;
 }
 
-int32_t KeyManager::UpdateKeyContext(uint32_t userId)
+int32_t KeyManager::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
     return E_OK;
 }

@@ -99,7 +99,7 @@ int32_t StorageManagerProxy::GetLockScreenStatus(uint32_t userId, bool &lockScre
     return E_OK;
 }
 
-int32_t StorageManagerProxy::UpdateKeyContext(uint32_t userId)
+int32_t StorageManagerProxy::UpdateKeyContext(uint32_t userId, needRemoveTmpKey)
 {
     return E_OK;
 }

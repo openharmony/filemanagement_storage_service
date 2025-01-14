@@ -85,7 +85,7 @@ public:
     int InActiveUserKey(unsigned int user);
     int SetDirectoryElPolicy(unsigned int user, KeyType type,
                              const std::vector<FileList> &vec);
-    int UpdateKeyContext(uint32_t userId);
+    int UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey = false);
     int UpdateCeEceSeceKeyContext(uint32_t userId, KeyType type);
     int getEceSeceKeyPath(unsigned int user, KeyType type, std::string &eceSeceKeyPath);
     int LockUserScreen(uint32_t user);

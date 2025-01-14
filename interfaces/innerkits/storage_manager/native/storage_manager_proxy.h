@@ -85,7 +85,7 @@ public:
                              const std::vector<uint8_t> &token,
                              const std::vector<uint8_t> &secret) override;
     int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus) override;
-    int32_t UpdateKeyContext(uint32_t userId) override;
+    int32_t UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey = false) override;
     int32_t GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId) override;
     int32_t DeleteAppkey(const std::string keyId) override;
     int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false) override;
