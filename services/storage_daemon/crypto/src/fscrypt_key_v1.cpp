@@ -456,7 +456,8 @@ bool FscryptKeyV1::InactiveKey(uint32_t flag, const std::string &mnt)
             ret = false;
         }
     }
-    if (!fscryptV1Ext.InactiveKeyExt(flag)) {
+    int errNo = fscryptV1Ext.InactiveKeyExt(flag);
+    if (errNo != E_OK) {
         LOGE("fscryptV1Ext InactiveKeyExt failed");
         ret = false;
     }

@@ -20,6 +20,7 @@
 
 #include "fbex.h"
 #include "file_ex.h"
+#include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "string_ex.h"
 
@@ -232,17 +233,17 @@ bool FscryptKeyV1Ext::WriteClassE(uint32_t status, uint8_t *classEBuffer, uint32
     return true;
 }
 
-bool FscryptKeyV1Ext::InactiveKeyExt(uint32_t flag)
+int32_t FscryptKeyV1Ext::InactiveKeyExt(uint32_t flag)
 {
     if (!FBEX::IsFBEXSupported()) {
-        return true;
+        return E_OK;
     }
 
     LOGI("enter");
     bool destroy = !!flag;
     if ((type_ != TYPE_EL2) && !destroy) {
         LOGI("not el2, no need to inactive");
-        return true;
+        return E_OK;
     }
     uint8_t buf[FBEX_IV_SIZE] = {0};
     buf[0] = 0xfb; // fitst byte const to kernel
@@ -252,12 +253,13 @@ bool FscryptKeyV1Ext::InactiveKeyExt(uint32_t flag)
     // el1-el4 use double id, like 0 10 11 12 ...
     uint32_t user = type_ == TYPE_EL5 ? userId_ : GetMappedUserId(userId_, type_);
     LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, user);
-    if (FBEX::UninstallOrLockUserKeyToKernel(user, type_, buf, FBEX_IV_SIZE, destroy) != 0) {
+    int errNo = FBEX::UninstallOrLockUserKeyToKernel(user, type_, buf, FBEX_IV_SIZE, destroy);
+    if (errNo != 0) {
         LOGE("UninstallOrLockUserKeyToKernel failed, userId %{public}d, type %{public}d, destroy %{public}u",
              userId_, type_, destroy);
-        return false;
+        return errNo;
     }
-    return true;
+    return E_OK;
 }
 
 bool FscryptKeyV1Ext::LockUserScreenExt(uint32_t flag, uint32_t &elType)

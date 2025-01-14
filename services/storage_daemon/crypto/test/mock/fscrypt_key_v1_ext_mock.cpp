@@ -34,9 +34,9 @@ bool FscryptKeyV1Ext::ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, ui
     return false;
 }
 
-bool FscryptKeyV1Ext::InactiveKeyExt(uint32_t flag)
+int32_t FscryptKeyV1Ext::InactiveKeyExt(uint32_t flag)
 {
-    return false;
+    return -1;
 }
 
 bool FscryptKeyV1Ext::UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_t size)

@@ -389,27 +389,27 @@ HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_InactiveKeyExt_001, TestSize.Level
     ext.userId_ = 100;
     ext.type_ = TYPE_EL2;
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(false));
-    EXPECT_EQ(ext.InactiveKeyExt(flag), true);
+    EXPECT_EQ(ext.InactiveKeyExt(flag), 0);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, UninstallOrLockUserKeyToKernel(_, _, _, _, _)).WillOnce(Return(0));
-    EXPECT_EQ(ext.InactiveKeyExt(flag), true);
+    EXPECT_EQ(ext.InactiveKeyExt(flag), 0);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, UninstallOrLockUserKeyToKernel(_, _, _, _, _)).WillOnce(Return(1));
-    EXPECT_EQ(ext.InactiveKeyExt(flag), false);
+    EXPECT_EQ(ext.InactiveKeyExt(flag), -1);
     
     ext.type_ = TYPE_EL5;
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
-    EXPECT_EQ(ext.InactiveKeyExt(0), true);
+    EXPECT_EQ(ext.InactiveKeyExt(0), 0);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, UninstallOrLockUserKeyToKernel(_, _, _, _, _)).WillOnce(Return(0));
-    EXPECT_EQ(ext.InactiveKeyExt(flag), true);
+    EXPECT_EQ(ext.InactiveKeyExt(flag), 0);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, UninstallOrLockUserKeyToKernel(_, _, _, _, _)).WillOnce(Return(1));
-    EXPECT_EQ(ext.InactiveKeyExt(flag), false);
+    EXPECT_EQ(ext.InactiveKeyExt(flag), -1);
     GTEST_LOG_(INFO) << "FscryptKeyV1Ext_InactiveKeyExt_001 end";
 }
 

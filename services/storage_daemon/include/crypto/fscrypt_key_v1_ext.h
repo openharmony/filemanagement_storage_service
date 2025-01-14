@@ -33,7 +33,7 @@ public:
     }
     bool ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, uint32_t &elType);
     bool ActiveDoubleKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, uint32_t &elType);
-    bool InactiveKeyExt(uint32_t flag);
+    int32_t InactiveKeyExt(uint32_t flag);
     bool LockUserScreenExt(uint32_t flag, uint32_t &elType);
     bool UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_t size);
     bool AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status);
