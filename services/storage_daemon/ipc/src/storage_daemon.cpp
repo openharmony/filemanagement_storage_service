@@ -335,7 +335,12 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
     if (ret == -EEXIST) {
         AuditLog storageAuditLog = { false, "FAILED TO GenerateUserKeys", "ADD", "GenerateUserKeys", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
-        return RestoreUserKey(userId, flags);
+        auto restoreRet = RestoreUserKey(userId, flags);
+        if (restoreRet != E_OK) {
+            std::string extraData = "flags=" + std::to_string(flags);
+            StorageRadar::ReportUserManager("PrepareUserDirs::RestoreUserKey", userId, restoreRet, extraData);
+        }
+        return restoreRet;
     }
 #endif
     if (ret != E_OK) {
@@ -348,6 +353,10 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
     }
 #endif
     int32_t prepareRet = UserManager::GetInstance()->PrepareUserDirs(userId, flags);
+    if (prepareRet != E_OK) {
+        std::string extraData = "flags=" + std::to_string(flags);
+        StorageRadar::ReportUserManager("PrepareUserDirs::UserManager::PrepareUserDirs", userId, prepareRet, extraData);
+    }
     MountManager::GetInstance()->PrepareAppdataDir(userId);
     return prepareRet;
 }
@@ -1098,7 +1107,11 @@ int32_t StorageDaemon::MountCryptoPathAgain(uint32_t userId)
 {
     LOGI("begin to MountCryptoPathAgain");
 #ifdef USER_CRYPTO_MANAGER
-    return MountManager::GetInstance()->MountCryptoPathAgain(userId);
+    auto ret = MountManager::GetInstance()->MountCryptoPathAgain(userId);
+    if (ret != E_OK) {
+        StorageRadar::ReportUserManager("MountCryptoPathAgain::MountManager::MountCryptoPathAgain", userId, ret, "");
+    }
+    return ret
 #else
     return E_OK;
 #endif

@@ -81,10 +81,15 @@ int32_t StorageDaemonCommunication::PrepareAddUser(int32_t userId, uint32_t flag
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("StorageDaemonCommunication::PrepareAddUser connect failed");
+        std::string extraData = "flags=" + std::to_string(flags);
+        StorageRadar::ReportUserManager("PrepareAddUser::Connect", userId, err, extraData);
         return err;
     }
     if (storageDaemon_ == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
+        std::string extraData = "flags=" + std::to_string(flags);
+        StorageRadar::ReportUserManager("StorageDaemonCommunication::PrepareAddUser",
+            userId, E_SERVICE_IS_NULLPTR, extraData);
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->PrepareUserDirs(userId, flags);
@@ -96,10 +101,15 @@ int32_t StorageDaemonCommunication::RemoveUser(int32_t userId, uint32_t flags)
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("StorageDaemonCommunication::RemoveUser connect failed");
+        std::string extraData = "flags=" + std::to_string(flags);
+        StorageRadar::ReportUserManager("RemoveUser::Connect", userId, err, extraData);
         return err;
     }
     if (storageDaemon_ == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
+        std::string extraData = "flags=" + std::to_string(flags);
+        StorageRadar::ReportUserManager("StorageDaemonCommunication::RemoveUser",
+            userId, E_SERVICE_IS_NULLPTR, extraData);
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->DestroyUserDirs(userId, flags);
@@ -111,10 +121,14 @@ int32_t StorageDaemonCommunication::PrepareStartUser(int32_t userId)
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("StorageDaemonCommunication::PrepareStartUser connect failed");
+        StorageRadar::ReportUserManager("StorageDaemonCommunication::PrepareStartUser::Connect",
+            userId, err, BizStage::BIZ_STAGE_START_USER);
         return err;
     }
     if (storageDaemon_ == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
+        StorageRadar::ReportUserManager("StorageDaemonCommunication::PrepareStartUser",
+            userId, E_SERVICE_IS_NULLPTR, BizStage::BIZ_STAGE_START_USER);
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->StartUser(userId);
@@ -126,10 +140,12 @@ int32_t StorageDaemonCommunication::StopUser(int32_t userId)
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("StorageDaemonCommunication::StopUser connect failed");
+        StorageRadar::ReportUserManager("StorageDaemonCommunication::StopUser::Connect", userId, err, "");
         return err;
     }
     if (storageDaemon_ == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
+        StorageRadar::ReportUserManager("StorageDaemonCommunication::StopUser", userId, E_SERVICE_IS_NULLPTR, "");
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->StopUser(userId);
@@ -141,10 +157,12 @@ int32_t StorageDaemonCommunication::CompleteAddUser(int32_t userId)
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("StorageDaemonCommunication::CompleteAddUser connect failed");
+        StorageRadar::ReportUserManager("StorageDaemonCommunication::CompleteAddUser::Connect", userId, err, "");
         return err;
     }
     if (storageDaemon_ == nullptr) {
         LOGE("StorageDaemonCommunication::CompleteAddUser service nullptr");
+        StorageRadar::ReportUserManager("StorageDaemonCommunication::CompleteAddUser", userId, E_SERVICE_IS_NULLPTR, "");
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->CompleteAddUser(userId);
@@ -530,10 +548,13 @@ int32_t StorageDaemonCommunication::MountCryptoPathAgain(int32_t userId)
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("Connect failed");
+        StorageRadar::ReportUserManager("StorageDaemonCommunication::MountCryptoPathAgain::Connect", userId, err, "");
         return err;
     }
     if (storageDaemon_ == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
+        StorageRadar::ReportUserManager("StorageDaemonCommunication::MountCryptoPathAgain",
+            userId, E_SERVICE_IS_NULLPTR, "");
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->MountCryptoPathAgain(userId);

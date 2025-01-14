@@ -19,6 +19,7 @@
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "utils/storage_radar.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -47,6 +48,8 @@ int32_t MultiUserManagerService::PrepareAddUser(int32_t userId, uint32_t flags)
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("MultiUserManagerService::PrepareAddUser userId %{public}d out of range", userId);
+        StorageRadar::ReportUserManager("MultiUserManagerService::PrepareAddUser::CheckUserIdRange",
+            userId, err, BizStage::BIZ_STAGE_PREPARE_ADD_USER);
         return err;
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
@@ -61,6 +64,8 @@ int32_t MultiUserManagerService::RemoveUser(int32_t userId, uint32_t flags)
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("MultiUserManagerService::RemoveUser userId %{public}d out of range", userId);
+        std::string extraData = "flags=" + std::to_string(flags);
+        StorageRadar::ReportUserManager("MultiUserManagerService::RemoveUser::CheckUserIdRange", "");
         return err;
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
@@ -75,6 +80,7 @@ int32_t MultiUserManagerService::PrepareStartUser(int32_t userId)
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("MultiUserManagerService::PrepareStartUser userId %{public}d out of range", userId);
+        StorageRadar::ReportUserManager("MultiUserManagerService::PrepareStartUser::CheckUserIdRange", userId, err, "");
         return err;
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;
@@ -89,6 +95,7 @@ int32_t MultiUserManagerService::StopUser(int32_t userId)
     int32_t err = CheckUserIdRange(userId);
     if (err != E_OK) {
         LOGE("MultiUserManagerService::StopUser userId %{public}d out of range", userId);
+        StorageRadar::ReportUserManager("MultiUserManagerService::StopUser::CheckUserIdRange", userId, err, "");
         return err;
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication = nullptr;

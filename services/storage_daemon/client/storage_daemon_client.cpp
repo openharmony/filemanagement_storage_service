@@ -104,14 +104,19 @@ int32_t StorageDaemonClient::CheckServiceStatus(uint32_t serviceFlags)
 
 int32_t StorageDaemonClient::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
-    if (CheckServiceStatus(STORAGE_SERVICE_FLAG) != E_OK) {
+    auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
+    if (status != E_OK) {
         LOGE("service check failed");
+        std::string extraData = "flags=" + std::to_string(flags);
+        StorageRadar::ReportUserManager("PrepareUserDirs::CheckServiceStatus", userId, status, extraData);
         return -EAGAIN;
     }
 
     sptr<IStorageDaemon> client = GetStorageDaemonProxy();
     if (client == nullptr) {
         LOGE("get storage daemon service failed");
+        std::string extraData = "flags=" + std::to_string(flags);
+        StorageRadar::ReportUserManager("PrepareUserDirs::GetStorageDaemonProxy", userId, -EAGAIN, extraData);
         return -EAGAIN;
     }
     return client->PrepareUserDirs(userId, flags);
@@ -119,14 +124,19 @@ int32_t StorageDaemonClient::PrepareUserDirs(int32_t userId, uint32_t flags)
 
 int32_t StorageDaemonClient::DestroyUserDirs(int32_t userId, uint32_t flags)
 {
-    if (CheckServiceStatus(STORAGE_SERVICE_FLAG) != E_OK) {
+    auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
+    if (status != E_OK) {
         LOGE("service check failed");
+        std::string extraData = "flags=" + std::to_string(flags);
+        StorageRadar::ReportUserManager("DestroyUserDirs::CheckServiceStatus", userId, status, extraData);
         return -EAGAIN;
     }
 
     sptr<IStorageDaemon> client = GetStorageDaemonProxy();
     if (client == nullptr) {
         LOGE("get storage daemon service failed");
+        std::string extraData = "flags=" + std::to_string(flags);
+        StorageRadar::ReportUserManager("DestroyUserDirs::GetStorageDaemonProxy", userId, -EAGAIN, extraData);
         return -EAGAIN;
     }
     return client->DestroyUserDirs(userId, flags);
@@ -134,14 +144,17 @@ int32_t StorageDaemonClient::DestroyUserDirs(int32_t userId, uint32_t flags)
 
 int32_t StorageDaemonClient::StartUser(int32_t userId)
 {
-    if (CheckServiceStatus(STORAGE_SERVICE_FLAG) != E_OK) {
+    auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
+    if (status != E_OK) {
         LOGE("service check failed");
+        StorageRadar::ReportUserManager("StartUser::CheckServiceStatus", userId, status, "");
         return -EAGAIN;
     }
 
     sptr<IStorageDaemon> client = GetStorageDaemonProxy();
     if (client == nullptr) {
         LOGE("get storage daemon service failed");
+        StorageRadar::ReportUserManager("StartUser::GetStorageDaemonProxy", userId, -EAGAIN, "");
         return -EAGAIN;
     }
 
@@ -150,14 +163,17 @@ int32_t StorageDaemonClient::StartUser(int32_t userId)
 
 int32_t StorageDaemonClient::StopUser(int32_t userId)
 {
-    if (CheckServiceStatus(STORAGE_SERVICE_FLAG) != E_OK) {
+    auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
+    if (status != E_OK) {
         LOGE("service check failed");
+        StorageRadar::ReportUserManager("StartUser::CheckServiceStatus", userId, status, "");
         return -EAGAIN;
     }
 
     sptr<IStorageDaemon> client = GetStorageDaemonProxy();
     if (client == nullptr) {
         LOGE("get storage daemon service failed");
+        StorageRadar::ReportUserManager("StartUser::GetStorageDaemonProxy", userId, -EAGAIN, "");
         return -EAGAIN;
     }
 
