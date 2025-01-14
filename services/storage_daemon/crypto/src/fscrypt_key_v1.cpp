@@ -24,6 +24,7 @@
 #include "file_ex.h"
 #include "key_backup.h"
 #include "libfscrypt/key_control.h"
+#include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/file_utils.h"
 #include "utils/storage_radar.h"
@@ -56,13 +57,15 @@ bool FscryptKeyV1::ActiveKey(uint32_t flag, const std::string &mnt)
         } else {
             sdpClass = FSCRYPT_SDP_ECE_CLASS;
         }
-        if (!InstallEceSeceKeyToKeyring(sdpClass)) {
+        int errNo = InstallEceSeceKeyToKeyring(sdpClass);
+        if (errNo != E_OK) {
             keyInfo_.key.Clear();
             LOGE("InstallEceSeceKeyToKeyring failed");
             return false;
         }
     } else {
-        if (!InstallKeyToKeyring()) {
+        int errNo = InstallKeyToKeyring();
+        if (errNo != E_OK) {
             keyInfo_.key.Clear();
             LOGE("InstallKeyToKeyring failed");
             return false;
@@ -188,7 +191,8 @@ bool FscryptKeyV1::UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std:
         return false;
     }
     if (sdpClass == FSCRYPT_SDP_ECE_CLASS) {
-        if (!InstallEceSeceKeyToKeyring(sdpClass)) {
+        int errNo = InstallEceSeceKeyToKeyring(sdpClass);
+        if (errNo != E_OK) {
             keyInfo_.key.Clear();
             LOGE("UnlockUserScreen InstallKeyToKeyring failed");
             return false;
@@ -353,7 +357,7 @@ bool FscryptKeyV1::EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t
     return true;
 }
 
-bool FscryptKeyV1::InstallKeyToKeyring()
+int32_t FscryptKeyV1::InstallKeyToKeyring()
 {
     fscrypt_key fskey;
     fskey.mode = FS_ENCRYPTION_MODE_AES_256_XTS;
@@ -361,7 +365,7 @@ bool FscryptKeyV1::InstallKeyToKeyring()
     auto err = memcpy_s(fskey.raw, FS_MAX_KEY_SIZE, keyInfo_.key.data.get(), keyInfo_.key.size);
     if (err != EOK) {
         LOGE("memcpy failed ret %{public}d", err);
-        return false;
+        return err;
     }
 
     key_serial_t krid = KeyCtrlSearch(KEY_SPEC_SESSION_KEYRING, "keyring", "fscrypt", 0);
@@ -372,7 +376,7 @@ bool FscryptKeyV1::InstallKeyToKeyring()
             LOGE("failed to add session keyring");
             std::string extraData = "cmd=KEY_SPEC_SESSION_KEYRING,errno=" + std::to_string(errno);
             StorageRadar::ReportKeyRingResult("InstallKeyToKeyring::KeyCtrlAddKey", krid, extraData);
-            return false;
+            return E_ADD_SESSION_KEYING_ERROR;
         }
     }
     for (auto prefix : CRYPTO_NAME_PREFIXES) {
@@ -387,25 +391,25 @@ bool FscryptKeyV1::InstallKeyToKeyring()
         }
     }
     if (!SaveKeyBlob(keyInfo_.keyDesc, dir_ + PATH_KEYDESC)) {
-        return false;
+        return E_SAVE_KEY_BLOB_ERROR;
     }
     keyInfo_.key.Clear();
     LOGW("success");
-    return true;
+    return E_OK;
 }
 
-bool FscryptKeyV1::InstallEceSeceKeyToKeyring(uint32_t sdpClass)
+int32_t FscryptKeyV1::InstallEceSeceKeyToKeyring(uint32_t sdpClass)
 {
     EncryptionKeySdp fskey;
     if (keyInfo_.key.size != sizeof(fskey.raw)) {
         LOGE("Wrong key size is %{public}d", keyInfo_.key.size);
-        return false;
+        return E_KEY_SIZE_ERROR;
     }
     fskey.mode = EXT4_ENCRYPTION_MODE_AES_256_XTS;
     auto err = memcpy_s(fskey.raw, sizeof(fskey.raw), keyInfo_.key.data.get(), keyInfo_.key.size);
     if (err != EOK) {
         LOGE("memcpy failed ret %{public}d", err);
-        return false;
+        return err;
     }
     fskey.size = EXT4_AES_256_XTS_KEY_SIZE_TO_KEYRING;
     fskey.sdpClass = sdpClass;
@@ -419,7 +423,7 @@ bool FscryptKeyV1::InstallEceSeceKeyToKeyring(uint32_t sdpClass)
             std::string extraData = "cmd=KEY_SPEC_SESSION_KEYRING,errno=" + std::to_string(errno) +
                 ",sdpClass=" + std::to_string(sdpClass);
             StorageRadar::ReportKeyRingResult("InstallEceSeceKeyToKeyring::KeyCtrlAddKey", krid, extraData);
-            return false;
+            return E_ADD_SESSION_KEYING_ERROR;
         }
     }
     for (auto prefix : CRYPTO_NAME_PREFIXES) {
@@ -432,10 +436,10 @@ bool FscryptKeyV1::InstallEceSeceKeyToKeyring(uint32_t sdpClass)
         }
     }
     if (!SaveKeyBlob(keyInfo_.keyDesc, dir_ + PATH_KEYDESC)) {
-        return false;
+        return E_SAVE_KEY_BLOB_ERROR;
     }
     LOGW("success");
-    return true;
+    return E_OK;
 }
 
 bool FscryptKeyV1::InactiveKey(uint32_t flag, const std::string &mnt)
