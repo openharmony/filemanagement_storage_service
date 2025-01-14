@@ -122,13 +122,13 @@ int32_t StorageDaemonCommunication::PrepareStartUser(int32_t userId)
     if (err != E_OK) {
         LOGE("StorageDaemonCommunication::PrepareStartUser connect failed");
         StorageRadar::ReportUserManager("StorageDaemonCommunication::PrepareStartUser::Connect",
-            userId, err, BizStage::BIZ_STAGE_START_USER);
+            userId, err, "");
         return err;
     }
     if (storageDaemon_ == nullptr) {
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         StorageRadar::ReportUserManager("StorageDaemonCommunication::PrepareStartUser",
-            userId, E_SERVICE_IS_NULLPTR, BizStage::BIZ_STAGE_START_USER);
+            userId, E_SERVICE_IS_NULLPTR, "");
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->StartUser(userId);
