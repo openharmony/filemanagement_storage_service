@@ -642,7 +642,7 @@ int KeyManager::GenerateIntegrityDirs(int32_t userId, KeyType type)
         LOGE("user %{public}d el %{public}d is not integrity. create error", userId, type);
         std::string extraData =
             "dir is not Integrity , userId =" + std::to_string(userId) + ", type = " + std::to_string(type);
-        StorageRadar::ReportUserKeyResult("GenerateIntegrityDirs", userId, E_MEMORY_OPERATION_ERR, dirType,
+        StorageRadar::ReportUserKeyResult("GenerateIntegrityDirs", userId, E_DIR_INTEGRITY_ERR, dirType,
                                           extraData);
         int ret = DoDeleteUserCeEceSeceKeys(userId, userDir, type == EL1_KEY ? userEl1Key_ : userEl2Key_);
         if (ret != E_OK) {
