@@ -17,6 +17,7 @@
 #define STORAGE_RADAR_H
 
 #include <string>
+#include "storage_statistics_radar.h"
 
 namespace OHOS {
 namespace StorageService {
@@ -25,6 +26,10 @@ const std::string ADD_NEW_USER_BEHAVIOR = "ADD_NEW_USER_BEHAVIOR";
 const std::string FILE_STORAGE_MANAGER_FAULT_BEHAVIOR  = "FILE_STORAGE_MANAGER_FAULT";
 constexpr char STORAGESERVICE_DOAMIN[] = "FILEMANAGEMENT";
 const int32_t DEFAULT_USERID = 100;
+constexpr uint8_t INDEX = 3;
+constexpr uint32_t MS_1000 = 1000;
+const std::string FILE_STORAGE_MANAGER_STATISTIC = "FILE_STORAGE_MANAGER_STATISTIC";
+
 enum class BizScene : int32_t {
     STORAGE_START = 0,
     USER_MOUNT_MANAGER,
@@ -133,6 +138,7 @@ public:
         const std::string &extraData);
     static void ReportBundleMgrResult(const std::string &funcName, int32_t ret, unsigned int userId,
         const std::string &extraData);
+    static void ReportStatistics(uint32_t userId, StorageDaemon::RadarStatisticInfo radarInfo);
 
 private:
     StorageRadar() = default;

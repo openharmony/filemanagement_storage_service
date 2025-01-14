@@ -17,8 +17,10 @@
 #define OHOS_STORAGE_DAEMON_STORAGE_DAEMON_STUB_H
 
 #include <map>
+#include <thread>
 #include "iremote_stub.h"
 #include "ipc/istorage_daemon.h"
+#include "utils/storage_statistics_radar.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -27,7 +29,7 @@ constexpr int UID_STORAGEMANAGER = 1090;
 class StorageDaemonStub : public IRemoteStub<IStorageDaemon> {
 public:
     StorageDaemonStub();
-    virtual ~StorageDaemonStub() = default;
+    ~StorageDaemonStub();
     int32_t OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
         MessageOption &option) override;
 
@@ -87,6 +89,18 @@ private:
     int32_t HandleMountMediaFuse(MessageParcel &data, MessageParcel &reply);
     int32_t HandleUMountMediaFuse(MessageParcel &data, MessageParcel &reply);
     std::mutex mutex_;
+
+    void StorageRadarThd(void);
+private:
+    std::atomic<bool> stopRadarReport_ { false };
+    std::condition_variable execRadarReportCon_;
+    std::mutex onRadarReportLock_;
+    std::atomic<bool> isNeedUpdateRadarFile_ { false };
+    std::thread callRadarStatisticReportThread_;
+    std::map<uint32_t, RadarStatisticInfo> opStatistics_;
+    std::chrono::time_point<std::chrono::system_clock> lastRadarReportTime_;
+    std::map<uint32_t, RadarStatisticInfo>::iterator GetUserStatistics(const uint32_t userId);
+    void GetTempStatistics(std::map<uint32_t, RadarStatisticInfo> &statistics);
 };
 } // StorageDaemon
 } // OHOS
