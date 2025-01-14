@@ -278,7 +278,8 @@ bool StringToUint32(const std::string &str, uint32_t &num)
     return true;
 }
 
-bool StringToBool(const std::string &str, bool &result){
+bool StringToBool(const std::string &str, bool &result)
+{
     if (str.empty()) {
         return false;
     }
