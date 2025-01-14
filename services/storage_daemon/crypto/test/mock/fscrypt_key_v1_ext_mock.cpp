@@ -29,9 +29,9 @@ bool FscryptKeyV1Ext::LockUserScreenExt(uint32_t flag, uint32_t &elType)
     return IFscryptKeyV1Ext::fscryptKeyV1ExtMock->LockUserScreenExt(flag, elType);
 }
 
-bool FscryptKeyV1Ext::ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, uint32_t &elType)
+int32_t FscryptKeyV1Ext::ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, uint32_t &elType)
 {
-    return false;
+    return -1;
 }
 
 int32_t FscryptKeyV1Ext::InactiveKeyExt(uint32_t flag)

@@ -45,7 +45,8 @@ bool FscryptKeyV1::ActiveKey(uint32_t flag, const std::string &mnt)
         return false;
     }
     LOGE("ActiveKey key is empty: %{public}u", keyInfo_.key.IsEmpty());
-    if (!fscryptV1Ext.ActiveKeyExt(flag, keyInfo_.key.data.get(), keyInfo_.key.size, elType)) {
+    int errNo = fscryptV1Ext.ActiveKeyExt(flag, keyInfo_.key.data.get(), keyInfo_.key.size, elType);
+    if (errNo != E_OK) {
         keyInfo_.key.Clear();
         LOGE("fscryptV1Ext ActiveKeyExtfailed");
         return false;

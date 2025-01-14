@@ -80,10 +80,10 @@ uint32_t FscryptKeyV1Ext::GetMappedDeUserId(uint32_t userId)
     return userId;
 }
 
-bool FscryptKeyV1Ext::ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, uint32_t &elType)
+int32_t FscryptKeyV1Ext::ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, uint32_t &elType)
 {
     if (!FBEX::IsFBEXSupported()) {
-        return true;
+        return E_OK;
     }
 
     LOGI("enter");
@@ -99,29 +99,32 @@ bool FscryptKeyV1Ext::ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, ui
     uint32_t user = GetMappedUserId(userId_, type_);
     LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, user);
     // iv buffer returns derived keys
-    if (FBEX::InstallKeyToKernel(user, type_, iv, size, static_cast<uint8_t>(flag)) != 0) {
+    int errNo = FBEX::InstallKeyToKernel(user, type_, iv, size, static_cast<uint8_t>(flag));
+    if (errNo != 0 && flag == 0) {
         LOGE("InstallKeyToKernel first failed, user %{public}d, type %{public}d, flag %{public}u", user, type_, flag);
-        if (flag == 0 && FBEX::InstallKeyToKernel(user, type_, iv, size, static_cast<uint8_t>(flag)) != 0) {
+        errNo = FBEX::InstallKeyToKernel(user, type_, iv, size, static_cast<uint8_t>(flag));
+        if (errNo != 0) {
             LOGE("InstallKeyToKernel failed, user %{public}d, type %{public}d, flag %{public}u", user, type_, flag);
-            return false;
+            return errNo;
         }
     }
 
     //Used to associate el3 and el4 kernels.
     elType = type_;
-    return true;
+    return E_OK;
 }
 
-bool FscryptKeyV1Ext::ActiveDoubleKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, uint32_t &elType)
+int32_t FscryptKeyV1Ext::ActiveDoubleKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, uint32_t &elType)
 {
     LOGI("enter");
     UserIdToFbeStr userIdToFbe = { .userIds = { userId_, GetMappedDeUserId(userId_) }, .size = USER_ID_SIZE };
-    if (FBEX::InstallDoubleDeKeyToKernel(userIdToFbe, iv, size, flag)) {
+    int32_t errNo = FBEX::InstallDoubleDeKeyToKernel(userIdToFbe, iv, size, flag);
+    if (errNo != 0) {
         LOGE("DoubleDeKeyToKernel failed, user %{public}d, type %{public}d, flag %{public}u", userId_, type_, flag);
-        return false;
+        return errNo;
     }
     elType = type_;
-    return true;
+    return E_OK;
 }
 
 bool FscryptKeyV1Ext::UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_t size)
