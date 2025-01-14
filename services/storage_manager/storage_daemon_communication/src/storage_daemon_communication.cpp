@@ -162,7 +162,8 @@ int32_t StorageDaemonCommunication::CompleteAddUser(int32_t userId)
     }
     if (storageDaemon_ == nullptr) {
         LOGE("StorageDaemonCommunication::CompleteAddUser service nullptr");
-        StorageRadar::ReportUserManager("StorageDaemonCommunication::CompleteAddUser", userId, E_SERVICE_IS_NULLPTR, "");
+        StorageRadar::ReportUserManager("StorageDaemonCommunication::CompleteAddUser",
+            userId, E_SERVICE_IS_NULLPTR, "");
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->CompleteAddUser(userId);

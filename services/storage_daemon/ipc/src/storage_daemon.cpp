@@ -1111,7 +1111,7 @@ int32_t StorageDaemon::MountCryptoPathAgain(uint32_t userId)
     if (ret != E_OK) {
         StorageRadar::ReportUserManager("MountCryptoPathAgain::MountManager::MountCryptoPathAgain", userId, ret, "");
     }
-    return ret
+    return ret;
 #else
     return E_OK;
 #endif
