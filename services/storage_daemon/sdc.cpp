@@ -256,12 +256,12 @@ static int32_t UpdateKeyContext(const std::vector<std::string> &args)
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }
-    if (OHOS::StorageDaemon::StringToUint32(args[INDEX_4], needRemoveTmpKey) == false) {
+    if (OHOS::StorageDaemon::StringBool(args[INDEX_4], needRemoveTmpKey) == false) {
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }
     
-    return OHOS::StorageDaemon::StorageDaemonClient::UpdateKeyContext(userId);
+    return OHOS::StorageDaemon::StorageDaemonClient::UpdateKeyContext(userId, needRemoveTmpKey);
 }
 
 static int32_t GenerateAppkey(const std::vector<std::string> &args)
