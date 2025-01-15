@@ -45,7 +45,8 @@ bool FscryptKeyV1::ActiveKey(uint32_t flag, const std::string &mnt)
         return false;
     }
     LOGE("ActiveKey key is empty: %{public}u", keyInfo_.key.IsEmpty());
-    if (!fscryptV1Ext.ActiveKeyExt(flag, keyInfo_.key.data.get(), keyInfo_.key.size, elType)) {
+    int errNo = fscryptV1Ext.ActiveKeyExt(flag, keyInfo_.key.data.get(), keyInfo_.key.size, elType);
+    if (errNo != E_OK) {
         keyInfo_.key.Clear();
         LOGE("fscryptV1Ext ActiveKeyExtfailed");
         return false;
@@ -449,11 +450,15 @@ bool FscryptKeyV1::InactiveKey(uint32_t flag, const std::string &mnt)
     DropCachesIfNeed();
 
     bool ret = true;
-    if (!keyInfo_.keyDesc.IsEmpty() && !UninstallKeyToKeyring()) {
-        LOGE("UninstallKeyToKeyring failed");
-        ret = false;
+    if (!keyInfo_.keyDesc.IsEmpty()) {
+        int errNo = UninstallKeyToKeyring();
+        if (errNo != E_OK) {
+            LOGE("UninstallKeyToKeyring failed");
+            ret = false;
+        }
     }
-    if (!fscryptV1Ext.InactiveKeyExt(flag)) {
+    int errNo = fscryptV1Ext.InactiveKeyExt(flag);
+    if (errNo != E_OK) {
         LOGE("fscryptV1Ext InactiveKeyExt failed");
         ret = false;
     }
@@ -490,7 +495,8 @@ bool FscryptKeyV1::LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::s
 {
     LOGI("enter FscryptKeyV1::LockUserScreen");
     // uninstall KeyRing
-    if (!UninstallKeyToKeyring()) {
+    int errNo = UninstallKeyToKeyring();
+    if (errNo != E_OK) {
         LOGE("UninstallKeyToKeyring failed");
         return false;
     }
@@ -517,16 +523,16 @@ bool FscryptKeyV1::LockUece(bool &isFbeSupport)
     return ret;
 }
 
-bool FscryptKeyV1::UninstallKeyToKeyring()
+int32_t FscryptKeyV1::UninstallKeyToKeyring()
 {
     if (keyInfo_.keyDesc.IsEmpty() && !LoadKeyBlob(keyInfo_.keyDesc, dir_ + PATH_KEYDESC)) {
         LOGE("Load keyDesc failed !");
-        return false;
+        return E_KEY_LOAD_ERROR;
     }
     if (keyInfo_.keyDesc.IsEmpty()) {
         DropCachesIfNeed();
         LOGE("keyDesc is null, key not installed?");
-        return false;
+        return E_KEY_EMPTY_ERROR;
     }
 
     key_serial_t krid = KeyCtrlSearch(KEY_SPEC_SESSION_KEYRING, "keyring", "fscrypt", 0);
@@ -534,7 +540,7 @@ bool FscryptKeyV1::UninstallKeyToKeyring()
         LOGE("Error searching session keyring for fscrypt-provisioning key for fscrypt");
         std::string extraData = "cmd=KEY_SPEC_SESSION_KEYRING,errno=" + std::to_string(errno);
         StorageRadar::ReportKeyRingResult("UninstallKeyToKeyring::KeyCtrlSearch", krid, extraData);
-        return false;
+        return E_SEARCH_SESSION_KEYING_ERROR;
     }
     for (auto prefix : CRYPTO_NAME_PREFIXES) {
         std::string keyref = prefix + ":" + keyInfo_.keyDesc.ToString();
@@ -545,7 +551,7 @@ bool FscryptKeyV1::UninstallKeyToKeyring()
     }
 
     LOGW("success");
-    return true;
+    return E_OK;
 }
 
 bool FscryptKeyV1::GenerateKeyDesc()
