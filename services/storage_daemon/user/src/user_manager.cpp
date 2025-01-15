@@ -347,7 +347,7 @@ void UserManager::CreateElxBundleDataDir(uint32_t userId, uint8_t elx)
     auto ret = client.CreateBundleDataDirWithEl(userId, static_cast<OHOS::AppExecFwk::DataDirEl>(elx));
     LOGI("CreateElxBundleDataDir end: userId %{public}u, elx is %{public}d, ret %{public}d", userId, elx, ret);
     if (ret != E_OK) {
-        StorageRadar::ReportBundleMgrResult("CreateBundleDataDir", ret, userId, "");
+        StorageRadar::ReportBundleMgrResult("CreateBundleDataDir", ret, userId, elx, "");
     }
 }
 
