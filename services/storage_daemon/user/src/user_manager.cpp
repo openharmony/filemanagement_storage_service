@@ -339,7 +339,7 @@ int32_t UserManager::DestroyEl1Dir(int32_t userId)
 void UserManager::CreateElxBundleDataDir(uint32_t userId, uint8_t elx)
 {
     LOGI("CreateElxBundleDataDir start: userId %{public}u, elx is %{public}d", userId, elx);
-    if(elx == EL1_KEY){
+    if (elx == EL1_KEY) {
         LOGW("CreateElxBundleDataDir pass: userId %{public}u, elx is %{public}d", userId, elx);
         return;
     }
