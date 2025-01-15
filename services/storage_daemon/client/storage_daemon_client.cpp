@@ -55,7 +55,7 @@ sptr<IStorageDaemon> StorageDaemonClient::GetStorageDaemonProxy(void)
 
 bool StorageDaemonClient::CheckServiceStatus(uint32_t serviceFlags)
 {
-    LOGI("CheckServiceStatus start");
+    LOGW("CheckServiceStatus start");
 
     auto samgr = OHOS::SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (samgr == nullptr) {
@@ -65,7 +65,7 @@ bool StorageDaemonClient::CheckServiceStatus(uint32_t serviceFlags)
             if (samgr != nullptr) {
                 break;
             }
-            LOGI("check samgr %{public}u times", i);
+            LOGW("check samgr %{public}u times", i);
             std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_TIME_PRE_CHECK));
         }
         if (samgr == nullptr) {
@@ -81,7 +81,7 @@ bool StorageDaemonClient::CheckServiceStatus(uint32_t serviceFlags)
             if (object != nullptr) {
                 break;
             }
-            LOGI("check storage daemon status %{public}u times", i);
+            LOGW("check storage daemon status %{public}u times", i);
             std::this_thread::sleep_for(std::chrono::milliseconds(SLEEP_TIME_PRE_CHECK));
         }
         if (exist == false) {
@@ -89,7 +89,7 @@ bool StorageDaemonClient::CheckServiceStatus(uint32_t serviceFlags)
             return false;
         }
     }
-    LOGI("CheckServiceStatus end, success");
+    LOGW("CheckServiceStatus end, success");
 
     return true;
 }

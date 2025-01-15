@@ -30,6 +30,7 @@ const uint32_t USER_UNLOCK = 0x2;
 const uint32_t USER_ADD_AUTH = 0x0;
 const uint32_t USER_CHANGE_AUTH = 0x1;
 const std::string SUFFIX_NEED_UPDATE = "/need_update";
+const std::string PATH_KEY_VERSION = "/version_";
 const std::vector<uint8_t> NULL_SECRET = { '!' };
 class BaseKey : public std::enable_shared_from_this<BaseKey> {
 public:
@@ -44,8 +45,8 @@ public:
 #else
     bool StoreKey(const UserAuth &auth);
 #endif
-    bool UpdateKey(const std::string &keypath = "");
-    bool RestoreKey(const UserAuth &auth);
+    bool UpdateKey(const std::string &keypath = "", bool needSyncCandidate = true);
+    bool RestoreKey(const UserAuth &auth, bool needSyncCandidate = true);
     virtual bool ActiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
     virtual bool InactiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
     virtual bool LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt = MNT_DATA) = 0;
@@ -55,7 +56,7 @@ public:
     virtual bool AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status) = 0;
     virtual bool DeleteClassEPinCode(uint32_t userId) = 0;
     virtual bool DecryptClassE(const UserAuth &auth, bool &isSupport, bool &eBufferStatue, uint32_t user,
-                               uint32_t status) = 0;
+                               bool needSyncCandidate) = 0;
     virtual bool EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status) = 0;
     virtual bool ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId) = 0;
     virtual bool LockUece(bool &isFbeSupport) = 0;
@@ -80,6 +81,7 @@ public:
     
 protected:
     static bool SaveKeyBlob(const KeyBlob &blob, const std::string &path);
+    std::string GetCandidateDir() const;
     std::string dir_ {};
 
 private:
@@ -111,9 +113,9 @@ private:
     void ClearKeyContext(KeyContext &keyCtx);
     bool InitKeyContext(const UserAuth &auth, const std::string &keyPath, KeyContext &keyCtx);
     int GetCandidateVersion() const;
-    std::string GetCandidateDir() const;
     std::string GetNextCandidateDir() const;
     void SyncKeyDir() const;
+    void DoLatestBackUp() const;
     uint32_t GetTypeFromDir();
     uint32_t GetIdFromDir();
 

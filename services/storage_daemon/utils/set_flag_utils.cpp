@@ -65,7 +65,7 @@ void SetFlagUtils::ParseDirPath(const std::string &path)
     std::regex idRegex("/storage_daemon/sd/(\\d+)/");
     std::smatch match;
     if (std::regex_search(path, match, idRegex)) {
-        int userId = std::stoi(match[1].str());
+        int userId = std::atoi(match[1].str().c_str());
         if (userId < START_USER_ID || userId > MAX_USER_ID) {
             LOGE("Invalid file path, userid:%{public}d", userId);
             return;

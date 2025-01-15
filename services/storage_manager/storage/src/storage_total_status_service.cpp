@@ -73,7 +73,7 @@ int32_t StorageTotalStatusService::GetTotalSize(int64_t &totalSize)
     ret = GetSizeOfPath(PATH_ROOT, SizeType::TOTAL, rootSize);
     if (ret != E_OK) {
         LOGE("GetSizeOfPath of root size failed, please check");
-        StorageRadar::ReportGetStorageStatus("GetSystemSize::GetSizeOfRootPath", DEFAULT_USERID, ret, "setting");
+        StorageRadar::ReportGetStorageStatus("GetTotalSize::GetSizeOfRootPath", DEFAULT_USERID, ret, "setting");
         return ret;
     }
     totalSize = GetRoundSize(dataSize + rootSize);
@@ -91,7 +91,7 @@ int32_t StorageTotalStatusService::GetFreeSize(int64_t &freeSize)
         StorageRadar::ReportGetStorageStatus("GetFreeSize", DEFAULT_USERID, ret, "setting");
     }
     LOGE("StorageTotalStatusService::GetFreeSize success, (/data)freeSize=%{public}lld",
-        static_cast<long long>(freeSize));
+         static_cast<long long>(freeSize));
     return ret;
 }
 
@@ -114,7 +114,7 @@ int32_t StorageTotalStatusService::GetSizeOfPath(const char *path, int32_t type,
         typeStr = "used space";
     }
     LOGI("StorageStatusService::GetSizeOfPath path is %{public}s, type is %{public}s, size is %{public}lld.",
-        path, typeStr.c_str(), static_cast<long long>(size));
+         path, typeStr.c_str(), static_cast<long long>(size));
     return E_OK;
 }
 } // StorageManager

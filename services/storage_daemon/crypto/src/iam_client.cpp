@@ -17,7 +17,9 @@
 
 #include "iam_client.h"
 #include "storage_service_log.h"
+#include "utils/storage_radar.h"
 
+using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
 const uint8_t IAM_MAX_RETRY_TIME = 3;
@@ -80,6 +82,7 @@ bool IamClient::GetSecureUid(uint32_t userId, uint64_t &secureUid)
     }
     if (retCode != UserIam::UserAuth::ResultCode::SUCCESS) {
         LOGE("Get secure uid failed !");
+        StorageRadar::ReportIamResult("GetSecureUid", userId, retCode);
         return false;
     }
     std::unique_lock<std::mutex> lock(iamMutex_);

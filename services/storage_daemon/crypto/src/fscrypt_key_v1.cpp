@@ -23,6 +23,7 @@
 #include "key_backup.h"
 #include "libfscrypt/key_control.h"
 #include "storage_service_log.h"
+#include "utils/file_utils.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -197,7 +198,7 @@ bool FscryptKeyV1::AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_
         LOGE("fscryptV1Ext AddClassE failed");
         return false;
     }
-    LOGI("AddClassE finish");
+    LOGW("AddClassE finish");
     return true;
 }
 
@@ -208,7 +209,7 @@ bool FscryptKeyV1::DeleteClassEPinCode(uint32_t userId)
         LOGE("fscryptV1Ext DeleteClassE failed");
         return false;
     }
-    LOGI("DeleteClassE finish");
+    LOGW("DeleteClassE finish");
     return true;
 }
 
@@ -219,17 +220,57 @@ bool FscryptKeyV1::ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId)
         LOGE("fscryptV1Ext ChangePinCodeClassE failed");
         return false;
     }
-    LOGI("ChangePinCodeClassE finish");
+    LOGW("ChangePinCodeClassE finish");
     return true;
 }
 
-bool FscryptKeyV1::DecryptClassE(const UserAuth &auth, bool &isSupport,
-                                 bool &eBufferStatue, uint32_t user, uint32_t status)
+bool FscryptKeyV1::DoDecryptClassE(const UserAuth &auth, KeyBlob &eSecretFBE, KeyBlob &decryptedKey,
+                                   bool needSyncCandidate)
+{
+    LOGI("enter");
+    auto candidate = GetCandidateDir();
+    if (candidate.empty()) {
+        // no candidate dir, just restore from the latest
+        return KeyBackup::GetInstance().TryRestoreUeceKey(shared_from_this(), auth, eSecretFBE, decryptedKey) == 0;
+    }
+
+    if (DecryptKeyBlob(auth, candidate, eSecretFBE, decryptedKey)) {
+        //update the latest with the candidate
+        UpdateKey("", needSyncCandidate);
+        return true;
+    }
+
+    LOGE("DoRestoreKey with %{public}s failed", candidate.c_str());
+    // try to restore from other versions
+    std::vector<std::string> files;
+    GetSubDirs(dir_, files);
+    std::sort(files.begin(), files.end(), [&](const std::string &a, const std::string &b) {
+        if (a.length() != b.length() ||
+            a.length() < PATH_KEY_VERSION.length() ||
+            b.length() < PATH_KEY_VERSION.length()) {
+            return a.length() > b.length();
+        }
+        // make sure a.length() >= PATH_KEY_VERSION.length() && b.length() >= PATH_KEY_VERSION.length()
+        return std::stoi(a.substr(PATH_KEY_VERSION.size() - 1)) >std::stoi(b.substr(PATH_KEY_VERSION.size() - 1));
+    });
+    for (const auto &it: files) {
+        if (it != candidate) {
+            if (DecryptKeyBlob(auth, dir_ + "/" + it, eSecretFBE, decryptedKey)) {
+                UpdateKey(it, needSyncCandidate);
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool FscryptKeyV1::DecryptClassE(const UserAuth &auth, bool &isSupport, bool &eBufferStatue,
+                                 uint32_t user, bool needSyncCandidate)
 {
     LOGI("enter");
     KeyBlob eSecretFBE(AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES);
     bool isFbeSupport = true;
-    if (!fscryptV1Ext.ReadClassE(status, eSecretFBE.data, eSecretFBE.size, isFbeSupport)) {
+    if (!fscryptV1Ext.ReadClassE(USER_UNLOCK, eSecretFBE.data, eSecretFBE.size, isFbeSupport)) {
         LOGE("fscryptV1Ext ReadClassE failed");
         return false;
     }
@@ -246,14 +287,14 @@ bool FscryptKeyV1::DecryptClassE(const UserAuth &auth, bool &isSupport,
     }
     LOGI("Decrypt keyPath is %{public}s", (dir_ + PATH_LATEST).c_str());
     KeyBlob decryptedKey(AES_256_HASH_RANDOM_SIZE);
-    if (KeyBackup::GetInstance().TryRestoreUeceKey(shared_from_this(), auth, eSecretFBE, decryptedKey) != 0) {
+    if (!DoDecryptClassE(auth, eSecretFBE, decryptedKey, needSyncCandidate) != 0) {
         LOGE("DecryptKeyBlob Decrypt failed");
         eSecretFBE.Clear();
         return false;
     }
     eSecretFBE.Clear();
     LOGI("Decrypt end!");
-    if (!fscryptV1Ext.WriteClassE(status, decryptedKey.data.get(), decryptedKey.size)) {
+    if (!fscryptV1Ext.WriteClassE(USER_UNLOCK, decryptedKey.data.get(), decryptedKey.size)) {
         LOGE("fscryptV1Ext WriteClassE failed");
         return false;
     }
@@ -330,7 +371,7 @@ bool FscryptKeyV1::InstallKeyToKeyring()
         return false;
     }
     keyInfo_.key.Clear();
-    LOGI("success");
+    LOGW("success");
     return true;
 }
 
@@ -371,7 +412,7 @@ bool FscryptKeyV1::InstallEceSeceKeyToKeyring(uint32_t sdpClass)
     if (!SaveKeyBlob(keyInfo_.keyDesc, dir_ + PATH_KEYDESC)) {
         return false;
     }
-    LOGI("success");
+    LOGW("success");
     return true;
 }
 
@@ -459,7 +500,7 @@ bool FscryptKeyV1::UninstallKeyToKeyring()
             LOGE("Failed to unlink key !");
         }
     }
-    LOGI("success");
+    LOGW("success");
     return true;
 }
 

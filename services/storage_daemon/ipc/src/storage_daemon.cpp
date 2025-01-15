@@ -262,7 +262,7 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
     if (type == EL4_KEY) {
         UserManager::GetInstance()->CreateBundleDataDir(userId);
     }
-    LOGI("restore User %{public}u el%{public}u success", userId, type);
+    LOGW("restore User %{public}u el%{public}u success", userId, type);
 
     return E_OK;
 }
@@ -381,7 +381,7 @@ int32_t StorageDaemon::InitGlobalKey(void)
     int ret = KeyManager::GetInstance()->InitGlobalDeviceKey();
     if (ret != E_OK) {
         LOGE("InitGlobalDeviceKey failed, please check");
-        StorageRadar::ReportInitGlobalKey("InitGlobalKey", 0, ret, "EL1");
+        StorageRadar::ReportUserKeyResult("InitGlobalKey::InitGlobalDeviceKey", 0, ret, "EL1", "");
     }
 #ifdef USE_LIBRESTORECON
     RestoreconRecurse(DATA_SERVICE_EL0_STORAGE_DAEMON_SD.c_str());
@@ -405,8 +405,9 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
 #ifdef USER_CRYPTO_MANAGER
 
 #ifdef USER_CRYPTO_MIGRATE_KEY
+    std::error_code errCode;
     std::string el2NeedRestorePath = GetNeedRestoreFilePath(START_USER_ID, USER_EL2_DIR);
-    if (std::filesystem::exists(el2NeedRestorePath)) {
+    if (std::filesystem::exists(el2NeedRestorePath, errCode)) {
         LOGE("USER_EL2_DIR is exist, update NEW_DOUBLE_2_SINGLE");
         std::string EL0_NEED_RESTORE = DATA_SERVICE_EL0_STORAGE_DAEMON_SD + NEED_RESTORE_SUFFIX;
         if (!SaveStringToFile(EL0_NEED_RESTORE, NEW_DOUBLE_2_SINGELE)) {
@@ -419,7 +420,7 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
     int ret = KeyManager::GetInstance()->InitGlobalUserKeys();
     if (ret) {
         LOGE("Init global users els failed");
-        StorageRadar::ReportInitGlobalKey("InitGlobalUserKeys", GLOBAL_USER_ID, ret, "EL1");
+        StorageRadar::ReportUserKeyResult("InitGlobalUserKeys", GLOBAL_USER_ID, ret, "EL1", "");
         return ret;
     }
 #endif
@@ -429,7 +430,7 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
     auto result = UserManager::GetInstance()->PrepareUserDirs(GLOBAL_USER_ID, CRYPTO_FLAG_EL1);
     if (result != E_OK) {
         LOGE("PrepareUserDirs failed, please check");
-        StorageRadar::ReportInitGlobalKey("InitGlobalUserKeys::PrepareUserDirs", GLOBAL_USER_ID, result, "EL1");
+        StorageRadar::ReportUserKeyResult("InitGlobalUserKeys::PrepareUserDirs", GLOBAL_USER_ID, result, "EL1", "");
     }
 
     std::thread thread([this]() { SetDeleteFlag4KeyFiles(); });
@@ -500,12 +501,12 @@ int32_t StorageDaemon::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
     if (ret != E_OK) {
         LOGE("UpdateUserAuth failed, please check");
         RadarParameter parameterRes = {
-            .orgPkg = DEFAULT_ORGPKGNAME,
+            .orgPkg = "account_mgr",
             .userId = userId,
             .funcName = "UpdateUserAuth",
             .bizScene = BizScene::USER_KEY_ENCRYPTION,
             .bizStage = BizStage::BIZ_STAGE_UPDATE_USER_AUTH,
-            .keyElxLevel = "EL1",
+            .keyElxLevel = "ELx",
             .errorCode = ret
         };
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
@@ -543,11 +544,18 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuth(uint32_t userId, KeyType
                                         .secureUid = secureUid };
     ret = KeyManager::GetInstance()->UpdateCeEceSeceUserAuth(userId, userTokenSecret, type, false);
     if (ret != E_OK) {
+        std::string isOldEmy = userTokenSecret.oldSecret.empty() ? "true" : "false";
+        std::string isNewEmy = userTokenSecret.newSecret.empty() ? "true" : "false";
+        std::string secretInfo = "oldSecret isEmpty = " + isOldEmy + ", newSecret isEmpty = " + isNewEmy;
+        StorageRadar::ReportUpdateUserAuth("PrepareUserDirsAndUpdateUserAuth::UpdateCeEceSeceUserAuth",
+            userId, ret, std::to_string(type), secretInfo);
         return ret;
     }
 
     ret = KeyManager::GetInstance()->UpdateCeEceSeceKeyContext(userId, type);
     if (ret != E_OK) {
+        StorageRadar::ReportUpdateUserAuth("PrepareUserDirsAndUpdateUserAuth::UpdateCeEceSeceKeyContext",
+            userId, ret, std::to_string(type), "");
         return ret;
     }
 
@@ -632,14 +640,14 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepare(uint32_t userId, KeyType type,
                                                const std::vector<uint8_t> &secret)
 {
 #ifdef USER_CRYPTO_MANAGER
-    LOGI("ActiveUserKey with type %{public}u enter", type);
+    LOGW("ActiveUserKey with type %{public}u enter", type);
     int ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, type, token, secret);
     if (ret != E_OK && ret != -ENOENT) {
 #ifdef USER_CRYPTO_MIGRATE_KEY
     std::error_code errCode;
         std::string elNeedRestorePath = GetNeedRestoreFilePathByType(userId, type);
         if ((!token.empty() || !secret.empty()) && std::filesystem::exists(elNeedRestorePath, errCode)) {
-            LOGI("start PrepareUserDirsAndUpdateUserAuth userId %{public}u, type %{public}u", userId, type);
+            LOGW("Migrate PrepareUserDirsAndUpdateUserAuth userId %{public}u, type %{public}u", userId, type);
             ret = PrepareUserDirsAndUpdateUserAuth(userId, type, token, secret);
         }
 #endif
@@ -649,7 +657,7 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepare(uint32_t userId, KeyType type,
             return ret;
         }
     } else if (ret == -ENOENT) {
-        LOGI("start GenerateKeyAndPrepareUserDirs userId %{public}u, type %{public}u sec empty %{public}d",
+        LOGW("start GenerateKeyAndPrepareUserDirs userId %{public}u, type %{public}u sec empty %{public}d",
              userId, type, secret.empty());
         ret = GenerateKeyAndPrepareUserDirs(userId, type, token, secret);
         if (ret != E_OK) {
@@ -699,11 +707,11 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
     int ret = E_OK;
     bool updateFlag = false;
 #ifdef USER_CRYPTO_MANAGER
-    LOGI("userId %{public}u, tok empty %{public}d sec empty %{public}d", userId, token.empty(), secret.empty());
+    LOGW("userId %{public}u, tok empty %{public}d sec empty %{public}d", userId, token.empty(), secret.empty());
     ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL2_KEY, token, secret);
     if (ret != E_OK) {
 #ifdef USER_CRYPTO_MIGRATE_KEY
-        LOGI("Migrate usrId %{public}u, Emp_tok %{public}d Emp_sec %{public}d", userId, token.empty(), secret.empty());
+        LOGW("Migrate usrId %{public}u, Emp_tok %{public}d Emp_sec %{public}d", userId, token.empty(), secret.empty());
         std::error_code errCode;
         std::string el2NeedRestorePath = GetNeedRestoreFilePath(userId, USER_EL2_DIR);
         if (std::filesystem::exists(el2NeedRestorePath, errCode) && (!token.empty() || !secret.empty())) {
@@ -876,12 +884,12 @@ int32_t StorageDaemon::UpdateKeyContext(uint32_t userId)
     if (ret != E_OK) {
         LOGE("UpdateKeyContext failed, please check");
         RadarParameter parameterRes = {
-            .orgPkg = DEFAULT_ORGPKGNAME,
+            .orgPkg = "account_mgr",
             .userId = userId,
             .funcName = "UpdateKeyContext",
             .bizScene = BizScene::USER_KEY_ENCRYPTION,
             .bizStage = BizStage::BIZ_STAGE_UPDATE_KEY_CONTEXT,
-            .keyElxLevel = "EL1",
+            .keyElxLevel = "EL2",
             .errorCode = ret
         };
         StorageService::StorageRadar::GetInstance().RecordFuctionResult(parameterRes);

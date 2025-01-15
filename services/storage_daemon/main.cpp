@@ -25,6 +25,7 @@
 #include "ipc/storage_daemon.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
+#include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
 #include "user/user_manager.h"
@@ -104,7 +105,25 @@ static const int32_t SLEEP_TIME_INTERVAL_3MS = 3 * 1000;
 
 int main()
 {
-    LOGI("storage_daemon start");
+    LOGW("storage_daemon start");
+    do {
+        auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+        if (samgr != nullptr) {
+            LOGE("samgr is not null");
+            sptr<StorageDaemon::StorageDaemon> sd(new StorageDaemon::StorageDaemon());
+            int ret = samgr->AddSystemAbility(STORAGE_MANAGER_DAEMON_ID, sd);
+            LOGI("AddSystemAbility: ret: %{public}d, errno: %{public}d", ret, errno);
+            sptr<CloudListener> listenter(new CloudListener());
+            ret = samgr->SubscribeSystemAbility(FILEMANAGEMENT_CLOUD_DAEMON_SERVICE_SA_ID, listenter);
+            LOGI("SubscribeSystemAbility for CLOUD_DAEMON_SERVICE: ret: %{public}d, errno: %{public}d", ret, errno);
+            ret = samgr->SubscribeSystemAbility(ACCESS_TOKEN_MANAGER_SERVICE_ID, listenter);
+            LOGI("SubscribeSystemAbility for MANAGER_SERVICE: ret: %{public}d, errno: %{public}d", ret, errno);
+            break;
+        }
+        usleep(SLEEP_TIME_INTERVAL_3MS);
+    } while (true);
+    LOGW("samgr GetSystemAbilityManager finish");
+
 #ifdef EXTERNAL_STORAGE_MANAGER
     StorageDaemon::NetlinkManager *nm = StorageDaemon::NetlinkManager::Instance();
     if (!nm) {
@@ -128,25 +147,7 @@ int main()
         return -1;
     }
 #endif
-
-    do {
-        auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-        if (samgr != nullptr) {
-            LOGE("samgr is not null");
-            sptr<StorageDaemon::StorageDaemon> sd(new StorageDaemon::StorageDaemon());
-            int ret = samgr->AddSystemAbility(STORAGE_MANAGER_DAEMON_ID, sd);
-            LOGI("AddSystemAbility: ret: %{public}d, errno: %{public}d", ret, errno);
-            sptr<CloudListener> listenter(new CloudListener());
-            ret = samgr->SubscribeSystemAbility(FILEMANAGEMENT_CLOUD_DAEMON_SERVICE_SA_ID, listenter);
-            LOGI("SubscribeSystemAbility for CLOUD_DAEMON_SERVICE: ret: %{public}d, errno: %{public}d", ret, errno);
-            ret = samgr->SubscribeSystemAbility(ACCESS_TOKEN_MANAGER_SERVICE_ID, listenter);
-            LOGI("SubscribeSystemAbility for MANAGER_SERVICE: ret: %{public}d, errno: %{public}d", ret, errno);
-            break;
-        }
-        usleep(SLEEP_TIME_INTERVAL_3MS);
-    } while (true);
-    LOGE("samgr GetSystemAbilityManager finish");
+    LOGW("storage_daemon main function execute finish.");
     IPCSkeleton::JoinWorkThread();
-
     return 0;
 }
