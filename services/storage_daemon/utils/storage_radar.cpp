@@ -223,11 +223,12 @@ void StorageRadar::ReportTEEClientResult(const std::string &funcName, int32_t re
 }
 
 void StorageRadar::ReportBundleMgrResult(const std::string &funcName, int32_t ret, unsigned int userId,
-    const std::string &extraData)
+                                         uint8_t elx, const std::string &extraData)
 {
     RadarParameter param = {
         .orgPkg = DEFAULT_ORGPKGNAME,
         .userId = userId,
+        .elx = elx,
         .funcName = "CreateBundleDataDir",
         .bizScene = BizScene::SPACE_STATISTICS,
         .bizStage = BizStage::BIZ_STAGE_GET_BUNDLE_STATS,
