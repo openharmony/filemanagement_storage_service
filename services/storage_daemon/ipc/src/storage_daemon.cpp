@@ -293,9 +293,7 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
             (void)remove(elNeedRestorePath.c_str());
         }
     }
-    if (type == EL4_KEY) {
-        UserManager::GetInstance()->CreateBundleDataDir(userId);
-    }
+
     // for double2single update el2-4 without secret
     UserManager::GetInstance()->CreateElxBundleDataDir(userId, type);
     LOGW("restore User %{public}u el%{public}u success", userId, type);
