@@ -36,7 +36,7 @@ public:
     int32_t DestroyUserDirs(int32_t userId, uint32_t flags);
     int32_t StartUser(int32_t userId);
     int32_t StopUser(int32_t userId);
-    void CreateBundleDataDir(uint32_t userId);
+    void CreateElxBundleDataDir(uint32_t userId, uint8_t elx);
 
 private:
     int32_t PrepareDirsFromIdAndLevel(int32_t userId, const std::string &level);
