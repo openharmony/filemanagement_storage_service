@@ -45,8 +45,8 @@ constexpr int32_t WAIT_THREAD_TIMEOUT_MS = 5;
 constexpr int32_t DEFAULT_CHECK_INTERVAL = 60 * 1000; // 60s
 constexpr int32_t STORAGE_THRESHOLD_PERCENTAGE = 5; // 5%
 constexpr int64_t STORAGE_THRESHOLD_MAX_BYTES = 500 * 1024 * 1024; // 500M
-constexpr int64_t STORAGE_THRESHOLD_100M = 100 * 1024 * 1024; // 100M
-constexpr int64_t STORAGE_THRESHOLD_1G = 1000 * 1024 * 1024; // 1G
+constexpr int64_t STORAGE_THRESHOLD_500M = 500 * 1024 * 1024; // 500M
+constexpr int64_t STORAGE_THRESHOLD_2G = 2000 * 1024 * 1024; // 2G
 constexpr int32_t STORAGE_LEFT_SIZE_THRESHOLD = 10; // 10%
 constexpr int32_t SEND_EVENT_INTERVAL = 24; // day
 constexpr int32_t CLEAN_CACHE_WEEK = 7 * 24; // week
@@ -138,6 +138,10 @@ void StorageMonitorService::MonitorAndManageStorage()
     if (freeSize < (totalSize * STORAGE_LEFT_SIZE_THRESHOLD) / CONST_NUM_ONE_HUNDRED) {
         CheckAndEventNotify(freeSize, totalSize);
         CheckAndCleanCache(freeSize, totalSize);
+        hasNotifiedStorageEvent_ = true;
+    } else if (hasNotifiedStorageEvent_) {
+        RefreshAllNotificationTimeStamp();
+        hasNotifiedStorageEvent_ = false;
     }
 }
 
@@ -195,13 +199,8 @@ void StorageMonitorService::CleanBundleCacheByInterval(const std::string &timest
 
 void StorageMonitorService::ReportRadarStorageUsage(enum StorageService::BizStage stage, const std::string &extraData)
 {
-    auto currentTime = std::chrono::steady_clock::now();
-    int32_t duration = static_cast<int32_t>(std::chrono::duration_cast<std::chrono::hours>
-            (currentTime - lastReportRadarTime_).count());
-    if (duration >= SEND_EVENT_INTERVAL) {
-        StorageRadar::ReportStorageUsage(stage, extraData);
-        lastReportRadarTime_ = currentTime;
-    }
+    LOGI("storage monitor service report radar storage usage start");
+    StorageService::StorageRadar::ReportStorageUsage(stage, extraData);
 }
 
 void StorageMonitorService::CleanBundleCache(int64_t lowThreshold)
@@ -235,22 +234,23 @@ int64_t StorageMonitorService::GetLowerThreshold(int64_t totalSize)
 void StorageMonitorService::CheckAndEventNotify(int64_t freeSize, int64_t totalSize)
 {
     LOGI("StorageMonitorService, start CheckAndEventNotify.");
-    if (freeSize < STORAGE_THRESHOLD_100M) {
+    std::string freeSizeStr = std::to_string(freeSize);
+    std::string totalSizeStr = std::to_string(totalSize);
+    std::string storageUsage = "storage usage not enough event notify freeSize = " + freeSizeStr + ", totalSize = " +
+                               totalSizeStr;
+    if (freeSize < STORAGE_THRESHOLD_500M) {
         EventNotifyHighFreqHandler();
+        storageUsage += ", freeSize < 500M, success notify event";
+        ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_500MB, storageUsage);
         return;
     }
-    auto currentTime = std::chrono::steady_clock::now();
-    int32_t duration = static_cast<int32_t>(std::chrono::duration_cast<std::chrono::hours>
-            (currentTime - lastNotificationTime_).count());
-    LOGI("StorageMonitorService, duration is %{public}d", duration);
-    if (duration >= SEND_EVENT_INTERVAL) {
-        if (freeSize >= STORAGE_THRESHOLD_1G) {
-            SendSmartNotificationEvent(FAULT_ID_ONE, FAULT_ID_ONE, false);
-        } else {
-            SendSmartNotificationEvent(FAULT_ID_TWO, FAULT_ID_TWO, false);
-        }
-        lastNotificationTime_ = currentTime;
+    if (freeSize < STORAGE_THRESHOLD_2G) {
+        EventNotifyFreqHandlerFor2G();
+        storageUsage += ", freeSize < 2G, success notify event";
+        ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_2GB, storageUsage);
+        return;
     }
+    EventNotifyFreqHandlerForTenPercent();
 }
 
 void StorageMonitorService::SendSmartNotificationEvent(const std::string &faultDesc,
@@ -276,7 +276,7 @@ void StorageMonitorService::SendSmartNotificationEvent(const std::string &faultD
     cJSON_AddStringToObject(root, "faultDescription", faultDesc.c_str());
     cJSON_AddStringToObject(root, "faultSuggestion", faultSuggest.c_str());
     if (isHighFreq) {
-        cJSON *faultSuggestionParam = cJSON_CreateString("100M");
+        cJSON *faultSuggestionParam = cJSON_CreateString("500M");
         cJSON *faultSuggestionArray = cJSON_CreateArray();
         cJSON_AddItemToArray(faultSuggestionArray, faultSuggestionParam);
         cJSON_AddItemToObject(root, "faultSuggestionParams", faultSuggestionArray);
@@ -294,14 +294,71 @@ void StorageMonitorService::SendSmartNotificationEvent(const std::string &faultD
 
 void StorageMonitorService::EventNotifyHighFreqHandler()
 {
-    auto currentTime = std::chrono::steady_clock::now();
+    auto currentTime = std::chrono::system_clock::now();
     int32_t duration = static_cast<int32_t>(std::chrono::duration_cast<std::chrono::minutes>
             (currentTime - lastNotificationTimeHighFreq_).count());
     LOGI("StorageMonitorService high frequency, duration is %{public}d", duration);
     if (duration >= SEND_EVENT_INTERVAL_HIGH_FREQ) {
         SendSmartNotificationEvent(FAULT_ID_THREE, FAULT_SUGGEST_THREE, true);
         lastNotificationTimeHighFreq_ = currentTime;
+        lastNotificationTime_ =
+                std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+                        std::chrono::system_clock::now()) - std::chrono::hours(SEND_EVENT_INTERVAL);
+        lastNotificationTime2G_ =
+                std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+                        std::chrono::system_clock::now()) - std::chrono::hours(SEND_EVENT_INTERVAL);
     }
+}
+
+void StorageMonitorService::EventNotifyFreqHandlerFor2G()
+{
+    auto currentTime = std::chrono::system_clock::now();
+    int32_t duration = static_cast<int32_t>(std::chrono::duration_cast<std::chrono::hours>
+            (currentTime - lastNotificationTime2G_).count());
+    LOGW("StorageMonitorService left Storage Size < 2G, duration is %{public}d", duration);
+    if (duration >= SEND_EVENT_INTERVAL) {
+        SendSmartNotificationEvent(FAULT_ID_TWO, FAULT_ID_TWO, false);
+        lastNotificationTime2G_ = currentTime;
+        lastNotificationTime_ =
+                std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+                        std::chrono::system_clock::now()) - std::chrono::hours(SEND_EVENT_INTERVAL);
+        lastNotificationTimeHighFreq_ =
+                std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+                        std::chrono::system_clock::now()) - std::chrono::minutes(SMART_EVENT_INTERVAL_HIGH_FREQ);
+    }
+}
+
+void StorageMonitorService::EventNotifyFreqHandlerForTenPercent()
+{
+    auto currentTime = std::chrono::system_clock::now();
+    int32_t duration = static_cast<int32_t>(std::chrono::duration_cast<std::chrono::hours>
+            (currentTime - lastNotificationTime_).count());
+    LOGW("StorageMonitorService left Storage Size < 10 percent, duration is %{public}d", duration);
+    if (duration >= SEND_EVENT_INTERVAL) {
+        SendSmartNotificationEvent(FAULT_ID_ONE, FAULT_ID_ONE, false);
+        lastNotificationTime_ = currentTime;
+        lastNotificationTime2G_ =
+                std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+                        std::chrono::system_clock::now()) - std::chrono::hours(SEND_EVENT_INTERVAL);
+        lastNotificationTimeHighFreq_ =
+                std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+                        std::chrono::system_clock::now()) - std::chrono::minutes(SMART_EVENT_INTERVAL_HIGH_FREQ);
+    }
+}
+
+void StorageMonitorService::RefreshAllNotificationTimeStamp()
+{
+    lastNotificationTime_ =
+            std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+                    std::chrono::system_clock::now()) - std::chrono::hours(SEND_EVENT_INTERVAL);
+
+    lastNotificationTime2G_ =
+            std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+                    std::chrono::system_clock::now()) - std::chrono::hours(SEND_EVENT_INTERVAL);
+
+    lastNotificationTimeHighFreq_ =
+            std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+                    std::chrono::system_clock::now()) - std::chrono::minutes(SMART_EVENT_INTERVAL_HIGH_FREQ);
 }
 } // StorageManager
 } // OHOS
