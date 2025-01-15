@@ -23,7 +23,6 @@ namespace StorageService {
 const std::string DEFAULT_ORGPKGNAME = "storageService";
 const std::string ADD_NEW_USER_BEHAVIOR = "ADD_NEW_USER_BEHAVIOR";
 const std::string FILE_STORAGE_MANAGER_FAULT_BEHAVIOR  = "FILE_STORAGE_MANAGER_FAULT";
-const std::string UMOUNT_FAIL_BEHAVIOR = "UMOUNT_FAIL_BEHAVIOR";
 constexpr char STORAGESERVICE_DOAMIN[] = "FILEMANAGEMENT";
 const int32_t DEFAULT_USERID = 100;
 enum class BizScene : int32_t {
@@ -33,7 +32,6 @@ enum class BizScene : int32_t {
     SPACE_STATISTICS,
     EXTERNAL_VOLUME_MANAGER,
     STORAGE_USAGE_MANAGER,
-    DISTRIBUTED_FILE,
 };
 
 enum class StageRes : int32_t {
@@ -87,6 +85,8 @@ enum class BizStage : int32_t {
     BIZ_STAGE_THRESHOLD_TEN_PERCENT = 51,
     BIZ_STAGE_THRESHOLD_FIVE_PERCENT,
     BIZ_STAGE_THRESHOLD_MINIMAL,
+
+    BIZ_STAGE_USER_MOUNT = 61,
 };
 
 struct RadarParameter {
@@ -98,6 +98,7 @@ struct RadarParameter {
     std::string keyElxLevel;
     int32_t errorCode;
     std::string extraData;
+    std::string toCallPkg;
 };
 
 class StorageRadar {
@@ -109,7 +110,6 @@ public:
     }
 
 public:
-    bool RecordKillProcessResult(std::string processName, int32_t errcode);
     bool RecordFuctionResult(const RadarParameter &parameterRes);
     static void ReportActiveUserKey(const std::string &funcName, uint32_t userId, int ret,
         const std::string &keyElxLevel);
@@ -118,7 +118,7 @@ public:
     static void ReportVolumeOperation(const std::string &funcName, int ret);
     static void ReportUserKeyResult(const std::string &funcName, uint32_t userId, int ret,
         const std::string &keyElxLevel, const std::string &extraData);
-    static void ReportUserManager(const std::string &funcName, uint32_t userId, int ret, enum BizStage stage);
+    static void ReportUserManager(const std::string &funcName, uint32_t userId, int ret, const std::string &extraData);
     static void ReportUpdateUserAuth(const std::string &funcName, uint32_t userId, int ret, const std::string &keyLevel,
         const std::string &extraData);
     static void ReportFbexResult(const std::string &funcName, uint32_t userId, int ret, const std::string &keyLevel,
@@ -126,6 +126,13 @@ public:
     static void ReportIamResult(const std::string &funcName, uint32_t userId, int ret);
     static void ReportHuksResult(const std::string &funcName, int ret);
     static void ReportStorageUsage(enum BizStage stage, const std::string &extraData);
+    static void ReportKeyRingResult(const std::string &funcName, int ret, const std::string &extraData);
+    static void ReportOsAccountResult(const std::string &funcName, int32_t ret, unsigned int userId);
+    static void ReportEl5KeyMgrResult(const std::string &funcName, int32_t ret, unsigned int userId);
+    static void ReportTEEClientResult(const std::string &funcName, int32_t ret, unsigned int userId,
+        const std::string &extraData);
+    static void ReportBundleMgrResult(const std::string &funcName, int32_t ret, unsigned int userId,
+        const std::string &extraData);
 
 private:
     StorageRadar() = default;

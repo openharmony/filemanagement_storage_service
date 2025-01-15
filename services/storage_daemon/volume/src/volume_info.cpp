@@ -20,10 +20,12 @@
 #include "ipc/storage_manager_client.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "utils/storage_radar.h"
 #include "utils/string_utils.h"
 #include "parameter.h"
 
 using namespace std;
+using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
 const int32_t TRUE_LEN = 5;
@@ -114,12 +116,13 @@ int32_t VolumeInfo::Mount(uint32_t flags)
             mountFlags_ &= ~MS_RDONLY;
         }
     }
-    
+
     mountFlags_ |= flags;
     LOGI("external volume mount start");
     err = DoMount(mountFlags_);
     if (err) {
         mountState_ = UNMOUNTED;
+        StorageRadar::ReportVolumeOperation("VolumeInfo::DoMount", err);
         return err;
     }
     LOGI("external volume mount success");
@@ -195,6 +198,9 @@ int32_t VolumeInfo::Format(std::string type)
     }
 
     int32_t err = DoFormat(type);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeInfo::DoFormat", err);
+    }
     return err;
 }
 
@@ -206,6 +212,9 @@ int32_t VolumeInfo::SetVolumeDescription(const std::string description)
     }
 
     int32_t err = DoSetVolDesc(description);
+    if (err != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeInfo::DoSetVolDesc", err);
+    }
     return err;
 }
 } // StorageDaemon

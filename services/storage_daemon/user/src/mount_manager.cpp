@@ -251,37 +251,56 @@ std::vector<DirInfo> MountManager::InitAppdataDir()
 
 int32_t MountManager::HmdfsTwiceMount(int32_t userId, const std::string &relativePath)
 {
-    int32_t ret = HmdfsMount(userId, relativePath);
-    // bind mount
     Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, relativePath));
-    std::string dst = hmdfsMntArgs.GetCommFullPath();
-    if (IsPathMounted(dst)) {
-        LOGI("path has mounted, %{public}s", dst.c_str());
-    } else {
-        ret += Mount(hmdfsMntArgs.GetFullDst() + "/device_view/", dst, nullptr, MS_BIND, nullptr);
-        if (ret != 0 && errno != EEXIST && errno != EBUSY) {
-            LOGE("failed to bind mount device_view, err %{public}d", errno);
-            return E_USER_MOUNT_ERR;
-        }
+    std::string srcPath = hmdfsMntArgs.GetFullDst() + "/device_view/";
+    std::string dstPath = hmdfsMntArgs.GetCommFullPath();
+    int32_t mountRes = BindMount(srcPath, dstPath);
+    if (mountRes != E_OK) {
+        LOGE("failed to bind mount device_view, err %{public}d", mountRes);
+        std::string extraData = "srcPath=" + srcPath + ",dstPath=" + dstPath + ",kernelCode=" + to_string(errno);
+        StorageRadar::ReportUserManager("HmdfsTwiceMount", userId, E_MOUNT_HMDFS_MEDIA, extraData);
+        return E_MOUNT_HMDFS_MEDIA;
     }
-    dst = hmdfsMntArgs.GetCloudFullPath();
-    if (IsPathMounted(dst)) {
-        LOGI("path has mounted, %{public}s", dst.c_str());
-    } else {
-        ret += Mount(hmdfsMntArgs.GetFullDst() + "/cloud_merge_view/", dst, nullptr, MS_BIND, nullptr);
-        if (ret != 0 && errno != EEXIST && errno != EBUSY) {
-            LOGE("failed to bind mount cloud_merge_view, err %{public}d", errno);
-            return E_USER_MOUNT_ERR;
-        }
+    srcPath = hmdfsMntArgs.GetFullDst() + "/cloud_merge_view/";
+    dstPath = hmdfsMntArgs.GetCloudFullPath();
+    mountRes = BindMount(srcPath, dstPath);
+    if (mountRes != E_OK) {
+        LOGE("failed to bind mount cloud_merge_view, err %{public}d", errno);
+        std::string extraData = "srcPath=" + srcPath + ",dstPath=" + dstPath + ",kernelCode=" + to_string(errno);
+        StorageRadar::ReportUserManager("HmdfsTwiceMount", userId, E_MOUNT_HMDFS_CLOUD, extraData);
+        return E_MOUNT_HMDFS_CLOUD;
     }
-    dst = hmdfsMntArgs.GetCloudDocsPath();
-    if (IsPathMounted(dst)) {
-        LOGI("path has mounted, %{public}s", dst.c_str());
-    } else {
-        ret += Mount(hmdfsMntArgs.GetLocalDocsPath(), dst, nullptr, MS_BIND, nullptr);
-        if (ret != 0 && errno != EEXIST && errno != EBUSY) {
-            LOGE("failed to bind mount docs, err %{public}d", errno);
-        }
+    srcPath = hmdfsMntArgs.GetLocalDocsPath();
+    dstPath = hmdfsMntArgs.GetCloudDocsPath();
+    mountRes = BindMount(srcPath, dstPath);
+    if (mountRes != E_OK) {
+        LOGE("failed to bind mount docs, err %{public}d", errno);
+        std::string extraData = "srcPath=" + srcPath + ",dstPath=" + dstPath + ",kernelCode=" + to_string(errno);
+        StorageRadar::ReportUserManager("HmdfsTwiceMount", userId, E_MOUNT_HMDFS_CLOUD_DOCS, extraData);
+        return E_MOUNT_HMDFS_CLOUD_DOCS;
+    }
+    return E_OK;
+}
+
+int32_t MountManager::BindMount(std::string &srcPath, std::string &dstPath)
+{
+    if (srcPath.empty() || !IsDir(srcPath)) {
+        LOGE("path invalid, %{public}s", srcPath.c_str());
+        return E_NON_EXIST;
+    }
+    if (dstPath.empty() || !IsDir(dstPath)) {
+        LOGE("path invalid, %{public}s", dstPath.c_str());
+        return E_NON_EXIST;
+    }
+    if (IsPathMounted(dstPath)) {
+        LOGE("path has mounted, %{public}s", dstPath.c_str());
+        return E_OK;
+    }
+    int32_t ret = Mount(srcPath, dstPath, nullptr, MS_BIND, nullptr);
+    if (ret != 0 && errno != EEXIST && errno != EBUSY) {
+        LOGE("failed to bind mount, srcPath is %{public}s, dstPath is %{public}s, err is %{public}d",
+            srcPath.c_str(), dstPath.c_str(), errno);
+        return E_MOUNT_BIND_MOUNT;
     }
     return E_OK;
 }
@@ -293,11 +312,14 @@ int32_t MountManager::SharefsMount(int32_t userId)
     if (IsPathMounted(dst)) {
         LOGI("path has mounted, %{public}s", dst.c_str());
     } else {
-        int ret = Mount(sharefsMntArgs.GetShareSrc(), dst, "sharefs", sharefsMntArgs.GetFlags(),
+        std::string srcPath = sharefsMntArgs.GetShareSrc();
+        int ret = Mount(srcPath, dst, "sharefs", sharefsMntArgs.GetFlags(),
                         sharefsMntArgs.GetUserIdPara().c_str());
         if (ret != 0 && errno != EEXIST && errno != EBUSY) {
             LOGE("failed to mount sharefs, err %{public}d", errno);
-            return E_USER_MOUNT_ERR;
+            std::string extraData = "srcPath=" + srcPath + ",dstPath=" + dst + ",kernelCode=" + to_string(errno);
+            StorageRadar::ReportUserManager("SharefsMount", userId, E_MOUNT_SHAREFS, extraData);
+            return E_MOUNT_SHAREFS;
         }
     }
     return E_OK;
@@ -320,9 +342,11 @@ int32_t MountManager::HmSharefsMount(int32_t userId, std::string &srcPath, std::
     Utils::MountArgument sharefsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
     int ret = Mount(srcPath, dstPath, "sharefs", sharefsMntArgs.GetFlags(),
                     sharefsMntArgs.GetHmUserIdPara().c_str());
-    if (ret != 0) {
+    if (ret != 0 && errno != EEXIST && errno != EBUSY) {
         LOGE("failed to mount hmSharefs, err %{public}d", errno);
-        return E_USER_MOUNT_ERR;
+        std::string extraData = "srcPath=" + srcPath + ",dstPath=" + dstPath + ",kernelCode=" + to_string(errno);
+        StorageRadar::ReportUserManager("HmSharefsMount", userId, E_MOUNT_HM_SHAREFS, extraData);
+        return E_MOUNT_HM_SHAREFS;
     }
     return E_OK;
 }
@@ -330,23 +354,25 @@ int32_t MountManager::HmSharefsMount(int32_t userId, std::string &srcPath, std::
 int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath, bool mountCloudDisk)
 {
     Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, relativePath));
-    std::string mountSrcPath = hmdfsMntArgs.GetFullSrc();
+    std::string srcPath = hmdfsMntArgs.GetFullSrc();
     if (mountCloudDisk) {
         hmdfsMntArgs.enableCloudDisk_ = true;
         hmdfsMntArgs.useCloudDir_ = false;
         hmdfsMntArgs.enableMergeView_ = false;
-        mountSrcPath = hmdfsMntArgs.GetFullCloud();
+        srcPath = hmdfsMntArgs.GetFullCloud();
     }
 
-    std::string dst = hmdfsMntArgs.GetFullDst();
-    if (IsPathMounted(dst)) {
-        LOGI("path has mounted, %{public}s", dst.c_str());
+    std::string dstPath = hmdfsMntArgs.GetFullDst();
+    if (IsPathMounted(dstPath)) {
+        LOGI("path has mounted, %{public}s", dstPath.c_str());
         return E_OK;
     }
-    int ret = Mount(mountSrcPath, dst, "hmdfs", hmdfsMntArgs.GetFlags(), hmdfsMntArgs.OptionsToString().c_str());
+    int ret = Mount(srcPath, dstPath, "hmdfs", hmdfsMntArgs.GetFlags(), hmdfsMntArgs.OptionsToString().c_str());
     if (ret != 0 && errno != EEXIST && errno != EBUSY) {
         LOGE("failed to mount hmdfs, err %{public}d", errno);
-        return E_USER_MOUNT_ERR;
+        std::string extraData = "srcPath=" + srcPath + ",dstPath=" + dstPath + ",kernelCode=" + to_string(errno);
+        StorageRadar::ReportUserManager("HmdfsMount", userId, E_MOUNT_HMDFS, extraData);
+        return E_MOUNT_HMDFS;
     }
 
     ret = chown(hmdfsMntArgs.GetCtrlPath().c_str(), OID_DFS, OID_SYSTEM);
@@ -391,16 +417,6 @@ int32_t MountManager::FindProcess(std::list<std::string> &unMountFailList, std::
     }
     LOGE("find process end, total find %{public}d", static_cast<int>(proInfos.size()));
     return E_OK;
-}
-
-void MountManager::UmountFailRadar(std::vector<ProcessInfo> &processInfos, int32_t radar)
-{
-    if (processInfos.empty()) {
-        return;
-    }
-    std::string info = ProcessToString(processInfos);
-    LOGE("record process, ret = %{public}d, process is %{public}s", radar, info.c_str());
-    StorageService::StorageRadar::GetInstance().RecordKillProcessResult(info, radar);
 }
 
 bool MountManager::PidUsingFlag(std::string &pidPath, std::list<std::string> &mountFailList)
@@ -515,13 +531,12 @@ bool MountManager::CheckSymlink(const std::string &path, std::list<std::string> 
 
 int32_t MountManager::CloudMount(int32_t userId, const string& path)
 {
-    LOGI("cloud mount start");
 #ifdef DFS_SERVICE
     string opt;
     int ret;
     if (!cloudReady_) {
         LOGI("Cloud Service has not started");
-        return E_USER_MOUNT_ERR;
+        return E_CLOUD_NOT_READY;
     }
 
     FILE *f = fopen("/dev/fuse", "r+");
@@ -567,65 +582,37 @@ int32_t MountManager::CloudMount(int32_t userId, const string& path)
 
 int32_t MountManager::CloudTwiceMount(int32_t userId)
 {
-    LOGI("mount cloud twice start");
+    LOGI("mount cloud start");
     int32_t ret = E_OK;
 #ifdef DFS_SERVICE
     Utils::MountArgument cloudMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
     string cloudPath = cloudMntArgs.GetFullCloud();
-    string cloudMediaPath = cloudMntArgs.GetFullMediaCloud();
     int32_t mountRet = E_OK;
     if (IsPathMounted(cloudPath)) {
         LOGI("path has mounted, %{public}s", cloudPath.c_str());
     } else {
         mountRet = CloudMount(userId, cloudPath);
-        if (mountRet != E_OK) {
-            ret = mountRet;
+        if (mountRet != E_OK && mountRet != E_CLOUD_NOT_READY) {
+            std::string extraData = "dstPath=" + cloudPath + ",kernelCode=" + to_string(mountRet);
+            StorageRadar::ReportUserManager("CloudTwiceMount", userId, E_MOUNT_CLOUD_FUSE, extraData);
+            ret = E_MOUNT_CLOUD_FUSE;
         }
     }
+    string cloudMediaPath = cloudMntArgs.GetFullMediaCloud();
     if (IsPathMounted(cloudMediaPath)) {
         LOGI("path has mounted, %{public}s", cloudMediaPath.c_str());
     } else {
         mountRet = CloudMount(userId, cloudMediaPath);
-        if (mountRet != E_OK) {
-            ret = mountRet;
+        if (mountRet != E_OK && mountRet != E_CLOUD_NOT_READY) {
+            std::string extraData = "dstPath=" + cloudMediaPath + ",kernelCode=" + to_string(mountRet);
+            StorageRadar::ReportUserManager("CloudTwiceMount", userId, E_MOUNT_CLOUD, extraData);
+            ret = E_MOUNT_CLOUD;
         }
     }
     return ret;
 #else
     return ret;
 #endif
-}
-
-int32_t MountManager::HmdfsMount(int32_t userId)
-{
-    int32_t err = PrepareHmdfsDirs(userId);
-    if (err != E_OK) {
-        LOGE("Prepare fileManager dir error");
-    }
-
-    int32_t ret = HmdfsTwiceMount(userId, "account");
-
-    ret += HmdfsMount(userId, "non_account");
-    if (ret != E_OK) {
-        return E_USER_MOUNT_ERR;
-    }
-
-    LOGI("ready to mount cloud");
-    mountMutex_.lock();
-    ret = CloudTwiceMount(userId);
-    if (ret == E_OK) {
-        fuseMountedUsers_.push_back(userId);
-    } else {
-        fuseToMountUsers_.push_back(userId);
-    }
-    mountMutex_.unlock();
-
-    ret = HmdfsMount(userId, "cloud", true);
-    if (ret != E_OK) {
-        LOGE("mount cloud to hmdfs failed!");
-    }
-
-    return E_OK;
 }
 
 static void ParseSandboxPath(string &path, const string &userId, const string &bundleName)
@@ -720,6 +707,8 @@ void MountManager::MountSandboxPath(const std::vector<std::string> &srcPaths, co
         if (ret != 0) {
             LOGE("mount bind failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
                  srcPath.c_str(), dstPath.c_str(), errno);
+            std::string extraData = "srcPath=" + srcPath + ",dstPath=" + dstPath + ",kernelCode=" + to_string(errno);
+            StorageRadar::ReportUserManager("MountSandboxPath", atoi(userId.c_str()), E_MOUNT_SANDBOX, extraData);
             continue;
         }
         LOGI("bind mount path, srcPath is %{public}s, dstPath is %{public}s", srcPath.c_str(), dstPath.c_str());
@@ -840,6 +829,10 @@ int32_t MountManager::UMountAllPath(int32_t userId, std::list<std::string> &unMo
         LOGE("failed to umount hmdfs mount point, res is %{public}d", res);
         result = E_UMOUNT_HMDFS;
     }
+    if (!unMountFailList.empty()) {
+        std::string extraData = "dstPath=" + ListToString(unMountFailList) + ",kernelCode=" + to_string(result);
+        StorageRadar::ReportUserManager("UMountAllPath", userId, E_UMOUNT_ALL_PATH, extraData);
+    }
     LOGI("UMountAllPath end, res is %{public}d", result);
     return result;
 }
@@ -928,12 +921,16 @@ int32_t MountManager::CloudUMount(int32_t userId)
     err = UMount2(cloudFusePath, MNT_DETACH);
     if (err != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("cloud fuse umount failed, errno is %{public}d.", errno);
+        std::string extraData = "dstPath=" + cloudFusePath + ",kernelCode=" + to_string(errno);
+        StorageRadar::ReportUserManager("CloudUMount", userId, E_UMOUNT_CLOUD_FUSE, extraData);
         return E_UMOUNT_CLOUD_FUSE;
     }
     const string cloudPath = cloudMntArgs.GetFullMediaCloud();
     err = UMount2(cloudPath, MNT_DETACH);
     if (err != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("cloud umount failed, errno %{public}d", errno);
+        std::string extraData = "dstPath=" + cloudPath + ",kernelCode=" + to_string(errno);
+        StorageRadar::ReportUserManager("CloudUMount", userId, E_UMOUNT_CLOUD, extraData);
         return E_UMOUNT_CLOUD;
     }
     LOGI("cloud umount success");
@@ -957,15 +954,22 @@ bool MountManager::SupportHmdfs()
 int32_t MountManager::LocalMount(int32_t userId)
 {
     Utils::MountArgument LocalMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, "account"));
-    if (Mount(LocalMntArgs.GetFullSrc(), LocalMntArgs.GetCommFullPath() + "local/",
-              nullptr, MS_BIND, nullptr)) {
-        LOGE("failed to bind mount, err %{public}d", errno);
-        return E_USER_MOUNT_ERR;
+    std::string srcPath = LocalMntArgs.GetFullSrc();
+    std::string dstPath = LocalMntArgs.GetCommFullPath() + "local/";
+    int ret = BindMount(srcPath, dstPath);
+    if (ret != E_OK) {
+        LOGE("failed to mount local media path, %{public}s, err is %{public}d", srcPath.c_str(), errno);
+        std::string extraData = "srcPath=" + srcPath + ",dstPath=" + dstPath + ",kernelCode = " + to_string(ret);
+        StorageRadar::ReportUserManager("LocalMount", userId, E_MOUNT_LOCAL_MEDIA, extraData);
+        return E_MOUNT_LOCAL_MEDIA;
     }
-    if (Mount(LocalMntArgs.GetFullSrc(), LocalMntArgs.GetCloudFullPath(),
-              nullptr, MS_BIND, nullptr)) {
-        LOGE("failed to bind mount, err %{public}d", errno);
-        return E_USER_MOUNT_ERR;
+    dstPath = LocalMntArgs.GetCloudFullPath();
+    ret = BindMount(srcPath, dstPath);
+    if (ret != E_OK) {
+        LOGE("failed to mount local cloud path, %{public}s, err is %{public}d", srcPath.c_str(), errno);
+        std::string extraData = "srcPath=" + srcPath + ",dstPath=" + dstPath + ",kernelCode = " + to_string(ret);
+        StorageRadar::ReportUserManager("LocalMount", userId, E_MOUNT_LOCAL_CLOUD, extraData);
+        return E_MOUNT_LOCAL_CLOUD;
     }
     return E_OK;
 }
@@ -1004,38 +1008,54 @@ int32_t MountManager::MountByUser(int32_t userId)
         LOGE("User %{public}d de has not decrypt.", userId);
         return E_KEY_NOT_ACTIVED;
     }
-    // The Documnets and Download directories are managed by the File access framework,
-    // and the UID GID is changed to filemanager
     std::thread thread([userId]() { ClearRedundantResources(userId); });
     thread.detach();
     PrepareFileManagerDir(userId);
-    if (CreateVirtualDirs(userId) != E_OK) {
-        LOGE("create hmdfs virtual dir error");
-        return E_PREPARE_DIR;
-    }
+    CreateVirtualDirs(userId);
+    PrepareHmdfsDirs(userId);
 
-    if (!SupportHmdfs()) {
-        ret = LocalMount(userId);
-    } else {
-        ret = HmdfsMount(userId);
-    }
-
-    if (ret != E_OK) {
-        LOGE("hmdfs mount error");
-        return ret;
-    }
-
-    ret = SharefsMount(userId);
-    if (ret != E_OK) {
-        LOGE("sharefs mount error");
+    int32_t mountHmdfsRes = MountFileSystem(userId);
+    if (mountHmdfsRes != E_OK) {
+        return mountHmdfsRes;
     }
     SetFafQuotaProId(userId);
-    if (CreateSystemServiceDirs(userId) != E_OK) {
-        LOGE("create system service dir error");
-        return E_PREPARE_DIR;
-    }
-    MountAppdataAndSharefs(userId);
+    CreateSystemServiceDirs(userId);
     LOGI("MountByUser success, userId is %{public}d.", userId);
+    return E_OK;
+}
+
+int32_t MountManager::MountFileSystem(int32_t userId)
+{
+    int32_t ret;
+    if (SupportHmdfs()) {
+        ret = HmdfsMount(userId, "account");
+        if (ret != E_OK) {
+            return ret;
+        }
+        ret = HmdfsTwiceMount(userId, "account");
+        if (ret != E_OK) {
+            return ret;
+        }
+        ret = HmdfsMount(userId, "non_account");
+        if (ret != E_OK) {
+            return ret;
+        }
+        mountMutex_.lock();
+        if (CloudTwiceMount(userId) == E_OK) {
+            fuseMountedUsers_.push_back(userId);
+        } else {
+            fuseToMountUsers_.push_back(userId);
+        }
+        mountMutex_.unlock();
+        HmdfsMount(userId, "cloud", true);
+    } else {
+        ret = LocalMount(userId);
+    }
+    if (ret != E_OK) {
+        return ret;
+    }
+    SharefsMount(userId);
+    MountAppdataAndSharefs(userId);
     return E_OK;
 }
 
@@ -1083,13 +1103,17 @@ int32_t MountManager::LocalUMount(int32_t userId)
     int unMountRes = UMount(path);
     if (unMountRes != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("failed to unmount local, errno %{public}d, path is %{public}s", errno, path.c_str());
-        res = unMountRes;
+        std::string extraData = "dstPath=" + path + ",kernelCode=" + to_string(errno);
+        StorageRadar::ReportUserManager("LocalUMount", userId, E_UMOUNT_LOCAL_MEDIA, extraData);
+        res = E_UMOUNT_LOCAL_MEDIA;
     }
     path = LocalMntArgs.GetCloudFullPath();
     unMountRes = UMount(path);
     if (unMountRes != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("failed to unmount local, errno %{public}d, path is %{public}s", errno, path.c_str());
-        res = unMountRes;
+        std::string extraData = "dstPath=" + path + ",kernelCode=" + to_string(errno);
+        StorageRadar::ReportUserManager("LocalUMount", userId, E_UMOUNT_LOCAL_CLOUD, extraData);
+        res = E_UMOUNT_LOCAL_CLOUD;
     }
     return res;
 }
@@ -1130,7 +1154,8 @@ int32_t MountManager::FindSaFd(int32_t userId)
     std::list<std::string> excludeProcess;
     FindProcess(list, proInfos, excludeProcess);
     if (!proInfos.empty()) {
-        UmountFailRadar(proInfos, E_UMOUNT_FIND_FD);
+        std::string extraData = "process=" + ProcessToString(proInfos);
+        StorageRadar::ReportUserManager("FindSaFd", userId, E_UMOUNT_FIND_FD, extraData);
     }
     LOGI("find sa fd end.");
     return E_OK;
@@ -1170,7 +1195,9 @@ int32_t MountManager::FindAndKillProcess(int32_t userId, std::list<std::string> 
         LOGE("no process find.");
         return E_UMOUNT_NO_PROCESS_FIND;
     }
-    UmountFailRadar(processInfos, radar);
+    std::string extraData = "process=" + ProcessToString(processInfos) + ",kernelCode=" + to_string(radar);
+    StorageRadar::ReportUserManager("FindAndKillProcess", userId, E_UMOUNT_FIND_PROCESS, extraData);
+
     std::vector<ProcessInfo> killFailList;
     KillProcess(processInfos, killFailList);
     if (!killFailList.empty()) {
@@ -1184,8 +1211,11 @@ int32_t MountManager::FindAndKillProcess(int32_t userId, std::list<std::string> 
 int32_t MountManager::PrepareHmdfsDirs(int32_t userId)
 {
     for (const DirInfo &dir : hmdfsDirVec_) {
-        if (!PrepareDir(StringPrintf(dir.path.c_str(), userId), dir.mode, dir.uid, dir.gid)) {
-            return E_PREPARE_DIR;
+        std::string path = StringPrintf(dir.path.c_str(), userId);
+        if (!PrepareDir(path, dir.mode, dir.uid, dir.gid)) {
+            std::string extraData = "dirPath=" + path + ",kernelCode=" + to_string(errno);
+            StorageRadar::ReportUserManager("PrepareHmdfsDirs", userId, E_CREATE_DIR_HMDFS, extraData);
+            return E_CREATE_DIR_HMDFS;
         }
     }
     return E_OK;
@@ -1195,11 +1225,13 @@ int32_t MountManager::PrepareFileManagerDirs(int32_t userId)
 {
     for (const DirInfo &dir : fileManagerDir_) {
         uid_t dirUid = GetFileManagerUid(dir.uid, userId);
-        if (!PrepareDir(StringPrintf(dir.path.c_str(), userId), dir.mode, dirUid, dir.gid)) {
-            return E_PREPARE_DIR;
+        std::string path = StringPrintf(dir.path.c_str(), userId);
+        if (!PrepareDir(path, dir.mode, dirUid, dir.gid)) {
+            std::string extraData = "dirPath=" + path + ",kernelCode=" + to_string(errno);
+            StorageRadar::ReportUserManager("PrepareFileManagerDirs", userId, E_CREATE_DIR_FILE_MANAGER, extraData);
+            return E_CREATE_DIR_FILE_MANAGER;
         }
     }
-
     return E_OK;
 }
 
@@ -1215,7 +1247,9 @@ int32_t MountManager::CreateVirtualDirs(int32_t userId)
             continue;
         }
         if (!PrepareDir(path, dir.mode, dir.uid, dir.gid)) {
-            return E_PREPARE_DIR;
+            std::string extraData = "dirPath=" + path + ",kernelCode=" + to_string(errno);
+            StorageRadar::ReportUserManager("CreateVirtualDirs", userId, E_CREATE_DIR_VIRTUAL, extraData);
+            return E_CREATE_DIR_VIRTUAL;
         }
     }
     return E_OK;
@@ -1297,7 +1331,9 @@ int32_t MountManager::CreateSystemServiceDirs(int32_t userId)
         std::string path = StringPrintf(dir.path.c_str(), userId);
         if (!PrepareDir(path, dir.mode, dir.uid, dir.gid)) {
             LOGE("failed to prepareDir %{public}s ", path.c_str());
-            err = E_PREPARE_DIR;
+            std::string extraData = "dirPath=" + path + ",kernelCode=" + to_string(errno);
+            StorageRadar::ReportUserManager("CreateSystemServiceDirs", userId, E_CREATE_DIR_SA, extraData);
+            err = E_CREATE_DIR_SA;
         }
     }
     return err;
@@ -1394,7 +1430,7 @@ bool MountManager::MediaFuseDirFlag(const std::string &path)
     return false;
 }
 
-int32_t MountManager::SharedMount(const std::string &path)
+int32_t MountManager::SharedMount(int32_t userId, const std::string &path)
 {
     if (path.empty() || !IsDir(path)) {
         LOGE("path invalid, %{public}s", path.c_str());
@@ -1403,42 +1439,48 @@ int32_t MountManager::SharedMount(const std::string &path)
     int32_t ret = mount(path.c_str(), path.c_str(), nullptr, MS_BIND | MS_REC, nullptr);
     if (ret != 0) {
         LOGE("SharedMount failed, path is %{public}s, errno is %{public}d.", path.c_str(), errno);
-        return ret;
+        std::string extraData = "path=" + path + ",kernelCode=" + to_string(errno);
+        StorageRadar::ReportUserManager("SharedMount", userId, E_MOUNT_SHARED, extraData);
+        return E_MOUNT_SHARED;
     }
     ret = mount(nullptr, path.c_str(), nullptr, MS_SHARED, nullptr);
     if (ret != 0) {
         LOGE("SharedMount shared failed, path is %{public}s, errno is %{public}d.", path.c_str(), errno);
-        return ret;
+        return E_MOUNT_SHARED;
     }
     return E_OK;
 }
 
-int32_t MountManager::BindAndRecMount(std::string &srcPath, std::string &dstPath, bool isUseSlave)
+int32_t MountManager::BindAndRecMount(int32_t userId, std::string &srcPath, std::string &dstPath, bool isUseSlave)
 {
     if (srcPath.empty() || !IsDir(srcPath)) {
         LOGE("path invalid, %{public}s", srcPath.c_str());
-        return E_OK;
+        return E_NON_EXIST;
     }
     if (dstPath.empty() || !IsDir(dstPath)) {
         LOGE("path invalid, %{public}s", dstPath.c_str());
-        return E_OK;
+        return E_NON_EXIST;
     }
     if (IsPathMounted(dstPath)) {
         LOGE("path has mounted, %{public}s", dstPath.c_str());
         return E_OK;
     }
     int32_t ret = mount(srcPath.c_str(), dstPath.c_str(), nullptr, MS_BIND | MS_REC, nullptr);
-    if (ret != 0) {
+    if (ret != 0 && errno != EEXIST && errno != EBUSY) {
         LOGE("bind and rec mount failed, srcPath is %{public}s, dstPath is %{public}s, errno is %{public}d.",
              srcPath.c_str(), dstPath.c_str(), errno);
-        return ret;
+        std::string extraData = "srcPath=" + srcPath + ",dstPath=" + dstPath + ",kernelCode=" + to_string(errno);
+        StorageRadar::ReportUserManager("BindAndRecMount", userId, E_MOUNT_BIND_AND_REC, extraData);
+        return E_MOUNT_BIND_AND_REC;
     }
     if (isUseSlave) {
         ret = mount(nullptr, dstPath.c_str(), nullptr, MS_SLAVE, nullptr);
-        if (ret != 0) {
-            LOGE("mount to slave failed, path is %{public}s, errno is %{public}d.", dstPath.c_str(), errno);
-            return ret;
-        }
+    } else {
+        ret = mount(nullptr, dstPath.c_str(), nullptr, MS_SHARED, nullptr);
+    }
+    if (ret != 0 && errno != EEXIST && errno != EBUSY) {
+        LOGE("mount to slave or shared failed, path is %{public}s, errno is %{public}d.", dstPath.c_str(), errno);
+        return ret;
     }
     return E_OK;
 }
@@ -1481,12 +1523,13 @@ int32_t MountManager::MountAppdata(const std::string &userId)
     std::vector<std::string> appdataSrc = APPDATA_SRC_PATH;
     std::vector<std::string> appdataDst = APPDATA_DST_PATH;
     int count = static_cast<int>(appdataSrc.size());
+    int32_t uid = atoi(userId.c_str());
     for (int i = 0; i < count; i++) {
         std::string src = appdataSrc[i];
         std::string dst = appdataDst[i];
         ParseSandboxPath(src, userId, "");
         ParseSandboxPath(dst, userId, "");
-        BindAndRecMount(src, dst);
+        BindAndRecMount(uid, src, dst);
     }
     return E_OK;
 }
@@ -1495,23 +1538,27 @@ int32_t MountManager::MountSharefsAndNoSharefs(int32_t userId)
 {
     Utils::MountArgument mountArgument(Utils::MountArgumentDescriptors::Alpha(userId, ""));
     std::string path = mountArgument.GetNoSharefsDocPath();
-    SharedMount(path);
+    SharedMount(userId, path);
+
     path = mountArgument.GetSharefsDocPath();
-    SharedMount(path);
+    SharedMount(userId, path);
 
     std::string src = APPDATA_SRC_PATH[0];
     std::string dst = APPDATA_DST_PATH[0];
     ParseSandboxPath(src, to_string(userId), "");
     ParseSandboxPath(dst, to_string(userId), "");
-    BindAndRecMount(src, dst);
+    BindAndRecMount(userId, src, dst);
     return E_OK;
 }
 
 int32_t MountManager::PrepareAppdataDirByUserId(int32_t userId)
 {
     for (const DirInfo &dir: appdataDir_) {
-        if (!PrepareDir(StringPrintf(dir.path.c_str(), userId), dir.mode, dir.uid, dir.gid)) {
-            return E_PREPARE_DIR;
+        std::string path = StringPrintf(dir.path.c_str(), userId);
+        if (!PrepareDir(path, dir.mode, dir.uid, dir.gid)) {
+            std::string extraData = "dirPath=" + path + ",kernelCode=" + to_string(errno);
+            StorageRadar::ReportUserManager("PrepareAppdataDirByUserId", userId, E_CREATE_DIR_APPDATA, extraData);
+            return E_CREATE_DIR_APPDATA;
         }
     }
     MountSharefsAndNoSharefs(userId);
@@ -1524,34 +1571,40 @@ int32_t MountManager::MountAppdataAndSharefs(int32_t userId)
     Utils::MountArgument mountArgument(Utils::MountArgumentDescriptors::Alpha(userId, ""));
     std::string mediaDocPath = mountArgument.GetMediaDocsPath();
     std::string curOtherPath = mountArgument.GetCurOtherPath();
-    BindAndRecMount(mediaDocPath, curOtherPath);
+    BindAndRecMount(userId, mediaDocPath, curOtherPath);
 
     LOGI("mount currentUser/other/appdata");
     std::string noSharefsAppdataPath = mountArgument.GetNoSharefsAppdataPath();
     std::string curOtherAppdataPath = mountArgument.GetCurOtherAppdataPath();
     if (!IsDir(curOtherAppdataPath)) {
-        MkDir(curOtherAppdataPath, MODE_0711);
+        if (MkDir(curOtherAppdataPath, MODE_0711)) {
+            std::string extraData = "dirPath=" + curOtherAppdataPath + ",kernelCode=" + to_string(errno);
+            StorageRadar::ReportUserManager("MountAppdataAndSharefs", userId, E_CREATE_DIR_APPDATA_OTHER, extraData);
+        }
     }
     std::string curFileMgrAppdataPath = mountArgument.GetCurFileMgrAppdataPath();
     if (!IsDir(curFileMgrAppdataPath)) {
-        MkDir(curFileMgrAppdataPath, MODE_0711);
+        if (MkDir(curFileMgrAppdataPath, MODE_0711)) {
+            std::string extraData = "dirPath=" + curFileMgrAppdataPath + ",kernelCode=" + to_string(errno);
+            StorageRadar::ReportUserManager("MountAppdataAndSharefs", userId, E_CREATE_DIR_APPDATA_FILEMGR, extraData);
+        }
     }
-    BindAndRecMount(noSharefsAppdataPath, curOtherAppdataPath);
+    BindAndRecMount(userId, noSharefsAppdataPath, curOtherAppdataPath);
 
     LOGI("mount currentUser/filemgr");
     std::string curFileMgrPath = mountArgument.GetCurFileMgrPath();
-    BindAndRecMount(mediaDocPath, curFileMgrPath);
+    BindAndRecMount(userId, mediaDocPath, curFileMgrPath);
 
     LOGI("mount currentUser/filemgr/appdata");
     HmSharefsMount(userId, noSharefsAppdataPath, curFileMgrAppdataPath);
 
     LOGI("mount sharefs/docs/currentUser");
     std::string sharefsDocCurPath = mountArgument.GetSharefsDocCurPath();
-    BindAndRecMount(curOtherPath, sharefsDocCurPath);
+    BindAndRecMount(userId, curOtherPath, sharefsDocCurPath, false);
 
     LOGI("mount nosharefs/docs/currentUser");
     std::string noSharefsDocCurPath = mountArgument.GetNoSharefsDocCurPath();
-    BindAndRecMount(curFileMgrPath, noSharefsDocCurPath);
+    BindAndRecMount(userId, curFileMgrPath, noSharefsDocCurPath, false);
     return E_OK;
 }
 
@@ -1614,7 +1667,9 @@ int32_t MountManager::MountMediaFuse(int32_t userId, int32_t &devFd)
     if (ret) {
         LOGE("failed to mount fuse, err %{public}d %{public}d %{public}s", errno, ret, path.c_str());
         close(devFd);
-        return E_USER_MOUNT_ERR;
+        std::string extraData = "dstPath=" + path + ",kernelCode=" + to_string(errno);
+        StorageRadar::ReportUserManager("MountMediaFuse", userId, E_MOUNT_MEDIA_FUSE, extraData);
+        return E_MOUNT_MEDIA_FUSE;
     }
     LOGI("mount media fuse success, path is %{public}s", path.c_str());
 #endif
@@ -1631,6 +1686,8 @@ int32_t MountManager::UMountMediaFuse(int32_t userId)
     err = UMount2(path, MNT_DETACH);
     if (err != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("media fuse umount failed, errno %{public}d", errno);
+        std::string extraData = "dstPath=" + path + ",kernelCode=" + to_string(errno);
+        StorageRadar::ReportUserManager("UMountMediaFuse", userId, E_UMOUNT_MEDIA_FUSE, extraData);
         return E_UMOUNT_MEDIA_FUSE;
     }
     LOGI("umount media fuse success");

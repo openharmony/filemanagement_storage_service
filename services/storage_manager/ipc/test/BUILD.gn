@@ -50,6 +50,8 @@ ohos_unittest("storage_manager_proxy_test") {
     "LOG_DOMAIN = 0xD004300",
   ]
 
+  deps = [ "${storage_daemon_path}:storage_common_utils" ]
+
   external_deps = [
     "ability_base:base",
     "ability_base:want",

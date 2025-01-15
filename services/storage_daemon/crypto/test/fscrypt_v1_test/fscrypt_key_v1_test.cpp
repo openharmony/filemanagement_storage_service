@@ -319,18 +319,18 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_InstallEceSeceKeyToKeyring, TestSize.L
     GTEST_LOG_(INFO) << "fscrypt_key_v1_InstallEceSeceKeyToKeyring start";
     auto g_testKeyV1 = std::make_shared<OHOS::StorageDaemon::FscryptKeyV1>(TEST_KEYPATH);
     uint32_t sdpClass = 2;
-    EXPECT_FALSE(g_testKeyV1->InstallEceSeceKeyToKeyring(sdpClass));
+    EXPECT_NE(g_testKeyV1->InstallEceSeceKeyToKeyring(sdpClass), E_OK);
 
     g_testKeyV1->keyInfo_.key.Clear();
     g_testKeyV1->keyInfo_.keyDesc.Clear();
     g_testKeyV1->keyInfo_.key.Alloc(TEST_KEYID_SIZE);
-    EXPECT_FALSE(g_testKeyV1->InstallEceSeceKeyToKeyring(sdpClass));
+    EXPECT_NE(g_testKeyV1->InstallEceSeceKeyToKeyring(sdpClass), E_OK);
 
     g_testKeyV1->keyInfo_.key.Clear();
     g_testKeyV1->keyInfo_.keyDesc.Clear();
     g_testKeyV1->keyInfo_.key.Alloc(TEST_KEYID_SIZE);
     g_testKeyV1->keyInfo_.keyDesc.Alloc(TEST_KEYID_SIZE);
-    EXPECT_FALSE(g_testKeyV1->InstallEceSeceKeyToKeyring(sdpClass));
+    EXPECT_NE(g_testKeyV1->InstallEceSeceKeyToKeyring(sdpClass), E_OK);
     GTEST_LOG_(INFO) << "fscrypt_key_v1_InstallEceSeceKeyToKeyring end";
 }
 

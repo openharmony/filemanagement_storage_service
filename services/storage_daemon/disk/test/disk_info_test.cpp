@@ -664,7 +664,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Partition_003, TestSize.Leve
     ASSERT_TRUE(diskInfo != nullptr);
     int ret = diskInfo->Partition();
 
-    EXPECT_EQ(ret, E_ERR);
+    EXPECT_EQ(ret, E_WEXITSTATUS);
 
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_Partition_002 end";
 }
@@ -760,7 +760,7 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Partition_004, TestSize.Leve
     ASSERT_TRUE(diskInfo != nullptr);
 
     int ret = diskInfo->Partition();
-    EXPECT_EQ(ret, E_ERR);
+    EXPECT_EQ(ret, E_WEXITSTATUS);
 
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_Partition_004 end";
 }

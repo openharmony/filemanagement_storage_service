@@ -143,7 +143,7 @@ int FscryptSetSysparam(const char *policy)
     if (optNums != FSCRYPT_OPTIONS_MAX) {
         LOGE("Mount fscrypt option setting error, not enabled crypto!");
         FreeStringVector(options, optNums);
-        return -EFAULT;
+        return -EINVAL;
     }
 
     // check supported policy
@@ -277,24 +277,24 @@ static int ReadKeyFile(const char *path, char *buf, size_t len)
     }
     if ((size_t)st.st_size != len) {
         LOGE("target file size is not equal to buf len");
-        return -EFAULT;
+        return -EINVAL;
     }
     char *realPath = realpath(path, NULL);
     if (realPath == NULL) {
         LOGE("realpath failed");
-        return -EFAULT;
+        return -ENOENT;
     }
 
     FILE *f = fopen(realPath, "r");
     free(realPath);
     if (f == NULL) {
         LOGE("key file read open failed");
-        return -EFAULT;
+        return -ENOENT;
     }
     int fd = fileno(f);
     if (fd < 0) {
         LOGE("key file read open failed");
-        return -EFAULT;
+        return -EIO;
     }
     if (read(fd, buf, len) != (ssize_t)len) {
         LOGE("bad file content");

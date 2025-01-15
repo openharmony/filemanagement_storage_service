@@ -47,6 +47,7 @@ const std::string SEC_DISCARD_DIR = "/latest/sec_discard";
 const std::string SHIELD_DIR = "/latest/shield";
 const std::string RESTORE_DIR = "/latest/need_restore";
 const std::string DESC_DIR = "/key_desc";
+const std::string EL2_ENCRYPT_TMP_FILE = "/el2_tmp";
 
 class KeyManager {
 public:
@@ -79,8 +80,6 @@ public:
                                      uint64_t secureUid,
                                      uint32_t userId,
                                      std::vector<std::vector<uint8_t>> &plainText);
-    int ActiveUserKey(unsigned int user, const std::vector<uint8_t> &token,
-                      const std::vector<uint8_t> &secret);
     int ActiveCeSceSeceUserKey(unsigned int user, KeyType type, const std::vector<uint8_t> &token,
                                const std::vector<uint8_t> &secret);
     int InActiveUserKey(unsigned int user);

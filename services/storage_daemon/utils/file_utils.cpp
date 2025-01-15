@@ -431,13 +431,13 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
 
     if (pipe(pipe_fd) < 0) {
         LOGE("creat pipe failed");
-        return E_ERR;
+        return E_CREATE_PIPE;
     }
 
     pid = fork();
     if (pid == -1) {
         LOGE("fork failed");
-        return E_ERR;
+        return E_FORK;
     } else if (pid == 0) {
         (void)close(pipe_fd[0]);
         if (dup2(pipe_fd[1], STDOUT_FILENO) == -1) {
@@ -467,11 +467,11 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
         }
         if (!WIFEXITED(status)) {
             LOGE("Process exits abnormally");
-            return E_ERR;
+            return E_WIFEXITED;
         }
         if (WEXITSTATUS(status) != 0) {
             LOGE("Process exited with an error");
-            return E_ERR;
+            return E_WEXITSTATUS;
         }
     }
     return E_OK;
@@ -741,12 +741,12 @@ bool CreateFolder(const std::string &path)
     if (!access(path.c_str(), F_OK) || path == "") {
         return true;
     }
- 
+
     size_t pos = path.rfind("/");
     if (pos == std::string::npos) {
         return false;
     }
- 
+
     std::string upperPath = path.substr(0, pos);
     if (CreateFolder(upperPath)) {
         if (mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IRWXO)) {
@@ -811,7 +811,7 @@ std::string ProcessToString(std::vector<ProcessInfo> &processList)
         return "";
     }
     std::string result;
-    for (auto & iter : processList) {
+    for (auto &iter : processList) {
         result += std::to_string(iter.pid) + "_" + iter.name + ",";
     }
     return result.empty() ? "" : result.substr(0, result.length() -1);

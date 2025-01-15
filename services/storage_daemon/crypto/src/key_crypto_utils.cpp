@@ -20,7 +20,9 @@
 #include "screenlock_manager.h"
 #endif
 #include "storage_service_log.h"
+#include "utils/storage_radar.h"
 
+using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageService {
 void KeyCryptoUtils::ForceLockUserScreen()
@@ -31,17 +33,20 @@ void KeyCryptoUtils::ForceLockUserScreen()
     int32_t ret = AccountSA::OsAccountManager::QueryActiveOsAccountIds(ids);
     if (ret != ERR_OK || ids.empty()) {
         LOGE("Query active userid failed, ret = %{public}u", ret);
+        StorageRadar::ReportOsAccountResult("ForceLockUserScreen::QueryActiveOsAccountIds", ret, DEFAULT_USERID);
         return;
     }
     int reasonFlag = static_cast<int>(ScreenLock::StrongAuthReasonFlags::ACTIVE_REQUEST);
     ret = ScreenLock::ScreenLockManager::GetInstance()->RequestStrongAuth(reasonFlag, ids[0]);
     if (ret != ScreenLock::E_SCREENLOCK_OK) {
         LOGE("Request strong auth by screen lock manager failed.");
+        StorageRadar::ReportOsAccountResult("ForceLockUserScreen::RequestStrongAuth", ret, ids[0]);
         return;
     }
     ret = ScreenLock::ScreenLockManager::GetInstance()->Lock(ids[0]);
     if (ret != ScreenLock::E_SCREENLOCK_OK) {
         LOGE("Lock user screen by screen lock manager failed.");
+        StorageRadar::ReportOsAccountResult("ForceLockUserScreen::Lock", ret, ids[0]);
         return;
     }
     LOGI("Force lock user screen and request strong auth success for userId = %{public}d.", ids[0]);
@@ -55,6 +60,7 @@ int32_t KeyCryptoUtils::CheckAccountExists(unsigned int userId, bool &isOsAccoun
     int32_t ret = AccountSA::OsAccountManager::IsOsAccountExists(userId, isOsAccountExists);
     if (ret != ERR_OK) {
         LOGE("Check userId failed, ret = %{public}u", ret);
+        StorageRadar::ReportOsAccountResult("CheckAccountExists::IsOsAccountExists", ret, userId);
         return ret;
     }
     LOGW("account %{public}d, is exists: %{public}d", userId, isOsAccountExists);

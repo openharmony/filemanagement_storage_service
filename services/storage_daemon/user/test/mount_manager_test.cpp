@@ -77,29 +77,29 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_HmdfsTwiceMount_001, 
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(true)).WillOnce(Return(true))
         .WillOnce(Return(true)).WillOnce(Return(true));
     auto ret = MountManager::GetInstance()->HmdfsTwiceMount(userId, relativePath);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(ret, E_MOUNT_HMDFS_MEDIA);
 
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(true)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
     ret = MountManager::GetInstance()->HmdfsTwiceMount(userId, relativePath);
-    EXPECT_EQ(ret, E_USER_MOUNT_ERR);
+    EXPECT_EQ(ret, E_MOUNT_HMDFS_MEDIA);
 
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(true)).WillOnce(Return(false)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(1));
     ret = MountManager::GetInstance()->HmdfsTwiceMount(userId, relativePath);
-    EXPECT_EQ(ret, E_USER_MOUNT_ERR);
+    EXPECT_EQ(ret, E_MOUNT_HMDFS_MEDIA);
 
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(true)).WillOnce(Return(false))
         .WillOnce(Return(false)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(0)).WillOnce(Return(1));
     ret = MountManager::GetInstance()->HmdfsTwiceMount(userId, relativePath);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(ret, E_MOUNT_HMDFS_MEDIA);
 
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(true)).WillOnce(Return(false))
         .WillOnce(Return(false)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(0)).WillOnce(Return(0));
     ret = MountManager::GetInstance()->HmdfsTwiceMount(userId, relativePath);
-    EXPECT_EQ(ret, E_OK);
+    EXPECT_EQ(ret, E_MOUNT_HMDFS_MEDIA);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_HmSharefsMount_001 end";
 }
 
@@ -122,7 +122,7 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_SharefsMount_001, Tes
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
     ret = MountManager::GetInstance()->SharefsMount(userId);
-    EXPECT_EQ(ret, E_USER_MOUNT_ERR);
+    EXPECT_EQ(ret, E_MOUNT_SHAREFS);
 
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
@@ -164,7 +164,7 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_HmSharefsMount_001, T
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
     ret = MountManager::GetInstance()->HmSharefsMount(userId, srcPath, dstPath);
-    EXPECT_EQ(ret, E_USER_MOUNT_ERR);
+    EXPECT_EQ(ret, E_MOUNT_HM_SHAREFS);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
@@ -205,27 +205,28 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_SharedMount_001, Test
 {
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_SharedMount_001 start";
     std::string path;
-    auto ret = MountManager::GetInstance()->SharedMount(path);
+    int32_t userId = 100;
+    auto ret = MountManager::GetInstance()->SharedMount(userId, path);
     EXPECT_EQ(ret, E_OK);
 
-    path = "test";
+    path = "test1";
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false));
-    ret = MountManager::GetInstance()->SharedMount(path);
+    ret = MountManager::GetInstance()->SharedMount(userId, path);
     EXPECT_EQ(ret, E_OK);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(1));
-    ret = MountManager::GetInstance()->SharedMount(path);
-    EXPECT_EQ(ret, 1);
+    ret = MountManager::GetInstance()->SharedMount(userId, path);
+    EXPECT_EQ(ret, E_MOUNT_SHARED);
 
-    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(1));
-    ret = MountManager::GetInstance()->SharedMount(path);
-    EXPECT_EQ(ret, 1);
+    ret = MountManager::GetInstance()->SharedMount(userId, path);
+    EXPECT_EQ(ret, E_MOUNT_SHARED);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(0));
-    ret = MountManager::GetInstance()->SharedMount(path);
+    ret = MountManager::GetInstance()->SharedMount(userId, path);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckSymlink_001 end";
 }
@@ -241,27 +242,28 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_BindAndRecMount_001, 
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_BindAndRecMount_001 start";
     std::string srcPath;
     std::string dstPath;
+    int32_t userId = 100;
     bool isUseSlave = true;
-    auto ret = MountManager::GetInstance()->BindAndRecMount(srcPath, dstPath, isUseSlave);
-    EXPECT_EQ(ret, E_OK);
+    auto ret = MountManager::GetInstance()->BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
+    EXPECT_EQ(ret, E_NON_EXIST);
 
     srcPath = "srcPath";
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false));
-    ret = MountManager::GetInstance()->BindAndRecMount(srcPath, dstPath, isUseSlave);
-    EXPECT_EQ(ret, E_OK);
+    ret = MountManager::GetInstance()->BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
+    EXPECT_EQ(ret, E_NON_EXIST);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
-    ret = MountManager::GetInstance()->BindAndRecMount(srcPath, dstPath, isUseSlave);
-    EXPECT_EQ(ret, E_OK);
+    ret = MountManager::GetInstance()->BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
+    EXPECT_EQ(ret, E_NON_EXIST);
 
     dstPath = "dstPath";
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(false));
-    ret = MountManager::GetInstance()->BindAndRecMount(srcPath, dstPath, isUseSlave);
-    EXPECT_EQ(ret, E_OK);
+    ret = MountManager::GetInstance()->BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
+    EXPECT_EQ(ret, E_NON_EXIST);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(true));
-    ret = MountManager::GetInstance()->BindAndRecMount(srcPath, dstPath, isUseSlave);
+    ret = MountManager::GetInstance()->BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckSymlink_001 end";
 }
@@ -277,31 +279,32 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_BindAndRecMount_002, 
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_BindAndRecMount_002 start";
     std::string srcPath = "srcPath";
     std::string dstPath = "dstPath";
+    int32_t userId = 100;
     bool isUseSlave = true;
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(1));
-    auto ret = MountManager::GetInstance()->BindAndRecMount(srcPath, dstPath, isUseSlave);
-    EXPECT_EQ(ret, 1);
+    auto ret = MountManager::GetInstance()->BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
+    EXPECT_EQ(ret, E_MOUNT_BIND_AND_REC);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(1));
-    ret = MountManager::GetInstance()->BindAndRecMount(srcPath, dstPath, isUseSlave);
+    ret = MountManager::GetInstance()->BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
     EXPECT_EQ(ret, 1);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(0));
-    ret = MountManager::GetInstance()->BindAndRecMount(srcPath, dstPath, isUseSlave);
+    ret = MountManager::GetInstance()->BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
     EXPECT_EQ(ret, E_OK);
 
     isUseSlave = false;
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
-    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
-    ret = MountManager::GetInstance()->BindAndRecMount(srcPath, dstPath, isUseSlave);
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(0));
+    ret = MountManager::GetInstance()->BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_BindAndRecMount_002 end";
 }
@@ -318,7 +321,7 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_PrepareAppdataDirByUs
     int32_t userId = 888;
     EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(false));
     auto ret = MountManager::GetInstance()->PrepareAppdataDirByUserId(userId);
-    EXPECT_EQ(ret, E_PREPARE_DIR);
+    EXPECT_EQ(ret, E_CREATE_DIR_APPDATA);
 
     EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).Times(MountManager::GetInstance()->appdataDir_.size())
         .WillRepeatedly(::testing::Return(11));

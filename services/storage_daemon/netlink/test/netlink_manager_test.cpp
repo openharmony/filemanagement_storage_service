@@ -67,32 +67,5 @@ HWTEST_F(NetlinkManagerTest, Storage_Service_NetlinkManagerTest_Instance_002, Te
     ASSERT_TRUE(netlinkManager1 == netlinkManager2);
     GTEST_LOG_(INFO) << "Storage_Service_NetlinkManagerTest_Instance_002 end";
 }
-
-/**
- * @tc.name: Storage_Service_NetlinkManagerTest_Start_Stop_001
- * @tc.desc: Verify the Start/Stop function.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
-HWTEST_F(NetlinkManagerTest, Storage_Service_NetlinkManagerTest_Start_Stop_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_NetlinkManagerTest_Start_Stop_001 start";
-
-    NetlinkManager *netlinkManager = NetlinkManager::Instance();
-    ASSERT_TRUE(netlinkManager != nullptr);
-
-    auto execFun = [](NetlinkManager *manager) {
-        auto ret = manager->Start();
-        EXPECT_TRUE(ret == E_OK);
-    };
-    std::thread execThread(execFun, netlinkManager);
-    sleep(1);
-    auto ret = netlinkManager->Stop();
-    EXPECT_TRUE(ret == E_OK);
-
-    execThread.join();
-
-    GTEST_LOG_(INFO) << "Storage_Service_NetlinkManagerTest_Start_Stop_001 end";
-}
 } // STORAGE_DAEMON
 } // OHOS

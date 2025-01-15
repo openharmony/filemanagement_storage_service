@@ -55,42 +55,6 @@ ohos_unittest("file_utils_test") {
   ]
 }
 
-ohos_unittest("set_flag_utils_test") {
-  branch_protector_ret = "pac_ret"
-  sanitize = {
-    integer_overflow = true
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
-  }
-  module_out_path = "storage_service/storage_daemon"
-
-  defines = [
-    "STORAGE_LOG_TAG = \"StorageDaemon\"",
-    "LOG_DOMAIN = 0xD004301",
-    "private = public",
-  ]
-
-  include_dirs = [
-    "${storage_daemon_path}/include",
-    "${storage_service_common_path}/include",
-  ]
-
-  sources = [ "set_flag_utils_test.cpp" ]
-
-  deps = [ "${storage_daemon_path}:storage_common_utils" ]
-
-  external_deps = [
-    "c_utils:utils",
-    "googletest:gtest_main",
-    "hilog:libhilog",
-    "hisysevent:libhisysevent",
-    "huks:libhukssdk",
-    "ipc:ipc_single",
-    "ipc:libdbinder",
-  ]
-}
-
 ohos_unittest("hi_audit_test") {
   branch_protector_ret = "pac_ret"
   sanitize = {
@@ -132,6 +96,5 @@ group("storage_daemon_utils_test") {
   deps = [
     ":file_utils_test",
     ":hi_audit_test",
-    ":set_flag_utils_test",
   ]
 }

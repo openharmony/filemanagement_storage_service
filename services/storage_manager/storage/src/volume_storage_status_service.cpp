@@ -55,7 +55,7 @@ int32_t VolumeStorageStatusService::GetFreeSizeOfVolume(std::string volumeUuid, 
     struct statvfs diskInfo;
     int ret = statvfs(path.c_str(), &diskInfo);
     if (ret != E_OK) {
-        return E_ERR;
+        return E_STATVFS;
     }
     freeSize = (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_bfree;
     return E_OK;
@@ -70,7 +70,7 @@ int32_t VolumeStorageStatusService::GetTotalSizeOfVolume(std::string volumeUuid,
     struct statvfs diskInfo;
     int ret = statvfs(path.c_str(), &diskInfo);
     if (ret != E_OK) {
-        return E_ERR;
+        return E_STATVFS;
     }
     totalSize =  (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_blocks;
     return E_OK;
