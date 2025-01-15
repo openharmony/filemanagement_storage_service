@@ -64,7 +64,7 @@ public:
         const std::vector<uint8_t> &, uint64_t, uint32_t, std::vector<std::vector<uint8_t>> &));
     MOCK_METHOD3(ActiveUserKey, int32_t(uint32_t, const std::vector<uint8_t> &, const std::vector<uint8_t> &));
     MOCK_METHOD1(InactiveUserKey, int32_t(uint32_t));
-    MOCK_METHOD1(UpdateKeyContext, int32_t(uint32_t));
+    MOCK_METHOD2(UpdateKeyContext, int32_t(uint32_t, bool));
     MOCK_METHOD3(CreateShareFile, std::vector<int32_t> (const std::vector<std::string> &, uint32_t, uint32_t));
     MOCK_METHOD2(DeleteShareFile, int32_t (uint32_t, const std::vector<std::string> &));
     MOCK_METHOD1(LockUserScreen, int32_t(uint32_t));

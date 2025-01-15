@@ -262,7 +262,7 @@ public:
         return E_OK;
     }
 
-    int32_t UpdateKeyContext(uint32_t userId) override
+    int32_t UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey = false) override
     {
         return E_OK;
     }

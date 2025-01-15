@@ -1845,9 +1845,10 @@ int KeyManager::UpdateCeEceSeceKeyContext(uint32_t userId, KeyType type)
     return 0;
 }
 
-int KeyManager::UpdateKeyContext(uint32_t userId)
+int KeyManager::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
     LOGI("UpdateKeyContext enter");
+    // todo needRemoveTmpKey
     int ret = UpdateCeEceSeceKeyContext(userId, EL2_KEY);
     if (ret != 0) {
         LOGE("Basekey update EL2 newest context failed");

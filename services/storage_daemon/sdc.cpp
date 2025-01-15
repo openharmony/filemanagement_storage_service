@@ -243,17 +243,25 @@ static int32_t EnableFscrypt(const std::vector<std::string> &args)
 
 static int32_t UpdateKeyContext(const std::vector<std::string> &args)
 {
-    if (args.size() < ARG_CNT_4) {
-        LOGE("Parameter nums is less than 4, please retry");
+    if (args.size() < ARG_CNT_5) {
+        LOGE("Parameter nums is less than 5, please retry");
         return -EINVAL;
     }
+
     uint32_t userId;
+    bool needRemoveTmpKey;
+
     // 3 means take the fourth argument of args
     if (OHOS::StorageDaemon::StringToUint32(args[INDEX_3], userId) == false) {
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }
-    return OHOS::StorageDaemon::StorageDaemonClient::UpdateKeyContext(userId);
+    if (OHOS::StorageDaemon::StringToBool(args[INDEX_4], needRemoveTmpKey) == false) {
+        LOGE("Parameter input error, please retry");
+        return -EINVAL;
+    }
+    
+    return OHOS::StorageDaemon::StorageDaemonClient::UpdateKeyContext(userId, needRemoveTmpKey);
 }
 
 static int32_t GenerateAppkey(const std::vector<std::string> &args)

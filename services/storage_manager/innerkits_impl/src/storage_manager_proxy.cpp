@@ -429,7 +429,7 @@ int32_t StorageManagerProxy::GetLockScreenStatus(uint32_t userId, bool &lockScre
     return reply.ReadInt32();
 }
 
-int32_t StorageManagerProxy::UpdateKeyContext(uint32_t userId)
+int32_t StorageManagerProxy::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
     LOGI("user ID: %{public}u", userId);
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
@@ -442,6 +442,10 @@ int32_t StorageManagerProxy::UpdateKeyContext(uint32_t userId)
     }
     if (!data.WriteUint32(userId)) {
         LOGE("Write user ID failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+    if (!data.WriteBool(needRemoveTmpKey)) {
+        LOGE("Write needRemoveTmpKey failed");
         return E_WRITE_PARCEL_ERR;
     }
     int32_t err = SendRequest(

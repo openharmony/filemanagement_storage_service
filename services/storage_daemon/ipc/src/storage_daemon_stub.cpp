@@ -665,9 +665,11 @@ int32_t StorageDaemonStub::HandleSetRecoverKey(MessageParcel &data, MessageParce
 int32_t StorageDaemonStub::HandleUpdateKeyContext(MessageParcel &data, MessageParcel &reply)
 {
     uint32_t userId = data.ReadUint32();
+    bool needRemoveTmpKey = data.ReadBool();
+
     int timerId = StorageXCollie::SetTimer("storage:UpdateKeyContext", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
-    int err = UpdateKeyContext(userId);
+    int err = UpdateKeyContext(userId, needRemoveTmpKey);
     StorageXCollie::CancelTimer(timerId);
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;

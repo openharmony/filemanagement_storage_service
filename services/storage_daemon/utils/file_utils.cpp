@@ -278,6 +278,24 @@ bool StringToUint32(const std::string &str, uint32_t &num)
     return true;
 }
 
+bool StringToBool(const std::string &str, bool &result)
+{
+    if (str.empty()) {
+        return false;
+    }
+
+    if (str == "true") {
+        result = true;
+    } else if (str == "false") {
+        result = false;
+    } else {
+        LOGE("Invalid boolean string: %{public}s", str.c_str());
+        return false;
+    }
+
+    return true;
+}
+
 void GetSubDirs(const std::string &path, std::vector<std::string> &dirList)
 {
     dirList.clear();

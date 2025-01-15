@@ -1059,7 +1059,8 @@ int32_t StorageManagerStub::HandleUpdateKeyContext(MessageParcel &data, MessageP
         return E_PERMISSION_DENIED;
     }
     uint32_t userId = data.ReadUint32();
-    int32_t err = UpdateKeyContext(userId);
+    bool needRemoveTmpKey = data.ReadBool();
+    int32_t err = UpdateKeyContext(userId, needRemoveTmpKey);
     if (!reply.WriteInt32(err)) {
         LOGE("Write reply error code failed");
         return E_WRITE_REPLY_ERR;

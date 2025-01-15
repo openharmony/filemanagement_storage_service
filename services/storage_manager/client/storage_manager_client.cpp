@@ -137,7 +137,7 @@ int32_t StorageManagerClient::InactiveUserKey(uint32_t userId)
     return client->InactiveUserKey(userId);
 }
 
-int32_t StorageManagerClient::UpdateKeyContext(uint32_t userId)
+int32_t StorageManagerClient::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
@@ -145,7 +145,7 @@ int32_t StorageManagerClient::UpdateKeyContext(uint32_t userId)
         return E_SA_IS_NULLPTR;
     }
 
-    return client->UpdateKeyContext(userId);
+    return client->UpdateKeyContext(userId, needRemoveTmpKey);
 }
 
 int32_t StorageManagerClient::LockUserScreen(uint32_t userId)

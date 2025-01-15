@@ -420,7 +420,7 @@ int32_t StorageDaemonCommunication::GetLockScreenStatus(uint32_t userId, bool &l
     return storageDaemon_->GetLockScreenStatus(userId, lockScreenStatus);
 }
 
-int32_t StorageDaemonCommunication::UpdateKeyContext(uint32_t userId)
+int32_t StorageDaemonCommunication::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
     LOGI("enter");
     int32_t err = Connect();
@@ -432,7 +432,7 @@ int32_t StorageDaemonCommunication::UpdateKeyContext(uint32_t userId)
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->UpdateKeyContext(userId);
+    return storageDaemon_->UpdateKeyContext(userId, needRemoveTmpKey);
 }
 
 int32_t StorageDaemonCommunication::ResetSdProxy()

@@ -1075,10 +1075,10 @@ int32_t StorageDaemon::SetRecoverKey(const std::vector<uint8_t> &key)
 #endif
 }
 
-int32_t StorageDaemon::UpdateKeyContext(uint32_t userId)
+int32_t StorageDaemon::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
 #ifdef USER_CRYPTO_MANAGER
-    int32_t ret = KeyManager::GetInstance()->UpdateKeyContext(userId);
+    int32_t ret = KeyManager::GetInstance()->UpdateKeyContext(userId, needRemoveTmpKey);
     if (ret != E_OK) {
         LOGE("UpdateKeyContext failed, please check");
         RadarParameter parameterRes = {
