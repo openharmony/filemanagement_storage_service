@@ -228,11 +228,10 @@ void StorageRadar::ReportBundleMgrResult(const std::string &funcName, int32_t re
     RadarParameter param = {
         .orgPkg = DEFAULT_ORGPKGNAME,
         .userId = userId,
-        .elx = elx,
         .funcName = "CreateBundleDataDir",
         .bizScene = BizScene::SPACE_STATISTICS,
         .bizStage = BizStage::BIZ_STAGE_GET_BUNDLE_STATS,
-        .keyElxLevel = "NA",
+        .keyElxLevel = std::to_string(elx),
         .errorCode = ret,
         .extraData = extraData,
         .toCallPkg = "bundle_mgr"
