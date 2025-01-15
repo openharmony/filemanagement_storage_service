@@ -33,6 +33,7 @@
 #include "ipc/istorage_daemon.h"
 #include "parameter.h"
 #include "quota/quota_manager.h"
+#include "observer/appstate_observer.h"
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -1208,6 +1209,57 @@ int32_t MountManager::FindAndKillProcess(int32_t userId, std::list<std::string> 
     return E_OK;
 }
 
+int32_t MountManager::CheckProcessUserId(int32_t userId, std::vector<ProcessInfo> &proInfos,
+                                         std::vector<ProcessInfo> &processKillInfos)
+{
+    for (auto proInfo : proInfos) {
+        std::string filename = "/proc/" + std::to_string(proInfo.pid) + "/status";
+        std::ifstream inputStream(filename.c_str(), std::ios::in);
+        if (!inputStream.is_open()) {
+            LOGE("open %{public}s failed, err %{public}d", filename.c_str(), errno);
+            continue;
+        }
+        std::string line;
+        std::string uidKey = "Uid:";
+        while (std::getline(inputStream, line)) {
+            if (line.find(uidKey) == 0) {
+                break;
+            }
+        }
+        std::stringstream ss(line);
+        std::string key;
+        int32_t uid;
+        ss >> key >> uid;
+        int32_t procUserId = uid / USER_ID_BASE;
+        if (procUserId == userId) {
+            processKillInfos.push_back(proInfo);
+        }
+        inputStream.close();
+    }
+    return E_OK;
+}
+
+int32_t MountManager::FindAndKillProcessWithoutRadar(int32_t userId, std::list<std::string> &killList)
+{
+    std::vector<ProcessInfo> processInfos;
+    std::vector<ProcessInfo> processKillInfos;
+    std::list<std::string> excludeProcess = {"(storage_daemon)"};
+    FindProcess(killList, processInfos, excludeProcess);
+    if (processInfos.empty()) {
+        LOGE("no process find without radar");
+        return E_UMOUNT_NO_PROCESS_FIND;
+    }
+    CheckProcessUserId(userId, processInfos, processKillInfos);
+    std::vector<ProcessInfo> killFailList;
+    KillProcess(processKillInfos, killFailList);
+    if (!killFailList.empty()) {
+        std::string info = ProcessToString(killFailList);
+        LOGE("kill process failed without radar, process is %{public}s.", info.c_str());
+        return E_UMOUNT_PROCESS_KILL;
+    }
+    return E_OK;
+}
+
 int32_t MountManager::PrepareHmdfsDirs(int32_t userId)
 {
     for (const DirInfo &dir : hmdfsDirVec_) {
@@ -1641,6 +1693,19 @@ int32_t MountManager::UmountMntUserTmpfs(int32_t userId)
     return E_OK;
 }
 
+#ifdef STORAGE_SERVICE_MEDIA_FUSE
+void MountManager::SetMediaObserverState(bool active)
+{
+    LOGI("set meidalibrary observer state start, active is %{public}d", active);
+    if (active == true) {
+        vector<string> bandleNameList = { MEDIALIBRARY_NAME };
+        AppStateObserverManager::GetInstance().UnSubscribeAppState();
+        AppStateObserverManager::GetInstance().SubscribeAppState(bandleNameList);
+    }
+    LOGI("set meidalibrary observer state end");
+}
+#endif
+
 int32_t MountManager::MountMediaFuse(int32_t userId, int32_t &devFd)
 {
 #ifdef STORAGE_SERVICE_MEDIA_FUSE
@@ -1671,6 +1736,7 @@ int32_t MountManager::MountMediaFuse(int32_t userId, int32_t &devFd)
         StorageRadar::ReportUserManager("MountMediaFuse", userId, E_MOUNT_MEDIA_FUSE, extraData);
         return E_MOUNT_MEDIA_FUSE;
     }
+    SetMediaObserverState(true);
     LOGI("mount media fuse success, path is %{public}s", path.c_str());
 #endif
     return E_OK;
