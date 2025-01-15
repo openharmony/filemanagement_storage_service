@@ -211,7 +211,7 @@ HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemote
         .WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, ActiveUserKey(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, InactiveUserKey(testing::_)).WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(mock, UpdateKeyContext(testing::, _testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, UpdateKeyContext(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, GetFreeSizeOfVolume(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, GetTotalSizeOfVolume(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, GetSystemSize(testing::_)).WillOnce(testing::Return(E_OK));
