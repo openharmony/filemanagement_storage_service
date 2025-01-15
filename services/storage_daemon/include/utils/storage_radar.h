@@ -132,7 +132,7 @@ public:
     static void ReportTEEClientResult(const std::string &funcName, int32_t ret, unsigned int userId,
         const std::string &extraData);
     static void ReportBundleMgrResult(const std::string &funcName, int32_t ret, unsigned int userId,
-        uint8_t elx, const std::string &extraData);
+        const std::string &extraData);
 
 private:
     StorageRadar() = default;

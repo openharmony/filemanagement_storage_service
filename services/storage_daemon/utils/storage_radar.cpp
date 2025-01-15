@@ -223,7 +223,7 @@ void StorageRadar::ReportTEEClientResult(const std::string &funcName, int32_t re
 }
 
 void StorageRadar::ReportBundleMgrResult(const std::string &funcName, int32_t ret, unsigned int userId,
-                                         uint8_t elx, const std::string &extraData)
+    const std::string &extraData)
 {
     RadarParameter param = {
         .orgPkg = DEFAULT_ORGPKGNAME,
@@ -231,7 +231,7 @@ void StorageRadar::ReportBundleMgrResult(const std::string &funcName, int32_t re
         .funcName = funcName,
         .bizScene = BizScene::SPACE_STATISTICS,
         .bizStage = BizStage::BIZ_STAGE_GET_BUNDLE_STATS,
-        .keyElxLevel = std::to_string(elx),
+        .keyElxLevel = "NA",
         .errorCode = ret,
         .extraData = extraData,
         .toCallPkg = "bundle_mgr"
