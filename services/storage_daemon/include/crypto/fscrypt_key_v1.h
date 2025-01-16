@@ -36,12 +36,12 @@ public:
     bool InactiveKey(uint32_t flag = 0, const std::string &mnt = MNT_DATA);
     bool LockUserScreen(uint32_t flag = 0, uint32_t sdpClass = 0, const std::string &mnt = MNT_DATA);
     bool UnlockUserScreen(uint32_t flag = 0, uint32_t sdpClass = 0, const std::string &mnt = MNT_DATA);
-    bool GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId);
-    bool DeleteAppkey(const std::string keyId);
+    int32_t GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId);
+    int32_t DeleteAppkey(const std::string keyId);
     void DropCachesIfNeed();
-    bool AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status = 0);
-    bool DeleteClassEPinCode(uint32_t userId = 0);
-    bool ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId = 0);
+    int32_t AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status = 0);
+    int32_t DeleteClassEPinCode(uint32_t userId = 0);
+    int32_t ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId = 0);
     bool DecryptClassE(const UserAuth &auth, bool &isSupport, bool &eBufferStatue, uint32_t user = 0,
                        bool needSyncCandidate = true);
     bool EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user = 0, uint32_t status = 0);
@@ -52,9 +52,9 @@ private:
     int32_t InstallKeyToKeyring();
     int32_t InstallEceSeceKeyToKeyring(uint32_t sdpClass);
     int32_t UninstallKeyToKeyring();
-    bool InstallKeyForAppKeyToKeyring(KeyBlob &appKey);
-    bool UninstallKeyForAppKeyToKeyring(const std::string keyId);
-    bool GenerateAppKeyDesc(KeyBlob appKey);
+    int32_t InstallKeyForAppKeyToKeyring(KeyBlob &appKey);
+    int32_t UninstallKeyForAppKeyToKeyring(const std::string keyId);
+    int32_t GenerateAppKeyDesc(KeyBlob appKey);
     bool DoDecryptClassE(const UserAuth &auth, KeyBlob &eSecretFBE, KeyBlob &decryptedKey,
                          bool needSyncCandidate = true);
     FscryptKeyV1Ext fscryptV1Ext;

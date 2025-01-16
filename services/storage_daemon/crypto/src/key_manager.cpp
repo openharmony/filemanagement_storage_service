@@ -241,7 +241,8 @@ int KeyManager::GenerateAndInstallEl5Key(uint32_t userId, const std::string &dir
     }
     bool isNeedEncryptClassE = true;
     saveESecretStatus[userId] = true;
-    if (elKey->AddClassE(isNeedEncryptClassE, saveESecretStatus[userId], FIRST_CREATE_KEY) == false) {
+    auto ret = elKey->AddClassE(isNeedEncryptClassE, saveESecretStatus[userId], FIRST_CREATE_KEY);
+    if (ret != E_OK) {
         elKey->ClearKey();
         LOGE("user %{public}u el5 create error", userId);
         return E_EL5_ADD_CLASS_ERROR;
@@ -942,7 +943,8 @@ int KeyManager::UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSe
         return E_PARAMS_NULLPTR_ERR;
     }
     if (tokenSecret.newSecret.empty()) {
-        if (!el5Key->DeleteClassEPinCode(user)) {
+        auto ret = el5Key->DeleteClassEPinCode(user);
+        if (ret != E_OK) {
             LOGE("user %{public}u DeleteClassE fail", user);
             return E_EL5_DELETE_CLASS_ERROR;
         }
@@ -951,7 +953,8 @@ int KeyManager::UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSe
     }
     if (!tokenSecret.newSecret.empty() && !tokenSecret.oldSecret.empty()) {
         saveESecretStatus[user] = true;
-        if (!el5Key->ChangePinCodeClassE(saveESecretStatus[user], user)) {
+        auto ret = el5Key->ChangePinCodeClassE(saveESecretStatus[user], user);
+        if (ret != E_OK) {
             LOGE("user %{public}u ChangePinCodeClassE fail", user);
             return E_EL5_UPDATE_CLASS_ERROR;
         }
@@ -1482,7 +1485,8 @@ int KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &ke
             LOGE("el5Key is nullptr");
             return E_PARAMS_NULLPTR_ERR;
         }
-        if (el5Key->GenerateAppkey(userId, hashId, keyId) == false) {
+        auto ret = el5Key->GenerateAppkey(userId, hashId, keyId);
+        if (ret != E_OK) {
             LOGE("Failed to generate Appkey2");
             return E_EL5_GENERATE_APP_KEY_ERR;
         }
@@ -1493,7 +1497,8 @@ int KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &ke
         LOGE("el5Key is nullptr");
         return E_PARAMS_NULLPTR_ERR;
     }
-    if (el5Key->GenerateAppkey(userId, hashId, keyId) == false) {
+    auto ret = el5Key->GenerateAppkey(userId, hashId, keyId);
+    if (ret != E_OK) {
         LOGE("Failed to generate Appkey2");
         return E_EL5_GENERATE_APP_KEY_ERR;
     }

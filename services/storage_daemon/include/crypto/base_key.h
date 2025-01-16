@@ -57,14 +57,14 @@ public:
     virtual bool InactiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
     virtual bool LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt = MNT_DATA) = 0;
     virtual bool UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt = MNT_DATA) = 0;
-    virtual bool GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId) = 0;
-    virtual bool DeleteAppkey(const std::string keyId) = 0;
-    virtual bool AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status) = 0;
-    virtual bool DeleteClassEPinCode(uint32_t userId) = 0;
+    virtual int32_t GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId) = 0;
+    virtual int32_t DeleteAppkey(const std::string keyId) = 0;
+    virtual int32_t AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status) = 0;
+    virtual int32_t DeleteClassEPinCode(uint32_t userId) = 0;
     virtual bool DecryptClassE(const UserAuth &auth, bool &isSupport, bool &eBufferStatue, uint32_t user,
                                bool needSyncCandidate) = 0;
     virtual bool EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status) = 0;
-    virtual bool ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId) = 0;
+    virtual int32_t ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId) = 0;
     virtual bool LockUece(bool &isFbeSupport) = 0;
     bool DoRestoreKey(const UserAuth &auth, const std::string &keypath);
     bool EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey, KeyBlob &encryptedKey);

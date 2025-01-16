@@ -77,35 +77,38 @@ bool FscryptKeyV1::ActiveKey(uint32_t flag, const std::string &mnt)
     return true;
 }
 
-bool FscryptKeyV1::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyDesc)
+int32_t FscryptKeyV1::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyDesc)
 {
     KeyBlob appKey(FBEX_KEYID_SIZE);
-    if (!fscryptV1Ext.GenerateAppkey(userId, hashId, appKey.data, appKey.size)) {
+    auto ret = fscryptV1Ext.GenerateAppkey(userId, hashId, appKey.data, appKey.size);
+    if (ret != E_OK) {
         LOGE("fscryptV1Ext GenerateAppkey failed");
-        return false;
+        return ret;
     }
     // The ioctl does not support EL5, return empty character string
     if (appKey.data.get() == nullptr) {
         LOGE("appKey.data.get() is nullptr");
         keyDesc = "";
-        return true;
+        return E_OK;
     }
-    if (!GenerateAppKeyDesc(appKey)) {
+    ret = GenerateAppKeyDesc(appKey);
+    if (ret != E_OK) {
         LOGE("GenerateAppKeyDesc failed");
-        return false;
+        return ret;
     }
-    if (!InstallKeyForAppKeyToKeyring(appKey)) {
+    ret = InstallKeyForAppKeyToKeyring(appKey);
+    if (ret != E_OK) {
         LOGE("InstallKeyForAppKeyToKeyring failed");
-        return false;
+        return ret;
     }
     appKey.Clear();
     keyDesc = keyInfo_.keyDesc.ToString();
     keyInfo_.keyDesc.Clear();
     LOGI("success");
-    return true;
+    return E_OK;
 }
 
-bool FscryptKeyV1::InstallKeyForAppKeyToKeyring(KeyBlob &appKey)
+int32_t FscryptKeyV1::InstallKeyForAppKeyToKeyring(KeyBlob &appKey)
 {
     LOGI("InstallKeyForAppKeyToKeyring enter");
     EncryptAsdpKey fskey;
@@ -114,7 +117,7 @@ bool FscryptKeyV1::InstallKeyForAppKeyToKeyring(KeyBlob &appKey)
     auto err = memcpy_s(fskey.raw, FSCRYPT_MAX_KEY_SIZE, appKey.data.get(), appKey.size);
     if (err != EOK) {
         LOGE("memcpy failed ret %{public}d", err);
-        return false;
+        return err;
     }
     key_serial_t krid = KeyCtrlSearch(KEY_SPEC_SESSION_KEYRING, "keyring", "fscrypt", 0);
     if (krid < 0) {
@@ -125,7 +128,7 @@ bool FscryptKeyV1::InstallKeyForAppKeyToKeyring(KeyBlob &appKey)
             std::string extraData = "keyring cmd=KEY_SPEC_SESSION_KEYRING,errno=" + std::to_string(errno) +
                 ",appKey=" + appKey.ToString();
             StorageRadar::ReportKeyRingResult("InstallKeyForAppKeyToKeyring::KeyCtrlAddKey", krid, extraData);
-            return false;
+            return -1;
         }
     }
     for (auto prefix : CRYPTO_NAME_PREFIXES) {
@@ -137,33 +140,34 @@ bool FscryptKeyV1::InstallKeyForAppKeyToKeyring(KeyBlob &appKey)
         }
     }
     LOGI("success");
-    return true;
+    return E_OK;
 }
 
-bool FscryptKeyV1::DeleteAppkey(const std::string KeyId)
+int32_t FscryptKeyV1::DeleteAppkey(const std::string KeyId)
 {
     LOGI("DeleteAppkey enter");
-    if (!UninstallKeyForAppKeyToKeyring(KeyId)) {
+    auto ret = UninstallKeyForAppKeyToKeyring(KeyId);
+    if (ret != E_OK) {
         LOGE("FscryptKeyV1 Delete Appkey2 failed");
-        return false;
+        return ret;
     }
     LOGI("success");
-    return true;
+    return E_OK;
 }
 
-bool FscryptKeyV1::UninstallKeyForAppKeyToKeyring(const std::string keyId)
+int32_t FscryptKeyV1::UninstallKeyForAppKeyToKeyring(const std::string keyId)
 {
     LOGI("UninstallKeyForAppKeyToKeyring enter");
     if (keyId.length() == 0) {
         LOGE("keyId is null, does not need to be installed?");
-        return false;
+        return E_KEY_TYPE_INVALID;
     }
     key_serial_t krid = KeyCtrlSearch(KEY_SPEC_SESSION_KEYRING, "keyring", "fscrypt", 0);
     if (krid == -1) {
         LOGE("Error searching session keyring for fscrypt-provisioning key for fscrypt");
         std::string extraData = "cmd=KEY_SPEC_SESSION_KEYRING,errno=" + std::to_string(errno) + ",keyId=" + keyId;
         StorageRadar::ReportKeyRingResult("UninstallKeyForAppKeyToKeyring::KeyCtrlSearch", krid, extraData);
-        return false;
+        return -1;
     }
     for (auto prefix : CRYPTO_NAME_PREFIXES) {
         std::string keyref = prefix + ":" + keyId;
@@ -173,7 +177,7 @@ bool FscryptKeyV1::UninstallKeyForAppKeyToKeyring(const std::string keyId)
         }
     }
     LOGI("success");
-    return true;
+    return E_Ok;
 }
 
 bool FscryptKeyV1::UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt)
@@ -204,37 +208,40 @@ bool FscryptKeyV1::UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std:
     return true;
 }
 
-bool FscryptKeyV1::AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status)
+int32_t FscryptKeyV1::AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status)
 {
     LOGI("AddClassE enter");
-    if (!fscryptV1Ext.AddClassE(isNeedEncryptClassE, isSupport, status)) {
+    auto ret = fscryptV1Ext.AddClassE(isNeedEncryptClassE, isSupport, status);
+    if (ret != E_OK) {
         LOGE("fscryptV1Ext AddClassE failed");
-        return false;
+        return ret;
     }
     LOGW("AddClassE finish");
-    return true;
+    return E_OK;
 }
 
-bool FscryptKeyV1::DeleteClassEPinCode(uint32_t userId)
+int32_t FscryptKeyV1::DeleteClassEPinCode(uint32_t userId)
 {
     LOGI("DeleteClassE enter");
-    if (!fscryptV1Ext.DeleteClassEPinCode(userId)) {
+    auto ret = fscryptV1Ext.DeleteClassEPinCode(userId);
+    if (ret != E_OK) {
         LOGE("fscryptV1Ext DeleteClassE failed");
-        return false;
+        return ret;
     }
     LOGW("DeleteClassE finish");
-    return true;
+    return E_OK;
 }
 
-bool FscryptKeyV1::ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId)
+int32_t FscryptKeyV1::ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId)
 {
     LOGI("ChangePinCodeClassE enter, userId: %{public}d", userId);
-    if (!fscryptV1Ext.ChangePinCodeClassE(userId, isFbeSupport)) {
+    auto ret = fscryptV1Ext.ChangePinCodeClassE(userId, isFbeSupport);
+    if (ret = E_OK) {
         LOGE("fscryptV1Ext ChangePinCodeClassE failed");
-        return false;
+        return ret;
     }
     LOGW("ChangePinCodeClassE finish");
-    return true;
+    return E_OK;
 }
 
 bool FscryptKeyV1::DoDecryptClassE(const UserAuth &auth, KeyBlob &eSecretFBE, KeyBlob &decryptedKey,
@@ -582,11 +589,11 @@ bool FscryptKeyV1::GenerateKeyDesc()
     return true;
 }
 
-bool FscryptKeyV1::GenerateAppKeyDesc(KeyBlob appKey)
+int32_t FscryptKeyV1::GenerateAppKeyDesc(KeyBlob appKey)
 {
     if (appKey.IsEmpty()) {
         LOGE("key is empty");
-        return false;
+        return E_KEY_EMPTY_ERROR;
     }
     SHA512_CTX c;
     SHA512_Init(&c);
@@ -604,10 +611,10 @@ bool FscryptKeyV1::GenerateAppKeyDesc(KeyBlob appKey)
     auto err = memcpy_s(keyInfo_.keyDesc.data.get(), keyInfo_.keyDesc.size, keyRef2, CRYPTO_KEY_DESC_SIZE);
     if (err != EOK) {
         LOGE("memcpy failed ret %{public}d", err);
-        return false;
+        return err;
     }
     LOGE("GenerateAppKeyDesc keyDesc : %{private}s", keyInfo_.keyDesc.ToString().c_str());
-    return true;
+    return E_OK;
 }
 } // namespace StorageDaemon
 } // namespace OHOS
