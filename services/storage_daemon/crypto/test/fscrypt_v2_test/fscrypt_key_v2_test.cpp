@@ -416,7 +416,7 @@ HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_SplitKeyBlob, TestSize.Level1)
     g_testKeyV2.SplitKeyBlob(keyIn, encAad, nonce, start);
     std::vector<uint8_t> encAadVct(encAad.data.get(), encAad.data.get() + encAad.size);
     std::vector<uint8_t> encAadVctEpt{1, 2, 3, 4, 5, 6};
-    EXPECT_EQ(encAadVct, encAadVct);
+    EXPECT_EQ(encAadVct, encAadVctEpt);
 
     std::vector<uint8_t> nonceVct(nonce.data.get(), nonce.data.get() + nonce.size);
     std::vector<uint8_t> nonceVctEpt{7, 8, 9, 10};
