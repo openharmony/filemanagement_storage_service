@@ -16,6 +16,7 @@
 #include "openssl_crypto_mock.h"
 
 #include "openssl_crypto.h"
+#include "storage_service_errno.h"
 
 using namespace std;
 using namespace OHOS::StorageDaemon;
