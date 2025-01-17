@@ -758,7 +758,7 @@ bool BaseKey::DecryptReal(const UserAuth &auth, const uint32_t keyType, KeyConte
     if (keyType == TYPE_EL3 || keyType == TYPE_EL4) {
         DoTempStore(keyCtx, keyContext_);
     }
-    auto ret = HuksMaster::GetInstance().DecryptKeyEx(keyCtx, auth, keyInfo_.key);
+    ret = HuksMaster::GetInstance().DecryptKeyEx(keyCtx, auth, keyInfo_.key);
     if (ret != E_OK) { // rndEnc -> rnd
         LOGE("Decrypt by hks failed.");
         return false;
