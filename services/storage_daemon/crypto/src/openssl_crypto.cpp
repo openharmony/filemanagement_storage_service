@@ -26,7 +26,7 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-bool OpensslCrypto::AESDecrypt(const KeyBlob &preKey, KeyContext &keyContext_, KeyBlob &plainText)
+int32_t OpensslCrypto::AESDecrypt(const KeyBlob &preKey, KeyContext &keyContext_, KeyBlob &plainText)
 {
     LOGI("enter");
     KeyBlob shield = HashWithPrefix(preKey, keyContext_.secDiscard, AES_256_HASH_RANDOM_SIZE);
@@ -78,7 +78,7 @@ bool OpensslCrypto::AESDecrypt(const KeyBlob &preKey, KeyContext &keyContext_, K
     return E_OK;
 }
 
-bool OpensslCrypto::AESEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, KeyContext &keyContext_)
+int32_t OpensslCrypto::AESEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, KeyContext &keyContext_)
 {
     LOGI("enter");
     KeyBlob shield = HashWithPrefix(preKey, keyContext_.secDiscard, AES_256_HASH_RANDOM_SIZE);

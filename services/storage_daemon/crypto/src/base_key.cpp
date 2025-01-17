@@ -31,6 +31,7 @@
 #include "libfscrypt/key_control.h"
 #include "openssl_crypto.h"
 #include "storage_service_constant.h"
+#include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "string_ex.h"
 #include "utils/file_utils.h"
