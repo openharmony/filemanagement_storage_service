@@ -132,9 +132,9 @@ int RecoveryManager::SetRecoverKey(const std::vector<uint8_t> &key)
         auto errNo = GenerateKeyDesc(ivBlob, keyDesc);
         if (errNo != E_OK) {
             LOGE("Generate key desc failed !");
-            return E_RECOVERY_KEY_GEN_KEY_DESC_ERR;
+            return errNo;
         }
-        auto ret = InstallKeyDescToKeyring(ELX_TYPE_ARR[i], key2Blob, keyDesc);
+        ret = InstallKeyDescToKeyring(ELX_TYPE_ARR[i], key2Blob, keyDesc);
         if (ret != E_OK) {
             ivBlob.Clear();
             keyDesc.Clear();

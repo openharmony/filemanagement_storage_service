@@ -242,13 +242,14 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
     }
     uint32_t keyType = GetTypeFromDir();
     if (keyType == TYPE_EL1 || keyType == TYPE_GLOBAL_EL1) {
-        return EncryptDe(auth, pathTemp);
+        return EncryptDe(auth, pathTemp) == E_OK;
     }
     if ((auth.token.IsEmpty() && auth.secret.IsEmpty()) || // Create user/Delete pincode(EL2-4)
         !auth.token.IsEmpty()) {  // add/change pin code (EL2-4)
         LOGE("Encrypt huks openssl.");
         KeyContext keyCtx = {};
-        if (!InitKeyContext(auth, pathTemp, keyCtx)) {
+        auto ret = InitKeyContext(auth, pathTemp, keyCtx);
+        if (ret != E_OK) {
             LOGE("init key context failed !");
             return false;
         }
@@ -285,25 +286,26 @@ bool BaseKey::CheckAndUpdateVersion()
     return true;
 }
 
-bool BaseKey::InitKeyContext(const UserAuth &auth, const std::string &keyPath, KeyContext &keyCtx)
+int32_t BaseKey::InitKeyContext(const UserAuth &auth, const std::string &keyPath, KeyContext &keyCtx)
 {
     LOGI("enter");
-    if (!LoadAndSaveShield(auth, keyPath + PATH_SHIELD, true, keyCtx)) {
+    auto ret = LoadAndSaveShield(auth, keyPath + PATH_SHIELD, true, keyCtx);
+    if (ret != E_OK) {
         LOGE("Load or save shield failed !");
-        return false;
+        return ret;
     }
 
     if (!GenerateAndSaveKeyBlob(keyCtx.secDiscard, keyPath + PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
         LOGE("Generate sec_discard failed");
-        return false;
+        return E_GENERATE_DISCARD_ERROR;
     }
 
     if (!GenerateKeyBlob(keyCtx.nonce, GCM_NONCE_BYTES) ||
         !GenerateKeyBlob(keyCtx.aad, GCM_MAC_BYTES)) {
         LOGE("Generate nonce and aad failed !");
-        return false;
+        return E_KEY_BLOB_ERROR;
     }
-    return true;
+    return E_OK;
 }
 
 bool BaseKey::SaveAndCleanKeyBuff(const std::string &keyPath, KeyContext &keyCtx)
@@ -329,31 +331,33 @@ bool BaseKey::SaveAndCleanKeyBuff(const std::string &keyPath, KeyContext &keyCtx
     return true;
 }
 
-bool BaseKey::LoadAndSaveShield(const UserAuth &auth, const std::string &pathShield,
+int32_t BaseKey::LoadAndSaveShield(const UserAuth &auth, const std::string &pathShield,
                                 bool needGenerateShield, KeyContext &keyCtx)
 {
 #ifdef USER_CRYPTO_MIGRATE_KEY
     if (needGenerateShield) {
-        if (!HuksMaster::GetInstance().GenerateKey(auth, keyCtx.shield)) {
+        auto ret = HuksMaster::GetInstance().GenerateKey(auth, keyCtx.shield);
+        if (ret != HKS_SUCCESS) {
             LOGE("GenerateKey of shield failed");
-            return false;
+            return ret;
         }
     } else {
         if (!LoadKeyBlob(keyCtx.shield, dir_ + PATH_LATEST + PATH_SHIELD)) {  // needcheck is update
             keyCtx.rndEnc.Clear();
-            return false;
+            return E_LOAD_KEY_BLOB_ERROR;
         }
     }
 #else
-    if (!HuksMaster::GetInstance().GenerateKey(auth, keyCtx.shield)) {
+    auto ret = HuksMaster::GetInstance().GenerateKey(auth, keyCtx.shield);
+    if (ret != HKS_SUCCESS) {
         LOGE("GenerateKey of shield failed");
-        return false;
+        return ret;
     }
 #endif
     if (!SaveKeyBlob(keyCtx.shield,  pathShield)) {
-        return false;
+        return E_SAVE_KEY_BLOB_ERROR;
     }
-    return true;
+    return E_OK;
 }
 
 // update the latest and do cleanups.
@@ -421,33 +425,34 @@ void BaseKey::DoLatestBackUp() const
     }
 }
 
-bool BaseKey::EncryptDe(const UserAuth &auth, const std::string &path)
+int32_t BaseKey::EncryptDe(const UserAuth &auth, const std::string &path)
 {
     LOGI("enter");
     KeyContext ctxDe;
-    if (!InitKeyContext(auth, path, ctxDe)) {
+    auto ret = InitKeyContext(auth, path, ctxDe);
+    if (ret != E_OK) {
         LOGE("init key context failed !");
-        return false;
+        return ret;
     }
     keyEncryptType_ = KeyEncryptType::KEY_CRYPT_HUKS;
-    auto ret = HuksMaster::GetInstance().EncryptKey(ctxDe, auth, keyInfo_, true);
+    ret = HuksMaster::GetInstance().EncryptKey(ctxDe, auth, keyInfo_, true);
     if (ret != E_OK) {
         LOGE("Encrypt by hks failed.");
         ClearKeyContext(ctxDe);
-        return false;
+        return ret;
     }
     if (!SaveKeyBlob(ctxDe.rndEnc, path + PATH_ENCRYPTED)) {
         LOGE("SaveKeyBlob rndEnc failed.");
         ClearKeyContext(ctxDe);
-        return false;
+        return E_SAVE_KEY_BLOB_ERROR;
     }
     const std::string NEED_UPDATE_PATH = path + SUFFIX_NEED_UPDATE;
     if (!SaveStringToFile(NEED_UPDATE_PATH, KeyEncryptTypeToString(keyEncryptType_))) {
         LOGE("Save key type file failed");
-        return false;
+        return E_SAVE_KEY_TYPE_ERROR;
     }
     LOGI("finish");
-    return true;
+    return E_OK;
 }
 
 bool BaseKey::EncryptEceSece(const UserAuth &auth, const uint32_t keyType, KeyContext &keyCtx)
@@ -937,7 +942,7 @@ int32_t BaseKey::EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath
     }
 
     LOGW("key path is exist : %{public}d", FileExists(keyPath));
-    if (!HuksMaster::GetInstance().GenerateKey(auth, keyCtx.shield) ||
+    if (HuksMaster::GetInstance().GenerateKey(auth, keyCtx.shield) != HKS_SUCCESS ||
         !SaveKeyBlob(keyCtx.shield, keyPath + PATH_SHIELD)) {
         LOGE("GenerateKey and save shield failed!");
         return E_SHIELD_OPERATION_ERROR;
