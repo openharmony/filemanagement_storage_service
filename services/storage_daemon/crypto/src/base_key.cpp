@@ -33,7 +33,6 @@
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "storage_service_errno.h"
 #include "string_ex.h"
 #include "utils/file_utils.h"
 #include "utils/string_utils.h"
@@ -478,7 +477,7 @@ bool BaseKey::EncryptEceSece(const UserAuth &auth, const uint32_t keyType, KeyCo
 
     KeyBlob rndEnc(keyCtx.rndEnc);
     LOGI("Encrypt by openssl start"); // rndEnc 80 -> rndEncEnc 108
-    auto ret = OpensslCrypto::AESEncrypt(mUserAuth.secret, rndEnc, keyCtx);
+    ret = OpensslCrypto::AESEncrypt(mUserAuth.secret, rndEnc, keyCtx);
     if (ret != E_OK) {
         LOGE("Encrypt by openssl failed.");
         return false;
