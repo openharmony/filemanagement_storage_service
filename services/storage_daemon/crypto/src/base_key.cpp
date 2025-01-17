@@ -32,6 +32,7 @@
 #include "openssl_crypto.h"
 #include "storage_service_constant.h"
 #include "storage_service_log.h"
+#include "storage_service_errno.h"
 #include "string_ex.h"
 #include "utils/file_utils.h"
 #include "utils/string_utils.h"
@@ -767,7 +768,7 @@ bool BaseKey::Decrypt(const UserAuth &auth)
             break;
         case KeyEncryptType::KEY_CRYPT_HUKS:
             LOGI("Huks decrypt key start");
-            ret = HuksMaster::GetInstance().DecryptKey(keyContext_, auth, keyInfo_, true);
+            ret = (HuksMaster::GetInstance().DecryptKey(keyContext_, auth, keyInfo_, true) == E_OK);
             break;
         case KeyEncryptType::KEY_CRYPT_HUKS_OPENSSL:
             LOGI("Huks openssl decrypt key, skip");

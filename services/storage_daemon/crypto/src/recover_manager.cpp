@@ -246,12 +246,12 @@ void RecoveryManager::CloseSession(TEEC_Context &context, TEEC_Session &session)
 }
 #endif
 
-bool RecoveryManager::GenerateKeyDesc(const KeyBlob &ivBlob, KeyBlob &keyDesc)
+int32_t RecoveryManager::GenerateKeyDesc(const KeyBlob &ivBlob, KeyBlob &keyDesc)
 {
     LOGI("enter");
     if (ivBlob.IsEmpty()) {
         LOGE("key is empty");
-        return false;
+        return E_KEY_BLOB_ERROR;
     }
     SHA512_CTX c;
 
@@ -270,14 +270,15 @@ bool RecoveryManager::GenerateKeyDesc(const KeyBlob &ivBlob, KeyBlob &keyDesc)
     auto err = memcpy_s(keyDesc.data.get(), keyDesc.size, keyRef2, CRYPTO_KEY_DESC_SIZE);
     if (err != EOK) {
         LOGE("memcpy failed ret %{public}d", err);
-        return false;
+        return err;
     }
     LOGI("succeed");
-    return true;
+    return E_OK;
 }
 
-bool RecoveryManager::InstallKeyDescToKeyring(size_t keyType, const KeyBlob &key2Blob, const KeyBlob &keyDesc)
+int32_t RecoveryManager::InstallKeyDescToKeyring(size_t keyType, const KeyBlob &key2Blob, const KeyBlob &keyDesc)
 {
+    int ret = E_OK;
     if (keyType == TYPE_EL3 || keyType == TYPE_EL4) {
         uint32_t sdpClass;
         if (keyType == TYPE_EL3) {
@@ -285,21 +286,23 @@ bool RecoveryManager::InstallKeyDescToKeyring(size_t keyType, const KeyBlob &key
         } else {
             sdpClass = FSCRYPT_SDP_ECE_CLASS;
         }
-        if (!InstallEceSece(sdpClass, key2Blob, keyDesc)) {
+        ret = InstallEceSece(sdpClass, key2Blob, keyDesc);
+        if (ret != E_OK) {
             LOGE("InstallKeyDescToKeyring failed");
-            return false;
+            return ret;
         }
     } else {
-        if (!InstallDeCe(key2Blob, keyDesc)) {
+        ret = InstallDeCe(key2Blob, keyDesc);
+        if (ret != E_OK) {
             LOGE("InstallKeyToKeyring failed");
-            return false;
+            return ret;
         }
     }
-    return true;
+    return E_OK;
 }
 
 
-bool RecoveryManager::InstallDeCe(const KeyBlob &key2Blob, const KeyBlob &keyDesc)
+int32_t RecoveryManager::InstallDeCe(const KeyBlob &key2Blob, const KeyBlob &keyDesc)
 {
     fscrypt_key fskey;
     fskey.mode = FS_ENCRYPTION_MODE_AES_256_XTS;
@@ -307,7 +310,7 @@ bool RecoveryManager::InstallDeCe(const KeyBlob &key2Blob, const KeyBlob &keyDes
     auto err = memcpy_s(fskey.raw, FS_MAX_KEY_SIZE, key2Blob.data.get(), key2Blob.size);
     if (err != EOK) {
         LOGE("memcpy failed ret %{public}d", err);
-        return false;
+        return err;
     }
 
     key_serial_t krid = KeyCtrlSearch(KEY_SPEC_SESSION_KEYRING, "keyring", "fscrypt", 0);
@@ -316,7 +319,7 @@ bool RecoveryManager::InstallDeCe(const KeyBlob &key2Blob, const KeyBlob &keyDes
         krid = KeyCtrlAddKey("keyring", "fscrypt", KEY_SPEC_SESSION_KEYRING);
         if (krid == -1) {
             LOGE("failed to add session keyring");
-            return false;
+            return E_ADD_SESSION_KEYRING_ERROR;
         }
     }
     for (auto prefix : CRYPTO_NAME_PREFIXES) {
@@ -329,21 +332,21 @@ bool RecoveryManager::InstallDeCe(const KeyBlob &key2Blob, const KeyBlob &keyDes
         }
     }
     LOGI("success");
-    return true;
+    return E_OK;
 }
 
-bool RecoveryManager::InstallEceSece(uint32_t sdpClass, const KeyBlob &key2Blob, const KeyBlob &keyDesc)
+int32_t RecoveryManager::InstallEceSece(uint32_t sdpClass, const KeyBlob &key2Blob, const KeyBlob &keyDesc)
 {
     EncryptionKeySdp fskey;
     if (key2Blob.size != sizeof(fskey.raw)) {
         LOGE("Wrong key size is %{public}d", key2Blob.size);
-        return false;
+        return E_KEY_BLOB_ERROR;
     }
     fskey.mode = EXT4_ENCRYPTION_MODE_AES_256_XTS;
     auto err = memcpy_s(fskey.raw, sizeof(fskey.raw), key2Blob.data.get(), key2Blob.size);
     if (err != EOK) {
         LOGE("memcpy failed ret %{public}d", err);
-        return false;
+        return err;
     }
     fskey.size = EXT4_AES_256_XTS_KEY_SIZE_TO_KEYRING;
     fskey.sdpClass = sdpClass;
@@ -354,7 +357,7 @@ bool RecoveryManager::InstallEceSece(uint32_t sdpClass, const KeyBlob &key2Blob,
         krid = KeyCtrlAddKey("keyring", "fscrypt", KEY_SPEC_SESSION_KEYRING);
         if (krid == -1) {
             LOGE("failed to add session keyring");
-            return false;
+            return E_ADD_SESSION_KEYRING_ERROR;
         }
     }
     for (auto prefix : CRYPTO_NAME_PREFIXES) {
@@ -366,7 +369,7 @@ bool RecoveryManager::InstallEceSece(uint32_t sdpClass, const KeyBlob &key2Blob,
         }
     }
     LOGI("success");
-    return true;
+    return E_OK;
 }
 } // namespace StorageDaemon
 } // namespace HOHS

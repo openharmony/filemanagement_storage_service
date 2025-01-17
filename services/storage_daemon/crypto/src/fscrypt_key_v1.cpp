@@ -377,7 +377,7 @@ int32_t FscryptKeyV1::InstallKeyToKeyring()
             LOGE("failed to add session keyring");
             std::string extraData = "cmd=KEY_SPEC_SESSION_KEYRING,errno=" + std::to_string(errno);
             StorageRadar::ReportKeyRingResult("InstallKeyToKeyring::KeyCtrlAddKey", krid, extraData);
-            return E_ADD_SESSION_KEYING_ERROR;
+            return E_ADD_SESSION_KEYRING_ERROR;
         }
     }
     for (auto prefix : CRYPTO_NAME_PREFIXES) {
@@ -424,7 +424,7 @@ int32_t FscryptKeyV1::InstallEceSeceKeyToKeyring(uint32_t sdpClass)
             std::string extraData = "cmd=KEY_SPEC_SESSION_KEYRING,errno=" + std::to_string(errno) +
                 ",sdpClass=" + std::to_string(sdpClass);
             StorageRadar::ReportKeyRingResult("InstallEceSeceKeyToKeyring::KeyCtrlAddKey", krid, extraData);
-            return E_ADD_SESSION_KEYING_ERROR;
+            return E_ADD_SESSION_KEYRING_ERROR;
         }
     }
     for (auto prefix : CRYPTO_NAME_PREFIXES) {

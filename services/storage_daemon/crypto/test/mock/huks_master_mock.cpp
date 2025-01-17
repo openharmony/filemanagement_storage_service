@@ -26,34 +26,34 @@ HuksMaster::~HuksMaster()
 {
 }
 
-bool HuksMaster::DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key, bool isNeedNewNonce)
+int32_t HuksMaster::DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key, bool isNeedNewNonce)
 {
     if (IHuksMaster::huksMasterMock == nullptr) {
-        return true;
+        return 0;
     }
     return IHuksMaster::huksMasterMock->DecryptKey(ctx, auth, key, isNeedNewNonce);
 }
 
-bool HuksMaster::EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo &key, bool isNeedNewNonce)
+int32_t HuksMaster::EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo &key, bool isNeedNewNonce)
 {
     if (IHuksMaster::huksMasterMock == nullptr) {
-        return true;
+        return 0;
     }
     return IHuksMaster::huksMasterMock->EncryptKey(ctx, auth, key, isNeedNewNonce);
 }
 
-bool HuksMaster::DecryptKeyEx(KeyContext &ctx, const UserAuth &auth, KeyBlob &rnd)
+int32_t HuksMaster::DecryptKeyEx(KeyContext &ctx, const UserAuth &auth, KeyBlob &rnd)
 {
     if (IHuksMaster::huksMasterMock == nullptr) {
-        return true;
+        return 0;
     }
     return IHuksMaster::huksMasterMock->DecryptKeyEx(ctx, auth, rnd);
 }
 
-bool HuksMaster::EncryptKeyEx(const UserAuth &auth, const KeyBlob &rnd, KeyContext &ctx)
+int32_t HuksMaster::EncryptKeyEx(const UserAuth &auth, const KeyBlob &rnd, KeyContext &ctx)
 {
     if (IHuksMaster::huksMasterMock == nullptr) {
-        return true;
+        return 0;
     }
     return IHuksMaster::huksMasterMock->EncryptKeyEx(auth, rnd, ctx);
 }
@@ -66,10 +66,10 @@ bool HuksMaster::UpgradeKey(KeyContext &ctx)
     return IHuksMaster::huksMasterMock->UpgradeKey(ctx);
 }
 
-bool HuksMaster::GenerateKey(const UserAuth &auth, KeyBlob &keyOut)
+int32_t HuksMaster::GenerateKey(const UserAuth &auth, KeyBlob &keyOut)
 {
     if (IHuksMaster::huksMasterMock == nullptr) {
-        return true;
+        return 0;
     }
     return IHuksMaster::huksMasterMock->GenerateKey(auth, keyOut);
 }
