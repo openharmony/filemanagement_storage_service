@@ -146,13 +146,13 @@ bool FscryptKeyV2::UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std:
 int32_t FscryptKeyV2::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId)
 {
     LOGI("Unsupported fscrypt v2");
-    return -1;
+    return E_NOT_SUPPORT;
 }
 
 int32_t FscryptKeyV2::DeleteAppkey(const std::string KeyId)
 {
     LOGI("Unsupported fscrypt v2");
-    return -1;
+    return E_NOT_SUPPORT;
 }
 
 int32_t FscryptKeyV2::AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status)
