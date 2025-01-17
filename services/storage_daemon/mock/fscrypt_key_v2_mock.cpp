@@ -58,7 +58,7 @@ bool FscryptKeyV2::UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std:
     return IFscryptKeyV2Moc::fscryptKeyV2Moc->UnlockUserScreen(flag, sdpClass, mnt);
 }
 
-bool FscryptKeyV2::GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId)
+int32_t FscryptKeyV2::GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId)
 {
     if (IFscryptKeyV2Moc::fscryptKeyV2Moc == nullptr) {
         return false;
@@ -66,7 +66,7 @@ bool FscryptKeyV2::GenerateAppkey(uint32_t userId, uint32_t appUid, std::string 
     return IFscryptKeyV2Moc::fscryptKeyV2Moc->GenerateAppkey(userId, appUid, keyId);
 }
 
-bool FscryptKeyV2::DeleteAppkey(const std::string KeyId)
+int32_t FscryptKeyV2::DeleteAppkey(const std::string KeyId)
 {
     if (IFscryptKeyV2Moc::fscryptKeyV2Moc == nullptr) {
         return false;
@@ -74,7 +74,7 @@ bool FscryptKeyV2::DeleteAppkey(const std::string KeyId)
     return IFscryptKeyV2Moc::fscryptKeyV2Moc->DeleteAppkey(KeyId);
 }
 
-bool FscryptKeyV2::AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status)
+int32_t FscryptKeyV2::AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status)
 {
     if (IFscryptKeyV2Moc::fscryptKeyV2Moc == nullptr) {
         return false;
@@ -82,7 +82,7 @@ bool FscryptKeyV2::AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_
     return IFscryptKeyV2Moc::fscryptKeyV2Moc->AddClassE(isNeedEncryptClassE, isSupport, status);
 }
 
-bool FscryptKeyV2::DeleteClassEPinCode(uint32_t user)
+int32_t FscryptKeyV2::DeleteClassEPinCode(uint32_t user)
 {
     if (IFscryptKeyV2Moc::fscryptKeyV2Moc == nullptr) {
         return false;
@@ -90,7 +90,7 @@ bool FscryptKeyV2::DeleteClassEPinCode(uint32_t user)
     return IFscryptKeyV2Moc::fscryptKeyV2Moc->DeleteClassEPinCode(user);
 }
 
-bool FscryptKeyV2::ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId)
+int32_t FscryptKeyV2::ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId)
 {
     if (IFscryptKeyV2Moc::fscryptKeyV2Moc == nullptr) {
         return false;

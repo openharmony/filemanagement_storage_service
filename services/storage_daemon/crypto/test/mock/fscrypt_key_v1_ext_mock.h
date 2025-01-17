@@ -30,10 +30,10 @@ public:
     virtual bool ReadClassE(uint32_t status, std::unique_ptr<uint8_t[]> &classEBuffer, uint32_t length,
                             bool &isFbeSupport) = 0;
     virtual bool WriteClassE(uint32_t status, uint8_t *classEBuffer, uint32_t length) = 0;
-    virtual bool ChangePinCodeClassE(uint32_t userId, bool &isFbeSupport) = 0;
-    virtual bool AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status) = 0;
-    virtual bool DeleteClassEPinCode(uint32_t userId) = 0;
-    virtual bool GenerateAppkey(uint32_t userId, uint32_t appUid, std::unique_ptr<uint8_t[]> &keyId, uint32_t size) = 0;
+    virtual int32_t ChangePinCodeClassE(uint32_t userId, bool &isFbeSupport) = 0;
+    virtual int32_t AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status) = 0;
+    virtual int32_t DeleteClassEPinCode(uint32_t userId) = 0;
+    virtual int32_t GenerateAppkey(uint32_t userId, uint32_t appUid, std::unique_ptr<uint8_t[]> &keyId, uint32_t size) = 0;
     virtual bool UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_t size) = 0;
     virtual uint32_t SetElType() = 0;
 public:
@@ -46,10 +46,10 @@ public:
     MOCK_METHOD2(LockUserScreenExt, bool(uint32_t, uint32_t &));
     MOCK_METHOD4(ReadClassE, bool(uint32_t, std::unique_ptr<uint8_t[]> &, uint32_t, bool &));
     MOCK_METHOD3(WriteClassE, bool(uint32_t, uint8_t *, uint32_t));
-    MOCK_METHOD2(ChangePinCodeClassE, bool(uint32_t, bool &));
-    MOCK_METHOD3(AddClassE, bool(bool &, bool &, uint32_t));
-    MOCK_METHOD1(DeleteClassEPinCode, bool(uint32_t));
-    MOCK_METHOD4(GenerateAppkey, bool(uint32_t, uint32_t, std::unique_ptr<uint8_t[]> &, uint32_t));
+    MOCK_METHOD2(ChangePinCodeClassE, int32_t(uint32_t, bool &));
+    MOCK_METHOD3(AddClassE, int32_t(bool &, bool &, uint32_t));
+    MOCK_METHOD1(DeleteClassEPinCode, int32_t(uint32_t));
+    MOCK_METHOD4(GenerateAppkey, int32_t(uint32_t, uint32_t, std::unique_ptr<uint8_t[]> &, uint32_t));
     MOCK_METHOD3(UnlockUserScreenExt, bool(uint32_t, uint8_t *, uint32_t));
     MOCK_METHOD0(SetElType, uint32_t());
 };

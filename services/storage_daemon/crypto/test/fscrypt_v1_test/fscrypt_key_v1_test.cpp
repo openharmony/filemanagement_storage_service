@@ -78,10 +78,10 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_GenerateAppKeyDesc, TestSize.Level1)
     GTEST_LOG_(INFO) << "fscrypt_key_v1_GenerateAppKeyDesc start";
     auto g_testKeyV1 = std::make_shared<OHOS::StorageDaemon::FscryptKeyV1>(TEST_KEYPATH);
     KeyBlob appKey;
-    EXPECT_FALSE(g_testKeyV1->GenerateAppKeyDesc(appKey));
+    EXPECT_NE(g_testKeyV1->GenerateAppKeyDesc(appKey), E_OK);
 
     KeyBlob appKey1(FBEX_KEYID_SIZE);
-    EXPECT_TRUE(g_testKeyV1->GenerateAppKeyDesc(appKey1));
+    EXPECT_EQ(g_testKeyV1->GenerateAppKeyDesc(appKey1), E_OK);
     GTEST_LOG_(INFO) << "fscrypt_key_v1_GenerateAppKeyDesc end";
 }
 
@@ -116,11 +116,11 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_ChangePinCodeClassE, TestSize.Level1)
     auto g_testKeyV1 = std::make_shared<OHOS::StorageDaemon::FscryptKeyV1>(TEST_KEYPATH);
     bool isFbeSupport = true;
     uint32_t userId = 100;
-    EXPECT_CALL(*fscryptKeyExtMock_, ChangePinCodeClassE(_, _)).WillOnce(Return(true));
-    EXPECT_TRUE(g_testKeyV1->ChangePinCodeClassE(isFbeSupport, userId));
+    EXPECT_CALL(*fscryptKeyExtMock_, ChangePinCodeClassE(_, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(g_testKeyV1->ChangePinCodeClassE(isFbeSupport, userId), E_OK);
 
-    EXPECT_CALL(*fscryptKeyExtMock_, ChangePinCodeClassE(_, _)).WillOnce(Return(false));
-    EXPECT_FALSE(g_testKeyV1->ChangePinCodeClassE(isFbeSupport, userId));
+    EXPECT_CALL(*fscryptKeyExtMock_, ChangePinCodeClassE(_, _)).WillOnce(Return(-1));
+    EXPECT_NE(g_testKeyV1->ChangePinCodeClassE(isFbeSupport, userId), E_OK);
     GTEST_LOG_(INFO) << "fscrypt_key_v1_ChangePinCodeClassE end";
 }
 
@@ -135,11 +135,11 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_DeleteClassEPinCode, TestSize.Level1)
     GTEST_LOG_(INFO) << "fscrypt_key_v1_DeleteClassEPinCode start";
     auto g_testKeyV1 = std::make_shared<OHOS::StorageDaemon::FscryptKeyV1>(TEST_KEYPATH);
     uint32_t userId = 100;
-    EXPECT_CALL(*fscryptKeyExtMock_, DeleteClassEPinCode(_)).WillOnce(Return(true));
-    EXPECT_TRUE(g_testKeyV1->DeleteClassEPinCode(userId));
+    EXPECT_CALL(*fscryptKeyExtMock_, DeleteClassEPinCode(_)).WillOnce(Return(E_OK));
+    EXPECT_EQ(g_testKeyV1->DeleteClassEPinCode(userId), E_OK);
 
-    EXPECT_CALL(*fscryptKeyExtMock_, DeleteClassEPinCode(_)).WillOnce(Return(false));
-    EXPECT_FALSE(g_testKeyV1->DeleteClassEPinCode(userId));
+    EXPECT_CALL(*fscryptKeyExtMock_, DeleteClassEPinCode(_)).WillOnce(Return(-1));
+    EXPECT_NE(g_testKeyV1->DeleteClassEPinCode(userId), E_OK);
     GTEST_LOG_(INFO) << "fscrypt_key_v1_DeleteClassEPinCode end";
 }
 
@@ -157,11 +157,11 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_AddClassE, TestSize.Level1)
     bool isSupport = true;
     bool isNeedEncryptClassE = true;
 
-    EXPECT_CALL(*fscryptKeyExtMock_, AddClassE(_, _, _)).WillOnce(Return(true));
-    EXPECT_TRUE(g_testKeyV1->AddClassE(isNeedEncryptClassE, isSupport, status));
+    EXPECT_CALL(*fscryptKeyExtMock_, AddClassE(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(g_testKeyV1->AddClassE(isNeedEncryptClassE, isSupport, status), E_OK);
 
-    EXPECT_CALL(*fscryptKeyExtMock_, AddClassE(_, _, _)).WillOnce(Return(false));
-    EXPECT_FALSE(g_testKeyV1->AddClassE(isNeedEncryptClassE, isSupport, status));
+    EXPECT_CALL(*fscryptKeyExtMock_, AddClassE(_, _, _)).WillOnce(Return(-1));
+    EXPECT_NE(g_testKeyV1->AddClassE(isNeedEncryptClassE, isSupport, status), E_OK);
     GTEST_LOG_(INFO) << "fscrypt_key_v1_AddClassE end";
 }
 
@@ -176,10 +176,10 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_DeleteAppkey, TestSize.Level1)
     GTEST_LOG_(INFO) << "fscrypt_key_v1_DeleteAppkey start";
     auto g_testKeyV1 = std::make_shared<OHOS::StorageDaemon::FscryptKeyV1>(TEST_KEYPATH);
     std::string KeyId = "";
-    EXPECT_FALSE(g_testKeyV1->DeleteAppkey(KeyId));
+    EXPECT_NE(g_testKeyV1->DeleteAppkey(KeyId), E_OK);
 
     KeyId = "test";
-    EXPECT_TRUE(g_testKeyV1->DeleteAppkey(KeyId));
+    EXPECT_EQ(g_testKeyV1->DeleteAppkey(KeyId), E_OK);
     GTEST_LOG_(INFO) << "fscrypt_key_v1_DeleteAppkey end";
 }
 
@@ -269,11 +269,11 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_GenerateAppkey, TestSize.Level1)
     uint32_t hashId = 2;
     std::string keyDesc = "test";
 
-    EXPECT_CALL(*fscryptKeyExtMock_, GenerateAppkey(_, _, _, _)).WillOnce(Return(false));
-    EXPECT_FALSE(g_testKeyV1->GenerateAppkey(userId, hashId, keyDesc));
+    EXPECT_CALL(*fscryptKeyExtMock_, GenerateAppkey(_, _, _, _)).WillOnce(Return(-1));
+    EXPECT_NE(g_testKeyV1->GenerateAppkey(userId, hashId, keyDesc), E_OK);
 
-    EXPECT_CALL(*fscryptKeyExtMock_, GenerateAppkey(_, _, _, _)).WillOnce(Return(true));
-    EXPECT_TRUE(g_testKeyV1->GenerateAppkey(userId, hashId, keyDesc));
+    EXPECT_CALL(*fscryptKeyExtMock_, GenerateAppkey(_, _, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(g_testKeyV1->GenerateAppkey(userId, hashId, keyDesc), E_OK);
     GTEST_LOG_(INFO) << "fscrypt_key_v1_GenerateAppkey end";
 }
 
