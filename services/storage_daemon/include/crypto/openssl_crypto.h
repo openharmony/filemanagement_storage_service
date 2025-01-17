@@ -25,8 +25,8 @@ constexpr int AES_256_HASH_RANDOM_SIZE = 32;
 constexpr int OPENSSL_SUCCESS_FLAG = 1;
 class OpensslCrypto {
 public:
-    static bool AESDecrypt(const KeyBlob &preKey, KeyContext &keyContext_, KeyBlob &plainText);
-    static bool AESEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, KeyContext &keyContext_);
+    static int32_t AESDecrypt(const KeyBlob &preKey, KeyContext &keyContext_, KeyBlob &plainText);
+    static int32_t AESEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, KeyContext &keyContext_);
     static KeyBlob HashWithPrefix(const KeyBlob &prefix, const KeyBlob &payload, uint32_t length);
 };
 } // namespace StorageDaemon

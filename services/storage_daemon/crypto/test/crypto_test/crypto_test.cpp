@@ -239,11 +239,11 @@ HWTEST_F(CryptoTest, Openssl_Crypto_AES_Encrypt_001, TestSize.Level1)
     KeyContext keyContext;
     KeyBlob plainText;
 
-    bool ret = OpensslCrypto::AESEncrypt(preKey, plainText, keyContext);
-    EXPECT_TRUE(ret);
+    int32_t ret = OpensslCrypto::AESEncrypt(preKey, plainText, keyContext);
+    EXPECT_TRUE(ret == E_OK);
 
     ret = OpensslCrypto::AESDecrypt(preKey, keyContext, plainText);
-    EXPECT_TRUE(ret);
+    EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "CryptoTest_OpensslCryptoAESEncrypt_0100 end";
 }
 }

@@ -24,16 +24,16 @@ namespace StorageDaemon {
 class IOpensslCrypto {
 public:
     virtual ~IOpensslCrypto() = default;
-    virtual bool AESEncrypt(const KeyBlob &, const KeyBlob &, KeyContext &) = 0;
-    virtual bool AESDecrypt(const KeyBlob &, KeyContext &, KeyBlob &);
+    virtual int32_t AESEncrypt(const KeyBlob &, const KeyBlob &, KeyContext &) = 0;
+    virtual int32_t AESDecrypt(const KeyBlob &, KeyContext &, KeyBlob &);
 public:
     static inline std::shared_ptr<IOpensslCrypto> opensslCryptoMock = nullptr;
 };
 
 class OpensslCryptoMock : public IOpensslCrypto {
 public:
-    MOCK_METHOD3(AESEncrypt, bool(const KeyBlob &, const KeyBlob &, KeyContext &));
-    MOCK_METHOD3(AESDecrypt, bool(const KeyBlob &, KeyContext &, KeyBlob &));
+    MOCK_METHOD3(AESEncrypt, int32_t(const KeyBlob &, const KeyBlob &, KeyContext &));
+    MOCK_METHOD3(AESDecrypt, int32_t(const KeyBlob &, KeyContext &, KeyBlob &));
 };
 }
 }

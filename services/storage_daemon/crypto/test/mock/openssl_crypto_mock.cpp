@@ -20,18 +20,18 @@
 using namespace std;
 using namespace OHOS::StorageDaemon;
 
-bool OpensslCrypto::AESDecrypt(const KeyBlob &preKey, KeyContext &keyContext_, KeyBlob &plainText)
+int32_t OpensslCrypto::AESDecrypt(const KeyBlob &preKey, KeyContext &keyContext_, KeyBlob &plainText)
 {
     if (IOpensslCrypto::opensslCryptoMock == nullptr) {
-        return true;
+        return E_OK;
     }
     return IOpensslCrypto::opensslCryptoMock->AESDecrypt(preKey, keyContext_, plainText);
 }
 
-bool OpensslCrypto::AESEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, KeyContext &keyContext_)
+int32_t OpensslCrypto::AESEncrypt(const KeyBlob &preKey, const KeyBlob &plainText, KeyContext &keyContext_)
 {
     if (IOpensslCrypto::opensslCryptoMock == nullptr) {
-        return true;
+        return E_OK;
     }
     return IOpensslCrypto::opensslCryptoMock->AESEncrypt(preKey, plainText, keyContext_);
 }

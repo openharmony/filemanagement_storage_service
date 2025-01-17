@@ -469,7 +469,8 @@ bool BaseKey::EncryptEceSece(const UserAuth &auth, const uint32_t keyType, KeyCo
 
     KeyBlob rndEnc(keyCtx.rndEnc);
     LOGI("Encrypt by openssl start"); // rndEnc 80 -> rndEncEnc 108
-    if (!OpensslCrypto::AESEncrypt(mUserAuth.secret, rndEnc, keyCtx)) {
+    auto ret = OpensslCrypto::AESEncrypt(mUserAuth.secret, rndEnc, keyCtx);
+    if (ret != E_OK) {
         LOGE("Encrypt by openssl failed.");
         return false;
     }
@@ -737,7 +738,8 @@ bool BaseKey::DecryptReal(const UserAuth &auth, const uint32_t keyType, KeyConte
         mUserAuth.secret = KeyBlob(NULL_SECRET);
     }
     KeyBlob rndEnc(keyCtx.rndEnc);
-    if (!OpensslCrypto::AESDecrypt(mUserAuth.secret, keyCtx, rndEnc)) { // rndEncEnc -> rndEnc
+    auto ret = OpensslCrypto::AESDecrypt(mUserAuth.secret, keyCtx, rndEnc);
+    if (ret != E_OK) { // rndEncEnc -> rndEnc
         LOGE("Decrypt by openssl failed.");
         return false;
     }
@@ -763,7 +765,8 @@ bool BaseKey::Decrypt(const UserAuth &auth)
     switch (keyEncryptType_) {
         case KeyEncryptType::KEY_CRYPT_OPENSSL:
             LOGI("Enhanced decrypt key start");
-            ret = OpensslCrypto::AESDecrypt(auth.secret, keyContext_, keyInfo_.key);
+            // 0:true, 1:false
+            ret = OpensslCrypto::AESDecrypt(auth.secret, keyContext_, keyInfo_.key) == E_OK;
             break;
         case KeyEncryptType::KEY_CRYPT_HUKS:
             LOGI("Huks decrypt key start");
