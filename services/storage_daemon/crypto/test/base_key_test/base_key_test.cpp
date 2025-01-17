@@ -94,7 +94,7 @@ HWTEST_F(BaseKeyTest, BaseKey_Decrypt_001, TestSize.Level1)
     std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
     UserAuth emptyUserAuth;
     elKey->keyEncryptType_ = BaseKey::KeyEncryptType::KEY_CRYPT_OPENSSL;
-    EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_TRUE(elKey->Decrypt(emptyUserAuth));
 
     elKey->keyEncryptType_ = BaseKey::KeyEncryptType::KEY_CRYPT_HUKS;
@@ -123,24 +123,25 @@ HWTEST_F(BaseKeyTest, BaseKey_DecryptReal_001, TestSize.Level1)
     UserAuth emptyUserAuth;
     uint32_t keyType = TYPE_EL2;
     KeyContext keyCtx;
-    EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(false));
+    EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(-1));
     EXPECT_FALSE(elKey->DecryptReal(emptyUserAuth, keyType, keyCtx));
 
-    EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(true));
+
+    EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_CALL(*huksMasterMock_, DecryptKeyEx(_, _, _)).WillOnce(Return(E_ERR));
     EXPECT_FALSE(elKey->DecryptReal(emptyUserAuth, keyType, keyCtx));
 
-    EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_CALL(*huksMasterMock_, DecryptKeyEx(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_TRUE(elKey->DecryptReal(emptyUserAuth, keyType, keyCtx));
 
     keyType = TYPE_EL3;
-    EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_CALL(*huksMasterMock_, DecryptKeyEx(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_TRUE(elKey->DecryptReal(emptyUserAuth, keyType, keyCtx));
 
     keyType = TYPE_EL4;
-    EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_CALL(*huksMasterMock_, DecryptKeyEx(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_TRUE(elKey->DecryptReal(emptyUserAuth, keyType, keyCtx));
     GTEST_LOG_(INFO) << "BaseKey_DecryptReal_001 end";
@@ -246,23 +247,25 @@ HWTEST_F(BaseKeyTest, BaseKey_EncryptEceSece_001, TestSize.Level1)
     EXPECT_CALL(*huksMasterMock_, EncryptKeyEx(_, _, _)).WillOnce(Return(E_ERR));
     EXPECT_FALSE(elKey->EncryptEceSece(auth, keyType, keyCtx));
 
+
     EXPECT_CALL(*huksMasterMock_, EncryptKeyEx(_, _, _)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*opensslCryptoMock_, AESEncrypt(_, _, _)).WillOnce(Return(false));
+    EXPECT_CALL(*opensslCryptoMock_, AESEncrypt(_, _, _)).WillOnce(Return(-1));
     EXPECT_FALSE(elKey->EncryptEceSece(auth, keyType, keyCtx));
 
     EXPECT_CALL(*huksMasterMock_, EncryptKeyEx(_, _, _)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*opensslCryptoMock_, AESEncrypt(_, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(*opensslCryptoMock_, AESEncrypt(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_TRUE(elKey->EncryptEceSece(auth, keyType, keyCtx));
     EXPECT_EQ(elKey->keyEncryptType_, BaseKey::KeyEncryptType::KEY_CRYPT_HUKS_OPENSSL);
 
     keyType = TYPE_EL3;
+
     EXPECT_CALL(*huksMasterMock_, EncryptKeyEx(_, _, _)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*opensslCryptoMock_, AESEncrypt(_, _, _)).WillOnce(Return(false));
+    EXPECT_CALL(*opensslCryptoMock_, AESEncrypt(_, _, _)).WillOnce(Return(-1));
     EXPECT_FALSE(elKey->EncryptEceSece(auth, keyType, keyCtx));
 
     keyType = TYPE_EL4;
     EXPECT_CALL(*huksMasterMock_, EncryptKeyEx(_, _, _)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*opensslCryptoMock_, AESEncrypt(_, _, _)).WillOnce(Return(false));
+    EXPECT_CALL(*opensslCryptoMock_, AESEncrypt(_, _, _)).WillOnce(Return(-1));
     EXPECT_FALSE(elKey->EncryptEceSece(auth, keyType, keyCtx));
     GTEST_LOG_(INFO) << "BaseKey_EncryptEceSece_001 end";
 }
@@ -316,10 +319,11 @@ HWTEST_F(BaseKeyTest, BaseKey_DoRestoreKeyCeEceSece_002, TestSize.Level1)
     
     string pathShield = path + PATH_SHIELD;
     ASSERT_TRUE(SaveStringToFileSync(path + PATH_SHIELD, test));
-    EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(false));
+    EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(-1));
     EXPECT_FALSE(elKey->DoRestoreKeyCeEceSece(auth, path, keyType));
 
-    EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(true));
+
+    EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_CALL(*huksMasterMock_, DecryptKeyEx(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_TRUE(elKey->DoRestoreKeyCeEceSece(auth, path, keyType));
 
@@ -329,7 +333,7 @@ HWTEST_F(BaseKeyTest, BaseKey_DoRestoreKeyCeEceSece_002, TestSize.Level1)
     std::copy(secretVec.begin(), secretVec.end(), auth.secret.data.get());
     auth.token.Alloc(tokenVec.size());
     std::copy(tokenVec.begin(), tokenVec.end(), auth.token.data.get());
-    EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_CALL(*huksMasterMock_, DecryptKeyEx(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_TRUE(elKey->DoRestoreKeyCeEceSece(auth, path, keyType));
 
@@ -616,7 +620,7 @@ HWTEST_F(BaseKeyTest, BaseKey_DoRestoreKeyOld_002, TestSize.Level1)
     auth.secret.Alloc(vec.size());
     std::copy(vec.begin(), vec.end(), auth.secret.data.get());
 
-    EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_TRUE(elKey->DoRestoreKeyOld(auth, path));
     auto ret = unlink(needUpdataPath.c_str());
     ASSERT_TRUE(ret != -1) << "Failed to delete file in BaseKey_DoRestoreKeyOld_002! " << errno;

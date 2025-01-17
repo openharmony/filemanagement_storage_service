@@ -31,8 +31,8 @@
 #include "libfscrypt/key_control.h"
 #include "openssl_crypto.h"
 #include "storage_service_constant.h"
-#include "storage_service_log.h"
 #include "storage_service_errno.h"
+#include "storage_service_log.h"
 #include "string_ex.h"
 #include "utils/file_utils.h"
 #include "utils/string_utils.h"
@@ -477,7 +477,8 @@ bool BaseKey::EncryptEceSece(const UserAuth &auth, const uint32_t keyType, KeyCo
 
     KeyBlob rndEnc(keyCtx.rndEnc);
     LOGI("Encrypt by openssl start"); // rndEnc 80 -> rndEncEnc 108
-    if (!OpensslCrypto::AESEncrypt(mUserAuth.secret, rndEnc, keyCtx)) {
+    ret = OpensslCrypto::AESEncrypt(mUserAuth.secret, rndEnc, keyCtx);
+    if (ret != E_OK) {
         LOGE("Encrypt by openssl failed.");
         return false;
     }
@@ -747,7 +748,8 @@ bool BaseKey::DecryptReal(const UserAuth &auth, const uint32_t keyType, KeyConte
         mUserAuth.secret = KeyBlob(NULL_SECRET);
     }
     KeyBlob rndEnc(keyCtx.rndEnc);
-    if (!OpensslCrypto::AESDecrypt(mUserAuth.secret, keyCtx, rndEnc)) { // rndEncEnc -> rndEnc
+    auto ret = OpensslCrypto::AESDecrypt(mUserAuth.secret, keyCtx, rndEnc);
+    if (ret != E_OK) { // rndEncEnc -> rndEnc
         LOGE("Decrypt by openssl failed.");
         return false;
     }
@@ -756,7 +758,7 @@ bool BaseKey::DecryptReal(const UserAuth &auth, const uint32_t keyType, KeyConte
     if (keyType == TYPE_EL3 || keyType == TYPE_EL4) {
         DoTempStore(keyCtx, keyContext_);
     }
-    auto ret = HuksMaster::GetInstance().DecryptKeyEx(keyCtx, auth, keyInfo_.key);
+    ret = HuksMaster::GetInstance().DecryptKeyEx(keyCtx, auth, keyInfo_.key);
     if (ret != E_OK) { // rndEnc -> rnd
         LOGE("Decrypt by hks failed.");
         return false;
@@ -773,7 +775,7 @@ bool BaseKey::Decrypt(const UserAuth &auth)
     switch (keyEncryptType_) {
         case KeyEncryptType::KEY_CRYPT_OPENSSL:
             LOGI("Enhanced decrypt key start");
-            ret = OpensslCrypto::AESDecrypt(auth.secret, keyContext_, keyInfo_.key);
+            ret = (OpensslCrypto::AESDecrypt(auth.secret, keyContext_, keyInfo_.key) == E_OK);
             break;
         case KeyEncryptType::KEY_CRYPT_HUKS:
             LOGI("Huks decrypt key start");
