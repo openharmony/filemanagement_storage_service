@@ -71,8 +71,8 @@ bool FscryptKeyV1Ext::WriteClassE(uint32_t status, uint8_t *classEBuffer, uint32
 }
 
 int32_t FscryptKeyV1Ext::GenerateAppkey(uint32_t userId, uint32_t appUid,
-                                     std::unique_ptr<uint8_t[]> &keyId,
-                                     uint32_t size)
+                                        std::unique_ptr<uint8_t[]> &keyId,
+                                        uint32_t size)
 {
     return IFscryptKeyV1Ext::fscryptKeyV1ExtMock->GenerateAppkey(userId, appUid, keyId, size);
 }

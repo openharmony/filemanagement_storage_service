@@ -33,7 +33,8 @@ public:
     virtual int32_t ChangePinCodeClassE(uint32_t userId, bool &isFbeSupport) = 0;
     virtual int32_t AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status) = 0;
     virtual int32_t DeleteClassEPinCode(uint32_t userId) = 0;
-    virtual int32_t GenerateAppkey(uint32_t userId, uint32_t appUid, std::unique_ptr<uint8_t[]> &keyId, uint32_t size) = 0;
+    virtual int32_t GenerateAppkey(uint32_t userId, uint32_t appUid,
+                                   std::unique_ptr<uint8_t[]> &keyId, uint32_t size) = 0;
     virtual bool UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_t size) = 0;
     virtual uint32_t SetElType() = 0;
 public:

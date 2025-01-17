@@ -142,7 +142,8 @@ bool FscryptKeyV1Ext::UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_t s
     return true;
 }
 
-int32_t FscryptKeyV1Ext::GenerateAppkey(uint32_t user, uint32_t hashId, std::unique_ptr<uint8_t[]> &appKey, uint32_t size)
+int32_t FscryptKeyV1Ext::GenerateAppkey(uint32_t user, uint32_t hashId,
+                                        std::unique_ptr<uint8_t[]> &appKey, uint32_t size)
 {
     if (!FBEX::IsFBEXSupported()) {
         return E_OK;
