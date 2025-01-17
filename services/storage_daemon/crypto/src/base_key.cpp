@@ -775,8 +775,7 @@ bool BaseKey::Decrypt(const UserAuth &auth)
     switch (keyEncryptType_) {
         case KeyEncryptType::KEY_CRYPT_OPENSSL:
             LOGI("Enhanced decrypt key start");
-            // 0:true, 1:false
-            ret = OpensslCrypto::AESDecrypt(auth.secret, keyContext_, keyInfo_.key) == E_OK;
+            ret = (OpensslCrypto::AESDecrypt(auth.secret, keyContext_, keyInfo_.key) == E_OK);
             break;
         case KeyEncryptType::KEY_CRYPT_HUKS:
             LOGI("Huks decrypt key start");
