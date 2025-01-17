@@ -89,10 +89,10 @@ private:
 #endif
 
     int SetRecoverKeyToTee(const std::vector<uint8_t> &key, SetRecoverKeyStr &setRecoverKeyStr);
-    bool GenerateKeyDesc(const KeyBlob &key2Blob, KeyBlob &originKey2);
-    bool InstallKeyDescToKeyring(size_t keyType, const KeyBlob &key2Blob, const KeyBlob &keyDesc);
-    bool InstallDeCe(const KeyBlob &key2Blob, const KeyBlob &keyDesc);
-    bool InstallEceSece(uint32_t sdpClass, const KeyBlob &key2Blob, const KeyBlob &keyDesc);
+    int32_t GenerateKeyDesc(const KeyBlob &key2Blob, KeyBlob &originKey2);
+    int32_t InstallKeyDescToKeyring(size_t keyType, const KeyBlob &key2Blob, const KeyBlob &keyDesc);
+    int32_t InstallDeCe(const KeyBlob &key2Blob, const KeyBlob &keyDesc);
+    int32_t InstallEceSece(uint32_t sdpClass, const KeyBlob &key2Blob, const KeyBlob &keyDesc);
 
 #ifdef RECOVER_KEY_TEE_ENVIRONMENT
     TEEC_UUID *recoverUuid_ = &recoverTaUuid;

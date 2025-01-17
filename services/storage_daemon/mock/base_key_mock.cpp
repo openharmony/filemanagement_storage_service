@@ -84,20 +84,20 @@ bool BaseKey::UpgradeKeys()
     return IBaseKeyMoc::baseKeyMoc->UpgradeKeys();
 }
 
-bool BaseKey::DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey,
-                             KeyBlob &decryptedKey)
+int32_t BaseKey::DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey,
+    KeyBlob &decryptedKey)
 {
     if (IBaseKeyMoc::baseKeyMoc == nullptr) {
-        return false;
+        return -1;
     }
     return IBaseKeyMoc::baseKeyMoc->DecryptKeyBlob(auth, keyPath, planKey, decryptedKey);
 }
 
-bool BaseKey::EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey,
-                             KeyBlob &encryptedKey)
+int32_t BaseKey::EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey,
+    KeyBlob &encryptedKey)
 {
     if (IBaseKeyMoc::baseKeyMoc == nullptr) {
-        return false;
+        return -1;
     }
     return IBaseKeyMoc::baseKeyMoc->EncryptKeyBlob(auth, keyPath, planKey, encryptedKey);
 }

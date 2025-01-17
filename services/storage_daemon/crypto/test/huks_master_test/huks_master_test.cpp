@@ -247,19 +247,19 @@ HWTEST_F(HuksMasterTest, HuksMaster_EncryptKeyEx_001, TestSize.Level1)
     std::vector<uint8_t> blobVec{1, 2, 3, 4, 5};
     ctx.shield.Alloc(blobVec.size());
     std::copy(blobVec.begin(), blobVec.end(), ctx.shield.data.get());
-    EXPECT_EQ(HuksMaster::GetInstance().EncryptKeyEx(auth, rnd, ctx), false);
+    EXPECT_NE(HuksMaster::GetInstance().EncryptKeyEx(auth, rnd, ctx), E_OK);
 
     rnd.Alloc(blobVec.size());
     std::copy(blobVec.begin(), blobVec.end(), rnd.data.get());
-    EXPECT_EQ(HuksMaster::GetInstance().EncryptKeyEx(auth, rnd, ctx), false);
+    EXPECT_NE(HuksMaster::GetInstance().EncryptKeyEx(auth, rnd, ctx), E_OK);
 
     auth.secret.Alloc(blobVec.size());
     std::copy(blobVec.begin(), blobVec.end(), auth.secret.data.get());
-    EXPECT_EQ(HuksMaster::GetInstance().EncryptKeyEx(auth, rnd, ctx), false);
+    EXPECT_NE(HuksMaster::GetInstance().EncryptKeyEx(auth, rnd, ctx), E_OK);
 
     auth.token.Alloc(blobVec.size());
     std::copy(blobVec.begin(), blobVec.end(), auth.token.data.get());
-    EXPECT_EQ(HuksMaster::GetInstance().EncryptKeyEx(auth, rnd, ctx), false);
+    EXPECT_NE(HuksMaster::GetInstance().EncryptKeyEx(auth, rnd, ctx), E_OK);
     GTEST_LOG_(INFO) << "HuksMaster_EncryptKeyEx_001 end";
 }
 
@@ -276,20 +276,20 @@ HWTEST_F(HuksMasterTest, HuksMaster_EncryptKey_001, TestSize.Level1)
     KeyContext ctx;
     KeyInfo key;
     bool isNeedNewNonce = false;
-    EXPECT_EQ(HuksMaster::GetInstance().EncryptKey(ctx, auth, key, isNeedNewNonce), false);
+    EXPECT_NE(HuksMaster::GetInstance().EncryptKey(ctx, auth, key, isNeedNewNonce), E_OK);
     
     std::vector<uint8_t> blobVec{1, 2, 3, 4, 5};
     ctx.shield.Alloc(blobVec.size());
     std::copy(blobVec.begin(), blobVec.end(), ctx.shield.data.get());
-    EXPECT_EQ(HuksMaster::GetInstance().EncryptKey(ctx, auth, key, isNeedNewNonce), false);
+    EXPECT_NE(HuksMaster::GetInstance().EncryptKey(ctx, auth, key, isNeedNewNonce), E_OK);
 
     key.key.Alloc(blobVec.size());
     std::copy(blobVec.begin(), blobVec.end(), key.key.data.get());
-    EXPECT_EQ(HuksMaster::GetInstance().EncryptKey(ctx, auth, key, isNeedNewNonce), false);
+    EXPECT_NE(HuksMaster::GetInstance().EncryptKey(ctx, auth, key, isNeedNewNonce), E_OK);
 
     HuksMaster::GetInstance().HdiDestroy();
     EXPECT_EQ(HuksMaster::GetInstance().HdiCreate(), true);
-    EXPECT_EQ(HuksMaster::GetInstance().EncryptKey(ctx, auth, key, isNeedNewNonce), false);
+    EXPECT_NE(HuksMaster::GetInstance().EncryptKey(ctx, auth, key, isNeedNewNonce), E_OK);
     GTEST_LOG_(INFO) << "HuksMaster_EncryptKey_001 end";
 }
 } // OHOS::StorageDaemon

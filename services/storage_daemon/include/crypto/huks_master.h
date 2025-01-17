@@ -36,11 +36,11 @@ public:
 
     /* key operations */
     static KeyBlob GenerateRandomKey(uint32_t keyLen);
-    bool GenerateKey(const UserAuth &auth, KeyBlob &keyOut);
-    bool EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo &key, bool isNeedNewNonce);
-    bool EncryptKeyEx(const UserAuth &auth, const KeyBlob &rnd, KeyContext &ctx);
-    bool DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key, bool isNeedNewNonce);
-    bool DecryptKeyEx(KeyContext &ctx, const UserAuth &auth, KeyBlob &rnd);
+    int32_t GenerateKey(const UserAuth &auth, KeyBlob &keyOut);
+    int32_t EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo &key, bool isNeedNewNonce);
+    int32_t EncryptKeyEx(const UserAuth &auth, const KeyBlob &rnd, KeyContext &ctx);
+    int32_t DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key, bool isNeedNewNonce);
+    int32_t DecryptKeyEx(KeyContext &ctx, const UserAuth &auth, KeyBlob &rnd);
     bool UpgradeKey(KeyContext &ctx);
 private:
     HuksMaster();
@@ -60,7 +60,7 @@ private:
                         const HksBlob &inData, struct HksBlob &outData);
     int HdiAccessFinish(const HksBlob &handle, const HksParamSet *paramSet,
                         const HksBlob &inData, HksBlob &outData);
-    bool HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *paramSet2,
+    int HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *paramSet2,
                             const KeyBlob &keyIn, KeyBlob &keyOut);
     int HdiAccessUpgradeKey(const HksBlob &oldKey, const HksParamSet *paramSet, struct HksBlob &newKey);
 

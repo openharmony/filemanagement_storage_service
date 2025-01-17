@@ -24,12 +24,12 @@ namespace StorageDaemon {
 class IHuksMaster {
 public:
     virtual ~IHuksMaster() = default;
-    virtual bool DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key, bool isNeedNewNonce) = 0;
-    virtual bool EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo &key, bool isNeedNewNonce) = 0;
-    virtual bool DecryptKeyEx(KeyContext &ctx, const UserAuth &auth, KeyBlob &rnd) = 0;
-    virtual bool EncryptKeyEx(const UserAuth &auth, const KeyBlob &rnd, KeyContext &ctx);
+    virtual int32_t DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key, bool isNeedNewNonce) = 0;
+    virtual int32_t EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo &key, bool isNeedNewNonce) = 0;
+    virtual int32_t DecryptKeyEx(KeyContext &ctx, const UserAuth &auth, KeyBlob &rnd) = 0;
+    virtual int32_t EncryptKeyEx(const UserAuth &auth, const KeyBlob &rnd, KeyContext &ctx);
     virtual bool UpgradeKey(KeyContext &ctx);
-    virtual bool GenerateKey(const UserAuth &auth, KeyBlob &keyOut) = 0;
+    virtual int32_t GenerateKey(const UserAuth &auth, KeyBlob &keyOut) = 0;
     virtual KeyBlob GenerateRandomKey(uint32_t keyLen) = 0;
 public:
     static inline std::shared_ptr<IHuksMaster> huksMasterMock = nullptr;
@@ -37,12 +37,12 @@ public:
 
 class HuksMasterMock : public IHuksMaster {
 public:
-    MOCK_METHOD4(DecryptKey, bool(KeyContext &ctx, const UserAuth &auth, KeyInfo &key, bool isNeedNewNonce));
-    MOCK_METHOD4(EncryptKey, bool(KeyContext &ctx, const UserAuth &auth, const KeyInfo &key, bool isNeedNewNonce));
-    MOCK_METHOD3(DecryptKeyEx, bool(KeyContext &ctx, const UserAuth &auth, KeyBlob &rnd));
-    MOCK_METHOD3(EncryptKeyEx, bool(const UserAuth &auth, const KeyBlob &rnd, KeyContext &ctx));
+    MOCK_METHOD4(DecryptKey, int32_t(KeyContext &ctx, const UserAuth &auth, KeyInfo &key, bool isNeedNewNonce));
+    MOCK_METHOD4(EncryptKey, int32_t(KeyContext &ctx, const UserAuth &auth, const KeyInfo &key, bool isNeedNewNonce));
+    MOCK_METHOD3(DecryptKeyEx, int32_t(KeyContext &ctx, const UserAuth &auth, KeyBlob &rnd));
+    MOCK_METHOD3(EncryptKeyEx, int32_t(const UserAuth &auth, const KeyBlob &rnd, KeyContext &ctx));
     MOCK_METHOD1(UpgradeKey, bool(KeyContext &ctx));
-    MOCK_METHOD2(GenerateKey, bool(const UserAuth &auth, KeyBlob &keyOut));
+    MOCK_METHOD2(GenerateKey, int32_t(const UserAuth &auth, KeyBlob &keyOut));
     MOCK_METHOD1(GenerateRandomKey, KeyBlob(uint32_t keyLen));
 };
 }

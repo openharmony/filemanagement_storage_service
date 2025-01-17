@@ -33,8 +33,8 @@ public:
     virtual bool UpdateKey(const std::string &keypath) = 0;
     virtual bool RestoreKey(const UserAuth &auth) = 0;
     virtual bool UpgradeKeys() = 0;
-    virtual bool DecryptKeyBlob(const UserAuth &, const std::string &, KeyBlob &, KeyBlob &) = 0;
-    virtual bool EncryptKeyBlob(const UserAuth &, const std::string &, KeyBlob &, KeyBlob &) = 0;
+    virtual int32_t DecryptKeyBlob(const UserAuth &, const std::string &, KeyBlob &, KeyBlob &) = 0;
+    virtual int32_t EncryptKeyBlob(const UserAuth &, const std::string &, KeyBlob &, KeyBlob &) = 0;
     virtual bool RenameKeyPath(const std::string &keyPath) = 0;
     virtual bool GetOriginKey(KeyBlob &originKey) = 0;
     virtual bool SaveKeyBlob(const KeyBlob &blob, const std::string &path) = 0;
@@ -57,8 +57,8 @@ public:
     MOCK_METHOD0(UpgradeKeys, bool());
     MOCK_METHOD0(KeyDescIsEmpty, bool());
     MOCK_METHOD0(GetKeyDir, std::string());
-    MOCK_METHOD4(DecryptKeyBlob, bool(const UserAuth &, const std::string &, KeyBlob &, KeyBlob &));
-    MOCK_METHOD4(EncryptKeyBlob, bool(const UserAuth &, const std::string &, KeyBlob &, KeyBlob &));
+    MOCK_METHOD4(DecryptKeyBlob, int32_t(const UserAuth &, const std::string &, KeyBlob &, KeyBlob &));
+    MOCK_METHOD4(EncryptKeyBlob, int32_t(const UserAuth &, const std::string &, KeyBlob &, KeyBlob &));
     MOCK_METHOD1(RenameKeyPath, bool(const std::string &keypath));
     MOCK_METHOD1(GetOriginKey, bool(KeyBlob &originKey));
     MOCK_METHOD2(SaveKeyBlob, bool(const KeyBlob &blob, const std::string &path));
