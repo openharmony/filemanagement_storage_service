@@ -128,7 +128,7 @@ int32_t FscryptKeyV1::InstallKeyForAppKeyToKeyring(KeyBlob &appKey)
             std::string extraData = "keyring cmd=KEY_SPEC_SESSION_KEYRING,errno=" + std::to_string(errno) +
                 ",appKey=" + appKey.ToString();
             StorageRadar::ReportKeyRingResult("InstallKeyForAppKeyToKeyring::KeyCtrlAddKey", krid, extraData);
-            return E_ADD_SESSION_KEYING_ERROR;
+            return E_ADD_SESSION_KEYRING_ERROR;
         }
     }
     for (auto prefix : CRYPTO_NAME_PREFIXES) {
@@ -177,7 +177,7 @@ int32_t FscryptKeyV1::UninstallKeyForAppKeyToKeyring(const std::string keyId)
         }
     }
     LOGI("success");
-    return E_Ok;
+    return E_OK;
 }
 
 bool FscryptKeyV1::UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt)
@@ -236,7 +236,7 @@ int32_t FscryptKeyV1::ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId)
 {
     LOGI("ChangePinCodeClassE enter, userId: %{public}d", userId);
     auto ret = fscryptV1Ext.ChangePinCodeClassE(userId, isFbeSupport);
-    if (ret = E_OK) {
+    if (ret != E_OK) {
         LOGE("fscryptV1Ext ChangePinCodeClassE failed");
         return ret;
     }
