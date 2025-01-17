@@ -128,7 +128,7 @@ int32_t FscryptKeyV1::InstallKeyForAppKeyToKeyring(KeyBlob &appKey)
             std::string extraData = "keyring cmd=KEY_SPEC_SESSION_KEYRING,errno=" + std::to_string(errno) +
                 ",appKey=" + appKey.ToString();
             StorageRadar::ReportKeyRingResult("InstallKeyForAppKeyToKeyring::KeyCtrlAddKey", krid, extraData);
-            return -1;
+            return E_ADD_SESSION_KEYING_ERROR;
         }
     }
     for (auto prefix : CRYPTO_NAME_PREFIXES) {
@@ -167,7 +167,7 @@ int32_t FscryptKeyV1::UninstallKeyForAppKeyToKeyring(const std::string keyId)
         LOGE("Error searching session keyring for fscrypt-provisioning key for fscrypt");
         std::string extraData = "cmd=KEY_SPEC_SESSION_KEYRING,errno=" + std::to_string(errno) + ",keyId=" + keyId;
         StorageRadar::ReportKeyRingResult("UninstallKeyForAppKeyToKeyring::KeyCtrlSearch", krid, extraData);
-        return -1;
+        return E_SEARCH_SESSION_KEYING_ERROR;
     }
     for (auto prefix : CRYPTO_NAME_PREFIXES) {
         std::string keyref = prefix + ":" + keyId;
