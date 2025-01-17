@@ -246,8 +246,8 @@ bool FscryptKeyV1::DoDecryptClassE(const UserAuth &auth, KeyBlob &eSecretFBE, Ke
         // no candidate dir, just restore from the latest
         return KeyBackup::GetInstance().TryRestoreUeceKey(shared_from_this(), auth, eSecretFBE, decryptedKey) == 0;
     }
-
-    if (DecryptKeyBlob(auth, candidate, eSecretFBE, decryptedKey)) {
+    auto ret = DecryptKeyBlob(auth, candidate, eSecretFBE, decryptedKey);
+    if (ret == E_OK) {
         // update the latest with the candidate
         UpdateKey("", needSyncCandidate);
         return true;
@@ -268,7 +268,8 @@ bool FscryptKeyV1::DoDecryptClassE(const UserAuth &auth, KeyBlob &eSecretFBE, Ke
     });
     for (const auto &it: files) {
         if (it != candidate) {
-            if (DecryptKeyBlob(auth, dir_ + "/" + it, eSecretFBE, decryptedKey)) {
+            auto ret = DecryptKeyBlob(auth, dir_ + "/" + it, eSecretFBE, decryptedKey);
+            if (ret == E_OK) {
                 UpdateKey(it, needSyncCandidate);
                 return true;
             }
@@ -338,7 +339,8 @@ bool FscryptKeyV1::EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t
         return true;
     }
     KeyBlob encryptedKey(AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES);
-    if (!EncryptKeyBlob(auth, dir_ + PATH_LATEST, eSecretFBE, encryptedKey)) {
+    auto ret = EncryptKeyBlob(auth, dir_ + PATH_LATEST, eSecretFBE, encryptedKey);
+    if (ret != E_OK) {
         LOGE("EncryptKeyBlob Decrypt failed");
         eSecretFBE.Clear();
         return false;

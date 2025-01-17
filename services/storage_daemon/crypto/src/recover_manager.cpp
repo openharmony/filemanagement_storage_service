@@ -129,8 +129,8 @@ int RecoveryManager::SetRecoverKey(const std::vector<uint8_t> &key)
         KeyBlob ivBlob(ivData);
         KeyBlob key2Blob(key2Data);
         KeyBlob keyDesc;
-        auto ret = GenerateKeyDesc(ivBlob, keyDesc);
-        if (ret != E_OK) {
+        auto errNo = GenerateKeyDesc(ivBlob, keyDesc);
+        if (errNo != E_OK) {
             LOGE("Generate key desc failed !");
             return E_RECOVERY_KEY_GEN_KEY_DESC_ERR;
         }

@@ -927,7 +927,7 @@ void BaseKey::SetOriginKey(KeyBlob &originKey)
     return;
 }
 
-bool BaseKey::EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey,
+int32_t BaseKey::EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey,
                              KeyBlob &encryptedKey)
 {
     LOGI("enter");
@@ -940,28 +940,28 @@ bool BaseKey::EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, K
     if (!HuksMaster::GetInstance().GenerateKey(auth, keyCtx.shield) ||
         !SaveKeyBlob(keyCtx.shield, keyPath + PATH_SHIELD)) {
         LOGE("GenerateKey and save shield failed!");
-        return false;
+        return E_SHIELD_OPERATION_ERROR;
     }
     if (!GenerateAndSaveKeyBlob(keyCtx.secDiscard, keyPath + PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
         keyCtx.shield.Clear();
         LOGE("GenerateAndSaveKeyBlob sec_discard failed!");
-        return false;
+        return E_SAVE_KEY_BLOB_ERROR;
     }
     auto ret = HuksMaster::GetInstance().EncryptKey(keyCtx, auth, {.key = planKey}, false);
     if (ret != E_OK) {
         keyCtx.shield.Clear();
         keyCtx.secDiscard.Clear();
         LOGE("HUKS encrypt key failed!");
-        return false;
+        return ret;
     }
     CombKeyBlob(keyCtx.rndEnc, keyCtx.nonce, encryptedKey);
 
     ClearKeyContext(keyCtx);
     LOGI("finish");
-    return true;
+    return E_OK;
 }
 
-bool BaseKey::DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey,
+int32_t BaseKey::DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey,
                              KeyBlob &decryptedKey)
 {
     LOGI("enter");
@@ -970,12 +970,12 @@ bool BaseKey::DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath, K
     std::string path = candidate.empty() ? keyPath : candidate;
     if (!LoadKeyBlob(keyCtx.shield, path + PATH_SHIELD)) {
         LOGE("Load KeyBlob shield failed!");
-        return false;
+        return E_LOAD_KEY_BLOB_ERROR;
     }
     if (!LoadKeyBlob(keyCtx.secDiscard, path + PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
         LOGE("Load KeyBlob secDiscard failed!");
         keyCtx.shield.Clear();
-        return false;
+        return E_LOAD_KEY_BLOB_ERROR;
     }
 
     KeyInfo planKeyInfo = {.key = planKey};
@@ -987,14 +987,14 @@ bool BaseKey::DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath, K
         keyCtx.shield.Clear();
         keyCtx.rndEnc.Clear();
         LOGE("HUKS decrypt key failed!");
-        return false;
+        return ret;
     }
 
     decryptedKey = std::move(planKeyInfo.key);
     planKeyInfo.key.Clear();
     ClearKeyContext(keyCtx);
     LOGI("finish");
-    return true;
+    return E_OK;
 }
 
 bool BaseKey::RenameKeyPath(const std::string &keyPath)

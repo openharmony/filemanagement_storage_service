@@ -443,12 +443,12 @@ HWTEST_F(BaseKeyTest, BaseKey_EncryptKeyBlob_000, TestSize.Level1)
     UserAuth auth;
     std::string path = "/data/test/test1";
     EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(Return(E_ERR));
-    EXPECT_FALSE(elKey->EncryptKeyBlob(auth, path, planKey, encryptedKey));
+    EXPECT_NE(elKey->EncryptKeyBlob(auth, path, planKey, encryptedKey), E_OK);
     
     std::vector<uint8_t> vec{1, 2, 3, 4, 5};
     KeyBlob keyOut(vec);
     EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(Return(E_OK));
-    EXPECT_FALSE(elKey->EncryptKeyBlob(auth, path, planKey, encryptedKey));
+    EXPECT_NE(elKey->EncryptKeyBlob(auth, path, planKey, encryptedKey), E_OK);
 
     EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(DoAll(WithArgs<1>(Invoke([](KeyBlob &value) {
         std::vector<uint8_t> vecIn{1, 2, 3, 4, 5};
@@ -460,7 +460,7 @@ HWTEST_F(BaseKeyTest, BaseKey_EncryptKeyBlob_000, TestSize.Level1)
     ASSERT_TRUE(SaveStringToFileSync(pathShield, test));
     EXPECT_CALL(*huksMasterMock_, GenerateRandomKey(_)).WillOnce(Return(keyOut));
     EXPECT_CALL(*huksMasterMock_, EncryptKey(_, _, _, _)).WillOnce(Return(E_ERR));
-    EXPECT_FALSE(elKey->EncryptKeyBlob(auth, path, planKey, encryptedKey));
+    EXPECT_NE(elKey->EncryptKeyBlob(auth, path, planKey, encryptedKey), E_OK);
     
     string pathSecdisc = path + PATH_SECDISC;
     std::string testSec(CRYPTO_KEY_SECDISC_SIZE, 'c');
@@ -472,7 +472,7 @@ HWTEST_F(BaseKeyTest, BaseKey_EncryptKeyBlob_000, TestSize.Level1)
     })), Return(E_OK)));
     EXPECT_CALL(*huksMasterMock_, GenerateRandomKey(_)).WillOnce(Return(keyOut));
     EXPECT_CALL(*huksMasterMock_, EncryptKey(_, _, _, _)).WillOnce(Return(E_OK));
-    EXPECT_TRUE(elKey->EncryptKeyBlob(auth, path, planKey, encryptedKey));
+    EXPECT_EQ(elKey->EncryptKeyBlob(auth, path, planKey, encryptedKey), E_OK);
     auto ret = unlink(pathShield.c_str());
     ASSERT_TRUE(ret != -1) << "Failed to delete file in BaseKey_EncryptKeyBlob_000! " << errno;
     ret = unlink(pathSecdisc.c_str());
@@ -501,16 +501,16 @@ HWTEST_F(BaseKeyTest, BaseKey_DecryptKeyBlob_000, TestSize.Level1)
     KeyBlob planKey(vecIn);
     UserAuth auth;
     KeyBlob decryptedKey;
-    EXPECT_FALSE(elKey->DecryptKeyBlob(auth, path, planKey, decryptedKey));
+    EXPECT_NE(elKey->DecryptKeyBlob(auth, path, planKey, decryptedKey), E_OK);
 
     string pathSecdisc = path + PATH_SECDISC;
     std::string testSec(CRYPTO_KEY_SECDISC_SIZE, 'c');
     ASSERT_TRUE(SaveStringToFileSync(pathSecdisc, testSec));
     EXPECT_CALL(*huksMasterMock_, DecryptKey(_, _, _, _)).WillOnce(Return(E_ERR));
-    EXPECT_FALSE(elKey->DecryptKeyBlob(auth, path, planKey, decryptedKey));
+    EXPECT_NE(elKey->DecryptKeyBlob(auth, path, planKey, decryptedKey), E_OK);
 
     EXPECT_CALL(*huksMasterMock_, DecryptKey(_, _, _, _)).WillOnce(Return(E_OK));
-    EXPECT_TRUE(elKey->DecryptKeyBlob(auth, path, planKey, decryptedKey));
+    EXPECT_EQ(elKey->DecryptKeyBlob(auth, path, planKey, decryptedKey), E_OK);
 
     auto ret = unlink(pathShield.c_str());
     ASSERT_TRUE(ret != -1) << "Failed to delete file in BaseKey_DecryptKeyBlob_000! " << errno;
