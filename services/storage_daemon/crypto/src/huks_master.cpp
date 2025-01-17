@@ -721,7 +721,7 @@ int32_t HuksMaster::EncryptKeyEx(const UserAuth &auth, const KeyBlob &rnd, KeyCo
 
     ctx.rndEnc.Alloc(rnd.size + CRYPTO_AES_AAD_LEN);
     auto ret = HuksHalTripleStage(paramSet1, paramSet2, rnd, ctx.rndEnc);
-    if (!ret) {
+    if (ret != E_OK) {
         LOGE("HuksHalTripleStage failed");
     }
 
@@ -755,7 +755,7 @@ int32_t HuksMaster::EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyI
 
     ctx.rndEnc.Alloc(CRYPTO_AES_256_KEY_ENCRYPTED_SIZE);
     auto ret = HuksHalTripleStage(paramSet1, paramSet2, key.key, ctx.rndEnc);
-    if (!ret) {
+    if (ret != E_OK) {
         LOGE("HuksHalTripleStage failed");
     }
     HksFreeParamSet(&paramSet2);
@@ -788,7 +788,7 @@ int32_t HuksMaster::DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &k
 
     key.key.Alloc(ctx.rndEnc.size);
     auto ret = HuksHalTripleStage(paramSet1, paramSet2, ctx.rndEnc, key.key);
-    if (!ret) {
+    if (ret != E_OK) {
         LOGE("HuksHalTripleStage failed");
     }
 
@@ -822,7 +822,7 @@ int32_t HuksMaster::DecryptKeyEx(KeyContext &ctx, const UserAuth &auth, KeyBlob 
 
     rnd.Alloc(ctx.rndEnc.size);
     auto ret = HuksHalTripleStage(paramSet1, paramSet2, ctx.rndEnc, rnd);
-    if (!ret) {
+    if (ret != E_OK) {
         LOGE("HuksHalTripleStage failed");
     }
 

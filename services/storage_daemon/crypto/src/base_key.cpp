@@ -430,7 +430,8 @@ bool BaseKey::EncryptDe(const UserAuth &auth, const std::string &path)
         return false;
     }
     keyEncryptType_ = KeyEncryptType::KEY_CRYPT_HUKS;
-    if (!HuksMaster::GetInstance().EncryptKey(ctxDe, auth, keyInfo_, true)) {
+    auto ret = HuksMaster::GetInstance().EncryptKey(ctxDe, auth, keyInfo_, true);
+    if (ret != E_OK) {
         LOGE("Encrypt by hks failed.");
         ClearKeyContext(ctxDe);
         return false;
@@ -453,7 +454,8 @@ bool BaseKey::EncryptEceSece(const UserAuth &auth, const uint32_t keyType, KeyCo
 {
     LOGI("enter");
     // rnd 64 -> rndEnc 80
-    if (!HuksMaster::GetInstance().EncryptKeyEx(auth, keyInfo_.key, keyCtx)) {
+    auto ret = HuksMaster::GetInstance().EncryptKeyEx(auth, keyInfo_.key, keyCtx);
+    if (ret != E_OK) {
         LOGE("Encrypt by hks failed.");
         return false;
     }
@@ -570,7 +572,8 @@ bool BaseKey::DoRestoreKeyDe(const UserAuth &auth, const std::string &path)
     }
 
     LOGW("Decrypt by hks start.");  // keyCtx.rndEnc 80 -> 64
-    if (!HuksMaster::GetInstance().DecryptKey(ctxNone, auth, keyInfo_, true)) {
+    auto ret = HuksMaster::GetInstance().DecryptKey(ctxNone, auth, keyInfo_, true);
+    if (ret != E_OK) {
         LOGE("Decrypt by hks failed.");
         ClearKeyContext(ctxNone);
         return false;
@@ -615,7 +618,8 @@ bool BaseKey::DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &pat
             mUserAuth.secret = KeyBlob(NULL_SECRET);
             KeyContext tempCtx = {};
             DoTempStore(keyContext_, tempCtx);
-            if (!HuksMaster::GetInstance().DecryptKeyEx(tempCtx, mUserAuth, keyInfo_.key)) {
+            auto ret = HuksMaster::GetInstance().DecryptKeyEx(tempCtx, mUserAuth, keyInfo_.key);
+            if (ret != E_OK) {
                 LOGE("Decrypt by hks failed.");
                 ClearKeyContext(tempCtx);
                 return false;
@@ -747,8 +751,8 @@ bool BaseKey::DecryptReal(const UserAuth &auth, const uint32_t keyType, KeyConte
     if (keyType == TYPE_EL3 || keyType == TYPE_EL4) {
         DoTempStore(keyCtx, keyContext_);
     }
-
-    if (!HuksMaster::GetInstance().DecryptKeyEx(keyCtx, auth, keyInfo_.key)) { // rndEnc -> rnd
+    auto ret = HuksMaster::GetInstance().DecryptKeyEx(keyCtx, auth, keyInfo_.key);
+    if (ret != E_OK) { // rndEnc -> rnd
         LOGE("Decrypt by hks failed.");
         return false;
     }
@@ -943,7 +947,8 @@ bool BaseKey::EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, K
         LOGE("GenerateAndSaveKeyBlob sec_discard failed!");
         return false;
     }
-    if (!HuksMaster::GetInstance().EncryptKey(keyCtx, auth, {.key = planKey}, false)) {
+    auto ret = HuksMaster::GetInstance().EncryptKey(keyCtx, auth, {.key = planKey}, false);
+    if (ret != E_OK) {
         keyCtx.shield.Clear();
         keyCtx.secDiscard.Clear();
         LOGE("HUKS encrypt key failed!");
@@ -977,7 +982,8 @@ bool BaseKey::DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath, K
     SplitKeyBlob(planKey, keyCtx.rndEnc, keyCtx.nonce, AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES);
     LOGE("decrypted size : %{public}d, nonce size : %{public}d", keyCtx.rndEnc.size, keyCtx.nonce.size);
 
-    if (!HuksMaster::GetInstance().DecryptKey(keyCtx, auth, planKeyInfo, false)) {
+    auto ret = HuksMaster::GetInstance().DecryptKey(keyCtx, auth, planKeyInfo, false);
+    if (ret != E_OK) {
         keyCtx.shield.Clear();
         keyCtx.rndEnc.Clear();
         LOGE("HUKS decrypt key failed!");
