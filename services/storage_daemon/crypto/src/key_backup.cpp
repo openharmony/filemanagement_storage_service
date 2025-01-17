@@ -146,13 +146,15 @@ int32_t KeyBackup::TryRestoreUeceKey(const std::shared_ptr<BaseKey> &baseKey,
     std::string keyDir = baseKey->GetDir();
     std::string backupDir;
     GetBackupDir(keyDir, backupDir);
-    if (baseKey->DecryptKeyBlob(auth, keyDir + PATH_LATEST, planKey, decryptedKey)) {
+    auto ret = baseKey->DecryptKeyBlob(auth, keyDir + PATH_LATEST, planKey, decryptedKey);
+    if (ret == E_OK) {
         CheckAndFixFiles(keyDir, backupDir);
         LOGI("Restore uece by main key success !");
         return 0;
     }
     LOGE("origKey failed, try backupKey");
-    if (baseKey->DecryptKeyBlob(auth, backupDir + PATH_LATEST, planKey, decryptedKey)) {
+    ret = baseKey->DecryptKeyBlob(auth, backupDir + PATH_LATEST, planKey, decryptedKey);
+    if (ret == E_OK) {
         CheckAndFixFiles(backupDir, keyDir);
         LOGI("Restore uece by back key success !");
         return 0;

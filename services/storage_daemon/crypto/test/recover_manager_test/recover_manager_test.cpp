@@ -47,12 +47,12 @@ void RecoveryManagerTest::TearDownTestCase(void)
 
 void RecoveryManagerTest::SetUp(void)
 {
-    // input testcase setup step，setup invoked before each testcases
+    // input testcase setup step, setup invoked before each testcases
 }
 
 void RecoveryManagerTest::TearDown(void)
 {
-    // input testcase teardown step，teardown invoked after each testcases
+    // input testcase teardown step, teardown invoked after each testcases
 }
 
 /**
@@ -67,24 +67,28 @@ HWTEST_F(RecoveryManagerTest, RecoveryManager_InstallDeCe_001, TestSize.Level1)
     std::vector<uint8_t> keyDescVct(3, 2);
     KeyBlob key2BlobErr;
     KeyBlob keyDesc(keyDescVct);
-    EXPECT_FALSE(RecoveryManager::GetInstance().InstallDeCe(key2BlobErr, keyDesc));
+    int ret = RecoveryManager::GetInstance().InstallDeCe(key2BlobErr, keyDesc);
+    EXPECT_NE(0, ret);
 
     std::vector<uint8_t> key2BlobVct(5, 1);
     KeyBlob key2Blob(key2BlobVct);
     EXPECT_CALL(*keyControlMock_, KeyCtrlSearch(_, _, _, _)).WillOnce(Return(-1));
     EXPECT_CALL(*keyControlMock_, KeyCtrlAddKey(_, _, _)).WillOnce(Return(-1));
-    EXPECT_FALSE(RecoveryManager::GetInstance().InstallDeCe(key2Blob, keyDesc));
+    ret = RecoveryManager::GetInstance().InstallDeCe(key2BlobErr, keyDesc);
+    EXPECT_NE(0, ret);
 
     EXPECT_CALL(*keyControlMock_, KeyCtrlSearch(_, _, _, _)).WillOnce(Return(-1));
     EXPECT_CALL(*keyControlMock_, KeyCtrlAddKey(_, _, _)).WillOnce(Return(0));
     EXPECT_CALL(*keyControlMock_, KeyCtrlAddKeyEx(_, _, _, _)).WillOnce(Return(0))
         .WillOnce(Return(-1)).WillOnce(Return(0));
-    EXPECT_TRUE(RecoveryManager::GetInstance().InstallDeCe(key2Blob, keyDesc));
+    ret = RecoveryManager::GetInstance().InstallDeCe(key2BlobErr, keyDesc);
+    EXPECT_EQ(0, ret);
 
     EXPECT_CALL(*keyControlMock_, KeyCtrlSearch(_, _, _, _)).WillOnce(Return(0));
     EXPECT_CALL(*keyControlMock_, KeyCtrlAddKeyEx(_, _, _, _)).WillOnce(Return(0))
         .WillOnce(Return(-1)).WillOnce(Return(0));
-    EXPECT_TRUE(RecoveryManager::GetInstance().InstallDeCe(key2Blob, keyDesc));
+    ret = RecoveryManager::GetInstance().InstallDeCe(key2BlobErr, keyDesc);
+    EXPECT_EQ(0, ret);
     GTEST_LOG_(INFO) << "RecoveryManager_InstallDeCe_001 end";
 }
 
@@ -101,25 +105,29 @@ HWTEST_F(RecoveryManagerTest, RecoveryManager_InstallEceSece_001, TestSize.Level
     std::vector<uint8_t> keyDescVct(3, 2);
     KeyBlob key2BlobErr;
     KeyBlob keyDesc(keyDescVct);
-    EXPECT_FALSE(RecoveryManager::GetInstance().InstallEceSece(sdpClass, key2BlobErr, keyDesc));
+    int ret = RecoveryManager::GetInstance().InstallEceSece(sdpClass, key2BlobErr, keyDesc);
+    EXPECT_NE(0, ret);
     
     EncryptionKeySdp fskey;
     KeyBlob key2Blob;
     key2Blob.Alloc(sizeof(fskey.raw));
     EXPECT_CALL(*keyControlMock_, KeyCtrlSearch(_, _, _, _)).WillOnce(Return(-1));
     EXPECT_CALL(*keyControlMock_, KeyCtrlAddKey(_, _, _)).WillOnce(Return(-1));
-    EXPECT_FALSE(RecoveryManager::GetInstance().InstallEceSece(sdpClass, key2Blob, keyDesc));
+    ret = RecoveryManager::GetInstance().InstallEceSece(sdpClass, key2BlobErr, keyDesc);
+    EXPECT_NE(0, ret);
 
     EXPECT_CALL(*keyControlMock_, KeyCtrlSearch(_, _, _, _)).WillOnce(Return(-1));
     EXPECT_CALL(*keyControlMock_, KeyCtrlAddKey(_, _, _)).WillOnce(Return(0));
     EXPECT_CALL(*keyControlMock_, KeyCtrlAddKeySdp(_, _, _, _)).WillOnce(Return(0))
         .WillOnce(Return(-1)).WillOnce(Return(0));
-    EXPECT_TRUE(RecoveryManager::GetInstance().InstallEceSece(sdpClass, key2Blob, keyDesc));
+    ret = RecoveryManager::GetInstance().InstallEceSece(sdpClass, key2BlobErr, keyDesc);
+    EXPECT_EQ(0, ret);
 
     EXPECT_CALL(*keyControlMock_, KeyCtrlSearch(_, _, _, _)).WillOnce(Return(0));
     EXPECT_CALL(*keyControlMock_, KeyCtrlAddKeySdp(_, _, _, _)).WillOnce(Return(0))
         .WillOnce(Return(-1)).WillOnce(Return(0));
-    EXPECT_TRUE(RecoveryManager::GetInstance().InstallEceSece(sdpClass, key2Blob, keyDesc));
+    ret = RecoveryManager::GetInstance().InstallEceSece(sdpClass, key2BlobErr, keyDesc);
+    EXPECT_EQ(0, ret);
     GTEST_LOG_(INFO) << "RecoveryManager_InstallEceSece_001 end";
 }
 
@@ -139,16 +147,19 @@ HWTEST_F(RecoveryManagerTest, RecoveryManager_InstallKeyDescToKeyring_001, TestS
     KeyBlob keyDesc(keyDescVct);
     EXPECT_CALL(*keyControlMock_, KeyCtrlSearch(_, _, _, _)).WillOnce(Return(-1));
     EXPECT_CALL(*keyControlMock_, KeyCtrlAddKey(_, _, _)).WillOnce(Return(-1));
-    EXPECT_FALSE(RecoveryManager::GetInstance().InstallKeyDescToKeyring(TYPE_EL3, key2Blob, keyDesc));
+    int ret = RecoveryManager::GetInstance().InstallKeyDescToKeyring(TYPE_EL3, key2Blob, keyDesc);
+    EXPECT_NE(0, ret);
 
     EXPECT_CALL(*keyControlMock_, KeyCtrlSearch(_, _, _, _)).WillOnce(Return(-1));
     EXPECT_CALL(*keyControlMock_, KeyCtrlAddKey(_, _, _)).WillOnce(Return(-1));
-    EXPECT_FALSE(RecoveryManager::GetInstance().InstallKeyDescToKeyring(TYPE_EL4, key2Blob, keyDesc));
+    ret = RecoveryManager::GetInstance().InstallKeyDescToKeyring(TYPE_EL3, key2Blob, keyDesc);
+    EXPECT_NE(0, ret);
 
     EXPECT_CALL(*keyControlMock_, KeyCtrlSearch(_, _, _, _)).WillOnce(Return(0));
     EXPECT_CALL(*keyControlMock_, KeyCtrlAddKeySdp(_, _, _, _)).WillOnce(Return(0))
         .WillOnce(Return(-1)).WillOnce(Return(0));
-    EXPECT_TRUE(RecoveryManager::GetInstance().InstallKeyDescToKeyring(TYPE_EL3, key2Blob, keyDesc));
+    ret = RecoveryManager::GetInstance().InstallKeyDescToKeyring(TYPE_EL3, key2Blob, keyDesc);
+    EXPECT_EQ(0, ret);
     GTEST_LOG_(INFO) << "RecoveryManager_InstallKeyDescToKeyring_001 end";
 }
 
@@ -167,12 +178,14 @@ HWTEST_F(RecoveryManagerTest, RecoveryManager_InstallKeyDescToKeyring_002, TestS
     KeyBlob key2Blob(key2BlobVct);
     EXPECT_CALL(*keyControlMock_, KeyCtrlSearch(_, _, _, _)).WillOnce(Return(-1));
     EXPECT_CALL(*keyControlMock_, KeyCtrlAddKey(_, _, _)).WillOnce(Return(-1));
-    EXPECT_FALSE(RecoveryManager::GetInstance().InstallKeyDescToKeyring(TYPE_EL2, key2Blob, keyDesc));
+    int ret = RecoveryManager::GetInstance().InstallKeyDescToKeyring(TYPE_EL3, key2Blob, keyDesc);
+    EXPECT_NE(0, ret);
 
     EXPECT_CALL(*keyControlMock_, KeyCtrlSearch(_, _, _, _)).WillOnce(Return(0));
     EXPECT_CALL(*keyControlMock_, KeyCtrlAddKeyEx(_, _, _, _)).WillOnce(Return(0))
         .WillOnce(Return(-1)).WillOnce(Return(0));
-    EXPECT_TRUE(RecoveryManager::GetInstance().InstallKeyDescToKeyring(TYPE_EL2, key2Blob, keyDesc));
+    ret = RecoveryManager::GetInstance().InstallKeyDescToKeyring(TYPE_EL3, key2Blob, keyDesc);
+    EXPECT_EQ(0, ret);
     GTEST_LOG_(INFO) << "RecoveryManager_InstallKeyDescToKeyring_002 end";
 }
 
@@ -187,11 +200,13 @@ HWTEST_F(RecoveryManagerTest, RecoveryManager_GenerateKeyDesc_001, TestSize.Leve
     GTEST_LOG_(INFO) << "RecoveryManager_GenerateKeyDesc_001 start";
     KeyBlob ivBlobErr;
     KeyBlob keyDesc;
-    EXPECT_FALSE(RecoveryManager::GetInstance().GenerateKeyDesc(ivBlobErr, keyDesc));
+    int ret = RecoveryManager::GetInstance().GenerateKeyDesc(ivBlobErr, keyDesc);
+    EXPECT_NE(0, ret);
 
     std::vector<uint8_t> ivBlobVct(5, 1);
     KeyBlob ivBlob(ivBlobVct);
-    EXPECT_TRUE(RecoveryManager::GetInstance().GenerateKeyDesc(ivBlob, keyDesc));
+    ret = RecoveryManager::GetInstance().GenerateKeyDesc(ivBlob, keyDesc);
+    EXPECT_EQ(0, ret);
     GTEST_LOG_(INFO) << "RecoveryManager_GenerateKeyDesc_001 end";
 }
 } // OHOS::StorageDaemon

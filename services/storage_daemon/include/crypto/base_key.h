@@ -67,8 +67,8 @@ public:
     virtual bool ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId) = 0;
     virtual bool LockUece(bool &isFbeSupport) = 0;
     bool DoRestoreKey(const UserAuth &auth, const std::string &keypath);
-    bool EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey, KeyBlob &encryptedKey);
-    bool DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey, KeyBlob &decryptedKey);
+    int32_t EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey, KeyBlob &encryptedKey);
+    int32_t DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey, KeyBlob &decryptedKey);
     bool RenameKeyPath(const std::string &keyPath);
     bool ClearKey(const std::string &mnt = MNT_DATA);
     void WipingActionDir(std::string &path);
@@ -101,7 +101,7 @@ private:
 #else
     bool DoStoreKey(const UserAuth &auth);
 #endif
-    bool LoadAndSaveShield(const UserAuth &auth, const std::string &pathShield, bool needGenerateShield,
+    int32_t LoadAndSaveShield(const UserAuth &auth, const std::string &pathShield, bool needGenerateShield,
                            KeyContext &keyCtx);
     bool SaveAndCleanKeyBuff(const std::string &keyPath, KeyContext &keyCtx);
     bool DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &path, const uint32_t keyType);
@@ -111,7 +111,7 @@ private:
     bool DoUpdateRestoreVx(const UserAuth &auth, const std::string &KeyPath, UpdateVersion update_version);
     static bool GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size);
     static bool GenerateKeyBlob(KeyBlob &blob, const uint32_t size);
-    bool EncryptDe(const UserAuth &auth, const std::string &path);
+    int32_t EncryptDe(const UserAuth &auth, const std::string &path);
     bool EncryptEceSece(const UserAuth &auth, const uint32_t keyType, KeyContext &keyCtx);
     bool Decrypt(const UserAuth &auth);
     bool DecryptReal(const UserAuth &auth, const uint32_t keyType, KeyContext &keyCtx);
@@ -121,7 +121,7 @@ private:
     void CombKeyBlob(const KeyBlob &encAad, const KeyBlob &end, KeyBlob &keyOut);
     void SplitKeyBlob(const KeyBlob &keyIn, KeyBlob &encAad, KeyBlob &nonce, uint32_t start);
     void ClearKeyContext(KeyContext &keyCtx);
-    bool InitKeyContext(const UserAuth &auth, const std::string &keyPath, KeyContext &keyCtx);
+    int32_t InitKeyContext(const UserAuth &auth, const std::string &keyPath, KeyContext &keyCtx);
     int GetCandidateVersion() const;
     std::string GetNextCandidateDir() const;
     void SyncKeyDir() const;
