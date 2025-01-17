@@ -45,7 +45,7 @@ class MtpDeviceManager : public NoCopyable  {
 
 public:
     int32_t MountDevice(const MtpDeviceInfo &device);
-    int32_t UmountDevice(const MtpDeviceInfo &device, bool needNotify);
+    int32_t UmountDevice(const MtpDeviceInfo &device, bool needNotify, bool isBadRemove);
     int32_t PrepareMtpMountPath(const std::string &path);
 
 private:

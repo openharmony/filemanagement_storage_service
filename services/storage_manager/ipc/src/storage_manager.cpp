@@ -744,11 +744,11 @@ int32_t StorageManager::NotifyMtpMounted(const std::string &id, const std::strin
     return E_OK;
 }
 
-int32_t StorageManager::NotifyMtpUnmounted(const std::string &id, const std::string &path)
+int32_t StorageManager::NotifyMtpUnmounted(const std::string &id, const std::string &path, const bool isBadRemove)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::NotifyMtpUnmounted start, id: %{public}s, path: %{public}s", id.c_str(), path.c_str());
-    DelayedSingleton<VolumeManagerService>::GetInstance()->NotifyMtpUnmounted(id, path);
+    DelayedSingleton<VolumeManagerService>::GetInstance()->NotifyMtpUnmounted(id, path, isBadRemove);
 #endif
     return E_OK;
 }

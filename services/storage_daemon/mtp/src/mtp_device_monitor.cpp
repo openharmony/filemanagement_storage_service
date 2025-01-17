@@ -170,7 +170,7 @@ void MtpDeviceMonitor::UmountAllMtpDevice()
 {
     std::lock_guard<std::mutex> lock(listMutex_);
     for (auto iter = lastestMtpDevList_.begin(); iter != lastestMtpDevList_.end(); iter++) {
-        int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->UmountDevice(*iter, true);
+        int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->UmountDevice(*iter, true, false);
         if (ret != E_OK) {
             LOGE("UmountAllMtpDevice: umount mtp device failed, path=%{public}s", (iter->path).c_str());
         }
@@ -185,7 +185,7 @@ void MtpDeviceMonitor::UmountDetachedMtpDevice(uint8_t devNum, uint32_t busLoc)
 
     for (auto iter = lastestMtpDevList_.begin(); iter != lastestMtpDevList_.end();) {
         LOGI("Mtp device mount path=%{public}s is not exist or removed, umount it.", (iter->path).c_str());
-        int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->UmountDevice(*iter, true);
+        int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->UmountDevice(*iter, true, true);
         if (ret == E_OK) {
             iter = lastestMtpDevList_.erase(iter);
         } else {
@@ -221,7 +221,7 @@ int32_t MtpDeviceMonitor::Umount(const std::string &id)
         if (iter->id != id) {
             continue;
         }
-        int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->UmountDevice(*iter, true);
+        int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->UmountDevice(*iter, true, false);
         if (ret == E_OK) {
             lastestMtpDevList_.erase(iter);
         } else {

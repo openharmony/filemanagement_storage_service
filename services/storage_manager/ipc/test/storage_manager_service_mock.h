@@ -313,8 +313,8 @@ public:
     {
         return E_OK;
     }
- 
-    virtual int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path) override
+
+    virtual int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path, const bool isBadRemove) override
     {
         return E_OK;
     }

@@ -1267,7 +1267,8 @@ int32_t StorageManagerStub::HandleNotifyMtpUnmount(MessageParcel &data, MessageP
 
     std::string id = data.ReadString();
     std::string path = data.ReadString();
-    int32_t err = NotifyMtpUnmounted(id, path);
+    bool isBadRemove = data.ReadBool();
+    int32_t err = NotifyMtpUnmounted(id, path, isBadRemove);
     if (!reply.WriteInt32(err)) {
         LOGE("Write reply error code failed");
         return E_WRITE_REPLY_ERR;

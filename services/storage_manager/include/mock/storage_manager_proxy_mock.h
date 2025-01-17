@@ -92,7 +92,7 @@ public:
     int32_t SetRecoverKey(const std::vector<uint8_t> &key) override;
     int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
                              const std::string &uuid) override;
-    int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path) override;
+    int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path, const bool isBadRemove) override;
 
     // app file share api
     std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,

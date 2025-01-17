@@ -266,7 +266,7 @@ void VolumeManagerService::NotifyMtpMounted(const std::string &id, const std::st
     VolumeStateNotify(VolumeState::MOUNTED, volumePtr);
 }
 
-void VolumeManagerService::NotifyMtpUnmounted(const std::string &id, const std::string &path)
+void VolumeManagerService::NotifyMtpUnmounted(const std::string &id, const std::string &path, const bool isBadRemove)
 {
     LOGI("VolumeManagerService NotifyMtpUnmounted");
     if (!volumeMap_.Contains(id)) {
@@ -278,7 +278,12 @@ void VolumeManagerService::NotifyMtpUnmounted(const std::string &id, const std::
         LOGE("volumePtr is nullptr for id");
         return;
     }
-    VolumeStateNotify(VolumeState::UNMOUNTED, volumePtr);
+    if (!isBadRemove) {
+        VolumeStateNotify(VolumeState::UNMOUNTED, volumePtr);
+    } else {
+        VolumeStateNotify(VolumeState::BAD_REMOVAL, volumePtr);
+    }
+
     volumeMap_.Erase(id);
 }
 } // StorageManager

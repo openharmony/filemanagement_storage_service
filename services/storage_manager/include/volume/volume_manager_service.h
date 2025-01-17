@@ -41,7 +41,7 @@ public:
     int32_t Format(std::string volumeId, std::string fsType);
     void NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
                           const std::string &uuid);
-    void NotifyMtpUnmounted(const std::string &id, const std::string &path);
+    void NotifyMtpUnmounted(const std::string &id, const std::string &path, const bool isBadRemove);
 
 private:
     StorageService::StorageRlMap<std::string, std::shared_ptr<VolumeExternal>> volumeMap_;

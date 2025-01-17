@@ -70,7 +70,7 @@ public:
 
     virtual int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
                                      const std::string &uuid) = 0;
-    virtual int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path) = 0;
+    virtual int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path, const bool isBadRemove) = 0;
 
     // fscrypt api
     virtual int32_t GenerateUserKeys(uint32_t userId, uint32_t flags) = 0;

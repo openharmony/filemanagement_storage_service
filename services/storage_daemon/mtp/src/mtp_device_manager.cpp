@@ -92,7 +92,7 @@ int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
     }
     if ((err != 0) || (result.size() != 0)) {
         LOGE("Run mtpfs cmd to mount mtp device failed.");
-        UmountDevice(device, false);
+        UmountDevice(device, false, false);
         isMounting = false;
         return E_MTP_MOUNT_FAILED;
     }
@@ -104,7 +104,7 @@ int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
     return E_OK;
 }
 
-int32_t MtpDeviceManager::UmountDevice(const MtpDeviceInfo &device, bool needNotify)
+int32_t MtpDeviceManager::UmountDevice(const MtpDeviceInfo &device, bool needNotify, bool isBadRemove)
 {
     LOGI("MountDevice: start umount mtp device, path=%{public}s", device.path.c_str());
     int ret = umount(device.path.c_str());
@@ -120,7 +120,7 @@ int32_t MtpDeviceManager::UmountDevice(const MtpDeviceInfo &device, bool needNot
     LOGI("Mtp device unmount success.");
     if (needNotify) {
         StorageManagerClient client;
-        client.NotifyMtpUnmounted(device.id, device.path);
+        client.NotifyMtpUnmounted(device.id, device.path, isBadRemove);
     }
     DelFolder(device.path);
     return E_OK;
