@@ -1190,6 +1190,14 @@ int32_t StorageDaemon::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, 
 #endif
 }
 
+int32_t StorageDaemon::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
+{
+#ifdef USER_CRYPTO_MANAGER
+    needActive = IsNeedRestorePathExist(userId, false);
+#endif
+    return E_OK;
+}
+
 int32_t StorageDaemon::UpdateMemoryPara(int32_t size, int32_t &oldSize)
 {
     return E_OK;

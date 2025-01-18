@@ -245,5 +245,10 @@ int32_t StorageDaemonProxy::UMountMediaFuse(int32_t userId)
 {
     return E_OK;
 }
+
+int32_t StorageDaemonProxy::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
+{
+    return E_OK;
+}
 } // StorageDaemon
 } // OHOS

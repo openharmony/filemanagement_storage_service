@@ -63,6 +63,7 @@ namespace StorageDaemon {
         SET_RECOVER_KEY,
         MOUNT_MEDIA_FUSE,
         UMOUNT_MEDIA_FUSE,
+        GET_USER_NEED_ACTIVE_STATUS,
     };
 } // namespace StorageDaemon
 } // namespace OHOS

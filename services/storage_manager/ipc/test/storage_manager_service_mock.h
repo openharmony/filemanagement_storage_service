@@ -308,6 +308,11 @@ public:
         return E_OK;
     }
 
+    virtual int32_t GetUserNeedActiveStatus(uint32_t userId, bool &needActive) override
+    {
+        return E_OK;
+    }
+
     virtual int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
                                      const std::string &uuid) override
     {
