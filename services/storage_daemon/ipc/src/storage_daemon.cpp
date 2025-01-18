@@ -1192,7 +1192,7 @@ int32_t StorageDaemon::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, 
 
 int32_t StorageDaemon::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
 {
-#ifdef USER_CRYPTO_MANAGER
+#ifdef USER_CRYPTO_MIGRATE_KEY
     needActive = IsNeedRestorePathExist(userId, false);
 #endif
     return E_OK;
