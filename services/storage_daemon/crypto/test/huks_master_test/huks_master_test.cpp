@@ -242,7 +242,7 @@ HWTEST_F(HuksMasterTest, HuksMaster_EncryptKeyEx_001, TestSize.Level1)
     UserAuth auth;
     KeyBlob rnd;
     KeyContext ctx;
-    EXPECT_EQ(HuksMaster::GetInstance().EncryptKeyEx(auth, rnd, ctx), false);
+    EXPECT_NE(HuksMaster::GetInstance().EncryptKeyEx(auth, rnd, ctx), E_OK);
     
     std::vector<uint8_t> blobVec{1, 2, 3, 4, 5};
     ctx.shield.Alloc(blobVec.size());
