@@ -64,6 +64,7 @@ public:
     MOCK_METHOD3(GenerateAppkey, int32_t (uint32_t, uint32_t, std::string &));
     MOCK_METHOD2(DeleteAppkey, int32_t (uint32_t, const std::string &));
     MOCK_METHOD3(GetFileEncryptStatus, int32_t (uint32_t, bool &, bool));
+    MOCK_METHOD2(GetUserNeedActiveStatus, int32_t(uint32_t, bool &));
     MOCK_METHOD4(CreateRecoverKey, int32_t (uint32_t, uint32_t, const std::vector<uint8_t> &,
                                             const std::vector<uint8_t> &));
     MOCK_METHOD1(SetRecoverKey, int32_t (const std::vector<uint8_t> &));

@@ -49,6 +49,7 @@ public:
     int32_t GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId);
     int32_t DeleteAppkey(const std::string keyId);
     int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false);
+    int32_t GetUserNeedActiveStatus(uint32_t userId, bool &needActive);
     int32_t CreateRecoverKey(uint32_t userId,
                              uint32_t userType,
                              const std::vector<uint8_t> &token,

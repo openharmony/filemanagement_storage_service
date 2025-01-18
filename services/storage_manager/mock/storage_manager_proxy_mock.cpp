@@ -326,5 +326,10 @@ int32_t StorageManagerProxy::UMountMediaFuse(int32_t userId)
 {
     return E_OK;
 }
+
+int32_t StorageManagerProxy::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
+{
+    return E_OK;
+}
 } // StorageManager
 } // OHOS

@@ -106,6 +106,8 @@ StorageDaemonStub::StorageDaemonStub()
         &StorageDaemonStub::HandleMountMediaFuse;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::UMOUNT_MEDIA_FUSE)] =
         &StorageDaemonStub::HandleUMountMediaFuse;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_USER_NEED_ACTIVE_STATUS)] =
+        &StorageDaemonStub::HandleGetUserNeedActiveStatus;
 }
 
 int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
@@ -157,6 +159,7 @@ int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_FILE_ENCRYPT_STATUS):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::MOUNT_MEDIA_FUSE):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::UMOUNT_MEDIA_FUSE):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_USER_NEED_ACTIVE_STATUS):
             return OnRemoteRequestForApp(code, data, reply);
         default:
             LOGE("Cannot response request %{public}d: unknown tranction", code);
@@ -263,6 +266,8 @@ int32_t StorageDaemonStub::OnRemoteRequestForApp(uint32_t code, MessageParcel &d
             return HandleMountMediaFuse(data, reply);
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::UMOUNT_MEDIA_FUSE):
             return HandleUMountMediaFuse(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_USER_NEED_ACTIVE_STATUS):
+            return HandleGetUserNeedActiveStatus(data, reply);
         default:
             LOGE("Cannot response request %{public}d: unknown tranction", code);
             return E_SYS_KERNEL_ERR;
@@ -875,6 +880,23 @@ int32_t StorageDaemonStub::HandleUMountMediaFuse(MessageParcel &data, MessagePar
         return E_WRITE_REPLY_ERR;
     }
 #endif
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleGetUserNeedActiveStatus(MessageParcel &data, MessageParcel &reply)
+{
+    uint32_t userId = data.ReadUint32();
+    bool needActive = false;
+    int timerId = StorageXCollie::SetTimer("storage:GetUserNeedActiveStatus", LOCAL_TIME_OUT_SECONDS);
+    std::lock_guard<std::mutex> lock(mutex_);
+    int err = GetUserNeedActiveStatus(userId, needActive);
+    StorageXCollie::CancelTimer(timerId);
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
+    if (!reply.WriteBool(needActive)) {
+        return E_WRITE_REPLY_ERR;
+    }
     return E_OK;
 }
 } // StorageDaemon
