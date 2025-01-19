@@ -54,7 +54,7 @@ public:
                                  const std::vector<uint8_t> &secret);
     static int32_t InactiveUserKey(uint32_t userId);
     static int32_t FscryptEnable(const std::string &fscryptOptions);
-    static int32_t UpdateKeyContext(uint32_t userId);
+    static int32_t UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey = false);
     static int32_t LockUserScreen(uint32_t userId);
     static int32_t UnlockUserScreen(uint32_t userId,
                                     const std::vector<uint8_t> &token,
@@ -67,6 +67,7 @@ public:
     static int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId);
     static int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false);
+    static int32_t GetUserNeedActiveStatus(uint32_t userId, bool &needActive);
     static int32_t CreateRecoverKey(uint32_t userId,
                                     uint32_t userType,
                                     const std::vector<uint8_t> &token,

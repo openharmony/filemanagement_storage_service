@@ -565,6 +565,17 @@ int32_t StorageManager::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted,
 #endif
 }
 
+int32_t StorageManager::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
+{
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("UserId: %{public}u", userId);
+    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
+    return fsCrypto->GetUserNeedActiveStatus(userId, needActive);
+#else
+    return E_OK;
+#endif
+}
+
 int32_t StorageManager::UnlockUserScreen(uint32_t userId,
                                          const std::vector<uint8_t> &token,
                                          const std::vector<uint8_t> &secret)
@@ -638,12 +649,12 @@ int32_t StorageManager::SetRecoverKey(const std::vector<uint8_t> &key)
 #endif
 }
 
-int32_t StorageManager::UpdateKeyContext(uint32_t userId)
+int32_t StorageManager::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
     std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    int32_t err = fsCrypto->UpdateKeyContext(userId);
+    int32_t err = fsCrypto->UpdateKeyContext(userId, needRemoveTmpKey);
     return err;
 #else
     return E_OK;

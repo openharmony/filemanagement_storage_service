@@ -164,7 +164,7 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRe
         .WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, ActiveUserKey(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, InactiveUserKey(testing::_)).WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(mock, UpdateKeyContext(testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, UpdateKeyContext(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, LockUserScreen(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, UnlockUserScreen(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, MountDfsDocs(testing::_, testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
@@ -176,6 +176,7 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRe
     EXPECT_CALL(mock, MountCryptoPathAgain(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, UpdateMemoryPara(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, GetFileEncryptStatus(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, GetUserNeedActiveStatus(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, UpdateUseAuthWithRecoveryKey(testing::_, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return(E_OK));
 
@@ -1010,7 +1011,7 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonTest_HandleUpdateKe
 
     MessageParcel data1;
     MessageParcel reply1;
-    EXPECT_CALL(mock, UpdateKeyContext(testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, UpdateKeyContext(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     int32_t ret = mock.HandleUpdateKeyContext(data1, reply1);
     EXPECT_TRUE(ret == E_OK);
     int32_t err = reply1.ReadInt32();
@@ -1018,7 +1019,7 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonTest_HandleUpdateKe
 
     MessageParcel data2;
     MessageParcel reply2;
-    EXPECT_CALL(mock, UpdateKeyContext(testing::_)).WillOnce(testing::Return(E_ERR));
+    EXPECT_CALL(mock, UpdateKeyContext(testing::_, testing::_)).WillOnce(testing::Return(E_ERR));
     ret = mock.HandleUpdateKeyContext(data2, reply2);
     EXPECT_TRUE(ret == E_OK);
     err = reply2.ReadInt32();

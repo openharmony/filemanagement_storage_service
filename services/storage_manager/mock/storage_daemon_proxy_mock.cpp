@@ -170,7 +170,7 @@ int32_t StorageDaemonProxy::SetRecoverKey(const std::vector<uint8_t> &key)
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::UpdateKeyContext(uint32_t userId)
+int32_t StorageDaemonProxy::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
     return E_OK;
 }
@@ -242,6 +242,11 @@ int32_t StorageDaemonProxy::MountMediaFuse(int32_t userId, int32_t &devFd)
 }
 
 int32_t StorageDaemonProxy::UMountMediaFuse(int32_t userId)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
 {
     return E_OK;
 }

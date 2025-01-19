@@ -99,7 +99,7 @@ int32_t StorageManagerProxy::GetLockScreenStatus(uint32_t userId, bool &lockScre
     return E_OK;
 }
 
-int32_t StorageManagerProxy::UpdateKeyContext(uint32_t userId)
+int32_t StorageManagerProxy::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
     return E_OK;
 }
@@ -323,6 +323,11 @@ int32_t StorageManagerProxy::MountMediaFuse(int32_t userId, int32_t &devFd)
 }
 
 int32_t StorageManagerProxy::UMountMediaFuse(int32_t userId)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
 {
     return E_OK;
 }

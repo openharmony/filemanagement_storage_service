@@ -293,9 +293,9 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
             (void)remove(elNeedRestorePath.c_str());
         }
     }
-    if (type == EL4_KEY) {
-        UserManager::GetInstance()->CreateBundleDataDir(userId);
-    }
+
+    // for double2single update el2-4 without secret
+    UserManager::GetInstance()->CreateElxBundleDataDir(userId, type);
     LOGW("restore User %{public}u el%{public}u success", userId, type);
 
     return E_OK;
@@ -335,7 +335,12 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
     if (ret == -EEXIST) {
         AuditLog storageAuditLog = { false, "FAILED TO GenerateUserKeys", "ADD", "GenerateUserKeys", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
-        return RestoreUserKey(userId, flags);
+        auto restoreRet = RestoreUserKey(userId, flags);
+        if (restoreRet != E_OK) {
+            std::string extraData = "flags=" + std::to_string(flags);
+            StorageRadar::ReportUserManager("PrepareUserDirs::RestoreUserKey", userId, restoreRet, extraData);
+        }
+        return restoreRet;
     }
 #endif
     if (ret != E_OK) {
@@ -348,6 +353,10 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
     }
 #endif
     int32_t prepareRet = UserManager::GetInstance()->PrepareUserDirs(userId, flags);
+    if (prepareRet != E_OK) {
+        std::string extraData = "flags=" + std::to_string(flags);
+        StorageRadar::ReportUserManager("PrepareUserDirs::UserManager::PrepareUserDirs", userId, prepareRet, extraData);
+    }
     MountManager::GetInstance()->PrepareAppdataDir(userId);
     return prepareRet;
 }
@@ -619,6 +628,8 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuth(uint32_t userId, KeyType
         LOGW("New DOUBLE_2_SINGLE::PrepareUserDirsAndUpdateUserAuth.");
         ret = PrepareUserDirsAndUpdateUserAuthVx(userId, type, token, secret, need_restore_version);
     }
+    // for double2single update el2-4 with secret
+    UserManager::GetInstance()->CreateElxBundleDataDir(userId, type);
     return ret;
 }
 
@@ -761,6 +772,8 @@ int32_t StorageDaemon::GenerateKeyAndPrepareUserDirs(uint32_t userId, KeyType ty
     std::string keyUeceDir = UECE_DIR + "/" + std::to_string(userId);
     if ((flags & IStorageDaemon::CRYPTO_FLAG_EL5) && IsDir(keyUeceDir) && !std::filesystem::is_empty(keyUeceDir)) {
         LOGE("uece has already create, do not need create !");
+        // for double2single update el5
+        UserManager::GetInstance()->CreateElxBundleDataDir(userId, type);
         return ret;
     }
     (void)UserManager::GetInstance()->DestroyUserDirs(userId, flags);
@@ -769,7 +782,7 @@ int32_t StorageDaemon::GenerateKeyAndPrepareUserDirs(uint32_t userId, KeyType ty
         LOGE("upgrade scene:prepare user dirs fail, userId %{public}u, flags %{public}u, sec empty %{public}d",
              userId, flags, secret.empty());
     }
-
+    UserManager::GetInstance()->CreateElxBundleDataDir(userId, type);
     return ret;
 #else
     return E_OK;
@@ -855,7 +868,6 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
                                      const std::vector<uint8_t> &secret)
 {
     int ret = E_OK;
-    bool updateFlag = false;
 #ifdef USER_CRYPTO_MANAGER
     LOGW("userId %{public}u, tok empty %{public}d sec empty %{public}d", userId, token.empty(), secret.empty());
     ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL2_KEY, token, secret);
@@ -865,7 +877,6 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
         std::error_code errCode;
         std::string el2NeedRestorePath = GetNeedRestoreFilePath(userId, USER_EL2_DIR);
         if (std::filesystem::exists(el2NeedRestorePath, errCode) && (!token.empty() || !secret.empty())) {
-            updateFlag = true;
             ret = PrepareUserDirsAndUpdateUserAuth(userId, EL2_KEY, token, secret);
             std::string EL0_NEED_RESTORE = DATA_SERVICE_EL0_STORAGE_DAEMON_SD + NEED_RESTORE_SUFFIX;
             if (!SaveStringToFile(EL0_NEED_RESTORE, NEW_DOUBLE_2_SINGLE)) {
@@ -895,9 +906,6 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
         return E_UNLOCK_APP_KEY2_FAILED;
     }
 #endif
-    if (updateFlag) {
-        UserManager::GetInstance()->CreateBundleDataDir(userId);
-    }
     std::thread([this, userId]() { RestoreconElX(userId); }).detach();
     std::thread([this]() { ActiveAppCloneUserKey(); }).detach();
     return ret;
@@ -1066,10 +1074,10 @@ int32_t StorageDaemon::SetRecoverKey(const std::vector<uint8_t> &key)
 #endif
 }
 
-int32_t StorageDaemon::UpdateKeyContext(uint32_t userId)
+int32_t StorageDaemon::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
 #ifdef USER_CRYPTO_MANAGER
-    int32_t ret = KeyManager::GetInstance()->UpdateKeyContext(userId);
+    int32_t ret = KeyManager::GetInstance()->UpdateKeyContext(userId, needRemoveTmpKey);
     if (ret != E_OK) {
         LOGE("UpdateKeyContext failed, please check");
         RadarParameter parameterRes = {
@@ -1098,7 +1106,11 @@ int32_t StorageDaemon::MountCryptoPathAgain(uint32_t userId)
 {
     LOGI("begin to MountCryptoPathAgain");
 #ifdef USER_CRYPTO_MANAGER
-    return MountManager::GetInstance()->MountCryptoPathAgain(userId);
+    auto ret = MountManager::GetInstance()->MountCryptoPathAgain(userId);
+    if (ret != E_OK) {
+        StorageRadar::ReportUserManager("MountCryptoPathAgain::MountManager::MountCryptoPathAgain", userId, ret, "");
+    }
+    return ret;
 #else
     return E_OK;
 #endif
@@ -1176,6 +1188,14 @@ int32_t StorageDaemon::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, 
 #else
     return E_OK;
 #endif
+}
+
+int32_t StorageDaemon::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
+{
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    needActive = IsNeedRestorePathExist(userId, false);
+#endif
+    return E_OK;
 }
 
 int32_t StorageDaemon::UpdateMemoryPara(int32_t size, int32_t &oldSize)

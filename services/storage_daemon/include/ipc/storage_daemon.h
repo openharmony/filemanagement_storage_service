@@ -68,7 +68,7 @@ public:
                                   const std::vector<uint8_t> &token,
                                   const std::vector<uint8_t> &secret) override;
     virtual int32_t InactiveUserKey(uint32_t userId) override;
-    virtual int32_t UpdateKeyContext(uint32_t userId) override;
+    virtual int32_t UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey = false) override;
     virtual int32_t MountCryptoPathAgain(uint32_t userId) override;
     virtual int32_t LockUserScreen(uint32_t userId) override;
     virtual int32_t UnlockUserScreen(uint32_t userId,
@@ -100,6 +100,7 @@ public:
     virtual int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId) override;
     virtual int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false) override;
+    virtual int32_t GetUserNeedActiveStatus(uint32_t userId, bool &needActive) override;
 
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
     public:

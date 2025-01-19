@@ -49,9 +49,9 @@ public:
 
 private:
     bool GenerateKeyDesc();
-    bool InstallKeyToKeyring();
-    bool InstallEceSeceKeyToKeyring(uint32_t sdpClass);
-    bool UninstallKeyToKeyring();
+    int32_t InstallKeyToKeyring();
+    int32_t InstallEceSeceKeyToKeyring(uint32_t sdpClass);
+    int32_t UninstallKeyToKeyring();
     bool InstallKeyForAppKeyToKeyring(KeyBlob &appKey);
     bool UninstallKeyForAppKeyToKeyring(const std::string keyId);
     bool GenerateAppKeyDesc(KeyBlob appKey);

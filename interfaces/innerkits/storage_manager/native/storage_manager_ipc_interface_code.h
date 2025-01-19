@@ -91,6 +91,7 @@ namespace StorageManager {
         NOTIFY_MTP_UNMOUNT,
         MOUNT_MEDIA_FUSE,
         UMOUNT_MEDIA_FUSE,
+        GET_USER_NEED_ACTIVE_STATUS,
     };
 } // namespace StorageManager
 } // namespace OHOS

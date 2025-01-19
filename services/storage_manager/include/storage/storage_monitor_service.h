@@ -43,24 +43,31 @@ private:
     void CheckAndCleanCache(int64_t freeSize, int64_t totalSize);
     void CheckAndEventNotify(int64_t freeSize, int64_t totalSize);
     void SendSmartNotificationEvent(const std::string &faultDesc, const std::string &faultSuggest, bool isHighFreq);
-    void EventNotifyHighFreqHandler();
     void CleanBundleCacheByInterval(const std::string &timestamp,
                                                            int64_t lowThreshold, int32_t checkInterval);
     void ReportRadarStorageUsage(enum StorageService::BizStage stage, const std::string &extraData);
+    void EventNotifyHighFreqHandler();
+    void EventNotifyFreqHandlerFor2G();
+    void EventNotifyFreqHandlerForTenPercent();
+    void RefreshAllNotificationTimeStamp();
 
+    bool hasNotifiedStorageEvent_ = true;
     std::mutex eventMutex_;
     std::thread eventThread_;
     std::condition_variable eventCon_;
     std::shared_ptr<AppExecFwk::EventHandler> eventHandler_ = nullptr;
-    std::chrono::steady_clock::time_point lastNotificationTime_ =
-            std::chrono::time_point_cast<std::chrono::steady_clock::duration>(
-                    std::chrono::steady_clock::now()) - std::chrono::hours(SMART_EVENT_INTERVAL);
-    std::chrono::steady_clock::time_point lastNotificationTimeHighFreq_ =
-            std::chrono::time_point_cast<std::chrono::steady_clock::duration>(
-                    std::chrono::steady_clock::now()) - std::chrono::minutes(SMART_EVENT_INTERVAL_HIGH_FREQ);
-    std::chrono::steady_clock::time_point lastReportRadarTime_ =
-            std::chrono::time_point_cast<std::chrono::steady_clock::duration>(
-                    std::chrono::steady_clock::now()) - std::chrono::hours(SMART_EVENT_INTERVAL);
+    std::chrono::system_clock::time_point lastNotificationTime_ =
+            std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+                    std::chrono::system_clock::now()) - std::chrono::hours(SMART_EVENT_INTERVAL);
+    std::chrono::system_clock::time_point lastNotificationTimeHighFreq_ =
+            std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+                    std::chrono::system_clock::now()) - std::chrono::minutes(SMART_EVENT_INTERVAL_HIGH_FREQ);
+    std::chrono::system_clock::time_point lastReportRadarTime_ =
+            std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+                    std::chrono::system_clock::now()) - std::chrono::hours(SMART_EVENT_INTERVAL);
+    std::chrono::system_clock::time_point lastNotificationTime2G_ =
+            std::chrono::time_point_cast<std::chrono::system_clock::duration>(
+                    std::chrono::system_clock::now()) - std::chrono::hours(SMART_EVENT_INTERVAL);
 };
 } // StorageManager
 } // OHOS

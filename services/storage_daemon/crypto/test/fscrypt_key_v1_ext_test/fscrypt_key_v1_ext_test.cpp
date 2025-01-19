@@ -163,29 +163,29 @@ HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_ActiveKeyExt_001, TestSize.Level1)
     ext.userId_ = 100;
     ext.type_ = TYPE_EL2;
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(false));
-    EXPECT_EQ(ext.ActiveKeyExt(0, &iv, size, elType), true);
+    EXPECT_EQ(ext.ActiveKeyExt(0, &iv, size, elType), 0);
     EXPECT_EQ(elType, 0);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, InstallKeyToKernel(_, _, _, _, _)).WillOnce(Return(1)).WillOnce(Return(1));
-    EXPECT_EQ(ext.ActiveKeyExt(0, &iv, size, elType), false);
+    EXPECT_EQ(ext.ActiveKeyExt(0, &iv, size, elType), 1);
     EXPECT_EQ(elType, 0);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, InstallKeyToKernel(_, _, _, _, _)).WillOnce(Return(1)).WillOnce(Return(0));
-    EXPECT_EQ(ext.ActiveKeyExt(0, &iv, size, elType), true);
+    EXPECT_EQ(ext.ActiveKeyExt(0, &iv, size, elType), 0);
     EXPECT_EQ(elType, TYPE_EL2);
 
     elType = 0;
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, InstallKeyToKernel(_, _, _, _, _)).WillOnce(Return(1));
-    EXPECT_EQ(ext.ActiveKeyExt(1, &iv, size, elType), true);
+    EXPECT_EQ(ext.ActiveKeyExt(1, &iv, size, elType), 0);
     EXPECT_EQ(elType, TYPE_EL2);
     
     elType = 0;
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, InstallKeyToKernel(_, _, _, _, _)).WillOnce(Return(0));
-    EXPECT_EQ(ext.ActiveKeyExt(0, &iv, size, elType), true);
+    EXPECT_EQ(ext.ActiveKeyExt(0, &iv, size, elType), 0);
     EXPECT_EQ(elType, TYPE_EL2);
     GTEST_LOG_(INFO) << "FscryptKeyV1Ext_ActiveKeyExt_001 end";
 }
@@ -389,27 +389,27 @@ HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_InactiveKeyExt_001, TestSize.Level
     ext.userId_ = 100;
     ext.type_ = TYPE_EL2;
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(false));
-    EXPECT_EQ(ext.InactiveKeyExt(flag), true);
+    EXPECT_EQ(ext.InactiveKeyExt(flag), 0);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, UninstallOrLockUserKeyToKernel(_, _, _, _, _)).WillOnce(Return(0));
-    EXPECT_EQ(ext.InactiveKeyExt(flag), true);
+    EXPECT_EQ(ext.InactiveKeyExt(flag), 0);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, UninstallOrLockUserKeyToKernel(_, _, _, _, _)).WillOnce(Return(1));
-    EXPECT_EQ(ext.InactiveKeyExt(flag), false);
+    EXPECT_EQ(ext.InactiveKeyExt(flag), 1);
     
     ext.type_ = TYPE_EL5;
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
-    EXPECT_EQ(ext.InactiveKeyExt(0), true);
+    EXPECT_EQ(ext.InactiveKeyExt(0), 0);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, UninstallOrLockUserKeyToKernel(_, _, _, _, _)).WillOnce(Return(0));
-    EXPECT_EQ(ext.InactiveKeyExt(flag), true);
+    EXPECT_EQ(ext.InactiveKeyExt(flag), 0);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, UninstallOrLockUserKeyToKernel(_, _, _, _, _)).WillOnce(Return(1));
-    EXPECT_EQ(ext.InactiveKeyExt(flag), false);
+    EXPECT_EQ(ext.InactiveKeyExt(flag), 1);
     GTEST_LOG_(INFO) << "FscryptKeyV1Ext_InactiveKeyExt_001 end";
 }
 
@@ -550,10 +550,10 @@ HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_ActiveDoubleKeyExt_001, TestSize.L
     ext.userId_ = 100;
     ext.type_ = TYPE_EL2;
     EXPECT_CALL(*fbexMock_, InstallDoubleDeKeyToKernel(_, _, _, _)).WillOnce(Return(true));
-    EXPECT_EQ(ext.ActiveDoubleKeyExt(0, &iv, size, elType), false);
+    EXPECT_NE(ext.ActiveDoubleKeyExt(0, &iv, size, elType), 0);
 
     EXPECT_CALL(*fbexMock_, InstallDoubleDeKeyToKernel(_, _, _, _)).WillOnce(Return(false));
-    EXPECT_EQ(ext.ActiveDoubleKeyExt(0, &iv, size, elType), true);
+    EXPECT_EQ(ext.ActiveDoubleKeyExt(0, &iv, size, elType), 0);
     EXPECT_EQ(elType, TYPE_EL2);
     GTEST_LOG_(INFO) << "FscryptKeyV1Ext_ActiveDoubleKeyExt_001 end";
 }

@@ -137,7 +137,7 @@ int32_t StorageManagerClient::InactiveUserKey(uint32_t userId)
     return client->InactiveUserKey(userId);
 }
 
-int32_t StorageManagerClient::UpdateKeyContext(uint32_t userId)
+int32_t StorageManagerClient::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
@@ -145,7 +145,7 @@ int32_t StorageManagerClient::UpdateKeyContext(uint32_t userId)
         return E_SA_IS_NULLPTR;
     }
 
-    return client->UpdateKeyContext(userId);
+    return client->UpdateKeyContext(userId, needRemoveTmpKey);
 }
 
 int32_t StorageManagerClient::LockUserScreen(uint32_t userId)
@@ -181,6 +181,17 @@ int32_t StorageManagerClient::GetFileEncryptStatus(uint32_t userId, bool &isEncr
     }
 
     return client->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
+}
+
+int32_t StorageManagerClient::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
+{
+    sptr<IStorageManager> client = GetStorageManagerProxy();
+    if (client == nullptr) {
+        LOGE("get storage manager service failed");
+        return E_SA_IS_NULLPTR;
+    }
+
+    return client->GetUserNeedActiveStatus(userId, needActive);
 }
 
 int32_t StorageManagerClient::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)

@@ -188,6 +188,8 @@ StorageManagerStub::StorageManagerStub()
         &StorageManagerStub::HandleGetFileEncryptStatus;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::CREATE_RECOVER_KEY)] =
         &StorageManagerStub::HandleCreateRecoverKey;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_USER_NEED_ACTIVE_STATUS)] =
+        &StorageManagerStub::HandleGetUserNeedActiveStatus;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::SET_RECOVER_KEY)] =
         &StorageManagerStub::HandleSetRecoverKey;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::NOTIFY_MTP_MOUNT)] =
@@ -307,6 +309,8 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
             return HandleDeleteAppkey(data, reply);
         case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_FILE_ENCRYPT_STATUS):
             return HandleGetFileEncryptStatus(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_USER_NEED_ACTIVE_STATUS):
+            return HandleGetUserNeedActiveStatus(data, reply);
         case static_cast<uint32_t>(StorageManagerInterfaceCode::CREATE_RECOVER_KEY):
             return HandleCreateRecoverKey(data, reply);
         case static_cast<uint32_t>(StorageManagerInterfaceCode::SET_RECOVER_KEY):
@@ -944,6 +948,25 @@ int32_t StorageManagerStub::HandleGetFileEncryptStatus(MessageParcel &data, Mess
     return E_OK;
 }
 
+int32_t StorageManagerStub::HandleGetUserNeedActiveStatus(MessageParcel &data, MessageParcel &reply)
+{
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    bool needActive = false;
+    uint32_t userId = data.ReadUint32();
+    int32_t err = GetUserNeedActiveStatus(userId, needActive);
+    if (!reply.WriteInt32(err)) {
+        LOGE("Write reply error code failed");
+        return E_WRITE_REPLY_ERR;
+    }
+    if (!reply.WriteBool(needActive)) {
+        LOGE("Write needActive failed");
+        return E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+
 int32_t StorageManagerStub::HandleUnlockUserScreen(MessageParcel &data, MessageParcel &reply)
 {
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
@@ -1059,7 +1082,8 @@ int32_t StorageManagerStub::HandleUpdateKeyContext(MessageParcel &data, MessageP
         return E_PERMISSION_DENIED;
     }
     uint32_t userId = data.ReadUint32();
-    int32_t err = UpdateKeyContext(userId);
+    bool needRemoveTmpKey = data.ReadBool();
+    int32_t err = UpdateKeyContext(userId, needRemoveTmpKey);
     if (!reply.WriteInt32(err)) {
         LOGE("Write reply error code failed");
         return E_WRITE_REPLY_ERR;

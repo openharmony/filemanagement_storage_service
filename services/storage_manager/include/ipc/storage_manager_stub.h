@@ -80,6 +80,7 @@ private:
     int32_t HandleGenerateAppkey(MessageParcel &data, MessageParcel &reply);
     int32_t HandleDeleteAppkey(MessageParcel &data, MessageParcel &reply);
     int32_t HandleGetFileEncryptStatus(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleGetUserNeedActiveStatus(MessageParcel &data, MessageParcel &reply);
     int32_t HandleCreateRecoverKey(MessageParcel &data, MessageParcel &reply);
     int32_t HandleSetRecoverKey(MessageParcel &data, MessageParcel &reply);
 

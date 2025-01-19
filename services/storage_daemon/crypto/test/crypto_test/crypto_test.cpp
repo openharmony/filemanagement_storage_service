@@ -105,11 +105,11 @@ HWTEST_F(CryptoTest, Huks_Master_Encrypt_Key_001, TestSize.Level1)
     bool isNeedNewNonce = false;
     KeyBlob rnd;
 
-    bool ret = HuksMaster::GetInstance().EncryptKey(ctx, auth, key, isNeedNewNonce);
-    EXPECT_FALSE(ret);
+    int ret = HuksMaster::GetInstance().EncryptKey(ctx, auth, key, isNeedNewNonce);
+    EXPECT_NE(E_OK, ret);
 
     ret = HuksMaster::GetInstance().EncryptKeyEx(auth, rnd, ctx);
-    EXPECT_FALSE(ret);
+    EXPECT_NE(E_OK, ret);
     GTEST_LOG_(INFO) << "CryptoTest_HuksMasterEncryptKey_0100 end";
 }
 
@@ -129,11 +129,11 @@ HWTEST_F(CryptoTest, Huks_Master_Encrypt_Key_002, TestSize.Level1)
     bool isNeedNewNonce = false;
     KeyBlob rnd;
 
-    bool ret = HuksMaster::GetInstance().EncryptKey(ctx, auth, key, isNeedNewNonce);
-    EXPECT_FALSE(ret);
+    int ret = HuksMaster::GetInstance().EncryptKey(ctx, auth, key, isNeedNewNonce);
+    EXPECT_NE(E_OK, ret);
 
     ret = HuksMaster::GetInstance().EncryptKeyEx(auth, rnd, ctx);
-    EXPECT_FALSE(ret);
+    EXPECT_NE(E_OK, ret);
     GTEST_LOG_(INFO) << "CryptoTest_HuksMasterEncryptKey_0200 end";
 }
 
@@ -152,11 +152,11 @@ HWTEST_F(CryptoTest, Huks_Master_Decrypt_Key_001, TestSize.Level1)
     bool isNeedNewNonce = false;
     KeyBlob rnd;
 
-    bool ret = HuksMaster::GetInstance().DecryptKey(ctx, auth, key, isNeedNewNonce);
-    EXPECT_FALSE(ret);
+    int ret = HuksMaster::GetInstance().DecryptKey(ctx, auth, key, isNeedNewNonce);
+    EXPECT_NE(E_OK, ret);
 
     ret = HuksMaster::GetInstance().DecryptKeyEx(ctx, auth, rnd);
-    EXPECT_FALSE(ret);
+    EXPECT_NE(E_OK, ret);
     GTEST_LOG_(INFO) << "CryptoTest_HuksMasterDecryptKey_0100 end";
 }
 
@@ -177,10 +177,10 @@ HWTEST_F(CryptoTest, Huks_Master_Decrypt_Key_002, TestSize.Level1)
     KeyBlob rnd;
 
     bool ret = HuksMaster::GetInstance().DecryptKey(ctx, auth, key, isNeedNewNonce);
-    EXPECT_FALSE(ret);
+    EXPECT_NE(ret, E_OK);
 
     ret = HuksMaster::GetInstance().DecryptKeyEx(ctx, auth, rnd);
-    EXPECT_FALSE(ret);
+    EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "CryptoTest_HuksMasterDecryptKey_0200 end";
 }
 
@@ -201,10 +201,10 @@ HWTEST_F(CryptoTest, Huks_Master_Decrypt_Key_003, TestSize.Level1)
     KeyBlob rnd;
 
     bool ret = HuksMaster::GetInstance().DecryptKey(ctx, auth, key, isNeedNewNonce);
-    EXPECT_FALSE(ret);
+    EXPECT_NE(E_OK, ret);
 
     ret = HuksMaster::GetInstance().DecryptKeyEx(ctx, auth, rnd);
-    EXPECT_FALSE(ret);
+    EXPECT_NE(E_OK, ret);
     GTEST_LOG_(INFO) << "CryptoTest_HuksMasterDecryptKey_0300 end";
 }
 
@@ -239,11 +239,11 @@ HWTEST_F(CryptoTest, Openssl_Crypto_AES_Encrypt_001, TestSize.Level1)
     KeyContext keyContext;
     KeyBlob plainText;
 
-    bool ret = OpensslCrypto::AESEncrypt(preKey, plainText, keyContext);
-    EXPECT_TRUE(ret);
+    int32_t ret = OpensslCrypto::AESEncrypt(preKey, plainText, keyContext);
+    EXPECT_TRUE(ret == E_OK);
 
     ret = OpensslCrypto::AESDecrypt(preKey, keyContext, plainText);
-    EXPECT_TRUE(ret);
+    EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "CryptoTest_OpensslCryptoAESEncrypt_0100 end";
 }
 }
