@@ -295,12 +295,14 @@ ohos_shared_library("storage_common_utils") {
     "./utils/hi_audit.cpp",
     "./utils/mount_argument_utils.cpp",
     "./utils/storage_radar.cpp",
+    "./utils/storage_statistics_radar.cpp",
     "./utils/storage_xcollie.cpp",
     "./utils/string_utils.cpp",
     "./utils/zip_util.cpp",
   ]
 
   external_deps = [
+    "cJSON:cjson",
     "c_utils:utils",
     "hicollie:libhicollie",
     "hilog:libhilog",
