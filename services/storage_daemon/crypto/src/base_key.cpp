@@ -254,7 +254,8 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
             return false;
         }
 
-        if (!EncryptEceSece(auth, keyType, keyCtx)) {
+        ret = EncryptEceSece(auth, keyType, keyCtx);
+        if (ret != E_OK) {
             LOGE("Encrypt key failed !");
             ClearKeyContext(keyCtx);
             return false;
@@ -455,14 +456,14 @@ int32_t BaseKey::EncryptDe(const UserAuth &auth, const std::string &path)
     return E_OK;
 }
 
-bool BaseKey::EncryptEceSece(const UserAuth &auth, const uint32_t keyType, KeyContext &keyCtx)
+int32_t BaseKey::EncryptEceSece(const UserAuth &auth, const uint32_t keyType, KeyContext &keyCtx)
 {
     LOGI("enter");
     // rnd 64 -> rndEnc 80
     auto ret = HuksMaster::GetInstance().EncryptKeyEx(auth, keyInfo_.key, keyCtx);
     if (ret != E_OK) {
         LOGE("Encrypt by hks failed.");
-        return false;
+        return ret;
     }
     LOGE("Huks encrypt end.");
 
@@ -480,13 +481,13 @@ bool BaseKey::EncryptEceSece(const UserAuth &auth, const uint32_t keyType, KeyCo
     ret = OpensslCrypto::AESEncrypt(mUserAuth.secret, rndEnc, keyCtx);
     if (ret != E_OK) {
         LOGE("Encrypt by openssl failed.");
-        return false;
+        return ret;
     }
     LOGE("Encrypt by openssl end");
     rndEnc.Clear();
     keyEncryptType_ = KeyEncryptType::KEY_CRYPT_HUKS_OPENSSL;
     LOGI("finish");
-    return true;
+    return E_OK;
 }
 
 bool BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate)
@@ -613,7 +614,7 @@ bool BaseKey::DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &pat
             LOGE("Load shield failed !");
             return false;
         }
-        return DecryptReal(auth, keyType, ctxNone);
+        return DecryptReal(auth, keyType, ctxNone) == E_OK;
     }
 
     // face/finger (EL3 EL4)
@@ -740,7 +741,7 @@ bool BaseKey::DoUpdateRestoreVx(const UserAuth &auth, const std::string &keyPath
     return true;
 }
 
-bool BaseKey::DecryptReal(const UserAuth &auth, const uint32_t keyType, KeyContext &keyCtx)
+int32_t BaseKey::DecryptReal(const UserAuth &auth, const uint32_t keyType, KeyContext &keyCtx)
 {
     LOGI("enter");
     UserAuth mUserAuth = auth;
@@ -751,7 +752,7 @@ bool BaseKey::DecryptReal(const UserAuth &auth, const uint32_t keyType, KeyConte
     auto ret = OpensslCrypto::AESDecrypt(mUserAuth.secret, keyCtx, rndEnc);
     if (ret != E_OK) { // rndEncEnc -> rndEnc
         LOGE("Decrypt by openssl failed.");
-        return false;
+        return ret;
     }
 
     keyCtx.rndEnc = std::move(rndEnc);
@@ -761,12 +762,12 @@ bool BaseKey::DecryptReal(const UserAuth &auth, const uint32_t keyType, KeyConte
     ret = HuksMaster::GetInstance().DecryptKeyEx(keyCtx, auth, keyInfo_.key);
     if (ret != E_OK) { // rndEnc -> rnd
         LOGE("Decrypt by hks failed.");
-        return false;
+        return ret;
     }
 
     rndEnc.Clear();
     LOGI("finish");
-    return true;
+    return E_OK;
 }
 
 bool BaseKey::Decrypt(const UserAuth &auth)

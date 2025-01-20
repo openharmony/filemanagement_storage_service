@@ -112,9 +112,9 @@ private:
     static bool GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size);
     static bool GenerateKeyBlob(KeyBlob &blob, const uint32_t size);
     int32_t EncryptDe(const UserAuth &auth, const std::string &path);
-    bool EncryptEceSece(const UserAuth &auth, const uint32_t keyType, KeyContext &keyCtx);
+    int32_t EncryptEceSece(const UserAuth &auth, const uint32_t keyType, KeyContext &keyCtx);
     bool Decrypt(const UserAuth &auth);
-    bool DecryptReal(const UserAuth &auth, const uint32_t keyType, KeyContext &keyCtx);
+    int32_t DecryptReal(const UserAuth &auth, const uint32_t keyType, KeyContext &keyCtx);
     bool CheckAndUpdateVersion();
     bool CombKeyCtx(const KeyBlob &nonce, const KeyBlob &rndEnc, const KeyBlob &aad, KeyBlob &keyOut);
     bool SplitKeyCtx(const KeyBlob &keyIn, KeyBlob &nonce, KeyBlob &rndEnc, KeyBlob &aad);
