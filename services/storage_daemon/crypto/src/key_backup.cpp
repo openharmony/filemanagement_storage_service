@@ -117,13 +117,13 @@ int32_t KeyBackup::TryRestoreKey(const std::shared_ptr<BaseKey> &baseKey, const 
     std::string keyDir = baseKey->GetDir();
     std::string backupDir;
     GetBackupDir(keyDir, backupDir);
-    if (baseKey->DoRestoreKey(auth, keyDir + PATH_LATEST)) {
+    if (baseKey->DoRestoreKey(auth, keyDir + PATH_LATEST) == E_OK) {
         CheckAndFixFiles(keyDir, backupDir);
         LOGI("Restore by main key success !");
         return 0;
     }
     LOGE("origKey failed, try backupKey");
-    if (baseKey->DoRestoreKey(auth, backupDir + PATH_LATEST)) {
+    if (baseKey->DoRestoreKey(auth, backupDir + PATH_LATEST) == E_OK) {
         std::thread fixFileThread([this, backupDir, keyDir]() { CheckAndFixFiles(backupDir, keyDir) ;});
         fixFileThread.detach();
         LOGI("Restore by back key success !");
@@ -244,7 +244,7 @@ int32_t KeyBackup::DoResotreKeyMix(std::shared_ptr<BaseKey> &baseKey, const User
             LOGE("basekey is nullptr");
             return E_ERR;
         }
-        if (baseKey->DoRestoreKey(auth, tempKeyDir)) {
+        if (baseKey->DoRestoreKey(auth, tempKeyDir) == E_OK) {
             LOGI("mix key files descrpt succ, fix orig and backup");
             CheckAndFixFiles(tempKeyDir, origKeyDir);
             CheckAndFixFiles(tempKeyDir, backupKeyDir);

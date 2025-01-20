@@ -29,6 +29,7 @@ const uint8_t USER_DESTROY = 0x1;
 const uint32_t USER_UNLOCK = 0x2;
 const uint32_t USER_ADD_AUTH = 0x0;
 const uint32_t USER_CHANGE_AUTH = 0x1;
+const int32_t RESTORE_VERSION = 3;
 const std::string SUFFIX_NEED_UPDATE = "/need_update";
 const std::string SUFFIX_NEED_RESTORE = "/need_restore";
 const std::string PATH_KEY_VERSION = "/version_";
@@ -47,12 +48,12 @@ public:
     /* key operations */
     bool InitKey(bool needGenerateKey);
 #ifdef USER_CRYPTO_MIGRATE_KEY
-    bool StoreKey(const UserAuth &auth, bool needGenerateShield = true);
+    int32_t StoreKey(const UserAuth &auth, bool needGenerateShield = true);
 #else
-    bool StoreKey(const UserAuth &auth);
+    int32_t StoreKey(const UserAuth &auth);
 #endif
-    bool UpdateKey(const std::string &keypath = "", bool needSyncCandidate = true);
-    bool RestoreKey(const UserAuth &auth, bool needSyncCandidate = true);
+    int32_t UpdateKey(const std::string &keypath = "", bool needSyncCandidate = true);
+    int32_t RestoreKey(const UserAuth &auth, bool needSyncCandidate = true);
     virtual bool ActiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
     virtual bool InactiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
     virtual bool LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt = MNT_DATA) = 0;
@@ -66,7 +67,7 @@ public:
     virtual bool EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status) = 0;
     virtual int32_t ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId) = 0;
     virtual bool LockUece(bool &isFbeSupport) = 0;
-    bool DoRestoreKey(const UserAuth &auth, const std::string &keypath);
+    int32_t DoRestoreKey(const UserAuth &auth, const std::string &keypath);
     int32_t EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey, KeyBlob &encryptedKey);
     int32_t DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey, KeyBlob &decryptedKey);
     bool RenameKeyPath(const std::string &keyPath);
@@ -97,24 +98,24 @@ protected:
 
 private:
 #ifdef USER_CRYPTO_MIGRATE_KEY
-    bool DoStoreKey(const UserAuth &auth, bool needGenerateShield = true);
+    int32_t  DoStoreKey(const UserAuth &auth, bool needGenerateShield = true);
 #else
-    bool DoStoreKey(const UserAuth &auth);
+    int32_t  DoStoreKey(const UserAuth &auth);
 #endif
     int32_t LoadAndSaveShield(const UserAuth &auth, const std::string &pathShield, bool needGenerateShield,
                            KeyContext &keyCtx);
     bool SaveAndCleanKeyBuff(const std::string &keyPath, KeyContext &keyCtx);
-    bool DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &path, const uint32_t keyType);
-    bool DoRestoreKeyDe(const UserAuth &auth, const std::string &path);
-    bool DoRestoreKeyOld(const UserAuth &auth, const std::string &keypath);
-    bool DoUpdateRestore(const UserAuth &auth, const std::string &keyPath);
-    bool DoUpdateRestoreVx(const UserAuth &auth, const std::string &KeyPath, UpdateVersion update_version);
+    int32_t DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &path, const uint32_t keyType);
+    int32_t DoRestoreKeyDe(const UserAuth &auth, const std::string &path);
+    int32_t DoRestoreKeyOld(const UserAuth &auth, const std::string &keypath);
+    int32_t DoUpdateRestore(const UserAuth &auth, const std::string &keyPath);
+    int32_t DoUpdateRestoreVx(const UserAuth &auth, const std::string &KeyPath, UpdateVersion update_version);
     static bool GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size);
     static bool GenerateKeyBlob(KeyBlob &blob, const uint32_t size);
     int32_t EncryptDe(const UserAuth &auth, const std::string &path);
-    bool EncryptEceSece(const UserAuth &auth, const uint32_t keyType, KeyContext &keyCtx);
-    bool Decrypt(const UserAuth &auth);
-    bool DecryptReal(const UserAuth &auth, const uint32_t keyType, KeyContext &keyCtx);
+    int32_t EncryptEceSece(const UserAuth &auth, const uint32_t keyType, KeyContext &keyCtx);
+    int32_t Decrypt(const UserAuth &auth);
+    int32_t DecryptReal(const UserAuth &auth, const uint32_t keyType, KeyContext &keyCtx);
     bool CheckAndUpdateVersion();
     bool CombKeyCtx(const KeyBlob &nonce, const KeyBlob &rndEnc, const KeyBlob &aad, KeyBlob &keyOut);
     bool SplitKeyCtx(const KeyBlob &keyIn, KeyBlob &nonce, KeyBlob &rndEnc, KeyBlob &aad);

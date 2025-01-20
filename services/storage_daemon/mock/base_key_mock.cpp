@@ -35,18 +35,18 @@ bool BaseKey::InitKey(bool needGenerateKey)
 }
 
 #ifdef USER_CRYPTO_MIGRATE_KEY
-bool BaseKey::StoreKey(const UserAuth &auth, bool needGenerateShield)
+int32_t BaseKey::StoreKey(const UserAuth &auth, bool needGenerateShield)
 {
     if (IBaseKeyMoc::baseKeyMoc == nullptr) {
-        return false;
+        return -1;
     }
     return IBaseKeyMoc::baseKeyMoc->StoreKey(auth, needGenerateShield);
 }
 #else
-bool BaseKey::StoreKey(const UserAuth &auth)
+int32_t BaseKey::StoreKey(const UserAuth &auth)
 {
     if (IBaseKeyMoc::baseKeyMoc == nullptr) {
-        return false;
+        return -1;
     }
     return IBaseKeyMoc::baseKeyMoc->StoreKey(auth);
 }
@@ -60,18 +60,18 @@ bool BaseKey::ClearKey(const std::string &mnt)
     return IBaseKeyMoc::baseKeyMoc->ClearKey(mnt);
 }
 
-bool BaseKey::UpdateKey(const std::string &keypath, bool needSyncCandidate)
+int32_t BaseKey::UpdateKey(const std::string &keypath, bool needSyncCandidate)
 {
     if (IBaseKeyMoc::baseKeyMoc == nullptr) {
-        return false;
+        return -1;
     }
     return IBaseKeyMoc::baseKeyMoc->UpdateKey(keypath);
 }
 
-bool BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate)
+int32_t BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate)
 {
     if (IBaseKeyMoc::baseKeyMoc == nullptr) {
-        return false;
+        return -1;
     }
     return IBaseKeyMoc::baseKeyMoc->RestoreKey(auth);
 }
