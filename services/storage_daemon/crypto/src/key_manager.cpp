@@ -1287,7 +1287,8 @@ bool KeyManager::HasElxDesc(std::map<unsigned int, std::shared_ptr<BaseKey>> &us
     return false;
 }
 
-bool KeyManager::IsAppCloneUser(unsigned int user) {
+bool KeyManager::IsAppCloneUser(unsigned int user)
+{
     return user >= START_APP_CLONE_USER_ID && user <= MAX_APP_CLONE_USER_ID;
 }
 
@@ -1323,8 +1324,8 @@ bool KeyManager::GetUserDelayHandler(uint32_t userId, std::shared_ptr<DelayHandl
 }
 
 int KeyManager::ActiveUeceUserKey(unsigned int user,
-                                       const std::vector<uint8_t> &token,
-                                       const std::vector<uint8_t> &secret, std::shared_ptr<BaseKey> elKey)
+                                  const std::vector<uint8_t> &token,
+                                  const std::vector<uint8_t> &secret, std::shared_ptr<BaseKey> elKey)
 {
     saveESecretStatus[user] = !secret.empty();
     LOGW("userId %{public}u, token empty %{public}d sec empty %{public}d", user, token.empty(), secret.empty());
@@ -1373,7 +1374,7 @@ int KeyManager::ActiveElXUserKey(unsigned int user,
     std::string NEED_RESTORE_PATH = GetKeyDirByUserAndType(user, keyType) + PATH_LATEST + SUFFIX_NEED_RESTORE;
     if (!FileExists(NEED_RESTORE_PATH) && !FileExists(NEED_UPDATE_PATH)) {
         auto ret = elKey->StoreKey(auth);
-        if(ret != E_OK) {
+        if (ret != E_OK) {
             LOGE("Store el failed");
             return E_ELX_KEY_STORE_ERROR;
         }
@@ -1426,8 +1427,8 @@ int KeyManager::UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &toke
 }
 
 int32_t KeyManager::UnlockEceSece(uint32_t user,
-                            const std::vector<uint8_t> &token,
-                            const std::vector<uint8_t> &secret)
+                                  const std::vector<uint8_t> &token,
+                                  const std::vector<uint8_t> &secret)
 {
     auto el4Key = GetUserElKey(user, EL4_KEY);
     if (el4Key == nullptr) {
@@ -1449,8 +1450,8 @@ int32_t KeyManager::UnlockEceSece(uint32_t user,
 }
 
 int32_t KeyManager::UnlockUece(uint32_t user,
-                            const std::vector<uint8_t> &token,
-                            const std::vector<uint8_t> &secret)
+                               const std::vector<uint8_t> &token,
+                               const std::vector<uint8_t> &secret)
 {
     UserAuth auth = {.token = token, .secret = secret};
     saveESecretStatus[user] = !auth.token.IsEmpty();

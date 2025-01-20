@@ -29,6 +29,7 @@ const uint8_t USER_DESTROY = 0x1;
 const uint32_t USER_UNLOCK = 0x2;
 const uint32_t USER_ADD_AUTH = 0x0;
 const uint32_t USER_CHANGE_AUTH = 0x1;
+const int32_t RESTORE_VERSION = 3;
 const std::string SUFFIX_NEED_UPDATE = "/need_update";
 const std::string SUFFIX_NEED_RESTORE = "/need_restore";
 const std::string PATH_KEY_VERSION = "/version_";

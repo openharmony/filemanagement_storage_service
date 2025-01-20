@@ -336,7 +336,7 @@ bool BaseKey::SaveAndCleanKeyBuff(const std::string &keyPath, KeyContext &keyCtx
 }
 
 int32_t BaseKey::LoadAndSaveShield(const UserAuth &auth, const std::string &pathShield,
-                                bool needGenerateShield, KeyContext &keyCtx)
+                                   bool needGenerateShield, KeyContext &keyCtx)
 {
 #ifdef USER_CRYPTO_MIGRATE_KEY
     if (needGenerateShield) {
@@ -622,7 +622,7 @@ int32_t BaseKey::DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &
             ctxNone.rndEnc.Clear();
             LOGE("Load shield failed !");
             return E_SHIELD_OPERATION_ERROR;
-        }        
+        }
         return DecryptReal(auth, keyType, ctxNone);
     }
 
@@ -677,11 +677,10 @@ int32_t BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
     UpdateVersion update_version = static_cast<UpdateVersion>(std::atoi(need_restore.c_str()));
     LOGI("NeedRestore Path is: %{public}s, restore_version: %{public}u", path.c_str(), restore_version);
     if (std::filesystem::exists(path + SUFFIX_NEED_RESTORE, errCode)) {
-        if (restore_version < 3) {
+        if (restore_version < RESTORE_VERSION) {
             LOGW("Old DOUBLE_2_SINGLE.");
             ret = DoUpdateRestore(auth, path);
-        }
-        else {
+        } else {
             LOGW("New DOUBLE_2_SINGLE.");
             ret = DoUpdateRestoreVx(auth, path, update_version);
         }
@@ -741,7 +740,7 @@ int32_t BaseKey::DoUpdateRestoreVx(const UserAuth &auth, const std::string &keyP
         }
         LOGI("PIN protect exist.");
     }
-    ret = StoreKey({ auth.token, auth.secret, secureUid }); 
+    ret = StoreKey({auth.token, auth.secret, secureUid});
     if (ret != E_OK) {
         LOGE("Store old failed !");
         return ret;
@@ -950,7 +949,7 @@ void BaseKey::SetOriginKey(KeyBlob &originKey)
 }
 
 int32_t BaseKey::EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey,
-                             KeyBlob &encryptedKey)
+                                KeyBlob &encryptedKey)
 {
     LOGI("enter");
     KeyContext keyCtx;
@@ -984,7 +983,7 @@ int32_t BaseKey::EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath
 }
 
 int32_t BaseKey::DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey,
-                             KeyBlob &decryptedKey)
+                                KeyBlob &decryptedKey)
 {
     LOGI("enter");
     KeyContext keyCtx;
