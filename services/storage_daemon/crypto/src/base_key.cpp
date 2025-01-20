@@ -193,9 +193,9 @@ std::string BaseKey::GetNextCandidateDir() const
 }
 
 #ifdef USER_CRYPTO_MIGRATE_KEY
-bool BaseKey::StoreKey(const UserAuth &auth, bool needGenerateShield)
+int32_t BaseKey::StoreKey(const UserAuth &auth, bool needGenerateShield)
 #else
-bool BaseKey::StoreKey(const UserAuth &auth)
+int32_t BaseKey::StoreKey(const UserAuth &auth)
 #endif
 {
     LOGI("enter");
@@ -214,9 +214,10 @@ bool BaseKey::StoreKey(const UserAuth &auth)
             LOGI("start sync");
             SyncKeyDir();
             LOGI("sync end");
-            return true;
+            return E_OK;
         }
         LOGE("rename fail return %{public}d, cleanup the temp dir", errno);
+        ret = errno;
     } else {
         LOGE("DoStoreKey fail, cleanup the temp dir");
     }
@@ -224,7 +225,7 @@ bool BaseKey::StoreKey(const UserAuth &auth)
     LOGI("start sync");
     SyncKeyDir();
     LOGI("sync end");
-    return false;
+    return ret;
 }
 
 // All key files are saved under keypath/temp/ in this function.
@@ -702,8 +703,8 @@ bool BaseKey::DoUpdateRestore(const UserAuth &auth, const std::string &keyPath)
         !IamClient::GetInstance().GetSecureUid(userId, secureUid)) {
         LOGE("Get secure uid form iam failed, use default value.");
     }
-
-    if (!StoreKey({ auth.token, auth.secret, secureUid })) {
+    ret = StoreKey({ auth.token, auth.secret, secureUid });
+    if (ret != E_OK) {
         LOGE("Store old failed !");
         return false;
     }
@@ -733,7 +734,8 @@ bool BaseKey::DoUpdateRestoreVx(const UserAuth &auth, const std::string &keyPath
         }
         LOGI("PIN protect exist.");
     }
-    if (!StoreKey({ auth.token, auth.secret, secureUid })) {
+    ret = StoreKey({ auth.token, auth.secret, secureUid }); 
+    if (ret != E_OK) {
         LOGE("Store old failed !");
         return false;
     }

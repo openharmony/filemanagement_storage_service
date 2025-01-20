@@ -640,9 +640,9 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UpdateUseAuthWithRecoveryKey_001, TestSiz
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
     #ifdef USER_CRYPTO_MIGRATE_KEY
-    EXPECT_CALL(*baseKeyMock_, StoreKey(_, _)).WillOnce(Return(false));
+    EXPECT_CALL(*baseKeyMock_, StoreKey(_, _)).WillOnce(Return(-1));
     #else
-    EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(false));
+    EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(-1));
     #endif
     EXPECT_EQ(KeyManager::GetInstance()->UpdateUseAuthWithRecoveryKey(
         authToken, newSecret, secureUid, userId, plainText2), -EFAULT);
@@ -680,9 +680,9 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UpdateUseAuthWithRecoveryKey_002, TestSiz
         EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2))
             .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
         #ifdef USER_CRYPTO_MIGRATE_KEY
-        EXPECT_CALL(*baseKeyMock_, StoreKey(_, _)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
+        EXPECT_CALL(*baseKeyMock_, StoreKey(_, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
         #else
-        EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
+        EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
         #endif
 
         EXPECT_EQ(KeyManager::GetInstance()->UpdateUseAuthWithRecoveryKey(
@@ -735,9 +735,9 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UpdateUseAuthWithRecoveryKey_003, TestSiz
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2))
         .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
     #ifdef USER_CRYPTO_MIGRATE_KEY
-    EXPECT_CALL(*baseKeyMock_, StoreKey(_, _)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
+    EXPECT_CALL(*baseKeyMock_, StoreKey(_, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
     #else
-    EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
+    EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
     #endif
     EXPECT_CALL(*fscryptKeyMock_, EncryptClassE(_, _, _, _)).WillOnce(Return(false));
     EXPECT_CALL(*baseKeyMock_, ClearKey(_)).WillOnce(Return(true));
@@ -787,9 +787,9 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UpdateUseAuthWithRecoveryKey_004, TestSiz
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2))
         .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
     #ifdef USER_CRYPTO_MIGRATE_KEY
-    EXPECT_CALL(*baseKeyMock_, StoreKey(_, _)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
+    EXPECT_CALL(*baseKeyMock_, StoreKey(_, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
     #else
-    EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
+    EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
     #endif
     EXPECT_CALL(*fscryptKeyMock_, EncryptClassE(_, _, _, _)).WillOnce(Return(true));
     EXPECT_CALL(*fscryptKeyMock_, LockUece(_)).WillOnce(Return(false));
@@ -839,9 +839,9 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UpdateUseAuthWithRecoveryKey_005, TestSiz
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2))
         .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
     #ifdef USER_CRYPTO_MIGRATE_KEY
-    EXPECT_CALL(*baseKeyMock_, StoreKey(_, _)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
+    EXPECT_CALL(*baseKeyMock_, StoreKey(_, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
     #else
-    EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
+    EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
     #endif
     EXPECT_CALL(*fscryptKeyMock_, EncryptClassE(_, _, _, _)).WillOnce(Return(true));
     EXPECT_CALL(*fscryptKeyMock_, LockUece(_)).WillOnce(Return(true));

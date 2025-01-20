@@ -86,8 +86,8 @@ int KeyManager::GenerateAndInstallDeviceKey(const std::string &dir)
         StorageRadar::ReportUserKeyResult("GenerateAndInstallDeviceKey", 0, E_GLOBAL_KEY_INIT_ERROR, "EL1", "");
         return E_GLOBAL_KEY_INIT_ERROR;
     }
-
-    if (globalEl1Key_->StoreKey(NULL_KEY_AUTH) == false) {
+    auto ret = globalEl1Key_->StoreKey(NULL_KEY_AUTH);
+    if (ret != E_OK) {
         globalEl1Key_->ClearKey();
         globalEl1Key_ = nullptr;
         LOGE("global security key store failed");
@@ -208,7 +208,8 @@ int KeyManager::GenerateAndInstallUserKey(uint32_t userId, const std::string &di
         LOGE("user security key init failed");
         return E_ELX_KEY_INIT_ERROR;
     }
-    if (elKey->StoreKey(auth) == false) {
+    auto ret = elKey->StoreKey(auth);
+    if (ret != E_OK) {
         elKey->ClearKey();
         LOGE("user security key store failed");
         return E_ELX_KEY_STORE_ERROR;
@@ -901,8 +902,8 @@ int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &aut
         KeyBlob originKey(plainText[i]);
         elxKey->SetOriginKey(originKey);
         i++;
-
-        if (elxKey->StoreKey({authToken, newSecret, secureUid}) == false) {
+        auto ret = elxKey->StoreKey({authToken, newSecret, secureUid});
+        if (ret != E_OK) {
             LOGE("Store key error");
             return E_ELX_KEY_STORE_ERROR;
         }
@@ -1013,10 +1014,11 @@ int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
         auth.secret.Clear();
     }
 #ifdef USER_CRYPTO_MIGRATE_KEY
-    if (item->StoreKey(auth, needGenerateShield) == false) {
+    auto ret = item->StoreKey(auth, needGenerateShield);
 #else
-    if (item->StoreKey(auth) == false) {
+    auto ret = item->StoreKey(auth);
 #endif
+    if (ret != E_OK) {
         LOGE("Store key error");
         return E_ELX_KEY_STORE_ERROR;
     }
@@ -1367,9 +1369,12 @@ int KeyManager::ActiveElXUserKey(unsigned int user,
     }
     std::string NEED_UPDATE_PATH = GetKeyDirByUserAndType(user, keyType) + PATH_LATEST + SUFFIX_NEED_UPDATE;
     std::string NEED_RESTORE_PATH = GetKeyDirByUserAndType(user, keyType) + PATH_LATEST + SUFFIX_NEED_RESTORE;
-    if (!FileExists(NEED_RESTORE_PATH) && !FileExists(NEED_UPDATE_PATH) && (elKey->StoreKey(auth) == false)) {
-        LOGE("Store el failed");
-        return E_ELX_KEY_STORE_ERROR;
+    if (!FileExists(NEED_RESTORE_PATH) && !FileExists(NEED_UPDATE_PATH)) {
+        auto ret = elKey->StoreKey(auth);
+        if(ret != E_OK) {
+            LOGE("Store el failed");
+            return E_ELX_KEY_STORE_ERROR;
+        }
     }
     if (elKey->ActiveKey(RETRIEVE_KEY) == false) {
         LOGE("Active user %{public}u key failed", user);

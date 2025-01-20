@@ -47,9 +47,9 @@ public:
     /* key operations */
     bool InitKey(bool needGenerateKey);
 #ifdef USER_CRYPTO_MIGRATE_KEY
-    bool StoreKey(const UserAuth &auth, bool needGenerateShield = true);
+    int32_t StoreKey(const UserAuth &auth, bool needGenerateShield = true);
 #else
-    bool StoreKey(const UserAuth &auth);
+    int32_t StoreKey(const UserAuth &auth);
 #endif
     bool UpdateKey(const std::string &keypath = "", bool needSyncCandidate = true);
     bool RestoreKey(const UserAuth &auth, bool needSyncCandidate = true);

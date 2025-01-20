@@ -35,18 +35,18 @@ bool BaseKey::InitKey(bool needGenerateKey)
 }
 
 #ifdef USER_CRYPTO_MIGRATE_KEY
-bool BaseKey::StoreKey(const UserAuth &auth, bool needGenerateShield)
+int32_t BaseKey::StoreKey(const UserAuth &auth, bool needGenerateShield)
 {
     if (IBaseKeyMoc::baseKeyMoc == nullptr) {
-        return false;
+        return -1;
     }
     return IBaseKeyMoc::baseKeyMoc->StoreKey(auth, needGenerateShield);
 }
 #else
-bool BaseKey::StoreKey(const UserAuth &auth)
+int32_t BaseKey::StoreKey(const UserAuth &auth)
 {
     if (IBaseKeyMoc::baseKeyMoc == nullptr) {
-        return false;
+        return -1;
     }
     return IBaseKeyMoc::baseKeyMoc->StoreKey(auth);
 }
