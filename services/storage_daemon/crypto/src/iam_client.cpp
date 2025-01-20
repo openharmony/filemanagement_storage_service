@@ -35,8 +35,9 @@ IamClient::~IamClient()
 }
 
 #ifdef USER_AUTH_FRAMEWORK
-void UserSecCallback::OnSecUserInfo(const UserIam::UserAuth::SecUserInfo &info)
+void UserSecCallback::OnSecUserInfo(int32_t result, const UserIam::UserAuth::SecUserInfo &info)
 {
+    static_cast<void>(result);
     LOGI("enter");
     secureUid_ = info.secureUid;
     IamClient::GetInstance().NotifyGetSecureUid();
@@ -48,8 +49,9 @@ uint64_t UserSecCallback::GetSecureUid()
     return secureUid_;
 }
 
-void UserEnrollCallback::OnSecUserInfo(const UserIam::UserAuth::SecUserInfo &info)
+void UserEnrollCallback::OnSecUserInfo(int32_t result, const UserIam::UserAuth::SecUserInfo &info)
 {
+    static_cast<void>(result);
     LOGI("enter");
     info_ = info;
     IamClient::GetInstance().NotifyGetSecUserInfo();

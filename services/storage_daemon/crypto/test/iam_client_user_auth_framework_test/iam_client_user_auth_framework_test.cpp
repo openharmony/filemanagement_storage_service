@@ -86,7 +86,7 @@ HWTEST_F(IamClientUserAuthFrameTest, iam_client_user_auth_frame_OnSecUserInfo, T
     UserIam::UserAuth::SecUserInfo info;
     UserSecCallback callback;
     info.secureUid = 2;
-    callback.OnSecUserInfo(info);
+    callback.OnSecUserInfo(0, info);
     EXPECT_TRUE(true);
     EXPECT_EQ(callback.GetSecureUid(), 2);
     GTEST_LOG_(INFO) << "iam_client_user_auth_frame_OnSecUserInfo end";

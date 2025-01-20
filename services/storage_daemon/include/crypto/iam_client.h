@@ -52,7 +52,7 @@ public:
     {
         secureUid_ = { 0 };
     }
-    void OnSecUserInfo(const UserIam::UserAuth::SecUserInfo &info) override;
+    void OnSecUserInfo(int32_t result, const UserIam::UserAuth::SecUserInfo &info) override;
     uint64_t GetSecureUid();
 
 private:
@@ -69,7 +69,7 @@ public:
     {
         info_ = {};
     }
-    void OnSecUserInfo(const UserIam::UserAuth::SecUserInfo &info) override;
+    void OnSecUserInfo(int32_t result, const UserIam::UserAuth::SecUserInfo &info) override;
     UserIam::UserAuth::SecUserInfo GetSecUserInfo();
 
 private:
