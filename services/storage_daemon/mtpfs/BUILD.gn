@@ -43,6 +43,7 @@ ohos_executable("mtpfs") {
     "-D_FILE_OFFSET_BITS=64",
     "-std=c++11",
     "-fstack-protector-strong",
+    "-O2",
   ]
 
   deps = [ "${storage_daemon_path}:storage_common_utils" ]
