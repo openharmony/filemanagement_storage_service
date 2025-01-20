@@ -107,8 +107,8 @@ private:
     int32_t DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &path, const uint32_t keyType);
     int32_t DoRestoreKeyDe(const UserAuth &auth, const std::string &path);
     int32_t DoRestoreKeyOld(const UserAuth &auth, const std::string &keypath);
-    bool DoUpdateRestore(const UserAuth &auth, const std::string &keyPath);
-    bool DoUpdateRestoreVx(const UserAuth &auth, const std::string &KeyPath, UpdateVersion update_version);
+    int32_t DoUpdateRestore(const UserAuth &auth, const std::string &keyPath);
+    int32_t DoUpdateRestoreVx(const UserAuth &auth, const std::string &KeyPath, UpdateVersion update_version);
     static bool GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size);
     static bool GenerateKeyBlob(KeyBlob &blob, const uint32_t size);
     int32_t EncryptDe(const UserAuth &auth, const std::string &path);

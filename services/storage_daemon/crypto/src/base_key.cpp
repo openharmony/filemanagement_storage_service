@@ -681,21 +681,21 @@ bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
         }
     }
     LOGI("end ret %{public}u, filepath isExist: %{public}u", ret, errCode.value());
-    return ret != 0;
+    return ret == E_OK;
 }
 
-bool BaseKey::DoUpdateRestore(const UserAuth &auth, const std::string &keyPath)
+int32_t BaseKey::DoUpdateRestore(const UserAuth &auth, const std::string &keyPath)
 {
     LOGI("enter");
     auto ret = DoRestoreKeyOld(auth, keyPath);
     if (ret != E_OK) {
         LOGE("Restore old failed !");
-        return false;
+        return ret;
     }
     std::error_code errCode;
     if (std::filesystem::exists(dir_ + PATH_NEED_RESTORE_SUFFIX, errCode) && !auth.token.IsEmpty()) {
         LOGE("Double 2 single, skip huks -> huks-openssl !");
-        return true;
+        return E_OK;
     }
     uint64_t secureUid = { 0 };
     uint32_t userId = GetIdFromDir();
@@ -706,24 +706,24 @@ bool BaseKey::DoUpdateRestore(const UserAuth &auth, const std::string &keyPath)
     ret = StoreKey({ auth.token, auth.secret, secureUid });
     if (ret != E_OK) {
         LOGE("Store old failed !");
-        return false;
+        return ret;
     }
     ret = UpdateKey();
     if (ret != E_OK) {
         LOGE("Update old failed !");
-        return false;
+        return ret;
     }
     LOGI("finish");
-    return true;
+    return E_OK;
 }
-bool BaseKey::DoUpdateRestoreVx(const UserAuth &auth, const std::string &keyPath, UpdateVersion update_version)
+int32_t BaseKey::DoUpdateRestoreVx(const UserAuth &auth, const std::string &keyPath, UpdateVersion update_version)
 {
     LOGI("enter");
     LOGI("Restore version %{public}u", update_version);
     auto ret = DoRestoreKeyCeEceSece(auth, keyPath, GetTypeFromDir());
     if (ret != E_OK) {
         LOGE("Restore ce ece sece failed !");
-        return false;
+        return ret;
     }
     uint64_t secureUid = { 0 };
     
@@ -738,15 +738,15 @@ bool BaseKey::DoUpdateRestoreVx(const UserAuth &auth, const std::string &keyPath
     ret = StoreKey({ auth.token, auth.secret, secureUid }); 
     if (ret != E_OK) {
         LOGE("Store old failed !");
-        return false;
+        return ret;
     }
     ret = UpdateKey();
     if (ret != E_OK) {
         LOGE("Update old failed !");
-        return false;
+        return ret;
     }
     LOGI("finish");
-    return true;
+    return E_OK;
 }
 
 int32_t BaseKey::DecryptReal(const UserAuth &auth, const uint32_t keyType, KeyContext &keyCtx)
