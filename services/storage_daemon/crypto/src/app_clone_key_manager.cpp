@@ -31,7 +31,7 @@ static const std::string NEED_RESTORE_PATH = "/data/service/el1/public/storage_d
 
 int AppCloneKeyManager::ActiveAppCloneUserKey(unsigned int &failedUserId)
 {
-    for (int userId = StorageService::START_APP_CLONE_USER_ID;
+    for (unsigned int userId = StorageService::START_APP_CLONE_USER_ID;
          userId < StorageService::MAX_APP_CLONE_USER_ID; userId++) {
         std::string keyPath = StringPrintf(NEED_RESTORE_PATH.c_str(), userId);
         std::error_code errCode;
