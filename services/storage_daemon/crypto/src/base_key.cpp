@@ -502,7 +502,7 @@ bool BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate)
         return KeyBackup::GetInstance().TryRestoreKey(shared_from_this(), auth) == 0;
     }
 
-    if (DoRestoreKey(auth, candidate)) {
+    if (DoRestoreKey(auth, candidate) == E_OK) {
         // update the latest with the candidate
         UpdateKey("", needSyncCandidate);
         return true;
@@ -523,7 +523,7 @@ bool BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate)
     });
     for (const auto &it: files) {
         if (it != candidate) {
-            if (DoRestoreKey(auth, dir_ + "/" + it)) {
+            if (DoRestoreKey(auth, dir_ + "/" + it) == E_OK) {
                 UpdateKey(it, needSyncCandidate);
                 return true;
             }
@@ -642,12 +642,12 @@ int32_t BaseKey::DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &
     return E_PARAMS_INVALID;
 }
 
-bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
+int32_t BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
 {
     auto ver = KeyCtrlLoadVersion(dir_.c_str());
     if (ver == FSCRYPT_INVALID || ver != keyInfo_.version) {
         LOGE("RestoreKey fail. bad version loaded %{public}u not expected %{public}u", ver, keyInfo_.version);
-        return false;
+        return E_VERSION_ERROR;
     }
 
     std::string encryptType;
@@ -657,7 +657,7 @@ bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
     uint32_t keyType = GetTypeFromDir();
     if (keyType == TYPE_EL1 || keyType == TYPE_GLOBAL_EL1) {
         LOGI("Restore device key.");
-        return DoRestoreKeyDe(auth, path) == E_OK;
+        return DoRestoreKeyDe(auth, path);
     }
     int ret;
     if (encryptType == KeyEncryptTypeToString(KeyEncryptType::KEY_CRYPT_HUKS_OPENSSL)) {
@@ -681,7 +681,7 @@ bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
         }
     }
     LOGI("end ret %{public}u, filepath isExist: %{public}u", ret, errCode.value());
-    return ret == E_OK;
+    return ret;
 }
 
 int32_t BaseKey::DoUpdateRestore(const UserAuth &auth, const std::string &keyPath)
