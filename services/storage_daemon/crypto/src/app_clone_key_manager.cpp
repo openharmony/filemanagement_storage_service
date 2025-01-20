@@ -31,7 +31,7 @@ static const std::string NEED_RESTORE_PATH = "/data/service/el1/public/storage_d
 
 int AppCloneKeyManager::ActiveAppCloneUserKey(unsigned int &failedUserId)
 {
-    for (unsigned int userId = StorageService::START_APP_CLONE_USER_ID;
+    for (int userId = StorageService::START_APP_CLONE_USER_ID;
          userId < StorageService::MAX_APP_CLONE_USER_ID; userId++) {
         std::string keyPath = StringPrintf(NEED_RESTORE_PATH.c_str(), userId);
         std::error_code errCode;
@@ -41,21 +41,21 @@ int AppCloneKeyManager::ActiveAppCloneUserKey(unsigned int &failedUserId)
         }
         int ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL2_KEY, {}, {});
         if (ret != E_OK) {
-            failedUserId = userId;
+            failedUserId = static_cast<unsigned int>(userId);
             LOGE("Active app clone user %{public}u el2 failed, ret=%{public}d.", userId, ret);
             StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveAppCloneUserKey", userId, ret, "EL2");
             return ret;
         }
         ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL3_KEY, {}, {});
         if (ret != E_OK) {
-            failedUserId = userId;
+            failedUserId = static_cast<unsigned int>(userId);
             LOGE("Active app clone user %{public}u el3 failed, ret=%{public}d.", userId, ret);
             StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveAppCloneUserKey", userId, ret, "EL3");
             return ret;
         }
         ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL4_KEY, {}, {});
         if (ret != E_OK) {
-            failedUserId = userId;
+            failedUserId = static_cast<unsigned int>(userId);
             LOGE("Active app clone user %{public}u el4 failed, ret=%{public}d.", userId, ret);
             StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveAppCloneUserKey", userId, ret, "EL4");
             return ret;
