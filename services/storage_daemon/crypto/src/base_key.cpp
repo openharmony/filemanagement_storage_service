@@ -529,7 +529,7 @@ bool BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate)
     return false;
 }
 
-bool BaseKey::DoRestoreKeyOld(const UserAuth &auth, const std::string &path)
+int32_t BaseKey::DoRestoreKeyOld(const UserAuth &auth, const std::string &path)
 {
     LOGW("enter, path = %{public}s", path.c_str());
     const std::string NEED_UPDATE_PATH = dir_ + PATH_LATEST + SUFFIX_NEED_UPDATE;
@@ -543,39 +543,39 @@ bool BaseKey::DoRestoreKeyOld(const UserAuth &auth, const std::string &path)
     auto ver = KeyCtrlLoadVersion(dir_.c_str());
     if (ver == FSCRYPT_INVALID || ver != keyInfo_.version) {
         LOGE("RestoreKey fail. bad version loaded %{public}u not expected %{public}u", ver, keyInfo_.version);
-        return false;
+        return E_PARAMS_INVALID;
     }
     if (!LoadKeyBlob(keyContext_.rndEnc, path + PATH_ENCRYPTED)) {
-        return false;
+        return E_LOAD_KEY_BLOB_ERROR;
     }
     if (keyEncryptType_ == KeyEncryptType::KEY_CRYPT_HUKS) {
         if (!LoadKeyBlob(keyContext_.shield, path + PATH_SHIELD)) {
             keyContext_.rndEnc.Clear();
-            return false;
+            return E_LOAD_KEY_BLOB_ERROR;
         }
     }
     if (!LoadKeyBlob(keyContext_.secDiscard, path + PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
         keyContext_.rndEnc.Clear();
         keyContext_.shield.Clear();
-        return false;
+        return E_LOAD_KEY_BLOB_ERROR;
     }
     return Decrypt(auth);
 }
 
-bool BaseKey::DoRestoreKeyDe(const UserAuth &auth, const std::string &path)
+int32_t BaseKey::DoRestoreKeyDe(const UserAuth &auth, const std::string &path)
 {
     LOGI("enter");
     KeyContext ctxNone;
     if (!LoadKeyBlob(ctxNone.rndEnc, path + PATH_ENCRYPTED)) {
         LOGE("Load rndEnc failed !");
-        return false;
+        return E_LOAD_KEY_BLOB_ERROR;
     }
 
     if (!LoadKeyBlob(ctxNone.secDiscard, path + PATH_SECDISC) ||
         !LoadKeyBlob(ctxNone.shield, path + PATH_SHIELD)) {
         ctxNone.rndEnc.Clear();
         LOGE("Load shield failed !");
-        return false;
+        return E_LOAD_KEY_BLOB_ERROR;
     }
 
     LOGW("Decrypt by hks start.");  // keyCtx.rndEnc 80 -> 64
@@ -583,14 +583,14 @@ bool BaseKey::DoRestoreKeyDe(const UserAuth &auth, const std::string &path)
     if (ret != E_OK) {
         LOGE("Decrypt by hks failed.");
         ClearKeyContext(ctxNone);
-        return false;
+        return ret;
     }
     ClearKeyContext(ctxNone);
     LOGI("finish");
-    return true;
+    return E_OK;
 }
 
-bool BaseKey::DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &path, const uint32_t keyType)
+int32_t BaseKey::DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &path, const uint32_t keyType)
 {
     LOGI("enter");
     if ((auth.secret.IsEmpty() && auth.token.IsEmpty()) ||
@@ -598,7 +598,7 @@ bool BaseKey::DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &pat
         KeyContext ctxNone;
         if (!LoadKeyBlob(ctxNone.rndEnc, path + PATH_ENCRYPTED)) {
             LOGE("Load rndEnc failed !");
-            return false;
+            return E_LOAD_KEY_BLOB_ERROR;
         }
 
         ctxNone.aad.Alloc(GCM_MAC_BYTES);
@@ -606,15 +606,15 @@ bool BaseKey::DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &pat
         if (!SplitKeyCtx(ctxNone.rndEnc, ctxNone.nonce, ctxNone.rndEnc, ctxNone.aad)) {
             ctxNone.rndEnc.Clear();
             LOGE("Split key context failed !");
-            return false;
+            return E_SPILT_KEY_CTX_ERROR;
         }
         if (!LoadKeyBlob(ctxNone.secDiscard, path + PATH_SECDISC) ||
             !LoadKeyBlob(ctxNone.shield, path + PATH_SHIELD)) {
             ctxNone.rndEnc.Clear();
             LOGE("Load shield failed !");
-            return false;
-        }
-        return DecryptReal(auth, keyType, ctxNone) == E_OK;
+            return E_SHIELD_OPERATION_ERROR;
+        }        
+        return DecryptReal(auth, keyType, ctxNone);
     }
 
     // face/finger (EL3 EL4)
@@ -629,14 +629,14 @@ bool BaseKey::DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &pat
             if (ret != E_OK) {
                 LOGE("Decrypt by hks failed.");
                 ClearKeyContext(tempCtx);
-                return false;
+                return ret;
             }
             ClearKeyContext(tempCtx);
         }
-        return true;
+        return E_OK;
     }
     LOGE("Decrypt failed, invalid param !");
-    return false;
+    return E_PARAMS_INVALID;
 }
 
 bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
@@ -654,7 +654,7 @@ bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
     uint32_t keyType = GetTypeFromDir();
     if (keyType == TYPE_EL1 || keyType == TYPE_GLOBAL_EL1) {
         LOGI("Restore device key.");
-        return DoRestoreKeyDe(auth, path);
+        return DoRestoreKeyDe(auth, path) == E_OK;
     }
     int ret;
     if (encryptType == KeyEncryptTypeToString(KeyEncryptType::KEY_CRYPT_HUKS_OPENSSL)) {
@@ -684,7 +684,8 @@ bool BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
 bool BaseKey::DoUpdateRestore(const UserAuth &auth, const std::string &keyPath)
 {
     LOGI("enter");
-    if (!DoRestoreKeyOld(auth, keyPath)) {
+    auto ret = DoRestoreKeyOld(auth, keyPath);
+    if (ret != E_OK) {
         LOGE("Restore old failed !");
         return false;
     }
@@ -715,7 +716,8 @@ bool BaseKey::DoUpdateRestoreVx(const UserAuth &auth, const std::string &keyPath
 {
     LOGI("enter");
     LOGI("Restore version %{public}u", update_version);
-    if (!DoRestoreKeyCeEceSece(auth, keyPath, GetTypeFromDir())) {
+    auto ret = DoRestoreKeyCeEceSece(auth, keyPath, GetTypeFromDir());
+    if (ret != E_OK) {
         LOGE("Restore ce ece sece failed !");
         return false;
     }
@@ -770,17 +772,17 @@ int32_t BaseKey::DecryptReal(const UserAuth &auth, const uint32_t keyType, KeyCo
     return E_OK;
 }
 
-bool BaseKey::Decrypt(const UserAuth &auth)
+int32_t BaseKey::Decrypt(const UserAuth &auth)
 {
-    bool ret = false;
+    int32_t ret = E_PARAMS_INVALID;
     switch (keyEncryptType_) {
         case KeyEncryptType::KEY_CRYPT_OPENSSL:
             LOGI("Enhanced decrypt key start");
-            ret = (OpensslCrypto::AESDecrypt(auth.secret, keyContext_, keyInfo_.key) == E_OK);
+            ret = OpensslCrypto::AESDecrypt(auth.secret, keyContext_, keyInfo_.key);
             break;
         case KeyEncryptType::KEY_CRYPT_HUKS:
             LOGI("Huks decrypt key start");
-            ret = (HuksMaster::GetInstance().DecryptKey(keyContext_, auth, keyInfo_, true) == E_OK);
+            ret = HuksMaster::GetInstance().DecryptKey(keyContext_, auth, keyInfo_, true);
             break;
         case KeyEncryptType::KEY_CRYPT_HUKS_OPENSSL:
             LOGI("Huks openssl decrypt key, skip");

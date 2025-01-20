@@ -104,16 +104,16 @@ private:
     int32_t LoadAndSaveShield(const UserAuth &auth, const std::string &pathShield, bool needGenerateShield,
                            KeyContext &keyCtx);
     bool SaveAndCleanKeyBuff(const std::string &keyPath, KeyContext &keyCtx);
-    bool DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &path, const uint32_t keyType);
-    bool DoRestoreKeyDe(const UserAuth &auth, const std::string &path);
-    bool DoRestoreKeyOld(const UserAuth &auth, const std::string &keypath);
+    int32_t DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &path, const uint32_t keyType);
+    int32_t DoRestoreKeyDe(const UserAuth &auth, const std::string &path);
+    int32_t DoRestoreKeyOld(const UserAuth &auth, const std::string &keypath);
     bool DoUpdateRestore(const UserAuth &auth, const std::string &keyPath);
     bool DoUpdateRestoreVx(const UserAuth &auth, const std::string &KeyPath, UpdateVersion update_version);
     static bool GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size);
     static bool GenerateKeyBlob(KeyBlob &blob, const uint32_t size);
     int32_t EncryptDe(const UserAuth &auth, const std::string &path);
     int32_t EncryptEceSece(const UserAuth &auth, const uint32_t keyType, KeyContext &keyCtx);
-    bool Decrypt(const UserAuth &auth);
+    int32_t Decrypt(const UserAuth &auth);
     int32_t DecryptReal(const UserAuth &auth, const uint32_t keyType, KeyContext &keyCtx);
     bool CheckAndUpdateVersion();
     bool CombKeyCtx(const KeyBlob &nonce, const KeyBlob &rndEnc, const KeyBlob &aad, KeyBlob &keyOut);
