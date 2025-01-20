@@ -493,19 +493,24 @@ int32_t BaseKey::EncryptEceSece(const UserAuth &auth, const uint32_t keyType, Ke
     return E_OK;
 }
 
-bool BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate)
+int32_t BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate)
 {
     LOGW("enter");
     auto candidate = GetCandidateDir();
     if (candidate.empty()) {
         // no candidate dir, just restore from the latest
-        return KeyBackup::GetInstance().TryRestoreKey(shared_from_this(), auth) == 0;
+        auto ret = KeyBackup::GetInstance().TryRestoreKey(shared_from_this(), auth);
+        if (ret == 0) {
+            return E_OK;
+        }
+        return ret;
     }
 
-    if (DoRestoreKey(auth, candidate) == E_OK) {
+    auto ret = DoRestoreKey(auth, candidate);
+    if (ret == E_OK) {
         // update the latest with the candidate
         UpdateKey("", needSyncCandidate);
-        return true;
+        return E_OK;
     }
 
     LOGE("DoRestoreKey with %{public}s failed", candidate.c_str());
@@ -523,13 +528,14 @@ bool BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate)
     });
     for (const auto &it: files) {
         if (it != candidate) {
-            if (DoRestoreKey(auth, dir_ + "/" + it) == E_OK) {
+            ret = DoRestoreKey(auth, dir_ + "/" + it);
+            if (ret == E_OK) {
                 UpdateKey(it, needSyncCandidate);
-                return true;
+                return E_OK;
             }
         }
     }
-    return false;
+    return ret;
 }
 
 int32_t BaseKey::DoRestoreKeyOld(const UserAuth &auth, const std::string &path)

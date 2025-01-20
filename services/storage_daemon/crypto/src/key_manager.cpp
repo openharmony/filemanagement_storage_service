@@ -132,7 +132,8 @@ int KeyManager::RestoreDeviceKey(const std::string &dir)
         return E_GLOBAL_KEY_INIT_ERROR;
     }
 
-    if (globalEl1Key_->RestoreKey(NULL_KEY_AUTH) == false) {
+    auto ret = globalEl1Key_->RestoreKey(NULL_KEY_AUTH);
+    if (ret != E_OK) {
         globalEl1Key_ = nullptr;
         LOGE("global security key restore failed");
         StorageRadar::ReportUserKeyResult("RestoreDeviceKey", 0, E_GLOBAL_KEY_STORE_ERROR, "EL1", "");
@@ -291,7 +292,8 @@ int KeyManager::RestoreUserKey(uint32_t userId, const std::string &dir, const Us
         return E_ELX_KEY_INIT_ERROR;
     }
 
-    if (elKey->RestoreKey(auth) == false) {
+    auto ret = elKey->RestoreKey(auth);
+    if (ret != E_OK) {
         LOGE("user security key restore failed");
         return E_ELX_KEY_STORE_ERROR;
     }
@@ -1000,7 +1002,7 @@ int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
         KeyBlob token(userTokenSecret.token);
         auth.token = std::move(token);
     }
-    if ((item->RestoreKey(auth) == false) && (item->RestoreKey(NULL_KEY_AUTH) == false)) {
+    if ((item->RestoreKey(auth) != E_OK) && (item->RestoreKey(NULL_KEY_AUTH) != E_OK)) {
         LOGE("Restore key error");
         return E_RESTORE_KEY_FAILED;
     }
@@ -1353,15 +1355,15 @@ int KeyManager::ActiveElXUserKey(unsigned int user,
         return E_ELX_KEY_INIT_ERROR;
     }
     UserAuth auth = { token, secret };
-    bool keyResult = elKey->RestoreKey(auth);
-    bool noKeyResult = !keyResult && elKey->RestoreKey(NULL_KEY_AUTH);
+    auto keyResult = elKey->RestoreKey(auth);
+    bool noKeyResult = (keyResult != E_OK) && (elKey->RestoreKey(NULL_KEY_AUTH) == E_OK);
     // key and no-key situation all failed, include upgrade situation, return err
-    if (!keyResult && !noKeyResult) {
+    if (keyResult != E_OK && !noKeyResult) {
         LOGE("Restore el failed, type: %{public}u", keyType);
         return E_RESTORE_KEY_FAILED;
     }
     // if device has pwd and decrypt success, continue.otherwise try no pwd and fix situation.
-    if (!keyResult && noKeyResult) {
+    if (keyResult != E_OK && noKeyResult) {
         if (TryToFixUserCeEceSeceKey(user, keyType, token, secret) != E_OK) {
             LOGE("TryToFixUserCeEceSeceKey elx failed, type %{public}u", keyType);
             return E_TRY_TO_FIX_USER_KEY_ERR;
@@ -1434,7 +1436,7 @@ int32_t KeyManager::UnlockEceSece(uint32_t user,
              saveLockScreenStatus[user]);
         return E_NON_EXIST;
     }
-    if (!el4Key->RestoreKey({ token, secret }, false) && !el4Key->RestoreKey(NULL_KEY_AUTH, false)) {
+    if (el4Key->RestoreKey({ token, secret }, false) != E_OK && el4Key->RestoreKey(NULL_KEY_AUTH, false) != E_OK) {
         LOGE("Restore user %{public}u el4 key failed", user);
         return E_RESTORE_KEY_FAILED;
     }
@@ -1547,7 +1549,7 @@ int KeyManager::CreateRecoverKey(uint32_t userId, uint32_t userType, const std::
             return E_PARAMS_NULLPTR_ERR;
         }
         UserAuth auth = { token, secret };
-        if ((elxKey->RestoreKey(auth, false) == false) && (elxKey->RestoreKey(NULL_KEY_AUTH, false) == false)) {
+        if ((elxKey->RestoreKey(auth, false) != E_OK) && (elxKey->RestoreKey(NULL_KEY_AUTH, false) != E_OK)) {
             LOGE("Restore el failed");
             return E_RESTORE_KEY_FAILED;
         }

@@ -52,7 +52,7 @@ public:
     int32_t StoreKey(const UserAuth &auth);
 #endif
     int32_t UpdateKey(const std::string &keypath = "", bool needSyncCandidate = true);
-    bool RestoreKey(const UserAuth &auth, bool needSyncCandidate = true);
+    int32_t RestoreKey(const UserAuth &auth, bool needSyncCandidate = true);
     virtual bool ActiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
     virtual bool InactiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
     virtual bool LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt = MNT_DATA) = 0;

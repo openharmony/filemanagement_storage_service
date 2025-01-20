@@ -124,18 +124,18 @@ HWTEST_F(KeyMgrAnotherTest, KeyManager_CreateRecoverKey_000, TestSize.Level1)
 
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
-    EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(false)).WillOnce(Return(false));
+    EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(-1)).WillOnce(Return(-1));
     EXPECT_EQ(KeyManager::GetInstance()->CreateRecoverKey(userId, userType, token, secret), -EFAULT);
 
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
-    EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(true));
+    EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(E_OK));
     EXPECT_CALL(*baseKeyMock_, GetOriginKey(_)).WillOnce(Return(false));
     EXPECT_EQ(KeyManager::GetInstance()->CreateRecoverKey(userId, userType, token, secret), -ENOENT);
 
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
-    EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(false)).WillOnce(Return(true));
+    EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(-1)).WillOnce(Return(E_OK));
     EXPECT_CALL(*baseKeyMock_, GetOriginKey(_)).WillOnce(Return(false));
     EXPECT_EQ(KeyManager::GetInstance()->CreateRecoverKey(userId, userType, token, secret), -ENOENT);
     GTEST_LOG_(INFO) << "KeyManager_CreateRecoverKey_000 end";
@@ -159,7 +159,7 @@ HWTEST_F(KeyMgrAnotherTest, KeyManager_CreateRecoverKey_001, TestSize.Level1)
         .WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2))
         .WillOnce(Return(FSCRYPT_V2));
-    EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(true)).WillOnce(Return(true));
+    EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
     EXPECT_CALL(*baseKeyMock_, GetOriginKey(_)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_EQ(KeyManager::GetInstance()->CreateRecoverKey(userId, userType, token, secret), -ENOENT);
     GTEST_LOG_(INFO) << "KeyManager_CreateRecoverKey_001 end";
@@ -193,7 +193,7 @@ HWTEST_F(KeyMgrAnotherTest, KeyManager_CreateRecoverKey_002, TestSize.Level1)
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2))
         .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2))
         .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
-    EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(true)).WillOnce(Return(true))
+    EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK))
         .WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*baseKeyMock_, GetOriginKey(_)).WillOnce(Return(true)).WillOnce(Return(true))
         .WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
@@ -206,7 +206,7 @@ HWTEST_F(KeyMgrAnotherTest, KeyManager_CreateRecoverKey_002, TestSize.Level1)
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2))
         .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2))
         .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
-    EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(true)).WillOnce(Return(true))
+    EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK))
         .WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*baseKeyMock_, GetOriginKey(_)).WillOnce(Return(true)).WillOnce(Return(true))
         .WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
