@@ -60,10 +60,10 @@ bool BaseKey::ClearKey(const std::string &mnt)
     return IBaseKeyMoc::baseKeyMoc->ClearKey(mnt);
 }
 
-bool BaseKey::UpdateKey(const std::string &keypath, bool needSyncCandidate)
+int32_t BaseKey::UpdateKey(const std::string &keypath, bool needSyncCandidate)
 {
     if (IBaseKeyMoc::baseKeyMoc == nullptr) {
-        return false;
+        return -1;
     }
     return IBaseKeyMoc::baseKeyMoc->UpdateKey(keypath);
 }

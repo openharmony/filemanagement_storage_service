@@ -250,7 +250,7 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_TryToFixUeceKey_000, TestSize.Level1)
     EXPECT_CALL(*iamClientMoc_, HasPinProtect(_)).WillOnce(Return(true));
     EXPECT_CALL(*fscryptKeyMock_, DeleteClassEPinCode(_)).WillOnce(Return(true));
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
-    EXPECT_CALL(*baseKeyMock_, UpdateKey(_)).WillOnce(Return(false));
+    EXPECT_CALL(*baseKeyMock_, UpdateKey(_)).WillOnce(Return(-1));
     EXPECT_EQ(KeyManager::GetInstance()->TryToFixUeceKey(user, token, secret),  -EFAULT);
     ForceRemoveDirectory(keyDir);
     KeyManager::GetInstance()->userEl5Key_.erase(user);

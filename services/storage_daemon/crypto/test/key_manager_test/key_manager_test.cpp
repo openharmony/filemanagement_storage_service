@@ -180,7 +180,7 @@ HWTEST_F(KeyManagerTest, KeyManager_GenerateAndInstallDeviceKey_002, TestSize.Le
     #endif
 
     EXPECT_CALL(*fscryptKeyMock_, ActiveKey(_, _)).WillOnce(Return(true));
-    EXPECT_CALL(*baseKeyMock_, UpdateKey(_)).WillOnce(Return(true));
+    EXPECT_CALL(*baseKeyMock_, UpdateKey(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(KeyManager::GetInstance()->GenerateAndInstallDeviceKey("/data/test"), 0);
     EXPECT_EQ(KeyManager::GetInstance()->hasGlobalDeviceKey_, true);
     GTEST_LOG_(INFO) << "KeyManager_GenerateAndInstallDeviceKey_002 end";
@@ -598,11 +598,11 @@ HWTEST_F(KeyManagerTest, KeyManager_UpdateCeEceSeceKeyContext, TestSize.Level1)
     std::shared_ptr<BaseKey> tmpKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>("test"));
     KeyManager::GetInstance()->userEl1Key_[userId] = tmpKey;
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
-    EXPECT_CALL(*baseKeyMock_, UpdateKey(_)).WillOnce(Return(false));
+    EXPECT_CALL(*baseKeyMock_, UpdateKey(_)).WillOnce(Return(-1));
     EXPECT_EQ(KeyManager::GetInstance()->UpdateCeEceSeceKeyContext(userId, type), -EFAULT);
 
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
-    EXPECT_CALL(*baseKeyMock_, UpdateKey(_)).WillOnce(Return(true));
+    EXPECT_CALL(*baseKeyMock_, UpdateKey(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(KeyManager::GetInstance()->UpdateCeEceSeceKeyContext(userId, type), 0);
     GTEST_LOG_(INFO) << "KeyManager_UpdateCeEceSeceKeyContext end";
 }
@@ -827,7 +827,7 @@ HWTEST_F(KeyManagerTest, KeyManager_GenerateAndInstallUserKey_002, TestSize.Leve
     EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(E_OK));
     #endif
     EXPECT_CALL(*fscryptKeyMock_, ActiveKey(_, _)).WillOnce(Return(true));
-    EXPECT_CALL(*baseKeyMock_, UpdateKey(_)).WillOnce(Return(true));
+    EXPECT_CALL(*baseKeyMock_, UpdateKey(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(KeyManager::GetInstance()->GenerateAndInstallUserKey(800, "/data/test", auth, EL1_KEY), 0);
     EXPECT_EQ(KeyManager::GetInstance()->HasElkey(800, EL1_KEY), true);
     EXPECT_EQ(KeyManager::GetInstance()->GenerateAndInstallUserKey(800, "/data/test", auth, EL1_KEY), 0);
@@ -844,7 +844,7 @@ HWTEST_F(KeyManagerTest, KeyManager_GenerateAndInstallUserKey_002, TestSize.Leve
     EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(E_OK));
     #endif
     EXPECT_CALL(*fscryptKeyMock_, ActiveKey(_, _)).WillOnce(Return(true));
-    EXPECT_CALL(*baseKeyMock_, UpdateKey(_)).WillOnce(Return(true));
+    EXPECT_CALL(*baseKeyMock_, UpdateKey(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(KeyManager::GetInstance()->GenerateAndInstallUserKey(800, "/data/test", auth, EL2_KEY), 0);
     EXPECT_EQ(KeyManager::GetInstance()->HasElkey(800, EL2_KEY), true);
     KeyManager::GetInstance()->userEl2Key_.erase(800);
@@ -871,7 +871,7 @@ HWTEST_F(KeyManagerTest, KeyManager_GenerateAndInstallUserKey_003, TestSize.Leve
     EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(E_OK));
     #endif
     EXPECT_CALL(*fscryptKeyMock_, ActiveKey(_, _)).WillOnce(Return(true));
-    EXPECT_CALL(*baseKeyMock_, UpdateKey(_)).WillOnce(Return(true));
+    EXPECT_CALL(*baseKeyMock_, UpdateKey(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(KeyManager::GetInstance()->GenerateAndInstallUserKey(800, "/data/test", auth, EL3_KEY), 0);
     EXPECT_EQ(KeyManager::GetInstance()->HasElkey(800, EL3_KEY), true);
     KeyManager::GetInstance()->userEl3Key_.erase(800);
@@ -886,7 +886,7 @@ HWTEST_F(KeyManagerTest, KeyManager_GenerateAndInstallUserKey_003, TestSize.Leve
     EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(E_OK));
     #endif
     EXPECT_CALL(*fscryptKeyMock_, ActiveKey(_, _)).WillOnce(Return(true));
-    EXPECT_CALL(*baseKeyMock_, UpdateKey(_)).WillOnce(Return(true));
+    EXPECT_CALL(*baseKeyMock_, UpdateKey(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(KeyManager::GetInstance()->GenerateAndInstallUserKey(800, "/data/test", auth, EL4_KEY), 0);
     EXPECT_EQ(KeyManager::GetInstance()->HasElkey(800, EL4_KEY), true);
     KeyManager::GetInstance()->userEl4Key_.erase(800);

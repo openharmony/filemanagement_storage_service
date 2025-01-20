@@ -103,7 +103,7 @@ int KeyManager::GenerateAndInstallDeviceKey(const std::string &dir)
         return E_GLOBAL_KEY_ACTIVE_ERROR;
     }
 
-    if (!globalEl1Key_->UpdateKey()) {
+    if (globalEl1Key_->UpdateKey() != E_OK) {
         StorageRadar::ReportUserKeyResult("GenerateAndInstallDeviceKey", 0, E_GLOBAL_KEY_UPDATE_ERROR, "EL1", "");
     }
     hasGlobalDeviceKey_ = true;
@@ -1848,7 +1848,8 @@ int KeyManager::UpdateCeEceSeceKeyContext(uint32_t userId, KeyType type)
         LOGE("Have not found user %{public}u, type el%{public}u", userId, type);
         return -ENOENT;
     }
-    if (!elKey->UpdateKey()) {
+    auto ret = elKey->UpdateKey();
+    if (ret != E_OK) {
         LOGE("Basekey update newest context failed");
         return E_ELX_KEY_UPDATE_ERROR;
     }

@@ -365,21 +365,21 @@ int32_t BaseKey::LoadAndSaveShield(const UserAuth &auth, const std::string &path
 }
 
 // update the latest and do cleanups.
-bool BaseKey::UpdateKey(const std::string &keypath, bool needSyncCandidate)
+int32_t BaseKey::UpdateKey(const std::string &keypath, bool needSyncCandidate)
 {
     LOGI("enter");
     if (!needSyncCandidate) {
         LOGE("Do not update candidate file !");
-        return true;
+        return E_OK;
     }
     auto candidate = keypath.empty() ? GetCandidateDir() : keypath;
     if (candidate.empty() && GetTypeFromDir() == TYPE_EL5) {
         LOGI("no uece candidate dir, do not need updateKey.");
-        return true;
+        return E_OK;
     }
     if (candidate.empty()) {
         LOGE("no candidate dir");
-        return false;
+        return E_EMPTY_CANDIDATE_ERROR;
     }
     DoLatestBackUp();
     bool hasLatest = IsDir(dir_ + PATH_LATEST);
@@ -394,7 +394,7 @@ bool BaseKey::UpdateKey(const std::string &keypath, bool needSyncCandidate)
             }
         }
         SyncKeyDir();
-        return false;
+        return errno;
     }
     LOGI("rename candidate %{public}s to latest success", candidate.c_str());
 
@@ -410,7 +410,7 @@ bool BaseKey::UpdateKey(const std::string &keypath, bool needSyncCandidate)
     KeyBackup::GetInstance().GetBackupDir(dir_, backupDir);
     KeyBackup::GetInstance().CreateBackup(dir_, backupDir, true);
     SyncKeyDir();
-    return true;
+    return E_OK;
 }
 
 void BaseKey::DoLatestBackUp() const
@@ -708,7 +708,8 @@ bool BaseKey::DoUpdateRestore(const UserAuth &auth, const std::string &keyPath)
         LOGE("Store old failed !");
         return false;
     }
-    if (!UpdateKey()) {
+    ret = UpdateKey();
+    if (ret != E_OK) {
         LOGE("Update old failed !");
         return false;
     }
@@ -739,7 +740,8 @@ bool BaseKey::DoUpdateRestoreVx(const UserAuth &auth, const std::string &keyPath
         LOGE("Store old failed !");
         return false;
     }
-    if (!UpdateKey()) {
+    ret = UpdateKey();
+    if (ret != E_OK) {
         LOGE("Update old failed !");
         return false;
     }

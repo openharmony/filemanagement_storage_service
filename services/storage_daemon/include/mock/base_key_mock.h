@@ -30,7 +30,7 @@ public:
     virtual int32_t StoreKey(const UserAuth &auth) = 0;
     virtual int32_t StoreKey(const UserAuth &auth, bool needGenerateShield) = 0;
     virtual bool ClearKey(const std::string &mnt) = 0;
-    virtual bool UpdateKey(const std::string &keypath) = 0;
+    virtual int32_t UpdateKey(const std::string &keypath) = 0;
     virtual bool RestoreKey(const UserAuth &auth) = 0;
     virtual bool UpgradeKeys() = 0;
     virtual int32_t DecryptKeyBlob(const UserAuth &, const std::string &, KeyBlob &, KeyBlob &) = 0;
@@ -52,7 +52,7 @@ public:
     MOCK_METHOD2(StoreKey, int32_t(const UserAuth &auth, bool needGenerateShield));
     MOCK_METHOD1(StoreKey, int32_t(const UserAuth &auth));
     MOCK_METHOD1(ClearKey, bool(const std::string &mnt));
-    MOCK_METHOD1(UpdateKey, bool(const std::string &keypath));
+    MOCK_METHOD1(UpdateKey, int32_t(const std::string &keypath));
     MOCK_METHOD1(RestoreKey, bool(const UserAuth &auth));
     MOCK_METHOD0(UpgradeKeys, bool());
     MOCK_METHOD0(KeyDescIsEmpty, bool());

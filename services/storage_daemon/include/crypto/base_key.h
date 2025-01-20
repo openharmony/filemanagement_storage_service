@@ -51,7 +51,7 @@ public:
 #else
     int32_t StoreKey(const UserAuth &auth);
 #endif
-    bool UpdateKey(const std::string &keypath = "", bool needSyncCandidate = true);
+    int32_t UpdateKey(const std::string &keypath = "", bool needSyncCandidate = true);
     bool RestoreKey(const UserAuth &auth, bool needSyncCandidate = true);
     virtual bool ActiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
     virtual bool InactiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;

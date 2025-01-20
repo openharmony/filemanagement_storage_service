@@ -196,16 +196,16 @@ HWTEST_F(BaseKeyTest, BaseKey_UpdateKey_001, TestSize.Level1)
     std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
     std::string keyPath = "/test";
     bool needSyncCandidate = false;
-    EXPECT_TRUE(elKey->UpdateKey(keyPath, needSyncCandidate));
+    EXPECT_EQ(elKey->UpdateKey(keyPath, needSyncCandidate), E_OK);
 
     needSyncCandidate = true;
-    EXPECT_FALSE(elKey->UpdateKey(keyPath, needSyncCandidate));
+    EXPECT_NE(elKey->UpdateKey(keyPath, needSyncCandidate), E_OK);
     
     keyPath = "";
-    EXPECT_FALSE(elKey->UpdateKey(keyPath, needSyncCandidate));
+    EXPECT_NE(elKey->UpdateKey(keyPath, needSyncCandidate), E_OK);
 
     elKey->dir_ = "/data/foo/bar/el5/100";
-    EXPECT_TRUE(elKey->UpdateKey(keyPath, needSyncCandidate));
+    EXPECT_EQ(elKey->UpdateKey(keyPath, needSyncCandidate), E_OK);
     GTEST_LOG_(INFO) << "BaseKey_UpdateKey_001 end";
 }
 
