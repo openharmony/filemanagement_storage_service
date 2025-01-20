@@ -97,9 +97,9 @@ protected:
 
 private:
 #ifdef USER_CRYPTO_MIGRATE_KEY
-    bool DoStoreKey(const UserAuth &auth, bool needGenerateShield = true);
+    int32_t  DoStoreKey(const UserAuth &auth, bool needGenerateShield = true);
 #else
-    bool DoStoreKey(const UserAuth &auth);
+    int32_t  DoStoreKey(const UserAuth &auth);
 #endif
     int32_t LoadAndSaveShield(const UserAuth &auth, const std::string &pathShield, bool needGenerateShield,
                            KeyContext &keyCtx);

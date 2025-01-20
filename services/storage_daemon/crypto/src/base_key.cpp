@@ -200,11 +200,13 @@ bool BaseKey::StoreKey(const UserAuth &auth)
 {
     LOGI("enter");
     auto pathTemp = dir_ + PATH_KEY_TEMP;
+    int32_t ret = E_PERMISSION_DENIED;
 #ifdef USER_CRYPTO_MIGRATE_KEY
-    if (DoStoreKey(auth, needGenerateShield)) {
+    ret = DoStoreKey(auth, needGenerateShield);
 #else
-    if (DoStoreKey(auth)) {
+    ret = DoStoreKey(auth);
 #endif
+    if (ret == E_OK) {
         // rename keypath/temp/ to keypath/version_xx/
         auto candidate = GetNextCandidateDir();
         LOGI("rename %{public}s to %{public}s", pathTemp.c_str(), candidate.c_str());
@@ -227,9 +229,9 @@ bool BaseKey::StoreKey(const UserAuth &auth)
 
 // All key files are saved under keypath/temp/ in this function.
 #ifdef USER_CRYPTO_MIGRATE_KEY
-bool BaseKey::DoStoreKey(const UserAuth &auth, bool needGenerateShield)
+int32_t  BaseKey::DoStoreKey(const UserAuth &auth, bool needGenerateShield)
 #else
-bool BaseKey::DoStoreKey(const UserAuth &auth)
+int32_t  BaseKey::DoStoreKey(const UserAuth &auth)
 #endif
 {
     LOGI("enter");
@@ -238,11 +240,11 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
         LOGE("MkDirRecurse failed!");
     }
     if (!CheckAndUpdateVersion()) {
-        return false;
+        return E_VERSION_ERROR;
     }
     uint32_t keyType = GetTypeFromDir();
     if (keyType == TYPE_EL1 || keyType == TYPE_GLOBAL_EL1) {
-        return EncryptDe(auth, pathTemp) == E_OK;
+        return EncryptDe(auth, pathTemp);
     }
     if ((auth.token.IsEmpty() && auth.secret.IsEmpty()) || // Create user/Delete pincode(EL2-4)
         !auth.token.IsEmpty()) {  // add/change pin code (EL2-4)
@@ -251,23 +253,23 @@ bool BaseKey::DoStoreKey(const UserAuth &auth)
         auto ret = InitKeyContext(auth, pathTemp, keyCtx);
         if (ret != E_OK) {
             LOGE("init key context failed !");
-            return false;
+            return ret;
         }
 
         ret = EncryptEceSece(auth, keyType, keyCtx);
         if (ret != E_OK) {
             LOGE("Encrypt key failed !");
             ClearKeyContext(keyCtx);
-            return false;
+            return ret;
         }
         // save key buff nonce+rndEnc+aad
         if (!SaveAndCleanKeyBuff(pathTemp, keyCtx)) {
             LOGE("save key buff failed !");
-            return false;
+            return E_SAVE_KEY_BUFFER_ERROR;
         }
     }
     LOGI("finish");
-    return true;
+    return E_OK;
 }
 
 bool BaseKey::CheckAndUpdateVersion()
