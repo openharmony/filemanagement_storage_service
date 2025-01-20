@@ -186,11 +186,10 @@ HWTEST_F(StorageManagerClientTest, StorageManagerClientTest_NotifyMtpUnmounted_0
 
     ASSERT_TRUE(storageManagerClient_ != nullptr);
 
-    auto ret = storageManagerClient_->NotifyMtpUnmounted("", "");
+    auto ret = storageManagerClient_->NotifyMtpUnmounted("", "", false);
     EXPECT_TRUE(ret == E_OK);
 
     GTEST_LOG_(INFO) << "StorageManagerClientTest_NotifyMtpUnmounted_001 end";
 }
 } // StorageDaemon
 } // OHOS
-

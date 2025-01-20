@@ -71,7 +71,7 @@ public:
 
     int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
                              const std::string &uuid) override;
-    int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path) override;
+    int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path, const bool isBadRemove) override;
 
     // fscrypt api
     int32_t GenerateUserKeys(uint32_t userId, uint32_t flags) override;

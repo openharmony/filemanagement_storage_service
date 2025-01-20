@@ -36,7 +36,7 @@ public:
 
     int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
                              const std::string &uuid);
-    int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path);
+    int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path, const bool isBadRemove);
 
 private:
     DISALLOW_COPY_AND_MOVE(StorageManagerClient);

@@ -1697,13 +1697,13 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_NotifyMtpUnmounted_0000,
     std::string id = "vol-1-18";
     std::string path = "/";
     ASSERT_TRUE(proxy_ != nullptr) << "StorageManagerProxy failed";
-    int64_t result = proxy_->NotifyMtpUnmounted(id, path);
+    int64_t result = proxy_->NotifyMtpUnmounted(id, path, false);
     EXPECT_EQ(result, E_OK);
 
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
         .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
-    result = proxy_->NotifyMtpUnmounted(id, path);
+    result = proxy_->NotifyMtpUnmounted(id, path, false);
     EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_NotifyMtpUnmounted_0000";
 }
@@ -1730,7 +1730,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_MountMediaFuse_0000, tes
     ASSERT_TRUE(proxy_ != nullptr) << "StorageManagerProxy failed";
     int32_t result = proxy_->MountMediaFuse(userId, devFd);
     EXPECT_EQ(result, E_OK);
-    
+
     #ifdef STORAGE_SERVICE_MEDIA_FUSE
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)
@@ -1762,7 +1762,7 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_UMountMediaFuse_0000, te
     ASSERT_TRUE(proxy_ != nullptr) << "StorageManagerProxy failed";
     int32_t result = proxy_->UMountMediaFuse(userId);
     EXPECT_EQ(result, E_OK);
-    
+
     #ifdef STORAGE_SERVICE_MEDIA_FUSE
     EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
         .Times(1)

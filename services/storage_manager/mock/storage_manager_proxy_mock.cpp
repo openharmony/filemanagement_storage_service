@@ -311,8 +311,8 @@ int32_t StorageManagerProxy::NotifyMtpMounted(const std::string &id, const std::
 {
     return E_OK;
 }
- 
-int32_t StorageManagerProxy::NotifyMtpUnmounted(const std::string &id, const std::string &path)
+
+int32_t StorageManagerProxy::NotifyMtpUnmounted(const std::string &id, const std::string &path, const bool isBadRemove)
 {
     return E_OK;
 }

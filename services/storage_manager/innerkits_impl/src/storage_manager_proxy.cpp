@@ -1431,8 +1431,8 @@ int32_t StorageManagerProxy::NotifyMtpMounted(const std::string &id, const std::
     }
     return reply.ReadInt32();
 }
- 
-int32_t StorageManagerProxy::NotifyMtpUnmounted(const std::string &id, const std::string &path)
+
+int32_t StorageManagerProxy::NotifyMtpUnmounted(const std::string &id, const std::string &path, const bool isBadRemove)
 {
     LOGI("StorageManagerProxy::NotifyMtpUnmounted, path:%{public}s", path.c_str());
     MessageParcel data;
@@ -1450,6 +1450,11 @@ int32_t StorageManagerProxy::NotifyMtpUnmounted(const std::string &id, const std
 
     if (!data.WriteString(path)) {
         LOGE("StorageManagerProxy::NotifyMtpUnmounted path, WriteInterfaceToken failed");
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    if (!data.WriteBool(isBadRemove)) {
+        LOGE("StorageManagerProxy::NotifyMtpUnmounted isBadRemove, WriteInterfaceToken failed");
         return E_WRITE_DESCRIPTOR_ERR;
     }
 
