@@ -16,6 +16,7 @@
 #include "fscrypt_key_v2.h"
 
 #include "libfscrypt/key_control.h"
+#include "storage_service_errno.h"
 #include "storage_service_log.h"
 
 namespace OHOS {
@@ -142,40 +143,40 @@ bool FscryptKeyV2::UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std:
     return true;
 }
 
-bool FscryptKeyV2::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId)
+int32_t FscryptKeyV2::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId)
 {
     LOGI("Unsupported fscrypt v2");
-    return false;
+    return E_NOT_SUPPORT;
 }
 
-bool FscryptKeyV2::DeleteAppkey(const std::string KeyId)
+int32_t FscryptKeyV2::DeleteAppkey(const std::string KeyId)
 {
     LOGI("Unsupported fscrypt v2");
-    return false;
+    return E_NOT_SUPPORT;
 }
 
-bool FscryptKeyV2::AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status)
+int32_t FscryptKeyV2::AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status)
 {
     (void)isNeedEncryptClassE;
     (void)status;
     (void)isSupport;
     LOGI("Unsupported fscrypt v2");
-    return true;
+    return E_OK;
 }
 
-bool FscryptKeyV2::DeleteClassEPinCode(uint32_t user)
+int32_t FscryptKeyV2::DeleteClassEPinCode(uint32_t user)
 {
     (void)user;
     LOGI("Unsupported fscrypt v2");
-    return true;
+    return E_OK;
 }
 
-bool FscryptKeyV2::ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId)
+int32_t FscryptKeyV2::ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId)
 {
     (void)userId;
     isFbeSupport = false;
     LOGI("Unsupported fscrypt v2");
-    return true;
+    return E_OK;
 }
 
 bool FscryptKeyV2::DecryptClassE(const UserAuth &auth, bool &isSupport,

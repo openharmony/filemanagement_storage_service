@@ -44,17 +44,17 @@ bool FscryptKeyV1Ext::UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_t s
     return IFscryptKeyV1Ext::fscryptKeyV1ExtMock->UnlockUserScreenExt(flag, iv, size);
 }
 
-bool FscryptKeyV1Ext::AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status)
+int32_t FscryptKeyV1Ext::AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status)
 {
     return IFscryptKeyV1Ext::fscryptKeyV1ExtMock->AddClassE(isNeedEncryptClassE, isSupport, status);
 }
 
-bool FscryptKeyV1Ext::DeleteClassEPinCode(uint32_t userId)
+int32_t FscryptKeyV1Ext::DeleteClassEPinCode(uint32_t userId)
 {
     return IFscryptKeyV1Ext::fscryptKeyV1ExtMock->DeleteClassEPinCode(userId);
 }
 
-bool FscryptKeyV1Ext::ChangePinCodeClassE(uint32_t userId, bool &isFbeSupport)
+int32_t FscryptKeyV1Ext::ChangePinCodeClassE(uint32_t userId, bool &isFbeSupport)
 {
     return IFscryptKeyV1Ext::fscryptKeyV1ExtMock->ChangePinCodeClassE(userId, isFbeSupport);
 }
@@ -70,9 +70,9 @@ bool FscryptKeyV1Ext::WriteClassE(uint32_t status, uint8_t *classEBuffer, uint32
     return IFscryptKeyV1Ext::fscryptKeyV1ExtMock->WriteClassE(status, classEBuffer, length);
 }
 
-bool FscryptKeyV1Ext::GenerateAppkey(uint32_t userId, uint32_t appUid,
-                                     std::unique_ptr<uint8_t[]> &keyId,
-                                     uint32_t size)
+int32_t FscryptKeyV1Ext::GenerateAppkey(uint32_t userId, uint32_t appUid,
+                                        std::unique_ptr<uint8_t[]> &keyId,
+                                        uint32_t size)
 {
     return IFscryptKeyV1Ext::fscryptKeyV1ExtMock->GenerateAppkey(userId, appUid, keyId, size);
 }

@@ -34,14 +34,14 @@ public:
     bool InactiveKey(uint32_t flag = 0, const std::string &mnt = MNT_DATA);
     bool LockUserScreen(uint32_t flag = 0, uint32_t sdpClass = 0, const std::string &mnt = MNT_DATA);
     bool UnlockUserScreen(uint32_t flag = 0, uint32_t sdpClass = 0, const std::string &mnt = MNT_DATA);
-    bool AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status = 0);
-    bool DeleteClassEPinCode(uint32_t userId = 0);
-    bool ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId = 0);
+    int32_t AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status = 0);
+    int32_t DeleteClassEPinCode(uint32_t userId = 0);
+    int32_t ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId = 0);
     bool DecryptClassE(const UserAuth &auth, bool &isSupport, bool &eBufferStatue, uint32_t user = 0,
                        bool needSyncCandidate = true);
     bool EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user = 0, uint32_t status = 0);
-    bool GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId);
-    bool DeleteAppkey(const std::string KeyId);
+    int32_t GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId);
+    int32_t DeleteAppkey(const std::string KeyId);
     bool LockUece(bool &isFbeSupport);
 };
 } // namespace StorageDaemon

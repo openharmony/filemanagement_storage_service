@@ -21,6 +21,7 @@
 
 #include "fbex_mock.h"
 #include "fscrypt_key_v1_ext.h"
+#include "storage_service_errno.h"
 
 using namespace std;
 using namespace testing::ext;
@@ -231,15 +232,15 @@ HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_GenerateAppkey_001, TestSize.Level
     ext.type_ = TYPE_EL2;
     std::unique_ptr<uint8_t []> appKey;
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(false));
-    EXPECT_EQ(ext.GenerateAppkey(100, 100, appKey, 1), true);
+    EXPECT_EQ(ext.GenerateAppkey(100, 100, appKey, 1), E_OK);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, GenerateAppkey(_, _, _, _)).WillOnce(Return(0));
-    EXPECT_EQ(ext.GenerateAppkey(100, 100, appKey, 1), true);
+    EXPECT_EQ(ext.GenerateAppkey(100, 100, appKey, 1), E_OK);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, GenerateAppkey(_, _, _, _)).WillOnce(Return(1));
-    EXPECT_EQ(ext.GenerateAppkey(100, 100, appKey, 1), false);
+    EXPECT_EQ(ext.GenerateAppkey(100, 100, appKey, 1), 1);
     GTEST_LOG_(INFO) << "FscryptKeyV1Ext_GenerateAppkey_001 end";
 }
 
@@ -259,15 +260,15 @@ HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_AddClassE_001, TestSize.Level1)
     ext.type_ = TYPE_EL2;
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(false));
-    EXPECT_EQ(ext.AddClassE(isNeedEncryptClassE, isSupport, 0), true);
+    EXPECT_EQ(ext.AddClassE(isNeedEncryptClassE, isSupport, 0), E_OK);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, InstallEL5KeyToKernel(_, _, _, _, _)).WillOnce(Return(0));
-    EXPECT_EQ(ext.AddClassE(isNeedEncryptClassE, isSupport, 0), true);
+    EXPECT_EQ(ext.AddClassE(isNeedEncryptClassE, isSupport, 0), E_OK);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, InstallEL5KeyToKernel(_, _, _, _, _)).WillOnce(Return(1));
-    EXPECT_EQ(ext.AddClassE(isNeedEncryptClassE, isSupport, 0), false);
+    EXPECT_EQ(ext.AddClassE(isNeedEncryptClassE, isSupport, 0), 1);
     GTEST_LOG_(INFO) << "FscryptKeyV1Ext_AddClassE_001 end";
 }
 
@@ -284,15 +285,15 @@ HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_DeleteClassEPinCode_001, TestSize.
     ext.userId_ = 100;
     ext.type_ = TYPE_EL2;
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(false));
-    EXPECT_EQ(ext.DeleteClassEPinCode(100), true);
+    EXPECT_EQ(ext.DeleteClassEPinCode(100), E_OK);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, DeleteClassEPinCode(_, _)).WillOnce(Return(0));
-    EXPECT_EQ(ext.DeleteClassEPinCode(100), true);
+    EXPECT_EQ(ext.DeleteClassEPinCode(100), E_OK);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, DeleteClassEPinCode(_, _)).WillOnce(Return(1));
-    EXPECT_EQ(ext.DeleteClassEPinCode(100), false);
+    EXPECT_EQ(ext.DeleteClassEPinCode(100), 1);
     GTEST_LOG_(INFO) << "FscryptKeyV1Ext_DeleteClassEPinCode_001 end";
 }
 
@@ -310,15 +311,15 @@ HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_ChangePinCodeClassE_001, TestSize.
     ext.userId_ = 100;
     ext.type_ = TYPE_EL2;
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(false));
-    EXPECT_EQ(ext.ChangePinCodeClassE(100, isFbeSupport), true);
+    EXPECT_EQ(ext.ChangePinCodeClassE(100, isFbeSupport), E_OK);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, ChangePinCodeClassE(_, _, _)).WillOnce(Return(0));
-    EXPECT_EQ(ext.ChangePinCodeClassE(100, isFbeSupport), true);
+    EXPECT_EQ(ext.ChangePinCodeClassE(100, isFbeSupport), E_OK);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, ChangePinCodeClassE(_, _, _)).WillOnce(Return(1));
-    EXPECT_EQ(ext.ChangePinCodeClassE(100, isFbeSupport), false);
+    EXPECT_EQ(ext.ChangePinCodeClassE(100, isFbeSupport), 1);
     GTEST_LOG_(INFO) << "FscryptKeyV1Ext_ChangePinCodeClassE_001 end";
 }
 

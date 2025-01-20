@@ -142,64 +142,69 @@ bool FscryptKeyV1Ext::UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_t s
     return true;
 }
 
-bool FscryptKeyV1Ext::GenerateAppkey(uint32_t user, uint32_t hashId, std::unique_ptr<uint8_t[]> &appKey, uint32_t size)
+int32_t FscryptKeyV1Ext::GenerateAppkey(uint32_t user, uint32_t hashId,
+                                        std::unique_ptr<uint8_t[]> &appKey, uint32_t size)
 {
     if (!FBEX::IsFBEXSupported()) {
-        return true;
+        return E_OK;
     }
     LOGI("enter");
     LOGI("map userId %{public}u to %{public}u", userId_, user);
     // 0--single id, 1--double id
     UserIdToFbeStr userIdToFbe = { .userIds = { userId_, GetMappedUserId(userId_, type_) }, .size = USER_ID_SIZE };
-    if (FBEX::GenerateAppkey(userIdToFbe, hashId, appKey, size)) {
+    auto ret = FBEX::GenerateAppkey(userIdToFbe, hashId, appKey, size);
+    if (ret != E_OK) {
         LOGE("GenerateAppkey failed, user %{public}d", user);
-        return false;
+        return ret;
     }
-    return true;
+    return E_OK;
 }
 
-bool FscryptKeyV1Ext::AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status)
+int32_t FscryptKeyV1Ext::AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status)
 {
     if (!FBEX::IsFBEXSupported()) {
-        return true;
+        return E_OK;
     }
     LOGI("enter");
     uint32_t userIdDouble = GetMappedUserId(userId_, type_);
     LOGI("map userId %{public}u to %{public}u", userId_, userIdDouble);
-    if (FBEX::InstallEL5KeyToKernel(userId_, userIdDouble, status, isSupport, isNeedEncryptClassE)) {
+    auto ret = FBEX::InstallEL5KeyToKernel(userId_, userIdDouble, status, isSupport, isNeedEncryptClassE);
+    if (ret != E_OK) {
         LOGE("AddESecret failed, userId_ %{public}d, status is %{public}d", userId_, status);
-        return false;
+        return ret;
     }
-    return true;
+    return E_OK;
 }
 
-bool FscryptKeyV1Ext::DeleteClassEPinCode(uint32_t userId)
+int32_t FscryptKeyV1Ext::DeleteClassEPinCode(uint32_t userId)
 {
     if (!FBEX::IsFBEXSupported()) {
-        return true;
+        return E_OK;
     }
     LOGI("enter");
     uint32_t userIdDouble = GetMappedUserId(userId_, type_);
     LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, userIdDouble);
-    if (FBEX::DeleteClassEPinCode(userId_, userIdDouble)) {
+    auto ret = FBEX::DeleteClassEPinCode(userId_, userIdDouble);
+    if (ret != E_OK) {
         LOGE("UninstallOrLockUserKeyForEL5ToKernel failed, userId_ %{public}d", userId_);
-        return false;
+        return ret;
     }
-    return true;
+    return E_OK;
 }
 
-bool FscryptKeyV1Ext::ChangePinCodeClassE(uint32_t userId, bool &isFbeSupport)
+int32_t FscryptKeyV1Ext::ChangePinCodeClassE(uint32_t userId, bool &isFbeSupport)
 {
     if (!FBEX::IsFBEXSupported()) {
-        return true;
+        return E_OK;
     }
     uint32_t userIdDouble = GetMappedUserId(userId_, type_);
     LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, userIdDouble);
-    if (FBEX::ChangePinCodeClassE(userId_, userIdDouble, isFbeSupport)) {
+    auto ret = FBEX::ChangePinCodeClassE(userId_, userIdDouble, isFbeSupport);
+    if (ret != E_OK) {
         LOGE("ChangePinCodeClassE failed, userId_ %{public}d", userId);
-        return false;
+        return ret;
     }
-    return true;
+    return E_OK;
 }
 
 bool FscryptKeyV1Ext::ReadClassE(uint32_t status, std::unique_ptr<uint8_t[]> &classEBuffer, uint32_t length,

@@ -170,8 +170,8 @@ HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_GenerateAppkey_DeleteAppkey, TestSize.
     uint32_t userId = 1;
     uint32_t appUid = 1;
     std::string TEST_KEYID = "1234";
-    EXPECT_FALSE(g_testKeyV2.GenerateAppkey(userId, appUid, TEST_KEYID));
-    EXPECT_FALSE(g_testKeyV2.DeleteAppkey(TEST_KEYID));
+    EXPECT_NE(g_testKeyV2.GenerateAppkey(userId, appUid, TEST_KEYID), E_OK);
+    EXPECT_NE(g_testKeyV2.DeleteAppkey(TEST_KEYID), E_OK);
     GTEST_LOG_(INFO) << "fscrypt_key_v2_GenerateAppkey_DeleteAppkey end";
 }
 
@@ -186,9 +186,9 @@ HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_AddClassE_ChangePinCodeClassE, TestSiz
     GTEST_LOG_(INFO) << "fscrypt_key_v2_AddClassE_ChangePinCodeClassE start";
     bool isNeedEncryptClassE = true;
     bool isSupport = true;
-    EXPECT_TRUE(g_testKeyV2.AddClassE(isNeedEncryptClassE, isSupport));
+    EXPECT_EQ(g_testKeyV2.AddClassE(isNeedEncryptClassE, isSupport), E_OK);
     bool isFbeSupport = true;
-    EXPECT_TRUE(g_testKeyV2.ChangePinCodeClassE(isFbeSupport));
+    EXPECT_EQ(g_testKeyV2.ChangePinCodeClassE(isFbeSupport), E_OK);
     EXPECT_FALSE(isFbeSupport);
     GTEST_LOG_(INFO) << "fscrypt_key_v2_AddClassE_ChangePinCodeClassE end";
 }
@@ -211,7 +211,7 @@ HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_DecryptClassE_EncryptClassE_DeleteClas
     isSupport = true;
     EXPECT_TRUE(g_testKeyV2.EncryptClassE(emptyUserAuth, isSupport));
     EXPECT_FALSE(isSupport);
-    EXPECT_TRUE(g_testKeyV2.DeleteClassEPinCode(user));
+    EXPECT_EQ(g_testKeyV2.DeleteClassEPinCode(user), E_OK);
     GTEST_LOG_(INFO) << "fscrypt_key_v2_DecryptClassE_EncryptClassE_DeleteClassEPinCode end";
 }
 

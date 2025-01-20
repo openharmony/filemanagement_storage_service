@@ -27,15 +27,15 @@ public:
     virtual ~IFscryptKeyV2Moc() = default;
 public:
     virtual bool ActiveKey(uint32_t flag, const std::string &mnt) = 0;
-    virtual bool GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId) = 0;
-    virtual bool DeleteAppkey(const std::string KeyId) = 0;
+    virtual int32_t GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId) = 0;
+    virtual int32_t DeleteAppkey(const std::string KeyId) = 0;
     virtual bool InactiveKey(uint32_t flag, const std::string &mnt) = 0;
     virtual bool LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt) = 0;
     virtual bool LockUece(bool &isFbeSupport) = 0;
     virtual bool UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt) = 0;
-    virtual bool AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status) = 0;
-    virtual bool DeleteClassEPinCode(uint32_t user) = 0;
-    virtual bool ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId) = 0;
+    virtual int32_t AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status) = 0;
+    virtual int32_t DeleteClassEPinCode(uint32_t user) = 0;
+    virtual int32_t ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId) = 0;
     virtual bool DecryptClassE(const UserAuth &auth, bool &isSupport,
                                bool &eBufferStatue, uint32_t user, uint32_t status) = 0;
     virtual bool EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status) = 0;
@@ -46,15 +46,15 @@ public:
 class FscryptKeyV2Moc : public IFscryptKeyV2Moc {
 public:
     MOCK_METHOD2(ActiveKey, bool(uint32_t flag, const std::string &mnt));
-    MOCK_METHOD3(GenerateAppkey, bool(uint32_t userId, uint32_t appUid, std::string &keyId));
-    MOCK_METHOD1(DeleteAppkey, bool(const std::string KeyId));
+    MOCK_METHOD3(GenerateAppkey, int32_t(uint32_t userId, uint32_t appUid, std::string &keyId));
+    MOCK_METHOD1(DeleteAppkey, int32_t(const std::string KeyId));
     MOCK_METHOD2(InactiveKey, bool(uint32_t flag, const std::string &mnt));
     MOCK_METHOD3(LockUserScreen, bool(uint32_t flag, uint32_t sdpClass, const std::string &mnt));
     MOCK_METHOD1(LockUece, bool(bool &isFbeSupport));
     MOCK_METHOD3(UnlockUserScreen, bool(uint32_t flag, uint32_t sdpClass, const std::string &mnt));
-    MOCK_METHOD3(AddClassE, bool(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status));
-    MOCK_METHOD1(DeleteClassEPinCode, bool(uint32_t user));
-    MOCK_METHOD2(ChangePinCodeClassE, bool(bool &isFbeSupport, uint32_t userId));
+    MOCK_METHOD3(AddClassE, int32_t(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status));
+    MOCK_METHOD1(DeleteClassEPinCode, int32_t(uint32_t user));
+    MOCK_METHOD2(ChangePinCodeClassE, int32_t(bool &isFbeSupport, uint32_t userId));
     MOCK_METHOD5(DecryptClassE, bool(const UserAuth &auth, bool &isSupport,
                                      bool &eBufferStatue, uint32_t user, uint32_t status));
     MOCK_METHOD4(EncryptClassE, bool(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status));
