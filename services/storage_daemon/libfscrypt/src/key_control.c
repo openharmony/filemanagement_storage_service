@@ -147,14 +147,14 @@ static uint8_t CheckKernelFscrypt(const char *mnt)
     char *realPath = realpath(mnt, NULL);
     if (realPath == NULL) {
         LOGE("realpath failed");
-        return FSCRYPT_INVALID;
+        return FSCRYPT_INVALID_REALPATH;
     }
 
     int fd = open(realPath, O_RDONLY | O_DIRECTORY | O_CLOEXEC);
     free(realPath);
     if (fd < 0) {
         LOGE("open policy file failed, errno: %{public}d", errno);
-        return FSCRYPT_INVALID;
+        return FSCRYPT_INVALID_OPEN;
     }
 
 #ifdef SUPPORT_FSCRYPT_V2
@@ -163,8 +163,8 @@ static uint8_t CheckKernelFscrypt(const char *mnt)
     (void)close(fd);
     if (errno == EOPNOTSUPP) {
         LOGE("Kernel doesn't support fscrypt v1 or v2.");
-        return FSCRYPT_INVALID;
-    } else if (errno == ENOTTY) {
+        return FSCRYPT_INVALID_NOT_SUPPORT;
+    } else if (errno == ENOTTY || errno == EAGAIN) {
         LOGE("Kernel doesn't support fscrypt v2, pls use v1.");
         return FSCRYPT_V1;
     } else if (errno == EFAULT) {
@@ -172,7 +172,7 @@ static uint8_t CheckKernelFscrypt(const char *mnt)
         return FSCRYPT_V2;
     }
     LOGE("Unexpected errno: %{public}d", errno);
-    return FSCRYPT_INVALID;
+    return FSCRYPT_INVALID_UNEXPECTED;
 #else
     (void)close(fd);
     return FSCRYPT_V1;
