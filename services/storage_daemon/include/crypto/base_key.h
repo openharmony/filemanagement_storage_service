@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -54,10 +54,10 @@ public:
 #endif
     int32_t UpdateKey(const std::string &keypath = "", bool needSyncCandidate = true);
     int32_t RestoreKey(const UserAuth &auth, bool needSyncCandidate = true);
-    virtual bool ActiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
-    virtual bool InactiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
-    virtual bool LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt = MNT_DATA) = 0;
-    virtual bool UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt = MNT_DATA) = 0;
+    virtual int32_t ActiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
+    virtual int32_t InactiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
+    virtual int32_t LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt = MNT_DATA) = 0;
+    virtual int32_t UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt = MNT_DATA) = 0;
     virtual int32_t GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId) = 0;
     virtual int32_t DeleteAppkey(const std::string keyId) = 0;
     virtual int32_t AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status) = 0;
@@ -66,7 +66,7 @@ public:
                                bool needSyncCandidate) = 0;
     virtual int32_t EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status) = 0;
     virtual int32_t ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId) = 0;
-    virtual bool LockUece(bool &isFbeSupport) = 0;
+    virtual int32_t LockUece(bool &isFbeSupport) = 0;
     int32_t DoRestoreKey(const UserAuth &auth, const std::string &keypath);
     int32_t EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey, KeyBlob &encryptedKey);
     int32_t DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey, KeyBlob &decryptedKey);

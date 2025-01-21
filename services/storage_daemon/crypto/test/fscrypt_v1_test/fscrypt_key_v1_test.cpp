@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Huawei Device Co., Ltd.
+ * Copyright (C) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -96,11 +96,11 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_LockUece, TestSize.Level1)
     GTEST_LOG_(INFO) << "fscrypt_key_v1_LockUece start";
     auto g_testKeyV1 = std::make_shared<OHOS::StorageDaemon::FscryptKeyV1>(TEST_KEYPATH);
     bool isFbeSupport = true;
-    EXPECT_CALL(*fscryptKeyExtMock_, LockUeceExt(_)).WillOnce(Return(false));
-    EXPECT_FALSE(g_testKeyV1->LockUece(isFbeSupport));
+    EXPECT_CALL(*fscryptKeyExtMock_, LockUeceExt(_)).WillOnce(Return(1));
+    EXPECT_NE(g_testKeyV1->LockUece(isFbeSupport), E_OK);
 
-    EXPECT_CALL(*fscryptKeyExtMock_, LockUeceExt(_)).WillOnce(Return(true));
-    EXPECT_TRUE(g_testKeyV1->LockUece(isFbeSupport));
+    EXPECT_CALL(*fscryptKeyExtMock_, LockUeceExt(_)).WillOnce(Return(E_OK));
+    EXPECT_EQ(g_testKeyV1->LockUece(isFbeSupport), E_OK);
     GTEST_LOG_(INFO) << "fscrypt_key_v1_LockUece end";
 }
 
@@ -235,22 +235,22 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_UnlockUserScreen, TestSize.Level1)
     uint32_t sdpClass = 1;
     const std::string mnt = "test";
 
-    EXPECT_FALSE(g_testKeyV1->UnlockUserScreen(flag, sdpClass, mnt));
+    EXPECT_NE(g_testKeyV1->UnlockUserScreen(flag, sdpClass, mnt), E_OK);
 
     g_testKeyV1->keyInfo_.key.Alloc(TEST_KEYID_SIZE);
-    EXPECT_CALL(*fscryptKeyExtMock_, UnlockUserScreenExt(_, _, _)).WillOnce(Return(false));
-    EXPECT_FALSE(g_testKeyV1->UnlockUserScreen(flag, sdpClass, mnt));
+    EXPECT_CALL(*fscryptKeyExtMock_, UnlockUserScreenExt(_, _, _)).WillOnce(Return(1));
+    EXPECT_NE(g_testKeyV1->UnlockUserScreen(flag, sdpClass, mnt), E_OK);
 
     g_testKeyV1->ClearKey();
     g_testKeyV1->keyInfo_.key.Alloc(TEST_KEYID_SIZE);
-    EXPECT_CALL(*fscryptKeyExtMock_, UnlockUserScreenExt(_, _, _)).WillOnce(Return(true));
-    EXPECT_TRUE(g_testKeyV1->UnlockUserScreen(flag, sdpClass, mnt));
+    EXPECT_CALL(*fscryptKeyExtMock_, UnlockUserScreenExt(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(g_testKeyV1->UnlockUserScreen(flag, sdpClass, mnt), E_OK);
 
     sdpClass = 2;
     g_testKeyV1->ClearKey();
     g_testKeyV1->keyInfo_.key.Alloc(TEST_KEYID_SIZE);
-    EXPECT_CALL(*fscryptKeyExtMock_, UnlockUserScreenExt(_, _, _)).WillOnce(Return(true));
-    EXPECT_FALSE(g_testKeyV1->UnlockUserScreen(flag, sdpClass, mnt));
+    EXPECT_CALL(*fscryptKeyExtMock_, UnlockUserScreenExt(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_NE(g_testKeyV1->UnlockUserScreen(flag, sdpClass, mnt), E_OK);
     g_testKeyV1->ClearKey();
     GTEST_LOG_(INFO) << "fscrypt_key_v1_UnlockUserScreen end";
 }
@@ -292,19 +292,19 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_LockUserScreen, TestSize.Level1)
 
     uint32_t elType = TYPE_EL4;
     EXPECT_CALL(*fscryptKeyExtMock_, SetElType()).WillOnce(Return(elType));
-    EXPECT_CALL(*fscryptKeyExtMock_, LockUserScreenExt(_, _)).WillOnce(Return(false));
-    EXPECT_FALSE(g_testKeyV1->LockUserScreen(flag, sdpClass, TEST_MNT));
+    EXPECT_CALL(*fscryptKeyExtMock_, LockUserScreenExt(_, _)).WillOnce(Return(1));
+    EXPECT_NE(g_testKeyV1->LockUserScreen(flag, sdpClass, TEST_MNT), E_OK);
 
     elType = TYPE_EL4;
     g_testKeyV1->keyInfo_.keyDesc.Clear();
     EXPECT_CALL(*fscryptKeyExtMock_, SetElType()).WillOnce(Return(elType));
-    EXPECT_CALL(*fscryptKeyExtMock_, LockUserScreenExt(_, _)).WillOnce(Return(true));
-    EXPECT_FALSE(g_testKeyV1->LockUserScreen(flag, sdpClass, TEST_MNT));
+    EXPECT_CALL(*fscryptKeyExtMock_, LockUserScreenExt(_, _)).WillOnce(Return(E_OK));
+    EXPECT_NE(g_testKeyV1->LockUserScreen(flag, sdpClass, TEST_MNT), E_OK);
 
     elType = TYPE_EL1;
     EXPECT_CALL(*fscryptKeyExtMock_, SetElType()).WillOnce(Return(elType));
-    EXPECT_CALL(*fscryptKeyExtMock_, LockUserScreenExt(_, _)).WillOnce(Return(true));
-    EXPECT_TRUE(g_testKeyV1->LockUserScreen(flag, sdpClass, TEST_MNT));
+    EXPECT_CALL(*fscryptKeyExtMock_, LockUserScreenExt(_, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(g_testKeyV1->LockUserScreen(flag, sdpClass, TEST_MNT), E_OK);
     GTEST_LOG_(INFO) << "fscrypt_key_v1_LockUserScreen end";
 }
 

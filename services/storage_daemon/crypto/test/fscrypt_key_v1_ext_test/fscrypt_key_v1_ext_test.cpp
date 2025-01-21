@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (C) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -206,15 +206,15 @@ HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_UnlockUserScreenExt_001, TestSize.
     ext.userId_ = 100;
     ext.type_ = TYPE_EL2;
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(false));
-    EXPECT_EQ(ext.UnlockUserScreenExt(0, &iv, size), true);
+    EXPECT_EQ(ext.UnlockUserScreenExt(0, &iv, size), E_OK);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, UnlockScreenToKernel(_, _, _, _)).WillOnce(Return(0));
-    EXPECT_EQ(ext.UnlockUserScreenExt(0, &iv, size), true);
+    EXPECT_EQ(ext.UnlockUserScreenExt(0, &iv, size), E_OK);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, UnlockScreenToKernel(_, _, _, _)).WillOnce(Return(1));
-    EXPECT_EQ(ext.UnlockUserScreenExt(0, &iv, size), false);
+    EXPECT_NE(ext.UnlockUserScreenExt(0, &iv, size), E_OK);
     GTEST_LOG_(INFO) << "FscryptKeyV1Ext_UnlockUserScreenExt_001 end";
 }
 
@@ -429,17 +429,17 @@ HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_LockUserScreenExt_001, TestSize.Le
     ext.userId_ = 100;
     ext.type_ = TYPE_EL2;
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(false));
-    EXPECT_EQ(ext.LockUserScreenExt(flag, elType), true);
+    EXPECT_EQ(ext.LockUserScreenExt(flag, elType), E_OK);
     EXPECT_EQ(elType, TYPE_EL5);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, LockScreenToKernel(_)).WillOnce(Return(1));
-    EXPECT_EQ(ext.LockUserScreenExt(flag, elType), false);
+    EXPECT_NE(ext.LockUserScreenExt(flag, elType), E_OK);
     EXPECT_EQ(elType, TYPE_EL5);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, LockScreenToKernel(_)).WillOnce(Return(0));
-    EXPECT_EQ(ext.LockUserScreenExt(flag, elType), true);
+    EXPECT_EQ(ext.LockUserScreenExt(flag, elType), E_OK);
     EXPECT_EQ(elType, ext.type_);
     GTEST_LOG_(INFO) << "FscryptKeyV1Ext_LockUserScreenExt_001 end";
 }
@@ -458,15 +458,15 @@ HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_LockUeceExt_001, TestSize.Level1)
     ext.userId_ = 100;
     ext.type_ = TYPE_EL2;
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(false));
-    EXPECT_EQ(ext.LockUeceExt(isFbeSupport), true);
+    EXPECT_EQ(ext.LockUeceExt(isFbeSupport), E_OK);
+
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*fbexMock_, LockUece(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_NE(ext.LockUeceExt(isFbeSupport), E_OK);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, LockUece(_, _, _)).WillOnce(Return(1));
-    EXPECT_EQ(ext.LockUeceExt(isFbeSupport), false);
-
-    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
-    EXPECT_CALL(*fbexMock_, LockUece(_, _, _)).WillOnce(Return(0));
-    EXPECT_EQ(ext.LockUeceExt(isFbeSupport), true);
+    EXPECT_EQ(ext.LockUeceExt(isFbeSupport), E_OK);
     GTEST_LOG_(INFO) << "FscryptKeyV1Ext_LockUeceExt_001 end";
 }
 
