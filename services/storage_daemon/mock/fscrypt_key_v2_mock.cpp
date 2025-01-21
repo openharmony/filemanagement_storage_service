@@ -61,7 +61,7 @@ bool FscryptKeyV2::UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std:
 int32_t FscryptKeyV2::GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId)
 {
     if (IFscryptKeyV2Moc::fscryptKeyV2Moc == nullptr) {
-        return false;
+        return -1;
     }
     return IFscryptKeyV2Moc::fscryptKeyV2Moc->GenerateAppkey(userId, appUid, keyId);
 }
@@ -69,7 +69,7 @@ int32_t FscryptKeyV2::GenerateAppkey(uint32_t userId, uint32_t appUid, std::stri
 int32_t FscryptKeyV2::DeleteAppkey(const std::string KeyId)
 {
     if (IFscryptKeyV2Moc::fscryptKeyV2Moc == nullptr) {
-        return false;
+        return -1;
     }
     return IFscryptKeyV2Moc::fscryptKeyV2Moc->DeleteAppkey(KeyId);
 }
@@ -77,7 +77,7 @@ int32_t FscryptKeyV2::DeleteAppkey(const std::string KeyId)
 int32_t FscryptKeyV2::AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status)
 {
     if (IFscryptKeyV2Moc::fscryptKeyV2Moc == nullptr) {
-        return false;
+        return -1;
     }
     return IFscryptKeyV2Moc::fscryptKeyV2Moc->AddClassE(isNeedEncryptClassE, isSupport, status);
 }
@@ -85,7 +85,7 @@ int32_t FscryptKeyV2::AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint
 int32_t FscryptKeyV2::DeleteClassEPinCode(uint32_t user)
 {
     if (IFscryptKeyV2Moc::fscryptKeyV2Moc == nullptr) {
-        return false;
+        return -1;
     }
     return IFscryptKeyV2Moc::fscryptKeyV2Moc->DeleteClassEPinCode(user);
 }
@@ -93,24 +93,24 @@ int32_t FscryptKeyV2::DeleteClassEPinCode(uint32_t user)
 int32_t FscryptKeyV2::ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId)
 {
     if (IFscryptKeyV2Moc::fscryptKeyV2Moc == nullptr) {
-        return false;
+        return -1;
     }
     return IFscryptKeyV2Moc::fscryptKeyV2Moc->ChangePinCodeClassE(isFbeSupport, userId);
 }
 
-bool FscryptKeyV2::DecryptClassE(const UserAuth &auth, bool &isSupport,
-                                 bool &eBufferStatue, uint32_t user, bool needSyncCandidate)
+int32_t FscryptKeyV2::DecryptClassE(const UserAuth &auth, bool &isSupport,
+                                    bool &eBufferStatue, uint32_t user, bool needSyncCandidate)
 {
     if (IFscryptKeyV2Moc::fscryptKeyV2Moc == nullptr) {
-        return false;
+        return -1;
     }
     return IFscryptKeyV2Moc::fscryptKeyV2Moc->DecryptClassE(auth, isSupport, eBufferStatue, user, needSyncCandidate);
 }
 
-bool FscryptKeyV2::EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status)
+int32_t FscryptKeyV2::EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status)
 {
     if (IFscryptKeyV2Moc::fscryptKeyV2Moc == nullptr) {
-        return false;
+        return -1;
     }
     return IFscryptKeyV2Moc::fscryptKeyV2Moc->EncryptClassE(auth, isSupport, user, status);
 }

@@ -206,10 +206,10 @@ HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_DecryptClassE_EncryptClassE_DeleteClas
     bool eBufferStatue = true;
     uint32_t user = 1;
     uint32_t status = 1;
-    EXPECT_TRUE(g_testKeyV2.DecryptClassE(emptyUserAuth, isSupport, eBufferStatue, user, status));
+    EXPECT_EQ(g_testKeyV2.DecryptClassE(emptyUserAuth, isSupport, eBufferStatue, user, status), E_OK);
     EXPECT_FALSE(isSupport);
     isSupport = true;
-    EXPECT_TRUE(g_testKeyV2.EncryptClassE(emptyUserAuth, isSupport));
+    EXPECT_EQ(g_testKeyV2.EncryptClassE(emptyUserAuth, isSupport), E_OK);
     EXPECT_FALSE(isSupport);
     EXPECT_EQ(g_testKeyV2.DeleteClassEPinCode(user), E_OK);
     GTEST_LOG_(INFO) << "fscrypt_key_v2_DecryptClassE_EncryptClassE_DeleteClassEPinCode end";

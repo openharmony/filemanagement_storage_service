@@ -349,17 +349,17 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_DecryptClassE, TestSize.Level1)
     uint32_t user = 1;
     uint32_t status = 1;
 
-    EXPECT_CALL(*fscryptKeyExtMock_, ReadClassE(_, _, _, _)).WillOnce(Return(false));
-    EXPECT_FALSE(g_testKeyV1->DecryptClassE(emptyUserAuth, isSupport, eBufferStatue, user, status));
+    EXPECT_CALL(*fscryptKeyExtMock_, ReadClassE(_, _, _, _)).WillOnce(Return(1));
+    EXPECT_NE(g_testKeyV1->DecryptClassE(emptyUserAuth, isSupport, eBufferStatue, user, status), E_OK);
 
     g_testKeyV1->ClearKey();
-    EXPECT_CALL(*fscryptKeyExtMock_, ReadClassE(_, _, _, _)).WillOnce(Return(true));
-    EXPECT_TRUE(g_testKeyV1->DecryptClassE(emptyUserAuth, isSupport, eBufferStatue, user, status));
+    EXPECT_CALL(*fscryptKeyExtMock_, ReadClassE(_, _, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(g_testKeyV1->DecryptClassE(emptyUserAuth, isSupport, eBufferStatue, user, status), E_OK);
 
     g_testKeyV1->ClearKey();
     const UserAuth auth{KeyBlob(8), KeyBlob(8), 0};
-    EXPECT_CALL(*fscryptKeyExtMock_, ReadClassE(_, _, _, _)).WillOnce(Return(true));
-    EXPECT_FALSE(g_testKeyV1->DecryptClassE(auth, isSupport, eBufferStatue, user, status));
+    EXPECT_CALL(*fscryptKeyExtMock_, ReadClassE(_, _, _, _)).WillOnce(Return(E_OK));
+    EXPECT_NE(g_testKeyV1->DecryptClassE(auth, isSupport, eBufferStatue, user, status), E_OK);
     GTEST_LOG_(INFO) << "fscrypt_key_v1_DecryptClassE end";
 }
 
@@ -377,8 +377,8 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_EncryptClassE, TestSize.Level1)
     uint32_t user = 1;
     uint32_t status = 1;
 
-    EXPECT_CALL(*fscryptKeyExtMock_, ReadClassE(_, _, _, _)).WillOnce(Return(false));
-    EXPECT_FALSE(g_testKeyV1->EncryptClassE(emptyUserAuth, isSupport, user, status));
+    EXPECT_CALL(*fscryptKeyExtMock_, ReadClassE(_, _, _, _)).WillOnce(Return(1));
+    EXPECT_NE(g_testKeyV1->EncryptClassE(emptyUserAuth, isSupport, user, status), E_OK);
     GTEST_LOG_(INFO) << "fscrypt_key_v1_EncryptClassE end";
 }
 } // OHOS::StorageDaemon

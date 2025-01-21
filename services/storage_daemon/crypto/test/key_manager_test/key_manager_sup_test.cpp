@@ -583,10 +583,10 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UnlockUece_001, TestSize.Level1)
     OHOS::ForceCreateDirectory(keyDir);
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
-    EXPECT_CALL(*fscryptKeyMock_, DecryptClassE(_, _, _, _, _)).WillOnce(Return(false));
+    EXPECT_CALL(*fscryptKeyMock_, DecryptClassE(_, _, _, _, _)).WillOnce(Return(-1));
     EXPECT_EQ(KeyManager::GetInstance()->UnlockUece(user, token, secret), E_UNLOCK_APP_KEY2_FAILED);
 
-    EXPECT_CALL(*fscryptKeyMock_, DecryptClassE(_, _, _, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(*fscryptKeyMock_, DecryptClassE(_, _, _, _, _)).WillOnce(Return(E_OK));
     if (access(UECE_PATH, F_OK) == 0) {
         #ifdef EL5_FILEKEY_MANAGER
         std::vector<std::pair<int, std::string>> keyInfo;
@@ -596,7 +596,7 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UnlockUece_001, TestSize.Level1)
 
         EXPECT_CALL(*el5FilekeyManagerKitMoc_, GetUserAppKey(_, _)).WillOnce(Return(-1));
         EXPECT_EQ(KeyManager::GetInstance()->UnlockUece(user, token, secret), E_UNLOCK_APP_KEY2_FAILED);
-        EXPECT_CALL(*fscryptKeyMock_, DecryptClassE(_, _, _, _, _)).WillOnce(Return(true));
+        EXPECT_CALL(*fscryptKeyMock_, DecryptClassE(_, _, _, _, _)).WillOnce(Return(E_OK));
         EXPECT_CALL(*el5FilekeyManagerKitMoc_, GetUserAppKey(_, _)).WillOnce(Return(0));
         #endif
     }
@@ -739,7 +739,7 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UpdateUseAuthWithRecoveryKey_003, TestSiz
     #else
     EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
     #endif
-    EXPECT_CALL(*fscryptKeyMock_, EncryptClassE(_, _, _, _)).WillOnce(Return(false));
+    EXPECT_CALL(*fscryptKeyMock_, EncryptClassE(_, _, _, _)).WillOnce(Return(-1));
     EXPECT_CALL(*baseKeyMock_, ClearKey(_)).WillOnce(Return(true));
     EXPECT_EQ(KeyManager::GetInstance()->UpdateUseAuthWithRecoveryKey(
         authToken, newSecret, secureUid, userId, plainText), -EFAULT);
@@ -791,7 +791,7 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UpdateUseAuthWithRecoveryKey_004, TestSiz
     #else
     EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
     #endif
-    EXPECT_CALL(*fscryptKeyMock_, EncryptClassE(_, _, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(*fscryptKeyMock_, EncryptClassE(_, _, _, _)).WillOnce(Return(E_OK));
     EXPECT_CALL(*fscryptKeyMock_, LockUece(_)).WillOnce(Return(false));
     EXPECT_EQ(KeyManager::GetInstance()->UpdateUseAuthWithRecoveryKey(
         authToken, newSecret, secureUid, userId, plainText), E_OK);
@@ -843,7 +843,7 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UpdateUseAuthWithRecoveryKey_005, TestSiz
     #else
     EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
     #endif
-    EXPECT_CALL(*fscryptKeyMock_, EncryptClassE(_, _, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(*fscryptKeyMock_, EncryptClassE(_, _, _, _)).WillOnce(Return(E_OK));
     EXPECT_CALL(*fscryptKeyMock_, LockUece(_)).WillOnce(Return(true));
     EXPECT_EQ(KeyManager::GetInstance()->UpdateUseAuthWithRecoveryKey(
         authToken, newSecret, secureUid, userId, plainText), E_OK);

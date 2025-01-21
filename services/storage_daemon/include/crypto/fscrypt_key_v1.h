@@ -42,9 +42,9 @@ public:
     int32_t AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status = 0);
     int32_t DeleteClassEPinCode(uint32_t userId = 0);
     int32_t ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId = 0);
-    bool DecryptClassE(const UserAuth &auth, bool &isSupport, bool &eBufferStatue, uint32_t user = 0,
-                       bool needSyncCandidate = true);
-    bool EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user = 0, uint32_t status = 0);
+    int32_t DecryptClassE(const UserAuth &auth, bool &isSupport, bool &eBufferStatue, uint32_t user = 0,
+                          bool needSyncCandidate = true);
+    int32_t EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user = 0, uint32_t status = 0);
     bool LockUece(bool &isFbeSupport);
 
 private:
@@ -55,7 +55,7 @@ private:
     int32_t InstallKeyForAppKeyToKeyring(KeyBlob &appKey);
     int32_t UninstallKeyForAppKeyToKeyring(const std::string keyId);
     int32_t GenerateAppKeyDesc(KeyBlob appKey);
-    bool DoDecryptClassE(const UserAuth &auth, KeyBlob &eSecretFBE, KeyBlob &decryptedKey,
+    int32_t DoDecryptClassE(const UserAuth &auth, KeyBlob &eSecretFBE, KeyBlob &decryptedKey,
                          bool needSyncCandidate = true);
     FscryptKeyV1Ext fscryptV1Ext;
 };
