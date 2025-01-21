@@ -1462,14 +1462,13 @@ int32_t KeyManager::UnlockUece(uint32_t user,
     UserAuth auth = {.token = token, .secret = secret};
     saveESecretStatus[user] = !auth.token.IsEmpty();
     auto el5Key = GetUserElKey(user, EL5_KEY);
-    if (el5Key != nullptr) {
-        return E_UNLOCK_APP_KEY2_FAILED;
-    }
     bool eBufferStatue = false;
-    auto ret = el5Key->DecryptClassE(auth, saveESecretStatus[user], eBufferStatue, user, false);
-    if (ret != E_OK) {
-        LOGE("Unlock user %{public}u uece failed", user);
-        return E_UNLOCK_APP_KEY2_FAILED;
+    if (el5Key != nullptr) {
+        auto ret = el5Key->DecryptClassE(auth, saveESecretStatus[user], eBufferStatue, user, false);
+        if (ret != E_OK) {
+            LOGE("Unlock user %{public}u uece failed", user);
+            return E_UNLOCK_APP_KEY2_FAILED;
+        }
     }
     if (UnlockUserAppKeys(user, false) != E_OK) {
         LOGE("failed to delete appkey2");
