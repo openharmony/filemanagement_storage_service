@@ -48,10 +48,21 @@ using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
 const UserAuth NULL_KEY_AUTH = {};
-const std::string DEFAULT_NEED_RESTORE_VERSION = "1";
-const std::string DEFAULT_NEED_RESTORE_UPDATE_VERSION = "3";
+constexpr const char *DEFAULT_NEED_RESTORE_VERSION = "1";
+constexpr const char *DEFAULT_NEED_RESTORE_UPDATE_VERSION = "3";
 constexpr const char *UECE_PATH = "/dev/fbex_uece";
-const uint32_t KEY_RECOVERY_USER_ID = 300;
+constexpr const char *DATA_DIR = "data/app/";
+constexpr const char *SERVICE_DIR = "data/service/";
+constexpr const char *FSCRYPT_VERSION_DIR = "/fscrypt_version";
+constexpr const char *ENCRYPT_VERSION_DIR = "/latest/encrypted";
+constexpr const char *SEC_DISCARD_DIR = "/latest/sec_discard";
+constexpr const char *SHIELD_DIR = "/latest/shield";
+constexpr const char *DESC_DIR = "/key_desc";
+constexpr const char *EL2_ENCRYPT_TMP_FILE = "/el2_tmp";
+constexpr uint32_t KEY_RECOVERY_USER_ID = 300;
+
+constexpr const char *SERVICE_STORAGE_DAEMON_DIR = "/data/service/el1/public/storage_daemon";
+constexpr const char *FSCRYPT_EL_DIR = "/data/service/el1/public/storage_daemon/sd";
 
 std::shared_ptr<BaseKey> KeyManager::GetBaseKey(const std::string& dir)
 {
@@ -512,7 +523,7 @@ int KeyManager::InitGlobalUserKeys(void)
         return ret;
     }
 
-    std::string globalUserEl1Path = USER_EL1_DIR + "/" + std::to_string(GLOBAL_USER_ID);
+    std::string globalUserEl1Path = std::string(USER_EL1_DIR) + "/" + std::to_string(GLOBAL_USER_ID);
     if (IsDir(globalUserEl1Path)) {
         ret = RestoreUserKey(GLOBAL_USER_ID, globalUserEl1Path, NULL_KEY_AUTH, EL1_KEY);
         if (ret != 0) {
@@ -563,11 +574,11 @@ int KeyManager::GenerateUserKeys(unsigned int user, uint32_t flags)
 
 int KeyManager::GenerateElxAndInstallUserKey(unsigned int user)
 {
-    std::string el1Path = USER_EL1_DIR + "/" + std::to_string(user);
-    std::string el2Path = USER_EL2_DIR + "/" + std::to_string(user);
-    std::string el3Path = USER_EL3_DIR + "/" + std::to_string(user);
-    std::string el4Path = USER_EL4_DIR + "/" + std::to_string(user);
-    std::string el5Path = USER_EL5_DIR + "/" + std::to_string(user);
+    std::string el1Path = std::string(USER_EL1_DIR) + "/" + std::to_string(user);
+    std::string el2Path = std::string(USER_EL2_DIR) + "/" + std::to_string(user);
+    std::string el3Path = std::string(USER_EL3_DIR) + "/" + std::to_string(user);
+    std::string el4Path = std::string(USER_EL4_DIR) + "/" + std::to_string(user);
+    std::string el5Path = std::string(USER_EL5_DIR) + "/" + std::to_string(user);
     if (IsDir(el1Path) || IsDir(el2Path) || IsDir(el3Path) || IsDir(el4Path) || IsDir(el5Path)) {
         return CheckAndFixUserKeyDirectory(user);
     }
@@ -613,7 +624,7 @@ int KeyManager::GenerateElxAndInstallUserKey(unsigned int user)
 
 int KeyManager::CheckAndFixUserKeyDirectory(unsigned int user)
 {
-    std::string el1NeedRestorePath = USER_EL1_DIR + "/" + std::to_string(user) + RESTORE_DIR;
+    std::string el1NeedRestorePath = std::string(USER_EL1_DIR) + "/" + std::to_string(user) + RESTORE_DIR;
     std::error_code errCode;
     if (std::filesystem::exists(el1NeedRestorePath, errCode)) {
         LOGE("el1 need_restore file is existed, upgrade scene not support.");
@@ -635,7 +646,7 @@ int KeyManager::CheckAndFixUserKeyDirectory(unsigned int user)
 int KeyManager::GenerateIntegrityDirs(int32_t userId, KeyType type)
 {
     std::string dirType = (type == EL1_KEY) ? EL1 : EL2;
-    std::string userDir = FSCRYPT_EL_DIR + "/" + dirType;
+    std::string userDir = std::string(FSCRYPT_EL_DIR) + "/" + dirType;
     uint32_t flag_type = (type == EL1_KEY) ? IStorageDaemon::CRYPTO_FLAG_EL1 : IStorageDaemon::CRYPTO_FLAG_EL2;
     std::string versionElx = userDir + "/" + std::to_string(userId) + FSCRYPT_VERSION_DIR;
     std::string encryptElx = userDir + "/" + std::to_string(userId) + ENCRYPT_VERSION_DIR;
@@ -675,8 +686,8 @@ int KeyManager::GenerateIntegrityDirs(int32_t userId, KeyType type)
 
 bool KeyManager::IsWorkDirExist(std::string type, int32_t userId)
 {
-    std::string dataDir = DATA_DIR + type + "/" + std::to_string(userId);
-    std::string serviceDir = SERVICE_DIR + type + "/" + std::to_string(userId);
+    std::string dataDir = std::string(DATA_DIR) + type + "/" + std::to_string(userId);
+    std::string serviceDir = std::string(SERVICE_DIR) + type + "/" + std::to_string(userId);
     std::error_code errCode;
     bool isExist = std::filesystem::exists(dataDir, errCode) && std::filesystem::exists(serviceDir, errCode);
     return isExist;
@@ -730,7 +741,7 @@ int KeyManager::DoDeleteUserCeEceSeceKeys(unsigned int user,
     auto it = userElKey_.find(user);
 #ifdef USER_CRYPTO_MIGRATE_KEY
     if (userDir == USER_EL1_DIR) {
-        std::string elNeedRestorePath = USER_EL1_DIR + "/" + std::to_string(user) + RESTORE_DIR;
+        std::string elNeedRestorePath = std::string(USER_EL1_DIR) + "/" + std::to_string(user) + RESTORE_DIR;
         (void)ClearAppCloneUserNeedRestore(user, elNeedRestorePath);
     }
 #endif
@@ -762,35 +773,36 @@ int KeyManager::DoDeleteUserKeys(unsigned int user)
 {
     int errCode = 0;
     int deleteRet = DoDeleteUserCeEceSeceKeys(user, USER_EL1_DIR, userEl1Key_);
+    const std::string elxPath("elx path=");
     if (deleteRet != 0) {
         LOGE("Delete el1 key failed");
         errCode = deleteRet;
-        StorageRadar::ReportUserKeyResult("DoDeleteUserKeys", user, errCode, "El1", "elx path=" + USER_EL1_DIR);
+        StorageRadar::ReportUserKeyResult("DoDeleteUserKeys", user, errCode, "El1", elxPath + USER_EL1_DIR);
     }
     deleteRet = DoDeleteUserCeEceSeceKeys(user, USER_EL2_DIR, userEl2Key_);
     if (deleteRet != 0) {
         LOGE("Delete el2 key failed");
         errCode = deleteRet;
-        StorageRadar::ReportUserKeyResult("DoDeleteUserKeys", user, errCode, "El2", "elx path=" + USER_EL2_DIR);
+        StorageRadar::ReportUserKeyResult("DoDeleteUserKeys", user, errCode, "El2", elxPath + USER_EL2_DIR);
     }
     deleteRet = DoDeleteUserCeEceSeceKeys(user, USER_EL3_DIR, userEl3Key_);
     if (deleteRet != 0) {
         LOGE("Delete el3 key failed");
         errCode = deleteRet;
-        StorageRadar::ReportUserKeyResult("DoDeleteUserKeys", user, errCode, "El3", "elx path=" + USER_EL3_DIR);
+        StorageRadar::ReportUserKeyResult("DoDeleteUserKeys", user, errCode, "El3", elxPath + USER_EL3_DIR);
     }
     deleteRet = DoDeleteUserCeEceSeceKeys(user, USER_EL4_DIR, userEl4Key_);
     if (deleteRet != 0) {
         LOGE("Delete el4 key failed");
         errCode = deleteRet;
-        StorageRadar::ReportUserKeyResult("DoDeleteUserKeys", user, errCode, "El4", "elx path=" + USER_EL4_DIR);
+        StorageRadar::ReportUserKeyResult("DoDeleteUserKeys", user, errCode, "El4", elxPath + USER_EL4_DIR);
     }
     if (IsUeceSupportWithErrno() != ENOENT) {
         deleteRet = DoDeleteUserCeEceSeceKeys(user, USER_EL5_DIR, userEl5Key_);
         if (deleteRet != 0) {
             LOGE("Delete el5 key failed");
             errCode = deleteRet;
-            StorageRadar::ReportUserKeyResult("DoDeleteUserKeys", user, errCode, "El5", "elx path=" + USER_EL5_DIR);
+            StorageRadar::ReportUserKeyResult("DoDeleteUserKeys", user, errCode, "El5", elxPath + USER_EL5_DIR);
         }
     }
     return errCode;
@@ -882,9 +894,9 @@ int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &aut
     std::vector<std::vector<uint8_t>> &plainText)
 {
     LOGI("enter UpdateUseAuthWithRecoveryKey start, user:%{public}d", userId);
-    std::string el2Path = USER_EL2_DIR + "/" + std::to_string(userId);
-    std::string el3Path = USER_EL3_DIR + "/" + std::to_string(userId);
-    std::string el4Path = USER_EL4_DIR + "/" + std::to_string(userId);
+    std::string el2Path = std::string(USER_EL2_DIR) + "/" + std::to_string(userId);
+    std::string el3Path = std::string(USER_EL3_DIR) + "/" + std::to_string(userId);
+    std::string el4Path = std::string(USER_EL4_DIR) + "/" + std::to_string(userId);
     std::vector<std::string> elKeyDirs = {el2Path, el3Path, el4Path};
 
     uint32_t i = 0;
@@ -913,7 +925,7 @@ int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &aut
         }
     }
     if (IsUeceSupport()) {
-        std::shared_ptr<BaseKey> el5Key = GetBaseKey(USER_EL5_DIR + "/" + std::to_string(userId));
+        std::shared_ptr<BaseKey> el5Key = GetBaseKey(std::string(USER_EL5_DIR) + "/" + std::to_string(userId));
         if (!el5Key) {
             return E_PARAMS_NULLPTR_ERR;
         }
@@ -936,7 +948,7 @@ int KeyManager::UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSe
 {
     LOGW("UpdateESecret enter");
     std::shared_ptr<BaseKey> el5Key = GetUserElKey(user, EL5_KEY);
-    std::string el5Path = USER_EL5_DIR + "/" + std::to_string(user);
+    std::string el5Path = std::string(USER_EL5_DIR) + "/" + std::to_string(user);
     if (IsUeceSupport() && el5Key == nullptr) {
         if (!MkDirRecurse(el5Path, S_IRWXU)) {
             LOGE("MkDirRecurse %{public}u failed!", user);
@@ -1053,19 +1065,19 @@ std::string KeyManager::GetKeyDirByUserAndType(unsigned int user, KeyType type)
     std::string keyDir = "";
     switch (type) {
         case EL1_KEY:
-            keyDir = USER_EL1_DIR + "/" + std::to_string(user);
+            keyDir = std::string(USER_EL1_DIR) + "/" + std::to_string(user);
             break;
         case EL2_KEY:
-            keyDir = USER_EL2_DIR + "/" + std::to_string(user);
+            keyDir = std::string(USER_EL2_DIR) + "/" + std::to_string(user);
             break;
         case EL3_KEY:
-            keyDir = USER_EL3_DIR + "/" + std::to_string(user);
+            keyDir = std::string(USER_EL3_DIR) + "/" + std::to_string(user);
             break;
         case EL4_KEY:
-            keyDir = USER_EL4_DIR + "/" + std::to_string(user);
+            keyDir = std::string(USER_EL4_DIR) + "/" + std::to_string(user);
             break;
         case EL5_KEY:
-            keyDir = USER_EL5_DIR + "/" + std::to_string(user);
+            keyDir = std::string(USER_EL5_DIR) + "/" + std::to_string(user);
             break;
         default:
             LOGE("GetKeyDirByUserAndType type %{public}u is invalid", type);
@@ -1299,7 +1311,7 @@ bool KeyManager::IsAppCloneUser(unsigned int user)
 
 int KeyManager::CheckAndDeleteEmptyEl5Directory(std::string keyDir, unsigned int user)
 {
-    std::string keyUeceDir = UECE_DIR + "/" + std::to_string(user);
+    std::string keyUeceDir = std::string(UECE_DIR) + "/" + std::to_string(user);
     if (!IsDir(keyDir) || !IsDir(keyUeceDir)) {
         LOGE("Have not found dir %{public}u el5", user);
         return -ENOENT;
@@ -1541,11 +1553,11 @@ int KeyManager::CreateRecoverKey(uint32_t userId, uint32_t userType, const std::
                                  const std::vector<uint8_t> &secret)
 {
     LOGI("enter");
-    std::string globalUserEl1Path = USER_EL1_DIR + "/" + std::to_string(GLOBAL_USER_ID);
-    std::string el1Path = USER_EL1_DIR + "/" + std::to_string(userId);
-    std::string el2Path = USER_EL2_DIR + "/" + std::to_string(userId);
-    std::string el3Path = USER_EL3_DIR + "/" + std::to_string(userId);
-    std::string el4Path = USER_EL4_DIR + "/" + std::to_string(userId);
+    std::string globalUserEl1Path = std::string(USER_EL1_DIR) + "/" + std::to_string(GLOBAL_USER_ID);
+    std::string el1Path = std::string(USER_EL1_DIR) + "/" + std::to_string(userId);
+    std::string el2Path = std::string(USER_EL2_DIR) + "/" + std::to_string(userId);
+    std::string el3Path = std::string(USER_EL3_DIR) + "/" + std::to_string(userId);
+    std::string el4Path = std::string(USER_EL4_DIR) + "/" + std::to_string(userId);
     std::vector<std::string> elKeyDirs = { DEVICE_EL1_DIR, globalUserEl1Path, el1Path, el2Path, el3Path, el4Path };
     std::vector<KeyBlob> originKeys;
     for (const auto &elxKeyDir : elKeyDirs) {
@@ -1717,7 +1729,7 @@ int KeyManager::InactiveUserElKey(unsigned int user, std::map<unsigned int, std:
     LOGI("remove elx desc");
     auto elx = elKey->GetKeyDir();
     if (!elx.empty() && elx != "el1") {
-        std::string descElx = FSCRYPT_EL_DIR + "/" + elx + "/" + std::to_string(user) + DESC_DIR;
+        std::string descElx = std::string(FSCRYPT_EL_DIR) + "/" + elx + "/" + std::to_string(user) + DESC_DIR;
         (void)remove(descElx.c_str());
         LOGI("remove desc success.");
     }
@@ -2015,7 +2027,7 @@ int KeyManager::CheckUserPinProtect(unsigned int userId,
 {
     LOGI("enter CheckUserPinProtect.");
     std::error_code errCode;
-    std::string restorePath = USER_EL2_DIR + "/" + std::to_string(userId) + RESTORE_DIR;
+    std::string restorePath = std::string(USER_EL2_DIR) + "/" + std::to_string(userId) + RESTORE_DIR;
     if (!std::filesystem::exists(restorePath, errCode)) {
         LOGI("Do not check pin code.");
         return E_OK;

@@ -30,24 +30,14 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-const std::string FSCRYPT_USER_EL1_PUBLIC = std::string() + "/data/service/el1/public";
-const std::string SERVICE_STORAGE_DAEMON_DIR = FSCRYPT_USER_EL1_PUBLIC + "/storage_daemon";
-const std::string FSCRYPT_EL_DIR = SERVICE_STORAGE_DAEMON_DIR + "/sd";
-const std::string USER_EL1_DIR = FSCRYPT_EL_DIR + "/el1";
-const std::string USER_EL2_DIR = FSCRYPT_EL_DIR + "/el2";
-const std::string USER_EL3_DIR = FSCRYPT_EL_DIR + "/el3";
-const std::string USER_EL4_DIR = FSCRYPT_EL_DIR + "/el4";
-const std::string USER_EL5_DIR = FSCRYPT_EL_DIR + "/el5";
-const std::string UECE_DIR = "data/app/el5";
-const std::string DATA_DIR = "data/app/";
-const std::string SERVICE_DIR = "data/service/";
-const std::string FSCRYPT_VERSION_DIR = "/fscrypt_version";
-const std::string ENCRYPT_VERSION_DIR = "/latest/encrypted";
-const std::string SEC_DISCARD_DIR = "/latest/sec_discard";
-const std::string SHIELD_DIR = "/latest/shield";
-const std::string RESTORE_DIR = "/latest/need_restore";
-const std::string DESC_DIR = "/key_desc";
-const std::string EL2_ENCRYPT_TMP_FILE = "/el2_tmp";
+
+constexpr const char *USER_EL1_DIR = "/data/service/el1/public/storage_daemon/sd/el1";
+constexpr const char *USER_EL2_DIR = "/data/service/el1/public/storage_daemon/sd/el2";
+constexpr const char *USER_EL3_DIR = "/data/service/el1/public/storage_daemon/sd/el3";
+constexpr const char *USER_EL4_DIR = "/data/service/el1/public/storage_daemon/sd/el4";
+constexpr const char *USER_EL5_DIR = "/data/service/el1/public/storage_daemon/sd/el5";
+constexpr const char *UECE_DIR = "data/app/el5";
+constexpr const char *RESTORE_DIR = "/latest/need_restore";
 
 class KeyManager {
 public:

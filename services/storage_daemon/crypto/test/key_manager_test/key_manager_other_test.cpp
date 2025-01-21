@@ -537,7 +537,7 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_CheckUserPinProtect_001, TestSize.Level
     std::vector<uint8_t> tokenEmpty;
     std::vector<uint8_t> secretEmpty;
 
-    std::string basePath = USER_EL2_DIR + "/" + std::to_string(userId) + "/latest";
+    std::string basePath = std::string(USER_EL2_DIR) + "/" + std::to_string(userId) + "/latest";
     OHOS::ForceRemoveDirectory(basePath);
     EXPECT_EQ(KeyManager::GetInstance()->CheckUserPinProtect(userId, tokenEmpty, secretEmpty), E_OK);
 
