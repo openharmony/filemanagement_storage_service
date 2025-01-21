@@ -53,7 +53,13 @@ void StorageDaemonStub::GetTempStatistics(std::map<uint32_t, RadarStatisticInfo>
 void StorageDaemonStub::StorageRadarThd(void)
 {
     // report radar statistics when restart
-    std::this_thread::sleep_for(std::chrono::seconds(RADAR_STATISTIC_THREAD_WAIT_SECONDS));
+    std::unique_lock<std::mutex> lock(onRadarReportLock_);
+    if (execRadarReportCon_.wait_for(lock, std::chrono::seconds(RADAR_STATISTIC_THREAD_WAIT_SECONDS),
+        [this] { return this->stopRadarReport_.load(); })) {
+        LOGI("Storage statistic radar exit.");
+        return;
+    }
+    lock.unlock();
     LOGI("Storage statistic thread start.");
     StorageStatisticRadar::GetInstance().CreateStatisticFile();
     std::map<uint32_t, RadarStatisticInfo> opStatisticsTemp;
