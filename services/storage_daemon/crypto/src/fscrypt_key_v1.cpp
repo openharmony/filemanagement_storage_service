@@ -244,20 +244,20 @@ int32_t FscryptKeyV1::ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId)
     return E_OK;
 }
 
-bool FscryptKeyV1::DoDecryptClassE(const UserAuth &auth, KeyBlob &eSecretFBE, KeyBlob &decryptedKey,
-                                   bool needSyncCandidate)
+int32_t FscryptKeyV1::DoDecryptClassE(const UserAuth &auth, KeyBlob &eSecretFBE, KeyBlob &decryptedKey,
+                                      bool needSyncCandidate)
 {
     LOGI("enter");
     auto candidate = GetCandidateDir();
     if (candidate.empty()) {
         // no candidate dir, just restore from the latest
-        return KeyBackup::GetInstance().TryRestoreUeceKey(shared_from_this(), auth, eSecretFBE, decryptedKey) == 0;
+        return KeyBackup::GetInstance().TryRestoreUeceKey(shared_from_this(), auth, eSecretFBE, decryptedKey);
     }
     auto ret = DecryptKeyBlob(auth, candidate, eSecretFBE, decryptedKey);
     if (ret == E_OK) {
         // update the latest with the candidate
         UpdateKey("", needSyncCandidate);
-        return true;
+        return E_OK;
     }
 
     LOGE("DoRestoreKey with %{public}s failed", candidate.c_str());
@@ -278,40 +278,42 @@ bool FscryptKeyV1::DoDecryptClassE(const UserAuth &auth, KeyBlob &eSecretFBE, Ke
             auto ret = DecryptKeyBlob(auth, dir_ + "/" + it, eSecretFBE, decryptedKey);
             if (ret == E_OK) {
                 UpdateKey(it, needSyncCandidate);
-                return true;
+                return E_OK;
             }
         }
     }
-    return false;
+    return ret;
 }
 
-bool FscryptKeyV1::DecryptClassE(const UserAuth &auth, bool &isSupport, bool &eBufferStatue,
-                                 uint32_t user, bool needSyncCandidate)
+int32_t FscryptKeyV1::DecryptClassE(const UserAuth &auth, bool &isSupport, bool &eBufferStatue,
+                                    uint32_t user, bool needSyncCandidate)
 {
     LOGI("enter");
     KeyBlob eSecretFBE(AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES);
     bool isFbeSupport = true;
-    if (!fscryptV1Ext.ReadClassE(USER_UNLOCK, eSecretFBE.data, eSecretFBE.size, isFbeSupport)) {
+    auto ret = fscryptV1Ext.ReadClassE(USER_UNLOCK, eSecretFBE.data, eSecretFBE.size, isFbeSupport);
+    if (ret != E_OK) {
         LOGE("fscryptV1Ext ReadClassE failed");
-        return false;
+        return ret;
     }
     if ((auth.token.IsEmpty() && auth.secret.IsEmpty()) || eSecretFBE.IsEmpty()) {
         LOGE("Token and secret is invalid, do not deal.");
         eBufferStatue = eSecretFBE.IsEmpty();
         eSecretFBE.Clear();
-        return true;
+        return E_OK;
     }
     if (!isFbeSupport) {
         LOGE("fbe not support uece, skip!");
         isSupport = false;
-        return true;
+        return E_OK;
     }
     LOGI("Decrypt keyPath is %{public}s", (dir_ + PATH_LATEST).c_str());
     KeyBlob decryptedKey(AES_256_HASH_RANDOM_SIZE);
-    if (!DoDecryptClassE(auth, eSecretFBE, decryptedKey, needSyncCandidate)) {
+    ret = DoDecryptClassE(auth, eSecretFBE, decryptedKey, needSyncCandidate);
+    if (ret != E_OK) {
         LOGE("DecryptKeyBlob Decrypt failed");
         eSecretFBE.Clear();
-        return false;
+        return ret;
     }
     keyInfo_.key.Alloc(eSecretFBE.size);
     auto err = memcpy_s(keyInfo_.key.data.get(), keyInfo_.key.size, eSecretFBE.data.get(), eSecretFBE.size);
@@ -320,51 +322,54 @@ bool FscryptKeyV1::DecryptClassE(const UserAuth &auth, bool &isSupport, bool &eB
     }
     eSecretFBE.Clear();
     LOGI("Decrypt end!");
-    if (!fscryptV1Ext.WriteClassE(USER_UNLOCK, decryptedKey.data.get(), decryptedKey.size)) {
+    ret = fscryptV1Ext.WriteClassE(USER_UNLOCK, decryptedKey.data.get(), decryptedKey.size);
+    if (ret != E_OK) {
         LOGE("fscryptV1Ext WriteClassE failed");
-        return false;
+        return ret;
     }
     GenerateKeyDesc();
     keyInfo_.key.Clear();
     decryptedKey.Clear();
     LOGI("finish");
-    return true;
+    return E_OK;
 }
 
-bool FscryptKeyV1::EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status)
+int32_t FscryptKeyV1::EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status)
 {
     LOGI("enter");
     KeyBlob eSecretFBE(AES_256_HASH_RANDOM_SIZE);
     bool isFbeSupport = true;
-    if (!fscryptV1Ext.ReadClassE(status, eSecretFBE.data, eSecretFBE.size, isFbeSupport)) {
+    auto ret = fscryptV1Ext.ReadClassE(status, eSecretFBE.data, eSecretFBE.size, isFbeSupport);
+    if (ret != E_OK) {
         LOGE("fscryptV1Ext ReadClassE failed");
-        return false;
+        return ret;
     }
     if (!isFbeSupport) {
         LOGE("fbe not support E type, skip!");
         isSupport = false;
-        return true;
+        return E_OK;
     }
     KeyBlob encryptedKey(AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES);
-    auto ret = EncryptKeyBlob(auth, dir_ + PATH_LATEST, eSecretFBE, encryptedKey);
+    ret = EncryptKeyBlob(auth, dir_ + PATH_LATEST, eSecretFBE, encryptedKey);
     if (ret != E_OK) {
         LOGE("EncryptKeyBlob Decrypt failed");
         eSecretFBE.Clear();
-        return false;
+        return ret;
     }
     eSecretFBE.Clear();
     if (!RenameKeyPath(dir_ + PATH_LATEST)) {
         LOGE("RenameKeyPath failed");
-        return false;
+        return E_RENAME_KEY_PATH;
     }
     LOGI("encrypt end");
-    if (!fscryptV1Ext.WriteClassE(status, encryptedKey.data.get(), encryptedKey.size)) {
+    ret = fscryptV1Ext.WriteClassE(status, encryptedKey.data.get(), encryptedKey.size);
+    if (ret != E_OK) {
         LOGE("fscryptV1Ext WriteClassE failed");
-        return false;
+        return ret;
     }
     encryptedKey.Clear();
     LOGI("finish");
-    return true;
+    return E_OK;
 }
 
 int32_t FscryptKeyV1::InstallKeyToKeyring()

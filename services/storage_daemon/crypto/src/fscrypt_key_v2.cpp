@@ -179,8 +179,8 @@ int32_t FscryptKeyV2::ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId)
     return E_OK;
 }
 
-bool FscryptKeyV2::DecryptClassE(const UserAuth &auth, bool &isSupport,
-                                 bool &eBufferStatue, uint32_t user, bool needSyncCandidate)
+int32_t FscryptKeyV2::DecryptClassE(const UserAuth &auth, bool &isSupport,
+                                    bool &eBufferStatue, uint32_t user, bool needSyncCandidate)
 {
     (void)auth;
     (void)user;
@@ -188,17 +188,17 @@ bool FscryptKeyV2::DecryptClassE(const UserAuth &auth, bool &isSupport,
     isSupport = false;
     eBufferStatue = false;
     LOGI("Unsupported fscrypt v2");
-    return true;
+    return E_OK;
 }
 
-bool FscryptKeyV2::EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status)
+int32_t FscryptKeyV2::EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status)
 {
     (void)auth;
     (void)user;
     (void)status;
     isSupport = false;
     LOGI("Unsupported fscrypt v2");
-    return true;
+    return E_OK;
 }
 } // namespace StorageDaemon
 } // namespace OHOS

@@ -62,9 +62,9 @@ public:
     virtual int32_t DeleteAppkey(const std::string keyId) = 0;
     virtual int32_t AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status) = 0;
     virtual int32_t DeleteClassEPinCode(uint32_t userId) = 0;
-    virtual bool DecryptClassE(const UserAuth &auth, bool &isSupport, bool &eBufferStatue, uint32_t user,
+    virtual int32_t DecryptClassE(const UserAuth &auth, bool &isSupport, bool &eBufferStatue, uint32_t user,
                                bool needSyncCandidate) = 0;
-    virtual bool EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status) = 0;
+    virtual int32_t EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status) = 0;
     virtual int32_t ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId) = 0;
     virtual bool LockUece(bool &isFbeSupport) = 0;
     int32_t DoRestoreKey(const UserAuth &auth, const std::string &keypath);

@@ -207,38 +207,40 @@ int32_t FscryptKeyV1Ext::ChangePinCodeClassE(uint32_t userId, bool &isFbeSupport
     return E_OK;
 }
 
-bool FscryptKeyV1Ext::ReadClassE(uint32_t status, std::unique_ptr<uint8_t[]> &classEBuffer, uint32_t length,
-                                 bool &isFbeSupport)
+int32_t FscryptKeyV1Ext::ReadClassE(uint32_t status, std::unique_ptr<uint8_t[]> &classEBuffer, uint32_t length,
+                                    bool &isFbeSupport)
 {
     if (!FBEX::IsFBEXSupported()) {
-        return true;
+        return E_OK;
     }
     LOGI("enter");
     // 0--single id, 1--double id
     UserIdToFbeStr userIdToFbe = { .userIds = { userId_, GetMappedUserId(userId_, type_) }, .size = USER_ID_SIZE };
     LOGI("type_: %{public}u, userId %{public}u to %{public}u", type_, userId_, userIdToFbe.userIds[DOUBLE_ID_INDEX]);
-    if (FBEX::ReadESecretToKernel(userIdToFbe, status, classEBuffer, length, isFbeSupport)) {
+    auto ret = FBEX::ReadESecretToKernel(userIdToFbe, status, classEBuffer, length, isFbeSupport);
+    if (ret != E_OK) {
         LOGE("ReadESecret failed, user %{public}d, status: %{public}d", userIdToFbe.userIds[DOUBLE_ID_INDEX], status);
-        return false;
+        return ret;
     }
-    return true;
+    return E_OK;
 }
 
-bool FscryptKeyV1Ext::WriteClassE(uint32_t status, uint8_t *classEBuffer, uint32_t length)
+int32_t FscryptKeyV1Ext::WriteClassE(uint32_t status, uint8_t *classEBuffer, uint32_t length)
 {
     if (!FBEX::IsFBEXSupported()) {
-        return true;
+        return E_OK;
     }
     LOGI("enter");
     // 0--single id, 1--double id
     UserIdToFbeStr userIdToFbe = { .userIds = { userId_, GetMappedUserId(userId_, type_) }, .size = USER_ID_SIZE };
     LOGI("type_ is %{public}u, map userId %{public}u to %{public}u",
          type_, userId_, userIdToFbe.userIds[DOUBLE_ID_INDEX]);
-    if (FBEX::WriteESecretToKernel(userIdToFbe, status, classEBuffer, length)) {
+    auto ret = FBEX::WriteESecretToKernel(userIdToFbe, status, classEBuffer, length);
+    if (ret != E_OK) {
         LOGE("WriteESecret failed,user %{public}d, status: %{public}d", userIdToFbe.userIds[DOUBLE_ID_INDEX], status);
-        return false;
+        return ret;
     }
-    return true;
+    return E_OK;
 }
 
 int32_t FscryptKeyV1Ext::InactiveKeyExt(uint32_t flag)

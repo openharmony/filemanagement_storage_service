@@ -258,15 +258,17 @@ int KeyManager::GenerateAndInstallEl5Key(uint32_t userId, const std::string &dir
     }
     saveESecretStatus[userId] = (!auth.secret.IsEmpty() && !auth.token.IsEmpty());
     if (isNeedEncryptClassE) {
-        if ((!auth.secret.IsEmpty() && !auth.token.IsEmpty()) &&
-            !elKey->EncryptClassE(auth, saveESecretStatus[userId], userId, USER_ADD_AUTH)) {
-            elKey->ClearKey();
-            LOGE("user %{public}u el5 create error", userId);
-            return E_EL5_ENCRYPT_CLASS_ERROR;
+        if (!auth.secret.IsEmpty() && !auth.token.IsEmpty()) {
+            auto ret = elKey->EncryptClassE(auth, saveESecretStatus[userId], userId, USER_ADD_AUTH);
+            if (ret != E_OK) {
+                elKey->ClearKey();
+                LOGE("user %{public}u el5 create error", userId);
+                return E_EL5_ENCRYPT_CLASS_ERROR;
+            }
         }
     } else {
         bool eBufferStatue = false;
-        if (!elKey->DecryptClassE(auth, saveESecretStatus[userId], eBufferStatue, userId, false)) {
+        if (elKey->DecryptClassE(auth, saveESecretStatus[userId], eBufferStatue, userId, false) != E_OK) {
             LOGE("user %{public}u decrypt error", userId);
         }
     }
@@ -912,11 +914,13 @@ int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &aut
     }
     if (IsUeceSupport()) {
         std::shared_ptr<BaseKey> el5Key = GetBaseKey(USER_EL5_DIR + "/" + std::to_string(userId));
-        bool tempUeceSupport = true;
-        UserAuth userAuth = {.token = authToken, .secret = newSecret, .secureUid = secureUid};
         if (!el5Key) {
             return E_PARAMS_NULLPTR_ERR;
-        } else if (!el5Key->EncryptClassE(userAuth, tempUeceSupport, userId, USER_ADD_AUTH)) {
+        }
+        bool tempUeceSupport = true;
+        UserAuth userAuth = {.token = authToken, .secret = newSecret, .secureUid = secureUid};
+        auto ret = el5Key->EncryptClassE(userAuth, tempUeceSupport, userId, USER_ADD_AUTH);
+        if (ret != E_OK) {
             el5Key->ClearKey();
             LOGE("user %{public}u Encrypt E fail", userId);
             return E_EL5_ENCRYPT_CLASS_ERROR;
@@ -967,7 +971,8 @@ int KeyManager::UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSe
     LOGI("UpdateESecret status is %{public}u", status);
     UserAuth auth = { .token = tokenSecret.token, .secret = tokenSecret.newSecret, .secureUid = tokenSecret.secureUid };
     saveESecretStatus[user] = true;
-    if (!el5Key->EncryptClassE(auth, saveESecretStatus[user], user, status)) {
+    auto ret = el5Key->EncryptClassE(auth, saveESecretStatus[user], user, status);
+    if (ret != E_OK) {
         LOGE("user %{public}u EncryptClassE fail", user);
         return E_EL5_ENCRYPT_CLASS_ERROR;
     }
@@ -1332,7 +1337,8 @@ int KeyManager::ActiveUeceUserKey(unsigned int user,
     userEl5Key_[user] = elKey;
     UserAuth auth = { .token = token, .secret = secret };
     bool eBufferStatue = false;
-    if (!elKey->DecryptClassE(auth, saveESecretStatus[user], eBufferStatue, user, true)) {
+    auto ret = elKey->DecryptClassE(auth, saveESecretStatus[user], eBufferStatue, user, true);
+    if (ret != E_OK) {
         LOGE("Unlock user %{public}u E_Class failed", user);
         return E_EL5_DELETE_CLASS_ERROR;
     }
@@ -1456,8 +1462,12 @@ int32_t KeyManager::UnlockUece(uint32_t user,
     UserAuth auth = {.token = token, .secret = secret};
     saveESecretStatus[user] = !auth.token.IsEmpty();
     auto el5Key = GetUserElKey(user, EL5_KEY);
+    if (el5Key != nullptr) {
+        return E_UNLOCK_APP_KEY2_FAILED;
+    }
     bool eBufferStatue = false;
-    if (el5Key != nullptr && !el5Key->DecryptClassE(auth, saveESecretStatus[user], eBufferStatue, user, false)) {
+    auto ret = el5Key->DecryptClassE(auth, saveESecretStatus[user], eBufferStatue, user, false);
+    if (ret != E_OK) {
         LOGE("Unlock user %{public}u uece failed", user);
         return E_UNLOCK_APP_KEY2_FAILED;
     }
