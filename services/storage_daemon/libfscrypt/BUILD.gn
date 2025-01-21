@@ -25,6 +25,7 @@ config("fscrypt_utils_config") {
   cflags = [
     "-g3",
     "-Wall",
+    "-O2",
   ]
 }
 
@@ -36,6 +37,7 @@ config("fscrypt_utils_public_config") {
   cflags = [
     "-g3",
     "-Wall",
+    "-O2",
   ]
 }
 

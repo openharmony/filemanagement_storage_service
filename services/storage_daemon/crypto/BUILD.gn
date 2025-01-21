@@ -26,6 +26,7 @@ config("storage_daemon_crypto_config") {
   cflags = [
     "-g3",
     "-Wall",
+    "-O2",
   ]
 }
 

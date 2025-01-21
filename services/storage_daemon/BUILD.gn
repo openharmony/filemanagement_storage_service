@@ -71,7 +71,10 @@ ohos_executable("storage_daemon") {
     "KMSG_LOG",
   ]
 
-  cflags = [ "-fstack-protector-strong" ]
+  cflags = [
+    "-fstack-protector-strong",
+    "-O2",
+  ]
 
   if (storage_service_user_file_sharing) {
     defines += [ "USER_FILE_SHARING" ]
@@ -227,7 +230,10 @@ ohos_executable("sdc") {
     "KMSG_LOG",
   ]
 
-  cflags = [ "-fstack-protector-strong" ]
+  cflags = [
+    "-fstack-protector-strong",
+    "-O2",
+  ]
 
   configs = [ ":sdc_config" ]
 
@@ -287,6 +293,7 @@ ohos_shared_library("storage_common_utils") {
   cflags = [
     "-D_FORTIFY_SOURCE=2",
     "-fstack-protector-strong",
+    "-O2",
   ]
 
   sources = [
