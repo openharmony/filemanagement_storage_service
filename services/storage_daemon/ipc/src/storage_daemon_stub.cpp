@@ -27,7 +27,7 @@ namespace OHOS {
 namespace StorageDaemon {
 using namespace std;
 const unsigned int LOCAL_TIME_OUT_SECONDS = 10;
-const unsigned int INACTIVE_USER_KEY_OUT_SECONDS = 20;
+const unsigned int INACTIVE_USER_KEY_OUT_SECONDS = 25;
 const unsigned int UPDATE_RADAR_STATISTIC_INTERVAL_SECONDS = 300;
 const unsigned int RADAR_REPORT_STATISTIC_INTERVAL_MINUTES = 1440;
 const unsigned int USER0ID = 0;
