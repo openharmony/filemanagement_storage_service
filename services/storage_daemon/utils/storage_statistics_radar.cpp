@@ -189,7 +189,7 @@ bool StorageStatisticRadar::ReadStatisticFile(std::map<uint32_t, RadarStatisticI
         }
         cJSON *userIdItem = cJSON_GetObjectItem(item, "userId");
         if (userIdItem != nullptr && cJSON_IsNumber(userIdItem)) {
-            userId = userIdItem->valueint;
+            userId = static_cast<uint32_t>(userIdItem->valueint);
         }
         cJSON *countItem = cJSON_GetObjectItem(item, "oprateCount");
         if (countItem != nullptr && cJSON_IsString(countItem)) {
