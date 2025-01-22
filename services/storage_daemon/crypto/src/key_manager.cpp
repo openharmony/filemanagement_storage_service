@@ -57,8 +57,8 @@ std::shared_ptr<BaseKey> KeyManager::GetBaseKey(const std::string& dir)
 {
     uint8_t versionFromPolicy = GetFscryptVersionFromPolicy();
     uint8_t kernelSupportVersion = KeyCtrlGetFscryptVersion(MNT_DATA.c_str());
-    if (kernelSupportVersion == FSCRYPT_INVALID) {
-        LOGE("kernel not support fscrypt");
+    if (kernelSupportVersion != FSCRYPT_V1 && kernelSupportVersion != FSCRYPT_V2) {
+        LOGE("kernel not support fscrypt, ret is %{public}d, errno is %{public}d.", kernelSupportVersion, errno);
         return nullptr;
     }
     if ((versionFromPolicy == kernelSupportVersion) && (kernelSupportVersion == FSCRYPT_V2)) {
