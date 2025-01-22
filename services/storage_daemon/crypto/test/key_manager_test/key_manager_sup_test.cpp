@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (C) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -792,7 +792,7 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UpdateUseAuthWithRecoveryKey_004, TestSiz
     EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
     #endif
     EXPECT_CALL(*fscryptKeyMock_, EncryptClassE(_, _, _, _)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*fscryptKeyMock_, LockUece(_)).WillOnce(Return(false));
+    EXPECT_CALL(*fscryptKeyMock_, LockUece(_)).WillOnce(Return(1));
     EXPECT_EQ(KeyManager::GetInstance()->UpdateUseAuthWithRecoveryKey(
         authToken, newSecret, secureUid, userId, plainText), E_OK);
 
@@ -844,7 +844,7 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UpdateUseAuthWithRecoveryKey_005, TestSiz
     EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
     #endif
     EXPECT_CALL(*fscryptKeyMock_, EncryptClassE(_, _, _, _)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*fscryptKeyMock_, LockUece(_)).WillOnce(Return(true));
+    EXPECT_CALL(*fscryptKeyMock_, LockUece(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(KeyManager::GetInstance()->UpdateUseAuthWithRecoveryKey(
         authToken, newSecret, secureUid, userId, plainText), E_OK);
 

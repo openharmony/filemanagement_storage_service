@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,12 +18,12 @@
 using namespace std;
 using namespace OHOS::StorageDaemon;
 
-bool FscryptKeyV1Ext::LockUeceExt(bool &isFbeSupport)
+int32_t FscryptKeyV1Ext::LockUeceExt(bool &isFbeSupport)
 {
     return IFscryptKeyV1Ext::fscryptKeyV1ExtMock->LockUeceExt(isFbeSupport);
 }
 
-bool FscryptKeyV1Ext::LockUserScreenExt(uint32_t flag, uint32_t &elType)
+int32_t FscryptKeyV1Ext::LockUserScreenExt(uint32_t flag, uint32_t &elType)
 {
     elType = IFscryptKeyV1Ext::fscryptKeyV1ExtMock->SetElType();
     return IFscryptKeyV1Ext::fscryptKeyV1ExtMock->LockUserScreenExt(flag, elType);
@@ -39,7 +39,7 @@ int32_t FscryptKeyV1Ext::InactiveKeyExt(uint32_t flag)
     return -1;
 }
 
-bool FscryptKeyV1Ext::UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_t size)
+int32_t FscryptKeyV1Ext::UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_t size)
 {
     return IFscryptKeyV1Ext::fscryptKeyV1ExtMock->UnlockUserScreenExt(flag, iv, size);
 }

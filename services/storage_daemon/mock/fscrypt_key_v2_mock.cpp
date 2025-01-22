@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,46 +14,47 @@
  */
 
 #include "fscrypt_key_v2_mock.h"
+#include "storage_service_errno.h"
 
 using namespace std;
 using namespace OHOS::StorageDaemon;
 
-bool FscryptKeyV2::ActiveKey(uint32_t flag, const std::string &mnt)
+int32_t FscryptKeyV2::ActiveKey(uint32_t flag, const std::string &mnt)
 {
     if (IFscryptKeyV2Moc::fscryptKeyV2Moc == nullptr) {
-        return false;
+        return E_KEY_EMPTY_ERROR;
     }
     return IFscryptKeyV2Moc::fscryptKeyV2Moc->ActiveKey(flag, mnt);
 }
 
-bool FscryptKeyV2::InactiveKey(uint32_t flag, const std::string &mnt)
+int32_t FscryptKeyV2::InactiveKey(uint32_t flag, const std::string &mnt)
 {
     if (IFscryptKeyV2Moc::fscryptKeyV2Moc == nullptr) {
-        return false;
+        return E_KEY_EMPTY_ERROR;
     }
     return IFscryptKeyV2Moc::fscryptKeyV2Moc->InactiveKey(flag, mnt);
 }
 
-bool FscryptKeyV2::LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt)
+int32_t FscryptKeyV2::LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt)
 {
     if (IFscryptKeyV2Moc::fscryptKeyV2Moc == nullptr) {
-        return false;
+        return E_KEY_EMPTY_ERROR;
     }
     return IFscryptKeyV2Moc::fscryptKeyV2Moc->LockUserScreen(flag, sdpClass, mnt);
 }
 
-bool FscryptKeyV2::LockUece(bool &isFbeSupport)
+int32_t FscryptKeyV2::LockUece(bool &isFbeSupport)
 {
     if (IFscryptKeyV2Moc::fscryptKeyV2Moc == nullptr) {
-        return false;
+        return E_KEY_EMPTY_ERROR;
     }
     return IFscryptKeyV2Moc::fscryptKeyV2Moc->LockUece(isFbeSupport);
 }
 
-bool FscryptKeyV2::UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt)
+int32_t FscryptKeyV2::UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt)
 {
     if (IFscryptKeyV2Moc::fscryptKeyV2Moc == nullptr) {
-        return false;
+        return E_KEY_EMPTY_ERROR;
     }
     return IFscryptKeyV2Moc::fscryptKeyV2Moc->UnlockUserScreen(flag, sdpClass, mnt);
 }

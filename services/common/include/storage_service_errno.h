@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -111,6 +111,9 @@ enum ErrNo {
     E_SAVE_KEY_BUFFER_ERROR = STORAGE_SERVICE_SYS_CAP_TAG + 367,
     E_EMPTY_CANDIDATE_ERROR = STORAGE_SERVICE_SYS_CAP_TAG +368,
     E_RENAME_KEY_PATH = STORAGE_SERVICE_SYS_CAP_TAG + 369,
+    E_REMOVE_KEY_ERROR = STORAGE_SERVICE_SYS_CAP_TAG + 400,
+    E_KEY_CTRL_INSTALL_ERROR = STORAGE_SERVICE_SYS_CAP_TAG + 401,
+    E_INVAILd_KEY_ID_ERROR = STORAGE_SERVICE_SYS_CAP_TAG + 402,
 
     // 用户管理 13600701 ~ 13601200
     E_USER_MOUNT_ERR = STORAGE_SERVICE_SYS_CAP_TAG + 701,

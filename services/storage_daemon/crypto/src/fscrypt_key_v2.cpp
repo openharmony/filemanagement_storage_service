@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,12 +22,12 @@
 namespace OHOS {
 namespace StorageDaemon {
 #ifdef SUPPORT_FSCRYPT_V2
-bool FscryptKeyV2::ActiveKey(uint32_t flag, const std::string &mnt)
+int32_t FscryptKeyV2::ActiveKey(uint32_t flag, const std::string &mnt)
 {
     LOGI("enter");
     if (keyInfo_.key.IsEmpty()) {
         LOGE("rawkey is null");
-        return false;
+        return E_KEY_EMPTY_ERROR;
     }
 
     auto buf = std::make_unique<char[]>(sizeof(fscrypt_add_key_arg) + FSCRYPT_MAX_KEY_SIZE);
@@ -39,19 +39,19 @@ bool FscryptKeyV2::ActiveKey(uint32_t flag, const std::string &mnt)
     auto err = memcpy_s(arg->raw, FSCRYPT_MAX_KEY_SIZE, keyInfo_.key.data.get(), keyInfo_.key.size);
     if (err != EOK) {
         LOGE("memcpy failed ret %{public}d", err);
-        return false;
+        return err;
     }
 
     if (!KeyCtrlInstallKey(mnt.c_str(), arg)) {
         LOGE("InstallKey failed");
-        return false;
+        return E_KEY_CTRL_INSTALL_ERROR;
     }
     keyInfo_.keyId.Alloc(FSCRYPT_KEY_IDENTIFIER_SIZE);
     auto ret = memcpy_s(keyInfo_.keyId.data.get(), keyInfo_.keyId.size, arg->key_spec.u.identifier,
         FSCRYPT_KEY_IDENTIFIER_SIZE);
     if (ret != EOK) {
         LOGE("memcpy_s failed ret %{public}d", ret);
-        return false;
+        return ret;
     }
     (void)memset_s(arg, sizeof(fscrypt_add_key_arg) + FSCRYPT_MAX_KEY_SIZE, 0, sizeof(fscrypt_add_key_arg) +
         FSCRYPT_MAX_KEY_SIZE);
@@ -59,23 +59,23 @@ bool FscryptKeyV2::ActiveKey(uint32_t flag, const std::string &mnt)
     LOGI("success. key_id len:%{public}d, data(hex):%{private}s", keyInfo_.keyId.size,
         keyInfo_.keyId.ToString().c_str());
     if (!SaveKeyBlob(keyInfo_.keyId, dir_ + PATH_KEYID)) {
-        return false;
+        return E_SAVE_KEY_BLOB_ERROR;
     }
     keyInfo_.key.Clear();
     LOGI("success");
-    return true;
+    return E_OK;
 }
 
-bool FscryptKeyV2::InactiveKey(uint32_t flag, const std::string &mnt)
+int32_t FscryptKeyV2::InactiveKey(uint32_t flag, const std::string &mnt)
 {
     LOGI("enter");
     if (keyInfo_.keyId.size == 0) {
         LOGE("keyId size is 0");
-        return true;
+        return E_OK;
     }
     if (keyInfo_.keyId.size != FSCRYPT_KEY_IDENTIFIER_SIZE) {
         LOGE("keyId is invalid, %{public}u", keyInfo_.keyId.size);
-        return false;
+        return E_INVAILd_KEY_ID_ERROR;
     }
 
     fscrypt_remove_key_arg arg;
@@ -85,11 +85,11 @@ bool FscryptKeyV2::InactiveKey(uint32_t flag, const std::string &mnt)
         keyInfo_.keyId.size);
     if (ret != EOK) {
         LOGE("memcpy_s failed ret %{public}d", ret);
-        return false;
+        return ret;
     }
 
     if (!KeyCtrlRemoveKey(mnt.c_str(), &arg)) {
-        return false;
+        return E_REMOVE_KEY_ERROR;
     }
     if (arg.removal_status_flags & FSCRYPT_KEY_REMOVAL_STATUS_FLAG_OTHER_USERS) {
         LOGE("Other users still have this key added");
@@ -99,48 +99,48 @@ bool FscryptKeyV2::InactiveKey(uint32_t flag, const std::string &mnt)
 
     LOGI("success");
     keyInfo_.keyId.Clear();
-    return true;
+    return E_OK;
 }
 
 #else
-bool FscryptKeyV2::ActiveKey(uint32_t flag, const std::string &mnt)
+int32_t FscryptKeyV2::ActiveKey(uint32_t flag, const std::string &mnt)
 {
     (void)mnt;
     (void)flag;
     LOGI("Unsupported fscrypt v2");
-    return false;
+    return E_PARAMS_INVALID;
 }
 
-bool FscryptKeyV2::InactiveKey(uint32_t flag, const std::string &mnt)
+int32_t FscryptKeyV2::InactiveKey(uint32_t flag, const std::string &mnt)
 {
     (void)mnt;
     (void)flag;
     LOGI("Unsupported fscrypt v2");
-    return false;
+    return E_PARAMS_INVALID;
 }
 #endif
 
-bool FscryptKeyV2::LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt)
+int32_t FscryptKeyV2::LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt)
 {
     (void)mnt;
     (void)flag;
     LOGI("Unsupported fscrypt v2");
-    return true;
+    return E_OK;
 }
 
-bool FscryptKeyV2::LockUece(bool &isFbeSupport)
+int32_t FscryptKeyV2::LockUece(bool &isFbeSupport)
 {
     isFbeSupport = false;
     LOGI("Unsupported fscrypt v2");
-    return true;
+    return E_OK;
 }
 
-bool FscryptKeyV2::UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt)
+int32_t FscryptKeyV2::UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt)
 {
     (void)mnt;
     (void)flag;
     LOGI("Unsupported fscrypt v2");
-    return true;
+    return E_OK;
 }
 
 int32_t FscryptKeyV2::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId)

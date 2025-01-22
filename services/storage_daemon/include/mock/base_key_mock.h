@@ -19,6 +19,7 @@
 #include <memory>
 
 #include "key_blob.h"
+#include "storage_service_errno.h"
 
 namespace OHOS {
 namespace StorageDaemon {

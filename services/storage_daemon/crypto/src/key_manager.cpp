@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (C) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -95,7 +95,7 @@ int KeyManager::GenerateAndInstallDeviceKey(const std::string &dir)
         return E_GLOBAL_KEY_STORE_ERROR;
     }
 
-    if (globalEl1Key_->ActiveKey(FIRST_CREATE_KEY) == false) {
+    if (globalEl1Key_->ActiveKey(FIRST_CREATE_KEY) != E_OK) {
         globalEl1Key_->ClearKey();
         globalEl1Key_ = nullptr;
         LOGE("global security key active failed");
@@ -140,7 +140,7 @@ int KeyManager::RestoreDeviceKey(const std::string &dir)
         return E_GLOBAL_KEY_STORE_ERROR;
     }
 
-    if (globalEl1Key_->ActiveKey(RETRIEVE_KEY) == false) {
+    if (globalEl1Key_->ActiveKey(RETRIEVE_KEY) != E_OK) {
         globalEl1Key_ = nullptr;
         LOGE("global security key active failed");
         StorageRadar::ReportUserKeyResult("RestoreDeviceKey", 0, E_GLOBAL_KEY_ACTIVE_ERROR, "EL1", "");
@@ -215,7 +215,7 @@ int KeyManager::GenerateAndInstallUserKey(uint32_t userId, const std::string &di
         LOGE("user security key store failed");
         return E_ELX_KEY_STORE_ERROR;
     }
-    if (elKey->ActiveKey(FIRST_CREATE_KEY) == false) {
+    if (elKey->ActiveKey(FIRST_CREATE_KEY) != E_OK) {
         elKey->ClearKey();
         LOGE("user security key active failed");
         return E_ELX_KEY_ACTIVE_ERROR;
@@ -300,7 +300,7 @@ int KeyManager::RestoreUserKey(uint32_t userId, const std::string &dir, const Us
         return E_ELX_KEY_STORE_ERROR;
     }
 
-    if (elKey->ActiveKey(RETRIEVE_KEY) == false) {
+    if (elKey->ActiveKey(RETRIEVE_KEY) != E_OK) {
         LOGE("user security key active failed");
         return E_ELX_KEY_ACTIVE_ERROR;
     }
@@ -925,7 +925,8 @@ int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &aut
             LOGE("user %{public}u Encrypt E fail", userId);
             return E_EL5_ENCRYPT_CLASS_ERROR;
         }
-        if (!el5Key->LockUece(tempUeceSupport)) {
+        ret = el5Key->LockUece(tempUeceSupport);
+        if (ret != E_OK) {
             LOGE("lock user %{public}u key failed !", userId);
         }
     }
@@ -1385,7 +1386,7 @@ int KeyManager::ActiveElXUserKey(unsigned int user,
             return E_ELX_KEY_STORE_ERROR;
         }
     }
-    if (elKey->ActiveKey(RETRIEVE_KEY) == false) {
+    if (elKey->ActiveKey(RETRIEVE_KEY) != E_OK) {
         LOGE("Active user %{public}u key failed", user);
         return E_ELX_KEY_ACTIVE_ERROR;
     }
@@ -1447,7 +1448,8 @@ int32_t KeyManager::UnlockEceSece(uint32_t user,
         LOGE("Restore user %{public}u el4 key failed", user);
         return E_RESTORE_KEY_FAILED;
     }
-    if (!el4Key->UnlockUserScreen(user, FSCRYPT_SDP_ECE_CLASS)) {
+    int32_t ret = el4Key->UnlockUserScreen(user, FSCRYPT_SDP_ECE_CLASS);
+    if (ret != E_OK) {
         LOGE("UnlockUserScreen user %{public}u el4 key failed", user);
         return E_UNLOCK_SCREEN_FAILED;
     }

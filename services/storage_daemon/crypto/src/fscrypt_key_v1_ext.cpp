@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -127,19 +127,20 @@ int32_t FscryptKeyV1Ext::ActiveDoubleKeyExt(uint32_t flag, uint8_t *iv, uint32_t
     return E_OK;
 }
 
-bool FscryptKeyV1Ext::UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_t size)
+int32_t FscryptKeyV1Ext::UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_t size)
 {
     if (!FBEX::IsFBEXSupported()) {
-        return true;
+        return E_OK;
     }
     LOGI("enter");
     uint32_t user = GetMappedUserId(userId_, type_);
     LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, user);
-    if (FBEX::UnlockScreenToKernel(user, type_, iv, size)) {
+    int32_t ret = FBEX::UnlockScreenToKernel(user, type_, iv, size);
+    if (ret != E_OK) {
         LOGE("UnlockScreenToKernel failed, userId %{public}d, %{public}d", userId_, flag);
-        return false;
+        return ret;
     }
-    return true;
+    return E_OK;
 }
 
 int32_t FscryptKeyV1Ext::GenerateAppkey(uint32_t user, uint32_t hashId,
@@ -272,36 +273,38 @@ int32_t FscryptKeyV1Ext::InactiveKeyExt(uint32_t flag)
     return E_OK;
 }
 
-bool FscryptKeyV1Ext::LockUserScreenExt(uint32_t flag, uint32_t &elType)
+int32_t FscryptKeyV1Ext::LockUserScreenExt(uint32_t flag, uint32_t &elType)
 {
     if (!FBEX::IsFBEXSupported()) {
-        return true;
+        return E_OK;
     }
     LOGI("enter");
     uint32_t user = GetMappedUserId(userId_, type_);
     LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, user);
-    if (FBEX::LockScreenToKernel(user)) {
-        LOGE("LockScreenToKernel failed, userId %{public}d", user);
-        return false;
+    int32_t ret = FBEX::LockScreenToKernel(user);
+    if (ret != E_OK) {
+        LOGE("LockScreenToKernel failed, userId %{public}d, error code: %{public}d", user, ret);
+        return ret;
     }
     //Used to associate el3 and el4 kernels.
     elType = type_;
-    return true;
+    return E_OK;
 }
 
-bool FscryptKeyV1Ext::LockUeceExt(bool &isFbeSupport)
+int32_t FscryptKeyV1Ext::LockUeceExt(bool &isFbeSupport)
 {
     if (!FBEX::IsFBEXSupported()) {
-        return true;
+        return E_OK;
     }
     LOGI("enter");
     uint32_t userIdDouble = GetMappedUserId(userId_, type_);
     LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, userIdDouble);
-    if (FBEX::LockUece(userId_, userIdDouble, isFbeSupport)) {
+    int32_t ret = FBEX::LockUece(userId_, userIdDouble, isFbeSupport);
+    if (ret != E_OK) {
         LOGE("LockUeceExt failed, userId");
-        return false;
+        return ret;
     }
-    return true;
+    return E_OK;
 }
 
 uint32_t FscryptKeyV1Ext::GetUserIdFromDir()

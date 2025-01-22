@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -104,7 +104,8 @@ void DelayHandler::DeactiveEl3El4El5()
         StorageRadar::ReportUpdateUserAuth("DeactiveEl3El4El5", userId_, E_PARAMS_INVALID, "EL4", "");
         return;
     }
-    if (!el4Key_->LockUserScreen(userId_, FSCRYPT_SDP_ECE_CLASS)) {
+    int32_t ret = el4Key_->LockUserScreen(userId_, FSCRYPT_SDP_ECE_CLASS);
+    if (ret != E_OK) {
         LOGE("Clear user %{public}u key failed", userId_);
         StorageRadar::ReportUpdateUserAuth("DeactiveEl3El4El5::LockUserScreen", userId_, E_SYS_KERNEL_ERR, "EL4", "");
         return;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -34,22 +34,23 @@ namespace OHOS {
 namespace StorageDaemon {
 static const std::string CRYPTO_NAME_PREFIXES[] = {"ext4", "f2fs", "fscrypt"};
 
-bool FscryptKeyV1::ActiveKey(uint32_t flag, const std::string &mnt)
+int32_t FscryptKeyV1::ActiveKey(uint32_t flag, const std::string &mnt)
 {
     uint32_t elType;
     (void)mnt;
     LOGI("enter");
-    if (!GenerateKeyDesc()) {
+    int32_t ret = GenerateKeyDesc();
+    if (ret != E_OK) {
         keyInfo_.key.Clear();
         LOGE("GenerateKeyDesc failed");
-        return false;
+        return ret;
     }
     LOGE("ActiveKey key is empty: %{public}u", keyInfo_.key.IsEmpty());
     int errNo = fscryptV1Ext.ActiveKeyExt(flag, keyInfo_.key.data.get(), keyInfo_.key.size, elType);
     if (errNo != E_OK) {
         keyInfo_.key.Clear();
         LOGE("fscryptV1Ext ActiveKeyExtfailed");
-        return false;
+        return errNo;
     }
     if (elType == TYPE_EL3 || elType == TYPE_EL4) {
         uint32_t sdpClass;
@@ -62,19 +63,19 @@ bool FscryptKeyV1::ActiveKey(uint32_t flag, const std::string &mnt)
         if (errNo != E_OK) {
             keyInfo_.key.Clear();
             LOGE("InstallEceSeceKeyToKeyring failed");
-            return false;
+            return errNo;
         }
     } else {
         int errNo = InstallKeyToKeyring();
         if (errNo != E_OK) {
             keyInfo_.key.Clear();
             LOGE("InstallKeyToKeyring failed");
-            return false;
+            return errNo;
         }
     }
     keyInfo_.key.Clear();
     LOGI("success");
-    return true;
+    return E_OK;
 }
 
 int32_t FscryptKeyV1::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyDesc)
@@ -180,32 +181,34 @@ int32_t FscryptKeyV1::UninstallKeyForAppKeyToKeyring(const std::string keyId)
     return E_OK;
 }
 
-bool FscryptKeyV1::UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt)
+int32_t FscryptKeyV1::UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt)
 {
     (void)mnt;
     LOGI("enter");
-    if (!GenerateKeyDesc()) {
+    int32_t ret = GenerateKeyDesc();
+    if (ret != E_OK) {
         keyInfo_.key.Clear();
         LOGE("GenerateKeyDesc failed");
-        return false;
+        return ret;
     }
     LOGI("keyInfo empty: %{public}u:", keyInfo_.key.IsEmpty());
-    if (!fscryptV1Ext.UnlockUserScreenExt(flag, keyInfo_.key.data.get(), keyInfo_.key.size)) {
+    ret = fscryptV1Ext.UnlockUserScreenExt(flag, keyInfo_.key.data.get(), keyInfo_.key.size);
+    if (ret != E_OK) {
         keyInfo_.key.Clear();
         LOGE("fscryptV1Ext UnlockUserScreenExtfailed");
-        return false;
+        return ret;
     }
     if (sdpClass == FSCRYPT_SDP_ECE_CLASS) {
         int errNo = InstallEceSeceKeyToKeyring(sdpClass);
         if (errNo != E_OK) {
             keyInfo_.key.Clear();
             LOGE("UnlockUserScreen InstallKeyToKeyring failed");
-            return false;
+            return errNo;
         }
     }
     keyInfo_.key.Clear();
     LOGI("success");
-    return true;
+    return E_OK;
 }
 
 int32_t FscryptKeyV1::AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status)
@@ -457,24 +460,24 @@ int32_t FscryptKeyV1::InstallEceSeceKeyToKeyring(uint32_t sdpClass)
     return E_OK;
 }
 
-bool FscryptKeyV1::InactiveKey(uint32_t flag, const std::string &mnt)
+int32_t FscryptKeyV1::InactiveKey(uint32_t flag, const std::string &mnt)
 {
     (void)mnt;
     LOGI("enter");
     DropCachesIfNeed();
 
-    bool ret = true;
+    int32_t ret = E_OK;
     if (!keyInfo_.keyDesc.IsEmpty()) {
         int errNo = UninstallKeyToKeyring();
         if (errNo != E_OK) {
             LOGE("UninstallKeyToKeyring failed");
-            ret = false;
+            ret = errNo;
         }
     }
-    int errNo = fscryptV1Ext.InactiveKeyExt(flag);
-    if (errNo != E_OK) {
+    ret = fscryptV1Ext.InactiveKeyExt(flag);
+    if (ret != E_OK) {
         LOGE("fscryptV1Ext InactiveKeyExt failed");
-        ret = false;
+        return ret;
     }
     DropCachesIfNeed();
     LOGI("finish");
@@ -505,33 +508,34 @@ void FscryptKeyV1::DropCachesIfNeed()
     LOGE("drop cache success");
 }
 
-bool FscryptKeyV1::LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt)
+int32_t FscryptKeyV1::LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt)
 {
     LOGI("enter FscryptKeyV1::LockUserScreen");
     // uninstall KeyRing
     int errNo = UninstallKeyToKeyring();
     if (errNo != E_OK) {
         LOGE("UninstallKeyToKeyring failed");
-        return false;
+        return errNo;
     }
 
     // uninstall FBE
     uint32_t elType;
-    if (!fscryptV1Ext.LockUserScreenExt(flag, elType)) {
+    int32_t ret = fscryptV1Ext.LockUserScreenExt(flag, elType);
+    if (ret != E_OK) {
         LOGE("fscryptV1Ext InactiveKeyExt failed");
-        return false;
+        return ret;
     }
     LOGI("finish FscryptKeyV1::LockUserScreen");
-    return true;
+    return E_OK;
 }
 
-bool FscryptKeyV1::LockUece(bool &isFbeSupport)
+int32_t FscryptKeyV1::LockUece(bool &isFbeSupport)
 {
     LOGI("enter");
-    bool ret = true;
-    if (!fscryptV1Ext.LockUeceExt(isFbeSupport)) {
+    int32_t ret = fscryptV1Ext.LockUeceExt(isFbeSupport);
+    if (ret != E_OK) {
         LOGE("fscryptV1Ext InactiveKeyExt failed");
-        ret = false;
+        return ret;
     }
     LOGI("finish");
     return ret;
@@ -568,11 +572,11 @@ int32_t FscryptKeyV1::UninstallKeyToKeyring()
     return E_OK;
 }
 
-bool FscryptKeyV1::GenerateKeyDesc()
+int32_t FscryptKeyV1::GenerateKeyDesc()
 {
     if (keyInfo_.key.IsEmpty()) {
         LOGE("key is empty");
-        return false;
+        return E_KEY_EMPTY_ERROR;
     }
     SHA512_CTX c;
 
@@ -591,9 +595,9 @@ bool FscryptKeyV1::GenerateKeyDesc()
     auto err = memcpy_s(keyInfo_.keyDesc.data.get(), keyInfo_.keyDesc.size, keyRef2, CRYPTO_KEY_DESC_SIZE);
     if (err != EOK) {
         LOGE("memcpy failed ret %{public}d", err);
-        return false;
+        return err;
     }
-    return true;
+    return E_OK;
 }
 
 int32_t FscryptKeyV1::GenerateAppKeyDesc(KeyBlob appKey)

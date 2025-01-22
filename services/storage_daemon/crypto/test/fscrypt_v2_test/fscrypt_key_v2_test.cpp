@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Huawei Device Co., Ltd.
+ * Copyright (C) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -80,27 +80,27 @@ HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_active_support, TestSize.Level1)
     GTEST_LOG_(INFO) << "fscrypt_key_v2_active_support start";
     uint32_t flag = 1;
     g_testKeyV2.ClearKey();
-    EXPECT_FALSE(g_testKeyV2.ActiveKey(flag, TEST_MNT));
+    EXPECT_NE(g_testKeyV2.ActiveKey(flag, TEST_MNT), E_OK);
 
     g_testKeyV2.keyInfo_.key.Alloc(FSCRYPT_MAX_KEY_SIZE + 1);
-    EXPECT_FALSE(g_testKeyV2.ActiveKey(flag, TEST_MNT));
+    EXPECT_NE(g_testKeyV2.ActiveKey(flag, TEST_MNT), E_OK);
 
     g_testKeyV2.ClearKey();
     std::string emptyStr;
     g_testKeyV2.keyInfo_.key.Alloc(FSCRYPT_MAX_KEY_SIZE);
-    EXPECT_FALSE(g_testKeyV2.ActiveKey(flag, emptyStr));
+    EXPECT_NE(g_testKeyV2.ActiveKey(flag, emptyStr), E_OK);
 
     g_testKeyV2.ClearKey();
     g_testKeyV2.keyInfo_.keyId.Clear();
     g_testKeyV2.keyInfo_.key.Alloc(FSCRYPT_MAX_KEY_SIZE);
     g_testKeyV2.keyInfo_.keyId.Alloc(FSCRYPT_KEY_IDENTIFIER_SIZE + 1);
-    EXPECT_FALSE(g_testKeyV2.ActiveKey(flag, TEST_MNT));
+    EXPECT_NE(g_testKeyV2.ActiveKey(flag, TEST_MNT), E_OK);
 
     g_testKeyV2.ClearKey();
     g_testKeyV2.keyInfo_.keyId.Clear();
     g_testKeyV2.keyInfo_.key.Alloc(FSCRYPT_MAX_KEY_SIZE);
     g_testKeyV2.keyInfo_.keyId.Alloc(FSCRYPT_KEY_IDENTIFIER_SIZE);
-    EXPECT_FALSE(g_testKeyV2.ActiveKey(flag, TEST_MNT));
+    EXPECT_NE(g_testKeyV2.ActiveKey(flag, TEST_MNT), E_OK);
     GTEST_LOG_(INFO) << "fscrypt_key_v2_active_support end";
 }
 
@@ -117,11 +117,11 @@ HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_policy_inactive_support, TestSize.Leve
     
     g_testKeyV2.keyInfo_.keyId.Clear();
     g_testKeyV2.keyInfo_.keyId.Alloc(FSCRYPT_KEY_IDENTIFIER_SIZE + 1);
-    EXPECT_FALSE(g_testKeyV2.InactiveKey(flag, TEST_MNT));
+    EXPECT_NE(g_testKeyV2.InactiveKey(flag, TEST_MNT), E_OK);
 
     g_testKeyV2.keyInfo_.keyId.Clear();
     g_testKeyV2.keyInfo_.keyId.Alloc(FSCRYPT_KEY_IDENTIFIER_SIZE);
-    EXPECT_FALSE(g_testKeyV2.InactiveKey(flag, TEST_MNT));
+    EXPECT_NE(g_testKeyV2.InactiveKey(flag, TEST_MNT), E_OK);
     g_testKeyV2.ClearKey();
     g_testKeyV2.keyInfo_.keyId.Clear();
     GTEST_LOG_(INFO) << "fscrypt_key_v2_policy_inactive_support end";
@@ -138,8 +138,8 @@ HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_LockUserScreen_UnLockUserScreen, TestS
     GTEST_LOG_(INFO) << "fscrypt_key_v2_LockUserScreen_UnLockUserScreen start";
     uint32_t flag = 1;
     uint32_t sdpClass = 1;
-    EXPECT_TRUE(g_testKeyV2.LockUserScreen(flag, sdpClass, TEST_MNT));
-    EXPECT_TRUE(g_testKeyV2.UnlockUserScreen(flag, sdpClass, TEST_MNT));
+    EXPECT_EQ(g_testKeyV2.LockUserScreen(flag, sdpClass, TEST_MNT), E_OK);
+    EXPECT_EQ(g_testKeyV2.UnlockUserScreen(flag, sdpClass, TEST_MNT), E_OK);
     GTEST_LOG_(INFO) << "fscrypt_key_v2_LockUserScreen_UnLockUserScreen end";
 }
 
@@ -153,7 +153,7 @@ HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_LockUece, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "fscrypt_key_v2_LockUece start";
     bool isFbeSupport = true;
-    EXPECT_TRUE(g_testKeyV2.LockUece(isFbeSupport));
+    EXPECT_EQ(g_testKeyV2.LockUece(isFbeSupport), E_OK);
     EXPECT_FALSE(isFbeSupport);
     GTEST_LOG_(INFO) << "fscrypt_key_v2_LockUece end";
 }
