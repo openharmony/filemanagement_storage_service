@@ -665,7 +665,7 @@ int32_t BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
         LOGI("Restore device key.");
         return DoRestoreKeyDe(auth, path);
     }
-    int ret;
+    int ret = -1;
     if (encryptType == KeyEncryptTypeToString(KeyEncryptType::KEY_CRYPT_HUKS_OPENSSL)) {
         LOGI("Restore ce ece sece key.");
         ret = DoRestoreKeyCeEceSece(auth, path, keyType);
