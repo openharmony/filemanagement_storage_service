@@ -620,7 +620,7 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UpdateUseAuthWithRecoveryKey_001, TestSiz
     std::vector<uint8_t> newSecret;
     uint64_t secureUid = 1;
     std::vector<std::vector<uint8_t>> plainText;
-    std::string el2Path = USER_EL2_DIR + "/" + std::to_string(userId);
+    std::string el2Path = std::string(USER_EL2_DIR) + "/" + std::to_string(userId);
     OHOS::ForceRemoveDirectory(el2Path);
     EXPECT_EQ(KeyManager::GetInstance()->UpdateUseAuthWithRecoveryKey(
         authToken, newSecret, secureUid, userId, plainText), -EOPNOTSUPP);
@@ -664,9 +664,9 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UpdateUseAuthWithRecoveryKey_002, TestSiz
     std::vector<uint8_t> newSecret;
     uint64_t secureUid = 1;
     std::vector<std::vector<uint8_t>> plainText(3);
-    std::string el2Path = USER_EL2_DIR + "/" + std::to_string(userId);
-    std::string el3Path = USER_EL3_DIR + "/" + std::to_string(userId);
-    std::string el4Path = USER_EL4_DIR + "/" + std::to_string(userId);
+    std::string el2Path = std::string(USER_EL2_DIR) + "/" + std::to_string(userId);
+    std::string el3Path = std::string(USER_EL3_DIR) + "/" + std::to_string(userId);
+    std::string el4Path = std::string(USER_EL4_DIR) + "/" + std::to_string(userId);
 
     OHOS::ForceCreateDirectory(el2Path);
     OHOS::ForceCreateDirectory(el3Path);
@@ -715,9 +715,9 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UpdateUseAuthWithRecoveryKey_003, TestSiz
     std::vector<uint8_t> newSecret;
     uint64_t secureUid = 1;
     std::vector<std::vector<uint8_t>> plainText(3);
-    std::string el2Path = USER_EL2_DIR + "/" + std::to_string(userId);
-    std::string el3Path = USER_EL3_DIR + "/" + std::to_string(userId);
-    std::string el4Path = USER_EL4_DIR + "/" + std::to_string(userId);
+    std::string el2Path = std::string(USER_EL2_DIR) + "/" + std::to_string(userId);
+    std::string el3Path = std::string(USER_EL3_DIR) + "/" + std::to_string(userId);
+    std::string el4Path = std::string(USER_EL4_DIR) + "/" + std::to_string(userId);
 
     OHOS::ForceCreateDirectory(el2Path);
     OHOS::ForceCreateDirectory(el3Path);
@@ -767,9 +767,9 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UpdateUseAuthWithRecoveryKey_004, TestSiz
     std::vector<uint8_t> newSecret;
     uint64_t secureUid = 1;
     std::vector<std::vector<uint8_t>> plainText(3);
-    std::string el2Path = USER_EL2_DIR + "/" + std::to_string(userId);
-    std::string el3Path = USER_EL3_DIR + "/" + std::to_string(userId);
-    std::string el4Path = USER_EL4_DIR + "/" + std::to_string(userId);
+    std::string el2Path = std::string(USER_EL2_DIR) + "/" + std::to_string(userId);
+    std::string el3Path = std::string(USER_EL3_DIR) + "/" + std::to_string(userId);
+    std::string el4Path = std::string(USER_EL4_DIR) + "/" + std::to_string(userId);
 
     OHOS::ForceCreateDirectory(el2Path);
     OHOS::ForceCreateDirectory(el3Path);
@@ -819,9 +819,9 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UpdateUseAuthWithRecoveryKey_005, TestSiz
     std::vector<uint8_t> newSecret;
     uint64_t secureUid = 1;
     std::vector<std::vector<uint8_t>> plainText(3);
-    std::string el2Path = USER_EL2_DIR + "/" + std::to_string(userId);
-    std::string el3Path = USER_EL3_DIR + "/" + std::to_string(userId);
-    std::string el4Path = USER_EL4_DIR + "/" + std::to_string(userId);
+    std::string el2Path = std::string(USER_EL2_DIR) + "/" + std::to_string(userId);
+    std::string el3Path = std::string(USER_EL3_DIR) + "/" + std::to_string(userId);
+    std::string el4Path = std::string(USER_EL4_DIR) + "/" + std::to_string(userId);
 
     OHOS::ForceCreateDirectory(el2Path);
     OHOS::ForceCreateDirectory(el3Path);

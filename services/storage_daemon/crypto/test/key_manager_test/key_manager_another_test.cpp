@@ -51,7 +51,7 @@ public:
     bool deviceEl1DirFlag = true;
 };
 
-const std::string GLOBAL_USER_EL1_PATH = USER_EL1_DIR + "/" + std::to_string(GLOBAL_USER_ID);
+const std::string GLOBAL_USER_EL1_PATH = std::string(USER_EL1_DIR) + "/" + std::to_string(GLOBAL_USER_ID);
 
 void KeyMgrAnotherTest::SetUpTestCase(void)
 {
@@ -178,10 +178,10 @@ HWTEST_F(KeyMgrAnotherTest, KeyManager_CreateRecoverKey_002, TestSize.Level1)
     uint32_t userType = 0;
     std::vector<uint8_t> token;
     std::vector<uint8_t> secret;
-    std::string el1Path = USER_EL1_DIR + "/" + std::to_string(userId);
-    std::string el2Path = USER_EL2_DIR + "/" + std::to_string(userId);
-    std::string el3Path = USER_EL3_DIR + "/" + std::to_string(userId);
-    std::string el4Path = USER_EL4_DIR + "/" + std::to_string(userId);
+    std::string el1Path = std::string(USER_EL1_DIR) + "/" + std::to_string(userId);
+    std::string el2Path = std::string(USER_EL2_DIR) + "/" + std::to_string(userId);
+    std::string el3Path = std::string(USER_EL3_DIR) + "/" + std::to_string(userId);
+    std::string el4Path = std::string(USER_EL4_DIR) + "/" + std::to_string(userId);
     OHOS::ForceCreateDirectory(el1Path);
     OHOS::ForceCreateDirectory(el2Path);
     OHOS::ForceCreateDirectory(el3Path);

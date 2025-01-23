@@ -769,7 +769,7 @@ int32_t StorageDaemon::GenerateKeyAndPrepareUserDirs(uint32_t userId, KeyType ty
     if (ret != E_OK) {
         return ret;
     }
-    std::string keyUeceDir = UECE_DIR + "/" + std::to_string(userId);
+    std::string keyUeceDir = std::string(UECE_DIR) + "/" + std::to_string(userId);
     if ((flags & IStorageDaemon::CRYPTO_FLAG_EL5) && IsDir(keyUeceDir) && !std::filesystem::is_empty(keyUeceDir)) {
         LOGE("uece has already create, do not need create !");
         // for double2single update el5
