@@ -107,7 +107,7 @@ int32_t StorageTotalStatusService::GetSizeOfPath(const char *path, int32_t type,
         size = (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_blocks;
         typeStr = "total space";
     } else if (type == SizeType::FREE) {
-        size = (int64_t)diskInfo.f_bsize * (int64_t)diskInfo.f_bfree;
+        size = (int64_t)diskInfo.f_frsize * (int64_t)diskInfo.f_bavail;
         typeStr = "free space";
     } else {
         size = (int64_t)diskInfo.f_bsize * ((int64_t)diskInfo.f_blocks - (int64_t)diskInfo.f_bfree);
