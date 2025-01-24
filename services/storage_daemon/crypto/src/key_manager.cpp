@@ -1544,7 +1544,7 @@ int KeyManager::DeleteAppkey(uint32_t userId, const std::string keyId)
         LOGE("el5Key is nullptr");
         return E_PARAMS_NULLPTR_ERR;
     }
-    if (el5Key->DeleteAppkey(keyId) == false) {
+    if (el5Key->DeleteAppkey(keyId) != E_OK) {
         LOGE("Failed to delete Appkey2");
         return E_EL5_DELETE_APP_KEY_ERR;
     }
@@ -1656,7 +1656,7 @@ int KeyManager::GenerateAndLoadAppKeyInfo(uint32_t userId, const std::vector<std
     auto elKey = userEl5Key_[userId];
     std::string keyId;
     for (auto keyInfoAppUid :keyInfo) {
-        if (elKey->GenerateAppkey(userId, keyInfoAppUid.first, keyId) == false) {
+        if (elKey->GenerateAppkey(userId, keyInfoAppUid.first, keyId) != E_OK) {
             LOGE("Failed to Generate Appkey2!");
             loadInfos.push_back(std::make_pair(keyInfoAppUid.second, false));
             continue;
