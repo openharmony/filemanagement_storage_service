@@ -118,14 +118,14 @@ int32_t KeyBackup::TryRestoreKey(const std::shared_ptr<BaseKey> &baseKey, const 
     std::string backupDir;
     GetBackupDir(keyDir, backupDir);
     if (baseKey->DoRestoreKey(auth, keyDir + PATH_LATEST) == E_OK) {
-        CheckAndFixFiles(keyDir, backupDir);
+        std::thread fixFileThread([this, keyDir, backupDir]() { CheckAndFixFiles(keyDir, backupDir); });
+        fixFileThread.detach();
         LOGI("Restore by main key success !");
         return 0;
     }
     LOGE("origKey failed, try backupKey");
     if (baseKey->DoRestoreKey(auth, backupDir + PATH_LATEST) == E_OK) {
-        std::thread fixFileThread([this, backupDir, keyDir]() { CheckAndFixFiles(backupDir, keyDir) ;});
-        fixFileThread.detach();
+        CheckAndFixFiles(backupDir, keyDir);
         LOGI("Restore by back key success !");
         return 0;
     }
