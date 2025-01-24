@@ -20,6 +20,7 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "string_ex.h"
+#include "securec.h"
 #include "utils/storage_xcollie.h"
 #include "utils/storage_radar.h"
 
@@ -33,6 +34,67 @@ const unsigned int RADAR_REPORT_STATISTIC_INTERVAL_MINUTES = 1440;
 const unsigned int USER0ID = 0;
 const unsigned int USER100ID = 100;
 const unsigned int RADAR_STATISTIC_THREAD_WAIT_SECONDS = 60;
+constexpr size_t MAX_IPC_RAW_DATA_SIZE = 128 * 1024 * 1024;
+
+static bool GetData(void *&buffer, size_t size, const void *data)
+{
+    if (data == nullptr) {
+        LOGE("null data");
+        return false;
+    }
+    if (size == 0 || size > MAX_IPC_RAW_DATA_SIZE) {
+        LOGE("size invalid: %{public}zu", size);
+        return false;
+    }
+    buffer = malloc(size);
+    if (buffer == nullptr) {
+        LOGE("malloc buffer failed");
+        return false;
+    }
+    if (memcpy_s(buffer, size, data, size) != E_OK) {
+        free(buffer);
+        LOGE("memcpy failed");
+        return false;
+    }
+    return true;
+}
+
+static bool ReadBatchUriByRawData(MessageParcel &data, std::vector<std::string> &uriVec)
+{
+    size_t dataSize = static_cast<size_t>(data.ReadInt32());
+    if (dataSize == 0) {
+        LOGE("parcel no data");
+        return false;
+    }
+
+    void *buffer = nullptr;
+    if (!GetData(buffer, dataSize, data.ReadRawData(dataSize))) {
+        LOGE("read raw data failed: %{public}zu", dataSize);
+        return false;
+    }
+
+    MessageParcel tempParcel;
+    if (!tempParcel.ParseFrom(reinterpret_cast<uintptr_t>(buffer), dataSize)) {
+        LOGE("failed to parseFrom");
+        return false;
+    }
+    tempParcel.ReadStringVector(&uriVec);
+    return true;
+}
+
+int32_t ReadBatchUris(MessageParcel &data, std::vector<std::string> &uriVec)
+{
+    uint32_t size = data.ReadUint32();
+    if (size == 0) {
+        LOGE("out of range: %{public}u", size);
+        return E_PARAMS_INVALID;
+    }
+    if (!ReadBatchUriByRawData(data, uriVec)) {
+        LOGE("read uris failed");
+        return E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
 
 std::map<uint32_t, RadarStatisticInfo>::iterator StorageDaemonStub::GetUserStatistics(const uint32_t userId)
 {
@@ -811,8 +873,9 @@ int32_t StorageDaemonStub::HandleMountCryptoPathAgain(MessageParcel &data, Messa
 int32_t StorageDaemonStub::HandleCreateShareFile(MessageParcel &data, MessageParcel &reply)
 {
     std::vector<std::string> uriList;
-    if (!data.ReadStringVector(&uriList)) {
-        return E_WRITE_REPLY_ERR;
+    auto ret = ReadBatchUris(data, uriList);
+    if (ret != E_OK) {
+        return ret;
     }
     uint32_t tokenId = data.ReadUint32();
     uint32_t flag = data.ReadUint32();
@@ -827,8 +890,9 @@ int32_t StorageDaemonStub::HandleDeleteShareFile(MessageParcel &data, MessagePar
 {
     uint32_t tokenId = data.ReadUint32();
     std::vector<std::string> uriList;
-    if (!data.ReadStringVector(&uriList)) {
-        return E_WRITE_REPLY_ERR;
+    auto ret = ReadBatchUris(data, uriList);
+    if (ret != E_OK) {
+        return ret;
     }
     int err = DeleteShareFile(tokenId, uriList);
     if (!reply.WriteInt32(err)) {

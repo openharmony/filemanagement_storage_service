@@ -241,6 +241,8 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRe
     StorageDaemonStubMock mock;
     int32_t code = static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_SHARE_FILE);
     std::vector<string> uriList;
+    string fileUri = "file://docs/storage/Users/currentUser/Documents/1.txt";
+    uriList.emplace_back(fileUri);
     EXPECT_TRUE(data.WriteStringVector(uriList));
     data.WriteUint32(100);
     data.WriteUint32(3);
@@ -269,6 +271,8 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRe
     StorageDaemonStubMock mock;
     int32_t code = static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_SHARE_FILE);
     std::vector<string> uriList;
+    string fileUri = "file://docs/storage/Users/currentUser/Documents/1.txt";
+    uriList.emplace_back(fileUri);
     EXPECT_TRUE(data.WriteStringVector(uriList));
     EXPECT_CALL(mock, DeleteShareFile(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     auto ret = mock.OnRemoteRequest(code, data, reply, option);

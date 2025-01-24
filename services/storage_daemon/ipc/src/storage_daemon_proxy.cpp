@@ -20,8 +20,42 @@
 
 namespace OHOS {
 namespace StorageDaemon {
+constexpr size_t MAX_IPC_RAW_DATA_SIZE = 128 * 1024 * 1024;
 StorageDaemonProxy::StorageDaemonProxy(const sptr<IRemoteObject> &impl) : IRemoteProxy<IStorageDaemon>(impl)
 {}
+
+static bool WriteUriByRawData(MessageParcel &data, const std::vector<std::string> &uriVec)
+{
+    MessageParcel tempParcel;
+    tempParcel.SetMaxCapacity(MAX_IPC_RAW_DATA_SIZE);
+    if (!tempParcel.WriteStringVector(uriVec)) {
+        LOGE("Write uris failed");
+        return false;
+    }
+    size_t dataSize = tempParcel.GetDataSize();
+    if (!data.WriteInt32(static_cast<int32_t>(dataSize))) {
+        LOGE("Write data size failed");
+        return false;
+    }
+    if (!data.WriteRawData(reinterpret_cast<uint8_t *>(tempParcel.GetData()), dataSize)) {
+        LOGE("Write raw data failed");
+        return false;
+    }
+    return true;
+}
+
+bool WriteBatchUris(MessageParcel &data, const std::vector<std::string> &uriVec)
+{
+    if (!data.WriteUint32(uriVec.size())) {
+        LOGE("Write uri size failed");
+        return false;
+    }
+    if (!WriteUriByRawData(data, uriVec)) {
+        LOGE("Write uri by raw data failed");
+        return false;
+    }
+    return true;
+}
 
 int32_t StorageDaemonProxy::Shutdown()
 {
@@ -742,7 +776,7 @@ std::vector<int32_t> StorageDaemonProxy::CreateShareFile(const std::vector<std::
         return std::vector<int32_t>{E_WRITE_DESCRIPTOR_ERR};
     }
 
-    if (!data.WriteStringVector(uriList)) {
+    if (!WriteBatchUris(data, uriList)) {
         return std::vector<int32_t>{E_WRITE_PARCEL_ERR};
     }
 
@@ -780,7 +814,7 @@ int32_t StorageDaemonProxy::DeleteShareFile(uint32_t tokenId, const std::vector<
         return E_WRITE_PARCEL_ERR;
     }
 
-    if (!data.WriteStringVector(uriList)) {
+    if (!WriteBatchUris(data, uriList)) {
         return E_WRITE_PARCEL_ERR;
     }
 
