@@ -806,8 +806,8 @@ int32_t BaseKey::Decrypt(const UserAuth &auth)
 bool BaseKey::ClearKey(const std::string &mnt)
 {
     LOGI("enter, dir_ = %{public}s", dir_.c_str());
-    bool ret = InactiveKey(USER_DESTROY, mnt);
-    if (!ret) {
+    auto ret = InactiveKey(USER_DESTROY, mnt);
+    if (ret != E_OK) {
         LOGE("InactiveKey failed.");
     }
     keyInfo_.key.Clear();
