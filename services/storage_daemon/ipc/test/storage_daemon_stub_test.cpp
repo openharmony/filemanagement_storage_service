@@ -31,6 +31,7 @@ using namespace testing::ext;
 
 namespace {
     const int ERROR_CODE = 99999;
+    constexpr size_t MAX_IPC_RAW_DATA_SIZE = 128 * 1024 * 1024;
     int32_t g_code[] = {
         static_cast<int32_t>(StorageDaemonInterfaceCode::SHUTDOWN),
         static_cast<int32_t>(StorageDaemonInterfaceCode::MOUNT),
@@ -243,7 +244,13 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRe
     std::vector<string> uriList;
     string fileUri = "file://docs/storage/Users/currentUser/Documents/1.txt";
     uriList.emplace_back(fileUri);
-    EXPECT_TRUE(data.WriteStringVector(uriList));
+    data.WriteUint32(uriList.size());
+    MessageParcel tempParcel;
+    tempParcel.SetMaxCapacity(MAX_IPC_RAW_DATA_SIZE);
+    EXPECT_TRUE(tempParcel.WriteStringVector(uriList));
+    size_t dataSize = tempParcel.GetDataSize();
+    data.WriteInt32(static_cast<int32_t>(dataSize));
+    data.WriteRawData(reinterpret_cast<uint8_t *>(tempParcel.GetData()), dataSize);
     data.WriteUint32(100);
     data.WriteUint32(3);
     std::vector<int32_t> retList;
@@ -273,7 +280,14 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRe
     std::vector<string> uriList;
     string fileUri = "file://docs/storage/Users/currentUser/Documents/1.txt";
     uriList.emplace_back(fileUri);
-    EXPECT_TRUE(data.WriteStringVector(uriList));
+    data.WriteUint32(100);
+    data.WriteUint32(uriList.size());
+    MessageParcel tempParcel;
+    tempParcel.SetMaxCapacity(MAX_IPC_RAW_DATA_SIZE);
+    EXPECT_TRUE(tempParcel.WriteStringVector(uriList));
+    size_t dataSize = tempParcel.GetDataSize();
+    data.WriteInt32(static_cast<int32_t>(dataSize));
+    data.WriteRawData(reinterpret_cast<uint8_t *>(tempParcel.GetData()), dataSize);
     EXPECT_CALL(mock, DeleteShareFile(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     auto ret = mock.OnRemoteRequest(code, data, reply, option);
     EXPECT_EQ(ret, E_OK);
