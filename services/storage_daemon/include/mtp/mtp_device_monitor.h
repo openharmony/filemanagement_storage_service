@@ -33,6 +33,11 @@ public:
     int32_t Mount(const std::string &id);
     int32_t Umount(const std::string &id);
     void MountMtpDeviceByBroadcast();
+    
+    void RegisterMTPParamListener();
+    void RemoveMTPParamListener();
+    static void OnMTPParamDeiable(const char *key, const  char *value, void *context);
+    static void OnMTPParamEnterpriseDeiable(const char *key, const  char *value, void *context);
 
 private:
     void MonitorDevice();
