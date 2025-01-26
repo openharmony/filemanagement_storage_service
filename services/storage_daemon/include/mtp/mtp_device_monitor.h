@@ -36,8 +36,8 @@ public:
     
     void RegisterMTPParamListener();
     void RemoveMTPParamListener();
-    static void OnMTPParamDeiable(const char *key, const  char *value, void *context);
-    static void OnMTPParamEnterpriseDeiable(const char *key, const  char *value, void *context);
+    static void OnMtpDisableParamChange(const char *key, const  char *value, void *context);
+    static void OnEnterpriseParamChange(const char *key, const  char *value, void *context);
 
 private:
     void MonitorDevice();

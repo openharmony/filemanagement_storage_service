@@ -251,36 +251,38 @@ void MtpDeviceMonitor::RemoveMTPParamListener()
     removeParameterWatcher(SYS_PARAM_SERVICE_ENTERPRISE_ENABLE, OnMTPParamEnterpriseDeiable, this);
 }
 
-void OnMTPParamDeiable(const char *key, const  char *value, void *context)
+void OnMtpDisableParamChange(const char *key, const  char *value, void *context)
 {
+    (void)context;
     if (key == nullptr || value == nullptr) {
-        LOGI("OnMTPParamDeiable return invaild value");
+        LOGE("OnMtpDisableParamChange return invaild value");
         return;
     }
-    LOGI("OnMTPParamDeiable key = %{public}s, value = %{public}s,",  key, value);
+    LOGI("OnMtpDisableParamChange key = %{public}s, value = %{public}s,",  key, value);
     if (strcmp(key, SYS_PARAM_SERVICE_PERSIST_ENABLE) != 0) {
-        LOGI("event key mismatch");
+        LOGE("event key mismatch");
         return;
     }
     if (IsNeedDisableMtp()) {
-        LOGI("MTP Manager unmount");
+        LOGI("MTP disable parameter changed, unmount all mtp devices.");
         UmountAllMtpDevice()
     }
 }
 
-void OnMTPParamEnterpriseDeiable(const char *key, const  char *value, void *context)
+void OnEnterpriseParamChange(const char *key, const  char *value, void *context)
 {
+    (void)context;
     if (key == nullptr || value == nullptr) {
-        LOGI("OnMTPParamDeiable return invaild value");
+        LOGE("OnEnterpriseParamChange return invaild value");
         return;
     }
-    LOGI("OnMTPParamDeiable key = %{public}s, value = %{public}s,",  key, value);
+    LOGI("OnEnterpriseParamChange key = %{public}s, value = %{public}s,",  key, value);
     if (strcmp(key, SYS_PARAM_SERVICE_ENTERPRISE_ENABLE) != 0) {
-        LOGI("event key mismatch");
+        LOGE("event key mismatch");
         return;
     }
     if (IsNeedDisableMtp()) {
-        LOGI("MTP Manager unmount");
+        LOGI("Enterprise device parameter changed, unmount all mtp devices.");
         UmountAllMtpDevice()
     }
 }
