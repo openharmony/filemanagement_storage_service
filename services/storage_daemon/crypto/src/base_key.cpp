@@ -824,7 +824,7 @@ bool BaseKey::ClearKey(const std::string &mnt)
         LOGI("do clear key.");
         if (!IsDir(dir_)) {
             LOGE("dir not exist, do not need to remove dir");
-            return ret;
+            return (ret == E_OK);
         }
         WipingActionDir(dir_);
         std::string backupDir;
@@ -841,7 +841,7 @@ bool BaseKey::ClearKey(const std::string &mnt)
         }
         // use F2FS_IOC_SEC_TRIM_FILE
     }
-    return ret;
+    return (ret == E_OK);
 }
 
 void BaseKey::WipingActionDir(std::string &path)
