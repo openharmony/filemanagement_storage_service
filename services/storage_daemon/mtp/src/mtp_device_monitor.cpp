@@ -125,7 +125,6 @@ void MtpDeviceMonitor::MonitorDevice()
         cnt--;
         sleep(SLEEP_TIME);
     }
-    // 添加监听 
     RegisterMTPParamListener();
     while (g_keepMonitoring) {
         sleep(SLEEP_TIME);
@@ -254,16 +253,16 @@ void MtpDeviceMonitor::RemoveMTPParamListener()
 
 void OnMTPParamDeiable(const char *key, const  char *value, void *context)
 {
-    if(key == nullptr || value == nullptr){
+    if (key == nullptr || value == nullptr) {
         LOGI("OnMTPParamDeiable return invaild value");
         return;
     }
     LOGI("OnMTPParamDeiable key = %{public}s, value = %{public}s,",  key, value);
-    if(strcmp(key, SYS_PARAM_SERVICE_PERSIST_ENABLE) != 0){
+    if (strcmp(key, SYS_PARAM_SERVICE_PERSIST_ENABLE) != 0) {
         LOGI("event key mismatch");
         return;
     }
-    if(IsNeedDisableMtp()){
+    if (IsNeedDisableMtp()) {
         LOGI("MTP Manager unmount");
         UmountAllMtpDevice()
     }
@@ -271,16 +270,16 @@ void OnMTPParamDeiable(const char *key, const  char *value, void *context)
 
 void OnMTPParamEnterpriseDeiable(const char *key, const  char *value, void *context)
 {
-    if(key == nullptr || value == nullptr){
+    if (key == nullptr || value == nullptr) {
         LOGI("OnMTPParamDeiable return invaild value");
         return;
     }
     LOGI("OnMTPParamDeiable key = %{public}s, value = %{public}s,",  key, value);
-    if(strcmp(key, SYS_PARAM_SERVICE_ENTERPRISE_ENABLE) != 0){
+    if (strcmp(key, SYS_PARAM_SERVICE_ENTERPRISE_ENABLE) != 0) {
         LOGI("event key mismatch");
         return;
     }
-    if(IsNeedDisableMtp()){
+    if (IsNeedDisableMtp()) {
         LOGI("MTP Manager unmount");
         UmountAllMtpDevice()
     }
