@@ -24,6 +24,7 @@
 #include "mtpfs_util.h"
 #include "storage_service_log.h"
 
+bool g_eventFlag = true;
 uint32_t MtpFsDevice::rootNode_ = ~0;
 
 MtpFsDevice::MtpFsDevice() : device_(nullptr), capabilities_(), deviceMutex_(), rootDir_(), moveEnabled_(false)
@@ -112,6 +113,7 @@ static void Libmtp_event_cb_fn(int ret, LIBMTP_event_t event, uint32_t param, vo
 {
     (void)data;
     LOGI("LIBMTP_event_cb_fn, ret=%{public}d, event=%{public}d, param=%{public}d.", ret, event, param);
+    g_eventFlag = true;
 }
 
 bool MtpFsDevice::ConnectByDevNo(int devNo)
@@ -158,9 +160,11 @@ bool MtpFsDevice::ConnectByDevNo(int devNo)
 
 void MtpFsDevice::ReadEvent()
 {
-    eventFlag_ = true;
     while (eventFlag_) {
-        int ret = LIBMTP_Read_Event_Async(device_, Libmtp_event_cb_fn, nullptr);
+        if (g_eventFlag) {
+            int ret = LIBMTP_Read_Event_Async(device_, Libmtp_event_cb_fn, nullptr);
+            g_eventFlag = false;
+        }
     }
     LOGI("Device detached, read event end");
 }
@@ -467,6 +471,12 @@ int MtpFsDevice::ReName(const std::string &oldPath, const std::string &newPath)
         return -EINVAL;
     }
     const MtpFsTypeDir *dirToReName = dirParent->Dir(tmpOldBaseName);
+    int32_t cnt = 8;
+    while (cnt > 0) {
+        int32_t ret = LIBMTP_Read_Event_Async(device_, Libmtp_event_cb_fn, nullptr);
+        LOGI("File or dir rename regist event receiver, ret=%{public}d", ret);
+        cnt--;
+    }
     if (dirToReName) {
         return DirReName(oldPath, newPath);
     } else {
@@ -588,7 +598,6 @@ int MtpFsDevice::FilePush(const std::string &src, const std::string &dst)
         CriticalLeave();
         if (rval != 0) {
             LOGE("Can not upload %{public}s to %{public}s", src.c_str(), dst.c_str());
-            return -EINVAL;
         }
     }
 
@@ -619,6 +628,7 @@ int MtpFsDevice::FilePush(const std::string &src, const std::string &dst)
         } else {
             const_cast<MtpFsTypeDir *>(dirParent)->AddFile(fileToUpload);
         }
+        LOGI("Upload %{public}s to mtp device success", dst.c_str());
     }
     free(static_cast<void *>(f->filename));
     free(static_cast<void *>(f));

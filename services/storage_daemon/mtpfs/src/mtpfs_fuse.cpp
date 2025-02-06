@@ -34,7 +34,7 @@ const int32_t ARG_SIZE = 2;
 
 int WrapGetattr(const char *path, struct stat *buf, struct fuse_file_info *fi)
 {
-    LOGI("mtp WrapGetattr");
+    LOGI("mtp WrapGetattr, path=%{public}s", path);
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->GetAttr(path, buf, fi);
     LOGI("GetAttr ret = %{public}d.", ret);
     return ret;
@@ -42,7 +42,7 @@ int WrapGetattr(const char *path, struct stat *buf, struct fuse_file_info *fi)
 
 int WrapMkNod(const char *path, mode_t mode, dev_t dev)
 {
-    LOGI("mtp WrapMkNod");
+    LOGI("mtp WrapMkNod, path=%{public}s", path);
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->MkNod(path, mode, dev);
     LOGI("MkNod ret = %{public}d.", ret);
     return ret;
@@ -50,7 +50,7 @@ int WrapMkNod(const char *path, mode_t mode, dev_t dev)
 
 int WrapMkDir(const char *path, mode_t mode)
 {
-    LOGI("mtp WrapMkDir");
+    LOGI("mtp WrapMkDir, path=%{public}s", path);
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->MkDir(path, mode);
     LOGI("MkDir ret = %{public}d.", ret);
     return ret;
@@ -58,7 +58,7 @@ int WrapMkDir(const char *path, mode_t mode)
 
 int WrapUnLink(const char *path)
 {
-    LOGI("mtp WrapUnLink");
+    LOGI("mtp WrapUnLink, path=%{public}s", path);
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->UnLink(path);
     LOGI("UnLink ret = %{public}d.", ret);
     return ret;
@@ -66,7 +66,7 @@ int WrapUnLink(const char *path)
 
 int WrapRmDir(const char *path)
 {
-    LOGI("mtp WrapRmDir");
+    LOGI("mtp WrapRmDir, path=%{public}s", path);
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->RmDir(path);
     LOGI("RmDir ret = %{public}d.", ret);
     return ret;
@@ -74,7 +74,7 @@ int WrapRmDir(const char *path)
 
 int WrapReName(const char *path, const char *newpath, unsigned int flags)
 {
-    LOGI("mtp WrapReName");
+    LOGI("mtp WrapReName, path=%{public}s", path);
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->ReName(path, newpath, flags);
     LOGI("ReName ret = %{public}d.", ret);
     return ret;
@@ -82,7 +82,7 @@ int WrapReName(const char *path, const char *newpath, unsigned int flags)
 
 int WrapChMod(const char *path, mode_t mode, struct fuse_file_info *fi)
 {
-    LOGI("mtp WrapChMod");
+    LOGI("mtp WrapChMod, path=%{public}s", path);
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->ChMods(path, mode, fi);
     LOGI("ChMods ret = %{public}d.", ret);
     return ret;
@@ -99,7 +99,7 @@ int WrapChown(const char *path, uid_t uid, gid_t gid, struct fuse_file_info *fi)
 
 int WrapUTimens(const char *path, const struct timespec tv[2], struct fuse_file_info *fi)
 {
-    LOGI("mtp WrapUTimens");
+    LOGI("mtp WrapUTimens, path=%{public}s", path);
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->UTimens(path, tv, fi);
     LOGI("UTimens ret = %{public}d.", ret);
     return ret;
@@ -107,7 +107,7 @@ int WrapUTimens(const char *path, const struct timespec tv[2], struct fuse_file_
 
 int WrapOpen(const char *path, struct fuse_file_info *fileInfo)
 {
-    LOGI("mtp WrapOpen");
+    LOGI("mtp WrapOpen, path=%{public}s", path);
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Open(path, fileInfo);
     LOGI("Open ret = %{public}d.", ret);
     return ret;
@@ -115,7 +115,7 @@ int WrapOpen(const char *path, struct fuse_file_info *fileInfo)
 
 int WrapRead(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fileInfo)
 {
-    LOGI("mtp WrapRead");
+    LOGI("mtp WrapRead, path=%{public}s", path);
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Read(path, buf, size, offset, fileInfo);
     LOGI("Read ret = %{public}d.", ret);
     return ret;
@@ -123,7 +123,7 @@ int WrapRead(const char *path, char *buf, size_t size, off_t offset, struct fuse
 
 int WrapWrite(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fileInfo)
 {
-    LOGI("mtp WrapWrite");
+    LOGI("mtp WrapWrite, path=%{public}s", path);
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Write(path, buf, size, offset, fileInfo);
     LOGI("Write ret = %{public}d.", ret);
     return ret;
@@ -131,7 +131,7 @@ int WrapWrite(const char *path, const char *buf, size_t size, off_t offset, stru
 
 int WrapStatfs(const char *path, struct statvfs *statInfo)
 {
-    LOGI("mtp WrapStatfs");
+    LOGI("mtp WrapStatfs, path=%{public}s", path);
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Statfs(path, statInfo);
     LOGI("Statfs ret = %{public}d.", ret);
     return ret;
@@ -139,7 +139,7 @@ int WrapStatfs(const char *path, struct statvfs *statInfo)
 
 int WrapFlush(const char *path, struct fuse_file_info *fileInfo)
 {
-    LOGI("mtp WrapFlush");
+    LOGI("mtp WrapFlush, path=%{public}s", path);
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Flush(path, fileInfo);
     LOGI("Flush ret = %{public}d.", ret);
     return ret;
@@ -147,7 +147,7 @@ int WrapFlush(const char *path, struct fuse_file_info *fileInfo)
 
 int WrapRelease(const char *path, struct fuse_file_info *fileInfo)
 {
-    LOGI("mtp WrapRelease");
+    LOGI("mtp WrapRelease, path=%{public}s", path);
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Release(path, fileInfo);
     LOGI("Release ret = %{public}d.", ret);
     return ret;
@@ -155,7 +155,7 @@ int WrapRelease(const char *path, struct fuse_file_info *fileInfo)
 
 int WrapFSync(const char *path, int datasync, struct fuse_file_info *fileInfo)
 {
-    LOGI("mtp WrapFSync");
+    LOGI("mtp WrapFSync, path=%{public}s", path);
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->FSync(path, datasync, fileInfo);
     LOGI("FSync ret = %{public}d.", ret);
     return ret;
@@ -163,7 +163,7 @@ int WrapFSync(const char *path, int datasync, struct fuse_file_info *fileInfo)
 
 int WrapOpenDir(const char *path, struct fuse_file_info *fileInfo)
 {
-    LOGI("mtp WrapOpenDir");
+    LOGI("mtp WrapOpenDir, path=%{public}s", path);
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->OpenDir(path, fileInfo);
     LOGI("OpenDir ret = %{public}d.", ret);
     return ret;
@@ -172,7 +172,7 @@ int WrapOpenDir(const char *path, struct fuse_file_info *fileInfo)
 int WrapReadDir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fileInfo,
     enum fuse_readdir_flags flag)
 {
-    LOGI("mtp WrapReadDir");
+    LOGI("mtp WrapReadDir, path=%{public}s", path);
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->ReadDir(path, buf, filler, offset, fileInfo, flag);
     LOGI("ReadDir ret = %{public}d.", ret);
     return ret;
@@ -180,7 +180,7 @@ int WrapReadDir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offse
 
 int WrapReleaseDir(const char *path, struct fuse_file_info *fileInfo)
 {
-    LOGI("mtp WrapReleaseDir");
+    LOGI("mtp WrapReleaseDir, path=%{public}s", path);
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->ReleaseDir(path, fileInfo);
     LOGI("ReleaseDir ret = %{public}d.", ret);
     return ret;
@@ -188,7 +188,7 @@ int WrapReleaseDir(const char *path, struct fuse_file_info *fileInfo)
 
 int WrapFSyncDir(const char *path, int datasync, struct fuse_file_info *fileInfo)
 {
-    LOGI("mtp WrapFSyncDir");
+    LOGI("mtp WrapFSyncDir, path=%{public}s", path);
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->FSyncDir(path, datasync, fileInfo);
     LOGI("FSyncDir ret = %{public}d.", ret);
     return ret;
@@ -202,7 +202,7 @@ void *WrapInit(struct fuse_conn_info *conn, struct fuse_config *cfg)
 
 int WrapCreate(const char *path, mode_t mode, fuse_file_info *fileInfo)
 {
-    LOGI("mtp WrapCreate");
+    LOGI("mtp WrapCreate, path=%{public}s", path);
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Create(path, mode, fileInfo);
     LOGI("Create ret = %{public}d.", ret);
     return ret;
@@ -234,7 +234,7 @@ int WrapLink(const char *path, const char *out)
 
 int WrapSetXAttr(const char *path, const char *in, const char *out, size_t size, int flag)
 {
-    LOGI("mtp WrapSetXAttr");
+    LOGI("mtp WrapSetXAttr, path=%{public}s", path);
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->SetXAttr(path, in);
     LOGI("WrapSetXAttr ret = %{public}d.", ret);
     return ret;
@@ -242,7 +242,7 @@ int WrapSetXAttr(const char *path, const char *in, const char *out, size_t size,
 
 int WrapGetXAttr(const char *path, const char *in, char *out, size_t size)
 {
-    LOGI("mtp WrapGetXAttr");
+    LOGI("mtp WrapGetXAttr, path=%{public}s", path);
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->GetXAttr(path, in, out, size);
     LOGI("WrapGetXAttr ret = %{public}d.", ret);
     return ret;
@@ -562,6 +562,7 @@ int MtpFileSystem::RmDir(const char *path)
 
 int MtpFileSystem::ReName(const char *path, const char *newpath, unsigned int flags)
 {
+    LOGI("MtpFileSystem: ReName, path=%{public}s, newpath=%{public}s", path, newpath);
     const std::string tmpOldDirName(SmtpfsDirName(std::string(path)));
     const std::string tmpNewDirName(SmtpfsDirName(std::string(newpath)));
     if (tmpOldDirName == tmpNewDirName) {
@@ -687,6 +688,7 @@ int MtpFileSystem::Create(const char *path, mode_t mode, fuse_file_info *fileInf
     tmpFilesPool_.AddFile(MtpFsTypeTmpFile(std::string(path), tmpPath, rval, true));
     rval = device_.FilePush(tmpPath, std::string(path));
     if (rval != 0) {
+        LOGE("MtpFileSystem: Create, FilePush path: %{public}s fail", path);
         return rval;
     }
     return 0;
@@ -883,6 +885,7 @@ int MtpFileSystem::FSync(const char *path, int datasync, struct fuse_file_info *
 
 int MtpFileSystem::OpenDir(const char *path, struct fuse_file_info *fileInfo)
 {
+    LOGI("MtpFileSystem: OpenDir, path: %{public}s", path);
     const MtpFsTypeDir *content = device_.DirFetchContent(std::string(path));
     if (content == nullptr) {
         return -ENOENT;
@@ -893,6 +896,7 @@ int MtpFileSystem::OpenDir(const char *path, struct fuse_file_info *fileInfo)
 int MtpFileSystem::ReadDir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset,
     struct fuse_file_info *fileInfo, enum fuse_readdir_flags flag)
 {
+    LOGI("MtpFileSystem: ReadDir, path: %{public}s", path);
     enum fuse_fill_dir_flags fillFlags = FUSE_FILL_DIR_PLUS;
     const MtpFsTypeDir *content = device_.DirFetchContent(std::string(path));
     if (content == nullptr) {
