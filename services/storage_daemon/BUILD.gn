@@ -176,8 +176,11 @@ ohos_executable("storage_daemon") {
       "mtp/src/usb_event_subscriber.cpp",
     ]
     external_deps += [
+      "ability_base:want",
       "cJSON:cjson",
       "common_event_service:cesfwk_innerkits",
+      "config_policy:configpolicy_util",
+      "init:libbeget_proxy",
       "libmtp:libmtp",
     ]
   }

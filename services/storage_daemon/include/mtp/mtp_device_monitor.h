@@ -38,7 +38,6 @@ public:
     void RemoveMTPParamListener();
     static void OnMtpDisableParamChange(const char *key, const  char *value, void *context);
     static void OnEnterpriseParamChange(const char *key, const  char *value, void *context);
-
 private:
     void MonitorDevice();
     void MountMtpDevice(const std::vector<MtpDeviceInfo> &monitorDevices);
