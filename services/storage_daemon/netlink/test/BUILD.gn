@@ -33,6 +33,7 @@ ohos_unittest("netlink_data_test") {
     "$ROOT_DIR/storage_daemon/include",
     "${storage_service_path}/utils/include",
     "${storage_service_path}/storage_manager/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   sources = [
@@ -119,6 +120,7 @@ ohos_unittest("netlink_listener_test") {
     "$ROOT_DIR/storage_daemon/include",
     "$ROOT_DIR/common/include",
     "${storage_service_path}/utils/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   sources = [

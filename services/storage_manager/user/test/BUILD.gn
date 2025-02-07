@@ -36,6 +36,7 @@ ohos_unittest("multi_user_manager_service_test") {
     "${storage_daemon_path}/include",
     "${storage_service_path}/utils/include",
     "include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   defines = [

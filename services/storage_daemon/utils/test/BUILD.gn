@@ -32,6 +32,7 @@ ohos_unittest("file_utils_test") {
   include_dirs = [
     "${storage_daemon_path}/include",
     "${storage_service_common_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   sources = [
@@ -74,6 +75,7 @@ ohos_unittest("hi_audit_test") {
   include_dirs = [
     "${storage_daemon_path}/include",
     "${storage_service_common_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   sources = [ "hi_audit_test.cpp" ]

@@ -37,6 +37,7 @@ ohos_unittest("KeyManagerTest") {
     "${storage_daemon_path}/include/libfscrypt",
     "${storage_daemon_path}/include/mock",
     "${storage_service_common_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   sources = [
@@ -107,6 +108,7 @@ ohos_unittest("KeyManagerSupTest") {
     "${storage_daemon_path}/include/mock",
     "${storage_daemon_path}/include/user",
     "${storage_service_common_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   sources = [
@@ -184,6 +186,7 @@ ohos_unittest("KeyManagerOtherTest") {
     "${storage_daemon_path}/include/mock",
     "${storage_daemon_path}/include/user",
     "${storage_service_common_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   sources = [
@@ -253,6 +256,7 @@ ohos_unittest("KeyManagerAnotherTest") {
     "${storage_daemon_path}/include/mock",
     "${storage_daemon_path}/include/user",
     "${storage_service_common_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   sources = [

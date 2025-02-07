@@ -35,6 +35,7 @@ ohos_moduletest("FscryptKeyV1Test") {
     "${storage_daemon_path}/include",
     "${storage_daemon_path}/include/crypto",
     "${storage_service_common_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   sources = [

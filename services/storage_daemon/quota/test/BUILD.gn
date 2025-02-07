@@ -12,6 +12,7 @@
 # limitations under the License.
 
 import("//build/test.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ROOT_DIR = "../../.."
 
@@ -32,6 +33,7 @@ ohos_unittest("quota_manager_test") {
     "$ROOT_DIR/storage_daemon/include",
     "$ROOT_DIR/storage_daemon/utils",
     "$ROOT_DIR/storage_manager/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   sources = [

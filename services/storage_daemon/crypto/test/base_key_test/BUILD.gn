@@ -38,6 +38,7 @@ ohos_unittest("BaseKeyTest") {
     "${storage_daemon_path}/include/crypto",
     "${storage_daemon_path}/include/utils",
     "${storage_service_common_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   sources = [

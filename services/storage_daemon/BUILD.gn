@@ -283,6 +283,7 @@ ohos_shared_library("storage_common_utils") {
     "./include",
     "./include/utils",
     "../common/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   defines = [

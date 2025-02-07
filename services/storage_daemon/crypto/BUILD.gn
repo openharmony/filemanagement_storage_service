@@ -21,6 +21,7 @@ config("storage_daemon_crypto_config") {
     "../include",
     "../include/crypto",
     "${storage_service_common_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   cflags = [

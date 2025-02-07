@@ -36,6 +36,7 @@ ohos_unittest("RecoveryManagerTest") {
     "${storage_daemon_path}/include/libfscrypt",
     "${storage_daemon_path}/include/mock",
     "${storage_service_common_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   sources = [

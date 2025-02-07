@@ -27,6 +27,7 @@ ohos_fuzztest("StorageDaemonFuzzTest") {
     "${storage_daemon_path}/include/quota",
     "${storage_daemon_path}/include/user",
     "${storage_daemon_path}/include/utils",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
   cflags = [
     "-g",
