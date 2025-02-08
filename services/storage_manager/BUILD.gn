@@ -54,20 +54,6 @@ ohos_shared_library("storage_manager") {
     "LOG_DOMAIN = 0xD004300",
   ]
 
-  if (storage_service_user_crypto_manager) {
-    defines += [ "USER_CRYPTO_MANAGER" ]
-    sources += [ "crypto/filesystem_crypto.cpp" ]
-  }
-
-  if (storage_service_external_storage_manager) {
-    defines += [ "EXTERNAL_STORAGE_MANAGER" ]
-    sources += [
-      "disk/src/disk_manager_service.cpp",
-      "volume/src/notification.cpp",
-      "volume/src/volume_manager_service.cpp",
-    ]
-  }
-
   if (storage_service_media_fuse) {
     defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
   }
@@ -96,6 +82,26 @@ ohos_shared_library("storage_manager") {
     "samgr:samgr_proxy",
   ]
 
+  if (storage_service_user_crypto_manager) {
+    defines += [ "USER_CRYPTO_MANAGER" ]
+    sources += [
+      "account_subscriber/account_subscriber.cpp",
+      "crypto/filesystem_crypto.cpp"，
+    ]
+    external_deps += [
+      "data_share:datashare_consumer",
+    ]
+  }
+
+  if (storage_service_external_storage_manager) {
+    defines += [ "EXTERNAL_STORAGE_MANAGER" ]
+    sources += [
+      "disk/src/disk_manager_service.cpp",
+      "volume/src/notification.cpp",
+      "volume/src/volume_manager_service.cpp",
+    ]
+  }
+
   if (storage_service_storage_statistics_manager) {
     defines += [ "STORAGE_STATISTICS_MANAGER" ]
     sources += [
@@ -111,7 +117,6 @@ ohos_shared_library("storage_manager") {
       "ability_runtime:dataobs_manager",
       "bundle_framework:appexecfwk_base",
       "bundle_framework:appexecfwk_core",
-      "data_share:datashare_consumer",
       "eventhandler:libeventhandler",
       "init:libbegetutil",
       "relational_store:native_rdb",
