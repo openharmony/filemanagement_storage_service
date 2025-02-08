@@ -329,7 +329,7 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Fscryp
 
     std::string fscryptOptions = "test";
     int32_t ret = storageDaemonClient_->FscryptEnable(fscryptOptions);
-    EXPECT_EQ(ret, -EFAULT);
+    EXPECT_EQ(ret, -EINVAL);
 
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_FscryptEnable_001 end";
 }

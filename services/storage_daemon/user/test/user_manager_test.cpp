@@ -244,8 +244,8 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StartUser_002, TestSiz
     std::shared_ptr<UserManager> userManager = UserManager::GetInstance();
     ASSERT_TRUE(userManager != nullptr);
 
-    int32_t ret = userManager->StartUser(StorageTest::USER_ID1);
-    EXPECT_TRUE(ret == E_USER_MOUNT_ERR) << "user's dirs are not prepare";
+    int32_t ret = userManager->StartUser(StorageService::START_USER_ID - 1);
+    EXPECT_TRUE(ret == E_USERID_RANGE) << "user's dirs are not prepare";
 
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_StartUser_002 end";
 }

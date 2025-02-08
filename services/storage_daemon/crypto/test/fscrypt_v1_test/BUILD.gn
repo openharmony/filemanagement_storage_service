@@ -34,11 +34,11 @@ ohos_moduletest("FscryptKeyV1Test") {
   include_dirs = [
     "${storage_daemon_path}/include",
     "${storage_daemon_path}/include/crypto",
+    "${storage_daemon_path}/include/mock",
     "${storage_service_common_path}/include",
   ]
 
   sources = [
-    "${storage_daemon_path}/crypto/src/base_key.cpp",
     "${storage_daemon_path}/crypto/src/crypto_delay_handler.cpp",
     "${storage_daemon_path}/crypto/src/fbex.cpp",
     "${storage_daemon_path}/crypto/src/fscrypt_key_v1.cpp",
@@ -52,6 +52,7 @@ ohos_moduletest("FscryptKeyV1Test") {
     "${storage_daemon_path}/crypto/src/recover_manager.cpp",
     "${storage_daemon_path}/crypto/test/fscrypt_v1_test/fscrypt_key_v1_test.cpp",
     "${storage_daemon_path}/crypto/test/mock/fscrypt_key_v1_ext_mock.cpp",
+    "${storage_daemon_path}/mock/base_key_mock.cpp",
   ]
 
   if (storage_service_crypto_test) {

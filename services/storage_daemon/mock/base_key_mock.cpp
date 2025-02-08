@@ -65,7 +65,7 @@ int32_t BaseKey::UpdateKey(const std::string &keypath, bool needSyncCandidate)
     if (IBaseKeyMoc::baseKeyMoc == nullptr) {
         return -1;
     }
-    return IBaseKeyMoc::baseKeyMoc->UpdateKey(keypath);
+    return IBaseKeyMoc::baseKeyMoc->UpdateKey(keypath, needSyncCandidate);
 }
 
 int32_t BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate)
