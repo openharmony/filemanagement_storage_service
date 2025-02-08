@@ -88,9 +88,7 @@ ohos_shared_library("storage_manager") {
       "account_subscriber/account_subscriber.cpp",
       "crypto/filesystem_crypto.cpp",
     ]
-    external_deps += [
-      "data_share:datashare_consumer",
-    ]
+    external_deps += [ "data_share:datashare_consumer" ]
   }
 
   if (storage_service_external_storage_manager) {
