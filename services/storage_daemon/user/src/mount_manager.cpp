@@ -209,7 +209,10 @@ std::vector<DirInfo> MountManager::InitSystemServiceDir()
             {"/data/service/el2/%d/database", MODE_0711, OID_DDMS, OID_DDMS},
             {"/data/service/el2/%d/database/pasteboard_service", MODE_02771, OID_PASTEBOARD, OID_DDMS},
             {"/data/service/el2/%d/findnetwork", MODE_0711, OID_FINDNETWORK, OID_FINDNETWORK},
-            {"/data/service/el2/%d/findnetwork/database", MODE_0711, OID_FINDNETWORK, OID_FINDNETWORK}};
+            {"/data/service/el2/%d/findnetwork/database", MODE_0711, OID_FINDNETWORK, OID_FINDNETWORK},
+            {"/data/service/el2/%d/backup", MODE_02771, OID_BACKUP, OID_BACKUP},
+            {"/data/service/el2/%d/backup/backup_sa", MODE_0711, OID_BACKUP, OID_BACKUP},
+            {"/data/service/el2/%d/backup/bundles", MODE_0711, OID_BACKUP, OID_BACKUP}};
 }
 
 std::vector<DirInfo> MountManager::InitFileManagerDir()
