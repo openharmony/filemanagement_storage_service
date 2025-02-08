@@ -115,6 +115,7 @@ namespace {
         static_cast<uint32_t>(StorageManagerInterfaceCode::SET_RECOVER_KEY),
         static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_MTP_MOUNT),
         static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_MTP_UNMOUNT),
+        static_cast<int32_t>(StorageManagerInterfaceCode::GET_USER_NEED_ACTIVE_STATUS),
     };
 }
 

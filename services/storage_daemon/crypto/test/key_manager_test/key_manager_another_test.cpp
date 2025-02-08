@@ -120,12 +120,12 @@ HWTEST_F(KeyMgrAnotherTest, KeyManager_CreateRecoverKey_000, TestSize.Level1)
     std::vector<uint8_t> secret;
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_INVALID));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID));
-    EXPECT_EQ(KeyManager::GetInstance()->CreateRecoverKey(userId, userType, token, secret), -EOPNOTSUPP);
+    EXPECT_EQ(KeyManager::GetInstance()->CreateRecoverKey(userId, userType, token, secret), E_PARAMS_NULLPTR_ERR);
 
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(-1)).WillOnce(Return(-1));
-    EXPECT_EQ(KeyManager::GetInstance()->CreateRecoverKey(userId, userType, token, secret), -EFAULT);
+    EXPECT_EQ(KeyManager::GetInstance()->CreateRecoverKey(userId, userType, token, secret), E_RESTORE_KEY_FAILED);
 
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
@@ -161,7 +161,7 @@ HWTEST_F(KeyMgrAnotherTest, KeyManager_CreateRecoverKey_001, TestSize.Level1)
         .WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
     EXPECT_CALL(*baseKeyMock_, GetOriginKey(_)).WillOnce(Return(true)).WillOnce(Return(true));
-    EXPECT_EQ(KeyManager::GetInstance()->CreateRecoverKey(userId, userType, token, secret), -ENOENT);
+    EXPECT_EQ(KeyManager::GetInstance()->CreateRecoverKey(userId, userType, token, secret), E_KEY_TYPE_INVALID);
     GTEST_LOG_(INFO) << "KeyManager_CreateRecoverKey_001 end";
 }
 
@@ -194,11 +194,11 @@ HWTEST_F(KeyMgrAnotherTest, KeyManager_CreateRecoverKey_002, TestSize.Level1)
         .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2))
         .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK))
-        .WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
+        .WillOnce(Return(E_OK)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
     EXPECT_CALL(*baseKeyMock_, GetOriginKey(_)).WillOnce(Return(true)).WillOnce(Return(true))
         .WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*recoveryMgrMock_, CreateRecoverKey(_, _, _, _, _)).WillOnce(Return(-EFAULT));
-    EXPECT_EQ(KeyManager::GetInstance()->CreateRecoverKey(userId, userType, token, secret), -ENOENT);
+    EXPECT_EQ(KeyManager::GetInstance()->CreateRecoverKey(userId, userType, token, secret), -EFAULT);
 
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2))
         .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2))
@@ -207,7 +207,7 @@ HWTEST_F(KeyMgrAnotherTest, KeyManager_CreateRecoverKey_002, TestSize.Level1)
         .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2))
         .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK))
-        .WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
+        .WillOnce(Return(E_OK)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK));
     EXPECT_CALL(*baseKeyMock_, GetOriginKey(_)).WillOnce(Return(true)).WillOnce(Return(true))
         .WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*recoveryMgrMock_, CreateRecoverKey(_, _, _, _, _)).WillOnce(Return(E_OK));
@@ -231,7 +231,7 @@ HWTEST_F(KeyMgrAnotherTest, KeyManager_SetRecoverKey_000, TestSize.Level1)
     std::vector<uint8_t> key;
 
     EXPECT_CALL(*recoveryMgrMock_, SetRecoverKey(_)).WillOnce(Return(-EFAULT));
-    EXPECT_EQ(KeyManager::GetInstance()->SetRecoverKey(key), -ENOENT);
+    EXPECT_EQ(KeyManager::GetInstance()->SetRecoverKey(key), E_SET_RECOVERY_KEY_ERR);
     GTEST_LOG_(INFO) << "KeyManager_SetRecoverKey_000 end";
 }
 

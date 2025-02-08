@@ -162,8 +162,8 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_StartUser_001, Tes
 
     ASSERT_TRUE(storageDaemon_ != nullptr);
 
-    int32_t ret = storageDaemon_->StartUser(StorageTest::USER_ID1);
-    EXPECT_TRUE(ret == E_USER_MOUNT_ERR) << "user's dirs are not prepare";
+    int32_t ret = storageDaemon_->StartUser(StorageService::START_USER_ID - 1);
+    EXPECT_TRUE(ret == E_USERID_RANGE) << "user's dirs are not prepare";
 
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_StartUser_001 end";
 }
@@ -225,10 +225,18 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_StopUser_001, Test
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_StopUser_001 start";
 
     ASSERT_TRUE(storageDaemon_ != nullptr);
+    int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1 | IStorageDaemon::CRYPTO_FLAG_EL2;
+    auto ret = storageDaemon_->PrepareUserDirs(StorageTest::USER_ID1, flags);
+    EXPECT_TRUE(ret == E_OK) << "create user dirs error";
 
-    auto ret = storageDaemon_->StopUser(StorageTest::USER_ID1);
+    ret = storageDaemon_->StartUser(StorageTest::USER_ID1);
+    EXPECT_TRUE(ret == E_OK) << "user's dirs are not prepare";
+
+    ret = storageDaemon_->StopUser(StorageTest::USER_ID1);
     EXPECT_TRUE(ret == E_OK) << "dir is not mount";
 
+    ret = storageDaemon_->DestroyUserDirs(StorageTest::USER_ID1, flags);
+    EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_StopUser_001 end";
 }
 
@@ -547,7 +555,6 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_GetBundleStatsForI
     if (StorageTest::StorageTestUtils::CheckDir(backupSaBundleDir)) {
         StorageTest::StorageTestUtils::RmDirRecurse(backupSaBundleDir);
     }
-
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_GetBundleStatsForIncrease_001 end";
 }
 

@@ -378,7 +378,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_active, TestSize.Level1)
 
     FscryptKeyV1 g_testKeyV1BadLen {TEST_KEYPATH, CRYPTO_AES_256_XTS_KEY_SIZE * 2};
     EXPECT_TRUE(g_testKeyV1BadLen.InitKey(true));
-    EXPECT_TRUE(g_testKeyV1BadLen.InactiveKey());
+    EXPECT_EQ(g_testKeyV1BadLen.InactiveKey(), E_OK);
     EXPECT_NE(g_testKeyV1BadLen.ActiveKey(), E_OK);
 }
 
@@ -461,7 +461,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_policy_get, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_key_inactive, TestSize.Level1)
 {
-    EXPECT_TRUE(g_testKeyV1->InactiveKey(USER_DESTROY));
+    EXPECT_EQ(g_testKeyV1->InactiveKey(USER_DESTROY), E_OK);
 
 #ifdef SUPPORT_FSCRYPT_V2
     EXPECT_FALSE(OHOS::ForceCreateDirectory(TEST_DIR_LEGACY + "/test_dir1"));
@@ -560,7 +560,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_inactive, TestSize.Level1)
     if (KeyCtrlGetFscryptVersion(TEST_MNT.c_str()) == FSCRYPT_V1) {
         return;
     }
-    EXPECT_TRUE(g_testKeyV2->InactiveKey());
+    EXPECT_EQ(g_testKeyV2->InactiveKey(), E_OK);
     // When the v2 policy removed, the files are encrypted.
     EXPECT_FALSE(OHOS::FileExists(TEST_DIR_V2 + "/test_dir"));
     EXPECT_FALSE(OHOS::FileExists(TEST_DIR_V2 + "/test_file1"));
@@ -959,7 +959,7 @@ HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys_001, TestSize.Leve
     EXPECT_EQ(-ENOENT, KeyManager::GetInstance()->SetDirectoryElPolicy(userId, EL2_KEY, {{userId, USER_EL2_DIR}}));
     EXPECT_EQ(0, KeyManager::GetInstance()->SetDirectoryElPolicy(userId, static_cast<KeyType>(0),
                                                                  {{userId, USER_EL2_DIR}})); // bad keytype
-    EXPECT_EQ(-ENOENT, KeyManager::GetInstance()->UpdateUserAuth(userId, userTokenSecretNull));
+    EXPECT_EQ(E_PARAMS_NULLPTR_ERR, KeyManager::GetInstance()->UpdateUserAuth(userId, userTokenSecretNull));
     EXPECT_EQ(E_PARAMS_INVALID, KeyManager::GetInstance()->UpdateKeyContext(userId));
     EXPECT_EQ(E_PARAMS_INVALID, KeyManager::GetInstance()->InActiveUserKey(userId));
     EXPECT_EQ(0, KeyManager::GetInstance()->DeleteUserKeys(userId));
@@ -1379,7 +1379,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_libfscrypt_api, TestSize.Level1)
     EXPECT_NE(0, SetFscryptSysparam(NULL));
 
     // test api in key_control.c
-    EXPECT_EQ(FSCRYPT_INVALID, KeyCtrlGetFscryptVersion(NULL));
+    EXPECT_EQ(FSCRYPT_INVALID_REALPATH, KeyCtrlGetFscryptVersion(NULL));
 
     key_serial_t id = 1;
     EXPECT_NE(0, KeyCtrlGetKeyringId(id, 0));

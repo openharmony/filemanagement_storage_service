@@ -95,18 +95,18 @@ HWTEST_F(BaseKeyTest, BaseKey_Decrypt_001, TestSize.Level1)
     UserAuth emptyUserAuth;
     elKey->keyEncryptType_ = BaseKey::KeyEncryptType::KEY_CRYPT_OPENSSL;
     EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(E_OK));
-    EXPECT_TRUE(elKey->Decrypt(emptyUserAuth));
+    EXPECT_EQ(elKey->Decrypt(emptyUserAuth), E_OK);
 
     elKey->keyEncryptType_ = BaseKey::KeyEncryptType::KEY_CRYPT_HUKS;
     EXPECT_CALL(*huksMasterMock_, DecryptKey(_, _, _, _)).WillOnce(Return(E_OK));
-    EXPECT_TRUE(elKey->Decrypt(emptyUserAuth));
+    EXPECT_EQ(elKey->Decrypt(emptyUserAuth), E_OK);
 
     elKey->keyEncryptType_ = BaseKey::KeyEncryptType::KEY_CRYPT_HUKS_OPENSSL;
-    EXPECT_FALSE(elKey->Decrypt(emptyUserAuth));
+    EXPECT_EQ(elKey->Decrypt(emptyUserAuth), E_PARAMS_INVALID);
 
     int encryptType = 4;
     elKey->keyEncryptType_ = static_cast<BaseKey::KeyEncryptType>(encryptType);
-    EXPECT_FALSE(elKey->Decrypt(emptyUserAuth));
+    EXPECT_EQ(elKey->Decrypt(emptyUserAuth), E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "BaseKey_Decrypt_001 end";
 }
 

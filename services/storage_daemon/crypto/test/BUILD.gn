@@ -27,6 +27,7 @@ ohos_moduletest("CryptoSubTest") {
     "LOG_DOMAIN = 0xD004301",
     "USER_CRYPTO_MIGRATE_KEY",
     "private = public",
+    "protected = public",
   ]
 
   include_dirs = [

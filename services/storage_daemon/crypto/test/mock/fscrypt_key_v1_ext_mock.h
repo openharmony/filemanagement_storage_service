@@ -25,34 +25,37 @@ namespace StorageDaemon {
 class IFscryptKeyV1Ext {
 public:
     virtual ~IFscryptKeyV1Ext() = default;
-    virtual int32_t LockUeceExt(bool &isFbeSupport) = 0;
-    virtual int32_t LockUserScreenExt(uint32_t flag, uint32_t &elType) = 0;
-    virtual int32_t ReadClassE(uint32_t status, std::unique_ptr<uint8_t[]> &classEBuffer, uint32_t length,
-                            bool &isFbeSupport) = 0;
-    virtual int32_t WriteClassE(uint32_t status, uint8_t *classEBuffer, uint32_t length) = 0;
-    virtual int32_t ChangePinCodeClassE(uint32_t userId, bool &isFbeSupport) = 0;
-    virtual int32_t AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status) = 0;
-    virtual int32_t DeleteClassEPinCode(uint32_t userId) = 0;
-    virtual int32_t GenerateAppkey(uint32_t userId, uint32_t appUid,
-                                   std::unique_ptr<uint8_t[]> &keyId, uint32_t size) = 0;
-    virtual int32_t UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_t size) = 0;
-    virtual uint32_t SetElType() = 0;
+
+    virtual int32_t ActiveKeyExt(uint32_t, uint8_t*, uint32_t, uint32_t &) = 0;
+    virtual int32_t ActiveDoubleKeyExt(uint32_t, uint8_t*, uint32_t, uint32_t &) = 0;
+    virtual int32_t InactiveKeyExt(uint32_t) = 0;
+    virtual int32_t LockUserScreenExt(uint32_t, uint32_t &) = 0;
+    virtual int32_t UnlockUserScreenExt(uint32_t, uint8_t*, uint32_t) = 0;
+    virtual int32_t AddClassE(bool &, bool &, uint32_t) = 0;
+    virtual int32_t DeleteClassEPinCode(uint32_t) = 0;
+    virtual int32_t ChangePinCodeClassE(uint32_t, bool &) = 0;
+    virtual int32_t ReadClassE(uint32_t, std::unique_ptr<uint8_t[]>&, uint32_t, bool&) = 0;
+    virtual int32_t WriteClassE(uint32_t, uint8_t*, uint32_t) = 0;
+    virtual int32_t GenerateAppkey(uint32_t, uint32_t, std::unique_ptr<uint8_t[]>&, uint32_t) = 0;
+    virtual int32_t LockUeceExt(bool&) = 0;
 public:
     static inline std::shared_ptr<IFscryptKeyV1Ext> fscryptKeyV1ExtMock = nullptr;
 };
 
 class FscryptKeyV1ExtMock : public IFscryptKeyV1Ext {
 public:
-    MOCK_METHOD1(LockUeceExt, int32_t(bool &));
-    MOCK_METHOD2(LockUserScreenExt, int32_t(uint32_t, uint32_t &));
-    MOCK_METHOD4(ReadClassE, int32_t(uint32_t, std::unique_ptr<uint8_t[]> &, uint32_t, bool &));
-    MOCK_METHOD3(WriteClassE, int32_t(uint32_t, uint8_t *, uint32_t));
-    MOCK_METHOD2(ChangePinCodeClassE, int32_t(uint32_t, bool &));
-    MOCK_METHOD3(AddClassE, int32_t(bool &, bool &, uint32_t));
-    MOCK_METHOD1(DeleteClassEPinCode, int32_t(uint32_t));
-    MOCK_METHOD4(GenerateAppkey, int32_t(uint32_t, uint32_t, std::unique_ptr<uint8_t[]> &, uint32_t));
-    MOCK_METHOD3(UnlockUserScreenExt, int32_t(uint32_t, uint8_t *, uint32_t));
-    MOCK_METHOD0(SetElType, uint32_t());
+    MOCK_METHOD(int32_t, ActiveKeyExt, (uint32_t, uint8_t*, uint32_t, uint32_t &));
+    MOCK_METHOD(int32_t, ActiveDoubleKeyExt, (uint32_t, uint8_t*, uint32_t, uint32_t &));
+    MOCK_METHOD(int32_t, InactiveKeyExt, (uint32_t));
+    MOCK_METHOD(int32_t, LockUserScreenExt, (uint32_t, uint32_t &));
+    MOCK_METHOD(int32_t, UnlockUserScreenExt, (uint32_t, uint8_t*, uint32_t));
+    MOCK_METHOD(int32_t, AddClassE, (bool &, bool &, uint32_t));
+    MOCK_METHOD(int32_t, DeleteClassEPinCode, (uint32_t));
+    MOCK_METHOD(int32_t, ChangePinCodeClassE, (uint32_t, bool &));
+    MOCK_METHOD(int32_t, ReadClassE, (uint32_t, (std::unique_ptr<uint8_t[]>&), uint32_t, bool&));
+    MOCK_METHOD(int32_t, WriteClassE, (uint32_t, uint8_t*, uint32_t));
+    MOCK_METHOD(int32_t, GenerateAppkey, (uint32_t, uint32_t, (std::unique_ptr<uint8_t[]>&), uint32_t));
+    MOCK_METHOD(int32_t, LockUeceExt, (bool&));
 };
 }
 }

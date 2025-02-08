@@ -15,28 +15,28 @@
 
 #include "fscrypt_key_v1_ext_mock.h"
 
+namespace OHOS {
+namespace StorageDaemon {
 using namespace std;
-using namespace OHOS::StorageDaemon;
-
-int32_t FscryptKeyV1Ext::LockUeceExt(bool &isFbeSupport)
-{
-    return IFscryptKeyV1Ext::fscryptKeyV1ExtMock->LockUeceExt(isFbeSupport);
-}
-
-int32_t FscryptKeyV1Ext::LockUserScreenExt(uint32_t flag, uint32_t &elType)
-{
-    elType = IFscryptKeyV1Ext::fscryptKeyV1ExtMock->SetElType();
-    return IFscryptKeyV1Ext::fscryptKeyV1ExtMock->LockUserScreenExt(flag, elType);
-}
 
 int32_t FscryptKeyV1Ext::ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, uint32_t &elType)
 {
-    return -1;
+    return IFscryptKeyV1Ext::fscryptKeyV1ExtMock->ActiveKeyExt(flag, iv, size, elType);
+}
+
+int32_t FscryptKeyV1Ext::ActiveDoubleKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, uint32_t &elType)
+{
+    return IFscryptKeyV1Ext::fscryptKeyV1ExtMock->ActiveDoubleKeyExt(flag, iv, size, elType);
 }
 
 int32_t FscryptKeyV1Ext::InactiveKeyExt(uint32_t flag)
 {
-    return -1;
+    return IFscryptKeyV1Ext::fscryptKeyV1ExtMock->InactiveKeyExt(flag);
+}
+
+int32_t FscryptKeyV1Ext::LockUserScreenExt(uint32_t flag, uint32_t &elType)
+{
+    return IFscryptKeyV1Ext::fscryptKeyV1ExtMock->LockUserScreenExt(flag, elType);
 }
 
 int32_t FscryptKeyV1Ext::UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_t size)
@@ -77,6 +77,12 @@ int32_t FscryptKeyV1Ext::GenerateAppkey(uint32_t userId, uint32_t appUid,
     return IFscryptKeyV1Ext::fscryptKeyV1ExtMock->GenerateAppkey(userId, appUid, keyId, size);
 }
 
+int32_t FscryptKeyV1Ext::LockUeceExt(bool &isFbeSupport)
+{
+    return IFscryptKeyV1Ext::fscryptKeyV1ExtMock->LockUeceExt(isFbeSupport);
+}
+
+
 uint32_t FscryptKeyV1Ext::GetUserIdFromDir()
 {
     return 0;
@@ -91,3 +97,10 @@ uint32_t FscryptKeyV1Ext::GetMappedUserId(uint32_t userId, uint32_t type)
 {
     return 0;
 }
+
+uint32_t FscryptKeyV1Ext::GetMappedDeUserId(uint32_t userId)
+{
+    return 0;
+}
+} // namespace StorageDaemon
+} // namespace OHOS

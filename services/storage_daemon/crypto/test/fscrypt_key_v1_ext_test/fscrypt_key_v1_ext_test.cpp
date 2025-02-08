@@ -461,11 +461,11 @@ HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_LockUeceExt_001, TestSize.Level1)
     EXPECT_EQ(ext.LockUeceExt(isFbeSupport), E_OK);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
-    EXPECT_CALL(*fbexMock_, LockUece(_, _, _)).WillOnce(Return(E_OK));
-    EXPECT_NE(ext.LockUeceExt(isFbeSupport), E_OK);
+    EXPECT_CALL(*fbexMock_, LockUece(_, _, _)).WillOnce(Return(1));
+    EXPECT_EQ(ext.LockUeceExt(isFbeSupport), 1);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
-    EXPECT_CALL(*fbexMock_, LockUece(_, _, _)).WillOnce(Return(1));
+    EXPECT_CALL(*fbexMock_, LockUece(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(ext.LockUeceExt(isFbeSupport), E_OK);
     GTEST_LOG_(INFO) << "FscryptKeyV1Ext_LockUeceExt_001 end";
 }

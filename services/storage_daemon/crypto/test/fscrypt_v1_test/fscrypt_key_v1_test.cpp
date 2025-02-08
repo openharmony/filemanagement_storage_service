@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+#include "base_key_mock.h"
 #include "directory_ex.h"
 #include "fbex.h"
 #include "file_ex.h"
@@ -45,18 +46,23 @@ public:
     void TearDown();
     UserAuth emptyUserAuth {};
     static inline std::shared_ptr<FscryptKeyV1ExtMock> fscryptKeyExtMock_ = nullptr;
+    static inline std::shared_ptr<BaseKeyMoc> baseKeyMock_ = nullptr;
 };
 
 void FscryptKeyV1Test::SetUpTestCase(void)
 {
     fscryptKeyExtMock_ = std::make_shared<FscryptKeyV1ExtMock>();
     FscryptKeyV1ExtMock::fscryptKeyV1ExtMock = fscryptKeyExtMock_;
+    baseKeyMock_ = std::make_shared<BaseKeyMoc>();
+    BaseKeyMoc::baseKeyMoc = baseKeyMock_;
 }
 
 void FscryptKeyV1Test::TearDownTestCase(void)
 {
     FscryptKeyV1ExtMock::fscryptKeyV1ExtMock = nullptr;
     fscryptKeyExtMock_ = nullptr;
+    BaseKeyMoc::baseKeyMoc = nullptr;
+    baseKeyMock_ = nullptr;
 }
 
 void FscryptKeyV1Test::SetUp(void)
@@ -176,7 +182,7 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_DeleteAppkey, TestSize.Level1)
     GTEST_LOG_(INFO) << "fscrypt_key_v1_DeleteAppkey start";
     auto g_testKeyV1 = std::make_shared<OHOS::StorageDaemon::FscryptKeyV1>(TEST_KEYPATH);
     std::string KeyId = "";
-    EXPECT_NE(g_testKeyV1->DeleteAppkey(KeyId), E_OK);
+    EXPECT_EQ(g_testKeyV1->DeleteAppkey(KeyId), E_KEY_TYPE_INVALID);
 
     KeyId = "test";
     EXPECT_EQ(g_testKeyV1->DeleteAppkey(KeyId), E_OK);
@@ -194,10 +200,10 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_UninstallKeyForAppKeyToKeyring, TestSi
     GTEST_LOG_(INFO) << "fscrypt_key_v1_UninstallKeyForAppKeyToKeyring start";
     auto g_testKeyV1 = std::make_shared<OHOS::StorageDaemon::FscryptKeyV1>(TEST_KEYPATH);
     std::string keyId = "";
-    EXPECT_FALSE(g_testKeyV1->UninstallKeyForAppKeyToKeyring(keyId));
+    EXPECT_EQ(g_testKeyV1->UninstallKeyForAppKeyToKeyring(keyId), E_KEY_TYPE_INVALID);
 
     keyId = "test";
-    EXPECT_TRUE(g_testKeyV1->UninstallKeyForAppKeyToKeyring(keyId));
+    EXPECT_EQ(g_testKeyV1->UninstallKeyForAppKeyToKeyring(keyId), E_OK);
     GTEST_LOG_(INFO) << "fscrypt_key_v1_UninstallKeyForAppKeyToKeyring end";
 }
 
@@ -212,11 +218,11 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_InstallKeyForAppKeyToKeyring, TestSize
     GTEST_LOG_(INFO) << "fscrypt_key_v1_InstallKeyForAppKeyToKeyring start";
     auto g_testKeyV1 = std::make_shared<OHOS::StorageDaemon::FscryptKeyV1>(TEST_KEYPATH);
     KeyBlob appKeyRaw(17);
-    EXPECT_TRUE(g_testKeyV1->InstallKeyForAppKeyToKeyring(appKeyRaw));
+    EXPECT_EQ(g_testKeyV1->InstallKeyForAppKeyToKeyring(appKeyRaw), E_OK);
     appKeyRaw.Clear();
 
     KeyBlob appKey(10);
-    EXPECT_TRUE(g_testKeyV1->InstallKeyForAppKeyToKeyring(appKey));
+    EXPECT_EQ(g_testKeyV1->InstallKeyForAppKeyToKeyring(appKey), E_OK);
     appKey.Clear();
     GTEST_LOG_(INFO) << "fscrypt_key_v1_InstallKeyForAppKeyToKeyring end";
 }
@@ -235,23 +241,25 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_UnlockUserScreen, TestSize.Level1)
     uint32_t sdpClass = 1;
     const std::string mnt = "test";
 
-    EXPECT_NE(g_testKeyV1->UnlockUserScreen(flag, sdpClass, mnt), E_OK);
+    g_testKeyV1->keyInfo_.key.Clear();
+    EXPECT_EQ(g_testKeyV1->UnlockUserScreen(flag, sdpClass, mnt), E_KEY_EMPTY_ERROR);
 
     g_testKeyV1->keyInfo_.key.Alloc(TEST_KEYID_SIZE);
     EXPECT_CALL(*fscryptKeyExtMock_, UnlockUserScreenExt(_, _, _)).WillOnce(Return(1));
-    EXPECT_NE(g_testKeyV1->UnlockUserScreen(flag, sdpClass, mnt), E_OK);
+    EXPECT_EQ(g_testKeyV1->UnlockUserScreen(flag, sdpClass, mnt), 1);
 
-    g_testKeyV1->ClearKey();
+    g_testKeyV1->keyInfo_.key.Clear();
     g_testKeyV1->keyInfo_.key.Alloc(TEST_KEYID_SIZE);
     EXPECT_CALL(*fscryptKeyExtMock_, UnlockUserScreenExt(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(g_testKeyV1->UnlockUserScreen(flag, sdpClass, mnt), E_OK);
 
     sdpClass = 2;
-    g_testKeyV1->ClearKey();
+    g_testKeyV1->keyInfo_.key.Clear();
     g_testKeyV1->keyInfo_.key.Alloc(TEST_KEYID_SIZE);
     EXPECT_CALL(*fscryptKeyExtMock_, UnlockUserScreenExt(_, _, _)).WillOnce(Return(E_OK));
-    EXPECT_NE(g_testKeyV1->UnlockUserScreen(flag, sdpClass, mnt), E_OK);
-    g_testKeyV1->ClearKey();
+    EXPECT_CALL(*baseKeyMock_, SaveKeyBlob(_, _)).WillOnce(Return(true));
+    EXPECT_EQ(g_testKeyV1->UnlockUserScreen(flag, sdpClass, mnt), E_OK);
+    g_testKeyV1->keyInfo_.key.Clear();
     GTEST_LOG_(INFO) << "fscrypt_key_v1_UnlockUserScreen end";
 }
 
@@ -291,18 +299,18 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_LockUserScreen, TestSize.Level1)
     uint32_t sdpClass = 2;
 
     uint32_t elType = TYPE_EL4;
-    EXPECT_CALL(*fscryptKeyExtMock_, SetElType()).WillOnce(Return(elType));
+    g_testKeyV1->keyInfo_.keyDesc.Alloc(TEST_KEYID_SIZE);
+    GTEST_LOG_(INFO) << "xxxxxx " <<  g_testKeyV1->keyInfo_.keyDesc.IsEmpty();
     EXPECT_CALL(*fscryptKeyExtMock_, LockUserScreenExt(_, _)).WillOnce(Return(1));
-    EXPECT_NE(g_testKeyV1->LockUserScreen(flag, sdpClass, TEST_MNT), E_OK);
+    EXPECT_EQ(g_testKeyV1->LockUserScreen(flag, sdpClass, TEST_MNT), 1);
 
     elType = TYPE_EL4;
-    g_testKeyV1->keyInfo_.keyDesc.Clear();
-    EXPECT_CALL(*fscryptKeyExtMock_, SetElType()).WillOnce(Return(elType));
+    g_testKeyV1->keyInfo_.keyDesc.Alloc(TEST_KEYID_SIZE);
     EXPECT_CALL(*fscryptKeyExtMock_, LockUserScreenExt(_, _)).WillOnce(Return(E_OK));
-    EXPECT_NE(g_testKeyV1->LockUserScreen(flag, sdpClass, TEST_MNT), E_OK);
+    EXPECT_EQ(g_testKeyV1->LockUserScreen(flag, sdpClass, TEST_MNT), E_OK);
 
     elType = TYPE_EL1;
-    EXPECT_CALL(*fscryptKeyExtMock_, SetElType()).WillOnce(Return(elType));
+    g_testKeyV1->keyInfo_.keyDesc.Alloc(TEST_KEYID_SIZE);
     EXPECT_CALL(*fscryptKeyExtMock_, LockUserScreenExt(_, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(g_testKeyV1->LockUserScreen(flag, sdpClass, TEST_MNT), E_OK);
     GTEST_LOG_(INFO) << "fscrypt_key_v1_LockUserScreen end";
@@ -319,18 +327,20 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_InstallEceSeceKeyToKeyring, TestSize.L
     GTEST_LOG_(INFO) << "fscrypt_key_v1_InstallEceSeceKeyToKeyring start";
     auto g_testKeyV1 = std::make_shared<OHOS::StorageDaemon::FscryptKeyV1>(TEST_KEYPATH);
     uint32_t sdpClass = 2;
-    EXPECT_NE(g_testKeyV1->InstallEceSeceKeyToKeyring(sdpClass), E_OK);
+    EXPECT_EQ(g_testKeyV1->InstallEceSeceKeyToKeyring(sdpClass), E_KEY_SIZE_ERROR);
 
     g_testKeyV1->keyInfo_.key.Clear();
     g_testKeyV1->keyInfo_.keyDesc.Clear();
     g_testKeyV1->keyInfo_.key.Alloc(TEST_KEYID_SIZE);
-    EXPECT_NE(g_testKeyV1->InstallEceSeceKeyToKeyring(sdpClass), E_OK);
+    EXPECT_CALL(*baseKeyMock_, SaveKeyBlob(_, _)).WillOnce(Return(true));
+    EXPECT_EQ(g_testKeyV1->InstallEceSeceKeyToKeyring(sdpClass), E_OK);
 
     g_testKeyV1->keyInfo_.key.Clear();
     g_testKeyV1->keyInfo_.keyDesc.Clear();
     g_testKeyV1->keyInfo_.key.Alloc(TEST_KEYID_SIZE);
     g_testKeyV1->keyInfo_.keyDesc.Alloc(TEST_KEYID_SIZE);
-    EXPECT_NE(g_testKeyV1->InstallEceSeceKeyToKeyring(sdpClass), E_OK);
+    EXPECT_CALL(*baseKeyMock_, SaveKeyBlob(_, _)).WillOnce(Return(true));
+    EXPECT_EQ(g_testKeyV1->InstallEceSeceKeyToKeyring(sdpClass), E_OK);
     GTEST_LOG_(INFO) << "fscrypt_key_v1_InstallEceSeceKeyToKeyring end";
 }
 
@@ -350,16 +360,20 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_DecryptClassE, TestSize.Level1)
     uint32_t status = 1;
 
     EXPECT_CALL(*fscryptKeyExtMock_, ReadClassE(_, _, _, _)).WillOnce(Return(1));
-    EXPECT_NE(g_testKeyV1->DecryptClassE(emptyUserAuth, isSupport, eBufferStatue, user, status), E_OK);
+    EXPECT_EQ(g_testKeyV1->DecryptClassE(emptyUserAuth, isSupport, eBufferStatue, user, status), 1);
 
-    g_testKeyV1->ClearKey();
+    g_testKeyV1->keyInfo_.key.Clear();
     EXPECT_CALL(*fscryptKeyExtMock_, ReadClassE(_, _, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(g_testKeyV1->DecryptClassE(emptyUserAuth, isSupport, eBufferStatue, user, status), E_OK);
 
-    g_testKeyV1->ClearKey();
+    g_testKeyV1->keyInfo_.key.Clear();
     const UserAuth auth{KeyBlob(8), KeyBlob(8), 0};
     EXPECT_CALL(*fscryptKeyExtMock_, ReadClassE(_, _, _, _)).WillOnce(Return(E_OK));
-    EXPECT_NE(g_testKeyV1->DecryptClassE(auth, isSupport, eBufferStatue, user, status), E_OK);
+    EXPECT_CALL(*baseKeyMock_, GetCandidateDir()).WillOnce(Return("test"));
+    EXPECT_CALL(*baseKeyMock_, UpdateKey(_, _)).WillOnce(Return(0));
+    EXPECT_CALL(*baseKeyMock_, DecryptKeyBlob(_, _, _, _)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*fscryptKeyExtMock_, WriteClassE(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(g_testKeyV1->DecryptClassE(auth, isSupport, eBufferStatue, user, status), E_OK);
     GTEST_LOG_(INFO) << "fscrypt_key_v1_DecryptClassE end";
 }
 
