@@ -105,7 +105,6 @@ ohos_shared_library("storage_manager") {
   if (storage_service_storage_statistics_manager) {
     defines += [ "STORAGE_STATISTICS_MANAGER" ]
     sources += [
-      "account_subscriber/account_subscriber.cpp",
       "storage/src/bundle_manager_connector.cpp",
       "storage/src/storage_monitor_service.cpp",
       "storage/src/storage_status_service.cpp",
