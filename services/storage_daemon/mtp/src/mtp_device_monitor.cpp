@@ -21,6 +21,7 @@
 #include <iostream>
 #include <libmtp.h>
 #include "parameter.h"
+#include "parameters.h"
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -38,7 +39,8 @@ const std::string MTP_ROOT_PATH = "/mnt/data/external/";
 const int32_t MTP_VAL_LEN = 6;
 const int32_t MTP_TRUE_LEN = 5;
 const int32_t DETECT_CNT = 4;
-const std::string SYS_PARAM_SERVICE_FORCE_ENABLE = "const.pc_security.fileguard_force_enable";
+const char *SYS_PARAM_SERVICE_PERSIST_ENABLE = "persist.edm.mtp_disable";
+const char *SYS_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.edm.is_enterprise_device";
 bool g_keepMonitoring = true;
 
 MtpDeviceMonitor::MtpDeviceMonitor() {}
@@ -47,24 +49,24 @@ MtpDeviceMonitor::~MtpDeviceMonitor()
 {
     LOGI("MtpDeviceMonitor Destructor.");
     UmountAllMtpDevice();
+    RemoveMTPParamListener();
 }
 
 void MtpDeviceMonitor::StartMonitor()
 {
     LOGI("MtpDeviceMonitor, start mtp device monitor.");
-    if (IsNeedDisableMtp()) {
-        LOGE("This device cannot support MTP.");
-        return;
-    }
     std::thread([this]() { MonitorDevice(); }).detach();
 }
 
 bool MtpDeviceMonitor::IsNeedDisableMtp()
 {
+    char mtpEnterpriseEnable[MTP_VAL_LEN + 1] = {"false"};
+    int retEn = GetParameter(SYS_PARAM_SERVICE_ENTERPRISE_ENABLE, "", mtpEnterpriseEnable, MTP_VAL_LEN);
+    LOGI("GetParameter mtpEnterpriseEnable %{public}s, retEnterprise %{public}d", mtpEnterpriseEnable, retEn);
     char mtpEnable[MTP_VAL_LEN + 1] = {"false"};
-    int ret = GetParameter(SYS_PARAM_SERVICE_FORCE_ENABLE.c_str(), "", mtpEnable, MTP_VAL_LEN);
+    int ret = GetParameter(SYS_PARAM_SERVICE_PERSIST_ENABLE, "", mtpEnable, MTP_VAL_LEN);
     LOGI("GetParameter mtpEnable %{public}s, ret %{public}d", mtpEnable, ret);
-    if (strncmp(mtpEnable, "true", MTP_TRUE_LEN) == 0) {
+    if (strncmp(mtpEnterpriseEnable, "true", MTP_TRUE_LEN) == 0 && strncmp(mtpEnable, "true", MTP_TRUE_LEN) == 0) {
         return true;
     }
     return false;
@@ -123,10 +125,8 @@ void MtpDeviceMonitor::MonitorDevice()
         cnt--;
         sleep(SLEEP_TIME);
     }
+    RegisterMTPParamListener();
     while (g_keepMonitoring) {
-        if (IsNeedDisableMtp()) {
-            break;
-        }
         sleep(SLEEP_TIME);
         UsbEventSubscriber::SubscribeCommonEvent();
     }
@@ -135,6 +135,10 @@ void MtpDeviceMonitor::MonitorDevice()
 
 void MtpDeviceMonitor::MountMtpDevice(const std::vector<MtpDeviceInfo> &monitorDevices)
 {
+    if (IsNeedDisableMtp()) {
+        LOGE("This device cannot support MTP.");
+        return;
+    }
     LOGI("MountMtpDevice: start mount mtp device.");
     for (auto device : monitorDevices) {
         if (HasMounted(device)) {
@@ -231,6 +235,58 @@ int32_t MtpDeviceMonitor::Umount(const std::string &id)
     }
     LOGE("the volume id %{public}s does not exist.", id.c_str());
     return E_NON_EXIST;
+}
+
+void MtpDeviceMonitor::RegisterMTPParamListener()
+{
+    LOGI("RegisterMTPParamListener");
+    WatchParameter(SYS_PARAM_SERVICE_PERSIST_ENABLE, OnMtpDisableParamChange, this);
+    WatchParameter(SYS_PARAM_SERVICE_ENTERPRISE_ENABLE, OnEnterpriseParamChange, this);
+}
+
+void MtpDeviceMonitor::RemoveMTPParamListener()
+{
+    LOGI("RemoveMTPParamListener");
+    RemoveParameterWatcher(SYS_PARAM_SERVICE_PERSIST_ENABLE, OnMtpDisableParamChange, this);
+    RemoveParameterWatcher(SYS_PARAM_SERVICE_ENTERPRISE_ENABLE, OnEnterpriseParamChange, this);
+}
+
+void MtpDeviceMonitor::OnMtpDisableParamChange(const char *key, const  char *value, void *context)
+{
+    (void)context;
+    if (key == nullptr || value == nullptr) {
+        LOGE("OnMtpDisableParamChange return invaild value");
+        return;
+    }
+    LOGI("OnMtpDisableParamChange key = %{public}s, value = %{public}s,",  key, value);
+    if (strcmp(key, SYS_PARAM_SERVICE_PERSIST_ENABLE) != 0) {
+        LOGE("event key mismatch");
+        return;
+    }
+    MtpDeviceMonitor instance;
+    if (instance.IsNeedDisableMtp()) {
+        LOGI("MTP disable parameter changed, unmount all mtp devices.");
+        instance.UmountAllMtpDevice();
+    }
+}
+
+void MtpDeviceMonitor::OnEnterpriseParamChange(const char *key, const  char *value, void *context)
+{
+    (void)context;
+    if (key == nullptr || value == nullptr) {
+        LOGE("OnEnterpriseParamChange return invaild value");
+        return;
+    }
+    LOGI("OnEnterpriseParamChange key = %{public}s, value = %{public}s,",  key, value);
+    if (strcmp(key, SYS_PARAM_SERVICE_ENTERPRISE_ENABLE) != 0) {
+        LOGE("event key mismatch");
+        return;
+    }
+    MtpDeviceMonitor instance;
+    if (instance.IsNeedDisableMtp()) {
+        LOGI("Enterprise device parameter changed, unmount all mtp devices.");
+        instance.UmountAllMtpDevice();
+    }
 }
 }  // namespace StorageDaemon
 }  // namespace OHOS
