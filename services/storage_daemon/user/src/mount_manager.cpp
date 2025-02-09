@@ -247,7 +247,8 @@ std::vector<DirInfo> MountManager::InitAppdataDir()
             {"/mnt/user/%d/sharefs/docs/currentUser", MODE_0711, OID_ROOT, OID_ROOT},
             {"/mnt/user/%d/currentUser", MODE_0711, OID_ROOT, OID_ROOT},
             {"/mnt/user/%d/currentUser/filemgr", MODE_0711, OID_ROOT, OID_ROOT},
-            {"/mnt/user/%d/currentUser/other", MODE_0711, OID_ROOT, OID_ROOT}};
+            {"/mnt/user/%d/currentUser/other", MODE_0711, OID_ROOT, OID_ROOT},
+            {"/data/service/el1/%d/utdtypes", MODE_0711, OID_FOUNDATION, OID_FOUNDATION}};
 }
 
 int32_t MountManager::HmdfsTwiceMount(int32_t userId, const std::string &relativePath)
