@@ -540,8 +540,8 @@ int32_t StorageManager::InactiveUserKey(uint32_t userId)
     int32_t err = fsCrypto->InactiveUserKey(userId);
     int32_t ret = -1;
     {
-       std::lock_guard<std::mutex> lock(mutex_);
-       ret = AppSpawnClientSendUserLockStatus(userId, ENCRYPTED);
+        std::lock_guard<std::mutex> lock(mutex_);
+        ret = AppSpawnClientSendUserLockStatus(userId, ENCRYPTED);
     }
     LOGE("send encrypted status: userId: %{public}d, err is %{public}d", userId, ret);
     StorageRadar::ReportActiveUserKey("AppSpawnClientSendUserLockStatus:ENCRYPT", userId, ret, "EL2-EL5");
