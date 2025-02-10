@@ -136,6 +136,7 @@ private:
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;
     static sptr<StorageManager> instance_;
     static std::mutex instanceLock_;
+    std::mutex mutex_;
 };
 } // StorageManager
 } // OHOS
