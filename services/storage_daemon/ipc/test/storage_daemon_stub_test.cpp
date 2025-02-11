@@ -63,6 +63,7 @@ namespace {
         static_cast<int32_t>(StorageDaemonInterfaceCode::GENERATE_APP_KEY),
         static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_APP_KEY),
         static_cast<int32_t>(StorageDaemonInterfaceCode::GET_FILE_ENCRYPT_STATUS),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::GET_USER_NEED_ACTIVE_STATUS),
     };
 }
 

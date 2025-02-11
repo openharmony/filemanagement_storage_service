@@ -213,5 +213,9 @@ int32_t StorageDaemonProxy::SendRequest(uint32_t code, MessageParcel &data, Mess
 {
     return E_OK;
 }
+int32_t StorageDaemonProxy::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
+{
+    return E_OK;
+}
 } // StorageDaemon
 } // OHOS

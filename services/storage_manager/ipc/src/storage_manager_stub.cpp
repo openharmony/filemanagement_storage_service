@@ -180,6 +180,8 @@ StorageManagerStub::StorageManagerStub()
         &StorageManagerStub::HandleUMountDfsDocs;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_FILE_ENCRYPT_STATUS)] =
         &StorageManagerStub::HandleGetFileEncryptStatus;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_USER_NEED_ACTIVE_STATUS)] =
+        &StorageManagerStub::HandleGetUserNeedActiveStatus;
 }
 
 int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
@@ -287,6 +289,8 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
             return HandleDeleteAppkey(data, reply);
         case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_FILE_ENCRYPT_STATUS):
             return HandleGetFileEncryptStatus(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_USER_NEED_ACTIVE_STATUS):
+            return HandleGetUserNeedActiveStatus(data, reply);
         default:
             LOGE("Cannot response request %d: unknown tranction", code);
             return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
@@ -885,6 +889,25 @@ int32_t StorageManagerStub::HandleGetFileEncryptStatus(MessageParcel &data, Mess
     }
     if (!reply.WriteBool(isEncrypted)) {
         LOGE("Write reply isEncrypted failed");
+        return E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleGetUserNeedActiveStatus(MessageParcel &data, MessageParcel &reply)
+{
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    bool needActive = false;
+    uint32_t userId = data.ReadUint32();
+    int32_t err = GetUserNeedActiveStatus(userId, needActive);
+    if (!reply.WriteInt32(err)) {
+        LOGE("Write reply error code failed");
+        return E_WRITE_REPLY_ERR;
+    }
+    if (!reply.WriteBool(needActive)) {
+        LOGE("Write needActive failed");
         return E_WRITE_REPLY_ERR;
     }
     return E_OK;

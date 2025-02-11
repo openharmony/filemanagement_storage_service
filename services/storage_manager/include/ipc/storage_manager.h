@@ -89,6 +89,7 @@ public:
     int32_t GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId) override;
     int32_t DeleteAppkey(const std::string keyId) override;
     int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false) override;
+    int32_t GetUserNeedActiveStatus(uint32_t userId, bool &needActive) override;
 
     // app file share api
     std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,

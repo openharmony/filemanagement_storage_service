@@ -94,6 +94,8 @@ StorageDaemonStub::StorageDaemonStub()
         &StorageDaemonStub::HandleUMountDfsDocs;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_FILE_ENCRYPT_STATUS)] =
         &StorageDaemonStub::HandleGetFileEncryptStatus;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_USER_NEED_ACTIVE_STATUS)] =
+        &StorageDaemonStub::HandleGetUserNeedActiveStatus;
 }
 
 int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code,
@@ -142,6 +144,7 @@ int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code,
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::GENERATE_APP_KEY):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::DELETE_APP_KEY):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_FILE_ENCRYPT_STATUS):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_USER_NEED_ACTIVE_STATUS):
             return OnRemoteRequestForApp(code, data, reply);
         default:
             LOGE("Cannot response request %d: unknown tranction", code);
@@ -238,6 +241,8 @@ int32_t StorageDaemonStub::OnRemoteRequestForApp(uint32_t code, MessageParcel &d
             return HandleDeleteAppkey(data, reply);
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_FILE_ENCRYPT_STATUS):
             return HandleGetFileEncryptStatus(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_USER_NEED_ACTIVE_STATUS):
+            return HandleGetUserNeedActiveStatus(data, reply);
         default:
             LOGE("Cannot response request %d: unknown tranction", code);
             return E_SYS_ERR;
@@ -716,6 +721,20 @@ int32_t StorageDaemonStub::HandleGetFileEncryptStatus(MessageParcel &data, Messa
         return E_WRITE_REPLY_ERR;
     }
     if (!reply.WriteBool(isEncrypted)) {
+        return E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleGetUserNeedActiveStatus(MessageParcel &data, MessageParcel &reply)
+{
+    uint32_t userId = data.ReadUint32();
+    bool needActive = false;
+    int err = GetUserNeedActiveStatus(userId, needActive);
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
+    if (!reply.WriteBool(needActive)) {
         return E_WRITE_REPLY_ERR;
     }
     return E_OK;
