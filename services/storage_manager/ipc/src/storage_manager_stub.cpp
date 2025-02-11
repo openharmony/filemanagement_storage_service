@@ -857,7 +857,7 @@ int32_t StorageManagerStub::HandleInactiveUserKey(MessageParcel &data, MessagePa
 
 int32_t StorageManagerStub::HandleLockUserScreen(MessageParcel &data, MessageParcel &reply)
 {
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
     uint32_t userId = data.ReadUint32();
