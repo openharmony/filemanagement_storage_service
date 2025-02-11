@@ -103,10 +103,13 @@ void KeyManagerOtherTest::TearDown(void)
 HWTEST_F(KeyManagerOtherTest, KeyManager_LoadAllUsersEl1Key_000, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "KeyManager_LoadAllUsersEl1Key_000 Start";
-    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
-    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
-    EXPECT_CALL(*baseKeyMock_, UpgradeKeys()).WillOnce(Return(true));
-    EXPECT_EQ(KeyManager::GetInstance()->LoadAllUsersEl1Key(), 0);
+    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillRepeatedly(Return(FSCRYPT_V2));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillRepeatedly(Return(FSCRYPT_V2));
+    EXPECT_CALL(*baseKeyMock_, UpgradeKeys()).WillRepeatedly(Return(true));
+    EXPECT_CALL(*baseKeyMock_, InitKey(_)).WillRepeatedly(Return(true));
+    EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillRepeatedly(Return(E_OK));
+    EXPECT_CALL(*fscryptKeyMock_, ActiveKey(_, _)).WillRepeatedly(Return(E_OK));
+    EXPECT_EQ(KeyManager::GetInstance()->LoadAllUsersEl1Key(), E_OK);
     GTEST_LOG_(INFO) << "KeyManager_LoadAllUsersEl1Key_000 end";
 }
 
