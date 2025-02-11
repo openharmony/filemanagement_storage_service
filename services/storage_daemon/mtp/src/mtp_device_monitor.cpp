@@ -39,7 +39,7 @@ const std::string MTP_ROOT_PATH = "/mnt/data/external/";
 const int32_t MTP_VAL_LEN = 6;
 const int32_t MTP_TRUE_LEN = 5;
 const int32_t DETECT_CNT = 4;
-const char *SYS_PARAM_SERVICE_PERSIST_ENABLE = "persist.edm.mtp_disable";
+const char *SYS_PARAM_SERVICE_PERSIST_ENABLE = "persist.edm.mtp_client_disable";
 const char *SYS_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.edm.is_enterprise_device";
 bool g_keepMonitoring = true;
 
