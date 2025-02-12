@@ -34,6 +34,7 @@ ohos_moduletest("CryptoSubTest") {
     "../../include",
     "../../include/crypto",
     "../../../common/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   sources = [

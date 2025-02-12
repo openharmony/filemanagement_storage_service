@@ -24,6 +24,7 @@ config("private_config") {
     "../../../../services/storage_manager/include",
     "../../../../services/storage_daemon/include",
     "../../../../services/common/include",
+    "../../../../interfaces/innerkits/storage_manager/native",
   ]
 }
 

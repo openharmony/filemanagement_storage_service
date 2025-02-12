@@ -36,6 +36,7 @@ ohos_unittest("storage_daemon_communication_test") {
     "${storage_manager_path}/include",
     "${storage_service_path}/utils/include",
     "include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   defines = [

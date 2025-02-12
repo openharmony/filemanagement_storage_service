@@ -126,6 +126,7 @@ ohos_unittest("storage_daemon_proxy_test") {
   include_dirs = [
     "$ROOT_DIR/include",
     "${storage_service_common_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   sources = [
@@ -173,6 +174,7 @@ ohos_unittest("storage_daemon_stub_test") {
     "$ROOT_DIR/include",
     "$ROOT_DIR/ipc/test/",
     "${storage_service_common_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   sources = [
