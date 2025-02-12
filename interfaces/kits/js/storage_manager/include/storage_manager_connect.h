@@ -50,6 +50,7 @@ public:
     int32_t Partition(std::string diskId, int32_t type);
 
     int32_t ResetProxy();
+    int32_t DeactivateUserKey(uint32_t userId);
 private:
     sptr<StorageManager::IStorageManager> storageManager_ = nullptr;
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;

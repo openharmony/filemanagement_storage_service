@@ -1544,7 +1544,7 @@ int KeyManager::LockUserScreen(uint32_t user)
     if (el4Key == nullptr) {
         LOGE("Have not found user %{public}u el3 or el4", user);
         StorageRadar::ReportUpdateUserAuth("LockUserScreen::GetUserElKey", user, -ENOENT, "EL4", "not found key");
-        return -ENOENT;
+        return E_NON_EXIST;
     }
     std::shared_ptr<DelayHandler> userDelayHandler;
     if (GetUserDelayHandler(user, userDelayHandler)) {

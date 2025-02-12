@@ -23,9 +23,11 @@
 #include "iremote_proxy.h"
 #include "iservice_registry.h"
 #include "libfscrypt/fscrypt_utils.h"
+#include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
 
+using namespace OHOS::StorageService;
 namespace {
 constexpr uint32_t STORAGE_DAEMON_SFIFT = 1;
 constexpr uint32_t CHECK_SERVICE_TIMES = 1000;
@@ -309,13 +311,13 @@ int32_t StorageDaemonClient::LockUserScreen(uint32_t userId)
 {
     if (!CheckServiceStatus(STORAGE_SERVICE_FLAG)) {
         LOGE("service check failed");
-        return -EAGAIN;
+        return E_SERVICE_IS_NULLPTR;
     }
 
     sptr<IStorageDaemon> client = GetStorageDaemonProxy();
     if (client == nullptr) {
         LOGE("get storage daemon service failed");
-        return -EAGAIN;
+        return E_SA_IS_NULLPTR;
     }
 
     return client->LockUserScreen(userId);
