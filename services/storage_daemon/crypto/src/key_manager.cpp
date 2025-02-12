@@ -60,6 +60,7 @@ constexpr const char *SHIELD_DIR = "/latest/shield";
 constexpr const char *DESC_DIR = "/key_desc";
 constexpr const char *EL2_ENCRYPT_TMP_FILE = "/el2_tmp";
 constexpr uint32_t KEY_RECOVERY_USER_ID = 300;
+constexpr uint32_t RECOVERY_TOKEN_CHALLENGE_LENG = 32;
 
 constexpr const char *SERVICE_STORAGE_DAEMON_DIR = "/data/service/el1/public/storage_daemon";
 constexpr const char *FSCRYPT_EL_DIR = "/data/service/el1/public/storage_daemon/sd";
@@ -1573,6 +1574,10 @@ int KeyManager::CreateRecoverKey(uint32_t userId, uint32_t userType, const std::
             return E_PARAMS_NULLPTR_ERR;
         }
         UserAuth auth = { token, secret };
+        if (secret.empty() && token.size() == RECOVERY_TOKEN_CHALLENGE_LENG) {
+            LOGW("secret is empty, use none token.");
+            auth = { {}, {}};
+        }
         if ((elxKey->RestoreKey(auth, false) != E_OK) && (elxKey->RestoreKey(NULL_KEY_AUTH, false) != E_OK)) {
             LOGE("Restore el failed");
             return E_RESTORE_KEY_FAILED;

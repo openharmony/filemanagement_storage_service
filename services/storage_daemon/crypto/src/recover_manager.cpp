@@ -62,11 +62,8 @@ int RecoveryManager::CreateRecoverKey(uint32_t userId,
     TEEC_Operation operation = { 0 };
     operation.started = SESSION_START_DEFAULT;
     operation.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT, TEEC_NONE, TEEC_NONE, TEEC_NONE);
-    CreateRecoverKeyStr recoverKeyStr = {
-        .userType = userType,
-        .userId = userId,
-        .authTokenLen = static_cast<uint32_t>(token.empty() ? 0 : AUTH_TOKEN_LEN)
-    };
+    CreateRecoverKeyStr recoverKeyStr = { .userType = userType, .userId = userId,
+                                          .authTokenLen = static_cast<uint32_t>(token.size()) };
     if (!token.empty()) {
         auto err = memcpy_s(recoverKeyStr.authToken, AUTH_TOKEN_LEN, token.data(), token.size());
         if (err != EOK) {
@@ -85,7 +82,7 @@ int RecoveryManager::CreateRecoverKey(uint32_t userId,
     operation.params[TEE_PARAM_INDEX_0].tmpref.size = sizeof(recoverKeyStr);
     TEEC_Result ret = TEEC_InvokeCommand(&createKeySession, TaCmdId::RK_CMD_ID_GEN_RECOVERY_KEY,
                                          &operation, &createKeyOrigin);
-    LOGI("InvokeCmd ret: %{public}d, origin: %{public}d", ret, createKeyOrigin);
+    LOGW("InvokeCmd ret: %{public}d, origin: %{public}d, token size: %{public}d", ret, createKeyOrigin, token.size());
     if (ret != TEEC_SUCCESS) {
         LOGE("InvokeCmd failed, ret: %{public}d, origin: %{public}d", ret, createKeyOrigin);
         CloseSession(createKeyContext, createKeySession);
