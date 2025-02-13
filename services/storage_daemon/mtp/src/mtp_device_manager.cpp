@@ -107,6 +107,18 @@ int32_t MtpDeviceManager::MountDevice(const MtpDeviceInfo &device)
 int32_t MtpDeviceManager::UmountDevice(const MtpDeviceInfo &device, bool needNotify, bool isBadRemove)
 {
     LOGI("MountDevice: start umount mtp device, path=%{public}s", device.path.c_str());
+    if (isBadRemove) {
+        LOGI("force to umount mtp device");
+        umount2(device.path.c_str(), MNT_DETACH);
+        remove(device.path.c_str());
+        LOGI("Mtp device force to unmount success");
+        if (needNotify) {
+            StorageManagerClient client;
+            client.NotifyMtpUnmounted(device.id, device.path, isBadRemove);
+        }
+        DelFolder(device.path);
+        return E_OK;
+    }
     int ret = umount(device.path.c_str());
     int err = remove(device.path.c_str());
     if (err && ret) {
