@@ -445,9 +445,6 @@ int32_t StorageManagerStub::HandleGetSystemSize(MessageParcel &data, MessageParc
 
 int32_t StorageManagerStub::HandleGetTotalSize(MessageParcel &data, MessageParcel &reply)
 {
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
-        return E_PERMISSION_DENIED;
-    }
     int64_t totalSize;
     int32_t err = GetTotalSize(totalSize);
     if (!reply.WriteInt32(err)) {
@@ -462,9 +459,6 @@ int32_t StorageManagerStub::HandleGetTotalSize(MessageParcel &data, MessageParce
 
 int32_t StorageManagerStub::HandleGetFreeSize(MessageParcel &data, MessageParcel &reply)
 {
-    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
-        return E_PERMISSION_DENIED;
-    }
     int64_t freeSize;
     int32_t err = GetFreeSize(freeSize);
     if (!reply.WriteInt32(err)) {
