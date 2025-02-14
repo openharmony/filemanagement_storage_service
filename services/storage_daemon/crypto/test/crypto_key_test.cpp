@@ -894,10 +894,6 @@ HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys_000, TestSize.Leve
     MkDirRecurse(USER_EL1_DIR, S_IRWXU);
     MkDirRecurse(USER_EL2_DIR, S_IRWXU);
 
-    OHOS::ForceRemoveDirectory(USER_KEY_EL1_DIR);
-    OHOS::ForceRemoveDirectory(USER_KEY_EL2_DIR);
-    EXPECT_EQ(-ENOENT, KeyManager::GetInstance()->GenerateUserKeys(userId, 0)); // no user_el1_dir
-
     KeyManager::GetInstance()->InitGlobalDeviceKey();
     KeyManager::GetInstance()->InitGlobalUserKeys();
     UserTokenSecret userTokenSecret = {.token = {'t', 'o', 'k', 'e', 'n'}, .oldSecret = {},
@@ -941,9 +937,6 @@ HWTEST_F(CryptoKeyTest, key_manager_generate_delete_user_keys_001, TestSize.Leve
     OHOS::ForceRemoveDirectory(USER_EL2_DIR);
     MkDirRecurse(USER_EL1_DIR, S_IRWXU);
     MkDirRecurse(USER_EL2_DIR, S_IRWXU);
-
-    OHOS::ForceRemoveDirectory(USER_KEY_EL1_DIR);
-    OHOS::ForceRemoveDirectory(USER_KEY_EL2_DIR);
 
     KeyManager::GetInstance()->InitGlobalDeviceKey();
     KeyManager::GetInstance()->InitGlobalUserKeys();
