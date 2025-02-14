@@ -331,7 +331,8 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
 
 int32_t StorageManagerStub::HandlePrepareAddUser(MessageParcel &data, MessageParcel &reply)
 {
-    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT) &&
+        IPCSkeleton::GetCallingUid() != ACCOUNT_UID) {
         return E_PERMISSION_DENIED;
     }
     int32_t userId = data.ReadInt32();
@@ -347,7 +348,8 @@ int32_t StorageManagerStub::HandlePrepareAddUser(MessageParcel &data, MessagePar
 
 int32_t StorageManagerStub::HandleRemoveUser(MessageParcel &data, MessageParcel &reply)
 {
-    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT) &&
+        IPCSkeleton::GetCallingUid() != ACCOUNT_UID) {
         return E_PERMISSION_DENIED;
     }
     int32_t userId = data.ReadInt32();
@@ -881,7 +883,8 @@ int32_t StorageManagerStub::HandleUpdateUseAuthWithRecoveryKey(MessageParcel &da
 
 int32_t StorageManagerStub::HandleActiveUserKey(MessageParcel &data, MessageParcel &reply)
 {
-    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT) &&
+        IPCSkeleton::GetCallingUid() != ACCOUNT_UID) {
         return E_PERMISSION_DENIED;
     }
     uint32_t userId = data.ReadUint32();
