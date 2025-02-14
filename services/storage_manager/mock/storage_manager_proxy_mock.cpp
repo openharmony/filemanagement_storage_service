@@ -284,5 +284,10 @@ int32_t StorageManagerProxy::UMountDfsDocs(int32_t userId, const std::string &re
 {
     return E_OK;
 }
+
+int32_t StorageManagerProxy::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
+{
+    return E_OK;
+}
 } // StorageManager
 } // OHOS

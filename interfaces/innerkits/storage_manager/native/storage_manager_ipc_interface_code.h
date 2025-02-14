@@ -84,6 +84,7 @@ namespace StorageManager {
         GENERATE_APP_KEY,
         DELETE_APP_KEY,
         GET_FILE_ENCRYPT_STATUS,
+        GET_USER_NEED_ACTIVE_STATUS,
     };
 } // namespace StorageManager
 } // namespace OHOS

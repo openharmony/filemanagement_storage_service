@@ -88,6 +88,7 @@ public:
     virtual int32_t GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId) = 0;
     virtual int32_t DeleteAppkey(const std::string keyId) = 0;
     virtual int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false) = 0;
+    virtual int32_t GetUserNeedActiveStatus(uint32_t userId, bool &needActive) = 0;
 
     // app file share api
     virtual std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,

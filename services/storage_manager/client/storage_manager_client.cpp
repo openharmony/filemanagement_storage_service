@@ -168,6 +168,17 @@ int32_t StorageManagerClient::GetFileEncryptStatus(uint32_t userId, bool &isEncr
     return client->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
 }
 
+int32_t StorageManagerClient::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
+{
+    sptr<IStorageManager> client = GetStorageManagerProxy();
+    if (client == nullptr) {
+        LOGE("get storage manager service failed");
+        return E_SA_IS_NULLPTR;
+    }
+
+    return client->GetUserNeedActiveStatus(userId, needActive);
+}
+
 int32_t StorageManagerClient::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)
 {
     sptr<IStorageManager> client = GetStorageManagerProxy();

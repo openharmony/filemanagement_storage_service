@@ -914,5 +914,30 @@ int32_t StorageDaemonProxy::GetFileEncryptStatus(uint32_t userId, bool &isEncryp
     isEncrypted = reply.ReadBool();
     return reply.ReadInt32();
 }
+
+int32_t StorageDaemonProxy::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
+{
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+
+    if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
+        LOGE("WriteInterfaceToken failed");
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+    if (!data.WriteInt32(userId)) {
+        LOGE("write userId failed!");
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    int32_t err =
+        SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::GET_USER_NEED_ACTIVE_STATUS), data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+    needActive = reply.ReadBool();
+    return reply.ReadInt32();
+}
+
 } // StorageDaemon
 } // OHOS

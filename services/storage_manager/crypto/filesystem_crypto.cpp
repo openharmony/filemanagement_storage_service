@@ -160,6 +160,19 @@ int32_t FileSystemCrypto::GetFileEncryptStatus(uint32_t userId, bool &isEncrypte
     return sdCommunication->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
 }
 
+int32_t FileSystemCrypto::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
+{
+    LOGI("UserId: %{public}u", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->GetUserNeedActiveStatus(userId, needActive);
+}
+
 int32_t FileSystemCrypto::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)
 {
     LOGI("UserId: %{public}u", userId);

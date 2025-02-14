@@ -466,5 +466,22 @@ int32_t StorageDaemonClient::GetFileEncryptStatus(uint32_t userId, bool &isEncry
 
     return client->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
 }
+
+int32_t StorageDaemonClient::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
+{
+    auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
+    if (status != E_OK) {
+        LOGE("service check failed");
+        return status;
+    }
+
+    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
+    if (client == nullptr) {
+        LOGE("Get StorageDaemon service failed!");
+        return E_SA_IS_NULLPTR;
+    }
+
+    return client->GetUserNeedActiveStatus(userId, needActive);
+}
 } // namespace StorageDaemon
 } // namespace OHOS

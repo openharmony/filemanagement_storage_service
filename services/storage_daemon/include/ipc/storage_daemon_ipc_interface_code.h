@@ -58,6 +58,7 @@ namespace StorageDaemon {
         MOUNT_DFS_DOCS,
         UMOUNT_DFS_DOCS,
         GET_FILE_ENCRYPT_STATUS,
+        GET_USER_NEED_ACTIVE_STATUS,
     };
 } // namespace StorageDaemon
 } // namespace OHOS
