@@ -253,16 +253,13 @@ void MtpDeviceMonitor::RemoveMTPParamListener()
 
 void MtpDeviceMonitor::OnMtpDisableParamChange(const char *key, const  char *value, void *context)
 {
-    if (key == nullptr || value == nullptr) {
+    if (key == nullptr || value == nullptr || context == nullptr) {
         LOGE("OnMtpDisableParamChange return invaild value");
         return;
     }
     LOGI("OnMtpDisableParamChange key = %{public}s, value = %{public}s,",  key, value);
     if (strcmp(key, SYS_PARAM_SERVICE_PERSIST_ENABLE) != 0) {
         LOGE("event key mismatch");
-        return;
-    }
-    if (context == nullptr) {
         return;
     }
     MtpDeviceMonitor* instance = reinterpret_cast<MtpDeviceMonitor*>(context);
@@ -274,16 +271,13 @@ void MtpDeviceMonitor::OnMtpDisableParamChange(const char *key, const  char *val
 
 void MtpDeviceMonitor::OnEnterpriseParamChange(const char *key, const  char *value, void *context)
 {
-    if (key == nullptr || value == nullptr) {
+    if (key == nullptr || value == nullptr || context == nullptr) {
         LOGE("OnEnterpriseParamChange return invaild value");
         return;
     }
     LOGI("OnEnterpriseParamChange key = %{public}s, value = %{public}s,",  key, value);
     if (strcmp(key, SYS_PARAM_SERVICE_ENTERPRISE_ENABLE) != 0) {
         LOGE("event key mismatch");
-        return;
-    }
-    if (context == nullptr) {
         return;
     }
     MtpDeviceMonitor* instance = reinterpret_cast<MtpDeviceMonitor*>(context);
