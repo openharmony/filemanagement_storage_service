@@ -262,7 +262,7 @@ void MtpDeviceMonitor::OnMtpDisableParamChange(const char *key, const  char *val
         LOGE("event key mismatch");
         return;
     }
-    if (context == nullptr){
+    if (context == nullptr) {
         return;
     }
     MtpDeviceMonitor* instance = reinterpret_cast<MtpDeviceMonitor*>(context);
@@ -283,7 +283,7 @@ void MtpDeviceMonitor::OnEnterpriseParamChange(const char *key, const  char *val
         LOGE("event key mismatch");
         return;
     }
-    if (context == nullptr){
+    if (context == nullptr) {
         return;
     }
     MtpDeviceMonitor* instance = reinterpret_cast<MtpDeviceMonitor*>(context);
