@@ -49,7 +49,6 @@ MtpDeviceMonitor::~MtpDeviceMonitor()
 {
     LOGI("MtpDeviceMonitor Destructor.");
     UmountAllMtpDevice();
-    RemoveMTPParamListener();
 }
 
 void MtpDeviceMonitor::StartMonitor()
@@ -130,6 +129,7 @@ void MtpDeviceMonitor::MonitorDevice()
         sleep(SLEEP_TIME);
         UsbEventSubscriber::SubscribeCommonEvent();
     }
+    RemoveMTPParamListener();
     LOGI("MonitorDevice: mtp device monitor thread end.");
 }
 
@@ -253,8 +253,7 @@ void MtpDeviceMonitor::RemoveMTPParamListener()
 
 void MtpDeviceMonitor::OnMtpDisableParamChange(const char *key, const  char *value, void *context)
 {
-    (void)context;
-    if (key == nullptr || value == nullptr) {
+    if (key == nullptr || value == nullptr || context == nullptr) {
         LOGE("OnMtpDisableParamChange return invaild value");
         return;
     }
@@ -263,17 +262,16 @@ void MtpDeviceMonitor::OnMtpDisableParamChange(const char *key, const  char *val
         LOGE("event key mismatch");
         return;
     }
-    MtpDeviceMonitor instance;
-    if (instance.IsNeedDisableMtp()) {
+    MtpDeviceMonitor* instance = reinterpret_cast<MtpDeviceMonitor*>(context);
+    if (instance->IsNeedDisableMtp()) {
         LOGI("MTP disable parameter changed, unmount all mtp devices.");
-        instance.UmountAllMtpDevice();
+        instance->UmountAllMtpDevice();
     }
 }
 
 void MtpDeviceMonitor::OnEnterpriseParamChange(const char *key, const  char *value, void *context)
 {
-    (void)context;
-    if (key == nullptr || value == nullptr) {
+    if (key == nullptr || value == nullptr || context == nullptr) {
         LOGE("OnEnterpriseParamChange return invaild value");
         return;
     }
@@ -282,10 +280,10 @@ void MtpDeviceMonitor::OnEnterpriseParamChange(const char *key, const  char *val
         LOGE("event key mismatch");
         return;
     }
-    MtpDeviceMonitor instance;
-    if (instance.IsNeedDisableMtp()) {
+    MtpDeviceMonitor* instance = reinterpret_cast<MtpDeviceMonitor*>(context);
+    if (instance->IsNeedDisableMtp()) {
         LOGI("Enterprise device parameter changed, unmount all mtp devices.");
-        instance.UmountAllMtpDevice();
+        instance->UmountAllMtpDevice();
     }
 }
 }  // namespace StorageDaemon
