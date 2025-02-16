@@ -63,7 +63,10 @@ ohos_unittest("KeyManagerTest") {
     "//third_party/googletest:gtest_main",
   ]
 
-  deps += [ "${storage_daemon_path}:storage_common_utils" ]
+  deps += [
+    "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_test_ipc",
+  ]
 
   external_deps = [
     "bundle_framework:appexecfwk_core",
@@ -130,6 +133,7 @@ ohos_unittest("KeyManagerSupTest") {
   ]
 
   deps = [
+    "${storage_daemon_path}:storage_daemon_test_ipc",
     "//third_party/googletest:gmock_main",
     "//third_party/googletest:gtest_main",
   ]
@@ -207,6 +211,7 @@ ohos_unittest("KeyManagerOtherTest") {
   ]
 
   deps = [
+    "${storage_daemon_path}:storage_daemon_test_ipc",
     "//third_party/googletest:gmock_main",
     "//third_party/googletest:gtest_main",
   ]
@@ -276,7 +281,10 @@ ohos_unittest("KeyManagerAnotherTest") {
     "key_manager_another_test.cpp",
   ]
 
-  deps = [ "${storage_daemon_path}:storage_common_utils" ]
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_test_ipc",
+  ]
 
   external_deps = [
     "c_utils:utils",

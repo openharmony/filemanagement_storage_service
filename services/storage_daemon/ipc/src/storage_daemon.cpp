@@ -24,6 +24,7 @@
 #include "hisysevent.h"
 #include "utils/storage_radar.h"
 #include "utils/string_utils.h"
+#include "utils/storage_xcollie.h"
 
 #ifdef USER_CRYPTO_MANAGER
 #include "crypto/app_clone_key_manager.h"
@@ -73,6 +74,7 @@ const std::string NEED_RESTORE_SUFFIX = "/latest/need_restore";
 const std::string NEW_DOUBLE_2_SINGLE = "2";
 typedef int32_t (*CreateShareFileFunc)(const std::vector<std::string> &, uint32_t, uint32_t, std::vector<int32_t> &);
 typedef int32_t (*DeleteShareFileFunc)(uint32_t, const std::vector<std::string> &);
+const unsigned int LOCAL_TIME_OUT_SECONDS = 10;
 
 int32_t StorageDaemon::Shutdown()
 {
@@ -81,6 +83,7 @@ int32_t StorageDaemon::Shutdown()
 
 int32_t StorageDaemon::Mount(const std::string &volId, uint32_t flags)
 {
+    LOGI("StorageDaemon::Mount, volId:%{public}s, flags:%{public}u", volId.c_str(), flags);
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle Mount");
     int32_t ret = VolumeManager::Instance()->Mount(volId, flags);
@@ -101,6 +104,7 @@ int32_t StorageDaemon::Mount(const std::string &volId, uint32_t flags)
 
 int32_t StorageDaemon::UMount(const std::string &volId)
 {
+    LOGI("StorageDaemon::UMount, volId:%{public}s", volId.c_str());
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle UMount");
     int32_t ret = VolumeManager::Instance()->UMount(volId);
@@ -121,6 +125,7 @@ int32_t StorageDaemon::UMount(const std::string &volId)
 
 int32_t StorageDaemon::Check(const std::string &volId)
 {
+    LOGI("StorageDaemon::Check, volId:%{public}s", volId.c_str());
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle Check");
     int32_t ret = VolumeManager::Instance()->Check(volId);
@@ -136,6 +141,7 @@ int32_t StorageDaemon::Check(const std::string &volId)
 
 int32_t StorageDaemon::Format(const std::string &volId, const std::string &fsType)
 {
+    LOGI("StorageDaemon::Format, volId:%{public}s, fsType:%{public}s", volId.c_str(), fsType.c_str());
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle Format");
     int32_t ret = VolumeManager::Instance()->Format(volId, fsType);
@@ -156,6 +162,7 @@ int32_t StorageDaemon::Format(const std::string &volId, const std::string &fsTyp
 
 int32_t StorageDaemon::Partition(const std::string &diskId, int32_t type)
 {
+    LOGI("StorageDaemon::Partition, diskId:%{public}s, type:%{public}d", diskId.c_str(), type);
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle Partition");
     int32_t ret = DiskManager::Instance()->HandlePartition(diskId);
@@ -176,6 +183,8 @@ int32_t StorageDaemon::Partition(const std::string &diskId, int32_t type)
 
 int32_t StorageDaemon::SetVolumeDescription(const std::string &volId, const std::string &description)
 {
+    LOGI("StorageDaemon::SetVolumeDescription, volId:%{public}s, description:%{public}s", volId.c_str(),
+        description.c_str());
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle SetVolumeDescription");
     int32_t ret = VolumeManager::Instance()->SetVolumeDescription(volId, description);
@@ -198,21 +207,22 @@ int32_t StorageDaemon::SetVolumeDescription(const std::string &volId, const std:
 
 int32_t StorageDaemon::GetCryptoFlag(KeyType type, uint32_t &flags)
 {
+    LOGI("StorageDaemon::GetCryptoFlag, flags:%{public}u", flags);
     switch (type) {
         case EL1_KEY:
-            flags = IStorageDaemon::CRYPTO_FLAG_EL1;
+            flags = static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL1);
             return E_OK;
         case EL2_KEY:
-            flags = IStorageDaemon::CRYPTO_FLAG_EL2;
+            flags = static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL2);
             return E_OK;
         case EL3_KEY:
-            flags = IStorageDaemon::CRYPTO_FLAG_EL3;
+            flags = static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL3);
             return E_OK;
         case EL4_KEY:
-            flags = IStorageDaemon::CRYPTO_FLAG_EL4;
+            flags = static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL4);
             return E_OK;
         case EL5_KEY:
-            flags = IStorageDaemon::CRYPTO_FLAG_EL5;
+            flags = static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL5);
             return E_OK;
         default:
             LOGE("GetCryptoFlag error, type = %{public}u", type);
@@ -223,6 +233,7 @@ int32_t StorageDaemon::GetCryptoFlag(KeyType type, uint32_t &flags)
 #ifdef USER_CRYPTO_MIGRATE_KEY
 std::string StorageDaemon::GetNeedRestoreFilePath(int32_t userId, const std::string &user_dir)
 {
+    LOGI("StorageDaemon::GetNeedRestoreFilePath, userId:%{public}d, user_dir:%{public}s", userId, user_dir.c_str());
     std::string path = user_dir + "/" + std::to_string(userId) + "/latest/need_restore";
     return path;
 }
@@ -248,6 +259,7 @@ std::string StorageDaemon::GetNeedRestoreFilePathByType(int32_t userId, KeyType 
 
 int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
 {
+    LOGI("StorageDaemon::RestoreOneUserKey, userId:%{public}d", userId);
     uint32_t flags = 0;
     int32_t ret = GetCryptoFlag(type, flags);
     if (ret != E_OK) {
@@ -327,8 +339,12 @@ int32_t StorageDaemon::RestoreUserKey(int32_t userId, uint32_t flags)
 
 int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
+    LOGI("StorageDaemon::PrepareUserDirs:userId  %{public}d, flags %{public}u", userId, flags);
+    std::lock_guard<std::mutex> lock(AppFileService::mutex);
     //CRYPTO_FLAG_EL3 create el3,  CRYPTO_FLAG_EL4 create el4
-    flags = flags | IStorageDaemon::CRYPTO_FLAG_EL3 | IStorageDaemon::CRYPTO_FLAG_EL4 | IStorageDaemon::CRYPTO_FLAG_EL5;
+    flags = flags | static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL3) |
+        static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL4) |
+        static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL5);
 #ifdef USER_CRYPTO_MANAGER
     int32_t ret = KeyManager::GetInstance()->GenerateUserKeys(userId, flags);
 #ifdef USER_CRYPTO_MIGRATE_KEY
@@ -363,9 +379,13 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
 
 int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
 {
+    LOGI("StorageDaemon::DestroyUserDirs:userId  %{public}d, flags %{public}u", userId, flags);
+    std::lock_guard<std::mutex> lock(AppFileService::mutex);
     int32_t errCode = 0;
     //CRYPTO_FLAG_EL3 destroy el3,  CRYPTO_FLAG_EL4 destroy el4
-    flags = flags | IStorageDaemon::CRYPTO_FLAG_EL3 | IStorageDaemon::CRYPTO_FLAG_EL4 | IStorageDaemon::CRYPTO_FLAG_EL5;
+    flags = flags | static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL3) |
+        static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL4) |
+        static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL5);
     int32_t destroyUserRet = UserManager::GetInstance()->DestroyUserDirs(userId, flags);
     if (destroyUserRet != E_OK) {
         errCode = destroyUserRet;
@@ -394,6 +414,7 @@ int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
 
 int32_t StorageDaemon::StartUser(int32_t userId)
 {
+    LOGI("StorageDaemon::StartUser:userId  %{public}d", userId);
     int32_t ret = UserManager::GetInstance()->StartUser(userId);
     if (ret != E_OK && ret != E_KEY_NOT_ACTIVED) {
         LOGE("StartUser failed, please check");
@@ -409,6 +430,7 @@ int32_t StorageDaemon::StartUser(int32_t userId)
 
 int32_t StorageDaemon::StopUser(int32_t userId)
 {
+    LOGI("StorageDaemon::StopUser:userId  %{public}d", userId);
     int32_t ret = UserManager::GetInstance()->StopUser(userId);
     LOGE("StopUser end, ret is %{public}d.", ret);
     StorageRadar::ReportUserManager("StopUser", userId, ret, "");
@@ -421,6 +443,7 @@ int32_t StorageDaemon::StopUser(int32_t userId)
 
 int32_t StorageDaemon::CompleteAddUser(int32_t userId)
 {
+    LOGI("StorageDaemon::CompleteAddUser:userId  %{public}d", userId);
     LOGI("CompleteAddUser enter.");
     if (userId >= StorageService::START_APP_CLONE_USER_ID && userId < StorageService::MAX_APP_CLONE_USER_ID) {
         LOGE("User %{public}d is app clone user, do not delete el1 need_restore.", userId);
@@ -440,6 +463,7 @@ int32_t StorageDaemon::CompleteAddUser(int32_t userId)
 
 int32_t StorageDaemon::InitGlobalKey(void)
 {
+    std::lock_guard<std::mutex> lock(AppFileService::mutex);
 #ifdef USER_CRYPTO_MANAGER
     int ret = KeyManager::GetInstance()->InitGlobalDeviceKey();
     if (ret != E_OK) {
@@ -459,6 +483,7 @@ int32_t StorageDaemon::InitGlobalKey(void)
 
 int32_t StorageDaemon::InitGlobalUserKeys(void)
 {
+    std::lock_guard<std::mutex> lock(AppFileService::mutex);
 #ifdef USER_FILE_SHARING
     // File sharing depends on the /data/service/el1/public be decrypted.
     // A hack way to prepare the sharing dir, move it to callbacks after the parameter ready.
@@ -499,7 +524,8 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
 #ifdef USE_LIBRESTORECON
     RestoreconRecurse(DATA_SERVICE_EL1_PUBLIC_STORAGE_DAEMON_SD.c_str());
 #endif
-    auto result = UserManager::GetInstance()->PrepareUserDirs(GLOBAL_USER_ID, CRYPTO_FLAG_EL1);
+    auto result = UserManager::GetInstance()->PrepareUserDirs(GLOBAL_USER_ID,
+        static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL1));
     if (result != E_OK) {
         LOGE("PrepareUserDirs failed, please check");
         StorageRadar::ReportUserKeyResult("InitGlobalUserKeys::PrepareUserDirs", GLOBAL_USER_ID, result, "EL1", "");
@@ -515,6 +541,8 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
 int32_t StorageDaemon::GenerateUserKeys(uint32_t userId, uint32_t flags)
 {
 #ifdef USER_CRYPTO_MANAGER
+    LOGI("StorageDaemon::GenerateUserKeys, userId: %{public}u, flags:%{public}u", userId, flags);
+    int timerId = StorageXCollie::SetTimer("storage:GenerateUserKeys", LOCAL_TIME_OUT_SECONDS);
     int32_t ret = KeyManager::GetInstance()->GenerateUserKeys(userId, flags);
     if (ret != E_OK) {
         LOGE("GenerateUserKeys failed, please check");
@@ -531,6 +559,7 @@ int32_t StorageDaemon::GenerateUserKeys(uint32_t userId, uint32_t flags)
         AuditLog storageAuditLog = { false, "FAILED TO GenerateUserKeys", "ADD", "GenerateUserKeys", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
     }
+    StorageXCollie::CancelTimer(timerId);
     return ret;
 #else
     return E_OK;
@@ -540,6 +569,8 @@ int32_t StorageDaemon::GenerateUserKeys(uint32_t userId, uint32_t flags)
 int32_t StorageDaemon::DeleteUserKeys(uint32_t userId)
 {
 #ifdef USER_CRYPTO_MANAGER
+    LOGI("StorageDaemon::DeleteUserKeys, userId: %{public}u", userId);
+    int timerId = StorageXCollie::SetTimer("storage:DeleteUserKeys", LOCAL_TIME_OUT_SECONDS);
     int32_t ret = KeyManager::GetInstance()->DeleteUserKeys(userId);
     if (ret != E_OK) {
         LOGE("DeleteUserKeys failed, please check");
@@ -556,6 +587,7 @@ int32_t StorageDaemon::DeleteUserKeys(uint32_t userId)
         AuditLog storageAuditLog = { false, "FAILED TO DeleteUserKeys", "DEL", "DeleteUserKeys", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
     }
+    StorageXCollie::CancelTimer(timerId);
     return ret;
 #else
     return E_OK;
@@ -567,9 +599,15 @@ int32_t StorageDaemon::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                                       const std::vector<uint8_t> &oldSecret,
                                       const std::vector<uint8_t> &newSecret)
 {
+    LOGI(
+        "StorageDaemon::UpdateUserAuth, userId: %{public}u, token:%{public}d,"
+        "oldSecret:%{public}d, newSecret:%{public}d",
+        userId, token.empty(), oldSecret.empty(), newSecret.empty());
     UserTokenSecret userTokenSecret = {
         .token = token, .oldSecret = oldSecret, .newSecret = newSecret, .secureUid = secureUid};
 #ifdef USER_CRYPTO_MANAGER
+    int timerId = StorageXCollie::SetTimer("storage:UpdateUserAuth", LOCAL_TIME_OUT_SECONDS);
+    std::lock_guard<std::mutex> lock(AppFileService::mutex);
     int32_t ret = KeyManager::GetInstance()->UpdateUserAuth(userId, userTokenSecret);
     if (ret != E_OK) {
         LOGE("UpdateUserAuth failed, please check");
@@ -586,6 +624,7 @@ int32_t StorageDaemon::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
         AuditLog storageAuditLog = { false, "FAILED TO UpdateUserAuth", "CP", "UpdateUserAuth", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
     }
+    StorageXCollie::CancelTimer(timerId);
     return ret;
 #else
     return E_OK;
@@ -596,8 +635,12 @@ int32_t StorageDaemon::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &
                                                     const std::vector<uint8_t> &newSecret,
                                                     uint64_t secureUid,
                                                     uint32_t userId,
-                                                    std::vector<std::vector<uint8_t>> &plainText)
+                                                    const std::vector<std::vector<uint8_t>> &plainText)
 {
+    LOGI(
+        "StorageDaemon::UpdateUseAuthWithRecoveryKey, authToken: %{public}d, newSecret:%{public}d,"
+        "userId:%{public}d",
+        authToken.empty(), newSecret.empty(), userId);
     LOGI("begin to UpdateUseAuthWithRecoveryKey");
 #ifdef USER_CRYPTO_MANAGER
     return KeyManager::GetInstance()->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId, plainText);
@@ -618,6 +661,8 @@ std::string StorageDaemon::GetNeedRestoreVersion(uint32_t userId, KeyType type)
 int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuth(uint32_t userId, KeyType type,
     const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret)
 {
+    LOGI("StorageDaemon::PrepareUserDirsAndUpdateUserAuth, userId: %{public}u, token:%{public}u,"
+        "secret:%{public}u", userId, token.empty(), secret.empty());
     int32_t ret = E_OK;
     std::string need_restore_version = GetNeedRestoreVersion(userId, type);
     int32_t OLD_UPDATE_VERSION_MAXLIMIT = std::atoi(NEW_DOUBLE_2_SINGLE.c_str());
@@ -636,7 +681,8 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuth(uint32_t userId, KeyType
 int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthOld(uint32_t userId, KeyType type,
     const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret)
 {
-    LOGW("start userId %{public}u KeyType %{public}u", userId, type);
+    LOGI("start userId %{public}u KeyType %{public}u token %{public}u secret %{public}u", userId, type,
+        token.empty(), secret.empty());
     int32_t ret = E_OK;
     uint32_t flags = 0;
 
@@ -680,7 +726,7 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthOld(uint32_t userId, KeyT
     if (ret != E_OK) {
         return ret;
     }
-    if (flags == IStorageDaemon::CRYPTO_FLAG_EL2) {
+    if (flags == static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL2)) {
         PrepareUeceDir(userId);
     }
     LOGW("userId %{public}u type %{public}u sucess", userId, type);
@@ -691,7 +737,8 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthVx(uint32_t userId, KeyTy
     const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret,
     const std::string needRestoreVersion)
 {
-    LOGW("start userId %{public}u KeyType %{public}u", userId, type);
+    LOGI("start userId %{public}u KeyType %{public}u token %{public}u secret %{public}u", userId, type,
+        token.empty(), secret.empty());
     int32_t ret = E_OK;
     uint32_t flags = 0;
 
@@ -717,7 +764,7 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthVx(uint32_t userId, KeyTy
     if (ret != E_OK) {
         return ret;
     }
-    if (flags == IStorageDaemon::CRYPTO_FLAG_EL2) {
+    if (flags == static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL2)) {
         PrepareUeceDir(userId);
     }
     LOGW("userId %{public}u type %{public}u sucess", userId, type);
@@ -726,6 +773,7 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthVx(uint32_t userId, KeyTy
 
 bool StorageDaemon::IsNeedRestorePathExist(uint32_t userId, bool needCheckEl1)
 {
+    LOGI("StorageDaemon::IsNeedRestorePathExist userId :%{public}u ", userId);
     std::error_code errCode;
     std::string el2NeedRestorePath = GetNeedRestoreFilePath(userId, USER_EL2_DIR);
     std::string el3NeedRestorePath = GetNeedRestoreFilePath(userId, USER_EL3_DIR);
@@ -742,10 +790,15 @@ bool StorageDaemon::IsNeedRestorePathExist(uint32_t userId, bool needCheckEl1)
 
 int32_t StorageDaemon::PrepareUeceDir(uint32_t userId)
 {
-    int32_t ret = UserManager::GetInstance()->DestroyUserDirs(userId, IStorageDaemon::CRYPTO_FLAG_EL5);
-    LOGI("delete user %{public}u uece %{public}u, ret %{public}d", userId, IStorageDaemon::CRYPTO_FLAG_EL5, ret);
-    ret = UserManager::GetInstance()->PrepareUserDirs(userId, IStorageDaemon::CRYPTO_FLAG_EL5);
-    LOGI("prepare user %{public}u uece %{public}u, ret %{public}d", userId, IStorageDaemon::CRYPTO_FLAG_EL5, ret);
+    LOGI("StorageDaemon::PrepareUeceDir  userId :%{public}u ", userId);
+    int32_t ret = UserManager::GetInstance()->DestroyUserDirs(userId,
+        static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL5));
+    LOGI("delete user %{public}u uece %{public}u, ret %{public}d",
+        userId, static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL5), ret);
+    ret = UserManager::GetInstance()->PrepareUserDirs(userId,
+        static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL5));
+    LOGI("prepare user %{public}u uece %{public}u, ret %{public}d",
+         userId, static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL5), ret);
     return ret;
 }
 #endif
@@ -754,6 +807,8 @@ int32_t StorageDaemon::GenerateKeyAndPrepareUserDirs(uint32_t userId, KeyType ty
                                                      const std::vector<uint8_t> &token,
                                                      const std::vector<uint8_t> &secret)
 {
+    LOGI("StorageDaemon::GenerateKeyAndPrepareUserDirs, userId %{public}u, KeyType %{public}u, token %{public}d,"
+        "secret %{public}d", userId, type, token.empty(), secret.empty());
 #ifdef USER_CRYPTO_MANAGER
     int32_t ret;
     uint32_t flags = 0;
@@ -770,7 +825,8 @@ int32_t StorageDaemon::GenerateKeyAndPrepareUserDirs(uint32_t userId, KeyType ty
         return ret;
     }
     std::string keyUeceDir = std::string(UECE_DIR) + "/" + std::to_string(userId);
-    if ((flags & IStorageDaemon::CRYPTO_FLAG_EL5) && IsDir(keyUeceDir) && !std::filesystem::is_empty(keyUeceDir)) {
+    if ((flags & static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL5)) && IsDir(keyUeceDir) &&
+         !std::filesystem::is_empty(keyUeceDir)) {
         LOGE("uece has already create, do not need create !");
         // for double2single update el5
         UserManager::GetInstance()->CreateElxBundleDataDir(userId, type);
@@ -793,6 +849,10 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepare(uint32_t userId, KeyType type,
                                                const std::vector<uint8_t> &token,
                                                const std::vector<uint8_t> &secret)
 {
+    LOGI(
+        "StorageDaemon::ActiveUserKeyAndPrepare, userId %{public}u, KeyType %{public}u, token %{public}d, "
+        "secret %{public}d",
+        userId, type, token.empty(), secret.empty());
 #ifdef USER_CRYPTO_MANAGER
     LOGW("ActiveUserKey with type %{public}u enter", type);
     int ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, type, token, secret);
@@ -831,6 +891,8 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepareElX(uint32_t userId,
                                                   const std::vector<uint8_t> &token,
                                                   const std::vector<uint8_t> &secret)
 {
+    LOGI("StorageDaemon::ActiveUserKeyAndPrepareElX, userId %{public}u, token %{public}d,secret %{public}d",
+        userId, token.empty(), secret.empty());
 #ifdef USER_CRYPTO_MANAGER
     int ret = ActiveUserKeyAndPrepare(userId, EL3_KEY, token, secret);
     if (ret != E_OK) {
@@ -867,6 +929,10 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
                                      const std::vector<uint8_t> &token,
                                      const std::vector<uint8_t> &secret)
 {
+    LOGI("StorageDaemon::ActiveUserKey, userId %{public}u, token %{public}d,secret %{public}d",
+        userId, token.empty(), secret.empty());
+    int timerId = StorageXCollie::SetTimer("storage:ActiveUserKey", LOCAL_TIME_OUT_SECONDS);
+    std::lock_guard<std::mutex> lock(AppFileService::mutex);
     int ret = E_OK;
 #ifdef USER_CRYPTO_MANAGER
     LOGW("userId %{public}u, tok empty %{public}d sec empty %{public}d", userId, token.empty(), secret.empty());
@@ -908,11 +974,13 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
 #endif
     std::thread([this, userId]() { RestoreconElX(userId); }).detach();
     std::thread([this]() { ActiveAppCloneUserKey(); }).detach();
+    StorageXCollie::CancelTimer(timerId);
     return ret;
 }
 
 int32_t StorageDaemon::RestoreconElX(uint32_t userId)
 {
+    LOGI("StorageDaemon::RestoreconElX, userId %{public}u", userId);
 #ifdef USE_LIBRESTORECON
     LOGI("Begin to restorecon path, userId = %{public}d", userId);
     RestoreconRecurse((DATA_SERVICE_EL2 + "public").c_str());
@@ -939,7 +1007,10 @@ int32_t StorageDaemon::RestoreconElX(uint32_t userId)
 
 int32_t StorageDaemon::InactiveUserKey(uint32_t userId)
 {
+    LOGI("StorageDaemon::InactiveUserKey, userId %{public}u", userId);
 #ifdef USER_CRYPTO_MANAGER
+    int timerId = StorageXCollie::SetTimer("storage:InactiveUserKey", LOCAL_TIME_OUT_SECONDS);
+    std::lock_guard<std::mutex> lock(AppFileService::mutex);
     int32_t ret = KeyManager::GetInstance()->InActiveUserKey(userId);
     if (ret != E_OK) {
         LOGE("InActiveUserKey failed, please check");
@@ -956,6 +1027,7 @@ int32_t StorageDaemon::InactiveUserKey(uint32_t userId)
         AuditLog storageAuditLog = { false, "FAILED TO InActiveUserKey", "DEL", "InActiveUserKey", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
     }
+    StorageXCollie::CancelTimer(timerId);
     return ret;
 #else
     return E_OK;
@@ -964,7 +1036,11 @@ int32_t StorageDaemon::InactiveUserKey(uint32_t userId)
 
 int32_t StorageDaemon::LockUserScreen(uint32_t userId)
 {
+    LOGI("StorageDaemon::LockUserScreen, userId %{public}u", userId);
+    
 #ifdef USER_CRYPTO_MANAGER
+    int timerId = StorageXCollie::SetTimer("storage:LockUserScreen", LOCAL_TIME_OUT_SECONDS);
+    std::lock_guard<std::mutex> lock(AppFileService::mutex);
     int32_t ret = KeyManager::GetInstance()->LockUserScreen(userId);
     if (ret != E_OK) {
         LOGE("LockUserScreen failed, please check");
@@ -981,6 +1057,7 @@ int32_t StorageDaemon::LockUserScreen(uint32_t userId)
         AuditLog storageAuditLog = { true, "FAILED TO LockUserScreen", "UPDATE", "LockUserScreen", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
     }
+    StorageXCollie::CancelTimer(timerId);
     return ret;
 #else
     return E_OK;
@@ -991,7 +1068,12 @@ int32_t StorageDaemon::UnlockUserScreen(uint32_t userId,
                                         const std::vector<uint8_t> &token,
                                         const std::vector<uint8_t> &secret)
 {
+    LOGI("StorageDaemon::UnlockUserScreen, userId %{public}u, token %{public}d,secret %{public}d",
+        userId, token.empty(), secret.empty());
+    
 #ifdef USER_CRYPTO_MANAGER
+    int timerId = StorageXCollie::SetTimer("storage:UnlockUserScreen", LOCAL_TIME_OUT_SECONDS);
+    std::lock_guard<std::mutex> lock(AppFileService::mutex);
     int32_t ret = KeyManager::GetInstance()->UnlockUserScreen(userId, token, secret);
     if (ret != E_OK) {
         LOGE("UnlockUserScreen failed, userId=%{public}u, ret=%{public}d", userId, ret);
@@ -1008,6 +1090,7 @@ int32_t StorageDaemon::UnlockUserScreen(uint32_t userId,
         AuditLog storageAuditLog = { true, "FAILED TO UnlockUserScreen", "UPDATE", "UnlockUserScreen", 1, "FAILED" };
         HiAudit::GetInstance().Write(storageAuditLog);
     }
+    StorageXCollie::CancelTimer(timerId);
     return ret;
 #else
     return E_OK;
@@ -1016,8 +1099,14 @@ int32_t StorageDaemon::UnlockUserScreen(uint32_t userId,
 
 int32_t StorageDaemon::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)
 {
+    LOGI("StorageDaemon::GetLockScreenStatus, userId %{public}u", userId);
+
 #ifdef USER_CRYPTO_MANAGER
-    return KeyManager::GetInstance()->GetLockScreenStatus(userId, lockScreenStatus);
+    int timerId = StorageXCollie::SetTimer("storage:GetLockScreenStatus", LOCAL_TIME_OUT_SECONDS);
+    std::lock_guard<std::mutex> lock(AppFileService::mutex);
+    int32_t ret = KeyManager::GetInstance()->GetLockScreenStatus(userId, lockScreenStatus);
+    StorageXCollie::CancelTimer(timerId);
+    return ret;
 #else
     return E_OK;
 #endif
@@ -1025,12 +1114,17 @@ int32_t StorageDaemon::GetLockScreenStatus(uint32_t userId, bool &lockScreenStat
 
 int32_t StorageDaemon::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId)
 {
+    LOGI("StorageDaemon::GenerateAppkey, userId %{public}u, hashId %{public}u, keyId %{public}s",
+        userId, hashId, keyId.c_str());
+    
 #ifdef USER_CRYPTO_MANAGER
+    int timerId = StorageXCollie::SetTimer("storage:GenerateAppkey", LOCAL_TIME_OUT_SECONDS);
     int ret = KeyManager::GetInstance()->GenerateAppkey(userId, hashId, keyId);
     if (ret != E_OK) {
         StorageRadar::ReportUserKeyResult("GenerateAppKey", userId, ret, EL5,
             "not support uece / EL5key is nullptr or ENONET");
     }
+    StorageXCollie::CancelTimer(timerId);
     return ret;
 #else
     return E_OK;
@@ -1039,12 +1133,17 @@ int32_t StorageDaemon::GenerateAppkey(uint32_t userId, uint32_t hashId, std::str
 
 int32_t StorageDaemon::DeleteAppkey(uint32_t userId, const std::string &keyId)
 {
+    LOGI("StorageDaemon::DeleteAppkey, userId %{public}u, keyId %{public}s", userId, keyId.c_str());
+    
 #ifdef USER_CRYPTO_MANAGER
+    int timerId = StorageXCollie::SetTimer("storage:DeleteAppkey", LOCAL_TIME_OUT_SECONDS);
+    std::lock_guard<std::mutex> lock(AppFileService::mutex);
     int ret = ret = KeyManager::GetInstance()->DeleteAppkey(userId, keyId);
     if (ret != E_OK) {
         StorageRadar::ReportUserKeyResult("DeleteAppKey", userId, ret, EL5,
             "EL5key is nullptr / Failed to delete AppKey2");
     }
+    StorageXCollie::CancelTimer(timerId);
     return ret;
 #else
     return E_OK;
@@ -1056,6 +1155,8 @@ int32_t StorageDaemon::CreateRecoverKey(uint32_t userId,
                                         const std::vector<uint8_t> &token,
                                         const std::vector<uint8_t> &secret)
 {
+    LOGI("StorageDaemon::CreateRecoverKey, userId %{public}u, userType %{public}u, token %{public}d,secret %{public}d",
+        userId, userType, token.empty(), secret.empty());
     LOGI("begin to CreateRecoverKey");
 #ifdef USER_CRYPTO_MANAGER
     return KeyManager::GetInstance()->CreateRecoverKey(userId, userType, token, secret);
@@ -1076,7 +1177,11 @@ int32_t StorageDaemon::SetRecoverKey(const std::vector<uint8_t> &key)
 
 int32_t StorageDaemon::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
+    LOGI("StorageDaemon::UpdateKeyContext, userId %{public}u", userId);
+    
 #ifdef USER_CRYPTO_MANAGER
+    int timerId = StorageXCollie::SetTimer("storage:UpdateKeyContext", LOCAL_TIME_OUT_SECONDS);
+    std::lock_guard<std::mutex> lock(AppFileService::mutex);
     int32_t ret = KeyManager::GetInstance()->UpdateKeyContext(userId, needRemoveTmpKey);
     if (ret != E_OK) {
         LOGE("UpdateKeyContext failed, please check");
@@ -1096,6 +1201,7 @@ int32_t StorageDaemon::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
         AuditLog storageAuditLog = { true, "SUCCESS TO UpdateKeyContext", "UPDATE", "UpdateKeyContext", 1, "SUCCESS" };
         HiAudit::GetInstance().Write(storageAuditLog);
     }
+    StorageXCollie::CancelTimer(timerId);
     return ret;
 #else
     return E_OK;
@@ -1116,17 +1222,20 @@ int32_t StorageDaemon::MountCryptoPathAgain(uint32_t userId)
 #endif
 }
 
-std::vector<int32_t> StorageDaemon::CreateShareFile(const std::vector<std::string> &uriList,
-                                                    uint32_t tokenId, uint32_t flag)
+int32_t StorageDaemon::CreateShareFile(const std::vector<std::string> &uriList,
+                                       uint32_t tokenId,
+                                       uint32_t flag,
+                                       std::vector<int32_t> &funcResult)
 {
-    LOGI("Create Share file list len is %{public}zu", uriList.size());
-    std::vector<int32_t> retList;
-    AppFileService::FileShare::CreateShareFile(uriList, tokenId, flag, retList);
-    return retList;
+    LOGI("Create Share file list len is %{public}zu,tokenId %{public}u, flag %{public}u",
+        uriList.size(), tokenId, flag);
+    AppFileService::FileShare::CreateShareFile(uriList, tokenId, flag, funcResult);
+    return E_OK;
 }
 
 int32_t StorageDaemon::DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList)
 {
+    LOGI("Delete Share file list len is %{public}zu", uriList.size());
     int32_t ret = AppFileService::FileShare::DeleteShareFile(tokenId, uriList);
     return ret;
 }
@@ -1134,6 +1243,8 @@ int32_t StorageDaemon::DeleteShareFile(uint32_t tokenId, const std::vector<std::
 int32_t StorageDaemon::SetBundleQuota(const std::string &bundleName, int32_t uid,
     const std::string &bundleDataDirPath, int32_t limitSizeMb)
 {
+    LOGI("StorageDaemon::SetBundleQuota bundleName %{public}s, uid %{public}d, bundleDataDirPath %{public}s,"
+        "limitSizeMb %{public}d", bundleName.c_str(), uid, bundleDataDirPath.c_str(), limitSizeMb);
     return QuotaManager::GetInstance()->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
 }
 
@@ -1146,6 +1257,7 @@ int32_t StorageDaemon::GetBundleStatsForIncrease(uint32_t userId, const std::vec
     const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes,
     std::vector<int64_t> &incPkgFileSizes)
 {
+    LOGI("StorageDaemon::GetBundleStatsForIncrease,userId %{public}u ", userId);
     return QuotaManager::GetInstance()->GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes,
         pkgFileSizes, incPkgFileSizes);
 }
@@ -1153,6 +1265,8 @@ int32_t StorageDaemon::GetBundleStatsForIncrease(uint32_t userId, const std::vec
 int32_t StorageDaemon::MountDfsDocs(int32_t userId, const std::string &relativePath,
     const std::string &networkId, const std::string &deviceId)
 {
+    LOGI("StorageDaemon::MountDfsDocs,userId %{public}d, relativePath %{public}s, networkId %{public}s,"
+        "deviceId %{public}s ", userId, relativePath.c_str(), networkId.c_str(), deviceId.c_str());
     LOGI("StorageDaemon::MountDfsDocs start.");
     return MountManager::GetInstance()->MountDfsDocs(userId, relativePath, networkId, deviceId);
 }
@@ -1160,13 +1274,19 @@ int32_t StorageDaemon::MountDfsDocs(int32_t userId, const std::string &relativeP
 int32_t StorageDaemon::UMountDfsDocs(int32_t userId, const std::string &relativePath,
     const std::string &networkId, const std::string &deviceId)
 {
+    LOGI("StorageDaemon::UMountDfsDocs,userId %{public}d, relativePath %{public}s, networkId %{public}s,"
+        "deviceId %{public}s ", userId, relativePath.c_str(), networkId.c_str(), deviceId.c_str());
     LOGI("StorageDaemon::UMountDfsDocs start.");
     return MountManager::GetInstance()->UMountDfsDocs(userId, relativePath, networkId, deviceId);
 }
 
 int32_t StorageDaemon::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
 {
+    LOGI("StorageDaemon::GetFileEncryptStatus,userId %{public}u", userId);
+    
 #ifdef USER_CRYPTO_MANAGER
+    int timerId = StorageXCollie::SetTimer("storage:GetFileEncryptStatus", LOCAL_TIME_OUT_SECONDS);
+    std::lock_guard<std::mutex> lock(AppFileService::mutex);
     int32_t ret = KeyManager::GetInstance()->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
     if (ret != E_OK) {
         LOGE("GetFileEncryptStatus failed, please check");
@@ -1184,6 +1304,7 @@ int32_t StorageDaemon::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, 
             "FAILED" };
         HiAudit::GetInstance().Write(storageAuditLog);
     }
+    StorageXCollie::CancelTimer(timerId);
     return ret;
 #else
     return E_OK;
@@ -1192,8 +1313,12 @@ int32_t StorageDaemon::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, 
 
 int32_t StorageDaemon::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
 {
+    LOGI("StorageDaemon::GetFileEncryptStatus,userId %{public}u, needActive %{public}d", userId, needActive);
 #ifdef USER_CRYPTO_MIGRATE_KEY
+    int timerId = StorageXCollie::SetTimer("storage:GetUserNeedActiveStatus", LOCAL_TIME_OUT_SECONDS);
+    std::lock_guard<std::mutex> lock(AppFileService::mutex);
     needActive = IsNeedRestorePathExist(userId, false);
+    StorageXCollie::CancelTimer(timerId);
 #endif
     return E_OK;
 }
@@ -1206,7 +1331,7 @@ int32_t StorageDaemon::UpdateMemoryPara(int32_t size, int32_t &oldSize)
 void StorageDaemon::SystemAbilityStatusChangeListener::OnAddSystemAbility(int32_t systemAbilityId,
                                                                           const std::string &deviceId)
 {
-    LOGI("SystemAbilityId:%{public}d", systemAbilityId);
+    LOGI("SystemAbilityId:%{public}d, deviceId %{public}s", systemAbilityId, deviceId.c_str());
 #ifdef EXTERNAL_STORAGE_MANAGER
     if (systemAbilityId == ACCESS_TOKEN_MANAGER_SERVICE_ID) {
         DiskManager::Instance()->ReplayUevent();
@@ -1220,7 +1345,7 @@ void StorageDaemon::SystemAbilityStatusChangeListener::OnAddSystemAbility(int32_
 void StorageDaemon::SystemAbilityStatusChangeListener::OnRemoveSystemAbility(int32_t systemAbilityId,
                                                                              const std::string &deviceId)
 {
-    LOGI("SystemAbilityId:%{public}d", systemAbilityId);
+    LOGI("SystemAbilityId:%{public}d, device %{public}s", systemAbilityId, deviceId.c_str());
     if (systemAbilityId == FILEMANAGEMENT_CLOUD_DAEMON_SERVICE_SA_ID) {
         MountManager::GetInstance()->SetCloudState(false);
     }
@@ -1234,8 +1359,10 @@ void StorageDaemon::ActiveAppCloneUserKey()
     if (ret != E_OK && (ret != E_NOT_SUPPORT)) {
         LOGE("ActiveAppCloneUserKey failed, errNo %{public}d", ret);
 #ifdef USER_CRYPTO_MIGRATE_KEY
-        uint32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1 | IStorageDaemon::CRYPTO_FLAG_EL2 |
-                         IStorageDaemon::CRYPTO_FLAG_EL3 | IStorageDaemon::CRYPTO_FLAG_EL4;
+    uint32_t flags = static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL1) |
+        static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL2) |
+        static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL3) |
+        static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL4);
         bool isOsAccountExists = true;
         StorageService::KeyCryptoUtils::CheckAccountExists(failedUserId, isOsAccountExists);
         std::error_code errCode;
@@ -1254,12 +1381,22 @@ void StorageDaemon::ActiveAppCloneUserKey()
 
 int32_t StorageDaemon::MountMediaFuse(int32_t userId, int32_t &devFd)
 {
+    LOGI("StorageDaemon::MountMediaFuse,userId:%{public}d", userId);
+#ifdef STORAGE_SERVICE_MEDIA_FUSE
     return MountManager::GetInstance()->MountMediaFuse(userId, devFd);
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageDaemon::UMountMediaFuse(int32_t userId)
 {
+    LOGI("StorageDaemon::UMountMediaFuse,userId:%{public}d", userId);
+#ifdef STORAGE_SERVICE_MEDIA_FUSE
     return MountManager::GetInstance()->UMountMediaFuse(userId);
+#else
+    return E_OK;
+#endif
 }
 } // namespace StorageDaemon
 } // namespace OHOS

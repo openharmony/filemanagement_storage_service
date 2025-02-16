@@ -39,6 +39,7 @@ ohos_fuzztest("FileSystemCryptoFuzzTest") {
   defines = [ "STORAGE_LOG_TAG = \"storage_service\"" ]
   deps = [
     "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_external",
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
   ]
   external_deps = [

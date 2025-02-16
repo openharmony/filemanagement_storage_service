@@ -54,6 +54,7 @@ ohos_unittest("storage_daemon_communication_test") {
 
   deps = [
     "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_test_ipc",
     "//third_party/googletest:gtest_main",
   ]
 

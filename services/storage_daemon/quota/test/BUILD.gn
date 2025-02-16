@@ -44,6 +44,7 @@ ohos_unittest("quota_manager_test") {
 
   deps = [
     "$ROOT_DIR/storage_daemon:storage_common_utils",
+    "$ROOT_DIR/storage_daemon:storage_daemon_test_ipc",
     "//third_party/googletest:gtest_main",
   ]
 

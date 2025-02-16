@@ -25,7 +25,6 @@ ohos_unittest("storage_total_status_service_test") {
   module_out_path = "storage_service/storage_manager"
 
   sources = [
-    "${storage_daemon_path}/ipc/src/storage_daemon_proxy.cpp",
     "${storage_manager_path}/storage/src/bundle_manager_connector.cpp",
     "${storage_manager_path}/storage/src/storage_monitor_service.cpp",
     "${storage_manager_path}/storage/src/storage_status_service.cpp",
@@ -52,6 +51,7 @@ ohos_unittest("storage_total_status_service_test") {
 
   deps = [
     "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_external",
     "//third_party/googletest:gtest_main",
   ]
 
@@ -115,7 +115,10 @@ ohos_unittest("volume_storage_status_service_test") {
     defines += [ "EXTERNAL_STORAGE_MANAGER" ]
   }
 
-  deps = [ "//third_party/googletest:gtest_main" ]
+  deps = [
+    "${storage_daemon_path}:storage_daemon_test_ipc",
+    "//third_party/googletest:gtest_main",
+  ]
 
   external_deps = [
     "access_token:libaccesstoken_sdk",

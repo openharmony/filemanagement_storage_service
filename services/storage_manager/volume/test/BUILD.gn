@@ -93,6 +93,7 @@ ohos_unittest("volume_manager_service_test") {
 
   deps = [
     "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_external",
     "//third_party/googletest:gtest_main",
   ]
 

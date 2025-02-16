@@ -69,7 +69,7 @@ public:
                                      const std::vector<uint8_t> &newSecret,
                                      uint64_t secureUid,
                                      uint32_t userId,
-                                     std::vector<std::vector<uint8_t>> &plainText);
+                                     const std::vector<std::vector<uint8_t>> &plainText);
     int ActiveCeSceSeceUserKey(unsigned int user, KeyType type, const std::vector<uint8_t> &token,
                                const std::vector<uint8_t> &secret);
     int InActiveUserKey(unsigned int user);

@@ -113,7 +113,7 @@ int32_t StorageDaemonProxy::UpdateUseAuthWithRecoveryKey(const std::vector<uint8
                                                          const std::vector<uint8_t> &newSecret,
                                                          uint64_t secureUid,
                                                          uint32_t userId,
-                                                         std::vector<std::vector<uint8_t>> &plainText)
+                                                         const std::vector<std::vector<uint8_t>> &plainText)
 {
     return E_OK;
 }
@@ -180,10 +180,13 @@ int32_t StorageDaemonProxy::MountCryptoPathAgain(uint32_t userId)
     return E_OK;
 }
 
-std::vector<int32_t> StorageDaemonProxy::CreateShareFile(const std::vector<std::string> &uriList,
-                                                         uint32_t tokenId, uint32_t flag)
+int32_t StorageDaemonProxy::CreateShareFile(const std::vector<std::string> &uriList,
+                                            uint32_t tokenId,
+                                            uint32_t flag,
+                                            std::vector<int32_t> &funcResult)
 {
-    return {E_OK};
+    funcResult = {1};
+    return E_OK;
 }
 
 int32_t StorageDaemonProxy::DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList)

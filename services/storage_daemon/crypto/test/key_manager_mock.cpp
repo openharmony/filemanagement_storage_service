@@ -45,7 +45,7 @@ int32_t KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &us
 
 int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,
     const std::vector<uint8_t> &newSecret, uint64_t secureUid, uint32_t userId,
-    std::vector<std::vector<uint8_t>> &plainText)
+    const std::vector<std::vector<uint8_t>> &plainText)
 {
     return E_OK;
 }

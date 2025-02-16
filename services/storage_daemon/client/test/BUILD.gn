@@ -51,6 +51,7 @@ ohos_unittest("storage_daemon_clt_test") {
 
   deps = [
     "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_test_ipc",
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
     "//third_party/googletest:gtest_main",
   ]

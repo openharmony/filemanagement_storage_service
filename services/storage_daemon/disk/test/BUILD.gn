@@ -54,12 +54,14 @@ ohos_unittest("disk_manager_test") {
 
   deps = [
     "$ROOT_DIR:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_test_ipc",
     "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
+    "hitrace:hitrace_meter",
     "init:libbegetutil",
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
@@ -106,6 +108,7 @@ ohos_unittest("disk_info_test") {
 
   deps = [
     "$ROOT_DIR:storage_common_utils",
+    "$ROOT_DIR:storage_daemon_test_ipc",
     "//third_party/googletest:gmock_main",
     "//third_party/googletest:gtest_main",
   ]
@@ -113,6 +116,7 @@ ohos_unittest("disk_info_test") {
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
+    "hitrace:hitrace_meter",
     "init:libbegetutil",
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
@@ -157,13 +161,17 @@ ohos_unittest("disk_info_sup_test") {
     "$ROOT_DIR/volume/src/volume_manager.cpp",
   ]
 
-  deps = [ "$ROOT_DIR:storage_common_utils" ]
+  deps = [
+    "$ROOT_DIR:storage_common_utils",
+    "$ROOT_DIR:storage_daemon_test_ipc",
+  ]
 
   external_deps = [
     "c_utils:utils",
     "googletest:gmock_main",
     "googletest:gtest_main",
     "hilog:libhilog",
+    "hitrace:hitrace_meter",
     "init:libbegetutil",
     "ipc:ipc_single",
     "safwk:system_ability_fwk",

@@ -71,6 +71,7 @@ ohos_static_library("libsdcrypto") {
 
   deps = [
     "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_test_ipc",
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
   ]
 

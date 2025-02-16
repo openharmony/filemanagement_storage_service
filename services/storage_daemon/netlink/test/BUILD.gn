@@ -41,7 +41,10 @@ ohos_unittest("netlink_data_test") {
     "$ROOT_DIR/storage_daemon/netlink/test/netlink_data_test.cpp",
   ]
 
-  deps = [ "//third_party/googletest:gtest_main" ]
+  deps = [
+    "${storage_daemon_path}:storage_daemon_test_ipc",
+    "//third_party/googletest:gtest_main",
+  ]
 
   external_deps = [
     "c_utils:utils",
@@ -90,6 +93,7 @@ ohos_unittest("netlink_handler_test") {
 
   deps = [
     "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_test_ipc",
     "//third_party/googletest:gmock_main",
     "//third_party/googletest:gtest_main",
   ]
@@ -97,6 +101,7 @@ ohos_unittest("netlink_handler_test") {
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
+    "hitrace:hitrace_meter",
     "init:libbegetutil",
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
@@ -129,6 +134,7 @@ ohos_unittest("netlink_listener_test") {
   ]
 
   deps = [
+    "${storage_daemon_path}:storage_daemon_test_ipc",
     "//third_party/googletest:gmock_main",
     "//third_party/googletest:gtest_main",
   ]
@@ -181,12 +187,14 @@ ohos_unittest("netlink_manager_test") {
 
   deps = [
     "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_test_ipc",
     "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
+    "hitrace:hitrace_meter",
     "init:libbegetutil",
     "ipc:ipc_single",
     "safwk:system_ability_fwk",

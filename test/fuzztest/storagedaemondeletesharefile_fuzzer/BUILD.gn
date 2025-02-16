@@ -37,7 +37,6 @@ ohos_fuzztest("StorageDaemonDeleteShareFileFuzzTest") {
   sources = [
     "${storage_daemon_path}/crypto/src/key_manager.cpp",
     "${storage_daemon_path}/ipc/src/storage_daemon.cpp",
-    "${storage_daemon_path}/ipc/src/storage_daemon_stub.cpp",
     "${storage_daemon_path}/quota/quota_manager.cpp",
     "${storage_daemon_path}/user/src/mount_manager.cpp",
     "${storage_daemon_path}/user/src/user_manager.cpp",
@@ -59,6 +58,7 @@ ohos_fuzztest("StorageDaemonDeleteShareFileFuzzTest") {
   deps = [
     "${bundlemanager_framework_path}/services/bundlemgr:libbms",
     "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_external",
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
   ]
 

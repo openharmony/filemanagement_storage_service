@@ -18,7 +18,7 @@
 #include "directory_ex.h"
 
 #include "storage_daemon_client.h"
-#include "ipc/istorage_daemon.h"
+#include "istorage_daemon.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "help_utils.h"
@@ -63,7 +63,7 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Prepar
     ASSERT_TRUE(storageDaemonClient_ != nullptr);
 
     int32_t userid = StorageTest::USER_ID1;
-    int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL2;
+    int32_t flags = static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL2);
     int32_t ret = storageDaemonClient_->PrepareUserDirs(userid, flags);
     EXPECT_TRUE(ret == E_OK);
 
@@ -85,7 +85,7 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_StartU
     ASSERT_TRUE(storageDaemonClient_ != nullptr);
 
     int32_t userid = StorageTest::USER_ID2;
-    int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL2;
+    int32_t flags = static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL2);
     storageDaemonClient_->DestroyUserDirs(userid, flags);
     int32_t ret = storageDaemonClient_->PrepareUserDirs(userid, flags);
     EXPECT_TRUE(ret == E_OK) << "PrepareUserDirs error";
@@ -111,7 +111,7 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Prepar
 
     int32_t userid = StorageTest::USER_ID3;
     std::string volId = "vol-1-1";
-    int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL2;
+    int32_t flags = static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL2);
     int32_t ret = storageDaemonClient_->PrepareUserSpace(userid, volId, flags);
     EXPECT_TRUE(ret == E_OK);
 
@@ -182,7 +182,7 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Active
     ASSERT_TRUE(storageDaemonClient_ != nullptr);
 
     int32_t userid = StorageTest::USER_ID4;
-    int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL2;
+    int32_t flags = static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL2);
     int32_t ret = storageDaemonClient_->GenerateUserKeys(userid, flags);
     ASSERT_TRUE(ret == E_OK);
 
@@ -209,7 +209,7 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Update
     ASSERT_TRUE(storageDaemonClient_ != nullptr);
 
     int32_t userid = StorageTest::USER_ID5;
-    int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL2;
+    int32_t flags = static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL2);
     int32_t ret = storageDaemonClient_->PrepareUserDirs(userid, flags);
     ret = storageDaemonClient_->StartUser(userid);
     EXPECT_TRUE(ret == E_OK) << "StartUser error";
@@ -235,7 +235,7 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Update
     ASSERT_TRUE(storageDaemonClient_ != nullptr);
 
     int32_t userid = StorageTest::USER_ID1;
-    int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL2;
+    int32_t flags = static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL2);
     int32_t ret = storageDaemonClient_->GenerateUserKeys(userid, flags);
     ASSERT_TRUE(ret == E_OK);
 

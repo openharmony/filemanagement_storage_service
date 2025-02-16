@@ -18,7 +18,7 @@
 
 #include <singleton.h>
 #include <nocopyable.h>
-#include "ipc/istorage_daemon.h"
+#include "istorage_daemon.h"
 #include "iremote_object.h"
 
 namespace OHOS {

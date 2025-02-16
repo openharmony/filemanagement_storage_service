@@ -110,6 +110,7 @@ ohos_unittest("mtp_device_monitor_test") {
     "config_policy:configpolicy_util",
     "googletest:gtest_main",
     "hilog:libhilog",
+    "hitrace:hitrace_meter",
     "init:libbeget_proxy",
     "init:libbegetutil",
     "ipc:ipc_single",

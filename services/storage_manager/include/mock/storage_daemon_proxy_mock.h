@@ -17,7 +17,7 @@
 #define OHOS_STORAGE_DAEMON_STORAGE_DAEMON_PROXY_MOCK_H
 
 #include "iremote_proxy.h"
-#include "ipc/istorage_daemon.h"
+#include "istorage_daemon.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -52,7 +52,7 @@ public:
                                                  const std::vector<uint8_t> &newSecret,
                                                  uint64_t secureUid,
                                                  uint32_t userId,
-                                                 std::vector<std::vector<uint8_t>> &plainText) override;
+                                                 const std::vector<std::vector<uint8_t>> &plainText) override;
     virtual int32_t ActiveUserKey(uint32_t userId,
                                   const std::vector<uint8_t> &token,
                                   const std::vector<uint8_t> &secret) override;
@@ -73,8 +73,10 @@ public:
     virtual int32_t SetRecoverKey(const std::vector<uint8_t> &key) override;
 
     // app file share api
-    virtual std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,
-                                                uint32_t tokenId, uint32_t flag) override;
+    virtual int32_t CreateShareFile(const std::vector<std::string> &uriList,
+                                    uint32_t tokenId,
+                                    uint32_t flag,
+                                    std::vector<int32_t> &funcResult) override;
     virtual int32_t DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList) override;
 
     virtual int32_t SetBundleQuota(const std::string &bundleName, int32_t uid,

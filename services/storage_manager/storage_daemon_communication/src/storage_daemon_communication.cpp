@@ -18,9 +18,9 @@
 #include <iservice_registry.h>
 #include <system_ability_definition.h>
 
-#include "ipc/istorage_daemon.h"
+#include "istorage_daemon.h"
 #include "ipc/storage_daemon.h"
-#include "ipc/storage_daemon_proxy.h"
+#include "storage_daemon_proxy.h"
 #include "os_account_manager.h"
 #ifdef ENABLE_SCREENLOCK_MANAGER
 #include "screenlock_manager.h"
@@ -510,7 +510,9 @@ std::vector<int32_t> StorageDaemonCommunication::CreateShareFile(const std::vect
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return std::vector<int32_t>{err};
     }
-    return storageDaemon_->CreateShareFile(uriList, tokenId, flag);
+    std::vector<int32_t> funcResult;
+    storageDaemon_->CreateShareFile(uriList, tokenId, flag, funcResult);
+    return funcResult;
 }
 
 int32_t StorageDaemonCommunication::DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList)

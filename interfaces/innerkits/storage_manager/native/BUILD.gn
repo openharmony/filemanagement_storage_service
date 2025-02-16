@@ -39,7 +39,6 @@ ohos_shared_library("storage_manager_sa_proxy") {
   }
 
   sources = [
-    "${storage_daemon_path}/ipc/src/storage_daemon_proxy.cpp",
     "${storage_manager_path}/innerkits_impl/src/bundle_stats.cpp",
     "${storage_manager_path}/innerkits_impl/src/disk.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_manager_proxy.cpp",

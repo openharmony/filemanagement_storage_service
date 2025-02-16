@@ -30,7 +30,7 @@
 #include "crypto/key_manager.h"
 #include "utils/disk_utils.h"
 #include "utils/storage_radar.h"
-#include "ipc/istorage_daemon.h"
+#include "istorage_daemon.h"
 #include "parameter.h"
 #include "quota/quota_manager.h"
 #include "observer/appstate_observer.h"
