@@ -85,7 +85,6 @@ int32_t StorageDaemon::Mount(const std::string &volId, uint32_t flags)
 {
     LOGI("StorageDaemon::Mount, volId:%{public}s, flags:%{public}u", volId.c_str(), flags);
 #ifdef EXTERNAL_STORAGE_MANAGER
-    LOGI("Handle Mount");
     int32_t ret = VolumeManager::Instance()->Mount(volId, flags);
     if (ret != E_OK) {
         LOGW("Mount failed, please check");
@@ -106,7 +105,6 @@ int32_t StorageDaemon::UMount(const std::string &volId)
 {
     LOGI("StorageDaemon::UMount, volId:%{public}s", volId.c_str());
 #ifdef EXTERNAL_STORAGE_MANAGER
-    LOGI("Handle UMount");
     int32_t ret = VolumeManager::Instance()->UMount(volId);
     if (ret != E_OK) {
         LOGW("UMount failed, please check");
@@ -127,7 +125,6 @@ int32_t StorageDaemon::Check(const std::string &volId)
 {
     LOGI("StorageDaemon::Check, volId:%{public}s", volId.c_str());
 #ifdef EXTERNAL_STORAGE_MANAGER
-    LOGI("Handle Check");
     int32_t ret = VolumeManager::Instance()->Check(volId);
     if (ret != E_OK) {
         LOGW("Check failed, please check");
@@ -143,7 +140,6 @@ int32_t StorageDaemon::Format(const std::string &volId, const std::string &fsTyp
 {
     LOGI("StorageDaemon::Format, volId:%{public}s, fsType:%{public}s", volId.c_str(), fsType.c_str());
 #ifdef EXTERNAL_STORAGE_MANAGER
-    LOGI("Handle Format");
     int32_t ret = VolumeManager::Instance()->Format(volId, fsType);
     if (ret != E_OK) {
         LOGW("Format failed, please check");
@@ -164,7 +160,6 @@ int32_t StorageDaemon::Partition(const std::string &diskId, int32_t type)
 {
     LOGI("StorageDaemon::Partition, diskId:%{public}s, type:%{public}d", diskId.c_str(), type);
 #ifdef EXTERNAL_STORAGE_MANAGER
-    LOGI("Handle Partition");
     int32_t ret = DiskManager::Instance()->HandlePartition(diskId);
     if (ret != E_OK) {
         LOGW("HandlePartition failed, please check");
@@ -186,7 +181,6 @@ int32_t StorageDaemon::SetVolumeDescription(const std::string &volId, const std:
     LOGI("StorageDaemon::SetVolumeDescription, volId:%{public}s, description:%{public}s", volId.c_str(),
         description.c_str());
 #ifdef EXTERNAL_STORAGE_MANAGER
-    LOGI("Handle SetVolumeDescription");
     int32_t ret = VolumeManager::Instance()->SetVolumeDescription(volId, description);
     if (ret != E_OK) {
         LOGW("SetVolumeDescription failed, please check");
@@ -444,7 +438,6 @@ int32_t StorageDaemon::StopUser(int32_t userId)
 int32_t StorageDaemon::CompleteAddUser(int32_t userId)
 {
     LOGI("StorageDaemon::CompleteAddUser:userId  %{public}d", userId);
-    LOGI("CompleteAddUser enter.");
     if (userId >= StorageService::START_APP_CLONE_USER_ID && userId < StorageService::MAX_APP_CLONE_USER_ID) {
         LOGE("User %{public}d is app clone user, do not delete el1 need_restore.", userId);
         return E_OK;
@@ -641,7 +634,6 @@ int32_t StorageDaemon::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &
         "StorageDaemon::UpdateUseAuthWithRecoveryKey, authToken: %{public}d, newSecret:%{public}d,"
         "userId:%{public}d",
         authToken.empty(), newSecret.empty(), userId);
-    LOGI("begin to UpdateUseAuthWithRecoveryKey");
 #ifdef USER_CRYPTO_MANAGER
     return KeyManager::GetInstance()->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId, plainText);
 #else
@@ -813,7 +805,6 @@ int32_t StorageDaemon::GenerateKeyAndPrepareUserDirs(uint32_t userId, KeyType ty
     int32_t ret;
     uint32_t flags = 0;
 
-    LOGI("enter:");
     ret = KeyManager::GetInstance()->GenerateUserKeyByType(userId, type, token, secret);
     if (ret != E_OK) {
         LOGE("upgrade scene:generate user key fail, userId %{public}u, KeyType %{public}u, sec empty %{public}d",
@@ -1157,7 +1148,6 @@ int32_t StorageDaemon::CreateRecoverKey(uint32_t userId,
 {
     LOGI("StorageDaemon::CreateRecoverKey, userId %{public}u, userType %{public}u, token %{public}d,secret %{public}d",
         userId, userType, token.empty(), secret.empty());
-    LOGI("begin to CreateRecoverKey");
 #ifdef USER_CRYPTO_MANAGER
     return KeyManager::GetInstance()->CreateRecoverKey(userId, userType, token, secret);
 #else
@@ -1267,7 +1257,6 @@ int32_t StorageDaemon::MountDfsDocs(int32_t userId, const std::string &relativeP
 {
     LOGI("StorageDaemon::MountDfsDocs,userId %{public}d, relativePath %{public}s, networkId %{public}s,"
         "deviceId %{public}s ", userId, relativePath.c_str(), networkId.c_str(), deviceId.c_str());
-    LOGI("StorageDaemon::MountDfsDocs start.");
     return MountManager::GetInstance()->MountDfsDocs(userId, relativePath, networkId, deviceId);
 }
 
@@ -1276,7 +1265,6 @@ int32_t StorageDaemon::UMountDfsDocs(int32_t userId, const std::string &relative
 {
     LOGI("StorageDaemon::UMountDfsDocs,userId %{public}d, relativePath %{public}s, networkId %{public}s,"
         "deviceId %{public}s ", userId, relativePath.c_str(), networkId.c_str(), deviceId.c_str());
-    LOGI("StorageDaemon::UMountDfsDocs start.");
     return MountManager::GetInstance()->UMountDfsDocs(userId, relativePath, networkId, deviceId);
 }
 

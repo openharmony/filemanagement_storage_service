@@ -270,7 +270,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_DestroyUserDirs_001, T
     std::shared_ptr<UserManager> userManager = UserManager::GetInstance();
     ASSERT_TRUE(userManager != nullptr);
 
-    int32_t flags = static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL1) | 
+    int32_t flags = static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL1) |
                     static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL2);
     auto ret = KeyManager::GetInstance()->GenerateUserKeys(StorageTest::USER_ID4, flags);
     EXPECT_EQ(ret, E_OK);
