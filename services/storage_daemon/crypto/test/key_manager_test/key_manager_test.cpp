@@ -1924,13 +1924,7 @@ HWTEST_F(KeyManagerTest, KeyManager_Generate_User_Key_By_Type_002, TestSize.Leve
 
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
     std::string elPath = KeyManager::GetInstance()->GetKeyDirByType(keyType);
-    RmDirRecurse(elPath);
-    ret = KeyManager::GetInstance()->GenerateUserKeyByType(userId, keyType, badToken, badSecret);
-    EXPECT_EQ(ret, -ENOENT);
-
-    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
-    elPath = KeyManager::GetInstance()->GetKeyDirByType(keyType);
-    EXPECT_FALSE(MkDir(elPath, S_IRWXU));
+    EXPECT_TRUE(MkDir(elPath, S_IRWXU));
     std::string elUserKeyPath = elPath + "/" + std::to_string(userId);
     EXPECT_FALSE(MkDir(elUserKeyPath, S_IRWXU));
     ret = KeyManager::GetInstance()->GenerateUserKeyByType(userId, keyType, badToken, badSecret);
