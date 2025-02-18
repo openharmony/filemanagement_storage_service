@@ -30,19 +30,22 @@ using namespace OHOS::StorageDaemon;
 
 namespace OHOS {
 constexpr uint8_t MAX_CALL_TRANSACTION = 32;
-constexpr size_t U32_AT_SIZE = 4;
 
 std::shared_ptr<StorageDaemon::StorageDaemon> storageDaemon = std::make_shared<StorageDaemon::StorageDaemon>();
 std::shared_ptr<StorageDaemon::UserManager> userManager = StorageDaemon::UserManager::GetInstance();
-uint32_t GetU32Data(const char *ptr)
+uint32_t GetU32Data(const uint8_t *ptr)
 {
     // 将第0个数字左移24位，将第1个数字左移16位，将第2个数字左移8位，第3个数字不左移
     return (ptr[0] << 24) | (ptr[1] << 16) | (ptr[2] << 8) | (ptr[3]);
 }
 
-bool StorageDaemonFuzzTest(std::unique_ptr<char[]> data, size_t size)
+bool StorageDaemonFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = GetU32Data(data.get());
+    if (data == nullptr || size < sizeof(uint32_t)) {
+        return true;
+    }
+
+    uint32_t code = GetU32Data(data);
     if (code == 0 ||
         code % MAX_CALL_TRANSACTION == static_cast<int32_t>(StorageDaemonInterfaceCode::CREATE_SHARE_FILE) ||
         code % MAX_CALL_TRANSACTION == static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_SHARE_FILE)) {
@@ -50,7 +53,7 @@ bool StorageDaemonFuzzTest(std::unique_ptr<char[]> data, size_t size)
     }
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
-    datas.WriteBuffer(data.get(), size);
+    datas.WriteBuffer(data, size);
     datas.RewindRead(0);
     MessageParcel reply;
     MessageOption option;
@@ -335,6 +338,54 @@ bool HandleShutdownFuzzTest(const uint8_t *data, size_t size)
     return true;
 }
 
+bool HandleCreateRecoverKeyFuzzTest(const uint8_t *data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
+    datas.WriteBuffer(data, size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageDaemon->HandleCreateRecoverKey(datas, reply);
+    return true;
+}
+
+bool HandleSetRecoverKeyFuzzTest(const uint8_t *data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
+    datas.WriteBuffer(data, size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageDaemon->HandleSetRecoverKey(datas, reply);
+    return true;
+}
+
+bool HandleMountMediaFuseFuzzTest(const uint8_t *data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
+    datas.WriteBuffer(data, size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageDaemon->HandleMountMediaFuse(datas, reply);
+    return true;
+}
+
+bool HandleUMountMediaFuseFuzzTest(const uint8_t *data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
+    datas.WriteBuffer(data, size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageDaemon->HandleUMountMediaFuse(datas, reply);
+    return true;
+}
+
 bool UserManagerFuzzTest(const uint8_t *data, size_t size)
 {
     if ((data == nullptr) || (size < sizeof(int32_t))) {
@@ -356,22 +407,7 @@ bool UserManagerFuzzTest(const uint8_t *data, size_t size)
 /* Fuzzer entry point */
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
-    /* Run your code on data */
-    if (data == nullptr) {
-        return 0;
-    }
-
-    /* Validate the length of size */
-    if (size < OHOS::U32_AT_SIZE) {
-        return 0;
-    }
-
-    auto str = std::make_unique<char[]>(size + 1);
-    (void)memset_s(str.get(), size + 1, 0x00, size + 1);
-    if (memcpy_s(str.get(), size, data, size) != EOK) {
-        return 0;
-    }
-    OHOS::StorageDaemonFuzzTest(move(str), size);
+    OHOS::StorageDaemonFuzzTest(data, size);
     OHOS::UserManagerFuzzTest(data, size);
     OHOS::HandleStartUserFuzzTest(data, size);
     OHOS::HandleStopUserFuzzTest(data, size);
@@ -396,5 +432,9 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     OHOS::HandleLockUserScreenFuzzTest(data, size);
     OHOS::HandleUpdateMemoryParaFuzzTest(data, size);
     OHOS::HandleShutdownFuzzTest(data, size);
+    OHOS::HandleCreateRecoverKeyFuzzTest(data, size);
+    OHOS::HandleSetRecoverKeyFuzzTest(data, size);
+    OHOS::HandleMountMediaFuseFuzzTest(data, size);
+    OHOS::HandleUMountMediaFuseFuzzTest(data, size);
     return 0;
 }
