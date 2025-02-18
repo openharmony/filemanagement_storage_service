@@ -26,11 +26,10 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-static const std::string NEED_RESTORE_PATH = "/data/service/el0/storage_daemon/sd/latest/need_restore";
-static const std::string NEW_DOUBLE_2_SINGLE = "2";
-static const int NEW_DOUBLE_2_SINGLE_BASE_VERSION = 2;
-static const uint32_t DEFAULT_SINGLE_FIRST_USER_ID = 100;
-static const uint32_t USER_ID_DIFF = 91;
+constexpr const char *NEED_RESTORE_PATH = "/data/service/el0/storage_daemon/sd/latest/need_restore";
+constexpr int NEW_DOUBLE_2_SINGLE_BASE_VERSION = 2;
+constexpr uint32_t DEFAULT_SINGLE_FIRST_USER_ID = 100;
+constexpr uint32_t USER_ID_DIFF = 91;
 
 /* sec_fbe_drv module saved userId, type and IV in ioctl FBEX_IOC_ADD_IV process.
  * In Upgrade Scenario, before upgrade user id 0 and after upgrade  user id 100, ioctl

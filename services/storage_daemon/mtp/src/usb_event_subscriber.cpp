@@ -12,23 +12,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 #include "mtp/usb_event_subscriber.h"
 #include <unistd.h>
 #include "cJSON.h"
 #include "mtp/mtp_device_monitor.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
- 
+
 namespace OHOS {
 namespace StorageDaemon {
-const std::string BUS_NUM_KEY = "busNum";
-const std::string DEV_ADDRESS_KEY = "devAddress";
- 
+constexpr const char *BUS_NUM_KEY = "busNum";
+constexpr const char *DEV_ADDRESS_KEY = "devAddress";
+
 UsbEventSubscriber::UsbEventSubscriber(const EventFwk::CommonEventSubscribeInfo &info)
     : EventFwk::CommonEventSubscriber(info)
 {}
- 
+
 std::shared_ptr<UsbEventSubscriber> usbEventSubscriber_ = nullptr;
 void UsbEventSubscriber::SubscribeCommonEvent(void)
 {
@@ -48,7 +48,7 @@ void UsbEventSubscriber::SubscribeCommonEvent(void)
         }
     }
 }
- 
+
 void UsbEventSubscriber::OnReceiveEvent(const OHOS::EventFwk::CommonEventData &data)
 {
     LOGI("UsbEventSubscriber::OnReceiveEvent.");
@@ -82,7 +82,7 @@ void UsbEventSubscriber::OnReceiveEvent(const OHOS::EventFwk::CommonEventData &d
 #endif
     }
 }
- 
+
 void UsbEventSubscriber::GetValueFromUsbDataInfo(const std::string &jsonStr, uint8_t &devNum, uint32_t &busLoc)
 {
     cJSON *usbJson = cJSON_Parse(jsonStr.c_str());
@@ -90,11 +90,11 @@ void UsbEventSubscriber::GetValueFromUsbDataInfo(const std::string &jsonStr, uin
         LOGE("GetValueFromUsbDataInfo failed, parse json object is nullptr.");
         return;
     }
-    cJSON *busLocObj = cJSON_GetObjectItemCaseSensitive(usbJson, DEV_ADDRESS_KEY.c_str());
+    cJSON *busLocObj = cJSON_GetObjectItemCaseSensitive(usbJson, DEV_ADDRESS_KEY);
     if (busLocObj != nullptr && cJSON_IsNumber(busLocObj)) {
         devNum = static_cast<uint8_t>(busLocObj->valueint);
     }
-    cJSON *devNumObj = cJSON_GetObjectItemCaseSensitive(usbJson, BUS_NUM_KEY.c_str());
+    cJSON *devNumObj = cJSON_GetObjectItemCaseSensitive(usbJson, BUS_NUM_KEY);
     if (devNumObj != nullptr && cJSON_IsNumber(devNumObj)) {
         busLoc = static_cast<uint32_t>(devNumObj->valueint);
     }

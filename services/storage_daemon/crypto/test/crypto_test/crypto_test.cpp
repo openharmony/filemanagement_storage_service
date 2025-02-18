@@ -31,6 +31,7 @@ using namespace testing::ext;
 using namespace OHOS::StorageDaemon;
 
 const std::string TEST_PATH = "/data/test";
+constexpr uint32_t CRYPTO_KEY_ALIAS_SIZE = 16;
 
 class CryptoTest : public testing::Test {
 public:

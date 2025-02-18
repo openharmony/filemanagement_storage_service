@@ -34,28 +34,21 @@
 namespace OHOS {
 namespace StorageDaemon {
 constexpr uint32_t CRYPTO_KEY_SECDISC_SIZE = 16384;
-constexpr uint32_t CRYPTO_KEY_ALIAS_SIZE = 16;
-constexpr uint32_t CRYPTO_AES_AAD_LEN = 16;
-constexpr uint32_t CRYPTO_AES_NONCE_LEN = 64;
-constexpr uint32_t CRYPTO_HKS_NONCE_LEN = 12;
 constexpr uint32_t CRYPTO_AES_256_XTS_KEY_SIZE = 64;
-constexpr uint32_t CRYPTO_KEY_SHIELD_MAX_SIZE = 2048;
-constexpr uint32_t CRYPTO_AES_256_KEY_ENCRYPTED_SIZE = 80;
-constexpr uint32_t CRYPTO_TOKEN_SIZE = TOKEN_CHALLENGE_LEN; // 32
 
 using key_serial_t = int;
 constexpr uint32_t CRYPTO_KEY_DESC_SIZE = FSCRYPT_KEY_DESCRIPTOR_SIZE;
-static const std::string MNT_DATA = "/data";
-static const std::string PATH_LATEST = "/latest";
-static const std::string PATH_SHIELD = "/shield";
-static const std::string PATH_SECDISC = "/sec_discard";
-static const std::string PATH_ENCRYPTED = "/encrypted";
-static const std::string PATH_KEYID = "/key_id";
-static const std::string PATH_KEYDESC = "/key_desc";
+constexpr const char *MNT_DATA = "/data";
+constexpr const char *PATH_LATEST = "/latest";
+constexpr const char *PATH_SHIELD = "/shield";
+constexpr const char *PATH_SECDISC = "/sec_discard";
+constexpr const char *PATH_ENCRYPTED = "/encrypted";
+constexpr const char *PATH_KEYID = "/key_id";
+constexpr const char *PATH_KEYDESC = "/key_desc";
 
-const std::string DATA_EL0_DIR = std::string() + "/data/service/el0";
-const std::string STORAGE_DAEMON_DIR = DATA_EL0_DIR + "/storage_daemon";
-const std::string DEVICE_EL1_DIR = STORAGE_DAEMON_DIR + "/sd";
+constexpr const char *DATA_EL0_DIR = "/data/service/el0";
+constexpr const char *STORAGE_DAEMON_DIR = "/data/service/el0/storage_daemon";
+constexpr const char *DEVICE_EL1_DIR = "/data/service/el0/storage_daemon/sd";
 
 class KeyBlob {
 public:

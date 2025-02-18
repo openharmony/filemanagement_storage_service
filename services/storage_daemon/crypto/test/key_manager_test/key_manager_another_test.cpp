@@ -35,7 +35,7 @@
 using namespace std;
 using namespace testing::ext;
 using namespace testing;
- 
+
 namespace OHOS::StorageDaemon {
 class KeyMgrAnotherTest : public testing::Test {
 public:
@@ -87,7 +87,7 @@ void KeyMgrAnotherTest::SetUp(void)
         OHOS::ForceCreateDirectory(GLOBAL_USER_EL1_PATH);
     }
 
-    if (access(DEVICE_EL1_DIR.c_str(), F_OK) != 0) {
+    if (access(DEVICE_EL1_DIR, F_OK) != 0) {
         deviceEl1DirFlag = false;
         OHOS::ForceCreateDirectory(DEVICE_EL1_DIR);
     }

@@ -65,6 +65,9 @@ constexpr int MAX_WORD_NUM = 3;
 constexpr int MAX_WORD_LEN = 20;
 auto g_testKeyV1 = std::make_shared<OHOS::StorageDaemon::FscryptKeyV1>(TEST_KEYPATH);
 auto g_testKeyV2 = std::make_shared<OHOS::StorageDaemon::FscryptKeyV2>(TEST_KEYPATH);
+
+constexpr uint8_t FIRST_CREATE_KEY = 0x6c;
+constexpr uint8_t USER_DESTROY = 0x1;
 }
 
 namespace OHOS::StorageDaemon {

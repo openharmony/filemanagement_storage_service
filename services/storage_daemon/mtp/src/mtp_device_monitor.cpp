@@ -34,13 +34,14 @@
 using namespace std;
 namespace OHOS {
 namespace StorageDaemon {
-static constexpr int32_t SLEEP_TIME = 1;
-const std::string MTP_ROOT_PATH = "/mnt/data/external/";
-const int32_t MTP_VAL_LEN = 6;
-const int32_t MTP_TRUE_LEN = 5;
-const int32_t DETECT_CNT = 4;
-const char *SYS_PARAM_SERVICE_PERSIST_ENABLE = "persist.edm.mtp_client_disable";
-const char *SYS_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.edm.is_enterprise_device";
+constexpr int32_t SLEEP_TIME = 1;
+constexpr int32_t MTP_VAL_LEN = 6;
+constexpr int32_t MTP_TRUE_LEN = 5;
+constexpr int32_t DETECT_CNT = 4;
+
+constexpr const char *MTP_ROOT_PATH = "/mnt/data/external/";
+constexpr const char *SYS_PARAM_SERVICE_PERSIST_ENABLE = "persist.edm.mtp_client_disable";
+constexpr const char *SYS_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.edm.is_enterprise_device";
 bool g_keepMonitoring = true;
 
 MtpDeviceMonitor::MtpDeviceMonitor() {}
@@ -106,7 +107,7 @@ void MtpDeviceMonitor::MountMtpDeviceByBroadcast()
         devInfo.vendorId = rawDevice->device_entry.vendor_id;
         devInfo.productId = rawDevice->device_entry.product_id;
         devInfo.id = "mtp-" + std::to_string(devInfo.vendorId) + "-" + std::to_string(devInfo.productId);
-        devInfo.path = MTP_ROOT_PATH + devInfo.id;
+        devInfo.path = std::string(MTP_ROOT_PATH) + devInfo.id;
         devInfos.push_back(devInfo);
         LOGI("Detect new mtp device: id=%{public}s, vendor=%{public}s, product=%{public}s, devNum=%{public}d",
             (devInfo.id).c_str(), (devInfo.vendor).c_str(), (devInfo.product).c_str(), devInfo.devNum);

@@ -20,13 +20,13 @@
 #include "storage_service_log.h"
 #include "storage_service_errno.h"
 #include "utils/storage_radar.h"
- 
+
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
 constexpr int32_t WAIT_THREAD_TIMEOUT_MS = 5;
 constexpr int32_t DEFAULT_CHECK_INTERVAL = 10 * 1000; // 10s
-const std::string CLEAR_TASK_NAME = "clear_ece_sece_key";
+constexpr const char *CLEAR_TASK_NAME = "clear_ece_sece_key";
 
 DelayHandler::DelayHandler(uint32_t userId) : userId_(userId) {}
 DelayHandler::~DelayHandler()

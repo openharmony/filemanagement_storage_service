@@ -23,11 +23,6 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-const int sInital = 0;
-const int sCreate = 1;
-const int sScan = 2;
-const int sDestroy = 4;
-
 class DiskInfo {
 public:
     enum DeviceFlag {
@@ -62,7 +57,7 @@ private:
     /* device vendor infomation */
     std::string vendor_;
     std::string sysPath_;
-    int status { sInital };
+    int status;
     std::string eventPath_;
     std::string devPath_;
     dev_t device_ {};

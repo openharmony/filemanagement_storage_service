@@ -28,7 +28,7 @@ using namespace std;
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
-const int32_t TRUE_LEN = 5;
+constexpr int32_t TRUE_LEN = 5;
 int32_t VolumeInfo::Create(const std::string volId, const std::string diskId, dev_t device)
 {
     id_ = volId;

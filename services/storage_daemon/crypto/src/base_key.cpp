@@ -38,10 +38,13 @@
 #include "utils/string_utils.h"
 
 namespace {
-const std::string PATH_LATEST_BACKUP = "/latest_bak";
-const std::string PATH_KEY_TEMP = "/temp";
-const std::string PATH_NEED_RESTORE_SUFFIX = "/latest/need_restore";
-const std::string PATH_USER_EL1_DIR = "/data/service/el1/public/storage_daemon/sd/el1/";
+constexpr const char *PATH_LATEST_BACKUP = "/latest_bak";
+constexpr const char *PATH_KEY_TEMP = "/temp";
+constexpr const char *PATH_NEED_RESTORE_SUFFIX = "/latest/need_restore";
+constexpr const char *PATH_USER_EL1_DIR = "/data/service/el1/public/storage_daemon/sd/el1/";
+constexpr uint8_t USER_DESTROY = 0x1;
+constexpr int32_t RESTORE_VERSION = 3;
+const std::vector<uint8_t> NULL_SECRET = { '!' };
 
 #ifndef F2FS_IOCTL_MAGIC
 #define F2FS_IOCTL_MAGIC 0xf5
@@ -87,7 +90,7 @@ static void DoTempStore(const KeyContext &sourceCtx, KeyContext &targetCtx)
 bool BaseKey::InitKey(bool needGenerateKey)
 {
     LOGI("enter");
-    if (keyInfo_.version == FSCRYPT_INVALID || keyInfo_.version > KeyCtrlGetFscryptVersion(MNT_DATA.c_str())) {
+    if (keyInfo_.version == FSCRYPT_INVALID || keyInfo_.version > KeyCtrlGetFscryptVersion(MNT_DATA)) {
         LOGE("invalid version %{public}u", keyInfo_.version);
         return false;
     }
@@ -156,7 +159,7 @@ bool BaseKey::LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t
 
 int BaseKey::GetCandidateVersion() const
 {
-    auto prefix = PATH_KEY_VERSION.substr(1); // skip the first slash
+    std::string prefix(PATH_KEY_VERSION + 1); // skip the first slash
     std::vector<std::string> files;
     GetSubDirs(dir_, files);
     int candidate = -1;
@@ -401,7 +404,7 @@ int32_t BaseKey::UpdateKey(const std::string &keypath, bool needSyncCandidate)
     std::vector<std::string> files;
     GetSubDirs(dir_, files);
     for (const auto &it: files) { // cleanup backup and other versions
-        if (it != PATH_LATEST.substr(1)) {
+        if (it != PATH_LATEST + 1) {
             OHOS::ForceRemoveDirectory(dir_ + "/" + it);
         }
     }
@@ -519,12 +522,12 @@ int32_t BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate)
     GetSubDirs(dir_, files);
     std::sort(files.begin(), files.end(), [&](const std::string &a, const std::string &b) {
         if (a.length() != b.length() ||
-            a.length() < PATH_KEY_VERSION.length() ||
-            b.length() < PATH_KEY_VERSION.length()) {
+            a.length() < strlen(PATH_KEY_VERSION) ||
+            b.length() < strlen(PATH_KEY_VERSION)) {
             return a.length() > b.length();
         }
-        // make sure a.length() >= PATH_KEY_VERSION.length() && b.length() >= PATH_KEY_VERSION.length()
-        return std::stoi(a.substr(PATH_KEY_VERSION.size() - 1)) > std::stoi(b.substr(PATH_KEY_VERSION.size() - 1));
+        // make sure a.length() >= strlen(PATH_KEY_VERSION) && b.length() >= strlen(PATH_KEY_VERSION)
+        return std::stoi(a.substr(strlen(PATH_KEY_VERSION) - 1)) > std::stoi(b.substr(strlen(PATH_KEY_VERSION) - 1));
     });
     for (const auto &it: files) {
         if (it != candidate) {
@@ -731,7 +734,7 @@ int32_t BaseKey::DoUpdateRestoreVx(const UserAuth &auth, const std::string &keyP
         return ret;
     }
     uint64_t secureUid = { 0 };
-    
+
     uint32_t userId = GetIdFromDir();
     if ((userId < StorageService::START_APP_CLONE_USER_ID || userId >= StorageService::MAX_APP_CLONE_USER_ID) &&
         IamClient::GetInstance().HasPinProtect(userId)) {
@@ -814,7 +817,9 @@ bool BaseKey::ClearKey(const std::string &mnt)
     bool needClearFlag = true;
 #ifdef USER_CRYPTO_MIGRATE_KEY
     std::error_code errCode;
-    std::string elNeedRestorePath = PATH_USER_EL1_DIR + std::to_string(GetIdFromDir()) + PATH_NEED_RESTORE_SUFFIX;
+    std::string elNeedRestorePath(PATH_USER_EL1_DIR);
+    elNeedRestorePath += std::to_string(GetIdFromDir());
+    elNeedRestorePath += PATH_NEED_RESTORE_SUFFIX;
     if (std::filesystem::exists(elNeedRestorePath, errCode)) {
         needClearFlag = false;
         LOGI("needRestore flag exist, do not remove secret.");

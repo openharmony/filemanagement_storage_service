@@ -32,10 +32,10 @@ public:
     }
     ~FscryptKeyV1() = default;
 
-    int32_t ActiveKey(uint32_t flag = 0, const std::string &mnt = MNT_DATA);
-    int32_t InactiveKey(uint32_t flag = 0, const std::string &mnt = MNT_DATA);
-    int32_t LockUserScreen(uint32_t flag = 0, uint32_t sdpClass = 0, const std::string &mnt = MNT_DATA);
-    int32_t UnlockUserScreen(uint32_t flag = 0, uint32_t sdpClass = 0, const std::string &mnt = MNT_DATA);
+    int32_t ActiveKey(uint32_t flag = 0, const std::string &mnt = std::string(MNT_DATA));
+    int32_t InactiveKey(uint32_t flag = 0, const std::string &mnt = std::string(MNT_DATA));
+    int32_t LockUserScreen(uint32_t flag = 0, uint32_t sdpClass = 0, const std::string &mnt = std::string(MNT_DATA));
+    int32_t UnlockUserScreen(uint32_t flag = 0, uint32_t sdpClass = 0, const std::string &mnt = std::string(MNT_DATA));
     int32_t GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId);
     int32_t DeleteAppkey(const std::string keyId);
     void DropCachesIfNeed();

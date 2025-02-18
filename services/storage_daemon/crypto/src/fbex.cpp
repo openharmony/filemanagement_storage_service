@@ -29,7 +29,7 @@
 #include "storage_service_log.h"
 #include "openssl_crypto.h"
 #include "utils/storage_radar.h"
- 
+
 using namespace OHOS::StorageService;
 namespace {
 constexpr const char *FBEX_UFS_INLINE_SUPPORT_PREFIX = "/sys/devices/platform/";
@@ -42,23 +42,26 @@ constexpr const char *FBEX_INLINE_CRYPTO_V3 = "3\n";
 constexpr const char *FBEX_CMD_PATH = "/dev/fbex_cmd";
 constexpr const char *FBEX_UECE_PATH = "/dev/fbex_uece";
 
-const uint8_t FBEX_IOC_MAGIC = 'f';
-const uint8_t FBEX_ADD_IV = 0x1;
-const uint8_t FBEX_DEL_IV = 0x2;
-const uint8_t FBEX_LOCK_SCREEN = 0x3;
-const uint8_t FBEX_UNLOCK_SCREEN = 0x4;
-const uint8_t FBEX_USER_LOGOUT = 0x8;
-const uint8_t FBEX_STATUS_REPORT = 0xC;
-const uint8_t FBEX_ADD_DOUBLE_DE_IV = 20;
-const uint8_t FBEX_ADD_EL5 = 21;
-const uint8_t FBEX_READ_EL5 = 22;
-const uint8_t FBEX_WRITE_EL5 = 23;
-const uint8_t FBEX_DEL_EL5_PINCODE = 24;
-const uint8_t FBEX_GENERATE_APP_KEY = 25;
-const uint8_t FBEX_CHANGE_PINCODE = 26;
-const uint8_t FBEX_LOCK_EL5 = 27;
-const uint32_t FILE_ENCRY_ERROR_UECE_ALREADY_CREATED = 0xFBE30031;
-const uint32_t FILE_ENCRY_ERROR_NOT_FOUND_UECE = 0xFBE30033;
+constexpr uint32_t FBEX_E_BUFFER_SIZE = 64;
+constexpr uint32_t UNLOCK_STATUS = 0x2;
+
+constexpr uint8_t FBEX_IOC_MAGIC = 'f';
+constexpr uint8_t FBEX_ADD_IV = 0x1;
+constexpr uint8_t FBEX_DEL_IV = 0x2;
+constexpr uint8_t FBEX_LOCK_SCREEN = 0x3;
+constexpr uint8_t FBEX_UNLOCK_SCREEN = 0x4;
+constexpr uint8_t FBEX_USER_LOGOUT = 0x8;
+constexpr uint8_t FBEX_STATUS_REPORT = 0xC;
+constexpr uint8_t FBEX_ADD_DOUBLE_DE_IV = 20;
+constexpr uint8_t FBEX_ADD_EL5 = 21;
+constexpr uint8_t FBEX_READ_EL5 = 22;
+constexpr uint8_t FBEX_WRITE_EL5 = 23;
+constexpr uint8_t FBEX_DEL_EL5_PINCODE = 24;
+constexpr uint8_t FBEX_GENERATE_APP_KEY = 25;
+constexpr uint8_t FBEX_CHANGE_PINCODE = 26;
+constexpr uint8_t FBEX_LOCK_EL5 = 27;
+constexpr uint32_t FILE_ENCRY_ERROR_UECE_ALREADY_CREATED = 0xFBE30031;
+constexpr uint32_t FILE_ENCRY_ERROR_NOT_FOUND_UECE = 0xFBE30033;
 
 struct FbeOptStr {
     uint32_t user = 0;
@@ -74,7 +77,7 @@ struct FbeOptStrE {
     uint32_t userIdSingle = 0;
     uint32_t status = 0;
     uint32_t length = 0;
-    uint8_t eBuffer[OHOS::StorageDaemon::FBEX_E_BUFFER_SIZE] = {0};
+    uint8_t eBuffer[FBEX_E_BUFFER_SIZE] = {0};
 };
 using FbeOptsE = FbeOptStrE;
 
@@ -257,7 +260,7 @@ int FBEX::InstallDoubleDeKeyToKernel(UserIdToFbeStr &userIdToFbe, uint8_t *iv, u
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
         return -errno;
     }
-    
+
     FbeOptsE ops{ .userIdDouble = userIdToFbe.userIds[DOUBLE_ID_INDEX],
                   .userIdSingle = userIdToFbe.userIds[SINGLE_ID_INDEX],
                   .status = flag,

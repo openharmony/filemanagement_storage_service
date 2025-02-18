@@ -35,6 +35,7 @@ const uint32_t PARAMS_2 = 2;
 constexpr size_t GCM_MAC_BYTES = 16;
 constexpr size_t GCM_NONCE_BYTES = 12;
 constexpr int AES_256_HASH_RANDOM_SIZE = 32;
+constexpr uint32_t UNLOCK_STATUS = 0x2;
 const uint32_t VALID_SIZE = GCM_NONCE_BYTES + AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES;
 constexpr const char *FBEX_UFS_INLINE_BASE_ADDR = "/proc/bootdevice/name";
 constexpr const char *FBEX_CMD_PATH = "/dev/fbex_cmd";

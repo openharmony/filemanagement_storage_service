@@ -24,8 +24,6 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-constexpr int UID_ROOT = 0;
-constexpr int UID_STORAGEMANAGER = 1090;
 class StorageDaemonStub : public IRemoteStub<IStorageDaemon> {
 public:
     StorageDaemonStub();

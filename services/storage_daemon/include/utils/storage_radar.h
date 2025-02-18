@@ -21,14 +21,8 @@
 
 namespace OHOS {
 namespace StorageService {
-const std::string DEFAULT_ORGPKGNAME = "storageService";
-const std::string ADD_NEW_USER_BEHAVIOR = "ADD_NEW_USER_BEHAVIOR";
-const std::string FILE_STORAGE_MANAGER_FAULT_BEHAVIOR  = "FILE_STORAGE_MANAGER_FAULT";
-constexpr char STORAGESERVICE_DOAMIN[] = "FILEMANAGEMENT";
-const int32_t DEFAULT_USERID = 100;
-constexpr uint8_t INDEX = 3;
-constexpr uint32_t MS_1000 = 1000;
-const std::string FILE_STORAGE_MANAGER_STATISTIC = "FILE_STORAGE_MANAGER_STATISTIC";
+constexpr const char *DEFAULT_ORGPKGNAME = "storageService";
+constexpr int32_t DEFAULT_USERID = 100;
 
 enum class BizScene : int32_t {
     STORAGE_START = 0,

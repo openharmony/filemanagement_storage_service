@@ -23,7 +23,6 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-constexpr int UID_FILE_MANAGER = 1006;
 class ExternalVolumeInfo : public VolumeInfo {
 public:
     ExternalVolumeInfo() = default;

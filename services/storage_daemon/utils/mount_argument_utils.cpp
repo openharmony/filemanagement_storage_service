@@ -26,28 +26,28 @@ namespace StorageDaemon {
 namespace Utils {
 using namespace std;
 namespace {
-    static const std::string DATA_POINT = "/data/service/el2/";
-    static const std::string BASE_MOUNT_POINT = "/mnt/hmdfs/";
-    static const std::string SYSFS_HMDFS_PATH = "/sys/fs/hmdfs/";
-    static const std::string COMM_DATA_POINT = "/storage/media/";
-    static const std::string COMM_CLOUD_POINT = "/storage/cloud/";
-    static const std::string RELATIVE_DOCS_PATH = "/files/Docs";
-    static const std::string SHAREFS_DATA_POINT = "/data/service/el2/";
-    static const std::string SHAREFS_BASE_MOUNT_POINT = "/mnt/share/";
-    static const std::string TMPFS_MNT_DATA = "/mnt/data/";
-    static const std::string HMDFS_DEVICE_VIEW_LOCAL_DOCS_PATH = "/device_view/local" + RELATIVE_DOCS_PATH;
-    static const std::string SANDBOX_PATH = "/mnt/sandbox/";
-    static const std::string MNT_USER_PATH = "/mnt/user/";
-    static const std::string NOSHAREFS_DOC_PATH = "/nosharefs/docs";
-    static const std::string SHAREFS_DOC_PATH = "/sharefs/docs";
-    static const std::string NOSHAREFS_DOC_CUR_PATH = "/nosharefs/docs/currentUser";
-    static const std::string SHAREFS_DOC_CUR_PATH = "/sharefs/docs/currentUser";
-    static const std::string LOCAL_FILE_DOCS_PATH = "/local/files/Docs";
-    static const std::string CUR_OTHER_PATH = "/currentUser/other";
-    static const std::string CUR_OTHER_APPDATA_PATH = "/currentUser/other/appdata";
-    static const std::string CUR_FILEMGR_PATH = "/currentUser/filemgr";
-    static const std::string CUR_FILEMGR_APPDATA_PATH = "/currentUser/filemgr/appdata";
-    static const std::string NOSHAREFS_APPDATA_PATH = "/nosharefs/appdata";
+    constexpr const char *DATA_POINT = "/data/service/el2/";
+    constexpr const char *BASE_MOUNT_POINT = "/mnt/hmdfs/";
+    constexpr const char *SYSFS_HMDFS_PATH = "/sys/fs/hmdfs/";
+    constexpr const char *COMM_DATA_POINT = "/storage/media/";
+    constexpr const char *COMM_CLOUD_POINT = "/storage/cloud/";
+    constexpr const char *RELATIVE_DOCS_PATH = "/files/Docs";
+    constexpr const char *SHAREFS_DATA_POINT = "/data/service/el2/";
+    constexpr const char *SHAREFS_BASE_MOUNT_POINT = "/mnt/share/";
+    constexpr const char *TMPFS_MNT_DATA = "/mnt/data/";
+    constexpr const char *HMDFS_DEVICE_VIEW_LOCAL_DOCS_PATH = "/device_view/local/files/Docs";
+    constexpr const char *SANDBOX_PATH = "/mnt/sandbox/";
+    constexpr const char *MNT_USER_PATH = "/mnt/user/";
+    constexpr const char *NOSHAREFS_DOC_PATH = "/nosharefs/docs";
+    constexpr const char *SHAREFS_DOC_PATH = "/sharefs/docs";
+    constexpr const char *NOSHAREFS_DOC_CUR_PATH = "/nosharefs/docs/currentUser";
+    constexpr const char *SHAREFS_DOC_CUR_PATH = "/sharefs/docs/currentUser";
+    constexpr const char *LOCAL_FILE_DOCS_PATH = "/local/files/Docs";
+    constexpr const char *CUR_OTHER_PATH = "/currentUser/other";
+    constexpr const char *CUR_OTHER_APPDATA_PATH = "/currentUser/other/appdata";
+    constexpr const char *CUR_FILEMGR_PATH = "/currentUser/filemgr";
+    constexpr const char *CUR_FILEMGR_APPDATA_PATH = "/currentUser/filemgr/appdata";
+    constexpr const char *NOSHAREFS_APPDATA_PATH = "/nosharefs/appdata";
 } // namespace
 
 string MountArgument::GetFullSrc() const

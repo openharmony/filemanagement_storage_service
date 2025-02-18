@@ -27,13 +27,13 @@
 namespace OHOS {
 namespace StorageDaemon {
 using namespace std;
-const unsigned int LOCAL_TIME_OUT_SECONDS = 10;
-const unsigned int INACTIVE_USER_KEY_OUT_SECONDS = 25;
-const unsigned int UPDATE_RADAR_STATISTIC_INTERVAL_SECONDS = 300;
-const unsigned int RADAR_REPORT_STATISTIC_INTERVAL_MINUTES = 1440;
-const unsigned int USER0ID = 0;
-const unsigned int USER100ID = 100;
-const unsigned int RADAR_STATISTIC_THREAD_WAIT_SECONDS = 60;
+constexpr unsigned int LOCAL_TIME_OUT_SECONDS = 10;
+constexpr unsigned int INACTIVE_USER_KEY_OUT_SECONDS = 25;
+constexpr unsigned int UPDATE_RADAR_STATISTIC_INTERVAL_SECONDS = 300;
+constexpr unsigned int RADAR_REPORT_STATISTIC_INTERVAL_MINUTES = 1440;
+constexpr unsigned int USER0ID = 0;
+constexpr unsigned int USER100ID = 100;
+constexpr unsigned int RADAR_STATISTIC_THREAD_WAIT_SECONDS = 60;
 constexpr size_t MAX_IPC_RAW_DATA_SIZE = 128 * 1024 * 1024;
 
 static bool GetData(void *&buffer, size_t size, const void *data)
