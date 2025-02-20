@@ -1708,11 +1708,13 @@ int KeyManager::InActiveUserKey(unsigned int user)
         StorageRadar::ReportUserKeyResult("InactiveUserElKey", user, ret, "EL4", "");
         return ret;
     }
-    ret = InactiveUserElKey(user, userEl5Key_);
-    if (ret != E_OK) {
-        LOGE("Inactive userEl5Key_ failed");
-        StorageRadar::ReportUserKeyResult("InactiveUserElKey", user, ret, "EL5", "");
-        return ret;
+    if (!IsAppCloneUser(user)) {
+        ret = InactiveUserElKey(user, userEl5Key_);
+        if (ret != E_OK) {
+            LOGE("Inactive userEl5Key_ failed");
+            StorageRadar::ReportUserKeyResult("InactiveUserElKey", user, ret, "EL5", "");
+            return ret;
+        }
     }
     auto userTask = userLockScreenTask_.find(user);
     if (userTask != userLockScreenTask_.end()) {
