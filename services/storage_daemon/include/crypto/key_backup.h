@@ -25,8 +25,6 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-const std::string BACKUP_NAME = "_bak";
-
 struct FileAttr {
     uid_t uid;
     gid_t gid;

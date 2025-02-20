@@ -25,6 +25,12 @@ using namespace testing::ext;
 using namespace OHOS::StorageDaemon;
 
 namespace {
+constexpr const char *FILE_SHARING_DIR = "/data/service/el1/public/storage_daemon/share";
+constexpr const char *PUBLIC_DIR = "/data/service/el1/public/storage_daemon/share/public";
+constexpr const char *SHARE_TOB_DIR = "/data/service/el1/public/storage_daemon/share_tob";
+constexpr const char *TOB_SCENE = "2b_share";
+constexpr const char *TOC_SCENE = "2c_share";
+constexpr const char *TOD_SCENE = "2c2b_share";
 class FileSharingTest : public testing::Test {
 public:
     static void SetUpTestCase(void);
@@ -69,7 +75,7 @@ HWTEST_F(FileSharingTest, file_sharing_test_001, TestSize.Level1)
 
     rc = SetupDirAcl(TOB_SCENE);
     EXPECT_EQ(rc, 0);
-    EXPECT_TRUE(getxattr(SHARE_TOB_DIR.c_str(), ACL_XATTR_DEFAULT, nullptr, 0) > 0);
+    EXPECT_TRUE(getxattr(SHARE_TOB_DIR, ACL_XATTR_DEFAULT, nullptr, 0) > 0);
 
     EXPECT_TRUE(RmDirRecurse(SHARE_TOB_DIR));
 
@@ -93,7 +99,7 @@ HWTEST_F(FileSharingTest, file_sharing_test_002, TestSize.Level1)
 
     rc = SetupDirAcl(TOC_SCENE);
     EXPECT_EQ(rc, 0);
-    EXPECT_TRUE(getxattr(PUBLIC_DIR.c_str(), ACL_XATTR_DEFAULT, nullptr, 0) > 0);
+    EXPECT_TRUE(getxattr(PUBLIC_DIR, ACL_XATTR_DEFAULT, nullptr, 0) > 0);
 
     EXPECT_TRUE(RmDirRecurse(PUBLIC_DIR));
     EXPECT_TRUE(RmDirRecurse(FILE_SHARING_DIR));
@@ -119,8 +125,8 @@ HWTEST_F(FileSharingTest, file_sharing_test_003, TestSize.Level1)
 
     rc = SetupDirAcl(TOD_SCENE);
     EXPECT_EQ(rc, 0);
-    EXPECT_TRUE(getxattr(SHARE_TOB_DIR.c_str(), ACL_XATTR_DEFAULT, nullptr, 0) > 0);
-    EXPECT_TRUE(getxattr(PUBLIC_DIR.c_str(), ACL_XATTR_DEFAULT, nullptr, 0) > 0);
+    EXPECT_TRUE(getxattr(SHARE_TOB_DIR, ACL_XATTR_DEFAULT, nullptr, 0) > 0);
+    EXPECT_TRUE(getxattr(PUBLIC_DIR, ACL_XATTR_DEFAULT, nullptr, 0) > 0);
 
     EXPECT_TRUE(RmDirRecurse(SHARE_TOB_DIR));
     EXPECT_TRUE(RmDirRecurse(PUBLIC_DIR));

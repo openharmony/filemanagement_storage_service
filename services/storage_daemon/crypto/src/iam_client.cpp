@@ -18,12 +18,13 @@
 #include "iam_client.h"
 #include "storage_service_log.h"
 #include "utils/storage_radar.h"
- 
+
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
-const uint8_t IAM_MAX_RETRY_TIME = 3;
-const uint16_t IAM_RETRY_INTERVAL_MS = 50 * 1000;
+constexpr uint8_t IAM_MAX_RETRY_TIME = 3;
+constexpr uint16_t IAM_RETRY_INTERVAL_MS = 50 * 1000;
+constexpr int8_t GET_SEC_TIMEOUT = 10;
 IamClient::IamClient()
 {
     LOGI("enter");

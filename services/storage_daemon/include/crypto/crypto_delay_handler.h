@@ -27,8 +27,8 @@
 namespace OHOS {
 namespace StorageDaemon {
 class DelayHandler {
-static const uint8_t CANCEL_CLEAR_ECE_SECE_TASK = 0;
-static const uint8_t START_CLEAR_ECE_SECE_TASK = 1;
+// static const uint8_t CANCEL_CLEAR_ECE_SECE_TASK = 0;
+// static const uint8_t START_CLEAR_ECE_SECE_TASK = 1;
 public:
     DelayHandler(uint32_t userId);
     ~DelayHandler();

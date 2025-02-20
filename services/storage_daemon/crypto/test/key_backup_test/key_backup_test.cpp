@@ -22,12 +22,13 @@
 using namespace std;
 using namespace testing::ext;
 using namespace testing;
- 
+
 namespace OHOS::StorageDaemon {
 constexpr static mode_t DEFAULT_WRITE_FILE_PERM = 0644;
 constexpr static uint32_t MAX_FILE_NUM = 5;
 constexpr uint32_t INVALID_LOOP_NUM = 0xFFFFFFFF;
 const string TEST_PATH = "/data/tdd";
+constexpr const char *BACKUP_NAME = "_bak";
 class KeyBackupTest : public testing::Test {
 public:
     static void SetUpTestCase(void);
@@ -77,7 +78,7 @@ HWTEST_F(KeyBackupTest, KeyBackup_GetBackupDir_000, TestSize.Level1)
     std::string origDir = DEVICE_EL1_DIR;
     std::string backupDir;
     EXPECT_EQ(KeyBackup::GetInstance().GetBackupDir(origDir, backupDir), 0);
-    EXPECT_EQ(backupDir, DEVICE_EL1_DIR + BACKUP_NAME);
+    EXPECT_EQ(backupDir, std::string(DEVICE_EL1_DIR) + BACKUP_NAME);
 
     origDir = "test";
     backupDir.clear();
@@ -198,7 +199,7 @@ HWTEST_F(KeyBackupTest, KeyBackup_ReadFileToString_001, TestSize.Level1)
     std::string content;
     EXPECT_FALSE(KeyBackup::GetInstance().ReadFileToString(path, content));
     EXPECT_FALSE(KeyBackup::GetInstance().ReadFileToString(path, content));
-    
+
     std::string payload = "this is a test content";
     ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, path));
     EXPECT_TRUE(KeyBackup::GetInstance().ReadFileToString(path, content));
@@ -223,11 +224,11 @@ HWTEST_F(KeyBackupTest, KeyBackup_CompareFile_001, TestSize.Level1)
     std::string content;
     std::string content2;
     EXPECT_EQ(KeyBackup::GetInstance().CompareFile(path, path2), -1);
-    
+
     std::string payload = "this is a test content";
     ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, path));
     EXPECT_EQ(KeyBackup::GetInstance().CompareFile(path, path2), -1);
-    
+
     ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, path2));
     EXPECT_EQ(KeyBackup::GetInstance().CompareFile(path, path2), 0);
     unlink(path.c_str());
@@ -251,7 +252,7 @@ HWTEST_F(KeyBackupTest, KeyBackup_CheckAndCopyOneFile_001, TestSize.Level1)
     std::string content;
     std::string content2;
     EXPECT_EQ(KeyBackup::GetInstance().CheckAndCopyOneFile(path, path2), -1);
-    
+
     std::string payload = "this is a test content";
     ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, path));
     EXPECT_EQ(KeyBackup::GetInstance().CheckAndCopyOneFile(path, path2), 0);
@@ -278,7 +279,7 @@ HWTEST_F(KeyBackupTest, KeyBackup_CleanFile_001, TestSize.Level1)
 
     KeyBackup::GetInstance().CleanFile(path);
     KeyBackup::GetInstance().CleanFile(TEST_PATH);
-    
+
     std::string payload = "this is a test content";
     ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, path));
     struct stat statbuf;
@@ -305,7 +306,7 @@ HWTEST_F(KeyBackupTest, KeyBackup_FsyncFile_001, TestSize.Level1)
 
     KeyBackup::GetInstance().FsyncFile(path);
     KeyBackup::GetInstance().FsyncFile(TEST_PATH);
-    
+
     std::string payload = "this is a test content";
     ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, path));
     KeyBackup::GetInstance().FsyncFile(path);
@@ -347,7 +348,7 @@ HWTEST_F(KeyBackupTest, KeyBackup_RemoveNode_002, TestSize.Level1)
     string baseDir = TEST_PATH + "/test";
     string subDir = baseDir + "/node";
     EXPECT_EQ(KeyBackup::GetInstance().MkdirParent(subDir, DEFAULT_WRITE_FILE_PERM), 0);
-   
+
     std::string fileName = baseDir + "/test.txt";
     std::string payload = "this is a test content";
     ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, fileName));
@@ -378,11 +379,11 @@ HWTEST_F(KeyBackupTest, KeyBackup_CheckAndCopyFiles_001, TestSize.Level1)
     ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, path));
     KeyBackup::GetInstance().CheckAndCopyFiles(path, path2);
     EXPECT_EQ(KeyBackup::GetInstance().CompareFile(path, path2), 0);
-    
+
     string bakDir = TEST_PATH + "/bak/test";
     KeyBackup::GetInstance().CheckAndCopyFiles(TEST_PATH, bakDir);
     EXPECT_NE(access(bakDir.c_str(), 0), 0);
-    
+
     bakDir.clear();
     bakDir = "/data/bak";
     KeyBackup::GetInstance().CheckAndCopyFiles(TEST_PATH, bakDir);
@@ -560,7 +561,7 @@ HWTEST_F(KeyBackupTest, KeyBackup_AddBackupFileToList_001, TestSize.Level1)
     fl.backFile = origDir + "/" + fl.baseName;
     fl.isSame = false;
     fileList.push_back(fl);
-    
+
     KeyBackup::GetInstance().AddBackupFileToList(fileName, origDir, fileList);
     EXPECT_EQ(fileList.size(), 1);
 
@@ -714,7 +715,7 @@ HWTEST_F(KeyBackupTest, KeyBackup_CopySameFilesToTempDir_002, TestSize.Level1)
     fl.isSame = false;
     fileList.push_back(fl);
     EXPECT_EQ(KeyBackup::GetInstance().CopySameFilesToTempDir(backupDir, tempDir, fileList), -1);
-    
+
     std::string payload = "this is a test content";
     ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, file1));
     ASSERT_TRUE(KeyBackup::GetInstance().WriteStringToFile(payload, file2));
@@ -786,7 +787,7 @@ HWTEST_F(KeyBackupTest, KeyBackup_GetFileList_001, TestSize.Level1)
     backDir = "/data/temp";
     EXPECT_EQ(KeyBackup::GetInstance().GetFileList(origDir, backDir, fileList, diffNum), -1);
     ForceCreateDirectory(backDir);
-    
+
     std::string f1 = TEST_PATH + "/test1.txt";
     std::string f2 = TEST_PATH + "/test2.txt";
     std::string f3 = backDir + "/test3.txt";

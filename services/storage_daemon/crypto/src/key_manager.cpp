@@ -65,10 +65,16 @@ constexpr uint32_t RECOVERY_TOKEN_CHALLENGE_LENG = 32;
 constexpr const char *SERVICE_STORAGE_DAEMON_DIR = "/data/service/el1/public/storage_daemon";
 constexpr const char *FSCRYPT_EL_DIR = "/data/service/el1/public/storage_daemon/sd";
 
+constexpr uint8_t RETRIEVE_KEY = 0x0;
+constexpr uint8_t FIRST_CREATE_KEY = 0x6c;
+constexpr uint8_t USER_LOGOUT = 0x0;
+constexpr uint32_t USER_ADD_AUTH = 0x0;
+constexpr uint32_t USER_CHANGE_AUTH = 0x1;
+
 std::shared_ptr<BaseKey> KeyManager::GetBaseKey(const std::string& dir)
 {
     uint8_t versionFromPolicy = GetFscryptVersionFromPolicy();
-    uint8_t kernelSupportVersion = KeyCtrlGetFscryptVersion(MNT_DATA.c_str());
+    uint8_t kernelSupportVersion = KeyCtrlGetFscryptVersion(MNT_DATA);
     if (kernelSupportVersion != FSCRYPT_V1 && kernelSupportVersion != FSCRYPT_V2) {
         LOGE("kernel not support fscrypt, ret is %{public}d, errno is %{public}d.", kernelSupportVersion, errno);
         return nullptr;
@@ -184,7 +190,7 @@ int KeyManager::InitGlobalDeviceKey(void)
     if (ret && errno != EEXIST) {
         LOGE("create storage daemon dir error");
         StorageRadar::ReportUserKeyResult("InitGlobalDeviceKey::MkDir", 0, ret, "EL1",
-            "errno = " + std::to_string(errno) + ", path = " + STORAGE_DAEMON_DIR);
+            std::string("errno = ") + std::to_string(errno) + ", path = " + STORAGE_DAEMON_DIR);
         return ret;
     }
     std::error_code errCode;
@@ -196,7 +202,7 @@ int KeyManager::InitGlobalDeviceKey(void)
     if (ret && errno != EEXIST) {
         LOGE("create device el1 key dir = (/data/service/el0/storage_daemon/sd) error");
         StorageRadar::ReportUserKeyResult("InitGlobalDeviceKey::MkDir", 0, ret, "EL1",
-            "errno = " + std::to_string(errno) + ", path = " + DEVICE_EL1_DIR);
+            std::string("errno = ") + std::to_string(errno) + ", path = " + DEVICE_EL1_DIR);
         return ret;
     }
 

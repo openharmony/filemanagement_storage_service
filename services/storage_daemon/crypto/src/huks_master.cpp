@@ -26,12 +26,19 @@
 #include "storage_service_log.h"
 #include "storage_service_errno.h"
 #include "utils/storage_radar.h"
- 
+
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
-const uint8_t MAX_RETRY_TIME = 3;
-const uint16_t RETRY_INTERVAL_MS = 50 * 1000;
+constexpr uint8_t MAX_RETRY_TIME = 3;
+constexpr uint16_t RETRY_INTERVAL_MS = 50 * 1000;
+constexpr uint32_t CRYPTO_KEY_ALIAS_SIZE = 16;
+constexpr uint32_t CRYPTO_AES_AAD_LEN = 16;
+constexpr uint32_t CRYPTO_AES_NONCE_LEN = 64;
+constexpr uint32_t CRYPTO_HKS_NONCE_LEN = 12;
+constexpr uint32_t CRYPTO_KEY_SHIELD_MAX_SIZE = 2048;
+constexpr uint32_t CRYPTO_AES_256_KEY_ENCRYPTED_SIZE = 80;
+constexpr uint32_t CRYPTO_TOKEN_SIZE = TOKEN_CHALLENGE_LEN; // 32
 HuksMaster::HuksMaster()
 {
     LOGI("enter");

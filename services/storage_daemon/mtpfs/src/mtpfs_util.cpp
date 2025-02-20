@@ -33,9 +33,9 @@
 #include "file_utils.h"
 #include "storage_service_log.h"
 
-const std::string devnull = "/dev/null";
-const int32_t MAX_INT = 255;
-const int32_t SCANF_NUM = 2;
+constexpr const char *DEV_NULL = "/dev/null";
+constexpr int32_t MAX_INT = 255;
+constexpr int32_t SCANF_NUM = 2;
 
 bool MtpFsUtil::enabled_ = false;
 int MtpFsUtil::stdOut_ = -1;
@@ -46,10 +46,10 @@ void MtpFsUtil::On()
     if (!enabled_) {
         return;
     }
-    if (freopen(devnull.c_str(), "w", stdout) == nullptr) {
+    if (freopen(DEV_NULL, "w", stdout) == nullptr) {
         LOGE("freopen stdout fail");
     }
-    if (freopen(devnull.c_str(), "w", stderr) == nullptr) {
+    if (freopen(DEV_NULL, "w", stderr) == nullptr) {
         LOGE("freopen stderr fail");
     }
     dup2(stdOut_, fileno(stdout));
@@ -74,10 +74,10 @@ void MtpFsUtil::Off()
     fflush(stderr);
     stdOut_ = dup(fileno(stdout));
     stdErr_ = dup(fileno(stderr));
-    if (freopen(devnull.c_str(), "w", stdout) == nullptr) {
+    if (freopen(DEV_NULL, "w", stdout) == nullptr) {
         LOGE("freopen stdout fail");
     }
-    if (freopen(devnull.c_str(), "w", stderr) == nullptr) {
+    if (freopen(DEV_NULL, "w", stderr) == nullptr) {
         LOGE("freopen stderr fail");
     }
     enabled_ = true;

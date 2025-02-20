@@ -28,7 +28,7 @@ namespace OHOS {
 namespace StorageDaemon {
 using namespace std;
 
-const int32_t BASE_USER_RANGE = 200000;
+constexpr int32_t BASE_USER_RANGE = 200000;
 
 void AppStateObserverManager::SubscribeAppState(const std::vector<std::string> &bundleNameList)
 {

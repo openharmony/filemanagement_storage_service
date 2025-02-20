@@ -27,11 +27,9 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-const int RND_AND_KEY2_LEN = 64;
-const int RND_AND_KEY2_NUMS = 6; // 0-Device EL1, 1-Global User EL1, 2-User EL1, 3-User EL2, 4-User EL3, 5-User EL4
-const int AUTH_TOKEN_LEN = 280;
-const uint32_t ELX_TYPE_ARR[] = { TYPE_GLOBAL_EL1, USERID_GLOBAL_EL1, TYPE_EL1,
-                                  TYPE_EL2, TYPE_EL3, TYPE_EL4 };
+constexpr int RND_AND_KEY2_LEN = 64;
+constexpr int RND_AND_KEY2_NUMS = 6; // 0-Device EL1, 1-Global User EL1, 2-User EL1, 3-User EL2, 4-User EL3, 5-User EL4
+constexpr int AUTH_TOKEN_LEN = 280;
 
 #ifdef RECOVER_KEY_TEE_ENVIRONMENT
 static TEEC_UUID recoverTaUuid = { 0x9449c83f, 0x2fa6, 0x485b, { 0x83, 0xff, 0x77, 0x14, 0x4f, 0xff, 0x66, 0xb4 } };

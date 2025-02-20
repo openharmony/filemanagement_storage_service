@@ -35,11 +35,18 @@ constexpr int32_t VOL_LENGTH = 3;
 constexpr int32_t MAJORID_BLKEXT = 259;
 constexpr int32_t MAX_PARTITION = 16;
 constexpr int32_t MAX_INTERVAL_PARTITION = 15;
-const std::string SGDISK_PATH = "/system/bin/sgdisk";
-const std::string SGDISK_DUMP_CMD = "--ohos-dump";
-const std::string SGDISK_ZAP_CMD = "--zap-all";
-const std::string SGDISK_PART_CMD = "--new=0:0:-0 --typeconde=0:0c00 --gpttombr=1";
-const std::string BLOCK_PATH = "/dev/block";
+constexpr const char *SGDISK_PATH = "/system/bin/sgdisk";
+constexpr const char *SGDISK_DUMP_CMD = "--ohos-dump";
+constexpr const char *SGDISK_ZAP_CMD = "--zap-all";
+constexpr const char *SGDISK_PART_CMD = "--new=0:0:-0 --typeconde=0:0c00 --gpttombr=1";
+constexpr const char *BLOCK_PATH = "/dev/block";
+
+enum DiskStatus:int {
+    S_INITAL = 0,
+    S_CREATE = 1,
+    S_SCAN = 2,
+    S_DESTROY = 4,
+};
 
 DiskInfo::DiskInfo(std::string &sysPath, std::string &devPath, dev_t device, int flag)
 {
@@ -49,7 +56,7 @@ DiskInfo::DiskInfo(std::string &sysPath, std::string &devPath, dev_t device, int
     devPath_ = StringPrintf("/dev/block/%s", id_.c_str());
     device_ = device;
     flags_ = static_cast<unsigned int>(flag);
-    status = sInital;
+    status = S_INITAL;
 }
 
 dev_t DiskInfo::GetDevice() const
@@ -97,7 +104,7 @@ int DiskInfo::Create()
     int ret;
 
     CreateDiskNode(devPath_, device_);
-    status = sCreate;
+    status = S_CREATE;
     ReadMetadata();
 
     StorageManagerClient client;
@@ -127,7 +134,7 @@ int DiskInfo::Destroy()
             return E_ERR;
         }
     }
-    status = sDestroy;
+    status = S_DESTROY;
     volumeId_.clear();
     return E_OK;
 }
@@ -195,7 +202,7 @@ int DiskInfo::ReadPartition()
     if (res != E_OK) {
         LOGE("Destroy failed in ReadPartition");
     }
-    
+
     std::vector<std::string> cmd;
     std::vector<std::string> output;
     std::vector<std::string> lines;
@@ -223,11 +230,11 @@ int DiskInfo::ReadPartition()
             std::vector<std::string> hmfsLines;
             hmfsLines.push_back(lines.front());
             hmfsLines.push_back(*userdataIt);
-            status = sScan;
+            status = S_SCAN;
             return ReadDiskLines(hmfsLines, maxVolumes);
         }
     }
-    status = sScan;
+    status = S_SCAN;
     return ReadDiskLines(lines, maxVolumes);
 }
 
@@ -341,8 +348,8 @@ int32_t DiskInfo::GetMaxMinor(int32_t major)
     DIR* dir;
     struct dirent* entry;
     int maxMinor = -1;
-    if ((dir = opendir(BLOCK_PATH.c_str())) == nullptr) {
-        LOGE("fail to open %{public}s", BLOCK_PATH.c_str());
+    if ((dir = opendir(BLOCK_PATH)) == nullptr) {
+        LOGE("fail to open %{public}s", BLOCK_PATH);
         return E_ERR;
     }
     while ((entry = readdir(dir)) != nullptr) {

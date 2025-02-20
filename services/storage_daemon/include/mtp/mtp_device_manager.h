@@ -23,10 +23,6 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-constexpr int32_t DEFAULT_DEV_INDEX = 1;
-constexpr uid_t FILE_MANAGER_UID = 1006;
-constexpr gid_t FILE_MANAGER_GID = 1006;
-constexpr mode_t PUBLIC_DIR_MODE = 02770;
 
 struct MtpDeviceInfo {
     std::string id;

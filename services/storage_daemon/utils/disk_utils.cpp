@@ -32,7 +32,8 @@ using namespace std;
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
-static constexpr int32_t NODE_PERM = 0660;
+constexpr int32_t NODE_PERM = 0660;
+constexpr const char *MMC_MAX_VOLUMES_PATH = "/sys/module/mmcblk/parameters/perdev_minors";
 
 int CreateDiskNode(const std::string &path, dev_t dev)
 {

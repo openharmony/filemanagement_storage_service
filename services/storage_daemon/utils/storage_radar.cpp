@@ -24,6 +24,12 @@
 
 namespace OHOS {
 namespace StorageService {
+constexpr const char *FILE_STORAGE_MANAGER_FAULT_BEHAVIOR  = "FILE_STORAGE_MANAGER_FAULT";
+constexpr const char *FILE_STORAGE_MANAGER_STATISTIC = "FILE_STORAGE_MANAGER_STATISTIC";
+constexpr char STORAGESERVICE_DOAMIN[] = "FILEMANAGEMENT";
+constexpr uint8_t INDEX = 3;
+constexpr uint32_t MS_1000 = 1000;
+
 void StorageRadar::ReportActiveUserKey(const std::string &funcName, uint32_t userId, int ret,
     const std::string &keyElxLevel)
 {
@@ -115,7 +121,7 @@ void StorageRadar::ReportUpdateUserAuth(const std::string &funcName, uint32_t us
     };
     StorageRadar::GetInstance().RecordFuctionResult(param);
 }
- 
+
 void StorageRadar::ReportFbexResult(const std::string &funcName, uint32_t userId, int ret, const std::string &keyLevel,
     const std::string &extraData)
 {
@@ -132,7 +138,7 @@ void StorageRadar::ReportFbexResult(const std::string &funcName, uint32_t userId
     };
     StorageRadar::GetInstance().RecordFuctionResult(param);
 }
- 
+
 void StorageRadar::ReportIamResult(const std::string &funcName, uint32_t userId, int ret)
 {
     RadarParameter param = {
@@ -147,7 +153,7 @@ void StorageRadar::ReportIamResult(const std::string &funcName, uint32_t userId,
     };
     StorageRadar::GetInstance().RecordFuctionResult(param);
 }
- 
+
 void StorageRadar::ReportHuksResult(const std::string &funcName, int ret)
 {
     RadarParameter param = {

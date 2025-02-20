@@ -27,10 +27,10 @@
 constexpr int UPLOAD_RECORD_FALSE_LEN = 5;
 constexpr int UPLOAD_RECORD_TRUE_LEN = 4;
 
-const int32_t ST_NLINK_TWO = 2;
-const int32_t FILE_SIZE = 512;
-const int32_t BS_SIZE = 1024;
-const int32_t ARG_SIZE = 2;
+constexpr int32_t ST_NLINK_TWO = 2;
+constexpr int32_t FILE_SIZE = 512;
+constexpr int32_t BS_SIZE = 1024;
+constexpr int32_t ARG_SIZE = 2;
 
 int WrapGetattr(const char *path, struct stat *buf, struct fuse_file_info *fi)
 {

@@ -27,8 +27,8 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-static constexpr int32_t GET_CLIENT_RETRY_TIMES = 5;
-static constexpr int32_t SLEEP_TIME = 1;
+constexpr int32_t GET_CLIENT_RETRY_TIMES = 5;
+constexpr int32_t SLEEP_TIME = 1;
 int32_t StorageManagerClient::GetClient()
 {
     auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
