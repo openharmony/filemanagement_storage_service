@@ -27,27 +27,24 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-namespace {
-    const std::string PATH_STORAGE_RADAR = "/data/service/el1/public/storage_daemon/radar/";
-    const std::string STATISTIC_FILE_NAME = "StorageStatisticFile.json";
-    const uint32_t OP_COUNT = 12;
-    const uint32_t KEY_LOAD_SUCC_COUNT = 0;
-    const uint32_t KEY_LOAD_FAIL_COUNT = 1;
-    const uint32_t KEY_UNLOAD_SUCC_COUNT = 2;
-    const uint32_t KEY_UNLOAD_FAIL_COUNT = 3;
-    const uint32_t USER_ADD_SUCC_COUNT = 4;
-    const uint32_t USER_ADD_FAIL_COUNT = 5;
-    const uint32_t USER_REMOVE_SUCC_COUNT = 6;
-    const uint32_t USER_REMOVE_FAIL_COUNT = 7;
-    const uint32_t USER_START_SUCC_COUNT = 8;
-    const uint32_t USER_START_FAIL_COUNT = 9;
-    const uint32_t USER_STOP_SUCC_COUNT = 10;
-    const uint32_t USER_STOP_FAIL_COUNT = 11;
-}
+constexpr const char *PATH_STORAGE_RADAR = "/data/service/el1/public/storage_daemon/radar/StorageStatisticFile.json";
+constexpr uint32_t OP_COUNT = 12;
+constexpr uint32_t KEY_LOAD_SUCC_COUNT = 0;
+constexpr uint32_t KEY_LOAD_FAIL_COUNT = 1;
+constexpr uint32_t KEY_UNLOAD_SUCC_COUNT = 2;
+constexpr uint32_t KEY_UNLOAD_FAIL_COUNT = 3;
+constexpr uint32_t USER_ADD_SUCC_COUNT = 4;
+constexpr uint32_t USER_ADD_FAIL_COUNT = 5;
+constexpr uint32_t USER_REMOVE_SUCC_COUNT = 6;
+constexpr uint32_t USER_REMOVE_FAIL_COUNT = 7;
+constexpr uint32_t USER_START_SUCC_COUNT = 8;
+constexpr uint32_t USER_START_FAIL_COUNT = 9;
+constexpr uint32_t USER_STOP_SUCC_COUNT = 10;
+constexpr uint32_t USER_STOP_FAIL_COUNT = 11;
 
 bool StorageStatisticRadar::CreateStatisticFile()
 {
-    std::string filePath = PATH_STORAGE_RADAR + STATISTIC_FILE_NAME;
+    std::string filePath = PATH_STORAGE_RADAR;
     if (access(filePath.c_str(), F_OK) == 0) {
         LOGI("File exist filePath:%{public}s", filePath.c_str());
         return true;
@@ -63,7 +60,7 @@ bool StorageStatisticRadar::CreateStatisticFile()
 
 void StorageStatisticRadar::CleanStatisticFile()
 {
-    std::string filePath = PATH_STORAGE_RADAR + STATISTIC_FILE_NAME;
+    std::string filePath = PATH_STORAGE_RADAR;
     std::ofstream outFile(filePath, std::ios::trunc);
     if (!outFile.is_open()) {
         LOGE("Open statistic file failed");
@@ -136,7 +133,7 @@ bool StorageStatisticRadar::UpdateStatisticFile(const std::map<uint32_t, RadarSt
         LOGI("Statistics is empty");
         return false;
     }
-    std::string filePath = PATH_STORAGE_RADAR + STATISTIC_FILE_NAME;
+    std::string filePath = PATH_STORAGE_RADAR;
     std::ofstream outFile(filePath, std::ios::trunc);
     if (!outFile.is_open()) {
         LOGE("Open statistic file failed");
@@ -152,7 +149,7 @@ bool StorageStatisticRadar::UpdateStatisticFile(const std::map<uint32_t, RadarSt
 
 bool StorageStatisticRadar::ReadStatisticFile(std::map<uint32_t, RadarStatisticInfo> &statistics)
 {
-    std::string filePath = PATH_STORAGE_RADAR + STATISTIC_FILE_NAME;
+    std::string filePath = PATH_STORAGE_RADAR;
     std::ifstream inFile(filePath);
     if (!inFile.is_open()) {
         LOGE("Open json failed");

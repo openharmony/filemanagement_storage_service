@@ -30,10 +30,10 @@ public:
     }
     ~FscryptKeyV2() = default;
 
-    int32_t ActiveKey(uint32_t flag = 0, const std::string &mnt = MNT_DATA);
-    int32_t InactiveKey(uint32_t flag = 0, const std::string &mnt = MNT_DATA);
-    int32_t LockUserScreen(uint32_t flag = 0, uint32_t sdpClass = 0, const std::string &mnt = MNT_DATA);
-    int32_t UnlockUserScreen(uint32_t flag = 0, uint32_t sdpClass = 0, const std::string &mnt = MNT_DATA);
+    int32_t ActiveKey(uint32_t flag = 0, const std::string &mnt = std::string(MNT_DATA));
+    int32_t InactiveKey(uint32_t flag = 0, const std::string &mnt = std::string(MNT_DATA));
+    int32_t LockUserScreen(uint32_t flag = 0, uint32_t sdpClass = 0, const std::string &mnt = std::string(MNT_DATA));
+    int32_t UnlockUserScreen(uint32_t flag = 0, uint32_t sdpClass = 0, const std::string &mnt = std::string(MNT_DATA));
     int32_t AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status = 0);
     int32_t DeleteClassEPinCode(uint32_t userId = 0);
     int32_t ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId = 0);

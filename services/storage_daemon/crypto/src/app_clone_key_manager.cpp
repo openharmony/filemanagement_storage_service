@@ -27,13 +27,13 @@
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
-static const std::string NEED_RESTORE_PATH = "/data/service/el1/public/storage_daemon/sd/el1/%d/latest/need_restore";
+constexpr const char *NEED_RESTORE_PATH = "/data/service/el1/public/storage_daemon/sd/el1/%d/latest/need_restore";
 
 int AppCloneKeyManager::ActiveAppCloneUserKey(unsigned int &failedUserId)
 {
     for (int userId = StorageService::START_APP_CLONE_USER_ID;
          userId < StorageService::MAX_APP_CLONE_USER_ID; userId++) {
-        std::string keyPath = StringPrintf(NEED_RESTORE_PATH.c_str(), userId);
+        std::string keyPath = StringPrintf(NEED_RESTORE_PATH, userId);
         std::error_code errCode;
         if (!std::filesystem::exists(keyPath, errCode)) {
             LOGD("restore path do not exist, errCode %{public}d", errCode.value());

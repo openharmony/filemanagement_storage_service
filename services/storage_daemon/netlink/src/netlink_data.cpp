@@ -24,7 +24,7 @@ constexpr int ACTION_PRE_LEN = 7;
 constexpr int DEVPATH_PRE_LEN = 8;
 constexpr int SUBSYSTEM_PRE_LEN = 10;
 constexpr int NL_PARAMS_MAX = 128;
-const std::string EMPTY_STRING = "";
+constexpr const char *EMPTY_STRING = "";
 
 void NetlinkData::Decode(const char *msg)
 {

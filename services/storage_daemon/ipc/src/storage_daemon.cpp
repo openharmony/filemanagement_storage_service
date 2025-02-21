@@ -64,14 +64,18 @@ namespace StorageDaemon {
 using namespace OHOS::FileManagement::CloudFile;
 #endif
 
-static const std::string DATA = "/data";
-const std::string DATA_SERVICE_EL2 = "/data/service/el2/";
-const std::string DATA_SERVICE_EL3 = "/data/service/el3/";
-const std::string DATA_SERVICE_EL4 = "/data/service/el4/";
-const std::string DATA_SERVICE_EL1_PUBLIC_STORAGE_DAEMON_SD = "/data/service/el1/public/storage_daemon/sd";
-const std::string DATA_SERVICE_EL0_STORAGE_DAEMON_SD = "/data/service/el0/storage_daemon/sd";
-const std::string NEED_RESTORE_SUFFIX = "/latest/need_restore";
-const std::string NEW_DOUBLE_2_SINGLE = "2";
+#ifdef USE_LIBRESTORECON
+constexpr const char *DATA_SERVICE_EL2 = "/data/service/el2/";
+constexpr const char *DATA_SERVICE_EL1_PUBLIC_STORAGE_DAEMON_SD = "/data/service/el1/public/storage_daemon/sd";
+constexpr const char *DATA_SERVICE_EL0_STORAGE_DAEMON_SD = "/data/service/el0/storage_daemon/sd";
+#elif defined(USER_CRYPTO_MIGRATE_KEY)
+constexpr const char *DATA_SERVICE_EL0_STORAGE_DAEMON_SD = "/data/service/el0/storage_daemon/sd";
+#endif
+
+#ifdef USER_CRYPTO_MIGRATE_KEY
+constexpr const char *NEED_RESTORE_SUFFIX = "/latest/need_restore";
+constexpr const char *NEW_DOUBLE_2_SINGLE = "2";
+#endif
 typedef int32_t (*CreateShareFileFunc)(const std::vector<std::string> &, uint32_t, uint32_t, std::vector<int32_t> &);
 typedef int32_t (*DeleteShareFileFunc)(uint32_t, const std::vector<std::string> &);
 const unsigned int LOCAL_TIME_OUT_SECONDS = 10;
@@ -466,7 +470,7 @@ int32_t StorageDaemon::InitGlobalKey(void)
         HiAudit::GetInstance().Write(storageAuditLog);
     }
 #ifdef USE_LIBRESTORECON
-    RestoreconRecurse(DATA_SERVICE_EL0_STORAGE_DAEMON_SD.c_str());
+    RestoreconRecurse(DATA_SERVICE_EL0_STORAGE_DAEMON_SD);
 #endif
     return ret;
 #else
@@ -493,7 +497,7 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
     if (std::filesystem::exists(el1NeedRestorePath, errCode)) {
         LOGE("USER_EL1_DIR is exist, update NEW_DOUBLE_2_SINGLE");
         std::string doubleVersion;
-        std::string el0NeedRestorePath = DATA_SERVICE_EL0_STORAGE_DAEMON_SD + NEED_RESTORE_SUFFIX;
+        std::string el0NeedRestorePath = std::string(DATA_SERVICE_EL0_STORAGE_DAEMON_SD) + NEED_RESTORE_SUFFIX;
         bool isRead = OHOS::LoadStringFromFile(el0NeedRestorePath, doubleVersion);
         int newSingleVersion = std::atoi(doubleVersion.c_str()) + 1;
         LOGW("Process NEW_DOUBLE(version:%{public}s}) ——> SINGLE Frame(version:%{public}d), ret: %{public}d",
@@ -515,7 +519,7 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
     }
 #endif
 #ifdef USE_LIBRESTORECON
-    RestoreconRecurse(DATA_SERVICE_EL1_PUBLIC_STORAGE_DAEMON_SD.c_str());
+    RestoreconRecurse(DATA_SERVICE_EL1_PUBLIC_STORAGE_DAEMON_SD);
 #endif
     auto result = UserManager::GetInstance()->PrepareUserDirs(GLOBAL_USER_ID,
         static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL1));
@@ -657,7 +661,7 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuth(uint32_t userId, KeyType
         "secret:%{public}u", userId, token.empty(), secret.empty());
     int32_t ret = E_OK;
     std::string need_restore_version = GetNeedRestoreVersion(userId, type);
-    int32_t OLD_UPDATE_VERSION_MAXLIMIT = std::atoi(NEW_DOUBLE_2_SINGLE.c_str());
+    int32_t OLD_UPDATE_VERSION_MAXLIMIT = std::atoi(NEW_DOUBLE_2_SINGLE);
     if (std::atoi(need_restore_version.c_str()) <= OLD_UPDATE_VERSION_MAXLIMIT) {
         LOGW("Old DOUBLE_2_SINGLE::PrepareUserDirsAndUpdateUserAuth.");
         ret = PrepareUserDirsAndUpdateUserAuthOld(userId, type, token, secret);
@@ -935,7 +939,7 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
         std::string el2NeedRestorePath = GetNeedRestoreFilePath(userId, USER_EL2_DIR);
         if (std::filesystem::exists(el2NeedRestorePath, errCode) && (!token.empty() || !secret.empty())) {
             ret = PrepareUserDirsAndUpdateUserAuth(userId, EL2_KEY, token, secret);
-            std::string EL0_NEED_RESTORE = DATA_SERVICE_EL0_STORAGE_DAEMON_SD + NEED_RESTORE_SUFFIX;
+            std::string EL0_NEED_RESTORE = std::string(DATA_SERVICE_EL0_STORAGE_DAEMON_SD) + NEED_RESTORE_SUFFIX;
             if (!SaveStringToFile(EL0_NEED_RESTORE, NEW_DOUBLE_2_SINGLE)) {
                 LOGE("Save key type file failed");
                 return E_SYS_KERNEL_ERR;
@@ -974,22 +978,24 @@ int32_t StorageDaemon::RestoreconElX(uint32_t userId)
     LOGI("StorageDaemon::RestoreconElX, userId %{public}u", userId);
 #ifdef USE_LIBRESTORECON
     LOGI("Begin to restorecon path, userId = %{public}d", userId);
-    RestoreconRecurse((DATA_SERVICE_EL2 + "public").c_str());
-    const std::string &path = DATA_SERVICE_EL2 + std::to_string(userId);
+    RestoreconRecurse((std::string(DATA_SERVICE_EL2) + "public").c_str());
+    const std::string &path = std::string(DATA_SERVICE_EL2) + std::to_string(userId);
     LOGI("RestoreconRecurse el2 public end, userId = %{public}d", userId);
     MountManager::GetInstance()->RestoreconSystemServiceDirs(userId);
     LOGI("RestoreconSystemServiceDirs el2 end, userId = %{public}d", userId);
-    RestoreconRecurse((DATA_SERVICE_EL2 + std::to_string(userId) + "/share").c_str());
+    RestoreconRecurse((std::string(DATA_SERVICE_EL2) + std::to_string(userId) + "/share").c_str());
     LOGI("RestoreconRecurse el2 share end, userId = %{public}d", userId);
-    const std::string &DATA_SERVICE_EL2_HMDFS = DATA_SERVICE_EL2 + std::to_string(userId) + "/hmdfs/";
+    const std::string &DATA_SERVICE_EL2_HMDFS = std::string(DATA_SERVICE_EL2) + std::to_string(userId) + "/hmdfs/";
     Restorecon(DATA_SERVICE_EL2_HMDFS.c_str());
     LOGI("Restorecon el2 DATA_SERVICE_EL2_HMDFS end, userId = %{public}d", userId);
     const std::string &ACCOUNT_FILES = "/hmdfs/account/files/";
-    const std::string &EL2_HMDFS_ACCOUNT_FILES = DATA_SERVICE_EL2 + std::to_string(userId) + ACCOUNT_FILES;
+    const std::string &EL2_HMDFS_ACCOUNT_FILES = std::string(DATA_SERVICE_EL2) + std::to_string(userId) +
+        ACCOUNT_FILES;
     Restorecon(EL2_HMDFS_ACCOUNT_FILES.c_str());
     LOGI("Restorecon el2 DATA_SERVICE_EL2_HMDFS_ACCOUNT_FILES end, userId = %{public}d", userId);
     const std::string &FILES_RECENT = "/hmdfs/account/files/.Recent";
-    const std::string &EL2_HMDFS_ACCOUNT_FILES_RECENT = DATA_SERVICE_EL2 + std::to_string(userId) + FILES_RECENT;
+    const std::string &EL2_HMDFS_ACCOUNT_FILES_RECENT = std::string(DATA_SERVICE_EL2) + std::to_string(userId) +
+        FILES_RECENT;
     Restorecon(EL2_HMDFS_ACCOUNT_FILES_RECENT.c_str());
     LOGI("Restorecon el2 DATA_SERVICE_EL2_HMDFS_ACCOUNT_FILES_RECENT end, userId = %{public}d", userId);
 #endif

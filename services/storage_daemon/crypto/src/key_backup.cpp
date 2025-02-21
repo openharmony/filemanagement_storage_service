@@ -28,10 +28,11 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-const uint32_t INVALID_LOOP_NUM = 0xFFFFFFFF;
-const uint8_t BACK_MAX_RETRY_TIME = 3;
-const uint16_t BACK_RETRY_INTERVAL_MS = 50 * 1000;
+constexpr uint32_t INVALID_LOOP_NUM = 0xFFFFFFFF;
+constexpr uint8_t BACK_MAX_RETRY_TIME = 3;
+constexpr uint16_t BACK_RETRY_INTERVAL_MS = 50 * 1000;
 
+constexpr const char *BACKUP_NAME = "_bak";
 struct FileNode {
     std::string baseName;
     std::string origFile;
@@ -168,7 +169,7 @@ int32_t KeyBackup::GetBackupDir(std::string &origDir, std::string &backupDir)
 {
     LOGI("get backup dir origDir %{public}s", origDir.c_str());
     if (origDir == DEVICE_EL1_DIR) {
-        backupDir = DEVICE_EL1_DIR + BACKUP_NAME;
+        backupDir = std::string(DEVICE_EL1_DIR) + BACKUP_NAME;
         LOGI("backup dir is: %{public}s", backupDir.c_str());
         return 0;
     }
@@ -493,7 +494,7 @@ int32_t KeyBackup::MkdirParentWithRetry(const std::string &pathName, mode_t mode
     }
     return ret;
 }
-    
+
 int32_t KeyBackup::MkdirParent(const std::string &pathName, mode_t mode)
 {
     LOGI("mkdir parent dirName %{public}s", pathName.c_str());

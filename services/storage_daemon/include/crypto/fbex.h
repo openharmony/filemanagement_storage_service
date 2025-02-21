@@ -32,13 +32,10 @@ constexpr uint32_t TYPE_GLOBAL_EL1 = 4;
 
 constexpr uint32_t FBEX_IV_SIZE = 64;
 constexpr uint32_t FBEX_KEYID_SIZE = 64;
-constexpr uint32_t FBEX_E_BUFFER_SIZE = 64;
-const uint32_t FBEX_UNSUPPORT_CODE = 0xfbe30203;
-const uint32_t UNLOCK_STATUS = 0x2;
-const int STORAGE_UNSUPPORT_CODE = 0;
-const int SINGLE_ID_INDEX = 0;
-const int DOUBLE_ID_INDEX = 1;
-const int USER_ID_SIZE = 2;
+constexpr int STORAGE_UNSUPPORT_CODE = 0;
+constexpr int SINGLE_ID_INDEX = 0;
+constexpr int DOUBLE_ID_INDEX = 1;
+constexpr int USER_ID_SIZE = 2;
 
 struct UserIdToFbeStr {
     uint32_t userIds[USER_ID_SIZE];

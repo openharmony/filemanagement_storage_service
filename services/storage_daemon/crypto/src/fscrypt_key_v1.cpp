@@ -33,6 +33,7 @@ using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
 static const std::string CRYPTO_NAME_PREFIXES[] = {"ext4", "f2fs", "fscrypt"};
+constexpr uint32_t USER_UNLOCK = 0x2;
 
 int32_t FscryptKeyV1::ActiveKey(uint32_t flag, const std::string &mnt)
 {
@@ -269,12 +270,12 @@ int32_t FscryptKeyV1::DoDecryptClassE(const UserAuth &auth, KeyBlob &eSecretFBE,
     GetSubDirs(dir_, files);
     std::sort(files.begin(), files.end(), [&](const std::string &a, const std::string &b) {
         if (a.length() != b.length() ||
-            a.length() < PATH_KEY_VERSION.length() ||
-            b.length() < PATH_KEY_VERSION.length()) {
+            a.length() < strlen(PATH_KEY_VERSION) ||
+            b.length() < strlen(PATH_KEY_VERSION)) {
             return a.length() > b.length();
         }
-        // make sure a.length() >= PATH_KEY_VERSION.length() && b.length() >= PATH_KEY_VERSION.length()
-        return std::stoi(a.substr(PATH_KEY_VERSION.size() - 1)) > std::stoi(b.substr(PATH_KEY_VERSION.size() - 1));
+        // make sure a.length() >= strlen(PATH_KEY_VERSION) && b.length() >= strlen(PATH_KEY_VERSION)
+        return std::stoi(a.substr(strlen(PATH_KEY_VERSION) - 1)) > std::stoi(b.substr(strlen(PATH_KEY_VERSION) - 1));
     });
     for (const auto &it: files) {
         if (it != candidate) {
@@ -487,7 +488,7 @@ int32_t FscryptKeyV1::InactiveKey(uint32_t flag, const std::string &mnt)
 void FscryptKeyV1::DropCachesIfNeed()
 {
     LOGE("drop cache if need enter.");
-    DIR *dir = opendir(MNT_DATA.c_str());
+    DIR *dir = opendir(MNT_DATA);
     if (dir == nullptr) {
         LOGE("dir is null, sync start.");
         sync();

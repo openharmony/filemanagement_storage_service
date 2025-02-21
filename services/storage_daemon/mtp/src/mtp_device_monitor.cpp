@@ -34,13 +34,14 @@
 using namespace std;
 namespace OHOS {
 namespace StorageDaemon {
-static constexpr int32_t SLEEP_TIME = 1;
-const std::string MTP_ROOT_PATH = "/mnt/data/external/";
-const int32_t MTP_VAL_LEN = 6;
-const int32_t MTP_TRUE_LEN = 5;
-const int32_t DETECT_CNT = 4;
-const char *SYS_PARAM_SERVICE_PERSIST_ENABLE = "persist.edm.mtp_client_disable";
-const char *SYS_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.edm.is_enterprise_device";
+constexpr int32_t SLEEP_TIME = 1;
+constexpr int32_t MTP_VAL_LEN = 6;
+constexpr int32_t MTP_TRUE_LEN = 5;
+constexpr int32_t DETECT_CNT = 4;
+
+constexpr const char *MTP_ROOT_PATH = "/mnt/data/external/";
+constexpr const char *SYS_PARAM_SERVICE_PERSIST_ENABLE = "persist.edm.mtp_client_disable";
+constexpr const char *SYS_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.edm.is_enterprise_device";
 bool g_keepMonitoring = true;
 
 MtpDeviceMonitor::MtpDeviceMonitor() {}
@@ -49,7 +50,6 @@ MtpDeviceMonitor::~MtpDeviceMonitor()
 {
     LOGI("MtpDeviceMonitor Destructor.");
     UmountAllMtpDevice();
-    RemoveMTPParamListener();
 }
 
 void MtpDeviceMonitor::StartMonitor()
@@ -107,7 +107,7 @@ void MtpDeviceMonitor::MountMtpDeviceByBroadcast()
         devInfo.vendorId = rawDevice->device_entry.vendor_id;
         devInfo.productId = rawDevice->device_entry.product_id;
         devInfo.id = "mtp-" + std::to_string(devInfo.vendorId) + "-" + std::to_string(devInfo.productId);
-        devInfo.path = MTP_ROOT_PATH + devInfo.id;
+        devInfo.path = std::string(MTP_ROOT_PATH) + devInfo.id;
         devInfos.push_back(devInfo);
         LOGI("Detect new mtp device: id=%{public}s, vendor=%{public}s, product=%{public}s, devNum=%{public}d",
             (devInfo.id).c_str(), (devInfo.vendor).c_str(), (devInfo.product).c_str(), devInfo.devNum);
@@ -130,6 +130,7 @@ void MtpDeviceMonitor::MonitorDevice()
         sleep(SLEEP_TIME);
         UsbEventSubscriber::SubscribeCommonEvent();
     }
+    RemoveMTPParamListener();
     LOGI("MonitorDevice: mtp device monitor thread end.");
 }
 
@@ -253,8 +254,7 @@ void MtpDeviceMonitor::RemoveMTPParamListener()
 
 void MtpDeviceMonitor::OnMtpDisableParamChange(const char *key, const  char *value, void *context)
 {
-    (void)context;
-    if (key == nullptr || value == nullptr) {
+    if (key == nullptr || value == nullptr || context == nullptr) {
         LOGE("OnMtpDisableParamChange return invaild value");
         return;
     }
@@ -263,17 +263,16 @@ void MtpDeviceMonitor::OnMtpDisableParamChange(const char *key, const  char *val
         LOGE("event key mismatch");
         return;
     }
-    MtpDeviceMonitor instance;
-    if (instance.IsNeedDisableMtp()) {
+    MtpDeviceMonitor* instance = reinterpret_cast<MtpDeviceMonitor*>(context);
+    if (instance->IsNeedDisableMtp()) {
         LOGI("MTP disable parameter changed, unmount all mtp devices.");
-        instance.UmountAllMtpDevice();
+        instance->UmountAllMtpDevice();
     }
 }
 
 void MtpDeviceMonitor::OnEnterpriseParamChange(const char *key, const  char *value, void *context)
 {
-    (void)context;
-    if (key == nullptr || value == nullptr) {
+    if (key == nullptr || value == nullptr || context == nullptr) {
         LOGE("OnEnterpriseParamChange return invaild value");
         return;
     }
@@ -282,10 +281,10 @@ void MtpDeviceMonitor::OnEnterpriseParamChange(const char *key, const  char *val
         LOGE("event key mismatch");
         return;
     }
-    MtpDeviceMonitor instance;
-    if (instance.IsNeedDisableMtp()) {
+    MtpDeviceMonitor* instance = reinterpret_cast<MtpDeviceMonitor*>(context);
+    if (instance->IsNeedDisableMtp()) {
         LOGI("Enterprise device parameter changed, unmount all mtp devices.");
-        instance.UmountAllMtpDevice();
+        instance->UmountAllMtpDevice();
     }
 }
 }  // namespace StorageDaemon

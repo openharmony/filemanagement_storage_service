@@ -28,9 +28,6 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-
-const int8_t GET_SEC_TIMEOUT = 10;
-
 enum UserSecStatus {
     SUCCESS,
     FAILED

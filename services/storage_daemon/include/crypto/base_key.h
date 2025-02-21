@@ -22,18 +22,9 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-const uint8_t RETRIEVE_KEY = 0x0;
-const uint8_t FIRST_CREATE_KEY = 0x6c;
-const uint8_t USER_LOGOUT = 0x0;
-const uint8_t USER_DESTROY = 0x1;
-const uint32_t USER_UNLOCK = 0x2;
-const uint32_t USER_ADD_AUTH = 0x0;
-const uint32_t USER_CHANGE_AUTH = 0x1;
-const int32_t RESTORE_VERSION = 3;
-const std::string SUFFIX_NEED_UPDATE = "/need_update";
-const std::string SUFFIX_NEED_RESTORE = "/need_restore";
-const std::string PATH_KEY_VERSION = "/version_";
-const std::vector<uint8_t> NULL_SECRET = { '!' };
+constexpr const char *SUFFIX_NEED_UPDATE = "/need_update";
+constexpr const char *SUFFIX_NEED_RESTORE = "/need_restore";
+constexpr const char *PATH_KEY_VERSION = "/version_";
 enum UpdateVersion {
     UPDATE_V2 = 2,
     UPDATE_V4 = 4
@@ -54,10 +45,12 @@ public:
 #endif
     int32_t UpdateKey(const std::string &keypath = "", bool needSyncCandidate = true);
     int32_t RestoreKey(const UserAuth &auth, bool needSyncCandidate = true);
-    virtual int32_t ActiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
-    virtual int32_t InactiveKey(uint32_t flag, const std::string &mnt = MNT_DATA) = 0;
-    virtual int32_t LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt = MNT_DATA) = 0;
-    virtual int32_t UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt = MNT_DATA) = 0;
+    virtual int32_t ActiveKey(uint32_t flag, const std::string &mnt = std::string(MNT_DATA)) = 0;
+    virtual int32_t InactiveKey(uint32_t flag, const std::string &mnt = std::string(MNT_DATA)) = 0;
+    virtual int32_t LockUserScreen(uint32_t flag, uint32_t sdpClass,
+        const std::string &mnt = std::string(MNT_DATA)) = 0;
+    virtual int32_t UnlockUserScreen(uint32_t flag, uint32_t sdpClass,
+        const std::string &mnt = std::string(MNT_DATA)) = 0;
     virtual int32_t GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId) = 0;
     virtual int32_t DeleteAppkey(const std::string keyId) = 0;
     virtual int32_t AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status) = 0;
@@ -71,14 +64,14 @@ public:
     int32_t EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey, KeyBlob &encryptedKey);
     int32_t DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey, KeyBlob &decryptedKey);
     bool RenameKeyPath(const std::string &keyPath);
-    bool ClearKey(const std::string &mnt = MNT_DATA);
+    bool ClearKey(const std::string &mnt = std::string(MNT_DATA));
     void WipingActionDir(std::string &path);
     bool UpgradeKeys();
     bool GetOriginKey(KeyBlob &originKey);
     void SetOriginKey(KeyBlob &originKey);
     bool KeyDescIsEmpty();
     std::string GetKeyDir();
-    
+
     KeyInfo keyInfo_;
     std::string GetDir() const
     {
@@ -89,7 +82,7 @@ public:
         KEY_CRYPT_OPENSSL,
         KEY_CRYPT_HUKS_OPENSSL
     };
-    
+
 protected:
     static bool SaveKeyBlob(const KeyBlob &blob, const std::string &path);
     static bool LoadKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size = 0);

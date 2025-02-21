@@ -26,6 +26,7 @@ namespace OHOS {
 namespace StorageDaemon {
 static const std::string CRYPTO_NAME_PREFIXES[] = {"ext4", "f2fs", "fscrypt"};
 #ifdef RECOVER_KEY_TEE_ENVIRONMENT
+constexpr uint32_t ELX_TYPE_ARR[] = { TYPE_GLOBAL_EL1, USERID_GLOBAL_EL1, TYPE_EL1, TYPE_EL2, TYPE_EL3, TYPE_EL4 };
 constexpr static uint32_t TEE_PARAM_INDEX_0 = 0;
 constexpr static uint32_t TEE_PARAM_INDEX_1 = 1;
 constexpr static int SESSION_START_DEFAULT = 1;

@@ -172,7 +172,7 @@ int32_t StorageManager::GetBundleStats(std::string pkgName, BundleStats &bundleS
     }
     return err;
 #else
-    return E_OK;
+    return E_NOT_SUPPORT;
 #endif
 }
 
@@ -187,7 +187,7 @@ int32_t StorageManager::GetSystemSize(int64_t &systemSize)
     }
     return err;
 #else
-    return E_OK;
+    return E_NOT_SUPPORT;
 #endif
 }
 
@@ -202,7 +202,7 @@ int32_t StorageManager::GetTotalSize(int64_t &totalSize)
     }
     return err;
 #else
-    return E_OK;
+    return E_NOT_SUPPORT;
 #endif
 }
 
@@ -217,7 +217,7 @@ int32_t StorageManager::GetFreeSize(int64_t &freeSize)
     }
     return err;
 #else
-    return E_OK;
+    return E_NOT_SUPPORT;
 #endif
 }
 
@@ -232,7 +232,7 @@ int32_t StorageManager::GetUserStorageStats(StorageStats &storageStats)
     }
     return err;
 #else
-    return E_OK;
+    return E_NOT_SUPPORT;
 #endif
 }
 
@@ -262,7 +262,7 @@ int32_t StorageManager::GetCurrentBundleStats(BundleStats &bundleStats, uint32_t
     }
     return err;
 #else
-    return E_OK;
+    return E_NOT_SUPPORT;
 #endif
 }
 

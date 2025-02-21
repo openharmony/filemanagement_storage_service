@@ -41,10 +41,10 @@ constexpr uint32_t ALL_PERMS = (S_ISUID | S_ISGID | S_ISVTX | S_IRWXU | S_IRWXG 
 #ifdef EXTERNAL_STORAGE_QOS_TRANS
 constexpr int SET_SCHED_LOAD_TRANS_TYPE = 10001;
 #endif
-const int BUF_LEN = 1024;
-const uint8_t KILL_RETRY_TIME = 5;
-const uint32_t KILL_RETRY_INTERVAL_MS = 100 * 1000;
-const std::string MOUNT_POINT_INFO = "/proc/mounts";
+constexpr int BUF_LEN = 1024;
+constexpr uint8_t KILL_RETRY_TIME = 5;
+constexpr uint32_t KILL_RETRY_INTERVAL_MS = 100 * 1000;
+constexpr const char *MOUNT_POINT_INFO = "/proc/mounts";
 
 int32_t ChMod(const std::string &path, mode_t mode)
 {
@@ -734,7 +734,7 @@ bool IsPathMounted(std::string &path)
     if (path.back() == '/') {
         path.pop_back();
     }
-    std::ifstream inputStream(MOUNT_POINT_INFO.c_str(), std::ios::in);
+    std::ifstream inputStream(MOUNT_POINT_INFO, std::ios::in);
     if (!inputStream.is_open()) {
         LOGE("unable to open /proc/mounts, errno is %{public}d", errno);
         return false;

@@ -40,6 +40,7 @@ namespace OHOS {
 namespace StorageDaemon {
 constexpr int32_t WAIT_THREAD_TIMEOUT_S = 15;
 constexpr int32_t FILE_NOT_EXIST = 2;
+constexpr int UID_FILE_MANAGER = 1006;
 int32_t ExternalVolumeInfo::ReadMetadata()
 {
     int32_t ret = OHOS::StorageDaemon::ReadMetadata(devPath_, fsUuid_, fsType_, fsLabel_);

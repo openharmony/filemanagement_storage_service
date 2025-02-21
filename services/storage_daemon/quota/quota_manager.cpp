@@ -46,14 +46,13 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-const std::string QUOTA_DEVICE_DATA_PATH = "/data";
-const std::string PROC_MOUNTS_PATH = "/proc/mounts";
-const std::string DEV_BLOCK_PATH = "/dev/block/";
-const char LINE_SEP = '\n';
-const int32_t DEV_BLOCK_PATH_LEN = DEV_BLOCK_PATH.length();
-const uint64_t ONE_KB = 1;
-const uint64_t ONE_MB = 1024 * ONE_KB;
-const uint64_t PATH_MAX_LEN = 4096;
+constexpr const char *QUOTA_DEVICE_DATA_PATH = "/data";
+constexpr const char *PROC_MOUNTS_PATH = "/proc/mounts";
+constexpr const char *DEV_BLOCK_PATH = "/dev/block/";
+constexpr char LINE_SEP = '\n';
+constexpr uint64_t ONE_KB = 1;
+constexpr uint64_t ONE_MB = 1024 * ONE_KB;
+constexpr uint64_t PATH_MAX_LEN = 4096;
 static std::map<std::string, std::string> mQuotaReverseMounts;
 std::recursive_mutex mMountsLock;
 
@@ -85,7 +84,7 @@ static bool InitialiseQuotaMounts()
         std::getline(in, source, ' ');
         std::getline(in, target, ' ');
         std::getline(in, ignored);
-        if (source.compare(0, DEV_BLOCK_PATH_LEN, DEV_BLOCK_PATH) == 0) {
+        if (source.compare(0, strlen(DEV_BLOCK_PATH), DEV_BLOCK_PATH) == 0) {
             struct dqblk dq;
             if (quotactl(QCMD(Q_GETQUOTA, USRQUOTA), source.c_str(), 0, reinterpret_cast<char*>(&dq)) == 0) {
                 mQuotaReverseMounts[target] = source;
