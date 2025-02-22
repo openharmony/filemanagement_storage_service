@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,9 +18,11 @@
 
 #include <mutex>
 #include <vector>
+#include <thread>
 #include "storage_daemon_stub.h"
 #include "system_ability_status_change_stub.h"
 #include "storage_service_constant.h"
+#include "utils/storage_statistics_radar.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -33,8 +35,8 @@ struct UserTokenSecret {
 };
 class StorageDaemon : public StorageDaemonStub {
 public:
-    StorageDaemon() = default;
-    virtual ~StorageDaemon() = default;
+    StorageDaemon();
+    ~StorageDaemon();
 
     virtual int32_t Shutdown() override;
     virtual int32_t Mount(const std::string &volId, uint32_t flags) override;
@@ -114,7 +116,8 @@ public:
     // media fuse
     virtual int32_t MountMediaFuse(int32_t userId, int32_t &devFd) override;
     virtual int32_t UMountMediaFuse(int32_t userId) override;
-
+    std::mutex mutex_;
+    void StorageRadarThd(void);
 private:
 #ifdef USER_CRYPTO_MIGRATE_KEY
     std::string GetNeedRestoreFilePath(int32_t userId, const std::string &user_dir);
@@ -148,6 +151,16 @@ private:
     int32_t RestoreconElX(uint32_t userId);
     void ActiveAppCloneUserKey();
     void SetDeleteFlag4KeyFiles();
+    
+    std::atomic<bool> stopRadarReport_ { false };
+    std::condition_variable execRadarReportCon_;
+    std::mutex onRadarReportLock_;
+    std::atomic<bool> isNeedUpdateRadarFile_ { false };
+    std::thread callRadarStatisticReportThread_;
+    std::map<uint32_t, RadarStatisticInfo> opStatistics_;
+    std::chrono::time_point<std::chrono::system_clock> lastRadarReportTime_;
+    std::map<uint32_t, RadarStatisticInfo>::iterator GetUserStatistics(const uint32_t userId);
+    void GetTempStatistics(std::map<uint32_t, RadarStatisticInfo> &statistics);
 };
 } // StorageDaemon
 } // OHOS

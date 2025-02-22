@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Huawei Device Co., Ltd.
+# Copyright (c) 2023-2025 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -44,7 +44,7 @@ ohos_unittest("quota_manager_test") {
 
   deps = [
     "$ROOT_DIR/storage_daemon:storage_common_utils",
-    "$ROOT_DIR/storage_daemon:storage_daemon_test_ipc",
+    "$ROOT_DIR/storage_daemon:storage_daemon_header",
     "//third_party/googletest:gtest_main",
   ]
 

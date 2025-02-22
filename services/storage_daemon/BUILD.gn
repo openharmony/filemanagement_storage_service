@@ -1,4 +1,4 @@
-# Copyright (c) 2024 Huawei Device Co., Ltd.
+# Copyright (c) 2024-2025 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -22,7 +22,7 @@ idl_gen_interface("storage_daemon_interface") {
   log_domainid = "0xD004301"
 }
 
-ohos_source_set("storage_daemon_external") {
+ohos_source_set("storage_daemon_ipc") {
   sanitize = {
     debug = false
     cfi = true
@@ -43,7 +43,7 @@ ohos_source_set("storage_daemon_external") {
   subsystem_name = "filemanagement"
 }
 
-ohos_source_set("storage_daemon_test_ipc") {
+ohos_source_set("storage_daemon_header") {
   sanitize = {
     debug = false
     cfi = true
@@ -157,7 +157,7 @@ ohos_executable("storage_daemon") {
   deps = [
     ":sdc",
     ":storage_common_utils",
-    ":storage_daemon_external",
+    ":storage_daemon_ipc",
     "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
   ]
 
@@ -289,8 +289,8 @@ ohos_executable("sdc") {
 
   deps = [
     ":storage_common_utils",
-    ":storage_daemon_external",
     ":storage_daemon_interface",
+    ":storage_daemon_ipc",
     "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
   ]
 
@@ -308,6 +308,7 @@ ohos_executable("sdc") {
   }
 
   external_deps = [
+    "cJSON:cjson",
     "c_utils:utils",
     "hilog:libhilog",
     "ipc:ipc_single",

@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Huawei Device Co., Ltd.
+# Copyright (c) 2021-2025 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -54,7 +54,7 @@ ohos_unittest("disk_manager_test") {
 
   deps = [
     "$ROOT_DIR:storage_common_utils",
-    "${storage_daemon_path}:storage_daemon_test_ipc",
+    "${storage_daemon_path}:storage_daemon_header",
     "//third_party/googletest:gtest_main",
   ]
 
@@ -108,7 +108,7 @@ ohos_unittest("disk_info_test") {
 
   deps = [
     "$ROOT_DIR:storage_common_utils",
-    "$ROOT_DIR:storage_daemon_test_ipc",
+    "$ROOT_DIR:storage_daemon_header",
     "//third_party/googletest:gmock_main",
     "//third_party/googletest:gtest_main",
   ]
@@ -163,7 +163,7 @@ ohos_unittest("disk_info_sup_test") {
 
   deps = [
     "$ROOT_DIR:storage_common_utils",
-    "$ROOT_DIR:storage_daemon_test_ipc",
+    "$ROOT_DIR:storage_daemon_header",
   ]
 
   external_deps = [
