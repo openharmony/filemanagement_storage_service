@@ -515,11 +515,14 @@ int32_t StorageDaemonStub::HandlePrepareUserDirs(MessageParcel &data, MessagePar
     auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
     int err = PrepareUserDirs(userId, flags);
-    if (!reply.WriteInt32(err)) {
+    if (err != E_OK) {
         it->second.userAddFailCount++;
-        return  E_WRITE_REPLY_ERR;
+    } else {
+        it->second.userAddSuccCount++;
     }
-    it->second.userAddSuccCount++;
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
     return E_OK;
 }
 
@@ -531,11 +534,14 @@ int32_t StorageDaemonStub::HandleDestroyUserDirs(MessageParcel &data, MessagePar
     auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
     int err = DestroyUserDirs(userId, flags);
-    if (!reply.WriteInt32(err)) {
+    if (err != E_OK) {
         it->second.userRemoveFailCount++;
-        return  E_WRITE_REPLY_ERR;
+    } else {
+        it->second.userRemoveSuccCount++;
     }
-    it->second.userRemoveSuccCount++;
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
     return E_OK;
 }
 
@@ -545,11 +551,14 @@ int32_t StorageDaemonStub::HandleStartUser(MessageParcel &data, MessageParcel &r
     auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
     int32_t err = StartUser(userId);
-    if (!reply.WriteInt32(err)) {
+    if (err != E_OK) {
         it->second.userStartFailCount++;
+    } else {
+        it->second.userStartSuccCount++;
+    }
+    if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
-    it->second.userStartSuccCount++;
     return E_OK;
 }
 
@@ -559,11 +568,14 @@ int32_t StorageDaemonStub::HandleStopUser(MessageParcel &data, MessageParcel &re
     auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
     int32_t err = StopUser(userId);
-    if (!reply.WriteInt32(err)) {
+    if (err != E_OK) {
         it->second.userStopFailCount++;
+    } else {
+        it->second.userStopSuccCount++;
+    }
+    if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
-    it->second.userStopSuccCount++;
     return E_OK;
 }
 
@@ -585,11 +597,14 @@ int32_t StorageDaemonStub::HandleInitGlobalKey(MessageParcel &data, MessageParce
     auto it = GetUserStatistics(USER0ID);
     isNeedUpdateRadarFile_ = true;
     int err = InitGlobalKey();
-    if (!reply.WriteInt32(err)) {
+    if (err != E_OK) {
         it->second.keyLoadFailCount++;
+    } else {
+        it->second.keyLoadSuccCount++;
+    }
+    if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
-    it->second.keyLoadSuccCount++;
     return E_OK;
 }
 
@@ -599,11 +614,14 @@ int32_t StorageDaemonStub::HandleInitGlobalUserKeys(MessageParcel &data, Message
     auto it = GetUserStatistics(USER100ID);
     isNeedUpdateRadarFile_ = true;
     int err = InitGlobalUserKeys();
-    if (!reply.WriteInt32(err)) {
+    if (err != E_OK) {
         it->second.keyLoadFailCount++;
+    } else {
+        it->second.keyLoadSuccCount++;
+    }
+    if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
-    it->second.keyLoadSuccCount++;
     return E_OK;
 }
 
@@ -697,11 +715,14 @@ int32_t StorageDaemonStub::HandleActiveUserKey(MessageParcel &data, MessageParce
     isNeedUpdateRadarFile_ = true;
     int err = ActiveUserKey(userId, token, secret);
     StorageXCollie::CancelTimer(timerId);
-    if (!reply.WriteInt32(err)) {
+    if ((err == E_OK) || ((err == E_ACTIVE_EL2_FAILED) && token.empty() && secret.empty())) {
+        it->second.keyLoadSuccCount++;
+    } else {
         it->second.keyLoadFailCount++;
+    }
+    if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
-    it->second.keyLoadSuccCount++;
     return E_OK;
 }
 
@@ -715,11 +736,14 @@ int32_t StorageDaemonStub::HandleInactiveUserKey(MessageParcel &data, MessagePar
     isNeedUpdateRadarFile_ = true;
     int err = InactiveUserKey(userId);
     StorageXCollie::CancelTimer(timerId);
-    if (!reply.WriteInt32(err)) {
+    if (err != E_OK) {
         it->second.keyUnloadFailCount++;
+    } else {
+        it->second.keyUnloadSuccCount++;
+    }
+    if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
-    it->second.keyUnloadSuccCount++;
     return E_OK;
 }
 
@@ -733,11 +757,14 @@ int32_t StorageDaemonStub::HandleLockUserScreen(MessageParcel &data, MessageParc
     isNeedUpdateRadarFile_ = true;
     int err = LockUserScreen(userId);
     StorageXCollie::CancelTimer(timerId);
-    if (!reply.WriteInt32(err)) {
+    if (err != E_OK) {
         it->second.keyUnloadFailCount++;
+    } else {
+        it->second.keyUnloadSuccCount++;
+    }
+    if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
-    it->second.keyUnloadSuccCount++;
     return E_OK;
 }
 
@@ -756,11 +783,14 @@ int32_t StorageDaemonStub::HandleUnlockUserScreen(MessageParcel &data, MessagePa
     isNeedUpdateRadarFile_ = true;
     int err = UnlockUserScreen(userId, token, secret);
     StorageXCollie::CancelTimer(timerId);
-    if (!reply.WriteInt32(err)) {
+    if (err != E_OK) {
         it->second.keyLoadFailCount++;
+    } else {
+        it->second.keyLoadSuccCount++;
+    }
+    if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
-    it->second.keyLoadSuccCount++;
     return E_OK;
 }
 
