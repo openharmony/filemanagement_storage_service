@@ -595,6 +595,7 @@ int32_t StorageDaemonStub::HandleInitGlobalKey(MessageParcel &data, MessageParce
 
 int32_t StorageDaemonStub::HandleInitGlobalUserKeys(MessageParcel &data, MessageParcel &reply)
 {
+    LOGI("Stub_InitGlobalUserKeys start.");
     std::lock_guard<std::mutex> lock(mutex_);
     auto it = GetUserStatistics(USER100ID);
     isNeedUpdateRadarFile_ = true;
