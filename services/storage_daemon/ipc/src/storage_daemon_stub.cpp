@@ -15,14 +15,90 @@
 
 #include "ipc/storage_daemon_stub.h"
 
+#include <cinttypes>
 #include "ipc/storage_daemon_ipc_interface_code.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "string_ex.h"
+#include "utils/storage_radar.h"
 
 namespace OHOS {
 namespace StorageDaemon {
 using namespace std;
+const unsigned int UPDATE_RADAR_STATISTIC_INTERVAL_SECONDS = 300;
+const unsigned int RADAR_REPORT_STATISTIC_INTERVAL_MINUTES = 1440;
+const unsigned int USER0ID = 0;
+const unsigned int USER100ID = 100;
+const unsigned int RADAR_STATISTIC_THREAD_WAIT_SECONDS = 60;
+
+std::map<uint32_t, RadarStatisticInfo>::iterator StorageDaemonStub::GetUserStatistics(const uint32_t userId)
+{
+    auto it = opStatistics_.find(userId);
+    if (it != opStatistics_.end()) {
+        return it;
+    }
+    RadarStatisticInfo radarInfo = { 0 };
+    return opStatistics_.insert(make_pair(userId, radarInfo)).first;
+}
+
+void StorageDaemonStub::GetTempStatistics(std::map<uint32_t, RadarStatisticInfo> &statistics)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    statistics.insert(opStatistics_.begin(), opStatistics_.end());
+    opStatistics_.clear();
+}
+
+void StorageDaemonStub::StorageRadarThd(void)
+{
+    // report radar statistics when restart
+    std::unique_lock<std::mutex> lock(onRadarReportLock_);
+    if (execRadarReportCon_.wait_for(lock, std::chrono::seconds(RADAR_STATISTIC_THREAD_WAIT_SECONDS),
+        [this] { return this->stopRadarReport_.load(); })) {
+        LOGI("Storage statistic radar exit.");
+        return;
+    }
+    lock.unlock();
+    LOGI("Storage statistic thread start.");
+    StorageStatisticRadar::GetInstance().CreateStatisticFile();
+    std::map<uint32_t, RadarStatisticInfo> opStatisticsTemp;
+    StorageStatisticRadar::GetInstance().ReadStatisticFile(opStatisticsTemp);
+    if (!opStatisticsTemp.empty()) {
+        for (auto ele : opStatisticsTemp) {
+            StorageService::StorageRadar::ReportStatistics(ele.first, ele.second);
+        }
+        StorageStatisticRadar::GetInstance().CleanStatisticFile();
+    }
+    lastRadarReportTime_ = std::chrono::system_clock::now();
+    while (!stopRadarReport_.load()) {
+        std::unique_lock<std::mutex> lock(onRadarReportLock_);
+        if (execRadarReportCon_.wait_for(lock, std::chrono::seconds(UPDATE_RADAR_STATISTIC_INTERVAL_SECONDS),
+            [this] { return this->stopRadarReport_.load(); })) {
+            LOGI("Storage statistic radar exit.");
+            return;
+        }
+        std::chrono::time_point<std::chrono::system_clock> nowTime = std::chrono::system_clock::now();
+        int64_t intervalMinutes =
+            std::chrono::duration_cast<std::chrono::minutes>(nowTime - lastRadarReportTime_).count();
+        if ((intervalMinutes > RADAR_REPORT_STATISTIC_INTERVAL_MINUTES) && !opStatistics_.empty()) {
+            LOGI("Storage statistic report, intervalMinutes:%{public}" PRId64, intervalMinutes);
+            opStatisticsTemp.clear();
+            GetTempStatistics(opStatisticsTemp);
+            for (auto ele : opStatisticsTemp) {
+                StorageService::StorageRadar::ReportStatistics(ele.first, ele.second);
+            }
+            lastRadarReportTime_ = std::chrono::system_clock::now();
+            StorageStatisticRadar::GetInstance().CleanStatisticFile();
+            continue;
+        }
+        if (!isNeedUpdateRadarFile_) {
+            LOGI("Storage statistic not need update.");
+            continue;
+        }
+        LOGI("Storage statistic update, intervalMinutes:%{public}" PRId64, intervalMinutes);
+        isNeedUpdateRadarFile_ = false;
+        StorageStatisticRadar::GetInstance().UpdateStatisticFile(opStatistics_);
+    }
+}
 
 StorageDaemonStub::StorageDaemonStub()
 {
@@ -96,6 +172,18 @@ StorageDaemonStub::StorageDaemonStub()
         &StorageDaemonStub::HandleGetFileEncryptStatus;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_USER_NEED_ACTIVE_STATUS)] =
         &StorageDaemonStub::HandleGetUserNeedActiveStatus;
+    callRadarStatisticReportThread_ = std::thread([this]() { StorageRadarThd(); });
+}
+
+StorageDaemonStub::~StorageDaemonStub()
+{
+    std::unique_lock<std::mutex> lock(onRadarReportLock_);
+    stopRadarReport_ = true;
+    execRadarReportCon_.notify_one();
+    lock.unlock();
+    if (callRadarStatisticReportThread_.joinable()) {
+        callRadarStatisticReportThread_.join();
+    }
 }
 
 int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code,
@@ -333,51 +421,73 @@ int32_t StorageDaemonStub::HandleSetVolDesc(MessageParcel &data, MessageParcel &
 
 int32_t StorageDaemonStub::HandlePrepareUserDirs(MessageParcel &data, MessageParcel &reply)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     int32_t userId = data.ReadInt32();
     uint32_t flags = data.ReadUint32();
-
+    auto it = GetUserStatistics(userId);
+    isNeedUpdateRadarFile_ = true;
     int err = PrepareUserDirs(userId, flags);
-    if (!reply.WriteInt32(err)) {
-        return  E_WRITE_REPLY_ERR;
+    if (err != E_OK) {
+        it->second.userAddFailCount++;
+    } else {
+        it->second.userAddSuccCount++;
     }
-
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
     return E_OK;
 }
 
 int32_t StorageDaemonStub::HandleDestroyUserDirs(MessageParcel &data, MessageParcel &reply)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     int32_t userId = data.ReadInt32();
     uint32_t flags = data.ReadUint32();
-
+    auto it = GetUserStatistics(userId);
+    isNeedUpdateRadarFile_ = true;
     int err = DestroyUserDirs(userId, flags);
-    if (!reply.WriteInt32(err)) {
-        return  E_WRITE_REPLY_ERR;
+    if (err != E_OK) {
+        it->second.userRemoveFailCount++;
+    } else {
+        it->second.userRemoveSuccCount++;
     }
-
+    if (!reply.WriteInt32(err)) {
+        return E_WRITE_REPLY_ERR;
+    }
     return E_OK;
 }
 
 int32_t StorageDaemonStub::HandleStartUser(MessageParcel &data, MessageParcel &reply)
 {
     int32_t userId = data.ReadInt32();
-
+    auto it = GetUserStatistics(userId);
+    isNeedUpdateRadarFile_ = true;
     int32_t err = StartUser(userId);
+    if (err != E_OK) {
+        it->second.userStartFailCount++;
+    } else {
+        it->second.userStartSuccCount++;
+    }
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
-
     return E_OK;
 }
 
 int32_t StorageDaemonStub::HandleStopUser(MessageParcel &data, MessageParcel &reply)
 {
     int32_t userId = data.ReadInt32();
-
+    auto it = GetUserStatistics(userId);
+    isNeedUpdateRadarFile_ = true;
     int32_t err = StopUser(userId);
+    if (err != E_OK) {
+        it->second.userStopFailCount++;
+    } else {
+        it->second.userStopSuccCount++;
+    }
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
-
     return E_OK;
 }
 
@@ -395,21 +505,35 @@ int32_t StorageDaemonStub::HandleCompleteAddUser(MessageParcel &data, MessagePar
 
 int32_t StorageDaemonStub::HandleInitGlobalKey(MessageParcel &data, MessageParcel &reply)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto it = GetUserStatistics(USER0ID);
+    isNeedUpdateRadarFile_ = true;
     int err = InitGlobalKey();
+    if (err != E_OK) {
+        it->second.keyLoadFailCount++;
+    } else {
+        it->second.keyLoadSuccCount++;
+    }
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
-
     return E_OK;
 }
 
 int32_t StorageDaemonStub::HandleInitGlobalUserKeys(MessageParcel &data, MessageParcel &reply)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto it = GetUserStatistics(USER100ID);
+    isNeedUpdateRadarFile_ = true;
     int err = InitGlobalUserKeys();
+    if (err != E_OK) {
+        it->second.keyLoadFailCount++;
+    } else {
+        it->second.keyLoadSuccCount++;
+    }
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
-
     return E_OK;
 }
 
@@ -467,11 +591,18 @@ int32_t StorageDaemonStub::HandleActiveUserKey(MessageParcel &data, MessageParce
     data.ReadUInt8Vector(&token);
     data.ReadUInt8Vector(&secret);
 
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto it = GetUserStatistics(userId);
+    isNeedUpdateRadarFile_ = true;
     int err = ActiveUserKey(userId, token, secret);
+    if ((err == E_OK) || ((err == E_ACTIVE_EL2_FAILED) && token.empty() && secret.empty())) {
+        it->second.keyLoadSuccCount++;
+    } else {
+        it->second.keyLoadFailCount++;
+    }
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
-
     return E_OK;
 }
 
@@ -479,11 +610,18 @@ int32_t StorageDaemonStub::HandleInactiveUserKey(MessageParcel &data, MessagePar
 {
     uint32_t userId = data.ReadUint32();
 
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto it = GetUserStatistics(userId);
+    isNeedUpdateRadarFile_ = true;
     int err = InactiveUserKey(userId);
+    if (err != E_OK) {
+        it->second.keyUnloadFailCount++;
+    } else {
+        it->second.keyUnloadSuccCount++;
+    }
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
-
     return E_OK;
 }
 
@@ -491,11 +629,18 @@ int32_t StorageDaemonStub::HandleLockUserScreen(MessageParcel &data, MessageParc
 {
     uint32_t userId = data.ReadUint32();
 
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto it = GetUserStatistics(userId);
+    isNeedUpdateRadarFile_ = true;
     int err = LockUserScreen(userId);
+    if (err != E_OK) {
+        it->second.keyUnloadFailCount++;
+    } else {
+        it->second.keyUnloadSuccCount++;
+    }
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
-
     return E_OK;
 }
 
@@ -508,11 +653,18 @@ int32_t StorageDaemonStub::HandleUnlockUserScreen(MessageParcel &data, MessagePa
     data.ReadUInt8Vector(&token);
     data.ReadUInt8Vector(&secret);
 
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto it = GetUserStatistics(userId);
+    isNeedUpdateRadarFile_ = true;
     int err = UnlockUserScreen(userId, token, secret);
+    if (err != E_OK) {
+        it->second.keyLoadFailCount++;
+    } else {
+        it->second.keyLoadSuccCount++;
+    }
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
-
     return E_OK;
 }
 

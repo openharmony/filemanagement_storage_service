@@ -268,10 +268,12 @@ ohos_shared_library("storage_common_utils") {
     "./utils/mount_argument_utils.cpp",
     "./utils/set_flag_utils.cpp",
     "./utils/storage_radar.cpp",
+    "./utils/storage_statistics_radar.cpp",
     "./utils/string_utils.cpp",
   ]
 
   external_deps = [
+    "cJSON:cjson",
     "c_utils:utils",
     "hilog:libhilog",
     "hisysevent:libhisysevent",

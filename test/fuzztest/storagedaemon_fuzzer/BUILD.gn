@@ -45,6 +45,7 @@ ohos_fuzztest("StorageDaemonFuzzTest") {
     "${storage_daemon_path}/utils/mount_argument_utils.cpp",
     "${storage_daemon_path}/utils/set_flag_utils.cpp",
     "${storage_daemon_path}/utils/storage_radar.cpp",
+    "${storage_daemon_path}/utils/storage_statistics_radar.cpp",
     "${storage_daemon_path}/utils/string_utils.cpp",
     "${storage_service_path}/test/fuzztest/storagedaemon_fuzzer/storagedaemon_fuzzer.cpp",
   ]
@@ -68,6 +69,7 @@ ohos_fuzztest("StorageDaemonFuzzTest") {
     "app_file_service:fileuri_native",
     "app_file_service:sandbox_helper_native",
     "bundle_framework:appexecfwk_core",
+    "cJSON:cjson",
     "c_utils:utils",
     "eventhandler:libeventhandler",
     "hilog:libhilog",
