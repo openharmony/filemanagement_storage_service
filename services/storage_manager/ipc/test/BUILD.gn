@@ -1,4 +1,4 @@
-# Copyright (C) 2021-2024 Huawei Device Co., Ltd.
+# Copyright (C) 2021-2025 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -101,6 +101,8 @@ ohos_unittest("storage_manager_stub_test") {
     "${storage_service_common_path}/include",
   ]
 
+  deps = [ "${storage_daemon_path}:storage_common_utils" ]
+
   sources = [
     "${storage_manager_path}/innerkits_impl/src/bundle_stats.cpp",
     "${storage_manager_path}/innerkits_impl/src/disk.cpp",
@@ -112,10 +114,6 @@ ohos_unittest("storage_manager_stub_test") {
     "${storage_manager_path}/ipc/test/storage_manager_stub_test.cpp",
     "${storage_manager_path}/storage/src/bundle_manager_connector.cpp",
     "${storage_manager_path}/utils/src/storage_utils.cpp",
-  ]
-
-  deps = [
-    "${storage_daemon_path}:storage_common_utils",
   ]
 
   external_deps = [
@@ -155,6 +153,8 @@ ohos_unittest("storage_manager_stub_nonpermission_test") {
     "LOG_DOMAIN = 0xD004300",
   ]
 
+  deps = [ "${storage_daemon_path}:storage_common_utils" ]
+
   include_dirs = [
     "${storage_manager_path}/client/test",
     "${storage_interface_path}/innerkits/storage_manager/native",
@@ -175,10 +175,6 @@ ohos_unittest("storage_manager_stub_nonpermission_test") {
     "${storage_manager_path}/ipc/test/storage_manager_stub_noper_test.cpp",
     "${storage_manager_path}/storage/src/bundle_manager_connector.cpp",
     "${storage_manager_path}/utils/src/storage_utils.cpp",
-  ]
-
-  deps = [
-    "${storage_daemon_path}:storage_common_utils",
   ]
 
   external_deps = [
@@ -241,10 +237,8 @@ ohos_unittest("storage_manager_stub_mockipc_test") {
     "${storage_manager_path}/storage/src/bundle_manager_connector.cpp",
     "${storage_manager_path}/utils/src/storage_utils.cpp",
   ]
-  
-  deps = [
-    "${storage_daemon_path}:storage_common_utils",
-  ]
+
+  deps = [ "${storage_daemon_path}:storage_common_utils" ]
 
   external_deps = [
     "ability_base:base",
