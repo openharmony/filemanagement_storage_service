@@ -463,6 +463,7 @@ int32_t StorageDaemon::InitGlobalKey(void)
 
 int32_t StorageDaemon::InitGlobalUserKeys(void)
 {
+    LOGI("Daemon_InitGlobalUserKeys start.");
 #ifdef USER_FILE_SHARING
     // File sharing depends on the /data/service/el1/public be decrypted.
     // A hack way to prepare the sharing dir, move it to callbacks after the parameter ready.
