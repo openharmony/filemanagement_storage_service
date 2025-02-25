@@ -59,7 +59,7 @@ void MtpDeviceMonitor::StartMonitor()
 {
     LOGI("MtpDeviceMonitor, start mtp device monitor.");
     if (IsHwitDevice()) {
-       LOGE("the vendor country of device is hwit/cn."); 
+       LOGE("the vendor country of device is hwit/cn.");
        return;
     }
     std::thread([this]() { MonitorDevice(); }).detach();
