@@ -95,6 +95,7 @@ ohos_unittest("storage_manager_stub_test") {
   include_dirs = [
     "${storage_manager_path}/client/test",
     "${storage_interface_path}/innerkits/storage_manager/native",
+    "${storage_daemon_path}/include",
     "${storage_manager_path}/include",
     "${storage_manager_path}/ipc/test/",
     "${storage_service_common_path}/include",
@@ -111,6 +112,10 @@ ohos_unittest("storage_manager_stub_test") {
     "${storage_manager_path}/ipc/test/storage_manager_stub_test.cpp",
     "${storage_manager_path}/storage/src/bundle_manager_connector.cpp",
     "${storage_manager_path}/utils/src/storage_utils.cpp",
+  ]
+
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
   ]
 
   external_deps = [
@@ -153,6 +158,7 @@ ohos_unittest("storage_manager_stub_nonpermission_test") {
   include_dirs = [
     "${storage_manager_path}/client/test",
     "${storage_interface_path}/innerkits/storage_manager/native",
+    "${storage_daemon_path}/include",
     "${storage_manager_path}/include",
     "${storage_manager_path}/ipc/test/",
     "${storage_service_common_path}/include",
@@ -169,6 +175,10 @@ ohos_unittest("storage_manager_stub_nonpermission_test") {
     "${storage_manager_path}/ipc/test/storage_manager_stub_noper_test.cpp",
     "${storage_manager_path}/storage/src/bundle_manager_connector.cpp",
     "${storage_manager_path}/utils/src/storage_utils.cpp",
+  ]
+
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
   ]
 
   external_deps = [
@@ -212,6 +222,7 @@ ohos_unittest("storage_manager_stub_mockipc_test") {
   include_dirs = [
     "${storage_manager_path}/client/test",
     "${storage_interface_path}/innerkits/storage_manager/native",
+    "${storage_daemon_path}/include",
     "${storage_manager_path}/include",
     "${storage_manager_path}/ipc/test/",
     "${storage_service_common_path}/include",
@@ -229,6 +240,10 @@ ohos_unittest("storage_manager_stub_mockipc_test") {
     "${storage_manager_path}/ipc/test/storage_manager_stub_mockipc_test.cpp",
     "${storage_manager_path}/storage/src/bundle_manager_connector.cpp",
     "${storage_manager_path}/utils/src/storage_utils.cpp",
+  ]
+  
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
   ]
 
   external_deps = [

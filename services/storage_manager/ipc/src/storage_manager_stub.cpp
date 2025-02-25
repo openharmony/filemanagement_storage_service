@@ -16,9 +16,7 @@
 #include "ipc/storage_manager_stub.h"
 #include "accesstoken_kit.h"
 #include "ipc_skeleton.h"
-#ifdef STORAGE_SERVICE_MEDIA_FUSE
 #include "storage/bundle_manager_connector.h"
-#endif
 #include "storage_manager_ipc_interface_code.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -919,6 +917,24 @@ int32_t StorageManagerStub::HandleInactiveUserKey(MessageParcel &data, MessagePa
 
 int32_t StorageManagerStub::HandleLockUserScreen(MessageParcel &data, MessageParcel &reply)
 {
+    // Only for sceneboard
+    std::string bundleName;
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    auto bundleMgr = DelayedSingleton<BundleMgrConnector>::GetInstance()->GetBundleMgrProxy();
+    if (bundleMgr == nullptr) {
+        LOGE("Connect bundle manager sa proxy failed.");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    if (!bundleMgr->GetBundleNameForUid(uid, bundleName)) {
+        LOGE("Invoke bundleMgr interface to get bundle name failed.");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    if (bundleName != SCENEBOARD_BUNDLE_NAME) {
+        LOGE("permissionCheck error, caller is %{public}s(%{public}d), should be %{public}s",
+            bundleName.c_str(), uid, SCENEBOARD_BUNDLE_NAME.c_str());
+        return E_PERMISSION_DENIED;
+    }
+
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
