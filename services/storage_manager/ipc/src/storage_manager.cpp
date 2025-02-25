@@ -26,6 +26,8 @@
 
 #ifdef USER_CRYPTO_MANAGER
 #include "crypto/filesystem_crypto.h"
+#include "appspawn.h"
+#include "utils/storage_radar.h"
 #endif
 #ifdef EXTERNAL_STORAGE_MANAGER
 #include "disk/disk_manager_service.h"
@@ -38,6 +40,8 @@
 #include "utils/storage_utils.h"
 #include "user/multi_user_manager_service.h"
 
+constexpr bool DECRYPTED = false;
+constexpr bool ENCRYPTED = true;
 namespace OHOS {
 namespace StorageManager {
 REGISTER_SYSTEM_ABILITY_BY_ID(StorageManager, STORAGE_MANAGER_MANAGER_ID, true);
@@ -434,6 +438,10 @@ int32_t StorageManager::ActiveUserKey(uint32_t userId,
     LOGI("UserId: %{public}u", userId);
     std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
     int32_t err = fsCrypto->ActiveUserKey(userId, token, secret);
+    if (err == E_OK) {
+        err = AppSpawnClientSendUserLockStatus(userId, DECRYPTED);
+        LOGE("Send DECRYPTED status: userId: %{public}d, err is %{public}d", userId, err);
+    }
     return err;
 #else
     return E_OK;
@@ -446,6 +454,10 @@ int32_t StorageManager::InactiveUserKey(uint32_t userId)
     LOGI("UserId: %{public}u", userId);
     std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
     int32_t err = fsCrypto->InactiveUserKey(userId);
+    err = AppSpawnClientSendUserLockStatus(userId, ENCRYPTED);
+    LOGE("Send ENCRYPTED status: userId: %{public}d, err is %{public}d", userId, err);
+    StorageService::StorageRadar::ReportActiveUserKey(
+        "StorageManager::InactiveUserKey::AppSpawnClientSendUserLockStatus:ENCRYPT", userId, err, "EL2-EL5");
     return err;
 #else
     return E_OK;

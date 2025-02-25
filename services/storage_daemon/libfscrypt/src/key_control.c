@@ -164,7 +164,7 @@ static uint8_t CheckKernelFscrypt(const char *mnt)
     if (errno == EOPNOTSUPP) {
         FSCRYPT_LOGE("Kernel doesn't support fscrypt v1 or v2.");
         return FSCRYPT_INVALID;
-    } else if (errno == ENOTTY) {
+    } else if (errno == ENOTTY || errno ==EAGAIN) {
         FSCRYPT_LOGE("Kernel doesn't support fscrypt v2, pls use v1.");
         return FSCRYPT_V1;
     } else if (errno == EFAULT) {
