@@ -32,6 +32,7 @@ constexpr pid_t FOUNDATION_UID = 5523;
 constexpr pid_t DFS_UID = 1009;
 const std::string MEDIALIBRARY_BUNDLE_NAME = "com.ohos.medialibrary.medialibrarydata";
 const std::string SCENEBOARD_BUNDLE_NAME = "com.ohos.sceneboard";
+const std::string SYSTEMUI_BUNDLE_NAME = "com.ohos.systemui";
 const std::string PERMISSION_STORAGE_MANAGER_CRYPT = "ohos.permission.STORAGE_MANAGER_CRYPT";
 const std::string PERMISSION_STORAGE_MANAGER = "ohos.permission.STORAGE_MANAGER";
 const std::string PERMISSION_MOUNT_MANAGER = "ohos.permission.MOUNT_UNMOUNT_MANAGER";
@@ -934,7 +935,7 @@ int32_t StorageManagerStub::HandleLockUserScreen(MessageParcel &data, MessagePar
         return E_BUNDLEMGR_ERROR;
     }
 
-    if (bundleName != SCENEBOARD_BUNDLE_NAME) {
+    if (bundleName != SCENEBOARD_BUNDLE_NAME && bundleName != SYSTEMUI_BUNDLE_NAME) {
         LOGE("permissionCheck error, caller is %{public}s(%{public}d), should be %{public}s",
             bundleName.c_str(), uid, SCENEBOARD_BUNDLE_NAME.c_str());
         return E_PERMISSION_DENIED;
