@@ -1715,11 +1715,13 @@ int KeyManager::InActiveUserKey(unsigned int user)
         StorageRadar::ReportUserKeyResult("InactiveUserElKey", user, ret, "EL4", "");
         return ret;
     }
-    ret = InactiveUserElKey(user, userEl5Key_);
-    if (ret != E_OK) {
-        LOGE("Inactive userEl5Key_ failed");
-        StorageRadar::ReportUserKeyResult("InactiveUserElKey", user, ret, "EL5", "");
-        return ret;
+    if (!IsAppCloneUser(user)) {
+        ret = InactiveUserElKey(user, userEl5Key_);
+        if (ret != E_OK) {
+            LOGE("Inactive userEl5Key_ failed");
+            StorageRadar::ReportUserKeyResult("InactiveUserElKey", user, ret, "EL5", "");
+            return ret;
+        }
     }
     auto userTask = userLockScreenTask_.find(user);
     if (userTask != userLockScreenTask_.end()) {
@@ -1769,10 +1771,13 @@ int KeyManager::LockUserScreen(uint32_t user)
         }
         userPinProtect.erase(user);
         userPinProtect.insert(std::make_pair(user, true));
+        LOGI("User is %{public}u ,Lock screen, SaveLockScreenStatus is %{public}d", user, saveLockScreenStatus[user]);
     }
     iter = saveLockScreenStatus.find(user);
     if (iter == saveLockScreenStatus.end()) {
         saveLockScreenStatus.insert(std::make_pair(user, false));
+        LOGI("User is %{public}u ,Insert LockScreenStatus, SaveLockScreenStatus is %{public}d", user,
+             saveLockScreenStatus[user]);
     }
     if (!KeyCtrlHasFscryptSyspara()) {
         saveLockScreenStatus[user] = false;
@@ -2144,7 +2149,7 @@ int KeyManager::RestoreUserKey(uint32_t userId, KeyType type)
     int32_t ret = RestoreUserKey(userId, dir, NULL_KEY_AUTH, type);
     if (ret == 0 && type != EL1_KEY) {
         saveLockScreenStatus[userId] = true;
-        LOGI("user is %{public}u , saveLockScreenStatus", userId);
+        LOGI("User is %{public}u , saveLockScreenStatus is %{public}d", userId, saveLockScreenStatus[userId]);
     }
     return ret;
 }

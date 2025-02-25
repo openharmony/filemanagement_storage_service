@@ -449,9 +449,11 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
     if (prepareRet != E_OK) {
         std::string extraData = "flags=" + std::to_string(flags);
         StorageRadar::ReportUserManager("PrepareUserDirs::UserManager::PrepareUserDirs", userId, prepareRet, extraData);
+        it->second.userAddFailCount++;
+    } else {
+        it->second.userAddSuccCount++;
     }
     MountManager::GetInstance()->PrepareAppdataDir(userId);
-    it->second.userAddSuccCount++;
     return prepareRet;
 }
 
@@ -473,6 +475,7 @@ int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
         StorageRadar::ReportUserManager("DestroyUserDirs", userId, errCode, extraData);
         AuditLog storageAuditLog = { false, "FAILED TO DestroyUserDirs", "DEL", "DestroyUserDirs", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
+        it->second.userStartFailCount++;
     } else {
         it->second.userRemoveSuccCount++;
     }
@@ -503,11 +506,12 @@ int32_t StorageDaemon::StartUser(int32_t userId)
         StorageRadar::ReportUserManager("StartUser", userId, ret, "");
         AuditLog storageAuditLog = { false, "FAILED TO StartUser", "ADD", "StartUser", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
+        it->second.userStartFailCount++;
     } else {
         AuditLog storageAuditLog = { false, "SUCCESS TO StartUser", "ADD", "StartUser", 1, "SUCCESS" };
         HiAudit::GetInstance().Write(storageAuditLog);
+        it->second.userStartSuccCount++;
     }
-    it->second.userStartSuccCount++;
     return ret;
 }
 
@@ -522,7 +526,11 @@ int32_t StorageDaemon::StopUser(int32_t userId)
     std::string cause = ret == E_OK ? "SUCCESS TO StopUser" : "FAILED TO StopUser";
     AuditLog storageAuditLog = { false, cause, "DEL", "StopUser", 1, status };
     HiAudit::GetInstance().Write(storageAuditLog);
-    it->second.userStopSuccCount++;
+    if (ret != E_OK) {
+        it->second.userStopFailCount++;
+    } else {
+        it->second.userStopSuccCount++;
+    }
     return ret;
 }
 
@@ -557,6 +565,7 @@ int32_t StorageDaemon::InitGlobalKey(void)
         StorageRadar::ReportUserKeyResult("InitGlobalKey::InitGlobalDeviceKey", 0, ret, "EL1", "");
         AuditLog storageAuditLog = { false, "FAILED TO InitGlobalDeviceKey", "ADD", "InitGlobalDeviceKey", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
+        it->second.keyLoadFailCount++;
     } else {
         it->second.keyLoadSuccCount++;
     }
@@ -565,13 +574,13 @@ int32_t StorageDaemon::InitGlobalKey(void)
 #endif
     return ret;
 #else
-    it->second.keyLoadSuccCount++;
     return E_OK;
 #endif
 }
 
 int32_t StorageDaemon::InitGlobalUserKeys(void)
 {
+    LOGI("Daemon_InitGlobalUserKeys start.");
     std::lock_guard<std::mutex> lock(mutex_);
     auto it = GetUserStatistics(USER100ID);
     isNeedUpdateRadarFile_ = true;
@@ -609,7 +618,10 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
         StorageRadar::ReportUserKeyResult("InitGlobalUserKeys", GLOBAL_USER_ID, ret, "EL1", "");
         AuditLog storageAuditLog = { false, "FAILED TO InitGlobalUserKeys", "ADD", "InitGlobalUserKeys", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
+        it->second.keyLoadFailCount++;
         return ret;
+    } else {
+        it->second.keyLoadSuccCount++;
     }
 #endif
 #ifdef USE_LIBRESTORECON
@@ -626,7 +638,6 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
         LOGE("PrepareAppdataDir failed, please check");
         StorageRadar::ReportUserKeyResult("InitGlobalUserKeys::PrepareAppdataDir", GLOBAL_USER_ID, result, "EL1", "");
     }
-    it->second.keyLoadSuccCount++;
     return result;
 }
 
@@ -660,7 +671,6 @@ int32_t StorageDaemon::GenerateUserKeys(uint32_t userId, uint32_t flags)
 int32_t StorageDaemon::DeleteUserKeys(uint32_t userId)
 {
 #ifdef USER_CRYPTO_MANAGER
-    LOGI("StorageDaemon::DeleteUserKeys, userId: %{public}u", userId);
     int timerId = StorageXCollie::SetTimer("storage:DeleteUserKeys", LOCAL_TIME_OUT_SECONDS);
     int32_t ret = KeyManager::GetInstance()->DeleteUserKeys(userId);
     if (ret != E_OK) {
@@ -1044,8 +1054,10 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
     std::thread([this, userId]() { RestoreconElX(userId); }).detach();
     std::thread([this]() { ActiveAppCloneUserKey(); }).detach();
     StorageXCollie::CancelTimer(timerId);
-    if (ret == E_OK) {
+    if ((ret == E_OK) || ((E_OK == E_ACTIVE_EL2_FAILED) && token.empty() && secret.empty())) {
         it->second.keyLoadSuccCount++;
+    } else {
+        it->second.keyLoadFailCount++;
     }
     return ret;
 }
@@ -1100,9 +1112,11 @@ int32_t StorageDaemon::InactiveUserKey(uint32_t userId)
         StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
         AuditLog storageAuditLog = { false, "FAILED TO InActiveUserKey", "DEL", "InActiveUserKey", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
+        it->second.keyUnloadFailCount++;
+    } else {
+        it->second.keyUnloadSuccCount++;
     }
     StorageXCollie::CancelTimer(timerId);
-    it->second.keyUnloadSuccCount++;
     return ret;
 #else
     return E_OK;
@@ -1131,9 +1145,11 @@ int32_t StorageDaemon::LockUserScreen(uint32_t userId)
         StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
         AuditLog storageAuditLog = { true, "FAILED TO LockUserScreen", "UPDATE", "LockUserScreen", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
+        it->second.keyUnloadFailCount++;
+    } else {
+        it->second.keyUnloadSuccCount++;
     }
     StorageXCollie::CancelTimer(timerId);
-    it->second.keyUnloadSuccCount++;
     return ret;
 #else
     return E_OK;
@@ -1164,9 +1180,11 @@ int32_t StorageDaemon::UnlockUserScreen(uint32_t userId,
         StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
         AuditLog storageAuditLog = { true, "FAILED TO UnlockUserScreen", "UPDATE", "UnlockUserScreen", 1, "FAILED" };
         HiAudit::GetInstance().Write(storageAuditLog);
+        it->second.keyLoadFailCount++;
+    } else {
+        it->second.keyLoadSuccCount++;
     }
     StorageXCollie::CancelTimer(timerId);
-    it->second.keyLoadSuccCount++;
     return ret;
 #else
     return E_OK;

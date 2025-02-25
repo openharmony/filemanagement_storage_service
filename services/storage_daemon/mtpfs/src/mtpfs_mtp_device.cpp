@@ -348,6 +348,7 @@ int MtpFsDevice::DirRemove(const std::string &path)
         return -ENOENT;
     }
     if (!dirToRemove->IsEmpty()) {
+        LOGE("Directory %{public}s is not empty", path.c_str());
         return -ENOTEMPTY;
     }
     CriticalEnter();

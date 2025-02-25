@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -26,7 +26,7 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 8] void PrepareUserDirs([in] int userId, [in] unsigned int flags);  
      [ipccode 9] void DestroyUserDirs([in] int userId,[in] unsigned int flags);  
      [ipccode 12] void CompleteAddUser([in] int userId);
-    // // fscrypt api
+     // fscrypt api
      [ipccode 13] void InitGlobalKey();
      [ipccode 14] void InitGlobalUserKeys();
      [ipccode 15] void GenerateUserKeys([in] unsigned int userId, [in] unsigned int flags);
@@ -50,7 +50,7 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 37] void CreateRecoverKey([in] unsigned int userId, [in] unsigned int userType, 
                                         [in] unsigned char[] token,[in] unsigned char[] secret);
      [ipccode 38] void SetRecoverKey([in] unsigned char[] key);
-    // // app file share api
+     // app file share api
      [ipccode 23] int[] CreateShareFile([in] String[] uriList,[in] unsigned int tokenId, [in] unsigned int flag);
      [ipccode 24] void DeleteShareFile([in] unsigned int tokenId, [in] String[] uriList);
      [ipccode 28] void SetBundleQuota([in] String bundleName, [in] int uid, [in] String bundleDataDirPath, 
@@ -65,7 +65,7 @@ interface OHOS.StorageDaemon.IStorageDaemon{
           [in] String networkId, [in] String deviceId);
      [ipccode 36] void GetFileEncryptStatus([in] unsigned int userId, [out] boolean isEncrypted, 
                                             [in] boolean needCheckDirMount);
-    // media fuse
+     // media fuse
      [ipccode 39] void MountMediaFuse([in] int userId, [out] FileDescriptor devFd);
      [ipccode 40] void UMountMediaFuse([in] int userId);
      [ipccode 41] void GetUserNeedActiveStatus([in] unsigned int userId, [out] boolean needActive);
