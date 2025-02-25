@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -833,9 +833,11 @@ int MtpFileSystem::Release(const char *path, struct fuse_file_info *fileInfo)
         rval = device_.FilePush(tmpPath, stdPath);
         device_.SetUploadRecord(stdPath, true);
         if (rval != 0) {
+            LOGE("FilePush %{public}s to mtp device fail", path);
             ::unlink(tmpPath.c_str());
             return -rval;
         }
+        LOGI("FilePush %{public}s to mtp device success", path);
     }
     ::unlink(tmpPath.c_str());
     LOGI("MtpFileSystem: Release success, path: %{public}s", path);
@@ -948,6 +950,11 @@ int MtpFileSystem::SetXAttr(const char *path, const char *in)
     if (path == nullptr || in == nullptr) {
         LOGE("Param is null.");
         return -ENOENT;
+    }
+    if (strcmp(in, "user.fetchcontent") == 0) {
+        LOGI("Refresh the mtp dir content, dir=%{public}s", path);
+        device_.RefreshDirContent(std::string(path));
+        return 0;
     }
     if (strcmp(in, "user.isUploadCompleted") != 0) {
         LOGE("attrKey error, attrKey=%{public}s", in);

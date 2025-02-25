@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,6 +24,8 @@
 #include "mtpfs_util.h"
 #include "storage_service_log.h"
 
+const int32_t FETCH_NUM = 3000;
+const int32_t DIR_COUNT_ONE = 1;
 bool g_eventFlag = true;
 uint32_t MtpFsDevice::rootNode_ = ~0;
 
@@ -246,6 +248,24 @@ const void MtpFsDevice::HandleDir(LIBMTP_file_t *content, MtpFsTypeDir *dir)
     }
 }
 
+const void MtpFsDevice::HandleDirByFetch(LIBMTP_file_t *content, MtpFsTypeDir *dir)
+{
+    if (content == nullptr || dir == nullptr) {
+        LOGE("content or dir is nullptr");
+        return;
+    }
+    LOGI("HandleDir clear dir content");
+    dir->dirs_.clear();
+    dir->files_.clear();
+    for (LIBMTP_file_t *f = content; f; f = f->next) {
+        if (f->filetype == LIBMTP_FILETYPE_FOLDER) {
+            dir->AddDir(MtpFsTypeDir(f));
+        } else {
+            dir->AddFile(MtpFsTypeFile(f));
+        }
+    }
+}
+
 const MtpFsTypeDir *MtpFsDevice::DirFetchContent(std::string path)
 {
     if (!rootDir_.IsFetched()) {
@@ -295,6 +315,57 @@ const MtpFsTypeDir *MtpFsDevice::DirFetchContent(std::string path)
     HandleDir(content, dir);
     LIBMTPFreeFilesAndFolders(&content);
     return dir;
+}
+
+void MtpFsDevice::RefreshDirContent(std::string path)
+{
+    if (!rootDir_.IsFetched()) {
+        for (LIBMTP_devicestorage_t *s = device_->storage; s; s = s->next) {
+            rootDir_.AddDir(MtpFsTypeDir(rootNode_, 0, s->id, std::string(s->StorageDescription)));
+            rootDir_.SetFetched();
+        }
+    }
+    if (rootDir_.DirCount() == DIR_COUNT_ONE) {
+        path = '/' + rootDir_.Dirs().begin()->Name() + path;
+    }
+    if (path == "/") {
+        return;
+    }
+
+    std::string member;
+    std::istringstream ss(path);
+    MtpFsTypeDir *dir = &rootDir_;
+    while (std::getline(ss, member, '/')) {
+        if (member.empty()) {
+            LOGI("member is empty");
+            continue;
+        }
+        const MtpFsTypeDir *tmp = dir->Dir(member);
+        if (!tmp) {
+            LOGE("tmp is nullptr");
+            return;
+        }
+        dir = const_cast<MtpFsTypeDir *>(tmp);
+    }
+
+    uint32_t *out = (uint32_t *)malloc(sizeof(uint32_t));
+    CriticalEnter();
+    int32_t num = LIBMTP_Get_Children(device_, dir->StorageId(), dir->Id(), &out);
+    CriticalLeave();
+    free(out);
+    LOGI("LIBMTP_Get_Children path=%{public}s, num=%{public}d", path.c_str(), num);
+    if (num > FETCH_NUM && dir->IsFetched()) {
+        LOGW("LIBMTP_Get_Children path content num over 3000 and is fetched, no need to update");
+        return;
+    }
+
+    CriticalEnter();
+    dir->SetFetched();
+    LIBMTP_file_t *content = LIBMTP_Get_Files_And_Folders(device_, dir->StorageId(), dir->Id());
+    CriticalLeave();
+    HandleDirByFetch(content, dir);
+    LIBMTPFreeFilesAndFolders(&content);
+    LOGI("LIBMTP_Get_Files_And_Folders fetchcontent end");
 }
 
 static uint64_t GetFormattedTimestamp()
@@ -599,6 +670,7 @@ int MtpFsDevice::FilePush(const std::string &src, const std::string &dst)
         CriticalLeave();
         if (rval != 0) {
             LOGE("Can not upload %{public}s to %{public}s", src.c_str(), dst.c_str());
+            return -EINVAL;
         }
     }
 
@@ -629,7 +701,6 @@ int MtpFsDevice::FilePush(const std::string &src, const std::string &dst)
         } else {
             const_cast<MtpFsTypeDir *>(dirParent)->AddFile(fileToUpload);
         }
-        LOGI("Upload %{public}s to mtp device success", dst.c_str());
     }
     free(static_cast<void *>(f->filename));
     free(static_cast<void *>(f));
