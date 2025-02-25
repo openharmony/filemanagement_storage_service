@@ -307,7 +307,7 @@ bool MtpDeviceMonitor::IsHwitDevice()
     if (std::string(param).find(CUST_HWIT) != std::string::npos) {
         return true;
     }
-    return true;
+    return false;
 }
 }  // namespace StorageDaemon
 }  // namespace OHOS
