@@ -42,6 +42,9 @@ constexpr int32_t DETECT_CNT = 4;
 constexpr const char *MTP_ROOT_PATH = "/mnt/data/external/";
 constexpr const char *SYS_PARAM_SERVICE_PERSIST_ENABLE = "persist.edm.mtp_client_disable";
 constexpr const char *SYS_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.edm.is_enterprise_device";
+const char* KEY_CUST = "const.cust.custPath";
+const std::string CUST_HWIT = "hwit";
+const int32_t SYS_PARARMETER_SIZE = 256;
 bool g_keepMonitoring = true;
 
 MtpDeviceMonitor::MtpDeviceMonitor() {}
@@ -55,6 +58,10 @@ MtpDeviceMonitor::~MtpDeviceMonitor()
 void MtpDeviceMonitor::StartMonitor()
 {
     LOGI("MtpDeviceMonitor, start mtp device monitor.");
+    if (IsHwitDevice()) {
+       LOGE("the vendor country of device is hwit/cn."); 
+       return;
+    }
     std::thread([this]() { MonitorDevice(); }).detach();
 }
 
@@ -286,6 +293,21 @@ void MtpDeviceMonitor::OnEnterpriseParamChange(const char *key, const  char *val
         LOGI("Enterprise device parameter changed, unmount all mtp devices.");
         instance->UmountAllMtpDevice();
     }
+}
+
+bool MtpDeviceMonitor::IsHwitDevice()
+{
+    char param[SYS_PARARMETER_SIZE] = {0};
+    int errorCode = GetParameter(KEY_CUST, "", param, SYS_PARARMETER_SIZE);
+    if (errorCode <= 0) {
+        LOGE("get vendor country fail, errorCode:%{public}d", errorCode);
+        return false;
+    }
+    LOGI("vendor counry: %{public}s, errorCode: %{public}d", param, errorCode);
+    if (std::string(param).find(CUST_HWIT) != std::string::npos) {
+        return true;
+    }
+    return true;
 }
 }  // namespace StorageDaemon
 }  // namespace OHOS
