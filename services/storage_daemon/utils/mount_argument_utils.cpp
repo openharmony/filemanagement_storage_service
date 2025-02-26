@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,6 +17,9 @@
 
 #include <sstream>
 #include <sys/mount.h>
+#include <sys/stat.h>
+
+#include "storage_service_log.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -155,13 +158,13 @@ string MountArgument::GetCachePath() const
 
 static uint64_t MocklispHash(const string &str)
 {
-    uint64_t res = 0;
-    constexpr int mocklispHashPos = 5;
-    /* Mocklisp hash function. */
-    for (auto ch : str) {
-        res = (res << mocklispHashPos) - res + (uint64_t)ch;
+    struct stat statBuf;
+    auto err = stat(str.c_str(), &statBuf);
+    if (err != 0) {
+        LOGE("stat failed err: %{public}d", err);
     }
-    return res;
+    LOGI("statBuf dev id: %{public}lu", static_cast<unsigned long>(statBuf.st_dev));
+    return statBuf.st_dev;
 }
 
 string MountArgument::GetCtrlPath() const
