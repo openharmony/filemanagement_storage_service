@@ -44,6 +44,7 @@ private:
     void UmountAllMtpDevice();
     bool HasMounted(const MtpDeviceInfo &device);
     bool IsNeedDisableMtp();
+    bool IsHwitDevice();
 
 private:
     std::mutex listMutex_;

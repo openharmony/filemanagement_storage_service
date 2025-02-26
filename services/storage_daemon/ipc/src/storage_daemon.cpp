@@ -1452,20 +1452,12 @@ void StorageDaemon::ActiveAppCloneUserKey()
 
 int32_t StorageDaemon::MountMediaFuse(int32_t userId, int32_t &devFd)
 {
-#ifdef STORAGE_SERVICE_MEDIA_FUSE
     return MountManager::GetInstance()->MountMediaFuse(userId, devFd);
-#else
-    return E_OK;
-#endif
 }
 
 int32_t StorageDaemon::UMountMediaFuse(int32_t userId)
 {
-#ifdef STORAGE_SERVICE_MEDIA_FUSE
     return MountManager::GetInstance()->UMountMediaFuse(userId);
-#else
-    return E_OK;
-#endif
 }
 } // namespace StorageDaemon
 } // namespace OHOS
