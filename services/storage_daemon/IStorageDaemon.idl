@@ -51,8 +51,11 @@ interface OHOS.StorageDaemon.IStorageDaemon{
                                         [in] unsigned char[] token,[in] unsigned char[] secret);
      [ipccode 38] void SetRecoverKey([in] unsigned char[] key);
      // app file share api
-     [ipccode 23] int[] CreateShareFile([in] String[] uriList,[in] unsigned int tokenId, [in] unsigned int flag);
-     [ipccode 24] void DeleteShareFile([in] unsigned int tokenId, [in] String[] uriList);
+     [ipcincapacity 131071, ipcoutcapacity 131071, ipccode 23] int[] CreateShareFile([in] String[] uriList,
+                                                                                     [in] unsigned int tokenId,
+                                                                                     [in] unsigned int flag);
+     [ipcincapacity 131071, ipcoutcapacity 131071, oneway, ipccode 24] void DeleteShareFile([in] unsigned int tokenId,
+                                                                                            [in] String[] uriList);
      [ipccode 28] void SetBundleQuota([in] String bundleName, [in] int uid, [in] String bundleDataDirPath, 
                                       [in] int limitSizeMb);
      [ipccode 29] void GetOccupiedSpace([in] int idType, [in] int id, [out] long size);

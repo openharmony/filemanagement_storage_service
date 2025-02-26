@@ -432,6 +432,9 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
         if (restoreRet != E_OK) {
             std::string extraData = "flags=" + std::to_string(flags);
             StorageRadar::ReportUserManager("PrepareUserDirs::RestoreUserKey", userId, restoreRet, extraData);
+            it->second.userAddFailCount++;
+        } else {
+            it->second.userAddSuccCount++;
         }
         return restoreRet;
     }
@@ -442,6 +445,7 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
         StorageRadar::ReportUserManager("PrepareUserDirs::GenerateUserKeys", userId, ret, extraData);
         AuditLog storageAuditLog = { false, "FAILED TO GenerateUserKeys", "ADD", "GenerateUserKeys", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
+        it->second.userAddFailCount++;
         return ret;
     }
 #endif
@@ -475,9 +479,6 @@ int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
         StorageRadar::ReportUserManager("DestroyUserDirs", userId, errCode, extraData);
         AuditLog storageAuditLog = { false, "FAILED TO DestroyUserDirs", "DEL", "DestroyUserDirs", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
-        it->second.userStartFailCount++;
-    } else {
-        it->second.userRemoveSuccCount++;
     }
 
 #ifdef USER_CRYPTO_MANAGER
@@ -490,8 +491,18 @@ int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
         AuditLog storageAuditLog = { false, "FAILED TO DeleteUserKeys", "DEL", "DeleteUserKeys", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
     }
+    if (!errCode) {
+        it->second.userRemoveFailCount++;
+    } else {
+        it->second.userRemoveSuccCount++;
+    }
     return errCode;
 #else
+    if (!errCode) {
+        it->second.userRemoveFailCount++;
+    } else {
+        it->second.userRemoveSuccCount++;
+    }
     return errCode;
 #endif
 }
@@ -566,14 +577,18 @@ int32_t StorageDaemon::InitGlobalKey(void)
         AuditLog storageAuditLog = { false, "FAILED TO InitGlobalDeviceKey", "ADD", "InitGlobalDeviceKey", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
         it->second.keyLoadFailCount++;
-    } else {
-        it->second.keyLoadSuccCount++;
     }
 #ifdef USE_LIBRESTORECON
     RestoreconRecurse(DATA_SERVICE_EL0_STORAGE_DAEMON_SD);
 #endif
+    if (ret != E_OK) {
+        it->second.keyLoadFailCount++;
+    } else {
+        it->second.keyLoadSuccCount++;
+    }
     return ret;
 #else
+    it->second.keyLoadSuccCount++;
     return E_OK;
 #endif
 }
@@ -607,6 +622,7 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
             doubleVersion.c_str(), newSingleVersion, isRead);
         if (!SaveStringToFile(el0NeedRestorePath, std::to_string(newSingleVersion))) {
             LOGE("Save NEW_DOUBLE_2_SINGELE file failed");
+            it->second.keyLoadFailCount++;
             return false;
         }
     }
@@ -620,8 +636,6 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
         HiAudit::GetInstance().Write(storageAuditLog);
         it->second.keyLoadFailCount++;
         return ret;
-    } else {
-        it->second.keyLoadSuccCount++;
     }
 #endif
 #ifdef USE_LIBRESTORECON
@@ -637,6 +651,9 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
     if (result != E_OK) {
         LOGE("PrepareAppdataDir failed, please check");
         StorageRadar::ReportUserKeyResult("InitGlobalUserKeys::PrepareAppdataDir", GLOBAL_USER_ID, result, "EL1", "");
+        it->second.keyLoadFailCount++;
+    } else {
+        it->second.keyLoadSuccCount++;
     }
     return result;
 }
@@ -1026,6 +1043,7 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
             std::string EL0_NEED_RESTORE = std::string(DATA_SERVICE_EL0_STORAGE_DAEMON_SD) + NEED_RESTORE_SUFFIX;
             if (!SaveStringToFile(EL0_NEED_RESTORE, NEW_DOUBLE_2_SINGLE)) {
                 LOGE("Save key type file failed");
+                it->second.keyLoadFailCount++;
                 return E_SYS_KERNEL_ERR;
             }
         }
@@ -1035,6 +1053,9 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
                  userId, EL2_KEY, token.empty(), secret.empty());
             if (!token.empty() && !secret.empty()) {
                 StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveUserKey", userId, ret, "EL2");
+                it->second.keyLoadFailCount++;
+            } else if (token.empty() && secret.empty()) {
+                it->second.keyLoadSuccCount++;
             }
             return E_ACTIVE_EL2_FAILED;
         }
@@ -1042,12 +1063,14 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
     ret = ActiveUserKeyAndPrepareElX(userId, token, secret);
     if (ret != E_OK) {
         LOGE("ActiveUserKeyAndPrepare failed, userId %{public}u.", userId);
+        it->second.keyLoadFailCount++;
         return ret;
     }
     ret = KeyManager::GetInstance()->UnlockUserAppKeys(userId, true);
     if (ret != E_OK) {
         LOGE("UnlockUserAppKeys failed, userId %{public}u.", userId);
         StorageRadar::ReportActiveUserKey("ActiveUserKey::UnlockUserAppKeys", userId, ret, "EL2");
+        it->second.keyLoadFailCount++;
         return E_UNLOCK_APP_KEY2_FAILED;
     }
 #endif
@@ -1119,6 +1142,7 @@ int32_t StorageDaemon::InactiveUserKey(uint32_t userId)
     StorageXCollie::CancelTimer(timerId);
     return ret;
 #else
+    it->second.keyUnloadSuccCount++;
     return E_OK;
 #endif
 }
@@ -1152,6 +1176,7 @@ int32_t StorageDaemon::LockUserScreen(uint32_t userId)
     StorageXCollie::CancelTimer(timerId);
     return ret;
 #else
+    it->second.keyUnloadSuccCount++;
     return E_OK;
 #endif
 }
@@ -1187,6 +1212,7 @@ int32_t StorageDaemon::UnlockUserScreen(uint32_t userId,
     StorageXCollie::CancelTimer(timerId);
     return ret;
 #else
+    it->second.keyLoadSuccCount++;
     return E_OK;
 #endif
 }
@@ -1311,6 +1337,7 @@ int32_t StorageDaemon::CreateShareFile(const std::vector<std::string> &uriList,
                                        std::vector<int32_t> &funcResult)
 {
     LOGI("Create Share file list len is %{public}zu", uriList.size());
+    funcResult.clear();
     AppFileService::FileShare::CreateShareFile(uriList, tokenId, flag, funcResult);
     return E_OK;
 }
