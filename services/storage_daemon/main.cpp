@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,6 +15,8 @@
 
 #include <fstream>
 #include <unistd.h>
+#include <sys/syscall.h>
+#include <sys/resource.h>
 
 #ifdef EXTERNAL_STORAGE_MANAGER
 #include "disk/disk_config.h"
@@ -25,6 +27,7 @@
 #include "ipc/storage_daemon.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
+#include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
@@ -103,6 +106,15 @@ static bool ParasConfig(StorageDaemon::DiskManager *dm)
 }
 #endif
 
+static void SetPriority()
+{
+    int tid = syscall(SYS_gettid);
+    if (setpriority(PRIO_PROCESS, tid, OHOS::StorageService::PRIORITY_LEVEL) != 0) {
+        LOGE("failed to set priority");
+    }
+    LOGW("set main priority: %{public}d", tid);
+}
+
 static const int32_t SLEEP_TIME_INTERVAL_3MS = 3 * 1000;
 
 int main()
@@ -126,6 +138,7 @@ int main()
     } while (true);
     LOGW("samgr GetSystemAbilityManager finish");
 
+    (void)SetPriority();
 #ifdef EXTERNAL_STORAGE_MANAGER
     StorageDaemon::NetlinkManager *nm = StorageDaemon::NetlinkManager::Instance();
     if ((nm == nullptr) || (nm->Start() != E_OK)) {

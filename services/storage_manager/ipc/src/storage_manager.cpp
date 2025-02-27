@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,6 +14,8 @@
  */
 
 #include "ipc/storage_manager.h"
+#include <sys/syscall.h>
+#include <sys/resource.h>
 
 #include <singleton.h>
 #include "utils/storage_radar.h"
@@ -35,6 +37,7 @@
 #include "volume/volume_manager_service.h"
 #endif
 #include "storage_daemon_communication/storage_daemon_communication.h"
+#include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
@@ -54,6 +57,7 @@ void StorageManager::OnStart()
     LOGI("StorageManager::OnStart Begin");
     bool res = SystemAbility::Publish(this);
     AddSystemAbilityListener(COMMON_EVENT_SERVICE_ID);
+    (void)SetPriority();
 #ifdef STORAGE_STATISTICS_MANAGER
     DelayedSingleton<StorageMonitorService>::GetInstance()->StartStorageMonitorTask();
 #endif
@@ -79,6 +83,15 @@ void StorageManager::ResetUserEventRecord(int32_t userId)
 #ifdef USER_CRYPTO_MANAGER
     AccountSubscriber::ResetUserEventRecord(userId);
 #endif
+}
+
+void StorageManager::SetPriority()
+{
+    int tid = syscall(SYS_gettid);
+    if (setpriority(PRIO_PROCESS, tid, PRIORITY_LEVEL) != 0) {
+        LOGE("failed to set priority");
+    }
+    LOGW("set storage_manager priority: %{public}d", tid);
 }
 
 int32_t StorageManager::PrepareAddUser(int32_t userId, uint32_t flags)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -134,6 +134,7 @@ public:
 private:
     StorageManager();
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;
+    void SetPriority();
     static sptr<StorageManager> instance_;
     static std::mutex instanceLock_;
     std::mutex mutex_;
