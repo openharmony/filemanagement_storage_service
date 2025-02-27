@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -110,11 +110,13 @@ public:
     }
 
 private:
-    std::set<MtpFsTypeDir> dirs_;
-    std::set<MtpFsTypeFile> files_;
     mutable std::mutex accessMutex_;
     bool fetched_;
     time_t modifyDate_;
+
+public:
+    std::set<MtpFsTypeDir> dirs_;
+    std::set<MtpFsTypeFile> files_;
 };
 
 #endif // MTPFS_TYPE_DIR_H
