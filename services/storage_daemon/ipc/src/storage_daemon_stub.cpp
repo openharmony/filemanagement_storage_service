@@ -80,7 +80,6 @@ static bool ReadBatchUriByRawData(MessageParcel &data, std::vector<std::string> 
         return false;
     }
     tempParcel.ReadStringVector(&uriVec);
-    free(buffer);
     return true;
 }
 
