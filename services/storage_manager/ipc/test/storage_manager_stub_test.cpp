@@ -104,7 +104,6 @@ namespace {
         static_cast<int32_t>(StorageManagerInterfaceCode::GET_USER_STATS),
         static_cast<int32_t>(StorageManagerInterfaceCode::GET_ALL_VOLUMES),
         static_cast<int32_t>(StorageManagerInterfaceCode::GET_ALL_DISKS),
-        static_cast<int32_t>(StorageManagerInterfaceCode::LOCK_USER_SCREEN),
         static_cast<int32_t>(StorageManagerInterfaceCode::UNLOCK_USER_SCREEN),
         static_cast<int32_t>(StorageManagerInterfaceCode::LOCK_SCREEN_STATUS),
         static_cast<int32_t>(StorageManagerInterfaceCode::SET_BUNDLE_QUOTA),
@@ -224,7 +223,6 @@ HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemote
     EXPECT_CALL(mock, GetUserStorageStats(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, GetAllVolumes(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, GetAllDisks(testing::_)).WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(mock, LockUserScreen(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, UnlockUserScreen(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, GetLockScreenStatus(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, SetBundleQuota(testing::_, testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
@@ -251,6 +249,36 @@ HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemote
     }
 
     GTEST_LOG_(INFO) << "Storage_Manager_StorageManagerStubTest_OnRemoteRequest_003 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_StorageManagerStubTest_OnRemoteRequest_004
+ * @tc.desc: Verify the OnRemoteRequest function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemoteRequest_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageManagerStubTest_OnRemoteRequest_003 start";
+    int32_t code[] = {
+        static_cast<int32_t>(StorageManagerInterfaceCode::LOCK_USER_SCREEN),
+#ifdef STORAGE_SERVICE_MEDIA_FUSE
+        static_cast<int32_t>(StorageManagerInterfaceCode::MOUNT_MEDIA_FUSE),
+        static_cast<int32_t>(StorageManagerInterfaceCode::UMOUNT_MEDIA_FUSE),
+#endif
+    };
+    StorageManagerStubMock mock;
+    for (auto c : code) {
+        MessageParcel data;
+        MessageParcel reply;
+        MessageOption option(MessageOption::TF_SYNC);
+        bool bRet = data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor());
+        EXPECT_TRUE(bRet) << "write token error";
+        int32_t ret = mock.OnRemoteRequest(c, data, reply, option);
+        EXPECT_EQ(ret, E_BUNDLEMGR_ERROR);
+    }
+
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageManagerStubTest_OnRemoteRequest_004 end";
 }
 } // STORAGE_MANAGER
 } // OHOS
