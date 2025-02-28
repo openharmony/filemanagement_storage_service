@@ -395,13 +395,13 @@ int32_t StorageDaemonProvider::UnlockUserScreen(uint32_t userId,
     return ret;
 }
 
-int32_t StorageDaemonProvider::GetLockScreenStatus(uint32_t user, bool &lockScreenStatus)
+int32_t StorageDaemonProvider::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)
 {
     CHECK_STORAGE_DAEMON();
     lockScreenStatus = false;
     int timerId = StorageXCollie::SetTimer("storage:GetLockScreenStatus", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
-    int32_t ret = storageDaemon_->GetLockScreenStatus(user, lockScreenStatus);
+    int32_t ret = storageDaemon_->GetLockScreenStatus(userId, lockScreenStatus);
     StorageXCollie::CancelTimer(timerId);
     return ret;
 }
