@@ -92,6 +92,9 @@ public:
     virtual int32_t MountMediaFuse(int32_t userId, int32_t &devFd) override;
     virtual int32_t UMountMediaFuse(int32_t userId) override;
     virtual int32_t GetUserNeedActiveStatus(uint32_t userId, bool &needActive) override;
+    // file mgr fuse
+    virtual int32_t MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd) override;
+    virtual int32_t UMountFileMgrFuse(int32_t userId, const std::string &path) override;
 private:
     static inline BrokerDelegator<StorageDaemonProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

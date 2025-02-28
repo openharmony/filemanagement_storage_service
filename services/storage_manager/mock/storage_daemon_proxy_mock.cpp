@@ -250,5 +250,15 @@ int32_t StorageDaemonProxy::GetUserNeedActiveStatus(uint32_t userId, bool &needA
 {
     return E_OK;
 }
+
+int32_t StorageDaemonProxy::MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::UMountFileMgrFuse(int32_t userId, const std::string &path)
+{
+    return E_OK;
+}
 } // StorageDaemon
 } // OHOS

@@ -74,6 +74,8 @@ namespace {
         static_cast<int32_t>(StorageDaemonInterfaceCode::COMPLETE_ADD_USER),
         static_cast<int32_t>(StorageDaemonInterfaceCode::MOUNT_MEDIA_FUSE),
         static_cast<int32_t>(StorageDaemonInterfaceCode::UMOUNT_MEDIA_FUSE),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::MOUNT_FILE_MGR_FUSE),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::UMOUNT_FILE_MGR_FUSE),
     };
 }
 
@@ -314,6 +316,8 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRe
     EXPECT_CALL(mock, MountMediaFuse(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, UMountMediaFuse(testing::_)).WillOnce(testing::Return(E_OK));
     #endif
+    EXPECT_CALL(mock, MountFileMgrFuse(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, UMountFileMgrFuse(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
 
     for (auto c : g_codeNew) {
         MessageParcel data;

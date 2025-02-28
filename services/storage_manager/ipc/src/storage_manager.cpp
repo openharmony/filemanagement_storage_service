@@ -806,5 +806,19 @@ int32_t StorageManager::UMountMediaFuse(int32_t userId)
     return E_OK;
 #endif
 }
+
+int32_t StorageManager::MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd)
+{
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->MountFileMgrFuse(userId, path, fuseFd);
+}
+
+int32_t StorageManager::UMountFileMgrFuse(int32_t userId, const std::string &path)
+{
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->UMountFileMgrFuse(userId, path);
+}
 }
 }

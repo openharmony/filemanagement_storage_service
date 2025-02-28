@@ -87,6 +87,8 @@ private:
     int32_t HandleMountMediaFuse(MessageParcel &data, MessageParcel &reply);
     int32_t HandleUMountMediaFuse(MessageParcel &data, MessageParcel &reply);
     int32_t HandleGetUserNeedActiveStatus(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleMountFileMgrFuse(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleUMountFileMgrFuse(MessageParcel &data, MessageParcel &reply);
     std::mutex mutex_;
 
     void StorageRadarThd(void);

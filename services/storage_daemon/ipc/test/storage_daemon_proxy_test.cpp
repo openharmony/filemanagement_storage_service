@@ -1085,6 +1085,7 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_GetBundleStatsForIncreas
     EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_GetBundleStatsForIncrease_001 end";
 }
+
 #ifdef STORAGE_SERVICE_MEDIA_FUSE
 /**
  * @tc.name: StorageDaemonProxyTest_MountMediaFuse_001
@@ -1141,5 +1142,62 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_UMountMediaFuse_001, Tes
     GTEST_LOG_(INFO) << "StorageDaemonProxyTest_UMountMediaFuse_001 end";
 }
 #endif
+
+/**
+ * @tc.name: StorageDaemonProxyTest_MountFileMgrFuse_001
+ * @tc.desc: Verify the MountFileMgrFuse function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_MountFileMgrFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_MountFileMgrFuse_001 start";
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+    .Times(1)
+    .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
+    ASSERT_TRUE(proxy_ != nullptr);
+    int32_t userId = 100;
+    std::string path = "/mnt/data/100/network_neighbor";
+    int32_t fuseFd = -1;
+    int32_t ret = proxy_->MountFileMgrFuse(userId, path, fuseFd);
+    ASSERT_TRUE(ret == E_OK);
+    ASSERT_TRUE(mock_ != nullptr);
+    int m = static_cast<int32_t>(StorageDaemonInterfaceCode::MOUNT_FILE_MGR_FUSE);
+    ASSERT_TRUE(m == mock_->code_);
+
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+    .Times(1)
+    .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
+    ret = proxy_->MountFileMgrFuse(userId, path, fuseFd);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_MountFileMgrFuse_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProxyTest_UMountFileMgrFuse_001
+ * @tc.desc: Verify the UMountFileMgrFuse function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_UMountFileMgrFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_UMountFileMgrFuse_001 start";
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+    .Times(1)
+    .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
+    ASSERT_TRUE(proxy_ != nullptr);
+    int32_t userId = 100;
+    std::string path = "/mnt/data/100/network_neighbor";
+    int32_t ret = proxy_->UMountFileMgrFuse(userId, path);
+    ASSERT_TRUE(ret == E_OK);
+    ASSERT_TRUE(mock_ != nullptr);
+    int m = static_cast<int32_t>(StorageDaemonInterfaceCode::UMOUNT_FILE_MGR_FUSE);
+    ASSERT_TRUE(m == mock_->code_);
+
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+    .Times(1)
+    .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
+    ret = proxy_->UMountFileMgrFuse(userId, path);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_UMountFileMgrFuse_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS

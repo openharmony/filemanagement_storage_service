@@ -331,5 +331,15 @@ int32_t StorageManagerProxy::GetUserNeedActiveStatus(uint32_t userId, bool &need
 {
     return E_OK;
 }
+
+int32_t StorageManagerProxy::MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::UMountFileMgrFuse(int32_t userId, const std::string &path)
+{
+    return E_OK;
+}
 } // StorageManager
 } // OHOS

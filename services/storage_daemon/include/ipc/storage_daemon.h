@@ -113,6 +113,9 @@ public:
     // media fuse
     virtual int32_t MountMediaFuse(int32_t userId, int32_t &devFd) override;
     virtual int32_t UMountMediaFuse(int32_t userId) override;
+    // file mgr fuse
+    virtual int32_t MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd) override;
+    virtual int32_t UMountFileMgrFuse(int32_t userId, const std::string &path) override;
 
 private:
 #ifdef USER_CRYPTO_MIGRATE_KEY

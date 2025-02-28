@@ -201,6 +201,10 @@ StorageManagerStub::StorageManagerStub()
         &StorageManagerStub::HandleMountMediaFuse;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::UMOUNT_MEDIA_FUSE)] =
         &StorageManagerStub::HandleUMountMediaFuse;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::MOUNT_FILE_MGR_FUSE)] =
+            &StorageManagerStub::HandleMountFileMgrFuse;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::UMOUNT_FILE_MGR_FUSE)] =
+            &StorageManagerStub::HandleUMountFileMgrFuse;
 }
 
 int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
@@ -324,6 +328,10 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
             return HandleMountMediaFuse(data, reply);
         case static_cast<uint32_t>(StorageManagerInterfaceCode::UMOUNT_MEDIA_FUSE):
             return HandleUMountMediaFuse(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::MOUNT_FILE_MGR_FUSE):
+            return HandleMountFileMgrFuse(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::UMOUNT_FILE_MGR_FUSE):
+            return HandleUMountFileMgrFuse(data, reply);
         default:
             LOGE("Cannot response request %{public}d: unknown tranction", code);
             return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
@@ -1400,6 +1408,49 @@ int32_t StorageManagerStub::HandleUMountMediaFuse(MessageParcel &data, MessagePa
         return E_WRITE_REPLY_ERR;
     }
 #endif
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleMountFileMgrFuse(MessageParcel &data, MessageParcel &reply)
+{
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    LOGI("StorageManagerStub::HandleMountFileMgrFuse start.");
+    int32_t userId = data.ReadInt32();
+    std::string path = data.ReadString();
+    int32_t fuseFd = -1;
+    int32_t ret = MountFileMgrFuse(userId, path, fuseFd);
+    if (!reply.WriteInt32(ret)) {
+        LOGE("Write reply error code failed");
+        if (ret == E_OK) {
+            close(fuseFd);
+        }
+        return E_WRITE_REPLY_ERR;
+    }
+    if (ret == E_OK) {
+        if (!reply.WriteFileDescriptor(fuseFd)) {
+            LOGE("Write reply fuseFd failed");
+            close(fuseFd);
+            return E_WRITE_REPLY_ERR;
+        }
+        close(fuseFd);
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleUMountFileMgrFuse(MessageParcel &data, MessageParcel &reply)
+{
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    LOGI("StorageManagerStub::HandleUMountFileMgrFuse start.");
+    int32_t userId = data.ReadInt32();
+    std::string path = data.ReadString();
+    int32_t ret = UMountFileMgrFuse(userId, path);
+    if (!reply.WriteInt32(ret)) {
+        return E_WRITE_REPLY_ERR;
+    }
     return E_OK;
 }
 } // StorageManager

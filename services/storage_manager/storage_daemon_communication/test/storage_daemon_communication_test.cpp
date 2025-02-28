@@ -899,4 +899,47 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetLockScreenStatu
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetLockScreenStatus_0000 SUCCESS";
 }
 #endif
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_MountFileMgrFuse_0000
+ * @tc.name: Daemon_communication_MountFileMgrFuse_0000
+ * @tc.desc: Test function of MountFileMgrFuse interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0FG3
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountFileMgrFuse_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_MountFileMgrFuse_0000 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+            DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t userId = 100;
+    std::string path = "/mnt/data/100/network_neighbor";
+    int32_t fuseFd = -1;
+    int32_t result = sdCommunication->MountFileMgrFuse(userId, path, fuseFd);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_MountFileMgrFuse_0000 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_UMountFileMgrFuse_0000
+ * @tc.name: Daemon_communication_UMountFileMgrFuse_0000
+ * @tc.desc: Test function of UMountFileMgrFuse interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0FG3
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountFileMgrFuse_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UMountFileMgrFuse_0000 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+            DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t userId = 100;
+    std::string path = "/mnt/data/100/network_neighbor";
+    int32_t result = sdCommunication->UMountFileMgrFuse(userId, path);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UMountFileMgrFuse_0000 SUCCESS";
+}
 } // namespace
