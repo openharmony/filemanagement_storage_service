@@ -24,7 +24,6 @@
 #include "hisysevent.h"
 #include "utils/storage_radar.h"
 #include "utils/string_utils.h"
-#include "utils/storage_xcollie.h"
 
 #ifdef USER_CRYPTO_MANAGER
 #include "crypto/app_clone_key_manager.h"
@@ -78,89 +77,6 @@ constexpr const char *NEW_DOUBLE_2_SINGLE = "2";
 #endif
 typedef int32_t (*CreateShareFileFunc)(const std::vector<std::string> &, uint32_t, uint32_t, std::vector<int32_t> &);
 typedef int32_t (*DeleteShareFileFunc)(uint32_t, const std::vector<std::string> &);
-const unsigned int LOCAL_TIME_OUT_SECONDS = 10;
-const unsigned int UPDATE_RADAR_STATISTIC_INTERVAL_SECONDS = 300;
-const unsigned int RADAR_REPORT_STATISTIC_INTERVAL_MINUTES = 1440;
-const unsigned int USER0ID = 0;
-const unsigned int USER100ID = 100;
-const unsigned int RADAR_STATISTIC_THREAD_WAIT_SECONDS = 60;
-
-std::map<uint32_t, RadarStatisticInfo>::iterator StorageDaemon::GetUserStatistics(const uint32_t userId)
-{
-    auto it = opStatistics_.find(userId);
-    if (it != opStatistics_.end()) {
-        return it;
-    }
-    RadarStatisticInfo radarInfo = { 0 };
-    return opStatistics_.insert(std::make_pair(userId, radarInfo)).first;
-}
-
-void StorageDaemon::GetTempStatistics(std::map<uint32_t, RadarStatisticInfo> &statistics)
-{
-    std::lock_guard<std::mutex> lock(mutex_);
-    statistics.insert(opStatistics_.begin(), opStatistics_.end());
-    opStatistics_.clear();
-}
-
-void StorageDaemon::StorageRadarThd(void)
-{
-    // report radar statistics when restart
-    std::this_thread::sleep_for(std::chrono::seconds(RADAR_STATISTIC_THREAD_WAIT_SECONDS));
-    LOGI("Storage statistic thread start.");
-    StorageStatisticRadar::GetInstance().CreateStatisticFile();
-    std::map<uint32_t, RadarStatisticInfo> opStatisticsTemp;
-    StorageStatisticRadar::GetInstance().ReadStatisticFile(opStatisticsTemp);
-    if (!opStatisticsTemp.empty()) {
-        for (auto ele : opStatisticsTemp) {
-            StorageService::StorageRadar::ReportStatistics(ele.first, ele.second);
-        }
-        StorageStatisticRadar::GetInstance().CleanStatisticFile();
-    }
-    lastRadarReportTime_ = std::chrono::system_clock::now();
-    while (!stopRadarReport_.load()) {
-        std::unique_lock<std::mutex> lock(onRadarReportLock_);
-        if (execRadarReportCon_.wait_for(lock, std::chrono::seconds(UPDATE_RADAR_STATISTIC_INTERVAL_SECONDS),
-            [this] { return this->stopRadarReport_.load(); })) {
-            LOGI("Storage statistic radar exit.");
-            return;
-        }
-        std::chrono::time_point<std::chrono::system_clock> nowTime = std::chrono::system_clock::now();
-        int64_t intervalMinutes =
-            std::chrono::duration_cast<std::chrono::minutes>(nowTime - lastRadarReportTime_).count();
-        if ((intervalMinutes > RADAR_REPORT_STATISTIC_INTERVAL_MINUTES) && !opStatistics_.empty()) {
-            opStatisticsTemp.clear();
-            GetTempStatistics(opStatisticsTemp);
-            for (auto ele : opStatisticsTemp) {
-                StorageService::StorageRadar::ReportStatistics(ele.first, ele.second);
-            }
-            lastRadarReportTime_ = std::chrono::system_clock::now();
-            StorageStatisticRadar::GetInstance().CleanStatisticFile();
-            continue;
-        }
-        if (!isNeedUpdateRadarFile_) {
-            LOGI("Storage statistic not need update.");
-            continue;
-        }
-        isNeedUpdateRadarFile_ = false;
-        StorageStatisticRadar::GetInstance().UpdateStatisticFile(opStatistics_);
-    }
-}
-
-StorageDaemon::StorageDaemon()
-{
-    callRadarStatisticReportThread_ = std::thread([this]() { StorageRadarThd(); });
-}
-
-StorageDaemon::~StorageDaemon()
-{
-    std::unique_lock<std::mutex> lock(onRadarReportLock_);
-    stopRadarReport_ = true;
-    execRadarReportCon_.notify_one();
-    lock.unlock();
-    if (callRadarStatisticReportThread_.joinable()) {
-        callRadarStatisticReportThread_.join();
-    }
-}
 
 int32_t StorageDaemon::Shutdown()
 {
@@ -415,9 +331,6 @@ int32_t StorageDaemon::RestoreUserKey(int32_t userId, uint32_t flags)
 
 int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
-    auto it = GetUserStatistics(userId);
-    isNeedUpdateRadarFile_ = true;
     //CRYPTO_FLAG_EL3 create el3,  CRYPTO_FLAG_EL4 create el4
     flags = flags | static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL3) |
         static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL4) |
@@ -432,9 +345,6 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
         if (restoreRet != E_OK) {
             std::string extraData = "flags=" + std::to_string(flags);
             StorageRadar::ReportUserManager("PrepareUserDirs::RestoreUserKey", userId, restoreRet, extraData);
-            it->second.userAddFailCount++;
-        } else {
-            it->second.userAddSuccCount++;
         }
         return restoreRet;
     }
@@ -445,7 +355,6 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
         StorageRadar::ReportUserManager("PrepareUserDirs::GenerateUserKeys", userId, ret, extraData);
         AuditLog storageAuditLog = { false, "FAILED TO GenerateUserKeys", "ADD", "GenerateUserKeys", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
-        it->second.userAddFailCount++;
         return ret;
     }
 #endif
@@ -453,9 +362,6 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
     if (prepareRet != E_OK) {
         std::string extraData = "flags=" + std::to_string(flags);
         StorageRadar::ReportUserManager("PrepareUserDirs::UserManager::PrepareUserDirs", userId, prepareRet, extraData);
-        it->second.userAddFailCount++;
-    } else {
-        it->second.userAddSuccCount++;
     }
     MountManager::GetInstance()->PrepareAppdataDir(userId);
     return prepareRet;
@@ -463,9 +369,6 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
 
 int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
-    auto it = GetUserStatistics(userId);
-    isNeedUpdateRadarFile_ = true;
     int32_t errCode = 0;
     //CRYPTO_FLAG_EL3 destroy el3,  CRYPTO_FLAG_EL4 destroy el4
     flags = flags | static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL3) |
@@ -491,34 +394,29 @@ int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
         AuditLog storageAuditLog = { false, "FAILED TO DeleteUserKeys", "DEL", "DeleteUserKeys", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
     }
-#endif
-    errCode == E_OK ? it->second.userRemoveSuccCount++ : it->second.userRemoveFailCount++;
     return errCode;
+#else
+    return errCode;
+#endif
 }
 
 int32_t StorageDaemon::StartUser(int32_t userId)
 {
-    auto it = GetUserStatistics(userId);
-    isNeedUpdateRadarFile_ = true;
     int32_t ret = UserManager::GetInstance()->StartUser(userId);
     if (ret != E_OK && ret != E_KEY_NOT_ACTIVED) {
         LOGE("StartUser failed, please check");
         StorageRadar::ReportUserManager("StartUser", userId, ret, "");
         AuditLog storageAuditLog = { false, "FAILED TO StartUser", "ADD", "StartUser", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
-        it->second.userStartFailCount++;
     } else {
         AuditLog storageAuditLog = { false, "SUCCESS TO StartUser", "ADD", "StartUser", 1, "SUCCESS" };
         HiAudit::GetInstance().Write(storageAuditLog);
-        it->second.userStartSuccCount++
     }
     return ret;
 }
 
 int32_t StorageDaemon::StopUser(int32_t userId)
 {
-    auto it = GetUserStatistics(userId);
-    isNeedUpdateRadarFile_ = true;
     int32_t ret = UserManager::GetInstance()->StopUser(userId);
     LOGE("StopUser end, ret is %{public}d.", ret);
     StorageRadar::ReportUserManager("StopUser", userId, ret, "");
@@ -526,7 +424,6 @@ int32_t StorageDaemon::StopUser(int32_t userId)
     std::string cause = ret == E_OK ? "SUCCESS TO StopUser" : "FAILED TO StopUser";
     AuditLog storageAuditLog = { false, cause, "DEL", "StopUser", 1, status };
     HiAudit::GetInstance().Write(storageAuditLog);
-    ret == E_OK ? it->second.userStopSuccCount++ : it->second.userStopFailCount++;
     return ret;
 }
 
@@ -551,12 +448,8 @@ int32_t StorageDaemon::CompleteAddUser(int32_t userId)
 
 int32_t StorageDaemon::InitGlobalKey(void)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
-    auto it = GetUserStatistics(USER0ID);
-    isNeedUpdateRadarFile_ = true;
-    int ret = E_OK;
 #ifdef USER_CRYPTO_MANAGER
-    ret = KeyManager::GetInstance()->InitGlobalDeviceKey();
+    int ret = KeyManager::GetInstance()->InitGlobalDeviceKey();
     if (ret != E_OK) {
         LOGE("InitGlobalDeviceKey failed, please check");
         StorageRadar::ReportUserKeyResult("InitGlobalKey::InitGlobalDeviceKey", 0, ret, "EL1", "");
@@ -566,17 +459,15 @@ int32_t StorageDaemon::InitGlobalKey(void)
 #ifdef USE_LIBRESTORECON
     RestoreconRecurse(DATA_SERVICE_EL0_STORAGE_DAEMON_SD);
 #endif
-#endif
-    ret == E_OK ? it->second.keyLoadSuccCount++ : it->second.keyLoadFailCount++;
     return ret;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageDaemon::InitGlobalUserKeys(void)
 {
     LOGI("Daemon_InitGlobalUserKeys start.");
-    std::lock_guard<std::mutex> lock(mutex_);
-    auto it = GetUserStatistics(USER100ID);
-    isNeedUpdateRadarFile_ = true;
 #ifdef USER_FILE_SHARING
     // File sharing depends on the /data/service/el1/public be decrypted.
     // A hack way to prepare the sharing dir, move it to callbacks after the parameter ready.
@@ -588,44 +479,8 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
 #ifdef USER_CRYPTO_MANAGER
 
 #ifdef USER_CRYPTO_MIGRATE_KEY
-    UserStatistics &userStats = it->second;
-    if (!ProcessRestorePath(START_USER_ID, USER_EL1_DIR, userStats)) {
-        return false;
-    }
-#endif
-
-    int ret = KeyManager::GetInstance()->InitGlobalUserKeys();
-    if (ret) {
-        LOGE("Init global users els failed");
-        StorageRadar::ReportUserKeyResult("InitGlobalUserKeys", GLOBAL_USER_ID, ret, "EL1", "");
-        AuditLog storageAuditLog = { false, "FAILED TO InitGlobalUserKeys", "ADD", "InitGlobalUserKeys", 1, "FAIL" };
-        HiAudit::GetInstance().Write(storageAuditLog);
-        it->second.keyLoadFailCount++;
-        return ret;
-    }
-#endif
-#ifdef USE_LIBRESTORECON
-    RestoreconRecurse(DATA_SERVICE_EL1_PUBLIC_STORAGE_DAEMON_SD);
-#endif
-    auto result = UserManager::GetInstance()->PrepareUserDirs(GLOBAL_USER_ID,
-        static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL1));
-    if (result != E_OK) {
-        LOGE("PrepareUserDirs failed, please check");
-        StorageRadar::ReportUserKeyResult("InitGlobalUserKeys::PrepareUserDirs", GLOBAL_USER_ID, result, "EL1", "");
-    }
-    result = MountManager::GetInstance()->PrepareAppdataDir(GLOBAL_USER_ID);
-    if (result != E_OK) {
-        LOGE("PrepareAppdataDir failed, please check");
-        StorageRadar::ReportUserKeyResult("InitGlobalUserKeys::PrepareAppdataDir", GLOBAL_USER_ID, result, "EL1", "");
-    }
-    result == E_OK ? it->second.keyLoadSuccCount++ : it->second.keyLoadFailCount++;
-    return result;
-}
-
-bool StorageDaemon::ProcessRestorePath(int userId, const char* userDir, UserStatistics& userStats)
-{
     std::error_code errCode;
-    std::string el1NeedRestorePath = GetNeedRestoreFilePath(userId, userDir);
+    std::string el1NeedRestorePath = GetNeedRestoreFilePath(START_USER_ID, USER_EL1_DIR);
     if (std::filesystem::exists(el1NeedRestorePath, errCode)) {
         LOGE("USER_EL1_DIR is exist, update NEW_DOUBLE_2_SINGLE");
         std::string doubleVersion;
@@ -636,17 +491,40 @@ bool StorageDaemon::ProcessRestorePath(int userId, const char* userDir, UserStat
             doubleVersion.c_str(), newSingleVersion, isRead);
         if (!SaveStringToFile(el0NeedRestorePath, std::to_string(newSingleVersion))) {
             LOGE("Save NEW_DOUBLE_2_SINGLE file failed");
-            userStats.keyLoadFailCount++;
             return false;
         }
     }
-    return true;
+#endif
+
+    int ret = KeyManager::GetInstance()->InitGlobalUserKeys();
+    if (ret) {
+        LOGE("Init global users els failed");
+        StorageRadar::ReportUserKeyResult("InitGlobalUserKeys", GLOBAL_USER_ID, ret, "EL1", "");
+        AuditLog storageAuditLog = { false, "FAILED TO InitGlobalUserKeys", "ADD", "InitGlobalUserKeys", 1, "FAIL" };
+        HiAudit::GetInstance().Write(storageAuditLog);
+        return ret;
+    }
+#endif
+#ifdef USE_LIBRESTORECON
+    RestoreconRecurse(DATA_SERVICE_EL1_PUBLIC_STORAGE_DAEMON_SD);
+#endif
+    auto result = UserManager::GetInstance()->PrepareUserDirs(
+        GLOBAL_USER_ID, static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL1));
+    if (result != E_OK) {
+        LOGE("PrepareUserDirs failed, please check");
+        StorageRadar::ReportUserKeyResult("InitGlobalUserKeys::PrepareUserDirs", GLOBAL_USER_ID, result, "EL1", "");
+    }
+    result = MountManager::GetInstance()->PrepareAppdataDir(GLOBAL_USER_ID);
+    if (result != E_OK) {
+        LOGE("PrepareAppdataDir failed, please check");
+        StorageRadar::ReportUserKeyResult("InitGlobalUserKeys::PrepareAppdataDir", GLOBAL_USER_ID, result, "EL1", "");
+    }
+    return result;
 }
 
 int32_t StorageDaemon::GenerateUserKeys(uint32_t userId, uint32_t flags)
 {
 #ifdef USER_CRYPTO_MANAGER
-    int timerId = StorageXCollie::SetTimer("storage:GenerateUserKeys", LOCAL_TIME_OUT_SECONDS);
     int32_t ret = KeyManager::GetInstance()->GenerateUserKeys(userId, flags);
     if (ret != E_OK) {
         LOGE("GenerateUserKeys failed, please check");
@@ -663,7 +541,6 @@ int32_t StorageDaemon::GenerateUserKeys(uint32_t userId, uint32_t flags)
         AuditLog storageAuditLog = { false, "FAILED TO GenerateUserKeys", "ADD", "GenerateUserKeys", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
     }
-    StorageXCollie::CancelTimer(timerId);
     return ret;
 #else
     return E_OK;
@@ -673,7 +550,6 @@ int32_t StorageDaemon::GenerateUserKeys(uint32_t userId, uint32_t flags)
 int32_t StorageDaemon::DeleteUserKeys(uint32_t userId)
 {
 #ifdef USER_CRYPTO_MANAGER
-    int timerId = StorageXCollie::SetTimer("storage:DeleteUserKeys", LOCAL_TIME_OUT_SECONDS);
     int32_t ret = KeyManager::GetInstance()->DeleteUserKeys(userId);
     if (ret != E_OK) {
         LOGE("DeleteUserKeys failed, please check");
@@ -690,7 +566,6 @@ int32_t StorageDaemon::DeleteUserKeys(uint32_t userId)
         AuditLog storageAuditLog = { false, "FAILED TO DeleteUserKeys", "DEL", "DeleteUserKeys", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
     }
-    StorageXCollie::CancelTimer(timerId);
     return ret;
 #else
     return E_OK;
@@ -705,8 +580,6 @@ int32_t StorageDaemon::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
     UserTokenSecret userTokenSecret = {
         .token = token, .oldSecret = oldSecret, .newSecret = newSecret, .secureUid = secureUid};
 #ifdef USER_CRYPTO_MANAGER
-    int timerId = StorageXCollie::SetTimer("storage:UpdateUserAuth", LOCAL_TIME_OUT_SECONDS);
-    std::lock_guard<std::mutex> lock(mutex_);
     int32_t ret = KeyManager::GetInstance()->UpdateUserAuth(userId, userTokenSecret);
     if (ret != E_OK) {
         LOGE("UpdateUserAuth failed, please check");
@@ -723,7 +596,6 @@ int32_t StorageDaemon::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
         AuditLog storageAuditLog = { false, "FAILED TO UpdateUserAuth", "CP", "UpdateUserAuth", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
     }
-    StorageXCollie::CancelTimer(timerId);
     return ret;
 #else
     return E_OK;
@@ -1010,10 +882,6 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
                                      const std::vector<uint8_t> &token,
                                      const std::vector<uint8_t> &secret)
 {
-    int timerId = StorageXCollie::SetTimer("storage:ActiveUserKey", LOCAL_TIME_OUT_SECONDS);
-    std::lock_guard<std::mutex> lock(mutex_);
-    auto it = GetUserStatistics(userId);
-    isNeedUpdateRadarFile_ = true;
     int ret = E_OK;
 #ifdef USER_CRYPTO_MANAGER
     LOGW("userId %{public}u, tok empty %{public}d sec empty %{public}d", userId, token.empty(), secret.empty());
@@ -1028,7 +896,6 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
             std::string EL0_NEED_RESTORE = std::string(DATA_SERVICE_EL0_STORAGE_DAEMON_SD) + NEED_RESTORE_SUFFIX;
             if (!SaveStringToFile(EL0_NEED_RESTORE, NEW_DOUBLE_2_SINGLE)) {
                 LOGE("Save key type file failed");
-                it->second.keyLoadFailCount++;
                 return E_SYS_KERNEL_ERR;
             }
         }
@@ -1039,28 +906,23 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
             if (!token.empty() && !secret.empty()) {
                 StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveUserKey", userId, ret, "EL2");
             }
-            it->second.keyLoadFailCount++;
             return E_ACTIVE_EL2_FAILED;
         }
     }
     ret = ActiveUserKeyAndPrepareElX(userId, token, secret);
     if (ret != E_OK) {
         LOGE("ActiveUserKeyAndPrepare failed, userId %{public}u.", userId);
-        it->second.keyLoadFailCount++;
         return ret;
     }
     ret = KeyManager::GetInstance()->UnlockUserAppKeys(userId, true);
     if (ret != E_OK) {
         LOGE("UnlockUserAppKeys failed, userId %{public}u.", userId);
         StorageRadar::ReportActiveUserKey("ActiveUserKey::UnlockUserAppKeys", userId, ret, "EL2");
-        it->second.keyLoadFailCount++;
         return E_UNLOCK_APP_KEY2_FAILED;
     }
 #endif
     std::thread([this, userId]() { RestoreconElX(userId); }).detach();
     std::thread([this]() { ActiveAppCloneUserKey(); }).detach();
-    StorageXCollie::CancelTimer(timerId);
-    it->second.keyLoadSuccCount++;
     return ret;
 }
 
@@ -1094,13 +956,8 @@ int32_t StorageDaemon::RestoreconElX(uint32_t userId)
 
 int32_t StorageDaemon::InactiveUserKey(uint32_t userId)
 {
-    int32_t ret = E_OK;
 #ifdef USER_CRYPTO_MANAGER
-    int timerId = StorageXCollie::SetTimer("storage:InactiveUserKey", LOCAL_TIME_OUT_SECONDS);
-    std::lock_guard<std::mutex> lock(mutex_);
-    auto it = GetUserStatistics(userId);
-    isNeedUpdateRadarFile_ = true;
-    ret = KeyManager::GetInstance()->InActiveUserKey(userId);
+    int32_t ret = KeyManager::GetInstance()->InActiveUserKey(userId);
     if (ret != E_OK) {
         LOGE("InActiveUserKey failed, please check");
         RadarParameter parameterRes = {
@@ -1116,21 +973,16 @@ int32_t StorageDaemon::InactiveUserKey(uint32_t userId)
         AuditLog storageAuditLog = { false, "FAILED TO InActiveUserKey", "DEL", "InActiveUserKey", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
     }
-    StorageXCollie::CancelTimer(timerId);
-#endif
-    ret == E_OK ? it->second.keyUnloadSuccCount++ : it->second.keyUnloadFailCount++;
     return ret;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageDaemon::LockUserScreen(uint32_t userId)
 {
-    int32_t ret = E_OK;
 #ifdef USER_CRYPTO_MANAGER
-    int timerId = StorageXCollie::SetTimer("storage:LockUserScreen", LOCAL_TIME_OUT_SECONDS);
-    std::lock_guard<std::mutex> lock(mutex_);
-    auto it = GetUserStatistics(userId);
-    isNeedUpdateRadarFile_ = true;
-    ret = KeyManager::GetInstance()->LockUserScreen(userId);
+    int32_t ret = KeyManager::GetInstance()->LockUserScreen(userId);
     if (ret != E_OK) {
         LOGE("LockUserScreen failed, please check");
         RadarParameter parameterRes = {
@@ -1146,23 +998,18 @@ int32_t StorageDaemon::LockUserScreen(uint32_t userId)
         AuditLog storageAuditLog = { true, "FAILED TO LockUserScreen", "UPDATE", "LockUserScreen", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
     }
-    StorageXCollie::CancelTimer(timerId);
-#endif
-    ret == E_OK ? it->second.keyUnloadSuccCount++ : it->second.keyUnloadFailCount++;
     return ret;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageDaemon::UnlockUserScreen(uint32_t userId,
                                         const std::vector<uint8_t> &token,
                                         const std::vector<uint8_t> &secret)
 {
-    int32_t ret = E_OK;
 #ifdef USER_CRYPTO_MANAGER
-    int timerId = StorageXCollie::SetTimer("storage:UnlockUserScreen", LOCAL_TIME_OUT_SECONDS);
-    std::lock_guard<std::mutex> lock(mutex_);
-    auto it = GetUserStatistics(userId);
-    isNeedUpdateRadarFile_ = true;
-    ret = KeyManager::GetInstance()->UnlockUserScreen(userId, token, secret);
+    int32_t ret = KeyManager::GetInstance()->UnlockUserScreen(userId, token, secret);
     if (ret != E_OK) {
         LOGE("UnlockUserScreen failed, userId=%{public}u, ret=%{public}d", userId, ret);
         RadarParameter parameterRes = {
@@ -1178,20 +1025,16 @@ int32_t StorageDaemon::UnlockUserScreen(uint32_t userId,
         AuditLog storageAuditLog = { true, "FAILED TO UnlockUserScreen", "UPDATE", "UnlockUserScreen", 1, "FAILED" };
         HiAudit::GetInstance().Write(storageAuditLog);
     }
-    StorageXCollie::CancelTimer(timerId);
-#endif
-    ret == E_OK ? it->second.keyLoadSuccCount++ : it->second.keyLoadFailCount++;
     return ret;
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageDaemon::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)
 {
 #ifdef USER_CRYPTO_MANAGER
-    int timerId = StorageXCollie::SetTimer("storage:GetLockScreenStatus", LOCAL_TIME_OUT_SECONDS);
-    std::lock_guard<std::mutex> lock(mutex_);
-    int32_t ret = KeyManager::GetInstance()->GetLockScreenStatus(userId, lockScreenStatus);
-    StorageXCollie::CancelTimer(timerId);
-    return ret;
+    return KeyManager::GetInstance()->GetLockScreenStatus(userId, lockScreenStatus);
 #else
     return E_OK;
 #endif
@@ -1200,13 +1043,11 @@ int32_t StorageDaemon::GetLockScreenStatus(uint32_t userId, bool &lockScreenStat
 int32_t StorageDaemon::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId)
 {
 #ifdef USER_CRYPTO_MANAGER
-    int timerId = StorageXCollie::SetTimer("storage:GenerateAppkey", LOCAL_TIME_OUT_SECONDS);
     int ret = KeyManager::GetInstance()->GenerateAppkey(userId, hashId, keyId);
     if (ret != E_OK) {
         StorageRadar::ReportUserKeyResult("GenerateAppKey", userId, ret, EL5,
             "not support uece / EL5key is nullptr or ENONET");
     }
-    StorageXCollie::CancelTimer(timerId);
     return ret;
 #else
     return E_OK;
@@ -1216,14 +1057,11 @@ int32_t StorageDaemon::GenerateAppkey(uint32_t userId, uint32_t hashId, std::str
 int32_t StorageDaemon::DeleteAppkey(uint32_t userId, const std::string &keyId)
 {
 #ifdef USER_CRYPTO_MANAGER
-    int timerId = StorageXCollie::SetTimer("storage:DeleteAppkey", LOCAL_TIME_OUT_SECONDS);
-    std::lock_guard<std::mutex> lock(mutex_);
     int ret = ret = KeyManager::GetInstance()->DeleteAppkey(userId, keyId);
     if (ret != E_OK) {
         StorageRadar::ReportUserKeyResult("DeleteAppKey", userId, ret, EL5,
             "EL5key is nullptr / Failed to delete AppKey2");
     }
-    StorageXCollie::CancelTimer(timerId);
     return ret;
 #else
     return E_OK;
@@ -1256,8 +1094,6 @@ int32_t StorageDaemon::SetRecoverKey(const std::vector<uint8_t> &key)
 int32_t StorageDaemon::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
 #ifdef USER_CRYPTO_MANAGER
-    int timerId = StorageXCollie::SetTimer("storage:UpdateKeyContext", LOCAL_TIME_OUT_SECONDS);
-    std::lock_guard<std::mutex> lock(mutex_);
     int32_t ret = KeyManager::GetInstance()->UpdateKeyContext(userId, needRemoveTmpKey);
     if (ret != E_OK) {
         LOGE("UpdateKeyContext failed, please check");
@@ -1277,7 +1113,6 @@ int32_t StorageDaemon::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
         AuditLog storageAuditLog = { true, "SUCCESS TO UpdateKeyContext", "UPDATE", "UpdateKeyContext", 1, "SUCCESS" };
         HiAudit::GetInstance().Write(storageAuditLog);
     }
-    StorageXCollie::CancelTimer(timerId);
     return ret;
 #else
     return E_OK;
@@ -1351,8 +1186,6 @@ int32_t StorageDaemon::UMountDfsDocs(int32_t userId, const std::string &relative
 int32_t StorageDaemon::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
 {
 #ifdef USER_CRYPTO_MANAGER
-    int timerId = StorageXCollie::SetTimer("storage:GetFileEncryptStatus", LOCAL_TIME_OUT_SECONDS);
-    std::lock_guard<std::mutex> lock(mutex_);
     int32_t ret = KeyManager::GetInstance()->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
     if (ret != E_OK) {
         LOGE("GetFileEncryptStatus failed, please check");
@@ -1370,7 +1203,6 @@ int32_t StorageDaemon::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, 
             "FAILED" };
         HiAudit::GetInstance().Write(storageAuditLog);
     }
-    StorageXCollie::CancelTimer(timerId);
     return ret;
 #else
     return E_OK;
@@ -1380,10 +1212,7 @@ int32_t StorageDaemon::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, 
 int32_t StorageDaemon::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
 {
 #ifdef USER_CRYPTO_MIGRATE_KEY
-    int timerId = StorageXCollie::SetTimer("storage:GetUserNeedActiveStatus", LOCAL_TIME_OUT_SECONDS);
-    std::lock_guard<std::mutex> lock(mutex_);
     needActive = IsNeedRestorePathExist(userId, false);
-    StorageXCollie::CancelTimer(timerId);
 #endif
     return E_OK;
 }
@@ -1391,29 +1220,6 @@ int32_t StorageDaemon::GetUserNeedActiveStatus(uint32_t userId, bool &needActive
 int32_t StorageDaemon::UpdateMemoryPara(int32_t size, int32_t &oldSize)
 {
     return E_OK;
-}
-
-void StorageDaemon::SystemAbilityStatusChangeListener::OnAddSystemAbility(int32_t systemAbilityId,
-                                                                          const std::string &deviceId)
-{
-    LOGI("SystemAbilityId:%{public}d", systemAbilityId);
-#ifdef EXTERNAL_STORAGE_MANAGER
-    if (systemAbilityId == ACCESS_TOKEN_MANAGER_SERVICE_ID) {
-        DiskManager::Instance()->ReplayUevent();
-    }
-#endif
-    if (systemAbilityId == FILEMANAGEMENT_CLOUD_DAEMON_SERVICE_SA_ID) {
-        MountManager::GetInstance()->SetCloudState(true);
-    }
-}
-
-void StorageDaemon::SystemAbilityStatusChangeListener::OnRemoveSystemAbility(int32_t systemAbilityId,
-                                                                             const std::string &deviceId)
-{
-    LOGI("SystemAbilityId:%{public}d", systemAbilityId);
-    if (systemAbilityId == FILEMANAGEMENT_CLOUD_DAEMON_SERVICE_SA_ID) {
-        MountManager::GetInstance()->SetCloudState(false);
-    }
 }
 
 void StorageDaemon::ActiveAppCloneUserKey()

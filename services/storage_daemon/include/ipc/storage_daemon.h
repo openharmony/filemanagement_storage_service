@@ -18,11 +18,9 @@
 
 #include <mutex>
 #include <vector>
-#include <thread>
-#include "storage_daemon_stub.h"
 #include "system_ability_status_change_stub.h"
 #include "storage_service_constant.h"
-#include "utils/storage_statistics_radar.h"
+#include "enum_daemon.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -33,91 +31,81 @@ struct UserTokenSecret {
     const std::vector<uint8_t> newSecret;
     uint64_t secureUid;
 };
-class StorageDaemon : public StorageDaemonStub {
+class StorageDaemon {
 public:
-    StorageDaemon();
-    ~StorageDaemon();
+    StorageDaemon() = default;
+    ~StorageDaemon() = default;
 
-    virtual int32_t Shutdown() override;
-    virtual int32_t Mount(const std::string &volId, uint32_t flags) override;
-    virtual int32_t UMount(const std::string &volId) override;
-    virtual int32_t Check(const std::string &volId) override;
-    virtual int32_t Format(const std::string &volId, const std::string &fsType) override;
-    virtual int32_t Partition(const std::string &diskId, int32_t type) override;
-    virtual int32_t SetVolumeDescription(const std::string &volId, const std::string &description) override;
+    int32_t Shutdown();
+    int32_t Mount(const std::string &volId, uint32_t flags);
+    int32_t UMount(const std::string &volId);
+    int32_t Check(const std::string &volId);
+    int32_t Format(const std::string &volId, const std::string &fsType);
+    int32_t Partition(const std::string &diskId, int32_t type);
+    int32_t SetVolumeDescription(const std::string &volId, const std::string &description);
 
-    virtual int32_t StartUser(int32_t userId) override;
-    virtual int32_t StopUser(int32_t userId) override;
-    virtual int32_t PrepareUserDirs(int32_t userId, uint32_t flags) override;
-    virtual int32_t DestroyUserDirs(int32_t userId, uint32_t flags) override;
-    virtual int32_t CompleteAddUser(int32_t userId) override;
+    int32_t StartUser(int32_t userId);
+    int32_t StopUser(int32_t userId);
+    int32_t PrepareUserDirs(int32_t userId, uint32_t flags);
+    int32_t DestroyUserDirs(int32_t userId, uint32_t flags);
+    int32_t CompleteAddUser(int32_t userId);
 
     // fscrypt api, add fs mutex in KeyManager
-    virtual int32_t InitGlobalKey(void) override;
-    virtual int32_t InitGlobalUserKeys(void) override;
-    virtual int32_t GenerateUserKeys(uint32_t userId, uint32_t flags) override;
-    virtual int32_t DeleteUserKeys(uint32_t userId) override;
-    virtual int32_t UpdateUserAuth(uint32_t userId, uint64_t secureUid,
+    int32_t InitGlobalKey(void);
+    int32_t InitGlobalUserKeys(void);
+    int32_t GenerateUserKeys(uint32_t userId, uint32_t flags);
+    int32_t DeleteUserKeys(uint32_t userId);
+    int32_t UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                                    const std::vector<uint8_t> &token,
                                    const std::vector<uint8_t> &oldSecret,
-                                   const std::vector<uint8_t> &newSecret) override;
-    virtual int32_t UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,
+                                   const std::vector<uint8_t> &newSecret);
+    int32_t UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,
                                                  const std::vector<uint8_t> &newSecret,
                                                  uint64_t secureUid,
                                                  uint32_t userId,
-                                                 const std::vector<std::vector<uint8_t>> &plainText) override;
-    virtual int32_t ActiveUserKey(uint32_t userId,
+                                                 const std::vector<std::vector<uint8_t>> &plainText);
+    int32_t ActiveUserKey(uint32_t userId,
                                   const std::vector<uint8_t> &token,
-                                  const std::vector<uint8_t> &secret) override;
-    virtual int32_t InactiveUserKey(uint32_t userId) override;
-    virtual int32_t UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey = false) override;
-    virtual int32_t MountCryptoPathAgain(uint32_t userId) override;
-    virtual int32_t LockUserScreen(uint32_t userId) override;
-    virtual int32_t UnlockUserScreen(uint32_t userId,
+                                  const std::vector<uint8_t> &secret);
+    int32_t InactiveUserKey(uint32_t userId);
+    int32_t UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey = false);
+    int32_t MountCryptoPathAgain(uint32_t userId);
+    int32_t LockUserScreen(uint32_t userId);
+    int32_t UnlockUserScreen(uint32_t userId,
                                      const std::vector<uint8_t> &token,
-                                     const std::vector<uint8_t> &secret) override;
-    virtual int32_t GetLockScreenStatus(uint32_t user, bool &lockScreenStatus) override;
-    virtual int32_t GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId) override;
-    virtual int32_t DeleteAppkey(uint32_t userId, const std::string &keyId) override;
-    virtual int32_t CreateRecoverKey(uint32_t userId,
+                                     const std::vector<uint8_t> &secret);
+    int32_t GetLockScreenStatus(uint32_t user, bool &lockScreenStatus);
+    int32_t GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId);
+    int32_t DeleteAppkey(uint32_t userId, const std::string &keyId);
+    int32_t CreateRecoverKey(uint32_t userId,
                              uint32_t userType,
                              const std::vector<uint8_t> &token,
-                             const std::vector<uint8_t> &secret) override;
-    virtual int32_t SetRecoverKey(const std::vector<uint8_t> &key) override;
+                             const std::vector<uint8_t> &secret);
+    int32_t SetRecoverKey(const std::vector<uint8_t> &key);
 
     // app file share api
-    virtual int32_t CreateShareFile(const std::vector<std::string> &uriList,
+    int32_t CreateShareFile(const std::vector<std::string> &uriList,
                                           uint32_t tokenId, uint32_t flag,
-                                          std::vector<int32_t>& funcResult) override;
-    virtual int32_t DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList) override;
+                                          std::vector<int32_t>& funcResult);
+    int32_t DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList);
 
-    virtual int32_t SetBundleQuota(const std::string &bundleName, int32_t uid,
-        const std::string &bundleDataDirPath, int32_t limitSizeMb) override;
-    virtual int32_t GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size) override;
-    virtual int32_t UpdateMemoryPara(int32_t size, int32_t &oldSize) override;
-    virtual int32_t GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
+    int32_t SetBundleQuota(const std::string &bundleName, int32_t uid,
+        const std::string &bundleDataDirPath, int32_t limitSizeMb);
+    int32_t GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size);
+    int32_t UpdateMemoryPara(int32_t size, int32_t &oldSize);
+    int32_t GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
         const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes,
-        std::vector<int64_t> &incPkgFileSizes) override;
-    virtual int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,
-        const std::string &networkId, const std::string &deviceId) override;
-    virtual int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
-        const std::string &networkId, const std::string &deviceId) override;
-    virtual int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false) override;
-    virtual int32_t GetUserNeedActiveStatus(uint32_t userId, bool &needActive) override;
-
-    class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
-    public:
-        SystemAbilityStatusChangeListener() = default;
-        ~SystemAbilityStatusChangeListener() = default;
-        void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;
-        void OnRemoveSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;
-    };
+        std::vector<int64_t> &incPkgFileSizes);
+    int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,
+        const std::string &networkId, const std::string &deviceId);
+    int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
+        const std::string &networkId, const std::string &deviceId);
+    int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false);
+    int32_t GetUserNeedActiveStatus(uint32_t userId, bool &needActive);
 
     // media fuse
-    virtual int32_t MountMediaFuse(int32_t userId, int32_t &devFd) override;
-    virtual int32_t UMountMediaFuse(int32_t userId) override;
-    std::mutex mutex_;
-    void StorageRadarThd(void);
+    int32_t MountMediaFuse(int32_t userId, int32_t &devFd);
+    int32_t UMountMediaFuse(int32_t userId);
 private:
 #ifdef USER_CRYPTO_MIGRATE_KEY
     std::string GetNeedRestoreFilePath(int32_t userId, const std::string &user_dir);
@@ -151,16 +139,6 @@ private:
     int32_t RestoreconElX(uint32_t userId);
     void ActiveAppCloneUserKey();
     void SetDeleteFlag4KeyFiles();
-    
-    std::atomic<bool> stopRadarReport_ { false };
-    std::condition_variable execRadarReportCon_;
-    std::mutex onRadarReportLock_;
-    std::atomic<bool> isNeedUpdateRadarFile_ { false };
-    std::thread callRadarStatisticReportThread_;
-    std::map<uint32_t, RadarStatisticInfo> opStatistics_;
-    std::chrono::time_point<std::chrono::system_clock> lastRadarReportTime_;
-    std::map<uint32_t, RadarStatisticInfo>::iterator GetUserStatistics(const uint32_t userId);
-    void GetTempStatistics(std::map<uint32_t, RadarStatisticInfo> &statistics);
 };
 } // StorageDaemon
 } // OHOS

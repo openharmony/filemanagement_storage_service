@@ -101,6 +101,7 @@ ohos_executable("storage_daemon") {
 
   sources = [
     "ipc/src/storage_daemon.cpp",
+    "ipc/src/storage_daemon_provider.cpp",
     "ipc/src/storage_manager_client.cpp",
     "main.cpp",
     "observer/appstate_observer.cpp",

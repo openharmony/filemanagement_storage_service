@@ -27,6 +27,7 @@
 #include "ipc/storage_daemon.h"
 #include "storage_service_constant.h"
 #include "utils/file_utils.h"
+#include "enum_daemon.h"
 
 namespace OHOS {
 namespace StorageDaemon {

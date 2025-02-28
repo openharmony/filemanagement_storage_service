@@ -20,8 +20,6 @@
 
 #include <poll.h>
 
-#include "ipc/storage_daemon.h"
-
 namespace OHOS {
 namespace StorageDaemon {
 class NetlinkListener {
