@@ -42,9 +42,9 @@ constexpr int32_t DETECT_CNT = 4;
 constexpr const char *MTP_ROOT_PATH = "/mnt/data/external/";
 constexpr const char *SYS_PARAM_SERVICE_PERSIST_ENABLE = "persist.edm.mtp_client_disable";
 constexpr const char *SYS_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.edm.is_enterprise_device";
-const char* KEY_CUST = "const.cust.custPath";
-const std::string CUST_HWIT = "hwit";
-const int32_t SYS_PARARMETER_SIZE = 256;
+constexpr const char *KEY_CUST = "const.cust.custPath";
+constexpr const char *CUST_HWIT = "hwit";
+constexpr int32_t SYS_PARARMETER_SIZE = 256;
 bool g_keepMonitoring = true;
 
 MtpDeviceMonitor::MtpDeviceMonitor() {}
