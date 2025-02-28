@@ -28,6 +28,12 @@
 namespace OHOS {
 namespace StorageDaemon {
 
+#define CHECK_STORAGE_DAEMON()           \
+    do {                                 \
+        if (storageDaemon_ == nullptr) { \
+            return E_PARAMS_NULLPTR_ERR; \
+        }                                \
+    } while (0)
 class StorageDaemonProvider : public StorageDaemonStub {
 public:
     StorageDaemonProvider();

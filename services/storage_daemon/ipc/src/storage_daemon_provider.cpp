@@ -130,53 +130,49 @@ StorageDaemonProvider::~StorageDaemonProvider()
 
 int32_t StorageDaemonProvider::Shutdown()
 {
-    if (storageDaemon_ == nullptr) {
-        return E_PARAMS_NULLPTR_ERR;
-    }
+    CHECK_STORAGE_DAEMON();
     return storageDaemon_->Shutdown();
 }
 
 int32_t StorageDaemonProvider::Mount(const std::string &volId, uint32_t flags)
 {
-    if (storageDaemon_ == nullptr) {
-        return E_PARAMS_NULLPTR_ERR;
-    }
+    CHECK_STORAGE_DAEMON();
     return storageDaemon_->Mount(volId, flags);
 }
 
 int32_t StorageDaemonProvider::UMount(const std::string &volId)
 {
-    if (storageDaemon_ == nullptr) {
-        return E_PARAMS_NULLPTR_ERR;
-    }
+    CHECK_STORAGE_DAEMON();
     return storageDaemon_->UMount(volId);
 }
 
 int32_t StorageDaemonProvider::Check(const std::string &volId)
 {
-    if (storageDaemon_ == nullptr) {
-        return E_PARAMS_NULLPTR_ERR;
-    }
+    CHECK_STORAGE_DAEMON();
     return storageDaemon_->Check(volId);
 }
 
 int32_t StorageDaemonProvider::Format(const std::string &volId, const std::string &fsType)
 {
+    CHECK_STORAGE_DAEMON();
     return storageDaemon_->Format(volId, fsType);
 }
 
 int32_t StorageDaemonProvider::Partition(const std::string &diskId, int32_t type)
 {
+    CHECK_STORAGE_DAEMON();
     return storageDaemon_->Partition(diskId, type);
 }
 
 int32_t StorageDaemonProvider::SetVolumeDescription(const std::string &volId, const std::string &description)
 {
+    CHECK_STORAGE_DAEMON();
     return storageDaemon_->SetVolumeDescription(volId, description);
 }
 
 int32_t StorageDaemonProvider::StartUser(int32_t userId)
 {
+    CHECK_STORAGE_DAEMON();
     auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
     int32_t err = storageDaemon_->StartUser(userId);
@@ -190,6 +186,7 @@ int32_t StorageDaemonProvider::StartUser(int32_t userId)
 
 int32_t StorageDaemonProvider::StopUser(int32_t userId)
 {
+    CHECK_STORAGE_DAEMON();
     auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
     int32_t err = storageDaemon_->StopUser(userId);
@@ -203,6 +200,7 @@ int32_t StorageDaemonProvider::StopUser(int32_t userId)
 
 int32_t StorageDaemonProvider::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
+    CHECK_STORAGE_DAEMON();
     std::lock_guard<std::mutex> lock(mutex_);
     auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
@@ -217,6 +215,7 @@ int32_t StorageDaemonProvider::PrepareUserDirs(int32_t userId, uint32_t flags)
 
 int32_t StorageDaemonProvider::DestroyUserDirs(int32_t userId, uint32_t flags)
 {
+    CHECK_STORAGE_DAEMON();
     std::lock_guard<std::mutex> lock(mutex_);
     auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
@@ -231,11 +230,13 @@ int32_t StorageDaemonProvider::DestroyUserDirs(int32_t userId, uint32_t flags)
 
 int32_t StorageDaemonProvider::CompleteAddUser(int32_t userId)
 {
+    CHECK_STORAGE_DAEMON();
     return storageDaemon_->CompleteAddUser(userId);
 }
 
 int32_t StorageDaemonProvider::InitGlobalKey()
 {
+    CHECK_STORAGE_DAEMON();
     std::lock_guard<std::mutex> lock(mutex_);
     auto it = GetUserStatistics(USER0ID);
     isNeedUpdateRadarFile_ = true;
@@ -251,6 +252,7 @@ int32_t StorageDaemonProvider::InitGlobalKey()
 int32_t StorageDaemonProvider::InitGlobalUserKeys()
 {
     LOGI("StorageDaemonProvider_InitGlobalUserKeys start.");
+    CHECK_STORAGE_DAEMON();
     std::lock_guard<std::mutex> lock(mutex_);
     auto it = GetUserStatistics(USER100ID);
     isNeedUpdateRadarFile_ = true;
@@ -265,6 +267,7 @@ int32_t StorageDaemonProvider::InitGlobalUserKeys()
 
 int32_t StorageDaemonProvider::GenerateUserKeys(uint32_t userId, uint32_t flags)
 {
+    CHECK_STORAGE_DAEMON();
     int timerId = StorageXCollie::SetTimer("storage:GenerateUserKeys", LOCAL_TIME_OUT_SECONDS);
     int err = storageDaemon_->GenerateUserKeys(userId, flags);
     StorageXCollie::CancelTimer(timerId);
@@ -273,6 +276,7 @@ int32_t StorageDaemonProvider::GenerateUserKeys(uint32_t userId, uint32_t flags)
 
 int32_t StorageDaemonProvider::DeleteUserKeys(uint32_t userId)
 {
+    CHECK_STORAGE_DAEMON();
     int timerId = StorageXCollie::SetTimer("storage:DeleteUserKeys", LOCAL_TIME_OUT_SECONDS);
     int err = storageDaemon_->DeleteUserKeys(userId);
     StorageXCollie::CancelTimer(timerId);
@@ -285,6 +289,7 @@ int32_t StorageDaemonProvider::UpdateUserAuth(uint32_t userId,
                                               const std::vector<uint8_t> &oldSecret,
                                               const std::vector<uint8_t> &newSecret)
 {
+    CHECK_STORAGE_DAEMON();
     int timerId = StorageXCollie::SetTimer("storage:UpdateUserAuth", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
     int err = storageDaemon_->UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
@@ -298,6 +303,7 @@ int32_t StorageDaemonProvider::UpdateUseAuthWithRecoveryKey(const std::vector<ui
                                                             uint32_t userId,
                                                             const std::vector<std::vector<uint8_t>> &plainText)
 {
+    CHECK_STORAGE_DAEMON();
     return storageDaemon_->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId, plainText);
 }
 
@@ -305,6 +311,7 @@ int32_t StorageDaemonProvider::ActiveUserKey(uint32_t userId,
                                              const std::vector<uint8_t> &token,
                                              const std::vector<uint8_t> &secret)
 {
+    CHECK_STORAGE_DAEMON();
     int timerId = StorageXCollie::SetTimer("storage:ActiveUserKey", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
     auto it = GetUserStatistics(userId);
@@ -321,6 +328,7 @@ int32_t StorageDaemonProvider::ActiveUserKey(uint32_t userId,
 
 int32_t StorageDaemonProvider::InactiveUserKey(uint32_t userId)
 {
+    CHECK_STORAGE_DAEMON();
     int timerId = StorageXCollie::SetTimer("storage:InactiveUserKey", INACTIVE_USER_KEY_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
     auto it = GetUserStatistics(userId);
@@ -337,6 +345,7 @@ int32_t StorageDaemonProvider::InactiveUserKey(uint32_t userId)
 
 int32_t StorageDaemonProvider::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
+    CHECK_STORAGE_DAEMON();
     int timerId = StorageXCollie::SetTimer("storage:UpdateKeyContext", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
     int32_t ret = storageDaemon_->UpdateKeyContext(userId, needRemoveTmpKey);
@@ -346,11 +355,13 @@ int32_t StorageDaemonProvider::UpdateKeyContext(uint32_t userId, bool needRemove
 
 int32_t StorageDaemonProvider::MountCryptoPathAgain(uint32_t userId)
 {
+    CHECK_STORAGE_DAEMON();
     return storageDaemon_->MountCryptoPathAgain(userId);
 }
 
 int32_t StorageDaemonProvider::LockUserScreen(uint32_t userId)
 {
+    CHECK_STORAGE_DAEMON();
     int timerId = StorageXCollie::SetTimer("storage:LockUserScreen", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
     auto it = GetUserStatistics(userId);
@@ -369,6 +380,7 @@ int32_t StorageDaemonProvider::UnlockUserScreen(uint32_t userId,
                                                 const std::vector<uint8_t> &token,
                                                 const std::vector<uint8_t> &secret)
 {
+    CHECK_STORAGE_DAEMON();
     int timerId = StorageXCollie::SetTimer("storage:UnlockUserScreen", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
     auto it = GetUserStatistics(userId);
@@ -385,6 +397,7 @@ int32_t StorageDaemonProvider::UnlockUserScreen(uint32_t userId,
 
 int32_t StorageDaemonProvider::GetLockScreenStatus(uint32_t user, bool &lockScreenStatus)
 {
+    CHECK_STORAGE_DAEMON();
     lockScreenStatus = false;
     int timerId = StorageXCollie::SetTimer("storage:GetLockScreenStatus", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
@@ -395,6 +408,7 @@ int32_t StorageDaemonProvider::GetLockScreenStatus(uint32_t user, bool &lockScre
 
 int32_t StorageDaemonProvider::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId)
 {
+    CHECK_STORAGE_DAEMON();
     int timerId = StorageXCollie::SetTimer("storage:GenerateAppkey", LOCAL_TIME_OUT_SECONDS);
     int32_t ret = storageDaemon_->GenerateAppkey(userId, hashId, keyId);
     StorageXCollie::CancelTimer(timerId);
@@ -403,6 +417,7 @@ int32_t StorageDaemonProvider::GenerateAppkey(uint32_t userId, uint32_t hashId, 
 
 int32_t StorageDaemonProvider::DeleteAppkey(uint32_t userId, const std::string &keyId)
 {
+    CHECK_STORAGE_DAEMON();
     int timerId = StorageXCollie::SetTimer("storage:DeleteAppkey", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
     int32_t ret = storageDaemon_->DeleteAppkey(userId, keyId);
@@ -415,11 +430,13 @@ int32_t StorageDaemonProvider::CreateRecoverKey(uint32_t userId,
                                                 const std::vector<uint8_t> &token,
                                                 const std::vector<uint8_t> &secret)
 {
+    CHECK_STORAGE_DAEMON();
     return storageDaemon_->CreateRecoverKey(userId, userType, token, secret);
 }
 
 int32_t StorageDaemonProvider::SetRecoverKey(const std::vector<uint8_t> &key)
 {
+    CHECK_STORAGE_DAEMON();
     return storageDaemon_->SetRecoverKey(key);
 }
 
@@ -428,11 +445,13 @@ int32_t StorageDaemonProvider::CreateShareFile(const std::vector<std::string> &u
                                                uint32_t flag,
                                                std::vector<int32_t> &funcResult)
 {
+    CHECK_STORAGE_DAEMON();
     return storageDaemon_->CreateShareFile(uriList, tokenId, flag, funcResult);
 }
 
 int32_t StorageDaemonProvider::DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList)
 {
+    CHECK_STORAGE_DAEMON();
     return storageDaemon_->DeleteShareFile(tokenId, uriList);
 }
 
@@ -441,16 +460,19 @@ int32_t StorageDaemonProvider::SetBundleQuota(const std::string &bundleName,
                                               const std::string &bundleDataDirPath,
                                               int32_t limitSizeMb)
 {
+    CHECK_STORAGE_DAEMON();
     return storageDaemon_->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
 }
 
 int32_t StorageDaemonProvider::GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size)
 {
+    CHECK_STORAGE_DAEMON();
     return storageDaemon_->GetOccupiedSpace(idType, id, size);
 }
 
 int32_t StorageDaemonProvider::UpdateMemoryPara(int32_t size, int32_t &oldSize)
 {
+    CHECK_STORAGE_DAEMON();
     return storageDaemon_->UpdateMemoryPara(size, oldSize);
 }
 
@@ -460,6 +482,7 @@ int32_t StorageDaemonProvider::GetBundleStatsForIncrease(uint32_t userId,
                                                          std::vector<int64_t> &pkgFileSizes,
                                                          std::vector<int64_t> &incPkgFileSizes)
 {
+    CHECK_STORAGE_DAEMON();
     return storageDaemon_->GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes, pkgFileSizes,
                                                     incPkgFileSizes);
 }
@@ -469,6 +492,7 @@ int32_t StorageDaemonProvider::MountDfsDocs(int32_t userId,
                                             const std::string &networkId,
                                             const std::string &deviceId)
 {
+    CHECK_STORAGE_DAEMON();
     return storageDaemon_->MountDfsDocs(userId, relativePath, networkId, deviceId);
 }
 
@@ -477,12 +501,14 @@ int32_t StorageDaemonProvider::UMountDfsDocs(int32_t userId,
                                              const std::string &networkId,
                                              const std::string &deviceId)
 {
+    CHECK_STORAGE_DAEMON();
     LOGI("StorageDaemonProvider::UMountDfsDocs start.");
     return storageDaemon_->UMountDfsDocs(userId, relativePath, networkId, deviceId);
 }
 
 int32_t StorageDaemonProvider::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
 {
+    CHECK_STORAGE_DAEMON();
     isEncrypted = true;
     int timerId = StorageXCollie::SetTimer("storage:GetFileEncryptStatus", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
@@ -493,6 +519,7 @@ int32_t StorageDaemonProvider::GetFileEncryptStatus(uint32_t userId, bool &isEnc
 
 int32_t StorageDaemonProvider::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
 {
+    CHECK_STORAGE_DAEMON();
     needActive = false;
     int timerId = StorageXCollie::SetTimer("storage:GetUserNeedActiveStatus", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
@@ -505,6 +532,7 @@ int32_t StorageDaemonProvider::MountMediaFuse(int32_t userId, int32_t &devFd)
 {
 #ifdef STORAGE_SERVICE_MEDIA_FUSE
     LOGI("StorageDaemonProvider::MountMediaFuse start.");
+    CHECK_STORAGE_DAEMON();
     devFd = -1;
     int32_t ret = storageDaemon_->MountMediaFuse(userId, devFd);
     return ret;
@@ -516,6 +544,7 @@ int32_t StorageDaemonProvider::UMountMediaFuse(int32_t userId)
 {
 #ifdef STORAGE_SERVICE_MEDIA_FUSE
     LOGI("StorageDaemonProvider::UMountMediaFuse start.");
+    CHECK_STORAGE_DAEMON();
     return storageDaemon_->UMountMediaFuse(userId);
 #endif
     return E_OK;

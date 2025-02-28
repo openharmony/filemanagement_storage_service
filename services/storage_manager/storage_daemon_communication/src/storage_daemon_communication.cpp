@@ -19,7 +19,6 @@
 #include <system_ability_definition.h>
 
 #include "istorage_daemon.h"
-#include "ipc/storage_daemon.h"
 #include "storage_daemon_proxy.h"
 #include "os_account_manager.h"
 #ifdef ENABLE_SCREENLOCK_MANAGER

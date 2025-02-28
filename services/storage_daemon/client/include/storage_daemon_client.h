@@ -23,7 +23,6 @@
 
 #include "iremote_proxy.h"
 #include "istorage_daemon.h"
-#include "ipc/storage_daemon.h"
 #include "storage_daemon_proxy.h"
 
 namespace OHOS {

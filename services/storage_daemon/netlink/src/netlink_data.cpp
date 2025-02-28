@@ -14,7 +14,6 @@
  */
 #include "netlink/netlink_data.h"
 
-#include "ipc/storage_daemon.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 
