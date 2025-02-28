@@ -139,6 +139,7 @@ private:
     int32_t RestoreconElX(uint32_t userId);
     void ActiveAppCloneUserKey();
     void SetDeleteFlag4KeyFiles();
+    void SetPriority();
 };
 } // StorageDaemon
 } // OHOS

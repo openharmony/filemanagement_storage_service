@@ -19,6 +19,8 @@
 #include <fcntl.h>
 #include <fstream>
 #include <thread>
+#include <sys/syscall.h>
+#include <sys/resource.h>
 #include "file_ex.h"
 #include "hi_audit.h"
 #include "hisysevent.h"
@@ -402,6 +404,7 @@ int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
 
 int32_t StorageDaemon::StartUser(int32_t userId)
 {
+    (void)SetPriority();  // set tid priority to 40
     int32_t ret = UserManager::GetInstance()->StartUser(userId);
     if (ret != E_OK && ret != E_KEY_NOT_ACTIVED) {
         LOGE("StartUser failed, please check");
@@ -884,6 +887,7 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
 {
     int ret = E_OK;
 #ifdef USER_CRYPTO_MANAGER
+    (void)SetPriority();  // set tid priority to 40
     LOGW("userId %{public}u, tok empty %{public}d sec empty %{public}d", userId, token.empty(), secret.empty());
     ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL2_KEY, token, secret);
     if (ret != E_OK) {
@@ -957,6 +961,7 @@ int32_t StorageDaemon::RestoreconElX(uint32_t userId)
 int32_t StorageDaemon::InactiveUserKey(uint32_t userId)
 {
 #ifdef USER_CRYPTO_MANAGER
+    (void)SetPriority();  // set tid priority to 40
     int32_t ret = KeyManager::GetInstance()->InActiveUserKey(userId);
     if (ret != E_OK) {
         LOGE("InActiveUserKey failed, please check");
@@ -1009,6 +1014,7 @@ int32_t StorageDaemon::UnlockUserScreen(uint32_t userId,
                                         const std::vector<uint8_t> &secret)
 {
 #ifdef USER_CRYPTO_MANAGER
+    (void)SetPriority();  // set tid priority to 40
     int32_t ret = KeyManager::GetInstance()->UnlockUserScreen(userId, token, secret);
     if (ret != E_OK) {
         LOGE("UnlockUserScreen failed, userId=%{public}u, ret=%{public}d", userId, ret);
@@ -1094,6 +1100,7 @@ int32_t StorageDaemon::SetRecoverKey(const std::vector<uint8_t> &key)
 int32_t StorageDaemon::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
 #ifdef USER_CRYPTO_MANAGER
+    (void)SetPriority();  // set tid priority to 40
     int32_t ret = KeyManager::GetInstance()->UpdateKeyContext(userId, needRemoveTmpKey);
     if (ret != E_OK) {
         LOGE("UpdateKeyContext failed, please check");
@@ -1186,6 +1193,7 @@ int32_t StorageDaemon::UMountDfsDocs(int32_t userId, const std::string &relative
 int32_t StorageDaemon::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
 {
 #ifdef USER_CRYPTO_MANAGER
+    (void)SetPriority();  // set tid priority to 40
     int32_t ret = KeyManager::GetInstance()->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
     if (ret != E_OK) {
         LOGE("GetFileEncryptStatus failed, please check");
@@ -1248,6 +1256,15 @@ void StorageDaemon::ActiveAppCloneUserKey()
 #endif
     }
 #endif
+}
+
+void StorageDaemon::SetPriority()
+{
+    int tid = syscall(SYS_gettid);
+    if (setpriority(PRIO_PROCESS, tid, PRIORITY_LEVEL) != 0) {
+        LOGE("failed to set priority");
+    }
+    LOGW("set storage_daemon priority: %{public}d", tid);
 }
 
 int32_t StorageDaemon::MountMediaFuse(int32_t userId, int32_t &devFd)

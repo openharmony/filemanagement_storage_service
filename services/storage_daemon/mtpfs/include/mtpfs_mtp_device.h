@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -91,6 +91,7 @@ public:
     void RemoveUploadRecord(const std::string path);
     void SetUploadRecord(const std::string path, bool value);
     std::tuple<std::string, bool> FindUploadRecord(const std::string path);
+    void RefreshDirContent(std::string path);
 
     Capabilities GetCapabilities() const;
 
@@ -111,6 +112,7 @@ private:
     void HandleDevNum(const std::string &devFile, int &devNo, int rawDevicesCnt, LIBMTP_raw_device_t *rawDevices);
     int ReNameInner(const std::string &oldPath, const std::string &newPath);
     void ReadEvent();
+    const void HandleDirByFetch(LIBMTP_file_t *content, MtpFsTypeDir *dir);
 
 private:
     LIBMTP_mtpdevice_t *device_;
