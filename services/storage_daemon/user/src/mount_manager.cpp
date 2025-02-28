@@ -1768,7 +1768,7 @@ int32_t MountManager::UMountMediaFuse(int32_t userId)
 
 int32_t MountManager::MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd)
 {
-    LOGI("mount file mgr fuse start, userId is %{public}d, path is %{public}s.", userId, path.c_str());
+    LOGI("mount file mgr fuse start, userId is %{public}d.", userId);
     fuseFd = open("/dev/fuse", O_RDWR);
     if (fuseFd < 0) {
         LOGE("open /dev/fuse fail for file mgr, errno is %{public}d.", errno);
@@ -1798,7 +1798,7 @@ int32_t MountManager::MountFileMgrFuse(int32_t userId, const std::string &path, 
 
 int32_t MountManager::UMountFileMgrFuse(int32_t userId, const std::string &path)
 {
-    LOGI("umount file mgr fuse start, userId is %{public}d, path is %{public}s.", userId, path.c_str());
+    LOGI("umount file mgr fuse start, userId is %{public}d.", userId);
     int32_t ret = UMount2(path, MNT_DETACH);
     if (ret != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("failed to umount fuse for file mgr, ret is %{public}d, errno is %{public}d.", ret, errno);

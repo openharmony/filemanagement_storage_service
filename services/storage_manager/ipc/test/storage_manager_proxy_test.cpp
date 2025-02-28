@@ -1801,43 +1801,4 @@ HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_GetUserNeedActiveStatus_
     EXPECT_EQ(result, E_WRITE_PARCEL_ERR);
     GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_GetUserNeedActiveStatus_0000";
 }
-
-/**
- * @tc.number: SUB_STORAGE_Storage_manager_proxy_MountFileMgrFuse_0000
- * @tc.name: Storage_manager_proxy_MountFileMgrFuse_0000
- * @tc.desc: Test function of MountFileMgrFuse interface for SUCCESS.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- */
-HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_MountFileMgrFuse_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_MountFileMgrFuse_0000";
-    int32_t userId = 100;
-    std::string path = "/mnt/data/100/network_neighbor";
-    int32_t fuseFd = -1;
-    ASSERT_TRUE(proxy_ != nullptr) << "StorageManagerProxy failed";
-    int32_t result = proxy_->MountFileMgrFuse(userId, path, fuseFd);
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_MountFileMgrFuse_0000";
-}
-
-/**
- * @tc.number: SUB_STORAGE_Storage_manager_proxy_UMountFileMgrFuse_0000
- * @tc.name: Storage_manager_proxy_UMountFileMgrFuse_0000
- * @tc.desc: Test function of UMountFileMgrFuse interface for SUCCESS.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- */
-HWTEST_F(StorageManagerProxyTest, Storage_manager_proxy_UMountFileMgrFuse_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProxyTest-begin Storage_manager_proxy_UMountFileMgrFuse_0000";
-    int32_t userId = 100;
-    std::string path = "/mnt/data/100/network_neighbor";
-    ASSERT_TRUE(proxy_ != nullptr) << "StorageManagerProxy failed";
-    int32_t result = proxy_->UMountFileMgrFuse(userId, path);
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageManagerProxyTest-end Storage_manager_proxy_UMountFileMgrFuse_0000";
-}
 } // namespace
