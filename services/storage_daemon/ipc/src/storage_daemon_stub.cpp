@@ -248,6 +248,10 @@ StorageDaemonStub::StorageDaemonStub()
         &StorageDaemonStub::HandleUMountMediaFuse;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_USER_NEED_ACTIVE_STATUS)] =
         &StorageDaemonStub::HandleGetUserNeedActiveStatus;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::MOUNT_FILE_MGR_FUSE)] =
+            &StorageDaemonStub::HandleMountFileMgrFuse;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::UMOUNT_FILE_MGR_FUSE)] =
+            &StorageDaemonStub::HandleUMountFileMgrFuse;
     callRadarStatisticReportThread_ = std::thread([this]() { StorageRadarThd(); });
 }
 
@@ -312,6 +316,8 @@ int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::MOUNT_MEDIA_FUSE):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::UMOUNT_MEDIA_FUSE):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_USER_NEED_ACTIVE_STATUS):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::MOUNT_FILE_MGR_FUSE):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::UMOUNT_FILE_MGR_FUSE):
             return OnRemoteRequestForApp(code, data, reply);
         default:
             LOGE("Cannot response request %{public}d: unknown tranction", code);
@@ -420,6 +426,10 @@ int32_t StorageDaemonStub::OnRemoteRequestForApp(uint32_t code, MessageParcel &d
             return HandleUMountMediaFuse(data, reply);
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::GET_USER_NEED_ACTIVE_STATUS):
             return HandleGetUserNeedActiveStatus(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::MOUNT_FILE_MGR_FUSE):
+            return HandleMountFileMgrFuse(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::UMOUNT_FILE_MGR_FUSE):
+            return HandleUMountFileMgrFuse(data, reply);
         default:
             LOGE("Cannot response request %{public}d: unknown tranction", code);
             return E_SYS_KERNEL_ERR;
@@ -1106,6 +1116,43 @@ int32_t StorageDaemonStub::HandleGetUserNeedActiveStatus(MessageParcel &data, Me
         return E_WRITE_REPLY_ERR;
     }
     if (!reply.WriteBool(needActive)) {
+        return E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleMountFileMgrFuse(MessageParcel &data, MessageParcel &reply)
+{
+    LOGI("StorageDaemonStub::HandleMountFileMgrFuse start.");
+    int32_t userId = data.ReadInt32();
+    std::string path = data.ReadString();
+    int32_t fuseFd = -1;
+    int32_t ret = MountFileMgrFuse(userId, path, fuseFd);
+    if (!reply.WriteInt32(ret)) {
+        LOGE("Write reply error code failed");
+        if (ret == E_OK) {
+            close(fuseFd);
+        }
+        return E_WRITE_REPLY_ERR;
+    }
+    if (ret == E_OK && fuseFd > 0) {
+        if (!reply.WriteFileDescriptor(fuseFd)) {
+            LOGE("Write reply fuseFd failed");
+            close(fuseFd);
+            return E_WRITE_REPLY_ERR;
+        }
+        close(fuseFd);
+    }
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleUMountFileMgrFuse(MessageParcel &data, MessageParcel &reply)
+{
+    LOGI("StorageDaemonStub::HandleUMountFileMgrFuse start.");
+    int32_t userId = data.ReadInt32();
+    std::string path = data.ReadString();
+    int32_t ret = UMountFileMgrFuse(userId, path);
+    if (!reply.WriteInt32(ret)) {
         return E_WRITE_REPLY_ERR;
     }
     return E_OK;

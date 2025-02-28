@@ -92,6 +92,8 @@ namespace StorageManager {
         MOUNT_MEDIA_FUSE,
         UMOUNT_MEDIA_FUSE,
         GET_USER_NEED_ACTIVE_STATUS,
+        MOUNT_FILE_MGR_FUSE,
+        UMOUNT_FILE_MGR_FUSE,
     };
 } // namespace StorageManager
 } // namespace OHOS

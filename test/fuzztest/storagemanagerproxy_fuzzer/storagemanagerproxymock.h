@@ -329,6 +329,16 @@ public:
     {
         return E_OK;
     }
+
+    int32_t MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd) override
+    {
+        return E_OK;
+    }
+
+    int32_t UMountFileMgrFuse(int32_t userId, const std::string &path) override
+    {
+        return E_OK;
+    }
 };
 } // namespace StorageManager
 } // namespace OHOS

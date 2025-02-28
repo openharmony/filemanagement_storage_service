@@ -82,7 +82,7 @@ public:
     int32_t DestroyHmdfsDirs(int32_t userId);
     int32_t DestroyFileManagerDirs(int32_t userId);
     int32_t DestroySystemServiceDirs(int32_t userId);
-    int32_t CloudMount(int32_t userId, const std::string& path);
+    int32_t CloudMount(int32_t userId, const std::string &path);
     int32_t CloudTwiceMount(int32_t userId);
     int32_t MountCryptoPathAgain(uint32_t userId);
     int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,
@@ -113,6 +113,8 @@ public:
     int32_t FindAndKillProcessWithoutRadar(int32_t userId, std::list<std::string> &killList);
     int32_t CheckProcessUserId(int32_t userId, std::vector<ProcessInfo> &proInfos,
                                std::vector<ProcessInfo> &processKillInfos);
+    int32_t MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd);
+    int32_t UMountFileMgrFuse(int32_t userId, const std::string &path);
 
 private:
     bool SupportHmdfs();

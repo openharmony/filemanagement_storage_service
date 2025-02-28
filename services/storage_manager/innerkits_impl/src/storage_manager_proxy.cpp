@@ -1684,5 +1684,57 @@ int32_t StorageManagerProxy::GetUserNeedActiveStatus(uint32_t userId, bool &need
     needActive = reply.ReadBool();
     return reply.ReadInt32();
 }
+
+int32_t StorageManagerProxy::MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd)
+{
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("WriteInterfaceToken failed");
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    if (!data.WriteInt32(userId) || !data.WriteString(path)) {
+        LOGE("WriteInt32 failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    int32_t err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::MOUNT_FILE_MGR_FUSE),
+        data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+    int32_t ret = reply.ReadInt32();
+    if (ret == E_OK) {
+        fuseFd = reply.ReadFileDescriptor();
+    }
+    return ret;
+}
+
+int32_t StorageManagerProxy::UMountFileMgrFuse(int32_t userId, const std::string &path)
+{
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("WriteInterfaceToken failed");
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    if (!data.WriteInt32(userId) || !data.WriteString(path)) {
+        LOGE("WriteInt32 failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    int32_t err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::UMOUNT_FILE_MGR_FUSE),
+        data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+    return reply.ReadInt32();
+}
 } // StorageManager
 } // OHOS

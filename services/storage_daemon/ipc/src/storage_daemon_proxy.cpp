@@ -1130,5 +1130,55 @@ int32_t StorageDaemonProxy::UMountMediaFuse(int32_t userId)
     return E_OK;
 #endif
 }
+
+int32_t StorageDaemonProxy::MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd)
+{
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+
+    if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
+        LOGE("WriteInterfaceToken failed");
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    if (!data.WriteInt32(userId) || !data.WriteString(path)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::MOUNT_FILE_MGR_FUSE),
+        data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+    int32_t ret = reply.ReadInt32();
+    if (ret == E_OK) {
+        fuseFd = reply.ReadFileDescriptor();
+    }
+    return ret;
+}
+
+int32_t StorageDaemonProxy::UMountFileMgrFuse(int32_t userId, const std::string &path)
+{
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+
+    if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
+        LOGE("WriteInterfaceToken failed");
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    if (!data.WriteInt32(userId) || !data.WriteString(path)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    int32_t err = SendRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::UMOUNT_FILE_MGR_FUSE),
+        data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+    return reply.ReadInt32();
+}
 } // StorageDaemon
 } // OHOS

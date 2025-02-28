@@ -1285,5 +1285,15 @@ int32_t StorageDaemon::UMountMediaFuse(int32_t userId)
 {
     return MountManager::GetInstance()->UMountMediaFuse(userId);
 }
+
+int32_t StorageDaemon::MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd)
+{
+    return MountManager::GetInstance()->MountFileMgrFuse(userId, path, fuseFd);
+}
+
+int32_t StorageDaemon::UMountFileMgrFuse(int32_t userId, const std::string &path)
+{
+    return MountManager::GetInstance()->UMountFileMgrFuse(userId, path);
+}
 } // namespace StorageDaemon
 } // namespace OHOS
