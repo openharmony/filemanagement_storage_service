@@ -116,6 +116,9 @@ public:
         const std::string &networkId, const std::string &deviceId) override;
     int32_t MountMediaFuse(int32_t userId, int32_t &devFd) override;
     int32_t UMountMediaFuse(int32_t userId) override;
+    // file mgr fuse
+    int32_t MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd) override;
+    int32_t UMountFileMgrFuse(int32_t userId, const std::string &path) override;
 private:
     static inline BrokerDelegator<StorageManagerProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

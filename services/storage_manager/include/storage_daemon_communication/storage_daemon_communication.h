@@ -100,6 +100,9 @@ public:
     // media fuse mount
     int32_t MountMediaFuse(int32_t userId, int32_t &devFd);
     int32_t UMountMediaFuse(int32_t userId);
+    // file mgr fuse
+    int32_t MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd);
+    int32_t UMountFileMgrFuse(int32_t userId, const std::string &path);
 private:
     sptr<OHOS::StorageDaemon::IStorageDaemon> storageDaemon_;
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;

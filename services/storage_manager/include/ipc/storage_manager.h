@@ -127,6 +127,9 @@ public:
     // media fuse
     int32_t MountMediaFuse(int32_t userId, int32_t &devFd) override;
     int32_t UMountMediaFuse(int32_t userId) override;
+    // file mgr fuse
+    int32_t MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd) override;
+    int32_t UMountFileMgrFuse(int32_t userId, const std::string &path) override;
 
     // reset user event record api
     void ResetUserEventRecord(int32_t userId);

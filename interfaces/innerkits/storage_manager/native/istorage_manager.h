@@ -130,6 +130,10 @@ public:
     virtual int32_t MountMediaFuse(int32_t userId, int32_t &devFd) = 0;
     virtual int32_t UMountMediaFuse(int32_t userId) = 0;
 
+    // file mgr fuse
+    virtual int32_t MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd) = 0;
+    virtual int32_t UMountFileMgrFuse(int32_t userId, const std::string &path) = 0;
+
     DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.StorageManager.IStorageManager");
 };
 } // StorageManager

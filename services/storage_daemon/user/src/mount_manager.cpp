@@ -179,6 +179,7 @@ std::vector<DirInfo> MountManager::InitVirtualDir()
             {"/mnt/data/%d/cloud", MODE_0711, OID_ROOT, OID_ROOT},
             {"/mnt/data/%d/cloud_fuse", MODE_0711, OID_DFS, OID_DFS},
             {"/mnt/data/%d/media_fuse", MODE_0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
+            {"/mnt/data/%d/network_neighbor", MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
             {"/mnt/data/%d/hmdfs", MODE_0711, OID_FILE_MANAGER, OID_FILE_MANAGER},
             {"/mnt/hmdfs/", MODE_0711, OID_ROOT, OID_ROOT},
             {"/mnt/hmdfs/%d/", MODE_0711, OID_ROOT, OID_ROOT},
@@ -534,7 +535,7 @@ bool MountManager::CheckSymlink(const std::string &path, std::list<std::string> 
     return false;
 }
 
-int32_t MountManager::CloudMount(int32_t userId, const string& path)
+int32_t MountManager::CloudMount(int32_t userId, const string &path)
 {
 #ifdef DFS_SERVICE
     string opt;
@@ -1720,21 +1721,21 @@ int32_t MountManager::MountMediaFuse(int32_t userId, int32_t &devFd)
     // open fuse
     devFd = open("/dev/fuse", O_RDWR);
     if (devFd < 0) {
-        LOGE("open /dev/fuse fail");
+        LOGE("open /dev/fuse fail for media, errno is %{public}d.", errno);
         return E_USER_MOUNT_ERR;
     }
     // mount fuse mountpoint
     string opt = StringPrintf("fd=%i,"
-                              "rootmode=40000,"
-                              "default_permissions,"
-                              "allow_other,"
-                              "user_id=0,group_id=0,"
-                              "context=\"u:object_r:hmdfs:s0\","
-                              "fscontext=u:object_r:hmdfs:s0",
-                              devFd);
+        "rootmode=40000,"
+        "default_permissions,"
+        "allow_other,"
+        "user_id=0,group_id=0,"
+        "context=\"u:object_r:hmdfs:s0\","
+        "fscontext=u:object_r:hmdfs:s0",
+        devFd);
     int ret = Mount("/dev/fuse", path.c_str(), "fuse", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_NOATIME, opt.c_str());
     if (ret) {
-        LOGE("failed to mount fuse, err %{public}d %{public}d %{public}s", errno, ret, path.c_str());
+        LOGE("failed to mount fuse for media, ret is %{public}d, errno is %{public}d.", ret, errno);
         close(devFd);
         std::string extraData = "dstPath=" + path + ",kernelCode=" + to_string(errno);
         StorageRadar::ReportUserManager("MountMediaFuse", userId, E_MOUNT_MEDIA_FUSE, extraData);
@@ -1762,6 +1763,50 @@ int32_t MountManager::UMountMediaFuse(int32_t userId)
     }
     LOGI("umount media fuse success");
 #endif
+    return E_OK;
+}
+
+int32_t MountManager::MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd)
+{
+    LOGI("mount file mgr fuse start, userId is %{public}d.", userId);
+    fuseFd = open("/dev/fuse", O_RDWR);
+    if (fuseFd < 0) {
+        LOGE("open /dev/fuse fail for file mgr, errno is %{public}d.", errno);
+        return E_OPEN_FUSE;
+    }
+    LOGI("open fuse end.");
+    string opt = StringPrintf("fd=%i,"
+        "rootmode=40000,"
+        "default_permissions,"
+        "allow_other,"
+        "user_id=0,group_id=0,"
+        "context=\"u:object_r:hmdfs:s0\","
+        "fscontext=u:object_r:hmdfs:s0",
+        fuseFd);
+    int ret = Mount("/dev/fuse", path.c_str(), "fuse", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_NOATIME | MS_RDONLY,
+        opt.c_str());
+    if (ret) {
+        LOGE("failed to mount fuse for file mgr, ret is %{public}d, errno is %{public}d.", ret, errno);
+        close(fuseFd);
+        std::string extraData = "dstPath=" + path + ",kernelCode=" + to_string(errno);
+        StorageRadar::ReportUserManager("MountFileMgrFuse", userId, E_MOUNT_FILE_MGR_FUSE, extraData);
+        return E_MOUNT_FILE_MGR_FUSE;
+    }
+    LOGI("file mgr mount fuse success.");
+    return E_OK;
+}
+
+int32_t MountManager::UMountFileMgrFuse(int32_t userId, const std::string &path)
+{
+    LOGI("umount file mgr fuse start, userId is %{public}d.", userId);
+    int32_t ret = UMount2(path, MNT_DETACH);
+    if (ret != E_OK && errno != ENOENT && errno != EINVAL) {
+        LOGE("failed to umount fuse for file mgr, ret is %{public}d, errno is %{public}d.", ret, errno);
+        std::string extraData = "dstPath=" + path + ",kernelCode=" + to_string(errno);
+        StorageRadar::ReportUserManager("UMountFileMgrFuse", userId, E_UMOUNT_FILE_MGR_FUSE, extraData);
+        return E_UMOUNT_FILE_MGR_FUSE;
+    }
+    LOGI("file mgr umount fuse success.");
     return E_OK;
 }
 } // namespace StorageDaemon

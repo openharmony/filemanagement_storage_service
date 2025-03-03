@@ -620,5 +620,35 @@ int32_t StorageDaemonClient::GetUserNeedActiveStatus(uint32_t userId, bool &need
 
     return client->GetUserNeedActiveStatus(userId, needActive);
 }
+
+int32_t StorageDaemonClient::MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd)
+{
+    auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
+    if (status != E_OK) {
+        LOGE("service check failed");
+        return status;
+    }
+    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
+    if (client == nullptr) {
+        LOGE("Get StorageDaemon service failed!");
+        return E_SA_IS_NULLPTR;
+    }
+    return client->MountFileMgrFuse(userId, path, fuseFd);
+}
+
+int32_t StorageDaemonClient::UMountFileMgrFuse(int32_t userId, const std::string &path)
+{
+    auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
+    if (status != E_OK) {
+        LOGE("service check failed");
+        return status;
+    }
+    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
+    if (client == nullptr) {
+        LOGE("Get StorageDaemon service failed!");
+        return E_SA_IS_NULLPTR;
+    }
+    return client->UMountFileMgrFuse(userId, path);
+}
 } // namespace StorageDaemon
 } // namespace OHOS

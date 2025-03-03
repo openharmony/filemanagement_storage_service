@@ -100,6 +100,9 @@ private:
     // mount media fuse
     int32_t HandleMountMediaFuse(MessageParcel &data, MessageParcel &reply);
     int32_t HandleUMountMediaFuse(MessageParcel &data, MessageParcel &reply);
+    // file mgr fuse
+    int32_t HandleMountFileMgrFuse(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleUMountFileMgrFuse(MessageParcel &data, MessageParcel &reply);
 };
 } // StorageManager
 } // OHOS
