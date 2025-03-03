@@ -633,6 +633,18 @@ int32_t StorageDaemonProvider::UMountMediaFuse(int32_t userId)
     return E_OK;
 }
 
+int32_t StorageDaemonProvider::MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd)
+{
+    LOGI("StorageDaemonProvider::MountFileMgrFuse, userId:%{public}d, path:%{public}s", userId, path.c_str());
+    return storageDaemon_->MountFileMgrFuse(userId, path, fuseFd);
+}
+
+int32_t StorageDaemonProvider::UMountFileMgrFuse(int32_t userId, const std::string &path)
+{
+    LOGI("StorageDaemonProvider::MountFileMgrFuse, userId:%{public}d, path:%{public}s", userId, path.c_str());
+    return storageDaemon_->UMountFileMgrFuse(userId, path);
+}
+
 void StorageDaemonProvider::SystemAbilityStatusChangeListener::OnAddSystemAbility(int32_t systemAbilityId,
                                                                                   const std::string &deviceId)
 {

@@ -72,4 +72,6 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 39] void MountMediaFuse([in] int userId, [out] FileDescriptor devFd);
      [ipccode 40] void UMountMediaFuse([in] int userId);
      [ipccode 41] void GetUserNeedActiveStatus([in] unsigned int userId, [out] boolean needActive);
+     [ipccode 42] void MountFileMgrFuse([in] int userId, [in] String path, [out] FileDescriptor fuseFd);
+     [ipccode 43] void UMountFileMgrFuse([in] int userId, [in] String path);
 }
