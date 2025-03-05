@@ -838,6 +838,9 @@ int MtpFileSystem::Release(const char *path, struct fuse_file_info *fileInfo)
             return -rval;
         }
         LOGI("FilePush %{public}s to mtp device success", path);
+    } else {
+        LOGI("Release file no modify");
+        device_.SetUploadRecord(stdPath, true);
     }
     ::unlink(tmpPath.c_str());
     LOGI("MtpFileSystem: Release success, path: %{public}s", path);
