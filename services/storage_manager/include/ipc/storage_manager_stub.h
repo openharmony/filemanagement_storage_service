@@ -16,7 +16,6 @@
 #ifndef OHOS_STORAGE_MANAGER_STORAGE_MANAGER_STUB_H
 #define OHOS_STORAGE_MANAGER_STORAGE_MANAGER_STUB_H
 
-#include <map>
 #include "iremote_stub.h"
 #include "istorage_manager.h"
 

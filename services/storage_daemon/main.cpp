@@ -13,21 +13,15 @@
  * limitations under the License.
  */
 
-#include <fstream>
 #include <unistd.h>
-#include <sys/syscall.h>
-#include <sys/resource.h>
-
 #ifdef EXTERNAL_STORAGE_MANAGER
 #include "disk/disk_config.h"
 #include "disk/disk_info.h"
 #include "disk/disk_manager.h"
 #include "netlink/netlink_manager.h"
 #endif
-#include "ipc/storage_daemon.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
-#include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "system_ability_definition.h"

@@ -15,15 +15,8 @@
 
 #include "ipc/storage_daemon.h"
 
-#include <dlfcn.h>
-#include <fcntl.h>
-#include <fstream>
-#include <thread>
-#include <sys/syscall.h>
-#include <sys/resource.h>
 #include "file_ex.h"
 #include "hi_audit.h"
-#include "hisysevent.h"
 #include "utils/storage_radar.h"
 #include "utils/string_utils.h"
 
@@ -39,12 +32,8 @@
 #endif
 #include "file_sharing/file_sharing.h"
 #include "quota/quota_manager.h"
-#include "storage_service_constant.h"
 #include "storage_service_errno.h"
-#include "storage_service_log.h"
 #include "user/user_manager.h"
-#include "user/mount_manager.h"
-#include "utils/file_utils.h"
 #include "system_ability_definition.h"
 #include "file_share.h"
 #ifdef DFS_SERVICE

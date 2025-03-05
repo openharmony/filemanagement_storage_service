@@ -13,13 +13,6 @@
  * limitations under the License.
  */
 
-#include <functional>
-#include <iostream>
-#include <map>
-#include <string>
-#include <vector>
-
-#include "client/storage_manager_client.h"
 #include "storage_daemon_client.h"
 #include "storage_service_log.h"
 #include "utils/file_utils.h"

@@ -14,11 +14,6 @@
  */
 
 #include "ipc/storage_manager.h"
-#include <sys/syscall.h>
-#include <sys/resource.h>
-
-#include <singleton.h>
-#include "utils/storage_radar.h"
 #ifdef STORAGE_STATISTICS_MANAGER
 #include <storage/storage_monitor_service.h>
 #include <storage/storage_status_service.h>
@@ -30,14 +25,12 @@
 #include "account_subscriber/account_subscriber.h"
 #include "crypto/filesystem_crypto.h"
 #include "appspawn.h"
-#include "utils/storage_radar.h"
 #endif
 #ifdef EXTERNAL_STORAGE_MANAGER
 #include "disk/disk_manager_service.h"
 #include "volume/volume_manager_service.h"
 #endif
 #include "storage_daemon_communication/storage_daemon_communication.h"
-#include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "system_ability_definition.h"

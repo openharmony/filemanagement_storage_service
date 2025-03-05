@@ -17,10 +17,7 @@
 #define OHOS_STORAGE_DAEMON_QUOTA_MANAGER_H
 
 #include <nocopyable.h>
-#include <set>
-#include <sys/types.h>
 #include <string>
-#include <vector>
 
 namespace OHOS {
 namespace StorageDaemon {

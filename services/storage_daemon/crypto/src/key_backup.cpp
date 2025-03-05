@@ -15,13 +15,10 @@
 
 #include "key_backup.h"
 
-#include <cstdio>
 #include <dirent.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include <thread>
 
-#include "securec.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "unique_fd.h"

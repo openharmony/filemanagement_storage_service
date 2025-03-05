@@ -15,10 +15,6 @@
 #ifndef STORAGE_DAEMON_UTILS_FILE_UTILS_H
 #define STORAGE_DAEMON_UTILS_FILE_UTILS_H
 
-#include <stdint.h>
-#include <string>
-#include <vector>
-#include <iostream>
 #include <sstream>
 #include <sys/types.h>
 #include <sys/mount.h>

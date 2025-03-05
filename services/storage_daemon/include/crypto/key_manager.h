@@ -16,16 +16,9 @@
 #ifndef STORAGE_DAEMON_CRYPTO_KEYMANAGER_H
 #define STORAGE_DAEMON_CRYPTO_KEYMANAGER_H
 
-#include <iostream>
-#include <map>
-#include <memory>
-#include <mutex>
-
 #include "base_key.h"
 #include "crypto_delay_handler.h"
-#include "key_blob.h"
 #include "ipc/storage_daemon.h"
-#include "storage_service_constant.h"
 #include "utils/file_utils.h"
 
 namespace OHOS {

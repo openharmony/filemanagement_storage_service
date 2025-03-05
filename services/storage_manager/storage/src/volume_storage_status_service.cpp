@@ -15,7 +15,6 @@
 
 #include "storage/volume_storage_status_service.h"
 
-#include <singleton.h>
 #include <sys/statvfs.h>
 
 #include "storage_service_errno.h"

@@ -16,8 +16,6 @@
 #ifndef OHOS_STORAGE_DAEMON_NETLINK_MANAGER_H
 #define OHOS_STORAGE_DAEMON_NETLINK_MANAGER_H
 
-#include <nocopyable.h>
-
 #include "netlink_handler.h"
 
 namespace OHOS {

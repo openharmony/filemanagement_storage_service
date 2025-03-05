@@ -14,10 +14,6 @@
  */
 
 #include "zip_util.h"
-
-#include <cerrno>
-#include <cstdlib>
-#include <fstream>
 #include <securec.h>
 
 #include "storage_service_log.h"

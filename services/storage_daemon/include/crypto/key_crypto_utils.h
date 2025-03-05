@@ -16,7 +16,6 @@
 #ifndef OHOS_KEY_CRYPTO_UTILS_H
 #define OHOS_KEY_CRYPTO_UTILS_H
 
-#include <cstdint>
 #include <string>
 
 namespace OHOS {

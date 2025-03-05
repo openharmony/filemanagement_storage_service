@@ -17,9 +17,7 @@
 #define OHOS_STORAGE_MANAGER_STORAGE_DAEMON_COMMUNICATION_H
 
 #include <singleton.h>
-#include <nocopyable.h>
 #include "ipc/istorage_daemon.h"
-#include "iremote_object.h"
 
 namespace OHOS {
 namespace StorageManager {

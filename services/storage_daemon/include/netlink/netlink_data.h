@@ -18,7 +18,6 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
 namespace OHOS {
 namespace StorageDaemon {

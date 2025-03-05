@@ -16,7 +16,6 @@
 #include "fscrypt_key_v1_ext.h"
 
 #include <filesystem>
-#include <vector>
 
 #include "fbex.h"
 #include "file_ex.h"

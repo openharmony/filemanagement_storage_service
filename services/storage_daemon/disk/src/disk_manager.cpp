@@ -16,14 +16,12 @@
 #include "disk/disk_manager.h"
 
 #include <sys/sysmacros.h>
-#include <thread>
 
 #include "ipc/storage_manager_client.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/disk_utils.h"
 #include "utils/file_utils.h"
-#include "utils/string_utils.h"
 
 namespace OHOS {
 namespace StorageDaemon {

@@ -15,25 +15,13 @@
 
 #include "storage/storage_monitor_service.h"
 
-#include <cstdlib>
-#include <cstring>
-#include <mntent.h>
-#include <pthread.h>
-#include <singleton.h>
-#include <sys/statvfs.h>
-#include <unordered_set>
-
 #include "cJSON.h"
-#include "common_event_data.h"
 #include "common_event_manager.h"
 #include "parameters.h"
-#include "param_wrapper.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "storage/bundle_manager_connector.h"
 #include "storage/storage_total_status_service.h"
-#include "utils/storage_radar.h"
-#include "want.h"
 
 using namespace OHOS::StorageService;
 namespace OHOS {

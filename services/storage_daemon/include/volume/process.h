@@ -18,7 +18,6 @@
 
 #include <string>
 #include <unordered_set>
-#include <sys/types.h>
 
 namespace OHOS {
 namespace StorageDaemon {

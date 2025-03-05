@@ -21,7 +21,6 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/storage_radar.h"
-#include "utils/string_utils.h"
 #include "parameter.h"
 
 using namespace std;

@@ -16,7 +16,6 @@
 #ifndef OHOS_STORAGE_DAEMON_ISTORAGE_DAEMON_H
 #define OHOS_STORAGE_DAEMON_ISTORAGE_DAEMON_H
 
-#include <string>
 #include "iremote_broker.h"
 
 namespace OHOS {

@@ -13,13 +13,10 @@
  * limitations under the License.
  */
 
-#include "disk/disk_info.h"
-
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/sysmacros.h>
 
-#include "disk/disk_manager.h"
 #include "ipc/storage_manager_client.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"

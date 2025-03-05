@@ -16,8 +16,6 @@
 #ifndef STORAGE_MANAGER_CILENT_H
 #define STORAGE_MANAGER_CILENT_H
 
-#include "iremote_proxy.h"
-#include "istorage_manager.h"
 #include "storage_manager_proxy.h"
 
 namespace OHOS {
