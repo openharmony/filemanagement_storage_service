@@ -40,6 +40,7 @@ constexpr const char *USER_EL4_DIR = "/data/service/el1/public/storage_daemon/sd
 constexpr const char *USER_EL5_DIR = "/data/service/el1/public/storage_daemon/sd/el5";
 constexpr const char *UECE_DIR = "data/app/el5";
 constexpr const char *RESTORE_DIR = "/latest/need_restore";
+constexpr const char *FSCRYPT_VERSION_DIR = "/fscrypt_version";
 const std::string NATO_EL2_DIR = FSCRYPT_EL_DIR + "/el2_NATO";
 const std::string NATO_EL3_DIR = FSCRYPT_EL_DIR + "/el3_NATO";
 const std::string NATO_EL4_DIR = FSCRYPT_EL_DIR + "/el4_NATO";

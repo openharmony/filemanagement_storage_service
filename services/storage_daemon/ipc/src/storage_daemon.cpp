@@ -935,6 +935,10 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId, const std::vector<uint8_t>
         ret = ActiveUserKey4Single(userId, token, secret);
     }
 #endif
+    if (ret != E_OK) {
+        LOGE("Active user key for userId=%{public}d failed, ret=%{public}d.", userId, ret);
+        return ret;
+    }
     std::thread([this, userId]() { RestoreconElX(userId); }).detach();
     std::thread([this]() { ActiveAppCloneUserKey(); }).detach();
     AncoActiveCryptKey(userId);

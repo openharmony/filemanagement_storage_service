@@ -1814,7 +1814,7 @@ int KeyManager::LockUserScreen(uint32_t user)
 {
     LOGI("start");
     std::lock_guard<std::mutex> lock(keyMutex_);
-    std::error_code errcode;
+    std::error_code errCode;
     if (!IsUserCeDecrypt(user) || std::filesystem::exists(GetNatoNeedRestorePath(user, EL4_KEY), errCode)) {
         LOGE("user ce does not decrypt, skip");
         return 0;
@@ -1880,7 +1880,7 @@ int KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type, const std:
             return ret;
         }
     } else if (type == EL2_KEY || type == EL3_KEY || type == EL4_KEY || type == EL5_KEY) {
-        int ret = getElxKeyPath(user, El2_KEY, keyPath);
+        int ret = getElxKeyPath(user, EL2_KEY, keyPath);
         if (ret != E_OK) {
             return ret;
         }
