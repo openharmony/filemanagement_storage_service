@@ -1038,7 +1038,7 @@ int32_t StorageDaemon::ActiveUserKey4Update(uint32_t userId, const std::vector<u
         StorageRadar::ReportActiveUserKey("ActiveUserKey4Update::PrepareUserDirsAndUpdateUserAuth", userId, ret, "EL2");
         return E_ACTIVE_EL2_FAILED;
     }
-    std::string EL0_NEED_RESTORE = DATA_SERVICE_EL0_STORAGE_DAEMON_SD + NEED_RESTORE_SUFFIX;
+    std::string EL0_NEED_RESTORE = std::string(DATA_SERVICE_EL0_STORAGE_DAEMON_SD) + NEED_RESTORE_SUFFIX;
     if (!SaveStringToFile(EL0_NEED_RESTORE, NEW_DOUBLE_2_SINGLE)) {
         LOGE("Save key type file failed");
         return E_SYS_KERNEL_ERR;
@@ -1072,15 +1072,15 @@ void StorageDaemon::ClearNatoRestoreKey(uint32_t userId, KeyType type, bool isCl
     RmDirRecurse(natoKey);
     if ((type == EL2_KEY) && std::filesystem::is_empty(NATO_EL2_DIR)) {
         RmDirRecurse(NATO_EL2_DIR);
-        RmDirRecurse(NATO_EL2_DIR + "_bak");
+        RmDirRecurse(std::string(NATO_EL2_DIR) + "_bak");
     }
     if ((type == EL3_KEY) && std::filesystem::is_empty(NATO_EL3_DIR)) {
         RmDirRecurse(NATO_EL3_DIR);
-        RmDirRecurse(NATO_EL3_DIR + "_bak");
+        RmDirRecurse(std::string(NATO_EL3_DIR) + "_bak");
     }
     if ((type == EL4_KEY) && std::filesystem::is_empty(NATO_EL4_DIR)) {
         RmDirRecurse(NATO_EL4_DIR);
-        RmDirRecurse(NATO_EL4_DIR + "_bak");
+        RmDirRecurse(std::string(NATO_EL4_DIR) + "_bak");
     }
 }
  
