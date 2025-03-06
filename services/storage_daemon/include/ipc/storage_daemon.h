@@ -132,6 +132,7 @@ private:
                                              const std::vector<uint8_t> &token,
                                              const std::vector<uint8_t> &secret,
                                              const std::string needRestoreVersion);
+    int32_t PrepareUserDirsAndUpdateAuth4Nato(uint32_t userId, KeyType type);
     int32_t PrepareUeceDir(uint32_t userId);
     int32_t RestoreUserKey(int32_t userId, uint32_t flags);
     bool IsNeedRestorePathExist(uint32_t userId, bool needCheckEl1);
