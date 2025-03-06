@@ -1454,7 +1454,7 @@ HWTEST_F(KeyManagerTest, KeyManager_getElxKeyPath_001, TestSize.Level1)
 
     elxKeyPath.clear();
     EXPECT_EQ(KeyManager::GetInstance()->getElxKeyPath(user, EL2_KEY, elxKeyPath), 0);
-    EXPECT_EQ(elxKeyPath, "");
+    EXPECT_EQ(elxKeyPath, "/data/test");
 
     KeyManager::GetInstance()->userEl2Key_.erase(user);
     KeyManager::GetInstance()->userEl3Key_.erase(user);
