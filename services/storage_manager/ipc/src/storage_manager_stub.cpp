@@ -934,7 +934,7 @@ int32_t StorageManagerStub::HandleLockUserScreen(MessageParcel &data, MessagePar
     auto bundleMgr = DelayedSingleton<BundleMgrConnector>::GetInstance()->GetBundleMgrProxy();
     if (bundleMgr == nullptr) {
         LOGE("Connect bundle manager sa proxy failed.");
-        return E_BUNDLEMGR_ERROR;
+        return E_SERVICE_IS_NULLPTR;
     }
     if (!bundleMgr->GetBundleNameForUid(uid, bundleName)) {
         LOGE("Invoke bundleMgr interface to get bundle name failed.");
@@ -1345,7 +1345,7 @@ int32_t StorageManagerStub::HandleMountMediaFuse(MessageParcel &data, MessagePar
     auto bundleMgr = DelayedSingleton<BundleMgrConnector>::GetInstance()->GetBundleMgrProxy();
     if (bundleMgr == nullptr) {
         LOGE("Connect bundle manager sa proxy failed.");
-        return E_BUNDLEMGR_ERROR;
+        return E_SERVICE_IS_NULLPTR;
     }
     if (!bundleMgr->GetBundleNameForUid(uid, bundleName)) {
         LOGE("Invoke bundleMgr interface to get bundle name failed.");
@@ -1390,7 +1390,7 @@ int32_t StorageManagerStub::HandleUMountMediaFuse(MessageParcel &data, MessagePa
     auto bundleMgr = DelayedSingleton<BundleMgrConnector>::GetInstance()->GetBundleMgrProxy();
     if (bundleMgr == nullptr) {
         LOGE("Connect bundle manager sa proxy failed.");
-        return E_BUNDLEMGR_ERROR;
+        return E_SERVICE_IS_NULLPTR;
     }
     if (!bundleMgr->GetBundleNameForUid(uid, bundleName)) {
         LOGE("Invoke bundleMgr interface to get bundle name failed.");

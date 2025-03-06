@@ -1096,8 +1096,7 @@ std::string KeyManager::GetKeyDirByUserAndType(unsigned int user, KeyType type)
 std::string KeyManager::GetNatoNeedRestorePath(uint32_t userId, KeyType type)
 {
     std::string keyDir = "";
-    switch (type)
-    {
+    switch (type) {
         case EL2_KEY:
             keyDir = std::string(NATO_EL2_DIR) + "/" + std::to_string (userId);
             break;
