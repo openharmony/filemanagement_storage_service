@@ -557,7 +557,7 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountFileMgrFuse_001
     EXPECT_EQ(ret, E_MOUNT_FILE_MGR_FUSE);
 
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(1));
-    int32_t ret = mountManager->MountFileMgrFuse(userId, path, fuseFd);
+    ret = mountManager->MountFileMgrFuse(userId, path, fuseFd);
     EXPECT_EQ(ret, E_OK);
     ForceRemoveDirectory(path);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountFileMgrFuse_001 end";
@@ -582,7 +582,7 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_UMountFileMgrFuse_00
     EXPECT_EQ(ret, E_UMOUNT_FILE_MGR_FUSE);
 
     EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(1));
-    int32_t ret = mountManager->UMountFileMgrFuse(userId, path);
+    ret = mountManager->UMountFileMgrFuse(userId, path);
     EXPECT_EQ(ret, E_OK);
     ForceRemoveDirectory(path);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_UMountFileMgrFuse_001 end";
