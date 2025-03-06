@@ -1052,7 +1052,7 @@ int32_t StorageDaemonStub::HandleGetFileEncryptStatus(MessageParcel &data, Messa
     bool isEncrypted = true;
     int timerId = StorageXCollie::SetTimer("storage:GetFileEncryptStatus", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
-    int err = GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
+    int32_t err = GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
     StorageXCollie::CancelTimer(timerId);
     if (!reply.WriteBool(isEncrypted)) {
         return E_WRITE_REPLY_ERR;
@@ -1110,7 +1110,7 @@ int32_t StorageDaemonStub::HandleGetUserNeedActiveStatus(MessageParcel &data, Me
     bool needActive = false;
     int timerId = StorageXCollie::SetTimer("storage:GetUserNeedActiveStatus", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
-    int err = GetUserNeedActiveStatus(userId, needActive);
+    int32_t err = GetUserNeedActiveStatus(userId, needActive);
     StorageXCollie::CancelTimer(timerId);
     if (!reply.WriteBool(needActive)) {
         return E_WRITE_REPLY_ERR;
