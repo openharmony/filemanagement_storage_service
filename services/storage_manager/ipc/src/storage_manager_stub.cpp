@@ -970,12 +970,12 @@ int32_t StorageManagerStub::HandleGetFileEncryptStatus(MessageParcel &data, Mess
     uint32_t userId = data.ReadUint32();
     bool needCheckDirMount = data.ReadBool();
     int32_t err = GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
-    if (!reply.WriteInt32(err)) {
-        LOGE("Write reply error code failed");
-        return E_WRITE_REPLY_ERR;
-    }
     if (!reply.WriteBool(isEncrypted)) {
         LOGE("Write reply isEncrypted failed");
+        return E_WRITE_REPLY_ERR;
+    }
+    if (!reply.WriteInt32(err)) {
+        LOGE("Write reply error code failed");
         return E_WRITE_REPLY_ERR;
     }
     return E_OK;
@@ -989,12 +989,12 @@ int32_t StorageManagerStub::HandleGetUserNeedActiveStatus(MessageParcel &data, M
     bool needActive = false;
     uint32_t userId = data.ReadUint32();
     int32_t err = GetUserNeedActiveStatus(userId, needActive);
-    if (!reply.WriteInt32(err)) {
-        LOGE("Write reply error code failed");
-        return E_WRITE_REPLY_ERR;
-    }
     if (!reply.WriteBool(needActive)) {
         LOGE("Write needActive failed");
+        return E_WRITE_REPLY_ERR;
+    }
+    if (!reply.WriteInt32(err)) {
+        LOGE("Write reply error code failed");
         return E_WRITE_REPLY_ERR;
     }
     return E_OK;
