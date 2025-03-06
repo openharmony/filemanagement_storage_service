@@ -30,9 +30,7 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-const std::string FSCRYPT_USER_EL1_PUBLIC = std::string() + "/data/service/el1/public";
-const std::string SERVICE_STORAGE_DAEMON_DIR = FSCRYPT_USER_EL1_PUBLIC + "/storage_daemon";
-const std::string FSCRYPT_EL_DIR = SERVICE_STORAGE_DAEMON_DIR + "/sd";
+
 constexpr const char *USER_EL1_DIR = "/data/service/el1/public/storage_daemon/sd/el1";
 constexpr const char *USER_EL2_DIR = "/data/service/el1/public/storage_daemon/sd/el2";
 constexpr const char *USER_EL3_DIR = "/data/service/el1/public/storage_daemon/sd/el3";
@@ -41,9 +39,10 @@ constexpr const char *USER_EL5_DIR = "/data/service/el1/public/storage_daemon/sd
 constexpr const char *UECE_DIR = "data/app/el5";
 constexpr const char *RESTORE_DIR = "/latest/need_restore";
 constexpr const char *FSCRYPT_VERSION_DIR = "/fscrypt_version";
-const std::string NATO_EL2_DIR = FSCRYPT_EL_DIR + "/el2_NATO";
-const std::string NATO_EL3_DIR = FSCRYPT_EL_DIR + "/el3_NATO";
-const std::string NATO_EL4_DIR = FSCRYPT_EL_DIR + "/el4_NATO";
+
+constexpr const char *NATO_EL2_DIR = "/data/service/el1/public/storage_daemon/sd/el2_NATO";
+constexpr const char *NATO_EL3_DIR = "/data/service/el1/public/storage_daemon/sd/el3_NATO";
+constexpr const char *NATO_EL4_DIR = "/data/service/el1/public/storage_daemon/sd/el4_NATO";
 
 class KeyManager {
 public:
