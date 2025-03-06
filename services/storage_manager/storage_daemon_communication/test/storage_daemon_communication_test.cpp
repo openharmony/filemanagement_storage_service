@@ -19,7 +19,6 @@
 #include "parameters.h"
 #include "storage_daemon_communication/storage_daemon_communication.h"
 #include "storage_service_errno.h"
-#include "test/common/help_utils.h"
 #include "user/multi_user_manager_service.h"
 
 namespace {
