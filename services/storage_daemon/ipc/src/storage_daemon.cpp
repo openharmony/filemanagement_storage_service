@@ -719,6 +719,14 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthVx(uint32_t userId, KeyTy
         LOGE("Active user %{public}u key fail, type %{public}u, flags %{public}u", userId, type, flags);
         return ret;
     }
+
+    std::error_code errCode;
+    std::string newVersion = KeyManager::GetInstance()->GetNatoNeedRestorePaTH(userId, type) + FSCRYPT_VERSION_DIR;
+    if (std::filesystem::exists(newVersion, errCode)) {
+        ClearNatoRestoreKey(userId, type, true);
+        return E_OK;
+    }
+
     LOGW("try to destory dir first, user %{public}u, flags %{public}u", userId, flags);
     (void)UserManager::GetInstance()->DestroyUserDirs(userId, flags);
     ret = UserManager::GetInstance()->PrepareUserDirs(userId, flags);

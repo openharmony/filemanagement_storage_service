@@ -30,7 +30,6 @@
 #include "key_backup.h"
 #include "libfscrypt/key_control.h"
 #include "openssl_crypto.h"
-#include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "string_ex.h"
@@ -540,6 +539,8 @@ int32_t BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate)
     }
     return ret;
 }
+
+int32_t BaseKey::RestoreKey4Nato;
 
 int32_t BaseKey::DoRestoreKeyOld(const UserAuth &auth, const std::string &path)
 {
