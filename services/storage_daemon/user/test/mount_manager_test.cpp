@@ -536,5 +536,56 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_UMountByListWithDetac
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_UMountByListWithDetach_001 end";
 }
+
+/**
+ * @tc.name: Storage_Manager_MountManagerTest_MountFileMgrFuse_001
+ * @tc.desc: Verify the MountFileMgrFuse function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountFileMgrFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountFileMgrFuse_001 start";
+    std::shared_ptr<MountManager> mountManager = MountManager::GetInstance();
+    ASSERT_TRUE(mountManager != nullptr);
+
+    int32_t userId = 100;
+    std::string path = "/mnt/data/100/smb/testMountFileMgrFuse";
+    ForceCreateDirectory(path);
+    int32_t fuseFd = -1;
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
+    int32_t ret = mountManager->MountFileMgrFuse(userId, path, fuseFd);
+    EXPECT_EQ(ret, E_MOUNT_FILE_MGR_FUSE);
+
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(1));
+    int32_t ret = mountManager->MountFileMgrFuse(userId, path, fuseFd);
+    EXPECT_EQ(ret, E_OK);
+    ForceRemoveDirectory(path);
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountFileMgrFuse_001 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_MountManagerTest_UMountFileMgrFuse_001
+ * @tc.desc: Verify the UMountFileMgrFuse function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_UMountFileMgrFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_UMountFileMgrFuse_001 start";
+    std::shared_ptr<MountManager> mountManager = MountManager::GetInstance();
+    ASSERT_TRUE(mountManager != nullptr);
+
+    int32_t userId = 100;
+    std::string path = "/mnt/data/100/smb/testUMountFileMgrFuse";
+    ForceCreateDirectory(path);
+    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(0));
+    int32_t ret = mountManager->UMountFileMgrFuse(userId, path);
+    EXPECT_EQ(ret, E_UMOUNT_FILE_MGR_FUSE);
+
+    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(1));
+    int32_t ret = mountManager->UMountFileMgrFuse(userId, path);
+    EXPECT_EQ(ret, E_OK);
+    ForceRemoveDirectory(path);
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_UMountFileMgrFuse_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS

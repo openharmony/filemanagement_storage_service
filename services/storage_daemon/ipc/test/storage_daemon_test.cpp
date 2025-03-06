@@ -594,5 +594,42 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_UMountMediaFuse_00
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_UMountMediaFuse_001 end";
 }
 #endif
+
+/**
+ * @tc.name: Storage_Manager_StorageDaemonTest_MountFileMgrFuse_001
+ * @tc.desc: check the MountFileMgrFuse function normal
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_MountFileMgrFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_MountFileMgrFuse_001 start";
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+    int32_t userId = 100;
+    std::string path = "/mnt/data/100/smb/testStorageDaemon";
+    OHOS::ForceCreateDirectory(path);
+    int32_t fuseFd = -1;
+    auto ret = storageDaemon_->MountFileMgrFuse(userId, path, fuseFd);
+    EXPECT_EQ(ret, E_OK);
+    OHOS::ForceRemoveDirectory(path);
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_MountFileMgrFuse_001 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_StorageDaemonTest_UMountFileMgrFuse_001
+ * @tc.desc: check the UMountFileMgrFuse function normal
+ * @tc.type: FUNC
+ */
+HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_UMountFileMgrFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_UMountFileMgrFuse_001 start";
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+    int32_t userId = 100;
+    std::string path = "/mnt/data/100/smb/testStorageDaemon";
+    OHOS::ForceCreateDirectory(path);
+    auto ret = storageDaemon_->UMountFileMgrFuse(userId, path);
+    EXPECT_EQ(ret, E_OK);
+    OHOS::ForceRemoveDirectory(path);
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_UMountFileMgrFuse_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS
