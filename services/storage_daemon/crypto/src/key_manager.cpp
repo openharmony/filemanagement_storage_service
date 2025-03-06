@@ -53,7 +53,6 @@ constexpr const char *DEFAULT_NEED_RESTORE_UPDATE_VERSION = "3";
 constexpr const char *UECE_PATH = "/dev/fbex_uece";
 constexpr const char *DATA_DIR = "data/app/";
 constexpr const char *SERVICE_DIR = "data/service/";
-constexpr const char *FSCRYPT_VERSION_DIR = "/fscrypt_version";
 constexpr const char *ENCRYPT_VERSION_DIR = "/latest/encrypted";
 constexpr const char *SEC_DISCARD_DIR = "/latest/sec_discard";
 constexpr const char *SHIELD_DIR = "/latest/shield";
@@ -1100,13 +1099,13 @@ std::string KeyManager::GetNatoNeedRestorePath(uint32_t userId, KeyType type)
     switch (type)
     {
         case EL2_KEY:
-            keyDir = NATO_EL2_DIR + "/" + std::to_string (userId);
+            keyDir = std::string(NATO_EL2_DIR) + "/" + std::to_string (userId);
             break;
         case EL3_KEY:
-            keyDir = NATO_EL3_DIR + "/" + std::to_string (userId);
+            keyDir = std::string(NATO_EL3_DIR) + "/" + std::to_string (userId);
             break;
         case EL4_KEY:
-            keyDir = NATO_EL4_DIR + "/" + std::to_string (userId);
+            keyDir = std::string(NATO_EL4_DIR) + "/" + std::to_string (userId);
             break;
         default:
             LOGE("GetNatoNeedRestorePath type %{public}u is invalid", type);
