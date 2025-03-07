@@ -1098,13 +1098,13 @@ std::string KeyManager::GetNatoNeedRestorePath(uint32_t userId, KeyType type)
     std::string keyDir = "";
     switch (type) {
         case EL2_KEY:
-            keyDir = std::string(NATO_EL2_DIR) + "/" + std::to_string (userId);
+            keyDir = std::string(NATO_EL2_DIR) + "/" + std::to_string(userId);
             break;
         case EL3_KEY:
-            keyDir = std::string(NATO_EL3_DIR) + "/" + std::to_string (userId);
+            keyDir = std::string(NATO_EL3_DIR) + "/" + std::to_string(userId);
             break;
         case EL4_KEY:
-            keyDir = std::string(NATO_EL4_DIR) + "/" + std::to_string (userId);
+            keyDir = std::string(NATO_EL4_DIR) + "/" + std::to_string(userId);
             break;
         default:
             LOGE("GetNatoNeedRestorePath type %{public}u is invalid", type);
@@ -1267,7 +1267,7 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
 
 int KeyManager::ActiveElxUserKey4Nato(unsigned int user, KeyType type)
 {
-    LOGW("Active Elx userkey for nato for userId=%{public}d, keyType=%{public}u", user, type);
+    LOGW("Active Elx user key for nato for userId=%{public}d, keyType=%{public}u", user, type);
     if (!KeyCtrlHasFscryptSyspara()) {
         return E_OK;
     }
@@ -1276,7 +1276,6 @@ int KeyManager::ActiveElxUserKey4Nato(unsigned int user, KeyType type)
     if (keyDir == "") {
         return E_KEY_TYPE_INVALID;
     }
-
     if (!CheckDir(type, keyDir, user)) {
         return E_NATO_CHECK_KEY_DIR_ERROR;
     }
@@ -1286,18 +1285,18 @@ int KeyManager::ActiveElxUserKey4Nato(unsigned int user, KeyType type)
         return E_PARAMS_NULLPTR_ERR;
     }
     if (!elKey->InitKey(false)) {
-        LOGE("InitKey nato for userId=%{public}d el%{public}u failed", user, type);
+        LOGE("InitKey nato for userId=%{public}d el%{public}u failed.", user, type);
         return E_NATO_INIT_USER_KEY_ERROR;
     }
     if (elKey->RestoreKey4Nato(keyDir, type) != E_OK) {
-        LOGE("RestoreKey nato for userId=%{public}d el%{public}u failed", user, type);
+        LOGE("RestoreKey nato for userId=%{public}d el%{public}u failed.", user, type);
         return E_NATO_RESTORE_USER_KEY_ERROR;
     }
-    if (elKey->ActiveKey(RETRIEVE_KEY) == false) {
-        LOGE("ActiveKey nato for userId=%{public}d el%{public}u failed", user, type);
+    if (elKey->ActiveKey(RETRIEVE_KEY) != E_OK) {
+        LOGE("ActiveKey nato for userId=%{public}d el%{public}u failed.", user, type);
         return E_NATO_ACTIVE_EL4_KEY_ERROR;
     }
-    LOGW("ActiveKey nato for userId=%{public}d, keyType=%{public}u success", user, type);
+    LOGW("Active Elx user key for nato for userId=%{public}d, keyType=%{public}u success.", user, type);
     return E_OK;
 }
 
@@ -1840,7 +1839,6 @@ int KeyManager::LockUserScreen(uint32_t user)
             saveLockScreenStatus[user]);
         return 0;
     }
-
     auto el5Key = GetUserElKey(user, EL5_KEY);
     saveESecretStatus[user] = true;
     if (el5Key != nullptr && el5Key->LockUece(saveESecretStatus[user]) != E_OK) {
