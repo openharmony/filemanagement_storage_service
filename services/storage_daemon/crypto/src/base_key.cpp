@@ -30,7 +30,6 @@
 #include "key_backup.h"
 #include "libfscrypt/key_control.h"
 #include "openssl_crypto.h"
-#include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "string_ex.h"
@@ -539,6 +538,39 @@ int32_t BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate)
         }
     }
     return ret;
+}
+
+int32_t BaseKey::RestoreKey4Nato(const std::string &keyDir, KeyType type)
+{
+    LOGI("Restore key for nato for type %{public}u keyDir=%{public}s enter.", type, keyDir.c_str());
+    static const std::map<KeyType, uint32_t> keyTypeMap = {
+        {KeyType::EL2_KEY, TYPE_EL2},
+        {KeyType::EL3_KEY, TYPE_EL3},
+        {KeyType::EL4_KEY, TYPE_EL4},
+    };
+ 
+    auto iter = keyTypeMap.find(type);
+    if (iter == keyTypeMap.end()) {
+        return E_PARAMS_INVALID;
+    }
+    UserAuth auth = { {}, {} };
+    auto ret = DoRestoreKeyCeEceSece(auth, keyDir + PATH_LATEST, iter->second);
+    if (ret != E_OK) {
+        LOGE("Restore ce ece sece for nato secen failed !");
+        return ret;
+    }
+    ret = StoreKey({ {}, {}, 0 });
+    if (ret != E_OK) {
+        LOGE("Store key for nato secen failed !");
+        return ret;
+    }
+    ret = UpdateKey();
+    if (ret != E_OK) {
+        LOGE("Update key for nato secen failed !");
+        return ret;
+    }
+    LOGI("Restore key for nato for type %{public}u success.", type);
+    return E_OK;
 }
 
 int32_t BaseKey::DoRestoreKeyOld(const UserAuth &auth, const std::string &path)

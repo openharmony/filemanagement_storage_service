@@ -719,6 +719,14 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthVx(uint32_t userId, KeyTy
         LOGE("Active user %{public}u key fail, type %{public}u, flags %{public}u", userId, type, flags);
         return ret;
     }
+
+    std::error_code errCode;
+    std::string newVersion = KeyManager::GetInstance()->GetNatoNeedRestorePath(userId, type) + FSCRYPT_VERSION_DIR;
+    if (std::filesystem::exists(newVersion, errCode)) {
+        ClearNatoRestoreKey(userId, type, true);
+        return E_OK;
+    }
+
     LOGW("try to destory dir first, user %{public}u, flags %{public}u", userId, flags);
     (void)UserManager::GetInstance()->DestroyUserDirs(userId, flags);
     ret = UserManager::GetInstance()->PrepareUserDirs(userId, flags);
@@ -729,6 +737,40 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthVx(uint32_t userId, KeyTy
         PrepareUeceDir(userId);
     }
     LOGW("userId %{public}u type %{public}u sucess", userId, type);
+    return E_OK;
+}
+
+int32_t StorageDaemon::PrepareUserDirsAndUpdateAuth4Nato(uint32_t userId, KeyType type)
+{
+    LOGW("Prepare dirs and update auth for nato secen for userId=%{public}d, keyType=%{public}u", userId, type);
+    std::error_code errCode;
+    std::string natoRestore = KeyManager::GetInstance()->GetNatoNeedRestorePath(userId, type) + RESTORE_DIR;
+    if (!std::filesystem::exists(natoRestore, errCode)) {
+        LOGE("Nato restore file=%{public}s is not exist.", natoRestore.c_str());
+        return E_KEY_TYPE_INVALID;
+    }
+ 
+    int32_t ret = KeyManager::GetInstance()->ActiveElxUserKey4Nato(userId, type);
+    if (ret != E_OK) {
+        LOGE("Active user=%{public}d el=%{public}u key fot nato secen failed, ret=%{public}d.", userId, type, ret);
+        return ret;
+    }
+ 
+    uint32_t flags = 0;
+    ret = GetCryptoFlag(type, flags);
+    if (ret != E_OK) {
+        return E_KEY_TYPE_INVALID;
+    }
+    (void)UserManager::GetInstance()->DestroyUserDirs(userId, flags);
+    ret = UserManager::GetInstance()->PrepareUserDirs(userId, flags);
+    if (ret != E_OK) {
+        return E_NATO_PREPARE_USER_DIR_ERROR;
+    }
+    if (flags == IStorageDaemon::CRYPTO_FLAG_EL2) {
+        PrepareUeceDir(userId);
+    }
+    UserManager::GetInstance()->CreateElxBundleDataDir(userId, type);
+    LOGW("Prepare dirs and update auth for nato secen for userId=%{public}u keyType=%{public}u sucess.", userId, type);
     return E_OK;
 }
 
@@ -871,54 +913,183 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepareElX(uint32_t userId,
     return E_OK;
 }
 
-int32_t StorageDaemon::ActiveUserKey(uint32_t userId,
-                                     const std::vector<uint8_t> &token,
-                                     const std::vector<uint8_t> &secret)
+int32_t StorageDaemon::ActiveUserKey(uint32_t userId, const std::vector<uint8_t> &token,
+    const std::vector<uint8_t> &secret)
+{
+    LOGW("userId=%{public}u, tok empty=%{public}d sec empty=%{public}d", userId, token.empty(), secret.empty());
+    int32_t ret = E_OK;
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    std::error_code errCode;
+    std::string natoRestore = KeyManager::GetInstance()->GetNatoNeedRestorePath(userId, EL2_KEY) + RESTORE_DIR;
+    if (std::filesystem::exists(natoRestore, errCode)) {
+        LOGW("Nato need_restore file=%{public}s is exist, invoke ActiveUserKey4Nato.", natoRestore.c_str());
+        return ActiveUserKey4Nato(userId, token, secret);
+    }
+ 
+    std::string el2RestorePath = GetNeedRestoreFilePath(userId, USER_EL2_DIR);
+    if (std::filesystem::exists(el2RestorePath, errCode)) {
+        LOGW("El2 need_restore file=%{public}s is exist, invoke ActiveUserKey4Update.", el2RestorePath.c_str());
+        ret = ActiveUserKey4Update(userId, token, secret);
+    } else {
+        LOGW("need_restore file not exist, invoke ActiveUserKey4Single.");
+        ret = ActiveUserKey4Single(userId, token, secret);
+    }
+#endif
+    if (ret != E_OK) {
+        LOGE("Active user key for userId=%{public}d failed, ret=%{public}d.", userId, ret);
+        return ret;
+    }
+    std::thread([this, userId]() { RestoreconElX(userId); }).detach();
+    std::thread([this]() { ActiveAppCloneUserKey(); }).detach();
+    LOGW("Active user key for userId=%{public}d success.", userId);
+    return ret;
+}
+
+int32_t StorageDaemon::ActiveUserKey4Single(uint32_t userId, const std::vector<uint8_t> &token,
+    const std::vector<uint8_t> &secret)
 {
     int ret = E_OK;
 #ifdef USER_CRYPTO_MANAGER
-    (void)SetPriority();  // set tid priority to 40
-    LOGW("userId %{public}u, tok empty %{public}d sec empty %{public}d", userId, token.empty(), secret.empty());
+    LOGW("Active user key for single secen for userId=%{public}d.", userId);
     ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL2_KEY, token, secret);
     if (ret != E_OK) {
-#ifdef USER_CRYPTO_MIGRATE_KEY
-        LOGW("Migrate usrId %{public}u, Emp_tok %{public}d Emp_sec %{public}d", userId, token.empty(), secret.empty());
-        std::error_code errCode;
-        std::string el2NeedRestorePath = GetNeedRestoreFilePath(userId, USER_EL2_DIR);
-        if (std::filesystem::exists(el2NeedRestorePath, errCode) && (!token.empty() || !secret.empty())) {
-            ret = PrepareUserDirsAndUpdateUserAuth(userId, EL2_KEY, token, secret);
-            std::string EL0_NEED_RESTORE = std::string(DATA_SERVICE_EL0_STORAGE_DAEMON_SD) + NEED_RESTORE_SUFFIX;
-            if (!SaveStringToFile(EL0_NEED_RESTORE, NEW_DOUBLE_2_SINGLE)) {
-                LOGE("Save key type file failed");
-                return E_SYS_KERNEL_ERR;
-            }
+        LOGE("ActiveUserKey failed, userId=%{public}u, type=%{public}u, tok empty %{public}d sec empty %{public}d",
+            userId, EL2_KEY, token.empty(), secret.empty());
+        if (!token.empty() && !secret.empty()) {
+            StorageRadar::ReportActiveUserKey("ActiveUserKey4Single::ActiveCeSceSeceUserKey", userId, ret, "EL2");
         }
-#endif
-        if (ret != E_OK) {
-            LOGE("ActiveUserKey fail, userId %{public}u, type %{public}u, tok empty %{public}d sec empty %{public}d",
-                 userId, EL2_KEY, token.empty(), secret.empty());
-            if (!token.empty() && !secret.empty()) {
-                StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveUserKey", userId, ret, "EL2");
-            }
-            return E_ACTIVE_EL2_FAILED;
-        }
+        return E_ACTIVE_EL2_FAILED;
     }
+    LOGI("Active ce sce sece user key for userId=%{public}d el2 success.", userId);
+ 
     ret = ActiveUserKeyAndPrepareElX(userId, token, secret);
     if (ret != E_OK) {
-        LOGE("ActiveUserKeyAndPrepare failed, userId %{public}u.", userId);
+        LOGE("ActiveUserKeyAndPrepareElX failed, userId %{public}u.", userId);
         return ret;
     }
+    LOGI("Active user key and prepare el3~el5 for single secen for userId=%{public}d success.", userId);
+ 
     ret = KeyManager::GetInstance()->UnlockUserAppKeys(userId, true);
     if (ret != E_OK) {
         LOGE("UnlockUserAppKeys failed, userId %{public}u.", userId);
-        StorageRadar::ReportActiveUserKey("ActiveUserKey::UnlockUserAppKeys", userId, ret, "EL2");
+        StorageRadar::ReportActiveUserKey("ActiveUserKey4Single::UnlockUserAppKeys", userId, ret, "EL5");
         return E_UNLOCK_APP_KEY2_FAILED;
     }
+    LOGW("Active user key for single secen for userId=%{public}d success.", userId);
 #endif
-    std::thread([this, userId]() { RestoreconElX(userId); }).detach();
-    std::thread([this]() { ActiveAppCloneUserKey(); }).detach();
     return ret;
 }
+ 
+#ifdef USER_CRYPTO_MIGRATE_KEY
+int32_t StorageDaemon::ActiveUserKey4Nato(uint32_t userId, const std::vector<uint8_t> &token,
+    const std::vector<uint8_t> &secret)
+{
+    LOGW("Active user key for nato secen for userId=%{public}d.", userId);
+    if (!token.empty() || !secret.empty()) {
+        LOGE("ActiveUserKey4Nato failed, input token or secret is not empty.");
+        ClearAllNatoRestoreKey(userId, true);
+        return E_ACTIVE_EL2_FAILED;
+    }
+    int32_t ret = PrepareUserDirsAndUpdateAuth4Nato(userId, EL2_KEY);
+    if (ret != E_OK) {
+        LOGE("ActiveUserKey4Nato el2 failed, userId=%{public}u, keyType=%{public}u", userId, EL2_KEY);
+        StorageRadar::ReportActiveUserKey("ActiveUserKey4Nato::PrepareUserDirsAndUpdateAuth4Nato", userId, ret, "EL2");
+        ClearAllNatoRestoreKey(userId, true);
+        return E_ACTIVE_EL2_FAILED;
+    }
+    LOGI("Prepare dirs and update auth for nato secen for userId=%{public}d el2 success.", userId);
+ 
+    ret = PrepareUserDirsAndUpdateAuth4Nato(userId, EL3_KEY);
+    if (ret != E_OK) {
+        LOGE("ActiveUserKey4Nato el3 failed, userId %{public}u, type %{public}u", userId, EL3_KEY);
+        StorageRadar::ReportActiveUserKey("ActiveUserKey4Nato::PrepareUserDirsAndUpdateAuth4Nato", userId, ret, "EL3");
+        ClearAllNatoRestoreKey(userId, true);
+        return ret;
+    }
+    LOGI("Prepare dirs and update auth for nato secen for userId=%{public}d el3 success.", userId);
+ 
+    ret = PrepareUserDirsAndUpdateAuth4Nato(userId, EL4_KEY);
+    if (ret != E_OK) {
+        LOGE("ActiveUserKey4Nato el4 failed, userId %{public}u, type %{public}u", userId, EL4_KEY);
+        StorageRadar::ReportActiveUserKey("ActiveUserKey4Nato::PrepareUserDirsAndUpdateAuth4Nato", userId, ret, "EL4");
+        ClearAllNatoRestoreKey(userId, true);
+        return ret;
+    }
+    LOGI("Prepare dirs and update auth for nato secen for userId=%{public}d el4 success.", userId);
+    ClearAllNatoRestoreKey(userId, false);
+ 
+    std::thread([this]() { ActiveAppCloneUserKey(); }).detach();
+    LOGW("Active user key for nato secen for userId=%{public}d success.", userId);
+    return E_OK;
+}
+ 
+int32_t StorageDaemon::ActiveUserKey4Update(uint32_t userId, const std::vector<uint8_t> &token,
+    const std::vector<uint8_t> &secret)
+{
+    LOGW("Active user key for update secen for userId=%{public}d.", userId);
+    if (token.empty() && secret.empty()) {
+        return E_ACTIVE_EL2_FAILED;
+    }
+    int32_t ret = PrepareUserDirsAndUpdateUserAuth(userId, EL2_KEY, token, secret);
+    if (ret != E_OK) {
+        LOGE("ActiveUserKey fail, userId %{public}u, type %{public}u, tok empty %{public}d sec empty %{public}d",
+            userId, EL2_KEY, token.empty(), secret.empty());
+        StorageRadar::ReportActiveUserKey("ActiveUserKey4Update::PrepareUserDirsAndUpdateUserAuth", userId, ret, "EL2");
+        return E_ACTIVE_EL2_FAILED;
+    }
+    std::string EL0_NEED_RESTORE = std::string(DATA_SERVICE_EL0_STORAGE_DAEMON_SD) + NEED_RESTORE_SUFFIX;
+    if (!SaveStringToFile(EL0_NEED_RESTORE, NEW_DOUBLE_2_SINGLE)) {
+        LOGE("Save key type file failed");
+        return E_SYS_KERNEL_ERR;
+    }
+    LOGI("Prepare dirs and update auth for update secen for userId=%{public}d el2 success.", userId);
+ 
+    ret = ActiveUserKeyAndPrepareElX(userId, token, secret);
+    if (ret != E_OK) {
+        LOGE("Active user key and prepare el3~el5 for update secen failed, userId %{public}u.", userId);
+        return ret;
+    }
+    LOGI("Active user key and prepare el3~el5 for update secen for userId=%{public}d success.", userId);
+ 
+    ret = KeyManager::GetInstance()->UnlockUserAppKeys(userId, true);
+    if (ret != E_OK) {
+        LOGE("UnlockUserAppKeys failed, userId %{public}u.", userId);
+        StorageRadar::ReportActiveUserKey("ActiveUserKey::UnlockUserAppKeys", userId, ret, "EL5");
+        return E_UNLOCK_APP_KEY2_FAILED;
+    }
+    LOGW("Active user key for update secen for userId=%{public}d success.", userId);
+    return E_OK;
+}
+ 
+void StorageDaemon::ClearNatoRestoreKey(uint32_t userId, KeyType type, bool isClearAll)
+{
+    std::string natoKey = KeyManager::GetInstance()->GetNatoNeedRestorePath(userId, type);
+    if (!isClearAll) {
+        RmDirRecurse(natoKey + PATH_LATEST);
+        return;
+    }
+    RmDirRecurse(natoKey);
+    if ((type == EL2_KEY) && std::filesystem::is_empty(NATO_EL2_DIR)) {
+        RmDirRecurse(NATO_EL2_DIR);
+        RmDirRecurse(std::string(NATO_EL2_DIR) + "_bak");
+    }
+    if ((type == EL3_KEY) && std::filesystem::is_empty(NATO_EL3_DIR)) {
+        RmDirRecurse(NATO_EL3_DIR);
+        RmDirRecurse(std::string(NATO_EL3_DIR) + "_bak");
+    }
+    if ((type == EL4_KEY) && std::filesystem::is_empty(NATO_EL4_DIR)) {
+        RmDirRecurse(NATO_EL4_DIR);
+        RmDirRecurse(std::string(NATO_EL4_DIR) + "_bak");
+    }
+}
+ 
+void StorageDaemon::ClearAllNatoRestoreKey(uint32_t userId, bool isClearAll)
+{
+    ClearNatoRestoreKey(userId, EL2_KEY, isClearAll);
+    ClearNatoRestoreKey(userId, EL3_KEY, isClearAll);
+    ClearNatoRestoreKey(userId, EL4_KEY, isClearAll);
+}
+#endif
 
 int32_t StorageDaemon::RestoreconElX(uint32_t userId)
 {
