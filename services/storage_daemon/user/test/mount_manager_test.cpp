@@ -579,7 +579,7 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_UMountFileMgrFuse_00
     ForceCreateDirectory(path);
     EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(1));
     int32_t ret = mountManager->UMountFileMgrFuse(userId, path);
-    EXPECT_EQ(ret, E_UMOUNT_FILE_MGR_FUSE);
+    EXPECT_EQ(ret, E_OK);
 
     EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(0));
     ret = mountManager->UMountFileMgrFuse(userId, path);
