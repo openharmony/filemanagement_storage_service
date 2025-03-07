@@ -16,7 +16,6 @@
 #include <cstdio>
 #include <gtest/gtest.h>
 
-#include "directory_ex.h"
 #include "parameters.h"
 #include "storage_daemon_communication/storage_daemon_communication.h"
 #include "storage_service_errno.h"
