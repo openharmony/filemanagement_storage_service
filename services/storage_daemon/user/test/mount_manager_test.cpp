@@ -552,11 +552,11 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountFileMgrFuse_001
     std::string path = "/mnt/data/100/smb/testMountFileMgrFuse";
     ForceCreateDirectory(path);
     int32_t fuseFd = -1;
-    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, Mount(_, _, _, _, _)).WillOnce(Return(1));
     int32_t ret = mountManager->MountFileMgrFuse(userId, path, fuseFd);
     EXPECT_EQ(ret, E_MOUNT_FILE_MGR_FUSE);
 
-    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(1));
+    EXPECT_CALL(*libraryFuncMock_, Mount(_, _, _, _, _)).WillOnce(Return(0));
     ret = mountManager->MountFileMgrFuse(userId, path, fuseFd);
     EXPECT_EQ(ret, E_OK);
     ForceRemoveDirectory(path);
@@ -577,11 +577,11 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_UMountFileMgrFuse_00
     int32_t userId = 100;
     std::string path = "/mnt/data/100/smb/testUMountFileMgrFuse";
     ForceCreateDirectory(path);
-    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(0));
+    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(1));
     int32_t ret = mountManager->UMountFileMgrFuse(userId, path);
     EXPECT_EQ(ret, E_UMOUNT_FILE_MGR_FUSE);
 
-    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(1));
+    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(0));
     ret = mountManager->UMountFileMgrFuse(userId, path);
     EXPECT_EQ(ret, E_OK);
     ForceRemoveDirectory(path);
