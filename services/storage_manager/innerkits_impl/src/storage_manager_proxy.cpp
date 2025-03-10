@@ -353,7 +353,7 @@ int32_t StorageManagerProxy::LockUserScreen(uint32_t userId)
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     MessageParcel data;
     MessageParcel reply;
-    MessageOption option(MessageOption::TF_SYNC);
+    MessageOption option(MessageOption::TF_ASYNC);
     if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
         LOGE("WriteInterfaceToken failed");
         return E_WRITE_DESCRIPTOR_ERR;
