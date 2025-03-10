@@ -167,7 +167,7 @@ std::vector<DirInfo> MountManager::InitVirtualDir()
             {"/mnt/data/%d/cloud", MODE_0711, OID_ROOT, OID_ROOT},
             {"/mnt/data/%d/cloud_fuse", MODE_0711, OID_DFS, OID_DFS},
             {"/mnt/data/%d/media_fuse", MODE_0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
-            {"/mnt/data/%d/network_neighbor", MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
+            {"/mnt/data/%d/smb", MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
             {"/mnt/data/%d/hmdfs", MODE_0711, OID_FILE_MANAGER, OID_FILE_MANAGER},
             {"/mnt/hmdfs/", MODE_0711, OID_ROOT, OID_ROOT},
             {"/mnt/hmdfs/%d/", MODE_0711, OID_ROOT, OID_ROOT},

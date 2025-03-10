@@ -31,6 +31,11 @@ constexpr const char *USER_EL4_DIR = "/data/service/el1/public/storage_daemon/sd
 constexpr const char *USER_EL5_DIR = "/data/service/el1/public/storage_daemon/sd/el5";
 constexpr const char *UECE_DIR = "data/app/el5";
 constexpr const char *RESTORE_DIR = "/latest/need_restore";
+constexpr const char *FSCRYPT_VERSION_DIR = "/fscrypt_version";
+
+constexpr const char *NATO_EL2_DIR = "/data/service/el1/public/storage_daemon/sd/el2_NATO";
+constexpr const char *NATO_EL3_DIR = "/data/service/el1/public/storage_daemon/sd/el3_NATO";
+constexpr const char *NATO_EL4_DIR = "/data/service/el1/public/storage_daemon/sd/el4_NATO";
 
 class KeyManager {
 public:
@@ -70,7 +75,7 @@ public:
                              const std::vector<FileList> &vec);
     int UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey = false);
     int UpdateCeEceSeceKeyContext(uint32_t userId, KeyType type);
-    int getEceSeceKeyPath(unsigned int user, KeyType type, std::string &eceSeceKeyPath);
+    int getElxKeyPath(unsigned int user, KeyType type, std::string &elxKeyPath);
     int LockUserScreen(uint32_t user);
     int UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &token,
                          const std::vector<uint8_t> &secret);
@@ -97,6 +102,9 @@ public:
     int TryToFixUeceKey(unsigned int userId,
                         const std::vector<uint8_t> &token,
                         const std::vector<uint8_t> &secret);
+    int ActiveElxUserKey4Nato(unsigned int user, KeyType type);
+    std::string GetNatoNeedRestorePath(uint32_t userId, KeyType type);
+
 private:
     KeyManager()
     {

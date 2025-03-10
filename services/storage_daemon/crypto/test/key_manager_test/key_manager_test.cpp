@@ -1431,37 +1431,37 @@ HWTEST_F(KeyManagerTest, KeyManager_InActiveUserKey_003, TestSize.Level1)
 }
 
 /**
- * @tc.name: KeyManager_getEceSeceKeyPath_001
- * @tc.desc: Verify the getEceSeceKeyPath function.
+ * @tc.name: KeyManager_getElxKeyPath_001
+ * @tc.desc: Verify the getElxKeyPath function.
  * @tc.type: FUNC
  * @tc.require: IAHHWW
  */
-HWTEST_F(KeyManagerTest, KeyManager_getEceSeceKeyPath_001, TestSize.Level1)
+HWTEST_F(KeyManagerTest, KeyManager_getElxKeyPath_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "KeyManager_getEceSeceKeyPath_001 Start";
+    GTEST_LOG_(INFO) << "KeyManager_getElxKeyPath_001 Start";
     unsigned int user = 800;
     shared_ptr<FscryptKeyV2> elKey = make_shared<FscryptKeyV2>("/data/test");
-    std::string eceSeceKeyPath;
+    std::string elxKeyPath;
     KeyManager::GetInstance()->userEl2Key_[user] = elKey;
     KeyManager::GetInstance()->userEl3Key_[user] = elKey;
     KeyManager::GetInstance()->userEl4Key_[user] = elKey;
-    EXPECT_EQ(KeyManager::GetInstance()->getEceSeceKeyPath(user, EL3_KEY, eceSeceKeyPath), 0);
-    EXPECT_EQ(eceSeceKeyPath, "/data/test");
+    EXPECT_EQ(KeyManager::GetInstance()->getElxKeyPath(user, EL3_KEY, elxKeyPath), 0);
+    EXPECT_EQ(elxKeyPath, "/data/test");
 
-    eceSeceKeyPath.clear();
-    EXPECT_EQ(KeyManager::GetInstance()->getEceSeceKeyPath(user, EL4_KEY, eceSeceKeyPath), 0);
-    EXPECT_EQ(eceSeceKeyPath, "/data/test");
+    elxKeyPath.clear();
+    EXPECT_EQ(KeyManager::GetInstance()->getElxKeyPath(user, EL4_KEY, elxKeyPath), 0);
+    EXPECT_EQ(elxKeyPath, "/data/test");
 
-    eceSeceKeyPath.clear();
-    EXPECT_EQ(KeyManager::GetInstance()->getEceSeceKeyPath(user, EL2_KEY, eceSeceKeyPath), 0);
-    EXPECT_EQ(eceSeceKeyPath, "");
+    elxKeyPath.clear();
+    EXPECT_EQ(KeyManager::GetInstance()->getElxKeyPath(user, EL2_KEY, elxKeyPath), 0);
+    EXPECT_EQ(elxKeyPath, "/data/test");
 
     KeyManager::GetInstance()->userEl2Key_.erase(user);
     KeyManager::GetInstance()->userEl3Key_.erase(user);
     KeyManager::GetInstance()->userEl4Key_.erase(user);
-    EXPECT_EQ(KeyManager::GetInstance()->getEceSeceKeyPath(user, EL3_KEY, eceSeceKeyPath), -ENOENT);
-    EXPECT_EQ(KeyManager::GetInstance()->getEceSeceKeyPath(user, EL4_KEY, eceSeceKeyPath), -ENOENT);
-    GTEST_LOG_(INFO) << "KeyManager_getEceSeceKeyPath_001 end";
+    EXPECT_EQ(KeyManager::GetInstance()->getElxKeyPath(user, EL3_KEY, elxKeyPath), -ENOENT);
+    EXPECT_EQ(KeyManager::GetInstance()->getElxKeyPath(user, EL4_KEY, elxKeyPath), -ENOENT);
+    GTEST_LOG_(INFO) << "KeyManager_getElxKeyPath_001 end";
 }
 
 /**

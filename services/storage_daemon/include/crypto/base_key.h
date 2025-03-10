@@ -16,6 +16,7 @@
 #define STORAGE_DAEMON_CRYPTO_BASEKEY_H
 
 #include "openssl_crypto.h"
+#include "storage_service_constant.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -42,6 +43,7 @@ public:
 #endif
     int32_t UpdateKey(const std::string &keypath = "", bool needSyncCandidate = true);
     int32_t RestoreKey(const UserAuth &auth, bool needSyncCandidate = true);
+    int32_t RestoreKey4Nato(const std::string &keyDir, KeyType type);
     virtual int32_t ActiveKey(uint32_t flag, const std::string &mnt = std::string(MNT_DATA)) = 0;
     virtual int32_t InactiveKey(uint32_t flag, const std::string &mnt = std::string(MNT_DATA)) = 0;
     virtual int32_t LockUserScreen(uint32_t flag, uint32_t sdpClass,
