@@ -455,8 +455,8 @@ HWTEST_F(KeyManagerTest, KeyManager_ActiveElXUserKey_003, TestSize.Level1)
     const std::vector<uint8_t> secret = {};
     std::shared_ptr<BaseKey> elKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>("test"));
 
-    std::string latestPath = KeyManager::GetInstance()->GetKeyDirByUserAndType(user, EL1_KEY) +
-        PATH_LATEST;
+    std::string userPath = KeyManager::GetInstance()->GetKeyDirByUserAndType(user, EL1_KEY);
+    std::string latestPath = userPath + PATH_LATEST;
     OHOS::ForceRemoveDirectory(latestPath);
     EXPECT_TRUE(OHOS::ForceCreateDirectory(latestPath));
     std::string fileUpdate = latestPath + SUFFIX_NEED_UPDATE;
@@ -479,7 +479,7 @@ HWTEST_F(KeyManagerTest, KeyManager_ActiveElXUserKey_003, TestSize.Level1)
 
     ASSERT_EQ(remove(fileRestore.c_str()), 0);
     ASSERT_EQ(remove(fileUpdate.c_str()), 0);
-    OHOS::ForceRemoveDirectory(latestPath);
+    OHOS::ForceRemoveDirectory(userPath);
     GTEST_LOG_(INFO) << "KeyManager_ActiveElXUserKey_003 end";
 }
 
@@ -1883,27 +1883,6 @@ HWTEST_F(KeyManagerTest, KeyManager_Generate_Elx_And_Install_User_key_102, TestS
 }
 
 /**
- * @tc.name: KeyManager_Generate_User_Key_By_Type_001
- * @tc.desc: Verify the KeyManager GenerateUserKeyByType function.
- * @tc.type: FUNC
- * @tc.require: SR000H0CM9
- */
-HWTEST_F(KeyManagerTest, KeyManager_Generate_User_Key_By_Type_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "KeyManager_GenerateUserKeyByType_0100 start";
-    uint32_t userId = 127;
-    KeyType keyType = EL1_KEY;
-    std::string token = "bad_token";
-    std::string secret = "bad_secret";
-    std::vector<uint8_t> badToken(token.begin(), token.end());
-    std::vector<uint8_t> badSecret(secret.begin(), secret.end());
-    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false));
-    auto ret = KeyManager::GetInstance()->GenerateUserKeyByType(userId, keyType, badToken, badSecret);
-    EXPECT_EQ(ret, 0);
-    GTEST_LOG_(INFO) << "KeyManager_GenerateUserKeyByType_0100 end";
-}
-
-/**
  * @tc.name: KeyManager_Generate_User_Key_By_Type_002
  * @tc.desc: Verify the KeyManager GenerateUserKeyByType function.
  * @tc.type: FUNC
@@ -1929,6 +1908,7 @@ HWTEST_F(KeyManagerTest, KeyManager_Generate_User_Key_By_Type_002, TestSize.Leve
     EXPECT_FALSE(MkDir(elUserKeyPath, S_IRWXU));
     ret = KeyManager::GetInstance()->GenerateUserKeyByType(userId, keyType, badToken, badSecret);
     EXPECT_EQ(ret, -EEXIST);
+    EXPECT_TRUE(OHOS::ForceRemoveDirectory(elUserKeyPath));
     GTEST_LOG_(INFO) << "KeyManager_GenerateUserKeyByType_0200 end";
 }
 

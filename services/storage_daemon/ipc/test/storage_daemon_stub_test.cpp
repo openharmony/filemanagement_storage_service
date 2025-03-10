@@ -64,8 +64,8 @@ namespace {
         static_cast<int32_t>(StorageDaemonInterfaceCode::UPDATE_MEM_PARA),
         static_cast<int32_t>(StorageDaemonInterfaceCode::GENERATE_APP_KEY),
         static_cast<int32_t>(StorageDaemonInterfaceCode::DELETE_APP_KEY),
-        static_cast<int32_t>(StorageDaemonInterfaceCode::GET_FILE_ENCRYPT_STATUS),
-        static_cast<int32_t>(StorageDaemonInterfaceCode::GET_USER_NEED_ACTIVE_STATUS),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::MOUNT_FILE_MGR_FUSE),
+        static_cast<int32_t>(StorageDaemonInterfaceCode::UMOUNT_FILE_MGR_FUSE),
     };
 
     int32_t g_codeNew[] = {
@@ -179,10 +179,10 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRe
     EXPECT_CALL(mock, GetOccupiedSpace(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, MountCryptoPathAgain(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, UpdateMemoryPara(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(mock, GetFileEncryptStatus(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(mock, GetUserNeedActiveStatus(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, UpdateUseAuthWithRecoveryKey(testing::_, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, MountFileMgrFuse(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, UMountFileMgrFuse(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
 
     for (auto c : g_code) {
         MessageParcel data;
@@ -331,6 +331,40 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRe
     }
 
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_007 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_008
+ * @tc.desc: Verify the OnRemoteRequest function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_008, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_008 start";
+    StorageDaemonStubMock mock;
+    EXPECT_CALL(mock, GetFileEncryptStatus(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    bool bRet = data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor());
+    EXPECT_TRUE(bRet) << "write token error";
+    int32_t ret = mock.OnRemoteRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::GET_FILE_ENCRYPT_STATUS), data,
+        reply, option);
+    EXPECT_TRUE(ret == E_OK);
+    reply.ReadBool();
+    EXPECT_TRUE(E_OK == reply.ReadInt32());
+
+    EXPECT_CALL(mock, GetUserNeedActiveStatus(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    bRet = data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor());
+    EXPECT_TRUE(bRet) << "write token error";
+    ret = mock.OnRemoteRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::GET_USER_NEED_ACTIVE_STATUS), data,
+        reply, option);
+    EXPECT_TRUE(ret == E_OK);
+    reply.ReadBool();
+    EXPECT_TRUE(E_OK == reply.ReadInt32());
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_008 end";
 }
 
 /**
