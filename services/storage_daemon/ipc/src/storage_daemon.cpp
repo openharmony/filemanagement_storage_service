@@ -15,6 +15,12 @@
 
 #include "ipc/storage_daemon.h"
 
+#include <dlfcn.h>
+#include <fcntl.h>
+#include <fstream>
+#include <thread>
+#include <sys/syscall.h>
+#include <sys/resource.h>
 #include "file_ex.h"
 #include "hi_audit.h"
 #include "utils/storage_radar.h"

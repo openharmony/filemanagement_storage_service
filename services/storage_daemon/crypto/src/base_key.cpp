@@ -24,7 +24,6 @@
 #include "iam_client.h"
 #include "key_backup.h"
 #include "libfscrypt/key_control.h"
-#include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "string_ex.h"

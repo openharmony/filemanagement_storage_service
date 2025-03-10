@@ -17,6 +17,7 @@
 #define STORAGE_DAEMON_CLIENT_H
 
 #include <iostream>
+
 #include "ipc/storage_daemon.h"
 
 namespace OHOS {
