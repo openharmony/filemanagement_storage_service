@@ -53,7 +53,6 @@ constexpr const char *DEFAULT_NEED_RESTORE_UPDATE_VERSION = "3";
 constexpr const char *UECE_PATH = "/dev/fbex_uece";
 constexpr const char *DATA_DIR = "data/app/";
 constexpr const char *SERVICE_DIR = "data/service/";
-constexpr const char *FSCRYPT_VERSION_DIR = "/fscrypt_version";
 constexpr const char *ENCRYPT_VERSION_DIR = "/latest/encrypted";
 constexpr const char *SEC_DISCARD_DIR = "/latest/sec_discard";
 constexpr const char *SHIELD_DIR = "/latest/shield";
@@ -1095,6 +1094,26 @@ std::string KeyManager::GetKeyDirByUserAndType(unsigned int user, KeyType type)
     return keyDir;
 }
 
+std::string KeyManager::GetNatoNeedRestorePath(uint32_t userId, KeyType type)
+{
+    std::string keyDir = "";
+    switch (type) {
+        case EL2_KEY:
+            keyDir = std::string(NATO_EL2_DIR) + "/" + std::to_string(userId);
+            break;
+        case EL3_KEY:
+            keyDir = std::string(NATO_EL3_DIR) + "/" + std::to_string(userId);
+            break;
+        case EL4_KEY:
+            keyDir = std::string(NATO_EL4_DIR) + "/" + std::to_string(userId);
+            break;
+        default:
+            LOGE("GetNatoNeedRestorePath type %{public}u is invalid", type);
+            break;
+    }
+    return keyDir;
+}
+
 std::string KeyManager::GetKeyDirByType(KeyType type)
 {
     std::string keyDir = "";
@@ -1245,6 +1264,41 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
     saveLockScreenStatus[user] = true;
     LOGI("Active user %{public}u el success, saveLockScreenStatus is %{public}d", user, saveLockScreenStatus[user]);
     return 0;
+}
+
+int KeyManager::ActiveElxUserKey4Nato(unsigned int user, KeyType type)
+{
+    LOGW("Active Elx user key for nato for userId=%{public}d, keyType=%{public}u", user, type);
+    if (!KeyCtrlHasFscryptSyspara()) {
+        return E_OK;
+    }
+    std::lock_guard<std::mutex> lock(keyMutex_);
+    std::string keyDir = GetNatoNeedRestorePath(user, type);
+    if (keyDir == "") {
+        return E_KEY_TYPE_INVALID;
+    }
+    if (!CheckDir(type, keyDir, user)) {
+        return E_NATO_CHECK_KEY_DIR_ERROR;
+    }
+    std::shared_ptr<BaseKey> elKey = GetBaseKey(keyDir);
+    if (elKey == nullptr) {
+        LOGE("GetBaseKey nato for userId=%{public}d el%{public}u failed.", user, type);
+        return E_PARAMS_NULLPTR_ERR;
+    }
+    if (!elKey->InitKey(false)) {
+        LOGE("InitKey nato for userId=%{public}d el%{public}u failed.", user, type);
+        return E_NATO_INIT_USER_KEY_ERROR;
+    }
+    if (elKey->RestoreKey4Nato(keyDir, type) != E_OK) {
+        LOGE("RestoreKey nato for userId=%{public}d el%{public}u failed.", user, type);
+        return E_NATO_RESTORE_USER_KEY_ERROR;
+    }
+    if (elKey->ActiveKey(RETRIEVE_KEY) != E_OK) {
+        LOGE("ActiveKey nato for userId=%{public}d el%{public}u failed.", user, type);
+        return E_NATO_ACTIVE_EL4_KEY_ERROR;
+    }
+    LOGW("Active Elx user key for nato for userId=%{public}d, keyType=%{public}u success.", user, type);
+    return E_OK;
 }
 
 int KeyManager::ActiveUece(unsigned int user,
@@ -1758,7 +1812,8 @@ int KeyManager::LockUserScreen(uint32_t user)
 {
     LOGI("start");
     std::lock_guard<std::mutex> lock(keyMutex_);
-    if (!IsUserCeDecrypt(user)) {
+    std::error_code errCode;
+    if (!IsUserCeDecrypt(user) || std::filesystem::exists(GetNatoNeedRestorePath(user, EL4_KEY), errCode)) {
         LOGE("user ce does not decrypt, skip");
         return 0;
     }
@@ -1785,7 +1840,6 @@ int KeyManager::LockUserScreen(uint32_t user)
             saveLockScreenStatus[user]);
         return 0;
     }
-
     auto el5Key = GetUserElKey(user, EL5_KEY);
     saveESecretStatus[user] = true;
     if (el5Key != nullptr && el5Key->LockUece(saveESecretStatus[user]) != E_OK) {
@@ -1818,22 +1872,20 @@ int KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type, const std:
     std::string eceSeceKeyPath;
     std::lock_guard<std::mutex> lock(keyMutex_);
     if (type == EL1_KEY) {
-        if (userEl1Key_.find(user) == userEl1Key_.end()) {
-            LOGE("Have not found user %{public}u el1 key, not enable el1", user);
-            return -ENOENT;
+        int ret = getElxKeyPath(user, EL1_KEY, keyPath);
+        if (ret != E_OK) {
+            return ret;
         }
-        keyPath = userEl1Key_[user]->GetDir();
     } else if (type == EL2_KEY || type == EL3_KEY || type == EL4_KEY || type == EL5_KEY) {
-        if (userEl2Key_.find(user) == userEl2Key_.end()) {
-            LOGE("Have not found user %{public}u el2 key, not enable el2", user);
-            return -ENOENT;
+        int ret = getElxKeyPath(user, EL2_KEY, keyPath);
+        if (ret != E_OK) {
+            return ret;
         }
-        keyPath = userEl2Key_[user]->GetDir();
     } else {
         LOGE("Not specify el flags, no need to crypt");
         return 0;
     }
-    if (getEceSeceKeyPath(user, type, eceSeceKeyPath) != 0) {
+    if (getElxKeyPath(user, type, eceSeceKeyPath) != 0) {
         LOGE("method getEceSeceKeyPath fail");
         return -ENOENT;
     }
@@ -1856,23 +1908,41 @@ int KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type, const std:
     return 0;
 }
 
-int KeyManager::getEceSeceKeyPath(unsigned int user, KeyType type, std::string &eceSeceKeyPath)
+int KeyManager::getElxKeyPath(unsigned int user, KeyType type, std::string &elxKeyPath)
 {
-    if (type == EL3_KEY) {
-        if (userEl3Key_.find(user) == userEl3Key_.end()) {
-            LOGI("Have not found user %{public}u el3 key, not enable el3", user);
-            return -ENOENT;
-        }
-        eceSeceKeyPath = userEl3Key_[user]->GetDir();
+    std::string natoPath = GetNatoNeedRestorePath(user, type);
+    std::error_code errCode;
+    if (std::filesystem::exists(natoPath, errCode)) {
+        LOGW("type=%{public}d NATO path is exist.", type);
+        elxKeyPath = natoPath;
+        return E_OK;
     }
-    if (type == EL4_KEY) {
-        if (userEl4Key_.find(user) == userEl4Key_.end()) {
-            LOGI("Have not found user %{public}u el4 key, not enable el4", user);
-            return -ENOENT;
-        }
-        eceSeceKeyPath = userEl4Key_[user]->GetDir();
+    if (!HasElkey(user, type) && type != EL5_KEY) {
+        LOGE("Have not found user %{public}u el%{public}d key", user, type);
+        return -ENOENT;
     }
-    return 0;
+
+    switch (type) {
+        case EL1_KEY:
+            elxKeyPath = userEl1Key_[user]->GetDir();
+            break;
+        case EL2_KEY:
+            elxKeyPath = userEl2Key_[user]->GetDir();
+            break;
+        case EL3_KEY:
+            elxKeyPath = userEl3Key_[user]->GetDir();
+            break;
+        case EL4_KEY:
+            elxKeyPath = userEl4Key_[user]->GetDir();
+            break;
+        case EL5_KEY:
+            LOGW("el5 not to deal");
+            break;
+        default:
+            LOGE("Type = %{public}u is illegal !", type);
+            return -ENOENT;
+    }
+    return E_OK;
 }
 
 int KeyManager::UpdateCeEceSeceKeyContext(uint32_t userId, KeyType type)

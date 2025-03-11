@@ -250,8 +250,14 @@ const void MtpFsDevice::HandleDir(LIBMTP_file_t *content, MtpFsTypeDir *dir)
 
 const void MtpFsDevice::HandleDirByFetch(LIBMTP_file_t *content, MtpFsTypeDir *dir)
 {
-    if (content == nullptr || dir == nullptr) {
-        LOGE("content or dir is nullptr");
+    if (content == nullptr) {
+        LOGE("directory have not any content");
+        dir->dirs_.clear();
+        dir->files_.clear();
+        return;
+    }
+    if (dir == nullptr) {
+        LOGE("dir is nullptr");
         return;
     }
     LOGI("HandleDir clear dir content");
