@@ -16,7 +16,6 @@
 #ifndef STORAGE_RADAR_H
 #define STORAGE_RADAR_H
 
-#include <string>
 #include "storage_statistics_radar.h"
 
 namespace OHOS {

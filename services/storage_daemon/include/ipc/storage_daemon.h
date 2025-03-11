@@ -16,8 +16,6 @@
 #ifndef OHOS_STORAGE_DAEMON_STORAGE_DAEMON_H
 #define OHOS_STORAGE_DAEMON_STORAGE_DAEMON_H
 
-#include <mutex>
-#include <vector>
 #include "ipc/storage_daemon_stub.h"
 #include "system_ability_status_change_stub.h"
 #include "storage_service_constant.h"

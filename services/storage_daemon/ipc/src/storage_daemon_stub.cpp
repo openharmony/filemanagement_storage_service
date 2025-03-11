@@ -19,7 +19,6 @@
 #include "ipc/storage_daemon_ipc_interface_code.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "string_ex.h"
 #include "securec.h"
 #include "utils/storage_xcollie.h"
 #include "utils/storage_radar.h"

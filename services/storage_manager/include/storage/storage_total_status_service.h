@@ -16,10 +16,7 @@
 #ifndef OHOS_STORAGE_MANAGER_STORAGE_TOTAL_STATUS_SERVICE_H
 #define OHOS_STORAGE_MANAGER_STORAGE_TOTAL_STATUS_SERVICE_H
 
-#include <vector>
-#include <nocopyable.h>
 #include <singleton.h>
-#include <iostream>
 
 namespace OHOS {
 namespace StorageManager {

@@ -15,12 +15,8 @@
 #ifndef OHOS_STORAGE_DAEMON_MTP_DEVICE_MONITOR_H
 #define OHOS_STORAGE_DAEMON_MTP_DEVICE_MONITOR_H
 
-#include <memory>
 #include <nocopyable.h>
 #include <singleton.h>
-#include <string>
-#include <thread>
-#include <vector>
 #include "mtp/mtp_device_manager.h"
 
 namespace OHOS {

@@ -15,15 +15,8 @@
 
 #include "volume/external_volume_info.h"
 
-#include <algorithm>
-#include <cerrno>
-#include <csignal>
-#include <cstdlib>
-#include <cstring>
-#include <sys/mount.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
-#include <unistd.h>
 #include <future>
 
 #include "storage_service_errno.h"

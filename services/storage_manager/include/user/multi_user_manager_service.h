@@ -16,9 +16,7 @@
 #ifndef OHOS_STORAGE_MANAGER_MULTI_USER_MANAGER_SERVICE_H
 #define OHOS_STORAGE_MANAGER_MULTI_USER_MANAGER_SERVICE_H
 
-#include <unordered_map>
 #include <singleton.h>
-#include <nocopyable.h>
 
 namespace OHOS {
 namespace StorageManager {

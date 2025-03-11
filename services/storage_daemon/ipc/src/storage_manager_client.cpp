@@ -17,9 +17,7 @@
 
 #include <iservice_registry.h>
 #include <system_ability_definition.h>
-#include <unistd.h>
 
-#include "disk.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/disk_utils.h"

@@ -15,20 +15,9 @@
 
 #include "account_subscriber/account_subscriber.h"
 
-#include <cinttypes>
-#include <memory>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h>
-#include <vector>
-
 #ifdef USER_CRYPTO_MANAGER
 #include "crypto/filesystem_crypto.h"
 #endif
-#include "appexecfwk_errors.h"
-#include "bundle_info.h"
-#include "common_event_manager.h"
-#include "common_event_support.h"
 #include "iservice_registry.h"
 #include "int_wrapper.h"
 #include "os_account_manager.h"
@@ -36,8 +25,6 @@
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
 #include "utils/storage_radar.h"
-#include "want.h"
-#include "want_params.h"
 
 using namespace OHOS::AAFwk;
 using namespace OHOS::AccountSA;

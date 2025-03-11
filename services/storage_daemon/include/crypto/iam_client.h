@@ -16,7 +16,6 @@
 #ifndef FSS_SECURITY_MERGE_IAMCLIENT_H
 #define FSS_SECURITY_MERGE_IAMCLIENT_H
 
-#include <condition_variable>
 #include <mutex>
 
 #ifdef USER_AUTH_FRAMEWORK

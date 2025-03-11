@@ -13,12 +13,7 @@
  * limitations under the License.
  */
 
-#include "base_key.h"
-
-#include <fcntl.h>
 #include <fstream>
-#include <cstdio>
-#include <string>
 #include <unistd.h>
 #include <dirent.h>
 
@@ -29,7 +24,6 @@
 #include "iam_client.h"
 #include "key_backup.h"
 #include "libfscrypt/key_control.h"
-#include "openssl_crypto.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "string_ex.h"

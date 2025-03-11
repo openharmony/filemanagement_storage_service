@@ -15,10 +15,8 @@
 
 #include "volume/process.h"
 
-#include <cerrno>
 #include <csignal>
 #include <dirent.h>
-#include <sys/types.h>
 #include <unistd.h>
 
 #include "storage_service_errno.h"

@@ -15,13 +15,6 @@
 
 #include "storage/bundle_manager_connector.h"
 
-#include <cstdlib>
-#include <cstring>
-#include <mntent.h>
-#include <singleton.h>
-#include <sys/statvfs.h>
-#include <unordered_set>
-
 #include "iservice_registry.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"

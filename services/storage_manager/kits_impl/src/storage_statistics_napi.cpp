@@ -15,9 +15,6 @@
 
 #include "storage_statistics_napi.h"
 
-#include "napi/native_api.h"
-#include "napi/native_node_api.h"
-
 #include "storage_statistics_n_exporter.h"
 
 namespace OHOS {

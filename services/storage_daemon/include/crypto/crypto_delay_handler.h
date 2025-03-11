@@ -16,9 +16,7 @@
 #ifndef STORAGE_DAEMON_CRYPTO_DELAY_HANDLER_H
 #define STORAGE_DAEMON_CRYPTO_DELAY_HANDLER_H
 
-#include <atomic>
 #include <thread>
-#include <vector>
 
 #include "base_key.h"
 #include "event_handler.h"
