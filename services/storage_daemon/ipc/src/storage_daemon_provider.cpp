@@ -636,6 +636,7 @@ int32_t StorageDaemonProvider::UMountMediaFuse(int32_t userId)
 int32_t StorageDaemonProvider::MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd)
 {
     LOGI("StorageDaemonProvider::MountFileMgrFuse, userId:%{public}d, path:%{public}s", userId, path.c_str());
+    fuseFd = -1;
     return storageDaemon_->MountFileMgrFuse(userId, path, fuseFd);
 }
 
