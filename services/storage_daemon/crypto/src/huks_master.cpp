@@ -21,7 +21,6 @@
 #include <openssl/rand.h>
 #include <openssl/sha.h>
 
-#include "hks_param.h"
 #include "key_crypto_utils.h"
 #include "storage_service_log.h"
 #include "storage_service_errno.h"

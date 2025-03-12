@@ -15,9 +15,6 @@
 #ifndef STORAGE_DAEMON_CRYPTO_BASEKEY_H
 #define STORAGE_DAEMON_CRYPTO_BASEKEY_H
 
-#include <string>
-
-#include "key_blob.h"
 #include "openssl_crypto.h"
 #include "storage_service_constant.h"
 

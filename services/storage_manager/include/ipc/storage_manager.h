@@ -18,7 +18,6 @@
 
 #include "system_ability.h"
 #include "storage_manager_stub.h"
-#include "istorage_manager.h"
 
 namespace OHOS {
 namespace StorageManager {

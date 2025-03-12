@@ -14,11 +14,6 @@
  */
 
 #include "mtp/usb_event_subscriber.h"
-#include <unistd.h>
-#include "cJSON.h"
-#include "mtp/mtp_device_monitor.h"
-#include "storage_service_errno.h"
-#include "storage_service_log.h"
 
 namespace OHOS {
 namespace StorageDaemon {

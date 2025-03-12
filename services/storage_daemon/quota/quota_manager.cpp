@@ -15,27 +15,14 @@
 
 #include "quota/quota_manager.h"
 
-#include <cstdint>
-#include <cstdlib>
 #include <dirent.h>
-#include <fcntl.h>
 #include <fstream>
-#include <iostream>
-#include <linux/dqblk_xfs.h>
 #include <linux/fs.h>
 #include <linux/quota.h>
-#include <map>
-#include <sstream>
 #include <stack>
-#include <sys/ioctl.h>
 #include <sys/quota.h>
 #include <sys/stat.h>
 #include <sys/statvfs.h>
-#include <sys/types.h>
-#include <tuple>
-#include <unique_fd.h>
-#include <unistd.h>
-#include <cstdio>
 
 #include "file_uri.h"
 #include "sandbox_helper.h"

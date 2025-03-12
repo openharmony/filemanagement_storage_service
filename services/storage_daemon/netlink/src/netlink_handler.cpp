@@ -16,8 +16,6 @@
 #include "netlink/netlink_handler.h"
 
 #include "disk/disk_manager.h"
-#include "netlink/netlink_data.h"
-#include "storage_service_errno.h"
 #include "storage_service_log.h"
 
 namespace OHOS {

@@ -15,10 +15,7 @@
 #ifndef STORAGE_DAEMON_CRYPTO_KEY_UTILS_H
 #define STORAGE_DAEMON_CRYPTO_KEY_UTILS_H
 
-#include <memory>
 #include <string>
-#include <vector>
-#include <linux/keyctl.h>
 #include <linux/version.h>
 
 #include "hks_type.h"

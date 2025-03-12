@@ -15,22 +15,6 @@
 
 #include "mtp/mtp_device_monitor.h"
 
-#include <cstdio>
-#include <dirent.h>
-#include <filesystem>
-#include <iostream>
-#include <libmtp.h>
-#include "parameter.h"
-#include "parameters.h"
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <thread>
-#include "mtp/usb_event_subscriber.h"
-#include "storage_service_errno.h"
-#include "storage_service_log.h"
-#include "utils/file_utils.h"
-
 using namespace std;
 namespace OHOS {
 namespace StorageDaemon {

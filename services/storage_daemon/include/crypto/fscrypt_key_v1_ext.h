@@ -16,7 +16,6 @@
 #ifndef STORAGE_DAEMON_CRYPTO_FSCRYPT_KEY_V1_EXT_H
 #define STORAGE_DAEMON_CRYPTO_FSCRYPT_KEY_V1_EXT_H
 
-#include <memory>
 #include <string>
 
 namespace OHOS {

@@ -16,27 +16,17 @@
 #include "key_manager.h"
 
 #include <fcntl.h>
-#include <filesystem>
-#include <string>
-#include <cstdio>
-
-#include "base_key.h"
 #include "directory_ex.h"
 #include "file_ex.h"
 #include "fscrypt_key_v1.h"
 #include "fscrypt_key_v2.h"
 #include "iam_client.h"
 #include "libfscrypt/fscrypt_control.h"
-#include "libfscrypt/key_control.h"
-#include "parameter.h"
 #include "recover_manager.h"
-#include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include "user/mount_manager.h"
 #include "user/user_manager.h"
 #include "utils/storage_radar.h"
-#include "utils/string_utils.h"
 #ifdef EL5_FILEKEY_MANAGER
 #include "el5_filekey_manager_kit.h"
 #endif

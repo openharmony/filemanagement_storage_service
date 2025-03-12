@@ -16,8 +16,6 @@
 #ifndef STORAGE_DAEMON_CRYPTO_FBEX_X
 #define STORAGE_DAEMON_CRYPTO_FBEX_X
 
-#include <cstdint>
-#include <memory>
 #include <string>
 
 namespace OHOS {

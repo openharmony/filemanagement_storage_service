@@ -16,13 +16,8 @@
 #ifndef OHOS_STORAGE_DAEMON_DISK_MANAGER_H
 #define OHOS_STORAGE_DAEMON_DISK_MANAGER_H
 
-#include <list>
-#include <memory>
 #include <mutex>
-#include <cstring>
 #include <nocopyable.h>
-
-#include <sys/types.h>
 
 #include "disk/disk_config.h"
 #include "disk/disk_info.h"

@@ -16,13 +16,8 @@
 #ifndef OHOS_STORAGE_MANAGER_BUNDLE_MANAGER_CONNECTOR_H
 #define OHOS_STORAGE_MANAGER_BUNDLE_MANAGER_CONNECTOR_H
 
-#include <nocopyable.h>
 #include <singleton.h>
-#include <iostream>
-#include "bundle_stats.h"
-#include "bundle_mgr_interface.h"
 #include "bundle_mgr_proxy.h"
-#include "iremote_object.h"
 
 namespace OHOS {
 namespace StorageManager {

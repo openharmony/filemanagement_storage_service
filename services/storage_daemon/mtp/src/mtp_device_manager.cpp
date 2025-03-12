@@ -15,21 +15,6 @@
 
 #include "mtp/mtp_device_manager.h"
 
-#include <config.h>
-#include <dirent.h>
-#include <iostream>
-#include <cstdio>
-#include <string>
-#include <sys/mount.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h>
-#include "ipc/storage_manager_client.h"
-#include "storage_service_errno.h"
-#include "storage_service_log.h"
-#include "utils/file_utils.h"
-
 namespace OHOS {
 namespace StorageDaemon {
 constexpr int32_t DEFAULT_DEV_INDEX = 1;

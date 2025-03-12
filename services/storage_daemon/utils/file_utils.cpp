@@ -15,14 +15,10 @@
 
 #include "utils/file_utils.h"
 
-#include <cerrno>
-#include <cstdlib>
-#include <cstring>
 #include <dirent.h>
 #include <fcntl.h>
 #include <fstream>
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include "securec.h"

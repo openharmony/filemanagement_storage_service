@@ -15,14 +15,8 @@
 #ifndef STORAGE_MANAGER_ACCOUNT_SUBSCRIBER_H
 #define STORAGE_MANAGER_ACCOUNT_SUBSCRIBER_H
 
-#include <mutex>
-#include <unordered_map>
-
 #include "common_event_manager.h"
-#include "common_event_subscribe_info.h"
-#include "common_event_subscriber.h"
 #include "common_event_support.h"
-#include "matching_skills.h"
 #include "datashare_helper.h"
 #include "storage_service_constant.h"
 

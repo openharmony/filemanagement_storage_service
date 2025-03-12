@@ -15,13 +15,7 @@
 
 #include "fbex.h"
 
-#include <cerrno>
-#include <cstdio>
 #include <fcntl.h>
-#include <securec.h>
-#include <cstdio>
-#include <dirent.h>
-#include <string>
 #include <sys/ioctl.h>
 #include <unistd.h>
 

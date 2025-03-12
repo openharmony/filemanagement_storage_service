@@ -16,12 +16,9 @@
 #ifndef STORAGE_DAEMON_KEY_BACKUP_H
 #define STORAGE_DAEMON_KEY_BACKUP_H
 
-#include <string>
-#include <sys/types.h>
 #include <sys/stat.h>
 
 #include "base_key.h"
-#include "key_blob.h"
 
 namespace OHOS {
 namespace StorageDaemon {

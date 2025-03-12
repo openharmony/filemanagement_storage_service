@@ -15,9 +15,6 @@
 #ifndef OHOS_STORAGE_DAEMON_NETLINK_LISTENER_H
 #define OHOS_STORAGE_DAEMON_NETLINK_LISTENER_H
 
-#include <memory>
-#include <thread>
-
 #include <poll.h>
 
 namespace OHOS {

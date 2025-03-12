@@ -17,7 +17,6 @@
 
 #include <list>
 #include <string>
-#include <sys/types.h>
 
 namespace OHOS {
 namespace StorageDaemon {

@@ -15,11 +15,9 @@
 
 #include "volume/volume_manager.h"
 
-#include <cstdlib>
 #include <sys/sysmacros.h>
 
 #include "ipc/storage_manager_client.h"
-#include "mtp/mtp_device_monitor.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/storage_radar.h"

@@ -14,6 +14,7 @@
  */
 
 #include "ipc/storage_manager.h"
+
 #include <sys/syscall.h>
 #include <sys/resource.h>
 
@@ -37,7 +38,6 @@
 #include "volume/volume_manager_service.h"
 #endif
 #include "storage_daemon_communication/storage_daemon_communication.h"
-#include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "system_ability_definition.h"

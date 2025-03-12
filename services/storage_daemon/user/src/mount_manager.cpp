@@ -14,19 +14,10 @@
  */
 
 #include "user/mount_manager.h"
-#include <cstdlib>
-#include <csignal>
 #include <dirent.h>
 #include <fcntl.h>
 #include <set>
-#include <sys/mount.h>
-#include <sys/types.h>
-#include <thread>
-#include <unistd.h>
 #include <regex>
-#include <filesystem>
-#include <cstdio>
-#include "hisysevent.h"
 #include "crypto/key_manager.h"
 #include "utils/disk_utils.h"
 #include "utils/storage_radar.h"
@@ -34,12 +25,10 @@
 #include "parameter.h"
 #include "quota/quota_manager.h"
 #include "observer/appstate_observer.h"
-#include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/mount_argument_utils.h"
 #include "utils/string_utils.h"
-#include "system_ability_definition.h"
 #ifdef DFS_SERVICE
 #include "cloud_daemon_manager.h"
 #endif

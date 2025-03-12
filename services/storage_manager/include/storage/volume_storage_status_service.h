@@ -16,7 +16,6 @@
 #ifndef OHOS_STORAGE_MANAGER_VOLUME_STORAGE_STATUS_SERVICE_H
 #define OHOS_STORAGE_MANAGER_VOLUME_STORAGE_STATUS_SERVICE_H
 
-#include <nocopyable.h>
 #include <singleton.h>
 
 namespace OHOS {

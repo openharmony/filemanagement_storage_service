@@ -16,8 +16,6 @@
 #ifndef OHOS_STORAGE_DAEMON_EXTERNAL_VOLUME_INFO_H
 #define OHOS_STORAGE_DAEMON_EXTERNAL_VOLUME_INFO_H
 
-#include <vector>
-#include <sys/types.h>
 #include <map>
 #include "volume/volume_info.h"
 

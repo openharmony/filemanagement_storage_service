@@ -15,8 +15,6 @@
 #ifndef OHOS_STORAGE_DAEMON_FILE_SHARING_H
 #define OHOS_STORAGE_DAEMON_FILE_SHARING_H
 
-#include <string>
-
 #include <sys/xattr.h>
 
 #include "file_sharing/acl.h"

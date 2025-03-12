@@ -17,8 +17,6 @@
 #define OHOS_STORAGE_MANAGER_VOLUME_MANAGER_SERVICE_H
 
 #include <singleton.h>
-#include <nocopyable.h>
-#include "volume_core.h"
 #include "volume_external.h"
 #include "storage_rl_map.h"
 

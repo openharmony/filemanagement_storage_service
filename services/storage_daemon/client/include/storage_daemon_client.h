@@ -16,14 +16,9 @@
 #ifndef STORAGE_DAEMON_CLIENT_H
 #define STORAGE_DAEMON_CLIENT_H
 
-#include <mutex>
 #include <iostream>
-#include <vector>
-#include <sys/types.h>
 
-#include "iremote_proxy.h"
-#include "istorage_daemon.h"
-#include "storage_daemon_proxy.h"
+#include "ipc/storage_daemon.h"
 
 namespace OHOS {
 namespace StorageDaemon {

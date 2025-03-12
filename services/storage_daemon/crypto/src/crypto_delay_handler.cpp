@@ -15,8 +15,6 @@
 
 #include "crypto_delay_handler.h"
 
-#include <pthread.h>
-
 #include "storage_service_log.h"
 #include "storage_service_errno.h"
 #include "utils/storage_radar.h"

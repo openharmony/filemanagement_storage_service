@@ -14,9 +14,6 @@
  */
 #include "netlink/netlink_data.h"
 
-#include "storage_service_errno.h"
-#include "storage_service_log.h"
-
 namespace OHOS {
 namespace StorageDaemon {
 constexpr int ACTION_PRE_LEN = 7;

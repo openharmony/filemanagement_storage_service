@@ -19,7 +19,6 @@
 #include <system_ability_definition.h>
 
 #include "accesstoken_kit.h"
-#include "storage_manager_proxy.h"
 #include "ipc_skeleton.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"

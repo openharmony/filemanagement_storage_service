@@ -18,8 +18,6 @@
 #include <iservice_registry.h>
 #include <system_ability_definition.h>
 
-#include "istorage_daemon.h"
-#include "storage_daemon_proxy.h"
 #include "os_account_manager.h"
 #ifdef ENABLE_SCREENLOCK_MANAGER
 #include "screenlock_manager.h"

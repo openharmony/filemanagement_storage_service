@@ -15,9 +15,7 @@
 
 #include "netlink/netlink_listener.h"
 
-#include <memory>
 #include <sys/socket.h>
-#include <unistd.h>
 #include <linux/netlink.h>
 
 #include "securec.h"

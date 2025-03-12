@@ -15,13 +15,9 @@
 
 #include "utils/disk_utils.h"
 
-#include <cerrno>
-#include <fcntl.h>
-#include <cstdio>
 #include <sys/stat.h>
 #include <sys/sysmacros.h>
 #include <unistd.h>
-#include <unordered_map>
 
 #include "storage_service_errno.h"
 #include "storage_service_log.h"

@@ -15,8 +15,6 @@
 
 #include "volumemanager_napi.h"
 
-#include "napi/native_api.h"
-#include "napi/native_node_api.h"
 #include "volumemanager_n_exporter.h"
 
 namespace OHOS {

@@ -16,9 +16,7 @@
 #ifndef OHOS_STORAGE_MANAGER_DISK_MANAGER_SERVICE_H
 #define OHOS_STORAGE_MANAGER_DISK_MANAGER_SERVICE_H
 
-#include <unordered_map>
 #include <singleton.h>
-#include <nocopyable.h>
 #include "disk.h"
 #include "storage_rl_map.h"
 

@@ -15,7 +15,6 @@
 
 #include "user/user_manager.h"
 #include "bundle_mgr_client.h"
-#include <cstdlib>
 
 #ifdef USER_CRYPTO_MANAGER
 #include "crypto/key_manager.h"
