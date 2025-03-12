@@ -104,6 +104,10 @@ public:
                         const std::vector<uint8_t> &secret);
     int ActiveElxUserKey4Nato(unsigned int user, KeyType type);
     std::string GetNatoNeedRestorePath(uint32_t userId, KeyType type);
+    // userElKeys_ function
+    void SaveUserElKey(unsigned int user, KeyType type, std::shared_ptr<BaseKey> elKey);
+    void DeleteElKey(unsigned int user, KeyType type);
+    bool HasElkey(uint32_t userId, KeyType type);
 
 private:
     KeyManager()
@@ -118,16 +122,13 @@ private:
     int RestoreUserKey(uint32_t userId, const std::string &dir, const UserAuth &auth, KeyType type);
     int LoadAllUsersEl1Key(void);
     int InitUserElkeyStorageDir(void);
-    bool HasElkey(uint32_t userId, KeyType type);
     int DoDeleteUserKeys(unsigned int user);
-    int DoDeleteUserCeEceSeceKeys(unsigned int user, const std::string userDir,
-                                  std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_);
+    int DoDeleteUserCeEceSeceKeys(unsigned int user, const std::string userDir, KeyType type);
     int UpgradeKeys(const std::vector<FileList> &dirInfo);
     int UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSecret);
     bool ResetESecret(unsigned int user, std::shared_ptr<BaseKey> &elKey);
     std::shared_ptr<BaseKey> GetBaseKey(const std::string& dir);
     std::shared_ptr<BaseKey> GetUserElKey(unsigned int user, KeyType type);
-    void SaveUserElKey(unsigned int user, KeyType type, std::shared_ptr<BaseKey> elKey);
     bool IsNeedClearKeyFile(std::string file);
     bool CheckDir(KeyType type, std::string keyDir, unsigned int user);
     int ActiveUece(unsigned int user,
@@ -142,7 +143,7 @@ private:
     int ActiveElXUserKey(unsigned int user,
                          const std::vector<uint8_t> &token, KeyType keyType,
                          const std::vector<uint8_t> &secret, std::shared_ptr<BaseKey> elKey);
-    int InactiveUserElKey(unsigned int user, std::map<unsigned int, std::shared_ptr<BaseKey>> &userElxKey_);
+    int InactiveUserElKey(unsigned int user, KeyType type);
     int CheckAndDeleteEmptyEl5Directory(std::string keyDir, unsigned int user);
     bool GetUserDelayHandler(uint32_t userId, std::shared_ptr<DelayHandler> &delayHandler);
     bool IsUeceSupport();
@@ -155,18 +156,14 @@ private:
     int GenerateIntegrityDirs(int32_t userId, KeyType type);
     int CheckAndFixUserKeyDirectory(unsigned int user);
     bool HashElxActived(unsigned int user, KeyType type);
-    bool HasElxDesc(std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_, KeyType type, unsigned int user);
     bool IsAppCloneUser(unsigned int user);
     int CheckNeedRestoreVersion(unsigned int user, KeyType type);
 #ifdef EL5_FILEKEY_MANAGER
     int GenerateAndLoadAppKeyInfo(uint32_t userId, const std::vector<std::pair<int, std::string>> &keyInfo);
 #endif
+    using KeyMap = std::map<KeyType, std::shared_ptr<BaseKey>>;
+    std::map<unsigned int, KeyMap> userElKeys_;
 
-    std::map<unsigned int, std::shared_ptr<BaseKey>> userEl1Key_;
-    std::map<unsigned int, std::shared_ptr<BaseKey>> userEl2Key_;
-    std::map<unsigned int, std::shared_ptr<BaseKey>> userEl3Key_;
-    std::map<unsigned int, std::shared_ptr<BaseKey>> userEl4Key_;
-    std::map<unsigned int, std::shared_ptr<BaseKey>> userEl5Key_;
     std::map<unsigned int, std::shared_ptr<DelayHandler>> userLockScreenTask_;
     std::shared_ptr<BaseKey> globalEl1Key_ { nullptr };
     std::map<unsigned int, bool> userPinProtect;

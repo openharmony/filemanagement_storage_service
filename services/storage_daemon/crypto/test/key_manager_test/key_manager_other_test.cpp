@@ -192,7 +192,7 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_TryToFixUserCeEceSeceKey_000, TestSize.
 
     EXPECT_CALL(*iamClientMoc_, HasPinProtect(_)).WillOnce(Return(true));
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false)).WillOnce(Return(true));
-    KeyManager::GetInstance()->userEl2Key_.erase(user);
+    KeyManager::GetInstance()->DeleteElKey(user, EL2_KEY);
     EXPECT_EQ(KeyManager::GetInstance()->TryToFixUserCeEceSeceKey(user, EL2_KEY, token, secret), E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "KeyManager_TryToFixUserCeEceSeceKey_000 end";
 }
@@ -239,7 +239,7 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_TryToFixUeceKey_000, TestSize.Level1)
         std::ofstream file(UECE_PATH);
         EXPECT_GT(open(UECE_PATH, O_RDWR), 0);
     }
-    KeyManager::GetInstance()->userEl5Key_.clear();
+    KeyManager::GetInstance()->DeleteElKey(user, EL5_KEY);
     EXPECT_CALL(*iamClientMoc_, HasPinProtect(_)).WillOnce(Return(false));
     EXPECT_EQ(KeyManager::GetInstance()->TryToFixUeceKey(user, token, secret), E_OK);
 
@@ -263,7 +263,7 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_TryToFixUeceKey_000, TestSize.Level1)
     EXPECT_CALL(*baseKeyMock_, UpdateKey(_, _)).WillOnce(Return(-1));
     EXPECT_EQ(KeyManager::GetInstance()->TryToFixUeceKey(user, token, secret),  E_ELX_KEY_UPDATE_ERROR);
     ForceRemoveDirectory(keyDir);
-    KeyManager::GetInstance()->userEl5Key_.erase(user);
+    KeyManager::GetInstance()->DeleteElKey(user, EL5_KEY);
     if (!existUece) {
         OHOS::RemoveFile(UECE_PATH);
     }
@@ -288,7 +288,7 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_TryToFixUeceKey_001, TestSize.Level1)
         std::ofstream file(UECE_PATH);
         EXPECT_GT(open(UECE_PATH, O_RDWR), 0);
     }
-    KeyManager::GetInstance()->userEl5Key_.clear();
+    KeyManager::GetInstance()->DeleteElKey(user, EL5_KEY);
     EXPECT_CALL(*iamClientMoc_, HasPinProtect(_)).WillOnce(Return(true));
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_INVALID));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID));
@@ -393,7 +393,8 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_UpdateCeEceSeceUserAuth_001, TestSize.L
     EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(-1));
     EXPECT_EQ(KeyManager::GetInstance()->UpdateCeEceSeceUserAuth(user, userTokenSecret, type), -EFAULT);
     #endif
-    KeyManager::GetInstance()->userEl1Key_.erase(user);
+
+    KeyManager::GetInstance()->DeleteElKey(user, EL1_KEY);
     OHOS::ForceRemoveDirectory(dir);
     GTEST_LOG_(INFO) << "KeyManager_UpdateCeEceSeceUserAuth_001 end";
 }
@@ -428,7 +429,7 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_UpdateCeEceSeceUserAuth_002, TestSize.L
     EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(KeyManager::GetInstance()->UpdateCeEceSeceUserAuth(user, userTokenSecret, type), E_OK);
     #endif
-    KeyManager::GetInstance()->userEl1Key_.erase(user);
+    KeyManager::GetInstance()->DeleteElKey(user, EL1_KEY);
     OHOS::ForceRemoveDirectory(dir);
     GTEST_LOG_(INFO) << "KeyManager_UpdateCeEceSeceUserAuth_002 end";
 }
@@ -470,7 +471,7 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_UpdateUserAuth_001, TestSize.Level1)
     #else
     EXPECT_EQ(KeyManager::GetInstance()->UpdateUserAuth(user, userTokenSecret), -EFAULT);
     #endif
-    KeyManager::GetInstance()->userEl5Key_.erase(user);
+    KeyManager::GetInstance()->DeleteElKey(user, EL5_KEY);
     OHOS::ForceRemoveDirectory(dir);
     GTEST_LOG_(INFO) << "KeyManager_UpdateUserAuth_001 end";
 }
@@ -531,7 +532,7 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_UpdateESecret_001, TestSize.Level1)
     EXPECT_CALL(*fscryptKeyMock_, EncryptClassE(_, _, _, _)).WillOnce(Return(E_OK));
     ret = KeyManager::GetInstance()->UpdateESecret(userId, newTokenSecret);
     EXPECT_EQ(ret, E_OK);
-    KeyManager::GetInstance()->userEl5Key_.erase(userId);
+    KeyManager::GetInstance()->DeleteElKey(userId, EL5_KEY);
     OHOS::ForceRemoveDirectory(dir);
     GTEST_LOG_(INFO) << "KeyManager_UpdateESecret_0100 end";
 }
@@ -592,21 +593,21 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_ActiveUeceUserKey_001, TestSize.Level1)
     EXPECT_CALL(*fscryptKeyMock_, DecryptClassE(_, _, _, _, _)).WillOnce(Return(-1));
     EXPECT_EQ(
         KeyManager::GetInstance()->ActiveUeceUserKey(userId, tokenEmpty, secretEmpty, elKey), E_EL5_DELETE_CLASS_ERROR);
-    KeyManager::GetInstance()->userEl5Key_.erase(userId);
+    KeyManager::GetInstance()->DeleteElKey(userId, EL5_KEY);
 
     EXPECT_CALL(*fscryptKeyMock_, DecryptClassE(_, _, _, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(KeyManager::GetInstance()->ActiveUeceUserKey(userId, tokenEmpty, secretEmpty, elKey), 0);
-    KeyManager::GetInstance()->userEl5Key_.erase(userId);
+    KeyManager::GetInstance()->DeleteElKey(userId, EL5_KEY);
 
     std::vector<uint8_t> token{ 1, 2, 3, 4, 5 };
     EXPECT_CALL(*fscryptKeyMock_, DecryptClassE(_, _, _, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(KeyManager::GetInstance()->ActiveUeceUserKey(userId, token, secretEmpty, elKey), 0);
-    KeyManager::GetInstance()->userEl5Key_.erase(userId);
+    KeyManager::GetInstance()->DeleteElKey(userId, EL5_KEY);
 
     std::vector<uint8_t> secret{ 1, 2, 3, 4, 5 };
     EXPECT_CALL(*fscryptKeyMock_, DecryptClassE(_, _, _, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(KeyManager::GetInstance()->ActiveUeceUserKey(userId, token, secret, elKey), 0);
-    KeyManager::GetInstance()->userEl5Key_.erase(userId);
+    KeyManager::GetInstance()->DeleteElKey(userId, EL5_KEY);
     GTEST_LOG_(INFO) << "KeyManager_ActiveUeceUserKey_001 end";
 }
 
@@ -630,7 +631,7 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_ActiveUeceUserKey_002, TestSize.Level1)
         .WillOnce(DoAll(SetArgReferee<2>(true), Return(E_OK)));
     EXPECT_CALL(*iamClientMoc_, HasPinProtect(_)).WillOnce(Return(false));
     EXPECT_EQ(KeyManager::GetInstance()->ActiveUeceUserKey(userId, token, secret, elKey), 0);
-    KeyManager::GetInstance()->userEl5Key_.erase(userId);
+    KeyManager::GetInstance()->DeleteElKey(userId, EL5_KEY);
 
     EXPECT_CALL(*fscryptKeyMock_, DecryptClassE(_, _, _, _, _))
         .WillOnce(DoAll(SetArgReferee<2>(true), Return(E_OK)));
@@ -641,7 +642,7 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_ActiveUeceUserKey_002, TestSize.Level1)
     EXPECT_CALL(*fscryptKeyMock_, EncryptClassE(_, _, _, _)).WillOnce(Return(-1));
     EXPECT_EQ(KeyManager::GetInstance()->ActiveUeceUserKey(userId, token, secret, elKey), E_TRY_TO_FIX_USER_KEY_ERR);
     OHOS::ForceRemoveDirectory(keyDir);
-    KeyManager::GetInstance()->userEl5Key_.erase(userId);
+    KeyManager::GetInstance()->DeleteElKey(userId, EL5_KEY);
     GTEST_LOG_(INFO) << "KeyManager_ActiveUeceUserKey_002 end";
 }
 
@@ -661,12 +662,12 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_ActiveUece_001, TestSize.Level1)
 
     EXPECT_CALL(*fscryptKeyMock_, DecryptClassE(_, _, _, _, _)).WillOnce(Return(-1));
     EXPECT_EQ(KeyManager::GetInstance()->ActiveUece(userId, elKey, tokenEmpty, secretEmpty), E_ELX_KEY_ACTIVE_ERROR);
-    KeyManager::GetInstance()->userEl5Key_.erase(userId);
+    KeyManager::GetInstance()->DeleteElKey(userId, EL5_KEY);
     KeyManager::GetInstance()->saveLockScreenStatus.erase(userId);
 
     EXPECT_CALL(*fscryptKeyMock_, DecryptClassE(_, _, _, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(KeyManager::GetInstance()->ActiveUece(userId, elKey, tokenEmpty, secretEmpty), 0);
-    KeyManager::GetInstance()->userEl5Key_.erase(userId);
+    KeyManager::GetInstance()->DeleteElKey(userId, EL5_KEY);
     KeyManager::GetInstance()->saveLockScreenStatus.erase(userId);
     GTEST_LOG_(INFO) << "KeyManager_ActiveUece_001 end";
 }
