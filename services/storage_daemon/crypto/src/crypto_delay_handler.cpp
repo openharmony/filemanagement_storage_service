@@ -14,7 +14,6 @@
  */
 
 #include "crypto_delay_handler.h"
-
 #include "storage_service_log.h"
 #include "storage_service_errno.h"
 #include "utils/storage_radar.h"
@@ -22,93 +21,107 @@
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
-constexpr int32_t WAIT_THREAD_TIMEOUT_MS = 5;
 constexpr int32_t DEFAULT_CHECK_INTERVAL = 10 * 1000; // 10s
-constexpr const char *CLEAR_TASK_NAME = "clear_ece_sece_key";
 
-DelayHandler::DelayHandler(uint32_t userId) : userId_(userId) {}
+DelayHandler::DelayHandler(uint32_t userId): running_(true),  timerId_(0), needExecute_(false),
+                                             cancelled_(false), userId_(userId)
+{
+    running_ = true;
+    timer_.Setup();
+    cv_.notify_all();
+    taskThread_ = std::thread(&DelayHandler::ProcessTasks, this);
+}
+
 DelayHandler::~DelayHandler()
 {
     LOGI("DelayHandler Destructor.");
-    std::unique_lock<std::mutex> lock(eventMutex_);
-    if ((eventHandler_ != nullptr) && (eventHandler_->GetEventRunner() != nullptr)) {
-        eventHandler_->RemoveAllEvents();
-        eventHandler_->GetEventRunner()->Stop();
+    running_ = false;
+    timer_.Shutdown();
+    cv_.notify_all();
+    if (taskThread_.joinable()) {
+        taskThread_.join();
     }
-    if (eventThread_.joinable()) {
-        eventThread_.join();
-    }
-    eventHandler_ = nullptr;
-    LOGI("success");
+    LOGI("DelayHandler::Destruct success.");
 }
 
-void DelayHandler::StartDelayTask(std::shared_ptr<BaseKey> &el4Key)
+void DelayHandler::StartDelayTask(const std::shared_ptr<BaseKey>& el4Key)
 {
+    LOGI("DelayHandler::StartDelayTask: enter.");
     CancelDelayTask();
     if (el4Key == nullptr) {
         LOGI("elKey is nullptr do not clean.");
         return;
     }
     el4Key_ = el4Key;
-
-    LOGI("StartDelayTask, start delay clear key task.");
-    std::unique_lock<std::mutex> lock(eventMutex_);
-    if (eventHandler_ == nullptr) {
-        eventThread_ = std::thread(&DelayHandler::StartDelayHandler, this);
-        eventCon_.wait_for(lock, std::chrono::seconds(WAIT_THREAD_TIMEOUT_MS), [this] {
-            return eventHandler_ != nullptr;
-        });
-    }
-
-    auto executeFunc = [this] { DeactiveEl3El4El5(); };
-    eventHandler_->PostTask(executeFunc, CLEAR_TASK_NAME, DEFAULT_CHECK_INTERVAL,
-                            AppExecFwk::EventHandler::Priority::IMMEDIATE);
-    LOGI("success");
-}
-
-void DelayHandler::StartDelayHandler()
-{
-    pthread_setname_np(pthread_self(), "storage_monitor_task_event");
-    auto runner = AppExecFwk::EventRunner::Create(false);
-    if (runner == nullptr) {
-        LOGE("event runner is nullptr.");
-        return;
-    }
-    {
-        std::lock_guard<std::mutex> lock(eventMutex_);
-        eventHandler_ = std::make_shared<AppExecFwk::EventHandler>(runner);
-    }
-    eventCon_.notify_one();
-    runner->Run();
-    LOGI("success");
+    LOGI("DelayHandler::StartDelayTask, start delay clear key task.");
+    std::lock_guard<std::mutex> lock(handlerMutex_);
+    needExecute_ = true;
+    cancelled_ = false;
+    cv_.notify_all();
+    LOGI("DelayHandler::success.");
 }
 
 void DelayHandler::CancelDelayTask()
 {
-    LOGI("enter");
-    if (eventHandler_ == nullptr) {
-        LOGE("eventHandler_ is nullptr !");
-        return;
-    }
-    eventHandler_->RemoveTask(CLEAR_TASK_NAME);
-    LOGI("success");
+    LOGI("DelayHandler::CancelDelayTask:: enter.");
+    std::lock_guard<std::mutex> lock(handlerMutex_);
+    timer_.Unregister(timerId_);
+    cancelled_ = true;
+    LOGI("DelayHandler::CancelDelayTask:: success.");
 }
 
 void DelayHandler::DeactiveEl3El4El5()
 {
-    LOGI("enter");
+    LOGI("DelayHandler::DeactiveEl3El4El5:: enter.");
     if (el4Key_ == nullptr) {
-        LOGI("elKey is nullptr do not clean.");
+        LOGI("DelayHandler::DeactiveEl3El4El5:: elKey is nullptr do not clean.");
         StorageRadar::ReportUpdateUserAuth("DeactiveEl3El4El5", userId_, E_PARAMS_INVALID, "EL4", "");
         return;
     }
+    std::lock_guard<std::mutex> lock(handlerMutex_);
     int32_t ret = el4Key_->LockUserScreen(userId_, FSCRYPT_SDP_ECE_CLASS);
     if (ret != E_OK) {
-        LOGE("Clear user %{public}u key failed", userId_);
+        LOGE("DelayHandler::DeactiveEl3El4El5:: Clear user %{public}u key failed.", userId_);
         StorageRadar::ReportUpdateUserAuth("DeactiveEl3El4El5::LockUserScreen", userId_, E_SYS_KERNEL_ERR, "EL4", "");
         return;
     }
     LOGW("success");
+}
+
+void DelayHandler::ProcessTasks()
+{
+    while (running_) {
+        {
+            std::unique_lock<std::mutex> lock(taskMutex_);
+            cv_.wait(lock, [this] { return needExecute_ || !running_; });
+            if (!running_) {
+                LOGI("DelayHandler: handler stoped, userId=%{public}d.", userId_);
+                break;
+            }
+            needExecute_ = false;
+        }
+        LOGI("DelayHandler: start timer for user=%{public}d, curTime=%{public}ld ms, exeTime=%{public}ld ms.",
+            userId_, GetTickCount(), GetTickCount() + DEFAULT_CHECK_INTERVAL);
+        timerId_ = timer_.Register([this]() {
+            std::unique_lock<std::mutex> lock(taskMutex_);
+            if (cancelled_) {
+                LOGI(" DelayHandler: task is cancelled.");
+                return;
+            }
+            LOGI("DelayHandler: EXECUTE for user=%{public}d, curTime=%{public}ld ms, exeTime=%{public}ld ms.",
+                userId_, GetTickCount(), GetTickCount() + DEFAULT_CHECK_INTERVAL);
+            DeactiveEl3El4El5();
+        }, DEFAULT_CHECK_INTERVAL, true);
+        cv_.notify_all();
+        LOGI("DelayHandler: done.");
+    }
+}
+
+int64_t DelayHandler::GetTickCount()
+{
+    return std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()
+    ).count();
 }
 } // StorageDaemon
 } // OHOS
