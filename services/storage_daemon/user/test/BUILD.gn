@@ -1,4 +1,4 @@
-# Copyright (c) 2021-2023 Huawei Device Co., Ltd.
+# Copyright (c) 2021-2025 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -72,7 +72,7 @@ ohos_unittest("user_manager_test") {
     "ipc:libdbinder",
   ]
 
-  if (storage_service_dfs_service) {
+  if (storage_service_cloud_fuse) {
     defines += [ "DFS_SERVICE" ]
     external_deps += [ "dfs_service:cloud_daemon_kit_inner" ]
   }
@@ -131,7 +131,7 @@ ohos_unittest("mount_manager_test") {
     "init:libbegetutil",
   ]
 
-  if (storage_service_dfs_service) {
+  if (storage_service_cloud_fuse) {
     defines += [ "DFS_SERVICE" ]
     external_deps += [ "dfs_service:cloud_daemon_kit_inner" ]
   }
