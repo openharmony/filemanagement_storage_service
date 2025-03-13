@@ -1,4 +1,4 @@
-# Copyright (c) 2024 Huawei Device Co., Ltd.
+# Copyright (c) 2024-2025 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -153,7 +153,7 @@ ohos_executable("storage_daemon") {
     external_deps += [ "user_auth_framework:userauth_client" ]
   }
 
-  if (storage_service_dfs_service) {
+  if (storage_service_cloud_fuse) {
     defines += [ "DFS_SERVICE" ]
     external_deps += [ "dfs_service:cloud_daemon_kit_inner" ]
   }
