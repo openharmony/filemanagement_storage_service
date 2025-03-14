@@ -14,9 +14,7 @@
  */
  
 #include "keymanager_napi.h"
- 
-#include "napi/native_api.h"
-#include "napi/native_node_api.h"
+
 #include "keymanager_n_exporter.h"
  
 namespace OHOS {

@@ -16,7 +16,6 @@
 #ifndef STORAGE_DAEMON_CRYPTO_KEY_RECOVER_MANAGER_H
 #define STORAGE_DAEMON_CRYPTO_KEY_RECOVER_MANAGER_H
 
-#include <vector>
 #include "fbex.h"
 #include "key_blob.h"
 #include "libfscrypt/key_control.h"

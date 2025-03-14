@@ -16,7 +16,6 @@
 #ifndef OHOS_STORAGE_MANAGER_STORAGE_DAEMON_COMMUNICATION_H
 #define OHOS_STORAGE_MANAGER_STORAGE_DAEMON_COMMUNICATION_H
 
-#include <nocopyable.h>
 #include "istorage_manager.h"
 #include "disk/disk_info.h"
 #include "volume/volume_info.h"

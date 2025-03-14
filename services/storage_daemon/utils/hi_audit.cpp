@@ -15,13 +15,10 @@
 
 #include "hi_audit.h"
 
-#include <chrono>
-#include <ctime>
 #include <dirent.h>
 #include <fcntl.h>
 #include <iomanip>
 #include <sstream>
-#include <sys/time.h>
 #include <unistd.h>
 
 #include "storage_service_log.h"

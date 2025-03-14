@@ -17,7 +17,6 @@
 #define OHOS_STORAGE_MANAGER_NOTIFICATION_H
 
 #include <singleton.h>
-#include <nocopyable.h>
 #include "volume_external.h"
 
 namespace OHOS {

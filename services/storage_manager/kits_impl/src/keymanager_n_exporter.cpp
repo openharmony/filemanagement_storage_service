@@ -13,17 +13,11 @@
  * limitations under the License.
  */
 #include "keymanager_n_exporter.h"
- 
-#include <singleton.h>
- 
-#include "n_class.h"
+
 #include "n_error.h"
 #include "n_func_arg.h"
-#include "n_val.h"
 #include "storage_manager_connect.h"
 #include "storage_service_errno.h"
-#include "storage_service_log.h"
-#include "keymanager_napi.h"
  
 using namespace OHOS::StorageManager;
 using namespace OHOS::FileManagement::LibN;

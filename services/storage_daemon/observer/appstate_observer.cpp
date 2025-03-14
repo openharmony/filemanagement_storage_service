@@ -15,13 +15,8 @@
 #ifdef STORAGE_SERVICE_MEDIA_FUSE
 #include "observer/appstate_observer.h"
 
-#include <cstddef>
-#include <sstream>
-#include <string>
-
 #include "singleton.h"
 #include "storage_service_constant.h"
-#include "system_ability_definition.h"
 #include "user/mount_manager.h"
 
 namespace OHOS {

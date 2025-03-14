@@ -16,7 +16,6 @@
 #define FILEMANAGEMENT_STORAGE_XCOLLIE_H
 
 #include "xcollie/xcollie.h"
-#include <sstream>
 
 namespace OHOS {
 namespace StorageDaemon {

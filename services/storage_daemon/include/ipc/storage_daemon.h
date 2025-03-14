@@ -16,8 +16,6 @@
 #ifndef OHOS_STORAGE_DAEMON_STORAGE_DAEMON_H
 #define OHOS_STORAGE_DAEMON_STORAGE_DAEMON_H
 
-#include <mutex>
-#include <vector>
 #include "ipc/storage_daemon_stub.h"
 #include "system_ability_status_change_stub.h"
 #include "storage_service_constant.h"
@@ -132,6 +130,7 @@ private:
                                              const std::vector<uint8_t> &token,
                                              const std::vector<uint8_t> &secret,
                                              const std::string needRestoreVersion);
+    int32_t PrepareUserDirsAndUpdateAuth4Nato(uint32_t userId, KeyType type);
     int32_t PrepareUeceDir(uint32_t userId);
     int32_t RestoreUserKey(int32_t userId, uint32_t flags);
     bool IsNeedRestorePathExist(uint32_t userId, bool needCheckEl1);
@@ -150,6 +149,13 @@ private:
     int32_t RestoreconElX(uint32_t userId);
     void ActiveAppCloneUserKey();
     void SetDeleteFlag4KeyFiles();
+    int32_t ActiveUserKey4Nato(uint32_t userId, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret);
+    int32_t ActiveUserKey4Update(uint32_t userId, const std::vector<uint8_t> &token,
+        const std::vector<uint8_t> &secret);
+    int32_t ActiveUserKey4Single(uint32_t userId, const std::vector<uint8_t> &token,
+        const std::vector<uint8_t> &secret);
+    void ClearNatoRestoreKey(uint32_t userId, KeyType type, bool isClearAll);
+    void ClearAllNatoRestoreKey(uint32_t userId, bool isClearAll);
     void SetPriority();
 };
 } // StorageDaemon

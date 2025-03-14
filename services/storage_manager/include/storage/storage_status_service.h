@@ -16,13 +16,9 @@
 #ifndef OHOS_STORAGE_MANAGER_STORAGE_STATUS_SERVICE_H
 #define OHOS_STORAGE_MANAGER_STORAGE_STATUS_SERVICE_H
 
-#include <vector>
-#include <nocopyable.h>
 #include <singleton.h>
-#include <iostream>
 #include "bundle_stats.h"
 #include "storage_stats.h"
-#include "iremote_object.h"
 
 namespace OHOS {
 namespace StorageManager {

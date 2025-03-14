@@ -16,13 +16,7 @@
 #ifndef OHOS_STORAGE_DAEMON_USER_MANAGER_H
 #define OHOS_STORAGE_DAEMON_USER_MANAGER_H
 
-#include <string>
-#include <vector>
-#include <mutex>
-#include <sys/types.h>
-#include <nocopyable.h>
 #include "user/mount_manager.h"
-#include "utils/file_utils.h"
 
 namespace OHOS {
 namespace StorageDaemon {

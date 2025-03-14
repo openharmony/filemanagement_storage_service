@@ -16,10 +16,7 @@
 #ifndef HI_AUDIT_H
 #define HI_AUDIT_H
 
-#include <cstdint>
 #include <mutex>
-#include <queue>
-#include <string>
 #include <sys/stat.h>
 
 #include "nocopyable.h"

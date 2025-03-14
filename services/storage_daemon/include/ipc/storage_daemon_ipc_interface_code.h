@@ -16,9 +16,6 @@
 #ifndef OHOS_STORAGE_DAEMON_STORAGE_DAEMON_IPC_INTERFACE_CODE_H
 #define OHOS_STORAGE_DAEMON_STORAGE_DAEMON_IPC_INTERFACE_CODE_H
 
-#include <string>
-#include "iremote_broker.h"
-
 /* SAID:5002 */
 namespace OHOS {
 namespace StorageDaemon {

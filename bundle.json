@@ -26,7 +26,8 @@
       "storage_service_storage_statistics_manager",
       "storage_service_crypto_test",
       "storage_service_external_storage_qos_trans",
-      "storage_service_media_fuse"
+      "storage_service_media_fuse",
+      "storage_service_cloud_fuse"
     ],
     "adapted_system_type": [ "small", "standard" ],
     "rom": "4096KB",

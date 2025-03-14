@@ -13,12 +13,9 @@
  * limitations under the License.
  */
 
-#include <iostream>
 #include <fstream>
 #include <sstream>
-#include <unistd.h>
 #include <fcntl.h>
-#include <sys/types.h>
 #include "unique_fd.h"
 #include "storage_service_log.h"
 #include "storage_statistics_radar.h"

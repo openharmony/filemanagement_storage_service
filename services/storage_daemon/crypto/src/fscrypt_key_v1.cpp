@@ -15,15 +15,12 @@
 
 #include "fscrypt_key_v1.h"
 
-#include <fcntl.h>
 #include <openssl/sha.h>
 #include <unistd.h>
-#include <cstdio>
 #include <dirent.h>
 
 #include "file_ex.h"
 #include "key_backup.h"
-#include "libfscrypt/key_control.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/file_utils.h"

@@ -14,13 +14,6 @@
  */
 
 #include "storage_daemon_client.h"
-
-#include <chrono>
-#include <ctime>
-#include <thread>
-
-#include "iremote_object.h"
-#include "iremote_proxy.h"
 #include "iservice_registry.h"
 #include "libfscrypt/fscrypt_utils.h"
 #include "storage_service_errno.h"

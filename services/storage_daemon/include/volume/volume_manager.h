@@ -16,10 +16,6 @@
 #ifndef OHOS_STORAGE_DAEMON_VOLUME_MANAGER_H
 #define OHOS_STORAGE_DAEMON_VOLUME_MANAGER_H
 
-#include <nocopyable.h>
-#include <sys/types.h>
-#include <string>
-#include <memory>
 #include "storage_rl_map.h"
 #include "volume/volume_info.h"
 

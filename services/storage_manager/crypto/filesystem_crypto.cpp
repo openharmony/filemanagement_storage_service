@@ -16,7 +16,6 @@
 #include "os_account_manager.h"
 #include "crypto/filesystem_crypto.h"
 
-#include <vector>
 #include "storage_daemon_communication/storage_daemon_communication.h"
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
