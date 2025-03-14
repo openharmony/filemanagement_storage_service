@@ -19,7 +19,7 @@
 #include <iostream>
 
 #include "ipc/storage_daemon.h"
-
+#include "istorage_daemon.h"
 namespace OHOS {
 namespace StorageDaemon {
 class StorageDaemonClient {

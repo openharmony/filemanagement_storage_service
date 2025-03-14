@@ -766,7 +766,7 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateAuth4Nato(uint32_t userId, KeyTyp
     if (ret != E_OK) {
         return E_NATO_PREPARE_USER_DIR_ERROR;
     }
-    if (flags == IStorageDaemon::CRYPTO_FLAG_EL2) {
+    if (flags == static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL2)) {
         PrepareUeceDir(userId);
     }
     UserManager::GetInstance()->CreateElxBundleDataDir(userId, type);
