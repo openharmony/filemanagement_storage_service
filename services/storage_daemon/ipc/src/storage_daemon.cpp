@@ -827,8 +827,13 @@ int32_t StorageDaemon::GenerateKeyAndPrepareUserDirs(uint32_t userId, KeyType ty
     if ((flags & static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL5)) && IsDir(keyUeceDir) &&
          !std::filesystem::is_empty(keyUeceDir)) {
         LOGE("uece has already create, do not need create !");
-        // for double2single update el5
-        UserManager::GetInstance()->CreateElxBundleDataDir(userId, type);
+#ifdef USER_CRYPTO_MIGRATE_KEY
+        std::error_code errCode;
+        std::string el0NeedRestore = std::string(DATA_SERVICE_EL0_STORAGE_DAEMON_SD) + NEED_RESTORE_SUFFIX;
+        if (std::filesystem::exists(el0NeedRestore, errCode)) {
+            UserManager::GetInstance()->CreateElxBundleDataDir(userId, type);  // for double2single update el5
+        }
+#endif
         return ret;
     }
     (void)UserManager::GetInstance()->DestroyUserDirs(userId, flags);

@@ -202,7 +202,7 @@ ohos_executable("storage_daemon") {
     external_deps += [ "user_auth_framework:userauth_client" ]
   }
 
-  if (storage_service_dfs_service) {
+  if (storage_service_cloud_fuse) {
     defines += [ "DFS_SERVICE" ]
     external_deps += [ "dfs_service:cloud_daemon_kit_inner" ]
   }
