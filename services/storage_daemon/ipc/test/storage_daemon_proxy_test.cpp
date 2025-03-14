@@ -388,6 +388,35 @@ HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_SetVolumeDescription_001
 }
 
 /**
+ * @tc.name: StorageDaemonProxyTest_QueryUsbIsInUse_001
+ * @tc.desc: Verify the QueryUsbIsInUse function.
+ * @tc.type: FUNC
+ * @tc.require: AR20250226995120
+ */
+HWTEST_F(StorageDaemonProxyTest, StorageDaemonProxyTest_QueryUsbIsInUse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_QueryUsbIsInUse_001 start";
+
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Invoke(mock_.GetRefPtr(), &StorageDaemonServiceMock::InvokeSendRequest));
+    std::string diskPath = "/mnt/data/external/F573-04E1";
+    bool isInUse = true;
+    ASSERT_TRUE(proxy_ != nullptr);
+    int32_t ret = proxy_->QueryUsbIsInUse(diskPath, isInUse);
+    ASSERT_TRUE(ret == E_OK);
+    ASSERT_TRUE(mock_ != nullptr);
+    ASSERT_TRUE(static_cast<int32_t>(StorageDaemonInterfaceCode::QUERY_USB_IS_IN_USE) == mock_->code_);
+
+    EXPECT_CALL(*mock_, SendRequest(testing::_, testing::_, testing::_, testing::_))
+        .Times(1)
+        .WillOnce(testing::Return(E_WRITE_PARCEL_ERR));
+    ret = proxy_->QueryUsbIsInUse(diskPath, isInUse);
+    EXPECT_EQ(ret, E_WRITE_PARCEL_ERR);
+    GTEST_LOG_(INFO) << "StorageDaemonProxyTest_QueryUsbIsInUse_001 end";
+}
+
+/**
  * @tc.name: StorageDaemonProxyTest_InitGlobalKey_001
  * @tc.desc: Verify the InitGlobalKey function.
  * @tc.type: FUNC

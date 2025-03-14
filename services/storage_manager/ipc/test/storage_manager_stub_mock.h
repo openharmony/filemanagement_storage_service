@@ -55,6 +55,7 @@ public:
     MOCK_METHOD2(SetVolumeDescription, int32_t(std::string, std::string));
     MOCK_METHOD2(Format, int32_t(std::string, std::string));
     MOCK_METHOD2(GetDiskById, int32_t(std::string, Disk &));
+    MOCK_METHOD2(QueryUsbIsInUse, int32_t(const std::string &, bool &));
 
     MOCK_METHOD2(GenerateUserKeys, int32_t(uint32_t, uint32_t));
     MOCK_METHOD1(DeleteUserKeys, int32_t(uint32_t));

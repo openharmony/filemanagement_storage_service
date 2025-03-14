@@ -181,6 +181,8 @@ StorageDaemonStub::StorageDaemonStub()
         &StorageDaemonStub::HandleFormat;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::SET_VOL_DESC)] =
         &StorageDaemonStub::HandleSetVolDesc;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::QUERY_USB_IS_IN_USE)] =
+        &StorageDaemonStub::HandleQueryUsbIsInUse;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::PREPARE_USER_DIRS)] =
         &StorageDaemonStub::HandlePrepareUserDirs;
     opToInterfaceMap_[static_cast<uint32_t>(StorageDaemonInterfaceCode::DESTROY_USER_DIRS)] =
@@ -279,6 +281,7 @@ int32_t StorageDaemonStub::OnRemoteRequest(uint32_t code, MessageParcel &data,
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::PARTITION):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::FORMAT):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::SET_VOL_DESC):
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::QUERY_USB_IS_IN_USE):
             return OnRemoteRequestForBase(code, data, reply);
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::PREPARE_USER_DIRS):
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::DESTROY_USER_DIRS):
@@ -341,6 +344,8 @@ int32_t StorageDaemonStub::OnRemoteRequestForBase(uint32_t code, MessageParcel &
             return HandleFormat(data, reply);
         case static_cast<uint32_t>(StorageDaemonInterfaceCode::SET_VOL_DESC):
             return HandleSetVolDesc(data, reply);
+        case static_cast<uint32_t>(StorageDaemonInterfaceCode::QUERY_USB_IS_IN_USE):
+            return HandleQueryUsbIsInUse(data, reply);
         default:
             LOGE("Cannot response request %{public}d: unknown tranction", code);
             return E_SYS_KERNEL_ERR;
@@ -514,6 +519,22 @@ int32_t StorageDaemonStub::HandleSetVolDesc(MessageParcel &data, MessageParcel &
         return E_WRITE_REPLY_ERR;
     }
 
+    return E_OK;
+}
+
+int32_t StorageDaemonStub::HandleQueryUsbIsInUse(MessageParcel &data, MessageParcel &reply)
+{
+    std::string diskPath = data.ReadString();
+    bool isInUse = true;
+    int32_t res = QueryUsbIsInUse(diskPath, isInUse);
+    if (!reply.WriteBool(isInUse)) {
+        LOGE("Write bool error");
+        return E_WRITE_REPLY_ERR;
+    }
+    if (!reply.WriteInt32(res)) {
+        LOGE("Write res failed");
+        return E_WRITE_REPLY_ERR;
+    }
     return E_OK;
 }
 

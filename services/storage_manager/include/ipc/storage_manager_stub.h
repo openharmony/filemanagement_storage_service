@@ -61,6 +61,7 @@ private:
     int32_t HandleSetVolDesc(MessageParcel &data, MessageParcel &reply);
     int32_t HandleFormat(MessageParcel &data, MessageParcel &reply);
     int32_t HandleGetDiskById(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleQueryUsbIsInUse(MessageParcel &data, MessageParcel &reply);
 
     int32_t HandleNotifyMtpMount(MessageParcel &data, MessageParcel &reply);
     int32_t HandleNotifyMtpUnmount(MessageParcel &data, MessageParcel &reply);

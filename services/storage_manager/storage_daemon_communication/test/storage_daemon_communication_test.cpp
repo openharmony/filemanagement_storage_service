@@ -648,6 +648,30 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetVolumeDescripti
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_SetVolumeDescription_0000 SUCCESS";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_QueryUsbIsInUse_0000
+ * @tc.name: Daemon_communication_QueryUsbIsInUse_0000
+ * @tc.desc: Test function of QueryUsbIsInUse interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20250226995120
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_QueryUsbIsInUse_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_QueryUsbIsInUse_0000 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    std::string diskPath = "/mnt/data/external/F573-04E1";
+    int32_t result = -1;
+    bool isInUse = true;
+    if (sdCommunication != nullptr) {
+        result = sdCommunication->QueryUsbIsInUse(diskPath, isInUse);
+    }
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_QueryUsbIsInUse_0000 SUCCESS";
+}
 #endif
 
 #ifdef USER_CRYPTO_MANAGER

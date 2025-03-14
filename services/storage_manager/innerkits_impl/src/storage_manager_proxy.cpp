@@ -1218,6 +1218,29 @@ int32_t StorageManagerProxy::GetDiskById(std::string diskId, Disk &disk)
     return reply.ReadInt32();
 }
 
+int32_t StorageManagerProxy::QueryUsbIsInUse(const std::string &diskPath, bool &isInUse)
+{
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    if (!data.WriteString(diskPath)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageManagerInterfaceCode::QUERY_USB_IS_IN_USE), data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+    isInUse = reply.ReadBool();
+    return reply.ReadInt32();
+}
+
 std::vector<int32_t> StorageManagerProxy::CreateShareFile(const std::vector<std::string> &uriList,
                                                           uint32_t tokenId, uint32_t flag)
 {

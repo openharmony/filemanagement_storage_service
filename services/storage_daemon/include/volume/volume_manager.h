@@ -34,6 +34,7 @@ public:
     int32_t UMount(const std::string volId);
     int32_t Format(const std::string volId, const std::string fsType);
     int32_t SetVolumeDescription(const std::string volId, const std::string description);
+    int32_t QueryUsbIsInUse(const std::string &diskPath, bool &isInUse);
 
 private:
     VolumeManager() = default;

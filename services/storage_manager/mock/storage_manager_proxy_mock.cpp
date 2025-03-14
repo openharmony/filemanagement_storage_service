@@ -249,6 +249,11 @@ int32_t StorageManagerProxy::GetDiskById(std::string diskId, Disk &disk)
     return E_OK;
 }
 
+int32_t StorageManagerProxy::QueryUsbIsInUse(const std::string &diskPath, bool &isInUse)
+{
+    return E_OK;
+}
+
 std::vector<int32_t> StorageManagerProxy::CreateShareFile(const std::vector<std::string> &uriList,
                                                           uint32_t tokenId, uint32_t flag)
 {

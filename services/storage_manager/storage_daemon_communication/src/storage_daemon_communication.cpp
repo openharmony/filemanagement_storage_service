@@ -256,6 +256,21 @@ int32_t StorageDaemonCommunication::SetVolumeDescription(std::string volumeId, s
     return storageDaemon_->SetVolumeDescription(volumeId, description);
 }
 
+int32_t StorageDaemonCommunication::QueryUsbIsInUse(const std::string &diskPath, bool &isInUse)
+{
+    LOGI("StorageDaemonCommunication::QueryUsbIsInUse start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::QueryUsbIsInUse connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->QueryUsbIsInUse(diskPath, isInUse);
+}
+
 int32_t StorageDaemonCommunication::GenerateUserKeys(uint32_t userId, uint32_t flags)
 {
     LOGD("enter");

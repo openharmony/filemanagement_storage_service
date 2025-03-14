@@ -212,6 +212,28 @@ int32_t StorageDaemonProxy::SetVolumeDescription(const std::string &volId, const
     return reply.ReadInt32();
 }
 
+int32_t StorageDaemonProxy::QueryUsbIsInUse(const std::string &diskPath, bool &isInUse)
+{
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor())) {
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    if (!data.WriteString(diskPath)) {
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    int32_t err = SendRequest(
+        static_cast<int32_t>(StorageDaemonInterfaceCode::QUERY_USB_IS_IN_USE), data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+    isInUse = reply.ReadBool();
+    return reply.ReadInt32();
+}
+
 int32_t StorageDaemonProxy::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
     MessageParcel data;

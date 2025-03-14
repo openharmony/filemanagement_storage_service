@@ -59,6 +59,7 @@ public:
     int32_t SetVolumeDescription(std::string fsUuid, std::string description) override;
     int32_t Format(std::string volumeId, std::string fsType) override;
     int32_t GetDiskById(std::string diskId, Disk &disk) override;
+    int32_t QueryUsbIsInUse(const std::string &diskPath, bool &isInUse) override;
 
     // fscrypt api
     int32_t GenerateUserKeys(uint32_t userId, uint32_t flags) override;

@@ -170,6 +170,18 @@ bool HandleSetVolDescFuzzTest(const uint8_t *data, size_t size)
     return true;
 }
 
+bool HandleQueryUsbIsInUseFuzzTest(const uint8_t *data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
+    datas.WriteBuffer(data, size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageDaemon->HandleQueryUsbIsInUse(datas, reply);
+    return true;
+}
+
 bool HandleFormatFuzzTest(const uint8_t *data, size_t size)
 {
     MessageParcel datas;
@@ -418,6 +430,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     OHOS::HandlePartitionFuzzTest(data, size);
     OHOS::HandleCheckFuzzTest(data, size);
     OHOS::HandleSetVolDescFuzzTest(data, size);
+    OHOS::HandleQueryUsbIsInUseFuzzTest(data, size);
     OHOS::HandleFormatFuzzTest(data, size);
     OHOS::HandleSetBundleQuotaFuzzTest(data, size);
     OHOS::HandleGenerateUserKeysFuzzTest(data, size);
