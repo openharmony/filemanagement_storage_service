@@ -24,15 +24,7 @@ ohos_unittest("storage_total_status_service_test") {
   }
   module_out_path = "storage_service/storage_manager"
 
-  sources = [
-    "${storage_manager_path}/storage/src/bundle_manager_connector.cpp",
-    "${storage_manager_path}/storage/src/storage_monitor_service.cpp",
-    "${storage_manager_path}/storage/src/storage_status_service.cpp",
-    "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
-    "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
-    "${storage_manager_path}/utils/src/storage_utils.cpp",
-    "storage_total_status_service_test.cpp",
-  ]
+  sources = [ "storage_total_status_service_test.cpp" ]
 
   include_dirs = [
     "${bundlemanager_framework_path}/services/bundlemgr/include",
@@ -51,6 +43,7 @@ ohos_unittest("storage_total_status_service_test") {
 
   deps = [
     "${storage_daemon_path}:storage_common_utils",
+    "${storage_service_path}/services/storage_manager:storage_manager",
     "${storage_daemon_path}:storage_daemon_ipc",
     "//third_party/googletest:gtest_main",
   ]
@@ -59,6 +52,8 @@ ohos_unittest("storage_total_status_service_test") {
     "ability_base:base",
     "ability_base:want",
     "access_token:libaccesstoken_sdk",
+    "access_token:libnativetoken",
+    "access_token:libtoken_setproc",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
     "cJSON:cjson",
