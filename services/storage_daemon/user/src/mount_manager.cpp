@@ -50,6 +50,8 @@
 namespace OHOS {
 namespace StorageDaemon {
 using namespace std;
+#define HMDFS_IOC 0xf2
+#define HMDFS_IOC_FORBID_OPEN _IO(HMDFS_IOC, 12)
 #ifdef DFS_SERVICE
 using namespace OHOS::FileManagement::CloudFile;
 #endif
@@ -125,6 +127,12 @@ const vector<string> FD_PATH = {
     "/data/service/el4/<currentUserId>",
     "/data/service/el5/<currentUserId>",
     "/storage/media/<currentUserId>"
+};
+
+const vector<string> SYS_PATH = {
+    "/mnt/hmdfs/<currentUserId>/account",
+    "/mnt/hmdfs/<currentUserId>/non_account",
+    "/mnt/hmdfs/<currentUserId>/cloud"
 };
 
 const std::string HMDFS_SYS_CAP = "const.distributed_file_property.enabled";
@@ -830,7 +838,7 @@ int32_t MountManager::UMountAllPath(int32_t userId, std::list<std::string> &unMo
     list = mountMap[MOUNT_POINT_TYPE_HMDFS];
     total = static_cast<int>(list.size());
     LOGI("unmount hmdfs path start, total %{public}d.", total);
-    res = UMountByList(list, unMountFailList);
+    res = UMountHmdfsByList(userId, list, unMountFailList);
     if (res != E_OK) {
         LOGE("failed to umount hmdfs mount point, res is %{public}d", res);
         result = E_UMOUNT_HMDFS;
@@ -841,6 +849,41 @@ int32_t MountManager::UMountAllPath(int32_t userId, std::list<std::string> &unMo
     }
     LOGI("UMountAllPath end, res is %{public}d", result);
     return result;
+}
+
+int32_t MountManager::UMountHmdfsByList(int32_t userId, std::list<std::string> &list,
+    std::list<std::string> &unMountFailList)
+{
+    if (list.empty()) {
+        return E_OK;
+    }
+    int32_t result = E_OK;
+    for (std::string &path: list) {
+        LOGD("umount path %{public}s.", path.c_str());
+        if (IsSysMountPoint(userId, path)) {
+            continue;
+        }
+        int32_t res = UMount(path);
+        if (res != E_OK && errno != ENOENT && errno != EINVAL) {
+            LOGE("failed to unmount path %{public}s, errno %{public}d.", path.c_str(), errno);
+            result = errno;
+            unMountFailList.push_back(path);
+        }
+    }
+    return result;
+}
+
+bool MountManager::IsSysMountPoint(int32_t userId, std::string &path)
+{
+    int count = static_cast<int>(SYS_PATH.size());
+    for (int i = 0; i < count; i++) {
+        std::string tempPath = SYS_PATH[i];
+        ParseSandboxPath(tempPath, to_string(userId), "");
+        if (path == tempPath) {
+            return true;
+        }
+    }
+    return false;
 }
 
 int32_t MountManager::UMountByList(std::list<std::string> &list, std::list<std::string> &unMountFailList)
@@ -1172,14 +1215,17 @@ int32_t MountManager::UmountFileSystem(int32_t userId)
     LOGI("try to force umount all path start.");
     std::list<std::string> unMountFailList;
     int32_t unMountRes = UMountAllPath(userId, unMountFailList);
-    if (unMountRes == E_OK || unMountRes == E_UMOUNT_PROC_MOUNTS_OPEN) {
-        return E_OK;
+    if (CheckSysFs(userId) || unMountRes != E_OK) {
+        ForbidOpen(userId);
+        std::vector<std::string> paths = {"account", "non_account", "cloud"};
+        for (const auto &item: paths) {
+            Utils::MountArgument mountArg(Utils::MountArgumentDescriptors::Alpha(userId, item));
+            unMountFailList.push_back(mountArg.GetFullDst());
+        }
+        LOGE("force umount failed, try to kill process, res is %{public}d.", unMountRes);
+        FindAndKillProcess(userId, unMountFailList, unMountRes);
     }
-    LOGE("force umount failed, try to kill process, res is %{public}d.", unMountRes);
-    int32_t findAndKill = FindAndKillProcess(userId, unMountFailList, unMountRes);
-    if (findAndKill == E_UMOUNT_NO_PROCESS_FIND || findAndKill == E_UMOUNT_PROCESS_KILL) {
-        return UMountByListWithDetach(unMountFailList) == E_OK ? E_OK : E_UMOUNT_DETACH;
-    }
+
     LOGE("try to force umount again.");
     std::list<std::string> tempList;
     int32_t unMountAgain = UMountByList(unMountFailList, tempList);
@@ -1190,6 +1236,75 @@ int32_t MountManager::UmountFileSystem(int32_t userId)
     FindAndKillProcess(userId, unMountFailList, unMountAgain);
     LOGE("try to umount by detach.");
     return UMountByListWithDetach(unMountFailList) == E_OK ? E_OK : E_UMOUNT_DETACH;
+}
+
+bool MountManager::CheckSysFs(int32_t userId)
+{
+    std::vector<std::string> paths = {"account", "non_account", "cloud"};
+    for (const auto &item: paths) {
+        Utils::MountArgument mountArg(Utils::MountArgumentDescriptors::Alpha(userId, item));
+        std::string path = mountArg.GetFullDst();
+        if (IsSysFsInUse(path)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool MountManager::IsSysFsInUse(std::string &path)
+{
+    FILE *f = fopen(path.c_str(), "r");
+    if (f == nullptr) {
+        LOGE("sys fs fopen fail, path is %{public}s, errno is %{public}d.", path.c_str(), errno);
+        return true;
+    }
+    int fd = fileno(f);
+    if (fd < 0) {
+        LOGE("sys fs fileno fail, path is %{public}s, errno is %{public}d.", path.c_str(), errno);
+        (void)fclose(f);
+        return true;
+    }
+    int inUse = -1;
+    int cmd = _IOR(0xAC, 77, int);
+    if (ioctl(fd, cmd, &inUse) < 0) {
+        LOGE("sys fs ioctl fail, path is %{public}s, errno is %{public}d.", path.c_str(), errno);
+        (void)fclose(f);
+        return true;
+    }
+    if (inUse > 0) {
+        LOGE("sys fs is in use, path is %{public}s, use count is %{public}d.", path.c_str(), inUse);
+        (void)fclose(f);
+        return true;
+    }
+    LOGE("sys fs is not use, path is %{public}s.", path.c_str());
+    (void)fclose(f);
+    return false;
+}
+
+void MountManager::ForbidOpen(int32_t userId)
+{
+    std::vector<std::string> paths = {"account", "non_account", "cloud"};
+    for (const auto &item: paths) {
+        Utils::MountArgument mountArg(Utils::MountArgumentDescriptors::Alpha(userId, item));
+        std::string path = mountArg.GetFullDst();
+        FILE *f = fopen(path.c_str(), "r");
+        if (f == nullptr) {
+            LOGE("forbid fopen fail, path is %{public}s, errno is %{public}d.", path.c_str(), errno);
+            return;
+        }
+        int fd = fileno(f);
+        if (fd < 0) {
+            LOGE("forbid fileno fail, path is %{public}s, errno is %{public}d.", path.c_str(), errno);
+            (void)fclose(f);
+            return;
+        }
+        if (ioctl(fd, HMDFS_IOC_FORBID_OPEN) < 0) {
+            LOGE("forbid ioctl fail, path is %{public}s, errno is %{public}d.", path.c_str(), errno);
+        } else {
+            LOGE("forbid ioctl success, path is %{public}s.", path.c_str());
+        }
+        (void)fclose(f);
+    }
 }
 
 int32_t MountManager::FindAndKillProcess(int32_t userId, std::list<std::string> &unMountFailList, int32_t radar)
