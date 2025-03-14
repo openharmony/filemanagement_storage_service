@@ -355,6 +355,10 @@ void MtpFsDevice::RefreshDirContent(std::string path)
     }
 
     uint32_t *out = (uint32_t *)malloc(sizeof(uint32_t));
+    if (!out) {
+        LOGE("malloc failed");
+        return;
+    }
     CriticalEnter();
     int32_t num = LIBMTP_Get_Children(device_, dir->StorageId(), dir->Id(), &out);
     CriticalLeave();

@@ -16,13 +16,45 @@
 #include <cstdio>
 #include <gtest/gtest.h>
 
+#include "accesstoken_kit.h"
 #include "directory_ex.h"
+#include "nativetoken_kit.h"
 #include "storage/bundle_manager_connector.h"
 #include "storage/storage_monitor_service.h"
 #include "storage/storage_status_service.h"
 #include "storage/storage_total_status_service.h"
 #include "storage_service_errno.h"
+#include "token_setproc.h"
 #include "utils/string_utils.h"
+
+static void SetNativeToken()
+{
+    uint64_t tokenId;
+    const char *perms[] = {
+        "ohos.permission.READ_MEDIA",
+        "ohos.permission.GET_BUNDLE_INFO_PRIVILEGED",
+        "ohos.permission.MANAGE_LOCAL_ACCOUNTS",
+        "ohos.permission.ACCESS_SCREEN_LOCK",
+        "ohos.permission.ACCESS_SCREEN_LOCK_INNER",
+        "ohos.permission.REMOVE_CACHE_FILES",
+        "ohos.permission.PUBLISH_SYSTEM_COMMON_EVENT"
+    };
+    const char* acls[] = { "ohos.permission.ACCESS_SCREEN_LOCK_INNER" };
+    NativeTokenInfoParams infoInstance = {
+        .dcapsNum = 0,
+        .permsNum = 7,
+        .aclsNum = 0,
+        .dcaps = nullptr,
+        .perms = perms,
+        .acls = acls,
+        .aplStr = "system_basic",
+    };
+
+    infoInstance.processName = "storage_service_test";
+    tokenId = GetAccessTokenId(&infoInstance);
+    SetSelfTokenID(tokenId);
+    OHOS::Security::AccessToken::AccessTokenKit::ReloadNativeTokenInfo();
+}
 
 namespace {
 using namespace std;
@@ -37,6 +69,7 @@ struct DirInfo {
 };
 constexpr uid_t OID_ROOT = 0;
 static constexpr int MODE_0711 = 0711;
+static constexpr int MODE_02771 = 02771;
 constexpr uid_t OID_FILE_MANAGER = 1006;
 constexpr uid_t OID_USER_DATA_RW = 1008;
 constexpr uid_t OID_DFS = 1009;
@@ -49,6 +82,7 @@ const std::vector<DirInfo> virtualDir_{{"/storage/media/%d", MODE_0711, OID_USER
         {"/mnt/data/%d/", MODE_0711, OID_ROOT, OID_ROOT},
         {"/mnt/data/%d/cloud", MODE_0711, OID_ROOT, OID_ROOT},
         {"/mnt/data/%d/cloud_fuse", MODE_0711, OID_DFS, OID_DFS},
+        {"/mnt/data/%d/userExternal", MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
         {"/mnt/data/%d/hmdfs", MODE_0711, OID_FILE_MANAGER, OID_FILE_MANAGER},
         {"/mnt/hmdfs/", MODE_0711, OID_ROOT, OID_ROOT},
         {"/mnt/hmdfs/%d/", MODE_0711, OID_ROOT, OID_ROOT},
@@ -58,7 +92,7 @@ const std::vector<DirInfo> virtualDir_{{"/storage/media/%d", MODE_0711, OID_USER
 
 class StorageTotalStatusServiceTest : public testing::Test {
 public:
-    static void SetUpTestCase(void) {};
+    static void SetUpTestCase(void) { SetNativeToken(); };
     static void TearDownTestCase() {};
     void SetUp() {};
     void TearDown() {};
