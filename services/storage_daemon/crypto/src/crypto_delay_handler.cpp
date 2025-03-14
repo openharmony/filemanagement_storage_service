@@ -100,16 +100,19 @@ void DelayHandler::ProcessTasks()
             }
             needExecute_ = false;
         }
-        LOGI("DelayHandler: start timer for user=%{public}d, curTime=%{public}ld ms, exeTime=%{public}ld ms.",
-            userId_, GetTickCount(), GetTickCount() + DEFAULT_CHECK_INTERVAL);
-        timerId_ = timer_.Register([this]() {
+        std::string curTime = std::to_string(GetTickCount());
+        std::string expExeTime = std::to_string(GetTickCount() + DEFAULT_CHECK_INTERVAL);
+        LOGI("DelayHandler: start timer for user=%{public}d, curTime=%{public}s ms, exeTime=%{public}s ms.",
+            userId_, curTime.c_str(), expExeTime.c_str());
+        timerId_ = timer_.Register([this, expExeTime]() {
             std::unique_lock<std::mutex> lock(taskMutex_);
             if (cancelled_) {
                 LOGI(" DelayHandler: task is cancelled.");
                 return;
             }
-            LOGI("DelayHandler: EXECUTE for user=%{public}d, curTime=%{public}ld ms, exeTime=%{public}ld ms.",
-                userId_, GetTickCount(), GetTickCount() + DEFAULT_CHECK_INTERVAL);
+            std::string realExeTime = std::to_string(GetTickCount());
+            LOGI("DelayHandler: EXECUTE for user=%{public}d, curTime=%{public}s ms, expExeTime=%{public}s ms.",
+                userId_, realExeTime.c_str(), expExeTime.c_str());
             DeactiveEl3El4El5();
         }, DEFAULT_CHECK_INTERVAL, true);
         cv_.notify_all();
