@@ -1208,7 +1208,7 @@ int32_t MountManager::UmountFileSystem(int32_t userId)
         Utils::MountArgument mountArg(Utils::MountArgumentDescriptors::Alpha(userId, item));
         unMountFailList.push_back(mountArg.GetFullDst());
     }
-    CheckSysFs(userId)
+    CheckSysFs(userId);
     if (unMountRes != E_OK) {
         ForbidOpen(userId);
         LOGE("force umount failed, try to kill process, res is %{public}d.", unMountRes);
