@@ -1203,17 +1203,17 @@ int32_t MountManager::UmountFileSystem(int32_t userId)
     LOGI("try to force umount all path start.");
     std::list<std::string> unMountFailList;
     int32_t unMountRes = UMountAllPath(userId, unMountFailList);
-    if (CheckSysFs(userId) || unMountRes != E_OK) {
+    std::vector<std::string> paths = {"account", "non_account", "cloud"};
+    for (const auto &item: paths) {
+        Utils::MountArgument mountArg(Utils::MountArgumentDescriptors::Alpha(userId, item));
+        unMountFailList.push_back(mountArg.GetFullDst());
+    }
+    CheckSysFs(userId)
+    if (unMountRes != E_OK) {
         ForbidOpen(userId);
-        std::vector<std::string> paths = {"account", "non_account", "cloud"};
-        for (const auto &item: paths) {
-            Utils::MountArgument mountArg(Utils::MountArgumentDescriptors::Alpha(userId, item));
-            unMountFailList.push_back(mountArg.GetFullDst());
-        }
         LOGE("force umount failed, try to kill process, res is %{public}d.", unMountRes);
         FindAndKillProcess(userId, unMountFailList, unMountRes);
     }
-
     LOGE("try to force umount again.");
     std::list<std::string> tempList;
     int32_t unMountAgain = UMountByList(unMountFailList, tempList);
