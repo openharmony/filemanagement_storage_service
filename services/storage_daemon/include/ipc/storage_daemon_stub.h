@@ -44,6 +44,7 @@ private:
     int32_t HandleFormat(MessageParcel &data, MessageParcel &reply);
     int32_t HandlePartition(MessageParcel &data, MessageParcel &reply);
     int32_t HandleSetVolDesc(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleQueryUsbIsInUse(MessageParcel &data, MessageParcel &reply);
 
     int32_t HandleStartUser(MessageParcel &data, MessageParcel &reply);
     int32_t HandleStopUser(MessageParcel &data, MessageParcel &reply);

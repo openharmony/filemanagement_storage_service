@@ -187,6 +187,11 @@ public:
         return E_OK;
     }
 
+    virtual int32_t QueryUsbIsInUse(const std::string &diskPath, bool &isInUse) override
+    {
+        return E_OK;
+    }
+
     virtual int32_t GenerateUserKeys(uint32_t userId, uint32_t flags) override
     {
         return E_OK;

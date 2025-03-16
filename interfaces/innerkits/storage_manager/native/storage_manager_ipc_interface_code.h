@@ -94,6 +94,7 @@ namespace StorageManager {
         GET_USER_NEED_ACTIVE_STATUS,
         MOUNT_FILE_MGR_FUSE,
         UMOUNT_FILE_MGR_FUSE,
+        QUERY_USB_IS_IN_USE,
     };
 } // namespace StorageManager
 } // namespace OHOS

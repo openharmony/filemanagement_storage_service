@@ -468,6 +468,25 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_SetVolumeDescripti
     EXPECT_TRUE(ret == E_NON_EXIST);
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_SetVolumeDescription_001 end";
 }
+
+/**
+ * @tc.name: Storage_Manager_StorageDaemonTest_QueryUsbIsInUse_001
+ * @tc.desc: check the QueryUsbIsInUse function when volume not exist
+ * @tc.type: FUNC
+ * @tc.require: AR20250226995120
+ */
+HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_QueryUsbIsInUse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_QueryUsbIsInUse_001 start";
+
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+    std::string diskPath = "";
+    bool isInUse = true;
+    auto ret = storageDaemon_->QueryUsbIsInUse(diskPath, isInUse);
+    EXPECT_TRUE(ret == E_PARAMS_NULLPTR_ERR);
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_QueryUsbIsInUse_001 end";
+}
 #endif
 
 /**

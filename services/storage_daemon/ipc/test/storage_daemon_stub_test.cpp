@@ -368,6 +368,31 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRe
 }
 
 /**
+ * @tc.name: Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_009
+ * @tc.desc: Verify the OnRemoteRequest function.
+ * @tc.type: FUNC
+ * @tc.require: AR20250226995120
+ */
+HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_009, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_009 start";
+    StorageDaemonStubMock mock;
+    EXPECT_CALL(mock, QueryUsbIsInUse(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    bool bRet = data.WriteInterfaceToken(StorageDaemonProxy::GetDescriptor());
+    EXPECT_TRUE(bRet) << "write token error";
+    int32_t ret = mock.OnRemoteRequest(static_cast<int32_t>(StorageDaemonInterfaceCode::QUERY_USB_IS_IN_USE), data,
+        reply, option);
+    EXPECT_TRUE(ret == E_OK);
+    reply.ReadBool();
+    EXPECT_TRUE(E_OK == reply.ReadInt32());
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonStubTest_OnRemoteRequest_009 end";
+}
+
+/**
  * @tc.name: Storage_Manager_StorageDaemonTest_HandlePrepareUserDirs_001
  * @tc.desc: Verify the HandlePrepareUserDirs function.
  * @tc.type: FUNC

@@ -69,6 +69,11 @@ public:
         return E_OK;
     }
 
+    virtual int32_t QueryUsbIsInUse(const std::string &diskPath, bool &isInUse) override
+    {
+        return E_OK;
+    }
+
     virtual int32_t StartUser(int32_t userId) override
     {
         return E_OK;

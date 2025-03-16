@@ -30,6 +30,7 @@ public:
     std::string GetFsUuid();
     std::string GetFsLabel();
     std::string GetMountPath();
+    int32_t IsUsbInUse(int fd);
 
 protected:
     virtual int32_t DoCreate(dev_t dev) override;
