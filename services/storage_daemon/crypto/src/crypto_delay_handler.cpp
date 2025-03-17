@@ -37,9 +37,9 @@ DelayHandler::~DelayHandler()
 
 void DelayHandler::StartDelayTask(const std::shared_ptr<BaseKey>& el4Key)
 {
-    std::lock_guard<std::mutex> lock(handlerMutex_);
     LOGI("DelayHandler::StartDelayTask: enter.");
     CancelDelayTask();
+    std::lock_guard<std::mutex> lock(handlerMutex_);
     if (el4Key == nullptr) {
         LOGI("elKey is nullptr do not clean.");
         return;
