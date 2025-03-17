@@ -1778,8 +1778,9 @@ int KeyManager::getElxKeyPath(unsigned int user, KeyType type, std::string &elxK
     if (!HasElkey(user, type) && type != EL5_KEY) {
         return -ENOENT;
     }
-
-    elxKeyPath = userElKeys_[user][type]->GetDir();
+    if (type >= EL1_KEY && type <= EL4_KEY) {
+        elxKeyPath = userElKeys_[user][type]->GetDir();
+    }
     return E_OK;
 }
 
