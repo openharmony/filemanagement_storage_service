@@ -202,7 +202,6 @@ int KeyManager::GenerateAndInstallUserKey(uint32_t userId, const std::string &di
 {
     LOGW("enter");
     if (HasElkey(userId, type)) {
-        LOGI("The user %{public}u el %{public}u have existed", userId, type);
         return 0;
     }
     auto elKey = GetBaseKey(dir);
@@ -228,14 +227,8 @@ int KeyManager::GenerateAndInstallUserKey(uint32_t userId, const std::string &di
         return E_ELX_KEY_ACTIVE_ERROR;
     }
     (void)elKey->UpdateKey();
-    if (type == EL1_KEY) {
-        userEl1Key_[userId] = elKey;
-    } else if (type == EL2_KEY) {
-        userEl2Key_[userId] = elKey;
-    } else if (type == EL3_KEY) {
-        userEl3Key_[userId] = elKey;
-    } else if (type == EL4_KEY) {
-        userEl4Key_[userId] = elKey;
+    if (type >= EL1_KEY && type < EL5_KEY) {
+        SaveUserElKey(userId, type, elKey);
     }
     LOGI("key create success");
     return 0;
@@ -279,7 +272,7 @@ int KeyManager::GenerateAndInstallEl5Key(uint32_t userId, const std::string &dir
             LOGE("user %{public}u decrypt error", userId);
         }
     }
-    userEl5Key_[userId] = elKey;
+    SaveUserElKey(userId, EL5_KEY, elKey);
     return 0;
 }
 
@@ -287,7 +280,6 @@ int KeyManager::RestoreUserKey(uint32_t userId, const std::string &dir, const Us
 {
     LOGI("enter");
     if (HasElkey(userId, type)) {
-        LOGI("The user %{public}u el %{public}u have existed", userId, type);
         return E_OK;
     }
 
@@ -312,17 +304,7 @@ int KeyManager::RestoreUserKey(uint32_t userId, const std::string &dir, const Us
         return E_ELX_KEY_ACTIVE_ERROR;
     }
 
-    if (type == EL1_KEY) {
-        userEl1Key_[userId] = elKey;
-    } else if (type == EL2_KEY) {
-        userEl2Key_[userId] = elKey;
-    } else if (type == EL3_KEY) {
-        userEl3Key_[userId] = elKey;
-    } else if (type == EL4_KEY) {
-        userEl4Key_[userId] = elKey;
-    } else if (type == EL5_KEY) {
-        userEl5Key_[userId] = elKey;
-    }
+    SaveUserElKey(userId, type, elKey);
     LOGI("key restore success");
 
     return E_OK;
@@ -350,43 +332,13 @@ int32_t KeyManager::ClearAppCloneUserNeedRestore(unsigned int userId, std::strin
 
 bool KeyManager::HasElkey(uint32_t userId, KeyType type)
 {
-    LOGI("enter");
-    switch (type) {
-        case EL1_KEY:
-            if (userEl1Key_.find(userId) != userEl1Key_.end()) {
-                LOGI("user el1 key has existed");
-                return true;
-            }
-            break;
-        case EL2_KEY:
-            if (userEl2Key_.find(userId) != userEl2Key_.end()) {
-                LOGI("user el2 key has existed");
-                return true;
-            }
-            break;
-        case EL3_KEY:
-            if (userEl3Key_.find(userId) != userEl3Key_.end()) {
-                LOGI("user el3 key has existed");
-                return true;
-            }
-            break;
-        case EL4_KEY:
-            if (userEl4Key_.find(userId) != userEl4Key_.end()) {
-                LOGI("user el4 key has existed");
-                return true;
-            }
-            break;
-        case EL5_KEY:
-            if (userEl5Key_.find(userId) != userEl5Key_.end()) {
-                LOGI("user el5 key has existed");
-                return true;
-            }
-            break;
-        default:
-            LOGE("key type error");
-            break;
+    if (userElKeys_.find(userId) != userElKeys_.end()) {
+        if (userElKeys_[userId].find(type) != userElKeys_[userId].end()) {
+            LOGI("The user %{public}u el %{public}u have existed", userId, type);
+            return true;
+        }
     }
-
+    LOGE("Have not found user %{public}u key, type %{public}u", userId, type);
     return false;
 }
 
@@ -657,7 +609,7 @@ int KeyManager::GenerateIntegrityDirs(int32_t userId, KeyType type)
             "dir is not Integrity , userId =" + std::to_string(userId) + ", type = " + std::to_string(type);
         StorageRadar::ReportUserKeyResult("GenerateIntegrityDirs", userId, E_DIR_INTEGRITY_ERR, dirType,
                                           extraData);
-        int ret = DoDeleteUserCeEceSeceKeys(userId, userDir, type == EL1_KEY ? userEl1Key_ : userEl2Key_);
+        int ret = DoDeleteUserCeEceSeceKeys(userId, userDir, type);
         if (ret != E_OK) {
             LOGE("Delete userId=%{public}d el %{public}d key failed", userId, type);
         }
@@ -728,26 +680,39 @@ int KeyManager::GenerateUserKeyByType(unsigned int user, KeyType type,
     return 0;
 }
 
-int KeyManager::DoDeleteUserCeEceSeceKeys(unsigned int user,
-                                          const std::string userDir,
-                                          std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_)
+void KeyManager::DeleteElKey(unsigned int user, KeyType type)
+{
+    if (userElKeys_.find(user) == userElKeys_.end()) {
+        LOGE("The user %{public}u not existed", user);
+        return;
+    }
+    if (userElKeys_[user].find(type) == userElKeys_[user].end()) {
+        LOGE("The el%{public}u not existed", type);
+        return;
+    }
+    userElKeys_[user].erase(type);
+    if (userElKeys_[user].empty()) {
+        userElKeys_.erase(user);
+    }
+}
+
+int KeyManager::DoDeleteUserCeEceSeceKeys(unsigned int user, const std::string userDir, KeyType type)
 {
     LOGI("enter, userDir is %{public}s", userDir.c_str());
     int ret = 0;
-    auto it = userElKey_.find(user);
 #ifdef USER_CRYPTO_MIGRATE_KEY
     if (userDir == USER_EL1_DIR) {
         std::string elNeedRestorePath = std::string(USER_EL1_DIR) + "/" + std::to_string(user) + RESTORE_DIR;
         (void)ClearAppCloneUserNeedRestore(user, elNeedRestorePath);
     }
 #endif
-    if (it != userElKey_.end()) {
-        auto elKey = it->second;
+    if (HasElkey(user, type)) {
+        auto elKey = userElKeys_[user][type];
         if (!elKey->ClearKey()) {
             LOGE("clear key failed");
             ret = E_CLEAR_KEY_FAILED;
         }
-        userElKey_.erase(user);
+        DeleteElKey(user, type);
         saveLockScreenStatus.erase(user);
     } else {
         std::string elPath = userDir + "/" + std::to_string(user);
@@ -768,37 +733,27 @@ int KeyManager::DoDeleteUserCeEceSeceKeys(unsigned int user,
 int KeyManager::DoDeleteUserKeys(unsigned int user)
 {
     int errCode = 0;
-    int deleteRet = DoDeleteUserCeEceSeceKeys(user, USER_EL1_DIR, userEl1Key_);
+    KeyType types[] = { EL1_KEY, EL2_KEY, EL3_KEY, EL4_KEY, EL5_KEY };
+    constexpr const char *USER_DIRS[] = {
+        USER_EL1_DIR,
+        USER_EL2_DIR,
+        USER_EL3_DIR,
+        USER_EL4_DIR,
+        USER_EL5_DIR
+    };
+    int size = sizeof(types) / sizeof(types[0]);
+    std::string el("El");
     const std::string elxPath("elx path=");
-    if (deleteRet != 0) {
-        LOGE("Delete el1 key failed");
-        errCode = deleteRet;
-        StorageRadar::ReportUserKeyResult("DoDeleteUserKeys", user, errCode, "El1", elxPath + USER_EL1_DIR);
-    }
-    deleteRet = DoDeleteUserCeEceSeceKeys(user, USER_EL2_DIR, userEl2Key_);
-    if (deleteRet != 0) {
-        LOGE("Delete el2 key failed");
-        errCode = deleteRet;
-        StorageRadar::ReportUserKeyResult("DoDeleteUserKeys", user, errCode, "El2", elxPath + USER_EL2_DIR);
-    }
-    deleteRet = DoDeleteUserCeEceSeceKeys(user, USER_EL3_DIR, userEl3Key_);
-    if (deleteRet != 0) {
-        LOGE("Delete el3 key failed");
-        errCode = deleteRet;
-        StorageRadar::ReportUserKeyResult("DoDeleteUserKeys", user, errCode, "El3", elxPath + USER_EL3_DIR);
-    }
-    deleteRet = DoDeleteUserCeEceSeceKeys(user, USER_EL4_DIR, userEl4Key_);
-    if (deleteRet != 0) {
-        LOGE("Delete el4 key failed");
-        errCode = deleteRet;
-        StorageRadar::ReportUserKeyResult("DoDeleteUserKeys", user, errCode, "El4", elxPath + USER_EL4_DIR);
-    }
-    if (IsUeceSupportWithErrno() != ENOENT) {
-        deleteRet = DoDeleteUserCeEceSeceKeys(user, USER_EL5_DIR, userEl5Key_);
+    for (int i = 0; i < size; ++i) {
+        if (types[i] == EL5_KEY && IsUeceSupportWithErrno() == ENOENT) {
+            continue;
+        }
+        int deleteRet = DoDeleteUserCeEceSeceKeys(user, GetKeyDirByType(types[i]), types[i]);
         if (deleteRet != 0) {
-            LOGE("Delete el5 key failed");
+            LOGE("Delete el%{public}d key failed", i + 1);
             errCode = deleteRet;
-            StorageRadar::ReportUserKeyResult("DoDeleteUserKeys", user, errCode, "El5", elxPath + USER_EL5_DIR);
+            StorageRadar::ReportUserKeyResult("DoDeleteUserKeys", user, errCode,
+                "El" + std::to_string(i + 1), elxPath + USER_DIRS[i]);
         }
     }
     return errCode;
@@ -1131,24 +1086,10 @@ std::string KeyManager::GetKeyDirByType(KeyType type)
 
 void KeyManager::SaveUserElKey(unsigned int user, KeyType type, std::shared_ptr<BaseKey> elKey)
 {
-    switch (type) {
-        case EL1_KEY:
-            userEl1Key_[user] = elKey;
-            break;
-        case EL2_KEY:
-            userEl2Key_[user] = elKey;
-            break;
-        case EL3_KEY:
-            userEl3Key_[user] = elKey;
-            break;
-        case EL4_KEY:
-            userEl4Key_[user] = elKey;
-            break;
-        case EL5_KEY:
-            userEl5Key_[user] = elKey;
-            break;
-        default:
-            LOGE("SaveUserElKey type %{public}u is invalid", type);
+    if (type >= EL1_KEY && type <= EL5_KEY) {
+        userElKeys_[user][type] = elKey;
+    } else {
+        LOGE("Save el key failed,type:%{public}d", type);
     }
 }
 
@@ -1157,7 +1098,6 @@ std::shared_ptr<BaseKey> KeyManager::GetUserElKey(unsigned int user, KeyType typ
     bool isNeedGenerateBaseKey = false;
     std::shared_ptr<BaseKey> elKey = nullptr;
     if (!HasElkey(user, type)) {
-        LOGE("Have not found user %{public}u key, type %{public}u", user, type);
         std::string keyDir = GetKeyDirByUserAndType(user, type);
         if (!IsDir(keyDir)) {
             LOGE("Have not found user %{public}u el, %{public}u type", user, type);
@@ -1171,37 +1111,10 @@ std::shared_ptr<BaseKey> KeyManager::GetUserElKey(unsigned int user, KeyType typ
         isNeedGenerateBaseKey = true;
         LOGI("Generate new baseKey type: %{public}u", type);
     }
-
-    switch (type) {
-        case EL1_KEY:
-            if (isNeedGenerateBaseKey) {
-                userEl1Key_[user] = elKey;
-            }
-            return userEl1Key_[user];
-        case EL2_KEY:
-            if (isNeedGenerateBaseKey) {
-                userEl2Key_[user] = elKey;
-            }
-            return userEl2Key_[user];
-        case EL3_KEY:
-            if (isNeedGenerateBaseKey) {
-                userEl3Key_[user] = elKey;
-            }
-            return userEl3Key_[user];
-        case EL4_KEY:
-            if (isNeedGenerateBaseKey) {
-                userEl4Key_[user] = elKey;
-            }
-            return userEl4Key_[user];
-        case EL5_KEY:
-            if (isNeedGenerateBaseKey) {
-                userEl5Key_[user] = elKey;
-            }
-            return userEl5Key_[user];
-        default:
-            LOGE("GetUserElKey type %{public}u is invalid", type);
-            return nullptr;
+    if (isNeedGenerateBaseKey) {
+        SaveUserElKey(user, type, elKey);
     }
+    return userElKeys_[user][type];
 }
 
 int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
@@ -1222,7 +1135,6 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
     }
     std::lock_guard<std::mutex> lock(keyMutex_);
     if (HasElkey(user, type) && HashElxActived(user, type)) {
-        LOGE("The user %{public}u el have been actived, key type is %{public}u", user, type);
         return 0;
     }
     std::shared_ptr<DelayHandler> userDelayHandler;
@@ -1316,39 +1228,14 @@ bool KeyManager::CheckDir(KeyType type, std::string keyDir, unsigned int user)
 
 bool KeyManager::HashElxActived(unsigned int user, KeyType type)
 {
-    LOGI("enter");
-    switch (type) {
-        case EL1_KEY:
-            return HasElxDesc(userEl1Key_, type, user);
-        case EL2_KEY:
-            return HasElxDesc(userEl2Key_, type, user);
-        case EL3_KEY:
-            return HasElxDesc(userEl3Key_, type, user);
-        case EL4_KEY:
-            return HasElxDesc(userEl4Key_, type, user);
-        case EL5_KEY:
-            return HasElxDesc(userEl5Key_, type, user);
-        default:
-            LOGE("key type error");
-            break;
-    }
-    return false;
-}
-
-bool KeyManager::HasElxDesc(std::map<unsigned int, std::shared_ptr<BaseKey>> &userElKey_,
-                            KeyType type,
-                            unsigned int user)
-{
-    LOGI("Enter.");
-    auto it = userElKey_.find(user);
-    if (it != userElKey_.end()) {
-        auto elKey = it->second;
+    if (HasElkey(user, type)) {
+        auto elKey = userElKeys_[user][type];
         if (elKey == nullptr) {
             LOGI("The ElKey is nullptr: %{public}d", elKey == nullptr);
             return false;
         }
 
-        if (it != userElKey_.end() && !elKey->KeyDescIsEmpty()) {
+        if (!elKey->KeyDescIsEmpty()) {
             LOGI("user el%{public}u key desc has existed", type);
             return true;
         }
@@ -1398,7 +1285,7 @@ int KeyManager::ActiveUeceUserKey(unsigned int user,
 {
     saveESecretStatus[user] = !secret.empty();
     LOGW("userId %{public}u, token empty %{public}d sec empty %{public}d", user, token.empty(), secret.empty());
-    userEl5Key_[user] = elKey;
+    SaveUserElKey(user, EL5_KEY, elKey);
     UserAuth auth = { .token = token, .secret = secret };
     bool eBufferStatue = false;
     auto ret = elKey->DecryptClassE(auth, saveESecretStatus[user], eBufferStatue, user, true);
@@ -1704,11 +1591,10 @@ int KeyManager::GenerateAndLoadAppKeyInfo(uint32_t userId, const std::vector<std
         LOGE("The keyInfo is empty!");
         return E_OK;
     }
-    if (userEl5Key_.find(userId) == userEl5Key_.end()) {
-        LOGE("userEl5Key_ has not existed");
+    if (!HasElkey(userId, EL5_KEY)) {
         return -ENOENT;
     }
-    auto elKey = userEl5Key_[userId];
+    auto elKey = userElKeys_[userId][EL5_KEY];
     std::string keyId;
     for (auto keyInfoAppUid :keyInfo) {
         if (elKey->GenerateAppkey(userId, keyInfoAppUid.first, keyId) != E_OK) {
@@ -1740,29 +1626,13 @@ int KeyManager::InActiveUserKey(unsigned int user)
         return 0;
     }
     std::lock_guard<std::mutex> lock(keyMutex_);
-    int ret = InactiveUserElKey(user, userEl2Key_);
-    if (ret != E_OK) {
-        LOGE("Inactive userEl2Key_ failed");
-        StorageRadar::ReportUserKeyResult("InactiveUserElKey", user, ret, "EL2", "");
-        return ret;
-    }
-    ret = InactiveUserElKey(user, userEl3Key_);
-    if (ret != E_OK) {
-        LOGE("Inactive userEl3Key_ failed");
-        StorageRadar::ReportUserKeyResult("InactiveUserElKey", user, ret, "EL3", "");
-        return ret;
-    }
-    ret = InactiveUserElKey(user, userEl4Key_);
-    if (ret != E_OK) {
-        LOGE("Inactive userEl4Key_ failed");
-        StorageRadar::ReportUserKeyResult("InactiveUserElKey", user, ret, "EL4", "");
-        return ret;
-    }
-    if (!IsAppCloneUser(user)) {
-        ret = InactiveUserElKey(user, userEl5Key_);
+    KeyType types[] = { EL2_KEY, EL3_KEY, EL4_KEY, EL5_KEY };
+    int ret = 0;
+    for (KeyType type : types) {
+        ret = InactiveUserElKey(user, type);
         if (ret != E_OK) {
-            LOGE("Inactive userEl5Key_ failed");
-            StorageRadar::ReportUserKeyResult("InactiveUserElKey", user, ret, "EL5", "");
+            LOGE("Inactive user El%{public}d key failed", type);
+            StorageRadar::ReportUserKeyResult("InactiveUserElKey", user, ret, "EL" + std::to_string(type), "");
             return ret;
         }
     }
@@ -1774,13 +1644,12 @@ int KeyManager::InActiveUserKey(unsigned int user)
     return 0;
 }
 
-int KeyManager::InactiveUserElKey(unsigned int user, std::map<unsigned int, std::shared_ptr<BaseKey>> &userElxKey_)
+int KeyManager::InactiveUserElKey(unsigned int user, KeyType type)
 {
-    if (userElxKey_.find(user) == userElxKey_.end()) {
-        LOGE("Have not found user %{public}u el2", user);
+    if (!HasElkey(user, type)) {
         return E_PARAMS_INVALID;
     }
-    auto elKey = userElxKey_[user];
+    auto elKey = userElKeys_[user][type];
     if (elKey->InactiveKey(USER_LOGOUT) != E_OK) {
         LOGE("Clear user %{public}u key failed", user);
         return E_ELX_KEY_INACTIVE_ERROR;
@@ -1792,7 +1661,7 @@ int KeyManager::InactiveUserElKey(unsigned int user, std::map<unsigned int, std:
         (void)remove(descElx.c_str());
         LOGI("remove desc success.");
     }
-    userElxKey_.erase(user);
+    DeleteElKey(user, type);
     LOGI("Inactive user %{public}u elX success", user);
     return 0;
 }
@@ -1907,29 +1776,10 @@ int KeyManager::getElxKeyPath(unsigned int user, KeyType type, std::string &elxK
         return E_OK;
     }
     if (!HasElkey(user, type) && type != EL5_KEY) {
-        LOGE("Have not found user %{public}u el%{public}d key", user, type);
         return -ENOENT;
     }
-
-    switch (type) {
-        case EL1_KEY:
-            elxKeyPath = userEl1Key_[user]->GetDir();
-            break;
-        case EL2_KEY:
-            elxKeyPath = userEl2Key_[user]->GetDir();
-            break;
-        case EL3_KEY:
-            elxKeyPath = userEl3Key_[user]->GetDir();
-            break;
-        case EL4_KEY:
-            elxKeyPath = userEl4Key_[user]->GetDir();
-            break;
-        case EL5_KEY:
-            LOGW("el5 not to deal");
-            break;
-        default:
-            LOGE("Type = %{public}u is illegal !", type);
-            return -ENOENT;
+    if (type >= EL1_KEY && type <= EL4_KEY) {
+        elxKeyPath = userElKeys_[user][type]->GetDir();
     }
     return E_OK;
 }
@@ -1942,7 +1792,6 @@ int KeyManager::UpdateCeEceSeceKeyContext(uint32_t userId, KeyType type)
     }
     std::lock_guard<std::mutex> lock(keyMutex_);
     if (HasElkey(userId, type) == false) {
-        LOGE("Have not found user %{public}u el%{public}u", userId, type);
         return E_PARAMS_INVALID;
     }
     std::shared_ptr<BaseKey> elKey = GetUserElKey(userId, type);

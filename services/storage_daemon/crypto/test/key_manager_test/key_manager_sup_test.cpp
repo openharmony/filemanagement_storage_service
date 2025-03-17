@@ -276,35 +276,35 @@ HWTEST_F(KeyManagerSupTest, KeyManager_SaveUserElKey_001, TestSize.Level1)
     GTEST_LOG_(INFO) << "KeyManager_SaveUserElKey_001 Start";
     std::shared_ptr<BaseKey> tmpKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>("test"));
     unsigned int user = 800;
-    KeyManager::GetInstance()->userEl1Key_.erase(user);
-    KeyManager::GetInstance()->userEl2Key_.erase(user);
-    KeyManager::GetInstance()->userEl3Key_.erase(user);
-    KeyManager::GetInstance()->userEl4Key_.erase(user);
-    KeyManager::GetInstance()->userEl5Key_.erase(user);
+    KeyManager::GetInstance()->DeleteElKey(user, EL1_KEY);
+    KeyManager::GetInstance()->DeleteElKey(user, EL2_KEY);
+    KeyManager::GetInstance()->DeleteElKey(user, EL3_KEY);
+    KeyManager::GetInstance()->DeleteElKey(user, EL4_KEY);
+    KeyManager::GetInstance()->DeleteElKey(user, EL5_KEY);
     KeyManager::GetInstance()->SaveUserElKey(user, EL1_KEY, tmpKey);
-    EXPECT_NE(KeyManager::GetInstance()->userEl1Key_[user], nullptr);
+    EXPECT_TRUE(KeyManager::GetInstance()->HasElkey(user, EL1_KEY));
 
     KeyManager::GetInstance()->SaveUserElKey(user, EL2_KEY, tmpKey);
-    EXPECT_NE(KeyManager::GetInstance()->userEl2Key_[user], nullptr);
+    EXPECT_TRUE(KeyManager::GetInstance()->HasElkey(user, EL2_KEY));
 
     KeyManager::GetInstance()->SaveUserElKey(user, EL3_KEY, tmpKey);
-    EXPECT_NE(KeyManager::GetInstance()->userEl3Key_[user], nullptr);
+    EXPECT_TRUE(KeyManager::GetInstance()->HasElkey(user, EL3_KEY));
 
     KeyManager::GetInstance()->SaveUserElKey(user, EL4_KEY, tmpKey);
-    EXPECT_NE(KeyManager::GetInstance()->userEl4Key_[user], nullptr);
+    EXPECT_TRUE(KeyManager::GetInstance()->HasElkey(user, EL4_KEY));
 
     KeyManager::GetInstance()->SaveUserElKey(user, EL5_KEY, tmpKey);
-    EXPECT_NE(KeyManager::GetInstance()->userEl5Key_[user], nullptr);
+    EXPECT_TRUE(KeyManager::GetInstance()->HasElkey(user, EL5_KEY));
 
     int eL6Key = 6;
     KeyType type = static_cast<KeyType>(eL6Key);
     KeyManager::GetInstance()->SaveUserElKey(user, type, tmpKey);
-    EXPECT_NE(KeyManager::GetInstance()->userEl5Key_[user], nullptr);
-    KeyManager::GetInstance()->userEl1Key_.erase(user);
-    KeyManager::GetInstance()->userEl2Key_.erase(user);
-    KeyManager::GetInstance()->userEl3Key_.erase(user);
-    KeyManager::GetInstance()->userEl4Key_.erase(user);
-    KeyManager::GetInstance()->userEl5Key_.erase(user);
+    EXPECT_FALSE(KeyManager::GetInstance()->HasElkey(user, type));
+    KeyManager::GetInstance()->DeleteElKey(user, EL1_KEY);
+    KeyManager::GetInstance()->DeleteElKey(user, EL2_KEY);
+    KeyManager::GetInstance()->DeleteElKey(user, EL3_KEY);
+    KeyManager::GetInstance()->DeleteElKey(user, EL4_KEY);
+    KeyManager::GetInstance()->DeleteElKey(user, EL5_KEY);
     GTEST_LOG_(INFO) << "KeyManager_SaveUserElKey_001 end";
 }
 
@@ -319,34 +319,36 @@ HWTEST_F(KeyManagerSupTest, KeyManager_DoDeleteUserCeEceSeceKeys_001, TestSize.L
     GTEST_LOG_(INFO) << "KeyManager_DoDeleteUserCeEceSeceKeys_001 Start";
     unsigned int user = 800;
     std::string userDir = "/data/test/";
-    std::map<unsigned int, std::shared_ptr<BaseKey>> userElKey;
+    KeyManager::GetInstance()->DeleteElKey(user, EL1_KEY);
 
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_INVALID));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID));
-    EXPECT_EQ(KeyManager::GetInstance()->DoDeleteUserCeEceSeceKeys(user, userDir, userElKey),
+    EXPECT_EQ(KeyManager::GetInstance()->DoDeleteUserCeEceSeceKeys(user, userDir, EL1_KEY),
         E_PARAMS_NULLPTR_ERR);
 
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*baseKeyMock_, ClearKey(_)).WillOnce(Return(false));
-    EXPECT_EQ(KeyManager::GetInstance()->DoDeleteUserCeEceSeceKeys(user, userDir, userElKey),
+    EXPECT_EQ(KeyManager::GetInstance()->DoDeleteUserCeEceSeceKeys(user, userDir, EL1_KEY),
         E_CLEAR_KEY_FAILED);
 
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*baseKeyMock_, ClearKey(_)).WillOnce(Return(true));
-    EXPECT_EQ(KeyManager::GetInstance()->DoDeleteUserCeEceSeceKeys(user, userDir, userElKey), 0);
+    EXPECT_EQ(KeyManager::GetInstance()->DoDeleteUserCeEceSeceKeys(user, userDir, EL1_KEY), 0);
     std::shared_ptr<BaseKey> tmpKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>("test"));
-    userElKey.insert(make_pair(user, tmpKey));
-    EXPECT_CALL(*baseKeyMock_, ClearKey(_)).WillOnce(Return(false));
-    EXPECT_EQ(KeyManager::GetInstance()->DoDeleteUserCeEceSeceKeys(user, userDir, userElKey),
-        E_CLEAR_KEY_FAILED);
-    EXPECT_EQ(userElKey.find(user), userElKey.end());
 
-    userElKey.insert(make_pair(user, tmpKey));
+    KeyManager::GetInstance()->SaveUserElKey(user, EL1_KEY, tmpKey);
+    EXPECT_CALL(*baseKeyMock_, ClearKey(_)).WillOnce(Return(false));
+    EXPECT_EQ(KeyManager::GetInstance()->DoDeleteUserCeEceSeceKeys(user, userDir, EL1_KEY),
+        E_CLEAR_KEY_FAILED);
+    EXPECT_FALSE(KeyManager::GetInstance()->HasElkey(user, EL1_KEY));
+
+    KeyManager::GetInstance()->SaveUserElKey(user, EL1_KEY, tmpKey);
     EXPECT_CALL(*baseKeyMock_, ClearKey(_)).WillOnce(Return(true));
-    EXPECT_EQ(KeyManager::GetInstance()->DoDeleteUserCeEceSeceKeys(user, userDir, userElKey), 0);
-    EXPECT_EQ(userElKey.find(user), userElKey.end());
+    EXPECT_EQ(KeyManager::GetInstance()->DoDeleteUserCeEceSeceKeys(user, userDir, EL1_KEY), 0);
+    EXPECT_FALSE(KeyManager::GetInstance()->HasElkey(user, EL1_KEY));
+    KeyManager::GetInstance()->DeleteElKey(user, EL1_KEY);
     GTEST_LOG_(INFO) << "KeyManager_DoDeleteUserCeEceSeceKeys_001 end";
 }
 
@@ -448,7 +450,7 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UnlockEceSece_001, TestSize.Level1)
     unsigned int user = 800;
     std::vector<uint8_t> token;
     std::vector<uint8_t> secret;
-    KeyManager::GetInstance()->userEl4Key_.erase(user);
+    KeyManager::GetInstance()->DeleteElKey(user, EL4_KEY);
     string keyDir = KeyManager::GetInstance()->GetKeyDirByUserAndType(user, EL4_KEY);
     OHOS::ForceRemoveDirectory(keyDir);
     EXPECT_EQ(KeyManager::GetInstance()->UnlockEceSece(user, token, secret), E_NON_EXIST);
@@ -489,11 +491,11 @@ HWTEST_F(KeyManagerSupTest, KeyManager_GenerateAndLoadAppKeyInfo_001, TestSize.L
     keyInfo.push_back(make_pair(1, "test"));
     keyInfo.push_back(make_pair(2, "test2"));
     keyInfo.push_back(make_pair(3, "test3"));
-    KeyManager::GetInstance()->userEl5Key_.erase(userId);
+    KeyManager::GetInstance()->DeleteElKey(userId, EL5_KEY);
     EXPECT_EQ(KeyManager::GetInstance()->GenerateAndLoadAppKeyInfo(userId, keyInfo), -ENOENT);
 
     std::shared_ptr<BaseKey> tmpKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>("test"));
-    KeyManager::GetInstance()->userEl5Key_[userId] = tmpKey;
+    KeyManager::GetInstance()->SaveUserElKey(userId, EL5_KEY, tmpKey);
     EXPECT_CALL(*fscryptKeyMock_, GenerateAppkey(_, _, _)).WillOnce(Return(false)).WillOnce(Return(true))
         .WillOnce(DoAll(SetArgReferee<2>("test3"), Return(true)));
     EXPECT_CALL(*el5FilekeyManagerKitMoc_, ChangeUserAppkeysLoadInfo(_, _)).WillOnce(Return(-1));
@@ -503,7 +505,7 @@ HWTEST_F(KeyManagerSupTest, KeyManager_GenerateAndLoadAppKeyInfo_001, TestSize.L
         .WillOnce(DoAll(SetArgReferee<2>("test3"), Return(true)));
     EXPECT_CALL(*el5FilekeyManagerKitMoc_, ChangeUserAppkeysLoadInfo(_, _)).WillOnce(Return(0));
     EXPECT_EQ(KeyManager::GetInstance()->GenerateAndLoadAppKeyInfo(userId, keyInfo), E_OK);
-    KeyManager::GetInstance()->userEl5Key_.erase(userId);
+    KeyManager::GetInstance()->DeleteElKey(userId, EL5_KEY);
     GTEST_LOG_(INFO) << "KeyManager_GenerateAndLoadAppKeyInfo_001 end";
 }
 #endif
@@ -544,7 +546,7 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UnlockUserAppKeys_001, TestSize.Level1)
     EXPECT_CALL(*el5FilekeyManagerKitMoc_, GetUserAllAppKey(_, _)).WillOnce(Return(0));
     #endif
     EXPECT_EQ(KeyManager::GetInstance()->UnlockUserAppKeys(userId, needGetAllAppKey), E_OK);
-    KeyManager::GetInstance()->userEl5Key_.erase(userId);
+    KeyManager::GetInstance()->DeleteElKey(userId, EL5_KEY);
     needGetAllAppKey = false;
     #ifdef EL5_FILEKEY_MANAGER
     EXPECT_CALL(*el5FilekeyManagerKitMoc_, GetUserAppKey(_, _)).WillOnce(Return(-1));
@@ -557,7 +559,7 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UnlockUserAppKeys_001, TestSize.Level1)
     EXPECT_CALL(*el5FilekeyManagerKitMoc_, GetUserAppKey(_, _)).WillOnce(Return(0));
     #endif
     EXPECT_EQ(KeyManager::GetInstance()->UnlockUserAppKeys(userId, needGetAllAppKey), E_OK);
-    KeyManager::GetInstance()->userEl5Key_.erase(userId);
+    KeyManager::GetInstance()->DeleteElKey(userId, EL5_KEY);
     if (!existUece) {
         OHOS::RemoveFile(UECE_PATH);
     }
@@ -856,34 +858,6 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UpdateUseAuthWithRecoveryKey_005, TestSiz
 }
 
 /**
- * @tc.name: KeyManager_HasElxDesc_001
- * @tc.desc: Verify the HasElxDesc function.
- * @tc.type: FUNC
- * @tc.require: IAHHWW
- */
-HWTEST_F(KeyManagerSupTest, KeyManager_HasElxDesc_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "KeyManager_HasElxDesc_001 Start";
-    unsigned int user = 800;
-    std::map<unsigned int, std::shared_ptr<BaseKey>> userElxKey_;
-    EXPECT_FALSE(KeyManager::GetInstance()->HasElxDesc(userElxKey_, EL1_KEY, user));
-
-    userElxKey_[user] = nullptr;
-    EXPECT_FALSE(KeyManager::GetInstance()->HasElxDesc(userElxKey_, EL1_KEY, user));
-    userElxKey_.erase(user);
-
-    shared_ptr<FscryptKeyV2> elKey = make_shared<FscryptKeyV2>("/data/test");
-    userElxKey_[user] = elKey;
-    EXPECT_CALL(*baseKeyMock_, KeyDescIsEmpty()).WillOnce(Return(true));
-    EXPECT_FALSE(KeyManager::GetInstance()->HasElxDesc(userElxKey_, EL1_KEY, user));
-
-    EXPECT_CALL(*baseKeyMock_, KeyDescIsEmpty()).WillOnce(Return(false));
-    EXPECT_TRUE(KeyManager::GetInstance()->HasElxDesc(userElxKey_, EL1_KEY, user));
-    userElxKey_.erase(user);
-    GTEST_LOG_(INFO) << "KeyManager_HasElxDesc_001 end";
-}
-
-/**
  * @tc.name: KeyManager_HashElxActived_001
  * @tc.desc: Verify the HashElxActived function.
  * @tc.type: FUNC
@@ -893,22 +867,21 @@ HWTEST_F(KeyManagerSupTest, KeyManager_HashElxActived_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "KeyManager_HashElxActived_001 Start";
     unsigned int user = 800;
-    KeyManager::GetInstance()->userEl1Key_.erase(user);
+    KeyManager::GetInstance()->DeleteElKey(user, EL1_KEY);
     EXPECT_FALSE(KeyManager::GetInstance()->HashElxActived(user, EL1_KEY));
 
     std::shared_ptr<BaseKey> tmpKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>("test"));
-    KeyManager::GetInstance()->userEl1Key_[user] = tmpKey;
+    KeyManager::GetInstance()->SaveUserElKey(user, EL1_KEY, tmpKey);
     EXPECT_CALL(*baseKeyMock_, KeyDescIsEmpty()).WillOnce(Return(false));
     EXPECT_TRUE(KeyManager::GetInstance()->HashElxActived(user, EL1_KEY));
-    KeyManager::GetInstance()->userEl1Key_.erase(user);
+    KeyManager::GetInstance()->DeleteElKey(user, EL1_KEY);
 
-    KeyManager::GetInstance()->userEl2Key_.erase(user);
+    KeyManager::GetInstance()->DeleteElKey(user, EL2_KEY);
     EXPECT_FALSE(KeyManager::GetInstance()->HashElxActived(user, EL2_KEY));
-
-    KeyManager::GetInstance()->userEl2Key_[user] = tmpKey;
+    KeyManager::GetInstance()->SaveUserElKey(user, EL2_KEY, tmpKey);
     EXPECT_CALL(*baseKeyMock_, KeyDescIsEmpty()).WillOnce(Return(false));
     EXPECT_TRUE(KeyManager::GetInstance()->HashElxActived(user, EL2_KEY));
-    KeyManager::GetInstance()->userEl2Key_.erase(user);
+    KeyManager::GetInstance()->DeleteElKey(user, EL2_KEY);
     GTEST_LOG_(INFO) << "KeyManager_HashElxActived_001 end";
 }
 
@@ -922,22 +895,22 @@ HWTEST_F(KeyManagerSupTest, KeyManager_HashElxActived_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "KeyManager_HashElxActived_002 Start";
     unsigned int user = 800;
-    KeyManager::GetInstance()->userEl3Key_.erase(user);
+    KeyManager::GetInstance()->DeleteElKey(user, EL3_KEY);
     EXPECT_FALSE(KeyManager::GetInstance()->HashElxActived(user, EL3_KEY));
 
     std::shared_ptr<BaseKey> tmpKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>("test"));
-    KeyManager::GetInstance()->userEl3Key_[user] = tmpKey;
+    KeyManager::GetInstance()->SaveUserElKey(user, EL3_KEY, tmpKey);
     EXPECT_CALL(*baseKeyMock_, KeyDescIsEmpty()).WillOnce(Return(false));
     EXPECT_TRUE(KeyManager::GetInstance()->HashElxActived(user, EL3_KEY));
-    KeyManager::GetInstance()->userEl3Key_.erase(user);
+    KeyManager::GetInstance()->DeleteElKey(user, EL3_KEY);
 
-    KeyManager::GetInstance()->userEl4Key_.erase(user);
+    KeyManager::GetInstance()->DeleteElKey(user, EL4_KEY);
     EXPECT_FALSE(KeyManager::GetInstance()->HashElxActived(user, EL4_KEY));
 
-    KeyManager::GetInstance()->userEl4Key_[user] = tmpKey;
+    KeyManager::GetInstance()->SaveUserElKey(user, EL4_KEY, tmpKey);
     EXPECT_CALL(*baseKeyMock_, KeyDescIsEmpty()).WillOnce(Return(false));
     EXPECT_TRUE(KeyManager::GetInstance()->HashElxActived(user, EL4_KEY));
-    KeyManager::GetInstance()->userEl4Key_.erase(user);
+    KeyManager::GetInstance()->DeleteElKey(user, EL4_KEY);
     GTEST_LOG_(INFO) << "KeyManager_HashElxActived_002 end";
 }
 
@@ -951,14 +924,14 @@ HWTEST_F(KeyManagerSupTest, KeyManager_HashElxActived_003, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "KeyManager_HashElxActived_003 Start";
     unsigned int user = 800;
-    KeyManager::GetInstance()->userEl5Key_.erase(user);
+    KeyManager::GetInstance()->DeleteElKey(user, EL5_KEY);
     EXPECT_FALSE(KeyManager::GetInstance()->HashElxActived(user, EL5_KEY));
 
     std::shared_ptr<BaseKey> tmpKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>("test"));
-    KeyManager::GetInstance()->userEl5Key_[user] = tmpKey;
+    KeyManager::GetInstance()->SaveUserElKey(user, EL5_KEY, tmpKey);
     EXPECT_CALL(*baseKeyMock_, KeyDescIsEmpty()).WillOnce(Return(false));
     EXPECT_TRUE(KeyManager::GetInstance()->HashElxActived(user, EL5_KEY));
-    KeyManager::GetInstance()->userEl5Key_.erase(user);
+    KeyManager::GetInstance()->DeleteElKey(user, EL5_KEY);
     
     int eL6Key = 6;
     KeyType type = static_cast<KeyType>(eL6Key);
