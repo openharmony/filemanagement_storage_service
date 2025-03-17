@@ -38,21 +38,15 @@ public:
     void CancelDelayTask();
 
 private:
-    std::condition_variable cv_;
-    std::thread taskThread_;
-    std::atomic<bool> running_;
     uint32_t timerId_;
     Utils::Timer timer_ {"DeativationEl3El4El5_Task_Timer"};
 
-    std::atomic<bool> needExecute_;
     std::atomic<bool> cancelled_;
     std::shared_ptr<BaseKey> el4Key_;
     uint32_t userId_;
 
     std::mutex handlerMutex_;
-    std::mutex taskMutex_;
 
-    void ProcessTasks();
     void DeactiveEl3El4El5();
     int64_t GetTickCount();
 };
