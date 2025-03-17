@@ -185,6 +185,15 @@ int32_t StorageDaemonProvider::SetVolumeDescription(const std::string &volId, co
     return storageDaemon_->SetVolumeDescription(volId, description);
 }
 
+int32_t StorageDaemonProvider::QueryUsbIsInUse(const std::string &diskPath, bool &isInUse)
+{
+    if (storageDaemon_ == nullptr) {
+        return E_ERR;
+    }
+    isInUse = true;
+    return storageDaemon_->QueryUsbIsInUse(diskPath, isInUse);
+}
+
 int32_t StorageDaemonProvider::StartUser(int32_t userId)
 {
     if (storageDaemon_ == nullptr) {

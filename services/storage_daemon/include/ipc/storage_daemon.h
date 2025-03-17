@@ -41,6 +41,7 @@ public:
     int32_t Format(const std::string &volId, const std::string &fsType);
     int32_t Partition(const std::string &diskId, int32_t type);
     int32_t SetVolumeDescription(const std::string &volId, const std::string &description);
+    int32_t QueryUsbIsInUse(const std::string &diskPath, bool &isInUse);
 
     int32_t StartUser(int32_t userId);
     int32_t StopUser(int32_t userId);

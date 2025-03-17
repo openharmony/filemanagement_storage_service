@@ -74,4 +74,5 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 41] void GetUserNeedActiveStatus([in] unsigned int userId, [out] boolean needActive);
      [ipccode 42] void MountFileMgrFuse([in] int userId, [in] String path, [out] FileDescriptor fuseFd);
      [ipccode 43] void UMountFileMgrFuse([in] int userId, [in] String path);
+     [ipccode 44] void QueryUsbIsInUse([in] String diskPath, [out] boolean isInUse);
 }
