@@ -23,29 +23,21 @@ namespace OHOS {
 namespace StorageDaemon {
 constexpr int32_t DEFAULT_CHECK_INTERVAL = 10 * 1000; // 10s
 
-DelayHandler::DelayHandler(uint32_t userId): running_(true),  timerId_(0), needExecute_(false),
-                                             cancelled_(false), userId_(userId)
+DelayHandler::DelayHandler(uint32_t userId): timerId_(0), cancelled_(false), userId_(userId)
 {
-    running_ = true;
     timer_.Setup();
-    cv_.notify_all();
-    taskThread_ = std::thread(&DelayHandler::ProcessTasks, this);
 }
 
 DelayHandler::~DelayHandler()
 {
     LOGI("DelayHandler Destructor.");
-    running_ = false;
     timer_.Shutdown();
-    cv_.notify_all();
-    if (taskThread_.joinable()) {
-        taskThread_.join();
-    }
     LOGI("DelayHandler::Destruct success.");
 }
 
 void DelayHandler::StartDelayTask(const std::shared_ptr<BaseKey>& el4Key)
 {
+    std::lock_guard<std::mutex> lock(handlerMutex_);
     LOGI("DelayHandler::StartDelayTask: enter.");
     CancelDelayTask();
     if (el4Key == nullptr) {
@@ -54,10 +46,18 @@ void DelayHandler::StartDelayTask(const std::shared_ptr<BaseKey>& el4Key)
     }
     el4Key_ = el4Key;
     LOGI("DelayHandler::StartDelayTask, start delay clear key task.");
-    std::lock_guard<std::mutex> lock(handlerMutex_);
-    needExecute_ = true;
     cancelled_ = false;
-    cv_.notify_all();
+    std::string curTime = std::to_string(GetTickCount());
+    std::string expExeTime = std::to_string(GetTickCount() + DEFAULT_CHECK_INTERVAL);
+    LOGI("DelayHandler: start timer for user=%{public}d, curTime=%{public}s ms, exeTime=%{public}s ms.",
+        userId_, curTime.c_str(), expExeTime.c_str());
+    timerId_ = timer_.Register([this, expExeTime]() {
+            std::string realExeTime = std::to_string(GetTickCount());
+            LOGI("DelayHandler: EXECUTE for user=%{public}d, curTime=%{public}s ms, expExeTime=%{public}s ms.",
+                userId_, realExeTime.c_str(), expExeTime.c_str());
+            DeactiveEl3El4El5();
+        }, DEFAULT_CHECK_INTERVAL, true);
+
     LOGI("DelayHandler::success.");
 }
 
@@ -67,6 +67,7 @@ void DelayHandler::CancelDelayTask()
     std::lock_guard<std::mutex> lock(handlerMutex_);
     timer_.Unregister(timerId_);
     cancelled_ = true;
+    
     LOGI("DelayHandler::CancelDelayTask:: success.");
 }
 
@@ -79,45 +80,18 @@ void DelayHandler::DeactiveEl3El4El5()
         return;
     }
     std::lock_guard<std::mutex> lock(handlerMutex_);
+    if (cancelled_) {
+        LOGI(" DelayHandler: task is cancelled.");
+        return;
+    }
     int32_t ret = el4Key_->LockUserScreen(userId_, FSCRYPT_SDP_ECE_CLASS);
     if (ret != E_OK) {
         LOGE("DelayHandler::DeactiveEl3El4El5:: Clear user %{public}u key failed.", userId_);
         StorageRadar::ReportUpdateUserAuth("DeactiveEl3El4El5::LockUserScreen", userId_, E_SYS_KERNEL_ERR, "EL4", "");
         return;
     }
+    cancelled_ = false;
     LOGW("success");
-}
-
-void DelayHandler::ProcessTasks()
-{
-    while (running_) {
-        {
-            std::unique_lock<std::mutex> lock(taskMutex_);
-            cv_.wait(lock, [this] { return needExecute_ || !running_; });
-            if (!running_) {
-                LOGI("DelayHandler: handler stoped, userId=%{public}d.", userId_);
-                break;
-            }
-            needExecute_ = false;
-        }
-        std::string curTime = std::to_string(GetTickCount());
-        std::string expExeTime = std::to_string(GetTickCount() + DEFAULT_CHECK_INTERVAL);
-        LOGI("DelayHandler: start timer for user=%{public}d, curTime=%{public}s ms, exeTime=%{public}s ms.",
-            userId_, curTime.c_str(), expExeTime.c_str());
-        timerId_ = timer_.Register([this, expExeTime]() {
-            std::unique_lock<std::mutex> lock(taskMutex_);
-            if (cancelled_) {
-                LOGI(" DelayHandler: task is cancelled.");
-                return;
-            }
-            std::string realExeTime = std::to_string(GetTickCount());
-            LOGI("DelayHandler: EXECUTE for user=%{public}d, curTime=%{public}s ms, expExeTime=%{public}s ms.",
-                userId_, realExeTime.c_str(), expExeTime.c_str());
-            DeactiveEl3El4El5();
-        }, DEFAULT_CHECK_INTERVAL, true);
-        cv_.notify_all();
-        LOGI("DelayHandler: done.");
-    }
 }
 
 int64_t DelayHandler::GetTickCount()
