@@ -197,6 +197,16 @@ int32_t StorageDaemon::SetVolumeDescription(const std::string &volId, const std:
 #endif
 }
 
+int32_t StorageDaemon::QueryUsbIsInUse(const std::string &diskPath, bool &isInUse)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageDaemon::QueryUsbIsInUse diskPath: %{public}s", diskPath.c_str());
+    return VolumeManager::Instance()->QueryUsbIsInUse(diskPath, isInUse);
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
 int32_t StorageDaemon::GetCryptoFlag(KeyType type, uint32_t &flags)
 {
     switch (type) {

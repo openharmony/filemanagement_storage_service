@@ -394,5 +394,26 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_SetVolumeDescripti
 
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_SetVolumeDescription_002 end";
 }
+
+/**
+ * @tc.name: Storage_Service_VolumeManagerTest_QueryUsbIsInUse_002
+ * @tc.desc: Verify the QueryUsbIsInUse function.
+ * @tc.type: FUNC
+ * @tc.require: AR20250226995120
+ */
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_QueryUsbIsInUse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_QueryUsbIsInUse_001 start";
+
+    VolumeManager *volumeManager = VolumeManager::Instance();
+    ASSERT_TRUE(volumeManager != nullptr);
+
+    std::string diskPath = "";
+    bool isInUse = true;
+    int32_t result = volumeManager->QueryUsbIsInUse(diskPath, isInUse);
+    EXPECT_EQ(result, E_PARAMS_NULLPTR_ERR);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_QueryUsbIsInUse_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS

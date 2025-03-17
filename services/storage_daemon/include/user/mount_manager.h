@@ -143,6 +143,11 @@ private:
         std::list<std::string> &excludeProcess);
     int32_t FindSaFd(int32_t userId);
     int32_t BindMount(std::string &srcPath, std::string &dstPath);
+    int32_t UMountHmdfsByList(int32_t userId, std::list<std::string> &list, std::list<std::string> &unMountFailList);
+    bool IsSysMountPoint(int32_t userId, std::string &path);
+    bool CheckSysFs(int32_t userId);
+    bool IsSysFsInUse(std::string &path);
+    void ForbidOpen(int32_t userId);
 
     DISALLOW_COPY_AND_MOVE(MountManager);
 

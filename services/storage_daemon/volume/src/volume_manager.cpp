@@ -15,7 +15,10 @@
 
 #include "volume/volume_manager.h"
 
+#include <fcntl.h>
+#include <sys/mount.h>
 #include <sys/sysmacros.h>
+#include <unistd.h>
 
 #include "ipc/storage_manager_client.h"
 #include "storage_service_errno.h"
@@ -24,6 +27,7 @@
 #include "utils/string_utils.h"
 #include "volume/external_volume_info.h"
 
+#define STORAGE_MANAGER_IOC_CHK_BUSY _IOR(0xAC, 77, int)
 using namespace std;
 using namespace OHOS::StorageService;
 namespace OHOS {
@@ -192,6 +196,38 @@ int32_t VolumeManager::SetVolumeDescription(const std::string volId, const std::
         return err;
     }
 
+    return E_OK;
+}
+
+int32_t VolumeManager::QueryUsbIsInUse(const std::string &diskPath, bool &isInUse)
+{
+    isInUse = true;
+    if (diskPath.empty()) {
+        LOGE("diskPath is null");
+        return E_PARAMS_NULLPTR_ERR;
+    }
+
+    int fd = open(diskPath.c_str(), O_RDONLY);
+    if (fd < 0) {
+        LOGE("open file fail diskPath %{public}s, errno %{public}d", diskPath.c_str(), errno);
+        return E_OPEN_FAILED;
+    }
+    int inUse = -1;
+    if (ioctl(fd, STORAGE_MANAGER_IOC_CHK_BUSY, &inUse) < 0) {
+        LOGE("ioctl check in use failed errno %{public}d", errno);
+        close(fd);
+        return E_IOCTL_FAILED;
+    }
+
+    if (inUse) {
+        LOGI("usb inuse number is %{public}d", inUse);
+        close(fd);
+        isInUse = true;
+        return E_OK;
+    }
+    LOGI("usb not inUse");
+    isInUse = false;
+    close(fd);
     return E_OK;
 }
 } // StorageDaemon

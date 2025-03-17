@@ -15,9 +15,11 @@
 
 #include "volume/external_volume_info.h"
 
+#include <fcntl.h>
+#include <future>
 #include <sys/stat.h>
 #include <sys/wait.h>
-#include <future>
+#include <unistd.h>
 
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -27,6 +29,7 @@
 #include "utils/string_utils.h"
 #include "volume/process.h"
 
+#define STORAGE_MANAGER_IOC_CHK_BUSY _IOR(0xAC, 77, int)
 using namespace std;
 using namespace OHOS::StorageService;
 namespace OHOS {
@@ -263,6 +266,21 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
     return E_OK;
 }
 
+int32_t ExternalVolumeInfo::IsUsbInUse(int fd)
+{
+    int32_t inUse = -1;
+    if (ioctl(fd, STORAGE_MANAGER_IOC_CHK_BUSY, &inUse) < 0) {
+        LOGE("ioctl check in use failed errno %{public}d", errno);
+        return E_IOCTL_FAILED;
+    }
+    if (inUse) {
+        LOGI("usb inuse number is %{public}d", inUse);
+        return E_USB_IN_USE;
+    }
+    LOGI("usb not inUse");
+    return E_OK;
+}
+
 int32_t ExternalVolumeInfo::DoUMount(bool force)
 {
     if (force) {
@@ -275,14 +293,29 @@ int32_t ExternalVolumeInfo::DoUMount(bool force)
         LOGI("External volume force to unmount success.");
         return E_OK;
     }
+    int fd = open(mountPath_.c_str(), O_RDONLY);
+    if (fd < 0) {
+        LOGE("open file fail mountPath %{public}s, errno %{public}d", mountPath_.c_str(), errno);
+    }
+    if (fd >= 0) {
+        IsUsbInUse(fd);
+    }
+
     LOGI("External volume start to unmount.");
-    int ret = umount(mountPath_.c_str());
+    int ret = umount2(mountPath_.c_str(), MNT_DETACH);
+    if (ret != E_OK) {
+        LOGE("umount2 failed errno %{public}d", errno);
+    }
+    if (fd >= 0) {
+        IsUsbInUse(fd);
+        close(fd);
+    }
+
     int err = remove(mountPath_.c_str());
     if (err && ret) {
         LOGE("External volume DoUmount error.");
         return E_VOL_UMOUNT_ERR;
     }
-
     if (err && errno != FILE_NOT_EXIST) {
         LOGE("failed to call remove(%{public}s) error, errno = %{public}d", mountPath_.c_str(), errno);
         return E_RMDIR_MOUNT;

@@ -59,6 +59,7 @@ public:
     int32_t SetVolumeDescription(std::string fsUuid, std::string description) override;
     int32_t Format(std::string volumeId, std::string fsType) override;
     int32_t GetDiskById(std::string diskId, Disk &disk) override;
+    int32_t QueryUsbIsInUse(const std::string &diskPath, bool &isInUse) override;
 
     int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
                              const std::string &uuid) override;

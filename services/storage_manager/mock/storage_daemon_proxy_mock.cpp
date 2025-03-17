@@ -56,6 +56,11 @@ int32_t StorageDaemonProxy::SetVolumeDescription(const std::string &volId, const
     return E_OK;
 }
 
+int32_t StorageDaemonProxy::QueryUsbIsInUse(const std::string &diskPath, bool &isInUse)
+{
+    return E_OK;
+}
+
 int32_t StorageDaemonProxy::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
     return E_OK;

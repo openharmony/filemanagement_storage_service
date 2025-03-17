@@ -338,5 +338,30 @@ HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemote
 
     GTEST_LOG_(INFO) << "Storage_Manager_StorageManagerStubTest_OnRemoteRequest_006 end";
 }
+
+/**
+ * @tc.name: Storage_Manager_StorageManagerStubTest_OnRemoteRequest_007
+ * @tc.desc: Verify the OnRemoteRequest function.
+ * @tc.type: FUNC
+ * @tc.require: AR20250226995120
+ */
+HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemoteRequest_007, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageManagerStubTest_OnRemoteRequest_007 start";
+    StorageManagerStubMock mock;
+    EXPECT_CALL(mock, QueryUsbIsInUse(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    bool bRet = data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor());
+    EXPECT_TRUE(bRet) << "write token error";
+    int32_t ret = mock.OnRemoteRequest(static_cast<int32_t>(StorageManagerInterfaceCode::QUERY_USB_IS_IN_USE), data,
+        reply, option);
+    EXPECT_TRUE(ret == E_OK);
+    reply.ReadBool();
+    EXPECT_TRUE(reply.ReadInt32() == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageManagerStubTest_OnRemoteRequest_007 end";
+}
 } // STORAGE_MANAGER
 } // OHOS

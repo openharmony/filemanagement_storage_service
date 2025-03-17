@@ -570,6 +570,18 @@ bool HandleSetVolDescFuzzTest(const uint8_t *data, size_t size)
     return true;
 }
 
+bool HandleQueryUsbIsInUseFuzzTest(const uint8_t *data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data, size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleQueryUsbIsInUse(datas, reply);
+    return true;
+}
+
 bool HandleGetDiskByIdFuzzTest(const uint8_t *data, size_t size)
 {
     MessageParcel datas;
@@ -785,6 +797,7 @@ void FuzzerTest2(const uint8_t *data, size_t size)
     OHOS::StorageManager::HandleGetVolumeByUuidFuzzTest(data, size);
     OHOS::StorageManager::HandleGetVolumeByIdFuzzTest(data, size);
     OHOS::StorageManager::HandleSetVolDescFuzzTest(data, size);
+    OHOS::StorageManager::HandleQueryUsbIsInUseFuzzTest(data, size);
     OHOS::StorageManager::HandleGetDiskByIdFuzzTest(data, size);
     OHOS::StorageManager::HandleUpdateUseAuthWithRecoveryKeyFuzzTest(data, size);
     OHOS::StorageManager::HandleGetFileEncryptStatusFuzzTest(data, size);

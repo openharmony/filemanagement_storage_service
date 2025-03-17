@@ -147,6 +147,8 @@ StorageManagerStub::StorageManagerStub()
         &StorageManagerStub::HandleFormat;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::GET_DISK_BY_ID)] =
         &StorageManagerStub::HandleGetDiskById;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::QUERY_USB_IS_IN_USE)] =
+        &StorageManagerStub::HandleQueryUsbIsInUse;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::CREATE_USER_KEYS)] =
         &StorageManagerStub::HandleGenerateUserKeys;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::DELETE_USER_KEYS)] =
@@ -274,6 +276,8 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
             return HandleFormat(data, reply);
         case static_cast<uint32_t>(StorageManagerInterfaceCode::GET_DISK_BY_ID):
             return HandleGetDiskById(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::QUERY_USB_IS_IN_USE):
+            return HandleQueryUsbIsInUse(data, reply);
         case static_cast<uint32_t>(StorageManagerInterfaceCode::CREATE_USER_KEYS):
             return HandleGenerateUserKeys(data, reply);
         case static_cast<uint32_t>(StorageManagerInterfaceCode::DELETE_USER_KEYS):
@@ -803,6 +807,25 @@ int32_t StorageManagerStub::HandleGetDiskById(MessageParcel &data, MessageParcel
     }
     if (!reply.WriteUint32(err)) {
         LOGE("StorageManagerStub::HandleGetDiskById call GetDiskById failed");
+        return E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleQueryUsbIsInUse(MessageParcel &data, MessageParcel &reply)
+{
+    if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    std::string diskPath = data.ReadString();
+    bool isInUse = true;
+    int32_t res = QueryUsbIsInUse(diskPath, isInUse);
+    if (!reply.WriteBool(isInUse)) {
+        LOGE("Write reply isInUse error");
+        return E_WRITE_REPLY_ERR;
+    }
+    if (!reply.WriteInt32(res)) {
+        LOGE("Write reply error code failed");
         return E_WRITE_REPLY_ERR;
     }
     return E_OK;

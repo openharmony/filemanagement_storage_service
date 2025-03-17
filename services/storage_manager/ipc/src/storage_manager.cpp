@@ -479,6 +479,18 @@ int32_t StorageManager::GenerateUserKeys(uint32_t userId, uint32_t flags)
 #endif
 }
 
+int32_t StorageManager::QueryUsbIsInUse(const std::string &diskPath, bool &isInUse)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManger::QueryUsbIsInUse diskPath: %{public}s", diskPath.c_str());
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->QueryUsbIsInUse(diskPath, isInUse);
+#else
+    return E_NOT_SUPPORT;
+#endif
+}
+
 int32_t StorageManager::DeleteUserKeys(uint32_t userId)
 {
 #ifdef USER_CRYPTO_MANAGER
