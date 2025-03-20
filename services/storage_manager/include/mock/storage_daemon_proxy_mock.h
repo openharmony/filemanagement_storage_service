@@ -74,11 +74,11 @@ public:
     virtual int32_t SetRecoverKey(const std::vector<uint8_t> &key) override;
 
     // app file share api
-    virtual int32_t CreateShareFile(const std::vector<std::string> &uriList,
+    virtual int32_t CreateShareFile(const FileRawData &fileRawData,
                                     uint32_t tokenId,
                                     uint32_t flag,
                                     std::vector<int32_t> &funcResult) override;
-    virtual int32_t DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList) override;
+    virtual int32_t DeleteShareFile(uint32_t tokenId, const FileRawData &fileRawData) override;
 
     virtual int32_t SetBundleQuota(const std::string &bundleName, int32_t uid,
         const std::string &bundleDataDirPath, int32_t limitSizeMb) override;

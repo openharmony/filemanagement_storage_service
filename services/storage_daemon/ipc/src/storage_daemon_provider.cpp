@@ -39,6 +39,54 @@ constexpr unsigned int RADAR_REPORT_STATISTIC_INTERVAL_MINUTES = 1440;
 constexpr unsigned int USER0ID = 0;
 constexpr unsigned int USER100ID = 100;
 constexpr unsigned int RADAR_STATISTIC_THREAD_WAIT_SECONDS = 60;
+constexpr size_t MAX_IPC_RAW_DATA_SIZE = 128 * 1024 * 1024;
+
+static bool GetData(void *&buffer, size_t size, const void *data)
+{
+    if (data == nullptr) {
+        LOGE("null data");
+        return false;
+    }
+    if (size == 0 || size > MAX_IPC_RAW_DATA_SIZE) {
+        LOGE("size invalid: %{public}zu", size);
+        return false;
+    }
+    buffer = malloc(size);
+    if (buffer == nullptr) {
+        LOGE("malloc buffer failed");
+        return false;
+    }
+    if (memcpy_s(buffer, size, data, size) != E_OK) {
+        free(buffer);
+        LOGE("memcpy failed");
+        return false;
+    }
+    return true;
+}
+
+static bool ReadBatchUris(FileRawData &data, std::vector<std::string> &uriVec)
+{
+    size_t dataSize = static_cast<size_t>(data.ReadInt32());
+    if (dataSize == 0) {
+        LOGE("file rawdata no data");
+        return false;
+    }
+
+    void *buffer = nullptr;
+    if (!GetData(buffer, dataSize, data.ReadRawData(dataSize))) {
+        LOGE("read raw data failed: %{public}zu", dataSize);
+        return false;
+    }
+
+    MessageParcel tempParcel;
+    if (!tempParcel.ParseFrom(reinterpret_cast<uintptr_t>(buffer), dataSize)) {
+        LOGE("failed to parseFrom");
+        free(buffer);
+        return false;
+    }
+    tempParcel.ReadStringVector(&uriVec);
+    return true;
+}
 
 std::map<uint32_t, RadarStatisticInfo>::iterator StorageDaemonProvider::GetUserStatistics(const uint32_t userId)
 {
@@ -508,7 +556,7 @@ int32_t StorageDaemonProvider::SetRecoverKey(const std::vector<uint8_t> &key)
     return storageDaemon_->SetRecoverKey(key);
 }
 
-int32_t StorageDaemonProvider::CreateShareFile(const std::vector<std::string> &uriList,
+int32_t StorageDaemonProvider::CreateShareFile(const FileRawData &fileRawData,
                                                uint32_t tokenId,
                                                uint32_t flag,
                                                std::vector<int32_t> &funcResult)
@@ -516,13 +564,21 @@ int32_t StorageDaemonProvider::CreateShareFile(const std::vector<std::string> &u
     if (storageDaemon_ == nullptr) {
         return E_ERR;
     }
+    std::vector<std::string> uriList;
+    if (!ReadBatchUris(fileRawData, uriList)) {
+        return E_WRITE_REPLY_ERR;
+    }
     return storageDaemon_->CreateShareFile(uriList, tokenId, flag, funcResult);
 }
 
-int32_t StorageDaemonProvider::DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList)
+int32_t StorageDaemonProvider::DeleteShareFile(uint32_t tokenId, const FileRawData &fileRawData)
 {
     if (storageDaemon_ == nullptr) {
         return E_ERR;
+    }
+    std::vector<std::string> uriList;
+    if (!ReadBatchUris(fileRawData, uriList)) {
+        return E_WRITE_REPLY_ERR;
     }
     return storageDaemon_->DeleteShareFile(tokenId, uriList);
 }

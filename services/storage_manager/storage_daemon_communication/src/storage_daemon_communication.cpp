@@ -25,10 +25,14 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/storage_radar.h"
+#include "message_parcel.h"
 
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageManager {
+
+constexpr size_t MAX_IPC_RAW_DATA_SIZE = 128 * 1024 * 1024; // 128MB
+
 StorageDaemonCommunication::StorageDaemonCommunication()
 {
     LOGI("DEBUG StorageDaemonCommunication constructer");
@@ -522,8 +526,16 @@ std::vector<int32_t> StorageDaemonCommunication::CreateShareFile(const std::vect
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return std::vector<int32_t>{err};
     }
+    MessageParcel tempParcel;
+    tempParcel.SetMaxCapacity(MAX_IPC_RAW_DATA_SIZE);
+    if (!tempParcel.WriteStringVector(uriList)) {
+        LOGE("Write uris failed");
+        return false;
+    }
+    size_t dataSize = tempParcel.GetDataSize();
+    StorageDaemon::FileRawData fileRawData(dataSize, reinterpret_cast<const void*>(tempParcel.GetData()));
     std::vector<int32_t> funcResult;
-    storageDaemon_->CreateShareFile(uriList, tokenId, flag, funcResult);
+    storageDaemon_->CreateShareFile(fileRawData, tokenId, flag, funcResult);
     return funcResult;
 }
 
@@ -539,7 +551,15 @@ int32_t StorageDaemonCommunication::DeleteShareFile(uint32_t tokenId, const std:
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->DeleteShareFile(tokenId, uriList);
+    MessageParcel tempParcel;
+    tempParcel.SetMaxCapacity(MAX_IPC_RAW_DATA_SIZE);
+    if (!tempParcel.WriteStringVector(uriList)) {
+        LOGE("Write uris failed");
+        return false;
+    }
+    size_t dataSize = tempParcel.GetDataSize();
+    StorageDaemon::FileRawData fileRawData(dataSize, reinterpret_cast<const void*>(tempParcel.GetData()));
+    return storageDaemon_->DeleteShareFile(tokenId, fileRawData);
 }
 
 int32_t StorageDaemonCommunication::SetBundleQuota(const std::string &bundleName, int32_t uid,
