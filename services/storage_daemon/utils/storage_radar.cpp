@@ -18,6 +18,9 @@
 #include "hisysevent.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include <chrono>
+#include <sstream>
+#include <iomanip>
 
 namespace OHOS {
 namespace StorageService {
@@ -233,6 +236,42 @@ bool StorageRadar::RecordFuctionResult(const RadarParameter &parRes)
         return false;
     }
     return true;
+}
+
+static std::string GetCurrentTime()
+{
+    auto now = std::chrono::system_clock::now();
+    auto time = std::chrono::system_clock::to_time_t(now);
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
+    std::stringstream strTime;
+    strTime << (std::put_time(std::localtime(&time), "%Y-%m-%d %H:%M:%S:")) << (std::setfill('0'))
+            << (std::setw(INDEX)) << (ms.count() % MS_1000);
+    return strTime.str();
+}
+
+void StorageRadar::ReportStatistics(uint32_t userId, StorageDaemon::RadarStatisticInfo radarInfo)
+{
+    int32_t res = HiSysEventWrite(
+        STORAGESERVICE_DOAMIN,
+        FILE_STORAGE_MANAGER_STATISTIC,
+        HiviewDFX::HiSysEvent::EventType::STATISTIC,
+        "USER_ID", userId,
+        "TIME", GetCurrentTime(),
+        "KEY_LOAD_SUCC_CNT", radarInfo.keyLoadSuccCount,
+        "KEY_LOAD_FAIL_CNT", radarInfo.keyLoadFailCount,
+        "KEY_UNLOAD_SUCC_CNT", radarInfo.keyUnloadSuccCount,
+        "KEY_UNLOAD_FAIL_CNT", radarInfo.keyUnloadFailCount,
+        "USER_ADD_SUCC_CNT", radarInfo.userAddSuccCount,
+        "USER_ADD_FAIL_CNT", radarInfo.userAddFailCount,
+        "USER_REMOVE_SUCC_CNT", radarInfo.userRemoveSuccCount,
+        "USER_REMOVE_FAIL_CNT", radarInfo.userRemoveFailCount,
+        "USER_START_SUCC_CNT", radarInfo.userStartSuccCount,
+        "USER_START_FAIL_CNT", radarInfo.userStartFailCount,
+        "USER_STOP_SUCC_CNT", radarInfo.userStopSuccCount,
+        "USER_STOP_FAIL_CNT", radarInfo.userStopFailCount);
+    if (res != E_OK) {
+        LOGE("StorageRadar ERROR, res :%{public}d", res);
+    }
 }
 } // namespace StorageService
 } // namespace OHOS
