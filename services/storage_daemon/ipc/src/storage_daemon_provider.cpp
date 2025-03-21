@@ -64,16 +64,16 @@ static bool GetData(void *&buffer, size_t size, const void *data)
     return true;
 }
 
-static bool ReadBatchUris(FileRawData &fileRawData, std::vector<std::string> &uriVec)
+static bool ReadBatchUris(FileRawdata &fileRawdata, std::vector<std::string> &uriVec)
 {
-    size_t dataSize = static_cast<size_t>(fileRawData.size);
+    size_t dataSize = static_cast<size_t>(fileRawdata.size);
     if (dataSize == 0) {
         LOGE("file rawdata no data");
         return false;
     }
 
     void *buffer = nullptr;
-    if (!GetData(buffer, dataSize, fileRawData.data)) {
+    if (!GetData(buffer, dataSize, fileRawdata.data)) {
         LOGE("read raw data failed: %{public}zu", dataSize);
         return false;
     }
@@ -556,7 +556,7 @@ int32_t StorageDaemonProvider::SetRecoverKey(const std::vector<uint8_t> &key)
     return storageDaemon_->SetRecoverKey(key);
 }
 
-int32_t StorageDaemonProvider::CreateShareFile(const FileRawData &fileRawData,
+int32_t StorageDaemonProvider::CreateShareFile(const FileRawdata &fileRawdata,
                                                uint32_t tokenId,
                                                uint32_t flag,
                                                std::vector<int32_t> &funcResult)
@@ -565,20 +565,20 @@ int32_t StorageDaemonProvider::CreateShareFile(const FileRawData &fileRawData,
         return E_ERR;
     }
     std::vector<std::string> uriList;
-    bool ret = ReadBatchUris(fileRawData, uriList);
+    bool ret = ReadBatchUris(fileRawdata, uriList);
     if (!ret) {
         return E_WRITE_REPLY_ERR;
     }
     return storageDaemon_->CreateShareFile(uriList, tokenId, flag, funcResult);
 }
 
-int32_t StorageDaemonProvider::DeleteShareFile(uint32_t tokenId, const FileRawData &fileRawData)
+int32_t StorageDaemonProvider::DeleteShareFile(uint32_t tokenId, const FileRawdata &fileRawdata)
 {
     if (storageDaemon_ == nullptr) {
         return E_ERR;
     }
     std::vector<std::string> uriList;
-    bool ret = ReadBatchUris(fileRawData, uriList);
+    bool ret = ReadBatchUris(fileRawdata, uriList);
     if (!ret) {
         return E_WRITE_REPLY_ERR;
     }
