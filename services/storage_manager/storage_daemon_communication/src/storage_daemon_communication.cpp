@@ -532,7 +532,7 @@ std::vector<int32_t> StorageDaemonCommunication::CreateShareFile(const std::vect
         LOGE("Write uris failed");
         return false;
     }
-    size_t dataSize = tempParcel.GetDataSize();
+    uint32_t dataSize = static_cast<uint32_t>(tempParcle.GetDataSize());
     StorageDaemon::FileRawData fileRawData(dataSize, reinterpret_cast<const void*>(tempParcel.GetData()));
     std::vector<int32_t> funcResult;
     storageDaemon_->CreateShareFile(fileRawData, tokenId, flag, funcResult);
@@ -557,7 +557,7 @@ int32_t StorageDaemonCommunication::DeleteShareFile(uint32_t tokenId, const std:
         LOGE("Write uris failed");
         return false;
     }
-    size_t dataSize = tempParcel.GetDataSize();
+    uint32_t dataSize = static_cast<uint32_t>(tempParcle.GetDataSize());
     StorageDaemon::FileRawData fileRawData(dataSize, reinterpret_cast<const void*>(tempParcel.GetData()));
     return storageDaemon_->DeleteShareFile(tokenId, fileRawData);
 }

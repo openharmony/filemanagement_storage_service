@@ -64,7 +64,7 @@ static bool GetData(void *&buffer, size_t size, const void *data)
     return true;
 }
 
-int32_t ReadFilesPath(FileRawData &fileRawData, std::vector<std::string> &uriVec)
+int32_t GetFilesPath(const FileRawData &fileRawData, std::vector<std::string> &uriVec)
 {
     size_t dataSize = static_cast<size_t>(fileRawData.size);
     if (dataSize == 0) {
@@ -565,7 +565,7 @@ int32_t StorageDaemonProvider::CreateShareFile(const FileRawData &fileRawData,
         return E_ERR;
     }
     std::vector<std::string> uriList;
-    auto ret = ReadFilesPath(fileRawData, uriList);
+    auto ret = GetFilesPath(fileRawData, uriList);
     if (ret != E_OK) {
         return ret;
     }
@@ -578,7 +578,7 @@ int32_t StorageDaemonProvider::DeleteShareFile(uint32_t tokenId, const FileRawDa
         return E_ERR;
     }
     std::vector<std::string> uriList;
-    auto ret = ReadFilesPath(fileRawData, uriList);
+    auto ret = GetFilesPath(fileRawData, uriList);
     if (ret != E_OK) {
         return ret;
     }
