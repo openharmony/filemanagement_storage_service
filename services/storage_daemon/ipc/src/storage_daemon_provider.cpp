@@ -64,28 +64,28 @@ static bool GetData(void *&buffer, size_t size, const void *data)
     return true;
 }
 
-static bool ReadBatchUris(FileRawdata &fileRawdata, std::vector<std::string> &uriVec)
+int32_t ReadFilesPath(FileRawData &fileRawData, std::vector<std::string> &uriVec)
 {
-    size_t dataSize = static_cast<size_t>(fileRawdata.size);
+    size_t dataSize = static_cast<size_t>(fileRawData.size);
     if (dataSize == 0) {
         LOGE("file rawdata no data");
-        return false;
+        return E_ERR;
     }
 
     void *buffer = nullptr;
-    if (!GetData(buffer, dataSize, fileRawdata.data)) {
+    if (!GetData(buffer, dataSize, fileRawData.data)) {
         LOGE("read raw data failed: %{public}zu", dataSize);
-        return false;
+        return E_ERR;
     }
 
     MessageParcel tempParcel;
     if (!tempParcel.ParseFrom(reinterpret_cast<uintptr_t>(buffer), dataSize)) {
         LOGE("failed to parseFrom");
         free(buffer);
-        return false;
+        return E_ERR;
     }
     tempParcel.ReadStringVector(&uriVec);
-    return true;
+    return E_OK;
 }
 
 std::map<uint32_t, RadarStatisticInfo>::iterator StorageDaemonProvider::GetUserStatistics(const uint32_t userId)
@@ -556,7 +556,7 @@ int32_t StorageDaemonProvider::SetRecoverKey(const std::vector<uint8_t> &key)
     return storageDaemon_->SetRecoverKey(key);
 }
 
-int32_t StorageDaemonProvider::CreateShareFile(const FileRawdata &fileRawdata,
+int32_t StorageDaemonProvider::CreateShareFile(const FileRawData &fileRawData,
                                                uint32_t tokenId,
                                                uint32_t flag,
                                                std::vector<int32_t> &funcResult)
@@ -565,22 +565,22 @@ int32_t StorageDaemonProvider::CreateShareFile(const FileRawdata &fileRawdata,
         return E_ERR;
     }
     std::vector<std::string> uriList;
-    bool ret = ReadBatchUris(fileRawdata, uriList);
-    if (!ret) {
-        return E_WRITE_REPLY_ERR;
+    auto ret = ReadFilesPath(fileRawData, uriList);
+    if (ret != E_OK) {
+        return ret;
     }
     return storageDaemon_->CreateShareFile(uriList, tokenId, flag, funcResult);
 }
 
-int32_t StorageDaemonProvider::DeleteShareFile(uint32_t tokenId, const FileRawdata &fileRawdata)
+int32_t StorageDaemonProvider::DeleteShareFile(uint32_t tokenId, const FileRawData &fileRawData)
 {
     if (storageDaemon_ == nullptr) {
         return E_ERR;
     }
     std::vector<std::string> uriList;
-    bool ret = ReadBatchUris(fileRawdata, uriList);
-    if (!ret) {
-        return E_WRITE_REPLY_ERR;
+    auto ret = ReadFilesPath(fileRawData, uriList);
+    if (ret != E_OK) {
+        return ret;
     }
     return storageDaemon_->DeleteShareFile(tokenId, uriList);
 }

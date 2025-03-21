@@ -18,12 +18,12 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-class FileRawdata {
+class FileRawData {
 public:
     uint32_t size;
     const void *data;
-    FileRawdata() = default;
-    FileRawdata(uint32_t size, const void *data) : size(size), data(data) {};
+    FileRawData() = default;
+    FileRawData(uint32_t size, const void *data) : size(size), data(data) {};
 };
 } // namespace StorageDaemon
 } // namespace OHOS
