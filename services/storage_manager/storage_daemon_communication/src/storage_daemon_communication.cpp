@@ -530,9 +530,9 @@ std::vector<int32_t> StorageDaemonCommunication::CreateShareFile(const std::vect
     tempParcel.SetMaxCapacity(MAX_IPC_RAW_DATA_SIZE);
     if (!tempParcel.WriteStringVector(uriList)) {
         LOGE("Write uris failed");
-        return false;
+        return std::vector<int32_t>{E_WRITE_PARCEL_ERR};
     }
-    uint32_t dataSize = static_cast<uint32_t>(tempParcle.GetDataSize());
+    uint32_t dataSize = static_cast<uint32_t>(tempParcel.GetDataSize());
     StorageDaemon::FileRawData fileRawData(dataSize, reinterpret_cast<const void*>(tempParcel.GetData()));
     std::vector<int32_t> funcResult;
     storageDaemon_->CreateShareFile(fileRawData, tokenId, flag, funcResult);
@@ -555,9 +555,9 @@ int32_t StorageDaemonCommunication::DeleteShareFile(uint32_t tokenId, const std:
     tempParcel.SetMaxCapacity(MAX_IPC_RAW_DATA_SIZE);
     if (!tempParcel.WriteStringVector(uriList)) {
         LOGE("Write uris failed");
-        return false;
+        return std::vector<int32_t>{E_WRITE_PARCEL_ERR};
     }
-    uint32_t dataSize = static_cast<uint32_t>(tempParcle.GetDataSize());
+    uint32_t dataSize = static_cast<uint32_t>(tempParcel.GetDataSize());
     StorageDaemon::FileRawData fileRawData(dataSize, reinterpret_cast<const void*>(tempParcel.GetData()));
     return storageDaemon_->DeleteShareFile(tokenId, fileRawData);
 }
