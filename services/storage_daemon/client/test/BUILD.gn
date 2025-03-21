@@ -1,4 +1,4 @@
-# Copyright (c) 2022 Huawei Device Co., Ltd.
+# Copyright (c) 2022-2025 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -52,11 +52,12 @@ ohos_unittest("storage_daemon_clt_test") {
   deps = [
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "init:libbegetutil",
     "ipc:ipc_single",
@@ -64,7 +65,66 @@ ohos_unittest("storage_daemon_clt_test") {
   ]
 }
 
+ohos_unittest("storage_daemon_client_sub_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
+  }
+  module_out_path = "storage_service/storage_daemon"
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "LOG_DOMAIN = 0xD004301",
+    "private=public",
+  ]
+
+  if (storage_service_user_crypto_manager) {
+    defines += [ "USER_CRYPTO_MANAGER" ]
+  }
+
+  include_dirs = [
+    "${storage_daemon_path}/include",
+    "${storage_daemon_path}/client/include",
+    "${storage_daemon_path}/utils/test/common",
+    "${storage_manager_path}/include",
+    "${storage_service_common_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+  ]
+
+  sources = [
+    "${storage_daemon_path}/client/storage_daemon_client.cpp",
+    "${storage_daemon_path}/client/test/storage_daemon_client_sub_test.cpp",
+    "${storage_daemon_path}/ipc/src/storage_daemon_stub.cpp",
+    "${storage_daemon_path}/utils/test/common/help_utils.cpp",
+    "${storage_manager_path}/mock/storage_daemon_proxy_mock.cpp",
+  ]
+
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}/libfscrypt:libfscryptutils",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hicollie:libhicollie",
+    "hilog:libhilog",
+    "init:libbegetutil",
+    "ipc:ipc_single",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+  ]
+}
+
 group("storage_daemon_client_test") {
   testonly = true
-  deps = [ ":storage_daemon_clt_test" ]
+  deps = [
+    ":storage_daemon_client_sub_test",
+    ":storage_daemon_clt_test",
+  ]
 }
