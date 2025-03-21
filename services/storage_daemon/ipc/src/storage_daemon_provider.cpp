@@ -64,16 +64,16 @@ static bool GetData(void *&buffer, size_t size, const void *data)
     return true;
 }
 
-static bool ReadBatchUris(FileRawData &data, std::vector<std::string> &uriVec)
+static bool ReadBatchUris(FileRawData &fileRawData, std::vector<std::string> &uriVec)
 {
-    size_t dataSize = static_cast<size_t>(data.ReadInt32());
+    size_t dataSize = static_cast<size_t>(fileRawData.size);
     if (dataSize == 0) {
         LOGE("file rawdata no data");
         return false;
     }
 
     void *buffer = nullptr;
-    if (!GetData(buffer, dataSize, data.ReadRawData(dataSize))) {
+    if (!GetData(buffer, dataSize, fileRawData.data)) {
         LOGE("read raw data failed: %{public}zu", dataSize);
         return false;
     }
@@ -565,7 +565,8 @@ int32_t StorageDaemonProvider::CreateShareFile(const FileRawData &fileRawData,
         return E_ERR;
     }
     std::vector<std::string> uriList;
-    if (!ReadBatchUris(fileRawData, uriList)) {
+    bool ret = ReadBatchUris(fileRawData, uriList);
+    if (!ret) {
         return E_WRITE_REPLY_ERR;
     }
     return storageDaemon_->CreateShareFile(uriList, tokenId, flag, funcResult);
@@ -577,7 +578,8 @@ int32_t StorageDaemonProvider::DeleteShareFile(uint32_t tokenId, const FileRawDa
         return E_ERR;
     }
     std::vector<std::string> uriList;
-    if (!ReadBatchUris(fileRawData, uriList)) {
+    bool ret = ReadBatchUris(fileRawData, uriList);
+    if (!ret) {
         return E_WRITE_REPLY_ERR;
     }
     return storageDaemon_->DeleteShareFile(tokenId, uriList);
