@@ -16,6 +16,7 @@
 #ifndef MTPFS_MTP_DEVICE_H
 #define MTPFS_MTP_DEVICE_H
 
+#include <condition_variable>
 #include "mtpfs_type_dir.h"
 #include "mtpfs_type_file.h"
 #include <map>
@@ -65,7 +66,7 @@ public:
     bool ConnectByDevNo(int devNo = 0);
     bool ConnectByDevFile(const std::string &devFile);
     void Disconnect();
-
+    void InitDevice();
     void EnableMove(bool e = true)
     {
         moveEnabled_ = e;
@@ -112,6 +113,7 @@ private:
     void HandleDevNum(const std::string &devFile, int &devNo, int rawDevicesCnt, LIBMTP_raw_device_t *rawDevices);
     int ReNameInner(const std::string &oldPath, const std::string &newPath);
     void ReadEvent();
+    static void MtpEventCallback(int ret, LIBMTP_event_t event, uint32_t param, void *data);
     const void HandleDirByFetch(LIBMTP_file_t *content, MtpFsTypeDir *dir);
 
 private:
@@ -124,6 +126,8 @@ private:
     bool eventFlag_ = true;
     std::mutex uploadRecordMutex_;
     std::map<std::string, bool> uploadRecordMap_;
+    static std::condition_variable eventCon_;
+    static std::mutex eventMutex_;
 };
 
 #endif // MTPFS_MTP_DEVICE_H
