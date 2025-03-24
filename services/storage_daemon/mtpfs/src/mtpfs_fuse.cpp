@@ -242,9 +242,9 @@ int WrapSetXAttr(const char *path, const char *in, const char *out, size_t size,
 
 int WrapGetXAttr(const char *path, const char *in, char *out, size_t size)
 {
-    LOGI("mtp WrapGetXAttr, path=%{public}s", path);
+    LOGD("mtp WrapGetXAttr, path=%{public}s", path);
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->GetXAttr(path, in, out, size);
-    LOGI("WrapGetXAttr ret = %{public}d.", ret);
+    LOGD("WrapGetXAttr ret = %{public}d.", ret);
     return ret;
 }
 
@@ -470,6 +470,7 @@ bool MtpFileSystem::Exec()
 
 void *MtpFileSystem::Init(struct fuse_conn_info *conn, struct fuse_config *cfg)
 {
+    device_.InitDevice();
     return nullptr;
 }
 

@@ -26,20 +26,25 @@
 
 const int32_t FETCH_NUM = 3000;
 const int32_t DIR_COUNT_ONE = 1;
-bool g_eventFlag = true;
+static bool g_isEventDone = true;
 uint32_t MtpFsDevice::rootNode_ = ~0;
+std::condition_variable MtpFsDevice::eventCon_;
+std::mutex MtpFsDevice::eventMutex_;
 
 MtpFsDevice::MtpFsDevice() : device_(nullptr), capabilities_(), deviceMutex_(), rootDir_(), moveEnabled_(false)
 {
     MtpFsUtil::Off();
     LIBMTP_Init();
+    g_isEventDone = true;
     MtpFsUtil::On();
 }
 
 MtpFsDevice::~MtpFsDevice()
 {
+    std::lock_guard<std::mutex> lock(eventMutex_);
     LOGI("MtpFsDevice Destructor.");
     eventFlag_ = false;
+    eventCon_.notify_one();
     Disconnect();
 }
 
@@ -111,11 +116,24 @@ void MtpFsDevice::HandleDevNum(const std::string &devFile, int &devNo, int rawDe
     }
 }
 
-static void Libmtp_event_cb_fn(int ret, LIBMTP_event_t event, uint32_t param, void *data)
+void MtpFsDevice::MtpEventCallback(int ret, LIBMTP_event_t event, uint32_t param, void *data)
 {
+    std::lock_guard<std::mutex> lock(eventMutex_);
     (void)data;
-    LOGI("LIBMTP_event_cb_fn, ret=%{public}d, event=%{public}d, param=%{public}d.", ret, event, param);
-    g_eventFlag = true;
+    g_isEventDone = true;
+    LOGI("MtpEventCallback received, ret=%{public}d, event=%{public}d, param=%{public}d, g_isEventDone=%{public}d", ret,
+         event, param, g_isEventDone);
+    switch (event) {
+        case LIBMTP_EVENT_OBJECT_ADDED:
+            LOGI("Received event LIBMTP_EVENT_OBJECT_ADDED.");
+            break;
+        case LIBMTP_EVENT_OBJECT_REMOVED:
+            LOGI("Received event LIBMTP_EVENT_OBJECT_REMOVED.");
+            break;
+        default:
+            break;
+    }
+    eventCon_.notify_one();
 }
 
 bool MtpFsDevice::ConnectByDevNo(int devNo)
@@ -155,7 +173,6 @@ bool MtpFsDevice::ConnectByDevNo(int devNo)
         return false;
     }
     capabilities_ = MtpFsDevice::GetCapabilities(*this);
-    std::thread([this]() { ReadEvent(); }).detach();
     LOGI("Connect by device number success.");
     return true;
 }
@@ -163,12 +180,24 @@ bool MtpFsDevice::ConnectByDevNo(int devNo)
 void MtpFsDevice::ReadEvent()
 {
     while (eventFlag_) {
-        if (g_eventFlag) {
-            int ret = LIBMTP_Read_Event_Async(device_, Libmtp_event_cb_fn, nullptr);
-            g_eventFlag = false;
+        std::unique_lock<std::mutex> lock(eventMutex_);
+        if (g_isEventDone) {
+            LOGI("Regist read mtp device event. g_isEventDone=%{public}d", g_isEventDone);
+            int ret = LIBMTP_Read_Event_Async(device_, MtpEventCallback, nullptr);
+            if (ret != 0) {
+                LOGE("Read libmtp event async failed, ret = %{public}d", ret);
+                continue;
+            }
+            g_isEventDone = false;
         }
+        eventCon_.wait(lock, [this] { return g_isEventDone || !eventFlag_; });
     }
-    LOGI("Device detached, read event end");
+    LOGI("Device detached, quit read event async thread.");
+}
+
+void MtpFsDevice::InitDevice()
+{
+    std::thread([this]() { ReadEvent(); }).detach();
 }
 
 bool MtpFsDevice::ConnectByDevFile(const std::string &devFile)
@@ -553,12 +582,6 @@ int MtpFsDevice::ReName(const std::string &oldPath, const std::string &newPath)
         return -EINVAL;
     }
     const MtpFsTypeDir *dirToReName = dirParent->Dir(tmpOldBaseName);
-    int32_t cnt = 8;
-    while (cnt > 0) {
-        int32_t ret = LIBMTP_Read_Event_Async(device_, Libmtp_event_cb_fn, nullptr);
-        LOGI("File or dir rename regist event receiver, ret=%{public}d", ret);
-        cnt--;
-    }
     if (dirToReName) {
         return DirReName(oldPath, newPath);
     } else {
@@ -728,6 +751,7 @@ int MtpFsDevice::FileRemove(const std::string &path)
         return -ENOENT;
     }
     CriticalEnter();
+    LOGI("LIBMTP_Delete_Object handleID=%{public}u", fileToRemove->Id());
     int rval = LIBMTP_Delete_Object(device_, fileToRemove->Id());
     CriticalLeave();
     if (rval != 0) {

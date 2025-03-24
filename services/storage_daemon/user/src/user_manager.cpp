@@ -50,7 +50,8 @@ UserManager::UserManager()
                  {"/data/service/el1/%d/backup/bundles", MODE_0711, OID_BACKUP, OID_BACKUP},
                  {"/data/service/el1/%d/utdtypes", MODE_0711, OID_FOUNDATION, OID_FOUNDATION},
                  {"/data/app/el1/%d/aot_compiler", MODE_0711, OID_ROOT, OID_ROOT},
-                 {"/data/app/el1/%d/aot_compiler/ark_profile", MODE_0711, OID_ROOT, OID_ROOT}}
+                 {"/data/app/el1/%d/aot_compiler/ark_profile", MODE_0711, OID_ROOT, OID_ROOT},
+                 {"/data/app/el1/%d/shader_cache", MODE_0711, OID_ROOT, OID_ROOT}}
 {
 }
 
