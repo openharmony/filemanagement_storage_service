@@ -518,4 +518,541 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Update
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UpdateUserAuth_001 end";
 }
+
+/**
+* @tc.name: Storage_Service_StorageDaemonClientTest_UpdateUseAuthWithRecoveryKey_001
+* @tc.desc: Verify the UpdateUseAuthWithRecoveryKey function.
+* @tc.type: FUNC
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_UpdateUseAuthWithRecoveryKey_001,
+    TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UpdateUseAuthWithRecoveryKey_001 start";
+    vector<uint8_t> authToken;
+    vector<uint8_t> newSecret;
+    vector<vector<uint8_t>> plainText;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>())).WillOnce(Return(sd));
+    auto ret = StorageDaemonClient::UpdateUseAuthWithRecoveryKey(authToken, newSecret, 0, 0, plainText);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    ret = StorageDaemonClient::UpdateUseAuthWithRecoveryKey(authToken, newSecret, 0, 0, plainText);
+    EXPECT_EQ(ret, E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, UpdateUseAuthWithRecoveryKey(_, _, _, _, _)).WillOnce(Return(E_OK));
+    ret = StorageDaemonClient::UpdateUseAuthWithRecoveryKey(authToken, newSecret, 0, 0, plainText);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UpdateUseAuthWithRecoveryKey_001 end";
+}
+
+/**
+* @tc.name: Storage_Service_StorageDaemonClientTest_ActiveUserKey_001
+* @tc.desc: Verify the ActiveUserKey function.
+* @tc.type: FUNC
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_ActiveUserKey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_ActiveUserKey_001 start";
+    vector<uint8_t> token;
+    vector<uint8_t> secret;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>())).WillOnce(Return(sd));
+    auto ret = StorageDaemonClient::ActiveUserKey(0, token, secret);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    ret = StorageDaemonClient::ActiveUserKey(0, token, secret);
+    EXPECT_EQ(ret, E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, ActiveUserKey(_, _, _)).WillOnce(Return(E_OK));
+    ret = StorageDaemonClient::ActiveUserKey(0, token, secret);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_ActiveUserKey_001 end";
+}
+
+/**
+* @tc.name: Storage_Service_StorageDaemonClientTest_InactiveUserKey_001
+* @tc.desc: Verify the InactiveUserKey function.
+* @tc.type: FUNC
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_InactiveUserKey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_InactiveUserKey_001 start";
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>())).WillOnce(Return(sd));
+    auto ret = StorageDaemonClient::InactiveUserKey(0);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    ret = StorageDaemonClient::InactiveUserKey(0);
+    EXPECT_EQ(ret, E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, InactiveUserKey(_)).WillOnce(Return(E_OK));
+    ret = StorageDaemonClient::InactiveUserKey(0);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_InactiveUserKey_001 end";
+}
+
+/**
+* @tc.name: Storage_Service_StorageDaemonClientTest_LockUserScreen_001
+* @tc.desc: Verify the LockUserScreen function.
+* @tc.type: FUNC
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_LockUserScreen_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_LockUserScreen_001 start";
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>())).WillOnce(Return(sd));
+    auto ret = StorageDaemonClient::LockUserScreen(0);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    ret = StorageDaemonClient::LockUserScreen(0);
+    EXPECT_EQ(ret, E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, LockUserScreen(_)).WillOnce(Return(E_OK));
+    ret = StorageDaemonClient::LockUserScreen(0);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_LockUserScreen_001 end";
+}
+
+/**
+* @tc.name: Storage_Service_StorageDaemonClientTest_UnlockUserScreen_001
+* @tc.desc: Verify the UnlockUserScreen function.
+* @tc.type: FUNC
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_UnlockUserScreen_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UnlockUserScreen_001 start";
+    vector<uint8_t> token;
+    vector<uint8_t> secret;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>())).WillOnce(Return(sd));
+    auto ret = StorageDaemonClient::UnlockUserScreen(0, token, secret);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    ret = StorageDaemonClient::UnlockUserScreen(0, token, secret);
+    EXPECT_EQ(ret, E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, UnlockUserScreen(_, _, _)).WillOnce(Return(E_OK));
+    ret = StorageDaemonClient::UnlockUserScreen(0, token, secret);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UnlockUserScreen_001 end";
+}
+
+/**
+* @tc.name: Storage_Service_StorageDaemonClientTest_GetLockScreenStatus_001
+* @tc.desc: Verify the GetLockScreenStatus function.
+* @tc.type: FUNC
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_GetLockScreenStatus_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_GetLockScreenStatus_001 start";
+    bool lockScreenStatus = false;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>())).WillOnce(Return(sd));
+    auto ret = StorageDaemonClient::GetLockScreenStatus(0, lockScreenStatus);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    ret = StorageDaemonClient::GetLockScreenStatus(0, lockScreenStatus);
+    EXPECT_EQ(ret, E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, GetLockScreenStatus(_, _)).WillOnce(Return(E_OK));
+    ret = StorageDaemonClient::GetLockScreenStatus(0, lockScreenStatus);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_GetLockScreenStatus_001 end";
+}
+
+/**
+* @tc.name: Storage_Service_StorageDaemonClientTest_UpdateKeyContext_001
+* @tc.desc: Verify the UpdateKeyContext function.
+* @tc.type: FUNC
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_UpdateKeyContext_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UpdateKeyContext_001 start";
+    bool needRemoveTmpKey = false;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>())).WillOnce(Return(sd));
+    auto ret = StorageDaemonClient::UpdateKeyContext(0, needRemoveTmpKey);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    ret = StorageDaemonClient::UpdateKeyContext(0, needRemoveTmpKey);
+    EXPECT_EQ(ret, E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, UpdateKeyContext(_, _)).WillOnce(Return(E_OK));
+    ret = StorageDaemonClient::UpdateKeyContext(0, needRemoveTmpKey);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UpdateKeyContext_001 end";
+}
+
+/**
+* @tc.name: Storage_Service_StorageDaemonClientTest_GenerateAppkey_001
+* @tc.desc: Verify the GenerateAppkey function.
+* @tc.type: FUNC
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_GenerateAppkey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_GenerateAppkey_001 start";
+    string keyId;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>())).WillOnce(Return(sd));
+    auto ret = StorageDaemonClient::GenerateAppkey(0, 0, keyId);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    ret = StorageDaemonClient::GenerateAppkey(0, 0, keyId);
+    EXPECT_EQ(ret, E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, GenerateAppkey(_, _, _)).WillOnce(Return(E_OK));
+    ret = StorageDaemonClient::GenerateAppkey(0, 0, keyId);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_GenerateAppkey_001 end";
+}
+
+/**
+* @tc.name: Storage_Service_StorageDaemonClientTest_DeleteAppkey_001
+* @tc.desc: Verify the DeleteAppkey function.
+* @tc.type: FUNC
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_DeleteAppkey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_DeleteAppkey_001 start";
+    string keyId;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>())).WillOnce(Return(sd));
+    auto ret = StorageDaemonClient::DeleteAppkey(0, keyId);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    ret = StorageDaemonClient::DeleteAppkey(0, keyId);
+    EXPECT_EQ(ret, E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, DeleteAppkey(_, _)).WillOnce(Return(E_OK));
+    ret = StorageDaemonClient::DeleteAppkey(0, keyId);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_DeleteAppkey_001 end";
+}
+
+/**
+* @tc.name: Storage_Service_StorageDaemonClientTest_CreateRecoverKey_001
+* @tc.desc: Verify the CreateRecoverKey function.
+* @tc.type: FUNC
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_CreateRecoverKey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_CreateRecoverKey_001 start";
+    vector<uint8_t> token;
+    vector<uint8_t> secret;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>())).WillOnce(Return(sd));
+    auto ret = StorageDaemonClient::CreateRecoverKey(0, 0, token, secret);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    ret = StorageDaemonClient::CreateRecoverKey(0, 0, token, secret);
+    EXPECT_EQ(ret, E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, CreateRecoverKey(_, _, _, _)).WillOnce(Return(E_OK));
+    ret = StorageDaemonClient::CreateRecoverKey(0, 0, token, secret);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_CreateRecoverKey_001 end";
+}
+
+/**
+* @tc.name: Storage_Service_StorageDaemonClientTest_SetRecoverKey_001
+* @tc.desc: Verify the SetRecoverKey function.
+* @tc.type: FUNC
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_SetRecoverKey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_SetRecoverKey_001 start";
+    vector<uint8_t> key;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>())).WillOnce(Return(sd));
+    auto ret = StorageDaemonClient::SetRecoverKey(key);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    ret = StorageDaemonClient::SetRecoverKey(key);
+    EXPECT_EQ(ret, E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, SetRecoverKey(_)).WillOnce(Return(E_OK));
+    ret = StorageDaemonClient::SetRecoverKey(key);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_SetRecoverKey_001 end";
+}
+
+/**
+* @tc.name: Storage_Service_StorageDaemonClientTest_MountDfsDocs_001
+* @tc.desc: Verify the MountDfsDocs function.
+* @tc.type: FUNC
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_MountDfsDocs_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_MountDfsDocs_001 start";
+    string relativePath;
+    string networkId;
+    string deviceId;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>())).WillOnce(Return(sd));
+    auto ret = StorageDaemonClient::MountDfsDocs(0, relativePath, networkId, deviceId);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    ret = StorageDaemonClient::MountDfsDocs(0, relativePath, networkId, deviceId);
+    EXPECT_EQ(ret, E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, MountDfsDocs(_, _, _, _)).WillOnce(Return(E_OK));
+    ret = StorageDaemonClient::MountDfsDocs(0, relativePath, networkId, deviceId);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_MountDfsDocs_001 end";
+}
+
+/**
+* @tc.name: Storage_Service_StorageDaemonClientTest_UMountDfsDocs_001
+* @tc.desc: Verify the UMountDfsDocs function.
+* @tc.type: FUNC
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_UMountDfsDocs_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UMountDfsDocs_001 start";
+    string relativePath;
+    string networkId;
+    string deviceId;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>())).WillOnce(Return(sd));
+    auto ret = StorageDaemonClient::UMountDfsDocs(0, relativePath, networkId, deviceId);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    ret = StorageDaemonClient::UMountDfsDocs(0, relativePath, networkId, deviceId);
+    EXPECT_EQ(ret, E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, UMountDfsDocs(_, _, _, _)).WillOnce(Return(E_OK));
+    ret = StorageDaemonClient::UMountDfsDocs(0, relativePath, networkId, deviceId);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UMountDfsDocs_001 end";
+}
+
+/**
+* @tc.name: Storage_Service_StorageDaemonClientTest_GetFileEncryptStatus_001
+* @tc.desc: Verify the GetFileEncryptStatus function.
+* @tc.type: FUNC
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_GetFileEncryptStatus_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_GetFileEncryptStatus_001 start";
+    bool isEncrypted = false;
+    bool needCheckDirMount = false;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>())).WillOnce(Return(sd));
+    auto ret = StorageDaemonClient::GetFileEncryptStatus(0, isEncrypted, needCheckDirMount);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    ret = StorageDaemonClient::GetFileEncryptStatus(0, isEncrypted, needCheckDirMount);
+    EXPECT_EQ(ret, E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, GetFileEncryptStatus(_, _, _)).WillOnce(Return(E_OK));
+    ret = StorageDaemonClient::GetFileEncryptStatus(0, isEncrypted, needCheckDirMount);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_GetFileEncryptStatus_001 end";
+}
+
+/**
+* @tc.name: Storage_Service_StorageDaemonClientTest_GetUserNeedActiveStatus_001
+* @tc.desc: Verify the GetUserNeedActiveStatus function.
+* @tc.type: FUNC
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_GetUserNeedActiveStatus_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_GetUserNeedActiveStatus_001 start";
+    bool needActive = false;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>())).WillOnce(Return(sd));
+    auto ret = StorageDaemonClient::GetUserNeedActiveStatus(0, needActive);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    ret = StorageDaemonClient::GetUserNeedActiveStatus(0, needActive);
+    EXPECT_EQ(ret, E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, GetUserNeedActiveStatus(_, _)).WillOnce(Return(E_OK));
+    ret = StorageDaemonClient::GetUserNeedActiveStatus(0, needActive);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_GetUserNeedActiveStatus_001 end";
+}
+
+/**
+* @tc.name: Storage_Service_StorageDaemonClientTest_MountFileMgrFuse_001
+* @tc.desc: Verify the MountFileMgrFuse function.
+* @tc.type: FUNC
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_MountFileMgrFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_MountFileMgrFuse_001 start";
+    string path;
+    int32_t fuseFd = 0;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>())).WillOnce(Return(sd));
+    auto ret = StorageDaemonClient::MountFileMgrFuse(0, path, fuseFd);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    ret = StorageDaemonClient::MountFileMgrFuse(0, path, fuseFd);
+    EXPECT_EQ(ret, E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, MountFileMgrFuse(_, _, _)).WillOnce(Return(E_OK));
+    ret = StorageDaemonClient::MountFileMgrFuse(0, path, fuseFd);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_MountFileMgrFuse_001 end";
+}
+
+/**
+* @tc.name: Storage_Service_StorageDaemonClientTest_UMountFileMgrFuse_001
+* @tc.desc: Verify the UMountFileMgrFuse function.
+* @tc.type: FUNC
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_UMountFileMgrFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UMountFileMgrFuse_001 start";
+    string path;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>())).WillOnce(Return(sd));
+    auto ret = StorageDaemonClient::UMountFileMgrFuse(0, path);
+    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    ret = StorageDaemonClient::UMountFileMgrFuse(0, path);
+    EXPECT_EQ(ret, E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam)).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
+        .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, UMountFileMgrFuse(_, _)).WillOnce(Return(E_OK));
+    ret = StorageDaemonClient::UMountFileMgrFuse(0, path);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_UMountFileMgrFuse_001 end";
+}
 }
