@@ -99,13 +99,12 @@ ohos_unittest("storage_daemon_client_sub_test") {
   sources = [
     "${storage_daemon_path}/client/storage_daemon_client.cpp",
     "${storage_daemon_path}/client/test/storage_daemon_client_sub_test.cpp",
-    "${storage_daemon_path}/ipc/src/storage_daemon_stub.cpp",
     "${storage_daemon_path}/utils/test/common/help_utils.cpp",
-    "${storage_manager_path}/mock/storage_daemon_proxy_mock.cpp",
   ]
 
   deps = [
     "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_ipc",
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
   ]
 

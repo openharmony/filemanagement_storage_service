@@ -18,7 +18,7 @@
 #include "storage_daemon_client.h"
 
 #include "if_system_ability_manager.h"
-#include "ipc/istorage_daemon.h"
+#include "istorage_daemon.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
 #include "storage_service_errno.h"
