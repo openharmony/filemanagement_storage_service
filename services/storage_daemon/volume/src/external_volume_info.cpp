@@ -228,11 +228,7 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
         LOGE("the volume %{public}s create path %{public}s failed", GetVolumeId().c_str(), GetMountPath().c_str());
         return E_MKDIR_MOUNT;
     }
-    LOGE("MOUNT start, fstype = %{public}s, fslabel = %{public}s", fsType_.c_str(), fsLabel_.c_str());
-    if ((fsType_ == "hmfs" || fsType_ == "f2fs") && GetIsUserdata()) {
-        LOGE("MOUNT, fstype = %{public}s, fslabel = %{public}s", fsType_.c_str(), fsLabel_.c_str());
-        ret = DoMount4Hmfs(mountFlags);
-    }
+    if ((fsType_ == "hmfs" || fsType_ == "f2fs") && GetIsUserdata()) ret = DoMount4Hmfs(mountFlags);
     if (ret) {
         LOGE("External volume DoMount error, errno = %{public}d", errno);
         remove(mountPath_.c_str());
@@ -248,7 +244,6 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
         else if (fsType_ == "ntfs") retValue = DoMount4Ntfs(mountFlags);
         else if (fsType_ == "exfat") retValue = DoMount4Exfat(mountFlags);
         else if (fsType_ == "vfat" || fsType_ == "fat32") retValue = DoMount4Vfat(mountFlags);
-        else if (fsType_ != "hmfs" && fsType_ != "f2fs") retValue = DoMount4OtherType(mountFlags);
         p.set_value(retValue);
     });
 

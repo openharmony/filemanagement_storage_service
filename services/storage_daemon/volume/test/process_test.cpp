@@ -47,6 +47,7 @@ HWTEST_F(ProcessTest, Storage_Service_ProcessTest_GetXXX_001, TestSize.Level1)
 
     std::string volId = "vol-1-1";
     std::string diskId = "disk-1-1";
+    bool isUserdata = false;
     dev_t device = MKDEV(1, 1); // 1 is major device number, 1 is minor device number
     uint32_t mountFlags = 0;
     ExternalVolumeInfoMock mock;
@@ -54,7 +55,7 @@ HWTEST_F(ProcessTest, Storage_Service_ProcessTest_GetXXX_001, TestSize.Level1)
     EXPECT_CALL(mock, DoCheck()).Times(1).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, DoMount(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
 
-    auto ret = mock.Create(volId, diskId, device, true);
+    auto ret = mock.Create(volId, diskId, device, isUserdata);
     EXPECT_TRUE(ret == E_OK);
 
     ret = mock.Check();
