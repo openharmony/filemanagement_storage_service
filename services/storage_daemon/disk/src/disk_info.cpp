@@ -27,7 +27,7 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-constexpr int32_t MIN_LINES = 2;
+constexpr int32_t MIN_LINES = 32;
 constexpr int32_t VOL_LENGTH = 3;
 constexpr int32_t MAJORID_BLKEXT = 259;
 constexpr int32_t MAX_PARTITION = 16;
