@@ -239,7 +239,7 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
     std::thread mountThread ([this, mountFlags, p = std::move(promise)]() mutable {
         LOGI("Ready to mount: volume fstype is %{public}s, mountflag is %{public}d", fsType_.c_str(), mountFlags);
         int retValue = E_OK;
-        else if (fsType_ == "ntfs") retValue = DoMount4Ntfs(mountFlags);
+        if (fsType_ == "ntfs") retValue = DoMount4Ntfs(mountFlags);
         else if (fsType_ == "exfat") retValue = DoMount4Exfat(mountFlags);
         else if (fsType_ == "vfat" || fsType_ == "fat32") retValue = DoMount4Vfat(mountFlags);
         else if ((fsType_ == "hmfs" || fsType_ == "f2fs") && GetIsUserdata()) retValue = E_OK;
