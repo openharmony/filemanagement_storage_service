@@ -27,9 +27,9 @@ config("storage_daemon_config") {
   include_dirs = [
     "include",
     "include/utils",
-    "../storage_manager/include",
+    "${storage_manager_path}/include",
     "${storage_interface_path}/innerkits/storage_manager/native",
-    "../common/include",
+    "${storage_service_common_path}/include",
   ]
 }
 
@@ -203,10 +203,10 @@ ohos_executable("storage_daemon") {
 config("sdc_config") {
   include_dirs = [
     "include",
-    "../common/include",
+    "${storage_service_common_path}/include",
     "client/include",
-    "../../interfaces/innerkits/storage_manager/native",
-    "../storage_manager/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+    "${storage_manager_path}/include",
   ]
 }
 
@@ -283,9 +283,9 @@ ohos_shared_library("storage_common_utils") {
   }
 
   include_dirs = [
-    "./include",
-    "./include/utils",
-    "../common/include",
+    "include",
+    "include/utils",
+    "${storage_service_common_path}/include",
     "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
@@ -301,15 +301,15 @@ ohos_shared_library("storage_common_utils") {
   ]
 
   sources = [
-    "./utils/disk_utils.cpp",
-    "./utils/file_utils.cpp",
-    "./utils/hi_audit.cpp",
-    "./utils/mount_argument_utils.cpp",
-    "./utils/storage_radar.cpp",
-    "./utils/storage_statistics_radar.cpp",
-    "./utils/storage_xcollie.cpp",
-    "./utils/string_utils.cpp",
-    "./utils/zip_util.cpp",
+    "utils/disk_utils.cpp",
+    "utils/file_utils.cpp",
+    "utils/hi_audit.cpp",
+    "utils/mount_argument_utils.cpp",
+    "utils/storage_radar.cpp",
+    "utils/storage_statistics_radar.cpp",
+    "utils/storage_xcollie.cpp",
+    "utils/string_utils.cpp",
+    "utils/zip_util.cpp",
   ]
 
   external_deps = [

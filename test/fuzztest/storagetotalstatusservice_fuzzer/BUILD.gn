@@ -33,15 +33,13 @@ ohos_fuzztest("StorageTotalStatusServiceFuzzTest") {
   sources = [
     "${storage_manager_path}/storage/src/storage_total_status_service.cpp",
     "${storage_manager_path}/utils/src/storage_utils.cpp",
-    "./storagetotalstatusservice_fuzzer.cpp",
+    "storagetotalstatusservice_fuzzer.cpp",
   ]
   defines = [ "STORAGE_LOG_TAG = \"storage_service\"" ]
-  deps = [
-    "${bundlemanager_framework_path}/services/bundlemgr:libbms",
-    "${storage_daemon_path}:storage_common_utils",
-  ]
+  deps = [ "${storage_daemon_path}:storage_common_utils" ]
 
   external_deps = [
+    "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "hilog:libhilog",
     "hitrace:hitrace_meter",

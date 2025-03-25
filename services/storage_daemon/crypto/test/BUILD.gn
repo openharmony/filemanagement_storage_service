@@ -31,9 +31,9 @@ ohos_moduletest("CryptoSubTest") {
   ]
 
   include_dirs = [
-    "../../include",
-    "../../include/crypto",
-    "../../../common/include",
+    "${storage_daemon_path}/include",
+    "${storage_daemon_path}/include/crypto",
+    "${storage_service_common_path}/include",
     "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
@@ -50,8 +50,8 @@ ohos_moduletest("CryptoSubTest") {
   configs = [ ":module_private_config" ]
 
   deps = [
+    "${storage_daemon_path}/crypto:libsdcrypto",
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
-    "../../crypto:libsdcrypto",
   ]
   external_deps = [
     "bundle_framework:appexecfwk_core",

@@ -45,7 +45,7 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/include",
     "$ROOT_DIR/include/crypto",
     "$ROOT_DIR/utils",
-    "$ROOT_DIR/../storage_manager/include",
+    "${storage_manager_path}/include",
     "${storage_daemon_path}/include/utils",
     "${storage_interface_path}/innerkits/storage_manager/native",
     "${storage_service_common_path}/include",
@@ -71,10 +71,7 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/volume/src/volume_manager.cpp",
   ]
 
-  deps = [
-    "${storage_daemon_path}:storage_common_utils",
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "${storage_daemon_path}:storage_common_utils" ]
 
   external_deps = [
     "ability_base:base",
@@ -88,6 +85,8 @@ ohos_unittest("storage_daemon_test") {
     "c_utils:utils",
     "dfs_service:cloud_daemon_kit_inner",
     "eventhandler:libeventhandler",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hicollie:libhicollie",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
@@ -134,13 +133,10 @@ ohos_unittest("storage_daemon_proxy_test") {
     "$ROOT_DIR/ipc/test/storage_daemon_proxy_test.cpp",
   ]
 
-  deps = [
-    "//third_party/googletest:gmock_main",
-    "//third_party/googletest:gtest_main",
-  ]
-
   external_deps = [
     "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "ipc:ipc_single",
     "ipc:libdbinder",
@@ -185,16 +181,14 @@ ohos_unittest("storage_daemon_stub_test") {
     "$ROOT_DIR/utils/mount_argument_utils.cpp",
   ]
 
-  deps = [
-    "${storage_daemon_path}:storage_common_utils",
-    "//third_party/googletest:gmock_main",
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "${storage_daemon_path}:storage_common_utils" ]
 
   external_deps = [
     "access_token:libaccesstoken_sdk",
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hicollie:libhicollie",
     "hilog:libhilog",
     "huks:libhukssdk",
@@ -248,13 +242,12 @@ ohos_unittest("storage_manager_clt_test") {
     "private = public",
   ]
 
-  deps = [
-    "${storage_daemon_path}:storage_common_utils",
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "${storage_daemon_path}:storage_common_utils" ]
 
   external_deps = [
     "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "init:libbegetutil",
     "ipc:ipc_single",

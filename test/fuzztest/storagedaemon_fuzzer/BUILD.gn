@@ -58,7 +58,6 @@ ohos_fuzztest("StorageDaemonFuzzTest") {
     "private=public",
   ]
   deps = [
-    "${bundlemanager_framework_path}/services/bundlemgr:libbms",
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
   ]

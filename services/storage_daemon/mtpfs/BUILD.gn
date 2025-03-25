@@ -27,7 +27,7 @@ ohos_executable("mtpfs") {
   }
 
   include_dirs = [
-    "./include",
+    "include",
     "${storage_daemon_path}/include/utils",
     "${storage_service_common_path}/include",
   ]
@@ -56,15 +56,15 @@ ohos_executable("mtpfs") {
   if (support_open_source_libmtp &&
       storage_service_external_storage_qos_trans) {
     sources = [
-      "./src/mtpfs_fuse.cpp",
-      "./src/mtpfs_libmtp.cpp",
-      "./src/mtpfs_main.cpp",
-      "./src/mtpfs_mtp_device.cpp",
-      "./src/mtpfs_tmp_files_pool.cpp",
-      "./src/mtpfs_type_dir.cpp",
-      "./src/mtpfs_type_file.cpp",
-      "./src/mtpfs_type_tmp_file.cpp",
-      "./src/mtpfs_util.cpp",
+      "src/mtpfs_fuse.cpp",
+      "src/mtpfs_libmtp.cpp",
+      "src/mtpfs_main.cpp",
+      "src/mtpfs_mtp_device.cpp",
+      "src/mtpfs_tmp_files_pool.cpp",
+      "src/mtpfs_type_dir.cpp",
+      "src/mtpfs_type_file.cpp",
+      "src/mtpfs_type_tmp_file.cpp",
+      "src/mtpfs_util.cpp",
     ]
     external_deps += [
       "libfuse:libfuse",
@@ -73,7 +73,7 @@ ohos_executable("mtpfs") {
       "openssl:libcrypto_shared",
     ]
   } else {
-    sources = [ "./src/mtpfs_main_virtual.cpp" ]
+    sources = [ "src/mtpfs_main_virtual.cpp" ]
   }
 
   subsystem_name = "filemanagement"

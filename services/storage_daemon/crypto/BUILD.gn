@@ -18,8 +18,8 @@ config("storage_daemon_crypto_config") {
   visibility = [ ":*" ]
 
   include_dirs = [
-    "../include",
-    "../include/crypto",
+    "${storage_daemon_path}/include",
+    "${storage_daemon_path}/include/crypto",
     "${storage_service_common_path}/include",
     "${storage_interface_path}/innerkits/storage_manager/native",
   ]

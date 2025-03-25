@@ -58,15 +58,15 @@ ohos_moduletest("FscryptKeyV2Test") {
 
   configs = [ ":module_private_config" ]
 
-  deps = [ "//third_party/googletest:gtest_main" ]
-
-  deps += [
+  deps = [
     "${storage_daemon_path}/crypto:libsdcrypto",
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
   ]
 
   external_deps = [
     "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "huks:libhukssdk",
     "init:libbegetutil",

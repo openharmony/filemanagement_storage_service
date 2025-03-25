@@ -41,11 +41,11 @@ ohos_unittest("storage_manager_clt_test") {
     "LOG_DOMAIN = 0xD004300",
   ]
 
-  deps = [ "//third_party/googletest:gtest_main" ]
-
   external_deps = [
     "access_token:libaccesstoken_sdk",
     "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "ipc:ipc_single",
     "safwk:system_ability_fwk",

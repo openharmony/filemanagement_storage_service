@@ -52,13 +52,12 @@ ohos_unittest("disk_manager_test") {
     "$ROOT_DIR/volume/src/volume_manager.cpp",
   ]
 
-  deps = [
-    "$ROOT_DIR:storage_common_utils",
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "$ROOT_DIR:storage_common_utils" ]
 
   external_deps = [
     "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "init:libbegetutil",
     "ipc:ipc_single",
@@ -104,14 +103,12 @@ ohos_unittest("disk_info_test") {
     "$ROOT_DIR/volume/src/volume_manager.cpp",
   ]
 
-  deps = [
-    "$ROOT_DIR:storage_common_utils",
-    "//third_party/googletest:gmock_main",
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "$ROOT_DIR:storage_common_utils" ]
 
   external_deps = [
     "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "init:libbegetutil",
     "ipc:ipc_single",
@@ -201,10 +198,10 @@ ohos_unittest("disk_config_test") {
     "$ROOT_DIR/disk/test/disk_config_test.cpp",
   ]
 
-  deps = [ "//third_party/googletest:gmock_main" ]
-
   external_deps = [
     "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "ipc:ipc_single",
     "safwk:system_ability_fwk",

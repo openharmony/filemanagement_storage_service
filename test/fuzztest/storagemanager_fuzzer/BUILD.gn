@@ -36,14 +36,12 @@ ohos_fuzztest("StorageManagerFuzzTest") {
     "STORAGE_LOG_TAG = \"storage_service\"",
     "private=public",
   ]
-  deps = [
-    "${bundlemanager_framework_path}/services/bundlemgr:libbms",
-    "${storage_service_path}/services/storage_manager:storage_manager",
-  ]
+  deps = [ "${storage_service_path}/services/storage_manager:storage_manager" ]
 
   external_deps = [
     "ability_runtime:abilitykit_native",
     "access_token:libaccesstoken_sdk",
+    "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "hilog:libhilog",
     "ipc:ipc_single",

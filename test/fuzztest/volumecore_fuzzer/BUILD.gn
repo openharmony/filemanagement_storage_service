@@ -26,7 +26,7 @@ ohos_fuzztest("VolumeCoreFuzzTest") {
     "-Wno-unused-variable",
     "-fno-omit-frame-pointer",
   ]
-  sources = [ "./volumecore_fuzzer.cpp" ]
+  sources = [ "volumecore_fuzzer.cpp" ]
   defines = []
   deps = [ "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy" ]
   external_deps = [ "c_utils:utils" ]

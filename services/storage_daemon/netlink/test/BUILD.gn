@@ -41,10 +41,10 @@ ohos_unittest("netlink_data_test") {
     "$ROOT_DIR/storage_daemon/netlink/test/netlink_data_test.cpp",
   ]
 
-  deps = [ "//third_party/googletest:gtest_main" ]
-
   external_deps = [
     "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "ipc:ipc_single",
     "samgr:samgr_proxy",
@@ -88,14 +88,12 @@ ohos_unittest("netlink_handler_test") {
     "$ROOT_DIR/storage_manager/innerkits_impl/src/volume_core.cpp",
   ]
 
-  deps = [
-    "${storage_daemon_path}:storage_common_utils",
-    "//third_party/googletest:gmock_main",
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "${storage_daemon_path}:storage_common_utils" ]
 
   external_deps = [
     "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "init:libbegetutil",
     "ipc:ipc_single",
@@ -128,13 +126,10 @@ ohos_unittest("netlink_listener_test") {
     "$ROOT_DIR/storage_daemon/netlink/test/netlink_listener_test.cpp",
   ]
 
-  deps = [
-    "//third_party/googletest:gmock_main",
-    "//third_party/googletest:gtest_main",
-  ]
-
   external_deps = [
     "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "ipc:ipc_single",
     "samgr:samgr_proxy",
@@ -179,13 +174,12 @@ ohos_unittest("netlink_manager_test") {
     "$ROOT_DIR/storage_manager/innerkits_impl/src/volume_core.cpp",
   ]
 
-  deps = [
-    "${storage_daemon_path}:storage_common_utils",
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "${storage_daemon_path}:storage_common_utils" ]
 
   external_deps = [
     "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "init:libbegetutil",
     "ipc:ipc_single",
