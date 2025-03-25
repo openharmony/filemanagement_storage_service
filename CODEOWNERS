@@ -12,5 +12,5 @@
 # limitations under the License.
 
 [InterfaceCode]
-interfaces/innerkits/storage_manager/native/storage_manager_ipc_interface_code.h @renguang1116 leonchan5 liubao6@huawei.com
+interfaces/innerkits/storage_manager/native/storage_manager_ipc_interface_code.h @renguang1116 @leonchan5 liubao6@huawei.com
 services/storage_daemon/include/ipc/storage_daemon_ipc_interface_code.h @renguang1116 
