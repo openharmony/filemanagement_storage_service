@@ -188,7 +188,6 @@ int32_t ExternalVolumeInfo::DoMount4Exfat(uint32_t mountFlags)
 int32_t ExternalVolumeInfo::DoMount4OtherType(uint32_t mountFlags)
 {
     mountFlags |= MS_MGC_VAL;
-    LOGE("DoMount4OtherType, fstype = %{public}s", fsType_.c_str());
     auto mountData = StringPrintf("uid=%d,gid=%d,dmask=0007,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
     int32_t ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType_.c_str(), mountFlags, mountData.c_str());
     if (ret) {
