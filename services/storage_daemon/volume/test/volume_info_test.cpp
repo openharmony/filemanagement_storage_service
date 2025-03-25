@@ -49,14 +49,14 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Create_001, TestSize.Lev
     std::string diskId = "disk-1-1";
     dev_t device = MKDEV(1, 1); // 1 is major device number, 1 is minor device number
     EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
-    auto ret = mock.Create(volId, diskId, device);
+    auto ret = mock.Create(volId, diskId, device, true);
     EXPECT_TRUE(ret == E_OK);
 
     volId = "vol-1-2";
     diskId = "disk-1-2";
     device = MKDEV(1, 2); // 1 is major device number, 2 is minor device number
     EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_ERR));
-    ret = mock.Create(volId, diskId, device);
+    ret = mock.Create(volId, diskId, device, true);
     EXPECT_TRUE(ret == E_ERR);
 
     GTEST_LOG_(INFO) << "Storage_Service_VolumeInfoTest_Create_001 end";
@@ -77,7 +77,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Destroy_001, TestSize.Le
     std::string diskId = "disk-1-3";
     dev_t device = MKDEV(1, 3); // 1 is major device number, 3 is minor device number
     EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
-    auto ret = mock.Create(volId, diskId, device);
+    auto ret = mock.Create(volId, diskId, device, true);
     EXPECT_TRUE(ret == E_OK);
 
     EXPECT_CALL(mock, DoDestroy()).Times(1).WillOnce(testing::Return(E_OK));
@@ -102,7 +102,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Destroy_002, TestSize.Le
     std::string diskId = "disk-1-4";
     dev_t device = MKDEV(1, 4); // 1 is major device number, 4 is minor device number
     EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
-    auto ret = mock.Create(volId, diskId, device);
+    auto ret = mock.Create(volId, diskId, device, true);
     EXPECT_TRUE(ret == E_OK);
 
     EXPECT_CALL(mock, DoDestroy()).Times(1).WillOnce(testing::Return(E_ERR));
@@ -132,7 +132,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Destroy_003, TestSize.Le
     EXPECT_CALL(mock, DoUMount(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, DoDestroy()).Times(1).WillOnce(testing::Return(E_OK));
 
-    auto ret = mock.Create(volId, diskId, device);
+    auto ret = mock.Create(volId, diskId, device, true);
     EXPECT_TRUE(ret == E_OK);
 
     ret = mock.Check();
@@ -187,7 +187,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_002, TestSize.Leve
     EXPECT_CALL(mock, DoCheck()).Times(1).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, DoMount(testing::_)).Times(1).WillOnce(testing::Return(E_VOL_MOUNT_ERR));
 
-    auto ret = mock.Create(volId, diskId, device);
+    auto ret = mock.Create(volId, diskId, device, true);
     EXPECT_TRUE(ret == E_OK);
     ret = mock.Check();
     EXPECT_TRUE(ret == E_OK);
@@ -218,7 +218,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_003, TestSize.Leve
     EXPECT_CALL(mock, DoCheck()).Times(1).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, DoMount(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
 
-    auto ret = mock.Create(volId, diskId, device);
+    auto ret = mock.Create(volId, diskId, device, true);
     EXPECT_TRUE(ret == E_OK);
     ret = mock.Check();
     EXPECT_TRUE(ret == E_OK);
@@ -249,7 +249,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_Mount_004, TestSize.Leve
     EXPECT_CALL(mock, DoCheck()).Times(1).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, DoMount(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
 
-    auto ret = mock.Create(volId, diskId, device);
+    auto ret = mock.Create(volId, diskId, device, true);
     EXPECT_TRUE(ret == E_OK);
 
     ret = mock.Check();
@@ -309,7 +309,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_UMount_002, Test
     EXPECT_CALL(mock, DoMount(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, DoUMount(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
 
-    auto ret = mock.Create(volId, diskId, device);
+    auto ret = mock.Create(volId, diskId, device, true);
     EXPECT_TRUE(ret == E_OK);
     ret = mock.Check();
     EXPECT_TRUE(ret == E_OK);
@@ -342,7 +342,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_UMount_003, Test
     EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, DoCheck()).Times(1).WillOnce(testing::Return(E_OK));
 
-    auto ret = mock.Create(volId, diskId, device);
+    auto ret = mock.Create(volId, diskId, device, true);
     EXPECT_TRUE(ret == E_OK);
     ret = mock.Check();
     EXPECT_TRUE(ret == E_OK);
@@ -378,7 +378,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_UMount_004, Test
     EXPECT_CALL(mock, DoMount(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, DoUMount(testing::_)).Times(1).WillOnce(testing::Return(E_ERR));
 
-    auto ret = mock.Create(volId, diskId, device);
+    auto ret = mock.Create(volId, diskId, device, true);
     EXPECT_TRUE(ret == E_OK);
     ret = mock.Check();
     EXPECT_TRUE(ret == E_OK);
@@ -431,7 +431,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_Check_002, TestS
     EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, DoCheck()).Times(1).WillOnce(testing::Return(E_OK));
 
-    auto ret = mock.Create(volId, diskId, device);
+    auto ret = mock.Create(volId, diskId, device, true);
     EXPECT_TRUE(ret == E_OK);
     ret = mock.Check();
     EXPECT_TRUE(ret == E_OK);
@@ -457,7 +457,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_Check_003, TestS
     EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, DoCheck()).Times(1).WillOnce(testing::Return(E_ERR));
 
-    auto ret = mock.Create(volId, diskId, device);
+    auto ret = mock.Create(volId, diskId, device, true);
     EXPECT_TRUE(ret == E_OK);
     ret = mock.Check();
     EXPECT_TRUE(ret == E_ERR);
@@ -482,7 +482,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_Format_001, Test
     EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, DoCheck()).Times(1).WillOnce(testing::Return(E_OK));
 
-    auto ret = mock.Create(volId, diskId, device);
+    auto ret = mock.Create(volId, diskId, device, true);
     EXPECT_TRUE(ret == E_OK);
     ret = mock.Check();
     EXPECT_TRUE(ret == E_OK);
@@ -513,7 +513,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_Format_002, Test
     EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, DoFormat(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
 
-    auto ret = mock.Create(volId, diskId, device);
+    auto ret = mock.Create(volId, diskId, device, true);
     EXPECT_TRUE(ret == E_OK);
     ret = mock.Format(type);
     EXPECT_TRUE(ret == E_OK);
@@ -537,7 +537,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetXXX_001, Test
     dev_t device = MKDEV(1, 16); // 1 is major device number, 16 is minor device number
 
     EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
-    auto ret = mock.Create(volId, diskId, device);
+    auto ret = mock.Create(volId, diskId, device, true);
     EXPECT_TRUE(ret == E_OK);
 
     EXPECT_TRUE(mock.GetVolumeId() == volId);
@@ -565,7 +565,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_SetVolumeDescription_001
     EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, DoCheck()).Times(1).WillOnce(testing::Return(E_OK));
 
-    auto ret = mock.Create(volId, diskId, device);
+    auto ret = mock.Create(volId, diskId, device, true);
     EXPECT_TRUE(ret == E_OK);
     ret = mock.Check();
     EXPECT_TRUE(ret == E_OK);
@@ -594,7 +594,7 @@ HWTEST_F(VolumeInfoTest, Storage_Service_VolumeInfoTest_SetVolumeDescription_002
     EXPECT_CALL(mock, DoCreate(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, DoSetVolDesc(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
 
-    auto ret = mock.Create(volId, diskId, device);
+    auto ret = mock.Create(volId, diskId, device, true);
     EXPECT_TRUE(ret == E_OK);
 
     std::string description = "description-1";

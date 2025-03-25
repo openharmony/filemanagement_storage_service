@@ -54,7 +54,7 @@ HWTEST_F(ProcessTest, Storage_Service_ProcessTest_GetXXX_001, TestSize.Level1)
     EXPECT_CALL(mock, DoCheck()).Times(1).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, DoMount(testing::_)).Times(1).WillOnce(testing::Return(E_OK));
 
-    auto ret = mock.Create(volId, diskId, device);
+    auto ret = mock.Create(volId, diskId, device, true);
     EXPECT_TRUE(ret == E_OK);
 
     ret = mock.Check();

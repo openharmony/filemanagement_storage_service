@@ -85,7 +85,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_CreateVolume_001, 
 
     std::string diskId = "diskId-1-1";
     dev_t device = MKDEV(1, 1); // 1 is major device number, 1 is minor device number
-    std::string result = volumeManager->CreateVolume(diskId, device);
+    std::string result = volumeManager->CreateVolume(diskId, device, true);
     GTEST_LOG_(INFO) << result;
 
     volumeManager->DestroyVolume(result);
@@ -108,8 +108,8 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_CreateVolume_002, 
 
     std::string diskId = "diskId-1-1";
     dev_t device = MKDEV(1, 1); // 1 is major device number, 1 is minor device number
-    std::string result = volumeManager->CreateVolume(diskId, device);
-    std::string res = volumeManager->CreateVolume(diskId, device);
+    std::string result = volumeManager->CreateVolume(diskId, device, true);
+    std::string res = volumeManager->CreateVolume(diskId, device, true);
     GTEST_LOG_(INFO) << result;
     EXPECT_TRUE(res.empty());
     volumeManager->DestroyVolume(result);
@@ -132,7 +132,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_DestroyVolume_001,
 
     std::string diskId = "diskId-1-2";
     dev_t device = MKDEV(1, 2); // 1 is major device number, 2 is minor device number
-    std::string volId = volumeManager->CreateVolume(diskId, device);
+    std::string volId = volumeManager->CreateVolume(diskId, device, true);
     int32_t result = volumeManager->DestroyVolume(volId);
     EXPECT_EQ(result, E_OK);
 
@@ -174,7 +174,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Check_001, TestSiz
 
     std::string diskId = "diskId-1-3";
     dev_t device = MKDEV(1, 3); // 1 is major device number, 3 is minor device number
-    std::string volId = volumeManager->CreateVolume(diskId, device);
+    std::string volId = volumeManager->CreateVolume(diskId, device, true);
     int32_t result = volumeManager->Check(volId);
     EXPECT_EQ(result, E_CHECK);
 
@@ -218,7 +218,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Mount_001, TestSiz
 
     std::string diskId = "diskId-1-4";
     dev_t device = MKDEV(1, 4); // 1 is major device number, 4 is minor device number
-    std::string volId = volumeManager->CreateVolume(diskId, device);
+    std::string volId = volumeManager->CreateVolume(diskId, device, true);
     uint32_t flags = 1; // disk type
     int32_t result = volumeManager->Mount(volId, flags);
     EXPECT_EQ(result, E_VOL_STATE);
@@ -264,7 +264,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_UMount_001, TestSi
 
     std::string diskId = "diskId-1-5";
     dev_t device = MKDEV(1, 5); // 1 is major device number, 5 is minor device number
-    std::string volId = volumeManager->CreateVolume(diskId, device);
+    std::string volId = volumeManager->CreateVolume(diskId, device, true);
     uint32_t flags = 1; // disk type
     volumeManager->Mount(volId, flags);
     int32_t result = volumeManager->UMount(volId);
@@ -314,7 +314,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Format_001, TestSi
 
     std::string diskId = "diskId-1-6";
     dev_t device = MKDEV(1, 6); // 1 is major device number, 6 is minor device number
-    std::string volId = volumeManager->CreateVolume(diskId, device);
+    std::string volId = volumeManager->CreateVolume(diskId, device, true);
     string fsType = "ext2";
     int32_t result = volumeManager->Format(volId, fsType);
     EXPECT_EQ(result, E_NOT_SUPPORT);
@@ -362,7 +362,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_SetVolumeDescripti
 
     std::string diskId = "diskId-1-7";
     dev_t device = MKDEV(1, 7); // 1 is major device number, 7 is minor device number
-    std::string volId = volumeManager->CreateVolume(diskId, device);
+    std::string volId = volumeManager->CreateVolume(diskId, device, true);
     string description = "description-1";
     int32_t result = volumeManager->SetVolumeDescription(volId, description);
     EXPECT_EQ(result, E_NOT_SUPPORT);
