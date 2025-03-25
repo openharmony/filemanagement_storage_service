@@ -39,7 +39,7 @@ public:
     VolumeInfo() = default;
     virtual ~VolumeInfo() = default;
 
-    int32_t Create(const std::string volId, const std::string diskId, dev_t device);
+    int32_t Create(const std::string volId, const std::string diskId, dev_t device, bool isUserdata);
     int32_t Destroy();
     int32_t Mount(uint32_t flags);
     int32_t UMount(bool force = false);
@@ -51,6 +51,7 @@ public:
     int32_t GetVolumeType();
     std::string GetDiskId();
     int32_t GetState();
+    bool GetIsUserdata();
 
 protected:
     virtual int32_t DoCreate(dev_t dev) = 0;
@@ -68,6 +69,7 @@ private:
     VolumeState mountState_;
     uint32_t mountFlags_;
     int32_t userIdOwner_;
+    bool isUserdata_;
 };
 } // STORAGE_DAEMON
 } // OHOS

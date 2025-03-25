@@ -218,7 +218,7 @@ int DiskInfo::ReadPartition()
         for (auto &tmp : split)
             lines.push_back(tmp);
     }
-
+    isUserdata = false;
     if (lines.size() > MIN_LINES) {
         auto userdataIt = std::find_if(lines.begin(), lines.end(), [](const std::string &str) {
             return str.find("userdata") != std::string::npos;
@@ -373,7 +373,7 @@ int DiskInfo::CreateVolume(dev_t dev)
     auto volume = VolumeManager::Instance();
 
     LOGI("disk read volume metadata");
-    std::string volumeId = volume->CreateVolume(GetId(), dev);
+    std::string volumeId = volume->CreateVolume(GetId(), dev, isUserdata);
     if (volumeId == "") {
         LOGE("Create volume failed");
         return E_ERR;

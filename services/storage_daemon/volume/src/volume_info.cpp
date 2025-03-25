@@ -28,7 +28,7 @@ using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
 constexpr int32_t TRUE_LEN = 5;
-int32_t VolumeInfo::Create(const std::string volId, const std::string diskId, dev_t device)
+int32_t VolumeInfo::Create(const std::string volId, const std::string diskId, dev_t device, bool isUserdata)
 {
     id_ = volId;
     diskId_ = diskId;
@@ -36,6 +36,7 @@ int32_t VolumeInfo::Create(const std::string volId, const std::string diskId, de
     mountState_ = UNMOUNTED;
     mountFlags_ = 0;
     userIdOwner_ = 0;
+    isUserdata_ = isUserdata;
 
     int32_t err = DoCreate(device);
     if (err) {
@@ -62,6 +63,11 @@ std::string VolumeInfo::GetDiskId()
 int32_t VolumeInfo::GetState()
 {
     return mountState_;
+}
+
+bool VolumeInfo::GetIsUserdata()
+{
+    return isUserdata_;
 }
 
 int32_t VolumeInfo::Destroy()

@@ -188,6 +188,7 @@ int32_t ExternalVolumeInfo::DoMount4Exfat(uint32_t mountFlags)
 int32_t ExternalVolumeInfo::DoMount4OtherType(uint32_t mountFlags)
 {
     mountFlags |= MS_MGC_VAL;
+    LOGE("DoMount4OtherType, fstype = %{public}s", fsType_.c_str());
     auto mountData = StringPrintf("uid=%d,gid=%d,dmask=0007,fmask=0007", UID_FILE_MANAGER, UID_FILE_MANAGER);
     int32_t ret = mount(devPath_.c_str(), mountPath_.c_str(), fsType_.c_str(), mountFlags, mountData.c_str());
     if (ret) {
@@ -227,8 +228,11 @@ int32_t ExternalVolumeInfo::DoMount(uint32_t mountFlags)
         LOGE("the volume %{public}s create path %{public}s failed", GetVolumeId().c_str(), GetMountPath().c_str());
         return E_MKDIR_MOUNT;
     }
-
-    if (fsType_ == "hmfs" || fsType_ == "f2fs") ret = DoMount4Hmfs(mountFlags);
+    LOGE("MOUNT start, fstype = %{public}s, fslabel = %{public}s", fsType_.c_str(), fsLabel_.c_str());
+    if ((fsType_ == "hmfs" || fsType_ == "f2fs") && GetIsUserdata()) {
+        LOGE("MOUNT, fstype = %{public}s, fslabel = %{public}s", fsType_.c_str(), fsLabel_.c_str());
+        ret = DoMount4Hmfs(mountFlags);
+    }
     if (ret) {
         LOGE("External volume DoMount error, errno = %{public}d", errno);
         remove(mountPath_.c_str());
