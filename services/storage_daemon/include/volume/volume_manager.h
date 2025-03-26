@@ -26,7 +26,7 @@ public:
     virtual ~VolumeManager() = default;
     static VolumeManager* Instance();
 
-    std::string CreateVolume(const std::string diskId, dev_t device);
+    std::string CreateVolume(const std::string diskId, dev_t device, bool isUserdata);
     int32_t DestroyVolume(const std::string volId);
 
     int32_t Check(const std::string volId);

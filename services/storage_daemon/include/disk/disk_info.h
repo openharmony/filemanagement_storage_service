@@ -58,6 +58,7 @@ private:
     std::string vendor_;
     std::string sysPath_;
     int status;
+    bool isUserdata;
     std::string eventPath_;
     std::string devPath_;
     dev_t device_ {};

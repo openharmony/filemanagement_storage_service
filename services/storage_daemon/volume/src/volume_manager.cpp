@@ -53,7 +53,7 @@ std::shared_ptr<VolumeInfo> VolumeManager::GetVolume(const std::string volId)
     return it->second;
 }
 
-std::string VolumeManager::CreateVolume(const std::string diskId, dev_t device)
+std::string VolumeManager::CreateVolume(const std::string diskId, dev_t device, bool isUserdata)
 {
     std::string volId = StringPrintf("vol-%u-%u", major(device), minor(device));
 
@@ -66,7 +66,7 @@ std::string VolumeManager::CreateVolume(const std::string diskId, dev_t device)
     }
 
     auto info = std::make_shared<ExternalVolumeInfo>();
-    int32_t ret = info->Create(volId, diskId, device);
+    int32_t ret = info->Create(volId, diskId, device, isUserdata);
     if (ret) {
         return "";
     }

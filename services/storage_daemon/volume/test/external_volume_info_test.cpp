@@ -61,7 +61,8 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoCreate
     dev_t device = MKDEV(156, 300);
     std::string diskId = "disk-156-300";
     std::string volId = "vol-156-301";
-    int32_t ret = vol.Create(volId, diskId, device);
+    bool isUserdata = false;
+    int32_t ret = vol.Create(volId, diskId, device, isUserdata);
     EXPECT_EQ(ret, E_OK);
     ret = vol.Destroy();
 
@@ -82,7 +83,8 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoDestro
     dev_t device = MKDEV(156, 400);
     std::string diskId = "disk-156-400";
     std::string volId = "vol-156-401";
-    int32_t ret = vol.Create(volId, diskId, device);
+    bool isUserdata = false;
+    int32_t ret = vol.Create(volId, diskId, device, isUserdata);
     EXPECT_EQ(ret, E_OK);
     ret = vol.Destroy();
     EXPECT_EQ(ret, E_OK);
@@ -154,7 +156,8 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoCheck_
     dev_t device = MKDEV(156, 600);
     std::string diskId = "disk-156-600";
     std::string volId = "vol-156-601";
-    int32_t ret = vol.Create(volId, diskId, device);
+    bool isUserdata = false;
+    int32_t ret = vol.Create(volId, diskId, device, isUserdata);
     EXPECT_EQ(ret, E_OK);
     ret = vol.Check();
     EXPECT_EQ(ret, E_CHECK);
@@ -177,7 +180,8 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     dev_t device = MKDEV(156, 700);
     std::string diskId = "disk-156-700";
     std::string volId = "vol-156-701";
-    int32_t ret = vol.Create(volId, diskId, device);
+    bool isUserdata = false;
+    int32_t ret = vol.Create(volId, diskId, device, isUserdata);
     EXPECT_EQ(ret, E_OK);
     std::string flag = "exfat";
     ret = vol.Format(flag);
@@ -201,7 +205,8 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     dev_t device = MKDEV(156, 701);
     std::string diskId = "disk-156-701";
     std::string volId = "vol-156-702";
-    int32_t ret = vol.Create(volId, diskId, device);
+    bool isUserdata = false;
+    int32_t ret = vol.Create(volId, diskId, device, isUserdata);
     EXPECT_EQ(ret, E_OK);
     std::string flag = "vfat";
     ret = vol.Format(flag);
@@ -225,7 +230,8 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoFormat
     dev_t device = MKDEV(156, 702);
     std::string diskId = "disk-156-702";
     std::string volId = "vol-156-703";
-    int32_t ret = vol.Create(volId, diskId, device);
+    bool isUserdata = false;
+    int32_t ret = vol.Create(volId, diskId, device, isUserdata);
     EXPECT_EQ(ret, E_OK);
     std::string flag = "ntfs";
     ret = vol.Format(flag);
@@ -249,7 +255,8 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoSetVol
     dev_t device = MKDEV(156, 800);
     std::string diskId = "disk-156-800";
     std::string volId = "vol-156-801";
-    int32_t ret = vol.Create(volId, diskId, device);
+    bool isUserdata = false;
+    int32_t ret = vol.Create(volId, diskId, device, isUserdata);
     EXPECT_EQ(ret, E_OK);
     std::string des = "label1";
     ret = vol.SetVolumeDescription(des);
