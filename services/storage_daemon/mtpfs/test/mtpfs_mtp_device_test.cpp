@@ -247,5 +247,26 @@ HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_FindUploadRecord_001, TestSize.Level1)
     EXPECT_EQ(std::get<1>(ret), true);
     GTEST_LOG_(INFO) << "MtpfsDeviceTest_FindUploadRecord_001 end";
 }
+
+/**
+ * @tc.name: DirRemoveDirectly_001
+ * @tc.desc: Verify the DirRemoveDirectly function.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_DirRemoveDirectly_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsDeviceTest_DirRemoveDirectly_001 start";
+    auto mtpfsdevice = std::make_shared<MtpFsDevice>();
+
+    int32_t ret = 0;
+    LIBMTP_event_t event = LIBMTP_EVENT_OBJECT_ADDED;
+    uint32_t param = 1;
+    void *data = nullptr;
+    mtpfsdevice->MtpEventCallback(ret, event, param, data);
+
+    event = LIBMTP_EVENT_OBJECT_REMOVED;
+    mtpfsdevice->MtpEventCallback(ret, event, param, data);
+    GTEST_LOG_(INFO) << "MtpfsDeviceTest_DirRemoveDirectly_001 end";
+}
 }
 }

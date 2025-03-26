@@ -955,6 +955,11 @@ int MtpFileSystem::SetXAttr(const char *path, const char *in)
         LOGE("Param is null.");
         return -ENOENT;
     }
+    if (strcmp(in, "user.rmdir") == 0) {
+        LOGI("rmdir directly, dir path=%{public}s", path);
+        int32_t ret = device_.DirRemoveDirectly(path);
+        return ret;
+    }
     if (strcmp(in, "user.fetchcontent") == 0) {
         LOGI("Refresh the mtp dir content, dir=%{public}s", path);
         device_.RefreshDirContent(std::string(path));
