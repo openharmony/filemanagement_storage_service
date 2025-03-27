@@ -595,8 +595,7 @@ int KeyManager::GenerateIntegrityDirs(int32_t userId, KeyType type)
 {
     std::string dirType = (type == EL1_KEY) ? EL1 : EL2;
     std::string userDir = std::string(FSCRYPT_EL_DIR) + "/" + dirType;
-    uint32_t flag_type = (type == EL1_KEY) ? static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL1) :
-        static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL2);
+    uint32_t flag_type = (type == EL1_KEY) ? IStorageDaemonEnum::CRYPTO_FLAG_EL1 : IStorageDaemonEnum::CRYPTO_FLAG_EL2;
     std::string versionElx = userDir + "/" + std::to_string(userId) + FSCRYPT_VERSION_DIR;
     std::string encryptElx = userDir + "/" + std::to_string(userId) + ENCRYPT_VERSION_DIR;
     std::string discardElx = userDir + "/" + std::to_string(userId) + SEC_DISCARD_DIR;

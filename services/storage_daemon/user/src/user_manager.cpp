@@ -20,6 +20,7 @@
 #include "crypto/key_manager.h"
 #endif
 #include "istorage_daemon.h"
+#include "ipc/enum_daemon.h"
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -95,7 +96,7 @@ int32_t UserManager::PrepareUserDirs(int32_t userId, uint32_t flags)
     if (err != E_OK) {
         return err;
     }
-    if (flags & static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL2)) {
+    if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL2) {
         err = MountManager::GetInstance()->PrepareHmdfsDirs(userId);
         if (err != E_OK) {
             LOGE("Prepare hmdfs dir error");
@@ -121,14 +122,14 @@ int32_t UserManager::DestroyUserDirs(int32_t userId, uint32_t flags)
         return err;
     }
     int32_t ret = E_OK;
-    if (flags & static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL1)) {
+    if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL1) {
         err = DestroyDirsFromIdAndLevel(userId, EL1);
         ret = (err != E_OK) ? err : ret;
 
         err = DestroyEl1BundleDir(userId);
         ret = (err != E_OK) ? err : ret;
     }
-    if (flags & static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL2)) {
+    if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL2) {
         err = DestroyDirsFromIdAndLevel(userId, EL2);
         ret = (err != E_OK) ? err : ret;
 
@@ -147,15 +148,15 @@ int32_t UserManager::DestroyUserDirs(int32_t userId, uint32_t flags)
         err = DestroyEl1Dir(userId);
         ret = (err != E_OK) ? err : ret;
     }
-    if (flags & static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL3)) {
+    if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL3) {
         err = DestroyDirsFromIdAndLevel(userId, EL3);
         ret = (err != E_OK) ? err : ret;
     }
-    if (flags & static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL4)) {
+    if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL4) {
         err = DestroyDirsFromIdAndLevel(userId, EL4);
         ret = (err != E_OK) ? err : ret;
     }
-    if (flags & static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL5)) {
+    if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL5) {
         err = DestroyDirsFromIdAndLevel(userId, EL5);
         ret = (err != E_OK) ? err : ret;
     }
@@ -370,7 +371,7 @@ int32_t UserManager::CheckCrypto(int32_t userId, uint32_t flags)
         LOGE("UserManager::PrepareUserDirs userId %{public}d out of range", userId);
         return err;
     }
-    if (flags & static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL1)) {
+    if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL1) {
         err = PrepareDirsFromIdAndLevel(userId, EL1);
         if (err != E_OK) {
             return err;
@@ -384,7 +385,7 @@ int32_t UserManager::CheckCrypto(int32_t userId, uint32_t flags)
             LOGW("Prepare el1 dir fail, %{public}d.", errorCode);
         }
     }
-    if (flags & static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL2)) {
+    if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL2) {
         err = PrepareDirsFromIdAndLevel(userId, EL2);
         if (err != E_OK) {
             return err;
@@ -394,19 +395,19 @@ int32_t UserManager::CheckCrypto(int32_t userId, uint32_t flags)
             return err;
         }
     }
-    if (flags & static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL3)) {
+    if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL3) {
         err = PrepareDirsFromIdAndLevel(userId, EL3);
         if (err != E_OK) {
             return err;
         }
     }
-    if (flags & static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL4)) {
+    if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL4) {
         err = PrepareDirsFromIdAndLevel(userId, EL4);
         if (err != E_OK) {
             return err;
         }
     }
-    if (flags & static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL5)) {
+    if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL5) {
         err = PrepareDirsFromIdAndLevel(userId, EL5);
         if (err != E_OK) {
             return err;

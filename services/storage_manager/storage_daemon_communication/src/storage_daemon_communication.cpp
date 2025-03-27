@@ -26,7 +26,7 @@
 #include "storage_service_log.h"
 #include "utils/storage_radar.h"
 #include "message_parcel.h"
-
+#include "file_raw_data.h"
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageManager {

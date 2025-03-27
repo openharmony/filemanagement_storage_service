@@ -25,6 +25,7 @@
 #include <unistd.h>
 
 #include "istorage_daemon.h"
+#include "ipc/enum_daemon.h"
 #include "user/user_manager.h"
 #include "utils/file_utils.h"
 
@@ -88,14 +89,14 @@ bool StorageTestUtils::CheckUserDir(int32_t userId, uint32_t flags)
         std::string path(dir.path);
         path.replace(path.find("%d"), strlen("%d"), std::to_string(userId));
 
-        if (flags & static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL1)) {
+        if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL1) {
             std::string realPath(path);
             realPath.replace(realPath.find("%s"), strlen("%s"), "el1");
             if (CheckDir(realPath) == false) {
                 return false;
             }
         }
-        if (flags & static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL2)) {
+        if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL2) {
             std::string realPath(path);
             realPath.replace(realPath.find("%s"), strlen("%s"), "el2");
             if (CheckDir(realPath) == false) {
@@ -105,7 +106,7 @@ bool StorageTestUtils::CheckUserDir(int32_t userId, uint32_t flags)
     }
 
     for (const Dir &dir : gSubDirs) {
-        if (flags & static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL1)) {
+        if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL1) {
             std::string path(dir.path);
             path.replace(path.find("%d"), strlen("%d"), std::to_string(userId));
             path.replace(path.find("%s"), strlen("%s"), "el1");
@@ -114,7 +115,7 @@ bool StorageTestUtils::CheckUserDir(int32_t userId, uint32_t flags)
             }
         }
 
-        if (flags & static_cast<uint32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL2)) {
+        if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL2) {
             std::string path(dir.path);
             path.replace(path.find("%d"), strlen("%d"), std::to_string(userId));
             path.replace(path.find("%s"), strlen("%s"), "el2");

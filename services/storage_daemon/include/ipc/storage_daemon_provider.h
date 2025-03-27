@@ -17,7 +17,6 @@
 #define OHOS_STORAGE_DAEMON_STORAGE_DAEMON_PROVIDER_H
 
 #include "storage_daemon_stub.h"
-#include "storage_daemon.h"
 #include "storage_service_constant.h"
 #include "system_ability_status_change_stub.h"
 #include "utils/storage_statistics_radar.h"
@@ -134,7 +133,6 @@ private:
     std::thread callRadarStatisticReportThread_;
     std::map<uint32_t, RadarStatisticInfo> opStatistics_;
     std::chrono::time_point<std::chrono::system_clock> lastRadarReportTime_;
-    std::shared_ptr<OHOS::StorageDaemon::StorageDaemon> storageDaemon_;
     std::map<uint32_t, RadarStatisticInfo>::iterator GetUserStatistics(const uint32_t userId);
     void GetTempStatistics(std::map<uint32_t, RadarStatisticInfo> &statistics);
 };

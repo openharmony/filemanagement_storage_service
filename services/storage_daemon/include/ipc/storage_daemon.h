@@ -19,7 +19,7 @@
 #include "system_ability_status_change_stub.h"
 #include "storage_service_constant.h"
 #include "enum_daemon.h"
-
+#include "storage_daemon_provider.h"
 namespace OHOS {
 namespace StorageDaemon {
 
@@ -29,7 +29,7 @@ struct UserTokenSecret {
     const std::vector<uint8_t> newSecret;
     uint64_t secureUid;
 };
-class StorageDaemon {
+class StorageDaemon : public StorageDaemonProvider {
 public:
     StorageDaemon() = default;
     ~StorageDaemon() = default;
@@ -83,10 +83,11 @@ public:
     int32_t SetRecoverKey(const std::vector<uint8_t> &key);
 
     // app file share api
-    int32_t CreateShareFile(const std::vector<std::string> &uriList,
-                                          uint32_t tokenId, uint32_t flag,
-                                          std::vector<int32_t>& funcResult);
-    int32_t DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList);
+    int32_t CreateShareFile(const FileRawData &fileRawData,
+                            uint32_t tokenId,
+                            uint32_t flag,
+                            std::vector<int32_t> &funcResult);
+    int32_t DeleteShareFile(uint32_t tokenId, const FileRawData &fileRawData);
 
     int32_t SetBundleQuota(const std::string &bundleName, int32_t uid,
         const std::string &bundleDataDirPath, int32_t limitSizeMb);

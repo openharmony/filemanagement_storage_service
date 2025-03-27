@@ -23,6 +23,7 @@
 #include "user/user_manager.h"
 #include "utils/file_utils.h"
 #include "crypto/key_manager.h"
+#include "ipc/enum_daemon.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -124,10 +125,8 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirs_001, T
     auto bRet = StorageTest::StorageTestUtils::CreateFile(filePath);
     EXPECT_TRUE(bRet) << "check the file create";
 
-    int32_t flags = static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL1) |
-        static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL2) |
-        static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL3) |
-        static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL4);
+    int32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL1 | IStorageDaemonEnum::CRYPTO_FLAG_EL2 |
+                    IStorageDaemonEnum::CRYPTO_FLAG_EL3 | IStorageDaemonEnum::CRYPTO_FLAG_EL4;
     int32_t ret = userManager->PrepareUserDirs(StorageTest::USER_ID1, flags);
     EXPECT_TRUE(ret == E_PREPARE_DIR) << "the path is not dir";
 
@@ -153,7 +152,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirs_002, T
     auto bRet = StorageTest::StorageTestUtils::CreateFile(filePath);
     EXPECT_TRUE(bRet) << "check the file create";
 
-    int32_t flags = static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL1);
+    int32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL1;
     int32_t ret = userManager->PrepareUserDirs(StorageTest::USER_ID1, flags);
     EXPECT_TRUE(ret == E_PREPARE_DIR) << "the flags is incorrect";
 
@@ -173,10 +172,8 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirs_003, T
     std::shared_ptr<UserManager> userManager = UserManager::GetInstance();
     ASSERT_TRUE(userManager != nullptr);
 
-    int32_t flags = static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL1) |
-                    static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL2) |
-                    static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL3) |
-                    static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL4);
+    int32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL1 | IStorageDaemonEnum::CRYPTO_FLAG_EL2 |
+                    IStorageDaemonEnum::CRYPTO_FLAG_EL3 | IStorageDaemonEnum::CRYPTO_FLAG_EL4;
     auto ret = KeyManager::GetInstance()->GenerateUserKeys(StorageTest::USER_ID5, flags);
     EXPECT_EQ(ret, E_OK);
 
@@ -201,10 +198,8 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_PrepareUserDirs_004, T
     ASSERT_TRUE(userManager != nullptr);
 
     int32_t userId = -1;
-    int32_t flags = static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL1) |
-        static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL2) |
-        static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL3) |
-        static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL4);
+    int32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL1 | IStorageDaemonEnum::CRYPTO_FLAG_EL2 |
+                    IStorageDaemonEnum::CRYPTO_FLAG_EL3 | IStorageDaemonEnum::CRYPTO_FLAG_EL4;
     auto ret = userManager->PrepareUserDirs(userId, flags);
     EXPECT_FALSE(ret == E_OK);
     GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_PrepareUserDirs_004 end";
@@ -224,8 +219,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StartUser_001, TestSiz
     ASSERT_TRUE(userManager != nullptr);
     userManager->StopUser(StorageTest::USER_ID3);
 
-    int32_t flags = static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL1) |
-                    static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL2);
+    int32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL1 | IStorageDaemonEnum::CRYPTO_FLAG_EL2;
     auto ret = KeyManager::GetInstance()->GenerateUserKeys(StorageTest::USER_ID3, flags);
     EXPECT_EQ(ret, E_OK);
     ret = userManager->PrepareUserDirs(StorageTest::USER_ID3, flags);
@@ -270,8 +264,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_DestroyUserDirs_001, T
     std::shared_ptr<UserManager> userManager = UserManager::GetInstance();
     ASSERT_TRUE(userManager != nullptr);
 
-    int32_t flags = static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL1) |
-                    static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL2);
+    int32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL1 | IStorageDaemonEnum::CRYPTO_FLAG_EL2;
     auto ret = KeyManager::GetInstance()->GenerateUserKeys(StorageTest::USER_ID4, flags);
     EXPECT_EQ(ret, E_OK);
     ret = userManager->PrepareUserDirs(StorageTest::USER_ID4, flags);
@@ -315,8 +308,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StopUser_002, TestSize
     std::shared_ptr<UserManager> userManager = UserManager::GetInstance();
     ASSERT_TRUE(userManager != nullptr);
 
-    int32_t flags = static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL1) |
-                    static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL2);
+    int32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL1 | IStorageDaemonEnum::CRYPTO_FLAG_EL2;
     auto ret = KeyManager::GetInstance()->GenerateUserKeys(StorageTest::USER_ID4, flags);
     EXPECT_EQ(ret, E_OK);
     ret = userManager->PrepareUserDirs(StorageTest::USER_ID4, flags);
@@ -343,7 +335,7 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_StopUser_003, TestSize
     std::shared_ptr<UserManager> userManager = UserManager::GetInstance();
     ASSERT_TRUE(userManager != nullptr);
 
-    int32_t flags = static_cast<int32_t>(IStorageDaemonEnum::CRYPTO_FLAG_EL2);
+    int32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL2;
     auto ret = KeyManager::GetInstance()->GenerateUserKeys(StorageTest::USER_ID3, flags);
     EXPECT_EQ(ret, E_OK);
     ret = userManager->PrepareUserDirs(StorageTest::USER_ID3, flags);

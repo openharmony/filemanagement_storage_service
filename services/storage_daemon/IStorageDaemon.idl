@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 rawdata OHOS.StorageDaemon.FileRawData;
-import EnumDaemon;
 interface OHOS.StorageDaemon.IStorageDaemon{       
      [ipccode 1] void Shutdown();    
      [ipccode 2] void Mount([in] String volId, [in] unsigned int flags);

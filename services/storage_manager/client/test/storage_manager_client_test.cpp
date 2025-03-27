@@ -17,6 +17,7 @@
 #include <gtest/gtest.h>
 
 #include "client/storage_manager_client.h"
+#include "ipc/enum_daemon.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 namespace OHOS {

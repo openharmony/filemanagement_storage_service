@@ -13,18 +13,26 @@
  * limitations under the License.
  */
 
-#ifndef OHOS_STORAGE_DAEMON_FILE_RAWDATA_H
-#define OHOS_STORAGE_DAEMON_FILE_RAWDATA_H
+#ifndef OHOS_STORAGE_DAEMON_FILE_RAW_DATA_H
+#define OHOS_STORAGE_DAEMON_FILE_RAW_DATA_H
 
+#include "securec.h"
+#include "storage_service_errno.h"
+#include <cstring>
 namespace OHOS {
 namespace StorageDaemon {
+
+constexpr uint32_t MAX_IPC_RAW_DATA_SIZE = 128 * 1024 * 1024; // 128MB
+
 class FileRawData {
 public:
     uint32_t size;
     const void *data;
     FileRawData() = default;
-    FileRawData(uint32_t size, const void *data) : size(size), data(data) {};
+    FileRawData(uint32_t size, const void *data);
+    int32_t RawDataCpy(const void *rawData);
+    ~FileRawData();
 };
 } // namespace StorageDaemon
 } // namespace OHOS
-#endif // OHOS_STORAGE_DAEMON_FILE_RAWDATA_H
+#endif // OHOS_STORAGE_DAEMON_FILE_RAW_DATA_H
