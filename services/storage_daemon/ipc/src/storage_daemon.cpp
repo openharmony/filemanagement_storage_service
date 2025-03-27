@@ -16,7 +16,6 @@
 #include "ipc/storage_daemon.h"
 #include "file_ex.h"
 #include "hi_audit.h"
-#include "ipc/enum_daemon.h"
 #include "utils/storage_radar.h"
 #include "utils/storage_xcollie.h"
 #include "utils/string_utils.h"
@@ -74,46 +73,6 @@ constexpr const char *NEW_DOUBLE_2_SINGLE = "2";
 #endif
 typedef int32_t (*CreateShareFileFunc)(const std::vector<std::string> &, uint32_t, uint32_t, std::vector<int32_t> &);
 typedef int32_t (*DeleteShareFileFunc)(uint32_t, const std::vector<std::string> &);
-
-int32_t StorageDaemon::Shutdown()
-{
-    return E_OK;
-}
-
-int32_t StorageDaemon::Mount(const std::string &volId, uint32_t flags)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemon::UMount(const std::string &volId)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemon::Check(const std::string &volId)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemon::Format(const std::string &volId, const std::string &fsType)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemon::Partition(const std::string &diskId, int32_t type)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemon::SetVolumeDescription(const std::string &volId, const std::string &description)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemon::QueryUsbIsInUse(const std::string &diskPath, bool &isInUse)
-{
-    return E_OK;
-}
 
 int32_t StorageDaemon::GetCryptoFlag(KeyType type, uint32_t &flags)
 {
@@ -311,34 +270,6 @@ int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
 #else
     return errCode;
 #endif
-}
-
-int32_t StorageDaemon::StartUser(int32_t userId)
-{
-    (void)SetPriority();  // set tid priority to 40
-    int32_t ret = UserManager::GetInstance()->StartUser(userId);
-    if (ret != E_OK && ret != E_KEY_NOT_ACTIVED) {
-        LOGE("StartUser failed, please check");
-        StorageRadar::ReportUserManager("StartUser", userId, ret, "");
-        AuditLog storageAuditLog = { false, "FAILED TO StartUser", "ADD", "StartUser", 1, "FAIL" };
-        HiAudit::GetInstance().Write(storageAuditLog);
-    } else {
-        AuditLog storageAuditLog = { false, "SUCCESS TO StartUser", "ADD", "StartUser", 1, "SUCCESS" };
-        HiAudit::GetInstance().Write(storageAuditLog);
-    }
-    return ret;
-}
-
-int32_t StorageDaemon::StopUser(int32_t userId)
-{
-    int32_t ret = UserManager::GetInstance()->StopUser(userId);
-    LOGE("StopUser end, ret is %{public}d.", ret);
-    StorageRadar::ReportUserManager("StopUser", userId, ret, "");
-    std::string status = ret == E_OK ? "SUCCESS" : "FAIL";
-    std::string cause = ret == E_OK ? "SUCCESS TO StopUser" : "FAILED TO StopUser";
-    AuditLog storageAuditLog = { false, cause, "DEL", "StopUser", 1, status };
-    HiAudit::GetInstance().Write(storageAuditLog);
-    return ret;
 }
 
 int32_t StorageDaemon::CompleteAddUser(int32_t userId)
@@ -1193,54 +1124,6 @@ int32_t StorageDaemon::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 #endif
 }
 
-int32_t StorageDaemon::MountCryptoPathAgain(uint32_t userId)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemon::CreateShareFile(const FileRawData &fileRawData,
-                                       uint32_t tokenId,
-                                       uint32_t flag,
-                                       std::vector<int32_t> &funcResult)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemon::DeleteShareFile(uint32_t tokenId, const FileRawData &fileRawData)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemon::SetBundleQuota(const std::string &bundleName, int32_t uid,
-    const std::string &bundleDataDirPath, int32_t limitSizeMb)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemon::GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemon::GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
-    const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes,
-    std::vector<int64_t> &incPkgFileSizes)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemon::MountDfsDocs(int32_t userId, const std::string &relativePath,
-    const std::string &networkId, const std::string &deviceId)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemon::UMountDfsDocs(int32_t userId, const std::string &relativePath,
-    const std::string &networkId, const std::string &deviceId)
-{
-    return E_OK;
-}
-
 int32_t StorageDaemon::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
 {
 #ifdef USER_CRYPTO_MANAGER
@@ -1273,11 +1156,6 @@ int32_t StorageDaemon::GetUserNeedActiveStatus(uint32_t userId, bool &needActive
 #ifdef USER_CRYPTO_MIGRATE_KEY
     needActive = IsNeedRestorePathExist(userId, false);
 #endif
-    return E_OK;
-}
-
-int32_t StorageDaemon::UpdateMemoryPara(int32_t size, int32_t &oldSize)
-{
     return E_OK;
 }
 
@@ -1314,26 +1192,6 @@ void StorageDaemon::SetPriority()
         LOGE("failed to set priority");
     }
     LOGW("set storage_daemon priority: %{public}d", tid);
-}
-
-int32_t StorageDaemon::MountMediaFuse(int32_t userId, int32_t &devFd)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemon::UMountMediaFuse(int32_t userId)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemon::MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd)
-{
-    return E_OK;
-}
-
-int32_t StorageDaemon::UMountFileMgrFuse(int32_t userId, const std::string &path)
-{
-    return E_OK;
 }
 } // namespace StorageDaemon
 } // namespace OHOS

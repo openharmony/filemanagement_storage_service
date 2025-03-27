@@ -25,12 +25,12 @@
 #include "crypto/app_clone_key_manager.h"
 #include "istorage_daemon.h"
 #include "ipc/storage_daemon.h"
+#include "ipc/storage_daemon_provider.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "test/common/help_utils.h"
 #include "user/user_manager.h"
 #include "utils/file_utils.h"
-#include "ipc/enum_daemon.h"
 namespace OHOS {
 namespace StorageDaemon {
 using namespace testing::ext;
@@ -41,7 +41,7 @@ public:
     void SetUp();
     void TearDown();
 
-    StorageDaemon* storageDaemon_;
+    StorageDaemonProvider* storageDaemon_;
 };
 
 void StorageDaemonTest::SetUpTestCase(void)
@@ -73,7 +73,7 @@ void StorageDaemonTest::SetUpTestCase(void)
 
 void StorageDaemonTest::SetUp()
 {
-    storageDaemon_ = new StorageDaemon();
+    storageDaemon_ = new StorageDaemonProvider();
     StorageTest::StorageTestUtils::ClearTestResource();
 }
 

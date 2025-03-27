@@ -18,6 +18,7 @@
 
 #include "storage_daemon_stub.h"
 #include "storage_service_constant.h"
+#include "storage_daemon.h"
 #include "system_ability_status_change_stub.h"
 #include "utils/storage_statistics_radar.h"
 #include <mutex>

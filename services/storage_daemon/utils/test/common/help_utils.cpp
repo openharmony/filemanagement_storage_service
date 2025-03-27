@@ -28,7 +28,7 @@
 #include "ipc/enum_daemon.h"
 #include "user/user_manager.h"
 #include "utils/file_utils.h"
-
+#include "storage_service_constant.h"
 namespace OHOS {
 namespace StorageDaemon {
 namespace StorageTest {

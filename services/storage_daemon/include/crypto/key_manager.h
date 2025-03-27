@@ -20,7 +20,6 @@
 #include "crypto_delay_handler.h"
 #include "ipc/storage_daemon.h"
 #include "utils/file_utils.h"
-#include "enum_daemon.h"
 
 namespace OHOS {
 namespace StorageDaemon {

@@ -18,7 +18,6 @@
 
 #include "system_ability_status_change_stub.h"
 #include "storage_service_constant.h"
-#include "enum_daemon.h"
 #include "storage_daemon_provider.h"
 namespace OHOS {
 namespace StorageDaemon {
@@ -29,22 +28,15 @@ struct UserTokenSecret {
     const std::vector<uint8_t> newSecret;
     uint64_t secureUid;
 };
-class StorageDaemon : public StorageDaemonProvider {
+class StorageDaemon {
 public:
     StorageDaemon() = default;
     ~StorageDaemon() = default;
-
-    int32_t Shutdown();
-    int32_t Mount(const std::string &volId, uint32_t flags);
-    int32_t UMount(const std::string &volId);
-    int32_t Check(const std::string &volId);
-    int32_t Format(const std::string &volId, const std::string &fsType);
-    int32_t Partition(const std::string &diskId, int32_t type);
-    int32_t SetVolumeDescription(const std::string &volId, const std::string &description);
-    int32_t QueryUsbIsInUse(const std::string &diskPath, bool &isInUse);
-
-    int32_t StartUser(int32_t userId);
-    int32_t StopUser(int32_t userId);
+    static StorageDaemon *GetInstance(void)
+    {
+        static StorageDaemon instance;
+        return &instance;
+    }
     int32_t PrepareUserDirs(int32_t userId, uint32_t flags);
     int32_t DestroyUserDirs(int32_t userId, uint32_t flags);
     int32_t CompleteAddUser(int32_t userId);
@@ -68,7 +60,6 @@ public:
                                   const std::vector<uint8_t> &secret);
     int32_t InactiveUserKey(uint32_t userId);
     int32_t UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey = false);
-    int32_t MountCryptoPathAgain(uint32_t userId);
     int32_t LockUserScreen(uint32_t userId);
     int32_t UnlockUserScreen(uint32_t userId,
                                      const std::vector<uint8_t> &token,
@@ -81,35 +72,9 @@ public:
                              const std::vector<uint8_t> &token,
                              const std::vector<uint8_t> &secret);
     int32_t SetRecoverKey(const std::vector<uint8_t> &key);
-
-    // app file share api
-    int32_t CreateShareFile(const FileRawData &fileRawData,
-                            uint32_t tokenId,
-                            uint32_t flag,
-                            std::vector<int32_t> &funcResult);
-    int32_t DeleteShareFile(uint32_t tokenId, const FileRawData &fileRawData);
-
-    int32_t SetBundleQuota(const std::string &bundleName, int32_t uid,
-        const std::string &bundleDataDirPath, int32_t limitSizeMb);
-    int32_t GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size);
-    int32_t UpdateMemoryPara(int32_t size, int32_t &oldSize);
-    int32_t GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
-        const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes,
-        std::vector<int64_t> &incPkgFileSizes);
-    int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,
-        const std::string &networkId, const std::string &deviceId);
-    int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
-        const std::string &networkId, const std::string &deviceId);
     int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false);
     int32_t GetUserNeedActiveStatus(uint32_t userId, bool &needActive);
-
-    // media fuse
-    int32_t MountMediaFuse(int32_t userId, int32_t &devFd);
-    int32_t UMountMediaFuse(int32_t userId);
-    // file mgr fuse
-    int32_t MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd);
-    int32_t UMountFileMgrFuse(int32_t userId, const std::string &path);
-
+    void SetPriority();
 private:
 #ifdef USER_CRYPTO_MIGRATE_KEY
     std::string GetNeedRestoreFilePath(int32_t userId, const std::string &user_dir);
@@ -151,7 +116,6 @@ private:
         const std::vector<uint8_t> &secret);
     void ClearNatoRestoreKey(uint32_t userId, KeyType type, bool isClearAll);
     void ClearAllNatoRestoreKey(uint32_t userId, bool isClearAll);
-    void SetPriority();
 };
 } // StorageDaemon
 } // OHOS

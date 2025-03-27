@@ -25,6 +25,7 @@
 #include "netlink/netlink_manager.h"
 #endif
 #include "ipc/storage_daemon_provider.h"
+#include "ipc/storage_daemon.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
 #include "storage_service_constant.h"
