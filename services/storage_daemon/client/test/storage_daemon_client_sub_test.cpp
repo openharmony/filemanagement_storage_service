@@ -22,7 +22,7 @@
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
 #include "storage_service_errno.h"
-#include "../../ipc/test/storage_daemon_stub_mock.h"
+#include "storage_daemon_stub_mock.h"
 
 namespace OHOS {
 class ISystemAbilityBase {

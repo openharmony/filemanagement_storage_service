@@ -27,7 +27,6 @@ ohos_unittest("storage_total_status_service_test") {
   sources = [ "storage_total_status_service_test.cpp" ]
 
   include_dirs = [
-    "${bundlemanager_framework_path}/services/bundlemgr/include",
     "${storage_interface_path}/innerkits/storage_manager/native",
     "${storage_service_common_path}/include",
     "${storage_daemon_path}/include",
@@ -45,7 +44,6 @@ ohos_unittest("storage_total_status_service_test") {
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_ipc",
     "${storage_service_path}/services/storage_manager:storage_manager",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
@@ -60,6 +58,8 @@ ohos_unittest("storage_total_status_service_test") {
     "c_utils:utils",
     "common_event_service:cesfwk_innerkits",
     "eventhandler:libeventhandler",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "hitrace:hitrace_meter",
     "init:libbegetutil",
@@ -95,7 +95,6 @@ ohos_unittest("volume_storage_status_service_test") {
     "volume_storage_status_service_test.cpp",
   ]
   include_dirs = [
-    "${bundlemanager_framework_path}/services/bundlemgr/include",
     "${storage_interface_path}/innerkits/storage_manager/native",
     "${storage_service_common_path}/include",
     "${storage_daemon_path}/include",
@@ -110,16 +109,15 @@ ohos_unittest("volume_storage_status_service_test") {
     defines += [ "EXTERNAL_STORAGE_MANAGER" ]
   }
 
-  deps = [
-    "${storage_daemon_path}:storage_daemon_header",
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "${storage_daemon_path}:storage_daemon_header" ]
 
   external_deps = [
     "access_token:libaccesstoken_sdk",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "hitrace:hitrace_meter",
     "ipc:ipc_single",

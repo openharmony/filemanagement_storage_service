@@ -35,13 +35,13 @@ ohos_fuzztest("StorageManagerProxyFuzzTest") {
 
   defines = [ "STORAGE_LOG_TAG = \"storage_service\"" ]
   deps = [
-    "${bundlemanager_framework_path}/services/bundlemgr:libbms",
     "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
     "${storage_service_path}/services/storage_manager:storage_manager",
   ]
 
   external_deps = [
     "ability_runtime:abilitykit_native",
+    "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "hilog:libhilog",
     "ipc:ipc_single",

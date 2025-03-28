@@ -18,9 +18,9 @@ import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 config("storage_manager_config") {
   include_dirs = [
     "include",
-    "../../interfaces/innerkits/storage_manager/native",
-    "../storage_daemon/include",
-    "../common/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+    "${storage_daemon_path}/include",
+    "${storage_service_common_path}/include",
   ]
 
   cflags = [

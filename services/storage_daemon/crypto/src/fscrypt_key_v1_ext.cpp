@@ -98,7 +98,12 @@ int32_t FscryptKeyV1Ext::ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size,
     LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, user);
     // iv buffer returns derived keys
     int errNo = FBEX::InstallKeyToKernel(user, type_, iv, size, static_cast<uint8_t>(flag));
-    if (errNo != 0 && flag == 0) {
+    if (errNo != 0) {
+        if (flag != 0) {
+            LOGE("New User InstallKeyToKernel failed, user %{public}d, type %{public}d, flag %{public}u", user, type_,
+                 flag);
+            return errNo;
+        }
         LOGE("InstallKeyToKernel first failed, user %{public}d, type %{public}d, flag %{public}u", user, type_, flag);
         errNo = FBEX::InstallKeyToKernel(user, type_, iv, size, static_cast<uint8_t>(flag));
         if (errNo != 0) {
@@ -250,8 +255,8 @@ int32_t FscryptKeyV1Ext::InactiveKeyExt(uint32_t flag)
 
     LOGI("enter");
     bool destroy = !!flag;
-    if ((type_ != TYPE_EL2) && !destroy) {
-        LOGI("not el2, no need to inactive");
+    if ((type_ == TYPE_EL1) && !destroy) {
+        LOGI("Is el1, no need to inactive");
         return E_OK;
     }
     uint8_t buf[FBEX_IV_SIZE] = {0};

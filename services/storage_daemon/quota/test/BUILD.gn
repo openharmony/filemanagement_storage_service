@@ -14,8 +14,6 @@
 import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
-ROOT_DIR = "../../.."
-
 ohos_unittest("quota_manager_test") {
   branch_protector_ret = "pac_ret"
   sanitize = {
@@ -29,23 +27,22 @@ ohos_unittest("quota_manager_test") {
   defines = [ "STORAGE_LOG_TAG = \"StorageDaemon\"" ]
 
   include_dirs = [
-    "$ROOT_DIR/common/include",
-    "$ROOT_DIR/storage_daemon/include",
-    "$ROOT_DIR/storage_daemon/utils",
-    "$ROOT_DIR/storage_manager/include",
+    "${storage_service_common_path}/include",
+    "${storage_daemon_path}/include",
+    "${storage_daemon_path}/utils",
+    "${storage_manager_path}/include",
     "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
   sources = [
-    "$ROOT_DIR/storage_daemon/quota/quota_manager.cpp",
-    "$ROOT_DIR/storage_daemon/quota/test/quota_manager_test.cpp",
-    "$ROOT_DIR/storage_daemon/utils/test/common/help_utils.cpp",
+    "${storage_daemon_path}/quota/quota_manager.cpp",
+    "${storage_daemon_path}/quota/test/quota_manager_test.cpp",
+    "${storage_daemon_path}/utils/test/common/help_utils.cpp",
   ]
 
   deps = [
     "$ROOT_DIR/storage_daemon:storage_common_utils",
     "$ROOT_DIR/storage_daemon:storage_daemon_header",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
@@ -53,6 +50,8 @@ ohos_unittest("quota_manager_test") {
     "app_file_service:fileuri_native",
     "app_file_service:sandbox_helper_native",
     "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "init:libbegetutil",
     "ipc:ipc_single",

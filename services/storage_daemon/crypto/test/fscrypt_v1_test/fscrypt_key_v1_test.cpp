@@ -25,7 +25,7 @@
 #include "fbex.h"
 #include "file_ex.h"
 #include "fscrypt_key_v1.h"
-#include "../mock/fscrypt_key_v1_ext_mock.h"
+#include "fscrypt_key_v1_ext_mock.h"
 #include "key_blob.h"
 #include "storage_service_errno.h"
 

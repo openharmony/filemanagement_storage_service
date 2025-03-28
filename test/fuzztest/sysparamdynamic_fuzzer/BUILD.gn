@@ -28,7 +28,7 @@ ohos_fuzztest("SysparamDynamicFuzzTest") {
     "-Wno-unused-variable",
     "-fno-omit-frame-pointer",
   ]
-  sources = [ "./sysparamdynamic_fuzzer.cpp" ]
+  sources = [ "sysparamdynamic_fuzzer.cpp" ]
   deps = [ "${storage_daemon_path}/libfscrypt:libfscryptutils" ]
   external_deps = [
     "bounds_checking_function:libsec_shared",

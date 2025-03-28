@@ -93,6 +93,7 @@ public:
     void SetUploadRecord(const std::string path, bool value);
     std::tuple<std::string, bool> FindUploadRecord(const std::string path);
     void RefreshDirContent(std::string path);
+    int DirRemoveDirectly(const std::string &path);
 
     Capabilities GetCapabilities() const;
 

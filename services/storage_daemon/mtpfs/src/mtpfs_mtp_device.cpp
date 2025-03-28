@@ -477,6 +477,37 @@ int MtpFsDevice::DirRemove(const std::string &path)
     return 0;
 }
 
+int MtpFsDevice::DirRemoveDirectly(const std::string &path)
+{
+    LOGI("DirRemoveDirectly %{public}s begin", path.c_str());
+    const std::string tmpBaseName(SmtpfsBaseName(path));
+    const std::string tmpDirName(SmtpfsDirName(path));
+    const MtpFsTypeDir *dirParent = DirFetchContent(tmpDirName);
+    const MtpFsTypeDir *dirToRemove = dirParent ? dirParent->Dir(tmpBaseName) : nullptr;
+    if (!dirParent || !dirToRemove || dirParent->Id() == 0) {
+        LOGE("No such directory %{public}s to remove", path.c_str());
+        return -ENOENT;
+    }
+    if (!dirToRemove->IsEmpty()) {
+        LOGI("Directory %{public}s is not empty", path.c_str());
+    }
+    CriticalEnter();
+    LOGI("LIBMTP_Delete_Object %{public}s, Handle=%{public}u", path.c_str(), dirToRemove->Id());
+    int rval = LIBMTP_Delete_Object(device_, dirToRemove->Id());
+    CriticalLeave();
+    if (rval != 0) {
+        LOGE("Could not remove the directory: %{public}s directly", path.c_str());
+        LIBMTP_Dump_Errorstack(device_);
+        LIBMTP_Clear_Errorstack(device_);
+        return -EINVAL;
+    }
+    uint64_t time = GetFormattedTimestamp();
+    const_cast<MtpFsTypeDir *>(dirParent)->SetModificationDate(time);
+    const_cast<MtpFsTypeDir *>(dirParent)->RemoveDir(*dirToRemove);
+    LOGI("Folder %{public}s removed directly", path.c_str());
+    return 0;
+}
+
 int MtpFsDevice::DirReName(const std::string &oldPath, const std::string &newPath)
 {
     const std::string tmpOldBaseName(SmtpfsBaseName(oldPath));

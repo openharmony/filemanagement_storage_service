@@ -56,11 +56,12 @@ ohos_unittest("storage_daemon_communication_test") {
   deps = [
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_header",
-    "//third_party/googletest:gtest_main",
   ]
 
   external_deps = [
     "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "init:libbegetutil",
     "ipc:ipc_single",

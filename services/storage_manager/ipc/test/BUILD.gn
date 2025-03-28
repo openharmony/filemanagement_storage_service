@@ -42,7 +42,6 @@ ohos_unittest("storage_manager_proxy_test") {
     "${storage_manager_path}/include",
     "${storage_service_path}/utils/include",
     "include",
-    "//third_party/googletest/googlemock/include/gmock",
   ]
 
   defines = [

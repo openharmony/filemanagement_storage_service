@@ -13,6 +13,7 @@
 
 import("//build/ohos.gni")
 import("//build/ohos_var.gni")
+import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 config("public_config") {
   include_dirs = [ "." ]
@@ -20,11 +21,10 @@ config("public_config") {
 
 config("private_config") {
   include_dirs = [
-    "../../../../services/storage_manager/include",
-    "../../../../services/storage_manager/include",
-    "../../../../services/storage_daemon/include",
-    "../../../../services/common/include",
-    "../../../../interfaces/innerkits/storage_manager/native",
+    "${storage_manager_path}/include",
+    "${storage_daemon_path}/include",
+    "${storage_service_common_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 }
 
@@ -40,9 +40,9 @@ ohos_shared_library("storage_manager_acl") {
   }
 
   sources = [
-    "../../../../services/storage_daemon/file_sharing/src/acl.cpp",
-    "../../../../services/storage_daemon/file_sharing/src/setacl.cpp",
-    "../../../../services/storage_daemon/utils/file_utils.cpp",
+    "${storage_daemon_path}/file_sharing/src/acl.cpp",
+    "${storage_daemon_path}/file_sharing/src/setacl.cpp",
+    "${storage_daemon_path}/utils/file_utils.cpp",
   ]
 
   defines = [
