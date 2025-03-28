@@ -88,6 +88,7 @@ ohos_unittest("storage_daemon_client_sub_test") {
 
   include_dirs = [
     "${storage_daemon_path}/include",
+    "${storage_daemon_path}/ipc/test/",
     "${storage_daemon_path}/client/include",
     "${storage_daemon_path}/utils/test/common",
     "${storage_manager_path}/include",

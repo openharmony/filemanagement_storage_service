@@ -18,7 +18,7 @@ config("fscrypt_utils_config") {
   visibility = [ ":*" ]
 
   include_dirs = [
-    "../include/libfscrypt",
+    "${storage_daemon_path}/include/libfscrypt",
     "${storage_service_common_path}/include",
   ]
 
@@ -32,7 +32,7 @@ config("fscrypt_utils_config") {
 config("fscrypt_utils_public_config") {
   visibility = [ ":*" ]
 
-  include_dirs = [ "../include/libfscrypt" ]
+  include_dirs = [ "${storage_daemon_path}/include/libfscrypt" ]
 
   cflags = [
     "-g3",

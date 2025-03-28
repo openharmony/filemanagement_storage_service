@@ -25,7 +25,7 @@ ohos_unittest("disk_test") {
   module_out_path = "storage_service/storage_manager"
 
   sources = [
-    "../src/disk.cpp",
+    "${storage_manager_path}/innerkits_impl/src/disk.cpp",
     "disk_test.cpp",
   ]
 
@@ -37,10 +37,10 @@ ohos_unittest("disk_test") {
     "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
-  deps = [ "//third_party/googletest:gtest_main" ]
-
   external_deps = [
     "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
@@ -59,7 +59,7 @@ ohos_unittest("volume_core_test") {
   module_out_path = "storage_service/storage_manager"
 
   sources = [
-    "../src/volume_core.cpp",
+    "${storage_manager_path}/innerkits_impl/src/volume_core.cpp",
     "volume_core_test.cpp",
   ]
 
@@ -71,10 +71,10 @@ ohos_unittest("volume_core_test") {
     "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
-  deps = [ "//third_party/googletest:gtest_main" ]
-
   external_deps = [
     "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
@@ -93,9 +93,9 @@ ohos_unittest("volume_external_test") {
   module_out_path = "storage_service/storage_manager"
 
   sources = [
-    "../src/disk.cpp",
-    "../src/volume_core.cpp",
-    "../src/volume_external.cpp",
+    "${storage_manager_path}/innerkits_impl/src/disk.cpp",
+    "${storage_manager_path}/innerkits_impl/src/volume_core.cpp",
+    "${storage_manager_path}/innerkits_impl/src/volume_external.cpp",
     "disk_test.cpp",
     "volume_core_test.cpp",
     "volume_external_test.cpp",
@@ -109,10 +109,10 @@ ohos_unittest("volume_external_test") {
     "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
-  deps = [ "//third_party/googletest:gtest_main" ]
-
   external_deps = [
     "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
@@ -131,8 +131,8 @@ ohos_unittest("storage_stats_test") {
   module_out_path = "storage_service/storage_manager"
 
   sources = [
-    "../src/bundle_stats.cpp",
-    "../src/storage_stats.cpp",
+    "${storage_manager_path}/innerkits_impl/src/bundle_stats.cpp",
+    "${storage_manager_path}/innerkits_impl/src/storage_stats.cpp",
     "bundle_stats_test.cpp",
     "storage_stats_test.cpp",
   ]
@@ -145,10 +145,10 @@ ohos_unittest("storage_stats_test") {
     "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
-  deps = [ "//third_party/googletest:gtest_main" ]
-
   external_deps = [
     "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "ipc:ipc_single",
     "safwk:system_ability_fwk",

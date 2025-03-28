@@ -18,7 +18,7 @@ import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 ohos_fuzztest("LibmtpFuzzTest") {
   module_out_path = "storage_service/storage_service"
   fuzz_config_file = "${storage_service_path}/test/fuzztest/libmtp_fuzzer"
-  include_dirs = [ "./" ]
+
   cflags = [
     "-D_FILE_OFFSET_BITS=64",
     "-fstack-protector-strong",
@@ -29,7 +29,7 @@ ohos_fuzztest("LibmtpFuzzTest") {
     "-Wno-unused-variable",
   ]
   defines = []
-  sources = [ "./libmtp_fuzzer.cpp" ]
+  sources = [ "libmtp_fuzzer.cpp" ]
   deps = [ "${storage_daemon_path}:storage_common_utils" ]
   if (support_open_source_libmtp &&
       storage_service_external_storage_qos_trans) {

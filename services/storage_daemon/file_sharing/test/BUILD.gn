@@ -16,16 +16,18 @@ import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 ohos_moduletest("AclTest") {
   module_out_path = "storage_service/storage_daemon"
 
-  include_dirs = [ "../../include" ]
+  include_dirs = [ "${storage_daemon_path}/include" ]
 
   sources = [
-    "../src/acl.cpp",
+    "${storage_daemon_path}/file_sharing/src/acl.cpp",
     "acl_test.cpp",
   ]
 
-  deps = [ "//third_party/googletest:gtest_main" ]
-
-  external_deps = [ "c_utils:utils" ]
+  external_deps = [
+    "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+  ]
 }
 
 ohos_moduletest("SetAclTest") {
@@ -37,24 +39,23 @@ ohos_moduletest("SetAclTest") {
   ]
 
   include_dirs = [
-    "../../include",
-    "../../../../interfaces/innerkits/acl/native",
+    "${storage_daemon_path}/include",
+    "${storage_interface_path}/innerkits/acl/native",
     "${storage_service_common_path}/include",
   ]
 
   sources = [
-    "../src/acl.cpp",
-    "../src/setacl.cpp",
+    "${storage_daemon_path}/file_sharing/src/acl.cpp",
+    "${storage_daemon_path}/file_sharing/src/setacl.cpp",
     "setacl_test.cpp",
   ]
 
-  deps = [
-    "${storage_daemon_path}:storage_common_utils",
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "${storage_daemon_path}:storage_common_utils" ]
 
   external_deps = [
     "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hilog:libhilog",
   ]
 }
@@ -68,25 +69,24 @@ ohos_moduletest("FileSharingTest") {
   ]
 
   include_dirs = [
-    "../../file_sharing",
-    "../../include",
+    "${storage_daemon_path}/file_sharing",
+    "${storage_daemon_path}/include",
     "${storage_service_common_path}/include",
   ]
 
   sources = [
-    "../src/acl.cpp",
-    "../src/file_sharing.cpp",
-    "../src/setacl.cpp",
+    "${storage_daemon_path}/file_sharing/src/acl.cpp",
+    "${storage_daemon_path}/file_sharing/src/file_sharing.cpp",
+    "${storage_daemon_path}/file_sharing/src/setacl.cpp",
     "filesharing_test.cpp",
   ]
 
-  deps = [
-    "${storage_daemon_path}:storage_common_utils",
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "${storage_daemon_path}:storage_common_utils" ]
 
   external_deps = [
     "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "init:libbegetutil",
   ]

@@ -53,10 +53,7 @@ ohos_unittest("user_manager_test") {
     "$ROOT_DIR/utils/test/common/help_utils.cpp",
   ]
 
-  deps = [
-    "$ROOT_DIR:storage_common_utils",
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "$ROOT_DIR:storage_common_utils" ]
 
   external_deps = [
     "ability_base:zuri",
@@ -64,6 +61,8 @@ ohos_unittest("user_manager_test") {
     "app_file_service:sandbox_helper_native",
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "huks:libhukssdk",

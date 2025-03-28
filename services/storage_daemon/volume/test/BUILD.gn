@@ -47,14 +47,12 @@ ohos_unittest("external_volume_info_test") {
     "$ROOT_DIR/storage_daemon/volume/test/external_volume_info_test.cpp",
   ]
 
-  deps = [
-    "${storage_daemon_path}:storage_common_utils",
-    "//third_party/googletest:gmock_main",
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "${storage_daemon_path}:storage_common_utils" ]
 
   external_deps = [
     "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "init:libbegetutil",
     "ipc:ipc_single",
@@ -90,14 +88,12 @@ ohos_unittest("process_test") {
     "$ROOT_DIR/storage_daemon/volume/test/process_test.cpp",
   ]
 
-  deps = [
-    "${storage_daemon_path}:storage_common_utils",
-    "//third_party/googletest:gmock_main",
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "${storage_daemon_path}:storage_common_utils" ]
 
   external_deps = [
     "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "init:libbegetutil",
     "ipc:ipc_single",
@@ -132,14 +128,12 @@ ohos_unittest("volume_info_test") {
     "$ROOT_DIR/storage_daemon/volume/test/volume_info_test.cpp",
   ]
 
-  deps = [
-    "${storage_daemon_path}:storage_common_utils",
-    "//third_party/googletest:gmock_main",
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "${storage_daemon_path}:storage_common_utils" ]
 
   external_deps = [
     "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "init:libbegetutil",
     "ipc:ipc_single",
@@ -178,14 +172,12 @@ ohos_unittest("volume_manager_test") {
     "$ROOT_DIR/storage_manager/innerkits_impl/src/volume_core.cpp",
   ]
 
-  deps = [
-    "${storage_daemon_path}:storage_common_utils",
-    "//third_party/googletest:gmock_main",
-    "//third_party/googletest:gtest_main",
-  ]
+  deps = [ "${storage_daemon_path}:storage_common_utils" ]
 
   external_deps = [
     "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
     "hilog:libhilog",
     "init:libbegetutil",
     "ipc:ipc_single",
