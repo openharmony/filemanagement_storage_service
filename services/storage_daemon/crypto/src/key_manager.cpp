@@ -1646,10 +1646,22 @@ int KeyManager::InActiveUserKey(unsigned int user)
 
 int KeyManager::InactiveUserElKey(unsigned int user, KeyType type)
 {
+    std::shared_ptr<BaseKey> elKey;
     if (!HasElkey(user, type)) {
+        LOGE("Have not found user %{public}u type %{public}u", user, type);
+        std::string keyDir = GetKeyDirByUserAndType(user, type);
+        if (!IsDir(keyDir)) {
+            LOGE("have not found user %{public}u, type %{public}u", user, type);
+            return E_PARAMS_INVALID;
+        }
+        elKey = GetBaseKey(keyDir);
+    } else {
+        elKey = userElKeys_[user][type];
+    }
+    if (elKey == nullptr) {
+        LOGE("BaseKey memory failed");
         return E_PARAMS_INVALID;
     }
-    auto elKey = userElKeys_[user][type];
     if (elKey->InactiveKey(USER_LOGOUT) != E_OK) {
         LOGE("Clear user %{public}u key failed", user);
         return E_ELX_KEY_INACTIVE_ERROR;
