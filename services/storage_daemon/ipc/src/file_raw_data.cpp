@@ -20,7 +20,20 @@
 namespace OHOS {
 namespace StorageDaemon {
 
-FileRawData::FileRawData(uint32_t size, const void *data) : size(size), data(data) {}
+FileRawData::FileRawData(uint32_t rawDataSize, const void *rawData) : size(rawDataSize), data(nullptr)
+{
+    LOGI("FileRawData Start");
+    if (rawData != nullptr && rawDataSize > 0 && rawDataSize <= MAX_IPC_RAW_DATA_SIZE) {
+        LOGI("rawData is not empty, size = %u", rawDataSize);
+        void *buffer = malloc(rawDataSize);
+        if (buffer != nullptr) {
+            memcpy(buffer, rawData, rawDataSize);
+            this->data = buffer;
+        } else {
+            LOGE("malloc buffer failed in constructor");
+        }
+    }
+}
 
 int32_t FileRawData::RawDataCpy(const void *rawData)
 {
@@ -31,6 +44,10 @@ int32_t FileRawData::RawDataCpy(const void *rawData)
     if (size == 0 || size > MAX_IPC_RAW_DATA_SIZE) {
         LOGE("size invalid: %u", size);
         return E_ERR;
+    }
+    if (data != nullptr) {
+        free(const_cast<void*>(data));
+        data = nullptr;
     }
     void *buffer = nullptr;
     size_t dataSize = static_cast<size_t>(size);
@@ -50,6 +67,7 @@ int32_t FileRawData::RawDataCpy(const void *rawData)
 
 FileRawData::~FileRawData()
 {
+    LOGI("~FileRawData Start");
     if (data != nullptr) {
         free(const_cast<void*>(data));
         data = nullptr;
