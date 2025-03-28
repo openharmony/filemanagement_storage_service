@@ -20,7 +20,6 @@
 #include "crypto/key_manager.h"
 #endif
 #include "istorage_daemon.h"
-#include "ipc/enum_daemon.h"
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"

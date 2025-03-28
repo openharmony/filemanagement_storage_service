@@ -23,7 +23,6 @@
 #include "user/user_manager.h"
 #include "utils/file_utils.h"
 #include "crypto/key_manager.h"
-#include "ipc/enum_daemon.h"
 
 namespace OHOS {
 namespace StorageDaemon {

@@ -19,7 +19,6 @@
 
 #include "storage_daemon_client.h"
 #include "istorage_daemon.h"
-#include "ipc/enum_daemon.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "help_utils.h"
