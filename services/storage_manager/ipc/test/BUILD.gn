@@ -111,6 +111,7 @@ ohos_unittest("storage_manager_stub_test") {
     "${storage_manager_path}/innerkits_impl/src/volume_external.cpp",
     "${storage_manager_path}/ipc/src/storage_manager_stub.cpp",
     "${storage_manager_path}/ipc/test/storage_manager_stub_test.cpp",
+    "${storage_manager_path}/storage/src/bundle_manager_connector.cpp",
     "${storage_manager_path}/utils/src/storage_utils.cpp",
   ]
 
@@ -127,6 +128,8 @@ ohos_unittest("storage_manager_stub_test") {
     "access_token:libnativetoken",
     "access_token:libtoken_setproc",
     "app_file_service:fileshare_native",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "hilog:libhilog",
     "hitrace:hitrace_meter",
@@ -171,6 +174,7 @@ ohos_unittest("storage_manager_stub_nonpermission_test") {
     "${storage_manager_path}/innerkits_impl/src/volume_external.cpp",
     "${storage_manager_path}/ipc/src/storage_manager_stub.cpp",
     "${storage_manager_path}/ipc/test/storage_manager_stub_noper_test.cpp",
+    "${storage_manager_path}/storage/src/bundle_manager_connector.cpp",
     "${storage_manager_path}/utils/src/storage_utils.cpp",
   ]
 
@@ -185,6 +189,8 @@ ohos_unittest("storage_manager_stub_nonpermission_test") {
     "ability_base:zuri",
     "access_token:libaccesstoken_sdk",
     "app_file_service:fileshare_native",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "hilog:libhilog",
     "hitrace:hitrace_meter",
