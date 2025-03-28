@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,6 +16,7 @@
 #include "ipc/storage_manager_stub.h"
 #include "accesstoken_kit.h"
 #include "ipc_skeleton.h"
+#include "storage/bundle_manager_connector.h"
 #include "storage_manager_ipc_interface_code.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -28,6 +29,8 @@ constexpr pid_t ACCOUNT_UID = 3058;
 constexpr pid_t BACKUP_SA_UID = 1089;
 constexpr pid_t FOUNDATION_UID = 5523;
 constexpr pid_t DFS_UID = 1009;
+const std::string SCENEBOARD_BUNDLE_NAME = "com.ohos.sceneboard";
+const std::string SYSTEMUI_BUNDLE_NAME = "com.ohos.systemui";
 const std::string PERMISSION_STORAGE_MANAGER_CRYPT = "ohos.permission.STORAGE_MANAGER_CRYPT";
 const std::string PERMISSION_STORAGE_MANAGER = "ohos.permission.STORAGE_MANAGER";
 const std::string PERMISSION_MOUNT_MANAGER = "ohos.permission.MOUNT_UNMOUNT_MANAGER";
@@ -858,10 +861,29 @@ int32_t StorageManagerStub::HandleInactiveUserKey(MessageParcel &data, MessagePa
 
 int32_t StorageManagerStub::HandleLockUserScreen(MessageParcel &data, MessageParcel &reply)
 {
+    // Only for sceneboard
+    std::string bundleName;
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    uint32_t userId = data.ReadUint32();
+    auto bundleMgr = DelayedSingleton<BundleMgrConnector>::GetInstance()->GetBundleMgrProxy();
+    if (bundleMgr == nullptr) {
+        LOGE("Connect bundle manager sa proxy failed.");
+        return E_BUNDLEMGR_ERROR;
+    }
+    if (!bundleMgr->GetBundleNameForUid(uid, bundleName)) {
+        LOGE("Invoke bundleMgr interface to get bundle name failed.");
+        return E_BUNDLEMGR_ERROR;
+    }
+
+    if (bundleName != SCENEBOARD_BUNDLE_NAME && bundleName != SYSTEMUI_BUNDLE_NAME) {
+        LOGE("permissionCheck error, caller is %{public}s(%{public}d), should be %{public}s",
+            bundleName.c_str(), uid, SCENEBOARD_BUNDLE_NAME.c_str());
+        return E_PERMISSION_DENIED;
+    }
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-    uint32_t userId = data.ReadUint32();
+
     int32_t err = LockUserScreen(userId);
     if (!reply.WriteInt32(err)) {
         LOGE("Write reply error code failed");
