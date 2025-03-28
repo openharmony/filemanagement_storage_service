@@ -1662,7 +1662,6 @@ int KeyManager::InactiveUserElKey(unsigned int user, KeyType type)
         LOGE("BaseKey memory failed");
         return E_PARAMS_INVALID;
     }
-    auto elKey = userElKeys_[user][type];
     if (elKey->InactiveKey(USER_LOGOUT) != E_OK) {
         LOGE("Clear user %{public}u key failed", user);
         return E_ELX_KEY_INACTIVE_ERROR;
