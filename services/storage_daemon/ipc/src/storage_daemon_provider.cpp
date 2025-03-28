@@ -581,7 +581,9 @@ int32_t StorageDaemonProvider::CreateShareFile(const FileRawData &fileRawData,
     if (ret != E_OK) {
         return ret;
     }
-    return AppFileService::FileShare::CreateShareFile(uriList, tokenId, flag, funcResult);
+    funcResult.clear();
+    AppFileService::FileShare::CreateShareFile(uriList, tokenId, flag, funcResult);
+    return E_OK;
 }
 
 int32_t StorageDaemonProvider::DeleteShareFile(uint32_t tokenId, const FileRawData &fileRawData)
