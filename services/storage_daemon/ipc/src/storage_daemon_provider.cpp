@@ -293,6 +293,7 @@ int32_t StorageDaemonProvider::QueryUsbIsInUse(const std::string &diskPath, bool
 
 int32_t StorageDaemonProvider::StartUser(int32_t userId)
 {
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
     (void)StorageDaemon::GetInstance()->SetPriority();  // set tid priority to 40
@@ -311,6 +312,8 @@ int32_t StorageDaemonProvider::StartUser(int32_t userId)
     } else {
         it->second.userStartSuccCount++;
     }
+    LOGI("SD_DURATION: HANDLE START USER: delay time = %{public}s",
+        StorageService::StorageRadar::RecordDuration(startTime).c_str());
     return ret;
 }
 
@@ -383,7 +386,6 @@ int32_t StorageDaemonProvider::InitGlobalKey()
 
 int32_t StorageDaemonProvider::InitGlobalUserKeys()
 {
-    std::shared_ptr<StorageDaemon> storageDaemon_ = std::shared_ptr<StorageDaemon>();
     LOGI("StorageDaemonProvider_InitGlobalUserKeys start.");
     std::lock_guard<std::mutex> lock(mutex_);
     auto it = GetUserStatistics(USER100ID);
@@ -399,10 +401,6 @@ int32_t StorageDaemonProvider::InitGlobalUserKeys()
 
 int32_t StorageDaemonProvider::GenerateUserKeys(uint32_t userId, uint32_t flags)
 {
-    std::shared_ptr<StorageDaemon> storageDaemon_ = std::shared_ptr<StorageDaemon>();
-    if (!storageDaemon_) {
-        return E_ERR;
-    }
     int timerId = StorageXCollie::SetTimer("storage:GenerateUserKeys", LOCAL_TIME_OUT_SECONDS);
     int err = StorageDaemon::GetInstance()->GenerateUserKeys(userId, flags);
     StorageXCollie::CancelTimer(timerId);
@@ -444,6 +442,7 @@ int32_t StorageDaemonProvider::ActiveUserKey(uint32_t userId,
                                              const std::vector<uint8_t> &token,
                                              const std::vector<uint8_t> &secret)
 {
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int timerId = StorageXCollie::SetTimer("storage:ActiveUserKey", LOCAL_TIME_OUT_SECONDS);
     std::lock_guard<std::mutex> lock(mutex_);
     auto it = GetUserStatistics(userId);
@@ -455,6 +454,8 @@ int32_t StorageDaemonProvider::ActiveUserKey(uint32_t userId,
     } else {
         it->second.keyLoadFailCount++;
     }
+    LOGI("SD_DURATION: READ KEY FILE: delay time = %{public}s",
+        StorageService::StorageRadar::RecordDuration(startTime).c_str());
     return err;
 }
 
