@@ -1556,6 +1556,7 @@ int KeyManager::UnlockUserAppKeys(uint32_t userId, bool needGetAllAppKey)
     int ret = E_OK;
     std::vector<std::pair<int, std::string>> keyInfo;
     std::vector<std::pair<std::string, bool>> loadInfos;
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     if (needGetAllAppKey) {
         ret = El5FilekeyManagerKit::GetUserAllAppKey(userId, keyInfo);
         if (ret != 0) {
@@ -1573,7 +1574,12 @@ int KeyManager::UnlockUserAppKeys(uint32_t userId, bool needGetAllAppKey)
         }
         LOGI("get User Appkeys success.");
     }
+    LOGI("SD_DURATION: GET USER APP KEYS: delay time = %{public}s",
+        StorageService::StorageRadar::RecordDuration(startTime).c_str());
+    startTime = StorageService::StorageRadar::RecordCurrentTime();
     ret = GenerateAndLoadAppKeyInfo(userId, keyInfo);
+    LOGI("SD_DURATION: GEN&LOAD APP KEY INFO: delay time = %{public}s",
+        StorageService::StorageRadar::RecordDuration(startTime).c_str());
     if (ret != E_OK) {
         LOGE("UnlockUserAppKeys fail.");
         return ret;
@@ -1597,11 +1603,14 @@ int KeyManager::GenerateAndLoadAppKeyInfo(uint32_t userId, const std::vector<std
     auto elKey = userElKeys_[userId][EL5_KEY];
     std::string keyId;
     for (auto keyInfoAppUid :keyInfo) {
+        auto startTime = StorageService::StorageRadar::RecordCurrentTime();
         if (elKey->GenerateAppkey(userId, keyInfoAppUid.first, keyId) != E_OK) {
             LOGE("Failed to Generate Appkey2!");
             loadInfos.push_back(std::make_pair(keyInfoAppUid.second, false));
             continue;
         }
+        LOGI("SD_DURATION: GENERATE APPKEY2: delay time = %{public}s",
+            StorageService::StorageRadar::RecordDuration(startTime).c_str());
         if (keyInfoAppUid.second != keyId) {
             LOGE("The keyId check fails!");
             loadInfos.push_back(std::make_pair(keyInfoAppUid.second, false));
@@ -1609,12 +1618,15 @@ int KeyManager::GenerateAndLoadAppKeyInfo(uint32_t userId, const std::vector<std
         }
         loadInfos.push_back(std::make_pair(keyInfoAppUid.second, true));
     }
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int ret = El5FilekeyManagerKit::ChangeUserAppkeysLoadInfo(userId, loadInfos);
     if (ret != 0) {
         LOGE("Change User Appkeys LoadInfo fail.");
         StorageRadar::ReportEl5KeyMgrResult("GenerateAndLoadAppKeyInfo::ChangeUserAppkeysLoadInfo", ret, userId);
         return ret;
     }
+    LOGI("SD_DURATION: EL5 FILEKEY MANAGER: delay time = %{public}s",
+        StorageService::StorageRadar::RecordDuration(startTime).c_str());
     return E_OK;
 }
 #endif
@@ -1646,10 +1658,22 @@ int KeyManager::InActiveUserKey(unsigned int user)
 
 int KeyManager::InactiveUserElKey(unsigned int user, KeyType type)
 {
+    std::shared_ptr<BaseKey> elKey;
     if (!HasElkey(user, type)) {
+        LOGE("Have not found user %{public}u type %{public}u", user, type);
+        std::string keyDir = GetKeyDirByUserAndType(user, type);
+        if (!IsDir(keyDir)) {
+            LOGE("have not found user %{public}u, type %{public}u", user, type);
+            return E_PARAMS_INVALID;
+        }
+        elKey = GetBaseKey(keyDir);
+    } else {
+        elKey = userElKeys_[user][type];
+    }
+    if (elKey == nullptr) {
+        LOGE("BaseKey memory failed");
         return E_PARAMS_INVALID;
     }
-    auto elKey = userElKeys_[user][type];
     if (elKey->InactiveKey(USER_LOGOUT) != E_OK) {
         LOGE("Clear user %{public}u key failed", user);
         return E_ELX_KEY_INACTIVE_ERROR;

@@ -729,6 +729,7 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepareElX(uint32_t userId,
                                                   const std::vector<uint8_t> &secret)
 {
 #ifdef USER_CRYPTO_MANAGER
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int ret = ActiveUserKeyAndPrepare(userId, EL3_KEY, token, secret);
     if (ret != E_OK) {
         LOGE("ActiveUserKeyAndPrepare failed, userId %{public}u, type %{public}u", userId, EL3_KEY);
@@ -738,6 +739,10 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepareElX(uint32_t userId,
         HiAudit::GetInstance().Write(storageAuditLog);
         return ret;
     }
+    LOGI("SD_DURATION: ACTIVE EL3: delay time = %{public}s",
+        StorageService::StorageRadar::RecordDuration(startTime).c_str());
+
+    startTime = StorageService::StorageRadar::RecordCurrentTime();
     ret = ActiveUserKeyAndPrepare(userId, EL4_KEY, token, secret);
     if (ret != E_OK) {
         LOGE("ActiveUserKeyAndPrepare failed, userId %{public}u, type %{public}u", userId, EL4_KEY);
@@ -747,6 +752,10 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepareElX(uint32_t userId,
         HiAudit::GetInstance().Write(storageAuditLog);
         return ret;
     }
+    LOGI("SD_DURATION: ACTIVE EL4: delay time = %{public}s",
+        StorageService::StorageRadar::RecordDuration(startTime).c_str());
+
+    startTime = StorageService::StorageRadar::RecordCurrentTime();
     ret = ActiveUserKeyAndPrepare(userId, EL5_KEY, token, secret);
     if (ret != E_OK) {
         LOGE("ActiveUserKeyAndPrepare failed, userId %{public}u, type %{public}u", userId, EL5_KEY);
@@ -756,6 +765,8 @@ int32_t StorageDaemon::ActiveUserKeyAndPrepareElX(uint32_t userId,
         HiAudit::GetInstance().Write(storageAuditLog);
         return ret;
     }
+    LOGI("SD_DURATION: ACTIVE EL5: delay time = %{public}s",
+        StorageService::StorageRadar::RecordDuration(startTime).c_str());
 #endif
     return E_OK;
 }
@@ -798,6 +809,7 @@ int32_t StorageDaemon::ActiveUserKey4Single(uint32_t userId, const std::vector<u
     int ret = E_OK;
 #ifdef USER_CRYPTO_MANAGER
     LOGW("Active user key for single secen for userId=%{public}d.", userId);
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL2_KEY, token, secret);
     if (ret != E_OK) {
         LOGE("ActiveUserKey failed, userId=%{public}u, type=%{public}u, tok empty %{public}d sec empty %{public}d",
@@ -807,7 +819,8 @@ int32_t StorageDaemon::ActiveUserKey4Single(uint32_t userId, const std::vector<u
         }
         return E_ACTIVE_EL2_FAILED;
     }
-    LOGI("Active ce sce sece user key for userId=%{public}d el2 success.", userId);
+    LOGI("SD_DURATION: Active ce sce sece user key for userId=%{public}d el2 success. delay time = %{public}s",
+        userId, StorageService::StorageRadar::RecordDuration(startTime).c_str());
 
     ret = ActiveUserKeyAndPrepareElX(userId, token, secret);
     if (ret != E_OK) {
@@ -816,13 +829,15 @@ int32_t StorageDaemon::ActiveUserKey4Single(uint32_t userId, const std::vector<u
     }
     LOGI("Active user key and prepare el3~el5 for single secen for userId=%{public}d success.", userId);
 
+    startTime = StorageService::StorageRadar::RecordCurrentTime();
     ret = KeyManager::GetInstance()->UnlockUserAppKeys(userId, true);
     if (ret != E_OK) {
         LOGE("UnlockUserAppKeys failed, userId %{public}u.", userId);
         StorageRadar::ReportActiveUserKey("ActiveUserKey4Single::UnlockUserAppKeys", userId, ret, "EL5");
         return E_UNLOCK_APP_KEY2_FAILED;
     }
-    LOGW("Active user key for single secen for userId=%{public}d success.", userId);
+    LOGW("SD_DURATION: Active user key for single secen for userId=%{public}d success. delay time = %{public}s",
+        userId, StorageService::StorageRadar::RecordDuration(startTime).c_str());
 #endif
     return ret;
 }

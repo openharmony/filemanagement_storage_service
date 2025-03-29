@@ -180,8 +180,8 @@ HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_ActiveKeyExt_001, TestSize.Level1)
     elType = 0;
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, InstallKeyToKernel(_, _, _, _, _)).WillOnce(Return(1));
-    EXPECT_EQ(ext.ActiveKeyExt(1, &iv, size, elType), 0);
-    EXPECT_EQ(elType, TYPE_EL2);
+    EXPECT_EQ(ext.ActiveKeyExt(1, &iv, size, elType), 1);
+    EXPECT_EQ(elType, TYPE_EL1);
     
     elType = 0;
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
@@ -400,7 +400,7 @@ HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_InactiveKeyExt_001, TestSize.Level
     EXPECT_CALL(*fbexMock_, UninstallOrLockUserKeyToKernel(_, _, _, _, _)).WillOnce(Return(1));
     EXPECT_EQ(ext.InactiveKeyExt(flag), 1);
     
-    ext.type_ = TYPE_EL5;
+    ext.type_ = TYPE_EL1;
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_EQ(ext.InactiveKeyExt(0), 0);
 

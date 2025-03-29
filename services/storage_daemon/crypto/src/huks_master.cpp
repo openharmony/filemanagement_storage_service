@@ -681,12 +681,15 @@ int HuksMaster::HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *pa
     uint8_t t[CRYPTO_TOKEN_SIZE] = {0};
     HksBlob hksToken = { sizeof(t), t };  // would not use the challenge here
 
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int ret = HdiAccessInit(hksKey, paramSet2, hksHandle, hksToken);
     if (ret != HKS_SUCCESS) {
         LOGE("HdiAccessInit failed ret %{public}d", ret);
         return ret;
     }
-
+    LOGI("SD_DURATION: HUKS: INIT: delay time = %{public}s",
+        StorageService::StorageRadar::RecordDuration(startTime).c_str());
+    startTime = StorageService::StorageRadar::RecordCurrentTime();
     ret = HdiAccessFinish(hksHandle, paramSet2, hksIn, hksOut);
     if (ret != HKS_SUCCESS) {
         if (ret == HKS_ERROR_KEY_AUTH_TIME_OUT) {
@@ -696,6 +699,8 @@ int HuksMaster::HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *pa
         LOGE("HdiAccessFinish failed ret %{public}d", ret);
         return ret;
     }
+    LOGI("SD_DURATION: HUKS: FINISH: delay time = %{public}s",
+        StorageService::StorageRadar::RecordDuration(startTime).c_str());
 
     keyOut.size = hksOut.size;
     LOGI("finish");

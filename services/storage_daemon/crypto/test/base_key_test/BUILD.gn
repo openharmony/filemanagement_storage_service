@@ -49,6 +49,7 @@ ohos_unittest("BaseKeyTest") {
     "${storage_daemon_path}/crypto/test/mock/huks_master_mock.cpp",
     "${storage_daemon_path}/crypto/test/mock/openssl_crypto_mock.cpp",
     "${storage_daemon_path}/utils/file_utils.cpp",
+    "${storage_daemon_path}/utils/storage_radar.cpp",
     "${storage_daemon_path}/utils/string_utils.cpp",
     "base_key_test.cpp",
   ]
@@ -60,6 +61,7 @@ ohos_unittest("BaseKeyTest") {
     "googletest:gmock_main",
     "googletest:gtest_main",
     "hilog:libhilog",
+    "hisysevent:libhisysevent",
     "huks:libhukssdk",
   ]
 

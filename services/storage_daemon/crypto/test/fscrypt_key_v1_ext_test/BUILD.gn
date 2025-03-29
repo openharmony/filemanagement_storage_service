@@ -41,6 +41,7 @@ ohos_unittest("FscryptKeyV1ExtTest") {
   sources = [
     "${storage_daemon_path}/crypto/src/fscrypt_key_v1_ext.cpp",
     "${storage_daemon_path}/mock/fbex_mock.cpp",
+    "${storage_daemon_path}/utils/storage_radar.cpp",
     "fscrypt_key_v1_ext_test.cpp",
   ]
 
@@ -52,6 +53,7 @@ ohos_unittest("FscryptKeyV1ExtTest") {
     "googletest:gmock_main",
     "googletest:gtest_main",
     "hilog:libhilog",
+    "hisysevent:libhisysevent",
     "huks:libhukssdk",
     "init:libbegetutil",
   ]
