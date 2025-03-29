@@ -735,6 +735,8 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_storekey_version_test_1, TestSize.Level1)
  */
 HWTEST_F(CryptoKeyTest, fscrypt_key_storekey_version_test_2, TestSize.Level1)
 {
+    g_testKeyV1->ClearKey();
+    EXPECT_TRUE(g_testKeyV1->InitKey(true));
 #ifndef CRYPTO_TEST
     g_testKeyV1->RestoreKey(emptyUserAuth);
 
@@ -751,6 +753,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_storekey_version_test_2, TestSize.Level1)
     OHOS::LoadStringFromFile(TEST_KEYPATH + TEST_KEYDIR_VERSION1 + PATH_SHIELD, keyShieldV1);
 
     // restorekey will decrypt from versions and rename first success one to latest
+    g_testKeyV1->keyInfo_.version = FSCRYPT_V2;
     g_testKeyV1->RestoreKey(emptyUserAuth);
     OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_LATEST + PATH_SHIELD);
     EXPECT_FALSE(OHOS::FileExists(TEST_KEYPATH + TEST_KEYDIR_LATEST_BACKUP + PATH_SHIELD));
