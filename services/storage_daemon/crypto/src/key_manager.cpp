@@ -1618,7 +1618,7 @@ int KeyManager::GenerateAndLoadAppKeyInfo(uint32_t userId, const std::vector<std
         }
         loadInfos.push_back(std::make_pair(keyInfoAppUid.second, true));
     }
-    startTime = StorageService::StorageRadar::RecordCurrentTime();
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int ret = El5FilekeyManagerKit::ChangeUserAppkeysLoadInfo(userId, loadInfos);
     if (ret != 0) {
         LOGE("Change User Appkeys LoadInfo fail.");
