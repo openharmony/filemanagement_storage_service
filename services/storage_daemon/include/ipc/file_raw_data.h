@@ -28,7 +28,8 @@ class FileRawData {
 public:
     uint32_t size;
     const void *data;
-    FileRawData() : size(0), data(nullptr) {};
+    bool mallocFlag; // true: malloc, false: not malloc
+    FileRawData() : size(0), data(nullptr), mallocFlag(false) {};
     FileRawData(uint32_t size, const void *data);
     int32_t RawDataCpy(const void *rawData);
     ~FileRawData();

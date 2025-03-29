@@ -20,7 +20,10 @@
 namespace OHOS {
 namespace StorageDaemon {
 
-FileRawData::FileRawData(uint32_t rawDataSize, const void *rawData) : size(rawDataSize), data(rawData) {}
+FileRawData::FileRawData(uint32_t rawDataSize, const void *rawData) : size(rawDataSize), data(rawData)
+{
+    mallocFlag = false;
+}
 
 int32_t FileRawData::RawDataCpy(const void *rawData)
 {
@@ -35,6 +38,7 @@ int32_t FileRawData::RawDataCpy(const void *rawData)
     if (data != nullptr) {
         free(const_cast<void*>(data));
         data = nullptr;
+        mallocFlag = false;
     }
     void *buffer = nullptr;
     size_t dataSize = static_cast<size_t>(size);
@@ -50,12 +54,13 @@ int32_t FileRawData::RawDataCpy(const void *rawData)
         return E_ERR;
     }
     data = buffer;
+    mallocFlag = true;
     return E_OK;
 }
 
 FileRawData::~FileRawData()
 {
-    if (data != nullptr) {
+    if (data != nullptr && mallocFlag) {
         free(const_cast<void*>(data));
         data = nullptr;
     }
