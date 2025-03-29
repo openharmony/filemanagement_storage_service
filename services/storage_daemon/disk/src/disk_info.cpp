@@ -22,6 +22,7 @@
 #include "storage_service_log.h"
 #include "utils/disk_utils.h"
 #include "utils/file_utils.h"
+#include "utils/storage_radar.h"
 #include "utils/string_utils.h"
 #include "volume/volume_manager.h"
 
@@ -252,9 +253,12 @@ int32_t DiskInfo::CreateUnknownTabVol()
     std::string fsType;
     std::string uuid;
     std::string label;
-    if (OHOS::StorageDaemon::ReadMetadata(devPath_, fsType, uuid, label) == E_OK) {
+    auto ret = OHOS::StorageDaemon::ReadMetadata(devPath_, fsType, uuid, label);
+    if (ret == E_OK) {
         CreateVolume(device_);
     } else {
+        StorageService::StorageRadar::ReportUserManager("DiskInfo::CreateUnknownTabVol::ReadMetadata", 0,
+                                                        ret, "devPath_=" + devPath_);
         LOGE("failed to identify the disk device");
         return E_NON_EXIST;
     }

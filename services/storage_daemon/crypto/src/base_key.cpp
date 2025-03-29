@@ -28,6 +28,7 @@
 #include "storage_service_log.h"
 #include "string_ex.h"
 #include "utils/file_utils.h"
+#include "utils/storage_radar.h"
 #include "utils/string_utils.h"
 
 namespace {
@@ -215,6 +216,7 @@ int32_t BaseKey::StoreKey(const UserAuth &auth)
         LOGE("rename fail return %{public}d, cleanup the temp dir", errno);
         ret = errno;
     } else {
+        StorageService::StorageRadar::ReportUserKeyResult("StoreKey", 0, ret, "", "dir_=" + dir_);
         LOGE("DoStoreKey fail, cleanup the temp dir");
     }
     OHOS::ForceRemoveDirectory(pathTemp);
@@ -279,6 +281,7 @@ bool BaseKey::CheckAndUpdateVersion()
             return false;
         }
     } else if (SaveStringToFileSync(pathVersion, std::to_string(keyInfo_.version)) == false) {
+        StorageService::StorageRadar::ReportUserKeyResult("CheckAndUpdateVersion", 0, 0, "", "dir_=" + dir_);
         LOGE("save version failed, errno:%{public}d", errno);
         return false;
     }
@@ -1198,6 +1201,7 @@ std::string BaseKey::GetKeyDir()
         case TYPE_EL5:
             return "el5";
         default:
+            StorageService::StorageRadar::ReportUserKeyResult("GetKeyDir", 0, 0, "", "dir_=" + dir_);
             LOGE("type is error");
             return "";
     }

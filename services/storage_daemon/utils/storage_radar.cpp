@@ -167,6 +167,21 @@ void StorageRadar::ReportHuksResult(const std::string &funcName, int ret)
     StorageRadar::GetInstance().RecordFuctionResult(param);
 }
 
+void StorageRadar::ReportMtpfsResult(const std::string &funcName, int ret, const std::string &extraData)
+{
+    RadarParameter param = {
+        .orgPkg = DEFAULT_ORGPKGNAME,
+        .userId = DEFAULT_USERID,
+        .funcName = "MtpFsDevice::" + funcName,
+        .bizScene = BizScene::STORAGE_MTPFS,
+        .bizStage = BizStage::BIZ_STAGE_MTPFS_MTP_DEVICE,
+        .keyElxLevel = "NA",
+        .errorCode = ret,
+        .extraData = extraData
+    };
+    StorageRadar::GetInstance().RecordFuctionResult(param);
+}
+
 void StorageRadar::ReportKeyRingResult(const std::string &funcName, int ret, const std::string &extraData)
 {
     RadarParameter param = {

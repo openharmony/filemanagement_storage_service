@@ -55,6 +55,8 @@ ohos_unittest("mtp_device_manager_test") {
     "$ROOT_DIR/storage_daemon/utils/file_utils.cpp",
   ]
 
+  deps = [ "${storage_daemon_path}:storage_common_utils" ]
+
   external_deps = [
     "c_utils:utils",
     "googletest:gtest_main",
@@ -103,6 +105,8 @@ ohos_unittest("mtp_device_monitor_test") {
     "$ROOT_DIR/storage_daemon/utils/disk_utils.cpp",
     "$ROOT_DIR/storage_daemon/utils/file_utils.cpp",
   ]
+
+  deps = [ "${storage_daemon_path}:storage_common_utils" ]
 
   external_deps = [
     "ability_base:want",
