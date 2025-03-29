@@ -205,8 +205,8 @@ ohos_unittest("KeyManagerOtherTest") {
   ]
 
   deps = [
+    "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_header",
-    "${storage_daemon_path}:storage_common_utils" 
   ]
 
   external_deps = [

@@ -28,7 +28,7 @@ class FileRawData {
 public:
     uint32_t size;
     const void *data;
-    FileRawData() = default;
+    FileRawData() : size(0), data(nullptr) {};
     FileRawData(uint32_t size, const void *data);
     int32_t RawDataCpy(const void *rawData);
     ~FileRawData();

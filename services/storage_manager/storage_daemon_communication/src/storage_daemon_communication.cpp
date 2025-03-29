@@ -516,7 +516,7 @@ void SdDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
 std::vector<int32_t> StorageDaemonCommunication::CreateShareFile(const std::vector<std::string> &uriList,
                                                                  uint32_t tokenId, uint32_t flag)
 {
-    LOGI("StorageDaemonCommunication::enter");
+    LOGI("enter");
     int32_t err = Connect();
     if (err != E_OK) {
         LOGE("Connect failed");
@@ -526,7 +526,6 @@ std::vector<int32_t> StorageDaemonCommunication::CreateShareFile(const std::vect
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return std::vector<int32_t>{err};
     }
-    LOGI("StorageDaemonCommunication::MessageParcel");
     MessageParcel tempParcel;
     tempParcel.SetMaxCapacity(MAX_IPC_RAW_DATA_SIZE);
     if (!tempParcel.WriteStringVector(uriList)) {
@@ -534,9 +533,7 @@ std::vector<int32_t> StorageDaemonCommunication::CreateShareFile(const std::vect
         return std::vector<int32_t>{E_WRITE_PARCEL_ERR};
     }
     uint32_t dataSize = static_cast<uint32_t>(tempParcel.GetDataSize());
-    LOGI("StorageDaemonCommunication::tempParcel.GetDataSize() = %{public}u.***********", dataSize);
     StorageDaemon::FileRawData fileRawData(dataSize, reinterpret_cast<const void*>(tempParcel.GetData()));
-    LOGI("StorageDaemonCommunication::fileRawData.size() = %{public}u.", fileRawData.size);
     std::vector<int32_t> funcResult;
     storageDaemon_->CreateShareFile(fileRawData, tokenId, flag, funcResult);
     return funcResult;

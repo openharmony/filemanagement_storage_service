@@ -64,7 +64,6 @@ int32_t GetFilesPath(const FileRawData &fileRawData, std::vector<std::string> &u
         LOGE("fileRawData invalid");
         return E_ERR;
     }
-    LOGI("fileRawData.size = %{public}u.", fileRawData.size);
     MessageParcel tempParcel;
     size_t dataSize = static_cast<size_t>(fileRawData.size);
     if (!tempParcel.ParseFrom(reinterpret_cast<uintptr_t>(fileRawData.data), dataSize)) {
@@ -72,7 +71,6 @@ int32_t GetFilesPath(const FileRawData &fileRawData, std::vector<std::string> &u
         return E_ERR;
     }
     tempParcel.ReadStringVector(&uriVec);
-    LOGI("GetFilesPath::furiVec.size = %{public}u.", uriVec.size());
     return E_OK;
 }
 
@@ -579,10 +577,8 @@ int32_t StorageDaemonProvider::CreateShareFile(const FileRawData &fileRawData,
                                                uint32_t flag,
                                                std::vector<int32_t> &funcResult)
 {
-    LOGI("StorageDaemonProvider::CreateShareFile Start");
     std::vector<std::string> uriList;
     auto ret = GetFilesPath(fileRawData, uriList);
-    LOGI("StorageDaemonProvider::CreateShareFile uriList = %{public}u.",uriList.size());
     if (ret != E_OK) {
         return ret;
     }
