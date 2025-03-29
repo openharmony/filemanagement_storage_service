@@ -29,6 +29,7 @@
 #include "string_ex.h"
 #include "utils/file_utils.h"
 #include "utils/string_utils.h"
+#include "utils/storage_radar.h"
 
 namespace {
 constexpr const char *PATH_LATEST_BACKUP = "/latest_bak";
@@ -631,6 +632,7 @@ int32_t BaseKey::DoRestoreKeyDe(const UserAuth &auth, const std::string &path)
 int32_t BaseKey::DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &path, const uint32_t keyType)
 {
     LOGI("enter");
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     if ((auth.secret.IsEmpty() && auth.token.IsEmpty()) ||
         (!auth.secret.IsEmpty() && !auth.token.IsEmpty())) {
         KeyContext ctxNone;
@@ -652,6 +654,8 @@ int32_t BaseKey::DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &
             LOGE("Load shield failed !");
             return E_SHIELD_OPERATION_ERROR;
         }
+        LOGI("SD_DURATION: READ KEY FILE: delay time = %{public}s",
+            StorageService::StorageRadar::RecordDuration(startTime).c_str());
         return DecryptReal(auth, keyType, ctxNone);
     }
 
@@ -797,6 +801,7 @@ int32_t BaseKey::DecryptReal(const UserAuth &auth, const uint32_t keyType, KeyCo
         return ret;
     }
 
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     keyCtx.rndEnc = std::move(rndEnc);
     if (keyType == TYPE_EL3 || keyType == TYPE_EL4) {
         DoTempStore(keyCtx, keyContext_);
@@ -806,6 +811,8 @@ int32_t BaseKey::DecryptReal(const UserAuth &auth, const uint32_t keyType, KeyCo
         LOGE("Decrypt by hks failed.");
         return ret;
     }
+    LOGI("SD_DURATION: HUKS: DECRYPT KEY EX: delay time = %{public}s",
+        StorageService::StorageRadar::RecordDuration(startTime).c_str());
 
     rndEnc.Clear();
     LOGI("finish");
@@ -934,11 +941,13 @@ void BaseKey::SyncKeyDir() const
         return;
     }
     LOGW("start fsync, dir_ is %{public}s", dir_.c_str());
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     if (fsync(fd) != 0) {
         LOGE("fsync %{public}s failed, errno %{public}d", dir_.c_str(), errno);
         syncfs(fd);
     }
-    LOGW("fsync end");
+    LOGW("fsync end. SD_DURATION: FSYNC: delay time = %{public}s",
+        StorageService::StorageRadar::RecordDuration(startTime).c_str());
     (void)closedir(dir);
 }
 

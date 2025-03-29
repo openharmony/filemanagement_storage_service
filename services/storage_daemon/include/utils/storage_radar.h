@@ -134,6 +134,8 @@ public:
     static void ReportBundleMgrResult(const std::string &funcName, int32_t ret, unsigned int userId,
         const std::string &extraData);
     static void ReportStatistics(uint32_t userId, StorageDaemon::RadarStatisticInfo radarInfo);
+    static std::string RecordDuration(int64_t startTime);
+    static int64_t RecordCurrentTime();
 
 private:
     StorageRadar() = default;
