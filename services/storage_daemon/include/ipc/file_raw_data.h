@@ -22,17 +22,31 @@
 namespace OHOS {
 namespace StorageDaemon {
 
+/**
+ * @brief Maximum size for IPC capacity.
+ */
 constexpr uint32_t MAX_IPC_RAW_DATA_SIZE = 128 * 1024 * 1024; // 128MB
 
+/**
+ * @class FileRawData
+ * @brief Represents raw data used in IPC communication.
+ */
 class FileRawData {
 public:
-    uint32_t size;
-    const void *data;
-    bool mallocFlag; // true: malloc, false: not malloc
-    FileRawData() : size(0), data(nullptr), mallocFlag(false) {};
-    FileRawData(uint32_t size, const void *data);
-    int32_t RawDataCpy(const void *rawData);
+    FileRawData() : size(0), data(nullptr) {};
     ~FileRawData();
+
+    /**
+     * @brief Copies raw data into the internal data. Fixed method used by the IDL tool
+     * 
+     * @param rawData Pointer to the raw data to be copied.
+     * @return int32_t Returns 0 on success, or an error code on failure.
+     */
+    int32_t RawDataCpy(const void *rawData);
+
+public:
+    const void *data; // Fixed variable used by the IDL tool
+    uint32_t size; // Fixed variable used by the IDL tool
 };
 } // namespace StorageDaemon
 } // namespace OHOS

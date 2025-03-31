@@ -20,11 +20,6 @@
 namespace OHOS {
 namespace StorageDaemon {
 
-FileRawData::FileRawData(uint32_t rawDataSize, const void *rawData) : size(rawDataSize), data(rawData)
-{
-    mallocFlag = false;
-}
-
 int32_t FileRawData::RawDataCpy(const void *rawData)
 {
     if (rawData == nullptr) {
@@ -60,7 +55,7 @@ int32_t FileRawData::RawDataCpy(const void *rawData)
 
 FileRawData::~FileRawData()
 {
-    if (data != nullptr && mallocFlag) {
+    if (data != nullptr) {
         free(const_cast<void*>(data));
         data = nullptr;
     }
