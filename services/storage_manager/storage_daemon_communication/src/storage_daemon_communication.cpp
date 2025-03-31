@@ -26,12 +26,9 @@
 #include "storage_service_log.h"
 #include "utils/storage_radar.h"
 #include "message_parcel.h"
-#include "file_raw_data.h"
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageManager {
-
-constexpr size_t MAX_IPC_RAW_DATA_SIZE = 128 * 1024 * 1024; // 128MB
 
 StorageDaemonCommunication::StorageDaemonCommunication()
 {
@@ -526,22 +523,8 @@ std::vector<int32_t> StorageDaemonCommunication::CreateShareFile(const std::vect
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return std::vector<int32_t>{err};
     }
-    MessageParcel tempParcel;
-    tempParcel.SetMaxCapacity(MAX_IPC_RAW_DATA_SIZE);
-    if (!tempParcel.WriteStringVector(uriList)) {
-        LOGE("Write uris failed");
-        return std::vector<int32_t>{E_WRITE_PARCEL_ERR};
-    }
-    uint32_t dataSize = static_cast<uint32_t>(tempParcel.GetDataSize());
-    FileRawData fileRawData;
-    fileRawData.size = dataSize;
-    int32_t ret = fileRawData.RawDataCpy(reinterpret_cast<const void*>(tempParcel.GetData()));
-    if (ret != E_OK) {
-        LOGE("Copy data failed");
-        return std::vector<int32_t>{E_WRITE_PARCEL_ERR};
-    }
     std::vector<int32_t> funcResult;
-    storageDaemon_->CreateShareFile(fileRawData, tokenId, flag, funcResult);
+    storageDaemon_->CreateShareFile(uriList, tokenId, flag, funcResult);
     return funcResult;
 }
 
@@ -557,21 +540,7 @@ int32_t StorageDaemonCommunication::DeleteShareFile(uint32_t tokenId, const std:
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    MessageParcel tempParcel;
-    tempParcel.SetMaxCapacity(MAX_IPC_RAW_DATA_SIZE);
-    if (!tempParcel.WriteStringVector(uriList)) {
-        LOGE("Write uris failed");
-        return E_WRITE_PARCEL_ERR;
-    }
-    uint32_t dataSize = static_cast<uint32_t>(tempParcel.GetDataSize());
-    FileRawData fileRawData;
-    fileRawData.size = dataSize;
-    int32_t ret = fileRawData.RawDataCpy(reinterpret_cast<const void*>(tempParcel.GetData()));
-    if (ret != E_OK) {
-        LOGE("Copy data failed");
-        return E_WRITE_PARCEL_ERR;
-    }
-    return storageDaemon_->DeleteShareFile(tokenId, fileRawData);
+    return storageDaemon_->DeleteShareFile(tokenId, uriList);
 }
 
 int32_t StorageDaemonCommunication::SetBundleQuota(const std::string &bundleName, int32_t uid,

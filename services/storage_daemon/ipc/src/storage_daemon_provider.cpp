@@ -57,23 +57,6 @@ constexpr unsigned int USER0ID = 0;
 constexpr unsigned int USER100ID = 100;
 constexpr unsigned int RADAR_STATISTIC_THREAD_WAIT_SECONDS = 60;
 
-int32_t GetFilesPath(const FileRawData &fileRawData, std::vector<std::string> &uriVec)
-{
-    LOGI("GetFilesPath start");
-    if (fileRawData.size == 0 || fileRawData.data == nullptr) {
-        LOGE("fileRawData invalid");
-        return E_ERR;
-    }
-    MessageParcel tempParcel;
-    size_t dataSize = static_cast<size_t>(fileRawData.size);
-    if (!tempParcel.ParseFrom(reinterpret_cast<uintptr_t>(fileRawData.data), dataSize)) {
-        LOGE("failed to parseFrom");
-        return E_ERR;
-    }
-    tempParcel.ReadStringVector(&uriVec);
-    return E_OK;
-}
-
 std::map<uint32_t, RadarStatisticInfo>::iterator StorageDaemonProvider::GetUserStatistics(const uint32_t userId)
 {
     auto it = opStatistics_.find(userId);
@@ -573,28 +556,18 @@ int32_t StorageDaemonProvider::SetRecoverKey(const std::vector<uint8_t> &key)
     return StorageDaemon::GetInstance()->SetRecoverKey(key);
 }
 
-int32_t StorageDaemonProvider::CreateShareFile(const FileRawData &fileRawData,
+int32_t StorageDaemonProvider::CreateShareFile(const std::vector<std::string> &uriList,
                                                uint32_t tokenId,
                                                uint32_t flag,
                                                std::vector<int32_t> &funcResult)
 {
-    std::vector<std::string> uriList;
-    auto ret = GetFilesPath(fileRawData, uriList);
-    if (ret != E_OK) {
-        return ret;
-    }
     funcResult.clear();
     AppFileService::FileShare::CreateShareFile(uriList, tokenId, flag, funcResult);
     return E_OK;
 }
 
-int32_t StorageDaemonProvider::DeleteShareFile(uint32_t tokenId, const FileRawData &fileRawData)
+int32_t StorageDaemonProvider::DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList)
 {
-    std::vector<std::string> uriList;
-    auto ret = GetFilesPath(fileRawData, uriList);
-    if (ret != E_OK) {
-        return ret;
-    }
     return AppFileService::FileShare::DeleteShareFile(tokenId, uriList);
 }
 

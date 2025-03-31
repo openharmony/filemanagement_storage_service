@@ -25,7 +25,6 @@ ohos_unittest("storage_daemon_communication_test") {
   module_out_path = "storage_service/storage_manager"
 
   sources = [
-    "${storage_daemon_path}/ipc/src/file_raw_data.cpp",
     "${storage_manager_path}/mock/storage_daemon_proxy_mock.cpp",
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
     "storage_daemon_communication_test.cpp",

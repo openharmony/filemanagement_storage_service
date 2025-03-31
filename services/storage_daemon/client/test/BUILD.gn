@@ -100,7 +100,6 @@ ohos_unittest("storage_daemon_client_sub_test") {
   sources = [
     "${storage_daemon_path}/client/storage_daemon_client.cpp",
     "${storage_daemon_path}/client/test/storage_daemon_client_sub_test.cpp",
-    "${storage_daemon_path}/ipc/src/file_raw_data.cpp",
     "${storage_daemon_path}/utils/test/common/help_utils.cpp",
   ]
 
