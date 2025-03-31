@@ -38,7 +38,7 @@ public:
 
     /**
      * @brief Copies raw data into the internal data. Fixed method used by the IDL tool
-     * 
+     *
      * @param rawData Pointer to the raw data to be copied.
      * @return int32_t Returns 0 on success, or an error code on failure.
      */
