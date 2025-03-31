@@ -533,6 +533,7 @@ std::vector<int32_t> StorageDaemonCommunication::CreateShareFile(const std::vect
         return std::vector<int32_t>{E_WRITE_PARCEL_ERR};
     }
     uint32_t dataSize = static_cast<uint32_t>(tempParcel.GetDataSize());
+    FileRawData fileRawData;
     fileRawData.size = dataSize;
     int32_t ret = fileRawData.RawDataCpy(reinterpret_cast<const void*>(tempParcel.GetData()));
     if (ret != E_OK) {
