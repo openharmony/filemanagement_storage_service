@@ -298,8 +298,7 @@ int32_t StorageDaemonClient::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                                             const std::vector<uint8_t> &newSecret)
 {
     LOGI("StorageDaemonClient::UpdateUserAuth, userId: %{public}u, token:%{public}d,"
-        "oldSecret:%{public}d, newSecret:%{public}d", userId, token.empty(),
-        oldSecret.empty(), newSecret.empty());
+        "oldSecret:%{public}d, newSecret:%{public}d", userId, token.empty(), oldSecret.empty(), newSecret.empty());
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
@@ -452,8 +451,7 @@ int32_t StorageDaemonClient::UpdateKeyContext(uint32_t userId, bool needRemoveTm
 
 int32_t StorageDaemonClient::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId)
 {
-    LOGI("StorageDaemonClient::GenerateAppkey, userId: %{public}u, hashId:%{public}u, keyId:%{public}s",
-        userId, hashId, keyId.c_str());
+    LOGI("StorageDaemonClient::GenerateAppkey, userId: %{public}u, hashId:%{public}u", userId, hashId);
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
@@ -530,8 +528,6 @@ int32_t StorageDaemonClient::SetRecoverKey(const std::vector<uint8_t> &key)
 int32_t StorageDaemonClient::MountDfsDocs(int32_t userId, const std::string &relativePath,
     const std::string &networkId, const std::string &deviceId)
 {
-    LOGI("StorageDaemonClient::MountDfsDocs, userId:%{public}d, relativePath:%{public}s, networkId:%{public}s,"
-        "deviced:%{public}s", userId, relativePath.c_str(), networkId.c_str(), deviceId.c_str());
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
@@ -550,8 +546,6 @@ int32_t StorageDaemonClient::MountDfsDocs(int32_t userId, const std::string &rel
 int32_t StorageDaemonClient::UMountDfsDocs(int32_t userId, const std::string &relativePath,
     const std::string &networkId, const std::string &deviceId)
 {
-    LOGI("StorageDaemonClient::UMountDfsDocs, userId:%{public}d, relativePath:%{public}s, networkId:%{public}s,"
-        "deviced:%{public}s", userId, relativePath.c_str(), networkId.c_str(), deviceId.c_str());
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
@@ -569,7 +563,6 @@ int32_t StorageDaemonClient::UMountDfsDocs(int32_t userId, const std::string &re
 
 int32_t StorageDaemonClient::FscryptEnable(const std::string &fscryptOptions)
 {
-    LOGI("StorageDaemonClient::FscryptEnable, fscryptOptions:%{public}s", fscryptOptions.c_str());
 #ifdef USER_CRYPTO_MANAGER
     int ret = SetFscryptSysparam(fscryptOptions.c_str());
     if (ret) {
@@ -601,7 +594,7 @@ int32_t StorageDaemonClient::GetFileEncryptStatus(uint32_t userId, bool &isEncry
 
 int32_t StorageDaemonClient::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
 {
-    LOGI("StorageDaemonClient::GetUserNeedActiveStatus, userId:%{public}d, needActive:%{public}d", userId, needActive);
+    LOGI("StorageDaemonClient::GetUserNeedActiveStatus, userId:%{public}d", userId);
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");

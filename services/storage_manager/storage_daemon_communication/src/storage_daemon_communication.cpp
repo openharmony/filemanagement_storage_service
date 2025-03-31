@@ -564,7 +564,13 @@ int32_t StorageDaemonCommunication::DeleteShareFile(uint32_t tokenId, const std:
         return E_WRITE_PARCEL_ERR;
     }
     uint32_t dataSize = static_cast<uint32_t>(tempParcel.GetDataSize());
-    StorageDaemon::FileRawData fileRawData(dataSize, reinterpret_cast<const void*>(tempParcel.GetData()));
+    FileRawData fileRawData;
+    fileRawData.size = dataSize;
+    int32_t ret = fileRawData.RawDataCpy(reinterpret_cast<const void*>(tempParcel.GetData()));
+    if (ret != E_OK) {
+        LOGE("Copy data failed");
+        return E_WRITE_PARCEL_ERR;
+    }
     return storageDaemon_->DeleteShareFile(tokenId, fileRawData);
 }
 

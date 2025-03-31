@@ -33,7 +33,7 @@ constexpr uint32_t MAX_IPC_RAW_DATA_SIZE = 128 * 1024 * 1024; // 128MB
  */
 class FileRawData {
 public:
-    FileRawData() : size(0), data(nullptr) {};
+    FileRawData() : data(nullptr), size(0) {};
     ~FileRawData();
 
     /**
