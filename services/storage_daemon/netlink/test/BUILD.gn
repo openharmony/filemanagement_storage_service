@@ -24,7 +24,7 @@ ohos_unittest("netlink_data_test") {
     cfi_cross_dso = true
     debug = false
   }
-  module_out_path = "storage_service/storage_daemon"
+  module_out_path = "storage_service/storage_service/storage_daemon"
 
   defines = [ "STORAGE_LOG_TAG = \"StorageDaemon\"" ]
 
@@ -59,7 +59,7 @@ ohos_unittest("netlink_handler_test") {
     cfi_cross_dso = true
     debug = false
   }
-  module_out_path = "storage_service/storage_daemon"
+  module_out_path = "storage_service/storage_service/storage_daemon"
 
   defines = [ "STORAGE_LOG_TAG = \"StorageDaemon\"" ]
 
@@ -110,7 +110,7 @@ ohos_unittest("netlink_listener_test") {
     cfi_cross_dso = true
     debug = false
   }
-  module_out_path = "storage_service/storage_daemon"
+  module_out_path = "storage_service/storage_service/storage_daemon"
 
   defines = [ "STORAGE_LOG_TAG = \"StorageDaemon\"" ]
 
@@ -144,7 +144,7 @@ ohos_unittest("netlink_manager_test") {
     cfi_cross_dso = true
     debug = false
   }
-  module_out_path = "storage_service/storage_daemon"
+  module_out_path = "storage_service/storage_service/storage_daemon"
 
   defines = [ "STORAGE_LOG_TAG = \"StorageDaemon\"" ]
 

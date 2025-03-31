@@ -22,7 +22,7 @@ ohos_unittest("storage_daemon_communication_test") {
     cfi_cross_dso = true
     debug = false
   }
-  module_out_path = "storage_service/storage_manager"
+  module_out_path = "storage_service/storage_service/storage_manager"
 
   sources = [
     "${storage_manager_path}/mock/storage_daemon_proxy_mock.cpp",

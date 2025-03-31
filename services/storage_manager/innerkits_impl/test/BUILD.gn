@@ -22,7 +22,7 @@ ohos_unittest("disk_test") {
     cfi_cross_dso = true
     debug = false
   }
-  module_out_path = "storage_service/storage_manager"
+  module_out_path = "storage_service/storage_service/storage_manager"
 
   sources = [
     "${storage_manager_path}/innerkits_impl/src/disk.cpp",
@@ -56,7 +56,7 @@ ohos_unittest("volume_core_test") {
     cfi_cross_dso = true
     debug = false
   }
-  module_out_path = "storage_service/storage_manager"
+  module_out_path = "storage_service/storage_service/storage_manager"
 
   sources = [
     "${storage_manager_path}/innerkits_impl/src/volume_core.cpp",
@@ -90,7 +90,7 @@ ohos_unittest("volume_external_test") {
     cfi_cross_dso = true
     debug = false
   }
-  module_out_path = "storage_service/storage_manager"
+  module_out_path = "storage_service/storage_service/storage_manager"
 
   sources = [
     "${storage_manager_path}/innerkits_impl/src/disk.cpp",
@@ -128,7 +128,7 @@ ohos_unittest("storage_stats_test") {
     cfi_cross_dso = true
     debug = false
   }
-  module_out_path = "storage_service/storage_manager"
+  module_out_path = "storage_service/storage_service/storage_manager"
 
   sources = [
     "${storage_manager_path}/innerkits_impl/src/bundle_stats.cpp",

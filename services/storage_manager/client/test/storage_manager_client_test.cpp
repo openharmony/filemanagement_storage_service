@@ -56,7 +56,7 @@ void StorageManagerClientTest::TearDown(void)
  * @tc.level Level 1
  * @tc.require: SR000GGUPF
  */
-HWTEST_F(StorageManagerClientTest, Client_manager_service_PrepareAddUser_0000, TestSize.Level1)
+HWTEST_F(StorageManagerClientTest, Client_manager_service_PrepareAddUser_0000, TestSize.Level0)
 {
     GTEST_LOG_(INFO) << "StorageManagerClientTest-begin Client_manager_service_PrepareAddUser_0000";
 

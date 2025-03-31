@@ -24,7 +24,7 @@ ohos_unittest("user_manager_test") {
     cfi_cross_dso = true
     debug = false
   }
-  module_out_path = "storage_service/storage_daemon"
+  module_out_path = "storage_service/storage_service/storage_daemon"
 
   defines = [
     "STORAGE_LOG_TAG = \"StorageDaemon\"",
@@ -86,7 +86,7 @@ ohos_unittest("mount_manager_test") {
     debug = false
     blocklist = "${storage_service_path}/cfi_blocklist.txt"
   }
-  module_out_path = "storage_service/storage_daemon"
+  module_out_path = "storage_service/storage_service/storage_daemon"
 
   defines = [
     "STORAGE_LOG_TAG = \"StorageDaemon\"",
