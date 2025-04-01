@@ -1,4 +1,4 @@
-# Copyright (c) 2021 Huawei Device Co., Ltd.
+# Copyright (c) 2021-2025 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -52,13 +52,17 @@ ohos_unittest("disk_manager_test") {
     "$ROOT_DIR/volume/src/volume_manager.cpp",
   ]
 
-  deps = [ "$ROOT_DIR:storage_common_utils" ]
+  deps = [
+    "$ROOT_DIR:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_header",
+  ]
 
   external_deps = [
     "c_utils:utils",
     "googletest:gmock_main",
     "googletest:gtest_main",
     "hilog:libhilog",
+    "hitrace:hitrace_meter",
     "init:libbegetutil",
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
@@ -103,13 +107,17 @@ ohos_unittest("disk_info_test") {
     "$ROOT_DIR/volume/src/volume_manager.cpp",
   ]
 
-  deps = [ "$ROOT_DIR:storage_common_utils" ]
+  deps = [
+    "$ROOT_DIR:storage_common_utils",
+    "$ROOT_DIR:storage_daemon_header",
+  ]
 
   external_deps = [
     "c_utils:utils",
     "googletest:gmock_main",
     "googletest:gtest_main",
     "hilog:libhilog",
+    "hitrace:hitrace_meter",
     "init:libbegetutil",
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
@@ -154,13 +162,17 @@ ohos_unittest("disk_info_sup_test") {
     "$ROOT_DIR/volume/src/volume_manager.cpp",
   ]
 
-  deps = [ "$ROOT_DIR:storage_common_utils" ]
+  deps = [
+    "$ROOT_DIR:storage_common_utils",
+    "$ROOT_DIR:storage_daemon_header",
+  ]
 
   external_deps = [
     "c_utils:utils",
     "googletest:gmock_main",
     "googletest:gtest_main",
     "hilog:libhilog",
+    "hitrace:hitrace_meter",
     "init:libbegetutil",
     "ipc:ipc_single",
     "safwk:system_ability_fwk",

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -25,10 +25,11 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/storage_radar.h"
-
+#include "message_parcel.h"
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageManager {
+
 StorageDaemonCommunication::StorageDaemonCommunication()
 {
     LOGI("DEBUG StorageDaemonCommunication constructer");
@@ -522,7 +523,9 @@ std::vector<int32_t> StorageDaemonCommunication::CreateShareFile(const std::vect
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return std::vector<int32_t>{err};
     }
-    return storageDaemon_->CreateShareFile(uriList, tokenId, flag);
+    std::vector<int32_t> funcResult;
+    storageDaemon_->CreateShareFile(uriList, tokenId, flag, funcResult);
+    return funcResult;
 }
 
 int32_t StorageDaemonCommunication::DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList)

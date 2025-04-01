@@ -11,10 +11,56 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import("//build/config/components/idl_tool/idl.gni")
 import("//build/ohos.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ## Install storage_daemon.cfg to /system/etc/init/storage_daemon.cfg
+idl_gen_interface("storage_daemon_interface") {
+  src_idl = rebase_path("IStorageDaemon.idl")
+  log_tag = "StorageDaemon"
+  log_domainid = "0xD004301"
+}
+
+ohos_source_set("storage_daemon_ipc") {
+  sanitize = {
+    debug = false
+    cfi = true
+    cfi_cross_dso = true
+  }
+  output_values = get_target_outputs(":storage_daemon_interface")
+  sources = []
+  sources += filter_include(output_values, [ "*.cpp" ])
+  public_configs = [ ":storage_daemon_config" ]
+  deps = [ ":storage_daemon_interface" ]
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+    "hitrace:hitrace_meter",
+    "ipc:ipc_core",
+  ]
+  part_name = "storage_service"
+  subsystem_name = "filemanagement"
+}
+
+ohos_source_set("storage_daemon_header") {
+  sanitize = {
+    debug = false
+    cfi = true
+    cfi_cross_dso = true
+  }
+  public_configs = [ ":storage_daemon_config" ]
+  deps = [ ":storage_daemon_interface" ]
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+    "hitrace:hitrace_meter",
+    "ipc:ipc_core",
+  ]
+  part_name = "storage_service"
+  subsystem_name = "filemanagement"
+}
+
 ohos_prebuilt_etc("storage_daemon_cfg") {
   source = "storage_daemon.cfg"
   relative_install_dir = "init"
@@ -30,6 +76,8 @@ config("storage_daemon_config") {
     "${storage_manager_path}/include",
     "${storage_interface_path}/innerkits/storage_manager/native",
     "${storage_service_common_path}/include",
+    "${target_gen_dir}",
+    "${storage_daemon_path}/include/ipc",
   ]
 }
 
@@ -54,7 +102,7 @@ ohos_executable("storage_daemon") {
 
   sources = [
     "ipc/src/storage_daemon.cpp",
-    "ipc/src/storage_daemon_stub.cpp",
+    "ipc/src/storage_daemon_provider.cpp",
     "ipc/src/storage_manager_client.cpp",
     "main.cpp",
     "observer/appstate_observer.cpp",
@@ -111,6 +159,7 @@ ohos_executable("storage_daemon") {
   deps = [
     ":sdc",
     ":storage_common_utils",
+    ":storage_daemon_ipc",
     "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
   ]
 
@@ -129,6 +178,7 @@ ohos_executable("storage_daemon") {
     "hicollie:libhicollie",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
+    "hitrace:hitrace_meter",
     "init:libbegetutil",
     "ipc:ipc_single",
     "os_account:os_account_innerkits",
@@ -223,7 +273,6 @@ ohos_executable("sdc") {
 
   sources = [
     "client/storage_daemon_client.cpp",
-    "ipc/src/storage_daemon_proxy.cpp",
     "sdc.cpp",
   ]
 
@@ -242,6 +291,8 @@ ohos_executable("sdc") {
 
   deps = [
     ":storage_common_utils",
+    ":storage_daemon_interface",
+    ":storage_daemon_ipc",
     "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
   ]
 
@@ -259,6 +310,7 @@ ohos_executable("sdc") {
   }
 
   external_deps = [
+    "cJSON:cjson",
     "c_utils:utils",
     "hilog:libhilog",
     "ipc:ipc_single",
