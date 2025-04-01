@@ -20,6 +20,7 @@
 
 #include "mtpfs_util.h"
 #include "storage_service_log.h"
+#include "string_utils.h"
 
 #define PERMISSION_ONE 0775
 #define PERMISSION_TWO 0644
@@ -31,11 +32,18 @@ constexpr int32_t ST_NLINK_TWO = 2;
 constexpr int32_t FILE_SIZE = 512;
 constexpr int32_t BS_SIZE = 1024;
 constexpr int32_t ARG_SIZE = 2;
+constexpr const char *MTP_FILE_FLAG = "?MTP_THM";
 
 int WrapGetattr(const char *path, struct stat *buf, struct fuse_file_info *fi)
 {
+    (void)fi;
     LOGI("mtp WrapGetattr, path=%{public}s", path);
-    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->GetAttr(path, buf, fi);
+    int ret = E_OK;
+    if (OHOS::StorageDaemon::IsEndWith(path, MTP_FILE_FLAG)) {
+        ret = DelayedSingleton<MtpFileSystem>::GetInstance()->GetThumbAttr(std::string(path), buf);
+    } else {
+        ret = DelayedSingleton<MtpFileSystem>::GetInstance()->GetAttr(path, buf);
+    }
     LOGI("GetAttr ret = %{public}d.", ret);
     return ret;
 }
@@ -108,7 +116,12 @@ int WrapUTimens(const char *path, const struct timespec tv[2], struct fuse_file_
 int WrapOpen(const char *path, struct fuse_file_info *fileInfo)
 {
     LOGI("mtp WrapOpen, path=%{public}s", path);
-    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Open(path, fileInfo);
+    int ret = E_OK;
+    if (OHOS::StorageDaemon::IsEndWith(path, MTP_FILE_FLAG)) {
+        ret = DelayedSingleton<MtpFileSystem>::GetInstance()->OpenThumb(path, fileInfo);
+    } else {
+        ret = DelayedSingleton<MtpFileSystem>::GetInstance()->OpenFile(path, fileInfo);
+    }
     LOGI("Open ret = %{public}d.", ret);
     return ret;
 }
@@ -116,7 +129,12 @@ int WrapOpen(const char *path, struct fuse_file_info *fileInfo)
 int WrapRead(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fileInfo)
 {
     LOGI("mtp WrapRead, path=%{public}s", path);
-    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Read(path, buf, size, offset, fileInfo);
+    int ret = E_OK;
+    if (OHOS::StorageDaemon::IsEndWith(path, MTP_FILE_FLAG)) {
+        ret = DelayedSingleton<MtpFileSystem>::GetInstance()->ReadThumb(std::string(path), buf);
+    } else {
+        ret = DelayedSingleton<MtpFileSystem>::GetInstance()->ReadFile(path, buf, size, offset, fileInfo);
+    }
     LOGI("Read ret = %{public}d.", ret);
     return ret;
 }
@@ -474,7 +492,7 @@ void *MtpFileSystem::Init(struct fuse_conn_info *conn, struct fuse_config *cfg)
     return nullptr;
 }
 
-int MtpFileSystem::GetAttr(const char *path, struct stat *buf, struct fuse_file_info *fi)
+int MtpFileSystem::GetAttr(const char *path, struct stat *buf)
 {
     LOGI("MtpFileSystem: GetAttr enter, path: %{public}s", path);
     if (memset_s(buf, sizeof(struct stat), 0, sizeof(struct stat)) != EOK) {
@@ -521,6 +539,28 @@ int MtpFileSystem::GetAttr(const char *path, struct stat *buf, struct fuse_file_
     }
     LOGI("MtpFileSystem: GetAttr success, path: %{public}s", path);
     return 0;
+}
+
+int MtpFileSystem::GetThumbAttr(const std::string &path, struct stat *buf)
+{
+    LOGI("MtpFileSystem: GetThumbAttr enter, path: %{public}s", path.c_str());
+    std::string realPath = path.substr(0, path.length() - strlen(MTP_FILE_FLAG));
+    int ret = GetAttr(realPath.c_str(), buf);
+    if (ret != 0) {
+        LOGE("GetThumbAttr: get attr for path=%{public}s failed.", realPath.c_str());
+        return ret;
+    }
+    char *data = nullptr;
+    int bufSize = device_.GetThumbnail(realPath, data);
+    if (bufSize <= 0) {
+        LOGE("GetThumbAttr for path=%{public}s failed, bufSize invalid.", realPath.c_str());
+        return -EIO;
+    }
+    buf->st_size = static_cast<ssize_t>(bufSize);
+    buf->st_blocks = static_cast<ssize_t>(bufSize / FILE_SIZE) + (bufSize % FILE_SIZE > 0 ? 1 : 0);
+
+    LOGI("MtpFileSystem: GetThumbAttr success, path=%{public}s, bufSize=%{public}d.", path.c_str(), bufSize);
+    return E_OK;
 }
 
 int MtpFileSystem::MkNod(const char *path, mode_t mode, dev_t dev)
@@ -695,10 +735,10 @@ int MtpFileSystem::Create(const char *path, mode_t mode, fuse_file_info *fileInf
     return 0;
 }
 
-int MtpFileSystem::Open(const char *path, struct fuse_file_info *fileInfo)
+int MtpFileSystem::OpenFile(const char *path, struct fuse_file_info *fileInfo)
 {
     std::lock_guard<std::mutex>lock(fuseMutex_);
-    LOGI("MtpFileSystem: Open enter, path: %{public}s", path);
+    LOGI("MtpFileSystem: OpenFile enter, path: %{public}s", path);
     if (fileInfo == nullptr) {
         LOGE("Missing FileInfo");
         return -ENOENT;
@@ -734,7 +774,7 @@ int MtpFileSystem::Open(const char *path, struct fuse_file_info *fileInfo)
     int fd = ::open(tmpPath.c_str(), fileInfo->flags);
     if (fd < 0) {
         ::unlink(tmpPath.c_str());
-        LOGE("MtpFileSystem: Open error, errno=%{public}d", errno);
+        LOGE("MtpFileSystem: OpenFile error, errno=%{public}d", errno);
         return -errno;
     }
 
@@ -745,13 +785,13 @@ int MtpFileSystem::Open(const char *path, struct fuse_file_info *fileInfo)
     } else {
         tmpFilesPool_.AddFile(MtpFsTypeTmpFile(stdPath, tmpPath, fd));
     }
-    LOGI("MtpFileSystem: Open success, path: %{public}s", path);
+    LOGI("MtpFileSystem: OpenFile success, path: %{public}s", path);
     return 0;
 }
 
-int MtpFileSystem::Read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fileInfo)
+int MtpFileSystem::ReadFile(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fileInfo)
 {
-    LOGI("MtpFileSystem: Read enter, path: %{public}s", path);
+    LOGI("MtpFileSystem: ReadFile enter, path: %{public}s", path);
     if (fileInfo == nullptr) {
         LOGE("Missing FileInfo");
         return -ENOENT;
@@ -763,12 +803,47 @@ int MtpFileSystem::Read(const char *path, char *buf, size_t size, off_t offset, 
     } else {
         rval = ::pread(fileInfo->fh, buf, size, offset);
         if (rval < 0) {
-            LOGE("MtpFileSystem: Read error, errno=%{public}d", errno);
+            LOGE("MtpFileSystem: ReadFile error, errno=%{public}d", errno);
             return -errno;
         }
     }
-    LOGI("MtpFileSystem: Open success, path: %{public}s, rval=%{public}d", path, rval);
+    LOGI("MtpFileSystem: ReadFile success, path: %{public}s, rval=%{public}d", path, rval);
     return rval;
+}
+
+int MtpFileSystem::OpenThumb(const char *path, struct fuse_file_info *fileInfo)
+{
+    std::lock_guard<std::mutex>lock(fuseMutex_);
+    LOGI("MtpFileSystem: OpenThumb enter, path: %{public}s", path);
+    if (fileInfo == nullptr) {
+        LOGE("Missing FileInfo");
+        return -ENOENT;
+    }
+    std::string tmpPath = tmpFilesPool_.MakeTmpPath(std::string(path));
+    int fd = ::creat(tmpPath.c_str(), S_IRUSR | S_IWUSR);
+    ::close(fd);
+
+    unsigned int flags = static_cast<unsigned int>(fileInfo->flags);
+    if (flags & O_WRONLY) {
+        flags |= O_TRUNC;
+    }
+    fileInfo->flags = static_cast<int>(flags);
+    fd = ::open(tmpPath.c_str(), fileInfo->flags);
+    if (fd < 0) {
+        ::unlink(tmpPath.c_str());
+        LOGE("MtpFileSystem: OpenThumb error, errno=%{public}d", errno);
+        return -errno;
+    }
+    fileInfo->fh = static_cast<uint32_t>(fd);
+    LOGI("MtpFileSystem: OpenThumb success, path: %{public}s", path);
+    return E_OK;
+}
+
+int MtpFileSystem::ReadThumb(const std::string &path, char *buf)
+{
+    LOGI("MtpFileSystem: ReadThumb enter, path: %{public}s", path.c_str());
+    std::string realPath = path.substr(0, path.length() - strlen(MTP_FILE_FLAG));
+    return device_.GetThumbnail(realPath, buf);
 }
 
 int MtpFileSystem::Write(const char *path, const char *buf, size_t size, off_t offset,
@@ -817,6 +892,9 @@ int MtpFileSystem::Release(const char *path, struct fuse_file_info *fileInfo)
     if (stdPath == std::string("-")) {
         return 0;
     }
+    if (OHOS::StorageDaemon::IsEndWith(path, MTP_FILE_FLAG)) {
+        return 0;
+    }
     MtpFsTypeTmpFile *tmpFile = const_cast<MtpFsTypeTmpFile *>(tmpFilesPool_.GetFile(stdPath));
     if (tmpFile == nullptr) {
         LOGE("failed to get tmpFile.");
@@ -829,7 +907,9 @@ int MtpFileSystem::Release(const char *path, struct fuse_file_info *fileInfo)
     const bool modIf = tmpFile->IsModified();
     const std::string tmpPath = tmpFile->PathTmp();
     tmpFilesPool_.RemoveFile(stdPath);
-    if (modIf) {
+    struct stat fileStat;
+    stat(tmpPath.c_str(), &fileStat);
+    if (modIf && fileStat.st_size != 0) {
         device_.SetUploadRecord(stdPath, false);
         rval = device_.FilePush(tmpPath, stdPath);
         device_.SetUploadRecord(stdPath, true);
@@ -840,7 +920,6 @@ int MtpFileSystem::Release(const char *path, struct fuse_file_info *fileInfo)
         }
         LOGI("FilePush %{public}s to mtp device success", path);
     } else {
-        LOGI("Release file no modify");
         device_.SetUploadRecord(stdPath, true);
     }
     ::unlink(tmpPath.c_str());

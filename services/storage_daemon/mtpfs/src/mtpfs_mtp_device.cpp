@@ -306,12 +306,15 @@ const MtpFsTypeDir *MtpFsDevice::DirFetchContent(std::string path)
     if (!rootDir_.IsFetched()) {
         for (LIBMTP_devicestorage_t *s = device_->storage; s; s = s->next) {
             rootDir_.AddDir(MtpFsTypeDir(rootNode_, 0, s->id, std::string(s->StorageDescription)));
+            if (rootDir_.Dirs().size() != 0) {
+                rootDirName_ = rootDir_.Dirs().begin()->Name();
+            }
             rootDir_.SetFetched();
         }
     }
 
     if (rootDir_.DirCount() == 1) {
-        path = '/' + rootDir_.Dirs().begin()->Name() + path;
+        path = '/' + rootDirName_ + path;
     }
     if (path == "/") {
         return &rootDir_;
@@ -361,7 +364,7 @@ void MtpFsDevice::RefreshDirContent(std::string path)
         }
     }
     if (rootDir_.DirCount() == DIR_COUNT_ONE) {
-        path = '/' + rootDir_.Dirs().begin()->Name() + path;
+        path = '/' + rootDirName_ + path;
     }
     if (path == "/") {
         return;
@@ -824,6 +827,45 @@ int MtpFsDevice::FileRename(const std::string &oldPath, const std::string &newPa
     const_cast<MtpFsTypeFile *>(fileToReName)->SetName(tmpNewBaseName);
     LOGI("File %{public}s renamed to %{public}s", oldPath.c_str(), tmpNewBaseName.c_str());
     return 0;
+}
+
+int MtpFsDevice::GetThumbnail(const std::string &path, char *buf)
+{
+    LOGI("MtpFsDevice: GetThumbnail enter, path: %{public}s", path.c_str());
+    const std::string tmpDirName(SmtpfsDirName(path));
+    const MtpFsTypeDir *dirParent = DirFetchContent(tmpDirName);
+    if (dirParent == nullptr) {
+        LOGE("GetThumbnail %{public}s failed, dirParent is nullptr", path.c_str());
+        return -ENOENT;
+    }
+    const std::string tmpBaseName(SmtpfsBaseName(path));
+    const MtpFsTypeFile *tmpFile = dirParent->File(tmpBaseName);
+    if (tmpFile == nullptr) {
+        LOGE("GetThumbnail %{public}s failed, tmpFile is null", path.c_str());
+        return -ENOENT;
+    }
+    unsigned int tmpSize;
+    unsigned char *tmpBuf;
+    CriticalEnter();
+    LOGI("MtpFsDevice: GetThumbnail begin, ID=%{public}u, path=%{public}s", tmpFile->Id(), path.c_str());
+    int ret = LIBMTP_Get_Thumbnail(device_, tmpFile->Id(), &tmpBuf, &tmpSize);
+    LOGI("MtpFsDevice: GetThumbnail, path=%{public}s, ret=%{public}d", path.c_str(), ret);
+    CriticalLeave();
+    if (ret != 0) {
+        LOGE("GetThumbnail %{public}s failed, LIBMTP_Get_Thumbnail error.", path.c_str());
+        tmpBuf = nullptr;
+        return -EIO;
+    }
+    if ((buf != nullptr) && (memcpy_s(buf, tmpSize, tmpBuf, tmpSize) != EOK)) {
+        LOGE("GetThumbnail %{public}s failed, memcpy_s thumbnail buffer error, errno=%{public}d.", errno);
+        free(tmpBuf);
+        tmpBuf = nullptr;
+        return -ENOMEM;
+    }
+    free(tmpBuf);
+    tmpBuf = nullptr;
+    LOGI("MtpFsDevice: GetThumbnail success, path=%{public}s, size=%{public}u", path.c_str(), tmpSize);
+    return tmpSize;
 }
 
 MtpFsDevice::Capabilities MtpFsDevice::GetCapabilities() const
