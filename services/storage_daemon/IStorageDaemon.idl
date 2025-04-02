@@ -1,0 +1,77 @@
+/*
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+interface OHOS.StorageDaemon.IStorageDaemon{       
+     [ipccode 1] void Shutdown();    
+     [ipccode 2] void Mount([in] String volId, [in] unsigned int flags);
+     [ipccode 3] void UMount([in] String volId);
+     [ipccode 4] void Check([in] String volId);
+     [ipccode 5] void Format([in] String volId, [in] String fsType);
+     [ipccode 6] void Partition([in] String diskId, [in] int type);
+     [ipccode 7] void SetVolumeDescription([in] String volId, [in] String description);  
+     [ipccode 10] void StartUser([in] int userId);
+     [ipccode 11] void StopUser([in] int userId);
+     [ipccode 8] void PrepareUserDirs([in] int userId, [in] unsigned int flags);  
+     [ipccode 9] void DestroyUserDirs([in] int userId,[in] unsigned int flags);  
+     [ipccode 12] void CompleteAddUser([in] int userId);
+     // fscrypt api
+     [ipccode 13] void InitGlobalKey();
+     [ipccode 14] void InitGlobalUserKeys();
+     [ipccode 15] void GenerateUserKeys([in] unsigned int userId, [in] unsigned int flags);
+     [ipccode 16] void DeleteUserKeys([in] unsigned int userId);
+     [ipccode 17] void UpdateUserAuth([in] unsigned int userId, [in] unsigned long secureUid,
+          [in] unsigned char[] token,[in] unsigned char[] oldSecret,[in] unsigned char[] newSecret);
+     [ipccode 18] void UpdateUseAuthWithRecoveryKey([in] unsigned char[] authToken,
+          [in] unsigned char[] newSecret, [in] unsigned long secureUid, [in] unsigned int userId,
+          [in] List<List<unsigned char>> plainText); 
+     [ipccode 19] void ActiveUserKey([in] unsigned int userId, [in] unsigned char[] token, 
+                                     [in] unsigned char[] secret);
+     [ipccode 20] void InactiveUserKey([in] unsigned int userId);
+     [ipccode 21] void UpdateKeyContext([in] unsigned int userId , [in] boolean needRemoveTmpKey);
+     [ipccode 22] void MountCryptoPathAgain([in] unsigned int userId);
+     [ipccode 25] void LockUserScreen([in] unsigned int userId);
+     [ipccode 26] void UnlockUserScreen([in] unsigned int user, [in] unsigned char[] token,
+                                        [in] unsigned char[] secret);
+     [ipccode 27] void GetLockScreenStatus([in] unsigned int user, [out] boolean lockScreenStatus);
+     [ipccode 32] void GenerateAppkey([in] unsigned int userId, [in] unsigned int hashId, [out] String keyId);
+     [ipccode 33] void DeleteAppkey([in] unsigned int userId, [in] String keyId);
+     [ipccode 37] void CreateRecoverKey([in] unsigned int userId, [in] unsigned int userType, 
+                                        [in] unsigned char[] token,[in] unsigned char[] secret);
+     [ipccode 38] void SetRecoverKey([in] unsigned char[] key);
+     // app file share api
+     [ipcincapacity 131071, ipcoutcapacity 131071, ipccode 23] int[] CreateShareFile([in] String[] uriList,
+                                                                                     [in] unsigned int tokenId,
+                                                                                     [in] unsigned int flag);
+     [ipcincapacity 131071, ipcoutcapacity 131071, oneway, ipccode 24] void DeleteShareFile([in] unsigned int tokenId,
+                                                                                            [in] String[] uriList);
+     [ipccode 28] void SetBundleQuota([in] String bundleName, [in] int uid, [in] String bundleDataDirPath, 
+                                      [in] int limitSizeMb);
+     [ipccode 29] void GetOccupiedSpace([in] int idType, [in] int id, [out] long size);
+     [ipccode 30] void UpdateMemoryPara([in] int size, [out] int oldSize);
+     [ipccode 31] void GetBundleStatsForIncrease([in] unsigned int userId, [in] String[] bundleNames,
+          [in] long[] incrementalBackTimes, [out] long[] pkgFileSizes, [out] long[] incPkgFileSizes);
+     [ipccode 34] void MountDfsDocs([in] int userId, [in] String relativePath,
+          [in] String networkId, [in] String deviceId);
+     [ipccode 35] void UMountDfsDocs([in] int userId, [in] String relativePath,
+          [in] String networkId, [in] String deviceId);
+     [ipccode 36] void GetFileEncryptStatus([in] unsigned int userId, [out] boolean isEncrypted, 
+                                            [in] boolean needCheckDirMount);
+     // media fuse
+     [ipccode 39] void MountMediaFuse([in] int userId, [out] FileDescriptor devFd);
+     [ipccode 40] void UMountMediaFuse([in] int userId);
+     [ipccode 41] void GetUserNeedActiveStatus([in] unsigned int userId, [out] boolean needActive);
+     [ipccode 42] void MountFileMgrFuse([in] int userId, [in] String path, [out] FileDescriptor fuseFd);
+     [ipccode 43] void UMountFileMgrFuse([in] int userId, [in] String path);
+     [ipccode 44] void QueryUsbIsInUse([in] String diskPath, [out] boolean isInUse);
+}

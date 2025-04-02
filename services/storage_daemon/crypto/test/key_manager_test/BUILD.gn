@@ -1,4 +1,4 @@
-# Copyright (C) 2024 Huawei Device Co., Ltd.
+# Copyright (C) 2024-2025 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -58,7 +58,10 @@ ohos_unittest("KeyManagerTest") {
     "key_manager_test.cpp",
   ]
 
-  deps = [ "${storage_daemon_path}:storage_common_utils" ]
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_header",
+  ]
 
   external_deps = [
     "bundle_framework:appexecfwk_core",
@@ -128,6 +131,8 @@ ohos_unittest("KeyManagerSupTest") {
 
   deps = [
     "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_header",
+
     #"${storage_daemon_path}/libfscrypt:libfscryptutils",
   ]
 
@@ -200,7 +205,10 @@ ohos_unittest("KeyManagerOtherTest") {
     "key_manager_other_test.cpp",
   ]
 
-  deps = [ "${storage_daemon_path}:storage_common_utils" ]
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_header",
+  ]
 
   external_deps = [
     "c_utils:utils",
@@ -267,7 +275,10 @@ ohos_unittest("KeyManagerAnotherTest") {
     "key_manager_another_test.cpp",
   ]
 
-  deps = [ "${storage_daemon_path}:storage_common_utils" ]
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_header",
+  ]
 
   external_deps = [
     "c_utils:utils",

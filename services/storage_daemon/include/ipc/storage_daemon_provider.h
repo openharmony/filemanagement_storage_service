@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,19 +13,26 @@
  * limitations under the License.
  */
 
-#ifndef OHOS_STORAGE_DAEMON_STORAGE_DAEMON_PROXY_H
-#define OHOS_STORAGE_DAEMON_STORAGE_DAEMON_PROXY_H
+#ifndef OHOS_STORAGE_DAEMON_STORAGE_DAEMON_PROVIDER_H
+#define OHOS_STORAGE_DAEMON_STORAGE_DAEMON_PROVIDER_H
 
-#include "iremote_proxy.h"
-#include "ipc/istorage_daemon.h"
+#include "storage_daemon_stub.h"
+#include "storage_service_constant.h"
+#include "storage_daemon.h"
+#include "system_ability_status_change_stub.h"
+#include "utils/storage_statistics_radar.h"
+#include <mutex>
+#include <thread>
+#include <vector>
 
 namespace OHOS {
 namespace StorageDaemon {
-class StorageDaemonProxy : public IRemoteProxy<IStorageDaemon> {
+class StorageDaemonProvider : public StorageDaemonStub {
 public:
-    StorageDaemonProxy(const sptr<IRemoteObject> &impl);
-    virtual int32_t Shutdown() override;
+    StorageDaemonProvider();
+    ~StorageDaemonProvider();
 
+    virtual int32_t Shutdown() override;
     virtual int32_t Mount(const std::string &volId, uint32_t flags) override;
     virtual int32_t UMount(const std::string &volId) override;
     virtual int32_t Check(const std::string &volId) override;
@@ -40,12 +47,13 @@ public:
     virtual int32_t DestroyUserDirs(int32_t userId, uint32_t flags) override;
     virtual int32_t CompleteAddUser(int32_t userId) override;
 
-    // fscrypt api
+    // fscrypt api, add fs mutex in KeyManager
     virtual int32_t InitGlobalKey(void) override;
     virtual int32_t InitGlobalUserKeys(void) override;
     virtual int32_t GenerateUserKeys(uint32_t userId, uint32_t flags) override;
     virtual int32_t DeleteUserKeys(uint32_t userId) override;
-    virtual int32_t UpdateUserAuth(uint32_t userId, uint64_t secureUid,
+    virtual int32_t UpdateUserAuth(uint32_t userId,
+                                   uint64_t secureUid,
                                    const std::vector<uint8_t> &token,
                                    const std::vector<uint8_t> &oldSecret,
                                    const std::vector<uint8_t> &newSecret) override;
@@ -53,10 +61,9 @@ public:
                                                  const std::vector<uint8_t> &newSecret,
                                                  uint64_t secureUid,
                                                  uint32_t userId,
-                                                 std::vector<std::vector<uint8_t>> &plainText) override;
-    virtual int32_t ActiveUserKey(uint32_t userId,
-                                  const std::vector<uint8_t> &token,
-                                  const std::vector<uint8_t> &secret) override;
+                                                 const std::vector<std::vector<uint8_t>> &plainText) override;
+    virtual int32_t
+        ActiveUserKey(uint32_t userId, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret) override;
     virtual int32_t InactiveUserKey(uint32_t userId) override;
     virtual int32_t UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey = false) override;
     virtual int32_t MountCryptoPathAgain(uint32_t userId) override;
@@ -74,35 +81,62 @@ public:
     virtual int32_t SetRecoverKey(const std::vector<uint8_t> &key) override;
 
     // app file share api
-    virtual std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,
-                                                uint32_t tokenId, uint32_t flag) override;
+    virtual int32_t CreateShareFile(const std::vector<std::string> &uriList,
+                                    uint32_t tokenId,
+                                    uint32_t flag,
+                                    std::vector<int32_t> &funcResult) override;
     virtual int32_t DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList) override;
 
-    virtual int32_t SetBundleQuota(const std::string &bundleName, int32_t uid,
-        const std::string &bundleDataDirPath, int32_t limitSizeMb) override;
+    virtual int32_t SetBundleQuota(const std::string &bundleName,
+                                   int32_t uid,
+                                   const std::string &bundleDataDirPath,
+                                   int32_t limitSizeMb) override;
     virtual int32_t GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size) override;
     virtual int32_t UpdateMemoryPara(int32_t size, int32_t &oldSize) override;
-    virtual int32_t GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
-        const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes,
-        std::vector<int64_t> &incPkgFileSizes) override;
-    virtual int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,
-        const std::string &networkId, const std::string &deviceId) override;
-    virtual int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
-        const std::string &networkId, const std::string &deviceId) override;
+    virtual int32_t GetBundleStatsForIncrease(uint32_t userId,
+                                              const std::vector<std::string> &bundleNames,
+                                              const std::vector<int64_t> &incrementalBackTimes,
+                                              std::vector<int64_t> &pkgFileSizes,
+                                              std::vector<int64_t> &incPkgFileSizes) override;
+    virtual int32_t MountDfsDocs(int32_t userId,
+                                 const std::string &relativePath,
+                                 const std::string &networkId,
+                                 const std::string &deviceId) override;
+    virtual int32_t UMountDfsDocs(int32_t userId,
+                                  const std::string &relativePath,
+                                  const std::string &networkId,
+                                  const std::string &deviceId) override;
     virtual int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false) override;
     virtual int32_t GetUserNeedActiveStatus(uint32_t userId, bool &needActive) override;
-
     // media fuse
     virtual int32_t MountMediaFuse(int32_t userId, int32_t &devFd) override;
     virtual int32_t UMountMediaFuse(int32_t userId) override;
     // file mgr fuse
     virtual int32_t MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd) override;
     virtual int32_t UMountFileMgrFuse(int32_t userId, const std::string &path) override;
-private:
-    static inline BrokerDelegator<StorageDaemonProxy> delegator_;
-    int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);
-};
-} // StorageDaemon
-} // OHOS
 
-#endif // OHOS_STORAGE_DAEMON_STORAGE_DAEMON_PROXY_H
+    class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
+    public:
+        SystemAbilityStatusChangeListener() = default;
+        ~SystemAbilityStatusChangeListener() = default;
+        void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId);
+        void OnRemoveSystemAbility(int32_t systemAbilityId, const std::string &deviceId);
+    };
+
+    std::mutex mutex_;
+    void StorageRadarThd(void);
+
+private:
+    std::atomic<bool> stopRadarReport_{false};
+    std::condition_variable execRadarReportCon_;
+    std::mutex onRadarReportLock_;
+    std::atomic<bool> isNeedUpdateRadarFile_{false};
+    std::thread callRadarStatisticReportThread_;
+    std::map<uint32_t, RadarStatisticInfo> opStatistics_;
+    std::chrono::time_point<std::chrono::system_clock> lastRadarReportTime_;
+    std::map<uint32_t, RadarStatisticInfo>::iterator GetUserStatistics(const uint32_t userId);
+    void GetTempStatistics(std::map<uint32_t, RadarStatisticInfo> &statistics);
+};
+} // namespace StorageDaemon
+} // namespace OHOS
+#endif // OHOS_STORAGE_DAEMON_STORAGE_DAEMON_PROVIDER_H

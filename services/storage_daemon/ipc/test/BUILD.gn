@@ -1,4 +1,4 @@
-# Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+# Copyright (c) 2022-2025 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -58,7 +58,7 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/disk/src/disk_info.cpp",
     "$ROOT_DIR/disk/src/disk_manager.cpp",
     "$ROOT_DIR/ipc/src/storage_daemon.cpp",
-    "$ROOT_DIR/ipc/src/storage_daemon_stub.cpp",
+    "$ROOT_DIR/ipc/src/storage_daemon_provider.cpp",
     "$ROOT_DIR/ipc/src/storage_manager_client.cpp",
     "$ROOT_DIR/ipc/test/storage_daemon_test.cpp",
     "$ROOT_DIR/quota/quota_manager.cpp",
@@ -71,7 +71,10 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/volume/src/volume_manager.cpp",
   ]
 
-  deps = [ "${storage_daemon_path}:storage_common_utils" ]
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_ipc",
+  ]
 
   external_deps = [
     "ability_base:base",
@@ -90,6 +93,7 @@ ohos_unittest("storage_daemon_test") {
     "hicollie:libhicollie",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
+    "hitrace:hitrace_meter",
     "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_single",
@@ -249,6 +253,7 @@ ohos_unittest("storage_manager_clt_test") {
     "googletest:gmock_main",
     "googletest:gtest_main",
     "hilog:libhilog",
+    "hitrace:hitrace_meter",
     "init:libbegetutil",
     "ipc:ipc_single",
     "os_account:os_account_innerkits",
@@ -260,8 +265,6 @@ ohos_unittest("storage_manager_clt_test") {
 group("storage_daemon_ipc_test") {
   testonly = true
   deps = [
-    ":storage_daemon_proxy_test",
-    ":storage_daemon_stub_test",
     ":storage_daemon_test",
     ":storage_manager_clt_test",
   ]

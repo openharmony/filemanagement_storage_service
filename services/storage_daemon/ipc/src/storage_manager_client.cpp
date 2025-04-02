@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,6 +22,7 @@
 #include "storage_service_log.h"
 #include "utils/disk_utils.h"
 #include "volume/external_volume_info.h"
+#include "hitrace_meter.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -59,6 +60,7 @@ int32_t StorageManagerClient::GetClient()
 
 int32_t StorageManagerClient::NotifyDiskCreated(DiskInfo &diskInfo)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     if (GetClient() != E_OK) {
         return E_SERVICE_IS_NULLPTR;
     }
@@ -73,6 +75,7 @@ int32_t StorageManagerClient::NotifyDiskCreated(DiskInfo &diskInfo)
 
 int32_t StorageManagerClient::NotifyDiskDestroyed(std::string id)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     if (GetClient() != E_OK) {
         return E_SERVICE_IS_NULLPTR;
     }
@@ -84,6 +87,7 @@ int32_t StorageManagerClient::NotifyDiskDestroyed(std::string id)
 
 int32_t StorageManagerClient::NotifyVolumeCreated(std::shared_ptr<VolumeInfo> info)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     if (GetClient() != E_OK) {
         return E_SERVICE_IS_NULLPTR;
     }
@@ -100,6 +104,7 @@ int32_t StorageManagerClient::NotifyVolumeCreated(std::shared_ptr<VolumeInfo> in
 
 int32_t StorageManagerClient::NotifyVolumeMounted(std::shared_ptr<VolumeInfo> volumeInfo)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     if (GetClient() != E_OK) {
         return E_SERVICE_IS_NULLPTR;
     }
@@ -117,6 +122,7 @@ int32_t StorageManagerClient::NotifyVolumeMounted(std::shared_ptr<VolumeInfo> vo
 int32_t StorageManagerClient::NotifyVolumeStateChanged(std::string volId, StorageManager::VolumeState state)
 
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     if (GetClient() != E_OK) {
         return E_SERVICE_IS_NULLPTR;
     }
@@ -126,7 +132,8 @@ int32_t StorageManagerClient::NotifyVolumeStateChanged(std::string volId, Storag
     return E_OK;
 }
 
-int32_t StorageManagerClient::NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
+int32_t StorageManagerClient::NotifyMtpMounted(const std::string &id, const std::string &path,
+                                               const std::string &desc,
                                                const std::string &uuid)
 {
     LOGI("NotifyMtpMounted: id = %{public}s, path = %{public}s, desc = %{public}s, uuid = %{public}s", id.c_str(),
