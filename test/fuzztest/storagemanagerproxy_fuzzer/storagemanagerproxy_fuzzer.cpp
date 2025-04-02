@@ -24,6 +24,7 @@ namespace OHOS {
 namespace StorageManager {
 bool StorageManagerProxyFuzzTest(const uint8_t *data, size_t size)
 {
+    size_t dataMinSize = sizeof(int32_t) + sizeof(uint32_t) + sizeof(uint64_t);
     if ((data == nullptr) || (size <= sizeof(uint64_t))) {
         return false;
     }
@@ -40,10 +41,10 @@ bool StorageManagerProxyFuzzTest(const uint8_t *data, size_t size)
     std::vector<uint8_t> token;
     std::vector<uint8_t> secret;
 
-    std::string metaData(reinterpret_cast<const char *>(data), size);
     int32_t metaData2 = *(reinterpret_cast<const int32_t *>(data));
-    uint32_t metaData3 = *(reinterpret_cast<const uint32_t *>(data));
-    uint64_t metaData4 = *(reinterpret_cast<const uint64_t *>(data));
+    uint32_t metaData3 = *(reinterpret_cast<const uint32_t *>(data + sizeof(uint32_t)));
+    uint64_t metaData4 = *(reinterpret_cast<const uint64_t *>(data + sizeof(uint32_t) + sizeof(uint64_t)));
+    std::string metaData(reinterpret_cast<const char *>(data + dataMinSize), size - dataMinSize);
     token.push_back(*data);
     secret.push_back(*data);
     proxy->StopUser(metaData2);
@@ -71,7 +72,8 @@ bool StorageManagerProxyFuzzTest(const uint8_t *data, size_t size)
 
 bool StorageManagerProxyGetFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size <= sizeof(int64_t))) {
+    size_t dataMinSize = sizeof(int32_t) + sizeof(uint32_t) + sizeof(uint64_t);
+    if ((data == nullptr) || (size <= dataMinSize)) {
         return false;
     }
     auto impl = new StorageManagerProxyMock();
@@ -80,9 +82,9 @@ bool StorageManagerProxyGetFuzzTest(const uint8_t *data, size_t size)
         return 0;
     }
     VolumeExternal vc1;
-    std::string metaData(reinterpret_cast<const char *>(data), size);
     int32_t userId = *(reinterpret_cast<const int32_t *>(data));
-    int64_t metaData4 = *(reinterpret_cast<const int64_t *>(data));
+    int64_t metaData4 = *(reinterpret_cast<const int64_t *>(data + sizeof(int32_t)));
+    std::string metaData(reinterpret_cast<const char *>(data + dataMinSize), size - dataMinSize);
 
     BundleStats bundleStats;
     StorageStats storageStats;

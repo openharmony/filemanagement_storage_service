@@ -38,8 +38,8 @@ bool StorageStatusServiceFuzzTest(const uint8_t *data, size_t size)
     std::vector<int64_t> incrementalBackTimes;
     std::vector<int64_t> pkgFileSizes;
     std::vector<int64_t> incPkgFileSizes;
-    std::string metaData(reinterpret_cast<const char *>(data), size);
     int64_t metaData2 = *(reinterpret_cast<const int64_t *>(data));
+    std::string metaData(reinterpret_cast<const char *>(data + sizeof(int64_t)), size - sizeof(int64_t));
     bundleName.push_back(metaData);
     incrementalBackTimes.push_back(metaData2);
     pkgFileSizes.push_back(metaData2);
