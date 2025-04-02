@@ -259,7 +259,8 @@ public:
         return E_OK;
     }
 
-    virtual int32_t GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId) override
+    virtual int32_t GenerateAppkey(uint32_t hashId,
+                                   uint32_t userId, std::string &keyId, bool needReSet = false) override
     {
         return E_OK;
     }
@@ -278,6 +279,11 @@ public:
     }
 
     virtual int32_t SetRecoverKey(const std::vector<uint8_t> &key) override
+    {
+        return E_OK;
+    }
+
+    virtual int32_t ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key)
     {
         return E_OK;
     }

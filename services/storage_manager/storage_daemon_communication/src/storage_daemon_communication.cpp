@@ -591,7 +591,7 @@ int32_t StorageDaemonCommunication::MountCryptoPathAgain(int32_t userId)
     return storageDaemon_->MountCryptoPathAgain(userId);
 }
 
-int32_t StorageDaemonCommunication::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId)
+int32_t StorageDaemonCommunication::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId, bool needReSet)
 {
     int32_t err = Connect();
     if (err != E_OK) {
@@ -602,7 +602,7 @@ int32_t StorageDaemonCommunication::GenerateAppkey(uint32_t userId, uint32_t has
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->GenerateAppkey(userId, hashId, keyId);
+    return storageDaemon_->GenerateAppkey(userId, hashId, keyId, needReSet);
 }
 
 int32_t StorageDaemonCommunication::DeleteAppkey(uint32_t userId, const std::string keyId)
@@ -650,6 +650,22 @@ int32_t StorageDaemonCommunication::SetRecoverKey(const std::vector<uint8_t> &ke
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->SetRecoverKey(key);
+}
+
+int32_t StorageDaemonCommunication::ResetSecretWithRecoveryKey(uint32_t userId,
+    uint32_t rkType, const std::vector<uint8_t> &key)
+{
+    LOGI("enter");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->ResetSecretWithRecoveryKey(userId, rkType, key);
 }
 
 int32_t StorageDaemonCommunication::GetBundleStatsForIncrease(uint32_t userId,

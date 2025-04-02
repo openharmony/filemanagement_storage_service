@@ -111,6 +111,7 @@ namespace {
         static_cast<int32_t>(StorageManagerInterfaceCode::DELETE_APP_KEY),
         static_cast<uint32_t>(StorageManagerInterfaceCode::CREATE_RECOVER_KEY),
         static_cast<uint32_t>(StorageManagerInterfaceCode::SET_RECOVER_KEY),
+        static_cast<uint32_t>(StorageManagerInterfaceCode::RESET_SECRET_WITH_RECOVERY_KEY),
         static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_MTP_MOUNT),
         static_cast<int32_t>(StorageManagerInterfaceCode::NOTIFY_MTP_UNMOUNT),
         static_cast<int32_t>(StorageManagerInterfaceCode::UMOUNT_FILE_MGR_FUSE),
@@ -225,12 +226,13 @@ HWTEST_F(StorageManagerStubTest, Storage_Manager_StorageManagerStubTest_OnRemote
     EXPECT_CALL(mock, UnlockUserScreen(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, GetLockScreenStatus(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, SetBundleQuota(testing::_, testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
-    EXPECT_CALL(mock, GenerateAppkey(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, GenerateAppkey(testing::_, testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, DeleteAppkey(testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, UpdateUseAuthWithRecoveryKey(testing::_, testing::_, testing::_, testing::_, testing::_))
         .WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, CreateRecoverKey(testing::_, testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, SetRecoverKey(testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, ResetSecretWithRecoveryKey(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, NotifyMtpMounted(testing::_, testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, NotifyMtpUnmounted(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     EXPECT_CALL(mock, UMountFileMgrFuse(testing::_, testing::_)).WillOnce(testing::Return(E_OK));

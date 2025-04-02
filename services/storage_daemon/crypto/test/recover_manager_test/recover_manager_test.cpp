@@ -18,6 +18,26 @@
 #include <memory>
 
 #include "key_control_mock.h"
+#include "storage_service_errno.h"
+
+#ifdef RECOVER_KEY_TEE_ENVIRONMENT
+#include "tee_client_api.h"
+namespace {
+    TEEC_Result g_initializeContext;
+    TEEC_Result g_invokeCommand;
+}
+
+TEEC_Result TEEC_InitializeContext(const char *name, TEEC_Context *context)
+{
+    return g_initializeContext;
+}
+
+TEEC_Result TEEC_InvokeCommand(TEEC_Session *session, uint32_t commandID, TEEC_Operation *operation,
+                               uint32_t *returnOrigin)
+{
+    return g_invokeCommand;
+}
+#endif
 
 using namespace std;
 using namespace testing::ext;
@@ -53,6 +73,70 @@ void RecoveryManagerTest::SetUp(void)
 void RecoveryManagerTest::TearDown(void)
 {
     // input testcase teardown step, teardown invoked after each testcases
+}
+
+/**
+ * @tc.name: RecoveryManager_ResetSecretWithRecoveryKeyToTee_001
+ * @tc.desc: Verify the ResetSecretWithRecoveryKeyToTee function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(RecoveryManagerTest, RecoveryManager_ResetSecretWithRecoveryKeyToTee_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "RecoveryManager_InRecoveryManager_ResetSecretWithRecoveryKeyToTee_001stallDeCe_001 start";
+
+    g_initializeContext = static_cast<TEEC_ReturnCode>(1);
+    SetRecoverKeyStr setRecoverKeyStr;
+    auto ret = RecoveryManager::GetInstance().ResetSecretWithRecoveryKeyToTee(1, 1, {}, setRecoverKeyStr);
+    EXPECT_EQ(ret, E_RECOVERY_KEY_OPEN_SESSION_ERR);
+
+    RecoveryManager::GetInstance().isSessionOpened = true;
+    g_invokeCommand = static_cast<TEEC_ReturnCode>(1);
+    ret = RecoveryManager::GetInstance().ResetSecretWithRecoveryKeyToTee(1, 1, {}, setRecoverKeyStr);
+    EXPECT_EQ(ret, E_TEEC_SET_RK_FOR_PLUGGED_IN_SSD_ERR);
+
+    RecoveryManager::GetInstance().isSessionOpened = true;
+    g_invokeCommand = TEEC_SUCCESS;
+    ret = RecoveryManager::GetInstance().ResetSecretWithRecoveryKeyToTee(1, 1, {}, setRecoverKeyStr);
+    EXPECT_EQ(ret, E_OK);
+
+    GTEST_LOG_(INFO) << "RecoveryManager_ResetSecretWithRecoveryKeyToTee_001 end";
+}
+
+/**
+ * @tc.name: RecoveryManager_ResetSecretWithRecoveryKey_001
+ * @tc.desc: Verify the ResetSecretWithRecoveryKey function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(RecoveryManagerTest, RecoveryManager_ResetSecretWithRecoveryKey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "RecoveryManager_ResetSecretWithRecoveryKey_001 start";
+    std::vector<KeyBlob> originIvs;
+
+    g_initializeContext = static_cast<TEEC_ReturnCode>(1);
+    auto ret = RecoveryManager::GetInstance().ResetSecretWithRecoveryKey(1, 1, {}, originIvs);
+    EXPECT_EQ(ret, E_RECOVERY_KEY_OPEN_SESSION_ERR);
+
+    RecoveryManager::GetInstance().isSessionOpened = true;
+    g_invokeCommand = TEEC_SUCCESS;
+
+    EXPECT_CALL(*keyControlMock_, KeyCtrlSearch(_, _, _, _)).Times(6).WillOnce(Return(0));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlAddKeyEx(_, _, _, _)).Times(12).WillOnce(Return(0));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlAddKeySdp(_, _, _, _)).Times(6).WillOnce(Return(0));
+    ret = RecoveryManager::GetInstance().ResetSecretWithRecoveryKey(1, 1, {}, originIvs);
+    EXPECT_EQ(ret, E_OK);
+
+    RecoveryManager::GetInstance().isSessionOpened = true;
+    g_invokeCommand = TEEC_SUCCESS;
+
+    EXPECT_CALL(*keyControlMock_, KeyCtrlSearch(_, _, _, _)).WillOnce(Return(-1));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlAddKey(_, _, _)).WillOnce(Return(-1));
+
+    ret = RecoveryManager::GetInstance().ResetSecretWithRecoveryKey(1, 1, {}, originIvs);
+    EXPECT_EQ(ret, E_ADD_SESSION_KEYRING_ERROR);
+
+    GTEST_LOG_(INFO) << "RecoveryManager_ResetSecretWithRecoveryKey_001 end";
 }
 
 /**

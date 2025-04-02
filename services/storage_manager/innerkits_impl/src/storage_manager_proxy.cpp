@@ -457,7 +457,7 @@ int32_t StorageManagerProxy::UpdateKeyContext(uint32_t userId, bool needRemoveTm
     return reply.ReadInt32();
 }
 
-int32_t StorageManagerProxy::GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId)
+int32_t StorageManagerProxy::GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId, bool needReSet)
 {
     LOGI("userId ID: %{public}u", userId);
     HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
@@ -474,6 +474,9 @@ int32_t StorageManagerProxy::GenerateAppkey(uint32_t hashId, uint32_t userId, st
     }
     if (!data.WriteUint32(userId)) {
         LOGE("Write appUid failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+    if (!data.WriteBool(needReSet)) {
         return E_WRITE_PARCEL_ERR;
     }
     int32_t err = SendRequest(
@@ -565,6 +568,42 @@ int32_t StorageManagerProxy::SetRecoverKey(const std::vector<uint8_t> &key)
     }
 
     int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::SET_RECOVER_KEY), data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+
+    return reply.ReadInt32();
+}
+
+
+int32_t StorageManagerProxy::ResetSecretWithRecoveryKey(uint32_t userId,
+    uint32_t rkType, const std::vector<uint8_t> &key)
+{
+    LOGI("user ID: %{public}d", userId);
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("WriteInterfaceToken failed");
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+
+    if (!data.WriteUint32(userId)) {
+        LOGE("Write user ID failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+    if (!data.WriteUint32(rkType)) {
+        LOGE("Write user ID failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+    if (!data.WriteUInt8Vector(key)) {
+        LOGE("Write key failed");
+        return E_WRITE_PARCEL_ERR;
+    }
+
+    int err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::RESET_SECRET_WITH_RECOVERY_KEY),
+        data, reply, option);
     if (err != E_OK) {
         return err;
     }

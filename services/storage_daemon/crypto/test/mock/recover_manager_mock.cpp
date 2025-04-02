@@ -45,3 +45,15 @@ int RecoveryManager::SetRecoverKey(const std::vector<uint8_t> &key)
     }
     return IRecoveryManager::recoveryMgrMock->SetRecoverKey(key);
 }
+
+int32_t RecoveryManager::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType,
+    const std::vector<uint8_t> &key, std::vector<KeyBlob> &originIvs)
+{
+    if (IRecoveryManager::recoveryMgrMock == nullptr) {
+        return -1;
+    }
+    for (uint32_t i = 0; i < rkType; i++) {
+        originIvs.push_back(KeyBlob());
+    }
+    return IRecoveryManager::recoveryMgrMock->ResetSecretWithRecoveryKey();
+}

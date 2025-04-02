@@ -526,10 +526,10 @@ int32_t StorageDaemonProvider::GetLockScreenStatus(uint32_t userId, bool &lockSc
     return ret;
 }
 
-int32_t StorageDaemonProvider::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId)
+int32_t StorageDaemonProvider::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId, bool needReSet)
 {
     int timerId = StorageXCollie::SetTimer("storage:GenerateAppkey", LOCAL_TIME_OUT_SECONDS);
-    int32_t ret = StorageDaemon::GetInstance()->GenerateAppkey(userId, hashId, keyId);
+    int32_t ret = StorageDaemon::GetInstance()->GenerateAppkey(userId, hashId, keyId, needReSet);
     StorageXCollie::CancelTimer(timerId);
     return ret;
 }
@@ -554,6 +554,12 @@ int32_t StorageDaemonProvider::CreateRecoverKey(uint32_t userId,
 int32_t StorageDaemonProvider::SetRecoverKey(const std::vector<uint8_t> &key)
 {
     return StorageDaemon::GetInstance()->SetRecoverKey(key);
+}
+
+int32_t StorageDaemonProvider::ResetSecretWithRecoveryKey(uint32_t userId,
+                                                          uint32_t rkType, const std::vector<uint8_t> &key)
+{
+    return StorageDaemon::GetInstance()->ResetSecretWithRecoveryKey(userId, rkType, key);
 }
 
 int32_t StorageDaemonProvider::CreateShareFile(const std::vector<std::string> &uriList,

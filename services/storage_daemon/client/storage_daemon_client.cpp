@@ -464,7 +464,7 @@ int32_t StorageDaemonClient::GenerateAppkey(uint32_t userId, uint32_t hashId, st
         return E_SA_IS_NULLPTR;
     }
 
-    return client->GenerateAppkey(userId, hashId, keyId);
+    return client->GenerateAppkey(userId, hashId, keyId, false);
 }
 
 int32_t StorageDaemonClient::DeleteAppkey(uint32_t userId, const std::string keyId)
