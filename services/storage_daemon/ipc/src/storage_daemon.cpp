@@ -808,7 +808,8 @@ int32_t StorageDaemon::ActiveUserKey4Single(uint32_t userId, const std::vector<u
 {
     int ret = E_OK;
 #ifdef USER_CRYPTO_MANAGER
-    LOGW("Active user key for single secen for userId=%{public}d.", userId);
+    (void)SetPriority();
+    LOGW("userId %{public}u, tok empty %{public}d sec empty %{public}d", userId, token.empty(), secret.empty());
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL2_KEY, token, secret);
     if (ret != E_OK) {
@@ -1123,7 +1124,7 @@ int32_t StorageDaemon::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
             .funcName = "UpdateKeyContext",
             .bizScene = BizScene::USER_KEY_ENCRYPTION,
             .bizStage = BizStage::BIZ_STAGE_UPDATE_KEY_CONTEXT,
-            .keyElxLevel = "EL2",
+            .keyElxLevel = "ELx",
             .errorCode = ret
         };
         StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
@@ -1152,7 +1153,7 @@ int32_t StorageDaemon::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, 
             .funcName = "GetFileEncryptStatus",
             .bizScene = BizScene::USER_KEY_ENCRYPTION,
             .bizStage = BizStage::BIZ_STAGE_GET_FILE_ENCRYPT_STATUS,
-            .keyElxLevel = "EL1",
+            .keyElxLevel = "ELx",
             .errorCode = ret
         };
         StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
