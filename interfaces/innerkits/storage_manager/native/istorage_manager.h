@@ -135,6 +135,9 @@ public:
     // file mgr fuse
     virtual int32_t MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd) = 0;
     virtual int32_t UMountFileMgrFuse(int32_t userId, const std::string &path) = 0;
+    // file lock
+    virtual int32_t IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
+        std::vector<std::string> &outputList, bool &isOccupy) = 0;
 
     DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.StorageManager.IStorageManager");
 };

@@ -70,6 +70,13 @@ static const std::string EL3 = "el3";
 static const std::string EL4 = "el4";
 static const std::string EL5 = "el5";
 
+static const std::string UN_REACHABLE = "(unreachable)";
+static const std::string PID_CWD = "cwd";
+static const std::string PID_EXE = "exe";
+static const std::string PID_ROOT = "root";
+static const std::string PID_FD = "fd";
+static const std::string PID_PROC = "/proc";
+
 enum KeyType {
     EL1_KEY = 1,
     EL2_KEY = 2,

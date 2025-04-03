@@ -16,6 +16,7 @@
 #include "ipc/storage_manager_stub.h"
 #include "accesstoken_kit.h"
 #include "ipc_skeleton.h"
+#include "securec.h"
 #include "storage/bundle_manager_connector.h"
 #include "storage_manager_ipc_interface_code.h"
 #include "storage_service_errno.h"
@@ -30,6 +31,7 @@ constexpr pid_t ACCOUNT_UID = 3058;
 constexpr pid_t BACKUP_SA_UID = 1089;
 constexpr pid_t FOUNDATION_UID = 5523;
 constexpr pid_t DFS_UID = 1009;
+constexpr size_t MAX_IPC_RAW_DATA_SIZE = 128 * 1024 * 1024;
 const std::string MEDIALIBRARY_BUNDLE_NAME = "com.ohos.medialibrary.medialibrarydata";
 const std::string SCENEBOARD_BUNDLE_NAME = "com.ohos.sceneboard";
 const std::string SYSTEMUI_BUNDLE_NAME = "com.ohos.systemui";
@@ -38,6 +40,73 @@ const std::string PERMISSION_STORAGE_MANAGER = "ohos.permission.STORAGE_MANAGER"
 const std::string PERMISSION_MOUNT_MANAGER = "ohos.permission.MOUNT_UNMOUNT_MANAGER";
 const std::string PERMISSION_FORMAT_MANAGER = "ohos.permission.MOUNT_FORMAT_MANAGER";
 const std::string PROCESS_NAME_FOUNDATION = "foundation";
+
+static bool WriteVecByRawData(MessageParcel &data, const std::vector<std::string> &vec)
+{
+    MessageParcel tempParcel;
+    tempParcel.SetMaxCapacity(MAX_IPC_RAW_DATA_SIZE);
+    if (!tempParcel.WriteStringVector(vec)) {
+        LOGE("Write uris failed");
+        return false;
+    }
+    size_t dataSize = tempParcel.GetDataSize();
+    if (!data.WriteInt32(static_cast<int32_t>(dataSize))) {
+        LOGE("Write data size failed");
+        return false;
+    }
+    if (!data.WriteRawData(reinterpret_cast<uint8_t *>(tempParcel.GetData()), dataSize)) {
+        LOGE("Write raw data failed");
+        return false;
+    }
+    return true;
+}
+
+static bool GetData(void *&buffer, size_t size, const void *data)
+{
+    if (data == nullptr) {
+        LOGE("null data");
+        return false;
+    }
+    if (size == 0 || size > MAX_IPC_RAW_DATA_SIZE) {
+        LOGE("size invalid: %{public}zu", size);
+        return false;
+    }
+    buffer = malloc(size);
+    if (buffer == nullptr) {
+        LOGE("malloc buffer failed");
+        return false;
+    }
+    if (memcpy_s(buffer, size, data, size) != E_OK) {
+        free(buffer);
+        LOGE("memcpy failed");
+        return false;
+    }
+    return true;
+}
+
+static bool ReadVecByRawData(MessageParcel &data, std::vector<std::string> &vec)
+{
+    size_t dataSize = static_cast<size_t>(data.ReadInt32());
+    if (dataSize == 0) {
+        LOGE("parcel no data");
+        return false;
+    }
+
+    void *buffer = nullptr;
+    if (!GetData(buffer, dataSize, data.ReadRawData(dataSize))) {
+        LOGE("read raw data failed: %{public}zu", dataSize);
+        return false;
+    }
+
+    MessageParcel tempParcel;
+    if (!tempParcel.ParseFrom(reinterpret_cast<uintptr_t>(buffer), dataSize)) {
+        LOGE("failed to parseFrom");
+        free(buffer);
+        return false;
+    }
+    tempParcel.ReadStringVector(&vec);
+    return true;
+}
 
 bool CheckClientPermission(const std::string& permissionStr)
 {
@@ -209,6 +278,8 @@ StorageManagerStub::StorageManagerStub()
             &StorageManagerStub::HandleMountFileMgrFuse;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::UMOUNT_FILE_MGR_FUSE)] =
             &StorageManagerStub::HandleUMountFileMgrFuse;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::IS_FILE_OCCUPIED)] =
+        &StorageManagerStub::HandleIsFileOccupied;
 }
 
 int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
@@ -340,6 +411,8 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
             return HandleMountFileMgrFuse(data, reply);
         case static_cast<uint32_t>(StorageManagerInterfaceCode::UMOUNT_FILE_MGR_FUSE):
             return HandleUMountFileMgrFuse(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::IS_FILE_OCCUPIED):
+            return HandleIsFileOccupied(data, reply);
         default:
             LOGE("Cannot response request %{public}d: unknown tranction", code);
             return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
@@ -1496,6 +1569,48 @@ int32_t StorageManagerStub::HandleUMountFileMgrFuse(MessageParcel &data, Message
     int32_t ret = UMountFileMgrFuse(userId, path);
     if (!reply.WriteInt32(ret)) {
         return E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleIsFileOccupied(MessageParcel &data, MessageParcel &reply)
+{
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    LOGI("StorageManagerStub::HandleIsFileOccupied start.");
+    std::string path = data.ReadString();
+    std::vector<std::string> inputList;
+    int32_t inputSize = data.ReadInt32();
+    if (inputSize > 0) {
+        if (!ReadVecByRawData(data, inputList)) {
+            LOGE("manager stub: read input list failed");
+            return E_WRITE_PARCEL_ERR;
+        }
+    }
+    std::vector<std::string> outputList;
+    bool isOccupy = false;
+    int32_t ret = IsFileOccupied(path, inputList, outputList, isOccupy);
+    if (!reply.WriteInt32(ret)) {
+        LOGE("manager stub: write ret failed");
+        return E_WRITE_REPLY_ERR;
+    }
+    if (ret == E_OK) {
+        if (!reply.WriteBool(isOccupy)) {
+            LOGE("manager stub: write reply isOccupy failed");
+            return E_WRITE_REPLY_ERR;
+        }
+        int32_t outputSize = static_cast<int32_t>(outputList.size());
+        if (!reply.WriteInt32(outputSize)) {
+            LOGE("manager stub: write output size failed");
+            return E_WRITE_REPLY_ERR;
+        }
+        if (outputSize > 0) {
+            if (!WriteVecByRawData(reply, outputList)) {
+                LOGE("manager stub: write reply output list failed");
+                return E_WRITE_REPLY_ERR;
+            }
+        }
     }
     return E_OK;
 }

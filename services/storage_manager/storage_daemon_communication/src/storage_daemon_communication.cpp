@@ -795,5 +795,20 @@ int32_t StorageDaemonCommunication::UMountFileMgrFuse(int32_t userId, const std:
     }
     return storageDaemon_->UMountFileMgrFuse(userId, path);
 }
+
+int32_t StorageDaemonCommunication::IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
+    std::vector<std::string> &outputList, bool &isOccupy)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->IsFileOccupied(path, inputList, outputList, isOccupy);
+}
 } // namespace StorageManager
 } // namespace OHOS

@@ -103,6 +103,9 @@ public:
     // file mgr fuse
     int32_t MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd);
     int32_t UMountFileMgrFuse(int32_t userId, const std::string &path);
+    // file lock
+    int32_t IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
+        std::vector<std::string> &outputList, bool &isOccupy);
 private:
     sptr<OHOS::StorageDaemon::IStorageDaemon> storageDaemon_;
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;

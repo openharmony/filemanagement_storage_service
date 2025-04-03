@@ -844,5 +844,13 @@ int32_t StorageManager::UMountFileMgrFuse(int32_t userId, const std::string &pat
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     return sdCommunication->UMountFileMgrFuse(userId, path);
 }
+
+int32_t StorageManager::IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
+    std::vector<std::string> &outputList, bool &isOccupy)
+{
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->IsFileOccupied(path, inputList, outputList, isOccupy);
+}
 }
 }

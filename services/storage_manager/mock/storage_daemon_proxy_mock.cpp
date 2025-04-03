@@ -275,5 +275,11 @@ int32_t StorageDaemonProxy::UMountFileMgrFuse(int32_t userId, const std::string 
 {
     return E_OK;
 }
+
+int32_t StorageDaemonProxy::IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
+    std::vector<std::string> &outputList, bool &isOccupy)
+{
+    return E_OK;
+}
 } // StorageDaemon
 } // OHOS

@@ -76,6 +76,8 @@ public:
     MOCK_METHOD1(UMountMediaFuse, int32_t (int32_t));
     MOCK_METHOD3(MountFileMgrFuse, int32_t (int32_t, const std::string &, int32_t &));
     MOCK_METHOD2(UMountFileMgrFuse, int32_t (int32_t, const std::string &));
+    MOCK_METHOD4(IsFileOccupied, int32_t (const std::string &, const std::vector<std::string> &,
+        std::vector<std::string> &, bool &));
 };
 }  // namespace StorageDaemon
 }  // namespace OHOS

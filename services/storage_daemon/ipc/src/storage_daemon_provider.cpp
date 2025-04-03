@@ -676,6 +676,12 @@ int32_t StorageDaemonProvider::UMountFileMgrFuse(int32_t userId, const std::stri
     return MountManager::GetInstance()->UMountFileMgrFuse(userId, path);
 }
 
+int32_t StorageDaemonProvider::IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
+    std::vector<std::string> &outputList, bool &isOccupy)
+{
+    return MountManager::GetInstance()->IsFileOccupied(path, inputList, outputList, isOccupy);
+}
+
 void StorageDaemonProvider::SystemAbilityStatusChangeListener::OnAddSystemAbility(int32_t systemAbilityId,
                                                                                   const std::string &deviceId)
 {

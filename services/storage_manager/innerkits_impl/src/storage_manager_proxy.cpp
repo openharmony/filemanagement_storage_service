@@ -15,6 +15,7 @@
 
 #include "storage_manager_proxy.h"
 #include "hitrace_meter.h"
+#include "securec.h"
 #include "storage_manager_ipc_interface_code.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -22,6 +23,74 @@
 
 namespace OHOS {
 namespace StorageManager {
+constexpr size_t MAX_IPC_RAW_DATA_SIZE = 128 * 1024 * 1024;
+static bool GetData(void *&buffer, size_t size, const void *data)
+{
+    if (data == nullptr) {
+        LOGE("null data");
+        return false;
+    }
+    if (size == 0 || size > MAX_IPC_RAW_DATA_SIZE) {
+        LOGE("size invalid: %{public}zu", size);
+        return false;
+    }
+    buffer = malloc(size);
+    if (buffer == nullptr) {
+        LOGE("malloc buffer failed");
+        return false;
+    }
+    if (memcpy_s(buffer, size, data, size) != E_OK) {
+        free(buffer);
+        LOGE("memcpy failed");
+        return false;
+    }
+    return true;
+}
+
+static bool ReadVecByRawData(MessageParcel &data, std::vector<std::string> &vec)
+{
+    size_t dataSize = static_cast<size_t>(data.ReadInt32());
+    if (dataSize == 0) {
+        LOGE("parcel no data");
+        return false;
+    }
+
+    void *buffer = nullptr;
+    if (!GetData(buffer, dataSize, data.ReadRawData(dataSize))) {
+        LOGE("read raw data failed: %{public}zu", dataSize);
+        return false;
+    }
+
+    MessageParcel tempParcel;
+    if (!tempParcel.ParseFrom(reinterpret_cast<uintptr_t>(buffer), dataSize)) {
+        LOGE("failed to parseFrom");
+        free(buffer);
+        return false;
+    }
+    tempParcel.ReadStringVector(&vec);
+    return true;
+}
+
+static bool WriteVecByRawData(MessageParcel &data, const std::vector<std::string> &vec)
+{
+    MessageParcel tempParcel;
+    tempParcel.SetMaxCapacity(MAX_IPC_RAW_DATA_SIZE);
+    if (!tempParcel.WriteStringVector(vec)) {
+        LOGE("write vec failed");
+        return false;
+    }
+    size_t dataSize = tempParcel.GetDataSize();
+    if (!data.WriteInt32(static_cast<int32_t>(dataSize))) {
+        LOGE("write data size failed");
+        return false;
+    }
+    if (!data.WriteRawData(reinterpret_cast<uint8_t *>(tempParcel.GetData()), dataSize)) {
+        LOGE("write raw data failed");
+        return false;
+    }
+    return true;
+}
+
 int32_t StorageManagerProxy::PrepareAddUser(int32_t userId, uint32_t flags)
 {
     LOGI("StorageManagerProxy::PrepareAddUser, userId:%{public}d", userId);
@@ -1797,6 +1866,50 @@ int32_t StorageManagerProxy::UMountFileMgrFuse(int32_t userId, const std::string
         return err;
     }
     return reply.ReadInt32();
+}
+
+int32_t StorageManagerProxy::IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
+    std::vector<std::string> &outputList, bool &isOccupy)
+{
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(StorageManagerProxy::GetDescriptor())) {
+        LOGE("manager proxy: WriteInterfaceToken failed.");
+        return E_WRITE_DESCRIPTOR_ERR;
+    }
+    if (!data.WriteString(path)) {
+        LOGE("manager proxy: write path failed.");
+        return E_WRITE_PARCEL_ERR;
+    }
+    int32_t inputSize = static_cast<int32_t>(inputList.size());
+    if (!data.WriteInt32(inputSize)) {
+        LOGE("manager proxy: write input size failed.");
+        return E_WRITE_PARCEL_ERR;
+    }
+    if (inputSize > 0) {
+        if (!WriteVecByRawData(data, inputList)) {
+            LOGE("manager proxy: write input raw data failed.");
+            return E_WRITE_PARCEL_ERR;
+        }
+    }
+    int32_t err = SendRequest(static_cast<int32_t>(StorageManagerInterfaceCode::IS_FILE_OCCUPIED), data, reply, option);
+    if (err != E_OK) {
+        return err;
+    }
+    err = reply.ReadInt32();
+    if (err != E_OK) {
+        return err;
+    }
+    isOccupy = reply.ReadBool();
+    int32_t outputSize = reply.ReadInt32();
+    if (outputSize > 0) {
+        if (!ReadVecByRawData(reply, outputList)) {
+            LOGE("manager proxy: read output list failed.");
+            return E_WRITE_REPLY_ERR;
+        }
+    }
+    return E_OK;
 }
 } // StorageManager
 } // OHOS

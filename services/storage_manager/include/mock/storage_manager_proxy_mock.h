@@ -121,6 +121,9 @@ public:
     // file mgr fuse
     int32_t MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd) override;
     int32_t UMountFileMgrFuse(int32_t userId, const std::string &path) override;
+    // file lock
+    int32_t IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
+        std::vector<std::string> &outputList, bool &isOccupy) override;
 private:
     static inline BrokerDelegator<StorageManagerProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);
