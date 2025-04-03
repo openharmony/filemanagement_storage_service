@@ -123,6 +123,13 @@ int32_t StorageDaemonProxy::UpdateUseAuthWithRecoveryKey(const std::vector<uint8
     return E_OK;
 }
 
+int32_t StorageDaemonProxy::ResetSecretWithRecoveryKey(uint32_t userId,
+                                                       uint32_t rkType,
+                                                       const std::vector<uint8_t> &key)
+{
+    return E_OK;
+}
+
 int32_t StorageDaemonProxy::ActiveUserKey(uint32_t userId,
                                           const std::vector<uint8_t> &token,
                                           const std::vector<uint8_t> &secret)
@@ -152,7 +159,7 @@ int32_t StorageDaemonProxy::GetLockScreenStatus(uint32_t userId, bool &lockScree
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId)
+int32_t StorageDaemonProxy::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId, bool needReSet)
 {
     return E_OK;
 }

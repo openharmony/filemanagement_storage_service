@@ -29,6 +29,7 @@ static const std::string CRYPTO_NAME_PREFIXES[] = {"ext4", "f2fs", "fscrypt"};
 constexpr uint32_t ELX_TYPE_ARR[] = { TYPE_GLOBAL_EL1, USERID_GLOBAL_EL1, TYPE_EL1, TYPE_EL2, TYPE_EL3, TYPE_EL4 };
 constexpr static uint32_t TEE_PARAM_INDEX_0 = 0;
 constexpr static uint32_t TEE_PARAM_INDEX_1 = 1;
+constexpr static uint32_t TEE_PARAM_INDEX_2 = 2;
 constexpr static int SESSION_START_DEFAULT = 1;
 constexpr int MAX_RETRY_COUNT = 3;
 constexpr int RETRY_INTERVAL = 100 * 1000; // 100ms
@@ -182,6 +183,93 @@ int RecoveryManager::SetRecoverKeyToTee(const std::vector<uint8_t> &key, SetReco
     CloseSession(setKeyContext, setKeySession);
 #endif
     return 0;
+}
+
+int32_t RecoveryManager::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType,
+    const std::vector<uint8_t> &key, std::vector<KeyBlob> &originIvs)
+{
+    LOGI("reset secret userId: %{public}d", userId);
+#ifdef RECOVER_KEY_TEE_ENVIRONMENT
+    SetRecoverKeyStr setRecoverKeyStr;
+    int ret = ResetSecretWithRecoveryKeyToTee(userId, rkType, key, setRecoverKeyStr);
+    if (ret != 0) {
+        LOGE("Set recover key to tee failed !");
+        return ret;
+    }
+
+    if (sizeof(setRecoverKeyStr.key2FromTee) != sizeof(setRecoverKeyStr.rndFromTee)) {
+        LOGE("key2 size dose not match iv size !");
+        return E_PARAMS_INVALID;
+    }
+    int rndNum = sizeof(setRecoverKeyStr.rndFromTee) / RND_AND_KEY2_LEN;
+    int key2Num = sizeof(setRecoverKeyStr.key2FromTee) / RND_AND_KEY2_LEN;
+    if (rndNum != RND_AND_KEY2_NUMS || key2Num != RND_AND_KEY2_NUMS) {
+        LOGE("rnd and key2 num is not match ! rndNum: %{public}d, key2Num: %{public}d", rndNum, key2Num);
+        return E_PARAMS_INVALID;
+    }
+
+    for (int i = 0; i < rndNum; ++i) {
+        uint8_t *key2 = setRecoverKeyStr.key2FromTee[i];
+        uint8_t *originIv = setRecoverKeyStr.rndFromTee[i];
+        std::vector<uint8_t> key2Data(key2, key2 + RND_AND_KEY2_LEN);
+        std::vector<uint8_t> ivData(originIv, originIv + RND_AND_KEY2_LEN);
+        KeyBlob ivBlob(ivData);
+        KeyBlob key2Blob(key2Data);
+        KeyBlob keyDesc;
+        auto errNo = GenerateKeyDesc(ivBlob, keyDesc);
+        if (errNo != E_OK) {
+            LOGE("Generate key desc failed !");
+            return errNo;
+        }
+        ret = InstallKeyDescToKeyring(ELX_TYPE_ARR[i], key2Blob, keyDesc);
+        if (ret != E_OK) {
+            LOGE("install type %{public}d to keyring failed !", ELX_TYPE_ARR[i]);
+            return ret;
+        }
+        originIvs.emplace_back(ivBlob);
+    }
+#endif
+    return E_OK;
+}
+
+int32_t RecoveryManager::ResetSecretWithRecoveryKeyToTee(uint32_t userId, uint32_t rkType,
+    const std::vector<uint8_t> &key, SetRecoverKeyStr &setRecoverKeyStr)
+{
+    LOGI("reset secret with recovery key");
+#ifdef RECOVER_KEY_TEE_ENVIRONMENT
+    TEEC_Context setKeyContext = {};
+    TEEC_Session setKeySession = {};
+    if (!OpenSession(setKeyContext, setKeySession)) {
+        LOGE("Open session failed !");
+        return E_RECOVERY_KEY_OPEN_SESSION_ERR;
+    }
+
+    TEEC_Operation operation = { 0 };
+    operation.started = SESSION_START_DEFAULT;
+    operation.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT,
+        TEEC_VALUE_INPUT, TEEC_MEMREF_TEMP_OUTPUT, TEEC_NONE);
+    uint32_t setKeyOrigin;
+    operation.params[TEE_PARAM_INDEX_0].tmpref.buffer = static_cast<void *>(const_cast<unsigned char *>(key.data()));
+    operation.params[TEE_PARAM_INDEX_0].tmpref.size = key.size();
+    operation.params[TEE_PARAM_INDEX_1].value.a = userId;
+    operation.params[TEE_PARAM_INDEX_1].value.b = rkType;
+    operation.params[TEE_PARAM_INDEX_2].tmpref.buffer = static_cast<void *>(&setRecoverKeyStr);
+    operation.params[TEE_PARAM_INDEX_2].tmpref.size = sizeof(setRecoverKeyStr);
+    TEEC_Result ret = TEEC_InvokeCommand(&setKeySession, TaCmdId::RK_CMD_ID_SET_RK_FOR_PLUGGED_IN_SSD, &operation,
+                                         &setKeyOrigin);
+    LOGI("InvokeCmd ret: %{public}d, origin: %{public}d", ret, setKeyOrigin);
+    if (ret != TEEC_SUCCESS) {
+        LOGE("InvokeCmd failed, ret: %{public}d, origin: %{public}d", ret, setKeyOrigin);
+        CloseSession(setKeyContext, setKeySession);
+        std::string extraData = "cmd=RK_CMD_ID_SET_RK_FOR_PLUGGED_IN_SSD,ret=" + std::to_string(ret) +
+            ",origin=" + std::to_string(setKeyOrigin);
+        StorageRadar::ReportTEEClientResult("ResetSecretWithRecoveryKeyToTee::TEEC_InvokeCommand",
+            E_TEEC_SET_RK_FOR_PLUGGED_IN_SSD_ERR, userId, extraData);
+        return E_TEEC_SET_RK_FOR_PLUGGED_IN_SSD_ERR;
+    }
+    CloseSession(setKeyContext, setKeySession);
+#endif
+    return E_OK;
 }
 
 #ifdef RECOVER_KEY_TEE_ENVIRONMENT

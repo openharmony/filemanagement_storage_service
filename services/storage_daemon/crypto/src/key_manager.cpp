@@ -1439,7 +1439,7 @@ int KeyManager::GetLockScreenStatus(uint32_t user, bool &lockScreenStatus)
     return 0;
 }
 
-int KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId)
+int KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId, bool needReSet)
 {
     if (!IsUeceSupport()) {
         LOGI("Not support uece !");
@@ -1447,6 +1447,10 @@ int KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &ke
     }
     LOGI("enter");
     std::lock_guard<std::mutex> lock(keyMutex_);
+    if (needReSet) {
+        return GenerateAppkeyWithRecover(userId, hashId, keyId);
+    }
+
     if (userId == KEY_RECOVERY_USER_ID) {
         LOGI("GenerateAppKey when RecoverKey");
         auto el5Key = GetBaseKey(GetKeyDirByUserAndType(userId, EL5_KEY));
@@ -1471,6 +1475,34 @@ int KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &ke
         LOGE("Failed to generate Appkey2 error=%{public}d", ret);
         return E_EL5_GENERATE_APP_KEY_ERR;
     }
+
+    return 0;
+}
+
+int KeyManager::GenerateAppkeyWithRecover(uint32_t userId, uint32_t hashId, std::string &keyId)
+{
+    LOGI("GenerateAppkey needReSet");
+    std::string el5Path = std::string(MAINTAIN_USER_EL5_DIR) + "/" + std::to_string(userId);
+    if (!IsDir(el5Path)) {
+        LOGE("Have not found type %{public}s", el5Path.c_str());
+        return E_KEY_TYPE_INVALID;
+    }
+    auto el5Key = GetBaseKey(el5Path);
+    if (el5Key == nullptr) {
+        LOGE("el5Key is nullptr");
+        return E_PARAMS_NULLPTR_ERR;
+    }
+    auto ret = el5Key->GenerateAppkey(userId, hashId, keyId);
+    if (ret != E_OK) {
+        LOGE("Failed to generate Appkey2 error=%{public}d", ret);
+        return E_EL5_GENERATE_APP_KEY_WITH_RECOVERY_ERR;
+    }
+    ret = el5Key->DeleteClassEPinCode(userId);
+    if (ret != E_OK) {
+        LOGE("GenerateAppkey DeleteClassEPinCode failed");
+        return E_EL5_DELETE_CLASS_WITH_RECOVERY_ERR;
+    }
+    saveESecretStatus[userId] = false;
     return 0;
 }
 
@@ -1543,6 +1575,55 @@ int KeyManager::SetRecoverKey(const std::vector<uint8_t> &key)
         LOGE("Set recovery key filed !");
         return E_SET_RECOVERY_KEY_ERR;
     }
+    return E_OK;
+}
+
+int32_t KeyManager::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key)
+{
+    LOGI("enter");
+#ifdef RECOVER_KEY_TEE_ENVIRONMENT
+    std::vector<KeyBlob> originIvs;
+    auto ret = RecoveryManager::GetInstance().ResetSecretWithRecoveryKey(userId, rkType, key, originIvs);
+    if (ret != E_OK) {
+        LOGE("ResetSecretWithRecoveryKey filed !");
+        return E_RESET_SECRET_WITH_RECOVERY_KEY_ERR;
+    }
+
+    LOGI("enter UpdateUseAuthWithRecoveryKey start, user:%{public}d", userId);
+    std::string globalUserEl1Path = std::string(MAINTAIN_USER_EL1_DIR) + "/" + std::to_string(GLOBAL_USER_ID);
+    std::string el1Path = std::string(MAINTAIN_USER_EL1_DIR) + "/" + std::to_string(userId);
+    std::string el2Path = std::string(MAINTAIN_USER_EL2_DIR) + "/" + std::to_string(userId);
+    std::string el3Path = std::string(MAINTAIN_USER_EL3_DIR) + "/" + std::to_string(userId);
+    std::string el4Path = std::string(MAINTAIN_USER_EL4_DIR) + "/" + std::to_string(userId);
+    std::vector<std::string> elKeyDirs = {MAINTAIN_DEVICE_EL1_DIR, globalUserEl1Path,
+                                          el1Path, el2Path, el3Path, el4Path};
+
+    if (originIvs.size() < elKeyDirs.size()) {
+        LOGE("plain text size error");
+        return E_PARAMS_INVALID;
+    }
+
+    uint32_t i = 0;
+    for (const auto &elxKeyDir : elKeyDirs) {
+        if (!IsDir(elxKeyDir)) {
+            LOGE("Have not found type %{public}s", elxKeyDir.c_str());
+            return E_KEY_TYPE_INVALID;
+        }
+        std::shared_ptr<BaseKey> elxKey = GetBaseKey(elxKeyDir);
+        if (elxKey == nullptr) {
+            LOGE("load elx key failed , key path is %{public}s", elxKeyDir.c_str());
+            return E_PARAMS_NULLPTR_ERR;
+        }
+
+        elxKey->SetOriginKey(originIvs[i]);
+        i++;
+        auto ret = elxKey->StoreKey(NULL_KEY_AUTH);
+        if (ret != E_OK) {
+            LOGE("Store key error");
+            return E_ELX_KEY_STORE_ERROR;
+        }
+    }
+#endif
     return E_OK;
 }
 

@@ -70,6 +70,12 @@ int32_t StorageManagerProxy::UpdateUseAuthWithRecoveryKey(const std::vector<uint
     return E_OK;
 }
 
+int32_t StorageManagerProxy::ResetSecretWithRecoveryKey(uint32_t userId,
+    uint32_t rkType, const std::vector<uint8_t> &key)
+{
+    return E_OK;
+}
+
 int32_t StorageManagerProxy::ActiveUserKey(uint32_t userId,
                                            const std::vector<uint8_t> &token,
                                            const std::vector<uint8_t> &secret)
@@ -104,7 +110,7 @@ int32_t StorageManagerProxy::UpdateKeyContext(uint32_t userId, bool needRemoveTm
     return E_OK;
 }
 
-int32_t StorageManagerProxy::GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId)
+int32_t StorageManagerProxy::GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId, bool needReSet)
 {
     return E_OK;
 }

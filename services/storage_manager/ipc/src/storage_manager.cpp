@@ -633,12 +633,12 @@ int32_t StorageManager::GetLockScreenStatus(uint32_t userId, bool &lockScreenSta
 #endif
 }
 
-int32_t StorageManager::GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId)
+int32_t StorageManager::GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId, bool needReSet)
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("hashId: %{public}u", hashId);
     std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    return fsCrypto->GenerateAppkey(hashId, userId, keyId);
+    return fsCrypto->GenerateAppkey(hashId, userId, keyId, needReSet);
 #else
     return E_OK;
 #endif
@@ -677,6 +677,18 @@ int32_t StorageManager::SetRecoverKey(const std::vector<uint8_t> &key)
     LOGI("SetRecoverKey enter");
     std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
     return fsCrypto->SetRecoverKey(key);
+#else
+    return E_OK;
+#endif
+}
+
+int32_t StorageManager::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key)
+{
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("ResetSecretWithRecoveryKey UserId: %{public}u", userId);
+    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
+    int32_t err = fsCrypto->ResetSecretWithRecoveryKey(userId, rkType, key);
+    return err;
 #else
     return E_OK;
 #endif

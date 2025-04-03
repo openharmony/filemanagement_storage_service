@@ -83,6 +83,7 @@ private:
     int32_t HandleGetUserNeedActiveStatus(MessageParcel &data, MessageParcel &reply);
     int32_t HandleCreateRecoverKey(MessageParcel &data, MessageParcel &reply);
     int32_t HandleSetRecoverKey(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleResetSecretWithRecoveryKey(MessageParcel &data, MessageParcel &reply);
 
     // app file share api
     int32_t HandleCreateShareFile(MessageParcel &data, MessageParcel &reply);

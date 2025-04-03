@@ -95,6 +95,7 @@ namespace StorageManager {
         MOUNT_FILE_MGR_FUSE,
         UMOUNT_FILE_MGR_FUSE,
         QUERY_USB_IS_IN_USE,
+        RESET_SECRET_WITH_RECOVERY_KEY,
     };
 } // namespace StorageManager
 } // namespace OHOS

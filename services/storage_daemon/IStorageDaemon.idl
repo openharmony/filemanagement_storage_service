@@ -44,7 +44,8 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 26] void UnlockUserScreen([in] unsigned int user, [in] unsigned char[] token,
                                         [in] unsigned char[] secret);
      [ipccode 27] void GetLockScreenStatus([in] unsigned int user, [out] boolean lockScreenStatus);
-     [ipccode 32] void GenerateAppkey([in] unsigned int userId, [in] unsigned int hashId, [out] String keyId);
+     [ipccode 32] void GenerateAppkey([in] unsigned int userId, [in] unsigned int hashId,
+                                      [out] String keyId, [in] boolean needReSet);
      [ipccode 33] void DeleteAppkey([in] unsigned int userId, [in] String keyId);
      [ipccode 37] void CreateRecoverKey([in] unsigned int userId, [in] unsigned int userType, 
                                         [in] unsigned char[] token,[in] unsigned char[] secret);
@@ -74,4 +75,6 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 42] void MountFileMgrFuse([in] int userId, [in] String path, [out] FileDescriptor fuseFd);
      [ipccode 43] void UMountFileMgrFuse([in] int userId, [in] String path);
      [ipccode 44] void QueryUsbIsInUse([in] String diskPath, [out] boolean isInUse);
+     [ipccode 47] void ResetSecretWithRecoveryKey([in] unsigned int userId,
+                                                  [in] unsigned int rkType, [in] unsigned char[] key);
 }

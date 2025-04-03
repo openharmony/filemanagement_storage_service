@@ -76,7 +76,7 @@ public:
     MOCK_METHOD2(UpdateMemoryPara, int32_t (int32_t, int32_t &));
     MOCK_METHOD5(GetBundleStatsForIncrease, int32_t(uint32_t, const std::vector<std::string> &,
         const std::vector<int64_t> &, std::vector<int64_t> &, std::vector<int64_t> &));
-    MOCK_METHOD3(GenerateAppkey, int32_t(uint32_t, uint32_t, std::string &));
+    MOCK_METHOD4(GenerateAppkey, int32_t(uint32_t, uint32_t, std::string &, bool));
     MOCK_METHOD4(SetBundleQuota, int32_t(const std::string &, int32_t, const std::string &, int32_t));
     MOCK_METHOD1(DeleteAppkey, int32_t(const std::string keyId));
     MOCK_METHOD3(GetFileEncryptStatus, int32_t(uint32_t, bool &, bool));
@@ -84,6 +84,7 @@ public:
     MOCK_METHOD4(CreateRecoverKey, int32_t(uint32_t, uint32_t, const std::vector<uint8_t> &,
         const std::vector<uint8_t> &));
     MOCK_METHOD1(SetRecoverKey, int32_t(const std::vector<uint8_t> &));
+    MOCK_METHOD3(ResetSecretWithRecoveryKey, int32_t(uint32_t, uint32_t, const std::vector<uint8_t> &));
     MOCK_METHOD4(NotifyMtpMounted, int32_t(const std::string &, const std::string &, const std::string &,
         const std::string &));
     MOCK_METHOD3(NotifyMtpUnmounted, int32_t(const std::string &, const std::string &, const bool));

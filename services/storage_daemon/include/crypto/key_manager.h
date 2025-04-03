@@ -37,6 +37,12 @@ constexpr const char *NATO_EL2_DIR = "/data/service/el1/public/storage_daemon/sd
 constexpr const char *NATO_EL3_DIR = "/data/service/el1/public/storage_daemon/sd/el3_NATO";
 constexpr const char *NATO_EL4_DIR = "/data/service/el1/public/storage_daemon/sd/el4_NATO";
 
+constexpr const char *MAINTAIN_USER_EL1_DIR = "/mnt/data_old/service/el1/public/storage_daemon/sd/el1";
+constexpr const char *MAINTAIN_USER_EL2_DIR = "/mnt/data_old/service/el1/public/storage_daemon/sd/el2";
+constexpr const char *MAINTAIN_USER_EL3_DIR = "/mnt/data_old/service/el1/public/storage_daemon/sd/el3";
+constexpr const char *MAINTAIN_USER_EL4_DIR = "/mnt/data_old/service/el1/public/storage_daemon/sd/el4";
+constexpr const char *MAINTAIN_USER_EL5_DIR = "/mnt/data_old/service/el1/public/storage_daemon/sd/el5";
+
 class KeyManager {
 public:
     static KeyManager *GetInstance(void)
@@ -80,13 +86,14 @@ public:
     int UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &token,
                          const std::vector<uint8_t> &secret);
     int GetLockScreenStatus(uint32_t user, bool &lockScreenStatus);
-    int GenerateAppkey(uint32_t user, uint32_t hashId, std::string &keyId);
+    int GenerateAppkey(uint32_t user, uint32_t hashId, std::string &keyId, bool needReSet = false);
     int DeleteAppkey(uint32_t user, const std::string keyId);
     int UnlockUserAppKeys(uint32_t userId, bool needGetAllAppKey);
     int GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false);
     int CreateRecoverKey(uint32_t userId, uint32_t userType, const std::vector<uint8_t> &token,
                          const std::vector<uint8_t> &secret);
     int SetRecoverKey(const std::vector<uint8_t> &key);
+    int32_t ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key);
 #ifdef USER_CRYPTO_MIGRATE_KEY
     int RestoreUserKey(uint32_t userId, KeyType type);
     int32_t ClearAppCloneUserNeedRestore(unsigned int userId, std::string elNeedRestorePath);
@@ -158,6 +165,7 @@ private:
     bool HashElxActived(unsigned int user, KeyType type);
     bool IsAppCloneUser(unsigned int user);
     int CheckNeedRestoreVersion(unsigned int user, KeyType type);
+    int GenerateAppkeyWithRecover(uint32_t userId, uint32_t hashId, std::string &keyId);
 #ifdef EL5_FILEKEY_MANAGER
     int GenerateAndLoadAppKeyInfo(uint32_t userId, const std::vector<std::pair<int, std::string>> &keyInfo);
 #endif

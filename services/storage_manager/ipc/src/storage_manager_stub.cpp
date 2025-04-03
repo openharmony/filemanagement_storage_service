@@ -195,6 +195,8 @@ StorageManagerStub::StorageManagerStub()
         &StorageManagerStub::HandleGetUserNeedActiveStatus;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::SET_RECOVER_KEY)] =
         &StorageManagerStub::HandleSetRecoverKey;
+    opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::RESET_SECRET_WITH_RECOVERY_KEY)] =
+        &StorageManagerStub::HandleResetSecretWithRecoveryKey;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::NOTIFY_MTP_MOUNT)] =
         &StorageManagerStub::HandleNotifyMtpMount;
     opToInterfaceMap_[static_cast<uint32_t>(StorageManagerInterfaceCode::NOTIFY_MTP_UNMOUNT)] =
@@ -324,6 +326,8 @@ int32_t StorageManagerStub::OnRemoteRequest(uint32_t code,
             return HandleCreateRecoverKey(data, reply);
         case static_cast<uint32_t>(StorageManagerInterfaceCode::SET_RECOVER_KEY):
             return HandleSetRecoverKey(data, reply);
+        case static_cast<uint32_t>(StorageManagerInterfaceCode::RESET_SECRET_WITH_RECOVERY_KEY):
+            return HandleResetSecretWithRecoveryKey(data, reply);
         case static_cast<uint32_t>(StorageManagerInterfaceCode::NOTIFY_MTP_MOUNT):
             return HandleNotifyMtpMount(data, reply);
         case static_cast<uint32_t>(StorageManagerInterfaceCode::NOTIFY_MTP_UNMOUNT):
@@ -1069,8 +1073,9 @@ int32_t StorageManagerStub::HandleGenerateAppkey(MessageParcel &data, MessagePar
     }
     uint32_t hashId = data.ReadUint32();
     uint32_t userId = data.ReadUint32();
+    bool needReSet = data.ReadBool();
     std::string keyId;
-    int32_t err = GenerateAppkey(hashId, userId, keyId);
+    int32_t err = GenerateAppkey(hashId, userId, keyId, needReSet);
     if (!reply.WriteString(keyId)) {
         LOGE("Write reply lockScreenStatus failed");
         return E_WRITE_REPLY_ERR;
@@ -1125,6 +1130,24 @@ int32_t StorageManagerStub::HandleSetRecoverKey(MessageParcel &data, MessageParc
     data.ReadUInt8Vector(&key);
 
     int32_t err = SetRecoverKey(key);
+    if (!reply.WriteInt32(err)) {
+        LOGE("Write reply error code failed");
+        return E_WRITE_REPLY_ERR;
+    }
+    return E_OK;
+}
+
+int32_t StorageManagerStub::HandleResetSecretWithRecoveryKey(MessageParcel &data, MessageParcel &reply)
+{
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
+        return E_PERMISSION_DENIED;
+    }
+    uint32_t userId = data.ReadUint32();
+    uint32_t rkType = data.ReadUint32();
+    std::vector<uint8_t> key;
+    data.ReadUInt8Vector(&key);
+
+    int32_t err = ResetSecretWithRecoveryKey(userId, rkType, key);
     if (!reply.WriteInt32(err)) {
         LOGE("Write reply error code failed");
         return E_WRITE_REPLY_ERR;

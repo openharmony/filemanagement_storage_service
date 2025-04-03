@@ -764,7 +764,7 @@ HWTEST_F(StorageDaemonClientTest, Storage_Service_StorageDaemonClientTest_Genera
     EXPECT_CALL(*sam, CheckSystemAbility(An<int32_t>(), An<bool&>()))
         .WillOnce(DoAll(SetArgReferee<1>(true), Return(sd)));
     EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, GenerateAppkey(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*sd, GenerateAppkey(_, _, _, _)).WillOnce(Return(E_OK));
     ret = StorageDaemonClient::GenerateAppkey(0, 0, keyId);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_StorageDaemonClientTest_GenerateAppkey_001 end";

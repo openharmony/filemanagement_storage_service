@@ -50,6 +50,7 @@ struct SetRecoverKeyStr {
 enum TaCmdId {
     RK_CMD_ID_GEN_RECOVERY_KEY = 0x1000A003,
     RK_CMD_ID_DECRYPT_CLASS_KEY = 0x1000A008,
+    RK_CMD_ID_SET_RK_FOR_PLUGGED_IN_SSD  = 0x1000A011,
 };
 
 const size_t DEVICE_EL1 = 0;
@@ -73,6 +74,8 @@ public:
                          const std::vector<uint8_t> &secret,
                          const std::vector<KeyBlob> &originIv);
     int SetRecoverKey(const std::vector<uint8_t> &key);
+    int32_t ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType,
+        const std::vector<uint8_t> &key, std::vector<KeyBlob> &originIvs);
 
 private:
     RecoveryManager();
@@ -90,6 +93,8 @@ private:
     int32_t InstallKeyDescToKeyring(size_t keyType, const KeyBlob &key2Blob, const KeyBlob &keyDesc);
     int32_t InstallDeCe(const KeyBlob &key2Blob, const KeyBlob &keyDesc);
     int32_t InstallEceSece(uint32_t sdpClass, const KeyBlob &key2Blob, const KeyBlob &keyDesc);
+    int32_t ResetSecretWithRecoveryKeyToTee(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key,
+        SetRecoverKeyStr &setRecoverKeyStr);
 
 #ifdef RECOVER_KEY_TEE_ENVIRONMENT
     TEEC_UUID *recoverUuid_ = &recoverTaUuid;

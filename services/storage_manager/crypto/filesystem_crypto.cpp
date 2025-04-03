@@ -206,7 +206,7 @@ int32_t FileSystemCrypto::GetLockScreenStatus(uint32_t userId, bool &lockScreenS
     return sdCommunication->GetLockScreenStatus(userId, lockScreenStatus);
 }
 
-int32_t FileSystemCrypto::GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId)
+int32_t FileSystemCrypto::GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId, bool needReSet)
 {
     LOGI("UserId: %{public}u", userId);
     int32_t err = CheckUserIdRange(userId);
@@ -216,7 +216,7 @@ int32_t FileSystemCrypto::GenerateAppkey(uint32_t hashId, uint32_t userId, std::
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    return sdCommunication->GenerateAppkey(userId, hashId, keyId);
+    return sdCommunication->GenerateAppkey(userId, hashId, keyId, needReSet);
 }
 
 int32_t FileSystemCrypto::DeleteAppkey(const std::string keyId)
@@ -275,6 +275,20 @@ int32_t FileSystemCrypto::SetRecoverKey(const std::vector<uint8_t> &key)
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     return sdCommunication->SetRecoverKey(key);
+}
+
+int32_t FileSystemCrypto::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key)
+{
+    LOGI("UserId: %{public}u", userId);
+    int32_t err = CheckUserIdRange(userId);
+    if (err != E_OK) {
+        LOGE("User ID out of range");
+        return err;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    err = sdCommunication->ResetSecretWithRecoveryKey(userId, rkType, key);
+    return err;
 }
 
 int32_t FileSystemCrypto::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)

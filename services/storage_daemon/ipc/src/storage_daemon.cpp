@@ -1070,10 +1070,10 @@ int32_t StorageDaemon::GetLockScreenStatus(uint32_t userId, bool &lockScreenStat
 #endif
 }
 
-int32_t StorageDaemon::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId)
+int32_t StorageDaemon::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId, bool needReSet)
 {
 #ifdef USER_CRYPTO_MANAGER
-    int ret = KeyManager::GetInstance()->GenerateAppkey(userId, hashId, keyId);
+    int ret = KeyManager::GetInstance()->GenerateAppkey(userId, hashId, keyId, needReSet);
     if (ret != E_OK) {
         StorageRadar::ReportUserKeyResult("GenerateAppKey", userId, ret, EL5,
             "not support uece / EL5key is nullptr or ENONET");
@@ -1109,6 +1109,16 @@ int32_t StorageDaemon::CreateRecoverKey(uint32_t userId,
 int32_t StorageDaemon::SetRecoverKey(const std::vector<uint8_t> &key)
 {
     return E_OK;
+}
+
+int32_t StorageDaemon::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key)
+{
+    LOGI("begin to ResetSecretWithRecoveryKey");
+#ifdef USER_CRYPTO_MANAGER
+    return KeyManager::GetInstance()->ResetSecretWithRecoveryKey(userId, rkType, key);
+#else
+    return E_OK;
+#endif
 }
 
 int32_t StorageDaemon::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)

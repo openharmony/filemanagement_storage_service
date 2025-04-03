@@ -106,6 +106,63 @@ void KeyMgrAnotherTest::TearDown(void)
 }
 
 /**
+ * @tc.name: KeyManager_ResetSecretWithRecoveryKey_000
+ * @tc.desc: Verify the ResetSecretWithRecoveryKey function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(KeyMgrAnotherTest, KeyManager_ResetSecretWithRecoveryKey_000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_ResetSecretWithRecoveryKey_000 Start";
+    uint32_t userId = 1112;
+    uint32_t rkType = 0;
+    std::vector<uint8_t> key;
+    std::string globalUserEl1Path = std::string(MAINTAIN_USER_EL1_DIR) + "/" + std::to_string(GLOBAL_USER_ID);
+    std::string el1Path = std::string(MAINTAIN_USER_EL1_DIR) + "/" + std::to_string(userId);
+    std::string el2Path = std::string(MAINTAIN_USER_EL2_DIR) + "/" + std::to_string(userId);
+    std::string el3Path = std::string(MAINTAIN_USER_EL3_DIR) + "/" + std::to_string(userId);
+    std::string el4Path = std::string(MAINTAIN_USER_EL4_DIR) + "/" + std::to_string(userId);
+    OHOS::ForceCreateDirectory(MAINTAIN_DEVICE_EL1_DIR);
+    OHOS::ForceCreateDirectory(globalUserEl1Path);
+    OHOS::ForceCreateDirectory(el1Path);
+    OHOS::ForceCreateDirectory(el2Path);
+    OHOS::ForceCreateDirectory(el3Path);
+    OHOS::ForceCreateDirectory(el4Path);
+    
+    EXPECT_CALL(*recoveryMgrMock_, ResetSecretWithRecoveryKey()).WillOnce(Return(-1));
+    EXPECT_EQ(KeyManager::GetInstance()->ResetSecretWithRecoveryKey(userId, rkType, key),
+              E_RESET_SECRET_WITH_RECOVERY_KEY_ERR);
+
+    EXPECT_CALL(*recoveryMgrMock_, ResetSecretWithRecoveryKey()).WillOnce(Return(E_OK));
+    EXPECT_EQ(KeyManager::GetInstance()->ResetSecretWithRecoveryKey(userId, rkType, key), E_PARAMS_INVALID);
+
+    rkType = 6;
+    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
+    EXPECT_CALL(*recoveryMgrMock_, ResetSecretWithRecoveryKey()).WillOnce(Return(E_OK));
+    EXPECT_CALL(*baseKeyMock_, StoreKey(_, _)).WillOnce(Return(-1));
+    EXPECT_EQ(KeyManager::GetInstance()->ResetSecretWithRecoveryKey(userId, rkType, key), E_ELX_KEY_STORE_ERROR);
+
+    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2))
+        .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2))
+        .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2))
+        .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2))
+        .WillOnce(Return(FSCRYPT_V2)).WillOnce(Return(FSCRYPT_V2));
+    EXPECT_CALL(*recoveryMgrMock_, ResetSecretWithRecoveryKey()).WillOnce(Return(E_OK));
+    EXPECT_CALL(*baseKeyMock_, StoreKey(_, _)).Times(6).WillOnce(Return(E_OK));
+    EXPECT_EQ(KeyManager::GetInstance()->ResetSecretWithRecoveryKey(userId, rkType, key), E_OK);
+
+    OHOS::ForceRemoveDirectory(MAINTAIN_DEVICE_EL1_DIR);
+    OHOS::ForceRemoveDirectory(globalUserEl1Path);
+    OHOS::ForceRemoveDirectory(el1Path);
+    OHOS::ForceRemoveDirectory(el2Path);
+    OHOS::ForceRemoveDirectory(el3Path);
+    OHOS::ForceRemoveDirectory(el4Path);
+    GTEST_LOG_(INFO) << "KeyManager_ResetSecretWithRecoveryKey_000 end";
+}
+
+/**
  * @tc.name: KeyManager_CreateRecoverKey_000
  * @tc.desc: Verify the CreateRecoverKey function.
  * @tc.type: FUNC

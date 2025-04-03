@@ -46,6 +46,7 @@ constexpr const char *PATH_KEYDESC = "/key_desc";
 constexpr const char *DATA_EL0_DIR = "/data/service/el0";
 constexpr const char *STORAGE_DAEMON_DIR = "/data/service/el0/storage_daemon";
 constexpr const char *DEVICE_EL1_DIR = "/data/service/el0/storage_daemon/sd";
+constexpr const char *MAINTAIN_DEVICE_EL1_DIR = "/mnt/data_old/service/el0/storage_daemon/sd";
 
 class KeyBlob {
 public:

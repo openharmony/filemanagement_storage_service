@@ -83,7 +83,7 @@ public:
                              const std::vector<uint8_t> &secret) override;
     int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus) override;
     int32_t UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey = false) override;
-    int32_t GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId) override;
+    int32_t GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId, bool needReSet = false) override;
     int32_t DeleteAppkey(const std::string keyId) override;
     int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false) override;
     int32_t GetUserNeedActiveStatus(uint32_t userId, bool &needActive) override;
@@ -92,6 +92,7 @@ public:
                              const std::vector<uint8_t> &token,
                              const std::vector<uint8_t> &secret) override;
     int32_t SetRecoverKey(const std::vector<uint8_t> &key) override;
+    int32_t ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key) override;
     int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
                              const std::string &uuid) override;
     int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path, const bool isBadRemove) override;

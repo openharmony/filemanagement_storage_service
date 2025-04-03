@@ -65,13 +65,16 @@ public:
                                      const std::vector<uint8_t> &token,
                                      const std::vector<uint8_t> &secret) override;
     virtual int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus) override;
-    virtual int32_t GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId) override;
+    virtual int32_t GenerateAppkey(uint32_t userId, uint32_t hashId,
+                                   std::string &keyId, bool needReSet = false) override;
     virtual int32_t DeleteAppkey(uint32_t userId, const std::string &keyId) override;
     virtual int32_t CreateRecoverKey(uint32_t userId,
                                      uint32_t userType,
                                      const std::vector<uint8_t> &token,
                                      const std::vector<uint8_t> &secret) override;
     virtual int32_t SetRecoverKey(const std::vector<uint8_t> &key) override;
+    virtual int32_t ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType,
+                                               const std::vector<uint8_t> &key) override;
 
     // app file share api
     virtual int32_t CreateShareFile(const std::vector<std::string> &uriList,
