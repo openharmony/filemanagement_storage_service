@@ -16,9 +16,8 @@
 #define OHOS_STORAGE_DAEMON_NETLINK_LISTENER_H
 
 #include <poll.h>
-#include <cstdint>
-#include <memory>
-#include <thread>
+
+#include "ipc/storage_daemon.h"
 
 namespace OHOS {
 namespace StorageDaemon {

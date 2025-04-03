@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,14 +23,14 @@
 #include "directory_ex.h"
 
 #include "crypto/app_clone_key_manager.h"
-#include "istorage_daemon.h"
+#include "ipc/istorage_daemon.h"
 #include "ipc/storage_daemon.h"
-#include "ipc/storage_daemon_provider.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "test/common/help_utils.h"
 #include "user/user_manager.h"
 #include "utils/file_utils.h"
+
 namespace OHOS {
 namespace StorageDaemon {
 using namespace testing::ext;
@@ -41,7 +41,7 @@ public:
     void SetUp();
     void TearDown();
 
-    StorageDaemonProvider* storageDaemon_;
+    StorageDaemon* storageDaemon_;
 };
 
 void StorageDaemonTest::SetUpTestCase(void)
@@ -73,7 +73,7 @@ void StorageDaemonTest::SetUpTestCase(void)
 
 void StorageDaemonTest::SetUp()
 {
-    storageDaemon_ = new StorageDaemonProvider();
+    storageDaemon_ = new StorageDaemon();
     StorageTest::StorageTestUtils::ClearTestResource();
 }
 
@@ -104,7 +104,7 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_PrepareUserDirs_00
     auto bRet = StorageTest::StorageTestUtils::CreateFile(filePath);
     EXPECT_TRUE(bRet) << "check the file create";
 
-    int32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL1 | IStorageDaemonEnum::CRYPTO_FLAG_EL2;
+    int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1 | IStorageDaemon::CRYPTO_FLAG_EL2;
     int32_t ret = storageDaemon_->PrepareUserDirs(StorageTest::USER_ID1, flags);
     EXPECT_TRUE(ret == E_PREPARE_DIR) << "the path is not dir";
 
@@ -123,7 +123,7 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_PrepareUserDirs_00
 
     ASSERT_TRUE(storageDaemon_ != nullptr);
 
-    int32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL1;
+    int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1;
     auto ret = storageDaemon_->PrepareUserDirs(StorageTest::USER_ID2, flags);
     EXPECT_TRUE(ret == E_OK) << "the flags is incorrect";
 
@@ -142,7 +142,7 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_PrepareUserDirs_00
 
     ASSERT_TRUE(storageDaemon_ != nullptr);
 
-    int32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL1 | IStorageDaemonEnum::CRYPTO_FLAG_EL2;
+    int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1 | IStorageDaemon::CRYPTO_FLAG_EL2;
     auto ret = storageDaemon_->PrepareUserDirs(StorageTest::USER_ID3, flags);
     EXPECT_TRUE(ret == E_OK);
 
@@ -180,7 +180,7 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_StartUser_002, Tes
 
     ASSERT_TRUE(storageDaemon_ != nullptr);
 
-    int32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL1 | IStorageDaemonEnum::CRYPTO_FLAG_EL2;
+    int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1 | IStorageDaemon::CRYPTO_FLAG_EL2;
     auto ret = storageDaemon_->PrepareUserDirs(StorageTest::USER_ID5, flags);
     EXPECT_TRUE(ret == E_OK) << "create user dirs error";
 
@@ -204,7 +204,7 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_DestroyUserDirs_00
 
     ASSERT_TRUE(storageDaemon_ != nullptr);
 
-    int32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL1 | IStorageDaemonEnum::CRYPTO_FLAG_EL2;
+    int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1 | IStorageDaemon::CRYPTO_FLAG_EL2;
     auto ret = storageDaemon_->PrepareUserDirs(StorageTest::USER_ID3, flags);
     EXPECT_TRUE(ret == E_OK);
 
@@ -225,7 +225,7 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_StopUser_001, Test
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_StopUser_001 start";
 
     ASSERT_TRUE(storageDaemon_ != nullptr);
-    int32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL1 | IStorageDaemonEnum::CRYPTO_FLAG_EL2;
+    int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1 | IStorageDaemon::CRYPTO_FLAG_EL2;
     auto ret = storageDaemon_->PrepareUserDirs(StorageTest::USER_ID1, flags);
     EXPECT_TRUE(ret == E_OK) << "create user dirs error";
 
@@ -252,7 +252,7 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_StopUser_002, Test
 
     ASSERT_TRUE(storageDaemon_ != nullptr);
 
-    int32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL1 | IStorageDaemonEnum::CRYPTO_FLAG_EL1;
+    int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1 | IStorageDaemon::CRYPTO_FLAG_EL2;
     auto ret = storageDaemon_->PrepareUserDirs(StorageTest::USER_ID4, flags);
     EXPECT_TRUE(ret == E_OK) << "create user dirs error";
 
@@ -275,7 +275,7 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_StopUser_003, Test
 
     ASSERT_TRUE(storageDaemon_ != nullptr);
 
-    int32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL1 | IStorageDaemonEnum::CRYPTO_FLAG_EL2;
+    int32_t flags = IStorageDaemon::CRYPTO_FLAG_EL1 | IStorageDaemon::CRYPTO_FLAG_EL2;
     auto ret = storageDaemon_->PrepareUserDirs(StorageTest::USER_ID3, flags);
     EXPECT_TRUE(ret == E_OK) << "PrepareUserDirs error";
     ret = storageDaemon_->StartUser(StorageTest::USER_ID3);

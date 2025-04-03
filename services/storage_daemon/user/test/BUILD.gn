@@ -53,10 +53,7 @@ ohos_unittest("user_manager_test") {
     "$ROOT_DIR/utils/test/common/help_utils.cpp",
   ]
 
-  deps = [
-    "$ROOT_DIR:storage_common_utils",
-    "${storage_daemon_path}:storage_daemon_header",
-  ]
+  deps = [ "$ROOT_DIR:storage_common_utils" ]
 
   external_deps = [
     "ability_base:zuri",
@@ -121,7 +118,6 @@ ohos_unittest("mount_manager_test") {
 
   deps = [
     #"$ROOT_DIR:storage_common_utils",
-    "$ROOT_DIR:storage_daemon_header",
   ]
 
   external_deps = [
