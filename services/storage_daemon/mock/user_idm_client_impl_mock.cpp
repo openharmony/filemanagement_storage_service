@@ -89,3 +89,9 @@ void UserIdmClientImpl::ClearRedundancyCredential(const std::shared_ptr<UserIdmC
 {
     return IUserIdmClientMoc::userIdmClientMoc->ClearRedundancyCredential(callback);
 }
+
+int32_t UserIdmClientImpl::GetCredentialInfoSync(int32_t userId, AuthType authType,
+    std::vector<CredentialInfo> &credentialInfoList)
+{
+    return IUserIdmClientMoc::userIdmClientMoc->GetCredentialInfoSync(userId, authType, credentialInfoList);
+}

@@ -44,6 +44,8 @@ public:
         const std::shared_ptr<GetCredentialInfoCallback> &callback) = 0;
     virtual int32_t GetSecUserInfo(int32_t userId, const std::shared_ptr<GetSecUserInfoCallback> &callback) = 0;
     virtual void ClearRedundancyCredential(const std::shared_ptr<UserIdmClientCallback> &callback) = 0;
+    virtual int32_t GetCredentialInfoSync(int32_t userId, AuthType authType,
+        std::vector<CredentialInfo> &credentialInfoList) = 0;
 public:
     static inline std::shared_ptr<IUserIdmClientMoc> userIdmClientMoc = nullptr;
 };
@@ -66,6 +68,8 @@ public:
         const std::shared_ptr<GetCredentialInfoCallback> &callback));
     MOCK_METHOD2(GetSecUserInfo, int32_t(int32_t userId, const std::shared_ptr<GetSecUserInfoCallback> &callback));
     MOCK_METHOD1(ClearRedundancyCredential, void(const std::shared_ptr<UserIdmClientCallback> &callback));
+    MOCK_METHOD3(GetCredentialInfoSync, int32_t(int32_t userId, AuthType authType,
+        std::vector<CredentialInfo> &credentialInfoList));
 };
 }
 }
