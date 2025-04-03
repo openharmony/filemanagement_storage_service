@@ -1495,12 +1495,12 @@ int KeyManager::GenerateAppkeyWithRecover(uint32_t userId, uint32_t hashId, std:
     auto ret = el5Key->GenerateAppkey(userId, hashId, keyId);
     if (ret != E_OK) {
         LOGE("Failed to generate Appkey2 error=%{public}d", ret);
-        return E_EL5_GENERATE_APP_KEY_ERR;
+        return E_EL5_GENERATE_APP_KEY_WITH_RECOVERY_ERR;
     }
     ret = el5Key->DeleteClassEPinCode(userId);
     if (ret != E_OK) {
         LOGE("GenerateAppkey DeleteClassEPinCode failed");
-        return E_EL5_DELETE_CLASS_ERROR;
+        return E_EL5_DELETE_CLASS_WITH_RECOVERY_ERR;
     }
     saveESecretStatus[userId] = false;
     return 0;

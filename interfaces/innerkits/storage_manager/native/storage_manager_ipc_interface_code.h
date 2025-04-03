@@ -87,7 +87,6 @@ namespace StorageManager {
         GET_FILE_ENCRYPT_STATUS,
         CREATE_RECOVER_KEY,
         SET_RECOVER_KEY,
-        RESET_SECRET_WITH_RECOVERY_KEY,
         NOTIFY_MTP_MOUNT,
         NOTIFY_MTP_UNMOUNT,
         MOUNT_MEDIA_FUSE,
@@ -96,6 +95,7 @@ namespace StorageManager {
         MOUNT_FILE_MGR_FUSE,
         UMOUNT_FILE_MGR_FUSE,
         QUERY_USB_IS_IN_USE,
+        RESET_SECRET_WITH_RECOVERY_KEY,
     };
 } // namespace StorageManager
 } // namespace OHOS
