@@ -16,7 +16,6 @@
 #include "user/mount_manager.h"
 #include <dirent.h>
 #include <fcntl.h>
-#include <set>
 #include <regex>
 #include "crypto/key_manager.h"
 #include "utils/disk_utils.h"
@@ -1912,6 +1911,200 @@ int32_t MountManager::UMountFileMgrFuse(int32_t userId, const std::string &path)
     }
     LOGI("file mgr umount fuse success.");
     return E_OK;
+}
+
+int32_t MountManager::IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
+    std::vector<std::string> &outputList, bool &isOccupy)
+{
+    if (path.empty()) {
+        LOGE("path is invalid.");
+        return E_PARAMS_INVALID;
+    }
+    if (inputList.empty() && path.back() == FILE_SEPARATOR_CHAR) {
+        LOGI("only modify dir, path is %{public}s.", path.c_str());
+        return OpenProcForPath(path, isOccupy, true);
+    }
+    if (inputList.empty() && path.back() != FILE_SEPARATOR_CHAR) {
+        LOGI("only modify file, path is %{public}s.", path.c_str());
+        return OpenProcForPath(path, isOccupy, false);
+    }
+    if (!inputList.empty() && path.back() == FILE_SEPARATOR_CHAR) {
+        LOGI("multi select file, path is %{public}s.", path.c_str());
+        std::set<std::string> occupyFiles;
+        int32_t ret = OpenProcForMulti(path, occupyFiles);
+        if (ret != E_OK) {
+            LOGE("failed to check, ret is %{public}d", ret);
+            return ret;
+        }
+        if (occupyFiles.empty()) {
+            LOGI("there has no occupy.");
+            return E_OK;
+        }
+        for (const std::string &item: inputList) {
+            if (occupyFiles.find(item) != occupyFiles.end()) {
+                outputList.push_back(item);
+            }
+        }
+        isOccupy = !outputList.empty();
+        std::string fileName = VectorToString(outputList);
+        LOGI("output list is %{public}s.", fileName.c_str());
+        return E_OK;
+    }
+    LOGE("param is invalid.");
+    return E_PARAMS_INVALID;
+}
+
+int32_t MountManager::OpenProcForMulti(const std::string &path, std::set<std::string> &occupyFiles)
+{
+    auto procDir = std::unique_ptr<DIR, int (*)(DIR*)>(opendir(PID_PROC.c_str()), closedir);
+    if (!procDir) {
+        LOGE("failed to open dir proc, err %{public}d", errno);
+        return E_UMOUNT_PROC_OPEN;
+    }
+    struct dirent *entry;
+    while ((entry = readdir(procDir.get())) != nullptr) {
+        if (entry->d_type != DT_DIR) {
+            continue;
+        }
+        std::string name = entry->d_name;
+        if (!StringIsNumber(name)) {
+            continue;
+        }
+        std::string pidPath = PID_PROC + FILE_SEPARATOR_CHAR + name;
+        FindProcForMulti(pidPath, path, occupyFiles);
+    }
+    return E_OK;
+}
+
+int32_t MountManager::OpenProcForPath(const std::string &path, bool &isOccupy, bool isDir)
+{
+    auto procDir = std::unique_ptr<DIR, int (*)(DIR*)>(opendir(PID_PROC.c_str()), closedir);
+    if (!procDir) {
+        LOGE("failed to open dir proc, err %{public}d", errno);
+        return E_UMOUNT_PROC_OPEN;
+    }
+    struct dirent *entry;
+    while ((entry = readdir(procDir.get())) != nullptr) {
+        if (entry->d_type != DT_DIR) {
+            continue;
+        }
+        std::string name = entry->d_name;
+        if (!StringIsNumber(name)) {
+            continue;
+        }
+        std::string pidPath = PID_PROC + FILE_SEPARATOR_CHAR + name;
+        if (FindProcForPath(pidPath, path, isDir)) {
+            isOccupy = true;
+            break;
+        }
+    }
+    LOGI("OpenProcForPath end, res is %{public}d.", isOccupy);
+    return E_OK;
+}
+
+bool MountManager::FindProcForPath(const std::string &pidPath, const std::string &path, bool isDir)
+{
+    if (CheckSymlinkForPath(pidPath + FILE_SEPARATOR_CHAR + PID_CWD, path, isDir)) {
+        return true;
+    }
+    if (CheckSymlinkForPath(pidPath + FILE_SEPARATOR_CHAR + PID_EXE, path, isDir)) {
+        return true;
+    }
+    if (CheckSymlinkForPath(pidPath + FILE_SEPARATOR_CHAR + PID_ROOT, path, isDir)) {
+        return true;
+    }
+    std::string fdPath = pidPath + FILE_SEPARATOR_CHAR + PID_FD;
+    auto fdDir = std::unique_ptr<DIR, int (*)(DIR*)>(opendir(fdPath.c_str()), closedir);
+    if (!fdDir) {
+        LOGE("unable to open %{public}s, err %{public}d", fdPath.c_str(), errno);
+        return false;
+    }
+    struct dirent* fdDirent;
+    while ((fdDirent = readdir(fdDir.get())) != nullptr) {
+        if (fdDirent->d_type != DT_LNK) {
+            continue;
+        }
+        if (CheckSymlinkForPath(fdPath + FILE_SEPARATOR_CHAR + fdDirent->d_name, path, isDir)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool MountManager::CheckSymlinkForPath(const std::string &fdPath, const std::string &path, bool isDir)
+{
+    char realPath[ONE_KB];
+    int res = readlink(fdPath.c_str(), realPath, sizeof(realPath) - 1);
+    if (res < 0 || res >= ONE_KB) {
+        LOGE("this link too large.");
+        return false;
+    }
+    realPath[res] = '\0';
+    std::string realPathStr(realPath);
+    if (isDir) {
+        if (realPathStr.find(UN_REACHABLE) == 0) {
+            realPathStr = realPathStr.substr(UN_REACHABLE.size()) + FILE_SEPARATOR_CHAR;
+        }
+        if (realPathStr.find(path) == 0) {
+            LOGE("find a fd from link for dir, %{public}s", realPathStr.c_str());
+            return true;
+        }
+    } else {
+        if (realPathStr.find(UN_REACHABLE) == 0) {
+            realPathStr = realPathStr.substr(UN_REACHABLE.size());
+        }
+        if (realPathStr == path) {
+            LOGE("find a fd from link for file, %{public}s", realPathStr.c_str());
+            return true;
+        }
+    }
+    return false;
+}
+
+void MountManager::FindProcForMulti(const std::string &pidPath, const std::string &path,
+    std::set<std::string> &occupyFiles)
+{
+    CheckSymlinkForMulti(pidPath + FILE_SEPARATOR_CHAR + PID_CWD, path, occupyFiles);
+    CheckSymlinkForMulti(pidPath + FILE_SEPARATOR_CHAR + PID_EXE, path, occupyFiles);
+    CheckSymlinkForMulti(pidPath + FILE_SEPARATOR_CHAR + PID_ROOT, path, occupyFiles);
+    std::string fdPath = pidPath + FILE_SEPARATOR_CHAR + PID_FD;
+    auto fdDir = std::unique_ptr<DIR, int (*)(DIR*)>(opendir(fdPath.c_str()), closedir);
+    if (!fdDir) {
+        LOGE("unable to open %{public}s, err %{public}d", fdPath.c_str(), errno);
+        return;
+    }
+    struct dirent* fdDirent;
+    while ((fdDirent = readdir(fdDir.get())) != nullptr) {
+        if (fdDirent->d_type != DT_LNK) {
+            continue;
+        }
+        CheckSymlinkForMulti(fdPath + FILE_SEPARATOR_CHAR + fdDirent->d_name, path, occupyFiles);
+    }
+}
+
+void MountManager::CheckSymlinkForMulti(const std::string &fdPath, const std::string &path,
+    std::set<std::string> &occupyFiles)
+{
+    char realPath[ONE_KB];
+    int res = readlink(fdPath.c_str(), realPath, sizeof(realPath) - 1);
+    if (res < 0 || res >= ONE_KB) {
+        LOGE("this link too large.");
+        return;
+    }
+    realPath[res] = '\0';
+    std::string realPathStr(realPath);
+    if (realPathStr.find(path) == 0) {
+        LOGE("find a fd from link, %{public}s", realPathStr.c_str());
+        realPathStr = realPathStr.substr(path.size());
+        if (realPathStr.empty()) {
+            return;
+        }
+        std::string::size_type point = realPathStr.find(FILE_SEPARATOR_CHAR);
+        if (point != std::string::npos) {
+            realPathStr = realPathStr.substr(0, point);
+        }
+        occupyFiles.insert(realPathStr);
+    }
 }
 } // namespace StorageDaemon
 } // namespace OHOS

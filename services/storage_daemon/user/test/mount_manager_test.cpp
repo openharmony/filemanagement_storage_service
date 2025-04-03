@@ -587,5 +587,112 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_UMountFileMgrFuse_00
     ForceRemoveDirectory(path);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_UMountFileMgrFuse_001 end";
 }
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerTest_IsFileOccupied_001
+ * @tc.desc: Verify the IsFileOccupied function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_IsFileOccupied_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_IsFileOccupied_001 start";
+    std::string path;
+    std::vector<std::string> input;
+    std::vector<std::string> output;
+    bool isOccupy;
+    int32_t ret = MountManager::GetInstance()->IsFileOccupied(path, input, output, isOccupy);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    path = "/data/test/tdd/";
+    ret = MountManager::GetInstance()->IsFileOccupied(path, input, output, isOccupy);
+    EXPECT_EQ(ret, E_OK);
+
+    path = "/data/test/tdd/test.txt";
+    ret = MountManager::GetInstance()->IsFileOccupied(path, input, output, isOccupy);
+    EXPECT_EQ(ret, E_OK);
+
+    path = "/data/test/tdd/";
+    input = {"aa", "bb", "1.txt"};
+    ret = MountManager::GetInstance()->IsFileOccupied(path, input, output, isOccupy);
+    EXPECT_EQ(ret, E_OK);
+
+    path = "/data/test/tdd/test.txt";
+    ret = MountManager::GetInstance()->IsFileOccupied(path, input, output, isOccupy);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_IsFileOccupied_001 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerTest_OpenProcForPath_001
+ * @tc.desc: Verify the OpenProcForPath function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_OpenProcForPath_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_OpenProcForPath_001 start";
+    std::string path = "/data/test/tdd/";
+    bool isOccupy;
+    bool isDir = true;
+    int32_t ret = MountManager::GetInstance()->OpenProcForPath(path, isOccupy, isDir);
+    EXPECT_EQ(ret, E_OK);
+
+    path = "/data/test/tdd/test.txt";
+    isDir = false;
+    ret = MountManager::GetInstance()->OpenProcForPath(path, isOccupy, isDir);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_OpenProcForPath_001 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerTest_OpenProcForMulti_001
+ * @tc.desc: Verify the OpenProcForMulti function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_OpenProcForMulti_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_OpenProcForPath_001 start";
+    std::string path = "/data/test/tdd/";
+    std::set<std::string> occupyFiles;
+    int32_t ret = MountManager::GetInstance()->OpenProcForMulti(path, occupyFiles);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_OpenProcForMulti_001 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerTest_FindProcForPath_001
+ * @tc.desc: Verify the FindProcForPath function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_FindProcForPath_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_FindProcForPath_001 start";
+    std::string pidPath = "/test/111";
+    std::string path = "/data/test/tdd/";
+    bool isDir = false;
+    bool ret = MountManager::GetInstance()->FindProcForPath(pidPath, path, isDir);
+    EXPECT_EQ(ret, false);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_FindProcForPath_001 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerTest_FindProcForMulti_001
+ * @tc.desc: Verify the FindProcForMulti function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_FindProcForMulti_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_FindProcForMulti_001 start";
+    std::string pidPath = "/test/111";
+    std::string path = "/data/test/tdd/";
+    std::set<std::string> occupyFiles;
+    MountManager::GetInstance()->FindProcForMulti(pidPath, path, occupyFiles);
+    ASSERT_TRUE(occupyFiles.empty());
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_FindProcForMulti_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS

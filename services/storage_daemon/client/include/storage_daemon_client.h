@@ -70,6 +70,9 @@ public:
     // file mgr fuse
     static int32_t MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd);
     static int32_t UMountFileMgrFuse(int32_t userId, const std::string &path);
+    // file lock
+    static int32_t IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
+        std::vector<std::string> &outputList, bool &isOccupy);
 
 private:
     static sptr<IStorageDaemon> GetStorageDaemonProxy(void);

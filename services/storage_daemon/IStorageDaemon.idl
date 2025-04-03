@@ -75,6 +75,10 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 42] void MountFileMgrFuse([in] int userId, [in] String path, [out] FileDescriptor fuseFd);
      [ipccode 43] void UMountFileMgrFuse([in] int userId, [in] String path);
      [ipccode 44] void QueryUsbIsInUse([in] String diskPath, [out] boolean isInUse);
+     [ipcincapacity 131071, ipcoutcapacity 131071, ipccode 46] void IsFileOccupied([in] String path,
+                                                                                   [in] String[] inputList,
+                                                                                   [out] String[] outputList,
+                                                                                   [out] boolean isOccupy);
      [ipccode 47] void ResetSecretWithRecoveryKey([in] unsigned int userId,
                                                   [in] unsigned int rkType, [in] unsigned char[] key);
 }

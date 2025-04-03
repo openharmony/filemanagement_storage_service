@@ -117,6 +117,9 @@ public:
     // file mgr fuse
     virtual int32_t MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd) override;
     virtual int32_t UMountFileMgrFuse(int32_t userId, const std::string &path) override;
+    // file lock
+    virtual int32_t IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
+        std::vector<std::string> &outputList, bool &isOccupy) override;
 
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
     public:

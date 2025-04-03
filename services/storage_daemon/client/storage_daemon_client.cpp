@@ -639,5 +639,22 @@ int32_t StorageDaemonClient::UMountFileMgrFuse(int32_t userId, const std::string
     }
     return client->UMountFileMgrFuse(userId, path);
 }
+
+int32_t StorageDaemonClient::IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
+    std::vector<std::string> &outputList, bool &isOccupy)
+{
+    LOGI("StorageDaemonClient::IsFileOccupied");
+    auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
+    if (status != E_OK) {
+        LOGE("service check failed");
+        return status;
+    }
+    sptr<IStorageDaemon> client = GetStorageDaemonProxy();
+    if (client == nullptr) {
+        LOGE("Get StorageDaemon service failed!");
+        return E_SA_IS_NULLPTR;
+    }
+    return client->IsFileOccupied(path, inputList, outputList, isOccupy);
+}
 } // namespace StorageDaemon
 } // namespace OHOS

@@ -20,6 +20,7 @@
 #include <list>
 #include <map>
 #include <nocopyable.h>
+#include <set>
 
 #include "utils/file_utils.h"
 
@@ -111,6 +112,8 @@ public:
                                std::vector<ProcessInfo> &processKillInfos);
     int32_t MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd);
     int32_t UMountFileMgrFuse(int32_t userId, const std::string &path);
+    int32_t IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
+        std::vector<std::string> &outputList, bool &isOccupy);
 
 private:
     bool SupportHmdfs();
@@ -148,6 +151,12 @@ private:
     bool CheckSysFs(int32_t userId);
     bool IsSysFsInUse(std::string &path);
     void ForbidOpen(int32_t userId);
+    int32_t OpenProcForPath(const std::string &path, bool &isOccupy, bool isDir);
+    int32_t OpenProcForMulti(const std::string &path, std::set<std::string> &occupyFiles);
+    bool FindProcForPath(const std::string &pidPath, const std::string &path, bool isDir);
+    void FindProcForMulti(const std::string &pidPath, const std::string &path, std::set<std::string> &occupyFiles);
+    bool CheckSymlinkForPath(const std::string &fdPath, const std::string &path, bool isDir);
+    void CheckSymlinkForMulti(const std::string &fdPath, const std::string &path, std::set<std::string> &occupyFiles);
 
     DISALLOW_COPY_AND_MOVE(MountManager);
 
