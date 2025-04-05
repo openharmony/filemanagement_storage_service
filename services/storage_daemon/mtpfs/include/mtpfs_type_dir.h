@@ -115,6 +115,7 @@ private:
     time_t modifyDate_;
 
 public:
+    LIBMTP_object_handles_t *objHandles = nullptr;
     std::set<MtpFsTypeDir> dirs_;
     std::set<MtpFsTypeFile> files_;
 };

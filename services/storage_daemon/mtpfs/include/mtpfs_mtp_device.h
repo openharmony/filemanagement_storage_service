@@ -94,7 +94,9 @@ public:
     std::tuple<std::string, bool> FindUploadRecord(const std::string path);
     void RefreshDirContent(std::string path);
     int DirRemoveDirectly(const std::string &path);
-
+    const MtpFsTypeDir *OpenDirFetchContent(std::string path);
+    const MtpFsTypeDir *ReadDirFetchContent(std::string path);
+    bool IsDirFetched(std::string path);
     Capabilities GetCapabilities() const;
 
 private:
@@ -116,6 +118,8 @@ private:
     void ReadEvent();
     static void MtpEventCallback(int ret, LIBMTP_event_t event, uint32_t param, void *data);
     const void HandleDirByFetch(LIBMTP_file_t *content, MtpFsTypeDir *dir);
+    void FreeObjectHandles(MtpFsTypeDir *dir);
+    void FetchDirContent(MtpFsTypeDir *dir);
 
 private:
     LIBMTP_mtpdevice_t *device_;
