@@ -966,7 +966,7 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonTest_HandleGenerate
 
     MessageParcel data1;
     MessageParcel reply1;
-    EXPECT_CALL(mock, GenerateAppkey(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(mock, GenerateAppkey(testing::_, testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_OK));
     int32_t ret = mock.HandleGenerateAppkey(data1, reply1);
     EXPECT_TRUE(ret == E_OK);
     int32_t err = reply1.ReadInt32();
@@ -974,7 +974,7 @@ HWTEST_F(StorageDaemonStubTest, Storage_Manager_StorageDaemonTest_HandleGenerate
 
     MessageParcel data2;
     MessageParcel reply2;
-    EXPECT_CALL(mock, GenerateAppkey(testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_ERR));
+    EXPECT_CALL(mock, GenerateAppkey(testing::_, testing::_, testing::_, testing::_)).WillOnce(testing::Return(E_ERR));
     ret = mock.HandleGenerateAppkey(data2, reply2);
     EXPECT_TRUE(ret == E_OK);
     string keyId = reply2.ReadString();
