@@ -80,7 +80,6 @@ public:
     virtual int32_t SetRecoverKey(const std::vector<uint8_t> &key) = 0;
     virtual int32_t ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key) = 0;
 
-
     // app file share api
     virtual std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,
                                                 uint32_t tokenId, uint32_t flag) = 0;
