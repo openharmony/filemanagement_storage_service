@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2025 Huawei Device Co., Ltd.
+ * Copyright (C) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -45,7 +45,7 @@ int32_t KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &us
 
 int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,
     const std::vector<uint8_t> &newSecret, uint64_t secureUid, uint32_t userId,
-    const std::vector<std::vector<uint8_t>> &plainText)
+    std::vector<std::vector<uint8_t>> &plainText)
 {
     return E_OK;
 }
