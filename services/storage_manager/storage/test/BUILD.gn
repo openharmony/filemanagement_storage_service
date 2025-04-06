@@ -1,4 +1,4 @@
-# Copyright (C) 2021-2025 Huawei Device Co., Ltd.
+# Copyright (C) 2021 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -42,7 +42,6 @@ ohos_unittest("storage_total_status_service_test") {
 
   deps = [
     "${storage_daemon_path}:storage_common_utils",
-    "${storage_daemon_path}:storage_daemon_ipc",
     "${storage_service_path}/services/storage_manager:storage_manager",
   ]
 
@@ -108,8 +107,6 @@ ohos_unittest("volume_storage_status_service_test") {
   if (storage_service_external_storage_manager) {
     defines += [ "EXTERNAL_STORAGE_MANAGER" ]
   }
-
-  deps = [ "${storage_daemon_path}:storage_daemon_header" ]
 
   external_deps = [
     "access_token:libaccesstoken_sdk",

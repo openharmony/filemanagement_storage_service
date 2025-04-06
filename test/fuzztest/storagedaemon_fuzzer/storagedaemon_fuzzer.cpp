@@ -374,18 +374,6 @@ bool HandleSetRecoverKeyFuzzTest(const uint8_t *data, size_t size)
     return true;
 }
 
-bool HandleResetSecretWithRecoveryKeyFuzzTest(const uint8_t *data, size_t size)
-{
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageDaemonStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-
-    storageDaemon->HandleResetSecretWithRecoveryKey(datas, reply);
-    return true;
-}
-
 bool HandleMountMediaFuseFuzzTest(const uint8_t *data, size_t size)
 {
     MessageParcel datas;
@@ -459,7 +447,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     OHOS::HandleShutdownFuzzTest(data, size);
     OHOS::HandleCreateRecoverKeyFuzzTest(data, size);
     OHOS::HandleSetRecoverKeyFuzzTest(data, size);
-    OHOS::HandleResetSecretWithRecoveryKeyFuzzTest(data, size);
     OHOS::HandleMountMediaFuseFuzzTest(data, size);
     OHOS::HandleUMountMediaFuseFuzzTest(data, size);
     return 0;
