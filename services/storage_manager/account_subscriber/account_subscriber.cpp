@@ -33,7 +33,7 @@ namespace OHOS {
 namespace StorageManager {
 static constexpr int CONNECT_TIME = 10;
 static std::mutex userRecordLock;
-std::shared_ptr<DataShare::DataShareHelper> AccountSubscriber::mediaShare_ = nullptr;
+static std::mutex mediaMapLock;
 
 AccountSubscriber::AccountSubscriber(const EventFwk::CommonEventSubscribeInfo &subscriberInfo)
     : EventFwk::CommonEventSubscriber(subscriberInfo)
@@ -92,6 +92,10 @@ void AccountSubscriber::ResetUserEventRecord(int32_t userId)
         std::lock_guard<std::mutex> lock(userRecordLock);
         accountSubscriber_->userRecord_.erase(userId);
     }
+    if (accountSubscriber_->mediaShareMap_.find(userId) != accountSubscriber_->mediaShareMap_.end()) {
+        std::lock_guard<std::mutex> lockMedia(mediaMapLock);
+        accountSubscriber_->mediaShareMap_.erase(userId);
+    }
 }
 
 void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventData)
@@ -123,9 +127,8 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
         userRecord_.erase(userId);
     }
     lock.unlock();
-
-    LOGI("connect %{public}d media library", userId);
-    GetSystemAbility();
+    std::thread mediaThread(&AccountSubscriber::GetSystemAbility, this);
+    mediaThread.detach();
 }
 
 uint32_t AccountSubscriber::GetUserStatus(int32_t userId)
@@ -177,6 +180,8 @@ void AccountSubscriber::HandleScreenLockedEvent(int32_t &userId)
 
 void AccountSubscriber::GetSystemAbility()
 {
+    std::lock_guard<std::mutex> lockMedia(mediaMutex_);
+    LOGI("connect %{public}d media library", userId_);
     auto sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (sam == nullptr) {
         LOGE("GetSystemAbilityManager sam == nullptr");
@@ -188,9 +193,11 @@ void AccountSubscriber::GetSystemAbility()
         return;
     }
     for (int i = 0; i < CONNECT_TIME; i++) {
-        mediaShare_ = DataShare::DataShareHelper::Creator(remoteObj, "datashare:///media");
-        if (mediaShare_ != nullptr) {
+        std::shared_ptr<DataShare::DataShareHelper> mediaShare =
+            DataShare::DataShareHelper::Creator(remoteObj, "datashare:///media");
+        if (mediaShare != nullptr) {
             LOGI("connect media success.");
+            mediaShareMap_[userId_] = mediaShare;
             break;
         }
         LOGE("try to connect media again.");

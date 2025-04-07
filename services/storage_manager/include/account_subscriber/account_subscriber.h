@@ -34,14 +34,10 @@ public:
     static void Subscriber(void);
     virtual ~AccountSubscriber() = default;
     virtual void OnReceiveEvent(const EventFwk::CommonEventData &eventData) override;
-    static void SetMediaShare(std::shared_ptr<DataShare::DataShareHelper> &sptr)
-    {
-        mediaShare_ = sptr;
-    }
-
     static void ResetUserEventRecord(int32_t userId);
 private:
-    static std::shared_ptr<DataShare::DataShareHelper> mediaShare_;
+    std::map<int32_t, std::shared_ptr<DataShare::DataShareHelper>> mediaShareMap_;
+    std::mutex mediaMutex_;
     std::mutex mutex_;
 
     int32_t userId_ = 0;
