@@ -22,7 +22,7 @@ ohos_unittest("storage_total_status_service_test") {
     cfi_cross_dso = true
     debug = false
   }
-  module_out_path = "storage_service/storage_manager"
+  module_out_path = "storage_service/storage_service/storage_manager"
 
   sources = [ "storage_total_status_service_test.cpp" ]
 
@@ -85,7 +85,7 @@ ohos_unittest("volume_storage_status_service_test") {
     cfi_cross_dso = true
     debug = false
   }
-  module_out_path = "storage_service/storage_manager"
+  module_out_path = "storage_service/storage_service/storage_manager"
 
   sources = [
     "${storage_manager_path}/storage/src/storage_status_service.cpp",

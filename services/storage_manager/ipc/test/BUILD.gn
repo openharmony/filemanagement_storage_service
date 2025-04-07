@@ -23,7 +23,7 @@ ohos_unittest("storage_manager_proxy_test") {
     debug = false
     blocklist = "${storage_service_path}/cfi_blocklist.txt"
   }
-  module_out_path = "storage_service/storage_manager"
+  module_out_path = "storage_service/storage_service/storage_manager"
 
   sources = [
     "${storage_manager_path}/disk/src/disk_manager_service.cpp",
@@ -84,7 +84,7 @@ ohos_unittest("storage_manager_stub_test") {
     debug = false
     blocklist = "${storage_service_path}/cfi_blocklist.txt"
   }
-  module_out_path = "storage_service/storage_manager"
+  module_out_path = "storage_service/storage_service/storage_manager"
 
   defines = [
     "STORAGE_LOG_TAG = \"StorageManager\"",
@@ -145,7 +145,7 @@ ohos_unittest("storage_manager_stub_nonpermission_test") {
     cfi_cross_dso = true
     debug = false
   }
-  module_out_path = "storage_service/storage_manager"
+  module_out_path = "storage_service/storage_service/storage_manager"
 
   defines = [
     "STORAGE_LOG_TAG = \"StorageManager\"",
@@ -207,7 +207,7 @@ ohos_unittest("storage_manager_stub_mockipc_test") {
     debug = false
     blocklist = "${storage_service_path}/cfi_blocklist.txt"
   }
-  module_out_path = "storage_service/storage_manager"
+  module_out_path = "storage_service/storage_service/storage_manager"
 
   defines = [
     "STORAGE_LOG_TAG = \"StorageManager\"",

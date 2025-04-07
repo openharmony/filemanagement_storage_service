@@ -22,7 +22,7 @@ ohos_unittest("crypto_manager_service_test") {
     cfi_cross_dso = true
     debug = false
   }
-  module_out_path = "storage_service/storage_manager"
+  module_out_path = "storage_service/storage_service/storage_manager"
 
   sources = [
     "${storage_manager_path}/crypto/filesystem_crypto.cpp",

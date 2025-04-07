@@ -14,7 +14,7 @@ import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ohos_moduletest("AclTest") {
-  module_out_path = "storage_service/storage_daemon"
+  module_out_path = "storage_service/storage_service/storage_daemon"
 
   include_dirs = [ "${storage_daemon_path}/include" ]
 
@@ -31,7 +31,7 @@ ohos_moduletest("AclTest") {
 }
 
 ohos_moduletest("SetAclTest") {
-  module_out_path = "storage_service/storage_daemon"
+  module_out_path = "storage_service/storage_service/storage_daemon"
 
   defines = [
     "STORAGE_LOG_TAG = \"StorageDaemon\"",
@@ -61,7 +61,7 @@ ohos_moduletest("SetAclTest") {
 }
 
 ohos_moduletest("FileSharingTest") {
-  module_out_path = "storage_service/storage_daemon"
+  module_out_path = "storage_service/storage_service/storage_daemon"
 
   defines = [
     "STORAGE_LOG_TAG = \"StorageDaemon\"",

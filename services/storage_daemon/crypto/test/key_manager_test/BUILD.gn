@@ -22,7 +22,7 @@ ohos_unittest("KeyManagerTest") {
     debug = false
     blocklist = "${storage_service_path}/cfi_blocklist.txt"
   }
-  module_out_path = "storage_service/storage_daemon"
+  module_out_path = "storage_service/storage_service/storage_daemon"
 
   defines = [
     "STORAGE_LOG_TAG = \"StorageDaemon\"",
@@ -89,7 +89,7 @@ ohos_unittest("KeyManagerSupTest") {
     debug = false
     blocklist = "${storage_service_path}/cfi_blocklist.txt"
   }
-  module_out_path = "storage_service/storage_daemon"
+  module_out_path = "storage_service/storage_service/storage_daemon"
 
   defines = [
     "STORAGE_LOG_TAG = \"StorageDaemon\"",
@@ -164,7 +164,7 @@ ohos_unittest("KeyManagerOtherTest") {
     debug = false
     blocklist = "${storage_service_path}/cfi_blocklist.txt"
   }
-  module_out_path = "storage_service/storage_daemon"
+  module_out_path = "storage_service/storage_service/storage_daemon"
 
   defines = [
     "STORAGE_LOG_TAG = \"StorageDaemon\"",
@@ -230,7 +230,7 @@ ohos_unittest("KeyManagerAnotherTest") {
     debug = false
     blocklist = "${storage_service_path}/cfi_blocklist.txt"
   }
-  module_out_path = "storage_service/storage_daemon"
+  module_out_path = "storage_service/storage_service/storage_daemon"
 
   defines = [
     "STORAGE_LOG_TAG = \"StorageDaemon\"",
