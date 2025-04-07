@@ -60,7 +60,7 @@ public:
     {
         return options_.good_;
     }
-    int GetAttr(const char *path, struct stat *buf, struct fuse_file_info  *fi);
+    int GetAttr(const char *path, struct stat *buf);
     int MkNod(const char *path, mode_t mode, dev_t dev);
     int MkDir(const char *path, mode_t mode);
     int UnLink(const char *path);
@@ -69,8 +69,10 @@ public:
     int ChMods(const char *path, mode_t mode, struct fuse_file_info  *fi);
     int Chown(const char *path, uid_t uid, gid_t gid, struct fuse_file_info  *fi);
     int UTimens(const char *path, const struct timespec tv[2], struct fuse_file_info  *fi);
-    int Open(const char *path, struct fuse_file_info *fileInfo);
-    int Read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fileInfo);
+    int OpenFile(const char *path, struct fuse_file_info *fileInfo);
+    int ReadFile(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fileInfo);
+    int OpenThumb(const char *path, struct fuse_file_info *fileInfo);
+    int ReadThumb(const std::string &path, char *buf);
     int Write(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fileInfo);
     int Statfs(const char *path, struct statvfs *statInfo);
     int Flush(const char *path, struct fuse_file_info *fileInfo);
@@ -86,6 +88,7 @@ public:
     int Create(const char *path, mode_t mode, fuse_file_info *fileInfo);
     int SetXAttr(const char *path, const char *in);
     int GetXAttr(const char *path, const char *in, char *out, size_t size);
+    int GetThumbAttr(const std::string &path, struct stat *buf);
 
 private:
     bool HasPartialObjectSupport();
