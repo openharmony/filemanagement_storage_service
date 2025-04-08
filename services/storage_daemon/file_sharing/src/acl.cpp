@@ -190,7 +190,6 @@ Acl::~Acl()
 {
     if (buf != nullptr) {
         delete[] buf;
-        buf = nullptr;
     }
 }
 } // STORAGE_DAEMON

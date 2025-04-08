@@ -400,12 +400,12 @@ bool HandleUMountMediaFuseFuzzTest(const uint8_t *data, size_t size)
 
 bool UserManagerFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size < sizeof(int32_t))) {
+    if ((data == nullptr) || (size < sizeof(int32_t) + sizeof(uint32_t))) {
         return false;
     }
 
     int32_t userId = *(reinterpret_cast<const int32_t *>(data));
-    uint32_t flag = *(reinterpret_cast<const uint32_t *>(data));
+    uint32_t flag = *(reinterpret_cast<const uint32_t *>(data + sizeof(uint32_t)));
     userManager->PrepareUserDirs(userId, flag);
     userManager->DestroyUserDirs(userId, flag);
     userManager->StartUser(userId);
