@@ -156,6 +156,8 @@ int FBEX::InstallEL5KeyToKernel(uint32_t userIdSingle, uint32_t userIdDouble, ui
             isSupport = false;
             return 0;
         }
+        std::string extraData = "userIdDouble=" + std::to_string(userIdDouble);
+        StorageRadar::ReportFbexResult("InstallEL5KeyToKernel::fopen", userIdSingle, errno, "EL5", extraData);
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
         return -errno;
     }
@@ -204,6 +206,7 @@ int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32
 
     FILE *f = fopen(FBEX_CMD_PATH, "r+");
     if (f == nullptr) {
+        StorageRadar::ReportFbexResult("InstallKeyToKernel::fopen", userId, errno, std::to_string(type), "");
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
         return -errno;
     }
@@ -300,6 +303,7 @@ int FBEX::UninstallOrLockUserKeyToKernel(uint32_t userId, uint32_t type, uint8_t
 
     FILE *f = fopen(FBEX_CMD_PATH, "r+");
     if (f == nullptr) {
+        StorageRadar::ReportFbexResult("UninstallOrLockUserKeyToKernel:fopen", userId, errno, std::to_string(type), "");
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
         return -errno;
     }
@@ -340,6 +344,8 @@ int FBEX::DeleteClassEPinCode(uint32_t userIdSingle, uint32_t userIdDouble)
             LOGE("fbex_uece does not exist, fbe not support this command!");
             return 0;
         }
+        std::string extraData = "userIdDouble=" + std::to_string(userIdDouble);
+        StorageRadar::ReportFbexResult("DeleteClassEPinCode::fopen", userIdSingle, errno, "EL5", extraData);
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
         return -errno;
     }
@@ -415,6 +421,7 @@ int FBEX::LockScreenToKernel(uint32_t userId)
 
     FILE *f = fopen(FBEX_CMD_PATH, "r+");
     if (f == nullptr) {
+        StorageRadar::ReportFbexResult("LockScreenToKernel::fopen", userId, errno, "", "");
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
         return -errno;
     }
@@ -447,6 +454,9 @@ int FBEX::GenerateAppkey(UserIdToFbeStr &userIdToFbe, uint32_t hashId, std::uniq
             appKey.reset(nullptr);
             return 0;
         }
+        std::string extraData = "userIdDouble=" + std::to_string(userIdToFbe.userIds[DOUBLE_ID_INDEX]);
+        StorageRadar::ReportFbexResult("GenerateAppkey::fopen", userIdToFbe.userIds[SINGLE_ID_INDEX],
+                                       errno, "EL5", extraData);
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
         return -errno;
     }
@@ -495,6 +505,8 @@ int FBEX::LockUece(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupp
             isFbeSupport = false;
             return 0;
         }
+        std::string extraData = "userIdDouble=" + std::to_string(userIdDouble);
+        StorageRadar::ReportFbexResult("GenerateAppkey::fopen", userIdSingle, errno, "EL5", extraData);
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
         return -errno;
     }
@@ -530,6 +542,7 @@ int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint
 
     FILE *f = fopen(FBEX_CMD_PATH, "r+");
     if (f == nullptr) {
+        StorageRadar::ReportFbexResult("UnlockScreenToKernel::fopen", userId, errno, std::to_string(type), "");
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
         return -errno;
     }
@@ -599,6 +612,9 @@ int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, std:
             isFbeSupport = false;
             return 0;
         }
+        std::string extraData = "userIdDouble=" + std::to_string(userIdToFbe.userIds[DOUBLE_ID_INDEX]);
+        StorageRadar::ReportFbexResult("ReadESecretToKernel::fopen", userIdToFbe.userIds[SINGLE_ID_INDEX],
+            errno, "EL5", extraData);
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
         return -errno;
     }
@@ -669,19 +685,16 @@ int FBEX::WriteESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uin
             LOGE("fbex_uece does not exist, fbe not support this command!");
             return 0;
         }
+        std::string extraData = "userIdDouble=" + std::to_string(userIdToFbe.userIds[DOUBLE_ID_INDEX]);
+        StorageRadar::ReportFbexResult("WriteESecretToKernel::fopen", userIdToFbe.userIds[SINGLE_ID_INDEX],
+                                       errno, "EL5", extraData);
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
         return -errno;
     }
     int fd = fileno(f);
     if (fd < 0) {
-        if (errno == ENOENT) {
-            LOGE("fbex_uece does not exist, fbe not support this command!");
-            (void)fclose(f);
-            return 0;
-        }
-        LOGE("open fbex_cmd failed, errno: %{public}d", errno);
         (void)fclose(f);
-        return -errno;
+        return (errno == ENOENT ? 0 : -errno);
     }
     uint32_t bufferSize = AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES;
     FbeOptsE ops{ .userIdDouble = userIdToFbe.userIds[DOUBLE_ID_INDEX],
@@ -718,6 +731,7 @@ int FBEX::GetStatus()
 {
     FILE *f = fopen(FBEX_CMD_PATH, "r+");
     if (f == nullptr) {
+        StorageRadar::ReportFbexResult("GetStatus::fopen", 0, errno, "", "");
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
         return -errno;
     }

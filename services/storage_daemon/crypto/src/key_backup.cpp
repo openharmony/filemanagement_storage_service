@@ -22,6 +22,7 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "unique_fd.h"
+#include "utils/storage_radar.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -463,10 +464,13 @@ void KeyBackup::FsyncFile(const std::string &dirName)
         LOGE("failed to open %{public}s", realPath.c_str());
         return;
     }
-    if (fsync(fd) == -1) {
+
+    auto ret = fsync(fd);
+    if (ret == -1) {
         if (errno == EROFS || errno == EINVAL) {
             LOGE("file system does not support sync, dirName: %{public}s", realPath.c_str());
         } else {
+            StorageService::StorageRadar::ReportUserManager("KeyBackup::FsyncFile", 0, ret, "dirName=" + dirName);
             LOGE("sync failed: %{public}s", realPath.c_str());
         }
     }
@@ -719,10 +723,13 @@ bool KeyBackup::WriteStringToFile(const std::string &payload, const std::string 
         return false;
     }
 
-    if (fsync(fd) == -1) {
+    auto ret = fsync(fd);
+    if (ret == -1) {
         if (errno == EROFS || errno == EINVAL) {
             LOGE("file system does not support sync, fileName: %{public}s", fileName.c_str());
         } else {
+            std::string extraData = "payload=" + payload + ", fileName=" + fileName;
+            StorageService::StorageRadar::ReportUserManager("KeyBackup::FsyncFile::fsync", 0, ret, extraData);
             LOGE("sync failed: %{public}s", fileName.c_str());
             unlink(fileName.c_str());
             return false;
