@@ -512,7 +512,7 @@ int MtpFileSystem::GetAttr(const char *path, struct stat *buf)
     } else {
         std::string tmpPath(SmtpfsDirName(path));
         std::string tmpFile(SmtpfsBaseName(path));
-        const MtpFsTypeDir *content = device_.DirFetchContent(tmpPath);
+        const MtpFsTypeDir *content = device_.ReadDirFetchContent(tmpPath);
         if (content == nullptr) {
             LOGE("MtpFileSystem: GetAttr error, content is null, path: %{public}s", path);
             return -ENOENT;
@@ -971,7 +971,7 @@ int MtpFileSystem::FSync(const char *path, int datasync, struct fuse_file_info *
 int MtpFileSystem::OpenDir(const char *path, struct fuse_file_info *fileInfo)
 {
     LOGI("MtpFileSystem: OpenDir, path: %{public}s", path);
-    const MtpFsTypeDir *content = device_.DirFetchContent(std::string(path));
+    const MtpFsTypeDir *content = device_.OpenDirFetchContent(std::string(path));
     if (content == nullptr) {
         return -ENOENT;
     }
@@ -983,7 +983,7 @@ int MtpFileSystem::ReadDir(const char *path, void *buf, fuse_fill_dir_t filler, 
 {
     LOGI("MtpFileSystem: ReadDir, path: %{public}s", path);
     enum fuse_fill_dir_flags fillFlags = FUSE_FILL_DIR_PLUS;
-    const MtpFsTypeDir *content = device_.DirFetchContent(std::string(path));
+    const MtpFsTypeDir *content = device_.ReadDirFetchContent(std::string(path));
     if (content == nullptr) {
         return -ENOENT;
     }
@@ -1058,33 +1058,47 @@ int MtpFileSystem::GetXAttr(const char *path, const char *in, char *out, size_t 
         LOGE("Param is null.");
         return 0;
     }
-    if (strcmp(in, "user.isUploadCompleted") != 0) {
-        LOGE("attrKey error, attrKey=%{public}s", in);
-        return 0;
-    }
+
     if (out == nullptr || size <= 0) {
         return UPLOAD_RECORD_FALSE_LEN;
     }
-    auto [firstParam, secondParam] = device_.FindUploadRecord(std::string(path));
-    if (firstParam.empty()) {
-        LOGE("No record, path=%{public}s", path);
-        return 0;
-    }
-    int ret;
-    if (secondParam) {
-        ret = memcpy_s(out, size, "true", UPLOAD_RECORD_TRUE_LEN);
+    if (strcmp(in, "user.isDirFetched") == 0) {
+        bool fetch = device_.IsDirFetched(std::string(path));
+        int ret;
+        if (fetch) {
+            ret = memcpy_s(out, size, "true", UPLOAD_RECORD_TRUE_LEN);
+        } else {
+            ret = memcpy_s(out, size, "false", UPLOAD_RECORD_FALSE_LEN);
+        }
         if (ret != 0) {
             LOGE("copy fail, ret=%{public}d", ret);
             return 0;
         }
-        device_.RemoveUploadRecord(path);
-        return UPLOAD_RECORD_TRUE_LEN;
+        return fetch ? UPLOAD_RECORD_TRUE_LEN : UPLOAD_RECORD_FALSE_LEN;
+    } else if (strcmp(in, "user.isUploadCompleted") == 0) {
+        auto [firstParam, secondParam] = device_.FindUploadRecord(std::string(path));
+        if (firstParam.empty()) {
+            LOGE("No record, path=%{public}s", path);
+            return 0;
+        }
+        int ret;
+        if (secondParam) {
+            ret = memcpy_s(out, size, "true", UPLOAD_RECORD_TRUE_LEN);
+            if (ret != 0) {
+                LOGE("copy fail, ret=%{public}d", ret);
+                return 0;
+            }
+            device_.RemoveUploadRecord(path);
+        } else {
+            ret = memcpy_s(out, size, "false", UPLOAD_RECORD_FALSE_LEN);
+            if (ret != 0) {
+                LOGE("copy fail, ret=%{public}d", ret);
+                return 0;
+            }
+        }
+        return secondParam ? UPLOAD_RECORD_TRUE_LEN : UPLOAD_RECORD_FALSE_LEN;
     } else {
-        ret = memcpy_s(out, size, "false", UPLOAD_RECORD_FALSE_LEN);
-        if (ret != 0) {
-            LOGE("copy fail, ret=%{public}d", ret);
-            return 0;
-        }
-        return UPLOAD_RECORD_FALSE_LEN;
+        LOGE("attrKey error, attrKey=%{public}s", in);
+        return 0;
     }
 }

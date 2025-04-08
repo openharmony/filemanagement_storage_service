@@ -27,6 +27,7 @@
 
 const int32_t FETCH_NUM = 3000;
 const int32_t DIR_COUNT_ONE = 1;
+const uint32_t DEFAULT_COUNT = 100;
 static bool g_isEventDone = true;
 uint32_t MtpFsDevice::rootNode_ = ~0;
 std::condition_variable MtpFsDevice::eventCon_;
@@ -358,6 +359,146 @@ const MtpFsTypeDir *MtpFsDevice::DirFetchContent(std::string path)
     return dir;
 }
 
+const MtpFsTypeDir *MtpFsDevice::OpenDirFetchContent(std::string path)
+{
+    if (!rootDir_.IsFetched()) {
+        for (LIBMTP_devicestorage_t *s = device_->storage; s; s = s->next) {
+            rootDir_.AddDir(MtpFsTypeDir(rootNode_, 0, s->id, std::string(s->StorageDescription)));
+            if (rootDir_.Dirs().size() != 0) {
+                rootDirName_ = rootDir_.Dirs().begin()->Name();
+            }
+            rootDir_.SetFetched();
+        }
+    }
+    if (rootDir_.DirCount() == 1) {
+        path = '/' + rootDirName_ + path;
+    }
+ 
+    if (path == "/") {
+        return &rootDir_;
+    }
+ 
+    std::string member;
+    std::istringstream ss(path);
+    MtpFsTypeDir *dir = &rootDir_;
+    while (std::getline(ss, member, '/')) {
+        if (member.empty()) {
+            continue;
+        }
+        const MtpFsTypeDir *tmp = dir->Dir(member);
+        if (!tmp && !dir->IsFetched()) {
+            FetchDirContent(dir);
+            tmp = dir->Dir(member);
+        }
+        if (!tmp) {
+            return nullptr;
+        }
+        dir = const_cast<MtpFsTypeDir *>(tmp);
+    }
+ 
+    if (!dir->IsFetched()) {
+        FetchDirContent(dir);
+    }
+    return dir;
+}
+ 
+void MtpFsDevice::FreeObjectHandles(MtpFsTypeDir *dir)
+{
+    if (dir->objHandles) {
+        if (dir->objHandles->handler) {
+            free(dir->objHandles->handler);
+            dir->objHandles->handler = nullptr;
+        }
+        free(dir->objHandles);
+        dir->objHandles = nullptr;
+    }
+}
+
+void MtpFsDevice::FetchDirContent(MtpFsTypeDir *dir)
+{
+    if (!dir || !device_) {
+        LOGE("Invalid dir or device");
+        return;
+    }
+
+    if (dir->objHandles == nullptr) {
+        dir->objHandles = LIBMTP_Get_Object_Handles(device_, dir->StorageId(), dir->Id());
+    }
+ 
+    if (dir->objHandles == nullptr || dir->objHandles->handler == nullptr || dir->objHandles->num == 0) {
+        dir->SetFetched();
+        return;
+    }
+    CriticalEnter();
+    LIBMTP_file_t *content = LIBMTP_Get_Patial_Files_Metadata(device_, dir->objHandles, DEFAULT_COUNT);
+    CriticalLeave();
+    HandleDir(content, dir);
+    if (dir->objHandles->offset >= dir->objHandles->num) {
+        dir->SetFetched();
+        FreeObjectHandles(dir);
+    }
+ 
+    LIBMTPFreeFilesAndFolders(&content);
+}
+ 
+const MtpFsTypeDir *MtpFsDevice::ReadDirFetchContent(std::string path)
+{
+    if (!rootDir_.IsFetched()) {
+        for (LIBMTP_devicestorage_t *s = device_->storage; s; s = s->next) {
+            rootDir_.AddDir(MtpFsTypeDir(rootNode_, 0, s->id, std::string(s->StorageDescription)));
+            if (rootDir_.Dirs().size() != 0) {
+                rootDirName_ = rootDir_.Dirs().begin()->Name();
+            }
+            rootDir_.SetFetched();
+        }
+    }
+    if (rootDir_.DirCount() == 1) {
+        path = '/' + rootDirName_ + path;
+    }
+ 
+    std::string member;
+    std::istringstream ss(path);
+    MtpFsTypeDir *dir = &rootDir_;
+    while (std::getline(ss, member, '/')) {
+        if (member.empty()) {
+            continue;
+        }
+        const MtpFsTypeDir *tmp = dir->Dir(member);
+        dir = const_cast<MtpFsTypeDir *>(tmp);
+    }
+    return dir;
+}
+
+bool MtpFsDevice::IsDirFetched(std::string path)
+{
+    if (!rootDir_.IsFetched()) {
+        for (LIBMTP_devicestorage_t *s = device_->storage; s; s = s->next) {
+            rootDir_.AddDir(MtpFsTypeDir(rootNode_, 0, s->id, std::string(s->StorageDescription)));
+            if (rootDir_.Dirs().size() != 0) {
+                rootDirName_ = rootDir_.Dirs().begin()->Name();
+            }
+            rootDir_.SetFetched();
+        }
+    }
+    if (rootDir_.DirCount() == 1) {
+        path = '/' + rootDirName_ + path;
+    }
+    if (path == "/") {
+        return true;
+    }
+    std::string member;
+    std::istringstream ss(path);
+    MtpFsTypeDir *dir = &rootDir_;
+    while (std::getline(ss, member, '/')) {
+        if (member.empty()) {
+            continue;
+        }
+        const MtpFsTypeDir *tmp = dir->Dir(member);
+        dir = const_cast<MtpFsTypeDir *>(tmp);
+    }
+    return dir->IsFetched();
+}
+
 void MtpFsDevice::RefreshDirContent(std::string path)
 {
     if (!rootDir_.IsFetched()) {
@@ -458,7 +599,7 @@ int MtpFsDevice::DirRemove(const std::string &path)
 {
     const std::string tmpBaseName(SmtpfsBaseName(path));
     const std::string tmpDirName(SmtpfsDirName(path));
-    const MtpFsTypeDir *dirParent = DirFetchContent(tmpDirName);
+    const MtpFsTypeDir *dirParent = ReadDirFetchContent(tmpDirName);
     const MtpFsTypeDir *dirToRemove = dirParent ? dirParent->Dir(tmpBaseName) : nullptr;
     if (!dirParent || !dirToRemove || dirParent->Id() == 0) {
         LOGE("No such directory %{public}s to remove", path.c_str());
@@ -787,7 +928,7 @@ int MtpFsDevice::FileRemove(const std::string &path)
 {
     const std::string tmpBaseName(SmtpfsBaseName(path));
     const std::string tmpDirName(SmtpfsDirName(path));
-    const MtpFsTypeDir *dirParent = DirFetchContent(tmpDirName);
+    const MtpFsTypeDir *dirParent = ReadDirFetchContent(tmpDirName);
     const MtpFsTypeFile *fileToRemove = dirParent ? dirParent->File(tmpBaseName) : nullptr;
     if (!dirParent || !fileToRemove) {
         LOGE("No such file %{public}s to remove", path.c_str());
