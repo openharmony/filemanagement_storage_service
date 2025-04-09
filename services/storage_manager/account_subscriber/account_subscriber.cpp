@@ -15,19 +15,14 @@
 
 #include "account_subscriber/account_subscriber.h"
 
-#ifdef USER_CRYPTO_MANAGER
-#include "crypto/filesystem_crypto.h"
-#endif
 #include "iservice_registry.h"
 #include "int_wrapper.h"
-#include "os_account_manager.h"
 #include "storage_daemon_communication/storage_daemon_communication.h"
 #include "storage_service_log.h"
 #include "system_ability_definition.h"
 #include "utils/storage_radar.h"
 
 using namespace OHOS::AAFwk;
-using namespace OHOS::AccountSA;
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageManager {
@@ -46,7 +41,6 @@ void AccountSubscriber::Subscriber(void)
         EventFwk::MatchingSkills matchingSkills;
         matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USER_UNLOCKED);
         matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_USER_SWITCHED);
-        matchingSkills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_LOCKED);
         EventFwk::CommonEventSubscribeInfo subscribeInfo(matchingSkills);
         accountSubscriber_ = std::make_shared<AccountSubscriber>(subscribeInfo);
         EventFwk::CommonEventManager::SubscribeCommonEvent(accountSubscriber_);
@@ -111,9 +105,6 @@ void AccountSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &eventDat
         status = HandleUserUnlockEvent(status);
     } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USER_SWITCHED) {
         status = HandleUserSwitchedEvent(status);
-    } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_LOCKED) {
-        HandleScreenLockedEvent(userId);
-        return;
     }
     userId_ = userId;
     userRecord_[userId] = status;
@@ -161,23 +152,6 @@ uint32_t AccountSubscriber::HandleUserSwitchedEvent(uint32_t userStatus)
     return userStatus;
 }
 
-void AccountSubscriber::HandleScreenLockedEvent(int32_t &userId)
-{
-    std::vector<int32_t> ids;
-    int ret = AccountSA::OsAccountManager::QueryActiveOsAccountIds(ids);
-    if (ret != 0 || ids.empty()) {
-        LOGE("Query active userid failed, ret = %{public}u", ret);
-        StorageRadar::ReportOsAccountResult("HandleScreenLockedEvent::QueryActiveOsAccountIds", ret, DEFAULT_USERID);
-        return;
-    }
-    userId = ids[0];
-    if (!OnReceiveEventLockUserScreen(userId)) {
-        LOGE("user %{public}u LockUserScreen fail", userId);
-    }
-    LOGI("Handle EventFwk::CommonEventSupport::Common_EVENT_SCREEN_LOCKED finished, userId is %{public}u",
-        userId);
-}
-
 void AccountSubscriber::GetSystemAbility()
 {
     std::lock_guard<std::mutex> lockMedia(mediaMutex_);
@@ -202,24 +176,6 @@ void AccountSubscriber::GetSystemAbility()
         }
         LOGE("try to connect media again.");
     }
-}
-
-bool AccountSubscriber::OnReceiveEventLockUserScreen(int32_t userId)
-{
-#ifdef USER_CRYPTO_MANAGER
-    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
-    if (fsCrypto != nullptr) {
-        int ret = fsCrypto->LockUserScreen(userId);
-        if (ret != 0) {
-            LOGE("user %{public}u LockUserScreen fail", userId);
-            return false;
-        }
-    } else {
-        LOGE("fsCrypto is nullptr");
-        return false;
-    }
-#endif
-    return true;
 }
 }  // namespace StorageManager
 }  // namespace OHOS
