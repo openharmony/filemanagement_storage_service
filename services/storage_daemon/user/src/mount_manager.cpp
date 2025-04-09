@@ -2046,7 +2046,7 @@ bool MountManager::CheckSymlinkForPath(const std::string &fdPath, const std::str
 {
     char realPath[PATH_MAX_FOR_LINK];
     int res = readlink(fdPath.c_str(), realPath, sizeof(realPath) - 1);
-    if (res < 0 || res >= ONE_KB) {
+    if (res < 0) {
         LOGE("readlink failed for path, errno is %{public}d.", errno);
         return false;
     }
