@@ -46,7 +46,7 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 28] void GetLockScreenStatus([in] unsigned int user, [out] boolean lockScreenStatus);
      [ipccode 33] void GenerateAppkey([in] unsigned int userId, [in] unsigned int hashId, [out] String keyId,
                                       [in] boolean needReSet);
-     [ipccode 35] void DeleteAppkey([in] unsigned int userId, [in] String keyId);
+     [ipccode 34] void DeleteAppkey([in] unsigned int userId, [in] String keyId);
      [ipccode 38] void CreateRecoverKey([in] unsigned int userId, [in] unsigned int userType,
                                         [in] unsigned char[] token,[in] unsigned char[] secret);
      [ipccode 39] void SetRecoverKey([in] unsigned char[] key);
