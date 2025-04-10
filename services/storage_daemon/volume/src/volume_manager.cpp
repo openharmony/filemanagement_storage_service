@@ -207,13 +207,11 @@ int32_t VolumeManager::QueryUsbIsInUse(const std::string &diskPath, bool &isInUs
         LOGE("diskPath is null");
         return E_PARAMS_NULLPTR_ERR;
     }
-    LOGE("QueryUsbIsInUse diskPath =%{public}s.", diskPath.c_str());
     char realPath[PATH_MAX] = { 0 };
     if (realpath(diskPath.c_str(), realPath) == nullptr) {
         LOGE("get realpath failed for diskPath =%{public}s.", diskPath.c_str());
         return E_PARAMS_INVALID;
     }
-    LOGE("QueryUsbIsInUse realPath %{public}s", realPath);
     int fd = open(realPath, O_RDONLY);
     if (fd < 0) {
         LOGE("open file fail realPath %{public}s, errno %{public}d", realPath, errno);
