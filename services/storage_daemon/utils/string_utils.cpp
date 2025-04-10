@@ -158,17 +158,5 @@ std::string ListToString(const std::list<std::string> &strList)
     }
     return result.empty() ? "" : result.substr(0, result.length() -1);
 }
-
-std::string VectorToString(const std::vector<std::string> &strList)
-{
-    if (strList.empty()) {
-        return "";
-    }
-    std::string result;
-    for (auto &iter : strList) {
-        result += iter + ",";
-    }
-    return result.empty() ? "" : result.substr(0, result.length() -1);
-}
 } // namespace StorageDaemon
 } // namespace OHOS
