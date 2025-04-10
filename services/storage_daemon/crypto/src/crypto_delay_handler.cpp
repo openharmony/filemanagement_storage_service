@@ -77,7 +77,7 @@
      std::lock_guard<std::mutex> lock(handlerMutex_);
      if (el4Key_ == nullptr) {
          LOGI("DelayHandler::DeactiveEl3El4El5:: elKey is nullptr do not clean.");
-         StorageRadar::ReportUpdateUserAuth("DeactiveEl3El4El5", userId_, E_PARAMS_INVALID, "EL4", "");
+         StorageRadar::ReportUpdateUserAuth("DeactiveEl3El4El5", userId_, E_PARAMS_INVAL, "EL4", "");
          return;
      }
      if (cancelled_) {
