@@ -14,9 +14,12 @@
  */
 
 #include <gtest/gtest.h>
+
 #include "crypto/filesystem_crypto.h"
+#include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+
 namespace OHOS {
 namespace StorageManager {
 using namespace testing::ext;
@@ -352,7 +355,7 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_ResetSecretWithRecoveryKey
     std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
         DelayedSingleton<FileSystemCrypto>::GetInstance();
 
-    int32_t ret = fileSystemCrypto_->ResetSecretWithRecoveryKey(99, 1, {});
+    int32_t ret = fileSystemCrypto_->ResetSecretWithRecoveryKey(StorageService::MAX_USER_ID + 1, 1, {});
     EXPECT_EQ(ret, E_USERID_RANGE);
 
     ret = fileSystemCrypto_->ResetSecretWithRecoveryKey(100, 1, {});
