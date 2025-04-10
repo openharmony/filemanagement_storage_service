@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,10 +24,10 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "ipc/istorage_daemon.h"
+#include "istorage_daemon.h"
 #include "user/user_manager.h"
 #include "utils/file_utils.h"
-
+#include "storage_service_constant.h"
 namespace OHOS {
 namespace StorageDaemon {
 namespace StorageTest {
@@ -88,14 +88,14 @@ bool StorageTestUtils::CheckUserDir(int32_t userId, uint32_t flags)
         std::string path(dir.path);
         path.replace(path.find("%d"), strlen("%d"), std::to_string(userId));
 
-        if (flags & IStorageDaemon::CRYPTO_FLAG_EL1) {
+        if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL1) {
             std::string realPath(path);
             realPath.replace(realPath.find("%s"), strlen("%s"), "el1");
             if (CheckDir(realPath) == false) {
                 return false;
             }
         }
-        if (flags & IStorageDaemon::CRYPTO_FLAG_EL2) {
+        if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL2) {
             std::string realPath(path);
             realPath.replace(realPath.find("%s"), strlen("%s"), "el2");
             if (CheckDir(realPath) == false) {
@@ -105,7 +105,7 @@ bool StorageTestUtils::CheckUserDir(int32_t userId, uint32_t flags)
     }
 
     for (const Dir &dir : gSubDirs) {
-        if (flags & IStorageDaemon::CRYPTO_FLAG_EL1) {
+        if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL1) {
             std::string path(dir.path);
             path.replace(path.find("%d"), strlen("%d"), std::to_string(userId));
             path.replace(path.find("%s"), strlen("%s"), "el1");
@@ -114,7 +114,7 @@ bool StorageTestUtils::CheckUserDir(int32_t userId, uint32_t flags)
             }
         }
 
-        if (flags & IStorageDaemon::CRYPTO_FLAG_EL2) {
+        if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL2) {
             std::string path(dir.path);
             path.replace(path.find("%d"), strlen("%d"), std::to_string(userId));
             path.replace(path.find("%s"), strlen("%s"), "el2");

@@ -1,4 +1,4 @@
-# Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+# Copyright (c) 2022-2025 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -58,7 +58,7 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/disk/src/disk_info.cpp",
     "$ROOT_DIR/disk/src/disk_manager.cpp",
     "$ROOT_DIR/ipc/src/storage_daemon.cpp",
-    "$ROOT_DIR/ipc/src/storage_daemon_stub.cpp",
+    "$ROOT_DIR/ipc/src/storage_daemon_provider.cpp",
     "$ROOT_DIR/ipc/src/storage_manager_client.cpp",
     "$ROOT_DIR/ipc/test/storage_daemon_test.cpp",
     "$ROOT_DIR/quota/quota_manager.cpp",
@@ -69,9 +69,13 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/volume/src/process.cpp",
     "$ROOT_DIR/volume/src/volume_info.cpp",
     "$ROOT_DIR/volume/src/volume_manager.cpp",
+    "$ROOT_DIR/utils/string_utils.cpp",
   ]
 
-  deps = [ "${storage_daemon_path}:storage_common_utils" ]
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_ipc",
+  ]
 
   external_deps = [
     "ability_base:base",
@@ -90,6 +94,7 @@ ohos_unittest("storage_daemon_test") {
     "hicollie:libhicollie",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
+    "hitrace:hitrace_meter",
     "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_single",
@@ -104,105 +109,6 @@ ohos_unittest("storage_daemon_test") {
   }
 
   use_exceptions = true
-}
-
-ohos_unittest("storage_daemon_proxy_test") {
-  branch_protector_ret = "pac_ret"
-  sanitize = {
-    integer_overflow = true
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
-    blocklist = "${storage_service_path}/cfi_blocklist.txt"
-  }
-  module_out_path = "storage_service/storage_daemon"
-
-  defines = [
-    "STORAGE_LOG_TAG = \"StorageDaemon\"",
-    "LOG_DOMAIN = 0xD004301",
-  ]
-
-  include_dirs = [
-    "$ROOT_DIR/include",
-    "${storage_service_common_path}/include",
-    "${storage_interface_path}/innerkits/storage_manager/native",
-  ]
-
-  sources = [
-    "$ROOT_DIR/ipc/src/storage_daemon_proxy.cpp",
-    "$ROOT_DIR/ipc/test/storage_daemon_proxy_test.cpp",
-  ]
-
-  external_deps = [
-    "c_utils:utils",
-    "googletest:gmock_main",
-    "googletest:gtest_main",
-    "hilog:libhilog",
-    "ipc:ipc_single",
-    "ipc:libdbinder",
-    "safwk:system_ability_fwk",
-    "samgr:samgr_proxy",
-  ]
-}
-
-ohos_unittest("storage_daemon_stub_test") {
-  branch_protector_ret = "pac_ret"
-  sanitize = {
-    integer_overflow = true
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
-    blocklist = "${storage_service_path}/cfi_blocklist.txt"
-  }
-  module_out_path = "storage_service/storage_daemon"
-
-  defines = [
-    "STORAGE_LOG_TAG = \"StorageDaemon\"",
-    "LOG_DOMAIN = 0xD004301",
-    "private = public",
-  ]
-
-  if (storage_service_user_crypto_manager) {
-    defines += [ "USER_CRYPTO_MANAGER" ]
-  }
-
-  include_dirs = [
-    "$ROOT_DIR/include",
-    "$ROOT_DIR/ipc/test/",
-    "${storage_service_common_path}/include",
-    "${storage_interface_path}/innerkits/storage_manager/native",
-  ]
-
-  sources = [
-    "$ROOT_DIR/ipc/src/storage_daemon_proxy.cpp",
-    "$ROOT_DIR/ipc/src/storage_daemon_stub.cpp",
-    "$ROOT_DIR/ipc/test/storage_daemon_stub_test.cpp",
-    "$ROOT_DIR/user/src/user_manager.cpp",
-    "$ROOT_DIR/utils/mount_argument_utils.cpp",
-  ]
-
-  deps = [ "${storage_daemon_path}:storage_common_utils" ]
-
-  external_deps = [
-    "access_token:libaccesstoken_sdk",
-    "bundle_framework:appexecfwk_core",
-    "c_utils:utils",
-    "googletest:gmock_main",
-    "googletest:gtest_main",
-    "hicollie:libhicollie",
-    "hilog:libhilog",
-    "huks:libhukssdk",
-    "init:libbegetutil",
-    "ipc:ipc_single",
-    "ipc:libdbinder",
-    "safwk:system_ability_fwk",
-    "samgr:samgr_proxy",
-  ]
-
-  if (enable_user_auth_framework) {
-    defines += [ "USER_AUTH_FRAMEWORK" ]
-    external_deps += [ "user_auth_framework:userauth_client" ]
-  }
 }
 
 ohos_unittest("storage_manager_clt_test") {
@@ -260,8 +166,6 @@ ohos_unittest("storage_manager_clt_test") {
 group("storage_daemon_ipc_test") {
   testonly = true
   deps = [
-    ":storage_daemon_proxy_test",
-    ":storage_daemon_stub_test",
     ":storage_daemon_test",
     ":storage_manager_clt_test",
   ]
