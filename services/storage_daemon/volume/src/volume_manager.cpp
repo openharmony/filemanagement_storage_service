@@ -216,7 +216,7 @@ int32_t VolumeManager::QueryUsbIsInUse(const std::string &diskPath, bool &isInUs
     LOGE("QueryUsbIsInUse realPath %{public}s", realPath);
     int fd = open(realPath, O_RDONLY);
     if (fd < 0) {
-        LOGE("open file fail diskPath %{public}s, errno %{public}d", realPath, errno);
+        LOGE("open file fail realPath %{public}s, errno %{public}d", realPath, errno);
         return E_OPEN_FAILED;
     }
     int inUse = -1;
