@@ -52,9 +52,8 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_WrapGetattr_001, TestSize.Level1)
     GTEST_LOG_(INFO) << "MtpfsFuseTest_WrapGetattr_001 start";
 
     struct stat buf;
-    struct fuse_file_info fi;
     auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
-    int result = mtpFileSystem->GetAttr("/", &buf, &fi);
+    int result = mtpFileSystem->GetAttr("/", &buf);
     EXPECT_EQ(result, 0);
     EXPECT_EQ(buf.st_mode, S_IFDIR | PERMISSION_ONE);
     EXPECT_EQ(buf.st_nlink, ST_NLINK_TWO);
@@ -318,7 +317,7 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttr_001, TestSize.Level1)
 
     const char *path = "/mnt/data/external";
     char out[UPLOAD_RECORD_FALSE_LEN + 1] = { 0 };
- 
+
     auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
     int ret = mtpFileSystem->GetXAttr(NULL, NULL, NULL, 0);
     EXPECT_EQ(ret, 0);

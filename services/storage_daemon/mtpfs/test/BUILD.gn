@@ -34,6 +34,7 @@ ohos_unittest("mtpfs_fuse_test") {
   include_dirs = [
     "${storage_daemon_path}/mtpfs/include",
     "${storage_daemon_path}/include/utils",
+    "${storage_interface_path}/innerkits/storage_manager/native",
     "${storage_service_common_path}/include",
   ]
 
@@ -98,6 +99,7 @@ ohos_unittest("mtpfs_libmtp_test") {
   include_dirs = [
     "${storage_daemon_path}/mtpfs/include",
     "${storage_daemon_path}/include/utils",
+    "${storage_interface_path}/innerkits/storage_manager/native",
     "${storage_service_common_path}/include",
   ]
 
@@ -162,6 +164,7 @@ ohos_unittest("mtpfs_mtp_device_test") {
   include_dirs = [
     "${storage_daemon_path}/mtpfs/include",
     "${storage_daemon_path}/include/utils",
+    "${storage_interface_path}/innerkits/storage_manager/native",
     "${storage_service_common_path}/include",
   ]
 
@@ -226,6 +229,7 @@ ohos_unittest("mtpfs_tmp_files_pool_test") {
   include_dirs = [
     "${storage_daemon_path}/mtpfs/include",
     "${storage_daemon_path}/include/utils",
+    "${storage_interface_path}/innerkits/storage_manager/native",
     "${storage_service_common_path}/include",
   ]
 

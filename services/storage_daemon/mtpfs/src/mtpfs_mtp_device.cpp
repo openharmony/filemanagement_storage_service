@@ -373,11 +373,11 @@ const MtpFsTypeDir *MtpFsDevice::OpenDirFetchContent(std::string path)
     if (rootDir_.DirCount() == 1) {
         path = '/' + rootDirName_ + path;
     }
- 
+
     if (path == "/") {
         return &rootDir_;
     }
- 
+
     std::string member;
     std::istringstream ss(path);
     MtpFsTypeDir *dir = &rootDir_;
@@ -395,13 +395,13 @@ const MtpFsTypeDir *MtpFsDevice::OpenDirFetchContent(std::string path)
         }
         dir = const_cast<MtpFsTypeDir *>(tmp);
     }
- 
+
     if (!dir->IsFetched()) {
         FetchDirContent(dir);
     }
     return dir;
 }
- 
+
 void MtpFsDevice::FreeObjectHandles(MtpFsTypeDir *dir)
 {
     if (dir->objHandles) {
@@ -424,7 +424,7 @@ void MtpFsDevice::FetchDirContent(MtpFsTypeDir *dir)
     if (dir->objHandles == nullptr) {
         dir->objHandles = LIBMTP_Get_Object_Handles(device_, dir->StorageId(), dir->Id());
     }
- 
+
     if (dir->objHandles == nullptr || dir->objHandles->handler == nullptr || dir->objHandles->num == 0) {
         dir->SetFetched();
         return;
@@ -437,10 +437,10 @@ void MtpFsDevice::FetchDirContent(MtpFsTypeDir *dir)
         dir->SetFetched();
         FreeObjectHandles(dir);
     }
- 
+
     LIBMTPFreeFilesAndFolders(&content);
 }
- 
+
 const MtpFsTypeDir *MtpFsDevice::ReadDirFetchContent(std::string path)
 {
     if (!rootDir_.IsFetched()) {
@@ -455,7 +455,7 @@ const MtpFsTypeDir *MtpFsDevice::ReadDirFetchContent(std::string path)
     if (rootDir_.DirCount() == 1) {
         path = '/' + rootDirName_ + path;
     }
- 
+
     std::string member;
     std::istringstream ss(path);
     MtpFsTypeDir *dir = &rootDir_;
@@ -1093,4 +1093,16 @@ std::tuple<std::string, bool> MtpFsDevice::FindUploadRecord(const std::string pa
         return {"", false};
     }
     return {it->first, it->second};
+}
+
+char *MtpFsDevice::GetDeviceFriendlyName()
+{
+    CriticalEnter();
+    char *name = LIBMTP_Get_Friendlyname(device_);
+    CriticalLeave();
+    if (name == nullptr) {
+        LOGI("get device name is null");
+        return nullptr;
+    }
+    return name;
 }
