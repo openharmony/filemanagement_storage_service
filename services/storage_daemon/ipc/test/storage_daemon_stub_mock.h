@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -74,6 +74,9 @@ public:
     MOCK_METHOD1(UMountMediaFuse, int32_t (int32_t));
     MOCK_METHOD3(MountFileMgrFuse, int32_t (int32_t, const std::string &, int32_t &));
     MOCK_METHOD2(UMountFileMgrFuse, int32_t (int32_t, const std::string &));
+    MOCK_METHOD1(AddDeathRecipient, bool(const sptr<DeathRecipient> &));
+    MOCK_METHOD1(RemoveDeathRecipient, bool(const sptr<DeathRecipient> &));
+    MOCK_METHOD4(SetBundleQuota, int32_t(const std::string &, int32_t, const std::string &, int32_t));
     MOCK_METHOD4(IsFileOccupied, int32_t (const std::string &, const std::vector<std::string> &,
         std::vector<std::string> &, bool &));
 };

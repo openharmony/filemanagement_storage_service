@@ -72,7 +72,79 @@ ohos_unittest("storage_daemon_communication_test") {
   }
 }
 
+ohos_unittest("storage_daemon_communication_sub_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
+  }
+  module_out_path = "storage_service/storage_service/storage_manager"
+
+  sources = [
+    "${storage_daemon_path}/ipc/src/storage_daemon_stub.cpp",
+    "${storage_manager_path}/mock/storage_daemon_proxy_mock.cpp",
+    "storage_daemon_communication_sub_test.cpp",
+  ]
+
+  include_dirs = [
+    "include",
+    "${storage_daemon_path}/include",
+    "${storage_daemon_path}/ipc/test/",
+    "${storage_manager_path}/include",
+    "${storage_service_common_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+  ]
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageManager\"",
+    "LOG_DOMAIN = 0xD004300",
+    "private=public",
+  ]
+
+  if (storage_service_user_crypto_manager) {
+    defines += [ "USER_CRYPTO_MANAGER" ]
+  }
+
+  if (storage_service_external_storage_manager) {
+    defines += [ "EXTERNAL_STORAGE_MANAGER" ]
+  }
+
+  if (storage_service_media_fuse) {
+    defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
+  }
+
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
+    "${storage_service_path}/services/storage_manager:storage_manager",
+  ]
+
+  external_deps = [
+    "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hicollie:libhicollie",
+    "hilog:libhilog",
+    "init:libbegetutil",
+    "ipc:ipc_single",
+    "os_account:os_account_innerkits",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+  ]
+
+  if (enable_screenlock_manager) {
+    defines += [ "ENABLE_SCREENLOCK_MANAGER" ]
+    external_deps += [ "screenlock_mgr:screenlock_client" ]
+  }
+}
+
+
 group("storage_manager_communication_test") {
   testonly = true
-  deps = [ ":storage_daemon_communication_test" ]
+  deps = [
+    ":storage_daemon_communication_test",
+    ":storage_daemon_communication_sub_test",
+  ]
 }
