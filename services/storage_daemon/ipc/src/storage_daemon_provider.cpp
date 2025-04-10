@@ -278,7 +278,6 @@ int32_t StorageDaemonProvider::QueryUsbIsInUse(const std::string &diskPath, bool
 int32_t StorageDaemonProvider::StartUser(int32_t userId)
 {
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
-    std::lock_guard<std::mutex> lock(mutex_);
     auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
     (void)StorageDaemon::GetInstance()->SetPriority();  // set tid priority to 40
@@ -304,7 +303,6 @@ int32_t StorageDaemonProvider::StartUser(int32_t userId)
 
 int32_t StorageDaemonProvider::StopUser(int32_t userId)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
     auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
     int32_t ret = UserManager::GetInstance()->StopUser(userId);
@@ -683,8 +681,9 @@ int32_t StorageDaemonProvider::IsFileOccupied(const std::string &path,
     return StorageDaemon::GetInstance()->IsFileOccupied(path, inputList, outputList, isOccupy);
 }
 
-int32_t
-    StorageDaemonProvider::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key)
+int32_t StorageDaemonProvider::ResetSecretWithRecoveryKey(uint32_t userId,
+                                                          uint32_t rkType,
+                                                          const std::vector<uint8_t> &key)
 {
     return StorageDaemon::GetInstance()->ResetSecretWithRecoveryKey(userId, rkType, key);
 }
