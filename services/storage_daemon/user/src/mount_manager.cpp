@@ -1931,8 +1931,7 @@ int32_t MountManager::IsFileOccupied(const std::string &path, const std::vector<
         return OpenProcForPath(path, isOccupy, false);
     }
     if (path == FILE_MGR_ROOT_PATH || (!inputList.empty() && path.back() == FILE_SEPARATOR_CHAR)) {
-        LOGI("multi select file, path is %{public}s, input size is %{public}d.",
-            path.c_str(), static_cast<int32_t>(inputList.size()));
+        LOGI("multi select file, path is %{public}s, input size is %{public}zu.", path.c_str(), inputList.size());
         std::set<std::string> occupyFiles;
         int32_t ret = OpenProcForMulti(path, occupyFiles);
         if (ret != E_OK) {
@@ -1949,7 +1948,7 @@ int32_t MountManager::IsFileOccupied(const std::string &path, const std::vector<
                 outputList.push_back(item);
             }
             isOccupy = !outputList.empty();
-            LOGI("output size is %{public}d.", static_cast<int32_t>(outputList.size()));
+            LOGI("output size is %{public}zu.", outputList.size());
             return E_OK;
         }
         for (const std::string &item: inputList) {
@@ -1958,7 +1957,7 @@ int32_t MountManager::IsFileOccupied(const std::string &path, const std::vector<
             }
         }
         isOccupy = !outputList.empty();
-        LOGI("output size is %{public}d.", static_cast<int32_t>(outputList.size()));
+        LOGI("output size is %{public}zu.", outputList.size());
         return E_OK;
     }
     LOGE("param is invalid.");
