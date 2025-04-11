@@ -1,4 +1,4 @@
-# Copyright (C) 2021 Huawei Device Co., Ltd.
+# Copyright (C) 2021-2025 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -52,7 +52,10 @@ ohos_unittest("storage_daemon_communication_test") {
     defines += [ "EXTERNAL_STORAGE_MANAGER" ]
   }
 
-  deps = [ "${storage_daemon_path}:storage_common_utils" ]
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_header",
+  ]
 
   external_deps = [
     "c_utils:utils",
@@ -84,7 +87,6 @@ ohos_unittest("storage_daemon_communication_sub_test") {
   module_out_path = "storage_service/storage_service/storage_manager"
 
   sources = [
-    "${storage_daemon_path}/ipc/src/storage_daemon_stub.cpp",
     "${storage_manager_path}/mock/storage_daemon_proxy_mock.cpp",
     "storage_daemon_communication_sub_test.cpp",
   ]
@@ -118,6 +120,7 @@ ohos_unittest("storage_daemon_communication_sub_test") {
 
   deps = [
     "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_header",
     "${storage_service_path}/services/storage_manager:storage_manager",
   ]
 
@@ -140,11 +143,10 @@ ohos_unittest("storage_daemon_communication_sub_test") {
   }
 }
 
-
 group("storage_manager_communication_test") {
   testonly = true
   deps = [
-    ":storage_daemon_communication_test",
     ":storage_daemon_communication_sub_test",
+    ":storage_daemon_communication_test",
   ]
 }

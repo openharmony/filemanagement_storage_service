@@ -17,7 +17,7 @@
 
 #include "gmock/gmock.h"
 
-#include "ipc/storage_daemon_stub.h"
+#include "storage_daemon_stub.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -46,13 +46,15 @@ public:
     MOCK_METHOD5(UpdateUserAuth,  int32_t(uint32_t, uint64_t, const std::vector<uint8_t> &,
         const std::vector<uint8_t> &, const std::vector<uint8_t> &));
     MOCK_METHOD5(UpdateUseAuthWithRecoveryKey, int32_t(const std::vector<uint8_t> &,
-        const std::vector<uint8_t> &, uint64_t, uint32_t, std::vector<std::vector<uint8_t>> &));
+        const std::vector<uint8_t> &, uint64_t, uint32_t, const std::vector<std::vector<uint8_t>> &));
     MOCK_METHOD3(ActiveUserKey,  int32_t (uint32_t, const std::vector<uint8_t> &, const std::vector<uint8_t> &));
     MOCK_METHOD1(InactiveUserKey, int32_t (uint32_t));
     MOCK_METHOD2(UpdateKeyContext, int32_t (uint32_t, bool));
     MOCK_METHOD1(MountCryptoPathAgain, int32_t (uint32_t));
-    MOCK_METHOD3(CreateShareFile, std::vector<int32_t> (const std::vector<std::string> &, uint32_t, uint32_t));
+    MOCK_METHOD4(CreateShareFile,
+                 int32_t(const std::vector<std::string> &, uint32_t, uint32_t, std::vector<int32_t> &));
     MOCK_METHOD2(DeleteShareFile, int32_t (uint32_t, const std::vector<std::string> &));
+    MOCK_METHOD4(SetBundleQuota, int32_t (const std::string&, int32_t, const std::string&, int32_t));
     MOCK_METHOD3(GetOccupiedSpace, int32_t (int32_t, int32_t, int64_t &));
     MOCK_METHOD1(LockUserScreen, int32_t (uint32_t));
     MOCK_METHOD3(UnlockUserScreen, int32_t (uint32_t, const std::vector<uint8_t> &, const std::vector<uint8_t> &));
@@ -76,7 +78,6 @@ public:
     MOCK_METHOD2(UMountFileMgrFuse, int32_t (int32_t, const std::string &));
     MOCK_METHOD1(AddDeathRecipient, bool(const sptr<DeathRecipient> &));
     MOCK_METHOD1(RemoveDeathRecipient, bool(const sptr<DeathRecipient> &));
-    MOCK_METHOD4(SetBundleQuota, int32_t(const std::string &, int32_t, const std::string &, int32_t));
     MOCK_METHOD4(IsFileOccupied, int32_t (const std::string &, const std::vector<std::string> &,
         std::vector<std::string> &, bool &));
 };

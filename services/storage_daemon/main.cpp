@@ -24,6 +24,7 @@
 #include "disk/disk_manager.h"
 #include "netlink/netlink_manager.h"
 #endif
+#include "ipc/storage_daemon_provider.h"
 #include "ipc/storage_daemon.h"
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
@@ -43,7 +44,7 @@ using namespace OHOS;
 #ifdef DFS_SERVICE
 using namespace OHOS::FileManagement::CloudFile;
 #endif
-using CloudListener = StorageDaemon::StorageDaemon::SystemAbilityStatusChangeListener;
+using CloudListener = StorageDaemon::StorageDaemonProvider::SystemAbilityStatusChangeListener;
 
 #ifdef EXTERNAL_STORAGE_MANAGER
 const int CONFIG_PARAM_NUM = 6;
@@ -124,7 +125,7 @@ int main()
         auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
         if (samgr != nullptr) {
             LOGE("samgr is not null");
-            sptr<StorageDaemon::StorageDaemon> sd(new StorageDaemon::StorageDaemon());
+            sptr<StorageDaemon::StorageDaemonProvider> sd(new StorageDaemon::StorageDaemonProvider());
             int ret = samgr->AddSystemAbility(STORAGE_MANAGER_DAEMON_ID, sd);
             LOGI("AddSystemAbility: ret: %{public}d, errno: %{public}d", ret, errno);
             sptr<CloudListener> listenter(new CloudListener());

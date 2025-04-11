@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,6 +13,9 @@
  * limitations under the License.
  */
 
+#include <chrono>
+#include <ctime>
+#include <thread>
 #include "storage_daemon_client.h"
 #include "iservice_registry.h"
 #include "libfscrypt/fscrypt_utils.h"
@@ -97,6 +100,7 @@ int32_t StorageDaemonClient::CheckServiceStatus(uint32_t serviceFlags)
 
 int32_t StorageDaemonClient::PrepareUserDirs(int32_t userId, uint32_t flags)
 {
+    LOGI("StorageDaemonClient::PrepareUserDirs, userId:%{public}d, flags:%{public}u", userId, flags);
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
@@ -117,6 +121,7 @@ int32_t StorageDaemonClient::PrepareUserDirs(int32_t userId, uint32_t flags)
 
 int32_t StorageDaemonClient::DestroyUserDirs(int32_t userId, uint32_t flags)
 {
+    LOGI("StorageDaemonClient::DestroyUserDirs, userId:%{public}d, flags:%{public}u", userId, flags);
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
@@ -137,6 +142,7 @@ int32_t StorageDaemonClient::DestroyUserDirs(int32_t userId, uint32_t flags)
 
 int32_t StorageDaemonClient::StartUser(int32_t userId)
 {
+    LOGI("StorageDaemonClient::StartUser, userId:%{public}d", userId);
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
@@ -156,6 +162,7 @@ int32_t StorageDaemonClient::StartUser(int32_t userId)
 
 int32_t StorageDaemonClient::StopUser(int32_t userId)
 {
+    LOGI("StorageDaemonClient::StopUser, userId:%{public}d", userId);
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
@@ -175,6 +182,8 @@ int32_t StorageDaemonClient::StopUser(int32_t userId)
 
 int32_t StorageDaemonClient::PrepareUserSpace(uint32_t userId, const std::string &volumId, uint32_t flags)
 {
+    LOGI("StorageDaemonClient::PrepareUserSpace, userId:%{public}u, volumId:%{public}s, flags:%{publc}u",
+        userId, volumId.c_str(), flags);
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
@@ -192,6 +201,8 @@ int32_t StorageDaemonClient::PrepareUserSpace(uint32_t userId, const std::string
 
 int32_t StorageDaemonClient::DestroyUserSpace(uint32_t userId, const std::string &volumId, uint32_t flags)
 {
+    LOGI("StorageDaemonClient::DestroyUserSpace, userId:%{public}u, volumId:%{public}s, flags:%{publc}u",
+        userId, volumId.c_str(), flags);
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
@@ -247,6 +258,7 @@ int32_t StorageDaemonClient::InitGlobalUserKeys(void)
 
 int32_t StorageDaemonClient::GenerateUserKeys(uint32_t userId, uint32_t flags)
 {
+    LOGI("StorageDaemonClient::GenerateUserKeys, userId: %{public}u, flags:%{public}u", userId, flags);
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
@@ -264,6 +276,7 @@ int32_t StorageDaemonClient::GenerateUserKeys(uint32_t userId, uint32_t flags)
 
 int32_t StorageDaemonClient::DeleteUserKeys(uint32_t userId)
 {
+    LOGI("StorageDaemonClient::DeleteUserKeys, userId: %{public}u", userId);
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
@@ -284,6 +297,8 @@ int32_t StorageDaemonClient::UpdateUserAuth(uint32_t userId, uint64_t secureUid,
                                             const std::vector<uint8_t> &oldSecret,
                                             const std::vector<uint8_t> &newSecret)
 {
+    LOGI("StorageDaemonClient::UpdateUserAuth, userId: %{public}u, token:%{public}d,"
+        "oldSecret:%{public}d, newSecret:%{public}d", userId, token.empty(), oldSecret.empty(), newSecret.empty());
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
@@ -305,6 +320,8 @@ int32_t StorageDaemonClient::UpdateUseAuthWithRecoveryKey(const std::vector<uint
                                                           uint32_t userId,
                                                           std::vector<std::vector<uint8_t>> &plainText)
 {
+    LOGI("StorageDaemonClient::UpdateUseAuthWithRecoveryKey, authToken: %{public}d, newSecret:%{public}d,"
+        "userId:%{public}d", authToken.empty(), newSecret.empty(), userId);
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
@@ -324,6 +341,8 @@ int32_t StorageDaemonClient::ActiveUserKey(uint32_t userId,
                                            const std::vector<uint8_t> &token,
                                            const std::vector<uint8_t> &secret)
 {
+    LOGI("StorageDaemonClient::ActiveUserKey, userId: %{public}u, token:%{public}d, secret:%{public}d",
+        userId, token.empty(), secret.empty());
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
@@ -341,6 +360,7 @@ int32_t StorageDaemonClient::ActiveUserKey(uint32_t userId,
 
 int32_t StorageDaemonClient::InactiveUserKey(uint32_t userId)
 {
+    LOGI("StorageDaemonClient::InactiveUserKey, userId: %{public}u", userId);
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
@@ -357,6 +377,7 @@ int32_t StorageDaemonClient::InactiveUserKey(uint32_t userId)
 
 int32_t StorageDaemonClient::LockUserScreen(uint32_t userId)
 {
+    LOGI("StorageDaemonClient::LockUserScreen, userId: %{public}u", userId);
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
@@ -375,6 +396,8 @@ int32_t StorageDaemonClient::LockUserScreen(uint32_t userId)
 int32_t StorageDaemonClient::UnlockUserScreen(uint32_t userId, const std::vector<uint8_t> &token,
                                               const std::vector<uint8_t> &secret)
 {
+    LOGI("StorageDaemonClient::UnlockUserScreen, userId: %{public}u, token:%{public}d, secret:%{public}d",
+        userId, token.empty(), secret.empty());
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
@@ -392,6 +415,7 @@ int32_t StorageDaemonClient::UnlockUserScreen(uint32_t userId, const std::vector
 
 int32_t StorageDaemonClient::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)
 {
+    LOGI("StorageDaemonClient::GetLockScreenStatus, userId: %{public}u", userId);
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
@@ -409,6 +433,7 @@ int32_t StorageDaemonClient::GetLockScreenStatus(uint32_t userId, bool &lockScre
 
 int32_t StorageDaemonClient::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
+    LOGI("StorageDaemonClient::UpdateKeyContext, userId: %{public}u", userId);
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
@@ -426,6 +451,7 @@ int32_t StorageDaemonClient::UpdateKeyContext(uint32_t userId, bool needRemoveTm
 
 int32_t StorageDaemonClient::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId)
 {
+    LOGI("StorageDaemonClient::GenerateAppkey, userId: %{public}u, hashId:%{public}u", userId, hashId);
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
@@ -443,6 +469,7 @@ int32_t StorageDaemonClient::GenerateAppkey(uint32_t userId, uint32_t hashId, st
 
 int32_t StorageDaemonClient::DeleteAppkey(uint32_t userId, const std::string keyId)
 {
+    LOGI("StorageDaemonClient::DeleteAppkey, userId: %{public}u, keyId:%{public}s", userId, keyId.c_str());
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
@@ -463,6 +490,8 @@ int32_t StorageDaemonClient::CreateRecoverKey(uint32_t userId,
                                               const std::vector<uint8_t> &token,
                                               const std::vector<uint8_t> &secret)
 {
+    LOGI("StorageDaemonClient::CreateRecoverKey, userId: %{public}u, userType:%{public}u,token:%{public}d,"
+        "secret:%{public}d", userId, userType, token.empty(), secret.empty());
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
@@ -480,6 +509,7 @@ int32_t StorageDaemonClient::CreateRecoverKey(uint32_t userId,
 
 int32_t StorageDaemonClient::SetRecoverKey(const std::vector<uint8_t> &key)
 {
+    LOGI("StorageDaemonClient::SetRecoverKey, key:%{public}d", key.empty());
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
@@ -546,6 +576,7 @@ int32_t StorageDaemonClient::FscryptEnable(const std::string &fscryptOptions)
 
 int32_t StorageDaemonClient::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
 {
+    LOGI("StorageDaemonClient::GetFileEncryptStatus, userId:%{public}d", userId);
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
@@ -563,6 +594,7 @@ int32_t StorageDaemonClient::GetFileEncryptStatus(uint32_t userId, bool &isEncry
 
 int32_t StorageDaemonClient::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
 {
+    LOGI("StorageDaemonClient::GetUserNeedActiveStatus, userId:%{public}d", userId);
     auto status = CheckServiceStatus(STORAGE_SERVICE_FLAG);
     if (status != E_OK) {
         LOGE("service check failed");
