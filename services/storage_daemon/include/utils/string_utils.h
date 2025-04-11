@@ -33,7 +33,6 @@ bool SaveStringToFileSync(const std::string &path, const std::string &data);
 bool StringIsNumber(const std::string &content);
 bool IsStringExist(const std::list<std::string> &strList, const std::string &content);
 std::string ListToString(const std::list<std::string> &strList);
-std::string VectorToString(const std::vector<std::string> &strList);
 } // namespace StorageDaemon
 } // namespace OHOS
 #endif // STORAGE_DAEMON_UTILS_STRING_UTILS_H
