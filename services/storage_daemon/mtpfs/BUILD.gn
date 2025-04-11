@@ -29,6 +29,7 @@ ohos_executable("mtpfs") {
   include_dirs = [
     "include",
     "${storage_daemon_path}/include/utils",
+    "${storage_interface_path}/innerkits/storage_manager/native",
     "${storage_service_common_path}/include",
   ]
 

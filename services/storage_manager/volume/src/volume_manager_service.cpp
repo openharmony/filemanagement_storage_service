@@ -18,15 +18,18 @@
 #include "disk.h"
 #include "disk/disk_manager_service.h"
 #include "safe_map.h"
+#include "securec.h"
 #include "storage_daemon_communication/storage_daemon_communication.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include <sys/xattr.h>
 #include "utils/storage_radar.h"
 #include "utils/storage_utils.h"
 #include "volume/notification.h"
 
 using namespace std;
 using namespace OHOS::StorageService;
+const int32_t MTP_DEVICE_NAME_LEN = 512;
 namespace OHOS {
 namespace StorageManager {
 VolumeManagerService::VolumeManagerService() {}
@@ -255,11 +258,29 @@ void VolumeManagerService::NotifyMtpMounted(const std::string &id, const std::st
                                             const std::string &uuid)
 {
     LOGI("VolumeManagerService NotifyMtpMounted");
+    std::string key = "user.getfriendlyname";
+    char *value = (char *)malloc(sizeof(char) * MTP_DEVICE_NAME_LEN);
+    int32_t len = 0;
+    if (value != nullptr) {
+        len = getxattr(path.c_str(), key.c_str(), value, MTP_DEVICE_NAME_LEN);
+        if (len >= 0) {
+            value[len] = '\0';
+        }
+        LOGI("MTP get namelen=%{public}d, name=%{public}s", len, value);
+    }
+
     VolumeCore core(id, 0, "");
     auto volumePtr = make_shared<VolumeExternal>(core);
     volumePtr->SetPath(path);
     volumePtr->SetFsType(FsType::MTP);
     volumePtr->SetDescription(desc);
+    if (len > 0) {
+        LOGI("set MTP device name:%{public}s", value);
+        volumePtr->SetDescription(std::string(value));
+    }
+    if (value != nullptr) {
+        free(value);
+    }
     volumePtr->SetState(MOUNTED);
     volumePtr->SetFsUuid(uuid);
     volumeMap_.Insert(volumePtr->GetId(), volumePtr);
