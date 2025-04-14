@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -39,7 +39,7 @@ void VolumeCore::SetState(int32_t state)
     state_ = state;
 }
 
-std::string VolumeCore::GetId()
+std::string VolumeCore::GetId() const
 {
     return id_;
 }
@@ -84,9 +84,9 @@ bool VolumeCore::Marshalling(Parcel &parcel) const
     return true;
 }
 
-std::unique_ptr<VolumeCore> VolumeCore::Unmarshalling(Parcel &parcel)
+VolumeCore *VolumeCore::Unmarshalling(Parcel &parcel)
 {
-    auto obj = std::make_unique<VolumeCore>();
+    VolumeCore* obj = new VolumeCore();
     obj->id_ = parcel.ReadString();
     obj->type_ = parcel.ReadInt32();
     obj->diskId_ = parcel.ReadString();

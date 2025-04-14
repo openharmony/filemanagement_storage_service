@@ -11,9 +11,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import("//build/config/components/idl_tool/idl.gni")
 import("//build/ohos.gni")
 import("//build/ohos/sa_profile/sa_profile.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
+
+idl_gen_interface("storage_manager_interface") {
+  src_idl = rebase_path("IStorageManager.idl")
+  log_tag = "StorageManager"
+  log_domainid = "0xD004300"
+}
+
+config("public_idl_config") {
+  include_dirs = [
+    ".",
+    "../../interfaces/innerkits/storage_manager/native",
+    "${target_gen_dir}",
+  ]
+}
 
 config("storage_manager_config") {
   include_dirs = [
@@ -30,6 +45,45 @@ config("storage_manager_config") {
   ]
 }
 
+ohos_source_set("storage_manager_ipc") {
+  sanitize = {
+    debug = false
+    cfi = true
+    cfi_cross_dso = true
+  }
+  output_values = get_target_outputs(":storage_manager_interface")
+  sources = []
+  sources += filter_include(output_values, [ "*.cpp" ])
+  public_configs = [ ":public_idl_config" ]
+  deps = [ ":storage_manager_interface" ]
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+    "hitrace:hitrace_meter",
+    "ipc:ipc_core",
+  ]
+  part_name = "storage_service"
+  subsystem_name = "filemanagement"
+}
+
+ohos_source_set("storage_manager_header") {
+  sanitize = {
+    debug = false
+    cfi = true
+    cfi_cross_dso = true
+  }
+  public_configs = [ ":public_idl_config" ]
+  deps = [ ":storage_manager_interface" ]
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+    "hitrace:hitrace_meter",
+    "ipc:ipc_core",
+  ]
+  part_name = "storage_service"
+  subsystem_name = "filemanagement"
+}
+
 ohos_shared_library("storage_manager") {
   branch_protector_ret = "pac_ret"
   sanitize = {
@@ -43,7 +97,7 @@ ohos_shared_library("storage_manager") {
 
   sources = [
     "ipc/src/storage_manager.cpp",
-    "ipc/src/storage_manager_stub.cpp",
+    "ipc/src/storage_manager_provider.cpp",
     "storage_daemon_communication/src/storage_daemon_communication.cpp",
     "user/src/multi_user_manager_service.cpp",
     "utils/src/storage_utils.cpp",
@@ -163,7 +217,6 @@ group("storage_manager_unit_test") {
   deps = [
     "client/test:storage_manager_client_test",
     "innerkits_impl/test:storage_manager_innerkits_test",
-    "ipc/test:storage_manager_ipc_test",
     "storage_daemon_communication/test:storage_manager_communication_test",
     "user/test:storage_manager_user_test",
   ]

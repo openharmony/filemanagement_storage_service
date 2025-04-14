@@ -50,48 +50,11 @@ constexpr bool ENCRYPTED = true;
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageManager {
-REGISTER_SYSTEM_ABILITY_BY_ID(StorageManager, STORAGE_MANAGER_MANAGER_ID, true);
-
-void StorageManager::OnStart()
-{
-    LOGI("StorageManager::OnStart Begin");
-    bool res = SystemAbility::Publish(this);
-    AddSystemAbilityListener(COMMON_EVENT_SERVICE_ID);
-    (void)SetPriority();
-#ifdef STORAGE_STATISTICS_MANAGER
-    DelayedSingleton<StorageMonitorService>::GetInstance()->StartStorageMonitorTask();
-#endif
-    LOGI("StorageManager::OnStart End, res = %{public}d", res);
-}
-
-void StorageManager::OnStop()
-{
-    LOGI("StorageManager::OnStop Done");
-}
-
-void StorageManager::OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId)
-{
-    (void) systemAbilityId;
-    (void) deviceId;
-#ifdef USER_CRYPTO_MANAGER
-    AccountSubscriber::Subscriber();
-#endif
-}
-
 void StorageManager::ResetUserEventRecord(int32_t userId)
 {
 #ifdef USER_CRYPTO_MANAGER
     AccountSubscriber::ResetUserEventRecord(userId);
 #endif
-}
-
-void StorageManager::SetPriority()
-{
-    int tid = syscall(SYS_gettid);
-    if (setpriority(PRIO_PROCESS, tid, PRIORITY_LEVEL) != 0) {
-        LOGE("failed to set priority");
-    }
-    LOGW("set storage_manager priority: %{public}d", tid);
 }
 
 int32_t StorageManager::PrepareAddUser(int32_t userId, uint32_t flags)
@@ -137,7 +100,7 @@ int32_t StorageManager::CompleteAddUser(int32_t userId)
     return err;
 }
 
-int32_t StorageManager::GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize)
+int32_t StorageManager::GetFreeSizeOfVolume(const std::string &volumeUuid, int64_t &freeSize)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGI("StorageManger::getFreeSizeOfVolume start, volumeUuid: %{public}s",
@@ -155,7 +118,7 @@ int32_t StorageManager::GetFreeSizeOfVolume(std::string volumeUuid, int64_t &fre
 #endif
 }
 
-int32_t StorageManager::GetTotalSizeOfVolume(std::string volumeUuid, int64_t &totalSize)
+int32_t StorageManager::GetTotalSizeOfVolume(const std::string &volumeUuid, int64_t &totalSize)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGI("StorageManger::getTotalSizeOfVolume start, volumeUuid: %{public}s",
@@ -173,7 +136,7 @@ int32_t StorageManager::GetTotalSizeOfVolume(std::string volumeUuid, int64_t &to
 #endif
 }
 
-int32_t StorageManager::GetBundleStats(std::string pkgName, BundleStats &bundleStats,
+int32_t StorageManager::GetBundleStats(const std::string &pkgName, BundleStats &bundleStats,
                                        int32_t appIndex, uint32_t statFlag)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
@@ -249,7 +212,7 @@ int32_t StorageManager::GetUserStorageStats(StorageStats &storageStats)
 #endif
 }
 
-int32_t StorageManager::GetUserStorageStats(int32_t userId, StorageStats &storageStats)
+int32_t StorageManager::GetUserStorageStatsIpc(int32_t userId, StorageStats &storageStats)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGD("StorageManger::GetUserStorageStats start");
@@ -279,7 +242,7 @@ int32_t StorageManager::GetCurrentBundleStats(BundleStats &bundleStats, uint32_t
 #endif
 }
 
-int32_t StorageManager::NotifyVolumeCreated(VolumeCore vc)
+int32_t StorageManager::NotifyVolumeCreated(const VolumeCore& vc)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::NotifyVolumeCreated start, volumeId: %{public}s", vc.GetId().c_str());
@@ -289,8 +252,8 @@ int32_t StorageManager::NotifyVolumeCreated(VolumeCore vc)
     return E_OK;
 }
 
-int32_t StorageManager::NotifyVolumeMounted(std::string volumeId, int32_t fsType, std::string fsUuid,
-    std::string path, std::string description)
+int32_t StorageManager::NotifyVolumeMounted(const std::string &volumeId, int32_t fsType, const std::string &fsUuid,
+    const std::string &path, const std::string &description)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::NotifyVolumeMounted start");
@@ -300,17 +263,38 @@ int32_t StorageManager::NotifyVolumeMounted(std::string volumeId, int32_t fsType
     return E_OK;
 }
 
-int32_t StorageManager::NotifyVolumeStateChanged(std::string volumeId, VolumeState state)
+OHOS::StorageManager::VolumeState StorageManager::UintToState(uint32_t state)
+{
+    switch (state) {
+        case UNMOUNTED:
+            return OHOS::StorageManager::VolumeState::UNMOUNTED;
+        case CHECKING:
+            return OHOS::StorageManager::VolumeState::CHECKING;
+        case MOUNTED:
+            return OHOS::StorageManager::VolumeState::MOUNTED;
+        case EJECTING:
+            return OHOS::StorageManager::VolumeState::EJECTING;
+        case REMOVED:
+            return OHOS::StorageManager::VolumeState::REMOVED;
+        case BAD_REMOVAL:
+            return OHOS::StorageManager::VolumeState::BAD_REMOVAL;
+        default:
+            return OHOS::StorageManager::VolumeState::UNMOUNTED;
+    }
+}
+
+int32_t StorageManager::NotifyVolumeStateChanged(const std::string& volumeId, uint32_t state)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::NotifyVolumeStateChanged start");
-    DelayedSingleton<VolumeManagerService>::GetInstance()->OnVolumeStateChanged(volumeId, state);
+    OHOS::StorageManager::VolumeState stateService = UintToState(state);
+    DelayedSingleton<VolumeManagerService>::GetInstance()->OnVolumeStateChanged(volumeId, stateService);
 #endif
 
     return E_OK;
 }
 
-int32_t StorageManager::Mount(std::string volumeId)
+int32_t StorageManager::Mount(const std::string &volumeId)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::Mount start");
@@ -324,7 +308,7 @@ int32_t StorageManager::Mount(std::string volumeId)
 #endif
 }
 
-int32_t StorageManager::Unmount(std::string volumeId)
+int32_t StorageManager::Unmount(const std::string &volumeId)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::Unmount start");
@@ -348,7 +332,7 @@ int32_t StorageManager::GetAllVolumes(std::vector<VolumeExternal> &vecOfVol)
     return E_OK;
 }
 
-int32_t StorageManager::NotifyDiskCreated(Disk disk)
+int32_t StorageManager::NotifyDiskCreated(const Disk& disk)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManager::NotifyDiskCreated start, diskId: %{public}s", disk.GetDiskId().c_str());
@@ -359,7 +343,7 @@ int32_t StorageManager::NotifyDiskCreated(Disk disk)
     return E_OK;
 }
 
-int32_t StorageManager::NotifyDiskDestroyed(std::string diskId)
+int32_t StorageManager::NotifyDiskDestroyed(const std::string &diskId)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManager::NotifyDiskDestroyed start, diskId: %{public}s", diskId.c_str());
@@ -370,7 +354,7 @@ int32_t StorageManager::NotifyDiskDestroyed(std::string diskId)
     return E_OK;
 }
 
-int32_t StorageManager::Partition(std::string diskId, int32_t type)
+int32_t StorageManager::Partition(const std::string &diskId, int32_t type)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManager::Partition start, diskId: %{public}s", diskId.c_str());
@@ -395,7 +379,7 @@ int32_t StorageManager::GetAllDisks(std::vector<Disk> &vecOfDisk)
     return E_OK;
 }
 
-int32_t StorageManager::GetVolumeByUuid(std::string fsUuid, VolumeExternal &vc)
+int32_t StorageManager::GetVolumeByUuid(const std::string &fsUuid, VolumeExternal &vc)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::GetVolumeByUuid start, uuid: %{public}s",
@@ -410,7 +394,7 @@ int32_t StorageManager::GetVolumeByUuid(std::string fsUuid, VolumeExternal &vc)
 #endif
 }
 
-int32_t StorageManager::GetVolumeById(std::string volumeId, VolumeExternal &vc)
+int32_t StorageManager::GetVolumeById(const std::string &volumeId, VolumeExternal &vc)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::GetVolumeById start, volId: %{public}s", volumeId.c_str());
@@ -424,7 +408,7 @@ int32_t StorageManager::GetVolumeById(std::string volumeId, VolumeExternal &vc)
 #endif
 }
 
-int32_t StorageManager::SetVolumeDescription(std::string fsUuid, std::string description)
+int32_t StorageManager::SetVolumeDescription(const std::string &fsUuid, const std::string &description)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::SetVolumeDescription start, uuid: %{public}s",
@@ -439,7 +423,7 @@ int32_t StorageManager::SetVolumeDescription(std::string fsUuid, std::string des
 #endif
 }
 
-int32_t StorageManager::Format(std::string volumeId, std::string fsType)
+int32_t StorageManager::Format(const std::string &volumeId, const std::string &fsType)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::Format start, volumeId: %{public}s, fsType: %{public}s", volumeId.c_str(), fsType.c_str());
@@ -453,7 +437,7 @@ int32_t StorageManager::Format(std::string volumeId, std::string fsType)
 #endif
 }
 
-int32_t StorageManager::GetDiskById(std::string diskId, Disk &disk)
+int32_t StorageManager::GetDiskById(const std::string &diskId, Disk &disk)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::GetDiskById start, diskId: %{public}s", diskId.c_str());
@@ -522,7 +506,7 @@ int32_t StorageManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> 
                                                      const std::vector<uint8_t> &newSecret,
                                                      uint64_t secureUid,
                                                      uint32_t userId,
-                                                     std::vector<std::vector<uint8_t>> &plainText)
+                                                     const std::vector<std::vector<uint8_t>> &plainText)
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("UserId: %{public}u", userId);
@@ -644,7 +628,7 @@ int32_t StorageManager::GenerateAppkey(uint32_t hashId, uint32_t userId, std::st
 #endif
 }
 
-int32_t StorageManager::DeleteAppkey(const std::string keyId)
+int32_t StorageManager::DeleteAppkey(const std::string &keyId)
 {
 #ifdef USER_CRYPTO_MANAGER
     LOGI("DeleteAppkey enter");
@@ -706,12 +690,15 @@ int32_t StorageManager::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 #endif
 }
 
-std::vector<int32_t> StorageManager::CreateShareFile(const std::vector<std::string> &uriList,
-                                                     uint32_t tokenId, uint32_t flag)
+int32_t StorageManager::CreateShareFile(const std::vector<std::string> &uriList,
+                                        uint32_t tokenId,
+                                        uint32_t flag,
+                                        std::vector<int32_t> &funcResult)
 {
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    return sdCommunication->CreateShareFile(uriList, tokenId, flag);
+    funcResult = sdCommunication->CreateShareFile(uriList, tokenId, flag);
+    return E_OK;
 }
 
 int32_t StorageManager::DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList)
@@ -748,7 +735,7 @@ int32_t StorageManager::GetBundleStatsForIncrease(uint32_t userId, const std::ve
 }
 
 
-int32_t StorageManager::GetUserStorageStatsByType(int32_t userId, StorageStats &storageStats, std::string type)
+int32_t StorageManager::GetUserStorageStatsByType(int32_t userId, StorageStats &storageStats, const std::string &type)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGI("StorageManger::GetUserStorageStatsByType start");
@@ -800,7 +787,7 @@ int32_t StorageManager::NotifyMtpMounted(const std::string &id, const std::strin
     return E_OK;
 }
 
-int32_t StorageManager::NotifyMtpUnmounted(const std::string &id, const std::string &path, const bool isBadRemove)
+int32_t StorageManager::NotifyMtpUnmounted(const std::string &id, const std::string &path, bool isBadRemove)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::NotifyMtpUnmounted start, id: %{public}s, path: %{public}s", id.c_str(), path.c_str());

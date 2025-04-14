@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -32,7 +32,7 @@ public:
     int64_t dataSize_ {0};
 
     bool Marshalling(Parcel &parcel) const override;
-    static std::unique_ptr<BundleStats> Unmarshalling(Parcel &parcel);
+    static BundleStats *Unmarshalling(Parcel &parcel);
 };
 } // StorageManager
 } // OHOS

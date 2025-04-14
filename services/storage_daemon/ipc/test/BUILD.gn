@@ -64,17 +64,18 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/quota/quota_manager.cpp",
     "$ROOT_DIR/user/src/mount_manager.cpp",
     "$ROOT_DIR/user/src/user_manager.cpp",
+    "$ROOT_DIR/utils/string_utils.cpp",
     "$ROOT_DIR/utils/test/common/help_utils.cpp",
     "$ROOT_DIR/volume/src/external_volume_info.cpp",
     "$ROOT_DIR/volume/src/process.cpp",
     "$ROOT_DIR/volume/src/volume_info.cpp",
     "$ROOT_DIR/volume/src/volume_manager.cpp",
-    "$ROOT_DIR/utils/string_utils.cpp",
   ]
 
   deps = [
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_ipc",
+    "${storage_manager_path}:storage_manager_header",
   ]
 
   external_deps = [
@@ -148,7 +149,10 @@ ohos_unittest("storage_manager_clt_test") {
     "private = public",
   ]
 
-  deps = [ "${storage_daemon_path}:storage_common_utils" ]
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
+    "${storage_manager_path}:storage_manager_header",
+  ]
 
   external_deps = [
     "c_utils:utils",

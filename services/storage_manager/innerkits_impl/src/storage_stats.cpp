@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -46,9 +46,9 @@ bool StorageStats::Marshalling(Parcel &parcel) const
     return true;
 }
 
-std::unique_ptr<StorageStats> StorageStats::Unmarshalling(Parcel &parcel)
+StorageStats *StorageStats::Unmarshalling(Parcel &parcel)
 {
-    auto obj = std::make_unique<StorageStats>();
+    StorageStats* obj = new StorageStats();
     obj->total_ = parcel.ReadInt64();
     obj->audio_ = parcel.ReadInt64();
     obj->video_ = parcel.ReadInt64();

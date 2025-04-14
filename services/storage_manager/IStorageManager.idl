@@ -1,0 +1,104 @@
+/*
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+sequenceable StorageStats..OHOS.StorageManager.StorageStats;
+sequenceable BundleStats..OHOS.StorageManager.BundleStats;
+sequenceable Disk..OHOS.StorageManager.Disk;
+sequenceable VolumeCore..OHOS.StorageManager.VolumeCore;
+sequenceable VolumeExternal..OHOS.StorageManager.VolumeExternal;
+interface OHOS.StorageManager.IStorageManager {
+    [ipccode 1] void PrepareAddUser([in] int userId, [in] unsigned int flags);
+    [ipccode 2] void RemoveUser([in] int userId, [in] unsigned int flags);
+    [ipccode 3] void PrepareStartUser([in] int userId);
+    [ipccode 4] void StopUser([in] int userId);
+    [ipccode 5] void CompleteAddUser([in]  int userId);
+    [ipccode 7] void GetFreeSizeOfVolume([in] String volumeUuid, [out] long freeSize);
+    [ipccode 6] void GetTotalSizeOfVolume([in] String volumeUuid, [out] long totalSize);
+    [ipccode 8] void GetBundleStats([in] String pkgName, [out] BundleStats bundleStats, [in]  int appIndex, 
+                                    [in]  unsigned int statFlag);
+    [ipccode 9] void GetSystemSize([out] long systemSize);
+    [ipccode 10] void GetTotalSize([out] long totalSize);
+    [ipccode 11] void GetFreeSize([out] long freeSize);
+    [ipccode 12] void GetUserStorageStats([out] StorageStats storageStats);
+    [ipccode 13] void GetUserStorageStatsIpc([in] int userId, [out] StorageStats storageStats);
+    [ipccode 14] void GetCurrentBundleStats([out] BundleStats bundleStats, [in] unsigned int statFlag);
+    [ipccode 45] void GetUserStorageStatsByType([in] int userId, [out] StorageStats storageStats, 
+                                                [in] String type);
+    [ipccode 15] void NotifyVolumeCreated([in] VolumeCore vc);
+    [ipccode 16] void NotifyVolumeMounted([in] String volumeId, [in] int fsType, [in] String fsUuid, 
+                                          [in] String path, [in] String description);
+    [ipccode 17] void NotifyVolumeStateChanged([in] String volumeId, [in] unsigned int  state);
+    [ipccode 18] void Mount([in] String volumeId);
+    [ipccode 19] void Unmount([in] String volumeId);
+    [ipccode 22] void GetAllVolumes([out] VolumeExternal[] vecOfVol); 
+    [ipccode 23] void NotifyDiskCreated([in] Disk disk); 
+    [ipccode 24] void NotifyDiskDestroyed([in] String diskId);
+    [ipccode 25] void Partition([in] String diskId, [in] int  type);
+    [ipccode 26] void GetAllDisks([out] Disk[] vecOfDisk); 
+    [ipccode 39] void SetVolumeDescription([in] String fsUuid, [in] String description);
+    [ipccode 40] void Format([in] String volumeId, [in] String fsType);
+    [ipccode 53] void NotifyMtpMounted([in] String id, [in] String path, [in] String desc,[in] String uuid);
+    [ipccode 54] void NotifyMtpUnmounted([in] String id, [in] String path, [in] boolean isBadRemove);
+    [ipccode 27] void GenerateUserKeys([in] unsigned int userId, [in] unsigned int flags);
+    [ipccode 28] void DeleteUserKeys([in] unsigned int userId);
+    [ipccode 29] void UpdateUserAuth([in] unsigned int userId, 
+                                     [in] unsigned long secureUid, 
+                                     [in] List<unsigned char> token,
+                                     [in] List<unsigned char> oldSecret, 
+                                     [in] List<unsigned char> newSecret);
+    [ipccode 31] void ActiveUserKey([in] unsigned int userId, [in] unsigned char[] token,
+                                    [in] unsigned char[] secret);
+    [ipccode 32] void InactiveUserKey([in] unsigned int userId);
+    [ipccode 36] void UpdateKeyContext([in] unsigned int userId , [in] boolean needRemoveTmpKey);
+    [oneway, ipccode 33] void LockUserScreen([in] unsigned int userId);
+    [ipccode 34] void UnlockUserScreen([in] unsigned int userId, [in] unsigned char[] token,
+                                       [in] unsigned char[] secret);
+    [ipccode 35] void GetLockScreenStatus([in] unsigned int userId, [out] boolean lockScreenStatus);
+    [ipccode 48] void GenerateAppkey([in] unsigned int hashId, [in] unsigned int userId, [out] String keyId,
+                                     [in] boolean needReSet);
+    [ipccode 49] void DeleteAppkey([in] String  keyId);
+    [ipccode 50] void GetFileEncryptStatus([in] unsigned int userId, [out] boolean isEncrypted,
+                                           [in] boolean needCheckDirMoun);
+    [ipccode 51] void CreateRecoverKey([in] unsigned int userId, [in] unsigned int userType, 
+                                       [in] unsigned char[] token, [in] unsigned char[] secret);
+    [ipccode 52] void SetRecoverKey([in] unsigned char[] key);
+    [oneway, ipccode 43] void DeleteShareFile([in] unsigned int  tokenId, [in] String[] uriList);
+    [ipccode 44] void SetBundleQuota([in] String bundleName, [in] int uid, [in] String bundleDataDirPath,
+                                     [in] int limitSizeMb);
+    [ipccode 46] void UpdateMemoryPara([in] int size, [out] int oldSize);
+    [ipccode 47] void GetBundleStatsForIncrease([in] unsigned int userId, [in] String[] bundleNames,
+        [in] long[] incrementalBackTimes, [out] long[] pkgFileSizes, [out] long[] incPkgFileSizes);
+    [ipccode 20] void MountDfsDocs([in] int userId, [in] String relativePath, [in] String networkId, 
+                                    [in] String deviceId);
+    [ipccode 21] void UMountDfsDocs([in] int userId, [in] String relativePath, [in] String networkId, 
+                                     [in] String deviceId);
+    [ipccode 55] void MountMediaFuse([in] int userId, [out] FileDescriptor devFd);
+    [ipccode 56] void UMountMediaFuse([in] int userId);
+    [ipccode 41] void GetDiskById([in] String diskId, [out] Disk disk);
+    [ipccode 37] void GetVolumeByUuid([in] String fsUuid, [out] VolumeExternal vc);
+    [ipccode 38]  void GetVolumeById([in] String volumeId, [out] VolumeExternal vc);
+    [ipccode 42] int[] CreateShareFile([in] String[] uriList,
+                                       [in] unsigned int tokenId,
+                                       [in] unsigned int flag);
+    [ipccode 30] void UpdateUseAuthWithRecoveryKey([in] unsigned char[] authToken, [in] unsigned char[] newSecret,
+        [in] unsigned long secureUid, [in] unsigned int userId, [in] List<List<unsigned char>> plainText);
+    [ipccode 57] void GetUserNeedActiveStatus([in] unsigned int userId, [out] boolean needActive);
+    [ipccode 58] void MountFileMgrFuse([in] int userId, [in] String path, [out] FileDescriptor fuseFd);
+    [ipccode 59] void UMountFileMgrFuse([in] int userId, [in] String path);
+    [ipccode 60] void QueryUsbIsInUse([in] String diskPath, [out] boolean isInUse);
+    [ipcincapacity 131071, ipcoutcapacity 131071, ipccode 61] void IsFileOccupied([in] String path, [in] String[] inputList,
+                                     [out] String[] outputList, [out] boolean isOccupy);
+    [ipccode 62] void ResetSecretWithRecoveryKey([in] unsigned int userId, [in] unsigned int rkType,
+                                                 [in] unsigned char[] key);
+}

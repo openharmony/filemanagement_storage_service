@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -215,7 +215,7 @@ int32_t StorageManagerConnect::GetUserStorageStats(int32_t userId, StorageStats 
         LOGE("StorageManagerConnect::GetUserStorageStats service == nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageManager_->GetUserStorageStats(userId, storageStats);
+    return storageManager_->GetUserStorageStatsIpc(userId, storageStats);
 }
 
 int32_t StorageManagerConnect::GetCurrentBundleStats(BundleStats &bundleStats, uint32_t statFlag)

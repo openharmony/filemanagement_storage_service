@@ -16,137 +16,132 @@
 #ifndef OHOS_STORAGE_MANAGER_STORAGE_MANAGER_H
 #define OHOS_STORAGE_MANAGER_STORAGE_MANAGER_H
 
-#include "system_ability.h"
-#include "storage_manager_stub.h"
-
+#include <cstdint>
+#include <string>
+#include "istorage_manager.h"
 namespace OHOS {
 namespace StorageManager {
-class StorageManager : public SystemAbility, public StorageManagerStub {
-    DECLARE_SYSTEM_ABILITY(StorageManager)
+class StorageManager {
 public:
-    StorageManager(int32_t saID, bool runOnCreate = true) : SystemAbility(saID, runOnCreate) {};
+    StorageManager() = default;
     ~StorageManager() = default;
-
-    void OnStart() override;
-    void OnStop() override;
-
-    int32_t PrepareAddUser(int32_t userId, uint32_t flags) override;
-    int32_t RemoveUser(int32_t userId, uint32_t flags) override;
-    int32_t PrepareStartUser(int32_t userId) override;
-    int32_t StopUser(int32_t userId) override;
-    int32_t CompleteAddUser(int32_t userId) override;
-
-    int32_t GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize) override;
-    int32_t GetTotalSizeOfVolume(std::string volumeUuid, int64_t &totalSize) override;
-    int32_t GetBundleStats(std::string pkgName, BundleStats &bundleStats, int32_t appIndex, uint32_t statFlag) override;
-    int32_t GetSystemSize(int64_t &systemSize) override;
-    int32_t GetTotalSize(int64_t &totalSize) override;
-    int32_t GetFreeSize(int64_t &freeSize) override;
-    int32_t GetUserStorageStats(StorageStats &storageStats) override;
-    int32_t GetUserStorageStats(int32_t userId, StorageStats &storageStats) override;
-    int32_t GetCurrentBundleStats(BundleStats &bundleStats, uint32_t statFlag) override;
-    int32_t GetUserStorageStatsByType(int32_t userId, StorageStats &storageStats, std::string type) override;
-
-    int32_t NotifyVolumeCreated(VolumeCore vc) override;
-    int32_t NotifyVolumeMounted(std::string volumeId, int32_t fsType, std::string fsUuid,
-        std::string path, std::string description) override;
-    int32_t NotifyVolumeStateChanged(std::string volumeId, VolumeState state) override;
-
-    int32_t Mount(std::string volumeId) override;
-    int32_t Unmount(std::string volumeId) override;
-
-    int32_t GetAllVolumes(std::vector<VolumeExternal> &vecOfVol)override;
-
-    int32_t NotifyDiskCreated(Disk disk) override;
-    int32_t NotifyDiskDestroyed(std::string diskId) override;
-    int32_t Partition(std::string diskId, int32_t type) override;
-    int32_t GetAllDisks(std::vector<Disk> &vecOfDisk) override;
-
-    int32_t GetVolumeByUuid(std::string fsUuid, VolumeExternal &vc) override;
-    int32_t GetVolumeById(std::string volumeId, VolumeExternal &vc) override;
-    int32_t SetVolumeDescription(std::string fsUuid, std::string description) override;
-    int32_t Format(std::string volumeId, std::string fsType) override;
-    int32_t GetDiskById(std::string diskId, Disk &disk) override;
-    int32_t QueryUsbIsInUse(const std::string &diskPath, bool &isInUse) override;
-
+    static StorageManager *GetInstance(void)
+    {
+        static StorageManager instance;
+        return &instance;
+    }
+    int32_t PrepareAddUser(int32_t userId, uint32_t flags);
+    int32_t RemoveUser(int32_t userId, uint32_t flags);
+    int32_t PrepareStartUser(int32_t userId);
+    int32_t StopUser(int32_t userId);
+    int32_t CompleteAddUser(int32_t userId);
+ 
+    int32_t GetFreeSizeOfVolume(const std::string &volumeUuid, int64_t &freeSize);
+    int32_t GetTotalSizeOfVolume(const std::string &volumeUuid, int64_t &totalSize);
+    int32_t GetBundleStats(const std::string &pkgName, BundleStats &bundleStats, int32_t appIndex, uint32_t statFlag);
+    int32_t GetSystemSize(int64_t &systemSize);
+    int32_t GetTotalSize(int64_t &totalSize);
+    int32_t GetFreeSize(int64_t &freeSize);
+    int32_t GetUserStorageStats(StorageStats &storageStats);
+    int32_t GetUserStorageStatsIpc(int32_t userId, StorageStats &storageStats);
+    int32_t GetCurrentBundleStats(BundleStats &bundleStats, uint32_t statFlag);
+    int32_t GetUserStorageStatsByType(int32_t userId, StorageStats &storageStats, const std::string &type);
+ 
+    int32_t NotifyVolumeCreated(const VolumeCore& vc);
+    int32_t NotifyVolumeMounted(const std::string &volumeId, int32_t fsType, const std::string &fsUuid,
+         const std::string &path, const std::string &description);
+    OHOS::StorageManager::VolumeState UintToState(uint32_t state);
+    int32_t NotifyVolumeStateChanged(const std::string &volumeId, uint32_t state);
+ 
+    int32_t Mount(const std::string &volumeId);
+    int32_t Unmount(const std::string &volumeId);
+ 
+    int32_t GetAllVolumes(std::vector<VolumeExternal> &vecOfVol);
+ 
+    int32_t NotifyDiskCreated(const Disk& disk);
+    int32_t NotifyDiskDestroyed(const std::string &diskId);
+    int32_t Partition(const std::string &diskId, int32_t type);
+    int32_t GetAllDisks(std::vector<Disk> &vecOfDisk);
+ 
+    int32_t GetVolumeByUuid(const std::string &fsUuid, VolumeExternal &vc);
+    int32_t GetVolumeById(const std::string &volumeId, VolumeExternal &vc);
+    int32_t SetVolumeDescription(const std::string &fsUuid, const std::string &description);
+    int32_t Format(const std::string &volumeId, const std::string &fsType);
+    int32_t GetDiskById(const std::string &diskId, Disk &disk);
+    int32_t QueryUsbIsInUse(const std::string &diskPath, bool &isInUse);
+ 
     int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
-                             const std::string &uuid) override;
-    int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path, const bool isBadRemove) override;
-
-    // fscrypt api
-    int32_t GenerateUserKeys(uint32_t userId, uint32_t flags) override;
-    int32_t DeleteUserKeys(uint32_t userId) override;
+                              const std::string &uuid);
+    int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path, bool isBadRemove);
+ 
+     // fscrypt api
+    int32_t GenerateUserKeys(uint32_t userId, uint32_t flags);
+    int32_t DeleteUserKeys(uint32_t userId);
     int32_t UpdateUserAuth(uint32_t userId, uint64_t secureUid,
-                           const std::vector<uint8_t> &token,
-                           const std::vector<uint8_t> &oldSecret,
-                           const std::vector<uint8_t> &newSecret) override;
+                            const std::vector<uint8_t> &token,
+                            const std::vector<uint8_t> &oldSecret,
+                            const std::vector<uint8_t> &newSecret);
     int32_t UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,
-                                         const std::vector<uint8_t> &newSecret,
-                                         uint64_t secureUid,
-                                         uint32_t userId,
-                                         std::vector<std::vector<uint8_t>> &plainText) override;
+                                          const std::vector<uint8_t> &newSecret,
+                                          uint64_t secureUid,
+                                          uint32_t userId,
+                                          const std::vector<std::vector<uint8_t>> &plainText);
     int32_t ActiveUserKey(uint32_t userId,
-                          const std::vector<uint8_t> &token,
-                          const std::vector<uint8_t> &secret) override;
-    int32_t InactiveUserKey(uint32_t userId) override;
-    int32_t UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey = false) override;
-    int32_t LockUserScreen(uint32_t userId) override;
+                           const std::vector<uint8_t> &token,
+                           const std::vector<uint8_t> &secret);
+    int32_t InactiveUserKey(uint32_t userId);
+    int32_t UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey = false);
+    int32_t LockUserScreen(uint32_t userId);
     int32_t UnlockUserScreen(uint32_t userId,
-                             const std::vector<uint8_t> &token,
-                             const std::vector<uint8_t> &secret) override;
-    int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus) override;
-    int32_t GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId, bool needReSet = false) override;
-    int32_t DeleteAppkey(const std::string keyId) override;
-    int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false) override;
-    int32_t GetUserNeedActiveStatus(uint32_t userId, bool &needActive) override;
+                              const std::vector<uint8_t> &token,
+                              const std::vector<uint8_t> &secret);
+    int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus);
+    int32_t GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId, bool needReSet = false);
+    int32_t DeleteAppkey(const std::string &keyId);
+    int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false);
+    int32_t GetUserNeedActiveStatus(uint32_t userId, bool &needActive);
     int32_t CreateRecoverKey(uint32_t userId,
-                             uint32_t userType,
-                             const std::vector<uint8_t> &token,
-                             const std::vector<uint8_t> &secret) override;
-    int32_t SetRecoverKey(const std::vector<uint8_t> &key) override;
-    int32_t ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key) override;
+                              uint32_t userType,
+                              const std::vector<uint8_t> &token,
+                              const std::vector<uint8_t> &secret);
+    int32_t SetRecoverKey(const std::vector<uint8_t> &key);
+    int32_t ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key);
 
-    // app file share api
-    std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,
-                                        uint32_t tokenId, uint32_t flag) override;
-    int32_t DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList) override;
-
+     // app file share api
+    int32_t CreateShareFile(const std::vector<std::string> &uriList,
+                             uint32_t tokenId,
+                             uint32_t flag,
+                             std::vector<int32_t> &funcResult);
+    int32_t DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList);
+ 
     int32_t SetBundleQuota(const std::string &bundleName, int32_t uid, const std::string &bundleDataDirPath,
-        int32_t limitSizeMb) override;
-    int32_t UpdateMemoryPara(int32_t size, int32_t &oldSize) override;
-
+         int32_t limitSizeMb);
+    int32_t UpdateMemoryPara(int32_t size, int32_t &oldSize);
+ 
     int32_t GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
-        const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes,
-        std::vector<int64_t> &incPkgFileSizes) override;
-
-    // dfs service
+         const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes,
+         std::vector<int64_t> &incPkgFileSizes);
+ 
+     // dfs service
     int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,
-        const std::string &networkId, const std::string &deviceId) override;
+         const std::string &networkId, const std::string &deviceId);
     int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
-        const std::string &networkId, const std::string &deviceId) override;
-
-    // media fuse
-    int32_t MountMediaFuse(int32_t userId, int32_t &devFd) override;
-    int32_t UMountMediaFuse(int32_t userId) override;
-    // file mgr fuse
-    int32_t MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd) override;
-    int32_t UMountFileMgrFuse(int32_t userId, const std::string &path) override;
-    // file lock
-    int32_t IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
-        std::vector<std::string> &outputList, bool &isOccupy) override;
-
-    // reset user event record api
+         const std::string &networkId, const std::string &deviceId);
+ 
+     // media fuse
+    int32_t MountMediaFuse(int32_t userId, int32_t &devFd);
+    int32_t UMountMediaFuse(int32_t userId);
+     // file mgr fuse
+    int32_t MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd);
+    int32_t UMountFileMgrFuse(int32_t userId, const std::string &path);
+    int32_t IsFileOccupied(const std::string &path,
+                           const std::vector<std::string> &inputList,
+                           std::vector<std::string> &outputList,
+                           bool &isOccupy);
     void ResetUserEventRecord(int32_t userId);
-
-private:
-    StorageManager();
-    void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;
-    void SetPriority();
-    static sptr<StorageManager> instance_;
-    static std::mutex instanceLock_;
     std::mutex mutex_;
 };
-} // StorageManager
-} // OHOS
+} // namespace StorageManager
+} // namespace OHOS
 
-#endif // OHOS_STORAGE_MANAGER_STORAGE_MANAGER_H
+#endif

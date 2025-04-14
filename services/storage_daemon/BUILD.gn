@@ -102,6 +102,7 @@ ohos_executable("storage_daemon") {
   }
 
   sources = [
+    "crypto/src/recover_manager.cpp",
     "ipc/src/storage_daemon.cpp",
     "ipc/src/storage_daemon_provider.cpp",
     "ipc/src/storage_manager_client.cpp",
@@ -113,7 +114,6 @@ ohos_executable("storage_daemon") {
     "utils/disk_utils.cpp",
     "utils/mount_argument_utils.cpp",
     "utils/string_utils.cpp",
-    "crypto/src/recover_manager.cpp",
   ]
 
   defines = [
@@ -184,10 +184,10 @@ ohos_executable("storage_daemon") {
     "hitrace:hitrace_meter",
     "init:libbegetutil",
     "ipc:ipc_single",
+    "openssl:libcrypto_shared",
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
-    "openssl:libcrypto_shared",
   ]
 
   if (storage_service_user_crypto_manager) {

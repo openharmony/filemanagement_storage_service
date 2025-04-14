@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -29,7 +29,7 @@ public:
     Disk();
     Disk(std::string diskId, int64_t sizeBytes, std::string sysPath, std::string vendor, int32_t flag);
 
-    std::string GetDiskId();
+    std::string GetDiskId() const;
     int64_t GetSizeBytes();
     std::string GetSysPath();
     std::string GetVendor();
@@ -37,7 +37,7 @@ public:
     void SetFlag(int32_t flag);
 
     bool Marshalling(Parcel &parcel) const override;
-    static std::unique_ptr<Disk> Unmarshalling(Parcel &parcel);
+    static Disk *Unmarshalling(Parcel &parcel);
 private:
     std::string diskId_;
     int64_t sizeBytes_ {};

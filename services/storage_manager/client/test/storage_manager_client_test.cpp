@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,6 +19,7 @@
 #include "client/storage_manager_client.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "storage_service_constant.h"
 namespace OHOS {
 namespace StorageManager {
 using namespace std;
@@ -63,7 +64,7 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_PrepareAddUser_0000, T
     ASSERT_TRUE(storageManagerClient_ != nullptr);
 
     uint32_t userId = 121;
-    int32_t flag = CRYPTO_FLAG_EL2;
+    int32_t flag = StorageDaemon::IStorageDaemonEnum::CRYPTO_FLAG_EL2;
     int32_t ret = storageManagerClient_->PrepareAddUser(userId, flag);
     GTEST_LOG_(INFO) << ret;
     EXPECT_TRUE(ret == E_OK);
@@ -88,7 +89,7 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_RemoveUser_0000, TestS
     ASSERT_TRUE(storageManagerClient_ != nullptr);
 
     uint32_t userId = 102;
-    uint32_t flag = CRYPTO_FLAG_EL2;
+    uint32_t flag = StorageDaemon::IStorageDaemonEnum::CRYPTO_FLAG_EL2;
     int32_t ret = storageManagerClient_->PrepareAddUser(userId, flag);
     EXPECT_TRUE(ret == E_OK);
 
@@ -113,7 +114,7 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_GenerateUserKeys_0000,
     ASSERT_TRUE(storageManagerClient_ != nullptr);
 
     uint32_t userId = 103;
-    uint32_t flag = CRYPTO_FLAG_EL2;
+    uint32_t flag = StorageDaemon::IStorageDaemonEnum::CRYPTO_FLAG_EL2;
     int32_t ret = storageManagerClient_->GenerateUserKeys(userId, flag);
     EXPECT_TRUE(ret == E_OK);
 
@@ -137,7 +138,7 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_DeleteUserKeys_0000, T
     ASSERT_TRUE(storageManagerClient_ != nullptr);
 
     uint32_t userId = 104;
-    uint32_t flag = CRYPTO_FLAG_EL2;
+    uint32_t flag = StorageDaemon::IStorageDaemonEnum::CRYPTO_FLAG_EL2;
     int32_t ret = storageManagerClient_->GenerateUserKeys(userId, flag);
     EXPECT_TRUE(ret == E_OK);
 
@@ -162,7 +163,7 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_UpdateUserAuth_0000, T
     ASSERT_TRUE(storageManagerClient_ != nullptr);
 
     uint32_t userId = 105;
-    uint32_t flag = CRYPTO_FLAG_EL2;
+    uint32_t flag = StorageDaemon::IStorageDaemonEnum::CRYPTO_FLAG_EL2;
     int32_t ret = storageManagerClient_->PrepareAddUser(userId, flag);
     EXPECT_TRUE(ret == E_OK);
 
@@ -189,7 +190,7 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_ActiveUserKey_0000, Te
     ASSERT_TRUE(storageManagerClient_ != nullptr);
 
     uint32_t userId = 106;
-    uint32_t flag = CRYPTO_FLAG_EL2;
+    uint32_t flag = StorageDaemon::IStorageDaemonEnum::CRYPTO_FLAG_EL2;
     int32_t ret = storageManagerClient_->GenerateUserKeys(userId, flag);
     EXPECT_TRUE(ret == E_OK);
 
@@ -216,7 +217,7 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_InactiveUserKey_0000, 
     ASSERT_TRUE(storageManagerClient_ != nullptr);
 
     uint32_t userId = 107;
-    uint32_t flag = CRYPTO_FLAG_EL2;
+    uint32_t flag = StorageDaemon::IStorageDaemonEnum::CRYPTO_FLAG_EL2;
     int32_t ret = storageManagerClient_->GenerateUserKeys(userId, flag);
     EXPECT_TRUE(ret == E_OK);
 
@@ -246,7 +247,7 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_UpdateKeyContext_0000,
     ASSERT_TRUE(storageManagerClient_ != nullptr);
 
     uint32_t userId = 108;
-    uint32_t flag = CRYPTO_FLAG_EL2;
+    uint32_t flag = StorageDaemon::IStorageDaemonEnum::CRYPTO_FLAG_EL2;
     storageManagerClient_->DeleteUserKeys(userId);
     int32_t ret = storageManagerClient_->GenerateUserKeys(userId, flag);
     EXPECT_TRUE(ret == E_OK);

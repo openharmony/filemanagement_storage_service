@@ -105,8 +105,6 @@
               "name": "//foundation/filemanagement/storage_service/interfaces/innerkits/storage_manager/native:storage_manager_sa_proxy",
               "header": {
                 "header_files": [
-                  "istorage_manager.h",
-                  "storage_manager_proxy.h",
                   "bundle_stats.h",
                   "storage_stats.h",
                   "disk.h",

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -38,14 +38,14 @@ public:
     VolumeCore(std::string id, int32_t type, std::string diskId);
     VolumeCore(std::string id, int32_t type, std::string diskId, int32_t state);
 
-    std::string GetId();
+    std::string GetId() const;
     int32_t GetType();
     std::string GetDiskId();
     int32_t GetState();
     void SetState(int32_t state);
 
     bool Marshalling(Parcel &parcel) const override;
-    static std::unique_ptr<VolumeCore> Unmarshalling(Parcel &parcel);
+    static VolumeCore *Unmarshalling(Parcel &parcel);
 private:
     std::string id_;
     int32_t type_ {};

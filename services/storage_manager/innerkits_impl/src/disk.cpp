@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,7 +22,7 @@ Disk::Disk() {}
 Disk::Disk(std::string diskId, int64_t sizeBytes, std::string sysPath, std::string vendor, int32_t flag)
     : diskId_(diskId), sizeBytes_(sizeBytes), sysPath_(sysPath), vendor_(vendor), flag_(flag) {}
 
-std::string Disk::GetDiskId()
+std::string Disk::GetDiskId() const
 {
     return diskId_;
 }
@@ -77,9 +77,9 @@ bool Disk::Marshalling(Parcel &parcel) const
     return true;
 }
 
-std::unique_ptr<Disk> Disk::Unmarshalling(Parcel &parcel)
+Disk *Disk::Unmarshalling(Parcel &parcel)
 {
-    auto obj = std::make_unique<Disk>();
+    Disk* obj = new Disk();
     obj->diskId_ = parcel.ReadString();
     obj->sizeBytes_ = parcel.ReadInt32();
     obj->sysPath_ = parcel.ReadString();

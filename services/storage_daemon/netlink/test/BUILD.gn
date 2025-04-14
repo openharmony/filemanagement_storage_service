@@ -41,7 +41,10 @@ ohos_unittest("netlink_data_test") {
     "$ROOT_DIR/storage_daemon/netlink/test/netlink_data_test.cpp",
   ]
 
-  deps = [ "${storage_daemon_path}:storage_daemon_header" ]
+  deps = [
+    "${storage_daemon_path}:storage_daemon_header",
+    "${storage_manager_path}:storage_manager_header",
+  ]
 
   external_deps = [
     "c_utils:utils",
@@ -93,6 +96,7 @@ ohos_unittest("netlink_handler_test") {
   deps = [
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_header",
+    "${storage_manager_path}:storage_manager_header",
   ]
 
   external_deps = [
@@ -185,6 +189,7 @@ ohos_unittest("netlink_manager_test") {
   deps = [
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_header",
+    "${storage_manager_path}:storage_manager_header",
   ]
 
   external_deps = [
