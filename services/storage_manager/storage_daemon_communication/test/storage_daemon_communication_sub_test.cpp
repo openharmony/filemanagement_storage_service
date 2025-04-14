@@ -445,4 +445,515 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Partition_0000, Te
     EXPECT_EQ(sdCommunication->Partition("", 0), E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Partition_0000";
 }
+
+/**
+* @tc.number: SUB_STORAGE_Daemon_communication_Format_0000
+* @tc.name: Daemon_communication_Format_0000
+* @tc.desc: Test function of Format interface for SUCCESS.
+* @tc.size: MEDIUM
+* @tc.type: FUNC
+* @tc.level Level 1
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Format_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_Format_0000";
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    sdCommunication->storageDaemon_ = nullptr;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    EXPECT_EQ(sdCommunication->Format("", ""), E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
+        sdCommunication->storageDaemon_ = nullptr;
+    }), Return(true)));
+    EXPECT_EQ(sdCommunication->Format("", ""), E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*sd, Format(_, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->Format("", ""), E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Format_0000";
+}
+
+/**
+* @tc.number: SUB_STORAGE_Daemon_communication_SetVolumeDescription_0000
+* @tc.name: Daemon_communication_SetVolumeDescription_0000
+* @tc.desc: Test function of SetVolumeDescription interface for SUCCESS.
+* @tc.size: MEDIUM
+* @tc.type: FUNC
+* @tc.level Level 1
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetVolumeDescription_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_SetVolumeDescription_0000";
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    sdCommunication->storageDaemon_ = nullptr;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    EXPECT_EQ(sdCommunication->SetVolumeDescription("", ""), E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
+        sdCommunication->storageDaemon_ = nullptr;
+    }), Return(true)));
+    EXPECT_EQ(sdCommunication->SetVolumeDescription("", ""), E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*sd, SetVolumeDescription(_, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->SetVolumeDescription("", ""), E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_SetVolumeDescription_0000";
+}
+
+/**
+* @tc.number: SUB_STORAGE_Daemon_communication_QueryUsbIsInUse_0000
+* @tc.name: Daemon_communication_QueryUsbIsInUse_0000
+* @tc.desc: Test function of QueryUsbIsInUse interface for SUCCESS.
+* @tc.size: MEDIUM
+* @tc.type: FUNC
+* @tc.level Level 1
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_QueryUsbIsInUse_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_QueryUsbIsInUse_0000";
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    string diskPath;
+    bool isInUse = false;
+    sdCommunication->storageDaemon_ = nullptr;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    EXPECT_EQ(sdCommunication->QueryUsbIsInUse(diskPath, isInUse), E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
+        sdCommunication->storageDaemon_ = nullptr;
+    }), Return(true)));
+    EXPECT_EQ(sdCommunication->QueryUsbIsInUse(diskPath, isInUse), E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*sd, QueryUsbIsInUse(_, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->QueryUsbIsInUse(diskPath, isInUse), E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_QueryUsbIsInUse_0000";
+}
+
+/**
+* @tc.number: SUB_STORAGE_Daemon_communication_GenerateUserKeys_0000
+* @tc.name: Daemon_communication_GenerateUserKeys_0000
+* @tc.desc: Test function of GenerateUserKeys interface for SUCCESS.
+* @tc.size: MEDIUM
+* @tc.type: FUNC
+* @tc.level Level 1
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GenerateUserKeys_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GenerateUserKeys_0000";
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    sdCommunication->storageDaemon_ = nullptr;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    EXPECT_EQ(sdCommunication->GenerateUserKeys(0, 0), E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
+        sdCommunication->storageDaemon_ = nullptr;
+    }), Return(true)));
+    EXPECT_EQ(sdCommunication->GenerateUserKeys(0, 0), E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*sd, GenerateUserKeys(_, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->GenerateUserKeys(0, 0), E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GenerateUserKeys_0000";
+}
+
+/**
+* @tc.number: SUB_STORAGE_Daemon_communication_DeleteUserKeys_0000
+* @tc.name: Daemon_communication_DeleteUserKeys_0000
+* @tc.desc: Test function of DeleteUserKeys interface for SUCCESS.
+* @tc.size: MEDIUM
+* @tc.type: FUNC
+* @tc.level Level 1
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteUserKeys_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_DeleteUserKeys_0000";
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    sdCommunication->storageDaemon_ = nullptr;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    EXPECT_EQ(sdCommunication->DeleteUserKeys(0), E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
+        sdCommunication->storageDaemon_ = nullptr;
+    }), Return(true)));
+    EXPECT_EQ(sdCommunication->DeleteUserKeys(0), E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*sd, DeleteUserKeys(_)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->DeleteUserKeys(0), E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_DeleteUserKeys_0000";
+}
+
+/**
+* @tc.number: SUB_STORAGE_Daemon_communication_UpdateUserAuth_0000
+* @tc.name: Daemon_communication_UpdateUserAuth_0000
+* @tc.desc: Test function of UpdateUserAuth interface for SUCCESS.
+* @tc.size: MEDIUM
+* @tc.type: FUNC
+* @tc.level Level 1
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateUserAuth_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UpdateUserAuth_0000";
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    vector<uint8_t> token;
+    vector<uint8_t> oldSecret;
+    vector<uint8_t> newSecret;
+    sdCommunication->storageDaemon_ = nullptr;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    EXPECT_EQ(sdCommunication->UpdateUserAuth(0, 0, token, oldSecret, newSecret), E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
+        sdCommunication->storageDaemon_ = nullptr;
+    }), Return(true)));
+    EXPECT_EQ(sdCommunication->UpdateUserAuth(0, 0, token, oldSecret, newSecret), E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*sd, UpdateUserAuth(_, _, _, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->UpdateUserAuth(0, 0, token, oldSecret, newSecret), E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UpdateUserAuth_0000";
+}
+
+/**
+* @tc.number: SUB_STORAGE_Daemon_communication_UpdateUseAuthWithRecoveryKey_0000
+* @tc.name: Daemon_communication_UpdateUseAuthWithRecoveryKey_0000
+* @tc.desc: Test function of UpdateUseAuthWithRecoveryKey interface for SUCCESS.
+* @tc.size: MEDIUM
+* @tc.type: FUNC
+* @tc.level Level 1
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateUseAuthWithRecoveryKey_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UpdateUseAuthWithRecoveryKey_0000";
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    vector<uint8_t> authToken;
+    vector<uint8_t> newSecret;
+    vector<std::vector<uint8_t>> plainText;
+    sdCommunication->storageDaemon_ = nullptr;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    EXPECT_EQ(sdCommunication->UpdateUseAuthWithRecoveryKey(authToken, newSecret, 0, 0, plainText), E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
+        sdCommunication->storageDaemon_ = nullptr;
+    }), Return(true)));
+    EXPECT_EQ(
+        sdCommunication->UpdateUseAuthWithRecoveryKey(authToken, newSecret, 0, 0, plainText), E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*sd, UpdateUseAuthWithRecoveryKey(_, _, _, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->UpdateUseAuthWithRecoveryKey(authToken, newSecret, 0, 0, plainText), E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UpdateUseAuthWithRecoveryKey_0000";
+}
+
+/**
+* @tc.number: SUB_STORAGE_Daemon_communication_ActiveUserKey_0000
+* @tc.name: Daemon_communication_ActiveUserKey_0000
+* @tc.desc: Test function of ActiveUserKey interface for SUCCESS.
+* @tc.size: MEDIUM
+* @tc.type: FUNC
+* @tc.level Level 1
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_ActiveUserKey_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_ActiveUserKey_0000";
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    vector<uint8_t> token;
+    vector<uint8_t> secret;
+    sdCommunication->storageDaemon_ = nullptr;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    EXPECT_EQ(sdCommunication->ActiveUserKey(0, token, secret), E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
+        sdCommunication->storageDaemon_ = nullptr;
+    }), Return(true)));
+    EXPECT_EQ(sdCommunication->ActiveUserKey(0, token, secret), E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*sd, ActiveUserKey(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->ActiveUserKey(0, token, secret), E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_ActiveUserKey_0000";
+}
+
+/**
+* @tc.number: SUB_STORAGE_Daemon_communication_InactiveUserKey_0000
+* @tc.name: Daemon_communication_InactiveUserKey_0000
+* @tc.desc: Test function of InactiveUserKey interface for SUCCESS.
+* @tc.size: MEDIUM
+* @tc.type: FUNC
+* @tc.level Level 1
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_InactiveUserKey_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_InactiveUserKey_0000";
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    sdCommunication->storageDaemon_ = nullptr;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    EXPECT_EQ(sdCommunication->InactiveUserKey(0), E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
+        sdCommunication->storageDaemon_ = nullptr;
+    }), Return(true)));
+    EXPECT_EQ(sdCommunication->InactiveUserKey(0), E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*sd, InactiveUserKey(_)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->InactiveUserKey(0), E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_InactiveUserKey_0000";
+}
+
+/**
+* @tc.number: SUB_STORAGE_Daemon_communication_LockUserScreen_0000
+* @tc.name: Daemon_communication_LockUserScreen_0000
+* @tc.desc: Test function of LockUserScreen interface for SUCCESS.
+* @tc.size: MEDIUM
+* @tc.type: FUNC
+* @tc.level Level 1
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_LockUserScreen_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_LockUserScreen_0000";
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    sdCommunication->storageDaemon_ = nullptr;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    EXPECT_EQ(sdCommunication->LockUserScreen(0), E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
+        sdCommunication->storageDaemon_ = nullptr;
+    }), Return(true)));
+    EXPECT_EQ(sdCommunication->LockUserScreen(0), E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*sd, LockUserScreen(_)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->LockUserScreen(0), E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_LockUserScreen_0000";
+}
+
+/**
+* @tc.number: SUB_STORAGE_Daemon_communication_GetFileEncryptStatus_0000
+* @tc.name: Daemon_communication_GetFileEncryptStatus_0000
+* @tc.desc: Test function of GetFileEncryptStatus interface for SUCCESS.
+* @tc.size: MEDIUM
+* @tc.type: FUNC
+* @tc.level Level 1
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetFileEncryptStatus_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetFileEncryptStatus_0000";
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    bool isEncrypted = false;
+    sdCommunication->storageDaemon_ = nullptr;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    EXPECT_EQ(sdCommunication->GetFileEncryptStatus(0, isEncrypted, false), E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
+        sdCommunication->storageDaemon_ = nullptr;
+    }), Return(true)));
+    EXPECT_EQ(sdCommunication->GetFileEncryptStatus(0, isEncrypted, false), E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*sd, GetFileEncryptStatus(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->GetFileEncryptStatus(0, isEncrypted, false), E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetFileEncryptStatus_0000";
+}
+
+/**
+* @tc.number: SUB_STORAGE_Daemon_communication_GetUserNeedActiveStatus_0000
+* @tc.name: Daemon_communication_GetUserNeedActiveStatus_0000
+* @tc.desc: Test function of GetUserNeedActiveStatus interface for SUCCESS.
+* @tc.size: MEDIUM
+* @tc.type: FUNC
+* @tc.level Level 1
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetUserNeedActiveStatus_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetUserNeedActiveStatus_0000";
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    bool needActive = false;
+    sdCommunication->storageDaemon_ = nullptr;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    EXPECT_EQ(sdCommunication->GetUserNeedActiveStatus(0, needActive), E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
+        sdCommunication->storageDaemon_ = nullptr;
+    }), Return(true)));
+    EXPECT_EQ(sdCommunication->GetUserNeedActiveStatus(0, needActive), E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*sd, GetUserNeedActiveStatus(_, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->GetUserNeedActiveStatus(0, needActive), E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetUserNeedActiveStatus_0000";
+}
+
+/**
+* @tc.number: SUB_STORAGE_Daemon_communication_UnlockUserScreen_0000
+* @tc.name: Daemon_communication_UnlockUserScreen_0000
+* @tc.desc: Test function of UnlockUserScreen interface for SUCCESS.
+* @tc.size: MEDIUM
+* @tc.type: FUNC
+* @tc.level Level 1
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UnlockUserScreen_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UnlockUserScreen_0000";
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    vector<uint8_t> token;
+    vector<uint8_t> secret;
+    sdCommunication->storageDaemon_ = nullptr;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    EXPECT_EQ(sdCommunication->UnlockUserScreen(0, token, secret), E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
+        sdCommunication->storageDaemon_ = nullptr;
+    }), Return(true)));
+    EXPECT_EQ(sdCommunication->UnlockUserScreen(0, token, secret), E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*sd, UnlockUserScreen(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->UnlockUserScreen(0, token, secret), E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UnlockUserScreen_0000";
+}
+
+/**
+* @tc.number: SUB_STORAGE_Daemon_communication_GetLockScreenStatus_0000
+* @tc.name: Daemon_communication_GetLockScreenStatus_0000
+* @tc.desc: Test function of GetLockScreenStatus interface for SUCCESS.
+* @tc.size: MEDIUM
+* @tc.type: FUNC
+* @tc.level Level 1
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetLockScreenStatus_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetLockScreenStatus_0000";
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    bool lockScreenStatus = false;
+    sdCommunication->storageDaemon_ = nullptr;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    EXPECT_EQ(sdCommunication->GetLockScreenStatus(0, lockScreenStatus), E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
+        sdCommunication->storageDaemon_ = nullptr;
+    }), Return(true)));
+    EXPECT_EQ(sdCommunication->GetLockScreenStatus(0, lockScreenStatus), E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*sd, GetLockScreenStatus(_, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->GetLockScreenStatus(0, lockScreenStatus), E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetLockScreenStatus_0000";
+}
+
+/**
+* @tc.number: SUB_STORAGE_Daemon_communication_UpdateKeyContext_0000
+* @tc.name: Daemon_communication_UpdateKeyContext_0000
+* @tc.desc: Test function of UpdateKeyContext interface for SUCCESS.
+* @tc.size: MEDIUM
+* @tc.type: FUNC
+* @tc.level Level 1
+* @tc.require: AR000GK4HB
+*/
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UpdateKeyContext_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UpdateKeyContext_0000";
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    sdCommunication->storageDaemon_ = nullptr;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    EXPECT_EQ(sdCommunication->UpdateKeyContext(0, false), E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
+        sdCommunication->storageDaemon_ = nullptr;
+    }), Return(true)));
+    EXPECT_EQ(sdCommunication->UpdateKeyContext(0, false), E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*sd, UpdateKeyContext(_, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->UpdateKeyContext(0, false), E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UpdateKeyContext_0000";
+}
 }
