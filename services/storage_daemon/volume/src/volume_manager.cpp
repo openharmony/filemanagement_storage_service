@@ -215,7 +215,7 @@ int32_t VolumeManager::QueryUsbIsInUse(const std::string &diskPath, bool &isInUs
     if (strncmp(realPath, diskPath.c_str(), diskPath.size()) != 0) {
         LOGE("diskPath is not equal to realPath, realPath.size = %{public}zu, diskPath.size() = %{public}zu",
             string_view(realPath).size(), diskPath.size());
-        return false;
+        return E_PARAMS_INVALID;
     }
     int fd = open(realPath, O_RDONLY);
     if (fd < 0) {
