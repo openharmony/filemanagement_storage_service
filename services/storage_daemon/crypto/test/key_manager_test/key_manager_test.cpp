@@ -1371,6 +1371,8 @@ HWTEST_F(KeyManagerTest, KeyManager_InActiveUserKey_002, TestSize.Level1)
     KeyManager::GetInstance()->SaveUserElKey(user, EL2_KEY, elKey);
     KeyManager::GetInstance()->SaveUserElKey(user, EL3_KEY, elKey);
     KeyManager::GetInstance()->SaveUserElKey(user, EL4_KEY, elKey);
+    EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID));
     EXPECT_CALL(*fscryptKeyMock_, InactiveKey(_, _)).WillOnce(Return(E_OK)).WillOnce(Return(E_OK))
         .WillOnce(Return(E_OK));
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
