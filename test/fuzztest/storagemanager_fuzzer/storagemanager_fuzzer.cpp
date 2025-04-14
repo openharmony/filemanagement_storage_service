@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -67,8 +67,7 @@ constexpr uint8_t MAX_CALL_TRANSACTION = 64;
 constexpr size_t U32_AT_SIZE = 4;
 constexpr int32_t SERVICE_ID = 5003;
 
-std::shared_ptr<StorageManager> storageManagerPtr =
-    std::make_shared<StorageManager>(SERVICE_ID, true);
+sptr<StorageManager> storageManagerPtr (new (std::nothrow) StorageManager(SERVICE_ID, true));
 
 uint32_t GetU32Data(const char* ptr)
 {
