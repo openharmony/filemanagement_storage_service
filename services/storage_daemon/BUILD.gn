@@ -112,8 +112,6 @@ ohos_executable("storage_daemon") {
     "user/src/user_manager.cpp",
     "utils/disk_utils.cpp",
     "utils/mount_argument_utils.cpp",
-    "utils/string_utils.cpp",
-    "crypto/src/recover_manager.cpp",
   ]
 
   defines = [
