@@ -182,10 +182,10 @@ ohos_executable("storage_daemon") {
     "hitrace:hitrace_meter",
     "init:libbegetutil",
     "ipc:ipc_single",
+    "openssl:libcrypto_shared",
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
-    "openssl:libcrypto_shared",
   ]
 
   if (storage_service_user_crypto_manager) {
