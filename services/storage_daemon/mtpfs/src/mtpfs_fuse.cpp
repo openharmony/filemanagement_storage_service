@@ -188,7 +188,7 @@ int WrapOpenDir(const char *path, struct fuse_file_info *fileInfo)
 }
 
 int WrapReadDir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fileInfo,
-    enum fuse_readdir_flags flag)
+    enum fuse_readdir_flags flag)
 {
     LOGI("mtp WrapReadDir, path=%{public}s", path);
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->ReadDir(path, buf, filler, offset, fileInfo, flag);
@@ -1097,8 +1097,28 @@ int MtpFileSystem::GetXAttr(const char *path, const char *in, char *out, size_t 
             }
         }
         return secondParam ? UPLOAD_RECORD_TRUE_LEN : UPLOAD_RECORD_FALSE_LEN;
+    } else if (strcmp(in, "user.getfriendlyname") == 0) {
+        return GetFriendlyName(in, out, size);
     } else {
         LOGE("attrKey error, attrKey=%{public}s", in);
         return 0;
     }
+}
+
+int MtpFileSystem::GetFriendlyName(const char *in, char *out, size_t size)
+{
+    LOGI("GetXAttr key=%{public}s", in);
+    char *deviceName = device_.GetDeviceFriendlyName();
+    if (deviceName == nullptr) {
+        LOGE("GetDeviceFriendlyName from device fail");
+        return -ENOENT;
+    }
+    int32_t nameLen = strlen(deviceName);
+    LOGI("GetDeviceFriendlyName from device success, name=%{public}s, nameLen=%{public}d", deviceName, nameLen);
+    int32_t ret = memcpy_s(out, size, deviceName, nameLen);
+    if (ret != 0) {
+        LOGE("memcpy_s devicename fail, ret=%{public}d", ret);
+        return 0;
+    }
+    return nameLen;
 }

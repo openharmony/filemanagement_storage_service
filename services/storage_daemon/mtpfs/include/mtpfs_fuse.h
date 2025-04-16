@@ -23,6 +23,7 @@
 #include "mtpfs_mtp_device.h"
 #include "mtpfs_tmp_files_pool.h"
 #include "mtpfs_type_tmp_file.h"
+#include "storage_service_errno.h"
 
 using namespace OHOS;
 
@@ -66,9 +67,9 @@ public:
     int UnLink(const char *path);
     int RmDir(const char *path);
     int ReName(const char *path, const char *newpath, unsigned int flags);
-    int ChMods(const char *path, mode_t mode, struct fuse_file_info  *fi);
-    int Chown(const char *path, uid_t uid, gid_t gid, struct fuse_file_info  *fi);
-    int UTimens(const char *path, const struct timespec tv[2], struct fuse_file_info  *fi);
+    int ChMods(const char *path, mode_t mode, struct fuse_file_info *fi);
+    int Chown(const char *path, uid_t uid, gid_t gid, struct fuse_file_info *fi);
+    int UTimens(const char *path, const struct timespec tv[2], struct fuse_file_info *fi);
     int OpenFile(const char *path, struct fuse_file_info *fileInfo);
     int ReadFile(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fileInfo);
     int OpenThumb(const char *path, struct fuse_file_info *fileInfo);
@@ -80,11 +81,11 @@ public:
     int FSync(const char *path, int datasync, struct fuse_file_info *fi);
     int OpenDir(const char *path, struct fuse_file_info *fileInfo);
     int ReadDir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset, struct fuse_file_info *fileInfo,
-        enum fuse_readdir_flags flag);
+        enum fuse_readdir_flags flag);
     int ReleaseDir(const char *path, struct fuse_file_info *fileInfo);
     int FSyncDir(const char *path, int datasync, struct fuse_file_info *fileInfo);
     int Truncate(const char *path, off_t offset, struct fuse_file_info *fileInfo);
-    void *Init(struct fuse_conn_info *conn, struct fuse_config  *cfg);
+    void *Init(struct fuse_conn_info *conn, struct fuse_config *cfg);
     int Create(const char *path, mode_t mode, fuse_file_info *fileInfo);
     int SetXAttr(const char *path, const char *in);
     int GetXAttr(const char *path, const char *in, char *out, size_t size);
@@ -93,6 +94,7 @@ public:
 private:
     bool HasPartialObjectSupport();
     bool ParseOptionsInner();
+    int GetFriendlyName(const char *in, char *out, size_t size);
     struct fuse_args args_;
     struct fuse_operations fuseOperations_;
     MtpFsTmpFilesPool tmpFilesPool_;

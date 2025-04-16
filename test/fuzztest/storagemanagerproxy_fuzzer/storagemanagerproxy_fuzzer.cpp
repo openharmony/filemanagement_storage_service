@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -25,7 +25,7 @@ namespace StorageManager {
 bool StorageManagerProxyFuzzTest(const uint8_t *data, size_t size)
 {
     size_t dataMinSize = sizeof(int32_t) + sizeof(uint32_t) + sizeof(uint64_t);
-    if ((data == nullptr) || (size <= sizeof(uint64_t))) {
+    if ((data == nullptr) || (size <= dataMinSize)) {
         return false;
     }
     auto impl = new StorageManagerProxyMock();

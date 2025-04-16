@@ -55,6 +55,7 @@ DiskInfo::DiskInfo(std::string &sysPath, std::string &devPath, dev_t device, int
     device_ = device;
     flags_ = static_cast<unsigned int>(flag);
     status = S_INITAL;
+    isUserdata = false;
 }
 
 dev_t DiskInfo::GetDevice() const
