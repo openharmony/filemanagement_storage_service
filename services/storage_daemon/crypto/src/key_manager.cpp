@@ -1743,7 +1743,7 @@ int KeyManager::InactiveUserElKey(unsigned int user, KeyType type)
     if (!HasElkey(user, type)) {
         LOGE("Have not found user %{public}u type %{public}u", user, type);
         std::string keyDir = GetKeyDirByUserAndType(user, type);
-        if (!IsDir(keyDir)) {
+        if (type != EL5_KEY && !IsDir(keyDir)) {
             LOGE("have not found user %{public}u, type %{public}u", user, type);
             return E_PARAMS_INVALID;
         }

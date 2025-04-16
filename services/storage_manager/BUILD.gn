@@ -36,6 +36,7 @@ config("storage_manager_config") {
     "${storage_interface_path}/innerkits/storage_manager/native",
     "${storage_daemon_path}/include",
     "${storage_service_common_path}/include",
+    "${target_gen_dir}",
   ]
 
   cflags = [
@@ -54,7 +55,7 @@ ohos_source_set("storage_manager_ipc") {
   output_values = get_target_outputs(":storage_manager_interface")
   sources = []
   sources += filter_include(output_values, [ "*.cpp" ])
-  public_configs = [ ":public_idl_config" ]
+  public_configs = [ ":storage_manager_config" ]
   deps = [ ":storage_manager_interface" ]
   external_deps = [
     "c_utils:utils",
@@ -72,7 +73,7 @@ ohos_source_set("storage_manager_header") {
     cfi = true
     cfi_cross_dso = true
   }
-  public_configs = [ ":public_idl_config" ]
+  public_configs = [ ":storage_manager_config" ]
   deps = [ ":storage_manager_interface" ]
   external_deps = [
     "c_utils:utils",

@@ -436,7 +436,8 @@ int32_t StorageManagerProvider::UpdateUseAuthWithRecoveryKey(const std::vector<u
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId, plainText);
+    return StorageManager::GetInstance()->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid,
+                                                                       userId, plainText);
 }
 
 int32_t StorageManagerProvider::ActiveUserKey(uint32_t userId,
@@ -605,8 +606,8 @@ int32_t StorageManagerProvider::GetBundleStatsForIncrease(uint32_t userId,
         LOGE("StorageManager permissionCheck error, calling uid is invalid, need backup_sa uid.");
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes, pkgFileSizes,
-                                               incPkgFileSizes);
+    return StorageManager::GetInstance()->GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes,
+                                                                    pkgFileSizes,incPkgFileSizes);                                                            
 }
 
 int32_t StorageManagerProvider::GetUserStorageStatsByType(int32_t userId,

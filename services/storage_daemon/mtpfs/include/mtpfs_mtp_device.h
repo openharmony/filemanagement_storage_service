@@ -98,6 +98,7 @@ public:
     const MtpFsTypeDir *ReadDirFetchContent(std::string path);
     bool IsDirFetched(std::string path);
     Capabilities GetCapabilities() const;
+    char *GetDeviceFriendlyName();
 
 private:
     void CriticalEnter()
