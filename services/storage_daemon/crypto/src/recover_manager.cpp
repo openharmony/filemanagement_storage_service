@@ -83,7 +83,7 @@ int RecoveryManager::CreateRecoverKey(uint32_t userId,
     operation.params[TEE_PARAM_INDEX_0].tmpref.size = sizeof(recoverKeyStr);
     TEEC_Result ret = TEEC_InvokeCommand(&createKeySession, TaCmdId::RK_CMD_ID_GEN_RECOVERY_KEY,
                                          &operation, &createKeyOrigin);
-    LOGW("InvokeCmd ret: %{public}d, origin: %{public}d, token size: %{public}d", ret, createKeyOrigin, token.size());
+    LOGW("InvokeCmd ret: %{public}d, origin: %{public}d, token size: %{public}zu", ret, createKeyOrigin, token.size());
     if (ret != TEEC_SUCCESS) {
         LOGE("InvokeCmd failed, ret: %{public}d, origin: %{public}d", ret, createKeyOrigin);
         CloseSession(createKeyContext, createKeySession);
