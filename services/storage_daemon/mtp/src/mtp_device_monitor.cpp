@@ -128,7 +128,14 @@ void MtpDeviceMonitor::MonitorDevice()
     LOGI("MonitorDevice: mtp device monitor thread begin.");
     int32_t cnt = DETECT_CNT;
     while (cnt > 0) {
-        MountMtpDeviceByBroadcast();
+        bool hasMtp = false;
+        if (HasMTPDevice(hasMtp) != E_OK) {
+            continue;
+        }
+        if (hasMtp) {
+            MountMtpDeviceByBroadcast();
+            break;
+        }
         cnt--;
         sleep(SLEEP_TIME);
     }
@@ -308,6 +315,32 @@ bool MtpDeviceMonitor::IsHwitDevice()
         return true;
     }
     return false;
+}
+
+int32_t MtpDeviceMonitor::HasMTPDevice(bool &hasMtp)
+{
+    auto &usbSrvClient = OHOS::USB::UsbSrvClient::GetInstance();
+    std::vector<UsbDevice> deviceList;
+    int32_t ret = usbSrvClient.GetDevices(deviceList);
+    if (ret != E_OK) {
+        LOGE("USB GetDevices failed, ret is %{public}d.", ret);
+        return ret;
+    }
+    for (UsbDevice &dev : deviceList) {
+        uint8_t deviceClass = dev.GetClass();
+        uint16_t idVendor = dev.GetVendorId();
+        uint16_t idProduct = dev.GetProductId();
+        LOGI("device class is %{public}d, vendor id is %{public}d, product id is %{public}d.",
+             deviceClass, idVendor, idProduct);
+        if (LIBMTP_check_is_mtp_device(deviceClass, idVendor, idProduct)) {
+            LOGE("this is mtp device.");
+            hasMtp = true;
+            return E_OK;
+        }
+    }
+    LOGI("there has no mtp device.");
+    hasMtp = false;
+    return E_OK;
 }
 }  // namespace StorageDaemon
 }  // namespace OHOS

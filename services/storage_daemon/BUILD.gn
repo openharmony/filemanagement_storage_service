@@ -234,6 +234,7 @@ ohos_executable("storage_daemon") {
       "config_policy:configpolicy_util",
       "init:libbeget_proxy",
       "libmtp:libmtp",
+      "usb_manager:usbsrv_client",
     ]
   }
 
