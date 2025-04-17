@@ -30,6 +30,7 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/file_utils.h"
+#include "usb_srv_client.h"
 
 using namespace std;
 namespace OHOS {
@@ -130,6 +131,8 @@ void MtpDeviceMonitor::MonitorDevice()
     while (cnt > 0) {
         bool hasMtp = false;
         if (HasMTPDevice(hasMtp) != E_OK) {
+            cnt--;
+            sleep(SLEEP_TIME);
             continue;
         }
         if (hasMtp) {
