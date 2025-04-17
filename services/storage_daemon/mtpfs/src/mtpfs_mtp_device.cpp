@@ -387,7 +387,9 @@ const MtpFsTypeDir *MtpFsDevice::OpenDirFetchContent(std::string path)
         }
         const MtpFsTypeDir *tmp = dir->Dir(member);
         if (!tmp && !dir->IsFetched()) {
+            CriticalEnter();
             FetchDirContent(dir);
+            CriticalLeave();
             tmp = dir->Dir(member);
         }
         if (!tmp) {
@@ -397,7 +399,9 @@ const MtpFsTypeDir *MtpFsDevice::OpenDirFetchContent(std::string path)
     }
 
     if (!dir->IsFetched()) {
+        CriticalLeave();
         FetchDirContent(dir);
+        CriticalLeave();
     }
     return dir;
 }
@@ -429,9 +433,7 @@ void MtpFsDevice::FetchDirContent(MtpFsTypeDir *dir)
         dir->SetFetched();
         return;
     }
-    CriticalEnter();
     LIBMTP_file_t *content = LIBMTP_Get_Patial_Files_Metadata(device_, dir->objHandles, DEFAULT_COUNT);
-    CriticalLeave();
     HandleDir(content, dir);
     if (dir->objHandles->offset >= dir->objHandles->num) {
         dir->SetFetched();
@@ -567,7 +569,7 @@ int MtpFsDevice::DirCreateNew(const std::string &path)
 {
     const std::string tmpBaseName(SmtpfsBaseName(path));
     const std::string tmpDirName(SmtpfsDirName(path));
-    const MtpFsTypeDir *dirParent = DirFetchContent(tmpDirName);
+    const MtpFsTypeDir *dirParent = ReadDirFetchContent(tmpDirName);
     if (!dirParent || dirParent->Id() == 0) {
         LOGE("Can not remove directory: %{public}s", path.c_str());
         return -EINVAL;
@@ -631,7 +633,7 @@ int MtpFsDevice::DirRemoveDirectly(const std::string &path)
     LOGI("DirRemoveDirectly %{public}s begin", path.c_str());
     const std::string tmpBaseName(SmtpfsBaseName(path));
     const std::string tmpDirName(SmtpfsDirName(path));
-    const MtpFsTypeDir *dirParent = DirFetchContent(tmpDirName);
+    const MtpFsTypeDir *dirParent = ReadDirFetchContent(tmpDirName);
     const MtpFsTypeDir *dirToRemove = dirParent ? dirParent->Dir(tmpBaseName) : nullptr;
     if (!dirParent || !dirToRemove || dirParent->Id() == 0) {
         LOGE("No such directory %{public}s to remove", path.c_str());
@@ -663,7 +665,7 @@ int MtpFsDevice::DirReName(const std::string &oldPath, const std::string &newPat
     const std::string tmpOldDirName(SmtpfsDirName(oldPath));
     const std::string tmpNewBaseName(SmtpfsBaseName(newPath));
     const std::string tmpNewDirName(SmtpfsDirName(newPath));
-    const MtpFsTypeDir *dirParent = DirFetchContent(tmpOldDirName);
+    const MtpFsTypeDir *dirParent = ReadDirFetchContent(tmpOldDirName);
     const MtpFsTypeDir *dirToReName = dirParent ? dirParent->Dir(tmpOldBaseName) : nullptr;
     if (!dirParent || !dirToReName || dirParent->Id() == 0) {
         LOGE("Can not rename %{public}s to %{public}s ", tmpOldBaseName.c_str(), tmpNewBaseName.c_str());
@@ -699,8 +701,8 @@ int MtpFsDevice::ReNameInner(const std::string &oldPath, const std::string &newP
     const std::string tmpOldDirName(SmtpfsDirName(oldPath));
     const std::string tmpNewBaseName(SmtpfsBaseName(newPath));
     const std::string tmpNewDirName(SmtpfsDirName(newPath));
-    const MtpFsTypeDir *dirOldParent = DirFetchContent(tmpOldDirName);
-    const MtpFsTypeDir *dirNewParent = DirFetchContent(tmpNewDirName);
+    const MtpFsTypeDir *dirOldParent = ReadDirFetchContent(tmpOldDirName);
+    const MtpFsTypeDir *dirNewParent = ReadDirFetchContent(tmpNewDirName);
     const MtpFsTypeDir *dirToReName = dirOldParent ? dirOldParent->Dir(tmpOldBaseName) : nullptr;
     const MtpFsTypeFile *fileToReName = dirOldParent ? dirOldParent->File(tmpOldBaseName) : nullptr;
 
@@ -759,7 +761,7 @@ int MtpFsDevice::ReName(const std::string &oldPath, const std::string &newPath)
         return -EINVAL;
     }
 
-    const MtpFsTypeDir *dirParent = DirFetchContent(tmpOldDirName);
+    const MtpFsTypeDir *dirParent = ReadDirFetchContent(tmpOldDirName);
     if (!dirParent || dirParent->Id() == 0) {
         return -EINVAL;
     }
@@ -783,7 +785,7 @@ int MtpFsDevice::FileRead(const std::string &path, char *buf, size_t size, off_t
 {
     const std::string pathBaseName(SmtpfsBaseName(path));
     const std::string pathDirName(SmtpfsDirName(path));
-    const MtpFsTypeDir *dirParent = DirFetchContent(pathDirName);
+    const MtpFsTypeDir *dirParent = ReadDirFetchContent(pathDirName);
     const MtpFsTypeFile *fileToFetch = dirParent ? dirParent->File(pathBaseName) : nullptr;
     if (!dirParent) {
         LOGE("Can not fetch %{public}s", path.c_str());
@@ -815,7 +817,7 @@ int MtpFsDevice::FileWrite(const std::string &path, const char *buf, size_t size
 {
     const std::string pathBaseName(SmtpfsBaseName(path));
     const std::string pathDirName(SmtpfsDirName(path));
-    const MtpFsTypeDir *dirParent = DirFetchContent(pathDirName);
+    const MtpFsTypeDir *dirParent = ReadDirFetchContent(pathDirName);
     const MtpFsTypeFile *fileToFetch = dirParent ? dirParent->File(pathBaseName) : nullptr;
     if (!dirParent) {
         LOGE("Can not fetch %{public}s", path.c_str());
@@ -840,7 +842,7 @@ int MtpFsDevice::FilePull(const std::string &src, const std::string &dst)
 {
     const std::string srcBaseName(SmtpfsBaseName(src));
     const std::string srcDirName(SmtpfsDirName(src));
-    const MtpFsTypeDir *dirParent = DirFetchContent(srcDirName);
+    const MtpFsTypeDir *dirParent = ReadDirFetchContent(srcDirName);
     const MtpFsTypeFile *fileToFetch = dirParent ? dirParent->File(srcBaseName) : nullptr;
     if (!dirParent) {
         LOGE("Can not fetch %{public}s", src.c_str());
@@ -874,7 +876,7 @@ int MtpFsDevice::FilePull(const std::string &src, const std::string &dst)
 int MtpFsDevice::FilePush(const std::string &src, const std::string &dst)
 {
     const std::string dstBaseName(SmtpfsBaseName(dst));
-    const MtpFsTypeDir *dirParent = DirFetchContent(SmtpfsDirName(dst));
+    const MtpFsTypeDir *dirParent = ReadDirFetchContent(SmtpfsDirName(dst));
     const MtpFsTypeFile *fileToRemove = dirParent ? dirParent->File(dstBaseName) : nullptr;
     if (!dirParent) {
         LOGE("Can not fetch %{public}s", dst.c_str());
@@ -955,7 +957,7 @@ int MtpFsDevice::FileRename(const std::string &oldPath, const std::string &newPa
     const std::string tmpOldDirName(SmtpfsDirName(oldPath));
     const std::string tmpNewBaseName(SmtpfsBaseName(newPath));
     const std::string tmpNewDirName(SmtpfsDirName(newPath));
-    const MtpFsTypeDir *dirParent = DirFetchContent(tmpOldDirName);
+    const MtpFsTypeDir *dirParent = ReadDirFetchContent(tmpOldDirName);
     const MtpFsTypeFile *fileToReName = dirParent ? dirParent->File(tmpOldBaseName) : nullptr;
     if (!dirParent || !fileToReName || tmpOldDirName != tmpNewDirName) {
         LOGE("Can not rename %{public}s to %{public}s", oldPath.c_str(), tmpNewBaseName.c_str());
@@ -985,7 +987,7 @@ int MtpFsDevice::GetThumbnail(const std::string &path, char *buf)
 {
     LOGI("MtpFsDevice: GetThumbnail enter, path: %{public}s", path.c_str());
     const std::string tmpDirName(SmtpfsDirName(path));
-    const MtpFsTypeDir *dirParent = DirFetchContent(tmpDirName);
+    const MtpFsTypeDir *dirParent = ReadDirFetchContent(tmpDirName);
     if (dirParent == nullptr) {
         LOGE("GetThumbnail %{public}s failed, dirParent is nullptr", path.c_str());
         return -ENOENT;
