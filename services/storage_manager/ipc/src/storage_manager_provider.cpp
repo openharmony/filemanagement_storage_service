@@ -607,7 +607,7 @@ int32_t StorageManagerProvider::GetBundleStatsForIncrease(uint32_t userId,
         return E_PERMISSION_DENIED;
     }
     return StorageManager::GetInstance()->GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes,
-                                                                    pkgFileSizes,incPkgFileSizes);                                                            
+                                                                    pkgFileSizes, incPkgFileSizes);
 }
 
 int32_t StorageManagerProvider::GetUserStorageStatsByType(int32_t userId,

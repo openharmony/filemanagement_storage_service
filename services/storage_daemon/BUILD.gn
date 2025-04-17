@@ -102,7 +102,6 @@ ohos_executable("storage_daemon") {
   }
 
   sources = [
-    "crypto/src/recover_manager.cpp",
     "ipc/src/storage_daemon.cpp",
     "ipc/src/storage_daemon_provider.cpp",
     "ipc/src/storage_manager_client.cpp",

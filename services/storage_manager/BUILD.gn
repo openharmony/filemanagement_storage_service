@@ -24,8 +24,8 @@ idl_gen_interface("storage_manager_interface") {
 
 config("public_idl_config") {
   include_dirs = [
-    ".",
-    "../../interfaces/innerkits/storage_manager/native",
+    "include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
     "${target_gen_dir}",
   ]
 }
