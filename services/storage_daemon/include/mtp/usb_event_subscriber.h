@@ -38,6 +38,7 @@ public:
  
 private:
     void GetValueFromUsbDataInfo(const std::string &jsonStr, uint8_t &devNum, uint32_t &busLoc);
+    bool IsMTPDevice(const std::string &jsonStr);
 };
 } // namespace UsbEventSubscriber
 } // namespace OHOS

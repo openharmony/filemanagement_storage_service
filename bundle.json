@@ -75,7 +75,8 @@
         "user_auth_framework",
         "zlib",
         "qos_manager",
-        "config_policy"
+        "config_policy",
+        "usb_manager"
       ],
       "third_party": [
         "e2fsprogs",

@@ -41,6 +41,7 @@ private:
     bool HasMounted(const MtpDeviceInfo &device);
     bool IsNeedDisableMtp();
     bool IsHwitDevice();
+    int32_t HasMTPDevice(bool &hasMtp);
 
 private:
     std::mutex listMutex_;
