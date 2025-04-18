@@ -112,28 +112,31 @@ bool UsbEventSubscriber::IsMTPDevice(const std::string &jsonStr)
 {
     cJSON *usbJson = cJSON_Parse(jsonStr.c_str());
     if (usbJson == nullptr) {
-        LOGE("IfMTPDevice failed, parse json object is nullptr.");
+        LOGE("IsMTPDevice failed, parse json object is nullptr.");
         return false;
     }
     uint8_t deviceClass = 0;
     cJSON *classObj = cJSON_GetObjectItemCaseSensitive(usbJson, DEV_CLASS_KEY);
     if (classObj != nullptr && cJSON_IsNumber(classObj)) {
-        LOGE("parse deviceClass failed.");
         deviceClass = static_cast<uint8_t>(classObj->valueint);
+    } else {
+        LOGE("parse deviceClass failed.");
         return false;
     }
     uint16_t idVendor = 0;
     cJSON *vendorObj = cJSON_GetObjectItemCaseSensitive(usbJson, DEV_VENDOR_ID_KEY);
     if (vendorObj != nullptr && cJSON_IsNumber(vendorObj)) {
-        LOGE("parse vendorObj failed.");
         idVendor = static_cast<uint16_t>(vendorObj->valueint);
+    } else {
+        LOGE("parse vendorObj failed.");
         return false;
     }
     uint16_t idProduct = 0;
     cJSON *productObj = cJSON_GetObjectItemCaseSensitive(usbJson, DEV_PRODUCT_ID_KEY);
     if (productObj != nullptr && cJSON_IsNumber(productObj)) {
-        LOGE("parse productObj failed.");
         idProduct = static_cast<uint16_t>(productObj->valueint);
+    } else {
+        LOGE("parse productObj failed.");
         return false;
     }
     cJSON_Delete(usbJson);
