@@ -22,14 +22,6 @@ idl_gen_interface("storage_manager_interface") {
   log_domainid = "0xD004300"
 }
 
-config("public_idl_config") {
-  include_dirs = [
-    "include",
-    "${storage_interface_path}/innerkits/storage_manager/native",
-    "${target_gen_dir}",
-  ]
-}
-
 config("storage_manager_config") {
   include_dirs = [
     "include",

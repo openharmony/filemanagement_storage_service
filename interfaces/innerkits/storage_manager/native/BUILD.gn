@@ -55,7 +55,7 @@ ohos_shared_library("storage_manager_sa_proxy") {
   configs = [ ":private_config" ]
   public_configs = [
     ":public_config",
-    "${storage_manager_path}:public_idl_config",
+    "${storage_manager_path}:storage_manager_config",
   ]
 
   cflags = [
