@@ -63,6 +63,7 @@ ohos_unittest("mtp_device_manager_test") {
     "hilog:libhilog",
     "ipc:ipc_single",
     "samgr:samgr_proxy",
+    "usb_manager:usbsrv_client",
   ]
 }
 
@@ -119,6 +120,7 @@ ohos_unittest("mtp_device_monitor_test") {
     "init:libbegetutil",
     "ipc:ipc_single",
     "samgr:samgr_proxy",
+    "usb_manager:usbsrv_client",
   ]
 
   if (support_open_source_libmtp &&

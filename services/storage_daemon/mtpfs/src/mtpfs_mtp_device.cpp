@@ -29,6 +29,8 @@ const int32_t FETCH_NUM = 3000;
 const int32_t DIR_COUNT_ONE = 1;
 const uint32_t DEFAULT_COUNT = 100;
 static bool g_isEventDone = true;
+static std::atomic<bool> g_isDeviceOperateEvent { false };
+static std::atomic<bool> g_needHandleDeviceEvent { false };
 uint32_t MtpFsDevice::rootNode_ = ~0;
 std::condition_variable MtpFsDevice::eventCon_;
 std::mutex MtpFsDevice::eventMutex_;
@@ -40,6 +42,8 @@ MtpFsDevice::MtpFsDevice() : device_(nullptr), capabilities_(), deviceMutex_(), 
     MtpFsUtil::Off();
     LIBMTP_Init();
     g_isEventDone = true;
+    g_isDeviceOperateEvent.store(false);
+    g_needHandleDeviceEvent.store(false);
     MtpFsUtil::On();
 }
 
@@ -130,9 +134,24 @@ void MtpFsDevice::MtpEventCallback(int ret, LIBMTP_event_t event, uint32_t param
     switch (event) {
         case LIBMTP_EVENT_OBJECT_ADDED:
             LOGI("Received event LIBMTP_EVENT_OBJECT_ADDED.");
+            if (g_isDeviceOperateEvent.load()) {
+                LOGI("g_isDeviceOperateEvent=%{public}d, the operation is from device", g_isDeviceOperateEvent.load());
+                g_needHandleDeviceEvent.store(true);
+            }
             break;
         case LIBMTP_EVENT_OBJECT_REMOVED:
             LOGI("Received event LIBMTP_EVENT_OBJECT_REMOVED.");
+            if (g_isDeviceOperateEvent.load()) {
+                LOGI("g_isDeviceOperateEvent=%{public}d, the operation is from device", g_isDeviceOperateEvent.load());
+                g_needHandleDeviceEvent.store(true);
+            }
+            break;
+        case LIBMTP_EVENT_NONE:
+            LOGI("Received event LIBMTP_EVENT_NONE.");
+            if (g_isDeviceOperateEvent.load()) {
+                LOGI("g_isDeviceOperateEvent=%{public}d, the operation is from device", g_isDeviceOperateEvent.load());
+                g_needHandleDeviceEvent.store(true);
+            }
             break;
         default:
             break;
@@ -268,25 +287,9 @@ bool MtpFsDevice::EnumStorages()
 
 const void MtpFsDevice::HandleDir(LIBMTP_file_t *content, MtpFsTypeDir *dir)
 {
-    if (content == nullptr || dir == nullptr) {
-        LOGE("content or dir is nullptr");
-        return;
-    }
-    for (LIBMTP_file_t *f = content; f; f = f->next) {
-        if (f->filetype == LIBMTP_FILETYPE_FOLDER) {
-            dir->AddDir(MtpFsTypeDir(f));
-        } else {
-            dir->AddFile(MtpFsTypeFile(f));
-        }
-    }
-}
-
-const void MtpFsDevice::HandleDirByFetch(LIBMTP_file_t *content, MtpFsTypeDir *dir)
-{
     if (content == nullptr) {
         LOGE("directory have not any content");
-        dir->dirs_.clear();
-        dir->files_.clear();
+        dir->Clear();
         return;
     }
     if (dir == nullptr) {
@@ -294,8 +297,9 @@ const void MtpFsDevice::HandleDirByFetch(LIBMTP_file_t *content, MtpFsTypeDir *d
         return;
     }
     LOGI("HandleDir clear dir content");
-    dir->dirs_.clear();
-    dir->files_.clear();
+    if (dir->DirCount() + dir->FileCount() < DEFAULT_COUNT) {
+        dir->Clear();
+    }
     for (LIBMTP_file_t *f = content; f; f = f->next) {
         if (f->filetype == LIBMTP_FILETYPE_FOLDER) {
             dir->AddDir(MtpFsTypeDir(f));
@@ -313,7 +317,7 @@ const MtpFsTypeDir *MtpFsDevice::DirFetchContent(std::string path)
             if (rootDir_.Dirs().size() != 0) {
                 rootDirName_ = rootDir_.Dirs().begin()->Name();
             }
-            rootDir_.SetFetched();
+            rootDir_.SetFetched(true);
         }
     }
 
@@ -338,7 +342,7 @@ const MtpFsTypeDir *MtpFsDevice::DirFetchContent(std::string path)
             CriticalLeave();
             HandleDir(content, dir);
             LIBMTPFreeFilesAndFolders(&content);
-            dir->SetFetched();
+            dir->SetFetched(true);
             tmp = dir->Dir(member);
         }
         if (!tmp) {
@@ -351,7 +355,7 @@ const MtpFsTypeDir *MtpFsDevice::DirFetchContent(std::string path)
         return dir;
     }
     CriticalEnter();
-    dir->SetFetched();
+    dir->SetFetched(true);
     LIBMTP_file_t *content = LIBMTP_Get_Files_And_Folders(device_, dir->StorageId(), dir->Id());
     CriticalLeave();
     HandleDir(content, dir);
@@ -367,15 +371,11 @@ const MtpFsTypeDir *MtpFsDevice::OpenDirFetchContent(std::string path)
             if (rootDir_.Dirs().size() != 0) {
                 rootDirName_ = rootDir_.Dirs().begin()->Name();
             }
-            rootDir_.SetFetched();
+            rootDir_.SetFetched(true);
         }
     }
     if (rootDir_.DirCount() == 1) {
         path = '/' + rootDirName_ + path;
-    }
-
-    if (path == "/") {
-        return &rootDir_;
     }
 
     std::string member;
@@ -386,16 +386,24 @@ const MtpFsTypeDir *MtpFsDevice::OpenDirFetchContent(std::string path)
             continue;
         }
         const MtpFsTypeDir *tmp = dir->Dir(member);
-        if (!tmp && !dir->IsFetched()) {
-            CriticalEnter();
-            FetchDirContent(dir);
-            CriticalLeave();
-            tmp = dir->Dir(member);
-        }
         if (!tmp) {
             return nullptr;
         }
         dir = const_cast<MtpFsTypeDir *>(tmp);
+    }
+
+    if (dir->objHandles != nullptr) {
+        CriticalEnter();
+        int32_t childrenNum = GetDirChildren(std::string(path), dir);
+        CriticalLeave();
+        if (childrenNum != dir->objHandles->num || g_needHandleDeviceEvent.load()) {
+            LOGI("new children num:%{public}d, cache:%{public}d or rename from device, fetch content again, "
+                "g_needHandleDeviceEvent=%{public}d", childrenNum, dir->objHandles->num,
+                g_needHandleDeviceEvent.load());
+            dir->SetFetched(false);
+            g_needHandleDeviceEvent.store(false);
+            FreeObjectHandles(dir);
+        }
     }
 
     if (!dir->IsFetched()) {
@@ -430,14 +438,14 @@ void MtpFsDevice::FetchDirContent(MtpFsTypeDir *dir)
     }
 
     if (dir->objHandles == nullptr || dir->objHandles->handler == nullptr || dir->objHandles->num == 0) {
-        dir->SetFetched();
+        dir->SetFetched(true);
+        dir->Clear();
         return;
     }
     LIBMTP_file_t *content = LIBMTP_Get_Patial_Files_Metadata(device_, dir->objHandles, DEFAULT_COUNT);
     HandleDir(content, dir);
     if (dir->objHandles->offset >= dir->objHandles->num) {
-        dir->SetFetched();
-        FreeObjectHandles(dir);
+        dir->SetFetched(true);
     }
 
     LIBMTPFreeFilesAndFolders(&content);
@@ -451,7 +459,7 @@ const MtpFsTypeDir *MtpFsDevice::ReadDirFetchContent(std::string path)
             if (rootDir_.Dirs().size() != 0) {
                 rootDirName_ = rootDir_.Dirs().begin()->Name();
             }
-            rootDir_.SetFetched();
+            rootDir_.SetFetched(true);
         }
     }
     if (rootDir_.DirCount() == 1) {
@@ -479,7 +487,7 @@ bool MtpFsDevice::IsDirFetched(std::string path)
             if (rootDir_.Dirs().size() != 0) {
                 rootDirName_ = rootDir_.Dirs().begin()->Name();
             }
-            rootDir_.SetFetched();
+            rootDir_.SetFetched(true);
         }
     }
     if (rootDir_.DirCount() == 1) {
@@ -501,59 +509,20 @@ bool MtpFsDevice::IsDirFetched(std::string path)
     return dir->IsFetched();
 }
 
-void MtpFsDevice::RefreshDirContent(std::string path)
+int MtpFsDevice::GetDirChildren(std::string path, MtpFsTypeDir *dir)
 {
-    if (!rootDir_.IsFetched()) {
-        for (LIBMTP_devicestorage_t *s = device_->storage; s; s = s->next) {
-            rootDir_.AddDir(MtpFsTypeDir(rootNode_, 0, s->id, std::string(s->StorageDescription)));
-            rootDir_.SetFetched();
-        }
-    }
-    if (rootDir_.DirCount() == DIR_COUNT_ONE) {
-        path = '/' + rootDirName_ + path;
-    }
-    if (path == "/") {
-        return;
-    }
-
-    std::string member;
-    std::istringstream ss(path);
-    MtpFsTypeDir *dir = &rootDir_;
-    while (std::getline(ss, member, '/')) {
-        if (member.empty()) {
-            LOGI("member is empty");
-            continue;
-        }
-        const MtpFsTypeDir *tmp = dir->Dir(member);
-        if (!tmp) {
-            LOGE("tmp is nullptr");
-            return;
-        }
-        dir = const_cast<MtpFsTypeDir *>(tmp);
-    }
-
     uint32_t *out = (uint32_t *)malloc(sizeof(uint32_t));
     if (!out) {
         LOGE("malloc failed");
-        return;
+        return -EINVAL;
     }
-    CriticalEnter();
+    LOGI("LIBMTP_Get_Children path=%{public}s begin", path.c_str());
+    g_isDeviceOperateEvent.store(true);
     int32_t num = LIBMTP_Get_Children(device_, dir->StorageId(), dir->Id(), &out);
-    CriticalLeave();
+    g_isDeviceOperateEvent.store(false);
+    LOGI("LIBMTP_Get_Children path=%{public}s end, num=%{public}d", path.c_str(), num);
     free(out);
-    LOGI("LIBMTP_Get_Children path=%{public}s, num=%{public}d", path.c_str(), num);
-    if (num > FETCH_NUM && dir->IsFetched()) {
-        LOGW("LIBMTP_Get_Children path content num over 3000 and is fetched, no need to update");
-        return;
-    }
-
-    CriticalEnter();
-    dir->SetFetched();
-    LIBMTP_file_t *content = LIBMTP_Get_Files_And_Folders(device_, dir->StorageId(), dir->Id());
-    CriticalLeave();
-    HandleDirByFetch(content, dir);
-    LIBMTPFreeFilesAndFolders(&content);
-    LOGI("LIBMTP_Get_Files_And_Folders fetchcontent end");
+    return num;
 }
 
 static uint64_t GetFormattedTimestamp()

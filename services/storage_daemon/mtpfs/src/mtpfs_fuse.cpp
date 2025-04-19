@@ -374,6 +374,13 @@ MtpFileSystem::MtpFileSystem() : args_(), tmpFilesPool_(), options_(), device_()
 
 MtpFileSystem::~MtpFileSystem()
 {
+    for (auto iter : dirMap_) {
+        MtpFsTypeDir *dir = const_cast<MtpFsTypeDir *>(iter.second);
+        if (dir != nullptr) {
+            LOGI("MtpFileSystem FreeObjectHandles, dirname=%{public}s", dir->Name().c_str());
+            device_.FreeObjectHandles(dir);
+        }
+    }
     fuse_opt_free_args(&args_);
 }
 
@@ -588,21 +595,25 @@ int MtpFileSystem::MkNod(const char *path, mode_t mode, dev_t dev)
 
 int MtpFileSystem::MkDir(const char *path, mode_t mode)
 {
+    std::lock_guard<std::mutex>lock(fuseMutex_);
     return device_.DirCreateNew(std::string(path));
 }
 
 int MtpFileSystem::UnLink(const char *path)
 {
+    std::lock_guard<std::mutex>lock(fuseMutex_);
     return device_.FileRemove(std::string(path));
 }
 
 int MtpFileSystem::RmDir(const char *path)
 {
+    std::lock_guard<std::mutex>lock(fuseMutex_);
     return device_.DirRemove(std::string(path));
 }
 
 int MtpFileSystem::ReName(const char *path, const char *newpath, unsigned int flags)
 {
+    std::lock_guard<std::mutex>lock(fuseMutex_);
     LOGI("MtpFileSystem: ReName, path=%{public}s, newpath=%{public}s", path, newpath);
     const std::string tmpOldDirName(SmtpfsDirName(std::string(path)));
     const std::string tmpNewDirName(SmtpfsDirName(std::string(newpath)));
@@ -718,6 +729,7 @@ int MtpFileSystem::UTimens(const char *path, const struct timespec tv[2], struct
 
 int MtpFileSystem::Create(const char *path, mode_t mode, fuse_file_info *fileInfo)
 {
+    std::lock_guard<std::mutex>lock(fuseMutex_);
     const std::string tmpPath = tmpFilesPool_.MakeTmpPath(std::string(path));
     int rval = ::creat(tmpPath.c_str(), mode);
     if (rval < 0) {
@@ -841,6 +853,7 @@ int MtpFileSystem::OpenThumb(const char *path, struct fuse_file_info *fileInfo)
 
 int MtpFileSystem::ReadThumb(const std::string &path, char *buf)
 {
+    std::lock_guard<std::mutex>lock(fuseMutex_);
     LOGI("MtpFileSystem: ReadThumb enter, path: %{public}s", path.c_str());
     std::string realPath = path.substr(0, path.length() - strlen(MTP_FILE_FLAG));
     return device_.GetThumbnail(realPath, buf);
@@ -970,11 +983,13 @@ int MtpFileSystem::FSync(const char *path, int datasync, struct fuse_file_info *
 
 int MtpFileSystem::OpenDir(const char *path, struct fuse_file_info *fileInfo)
 {
+    std::lock_guard<std::mutex>lock(fuseMutex_);
     LOGI("MtpFileSystem: OpenDir, path: %{public}s", path);
     const MtpFsTypeDir *content = device_.OpenDirFetchContent(std::string(path));
     if (content == nullptr) {
         return -ENOENT;
     }
+    dirMap_[std::string(path)] = content;
     return 0;
 }
 
@@ -1041,7 +1056,6 @@ int MtpFileSystem::SetXAttr(const char *path, const char *in)
     }
     if (strcmp(in, "user.fetchcontent") == 0) {
         LOGI("Refresh the mtp dir content, dir=%{public}s", path);
-        device_.RefreshDirContent(std::string(path));
         return 0;
     }
     if (strcmp(in, "user.isUploadCompleted") != 0) {
