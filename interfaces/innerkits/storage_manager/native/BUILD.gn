@@ -22,7 +22,7 @@ idl_gen_interface("storage_manager_interface_native") {
 }
 
 config("public_config") {
-  include_dirs = [ 
+  include_dirs = [
     ".",
     "${target_gen_dir}",
   ]
@@ -83,9 +83,7 @@ ohos_shared_library("storage_manager_sa_proxy") {
   ]
 
   configs = [ ":private_config" ]
-  public_configs = [
-    ":public_config",
-  ]
+  public_configs = [ ":public_config" ]
 
   cflags = [
     "-D_FORTIFY_SOURCE=2",
