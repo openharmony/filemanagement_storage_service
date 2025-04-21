@@ -95,3 +95,14 @@ int32_t UserIdmClientImpl::GetCredentialInfoSync(int32_t userId, AuthType authTy
 {
     return IUserIdmClientMoc::userIdmClientMoc->GetCredentialInfoSync(userId, authType, credentialInfoList);
 }
+
+int32_t UserIdmClientImpl::RegistCredChangeEventListener(const std::vector<AuthType> &authType,
+    const std::shared_ptr<CredChangeEventListener> &listener)
+{
+    return IUserIdmClientMoc::userIdmClientMoc->RegistCredChangeEventListener(authType, listener);
+}
+
+int32_t UserIdmClientImpl::UnRegistCredChangeEventListener(const std::shared_ptr<CredChangeEventListener> &listener)
+{
+    return IUserIdmClientMoc::userIdmClientMoc->UnRegistCredChangeEventListener(listener);
+}
