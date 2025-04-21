@@ -76,7 +76,7 @@ public:
         std::vector<CredentialInfo> &credentialInfoList));
     MOCK_METHOD2(RegistCredChangeEventListener, int32_t(const std::vector<AuthType> &authType,
         const std::shared_ptr<CredChangeEventListener> &listener));
-    MOCK_METHOD1(UnRegistCredChangeEventListener, int32_t(const std::shared_ptr<UserIdmClientCallback> &listener));
+    MOCK_METHOD1(UnRegistCredChangeEventListener, int32_t(const std::shared_ptr<CredChangeEventListener> &listener));
 };
 }
 }
