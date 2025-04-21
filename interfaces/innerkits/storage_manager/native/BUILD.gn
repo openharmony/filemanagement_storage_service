@@ -22,7 +22,10 @@ idl_gen_interface("storage_manager_interface_native") {
 }
 
 config("public_config") {
-  include_dirs = [ "." ]
+  include_dirs = [ 
+    ".",
+    "${target_gen_dir}",
+  ]
 }
 
 config("private_config") {
@@ -31,7 +34,6 @@ config("private_config") {
     "${storage_service_path}/services/storage_daemon/include",
     "${storage_service_common_path}/include",
     "${storage_interface_path}/innerkits/storage_manager/native",
-    "${target_gen_dir}",
   ]
 }
 ohos_source_set("storage_manager_ipc_native") {
@@ -43,7 +45,7 @@ ohos_source_set("storage_manager_ipc_native") {
   output_values = get_target_outputs(":storage_manager_interface_native")
   sources = []
   sources += filter_include(output_values, [ "*.cpp" ])
-  public_configs = [ ":private_config" ]
+  public_configs = [ ":public_config" ]
   deps = [ ":storage_manager_interface_native" ]
   external_deps = [
     "c_utils:utils",
@@ -83,7 +85,6 @@ ohos_shared_library("storage_manager_sa_proxy") {
   configs = [ ":private_config" ]
   public_configs = [
     ":public_config",
-    "${storage_manager_path}:storage_manager_config",
   ]
 
   cflags = [
