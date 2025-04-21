@@ -80,12 +80,15 @@ void UsbEventSubscriber::OnReceiveEvent(const OHOS::EventFwk::CommonEventData &d
 #endif
     }
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_USB_DEVICE_DETACHED) {
+        std::string usbInfo = data.GetData();
         LOGI("OnReceiveEvent COMMON_EVENT_USB_DEVICE_DETACHED, data=%{public}s", data.GetData().c_str());
 #ifdef SUPPORT_OPEN_SOURCE_MTP_DEVICE
-        uint8_t devNum = 0;
-        uint32_t busLoc = 0;
-        GetValueFromUsbDataInfo(data.GetData(), devNum, busLoc);
-        DelayedSingleton<MtpDeviceMonitor>::GetInstance()->UmountDetachedMtpDevice(devNum, busLoc);
+        if (IsMTPDevice(usbInfo)) {
+            uint8_t devNum = 0;
+            uint32_t busLoc = 0;
+            GetValueFromUsbDataInfo(data.GetData(), devNum, busLoc);
+            DelayedSingleton<MtpDeviceMonitor>::GetInstance()->UmountDetachedMtpDevice(devNum, busLoc);
+        }
 #endif
     }
 }
