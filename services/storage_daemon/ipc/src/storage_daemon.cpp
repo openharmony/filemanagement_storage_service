@@ -842,8 +842,9 @@ int32_t StorageDaemon::ActiveUserKey4Single(uint32_t userId, const std::vector<u
         StorageRadar::ReportActiveUserKey("ActiveUserKey4Single::UnlockUserAppKeys", userId, ret, "EL5");
         return E_UNLOCK_APP_KEY2_FAILED;
     }
-    LOGW("SD_DURATION: UNLOCK USER APP KEY: . delay time = %{public}s. Active user key for single secen for userId=%{public}d success",
-        StorageService::StorageRadar::RecordDuration(startTime).c_str(), userId);
+    LOGI("SD_DURATION: UNLOCK USER APP KEY: delay time = %{public}s.",
+        StorageService::StorageRadar::RecordDuration(startTime).c_str());
+    LOGW("Active user key for single secen for userId=%{public}d success.", userId);
 #endif
     return ret;
 }
