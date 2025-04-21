@@ -758,6 +758,7 @@ int32_t StorageManagerProvider::IsFileOccupied(const std::string &path,
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
+    isOccupy = false;
     return StorageManager::GetInstance()->IsFileOccupied(path, inputList, outputList, isOccupy);
 }
 
