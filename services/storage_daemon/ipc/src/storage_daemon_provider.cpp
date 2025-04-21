@@ -438,7 +438,7 @@ int32_t StorageDaemonProvider::ActiveUserKey(uint32_t userId,
     } else {
         it->second.keyLoadFailCount++;
     }
-    LOGI("SD_DURATION: READ KEY FILE: delay time = %{public}s",
+    LOGI("SD_DURATION: ACTIVE USER KEY: delay time = %{public}s",
         StorageService::StorageRadar::RecordDuration(startTime).c_str());
     return err;
 }
