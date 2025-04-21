@@ -265,8 +265,8 @@ void VolumeManagerService::NotifyMtpMounted(const std::string &id, const std::st
         len = getxattr(path.c_str(), key.c_str(), value, MTP_DEVICE_NAME_LEN);
         if (len >= 0) {
             value[len] = '\0';
+            LOGI("MTP get namelen=%{public}d, name=%{public}s", len, value);
         }
-        LOGI("MTP get namelen=%{public}d, name=%{public}s", len, value);
     }
 
     VolumeCore core(id, 0, "");
