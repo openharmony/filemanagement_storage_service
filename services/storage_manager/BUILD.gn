@@ -11,16 +11,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import("//build/config/components/idl_tool/idl.gni")
 import("//build/ohos.gni")
 import("//build/ohos/sa_profile/sa_profile.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
-
-idl_gen_interface("storage_manager_interface") {
-  src_idl = rebase_path("IStorageManager.idl")
-  log_tag = "StorageManager"
-  log_domainid = "0xD004300"
-}
 
 config("storage_manager_config") {
   include_dirs = [
@@ -28,7 +21,6 @@ config("storage_manager_config") {
     "${storage_interface_path}/innerkits/storage_manager/native",
     "${storage_daemon_path}/include",
     "${storage_service_common_path}/include",
-    "${target_gen_dir}",
   ]
 
   cflags = [
@@ -36,45 +28,6 @@ config("storage_manager_config") {
     "-fstack-protector-strong",
     "-O2",
   ]
-}
-
-ohos_source_set("storage_manager_ipc") {
-  sanitize = {
-    debug = false
-    cfi = true
-    cfi_cross_dso = true
-  }
-  output_values = get_target_outputs(":storage_manager_interface")
-  sources = []
-  sources += filter_include(output_values, [ "*.cpp" ])
-  public_configs = [ ":storage_manager_config" ]
-  deps = [ ":storage_manager_interface" ]
-  external_deps = [
-    "c_utils:utils",
-    "hilog:libhilog",
-    "hitrace:hitrace_meter",
-    "ipc:ipc_core",
-  ]
-  part_name = "storage_service"
-  subsystem_name = "filemanagement"
-}
-
-ohos_source_set("storage_manager_header") {
-  sanitize = {
-    debug = false
-    cfi = true
-    cfi_cross_dso = true
-  }
-  public_configs = [ ":storage_manager_config" ]
-  deps = [ ":storage_manager_interface" ]
-  external_deps = [
-    "c_utils:utils",
-    "hilog:libhilog",
-    "hitrace:hitrace_meter",
-    "ipc:ipc_core",
-  ]
-  part_name = "storage_service"
-  subsystem_name = "filemanagement"
 }
 
 ohos_shared_library("storage_manager") {

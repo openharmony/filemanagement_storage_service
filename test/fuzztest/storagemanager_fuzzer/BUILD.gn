@@ -37,7 +37,7 @@ ohos_fuzztest("StorageManagerFuzzTest") {
     "private=public",
   ]
   deps = [
-    "${storage_manager_path}:storage_manager_header",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_header",
     "${storage_service_path}/services/storage_manager:storage_manager",
   ]
 

@@ -79,7 +79,7 @@ bool Disk::Marshalling(Parcel &parcel) const
 
 Disk *Disk::Unmarshalling(Parcel &parcel)
 {
-    Disk* obj = new Disk();
+    Disk* obj = new (std::nothrow) Disk();
     obj->diskId_ = parcel.ReadString();
     obj->sizeBytes_ = parcel.ReadInt32();
     obj->sysPath_ = parcel.ReadString();

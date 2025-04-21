@@ -36,7 +36,7 @@ bool BundleStats::Marshalling(Parcel &parcel) const
 
 BundleStats *BundleStats::Unmarshalling(Parcel &parcel)
 {
-    BundleStats* obj = new BundleStats();
+    BundleStats* obj = new (std::nothrow) BundleStats();
     obj->appSize_ = parcel.ReadInt64();
     obj->cacheSize_ = parcel.ReadInt64();
     obj->dataSize_ = parcel.ReadInt64();

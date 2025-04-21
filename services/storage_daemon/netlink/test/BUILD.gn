@@ -43,7 +43,7 @@ ohos_unittest("netlink_data_test") {
 
   deps = [
     "${storage_daemon_path}:storage_daemon_header",
-    "${storage_manager_path}:storage_manager_header",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_header",
   ]
 
   external_deps = [
@@ -96,7 +96,7 @@ ohos_unittest("netlink_handler_test") {
   deps = [
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_header",
-    "${storage_manager_path}:storage_manager_header",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_header",
   ]
 
   external_deps = [
@@ -189,7 +189,7 @@ ohos_unittest("netlink_manager_test") {
   deps = [
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_header",
-    "${storage_manager_path}:storage_manager_header",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_header",
   ]
 
   external_deps = [

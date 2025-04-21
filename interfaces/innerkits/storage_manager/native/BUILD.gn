@@ -57,6 +57,24 @@ ohos_source_set("storage_manager_ipc_native") {
   subsystem_name = "filemanagement"
 }
 
+ohos_source_set("storage_manager_header") {
+  sanitize = {
+    debug = false
+    cfi = true
+    cfi_cross_dso = true
+  }
+  public_configs = [ ":public_config" ]
+  deps = [ ":storage_manager_interface_native" ]
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+    "hitrace:hitrace_meter",
+    "ipc:ipc_core",
+  ]
+  part_name = "storage_service"
+  subsystem_name = "filemanagement"
+}
+
 ohos_shared_library("storage_manager_sa_proxy") {
   branch_protector_ret = "pac_ret"
   sanitize = {
@@ -98,6 +116,7 @@ ohos_shared_library("storage_manager_sa_proxy") {
   ]
 
   deps = [
+    ":storage_manager_header",
     ":storage_manager_interface_native",
     ":storage_manager_ipc_native",
   ]

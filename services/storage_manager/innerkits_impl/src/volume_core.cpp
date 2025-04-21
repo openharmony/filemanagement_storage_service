@@ -86,7 +86,7 @@ bool VolumeCore::Marshalling(Parcel &parcel) const
 
 VolumeCore *VolumeCore::Unmarshalling(Parcel &parcel)
 {
-    VolumeCore* obj = new VolumeCore();
+    VolumeCore* obj = new (std::nothrow) VolumeCore();
     obj->id_ = parcel.ReadString();
     obj->type_ = parcel.ReadInt32();
     obj->diskId_ = parcel.ReadString();
