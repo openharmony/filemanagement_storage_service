@@ -67,12 +67,12 @@ int32_t FscryptKeyV2::GenerateAppkey(uint32_t userId, uint32_t appUid, std::stri
     return IFscryptKeyV2Moc::fscryptKeyV2Moc->GenerateAppkey(userId, appUid, keyId);
 }
 
-int32_t FscryptKeyV2::DeleteAppkey(const std::string KeyId)
+int32_t FscryptKeyV2::DeleteAppkey(const std::string keyId)
 {
     if (IFscryptKeyV2Moc::fscryptKeyV2Moc == nullptr) {
         return -1;
     }
-    return IFscryptKeyV2Moc::fscryptKeyV2Moc->DeleteAppkey(KeyId);
+    return IFscryptKeyV2Moc::fscryptKeyV2Moc->DeleteAppkey(keyId);
 }
 
 int32_t FscryptKeyV2::AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status)
