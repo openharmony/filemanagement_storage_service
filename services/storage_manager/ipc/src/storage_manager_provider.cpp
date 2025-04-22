@@ -574,7 +574,8 @@ int32_t StorageManagerProvider::CreateShareFile(const std::vector<std::string> &
     if (!CheckClientPermissionForShareFile()) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->CreateShareFile(uriList, tokenId, flag, funcResult);
+    funcResult = StorageManager::GetInstance()->CreateShareFile(uriList, tokenId, flag);
+    return E_OK;
 }
 
 int32_t StorageManagerProvider::DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList)

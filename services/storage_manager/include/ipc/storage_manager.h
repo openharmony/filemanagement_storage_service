@@ -108,10 +108,9 @@ public:
     int32_t ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key);
 
      // app file share api
-    int32_t CreateShareFile(const std::vector<std::string> &uriList,
+     std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,
                              uint32_t tokenId,
-                             uint32_t flag,
-                             std::vector<int32_t> &funcResult);
+                             uint32_t flag);
     int32_t DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList);
  
     int32_t SetBundleQuota(const std::string &bundleName, int32_t uid, const std::string &bundleDataDirPath,
