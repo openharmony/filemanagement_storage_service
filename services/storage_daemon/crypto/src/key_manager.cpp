@@ -1483,10 +1483,6 @@ int KeyManager::GenerateAppkeyWithRecover(uint32_t userId, uint32_t hashId, std:
 {
     LOGI("GenerateAppkey needReSet");
     std::string el5Path = std::string(MAINTAIN_USER_EL5_DIR) + "/" + std::to_string(userId);
-    if (!IsDir(el5Path)) {
-        LOGE("Have not found type %{public}s", el5Path.c_str());
-        return E_KEY_TYPE_INVALID;
-    }
     auto el5Key = GetBaseKey(el5Path);
     if (el5Key == nullptr) {
         LOGE("el5Key is nullptr");
