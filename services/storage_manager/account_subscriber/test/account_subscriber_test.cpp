@@ -46,6 +46,42 @@ void AccountSubscriberTest::TearDownTestCase(void)
 }
 
 /**
+* @tc.number: SUB_STORAGE_Account_Subscriber_Subscriber_0000
+* @tc.name: Account_Subscriber_Subscriber_0000
+* @tc.desc: Test function of Subscriber interface for SUCCESS.
+* @tc.size: MEDIUM
+* @tc.type: FUNC
+* @tc.level Level 1
+* @tc.require: SR000GGUPF
+ */
+HWTEST_F(AccountSubscriberTest, Account_Subscriber_Subscriber_0000, TestSize.Level0)
+{
+    GTEST_LOG_(INFO) << "Account_Subscriber_Subscriber_0000-begin";
+
+    ASSERT_TRUE(accountSubscriber_ != nullptr);
+    AccountSubscriber::Subscriber();
+    GTEST_LOG_(INFO) << "Account_Subscriber_Subscriber_0000 end";
+}
+
+/**
+* @tc.number: SUB_STORAGE_Account_Subscriber_Subscriber_0001
+* @tc.name: Account_Subscriber_Subscriber_0001
+* @tc.desc: Test function of Subscriber interface for SUCCESS.
+* @tc.size: MEDIUM
+* @tc.type: FUNC
+* @tc.level Level 1
+* @tc.require: SR000GGUPF
+ */
+HWTEST_F(AccountSubscriberTest, Account_Subscriber_Subscriber_0001, TestSize.Level0)
+{
+    GTEST_LOG_(INFO) << "Account_Subscriber_Subscriber_0001-begin";
+    accountSubscriber_ == nullptr;
+    ASSERT_TRUE(accountSubscriber_ == nullptr);
+    AccountSubscriber::Subscriber();
+    GTEST_LOG_(INFO) << "Account_Subscriber_Subscriber_0001 end";
+}
+
+/**
 * @tc.number: SUB_STORAGE_Account_Subscriber_ResetUserEventRecord_0000
 * @tc.name: Account_Subscriber_ResetUserEventRecord_0000
 * @tc.desc: Test function of ResetUserEventRecord interface for SUCCESS.
