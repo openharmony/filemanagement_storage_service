@@ -484,6 +484,32 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_GetFileEncryptStatus_0000,
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_GetFileEncryptStatus_0000";
 }
+
+/**
+ * @tc.number: SUB_Storage_manager_crypto_GetUserNeedActiveStatus_0000
+ * @tc.name: Storage_manager_crypto_GetUserNeedActiveStatus_0000
+ * @tc.desc: Test function of GetUserNeedActiveStatus interface for Parameters ERROR which userId not in [101, 1099].
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0F7I
+ */
+HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_GetUserNeedActiveStatus_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileSystemCryptoTest-start Storage_manager_crypto_UpdateKeyContext_0001";
+    std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
+        DelayedSingleton<FileSystemCrypto>::GetInstance();
+    uint32_t userId = 99999;
+    bool needActive = true;
+    uint32_t ret = fileSystemCrypto_->GetUserNeedActiveStatus(userId, needActive);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+
+    userId = 800;
+    ret = fileSystemCrypto_->GetUserNeedActiveStatus(userId, needActive);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_GetUserNeedActiveStatus_0000";
+}
+
 /**
  * @tc.number: SUB_STORAGE_Storage_manager_crypto_GenerateAppkey_0000
  * @tc.name: Storage_manager_crypto_GenerateAppkey_0000
@@ -498,11 +524,15 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_GenerateAppkey_0000, testi
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-start Storage_manager_crypto_GenerateAppkey_0000";
     std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
             DelayedSingleton<FileSystemCrypto>::GetInstance();
-    uint32_t userId = 108;
+    ASSERT_TRUE(fileSystemCrypto_ != nullptr);
+    uint32_t userId = 99999;
     uint32_t hashId = -1;
     std::string keyId = "keys"; // UserKeys type
-    ASSERT_TRUE(fileSystemCrypto_ != nullptr);
     uint32_t result = fileSystemCrypto_->GenerateAppkey(hashId, userId, keyId);
+    EXPECT_EQ(result, E_USERID_RANGE);
+
+    userId = 108;
+    result = fileSystemCrypto_->GenerateAppkey(hashId, userId, keyId);
     EXPECT_EQ(result, E_OK);
 
     fileSystemCrypto_->DeleteAppkey(keyId);

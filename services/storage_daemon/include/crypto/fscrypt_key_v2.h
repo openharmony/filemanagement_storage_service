@@ -41,7 +41,7 @@ public:
                           bool needSyncCandidate = true);
     int32_t EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user = 0, uint32_t status = 0);
     int32_t GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId);
-    int32_t DeleteAppkey(const std::string KeyId);
+    int32_t DeleteAppkey(const std::string keyId);
     int32_t LockUece(bool &isFbeSupport);
 };
 } // namespace StorageDaemon

@@ -15,7 +15,6 @@
 
 #include <cstdio>
 #include <gtest/gtest.h>
-#include "storage/volume_storage_status_service.h"
 
 #include "storage_service_errno.h"
 #include "storage/volume_storage_status_service.h"
@@ -26,7 +25,7 @@ using namespace OHOS;
 using namespace StorageManager;
 
 class VolumeStorageStatusServiceTest : public testing::Test {
-    public:
+public:
     static void SetUpTestCase(void) {};
     static void TearDownTestCase() {};
     void SetUp() {};

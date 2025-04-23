@@ -148,7 +148,7 @@ int32_t FscryptKeyV2::GenerateAppkey(uint32_t userId, uint32_t hashId, std::stri
     return E_NOT_SUPPORT;
 }
 
-int32_t FscryptKeyV2::DeleteAppkey(const std::string KeyId)
+int32_t FscryptKeyV2::DeleteAppkey(const std::string keyId)
 {
     LOGI("Unsupported fscrypt v2");
     return E_NOT_SUPPORT;

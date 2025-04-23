@@ -148,10 +148,10 @@ int32_t FscryptKeyV1::InstallKeyForAppKeyToKeyring(KeyBlob &appKey)
     return E_OK;
 }
 
-int32_t FscryptKeyV1::DeleteAppkey(const std::string KeyId)
+int32_t FscryptKeyV1::DeleteAppkey(const std::string keyId)
 {
     LOGI("DeleteAppkey enter");
-    auto ret = UninstallKeyForAppKeyToKeyring(KeyId);
+    auto ret = UninstallKeyForAppKeyToKeyring(keyId);
     if (ret != E_OK) {
         LOGE("FscryptKeyV1 Delete Appkey2 failed");
         return ret;

@@ -28,7 +28,7 @@ public:
 public:
     virtual int32_t ActiveKey(uint32_t flag, const std::string &mnt) = 0;
     virtual int32_t GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId) = 0;
-    virtual int32_t DeleteAppkey(const std::string KeyId) = 0;
+    virtual int32_t DeleteAppkey(const std::string keyId) = 0;
     virtual bool InactiveKey(uint32_t flag, const std::string &mnt) = 0;
     virtual int32_t LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt) = 0;
     virtual int32_t LockUece(bool &isFbeSupport) = 0;
@@ -47,7 +47,7 @@ class FscryptKeyV2Moc : public IFscryptKeyV2Moc {
 public:
     MOCK_METHOD2(ActiveKey, int32_t(uint32_t flag, const std::string &mnt));
     MOCK_METHOD3(GenerateAppkey, int32_t(uint32_t userId, uint32_t appUid, std::string &keyId));
-    MOCK_METHOD1(DeleteAppkey, int32_t(const std::string KeyId));
+    MOCK_METHOD1(DeleteAppkey, int32_t(const std::string keyId));
     MOCK_METHOD2(InactiveKey, bool(uint32_t flag, const std::string &mnt));
     MOCK_METHOD3(LockUserScreen, int32_t(uint32_t flag, uint32_t sdpClass, const std::string &mnt));
     MOCK_METHOD1(LockUece, int32_t(bool &isFbeSupport));

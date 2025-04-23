@@ -181,11 +181,11 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_DeleteAppkey, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "fscrypt_key_v1_DeleteAppkey start";
     auto g_testKeyV1 = std::make_shared<OHOS::StorageDaemon::FscryptKeyV1>(TEST_KEYPATH);
-    std::string KeyId = "";
-    EXPECT_EQ(g_testKeyV1->DeleteAppkey(KeyId), E_KEY_TYPE_INVALID);
+    std::string keyId = "";
+    EXPECT_EQ(g_testKeyV1->DeleteAppkey(keyId), E_KEY_TYPE_INVALID);
 
-    KeyId = "test";
-    EXPECT_EQ(g_testKeyV1->DeleteAppkey(KeyId), E_OK);
+    keyId = "test";
+    EXPECT_EQ(g_testKeyV1->DeleteAppkey(keyId), E_OK);
     GTEST_LOG_(INFO) << "fscrypt_key_v1_DeleteAppkey end";
 }
 
