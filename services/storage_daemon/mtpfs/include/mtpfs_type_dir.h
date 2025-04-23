@@ -44,7 +44,7 @@ public:
         dirs_.clear();
         files_.clear();
     }
-    void SetFetched(bool f = true)
+    void SetFetched(bool f)
     {
         fetched_ = f;
     }
@@ -111,7 +111,7 @@ public:
 
 private:
     mutable std::mutex accessMutex_;
-    bool fetched_;
+    bool fetched_ = false;
     time_t modifyDate_;
 
 public:

@@ -101,6 +101,7 @@ private:
     MtpFileSystemOptions options_;
     MtpFsDevice device_;
     std::mutex fuseMutex_;
+    std::map<std::string, const MtpFsTypeDir *> dirMap_ {};
 };
 
 #endif // MTPFS_FUSE_H
