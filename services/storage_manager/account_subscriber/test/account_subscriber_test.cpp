@@ -43,7 +43,7 @@ void AccountSubscriberTest::SetUpTestCase()
     GTEST_LOG_(INFO) << "setup";
 }
 
-void AccountSubscriberTest::TearDownTestCase(void)
+void AccountSubscriberTest::TearDownTestCase()
 {
     GTEST_LOG_(INFO) << "teardown";
 }
@@ -53,7 +53,7 @@ void AccountSubscriberTest::SetUp()
     accountSubscriberPtr_ = make_shared<AccountSubscriber>();
 }
 
-void AccountSubscriberTest::TearDown(void)
+void AccountSubscriberTest::TearDown()
 {
     accountSubscriberPtr_ = nullptr;
 }
