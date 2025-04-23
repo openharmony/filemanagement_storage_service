@@ -253,12 +253,12 @@ int32_t StorageManagerProvider::GetUserStorageStats(StorageStats &storageStats)
     return StorageManager::GetInstance()->GetUserStorageStats(storageStats);
 }
 
-int32_t StorageManagerProvider::GetUserStorageStatsIpc(int32_t userId, StorageStats &storageStats)
+int32_t StorageManagerProvider::GetUserStorageStats(int32_t userId, StorageStats &storageStats)
 {
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->GetUserStorageStatsIpc(userId, storageStats);
+    return StorageManager::GetInstance()->GetUserStorageStats(userId, storageStats);
 }
 
 int32_t StorageManagerProvider::GetCurrentBundleStats(BundleStats &bundleStats, uint32_t statFlag)

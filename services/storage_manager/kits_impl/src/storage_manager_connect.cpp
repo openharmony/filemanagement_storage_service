@@ -215,7 +215,7 @@ int32_t StorageManagerConnect::GetUserStorageStats(int32_t userId, StorageStats 
         LOGE("StorageManagerConnect::GetUserStorageStats service == nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageManager_->GetUserStorageStatsIpc(userId, storageStats);
+    return storageManager_->GetUserStorageStats(userId, storageStats);
 }
 
 int32_t StorageManagerConnect::GetCurrentBundleStats(BundleStats &bundleStats, uint32_t statFlag)

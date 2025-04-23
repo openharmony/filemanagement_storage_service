@@ -212,7 +212,7 @@ int32_t StorageManager::GetUserStorageStats(StorageStats &storageStats)
 #endif
 }
 
-int32_t StorageManager::GetUserStorageStatsIpc(int32_t userId, StorageStats &storageStats)
+int32_t StorageManager::GetUserStorageStats(int32_t userId, StorageStats &storageStats)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGD("StorageManger::GetUserStorageStats start");

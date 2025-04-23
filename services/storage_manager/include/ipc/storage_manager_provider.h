@@ -49,7 +49,7 @@ public:
     int32_t GetTotalSize(int64_t &totalSize) override;
     int32_t GetFreeSize(int64_t &freeSize) override;
     int32_t GetUserStorageStats(StorageStats &storageStats) override;
-    int32_t GetUserStorageStatsIpc(int32_t userId, StorageStats &storageStats) override;
+    int32_t GetUserStorageStats(int32_t userId, StorageStats &storageStats) override;
     int32_t GetCurrentBundleStats(BundleStats &bundleStats, uint32_t statFlag) override;
     int32_t GetUserStorageStatsByType(int32_t userId, StorageStats &storageStats, const std::string &type) override;
 

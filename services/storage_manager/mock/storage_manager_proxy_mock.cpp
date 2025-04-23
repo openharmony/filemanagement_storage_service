@@ -220,7 +220,7 @@ int32_t StorageManagerProxy::GetUserStorageStats(StorageStats &storageStats)
     return E_OK;
 }
 
-int32_t StorageManagerProxy::GetUserStorageStatsIpc(int32_t userId, StorageStats &storageStats)
+int32_t StorageManagerProxy::GetUserStorageStats(int32_t userId, StorageStats &storageStats)
 {
     return E_OK;
 }
