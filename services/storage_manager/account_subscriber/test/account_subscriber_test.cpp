@@ -30,8 +30,8 @@ using namespace testing::ext;
 
 class AccountSubscriberTest : public testing::Test {
 public:
-    static void SetUpTestCase(void);
-    static void TearDownTestCase(void);
+    static void SetUpTestCase();
+    static void TearDownTestCase();
     void SetUp();
     void TearDown();
 public:
@@ -48,12 +48,12 @@ void AccountSubscriberTest::TearDownTestCase(void)
     GTEST_LOG_(INFO) << "teardown";
 }
 
-void StorageManagerClientTest::SetUp()
+void AccountSubscriberTest::SetUp()
 {
     accountSubscriberPtr_ = make_shared<AccountSubscriber>();
 }
 
-void StorageManagerClientTest::TearDown(void)
+void AccountSubscriberTest::TearDown(void)
 {
     accountSubscriberPtr_ = nullptr;
 }
