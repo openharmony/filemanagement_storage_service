@@ -40,6 +40,7 @@ ohos_unittest("account_subscriber_test") {
     defines = [
         "STORAGE_LOG_TAG = \"StorageManager\"",
         "LOG_DOMAIN = 0xD004300",
+        "private = public",
     ]
 
     deps = [
@@ -49,6 +50,7 @@ ohos_unittest("account_subscriber_test") {
     ]
 
     external_deps = [
+        "ability_base:want",
         "appspawn:appspawn_client",
         "cJSON:cjson",
         "c_utils:utils",
