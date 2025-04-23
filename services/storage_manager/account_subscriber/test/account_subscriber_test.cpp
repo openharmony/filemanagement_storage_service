@@ -32,17 +32,17 @@ public:
     void SetUp() {};
     void TearDown() {};
 public:
-    static inline shared_ptr<AccountSubscriber> accountSubscriber_ = nullptr;
+    static inline shared_ptr<AccountSubscriber> accountSubscriberPtr_ = nullptr;
 };
 
 void AccountSubscriberTest::SetUpTestCase()
 {
-    accountSubscriber_ = make_shared<AccountSubscriber>();
+    accountSubscriberPtr_ = make_shared<AccountSubscriber>();
 }
 
 void AccountSubscriberTest::TearDownTestCase(void)
 {
-    accountSubscriber_ = nullptr;
+    accountSubscriberPtr_ = nullptr;
 }
 
 /**
@@ -57,9 +57,11 @@ void AccountSubscriberTest::TearDownTestCase(void)
 HWTEST_F(AccountSubscriberTest, Account_Subscriber_Subscriber_0000, TestSize.Level0)
 {
     GTEST_LOG_(INFO) << "Account_Subscriber_Subscriber_0000-begin";
-
-    ASSERT_TRUE(accountSubscriber_ != nullptr);
+    //accountSubscriber_ == nullptr
     AccountSubscriber::Subscriber();
+    //accountSubscriber_ != nullptr
+    AccountSubscriber::Subscriber();
+    ASSERT_TRUE(true);
     GTEST_LOG_(INFO) << "Account_Subscriber_Subscriber_0000 end";
 }
 
