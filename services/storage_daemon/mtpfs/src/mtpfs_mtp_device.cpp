@@ -1043,17 +1043,17 @@ MtpFsDevice::Capabilities MtpFsDevice::GetCapabilities(const MtpFsDevice &device
     return capabilities;
 }
 
-void MtpFsDevice::AddUploadRecord(const std::string path, bool value)
+void MtpFsDevice::AddUploadRecord(const std::string path, const std::string value)
 {
     std::unique_lock<std::mutex> lock(uploadRecordMutex_);
     auto it = uploadRecordMap_.find(path);
     if (it == uploadRecordMap_.end()) {
-        LOGI("uploadRecordMap_ add %{public}s to %{public}d", path.c_str(), value);
+        LOGI("uploadRecordMap_ add %{public}s to %{public}s", path.c_str(), value.c_str());
         uploadRecordMap_[path] = value;
         return;
     }
 
-    LOGI("uploadRecordMap_ set path %{public}s to %{public}d", path.c_str(), value);
+    LOGI("uploadRecordMap_ set path %{public}s to %{public}s", path.c_str(), value.c_str());
     it->second = value;
     return;
 }
@@ -1072,7 +1072,7 @@ void MtpFsDevice::RemoveUploadRecord(const std::string path)
     return;
 }
 
-void MtpFsDevice::SetUploadRecord(const std::string path, bool value)
+void MtpFsDevice::SetUploadRecord(const std::string path, const std::string value)
 {
     std::unique_lock<std::mutex> lock(uploadRecordMutex_);
     auto it = uploadRecordMap_.find(path);
@@ -1081,18 +1081,19 @@ void MtpFsDevice::SetUploadRecord(const std::string path, bool value)
         return;
     }
 
-    LOGI("uploadRecordMap_ set path %{public}s to %{public}d", path.c_str(), value);
+    LOGI("uploadRecordMap_ set path %{public}s upload status from %{public}s to %{public}s", path.c_str(),
+         it->second.c_str(), value.c_str());
     it->second = value;
     return;
 }
 
-std::tuple<std::string, bool> MtpFsDevice::FindUploadRecord(const std::string path)
+std::tuple<std::string, std::string> MtpFsDevice::FindUploadRecord(const std::string path)
 {
     std::unique_lock<std::mutex> lock(uploadRecordMutex_);
     auto it = uploadRecordMap_.find(path);
     if (it == uploadRecordMap_.end()) {
         LOGE("uploadRecordMap_ not contain %{public}s", path.c_str());
-        return {"", false};
+        return {"", "fail"};
     }
     return {it->first, it->second};
 }
