@@ -95,10 +95,48 @@ ohos_unittest("hi_audit_test") {
   ]
 }
 
+ohos_unittest("storage_statistics_radar_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+  module_out_path = "storage_service/storage_service/storage_daemon"
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "LOG_DOMAIN = 0xD004301",
+    "private = public",
+  ]
+
+  include_dirs = [
+    "${storage_daemon_path}/include",
+    "${storage_service_common_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+  ]
+
+  sources = [ "storage_statistic_radar_test.cpp" ]
+
+  deps = [ "${storage_daemon_path}:storage_common_utils" ]
+
+  external_deps = [
+    "c_utils:utils",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "huks:libhukssdk",
+    "ipc:ipc_single",
+    "ipc:libdbinder",
+  ]
+}
+
 group("storage_daemon_utils_test") {
   testonly = true
   deps = [
     ":file_utils_test",
     ":hi_audit_test",
+    ":storage_statistics_radar_test",
   ]
 }

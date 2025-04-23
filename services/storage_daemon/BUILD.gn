@@ -458,6 +458,7 @@ group("storage_daemon_unit_test") {
     "crypto/test/recover_manager_test:recover_manager_test",
     "file_sharing/test:file_sharing_test",
     "ipc/test:storage_daemon_ipc_test",
+    "libfscrypt/test:lib_fscrypt_test",
     "quota/test:storage_daemon_quota_test",
     "user/test:storage_daemon_user_test",
     "utils/test:storage_daemon_utils_test",
