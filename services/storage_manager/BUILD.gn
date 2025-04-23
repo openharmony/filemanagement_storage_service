@@ -161,7 +161,7 @@ group("storage_manager_monitor_config") {
 group("storage_manager_unit_test") {
   testonly = true
   deps = [
-    "account_subscriber/test:account_subscriber_test",
+    "account_subscriber/test:storage_account_subscriber_test",
     "client/test:storage_manager_client_test",
     "innerkits_impl/test:storage_manager_innerkits_test",
     "ipc/test:storage_manager_ipc_test",
