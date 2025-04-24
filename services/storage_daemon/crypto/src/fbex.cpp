@@ -196,6 +196,7 @@ int FBEX::InstallEL5KeyToKernel(uint32_t userIdSingle, uint32_t userIdDouble, ui
 int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size, uint8_t flag)
 {
     LOGI("enter, userId: %{public}d, type: %{public}u, flag: %{public}u", userId, type, flag);
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     if (!CheckIvValid(iv, size)) {
         LOGE("install key param invalid");
         return -EINVAL;
@@ -220,6 +221,9 @@ int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32
         (void)fclose(f);
         return 0;
     }
+    LOGI("SD_DURATION: FBEX: FILE OPS: keyType=%{public}d, delay time = %{public}s",
+        type, StorageService::StorageRadar::RecordDuration(startTime).c_str());
+    startTime = StorageService::StorageRadar::RecordCurrentTime();
     int ret = ioctl(fd, FBEX_IOC_ADD_IV, &ops);
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
@@ -236,7 +240,8 @@ int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32
         return 0;
     }
     (void)memset_s(&ops.iv, sizeof(ops.iv), 0, sizeof(ops.iv));
-    LOGI("InstallKeyToKernel success");
+    LOGI("SD_DURATION: FBEX: INSTALL KEY TO KERNEL: success, keyType=%{public}d, delay time = %{public}s",
+        type, StorageService::StorageRadar::RecordDuration(startTime).c_str());
     return ret;
 }
 

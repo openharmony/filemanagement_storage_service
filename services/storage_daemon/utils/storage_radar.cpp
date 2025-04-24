@@ -14,6 +14,7 @@
  */
 
 #include "utils/storage_radar.h"
+#include "utils/string_utils.h"
 
 #include "hisysevent.h"
 #include "storage_service_errno.h"
@@ -27,6 +28,10 @@ constexpr const char *FILE_STORAGE_MANAGER_STATISTIC = "FILE_STORAGE_MANAGER_STA
 constexpr char STORAGESERVICE_DOAMIN[] = "FILEMANAGEMENT";
 constexpr uint8_t INDEX = 3;
 constexpr uint32_t MS_1000 = 1000;
+
+constexpr int64_t DELAY_TIME_THRESHOLD = 50; // ms
+constexpr const char *TAG_PREFIX = " WARNING: DELAY > ";
+constexpr const char *TAG_UNIT_SUFFIX = " ms.";
 
 void StorageRadar::ReportActiveUserKey(const std::string &funcName, uint32_t userId, int ret,
     const std::string &keyElxLevel)
@@ -339,6 +344,24 @@ void StorageRadar::ReportStatistics(uint32_t userId, StorageDaemon::RadarStatist
     if (res != E_OK) {
         LOGE("StorageRadar ERROR, res :%{public}d", res);
     }
+}
+
+int64_t StorageRadar::RecordCurrentTime()
+{
+    return std::chrono::duration_cast<std::chrono::milliseconds>(
+           std::chrono::system_clock::now().time_since_epoch()
+           ).count();
+}
+
+std::string StorageRadar::RecordDuration(int64_t startTime)
+{
+    auto duration = RecordCurrentTime() - startTime;
+    std::string ret = std::to_string(duration) + TAG_UNIT_SUFFIX;
+    if (duration > DELAY_TIME_THRESHOLD) {
+        std::string tag = TAG_PREFIX + std::to_string(DELAY_TIME_THRESHOLD) + TAG_UNIT_SUFFIX;
+        ret += tag;
+    }
+    return ret;
 }
 } // namespace StorageService
 } // namespace OHOS
