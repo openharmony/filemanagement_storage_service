@@ -22,6 +22,7 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "string_ex.h"
+#include "utils/storage_radar.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -80,9 +81,12 @@ uint32_t FscryptKeyV1Ext::GetMappedDeUserId(uint32_t userId)
 
 int32_t FscryptKeyV1Ext::ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, uint32_t &elType)
 {
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     if (!FBEX::IsFBEXSupported()) {
         return E_OK;
     }
+    LOGI("SD_DURATION: FBEX SUPPORT: elType=%{public}d, delay time = %{public}s",
+        elType, StorageService::StorageRadar::RecordDuration(startTime).c_str());
 
     LOGI("enter");
     std::error_code errCode;

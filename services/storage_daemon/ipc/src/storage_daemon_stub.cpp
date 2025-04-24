@@ -579,6 +579,7 @@ int32_t StorageDaemonStub::HandleDestroyUserDirs(MessageParcel &data, MessagePar
 int32_t StorageDaemonStub::HandleStartUser(MessageParcel &data, MessageParcel &reply)
 {
     int32_t userId = data.ReadInt32();
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
     int32_t err = StartUser(userId);
@@ -590,6 +591,8 @@ int32_t StorageDaemonStub::HandleStartUser(MessageParcel &data, MessageParcel &r
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
+    LOGI("SD_DURATION: HANDLE START USER: delay time = %{public}s",
+        StorageService::StorageRadar::RecordDuration(startTime).c_str());
     return E_OK;
 }
 
@@ -735,6 +738,7 @@ int32_t StorageDaemonStub::HandleUpdateUseAuthWithRecoveryKey(MessageParcel &dat
 int32_t StorageDaemonStub::HandleActiveUserKey(MessageParcel &data, MessageParcel &reply)
 {
     uint32_t userId = data.ReadUint32();
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
 
     std::vector<uint8_t> token;
     std::vector<uint8_t> secret;
@@ -755,6 +759,8 @@ int32_t StorageDaemonStub::HandleActiveUserKey(MessageParcel &data, MessageParce
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
+    LOGI("SD_DURATION: ACTIVE USER KEY: delay time = %{public}s",
+        StorageService::StorageRadar::RecordDuration(startTime).c_str());
     return E_OK;
 }
 

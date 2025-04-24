@@ -44,12 +44,16 @@ int32_t FscryptKeyV1::ActiveKey(uint32_t flag, const std::string &mnt)
         return ret;
     }
     LOGE("ActiveKey key is empty: %{public}u", keyInfo_.key.IsEmpty());
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int errNo = fscryptV1Ext.ActiveKeyExt(flag, keyInfo_.key.data.get(), keyInfo_.key.size, elType);
     if (errNo != E_OK) {
         keyInfo_.key.Clear();
         LOGE("fscryptV1Ext ActiveKeyExtfailed");
         return errNo;
     }
+    LOGI("SD_DURATION: ACTIVE KEY EXT: delay time = %{public}s",
+        StorageService::StorageRadar::RecordDuration(startTime).c_str());
+    startTime = StorageService::StorageRadar::RecordCurrentTime();
     if (elType == TYPE_EL3 || elType == TYPE_EL4) {
         uint32_t sdpClass;
         if (elType == TYPE_EL3) {
@@ -71,6 +75,8 @@ int32_t FscryptKeyV1::ActiveKey(uint32_t flag, const std::string &mnt)
             return errNo;
         }
     }
+    LOGI("SD_DURATION: INSTALL KEY TO KEYRING: delay time = %{public}s",
+        StorageService::StorageRadar::RecordDuration(startTime).c_str());
     keyInfo_.key.Clear();
     LOGI("success");
     return E_OK;
@@ -462,7 +468,10 @@ int32_t FscryptKeyV1::InactiveKey(uint32_t flag, const std::string &mnt)
 {
     (void)mnt;
     LOGI("enter");
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     DropCachesIfNeed();
+    LOGI("SD_DURATION: DROP CACHE: delay time = %{public}s",
+        StorageService::StorageRadar::RecordDuration(startTime).c_str());
 
     int32_t ret = E_OK;
     if (!keyInfo_.keyDesc.IsEmpty()) {
@@ -477,8 +486,10 @@ int32_t FscryptKeyV1::InactiveKey(uint32_t flag, const std::string &mnt)
         LOGE("fscryptV1Ext InactiveKeyExt failed");
         return ret;
     }
+    startTime = StorageService::StorageRadar::RecordCurrentTime();
     DropCachesIfNeed();
-    LOGI("finish");
+    LOGI("finish. SD_DURATION: DROP CACHE: delay time = %{public}s",
+        StorageService::StorageRadar::RecordDuration(startTime).c_str());
     return ret;
 }
 
