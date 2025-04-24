@@ -11,11 +11,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+*/
 
 #include "huks_master.h"
 
-#include <dlfcn.h>
+#include <iomanip>
+#include <sstream>
+
 #include <unistd.h>
 #include <openssl/err.h>
 #include <openssl/rand.h>
@@ -38,10 +40,12 @@ constexpr uint32_t CRYPTO_HKS_NONCE_LEN = 12;
 constexpr uint32_t CRYPTO_KEY_SHIELD_MAX_SIZE = 2048;
 constexpr uint32_t CRYPTO_AES_256_KEY_ENCRYPTED_SIZE = 80;
 constexpr uint32_t CRYPTO_TOKEN_SIZE = TOKEN_CHALLENGE_LEN; // 32
+constexpr uint32_t DEFAULT_PREFIX_SIZE_FOR_KEY_BLOB = 32;
+
 HuksMaster::HuksMaster()
 {
     LOGI("enter");
-    HdiCreate();
+    InitHdiProxyInstance();
     HdiModuleInit();
     LOGI("finish");
 }
@@ -50,74 +54,52 @@ HuksMaster::~HuksMaster()
 {
     LOGI("enter");
     HdiModuleDestroy();
-    HdiDestroy();
+    ReleaseHdiProxyInstance();
     LOGI("finish");
 }
 
-bool HuksMaster::HdiCreate()
+
+int32_t HuksMaster::InitHdiProxyInstance()
 {
     LOGI("enter");
-    if (hdiHandle_ != nullptr || halDevice_ != nullptr) {
-        return true;
+    if (hksHdiProxyInstance_ != nullptr) {
+        return HKS_SUCCESS;
     }
-
-    hdiHandle_ = dlopen("libhuks_engine_core_standard.z.so", RTLD_LAZY);
-    if (hdiHandle_ == nullptr) {
-        LOGE("dlopen failed %{public}s", dlerror());
-        return false;
+    std::lock_guard<std::mutex> lock(hdiProxyMutex_);
+    if (hksHdiProxyInstance_ != nullptr) {
+        return HKS_SUCCESS;
     }
-
-    auto createHdi = reinterpret_cast<HkmHalCreateHandle>(dlsym(hdiHandle_, "HuksCreateHdiDevicePtr"));
-    if (createHdi == nullptr) {
-        LOGE("dlsym failed %{public}s", dlerror());
-        dlclose(hdiHandle_);
-        hdiHandle_ = nullptr;
-        return false;
-    }
-
-    halDevice_ = (*createHdi)();
-    if (halDevice_ == nullptr) {
-        LOGE("HuksHdiCreate failed");
-        dlclose(hdiHandle_);
-        hdiHandle_ = nullptr;
-        return false;
+    hksHdiProxyInstance_ = IHuksGetInstance("hdi_service", true);
+    if (hksHdiProxyInstance_ == nullptr) {
+        LOGE("IHuksGet hdi huks service failed");
+        return HKS_ERROR_NULL_POINTER;
     }
     LOGI("success");
-    return true;
+    return HKS_SUCCESS;
 }
 
-void HuksMaster::HdiDestroy()
+void HuksMaster::ReleaseHdiProxyInstance()
 {
     LOGI("enter");
-    if (hdiHandle_ == nullptr) {
-        LOGI("hdiHandle_ is nullptr, already destroyed");
-        return;
+    if (hksHdiProxyInstance_ != nullptr) {
+        IHuksReleaseInstance("hdi_service", hksHdiProxyInstance_, true);
     }
-
-    auto destroyHdi = reinterpret_cast<HkmHalDestroyHandle>(dlsym(hdiHandle_, "HuksDestoryHdiDevicePtr"));
-    if ((destroyHdi != nullptr) && (halDevice_ != nullptr)) {
-        (*destroyHdi)(halDevice_);
-    }
-
-    dlclose(hdiHandle_);
-    hdiHandle_ = nullptr;
-    halDevice_ = nullptr;
+    hksHdiProxyInstance_ = nullptr;
     LOGI("finish");
 }
 
 int HuksMaster::HdiModuleInit()
 {
     LOGI("enter");
-    if (halDevice_ == nullptr) {
-        LOGE("halDevice_ is nullptr");
+    if (hksHdiProxyInstance_ == nullptr) {
+        LOGE("hksHdiProxyInstance_ is nullptr");
         return HKS_ERROR_NULL_POINTER;
     }
-    if (halDevice_->HuksHdiModuleInit == nullptr) {
+    if (hksHdiProxyInstance_->ModuleInit == nullptr) {
         LOGE("HuksHdiModuleInit is nullptr");
         return HKS_ERROR_NULL_POINTER;
     }
-
-    int ret = halDevice_->HuksHdiModuleInit();
+    auto ret = hksHdiProxyInstance_->ModuleInit(hksHdiProxyInstance_);
     if (ret == HKS_SUCCESS) {
         LOGI("HuksHdiModuleInit success, ret %{public}d", ret);
         return ret;
@@ -131,7 +113,7 @@ int HuksMaster::HdiModuleInit()
     int retryRet = 0;
     for (int i = 0; i < MAX_RETRY_TIME; ++i) {
         usleep(RETRY_INTERVAL_MS);
-        retryRet = halDevice_->HuksHdiModuleInit();
+        retryRet = hksHdiProxyInstance_->ModuleInit(hksHdiProxyInstance_);
         LOGE("HuksHdiModuleInit has retry %{public}d times, retryRet %{public}d", i, retryRet);
         if (retryRet == HKS_SUCCESS) {
             break;
@@ -147,21 +129,20 @@ int HuksMaster::HdiModuleInit()
 int HuksMaster::HdiModuleDestroy()
 {
     LOGI("enter");
-    if (halDevice_ == nullptr) {
-        LOGE("halDevice_ is nullptr");
+    if (hksHdiProxyInstance_ == nullptr) {
+        LOGE("hksHdiProxyInstance_ is nullptr");
         return HKS_ERROR_NULL_POINTER;
     }
-    if (halDevice_->HuksHdiModuleDestroy == nullptr) {
+    if (hksHdiProxyInstance_->ModuleDestroy == nullptr) {
         LOGE("HuksHdiModuleDestroy is nullptr");
         return HKS_ERROR_NULL_POINTER;
     }
-
-    int ret = halDevice_->HuksHdiModuleDestroy();
+    auto ret = hksHdiProxyInstance_->ModuleDestroy(hksHdiProxyInstance_);
     if (ret == HKS_SUCCESS) {
         LOGI("HuksHdiModuleDestroy success, ret %{public}d", ret);
         return ret;
     }
-
+    
     if (ret != HKS_ERROR_RETRYABLE_ERROR) {
         LOGE("HuksHdiModuleDestroy failed, ret %{public}d", ret);
         StorageRadar::ReportHuksResult("HuksHdiModuleDestroy", ret);
@@ -170,7 +151,7 @@ int HuksMaster::HdiModuleDestroy()
     int retryRet = 0;
     for (int i = 0; i < MAX_RETRY_TIME; ++i) {
         usleep(RETRY_INTERVAL_MS);
-        retryRet = halDevice_->HuksHdiModuleDestroy();
+        retryRet = hksHdiProxyInstance_->ModuleDestroy(hksHdiProxyInstance_);
         LOGE("HuksHdiModuleDestroy has retry %{public}d times, retryRet %{public}d", i, retryRet);
         if (retryRet == HKS_SUCCESS) {
             break;
@@ -183,22 +164,23 @@ int HuksMaster::HdiModuleDestroy()
     return retryRet;
 }
 
-int HuksMaster::HdiGenerateKey(const HksBlob &keyAlias, const HksParamSet *paramSetIn,
-                               HksBlob &keyOut)
+int HuksMaster::HdiGenerateKey(const HuksBlob &keyAlias, const HksParamSet *paramSetIn, HuksBlob &keyOut)
 {
     LOGI("enter");
-    if (halDevice_ == nullptr) {
-        LOGE("halDevice_ is nullptr");
+    if (hksHdiProxyInstance_ == nullptr) {
+        LOGE("hksHdiProxyInstance_ is nullptr");
         return HKS_ERROR_NULL_POINTER;
     }
-    if (halDevice_->HuksHdiGenerateKey == nullptr) {
-        LOGE("HuksHdiAccessGenerateKey is nullptr");
+    if (hksHdiProxyInstance_->GenerateKey == nullptr) {
+        LOGE("HuksHdiGenerateKey is nullptr");
         return HKS_ERROR_NULL_POINTER;
     }
 
-    uint8_t data = 0;
-    HksBlob keyIn = {1, &data};
-    auto ret = halDevice_->HuksHdiGenerateKey(&keyAlias, paramSetIn, &keyIn, &keyOut);
+    uint8_t keyData = 0;
+    struct HuksBlob keyIn = {&keyData, 1};
+    struct HuksParamSet hksParamSet;
+    HDI_CONVERTER_PARAM_IN_PARAMSET(paramSetIn, hksParamSet);
+    auto ret = hksHdiProxyInstance_->GenerateKey(hksHdiProxyInstance_, &keyAlias, &hksParamSet, &keyIn, &keyOut);
     if (ret == HKS_SUCCESS) {
         LOGI("HuksHdiGenerateKey success, ret %{public}d", ret);
         return ret;
@@ -206,13 +188,13 @@ int HuksMaster::HdiGenerateKey(const HksBlob &keyAlias, const HksParamSet *param
 
     if (ret != HKS_ERROR_RETRYABLE_ERROR) {
         LOGE("HuksHdiGenerateKey failed, ret %{public}d", ret);
-        StorageRadar::ReportHuksResult("HuksHdiGenerateKey", ret);
+        StorageRadar::ReportHuksResult("HuksHdi GenerateKey", ret);
         return ret;
     }
     int retryRet = 0;
     for (int i = 0; i < MAX_RETRY_TIME; ++i) {
         usleep(RETRY_INTERVAL_MS);
-        retryRet = halDevice_->HuksHdiGenerateKey(&keyAlias, paramSetIn, &keyIn, &keyOut);
+        retryRet = hksHdiProxyInstance_->GenerateKey(hksHdiProxyInstance_, &keyAlias, &hksParamSet, &keyIn, &keyOut);
         LOGE("HuksHdiGenerateKey has retry %{public}d times, retryRet %{public}d", i, retryRet);
         if (retryRet == HKS_SUCCESS) {
             break;
@@ -220,30 +202,30 @@ int HuksMaster::HdiGenerateKey(const HksBlob &keyAlias, const HksParamSet *param
     }
     LOGE("HuksHdiGenerateKey end, retryRet %{public}d", retryRet);
     if (retryRet != HKS_SUCCESS) {
-        StorageRadar::ReportHuksResult("HuksHdiGenerateKey_Retry", retryRet);
+        StorageRadar::ReportHuksResult("HuksHdi GenerateKey_Retry", retryRet);
     }
     return retryRet;
 }
 
-int HuksMaster::HdiAccessInit(const HksBlob &key, const HksParamSet *paramSet,
-                              HksBlob &handle, HksBlob &token)
+int HuksMaster::HdiAccessInit(const HuksBlob &key, const HksParamSet *paramSet, HuksBlob &handle, HuksBlob &token)
 {
     LOGI("enter");
-    if (halDevice_ == nullptr) {
-        LOGE("halDevice_ is nullptr");
+    if (hksHdiProxyInstance_ == nullptr) {
+        LOGE("hksHdiProxyInstance_ is nullptr");
         return HKS_ERROR_NULL_POINTER;
     }
-    if (halDevice_->HuksHdiInit == nullptr) {
-        LOGE("HuksHdiAccessInit is nullptr");
+    if (hksHdiProxyInstance_->Init == nullptr) {
+        LOGE("HuksHdiInit is nullptr");
         return HKS_ERROR_NULL_POINTER;
     }
 
-    auto ret = halDevice_->HuksHdiInit(&key, paramSet, &handle, &token);
+    struct HuksParamSet huksParamSet;
+    HDI_CONVERTER_PARAM_IN_PARAMSET(paramSet, huksParamSet);
+    auto ret = hksHdiProxyInstance_->Init(hksHdiProxyInstance_, &key, &huksParamSet, &handle, &token);
     if (ret == HKS_SUCCESS) {
         LOGI("HuksHdiInit success, ret %{public}d", ret);
         return ret;
     }
-
     if (ret != HKS_ERROR_RETRYABLE_ERROR) {
         LOGE("HuksHdiInit failed, ret %{public}d", ret);
         return ret;
@@ -251,7 +233,7 @@ int HuksMaster::HdiAccessInit(const HksBlob &key, const HksParamSet *paramSet,
     int retryRet = 0;
     for (int i = 0; i < MAX_RETRY_TIME; ++i) {
         usleep(RETRY_INTERVAL_MS);
-        retryRet = halDevice_->HuksHdiInit(&key, paramSet, &handle, &token);
+        retryRet = hksHdiProxyInstance_->Init(hksHdiProxyInstance_, &key, &huksParamSet, &handle, &token);
         LOGE("HuksHdiInit has retry %{public}d times, retryRet %{public}d", i, retryRet);
         if (retryRet == HKS_SUCCESS) {
             break;
@@ -264,25 +246,26 @@ int HuksMaster::HdiAccessInit(const HksBlob &key, const HksParamSet *paramSet,
     return retryRet;
 }
 
-int HuksMaster::HdiAccessFinish(const HksBlob &handle, const HksParamSet *paramSet,
-                                const HksBlob &inData, HksBlob &outData)
+int HuksMaster::HdiAccessFinish(const HuksBlob &handle, const HksParamSet *paramSet,
+                                const HuksBlob &inData, HuksBlob &outData)
 {
     LOGI("enter");
-    if (halDevice_ == nullptr) {
-        LOGE("halDevice_ is nullptr");
+    if (hksHdiProxyInstance_ == nullptr) {
+        LOGE("hksHdiProxyInstance_ is nullptr");
         return HKS_ERROR_NULL_POINTER;
     }
-    if (halDevice_->HuksHdiFinish == nullptr) {
-        LOGE("HuksHdiAccessFinish is nullptr");
+    if (hksHdiProxyInstance_->Finish == nullptr) {
+        LOGE("HuksHdiFinish is nullptr");
         return HKS_ERROR_NULL_POINTER;
     }
 
-    auto ret = halDevice_->HuksHdiFinish(&handle, paramSet, &inData, &outData);
+    struct HuksParamSet huksParamSet;
+    HDI_CONVERTER_PARAM_IN_PARAMSET(paramSet, huksParamSet);
+    auto ret = hksHdiProxyInstance_->Finish(hksHdiProxyInstance_, &handle, &huksParamSet, &inData, &outData);
     if (ret == HKS_SUCCESS) {
         LOGI("HuksHdiFinish success, ret %{public}d", ret);
         return ret;
     }
-
     if (ret != HKS_ERROR_RETRYABLE_ERROR) {
         LOGE("HuksHdiFinish failed, ret %{public}d", ret);
         return ret;
@@ -290,7 +273,7 @@ int HuksMaster::HdiAccessFinish(const HksBlob &handle, const HksParamSet *paramS
     int retryRet = 0;
     for (int i = 0; i < MAX_RETRY_TIME; ++i) {
         usleep(RETRY_INTERVAL_MS);
-        retryRet = halDevice_->HuksHdiFinish(&handle, paramSet, &inData, &outData);
+        retryRet = hksHdiProxyInstance_->Finish(hksHdiProxyInstance_, &handle, &huksParamSet, &inData, &outData);
         LOGE("HuksHdiFinish has retry %{public}d times, retryRet %{public}d", i, retryRet);
         if (retryRet == HKS_SUCCESS) {
             break;
@@ -303,24 +286,26 @@ int HuksMaster::HdiAccessFinish(const HksBlob &handle, const HksParamSet *paramS
     return retryRet;
 }
 
-int HuksMaster::HdiAccessUpgradeKey(const HksBlob &oldKey, const HksParamSet *paramSet, struct HksBlob &newKey)
+int HuksMaster::HdiAccessUpgradeKey(const HuksBlob &oldKey, const HksParamSet *paramSet, struct HuksBlob &newKey)
 {
     LOGI("enter");
-    if (halDevice_ == nullptr) {
-        LOGE("halDevice_ is nullptr");
+    if (hksHdiProxyInstance_ == nullptr) {
+        LOGE("hksHdiProxyInstance_ is nullptr");
         return HKS_ERROR_NULL_POINTER;
     }
-    if (halDevice_->HuksHdiUpgradeKey == nullptr) {
+    if (hksHdiProxyInstance_->UpgradeKey == nullptr) {
         LOGE("HuksHdiUpgradeKey is nullptr");
         return HKS_ERROR_NULL_POINTER;
     }
 
-    auto ret = halDevice_->HuksHdiUpgradeKey(&oldKey, paramSet, &newKey);
+    struct HuksParamSet huksParamSet;
+    HDI_CONVERTER_PARAM_IN_PARAMSET(paramSet, huksParamSet);
+    auto ret = hksHdiProxyInstance_->UpgradeKey(hksHdiProxyInstance_, &oldKey, &huksParamSet, &newKey);
     if (ret == HKS_SUCCESS) {
         LOGI("HuksHdiUpgradeKey success, ret %{public}d", ret);
         return ret;
     }
-
+    
     if (ret != HKS_ERROR_RETRYABLE_ERROR) {
         LOGE("HuksHdiUpgradeKey failed, ret %{public}d", ret);
         StorageRadar::ReportHuksResult("HuksHdiUpgradeKey", ret);
@@ -329,7 +314,7 @@ int HuksMaster::HdiAccessUpgradeKey(const HksBlob &oldKey, const HksParamSet *pa
     int retryRet = 0;
     for (int i = 0; i < MAX_RETRY_TIME; ++i) {
         usleep(RETRY_INTERVAL_MS);
-        retryRet = halDevice_->HuksHdiUpgradeKey(&oldKey, paramSet, &newKey);
+        retryRet = hksHdiProxyInstance_->UpgradeKey(hksHdiProxyInstance_, &oldKey, &huksParamSet, &newKey);
         LOGE("HuksHdiUpgradeKey has retry %{public}d times, retryRet %{public}d", i, retryRet);
         if (retryRet == HKS_SUCCESS) {
             break;
@@ -337,9 +322,45 @@ int HuksMaster::HdiAccessUpgradeKey(const HksBlob &oldKey, const HksParamSet *pa
     }
     LOGE("HuksHdiUpgradeKey end, retryRet %{public}d", retryRet);
     if (retryRet != HKS_SUCCESS) {
-        StorageRadar::ReportHuksResult("HuksHdiUpgradeKey_Retry", retryRet);
+        StorageRadar::ReportHuksResult("HuksHdi UpgradeKey_Retry", retryRet);
     }
     return retryRet;
+}
+
+int HuksMaster::HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *paramSet2,
+                                const KeyBlob &keyIn, KeyBlob &keyOut)
+{
+    LOGI("enter");
+    HuksBlob hksKey = { reinterpret_cast<uint8_t *>(paramSet1), paramSet1->paramSetSize };
+    HuksBlob hksIn = keyIn.ToHuksBlob();
+    HuksBlob hksOut = keyOut.ToHuksBlob();
+    uint8_t h[sizeof(uint64_t)] = {0};
+    HuksBlob hksHandle = { h, sizeof(uint64_t) };
+    uint8_t t[CRYPTO_TOKEN_SIZE] = {0};
+    HuksBlob hksToken = { t, sizeof(t) };  // would not use the challenge here
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
+    int ret = HdiAccessInit(hksKey, paramSet2, hksHandle, hksToken);
+    if (ret != HKS_SUCCESS) {
+        LOGE("HdiAccessInit failed ret %{public}d", ret);
+        return ret;
+    }
+    LOGI("SD_DURATION: HUKS: INIT: delay time = %{public}s",
+        StorageService::StorageRadar::RecordDuration(startTime).c_str());
+    startTime = StorageService::StorageRadar::RecordCurrentTime();
+    ret = HdiAccessFinish(hksHandle, paramSet2, hksIn, hksOut);
+    if (ret != HKS_SUCCESS) {
+        if (ret == HKS_ERROR_KEY_AUTH_TIME_OUT) {
+            StorageService::KeyCryptoUtils::ForceLockUserScreen();
+            LOGE("HdiAccessFinish failed because authToken timeout, force lock user screen.");
+        }
+        LOGE("HdiAccessFinish failed ret %{public}d", ret);
+        return ret;
+    }
+    LOGI("SD_DURATION: HUKS: FINISH: delay time = %{public}s",
+        StorageService::StorageRadar::RecordDuration(startTime).c_str());
+    keyOut.size = hksOut.dataLen;
+    LOGI("finish");
+    return E_OK;
 }
 
 KeyBlob HuksMaster::GenerateRandomKey(uint32_t keyLen)
@@ -388,7 +409,7 @@ static const HksParam g_generateKeyParam[] = {
     { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_GCM },
     { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_NONE },
     { .tag = HKS_TAG_PROCESS_NAME,
-      .blob =
+    .blob =
         { sizeof(g_processName), g_processName }
     },
 };
@@ -421,15 +442,15 @@ int32_t HuksMaster::GenerateKey(const UserAuth &auth, KeyBlob &keyOut)
             break;
         }
         KeyBlob alias = GenerateRandomKey(CRYPTO_KEY_ALIAS_SIZE);
-        HksBlob hksAlias = alias.ToHksBlob();
+        HuksBlob hksAlias = alias.ToHuksBlob();
         keyOut.Alloc(CRYPTO_KEY_SHIELD_MAX_SIZE);
-        HksBlob hksKeyOut = keyOut.ToHksBlob();
+        HuksBlob hksKeyOut = keyOut.ToHuksBlob();
         ret = HdiGenerateKey(hksAlias, paramSet, hksKeyOut);
         if (ret != HKS_SUCCESS) {
             LOGE("HdiGenerateKey failed ret %{public}d", ret);
             break;
         }
-        keyOut.size = hksKeyOut.size;
+        keyOut.size = hksKeyOut.dataLen;
         LOGI("HdiGenerateKey success, out size %{public}d", keyOut.size);
     } while (0);
 
@@ -475,7 +496,7 @@ static int AppendAeTag(KeyBlob &cipherText, HksParamSet *paramSet)
 
     HksParam param[] = {
         { .tag = HKS_TAG_AE_TAG,
-          .blob =
+        .blob =
             { HKS_AE_TAG_LEN, cipherText.data.get() + cipherText.size - HKS_AE_TAG_LEN }
         },
     };
@@ -548,15 +569,15 @@ static int AppendNonceAadToken(KeyContext &ctx, const UserAuth &auth, HksParamSe
         { .tag = HKS_TAG_USER_AUTH_TYPE, .uint32Param = HKS_USER_AUTH_TYPE_PIN },
         { .tag = HKS_TAG_KEY_AUTH_ACCESS_TYPE, .uint32Param = HKS_AUTH_ACCESS_INVALID_CLEAR_PASSWORD },
         { .tag = HKS_TAG_NONCE,
-          .blob =
+        .blob =
             { ctx.nonce.size, ctx.nonce.data.get() }
         },
         { .tag = HKS_TAG_ASSOCIATED_DATA,
-          .blob =
+        .blob =
             { ctx.aad.size, ctx.aad.data.get() }
         },
         { .tag = HKS_TAG_AUTH_TOKEN,
-          .blob =
+        .blob =
             { auth.token.size, auth.token.data.get() }
         }
     };
@@ -615,9 +636,9 @@ static HksParamSet *GenHuksOptionParamEx(KeyContext &ctx, const UserAuth &auth, 
 }
 
 static HksParamSet *GenHuksOptionParam(KeyContext &ctx,
-                                       const UserAuth &auth,
-                                       const bool isEncrypt,
-                                       const bool isNeedNewNonce)
+                                    const UserAuth &auth,
+                                    const bool isEncrypt,
+                                    const bool isNeedNewNonce)
 {
     HksParam encryptParam[] = {
         { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_AES },
@@ -652,7 +673,7 @@ static HksParamSet *GenHuksOptionParam(KeyContext &ctx,
     }
 
     ret = isNeedNewNonce ? AppendNonceAadToken(ctx, auth, paramSet)
-                         : AppendNewNonceAadToken(ctx, auth, paramSet, isEncrypt);
+                        : AppendNewNonceAadToken(ctx, auth, paramSet, isEncrypt);
     if (ret != HKS_SUCCESS) {
         LOGE("AppendNonceAad failed ret %{public}d", ret);
         HksFreeParamSet(&paramSet);
@@ -667,39 +688,6 @@ static HksParamSet *GenHuksOptionParam(KeyContext &ctx,
     }
 
     return paramSet;
-}
-
-int HuksMaster::HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *paramSet2,
-                                   const KeyBlob &keyIn, KeyBlob &keyOut)
-{
-    LOGI("enter");
-    HksBlob hksKey = { paramSet1->paramSetSize, reinterpret_cast<uint8_t *>(paramSet1) };
-    HksBlob hksIn = keyIn.ToHksBlob();
-    HksBlob hksOut = keyOut.ToHksBlob();
-    uint8_t h[sizeof(uint64_t)] = {0};
-    HksBlob hksHandle = { sizeof(uint64_t), h };
-    uint8_t t[CRYPTO_TOKEN_SIZE] = {0};
-    HksBlob hksToken = { sizeof(t), t };  // would not use the challenge here
-
-    int ret = HdiAccessInit(hksKey, paramSet2, hksHandle, hksToken);
-    if (ret != HKS_SUCCESS) {
-        LOGE("HdiAccessInit failed ret %{public}d", ret);
-        return ret;
-    }
-
-    ret = HdiAccessFinish(hksHandle, paramSet2, hksIn, hksOut);
-    if (ret != HKS_SUCCESS) {
-        if (ret == HKS_ERROR_KEY_AUTH_TIME_OUT) {
-            StorageService::KeyCryptoUtils::ForceLockUserScreen();
-            LOGE("HdiAccessFinish failed because authToken timeout, force lock user screen.");
-        }
-        LOGE("HdiAccessFinish failed ret %{public}d", ret);
-        return ret;
-    }
-
-    keyOut.size = hksOut.size;
-    LOGI("finish");
-    return E_OK;
 }
 
 int32_t HuksMaster::EncryptKeyEx(const UserAuth &auth, const KeyBlob &rnd, KeyContext &ctx)
@@ -730,7 +718,6 @@ int32_t HuksMaster::EncryptKeyEx(const UserAuth &auth, const KeyBlob &rnd, KeyCo
     if (ret != E_OK) {
         LOGE("HuksHalTripleStage failed");
     }
-
     HksFreeParamSet(&paramSet2);
     LOGI("finish");
     return ret;
@@ -791,13 +778,11 @@ int32_t HuksMaster::DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &k
         LOGE("GenHuksOptionParam failed");
         return E_GEN_HUKS_PARAM_ERROR;
     }
-
     key.key.Alloc(ctx.rndEnc.size);
     auto ret = HuksHalTripleStage(paramSet1, paramSet2, ctx.rndEnc, key.key);
     if (ret != E_OK) {
         LOGE("HuksHalTripleStage failed");
     }
-
     HksFreeParamSet(&paramSet2);
     LOGI("finish");
     return ret;
@@ -831,7 +816,6 @@ int32_t HuksMaster::DecryptKeyEx(KeyContext &ctx, const UserAuth &auth, KeyBlob 
     if (ret != E_OK) {
         LOGE("HuksHalTripleStage failed");
     }
-
     HksFreeParamSet(&paramSet2);
     LOGI("finish");
     return ret;
@@ -892,13 +876,12 @@ bool HuksMaster::UpgradeKey(KeyContext &ctx)
         }
 
         KeyBlob keyOut(CRYPTO_KEY_SHIELD_MAX_SIZE);
-        HksBlob hksIn = ctx.shield.ToHksBlob();
-        HksBlob hksOut = keyOut.ToHksBlob();
-
+        HuksBlob hksIn = ctx.shield.ToHuksBlob();
+        HuksBlob hksOut = keyOut.ToHuksBlob();
         err = HdiAccessUpgradeKey(hksIn, paramSet, hksOut);
         if (err == HKS_SUCCESS) {
             LOGI("Shield upgraded successfully");
-            keyOut.size = hksOut.size;
+            keyOut.size = hksOut.dataLen;
             ctx.shield.Clear();
             ctx.shield = std::move(keyOut);
             ret = true;
@@ -907,6 +890,5 @@ bool HuksMaster::UpgradeKey(KeyContext &ctx)
     HksFreeParamSet(&paramSet);
     return ret;
 }
-
 } // namespace StorageDaemon
 } // namespace OHOS

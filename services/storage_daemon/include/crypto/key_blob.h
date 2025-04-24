@@ -130,6 +130,10 @@ public:
     {
         return {size, data.get()};
     }
+    HksBlob ToHksBlob() const
+    {
+        return {data.get(), size};
+    }
     uint32_t size { 0 };
     std::unique_ptr<uint8_t[]> data { nullptr };
 };
