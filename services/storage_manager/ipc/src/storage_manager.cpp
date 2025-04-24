@@ -691,8 +691,7 @@ int32_t StorageManager::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 }
 
 std::vector<int32_t> StorageManager::CreateShareFile(const std::vector<std::string> &uriList,
-                                        uint32_t tokenId,
-                                        uint32_t flag)
+    uint32_t tokenId, uint32_t flag)
 {
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();

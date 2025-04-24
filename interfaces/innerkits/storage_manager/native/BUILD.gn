@@ -19,6 +19,7 @@ idl_gen_interface("storage_manager_interface_native") {
   src_idl = rebase_path("${storage_manager_path}/IStorageManager.idl")
   log_tag = "StorageManager"
   log_domainid = "0xD004300"
+  hitrace = "HITRACE_TAG_FILEMANAGEMENT"
 }
 
 config("public_config") {
