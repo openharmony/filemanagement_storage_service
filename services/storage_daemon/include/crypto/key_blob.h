@@ -19,6 +19,7 @@
 #include <linux/version.h>
 
 #include "hks_type.h"
+#include "v1_1/ihuks_types.h"
 #include "securec.h"
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
