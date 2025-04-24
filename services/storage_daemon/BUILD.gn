@@ -145,7 +145,10 @@ ohos_executable("storage_daemon") {
       "crypto:libsdcrypto",
       "libfscrypt:libfscryptutils",
     ]
-    external_deps += [ "huks:libhukssdk" ]
+    external_deps += [
+      "drivers_interface_huks:libhuks_proxy_1.1",
+      "huks:libhukssdk",
+    ]
   }
 
   if (enable_user_auth_framework) {

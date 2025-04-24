@@ -57,6 +57,7 @@ ohos_unittest("BaseKeyTest") {
 
   external_deps = [
     "c_utils:utils",
+    "drivers_interface_huks:libhuks_proxy_1.1",
     "googletest:gmock_main",
     "googletest:gtest_main",
     "hilog:libhilog",

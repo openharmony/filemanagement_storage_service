@@ -54,7 +54,6 @@ ohos_unittest("FscryptKeyV1ExtTest") {
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
-    "huks:libhukssdk",
     "init:libbegetutil",
   ]
 }
