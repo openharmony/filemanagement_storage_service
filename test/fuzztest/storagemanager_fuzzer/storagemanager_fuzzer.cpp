@@ -760,6 +760,30 @@ bool HandleNotifyDiskDestroyedFuzzTest(const uint8_t *data, size_t size)
     storageManagerPtr->HandleNotifyDiskDestroyed(datas, reply);
     return true;
 }
+
+bool HandleMountMediaFuseFuzzTest(const uint8_t *data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data, size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleMountMediaFuse(datas, reply);
+    return true;
+}
+
+bool HandleUMountMediaFuseFuzzTest(const uint8_t *data, size_t size)
+{
+    MessageParcel datas;
+    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
+    datas.WriteBuffer(data, size);
+    datas.RewindRead(0);
+    MessageParcel reply;
+
+    storageManagerPtr->HandleUMountMediaFuse(datas, reply);
+    return true;
+}
 } // namespace OHOS::StorageManager
 
 void FuzzerTest1(const uint8_t *data, size_t size)
@@ -824,6 +848,8 @@ void FuzzerTest2(const uint8_t *data, size_t size)
     OHOS::StorageManager::HandleNotifyMtpMountFuzzTest(data, size);
     OHOS::StorageManager::HandleNotifyMtpUnmountFuzzTest(data, size);
     OHOS::StorageManager::HandleNotifyDiskDestroyedFuzzTest(data, size);
+    OHOS::StorageManager::HandleMountMediaFuseFuzzTest(data, size);
+    OHOS::StorageManager::HandleUMountMediaFuseFuzzTest(data, size);
 }
 
 /* Fuzzer entry point */
