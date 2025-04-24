@@ -37,7 +37,6 @@ constexpr uint32_t CRYPTO_HKS_NONCE_LEN = 12;
 constexpr uint32_t CRYPTO_KEY_SHIELD_MAX_SIZE = 2048;
 constexpr uint32_t CRYPTO_AES_256_KEY_ENCRYPTED_SIZE = 80;
 constexpr uint32_t CRYPTO_TOKEN_SIZE = TOKEN_CHALLENGE_LEN; // 32
-constexpr uint32_t DEFAULT_PREFIX_SIZE_FOR_KEY_BLOB = 32;
 
 HuksMaster::HuksMaster()
 {
