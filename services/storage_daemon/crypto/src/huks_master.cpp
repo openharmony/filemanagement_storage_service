@@ -11,12 +11,9 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 
 #include "huks_master.h"
-
-#include <iomanip>
-#include <sstream>
 
 #include <unistd.h>
 #include <openssl/err.h>
@@ -637,7 +634,7 @@ static HksParamSet *GenHuksOptionParam(KeyContext &ctx,
     }
 
     ret = isNeedNewNonce ? AppendNonceAadToken(ctx, auth, paramSet)
-                        : AppendNewNonceAadToken(ctx, auth, paramSet, isEncrypt);
+                         : AppendNewNonceAadToken(ctx, auth, paramSet, isEncrypt);
     if (ret != HKS_SUCCESS) {
         LOGE("AppendNonceAad failed ret %{public}d", ret);
         HksFreeParamSet(&paramSet);
