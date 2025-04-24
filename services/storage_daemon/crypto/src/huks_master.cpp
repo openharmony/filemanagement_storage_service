@@ -327,42 +327,6 @@ int HuksMaster::HdiAccessUpgradeKey(const HuksBlob &oldKey, const HksParamSet *p
     return retryRet;
 }
 
-int HuksMaster::HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *paramSet2,
-                                   const KeyBlob &keyIn, KeyBlob &keyOut)
-{
-    LOGI("enter");
-    HuksBlob hksKey = { reinterpret_cast<uint8_t *>(paramSet1), paramSet1->paramSetSize };
-    HuksBlob hksIn = keyIn.ToHuksBlob();
-    HuksBlob hksOut = keyOut.ToHuksBlob();
-    uint8_t h[sizeof(uint64_t)] = {0};
-    HuksBlob hksHandle = { h, sizeof(uint64_t) };
-    uint8_t t[CRYPTO_TOKEN_SIZE] = {0};
-    HuksBlob hksToken = { t, sizeof(t) };  // would not use the challenge here
-    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
-    int ret = HdiAccessInit(hksKey, paramSet2, hksHandle, hksToken);
-    if (ret != HKS_SUCCESS) {
-        LOGE("HdiAccessInit failed ret %{public}d", ret);
-        return ret;
-    }
-    LOGI("SD_DURATION: HUKS: INIT: delay time = %{public}s",
-        StorageService::StorageRadar::RecordDuration(startTime).c_str());
-    startTime = StorageService::StorageRadar::RecordCurrentTime();
-    ret = HdiAccessFinish(hksHandle, paramSet2, hksIn, hksOut);
-    if (ret != HKS_SUCCESS) {
-        if (ret == HKS_ERROR_KEY_AUTH_TIME_OUT) {
-            StorageService::KeyCryptoUtils::ForceLockUserScreen();
-            LOGE("HdiAccessFinish failed because authToken timeout, force lock user screen.");
-        }
-        LOGE("HdiAccessFinish failed ret %{public}d", ret);
-        return ret;
-    }
-    LOGI("SD_DURATION: HUKS: FINISH: delay time = %{public}s",
-        StorageService::StorageRadar::RecordDuration(startTime).c_str());
-    keyOut.size = hksOut.dataLen;
-    LOGI("finish");
-    return E_OK;
-}
-
 KeyBlob HuksMaster::GenerateRandomKey(uint32_t keyLen)
 {
     LOGI("enter, size %{public}d", keyLen);
@@ -694,14 +658,13 @@ int HuksMaster::HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *pa
                                    const KeyBlob &keyIn, KeyBlob &keyOut)
 {
     LOGI("enter");
-    HksBlob hksKey = { paramSet1->paramSetSize, reinterpret_cast<uint8_t *>(paramSet1) };
-    HksBlob hksIn = keyIn.ToHksBlob();
-    HksBlob hksOut = keyOut.ToHksBlob();
+    HuksBlob hksKey = { reinterpret_cast<uint8_t *>(paramSet1), paramSet1->paramSetSize };
+    HuksBlob hksIn = keyIn.ToHuksBlob();
+    HuksBlob hksOut = keyOut.ToHuksBlob();
     uint8_t h[sizeof(uint64_t)] = {0};
-    HksBlob hksHandle = { sizeof(uint64_t), h };
+    HuksBlob hksHandle = { h, sizeof(uint64_t) };
     uint8_t t[CRYPTO_TOKEN_SIZE] = {0};
-    HksBlob hksToken = { sizeof(t), t };  // would not use the challenge here
-
+    HuksBlob hksToken = { t, sizeof(t) };  // would not use the challenge here
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int ret = HdiAccessInit(hksKey, paramSet2, hksHandle, hksToken);
     if (ret != HKS_SUCCESS) {
@@ -722,8 +685,7 @@ int HuksMaster::HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *pa
     }
     LOGI("SD_DURATION: HUKS: FINISH: delay time = %{public}s",
         StorageService::StorageRadar::RecordDuration(startTime).c_str());
-
-    keyOut.size = hksOut.size;
+    keyOut.size = hksOut.dataLen;
     LOGI("finish");
     return E_OK;
 }
