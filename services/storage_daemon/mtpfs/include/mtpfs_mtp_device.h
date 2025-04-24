@@ -90,8 +90,8 @@ public:
     int FileRename(const std::string &oldPath, const std::string &newPath);
     void AddUploadRecord(const std::string path, const std::string value);
     void RemoveUploadRecord(const std::string path);
-    void SetUploadRecord(const std::string path, bool value);
-    std::tuple<std::string, bool> FindUploadRecord(const std::string path);
+    void SetUploadRecord(const std::string path, const std::string value);
+    std::tuple<std::string, std::string> FindUploadRecord(const std::string path);
     int DirRemoveDirectly(const std::string &path);
     const MtpFsTypeDir *OpenDirFetchContent(std::string path);
     const MtpFsTypeDir *ReadDirFetchContent(std::string path);

@@ -497,6 +497,8 @@ bool MtpFileSystem::Exec()
 void *MtpFileSystem::Init(struct fuse_conn_info *conn, struct fuse_config *cfg)
 {
     device_.InitDevice();
+    cfg->attr_timeout = 0;
+    LOGI("MtpFileSystem: Init end, cfg->attr_timeout=%{public}f", cfg->attr_timeout);
     return nullptr;
 }
 
@@ -903,9 +905,6 @@ int MtpFileSystem::Release(const char *path, struct fuse_file_info *fileInfo)
         return -errno;
     }
     const std::string stdPath(path);
-    if (stdPath == std::string("-")) {
-        return 0;
-    }
     if (OHOS::StorageDaemon::IsEndWith(path, MTP_FILE_FLAG)) {
         return 0;
     }
