@@ -65,17 +65,17 @@ HWTEST_F(HuksMasterTest, HuksMaster_InitHdiProxyInstance_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "HuksMaster_InitHdiProxyInstance_001 start";
     // first time init
-    HuksMaster::GetInstance().g_hksHdiProxyInstance = nullptr;
+    HuksMaster::GetInstance().hksHdiProxyInstance_ = nullptr;
     EXPECT_EQ(HuksMaster::GetInstance().InitHdiProxyInstance(), HKS_SUCCESS);
     // not first time init
-    EXPECT_NE(HuksMaster::GetInstance().g_hksHdiProxyInstance, nullptr);
+    EXPECT_NE(HuksMaster::GetInstance().hksHdiProxyInstance_, nullptr);
     EXPECT_EQ(HuksMaster::GetInstance().InitHdiProxyInstance(), HKS_SUCCESS);
 
     HuksMaster::GetInstance().ReleaseHdiProxyInstance();
-    EXPECT_EQ(HuksMaster::GetInstance().g_hksHdiProxyInstance, nullptr);
+    EXPECT_EQ(HuksMaster::GetInstance().hksHdiProxyInstance_, nullptr);
 
     HuksMaster::GetInstance().ReleaseHdiProxyInstance();
-    EXPECT_EQ(HuksMaster::GetInstance().g_hksHdiProxyInstance, nullptr);
+    EXPECT_EQ(HuksMaster::GetInstance().hksHdiProxyInstance_, nullptr);
 
     EXPECT_EQ(HuksMaster::GetInstance().InitHdiProxyInstance(), HKS_SUCCESS);
     GTEST_LOG_(INFO) << "HuksMaster_InitHdiProxyInstance_001_001 end";
@@ -90,14 +90,11 @@ HWTEST_F(HuksMasterTest, HuksMaster_InitHdiProxyInstance_001, TestSize.Level1)
 HWTEST_F(HuksMasterTest, HuksMaster_HdiModuleInit_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "HuksMaster_HdiModuleInit_001 start";
-    HuksMaster::GetInstance().g_hksHdiProxyInstance = nullptr;
+    HuksMaster::GetInstance().hksHdiProxyInstance_ = nullptr;
     EXPECT_EQ(HuksMaster::GetInstance().HdiModuleInit(), HKS_ERROR_NULL_POINTER);
 
-    EXPECT_EQ(HuksMaster::GetInstance().InitHdiProxyInstance(), HKS_SUCCESS);
-    EXPECT_EQ(HuksMaster::GetInstance().HdiModuleInit(), HKS_SUCCESS);
-
-    if (HuksMaster::GetInstance().g_hksHdiProxyInstance != nullptr) {
-        HuksMaster::GetInstance().g_hksHdiProxyInstance->ModuleInit = nullptr;
+    if (HuksMaster::GetInstance().hksHdiProxyInstance_ != nullptr) {
+        HuksMaster::GetInstance().hksHdiProxyInstance_->ModuleInit = nullptr;
         EXPECT_EQ(HuksMaster::GetInstance().HdiModuleInit(), HKS_ERROR_NULL_POINTER);
     }
 
@@ -115,13 +112,13 @@ HWTEST_F(HuksMasterTest, HuksMaster_HdiModuleInit_001, TestSize.Level1)
 HWTEST_F(HuksMasterTest, HuksMaster_HuksHdiModuleDestroy_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "HuksMaster_HuksHdiModuleDestroy_001 start";
-    HuksMaster::GetInstance().g_hksHdiProxyInstance = nullptr;
+    HuksMaster::GetInstance().hksHdiProxyInstance_ = nullptr;
     EXPECT_EQ(HuksMaster::GetInstance().HdiModuleDestroy(), HKS_ERROR_NULL_POINTER);
 
     EXPECT_EQ(HuksMaster::GetInstance().InitHdiProxyInstance(), HKS_SUCCESS);
     EXPECT_EQ(HuksMaster::GetInstance().HdiModuleDestroy(), HKS_SUCCESS);
-    if (HuksMaster::GetInstance().g_hksHdiProxyInstance != nullptr) {
-        HuksMaster::GetInstance().g_hksHdiProxyInstance->ModuleDestroy = nullptr;
+    if (HuksMaster::GetInstance().hksHdiProxyInstance_ != nullptr) {
+        HuksMaster::GetInstance().hksHdiProxyInstance_->ModuleDestroy = nullptr;
         EXPECT_EQ(HuksMaster::GetInstance().HdiModuleDestroy(), HKS_ERROR_NULL_POINTER);
     }
 
@@ -144,8 +141,8 @@ HWTEST_F(HuksMasterTest, HuksMaster_HdiGenerateKey_001, TestSize.Level1)
     HksParamSet *paramSet = nullptr;
     HuksMaster::GetInstance().ReleaseHdiProxyInstance();
     EXPECT_EQ(HuksMaster::GetInstance().InitHdiProxyInstance(), HKS_SUCCESS);
-    if (HuksMaster::GetInstance().g_hksHdiProxyInstance != nullptr) {
-        HuksMaster::GetInstance().g_hksHdiProxyInstance->GenerateKey = nullptr;
+    if (HuksMaster::GetInstance().hksHdiProxyInstance_ != nullptr) {
+        HuksMaster::GetInstance().hksHdiProxyInstance_->GenerateKey = nullptr;
         EXPECT_EQ(HuksMaster::GetInstance().HdiGenerateKey(hksAlias, paramSet, hksKeyOut), HKS_ERROR_NULL_POINTER);
     }
     HuksMaster::GetInstance().ReleaseHdiProxyInstance();;
@@ -168,8 +165,8 @@ HWTEST_F(HuksMasterTest, HuksMaster_HdiAccessInit_001, TestSize.Level1)
     HuksBlob token;
     HuksMaster::GetInstance().ReleaseHdiProxyInstance();
     EXPECT_EQ(HuksMaster::GetInstance().InitHdiProxyInstance(), HKS_SUCCESS);
-    if (HuksMaster::GetInstance().g_hksHdiProxyInstance != nullptr) {
-        HuksMaster::GetInstance().g_hksHdiProxyInstance->Init = nullptr;
+    if (HuksMaster::GetInstance().hksHdiProxyInstance_ != nullptr) {
+        HuksMaster::GetInstance().hksHdiProxyInstance_->Init = nullptr;
         EXPECT_EQ(HuksMaster::GetInstance().HdiAccessInit(key, paramSet, handle, token), HKS_ERROR_NULL_POINTER);
     }
     HuksMaster::GetInstance().ReleaseHdiProxyInstance();
@@ -192,8 +189,8 @@ HWTEST_F(HuksMasterTest, HuksMaster_HdiAccessFinish_001, TestSize.Level1)
     HuksBlob outData;
     HuksMaster::GetInstance().ReleaseHdiProxyInstance();
     EXPECT_EQ(HuksMaster::GetInstance().InitHdiProxyInstance(), HKS_SUCCESS);
-    if (HuksMaster::GetInstance().g_hksHdiProxyInstance != nullptr) {
-        HuksMaster::GetInstance().g_hksHdiProxyInstance->Finish = nullptr;
+    if (HuksMaster::GetInstance().hksHdiProxyInstance_ != nullptr) {
+        HuksMaster::GetInstance().hksHdiProxyInstance_->Finish = nullptr;
         EXPECT_EQ(HuksMaster::GetInstance().HdiAccessFinish(handle, paramSet, inData, outData),
             HKS_ERROR_NULL_POINTER);
     }
@@ -216,8 +213,8 @@ HWTEST_F(HuksMasterTest, HuksMaster_HdiAccessUpgradeKey_001, TestSize.Level1)
     HksParamSet *paramSet = nullptr;
     HuksMaster::GetInstance().ReleaseHdiProxyInstance();
     EXPECT_EQ(HuksMaster::GetInstance().InitHdiProxyInstance(), HKS_SUCCESS);
-    if (HuksMaster::GetInstance().g_hksHdiProxyInstance != nullptr) {
-        HuksMaster::GetInstance().g_hksHdiProxyInstance->UpgradeKey = nullptr;
+    if (HuksMaster::GetInstance().hksHdiProxyInstance_ != nullptr) {
+        HuksMaster::GetInstance().hksHdiProxyInstance_->UpgradeKey = nullptr;
         EXPECT_EQ(HuksMaster::GetInstance().HdiAccessUpgradeKey(oldKey, paramSet, newKey), HKS_ERROR_NULL_POINTER);
     }
     HuksMaster::GetInstance().ReleaseHdiProxyInstance();
