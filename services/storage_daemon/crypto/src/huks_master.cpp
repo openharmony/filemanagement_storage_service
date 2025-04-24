@@ -55,7 +55,6 @@ HuksMaster::~HuksMaster()
     LOGI("finish");
 }
 
-
 int32_t HuksMaster::InitHdiProxyInstance()
 {
     LOGI("enter");
@@ -139,7 +138,7 @@ int HuksMaster::HdiModuleDestroy()
         LOGI("HuksHdiModuleDestroy success, ret %{public}d", ret);
         return ret;
     }
-    
+
     if (ret != HKS_ERROR_RETRYABLE_ERROR) {
         LOGE("HuksHdiModuleDestroy failed, ret %{public}d", ret);
         StorageRadar::ReportHuksResult("HuksHdiModuleDestroy", ret);
@@ -223,6 +222,7 @@ int HuksMaster::HdiAccessInit(const HuksBlob &key, const HksParamSet *paramSet, 
         LOGI("HuksHdiInit success, ret %{public}d", ret);
         return ret;
     }
+
     if (ret != HKS_ERROR_RETRYABLE_ERROR) {
         LOGE("HuksHdiInit failed, ret %{public}d", ret);
         return ret;
@@ -263,6 +263,7 @@ int HuksMaster::HdiAccessFinish(const HuksBlob &handle, const HksParamSet *param
         LOGI("HuksHdiFinish success, ret %{public}d", ret);
         return ret;
     }
+
     if (ret != HKS_ERROR_RETRYABLE_ERROR) {
         LOGE("HuksHdiFinish failed, ret %{public}d", ret);
         return ret;
@@ -302,7 +303,7 @@ int HuksMaster::HdiAccessUpgradeKey(const HuksBlob &oldKey, const HksParamSet *p
         LOGI("HuksHdiUpgradeKey success, ret %{public}d", ret);
         return ret;
     }
-    
+
     if (ret != HKS_ERROR_RETRYABLE_ERROR) {
         LOGE("HuksHdiUpgradeKey failed, ret %{public}d", ret);
         StorageRadar::ReportHuksResult("HuksHdiUpgradeKey", ret);
@@ -662,6 +663,7 @@ int HuksMaster::HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *pa
     HuksBlob hksHandle = { h, sizeof(uint64_t) };
     uint8_t t[CRYPTO_TOKEN_SIZE] = {0};
     HuksBlob hksToken = { t, sizeof(t) };  // would not use the challenge here
+
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int ret = HdiAccessInit(hksKey, paramSet2, hksHandle, hksToken);
     if (ret != HKS_SUCCESS) {
@@ -682,6 +684,7 @@ int HuksMaster::HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *pa
     }
     LOGI("SD_DURATION: HUKS: FINISH: delay time = %{public}s",
         StorageService::StorageRadar::RecordDuration(startTime).c_str());
+
     keyOut.size = hksOut.dataLen;
     LOGI("finish");
     return E_OK;
@@ -715,6 +718,7 @@ int32_t HuksMaster::EncryptKeyEx(const UserAuth &auth, const KeyBlob &rnd, KeyCo
     if (ret != E_OK) {
         LOGE("HuksHalTripleStage failed");
     }
+
     HksFreeParamSet(&paramSet2);
     LOGI("finish");
     return ret;
@@ -748,6 +752,7 @@ int32_t HuksMaster::EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyI
     if (ret != E_OK) {
         LOGE("HuksHalTripleStage failed");
     }
+
     HksFreeParamSet(&paramSet2);
     LOGI("finish");
     return ret;
@@ -775,11 +780,13 @@ int32_t HuksMaster::DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &k
         LOGE("GenHuksOptionParam failed");
         return E_GEN_HUKS_PARAM_ERROR;
     }
+
     key.key.Alloc(ctx.rndEnc.size);
     auto ret = HuksHalTripleStage(paramSet1, paramSet2, ctx.rndEnc, key.key);
     if (ret != E_OK) {
         LOGE("HuksHalTripleStage failed");
     }
+
     HksFreeParamSet(&paramSet2);
     LOGI("finish");
     return ret;
@@ -813,6 +820,7 @@ int32_t HuksMaster::DecryptKeyEx(KeyContext &ctx, const UserAuth &auth, KeyBlob 
     if (ret != E_OK) {
         LOGE("HuksHalTripleStage failed");
     }
+
     HksFreeParamSet(&paramSet2);
     LOGI("finish");
     return ret;
@@ -875,6 +883,7 @@ bool HuksMaster::UpgradeKey(KeyContext &ctx)
         KeyBlob keyOut(CRYPTO_KEY_SHIELD_MAX_SIZE);
         HuksBlob hksIn = ctx.shield.ToHuksBlob();
         HuksBlob hksOut = keyOut.ToHuksBlob();
+
         err = HdiAccessUpgradeKey(hksIn, paramSet, hksOut);
         if (err == HKS_SUCCESS) {
             LOGI("Shield upgraded successfully");
@@ -887,5 +896,6 @@ bool HuksMaster::UpgradeKey(KeyContext &ctx)
     HksFreeParamSet(&paramSet);
     return ret;
 }
+
 } // namespace StorageDaemon
 } // namespace OHOS
