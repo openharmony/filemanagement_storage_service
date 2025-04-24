@@ -27,6 +27,7 @@
 
 constexpr int UPLOAD_RECORD_FALSE_LEN = 5;
 constexpr int UPLOAD_RECORD_TRUE_LEN = 4;
+constexpr int32_t UPLOAD_RECORD_SUCCESS_LEN = 7;
 
 constexpr int32_t ST_NLINK_TWO = 2;
 constexpr int32_t FILE_SIZE = 512;
@@ -496,6 +497,8 @@ bool MtpFileSystem::Exec()
 void *MtpFileSystem::Init(struct fuse_conn_info *conn, struct fuse_config *cfg)
 {
     device_.InitDevice();
+    cfg->attr_timeout = 0;
+    LOGI("MtpFileSystem: Init end, cfg->attr_timeout=%{public}f", cfg->attr_timeout);
     return nullptr;
 }
 
@@ -902,9 +905,6 @@ int MtpFileSystem::Release(const char *path, struct fuse_file_info *fileInfo)
         return -errno;
     }
     const std::string stdPath(path);
-    if (stdPath == std::string("-")) {
-        return 0;
-    }
     if (OHOS::StorageDaemon::IsEndWith(path, MTP_FILE_FLAG)) {
         return 0;
     }
@@ -923,17 +923,18 @@ int MtpFileSystem::Release(const char *path, struct fuse_file_info *fileInfo)
     struct stat fileStat;
     stat(tmpPath.c_str(), &fileStat);
     if (modIf && fileStat.st_size != 0) {
-        device_.SetUploadRecord(stdPath, false);
+        device_.SetUploadRecord(stdPath, "sending");
         rval = device_.FilePush(tmpPath, stdPath);
-        device_.SetUploadRecord(stdPath, true);
         if (rval != 0) {
             LOGE("FilePush %{public}s to mtp device fail", path);
+            device_.SetUploadRecord(stdPath, "fail");
             ::unlink(tmpPath.c_str());
             return -rval;
         }
         LOGI("FilePush %{public}s to mtp device success", path);
+        device_.SetUploadRecord(stdPath, "success");
     } else {
-        device_.SetUploadRecord(stdPath, true);
+        device_.SetUploadRecord(stdPath, "success");
     }
     ::unlink(tmpPath.c_str());
     LOGI("MtpFileSystem: Release success, path: %{public}s", path);
@@ -1062,7 +1063,7 @@ int MtpFileSystem::SetXAttr(const char *path, const char *in)
         LOGE("attrKey error, attrKey=%{public}s", in);
         return -ENOENT;
     }
-    device_.AddUploadRecord(std::string(path), false);
+    device_.AddUploadRecord(std::string(path), "sending");
     return 0;
 }
 
@@ -1074,7 +1075,7 @@ int MtpFileSystem::GetXAttr(const char *path, const char *in, char *out, size_t 
     }
 
     if (out == nullptr || size <= 0) {
-        return UPLOAD_RECORD_FALSE_LEN;
+        return UPLOAD_RECORD_SUCCESS_LEN;
     }
     if (strcmp(in, "user.isDirFetched") == 0) {
         bool fetch = device_.IsDirFetched(std::string(path));
@@ -1095,22 +1096,20 @@ int MtpFileSystem::GetXAttr(const char *path, const char *in, char *out, size_t 
             LOGE("No record, path=%{public}s", path);
             return 0;
         }
-        int ret;
-        if (secondParam) {
-            ret = memcpy_s(out, size, "true", UPLOAD_RECORD_TRUE_LEN);
-            if (ret != 0) {
-                LOGE("copy fail, ret=%{public}d", ret);
+        int32_t len = strlen(secondParam.c_str());
+        if (secondParam == "success" || secondParam == "fail") {
+            if (memcpy_s(out, size, secondParam.c_str(), len) != 0) {
+                LOGE("memcpy_s fail");
                 return 0;
             }
             device_.RemoveUploadRecord(path);
-        } else {
-            ret = memcpy_s(out, size, "false", UPLOAD_RECORD_FALSE_LEN);
-            if (ret != 0) {
-                LOGE("copy fail, ret=%{public}d", ret);
+        } else if (secondParam == "sending") {
+            if (memcpy_s(out, size, secondParam.c_str(), len) != 0) {
+                LOGE("memcpy_s fail");
                 return 0;
             }
         }
-        return secondParam ? UPLOAD_RECORD_TRUE_LEN : UPLOAD_RECORD_FALSE_LEN;
+        return len;
     } else if (strcmp(in, "user.getfriendlyname") == 0) {
         return GetFriendlyName(in, out, size);
     } else {

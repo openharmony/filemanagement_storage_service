@@ -88,10 +88,10 @@ public:
     int FilePush(const std::string &src, const std::string &dst);
     int FileRemove(const std::string &path);
     int FileRename(const std::string &oldPath, const std::string &newPath);
-    void AddUploadRecord(const std::string path, bool value);
+    void AddUploadRecord(const std::string path, const std::string value);
     void RemoveUploadRecord(const std::string path);
-    void SetUploadRecord(const std::string path, bool value);
-    std::tuple<std::string, bool> FindUploadRecord(const std::string path);
+    void SetUploadRecord(const std::string path, const std::string value);
+    std::tuple<std::string, std::string> FindUploadRecord(const std::string path);
     int DirRemoveDirectly(const std::string &path);
     const MtpFsTypeDir *OpenDirFetchContent(std::string path);
     const MtpFsTypeDir *ReadDirFetchContent(std::string path);
@@ -130,7 +130,7 @@ private:
     static uint32_t rootNode_;
     bool eventFlag_ = true;
     std::mutex uploadRecordMutex_;
-    std::map<std::string, bool> uploadRecordMap_;
+    std::map<std::string, std::string> uploadRecordMap_;
     static std::condition_variable eventCon_;
     static std::mutex eventMutex_;
     std::string rootDirName_;

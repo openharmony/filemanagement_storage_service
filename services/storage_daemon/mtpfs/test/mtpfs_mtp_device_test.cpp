@@ -172,13 +172,13 @@ HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_AddUploadRecord_001, TestSize.Level1)
     GTEST_LOG_(INFO) << "MtpfsDeviceTest_AddUploadRecord_001 start";
     const char *path = "/mnt/data/external";
     auto mtpfsdevice = std::make_shared<MtpFsDevice>();
-    mtpfsdevice->AddUploadRecord(path, false);
+    mtpfsdevice->AddUploadRecord(path, "fail");
     auto it = mtpfsdevice->uploadRecordMap_.find(path);
-    EXPECT_EQ(it->second, false);
+    EXPECT_EQ(it->second, "fail");
 
-    mtpfsdevice->AddUploadRecord(path, true);
+    mtpfsdevice->AddUploadRecord(path, "success");
     it = mtpfsdevice->uploadRecordMap_.find(path);
-    EXPECT_EQ(it->second, true);
+    EXPECT_EQ(it->second, "success");
     GTEST_LOG_(INFO) << "MtpfsDeviceTest_AddUploadRecord_001 end";
 }
 
@@ -193,11 +193,11 @@ HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_RemoveUploadRecord_001, TestSize.Level
     const char *path0 = "/mnt/data/external";
     const char *path1 = "/mnt/data/exter";
     auto mtpfsdevice = std::make_shared<MtpFsDevice>();
-    mtpfsdevice->AddUploadRecord(path0, true);
+    mtpfsdevice->AddUploadRecord(path0, "success");
 
     mtpfsdevice->RemoveUploadRecord(path1);
     auto it = mtpfsdevice->uploadRecordMap_.find(path0);
-    EXPECT_EQ(it->second, true);
+    EXPECT_EQ(it->second, "success");
 
     mtpfsdevice->RemoveUploadRecord(path0);
     it = mtpfsdevice->uploadRecordMap_.find(path0);
@@ -216,14 +216,14 @@ HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_SetUploadRecord_001, TestSize.Level1)
     const char *path = "/mnt/data/external";
     auto mtpfsdevice = std::make_shared<MtpFsDevice>();
 
-    mtpfsdevice->SetUploadRecord(path, false);
+    mtpfsdevice->SetUploadRecord(path, "fail");
     auto it = mtpfsdevice->uploadRecordMap_.find(path);
     EXPECT_EQ(it, mtpfsdevice->uploadRecordMap_.end());
 
-    mtpfsdevice->AddUploadRecord(path, false);
-    mtpfsdevice->SetUploadRecord(path, true);
+    mtpfsdevice->AddUploadRecord(path, "fail");
+    mtpfsdevice->SetUploadRecord(path, "success");
     it = mtpfsdevice->uploadRecordMap_.find(path);
-    EXPECT_EQ(it->second, true);
+    EXPECT_EQ(it->second, "success");
     GTEST_LOG_(INFO) << "MtpfsDeviceTest_SetUploadRecord_001 end";
 }
 
@@ -236,15 +236,15 @@ HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_FindUploadRecord_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MtpfsDeviceTest_FindUploadRecord_001 start";
     const char *path = "/mnt/data/external";
-    std::tuple<std::string, bool> ret;
+    std::tuple<std::string, std::string> ret;
     auto mtpfsdevice = std::make_shared<MtpFsDevice>();
 
     ret = mtpfsdevice->FindUploadRecord(path);
     EXPECT_EQ(std::get<0>(ret).empty(), true);
 
-    mtpfsdevice->AddUploadRecord(path, true);
+    mtpfsdevice->AddUploadRecord(path, "success");
     ret = mtpfsdevice->FindUploadRecord(path);
-    EXPECT_EQ(std::get<1>(ret), true);
+    EXPECT_EQ(std::get<1>(ret), "success");
     GTEST_LOG_(INFO) << "MtpfsDeviceTest_FindUploadRecord_001 end";
 }
 

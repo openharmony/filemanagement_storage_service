@@ -29,6 +29,7 @@ const int32_t BS_SIZE = 1024;
 const int32_t ARG_SIZE = 2;
 constexpr int UPLOAD_RECORD_FALSE_LEN = 5;
 constexpr int UPLOAD_RECORD_TRUE_LEN = 4;
+constexpr int UPLOAD_RECORD_SUCCESS_SENDING_LEN = 7;
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -316,28 +317,28 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttr_001, TestSize.Level1)
     GTEST_LOG_(INFO) << "MtpfsFuseTest_GetXAttr_001 start";
 
     const char *path = "/mnt/data/external";
-    char out[UPLOAD_RECORD_FALSE_LEN + 1] = { 0 };
+    char out[UPLOAD_RECORD_SUCCESS_SENDING_LEN + 1] = { 0 };
 
     auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
     int ret = mtpFileSystem->GetXAttr(NULL, NULL, NULL, 0);
     EXPECT_EQ(ret, 0);
 
     ret = mtpFileSystem->GetXAttr(path, "user.uploadCompleted", NULL, 0);
-    EXPECT_EQ(ret, 0);
+    EXPECT_EQ(ret, UPLOAD_RECORD_SUCCESS_SENDING_LEN);
 
     ret = mtpFileSystem->GetXAttr(path, "user.isUploadCompleted", NULL, 0);
-    EXPECT_EQ(ret, UPLOAD_RECORD_FALSE_LEN);
+    EXPECT_EQ(ret, UPLOAD_RECORD_SUCCESS_SENDING_LEN);
 
     ret = mtpFileSystem->GetXAttr(path, "user.isUploadCompleted", out, sizeof(out));
     EXPECT_EQ(ret, 0);
 
     mtpFileSystem->SetXAttr(path, "user.isUploadCompleted");
     ret = mtpFileSystem->GetXAttr(path, "user.isUploadCompleted", out, sizeof(out));
-    EXPECT_EQ(ret, UPLOAD_RECORD_FALSE_LEN);
+    EXPECT_EQ(ret, UPLOAD_RECORD_SUCCESS_SENDING_LEN);
 
-    mtpFileSystem->device_.SetUploadRecord(path, true);
+    mtpFileSystem->device_.SetUploadRecord(path, "success");
     ret = mtpFileSystem->GetXAttr(path, "user.isUploadCompleted", out, sizeof(out));
-    EXPECT_EQ(ret, UPLOAD_RECORD_TRUE_LEN);
+    EXPECT_EQ(ret, UPLOAD_RECORD_SUCCESS_SENDING_LEN);
 
     GTEST_LOG_(INFO) << "MtpfsFuseTest_GetXAttr_001 end";
 }
