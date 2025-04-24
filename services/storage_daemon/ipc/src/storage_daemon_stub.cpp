@@ -759,7 +759,7 @@ int32_t StorageDaemonStub::HandleActiveUserKey(MessageParcel &data, MessageParce
     if (!reply.WriteInt32(err)) {
         return E_WRITE_REPLY_ERR;
     }
-    LOGI("SD_DURATION: READ KEY FILE: delay time = %{public}s",
+    LOGI("SD_DURATION: ACTIVE USER KEY: delay time = %{public}s",
         StorageService::StorageRadar::RecordDuration(startTime).c_str());
     return E_OK;
 }
