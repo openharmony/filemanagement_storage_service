@@ -328,7 +328,7 @@ int HuksMaster::HdiAccessUpgradeKey(const HuksBlob &oldKey, const HksParamSet *p
 }
 
 int HuksMaster::HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *paramSet2,
-                                const KeyBlob &keyIn, KeyBlob &keyOut)
+                                   const KeyBlob &keyIn, KeyBlob &keyOut)
 {
     LOGI("enter");
     HuksBlob hksKey = { reinterpret_cast<uint8_t *>(paramSet1), paramSet1->paramSetSize };
@@ -409,7 +409,7 @@ static const HksParam g_generateKeyParam[] = {
     { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_GCM },
     { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_NONE },
     { .tag = HKS_TAG_PROCESS_NAME,
-    .blob =
+      .blob =
         { sizeof(g_processName), g_processName }
     },
 };
@@ -496,7 +496,7 @@ static int AppendAeTag(KeyBlob &cipherText, HksParamSet *paramSet)
 
     HksParam param[] = {
         { .tag = HKS_TAG_AE_TAG,
-        .blob =
+          .blob =
             { HKS_AE_TAG_LEN, cipherText.data.get() + cipherText.size - HKS_AE_TAG_LEN }
         },
     };
@@ -569,15 +569,15 @@ static int AppendNonceAadToken(KeyContext &ctx, const UserAuth &auth, HksParamSe
         { .tag = HKS_TAG_USER_AUTH_TYPE, .uint32Param = HKS_USER_AUTH_TYPE_PIN },
         { .tag = HKS_TAG_KEY_AUTH_ACCESS_TYPE, .uint32Param = HKS_AUTH_ACCESS_INVALID_CLEAR_PASSWORD },
         { .tag = HKS_TAG_NONCE,
-        .blob =
+          .blob =
             { ctx.nonce.size, ctx.nonce.data.get() }
         },
         { .tag = HKS_TAG_ASSOCIATED_DATA,
-        .blob =
+          .blob =
             { ctx.aad.size, ctx.aad.data.get() }
         },
         { .tag = HKS_TAG_AUTH_TOKEN,
-        .blob =
+          .blob =
             { auth.token.size, auth.token.data.get() }
         }
     };
@@ -636,9 +636,9 @@ static HksParamSet *GenHuksOptionParamEx(KeyContext &ctx, const UserAuth &auth, 
 }
 
 static HksParamSet *GenHuksOptionParam(KeyContext &ctx,
-                                    const UserAuth &auth,
-                                    const bool isEncrypt,
-                                    const bool isNeedNewNonce)
+                                       const UserAuth &auth,
+                                       const bool isEncrypt,
+                                       const bool isNeedNewNonce)
 {
     HksParam encryptParam[] = {
         { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_AES },

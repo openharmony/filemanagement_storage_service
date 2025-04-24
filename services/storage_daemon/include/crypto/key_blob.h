@@ -130,7 +130,7 @@ public:
     {
         return {size, data.get()};
     }
-    HksBlob ToHksBlob() const
+    HuksBlob ToHuksBlob() const
     {
         return {data.get(), size};
     }
