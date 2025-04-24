@@ -113,7 +113,8 @@ bool BaseKey::SaveKeyBlob(const KeyBlob &blob, const std::string &path)
         return false;
     }
     LOGI("enter %{public}s, size=%{public}d", path.c_str(), blob.size);
-    return WriteFileSync(path.c_str(), blob.data.get(), blob.size);
+    std::string errMsg = "";
+    return WriteFileSync(path.c_str(), blob.data.get(), blob.size, errMsg);
 }
 
 bool BaseKey::GenerateAndSaveKeyBlob(KeyBlob &blob, const std::string &path, const uint32_t size)
@@ -276,12 +277,13 @@ bool BaseKey::CheckAndUpdateVersion()
 {
     auto pathVersion = dir_ + PATH_FSCRYPT_VER;
     std::string version;
+    std::string errMsg = "";
     if (OHOS::LoadStringFromFile(pathVersion, version)) {
         if (version != std::to_string(keyInfo_.version)) {
             LOGE("version already exist %{public}s, not expected %{public}d", version.c_str(), keyInfo_.version);
             return false;
         }
-    } else if (SaveStringToFileSync(pathVersion, std::to_string(keyInfo_.version)) == false) {
+    } else if (SaveStringToFileSync(pathVersion, std::to_string(keyInfo_.version), errMsg) == false) {
         StorageService::StorageRadar::ReportUserKeyResult("CheckAndUpdateVersion", 0, 0, "", "dir_=" + dir_);
         LOGE("save version failed, errno:%{public}d", errno);
         return false;

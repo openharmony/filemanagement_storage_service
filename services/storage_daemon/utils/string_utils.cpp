@@ -81,16 +81,18 @@ std::vector<std::string> SplitLine(std::string &line, std::string &token)
     return result;
 }
 
-bool WriteFileSync(const char *path, const uint8_t *data, size_t size)
+bool WriteFileSync(const char *path, const uint8_t *data, size_t size, std::string &errMsg)
 {
     FILE *f = fopen(path, "w");
     if (f == nullptr) {
+        errMsg = "f == nullptr, errno" + std::to_string(errno);
         LOGE("open %{public}s failed, errno %{public}d", path, errno);
         return false;
     }
     ChMod(path, S_IRUSR | S_IWUSR);
     int fd = fileno(f);
     if (fd == -1) {
+        errMsg = "fd == -1, errno" + std::to_string(errno);
         LOGE("open %{public}s failed, errno %{public}d", path, errno);
         (void)fclose(f);
         return false;
@@ -98,17 +100,20 @@ bool WriteFileSync(const char *path, const uint8_t *data, size_t size)
 
     long len = write(fd, data, size);
     if (len < 0) {
+        errMsg = "fd == -1, errno" + std::to_string(errno);
         LOGE("write %{public}s failed, errno %{public}d", path, errno);
         (void)fclose(f);
         return false;
     }
     if (static_cast<size_t>(len) != size) {
+        errMsg = "len != size, errno" + std::to_string(errno);
         LOGE("write return len %{public}ld, not equal to content length %{public}zu", len, size);
         (void)fclose(f);
         return false;
     }
 
     if (fsync(fd) != 0) {
+        errMsg = "fsync(fd), errno" + std::to_string(errno);
         LOGE("fsync %{public}s failed, errno %{public}d", path, errno);
         (void)fclose(f);
         return false;
@@ -117,13 +122,13 @@ bool WriteFileSync(const char *path, const uint8_t *data, size_t size)
     return true;
 }
 
-bool SaveStringToFileSync(const std::string &path, const std::string &data)
+bool SaveStringToFileSync(const std::string &path, const std::string &data, std::string &errMsg)
 {
     if (path.empty() || data.empty()) {
         return false;
     }
     LOGI("enter %{public}s, size=%{public}zu", path.c_str(), data.length());
-    return WriteFileSync(path.c_str(), reinterpret_cast<const uint8_t *>(data.c_str()), data.size());
+    return WriteFileSync(path.c_str(), reinterpret_cast<const uint8_t *>(data.c_str()), data.size(), errMsg);
 }
 
 bool StringIsNumber(const std::string &content)

@@ -178,6 +178,7 @@ private:
     std::map<unsigned int, bool> saveLockScreenStatus;
     std::map<unsigned int, bool> saveESecretStatus;
     std::mutex keyMutex_;
+    int64_t getLockStatusTime_[2];
     bool hasGlobalDeviceKey_;
 };
 } // namespace StorageDaemon

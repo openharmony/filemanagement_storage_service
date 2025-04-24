@@ -73,8 +73,8 @@ HWTEST_F(StorageStatisticRadarTest, StorageStatisticRadarTest_CreateStatisticFil
     RadarStatisticInfo info = StorageStatisticRadarTest::getRadarInfo();
     statistics.insert(std::make_pair(1, info));
     std::string jsonStr = radar.CreateJsonString(statistics);
-
-    SaveStringToFileSync(PATH_STORAGE_RADAR.c_str(), jsonStr);
+    std::string errMsg = "";
+    SaveStringToFileSync(PATH_STORAGE_RADAR.c_str(), jsonStr, errMsg);
     EXPECT_TRUE(radar.CreateStatisticFile());
 
     std::remove(PATH_STORAGE_RADAR.c_str());
@@ -99,7 +99,8 @@ HWTEST_F(StorageStatisticRadarTest, StorageStatisticRadarTest_CleanStatisticFile
     RadarStatisticInfo info = StorageStatisticRadarTest::getRadarInfo();
     statistics.insert(std::make_pair(1, info));
     std::string jsonStr = radar.CreateJsonString(statistics);
-    SaveStringToFileSync(PATH_STORAGE_RADAR.c_str(), jsonStr);
+    std::string errMsg = "";
+    SaveStringToFileSync(PATH_STORAGE_RADAR.c_str(), jsonStr, errMsg);
 
     radar.CleanStatisticFile();
     std::ifstream inFile(PATH_STORAGE_RADAR.c_str());
@@ -170,21 +171,22 @@ HWTEST_F(StorageStatisticRadarTest, StorageStatisticRadarTest_ReadStatisticFile_
     EXPECT_TRUE(statistics1.empty());
 
     std::string radarInfo = "";
-    SaveStringToFileSync(PATH_STORAGE_RADAR.c_str(), radarInfo);
+    std::string errMsg = "";
+    SaveStringToFileSync(PATH_STORAGE_RADAR.c_str(), radarInfo, errMsg);
     std::map<uint32_t, RadarStatisticInfo> statistics2;
     EXPECT_FALSE(radar.ReadStatisticFile(statistics2));
     EXPECT_TRUE(statistics2.empty());
     std::remove(PATH_STORAGE_RADAR.c_str());
 
     std::string radarInfo1 = "test json";
-    SaveStringToFileSync(PATH_STORAGE_RADAR.c_str(), radarInfo1);
+    SaveStringToFileSync(PATH_STORAGE_RADAR.c_str(), radarInfo1, errMsg);
     std::map<uint32_t, RadarStatisticInfo> statistics3;
     EXPECT_FALSE(radar.ReadStatisticFile(statistics3));
     EXPECT_TRUE(statistics3.empty());
     std::remove(PATH_STORAGE_RADAR.c_str());
 
     std::string expected = "{\"storageStatisticFile\":\"userId\":1,\"oprateCount\":\"1,2,3,4,5,6,7,8,9,10,11,12\"}]}";
-    SaveStringToFileSync(PATH_STORAGE_RADAR.c_str(), expected);
+    SaveStringToFileSync(PATH_STORAGE_RADAR.c_str(), expected, errMsg);
     std::remove(PATH_STORAGE_RADAR.c_str());
     EXPECT_FALSE(radar.ReadStatisticFile(statistics3));
     EXPECT_TRUE(statistics3.empty());
@@ -194,7 +196,7 @@ HWTEST_F(StorageStatisticRadarTest, StorageStatisticRadarTest_ReadStatisticFile_
     RadarStatisticInfo info = StorageStatisticRadarTest::getRadarInfo();
     statistics4.insert(std::make_pair(1, info));
     std::string jsonStr = radar.CreateJsonString(statistics4);
-    SaveStringToFileSync(PATH_STORAGE_RADAR.c_str(), jsonStr);
+    SaveStringToFileSync(PATH_STORAGE_RADAR.c_str(), jsonStr, errMsg);
     std::map<uint32_t, RadarStatisticInfo> statistics;
     EXPECT_TRUE(radar.ReadStatisticFile(statistics));
     EXPECT_FALSE(statistics.empty());

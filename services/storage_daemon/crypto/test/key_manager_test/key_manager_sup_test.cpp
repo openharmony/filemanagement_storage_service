@@ -584,7 +584,7 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UnlockUece_001, TestSize.Level1)
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*fscryptKeyMock_, DecryptClassE(_, _, _, _, _)).WillOnce(Return(-1));
-    EXPECT_EQ(KeyManager::GetInstance()->UnlockUece(user, token, secret), E_UNLOCK_APP_KEY2_FAILED);
+    EXPECT_EQ(KeyManager::GetInstance()->UnlockUece(user, token, secret), -1);
 
     EXPECT_CALL(*fscryptKeyMock_, DecryptClassE(_, _, _, _, _)).WillOnce(Return(E_OK));
     if (access(UECE_PATH, F_OK) == 0) {
@@ -595,7 +595,7 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UnlockUece_001, TestSize.Level1)
         keyInfo.push_back(make_pair(3, "test3"));
 
         EXPECT_CALL(*el5FilekeyManagerKitMoc_, GetUserAppKey(_, _)).WillOnce(Return(-1));
-        EXPECT_EQ(KeyManager::GetInstance()->UnlockUece(user, token, secret), E_UNLOCK_APP_KEY2_FAILED);
+        EXPECT_EQ(KeyManager::GetInstance()->UnlockUece(user, token, secret), -1);
         EXPECT_CALL(*fscryptKeyMock_, DecryptClassE(_, _, _, _, _)).WillOnce(Return(E_OK));
         EXPECT_CALL(*el5FilekeyManagerKitMoc_, GetUserAppKey(_, _)).WillOnce(Return(0));
         #endif

@@ -54,6 +54,8 @@ constexpr uint32_t RECOVERY_TOKEN_CHALLENGE_LENG = 32;
 constexpr const char *SERVICE_STORAGE_DAEMON_DIR = "/data/service/el1/public/storage_daemon";
 constexpr const char *FSCRYPT_EL_DIR = "/data/service/el1/public/storage_daemon/sd";
 
+constexpr int LOCK_STATUS_START = 0;
+constexpr int LOCK_STATUS_END = 1;
 constexpr uint8_t RETRIEVE_KEY = 0x0;
 constexpr uint8_t FIRST_CREATE_KEY = 0x6c;
 constexpr uint8_t USER_LOGOUT = 0x0;
@@ -785,6 +787,12 @@ std::string BuildSecretStatus(struct UserTokenSecret &userTokenSecret)
     return "oldSecret isEmpty = " + isOldEmy + ", newSecret isEmpty = " + isNewEmy;
 }
 
+std::string BuildTimeInfo(int64_t start, int64_t end)
+{
+    std::string duration = std::to_string(end - start);
+    return " start: " + std::to_string(start) + " ,end: " + std::to_string(end) + " ,duration: " + duration;
+}
+
 #ifdef USER_CRYPTO_MIGRATE_KEY
 int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTokenSecret,
                                bool needGenerateShield)
@@ -794,47 +802,58 @@ int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTo
 {
     std::lock_guard<std::mutex> lock(keyMutex_);
     std::string secretInfo = BuildSecretStatus(userTokenSecret);
+    std::string queryTime = BuildTimeInfo(getLockStatusTime_[LOCK_STATUS_START], getLockStatusTime_[LOCK_STATUS_END]);
+    int64_t startTime = StorageService::StorageRadar::RecordCurrentTime();
 #ifdef USER_CRYPTO_MIGRATE_KEY
     int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL2_KEY, needGenerateShield);
     if (ret != 0) {
-        StorageRadar::ReportUpdateUserAuth("UpdateCeEceSeceUserAuth_Migrate", user, ret, "EL2", secretInfo);
+        LOGE("user %{public}u UpdateUserAuth el2 key fail", user);
+        queryTime += " UpdateUserAuth: " + BuildTimeInfo(startTime, StorageService::StorageRadar::RecordCurrentTime());
+        StorageRadar::ReportUpdateUserAuth("UpdateCeEceSeceUserAuth_Migrate", user, ret, "EL2", secretInfo + queryTime);
         return ret;
     }
     ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL3_KEY, needGenerateShield);
     if (ret != 0) {
         LOGE("user %{public}u UpdateUserAuth el3 key fail", user);
-        StorageRadar::ReportUpdateUserAuth("UpdateCeEceSeceUserAuth_Migrate", user, ret, "EL3", secretInfo);
+        queryTime += " UpdateUserAuth: " + BuildTimeInfo(startTime, StorageService::StorageRadar::RecordCurrentTime());
+        StorageRadar::ReportUpdateUserAuth("UpdateCeEceSeceUserAuth_Migrate", user, ret, "EL3", secretInfo + queryTime);
         return ret;
     }
     ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL4_KEY, needGenerateShield);
     if (ret != 0) {
         LOGE("user %{public}u UpdateUserAuth el4 key fail", user);
-        StorageRadar::ReportUpdateUserAuth("UpdateCeEceSeceUserAuth_Migrate", user, ret, "EL4", secretInfo);
+        queryTime += " UpdateUserAuth: " + BuildTimeInfo(startTime, StorageService::StorageRadar::RecordCurrentTime());
+        StorageRadar::ReportUpdateUserAuth("UpdateCeEceSeceUserAuth_Migrate", user, ret, "EL4", secretInfo + queryTime);
         return ret;
     }
 #else
     int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL2_KEY);
     if (ret != 0) {
-        StorageRadar::ReportUpdateUserAuth("UpdateCeEceSeceUserAuth", user, ret, "EL2", secretInfo);
+        LOGE("user %{public}u UpdateUserAuth el2 key fail", user);
+        queryTime += " UpdateUserAuth: " + BuildTimeInfo(startTime, StorageService::StorageRadar::RecordCurrentTime());
+        StorageRadar::ReportUpdateUserAuth("UpdateCeEceSeceUserAuth", user, ret, "EL2", secretInfo + queryTime);
         return ret;
     }
     ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL3_KEY);
     if (ret != 0) {
         LOGE("user %{public}u UpdateUserAuth el3 key fail", user);
-        StorageRadar::ReportUpdateUserAuth("UpdateCeEceSeceUserAuth", user, ret, "EL3", secretInfo);
+        queryTime += " UpdateUserAuth: " + BuildTimeInfo(startTime, StorageService::StorageRadar::RecordCurrentTime());
+        StorageRadar::ReportUpdateUserAuth("UpdateCeEceSeceUserAuth", user, ret, "EL3", secretInfo + queryTime);
         return ret;
     }
     ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL4_KEY);
     if (ret != 0) {
         LOGE("user %{public}u UpdateUserAuth el4 key fail", user);
-        StorageRadar::ReportUpdateUserAuth("UpdateCeEceSeceUserAuth", user, ret, "EL4", secretInfo);
+        queryTime += " UpdateUserAuth: " + BuildTimeInfo(startTime, StorageService::StorageRadar::RecordCurrentTime());
+        StorageRadar::ReportUpdateUserAuth("UpdateCeEceSeceUserAuth", user, ret, "EL4", secretInfo + queryTime);
         return ret;
     }
 #endif
     ret = UpdateESecret(user, userTokenSecret);
     if (ret != 0) {
         LOGE("user %{public}u UpdateESecret fail", user);
-        StorageRadar::ReportUpdateUserAuth("UpdateESecret", user, ret, "EL5", secretInfo);
+        queryTime += " UpdateUserAuth: " + BuildTimeInfo(startTime, StorageService::StorageRadar::RecordCurrentTime());
+        StorageRadar::ReportUpdateUserAuth("UpdateESecret", user, ret, "EL5", secretInfo + queryTime);
         return ret;
     }
     return ret;
@@ -1346,6 +1365,7 @@ int KeyManager::ActiveElXUserKey(unsigned int user,
 int KeyManager::UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret)
 {
     LOGI("start");
+    int64_t startTime = StorageService::StorageRadar::RecordCurrentTime();
     userPinProtect[user] = !secret.empty() || !token.empty();
     std::shared_ptr<DelayHandler> userDelayHandler;
     if (GetUserDelayHandler(user, userDelayHandler)) {
@@ -1367,14 +1387,17 @@ int KeyManager::UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &toke
     std::lock_guard<std::mutex> lock(keyMutex_);
     std::string tokenEmy = token.empty() ? "true" : "false";
     std::string secretEmy = secret.empty() ? "true" : "false";
-    std::string tokenInfo = "token isEmpty = " + tokenEmy + ", secret isEmpty = " + secretEmy;
+    std::string queryTime = BuildTimeInfo(getLockStatusTime_[LOCK_STATUS_START], getLockStatusTime_[LOCK_STATUS_END]);
+    std::string extraData = "token isEmpty = " + tokenEmy + ", secret isEmpty = " + secretEmy + queryTime;
     int ret = 0;
     if ((ret = UnlockEceSece(user, token, secret)) != E_OK) {
-        StorageRadar::ReportUpdateUserAuth("UnlockUserScreen::UnlockEceSece", user, ret, "EL4", tokenInfo);
+        extraData += " UnlockScreen: " + BuildTimeInfo(startTime, StorageService::StorageRadar::RecordCurrentTime());
+        StorageRadar::ReportUpdateUserAuth("UnlockUserScreen::UnlockEceSece", user, ret, "EL4", extraData);
         return ret;
     }
     if ((ret = UnlockUece(user, token, secret)) != E_OK) {
-        StorageRadar::ReportUpdateUserAuth("UnlockUserScreen::UnlockUece", user, ret, "EL5", tokenInfo);
+        extraData += " UnlockScreen: " + BuildTimeInfo(startTime, StorageService::StorageRadar::RecordCurrentTime());
+        StorageRadar::ReportUpdateUserAuth("UnlockUserScreen::UnlockUece", user, ret, "EL5", extraData);
         return ret;
     }
     saveLockScreenStatus[user] = true;
@@ -1419,23 +1442,26 @@ int32_t KeyManager::UnlockUece(uint32_t user,
         auto ret = el5Key->DecryptClassE(auth, saveESecretStatus[user], eBufferStatue, user, false);
         if (ret != E_OK) {
             LOGE("Unlock user %{public}u uece failed", user);
-            return E_UNLOCK_APP_KEY2_FAILED;
+            return ret;
         }
     }
-    if (UnlockUserAppKeys(user, false) != E_OK) {
+    int ret = UnlockUserAppKeys(user, false);
+    if (ret != E_OK) {
         LOGE("failed to delete appkey2");
-        return E_UNLOCK_APP_KEY2_FAILED;
+        return ret;
     }
     return E_OK;
 }
 
 int KeyManager::GetLockScreenStatus(uint32_t user, bool &lockScreenStatus)
 {
+    getLockStatusTime_[LOCK_STATUS_START] = StorageService::StorageRadar::RecordCurrentTime();
     LOGI("start");
     std::lock_guard<std::mutex> lock(keyMutex_);
     auto iter = saveLockScreenStatus.find(user);
     lockScreenStatus = (iter == saveLockScreenStatus.end()) ? false: iter->second;
     LOGW("lockScreenStatus is %{public}d", lockScreenStatus);
+    getLockStatusTime_[LOCK_STATUS_END] = StorageService::StorageRadar::RecordCurrentTime();
     return 0;
 }
 
@@ -1911,7 +1937,6 @@ int KeyManager::UpdateCeEceSeceKeyContext(uint32_t userId, KeyType type)
 int KeyManager::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
     LOGI("UpdateKeyContext enter");
-    // todo needRemoveTmpKey
     int ret = UpdateCeEceSeceKeyContext(userId, EL2_KEY);
     if (ret != 0) {
         LOGE("Basekey update EL2 newest context failed");

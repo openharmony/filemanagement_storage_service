@@ -287,7 +287,8 @@ HWTEST_F(BaseKeyTest, BaseKey_DoRestoreKeyCeEceSece_001, TestSize.Level1)
 
     std::string test = "1234567890";
     string pathEncrypt = path + PATH_ENCRYPTED;
-    ASSERT_TRUE(SaveStringToFileSync(pathEncrypt, test));
+    std::string errMsg = "";
+    ASSERT_TRUE(SaveStringToFileSync(pathEncrypt, test, errMsg));
     EXPECT_NE(elKey->DoRestoreKeyCeEceSece(auth, path, keyType), E_OK);
     auto ret = unlink(pathEncrypt.c_str());
     ASSERT_TRUE(ret != -1) << "Failed to delete file in BaseKey_DoRestoreKeyCeEceSece_001! " << errno;
@@ -310,15 +311,16 @@ HWTEST_F(BaseKeyTest, BaseKey_DoRestoreKeyCeEceSece_002, TestSize.Level1)
     std::string test = "1234567890";
     std::string rightContent = "123456789012345678901234567890";
     string pathEncrypt = path + PATH_ENCRYPTED;
-    ASSERT_TRUE(SaveStringToFileSync(pathEncrypt, rightContent));
+    std::string errMsg = "";
+    ASSERT_TRUE(SaveStringToFileSync(pathEncrypt, rightContent, errMsg));
     EXPECT_NE(elKey->DoRestoreKeyCeEceSece(auth, path, keyType), E_OK);
 
     string pathSecdisc = path + PATH_SECDISC;
-    ASSERT_TRUE(SaveStringToFileSync(path + PATH_SECDISC, test));
+    ASSERT_TRUE(SaveStringToFileSync(path + PATH_SECDISC, test, errMsg));
     EXPECT_NE(elKey->DoRestoreKeyCeEceSece(auth, path, keyType), E_OK);
     
     string pathShield = path + PATH_SHIELD;
-    ASSERT_TRUE(SaveStringToFileSync(path + PATH_SHIELD, test));
+    ASSERT_TRUE(SaveStringToFileSync(path + PATH_SHIELD, test, errMsg));
     EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(-1));
     EXPECT_NE(elKey->DoRestoreKeyCeEceSece(auth, path, keyType), E_OK);
 
@@ -461,14 +463,15 @@ HWTEST_F(BaseKeyTest, BaseKey_EncryptKeyBlob_000, TestSize.Level1)
     })), Return(E_OK)));
     std::string test = "1234567890";
     string pathShield = path + PATH_SHIELD;
-    ASSERT_TRUE(SaveStringToFileSync(pathShield, test));
+    std::string errMsg = "";
+    ASSERT_TRUE(SaveStringToFileSync(pathShield, test, errMsg));
     EXPECT_CALL(*huksMasterMock_, GenerateRandomKey(_)).WillOnce(Return(keyOut));
     EXPECT_CALL(*huksMasterMock_, EncryptKey(_, _, _, _)).WillOnce(Return(E_ERR));
     EXPECT_NE(elKey->EncryptKeyBlob(auth, path, planKey, encryptedKey), E_OK);
     
     string pathSecdisc = path + PATH_SECDISC;
     std::string testSec(CRYPTO_KEY_SECDISC_SIZE, 'c');
-    ASSERT_TRUE(SaveStringToFileSync(pathSecdisc, testSec));
+    ASSERT_TRUE(SaveStringToFileSync(pathSecdisc, testSec, errMsg));
     EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(DoAll(WithArgs<1>(Invoke([](KeyBlob &value) {
         std::vector<uint8_t> vecIn{1, 2, 3, 4, 5};
         value.Alloc(vecIn.size());
@@ -498,7 +501,8 @@ HWTEST_F(BaseKeyTest, BaseKey_DecryptKeyBlob_000, TestSize.Level1)
     std::string path = "/data/test";
     string pathShield = path + PATH_SHIELD;
     std::string test = "1234567890";
-    ASSERT_TRUE(SaveStringToFileSync(pathShield, test));
+    std::string errMsg = "";
+    ASSERT_TRUE(SaveStringToFileSync(pathShield, test, errMsg));
 
     uint32_t vecSize = AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + 10;
     std::vector<uint8_t> vecIn(vecSize, 5);
@@ -509,7 +513,7 @@ HWTEST_F(BaseKeyTest, BaseKey_DecryptKeyBlob_000, TestSize.Level1)
 
     string pathSecdisc = path + PATH_SECDISC;
     std::string testSec(CRYPTO_KEY_SECDISC_SIZE, 'c');
-    ASSERT_TRUE(SaveStringToFileSync(pathSecdisc, testSec));
+    ASSERT_TRUE(SaveStringToFileSync(pathSecdisc, testSec, errMsg));
     EXPECT_CALL(*huksMasterMock_, DecryptKey(_, _, _, _)).WillOnce(Return(E_ERR));
     EXPECT_NE(elKey->DecryptKeyBlob(auth, path, planKey, decryptedKey), E_OK);
 
@@ -544,14 +548,15 @@ HWTEST_F(BaseKeyTest, BaseKey_DoRestoreKeyOld_000, TestSize.Level1)
     EXPECT_NE(elKey->DoRestoreKeyOld(auth, path), E_OK);
 
     string pathEncrpted = path + PATH_ENCRYPTED;
-    ASSERT_TRUE(SaveStringToFileSync(pathEncrpted, test));
+    std::string errMsg = "";
+    ASSERT_TRUE(SaveStringToFileSync(pathEncrpted, test, errMsg));
     EXPECT_NE(elKey->DoRestoreKeyOld(auth, path), E_OK);
     string pathShield = path + PATH_SHIELD;
-    ASSERT_TRUE(SaveStringToFileSync(pathShield, test));
+    ASSERT_TRUE(SaveStringToFileSync(pathShield, test, errMsg));
     EXPECT_NE(elKey->DoRestoreKeyOld(auth, path), E_OK);
     string pathSecdisc = path + PATH_SECDISC;
     std::string testSec(CRYPTO_KEY_SECDISC_SIZE, 'c');
-    ASSERT_TRUE(SaveStringToFileSync(pathSecdisc, testSec));
+    ASSERT_TRUE(SaveStringToFileSync(pathSecdisc, testSec, errMsg));
     EXPECT_CALL(*huksMasterMock_, DecryptKey(_, _, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(elKey->DoRestoreKeyOld(auth, path), E_OK);
 
@@ -603,15 +608,16 @@ HWTEST_F(BaseKeyTest, BaseKey_DoRestoreKeyOld_002, TestSize.Level1)
 
     std::string test = "1234567890";
     string needUpdataPath = needUpdataDir + SUFFIX_NEED_UPDATE;
-    ASSERT_TRUE(SaveStringToFileSync(needUpdataPath, test));
+    std::string errMsg = "";
+    ASSERT_TRUE(SaveStringToFileSync(needUpdataPath, test, errMsg));
     elKey->keyInfo_.version = KeyCtrlLoadVersion(elKey->GetDir().c_str());
     
     std::string path = "/data/test";
     string pathEncrpted = path + PATH_ENCRYPTED;
-    ASSERT_TRUE(SaveStringToFileSync(pathEncrpted, test));
+    ASSERT_TRUE(SaveStringToFileSync(pathEncrpted, test, errMsg));
     string pathSecdisc = path + PATH_SECDISC;
     std::string testSec(CRYPTO_KEY_SECDISC_SIZE, 'c');
-    ASSERT_TRUE(SaveStringToFileSync(pathSecdisc, testSec));
+    ASSERT_TRUE(SaveStringToFileSync(pathSecdisc, testSec, errMsg));
 
     UserAuth auth;
     std::vector<uint8_t> vec{1, 2, 3, 4, 5};
