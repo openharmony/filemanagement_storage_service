@@ -10,12 +10,23 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import("//build/config/components/idl_tool/idl.gni")
 import("//build/ohos.gni")
 import("//build/ohos_var.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
+idl_gen_interface("storage_manager_interface_native") {
+  src_idl = rebase_path("${storage_manager_path}/IStorageManager.idl")
+  log_tag = "StorageManager"
+  log_domainid = "0xD004300"
+  hitrace = "HITRACE_TAG_FILEMANAGEMENT"
+}
+
 config("public_config") {
-  include_dirs = [ "." ]
+  include_dirs = [
+    ".",
+    "${target_gen_dir}",
+  ]
 }
 
 config("private_config") {
@@ -25,6 +36,44 @@ config("private_config") {
     "${storage_service_common_path}/include",
     "${storage_interface_path}/innerkits/storage_manager/native",
   ]
+}
+ohos_source_set("storage_manager_ipc_native") {
+  sanitize = {
+    debug = false
+    cfi = true
+    cfi_cross_dso = true
+  }
+  output_values = get_target_outputs(":storage_manager_interface_native")
+  sources = []
+  sources += filter_include(output_values, [ "*.cpp" ])
+  public_configs = [ ":public_config" ]
+  deps = [ ":storage_manager_interface_native" ]
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+    "hitrace:hitrace_meter",
+    "ipc:ipc_core",
+  ]
+  part_name = "storage_service"
+  subsystem_name = "filemanagement"
+}
+
+ohos_source_set("storage_manager_header") {
+  sanitize = {
+    debug = false
+    cfi = true
+    cfi_cross_dso = true
+  }
+  public_configs = [ ":public_config" ]
+  deps = [ ":storage_manager_interface_native" ]
+  external_deps = [
+    "c_utils:utils",
+    "hilog:libhilog",
+    "hitrace:hitrace_meter",
+    "ipc:ipc_core",
+  ]
+  part_name = "storage_service"
+  subsystem_name = "filemanagement"
 }
 
 ohos_shared_library("storage_manager_sa_proxy") {
@@ -41,7 +90,6 @@ ohos_shared_library("storage_manager_sa_proxy") {
   sources = [
     "${storage_manager_path}/innerkits_impl/src/bundle_stats.cpp",
     "${storage_manager_path}/innerkits_impl/src/disk.cpp",
-    "${storage_manager_path}/innerkits_impl/src/storage_manager_proxy.cpp",
     "${storage_manager_path}/innerkits_impl/src/storage_stats.cpp",
     "${storage_manager_path}/innerkits_impl/src/volume_core.cpp",
     "${storage_manager_path}/innerkits_impl/src/volume_external.cpp",
@@ -68,6 +116,11 @@ ohos_shared_library("storage_manager_sa_proxy") {
     "ipc:ipc_single",
   ]
 
+  deps = [
+    ":storage_manager_header",
+    ":storage_manager_interface_native",
+    ":storage_manager_ipc_native",
+  ]
   part_name = "storage_service"
   innerapi_tags = [ "platformsdk" ]
   subsystem_name = "filemanagement"

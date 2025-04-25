@@ -95,7 +95,7 @@ int32_t FileSystemCrypto::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t
                                                        const std::vector<uint8_t> &newSecret,
                                                        uint64_t secureUid,
                                                        uint32_t userId,
-                                                       std::vector<std::vector<uint8_t>> &plainText)
+                                                       const std::vector<std::vector<uint8_t>> &plainText)
 {
     LOGI("UserId: %{public}u", userId);
     int32_t err = CheckUserIdRange(userId);

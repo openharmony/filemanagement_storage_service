@@ -50,6 +50,7 @@ ohos_unittest("external_volume_info_test") {
   deps = [
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_header",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_header",
   ]
 
   external_deps = [
@@ -92,7 +93,10 @@ ohos_unittest("process_test") {
     "$ROOT_DIR/storage_daemon/volume/test/process_test.cpp",
   ]
 
-  deps = [ "${storage_daemon_path}:storage_common_utils" ]
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_header",
+  ]
 
   external_deps = [
     "c_utils:utils",
@@ -135,6 +139,7 @@ ohos_unittest("volume_info_test") {
   deps = [
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_header",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_header",
   ]
 
   external_deps = [
@@ -180,7 +185,10 @@ ohos_unittest("volume_manager_test") {
     "$ROOT_DIR/storage_manager/innerkits_impl/src/volume_core.cpp",
   ]
 
-  deps = [ "${storage_daemon_path}:storage_common_utils" ]
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_header",
+  ]
 
   external_deps = [
     "c_utils:utils",

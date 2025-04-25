@@ -43,7 +43,7 @@ ohos_shared_library("storage_manager") {
 
   sources = [
     "ipc/src/storage_manager.cpp",
-    "ipc/src/storage_manager_stub.cpp",
+    "ipc/src/storage_manager_provider.cpp",
     "storage_daemon_communication/src/storage_daemon_communication.cpp",
     "user/src/multi_user_manager_service.cpp",
     "utils/src/storage_utils.cpp",
@@ -164,7 +164,6 @@ group("storage_manager_unit_test") {
     "account_subscriber/test:storage_account_subscriber_test",
     "client/test:storage_manager_client_test",
     "innerkits_impl/test:storage_manager_innerkits_test",
-    "ipc/test:storage_manager_ipc_test",
     "storage_daemon_communication/test:storage_manager_communication_test",
     "user/test:storage_manager_user_test",
   ]

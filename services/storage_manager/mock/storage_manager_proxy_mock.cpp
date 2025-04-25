@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -65,7 +65,7 @@ int32_t StorageManagerProxy::UpdateUseAuthWithRecoveryKey(const std::vector<uint
                                                           const std::vector<uint8_t> &newSecret,
                                                           uint64_t secureUid,
                                                           uint32_t userId,
-                                                          std::vector<std::vector<uint8_t>> &plainText)
+                                                          const std::vector<std::vector<uint8_t>> &plainText)
 {
     return E_OK;
 }
@@ -115,7 +115,7 @@ int32_t StorageManagerProxy::GenerateAppkey(uint32_t hashId, uint32_t userId, st
     return E_OK;
 }
 
-int32_t StorageManagerProxy::DeleteAppkey(const std::string keyId)
+int32_t StorageManagerProxy::DeleteAppkey(const std::string& keyId)
 {
     return E_OK;
 }
@@ -133,44 +133,44 @@ int32_t StorageManagerProxy::SetRecoverKey(const std::vector<uint8_t> &key)
     return E_OK;
 }
 
-int32_t StorageManagerProxy::GetFreeSizeOfVolume(std::string volumeUuid, int64_t &freeSize)
+int32_t StorageManagerProxy::GetFreeSizeOfVolume(const std::string& volumeUuid, int64_t &freeSize)
 {
     return E_OK;
 }
 
-int32_t StorageManagerProxy::GetTotalSizeOfVolume(std::string volumeUuid, int64_t &totalSize)
+int32_t StorageManagerProxy::GetTotalSizeOfVolume(const std::string& volumeUuid, int64_t &totalSize)
 {
     return E_OK;
 }
 
-int32_t StorageManagerProxy::GetBundleStats(std::string pkgName, BundleStats &bundleStats,
+int32_t StorageManagerProxy::GetBundleStats(const std::string& pkgName, BundleStats &bundleStats,
     int32_t appIndex, uint32_t statFlag)
 {
     return E_OK;
 }
 
-int32_t StorageManagerProxy::NotifyVolumeCreated(VolumeCore vc)
+int32_t StorageManagerProxy::NotifyVolumeCreated(const VolumeCore& vc)
 {
     return E_OK;
 }
 
-int32_t StorageManagerProxy::NotifyVolumeMounted(std::string volumeId, int32_t fsType, std::string fsUuid,
-    std::string path, std::string description)
+int32_t StorageManagerProxy::NotifyVolumeMounted(const std::string& volumeId, int32_t fsType, const std::string& fsUuid,
+    const std::string& path, const std::string& description)
 {
     return E_OK;
 }
 
-int32_t StorageManagerProxy::NotifyVolumeStateChanged(std::string volumeId, VolumeState state)
+int32_t StorageManagerProxy::NotifyVolumeStateChanged(const std::string& volumeId, uint32_t state)
 {
     return E_OK;
 }
 
-int32_t StorageManagerProxy::Mount(std::string volumeId)
+int32_t StorageManagerProxy::Mount(const std::string& volumeId)
 {
     return E_OK;
 }
 
-int32_t StorageManagerProxy::Unmount(std::string volumeId)
+int32_t StorageManagerProxy::Unmount(const std::string& volumeId)
 {
     return E_OK;
 }
@@ -180,17 +180,17 @@ int32_t StorageManagerProxy::GetAllVolumes(std::vector<VolumeExternal> &vecOfVol
     return E_OK;
 }
 
-int32_t StorageManagerProxy::NotifyDiskCreated(Disk disk)
+int32_t StorageManagerProxy::NotifyDiskCreated(const Disk& disk)
 {
     return E_OK;
 }
 
-int32_t StorageManagerProxy::NotifyDiskDestroyed(std::string diskId)
+int32_t StorageManagerProxy::NotifyDiskDestroyed(const std::string& diskId)
 {
     return E_OK;
 }
 
-int32_t StorageManagerProxy::Partition(std::string diskId, int32_t type)
+int32_t StorageManagerProxy::Partition(const std::string& diskId, int32_t type)
 {
     return E_OK;
 }
@@ -230,27 +230,27 @@ int32_t StorageManagerProxy::GetCurrentBundleStats(BundleStats &bundleStats, uin
     return E_OK;
 }
 
-int32_t StorageManagerProxy::GetVolumeByUuid(std::string fsUuid, VolumeExternal &vc)
+int32_t StorageManagerProxy::GetVolumeByUuid(const std::string& fsUuid, VolumeExternal &vc)
 {
     return E_OK;
 }
 
-int32_t StorageManagerProxy::GetVolumeById(std::string volumeId, VolumeExternal &vc)
+int32_t StorageManagerProxy::GetVolumeById(const std::string& volumeId, VolumeExternal &vc)
 {
     return E_OK;
 }
 
-int32_t StorageManagerProxy::SetVolumeDescription(std::string fsUuid, std::string description)
+int32_t StorageManagerProxy::SetVolumeDescription(const std::string& fsUuid, const std::string& description)
 {
     return E_OK;
 }
 
-int32_t StorageManagerProxy::Format(std::string volumeId, std::string fsType)
+int32_t StorageManagerProxy::Format(const std::string& volumeId, const std::string& fsType)
 {
     return E_OK;
 }
 
-int32_t StorageManagerProxy::GetDiskById(std::string diskId, Disk &disk)
+int32_t StorageManagerProxy::GetDiskById(const std::string& diskId, Disk &disk)
 {
     return E_OK;
 }
@@ -260,10 +260,13 @@ int32_t StorageManagerProxy::QueryUsbIsInUse(const std::string &diskPath, bool &
     return E_OK;
 }
 
-std::vector<int32_t> StorageManagerProxy::CreateShareFile(const std::vector<std::string> &uriList,
-                                                          uint32_t tokenId, uint32_t flag)
+int32_t StorageManagerProxy::CreateShareFile(const std::vector<std::string> &uriList,
+                                             uint32_t tokenId,
+                                             uint32_t flag,
+                                             std::vector<int32_t> &funcResult)
 {
-    return {E_OK};
+    funcResult = {1};
+    return E_OK;
 }
 
 int32_t StorageManagerProxy::DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList)
@@ -295,7 +298,8 @@ int32_t StorageManagerProxy::SendRequest(uint32_t code, MessageParcel &data, Mes
     return E_OK;
 }
 
-int32_t StorageManagerProxy::GetUserStorageStatsByType(int32_t userId, StorageStats &storageStats, std::string type)
+int32_t StorageManagerProxy::GetUserStorageStatsByType(int32_t userId, StorageStats &storageStats,
+    const std::string &type)
 {
     return E_OK;
 }
@@ -323,7 +327,7 @@ int32_t StorageManagerProxy::NotifyMtpMounted(const std::string &id, const std::
     return E_OK;
 }
 
-int32_t StorageManagerProxy::NotifyMtpUnmounted(const std::string &id, const std::string &path, const bool isBadRemove)
+int32_t StorageManagerProxy::NotifyMtpUnmounted(const std::string &id, const std::string &path, bool isBadRemove)
 {
     return E_OK;
 }

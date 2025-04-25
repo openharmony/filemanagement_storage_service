@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -115,9 +115,9 @@ bool VolumeExternal::Marshalling(Parcel &parcel) const
     return true;
 }
 
-std::unique_ptr<VolumeExternal> VolumeExternal::Unmarshalling(Parcel &parcel)
+VolumeExternal *VolumeExternal::Unmarshalling(Parcel &parcel)
 {
-    auto obj = std::make_unique<VolumeExternal>(*VolumeCore::Unmarshalling(parcel));
+    VolumeExternal* obj = new (std::nothrow) VolumeExternal(*VolumeCore::Unmarshalling(parcel));
     obj->flags_ = parcel.ReadInt32();
     obj->fsType_ = parcel.ReadInt32();
     obj->fsUuid_ = parcel.ReadString();

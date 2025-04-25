@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,6 +20,7 @@
 #include "storage_service_log.h"
 #include "storage_service_errno.h"
 #include "system_ability_definition.h"
+#include "hitrace_meter.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -42,6 +43,7 @@ sptr<IStorageManager> StorageManagerClient::GetStorageManagerProxy(void)
 
 int32_t StorageManagerClient::PrepareAddUser(uint32_t userId, uint32_t flags)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
@@ -53,6 +55,7 @@ int32_t StorageManagerClient::PrepareAddUser(uint32_t userId, uint32_t flags)
 
 int32_t StorageManagerClient::RemoveUser(uint32_t userId, uint32_t flags)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
@@ -64,6 +67,7 @@ int32_t StorageManagerClient::RemoveUser(uint32_t userId, uint32_t flags)
 
 int32_t StorageManagerClient::GenerateUserKeys(uint32_t userId, uint32_t flags)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
@@ -75,6 +79,7 @@ int32_t StorageManagerClient::GenerateUserKeys(uint32_t userId, uint32_t flags)
 
 int32_t StorageManagerClient::DeleteUserKeys(uint32_t userId)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
@@ -89,6 +94,7 @@ int32_t StorageManagerClient::UpdateUserAuth(uint32_t userId, uint64_t secureUid
                                              const std::vector<uint8_t> &oldSecret,
                                              const std::vector<uint8_t> &newSecret)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
@@ -102,8 +108,9 @@ int32_t StorageManagerClient::UpdateUseAuthWithRecoveryKey(const std::vector<uin
                                                            const std::vector<uint8_t> &newSecret,
                                                            uint64_t secureUid,
                                                            uint32_t userId,
-                                                           std::vector<std::vector<uint8_t>> &plainText)
+                                                           const std::vector<std::vector<uint8_t>> &plainText)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
@@ -117,6 +124,7 @@ int32_t StorageManagerClient::ActiveUserKey(uint32_t userId,
                                             const std::vector<uint8_t> &token,
                                             const std::vector<uint8_t> &secret)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
@@ -128,6 +136,7 @@ int32_t StorageManagerClient::ActiveUserKey(uint32_t userId,
 
 int32_t StorageManagerClient::InactiveUserKey(uint32_t userId)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
@@ -139,6 +148,7 @@ int32_t StorageManagerClient::InactiveUserKey(uint32_t userId)
 
 int32_t StorageManagerClient::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
@@ -150,6 +160,7 @@ int32_t StorageManagerClient::UpdateKeyContext(uint32_t userId, bool needRemoveT
 
 int32_t StorageManagerClient::LockUserScreen(uint32_t userId)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
@@ -163,6 +174,7 @@ int32_t StorageManagerClient::UnlockUserScreen(uint32_t userId,
                                                const std::vector<uint8_t> &token,
                                                const std::vector<uint8_t> &secret)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
@@ -185,6 +197,7 @@ int32_t StorageManagerClient::GetFileEncryptStatus(uint32_t userId, bool &isEncr
 
 int32_t StorageManagerClient::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
@@ -196,6 +209,7 @@ int32_t StorageManagerClient::GetUserNeedActiveStatus(uint32_t userId, bool &nee
 
 int32_t StorageManagerClient::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
@@ -208,6 +222,7 @@ int32_t StorageManagerClient::GetLockScreenStatus(uint32_t userId, bool &lockScr
 int32_t StorageManagerClient::MountDfsDocs(int32_t userId, const std::string &relativePath,
     const std::string &networkId, const std::string &deviceId)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");
@@ -220,6 +235,7 @@ int32_t StorageManagerClient::MountDfsDocs(int32_t userId, const std::string &re
 int32_t StorageManagerClient::UMountDfsDocs(int32_t userId, const std::string &relativePath,
     const std::string &networkId, const std::string &deviceId)
 {
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
     sptr<IStorageManager> client = GetStorageManagerProxy();
     if (client == nullptr) {
         LOGE("get storage manager service failed");

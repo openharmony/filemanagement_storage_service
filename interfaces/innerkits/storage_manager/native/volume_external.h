@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -61,7 +61,7 @@ public:
     void Reset();
 
     bool Marshalling(Parcel &parcel) const override;
-    static std::unique_ptr<VolumeExternal> Unmarshalling(Parcel &parcel);
+    static VolumeExternal *Unmarshalling(Parcel &parcel);
 private:
     int32_t fsType_ { UNDEFINED };
     int32_t flags_ {};
