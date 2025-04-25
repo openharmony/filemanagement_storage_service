@@ -555,9 +555,12 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthVx(uint32_t userId, KeyTy
     }
     std::string need_restore_path = KeyManager::GetInstance()->GetKeyDirByUserAndType(userId, type) + RESTORE_DIR;
     uint32_t new_need_restore = static_cast<uint32_t>(std::atoi(needRestoreVersion.c_str()) + 1);
+    std::string errMsg = "";
     if (new_need_restore == UpdateVersion::UPDATE_V4 &&
-        !SaveStringToFileSync(need_restore_path, std::to_string(new_need_restore))) {
+        !SaveStringToFileSync(need_restore_path, std::to_string(new_need_restore), errMsg)) {
         LOGE("Write userId: %{public}d, El%{public}d need_restore failed.", userId, type);
+        StorageRadar::ReportUpdateUserAuth("PrepareUserDirsAndUpdateUserAuthVx::SaveStringToFileSync",
+            userId, E_SAVE_STRING_TO_FILE_ERR, std::to_string(type), errMsg);
     }
     LOGW("New DOUBLE_2_SINGLE::ActiveCeSceSeceUserKey.");
     ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, type, token, secret);

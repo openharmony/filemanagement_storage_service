@@ -28,8 +28,8 @@ inline bool IsEndWith(const std::string &str, const std::string &end)
 }
 
 std::vector<std::string> SplitLine(std::string &line, std::string &token);
-bool WriteFileSync(const char *path, const uint8_t *data, size_t size);
-bool SaveStringToFileSync(const std::string &path, const std::string &data);
+bool WriteFileSync(const char *path, const uint8_t *data, size_t size, std::string &errMsg);
+bool SaveStringToFileSync(const std::string &path, const std::string &data, std::string &errMsg);
 bool StringIsNumber(const std::string &content);
 bool IsStringExist(const std::list<std::string> &strList, const std::string &content);
 std::string ListToString(const std::list<std::string> &strList);

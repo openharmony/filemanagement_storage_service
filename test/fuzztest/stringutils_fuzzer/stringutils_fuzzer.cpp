@@ -28,8 +28,9 @@ bool StringUtilsFuzzTest(const uint8_t *data, size_t size)
     const char *character = "test";
     StorageDaemon::IsEndWith(metaData, metaData);
     StorageDaemon::StringPrintf(character);
-    StorageDaemon::WriteFileSync(character, data, size);
-    StorageDaemon::SaveStringToFileSync(metaData, metaData);
+    std::string errMsg = "";
+    StorageDaemon::WriteFileSync(character, data, size, errMsg);
+    StorageDaemon::SaveStringToFileSync(metaData, metaData, errMsg);
     return true;
 }
 } // namespace OHOS
