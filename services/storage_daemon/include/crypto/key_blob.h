@@ -19,6 +19,7 @@
 #include <linux/version.h>
 
 #include "hks_type.h"
+#include "v1_1/ihuks_types.h"
 #include "securec.h"
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
@@ -129,6 +130,10 @@ public:
     HksBlob ToHksBlob() const
     {
         return {size, data.get()};
+    }
+    HuksBlob ToHuksBlob() const
+    {
+        return {data.get(), size};
     }
     uint32_t size { 0 };
     std::unique_ptr<uint8_t[]> data { nullptr };

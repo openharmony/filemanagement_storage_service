@@ -50,7 +50,6 @@ ohos_unittest("FbexTest") {
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
-    "huks:libhukssdk",
     "init:libbegetutil",
   ]
 }

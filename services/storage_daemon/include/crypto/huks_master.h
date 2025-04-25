@@ -19,13 +19,13 @@
 
 #include "huks_hdi.h"
 
+// for new HUKS IDL
+#include <mutex>
+#include "v1_1/ihuks.h"
+#include "v1_1/ihuks_types.h"
+
 namespace OHOS {
 namespace StorageDaemon {
-using HkmHdiHandle_t = void *;
-using HkmHalDevice_t = HuksHdi *;
-using HkmHalCreateHandle = HuksHdi *(*)(void);
-using HkmHalDestroyHandle = void (*)(HuksHdi *);
-
 class HuksMaster {
 public:
     static HuksMaster &GetInstance()
@@ -42,30 +42,26 @@ public:
     int32_t DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key, bool isNeedNewNonce);
     int32_t DecryptKeyEx(KeyContext &ctx, const UserAuth &auth, KeyBlob &rnd);
     bool UpgradeKey(KeyContext &ctx);
+
 private:
     HuksMaster();
     ~HuksMaster();
     HuksMaster(const HuksMaster &) = delete;
     HuksMaster &operator=(const HuksMaster &) = delete;
 
-    /* huks hal interface */
-    bool HdiCreate();
-    void HdiDestroy();
-    int HdiModuleInit();
-    int HdiModuleDestroy();
-    int HdiGenerateKey(const HksBlob &keyAlias, const HksParamSet *paramSetIn,
-                       HksBlob &keyOut);
-    int HdiAccessInit(const HksBlob &key, const HksParamSet *paramSet, HksBlob &handle, HksBlob &token);
-    int HdiAccessUpdate(const HksBlob &handle, const HksParamSet *paramSet,
-                        const HksBlob &inData, struct HksBlob &outData);
-    int HdiAccessFinish(const HksBlob &handle, const HksParamSet *paramSet,
-                        const HksBlob &inData, HksBlob &outData);
+    int32_t InitHdiProxyInstance();
+    void ReleaseHdiProxyInstance();
+    int32_t HdiModuleInit();
+    int32_t HdiModuleDestroy();
+    int HdiGenerateKey(const HuksBlob &keyAlias, const HksParamSet *paramSetIn, HuksBlob &keyOut);
+    int HdiAccessInit(const HuksBlob &key, const HksParamSet *paramSet, HuksBlob &handle, HuksBlob &token);
+    int HdiAccessFinish(const HuksBlob &handle, const HksParamSet *paramSet, const HuksBlob &inData, HuksBlob &outData);
+    int HdiAccessUpgradeKey(const HuksBlob &oldKey, const HksParamSet *paramSet, struct HuksBlob &newKey);
     int HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *paramSet2,
-                            const KeyBlob &keyIn, KeyBlob &keyOut);
-    int HdiAccessUpgradeKey(const HksBlob &oldKey, const HksParamSet *paramSet, struct HksBlob &newKey);
+                                   const KeyBlob &keyIn, KeyBlob &keyOut);
 
-    HkmHdiHandle_t hdiHandle_ = nullptr;
-    HkmHalDevice_t halDevice_ = nullptr;
+    std::mutex hdiProxyMutex_;
+    struct IHuks *hksHdiProxyInstance_ = nullptr;
 };
 } // namespace StorageDaemon
 } // namespace OHOS

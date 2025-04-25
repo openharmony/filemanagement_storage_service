@@ -56,23 +56,29 @@ void HuksMasterTest::TearDown(void)
 }
 
 /**
- * @tc.name: HuksMaster_HuksHdiModuleDestroy_001
- * @tc.desc: Verify the HuksHdiModuleDestroy.
+ * @tc.name: HuksMaster_InitHdiProxyInstance_001
+ * @tc.desc: Verify the InitHdiProxyInstance.
  * @tc.type: FUNC
  * @tc.require: IAUK5E
  */
-HWTEST_F(HuksMasterTest, HuksMaster_HuksHdiModuleDestroy_001, TestSize.Level1)
+HWTEST_F(HuksMasterTest, HuksMaster_InitHdiProxyInstance_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "HuksMaster_HuksHdiModuleDestroy_001 start";
-    EXPECT_EQ(HuksMaster::GetInstance().HdiModuleDestroy(), HKS_SUCCESS);
-    if (HuksMaster::GetInstance().halDevice_ != nullptr) {
-        HuksMaster::GetInstance().halDevice_->HuksHdiModuleDestroy = nullptr;
-        EXPECT_EQ(HuksMaster::GetInstance().HdiModuleDestroy(), HKS_ERROR_NULL_POINTER);
-    }
+    GTEST_LOG_(INFO) << "HuksMaster_InitHdiProxyInstance_001 start";
+    // first time init
+    HuksMaster::GetInstance().hksHdiProxyInstance_ = nullptr;
+    EXPECT_EQ(HuksMaster::GetInstance().InitHdiProxyInstance(), HKS_SUCCESS);
+    // not first time init
+    EXPECT_NE(HuksMaster::GetInstance().hksHdiProxyInstance_, nullptr);
+    EXPECT_EQ(HuksMaster::GetInstance().InitHdiProxyInstance(), HKS_SUCCESS);
 
-    HuksMaster::GetInstance().HdiDestroy();
-    EXPECT_EQ(HuksMaster::GetInstance().HdiModuleDestroy(), HKS_ERROR_NULL_POINTER);
-    GTEST_LOG_(INFO) << "HuksMaster_HuksHdiModuleDestroy_001 end";
+    HuksMaster::GetInstance().ReleaseHdiProxyInstance();
+    EXPECT_EQ(HuksMaster::GetInstance().hksHdiProxyInstance_, nullptr);
+
+    HuksMaster::GetInstance().ReleaseHdiProxyInstance();
+    EXPECT_EQ(HuksMaster::GetInstance().hksHdiProxyInstance_, nullptr);
+
+    EXPECT_EQ(HuksMaster::GetInstance().InitHdiProxyInstance(), HKS_SUCCESS);
+    GTEST_LOG_(INFO) << "HuksMaster_InitHdiProxyInstance_001_001 end";
 }
 
 /**
@@ -84,55 +90,41 @@ HWTEST_F(HuksMasterTest, HuksMaster_HuksHdiModuleDestroy_001, TestSize.Level1)
 HWTEST_F(HuksMasterTest, HuksMaster_HdiModuleInit_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "HuksMaster_HdiModuleInit_001 start";
-    EXPECT_EQ(HuksMaster::GetInstance().HdiCreate(), true);
-    EXPECT_EQ(HuksMaster::GetInstance().HdiModuleInit(), HKS_SUCCESS);
+    HuksMaster::GetInstance().hksHdiProxyInstance_ = nullptr;
+    EXPECT_EQ(HuksMaster::GetInstance().HdiModuleInit(), HKS_ERROR_NULL_POINTER);
 
-    if (HuksMaster::GetInstance().halDevice_ != nullptr) {
-        HuksMaster::GetInstance().halDevice_->HuksHdiModuleInit = nullptr;
+    if (HuksMaster::GetInstance().hksHdiProxyInstance_ != nullptr) {
+        HuksMaster::GetInstance().hksHdiProxyInstance_->ModuleInit = nullptr;
         EXPECT_EQ(HuksMaster::GetInstance().HdiModuleInit(), HKS_ERROR_NULL_POINTER);
     }
-    
-    HuksMaster::GetInstance().HdiDestroy();
-    EXPECT_EQ(HuksMaster::GetInstance().HdiModuleInit(), HKS_ERROR_NULL_POINTER);
+
+    HuksMaster::GetInstance().ReleaseHdiProxyInstance();
+    EXPECT_NE(HuksMaster::GetInstance().HdiModuleInit(), HKS_SUCCESS);
     GTEST_LOG_(INFO) << "HuksMaster_HdiModuleInit_001 end";
 }
 
 /**
- * @tc.name: HuksMaster_HdiCreate_001
- * @tc.desc: Verify the HdiCreate.
+ * @tc.name: HuksMaster_HuksHdiModuleDestroy_001
+ * @tc.desc: Verify the HuksHdiModuleDestroy.
  * @tc.type: FUNC
  * @tc.require: IAUK5E
  */
-HWTEST_F(HuksMasterTest, HuksMaster_HdiCreate_001, TestSize.Level1)
+HWTEST_F(HuksMasterTest, HuksMaster_HuksHdiModuleDestroy_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "HuksMaster_HdiCreate_001 start";
-    // hdiHandle_ && halDevice_ not null
-    EXPECT_EQ(HuksMaster::GetInstance().HdiCreate(), true);
-
-    // release halDevice_
-    ASSERT_NE(HuksMaster::GetInstance().hdiHandle_, nullptr);
-    auto destroyHdi = reinterpret_cast<HkmHalDestroyHandle>(
-        dlsym(HuksMaster::GetInstance().hdiHandle_, "HuksDestoryHdiDevicePtr"));
-    if ((destroyHdi != nullptr) && (HuksMaster::GetInstance().halDevice_ != nullptr)) {
-        (*destroyHdi)(HuksMaster::GetInstance().halDevice_);
-    }
-    HuksMaster::GetInstance().halDevice_ = nullptr;
-    // "halDevice_ is nullptr"
+    GTEST_LOG_(INFO) << "HuksMaster_HuksHdiModuleDestroy_001 start";
+    HuksMaster::GetInstance().hksHdiProxyInstance_ = nullptr;
     EXPECT_EQ(HuksMaster::GetInstance().HdiModuleDestroy(), HKS_ERROR_NULL_POINTER);
-    EXPECT_EQ(HuksMaster::GetInstance().HdiModuleInit(), HKS_ERROR_NULL_POINTER);
-    // hdiHandle_ not nullptr, halDevice_ is nullptr
-    EXPECT_EQ(HuksMaster::GetInstance().HdiCreate(), true);
-    // release all
-    HuksMaster::GetInstance().HdiDestroy();
-    EXPECT_EQ(HuksMaster::GetInstance().hdiHandle_, nullptr);
-    EXPECT_EQ(HuksMaster::GetInstance().halDevice_, nullptr);
-    // hdiHandle_ is nullptr, already destroyed
-    HuksMaster::GetInstance().HdiDestroy();
-    // create hdiHandle_
-    HuksMaster::GetInstance().hdiHandle_ = dlopen("libhuks_engine_core_standard.z.so", RTLD_LAZY);
-    ASSERT_NE(HuksMaster::GetInstance().hdiHandle_, nullptr);
-    EXPECT_EQ(HuksMaster::GetInstance().HdiCreate(), true);
-    GTEST_LOG_(INFO) << "HuksMaster_HdiCreate_001 end";
+
+    EXPECT_EQ(HuksMaster::GetInstance().InitHdiProxyInstance(), HKS_SUCCESS);
+    EXPECT_EQ(HuksMaster::GetInstance().HdiModuleDestroy(), HKS_SUCCESS);
+    if (HuksMaster::GetInstance().hksHdiProxyInstance_ != nullptr) {
+        HuksMaster::GetInstance().hksHdiProxyInstance_->ModuleDestroy = nullptr;
+        EXPECT_EQ(HuksMaster::GetInstance().HdiModuleDestroy(), HKS_ERROR_NULL_POINTER);
+    }
+
+    HuksMaster::GetInstance().ReleaseHdiProxyInstance();
+    EXPECT_NE(HuksMaster::GetInstance().HdiModuleDestroy(), HKS_SUCCESS);
+    GTEST_LOG_(INFO) << "HuksMaster_HuksHdiModuleDestroy_001 end";
 }
 
 /**
@@ -144,16 +136,16 @@ HWTEST_F(HuksMasterTest, HuksMaster_HdiCreate_001, TestSize.Level1)
 HWTEST_F(HuksMasterTest, HuksMaster_HdiGenerateKey_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "HuksMaster_HdiGenerateKey_001 start";
-    HksBlob hksAlias;
-    HksBlob hksKeyOut;
+    HuksBlob hksAlias;
+    HuksBlob hksKeyOut;
     HksParamSet *paramSet = nullptr;
-    HuksMaster::GetInstance().HdiDestroy();
-    EXPECT_EQ(HuksMaster::GetInstance().HdiCreate(), true);
-    if (HuksMaster::GetInstance().halDevice_ != nullptr) {
-        HuksMaster::GetInstance().halDevice_->HuksHdiGenerateKey = nullptr;
+    HuksMaster::GetInstance().ReleaseHdiProxyInstance();
+    EXPECT_EQ(HuksMaster::GetInstance().InitHdiProxyInstance(), HKS_SUCCESS);
+    if (HuksMaster::GetInstance().hksHdiProxyInstance_ != nullptr) {
+        HuksMaster::GetInstance().hksHdiProxyInstance_->GenerateKey = nullptr;
         EXPECT_EQ(HuksMaster::GetInstance().HdiGenerateKey(hksAlias, paramSet, hksKeyOut), HKS_ERROR_NULL_POINTER);
     }
-    HuksMaster::GetInstance().HdiDestroy();
+    HuksMaster::GetInstance().ReleaseHdiProxyInstance();;
     EXPECT_EQ(HuksMaster::GetInstance().HdiGenerateKey(hksAlias, paramSet, hksKeyOut), HKS_ERROR_NULL_POINTER);
     GTEST_LOG_(INFO) << "HuksMaster_HdiGenerateKey_001 end";
 }
@@ -167,17 +159,17 @@ HWTEST_F(HuksMasterTest, HuksMaster_HdiGenerateKey_001, TestSize.Level1)
 HWTEST_F(HuksMasterTest, HuksMaster_HdiAccessInit_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "HuksMaster_HdiAccessInit_001 start";
-    HksBlob key;
+    HuksBlob key;
     HksParamSet *paramSet = nullptr;
-    HksBlob handle;
-    HksBlob token;
-    HuksMaster::GetInstance().HdiDestroy();
-    EXPECT_EQ(HuksMaster::GetInstance().HdiCreate(), true);
-    if (HuksMaster::GetInstance().halDevice_ != nullptr) {
-        HuksMaster::GetInstance().halDevice_->HuksHdiInit = nullptr;
+    HuksBlob handle;
+    HuksBlob token;
+    HuksMaster::GetInstance().ReleaseHdiProxyInstance();
+    EXPECT_EQ(HuksMaster::GetInstance().InitHdiProxyInstance(), HKS_SUCCESS);
+    if (HuksMaster::GetInstance().hksHdiProxyInstance_ != nullptr) {
+        HuksMaster::GetInstance().hksHdiProxyInstance_->Init = nullptr;
         EXPECT_EQ(HuksMaster::GetInstance().HdiAccessInit(key, paramSet, handle, token), HKS_ERROR_NULL_POINTER);
     }
-    HuksMaster::GetInstance().HdiDestroy();
+    HuksMaster::GetInstance().ReleaseHdiProxyInstance();
     EXPECT_EQ(HuksMaster::GetInstance().HdiAccessInit(key, paramSet, handle, token), HKS_ERROR_NULL_POINTER);
     GTEST_LOG_(INFO) << "HuksMaster_HdiAccessInit_001 end";
 }
@@ -191,18 +183,18 @@ HWTEST_F(HuksMasterTest, HuksMaster_HdiAccessInit_001, TestSize.Level1)
 HWTEST_F(HuksMasterTest, HuksMaster_HdiAccessFinish_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "HuksMaster_HdiAccessFinish_001 start";
-    HksBlob handle;
+    HuksBlob handle;
     HksParamSet *paramSet = nullptr;
-    HksBlob inData;
-    HksBlob outData;
-    HuksMaster::GetInstance().HdiDestroy();
-    EXPECT_EQ(HuksMaster::GetInstance().HdiCreate(), true);
-    if (HuksMaster::GetInstance().halDevice_ != nullptr) {
-        HuksMaster::GetInstance().halDevice_->HuksHdiFinish = nullptr;
+    HuksBlob inData;
+    HuksBlob outData;
+    HuksMaster::GetInstance().ReleaseHdiProxyInstance();
+    EXPECT_EQ(HuksMaster::GetInstance().InitHdiProxyInstance(), HKS_SUCCESS);
+    if (HuksMaster::GetInstance().hksHdiProxyInstance_ != nullptr) {
+        HuksMaster::GetInstance().hksHdiProxyInstance_->Finish = nullptr;
         EXPECT_EQ(HuksMaster::GetInstance().HdiAccessFinish(handle, paramSet, inData, outData),
             HKS_ERROR_NULL_POINTER);
     }
-    HuksMaster::GetInstance().HdiDestroy();
+    HuksMaster::GetInstance().ReleaseHdiProxyInstance();
     EXPECT_EQ(HuksMaster::GetInstance().HdiAccessFinish(handle, paramSet, inData, outData), HKS_ERROR_NULL_POINTER);
     GTEST_LOG_(INFO) << "HuksMaster_HdiAccessFinish_001 end";
 }
@@ -216,16 +208,16 @@ HWTEST_F(HuksMasterTest, HuksMaster_HdiAccessFinish_001, TestSize.Level1)
 HWTEST_F(HuksMasterTest, HuksMaster_HdiAccessUpgradeKey_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "HuksMaster_HdiAccessUpgradeKey_001 start";
-    HksBlob oldKey;
-    HksBlob newKey;
+    HuksBlob oldKey;
+    HuksBlob newKey;
     HksParamSet *paramSet = nullptr;
-    HuksMaster::GetInstance().HdiDestroy();
-    EXPECT_EQ(HuksMaster::GetInstance().HdiCreate(), true);
-    if (HuksMaster::GetInstance().halDevice_ != nullptr) {
-        HuksMaster::GetInstance().halDevice_->HuksHdiUpgradeKey = nullptr;
+    HuksMaster::GetInstance().ReleaseHdiProxyInstance();
+    EXPECT_EQ(HuksMaster::GetInstance().InitHdiProxyInstance(), HKS_SUCCESS);
+    if (HuksMaster::GetInstance().hksHdiProxyInstance_ != nullptr) {
+        HuksMaster::GetInstance().hksHdiProxyInstance_->UpgradeKey = nullptr;
         EXPECT_EQ(HuksMaster::GetInstance().HdiAccessUpgradeKey(oldKey, paramSet, newKey), HKS_ERROR_NULL_POINTER);
     }
-    HuksMaster::GetInstance().HdiDestroy();
+    HuksMaster::GetInstance().ReleaseHdiProxyInstance();
     EXPECT_EQ(HuksMaster::GetInstance().HdiAccessUpgradeKey(oldKey, paramSet, newKey), HKS_ERROR_NULL_POINTER);
     GTEST_LOG_(INFO) << "HuksMaster_HdiAccessUpgradeKey_001 end";
 }
@@ -287,8 +279,8 @@ HWTEST_F(HuksMasterTest, HuksMaster_EncryptKey_001, TestSize.Level1)
     std::copy(blobVec.begin(), blobVec.end(), key.key.data.get());
     EXPECT_NE(HuksMaster::GetInstance().EncryptKey(ctx, auth, key, isNeedNewNonce), E_OK);
 
-    HuksMaster::GetInstance().HdiDestroy();
-    EXPECT_EQ(HuksMaster::GetInstance().HdiCreate(), true);
+    HuksMaster::GetInstance().ReleaseHdiProxyInstance();
+    EXPECT_EQ(HuksMaster::GetInstance().InitHdiProxyInstance(), HKS_SUCCESS);
     EXPECT_NE(HuksMaster::GetInstance().EncryptKey(ctx, auth, key, isNeedNewNonce), E_OK);
     GTEST_LOG_(INFO) << "HuksMaster_EncryptKey_001 end";
 }

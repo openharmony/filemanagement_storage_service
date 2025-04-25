@@ -76,6 +76,7 @@ ohos_static_library("libsdcrypto") {
 
   external_deps = [
     "c_utils:utils",
+    "drivers_interface_huks:libhuks_proxy_1.1",
     "eventhandler:libeventhandler",
     "hilog:libhilog",
     "huks:libhukssdk",

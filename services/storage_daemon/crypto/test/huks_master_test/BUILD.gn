@@ -53,6 +53,7 @@ ohos_unittest("HuksMasterTest") {
 
   external_deps = [
     "c_utils:utils",
+    "drivers_interface_huks:libhuks_proxy_1.1",
     "hilog:libhilog",
     "huks:libhukssdk",
     "init:libbegetutil",
