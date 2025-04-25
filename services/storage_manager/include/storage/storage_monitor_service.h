@@ -43,15 +43,18 @@ private:
     void CleanBundleCacheByInterval(const std::string &timestamp,
                                                            int64_t lowThreshold, int32_t checkInterval);
     void ReportRadarStorageUsage(enum StorageService::BizStage stage, const std::string &extraData);
-    void EventNotifyHighFreqHandler();
-    void EventNotifyFreqHandlerFor2G();
-    void EventNotifyFreqHandlerForTenPercent();
     void RefreshAllNotificationTimeStamp();
+    void EventNotifyFreqHandlerForLow();
+    void EventNotifyFreqHandlerForMedium();
+    void EventNotifyFreqHandlerForHigh();
+    void ParseMemoryParameters(int64_t totalSize);
+    std::string GetMemoryAlertCleanupParams();
 
     bool hasNotifiedStorageEvent_ = true;
     std::mutex eventMutex_;
     std::thread eventThread_;
     std::condition_variable eventCon_;
+    std::map<std::string, int64_t> thresholds;
     std::shared_ptr<AppExecFwk::EventHandler> eventHandler_ = nullptr;
     std::chrono::system_clock::time_point lastNotificationTime_ =
             std::chrono::time_point_cast<std::chrono::system_clock::duration>(
@@ -62,7 +65,7 @@ private:
     std::chrono::system_clock::time_point lastReportRadarTime_ =
             std::chrono::time_point_cast<std::chrono::system_clock::duration>(
                     std::chrono::system_clock::now()) - std::chrono::hours(SMART_EVENT_INTERVAL);
-    std::chrono::system_clock::time_point lastNotificationTime2G_ =
+    std::chrono::system_clock::time_point lastNotificationTimeMedium_ =
             std::chrono::time_point_cast<std::chrono::system_clock::duration>(
                     std::chrono::system_clock::now()) - std::chrono::hours(SMART_EVENT_INTERVAL);
 };

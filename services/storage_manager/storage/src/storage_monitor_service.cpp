@@ -15,8 +15,12 @@
 
 #include "storage/storage_monitor_service.h"
 
+#include <string>
+#include <sstream>
+
 #include "cJSON.h"
 #include "common_event_manager.h"
+#include "init_param.h"
 #include "parameters.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -26,19 +30,17 @@
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageManager {
+constexpr int32_t ONE_MB = 1024 * 1024;
+constexpr int32_t ONE_GB = 1024 * 1024 * 1024;
 constexpr int32_t CONST_NUM_TWO = 2;
-constexpr int32_t CONST_NUM_THREE = 3;
 constexpr int32_t CONST_NUM_ONE_HUNDRED = 100;
+constexpr int32_t CLEAN_CACHE_WEEK = 7 * 24; // week
 constexpr int32_t WAIT_THREAD_TIMEOUT_MS = 5;
 constexpr int32_t DEFAULT_CHECK_INTERVAL = 60 * 1000; // 60s
-constexpr int32_t STORAGE_THRESHOLD_PERCENTAGE = 5; // 5%
-constexpr int64_t STORAGE_THRESHOLD_MAX_BYTES = 500 * 1024 * 1024; // 500M
-constexpr int64_t STORAGE_THRESHOLD_500M = 500 * 1024 * 1024; // 500M
-constexpr int64_t STORAGE_THRESHOLD_2G = 2000 * 1024 * 1024; // 2G
-constexpr int32_t STORAGE_LEFT_SIZE_THRESHOLD = 10; // 10%
 constexpr int32_t SEND_EVENT_INTERVAL = 24; // day
-constexpr int32_t CLEAN_CACHE_WEEK = 7 * 24; // week
 constexpr int32_t SEND_EVENT_INTERVAL_HIGH_FREQ = 5; // 5m
+constexpr int32_t MEMORY_PARAMS_PATH_LEN = 128;
+constexpr const char *DEFAULT_PARAMS = "notify_l:500M/notify_m:2G/notify_h:10%/clean_l:750M/clean_m:5%/clean_h:10%";
 const std::string PUBLISH_SYSTEM_COMMON_EVENT = "ohos.permission.PUBLISH_SYSTEM_COMMON_EVENT";
 const std::string SMART_BUNDLE_NAME = "com.ohos.hmos.hiviewcare";
 const std::string SMART_ACTION = "hicare.event.SMART_NOTIFICATION";
@@ -123,9 +125,20 @@ void StorageMonitorService::MonitorAndManageStorage()
         LOGE("Get device free size failed.");
         return;
     }
-    if (freeSize < (totalSize * STORAGE_LEFT_SIZE_THRESHOLD) / CONST_NUM_ONE_HUNDRED) {
-        CheckAndEventNotify(freeSize, totalSize);
+    ParseMemoryParameters(totalSize);
+
+    LOGI("clean_l, size=%{public}lld, clean_m, size=%{public}lld, clean_h, size=%{public}lld",
+         static_cast<long long>(thresholds["clean_l"]), static_cast<long long>(thresholds["clean_m"]),
+         static_cast<long long>(thresholds["clean_h"]));
+    if (freeSize < thresholds["clean_h"]) {
         CheckAndCleanCache(freeSize, totalSize);
+    }
+ 
+    LOGI("notify_l, size=%{public}lld, notify_m, size=%{public}lld, notify_h, size=%{public}lld",
+        static_cast<long long>(thresholds["notify_l"]), static_cast<long long>(thresholds["notify_m"]),
+        static_cast<long long>(thresholds["notify_h"]));
+    if (freeSize < thresholds["notify_h"]) {
+        CheckAndEventNotify(freeSize, totalSize);
         hasNotifiedStorageEvent_ = true;
     } else if (hasNotifiedStorageEvent_) {
         RefreshAllNotificationTimeStamp();
@@ -133,9 +146,73 @@ void StorageMonitorService::MonitorAndManageStorage()
     }
 }
 
+std::string StorageMonitorService::GetMemoryAlertCleanupParams()
+{
+    std::string memoryParams;
+    char tmpBuffer[MEMORY_PARAMS_PATH_LEN] = {0};
+    uint32_t tmpLen = MEMORY_PARAMS_PATH_LEN;
+    
+    if (SystemGetParameter("memory.alert.cleanup", tmpBuffer, &tmpLen) == 0) {
+        memoryParams = tmpBuffer;
+    } else {
+        LOGE("Failed to read memory.alert.cleanup, using default");
+        memoryParams = DEFAULT_PARAMS;
+    }
+    
+    return memoryParams;
+}
+ 
+void StorageMonitorService::ParseMemoryParameters(int64_t totalSize)
+{
+    std::string memoryParams = GetMemoryAlertCleanupParams();
+    std::istringstream memoryParamsStream(memoryParams);
+    std::string item;
+    while (std::getline(memoryParamsStream, item, '/')) {
+        std::string key;
+        std::string value;
+ 
+        size_t pos = item.find(':');
+        if (pos != std::string::npos) {
+            key = item.substr(0, pos);
+            value = item.substr(pos + 1);
+        } else {
+            LOGE("Invalid parameter format");
+            continue;
+        }
+ 
+        if (value.length() > 1 && value.substr(value.length() - 1) == "%") {
+            int percentage = std::stoi(value.substr(0, value.length() - 1));
+            if (percentage < 0 || percentage > CONST_NUM_ONE_HUNDRED) {
+                LOGE("Invalid percentage value");
+            } else {
+                int64_t size = (totalSize * percentage) / CONST_NUM_ONE_HUNDRED;
+                thresholds[key] = static_cast<int64_t>(size);
+            }
+        } else if (value.length() > 1 && value.substr(value.length() - 1) == "G") {
+            int gigabytes = std::stoi(value.substr(0, value.length() - 1));
+            if (gigabytes < 0) {
+                LOGE("Memory value cannot be negative: %{public}d G", gigabytes);
+            } else {
+                int64_t size = static_cast<int64_t>(gigabytes) * ONE_GB;
+                thresholds[key] = static_cast<int64_t>(size);
+            }
+        } else if (value.length() > 1 && value.substr(value.length() - 1) == "M") {
+            int megabytes = std::stoi(value.substr(0, value.length() - 1));
+            if (megabytes < 0) {
+                LOGE("Memory value cannot be negative: %{public}d M", megabytes);
+            } else {
+                int64_t size = static_cast<int64_t>(megabytes) * ONE_MB;
+                thresholds[key] = static_cast<int64_t>(size);
+            }
+        } else {
+            LOGE("parameter value format is invalid");
+        }
+    }
+}
+
 void StorageMonitorService::CheckAndCleanCache(int64_t freeSize, int64_t totalSize)
 {
-    int64_t lowThreshold = GetLowerThreshold(totalSize);
+    int64_t lowThreshold = thresholds["clean_l"];
     if (lowThreshold <= 0) {
         LOGE("Lower threshold value is invalid.");
         return;
@@ -149,18 +226,19 @@ void StorageMonitorService::CheckAndCleanCache(int64_t freeSize, int64_t totalSi
     std::string lowThresholdStr = std::to_string(lowThreshold);
     std::string storageUsage = "storage usage not enough:freeSize = " + freeSizeStr + ", totalSize = " + totalSizeStr +
                                ", lowThreshold = " + lowThresholdStr;
-    if (freeSize < (lowThreshold * CONST_NUM_THREE) / CONST_NUM_TWO) {
+    if (freeSize < lowThreshold) {
         CleanBundleCache(lowThreshold);
-        ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_MINIMAL, storageUsage);
+        ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_CLEAN_LOW, storageUsage);
+        LOGI("Device running out of memory");
         return;
     }
 
-    if (freeSize > (totalSize * STORAGE_THRESHOLD_PERCENTAGE) / CONST_NUM_ONE_HUNDRED) {
+    if (freeSize > thresholds["clean_m"]) {
         CleanBundleCacheByInterval(TIMESTAMP_WEEK, lowThreshold, CLEAN_CACHE_WEEK);
-        ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_TEN_PERCENT, storageUsage);
+        ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_CLEAN_HIGH, storageUsage);
     } else {
         CleanBundleCacheByInterval(TIMESTAMP_DAY, lowThreshold, SEND_EVENT_INTERVAL);
-        ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_FIVE_PERCENT, storageUsage);
+        ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_CLEAN_MEDIUM, storageUsage);
     }
 }
 
@@ -213,12 +291,6 @@ void StorageMonitorService::CleanBundleCache(int64_t lowThreshold)
     StorageRadar::ReportBundleMgrResult("CleanBundleCacheFilesAutomatic", ret, DEFAULT_USERID, "");
 }
 
-int64_t StorageMonitorService::GetLowerThreshold(int64_t totalSize)
-{
-    int64_t lowBytes = (totalSize * STORAGE_THRESHOLD_PERCENTAGE) / CONST_NUM_ONE_HUNDRED;
-    return (lowBytes < STORAGE_THRESHOLD_MAX_BYTES) ? lowBytes : STORAGE_THRESHOLD_MAX_BYTES;
-}
-
 void StorageMonitorService::CheckAndEventNotify(int64_t freeSize, int64_t totalSize)
 {
     LOGI("StorageMonitorService, start CheckAndEventNotify.");
@@ -226,19 +298,19 @@ void StorageMonitorService::CheckAndEventNotify(int64_t freeSize, int64_t totalS
     std::string totalSizeStr = std::to_string(totalSize);
     std::string storageUsage = "storage usage not enough event notify freeSize = " + freeSizeStr + ", totalSize = " +
                                totalSizeStr;
-    if (freeSize < STORAGE_THRESHOLD_500M) {
-        EventNotifyHighFreqHandler();
-        storageUsage += ", freeSize < 500M, success notify event";
-        ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_500MB, storageUsage);
+    if (freeSize < thresholds["notify_l"]) {
+        EventNotifyFreqHandlerForLow();
+        storageUsage += ", freeSize < " + std::to_string(thresholds["notify_l"]) + ", success notify event";
+        ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_NOTIFY_LOW, storageUsage);
         return;
     }
-    if (freeSize < STORAGE_THRESHOLD_2G) {
-        EventNotifyFreqHandlerFor2G();
-        storageUsage += ", freeSize < 2G, success notify event";
-        ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_2GB, storageUsage);
+    if (freeSize < thresholds["notify_m"]) {
+        EventNotifyFreqHandlerForMedium();
+        storageUsage += ", freeSize < " + std::to_string(thresholds["notify_m"]) + ", success notify event";
+        ReportRadarStorageUsage(StorageService::BizStage::BIZ_STAGE_THRESHOLD_NOTIFY_MEDIUM, storageUsage);
         return;
     }
-    EventNotifyFreqHandlerForTenPercent();
+    EventNotifyFreqHandlerForHigh();
 }
 
 void StorageMonitorService::SendSmartNotificationEvent(const std::string &faultDesc,
@@ -280,33 +352,33 @@ void StorageMonitorService::SendSmartNotificationEvent(const std::string &faultD
     EventFwk::CommonEventManager::PublishCommonEvent(eventData, publishInfo, nullptr);
 }
 
-void StorageMonitorService::EventNotifyHighFreqHandler()
+void StorageMonitorService::EventNotifyFreqHandlerForLow()
 {
     auto currentTime = std::chrono::system_clock::now();
     int32_t duration = static_cast<int32_t>(std::chrono::duration_cast<std::chrono::minutes>
             (currentTime - lastNotificationTimeHighFreq_).count());
-    LOGI("StorageMonitorService high frequency, duration is %{public}d", duration);
+    LOGW("StorageMonitorService left Storage Size < Low, duration is %{public}d", duration);
     if (duration >= SEND_EVENT_INTERVAL_HIGH_FREQ) {
         SendSmartNotificationEvent(FAULT_ID_THREE, FAULT_SUGGEST_THREE, true);
         lastNotificationTimeHighFreq_ = currentTime;
         lastNotificationTime_ =
                 std::chrono::time_point_cast<std::chrono::system_clock::duration>(
                         std::chrono::system_clock::now()) - std::chrono::hours(SEND_EVENT_INTERVAL);
-        lastNotificationTime2G_ =
+        lastNotificationTimeMedium_ =
                 std::chrono::time_point_cast<std::chrono::system_clock::duration>(
                         std::chrono::system_clock::now()) - std::chrono::hours(SEND_EVENT_INTERVAL);
     }
 }
 
-void StorageMonitorService::EventNotifyFreqHandlerFor2G()
+void StorageMonitorService::EventNotifyFreqHandlerForMedium()
 {
     auto currentTime = std::chrono::system_clock::now();
     int32_t duration = static_cast<int32_t>(std::chrono::duration_cast<std::chrono::hours>
-            (currentTime - lastNotificationTime2G_).count());
-    LOGW("StorageMonitorService left Storage Size < 2G, duration is %{public}d", duration);
+            (currentTime - lastNotificationTimeMedium_).count());
+    LOGW("StorageMonitorService left Storage Size < Medium, duration is %{public}d", duration);
     if (duration >= SEND_EVENT_INTERVAL) {
         SendSmartNotificationEvent(FAULT_ID_TWO, FAULT_ID_TWO, false);
-        lastNotificationTime2G_ = currentTime;
+        lastNotificationTimeMedium_ = currentTime;
         lastNotificationTime_ =
                 std::chrono::time_point_cast<std::chrono::system_clock::duration>(
                         std::chrono::system_clock::now()) - std::chrono::hours(SEND_EVENT_INTERVAL);
@@ -316,16 +388,16 @@ void StorageMonitorService::EventNotifyFreqHandlerFor2G()
     }
 }
 
-void StorageMonitorService::EventNotifyFreqHandlerForTenPercent()
+void StorageMonitorService::EventNotifyFreqHandlerForHigh()
 {
     auto currentTime = std::chrono::system_clock::now();
     int32_t duration = static_cast<int32_t>(std::chrono::duration_cast<std::chrono::hours>
             (currentTime - lastNotificationTime_).count());
-    LOGW("StorageMonitorService left Storage Size < 10 percent, duration is %{public}d", duration);
+    LOGW("StorageMonitorService left Storage Size < High, duration is %{public}d", duration);
     if (duration >= SEND_EVENT_INTERVAL) {
         SendSmartNotificationEvent(FAULT_ID_ONE, FAULT_ID_ONE, false);
         lastNotificationTime_ = currentTime;
-        lastNotificationTime2G_ =
+        lastNotificationTimeMedium_ =
                 std::chrono::time_point_cast<std::chrono::system_clock::duration>(
                         std::chrono::system_clock::now()) - std::chrono::hours(SEND_EVENT_INTERVAL);
         lastNotificationTimeHighFreq_ =
@@ -340,7 +412,7 @@ void StorageMonitorService::RefreshAllNotificationTimeStamp()
             std::chrono::time_point_cast<std::chrono::system_clock::duration>(
                     std::chrono::system_clock::now()) - std::chrono::hours(SEND_EVENT_INTERVAL);
 
-    lastNotificationTime2G_ =
+    lastNotificationTimeMedium_ =
             std::chrono::time_point_cast<std::chrono::system_clock::duration>(
                     std::chrono::system_clock::now()) - std::chrono::hours(SEND_EVENT_INTERVAL);
 
