@@ -155,9 +155,9 @@ HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_HandleDir_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "MtpfsDeviceTest_HandleDir_001 start";
     LIBMTP_file_t *content = nullptr;
-    MtpFsTypeDir *dir = nullptr;
+    MtpFsTypeDir dir;
     auto mtpfsdevice = std::make_shared<MtpFsDevice>();
-    mtpfsdevice->HandleDir(content, dir);
+    mtpfsdevice->HandleDir(content, &dir);
     EXPECT_EQ(content, nullptr);
     GTEST_LOG_(INFO) << "MtpfsDeviceTest_HandleDir_001 end";
 }

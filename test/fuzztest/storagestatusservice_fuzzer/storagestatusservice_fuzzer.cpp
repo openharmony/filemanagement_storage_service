@@ -22,7 +22,7 @@ namespace OHOS {
 namespace StorageManager {
 bool StorageStatusServiceFuzzTest(const uint8_t *data, size_t size)
 {
-    if ((data == nullptr) || (size <= sizeof(int64_t))) {
+    if ((data == nullptr) || (size < sizeof(int32_t) + sizeof(int64_t))) {
         return false;
     }
     std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
@@ -30,16 +30,18 @@ bool StorageStatusServiceFuzzTest(const uint8_t *data, size_t size)
         return 0;
     }
     int32_t userId = *(reinterpret_cast<const int32_t *>(data));
-    std::string pkgName(reinterpret_cast<const char *>(data), size);
-    std::string type(reinterpret_cast<const char *>(data), size);
+    int64_t metaData2 = *(reinterpret_cast<const int64_t *>(data + sizeof(int32_t)));
+    int32_t pos = sizeof(int32_t) + sizeof(int64_t);
+    int32_t len = (size - pos) / 3;
+    std::string pkgName(reinterpret_cast<const char *>(data + pos), len);
+    std::string type(reinterpret_cast<const char *>(data + pos + len), len);
+    std::string metaData(reinterpret_cast<const char *>(data + pos + len + len), len);
     BundleStats bundleStats;
     StorageStats storageStats;
     std::vector<std::string> bundleName;
     std::vector<int64_t> incrementalBackTimes;
     std::vector<int64_t> pkgFileSizes;
     std::vector<int64_t> incPkgFileSizes;
-    int64_t metaData2 = *(reinterpret_cast<const int64_t *>(data));
-    std::string metaData(reinterpret_cast<const char *>(data + sizeof(int64_t)), size - sizeof(int64_t));
     bundleName.push_back(metaData);
     incrementalBackTimes.push_back(metaData2);
     pkgFileSizes.push_back(metaData2);

@@ -13,8 +13,10 @@
  * limitations under the License.
  */
 
+#include <vector>
 #include <gtest/gtest.h>
 
+#include "init_param.h"
 #include "storage/storage_monitor_service.h"
 #include "storage_service_errno.h"
 #include "storage_total_status_service_mock.h"
@@ -35,8 +37,32 @@ public:
 
 namespace OHOS {
 namespace system {
+static constexpr int MAX_VALUE_LEN = 128;
+int IsValidParamValue(const char *value, uint32_t len)
+{
+    if ((value == NULL) || (strlen(value) + 1 > len)) {
+        return 0;
+    }
+    return 1;
+}
+
 std::string GetParameter(const std::string& key, const std::string& def)
 {
+    if (OHOS::StorageManager::SystemUtil::su == nullptr) {
+        uint32_t size = 0;
+        int ret = SystemReadParam(key.c_str(), NULL, &size);
+        if (ret == 0) {
+            std::vector<char> value(MAX_VALUE_LEN);
+            ret = SystemReadParam(key.c_str(), value.data(), &size);
+            if (ret == 0) {
+                return std::string(value.data());
+            }
+        }
+        if (IsValidParamValue(def.c_str(), MAX_VALUE_LEN) == 1) {
+            return std::string(def);
+        }
+        return "";
+    }
     return OHOS::StorageManager::SystemUtil::su->GetParameter(key, def);
 }
 } // namespace system
