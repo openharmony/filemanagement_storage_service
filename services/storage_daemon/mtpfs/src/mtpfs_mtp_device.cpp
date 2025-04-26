@@ -503,8 +503,14 @@ bool MtpFsDevice::IsDirFetched(std::string path)
         if (member.empty()) {
             continue;
         }
+        if (dir == nullptr) {
+            return false;
+        }
         const MtpFsTypeDir *tmp = dir->Dir(member);
         dir = const_cast<MtpFsTypeDir *>(tmp);
+    }
+    if (dir == nullptr) {
+        return false;
     }
     return dir->IsFetched();
 }
