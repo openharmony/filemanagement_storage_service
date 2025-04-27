@@ -202,6 +202,7 @@ std::vector<DirInfo> MountManager::InitSystemServiceDir()
             {"/data/service/el2/%d/dlp_credential_service", MODE_0711, OID_DLP_CREDENTIAL, OID_DLP_CREDENTIAL},
             {"/data/service/el2/%d/xpower", MODE_0711, OID_HIVIEW, OID_HIVIEW},
             {"/data/service/el2/%d/iShare", MODE_0711, OID_COLLABORATION_FWK, OID_COLLABORATION_FWK},
+            {"/data/service/el2/%d/fusion_awareness", MODE_0711, OID_COLLABORATION_FWK, OID_COLLABORATION_FWK},
             {"/data/service/el2/%d/av_session", MODE_0711, OID_AV_SESSION, OID_AV_SESSION},
             {"/data/service/el2/%d/file_transfer_service", MODE_0711, 7017, 7017},
             {"/data/service/el2/%d/print_service", MODE_0711, OID_PRINT, OID_PRINT},
