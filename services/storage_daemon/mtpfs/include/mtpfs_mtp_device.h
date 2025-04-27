@@ -100,6 +100,9 @@ public:
     char *GetDeviceFriendlyName();
     void FreeObjectHandles(MtpFsTypeDir *dir);
     int GetDirChildren(std::string path, MtpFsTypeDir *dir);
+    static int AddFileCancelFlag(const std::string &path);
+    static void RemoveFileCancelFlag(const std::string &path);
+    static bool IsFileCancelFlagExist(const std::string &path);
 
 private:
     void CriticalEnter()
@@ -119,7 +122,9 @@ private:
     int ReNameInner(const std::string &oldPath, const std::string &newPath);
     void ReadEvent();
     static void MtpEventCallback(int ret, LIBMTP_event_t event, uint32_t param, void *data);
+    static int MtpProgressCallback(uint64_t const sent, uint64_t const total, void const *const data);
     void FetchDirContent(MtpFsTypeDir *dir);
+    void DumpLibMtpErrorStack();
 
 private:
     LIBMTP_mtpdevice_t *device_;
@@ -134,6 +139,8 @@ private:
     static std::condition_variable eventCon_;
     static std::mutex eventMutex_;
     std::string rootDirName_;
+    static std::mutex setMutex_;
+    static std::setstd::string fileCancelFlagSet_;
 };
 
 #endif // MTPFS_MTP_DEVICE_H
