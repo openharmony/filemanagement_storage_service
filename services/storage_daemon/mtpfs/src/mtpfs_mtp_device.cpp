@@ -35,7 +35,7 @@ uint32_t MtpFsDevice::rootNode_ = ~0;
 std::condition_variable MtpFsDevice::eventCon_;
 std::mutex MtpFsDevice::eventMutex_;
 std::mutex MtpFsDevice::setMutex_;
-std::setstd::string MtpFsDevice::fileCancelFlagSet_;
+std::set<std::string> MtpFsDevice::fileCancelFlagSet_;
 static const std::string NO_ERROR_PATH = "/FileManagerExternalStorageReadOnlyFlag";
 using namespace OHOS::StorageService;
 
@@ -163,7 +163,7 @@ void MtpFsDevice::MtpEventCallback(int ret, LIBMTP_event_t event, uint32_t param
 
 int MtpFsDevice::MtpProgressCallback(uint64_t const sent, uint64_t const total, void const *const data)
 {
-    const char charData = static_cast<const char>(data);
+    const char *charData = static_cast<const char*>(data);
     return IsFileCancelFlagExist(std::string(charData)) ? -ECANCELED : 0;
 }
 
@@ -1098,7 +1098,7 @@ int MtpFsDevice::AddFileCancelFlag(const std::string &path)
         LOGE("SetFileCancelFlag: input file path is empty.");
         return -EINVAL;
     }
-    std::lock_guardstd::mutex lock(MtpFsDevice::setMutex_);
+    std::lock_guard<std::mutex> lock(MtpFsDevice::setMutex_);
     MtpFsDevice::fileCancelFlagSet_.insert(path);
     return 0;
 }
@@ -1110,7 +1110,7 @@ void MtpFsDevice::RemoveFileCancelFlag(const std::string &path)
         LOGE("RemoveFileCancelFlag: input file path is empty.");
         return;
     }
-    std::lock_guardstd::mutex lock(MtpFsDevice::setMutex_);
+    std::lock_guard<std::mutex> lock(MtpFsDevice::setMutex_);
     MtpFsDevice::fileCancelFlagSet_.erase(path);
 }
 
@@ -1120,6 +1120,6 @@ bool MtpFsDevice::IsFileCancelFlagExist(const std::string &path)
         LOGE("IsFileCancelFlagExist: input file path is empty.");
         return false;
     }
-    std::lock_guardstd::mutex lock(MtpFsDevice::setMutex_);
+    std::lock_guard<std::mutex> lock(MtpFsDevice::setMutex_);
     return (MtpFsDevice::fileCancelFlagSet_.find(path) != MtpFsDevice::fileCancelFlagSet_.end());
 }
