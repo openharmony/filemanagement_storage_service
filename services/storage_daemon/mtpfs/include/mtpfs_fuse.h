@@ -106,7 +106,7 @@ private:
     std::mutex fuseMutex_;
     std::map<std::string, const MtpFsTypeDir *> dirMap_ {};
     std::mutex listMutex_;
-    std::setstd::string pullingFileList_;
+    std::set<std::string> pullingFileList_;
 };
 
 #endif // MTPFS_FUSE_H
