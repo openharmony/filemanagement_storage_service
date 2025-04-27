@@ -752,7 +752,6 @@ int MtpFileSystem::Create(const char *path, mode_t mode, fuse_file_info *fileInf
 
 int MtpFileSystem::OpenFile(const char *path, struct fuse_file_info *fileInfo)
 {
-    std::lock_guard<std::mutex>lock(fuseMutex_);
     LOGI("MtpFileSystem: OpenFile enter, path: %{public}s", path);
     if (fileInfo == nullptr) {
         LOGE("Missing FileInfo");
@@ -771,17 +770,18 @@ int MtpFileSystem::OpenFile(const char *path, struct fuse_file_info *fileInfo)
     if (tmpFile != nullptr) {
         tmpPath = tmpFile->PathTmp();
     } else {
-        tmpPath = tmpFilesPool_.MakeTmpPath(stdPath);
-        // only copy the file if needed
-        if (!HasPartialObjectSupport()) {
-            int rval = device_.FilePull(stdPath, tmpPath);
-            if (rval != 0) {
-                return -rval;
-            }
-        } else {
-            int fd = ::creat(tmpPath.c_str(), S_IRUSR | S_IWUSR);
-            ::close(fd);
+        if (IsFilePulling(stdPath)) {
+            LOGE("MtpFileSystem::OpenFile failed, file is pulling for path=%{public}s.", path);
+            return -EBUSY;
         }
+        AddPullingFile(stdPath);
+        tmpPath = tmpFilesPool_.MakeTmpPath(stdPath);
+        int rval = device_.FilePull(stdPath, tmpPath);
+        if (rval != 0) {
+            RemovePullingFile(stdPath);
+            return -rval;
+        }
+        RemovePullingFile(stdPath);
     }
 
     // we create the tmp file even if we can use partial get/send to
@@ -1059,6 +1059,10 @@ int MtpFileSystem::SetXAttr(const char *path, const char *in)
         LOGI("Refresh the mtp dir content, dir=%{public}s", path);
         return 0;
     }
+    if (strcmp(in, "user.cancelcopy") == 0) {
+        LOGI("Cancel the mtp transfer task, path=%{public}s", path);
+        return device_.AddFileCancelFlag(std::string(path));
+    }
     if (strcmp(in, "user.isUploadCompleted") != 0) {
         LOGE("attrKey error, attrKey=%{public}s", in);
         return -ENOENT;
@@ -1134,4 +1138,38 @@ int MtpFileSystem::GetFriendlyName(const char *in, char *out, size_t size)
         return 0;
     }
     return nameLen;
+}
+
+int MtpFileSystem::AddPullingFile(const std::string &path)
+{
+    LOGI("MtpFileSystem: AddPullingFile enter, path: %{public}s", path.c_str());
+    if (path.empty()) {
+        LOGE("AddPullingFile: input file path is empty.");
+        return -EINVAL;
+    }
+    std::lock_guard<std::mutex> lock(listMutex_);
+    pullingFileList_.insert(path);
+    return 0;
+}
+
+void MtpFileSystem::RemovePullingFile(const std::string &path)
+{
+    LOGI("MtpFileSystem: RemovePullingFile enter, path: %{public}s", path.c_str());
+    if (path.empty()) {
+        LOGE("RemovePullingFile: input file path is empty.");
+        return;
+    }
+    std::lock_guard<std::mutex> lock(listMutex_);
+    pullingFileList_.erase(path);
+}
+
+bool MtpFileSystem::IsFilePulling(const std::string &path)
+{
+    LOGI("MtpFileSystem: IsFilePulling enter, path: %{public}s", path.c_str());
+    if (path.empty()) {
+        LOGE("IsFilePulling: input file path is empty.");
+        return false;
+    }
+    std::lock_guard<std::mutex> lock(listMutex_);
+    return (pullingFileList_.find(path) != pullingFileList_.end());
 }

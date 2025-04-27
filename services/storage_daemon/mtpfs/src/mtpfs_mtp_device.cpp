@@ -34,6 +34,8 @@ static std::atomic<bool> g_needHandleDeviceEvent { false };
 uint32_t MtpFsDevice::rootNode_ = ~0;
 std::condition_variable MtpFsDevice::eventCon_;
 std::mutex MtpFsDevice::eventMutex_;
+std::mutex MtpFsDevice::setMutex_;
+std::set<std::string> MtpFsDevice::fileCancelFlagSet_;
 static const std::string NO_ERROR_PATH = "/FileManagerExternalStorageReadOnlyFlag";
 using namespace OHOS::StorageService;
 
@@ -69,7 +71,7 @@ bool MtpFsDevice::Connect(LIBMTP_raw_device_t *dev)
     MtpFsUtil::On();
 
     if (!device_) {
-        LIBMTP_Dump_Errorstack(device_);
+        DumpLibMtpErrorStack(device_);
         return false;
     }
 
@@ -159,6 +161,12 @@ void MtpFsDevice::MtpEventCallback(int ret, LIBMTP_event_t event, uint32_t param
     eventCon_.notify_one();
 }
 
+int MtpFsDevice::MtpProgressCallback(uint64_t const sent, uint64_t const total, void const *const data)
+{
+    const char *charData = static_cast<const char*>(data);
+    return IsFileCancelFlagExist(std::string(charData)) ? -ECANCELED : 0;
+}
+
 bool MtpFsDevice::ConnectByDevNo(int devNo)
 {
     LOGI("Start to connect by device number = %{public}d.", devNo);
@@ -188,7 +196,7 @@ bool MtpFsDevice::ConnectByDevNo(int devNo)
     free(static_cast<void *>(rawDevices));
     if (!device_) {
         LOGE("device_ is nullptr");
-        LIBMTP_Dump_Errorstack(device_);
+        DumpLibMtpErrorStack(device_);
         return false;
     }
     if (!EnumStorages()) {
@@ -273,11 +281,9 @@ bool MtpFsDevice::EnumStorages()
 {
     LOGI("Start to enum mtp device storages.");
     CriticalEnter();
-    LIBMTP_Clear_Errorstack(device_);
     if (LIBMTP_Get_Storage(device_, LIBMTP_STORAGE_SORTBY_NOTSORTED) < 0) {
         LOGE("Could not retrieve device storage.");
-        LIBMTP_Dump_Errorstack(device_);
-        LIBMTP_Clear_Errorstack(device_);
+        DumpLibMtpErrorStack(device_);
         return false;
     }
     CriticalLeave();
@@ -556,8 +562,7 @@ int MtpFsDevice::DirCreateNew(const std::string &path)
     if (newId == 0) {
         StorageRadar::ReportMtpfsResult("DirCreateNew::LIBMTP_Create_Folder", newId, "path=" + path);
         LOGE("Could not create directory: %{public}s", path.c_str());
-        LIBMTP_Dump_Errorstack(device_);
-        LIBMTP_Clear_Errorstack(device_);
+        DumpLibMtpErrorStack(device_);
     } else {
         MtpFsTypeDir dirToUpload(newId, dirParent->Id(), dirParent->StorageId(), tmpBaseName);
         uint64_t time = GetFormattedTimestamp();
@@ -592,8 +597,7 @@ int MtpFsDevice::DirRemove(const std::string &path)
     if (rval != 0) {
         StorageRadar::ReportMtpfsResult("DirRemove::LIBMTP_Delete_Object", rval, "path=" + path);
         LOGE("Could not remove the directory: %{public}s", path.c_str());
-        LIBMTP_Dump_Errorstack(device_);
-        LIBMTP_Clear_Errorstack(device_);
+        DumpLibMtpErrorStack(device_);
         return -EINVAL;
     }
     uint64_t time = GetFormattedTimestamp();
@@ -623,8 +627,7 @@ int MtpFsDevice::DirRemoveDirectly(const std::string &path)
     CriticalLeave();
     if (rval != 0) {
         LOGE("Could not remove the directory: %{public}s directly", path.c_str());
-        LIBMTP_Dump_Errorstack(device_);
-        LIBMTP_Clear_Errorstack(device_);
+        DumpLibMtpErrorStack(device_);
         return -EINVAL;
     }
     uint64_t time = GetFormattedTimestamp();
@@ -661,8 +664,7 @@ int MtpFsDevice::DirReName(const std::string &oldPath, const std::string &newPat
         std::string extraData = "oldPath=" + oldPath + "newPath=" + newPath;
         StorageRadar::ReportMtpfsResult("DirReName::LIBMTP_Set_Folder_Name", ret, extraData);
         LOGE("Could not rename %{public}s to %{public}s", oldPath.c_str(), tmpNewBaseName.c_str());
-        LIBMTP_Dump_Errorstack(device_);
-        LIBMTP_Clear_Errorstack(device_);
+        DumpLibMtpErrorStack(device_);
         return -EINVAL;
     }
     const_cast<MtpFsTypeDir *>(dirToReName)->SetName(tmpNewBaseName);
@@ -705,8 +707,7 @@ int MtpFsDevice::ReNameInner(const std::string &oldPath, const std::string &newP
         CriticalLeave();
         if (rval != 0) {
             LOGE("Could not move %{public}s to %{public}s", oldPath.c_str(), newPath.c_str());
-            LIBMTP_Dump_Errorstack(device_);
-            LIBMTP_Clear_Errorstack(device_);
+            DumpLibMtpErrorStack(device_);
             return -EINVAL;
         }
         const_cast<MtpFsTypeBasic *>(objectToReName)->SetParent(dirNewParent->Id());
@@ -718,8 +719,7 @@ int MtpFsDevice::ReNameInner(const std::string &oldPath, const std::string &newP
         CriticalLeave();
         if (rval != 0) {
             LOGE("Could not rename %{public}s to %{public}s", oldPath.c_str(), newPath.c_str());
-            LIBMTP_Dump_Errorstack(device_);
-            LIBMTP_Clear_Errorstack(device_);
+            DumpLibMtpErrorStack(device_);
             return -EINVAL;
         }
     }
@@ -833,17 +833,18 @@ int MtpFsDevice::FilePull(const std::string &src, const std::string &dst)
     } else {
         LOGI("Started fetching %{public}s", src.c_str());
         CriticalEnter();
-        int rval = LIBMTP_Get_File_To_File(device_, fileToFetch->Id(), dst.c_str(), nullptr, nullptr);
+        int rval = LIBMTP_Get_File_To_File(device_, fileToFetch->Id(), dst.c_str(), MtpProgressCallback, src.c_str());
         CriticalLeave();
         if (rval != 0) {
             std::string extraData = "src=" + src + "dst=" + dst;
             StorageRadar::ReportMtpfsResult("FilePull::LIBMTP_Get_File_To_File", rval, extraData);
             LOGE("Could not fetch file %{public}s", src.c_str());
-            LIBMTP_Dump_Errorstack(device_);
-            LIBMTP_Clear_Errorstack(device_);
+            DumpLibMtpErrorStack(device_);
+            RemoveFileCancelFlag(src);
             return -ENOENT;
         }
     }
+    RemoveFileCancelFlag(src);
     LOGI("File fetched %{public}s", src.c_str());
     return 0;
 }
@@ -875,15 +876,14 @@ int MtpFsDevice::FilePush(const std::string &src, const std::string &dst)
     LIBMTP_file_t *f = fileToUpload.ToLIBMTPFile();
     LOGI("Started uploading %{public}s, st_size=%{public}s", dst.c_str(), std::to_string(fileStat.st_size).c_str());
     CriticalEnter();
-    int rval = LIBMTP_Send_File_From_File(device_, src.c_str(), f, nullptr, nullptr);
+    int rval = LIBMTP_Send_File_From_File(device_, src.c_str(), f, MtpProgressCallback, dst.c_str());
     CriticalLeave();
     if (rval != 0) {
         if (dst != NO_ERROR_PATH) {
             StorageRadar::ReportMtpfsResult("FilePush::LIBMTP_Send_File_From_File", rval, "src=" + src + "dst=" + dst);
         }
         LOGE("Could not upload file %{public}s", src.c_str());
-        LIBMTP_Dump_Errorstack(device_);
-        LIBMTP_Clear_Errorstack(device_);
+        DumpLibMtpErrorStack(device_);
     } else {
         fileToUpload.SetId(f->item_id);
         fileToUpload.SetParent(f->parent_id);
@@ -898,6 +898,7 @@ int MtpFsDevice::FilePush(const std::string &src, const std::string &dst)
     }
     free(static_cast<void *>(f->filename));
     free(static_cast<void *>(f));
+    RemoveFileCancelFlag(dst);
     return (rval != 0 ? -EINVAL : rval);
 }
 
@@ -949,8 +950,7 @@ int MtpFsDevice::FileRename(const std::string &oldPath, const std::string &newPa
         std::string extraData = "oldPath=" + oldPath + "newPath=" + newPath;
         StorageRadar::ReportMtpfsResult("FileRename::LIBMTP_Set_File_Name", rval, extraData);
         LOGE("Could not rename %{public}s to %{public}s", oldPath.c_str(), newPath.c_str());
-        LIBMTP_Dump_Errorstack(device_);
-        LIBMTP_Clear_Errorstack(device_);
+        DumpLibMtpErrorStack(device_);
         return -EINVAL;
     }
     const_cast<MtpFsTypeFile *>(fileToReName)->SetName(tmpNewBaseName);
@@ -1083,4 +1083,43 @@ char *MtpFsDevice::GetDeviceFriendlyName()
         return nullptr;
     }
     return name;
+}
+
+void MtpFsDevice::DumpLibMtpErrorStack()
+{
+    LIBMTP_Dump_Errorstack(device_);
+    LIBMTP_Clear_Errorstack(device_);
+}
+
+int MtpFsDevice::AddFileCancelFlag(const std::string &path)
+{
+    LOGI("MtpFsDevice: AddFileCancelFlag enter, path: %{public}s", path.c_str());
+    if (path.empty()) {
+        LOGE("SetFileCancelFlag: input file path is empty.");
+        return -EINVAL;
+    }
+    std::lock_guard<std::mutex> lock(MtpFsDevice::setMutex_);
+    MtpFsDevice::fileCancelFlagSet_.insert(path);
+    return 0;
+}
+
+void MtpFsDevice::RemoveFileCancelFlag(const std::string &path)
+{
+    LOGI("MtpFsDevice: RemoveFileCancelFlag enter, path: %{public}s", path.c_str());
+    if (path.empty()) {
+        LOGE("RemoveFileCancelFlag: input file path is empty.");
+        return;
+    }
+    std::lock_guard<std::mutex> lock(MtpFsDevice::setMutex_);
+    MtpFsDevice::fileCancelFlagSet_.erase(path);
+}
+
+bool MtpFsDevice::IsFileCancelFlagExist(const std::string &path)
+{
+    if (path.empty()) {
+        LOGE("IsFileCancelFlagExist: input file path is empty.");
+        return false;
+    }
+    std::lock_guard<std::mutex> lock(MtpFsDevice::setMutex_);
+    return (MtpFsDevice::fileCancelFlagSet_.find(path) != MtpFsDevice::fileCancelFlagSet_.end());
 }

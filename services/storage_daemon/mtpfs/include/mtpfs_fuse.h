@@ -90,6 +90,9 @@ public:
     int SetXAttr(const char *path, const char *in);
     int GetXAttr(const char *path, const char *in, char *out, size_t size);
     int GetThumbAttr(const std::string &path, struct stat *buf);
+    int AddPullingFile(const std::string &path);
+    void RemovePullingFile(const std::string &path);
+    bool IsFilePulling(const std::string &path);
 
 private:
     bool HasPartialObjectSupport();
@@ -102,6 +105,8 @@ private:
     MtpFsDevice device_;
     std::mutex fuseMutex_;
     std::map<std::string, const MtpFsTypeDir *> dirMap_ {};
+    std::mutex listMutex_;
+    std::set<std::string> pullingFileList_;
 };
 
 #endif // MTPFS_FUSE_H
