@@ -1147,7 +1147,7 @@ int MtpFileSystem::AddPullingFile(const std::string &path)
         LOGE("AddPullingFile: input file path is empty.");
         return -EINVAL;
     }
-    std::lock_guardstd::mutex lock(listMutex_);
+    std::lock_guard<std::mutex> lock(listMutex_);
     pullingFileList_.insert(path);
     return 0;
 }
@@ -1159,7 +1159,7 @@ void MtpFileSystem::RemovePullingFile(const std::string &path)
         LOGE("RemovePullingFile: input file path is empty.");
         return;
     }
-    std::lock_guardstd::mutex lock(listMutex_);
+    std::lock_guard<std::mutex> lock(listMutex_);
     pullingFileList_.erase(path);
 }
 
@@ -1170,6 +1170,6 @@ bool MtpFileSystem::IsFilePulling(const std::string &path)
         LOGE("IsFilePulling: input file path is empty.");
         return false;
     }
-    std::lock_guardstd::mutex lock(listMutex_);
+    std::lock_guard<std::mutex> lock(listMutex_);
     return (pullingFileList_.find(path) != pullingFileList_.end());
 }
