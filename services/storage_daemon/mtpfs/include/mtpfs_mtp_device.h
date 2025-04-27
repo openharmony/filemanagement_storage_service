@@ -140,7 +140,7 @@ private:
     static std::mutex eventMutex_;
     std::string rootDirName_;
     static std::mutex setMutex_;
-    static std::setstd::string fileCancelFlagSet_;
+    static std::set<std::string> fileCancelFlagSet_;
 };
 
 #endif // MTPFS_MTP_DEVICE_H
