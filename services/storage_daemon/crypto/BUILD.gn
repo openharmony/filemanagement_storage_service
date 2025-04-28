@@ -107,10 +107,6 @@ ohos_static_library("libsdcrypto") {
     external_deps += [ "screenlock_mgr:screenlock_client" ]
   }
 
-  if (storage_service_device_type == "PC") {
-    defines += [ "EL2_INACTIVE_SPECIAL_HANDLING" ]
-  }
-
   subsystem_name = "filemanagement"
   part_name = "storage_service"
 }
