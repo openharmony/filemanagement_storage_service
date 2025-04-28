@@ -71,7 +71,7 @@ bool MtpFsDevice::Connect(LIBMTP_raw_device_t *dev)
     MtpFsUtil::On();
 
     if (!device_) {
-        DumpLibMtpErrorStack(device_);
+        DumpLibMtpErrorStack();
         return false;
     }
 
@@ -196,7 +196,7 @@ bool MtpFsDevice::ConnectByDevNo(int devNo)
     free(static_cast<void *>(rawDevices));
     if (!device_) {
         LOGE("device_ is nullptr");
-        DumpLibMtpErrorStack(device_);
+        DumpLibMtpErrorStack();
         return false;
     }
     if (!EnumStorages()) {
@@ -283,7 +283,7 @@ bool MtpFsDevice::EnumStorages()
     CriticalEnter();
     if (LIBMTP_Get_Storage(device_, LIBMTP_STORAGE_SORTBY_NOTSORTED) < 0) {
         LOGE("Could not retrieve device storage.");
-        DumpLibMtpErrorStack(device_);
+        DumpLibMtpErrorStack();
         return false;
     }
     CriticalLeave();
@@ -562,7 +562,7 @@ int MtpFsDevice::DirCreateNew(const std::string &path)
     if (newId == 0) {
         StorageRadar::ReportMtpfsResult("DirCreateNew::LIBMTP_Create_Folder", newId, "path=" + path);
         LOGE("Could not create directory: %{public}s", path.c_str());
-        DumpLibMtpErrorStack(device_);
+        DumpLibMtpErrorStack();
     } else {
         MtpFsTypeDir dirToUpload(newId, dirParent->Id(), dirParent->StorageId(), tmpBaseName);
         uint64_t time = GetFormattedTimestamp();
@@ -597,7 +597,7 @@ int MtpFsDevice::DirRemove(const std::string &path)
     if (rval != 0) {
         StorageRadar::ReportMtpfsResult("DirRemove::LIBMTP_Delete_Object", rval, "path=" + path);
         LOGE("Could not remove the directory: %{public}s", path.c_str());
-        DumpLibMtpErrorStack(device_);
+        DumpLibMtpErrorStack();
         return -EINVAL;
     }
     uint64_t time = GetFormattedTimestamp();
@@ -627,7 +627,7 @@ int MtpFsDevice::DirRemoveDirectly(const std::string &path)
     CriticalLeave();
     if (rval != 0) {
         LOGE("Could not remove the directory: %{public}s directly", path.c_str());
-        DumpLibMtpErrorStack(device_);
+        DumpLibMtpErrorStack();
         return -EINVAL;
     }
     uint64_t time = GetFormattedTimestamp();
@@ -664,7 +664,7 @@ int MtpFsDevice::DirReName(const std::string &oldPath, const std::string &newPat
         std::string extraData = "oldPath=" + oldPath + "newPath=" + newPath;
         StorageRadar::ReportMtpfsResult("DirReName::LIBMTP_Set_Folder_Name", ret, extraData);
         LOGE("Could not rename %{public}s to %{public}s", oldPath.c_str(), tmpNewBaseName.c_str());
-        DumpLibMtpErrorStack(device_);
+        DumpLibMtpErrorStack();
         return -EINVAL;
     }
     const_cast<MtpFsTypeDir *>(dirToReName)->SetName(tmpNewBaseName);
@@ -707,7 +707,7 @@ int MtpFsDevice::ReNameInner(const std::string &oldPath, const std::string &newP
         CriticalLeave();
         if (rval != 0) {
             LOGE("Could not move %{public}s to %{public}s", oldPath.c_str(), newPath.c_str());
-            DumpLibMtpErrorStack(device_);
+            DumpLibMtpErrorStack();
             return -EINVAL;
         }
         const_cast<MtpFsTypeBasic *>(objectToReName)->SetParent(dirNewParent->Id());
@@ -719,7 +719,7 @@ int MtpFsDevice::ReNameInner(const std::string &oldPath, const std::string &newP
         CriticalLeave();
         if (rval != 0) {
             LOGE("Could not rename %{public}s to %{public}s", oldPath.c_str(), newPath.c_str());
-            DumpLibMtpErrorStack(device_);
+            DumpLibMtpErrorStack();
             return -EINVAL;
         }
     }
@@ -839,7 +839,7 @@ int MtpFsDevice::FilePull(const std::string &src, const std::string &dst)
             std::string extraData = "src=" + src + "dst=" + dst;
             StorageRadar::ReportMtpfsResult("FilePull::LIBMTP_Get_File_To_File", rval, extraData);
             LOGE("Could not fetch file %{public}s", src.c_str());
-            DumpLibMtpErrorStack(device_);
+            DumpLibMtpErrorStack();
             RemoveFileCancelFlag(src);
             return -ENOENT;
         }
@@ -883,7 +883,7 @@ int MtpFsDevice::FilePush(const std::string &src, const std::string &dst)
             StorageRadar::ReportMtpfsResult("FilePush::LIBMTP_Send_File_From_File", rval, "src=" + src + "dst=" + dst);
         }
         LOGE("Could not upload file %{public}s", src.c_str());
-        DumpLibMtpErrorStack(device_);
+        DumpLibMtpErrorStack();
     } else {
         fileToUpload.SetId(f->item_id);
         fileToUpload.SetParent(f->parent_id);
@@ -950,7 +950,7 @@ int MtpFsDevice::FileRename(const std::string &oldPath, const std::string &newPa
         std::string extraData = "oldPath=" + oldPath + "newPath=" + newPath;
         StorageRadar::ReportMtpfsResult("FileRename::LIBMTP_Set_File_Name", rval, extraData);
         LOGE("Could not rename %{public}s to %{public}s", oldPath.c_str(), newPath.c_str());
-        DumpLibMtpErrorStack(device_);
+        DumpLibMtpErrorStack();
         return -EINVAL;
     }
     const_cast<MtpFsTypeFile *>(fileToReName)->SetName(tmpNewBaseName);
@@ -1087,6 +1087,10 @@ char *MtpFsDevice::GetDeviceFriendlyName()
 
 void MtpFsDevice::DumpLibMtpErrorStack()
 {
+    if (device_ == nullptr) {
+        LOGE("MtpFsDevice::DumpLibMtpErrorStack error, device_ is nullptr.");
+        return;
+    }
     LIBMTP_Dump_Errorstack(device_);
     LIBMTP_Clear_Errorstack(device_);
 }
