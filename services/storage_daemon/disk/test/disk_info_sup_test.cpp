@@ -112,7 +112,8 @@ HWTEST_F(DiskInfoSupTest, Storage_Service_DiskInfoSupTest_ReadDiskLines_001, Tes
         "PART 5",
     };
     int32_t maxVols = 3;
-    auto ret = diskInfo->ReadDiskLines(lines, maxVols);
+    bool isUserdata = false;
+    auto ret = diskInfo->ReadDiskLines(lines, maxVols, isUserdata);
     EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoSupTest_ReadDiskLines_001 end";
 }
@@ -151,7 +152,8 @@ HWTEST_F(DiskInfoSupTest, Storage_Service_DiskInfoSupTest_ReadDiskLines_002, Tes
         "PART 7 3",
     };
     int32_t maxVols = 3;
-    auto ret = diskInfo->ReadDiskLines(lines, maxVols);
+    bool isUserdata = false;
+    auto ret = diskInfo->ReadDiskLines(lines, maxVols, isUserdata);
     EXPECT_EQ(ret, E_OK);
     ret = diskInfo->Destroy();
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoSupTest_ReadDiskLines_002 end";
