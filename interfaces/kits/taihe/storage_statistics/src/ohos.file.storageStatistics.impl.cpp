@@ -77,7 +77,7 @@ StorageStats GetUserStorageStatsSync()
 {
     if (!OHOS::StorageManager::IsSystemApp()) {
         set_business_error(OHOS::E_PERMISSION_SYS, "GetUserStorageStatsSync is not allowed for non-system apps");
-        return MakeBundleStats(-1);
+        return MakeBundleStats(-1, -1, -1);
     }
 
     auto resultStats = std::make_shared<OHOS::StorageManager::StorageStats>();
