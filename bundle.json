@@ -29,6 +29,7 @@
       "storage_service_media_fuse",
       "storage_service_cloud_fuse"
     ],
+    
     "adapted_system_type": [ "small", "standard" ],
     "rom": "4096KB",
     "ram": "10240KB",
