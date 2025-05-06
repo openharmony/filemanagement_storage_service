@@ -21,7 +21,7 @@ part_name = "storage_service"
 taihe_generated_file_path = "$taihe_file_path/out/$subsystem_name/$part_name/key_manager"
 
 copy_taihe_idl("copy_taihe") {
-  sources = [ 
+  sources = [
     "${storage_service_path}/interfaces/kits/taihe/key_manager/idl/ohos.file.keyManager.taihe"
     ]
 }
@@ -40,6 +40,15 @@ taihe_shared_library("key_manager_taihe") {
   subsystem_name = "$subsystem_name"
   part_name = "$part_name"
 
+  sanitize = {
+    integer_overflow = true
+    ubsan = true
+    boundary_sanitize = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+
   include_dirs = [
     "include",
     "//foundation/filemanagement/storage_service/interfaces/innerkits/acl/native",
@@ -54,7 +63,7 @@ taihe_shared_library("key_manager_taihe") {
     "STORAGE_LOG_TAG = \"StorageManager\"",
     "LOG_DOMAIN = 0xD004300",
   ]
-  
+
   sources = get_target_outputs(":run_taihe")
   sources += [
     "src/ani_constructor.cpp",
