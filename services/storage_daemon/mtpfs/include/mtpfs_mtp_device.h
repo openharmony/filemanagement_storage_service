@@ -99,10 +99,11 @@ public:
     Capabilities GetCapabilities() const;
     char *GetDeviceFriendlyName();
     void FreeObjectHandles(MtpFsTypeDir *dir);
-    int GetDirChildren(std::string path, MtpFsTypeDir *dir);
     static int AddFileCancelFlag(const std::string &path);
     static void RemoveFileCancelFlag(const std::string &path);
     static bool IsFileCancelFlagExist(const std::string &path);
+    int GetDirChildren(std::string path, MtpFsTypeDir *dir, uint32_t *out);
+    void HandleRemoveEvent(uint32_t handleId);
 
 private:
     void CriticalEnter()
@@ -125,6 +126,10 @@ private:
     static int MtpProgressCallback(uint64_t const sent, uint64_t const total, void const *const data);
     void FetchDirContent(MtpFsTypeDir *dir);
     void DumpLibMtpErrorStack();
+    std::map<uint32_t, std::string> FindDifferenceFds(uint32_t *newFd, int32_t newNum, uint32_t *oldFd, int32_t oldNum);
+    void HandleDiffFdMap(std::map<uint32_t, std::string> &diffFdMap, MtpFsTypeDir *dir);
+    void CheckDirChildren(MtpFsTypeDir *dir);
+    bool UpdateFileNameByFd(MtpFsTypeDir &fileDir, uint32_t fileFd, LIBMTP_file_t *file);
 
 private:
     LIBMTP_mtpdevice_t *device_;

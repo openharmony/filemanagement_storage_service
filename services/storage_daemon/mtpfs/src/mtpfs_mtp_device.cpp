@@ -18,6 +18,7 @@
 #include <sstream>
 #include <thread>
 #include <unistd.h>
+#include <unordered_set>
 
 #include "mtpfs_fuse.h"
 #include "mtpfs_libmtp.h"
@@ -28,9 +29,9 @@
 const int32_t FETCH_NUM = 3000;
 const int32_t DIR_COUNT_ONE = 1;
 const uint32_t DEFAULT_COUNT = 100;
+const uint32_t PTP_ID_START = 300000000;
+const uint32_t PTP_ID_INDEX = 200000000;
 static bool g_isEventDone = true;
-static std::atomic<bool> g_isDeviceOperateEvent { false };
-static std::atomic<bool> g_needHandleDeviceEvent { false };
 uint32_t MtpFsDevice::rootNode_ = ~0;
 std::condition_variable MtpFsDevice::eventCon_;
 std::mutex MtpFsDevice::eventMutex_;
@@ -44,8 +45,6 @@ MtpFsDevice::MtpFsDevice() : device_(nullptr), capabilities_(), deviceMutex_(), 
     MtpFsUtil::Off();
     LIBMTP_Init();
     g_isEventDone = true;
-    g_isDeviceOperateEvent.store(false);
-    g_needHandleDeviceEvent.store(false);
     MtpFsUtil::On();
 }
 
@@ -136,24 +135,17 @@ void MtpFsDevice::MtpEventCallback(int ret, LIBMTP_event_t event, uint32_t param
     switch (event) {
         case LIBMTP_EVENT_OBJECT_ADDED:
             LOGI("Received event LIBMTP_EVENT_OBJECT_ADDED.");
-            if (g_isDeviceOperateEvent.load()) {
-                LOGI("g_isDeviceOperateEvent=%{public}d, the operation is from device", g_isDeviceOperateEvent.load());
-                g_needHandleDeviceEvent.store(true);
-            }
             break;
         case LIBMTP_EVENT_OBJECT_REMOVED:
             LOGI("Received event LIBMTP_EVENT_OBJECT_REMOVED.");
-            if (g_isDeviceOperateEvent.load()) {
-                LOGI("g_isDeviceOperateEvent=%{public}d, the operation is from device", g_isDeviceOperateEvent.load());
-                g_needHandleDeviceEvent.store(true);
+            if (param > PTP_ID_START) {
+                LOGI("It's HO 5.x version and PTP mode");
+                uint32_t handleId = param - PTP_ID_INDEX;
+                DelayedSingleton<MtpFileSystem>::GetInstance()->HandleRemove(handleId);
             }
             break;
         case LIBMTP_EVENT_NONE:
             LOGI("Received event LIBMTP_EVENT_NONE.");
-            if (g_isDeviceOperateEvent.load()) {
-                LOGI("g_isDeviceOperateEvent=%{public}d, the operation is from device", g_isDeviceOperateEvent.load());
-                g_needHandleDeviceEvent.store(true);
-            }
             break;
         default:
             break;
@@ -295,17 +287,13 @@ const void MtpFsDevice::HandleDir(LIBMTP_file_t *content, MtpFsTypeDir *dir)
 {
     if (content == nullptr) {
         LOGE("directory have not any content");
-        dir->Clear();
         return;
     }
     if (dir == nullptr) {
         LOGE("dir is nullptr");
         return;
     }
-    LOGI("HandleDir clear dir content");
-    if (dir->DirCount() + dir->FileCount() < DEFAULT_COUNT) {
-        dir->Clear();
-    }
+    LOGI("HandleDir content");
     for (LIBMTP_file_t *f = content; f; f = f->next) {
         if (f->filetype == LIBMTP_FILETYPE_FOLDER) {
             dir->AddDir(MtpFsTypeDir(f));
@@ -399,17 +387,7 @@ const MtpFsTypeDir *MtpFsDevice::OpenDirFetchContent(std::string path)
     }
 
     if (dir->objHandles != nullptr) {
-        CriticalEnter();
-        int32_t childrenNum = GetDirChildren(std::string(path), dir);
-        CriticalLeave();
-        if (childrenNum != dir->objHandles->num || g_needHandleDeviceEvent.load()) {
-            LOGI("new children num:%{public}d, cache:%{public}d or rename from device, fetch content again, "
-                "g_needHandleDeviceEvent=%{public}d", childrenNum, dir->objHandles->num,
-                g_needHandleDeviceEvent.load());
-            dir->SetFetched(false);
-            g_needHandleDeviceEvent.store(false);
-            FreeObjectHandles(dir);
-        }
+        CheckDirChildren(dir);
     }
 
     if (!dir->IsFetched()) {
@@ -418,6 +396,52 @@ const MtpFsTypeDir *MtpFsDevice::OpenDirFetchContent(std::string path)
         CriticalLeave();
     }
     return dir;
+}
+
+void MtpFsDevice::CheckDirChildren(MtpFsTypeDir *dir)
+{
+    if (dir == nullptr) {
+        LOGI("dir is nullptr");
+        return;
+    }
+    uint32_t *out;
+    CriticalEnter();
+    LOGI("LIBMTP_Get_Children begin");
+    int32_t childrenNum = LIBMTP_Get_Children(device_, dir->StorageId(), dir->Id(), &out);
+    LOGI("LIBMTP_Get_Children end, childrenNum=%{public}d, cacheNum=%{public}u", childrenNum, dir->objHandles->num);
+    CriticalLeave();
+    if (childrenNum < 0) {
+        LOGE("LIBMTP_Get_Children fail");
+        return;
+    }
+    std::map<uint32_t, std::string> diffFdMap =
+        FindDifferenceFds(out, childrenNum, dir->objHandles->handler, dir->objHandles->num);
+    if (childrenNum == 0) {
+        dir->Clear();
+        dir->objHandles->num = 0;
+        dir->objHandles->offset = 0;
+        LOGI("childrenNum is 0, clear dir=%{public}s content", dir->Name().c_str());
+        return;
+    }
+    if (!diffFdMap.empty()) {
+        HandleDiffFdMap(diffFdMap, dir);
+        if (dir->objHandles->handler != nullptr) {
+            free(dir->objHandles->handler);
+            dir->objHandles->handler = nullptr;
+            dir->objHandles->num = childrenNum;
+            LOGI("update objHandles");
+            dir->objHandles->handler = (uint32_t *)malloc(childrenNum * sizeof(uint32_t));
+            if (dir->objHandles->handler == nullptr) {
+                free(out);
+                return;
+            }
+            if (memcpy_s(dir->objHandles->handler, childrenNum * sizeof(uint32_t), out,
+                childrenNum * sizeof(uint32_t)) != EOK) {
+                LOGE("memcpy_s fail");
+            }
+        }
+    }
+    free(out);
 }
 
 void MtpFsDevice::FreeObjectHandles(MtpFsTypeDir *dir)
@@ -445,7 +469,6 @@ void MtpFsDevice::FetchDirContent(MtpFsTypeDir *dir)
 
     if (dir->objHandles == nullptr || dir->objHandles->handler == nullptr || dir->objHandles->num == 0) {
         dir->SetFetched(true);
-        dir->Clear();
         return;
     }
     LIBMTP_file_t *content = LIBMTP_Get_Patial_Files_Metadata(device_, dir->objHandles, DEFAULT_COUNT);
@@ -519,22 +542,6 @@ bool MtpFsDevice::IsDirFetched(std::string path)
         return false;
     }
     return dir->IsFetched();
-}
-
-int MtpFsDevice::GetDirChildren(std::string path, MtpFsTypeDir *dir)
-{
-    uint32_t *out = (uint32_t *)malloc(sizeof(uint32_t));
-    if (!out) {
-        LOGE("malloc failed");
-        return -EINVAL;
-    }
-    LOGI("LIBMTP_Get_Children path=%{public}s begin", path.c_str());
-    g_isDeviceOperateEvent.store(true);
-    int32_t num = LIBMTP_Get_Children(device_, dir->StorageId(), dir->Id(), &out);
-    g_isDeviceOperateEvent.store(false);
-    LOGI("LIBMTP_Get_Children path=%{public}s end, num=%{public}d", path.c_str(), num);
-    free(out);
-    return num;
 }
 
 static uint64_t GetFormattedTimestamp()
@@ -1126,4 +1133,119 @@ bool MtpFsDevice::IsFileCancelFlagExist(const std::string &path)
     }
     std::lock_guard<std::mutex> lock(MtpFsDevice::setMutex_);
     return (MtpFsDevice::fileCancelFlagSet_.find(path) != MtpFsDevice::fileCancelFlagSet_.end());
+}
+
+std::map<uint32_t, std::string> MtpFsDevice::FindDifferenceFds(
+    uint32_t *newFd, int32_t newNum, uint32_t *oldFd, int32_t oldNum)
+{
+    std::map<uint32_t, std::string> diffFdMap;
+    if (newFd == nullptr || oldFd == nullptr) {
+        LOGE("newFd or oldFd is nullptr");
+        return diffFdMap;
+    }
+
+    std::unordered_set<uint32_t> oldTemp(oldFd, oldFd + oldNum);
+    for (uint32_t i = 0; i < newNum; ++i) {
+        LOGD("FindDifferenceFds newFd=%{public}u", newFd[i]);
+        if (!oldTemp.count(newFd[i])) {
+            diffFdMap.insert(std::make_pair(newFd[i], "add"));
+        }
+    }
+
+    std::unordered_set<uint32_t> newTemp(newFd, newFd + newNum);
+    for (uint32_t i = 0; i < oldNum; ++i) {
+        LOGD("FindDifferenceFds oldFd=%{public}u", oldFd[i]);
+        if (!newTemp.count(oldFd[i])) {
+            diffFdMap.insert(std::make_pair(oldFd[i], "remove"));
+        }
+    }
+    return diffFdMap;
+}
+
+void MtpFsDevice::HandleDiffFdMap(std::map<uint32_t, std::string> &diffFdMap, MtpFsTypeDir *dir)
+{
+    if (dir == nullptr || diffFdMap.size() == 0) {
+        LOGE("dir is nullptr or diffFdMap is empty");
+        return;
+    }
+    for (auto diffFd : diffFdMap) {
+        LOGI("HandleDiffFdMap diffFd=%{public}u, type=%{public}s", diffFd.first, diffFd.second.c_str());
+        if (diffFd.second == "add") {
+            CriticalEnter();
+            LIBMTP_file_t *file = LIBMTP_Get_Filemetadata(device_, diffFd.first);
+            CriticalLeave();
+            if (file == nullptr) {
+                LOGI("HandleDiffFdMap Get File metadata fail, diffFd=%{public}u", diffFd.first);
+                continue;
+            }
+            if (file->filetype == LIBMTP_FILETYPE_FOLDER) {
+                dir->AddDir(MtpFsTypeDir(file));
+            } else {
+                dir->AddFile(MtpFsTypeFile(file));
+            }
+            continue;
+        }
+
+        for (auto iter = dir->dirs_.begin(); iter != dir->dirs_.end(); iter++) {
+            if (iter->Id() == diffFd.first) {
+                dir->dirs_.erase(iter);
+                break;
+            }
+        }
+        for (auto iter = dir->files_.begin(); iter != dir->files_.end(); iter++) {
+            if (iter->Id() == diffFd.first) {
+                dir->files_.erase(iter);
+                break;
+            }
+        }
+    }
+}
+
+void MtpFsDevice::HandleRemoveEvent(uint32_t handleId)
+{
+    LOGI("HandleRemoveEvent HandleID=%{public}u", handleId);
+    CriticalEnter();
+    LOGI("HandleRemoveEvent LIBMTP_Get_Filemetadata begin");
+    LIBMTP_file_t *file = LIBMTP_Get_Filemetadata(device_, handleId);
+    LOGI("HandleRemoveEvent LIBMTP_Get_Filemetadata end");
+    CriticalLeave();
+    if (file == nullptr) {
+        LOGI("HandleRemoveEvent it is a remove action");
+        return;
+    }
+    LOGI("HandleRemoveEvent it is a rename action, HandleID=%{public}u, ParentID=%{public}u, filename=%{public}s",
+        file->item_id,
+        file->parent_id,
+        file->filename);
+    bool res = UpdateFileNameByFd(rootDir_, handleId, file);
+    if (res) {
+        LOGI("UpdateFileNameByFd has already updated");
+    }
+    if (file != nullptr) {
+        LIBMTP_destroy_file_t(file);
+    }
+}
+
+bool MtpFsDevice::UpdateFileNameByFd(const MtpFsTypeDir &fileDir, uint32_t fileFd, LIBMTP_file_t *file)
+{
+    if (file == nullptr) {
+        LOGE("UpdateFileNameByFd failed: input fileDir or file is nullptr.");
+        return false;
+    }
+    if (fileDir.IsEmpty()) {
+        LOGE("UpdateFileNameByFd failed: fileDir:%{public}s is empty", fileDir.Name().c_str());
+        return false;
+    }
+    for (auto it = fileDir.files_.begin(); it != fileDir.files_.end(); ++it) {
+        if (it->Id() == fileFd) {
+            const_cast<MtpFsTypeDir &>(fileDir).ReplaceFile(*it, MtpFsTypeFile(file));
+            return true;
+        }
+    }
+    for (const MtpFsTypeDir &dir : fileDir.dirs_) {
+        if (UpdateFileNameByFd(dir, fileFd, file)) {
+            return true;
+        }
+    }
+    return false;
 }
