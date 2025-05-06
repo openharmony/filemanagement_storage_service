@@ -15,8 +15,8 @@
 
 #ifndef OHOS_FILE_VOLUMEMANAGER_IMPL_H
 #define OHOS_FILE_VOLUMEMANAGER_IMPL_H
-#include "ohos.file.volumeManager.proj.hpp"
 #include "ohos.file.volumeManager.impl.hpp"
+#include "ohos.file.volumeManager.proj.hpp"
 #include "taihe/runtime.hpp"
 
 #include "storage_manager_connect.h"
@@ -31,5 +31,5 @@ Volume MakeVolume(string_view a, string_view b);
 Volume GetVolumeByUuidSync(string_view uuid);
 
 array_view<Volume> GetAllVolumesSync();
-}  
+} // namespace ANI::volumeManager
 #endif // OHOS_FILE_VOLUMEMANAGER_IMPL_H

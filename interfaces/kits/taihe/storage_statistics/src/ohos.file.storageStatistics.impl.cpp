@@ -19,11 +19,12 @@ using namespace taihe;
 using namespace ANI::storageStatistics;
 namespace ANI::storageStatistics {
 
-int64_t GetFreeSizeSync() {
+int64_t GetFreeSizeSync()
+{
     auto resultSize = std::make_shared<int64_t>();
 
-    auto errNum = OHOS::DelayedSingleton<OHOS::StorageManager::
-                  StorageManagerConnect>::GetInstance()->GetFreeSize(*resultSize);
+    auto errNum =
+        OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance()->GetFreeSize(*resultSize);
     if (errNum != OHOS::E_OK) {
         set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "Failed to get free size.");
         return -1;
@@ -32,11 +33,12 @@ int64_t GetFreeSizeSync() {
     return *resultSize;
 }
 
-int64_t GetTotalSizeSync() {
+int64_t GetTotalSizeSync()
+{
     auto resultSize = std::make_shared<int64_t>();
 
-    int32_t errNum = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::
-                     GetInstance()->GetTotalSize(*resultSize);
+    int32_t errNum =
+        OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance()->GetTotalSize(*resultSize);
     if (errNum != OHOS::E_OK) {
         set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "Failed to get total size.");
         return -1;
@@ -45,40 +47,44 @@ int64_t GetTotalSizeSync() {
     return *resultSize;
 }
 
-BundleStats MakeBundleStats(int64_t a, int64_t b, int64_t c) {
+BundleStats MakeBundleStats(int64_t a, int64_t b, int64_t c)
+{
     return {a, b, c};
 }
 
-StorageStats MakeStorageStats(int64_t a) {
+StorageStats MakeStorageStats(int64_t a)
+{
     return {a};
 }
 
-BundleStats GetCurrentBundleStatsSync() {
+BundleStats GetCurrentBundleStatsSync()
+{
     uint32_t statFlag = 0;
     auto resultStats = std::make_shared<OHOS::StorageManager::BundleStats>();
-  
-    auto errNum = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::
-                     GetInstance()->GetCurrentBundleStats(*resultStats, statFlag);
+
+    auto errNum =
+        OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance()->GetCurrentBundleStats(
+            *resultStats, statFlag);
     if (errNum != OHOS::E_OK) {
         set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "Failed to get current bundle stats.");
         return MakeBundleStats(-1, -1, -1);
     }
 
-    return MakeBundleStats((*resultStats).dataSize_, 
-                    (*resultStats).cacheSize_, 
-                    (*resultStats).appSize_);
+    return MakeBundleStats((*resultStats).dataSize_, (*resultStats).cacheSize_, (*resultStats).appSize_);
 }
 
-StorageStats GetUserStorageStatsSync() {
+StorageStats GetUserStorageStatsSync()
+{
     if (!OHOS::StorageManager::IsSystemApp()) {
         set_business_error(OHOS::E_PERMISSION_SYS, "GetUserStorageStatsSync is not allowed for non-system apps");
         return MakeBundleStats(-1);
     }
 
     auto resultStats = std::make_shared<OHOS::StorageManager::StorageStats>();
-    
-    auto errNum = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::
-                    GetInstance()->GetUserStorageStats(*resultStats);
+
+    auto errNum =
+        OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance()->GetUserStorageStats(
+            *resultStats);
     if (errNum != OHOS::E_OK) {
         set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "Failed to get user storage stats");
         return MakeStorageStats(-1);
@@ -87,7 +93,8 @@ StorageStats GetUserStorageStatsSync() {
     return MakeStorageStats((*resultStats).total_);
 }
 
-StorageStats GetUserStorageStatsByidSync(int64_t userId) {
+StorageStats GetUserStorageStatsByidSync(int64_t userId)
+{
     int32_t userId_i = static_cast<int32_t>(userId);
 
     if (!OHOS::StorageManager::IsSystemApp()) {
@@ -97,15 +104,16 @@ StorageStats GetUserStorageStatsByidSync(int64_t userId) {
 
     auto resultStats = std::make_shared<OHOS::StorageManager::StorageStats>();
 
-    auto errNum = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::
-                     GetInstance()->GetUserStorageStats(userId_i, *resultStats);
+    auto errNum =
+        OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance()->GetUserStorageStats(
+            userId_i, *resultStats);
     if (errNum != OHOS::E_OK) {
         set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "Failed to get user storage stats by ID");
         return MakeStorageStats(-1);
     }
     return MakeStorageStats((*resultStats).total_);
 }
-}  // namespace ANI::storageStatistics
+} // namespace ANI::storageStatistics
 
 // Since these macros are auto-generate, lint will cause false positive.
 // NOLINTBEGIN

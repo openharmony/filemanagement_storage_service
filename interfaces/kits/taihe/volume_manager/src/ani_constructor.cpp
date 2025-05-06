@@ -14,7 +14,8 @@
  */
 
 #include "ohos.file.volumeManager.ani.hpp"
-ANI_EXPORT ani_status ANI_Constructor(ani_vm *vm, uint32_t *result) {
+ANI_EXPORT ani_status ANI_Constructor(ani_vm *vm, uint32_t *result)
+{
     ani_env *env;
     if (ANI_OK != vm->GetEnv(ANI_VERSION_1, &env)) {
         return ANI_ERROR;

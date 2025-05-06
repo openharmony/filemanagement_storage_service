@@ -18,20 +18,22 @@
 using namespace taihe;
 using namespace ANI::keyManager;
 namespace ANI::keyManager {
-void DeactivateUserKey(int64_t userId) {
+void DeactivateUserKey(int64_t userId)
+{
     uint32_t userId_i = static_cast<uint32_t>(userId);
 
     if (!OHOS::StorageManager::IsSystemApp()) {
         set_business_error(OHOS::E_PERMISSION_SYS, "DeactivateUserKey is not allowed for non-system apps.");
-        return ;
+        return;
     }
-    
-    auto errNum = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance()->DeactivateUserKey(userId_i);
+
+    auto errNum =
+        OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance()->DeactivateUserKey(userId_i);
     std::cout << "DeactivateUserKey: userId = " << userId_i << ", errNum = " << errNum << std::endl;
     if (errNum != OHOS::E_OK) {
         set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "Failed to deactivate user key.");
-        return ;
+        return;
     }
 }
-}
+} // namespace ANI::keyManager
 TH_EXPORT_CPP_API_DeactivateUserKey(DeactivateUserKey);

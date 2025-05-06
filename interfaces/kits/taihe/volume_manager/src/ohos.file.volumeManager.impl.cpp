@@ -19,11 +19,13 @@ using namespace ANI::volumeManager;
 
 namespace ANI::volumeManager {
 
-Volume MakeVolume(string_view a, string_view b) {
+Volume MakeVolume(string_view a, string_view b)
+{
     return {a, b};
 }
 
-Volume GetVolumeByUuidSync(string_view uuid) {
+Volume GetVolumeByUuidSync(string_view uuid)
+{
     if (!OHOS::StorageManager::IsSystemApp()) {
         set_business_error(OHOS::E_PERMISSION_SYS, "Not a system app");
         return MakeVolume("", "");
@@ -36,7 +38,7 @@ Volume GetVolumeByUuidSync(string_view uuid) {
         return MakeVolume("", "");
     }
 
-    int32_t errNum = instance->GetVolumeByUuid(uuid.c_str(), *volumeInfo);;
+    int32_t errNum = instance->GetVolumeByUuid(uuid.c_str(), *volumeInfo);
     if (errNum != OHOS::E_OK) {
         set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "GetVolumeByUuid failed");
         return MakeVolume("", "");
@@ -45,7 +47,8 @@ Volume GetVolumeByUuidSync(string_view uuid) {
     return MakeVolume(volumeInfo->GetDescription(), volumeInfo->GetUuid());
 }
 
-array_view<Volume> GetAllVolumesSync() {
+array_view<Volume> GetAllVolumesSync()
+{
     auto volumeInfo = std::make_shared<std::vector<OHOS::StorageManager::VolumeExternal>>();
 
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
@@ -59,15 +62,14 @@ array_view<Volume> GetAllVolumesSync() {
         set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "GetAllVolumes failed");
         return array<Volume>::make(0, Volume{});
     }
-    
+
     auto result = array<Volume>::make(volumeInfo->size(), Volume{});
-    std::transform(volumeInfo->begin(), volumeInfo->end(), result.begin(), [](auto& vol) {
-        return MakeVolume(vol.GetDescription(), vol.GetUuid());
-    });
+    std::transform(volumeInfo->begin(), volumeInfo->end(), result.begin(),
+                   [](auto &vol) { return MakeVolume(vol.GetDescription(), vol.GetUuid()); });
 
     return result;
 }
-}  // namespace ANI::volumeManager
+} // namespace ANI::volumeManager
 
 // Since these macros are auto-generate, lint will cause false positive.
 // NOLINTBEGIN
