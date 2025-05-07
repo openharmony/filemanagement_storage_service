@@ -373,9 +373,6 @@ int32_t DiskInfo::ReadDiskLines(std::vector<std::string> lines, int32_t maxVols,
 
 dev_t DiskInfo::ProcessPartition(std::vector<std::string>::iterator &it, int32_t maxVols, bool isUserdata)
 {
-    if (++it == end) {
-        return;
-    }
     int32_t index = std::atoi((*it).c_str());
     unsigned int majorId = major(device_);
     if ((index > maxVols && majorId == DISK_MMC_MAJOR) || index < 1) {
