@@ -93,6 +93,7 @@ public:
     int AddPullingFile(const std::string &path);
     void RemovePullingFile(const std::string &path);
     bool IsFilePulling(const std::string &path);
+    void HandleRemove(uint32_t handleId);
 
 private:
     bool HasPartialObjectSupport();

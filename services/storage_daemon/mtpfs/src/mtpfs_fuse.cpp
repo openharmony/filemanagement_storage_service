@@ -16,6 +16,7 @@
 #include "mtpfs_fuse.h"
 
 #include <fuse_opt.h>
+#include <thread>
 #include <unistd.h>
 
 #include "mtpfs_util.h"
@@ -1172,4 +1173,9 @@ bool MtpFileSystem::IsFilePulling(const std::string &path)
     }
     std::lock_guard<std::mutex> lock(listMutex_);
     return (pullingFileList_.find(path) != pullingFileList_.end());
+}
+
+void MtpFileSystem::HandleRemove(uint32_t handleId)
+{
+    std::thread([this, handleId]() { device_.HandleRemoveEvent(handleId); }).detach();
 }
