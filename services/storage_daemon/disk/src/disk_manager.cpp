@@ -53,8 +53,8 @@ void DiskManager::HandleDiskEvent(NetlinkData *data)
         return;
     }
 
-    unsigned int major = (unsigned int) std::atoi(data->GetParam("MAJOR").c_str());
-    unsigned int minor = (unsigned int) std::atoi(data->GetParam("MINOR").c_str());
+    unsigned int major = (unsigned int) std::atoi((data->GetParam("MAJOR")).c_str());
+    unsigned int minor = (unsigned int) std::atoi((data->GetParam("MINOR")).c_str());
     dev_t device = makedev(major, minor);
 
     switch (data->GetAction()) {
@@ -93,8 +93,8 @@ std::shared_ptr<DiskInfo> DiskManager::MatchConfig(NetlinkData *data)
     }
     std::string sysPath = data->GetSyspath();
     std::string devPath = data->GetDevpath();
-    unsigned int major = (unsigned int) std::atoi(data->GetParam("MAJOR".c_str());
-    unsigned int minor = (unsigned int) std::atoi(data->GetParam("MINOR").c_str());
+    unsigned int major = (unsigned int) std::atoi((data->GetParam("MAJOR")).c_str());
+    unsigned int minor = (unsigned int) std::atoi((data->GetParam("MINOR")).c_str());
     dev_t device = makedev(major, minor);
 
     for (auto config : diskConfig_) {
