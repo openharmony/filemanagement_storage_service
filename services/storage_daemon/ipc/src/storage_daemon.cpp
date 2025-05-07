@@ -231,6 +231,7 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
         return ret;
     }
 #endif
+    (void)UserManager::GetInstance()->DestroyUserDirs(userId, flags);
     int32_t prepareRet = UserManager::GetInstance()->PrepareUserDirs(userId, flags);
     if (prepareRet != E_OK) {
         std::string extraData = "flags=" + std::to_string(flags);
@@ -807,6 +808,7 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId, const std::vector<uint8_t>
     }
     std::thread([this, userId]() { RestoreconElX(userId); }).detach();
     std::thread([this]() { ActiveAppCloneUserKey(); }).detach();
+    std::thread([this, userId]() { UserManager::GetInstance()->CheckDirsFromVec(userId); }).detach();
     LOGW("Active user key for userId=%{public}d success.", userId);
     return ret;
 }

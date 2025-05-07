@@ -155,7 +155,7 @@ void DiskInfo::ReadMetadata()
             LOGE("open file %{public}s failed", path.c_str());
             return;
         }
-        int manfid = std::stoi(str);
+        int manfid = std::atoi(str.c_str());
         switch (manfid) {
             case 0x000003: {
                 vendor_ = "SanDisk";
@@ -373,7 +373,10 @@ int32_t DiskInfo::ReadDiskLines(std::vector<std::string> lines, int32_t maxVols,
 
 dev_t DiskInfo::ProcessPartition(std::vector<std::string>::iterator &it, int32_t maxVols, bool isUserdata)
 {
-    int32_t index = std::stoi(*it);
+    if (++it == end) {
+        return;
+    }
+    int32_t index = std::atoi((*it).c_str());
     unsigned int majorId = major(device_);
     if ((index > maxVols && majorId == DISK_MMC_MAJOR) || index < 1) {
         LOGE("Invalid partition %{public}d", index);
