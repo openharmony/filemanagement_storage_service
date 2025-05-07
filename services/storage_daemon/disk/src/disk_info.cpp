@@ -154,7 +154,7 @@ void DiskInfo::ReadMetadata()
             LOGE("open file %{public}s failed", path.c_str());
             return;
         }
-        int manfid = std::atoi(str).c_str();
+        int manfid = std::atoi(str.c_str());
         switch (manfid) {
             case 0x000003: {
                 vendor_ = "SanDisk";
