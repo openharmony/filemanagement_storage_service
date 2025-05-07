@@ -129,6 +129,7 @@ public:
     };
 
     std::mutex mutex_;
+    std::mutex mutexStats_;
     void StorageRadarThd(void);
 
 private:

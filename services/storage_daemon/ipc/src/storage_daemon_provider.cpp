@@ -59,6 +59,7 @@ constexpr unsigned int RADAR_STATISTIC_THREAD_WAIT_SECONDS = 60;
 
 std::map<uint32_t, RadarStatisticInfo>::iterator StorageDaemonProvider::GetUserStatistics(const uint32_t userId)
 {
+    std::lock_guard<std::mutex> lock(mutexStats_);
     auto it = opStatistics_.find(userId);
     if (it != opStatistics_.end()) {
         return it;
@@ -69,7 +70,7 @@ std::map<uint32_t, RadarStatisticInfo>::iterator StorageDaemonProvider::GetUserS
 
 void StorageDaemonProvider::GetTempStatistics(std::map<uint32_t, RadarStatisticInfo> &statistics)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutexStats_);
     statistics.insert(opStatistics_.begin(), opStatistics_.end());
     opStatistics_.clear();
 }
