@@ -31,6 +31,7 @@ public:
     int32_t StartUser(int32_t userId);
     int32_t StopUser(int32_t userId);
     void CreateElxBundleDataDir(uint32_t userId, uint8_t elx);
+    void CheckDirsFromVec(int32_t userId);
 
 private:
     int32_t PrepareDirsFromIdAndLevel(int32_t userId, const std::string &level);

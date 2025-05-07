@@ -231,6 +231,17 @@ int32_t UserManager::PrepareDirsFromIdAndLevel(int32_t userId, const std::string
     return E_OK;
 }
 
+void UserManager::CheckDirsFromVec(int32_t userId)
+{
+    std::vector<std::string> levels = { EL1, EL2, EL3, EL4, EL5 };
+
+    for (const std::string &level : levels) {
+        if (!PrepareDirsFromVec(userId, level, subDirVec_)) {
+            LOGE("failed to prepare %{public}s sub dirs for userid %{public}d", level.c_str(), userId);
+        }
+    }
+}
+
 int32_t UserManager::DestroyDirsFromIdAndLevel(int32_t userId, const std::string &level)
 {
     if (level != EL3 && level != EL4 && level != EL5) {

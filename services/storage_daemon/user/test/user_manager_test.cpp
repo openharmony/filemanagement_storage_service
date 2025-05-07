@@ -276,6 +276,24 @@ HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_DestroyUserDirs_001, T
 }
 
 /**
+ * @tc.name: Storage_Manager_UserManagerTest_CheckDirsFromVec_001
+ * @tc.desc: Verify the CheckDirsFromVec function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_CheckDirsFromVec_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_CheckDirsFromVec_001 start";
+
+    std::shared_ptr<UserManager> userManager = UserManager::GetInstance();
+    ASSERT_TRUE(userManager != nullptr);
+
+    int32_t userId = 405;
+    userManager->CheckDirsFromVec(userId);
+    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_CheckDirsFromVec_001 end";
+}
+
+/**
  * @tc.name: Storage_Manager_UserManagerTest_StopUser_001
  * @tc.desc: check the StopUser function when dir does not exist.
  * @tc.type: FUNC
