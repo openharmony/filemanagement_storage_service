@@ -15,9 +15,8 @@
 
 #include "ohos.file.storageStatistics.impl.h"
 
-using namespace taihe;
-using namespace ANI::storageStatistics;
-namespace ANI::storageStatistics {
+namespace ANI::StorageStatistics {
+constexpr int64_t DEFAULTSIZE = 0;
 
 int64_t GetFreeSizeSync()
 {
@@ -26,8 +25,8 @@ int64_t GetFreeSizeSync()
     auto errNum =
         OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance()->GetFreeSize(*resultSize);
     if (errNum != OHOS::E_OK) {
-        set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "Failed to get free size.");
-        return -1;
+        taihe::set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "Failed to get free size.");
+        return DEFAULTSIZE;
     }
 
     return *resultSize;
@@ -40,24 +39,24 @@ int64_t GetTotalSizeSync()
     int32_t errNum =
         OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance()->GetTotalSize(*resultSize);
     if (errNum != OHOS::E_OK) {
-        set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "Failed to get total size.");
-        return -1;
+        taihe::set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "Failed to get total size.");
+        return DEFAULTSIZE;
     }
 
     return *resultSize;
 }
 
-BundleStats MakeBundleStats(int64_t a, int64_t b, int64_t c)
+ohos::file::storageStatistics::BundleStats MakeBundleStats(int64_t dataSize, int64_t cacheSize, int64_t appSize)
 {
-    return {a, b, c};
+    return {dataSize, cacheSize, appSize};
 }
 
-StorageStats MakeStorageStats(int64_t a)
+ohos::file::storageStatistics::StorageStats MakeStorageStats(int64_t total)
 {
-    return {a};
+    return {total};
 }
 
-BundleStats GetCurrentBundleStatsSync()
+ohos::file::storageStatistics::BundleStats GetCurrentBundleStatsSync()
 {
     uint32_t statFlag = 0;
     auto resultStats = std::make_shared<OHOS::StorageManager::BundleStats>();
@@ -66,17 +65,19 @@ BundleStats GetCurrentBundleStatsSync()
         OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance()->GetCurrentBundleStats(
             *resultStats, statFlag);
     if (errNum != OHOS::E_OK) {
-        set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "Failed to get current bundle stats.");
-        return MakeBundleStats(-1, -1, -1);
+        taihe::set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum),
+            "Failed to get current bundle stats.");
+        return MakeBundleStats(DEFAULTSIZE, DEFAULTSIZE, DEFAULTSIZE);
     }
 
     return MakeBundleStats((*resultStats).dataSize_, (*resultStats).cacheSize_, (*resultStats).appSize_);
 }
 
-StorageStats GetUserStorageStatsSync()
+ohos::file::storageStatistics::StorageStats GetUserStorageStatsSync()
 {
     if (!OHOS::StorageManager::IsSystemApp()) {
-        set_business_error(OHOS::E_PERMISSION_SYS, "GetUserStorageStatsSync is not allowed for non-system apps");
+        taihe::set_business_error(OHOS::E_PERMISSION_SYS,
+            "GetUserStorageStatsSync is not allowed for non-system apps");
         return MakeStorageStats(-1);
     }
 
@@ -86,20 +87,21 @@ StorageStats GetUserStorageStatsSync()
         OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance()->GetUserStorageStats(
             *resultStats);
     if (errNum != OHOS::E_OK) {
-        set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "Failed to get user storage stats");
-        return MakeStorageStats(-1);
+        taihe::set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "Failed to get user storage stats");
+        return MakeStorageStats(DEFAULTSIZE);
     }
 
     return MakeStorageStats((*resultStats).total_);
 }
 
-StorageStats GetUserStorageStatsByidSync(int64_t userId)
+ohos::file::storageStatistics::StorageStats GetUserStorageStatsByidSync(int64_t userId)
 {
     int32_t userId_i = static_cast<int32_t>(userId);
 
     if (!OHOS::StorageManager::IsSystemApp()) {
-        set_business_error(OHOS::E_PERMISSION_SYS, "GetUserStorageStatsSync is not allowed for non-system apps");
-        return MakeStorageStats(-1);
+        taihe::set_business_error(OHOS::E_PERMISSION_SYS,
+            "GetUserStorageStatsSync is not allowed for non-system apps");
+        return MakeStorageStats(DEFAULTSIZE);
     }
 
     auto resultStats = std::make_shared<OHOS::StorageManager::StorageStats>();
@@ -108,8 +110,9 @@ StorageStats GetUserStorageStatsByidSync(int64_t userId)
         OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance()->GetUserStorageStats(
             userId_i, *resultStats);
     if (errNum != OHOS::E_OK) {
-        set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "Failed to get user storage stats by ID");
-        return MakeStorageStats(-1);
+        taihe::set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum),
+            "Failed to get user storage stats by ID");
+        return MakeStorageStats(DEFAULTSIZE);
     }
     return MakeStorageStats((*resultStats).total_);
 }
@@ -117,11 +120,11 @@ StorageStats GetUserStorageStatsByidSync(int64_t userId)
 
 // Since these macros are auto-generate, lint will cause false positive.
 // NOLINTBEGIN
-TH_EXPORT_CPP_API_GetFreeSizeSync(GetFreeSizeSync);
-TH_EXPORT_CPP_API_GetTotalSizeSync(GetTotalSizeSync);
-TH_EXPORT_CPP_API_MakeBundleStats(MakeBundleStats);
-TH_EXPORT_CPP_API_MakeStorageStats(MakeStorageStats);
-TH_EXPORT_CPP_API_GetCurrentBundleStatsSync(GetCurrentBundleStatsSync);
-TH_EXPORT_CPP_API_GetUserStorageStatsSync(GetUserStorageStatsSync);
-TH_EXPORT_CPP_API_GetUserStorageStatsByidSync(GetUserStorageStatsByidSync);
+TH_EXPORT_CPP_API_GetFreeSizeSync(ANI::StorageStatistics::GetFreeSizeSync);
+TH_EXPORT_CPP_API_GetTotalSizeSync(ANI::StorageStatistics::GetTotalSizeSync);
+TH_EXPORT_CPP_API_MakeBundleStats(ANI::StorageStatistics::MakeBundleStats);
+TH_EXPORT_CPP_API_MakeStorageStats(ANI::StorageStatistics::MakeStorageStats);
+TH_EXPORT_CPP_API_GetCurrentBundleStatsSync(ANI::StorageStatistics::GetCurrentBundleStatsSync);
+TH_EXPORT_CPP_API_GetUserStorageStatsSync(ANI::StorageStatistics::GetUserStorageStatsSync);
+TH_EXPORT_CPP_API_GetUserStorageStatsByidSync(ANI::StorageStatistics::GetUserStorageStatsByidSync);
 // NOLINTEND

@@ -15,21 +15,15 @@
 
 #ifndef OHOS_FILE_VOLUMEMANAGER_IMPL_H
 #define OHOS_FILE_VOLUMEMANAGER_IMPL_H
-#include "ohos.file.volumeManager.impl.hpp"
 #include "ohos.file.volumeManager.proj.hpp"
-#include "taihe/runtime.hpp"
-
+#include "ohos.file.volumeManager.impl.hpp"
 #include "storage_manager_connect.h"
 #include "storage_service_errno.h"
+#include "taihe/runtime.hpp"
 
 namespace ANI::volumeManager {
-using namespace taihe;
-using namespace ohos::file::volumeManager;
-
-Volume MakeVolume(string_view a, string_view b);
-
-Volume GetVolumeByUuidSync(string_view uuid);
-
-array_view<Volume> GetAllVolumesSync();
+ohos::file::volumeManager::Volume MakeVolume(taihe::string_view description, taihe::string_view uuid);
+ohos::file::volumeManager::Volume GetVolumeByUuidSync(taihe::string_view uuid);
+taihe::array_view<ohos::file::volumeManager::Volume> GetAllVolumesSync();
 } // namespace ANI::volumeManager
 #endif // OHOS_FILE_VOLUMEMANAGER_IMPL_H

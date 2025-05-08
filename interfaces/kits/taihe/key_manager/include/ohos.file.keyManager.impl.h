@@ -15,16 +15,13 @@
 
 #ifndef OHOS_FILE_KEYMANAGER_IMPL_H
 #define OHOS_FILE_KEYMANAGER_IMPL_H
-#include "ohos.file.keyManager.proj.hpp"
 #include "ohos.file.keyManager.impl.hpp"
-#include "taihe/runtime.hpp"
-
+#include "ohos.file.keyManager.proj.hpp"
 #include "storage_manager_connect.h"
 #include "storage_service_errno.h"
+#include "taihe/runtime.hpp"
 
-
-namespace ANI::keyManager {
-using namespace taihe;
+namespace ANI::KeyManager {
 void DeactivateUserKey(int64_t userId);
 }
 #endif // OHOS_FILE_KEYMANAGER_IMPL_H

@@ -24,7 +24,7 @@ struct Volume {
     uuid: String;
 }
 
-function MakeVolume(a: String, b: String): Volume;
+function MakeVolume(description: String, uuid: String): Volume;
 
 @gen_async("getVolumeByUuid")
 @gen_promise("getVolumeByUuid")

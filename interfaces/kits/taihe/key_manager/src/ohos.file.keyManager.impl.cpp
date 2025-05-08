@@ -15,25 +15,22 @@
 
 #include "ohos.file.keyManager.impl.h"
 
-using namespace taihe;
-using namespace ANI::keyManager;
-namespace ANI::keyManager {
+namespace ANI::KeyManager {
 void DeactivateUserKey(int64_t userId)
 {
     uint32_t userId_i = static_cast<uint32_t>(userId);
 
     if (!OHOS::StorageManager::IsSystemApp()) {
-        set_business_error(OHOS::E_PERMISSION_SYS, "DeactivateUserKey is not allowed for non-system apps.");
+        taihe::set_business_error(OHOS::E_PERMISSION_SYS, "DeactivateUserKey is not allowed for non-system apps.");
         return;
     }
 
-    auto errNum =
-        OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance()->DeactivateUserKey(userId_i);
-    std::cout << "DeactivateUserKey: userId = " << userId_i << ", errNum = " << errNum << std::endl;
+    auto errNum = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>
+        ::GetInstance()->DeactivateUserKey(userId_i);
     if (errNum != OHOS::E_OK) {
-        set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "Failed to deactivate user key.");
+        taihe::set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "Failed to deactivate user key.");
         return;
     }
 }
 } // namespace ANI::keyManager
-TH_EXPORT_CPP_API_DeactivateUserKey(DeactivateUserKey);
+TH_EXPORT_CPP_API_DeactivateUserKey(ANI::KeyManager::DeactivateUserKey);

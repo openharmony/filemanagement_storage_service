@@ -15,55 +15,54 @@
 
 #include "ohos.file.volumeManager.impl.h"
 
-using namespace ANI::volumeManager;
-
 namespace ANI::volumeManager {
 
-Volume MakeVolume(string_view a, string_view b)
+ohos::file::volumeManager::Volume MakeVolume(taihe::string_view description, taihe::string_view uuid)
 {
-    return {a, b};
+    return {description, uuid};
 }
 
-Volume GetVolumeByUuidSync(string_view uuid)
+ohos::file::volumeManager::Volume GetVolumeByUuidSync(taihe::string_view uuid)
 {
     if (!OHOS::StorageManager::IsSystemApp()) {
-        set_business_error(OHOS::E_PERMISSION_SYS, "Not a system app");
+        taihe::set_business_error(OHOS::E_PERMISSION_SYS, "Not a system app");
         return MakeVolume("", "");
     }
 
     auto volumeInfo = std::make_shared<OHOS::StorageManager::VolumeExternal>();
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
     if (instance == nullptr) {
-        set_error("StorageManagerConnect instance failed");
+        taihe::set_error("StorageManagerConnect instance failed");
         return MakeVolume("", "");
     }
 
     int32_t errNum = instance->GetVolumeByUuid(uuid.c_str(), *volumeInfo);
     if (errNum != OHOS::E_OK) {
-        set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "GetVolumeByUuid failed");
+        taihe::set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "GetVolumeByUuid failed");
         return MakeVolume("", "");
     }
 
     return MakeVolume(volumeInfo->GetDescription(), volumeInfo->GetUuid());
 }
 
-array_view<Volume> GetAllVolumesSync()
+taihe::array_view<ohos::file::volumeManager::Volume> GetAllVolumesSync()
 {
     auto volumeInfo = std::make_shared<std::vector<OHOS::StorageManager::VolumeExternal>>();
 
     auto instance = OHOS::DelayedSingleton<OHOS::StorageManager::StorageManagerConnect>::GetInstance();
     if (instance == nullptr) {
-        set_error("Get StorageManagerConnect instacne failed");
-        return array<Volume>::make(0, Volume{});
+        taihe::set_error("Get StorageManagerConnect instacne failed");
+        return taihe::array<ohos::file::volumeManager::Volume>::make(0, ohos::file::volumeManager::Volume{});
     }
 
     int32_t errNum = instance->GetAllVolumes(*volumeInfo);
     if (errNum != OHOS::E_OK) {
-        set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "GetAllVolumes failed");
-        return array<Volume>::make(0, Volume{});
+        taihe::set_business_error(OHOS::StorageManager::Convert2JsErrNum(errNum), "GetAllVolumes failed");
+        return taihe::array<ohos::file::volumeManager::Volume>::make(0, ohos::file::volumeManager::Volume{});
     }
 
-    auto result = array<Volume>::make(volumeInfo->size(), Volume{});
+    auto result = taihe::array<ohos::file::volumeManager::Volume>::
+        make(volumeInfo->size(), ohos::file::volumeManager::Volume{});
     std::transform(volumeInfo->begin(), volumeInfo->end(), result.begin(),
                    [](auto &vol) { return MakeVolume(vol.GetDescription(), vol.GetUuid()); });
 
@@ -73,7 +72,7 @@ array_view<Volume> GetAllVolumesSync()
 
 // Since these macros are auto-generate, lint will cause false positive.
 // NOLINTBEGIN
-TH_EXPORT_CPP_API_MakeVolume(MakeVolume);
-TH_EXPORT_CPP_API_GetVolumeByUuidSync(GetVolumeByUuidSync);
-TH_EXPORT_CPP_API_GetAllVolumesSync(GetAllVolumesSync);
+TH_EXPORT_CPP_API_MakeVolume(ANI::volumeManager::MakeVolume);
+TH_EXPORT_CPP_API_GetVolumeByUuidSync(ANI::volumeManager::GetVolumeByUuidSync);
+TH_EXPORT_CPP_API_GetAllVolumesSync(ANI::volumeManager::GetAllVolumesSync);
 // NOLINTEND

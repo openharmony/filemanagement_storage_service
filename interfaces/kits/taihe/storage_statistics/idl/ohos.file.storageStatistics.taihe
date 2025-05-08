@@ -33,13 +33,13 @@ struct BundleStats {
     appSize: i64;
 }
 
-function MakeBundleStats(a: i64, b: i64, c: i64): BundleStats;
+function MakeBundleStats(dataSize: i64, cacheSize: i64, appSize: i64): BundleStats;
 
 struct StorageStats {
     total: i64;
 }
 
-function MakeStorageStats(a: i64): StorageStats;
+function MakeStorageStats(total: i64): StorageStats;
 
 @gen_async("getCurrentBundleStats")
 @gen_promise("getCurrentBundleStats")

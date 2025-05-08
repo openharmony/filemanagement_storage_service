@@ -15,31 +15,22 @@
 
 #ifndef OHOS_FILE_KEYMANAGER_IMPL_H
 #define OHOS_FILE_KEYMANAGER_IMPL_H
-#include "ohos.file.storageStatistics.proj.hpp"
 #include "ohos.file.storageStatistics.impl.hpp"
-#include "taihe/runtime.hpp"
-
+#include "ohos.file.storageStatistics.proj.hpp"
+#include "bundle_stats.h"
 #include "storage_manager_connect.h"
 #include "storage_service_errno.h"
-#include "bundle_stats.h"
 #include "storage_stats.h"
+#include "taihe/runtime.hpp"
 
-namespace ANI::storageStatistics {
-using namespace taihe;
-using namespace ohos::file::storageStatistics;
-
+namespace ANI::StorageStatistics {
 int64_t GetFreeSizeSync();
-
 int64_t GetTotalSizeSync();
 
-BundleStats MakeBundleStats(int64_t a, int64_t b, int64_t c);
-
-StorageStats MakeStorageStats(int64_t a);
-
-BundleStats GetCurrentBundleStatsSync();
-
-StorageStats GetUserStorageStatsSync();
-
-StorageStats GetUserStorageStatsByidSync(int64_t userID);
+ohos::file::storageStatistics::BundleStats MakeBundleStats(int64_t dataSize, int64_t cacheSize, int64_t appSize);
+ohos::file::storageStatistics::StorageStats MakeStorageStats(int64_t total);
+ohos::file::storageStatistics::BundleStats GetCurrentBundleStatsSync();
+ohos::file::storageStatistics::StorageStats GetUserStorageStatsSync();
+ohos::file::storageStatistics::StorageStats GetUserStorageStatsByidSync(int64_t userID);
 }
 #endif // OHOS_FILE_KEYMANAGER_IMPL_H
