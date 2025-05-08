@@ -56,6 +56,7 @@ DiskInfo::DiskInfo(std::string &sysPath, std::string &devPath, dev_t device, int
     flags_ = static_cast<unsigned int>(flag);
     status = S_INITAL;
     isUserdata = false;
+    sgdiskLines_ = std::vector<std::string>();
 }
 
 dev_t DiskInfo::GetDevice() const
@@ -197,28 +198,21 @@ int DiskInfo::ReadPartition()
         LOGE("Invaild maxVolumes: %{public}d", maxVolumes);
         return E_ERR;
     }
-    int res = Destroy();
-    if (res != E_OK) {
-        LOGE("Destroy failed in ReadPartition");
-    }
 
-    std::vector<std::string> cmd;
     std::vector<std::string> output;
     std::vector<std::string> lines;
-
-    cmd.push_back(SGDISK_PATH);
-    cmd.push_back(SGDISK_DUMP_CMD);
-    cmd.push_back(devPath_);
-    res = ForkExec(cmd, &output);
-    if (res != E_OK) {
-        LOGE("get %{private}s partition failed", devPath_.c_str());
+    std::vector<std::string> cmd = {SGDISK_PATH, SGDISK_DUMP_CMD, devPath_};
+    int res = ForkExec(cmd, &output);
+    if (output.empty() || res != E_OK) {
+        int destroyRes = Destroy();
+        sgdiskLines_.clear();
+        LOGE("get %{private}s partition failed, destroy error :%{private}d", devPath_.c_str(), destroyRes);
         return res;
     }
     std::string bufToken = "\n";
     for (auto &buf : output) {
         auto split = SplitLine(buf, bufToken);
-        for (auto &tmp : split)
-            lines.push_back(tmp);
+        lines.insert(lines.end(), split.begin(), split.end());
     }
     isUserdata = false;
     if (lines.size() > MIN_LINES) {
@@ -226,15 +220,83 @@ int DiskInfo::ReadPartition()
             return str.find("userdata") != std::string::npos;
         });
         if (userdataIt != lines.end()) {
+            isUserdata = true;
             std::vector<std::string> hmfsLines;
             hmfsLines.push_back(lines.front());
             hmfsLines.push_back(*userdataIt);
             status = S_SCAN;
-            return ReadDiskLines(hmfsLines, maxVolumes);
+            return ReadDiskLines(hmfsLines, maxVolumes, isUserdata);
         }
     }
     status = S_SCAN;
-    return ReadDiskLines(lines, maxVolumes);
+    std::sort(lines.begin() + 1, lines.end());
+    if (sgdiskLines_.empty()) {
+        sgdiskLines_ = lines;
+    } else {
+        ProcessPartitionChanges(lines, maxVolumes, isUserdata);
+        return E_OK;
+    }
+    return ReadDiskLines(sgdiskLines_, maxVolumes, isUserdata);
+}
+
+void DiskInfo::ProcessPartitionChanges(const std::vector<std::string>& lines, int maxVolumes, bool isUserdata)
+{
+    std::vector<std::string> addedLines;
+    std::vector<std::string> removedLines;
+    std::set_difference(
+        lines.begin(), lines.end(),
+        sgdiskLines_.begin(), sgdiskLines_.end(),
+        std::back_inserter(addedLines)
+    );
+    std::set_difference(
+        sgdiskLines_.begin(), sgdiskLines_.end(),
+        lines.begin(), lines.end(),
+        std::back_inserter(removedLines)
+    );
+
+    if (!addedLines.empty()) {
+        std::vector<std::string> SDLines;
+        SDLines.reserve(addedLines.size() + 1);
+        SDLines.push_back(lines.front());
+        SDLines.insert(SDLines.end(), addedLines.begin(), addedLines.end());
+        sgdiskLines_ = lines;
+        if (ReadDiskLines(SDLines, maxVolumes, isUserdata) != E_OK) {
+            LOGI("Failed to read disk lines ");
+        }
+    }
+    if (!removedLines.empty()) {
+        UmountLines(removedLines, maxVolumes, isUserdata);
+        sgdiskLines_.clear();
+        sgdiskLines_ = lines;
+    }
+}
+
+void DiskInfo::UmountLines(std::vector<std::string> lines, int32_t maxVols, bool isUserdata)
+{
+    std::string lineToken = " ";
+    for (auto &line : lines) {
+        auto split = SplitLine(line, lineToken);
+        auto it = split.begin();
+        if (it == split.end()) {
+            continue;
+        }
+
+        if (*it == "PART") {
+            if (++it == split.end()) {
+                continue;
+            }
+            dev_t partitionDev = ProcessPartition(it, maxVols, isUserdata);
+            if (partitionDev == makedev(0, 0)) {
+                continue;
+            }
+            std::string volumeId = StringPrintf("vol-%u-%u", major(partitionDev), minor(partitionDev));
+            auto volume = VolumeManager::Instance();
+            auto ret = volume->DestroyVolume(volumeId);
+            if (ret != E_OK) {
+                LOGE("Destroy volume %{public}s failed", volumeId.c_str());
+            }
+        }
+    }
 }
 
 bool DiskInfo::CreateMBRVolume(int32_t type, dev_t dev)
@@ -266,7 +328,7 @@ int32_t DiskInfo::CreateUnknownTabVol()
     return E_OK;
 }
 
-int32_t DiskInfo::ReadDiskLines(std::vector<std::string> lines, int32_t maxVols)
+int32_t DiskInfo::ReadDiskLines(std::vector<std::string> lines, int32_t maxVols, bool isUserdata)
 {
     std::string lineToken = " ";
     bool foundPart = false;
@@ -291,7 +353,14 @@ int32_t DiskInfo::ReadDiskLines(std::vector<std::string> lines, int32_t maxVols)
                 continue;
             }
         } else if (*it == "PART") {
-            ProcessPartition(it, split.end(), table, maxVols, foundPart);
+            if (++it == split.end()) {
+                continue;
+            }
+            dev_t partitionDev = ProcessPartition(it, maxVols, isUserdata);
+            if (partitionDev == makedev(0, 0)) {
+                continue;
+            }
+            CreateTableVolume(it, split.end(), table, foundPart, partitionDev);
         }
     }
 
@@ -302,47 +371,31 @@ int32_t DiskInfo::ReadDiskLines(std::vector<std::string> lines, int32_t maxVols)
     return E_OK;
 }
 
-void DiskInfo::ProcessPartition(std::vector<std::string>::iterator &it, const std::vector<std::string>::iterator &end,
-                                Table table, int32_t maxVols, bool &foundPart)
+dev_t DiskInfo::ProcessPartition(std::vector<std::string>::iterator &it, int32_t maxVols, bool isUserdata)
 {
-    if (++it == end) {
-        return;
-    }
     int32_t index = std::atoi((*it).c_str());
     unsigned int majorId = major(device_);
     if ((index > maxVols && majorId == DISK_MMC_MAJOR) || index < 1) {
         LOGE("Invalid partition %{public}d", index);
-        return;
+        return makedev(0, 0);
     }
-    dev_t partitionDev;
-    if (index > MAX_SCSI_VOLUMES) {
+    dev_t partitionDev = makedev(0, 0);
+    if (isUserdata) {
         int32_t maxMinor = GetMaxMinor(MAJORID_BLKEXT);
-        if (maxMinor == -1 && minor(device_) == 0) {
-            partitionDev = makedev(MAJORID_BLKEXT, minor(device_) + static_cast<uint32_t>(index) - MAX_PARTITION);
-        } else if (maxMinor == -1 && minor(device_) == MAX_PARTITION) {
+        if (maxMinor == -1) {
             partitionDev = makedev(MAJORID_BLKEXT, static_cast<uint32_t>(index) - MAX_PARTITION);
         } else {
-            partitionDev = makedev(MAJORID_BLKEXT, maxMinor + static_cast<uint32_t>(index) - MAX_INTERVAL_PARTITION);
+            partitionDev = makedev(MAJORID_BLKEXT, static_cast<uint32_t>(maxMinor) +
+                                   static_cast<uint32_t>(index) - MAX_INTERVAL_PARTITION);
         }
     } else {
-        partitionDev = makedev(major(device_), minor(device_) + static_cast<uint32_t>(index));
-    }
-
-    if (table == Table::MBR) {
-        if (++it == end) {
-            return;
-        }
-        int32_t type = std::stoi("0x0" + *it, 0, 16);
-        if (CreateMBRVolume(type, partitionDev)) {
-            foundPart = true;
+        if (index > MAX_SCSI_VOLUMES) {
+            partitionDev = makedev(MAJORID_BLKEXT, static_cast<uint32_t>(index) - MAX_PARTITION);
         } else {
-            LOGE("Create MBR Volume failed");
-        }
-    } else if (table == Table::GPT) {
-        if (CreateVolume(partitionDev) == E_OK) {
-            foundPart = true;
+            partitionDev = makedev(major(device_), minor(device_) + static_cast<uint32_t>(index));
         }
     }
+    return partitionDev;
 }
 
 int32_t DiskInfo::GetMaxMinor(int32_t major)
@@ -371,6 +424,26 @@ int32_t DiskInfo::GetMaxMinor(int32_t major)
     }
     closedir(dir);
     return maxMinor;
+}
+
+void DiskInfo::CreateTableVolume(std::vector<std::string>::iterator &it, const std::vector<std::string>::iterator &end,
+    Table table, bool &foundPart, dev_t partitionDev)
+{
+    if (table == Table::MBR) {
+        if (++it == end) {
+            return;
+        }
+        int32_t type = std::stoi("0x0" + *it, 0, 16);
+        if (CreateMBRVolume(type, partitionDev)) {
+            foundPart = true;
+        } else {
+            LOGE("Create MBR Volume failed");
+        }
+    } else if (table == Table::GPT) {
+        if (CreateVolume(partitionDev) == E_OK) {
+            foundPart = true;
+        }
+    }
 }
 
 int DiskInfo::CreateVolume(dev_t dev)

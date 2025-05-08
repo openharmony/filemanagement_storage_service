@@ -64,12 +64,16 @@ private:
     dev_t device_ {};
     unsigned int flags_ {};
     std::list<std::string> volumeId_;
-    int32_t ReadDiskLines(std::vector<std::string> lines, int32_t maxVols);
+    std::vector<std::string> sgdiskLines_;
+    int32_t ReadDiskLines(std::vector<std::string> lines, int32_t maxVols, bool isUserdata);
     bool CreateMBRVolume(int32_t type, dev_t dev);
     int32_t CreateUnknownTabVol();
-    void ProcessPartition(std::vector<std::string>::iterator &it, const std::vector<std::string>::iterator &end,
-                          Table table, int32_t maxVols, bool &foundPart);
+    dev_t ProcessPartition(std::vector<std::string>::iterator &it, int32_t maxVols, bool isUserdata);
     int32_t GetMaxMinor(int32_t major);
+    void CreateTableVolume(std::vector<std::string>::iterator &it, const std::vector<std::string>::iterator &end,
+                           Table table, bool &foundPart, dev_t partitionDev);
+    void UmountLines(std::vector<std::string> lines, int32_t maxVols, bool isUserdata);
+    void ProcessPartitionChanges(const std::vector<std::string>& lines, int maxVolumes, bool isUserdata);
 };
 } // STORAGE_DAEMON
 } // OHOS
