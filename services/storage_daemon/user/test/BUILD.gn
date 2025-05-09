@@ -132,6 +132,7 @@ ohos_unittest("mount_manager_test") {
     "hisysevent:libhisysevent",
     "huks:libhukssdk",
     "init:libbegetutil",
+    "samgr:samgr_proxy",
   ]
 
   if (storage_service_cloud_fuse) {

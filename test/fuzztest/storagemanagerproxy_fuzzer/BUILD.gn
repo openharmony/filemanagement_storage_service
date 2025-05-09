@@ -45,6 +45,7 @@ ohos_fuzztest("StorageManagerProxyFuzzTest") {
     "c_utils:utils",
     "hilog:libhilog",
     "ipc:ipc_single",
+    "safwk:system_ability_fwk",
   ]
 }
 
