@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 #include "base_key.h"
-
 #include <filesystem>
 #include <fcntl.h>
 #include <fstream>
@@ -27,10 +26,13 @@
 #include "directory_ex.h"
 #include "file_ex.h"
 
+#include "common_utils_mock.h"
 #include "fbex.h"
+#include "file_utils_mock.h"
 #include "fscrypt_key_v2.h"
 #include "huks_master_mock.h"
 #include "key_blob.h"
+#include "key_control_mock.h"
 #include "openssl_crypto_mock.h"
 #include "storage_service_errno.h"
 #include "string_utils.h"
@@ -52,6 +54,9 @@ public:
     void TearDown();
     static inline shared_ptr<HuksMasterMock> huksMasterMock_ = nullptr;
     static inline shared_ptr<OpensslCryptoMock> opensslCryptoMock_ = nullptr;
+    static inline shared_ptr<KeyControlMoc> keyControlMock_ = nullptr;
+    static inline shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
+    static inline shared_ptr<CommonUtilsMock> commonUtilMoc_ = nullptr;
 };
 
 void BaseKeyTest::SetUpTestCase(void)
@@ -61,6 +66,12 @@ void BaseKeyTest::SetUpTestCase(void)
     HuksMasterMock::huksMasterMock = huksMasterMock_;
     opensslCryptoMock_ = make_shared<OpensslCryptoMock>();
     OpensslCryptoMock::opensslCryptoMock = opensslCryptoMock_;
+    keyControlMock_ = make_shared<KeyControlMoc>();
+    KeyControlMoc::keyControlMoc = keyControlMock_;
+    fileUtilMoc_ = make_shared<FileUtilMoc>();
+    FileUtilMoc::fileUtilMoc = fileUtilMoc_;
+    commonUtilMoc_ = make_shared<CommonUtilsMock>();
+    CommonUtilsMock::utils = commonUtilMoc_;
 }
 
 void BaseKeyTest::TearDownTestCase(void)
@@ -70,6 +81,12 @@ void BaseKeyTest::TearDownTestCase(void)
     opensslCryptoMock_ = nullptr;
     HuksMasterMock::huksMasterMock = nullptr;
     huksMasterMock_ = nullptr;
+    KeyControlMoc::keyControlMoc = nullptr;
+    keyControlMock_ = nullptr;
+    FileUtilMoc::fileUtilMoc = nullptr;
+    fileUtilMoc_ = nullptr;
+    CommonUtilsMock::utils = nullptr;
+    commonUtilMoc_ = nullptr;
 }
 
 void BaseKeyTest::SetUp(void)
@@ -123,13 +140,12 @@ HWTEST_F(BaseKeyTest, BaseKey_DecryptReal_001, TestSize.Level1)
     UserAuth emptyUserAuth;
     uint32_t keyType = TYPE_EL2;
     KeyContext keyCtx;
-    EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(-1));
-    EXPECT_NE(elKey->DecryptReal(emptyUserAuth, keyType, keyCtx), E_OK);
-
+    EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(elKey->DecryptReal(emptyUserAuth, keyType, keyCtx), E_ERR);
 
     EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_CALL(*huksMasterMock_, DecryptKeyEx(_, _, _)).WillOnce(Return(E_ERR));
-    EXPECT_NE(elKey->DecryptReal(emptyUserAuth, keyType, keyCtx), E_OK);
+    EXPECT_EQ(elKey->DecryptReal(emptyUserAuth, keyType, keyCtx), E_ERR);
 
     EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_CALL(*huksMasterMock_, DecryptKeyEx(_, _, _)).WillOnce(Return(E_OK));
@@ -171,13 +187,14 @@ HWTEST_F(BaseKeyTest, BaseKey_SaveAndCleanKeyBuff_001, TestSize.Level1)
     keyCtx.aad.Alloc(aadVct.size());
     std::copy(aadVct.begin(), aadVct.end(), keyCtx.aad.data.get());
     EXPECT_FALSE(elKey->SaveAndCleanKeyBuff(keyPath, keyCtx));
-    
+
     keyPath = "/data/test";
+    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false));
     EXPECT_TRUE(elKey->SaveAndCleanKeyBuff(keyPath, keyCtx));
     EXPECT_TRUE(keyCtx.nonce.IsEmpty());
     EXPECT_TRUE(keyCtx.rndEnc.IsEmpty());
     EXPECT_TRUE(keyCtx.aad.IsEmpty());
-    
+
     const std::string needUpdatePath = keyPath + "/need_update";
     auto ret = unlink(needUpdatePath.c_str());
     ASSERT_TRUE(ret != -1) << "Failed to delete file in BaseKey_SaveAndCleanKeyBuff_001! " << errno;
@@ -194,18 +211,23 @@ HWTEST_F(BaseKeyTest, BaseKey_UpdateKey_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "BaseKey_UpdateKey_001 start";
     std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
-    std::string keyPath = "/test";
+    std::string keyPath = "";
     bool needSyncCandidate = false;
     EXPECT_EQ(elKey->UpdateKey(keyPath, needSyncCandidate), E_OK);
 
     needSyncCandidate = true;
-    EXPECT_NE(elKey->UpdateKey(keyPath, needSyncCandidate), E_OK);
-    
-    keyPath = "";
-    EXPECT_NE(elKey->UpdateKey(keyPath, needSyncCandidate), E_OK);
-
     elKey->dir_ = "/data/foo/bar/el5/100";
+    EXPECT_CALL(*fileUtilMoc_, GetSubDirs(_, _)).WillOnce(Return());
     EXPECT_EQ(elKey->UpdateKey(keyPath, needSyncCandidate), E_OK);
+
+    needSyncCandidate = true;
+    elKey->dir_ = "/data/foo/bar/el1/100";
+    EXPECT_CALL(*fileUtilMoc_, GetSubDirs(_, _)).WillOnce(Return());
+    EXPECT_EQ(elKey->UpdateKey(keyPath, needSyncCandidate), E_EMPTY_CANDIDATE_ERROR);
+
+    keyPath = "/test";
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false)).WillOnce(Return(false));
+    EXPECT_EQ(elKey->UpdateKey(keyPath, needSyncCandidate), 2);
     GTEST_LOG_(INFO) << "BaseKey_UpdateKey_001 end";
 }
 
@@ -219,11 +241,16 @@ HWTEST_F(BaseKeyTest, BaseKey_DoLatestBackUp_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "BaseKey_DoLatestBackUp_001 start";
     std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false));
+    elKey->DoLatestBackUp();
+
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
     elKey->DoLatestBackUp();
 
     std::string pathLatest = elKey->GetDir() + PATH_LATEST;
     EXPECT_TRUE(OHOS::ForceCreateDirectory(pathLatest));
     std::string pathLatestBak = elKey->GetDir() + PATH_LATEST_BACKUP;
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
     elKey->DoLatestBackUp();
     EXPECT_FALSE(access(pathLatest.c_str(), F_OK) == 0);
     EXPECT_TRUE(access(pathLatestBak.c_str(), F_OK) == 0);
@@ -246,7 +273,6 @@ HWTEST_F(BaseKeyTest, BaseKey_EncryptEceSece_001, TestSize.Level1)
     KeyContext keyCtx;
     EXPECT_CALL(*huksMasterMock_, EncryptKeyEx(_, _, _)).WillOnce(Return(E_ERR));
     EXPECT_NE(elKey->EncryptEceSece(auth, keyType, keyCtx), E_OK);
-
 
     EXPECT_CALL(*huksMasterMock_, EncryptKeyEx(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_CALL(*opensslCryptoMock_, AESEncrypt(_, _, _)).WillOnce(Return(-1));
@@ -288,6 +314,7 @@ HWTEST_F(BaseKeyTest, BaseKey_DoRestoreKeyCeEceSece_001, TestSize.Level1)
     std::string test = "1234567890";
     string pathEncrypt = path + PATH_ENCRYPTED;
     std::string errMsg = "";
+    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false));
     ASSERT_TRUE(SaveStringToFileSync(pathEncrypt, test, errMsg));
     EXPECT_NE(elKey->DoRestoreKeyCeEceSece(auth, path, keyType), E_OK);
     auto ret = unlink(pathEncrypt.c_str());
@@ -312,18 +339,20 @@ HWTEST_F(BaseKeyTest, BaseKey_DoRestoreKeyCeEceSece_002, TestSize.Level1)
     std::string rightContent = "123456789012345678901234567890";
     string pathEncrypt = path + PATH_ENCRYPTED;
     std::string errMsg = "";
+    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false));
     ASSERT_TRUE(SaveStringToFileSync(pathEncrypt, rightContent, errMsg));
     EXPECT_NE(elKey->DoRestoreKeyCeEceSece(auth, path, keyType), E_OK);
 
     string pathSecdisc = path + PATH_SECDISC;
+    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false));
     ASSERT_TRUE(SaveStringToFileSync(path + PATH_SECDISC, test, errMsg));
     EXPECT_NE(elKey->DoRestoreKeyCeEceSece(auth, path, keyType), E_OK);
-    
+
     string pathShield = path + PATH_SHIELD;
+    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false));
     ASSERT_TRUE(SaveStringToFileSync(path + PATH_SHIELD, test, errMsg));
     EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(-1));
     EXPECT_NE(elKey->DoRestoreKeyCeEceSece(auth, path, keyType), E_OK);
-
 
     EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_CALL(*huksMasterMock_, DecryptKeyEx(_, _, _)).WillOnce(Return(E_OK));
@@ -361,7 +390,7 @@ HWTEST_F(BaseKeyTest, BaseKey_DoRestoreKeyCeEceSece_003, TestSize.Level1)
     UserAuth auth;
     std::string path = "/data/test";
     uint32_t keyType = TYPE_EL2;
-    
+
     std::vector<uint8_t> tokenVec{6, 7, 8};
     auth.token.Alloc(tokenVec.size());
     std::copy(tokenVec.begin(), tokenVec.end(), auth.token.data.get());
@@ -448,44 +477,87 @@ HWTEST_F(BaseKeyTest, BaseKey_EncryptKeyBlob_000, TestSize.Level1)
     KeyBlob encryptedKey;
     UserAuth auth;
     std::string path = "/data/test/test1";
-    EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(Return(E_ERR));
-    EXPECT_NE(elKey->EncryptKeyBlob(auth, path, planKey, encryptedKey), E_OK);
-    
-    std::vector<uint8_t> vec{1, 2, 3, 4, 5};
-    KeyBlob keyOut(vec);
-    EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(Return(E_OK));
-    EXPECT_NE(elKey->EncryptKeyBlob(auth, path, planKey, encryptedKey), E_OK);
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(path));
 
-    EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(DoAll(WithArgs<1>(Invoke([](KeyBlob &value) {
-        std::vector<uint8_t> vecIn{1, 2, 3, 4, 5};
-        value.Alloc(vecIn.size());
-        std::copy(vecIn.begin(), vecIn.end(), value.data.get());
-    })), Return(E_OK)));
+    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(false));
+    EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(elKey->EncryptKeyBlob(auth, path, planKey, encryptedKey), E_SHIELD_OPERATION_ERROR);
+
+    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(true));
+    EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(Return(HKS_SUCCESS));
+    EXPECT_EQ(elKey->EncryptKeyBlob(auth, path, planKey, encryptedKey), E_SHIELD_OPERATION_ERROR);
+
+    KeyBlob keyOut;
     std::string test = "1234567890";
     string pathShield = path + PATH_SHIELD;
     std::string errMsg = "";
+    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false));
     ASSERT_TRUE(SaveStringToFileSync(pathShield, test, errMsg));
+    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(true));
+    EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(DoAll(WithArgs<1>(Invoke([](KeyBlob &value) {
+        std::vector<uint8_t> vecIn{1, 2, 3, 4, 5};
+        value.Alloc(vecIn.size());
+        std::copy(vecIn.begin(), vecIn.end(), value.data.get());
+    })), Return(HKS_SUCCESS)));
+    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false));
     EXPECT_CALL(*huksMasterMock_, GenerateRandomKey(_)).WillOnce(Return(keyOut));
-    EXPECT_CALL(*huksMasterMock_, EncryptKey(_, _, _, _)).WillOnce(Return(E_ERR));
-    EXPECT_NE(elKey->EncryptKeyBlob(auth, path, planKey, encryptedKey), E_OK);
-    
+    EXPECT_EQ(elKey->EncryptKeyBlob(auth, path, planKey, encryptedKey), E_SAVE_KEY_BLOB_ERROR);
+
+    auto ret = unlink(pathShield.c_str());
+    ASSERT_TRUE(ret != -1) << "Failed to delete file in BaseKey_DecryptKeyBlob_000! " << errno;
+    OHOS::ForceRemoveDirectory(path);
+    GTEST_LOG_(INFO) << "BaseKey_EncryptKeyBlob_000 end";
+}
+
+/**
+ * @tc.name: BaseKey_EncryptKeyBlob_001
+ * @tc.desc: Verify the EncryptKeyBlob function.
+ * @tc.type: FUNC
+ * @tc.require: IAXJFK
+ */
+HWTEST_F(BaseKeyTest, BaseKey_EncryptKeyBlob_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_EncryptKeyBlob_001 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+    KeyBlob planKey;
+    KeyBlob encryptedKey;
+    UserAuth auth;
+    std::string path = "/data/test/test1";
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(path));
+
+    std::string errMsg = "";
+    std::vector<uint8_t> vec{1, 2, 3, 4, 5};
+    KeyBlob keyOut(vec);
     string pathSecdisc = path + PATH_SECDISC;
     std::string testSec(CRYPTO_KEY_SECDISC_SIZE, 'c');
+    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false));
     ASSERT_TRUE(SaveStringToFileSync(pathSecdisc, testSec, errMsg));
+    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(false));
     EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(DoAll(WithArgs<1>(Invoke([](KeyBlob &value) {
         std::vector<uint8_t> vecIn{1, 2, 3, 4, 5};
         value.Alloc(vecIn.size());
         std::copy(vecIn.begin(), vecIn.end(), value.data.get());
     })), Return(E_OK)));
+    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false)).WillOnce(Return(false));
+    EXPECT_CALL(*huksMasterMock_, GenerateRandomKey(_)).WillOnce(Return(keyOut));
+    EXPECT_CALL(*huksMasterMock_, EncryptKey(_, _, _, _)).WillOnce(Return(E_ERR));
+    EXPECT_EQ(elKey->EncryptKeyBlob(auth, path, planKey, encryptedKey), E_ERR);
+
+    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(false));
+    EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(DoAll(WithArgs<1>(Invoke([](KeyBlob &value) {
+        std::vector<uint8_t> vecIn{1, 2, 3, 4, 5};
+        value.Alloc(vecIn.size());
+        std::copy(vecIn.begin(), vecIn.end(), value.data.get());
+    })), Return(E_OK)));
+    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false)).WillOnce(Return(false));
     EXPECT_CALL(*huksMasterMock_, GenerateRandomKey(_)).WillOnce(Return(keyOut));
     EXPECT_CALL(*huksMasterMock_, EncryptKey(_, _, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(elKey->EncryptKeyBlob(auth, path, planKey, encryptedKey), E_OK);
-    auto ret = unlink(pathShield.c_str());
-    ASSERT_TRUE(ret != -1) << "Failed to delete file in BaseKey_EncryptKeyBlob_000! " << errno;
-    ret = unlink(pathSecdisc.c_str());
+
+    auto ret = unlink(pathSecdisc.c_str());
     ASSERT_TRUE(ret != -1) << "Failed to delete file in BaseKey_EncryptKeyBlob_000! " << errno;
     OHOS::ForceRemoveDirectory(path);
-    GTEST_LOG_(INFO) << "BaseKey_EncryptKeyBlob_000 end";
+    GTEST_LOG_(INFO) << "BaseKey_EncryptKeyBlob_001 end";
 }
 
 /**
@@ -499,74 +571,38 @@ HWTEST_F(BaseKeyTest, BaseKey_DecryptKeyBlob_000, TestSize.Level1)
     GTEST_LOG_(INFO) << "BaseKey_DecryptKeyBlob_000 start";
     std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
     std::string path = "/data/test";
-    string pathShield = path + PATH_SHIELD;
-    std::string test = "1234567890";
-    std::string errMsg = "";
-    ASSERT_TRUE(SaveStringToFileSync(pathShield, test, errMsg));
-
     uint32_t vecSize = AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + 10;
     std::vector<uint8_t> vecIn(vecSize, 5);
     KeyBlob planKey(vecIn);
     UserAuth auth;
     KeyBlob decryptedKey;
-    EXPECT_NE(elKey->DecryptKeyBlob(auth, path, planKey, decryptedKey), E_OK);
+
+    EXPECT_CALL(*fileUtilMoc_, GetSubDirs(_, _)).WillOnce(Return());
+    EXPECT_EQ(elKey->DecryptKeyBlob(auth, path, planKey, decryptedKey), E_LOAD_KEY_BLOB_ERROR);
+
+    std::string errMsg = "";
+    std::string test = "1234567890";
+    string pathShield = path + PATH_SHIELD;
+    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false));
+    ASSERT_TRUE(SaveStringToFileSync(pathShield, test, errMsg));
+    EXPECT_CALL(*fileUtilMoc_, GetSubDirs(_, _)).WillOnce(Return());
+    EXPECT_EQ(elKey->DecryptKeyBlob(auth, path, planKey, decryptedKey), E_LOAD_KEY_BLOB_ERROR);
 
     string pathSecdisc = path + PATH_SECDISC;
     std::string testSec(CRYPTO_KEY_SECDISC_SIZE, 'c');
+    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false));
     ASSERT_TRUE(SaveStringToFileSync(pathSecdisc, testSec, errMsg));
+    EXPECT_CALL(*fileUtilMoc_, GetSubDirs(_, _)).WillOnce(Return());
     EXPECT_CALL(*huksMasterMock_, DecryptKey(_, _, _, _)).WillOnce(Return(E_ERR));
-    EXPECT_NE(elKey->DecryptKeyBlob(auth, path, planKey, decryptedKey), E_OK);
+    EXPECT_EQ(elKey->DecryptKeyBlob(auth, path, planKey, decryptedKey), E_ERR);
 
+    EXPECT_CALL(*fileUtilMoc_, GetSubDirs(_, _)).WillOnce(Return());
     EXPECT_CALL(*huksMasterMock_, DecryptKey(_, _, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(elKey->DecryptKeyBlob(auth, path, planKey, decryptedKey), E_OK);
 
-    auto ret = unlink(pathShield.c_str());
-    ASSERT_TRUE(ret != -1) << "Failed to delete file in BaseKey_DecryptKeyBlob_000! " << errno;
-    ret = unlink(pathSecdisc.c_str());
+    auto ret = unlink(pathSecdisc.c_str());
     ASSERT_TRUE(ret != -1) << "Failed to delete file in BaseKey_DecryptKeyBlob_000! " << errno;
     GTEST_LOG_(INFO) << "BaseKey_DecryptKeyBlob_000 end";
-}
-
-/**
- * @tc.name: BaseKey_DoRestoreKeyOld_000
- * @tc.desc: Verify the DoRestoreKeyOld function.
- * @tc.type: FUNC
- * @tc.require: IAXJFK
- */
-HWTEST_F(BaseKeyTest, BaseKey_DoRestoreKeyOld_000, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "BaseKey_DoRestoreKeyOld_000 start";
-    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
-    std::string path = "/data/test";
-    std::string test = "1234567890";
-    elKey->keyInfo_.version = FSCRYPT_INVALID;
-
-    UserAuth auth;
-    EXPECT_NE(elKey->DoRestoreKeyOld(auth, path), E_OK);
-
-    elKey->keyInfo_.version = KeyCtrlLoadVersion(elKey->GetDir().c_str());
-    EXPECT_NE(elKey->DoRestoreKeyOld(auth, path), E_OK);
-
-    string pathEncrpted = path + PATH_ENCRYPTED;
-    std::string errMsg = "";
-    ASSERT_TRUE(SaveStringToFileSync(pathEncrpted, test, errMsg));
-    EXPECT_NE(elKey->DoRestoreKeyOld(auth, path), E_OK);
-    string pathShield = path + PATH_SHIELD;
-    ASSERT_TRUE(SaveStringToFileSync(pathShield, test, errMsg));
-    EXPECT_NE(elKey->DoRestoreKeyOld(auth, path), E_OK);
-    string pathSecdisc = path + PATH_SECDISC;
-    std::string testSec(CRYPTO_KEY_SECDISC_SIZE, 'c');
-    ASSERT_TRUE(SaveStringToFileSync(pathSecdisc, testSec, errMsg));
-    EXPECT_CALL(*huksMasterMock_, DecryptKey(_, _, _, _)).WillOnce(Return(E_OK));
-    EXPECT_EQ(elKey->DoRestoreKeyOld(auth, path), E_OK);
-
-    auto ret = unlink(pathShield.c_str());
-    ASSERT_TRUE(ret != -1) << "Failed to delete file in BaseKey_DoRestoreKeyOld_000! " << errno;
-    ret = unlink(pathSecdisc.c_str());
-    ASSERT_TRUE(ret != -1) << "Failed to delete file in BaseKey_DoRestoreKeyOld_000! " << errno;
-    ret = unlink(pathEncrpted.c_str());
-    ASSERT_TRUE(ret != -1) << "Failed to delete file in BaseKey_DoRestoreKeyOld_000! " << errno;
-    GTEST_LOG_(INFO) << "BaseKey_DoRestoreKeyOld_000 end";
 }
 
 /**
@@ -584,12 +620,32 @@ HWTEST_F(BaseKeyTest, BaseKey_DoRestoreKeyOld_001, TestSize.Level1)
     elKey->keyInfo_.version = FSCRYPT_INVALID;
 
     UserAuth auth;
-    EXPECT_NE(elKey->DoRestoreKeyOld(auth, path), E_OK);
+    EXPECT_CALL(*keyControlMock_, KeyCtrlLoadVersion(_)).WillOnce(Return(FSCRYPT_INVALID));
+    EXPECT_EQ(elKey->DoRestoreKeyOld(auth, path), E_PARAMS_INVALID);
 
-    std::vector<uint8_t> vec{1, 2, 3, 4, 5};
-    auth.secret.Alloc(vec.size());
-    std::copy(vec.begin(), vec.end(), auth.secret.data.get());
-    EXPECT_NE(elKey->DoRestoreKeyOld(auth, path), E_OK);
+    elKey->dir_ = "el100/100";
+    auth.secret.Alloc(1);
+    EXPECT_CALL(*keyControlMock_, KeyCtrlLoadVersion(_)).WillOnce(Return(FSCRYPT_INVALID));
+    EXPECT_EQ(elKey->DoRestoreKeyOld(auth, path), E_PARAMS_INVALID);
+
+    elKey->dir_ = "el1/101";
+    const std::string needUpdataDir = elKey->GetDir() + PATH_LATEST;
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(needUpdataDir));
+    string needUpdataPath = needUpdataDir + SUFFIX_NEED_UPDATE;
+    std::string errMsg = "";
+    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false));
+    ASSERT_TRUE(SaveStringToFileSync(needUpdataPath, test, errMsg));
+    EXPECT_CALL(*keyControlMock_, KeyCtrlLoadVersion(_)).WillOnce(Return(FSCRYPT_INVALID));
+    EXPECT_EQ(elKey->DoRestoreKeyOld(auth, path), E_PARAMS_INVALID);
+
+    auth.secret.Clear();
+    elKey->keyInfo_.version = FSCRYPT_INVALID;
+    EXPECT_CALL(*keyControlMock_, KeyCtrlLoadVersion(_)).WillOnce(Return(FSCRYPT_INVALID_NOT_SUPPORT));
+    EXPECT_EQ(elKey->DoRestoreKeyOld(auth, path), E_PARAMS_INVALID);
+
+    elKey->keyInfo_.version = FSCRYPT_INVALID_NOT_SUPPORT;
+    EXPECT_CALL(*keyControlMock_, KeyCtrlLoadVersion(_)).WillOnce(Return(FSCRYPT_INVALID_NOT_SUPPORT));
+    EXPECT_EQ(elKey->DoRestoreKeyOld(auth, path), E_LOAD_KEY_BLOB_ERROR);
     GTEST_LOG_(INFO) << "BaseKey_DoRestoreKeyOld_001 end";
 }
 
@@ -603,36 +659,231 @@ HWTEST_F(BaseKeyTest, BaseKey_DoRestoreKeyOld_002, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "BaseKey_DoRestoreKeyOld_002 start";
     std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+    elKey->dir_ = "el1/101";
     const std::string needUpdataDir = elKey->GetDir() + PATH_LATEST;
     EXPECT_TRUE(OHOS::ForceCreateDirectory(needUpdataDir));
 
-    std::string test = "1234567890";
-    string needUpdataPath = needUpdataDir + SUFFIX_NEED_UPDATE;
-    std::string errMsg = "";
-    ASSERT_TRUE(SaveStringToFileSync(needUpdataPath, test, errMsg));
-    elKey->keyInfo_.version = KeyCtrlLoadVersion(elKey->GetDir().c_str());
-    
-    std::string path = "/data/test";
-    string pathEncrpted = path + PATH_ENCRYPTED;
-    ASSERT_TRUE(SaveStringToFileSync(pathEncrpted, test, errMsg));
-    string pathSecdisc = path + PATH_SECDISC;
-    std::string testSec(CRYPTO_KEY_SECDISC_SIZE, 'c');
-    ASSERT_TRUE(SaveStringToFileSync(pathSecdisc, testSec, errMsg));
-
     UserAuth auth;
-    std::vector<uint8_t> vec{1, 2, 3, 4, 5};
-    auth.secret.Alloc(vec.size());
-    std::copy(vec.begin(), vec.end(), auth.secret.data.get());
+    std::string errMsg = "";
+    std::string test = "1234567890";
+    string needUpdataPath = needUpdataDir + PATH_ENCRYPTED;
+    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false));
+    ASSERT_TRUE(SaveStringToFileSync(needUpdataPath, test, errMsg));
+    elKey->keyInfo_.version = FSCRYPT_INVALID_NOT_SUPPORT;
+    EXPECT_CALL(*keyControlMock_, KeyCtrlLoadVersion(_)).WillOnce(Return(FSCRYPT_INVALID_NOT_SUPPORT));
+    EXPECT_EQ(elKey->DoRestoreKeyOld(auth, needUpdataDir), E_LOAD_KEY_BLOB_ERROR);
 
+    auth.secret.Alloc(1);
+    needUpdataPath = needUpdataDir + SUFFIX_NEED_UPDATE;
+    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false));
+    ASSERT_TRUE(SaveStringToFileSync(needUpdataPath, test, errMsg));
+    std::string testSec(CRYPTO_KEY_SECDISC_SIZE, 'c');
+    needUpdataPath = needUpdataDir + PATH_SECDISC;
+    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false));
+    ASSERT_TRUE(SaveStringToFileSync(needUpdataPath, testSec, errMsg));
+    elKey->keyInfo_.version = FSCRYPT_INVALID_NOT_SUPPORT;
+    EXPECT_CALL(*keyControlMock_, KeyCtrlLoadVersion(_)).WillOnce(Return(FSCRYPT_INVALID_NOT_SUPPORT));
     EXPECT_CALL(*opensslCryptoMock_, AESDecrypt(_, _, _)).WillOnce(Return(E_OK));
-    EXPECT_EQ(elKey->DoRestoreKeyOld(auth, path), E_OK);
-    auto ret = unlink(needUpdataPath.c_str());
-    ASSERT_TRUE(ret != -1) << "Failed to delete file in BaseKey_DoRestoreKeyOld_002! " << errno;
-    ret = unlink(pathSecdisc.c_str());
-    ASSERT_TRUE(ret != -1) << "Failed to delete file in BaseKey_DoRestoreKeyOld_002! " << errno;
-    ret = unlink(pathEncrpted.c_str());
-    ASSERT_TRUE(ret != -1) << "Failed to delete file in BaseKey_DoRestoreKeyOld_002! " << errno;
-    EXPECT_TRUE(OHOS::ForceRemoveDirectory(needUpdataDir));
+    EXPECT_EQ(elKey->DoRestoreKeyOld(auth, needUpdataDir), E_OK);
+
+    EXPECT_TRUE(OHOS::ForceRemoveDirectory(elKey->dir_));
     GTEST_LOG_(INFO) << "BaseKey_DoRestoreKeyOld_002 end";
+}
+
+/**
+ * @tc.name: BaseKey_InitKey_001
+ * @tc.desc: Verify the InitKey function.
+ * @tc.type: FUNC
+ * @tc.require: IAXJFK
+ */
+HWTEST_F(BaseKeyTest, BaseKey_InitKey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_InitKey_001 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+    elKey->keyInfo_.version = FSCRYPT_INVALID;
+    EXPECT_FALSE(elKey->BaseKey::InitKey(false));
+
+    elKey->keyInfo_.version = FSCRYPT_INVALID_NOT_SUPPORT;
+    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID));
+    EXPECT_FALSE(elKey->BaseKey::InitKey(false));
+
+    elKey->keyInfo_.key.Clear();
+    elKey->keyInfo_.key.Alloc(1);
+    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID_NOT_SUPPORT));
+    EXPECT_FALSE(elKey->BaseKey::InitKey(false));
+
+    KeyBlob keyOut;
+    elKey->keyInfo_.key.Clear();
+    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID_NOT_SUPPORT));
+    EXPECT_CALL(*huksMasterMock_, GenerateRandomKey(_)).WillOnce(Return(keyOut));
+    EXPECT_FALSE(elKey->BaseKey::InitKey(true));
+
+    keyOut.Alloc(1);
+    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID_NOT_SUPPORT));
+    EXPECT_CALL(*huksMasterMock_, GenerateRandomKey(_)).WillOnce(Return(keyOut));
+    EXPECT_TRUE(elKey->BaseKey::InitKey(true));
+
+    elKey->keyInfo_.key.Clear();
+    EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID_NOT_SUPPORT));
+    EXPECT_TRUE(elKey->BaseKey::InitKey(false));
+    GTEST_LOG_(INFO) << "BaseKey_InitKey_001 end";
+}
+
+/**
+ * @tc.name: BaseKey_DoStoreKey_001
+ * @tc.desc: Verify the DoStoreKey function.
+ * @tc.type: FUNC
+ * @tc.require: IAXJFK
+ */
+HWTEST_F(BaseKeyTest, BaseKey_DoStoreKey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_DoStoreKey_001 start";
+    UserAuth user;
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+
+    elKey->keyInfo_.version = FSCRYPT_INVALID_NOT_SUPPORT;
+    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(false));
+    EXPECT_CALL(*commonUtilMoc_, LoadStringFromFile(_, _)).WillOnce(Return(true));
+    EXPECT_EQ(elKey->BaseKey::DoStoreKey(user), E_VERSION_ERROR);
+
+    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(true));
+    EXPECT_CALL(*commonUtilMoc_, LoadStringFromFile(_, _)).WillOnce(Return(true));
+    EXPECT_EQ(elKey->BaseKey::DoStoreKey(user), E_VERSION_ERROR);
+
+    elKey->dir_ = "";
+    elKey->keyInfo_.version = FSCRYPT_INVALID;
+    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(false));
+    EXPECT_CALL(*commonUtilMoc_, LoadStringFromFile(_, _)).WillOnce(DoAll(SetArgReferee<1>("0"), Return(true)));
+    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false));
+    EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(Return(E_PARAMS_INVALID));
+    EXPECT_EQ(elKey->BaseKey::DoStoreKey(user), E_PARAMS_INVALID);
+
+    elKey->dir_ = "el1/100";
+    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(false));
+    EXPECT_CALL(*commonUtilMoc_, LoadStringFromFile(_, _)).WillOnce(DoAll(SetArgReferee<1>("0"), Return(true)));
+    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false));
+    EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(Return(E_PARAMS_INVALID));
+    EXPECT_EQ(elKey->BaseKey::DoStoreKey(user), E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "BaseKey_DoStoreKey_001 end";
+}
+
+/**
+ * @tc.name: BaseKey_CheckAndUpdateVersion_001
+ * @tc.desc: Verify the CheckAndUpdateVersion function.
+ * @tc.type: FUNC
+ * @tc.require: IAXJFK
+ */
+HWTEST_F(BaseKeyTest, BaseKey_CheckAndUpdateVersion_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_CheckAndUpdateVersion_001 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+
+    elKey->keyInfo_.version = FSCRYPT_INVALID;
+    EXPECT_CALL(*commonUtilMoc_, LoadStringFromFile(_, _)).WillOnce(Return(true));
+    EXPECT_FALSE(elKey->BaseKey::CheckAndUpdateVersion());
+
+    EXPECT_CALL(*commonUtilMoc_, LoadStringFromFile(_, _)).WillOnce(DoAll(SetArgReferee<1>("0"), Return(true)));
+    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false));
+    EXPECT_TRUE(elKey->BaseKey::CheckAndUpdateVersion());
+
+    elKey->dir_ = "el1/101";
+    EXPECT_CALL(*commonUtilMoc_, LoadStringFromFile(_, _)).WillOnce(Return(false));
+    EXPECT_FALSE(elKey->BaseKey::CheckAndUpdateVersion());
+
+    elKey->dir_ = "";
+    EXPECT_CALL(*commonUtilMoc_, LoadStringFromFile(_, _)).WillOnce(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false)).WillOnce(Return(false));
+    EXPECT_TRUE(elKey->BaseKey::CheckAndUpdateVersion());
+    GTEST_LOG_(INFO) << "BaseKey_CheckAndUpdateVersion_001 end";
+}
+
+/**
+ * @tc.name: BaseKey_LoadAndSaveShield_001
+ * @tc.desc: Verify the LoadAndSaveShield function.
+ * @tc.type: FUNC
+ * @tc.require: IAXJFK
+ */
+HWTEST_F(BaseKeyTest, BaseKey_LoadAndSaveShield_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_LoadAndSaveShield_001 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+    UserAuth auth;
+    KeyContext keyCtx;
+    string errMsg = "";
+    string test = "1234567890";
+#ifdef USER_CRYPTO_MIGRATE_KEY
+    EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(Return(E_PARAMS_INVALID));
+    EXPECT_EQ(elKey->BaseKey::LoadAndSaveShield(auth, "", true, keyCtx), E_PARAMS_INVALID);
+
+    elKey->dir_ = "el1/101";
+    EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(Return(HKS_SUCCESS));
+    EXPECT_EQ(elKey->BaseKey::LoadAndSaveShield(auth, "", true, keyCtx), E_SAVE_KEY_BLOB_ERROR);
+
+    elKey->dir_ = "";
+    EXPECT_EQ(elKey->BaseKey::LoadAndSaveShield(auth, "", false, keyCtx), E_LOAD_KEY_BLOB_ERROR);
+
+    elKey->dir_ = "el1/101";
+    const std::string needUpdataDir = elKey->GetDir() + PATH_LATEST;
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(needUpdataDir));
+    string pathShield = needUpdataDir + PATH_SHIELD;
+    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false));
+    ASSERT_TRUE(SaveStringToFileSync(pathShield, test, errMsg));
+    EXPECT_EQ(elKey->BaseKey::LoadAndSaveShield(auth, "", false, keyCtx), E_SAVE_KEY_BLOB_ERROR);
+#else
+    EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(Return(E_PARAMS_INVALID));
+    EXPECT_EQ(elKey->BaseKey::LoadAndSaveShield(auth, "", true, keyCtx), E_PARAMS_INVALID);
+#endif
+    keyCtx.shield.Clear();
+    EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(Return(HKS_SUCCESS));
+    EXPECT_EQ(elKey->BaseKey::LoadAndSaveShield(auth, "", true, keyCtx), E_SAVE_KEY_BLOB_ERROR);
+
+    keyCtx.shield.Alloc(1);
+    elKey->dir_ = "el1/101";
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(elKey->GetDir() + PATH_LATEST));
+    string path = elKey->GetDir() + PATH_LATEST + PATH_SHIELD;
+    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false));
+    ASSERT_TRUE(SaveStringToFileSync(path, test, errMsg));
+    EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(Return(HKS_SUCCESS));
+    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false));
+    EXPECT_EQ(elKey->BaseKey::LoadAndSaveShield(auth, path, true, keyCtx), E_OK);
+
+    EXPECT_TRUE(OHOS::ForceRemoveDirectory(elKey->dir_));
+    GTEST_LOG_(INFO) << "BaseKey_LoadAndSaveShield_001 end";
+}
+
+/**
+ * @tc.name: BaseKey_InitKeyContext_001
+ * @tc.desc: Verify the InitKeyContext function.
+ * @tc.type: FUNC
+ * @tc.require: IAXJFK
+ */
+HWTEST_F(BaseKeyTest, BaseKey_InitKeyContext_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_InitKeyContext_001 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+    UserAuth auth;
+    string keyPath;
+    KeyContext keyCtx;
+    string errMsg = "";
+    string test = "1234567890";
+
+    EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(Return(E_PARAMS_INVALID));
+    EXPECT_EQ(elKey->BaseKey::InitKeyContext(auth, keyPath, keyCtx), E_PARAMS_INVALID);
+
+    KeyBlob keyOut;
+    keyOut.Clear();
+    keyCtx.shield.Alloc(1);
+    elKey->dir_ = "el1/101";
+    EXPECT_TRUE(OHOS::ForceCreateDirectory(elKey->GetDir() + PATH_LATEST));
+    string path = elKey->GetDir() + PATH_LATEST + PATH_SHIELD;
+    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false));
+    ASSERT_TRUE(SaveStringToFileSync(path, test, errMsg));
+    EXPECT_CALL(*huksMasterMock_, GenerateKey(_, _)).WillOnce(Return(HKS_SUCCESS));
+    EXPECT_CALL(*fileUtilMoc_, ChMod(_, _)).WillOnce(Return(false));
+    EXPECT_CALL(*huksMasterMock_, GenerateRandomKey(_)).WillOnce(Return(keyOut));
+    EXPECT_EQ(elKey->BaseKey::InitKeyContext(auth, keyPath, keyCtx), E_GENERATE_DISCARD_ERROR);
+
+    EXPECT_TRUE(OHOS::ForceRemoveDirectory(elKey->dir_));
+    GTEST_LOG_(INFO) << "BaseKey_InitKeyContext_001 end";
 }
 } // OHOS::StorageDaemon

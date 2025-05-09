@@ -87,3 +87,35 @@ key_serial_t KeyCtrlAddAppAsdpKey(const char *type,
 
     return IKeyControlMoc::keyControlMoc->KeyCtrlAddAppAsdpKey(type, description, fsKey, ringId);
 }
+
+#ifdef SUPPORT_FSCRYPT_V2
+bool KeyCtrlInstallKey(const char *mnt, struct fscrypt_add_key_arg *arg)
+{
+    return IKeyControlMoc::keyControlMoc->KeyCtrlInstallKey(mnt, arg);
+}
+
+bool KeyCtrlRemoveKey(const char *mnt, struct fscrypt_remove_key_arg *arg)
+{
+    return IKeyControlMoc::keyControlMoc->KeyCtrlRemoveKey(mnt, arg);
+}
+
+bool KeyCtrlGetKeyStatus(const char *mnt, struct fscrypt_get_key_status_arg *arg)
+{
+    return IKeyControlMoc::keyControlMoc->KeyCtrlGetKeyStatus(mnt, arg);
+}
+
+bool KeyCtrlGetPolicyEx(const char *path, struct fscrypt_get_policy_ex_arg *policy)
+{
+    return IKeyControlMoc::keyControlMoc->KeyCtrlGetPolicyEx(path, policy);
+}
+#endif
+
+bool KeyCtrlSetPolicy(const char *path, union FscryptPolicy *policy)
+{
+    return IKeyControlMoc::keyControlMoc->KeyCtrlSetPolicy(path, policy);
+}
+
+uint8_t KeyCtrlLoadVersion(const char *keyPath)
+{
+    return IKeyControlMoc::keyControlMoc->KeyCtrlLoadVersion(keyPath);
+}
