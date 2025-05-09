@@ -31,6 +31,6 @@ ohos::file::storageStatistics::BundleStats MakeBundleStats(int64_t dataSize, int
 ohos::file::storageStatistics::StorageStats MakeStorageStats(int64_t total);
 ohos::file::storageStatistics::BundleStats GetCurrentBundleStatsSync();
 ohos::file::storageStatistics::StorageStats GetUserStorageStatsSync();
-ohos::file::storageStatistics::StorageStats GetUserStorageStatsByidSync(int64_t userID);
+ohos::file::storageStatistics::StorageStats GetUserStorageStatsByidSync(int64_t userId);
 }
 #endif // OHOS_FILE_KEYMANAGER_IMPL_H

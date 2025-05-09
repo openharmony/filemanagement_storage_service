@@ -16,7 +16,7 @@
 #include "ohos.file.storageStatistics.impl.h"
 
 namespace ANI::StorageStatistics {
-constexpr int64_t DEFAULTSIZE = 0;
+constexpr int64_t DEFAULTSIZE = -1;
 
 int64_t GetFreeSizeSync()
 {
@@ -78,7 +78,7 @@ ohos::file::storageStatistics::StorageStats GetUserStorageStatsSync()
     if (!OHOS::StorageManager::IsSystemApp()) {
         taihe::set_business_error(OHOS::E_PERMISSION_SYS,
             "GetUserStorageStatsSync is not allowed for non-system apps");
-        return MakeStorageStats(-1);
+        return MakeStorageStats(DEFAULTSIZE);
     }
 
     auto resultStats = std::make_shared<OHOS::StorageManager::StorageStats>();

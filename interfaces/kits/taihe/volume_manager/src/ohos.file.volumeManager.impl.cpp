@@ -15,7 +15,7 @@
 
 #include "ohos.file.volumeManager.impl.h"
 
-namespace ANI::volumeManager {
+namespace ANI::VolumeManager {
 
 ohos::file::volumeManager::Volume MakeVolume(taihe::string_view description, taihe::string_view uuid)
 {
@@ -68,11 +68,11 @@ taihe::array_view<ohos::file::volumeManager::Volume> GetAllVolumesSync()
 
     return result;
 }
-} // namespace ANI::volumeManager
+} // namespace ANI::VolumeManager
 
 // Since these macros are auto-generate, lint will cause false positive.
 // NOLINTBEGIN
-TH_EXPORT_CPP_API_MakeVolume(ANI::volumeManager::MakeVolume);
-TH_EXPORT_CPP_API_GetVolumeByUuidSync(ANI::volumeManager::GetVolumeByUuidSync);
-TH_EXPORT_CPP_API_GetAllVolumesSync(ANI::volumeManager::GetAllVolumesSync);
+TH_EXPORT_CPP_API_MakeVolume(ANI::VolumeManager::MakeVolume);
+TH_EXPORT_CPP_API_GetVolumeByUuidSync(ANI::VolumeManager::GetVolumeByUuidSync);
+TH_EXPORT_CPP_API_GetAllVolumesSync(ANI::VolumeManager::GetAllVolumesSync);
 // NOLINTEND
