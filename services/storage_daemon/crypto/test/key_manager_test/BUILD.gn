@@ -147,6 +147,7 @@ ohos_unittest("KeyManagerSupTest") {
     "init:libbegetutil",
     "ipc:ipc_single",
     "openssl:libcrypto_shared",
+    "samgr:samgr_proxy",
   ]
 
   if (enable_user_auth_framework) {
@@ -221,6 +222,7 @@ ohos_unittest("KeyManagerOtherTest") {
     "init:libbegetutil",
     "ipc:ipc_single",
     "openssl:libcrypto_shared",
+    "samgr:samgr_proxy",
   ]
 
   if (enable_user_auth_framework) {
@@ -291,6 +293,7 @@ ohos_unittest("KeyManagerAnotherTest") {
     "init:libbegetutil",
     "ipc:ipc_single",
     "openssl:libcrypto_shared",
+    "samgr:samgr_proxy",
   ]
 
   if (enable_user_auth_framework) {

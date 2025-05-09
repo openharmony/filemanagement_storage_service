@@ -53,7 +53,9 @@ ohos_unittest("RecoveryManagerTest") {
   external_deps = [
     "googletest:gmock_main",
     "googletest:gtest_main",
+    "hilog:libhilog",
     "huks:libhukssdk",
+    "ipc:ipc_core",
     "openssl:libcrypto_shared",
   ]
 
