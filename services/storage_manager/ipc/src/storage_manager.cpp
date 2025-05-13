@@ -252,12 +252,13 @@ int32_t StorageManager::NotifyVolumeCreated(const VolumeCore& vc)
     return E_OK;
 }
 
-int32_t StorageManager::NotifyVolumeMounted(const std::string &volumeId, int32_t fsType, const std::string &fsUuid,
-    const std::string &path, const std::string &description)
+int32_t StorageManager::NotifyVolumeMounted(const std::string &volumeId, const std::string &fsTypeStr,
+    const std::string &fsUuid, const std::string &path, const std::string &description)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
-    LOGI("StorageManger::NotifyVolumeMounted start");
-    DelayedSingleton<VolumeManagerService>::GetInstance()->OnVolumeMounted(volumeId, fsType, fsUuid, path, description);
+    LOGI("StorageManger::NotifyVolumeMounted start, fsType is %{public}s.", fsTypeStr);
+    DelayedSingleton<VolumeManagerService>::GetInstance()->OnVolumeMounted(volumeId, fsTypeStr, fsUuid, path,
+        description);
 #endif
 
     return E_OK;

@@ -275,7 +275,7 @@ int32_t StorageManagerProvider::NotifyVolumeCreated(const VolumeCore &vc)
 }
 
 int32_t StorageManagerProvider::NotifyVolumeMounted(const std::string &volumeId,
-                                                    int32_t fsType,
+                                                    const std::string &fsTypeStr,
                                                     const std::string &fsUuid,
                                                     const std::string &path,
                                                     const std::string &description)
@@ -283,7 +283,7 @@ int32_t StorageManagerProvider::NotifyVolumeMounted(const std::string &volumeId,
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->NotifyVolumeMounted(volumeId, fsType, fsUuid, path, description);
+    return StorageManager::GetInstance()->NotifyVolumeMounted(volumeId, fsTypeStr, fsUuid, path, description);
 }
 
 int32_t StorageManagerProvider::NotifyVolumeStateChanged(const std::string &volumeId, uint32_t state)

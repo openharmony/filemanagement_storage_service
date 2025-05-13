@@ -66,7 +66,7 @@ bool StorageManagerProxyFuzzTest(const uint8_t *data, size_t size)
     proxy->ActiveUserKey(metaData2, token, secret);
     proxy->SetVolumeDescription(metaData, metaData);
     proxy->UpdateUserAuth(metaData2, metaData4, token, secret, secret);
-    proxy->NotifyVolumeMounted(metaData, metaData2, metaData, metaData, metaData);
+    proxy->NotifyVolumeMounted(metaData, metaData, metaData, metaData, metaData);
     return true;
 }
 

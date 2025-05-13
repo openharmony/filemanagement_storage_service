@@ -48,7 +48,7 @@ public:
     int32_t GetUserStorageStatsByType(int32_t userId, StorageStats &storageStats, const std::string &type);
  
     int32_t NotifyVolumeCreated(const VolumeCore& vc);
-    int32_t NotifyVolumeMounted(const std::string &volumeId, int32_t fsType, const std::string &fsUuid,
+    int32_t NotifyVolumeMounted(const std::string &volumeId, const std::string &fsTypeStr, const std::string &fsUuid,
          const std::string &path, const std::string &description);
     OHOS::StorageManager::VolumeState UintToState(uint32_t state);
     int32_t NotifyVolumeStateChanged(const std::string &volumeId, uint32_t state);

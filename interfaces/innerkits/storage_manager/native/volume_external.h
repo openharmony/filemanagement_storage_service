@@ -23,22 +23,20 @@ namespace OHOS {
 namespace StorageManager {
 enum FsType {
     UNDEFINED = -1,
-    EXT2,
-    EXT3,
-    EXT4,
     NTFS,
     EXFAT,
     VFAT,
+    HMFS,
+    F2FS,
     MTP
 };
 
 static std::map<int32_t, std::string> FS_TYPE_MAP = {
-    {EXT2, "ext2"},
-    {EXT3, "ext3"},
-    {EXT4, "ext4"},
     {NTFS, "ntfs"},
     {EXFAT, "exfat"},
     {VFAT, "vfat"},
+    {HMFS, "hmfs"},
+    {F2FS, "f2fs"},
     {MTP, "mtp"},
 };
 
@@ -58,6 +56,7 @@ public:
     std::string GetUuid();
     std::string GetPath();
     std::string GetDescription();
+    int32_t GetFsTypeByStr(const std::string fsTypeStr);
     void Reset();
 
     bool Marshalling(Parcel &parcel) const override;

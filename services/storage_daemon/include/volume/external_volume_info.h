@@ -26,7 +26,7 @@ public:
     ExternalVolumeInfo() = default;
     virtual ~ExternalVolumeInfo() = default;
 
-    int32_t GetFsType();
+    std::string GetFsType();
     std::string GetFsUuid();
     std::string GetFsLabel();
     std::string GetMountPath();

@@ -60,7 +60,7 @@ void VolumeManagerService::OnVolumeStateChanged(string volumeId, VolumeState sta
     }
 }
 
-void VolumeManagerService::OnVolumeMounted(std::string volumeId, int fsType, std::string fsUuid,
+void VolumeManagerService::OnVolumeMounted(std::string volumeId, const std::string &fsTypeStr, std::string fsUuid,
     std::string path, std::string description)
 {
     if (!volumeMap_.Contains(volumeId)) {
@@ -72,7 +72,7 @@ void VolumeManagerService::OnVolumeMounted(std::string volumeId, int fsType, std
         LOGE("volumePtr is nullptr for volumeId");
         return;
     }
-    volumePtr->SetFsType(fsType);
+    volumePtr->SetFsType(volumePtr->GetFsTypeByStr(fsTypeStr));
     volumePtr->SetFsUuid(fsUuid);
     volumePtr->SetPath(path);
     std::string des = description;
@@ -272,7 +272,7 @@ void VolumeManagerService::NotifyMtpMounted(const std::string &id, const std::st
     VolumeCore core(id, 0, "");
     auto volumePtr = make_shared<VolumeExternal>(core);
     volumePtr->SetPath(path);
-    volumePtr->SetFsType(FsType::MTP);
+    volumePtr->SetFsType(volumePtr->GetFsTypeByStr("mtp"));
     volumePtr->SetDescription(desc);
     if (len > 0) {
         LOGI("set MTP device name:%{public}s", value);
