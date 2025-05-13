@@ -208,13 +208,10 @@ void MtpFsDevice::ReadEvent()
 {
     std::unique_lock<std::mutex> lock(eventMutex_);
     while (eventFlag_.load()) {
-        eventCon_.wait(lock, [this] { return !isTransferring_.load() || !eventFlag_.load();
-        });
-
+        eventCon_.wait(lock, [this] { return !isTransferring_.load() || !eventFlag_.load(); });
         if (!eventFlag_.load()) {
             break;
         }
-
         if (g_isEventDone.load()) {
             LOGI("Registering MTP event callback");
             int ret = LIBMTP_Read_Event_Async(device_, MtpEventCallback, nullptr);
@@ -224,8 +221,7 @@ void MtpFsDevice::ReadEvent()
             }
             g_isEventDone.store(false);
         }
-        eventCon_.wait(lock, [this] { return g_isEventDone.load() || !eventFlag_.load();
-        });
+        eventCon_.wait(lock, [this] { return g_isEventDone.load() || !eventFlag_.load(); });
     }
     LOGI("Event thread terminated");
 }
