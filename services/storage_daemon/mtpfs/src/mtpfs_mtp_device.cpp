@@ -206,8 +206,8 @@ bool MtpFsDevice::ConnectByDevNo(int devNo)
 
 void MtpFsDevice::ReadEvent()
 {
-    std::unique_lock<std::mutex> lock(eventMutex_);
     while (eventFlag_.load()) {
+        std::unique_lock<std::mutex> lock(eventMutex_);
         eventCon_.wait(lock, [this] { return !isTransferring_.load() || !eventFlag_.load(); });
         if (!eventFlag_.load()) {
             break;
