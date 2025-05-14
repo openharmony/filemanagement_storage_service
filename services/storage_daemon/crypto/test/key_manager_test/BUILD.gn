@@ -66,6 +66,7 @@ ohos_unittest("KeyManagerTest") {
   external_deps = [
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
+    "drivers_interface_huks:libhuks_proxy_1.1",
     "eventhandler:libeventhandler",
     "googletest:gmock_main",
     "googletest:gtest_main",
@@ -138,6 +139,7 @@ ohos_unittest("KeyManagerSupTest") {
 
   external_deps = [
     "c_utils:utils",
+    "drivers_interface_huks:libhuks_proxy_1.1",
     "eventhandler:libeventhandler",
     "googletest:gmock_main",
     "googletest:gtest_main",
@@ -213,6 +215,7 @@ ohos_unittest("KeyManagerOtherTest") {
 
   external_deps = [
     "c_utils:utils",
+    "drivers_interface_huks:libhuks_proxy_1.1",
     "eventhandler:libeventhandler",
     "googletest:gmock_main",
     "googletest:gtest_main",
@@ -284,6 +287,7 @@ ohos_unittest("KeyManagerAnotherTest") {
 
   external_deps = [
     "c_utils:utils",
+    "drivers_interface_huks:libhuks_proxy_1.1",
     "eventhandler:libeventhandler",
     "googletest:gmock_main",
     "googletest:gtest_main",

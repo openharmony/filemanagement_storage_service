@@ -64,6 +64,7 @@ ohos_unittest("user_manager_test") {
     "app_file_service:sandbox_helper_native",
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
+    "drivers_interface_huks:libhuks_proxy_1.1",
     "googletest:gmock_main",
     "googletest:gtest_main",
     "hilog:libhilog",
@@ -126,6 +127,7 @@ ohos_unittest("mount_manager_test") {
 
   external_deps = [
     "c_utils:utils",
+    "drivers_interface_huks:libhuks_proxy_1.1",
     "googletest:gmock_main",
     "googletest:gtest_main",
     "hilog:libhilog",

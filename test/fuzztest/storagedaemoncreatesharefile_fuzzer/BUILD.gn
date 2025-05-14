@@ -70,6 +70,7 @@ ohos_fuzztest("StorageDaemonCreateShareFileFuzzTest") {
     "bundle_framework:appexecfwk_core",
     "cJSON:cjson",
     "c_utils:utils",
+    "drivers_interface_huks:libhuks_proxy_1.1",
     "eventhandler:libeventhandler",
     "hicollie:libhicollie",
     "hilog:libhilog",
