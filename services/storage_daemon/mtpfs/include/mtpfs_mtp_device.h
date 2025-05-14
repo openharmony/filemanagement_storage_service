@@ -138,7 +138,6 @@ private:
     MtpFsTypeDir rootDir_;
     bool moveEnabled_;
     static uint32_t rootNode_;
-    bool eventFlag_ = true;
     std::mutex uploadRecordMutex_;
     std::map<std::string, std::string> uploadRecordMap_;
     static std::condition_variable eventCon_;
@@ -146,6 +145,7 @@ private:
     std::string rootDirName_;
     static std::mutex setMutex_;
     static std::set<std::string> fileCancelFlagSet_;
+    std::atomic<bool> eventFlag_;
 };
 
 #endif // MTPFS_MTP_DEVICE_H

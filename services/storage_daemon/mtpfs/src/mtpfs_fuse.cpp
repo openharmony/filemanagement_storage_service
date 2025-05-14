@@ -898,24 +898,29 @@ int MtpFileSystem::Release(const char *path, struct fuse_file_info *fileInfo)
     LOGI("MtpFileSystem: Release enter, path: %{public}s", path);
     if (fileInfo == nullptr) {
         LOGE("Missing FileInfo");
+        device_.SetUploadRecord(stdPath, "fail");
         return -ENOENT;
     }
     int rval = ::close(fileInfo->fh);
     if (rval < 0) {
         LOGE("MtpFileSystem: Release close error, errno=%{public}d", errno);
+        device_.SetUploadRecord(stdPath, "fail");
         return -errno;
     }
     const std::string stdPath(path);
     if (OHOS::StorageDaemon::IsEndWith(path, MTP_FILE_FLAG)) {
+        device_.SetUploadRecord(stdPath, "success");
         return 0;
     }
     MtpFsTypeTmpFile *tmpFile = const_cast<MtpFsTypeTmpFile *>(tmpFilesPool_.GetFile(stdPath));
     if (tmpFile == nullptr) {
         LOGE("failed to get tmpFile.");
+        device_.SetUploadRecord(stdPath, "fail");
         return -EINVAL;
     }
     tmpFile->RemoveFileDescriptor(fileInfo->fh);
     if (tmpFile->RefCnt() != 0) {
+        device_.SetUploadRecord(stdPath, "success");
         return 0;
     }
     const bool modIf = tmpFile->IsModified();

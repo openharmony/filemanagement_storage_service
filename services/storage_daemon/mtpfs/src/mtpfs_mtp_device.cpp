@@ -31,8 +31,9 @@ const int32_t DIR_COUNT_ONE = 1;
 const uint32_t DEFAULT_COUNT = 100;
 const uint32_t PTP_ID_START = 300000000;
 const uint32_t PTP_ID_INDEX = 200000000;
-static bool g_isEventDone = true;
 uint32_t MtpFsDevice::rootNode_ = ~0;
+std::atomic<bool> g_isEventDone;
+std::atomic<bool> isTransferring_; 
 std::condition_variable MtpFsDevice::eventCon_;
 std::mutex MtpFsDevice::eventMutex_;
 std::mutex MtpFsDevice::setMutex_;
@@ -44,15 +45,17 @@ MtpFsDevice::MtpFsDevice() : device_(nullptr), capabilities_(), deviceMutex_(), 
 {
     MtpFsUtil::Off();
     LIBMTP_Init();
-    g_isEventDone = true;
     MtpFsUtil::On();
+    g_isEventDone.store(true);
+    isTransferring_.store(false);
+    eventFlag_.store(true); 
 }
 
 MtpFsDevice::~MtpFsDevice()
 {
     std::lock_guard<std::mutex> lock(eventMutex_);
     LOGI("MtpFsDevice Destructor.");
-    eventFlag_ = false;
+    eventFlag_.store(false);
     eventCon_.notify_one();
     Disconnect();
 }
@@ -129,9 +132,9 @@ void MtpFsDevice::MtpEventCallback(int ret, LIBMTP_event_t event, uint32_t param
 {
     std::lock_guard<std::mutex> lock(eventMutex_);
     (void)data;
-    g_isEventDone = true;
+    g_isEventDone.store(true);
     LOGI("MtpEventCallback received, ret=%{public}d, event=%{public}d, param=%{public}d, g_isEventDone=%{public}d", ret,
-         event, param, g_isEventDone);
+         event, param, g_isEventDone.load());
     switch (event) {
         case LIBMTP_EVENT_OBJECT_ADDED:
             LOGI("Received event LIBMTP_EVENT_OBJECT_ADDED.");
@@ -202,20 +205,24 @@ bool MtpFsDevice::ConnectByDevNo(int devNo)
 
 void MtpFsDevice::ReadEvent()
 {
-    while (eventFlag_) {
+    while (eventFlag_.load()) {
         std::unique_lock<std::mutex> lock(eventMutex_);
-        if (g_isEventDone) {
-            LOGI("Regist read mtp device event. g_isEventDone=%{public}d", g_isEventDone);
+        eventCon_.wait(lock, [this] { return !isTransferring_.load() || !eventFlag_.load(); });
+        if (!eventFlag_.load()) {
+            break;
+        }
+        if (g_isEventDone.load()) {
+            LOGI("Registering MTP event callback");
             int ret = LIBMTP_Read_Event_Async(device_, MtpEventCallback, nullptr);
             if (ret != 0) {
-                LOGE("Read libmtp event async failed, ret = %{public}d", ret);
+                LOGE("Event registration failed, ret=%{public}d", ret);
                 continue;
             }
-            g_isEventDone = false;
+            g_isEventDone.store(false);
         }
-        eventCon_.wait(lock, [this] { return g_isEventDone || !eventFlag_; });
+        eventCon_.wait(lock, [this] { return g_isEventDone.load() || !eventFlag_.load(); });
     }
-    LOGI("Device detached, quit read event async thread.");
+    LOGI("Event thread terminated");
 }
 
 void MtpFsDevice::InitDevice()
@@ -834,6 +841,8 @@ int MtpFsDevice::FilePull(const std::string &src, const std::string &dst)
         LOGE("No such file %{public}s", src.c_str());
         return -ENOENT;
     }
+    isTransferring_.store(true);
+    eventCon_.notify_one();
     if (fileToFetch->Size() == 0) {
         int fd = ::creat(dst.c_str(), S_IRUSR | S_IWUSR);
         ::close(fd);
@@ -848,11 +857,15 @@ int MtpFsDevice::FilePull(const std::string &src, const std::string &dst)
             LOGE("Could not fetch file %{public}s", src.c_str());
             DumpLibMtpErrorStack();
             RemoveFileCancelFlag(src);
+            isTransferring_.store(false);
+            eventCon_.notify_one();
             return -ENOENT;
         }
     }
     RemoveFileCancelFlag(src);
     LOGI("File fetched %{public}s", src.c_str());
+    isTransferring_.store(false);
+    eventCon_.notify_one();
     return 0;
 }
 
@@ -865,6 +878,8 @@ int MtpFsDevice::FilePush(const std::string &src, const std::string &dst)
         LOGE("Can not fetch %{public}s", dst.c_str());
         return -EINVAL;
     }
+    isTransferring_.store(true);
+    eventCon_.notify_one();
     if (fileToRemove) {
         CriticalEnter();
         int rval = LIBMTP_Delete_Object(device_, fileToRemove->Id());
@@ -872,6 +887,8 @@ int MtpFsDevice::FilePush(const std::string &src, const std::string &dst)
         if (rval != 0) {
             StorageRadar::ReportMtpfsResult("FilePush::LIBMTP_Delete_Object", rval, "src=" + src + "dst=" + dst);
             LOGE("Can not upload %{public}s to %{public}s", src.c_str(), dst.c_str());
+            isTransferring_.store(false);
+            eventCon_.notify_one();
             return -EINVAL;
         }
     }
@@ -906,6 +923,8 @@ int MtpFsDevice::FilePush(const std::string &src, const std::string &dst)
     free(static_cast<void *>(f->filename));
     free(static_cast<void *>(f));
     RemoveFileCancelFlag(dst);
+    isTransferring_.store(false);
+    eventCon_.notify_one();
     return (rval != 0 ? -EINVAL : rval);
 }
 
