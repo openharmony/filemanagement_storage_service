@@ -21,8 +21,10 @@
 
 // for new HUKS IDL
 #include <mutex>
+#ifdef HUKS_IDL_ENVIRONMENT
 #include "v1_1/ihuks.h"
 #include "v1_1/ihuks_types.h"
+#endif
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -49,6 +51,7 @@ private:
     HuksMaster(const HuksMaster &) = delete;
     HuksMaster &operator=(const HuksMaster &) = delete;
 
+#ifdef HUKS_IDL_ENVIRONMENT
     int32_t InitHdiProxyInstance();
     void ReleaseHdiProxyInstance();
     int32_t HdiModuleInit();
@@ -58,10 +61,11 @@ private:
     int HdiAccessFinish(const HuksBlob &handle, const HksParamSet *paramSet, const HuksBlob &inData, HuksBlob &outData);
     int HdiAccessUpgradeKey(const HuksBlob &oldKey, const HksParamSet *paramSet, struct HuksBlob &newKey);
     int HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *paramSet2,
-                                   const KeyBlob &keyIn, KeyBlob &keyOut);
+                           const KeyBlob &keyIn, KeyBlob &keyOut);
 
     std::mutex hdiProxyMutex_;
     struct IHuks *hksHdiProxyInstance_ = nullptr;
+#endif
 };
 } // namespace StorageDaemon
 } // namespace OHOS

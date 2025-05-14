@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+#ifdef HUKS_IDL_ENVIRONMENT
 #include <dlfcn.h>
 #include <gtest/gtest.h>
 #include <string>
@@ -285,3 +286,4 @@ HWTEST_F(HuksMasterTest, HuksMaster_EncryptKey_001, TestSize.Level1)
     GTEST_LOG_(INFO) << "HuksMaster_EncryptKey_001 end";
 }
 } // OHOS::StorageDaemon
+#endif

@@ -66,7 +66,6 @@ ohos_unittest("KeyManagerTest") {
   external_deps = [
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
-    "drivers_interface_huks:libhuks_proxy_1.1",
     "eventhandler:libeventhandler",
     "googletest:gmock_main",
     "googletest:gtest_main",
@@ -81,6 +80,11 @@ ohos_unittest("KeyManagerTest") {
   if (enable_user_auth_framework) {
     defines += [ "USER_AUTH_FRAMEWORK" ]
     external_deps += [ "user_auth_framework:userauth_client" ]
+  }
+
+  if (enable_huks_hdi) {
+    defines += [ "HUKS_HDI_ENVIRONMENT" ]
+    external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
   }
 }
 
@@ -139,7 +143,6 @@ ohos_unittest("KeyManagerSupTest") {
 
   external_deps = [
     "c_utils:utils",
-    "drivers_interface_huks:libhuks_proxy_1.1",
     "eventhandler:libeventhandler",
     "googletest:gmock_main",
     "googletest:gtest_main",
@@ -160,6 +163,11 @@ ohos_unittest("KeyManagerSupTest") {
   if (storage_service_el5_filekey_manager) {
     defines += [ "EL5_FILEKEY_MANAGER" ]
     external_deps += [ "access_token:el5_filekey_manager_sdk" ]
+  }
+
+  if (enable_huks_hdi) {
+    defines += [ "HUKS_HDI_ENVIRONMENT" ]
+    external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
   }
 }
 
@@ -215,7 +223,6 @@ ohos_unittest("KeyManagerOtherTest") {
 
   external_deps = [
     "c_utils:utils",
-    "drivers_interface_huks:libhuks_proxy_1.1",
     "eventhandler:libeventhandler",
     "googletest:gmock_main",
     "googletest:gtest_main",
@@ -231,6 +238,12 @@ ohos_unittest("KeyManagerOtherTest") {
   if (enable_user_auth_framework) {
     defines += [ "USER_AUTH_FRAMEWORK" ]
     external_deps += [ "user_auth_framework:userauth_client" ]
+  }
+
+
+  if (enable_huks_hdi) {
+    defines += [ "HUKS_HDI_ENVIRONMENT" ]
+    external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
   }
 }
 
@@ -287,7 +300,6 @@ ohos_unittest("KeyManagerAnotherTest") {
 
   external_deps = [
     "c_utils:utils",
-    "drivers_interface_huks:libhuks_proxy_1.1",
     "eventhandler:libeventhandler",
     "googletest:gmock_main",
     "googletest:gtest_main",
@@ -307,6 +319,11 @@ ohos_unittest("KeyManagerAnotherTest") {
   if (enable_tee_client) {
     defines += [ "RECOVER_KEY_TEE_ENVIRONMENT" ]
     external_deps += [ "tee_client:libteec" ]
+  }
+
+  if (enable_huks_hdi) {
+    defines += [ "HUKS_HDI_ENVIRONMENT" ]
+    external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
   }
 }
 

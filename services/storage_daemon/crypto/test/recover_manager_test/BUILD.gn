@@ -51,7 +51,6 @@ ohos_unittest("RecoveryManagerTest") {
   ]
 
   external_deps = [
-    "drivers_interface_huks:libhuks_proxy_1.1",
     "googletest:gmock_main",
     "googletest:gtest_main",
     "hilog:libhilog",
@@ -63,6 +62,11 @@ ohos_unittest("RecoveryManagerTest") {
   if (enable_tee_client) {
     defines += [ "RECOVER_KEY_TEE_ENVIRONMENT" ]
     external_deps += [ "tee_client:libteec" ]
+  }
+
+  if (enable_huks_hdi) {
+    defines += [ "HUKS_HDI_ENVIRONMENT" ]
+    external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
   }
 }
 

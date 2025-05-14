@@ -28,6 +28,7 @@
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
+#ifdef HUKS_IDL_ENVIRONMENT
 constexpr uint8_t MAX_RETRY_TIME = 3;
 constexpr uint16_t RETRY_INTERVAL_MS = 50 * 1000;
 constexpr uint32_t CRYPTO_KEY_ALIAS_SIZE = 16;
@@ -37,29 +38,32 @@ constexpr uint32_t CRYPTO_HKS_NONCE_LEN = 12;
 constexpr uint32_t CRYPTO_KEY_SHIELD_MAX_SIZE = 2048;
 constexpr uint32_t CRYPTO_AES_256_KEY_ENCRYPTED_SIZE = 80;
 constexpr uint32_t CRYPTO_TOKEN_SIZE = TOKEN_CHALLENGE_LEN; // 32
+#endif
 
 HuksMaster::HuksMaster()
 {
     LOGI("enter");
+#ifdef HUKS_IDL_ENVIRONMENT
     InitHdiProxyInstance();
     HdiModuleInit();
+#endif
     LOGI("finish");
 }
 
 HuksMaster::~HuksMaster()
 {
     LOGI("enter");
+#ifdef HUKS_IDL_ENVIRONMENT
     HdiModuleDestroy();
     ReleaseHdiProxyInstance();
+#endif
     LOGI("finish");
 }
 
+#ifdef HUKS_IDL_ENVIRONMENT
 int32_t HuksMaster::InitHdiProxyInstance()
 {
     LOGI("enter");
-    if (hksHdiProxyInstance_ != nullptr) {
-        return HKS_SUCCESS;
-    }
     std::lock_guard<std::mutex> lock(hdiProxyMutex_);
     if (hksHdiProxyInstance_ != nullptr) {
         return HKS_SUCCESS;
@@ -324,20 +328,30 @@ int HuksMaster::HdiAccessUpgradeKey(const HuksBlob &oldKey, const HksParamSet *p
     return retryRet;
 }
 
-KeyBlob HuksMaster::GenerateRandomKey(uint32_t keyLen)
+static bool CheckNeedUpgrade(KeyBlob &inData)
 {
-    LOGI("enter, size %{public}d", keyLen);
-    KeyBlob out(keyLen);
-    if (out.IsEmpty()) {
-        return out;
+    constexpr uint32_t HKS_KEY_VERSION = 3;
+    HksParamSet *keyBlobParamSet = nullptr;
+    int ret = HksGetParamSet(reinterpret_cast<HksParamSet *>(inData.data.get()), inData.size, &keyBlobParamSet);
+    if (ret != HKS_SUCCESS) {
+        LOGE("HksGetParamSet failed %{public}d", ret);
+        return false;
     }
 
-    auto ret = RAND_bytes(out.data.get(), out.size);
-    if (ret <= 0) {
-        LOGE("RAND_bytes failed return %{public}d, errno %{public}lu", ret, ERR_get_error());
-        out.Clear();
+    struct HksParam *keyVersion = nullptr;
+    ret = HksGetParam(keyBlobParamSet, HKS_TAG_KEY_VERSION, &keyVersion);
+    if (ret != HKS_SUCCESS) {
+        LOGE("version get key param failed!");
+        HksFreeParamSet(&keyBlobParamSet);
+        return false;
     }
-    return out;
+
+    if (keyVersion->uint32Param >= HKS_KEY_VERSION) {
+        HksFreeParamSet(&keyBlobParamSet);
+        return false;
+    }
+    HksFreeParamSet(&keyBlobParamSet);
+    return true;
 }
 
 static int AppendSecureAccessParams(const UserAuth &auth, HksParamSet *paramSet)
@@ -374,50 +388,6 @@ static const HksParam g_generateKeyParam[] = {
         { sizeof(g_processName), g_processName }
     },
 };
-
-int32_t HuksMaster::GenerateKey(const UserAuth &auth, KeyBlob &keyOut)
-{
-    LOGI("enter");
-
-    HksParamSet *paramSet = nullptr;
-    int ret = HKS_SUCCESS;
-    do {
-        ret = HksInitParamSet(&paramSet);
-        if (ret != HKS_SUCCESS) {
-            LOGE("HksInitParamSet failed ret %{public}d", ret);
-            break;
-        }
-        ret = HksAddParams(paramSet, g_generateKeyParam, HKS_ARRAY_SIZE(g_generateKeyParam));
-        if (ret != HKS_SUCCESS) {
-            LOGE("HksAddParams failed ret %{public}d", ret);
-            break;
-        }
-        ret = AppendSecureAccessParams(auth, paramSet);
-        if (ret != HKS_SUCCESS) {
-            LOGE("AppendSecureAccessParams failed ret %{public}d", ret);
-            break;
-        }
-        ret = HksBuildParamSet(&paramSet);
-        if (ret != HKS_SUCCESS) {
-            LOGE("HksBuildParamSet failed ret %{public}d", ret);
-            break;
-        }
-        KeyBlob alias = GenerateRandomKey(CRYPTO_KEY_ALIAS_SIZE);
-        HuksBlob hksAlias = alias.ToHuksBlob();
-        keyOut.Alloc(CRYPTO_KEY_SHIELD_MAX_SIZE);
-        HuksBlob hksKeyOut = keyOut.ToHuksBlob();
-        ret = HdiGenerateKey(hksAlias, paramSet, hksKeyOut);
-        if (ret != HKS_SUCCESS) {
-            LOGE("HdiGenerateKey failed ret %{public}d", ret);
-            break;
-        }
-        keyOut.size = hksKeyOut.dataLen;
-        LOGI("HdiGenerateKey success, out size %{public}d", keyOut.size);
-    } while (0);
-
-    HksFreeParamSet(&paramSet);
-    return ret;
-}
 
 static KeyBlob HashWithPrefix(const std::string &prefix, const KeyBlob &payload, uint32_t length)
 {
@@ -652,46 +622,112 @@ static HksParamSet *GenHuksOptionParam(KeyContext &ctx,
 }
 
 int HuksMaster::HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *paramSet2,
-                                   const KeyBlob &keyIn, KeyBlob &keyOut)
+    const KeyBlob &keyIn, KeyBlob &keyOut)
+{
+LOGI("enter");
+#ifdef HUKS_IDL_ENVIRONMENT
+HuksBlob hksKey = { reinterpret_cast<uint8_t *>(paramSet1), paramSet1->paramSetSize };
+HuksBlob hksIn = keyIn.ToHuksBlob();
+HuksBlob hksOut = keyOut.ToHuksBlob();
+uint8_t h[sizeof(uint64_t)] = {0};
+HuksBlob hksHandle = { h, sizeof(uint64_t) };
+uint8_t t[CRYPTO_TOKEN_SIZE] = {0};
+HuksBlob hksToken = { t, sizeof(t) };  // would not use the challenge here
+
+auto startTime = StorageService::StorageRadar::RecordCurrentTime();
+int ret = HdiAccessInit(hksKey, paramSet2, hksHandle, hksToken);
+if (ret != HKS_SUCCESS) {
+LOGE("HdiAccessInit failed ret %{public}d", ret);
+return ret;
+}
+LOGI("SD_DURATION: HUKS: INIT: delay time = %{public}s",
+StorageService::StorageRadar::RecordDuration(startTime).c_str());
+startTime = StorageService::StorageRadar::RecordCurrentTime();
+ret = HdiAccessFinish(hksHandle, paramSet2, hksIn, hksOut);
+if (ret != HKS_SUCCESS) {
+if (ret == HKS_ERROR_KEY_AUTH_TIME_OUT) {
+StorageService::KeyCryptoUtils::ForceLockUserScreen();
+LOGE("HdiAccessFinish failed because authToken timeout, force lock user screen.");
+}
+LOGE("HdiAccessFinish failed ret %{public}d", ret);
+return ret;
+}
+LOGI("SD_DURATION: HUKS: FINISH: delay time = %{public}s",
+StorageService::StorageRadar::RecordDuration(startTime).c_str());
+
+keyOut.size = hksOut.dataLen;
+#endif
+LOGI("finish");
+return E_OK;
+}
+#endif
+
+KeyBlob HuksMaster::GenerateRandomKey(uint32_t keyLen)
+{
+    LOGI("enter, size %{public}d", keyLen);
+    KeyBlob out(keyLen);
+    if (out.IsEmpty()) {
+        return out;
+    }
+
+    auto ret = RAND_bytes(out.data.get(), out.size);
+    if (ret <= 0) {
+        LOGE("RAND_bytes failed return %{public}d, errno %{public}lu", ret, ERR_get_error());
+        out.Clear();
+    }
+    return out;
+}
+
+int32_t HuksMaster::GenerateKey(const UserAuth &auth, KeyBlob &keyOut)
 {
     LOGI("enter");
-    HuksBlob hksKey = { reinterpret_cast<uint8_t *>(paramSet1), paramSet1->paramSetSize };
-    HuksBlob hksIn = keyIn.ToHuksBlob();
-    HuksBlob hksOut = keyOut.ToHuksBlob();
-    uint8_t h[sizeof(uint64_t)] = {0};
-    HuksBlob hksHandle = { h, sizeof(uint64_t) };
-    uint8_t t[CRYPTO_TOKEN_SIZE] = {0};
-    HuksBlob hksToken = { t, sizeof(t) };  // would not use the challenge here
-
-    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
-    int ret = HdiAccessInit(hksKey, paramSet2, hksHandle, hksToken);
-    if (ret != HKS_SUCCESS) {
-        LOGE("HdiAccessInit failed ret %{public}d", ret);
-        return ret;
-    }
-    LOGI("SD_DURATION: HUKS: INIT: delay time = %{public}s",
-        StorageService::StorageRadar::RecordDuration(startTime).c_str());
-    startTime = StorageService::StorageRadar::RecordCurrentTime();
-    ret = HdiAccessFinish(hksHandle, paramSet2, hksIn, hksOut);
-    if (ret != HKS_SUCCESS) {
-        if (ret == HKS_ERROR_KEY_AUTH_TIME_OUT) {
-            StorageService::KeyCryptoUtils::ForceLockUserScreen();
-            LOGE("HdiAccessFinish failed because authToken timeout, force lock user screen.");
+#ifdef HUKS_IDL_ENVIRONMENT
+    HksParamSet *paramSet = nullptr;
+    int ret = HKS_SUCCESS;
+    do {
+        ret = HksInitParamSet(&paramSet);
+        if (ret != HKS_SUCCESS) {
+            LOGE("HksInitParamSet failed ret %{public}d", ret);
+            break;
         }
-        LOGE("HdiAccessFinish failed ret %{public}d", ret);
-        return ret;
-    }
-    LOGI("SD_DURATION: HUKS: FINISH: delay time = %{public}s",
-        StorageService::StorageRadar::RecordDuration(startTime).c_str());
+        ret = HksAddParams(paramSet, g_generateKeyParam, HKS_ARRAY_SIZE(g_generateKeyParam));
+        if (ret != HKS_SUCCESS) {
+            LOGE("HksAddParams failed ret %{public}d", ret);
+            break;
+        }
+        ret = AppendSecureAccessParams(auth, paramSet);
+        if (ret != HKS_SUCCESS) {
+            LOGE("AppendSecureAccessParams failed ret %{public}d", ret);
+            break;
+        }
+        ret = HksBuildParamSet(&paramSet);
+        if (ret != HKS_SUCCESS) {
+            LOGE("HksBuildParamSet failed ret %{public}d", ret);
+            break;
+        }
+        KeyBlob alias = GenerateRandomKey(CRYPTO_KEY_ALIAS_SIZE);
+        HuksBlob hksAlias = alias.ToHuksBlob();
+        keyOut.Alloc(CRYPTO_KEY_SHIELD_MAX_SIZE);
+        HuksBlob hksKeyOut = keyOut.ToHuksBlob();
+        ret = HdiGenerateKey(hksAlias, paramSet, hksKeyOut);
+        if (ret != HKS_SUCCESS) {
+            LOGE("HdiGenerateKey failed ret %{public}d", ret);
+            break;
+        }
+        keyOut.size = hksKeyOut.dataLen;
+        LOGI("HdiGenerateKey success, out size %{public}d", keyOut.size);
+    } while (0);
 
-    keyOut.size = hksOut.dataLen;
-    LOGI("finish");
-    return E_OK;
+    HksFreeParamSet(&paramSet);
+    return ret;
+#endif
+    return HKS_SUCCESS;
 }
 
 int32_t HuksMaster::EncryptKeyEx(const UserAuth &auth, const KeyBlob &rnd, KeyContext &ctx)
 {
     LOGI("enter");
+#ifdef HUKS_IDL_ENVIRONMENT
     if (ctx.shield.IsEmpty()) {
         LOGE("bad shield input, size %{public}d", ctx.shield.size);
         return E_KEY_CTX_ERROR;
@@ -721,11 +757,14 @@ int32_t HuksMaster::EncryptKeyEx(const UserAuth &auth, const KeyBlob &rnd, KeyCo
     HksFreeParamSet(&paramSet2);
     LOGI("finish");
     return ret;
+#endif
+    return E_OK;
 }
 
 int32_t HuksMaster::EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyInfo &key, bool isNeedNewNonce)
 {
     LOGI("enter");
+#ifdef HUKS_IDL_ENVIRONMENT
     if (ctx.shield.IsEmpty()) {
         LOGE("bad shield input, size %{public}d", ctx.shield.size);
         return E_KEY_CTX_ERROR;
@@ -755,11 +794,14 @@ int32_t HuksMaster::EncryptKey(KeyContext &ctx, const UserAuth &auth, const KeyI
     HksFreeParamSet(&paramSet2);
     LOGI("finish");
     return ret;
+#endif
+    return E_OK;
 }
 
 int32_t HuksMaster::DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &key, bool isNeedNewNonce)
 {
     LOGI("enter");
+#ifdef HUKS_IDL_ENVIRONMENT
     if (ctx.shield.IsEmpty()) {
         LOGE("bad shield input, size %{public}d", ctx.shield.size);
         return E_KEY_CTX_ERROR;
@@ -789,11 +831,14 @@ int32_t HuksMaster::DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &k
     HksFreeParamSet(&paramSet2);
     LOGI("finish");
     return ret;
+#endif
+    return E_OK;
 }
 
 int32_t HuksMaster::DecryptKeyEx(KeyContext &ctx, const UserAuth &auth, KeyBlob &rnd)
 {
     LOGI("enter");
+#ifdef HUKS_IDL_ENVIRONMENT
     if (ctx.shield.IsEmpty()) {
         LOGE("bad shield input, size %{public}d", ctx.shield.size);
         return E_KEY_CTX_ERROR;
@@ -823,36 +868,13 @@ int32_t HuksMaster::DecryptKeyEx(KeyContext &ctx, const UserAuth &auth, KeyBlob 
     HksFreeParamSet(&paramSet2);
     LOGI("finish");
     return ret;
-}
-
-static bool CheckNeedUpgrade(KeyBlob &inData)
-{
-    constexpr uint32_t HKS_KEY_VERSION = 3;
-    HksParamSet *keyBlobParamSet = nullptr;
-    int ret = HksGetParamSet(reinterpret_cast<HksParamSet *>(inData.data.get()), inData.size, &keyBlobParamSet);
-    if (ret != HKS_SUCCESS) {
-        LOGE("HksGetParamSet failed %{public}d", ret);
-        return false;
-    }
-
-    struct HksParam *keyVersion = nullptr;
-    ret = HksGetParam(keyBlobParamSet, HKS_TAG_KEY_VERSION, &keyVersion);
-    if (ret != HKS_SUCCESS) {
-        LOGE("version get key param failed!");
-        HksFreeParamSet(&keyBlobParamSet);
-        return false;
-    }
-
-    if (keyVersion->uint32Param >= HKS_KEY_VERSION) {
-        HksFreeParamSet(&keyBlobParamSet);
-        return false;
-    }
-    HksFreeParamSet(&keyBlobParamSet);
-    return true;
+#endif
+    return E_OK;
 }
 
 bool HuksMaster::UpgradeKey(KeyContext &ctx)
 {
+#ifdef HUKS_IDL_ENVIRONMENT
     struct HksParamSet *paramSet = nullptr;
     bool ret = false;
 
@@ -894,6 +916,8 @@ bool HuksMaster::UpgradeKey(KeyContext &ctx)
     } while (0);
     HksFreeParamSet(&paramSet);
     return ret;
+#endif
+    return false;
 }
 
 } // namespace StorageDaemon

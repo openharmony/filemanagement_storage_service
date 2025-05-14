@@ -65,7 +65,6 @@ ohos_moduletest("FscryptKeyV2Test") {
 
   external_deps = [
     "c_utils:utils",
-    "drivers_interface_huks:libhuks_proxy_1.1",
     "googletest:gmock_main",
     "googletest:gtest_main",
     "hilog:libhilog",
@@ -78,6 +77,11 @@ ohos_moduletest("FscryptKeyV2Test") {
   if (enable_screenlock_manager) {
     defines += [ "ENABLE_SCREENLOCK_MANAGER" ]
     external_deps += [ "screenlock_mgr:screenlock_client" ]
+  }
+
+  if (enable_huks_hdi) {
+    defines += [ "HUKS_HDI_ENVIRONMENT" ]
+    external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
   }
 }
 

@@ -70,7 +70,6 @@ ohos_fuzztest("StorageDaemonDeleteShareFileFuzzTest") {
     "bundle_framework:appexecfwk_core",
     "cJSON:cjson",
     "c_utils:utils",
-    "drivers_interface_huks:libhuks_proxy_1.1",
     "eventhandler:libeventhandler",
     "hicollie:libhicollie",
     "hilog:libhilog",
@@ -96,6 +95,11 @@ ohos_fuzztest("StorageDaemonDeleteShareFileFuzzTest") {
   if (enable_tee_client) {
     defines += [ "RECOVER_KEY_TEE_ENVIRONMENT" ]
     external_deps += [ "tee_client:libteec" ]
+  }
+
+  if (enable_huks_hdi) {
+    defines += [ "HUKS_HDI_ENVIRONMENT" ]
+    external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
   }
 
   use_exceptions = true

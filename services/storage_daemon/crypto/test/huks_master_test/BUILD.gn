@@ -51,7 +51,6 @@ ohos_unittest("HuksMasterTest") {
 
   external_deps = [
     "c_utils:utils",
-    "drivers_interface_huks:libhuks_proxy_1.1",
     "googletest:gmock_main",
     "googletest:gtest_main",
     "hilog:libhilog",
@@ -64,6 +63,11 @@ ohos_unittest("HuksMasterTest") {
   if (enable_user_auth_framework) {
     defines += [ "USER_AUTH_FRAMEWORK" ]
     external_deps += [ "user_auth_framework:userauth_client" ]
+  }
+
+  if (enable_huks_hdi) {
+    defines += [ "HUKS_HDI_ENVIRONMENT" ]
+    external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
   }
 }
 

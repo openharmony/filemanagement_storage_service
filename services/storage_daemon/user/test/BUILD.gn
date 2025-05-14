@@ -64,7 +64,6 @@ ohos_unittest("user_manager_test") {
     "app_file_service:sandbox_helper_native",
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
-    "drivers_interface_huks:libhuks_proxy_1.1",
     "googletest:gmock_main",
     "googletest:gtest_main",
     "hilog:libhilog",
@@ -78,6 +77,11 @@ ohos_unittest("user_manager_test") {
   if (storage_service_cloud_fuse) {
     defines += [ "DFS_SERVICE" ]
     external_deps += [ "dfs_service:cloud_daemon_kit_inner" ]
+  }
+
+  if (enable_huks_hdi) {
+    defines += [ "HUKS_HDI_ENVIRONMENT" ]
+    external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
   }
 }
 
@@ -127,7 +131,6 @@ ohos_unittest("mount_manager_test") {
 
   external_deps = [
     "c_utils:utils",
-    "drivers_interface_huks:libhuks_proxy_1.1",
     "googletest:gmock_main",
     "googletest:gtest_main",
     "hilog:libhilog",
@@ -140,6 +143,11 @@ ohos_unittest("mount_manager_test") {
   if (storage_service_cloud_fuse) {
     defines += [ "DFS_SERVICE" ]
     external_deps += [ "dfs_service:cloud_daemon_kit_inner" ]
+  }
+
+  if (enable_huks_hdi) {
+    defines += [ "HUKS_HDI_ENVIRONMENT" ]
+    external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
   }
 }
 

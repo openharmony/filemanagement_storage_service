@@ -66,6 +66,10 @@ ohos_unittest("CryptoDelayHandlerTest") {
     external_deps += [ "screenlock_mgr:screenlock_client" ]
   }
 
+  if (enable_huks_hdi) {
+    defines += [ "HUKS_HDI_ENVIRONMENT" ]
+    external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
+  }
 }
 
 group("crypto_delay_handler_test") {
