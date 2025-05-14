@@ -134,7 +134,7 @@ void MtpFsDevice::MtpEventCallback(int ret, LIBMTP_event_t event, uint32_t param
     (void)data;
     g_isEventDone.store(true);
     LOGI("MtpEventCallback received, ret=%{public}d, event=%{public}d, param=%{public}d, g_isEventDone=%{public}d", ret,
-         event, param, g_isEventDone);
+         event, param, g_isEventDone.load());
     switch (event) {
         case LIBMTP_EVENT_OBJECT_ADDED:
             LOGI("Received event LIBMTP_EVENT_OBJECT_ADDED.");
