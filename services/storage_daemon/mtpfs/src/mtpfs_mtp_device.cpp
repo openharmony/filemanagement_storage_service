@@ -842,6 +842,7 @@ int MtpFsDevice::FilePull(const std::string &src, const std::string &dst)
         return -ENOENT;
     }
     isTransferring_.store(true);
+    eventCon_.notify_one();
     if (fileToFetch->Size() == 0) {
         int fd = ::creat(dst.c_str(), S_IRUSR | S_IWUSR);
         ::close(fd);
@@ -857,12 +858,14 @@ int MtpFsDevice::FilePull(const std::string &src, const std::string &dst)
             DumpLibMtpErrorStack();
             RemoveFileCancelFlag(src);
             isTransferring_.store(false);
+            eventCon_.notify_one();
             return -ENOENT;
         }
     }
     RemoveFileCancelFlag(src);
     LOGI("File fetched %{public}s", src.c_str());
     isTransferring_.store(false);
+    eventCon_.notify_one();
     return 0;
 }
 
@@ -876,6 +879,7 @@ int MtpFsDevice::FilePush(const std::string &src, const std::string &dst)
         return -EINVAL;
     }
     isTransferring_.store(true);
+    eventCon_.notify_one();
     if (fileToRemove) {
         CriticalEnter();
         int rval = LIBMTP_Delete_Object(device_, fileToRemove->Id());
@@ -884,6 +888,7 @@ int MtpFsDevice::FilePush(const std::string &src, const std::string &dst)
             StorageRadar::ReportMtpfsResult("FilePush::LIBMTP_Delete_Object", rval, "src=" + src + "dst=" + dst);
             LOGE("Can not upload %{public}s to %{public}s", src.c_str(), dst.c_str());
             isTransferring_.store(false);
+            eventCon_.notify_one();
             return -EINVAL;
         }
     }
@@ -919,6 +924,7 @@ int MtpFsDevice::FilePush(const std::string &src, const std::string &dst)
     free(static_cast<void *>(f));
     RemoveFileCancelFlag(dst);
     isTransferring_.store(false);
+    eventCon_.notify_one();
     return (rval != 0 ? -EINVAL : rval);
 }
 
