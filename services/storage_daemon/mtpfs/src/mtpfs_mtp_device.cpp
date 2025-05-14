@@ -55,7 +55,7 @@ MtpFsDevice::~MtpFsDevice()
 {
     std::lock_guard<std::mutex> lock(eventMutex_);
     LOGI("MtpFsDevice Destructor.");
-    eventFlag_ = false;
+    eventFlag_.store(false);
     eventCon_.notify_one();
     Disconnect();
 }
