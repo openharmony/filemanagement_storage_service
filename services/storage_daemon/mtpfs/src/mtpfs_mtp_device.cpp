@@ -31,7 +31,6 @@ const int32_t DIR_COUNT_ONE = 1;
 const uint32_t DEFAULT_COUNT = 100;
 const uint32_t PTP_ID_START = 300000000;
 const uint32_t PTP_ID_INDEX = 200000000;
-static bool g_isEventDone = true;
 uint32_t MtpFsDevice::rootNode_ = ~0;
 std::atomic<bool> g_isEventDone;
 std::atomic<bool> isTransferring_; 
