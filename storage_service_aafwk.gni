@@ -40,6 +40,7 @@ declare_args() {
                                defined(global_parts_info.thirdparty_libfuse)
 
   enable_tee_client = !is_emulator
+  enable_huks_hdi = !is_emulator
 }
 
 storage_manager_path =

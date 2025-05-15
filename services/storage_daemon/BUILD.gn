@@ -197,7 +197,9 @@ ohos_executable("storage_daemon") {
       "crypto:libsdcrypto",
       "libfscrypt:libfscryptutils",
     ]
-    external_deps += [ "huks:libhukssdk" ]
+    external_deps += [
+      "huks:libhukssdk",
+    ]
   }
 
   if (enable_user_auth_framework) {
@@ -241,6 +243,11 @@ ohos_executable("storage_daemon") {
   if (storage_service_media_fuse) {
     defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
     external_deps += [ "ability_runtime:app_manager" ]
+  }
+
+  if (enable_huks_hdi) {
+    defines += [ "HUKS_IDL_ENVIRONMENT" ]
+    external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
   }
 
   ldflags = [

@@ -109,6 +109,11 @@ ohos_unittest("storage_daemon_test") {
     external_deps += [ "user_auth_framework:userauth_client" ]
   }
 
+  if (enable_huks_hdi) {
+    defines += [ "HUKS_IDL_ENVIRONMENT" ]
+    external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
+  }
+
   use_exceptions = true
 }
 
