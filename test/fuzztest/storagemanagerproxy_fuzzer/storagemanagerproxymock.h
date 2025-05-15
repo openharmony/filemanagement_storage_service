@@ -112,7 +112,7 @@ public:
         return E_OK;
     }
 
-    int32_t NotifyVolumeMounted(std::string volumeId, int fsType, std::string fsUuid,
+    int32_t NotifyVolumeMounted(std::string volumeId, std::string &fsTypeStr, std::string fsUuid,
                                         std::string path, std::string description) override
     {
         return E_OK;
