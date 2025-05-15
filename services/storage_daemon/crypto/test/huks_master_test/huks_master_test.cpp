@@ -146,7 +146,7 @@ HWTEST_F(HuksMasterTest, HuksMaster_HdiGenerateKey_001, TestSize.Level1)
         HuksMaster::GetInstance().hksHdiProxyInstance_->GenerateKey = nullptr;
         EXPECT_EQ(HuksMaster::GetInstance().HdiGenerateKey(hksAlias, paramSet, hksKeyOut), HKS_ERROR_NULL_POINTER);
     }
-    HuksMaster::GetInstance().ReleaseHdiProxyInstance();;
+    HuksMaster::GetInstance().ReleaseHdiProxyInstance();
     EXPECT_EQ(HuksMaster::GetInstance().HdiGenerateKey(hksAlias, paramSet, hksKeyOut), HKS_ERROR_NULL_POINTER);
     GTEST_LOG_(INFO) << "HuksMaster_HdiGenerateKey_001 end";
 }

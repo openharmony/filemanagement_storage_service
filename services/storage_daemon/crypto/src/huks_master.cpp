@@ -80,6 +80,7 @@ int32_t HuksMaster::InitHdiProxyInstance()
 void HuksMaster::ReleaseHdiProxyInstance()
 {
     LOGI("enter");
+    std::lock_guard<std::mutex> lock(hdiProxyMutex_);
     if (hksHdiProxyInstance_ != nullptr) {
         IHuksReleaseInstance("hdi_service", hksHdiProxyInstance_, true);
     }
@@ -622,7 +623,7 @@ static HksParamSet *GenHuksOptionParam(KeyContext &ctx,
 }
 
 int HuksMaster::HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *paramSet2,
-    const KeyBlob &keyIn, KeyBlob &keyOut)
+                                   const KeyBlob &keyIn, KeyBlob &keyOut)
 {
     LOGI("enter");
     HuksBlob hksKey = { reinterpret_cast<uint8_t *>(paramSet1), paramSet1->paramSetSize };
