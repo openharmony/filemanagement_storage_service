@@ -31,6 +31,12 @@
 #include <sys/ioctl.h>
 
 #define ARRAY_LEN(array) (sizeof((array)) / sizeof((array)[0]))
+#define SAFE_FREE_PTR(ptr) do { \
+    if ((ptr) != NULL) { \
+        free(ptr); \
+        (ptr) = NULL; \
+    } \
+} while (0)
 
 typedef struct FscrtpyItem_ {
     char *key;
@@ -381,6 +387,7 @@ int LoadAndSetPolicy(const char *keyDir, const char *dir)
             strlen(PATH_KEYDESC), &pathBuf);
         if (ret != 0) {
             LOGE("path splice error");
+            SAFE_FREE_PTR(pathBuf);
             return ret;
         }
         ret = SetPolicyLegacy(pathBuf, dir, &arg);
@@ -393,6 +400,7 @@ int LoadAndSetPolicy(const char *keyDir, const char *dir)
             strlen(PATH_KEYID), &pathBuf);
         if (ret != 0) {
             LOGE("path splice error");
+            SAFE_FREE_PTR(pathBuf);
             return ret;
         }
         ret = SetPolicyV2(pathBuf, dir, &arg);
@@ -401,11 +409,7 @@ int LoadAndSetPolicy(const char *keyDir, const char *dir)
         }
 #endif
     }
-    if (pathBuf != NULL) {
-        free(pathBuf);
-        pathBuf = NULL;
-    }
-
+    SAFE_FREE_PTR(pathBuf);
     return ret;
 }
 
@@ -465,10 +469,12 @@ int LoadAndSetEceAndSecePolicy(const char *keyDir, const char *dir, int type)
             char keyDesc[FSCRYPT_KEY_DESCRIPTOR_SIZE] = {0};
             ret = ReadKeyFile(pathBuf, keyDesc, FSCRYPT_KEY_DESCRIPTOR_SIZE);
             if (ret != 0) {
+                SAFE_FREE_PTR(pathBuf);
                 return ret;
             }
             ret = ActSetFileXattrActSetFileXattr(dir, keyDesc, type);
             if (ret != 0) {
+                SAFE_FREE_PTR(pathBuf);
                 LOGE("ActSetFileXattr failed");
                 return ret;
             }
@@ -478,9 +484,7 @@ int LoadAndSetEceAndSecePolicy(const char *keyDir, const char *dir, int type)
         return 0;
 #endif
     }
-    if (pathBuf != NULL) {
-        free(pathBuf);
-    }
+    SAFE_FREE_PTR(pathBuf);
     return ret;
 }
 
