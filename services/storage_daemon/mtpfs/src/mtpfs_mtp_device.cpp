@@ -32,8 +32,8 @@ const uint32_t DEFAULT_COUNT = 100;
 const uint32_t PTP_ID_START = 300000000;
 const uint32_t PTP_ID_INDEX = 200000000;
 uint32_t MtpFsDevice::rootNode_ = ~0;
-std::atomic<bool> g_isEventDone;
-std::atomic<bool> isTransferring_; 
+static std::atomic<bool> g_isEventDone;
+static std::atomic<bool> isTransferring_;
 std::condition_variable MtpFsDevice::eventCon_;
 std::mutex MtpFsDevice::eventMutex_;
 std::mutex MtpFsDevice::setMutex_;
@@ -336,6 +336,9 @@ const MtpFsTypeDir *MtpFsDevice::DirFetchContent(std::string path)
         if (member.empty()) {
             continue;
         }
+        if (dir == nullptr) {
+            return nullptr;
+        }
         const MtpFsTypeDir *tmp = dir->Dir(member);
         if (!tmp && !dir->IsFetched()) {
             CriticalEnter();
@@ -385,6 +388,9 @@ const MtpFsTypeDir *MtpFsDevice::OpenDirFetchContent(std::string path)
     while (std::getline(ss, member, '/')) {
         if (member.empty()) {
             continue;
+        }
+        if (dir == nullptr) {
+            return nullptr;
         }
         const MtpFsTypeDir *tmp = dir->Dir(member);
         if (!tmp) {
@@ -508,6 +514,9 @@ const MtpFsTypeDir *MtpFsDevice::ReadDirFetchContent(std::string path)
     while (std::getline(ss, member, '/')) {
         if (member.empty()) {
             continue;
+        }
+        if (dir == nullptr) {
+            return nullptr;
         }
         const MtpFsTypeDir *tmp = dir->Dir(member);
         dir = const_cast<MtpFsTypeDir *>(tmp);

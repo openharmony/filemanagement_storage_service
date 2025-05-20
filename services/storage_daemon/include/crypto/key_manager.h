@@ -120,6 +120,8 @@ private:
     KeyManager()
     {
         hasGlobalDeviceKey_ = false;
+        getLockStatusTime_[0] = 0;
+        getLockStatusTime_[1] = 0;
     }
     ~KeyManager() {}
     int GenerateAndInstallDeviceKey(const std::string &dir);

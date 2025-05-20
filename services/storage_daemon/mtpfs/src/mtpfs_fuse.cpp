@@ -787,6 +787,11 @@ int MtpFileSystem::OpenFile(const char *path, struct fuse_file_info *fileInfo)
 
     // we create the tmp file even if we can use partial get/send to
     // have a valid file descriptor
+    char realPath[PATH_MAX] = {0};
+    if (realpath(tmpPath.c_str(), realPath) == nullptr) {
+        LOGE("MtpFileSystem: realpath error, errno=%{public}d", errno);
+        return -errno;
+    }
     int fd = ::open(tmpPath.c_str(), fileInfo->flags);
     if (fd < 0) {
         ::unlink(tmpPath.c_str());
@@ -844,6 +849,11 @@ int MtpFileSystem::OpenThumb(const char *path, struct fuse_file_info *fileInfo)
         flags |= O_TRUNC;
     }
     fileInfo->flags = static_cast<int>(flags);
+    char realPath[PATH_MAX] = {0};
+    if (realpath(tmpPath.c_str(), realPath) == nullptr) {
+        LOGE("MtpFileSystem: realpath error, errno=%{public}d", errno);
+        return -errno;
+    }
     fd = ::open(tmpPath.c_str(), fileInfo->flags);
     if (fd < 0) {
         ::unlink(tmpPath.c_str());
