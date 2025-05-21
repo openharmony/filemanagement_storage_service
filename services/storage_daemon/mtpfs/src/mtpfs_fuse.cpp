@@ -35,6 +35,10 @@ constexpr int32_t FILE_SIZE = 512;
 constexpr int32_t BS_SIZE = 1024;
 constexpr int32_t ARG_SIZE = 2;
 constexpr const char *MTP_FILE_FLAG = "?MTP_THM";
+constexpr const char *MTP_CLIENT_WRITE = "constraint.mtp.client.write";
+int32_t currentUid = 0;
+std::map<uid_t, bool> mtpMAP_;
+std::shared_ptr<AccountSubscriber> osAccountSubscriber_ = nullptr;
 
 int WrapGetattr(const char *path, struct stat *buf, struct fuse_file_info *fi)
 {
@@ -53,6 +57,10 @@ int WrapGetattr(const char *path, struct stat *buf, struct fuse_file_info *fi)
 int WrapMkNod(const char *path, mode_t mode, dev_t dev)
 {
     LOGI("mtp WrapMkNod, path=%{public}s", path);
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserRead();
+    if (readOnly) {
+        return -1;
+    }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->MkNod(path, mode, dev);
     LOGI("MkNod ret = %{public}d.", ret);
     return ret;
@@ -61,6 +69,10 @@ int WrapMkNod(const char *path, mode_t mode, dev_t dev)
 int WrapMkDir(const char *path, mode_t mode)
 {
     LOGI("mtp WrapMkDir, path=%{public}s", path);
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserRead();
+    if (readOnly) {
+        return -1;
+    }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->MkDir(path, mode);
     LOGI("MkDir ret = %{public}d.", ret);
     return ret;
@@ -69,6 +81,10 @@ int WrapMkDir(const char *path, mode_t mode)
 int WrapUnLink(const char *path)
 {
     LOGI("mtp WrapUnLink, path=%{public}s", path);
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserRead();
+    if (readOnly) {
+        return -1;
+    }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->UnLink(path);
     LOGI("UnLink ret = %{public}d.", ret);
     return ret;
@@ -77,6 +93,10 @@ int WrapUnLink(const char *path)
 int WrapRmDir(const char *path)
 {
     LOGI("mtp WrapRmDir, path=%{public}s", path);
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserRead();
+    if (readOnly) {
+        return -1;
+    }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->RmDir(path);
     LOGI("RmDir ret = %{public}d.", ret);
     return ret;
@@ -85,6 +105,10 @@ int WrapRmDir(const char *path)
 int WrapReName(const char *path, const char *newpath, unsigned int flags)
 {
     LOGI("mtp WrapReName, path=%{public}s", path);
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserRead();
+    if (readOnly) {
+        return -1;
+    }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->ReName(path, newpath, flags);
     LOGI("ReName ret = %{public}d.", ret);
     return ret;
@@ -93,6 +117,10 @@ int WrapReName(const char *path, const char *newpath, unsigned int flags)
 int WrapChMod(const char *path, mode_t mode, struct fuse_file_info *fi)
 {
     LOGI("mtp WrapChMod, path=%{public}s", path);
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserRead();
+    if (readOnly) {
+        return -1;
+    }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->ChMods(path, mode, fi);
     LOGI("ChMods ret = %{public}d.", ret);
     return ret;
@@ -101,6 +129,10 @@ int WrapChMod(const char *path, mode_t mode, struct fuse_file_info *fi)
 int WrapChown(const char *path, uid_t uid, gid_t gid, struct fuse_file_info *fi)
 {
     LOGE("mtp WrapChown path:%{public}s ,uid:%{public}lu, gid:%{public}lu", path, uid, gid);
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserRead();
+    if (readOnly) {
+        return -1;
+    }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Chown(path, uid, gid, fi);
     LOGI("Chown ret = %{public}d.", ret);
     return ret;
@@ -110,6 +142,10 @@ int WrapChown(const char *path, uid_t uid, gid_t gid, struct fuse_file_info *fi)
 int WrapUTimens(const char *path, const struct timespec tv[2], struct fuse_file_info *fi)
 {
     LOGI("mtp WrapUTimens, path=%{public}s", path);
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserRead();
+    if (readOnly) {
+        return -1;
+    }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->UTimens(path, tv, fi);
     LOGI("UTimens ret = %{public}d.", ret);
     return ret;
@@ -144,6 +180,10 @@ int WrapRead(const char *path, char *buf, size_t size, off_t offset, struct fuse
 int WrapWrite(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fileInfo)
 {
     LOGI("mtp WrapWrite, path=%{public}s", path);
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserRead();
+    if (readOnly) {
+        return -1;
+    }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Write(path, buf, size, offset, fileInfo);
     LOGI("Write ret = %{public}d.", ret);
     return ret;
@@ -168,6 +208,10 @@ int WrapFlush(const char *path, struct fuse_file_info *fileInfo)
 int WrapRelease(const char *path, struct fuse_file_info *fileInfo)
 {
     LOGI("mtp WrapRelease, path=%{public}s", path);
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserRead();
+    if (readOnly) {
+        return -1;
+    }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Release(path, fileInfo);
     LOGI("Release ret = %{public}d.", ret);
     return ret;
@@ -176,6 +220,10 @@ int WrapRelease(const char *path, struct fuse_file_info *fileInfo)
 int WrapFSync(const char *path, int datasync, struct fuse_file_info *fileInfo)
 {
     LOGI("mtp WrapFSync, path=%{public}s", path);
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserRead();
+    if (readOnly) {
+        return -1;
+    }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->FSync(path, datasync, fileInfo);
     LOGI("FSync ret = %{public}d.", ret);
     return ret;
@@ -217,12 +265,24 @@ int WrapFSyncDir(const char *path, int datasync, struct fuse_file_info *fileInfo
 void *WrapInit(struct fuse_conn_info *conn, struct fuse_config *cfg)
 {
     LOGI("mtp WrapInit");
+    std::set<OHOS::AccountSA::OsAccountState> states = { OHOS::AccountSA::OsAccountState::SWITCHED };
+    bool withHandShake = false;
+    OHOS::AccountSA::OsAccountSubscribeInfo subscribeInfo(state, withHandShake);
+    osAccountSubscriber_ = std::make_shared<AccountSubscriber>(subscribeInfo);
+    // 注册账号子系统uid改变订阅函数
+    ErrCode errCode = OHOS::AccountSA::OsAccountManager::SubscribeOsAccount(osAccountSubscriber_);
+    LOGI("subscribe os accouunt done errCode = %{public}d", errCode);
+    DelayedSingleton<MtpFileSystem>::GetInstance->InitCurrentUidAndCacheMap();
     return DelayedSingleton<MtpFileSystem>::GetInstance()->Init(conn, cfg);
 }
 
 int WrapCreate(const char *path, mode_t mode, fuse_file_info *fileInfo)
 {
     LOGI("mtp WrapCreate, path=%{public}s", path);
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserRead();
+    if (readOnly) {
+        return -1;
+    }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Create(path, mode, fileInfo);
     LOGI("Create ret = %{public}d.", ret);
     return ret;
@@ -255,6 +315,10 @@ int WrapLink(const char *path, const char *out)
 int WrapSetXAttr(const char *path, const char *in, const char *out, size_t size, int flag)
 {
     LOGI("mtp WrapSetXAttr, path=%{public}s", path);
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserRead();
+    if (readOnly) {
+        return -1;
+    }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->SetXAttr(path, in);
     LOGI("WrapSetXAttr ret = %{public}d.", ret);
     return ret;
@@ -376,6 +440,8 @@ MtpFileSystem::MtpFileSystem() : args_(), tmpFilesPool_(), options_(), device_()
 
 MtpFileSystem::~MtpFileSystem()
 {
+    ErrCode errCode = OHOS::AccountSA::OsAccountManager::UnsubscribeOsAccount(osAccountSubscriber_);
+    LOGI("UnsubscribeOsAccount errCode is: %{public}d", errCode);
     for (auto iter : dirMap_) {
         MtpFsTypeDir *dir = const_cast<MtpFsTypeDir *>(iter.second);
         if (dir != nullptr) {
@@ -1183,4 +1249,42 @@ bool MtpFileSystem::IsFilePulling(const std::string &path)
 void MtpFileSystem::HandleRemove(uint32_t handleId)
 {
     std::thread([this, handleId]() { device_.HandleRemoveEvent(handleId); }).detach();
+}
+
+void MtpFileSystem::InitCurrentUidAndCacheMap()
+{
+    LOGI("InitCurrentUidAndCacheMap start");
+    // 通过账号子系统查询当前用户uid
+    std::vector<int> activedOsAccountIds;
+    ErrCode errCode = OHOS::AccountSA::OsAccountManager::QueryActiveOsAccountIds(activedOsAccountIds);
+    LOGI("InitCurrentUidAndCacheMap QueryActiveOsAccountIds errCode is: %{public}d", errCode);
+    currentUid = activedOsAccountIds[0];
+    LOGI("InitCurrentUidAndCacheMap currentUid = %{public}d", currentUid);
+    for (size_t i = 0; i < activedOsAccountIds.size(); i++) {
+        bool readOnly = false;
+        ErrCode errCode = OHOS::AccountSA::OsAccountManager
+            ::IsOsAccountConstraintEnable(activedOsAccountIds[i], MTP_CLIENT_WRITE, readOnly);
+        mtpMap_[activedOsAccountIds[i]] = readOnly;
+    }
+    LOGI("InitCurrentUidAndCacheMap end");
+}
+
+bool MtpFileSystem::IsCurrentUserReadOnly()
+{
+    LOGI("IsTrueCurrentUserTactic start");
+    auto item = mtpMap_.find(currentUid);
+    if (item != mtpMap_.end()) {
+        if (item->second) {
+            return true;
+        }
+    }
+    LOGI("IsTrueCurrentUserTactic end");
+    return false;
+}
+
+void AccountSubscriber::OnStateChanged(const OHOS::AccountSA::OsAccountStateData &data)
+{
+    LOGI("OnStateChanged start");
+    currentUid = data.toId;
+    LOGI("OnStateChanged end");
 }

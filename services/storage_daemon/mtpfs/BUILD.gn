@@ -72,6 +72,7 @@ ohos_executable("mtpfs") {
       "libmtp:libmtp",
       "libusb:libusb",
       "openssl:libcrypto_shared",
+      "os_account:os_account_innerkits",
     ]
   } else {
     sources = [ "src/mtpfs_main_virtual.cpp" ]

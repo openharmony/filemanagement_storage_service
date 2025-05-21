@@ -23,9 +23,17 @@
 #include "mtpfs_mtp_device.h"
 #include "mtpfs_tmp_files_pool.h"
 #include "mtpfs_type_tmp_file.h"
+#include "os_account_manager.h"
 #include "storage_service_errno.h"
 
 using namespace OHOS;
+
+class AccountSubscriber final : public OHOS::AccountSA::OsAccountSubscriber {
+public:
+    AccountSubscriber(const OHOS::AccountSA::OsAccountSubscirbeInfo &info)
+        : OHOS::AccountSA::OsAccountSubscriber(info){};
+    void OnStateChanged(const OHOS::AccountSA::OsAccountStateData &data) override;
+}
 
 class MtpFileSystem {
     DECLARE_DELAYED_SINGLETON(MtpFileSystem);
@@ -94,6 +102,8 @@ public:
     void RemovePullingFile(const std::string &path);
     bool IsFilePulling(const std::string &path);
     void HandleRemove(uint32_t handleId);
+    void InitCurrentUidAndCacheMap();
+    void IsCurrentUserReadOnly();
 
 private:
     bool HasPartialObjectSupport();
