@@ -886,4 +886,122 @@ HWTEST_F(BaseKeyTest, BaseKey_InitKeyContext_001, TestSize.Level1)
     EXPECT_TRUE(OHOS::ForceRemoveDirectory(elKey->dir_));
     GTEST_LOG_(INFO) << "BaseKey_InitKeyContext_001 end";
 }
+
+/**
+ * @tc.name: BaseKey_KeyEncryptTypeToString_001
+ * @tc.desc: Verify the KeyEncryptTypeToString function.
+ * @tc.type: FUNC
+ * @tc.require: IAXJFK
+ */
+HWTEST_F(BaseKeyTest, BaseKey_KeyEncryptTypeToString_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_KeyEncryptTypeToString_001 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+
+    EXPECT_EQ(elKey->BaseKey::KeyEncryptTypeToString(BaseKey::KeyEncryptType::KEY_CRYPT_OPENSSL), "KEY_CRYPT_OPENSSL");
+    EXPECT_EQ(elKey->BaseKey::KeyEncryptTypeToString(BaseKey::KeyEncryptType::KEY_CRYPT_HUKS), "KEY_CRYPT_HUKS");
+    EXPECT_EQ(elKey->BaseKey::KeyEncryptTypeToString(BaseKey::KeyEncryptType::KEY_CRYPT_HUKS_OPENSSL), 
+        "KEY_CRYPT_HUKS_OPENSSL");
+
+    GTEST_LOG_(INFO) << "BaseKey_KeyEncryptTypeToString_001 end";
+}
+
+/**
+ * @tc.name: BaseKey_CombKeyCtx_001
+ * @tc.desc: Verify the CombKeyCtx function.
+ * @tc.type: FUNC
+ * @tc.require: IAXJFK
+ */
+HWTEST_F(BaseKeyTest, BaseKey_CombKeyCtx_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_CombKeyCtx_001 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+
+    KeyBlob nonce;
+    KeyBlob rndEnc;
+    KeyBlob aad;
+    KeyBlob keyOut;
+    EXPECT_FALSE(elKey->BaseKey::CombKeyCtx(nonce, rndEnc, aad, keyOut));
+
+    nonce.Alloc(1);
+    EXPECT_FALSE(elKey->BaseKey::CombKeyCtx(nonce, rndEnc, aad, keyOut));
+
+    aad.Alloc(1);
+    EXPECT_FALSE(elKey->BaseKey::CombKeyCtx(nonce, rndEnc, aad, keyOut));
+
+    rndEnc.Alloc(1);
+    keyOut.Alloc(1);
+    EXPECT_TRUE(elKey->BaseKey::CombKeyCtx(nonce, rndEnc, aad, keyOut));
+    GTEST_LOG_(INFO) << "BaseKey_CombKeyCtx_001 end";
+}
+
+/**
+ * @tc.name: BaseKey_SplitKeyCtx_001
+ * @tc.desc: Verify the SplitKeyCtx function.
+ * @tc.type: FUNC
+ * @tc.require: IAXJFK
+ */
+HWTEST_F(BaseKeyTest, BaseKey_SplitKeyCtx_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_SplitKeyCtx_001 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+
+    KeyBlob keyIn;
+    KeyBlob nonce;
+    KeyBlob rndEnc;
+    KeyBlob aad;
+    nonce.Alloc(1);
+    EXPECT_FALSE(elKey->BaseKey::SplitKeyCtx(keyIn, nonce, rndEnc, aad));
+
+    nonce.Clear();
+    EXPECT_TRUE(elKey->BaseKey::SplitKeyCtx(keyIn, nonce, rndEnc, aad));
+    GTEST_LOG_(INFO) << "BaseKey_SplitKeyCtx_001 end";
+}
+
+/**
+ * @tc.name: BaseKey_GetTypeFromDir_001
+ * @tc.desc: Verify the GetTypeFromDir function.
+ * @tc.type: FUNC
+ * @tc.require: IAXJFK
+ */
+HWTEST_F(BaseKeyTest, BaseKey_GetTypeFromDir_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_GetTypeFromDir_001 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+
+    elKey->dir_ = "";
+    EXPECT_EQ(elKey->BaseKey::GetTypeFromDir(), TYPE_GLOBAL_EL1);
+
+    elKey->dir_ = "/";
+    EXPECT_EQ(elKey->BaseKey::GetTypeFromDir(), TYPE_GLOBAL_EL1);
+
+    elKey->dir_ = "100/";
+    EXPECT_EQ(elKey->BaseKey::GetTypeFromDir(), TYPE_GLOBAL_EL1);
+
+    elKey->dir_ = "foo/el5/100";
+    EXPECT_EQ(elKey->BaseKey::GetTypeFromDir(), TYPE_EL5);
+
+    elKey->dir_ = "foo/el6/100";
+    EXPECT_EQ(elKey->BaseKey::GetTypeFromDir(), TYPE_GLOBAL_EL1);
+    GTEST_LOG_(INFO) << "BaseKey_GetTypeFromDir_001 end";
+}
+
+/**
+ * @tc.name: BaseKey_GetIdFromDir_001
+ * @tc.desc: Verify the GetIdFromDir function.
+ * @tc.type: FUNC
+ * @tc.require: IAXJFK
+ */
+HWTEST_F(BaseKeyTest, BaseKey_GetIdFromDir_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "BaseKey_GetIdFromDir_001 start";
+    std::shared_ptr<FscryptKeyV2> elKey = std::make_shared<FscryptKeyV2>("/data/test");
+
+    elKey->dir_ = "";
+    EXPECT_EQ(elKey->BaseKey::GetIdFromDir(), USERID_GLOBAL_EL1);
+
+    elKey->dir_ = "el2/100";
+    EXPECT_EQ(elKey->BaseKey::GetIdFromDir(), 100);
+    GTEST_LOG_(INFO) << "BaseKey_GetIdFromDir_001 end";
+}
 } // OHOS::StorageDaemon
