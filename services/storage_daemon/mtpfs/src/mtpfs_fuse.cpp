@@ -1271,14 +1271,14 @@ void MtpFileSystem::InitCurrentUidAndCacheMap()
 
 bool MtpFileSystem::IsCurrentUserReadOnly()
 {
-    LOGI("IsTrueCurrentUserTactic start");
+    LOGI("IsCurrentUserReadOnly start");
     auto item = mtpMap_.find(currentUid);
     if (item != mtpMap_.end()) {
         if (item->second) {
             return true;
         }
     }
-    LOGI("IsTrueCurrentUserTactic end");
+    LOGI("IsCurrentUserReadOnly end");
     return false;
 }
 
