@@ -103,7 +103,7 @@ public:
     bool IsFilePulling(const std::string &path);
     void HandleRemove(uint32_t handleId);
     void InitCurrentUidAndCacheMap();
-    void IsCurrentUserReadOnly();
+    bool IsCurrentUserReadOnly();
 
 private:
     bool HasPartialObjectSupport();

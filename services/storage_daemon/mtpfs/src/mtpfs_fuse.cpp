@@ -57,7 +57,7 @@ int WrapGetattr(const char *path, struct stat *buf, struct fuse_file_info *fi)
 int WrapMkNod(const char *path, mode_t mode, dev_t dev)
 {
     LOGI("mtp WrapMkNod, path=%{public}s", path);
-    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserRead();
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
     if (readOnly) {
         return -1;
     }
@@ -69,7 +69,7 @@ int WrapMkNod(const char *path, mode_t mode, dev_t dev)
 int WrapMkDir(const char *path, mode_t mode)
 {
     LOGI("mtp WrapMkDir, path=%{public}s", path);
-    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserRead();
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
     if (readOnly) {
         return -1;
     }
@@ -81,7 +81,7 @@ int WrapMkDir(const char *path, mode_t mode)
 int WrapUnLink(const char *path)
 {
     LOGI("mtp WrapUnLink, path=%{public}s", path);
-    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserRead();
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
     if (readOnly) {
         return -1;
     }
@@ -93,7 +93,7 @@ int WrapUnLink(const char *path)
 int WrapRmDir(const char *path)
 {
     LOGI("mtp WrapRmDir, path=%{public}s", path);
-    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserRead();
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
     if (readOnly) {
         return -1;
     }
@@ -105,7 +105,7 @@ int WrapRmDir(const char *path)
 int WrapReName(const char *path, const char *newpath, unsigned int flags)
 {
     LOGI("mtp WrapReName, path=%{public}s", path);
-    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserRead();
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
     if (readOnly) {
         return -1;
     }
@@ -117,7 +117,7 @@ int WrapReName(const char *path, const char *newpath, unsigned int flags)
 int WrapChMod(const char *path, mode_t mode, struct fuse_file_info *fi)
 {
     LOGI("mtp WrapChMod, path=%{public}s", path);
-    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserRead();
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
     if (readOnly) {
         return -1;
     }
@@ -129,7 +129,7 @@ int WrapChMod(const char *path, mode_t mode, struct fuse_file_info *fi)
 int WrapChown(const char *path, uid_t uid, gid_t gid, struct fuse_file_info *fi)
 {
     LOGE("mtp WrapChown path:%{public}s ,uid:%{public}lu, gid:%{public}lu", path, uid, gid);
-    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserRead();
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
     if (readOnly) {
         return -1;
     }
@@ -142,7 +142,7 @@ int WrapChown(const char *path, uid_t uid, gid_t gid, struct fuse_file_info *fi)
 int WrapUTimens(const char *path, const struct timespec tv[2], struct fuse_file_info *fi)
 {
     LOGI("mtp WrapUTimens, path=%{public}s", path);
-    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserRead();
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
     if (readOnly) {
         return -1;
     }
@@ -180,7 +180,7 @@ int WrapRead(const char *path, char *buf, size_t size, off_t offset, struct fuse
 int WrapWrite(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fileInfo)
 {
     LOGI("mtp WrapWrite, path=%{public}s", path);
-    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserRead();
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
     if (readOnly) {
         return -1;
     }
@@ -208,7 +208,7 @@ int WrapFlush(const char *path, struct fuse_file_info *fileInfo)
 int WrapRelease(const char *path, struct fuse_file_info *fileInfo)
 {
     LOGI("mtp WrapRelease, path=%{public}s", path);
-    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserRead();
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
     if (readOnly) {
         return -1;
     }
@@ -220,7 +220,7 @@ int WrapRelease(const char *path, struct fuse_file_info *fileInfo)
 int WrapFSync(const char *path, int datasync, struct fuse_file_info *fileInfo)
 {
     LOGI("mtp WrapFSync, path=%{public}s", path);
-    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserRead();
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
     if (readOnly) {
         return -1;
     }
@@ -279,7 +279,7 @@ void *WrapInit(struct fuse_conn_info *conn, struct fuse_config *cfg)
 int WrapCreate(const char *path, mode_t mode, fuse_file_info *fileInfo)
 {
     LOGI("mtp WrapCreate, path=%{public}s", path);
-    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserRead();
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
     if (readOnly) {
         return -1;
     }
@@ -315,7 +315,7 @@ int WrapLink(const char *path, const char *out)
 int WrapSetXAttr(const char *path, const char *in, const char *out, size_t size, int flag)
 {
     LOGI("mtp WrapSetXAttr, path=%{public}s", path);
-    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserRead();
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
     if (readOnly) {
         return -1;
     }
