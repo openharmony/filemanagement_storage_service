@@ -280,7 +280,7 @@ void *WrapInit(struct fuse_conn_info *conn, struct fuse_config *cfg)
     // 注册账号子系统uid改变订阅函数
     ErrCode errCode = OHOS::AccountSA::OsAccountManager::SubscribeOsAccount(osAccountSubscriber_);
     LOGI("subscribe os accouunt done errCode = %{public}d", errCode);
-    DelayedSingleton<MtpFileSystem>::GetInstance->InitCurrentUidAndCacheMap();
+    DelayedSingleton<MtpFileSystem>::GetInstance()->InitCurrentUidAndCacheMap();
     return DelayedSingleton<MtpFileSystem>::GetInstance()->Init(conn, cfg);
 }
 
@@ -1293,7 +1293,7 @@ bool MtpFileSystem::IsCurrentUserReadOnly()
     return false;
 }
 
-bool MtpFileSystem::SetCurrentUid(int32_t uid)
+void MtpFileSystem::SetCurrentUid(int32_t uid)
 {
     LOGI("AccountSubscriber::SetCurrentUid start");
     std::lock_guard<std::mutex>lock(mtpClientMutex_);
@@ -1301,7 +1301,7 @@ bool MtpFileSystem::SetCurrentUid(int32_t uid)
     LOGI("AccountSubscriber::SetCurrentUid end");
 }
 
-bool MtpFileSystem::SetMtpClientWriteMap(uid_t first, bool second)
+void MtpFileSystem::SetMtpClientWriteMap(uid_t first, bool second)
 {
     LOGI("AccountSubscriber::SetMtpClientWriteMap start");
     std::lock_guard<std::mutex>lock(mtpClientMutex_);
@@ -1312,7 +1312,6 @@ bool MtpFileSystem::SetMtpClientWriteMap(uid_t first, bool second)
 void AccountSubscriber::OnStateChanged(const OHOS::AccountSA::OsAccountStateData &data)
 {
     LOGI("AccountSubscriber::OnStateChanged start");
-    std::lock_guard<std::mutex>lock(mtpClientMutex_);
     DelayedSingleton<MtpFileSystem>::GetInstance()->SetCurrentUid(data.toId);
     LOGI("AccountSubscriber::OnStateChanged end");
 }
