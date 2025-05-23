@@ -143,7 +143,6 @@ int WrapChown(const char *path, uid_t uid, gid_t gid, struct fuse_file_info *fi)
     return ret;
 }
 
-
 int WrapUTimens(const char *path, const struct timespec tv[2], struct fuse_file_info *fi)
 {
     LOGI("mtp WrapUTimens, path=%{public}s", path);
