@@ -58,7 +58,7 @@ int WrapMkNod(const char *path, mode_t mode, dev_t dev)
     bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
     if (readOnly) {
         LOGI("WrapMkNod fail");
-        return -1;
+        return E_CURRENT_USER_READONLY;
     }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->MkNod(path, mode, dev);
     LOGI("MkNod ret = %{public}d.", ret);
@@ -71,7 +71,7 @@ int WrapMkDir(const char *path, mode_t mode)
     bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
     if (readOnly) {
         LOGI("WrapMkDir fail");
-        return -1;
+        return E_CURRENT_USER_READONLY;
     }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->MkDir(path, mode);
     LOGI("MkDir ret = %{public}d.", ret);
@@ -84,7 +84,7 @@ int WrapUnLink(const char *path)
     bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
     if (readOnly) {
         LOGI("WrapUnLink fail");
-        return -1;
+        return E_CURRENT_USER_READONLY;
     }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->UnLink(path);
     LOGI("UnLink ret = %{public}d.", ret);
@@ -97,7 +97,7 @@ int WrapRmDir(const char *path)
     bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
     if (readOnly) {
         LOGI("WrapRmDir fail");
-        return -1;
+        return E_CURRENT_USER_READONLY;
     }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->RmDir(path);
     LOGI("RmDir ret = %{public}d.", ret);
@@ -110,7 +110,7 @@ int WrapReName(const char *path, const char *newpath, unsigned int flags)
     bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
     if (readOnly) {
         LOGI("WrapReName fail");
-        return -1;
+        return E_CURRENT_USER_READONLY;
     }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->ReName(path, newpath, flags);
     LOGI("ReName ret = %{public}d.", ret);
@@ -123,7 +123,7 @@ int WrapChMod(const char *path, mode_t mode, struct fuse_file_info *fi)
     bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
     if (readOnly) {
         LOGI("WrapChMod fail");
-        return -1;
+        return E_CURRENT_USER_READONLY;
     }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->ChMods(path, mode, fi);
     LOGI("ChMods ret = %{public}d.", ret);
@@ -136,7 +136,7 @@ int WrapChown(const char *path, uid_t uid, gid_t gid, struct fuse_file_info *fi)
     bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
     if (readOnly) {
         LOGI("WrapChown fail");
-        return -1;
+        return E_CURRENT_USER_READONLY;
     }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Chown(path, uid, gid, fi);
     LOGI("Chown ret = %{public}d.", ret);
@@ -149,7 +149,7 @@ int WrapUTimens(const char *path, const struct timespec tv[2], struct fuse_file_
     bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
     if (readOnly) {
         LOGI("WrapUTimens fail");
-        return -1;
+        return E_CURRENT_USER_READONLY;
     }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->UTimens(path, tv, fi);
     LOGI("UTimens ret = %{public}d.", ret);
@@ -188,7 +188,7 @@ int WrapWrite(const char *path, const char *buf, size_t size, off_t offset, stru
     bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
     if (readOnly) {
         LOGI("WrapWrite fail");
-        return -1;
+        return E_CURRENT_USER_READONLY;
     }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Write(path, buf, size, offset, fileInfo);
     LOGI("Write ret = %{public}d.", ret);
@@ -217,7 +217,7 @@ int WrapRelease(const char *path, struct fuse_file_info *fileInfo)
     bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
     if (readOnly) {
         LOGI("WrapRelease fail");
-        return -1;
+        return E_CURRENT_USER_READONLY;
     }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Release(path, fileInfo);
     LOGI("Release ret = %{public}d.", ret);
@@ -230,7 +230,7 @@ int WrapFSync(const char *path, int datasync, struct fuse_file_info *fileInfo)
     bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
     if (readOnly) {
         LOGI("WrapFSync fail");
-        return -1;
+        return E_CURRENT_USER_READONLY;
     }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->FSync(path, datasync, fileInfo);
     LOGI("FSync ret = %{public}d.", ret);
@@ -289,7 +289,7 @@ int WrapCreate(const char *path, mode_t mode, fuse_file_info *fileInfo)
     bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
     if (readOnly) {
         LOGI("WrapCreate fail");
-        return -1;
+        return E_CURRENT_USER_READONLY;
     }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Create(path, mode, fileInfo);
     LOGI("Create ret = %{public}d.", ret);
@@ -326,7 +326,7 @@ int WrapSetXAttr(const char *path, const char *in, const char *out, size_t size,
     bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
     if (readOnly) {
         LOGI("WrapSetXAttr fail");
-        return -1;
+        return E_CURRENT_USER_READONLY;
     }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->SetXAttr(path, in);
     LOGI("WrapSetXAttr ret = %{public}d.", ret);
