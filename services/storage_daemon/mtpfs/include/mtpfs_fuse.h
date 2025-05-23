@@ -30,7 +30,7 @@ using namespace OHOS;
 
 class AccountSubscriber final : public OHOS::AccountSA::OsAccountSubscriber {
 public:
-    AccountSubscriber(const OHOS::AccountSA::OsAccountSubscirbeInfo &info)
+    AccountSubscriber(const OHOS::AccountSA::OsAccountSubscribeInfo &info)
         : OHOS::AccountSA::OsAccountSubscriber(info){};
     void OnStateChanged(const OHOS::AccountSA::OsAccountStateData &data) override;
 }
@@ -104,6 +104,8 @@ public:
     void HandleRemove(uint32_t handleId);
     void InitCurrentUidAndCacheMap();
     bool IsCurrentUserReadOnly();
+    void SetCurrentUid(int32_t uid);
+    void SetMtpClientWriteMap(uid_t first, bool second);
 
 private:
     bool HasPartialObjectSupport();
@@ -118,6 +120,9 @@ private:
     std::map<std::string, const MtpFsTypeDir *> dirMap_ {};
     std::mutex listMutex_;
     std::set<std::string> pullingFileList_;
+    std::mutex mtpClientMutex_;
+    int32_t currentUid = 0;
+    std::map<uid_t, bool> mtpClientWriteMap_ {};
 };
 
 #endif // MTPFS_FUSE_H

@@ -36,8 +36,6 @@ constexpr int32_t BS_SIZE = 1024;
 constexpr int32_t ARG_SIZE = 2;
 constexpr const char *MTP_FILE_FLAG = "?MTP_THM";
 constexpr const char *MTP_CLIENT_WRITE = "constraint.mtp.client.write";
-int32_t currentUid = 0;
-std::map<uid_t, bool> mtpMAP_;
 std::shared_ptr<AccountSubscriber> osAccountSubscriber_ = nullptr;
 
 int WrapGetattr(const char *path, struct stat *buf, struct fuse_file_info *fi)
@@ -266,8 +264,8 @@ void *WrapInit(struct fuse_conn_info *conn, struct fuse_config *cfg)
 {
     LOGI("mtp WrapInit");
     std::set<OHOS::AccountSA::OsAccountState> states = { OHOS::AccountSA::OsAccountState::SWITCHED };
-    bool withHandShake = false;
-    OHOS::AccountSA::OsAccountSubscribeInfo subscribeInfo(state, withHandShake);
+    bool withHandShake = true;
+    OHOS::AccountSA::OsAccountSubscribeInfo subscribeInfo(states, withHandShake);
     osAccountSubscriber_ = std::make_shared<AccountSubscriber>(subscribeInfo);
     // 注册账号子系统uid改变订阅函数
     ErrCode errCode = OHOS::AccountSA::OsAccountManager::SubscribeOsAccount(osAccountSubscriber_);
@@ -1255,6 +1253,7 @@ void MtpFileSystem::InitCurrentUidAndCacheMap()
 {
     LOGI("InitCurrentUidAndCacheMap start");
     // 通过账号子系统查询当前用户uid
+    std::lock_guard<std::mutex>lock(mtpClientMutex_);
     std::vector<int> activedOsAccountIds;
     ErrCode errCode = OHOS::AccountSA::OsAccountManager::QueryActiveOsAccountIds(activedOsAccountIds);
     LOGI("InitCurrentUidAndCacheMap QueryActiveOsAccountIds errCode is: %{public}d", errCode);
@@ -1282,9 +1281,26 @@ bool MtpFileSystem::IsCurrentUserReadOnly()
     return false;
 }
 
+bool MtpFileSystem::SetCurrentUid(int32_t uid)
+{
+    LOGI("AccountSubscriber::SetCurrentUid start");
+    std::lock_guard<std::mutex>lock(mtpClientMutex_);
+    currentUid = uid;
+    LOGI("AccountSubscriber::SetCurrentUid end");
+}
+
+bool MtpFileSystem::SetMtpClientWriteMap(uid_t first, bool second)
+{
+    LOGI("AccountSubscriber::SetMtpClientWriteMap start");
+    std::lock_guard<std::mutex>lock(mtpClientMutex_);
+    mtpClientWriteMap_[first] = second;
+    LOGI("AccountSubscriber::SetMtpClientWriteMap end");
+}
+
 void AccountSubscriber::OnStateChanged(const OHOS::AccountSA::OsAccountStateData &data)
 {
-    LOGI("OnStateChanged start");
-    currentUid = data.toId;
-    LOGI("OnStateChanged end");
+    LOGI("AccountSubscriber::OnStateChanged start");
+    std::lock_guard<std::mutex>lock(mtpClientMutex_);
+    DelayedSingleton<MtpFileSystem>::GetInstance()->SetCurrentUid(data.toId);
+    LOGI("AccountSubscriber::OnStateChanged end");
 }

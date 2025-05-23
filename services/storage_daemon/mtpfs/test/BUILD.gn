@@ -71,6 +71,7 @@ ohos_unittest("mtpfs_fuse_test") {
       "libmtp:libmtp",
       "libusb:libusb",
       "openssl:libcrypto_shared",
+      "os_account:os_account_innerkits",
     ]
   } else {
     sources = [ "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_main_virtual.cpp" ]
