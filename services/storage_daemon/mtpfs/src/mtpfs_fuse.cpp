@@ -1263,7 +1263,7 @@ void MtpFileSystem::InitCurrentUidAndCacheMap()
         bool readOnly = false;
         ErrCode errCode = OHOS::AccountSA::OsAccountManager
             ::IsOsAccountConstraintEnable(activedOsAccountIds[i], MTP_CLIENT_WRITE, readOnly);
-        mtpMap_[activedOsAccountIds[i]] = readOnly;
+        mtpClientWriteMap_[activedOsAccountIds[i]] = readOnly;
     }
     LOGI("InitCurrentUidAndCacheMap end");
 }
@@ -1271,8 +1271,8 @@ void MtpFileSystem::InitCurrentUidAndCacheMap()
 bool MtpFileSystem::IsCurrentUserReadOnly()
 {
     LOGI("IsCurrentUserReadOnly start");
-    auto item = mtpMap_.find(currentUid);
-    if (item != mtpMap_.end()) {
+    auto item = mtpClientWriteMap_.find(currentUid);
+    if (item != mtpClientWriteMap_.end()) {
         if (item->second) {
             return true;
         }
