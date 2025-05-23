@@ -303,7 +303,7 @@ int32_t FscryptKeyV1Ext::LockUeceExt(bool &isFbeSupport)
     if (!FBEX::IsFBEXSupported()) {
         return E_OK;
     }
-    LOGI("enter");
+    LOGD("enter");
     uint32_t userIdDouble = GetMappedUserId(userId_, type_);
     LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, userIdDouble);
     int32_t ret = FBEX::LockUece(userId_, userIdDouble, isFbeSupport);

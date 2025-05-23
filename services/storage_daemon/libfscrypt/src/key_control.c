@@ -201,6 +201,6 @@ bool KeyCtrlHasFscryptSyspara(void)
 uint8_t KeyCtrlLoadVersion(const char *keyPath)
 {
     (void)keyPath;
-    LOGI("load key control version enter.");
+    LOGD("load key control version enter.");
     return FSCRYPT_V2;
 }

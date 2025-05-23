@@ -542,7 +542,7 @@ int32_t FscryptKeyV1::LockUserScreen(uint32_t flag, uint32_t sdpClass, const std
 
 int32_t FscryptKeyV1::LockUece(bool &isFbeSupport)
 {
-    LOGI("enter");
+    LOGD("enter");
     int32_t ret = fscryptV1Ext.LockUeceExt(isFbeSupport);
     if (ret != E_OK) {
         LOGE("fscryptV1Ext InactiveKeyExt failed");

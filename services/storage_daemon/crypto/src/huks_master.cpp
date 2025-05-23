@@ -209,7 +209,7 @@ int HuksMaster::HdiGenerateKey(const HuksBlob &keyAlias, const HksParamSet *para
 
 int HuksMaster::HdiAccessInit(const HuksBlob &key, const HksParamSet *paramSet, HuksBlob &handle, HuksBlob &token)
 {
-    LOGI("enter");
+    LOGD("enter");
     if (hksHdiProxyInstance_ == nullptr) {
         LOGE("hksHdiProxyInstance_ is nullptr");
         return HKS_ERROR_NULL_POINTER;
@@ -223,7 +223,7 @@ int HuksMaster::HdiAccessInit(const HuksBlob &key, const HksParamSet *paramSet, 
     HDI_CONVERTER_PARAM_IN_PARAMSET(paramSet, huksParamSet);
     auto ret = hksHdiProxyInstance_->Init(hksHdiProxyInstance_, &key, &huksParamSet, &handle, &token);
     if (ret == HKS_SUCCESS) {
-        LOGI("HuksHdiInit success, ret %{public}d", ret);
+        LOGD("HuksHdiInit success, ret %{public}d", ret);
         return ret;
     }
 
@@ -250,7 +250,7 @@ int HuksMaster::HdiAccessInit(const HuksBlob &key, const HksParamSet *paramSet, 
 int HuksMaster::HdiAccessFinish(const HuksBlob &handle, const HksParamSet *paramSet,
                                 const HuksBlob &inData, HuksBlob &outData)
 {
-    LOGI("enter");
+    LOGD("enter");
     if (hksHdiProxyInstance_ == nullptr) {
         LOGE("hksHdiProxyInstance_ is nullptr");
         return HKS_ERROR_NULL_POINTER;
@@ -264,7 +264,7 @@ int HuksMaster::HdiAccessFinish(const HuksBlob &handle, const HksParamSet *param
     HDI_CONVERTER_PARAM_IN_PARAMSET(paramSet, huksParamSet);
     auto ret = hksHdiProxyInstance_->Finish(hksHdiProxyInstance_, &handle, &huksParamSet, &inData, &outData);
     if (ret == HKS_SUCCESS) {
-        LOGI("HuksHdiFinish success, ret %{public}d", ret);
+        LOGD("HuksHdiFinish success, ret %{public}d", ret);
         return ret;
     }
 
@@ -625,7 +625,7 @@ static HksParamSet *GenHuksOptionParam(KeyContext &ctx,
 int HuksMaster::HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *paramSet2,
                                    const KeyBlob &keyIn, KeyBlob &keyOut)
 {
-    LOGI("enter");
+    LOGD("enter");
     HuksBlob hksKey = { reinterpret_cast<uint8_t *>(paramSet1), paramSet1->paramSetSize };
     HuksBlob hksIn = keyIn.ToHuksBlob();
     HuksBlob hksOut = keyOut.ToHuksBlob();
@@ -656,7 +656,7 @@ int HuksMaster::HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *pa
         StorageService::StorageRadar::RecordDuration(startTime).c_str());
 
     keyOut.size = hksOut.dataLen;
-    LOGI("finish");
+    LOGD("finish");
     return E_OK;
 }
 #endif
@@ -836,7 +836,7 @@ int32_t HuksMaster::DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &k
 
 int32_t HuksMaster::DecryptKeyEx(KeyContext &ctx, const UserAuth &auth, KeyBlob &rnd)
 {
-    LOGI("enter");
+    LOGD("enter");
 #ifdef HUKS_IDL_ENVIRONMENT
     if (ctx.shield.IsEmpty()) {
         LOGE("bad shield input, size %{public}d", ctx.shield.size);
