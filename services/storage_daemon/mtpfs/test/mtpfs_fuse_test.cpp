@@ -30,8 +30,8 @@ const int32_t ARG_SIZE = 2;
 constexpr int UPLOAD_RECORD_FALSE_LEN = 5;
 constexpr int UPLOAD_RECORD_TRUE_LEN = 4;
 constexpr int UPLOAD_RECORD_SUCCESS_SENDING_LEN = 7;
-const int32_t FROM_ID = 100;
-const int32_t TO_ID = 101;
+constexpr int32_t FROM_ID = 100;
+constexpr int32_t TO_ID = 101;
 
 namespace OHOS {
 namespace StorageDaemon {

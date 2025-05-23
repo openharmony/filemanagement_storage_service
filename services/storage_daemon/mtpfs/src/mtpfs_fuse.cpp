@@ -277,7 +277,6 @@ void *WrapInit(struct fuse_conn_info *conn, struct fuse_config *cfg)
     bool withHandShake = true;
     OHOS::AccountSA::OsAccountSubscribeInfo subscribeInfo(states, withHandShake);
     osAccountSubscriber_ = std::make_shared<AccountSubscriber>(subscribeInfo);
-    // 注册账号子系统uid改变订阅函数
     ErrCode errCode = OHOS::AccountSA::OsAccountManager::SubscribeOsAccount(osAccountSubscriber_);
     LOGI("subscribe os accouunt done errCode = %{public}d", errCode);
     DelayedSingleton<MtpFileSystem>::GetInstance()->InitCurrentUidAndCacheMap();
@@ -1264,7 +1263,6 @@ void MtpFileSystem::HandleRemove(uint32_t handleId)
 void MtpFileSystem::InitCurrentUidAndCacheMap()
 {
     LOGI("InitCurrentUidAndCacheMap start");
-    // 通过账号子系统查询当前用户uid
     std::lock_guard<std::mutex>lock(mtpClientMutex_);
     std::vector<int> activedOsAccountIds;
     ErrCode errCode = OHOS::AccountSA::OsAccountManager::QueryActiveOsAccountIds(activedOsAccountIds);
