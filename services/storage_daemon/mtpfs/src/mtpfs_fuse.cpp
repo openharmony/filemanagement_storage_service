@@ -971,6 +971,7 @@ int MtpFileSystem::Write(const char *path, const char *buf, size_t size, off_t o
 int MtpFileSystem::Release(const char *path, struct fuse_file_info *fileInfo)
 {
     std::lock_guard<std::mutex>lock(fuseMutex_);
+    const std::string stdPath(path);
     LOGI("MtpFileSystem: Release enter, path: %{public}s", path);
     if (fileInfo == nullptr) {
         LOGE("Missing FileInfo");
@@ -983,7 +984,6 @@ int MtpFileSystem::Release(const char *path, struct fuse_file_info *fileInfo)
         device_.SetUploadRecord(stdPath, "fail");
         return -errno;
     }
-    const std::string stdPath(path);
     if (OHOS::StorageDaemon::IsEndWith(path, MTP_FILE_FLAG)) {
         device_.SetUploadRecord(stdPath, "success");
         return 0;
