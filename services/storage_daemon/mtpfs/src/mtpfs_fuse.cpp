@@ -345,6 +345,8 @@ int WrapRemoveXAttr(const char *path, const char *in)
 void WrapDestroy(void *path)
 {
     LOGI("mtp WrapDestroy");
+    ErrCode errCode = OHOS::AccountSA::OsAccountManager::UnsubscribeOsAccount(osAccountSubscriber_);
+    LOGI("UnsubscribeOsAccount errCode is: %{public}d", errCode);
     return;
 }
 
@@ -438,8 +440,6 @@ MtpFileSystem::MtpFileSystem() : args_(), tmpFilesPool_(), options_(), device_()
 
 MtpFileSystem::~MtpFileSystem()
 {
-    ErrCode errCode = OHOS::AccountSA::OsAccountManager::UnsubscribeOsAccount(osAccountSubscriber_);
-    LOGI("UnsubscribeOsAccount errCode is: %{public}d", errCode);
     for (auto iter : dirMap_) {
         MtpFsTypeDir *dir = const_cast<MtpFsTypeDir *>(iter.second);
         if (dir != nullptr) {
