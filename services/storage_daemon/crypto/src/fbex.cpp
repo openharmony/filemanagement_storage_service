@@ -37,6 +37,7 @@ constexpr const char *FBEX_CMD_PATH = "/dev/fbex_cmd";
 constexpr const char *FBEX_UECE_PATH = "/dev/fbex_uece";
 
 constexpr uint32_t FBEX_E_BUFFER_SIZE = 64;
+constexpr uint32_t AUTH_TOKEN_MAX_SIZE = 1024;
 constexpr uint32_t UNLOCK_STATUS = 0x2;
 
 constexpr uint8_t FBEX_IOC_MAGIC = 'f';
@@ -66,6 +67,17 @@ struct FbeOptStr {
 };
 using FbeOpts = FbeOptStr;
 
+struct FbeOptStrV1 {
+    uint32_t user = 0;
+    uint32_t type = 0;
+    uint32_t len = 0;
+    uint8_t iv[OHOS::StorageDaemon::FBEX_IV_SIZE] = {0};
+    uint8_t flag = 0;
+    uint32_t authTokenSize = 0;
+    uint8_t authToken[AUTH_TOKEN_MAX_SIZE] = {0};
+};
+using FbeOptsV1 = FbeOptStrV1;
+
 struct FbeOptStrE {
     uint32_t userIdDouble = 0;
     uint32_t userIdSingle = 0;
@@ -74,6 +86,17 @@ struct FbeOptStrE {
     uint8_t eBuffer[FBEX_E_BUFFER_SIZE] = {0};
 };
 using FbeOptsE = FbeOptStrE;
+
+struct FbeOptStrEV1 {
+    uint32_t userIdDouble = 0;
+    uint32_t userIdSingle = 0;
+    uint32_t status = 0;
+    uint32_t length = 0;
+    uint8_t eBuffer[FBEX_E_BUFFER_SIZE] = {0};
+    uint32_t authTokenSize = 0;
+    uint8_t authToken[AUTH_TOKEN_MAX_SIZE] = {0};
+};
+using FbeOptsEV1 = FbeOptStrEV1;
 
 #define FBEX_IOC_ADD_IV _IOWR(FBEX_IOC_MAGIC, FBEX_ADD_IV, FbeOpts)
 #define FBEX_IOC_ADD_DOUBLE_DE_IV _IOWR(FBEX_IOC_MAGIC, FBEX_ADD_DOUBLE_DE_IV, FbeOpts)
@@ -145,6 +168,34 @@ static inline bool CheckWriteBuffValid(const uint8_t *eBuffer, uint32_t size, ui
     return (eBuffer != nullptr) && (size == (GCM_NONCE_BYTES + AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES));
 }
 
+static inline int MemcpyFbeOptsV1(FbeOptsV1 &ops, const KeyBlob &authToken, uint8_t *iv, uint32_t size)
+{
+    int err;
+    if (!authToken.IsEmpty()) {
+        err = memcpy_s(ops.authToken, AUTH_TOKEN_MAX_SIZE, authToken.data.get(), authToken.size);
+        LOGI("memcpy authToken, res=%{public}d, authToken.size=%{public}d", err, authToken.size);
+    }
+    err = memcpy_s(ops.iv, sizeof(ops.iv), iv, size);
+    if (err != EOK) {
+        LOGE("memcpy failed %{public}d", err);
+    }
+    return err;
+}
+
+static inline int MemcpyFbeOptsEV1(FbeOptsEV1 &ops, const KeyBlob &authToken, uint8_t *eBuffer, uint32_t size)
+{
+    int err;
+    if (!authToken.IsEmpty()) {
+        err = memcpy_s(ops.authToken, AUTH_TOKEN_MAX_SIZE, authToken.data.get(), authToken.size);
+        LOGI("memcpy authToken, res=%{public}d, authToken.size=%{public}d", err, authToken.size);
+    }
+    err = memcpy_s(ops.eBuffer, sizeof(ops.eBuffer), eBuffer, size);
+    if (err != EOK) {
+        LOGE("memcpy failed %{public}d", err);
+    }
+    return err;
+}
+
 int FBEX::InstallEL5KeyToKernel(uint32_t userIdSingle, uint32_t userIdDouble, uint8_t flag,
                                 bool &isSupport, bool &isNeedEncryptClassE)
 {
@@ -195,11 +246,11 @@ int FBEX::InstallEL5KeyToKernel(uint32_t userIdSingle, uint32_t userIdDouble, ui
     return ret;
 }
 
-int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size, uint8_t flag)
+int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, KeyBlob &iv, uint8_t flag, const KeyBlob &authToken)
 {
     LOGI("enter, userId: %{public}d, type: %{public}u, flag: %{public}u", userId, type, flag);
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
-    if (!CheckIvValid(iv, size)) {
+    if (iv.IsEmpty() || !CheckIvValid(iv.data.get(), iv.size)) {
         LOGE("install key param invalid");
         return -EINVAL;
     }
@@ -212,15 +263,12 @@ int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32
     }
     int fd = fileno(f);
     if (fd < 0) {
-        LOGE("open fbex_cmd failed, errno: %{public}d", errno);
         (void)fclose(f);
         return -errno;
     }
 
-    FbeOpts ops{.user = userId, .type = type, .len = size, .flag = flag};
-    auto err = memcpy_s(ops.iv, sizeof(ops.iv), iv, size);
-    if (err != EOK) {
-        LOGE("memcpy failed %{public}d", err);
+    FbeOptsV1 ops{.user = userId, .type = type, .len = iv.size, .flag = flag, .authTokenSize = authToken.size};
+    if (MemcpyFbeOptsV1(ops, authToken, iv.data.get(), iv.size) != EOK) {
         (void)fclose(f);
         return 0;
     }
@@ -237,10 +285,9 @@ int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32
     }
     (void)fclose(f);
 
-    auto errops = memcpy_s(iv, size, ops.iv, sizeof(ops.iv));
+    auto errops = memcpy_s(iv.data.get(), iv.size, ops.iv, sizeof(ops.iv));
     if (errops != EOK) {
         LOGE("memcpy failed %{public}d", errops);
-        return 0;
     }
     (void)memset_s(&ops.iv, sizeof(ops.iv), 0, sizeof(ops.iv));
     LOGI("SD_DURATION: FBEX: INSTALL KEY TO KERNEL: success, keyType=%{public}d, delay time = %{public}s",
@@ -248,11 +295,11 @@ int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32
     return ret;
 }
 
-int FBEX::InstallDoubleDeKeyToKernel(UserIdToFbeStr &userIdToFbe, uint8_t *iv, uint32_t size, uint8_t flag)
+int FBEX::InstallDoubleDeKeyToKernel(UserIdToFbeStr &userIdToFbe, KeyBlob &iv, uint8_t flag, const KeyBlob &authToken)
 {
     LOGI("id-single: %{public}d, id-double: %{public}d, flag: %{public}u",
         userIdToFbe.userIds[SINGLE_ID_INDEX], userIdToFbe.userIds[DOUBLE_ID_INDEX], flag);
-    if (!CheckIvValid(iv, size)) {
+    if (iv.IsEmpty() || !CheckIvValid(iv.data.get(), iv.size)) {
         LOGE("install key param invalid");
         return -EINVAL;
     }
@@ -263,14 +310,12 @@ int FBEX::InstallDoubleDeKeyToKernel(UserIdToFbeStr &userIdToFbe, uint8_t *iv, u
         return -errno;
     }
 
-    FbeOptsE ops{ .userIdDouble = userIdToFbe.userIds[DOUBLE_ID_INDEX],
-                  .userIdSingle = userIdToFbe.userIds[SINGLE_ID_INDEX],
-                  .status = flag,
-                  .length = size };
+    FbeOptsEV1 ops{ .userIdDouble = userIdToFbe.userIds[DOUBLE_ID_INDEX],
+                    .userIdSingle = userIdToFbe.userIds[SINGLE_ID_INDEX],
+                    .status = flag,
+                    .length = iv.size };
     // eBuffer -> iv
-    auto err = memcpy_s(ops.eBuffer, sizeof(ops.eBuffer), iv, size);
-    if (err != EOK) {
-        LOGE("memcpy failed %{public}d", err);
+    if (MemcpyFbeOptsEV1(ops, authToken, iv.data.get(), iv.size) != EOK) {
         return 0;
     }
     int ret = ioctl(fd, FBEX_IOC_ADD_DOUBLE_DE_IV, &ops);
@@ -283,7 +328,7 @@ int FBEX::InstallDoubleDeKeyToKernel(UserIdToFbeStr &userIdToFbe, uint8_t *iv, u
         return ret;
     }
     close(fd);
-    auto errops = memcpy_s(iv, size, ops.eBuffer, sizeof(ops.eBuffer));
+    auto errops = memcpy_s(iv.data.get(), iv.size, ops.eBuffer, sizeof(ops.eBuffer));
     if (errops != EOK) {
         LOGE("memcpy failed %{public}d", errops);
         return 0;
@@ -532,7 +577,7 @@ int FBEX::LockUece(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupp
     return ret;
 }
 
-int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size)
+int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size, const KeyBlob &authToken)
 {
     LOGI("enter, userId: %{public}d, type: %{public}u", userId, type);
     if (!CheckIvValid(iv, size)) {
@@ -553,14 +598,12 @@ int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint
         return -errno;
     }
 
-    FbeOpts ops{.user = userId, .type = type, .len = size};
-
-    auto err = memcpy_s(ops.iv, sizeof(ops.iv), iv, size);
-    if (err != EOK) {
-        LOGE("memcpy failed %{public}d", err);
+    FbeOptsV1 ops{.user = userId, .type = type, .len = size, .authTokenSize = authToken.size};
+    if (MemcpyFbeOptsV1(ops, authToken, iv, size) != EOK) {
         (void)fclose(f);
         return 0;
     }
+
     int ret = ioctl(fd, FBEX_IOC_UNLOCK_SCREEN, &ops);
     if (ret != 0) {
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
@@ -574,8 +617,8 @@ int FBEX::UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint
     auto errops = memcpy_s(iv, size, ops.iv, sizeof(ops.iv));
     if (errops != EOK) {
         LOGE("memcpy failed %{public}d", errops);
-        return 0;
     }
+    (void)memset_s(&ops.iv, sizeof(ops.iv), 0, sizeof(ops.iv));
     LOGI("UnlockScreenToKernel success");
     return ret;
 }
@@ -600,10 +643,10 @@ void FBEX::HandleIoctlError(int ret, int errnoVal, const std::string &cmd, uint3
     StorageRadar::ReportFbexResult("InstallDoubleDeKeyToKernel", userIdSingle, ret, "EL5", extraData);
 }
 
-int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, std::unique_ptr<uint8_t[]> &eBuffer,
-                              uint32_t length, bool &isFbeSupport)
+int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, KeyBlob &eBuffer,
+                              const KeyBlob &authToken, bool &isFbeSupport)
 {
-    if (!CheckPreconditions(userIdToFbe, status, eBuffer, length, isFbeSupport)) {
+    if (eBuffer.IsEmpty() || !CheckPreconditions(userIdToFbe, status, eBuffer.data, eBuffer.size, isFbeSupport)) {
         return -EINVAL;
     }
     FILE *f = fopen(FBEX_UECE_PATH, "r+");
@@ -630,11 +673,9 @@ int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, std:
         return -errno;
     }
     uint32_t bufferSize = AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES;
-    FbeOptsE ops{ .userIdDouble = userIdToFbe.userIds[DOUBLE_ID_INDEX],
-                  .userIdSingle = userIdToFbe.userIds[SINGLE_ID_INDEX], .status = status, .length = bufferSize };
-    auto err = memcpy_s(ops.eBuffer, sizeof(ops.eBuffer), eBuffer.get(), length);
-    if (err != EOK) {
-        LOGE("memcpy failed %{public}d", err);
+    FbeOptsEV1 ops{ .userIdDouble = userIdToFbe.userIds[DOUBLE_ID_INDEX], .authTokenSize = authToken.size,
+                   .userIdSingle = userIdToFbe.userIds[SINGLE_ID_INDEX], .status = status, .length = bufferSize };
+    if (MemcpyFbeOptsEV1(ops, authToken, eBuffer.data.get(), eBuffer.size) != EOK) {
         (void)fclose(f);
         return 0;
     }
@@ -646,12 +687,11 @@ int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, std:
     }
     (void)fclose(f);
     if (ops.length == 0) {
-        (void)memset_s(eBuffer.get(), sizeof(eBuffer.get()), 0, sizeof(eBuffer.get()));
-        eBuffer.reset(nullptr);
+        eBuffer.Clear();
         LOGE("ops length is 0, skip");
         return 0;
     }
-    UnlockSendSecret(status, bufferSize, length, eBuffer.get(), ops.eBuffer);
+    UnlockSendSecret(status, bufferSize, eBuffer.size, eBuffer.data.get(), ops.eBuffer);
     LOGI("ReadESecretToKernel success");
     return 0;
 }

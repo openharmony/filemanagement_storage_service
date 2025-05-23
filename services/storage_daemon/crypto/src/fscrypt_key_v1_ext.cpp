@@ -79,7 +79,7 @@ uint32_t FscryptKeyV1Ext::GetMappedDeUserId(uint32_t userId)
     return userId;
 }
 
-int32_t FscryptKeyV1Ext::ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, uint32_t &elType)
+int32_t FscryptKeyV1Ext::ActiveKeyExt(uint32_t flag, KeyBlob &iv, uint32_t &elType, const KeyBlob &authToken)
 {
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     if (!FBEX::IsFBEXSupported()) {
@@ -96,12 +96,12 @@ int32_t FscryptKeyV1Ext::ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size,
     if (type_ == TYPE_EL1 && std::filesystem::exists(NEED_RESTORE_PATH, errCode) &&
         std::atoi(updateVersion.c_str()) >= NEW_DOUBLE_2_SINGLE_BASE_VERSION) {
         LOGI("restore path exists, deal double DE, errCode = %{public}d", errCode.value());
-        return ActiveDoubleKeyExt(flag, iv, size, elType);
+        return ActiveDoubleKeyExt(flag, iv, elType, authToken);
     }
     uint32_t user = GetMappedUserId(userId_, type_);
     LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, user);
     // iv buffer returns derived keys
-    int errNo = FBEX::InstallKeyToKernel(user, type_, iv, size, static_cast<uint8_t>(flag));
+    int errNo = FBEX::InstallKeyToKernel(user, type_, iv, static_cast<uint8_t>(flag), authToken);
     if (errNo != 0) {
         if (flag != 0) {
             LOGE("New User InstallKeyToKernel failed, user %{public}d, type %{public}d, flag %{public}u", user, type_,
@@ -109,7 +109,7 @@ int32_t FscryptKeyV1Ext::ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size,
             return errNo;
         }
         LOGE("InstallKeyToKernel first failed, user %{public}d, type %{public}d, flag %{public}u", user, type_, flag);
-        errNo = FBEX::InstallKeyToKernel(user, type_, iv, size, static_cast<uint8_t>(flag));
+        errNo = FBEX::InstallKeyToKernel(user, type_, iv, static_cast<uint8_t>(flag), authToken);
         if (errNo != 0) {
             LOGE("InstallKeyToKernel failed, user %{public}d, type %{public}d, flag %{public}u", user, type_, flag);
             return errNo;
@@ -121,11 +121,11 @@ int32_t FscryptKeyV1Ext::ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size,
     return E_OK;
 }
 
-int32_t FscryptKeyV1Ext::ActiveDoubleKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, uint32_t &elType)
+int32_t FscryptKeyV1Ext::ActiveDoubleKeyExt(uint32_t flag, KeyBlob &iv, uint32_t &elType, const KeyBlob &authToken)
 {
     LOGI("enter");
     UserIdToFbeStr userIdToFbe = { .userIds = { userId_, GetMappedDeUserId(userId_) }, .size = USER_ID_SIZE };
-    int32_t errNo = FBEX::InstallDoubleDeKeyToKernel(userIdToFbe, iv, size, flag);
+    int32_t errNo = FBEX::InstallDoubleDeKeyToKernel(userIdToFbe, iv, flag, authToken);
     if (errNo != 0) {
         LOGE("DoubleDeKeyToKernel failed, user %{public}d, type %{public}d, flag %{public}u", userId_, type_, flag);
         return errNo;
@@ -134,7 +134,7 @@ int32_t FscryptKeyV1Ext::ActiveDoubleKeyExt(uint32_t flag, uint8_t *iv, uint32_t
     return E_OK;
 }
 
-int32_t FscryptKeyV1Ext::UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_t size)
+int32_t FscryptKeyV1Ext::UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_t size, const KeyBlob &authToken)
 {
     if (!FBEX::IsFBEXSupported()) {
         return E_OK;
@@ -142,7 +142,7 @@ int32_t FscryptKeyV1Ext::UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_
     LOGI("enter");
     uint32_t user = GetMappedUserId(userId_, type_);
     LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, user);
-    int32_t ret = FBEX::UnlockScreenToKernel(user, type_, iv, size);
+    int32_t ret = FBEX::UnlockScreenToKernel(user, type_, iv, size, authToken);
     if (ret != E_OK) {
         LOGE("UnlockScreenToKernel failed, userId %{public}d, %{public}d", userId_, flag);
         return ret;
@@ -215,7 +215,7 @@ int32_t FscryptKeyV1Ext::ChangePinCodeClassE(uint32_t userId, bool &isFbeSupport
     return E_OK;
 }
 
-int32_t FscryptKeyV1Ext::ReadClassE(uint32_t status, std::unique_ptr<uint8_t[]> &classEBuffer, uint32_t length,
+int32_t FscryptKeyV1Ext::ReadClassE(uint32_t status, KeyBlob &classEBuffer, const KeyBlob &authToken,
                                     bool &isFbeSupport)
 {
     if (!FBEX::IsFBEXSupported()) {
@@ -225,7 +225,7 @@ int32_t FscryptKeyV1Ext::ReadClassE(uint32_t status, std::unique_ptr<uint8_t[]> 
     // 0--single id, 1--double id
     UserIdToFbeStr userIdToFbe = { .userIds = { userId_, GetMappedUserId(userId_, type_) }, .size = USER_ID_SIZE };
     LOGI("type_: %{public}u, userId %{public}u to %{public}u", type_, userId_, userIdToFbe.userIds[DOUBLE_ID_INDEX]);
-    auto ret = FBEX::ReadESecretToKernel(userIdToFbe, status, classEBuffer, length, isFbeSupport);
+    auto ret = FBEX::ReadESecretToKernel(userIdToFbe, status, classEBuffer, authToken, isFbeSupport);
     if (ret != E_OK) {
         LOGE("ReadESecret failed, user %{public}d, status: %{public}d", userIdToFbe.userIds[DOUBLE_ID_INDEX], status);
         return ret;

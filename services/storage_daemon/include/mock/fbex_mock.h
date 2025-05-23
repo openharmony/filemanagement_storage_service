@@ -27,12 +27,15 @@ public:
     virtual ~IFbexMoc() = default;
 public:
     virtual bool IsFBEXSupported() = 0;
-    virtual int InstallKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size, uint8_t flag) = 0;
+    virtual int InstallKeyToKernel(uint32_t userId, uint32_t type, KeyBlob &iv,
+        uint8_t flag, const KeyBlob &authToken) = 0;
     virtual int UninstallOrLockUserKeyToKernel(uint32_t, uint32_t, uint8_t *, uint32_t, bool) = 0;
-    virtual int InstallDoubleDeKeyToKernel(UserIdToFbeStr &userIdToFbe, uint8_t *iv, uint32_t size, uint8_t flag) = 0;
+    virtual int InstallDoubleDeKeyToKernel(UserIdToFbeStr &userIdToFbe, KeyBlob &iv,
+        uint8_t flag, const KeyBlob &authToken) = 0;
     virtual int LockScreenToKernel(uint32_t userId) = 0;
-    virtual int UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size) = 0;
-    virtual int ReadESecretToKernel(UserIdToFbeStr &, uint32_t,  std::unique_ptr<uint8_t[]> &, uint32_t, bool &) = 0;
+    virtual int UnlockScreenToKernel(uint32_t userId, uint32_t type,
+        uint8_t *iv, uint32_t size, const KeyBlob &authToken) = 0;
+    virtual int ReadESecretToKernel(UserIdToFbeStr &, uint32_t, KeyBlob &, const KeyBlob &, bool &) = 0;
     virtual int WriteESecretToKernel(UserIdToFbeStr &, uint32_t, uint8_t *, uint32_t length) = 0;
     virtual bool IsMspReady() = 0;
     virtual int GetStatus() = 0;
@@ -48,12 +51,15 @@ public:
 class FbexMoc : public IFbexMoc {
 public:
     MOCK_METHOD0(IsFBEXSupported, bool());
-    MOCK_METHOD5(InstallKeyToKernel, int(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size, uint8_t flag));
+    MOCK_METHOD5(InstallKeyToKernel, int(uint32_t userId, uint32_t type, KeyBlob &iv,
+        uint8_t flag, const KeyBlob &authToken));
     MOCK_METHOD5(UninstallOrLockUserKeyToKernel, int(uint32_t, uint32_t, uint8_t *, uint32_t, bool));
-    MOCK_METHOD4(InstallDoubleDeKeyToKernel, int(UserIdToFbeStr &, uint8_t *iv, uint32_t size, uint8_t flag));
+    MOCK_METHOD4(InstallDoubleDeKeyToKernel, int(UserIdToFbeStr &, KeyBlob &iv,
+        uint8_t flag, const KeyBlob &authToken));
     MOCK_METHOD1(LockScreenToKernel, int(uint32_t userId));
-    MOCK_METHOD4(UnlockScreenToKernel, int(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size));
-    MOCK_METHOD5(ReadESecretToKernel, int(UserIdToFbeStr &, uint32_t, std::unique_ptr<uint8_t[]> &, uint32_t, bool &));
+    MOCK_METHOD5(UnlockScreenToKernel, int(uint32_t userId, uint32_t type,
+        uint8_t *iv, uint32_t size, const KeyBlob &authToken));
+    MOCK_METHOD5(ReadESecretToKernel, int(UserIdToFbeStr &, uint32_t, KeyBlob &, const KeyBlob &, bool &));
     MOCK_METHOD4(WriteESecretToKernel, int(UserIdToFbeStr &, uint32_t, uint8_t *, uint32_t length));
     MOCK_METHOD0(IsMspReady, bool());
     MOCK_METHOD0(GetStatus, int());

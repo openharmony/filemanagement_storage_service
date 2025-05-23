@@ -21,7 +21,7 @@
 namespace OHOS {
 namespace StorageDaemon {
 #ifdef SUPPORT_FSCRYPT_V2
-int32_t FscryptKeyV2::ActiveKey(uint32_t flag, const std::string &mnt)
+int32_t FscryptKeyV2::ActiveKey(const KeyBlob &authToken, uint32_t flag, const std::string &mnt)
 {
     LOGI("enter");
     if (keyInfo_.key.IsEmpty()) {
@@ -134,7 +134,8 @@ int32_t FscryptKeyV2::LockUece(bool &isFbeSupport)
     return E_OK;
 }
 
-int32_t FscryptKeyV2::UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt)
+int32_t FscryptKeyV2::UnlockUserScreen(const KeyBlob &authToken, uint32_t flag,
+    uint32_t sdpClass, const std::string &mnt)
 {
     (void)mnt;
     (void)flag;

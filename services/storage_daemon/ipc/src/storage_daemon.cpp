@@ -590,7 +590,8 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthVx(uint32_t userId, KeyTy
     return E_OK;
 }
 
-int32_t StorageDaemon::PrepareUserDirsAndUpdateAuth4Nato(uint32_t userId, KeyType type)
+int32_t StorageDaemon::PrepareUserDirsAndUpdateAuth4Nato(uint32_t userId,
+    KeyType type, const std::vector<uint8_t> &token)
 {
     LOGW("Prepare dirs and update auth for nato secen for userId=%{public}d, keyType=%{public}u", userId, type);
     std::error_code errCode;
@@ -600,7 +601,7 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateAuth4Nato(uint32_t userId, KeyTyp
         return E_KEY_TYPE_INVALID;
     }
 
-    int32_t ret = KeyManager::GetInstance()->ActiveElxUserKey4Nato(userId, type);
+    int32_t ret = KeyManager::GetInstance()->ActiveElxUserKey4Nato(userId, type, token);
     if (ret != E_OK) {
         LOGE("Active user=%{public}d el=%{public}u key fot nato secen failed, ret=%{public}d.", userId, type, ret);
         return ret;
@@ -864,7 +865,7 @@ int32_t StorageDaemon::ActiveUserKey4Nato(uint32_t userId, const std::vector<uin
         ClearAllNatoRestoreKey(userId, true);
         return E_ACTIVE_EL2_FAILED;
     }
-    int32_t ret = PrepareUserDirsAndUpdateAuth4Nato(userId, EL2_KEY);
+    int32_t ret = PrepareUserDirsAndUpdateAuth4Nato(userId, EL2_KEY, token);
     if (ret != E_OK) {
         LOGE("ActiveUserKey4Nato el2 failed, userId=%{public}u, keyType=%{public}u", userId, EL2_KEY);
         StorageRadar::ReportActiveUserKey("ActiveUserKey4Nato::PrepareUserDirsAndUpdateAuth4Nato", userId, ret, "EL2");
@@ -873,7 +874,7 @@ int32_t StorageDaemon::ActiveUserKey4Nato(uint32_t userId, const std::vector<uin
     }
     LOGI("Prepare dirs and update auth for nato secen for userId=%{public}d el2 success.", userId);
 
-    ret = PrepareUserDirsAndUpdateAuth4Nato(userId, EL3_KEY);
+    ret = PrepareUserDirsAndUpdateAuth4Nato(userId, EL3_KEY, token);
     if (ret != E_OK) {
         LOGE("ActiveUserKey4Nato el3 failed, userId %{public}u, type %{public}u", userId, EL3_KEY);
         StorageRadar::ReportActiveUserKey("ActiveUserKey4Nato::PrepareUserDirsAndUpdateAuth4Nato", userId, ret, "EL3");
@@ -882,7 +883,7 @@ int32_t StorageDaemon::ActiveUserKey4Nato(uint32_t userId, const std::vector<uin
     }
     LOGI("Prepare dirs and update auth for nato secen for userId=%{public}d el3 success.", userId);
 
-    ret = PrepareUserDirsAndUpdateAuth4Nato(userId, EL4_KEY);
+    ret = PrepareUserDirsAndUpdateAuth4Nato(userId, EL4_KEY, token);
     if (ret != E_OK) {
         LOGE("ActiveUserKey4Nato el4 failed, userId %{public}u, type %{public}u", userId, EL4_KEY);
         StorageRadar::ReportActiveUserKey("ActiveUserKey4Nato::PrepareUserDirsAndUpdateAuth4Nato", userId, ret, "EL4");

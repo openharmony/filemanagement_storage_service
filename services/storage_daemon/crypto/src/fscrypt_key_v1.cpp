@@ -32,7 +32,7 @@ namespace StorageDaemon {
 static const std::string CRYPTO_NAME_PREFIXES[] = {"ext4", "f2fs", "fscrypt"};
 constexpr uint32_t USER_UNLOCK = 0x2;
 
-int32_t FscryptKeyV1::ActiveKey(uint32_t flag, const std::string &mnt)
+int32_t FscryptKeyV1::ActiveKey(const KeyBlob &authToken, uint32_t flag, const std::string &mnt)
 {
     uint32_t elType;
     (void)mnt;
@@ -45,7 +45,7 @@ int32_t FscryptKeyV1::ActiveKey(uint32_t flag, const std::string &mnt)
     }
     LOGE("ActiveKey key is empty: %{public}u", keyInfo_.key.IsEmpty());
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
-    int errNo = fscryptV1Ext.ActiveKeyExt(flag, keyInfo_.key.data.get(), keyInfo_.key.size, elType);
+    int errNo = fscryptV1Ext.ActiveKeyExt(flag, keyInfo_.key, elType, authToken);
     if (errNo != E_OK) {
         keyInfo_.key.Clear();
         LOGE("fscryptV1Ext ActiveKeyExtfailed");
@@ -185,7 +185,8 @@ int32_t FscryptKeyV1::UninstallKeyForAppKeyToKeyring(const std::string keyId)
     return E_OK;
 }
 
-int32_t FscryptKeyV1::UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt)
+int32_t FscryptKeyV1::UnlockUserScreen(const KeyBlob &authToken, uint32_t flag,
+    uint32_t sdpClass, const std::string &mnt)
 {
     (void)mnt;
     LOGI("enter");
@@ -196,7 +197,7 @@ int32_t FscryptKeyV1::UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const s
         return ret;
     }
     LOGI("keyInfo empty: %{public}u:", keyInfo_.key.IsEmpty());
-    ret = fscryptV1Ext.UnlockUserScreenExt(flag, keyInfo_.key.data.get(), keyInfo_.key.size);
+    ret = fscryptV1Ext.UnlockUserScreenExt(flag, keyInfo_.key.data.get(), keyInfo_.key.size, authToken);
     if (ret != E_OK) {
         keyInfo_.key.Clear();
         LOGE("fscryptV1Ext UnlockUserScreenExtfailed");
@@ -300,7 +301,8 @@ int32_t FscryptKeyV1::DecryptClassE(const UserAuth &auth, bool &isSupport, bool 
     LOGI("enter");
     KeyBlob eSecretFBE(AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES);
     bool isFbeSupport = true;
-    auto ret = fscryptV1Ext.ReadClassE(USER_UNLOCK, eSecretFBE.data, eSecretFBE.size, isFbeSupport);
+    auto authToken = auth.token;
+    auto ret = fscryptV1Ext.ReadClassE(USER_UNLOCK, eSecretFBE, authToken, isFbeSupport);
     if (ret != E_OK) {
         LOGE("fscryptV1Ext ReadClassE failed");
         return ret;
@@ -348,7 +350,8 @@ int32_t FscryptKeyV1::EncryptClassE(const UserAuth &auth, bool &isSupport, uint3
     LOGI("enter");
     KeyBlob eSecretFBE(AES_256_HASH_RANDOM_SIZE);
     bool isFbeSupport = true;
-    auto ret = fscryptV1Ext.ReadClassE(status, eSecretFBE.data, eSecretFBE.size, isFbeSupport);
+    auto authToken = auth.token;
+    auto ret = fscryptV1Ext.ReadClassE(status, eSecretFBE, authToken, isFbeSupport);
     if (ret != E_OK) {
         LOGE("fscryptV1Ext ReadClassE failed");
         return ret;

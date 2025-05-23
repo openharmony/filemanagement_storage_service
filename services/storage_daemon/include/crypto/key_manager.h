@@ -109,7 +109,7 @@ public:
     int TryToFixUeceKey(unsigned int userId,
                         const std::vector<uint8_t> &token,
                         const std::vector<uint8_t> &secret);
-    int ActiveElxUserKey4Nato(unsigned int user, KeyType type);
+    int ActiveElxUserKey4Nato(unsigned int user, KeyType type, const KeyBlob &authToken);
     std::string GetNatoNeedRestorePath(uint32_t userId, KeyType type);
     // userElKeys_ function
     void SaveUserElKey(unsigned int user, KeyType type, std::shared_ptr<BaseKey> elKey);
