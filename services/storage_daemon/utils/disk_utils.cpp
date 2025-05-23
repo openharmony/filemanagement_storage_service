@@ -109,6 +109,8 @@ std::string GetBlkidData(const std::string &devPath, const std::string &type)
     std::vector<std::string> cmd;
     cmd = {
         "blkid",
+        "-n",
+        "mdraid",
         "-s",
         type,
         "-o",
