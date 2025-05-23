@@ -33,7 +33,7 @@ public:
     AccountSubscriber(const OHOS::AccountSA::OsAccountSubscribeInfo &info)
         : OHOS::AccountSA::OsAccountSubscriber(info){};
     void OnStateChanged(const OHOS::AccountSA::OsAccountStateData &data) override;
-}
+};
 
 class MtpFileSystem {
     DECLARE_DELAYED_SINGLETON(MtpFileSystem);
