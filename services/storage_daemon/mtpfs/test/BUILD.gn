@@ -137,6 +137,7 @@ ohos_unittest("mtpfs_libmtp_test") {
       "libmtp:libmtp",
       "libusb:libusb",
       "openssl:libcrypto_shared",
+      "os_account:os_account_innerkits",
     ]
   } else {
     sources = [ "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_main_virtual.cpp" ]
@@ -202,6 +203,7 @@ ohos_unittest("mtpfs_mtp_device_test") {
       "libmtp:libmtp",
       "libusb:libusb",
       "openssl:libcrypto_shared",
+      "os_account:os_account_innerkits",
     ]
   } else {
     sources = [ "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_main_virtual.cpp" ]
@@ -267,6 +269,7 @@ ohos_unittest("mtpfs_tmp_files_pool_test") {
       "libmtp:libmtp",
       "libusb:libusb",
       "openssl:libcrypto_shared",
+      "os_account:os_account_innerkits",
     ]
   } else {
     sources = [ "$ROOT_DIR/storage_daemon/mtpfs/src/mtpfs_main_virtual.cpp" ]
