@@ -80,7 +80,7 @@ static const FscrtpyItem CONTENTS_MODES[] = {
 };
 
 static bool g_fscryptEnabled = false;
-static bool g_fscryptInited = false;
+static bool g_fscryptInited = false; 
 
 static const char *GLOBAL_FSCRYPT_DIR[] = {
     "/data/app/el1/bundle/public",
