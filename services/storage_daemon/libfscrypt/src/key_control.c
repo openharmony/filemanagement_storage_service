@@ -30,6 +30,7 @@
 #include "fscrypt_sysparam.h"
 #include "init_utils.h"
 #include "securec.h"
+#include "storage_radar_c.h"
 
 key_serial_t KeyCtrlGetKeyringId(key_serial_t id, int create)
 {
@@ -90,12 +91,19 @@ static bool FsIoctl(const char *mnt, unsigned long cmd, void *arg)
 
     int fd = open(realPath, O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
     free(realPath);
+    if (fd < 0 && cmd == FS_IOC_SET_ENCRYPTION_POLICY) {
+        RADAR_REPORT(mnt, "fd open failed! ", errno);
+    }
     if (fd < 0) {
         LOGE("open %{public}s failed, errno:%{public}d", mnt, errno);
         return false;
     }
-    if (ioctl(fd, cmd, arg) != 0) {
-        LOGE("ioctl to %{public}s failed, errno:%{public}d", mnt, errno);
+    int ret = ioctl(fd, cmd, arg);
+    if (ret != 0 && cmd == FS_IOC_SET_ENCRYPTION_POLICY) {
+        RADAR_REPORT(mnt, "set policy failed! ", errno);
+    }
+    if (ret != 0) {
+        LOGE("ioctl to %{public}s failed, errno:%{public}d", mnt, ret);
         (void)close(fd);
         return false;
     }

@@ -58,6 +58,7 @@ ohos_static_library("libfscryptutils") {
     "src/fscrypt_utils.c",
     "src/init_utils.c",
     "src/key_control.c",
+    "src/storage_radar_c.c",
     "src/sysparam_dynamic.c",
   ]
 
@@ -75,6 +76,7 @@ ohos_static_library("libfscryptutils") {
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
+    "hisysevent:libhisysevent",
     "init:libbegetutil",
   ]
 
@@ -98,6 +100,7 @@ ohos_static_library("libfscryptutils_static") {
     "src/fscrypt_control.c",
     "src/fscrypt_utils.c",
     "src/key_control.c",
+    "src/storage_radar_c.c",
     "src/sysparam_static.c",
   ]
 
@@ -117,6 +120,7 @@ ohos_static_library("libfscryptutils_static") {
     "bounds_checking_function:libsec_static",
     "c_utils:utils",
     "hilog:libhilog",
+    "hisysevent:libhisysevent",
     "init:libbegetutil",
   ]
 
