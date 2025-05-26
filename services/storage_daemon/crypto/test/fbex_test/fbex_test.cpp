@@ -124,12 +124,13 @@ HWTEST_F(FbexTest, InstallKeyToKernel, TestSize.Level1)
     EXPECT_EQ(ret, -EINVAL);
 
     KeyBlob iv2(FBEX_IV_SIZE);
-    ret = fbex.InstallKeyToKernel(userId, type, iv2, flag, {});
+    KeyBlob authToken(FBEX_IV_SIZE);
+    ret = fbex.InstallKeyToKernel(userId, type, iv2, flag, authToken);
     EXPECT_NE(ret, 0);
 
     OHOS::ForceRemoveDirectory(FBEX_CMD_PATH);
     std::ofstream file(FBEX_CMD_PATH);
-    ret = fbex.InstallKeyToKernel(userId, type, iv2, flag, {});
+    ret = fbex.InstallKeyToKernel(userId, type, iv2, flag, authToken);
     EXPECT_NE(ret, 0);
     EXPECT_TRUE(OHOS::RemoveFile(FBEX_CMD_PATH));
     GTEST_LOG_(INFO) << "fbex_InstallKeyToKernel end";
@@ -325,11 +326,12 @@ HWTEST_F(FbexTest, UnlockScreenToKernel, TestSize.Level1)
 
     uint8_t *iv = new uint8_t[FBEX_IV_SIZE];
     OHOS::ForceRemoveDirectory(FBEX_CMD_PATH);
-    ret = fbex.UnlockScreenToKernel(userId, type, iv, size, {});
+    KeyBlob authToken(FBEX_IV_SIZE);
+    ret = fbex.UnlockScreenToKernel(userId, type, iv, size, authToken);
     EXPECT_NE(ret, 0);
 
     std::ofstream file(FBEX_CMD_PATH);
-    ret = fbex.UnlockScreenToKernel(userId, type, iv, size, {});
+    ret = fbex.UnlockScreenToKernel(userId, type, iv, size, authToken);
     EXPECT_NE(ret, 0);
     EXPECT_TRUE(OHOS::RemoveFile(FBEX_CMD_PATH));
     delete[] iv;
@@ -361,19 +363,20 @@ HWTEST_F(FbexTest, ReadESecretToKernel, TestSize.Level1)
     isFbeSupport = true;
     OHOS::ForceRemoveDirectory(FBEX_UECE_PATH);
     OHOS::ForceCreateDirectory(FBEX_UECE_PATH);
-    ret = fbex.ReadESecretToKernel(userIdToFbe, status, eBuffer, {}, isFbeSupport);
+    KeyBlob authToken(FBEX_IV_SIZE);
+    ret = fbex.ReadESecretToKernel(userIdToFbe, status, eBuffer, authToken, isFbeSupport);
     EXPECT_NE(ret, 0);
     EXPECT_EQ(isFbeSupport, true);
 
     isFbeSupport = true;
     OHOS::ForceRemoveDirectory(FBEX_UECE_PATH);
-    ret = fbex.ReadESecretToKernel(userIdToFbe, status, eBuffer, {}, isFbeSupport);
+    ret = fbex.ReadESecretToKernel(userIdToFbe, status, eBuffer, authToken, isFbeSupport);
     EXPECT_EQ(ret, 0);
     EXPECT_EQ(isFbeSupport, false);
 
     isFbeSupport = true;
     std::ofstream file(FBEX_UECE_PATH);
-    ret = fbex.ReadESecretToKernel(userIdToFbe, status, eBuffer, {}, isFbeSupport);
+    ret = fbex.ReadESecretToKernel(userIdToFbe, status, eBuffer, authToken, isFbeSupport);
     EXPECT_NE(ret, 0);
     EXPECT_EQ(isFbeSupport, true);
     EXPECT_TRUE(OHOS::RemoveFile(FBEX_UECE_PATH));
