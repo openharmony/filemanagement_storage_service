@@ -18,6 +18,8 @@
 
 #include <string>
 
+#include "key_blob.h"
+
 namespace OHOS {
 namespace StorageDaemon {
 constexpr uint32_t USERID_GLOBAL_EL1 = 0;
@@ -43,13 +45,15 @@ struct UserIdToFbeStr {
 class FBEX {
 public:
     static bool IsFBEXSupported();
-    static int InstallKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size, uint8_t flag);
-    static int InstallDoubleDeKeyToKernel(UserIdToFbeStr &userIdToFbe, uint8_t *iv, uint32_t size, uint8_t flag);
+    static int InstallKeyToKernel(uint32_t userId, uint32_t type, KeyBlob &iv, uint8_t flag, const KeyBlob &authToken);
+    static int InstallDoubleDeKeyToKernel(UserIdToFbeStr &userIdToFbe, KeyBlob &iv,
+                                          uint8_t flag, const KeyBlob &authToken);
     static int UninstallOrLockUserKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size, bool destroy);
     static int LockScreenToKernel(uint32_t userId);
-    static int UnlockScreenToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size);
+    static int UnlockScreenToKernel(uint32_t userId, uint32_t type,
+                                    uint8_t *iv, uint32_t size, const KeyBlob &authToken);
     static int ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status,
-                                   std::unique_ptr<uint8_t[]> &eBuffer, uint32_t length, bool &isFbeSupport);
+                                   KeyBlob &eBuffer, const KeyBlob &authToken, bool &isFbeSupport);
     static int WriteESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, uint8_t *eBuffer, uint32_t length);
     static bool IsMspReady();
     static int GetStatus();

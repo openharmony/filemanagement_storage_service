@@ -26,15 +26,15 @@ class IFscryptKeyV1Ext {
 public:
     virtual ~IFscryptKeyV1Ext() = default;
 
-    virtual int32_t ActiveKeyExt(uint32_t, uint8_t*, uint32_t, uint32_t &) = 0;
-    virtual int32_t ActiveDoubleKeyExt(uint32_t, uint8_t*, uint32_t, uint32_t &) = 0;
+    virtual int32_t ActiveKeyExt(uint32_t, KeyBlob &, uint32_t &, const KeyBlob &) = 0;
+    virtual int32_t ActiveDoubleKeyExt(uint32_t, KeyBlob &, uint32_t &, const KeyBlob &) = 0;
     virtual int32_t InactiveKeyExt(uint32_t) = 0;
     virtual int32_t LockUserScreenExt(uint32_t, uint32_t &) = 0;
-    virtual int32_t UnlockUserScreenExt(uint32_t, uint8_t*, uint32_t) = 0;
+    virtual int32_t UnlockUserScreenExt(uint32_t, uint8_t*, uint32_t, const KeyBlob &) = 0;
     virtual int32_t AddClassE(bool &, bool &, uint32_t) = 0;
     virtual int32_t DeleteClassEPinCode(uint32_t) = 0;
     virtual int32_t ChangePinCodeClassE(uint32_t, bool &) = 0;
-    virtual int32_t ReadClassE(uint32_t, std::unique_ptr<uint8_t[]>&, uint32_t, bool&) = 0;
+    virtual int32_t ReadClassE(uint32_t, KeyBlob &, const KeyBlob &) = 0;
     virtual int32_t WriteClassE(uint32_t, uint8_t*, uint32_t) = 0;
     virtual int32_t GenerateAppkey(uint32_t, uint32_t, std::unique_ptr<uint8_t[]>&, uint32_t) = 0;
     virtual int32_t LockUeceExt(bool&) = 0;
@@ -44,15 +44,15 @@ public:
 
 class FscryptKeyV1ExtMock : public IFscryptKeyV1Ext {
 public:
-    MOCK_METHOD(int32_t, ActiveKeyExt, (uint32_t, uint8_t*, uint32_t, uint32_t &));
-    MOCK_METHOD(int32_t, ActiveDoubleKeyExt, (uint32_t, uint8_t*, uint32_t, uint32_t &));
+    MOCK_METHOD(int32_t, ActiveKeyExt, (uint32_t, KeyBlob &, uint32_t &, const KeyBlob &));
+    MOCK_METHOD(int32_t, ActiveDoubleKeyExt, (uint32_t, KeyBlob &, uint32_t &, const KeyBlob &));
     MOCK_METHOD(int32_t, InactiveKeyExt, (uint32_t));
     MOCK_METHOD(int32_t, LockUserScreenExt, (uint32_t, uint32_t &));
-    MOCK_METHOD(int32_t, UnlockUserScreenExt, (uint32_t, uint8_t*, uint32_t));
+    MOCK_METHOD(int32_t, UnlockUserScreenExt, (uint32_t, uint8_t*, uint32_t, const KeyBlob &));
     MOCK_METHOD(int32_t, AddClassE, (bool &, bool &, uint32_t));
     MOCK_METHOD(int32_t, DeleteClassEPinCode, (uint32_t));
     MOCK_METHOD(int32_t, ChangePinCodeClassE, (uint32_t, bool &));
-    MOCK_METHOD(int32_t, ReadClassE, (uint32_t, (std::unique_ptr<uint8_t[]>&), uint32_t, bool&));
+    MOCK_METHOD(int32_t, ReadClassE, (uint32_t, KeyBlob &, const KeyBlob &));
     MOCK_METHOD(int32_t, WriteClassE, (uint32_t, uint8_t*, uint32_t));
     MOCK_METHOD(int32_t, GenerateAppkey, (uint32_t, uint32_t, (std::unique_ptr<uint8_t[]>&), uint32_t));
     MOCK_METHOD(int32_t, LockUeceExt, (bool&));

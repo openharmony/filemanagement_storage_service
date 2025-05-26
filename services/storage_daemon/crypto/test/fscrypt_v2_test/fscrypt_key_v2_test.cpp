@@ -80,27 +80,27 @@ HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_active_support, TestSize.Level1)
     GTEST_LOG_(INFO) << "fscrypt_key_v2_active_support start";
     uint32_t flag = 1;
     g_testKeyV2.ClearKey();
-    EXPECT_NE(g_testKeyV2.ActiveKey(flag, TEST_MNT), E_OK);
+    EXPECT_NE(g_testKeyV2.ActiveKey({}, flag, TEST_MNT), E_OK);
 
     g_testKeyV2.keyInfo_.key.Alloc(FSCRYPT_MAX_KEY_SIZE + 1);
-    EXPECT_NE(g_testKeyV2.ActiveKey(flag, TEST_MNT), E_OK);
+    EXPECT_NE(g_testKeyV2.ActiveKey({}, flag, TEST_MNT), E_OK);
 
     g_testKeyV2.ClearKey();
     std::string emptyStr;
     g_testKeyV2.keyInfo_.key.Alloc(FSCRYPT_MAX_KEY_SIZE);
-    EXPECT_NE(g_testKeyV2.ActiveKey(flag, emptyStr), E_OK);
+    EXPECT_NE(g_testKeyV2.ActiveKey({}, flag, emptyStr), E_OK);
 
     g_testKeyV2.ClearKey();
     g_testKeyV2.keyInfo_.keyId.Clear();
     g_testKeyV2.keyInfo_.key.Alloc(FSCRYPT_MAX_KEY_SIZE);
     g_testKeyV2.keyInfo_.keyId.Alloc(FSCRYPT_KEY_IDENTIFIER_SIZE + 1);
-    EXPECT_NE(g_testKeyV2.ActiveKey(flag, TEST_MNT), E_OK);
+    EXPECT_NE(g_testKeyV2.ActiveKey({}, flag, TEST_MNT), E_OK);
 
     g_testKeyV2.ClearKey();
     g_testKeyV2.keyInfo_.keyId.Clear();
     g_testKeyV2.keyInfo_.key.Alloc(FSCRYPT_MAX_KEY_SIZE);
     g_testKeyV2.keyInfo_.keyId.Alloc(FSCRYPT_KEY_IDENTIFIER_SIZE);
-    EXPECT_NE(g_testKeyV2.ActiveKey(flag, TEST_MNT), E_OK);
+    EXPECT_NE(g_testKeyV2.ActiveKey({}, flag, TEST_MNT), E_OK);
     GTEST_LOG_(INFO) << "fscrypt_key_v2_active_support end";
 }
 
@@ -139,7 +139,7 @@ HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_LockUserScreen_UnLockUserScreen, TestS
     uint32_t flag = 1;
     uint32_t sdpClass = 1;
     EXPECT_EQ(g_testKeyV2.LockUserScreen(flag, sdpClass, TEST_MNT), E_OK);
-    EXPECT_EQ(g_testKeyV2.UnlockUserScreen(flag, sdpClass, TEST_MNT), E_OK);
+    EXPECT_EQ(g_testKeyV2.UnlockUserScreen({}, flag, sdpClass, TEST_MNT), E_OK);
     GTEST_LOG_(INFO) << "fscrypt_key_v2_LockUserScreen_UnLockUserScreen end";
 }
 

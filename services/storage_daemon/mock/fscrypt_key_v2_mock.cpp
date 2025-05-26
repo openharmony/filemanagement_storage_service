@@ -19,12 +19,12 @@
 using namespace std;
 using namespace OHOS::StorageDaemon;
 
-int32_t FscryptKeyV2::ActiveKey(uint32_t flag, const std::string &mnt)
+int32_t FscryptKeyV2::ActiveKey(const KeyBlob &authToken, uint32_t flag, const std::string &mnt)
 {
     if (IFscryptKeyV2Moc::fscryptKeyV2Moc == nullptr) {
         return E_KEY_EMPTY_ERROR;
     }
-    return IFscryptKeyV2Moc::fscryptKeyV2Moc->ActiveKey(flag, mnt);
+    return IFscryptKeyV2Moc::fscryptKeyV2Moc->ActiveKey(authToken, flag, mnt);
 }
 
 int32_t FscryptKeyV2::InactiveKey(uint32_t flag, const std::string &mnt)
@@ -51,12 +51,13 @@ int32_t FscryptKeyV2::LockUece(bool &isFbeSupport)
     return IFscryptKeyV2Moc::fscryptKeyV2Moc->LockUece(isFbeSupport);
 }
 
-int32_t FscryptKeyV2::UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt)
+int32_t FscryptKeyV2::UnlockUserScreen(const KeyBlob &authToken,
+    uint32_t flag, uint32_t sdpClass, const std::string &mnt)
 {
     if (IFscryptKeyV2Moc::fscryptKeyV2Moc == nullptr) {
         return E_KEY_EMPTY_ERROR;
     }
-    return IFscryptKeyV2Moc::fscryptKeyV2Moc->UnlockUserScreen(flag, sdpClass, mnt);
+    return IFscryptKeyV2Moc::fscryptKeyV2Moc->UnlockUserScreen(authToken, flag, sdpClass, mnt);
 }
 
 int32_t FscryptKeyV2::GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId)
