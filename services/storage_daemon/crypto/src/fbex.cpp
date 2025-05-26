@@ -312,10 +312,10 @@ int FBEX::InstallDoubleDeKeyToKernel(UserIdToFbeStr &userIdToFbe, KeyBlob &iv, u
 
     FbeOptsEV1 ops{ .userIdDouble = userIdToFbe.userIds[DOUBLE_ID_INDEX],
                     .userIdSingle = userIdToFbe.userIds[SINGLE_ID_INDEX],
-                    .status = flag,
-                    .length = iv.size };
+                    .status = flag, .length = iv.size, .authTokenSize = authToken.size };
     // eBuffer -> iv
     if (MemcpyFbeOptsEV1(ops, authToken, iv.data.get(), iv.size) != EOK) {
+        close(fd);
         return 0;
     }
     int ret = ioctl(fd, FBEX_IOC_ADD_DOUBLE_DE_IV, &ops);
@@ -674,7 +674,7 @@ int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, KeyB
     }
     uint32_t bufferSize = AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES;
     FbeOptsEV1 ops{ .userIdDouble = userIdToFbe.userIds[DOUBLE_ID_INDEX], .authTokenSize = authToken.size,
-                   .userIdSingle = userIdToFbe.userIds[SINGLE_ID_INDEX], .status = status, .length = bufferSize };
+                    .userIdSingle = userIdToFbe.userIds[SINGLE_ID_INDEX], .status = status, .length = bufferSize };
     if (MemcpyFbeOptsEV1(ops, authToken, eBuffer.data.get(), eBuffer.size) != EOK) {
         (void)fclose(f);
         return 0;
