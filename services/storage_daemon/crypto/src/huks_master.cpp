@@ -209,7 +209,7 @@ int HuksMaster::HdiGenerateKey(const HuksBlob &keyAlias, const HksParamSet *para
 
 int HuksMaster::HdiAccessInit(const HuksBlob &key, const HksParamSet *paramSet, HuksBlob &handle, HuksBlob &token)
 {
-    LOGD("enter");
+    LOGD("HuksMaster::HdiAccessInit enter");
     if (hksHdiProxyInstance_ == nullptr) {
         LOGE("hksHdiProxyInstance_ is nullptr");
         return HKS_ERROR_NULL_POINTER;
@@ -250,7 +250,7 @@ int HuksMaster::HdiAccessInit(const HuksBlob &key, const HksParamSet *paramSet, 
 int HuksMaster::HdiAccessFinish(const HuksBlob &handle, const HksParamSet *paramSet,
                                 const HuksBlob &inData, HuksBlob &outData)
 {
-    LOGD("enter");
+    LOGD("HuksMaster::HdiAccessFinish enter");
     if (hksHdiProxyInstance_ == nullptr) {
         LOGE("hksHdiProxyInstance_ is nullptr");
         return HKS_ERROR_NULL_POINTER;
@@ -625,7 +625,7 @@ static HksParamSet *GenHuksOptionParam(KeyContext &ctx,
 int HuksMaster::HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *paramSet2,
                                    const KeyBlob &keyIn, KeyBlob &keyOut)
 {
-    LOGD("enter");
+    LOGD("HuksMaster::HuksHalTripleStage enter");
     HuksBlob hksKey = { reinterpret_cast<uint8_t *>(paramSet1), paramSet1->paramSetSize };
     HuksBlob hksIn = keyIn.ToHuksBlob();
     HuksBlob hksOut = keyOut.ToHuksBlob();
@@ -656,7 +656,7 @@ int HuksMaster::HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *pa
         StorageService::StorageRadar::RecordDuration(startTime).c_str());
 
     keyOut.size = hksOut.dataLen;
-    LOGD("finish");
+    LOGD("HuksMaster::HuksHalTripleStage finish");
     return E_OK;
 }
 #endif
@@ -836,7 +836,7 @@ int32_t HuksMaster::DecryptKey(KeyContext &ctx, const UserAuth &auth, KeyInfo &k
 
 int32_t HuksMaster::DecryptKeyEx(KeyContext &ctx, const UserAuth &auth, KeyBlob &rnd)
 {
-    LOGD("enter");
+    LOGD("HuksMaster::DecryptKeyEx enter");
 #ifdef HUKS_IDL_ENVIRONMENT
     if (ctx.shield.IsEmpty()) {
         LOGE("bad shield input, size %{public}d", ctx.shield.size);
@@ -865,7 +865,7 @@ int32_t HuksMaster::DecryptKeyEx(KeyContext &ctx, const UserAuth &auth, KeyBlob 
     }
 
     HksFreeParamSet(&paramSet2);
-    LOGI("finish");
+    LOGI("HuksMaster::DecryptKeyEx finish");
     return ret;
 #endif
     return E_OK;
