@@ -232,7 +232,7 @@ int32_t QuotaManager::SetBundleQuota(const std::string &bundleName, int32_t uid,
         LOGE("Failed to set hard quota, errno : %{public}d", errno);
         return E_QUOTA_CTL_KERNEL_ERR;
     } else {
-        LOGE("Applied hard quotas ok");
+        LOGD("Applied hard quotas ok");
         return E_OK;
     }
 }
@@ -313,7 +313,7 @@ static std::tuple<std::vector<std::string>, std::vector<std::string>> ReadInclud
         std::string line;
         std::getline(incExcFile, line);
         if (line.empty()) {
-            LOGI("Read Complete");
+            LOGD("Read Complete");
             break;
         }
         if (line == BACKUP_INCLUDE) {
@@ -362,7 +362,7 @@ static bool GetPathWildCard(uint32_t userId, const std::string &bundleName, cons
     std::string pathBeforeWildCard = includeWildCard.substr(0, pos);
     DIR *dirPtr = opendir(pathBeforeWildCard.c_str());
     if (dirPtr == nullptr) {
-        LOGE("GetPathWildCard open file dir:%{private}s fail, errno:%{public}d", pathBeforeWildCard.c_str(), errno);
+        LOGD("GetPathWildCard open file dir:%{private}s fail, errno:%{public}d", pathBeforeWildCard.c_str(), errno);
         return false;
     }
     struct dirent *entry = nullptr;
@@ -380,7 +380,7 @@ static bool GetPathWildCard(uint32_t userId, const std::string &bundleName, cons
     for (auto &subDir : subDirs) {
         DIR *subDirPtr = opendir(subDir.c_str());
         if (subDirPtr == nullptr) {
-            LOGE("GetPathWildCard open file dir:%{private}s fail, errno:%{public}d", subDir.c_str(), errno);
+            LOGD("GetPathWildCard open file dir:%{private}s fail, errno:%{public}d", subDir.c_str(), errno);
             return false;
         }
         while ((entry = readdir(subDirPtr)) != nullptr) {
@@ -411,14 +411,14 @@ static void RecognizeSandboxWildCard(const uint32_t userId, const std::string &b
             bundleName + FILE_SEPARATOR_CHAR;
         std::string relatePath = sandboxPathStr.substr(BASE_EL1.size());
         if (!GetPathWildCard(userId, bundleName, physicalPrefix + relatePath, phyIncludes, pathMap)) {
-            LOGE("el1 GetPathWildCard dir path invaild");
+            LOGD("el1 GetPathWildCard dir path invaild");
         }
     } else if (sandboxPathStr.find(BASE_EL2 + DEFAULT_PATH_WITH_WILDCARD) == 0) {
         std::string physicalPrefix = PHY_APP + EL2 + FILE_SEPARATOR_CHAR + std::to_string(userId) + BASE +
             bundleName + FILE_SEPARATOR_CHAR;
         std::string relatePath = sandboxPathStr.substr(BASE_EL2.size());
         if (!GetPathWildCard(userId, bundleName, physicalPrefix + relatePath, phyIncludes, pathMap)) {
-            LOGE("el2 GetPathWildCard dir path invaild");
+            LOGD("el2 GetPathWildCard dir path invaild");
         }
     }
 }
@@ -549,11 +549,11 @@ static std::tuple<bool, bool> CheckIfDirForIncludes(const std::string &path, Bun
     // check whether the path exists
     struct stat fileStatInfo = {0};
     if (stat(path.c_str(), &fileStatInfo) != 0) {
-        LOGE("CheckIfDirForIncludes call stat error %{private}s, fail errno:%{public}d", path.c_str(), errno);
+        LOGD("CheckIfDirForIncludes call stat error %{private}s, fail errno:%{public}d", path.c_str(), errno);
         return {false, false};
     }
     if (S_ISDIR(fileStatInfo.st_mode)) {
-        LOGI("%{private}s exists and is a directory", path.c_str());
+        LOGD("%{private}s exists and is a directory", path.c_str());
         return {true, true};
     } else {
         std::string sandboxPath = path;

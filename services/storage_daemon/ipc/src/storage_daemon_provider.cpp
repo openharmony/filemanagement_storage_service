@@ -118,7 +118,7 @@ void StorageDaemonProvider::StorageRadarThd(void)
             continue;
         }
         if (!isNeedUpdateRadarFile_) {
-            LOGI("Storage statistic not need update.");
+            LOGD("Storage statistic not need update.");
             continue;
         }
         LOGI("Storage statistic update, intervalMinutes:%{public}" PRId64, intervalMinutes);

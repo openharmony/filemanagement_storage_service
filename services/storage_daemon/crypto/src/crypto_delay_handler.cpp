@@ -45,12 +45,9 @@ void DelayHandler::StartDelayTask(const std::shared_ptr<BaseKey>& el4Key)
         return;
     }
     el4Key_ = el4Key;
-    LOGI("DelayHandler::StartDelayTask, start delay clear key task.");
     cancelled_ = false;
     std::string curTime = std::to_string(GetTickCount());
     std::string expExeTime = std::to_string(GetTickCount() + DEFAULT_CHECK_INTERVAL);
-    LOGI("DelayHandler: start timer for user=%{public}d, curTime=%{public}s ms, exeTime=%{public}s ms.",
-        userId_, curTime.c_str(), expExeTime.c_str());
     timerId_ = timer_.Register([this, expExeTime]() {
             std::string realExeTime = std::to_string(GetTickCount());
             LOGI("DelayHandler: EXECUTE for user=%{public}d, curTime=%{public}s ms, expExeTime=%{public}s ms.",
@@ -58,22 +55,23 @@ void DelayHandler::StartDelayTask(const std::shared_ptr<BaseKey>& el4Key)
             DeactiveEl3El4El5();
         }, DEFAULT_CHECK_INTERVAL, true);
 
-    LOGI("DelayHandler::success.");
+    LOGI("DelayHandler: start timer for user=%{public}d, curTime=%{public}s ms, exeTime=%{public}s ms success.",
+        userId_, curTime.c_str(), expExeTime.c_str());
 }
 
 void DelayHandler::CancelDelayTask()
 {
-    LOGI("DelayHandler::CancelDelayTask:: enter.");
+    LOGD("DelayHandler::CancelDelayTask:: enter.");
     std::lock_guard<std::mutex> lock(handlerMutex_);
     timer_.Unregister(timerId_);
     cancelled_ = true;
     
-    LOGI("DelayHandler::CancelDelayTask:: success.");
+    LOGD("DelayHandler::CancelDelayTask:: success.");
 }
 
 void DelayHandler::DeactiveEl3El4El5()
 {
-    LOGI("DelayHandler::DeactiveEl3El4El5:: enter.");
+    LOGD("DelayHandler::DeactiveEl3El4El5:: enter.");
     std::lock_guard<std::mutex> lock(handlerMutex_);
     if (el4Key_ == nullptr) {
         LOGI("DelayHandler::DeactiveEl3El4El5:: elKey is nullptr do not clean.");
