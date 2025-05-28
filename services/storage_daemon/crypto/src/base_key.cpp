@@ -499,7 +499,7 @@ int32_t BaseKey::EncryptEceSece(const UserAuth &auth, const uint32_t keyType, Ke
 
 int32_t BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate)
 {
-    LOGD("enter");
+    LOGD("BaseKey::RestoreKey enter");
     auto candidate = GetCandidateDir();
     if (candidate.empty()) {
         // no candidate dir, just restore from the latest
@@ -1102,7 +1102,7 @@ void BaseKey::SplitKeyBlob(const KeyBlob &keyIn, KeyBlob &encAad, KeyBlob &nonce
 
 void BaseKey::ClearKeyContext(KeyContext &keyCtx)
 {
-    LOGD("enter clear");
+    LOGD("BaseKey::ClearKeyContext enter");
     keyCtx.aad.Clear();
     keyCtx.nonce.Clear();
     keyCtx.shield.Clear();
