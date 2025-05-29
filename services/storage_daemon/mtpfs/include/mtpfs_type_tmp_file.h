@@ -46,16 +46,19 @@ public:
 
     std::set<int> FileDescriptors() const
     {
+        std::lock_guard<std::mutex>lock(setMutex_);
         return fileDescriptors_;
     }
     void AddFileDescriptor(int fd)
     {
+        std::lock_guard<std::mutex>lock(setMutex_);
         fileDescriptors_.insert(fd);
     }
     bool HasFileDescriptor(int fd);
     void RemoveFileDescriptor(int fd);
     int RefCnt() const
     {
+        std::lock_guard<std::mutex>lock(setMutex_);
         return fileDescriptors_.size();
     }
 
@@ -81,6 +84,7 @@ public:
 private:
     std::string pathDevice_;
     std::string pathTmp_;
+    std::mutex setMutex_;
     std::set<int> fileDescriptors_;
     bool modified_;
 };

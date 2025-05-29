@@ -15,31 +15,28 @@
 
 #include "mtpfs_type_dir.h"
 
-MtpFsTypeDir::MtpFsTypeDir() : MtpFsTypeBasic(), dirs_(), files_(), accessMutex_(), fetched_(false), modifyDate_(0) {}
+MtpFsTypeDir::MtpFsTypeDir() : MtpFsTypeBasic(), dirList_(), fileList_(), fetched_(false), modifyDate_(0) {}
 
 MtpFsTypeDir::MtpFsTypeDir(uint32_t id, uint32_t parentId, uint32_t storageId, const std::string &name)
     : MtpFsTypeBasic(id, parentId, storageId, name),
-      dirs_(),
-      files_(),
-      accessMutex_(),
+      dirList_(),
+      fileList_(),
       fetched_(false),
       modifyDate_(0)
 {}
 
 MtpFsTypeDir::MtpFsTypeDir(LIBMTP_file_t *file)
     : MtpFsTypeBasic(file->item_id, file->parent_id, file->storage_id, std::string(file->filename)),
-      dirs_(),
-      files_(),
-      accessMutex_(),
+      dirList_(),
+      fileList_(),
       fetched_(false),
       modifyDate_(file->modificationdate)
 {}
 
 MtpFsTypeDir::MtpFsTypeDir(const MtpFsTypeDir &copy)
     : MtpFsTypeBasic(copy),
-      dirs_(copy.dirs_),
-      files_(copy.files_),
-      accessMutex_(),
+      dirList_(copy.dirList_),
+      fileList_(copy.fileList_),
       fetched_(copy.fetched_),
       modifyDate_(copy.modifyDate_)
 {}
@@ -61,73 +58,64 @@ LIBMTP_folder_t *MtpFsTypeDir::ToLIBMTPFolder() const
 
 void MtpFsTypeDir::AddDir(const MtpFsTypeDir &dir)
 {
-    EnterCritical();
-    dirs_.insert(dir);
-    LeaveCritical();
+    std::unique_lock<std::mutex> lock(mutex_);
+    dirList_.insert(dir);
 }
 
 void MtpFsTypeDir::AddFile(const MtpFsTypeFile &file)
 {
-    EnterCritical();
-    files_.insert(file);
-    LeaveCritical();
+    std::unique_lock<std::mutex> lock(mutex_);
+    fileList_.insert(file);
 }
 
 bool MtpFsTypeDir::RemoveDir(const MtpFsTypeDir &dir)
 {
-    EnterCritical();
-    auto it = std::find(dirs_.begin(), dirs_.end(), dir);
-    if (it == dirs_.end()) {
-        LeaveCritical();
+    std::unique_lock<std::mutex> lock(mutex_);
+    auto it = std::find(dirList_.begin(), dirList_.end(), dir);
+    if (it == dirList_.end()) {
         return false;
     }
-    dirs_.erase(it);
-    LeaveCritical();
+    dirList_.erase(it);
     return true;
 }
 
 bool MtpFsTypeDir::RemoveFile(const MtpFsTypeFile &file)
 {
-    EnterCritical();
-    auto it = std::find(files_.begin(), files_.end(), file);
-    if (it == files_.end()) {
-        LeaveCritical();
+    std::unique_lock<std::mutex> lock(mutex_);
+    auto it = std::find(fileList_.begin(), fileList_.end(), file);
+    if (it == fileList_.end()) {
         return false;
     }
-    files_.erase(it);
-    LeaveCritical();
+    fileList_.erase(it);
     return true;
 }
 
 bool MtpFsTypeDir::ReplaceFile(const MtpFsTypeFile &oldFile, const MtpFsTypeFile &newFile)
 {
-    EnterCritical();
-    auto it = std::find(files_.begin(), files_.end(), oldFile);
-    if (it == files_.end()) {
-        LeaveCritical();
+    std::unique_lock<std::mutex> lock(mutex_);
+    auto it = std::find(fileList_.begin(), fileList_.end(), oldFile);
+    if (it == fileList_.end()) {
         return false;
     }
-    files_.erase(it);
-    files_.insert(newFile);
-    LeaveCritical();
+    fileList_.erase(it);
+    fileList_.insert(newFile);
     return true;
 }
 
 MtpFsTypeDir &MtpFsTypeDir::operator = (const MtpFsTypeDir &rhs)
 {
     MtpFsTypeBasic::operator = (rhs);
-    dirs_ = rhs.dirs_;
-    files_ = rhs.files_;
+    dirList_ = rhs.dirList_;
+    fileList_ = rhs.fileList_;
     fetched_ = rhs.fetched_;
     return *this;
 }
 
 const MtpFsTypeDir *MtpFsTypeDir::Dir(const std::string &name) const
 {
-    EnterCritical();
-    auto it = std::find(dirs_.begin(), dirs_.end(), name);
-    LeaveCritical();
-    if (it == dirs_.end()) {
+    std::unique_lock<std::mutex> lock(mutex_);
+    auto it = std::find(dirList_.begin(), dirList_.end(), name);
+    if (it == dirList_.end()) {
         return nullptr;
     }
     return &*it;
@@ -135,10 +123,9 @@ const MtpFsTypeDir *MtpFsTypeDir::Dir(const std::string &name) const
 
 const MtpFsTypeFile *MtpFsTypeDir::File(const std::string &name) const
 {
-    EnterCritical();
-    auto it = std::find(files_.begin(), files_.end(), name);
-    LeaveCritical();
-    if (it == files_.end()) {
+    std::unique_lock<std::mutex> lock(mutex_);
+    auto it = std::find(fileList_.begin(), fileList_.end(), name);
+    if (it == fileList_.end()) {
         return nullptr;
     }
     return &*it;

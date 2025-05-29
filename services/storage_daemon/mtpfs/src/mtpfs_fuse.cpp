@@ -808,7 +808,6 @@ int MtpFileSystem::UTimens(const char *path, const struct timespec tv[2], struct
 
 int MtpFileSystem::Create(const char *path, mode_t mode, fuse_file_info *fileInfo)
 {
-    std::lock_guard<std::mutex>lock(fuseMutex_);
     const std::string tmpPath = tmpFilesPool_.MakeTmpPath(std::string(path));
     int rval = ::creat(tmpPath.c_str(), mode);
     if (rval < 0) {
@@ -839,29 +838,25 @@ int MtpFileSystem::OpenFile(const char *path, struct fuse_file_info *fileInfo)
     }
     fileInfo->flags = static_cast<int>(flags);
     const std::string stdPath(path);
-
-    MtpFsTypeTmpFile *tmpFile = const_cast<MtpFsTypeTmpFile *>(tmpFilesPool_.GetFile(stdPath));
-
     std::string tmpPath;
+    MtpFsTypeTmpFile *tmpFile = const_cast<MtpFsTypeTmpFile *>(tmpFilesPool_.GetFile(stdPath));
     if (tmpFile != nullptr) {
         tmpPath = tmpFile->PathTmp();
     } else {
-        if (IsFilePulling(stdPath)) {
-            LOGE("MtpFileSystem::OpenFile failed, file is pulling for path=%{public}s.", path);
-            return -EBUSY;
-        }
-        AddPullingFile(stdPath);
         tmpPath = tmpFilesPool_.MakeTmpPath(stdPath);
-        int rval = device_.FilePull(stdPath, tmpPath);
-        if (rval != 0) {
-            RemovePullingFile(stdPath);
-            return -rval;
+        // only copy the file if needed
+        if (!HasGetPartialSupport()) {
+            int rval = device_.FilePull(stdPath, tmpPath);
+            if (rval != 0) {
+                return -rval;
+            }
+        } else {
+            int fd = ::creat(tmpPath.c_str(), S_IRUSR | S_IWUSR);
+            ::close(fd);
         }
-        RemovePullingFile(stdPath);
     }
 
-    // we create the tmp file even if we can use partial get/send to
-    // have a valid file descriptor
+    // we create the tmp file even if we can use partial get/send to have a valid file descriptor
     char realPath[PATH_MAX] = {0};
     if (realpath(tmpPath.c_str(), realPath) == nullptr) {
         LOGE("MtpFileSystem: realpath error, errno=%{public}d", errno);
@@ -873,7 +868,6 @@ int MtpFileSystem::OpenFile(const char *path, struct fuse_file_info *fileInfo)
         LOGE("MtpFileSystem: OpenFile error, errno=%{public}d", errno);
         return -errno;
     }
-
     fileInfo->fh = static_cast<uint32_t>(fd);
 
     if (tmpFile != nullptr) {
@@ -887,13 +881,14 @@ int MtpFileSystem::OpenFile(const char *path, struct fuse_file_info *fileInfo)
 
 int MtpFileSystem::ReadFile(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fileInfo)
 {
+    std::lock_guard<std::mutex>lock(fuseMutex_);
     LOGI("MtpFileSystem: ReadFile enter, path: %{public}s", path);
     if (fileInfo == nullptr) {
         LOGE("Missing FileInfo");
         return -ENOENT;
     }
     int rval = 0;
-    if (HasPartialObjectSupport()) {
+    if (HasGetPartialSupport()) {
         const std::string stdPath(path);
         rval = device_.FileRead(stdPath, buf, size, offset);
     } else {
@@ -909,7 +904,6 @@ int MtpFileSystem::ReadFile(const char *path, char *buf, size_t size, off_t offs
 
 int MtpFileSystem::OpenThumb(const char *path, struct fuse_file_info *fileInfo)
 {
-    std::lock_guard<std::mutex>lock(fuseMutex_);
     LOGI("MtpFileSystem: OpenThumb enter, path: %{public}s", path);
     if (fileInfo == nullptr) {
         LOGE("Missing FileInfo");
@@ -942,7 +936,6 @@ int MtpFileSystem::OpenThumb(const char *path, struct fuse_file_info *fileInfo)
 
 int MtpFileSystem::ReadThumb(const std::string &path, char *buf)
 {
-    std::lock_guard<std::mutex>lock(fuseMutex_);
     LOGI("MtpFileSystem: ReadThumb enter, path: %{public}s", path.c_str());
     std::string realPath = path.substr(0, path.length() - strlen(MTP_FILE_FLAG));
     return device_.GetThumbnail(realPath, buf);
@@ -951,13 +944,14 @@ int MtpFileSystem::ReadThumb(const std::string &path, char *buf)
 int MtpFileSystem::Write(const char *path, const char *buf, size_t size, off_t offset,
     struct fuse_file_info *fileInfo)
 {
+    std::lock_guard<std::mutex>lock(fuseMutex_);
     LOGI("MtpFileSystem: Write enter, path: %{public}s", path);
     if (fileInfo == nullptr) {
         LOGE("Missing FileInfo");
         return -ENOENT;
     }
     int rval = 0;
-    if (HasPartialObjectSupport()) {
+    if (HasSendPartialSupport()) {
         const std::string stdPath(path);
         rval = device_.FileWrite(stdPath, buf, size, offset);
     } else {
@@ -1129,10 +1123,15 @@ int MtpFileSystem::FSyncDir(const char *path, int datasync, struct fuse_file_inf
     return 0;
 }
 
-bool MtpFileSystem::HasPartialObjectSupport()
+bool MtpFileSystem::HasGetPartialSupport()
 {
     MtpFsDevice::Capabilities caps = device_.GetCapabilities();
-    return (caps.CanGetPartialObject() && caps.CanSendPartialObject());
+    return caps.CanGetPartialObject();
+}
+
+bool MtpFileSystem::HasSendPartialSupport()
+{
+    return false;
 }
 
 int MtpFileSystem::SetXAttr(const char *path, const char *in)
@@ -1152,7 +1151,7 @@ int MtpFileSystem::SetXAttr(const char *path, const char *in)
     }
     if (strcmp(in, "user.cancelcopy") == 0) {
         LOGI("Cancel the mtp transfer task, path=%{public}s", path);
-        return device_.AddFileCancelFlag(std::string(path));
+        return 0;
     }
     if (strcmp(in, "user.isUploadCompleted") != 0) {
         LOGE("attrKey error, attrKey=%{public}s", in);
@@ -1229,40 +1228,6 @@ int MtpFileSystem::GetFriendlyName(const char *in, char *out, size_t size)
         return 0;
     }
     return nameLen;
-}
-
-int MtpFileSystem::AddPullingFile(const std::string &path)
-{
-    LOGI("MtpFileSystem: AddPullingFile enter, path: %{public}s", path.c_str());
-    if (path.empty()) {
-        LOGE("AddPullingFile: input file path is empty.");
-        return -EINVAL;
-    }
-    std::lock_guard<std::mutex> lock(listMutex_);
-    pullingFileList_.insert(path);
-    return 0;
-}
-
-void MtpFileSystem::RemovePullingFile(const std::string &path)
-{
-    LOGI("MtpFileSystem: RemovePullingFile enter, path: %{public}s", path.c_str());
-    if (path.empty()) {
-        LOGE("RemovePullingFile: input file path is empty.");
-        return;
-    }
-    std::lock_guard<std::mutex> lock(listMutex_);
-    pullingFileList_.erase(path);
-}
-
-bool MtpFileSystem::IsFilePulling(const std::string &path)
-{
-    LOGI("MtpFileSystem: IsFilePulling enter, path: %{public}s", path.c_str());
-    if (path.empty()) {
-        LOGE("IsFilePulling: input file path is empty.");
-        return false;
-    }
-    std::lock_guard<std::mutex> lock(listMutex_);
-    return (pullingFileList_.find(path) != pullingFileList_.end());
 }
 
 void MtpFileSystem::HandleRemove(uint32_t handleId)

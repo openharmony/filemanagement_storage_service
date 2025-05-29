@@ -23,30 +23,20 @@ public:
     MtpFsTmpFilesPool();
     ~MtpFsTmpFilesPool();
 
-    void SetTmpDir(const std::string &tmpDir)
-    {
-        tmpDir_ = tmpDir;
-    }
-
-    void AddFile(const MtpFsTypeTmpFile &tmp)
-    {
-        pool_.insert(tmp);
-    }
-    void RemoveFile(const std::string &path);
-    bool Empty() const
-    {
-        return pool_.size();
-    }
-
-    const MtpFsTypeTmpFile *GetFile(const std::string &path) const;
-
-    std::string MakeTmpPath(const std::string &pathDevice) const;
     bool CreateTmpDir();
     bool RemoveTmpDir();
+    void SetTmpDir(const std::string &tmpDir);
+    void AddFile(const MtpFsTypeTmpFile &tmp);
+    void RemoveFile(const std::string &path);
+
+    bool Empty() const;
+    const MtpFsTypeTmpFile *GetFile(const std::string &path) const;
+    std::string MakeTmpPath(const std::string &pathDevice) const;
 
 private:
     std::string tmpDir_;
-    std::set<MtpFsTypeTmpFile> pool_;
+    std::mutex setMutex_;
+    std::set<MtpFsTypeTmpFile> tmpFilePool_;
 };
 
 #endif // MTPFS_TMP_FILES_POOL_H

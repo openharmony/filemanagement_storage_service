@@ -30,19 +30,10 @@ public:
     MtpFsTypeDir(LIBMTP_file_t *file);
     MtpFsTypeDir(const MtpFsTypeDir &copy);
 
-    void EnterCritical() const
-    {
-        accessMutex_.lock();
-    }
-    void LeaveCritical() const
-    {
-        accessMutex_.unlock();
-    }
-
     void Clear()
     {
-        dirs_.clear();
-        files_.clear();
+        dirList_.clear();
+        fileList_.clear();
     }
     void SetFetched(bool f)
     {
@@ -60,25 +51,25 @@ public:
 
     std::set<MtpFsTypeDir>::size_type DirCount() const
     {
-        return dirs_.size();
+        return dirList_.size();
     }
     std::set<MtpFsTypeFile>::size_type FileCount() const
     {
-        return files_.size();
+        return fileList_.size();
     }
     const MtpFsTypeDir *Dir(const std::string &name) const;
     const MtpFsTypeFile *File(const std::string &name) const;
     std::set<MtpFsTypeDir> Dirs() const
     {
-        return dirs_;
+        return dirList_;
     }
     std::set<MtpFsTypeFile> Files() const
     {
-        return files_;
+        return fileList_;
     }
     bool IsEmpty() const
     {
-        return dirs_.empty() && files_.empty();
+        return dirList_.empty() && fileList_.empty();
     }
 
     time_t ModificationDate() const
@@ -110,14 +101,14 @@ public:
     }
 
 private:
-    mutable std::mutex accessMutex_;
+    std::mutex mutex_;
     bool fetched_ = false;
     time_t modifyDate_;
 
 public:
     LIBMTP_object_handles_t *objHandles = nullptr;
-    std::set<MtpFsTypeDir> dirs_;
-    std::set<MtpFsTypeFile> files_;
+    std::set<MtpFsTypeDir> dirList_;
+    std::set<MtpFsTypeFile> fileList_;
 };
 
 #endif // MTPFS_TYPE_DIR_H

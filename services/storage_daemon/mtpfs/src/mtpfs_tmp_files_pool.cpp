@@ -22,7 +22,7 @@
 #include "mtpfs_util.h"
 #include "storage_service_log.h"
 
-MtpFsTmpFilesPool::MtpFsTmpFilesPool() : tmpDir_(SmtpfsGetTmpDir()), pool_() {}
+MtpFsTmpFilesPool::MtpFsTmpFilesPool() : tmpDir_(SmtpfsGetTmpDir()), tmpFilePool_() {}
 
 MtpFsTmpFilesPool::~MtpFsTmpFilesPool() {}
 
@@ -49,19 +49,38 @@ std::string GetSha256Hash(const std::string &input)
     return std::string(res);
 }
 
+void MtpFsTmpFilesPool::SetTmpDir(const std::string &tmpDir)
+{
+    tmpDir_ = tmpDir;
+}
+
+void MtpFsTmpFilesPool::AddFile(const MtpFsTypeTmpFile &tmp)
+{
+    std::lock_guard<std::mutex>lock(setMutex_);
+    tmpFilePool_.insert(tmp);
+}
+
+bool MtpFsTmpFilesPool::Empty() const
+{
+    std::lock_guard<std::mutex>lock(setMutex_);
+    return tmpFilePool_.size();
+}
+
 void MtpFsTmpFilesPool::RemoveFile(const std::string &path)
 {
-    auto it = std::find(pool_.begin(), pool_.end(), path);
-    if (it == pool_.end()) {
+    std::lock_guard<std::mutex>lock(setMutex_);
+    auto it = std::find(tmpFilePool_.begin(), tmpFilePool_.end(), path);
+    if (it == tmpFilePool_.end()) {
         return;
     }
-    pool_.erase(it);
+    tmpFilePool_.erase(it);
 }
 
 const MtpFsTypeTmpFile *MtpFsTmpFilesPool::GetFile(const std::string &path) const
 {
-    auto it = std::find(pool_.begin(), pool_.end(), path);
-    if (it == pool_.end()) {
+    std::lock_guard<std::mutex>lock(setMutex_);
+    auto it = std::find(tmpFilePool_.begin(), tmpFilePool_.end(), path);
+    if (it == tmpFilePool_.end()) {
         return nullptr;
     }
     return static_cast<const MtpFsTypeTmpFile *>(&*it);
