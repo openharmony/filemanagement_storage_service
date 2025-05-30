@@ -30,11 +30,6 @@ public:
     MtpFsTypeDir(LIBMTP_file_t *file);
     MtpFsTypeDir(const MtpFsTypeDir &copy);
 
-    void Clear()
-    {
-        dirList_.clear();
-        fileList_.clear();
-    }
     void SetFetched(bool f)
     {
         fetched_ = f;
@@ -43,6 +38,7 @@ public:
     {
         return fetched_;
     }
+    void Clear();
     void AddDir(const MtpFsTypeDir &dir);
     void AddFile(const MtpFsTypeFile &file);
     bool RemoveDir(const MtpFsTypeDir &dir);
@@ -59,11 +55,11 @@ public:
     }
     const MtpFsTypeDir *Dir(const std::string &name) const;
     const MtpFsTypeFile *File(const std::string &name) const;
-    std::set<MtpFsTypeDir> Dirs() const
+    const std::set<MtpFsTypeDir>& Dirs()
     {
         return dirList_;
     }
-    std::set<MtpFsTypeFile> Files() const
+    const std::set<MtpFsTypeFile>& Files()
     {
         return fileList_;
     }

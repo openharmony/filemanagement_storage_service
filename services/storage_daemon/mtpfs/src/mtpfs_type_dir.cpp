@@ -56,6 +56,13 @@ LIBMTP_folder_t *MtpFsTypeDir::ToLIBMTPFolder() const
     return f;
 }
 
+void MtpFsTypeDir::Clear()
+{
+    std::unique_lock<std::mutex> lock(mutex_);
+    dirList_.clear();
+    fileList_.clear();
+}
+
 void MtpFsTypeDir::AddDir(const MtpFsTypeDir &dir)
 {
     std::unique_lock<std::mutex> lock(mutex_);

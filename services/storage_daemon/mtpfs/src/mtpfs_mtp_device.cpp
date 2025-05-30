@@ -354,13 +354,11 @@ const MtpFsTypeDir *MtpFsDevice::DirFetchContent(std::string path)
     if (dir->IsFetched()) {
         return dir;
     }
-    {
-        std::unique_lock<std::mutex> lock(deviceMutex_);
-        dir->SetFetched(true);
-        LIBMTP_file_t *content = LIBMTP_Get_Files_And_Folders(device_, dir->StorageId(), dir->Id());
-        HandleDir(content, dir);
-        LIBMTPFreeFilesAndFolders(&content);
-    }
+    std::unique_lock<std::mutex> lock(deviceMutex_);
+    dir->SetFetched(true);
+    LIBMTP_file_t *content = LIBMTP_Get_Files_And_Folders(device_, dir->StorageId(), dir->Id());
+    HandleDir(content, dir);
+    LIBMTPFreeFilesAndFolders(&content);
     return dir;
 }
 

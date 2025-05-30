@@ -47,19 +47,19 @@ void MtpFsTypeTmpFile::RemoveFileDescriptor(int fd)
 
 std::set<int> MtpFsTypeTmpFile::FileDescriptors() const
 {
-    std::lock_guard<std::mutex>lock(setMutex_);
+    std::lock_guard<std::mutex> lock(setMutex_);
     return fileDescriptors_;
 }
 
 void MtpFsTypeTmpFile::AddFileDescriptor(int fd)
 {
-    std::lock_guard<std::mutex>lock(setMutex_);
+    std::lock_guard<std::mutex> lock(setMutex_);
     fileDescriptors_.insert(fd);
 }
 
 int MtpFsTypeTmpFile::RefCnt() const
 {
-    std::lock_guard<std::mutex>lock(setMutex_);
+    std::lock_guard<std::mutex> lock(setMutex_);
     return fileDescriptors_.size();
 }
 

@@ -595,19 +595,19 @@ int MtpFileSystem::GetAttr(const char *path, struct stat *buf)
         return 0;
     } else {
         std::string tmpPath(SmtpfsDirName(path));
-        std::string tmpFile(SmtpfsBaseName(path));
+        std::string mtpFile(SmtpfsBaseName(path));
         const MtpFsTypeDir *content = device_.ReadDirFetchContent(tmpPath);
         if (content == nullptr) {
             LOGE("MtpFileSystem: GetAttr error, content is null, path: %{public}s", path);
             return -ENOENT;
-        } else if (content->Dir(tmpFile) != nullptr) {
-            const MtpFsTypeDir *dir = content->Dir(tmpFile);
+        } else if (content->Dir(mtpFile) != nullptr) {
+            const MtpFsTypeDir *dir = content->Dir(mtpFile);
             buf->st_ino = dir->Id();
             buf->st_mode = S_IFDIR | PERMISSION_ONE;
             buf->st_nlink = ST_NLINK_TWO;
             buf->st_mtime = dir->ModificationDate();
-        } else if (content->File(tmpFile) != nullptr) {
-            const MtpFsTypeFile *file = content->File(tmpFile);
+        } else if (content->File(mtpFile) != nullptr) {
+            const MtpFsTypeFile *file = content->File(mtpFile);
             buf->st_ino = file->Id();
             buf->st_size = static_cast<ssize_t>(file->Size());
             buf->st_blocks = static_cast<ssize_t>(file->Size() / FILE_SIZE) + (file->Size() % FILE_SIZE > 0 ? 1 : 0);
