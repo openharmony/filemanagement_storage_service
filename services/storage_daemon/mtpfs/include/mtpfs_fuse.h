@@ -109,6 +109,7 @@ private:
     bool HasSendPartialSupport();
     bool ParseOptionsInner();
     int GetFriendlyName(const char *in, char *out, size_t size);
+    int HandleTemporaryFile(const std::string stdPath, struct fuse_file_info *fileInfo);
     struct fuse_args args_;
     struct fuse_operations fuseOperations_;
     MtpFsTmpFilesPool tmpFilesPool_;

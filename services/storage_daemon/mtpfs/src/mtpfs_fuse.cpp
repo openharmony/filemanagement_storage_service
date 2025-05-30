@@ -41,14 +41,12 @@ std::shared_ptr<AccountSubscriber> osAccountSubscriber_ = nullptr;
 int WrapGetattr(const char *path, struct stat *buf, struct fuse_file_info *fi)
 {
     (void)fi;
-    LOGI("mtp WrapGetattr, path=%{public}s", path);
     int ret = E_OK;
     if (OHOS::StorageDaemon::IsEndWith(path, MTP_FILE_FLAG)) {
         ret = DelayedSingleton<MtpFileSystem>::GetInstance()->GetThumbAttr(std::string(path), buf);
     } else {
         ret = DelayedSingleton<MtpFileSystem>::GetInstance()->GetAttr(path, buf);
     }
-    LOGI("GetAttr ret = %{public}d.", ret);
     return ret;
 }
 
@@ -991,6 +989,11 @@ int MtpFileSystem::Release(const char *path, struct fuse_file_info *fileInfo)
         device_.SetUploadRecord(stdPath, "success");
         return 0;
     }
+    return HandleTemporaryFile(stdPath, fileInfo);
+}
+
+int MtpFileSystem::HandleTemporaryFile(const std::string stdPath, struct fuse_file_info *fileInfo)
+{
     MtpFsTypeTmpFile *tmpFile = const_cast<MtpFsTypeTmpFile *>(tmpFilesPool_.GetFile(stdPath));
     if (tmpFile == nullptr) {
         LOGE("failed to get tmpFile.");
@@ -1009,20 +1012,20 @@ int MtpFileSystem::Release(const char *path, struct fuse_file_info *fileInfo)
     stat(tmpPath.c_str(), &fileStat);
     if (modIf && fileStat.st_size != 0) {
         device_.SetUploadRecord(stdPath, "sending");
-        rval = device_.FilePush(tmpPath, stdPath);
+        int rval = device_.FilePush(tmpPath, stdPath);
         if (rval != 0) {
-            LOGE("FilePush %{public}s to mtp device fail", path);
+            LOGE("FilePush %{public}s to mtp device fail", stdPath.c_str());
             device_.SetUploadRecord(stdPath, "fail");
             ::unlink(tmpPath.c_str());
             return -rval;
         }
-        LOGI("FilePush %{public}s to mtp device success", path);
+        LOGI("FilePush %{public}s to mtp device success", stdPath.c_str());
         device_.SetUploadRecord(stdPath, "success");
     } else {
         device_.SetUploadRecord(stdPath, "success");
     }
     ::unlink(tmpPath.c_str());
-    LOGI("MtpFileSystem: Release success, path: %{public}s", path);
+    LOGI("MtpFileSystem: Release success, stdPath: %{public}s", stdPath.c_str());
     return 0;
 }
 

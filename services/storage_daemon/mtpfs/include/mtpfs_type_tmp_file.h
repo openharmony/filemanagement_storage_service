@@ -16,6 +16,7 @@
 #ifndef MTPFS_TYPE_TMP_FILE_H
 #define MTPFS_TYPE_TMP_FILE_H
 
+#include <mutex>
 #include <set>
 #include <string>
 #include "mtpfs_type_file.h"
@@ -44,23 +45,11 @@ public:
         modified_ = modified;
     }
 
-    std::set<int> FileDescriptors() const
-    {
-        std::lock_guard<std::mutex>lock(setMutex_);
-        return fileDescriptors_;
-    }
-    void AddFileDescriptor(int fd)
-    {
-        std::lock_guard<std::mutex>lock(setMutex_);
-        fileDescriptors_.insert(fd);
-    }
+    int RefCnt() const;
+    void AddFileDescriptor(int fd);
     bool HasFileDescriptor(int fd);
     void RemoveFileDescriptor(int fd);
-    int RefCnt() const
-    {
-        std::lock_guard<std::mutex>lock(setMutex_);
-        return fileDescriptors_.size();
-    }
+    std::set<int> FileDescriptors() const;
 
     MtpFsTypeTmpFile &operator = (const MtpFsTypeTmpFile &rhs);
 
@@ -84,7 +73,7 @@ public:
 private:
     std::string pathDevice_;
     std::string pathTmp_;
-    std::mutex setMutex_;
+    mutable std::mutex setMutex_;
     std::set<int> fileDescriptors_;
     bool modified_;
 };

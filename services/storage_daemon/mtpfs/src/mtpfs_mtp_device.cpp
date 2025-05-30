@@ -36,8 +36,6 @@ static std::atomic<bool> g_isEventDone;
 static std::atomic<bool> isTransferring_;
 std::condition_variable MtpFsDevice::eventCon_;
 std::mutex MtpFsDevice::eventMutex_;
-std::mutex MtpFsDevice::setMutex_;
-std::set<std::string> MtpFsDevice::fileCancelFlagSet_;
 static const std::string NO_ERROR_PATH = "/FileManagerExternalStorageReadOnlyFlag";
 using namespace OHOS::StorageService;
 
@@ -48,7 +46,7 @@ MtpFsDevice::MtpFsDevice() : device_(nullptr), capabilities_(), rootDir_(), move
     MtpFsUtil::On();
     g_isEventDone.store(true);
     isTransferring_.store(false);
-    eventFlag_.store(true); 
+    eventFlag_.store(true);
 }
 
 MtpFsDevice::~MtpFsDevice()
@@ -159,7 +157,7 @@ int MtpFsDevice::MtpProgressCallback(uint64_t const sent, uint64_t const total, 
 {
     const char *charData = static_cast<const char*>(data);
     LOGD("MtpProgressCallback enter, sent=%{public}lld, total=%{public}lld, data=%{public}s", sent, total, charData);
-    return 0;
+    return E_OK;
 }
 
 bool MtpFsDevice::ConnectByDevNo(int devNo)
@@ -889,7 +887,14 @@ int MtpFsDevice::FilePush(const std::string &src, const std::string &dst)
             return -EINVAL;
         }
     }
+    int uploadRval = PerformUpload(src, dst, dirParent, fileToRemove, dstBaseName);
+    SetTransferValue(false);
+    return uploadRval;
+}
 
+int MtpFsDevice::PerformUpload(const std::string &src, const std::string &dst, const MtpFsTypeDir *dirParent,
+                               const MtpFsTypeFile *fileToRemove, const std::string &dstBaseName)
+{
     struct stat fileStat;
     stat(src.c_str(), &fileStat);
     MtpFsTypeFile fileToUpload(0, dirParent->Id(), dirParent->StorageId(), dstBaseName,
@@ -1220,7 +1225,7 @@ bool MtpFsDevice::UpdateFileNameByFd(const MtpFsTypeDir &fileDir, uint32_t fileF
     return false;
 }
 
-static void MtpFsDevice::SetTransferValue(bool value)
+void MtpFsDevice::SetTransferValue(bool value)
 {
     std::lock_guard<std::mutex> lock(eventMutex_);
     isTransferring_.store(value);

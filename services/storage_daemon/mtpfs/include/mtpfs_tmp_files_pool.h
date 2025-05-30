@@ -35,7 +35,7 @@ public:
 
 private:
     std::string tmpDir_;
-    std::mutex setMutex_;
+    mutable std::mutex setMutex_;
     std::set<MtpFsTypeTmpFile> tmpFilePool_;
 };
 

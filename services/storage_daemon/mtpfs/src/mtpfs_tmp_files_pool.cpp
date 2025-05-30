@@ -56,19 +56,19 @@ void MtpFsTmpFilesPool::SetTmpDir(const std::string &tmpDir)
 
 void MtpFsTmpFilesPool::AddFile(const MtpFsTypeTmpFile &tmp)
 {
-    std::lock_guard<std::mutex>lock(setMutex_);
+    std::lock_guard<std::mutex> lock(setMutex_);
     tmpFilePool_.insert(tmp);
 }
 
 bool MtpFsTmpFilesPool::Empty() const
 {
-    std::lock_guard<std::mutex>lock(setMutex_);
+    std::lock_guard<std::mutex> lock(setMutex_);
     return tmpFilePool_.size();
 }
 
 void MtpFsTmpFilesPool::RemoveFile(const std::string &path)
 {
-    std::lock_guard<std::mutex>lock(setMutex_);
+    std::lock_guard<std::mutex> lock(setMutex_);
     auto it = std::find(tmpFilePool_.begin(), tmpFilePool_.end(), path);
     if (it == tmpFilePool_.end()) {
         return;
@@ -78,7 +78,7 @@ void MtpFsTmpFilesPool::RemoveFile(const std::string &path)
 
 const MtpFsTypeTmpFile *MtpFsTmpFilesPool::GetFile(const std::string &path) const
 {
-    std::lock_guard<std::mutex>lock(setMutex_);
+    std::lock_guard<std::mutex> lock(setMutex_);
     auto it = std::find(tmpFilePool_.begin(), tmpFilePool_.end(), path);
     if (it == tmpFilePool_.end()) {
         return nullptr;

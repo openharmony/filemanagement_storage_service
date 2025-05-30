@@ -101,7 +101,7 @@ public:
     }
 
 private:
-    std::mutex mutex_;
+    mutable std::mutex mutex_;
     bool fetched_ = false;
     time_t modifyDate_;
 
