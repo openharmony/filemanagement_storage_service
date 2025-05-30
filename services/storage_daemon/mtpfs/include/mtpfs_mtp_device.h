@@ -99,22 +99,10 @@ public:
     Capabilities GetCapabilities() const;
     char *GetDeviceFriendlyName();
     void FreeObjectHandles(MtpFsTypeDir *dir);
-    static int AddFileCancelFlag(const std::string &path);
-    static void RemoveFileCancelFlag(const std::string &path);
-    static bool IsFileCancelFlagExist(const std::string &path);
     int GetDirChildren(std::string path, MtpFsTypeDir *dir, uint32_t *out);
     void HandleRemoveEvent(uint32_t handleId);
 
 private:
-    void CriticalEnter()
-    {
-        deviceMutex_.lock();
-    }
-    void CriticalLeave()
-    {
-        deviceMutex_.unlock();
-    }
-
     bool EnumStorages();
     static Capabilities GetCapabilities(const MtpFsDevice &device);
     bool ConvertErrorCode(LIBMTP_error_number_t err);
@@ -125,11 +113,14 @@ private:
     static void MtpEventCallback(int ret, LIBMTP_event_t event, uint32_t param, void *data);
     static int MtpProgressCallback(uint64_t const sent, uint64_t const total, void const *const data);
     void FetchDirContent(MtpFsTypeDir *dir);
-    void DumpLibMtpErrorStack();
     std::map<uint32_t, std::string> FindDifferenceFds(uint32_t *newFd, int32_t newNum, uint32_t *oldFd, int32_t oldNum);
     void HandleDiffFdMap(std::map<uint32_t, std::string> &diffFdMap, MtpFsTypeDir *dir);
     void CheckDirChildren(MtpFsTypeDir *dir);
-    bool UpdateFileNameByFd(MtpFsTypeDir &fileDir, uint32_t fileFd, LIBMTP_file_t *file);
+    bool UpdateFileNameByFd(const MtpFsTypeDir &fileDir, uint32_t fileFd, LIBMTP_file_t *file);
+    int PerformUpload(const std::string &src, const std::string &dst, const MtpFsTypeDir *dirParent,
+                      const MtpFsTypeFile *fileToRemove, const std::string &dstBaseName);
+    void DumpLibMtpErrorStack();
+    static void SetTransferValue(bool value);
 
 private:
     LIBMTP_mtpdevice_t *device_;
@@ -143,8 +134,6 @@ private:
     static std::condition_variable eventCon_;
     static std::mutex eventMutex_;
     std::string rootDirName_;
-    static std::mutex setMutex_;
-    static std::set<std::string> fileCancelFlagSet_;
     std::atomic<bool> eventFlag_;
 };
 
