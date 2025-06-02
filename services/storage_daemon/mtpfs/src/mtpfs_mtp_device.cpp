@@ -969,7 +969,7 @@ int MtpFsDevice::FileRename(const std::string &oldPath, const std::string &newPa
     int rval = LIBMTP_Set_File_Name(device_, file, tmpNewBaseName.c_str());
     free(static_cast<void *>(file->filename));
     free(static_cast<void *>(file));
-    if (rval > 0) {
+    if (rval != 0) {
         std::string extraData = "oldPath=" + oldPath + "newPath=" + newPath;
         StorageRadar::ReportMtpfsResult("FileRename::LIBMTP_Set_File_Name", rval, extraData);
         LOGE("Could not rename %{public}s to %{public}s", oldPath.c_str(), newPath.c_str());
