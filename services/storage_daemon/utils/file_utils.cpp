@@ -454,7 +454,7 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
         return E_FORK;
     } else if (pid == 0) {
         (void)close(pipe_fd[0]);
-        if (dup2(pipe_fd[1], STDOUT_FILENO) == -1 || dup2(pipe_fd[1], STDERR_FILENO) == -1) {
+        if (dup2(pipe_fd[1], STDOUT_FILENO) == -1) {
             LOGE("dup2 failed");
             _exit(1);
         }
