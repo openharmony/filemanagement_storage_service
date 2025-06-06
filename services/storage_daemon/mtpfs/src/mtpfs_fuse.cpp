@@ -1245,6 +1245,9 @@ void MtpFileSystem::InitCurrentUidAndCacheMap()
     std::vector<int> activedOsAccountIds;
     ErrCode errCode = OHOS::AccountSA::OsAccountManager::QueryActiveOsAccountIds(activedOsAccountIds);
     LOGI("InitCurrentUidAndCacheMap QueryActiveOsAccountIds errCode is: %{public}d", errCode);
+    if (activedOsAccountIds.empty()) {
+        return;
+    }
     currentUid = activedOsAccountIds[0];
     LOGI("InitCurrentUidAndCacheMap currentUid = %{public}d", currentUid);
     for (size_t i = 0; i < activedOsAccountIds.size(); i++) {
