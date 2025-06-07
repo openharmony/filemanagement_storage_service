@@ -332,6 +332,18 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_MountDfsDocs_001, 
     ret = storageDaemon_->MountDfsDocs(userId, relativePath, networkId, deviceId);
     EXPECT_EQ(ret, E_USER_MOUNT_ERR);
 
+    relativePath = "";
+    ret = storageDaemon_->MountDfsDocs(userId, relativePath, networkId, deviceId);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    std::string tempPath(PATH_MAX + 1, 'a');
+    ret = storageDaemon_->MountDfsDocs(userId, tempPath, networkId, deviceId);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    relativePath = "@";
+    ret = storageDaemon_->MountDfsDocs(userId, relativePath, networkId, deviceId);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
     OHOS::ForceRemoveDirectory(path);
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_MountDfsDocs_001 end";
 }
