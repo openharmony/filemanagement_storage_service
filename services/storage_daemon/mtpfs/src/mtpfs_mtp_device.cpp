@@ -31,6 +31,7 @@ const int32_t DIR_COUNT_ONE = 1;
 const uint32_t DEFAULT_COUNT = 100;
 const uint32_t PTP_ID_START = 300000000;
 const uint32_t PTP_ID_INDEX = 200000000;
+constexpr uint32_t DELETE_OBJECT_DELAY_US = 50000;
 uint32_t MtpFsDevice::rootNode_ = ~0;
 static std::atomic<bool> g_isEventDone;
 static std::atomic<bool> isTransferring_;
@@ -138,7 +139,7 @@ void MtpFsDevice::MtpEventCallback(int ret, LIBMTP_event_t event, uint32_t param
             break;
         case LIBMTP_EVENT_OBJECT_REMOVED:
             LOGI("Received event LIBMTP_EVENT_OBJECT_REMOVED.");
-            if (param > PTP_ID_START) {
+            if (param > PTP_ID_START && !isTransferring_.load()) {
                 LOGI("It's HO 5.x version and PTP mode");
                 uint32_t handleId = param - PTP_ID_INDEX;
                 DelayedSingleton<MtpFileSystem>::GetInstance()->HandleRemove(handleId);
@@ -877,6 +878,7 @@ int MtpFsDevice::FilePush(const std::string &src, const std::string &dst)
     if (fileToRemove) {
         std::unique_lock<std::mutex> lock(deviceMutex_);
         int rval = LIBMTP_Delete_Object(device_, fileToRemove->Id());
+        usleep(DELETE_OBJECT_DELAY_US);
         if (rval != 0) {
             StorageRadar::ReportMtpfsResult("FilePush::LIBMTP_Delete_Object", rval, "src=" + src + "dst=" + dst);
             LOGE("Can not upload %{public}s to %{public}s", src.c_str(), dst.c_str());
