@@ -917,7 +917,7 @@ int32_t MountManager::UMountByList(std::list<std::string> &list, std::list<std::
         }
     }
     auto delay = StorageService::StorageRadar::ReportDuration("UMOUNT: UMOUNT BY LIST",
-        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, StorageService::DEFAULT_USERID);
     LOGI("SD_DURATION: UMOUNT: UMOUNT BY LIST, delayTime = %{public}s", delay.c_str());
     return result;
 }
@@ -1001,7 +1001,7 @@ int32_t MountManager::CloudUMount(int32_t userId)
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
     LOGI("SD_DURATION: UMOUNT2: UMOUNT FULL COULD, delayTime = %{public}s", delay.c_str());
 
-    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
+    startTime = StorageService::StorageRadar::RecordCurrentTime();
     const string cloudPath = cloudMntArgs.GetFullMediaCloud();
     err = UMount2(cloudPath, MNT_DETACH);
     if (err != E_OK && errno != ENOENT && errno != EINVAL) {
@@ -1010,7 +1010,7 @@ int32_t MountManager::CloudUMount(int32_t userId)
         StorageRadar::ReportUserManager("CloudUMount", userId, E_UMOUNT_CLOUD, extraData);
         return E_UMOUNT_CLOUD;
     }
-    auto delay = StorageService::StorageRadar::ReportDuration("UMOUNT2: UMOUNT FULL MEDIA COULD",
+    delay = StorageService::StorageRadar::ReportDuration("UMOUNT2: UMOUNT FULL MEDIA COULD",
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
     LOGI("SD_DURATION: UMOUNT2: UMOUNT FULL MEDIA COULD, delayTime = %{public}s. cloud umount success", delay.c_str());
     return E_OK;
@@ -1191,7 +1191,7 @@ int32_t MountManager::LocalUMount(int32_t userId)
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
     LOGI("SD_DURATION: UMOUNT: LOCAL UMOUNT COMM FUL PATH, delayTime = %{public}s", delay.c_str());
 
-    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
+    startTime = StorageService::StorageRadar::RecordCurrentTime();
     path = LocalMntArgs.GetCloudFullPath();
     unMountRes = UMount(path);
     if (unMountRes != E_OK && errno != ENOENT && errno != EINVAL) {
@@ -1200,7 +1200,7 @@ int32_t MountManager::LocalUMount(int32_t userId)
         StorageRadar::ReportUserManager("LocalUMount", userId, E_UMOUNT_LOCAL_CLOUD, extraData);
         res = E_UMOUNT_LOCAL_CLOUD;
     }
-    auto delay = StorageService::StorageRadar::ReportDuration("UMOUNT: LOCAL UMOUNT CLOUD FUL PATH",
+    delay = StorageService::StorageRadar::ReportDuration("UMOUNT: LOCAL UMOUNT CLOUD FUL PATH",
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
     LOGI("SD_DURATION: UMOUNT: LOCAL UMOUNT CLOUD FUL PATH, delayTime = %{public}s", delay.c_str());
     return res;
@@ -1855,6 +1855,7 @@ int32_t MountManager::UmountMntUserTmpfs(int32_t userId)
     auto delay = StorageService::StorageRadar::ReportDuration("UMOUNT2: UMOUNT SHARE FS DOC CUR APPDATA",
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
     LOGI("SD_DURATION: UMOUNT2: UMOUNT SHARE FS DOC CUR APPDATA, delayTime = %{public}s", delay.c_str());
+
     startTime = StorageService::StorageRadar::RecordCurrentTime();
     path = mountArgument.GetCurOtherAppdataPath();
     res = UMount2(path, MNT_DETACH);
@@ -1951,7 +1952,6 @@ int32_t MountManager::MountFileMgrFuse(int32_t userId, const std::string &path, 
         return E_OPEN_FUSE;
     }
     LOGI("open fuse end.");
-    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     string opt = StringPrintf("fd=%i,"
         "rootmode=40000,"
         "default_permissions,"
@@ -1960,6 +1960,7 @@ int32_t MountManager::MountFileMgrFuse(int32_t userId, const std::string &path, 
         "context=\"u:object_r:hmdfs:s0\","
         "fscontext=u:object_r:hmdfs:s0",
         fuseFd);
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int ret = Mount("/dev/fuse", path.c_str(), "fuse", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_NOATIME, opt.c_str());
     if (ret) {
         LOGE("failed to mount fuse for file mgr, ret is %{public}d, errno is %{public}d.", ret, errno);

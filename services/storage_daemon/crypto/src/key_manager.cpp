@@ -1682,7 +1682,7 @@ int KeyManager::UnlockUserAppKeys(uint32_t userId, bool needGetAllAppKey)
     LOGI("SD_DURATION: GET USER APP KEYS: delay time = %{public}s", delay.c_str());
     startTime = StorageService::StorageRadar::RecordCurrentTime();
     ret = GenerateAndLoadAppKeyInfo(userId, keyInfo);
-    delay = StorageService::StorageRadar::ReportDuration("GEN&LOAD APP KEY INFO", 
+    delay = StorageService::StorageRadar::ReportDuration("GEN&LOAD APP KEY INFO",
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
     LOGI("SD_DURATION: GEN&LOAD APP KEY INFO: delay time = %{public}s", delay.c_str());
     if (ret != E_OK) {

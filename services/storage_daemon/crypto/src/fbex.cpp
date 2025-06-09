@@ -272,7 +272,7 @@ int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, KeyBlob &iv, uint8_
         (void)fclose(f);
         return 0;
     }
-    auto delay = StorageService::StorageRadar::ReportDuration("KeyToKernel: FILE OPS",
+    auto delay = StorageService::StorageRadar::ReportDuration("KEY TO KERNEL: FILE OPS",
         startTime, StorageService::DEFAULT_DELAY_TIME_THRESH, userId);
     LOGI("SD_DURATION: FBEX: FILE OPS: keyType=%{public}d, delay time = %{public}s", type, delay.c_str());
     startTime = StorageService::StorageRadar::RecordCurrentTime();
