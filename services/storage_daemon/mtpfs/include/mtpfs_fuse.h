@@ -23,9 +23,17 @@
 #include "mtpfs_mtp_device.h"
 #include "mtpfs_tmp_files_pool.h"
 #include "mtpfs_type_tmp_file.h"
+#include "os_account_manager.h"
 #include "storage_service_errno.h"
 
 using namespace OHOS;
+
+class AccountSubscriber final : public OHOS::AccountSA::OsAccountSubscriber {
+public:
+    AccountSubscriber(const OHOS::AccountSA::OsAccountSubscribeInfo &info)
+        : OHOS::AccountSA::OsAccountSubscriber(info){};
+    void OnStateChanged(const OHOS::AccountSA::OsAccountStateData &data) override;
+};
 
 class MtpFileSystem {
     DECLARE_DELAYED_SINGLETON(MtpFileSystem);
@@ -90,15 +98,18 @@ public:
     int SetXAttr(const char *path, const char *in);
     int GetXAttr(const char *path, const char *in, char *out, size_t size);
     int GetThumbAttr(const std::string &path, struct stat *buf);
-    int AddPullingFile(const std::string &path);
-    void RemovePullingFile(const std::string &path);
-    bool IsFilePulling(const std::string &path);
     void HandleRemove(uint32_t handleId);
+    void InitCurrentUidAndCacheMap();
+    bool IsCurrentUserReadOnly();
+    void SetCurrentUid(int32_t uid);
+    void SetMtpClientWriteMap(uid_t first, bool second);
 
 private:
-    bool HasPartialObjectSupport();
+    bool HasGetPartialSupport();
+    bool HasSendPartialSupport();
     bool ParseOptionsInner();
     int GetFriendlyName(const char *in, char *out, size_t size);
+    int HandleTemporaryFile(const std::string stdPath, struct fuse_file_info *fileInfo);
     struct fuse_args args_;
     struct fuse_operations fuseOperations_;
     MtpFsTmpFilesPool tmpFilesPool_;
@@ -106,8 +117,9 @@ private:
     MtpFsDevice device_;
     std::mutex fuseMutex_;
     std::map<std::string, const MtpFsTypeDir *> dirMap_ {};
-    std::mutex listMutex_;
-    std::set<std::string> pullingFileList_;
+    std::mutex mtpClientMutex_;
+    int32_t currentUid = 0;
+    std::map<uid_t, bool> mtpClientWriteMap_ {};
 };
 
 #endif // MTPFS_FUSE_H

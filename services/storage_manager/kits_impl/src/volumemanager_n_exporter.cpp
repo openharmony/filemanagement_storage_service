@@ -280,6 +280,7 @@ napi_value GetVolumeById(napi_env env, napi_callback_info info)
         volumeObject.AddProp("state", NVal::CreateInt32(env, volumeInfo->GetState()).val_);
         volumeObject.AddProp("path", NVal::CreateUTF8String(env, volumeInfo->GetPath()).val_);
         volumeObject.AddProp("diskType", NVal::CreateInt32(env, volumeInfo->GetFlags()).val_);
+        volumeObject.AddProp("fsType", NVal::CreateUTF8String(env, volumeInfo->GetFsTypeString()).val_);
         
         return volumeObject;
     };

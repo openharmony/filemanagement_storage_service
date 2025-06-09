@@ -460,15 +460,15 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UnlockEceSece_001, TestSize.Level1)
     EXPECT_EQ(KeyManager::GetInstance()->UnlockEceSece(user, token, secret), E_RESTORE_KEY_FAILED);
 
     EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*fscryptKeyMock_, UnlockUserScreen(_, _, _)).WillOnce(Return(-1));
+    EXPECT_CALL(*fscryptKeyMock_, UnlockUserScreen(_, _, _, _)).WillOnce(Return(-1));
     EXPECT_EQ(KeyManager::GetInstance()->UnlockEceSece(user, token, secret), E_UNLOCK_SCREEN_FAILED);
 
     EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*fscryptKeyMock_, UnlockUserScreen(_, _, _)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*fscryptKeyMock_, UnlockUserScreen(_, _, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(KeyManager::GetInstance()->UnlockEceSece(user, token, secret), E_OK);
 
     EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(-1)).WillOnce(Return(E_OK));
-    EXPECT_CALL(*fscryptKeyMock_, UnlockUserScreen(_, _, _)).WillOnce(Return(-1));
+    EXPECT_CALL(*fscryptKeyMock_, UnlockUserScreen(_, _, _, _)).WillOnce(Return(-1));
     EXPECT_EQ(KeyManager::GetInstance()->UnlockEceSece(user, token, secret), E_UNLOCK_SCREEN_FAILED);
     OHOS::ForceRemoveDirectory(keyDir);
     GTEST_LOG_(INFO) << "KeyManager_UnlockEceSece_001 end";

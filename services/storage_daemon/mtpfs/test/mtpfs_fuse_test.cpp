@@ -30,6 +30,8 @@ const int32_t ARG_SIZE = 2;
 constexpr int UPLOAD_RECORD_FALSE_LEN = 5;
 constexpr int UPLOAD_RECORD_TRUE_LEN = 4;
 constexpr int UPLOAD_RECORD_SUCCESS_SENDING_LEN = 7;
+constexpr int32_t FROM_ID = 100;
+constexpr int32_t TO_ID = 101;
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -341,6 +343,68 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttr_001, TestSize.Level1)
     EXPECT_EQ(ret, UPLOAD_RECORD_SUCCESS_SENDING_LEN);
 
     GTEST_LOG_(INFO) << "MtpfsFuseTest_GetXAttr_001 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_InitCurrentUidAndCacheMap_001
+ * @tc.desc: Test InitCurrentUidAndCacheMap function when init mtpClientWriteMap success.
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_InitCurrentUidAndCacheMap_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_InitCurrentUidAndCacheMap_001 start";
+
+    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
+    mtpFileSystem->InitCurrentUidAndCacheMap();
+    EXPECT_TRUE(mtpFileSystem->mtpClientWriteMap_.size() > 0);
+    mtpFileSystem->mtpClientWriteMap_.clear();
+
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_InitCurrentUidAndCacheMap_001 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_IsCurrentUserReadOnly_001
+ * @tc.desc: Test IsCurrentUserReadOnly function when currentUser is not readOnly
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_IsCurrentUserReadOnly_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_IsCurrentUserReadOnly_001 start";
+
+    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
+    bool result = mtpFileSystem->IsCurrentUserReadOnly();
+    EXPECT_FALSE(result);
+
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_IsCurrentUserReadOnly_001 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_AccountSubscriber_OnStateChanged_001
+ * @tc.desc: Test OnStateChanged function when currentUid was changed
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_AccountSubscriber_OnStateChanged_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_AccountSubscriber_OnStateChanged_001 start";
+
+    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
+    std::set<OHOS::AccountSA::OsAccountState> states = { OHOS::AccountSA::OsAccountState::SWITCHED };
+    bool withHandShake = true;
+    OHOS::AccountSA::OsAccountSubscribeInfo subscribeInfo(states, withHandShake);
+    AccountSubscriber accountSubscriber(subscribeInfo);
+
+    OHOS::AccountSA::OsAccountStateData osAccountStateData;
+    osAccountStateData.state = OHOS::AccountSA::OsAccountState::INVALID_TYPE;
+    accountSubscriber.OnStateChanged(osAccountStateData);
+
+    osAccountStateData.state = OHOS::AccountSA::OsAccountState::SWITCHED;
+    osAccountStateData.fromId = FROM_ID;
+    osAccountStateData.toId = TO_ID;
+    accountSubscriber.OnStateChanged(osAccountStateData);
+    EXPECT_EQ(mtpFileSystem->currentUid, TO_ID);
+    mtpFileSystem->currentUid = 0;
+
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_AccountSubscriber_OnStateChanged_001 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

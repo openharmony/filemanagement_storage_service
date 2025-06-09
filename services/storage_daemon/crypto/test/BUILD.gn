@@ -76,6 +76,11 @@ ohos_moduletest("CryptoSubTest") {
     defines += [ "ENABLE_SCREENLOCK_MANAGER" ]
     external_deps += [ "screenlock_mgr:screenlock_client" ]
   }
+
+  if (enable_huks_hdi) {
+    defines += [ "HUKS_IDL_ENVIRONMENT" ]
+    external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
+  }
 }
 
 group("crypto_test") {

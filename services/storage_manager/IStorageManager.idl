@@ -36,7 +36,7 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 46] void GetUserStorageStatsByType([in] int userId, [out] StorageStats storageStats, 
                                                 [in] String type);
     [ipccode 15] void NotifyVolumeCreated([in] VolumeCore vc);
-    [ipccode 16] void NotifyVolumeMounted([in] String volumeId, [in] int fsType, [in] String fsUuid, 
+    [ipccode 16] void NotifyVolumeMounted([in] String volumeId, [in] String fsTypeStr, [in] String fsUuid,
                                           [in] String path, [in] String description);
     [ipccode 17] void NotifyVolumeStateChanged([in] String volumeId, [in] unsigned int  state);
     [ipccode 18] void Mount([in] String volumeId);

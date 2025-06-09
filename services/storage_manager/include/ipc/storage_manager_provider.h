@@ -55,7 +55,7 @@ public:
 
     int32_t NotifyVolumeCreated(const VolumeCore &vc) override;
     int32_t NotifyVolumeMounted(const std::string &volumeId,
-                                int32_t fsType,
+                                const std::string &fsTypeStr,
                                 const std::string &fsUuid,
                                 const std::string &path,
                                 const std::string &description) override;

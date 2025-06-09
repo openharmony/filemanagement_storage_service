@@ -300,11 +300,11 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeMoun
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeMounted_001 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     std::string volumeId = "testVolumeId";
-    int32_t fsType = 1;
+    std::string fsTypeStr = "testfsTypeStr";
     std::string fsUuid = "testFsUuid";
     std::string path = "/mnt/testVolume";
     std::string description = "Test Volume";
-    auto ret = storageManagerProviderTest_->NotifyVolumeMounted(volumeId, fsType, fsUuid, path, description);
+    auto ret = storageManagerProviderTest_->NotifyVolumeMounted(volumeId, fsTypeStr, fsUuid, path, description);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeMounted_001 end";
 }

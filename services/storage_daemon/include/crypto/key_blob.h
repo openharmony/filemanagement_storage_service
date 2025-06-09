@@ -19,6 +19,9 @@
 #include <linux/version.h>
 
 #include "hks_type.h"
+#ifdef HUKS_IDL_ENVIRONMENT
+#include "v1_1/ihuks_types.h"
+#endif
 #include "securec.h"
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 4, 0)
@@ -131,6 +134,12 @@ public:
     {
         return {size, data.get()};
     }
+#ifdef HUKS_IDL_ENVIRONMENT
+    HuksBlob ToHuksBlob() const
+    {
+        return {data.get(), size};
+    }
+#endif
     uint32_t size { 0 };
     std::unique_ptr<uint8_t[]> data { nullptr };
 };

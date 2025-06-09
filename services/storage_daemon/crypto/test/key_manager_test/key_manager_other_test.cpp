@@ -108,7 +108,7 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_LoadAllUsersEl1Key_000, TestSize.Level1
     EXPECT_CALL(*baseKeyMock_, UpgradeKeys()).WillRepeatedly(Return(true));
     EXPECT_CALL(*baseKeyMock_, InitKey(_)).WillRepeatedly(Return(true));
     EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillRepeatedly(Return(E_OK));
-    EXPECT_CALL(*fscryptKeyMock_, ActiveKey(_, _)).WillRepeatedly(Return(E_OK));
+    EXPECT_CALL(*fscryptKeyMock_, ActiveKey(_, _, _)).WillRepeatedly(Return(E_OK));
     EXPECT_EQ(KeyManager::GetInstance()->LoadAllUsersEl1Key(), E_OK);
     GTEST_LOG_(INFO) << "KeyManager_LoadAllUsersEl1Key_000 end";
 }
@@ -332,7 +332,7 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_ActiveElXUserKey_001, TestSize.Level1)
     #else
     EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(E_OK));
     #endif
-    EXPECT_CALL(*fscryptKeyMock_, ActiveKey(_, _)).WillOnce(Return(E_OK));
+    EXPECT_CALL(*fscryptKeyMock_, ActiveKey(_, _, _)).WillOnce(Return(E_OK));
     EXPECT_EQ(KeyManager::GetInstance()->ActiveElXUserKey(user, token, EL1_KEY, secret, elKey), E_OK);
 
     EXPECT_CALL(*baseKeyMock_, InitKey(_)).WillOnce(Return(true));

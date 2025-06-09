@@ -185,12 +185,12 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeMounted_0000, 
     std::shared_ptr<VolumeManagerService> vmService =
         DelayedSingleton<VolumeManagerService>::GetInstance();
     std::string volumeId = "vol-1-5";
-    int32_t fsType = 1;
+    std::string fsTypeStr = "ntfs";
     std::string fsUuid = "";
     std::string path = "";
     std::string description = "";
     if (vmService != nullptr) {
-        vmService->OnVolumeMounted(volumeId, fsType, fsUuid, path, description);
+        vmService->OnVolumeMounted(volumeId, fsTypeStr, fsUuid, path, description);
         VolumeExternal ve;
         int32_t res = vmService->GetVolumeById(volumeId, ve);
         EXPECT_EQ(res, E_NON_EXIST);
@@ -257,13 +257,14 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeByUuid_0000, t
             DelayedSingleton<VolumeManagerService>::GetInstance();
     std::string volumeId = "vol-1-6";
     int32_t fsType = 1;
+    std::string fsTypeStr = "ntfs";
     std::string fsUuid = "uuid-1";
     std::string path = "/";
     std::string description = "description-1";
     std::string diskId = "disk-1-6";
     VolumeCore vc(volumeId, fsType, diskId);
     vmService->OnVolumeCreated(vc);
-    vmService->OnVolumeMounted(volumeId, fsType, fsUuid, path, description);
+    vmService->OnVolumeMounted(volumeId, fsTypeStr, fsUuid, path, description);
     std::shared_ptr<VolumeExternal> result = vmService->GetVolumeByUuid(fsUuid);
     EXPECT_NE(result, nullptr);
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Storage_manager_proxy_GetVolumeByUuid_0000";
@@ -285,13 +286,14 @@ HWTEST_F(VolumeManagerServiceTest, Storage_manager_proxy_GetVolumeByUuid_0001, t
             DelayedSingleton<VolumeManagerService>::GetInstance();
     std::string volumeId = "vol-1-6";
     int32_t fsType = 1;
+    std::string fsTypeStr = "ntfs";
     std::string fsUuid = "uuid-1";
     std::string path = "/";
     std::string description = "description-1";
     std::string diskId = "disk-1-6";
     VolumeCore vc(volumeId, fsType, diskId);
     vmService->OnVolumeCreated(vc);
-    vmService->OnVolumeMounted(volumeId, fsType, fsUuid, path, description);
+    vmService->OnVolumeMounted(volumeId, fsTypeStr, fsUuid, path, description);
     VolumeExternal ve;
     int32_t ret = vmService->GetVolumeByUuid(fsUuid, ve);
     EXPECT_EQ(ret, E_OK);

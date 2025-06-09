@@ -25,14 +25,14 @@ int main(int argc, char **argv)
         std::cout << "mtpfs wrong usage, see " << SmtpfsBaseName(argv[0]) << " -h for details.\n";
         return 1;
     }
-    
+
     bool success = DelayedSingleton<MtpFileSystem>::GetInstance()->Exec();
     if (!success) {
         LOGE("Exec mtpfs.bin to mount mtp device failed.");
         std::cout << "Exec mtpfs to mount mtp device failed.\n";
         return 1;
     }
- 
+
     LOGI("Exec mtpfs.bin to mount mtp device success.");
     return 0;
 }

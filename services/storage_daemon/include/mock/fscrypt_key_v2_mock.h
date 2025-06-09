@@ -26,13 +26,13 @@ class IFscryptKeyV2Moc {
 public:
     virtual ~IFscryptKeyV2Moc() = default;
 public:
-    virtual int32_t ActiveKey(uint32_t flag, const std::string &mnt) = 0;
+    virtual int32_t ActiveKey(const KeyBlob &authToken, uint32_t flag, const std::string &mnt) = 0;
     virtual int32_t GenerateAppkey(uint32_t userId, uint32_t appUid, std::string &keyId) = 0;
     virtual int32_t DeleteAppkey(const std::string keyId) = 0;
     virtual bool InactiveKey(uint32_t flag, const std::string &mnt) = 0;
     virtual int32_t LockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt) = 0;
     virtual int32_t LockUece(bool &isFbeSupport) = 0;
-    virtual int32_t UnlockUserScreen(uint32_t flag, uint32_t sdpClass, const std::string &mnt) = 0;
+    virtual int32_t UnlockUserScreen(const KeyBlob &, uint32_t flag, uint32_t sdpClass, const std::string &mnt) = 0;
     virtual int32_t AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status) = 0;
     virtual int32_t DeleteClassEPinCode(uint32_t user) = 0;
     virtual int32_t ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId) = 0;
@@ -45,13 +45,13 @@ public:
 
 class FscryptKeyV2Moc : public IFscryptKeyV2Moc {
 public:
-    MOCK_METHOD2(ActiveKey, int32_t(uint32_t flag, const std::string &mnt));
+    MOCK_METHOD3(ActiveKey, int32_t(const KeyBlob &authToken, uint32_t flag, const std::string &mnt));
     MOCK_METHOD3(GenerateAppkey, int32_t(uint32_t userId, uint32_t appUid, std::string &keyId));
     MOCK_METHOD1(DeleteAppkey, int32_t(const std::string keyId));
     MOCK_METHOD2(InactiveKey, bool(uint32_t flag, const std::string &mnt));
     MOCK_METHOD3(LockUserScreen, int32_t(uint32_t flag, uint32_t sdpClass, const std::string &mnt));
     MOCK_METHOD1(LockUece, int32_t(bool &isFbeSupport));
-    MOCK_METHOD3(UnlockUserScreen, int32_t(uint32_t flag, uint32_t sdpClass, const std::string &mnt));
+    MOCK_METHOD4(UnlockUserScreen, int32_t(const KeyBlob &, uint32_t flag, uint32_t sdpClass, const std::string &mnt));
     MOCK_METHOD3(AddClassE, int32_t(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status));
     MOCK_METHOD1(DeleteClassEPinCode, int32_t(uint32_t user));
     MOCK_METHOD2(ChangePinCodeClassE, int32_t(bool &isFbeSupport, uint32_t userId));
