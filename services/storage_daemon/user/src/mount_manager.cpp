@@ -580,7 +580,6 @@ int32_t MountManager::CloudMount(int32_t userId, const string &path)
         "context=\"u:object_r:hmdfs:s0\","
         "fscontext=u:object_r:hmdfs:s0",
         fd);
-    LOGI("start to mount fuse");
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     ret = Mount("/dev/fuse", path.c_str(), "fuse", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_NOATIME, opt.c_str());
     if (ret) {
