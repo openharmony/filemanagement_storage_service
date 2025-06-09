@@ -29,6 +29,7 @@
 constexpr int UPLOAD_RECORD_FALSE_LEN = 5;
 constexpr int UPLOAD_RECORD_TRUE_LEN = 4;
 constexpr int32_t UPLOAD_RECORD_SUCCESS_LEN = 7;
+constexpr uint32_t DEVICE_WRITE_DELAY_US = 50000;
 
 constexpr int32_t ST_NLINK_TWO = 2;
 constexpr int32_t FILE_SIZE = 512;
@@ -1013,6 +1014,7 @@ int MtpFileSystem::HandleTemporaryFile(const std::string stdPath, struct fuse_fi
     if (modIf && fileStat.st_size != 0) {
         device_.SetUploadRecord(stdPath, "sending");
         int rval = device_.FilePush(tmpPath, stdPath);
+        usleep(DEVICE_WRITE_DELAY_US);
         if (rval != 0) {
             LOGE("FilePush %{public}s to mtp device fail", stdPath.c_str());
             device_.SetUploadRecord(stdPath, "fail");
