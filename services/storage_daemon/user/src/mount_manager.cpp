@@ -301,12 +301,16 @@ int32_t MountManager::BindMount(std::string &srcPath, std::string &dstPath)
         LOGE("path has mounted, %{public}s", dstPath.c_str());
         return E_OK;
     }
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int32_t ret = Mount(srcPath, dstPath, nullptr, MS_BIND, nullptr);
     if (ret != 0 && errno != EEXIST && errno != EBUSY) {
         LOGE("failed to bind mount, srcPath is %{public}s, dstPath is %{public}s, err is %{public}d",
             srcPath.c_str(), dstPath.c_str(), errno);
         return E_MOUNT_BIND_MOUNT;
     }
+    auto delay = StorageService::StorageRadar::ReportDuration("MOUNT: BIND MOUNT",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, StorageService::DEFAULT_USERID);
+    LOGI("SD_DURATION: MOUNT: BIND MOUNT, delayTime = %{public}s", delay.c_str());
     return E_OK;
 }
 
@@ -318,6 +322,7 @@ int32_t MountManager::SharefsMount(int32_t userId)
         LOGI("path has mounted, %{public}s", dst.c_str());
     } else {
         std::string srcPath = sharefsMntArgs.GetShareSrc();
+        auto startTime = StorageService::StorageRadar::RecordCurrentTime();
         int ret = Mount(srcPath, dst, "sharefs", sharefsMntArgs.GetFlags(),
                         sharefsMntArgs.GetUserIdPara().c_str());
         if (ret != 0 && errno != EEXIST && errno != EBUSY) {
@@ -326,6 +331,9 @@ int32_t MountManager::SharefsMount(int32_t userId)
             StorageRadar::ReportUserManager("SharefsMount", userId, E_MOUNT_SHAREFS, extraData);
             return E_MOUNT_SHAREFS;
         }
+        auto delay = StorageService::StorageRadar::ReportDuration("MOUNT: SHARE FS MOUNT",
+            startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
+        LOGI("SD_DURATION: SHARE FS MOUNT, delayTime = %{public}s", delay.c_str());
     }
     return E_OK;
 }
@@ -345,6 +353,7 @@ int32_t MountManager::HmSharefsMount(int32_t userId, std::string &srcPath, std::
         return E_OK;
     }
     Utils::MountArgument sharefsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int ret = Mount(srcPath, dstPath, "sharefs", sharefsMntArgs.GetFlags(),
                     sharefsMntArgs.GetHmUserIdPara().c_str());
     if (ret != 0 && errno != EEXIST && errno != EBUSY) {
@@ -353,6 +362,9 @@ int32_t MountManager::HmSharefsMount(int32_t userId, std::string &srcPath, std::
         StorageRadar::ReportUserManager("HmSharefsMount", userId, E_MOUNT_HM_SHAREFS, extraData);
         return E_MOUNT_HM_SHAREFS;
     }
+    auto delay = StorageService::StorageRadar::ReportDuration("MOUNT: HM SHARE FS MOUNT",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
+    LOGI("SD_DURATION: HM SHARE FS MOUNT, delayTime = %{public}s", delay.c_str());
     return E_OK;
 }
 
@@ -372,6 +384,7 @@ int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath, bool 
         LOGI("path has mounted, %{public}s", dstPath.c_str());
         return E_OK;
     }
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int ret = Mount(srcPath, dstPath, "hmdfs", hmdfsMntArgs.GetFlags(), hmdfsMntArgs.OptionsToString().c_str());
     if (ret != 0 && errno != EEXIST && errno != EBUSY) {
         LOGE("failed to mount hmdfs, err %{public}d", errno);
@@ -379,6 +392,9 @@ int32_t MountManager::HmdfsMount(int32_t userId, std::string relativePath, bool 
         StorageRadar::ReportUserManager("HmdfsMount", userId, E_MOUNT_HMDFS, extraData);
         return E_MOUNT_HMDFS;
     }
+    auto delay = StorageService::StorageRadar::ReportDuration("MOUNT: HMDFS MOUNT",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
+    LOGI("SD_DURATION: HMDFS MOUNT, delayTime = %{public}s", delay.c_str());
 
     ret = chown(hmdfsMntArgs.GetCtrlPath().c_str(), OID_DFS, OID_SYSTEM);
     if (ret != 0) {
@@ -565,13 +581,16 @@ int32_t MountManager::CloudMount(int32_t userId, const string &path)
         "fscontext=u:object_r:hmdfs:s0",
         fd);
     LOGI("start to mount fuse");
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     ret = Mount("/dev/fuse", path.c_str(), "fuse", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_NOATIME, opt.c_str());
     if (ret) {
         LOGE("failed to mount fuse, err %{public}d %{public}d %{public}s", errno, ret, path.c_str());
         (void)fclose(f);
         return ret;
     }
-    LOGI("start cloud daemon fuse");
+    auto delay = StorageService::StorageRadar::ReportDuration("MOUNT: CLOUD MOUNT",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
+    LOGI("SD_DURATION: CLOUD MOUNT, delayTime = %{public}s. start cloud daemon fuse.", delay.c_str());
     ret = CloudDaemonManager::GetInstance().StartFuse(userId, fd, path);
     if (ret) {
         LOGE("failed to connect fuse, err %{public}d %{public}d %{public}s", errno, ret, path.c_str());
@@ -849,6 +868,7 @@ int32_t MountManager::UMountHmdfsByList(int32_t userId, std::list<std::string> &
         return E_OK;
     }
     int32_t result = E_OK;
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     for (std::string &path: list) {
         LOGD("umount path %{public}s.", path.c_str());
         if (IsSysMountPoint(userId, path)) {
@@ -861,6 +881,9 @@ int32_t MountManager::UMountHmdfsByList(int32_t userId, std::list<std::string> &
             unMountFailList.push_back(path);
         }
     }
+    auto delay = StorageService::StorageRadar::ReportDuration("UMOUNT: UMOUNT HMDFS BY LIST",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
+    LOGI("SD_DURATION: UMOUNT: UMOUNT HMDFS BY LIST, delayTime = %{public}s", delay.c_str());
     return result;
 }
 
@@ -883,6 +906,7 @@ int32_t MountManager::UMountByList(std::list<std::string> &list, std::list<std::
         return E_OK;
     }
     int32_t result = E_OK;
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     for (const std::string &path: list) {
         LOGD("umount path %{public}s.", path.c_str());
         int32_t res = UMount(path);
@@ -892,6 +916,9 @@ int32_t MountManager::UMountByList(std::list<std::string> &list, std::list<std::
             unMountFailList.push_back(path);
         }
     }
+    auto delay = StorageService::StorageRadar::ReportDuration("UMOUNT: UMOUNT BY LIST",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
+    LOGI("SD_DURATION: UMOUNT: UMOUNT BY LIST, delayTime = %{public}s", delay.c_str());
     return result;
 }
 
@@ -901,6 +928,7 @@ int32_t MountManager::UMountByListWithDetach(std::list<std::string> &list)
         return E_OK;
     }
     int32_t result = E_OK;
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     for (const std::string &path: list) {
         LOGD("umount path %{public}s.", path.c_str());
         int32_t res = UMount2(path, MNT_DETACH);
@@ -909,6 +937,9 @@ int32_t MountManager::UMountByListWithDetach(std::list<std::string> &list)
             result = errno;
         }
     }
+    auto delay = StorageService::StorageRadar::ReportDuration("UMOUNT2: UMOUNT LIST WITH DETACH",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, StorageService::DEFAULT_USERID);
+    LOGI("SD_DURATION: UMOUNT2: UMOUNT LIST WITH DETACH, delayTime = %{public}s", delay.c_str());
     return result;
 }
 
@@ -956,6 +987,7 @@ int32_t MountManager::CloudUMount(int32_t userId)
 {
 #ifdef DFS_SERVICE
     int32_t err = E_OK;
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     Utils::MountArgument cloudMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
     const string cloudFusePath = cloudMntArgs.GetFullCloud();
     err = UMount2(cloudFusePath, MNT_DETACH);
@@ -965,6 +997,11 @@ int32_t MountManager::CloudUMount(int32_t userId)
         StorageRadar::ReportUserManager("CloudUMount", userId, E_UMOUNT_CLOUD_FUSE, extraData);
         return E_UMOUNT_CLOUD_FUSE;
     }
+    auto delay = StorageService::StorageRadar::ReportDuration("UMOUNT2: UMOUNT FULL COULD",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
+    LOGI("SD_DURATION: UMOUNT2: UMOUNT FULL COULD, delayTime = %{public}s", delay.c_str());
+
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     const string cloudPath = cloudMntArgs.GetFullMediaCloud();
     err = UMount2(cloudPath, MNT_DETACH);
     if (err != E_OK && errno != ENOENT && errno != EINVAL) {
@@ -973,7 +1010,9 @@ int32_t MountManager::CloudUMount(int32_t userId)
         StorageRadar::ReportUserManager("CloudUMount", userId, E_UMOUNT_CLOUD, extraData);
         return E_UMOUNT_CLOUD;
     }
-    LOGI("cloud umount success");
+    auto delay = StorageService::StorageRadar::ReportDuration("UMOUNT2: UMOUNT FULL MEDIA COULD",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
+    LOGI("SD_DURATION: UMOUNT2: UMOUNT FULL MEDIA COULD, delayTime = %{public}s. cloud umount success", delay.c_str());
     return E_OK;
 #else
     return E_OK;
@@ -1138,6 +1177,7 @@ void MountManager::PrepareFileManagerDir(int32_t userId)
 int32_t MountManager::LocalUMount(int32_t userId)
 {
     int res = E_OK;
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     Utils::MountArgument LocalMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, "account"));
     std::string path = LocalMntArgs.GetCommFullPath() + "local/";
     int unMountRes = UMount(path);
@@ -1147,6 +1187,11 @@ int32_t MountManager::LocalUMount(int32_t userId)
         StorageRadar::ReportUserManager("LocalUMount", userId, E_UMOUNT_LOCAL_MEDIA, extraData);
         res = E_UMOUNT_LOCAL_MEDIA;
     }
+    auto delay = StorageService::StorageRadar::ReportDuration("UMOUNT: LOCAL UMOUNT COMM FUL PATH",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
+    LOGI("SD_DURATION: UMOUNT: LOCAL UMOUNT COMM FUL PATH, delayTime = %{public}s", delay.c_str());
+
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     path = LocalMntArgs.GetCloudFullPath();
     unMountRes = UMount(path);
     if (unMountRes != E_OK && errno != ENOENT && errno != EINVAL) {
@@ -1155,6 +1200,9 @@ int32_t MountManager::LocalUMount(int32_t userId)
         StorageRadar::ReportUserManager("LocalUMount", userId, E_UMOUNT_LOCAL_CLOUD, extraData);
         res = E_UMOUNT_LOCAL_CLOUD;
     }
+    auto delay = StorageService::StorageRadar::ReportDuration("UMOUNT: LOCAL UMOUNT CLOUD FUL PATH",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
+    LOGI("SD_DURATION: UMOUNT: LOCAL UMOUNT CLOUD FUL PATH, delayTime = %{public}s", delay.c_str());
     return res;
 }
 
@@ -1435,12 +1483,16 @@ int32_t MountManager::MountDfsDocs(int32_t userId, const std::string &relativePa
 
     Utils::MountArgument hmdfsMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, relativePath));
     std::string srcPath = hmdfsMntArgs.GetFullDst() + "/device_view/" + networkId + "/files/Docs/";
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int32_t ret = Mount(srcPath, dstPath, nullptr, MS_BIND, nullptr);
     if (ret != 0 && errno != EEXIST && errno != EBUSY) {
         LOGE("MountDfsDocs mount bind failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
              GetAnonyString(srcPath).c_str(), dstPath.c_str(), errno);
         return E_USER_MOUNT_ERR;
     }
+    auto delay = StorageService::StorageRadar::ReportDuration(" MOUNT: MOUNT_DFS_DOCS",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
+    LOGI("SD_DURATION: MOUNT: MOUNT_DFS_DOCS, delayTime = %{public}s", delay.c_str());
     return E_OK;
 }
 
@@ -1457,13 +1509,16 @@ int32_t MountManager::UMountDfsDocs(int32_t userId, const std::string &relativeP
 
     std::string dstPath = StringPrintf("/mnt/data/%d/hmdfs/%s", userId, GetAnonyString(deviceId).c_str());
     sync();
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int32_t ret = UMount2(dstPath, MNT_FORCE);
     if (ret != E_OK) {
         LOGE("UMountDfsDocs unmount bind failed, srcPath is %{public}s errno is %{public}d",
              dstPath.c_str(), errno);
         return E_USER_UMOUNT_ERR;
     }
-    LOGI("MountManager::UMountDfsDocs end.");
+    auto delay = StorageService::StorageRadar::ReportDuration("UMOUNT2: UMOUNT DFS DOCS",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
+    LOGI("MountManager::UMountDfsDocs end. SD_DURATION: delayTime = %{public}s", delay.c_str());
     if (!filesystem::is_empty(dstPath)) {
         LOGE("[UMountDfsDocs] Failed to umount");
         return E_NOT_EMPTY_TO_UMOUNT;
@@ -1792,15 +1847,23 @@ int32_t MountManager::UmountMntUserTmpfs(int32_t userId)
 {
     Utils::MountArgument mountArgument(Utils::MountArgumentDescriptors::Alpha(userId, ""));
     std::string path = mountArgument.GetSharefsDocCurPath() + "/appdata";
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int32_t res = UMount2(path, MNT_DETACH);
     if (res != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("failed to umount with detach, path %{public}s, errno %{public}d.", path.c_str(), errno);
     }
+    auto delay = StorageService::StorageRadar::ReportDuration("UMOUNT2: UMOUNT SHARE FS DOC CUR APPDATA",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
+    LOGI("SD_DURATION: UMOUNT2: UMOUNT SHARE FS DOC CUR APPDATA, delayTime = %{public}s", delay.c_str());
+    startTime = StorageService::StorageRadar::RecordCurrentTime();
     path = mountArgument.GetCurOtherAppdataPath();
     res = UMount2(path, MNT_DETACH);
     if (res != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("failed to umount with detach, path %{public}s, errno %{public}d.", path.c_str(), errno);
     }
+    delay = StorageService::StorageRadar::ReportDuration("UMOUNT2: UMOUNT OTHER TEMP CUR APPDATA",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
+    LOGI("SD_DURATION: UMOUNT2: UMOUNT OTHER TEMP CUR APPDATA, delayTime = %{public}s", delay.c_str());
     return E_OK;
 }
 
@@ -1839,6 +1902,7 @@ int32_t MountManager::MountMediaFuse(int32_t userId, int32_t &devFd)
         "context=\"u:object_r:hmdfs:s0\","
         "fscontext=u:object_r:hmdfs:s0",
         devFd);
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int ret = Mount("/dev/fuse", path.c_str(), "fuse", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_NOATIME, opt.c_str());
     if (ret) {
         LOGE("failed to mount fuse for media, ret is %{public}d, errno is %{public}d.", ret, errno);
@@ -1847,6 +1911,9 @@ int32_t MountManager::MountMediaFuse(int32_t userId, int32_t &devFd)
         StorageRadar::ReportUserManager("MountMediaFuse", userId, E_MOUNT_MEDIA_FUSE, extraData);
         return E_MOUNT_MEDIA_FUSE;
     }
+    auto delay = StorageService::StorageRadar::ReportDuration("MOUNT: MOUNT MEDIA FUSE",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
+    LOGI("SD_DURATION: MOUNT: MOUNT MEDIA FUSE, delayTime = %{public}s", delay.c_str());
     SetMediaObserverState(true);
     LOGI("mount media fuse success, path is %{public}s", path.c_str());
 #endif
@@ -1858,6 +1925,7 @@ int32_t MountManager::UMountMediaFuse(int32_t userId)
 #ifdef STORAGE_SERVICE_MEDIA_FUSE
     int32_t err = E_OK;
     LOGI("start umount media fuse");
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     Utils::MountArgument mediaMntArgs(Utils::MountArgumentDescriptors::Alpha(userId, ""));
     const string path = mediaMntArgs.GetFullMediaFuse();
     err = UMount2(path, MNT_DETACH);
@@ -1867,7 +1935,9 @@ int32_t MountManager::UMountMediaFuse(int32_t userId)
         StorageRadar::ReportUserManager("UMountMediaFuse", userId, E_UMOUNT_MEDIA_FUSE, extraData);
         return E_UMOUNT_MEDIA_FUSE;
     }
-    LOGI("umount media fuse success");
+    auto delay = StorageService::StorageRadar::ReportDuration("UMOUNT2: UMOUNT MEDIA FUSE",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
+    LOGI("SD_DURATION: umount media fuse success, delayTime = %{public}s", delay.c_str());
 #endif
     return E_OK;
 }
@@ -1881,6 +1951,7 @@ int32_t MountManager::MountFileMgrFuse(int32_t userId, const std::string &path, 
         return E_OPEN_FUSE;
     }
     LOGI("open fuse end.");
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     string opt = StringPrintf("fd=%i,"
         "rootmode=40000,"
         "default_permissions,"
@@ -1897,13 +1968,16 @@ int32_t MountManager::MountFileMgrFuse(int32_t userId, const std::string &path, 
         StorageRadar::ReportUserManager("MountFileMgrFuse", userId, E_MOUNT_FILE_MGR_FUSE, extraData);
         return E_MOUNT_FILE_MGR_FUSE;
     }
-    LOGI("file mgr mount fuse success.");
+    auto delay = StorageService::StorageRadar::ReportDuration("MOUNT: FILE MGR FUSE",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
+    LOGI("SD_DURATION: file mgr mount fuse success, delayTime = %{public}s", delay.c_str());
     return E_OK;
 }
 
 int32_t MountManager::UMountFileMgrFuse(int32_t userId, const std::string &path)
 {
     LOGI("umount file mgr fuse start, userId is %{public}d.", userId);
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     int32_t ret = UMount2(path, MNT_DETACH);
     if (ret != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("failed to umount fuse for file mgr, ret is %{public}d, errno is %{public}d.", ret, errno);
@@ -1911,7 +1985,9 @@ int32_t MountManager::UMountFileMgrFuse(int32_t userId, const std::string &path)
         StorageRadar::ReportUserManager("UMountFileMgrFuse", userId, E_UMOUNT_FILE_MGR_FUSE, extraData);
         return E_UMOUNT_FILE_MGR_FUSE;
     }
-    LOGI("file mgr umount fuse success.");
+    auto delay = StorageService::StorageRadar::ReportDuration("UMOUNT2: UMOUNT FILE MGR FUSE",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
+    LOGI("SD_DURATION: UMOUNT2: UMOUNT FILE MGR FUSE success, delayTime = %{public}s.", delay.c_str());
     return E_OK;
 }
 

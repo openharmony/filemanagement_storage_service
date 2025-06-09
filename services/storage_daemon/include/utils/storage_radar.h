@@ -22,6 +22,8 @@ namespace OHOS {
 namespace StorageService {
 constexpr const char *DEFAULT_ORGPKGNAME = "storageService";
 constexpr int32_t DEFAULT_USERID = 100;
+constexpr int64_t DEFAULT_DELAY_TIME_THRESH = 20; //ms. LOW THRESH
+constexpr int64_t DELAY_TIME_THRESH_HIGH = 50; //ms
 
 enum class BizScene : int32_t {
     STORAGE_START = 0,
@@ -138,7 +140,8 @@ public:
     static void ReportBundleMgrResult(const std::string &funcName, int32_t ret, unsigned int userId,
         const std::string &extraData);
     static void ReportStatistics(uint32_t userId, StorageDaemon::RadarStatisticInfo radarInfo);
-    static std::string RecordDuration(int64_t startTime);
+    static std::string ReportDuration(const std::string &funcName, int64_t startTime,
+        int64_t delay_threshold = DEFAULT_DELAY_TIME_THRESH, uint32_t userId = DEFAULT_USERID);
     static int64_t RecordCurrentTime();
 
 private:

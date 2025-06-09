@@ -29,7 +29,6 @@ constexpr char STORAGESERVICE_DOAMIN[] = "FILEMANAGEMENT";
 constexpr uint8_t INDEX = 3;
 constexpr uint32_t MS_1000 = 1000;
 
-constexpr int64_t DELAY_TIME_THRESHOLD = 50; // ms
 constexpr const char *TAG_PREFIX = " WARNING: DELAY > ";
 constexpr const char *TAG_UNIT_SUFFIX = " ms.";
 
@@ -368,14 +367,26 @@ int64_t StorageRadar::RecordCurrentTime()
            ).count();
 }
 
-std::string StorageRadar::RecordDuration(int64_t startTime)
+std::string StorageRadar::ReportDuration(const std::string &funcName, int64_t startTime,
+                                         int64_t delay_threshold, uint32_t userId)
 {
     auto duration = RecordCurrentTime() - startTime;
     std::string ret = std::to_string(duration) + TAG_UNIT_SUFFIX;
-    if (duration > DELAY_TIME_THRESHOLD) {
-        std::string tag = TAG_PREFIX + std::to_string(DELAY_TIME_THRESHOLD) + TAG_UNIT_SUFFIX;
-        ret += tag;
+    if (duration <= delay_threshold) {
+        return ret;
     }
+    std::string tag = TAG_PREFIX + std::to_string(delay_threshold) + TAG_UNIT_SUFFIX;
+    std::string extraData = ret + tag;
+    RadarParameter param = {
+        .orgPkg = DEFAULT_ORGPKGNAME,
+        .userId = userId,
+        .funcName = funcName,
+        .bizScene = BizScene::USER_KEY_ENCRYPTION,
+        .keyElxLevel = "NA",
+        .errorCode = E_DURATION_EXCEED_THRESH,
+        .extraData = extraData
+    };
+    StorageRadar::GetInstance().RecordFuctionResult(param);
     return ret;
 }
 } // namespace StorageService

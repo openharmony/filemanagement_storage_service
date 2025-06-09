@@ -640,8 +640,8 @@ int HuksMaster::HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *pa
         LOGE("HdiAccessInit failed ret %{public}d", ret);
         return ret;
     }
-    LOGI("SD_DURATION: HUKS: INIT: delay time = %{public}s",
-        StorageService::StorageRadar::RecordDuration(startTime).c_str());
+    auto delay = StorageService::StorageRadar::ReportDuration("HUKS: INIT", startTime);
+    LOGI("SD_DURATION: HUKS: INIT: delay time = %{public}s", delay.c_str());
     startTime = StorageService::StorageRadar::RecordCurrentTime();
     ret = HdiAccessFinish(hksHandle, paramSet2, hksIn, hksOut);
     if (ret != HKS_SUCCESS) {
@@ -652,8 +652,8 @@ int HuksMaster::HuksHalTripleStage(HksParamSet *paramSet1, const HksParamSet *pa
         LOGE("HdiAccessFinish failed ret %{public}d", ret);
         return ret;
     }
-    LOGI("SD_DURATION: HUKS: FINISH: delay time = %{public}s",
-        StorageService::StorageRadar::RecordDuration(startTime).c_str());
+    delay = StorageService::StorageRadar::ReportDuration("HUKS: FINISH", startTime);
+    LOGI("SD_DURATION: HUKS: FINISH: delay time = %{public}s", delay.c_str());
 
     keyOut.size = hksOut.dataLen;
     LOGD("HuksMaster::HuksHalTripleStage finish");

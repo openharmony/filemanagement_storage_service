@@ -663,8 +663,8 @@ int32_t BaseKey::DoRestoreKeyCeEceSece(const UserAuth &auth, const std::string &
             LOGE("Load shield failed !");
             return E_SHIELD_OPERATION_ERROR;
         }
-        LOGI("SD_DURATION: READ KEY FILE: delay time = %{public}s",
-            StorageService::StorageRadar::RecordDuration(startTime).c_str());
+        auto delay = StorageService::StorageRadar::ReportDuration("READ KEY FILE: FILE OPS", startTime);
+        LOGI("SD_DURATION: READ KEY FILE: delay time = %{public}s", delay.c_str());
         return DecryptReal(auth, keyType, ctxNone);
     }
 
@@ -820,8 +820,8 @@ int32_t BaseKey::DecryptReal(const UserAuth &auth, const uint32_t keyType, KeyCo
         LOGE("Decrypt by hks failed.");
         return ret;
     }
-    LOGI("SD_DURATION: HUKS: DECRYPT KEY EX: delay time = %{public}s",
-        StorageService::StorageRadar::RecordDuration(startTime).c_str());
+    auto delay = StorageService::StorageRadar::ReportDuration("HUKS: DECRYPT KEY EX", startTime);
+    LOGI("SD_DURATION: HUKS: DECRYPT KEY EX: delay time = %{public}s", delay.c_str());
 
     rndEnc.Clear();
     LOGI("finish");
@@ -955,8 +955,9 @@ void BaseKey::SyncKeyDir() const
         LOGE("fsync %{public}s failed, errno %{public}d", dir_.c_str(), errno);
         syncfs(fd);
     }
-    LOGW("fsync end. SD_DURATION: FSYNC: delay time = %{public}s",
-        StorageService::StorageRadar::RecordDuration(startTime).c_str());
+    auto delay = StorageService::StorageRadar::ReportDuration("FSYNC",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, StorageService::DEFAULT_USERID);
+    LOGW("fsync end. SD_DURATION: FSYNC: delay time = %{public}s", delay.c_str());
     (void)closedir(dir);
 }
 

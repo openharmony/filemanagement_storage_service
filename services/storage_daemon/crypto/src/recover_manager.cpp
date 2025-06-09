@@ -80,11 +80,14 @@ int RecoveryManager::CreateRecoverKey(uint32_t userId,
             return E_MEMORY_OPERATION_ERR;
         }
     }
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     operation.params[TEE_PARAM_INDEX_0].tmpref.buffer = static_cast<void *>(&recoverKeyStr);
     operation.params[TEE_PARAM_INDEX_0].tmpref.size = sizeof(recoverKeyStr);
     TEEC_Result ret = TEEC_InvokeCommand(&createKeySession, TaCmdId::RK_CMD_ID_GEN_RECOVERY_KEY,
                                          &operation, &createKeyOrigin);
-    LOGW("InvokeCmd ret: %{public}d, origin: %{public}d, token size: %{public}zu", ret, createKeyOrigin, token.size());
+    LOGW("SD_DURATION: InvokeCmd ret: %{public}d, origin: %{public}d, token size: %{public}zu, delay = %{public}s",
+        ret, createKeyOrigin, token.size(), StorageService::StorageRadar::ReportDuration("CREATE RECOVERY KEY",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId).c_str());
     if (ret != TEEC_SUCCESS) {
         LOGE("InvokeCmd failed, ret: %{public}d, origin: %{public}d", ret, createKeyOrigin);
         CloseSession(createKeyContext, createKeySession);
@@ -133,6 +136,7 @@ int RecoveryManager::SetRecoverKey(const std::vector<uint8_t> &key)
             LOGE("Generate key desc failed !");
             return errNo;
         }
+        auto startTime = StorageService::StorageRadar::RecordCurrentTime();
         ret = InstallKeyDescToKeyring(ELX_TYPE_ARR[i], key2Blob, keyDesc);
         if (ret != E_OK) {
             ivBlob.Clear();
@@ -141,6 +145,8 @@ int RecoveryManager::SetRecoverKey(const std::vector<uint8_t> &key)
             LOGE("install type %{public}d to keyring failed !", ELX_TYPE_ARR[i]);
             return ret;
         }
+        auto delay = StorageService::StorageRadar::ReportDuration("INSTALL KEY DESC TO KEYRING", startTime);
+        LOGI("SD_DURATION: INSTALL KEY DESC TO KEYRING, delayTime = %{public}s", delay.c_str());
         ivBlob.Clear();
         keyDesc.Clear();
         key2Blob.Clear();
@@ -160,6 +166,7 @@ int RecoveryManager::SetRecoverKeyToTee(const std::vector<uint8_t> &key, SetReco
         LOGE("Open session failed !");
         return E_RECOVERY_KEY_OPEN_SESSION_ERR;
     }
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     TEEC_Operation operation = { 0 };
     operation.started = SESSION_START_DEFAULT;
     operation.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT, TEEC_MEMREF_TEMP_OUTPUT, TEEC_NONE, TEEC_NONE);
@@ -180,6 +187,9 @@ int RecoveryManager::SetRecoverKeyToTee(const std::vector<uint8_t> &key, SetReco
             DEFAULT_USERID, extraData);
         return E_TEEC_DECRYPT_CLASS_KEY_ERR;
     }
+    auto delay = StorageService::StorageRadar::ReportDuration("SET RECOVERY KEY",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, StorageService::DEFAULT_USERID);
+    LOGI("SD_DURATION: SET RECOVERY KEY, delayTime = %{public}s", delay.c_str());
     CloseSession(setKeyContext, setKeySession);
 #endif
     return 0;
@@ -221,11 +231,15 @@ int32_t RecoveryManager::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rk
             LOGE("Generate key desc failed !");
             return errNo;
         }
+        auto startTime = StorageService::StorageRadar::RecordCurrentTime();
         ret = InstallKeyDescToKeyring(ELX_TYPE_ARR[i], key2Blob, keyDesc);
         if (ret != E_OK) {
             LOGE("install type %{public}d to keyring failed !", ELX_TYPE_ARR[i]);
             return ret;
         }
+        auto delay = StorageService::StorageRadar::ReportDuration("INSTALL KEY DESC TO KEYRING",
+            startTime, StorageService::DEFAULT_DELAY_TIME_THRESH, userId);
+        LOGI("SD_DURATION: INSTALL KEY DESC TO KEYRING, delayTime = %{public}s", delay.c_str());
         originIvs.emplace_back(ivBlob);
     }
 #endif
@@ -244,6 +258,7 @@ int32_t RecoveryManager::ResetSecretWithRecoveryKeyToTee(uint32_t userId, uint32
         return E_RECOVERY_KEY_OPEN_SESSION_ERR;
     }
 
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     TEEC_Operation operation = { 0 };
     operation.started = SESSION_START_DEFAULT;
     operation.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_TEMP_INPUT,
@@ -267,6 +282,9 @@ int32_t RecoveryManager::ResetSecretWithRecoveryKeyToTee(uint32_t userId, uint32
             E_TEEC_SET_RK_FOR_PLUGGED_IN_SSD_ERR, userId, extraData);
         return E_TEEC_SET_RK_FOR_PLUGGED_IN_SSD_ERR;
     }
+    auto delay = StorageService::StorageRadar::ReportDuration("RESET SECRET WITH RECOVERY KEY",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
+    LOGI("SD_DURATION: RESET SECRET WITH RECOVERY KEY, delayTime = %{public}s", delay.c_str());
     CloseSession(setKeyContext, setKeySession);
 #endif
     return E_OK;
