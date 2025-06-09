@@ -1246,6 +1246,7 @@ void MtpFileSystem::InitCurrentUidAndCacheMap()
     ErrCode errCode = OHOS::AccountSA::OsAccountManager::QueryActiveOsAccountIds(activedOsAccountIds);
     LOGI("InitCurrentUidAndCacheMap QueryActiveOsAccountIds errCode is: %{public}d", errCode);
     if (activedOsAccountIds.empty()) {
+        LOGE("activedOsAccountIds is empty");
         return;
     }
     currentUid = activedOsAccountIds[0];
