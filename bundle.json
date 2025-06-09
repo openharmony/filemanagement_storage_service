@@ -46,6 +46,7 @@
         "common_event_service",
         "data_share",
         "dfs_service",
+        "drivers_interface_huks",
         "exfatprogs",
         "eventhandler",
         "FreeBSD",

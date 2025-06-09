@@ -35,24 +35,29 @@ constexpr int32_t FILE_SIZE = 512;
 constexpr int32_t BS_SIZE = 1024;
 constexpr int32_t ARG_SIZE = 2;
 constexpr const char *MTP_FILE_FLAG = "?MTP_THM";
+constexpr const char *MTP_CLIENT_WRITE = "constraint.mtp.client.write";
+std::shared_ptr<AccountSubscriber> osAccountSubscriber_ = nullptr;
 
 int WrapGetattr(const char *path, struct stat *buf, struct fuse_file_info *fi)
 {
     (void)fi;
-    LOGI("mtp WrapGetattr, path=%{public}s", path);
     int ret = E_OK;
     if (OHOS::StorageDaemon::IsEndWith(path, MTP_FILE_FLAG)) {
         ret = DelayedSingleton<MtpFileSystem>::GetInstance()->GetThumbAttr(std::string(path), buf);
     } else {
         ret = DelayedSingleton<MtpFileSystem>::GetInstance()->GetAttr(path, buf);
     }
-    LOGI("GetAttr ret = %{public}d.", ret);
     return ret;
 }
 
 int WrapMkNod(const char *path, mode_t mode, dev_t dev)
 {
     LOGI("mtp WrapMkNod, path=%{public}s", path);
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
+    if (readOnly) {
+        LOGI("WrapMkNod fail");
+        return E_CURRENT_USER_READONLY;
+    }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->MkNod(path, mode, dev);
     LOGI("MkNod ret = %{public}d.", ret);
     return ret;
@@ -61,6 +66,11 @@ int WrapMkNod(const char *path, mode_t mode, dev_t dev)
 int WrapMkDir(const char *path, mode_t mode)
 {
     LOGI("mtp WrapMkDir, path=%{public}s", path);
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
+    if (readOnly) {
+        LOGI("WrapMkDir fail");
+        return E_CURRENT_USER_READONLY;
+    }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->MkDir(path, mode);
     LOGI("MkDir ret = %{public}d.", ret);
     return ret;
@@ -69,6 +79,11 @@ int WrapMkDir(const char *path, mode_t mode)
 int WrapUnLink(const char *path)
 {
     LOGI("mtp WrapUnLink, path=%{public}s", path);
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
+    if (readOnly) {
+        LOGI("WrapUnLink fail");
+        return E_CURRENT_USER_READONLY;
+    }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->UnLink(path);
     LOGI("UnLink ret = %{public}d.", ret);
     return ret;
@@ -77,6 +92,11 @@ int WrapUnLink(const char *path)
 int WrapRmDir(const char *path)
 {
     LOGI("mtp WrapRmDir, path=%{public}s", path);
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
+    if (readOnly) {
+        LOGI("WrapRmDir fail");
+        return E_CURRENT_USER_READONLY;
+    }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->RmDir(path);
     LOGI("RmDir ret = %{public}d.", ret);
     return ret;
@@ -85,6 +105,11 @@ int WrapRmDir(const char *path)
 int WrapReName(const char *path, const char *newpath, unsigned int flags)
 {
     LOGI("mtp WrapReName, path=%{public}s", path);
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
+    if (readOnly) {
+        LOGI("WrapReName fail");
+        return E_CURRENT_USER_READONLY;
+    }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->ReName(path, newpath, flags);
     LOGI("ReName ret = %{public}d.", ret);
     return ret;
@@ -93,6 +118,11 @@ int WrapReName(const char *path, const char *newpath, unsigned int flags)
 int WrapChMod(const char *path, mode_t mode, struct fuse_file_info *fi)
 {
     LOGI("mtp WrapChMod, path=%{public}s", path);
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
+    if (readOnly) {
+        LOGI("WrapChMod fail");
+        return E_CURRENT_USER_READONLY;
+    }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->ChMods(path, mode, fi);
     LOGI("ChMods ret = %{public}d.", ret);
     return ret;
@@ -101,15 +131,24 @@ int WrapChMod(const char *path, mode_t mode, struct fuse_file_info *fi)
 int WrapChown(const char *path, uid_t uid, gid_t gid, struct fuse_file_info *fi)
 {
     LOGE("mtp WrapChown path:%{public}s ,uid:%{public}lu, gid:%{public}lu", path, uid, gid);
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
+    if (readOnly) {
+        LOGI("WrapChown fail");
+        return E_CURRENT_USER_READONLY;
+    }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Chown(path, uid, gid, fi);
     LOGI("Chown ret = %{public}d.", ret);
     return ret;
 }
 
-
 int WrapUTimens(const char *path, const struct timespec tv[2], struct fuse_file_info *fi)
 {
     LOGI("mtp WrapUTimens, path=%{public}s", path);
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
+    if (readOnly) {
+        LOGI("WrapUTimens fail");
+        return E_CURRENT_USER_READONLY;
+    }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->UTimens(path, tv, fi);
     LOGI("UTimens ret = %{public}d.", ret);
     return ret;
@@ -144,6 +183,11 @@ int WrapRead(const char *path, char *buf, size_t size, off_t offset, struct fuse
 int WrapWrite(const char *path, const char *buf, size_t size, off_t offset, struct fuse_file_info *fileInfo)
 {
     LOGI("mtp WrapWrite, path=%{public}s", path);
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
+    if (readOnly) {
+        LOGI("WrapWrite fail");
+        return E_CURRENT_USER_READONLY;
+    }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Write(path, buf, size, offset, fileInfo);
     LOGI("Write ret = %{public}d.", ret);
     return ret;
@@ -168,6 +212,11 @@ int WrapFlush(const char *path, struct fuse_file_info *fileInfo)
 int WrapRelease(const char *path, struct fuse_file_info *fileInfo)
 {
     LOGI("mtp WrapRelease, path=%{public}s", path);
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
+    if (readOnly) {
+        LOGI("WrapRelease fail");
+        return E_CURRENT_USER_READONLY;
+    }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Release(path, fileInfo);
     LOGI("Release ret = %{public}d.", ret);
     return ret;
@@ -176,6 +225,11 @@ int WrapRelease(const char *path, struct fuse_file_info *fileInfo)
 int WrapFSync(const char *path, int datasync, struct fuse_file_info *fileInfo)
 {
     LOGI("mtp WrapFSync, path=%{public}s", path);
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
+    if (readOnly) {
+        LOGI("WrapFSync fail");
+        return E_CURRENT_USER_READONLY;
+    }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->FSync(path, datasync, fileInfo);
     LOGI("FSync ret = %{public}d.", ret);
     return ret;
@@ -217,12 +271,24 @@ int WrapFSyncDir(const char *path, int datasync, struct fuse_file_info *fileInfo
 void *WrapInit(struct fuse_conn_info *conn, struct fuse_config *cfg)
 {
     LOGI("mtp WrapInit");
+    std::set<OHOS::AccountSA::OsAccountState> states = { OHOS::AccountSA::OsAccountState::SWITCHED };
+    bool withHandShake = true;
+    OHOS::AccountSA::OsAccountSubscribeInfo subscribeInfo(states, withHandShake);
+    osAccountSubscriber_ = std::make_shared<AccountSubscriber>(subscribeInfo);
+    ErrCode errCode = OHOS::AccountSA::OsAccountManager::SubscribeOsAccount(osAccountSubscriber_);
+    LOGI("subscribe os accouunt done errCode = %{public}d", errCode);
+    DelayedSingleton<MtpFileSystem>::GetInstance()->InitCurrentUidAndCacheMap();
     return DelayedSingleton<MtpFileSystem>::GetInstance()->Init(conn, cfg);
 }
 
 int WrapCreate(const char *path, mode_t mode, fuse_file_info *fileInfo)
 {
     LOGI("mtp WrapCreate, path=%{public}s", path);
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
+    if (readOnly) {
+        LOGI("WrapCreate fail");
+        return E_CURRENT_USER_READONLY;
+    }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->Create(path, mode, fileInfo);
     LOGI("Create ret = %{public}d.", ret);
     return ret;
@@ -255,6 +321,11 @@ int WrapLink(const char *path, const char *out)
 int WrapSetXAttr(const char *path, const char *in, const char *out, size_t size, int flag)
 {
     LOGI("mtp WrapSetXAttr, path=%{public}s", path);
+    bool readOnly = DelayedSingleton<MtpFileSystem>::GetInstance()->IsCurrentUserReadOnly();
+    if (readOnly) {
+        LOGI("WrapSetXAttr fail");
+        return E_CURRENT_USER_READONLY;
+    }
     int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->SetXAttr(path, in);
     LOGI("WrapSetXAttr ret = %{public}d.", ret);
     return ret;
@@ -283,6 +354,8 @@ int WrapRemoveXAttr(const char *path, const char *in)
 void WrapDestroy(void *path)
 {
     LOGI("mtp WrapDestroy");
+    ErrCode errCode = OHOS::AccountSA::OsAccountManager::UnsubscribeOsAccount(osAccountSubscriber_);
+    LOGI("UnsubscribeOsAccount errCode is: %{public}d", errCode);
     return;
 }
 
@@ -522,19 +595,19 @@ int MtpFileSystem::GetAttr(const char *path, struct stat *buf)
         return 0;
     } else {
         std::string tmpPath(SmtpfsDirName(path));
-        std::string tmpFile(SmtpfsBaseName(path));
+        std::string mtpFile(SmtpfsBaseName(path));
         const MtpFsTypeDir *content = device_.ReadDirFetchContent(tmpPath);
         if (content == nullptr) {
             LOGE("MtpFileSystem: GetAttr error, content is null, path: %{public}s", path);
             return -ENOENT;
-        } else if (content->Dir(tmpFile) != nullptr) {
-            const MtpFsTypeDir *dir = content->Dir(tmpFile);
+        } else if (content->Dir(mtpFile) != nullptr) {
+            const MtpFsTypeDir *dir = content->Dir(mtpFile);
             buf->st_ino = dir->Id();
             buf->st_mode = S_IFDIR | PERMISSION_ONE;
             buf->st_nlink = ST_NLINK_TWO;
             buf->st_mtime = dir->ModificationDate();
-        } else if (content->File(tmpFile) != nullptr) {
-            const MtpFsTypeFile *file = content->File(tmpFile);
+        } else if (content->File(mtpFile) != nullptr) {
+            const MtpFsTypeFile *file = content->File(mtpFile);
             buf->st_ino = file->Id();
             buf->st_size = static_cast<ssize_t>(file->Size());
             buf->st_blocks = static_cast<ssize_t>(file->Size() / FILE_SIZE) + (file->Size() % FILE_SIZE > 0 ? 1 : 0);
@@ -733,7 +806,6 @@ int MtpFileSystem::UTimens(const char *path, const struct timespec tv[2], struct
 
 int MtpFileSystem::Create(const char *path, mode_t mode, fuse_file_info *fileInfo)
 {
-    std::lock_guard<std::mutex>lock(fuseMutex_);
     const std::string tmpPath = tmpFilesPool_.MakeTmpPath(std::string(path));
     int rval = ::creat(tmpPath.c_str(), mode);
     if (rval < 0) {
@@ -764,36 +836,36 @@ int MtpFileSystem::OpenFile(const char *path, struct fuse_file_info *fileInfo)
     }
     fileInfo->flags = static_cast<int>(flags);
     const std::string stdPath(path);
-
-    MtpFsTypeTmpFile *tmpFile = const_cast<MtpFsTypeTmpFile *>(tmpFilesPool_.GetFile(stdPath));
-
     std::string tmpPath;
+    MtpFsTypeTmpFile *tmpFile = const_cast<MtpFsTypeTmpFile *>(tmpFilesPool_.GetFile(stdPath));
     if (tmpFile != nullptr) {
         tmpPath = tmpFile->PathTmp();
     } else {
-        if (IsFilePulling(stdPath)) {
-            LOGE("MtpFileSystem::OpenFile failed, file is pulling for path=%{public}s.", path);
-            return -EBUSY;
-        }
-        AddPullingFile(stdPath);
         tmpPath = tmpFilesPool_.MakeTmpPath(stdPath);
-        int rval = device_.FilePull(stdPath, tmpPath);
-        if (rval != 0) {
-            RemovePullingFile(stdPath);
-            return -rval;
+        // only copy the file if needed
+        if (!HasGetPartialSupport()) {
+            int rval = device_.FilePull(stdPath, tmpPath);
+            if (rval != 0) {
+                return -rval;
+            }
+        } else {
+            int fd = ::creat(tmpPath.c_str(), S_IRUSR | S_IWUSR);
+            ::close(fd);
         }
-        RemovePullingFile(stdPath);
     }
 
-    // we create the tmp file even if we can use partial get/send to
-    // have a valid file descriptor
+    // we create the tmp file even if we can use partial get/send to have a valid file descriptor
+    char realPath[PATH_MAX] = {0};
+    if (realpath(tmpPath.c_str(), realPath) == nullptr) {
+        LOGE("MtpFileSystem: realpath error, errno=%{public}d", errno);
+        return -errno;
+    }
     int fd = ::open(tmpPath.c_str(), fileInfo->flags);
     if (fd < 0) {
         ::unlink(tmpPath.c_str());
         LOGE("MtpFileSystem: OpenFile error, errno=%{public}d", errno);
         return -errno;
     }
-
     fileInfo->fh = static_cast<uint32_t>(fd);
 
     if (tmpFile != nullptr) {
@@ -807,13 +879,14 @@ int MtpFileSystem::OpenFile(const char *path, struct fuse_file_info *fileInfo)
 
 int MtpFileSystem::ReadFile(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fileInfo)
 {
+    std::lock_guard<std::mutex>lock(fuseMutex_);
     LOGI("MtpFileSystem: ReadFile enter, path: %{public}s", path);
     if (fileInfo == nullptr) {
         LOGE("Missing FileInfo");
         return -ENOENT;
     }
     int rval = 0;
-    if (HasPartialObjectSupport()) {
+    if (HasGetPartialSupport()) {
         const std::string stdPath(path);
         rval = device_.FileRead(stdPath, buf, size, offset);
     } else {
@@ -829,7 +902,6 @@ int MtpFileSystem::ReadFile(const char *path, char *buf, size_t size, off_t offs
 
 int MtpFileSystem::OpenThumb(const char *path, struct fuse_file_info *fileInfo)
 {
-    std::lock_guard<std::mutex>lock(fuseMutex_);
     LOGI("MtpFileSystem: OpenThumb enter, path: %{public}s", path);
     if (fileInfo == nullptr) {
         LOGE("Missing FileInfo");
@@ -844,6 +916,11 @@ int MtpFileSystem::OpenThumb(const char *path, struct fuse_file_info *fileInfo)
         flags |= O_TRUNC;
     }
     fileInfo->flags = static_cast<int>(flags);
+    char realPath[PATH_MAX] = {0};
+    if (realpath(tmpPath.c_str(), realPath) == nullptr) {
+        LOGE("MtpFileSystem: realpath error, errno=%{public}d", errno);
+        return -errno;
+    }
     fd = ::open(tmpPath.c_str(), fileInfo->flags);
     if (fd < 0) {
         ::unlink(tmpPath.c_str());
@@ -857,7 +934,6 @@ int MtpFileSystem::OpenThumb(const char *path, struct fuse_file_info *fileInfo)
 
 int MtpFileSystem::ReadThumb(const std::string &path, char *buf)
 {
-    std::lock_guard<std::mutex>lock(fuseMutex_);
     LOGI("MtpFileSystem: ReadThumb enter, path: %{public}s", path.c_str());
     std::string realPath = path.substr(0, path.length() - strlen(MTP_FILE_FLAG));
     return device_.GetThumbnail(realPath, buf);
@@ -866,13 +942,14 @@ int MtpFileSystem::ReadThumb(const std::string &path, char *buf)
 int MtpFileSystem::Write(const char *path, const char *buf, size_t size, off_t offset,
     struct fuse_file_info *fileInfo)
 {
+    std::lock_guard<std::mutex>lock(fuseMutex_);
     LOGI("MtpFileSystem: Write enter, path: %{public}s", path);
     if (fileInfo == nullptr) {
         LOGE("Missing FileInfo");
         return -ENOENT;
     }
     int rval = 0;
-    if (HasPartialObjectSupport()) {
+    if (HasSendPartialSupport()) {
         const std::string stdPath(path);
         rval = device_.FileWrite(stdPath, buf, size, offset);
     } else {
@@ -895,27 +972,37 @@ int MtpFileSystem::Write(const char *path, const char *buf, size_t size, off_t o
 int MtpFileSystem::Release(const char *path, struct fuse_file_info *fileInfo)
 {
     std::lock_guard<std::mutex>lock(fuseMutex_);
+    const std::string stdPath(path);
     LOGI("MtpFileSystem: Release enter, path: %{public}s", path);
     if (fileInfo == nullptr) {
         LOGE("Missing FileInfo");
+        device_.SetUploadRecord(stdPath, "fail");
         return -ENOENT;
     }
     int rval = ::close(fileInfo->fh);
     if (rval < 0) {
         LOGE("MtpFileSystem: Release close error, errno=%{public}d", errno);
+        device_.SetUploadRecord(stdPath, "fail");
         return -errno;
     }
-    const std::string stdPath(path);
     if (OHOS::StorageDaemon::IsEndWith(path, MTP_FILE_FLAG)) {
+        device_.SetUploadRecord(stdPath, "success");
         return 0;
     }
+    return HandleTemporaryFile(stdPath, fileInfo);
+}
+
+int MtpFileSystem::HandleTemporaryFile(const std::string stdPath, struct fuse_file_info *fileInfo)
+{
     MtpFsTypeTmpFile *tmpFile = const_cast<MtpFsTypeTmpFile *>(tmpFilesPool_.GetFile(stdPath));
     if (tmpFile == nullptr) {
         LOGE("failed to get tmpFile.");
+        device_.SetUploadRecord(stdPath, "fail");
         return -EINVAL;
     }
     tmpFile->RemoveFileDescriptor(fileInfo->fh);
     if (tmpFile->RefCnt() != 0) {
+        device_.SetUploadRecord(stdPath, "success");
         return 0;
     }
     const bool modIf = tmpFile->IsModified();
@@ -925,20 +1012,20 @@ int MtpFileSystem::Release(const char *path, struct fuse_file_info *fileInfo)
     stat(tmpPath.c_str(), &fileStat);
     if (modIf && fileStat.st_size != 0) {
         device_.SetUploadRecord(stdPath, "sending");
-        rval = device_.FilePush(tmpPath, stdPath);
+        int rval = device_.FilePush(tmpPath, stdPath);
         if (rval != 0) {
-            LOGE("FilePush %{public}s to mtp device fail", path);
+            LOGE("FilePush %{public}s to mtp device fail", stdPath.c_str());
             device_.SetUploadRecord(stdPath, "fail");
             ::unlink(tmpPath.c_str());
             return -rval;
         }
-        LOGI("FilePush %{public}s to mtp device success", path);
+        LOGI("FilePush %{public}s to mtp device success", stdPath.c_str());
         device_.SetUploadRecord(stdPath, "success");
     } else {
         device_.SetUploadRecord(stdPath, "success");
     }
     ::unlink(tmpPath.c_str());
-    LOGI("MtpFileSystem: Release success, path: %{public}s", path);
+    LOGI("MtpFileSystem: Release success, stdPath: %{public}s", stdPath.c_str());
     return 0;
 }
 
@@ -1039,10 +1126,15 @@ int MtpFileSystem::FSyncDir(const char *path, int datasync, struct fuse_file_inf
     return 0;
 }
 
-bool MtpFileSystem::HasPartialObjectSupport()
+bool MtpFileSystem::HasGetPartialSupport()
 {
     MtpFsDevice::Capabilities caps = device_.GetCapabilities();
-    return (caps.CanGetPartialObject() && caps.CanSendPartialObject());
+    return caps.CanGetPartialObject();
+}
+
+bool MtpFileSystem::HasSendPartialSupport()
+{
+    return false;
 }
 
 int MtpFileSystem::SetXAttr(const char *path, const char *in)
@@ -1062,7 +1154,7 @@ int MtpFileSystem::SetXAttr(const char *path, const char *in)
     }
     if (strcmp(in, "user.cancelcopy") == 0) {
         LOGI("Cancel the mtp transfer task, path=%{public}s", path);
-        return device_.AddFileCancelFlag(std::string(path));
+        return 0;
     }
     if (strcmp(in, "user.isUploadCompleted") != 0) {
         LOGE("attrKey error, attrKey=%{public}s", in);
@@ -1141,41 +1233,61 @@ int MtpFileSystem::GetFriendlyName(const char *in, char *out, size_t size)
     return nameLen;
 }
 
-int MtpFileSystem::AddPullingFile(const std::string &path)
-{
-    LOGI("MtpFileSystem: AddPullingFile enter, path: %{public}s", path.c_str());
-    if (path.empty()) {
-        LOGE("AddPullingFile: input file path is empty.");
-        return -EINVAL;
-    }
-    std::lock_guard<std::mutex> lock(listMutex_);
-    pullingFileList_.insert(path);
-    return 0;
-}
-
-void MtpFileSystem::RemovePullingFile(const std::string &path)
-{
-    LOGI("MtpFileSystem: RemovePullingFile enter, path: %{public}s", path.c_str());
-    if (path.empty()) {
-        LOGE("RemovePullingFile: input file path is empty.");
-        return;
-    }
-    std::lock_guard<std::mutex> lock(listMutex_);
-    pullingFileList_.erase(path);
-}
-
-bool MtpFileSystem::IsFilePulling(const std::string &path)
-{
-    LOGI("MtpFileSystem: IsFilePulling enter, path: %{public}s", path.c_str());
-    if (path.empty()) {
-        LOGE("IsFilePulling: input file path is empty.");
-        return false;
-    }
-    std::lock_guard<std::mutex> lock(listMutex_);
-    return (pullingFileList_.find(path) != pullingFileList_.end());
-}
-
 void MtpFileSystem::HandleRemove(uint32_t handleId)
 {
     std::thread([this, handleId]() { device_.HandleRemoveEvent(handleId); }).detach();
+}
+
+void MtpFileSystem::InitCurrentUidAndCacheMap()
+{
+    LOGI("InitCurrentUidAndCacheMap start");
+    std::lock_guard<std::mutex>lock(mtpClientMutex_);
+    std::vector<int> activedOsAccountIds;
+    ErrCode errCode = OHOS::AccountSA::OsAccountManager::QueryActiveOsAccountIds(activedOsAccountIds);
+    LOGI("InitCurrentUidAndCacheMap QueryActiveOsAccountIds errCode is: %{public}d", errCode);
+    currentUid = activedOsAccountIds[0];
+    LOGI("InitCurrentUidAndCacheMap currentUid = %{public}d", currentUid);
+    for (size_t i = 0; i < activedOsAccountIds.size(); i++) {
+        bool readOnly = false;
+        ErrCode errCode = OHOS::AccountSA::OsAccountManager
+            ::IsOsAccountConstraintEnable(activedOsAccountIds[i], MTP_CLIENT_WRITE, readOnly);
+        mtpClientWriteMap_[activedOsAccountIds[i]] = readOnly;
+    }
+    LOGI("InitCurrentUidAndCacheMap end");
+}
+
+bool MtpFileSystem::IsCurrentUserReadOnly()
+{
+    LOGI("IsCurrentUserReadOnly start");
+    auto item = mtpClientWriteMap_.find(currentUid);
+    if (item != mtpClientWriteMap_.end()) {
+        if (item->second) {
+            return true;
+        }
+    }
+    LOGI("IsCurrentUserReadOnly end");
+    return false;
+}
+
+void MtpFileSystem::SetCurrentUid(int32_t uid)
+{
+    LOGI("AccountSubscriber::SetCurrentUid start");
+    std::lock_guard<std::mutex>lock(mtpClientMutex_);
+    currentUid = uid;
+    LOGI("AccountSubscriber::SetCurrentUid end");
+}
+
+void MtpFileSystem::SetMtpClientWriteMap(uid_t first, bool second)
+{
+    LOGI("AccountSubscriber::SetMtpClientWriteMap start");
+    std::lock_guard<std::mutex>lock(mtpClientMutex_);
+    mtpClientWriteMap_[first] = second;
+    LOGI("AccountSubscriber::SetMtpClientWriteMap end");
+}
+
+void AccountSubscriber::OnStateChanged(const OHOS::AccountSA::OsAccountStateData &data)
+{
+    LOGI("AccountSubscriber::OnStateChanged start");
+    DelayedSingleton<MtpFileSystem>::GetInstance()->SetCurrentUid(data.toId);
+    LOGI("AccountSubscriber::OnStateChanged end");
 }

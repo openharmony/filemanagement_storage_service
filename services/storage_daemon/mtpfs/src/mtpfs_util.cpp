@@ -87,7 +87,7 @@ std::string SmtpfsDirName(const std::string &path)
 {
     char *str = strdup(path.c_str());
     if (!str) {
-        return -ENOMEM;
+        return "";
     }
     std::string result(dirname(str));
     free(static_cast<void *>(str));
@@ -98,7 +98,7 @@ std::string SmtpfsBaseName(const std::string &path)
 {
     char *str = strdup(path.c_str());
     if (!str) {
-        return -ENOMEM;
+        return "";
     }
     std::string result(basename(str));
     free(static_cast<void *>(str));

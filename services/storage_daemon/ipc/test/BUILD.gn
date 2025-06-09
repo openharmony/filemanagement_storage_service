@@ -109,6 +109,11 @@ ohos_unittest("storage_daemon_test") {
     external_deps += [ "user_auth_framework:userauth_client" ]
   }
 
+  if (enable_huks_hdi) {
+    defines += [ "HUKS_IDL_ENVIRONMENT" ]
+    external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
+  }
+
   use_exceptions = true
 }
 
@@ -167,9 +172,109 @@ ohos_unittest("storage_manager_clt_test") {
   ]
 }
 
+ohos_unittest("storage_daemon_provider_test") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
+  }
+  module_out_path = "storage_service/storage_daemon"
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "LOG_DOMAIN = 0xD004301",
+  ]
+
+  if (storage_service_user_crypto_manager) {
+    defines += [ "USER_CRYPTO_MANAGER" ]
+  }
+
+  if (storage_service_external_storage_manager) {
+    defines += [ "EXTERNAL_STORAGE_MANAGER" ]
+  }
+
+  include_dirs = [
+    "${storage_daemon_path}/include",
+    "${storage_daemon_path}/utils",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+    "${storage_daemon_path}/ipc/src",
+    "${storage_daemon_path}/ipc/test",
+    "${storage_daemon_path}/include/crypto",
+  ]
+
+  sources = [
+    "${storage_daemon_path}/crypto/test/key_manager_mock.cpp",
+    "${storage_daemon_path}/disk/src/disk_info.cpp",
+    "${storage_daemon_path}/disk/src/disk_manager.cpp",
+    "${storage_daemon_path}/ipc/src/storage_daemon.cpp",
+    "${storage_daemon_path}/ipc/src/storage_daemon_provider.cpp",
+    "${storage_daemon_path}/ipc/src/storage_manager_client.cpp",
+    "${storage_daemon_path}/ipc/test/storage_daemon_provider_test.cpp",
+    "${storage_daemon_path}/observer/appstate_observer.cpp",
+    "${storage_daemon_path}/quota/quota_manager.cpp",
+    "${storage_daemon_path}/user/src/mount_manager.cpp",
+    "${storage_daemon_path}/user/src/user_manager.cpp",
+    "${storage_daemon_path}/utils/test/common/help_utils.cpp",
+    "${storage_daemon_path}/volume/src/external_volume_info.cpp",
+    "${storage_daemon_path}/volume/src/volume_info.cpp",
+    "${storage_daemon_path}/volume/src/volume_manager.cpp",
+  ]
+
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_ipc",
+    "${storage_daemon_path}/crypto:libsdcrypto",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_header",
+  ]
+
+  external_deps = [
+    "ability_base:base",
+    "ability_base:want",
+    "ability_base:zuri",
+    "access_token:libaccesstoken_sdk",
+    "app_file_service:fileshare_native",
+    "app_file_service:fileuri_native",
+    "app_file_service:sandbox_helper_native",
+    "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
+    "dfs_service:cloud_daemon_kit_inner",
+    "eventhandler:libeventhandler",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hicollie:libhicollie",
+    "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "hitrace:hitrace_meter",
+    "huks:libhukssdk",
+    "init:libbegetutil",
+    "ipc:ipc_single",
+    "ipc:libdbinder",
+    "safwk:system_ability_fwk",
+    "samgr:samgr_proxy",
+  ]
+  cflags_cc = [ "--coverage" ]
+  ldflags = [ "--coverage" ]
+
+  if (storage_service_media_fuse) {
+    defines += [ "STORAGE_SERVICE_MEDIA_FUSE" ]
+    external_deps += [ "ability_runtime:app_manager" ]
+  }
+
+  if (enable_user_auth_framework) {
+    defines += [ "USER_AUTH_FRAMEWORK" ]
+    external_deps += [ "user_auth_framework:userauth_client" ]
+  }
+
+  use_exceptions = true
+}
+
 group("storage_daemon_ipc_test") {
   testonly = true
   deps = [
+    ":storage_daemon_provider_test",
     ":storage_daemon_test",
     ":storage_manager_clt_test",
   ]

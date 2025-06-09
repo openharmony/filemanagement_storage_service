@@ -81,7 +81,7 @@ bool StringToUint32(const std::string &str, uint32_t &num)
 
 void GetSubDirs(const std::string &path, std::vector<std::string> &dirList)
 {
-    return;
+    return IFileUtilMoc::fileUtilMoc->GetSubDirs(path, dirList);
 }
 
 void ReadDigitDir(const std::string &path, std::vector<FileList> &dirInfo)

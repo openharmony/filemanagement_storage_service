@@ -18,32 +18,49 @@
 MtpFsTypeTmpFile::MtpFsTypeTmpFile() : pathDevice_(), pathTmp_(), fileDescriptors_(), modified_(false) {}
 
 MtpFsTypeTmpFile::MtpFsTypeTmpFile(const std::string &pathDevice, const std::string &pathTmp, int fileDesc,
-    bool modified)
-    : pathDevice_(pathDevice), pathTmp_(pathTmp), modified_(modified)
+    bool modified) : pathDevice_(pathDevice), pathTmp_(pathTmp), modified_(modified)
 {
+    std::unique_lock<std::mutex> lock(setMutex_);
     fileDescriptors_.insert(fileDesc);
 }
 
-MtpFsTypeTmpFile::MtpFsTypeTmpFile(const MtpFsTypeTmpFile &copy)
-    : pathDevice_(copy.pathDevice_),
-      pathTmp_(copy.pathTmp_),
-      fileDescriptors_(copy.fileDescriptors_),
-      modified_(copy.modified_)
+MtpFsTypeTmpFile::MtpFsTypeTmpFile(const MtpFsTypeTmpFile &copy) : pathDevice_(copy.pathDevice_),
+    pathTmp_(copy.pathTmp_), fileDescriptors_(copy.fileDescriptors_), modified_(copy.modified_)
 {}
 
 bool MtpFsTypeTmpFile::HasFileDescriptor(int fd)
 {
+    std::unique_lock<std::mutex> lock(setMutex_);
     auto it = std::find(fileDescriptors_.begin(), fileDescriptors_.end(), fd);
     return it != fileDescriptors_.end();
 }
 
 void MtpFsTypeTmpFile::RemoveFileDescriptor(int fd)
 {
+    std::unique_lock<std::mutex> lock(setMutex_);
     auto it = std::find(fileDescriptors_.begin(), fileDescriptors_.end(), fd);
     if (it == fileDescriptors_.end()) {
         return;
     }
     fileDescriptors_.erase(it);
+}
+
+std::set<int> MtpFsTypeTmpFile::FileDescriptors() const
+{
+    std::lock_guard<std::mutex> lock(setMutex_);
+    return fileDescriptors_;
+}
+
+void MtpFsTypeTmpFile::AddFileDescriptor(int fd)
+{
+    std::lock_guard<std::mutex> lock(setMutex_);
+    fileDescriptors_.insert(fd);
+}
+
+int MtpFsTypeTmpFile::RefCnt() const
+{
+    std::lock_guard<std::mutex> lock(setMutex_);
+    return fileDescriptors_.size();
 }
 
 MtpFsTypeTmpFile &MtpFsTypeTmpFile::operator = (const MtpFsTypeTmpFile &rhs)

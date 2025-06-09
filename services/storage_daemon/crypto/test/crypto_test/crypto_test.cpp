@@ -209,6 +209,7 @@ HWTEST_F(CryptoTest, Huks_Master_Decrypt_Key_003, TestSize.Level1)
     GTEST_LOG_(INFO) << "CryptoTest_HuksMasterDecryptKey_0300 end";
 }
 
+#ifdef HUKS_IDL_ENVIRONMENT
 /**
  * @tc.name: Huks_Master_Hdi_Access_Upgrade_Key_001
  * @tc.desc: Verify the HuksMaster HdiAccessUpgradeKey function.
@@ -218,14 +219,15 @@ HWTEST_F(CryptoTest, Huks_Master_Decrypt_Key_003, TestSize.Level1)
 HWTEST_F(CryptoTest, Huks_Master_Hdi_Access_Upgrade_Key_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "CryptoTest_HuksMasterHdiAccessUpgradeKey_0100 start";
-    const HksBlob oldKey {};
+    const HuksBlob oldKey {};
     struct HksParamSet *paramSet = nullptr;
-    HksBlob newKey;
+    HuksBlob newKey;
 
     int ret = HuksMaster::GetInstance().HdiAccessUpgradeKey(oldKey, paramSet, newKey);
     EXPECT_NE(ret, HKS_SUCCESS);
     GTEST_LOG_(INFO) << "CryptoTest_HuksMasterHdiAccessUpgradeKey_0100 end";
 }
+#endif
 
 /**
  * @tc.name: Openssl_Crypto_AES_Encrypt_001

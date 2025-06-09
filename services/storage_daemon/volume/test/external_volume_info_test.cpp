@@ -277,9 +277,9 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_GetFsTyp
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetFsType_001 start";
 
     ASSERT_TRUE(externalVolumeInfo_ != nullptr);
-    auto ret = externalVolumeInfo_->GetFsType();
+    std::string ret = externalVolumeInfo_->GetFsType();
     GTEST_LOG_(INFO) << ret;
-    EXPECT_TRUE(ret == E_ERR);
+    EXPECT_TRUE(ret.empty());
 
     GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_GetFsType_001 end";
 }

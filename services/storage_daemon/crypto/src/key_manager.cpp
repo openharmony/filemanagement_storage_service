@@ -104,7 +104,7 @@ int KeyManager::GenerateAndInstallDeviceKey(const std::string &dir)
         return E_GLOBAL_KEY_STORE_ERROR;
     }
 
-    if (globalEl1Key_->ActiveKey(FIRST_CREATE_KEY) != E_OK) {
+    if (globalEl1Key_->ActiveKey({}, FIRST_CREATE_KEY) != E_OK) {
         globalEl1Key_->ClearKey();
         globalEl1Key_ = nullptr;
         LOGE("global security key active failed");
@@ -149,7 +149,7 @@ int KeyManager::RestoreDeviceKey(const std::string &dir)
         return E_GLOBAL_KEY_STORE_ERROR;
     }
 
-    if (globalEl1Key_->ActiveKey(RETRIEVE_KEY) != E_OK) {
+    if (globalEl1Key_->ActiveKey({}, RETRIEVE_KEY) != E_OK) {
         globalEl1Key_ = nullptr;
         LOGE("global security key active failed");
         StorageRadar::ReportUserKeyResult("RestoreDeviceKey", 0, E_GLOBAL_KEY_ACTIVE_ERROR, "EL1", "");
@@ -223,7 +223,7 @@ int KeyManager::GenerateAndInstallUserKey(uint32_t userId, const std::string &di
         LOGE("user security key store failed");
         return E_ELX_KEY_STORE_ERROR;
     }
-    if (elKey->ActiveKey(FIRST_CREATE_KEY) != E_OK) {
+    if (elKey->ActiveKey(auth.token, FIRST_CREATE_KEY) != E_OK) {
         elKey->ClearKey();
         LOGE("user security key active failed");
         return E_ELX_KEY_ACTIVE_ERROR;
@@ -301,7 +301,7 @@ int KeyManager::RestoreUserKey(uint32_t userId, const std::string &dir, const Us
         return E_ELX_KEY_STORE_ERROR;
     }
 
-    if (elKey->ActiveKey(RETRIEVE_KEY) != E_OK) {
+    if (elKey->ActiveKey(auth.token, RETRIEVE_KEY) != E_OK) {
         LOGE("user security key active failed");
         return E_ELX_KEY_ACTIVE_ERROR;
     }
@@ -1186,7 +1186,7 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
     return 0;
 }
 
-int KeyManager::ActiveElxUserKey4Nato(unsigned int user, KeyType type)
+int KeyManager::ActiveElxUserKey4Nato(unsigned int user, KeyType type, const KeyBlob &authToken)
 {
     LOGW("Active Elx user key for nato for userId=%{public}d, keyType=%{public}u", user, type);
     if (!KeyCtrlHasFscryptSyspara()) {
@@ -1213,7 +1213,7 @@ int KeyManager::ActiveElxUserKey4Nato(unsigned int user, KeyType type)
         LOGE("RestoreKey nato for userId=%{public}d el%{public}u failed.", user, type);
         return E_NATO_RESTORE_USER_KEY_ERROR;
     }
-    if (elKey->ActiveKey(RETRIEVE_KEY) != E_OK) {
+    if (elKey->ActiveKey(authToken, RETRIEVE_KEY) != E_OK) {
         LOGE("ActiveKey nato for userId=%{public}d el%{public}u failed.", user, type);
         return E_NATO_ACTIVE_EL4_KEY_ERROR;
     }
@@ -1355,7 +1355,7 @@ int KeyManager::ActiveElXUserKey(unsigned int user,
             return E_ELX_KEY_STORE_ERROR;
         }
     }
-    if (elKey->ActiveKey(RETRIEVE_KEY) != E_OK) {
+    if (elKey->ActiveKey(auth.token, RETRIEVE_KEY) != E_OK) {
         LOGE("Active user %{public}u key failed", user);
         return E_ELX_KEY_ACTIVE_ERROR;
     }
@@ -1421,7 +1421,7 @@ int32_t KeyManager::UnlockEceSece(uint32_t user,
         LOGE("Restore user %{public}u el4 key failed", user);
         return E_RESTORE_KEY_FAILED;
     }
-    int32_t ret = el4Key->UnlockUserScreen(user, FSCRYPT_SDP_ECE_CLASS);
+    int32_t ret = el4Key->UnlockUserScreen(token, user, FSCRYPT_SDP_ECE_CLASS);
     if (ret != E_OK) {
         LOGE("UnlockUserScreen user %{public}u el4 key failed", user);
         return E_UNLOCK_SCREEN_FAILED;

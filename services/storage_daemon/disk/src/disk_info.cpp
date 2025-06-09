@@ -402,7 +402,7 @@ int32_t DiskInfo::GetMaxMinor(int32_t major)
 {
     DIR* dir;
     struct dirent* entry;
-    int maxMinor = -1;
+    int32_t maxMinor = -1;
     if ((dir = opendir(BLOCK_PATH)) == nullptr) {
         LOGE("fail to open %{public}s", BLOCK_PATH);
         return E_ERR;
@@ -414,8 +414,8 @@ int32_t DiskInfo::GetMaxMinor(int32_t major)
         std::string devicePath = std::string(BLOCK_PATH) + "/" + entry->d_name;
         struct stat statbuf;
         if (stat(devicePath.c_str(), &statbuf) == 0) {
-            int majorNum = major(statbuf.st_rdev);
-            int minorNum = minor(statbuf.st_rdev);
+            int32_t majorNum = static_cast<int32_t>major(statbuf.st_rdev);
+            int32_t minorNum = static_cast<int32_t>minor(statbuf.st_rdev);
 
             if (majorNum == major) {
                 maxMinor = minorNum > maxMinor ? minorNum : maxMinor;

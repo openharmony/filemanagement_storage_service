@@ -52,6 +52,11 @@ ohos_unittest("KeyBackupTest") {
     "hilog:libhilog",
     "huks:libhukssdk",
   ]
+
+  if (enable_huks_hdi) {
+    defines += [ "HUKS_IDL_ENVIRONMENT" ]
+    external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
+  }
 }
 
 group("key_backup_test") {

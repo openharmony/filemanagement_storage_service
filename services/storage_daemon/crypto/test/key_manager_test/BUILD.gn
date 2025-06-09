@@ -81,6 +81,11 @@ ohos_unittest("KeyManagerTest") {
     defines += [ "USER_AUTH_FRAMEWORK" ]
     external_deps += [ "user_auth_framework:userauth_client" ]
   }
+
+  if (enable_huks_hdi) {
+    defines += [ "HUKS_IDL_ENVIRONMENT" ]
+    external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
+  }
 }
 
 ohos_unittest("KeyManagerSupTest") {
@@ -159,6 +164,11 @@ ohos_unittest("KeyManagerSupTest") {
     defines += [ "EL5_FILEKEY_MANAGER" ]
     external_deps += [ "access_token:el5_filekey_manager_sdk" ]
   }
+
+  if (enable_huks_hdi) {
+    defines += [ "HUKS_IDL_ENVIRONMENT" ]
+    external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
+  }
 }
 
 ohos_unittest("KeyManagerOtherTest") {
@@ -228,6 +238,12 @@ ohos_unittest("KeyManagerOtherTest") {
   if (enable_user_auth_framework) {
     defines += [ "USER_AUTH_FRAMEWORK" ]
     external_deps += [ "user_auth_framework:userauth_client" ]
+  }
+
+
+  if (enable_huks_hdi) {
+    defines += [ "HUKS_IDL_ENVIRONMENT" ]
+    external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
   }
 }
 
@@ -303,6 +319,11 @@ ohos_unittest("KeyManagerAnotherTest") {
   if (enable_tee_client) {
     defines += [ "RECOVER_KEY_TEE_ENVIRONMENT" ]
     external_deps += [ "tee_client:libteec" ]
+  }
+
+  if (enable_huks_hdi) {
+    defines += [ "HUKS_IDL_ENVIRONMENT" ]
+    external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
   }
 }
 

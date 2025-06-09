@@ -36,6 +36,8 @@ ohos_unittest("BaseKeyTest") {
     "${storage_daemon_path}/crypto/test/mock",
     "${storage_daemon_path}/include",
     "${storage_daemon_path}/include/crypto",
+    "${storage_daemon_path}/include/libfscrypt",
+    "${storage_daemon_path}/include/mock",
     "${storage_daemon_path}/include/utils",
     "${storage_service_common_path}/include",
     "${storage_interface_path}/innerkits/storage_manager/native",
@@ -48,16 +50,15 @@ ohos_unittest("BaseKeyTest") {
     "${storage_daemon_path}/crypto/src/key_backup.cpp",
     "${storage_daemon_path}/crypto/test/mock/huks_master_mock.cpp",
     "${storage_daemon_path}/crypto/test/mock/openssl_crypto_mock.cpp",
-    "${storage_daemon_path}/utils/file_utils.cpp",
+    "${storage_daemon_path}/mock/common_utils_mock.cpp",
+    "${storage_daemon_path}/mock/key_control_mock.cpp",
+    "${storage_daemon_path}/mock/file_utils_mock.cpp",
     "${storage_daemon_path}/utils/storage_radar.cpp",
     "${storage_daemon_path}/utils/string_utils.cpp",
     "base_key_test.cpp",
   ]
 
-  deps = [
-    "${storage_daemon_path}:storage_common_utils",
-    "${storage_daemon_path}/libfscrypt:libfscryptutils",
-  ]
+  deps = [ "${storage_daemon_path}:storage_common_utils" ]
 
   external_deps = [
     "c_utils:utils",
@@ -71,6 +72,21 @@ ohos_unittest("BaseKeyTest") {
   if (enable_user_auth_framework) {
     defines += [ "USER_AUTH_FRAMEWORK" ]
     external_deps += [ "user_auth_framework:userauth_client" ]
+  }
+
+  if (storage_service_user_crypto_manager) {
+    defines += [
+      "USER_CRYPTO_MANAGER",
+      "USER_CRYPTO_MIGRATE_KEY",
+    ]
+    deps += [
+      "${storage_daemon_path}/crypto:libsdcrypto",
+    ]
+  }
+
+  if (enable_huks_hdi) {
+    defines += [ "HUKS_IDL_ENVIRONMENT" ]
+    external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
   }
 }
 

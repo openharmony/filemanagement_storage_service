@@ -157,36 +157,35 @@ HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_GetMappedUserId_004, TestSize.Leve
 HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_ActiveKeyExt_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "FscryptKeyV1Ext_ActiveKeyExt_001 end";
-    uint8_t iv = 1;
-    uint32_t size = 1;
+    KeyBlob iv(1);
     uint32_t elType = 0;
     FscryptKeyV1Ext ext;
     ext.userId_ = 100;
     ext.type_ = TYPE_EL2;
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(false));
-    EXPECT_EQ(ext.ActiveKeyExt(0, &iv, size, elType), 0);
+    EXPECT_EQ(ext.ActiveKeyExt(0, iv, elType, {}), 0);
     EXPECT_EQ(elType, 0);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, InstallKeyToKernel(_, _, _, _, _)).WillOnce(Return(1)).WillOnce(Return(1));
-    EXPECT_EQ(ext.ActiveKeyExt(0, &iv, size, elType), 1);
+    EXPECT_EQ(ext.ActiveKeyExt(0, iv, elType, {}), 1);
     EXPECT_EQ(elType, 0);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, InstallKeyToKernel(_, _, _, _, _)).WillOnce(Return(1)).WillOnce(Return(0));
-    EXPECT_EQ(ext.ActiveKeyExt(0, &iv, size, elType), 0);
+    EXPECT_EQ(ext.ActiveKeyExt(0, iv, elType, {}), 0);
     EXPECT_EQ(elType, TYPE_EL2);
 
     elType = 0;
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, InstallKeyToKernel(_, _, _, _, _)).WillOnce(Return(1));
-    EXPECT_EQ(ext.ActiveKeyExt(1, &iv, size, elType), 1);
+    EXPECT_EQ(ext.ActiveKeyExt(1, iv, elType, {}), 1);
     EXPECT_EQ(elType, TYPE_EL1);
     
     elType = 0;
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, InstallKeyToKernel(_, _, _, _, _)).WillOnce(Return(0));
-    EXPECT_EQ(ext.ActiveKeyExt(0, &iv, size, elType), 0);
+    EXPECT_EQ(ext.ActiveKeyExt(0, iv, elType, {}), 0);
     EXPECT_EQ(elType, TYPE_EL2);
     GTEST_LOG_(INFO) << "FscryptKeyV1Ext_ActiveKeyExt_001 end";
 }
@@ -206,15 +205,15 @@ HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_UnlockUserScreenExt_001, TestSize.
     ext.userId_ = 100;
     ext.type_ = TYPE_EL2;
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(false));
-    EXPECT_EQ(ext.UnlockUserScreenExt(0, &iv, size), E_OK);
+    EXPECT_EQ(ext.UnlockUserScreenExt(0, &iv, size, {}), E_OK);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
-    EXPECT_CALL(*fbexMock_, UnlockScreenToKernel(_, _, _, _)).WillOnce(Return(0));
-    EXPECT_EQ(ext.UnlockUserScreenExt(0, &iv, size), E_OK);
+    EXPECT_CALL(*fbexMock_, UnlockScreenToKernel(_, _, _, _, _)).WillOnce(Return(0));
+    EXPECT_EQ(ext.UnlockUserScreenExt(0, &iv, size, {}), E_OK);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
-    EXPECT_CALL(*fbexMock_, UnlockScreenToKernel(_, _, _, _)).WillOnce(Return(1));
-    EXPECT_NE(ext.UnlockUserScreenExt(0, &iv, size), E_OK);
+    EXPECT_CALL(*fbexMock_, UnlockScreenToKernel(_, _, _, _, _)).WillOnce(Return(1));
+    EXPECT_NE(ext.UnlockUserScreenExt(0, &iv, size, {}), E_OK);
     GTEST_LOG_(INFO) << "FscryptKeyV1Ext_UnlockUserScreenExt_001 end";
 }
 
@@ -333,20 +332,20 @@ HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_ReadClassE_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "FscryptKeyV1Ext_ReadClassE_001 end";
     bool isFbeSupport;
-    std::unique_ptr<uint8_t[]> classEBuffer;
+    KeyBlob classEBuffer;
     FscryptKeyV1Ext ext;
     ext.userId_ = 100;
     ext.type_ = TYPE_EL2;
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(false));
-    EXPECT_EQ(ext.ReadClassE(0, classEBuffer, 1, isFbeSupport), E_OK);
+    EXPECT_EQ(ext.ReadClassE(0, classEBuffer, {}, isFbeSupport), E_OK);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, ReadESecretToKernel(_, _, _, _, _)).WillOnce(Return(0));
-    EXPECT_EQ(ext.ReadClassE(0, classEBuffer, 1, isFbeSupport), E_OK);
+    EXPECT_EQ(ext.ReadClassE(0, classEBuffer, {}, isFbeSupport), E_OK);
 
     EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
     EXPECT_CALL(*fbexMock_, ReadESecretToKernel(_, _, _, _, _)).WillOnce(Return(1));
-    EXPECT_EQ(ext.ReadClassE(0, classEBuffer, 1, isFbeSupport), 1);
+    EXPECT_EQ(ext.ReadClassE(0, classEBuffer, {}, isFbeSupport), 1);
     GTEST_LOG_(INFO) << "FscryptKeyV1Ext_ReadClassE_001 end";
 }
 
@@ -544,17 +543,16 @@ HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_GetMappedDeUserId_001, TestSize.Le
 HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_ActiveDoubleKeyExt_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "FscryptKeyV1Ext_ActiveDoubleKeyExt_001 end";
-    uint8_t iv = 1;
-    uint32_t size = 1;
+    KeyBlob iv(1);
     uint32_t elType = 0;
     FscryptKeyV1Ext ext;
     ext.userId_ = 100;
     ext.type_ = TYPE_EL2;
     EXPECT_CALL(*fbexMock_, InstallDoubleDeKeyToKernel(_, _, _, _)).WillOnce(Return(true));
-    EXPECT_NE(ext.ActiveDoubleKeyExt(0, &iv, size, elType), 0);
+    EXPECT_NE(ext.ActiveDoubleKeyExt(0, iv, elType, {}), 0);
 
     EXPECT_CALL(*fbexMock_, InstallDoubleDeKeyToKernel(_, _, _, _)).WillOnce(Return(false));
-    EXPECT_EQ(ext.ActiveDoubleKeyExt(0, &iv, size, elType), 0);
+    EXPECT_EQ(ext.ActiveDoubleKeyExt(0, iv, elType, {}), 0);
     EXPECT_EQ(elType, TYPE_EL2);
     GTEST_LOG_(INFO) << "FscryptKeyV1Ext_ActiveDoubleKeyExt_001 end";
 }

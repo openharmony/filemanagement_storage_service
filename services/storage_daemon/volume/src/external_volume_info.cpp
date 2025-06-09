@@ -51,14 +51,9 @@ int32_t ExternalVolumeInfo::ReadMetadata()
     return ret;
 }
 
-int32_t ExternalVolumeInfo::GetFsType()
+std::string ExternalVolumeInfo::GetFsType()
 {
-    for (uint32_t i = 0; i < supportMountType_.size(); i++) {
-        if (supportMountType_[i].compare(fsType_) == 0) {
-            return i;
-        }
-    }
-    return -1;
+    return fsType_;
 }
 
 std::string ExternalVolumeInfo::GetFsUuid()
@@ -331,11 +326,13 @@ int32_t ExternalVolumeInfo::DoCheck()
     }
 
     // check fstype
-    if (GetFsType() == -1) {
-        LOGE("External Volume type not support.");
-        return E_NOT_SUPPORT;
+    for (std::string item : supportMountType_) {
+        if (item == fsType_) {
+            return E_OK;
+        }
     }
-    return E_OK;
+    LOGE("External Volume type not support.");
+    return E_NOT_SUPPORT;
 }
 
 int32_t ExternalVolumeInfo::DoFormat(std::string type)

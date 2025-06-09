@@ -168,7 +168,9 @@ int BaseKey::GetCandidateVersion() const
             }
         }
     }
-    LOGW("candidate key version is %{public}d", candidate);
+    if (candidate != -1) {
+        LOGW("candidate key version is %{public}d", candidate);
+    }
     return candidate;
 }
 
@@ -497,7 +499,7 @@ int32_t BaseKey::EncryptEceSece(const UserAuth &auth, const uint32_t keyType, Ke
 
 int32_t BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate)
 {
-    LOGW("enter");
+    LOGD("BaseKey::RestoreKey enter");
     auto candidate = GetCandidateDir();
     if (candidate.empty()) {
         // no candidate dir, just restore from the latest
@@ -707,7 +709,7 @@ int32_t BaseKey::DoRestoreKey(const UserAuth &auth, const std::string &path)
     }
     int ret = -1;
     if (encryptType == KeyEncryptTypeToString(KeyEncryptType::KEY_CRYPT_HUKS_OPENSSL)) {
-        LOGI("Restore ce ece sece key.");
+        LOGD("Restore ce ece sece key.");
         ret = DoRestoreKeyCeEceSece(auth, path, keyType);
     }
     std::error_code errCode;
@@ -1100,7 +1102,7 @@ void BaseKey::SplitKeyBlob(const KeyBlob &keyIn, KeyBlob &encAad, KeyBlob &nonce
 
 void BaseKey::ClearKeyContext(KeyContext &keyCtx)
 {
-    LOGI("enter clear");
+    LOGD("BaseKey::ClearKeyContext enter");
     keyCtx.aad.Clear();
     keyCtx.nonce.Clear();
     keyCtx.shield.Clear();

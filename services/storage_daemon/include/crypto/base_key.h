@@ -44,11 +44,12 @@ public:
     int32_t UpdateKey(const std::string &keypath = "", bool needSyncCandidate = true);
     int32_t RestoreKey(const UserAuth &auth, bool needSyncCandidate = true);
     int32_t RestoreKey4Nato(const std::string &keyDir, KeyType type);
-    virtual int32_t ActiveKey(uint32_t flag, const std::string &mnt = std::string(MNT_DATA)) = 0;
+    virtual int32_t ActiveKey(const KeyBlob &authToken, uint32_t flag,
+        const std::string &mnt = std::string(MNT_DATA)) = 0;
     virtual int32_t InactiveKey(uint32_t flag, const std::string &mnt = std::string(MNT_DATA)) = 0;
     virtual int32_t LockUserScreen(uint32_t flag, uint32_t sdpClass,
         const std::string &mnt = std::string(MNT_DATA)) = 0;
-    virtual int32_t UnlockUserScreen(uint32_t flag, uint32_t sdpClass,
+    virtual int32_t UnlockUserScreen(const KeyBlob &authToken, uint32_t flag, uint32_t sdpClass,
         const std::string &mnt = std::string(MNT_DATA)) = 0;
     virtual int32_t GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId) = 0;
     virtual int32_t DeleteAppkey(const std::string keyId) = 0;

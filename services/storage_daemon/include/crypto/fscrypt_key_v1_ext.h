@@ -18,6 +18,8 @@
 
 #include <string>
 
+#include "key_blob.h"
+
 namespace OHOS {
 namespace StorageDaemon {
 class FscryptKeyV1Ext {
@@ -30,15 +32,15 @@ public:
         userId_ = GetUserIdFromDir();
         type_ = GetTypeFromDir();
     }
-    int32_t ActiveKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, uint32_t &elType);
-    int32_t ActiveDoubleKeyExt(uint32_t flag, uint8_t *iv, uint32_t size, uint32_t &elType);
+    int32_t ActiveKeyExt(uint32_t flag, KeyBlob &iv, uint32_t &elType, const KeyBlob &authToken);
+    int32_t ActiveDoubleKeyExt(uint32_t flag, KeyBlob &iv, uint32_t &elType, const KeyBlob &authToken);
     int32_t InactiveKeyExt(uint32_t flag);
     int32_t LockUserScreenExt(uint32_t flag, uint32_t &elType);
-    int32_t UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_t size);
+    int32_t UnlockUserScreenExt(uint32_t flag, uint8_t *iv, uint32_t size, const KeyBlob &authToken);
     int32_t AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status);
     int32_t DeleteClassEPinCode(uint32_t userId);
     int32_t ChangePinCodeClassE(uint32_t userId, bool &isFbeSupport);
-    int32_t ReadClassE(uint32_t status, std::unique_ptr<uint8_t[]> &classEBuffer, uint32_t length, bool &isFbeSupport);
+    int32_t ReadClassE(uint32_t status, KeyBlob &classEBuffer, const KeyBlob &authToken, bool &isFbeSupport);
     int32_t WriteClassE(uint32_t status, uint8_t *classEBuffer, uint32_t length);
     int32_t GenerateAppkey(uint32_t userId, uint32_t appUid, std::unique_ptr<uint8_t[]> &keyId, uint32_t size);
     int32_t LockUeceExt(bool &isFbeSupport);

@@ -184,7 +184,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_init, TestSize.Level1)
     g_testKeyV2->keyInfo_.key.Clear();
 #else
     EXPECT_FALSE(g_testKeyV2->InitKey(true));
-    EXPECT_NE(g_testKeyV2->ActiveKey(), E_OK);
+    EXPECT_NE(g_testKeyV2->ActiveKey({}), E_OK);
     EXPECT_NE(g_testKeyV2->InactiveKey(), E_OK);
 #endif
 }
@@ -236,7 +236,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_store, TestSize.Level1)
     EXPECT_TRUE(g_testKeyV1BadDir.InitKey(true));
     EXPECT_NE(g_testKeyV1BadDir.StoreKey(emptyUserAuth), E_OK);
     EXPECT_NE(g_testKeyV1BadDir.UpdateKey(), E_OK);
-    EXPECT_NE(g_testKeyV1BadDir.ActiveKey(), E_OK);
+    EXPECT_NE(g_testKeyV1BadDir.ActiveKey({}), E_OK);
 }
 
 #ifdef SUPPORT_FSCRYPT_V2
@@ -359,7 +359,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_restore, TestSize.Level1)
 HWTEST_F(CryptoKeyTest, fscrypt_key_v1_active, TestSize.Level1)
 {
     g_testKeyV1->ClearKey();
-    EXPECT_NE(g_testKeyV1->ActiveKey(), E_OK); // active empty key should fail
+    EXPECT_NE(g_testKeyV1->ActiveKey({}), E_OK); // active empty key should fail
     EXPECT_TRUE(g_testKeyV1->InitKey(true));
 #ifndef CRYPTO_TEST
     g_testKeyV1->StoreKey(emptyUserAuth);
@@ -369,7 +369,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_active, TestSize.Level1)
     EXPECT_FALSE(g_testKeyV1->keyInfo_.key.IsEmpty());
     EXPECT_EQ(FSCRYPT_V1, g_testKeyV1->keyInfo_.version);
 
-    EXPECT_EQ(g_testKeyV1->ActiveKey(FIRST_CREATE_KEY), E_OK);
+    EXPECT_EQ(g_testKeyV1->ActiveKey({}, FIRST_CREATE_KEY), E_OK);
     // raw key should be erase after install to kernel.
     EXPECT_TRUE(g_testKeyV1->keyInfo_.key.IsEmpty());
     EXPECT_TRUE(g_testKeyV1->keyInfo_.keyId.IsEmpty());
@@ -382,7 +382,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_active, TestSize.Level1)
     FscryptKeyV1 g_testKeyV1BadLen {TEST_KEYPATH, CRYPTO_AES_256_XTS_KEY_SIZE * 2};
     EXPECT_TRUE(g_testKeyV1BadLen.InitKey(true));
     EXPECT_EQ(g_testKeyV1BadLen.InactiveKey(), E_OK);
-    EXPECT_NE(g_testKeyV1BadLen.ActiveKey(), E_OK);
+    EXPECT_NE(g_testKeyV1BadLen.ActiveKey({}), E_OK);
 }
 
 /**
@@ -414,7 +414,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_policy_set, TestSize.Level1)
 #else
     EXPECT_EQ(g_testKeyV1->StoreKey(emptyUserAuth), E_OK);
 #endif
-    EXPECT_EQ(g_testKeyV1->ActiveKey(FIRST_CREATE_KEY), E_OK);
+    EXPECT_EQ(g_testKeyV1->ActiveKey({}, FIRST_CREATE_KEY), E_OK);
 
     FscryptPolicy arg;
     (void)memset_s(&arg, sizeof(arg), 0, sizeof(arg));
@@ -489,7 +489,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_active, TestSize.Level1)
     EXPECT_TRUE(g_testKeyV2->InitKey(true));
     EXPECT_EQ(g_testKeyV2->StoreKey(emptyUserAuth), E_OK);
     EXPECT_EQ(g_testKeyV2->UpdateKey(), E_OK);
-    EXPECT_EQ(g_testKeyV2->ActiveKey(), E_OK);
+    EXPECT_EQ(g_testKeyV2->ActiveKey({}), E_OK);
 
     // raw key should be erase after install to kernel.
     EXPECT_TRUE(g_testKeyV2->keyInfo_.key.IsEmpty());
@@ -583,7 +583,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_policy_restore, TestSize.Level1)
     }
     EXPECT_EQ(g_testKeyV2->RestoreKey(emptyUserAuth), E_OK);
     EXPECT_EQ(FSCRYPT_V2, g_testKeyV2->keyInfo_.version);
-    EXPECT_EQ(g_testKeyV2->ActiveKey(), E_OK);
+    EXPECT_EQ(g_testKeyV2->ActiveKey({}), E_OK);
 
     // the files is decrypted now
     EXPECT_TRUE(OHOS::FileExists(TEST_DIR_V2 + "/test_dir"));
@@ -607,7 +607,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_default, TestSize.Lev
     g_testKeyV2->ClearKey();
     EXPECT_TRUE(g_testKeyV2->InitKey(true));
     EXPECT_EQ(g_testKeyV2->StoreKey(emptyUserAuth), E_OK);
-    EXPECT_EQ(g_testKeyV2->ActiveKey(), E_OK);
+    EXPECT_EQ(g_testKeyV2->ActiveKey({}), E_OK);
 
     EXPECT_EQ(0, SetFscryptSysparam("2:aes-256-cts:aes-256-xts"));
     EXPECT_EQ(0, InitFscryptPolicy());
@@ -640,7 +640,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v1_load_and_set_policy_default, TestSize.Lev
 #else
     EXPECT_EQ(g_testKeyV1->StoreKey(emptyUserAuth), E_OK);
 #endif
-    EXPECT_EQ(g_testKeyV1->ActiveKey(FIRST_CREATE_KEY), E_OK);
+    EXPECT_EQ(g_testKeyV1->ActiveKey({}, FIRST_CREATE_KEY), E_OK);
 
     EXPECT_EQ(0, SetFscryptSysparam("1:aes-256-cts:aes-256-xts"));
     EXPECT_EQ(0, InitFscryptPolicy());
@@ -855,7 +855,7 @@ HWTEST_F(CryptoKeyTest, fscrypt_key_v2_load_and_set_policy_padding_4, TestSize.L
     g_testKeyV2->ClearKey();
     EXPECT_TRUE(g_testKeyV2->InitKey(true));
     EXPECT_EQ(g_testKeyV2->StoreKey(emptyUserAuth), E_OK);
-    EXPECT_EQ(g_testKeyV2->ActiveKey(), E_OK);
+    EXPECT_EQ(g_testKeyV2->ActiveKey({}), E_OK);
 
     EXPECT_EQ(0, SetFscryptSysparam("2:aes-256-cts:aes-256-xts"));
     EXPECT_EQ(0, InitFscryptPolicy());
