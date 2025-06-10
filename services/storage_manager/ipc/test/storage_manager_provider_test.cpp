@@ -158,9 +158,9 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetTotalSizeOfVo
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetTotalSizeOfVolume_001 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    const std::string VolumeUuid = "test_volume_uuid";
-    int64_t TotalSize = 0;
-    auto ret = storageManagerProviderTest_->GetTotalSizeOfVolume(VolumeUuid, TotalSize);
+    const std::string volumeUuid = "test_volume_uuid";
+    int64_t totalSize = 0;
+    auto ret = storageManagerProviderTest_->GetTotalSizeOfVolume(volumeUuid, totalSize);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetTotalSizeOfVolume_001 end";
 }

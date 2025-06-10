@@ -77,7 +77,7 @@ uint32_t GetU32Data(const char *ptr)
     return (ptr[0] << 24) | (ptr[1] << 16) | (ptr[2] << 8) | (ptr[3]);
 }
 
-bool StorageManagerProviderFuzzTest(std::unique_ptr<char[]> data, size_t size)
+bool StorageManagerProviderFTest(std::unique_ptr<char[]> data, size_t size)
 {
     uint32_t code = GetU32Data(data.get());
     if (code == 0) {
@@ -935,7 +935,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         return 0;
     }
 
-    OHOS::StorageManager::StorageManagerProviderFuzzTest(move(str), size);
+    OHOS::StorageManager::StorageManagerProviderFTest(move(str), size);
     FuzzerTest1(data, size);
     FuzzerTest2(data, size);
     return 0;
