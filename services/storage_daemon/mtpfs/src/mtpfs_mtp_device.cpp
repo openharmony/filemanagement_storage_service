@@ -316,7 +316,7 @@ void MtpFsDevice::SetFetched(MtpFsTypeDir *dir)
     if (dir == nullptr) {
         return;
     }
-    std::unique_lockstd::mutex lock(deviceMutex_);
+    std::unique_lock<std::mutex> lock(deviceMutex_);
     dir->SetFetched(true);
     LIBMTP_file_t *content = LIBMTP_Get_Files_And_Folders(device_, dir->StorageId(), dir->Id());
     HandleDir(content, dir);
@@ -1272,7 +1272,7 @@ int MtpFsDevice::AddRemovingFile(const std::string &path)
         LOGE("SetFileCancelFlag: input file path is empty.");
         return -EINVAL;
     }
-    std::lock_guardstd::mutex lock(MtpFsDevice::setMutex_);
+    std::lock_guard<std::mutex> lock(MtpFsDevice::setMutex_);
     MtpFsDevice::removingFileSet_.insert(path);
     return E_OK;
 }
@@ -1284,7 +1284,7 @@ int MtpFsDevice::EraseRemovingFile(const std::string &path)
         LOGE("EraseRemovingFile: input file path is empty.");
         return -EINVAL;
     }
-    std::lock_guardstd::mutex lock(MtpFsDevice::setMutex_);
+    std::lock_guard<std::mutex> lock(MtpFsDevice::setMutex_);
     MtpFsDevice::removingFileSet_.erase(path);
     return E_OK;
 }
@@ -1295,7 +1295,7 @@ bool MtpFsDevice::IsFileRemoving(const std::string &path)
         LOGE("IsFileRemoving: input file path is empty.");
         return false;
     }
-    std::lock_guardstd::mutex lock(MtpFsDevice::setMutex_);
+    std::lock_guard<std::mutex> lock(MtpFsDevice::setMutex_);
     return (MtpFsDevice::removingFileSet_.find(path) != MtpFsDevice::removingFileSet_.end());
 }
 
