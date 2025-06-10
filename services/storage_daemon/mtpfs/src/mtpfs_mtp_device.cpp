@@ -37,6 +37,8 @@ static std::atomic<bool> g_isEventDone;
 static std::atomic<bool> isTransferring_;
 std::condition_variable MtpFsDevice::eventCon_;
 std::mutex MtpFsDevice::eventMutex_;
+std::mutex MtpFsDevice::setMutex_;
+std::set<std::string> MtpFsDevice::removingFileSet_;
 static const std::string NO_ERROR_PATH = "/FileManagerExternalStorageReadOnlyFlag";
 using namespace OHOS::StorageService;
 
@@ -158,7 +160,7 @@ int MtpFsDevice::MtpProgressCallback(uint64_t const sent, uint64_t const total, 
 {
     const char *charData = static_cast<const char*>(data);
     LOGD("MtpProgressCallback enter, sent=%{public}lld, total=%{public}lld, data=%{public}s", sent, total, charData);
-    return E_OK;
+    return IsFileRemoving(std::string(charData)) ? -ECANCELED : 0;
 }
 
 bool MtpFsDevice::ConnectByDevNo(int devNo)
@@ -279,6 +281,7 @@ bool MtpFsDevice::EnumStorages()
 {
     LOGI("Start to enum mtp device storages.");
     std::unique_lock<std::mutex> lock(deviceMutex_);
+    LIBMTP_Clear_Errorstack(device_);
     if (LIBMTP_Get_Storage(device_, LIBMTP_STORAGE_SORTBY_NOTSORTED) < 0) {
         LOGE("Could not retrieve device storage.");
         DumpLibMtpErrorStack();
@@ -306,6 +309,18 @@ const void MtpFsDevice::HandleDir(LIBMTP_file_t *content, MtpFsTypeDir *dir)
             dir->AddFile(MtpFsTypeFile(f));
         }
     }
+}
+
+void MtpFsDevice::SetFetched(MtpFsTypeDir *dir)
+{
+    if (dir == nullptr) {
+        return;
+    }
+    std::unique_lock<std::mutex> lock(deviceMutex_);
+    dir->SetFetched(true);
+    LIBMTP_file_t *content = LIBMTP_Get_Files_And_Folders(device_, dir->StorageId(), dir->Id());
+    HandleDir(content, dir);
+    LIBMTPFreeFilesAndFolders(&content);
 }
 
 const MtpFsTypeDir *MtpFsDevice::DirFetchContent(std::string path)
@@ -355,11 +370,7 @@ const MtpFsTypeDir *MtpFsDevice::DirFetchContent(std::string path)
     if (dir->IsFetched()) {
         return dir;
     }
-    std::unique_lock<std::mutex> lock(deviceMutex_);
-    dir->SetFetched(true);
-    LIBMTP_file_t *content = LIBMTP_Get_Files_And_Folders(device_, dir->StorageId(), dir->Id());
-    HandleDir(content, dir);
-    LIBMTPFreeFilesAndFolders(&content);
+    SetFetched(dir);
     return dir;
 }
 
@@ -490,6 +501,10 @@ void MtpFsDevice::FetchDirContent(MtpFsTypeDir *dir)
 
 const MtpFsTypeDir *MtpFsDevice::ReadDirFetchContent(std::string path)
 {
+    if (device_ == nullptr) {
+        LOGE("ReadDirFetchContent error, device_ is nullptr.");
+        return nullptr;
+    }
     if (!rootDir_.IsFetched()) {
         for (LIBMTP_devicestorage_t *s = device_->storage; s; s = s->next) {
             rootDir_.AddDir(MtpFsTypeDir(rootNode_, 0, s->id, std::string(s->StorageDescription)));
@@ -781,7 +796,8 @@ int MtpFsDevice::FileRead(const std::string &path, char *buf, size_t size, off_t
         return -ENOENT;
     }
     SetTransferValue(true);
-    LOGI("Start file reading for path=%{public}s", path.c_str());
+    LOGI("Start file reading for path=%{public}s, size=%{public}d, offset=%{public}d, handle id=%{public}d",
+        path.c_str(), size, offset, fileToFetch->Id());
 
     unsigned char *tmpBuf;
     unsigned int tmpSize;
@@ -871,17 +887,18 @@ int MtpFsDevice::FilePush(const std::string &src, const std::string &dst)
     const MtpFsTypeDir *dirParent = ReadDirFetchContent(SmtpfsDirName(dst));
     const MtpFsTypeFile *fileToRemove = dirParent ? dirParent->File(dstBaseName) : nullptr;
     if (!dirParent) {
-        LOGE("Can not fetch %{public}s", dst.c_str());
+        LOGE("FilePush failed, Can not fetch %{public}s", dst.c_str());
         return -EINVAL;
     }
     SetTransferValue(true);
-    if (fileToRemove) {
+    if (fileToRemove && !IsOpenHarmonyMtpDevice()) {
+        LOGI("Start to delete mtp file, handle id = %{public}d.", fileToRemove->Id());
         std::unique_lock<std::mutex> lock(deviceMutex_);
         int rval = LIBMTP_Delete_Object(device_, fileToRemove->Id());
         usleep(DELETE_OBJECT_DELAY_US);
         if (rval != 0) {
             StorageRadar::ReportMtpfsResult("FilePush::LIBMTP_Delete_Object", rval, "src=" + src + "dst=" + dst);
-            LOGE("Can not upload %{public}s to %{public}s", src.c_str(), dst.c_str());
+            LOGE("FilePush failed, Can not upload %{public}s to %{public}s", src.c_str(), dst.c_str());
             SetTransferValue(false);
             DumpLibMtpErrorStack();
             return -EINVAL;
@@ -889,7 +906,22 @@ int MtpFsDevice::FilePush(const std::string &src, const std::string &dst)
     }
     int uploadRval = PerformUpload(src, dst, dirParent, fileToRemove, dstBaseName);
     SetTransferValue(false);
+    LOGI("FilePush %{public}s to mtp device end, uploadRval=%{public}d.", dst.c_str(), uploadRval);
     return uploadRval;
+}
+
+int MtpFsDevice::FilePushAsync(const std::string src, const std::string dst)
+{
+    LOGI("FilePushAsync enter, dstPath: %{public}s", dst.c_str());
+
+    std::thread([this, src, dst]() {
+        LOGI("Start async push file=%{public}s to mtp device.", dst.c_str());
+        int ret = FilePush(src, dst);
+        SetUploadRecord(dst, (ret == E_OK) ? "success" : "fail");
+        ::unlink(src.c_str());
+        }).detach();
+
+    return E_OK;
 }
 
 int MtpFsDevice::PerformUpload(const std::string &src, const std::string &dst, const MtpFsTypeDir *dirParent,
@@ -921,7 +953,6 @@ int MtpFsDevice::PerformUpload(const std::string &src, const std::string &dst, c
             const_cast<MtpFsTypeDir *>(dirParent)->AddFile(fileToUpload);
         }
     }
-    SetTransferValue(false);
     free(static_cast<void *>(f->filename));
     free(static_cast<void *>(f));
     return (rval != 0 ? -EINVAL : rval);
@@ -937,18 +968,20 @@ int MtpFsDevice::FileRemove(const std::string &path)
         LOGE("No such file %{public}s to remove", path.c_str());
         return -ENOENT;
     }
-
+    AddRemovingFile(path);
     LOGI("LIBMTP_Delete_Object handleID=%{public}u", fileToRemove->Id());
     std::unique_lock<std::mutex> lock(deviceMutex_);
     int rval = LIBMTP_Delete_Object(device_, fileToRemove->Id());
     if (rval != 0) {
-        LOGE("Could not remove the directory %{public}s", path.c_str());
+        LOGE("Could not remove the file %{public}s, rval=%{public}d.", path.c_str(), rval);
+        EraseRemovingFile(path);
         DumpLibMtpErrorStack();
         return -EINVAL;
     }
     uint64_t time = GetFormattedTimestamp();
     const_cast<MtpFsTypeDir *>(dirParent)->SetModificationDate(time);
     const_cast<MtpFsTypeDir *>(dirParent)->RemoveFile(*fileToRemove);
+    EraseRemovingFile(path);
     LOGI("File %{public}s removed", path.c_str());
     return 0;
 }
@@ -1230,4 +1263,56 @@ void MtpFsDevice::SetTransferValue(bool value)
     std::lock_guard<std::mutex> lock(eventMutex_);
     isTransferring_.store(value);
     eventCon_.notify_one();
+}
+
+int MtpFsDevice::AddRemovingFile(const std::string &path)
+{
+    LOGI("MtpFsDevice: AddRemovingFile enter, path: %{public}s", path.c_str());
+    if (path.empty()) {
+        LOGE("SetFileCancelFlag: input file path is empty.");
+        return -EINVAL;
+    }
+    std::lock_guard<std::mutex> lock(MtpFsDevice::setMutex_);
+    MtpFsDevice::removingFileSet_.insert(path);
+    return E_OK;
+}
+
+int MtpFsDevice::EraseRemovingFile(const std::string &path)
+{
+    LOGI("MtpFsDevice: EraseRemovingFile enter, path: %{public}s", path.c_str());
+    if (path.empty()) {
+        LOGE("EraseRemovingFile: input file path is empty.");
+        return -EINVAL;
+    }
+    std::lock_guard<std::mutex> lock(MtpFsDevice::setMutex_);
+    MtpFsDevice::removingFileSet_.erase(path);
+    return E_OK;
+}
+
+bool MtpFsDevice::IsFileRemoving(const std::string &path)
+{
+    if (path.empty()) {
+        LOGE("IsFileRemoving: input file path is empty.");
+        return false;
+    }
+    std::lock_guard<std::mutex> lock(MtpFsDevice::setMutex_);
+    return (MtpFsDevice::removingFileSet_.find(path) != MtpFsDevice::removingFileSet_.end());
+}
+
+bool MtpFsDevice::IsOpenHarmonyMtpDevice()
+{
+    if (device_ == nullptr) {
+        LOGE("Check device os type failed, mtp device_ is nullptr");
+        return false;
+    }
+    LIBMTP_device_extension_t *tmpExt = device_->extensions;
+    while (tmpExt != nullptr) {
+        if (strcmp(tmpExt->name, "openharmony") == 0) {
+            LOGI("Check device os type success, current mtp device is openharmony device.");
+            return true;
+        }
+        tmpExt = tmpExt->next;
+    }
+    LOGI("Check device os type success, current mtp device is not openharmony device.");
+    return false;
 }

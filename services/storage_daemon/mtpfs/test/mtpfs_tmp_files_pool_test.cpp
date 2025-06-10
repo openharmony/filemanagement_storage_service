@@ -69,5 +69,46 @@ HWTEST_F(MtpfsTmpFilesPoolTest, MtpfsTmpFilesPoolTest_RemoveTmpDir_001, TestSize
     EXPECT_EQ(result, false);
     GTEST_LOG_(INFO) << "MtpfsTmpFilesPoolTest_RemoveTmpDir_001 end";
 }
+
+/**
+ * @tc.name: MtpfsTmpFilesPoolTest_AddFileTest_001
+ * @tc.desc: 测试 AddFile 函数在调用时能够正确将文件插入到集合中
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsTmpFilesPoolTest, MtpfsTmpFilesPoolTest_AddFileTest_001, TestSize.Level1) {
+    std::string path = "/path/to/file";
+    std::string tmpPath = "/path/to/tmpPath";
+    MtpFsTypeTmpFile tmpFile = MtpFsTypeTmpFile(std::string(path), tmpPath, 1);
+
+    MtpFsTmpFilesPool tmpFilesPool;
+    tmpFilesPool.AddFile(tmpFile);
+
+    auto found = std::find(tmpFilesPool.tmpFilePool_.begin(), tmpFilesPool.tmpFilePool_.end(), tmpFile);
+    EXPECT_NE(found, tmpFilesPool.tmpFilePool_.end());
+    EXPECT_EQ(found->PathTmp(), "/path/to/tmpPath");
+}
+
+/**
+ * @tc.name: MtpfsTmpFilesPoolTest_RemoveFileTest_001
+ * @tc.desc: 测试当文件路径存在时,RemoveFile 函数能够成功移除该路径
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsTmpFilesPoolTest, MtpfsTmpFilesPoolTest_RemoveFileTest_001, TestSize.Level1) {
+    std::string path1 = "/path/to/file1";
+    std::string tmpPath1 = "/path/to/tmpPath1";
+    MtpFsTypeTmpFile tmpFile1 = MtpFsTypeTmpFile(std::string(path1), tmpPath1, 1);
+
+    std::string path2 = "/path/to/file2";
+    std::string tmpPath2 = "/path/to/tmpPath2";
+    MtpFsTypeTmpFile tmpFile2 = MtpFsTypeTmpFile(std::string(path2), tmpPath2, 2);
+
+    MtpFsTmpFilesPool tmpPool;
+    tmpPool.AddFile(tmpFile1);
+    tmpPool.AddFile(tmpFile2);
+
+    std::string remove = "/path/to/file1";
+    tmpPool.RemoveFile(remove);
+    EXPECT_EQ(std::find(tmpPool.tmpFilePool_.begin(), tmpPool.tmpFilePool_.end(), remove), tmpPool.tmpFilePool_.end());
+}
 }
 }

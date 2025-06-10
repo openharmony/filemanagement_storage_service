@@ -27,10 +27,6 @@ public:
     MtpFsTypeTmpFile(const MtpFsTypeTmpFile &copy);
     MtpFsTypeTmpFile(const std::string &pathDevice, const std::string &pathTmp, int fileDesc, bool modified = false);
 
-    std::string PathDevice() const
-    {
-        return pathDevice_;
-    }
     std::string PathTmp() const
     {
         return pathTmp_;
@@ -47,9 +43,7 @@ public:
 
     int RefCnt() const;
     void AddFileDescriptor(int fd);
-    bool HasFileDescriptor(int fd);
     void RemoveFileDescriptor(int fd);
-    std::set<int> FileDescriptors() const;
 
     MtpFsTypeTmpFile &operator = (const MtpFsTypeTmpFile &rhs);
 

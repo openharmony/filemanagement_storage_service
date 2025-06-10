@@ -86,6 +86,7 @@ public:
     int FileWrite(const std::string &path, const char *buf, size_t size, off_t offset);
     int FilePull(const std::string &src, const std::string &dst);
     int FilePush(const std::string &src, const std::string &dst);
+    int FilePushAsync(const std::string src, const std::string dst);
     int FileRemove(const std::string &path);
     int FileRename(const std::string &oldPath, const std::string &newPath);
     void AddUploadRecord(const std::string path, const std::string value);
@@ -101,9 +102,13 @@ public:
     void FreeObjectHandles(MtpFsTypeDir *dir);
     int GetDirChildren(std::string path, MtpFsTypeDir *dir, uint32_t *out);
     void HandleRemoveEvent(uint32_t handleId);
+    static int AddRemovingFile(const std::string &path);
+    static int EraseRemovingFile(const std::string &path);
+    static bool IsFileRemoving(const std::string &path);
 
 private:
     bool EnumStorages();
+    bool IsOpenHarmonyMtpDevice();
     static Capabilities GetCapabilities(const MtpFsDevice &device);
     bool ConvertErrorCode(LIBMTP_error_number_t err);
     const void HandleDir(LIBMTP_file_t *content, MtpFsTypeDir *dir);
@@ -119,6 +124,7 @@ private:
     bool UpdateFileNameByFd(const MtpFsTypeDir &fileDir, uint32_t fileFd, LIBMTP_file_t *file);
     int PerformUpload(const std::string &src, const std::string &dst, const MtpFsTypeDir *dirParent,
                       const MtpFsTypeFile *fileToRemove, const std::string &dstBaseName);
+    void SetFetched(MtpFsTypeDir *dir);
     void DumpLibMtpErrorStack();
     static void SetTransferValue(bool value);
 
@@ -135,6 +141,8 @@ private:
     static std::mutex eventMutex_;
     std::string rootDirName_;
     std::atomic<bool> eventFlag_;
+    static std::mutex setMutex_;
+    static std::set<std::string> removingFileSet_;
 };
 
 #endif // MTPFS_MTP_DEVICE_H

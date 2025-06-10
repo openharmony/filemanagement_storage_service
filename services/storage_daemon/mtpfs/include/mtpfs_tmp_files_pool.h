@@ -25,11 +25,8 @@ public:
 
     bool CreateTmpDir();
     bool RemoveTmpDir();
-    void SetTmpDir(const std::string &tmpDir);
     void AddFile(const MtpFsTypeTmpFile &tmp);
     void RemoveFile(const std::string &path);
-
-    bool Empty() const;
     const MtpFsTypeTmpFile *GetFile(const std::string &path) const;
     std::string MakeTmpPath(const std::string &pathDevice) const;
 

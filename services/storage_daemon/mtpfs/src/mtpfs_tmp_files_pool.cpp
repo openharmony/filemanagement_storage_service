@@ -49,21 +49,10 @@ std::string GetSha256Hash(const std::string &input)
     return std::string(res);
 }
 
-void MtpFsTmpFilesPool::SetTmpDir(const std::string &tmpDir)
-{
-    tmpDir_ = tmpDir;
-}
-
 void MtpFsTmpFilesPool::AddFile(const MtpFsTypeTmpFile &tmp)
 {
     std::lock_guard<std::mutex> lock(setMutex_);
     tmpFilePool_.insert(tmp);
-}
-
-bool MtpFsTmpFilesPool::Empty() const
-{
-    std::lock_guard<std::mutex> lock(setMutex_);
-    return tmpFilePool_.size();
 }
 
 void MtpFsTmpFilesPool::RemoveFile(const std::string &path)
