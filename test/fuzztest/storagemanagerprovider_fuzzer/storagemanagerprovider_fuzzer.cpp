@@ -74,11 +74,10 @@ std::shared_ptr<StorageManagerProvider> storageManagerProvider =
 uint32_t GetU32Data(const char *ptr)
 {
     // 将第0个数字左移24位，将第1个数字左移16位，将第2个数字左移8位，第3个数字不左移
-    return (static_cast<uint32_t>(ptr[0]) << 24) | (static_cast<uint32_t>(ptr[1]) << 16) |
-           (static_cast<uint32_t>(ptr[2]) << 8) | static_cast<uint32_t>(ptr[3]);
+    return (ptr[0] << 24) | (ptr[1] << 16) | (ptr[2] << 8) | (ptr[3]);
 }
 
-bool StorageManagerProviderFTest(std::unique_ptr<char[]> data, size_t size)
+bool g_storageManagerProviderFTest(std::unique_ptr<char[]> data, size_t size)
 {
     uint32_t code = GetU32Data(data.get());
     if (code == 0) {
@@ -936,7 +935,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         return 0;
     }
 
-    OHOS::StorageManager::StorageManagerProviderFTest(move(str), size);
+    OHOS::StorageManager::g_storageManagerProviderFTest(move(str), size);
     FuzzerTest1(data, size);
     FuzzerTest2(data, size);
     return 0;
