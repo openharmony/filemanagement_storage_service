@@ -52,6 +52,7 @@ ohos_fuzztest("StorageManagerProviderFuzzTest") {
     "access_token:libaccesstoken_sdk",
     "appspawn:appspawn_client",
     "bundle_framework:appexecfwk_core",
+    "hilog:libhilog",
     "hisysevent:libhisysevent",
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
