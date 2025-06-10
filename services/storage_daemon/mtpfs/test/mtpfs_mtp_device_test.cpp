@@ -43,7 +43,9 @@ public:
     static void SetUpTestCase(void){};
     static void TearDownTestCase(void){};
     void SetUp(){};
-    void TearDown(){};
+    void TearDown() {
+        MtpFsDevice::removingFileSet_.clear();
+    };
 };
 
 /**
@@ -267,6 +269,130 @@ HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_DirRemoveDirectly_001, TestSize.Level1
     event = LIBMTP_EVENT_OBJECT_REMOVED;
     mtpfsdevice->MtpEventCallback(ret, event, param, data);
     GTEST_LOG_(INFO) << "MtpfsDeviceTest_DirRemoveDirectly_001 end";
+}
+
+/**
+ * @tc.name: MtpfsDeviceTest_AddRemovingFileTest_001
+ * @tc.desc: 测试当传入的路径为空字符串时,AddRemovingFile 函数应返回 -EINVAL
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_AddRemovingFileTest_001, TestSize.Level1) {
+    std::string emptyPath = "";
+    int result = MtpFsDevice::AddRemovingFile(emptyPath);
+    EXPECT_EQ(result, -EINVAL);
+}
+
+/**
+ * @tc.name: MtpfsDeviceTest_AddRemovingFileTest_002
+ * @tc.desc: 测试当传入的路径不为空时,AddRemovingFile 函数应返回 E_OK,并且路径应被插入到 removingFileSet_ 中
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_AddRemovingFileTest_002, TestSize.Level1) {
+    std::string validPath = "/path/to/file";
+    int result = MtpFsDevice::AddRemovingFile(validPath);
+    EXPECT_EQ(result, E_OK);
+    EXPECT_TRUE(MtpFsDevice::removingFileSet_.find(validPath) != MtpFsDevice::removingFileSet_.end());
+}
+
+/**
+ * @tc.name: EraseRemovingFile_001
+ * @tc.desc: 测试当传入的路径为空时,函数应返回 E_PARAMS_INVALID
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_EraseRemovingFile_001, TestSize.Level1) {
+    std::string emptyPath = "";
+    int result = MtpFsDevice::EraseRemovingFile(emptyPath);
+    EXPECT_EQ(result, -EINVAL);
+}
+
+/**
+ * @tc.name: MtpfsDeviceTest_EraseRemovingFile_002
+ * @tc.desc: 测试当传入的路径有效时,函数应返回 E_OK
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_EraseRemovingFile_002, TestSize.Level1) {
+    std::string validPath = "/valid/path";
+    MtpFsDevice::removingFileSet_.insert(validPath);
+
+    int result = MtpFsDevice::EraseRemovingFile(validPath);
+    EXPECT_EQ(result, E_OK);
+    EXPECT_FALSE(MtpFsDevice::removingFileSet_.count(validPath));
+}
+
+/**
+ * @tc.name: MtpfsDeviceTest_IsFileRemovingTest_001
+ * @tc.desc: 测试当输入路径为空时,IsFileRemoving 函数应返回 false
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_IsFileRemovingTest_001, TestSize.Level1) {
+    std::string emptyPath = "";
+    EXPECT_FALSE(MtpFsDevice::IsFileRemoving(emptyPath));
+}
+
+/**
+ * @tc.name: MtpfsDeviceTest_IsFileRemovingTest_002
+ * @tc.desc: 测试当输入路径不在 removingFileSet_ 中时,IsFileRemoving 函数应返回 false
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_IsFileRemovingTest_002, TestSize.Level1) {
+    std::string pathNotInSet = "/path/not/in/set";
+    EXPECT_FALSE(MtpFsDevice::IsFileRemoving(pathNotInSet));
+}
+
+/**
+ * @tc.name: MtpfsDeviceTest_IsFileRemovingTest_003
+ * @tc.desc: 测试当输入路径在 removingFileSet_ 中时,IsFileRemoving 函数应返回 true
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_IsFileRemovingTest_003, TestSize.Level1) {
+    std::string pathInSet = "/path/in/set";
+    MtpFsDevice::removingFileSet_.insert(pathInSet);
+    EXPECT_TRUE(MtpFsDevice::IsFileRemoving(pathInSet));
+}
+
+/**
+ * @tc.name: MtpfsDeviceTest_FilePushAsyncTest_001
+ * @tc.desc: 测试当文件推送成功时,FilePushAsync 函数应返回成功
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_FilePushAsyncTest_001, TestSize.Level1) {
+    auto mtpfsdevice = std::make_shared();
+    std::string srcPath = "/path/to/local/file/test.txt";
+    std::string dstPath = "/path/to/mtp/device/test.txt";
+
+    int result = mtpfsdevice->FilePushAsync(srcPath, dstPath);
+    EXPECT_EQ(result, E_OK);
+}
+
+/**
+ * @tc.name: PerformUpload_ShouldReturnSuccess_WhenUploadSucceeds
+ * @tc.desc: 测试文件上传失败的场景
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_PerformUploadTest_001, TestSize.Level1) {
+    std::string src = "test_source_file.txt";
+    std::string dst = "test_destination_file.txt";
+    MtpFsTypeDir dirParent(1, 1, 1, "");
+    MtpFsTypeFile fileToRemove(1, 1, 1, "file_to_remove.txt", 1024, 0);
+    std::string dstBaseName = "new_file_name.txt";
+
+    auto mtpfsdevice = std::make_shared();
+    int result = mtpfsdevice->PerformUpload(src, dst, &dirParent, &fileToRemove, dstBaseName);
+    EXPECT_EQ(result, -EINVAL);
+}
+
+/**
+ * @tc.name: MtpfsDeviceTest_GetThumbnailTest_001
+ * @tc.desc: 测试当目录内容为 nullptr 时,GetThumbnail 应返回 -ENOENT
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_GetThumbnailTest_001, TestSize.Level1) {
+    std::string path = "/invalid/path";
+    char buf[1024];
+
+    auto mtpfsdevice = std::make_shared();
+    int result = mtpfsdevice->GetThumbnail(path, buf);
+    EXPECT_EQ(result, -ENOENT);
 }
 }
 }
