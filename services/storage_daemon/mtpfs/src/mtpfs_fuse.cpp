@@ -702,31 +702,7 @@ int MtpFileSystem::ReName(const char *path, const char *newpath, unsigned int fl
     if (!options_.enableMove_) {
         return -EPERM;
     }
-    const std::string tmpFile = tmpFilesPool_.MakeTmpPath(std::string(newpath));
-    int rval = device_.FilePull(std::string(path), tmpFile);
-    if (rval != 0) {
-        return -rval;
-    }
-    rval = device_.FilePush(tmpFile, std::string(newpath));
-    if (rval != 0) {
-        return -rval;
-    }
-    rval = device_.FileRemove(std::string(path));
-    if (rval != 0) {
-        return -rval;
-    }
-    const std::string tmpBaseName(SmtpfsBaseName(newpath));
-    const std::string tmpDirName(SmtpfsDirName(newpath));
-    const MtpFsTypeDir *dirParent = device_.DirFetchContent(tmpDirName);
-    const int32_t factor = 1000;
-    auto now = std::chrono::system_clock::now();
-    auto millisecs = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch());
-    time_t time = static_cast<time_t>(millisecs.count() / factor);
-    if (dirParent != nullptr) {
-        LOGI("MtpFileSystem: file cutted, update dirParent mtime");
-        const_cast<MtpFsTypeDir *>(dirParent)->SetModificationDate(time);
-    }
-    return 0;
+    return device_.FileMove(std::string(path), std::string(newpath));
 }
 
 int MtpFileSystem::ChMods(const char *path, mode_t mode, struct fuse_file_info *fi)

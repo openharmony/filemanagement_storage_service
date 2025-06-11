@@ -701,59 +701,52 @@ int MtpFsDevice::DirReName(const std::string &oldPath, const std::string &newPat
     return 0;
 }
 
-int MtpFsDevice::ReNameInner(const std::string &oldPath, const std::string &newPath)
+int MtpFsDevice::FileMove(const std::string &oldPath, const std::string &newPath)
 {
-    const std::string tmpOldBaseName(SmtpfsBaseName(oldPath));
-    const std::string tmpOldDirName(SmtpfsDirName(oldPath));
-    const std::string tmpNewBaseName(SmtpfsBaseName(newPath));
-    const std::string tmpNewDirName(SmtpfsDirName(newPath));
-    const MtpFsTypeDir *dirOldParent = ReadDirFetchContent(tmpOldDirName);
-    const MtpFsTypeDir *dirNewParent = ReadDirFetchContent(tmpNewDirName);
-    const MtpFsTypeDir *dirToReName = dirOldParent ? dirOldParent->Dir(tmpOldBaseName) : nullptr;
-    const MtpFsTypeFile *fileToReName = dirOldParent ? dirOldParent->File(tmpOldBaseName) : nullptr;
-
-    LOGD("dirToReName:%{public}s", dirToReName);
-    LOGD("fileToReName:%{public}s", fileToReName);
-
-    if (!dirOldParent || !dirNewParent || dirOldParent->Id() == 0) {
-        return -EINVAL;
+    const std::string oldBaseName(SmtpfsBaseName(oldPath));
+    const std::string oldDirName(SmtpfsDirName(oldPath));
+    const std::string newDirName(SmtpfsDirName(newPath));
+    const MtpFsTypeDir *oldDirParent = ReadDirFetchContent(oldDirName);
+    if (oldDirParent == nullptr) {
+        LOGE("oldDirParent is nullptr for oldPath=%{public}s to move.", oldPath.c_str());
+        return -ENOENT;
     }
-    const MtpFsTypeBasic *objToReName = dirToReName ? static_cast<const MtpFsTypeBasic *>(dirToReName) :
-        static_cast<const MtpFsTypeBasic *>(fileToReName);
-
-    if (!objToReName) {
-        LOGE("No such file or directory to rename/move!");
+    const MtpFsTypeDir *newDirParent = ReadDirFetchContent(newDirName);
+    if (newDirParent == nullptr) {
+        LOGE("newDirParent is nullptr for newPath=%{public}s to move.", newPath.c_str());
+        return -ENOENT;
+    }
+    const MtpFsTypeFile *fileToMove = oldDirParent->File(oldBaseName);
+    if (fileToMove == nullptr) {
+        LOGE("fileToMove is nullptr for oldPath=%{public}s to move.", oldPath.c_str());
         return -ENOENT;
     }
 
-    LOGD("objToReName:%{public}s", objToReName);
-    LOGD("objToReName->id:%{public}d", objToReName->Id());
-
-    if (tmpOldDirName != tmpNewDirName) {
-        std::unique_lock<std::mutex> lock(deviceMutex_);
-        int rval = LIBMTP_Set_Object_u32(device_, objToReName->Id(), LIBMTP_PROPERTY_ParentObject, dirNewParent->Id());
-        if (rval != 0) {
-            LOGE("Could not move %{public}s to %{public}s", oldPath.c_str(), newPath.c_str());
-            DumpLibMtpErrorStack();
-            return -EINVAL;
-        }
-        const_cast<MtpFsTypeBasic *>(objToReName)->SetParent(dirNewParent->Id());
+    uint32_t handleId = fileToMove->Id();
+    uint32_t newDirParentId = newDirParent->Id();
+    if (newDirName == "/" && !IsOpenHarmonyMtpDevice()) {
+        newDirParentId = 0;
     }
-    if (tmpOldBaseName != tmpNewBaseName) {
-        std::unique_lock<std::mutex> lock(deviceMutex_);
-        int rval = LIBMTP_Set_Object_String(device_, objToReName->Id(), LIBMTP_PROPERTY_Name, tmpNewBaseName.c_str());
-        if (rval != 0) {
-            LOGE("Could not rename %{public}s to %{public}s", oldPath.c_str(), newPath.c_str());
-            DumpLibMtpErrorStack();
-            return -EINVAL;
-        }
+    std::unique_lock<std::mutex> lock(deviceMutex_);
+    LOGI("Start LIBMTP_Move_Object for handleId = %{public}u", handleId);
+    int rval = LIBMTP_Move_Object(device_, handleId, newDirParent->StorageId(), newDirParentId);
+    if (rval != 0) {
+        LOGE("Move object failed from oldPath=%{public}s to newPath=%{public}s", oldPath.c_str(), newPath.c_str());
+        DumpLibMtpErrorStack();
+        return -EINVAL;
     }
+    uint64_t time = GetFormattedTimestamp();
+    const_cast<MtpFsTypeFile *>(fileToMove)->SetParent(newDirParentId);
+    const_cast<MtpFsTypeDir *>(newDirParent)->AddFile(*fileToMove);
+    const_cast<MtpFsTypeDir *>(oldDirParent)->RemoveFile(*fileToMove);
+    const_cast<MtpFsTypeDir *>(oldDirParent)->SetModificationDate(time);
+    const_cast<MtpFsTypeDir *>(newDirParent)->SetModificationDate(time);
+    LOGI("Move object success from oldPath=%{public}s to newPath=%{public}s", oldPath.c_str(), newPath.c_str());
     return 0;
 }
 
 int MtpFsDevice::ReName(const std::string &oldPath, const std::string &newPath)
 {
-#ifndef SMTPFS_MOVE_BY_SET_OBJECT_PROPERTY
     const std::string tmpOldBaseName(SmtpfsBaseName(oldPath));
     const std::string tmpOldDirName(SmtpfsDirName(oldPath));
     const std::string tmpNewDirName(SmtpfsDirName(newPath));
@@ -771,14 +764,6 @@ int MtpFsDevice::ReName(const std::string &oldPath, const std::string &newPath)
     } else {
         return FileRename(oldPath, newPath);
     }
-#else
-    int32_t ret = ReNameInner(oldPath, newPath);
-    if (ret != 0) {
-        LOGE("ReNameInner fail");
-        return ret;
-    }
-    return 0;
-#endif
 }
 
 int MtpFsDevice::FileRead(const std::string &path, char *buf, size_t size, off_t offset)
