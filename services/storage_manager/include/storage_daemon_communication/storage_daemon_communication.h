@@ -106,6 +106,8 @@ public:
     // file lock
     int32_t IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
         std::vector<std::string> &outputList, bool &isOccupy);
+    int32_t MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles);
+    int32_t UMountDisShareFile(int32_t userId, const std::string &networkId);
 private:
     sptr<OHOS::StorageDaemon::IStorageDaemon> storageDaemon_;
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;

@@ -40,6 +40,7 @@ ohos_fuzztest("StorageDaemonCreateShareFileFuzzTest") {
     "${storage_daemon_path}/ipc/src/storage_daemon_stub.cpp",
     "${storage_daemon_path}/quota/quota_manager.cpp",
     "${storage_daemon_path}/user/src/mount_manager.cpp",
+    "${storage_daemon_path}/user/src/mount_manager_ext.cpp",
     "${storage_daemon_path}/user/src/user_manager.cpp",
     "${storage_daemon_path}/utils/file_utils.cpp",
     "${storage_daemon_path}/utils/hi_audit.cpp",

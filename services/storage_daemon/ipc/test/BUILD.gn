@@ -63,6 +63,7 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/ipc/test/storage_daemon_test.cpp",
     "$ROOT_DIR/quota/quota_manager.cpp",
     "$ROOT_DIR/user/src/mount_manager.cpp",
+    "$ROOT_DIR/user/src/mount_manager_ext.cpp",
     "$ROOT_DIR/user/src/user_manager.cpp",
     "$ROOT_DIR/utils/string_utils.cpp",
     "$ROOT_DIR/utils/test/common/help_utils.cpp",

@@ -79,4 +79,6 @@ interface OHOS.StorageDaemon.IStorageDaemon{
                                                   [in] unsigned char[] key);
      [ipcincapacity 131071, ipcoutcapacity 131071, ipccode 47] void IsFileOccupied([in] String path, [in] String[] inputList,
                                       [out] String[] outputList, [out] boolean isOccupy);
+     [ipccode 48] void MountDisShareFile([in] int userId, [in] Map shareFiles);
+     [ipccode 49] void UMountDisShareFile([in] int userId, [in] String networkId);
 }

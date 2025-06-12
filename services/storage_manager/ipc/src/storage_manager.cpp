@@ -837,5 +837,38 @@ int32_t StorageManager::IsFileOccupied(const std::string &path, const std::vecto
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     return sdCommunication->IsFileOccupied(path, inputList, outputList, isOccupy);
 }
+
+int32_t StorageManager::MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles)
+{
+    if (userId <= 0) {
+        LOGE("mount share file, userId %{public}d is invalid.", userId);
+        return E_PARAMS_INVALID;
+    }
+    for (const auto &item : shareFiles) {
+        if (item.first.find("..") != std::string::npos || item.second.find("..") != std::string::npos) {
+            LOGE("mount share file, shareFiles<%{public}s, %{public}s> is invalid.",
+                 item.first.c_str(), item.second.c_str());
+            return E_PARAMS_INVALID;
+        }
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->MountDisShareFile(userId, shareFiles);
+}
+
+int32_t StorageManager::UMountDisShareFile(int32_t userId, const std::string &networkId)
+{
+    if (userId <= 0) {
+        LOGE("umount share file, userId %{public}d is invalid.", userId);
+        return E_PARAMS_INVALID;
+    }
+    if (networkId.find("..") != std::string::npos || networkId.find("..") != std::string::npos) {
+        LOGE("umount share file, networkId %{public}s is invalid.", networkId.c_str());
+        return E_PARAMS_INVALID;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->UMountDisShareFile(userId, networkId);
+}
 }
 }

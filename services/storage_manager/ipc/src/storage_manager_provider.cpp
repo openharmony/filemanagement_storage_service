@@ -772,5 +772,25 @@ int32_t StorageManagerProvider::ResetSecretWithRecoveryKey(uint32_t userId,
     }
     return StorageManager::GetInstance()->ResetSecretWithRecoveryKey(userId, rkType, key);
 }
+
+int32_t StorageManagerProvider::MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles)
+{
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    if (uid != DFS_UID) {
+        LOGE("MountDisShareFile permissionCheck error, calling uid is %{public}d", uid);
+        return E_PERMISSION_DENIED;
+    }
+    return StorageManager::GetInstance()->MountDisShareFile(userId, shareFiles);
+}
+
+int32_t StorageManagerProvider::UMountDisShareFile(int32_t userId, const std::string &networkId)
+{
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    if (uid != DFS_UID) {
+        LOGE("UMountDisShareFile permissionCheck error, calling uid is %{public}d", uid);
+        return E_PERMISSION_DENIED;
+    }
+    return StorageManager::GetInstance()->UMountDisShareFile(userId, networkId);
+}
 } // namespace StorageManager
 } // namespace OHOS

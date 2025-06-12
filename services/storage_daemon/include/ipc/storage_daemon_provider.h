@@ -120,6 +120,9 @@ public:
                                    bool &isOccupy) override;
     virtual int32_t
         ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key) override;
+    // cross device
+    virtual int32_t MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles);
+    virtual int32_t UMountDisShareFile(int32_t userId, const std::string &networkId);
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
     public:
         SystemAbilityStatusChangeListener() = default;
