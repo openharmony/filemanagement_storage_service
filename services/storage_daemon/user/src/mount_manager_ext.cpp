@@ -36,11 +36,11 @@ int32_t MountManager::MountDisShareFile(int32_t userId, const std::map<std::stri
         std::string dstPath = item.first;
         std::string srcPath = item.second;
         if (!IsDir(srcPath)) {
-            LOGE("mount share file, src path invalid, errno is %{public}d.", srcPath.c_str(), errno);
+            LOGE("mount share file, src path invalid, errno is %{public}d.", errno);
             return E_NON_EXIST;
         }
         if (!IsDir(dstPath) && !MkDirRecurse(dstPath, MODE_0771)) {
-            LOGE("mount share file, dst path mkdir failed, errno is %{public}d.", dstPath.c_str(), errno);
+            LOGE("mount share file, dst path mkdir failed, errno is %{public}d.", errno);
             return E_NON_EXIST;
         }
         int32_t ret = Mount(srcPath, dstPath, nullptr, MS_BIND, nullptr);
