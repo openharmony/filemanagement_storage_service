@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,7 +21,9 @@
 
 #include "file_utils_mock.h"
 #include "library_func_mock.h"
+#include "parameter_mock.h"
 #include "storage_service_errno.h"
+#include "utils/mount_argument_utils.h"
 
 using namespace std;
 namespace {
@@ -42,6 +44,7 @@ public:
     void TearDown() {};
     static inline std::shared_ptr<LibraryFuncMock> libraryFuncMock_ = nullptr;
     static inline shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
+    static inline shared_ptr<ParamMoc> paramMoc_ = nullptr;
 };
 
 void MountManagerTest::SetUpTestCase(void)
@@ -51,6 +54,8 @@ void MountManagerTest::SetUpTestCase(void)
     FileUtilMoc::fileUtilMoc = fileUtilMoc_;
     libraryFuncMock_ = std::make_shared<LibraryFuncMock>();
     LibraryFuncMock::libraryFunc_ = libraryFuncMock_;
+    paramMoc_ = std::make_shared<ParamMoc>();
+    ParamMoc::paramMoc_ = paramMoc_;
 }
 
 void MountManagerTest::TearDownTestCase()
@@ -60,6 +65,8 @@ void MountManagerTest::TearDownTestCase()
     fileUtilMoc_ = nullptr;
     LibraryFuncMock::libraryFunc_ = nullptr;
     libraryFuncMock_ = nullptr;
+    ParamMoc::paramMoc_ = nullptr;
+    paramMoc_ = nullptr;
 }
 
 /**
@@ -693,6 +700,227 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_FindProcForMulti_001,
     MountManager::GetInstance()->FindProcForMulti(pidPath, path, occupyFiles);
     ASSERT_TRUE(occupyFiles.empty());
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_FindProcForMulti_001 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_MountManagerTest_MountDfsDocs_001
+ * @tc.desc: Verify the MountDfsDocs function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountDfsDocs_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountDfsDocs_002 start";
+
+    std::shared_ptr<MountManager> mountManager = MountManager::GetInstance();
+    ASSERT_TRUE(mountManager != nullptr);
+
+    int32_t userId = 100;
+    std::string relativePath = "";
+    std::string deviceId = "f6d4c0864707aefte7a78f09473aa122ff57fc8";
+
+    EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(false));
+    int32_t ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    EXPECT_EQ(ret, E_PREPARE_DIR);
+
+    EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(true));
+    ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    std::string tempPath(PATH_MAX + 1, 'a');
+    EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(true));
+    ret = mountManager->MountDfsDocs(userId, tempPath, deviceId, deviceId);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+
+    relativePath = "@";
+    EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(true));
+    ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    EXPECT_EQ(ret, E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountDfsDocs_001 end";
+}
+
+
+/**
+ * @tc.name: Storage_Manager_MountManagerTest_MountDfsDocs_002
+ * @tc.desc: Verify the MountDfsDocs function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountDfsDocs_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountDfsDocs_002 start";
+
+    std::shared_ptr<MountManager> mountManager = MountManager::GetInstance();
+    ASSERT_TRUE(mountManager != nullptr);
+
+    int32_t userId = 100;
+    std::string relativePath = "/data";
+    std::string deviceId = "f6d4c0864707aefte7a78f09473aa122ff57fc8";
+
+    EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
+    errno = EPERM;
+    int32_t ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    errno = 0;
+    EXPECT_EQ(ret, E_USER_MOUNT_ERR);
+
+    EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
+    errno = EBUSY;
+    EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>('0'), Return(0)));
+    ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    errno = 0;
+    EXPECT_EQ(ret, E_OK);
+
+    EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
+    errno = EEXIST;
+    EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>('0'), Return(0)));
+    ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    errno = 0;
+    EXPECT_EQ(ret, E_OK);
+
+    EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
+    EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>('0'), Return(0)));
+    ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountDfsDocs_002 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_MountManagerTest_MountDfsDocs_003
+ * @tc.desc: Verify the MountDfsDocs function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountDfsDocs_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountDfsDocs_003 start";
+
+    std::shared_ptr<MountManager> mountManager = MountManager::GetInstance();
+    ASSERT_TRUE(mountManager != nullptr);
+
+    int32_t userId = 100;
+    std::string relativePath = "/data";
+    std::string deviceId = "f6d4c0864707aefte7a78f09473aa122ff57fc8";
+
+    EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(1));
+    errno = EBUSY;
+    EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>('1'), Return(1)));
+    int32_t ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    errno = 0;
+    EXPECT_EQ(ret, E_OK);
+
+    EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(1));
+    errno = EEXIST;
+    EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>('1'), Return(1)));
+    ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    errno = 0;
+    EXPECT_EQ(ret, E_OK);
+
+    EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
+    errno = EEXIST;
+    EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>('1'), Return(1)));
+    ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    errno = 0;
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountDfsDocs_003 end";
+}
+
+/**
+ * @tc.name: Storage_Manager_MountManagerTest_MountDfsDocs_004
+ * @tc.desc: Verify the MountDfsDocs function.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountDfsDocs_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountDfsDocs_004 start";
+
+    std::shared_ptr<MountManager> mountManager = MountManager::GetInstance();
+    ASSERT_TRUE(mountManager != nullptr);
+
+    int32_t userId = 100;
+    std::string relativePath = "/data";
+    std::string deviceId = "f6d4c0864707aefte7a78f09473aa122ff57fc8";
+
+    EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(1));
+    errno = EPERM;
+    EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>('1'), Return(1)));
+    int32_t ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    errno = 0;
+    EXPECT_EQ(ret, E_USER_MOUNT_ERR);
+
+    EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(1));
+    errno = EBUSY;
+    EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>('1'), Return(1)));
+    ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    errno = 0;
+    EXPECT_EQ(ret, E_OK);
+
+    EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(1));
+    errno = EEXIST;
+    EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>('1'), Return(1)));
+    ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    errno = 0;
+    EXPECT_EQ(ret, E_OK);
+
+    EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
+    EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
+    EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>('1'), Return(1)));
+    ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountDfsDocs_004 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerTest_IsReadOnlyMount_001
+ * @tc.desc: Verify the IsReadOnlyMount function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_IsReadOnlyMount_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_IsReadOnlyMount_001 start";
+    EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>('1'), Return(1)));
+    bool isReadOnlyMount = MountManager::GetInstance()->IsReadOnlyRemount();
+    ASSERT_TRUE(isReadOnlyMount);
+
+    EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>('0'), Return(1)));
+    isReadOnlyMount = MountManager::GetInstance()->IsReadOnlyRemount();
+    ASSERT_TRUE(!isReadOnlyMount);
+
+    EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>('0'), Return(0)));
+    isReadOnlyMount = MountManager::GetInstance()->IsReadOnlyRemount();
+    ASSERT_TRUE(!isReadOnlyMount);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_IsReadOnlyMount_001 end";
 }
 } // STORAGE_DAEMON
 } // OHOS
