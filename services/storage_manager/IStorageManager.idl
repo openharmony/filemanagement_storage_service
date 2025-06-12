@@ -102,6 +102,6 @@ interface OHOS.StorageManager.IStorageManager {
                                      [out] String[] outputList, [out] boolean isOccupy);
     [ipccode 63] void ResetSecretWithRecoveryKey([in] unsigned int userId, [in] unsigned int rkType,
                                                  [in] unsigned char[] key);
-    [ipccode 64] void MountDisShareFile([in] int userId, [in] Map shareFiles);
+    [ipccode 64] void MountDisShareFile([in] int userId, [in] OrderedMap<String, String> shareFiles);
     [ipccode 65] void UMountDisShareFile([in] int userId, [in] String networkId);
 }
