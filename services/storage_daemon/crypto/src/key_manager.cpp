@@ -62,6 +62,16 @@ constexpr uint8_t USER_LOGOUT = 0x0;
 constexpr uint32_t USER_ADD_AUTH = 0x0;
 constexpr uint32_t USER_CHANGE_AUTH = 0x1;
 
+static bool IsEncryption()
+{
+#ifdef SUPPORT_RECOVERY_KEY_SERVICE
+    static bool isEncryption = RecoveryManager::GetInstance().IsEncryptionEnabled();
+    LOGE("[liuxiaowei debug] IsEncryptionEnabled ret: %{public}s", isEncryption ? "true" : "false");
+    return isEncryption;
+#endif
+    return true;
+}
+
 std::shared_ptr<BaseKey> KeyManager::GetBaseKey(const std::string& dir)
 {
     uint8_t versionFromPolicy = GetFscryptVersionFromPolicy();
@@ -83,6 +93,9 @@ std::shared_ptr<BaseKey> KeyManager::GetBaseKey(const std::string& dir)
 int KeyManager::GenerateAndInstallDeviceKey(const std::string &dir)
 {
     LOGW("enter");
+    if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
+        return E_OK;
+    }
     globalEl1Key_ = GetBaseKey(dir);
     if (globalEl1Key_ == nullptr) {
         StorageRadar::ReportUserKeyResult("GenerateAndInstallDeviceKey", 0, E_GLOBAL_KEY_NULLPTR, "EL1", "");
@@ -461,7 +474,7 @@ int KeyManager::InitUserElkeyStorageDir(void)
 int KeyManager::InitGlobalUserKeys(void)
 {
     LOGW("enter");
-    if (!KeyCtrlHasFscryptSyspara()) {
+    if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
         return 0;
     }
     std::lock_guard<std::mutex> lock(keyMutex_);
@@ -505,7 +518,7 @@ int KeyManager::InitGlobalUserKeys(void)
 int KeyManager::GenerateUserKeys(unsigned int user, uint32_t flags)
 {
     LOGW("start, user:%{public}u", user);
-    if (!KeyCtrlHasFscryptSyspara()) {
+    if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
         return 0;
     }
     if ((!IsDir(USER_EL1_DIR)) || (!IsDir(USER_EL2_DIR)) || (!IsDir(USER_EL3_DIR)) ||
@@ -648,7 +661,7 @@ int KeyManager::GenerateUserKeyByType(unsigned int user, KeyType type,
                                       const std::vector<uint8_t> &secret)
 {
     LOGI("start, user:%{public}u, type %{public}u", user, type);
-    if (!KeyCtrlHasFscryptSyspara()) {
+    if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
         return 0;
     }
 
@@ -764,7 +777,7 @@ int KeyManager::DoDeleteUserKeys(unsigned int user)
 int KeyManager::DeleteUserKeys(unsigned int user)
 {
     LOGI("start, user:%{public}d", user);
-    if (!KeyCtrlHasFscryptSyspara()) {
+    if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
         return 0;
     }
 
@@ -918,6 +931,9 @@ int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &aut
 int KeyManager::UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSecret)
 {
     LOGW("UpdateESecret enter");
+     if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
+        return E_OK;
+    }
     std::shared_ptr<BaseKey> el5Key = GetUserElKey(user, EL5_KEY);
     std::string el5Path = std::string(USER_EL5_DIR) + "/" + std::to_string(user);
     if (IsUeceSupport() && el5Key == nullptr) {
@@ -974,7 +990,7 @@ int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
 #endif
 {
     LOGW("start, user:%{public}d", user);
-    if (!KeyCtrlHasFscryptSyspara()) {
+    if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
         return E_OK;
     }
     std::shared_ptr<BaseKey> item = GetUserElKey(user, type);
@@ -1141,7 +1157,7 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
                                        const std::vector<uint8_t> &token,
                                        const std::vector<uint8_t> &secret)
 {
-    if (!KeyCtrlHasFscryptSyspara()) {
+    if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
         return 0;
     }
     int ret = CheckNeedRestoreVersion(user, type);
@@ -1189,7 +1205,7 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user,
 int KeyManager::ActiveElxUserKey4Nato(unsigned int user, KeyType type, const KeyBlob &authToken)
 {
     LOGW("Active Elx user key for nato for userId=%{public}d, keyType=%{public}u", user, type);
-    if (!KeyCtrlHasFscryptSyspara()) {
+    if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
         return E_OK;
     }
     std::lock_guard<std::mutex> lock(keyMutex_);
@@ -1379,7 +1395,7 @@ int KeyManager::UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &toke
         LOGE("user ce does not decrypt, skip");
         return 0;
     }
-    if (!KeyCtrlHasFscryptSyspara()) {
+    if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
         saveLockScreenStatus[user] = true;
         LOGI("saveLockScreenStatus is %{public}d", saveLockScreenStatus[user]);
         return 0;
@@ -1467,7 +1483,7 @@ int KeyManager::GetLockScreenStatus(uint32_t user, bool &lockScreenStatus)
 
 int KeyManager::GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId, bool needReSet)
 {
-    if (!IsUeceSupport()) {
+    if (!IsUeceSupport() || !IsEncryption()) {
         LOGI("Not support uece !");
         return -ENOTSUP;
     }
@@ -1530,6 +1546,10 @@ int KeyManager::GenerateAppkeyWithRecover(uint32_t userId, uint32_t hashId, std:
 
 int KeyManager::DeleteAppkey(uint32_t userId, const std::string keyId)
 {
+    if (!IsUeceSupport() || !IsEncryption()) {
+        LOGI("Not support uece !");
+        return -ENOTSUP;
+    }
     std::lock_guard<std::mutex> lock(keyMutex_);
     auto el5Key = GetBaseKey(GetKeyDirByUserAndType(userId, EL5_KEY));
     if (el5Key == nullptr) {
@@ -1651,7 +1671,7 @@ int32_t KeyManager::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType,
 
 int KeyManager::UnlockUserAppKeys(uint32_t userId, bool needGetAllAppKey)
 {
-    if (!IsUeceSupport()) {
+    if (!IsUeceSupport() || !IsEncryption()) {
         LOGI("E type is not support");
         return E_OK;
     }
@@ -1737,7 +1757,7 @@ int KeyManager::GenerateAndLoadAppKeyInfo(uint32_t userId, const std::vector<std
 int KeyManager::InActiveUserKey(unsigned int user)
 {
     LOGI("start");
-    if (!KeyCtrlHasFscryptSyspara()) {
+    if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
         return 0;
     }
     std::lock_guard<std::mutex> lock(keyMutex_);
@@ -1819,7 +1839,7 @@ int KeyManager::LockUserScreen(uint32_t user)
         LOGI("User is %{public}u ,Insert LockScreenStatus, SaveLockScreenStatus is %{public}d", user,
              saveLockScreenStatus[user]);
     }
-    if (!KeyCtrlHasFscryptSyspara()) {
+    if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
         saveLockScreenStatus[user] = false;
         LOGI("KeyCtrlHasFscryptSyspara is false, saveLockScreenStatus is %{public}d",
             saveLockScreenStatus[user]);
@@ -1850,7 +1870,7 @@ int KeyManager::LockUserScreen(uint32_t user)
 int KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type, const std::vector<FileList> &vec)
 {
     LOGI("start");
-    if (!KeyCtrlHasFscryptSyspara()) {
+    if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
         return 0;
     }
     std::string keyPath;
@@ -1914,7 +1934,7 @@ int KeyManager::getElxKeyPath(unsigned int user, KeyType type, std::string &elxK
 int KeyManager::UpdateCeEceSeceKeyContext(uint32_t userId, KeyType type)
 {
     LOGI("start");
-    if (!KeyCtrlHasFscryptSyspara()) {
+    if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
         return 0;
     }
     std::lock_guard<std::mutex> lock(keyMutex_);
