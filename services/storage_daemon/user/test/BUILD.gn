@@ -117,8 +117,10 @@ ohos_unittest("mount_manager_test") {
   sources = [
     "$ROOT_DIR/mock/file_utils_mock.cpp",
     "$ROOT_DIR/mock/library_func_mock.cpp",
+    "$ROOT_DIR/mock/parameter_mock.cpp",
     "$ROOT_DIR/user/src/mount_manager.cpp",
     "$ROOT_DIR/user/test/mount_manager_test.cpp",
+    "$ROOT_DIR/utils/disk_utils.cpp",
     "$ROOT_DIR/utils/mount_argument_utils.cpp",
     "$ROOT_DIR/utils/storage_radar.cpp",
     "$ROOT_DIR/utils/string_utils.cpp",

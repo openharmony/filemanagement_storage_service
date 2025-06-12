@@ -128,6 +128,9 @@ bool VolumeExternal::Marshalling(Parcel &parcel) const
 VolumeExternal *VolumeExternal::Unmarshalling(Parcel &parcel)
 {
     VolumeExternal* obj = new (std::nothrow) VolumeExternal(*VolumeCore::Unmarshalling(parcel));
+    if (!obj) {
+        return nullptr;
+    }
     obj->flags_ = parcel.ReadInt32();
     obj->fsType_ = parcel.ReadInt32();
     obj->fsUuid_ = parcel.ReadString();

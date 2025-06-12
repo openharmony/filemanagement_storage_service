@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -131,6 +131,8 @@ const string SHARE_PATH = "/data/service/el1/public/storage_daemon/share/public"
 static constexpr int MODE_0711 = 0711;
 static constexpr int MODE_0771 = 0771;
 static constexpr int MODE_02771 = 02771;
+const char DETERMINE_DEVICE_TYPE_KEY[] = "persist.distributed_scene.sys_settings_data_sync";
+const int32_t REMOUNT_VALUE_LEN = 10;
 MountManager::MountManager() : hmdfsDirVec_(InitHmdfsDirVec()), virtualDir_(InitVirtualDir()),
     systemServiceDir_(InitSystemServiceDir()), fileManagerDir_(InitFileManagerDir()), appdataDir_(InitAppdataDir())
 {
@@ -494,7 +496,7 @@ bool MountManager::GetProcessInfo(const std::string &filename, ProcessInfo &info
     ss >> pid;
     std::string processName;
     ss >> processName;
-    info.pid = std::stoi(pid);
+    info.pid = std::atoi(pid.c_str());
     info.name = processName;
     inputStream.close();
     return true;
@@ -1492,6 +1494,14 @@ int32_t MountManager::MountDfsDocs(int32_t userId, const std::string &relativePa
     auto delay = StorageService::StorageRadar::ReportDuration(" MOUNT: MOUNT_DFS_DOCS",
         startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
     LOGI("SD_DURATION: MOUNT: MOUNT_DFS_DOCS, delayTime = %{public}s", delay.c_str());
+    if (IsReadOnlyRemount()) {
+        ret = mount(nullptr, dstPath.c_str(), nullptr, MS_BIND | MS_REMOUNT | MS_RDONLY, nullptr);
+        if (ret != 0 && errno != EEXIST && errno != EBUSY) {
+            LOGE("MountDfsDocs readonly mount failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
+                GetAnonyString(srcPath).c_str(), dstPath.c_str(), errno);
+            return E_USER_MOUNT_ERR;
+        }
+    }
     return E_OK;
 }
 
@@ -1716,7 +1726,7 @@ void MountManager::GetAllUserId(std::vector<int32_t> &userIds)
         if (!StringIsNumber(subPath)) {
             continue;
         }
-        int32_t userId = stoi(subPath);
+        int32_t userId = atoi(subPath.c_str());
         if (userId < DEFAULT_USERID) {
             continue;
         }
@@ -2195,6 +2205,19 @@ void MountManager::CheckSymlinkForMulti(const std::string &fdPath, const std::st
         }
         occupyFiles.insert(realPathStr);
     }
+}
+
+bool MountManager::IsReadOnlyRemount()
+{
+    const char *syncType = "1";
+    char paramOutBuf[REMOUNT_VALUE_LEN] = {0};
+    int ret = GetParameter(DETERMINE_DEVICE_TYPE_KEY, "", paramOutBuf, REMOUNT_VALUE_LEN);
+    LOGD("paramOutBuf: %{public}s, ret: %{public}d", paramOutBuf, ret);
+    if (ret > 0 && strncmp(paramOutBuf, syncType, strlen(syncType)) == 0) {
+        LOGI("Need readonly remount.");
+        return true;
+    }
+    return false;
 }
 } // namespace StorageDaemon
 } // namespace OHOS

@@ -55,11 +55,11 @@ public:
     }
     const MtpFsTypeDir *Dir(const std::string &name) const;
     const MtpFsTypeFile *File(const std::string &name) const;
-    std::set<MtpFsTypeDir> Dirs() const
+    const std::set<MtpFsTypeDir>& Dirs() const
     {
         return dirList_;
     }
-    std::set<MtpFsTypeFile> Files() const
+    const std::set<MtpFsTypeFile>& Files() const
     {
         return fileList_;
     }

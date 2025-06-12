@@ -49,6 +49,9 @@ bool StorageStats::Marshalling(Parcel &parcel) const
 StorageStats *StorageStats::Unmarshalling(Parcel &parcel)
 {
     StorageStats* obj = new (std::nothrow) StorageStats();
+    if (!obj) {
+        return nullptr;
+    }
     obj->total_ = parcel.ReadInt64();
     obj->audio_ = parcel.ReadInt64();
     obj->video_ = parcel.ReadInt64();

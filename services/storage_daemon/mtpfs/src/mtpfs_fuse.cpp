@@ -29,6 +29,8 @@
 constexpr int UPLOAD_RECORD_FALSE_LEN = 5;
 constexpr int UPLOAD_RECORD_TRUE_LEN = 4;
 constexpr int32_t UPLOAD_RECORD_SUCCESS_LEN = 7;
+constexpr ssize_t ASYNC_FILE_PUSH_SIZE = 204800000; //200MB
+constexpr uint32_t DEVICE_WRITE_DELAY_US = 50000;
 
 constexpr int32_t ST_NLINK_TWO = 2;
 constexpr int32_t FILE_SIZE = 512;
@@ -825,6 +827,7 @@ int MtpFileSystem::Create(const char *path, mode_t mode, fuse_file_info *fileInf
 
 int MtpFileSystem::OpenFile(const char *path, struct fuse_file_info *fileInfo)
 {
+    std::lock_guard<std::mutex>lock(fuseMutex_);
     LOGI("MtpFileSystem: OpenFile enter, path: %{public}s", path);
     if (fileInfo == nullptr) {
         LOGE("Missing FileInfo");
@@ -972,8 +975,8 @@ int MtpFileSystem::Write(const char *path, const char *buf, size_t size, off_t o
 int MtpFileSystem::Release(const char *path, struct fuse_file_info *fileInfo)
 {
     std::lock_guard<std::mutex>lock(fuseMutex_);
-    const std::string stdPath(path);
     LOGI("MtpFileSystem: Release enter, path: %{public}s", path);
+    const std::string stdPath(path);
     if (fileInfo == nullptr) {
         LOGE("Missing FileInfo");
         device_.SetUploadRecord(stdPath, "fail");
@@ -1012,7 +1015,11 @@ int MtpFileSystem::HandleTemporaryFile(const std::string stdPath, struct fuse_fi
     stat(tmpPath.c_str(), &fileStat);
     if (modIf && fileStat.st_size != 0) {
         device_.SetUploadRecord(stdPath, "sending");
+        if (fileStat.st_size > ASYNC_FILE_PUSH_SIZE) {
+            return device_.FilePushAsync(tmpPath, stdPath);
+        }
         int rval = device_.FilePush(tmpPath, stdPath);
+        usleep(DEVICE_WRITE_DELAY_US);
         if (rval != 0) {
             LOGE("FilePush %{public}s to mtp device fail", stdPath.c_str());
             device_.SetUploadRecord(stdPath, "fail");
@@ -1020,10 +1027,8 @@ int MtpFileSystem::HandleTemporaryFile(const std::string stdPath, struct fuse_fi
             return -rval;
         }
         LOGI("FilePush %{public}s to mtp device success", stdPath.c_str());
-        device_.SetUploadRecord(stdPath, "success");
-    } else {
-        device_.SetUploadRecord(stdPath, "success");
     }
+    device_.SetUploadRecord(stdPath, "success");
     ::unlink(tmpPath.c_str());
     LOGI("MtpFileSystem: Release success, stdPath: %{public}s", stdPath.c_str());
     return 0;
@@ -1036,7 +1041,6 @@ int MtpFileSystem::Statfs(const char *path, struct statvfs *statInfo)
         LOGE("Missing statInfo");
         return -ENOENT;
     }
-    // XXX: linux coreutils still use bsize member to calculate free space
     statInfo->f_bsize = static_cast<unsigned long>(bs);
     statInfo->f_frsize = static_cast<unsigned long>(bs);
     statInfo->f_blocks = device_.StorageTotalSize() / bs;
@@ -1245,6 +1249,10 @@ void MtpFileSystem::InitCurrentUidAndCacheMap()
     std::vector<int> activedOsAccountIds;
     ErrCode errCode = OHOS::AccountSA::OsAccountManager::QueryActiveOsAccountIds(activedOsAccountIds);
     LOGI("InitCurrentUidAndCacheMap QueryActiveOsAccountIds errCode is: %{public}d", errCode);
+    if (activedOsAccountIds.empty()) {
+        LOGE("activedOsAccountIds is empty");
+        return;
+    }
     currentUid = activedOsAccountIds[0];
     LOGI("InitCurrentUidAndCacheMap currentUid = %{public}d", currentUid);
     for (size_t i = 0; i < activedOsAccountIds.size(); i++) {
