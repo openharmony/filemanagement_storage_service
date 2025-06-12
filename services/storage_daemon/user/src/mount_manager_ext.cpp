@@ -61,7 +61,7 @@ int32_t MountManager::UMountDisShareFile(int32_t userId, const std::string &netw
     std::list<std::string> mounts;
     FindMountsByNetworkId(networkId, mounts);
     for (const std::string &item: mounts) {
-        int32_t ret = UMount(item);
+        int32_t ret = UMount2(item, MNT_DETACH);
         if (ret != E_OK && errno != ENOENT && errno != EINVAL) {
             LOGE("umount share file failed, errno is %{public}d.", errno);
             std::string extraData = "networkId=" + networkId + ",kernelCode=" + to_string(errno);
