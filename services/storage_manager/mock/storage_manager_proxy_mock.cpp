@@ -279,14 +279,6 @@ int32_t StorageManagerProxy::SetBundleQuota(const std::string &bundleName, int32
     return E_OK;
 }
 
-
-int32_t StorageManagerProxy::GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
-    const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes,
-    std::vector<int64_t> &incPkgFileSizes)
-{
-    return E_OK;
-}
-
 int32_t StorageManagerProxy::UpdateMemoryPara(int32_t size, int32_t &oldSize)
 {
     return E_OK;

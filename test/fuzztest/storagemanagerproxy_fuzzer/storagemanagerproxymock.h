@@ -303,14 +303,6 @@ public:
     {
         return E_OK;
     }
-    int32_t GetBundleStatsForIncrease(uint32_t userId,
-                                      const std::vector<std::string> &bundleNames,
-                                      const std::vector<int64_t> &incrementalBackTimes,
-                                      std::vector<int64_t> &pkgFileSizes,
-                                      std::vector<int64_t> &incPkgFileSizes) override
-    {
-        return E_OK;
-    }
     int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false) override
     {
         return E_OK;

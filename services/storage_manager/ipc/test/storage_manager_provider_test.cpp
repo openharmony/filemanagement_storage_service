@@ -844,28 +844,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_SetBundleQuota_0
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_SetBundleQuota_001 end";
 }
 /**
- * @tc.name: StorageManagerProviderTest_GetBundleStatsForIncrease_001
- * @tc.desc: Verify the GetBundleStatsForIncrease function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_GetBundleStatsForIncrease_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetBundleStatsForIncrease_001 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    uint32_t userId = 1001;
-    std::vector<std::string> bundleNames = {"bundle1", "bundle2"};
-    std::vector<int64_t> incrementalBackTimes = {1620000000, 1620000001};
-    std::vector<int64_t> pkgFileSizes;
-    std::vector<int64_t> incPkgFileSizes;
-    auto ret = storageManagerProviderTest_->GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes,
-                                                                      pkgFileSizes, incPkgFileSizes);
-    EXPECT_EQ(ret, E_PERMISSION_DENIED);
-    EXPECT_TRUE(pkgFileSizes.empty());
-    EXPECT_TRUE(incPkgFileSizes.empty());
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_GetBundleStatsForIncrease_001 end";
-}
-/**
  * @tc.name: StorageManagerProviderTest_GetUserStorageStatsByType_001
  * @tc.desc: Verify the GetUserStorageStatsByType function.
  * @tc.type: FUNC

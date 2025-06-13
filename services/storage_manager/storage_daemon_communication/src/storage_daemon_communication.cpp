@@ -667,23 +667,6 @@ int32_t StorageDaemonCommunication::ResetSecretWithRecoveryKey(uint32_t userId,
     return storageDaemon_->ResetSecretWithRecoveryKey(userId, rkType, key);
 }
 
-int32_t StorageDaemonCommunication::GetBundleStatsForIncrease(uint32_t userId,
-    const std::vector<std::string> &bundleNames, const std::vector<int64_t> &incrementalBackTimes,
-    std::vector<int64_t> &pkgFileSizes, std::vector<int64_t> &incPkgFileSizes)
-{
-    int32_t err = Connect();
-    if (err != E_OK) {
-        LOGE("Connect failed");
-        return err;
-    }
-    if (storageDaemon_ == nullptr) {
-        LOGE("StorageDaemonCommunication::Connect service nullptr");
-        return E_SERVICE_IS_NULLPTR;
-    }
-    return storageDaemon_->GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes, pkgFileSizes,
-        incPkgFileSizes);
-}
-
 int32_t StorageDaemonCommunication::UpdateMemoryPara(int32_t size, int32_t &oldSize)
 {
     LOGI("StorageDaemonCommunication::UpdateMemoryPara");

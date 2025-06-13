@@ -78,8 +78,6 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 45] void SetBundleQuota([in] String bundleName, [in] int uid, [in] String bundleDataDirPath,
                                      [in] int limitSizeMb);
     [ipccode 47] void UpdateMemoryPara([in] int size, [out] int oldSize);
-    [ipccode 48] void GetBundleStatsForIncrease([in] unsigned int userId, [in] String[] bundleNames,
-        [in] long[] incrementalBackTimes, [out] long[] pkgFileSizes, [out] long[] incPkgFileSizes);
     [ipccode 20] void MountDfsDocs([in] int userId, [in] String relativePath, [in] String networkId, 
                                     [in] String deviceId);
     [ipccode 21] void UMountDfsDocs([in] int userId, [in] String relativePath, [in] String networkId, 

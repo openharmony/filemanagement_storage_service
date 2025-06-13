@@ -217,13 +217,6 @@ int32_t StorageDaemonProxy::GetOccupiedSpace(int32_t idType, int32_t id, int64_t
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
-    const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes,
-    std::vector<int64_t> &incPkgFileSizes)
-{
-    return E_OK;
-}
-
 int32_t StorageDaemonProxy::MountDfsDocs(int32_t userId, const std::string &relativePath,
     const std::string &networkId, const std::string &deviceId)
 {

@@ -1288,46 +1288,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_SetRecoverKey_0000
 }
 
 /**
-* @tc.number: SUB_STORAGE_Daemon_communication_GetBundleStatsForIncrease_0000
-* @tc.name: Daemon_communication_GetBundleStatsForIncrease_0000
-* @tc.desc: Test function of GetBundleStatsForIncrease interface for SUCCESS.
-* @tc.size: MEDIUM
-* @tc.type: FUNC
-* @tc.level Level 1
-* @tc.require: AR000GK4HB
-*/
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetBundleStatsForIncrease_0000, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_GetBundleStatsForIncrease_0000";
-    ASSERT_TRUE(sdCommunication != nullptr);
-
-    vector<string> bundleNames;
-    vector<int64_t> incTimes;
-    vector<int64_t> pkgFileSizes;
-    vector<int64_t> incSizes;
-    sdCommunication->storageDaemon_ = nullptr;
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
-    auto ret = sdCommunication->GetBundleStatsForIncrease(0, bundleNames, incTimes, pkgFileSizes, incSizes);
-    EXPECT_EQ(ret, E_SA_IS_NULLPTR);
-
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
-        sdCommunication->storageDaemon_ = nullptr;
-    }), Return(true)));
-    ret = sdCommunication->GetBundleStatsForIncrease(0, bundleNames, incTimes, pkgFileSizes, incSizes);
-    EXPECT_EQ(ret, E_SERVICE_IS_NULLPTR);
-
-    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
-    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
-    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
-    EXPECT_CALL(*sd, GetBundleStatsForIncrease(_, _, _, _, _)).WillOnce(Return(E_OK));
-    ret = sdCommunication->GetBundleStatsForIncrease(0, bundleNames, incTimes, pkgFileSizes, incSizes);
-    EXPECT_EQ(ret, E_OK);
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetBundleStatsForIncrease_0000";
-}
-
-/**
 * @tc.number: SUB_STORAGE_Daemon_communication_UpdateMemoryPara_0000
 * @tc.name: Daemon_communication_UpdateMemoryPara_0000
 * @tc.desc: Test function of UpdateMemoryPara interface for SUCCESS.

@@ -116,10 +116,6 @@ public:
          int32_t limitSizeMb);
     int32_t UpdateMemoryPara(int32_t size, int32_t &oldSize);
  
-    int32_t GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
-         const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes,
-         std::vector<int64_t> &incPkgFileSizes);
- 
      // dfs service
     int32_t MountDfsDocs(int32_t userId, const std::string &relativePath,
          const std::string &networkId, const std::string &deviceId);
