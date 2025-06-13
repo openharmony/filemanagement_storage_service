@@ -567,6 +567,28 @@ HWTEST_F(KeyMgrAnotherTest, KeyMgrAnotherTest_UpdateCeEceSeceKeyContext_001, Tes
 }
 
 /**
+ * @tc.name: KeyMgrAnotherTest_ActiveElxUserKey4Nato_001
+ * @tc.desc: Verify the KeyManager ActiveElxUserKey4Nato function.
+ * @tc.type: FUNC
+ * @tc.require: SR000H0CM9
+ */
+HWTEST_F(KeyMgrAnotherTest, KeyMgrAnotherTest_ActiveElxUserKey4Nato_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyMgrAnotherTest_ActiveElxUserKey4Nato_001 start";
+    uint32_t userId = 124;
+    KeyType type = EL1_KEY;
+    KeyBlob authToken;
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false));
+    auto ret = KeyManager::GetInstance()->ActiveElxUserKey4Nato(userId, type, authToken);
+    EXPECT_EQ(ret, 0);
+
+    EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
+    ret = KeyManager::GetInstance()->ActiveElxUserKey4Nato(userId, type, authToken);
+    EXPECT_EQ(ret, 0);
+    GTEST_LOG_(INFO) << "KeyMgrAnotherTest_ActiveElxUserKey4Nato_001 end";
+}
+
+/**
  * @tc.name: KeyMgrAnotherTest_LockUserScreen_001
  * @tc.desc: Verify the KeyManager LockUserScreen function.
  * @tc.type: FUNC
