@@ -41,7 +41,6 @@ ohos_fuzztest("StorageDaemonProviderFuzzTest") {
     "${storage_daemon_path}/ipc/src/storage_daemon_provider.cpp",
     "${storage_daemon_path}/quota/quota_manager.cpp",
     "${storage_daemon_path}/user/src/mount_manager.cpp",
-    "${storage_daemon_path}/user/src/mount_manager_ext.cpp",
     "${storage_daemon_path}/user/src/user_manager.cpp",
     "${storage_daemon_path}/utils/string_utils.cpp",
     "${storage_daemon_path}/observer/appstate_observer.cpp",

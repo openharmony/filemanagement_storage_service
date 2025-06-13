@@ -159,8 +159,7 @@ public:
                            bool &isOccupy) override;
     // reset user event record api
     void ResetUserEventRecord(int32_t userId);
-    int32_t MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles) override;
-    int32_t UMountDisShareFile(int32_t userId, const std::string &networkId) override;
+
 private:
     StorageManagerProvider();
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;

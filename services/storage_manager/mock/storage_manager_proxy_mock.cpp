@@ -362,15 +362,5 @@ int32_t StorageManagerProxy::IsFileOccupied(const std::string &path, const std::
 {
     return E_OK;
 }
-
-int32_t StorageManagerProxy::MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::UMountDisShareFile(int32_t userId, const std::string &networkId)
-{
-    return E_OK;
-}
 } // StorageManager
 } // OHOS

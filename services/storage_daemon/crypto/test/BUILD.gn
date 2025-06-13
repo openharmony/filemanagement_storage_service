@@ -39,7 +39,6 @@ ohos_moduletest("CryptoSubTest") {
 
   sources = [
     "${storage_daemon_path}/user/src/mount_manager.cpp",
-    "${storage_daemon_path}/user/src/mount_manager_ext.cpp",
     "${storage_daemon_path}/user/src/user_manager.cpp",
     "crypto_key_test.cpp",
   ]

@@ -355,16 +355,6 @@ public:
     {
         return E_OK;
     }
-
-    int32_t MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles) override
-    {
-        return E_OK;
-    }
-
-    int32_t UMountDisShareFile(int32_t userId, const std::string &networkId) override
-    {
-        return E_OK;
-    }
 };
 } // namespace StorageManager
 } // namespace OHOS
