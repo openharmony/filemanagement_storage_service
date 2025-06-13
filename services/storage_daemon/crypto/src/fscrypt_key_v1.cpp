@@ -21,8 +21,8 @@
 
 #include "file_ex.h"
 #include "key_backup.h"
-#include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "storage_service_errno.h"
 #include "utils/file_utils.h"
 #include "utils/storage_radar.h"
 
@@ -51,8 +51,8 @@ int32_t FscryptKeyV1::ActiveKey(const KeyBlob &authToken, uint32_t flag, const s
         LOGE("fscryptV1Ext ActiveKeyExtfailed");
         return errNo;
     }
-    LOGI("SD_DURATION: ACTIVE KEY EXT: delay time = %{public}s",
-        StorageService::StorageRadar::RecordDuration(startTime).c_str());
+    auto delay = StorageService::StorageRadar::ReportDuration("HUKS: ACTIVE KEY EXT", startTime);
+    LOGI("SD_DURATION: HUKS: ACTIVE KEY EXT: delay time = %{public}s", delay.c_str());
     startTime = StorageService::StorageRadar::RecordCurrentTime();
     if (elType == TYPE_EL3 || elType == TYPE_EL4) {
         uint32_t sdpClass;
@@ -75,8 +75,8 @@ int32_t FscryptKeyV1::ActiveKey(const KeyBlob &authToken, uint32_t flag, const s
             return errNo;
         }
     }
-    LOGI("SD_DURATION: INSTALL KEY TO KEYRING: delay time = %{public}s",
-        StorageService::StorageRadar::RecordDuration(startTime).c_str());
+    delay = StorageService::StorageRadar::ReportDuration("INSTALL KEY TO KEYRING", startTime);
+    LOGI("SD_DURATION: INSTALL KEY TO KEYRING: delay time = %{public}s", delay.c_str());
     keyInfo_.key.Clear();
     LOGI("success");
     return E_OK;
@@ -475,8 +475,9 @@ int32_t FscryptKeyV1::InactiveKey(uint32_t flag, const std::string &mnt)
     LOGI("enter");
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     DropCachesIfNeed();
-    LOGI("SD_DURATION: DROP CACHE: delay time = %{public}s",
-        StorageService::StorageRadar::RecordDuration(startTime).c_str());
+    auto delay = StorageService::StorageRadar::ReportDuration("DROP CACHE", startTime,
+        StorageService::DELAY_TIME_THRESH_HIGH, StorageService::DEFAULT_USERID);
+    LOGI("SD_DURATION: DROP CACHE: delay time = %{public}s", delay.c_str());
 
     int32_t ret = E_OK;
     if (!keyInfo_.keyDesc.IsEmpty()) {
@@ -493,8 +494,9 @@ int32_t FscryptKeyV1::InactiveKey(uint32_t flag, const std::string &mnt)
     }
     startTime = StorageService::StorageRadar::RecordCurrentTime();
     DropCachesIfNeed();
-    LOGI("finish. SD_DURATION: DROP CACHE: delay time = %{public}s",
-        StorageService::StorageRadar::RecordDuration(startTime).c_str());
+    delay = StorageService::StorageRadar::ReportDuration("DROP CACHE", startTime,
+        StorageService::DELAY_TIME_THRESH_HIGH, StorageService::DEFAULT_USERID);
+    LOGI("finish. SD_DURATION: DROP CACHE: delay time = %{public}s", delay.c_str());
     return ret;
 }
 

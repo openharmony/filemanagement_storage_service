@@ -26,6 +26,93 @@
 
 namespace OHOS {
 namespace StorageDaemon {
+using namespace std;
+const string SANDBOX_ROOT_PATH = "/mnt/sandbox/";
+const string CURRENT_USER_ID_FLAG = "<currentUserId>";
+const string PACKAGE_NAME_FLAG = "<bundleName>";
+const string MOUNT_POINT_INFO = "/proc/mounts";
+const string MOUNT_POINT_TYPE_HMDFS = "hmdfs";
+const string MOUNT_POINT_TYPE_HMFS = "hmfs";
+const string MOUNT_POINT_TYPE_F2FS = "f2fs";
+const string MOUNT_POINT_TYPE_SHAREFS = "sharefs";
+const string EL2_BASE = "/data/storage/el2/base/";
+const string MOUNT_SUFFIX = "_locked";
+const string APP_EL1_PATH = "/data/app/el1";
+const string FILE_MGR_ROOT_PATH = "/storage/Users/currentUser/";
+const set<string> SANDBOX_EXCLUDE_PATH = {
+    "chipset",
+    "system",
+    "com.ohos.render"
+};
+const vector<string> CRYPTO_SANDBOX_PATH = {
+    "/data/storage/el2/base/",
+    "/data/storage/el2/database/",
+    "/data/storage/el2/share/",
+    "/data/storage/el2/log/",
+    "/data/storage/el2/distributedfiles/",
+    "/data/storage/el2/cloud/",
+    "/data/storage/el3/base/",
+    "/data/storage/el3/database/",
+    "/data/storage/el4/base/",
+    "/data/storage/el4/database/",
+    "/data/storage/el5/base/",
+    "/data/storage/el5/database/"
+};
+const vector<string> CRYPTO_SRC_PATH = {
+    "/data/app/el2/<currentUserId>/base/<bundleName>/",
+    "/data/app/el2/<currentUserId>/database/<bundleName>/",
+    "/mnt/share/<currentUserId>/<bundleName>/",
+    "/data/app/el2/<currentUserId>/log/<bundleName>/",
+    "/mnt/hmdfs/<currentUserId>/account/merge_view/data/<bundleName>/",
+    "/mnt/hmdfs/<currentUserId>/cloud/data/<bundleName>/",
+    "/data/app/el3/<currentUserId>/base/<bundleName>/",
+    "/data/app/el3/<currentUserId>/database/<bundleName>/",
+    "/data/app/el4/<currentUserId>/base/<bundleName>/",
+    "/data/app/el4/<currentUserId>/database/<bundleName>/",
+    "/data/app/el5/<currentUserId>/base/<bundleName>/",
+    "/data/app/el5/<currentUserId>/database/<bundleName>/"
+};
+
+const vector<string> APPDATA_DST_PATH = {
+    "/mnt/user/<currentUserId>/nosharefs/appdata/el1/base/",
+    "/mnt/user/<currentUserId>/nosharefs/appdata/el2/base/",
+    "/mnt/user/<currentUserId>/nosharefs/appdata/el2/cloud/",
+    "/mnt/user/<currentUserId>/nosharefs/appdata/el2/distributedfiles/",
+    "/mnt/user/<currentUserId>/nosharefs/appdata/el5/base/"
+};
+
+const vector<string> APPDATA_SRC_PATH = {
+    "/data/app/el1/<currentUserId>/base/",
+    "/data/app/el2/<currentUserId>/base/",
+    "/mnt/hmdfs/<currentUserId>/cloud/data/",
+    "/mnt/hmdfs/<currentUserId>/account/merge_view/data/",
+    "/data/app/el5/<currentUserId>/base/"
+};
+
+const vector<string> FD_PATH = {
+    "/data/service/el2/<currentUserId>",
+    "/data/service/el3/<currentUserId>",
+    "/data/service/el4/<currentUserId>",
+    "/data/service/el5/<currentUserId>",
+    "/storage/media/<currentUserId>"
+};
+
+const vector<string> SYS_PATH = {
+    "/mnt/hmdfs/<currentUserId>/account",
+    "/mnt/hmdfs/<currentUserId>/non_account",
+    "/mnt/hmdfs/<currentUserId>/cloud"
+};
+
+const std::string HMDFS_SYS_CAP = "const.distributed_file_property.enabled";
+const int32_t HMDFS_VAL_LEN = 6;
+const int32_t HMDFS_TRUE_LEN = 5;
+const string SHARE_PATH = "/data/service/el1/public/storage_daemon/share/public";
+static constexpr int MODE_0711 = 0711;
+static constexpr int MODE_0771 = 0771;
+static constexpr int MODE_02771 = 02771;
+const char DETERMINE_DEVICE_TYPE_KEY[] = "persist.distributed_scene.sys_settings_data_sync";
+const int32_t REMOUNT_VALUE_LEN = 10;
+
 struct DirInfo {
     const std::string path;
     mode_t mode;

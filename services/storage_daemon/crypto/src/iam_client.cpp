@@ -70,6 +70,7 @@ bool IamClient::GetSecureUid(uint32_t userId, uint64_t &secureUid)
     LOGI("enter");
 #ifdef USER_AUTH_FRAMEWORK
     LOGI("get secure uid real !");
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     secureUidStatus_ = FAILED;
     std::shared_ptr<UserSecCallback> secCallback = std::make_shared<UserSecCallback>();
     int32_t retCode = UserIam::UserAuth::UserIdmClient::GetInstance().GetSecUserInfo(userId, secCallback);
@@ -100,6 +101,9 @@ bool IamClient::GetSecureUid(uint32_t userId, uint64_t &secureUid)
         LOGE("Get secure uid failed, use default !");
     }
     secureUid = secCallback->GetSecureUid();
+    auto delay = StorageService::StorageRadar::ReportDuration("IAM: GET SECURE UID",
+        startTime, StorageService::DEFAULT_DELAY_TIME_THRESH, userId);
+    LOGI("SD_DURATION: IAM: GET SECUR UID, delay time = %{public}s", delay.c_str());
 #else
     LOGI("iam not support, use default !");
     secureUid = { 0 };
@@ -113,6 +117,7 @@ bool IamClient::GetSecUserInfo(uint32_t userId, UserIam::UserAuth::SecUserInfo &
     LOGI("enter");
 #ifdef USER_AUTH_FRAMEWORK
     LOGI("Get SecUserInfo real !");
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     secUserInfoState_ = SEC_USER_INFO_FAILED;
     std::shared_ptr<UserEnrollCallback> userEnrollCallback = std::make_shared<UserEnrollCallback>();
     int32_t retCode = UserIam::UserAuth::UserIdmClient::GetInstance().GetSecUserInfo(userId, userEnrollCallback);
@@ -141,6 +146,9 @@ bool IamClient::GetSecUserInfo(uint32_t userId, UserIam::UserAuth::SecUserInfo &
         LOGE("Get SecUserInfo failed, use default !");
     }
     info = userEnrollCallback->GetSecUserInfo();
+    auto delay = StorageService::StorageRadar::ReportDuration("IAM: GET SECURE USER INFO",
+        startTime, StorageService::DEFAULT_DELAY_TIME_THRESH, userId);
+    LOGI("SD_DURATION: IAM: GET SECURE USER INFO, delay time = %{public}s", delay.c_str());
 #else
     LOGI("iam not support, use default !");
     info = {};

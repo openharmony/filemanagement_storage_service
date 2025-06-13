@@ -297,8 +297,9 @@ int32_t StorageDaemonProvider::StartUser(int32_t userId)
     } else {
         it->second.userStartSuccCount++;
     }
-    LOGI("SD_DURATION: HANDLE START USER: delay time = %{public}s",
-        StorageService::StorageRadar::RecordDuration(startTime).c_str());
+    auto delay = StorageService::StorageRadar::ReportDuration("START USER",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
+    LOGI("SD_DURATION: START USER: delay time = %{public}s", delay.c_str());
     return ret;
 }
 
@@ -439,8 +440,9 @@ int32_t StorageDaemonProvider::ActiveUserKey(uint32_t userId,
     } else {
         it->second.keyLoadFailCount++;
     }
-    LOGI("SD_DURATION: ACTIVE USER KEY: delay time = %{public}s",
-        StorageService::StorageRadar::RecordDuration(startTime).c_str());
+    auto delay = StorageService::StorageRadar::ReportDuration("ACTIVE USER KEY",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
+    LOGI("SD_DURATION: ACTIVE USER KEY: delay time = %{public}s", delay.c_str());
     return err;
 }
 

@@ -272,8 +272,9 @@ int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, KeyBlob &iv, uint8_
         (void)fclose(f);
         return 0;
     }
-    LOGI("SD_DURATION: FBEX: FILE OPS: keyType=%{public}d, delay time = %{public}s",
-        type, StorageService::StorageRadar::RecordDuration(startTime).c_str());
+    auto delay = StorageService::StorageRadar::ReportDuration("KEY TO KERNEL: FILE OPS",
+        startTime, StorageService::DEFAULT_DELAY_TIME_THRESH, userId);
+    LOGI("SD_DURATION: FBEX: FILE OPS: keyType=%{public}d, delay time = %{public}s", type, delay.c_str());
     startTime = StorageService::StorageRadar::RecordCurrentTime();
     int ret = ioctl(fd, FBEX_IOC_ADD_IV, &ops);
     if (ret != 0) {
@@ -290,8 +291,9 @@ int FBEX::InstallKeyToKernel(uint32_t userId, uint32_t type, KeyBlob &iv, uint8_
         LOGE("memcpy failed %{public}d", errops);
     }
     (void)memset_s(&ops.iv, sizeof(ops.iv), 0, sizeof(ops.iv));
-    LOGI("SD_DURATION: FBEX: INSTALL KEY TO KERNEL: success, keyType=%{public}d, delay time = %{public}s",
-        type, StorageService::StorageRadar::RecordDuration(startTime).c_str());
+    delay = StorageService::StorageRadar::ReportDuration("FBEX: INSTALL KEY TO KERNEL",
+        startTime, StorageService::DEFAULT_DELAY_TIME_THRESH, userId);
+    LOGI("SD_DURATION: FBEX: INSTALL KEY TO KERNEL: keyType=%{public}d, delay = %{public}s", type, delay.c_str());
     return ret;
 }
 
@@ -336,7 +338,6 @@ int FBEX::InstallDoubleDeKeyToKernel(UserIdToFbeStr &userIdToFbe, KeyBlob &iv, u
     LOGI("InstallDoubleDeKeyToKernel success");
     return ret;
 }
-
 
 int FBEX::UninstallOrLockUserKeyToKernel(uint32_t userId, uint32_t type, uint8_t *iv, uint32_t size, bool destroy)
 {

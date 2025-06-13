@@ -85,10 +85,8 @@ int32_t FscryptKeyV1Ext::ActiveKeyExt(uint32_t flag, KeyBlob &iv, uint32_t &elTy
     if (!FBEX::IsFBEXSupported()) {
         return E_OK;
     }
-    LOGI("SD_DURATION: FBEX SUPPORT: elType=%{public}d, delay time = %{public}s",
-        elType, StorageService::StorageRadar::RecordDuration(startTime).c_str());
-
-    LOGI("enter");
+    auto delay = StorageService::StorageRadar::ReportDuration("FBEX: IS_SUPPORT", startTime);
+    LOGI("enter. SD_DURATION: FBEX SUPPORT: elType=%{public}d, delay time = %{public}s", elType, delay.c_str());
     std::error_code errCode;
     std::string updateVersion;
     int ret = OHOS::LoadStringFromFile(NEED_RESTORE_PATH, updateVersion);

@@ -30,8 +30,6 @@ using namespace std;
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
-static constexpr int MODE_0711 = 0711;
-static constexpr int MODE_02771 = 02771;
 std::shared_ptr<UserManager> UserManager::instance_ = nullptr;
 UserManager::UserManager()
     : rootDirVec_{{"/data/app/%s/%d", MODE_0711, OID_ROOT, OID_ROOT},
