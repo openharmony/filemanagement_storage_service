@@ -931,7 +931,7 @@ int32_t KeyManager::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &aut
 int KeyManager::UpdateESecret(unsigned int user, struct UserTokenSecret &tokenSecret)
 {
     LOGW("UpdateESecret enter");
-     if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
+    if (!KeyCtrlHasFscryptSyspara() || !IsEncryption()) {
         return E_OK;
     }
     std::shared_ptr<BaseKey> el5Key = GetUserElKey(user, EL5_KEY);
