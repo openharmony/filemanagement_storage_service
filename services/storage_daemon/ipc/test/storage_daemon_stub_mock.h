@@ -80,8 +80,6 @@ public:
     MOCK_METHOD1(RemoveDeathRecipient, bool(const sptr<DeathRecipient> &));
     MOCK_METHOD4(IsFileOccupied, int32_t (const std::string &, const std::vector<std::string> &,
         std::vector<std::string> &, bool &));
-    MOCK_METHOD2(MountDisShareFile, int32_t (int32_t, const std::map<std::string, std::string> &));
-    MOCK_METHOD2(UMountDisShareFile, int32_t (int32_t, const std::string &));
 };
 }  // namespace StorageDaemon
 }  // namespace OHOS

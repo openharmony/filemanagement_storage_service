@@ -45,7 +45,6 @@ bool StorageManagerProxyFuzzTest(const uint8_t *data, size_t size)
     uint32_t metaData3 = *(reinterpret_cast<const uint32_t *>(data + sizeof(uint32_t)));
     uint64_t metaData4 = *(reinterpret_cast<const uint64_t *>(data + sizeof(uint32_t) + sizeof(uint64_t)));
     std::string metaData(reinterpret_cast<const char *>(data + dataMinSize), size - dataMinSize);
-    std::map<std::string, std::string> metaData5 = {{metaData, metaData}};
     token.push_back(*data);
     secret.push_back(*data);
     proxy->StopUser(metaData2);
@@ -68,8 +67,6 @@ bool StorageManagerProxyFuzzTest(const uint8_t *data, size_t size)
     proxy->SetVolumeDescription(metaData, metaData);
     proxy->UpdateUserAuth(metaData2, metaData4, token, secret, secret);
     proxy->NotifyVolumeMounted(metaData, metaData, metaData, metaData, metaData);
-    proxy->MountDisShareFile(metaData2, metaData5);
-    proxy->UMountDisShareFile(metaData2, metaData);
     return true;
 }
 
