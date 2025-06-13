@@ -862,7 +862,7 @@ int32_t StorageManager::UMountDisShareFile(int32_t userId, const std::string &ne
         LOGE("umount share file, userId %{public}d is invalid.", userId);
         return E_PARAMS_INVALID;
     }
-    if (networkId.find("..") != std::string::npos || networkId.find("..") != std::string::npos) {
+    if (networkId.find("..") != std::string::npos) {
         LOGE("umount share file, networkId %{public}s is invalid.", networkId.c_str());
         return E_PARAMS_INVALID;
     }
