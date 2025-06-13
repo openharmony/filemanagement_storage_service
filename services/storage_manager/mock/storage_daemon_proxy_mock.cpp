@@ -281,5 +281,15 @@ int32_t StorageDaemonProxy::IsFileOccupied(const std::string &path, const std::v
 {
     return E_OK;
 }
+
+int32_t StorageDaemonProxy::MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::UMountDisShareFile(int32_t userId, const std::string &networkId)
+{
+    return E_OK;
+}
 } // StorageDaemon
 } // OHOS

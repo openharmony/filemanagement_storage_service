@@ -137,6 +137,8 @@ public:
                            std::vector<std::string> &outputList,
                            bool &isOccupy);
     void ResetUserEventRecord(int32_t userId);
+    int32_t MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles);
+    int32_t UMountDisShareFile(int32_t userId, const std::string &networkId);
     std::mutex mutex_;
 };
 } // namespace StorageManager
