@@ -809,5 +809,34 @@ int32_t StorageDaemonCommunication::IsFileOccupied(const std::string &path, cons
     }
     return storageDaemon_->IsFileOccupied(path, inputList, outputList, isOccupy);
 }
+
+int32_t StorageDaemonCommunication::MountDisShareFile(int32_t userId,
+    const std::map<std::string, std::string> &shareFiles)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->MountDisShareFile(userId, shareFiles);
+}
+
+int32_t StorageDaemonCommunication::UMountDisShareFile(int32_t userId, const std::string &networkId)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->UMountDisShareFile(userId, networkId);
+}
 } // namespace StorageManager
 } // namespace OHOS

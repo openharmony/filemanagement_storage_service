@@ -922,5 +922,87 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_IsReadOnlyMount_001, 
     ASSERT_TRUE(!isReadOnlyMount);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_IsReadOnlyMount_001 end";
 }
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerExtTest_MountDisShareFile_001
+ * @tc.desc: Verify the MountDisShareFile function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_MountDisShareFile_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_MountDisShareFile_001 start";
+    int32_t userId = 100;
+    std::map<std::string, std::string> shareFiles = {{"/data/sharefile1", "/data/sharefile2"}};
+
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false));
+    auto ret = MountManager::GetInstance()->MountDisShareFile(userId, shareFiles);
+    EXPECT_EQ(ret, E_NON_EXIST);
+
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(false));
+    EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(false));
+    ret = MountManager::GetInstance()->MountDisShareFile(userId, shareFiles);
+    EXPECT_EQ(ret, E_NON_EXIST);
+
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
+    ret = MountManager::GetInstance()->MountDisShareFile(userId, shareFiles);
+    EXPECT_EQ(ret, E_MOUNT_SHARE_FILE);
+
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
+    EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
+    ret = MountManager::GetInstance()->MountDisShareFile(userId, shareFiles);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_MountDisShareFile_001 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerExtTest_UMountDisShareFile_001
+ * @tc.desc: Verify the UMountDisShareFile function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_UMountDisShareFile_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_UMountDisShareFile_001 start";
+    int32_t userId = 100;
+    std::string networkId = "/storage/cloud/100/files/Docs";
+    EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(1));
+    errno = 5;
+    auto ret = MountManager::GetInstance()->UMountDisShareFile(userId, networkId);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_UMountDisShareFile_001 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerExtTest_FindMountsByNetworkId_001
+ * @tc.desc: Verify the FindMountsByNetworkId function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_FindMountsByNetworkId_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_FindMountsByNetworkId_001 start";
+    std::string networkId = "hmdfs";
+    std::list<std::string> mounts;
+    auto ret = MountManager::GetInstance()->FindMountsByNetworkId(networkId, mounts);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_FindMountsByNetworkId_001 end";
+}
+
+/**
+ * @tc.name: Storage_Daemon_MountManagerExtTest_FilterNotMountedPath_001
+ * @tc.desc: Verify the FilterNotMountedPath function.
+ * @tc.type: FUNC
+ * @tc.require: IB49AM
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_FilterNotMountedPath_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_FilterNotMountedPath_001 start";
+    std::map<std::string, std::string> notMountPaths = {{"/storage/media/100", "/data/service/el2/100/hmdfs/account"}};
+    auto ret = MountManager::GetInstance()->FilterNotMountedPath(notMountPaths);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_FilterNotMountedPath_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS

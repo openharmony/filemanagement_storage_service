@@ -713,5 +713,15 @@ void StorageDaemonProvider::SystemAbilityStatusChangeListener::OnRemoveSystemAbi
         MountManager::GetInstance()->SetCloudState(false);
     }
 }
+
+int32_t StorageDaemonProvider::MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles)
+{
+    return MountManager::GetInstance()->MountDisShareFile(userId, shareFiles);
+}
+
+int32_t StorageDaemonProvider::UMountDisShareFile(int32_t userId, const std::string &networkId)
+{
+    return MountManager::GetInstance()->UMountDisShareFile(userId, networkId);
+}
 } // namespace StorageDaemon
 } // namespace OHOS
