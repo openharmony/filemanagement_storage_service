@@ -22,6 +22,7 @@ group("storage_service_fuzztest") {
     "${storage_service_path}/test/fuzztest/fileutils_fuzzer:FileUtilsFuzzTest",
     "${storage_service_path}/test/fuzztest/fscryptutils_fuzzer:FscryptUtilsFuzzTest",
     "${storage_service_path}/test/fuzztest/keycontrol_fuzzer:KeyControlFuzzTest",
+    "${storage_service_path}/test/fuzztest/storagemanagerprovider_fuzzer:StorageManagerProviderFuzzTest",
     "${storage_service_path}/test/fuzztest/storagedaemonprovider_fuzzer:StorageDaemonProviderFuzzTest",
     "${storage_service_path}/test/fuzztest/storagedaemonprovidercreatesharefile_fuzzer:StorageDaemonProviderCreateShareFileFuzzTest",
     "${storage_service_path}/test/fuzztest/storagedaemonproviderdeletesharefile_fuzzer:StorageDaemonProviderDeleteShareFileFuzzTest",

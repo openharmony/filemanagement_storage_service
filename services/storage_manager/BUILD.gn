@@ -164,6 +164,7 @@ group("storage_manager_unit_test") {
     "account_subscriber/test:storage_account_subscriber_test",
     "client/test:storage_manager_client_test",
     "innerkits_impl/test:storage_manager_innerkits_test",
+    "ipc/test:storage_manager_ipc_test",
     "storage_daemon_communication/test:storage_manager_communication_test",
     "user/test:storage_manager_user_test",
   ]
