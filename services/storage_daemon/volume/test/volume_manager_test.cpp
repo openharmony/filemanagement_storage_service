@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,9 +22,20 @@
 #include "storage_service_log.h"
 #include "volume/volume_manager.h"
 #include "volume_info_mock.h"
+#include "parameter.h"
+
+namespace {
+uint32_t g_FindParameter = 0;
+}
+
+uint32_t FindParameter(const char *key)
+{
+    return g_FindParameter;
+}
 
 namespace OHOS {
 namespace StorageDaemon {
+using namespace testing;
 using namespace testing::ext;
 
 class VolumeManagerTest : public testing::Test {
@@ -255,6 +266,37 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Mount_002, TestSiz
 }
 
 /**
+ * @tc.name: Storage_Service_VolumeManagerTest_Mount_003
+ * @tc.desc: Verify the Mount function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_Mount_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Mount_003 start";
+    VolumeManager *volumeManager = VolumeManager::Instance();
+    ASSERT_TRUE(volumeManager != nullptr);
+
+    std::string volId = "mount_test";
+    uint32_t flags = 1;
+    auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
+    volumeInfoMock->id_ = "vol-1-1";
+    volumeInfoMock->type_ = EXTERNAL;
+    volumeInfoMock->mountState_ = MOUNTED;
+    volumeInfoMock->mountFlags_ = 0;
+    volumeInfoMock->userIdOwner_ = 100;
+    volumeInfoMock->isUserdata_ = false;
+
+    volumeManager->volumes_.Insert(volId, volumeInfoMock);
+    EXPECT_CALL(*volumeInfoMock, DoTryToCheck()).WillOnce(Return(0));
+    EXPECT_EQ(volumeManager->Mount(volId, flags), 0);
+
+    EXPECT_CALL(*volumeInfoMock, DoTryToCheck()).WillOnce(Return(E_VOL_NEED_FIX));
+    EXPECT_EQ(volumeManager->Mount(volId, flags), 0);
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_Mount_003 end";
+}
+
+/**
  * @tc.name: Storage_Service_VolumeManagerTest_UMount_001
  * @tc.desc: Verify the UMount function.
  * @tc.type: FUNC
@@ -422,6 +464,49 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_QueryUsbIsInUse_00
     EXPECT_EQ(result, E_PARAMS_NULLPTR_ERR);
 
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_QueryUsbIsInUse_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeManagerTest_TryToFix_001
+ * @tc.desc: Verify the TryToFix function.
+ * @tc.type: FUNC
+ * @tc.require: AR20250226995120
+ */
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_TryToFix_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_TryToFix_001 start";
+
+    VolumeManager *volumeManager = VolumeManager::Instance();
+    ASSERT_TRUE(volumeManager != nullptr);
+
+    std::string volId = "volId";
+    uint32_t flags = 1;
+    volumeManager->volumes_.Clear();
+    EXPECT_EQ(volumeManager->TryToFix(volId, flags), E_NON_EXIST);
+
+    auto volumeInfoMock = std::make_shared<VolumeInfoMock>();
+    volumeManager->volumes_.Insert(volId, volumeInfoMock);
+    EXPECT_CALL(*volumeInfoMock, DoTryToFix()).WillOnce(Return(-1));
+    volumeInfoMock->mountState_ = MOUNTED;
+    EXPECT_EQ(volumeManager->TryToFix(volId, flags), -1);
+
+    EXPECT_CALL(*volumeInfoMock, DoTryToFix()).WillOnce(Return(0));
+    volumeInfoMock->mountState_ = REMOVED;
+    EXPECT_EQ(volumeManager->TryToFix(volId, flags), E_VOL_STATE);
+
+    EXPECT_CALL(*volumeInfoMock, DoTryToFix()).WillOnce(Return(0));
+    volumeInfoMock->mountState_ = UNMOUNTED;
+    EXPECT_CALL(*volumeInfoMock, DoCheck()).WillOnce(Return(-1));
+    EXPECT_EQ(volumeManager->TryToFix(volId, flags), -1);
+
+    EXPECT_CALL(*volumeInfoMock, DoTryToFix()).WillOnce(Return(0));
+    volumeInfoMock->mountState_ = UNMOUNTED;
+    EXPECT_CALL(*volumeInfoMock, DoCheck()).WillOnce(Return(0));
+    g_FindParameter = -1;
+    EXPECT_CALL(*volumeInfoMock, DoMount(_)).WillOnce(Return(-1));
+    EXPECT_EQ(volumeManager->TryToFix(volId, flags), -1);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_TryToFix_001 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

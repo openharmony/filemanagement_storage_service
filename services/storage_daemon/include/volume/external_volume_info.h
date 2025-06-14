@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -26,6 +26,8 @@ public:
     ExternalVolumeInfo() = default;
     virtual ~ExternalVolumeInfo() = default;
 
+    virtual int32_t DoTryToFix() override;
+    virtual int32_t DoTryToCheck() override;
     std::string GetFsType();
     std::string GetFsUuid();
     std::string GetFsLabel();
@@ -60,8 +62,12 @@ private:
     int32_t DoMount4Hmfs(uint32_t mountFlags);
     int32_t DoMount4Ntfs(uint32_t mountFlags);
     int32_t DoMount4Exfat(uint32_t mountFlags);
+    int32_t DoFix4Ntfs();
+    int32_t DoFix4Exfat();
     int32_t DoMount4OtherType(uint32_t mountFlags);
     int32_t DoMount4Vfat(uint32_t mountFlags);
+    int32_t DoCheck4Ntfs();
+    int32_t DoCheck4Exfat();
 };
 } // STORAGE_DAEMON
 } // OHOS
