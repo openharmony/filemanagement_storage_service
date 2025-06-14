@@ -79,8 +79,8 @@ public:
     void ForceLockUserScreen();
 
     // app file share api
-    std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList, uint32_t tokenId, uint32_t flag);
-    int32_t DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList);
+    std::vector<int32_t> CreateShareFile(const StorageFileRawData &rawData, uint32_t tokenId, uint32_t flag);
+    int32_t DeleteShareFile(uint32_t tokenId, const StorageFileRawData &uriList);
 
     int32_t SetBundleQuota(const std::string &bundleName, int32_t uid, const std::string &bundleDataDirPath,
         int32_t limitSizeMb);

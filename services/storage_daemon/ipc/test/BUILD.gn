@@ -71,6 +71,7 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/volume/src/process.cpp",
     "$ROOT_DIR/volume/src/volume_info.cpp",
     "$ROOT_DIR/volume/src/volume_manager.cpp",
+    "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
   ]
 
   deps = [

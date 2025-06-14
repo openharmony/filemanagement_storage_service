@@ -52,8 +52,8 @@ public:
     MOCK_METHOD2(UpdateKeyContext, int32_t (uint32_t, bool));
     MOCK_METHOD1(MountCryptoPathAgain, int32_t (uint32_t));
     MOCK_METHOD4(CreateShareFile,
-                 int32_t(const std::vector<std::string> &, uint32_t, uint32_t, std::vector<int32_t> &));
-    MOCK_METHOD2(DeleteShareFile, int32_t (uint32_t, const std::vector<std::string> &));
+                 int32_t(const StorageManager::StorageFileRawData &, uint32_t, uint32_t, std::vector<int32_t> &));
+    MOCK_METHOD2(DeleteShareFile, int32_t (uint32_t, const StorageManager::StorageFileRawData &));
     MOCK_METHOD4(SetBundleQuota, int32_t (const std::string&, int32_t, const std::string&, int32_t));
     MOCK_METHOD3(GetOccupiedSpace, int32_t (int32_t, int32_t, int64_t &));
     MOCK_METHOD1(LockUserScreen, int32_t (uint32_t));

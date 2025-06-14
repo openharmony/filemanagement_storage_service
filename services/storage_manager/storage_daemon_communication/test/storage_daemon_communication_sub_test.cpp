@@ -994,7 +994,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreateShareFile_00
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_CreateShareFile_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    vector<string> uriList;
+    StorageFileRawData uriList;
     sdCommunication->storageDaemon_ = nullptr;
     EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
     EXPECT_EQ(sdCommunication->CreateShareFile(uriList, 0, 0)[0], E_SA_IS_NULLPTR);
@@ -1029,7 +1029,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteShareFile_00
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_DeleteShareFile_0000";
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    vector<string> uriList;
+    StorageFileRawData uriList;
     sdCommunication->storageDaemon_ = nullptr;
     EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
     EXPECT_EQ(sdCommunication->DeleteShareFile(0, uriList), E_SA_IS_NULLPTR);

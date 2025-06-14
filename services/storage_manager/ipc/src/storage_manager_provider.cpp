@@ -566,7 +566,7 @@ int32_t StorageManagerProvider::UpdateKeyContext(uint32_t userId, bool needRemov
     return StorageManager::GetInstance()->UpdateKeyContext(userId, needRemoveTmpKey);
 }
 
-int32_t StorageManagerProvider::CreateShareFile(const std::vector<std::string> &uriList,
+int32_t StorageManagerProvider::CreateShareFile(const StorageFileRawData &rawData,
                                                 uint32_t tokenId,
                                                 uint32_t flag,
                                                 std::vector<int32_t> &funcResult)
@@ -574,16 +574,19 @@ int32_t StorageManagerProvider::CreateShareFile(const std::vector<std::string> &
     if (!CheckClientPermissionForShareFile()) {
         return E_PERMISSION_DENIED;
     }
-    funcResult = StorageManager::GetInstance()->CreateShareFile(uriList, tokenId, flag);
+    int32_t rawDataSize = static_cast<int32_t>(rawData.size);
+    LOGI("StorageManagerProvider::CreateShareFile start. file size is %{public}d", rawDataSize);
+    funcResult = StorageManager::GetInstance()->CreateShareFile(rawData, tokenId, flag);
+    LOGI("StorageManagerProvider::CreateShareFile end. result is %{public}zu", funcResult.size());
     return E_OK;
 }
 
-int32_t StorageManagerProvider::DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList)
+int32_t StorageManagerProvider::DeleteShareFile(uint32_t tokenId, const StorageFileRawData &rawData)
 {
     if (!CheckClientPermissionForShareFile()) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->DeleteShareFile(tokenId, uriList);
+    return StorageManager::GetInstance()->DeleteShareFile(tokenId, rawData);
 }
 
 int32_t StorageManagerProvider::SetBundleQuota(const std::string &bundleName,

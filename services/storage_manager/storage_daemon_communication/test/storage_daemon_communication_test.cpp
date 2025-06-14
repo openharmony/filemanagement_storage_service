@@ -296,7 +296,10 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreateShareFile_00
 
     uint32_t tokenId = 100;
     uint32_t flag = 3;
-    vector<string> uriList(1, "testcreatefile");
+    StorageFileRawData uriList;
+    uriList.ownedData= "testcreatefile";
+    uriList.size = uriList.ownedData.size();
+    uriList.data = uriList.ownedData.c_str();
     std::vector<int32_t> result = sdCommunication->CreateShareFile(uriList, tokenId, flag);
     ASSERT_TRUE(!result.empty());
 
@@ -319,8 +322,10 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteShareFile_00
             DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    std::vector<string> uriList;
-    uriList.push_back("testcreatefile");
+    StorageFileRawData uriList;
+    uriList.ownedData= "testcreatefile";
+    uriList.size = uriList.ownedData.size();
+    uriList.data = uriList.ownedData.c_str();
     uint32_t tokenId = 100;
     int32_t ret = sdCommunication->DeleteShareFile(tokenId, uriList);
     EXPECT_EQ(ret, E_OK);
