@@ -102,6 +102,10 @@ ohos_static_library("libsdcrypto") {
     external_deps += [ "tee_client:libteec" ]
   }
 
+  if (storage_service_external_storage_qos_trans) {
+    defines += [ "SUPPORT_RECOVERY_KEY_SERVICE" ]
+  }
+
   if (enable_screenlock_manager) {
     defines += [ "ENABLE_SCREENLOCK_MANAGER" ]
     external_deps += [ "screenlock_mgr:screenlock_client" ]

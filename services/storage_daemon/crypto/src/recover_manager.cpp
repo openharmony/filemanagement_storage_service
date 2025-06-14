@@ -15,6 +15,7 @@
 
 #include "recover_manager.h"
 
+#include <bitset>
 #include <openssl/sha.h>
 #include <unistd.h>
 #include "storage_service_errno.h"
@@ -44,6 +45,43 @@ RecoveryManager::RecoveryManager()
 RecoveryManager::~RecoveryManager()
 {
     LOGI("enter");
+}
+
+bool RecoveryManager::IsEncryptionEnabled()
+{
+    LOGI("enter");
+#ifdef RECOVER_KEY_TEE_ENVIRONMENT
+    TEEC_Context createKeyContext = {};
+    TEEC_Session createKeySession = {};
+    if (!OpenSession(createKeyContext, createKeySession)) {
+        LOGE("Open session failed !");
+        return true;
+    }
+
+    TEEC_Operation operation = { 0 };
+    operation.started = SESSION_START_DEFAULT;
+    operation.paramTypes = TEEC_PARAM_TYPES(TEEC_VALUE_OUTPUT, TEEC_NONE, TEEC_NONE, TEEC_NONE);
+    operation.params[TEE_PARAM_INDEX_0].value.a = 1;
+
+    uint32_t origin = 0;
+    TEEC_Result result = TEEC_InvokeCommand(&createKeySession, TaCmdId::RK_CMD_ID_GET_FULL_DISK_ENCRYPTION_POLICY,
+                                            &operation, &origin);
+    LOGI("InvokeCmd ret: %{public}d, origin: %{public}d", result, origin);
+    if (result != TEEC_SUCCESS) {
+        LOGE("InvokeCmd failed, ret: %{public}d, origin: %{public}d", result, origin);
+        CloseSession(createKeyContext, createKeySession);
+        std::string extraData = "cmd=RK_CMD_ID_GET_FULL_DISK_ENCRYPTION_POLICY,ret=" + std::to_string(result) +
+            ",origin=" + std::to_string(origin);
+        StorageRadar::ReportTEEClientResult("TEEC_InvokeCommand", E_TEEC_GEN_RECOVERY_KEY_ERR, 0, extraData);
+        return true;
+    }
+    CloseSession(createKeyContext, createKeySession);
+
+    auto policy = std::bitset<sizeof(uint32_t)>(operation.params[TEE_PARAM_INDEX_0].value.a);
+    return policy.test(0);
+#endif
+    LOGI("success");
+    return true;
 }
 
 int RecoveryManager::CreateRecoverKey(uint32_t userId,

@@ -223,7 +223,12 @@ HWTEST_F(KeyManagerSupTest, KeyManager_DeleteAppkey_001, TestSize.Level1)
     GTEST_LOG_(INFO) << "KeyManager_DeleteAppkey_001 Start";
     unsigned int user = 800;
     string keyId;
-
+    bool existUece = true;
+    if (access(UECE_PATH, F_OK) != 0) {
+        existUece = false;
+        std::ofstream file(UECE_PATH);
+        EXPECT_GT(open(UECE_PATH, O_RDWR), 0);
+    }
     shared_ptr<FscryptKeyV2> elKey = make_shared<FscryptKeyV2>("/data/test");
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_INVALID));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_INVALID));
@@ -238,6 +243,9 @@ HWTEST_F(KeyManagerSupTest, KeyManager_DeleteAppkey_001, TestSize.Level1)
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*fscryptKeyMock_, DeleteAppkey(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(KeyManager::GetInstance()->DeleteAppkey(user, keyId), 0);
+    if (!existUece) {
+        OHOS::RemoveFile(UECE_PATH);
+    }
     GTEST_LOG_(INFO) << "KeyManager_DeleteAppkey_001 end";
 }
 

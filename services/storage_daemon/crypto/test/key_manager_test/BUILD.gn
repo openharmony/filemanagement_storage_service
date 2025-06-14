@@ -264,6 +264,7 @@ ohos_unittest("KeyManagerAnotherTest") {
     "LOG_DOMAIN = 0xD004301",
     "USER_CRYPTO_MIGRATE_KEY",
     "private = public",
+    "SUPPORT_RECOVERY_KEY_SERVICE",
   ]
 
   include_dirs = [
@@ -292,6 +293,7 @@ ohos_unittest("KeyManagerAnotherTest") {
     "${storage_daemon_path}/mock/key_control_mock.cpp",
     "${storage_daemon_path}/mock/mount_manager_mock.cpp",
     "key_manager_another_test.cpp",
+    "${storage_daemon_path}/user/src/user_manager.cpp",
   ]
 
   deps = [
@@ -311,6 +313,7 @@ ohos_unittest("KeyManagerAnotherTest") {
     "ipc:ipc_single",
     "openssl:libcrypto_shared",
     "samgr:samgr_proxy",
+    "bundle_framework:appexecfwk_core",
   ]
 
   if (enable_user_auth_framework) {
