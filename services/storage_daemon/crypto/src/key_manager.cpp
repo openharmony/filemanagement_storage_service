@@ -66,7 +66,6 @@ static bool IsEncryption()
 {
 #ifdef SUPPORT_RECOVERY_KEY_SERVICE
     static bool isEncryption = RecoveryManager::GetInstance().IsEncryptionEnabled();
-    LOGE("[liuxiaowei debug] IsEncryptionEnabled ret: %{public}s", isEncryption ? "true" : "false");
     return isEncryption;
 #endif
     return true;
