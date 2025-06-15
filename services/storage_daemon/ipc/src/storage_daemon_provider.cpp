@@ -597,7 +597,7 @@ int32_t StorageDaemonProvider::CreateShareFile(const StorageFileRawData &rawData
                                                uint32_t flag,
                                                std::vector<int32_t> &funcResult)
 {
-    LOGI("Create Share file list len is %{public}u", uriList.size);
+    LOGI("Create Share file list len is %{public}u", rawData.size);
     funcResult.clear();
     std::vector<std::string> uriList;
     RawDataToStringVec(rawData, uriList);
