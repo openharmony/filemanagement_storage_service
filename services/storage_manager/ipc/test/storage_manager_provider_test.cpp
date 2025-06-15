@@ -805,7 +805,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreateShareFile_
     StorageFileRawData fileRawData;
     fileRawData.ownedData = "file1";
     fileRawData.size = fileRawData.ownedData.size();
-    fileRawData.data = fileRawData.ownedData.c_str();
+    fileRawData.data = fileRawData.ownedData.data();
     uint32_t tokenId = 12345;
     uint32_t flag = 1;
     std::vector<int32_t> funcResult;
@@ -826,7 +826,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_DeleteShareFile_
     StorageFileRawData fileRawData;
     fileRawData.ownedData = "file1";
     fileRawData.size = fileRawData.ownedData.size();
-    fileRawData.data = fileRawData.ownedData.c_str();
+    fileRawData.data = fileRawData.ownedData.data();
     uint32_t tokenId = 12345;
     auto ret = storageManagerProviderTest_->DeleteShareFile(tokenId, fileRawData);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);

@@ -760,11 +760,14 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateShareFile_00
 {
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateShareFile_001 start";
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::vector<std::string> uriList;
+    StorageFileRawData fileRawData;
+    fileRawData.ownedData = "file1";
+    fileRawData.size = fileRawData.ownedData.size();
+    fileRawData.data = fileRawData.ownedData.data();
     uint32_t tokenId = 0;
     uint32_t flag = 0;
     std::vector<int32_t> funcResult;
-    int32_t ret = storageDaemonProviderTest_->CreateShareFile(uriList, tokenId, flag, funcResult);
+    int32_t ret = storageDaemonProviderTest_->CreateShareFile(fileRawData, tokenId, flag, funcResult);
     ASSERT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateShareFile_001 end";
 }
@@ -778,9 +781,12 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_DeleteShareFile_00
 {
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeleteShareFile_001 start";
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::vector<std::string> uriList;
+    StorageFileRawData fileRawData;
+    fileRawData.ownedData = "file1";
+    fileRawData.size = fileRawData.ownedData.size();
+    fileRawData.data = fileRawData.ownedData.data();
     uint32_t tokenId = 0;
-    int32_t ret = storageDaemonProviderTest_->DeleteShareFile(tokenId, uriList);
+    int32_t ret = storageDaemonProviderTest_->DeleteShareFile(tokenId, fileRawData);
 
     EXPECT_EQ(ret, -EINVAL);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeleteShareFile_001 end";
