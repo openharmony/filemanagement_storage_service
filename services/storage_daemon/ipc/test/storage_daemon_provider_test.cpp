@@ -1024,5 +1024,39 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ResetSecretWithRec
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ResetSecretWithRecoveryKey_001 end";
 }
+
+/**
+ * @tc.name: StorageDaemonProviderTest_MountDisShareFile_001
+ * @tc.desc: Verify the MountDisShareFile function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountDisShareFile_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountDisShareFile_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    int32_t userId = 100;
+    std::map<std::string, std::string> shareFiles = {{{"/data/sharefile1", "/data/sharefile2"}}};
+    auto ret = storageDaemonProviderTest_->MountDisShareFile(userId, shareFiles);
+    EXPECT_TRUE(ret == E_NON_EXIST);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountDisShareFile_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_UMountDisShareFile_001
+ * @tc.desc: Verify the UMountDisShareFile function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountDisShareFile_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDisShareFile_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    int32_t userId = 100;
+    std::string networkId = "sharefile1";
+    auto ret = storageDaemonProviderTest_->UMountDisShareFile(userId, networkId);
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDisShareFile_001 end";
+}
 } // namespace StorageDaemon
 } // namespace OHOS
