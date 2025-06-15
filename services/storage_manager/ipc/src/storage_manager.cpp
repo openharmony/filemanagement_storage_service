@@ -846,8 +846,7 @@ int32_t StorageManager::MountDisShareFile(int32_t userId, const std::map<std::st
     }
     for (const auto &item : shareFiles) {
         if (item.first.find("..") != std::string::npos || item.second.find("..") != std::string::npos) {
-            LOGE("mount share file, shareFiles<%{public}s, %{public}s> is invalid.",
-                 item.first.c_str(), item.second.c_str());
+            LOGE("mount share file, shareFiles is invalid.");
             return E_PARAMS_INVALID;
         }
     }
@@ -863,7 +862,7 @@ int32_t StorageManager::UMountDisShareFile(int32_t userId, const std::string &ne
         return E_PARAMS_INVALID;
     }
     if (networkId.find("..") != std::string::npos) {
-        LOGE("umount share file, networkId %{public}s is invalid.", networkId.c_str());
+        LOGE("umount share file, networkId is invalid.");
         return E_PARAMS_INVALID;
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
