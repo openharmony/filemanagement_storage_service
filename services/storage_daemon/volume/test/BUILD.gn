@@ -162,10 +162,14 @@ ohos_unittest("volume_manager_test") {
     cfi = true
     cfi_cross_dso = true
     debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
   }
   module_out_path = "storage_service/storage_service/storage_daemon"
 
-  defines = [ "STORAGE_LOG_TAG = \"StorageDaemon\"" ]
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "private=public",
+  ]
 
   include_dirs = [
     "$ROOT_DIR/storage_daemon/include",
@@ -210,5 +214,6 @@ group("storage_daemon_volume_test") {
     ":process_test",
     ":volume_info_test",
     ":volume_manager_test",
+    "external_volume_info:external_volume_info_other_test",
   ]
 }
