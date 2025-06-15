@@ -189,6 +189,21 @@ int32_t StorageDaemonProvider::UMount(const std::string &volId)
 #endif
 }
 
+int32_t StorageDaemonProvider::TryToFix(const std::string &volId, uint32_t flags)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("Handle TryToFix");
+    int32_t ret = VolumeManager::Instance()->TryToFix(volId, flags);
+    if (ret != E_OK) {
+        LOGW("TryToFix failed, please check");
+        StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::TryToFix", ret);
+    }
+    return ret;
+#else
+    return E_OK;
+#endif
+}
+
 int32_t StorageDaemonProvider::Check(const std::string &volId)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER

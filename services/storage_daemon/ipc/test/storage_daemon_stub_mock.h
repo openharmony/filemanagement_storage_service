@@ -27,6 +27,7 @@ public:
 
     MOCK_METHOD2(Mount, int32_t(const std::string &, uint32_t));
     MOCK_METHOD1(UMount, int32_t(const std::string &));
+    MOCK_METHOD2(TryToFix, int32_t(const std::string &, uint32_t));
     MOCK_METHOD1(Check, int32_t(const std::string &));
     MOCK_METHOD2(Format, int32_t(const std::string &, const std::string &));
     MOCK_METHOD2(Partition, int32_t(const std::string &, int32_t));

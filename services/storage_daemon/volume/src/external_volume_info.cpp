@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -180,6 +180,77 @@ int32_t ExternalVolumeInfo::DoMount4Exfat(uint32_t mountFlags)
 #endif
 }
 
+int32_t ExternalVolumeInfo::DoCheck4Exfat()
+{
+    std::vector<std::string> cmd = {
+        "fsck.exfat",
+        "-n",
+        devPath_,
+    };
+    int execRet = ForkExecWithExit(cmd);
+    LOGE("execRet: %{public}d", execRet);
+    if (execRet != E_OK) {
+        return E_VOL_NEED_FIX;
+    }
+    return E_OK;
+}
+
+int32_t ExternalVolumeInfo::DoCheck4Ntfs()
+{
+    std::vector<std::string> cmd = {
+        "fsck.ntfs",
+        devPath_,
+    };
+    int execRet = ForkExecWithExit(cmd);
+    LOGE("execRet: %{public}d", execRet);
+    if (execRet != E_OK) {
+        return E_VOL_NEED_FIX;
+    }
+    return E_OK;
+}
+
+int32_t ExternalVolumeInfo::DoFix4Ntfs()
+{
+    LOGE("DoFix4Ntfs");
+    std::vector<std::string> cmd = {
+        "ntfsfix",
+        "-d",
+        devPath_
+    };
+#ifdef EXTERNAL_STORAGE_QOS_TRANS
+    if (ExtStorageMountForkExec(cmd) != E_OK) {
+        return E_VOL_FIX_FAILED;
+    }
+    return E_OK;
+#else
+    if (ForkExec(cmd) != E_OK) {
+        return E_VOL_FIX_FAILED;
+    }
+    return E_OK;
+#endif
+}
+
+int32_t ExternalVolumeInfo::DoFix4Exfat()
+{
+    LOGE("DoFix4Exfat");
+    std::vector<std::string> cmd = {
+        "fsck.exfat",
+        "-p",
+        devPath_,
+    };
+#ifdef EXTERNAL_STORAGE_QOS_TRANS
+    if (ExtStorageMountForkExec(cmd) != E_OK) {
+        return E_VOL_FIX_FAILED;
+    }
+    return E_OK;
+#else
+    if (ForkExec(cmd) != E_OK) {
+        return E_VOL_FIX_FAILED;
+    }
+    return E_OK;
+#endif
+}
+
 int32_t ExternalVolumeInfo::DoMount4OtherType(uint32_t mountFlags)
 {
     mountFlags |= MS_MGC_VAL;
@@ -315,6 +386,78 @@ int32_t ExternalVolumeInfo::DoUMount(bool force)
     }
     LOGI("External volume unmount success.");
     return E_OK;
+}
+
+int32_t ExternalVolumeInfo::DoTryToCheck()
+{
+    int32_t ret = DoCheck();
+    if (ret != E_OK) {
+        LOGE("External volume uuid=%{public}s check failed.", GetAnonyString(GetFsUuid()).c_str());
+        return E_DOCHECK_MOUNT;
+    }
+
+    if (fsType_ != "ntfs" && fsType_ != "exfat") {
+        LOGE("Volume type %{public}s, is not support fix", fsType_.c_str());
+        return E_OK;
+    }
+
+    std::promise<int32_t> promise;
+    std::future<int32_t> future = promise.get_future();
+    std::thread mountThread ([this, p = std::move(promise)]() mutable {
+        LOGI("Ready to DoTryToCheck: volume fstype is %{public}s", fsType_.c_str());
+        int retValue = E_OK;
+        if (fsType_ == "ntfs") retValue = DoCheck4Ntfs();
+        else if (fsType_ == "exfat") retValue = DoCheck4Exfat();
+        else retValue = E_VOL_FIX_NOT_SUPPORT;
+        LOGI("DoTryToCheck cmdRet:%{public}d", retValue);
+        p.set_value(retValue);
+    });
+    if (future.wait_for(std::chrono::seconds(WAIT_THREAD_TIMEOUT_S)) == std::future_status::timeout) {
+        LOGE("DoTryToCheck timed out");
+        mountThread.detach();
+        return E_TIMEOUT_MOUNT;
+    }
+
+    ret = future.get();
+    mountThread.join();
+    if (ret != E_OK) {
+        LOGE("External volume DoTryToCheck error, maybe need fix, errno = %{public}d", ret);
+        return E_VOL_NEED_FIX;
+    }
+    return E_OK;
+}
+
+int32_t ExternalVolumeInfo::DoTryToFix()
+{
+    int32_t ret = DoCheck();
+    if (ret != E_OK) {
+        LOGE("External volume uuid=%{public}s check failed.", GetAnonyString(GetFsUuid()).c_str());
+        return E_DOCHECK_MOUNT;
+    }
+
+    if (fsType_ != "ntfs" && fsType_ != "exfat") {
+        LOGE("Volume type %{public}s, is not support fix", fsType_.c_str());
+        return E_VOL_FIX_NOT_SUPPORT;
+    }
+    std::promise<int32_t> promise;
+    std::future<int32_t> future = promise.get_future();
+    std::thread mountThread ([this, p = std::move(promise)]() mutable {
+        LOGI("Ready to mount: volume fstype is %{public}s", fsType_.c_str());
+        int retValue = E_OK;
+        if (fsType_ == "ntfs") retValue = DoFix4Ntfs();
+        else if (fsType_ == "exfat") retValue = DoFix4Exfat();
+        p.set_value(retValue);
+    });
+    if (future.wait_for(std::chrono::seconds(WAIT_THREAD_TIMEOUT_S)) == std::future_status::timeout) {
+        LOGE("Fix timed out");
+        mountThread.detach();
+        return E_TIMEOUT_MOUNT;
+    }
+
+    ret = future.get();
+    mountThread.join();
+    LOGI("DoTryToFix: volume fstype is %{public}s, ret: %{public}d, errno: %{public}d", fsType_.c_str(), ret, errno);
+    return ret;
 }
 
 int32_t ExternalVolumeInfo::DoCheck()

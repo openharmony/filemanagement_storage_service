@@ -264,6 +264,17 @@ int32_t StorageManager::NotifyVolumeMounted(const std::string &volumeId, const s
     return E_OK;
 }
 
+int32_t StorageManager::NotifyVolumeDamaged(const std::string &volumeId, const std::string &fsTypeStr,
+    const std::string &fsUuid, const std::string &path, const std::string &description)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManger::NotifyVolumeDamaged start, fsType is %{public}s.", fsTypeStr.c_str());
+    DelayedSingleton<VolumeManagerService>::GetInstance()->OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path,
+                                                                           description);
+#endif
+    return E_OK;
+}
+
 OHOS::StorageManager::VolumeState StorageManager::UintToState(uint32_t state)
 {
     switch (state) {
@@ -316,6 +327,20 @@ int32_t StorageManager::Unmount(const std::string &volumeId)
     int result = DelayedSingleton<VolumeManagerService>::GetInstance()->Unmount(volumeId);
     if (result != E_OK) {
         StorageRadar::ReportVolumeOperation("VolumeManagerService::Unmount", result);
+    }
+    return result;
+#else
+    return E_OK;
+#endif
+}
+
+int32_t StorageManager::TryToFix(const std::string &volumeId)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManger::TryToFix start");
+    int result = DelayedSingleton<VolumeManagerService>::GetInstance()->TryToFix(volumeId);
+    if (result != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeManagerService::TryToFix", result);
     }
     return result;
 #else

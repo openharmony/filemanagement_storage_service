@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -409,6 +409,25 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_KillProcess_001, TestSize.Level1)
     KillProcess(processList, killFailList);
     EXPECT_EQ(killFailList.size(), 0);
     GTEST_LOG_(INFO) << "FileUtilsTest_KillProcess_001 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_ForkExecWithExit_001
+ * @tc.desc: Verify the ForkExecWithExit function.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExecWithExit_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_ForkExecWithExit_001 start";
+
+    std::vector<std::string> cmd = {
+        "fsck.ntfs",
+        "/dev/block/vol-1-7",
+    };
+
+    EXPECT_EQ(ForkExecWithExit(cmd), E_WEXITSTATUS);
+    GTEST_LOG_(INFO) << "FileUtilsTest_ForkExecWithExit_001 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -129,6 +129,12 @@ int32_t VolumeManager::Mount(const std::string volId, uint32_t flags)
         return E_NON_EXIST;
 #endif
     }
+    int32_t checkRet = info->DoTryToCheck();
+    if (checkRet == E_VOL_NEED_FIX) {
+        LOGE("external volume maybe damage");
+        StorageManagerClient client;
+        checkRet = client.NotifyVolumeDamaged(info);
+    }
 
     int32_t err = info->Mount(flags);
     if (err != E_OK) {
@@ -139,6 +145,50 @@ int32_t VolumeManager::Mount(const std::string volId, uint32_t flags)
     StorageManagerClient client;
     err = client.NotifyVolumeMounted(info);
     if (err) {
+        LOGE("Volume Notify Mount Destroyed failed");
+    }
+    return E_OK;
+}
+
+int32_t VolumeManager::TryToFix(const std::string volId, uint32_t flags)
+{
+    std::shared_ptr<VolumeInfo> info = GetVolume(volId);
+    if (info == nullptr) {
+        LOGE("the volume %{public}s does not exist.", volId.c_str());
+        return E_NON_EXIST;
+    }
+    int32_t errFix = info->DoTryToFix();
+    LOGE("The volume result: %{public}d.", errFix);
+    if (errFix != E_OK) {
+        LOGE("the volume %{public}s fix failed, ret: %{public}d.", volId.c_str(), errFix);
+    }
+
+    int32_t currentState = info->GetState();
+    if (currentState == MOUNTED) {
+        LOGE("the volume has mounted.id: %{public}s", volId.c_str());
+        return errFix;
+    }
+
+    int32_t errMount = info->UMount();
+    if (errMount != E_OK) {
+        LOGE("the volume %{public}s UMount failed, ret:%{public}d.", volId.c_str(), errMount);
+    }
+
+    errMount = info->Check();
+    if (errMount != E_OK) {
+        LOGE("the volume %{public}s check failed.", volId.c_str());
+        return errMount;
+    }
+
+    errMount = info->Mount(flags);
+    if (errMount != E_OK) {
+        LOGE("the volume %{public}s mount failed.", volId.c_str());
+        return errMount;
+    }
+
+    StorageManagerClient client;
+    errMount = client.NotifyVolumeMounted(info);
+    if (errMount) {
         LOGE("Volume Notify Mount Destroyed failed");
     }
     return E_OK;

@@ -50,12 +50,16 @@ public:
     int32_t NotifyVolumeCreated(const VolumeCore& vc);
     int32_t NotifyVolumeMounted(const std::string &volumeId, const std::string &fsTypeStr, const std::string &fsUuid,
          const std::string &path, const std::string &description);
+    int32_t NotifyVolumeDamaged(const std::string &volumeId, const std::string &fsTypeStr, const std::string &fsUuid,
+                                const std::string &path, const std::string &description);
     OHOS::StorageManager::VolumeState UintToState(uint32_t state);
     int32_t NotifyVolumeStateChanged(const std::string &volumeId, uint32_t state);
 
     int32_t Mount(const std::string &volumeId);
     int32_t Unmount(const std::string &volumeId);
 
+    int32_t TryToFix(const std::string &volumeId);
+ 
     int32_t GetAllVolumes(std::vector<VolumeExternal> &vecOfVol);
 
     int32_t NotifyDiskCreated(const Disk& disk);

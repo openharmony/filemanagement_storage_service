@@ -126,6 +126,21 @@ int32_t StorageManagerClient::NotifyVolumeStateChanged(std::string volId, Storag
     return E_OK;
 }
 
+int32_t StorageManagerClient::NotifyVolumeDamaged(std::shared_ptr<VolumeInfo> volumeInfo)
+{
+    if (GetClient() != E_OK) {
+        return E_SERVICE_IS_NULLPTR;
+    }
+    if (volumeInfo == nullptr) {
+        return E_PARAMS_INVALID;
+    }
+
+    std::shared_ptr<ExternalVolumeInfo> info = std::static_pointer_cast<ExternalVolumeInfo>(volumeInfo);
+    storageManager_->NotifyVolumeDamaged(info->GetVolumeId(), info->GetFsType(), info->GetFsUuid(),
+                                         info->GetMountPath(), info->GetFsLabel());
+    return E_OK;
+}
+
 int32_t StorageManagerClient::NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
                                                const std::string &uuid)
 {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -32,6 +32,7 @@ public:
     int32_t Check(const std::string volId);
     int32_t Mount(const std::string volId, uint32_t flags);
     int32_t UMount(const std::string volId);
+    int32_t TryToFix(const std::string volId, uint32_t flags);
     int32_t Format(const std::string volId, const std::string fsType);
     int32_t SetVolumeDescription(const std::string volId, const std::string description);
     int32_t QueryUsbIsInUse(const std::string &diskPath, bool &isInUse);

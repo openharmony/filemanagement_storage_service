@@ -36,6 +36,11 @@ int32_t StorageDaemonProxy::UMount(const std::string &volId)
     return E_OK;
 }
 
+int32_t StorageDaemonProxy::TryToFix(const std::string &volId, uint32_t flags)
+{
+    return E_OK;
+}
+
 int32_t StorageDaemonProxy::Check(const std::string &volId)
 {
     return E_OK;

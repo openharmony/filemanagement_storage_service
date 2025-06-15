@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -485,6 +485,49 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
         }
         if (WEXITSTATUS(status) != 0) {
             LOGE("Process exited with an error");
+            return E_WEXITSTATUS;
+        }
+    }
+    return E_OK;
+}
+
+int ForkExecWithExit(std::vector<std::string> &cmd)
+{
+    int pipe_fd[2];
+    pid_t pid;
+    int status;
+    auto args = FromatCmd(cmd);
+
+    if (pipe(pipe_fd) < 0) {
+        LOGE("creat pipe failed");
+        return E_CREATE_PIPE;
+    }
+
+    pid = fork();
+    if (pid == -1) {
+        LOGE("fork failed");
+        return E_FORK;
+    } else if (pid == 0) {
+        (void)close(pipe_fd[0]);
+        if (dup2(pipe_fd[1], STDOUT_FILENO) == -1) {
+            LOGE("dup2 failed");
+            _exit(1);
+        }
+        (void)close(pipe_fd[1]);
+        execvp(args[0], const_cast<char **>(args.data()));
+        LOGE("execvp failed errno: %{public}d", errno);
+        _exit(1);
+    } else {
+        (void)close(pipe_fd[1]);
+        (void)close(pipe_fd[0]);
+        waitpid(pid, &status, 0);
+        LOGE("Process exits %{public}d", errno);
+        if (!WIFEXITED(status)) {
+            LOGE("Process exits abnormally, status: %{public}d", status);
+            return E_WIFEXITED;
+        }
+        if (WEXITSTATUS(status) != 0) {
+            LOGE("Process exited with an error, status: %{public}d", status);
             return E_WEXITSTATUS;
         }
     }

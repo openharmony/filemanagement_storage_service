@@ -286,6 +286,18 @@ int32_t StorageManagerProvider::NotifyVolumeMounted(const std::string &volumeId,
     return StorageManager::GetInstance()->NotifyVolumeMounted(volumeId, fsTypeStr, fsUuid, path, description);
 }
 
+int32_t StorageManagerProvider::NotifyVolumeDamaged(const std::string &volumeId,
+                                                    const std::string &fsTypeStr,
+                                                    const std::string &fsUuid,
+                                                    const std::string &path,
+                                                    const std::string &description)
+{
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    return StorageManager::GetInstance()->NotifyVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
+}
+
 int32_t StorageManagerProvider::NotifyVolumeStateChanged(const std::string &volumeId, uint32_t state)
 {
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
@@ -308,6 +320,14 @@ int32_t StorageManagerProvider::Unmount(const std::string &volumeId)
         return E_PERMISSION_DENIED;
     }
     return StorageManager::GetInstance()->Unmount(volumeId);
+}
+
+int32_t StorageManagerProvider::TryToFix(const std::string &volumeId)
+{
+    if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    return StorageManager::GetInstance()->TryToFix(volumeId);
 }
 
 int32_t StorageManagerProvider::GetAllVolumes(std::vector<VolumeExternal> &vecOfVol)

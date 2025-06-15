@@ -60,10 +60,16 @@ public:
                                 const std::string &fsUuid,
                                 const std::string &path,
                                 const std::string &description) override;
+    int32_t NotifyVolumeDamaged(const std::string &volumeId,
+                                const std::string &fsTypeStr,
+                                const std::string &fsUuid,
+                                const std::string &path,
+                                const std::string &description) override;
     int32_t NotifyVolumeStateChanged(const std::string &volumeId, uint32_t state) override;
 
     int32_t Mount(const std::string &volumeId) override;
     int32_t Unmount(const std::string &volumeId) override;
+    int32_t TryToFix(const std::string &volumeId) override;
 
     int32_t GetAllVolumes(std::vector<VolumeExternal> &vecOfVol) override;
 

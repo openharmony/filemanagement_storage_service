@@ -1077,5 +1077,41 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_ResetSecretWithR
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_ResetSecretWithRecoveryKey_001 end";
 }
+
+/**
+ * @tc.name: StorageManagerProviderTest_TryToFix_001
+ * @tc.desc: Verify the ResetSecretWithRecoveryKey function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_TryToFix_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_TryToFix_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string volId = "vol-8-1";
+    auto ret = storageManagerProviderTest_->TryToFix(volId);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_TryToFix_001 end";
+}
+ 
+/**
+ * @tc.name: StorageManagerProviderTest_NotifyVolumeDamaged_001
+ * @tc.desc: Verify the NotifyVolumeDamaged function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyVolumeDamaged_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeDamaged_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string volId = "vol-8-1";
+    std::string fsTypeStr = "ntfs";
+    std::string uuid = "uuid-1";
+    std::string path = "/";
+    std::string description = "My Disk";
+    auto ret = storageManagerProviderTest_->NotifyVolumeDamaged(volId, fsTypeStr, uuid, path, description);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyVolumeDamaged_001 end";
+}
 } // namespace StorageManager
 } // namespace OHOS
