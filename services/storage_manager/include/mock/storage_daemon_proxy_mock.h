@@ -28,6 +28,7 @@ public:
 
     virtual int32_t Mount(const std::string &volId, uint32_t flags) override;
     virtual int32_t UMount(const std::string &volId) override;
+    virtual int32_t TryToFix(const std::string &volId, uint32_t flags) override;
     virtual int32_t Check(const std::string &volId) override;
     virtual int32_t Format(const std::string &volId, const std::string &fsType) override;
     virtual int32_t Partition(const std::string &diskId, int32_t type) override;
