@@ -35,6 +35,7 @@ public:
 
     int32_t Mount(std::string volumeId, int32_t flag);
     int32_t Unmount(std::string volumeId);
+    int32_t TryToFix(std::string volumeId, int32_t flag);
     int32_t Check(std::string volumeId);
     int32_t Partition(std::string diskId, int32_t type);
     int32_t Format(std::string volumeId, std::string type);

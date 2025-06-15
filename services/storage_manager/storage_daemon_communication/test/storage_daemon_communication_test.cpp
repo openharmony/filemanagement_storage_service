@@ -555,6 +555,30 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Unmount_0000, test
 }
 
 /**
+ * @tc.number: SUB_STORAGE_Daemon_communication_TryToFix_0000
+ * @tc.name: Daemon_communication_TryToFix_0000
+ * @tc.desc: Test function of TryToFix interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_TryToFix_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_TryToFix_0000 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t result = -1;
+    std::string volumeId = "vol-2-1";
+    int32_t flag = 1;
+    if (sdCommunication != nullptr) {
+        result = sdCommunication->TryToFix(volumeId, flag);
+    }
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_TryToFix_0000 SUCCESS";
+}
+
+/**
  * @tc.number: SUB_STORAGE_Daemon_communication_Check_0000
  * @tc.name: Daemon_communication_Check_0000
  * @tc.desc: Test function of Check interface for SUCCESS.

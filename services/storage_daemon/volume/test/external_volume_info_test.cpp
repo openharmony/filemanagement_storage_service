@@ -143,6 +143,94 @@ HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoUMount
 }
 
 /**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoTryToFix_001
+ * @tc.desc: Verify the DoTryToFix function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoTryToFix_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoTryToFix_001 start";
+
+    ExternalVolumeInfoMock mock;
+    ExternalVolumeInfo vol;
+
+    auto ret = vol.DoTryToFix();
+    EXPECT_EQ(ret, E_DOCHECK_MOUNT);
+
+    mock.fsType_ = "ntfs";
+    EXPECT_CALL(mock, DoFix4Ntfs()).Times(1).WillOnce(testing::Return(E_VOL_FIX_FAILED));
+    ret = mock.DoFix4Ntfs();
+    EXPECT_EQ(ret, E_VOL_FIX_FAILED);
+    ret = mock.DoTryToFix();
+    EXPECT_EQ(ret, E_OK);
+
+    mock.fsType_ = "exfat";
+    EXPECT_CALL(mock, DoFix4Exfat()).Times(1).WillOnce(testing::Return(E_VOL_FIX_FAILED));
+    ret = mock.DoFix4Exfat();
+    EXPECT_EQ(ret, E_VOL_FIX_FAILED);
+    EXPECT_CALL(mock, DoFix4Exfat()).Times(1).WillOnce(testing::Return((E_OK)));
+    ret = mock.DoFix4Exfat();
+    EXPECT_TRUE(ret == (E_OK));
+
+    
+    mock.fsType_ = "vfat";
+    EXPECT_CALL(mock, DoTryToFix()).Times(1).WillOnce(testing::Return(E_VOL_FIX_NOT_SUPPORT));
+    ret = mock.DoTryToFix();
+    EXPECT_EQ(ret, E_VOL_FIX_NOT_SUPPORT);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoTryToFix_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoTryToFix_002
+ * @tc.desc: Verify the DoTryToFix function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoTryToFix_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoTryToFix_002 start";
+    ExternalVolumeInfo vol;
+    vol.fsType_ = "ntfs";
+    dev_t device = MKDEV(156, 600);
+    std::string diskId = "disk-156-600";
+    std::string volId = "vol-156-601";
+    bool isUserdata = false;
+    int32_t ret = vol.Create(volId, diskId, device, isUserdata);
+
+    EXPECT_EQ(ret, E_OK);
+    ret = vol.Check();
+    EXPECT_EQ(ret, E_CHECK);
+    ret = vol.Destroy();
+    EXPECT_EQ(ret, E_OK);
+
+    ExternalVolumeInfoMock mock;
+
+    EXPECT_CALL(mock, DoTryToFix()).Times(1).WillOnce(testing::Return(E_OK));
+    ret = mock.DoTryToFix();
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoTryToFix_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoTryToFix_003
+ * @tc.desc: Verify the DoTryToFix function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(ExternalVolumeInfoTest, Storage_Service_ExternalVolumeInfoTest_DoTryToFix_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoTryToFix_003 start";
+    ExternalVolumeInfo vol;
+    vol.fsType_ = "fat32";
+
+    int32_t ret = vol.DoTryToFix();
+    EXPECT_EQ(ret, E_DOCHECK_MOUNT);
+    GTEST_LOG_(INFO) << "Storage_Service_ExternalVolumeInfoTest_DoTryToFix_003 end";
+}
+
+/**
  * @tc.name: Storage_Service_ExternalVolumeInfoTest_DoCheck_001
  * @tc.desc: Verify the DoCheck function.
  * @tc.type: FUNC

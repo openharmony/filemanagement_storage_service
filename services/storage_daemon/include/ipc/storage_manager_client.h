@@ -31,6 +31,7 @@ public:
 
     int32_t NotifyVolumeCreated(std::shared_ptr<VolumeInfo> info);
     int32_t NotifyVolumeMounted(std::shared_ptr<VolumeInfo> volumeInfo);
+    int32_t NotifyVolumeDamaged(std::shared_ptr<VolumeInfo> volumeInfo);
     int32_t NotifyVolumeStateChanged(std::string volId, StorageManager::VolumeState state);
 
     int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
