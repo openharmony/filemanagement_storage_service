@@ -762,8 +762,9 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateShareFile_00
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     StorageFileRawData fileRawData;
     fileRawData.ownedData = "file1";
+    const char* buffer = "file1";
     fileRawData.size = fileRawData.ownedData.size();
-    fileRawData.data = fileRawData.ownedData.data();
+    fileRawData.RawDataCpy(static_cast<const void*>(buffer));
     uint32_t tokenId = 0;
     uint32_t flag = 0;
     std::vector<int32_t> funcResult;
@@ -783,8 +784,9 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_DeleteShareFile_00
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
     StorageFileRawData fileRawData;
     fileRawData.ownedData = "file1";
+    const char* buffer = "file1";
     fileRawData.size = fileRawData.ownedData.size();
-    fileRawData.data = fileRawData.ownedData.data();
+    fileRawData.RawDataCpy(static_cast<const void*>(buffer));
     uint32_t tokenId = 0;
     int32_t ret = storageDaemonProviderTest_->DeleteShareFile(tokenId, fileRawData);
 
@@ -1030,7 +1032,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ResetSecretWithRec
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ResetSecretWithRecoveryKey_001 end";
 }
- 
+
 /**
  * @tc.name: StorageDaemonProviderTest_TryToFix_001
  * @tc.desc: Verify the TryToFix function.
