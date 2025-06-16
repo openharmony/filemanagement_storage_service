@@ -182,7 +182,7 @@ ohos_unittest("storage_daemon_provider_test") {
     debug = false
     blocklist = "${storage_service_path}/cfi_blocklist.txt"
   }
-  module_out_path = "storage_service/storage_daemon"
+  module_out_path = "storage_service/storage_service/storage_daemon"
 
   defines = [
     "STORAGE_LOG_TAG = \"StorageDaemon\"",
@@ -256,8 +256,7 @@ ohos_unittest("storage_daemon_provider_test") {
     "ipc:ipc_single",
     "ipc:libdbinder",
     "safwk:system_ability_fwk",
-    "samgr:samgr_proxy",
-    "crypto_framework:crypto_framework_lib",
+    "samgr:samgr_proxy"
   ]
   cflags_cc = [ "--coverage" ]
   ldflags = [ "--coverage" ]
