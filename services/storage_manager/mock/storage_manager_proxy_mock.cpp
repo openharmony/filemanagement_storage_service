@@ -271,7 +271,7 @@ int32_t StorageManagerProxy::QueryUsbIsInUse(const std::string &diskPath, bool &
     return E_OK;
 }
 
-int32_t StorageManagerProxy::CreateShareFile(const std::vector<std::string> &uriList,
+int32_t StorageManagerProxy::CreateShareFile(const StorageFileRawData &uriList,
                                              uint32_t tokenId,
                                              uint32_t flag,
                                              std::vector<int32_t> &funcResult)
@@ -280,16 +280,16 @@ int32_t StorageManagerProxy::CreateShareFile(const std::vector<std::string> &uri
     return E_OK;
 }
 
-int32_t StorageManagerProxy::DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList)
+int32_t StorageManagerProxy::DeleteShareFile(uint32_t tokenId, const StorageFileRawData &uriList)
 {
     return E_OK;
 }
+
 int32_t StorageManagerProxy::SetBundleQuota(const std::string &bundleName, int32_t uid,
     const std::string &bundleDataDirPath, int32_t limitSizeMb)
 {
     return E_OK;
 }
-
 
 int32_t StorageManagerProxy::GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
     const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes,

@@ -289,20 +289,22 @@ public:
         return E_OK;
     }
 
-    std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList,
-                                                 uint32_t tokenId, uint32_t flag) override
+    std::vector<int32_t> CreateShareFile(const StorageFileRawData &uriList,
+        uint32_t tokenId, uint32_t flag) override
     {
         return std::vector<int32_t>{E_OK};
     }
 
-    int32_t DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList) override
+    int32_t DeleteShareFile(uint32_t tokenId, const StorageFileRawData &uriList) override
     {
         return E_OK;
     }
+
     int32_t UpdateMemoryPara(int32_t size, int32_t &oldSize) override
     {
         return E_OK;
     }
+
     int32_t GetBundleStatsForIncrease(uint32_t userId,
                                       const std::vector<std::string> &bundleNames,
                                       const std::vector<int64_t> &incrementalBackTimes,
@@ -311,15 +313,18 @@ public:
     {
         return E_OK;
     }
+
     int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false) override
     {
         return E_OK;
     }
+
     int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
                              const std::string &uuid) override
     {
         return E_OK;
     }
+
     int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path, const bool isBadRemove) override
     {
         return E_OK;

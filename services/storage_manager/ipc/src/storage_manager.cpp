@@ -716,19 +716,19 @@ int32_t StorageManager::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 #endif
 }
 
-std::vector<int32_t> StorageManager::CreateShareFile(const std::vector<std::string> &uriList,
+std::vector<int32_t> StorageManager::CreateShareFile(const StorageFileRawData &rawData,
     uint32_t tokenId, uint32_t flag)
 {
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    return sdCommunication->CreateShareFile(uriList, tokenId, flag);
+    return sdCommunication->CreateShareFile(rawData, tokenId, flag);
 }
 
-int32_t StorageManager::DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList)
+int32_t StorageManager::DeleteShareFile(uint32_t tokenId, const StorageFileRawData &rawData)
 {
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    return sdCommunication->DeleteShareFile(tokenId, uriList);
+    return sdCommunication->DeleteShareFile(tokenId, rawData);
 }
 
 int32_t StorageManager::SetBundleQuota(const std::string &bundleName, int32_t uid,

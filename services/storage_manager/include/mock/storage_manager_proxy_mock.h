@@ -107,11 +107,11 @@ public:
     int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path, bool isBadRemove) override;
 
     // app file share api
-    int32_t CreateShareFile(const std::vector<std::string> &uriList,
+    int32_t CreateShareFile(const StorageFileRawData &rawData,
                             uint32_t tokenId,
                             uint32_t flag,
                             std::vector<int32_t> &funcResult) override;
-    int32_t DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList) override;
+    int32_t DeleteShareFile(uint32_t tokenId, const StorageFileRawData &rawData) override;
 
     int32_t SetBundleQuota(const std::string &bundleName, int32_t uid, const std::string &bundleDataDirPath,
         int32_t limitSizeMb) override;

@@ -20,6 +20,7 @@
 #include "storage_manager.h"
 #include "storage_manager_stub.h"
 #include "system_ability.h"
+#include "storage_file_raw_data.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -125,11 +126,11 @@ public:
     int32_t ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key) override;
 
     // app file share api
-    int32_t CreateShareFile(const std::vector<std::string> &uriList,
+    int32_t CreateShareFile(const StorageFileRawData &rawData,
                             uint32_t tokenId,
                             uint32_t flag,
                             std::vector<int32_t> &funcResult) override;
-    int32_t DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList) override;
+    int32_t DeleteShareFile(uint32_t tokenId, const StorageFileRawData &rawData) override;
 
     int32_t SetBundleQuota(const std::string &bundleName,
                            int32_t uid,

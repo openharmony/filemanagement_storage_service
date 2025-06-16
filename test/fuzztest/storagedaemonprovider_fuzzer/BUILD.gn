@@ -26,7 +26,6 @@ ohos_fuzztest("StorageDaemonProviderFuzzTest") {
     "${storage_daemon_path}/include/quota",
     "${storage_daemon_path}/include/user",
     "${storage_daemon_path}/include/utils",
-
     "${storage_interface_path}/innerkits/storage_manager/native",
   ]
   cflags = [
@@ -45,6 +44,7 @@ ohos_fuzztest("StorageDaemonProviderFuzzTest") {
     "${storage_daemon_path}/user/src/user_manager.cpp",
     "${storage_daemon_path}/utils/string_utils.cpp",
     "${storage_daemon_path}/observer/appstate_observer.cpp",
+    "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
     "${storage_service_path}/test/fuzztest/storagedaemonprovider_fuzzer/storagedaemonprovider_fuzzer.cpp",
   ]
 

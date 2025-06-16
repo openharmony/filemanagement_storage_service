@@ -524,7 +524,7 @@ void SdDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
     DelayedSingleton<StorageDaemonCommunication>::GetInstance()->ForceLockUserScreen();
 }
 
-std::vector<int32_t> StorageDaemonCommunication::CreateShareFile(const std::vector<std::string> &uriList,
+std::vector<int32_t> StorageDaemonCommunication::CreateShareFile(const StorageFileRawData &rawData,
                                                                  uint32_t tokenId, uint32_t flag)
 {
     LOGI("enter");
@@ -538,11 +538,14 @@ std::vector<int32_t> StorageDaemonCommunication::CreateShareFile(const std::vect
         return std::vector<int32_t>{err};
     }
     std::vector<int32_t> funcResult;
-    storageDaemon_->CreateShareFile(uriList, tokenId, flag, funcResult);
+    int32_t rawDataSize = static_cast<int32_t>(rawData.size);
+    LOGI("StorageDaemonCommunication::CreateShareFile start. file size is %{public}d", rawDataSize);
+    storageDaemon_->CreateShareFile(rawData, tokenId, flag, funcResult);
+    LOGI("StorageDaemonCommunication::CreateShareFile end. result is %{public}zu", funcResult.size());
     return funcResult;
 }
 
-int32_t StorageDaemonCommunication::DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList)
+int32_t StorageDaemonCommunication::DeleteShareFile(uint32_t tokenId, const StorageFileRawData &rawData)
 {
     LOGI("enter");
     int32_t err = Connect();
@@ -554,7 +557,7 @@ int32_t StorageDaemonCommunication::DeleteShareFile(uint32_t tokenId, const std:
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->DeleteShareFile(tokenId, uriList);
+    return storageDaemon_->DeleteShareFile(tokenId, rawData);
 }
 
 int32_t StorageDaemonCommunication::SetBundleQuota(const std::string &bundleName, int32_t uid,

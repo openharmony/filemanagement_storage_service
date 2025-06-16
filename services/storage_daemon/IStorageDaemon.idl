@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+rawdata OHOS.StorageManager.StorageFileRawData;
 interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 1] void Shutdown();
      [ipccode 2] void Mount([in] String volId, [in] unsigned int flags);
@@ -51,11 +52,9 @@ interface OHOS.StorageDaemon.IStorageDaemon{
                                         [in] unsigned char[] token,[in] unsigned char[] secret);
      [ipccode 39] void SetRecoverKey([in] unsigned char[] key);
      // app file share api
-     [ipcincapacity 131071, ipcoutcapacity 131071, ipccode 24] int[] CreateShareFile([in] String[] uriList,
-                                                                                     [in] unsigned int tokenId,
-                                                                                     [in] unsigned int flag);
-     [ipcincapacity 131071, ipcoutcapacity 131071, oneway, ipccode 25] void DeleteShareFile([in] unsigned int tokenId,
-                                                                                            [in] String[] uriList);
+     [ipccode 24] int[] CreateShareFile([in] StorageFileRawData rawData,
+                                        [in] unsigned int tokenId, [in] unsigned int flag);
+     [oneway, ipccode 25] void DeleteShareFile([in] unsigned int tokenId, [in] StorageFileRawData rawData);
      [ipccode 29] void SetBundleQuota([in] String bundleName, [in] int uid, [in] String bundleDataDirPath,
                                       [in] int limitSizeMb);
      [ipccode 30] void GetOccupiedSpace([in] int idType, [in] int id, [out] long size);
