@@ -157,6 +157,29 @@ HWTEST_F(StorageManagerClientTest, StorageManagerClientTest_NotifyVolumeStateCha
 }
 
 /**
+ * @tc.name: StorageManagerClientTest_NotifyVolumeDamaged_001
+ * @tc.desc: Verify the NotifyVolumeDamaged function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerClientTest, StorageManagerClientTest_NotifyVolumeDamaged_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerClientTest_NotifyVolumeDamaged_001 start";
+
+    ASSERT_TRUE(storageManagerClient_ != nullptr);
+
+    std::shared_ptr<VolumeInfo> info = nullptr;
+    auto ret = storageManagerClient_->NotifyVolumeDamaged(info);
+    EXPECT_TRUE(ret == E_PARAMS_INVALID);
+
+    info = std::make_shared<ExternalVolumeInfo>();
+    ret = storageManagerClient_->NotifyVolumeDamaged(info);
+    EXPECT_TRUE(ret == E_OK);
+
+    GTEST_LOG_(INFO) << "StorageManagerClientTest_NotifyVolumeDamaged_001 end";
+}
+
+/**
  * @tc.name: StorageManagerClientTest_NotifyMtpMounted_001
  * @tc.desc: Verify the NotifyMtpMounted function.
  * @tc.type: FUNC

@@ -81,4 +81,5 @@ interface OHOS.StorageDaemon.IStorageDaemon{
                                       [out] String[] outputList, [out] boolean isOccupy);
      [ipccode 48] void MountDisShareFile([in] int userId, [in] OrderedMap<String, String> shareFiles);
      [ipccode 49] void UMountDisShareFile([in] int userId, [in] String networkId);
+     [ipccode 51] void TryToFix([in] String volId, [in] unsigned int flags);
 }

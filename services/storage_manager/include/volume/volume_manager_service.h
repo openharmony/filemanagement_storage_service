@@ -27,8 +27,11 @@ class VolumeManagerService : public NoCopyable {
 public:
     int32_t Mount(std::string volumeId);
     int32_t Unmount(std::string volumeId);
+    int32_t TryToFix(std::string volumeId);
     void OnVolumeCreated(VolumeCore vc);
     void OnVolumeMounted(std::string volumeId, const std::string &fsTypeStr, std::string fsUuid,
+        std::string path, std::string description);
+    void OnVolumeDamaged(std::string volumeId, const std::string &fsTypeStr, std::string fsUuid,
         std::string path, std::string description);
     void OnVolumeStateChanged(std::string volumeId, VolumeState state);
     std::vector<VolumeExternal> GetAllVolumes();

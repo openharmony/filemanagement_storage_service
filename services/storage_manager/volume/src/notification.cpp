@@ -68,6 +68,11 @@ void Notification::NotifyVolumeChange(VolumeState notifyCode, std::shared_ptr<Vo
             wantParams.SetParam("volumeState", AAFwk::Integer::Box(EJECTING));
             want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_VOLUME_EJECT);
             break;
+        case VolumeState::DAMAGED:
+            LOGI("notifycode: DeskDamaged, id:%{public}s", volume->GetId().c_str());
+            wantParams.SetParam("volumeState", AAFwk::Integer::Box(DAMAGED));
+            want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_DISK_UNMOUNTABLE);
+            break;
         default: {
             break;
         }
