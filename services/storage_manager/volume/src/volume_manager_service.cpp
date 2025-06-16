@@ -94,6 +94,39 @@ void VolumeManagerService::OnVolumeMounted(std::string volumeId, const std::stri
     VolumeStateNotify(VolumeState::MOUNTED, volumePtr);
 }
 
+void VolumeManagerService::OnVolumeDamaged(std::string volumeId, const std::string &fsTypeStr, std::string fsUuid,
+                                           std::string path, std::string description)
+{
+    if (!volumeMap_.Contains(volumeId)) {
+        LOGE("VolumeManagerService::OnVolumeDamaged volumeId %{public}s not exists", volumeId.c_str());
+        return;
+    }
+    std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeId);
+    if (volumePtr == nullptr) {
+        LOGE("volumePtr is nullptr for volumeId");
+        return;
+    }
+    volumePtr->SetFsType(volumePtr->GetFsTypeByStr(fsTypeStr));
+    volumePtr->SetFsUuid(fsUuid);
+    volumePtr->SetPath(path);
+    std::string des = description;
+    auto disk = DelayedSingleton<DiskManagerService>::GetInstance()->GetDiskById(volumePtr->GetDiskId());
+    if (disk != nullptr) {
+        if (des == "") {
+            if (disk->GetFlag() == SD_FLAG) {
+                des = "MySDCard";
+            } else if (disk->GetFlag() == USB_FLAG) {
+                des = "MyUSB";
+            } else {
+                des = "Default";
+            }
+        }
+        volumePtr->SetFlags(disk->GetFlag());
+    }
+    volumePtr->SetDescription(des);
+    VolumeStateNotify(VolumeState::DAMAGED, volumePtr);
+}
+
 int32_t VolumeManagerService::Mount(std::string volumeId)
 {
     if (!volumeMap_.Contains(volumeId)) {
@@ -148,6 +181,29 @@ int32_t VolumeManagerService::Unmount(std::string volumeId)
         volumePtr->Reset();
     } else {
         volumePtr->SetState(VolumeState::MOUNTED);
+    }
+    return result;
+}
+
+int32_t VolumeManagerService::TryToFix(std::string volumeId)
+{
+    if (!volumeMap_.Contains(volumeId)) {
+        LOGE("VolumeManagerService::TryToFix volumeId %{public}s not exists", volumeId.c_str());
+        return E_NON_EXIST;
+    }
+    std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeId);
+    if (volumePtr == nullptr) {
+        LOGE("volumePtr is nullptr for volumeId");
+        return E_VOLUMEEX_IS_NULLPTR;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t result = Check(volumePtr->GetId());
+    if (result == E_OK) {
+        result = sdCommunication->TryToFix(volumeId, 0);
+    } else {
+        volumePtr->Reset();
+        StorageRadar::ReportVolumeOperation("VolumeManagerService::DAMAGED", result);
     }
     return result;
 }

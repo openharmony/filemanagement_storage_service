@@ -132,6 +132,8 @@ int32_t VolumeManager::Mount(const std::string volId, uint32_t flags)
     int32_t checkRet = info->DoTryToCheck();
     if (checkRet == E_VOL_NEED_FIX) {
         LOGE("external volume maybe damage");
+        StorageManagerClient client;
+        checkRet = client.NotifyVolumeDamaged(info);
     }
 
     int32_t err = info->Mount(flags);

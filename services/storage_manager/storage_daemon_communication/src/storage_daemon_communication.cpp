@@ -196,6 +196,21 @@ int32_t StorageDaemonCommunication::Unmount(std::string volumeId)
     return storageDaemon_->UMount(volumeId);
 }
 
+int32_t StorageDaemonCommunication::TryToFix(std::string volumeId, int32_t flag)
+{
+    LOGI("StorageDaemonCommunication::TryToFix start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::TryToFix connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->TryToFix(volumeId, flag);
+}
+
 int32_t StorageDaemonCommunication::Check(std::string volumeId)
 {
     LOGI("StorageDaemonCommunication::check start");

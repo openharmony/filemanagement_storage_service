@@ -1024,6 +1024,22 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ResetSecretWithRec
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ResetSecretWithRecoveryKey_001 end";
 }
+ 
+/**
+ * @tc.name: StorageDaemonProviderTest_TryToFix_001
+ * @tc.desc: Verify the TryToFix function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_TryToFix_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_TryToFix_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string volId = "vol-1-1";
+    int32_t result = storageDaemonProviderTest_->TryToFix(volId, 0);
+    EXPECT_EQ(result, E_NON_EXIST);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_TryToFix_001 end";
+}
 
 /**
  * @tc.name: StorageDaemonProviderTest_MountDisShareFile_001
