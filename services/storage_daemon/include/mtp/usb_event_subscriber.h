@@ -20,6 +20,7 @@
 #include "common_event_manager.h"
 #include "common_event_subscriber.h"
 #include "common_event_support.h"
+#include "cJSON.h"
  
 namespace OHOS {
 namespace StorageDaemon {
@@ -39,6 +40,9 @@ public:
 private:
     void GetValueFromUsbDataInfo(const std::string &jsonStr, uint8_t &devNum, uint32_t &busLoc);
     bool IsMTPDevice(const std::string &jsonStr);
+    std::string toLowerString(const char* str);
+    bool CheckMtpInterface(const cJSON* iface);
+    bool CheckAllInterfaces(const cJSON* configs);
 };
 } // namespace UsbEventSubscriber
 } // namespace OHOS
