@@ -36,6 +36,11 @@ int32_t StorageDaemonProxy::UMount(const std::string &volId)
     return E_OK;
 }
 
+int32_t StorageDaemonProxy::TryToFix(const std::string &volId, uint32_t flags)
+{
+    return E_OK;
+}
+
 int32_t StorageDaemonProxy::Check(const std::string &volId)
 {
     return E_OK;
@@ -192,7 +197,7 @@ int32_t StorageDaemonProxy::MountCryptoPathAgain(uint32_t userId)
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::CreateShareFile(const std::vector<std::string> &uriList,
+int32_t StorageDaemonProxy::CreateShareFile(const StorageFileRawData &rawData,
                                             uint32_t tokenId,
                                             uint32_t flag,
                                             std::vector<int32_t> &funcResult)
@@ -201,7 +206,7 @@ int32_t StorageDaemonProxy::CreateShareFile(const std::vector<std::string> &uriL
     return E_OK;
 }
 
-int32_t StorageDaemonProxy::DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList)
+int32_t StorageDaemonProxy::DeleteShareFile(uint32_t tokenId, const StorageFileRawData &rawData)
 {
     return E_OK;
 }
@@ -271,6 +276,16 @@ int32_t StorageDaemonProxy::UMountFileMgrFuse(int32_t userId, const std::string 
 
 int32_t StorageDaemonProxy::IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
     std::vector<std::string> &outputList, bool &isOccupy)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::UMountDisShareFile(int32_t userId, const std::string &networkId)
 {
     return E_OK;
 }

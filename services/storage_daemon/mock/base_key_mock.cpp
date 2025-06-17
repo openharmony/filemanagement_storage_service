@@ -167,3 +167,11 @@ std::string BaseKey::GetCandidateDir() const
     }
     return IBaseKeyMoc::baseKeyMoc->GetCandidateDir();
 }
+
+int32_t BaseKey::RestoreKey4Nato(const std::string &keyDir, KeyType type)
+{
+    if (IBaseKeyMoc::baseKeyMoc == nullptr) {
+        return -1;
+    }
+    return IBaseKeyMoc::baseKeyMoc->RestoreKey4Nato(keyDir, type);
+}

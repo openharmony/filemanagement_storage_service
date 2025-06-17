@@ -50,8 +50,14 @@ public:
                                 const std::string &path,
                                 const std::string &description) override;
     int32_t NotifyVolumeStateChanged(const std::string& volumeId, uint32_t state) override;
+    int32_t NotifyVolumeDamaged(const std::string &volumeId,
+                                const std::string &fsTypeStr,
+                                const std::string &fsUuid,
+                                const std::string &path,
+                                const std::string &description) override;
     int32_t Mount(const std::string& volumeId) override;
     int32_t Unmount(const std::string& volumeId) override;
+    int32_t TryToFix(const std::string& volumeId) override;
     int32_t GetAllVolumes(std::vector<VolumeExternal> &vecOfVol) override;
     int32_t NotifyDiskCreated(const Disk& disk) override;
     int32_t NotifyDiskDestroyed(const std::string& diskId) override;
@@ -101,11 +107,11 @@ public:
     int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path, bool isBadRemove) override;
 
     // app file share api
-    int32_t CreateShareFile(const std::vector<std::string> &uriList,
+    int32_t CreateShareFile(const StorageFileRawData &rawData,
                             uint32_t tokenId,
                             uint32_t flag,
                             std::vector<int32_t> &funcResult) override;
-    int32_t DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList) override;
+    int32_t DeleteShareFile(uint32_t tokenId, const StorageFileRawData &rawData) override;
 
     int32_t SetBundleQuota(const std::string &bundleName, int32_t uid, const std::string &bundleDataDirPath,
         int32_t limitSizeMb) override;
@@ -125,6 +131,8 @@ public:
     // file lock
     int32_t IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
         std::vector<std::string> &outputList, bool &isOccupy) override;
+    int32_t MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles) override;
+    int32_t UMountDisShareFile(int32_t userId, const std::string &networkId) override;
 private:
     static inline BrokerDelegator<StorageManagerProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

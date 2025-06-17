@@ -28,6 +28,7 @@ public:
         const std::vector<uint8_t> &secret, const std::vector<KeyBlob> &originIv) = 0;
     virtual int SetRecoverKey(const std::vector<uint8_t> &key) = 0;
     virtual int32_t ResetSecretWithRecoveryKey() = 0;
+    virtual bool IsEncryptionEnabled() = 0;
 public:
     static inline std::shared_ptr<IRecoveryManager> recoveryMgrMock = nullptr;
 };
@@ -38,6 +39,7 @@ public:
         const std::vector<uint8_t> &secret, const std::vector<KeyBlob> &originIv));
     MOCK_METHOD1(SetRecoverKey, int(const std::vector<uint8_t> &key));
     MOCK_METHOD0(ResetSecretWithRecoveryKey, int32_t());
+    MOCK_METHOD0(IsEncryptionEnabled, bool());
 };
 }
 }

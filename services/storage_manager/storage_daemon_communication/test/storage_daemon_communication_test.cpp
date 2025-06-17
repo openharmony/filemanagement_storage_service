@@ -296,7 +296,10 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_CreateShareFile_00
 
     uint32_t tokenId = 100;
     uint32_t flag = 3;
-    vector<string> uriList(1, "testcreatefile");
+    StorageFileRawData uriList;
+    uriList.ownedData= "testcreatefile";
+    uriList.size = uriList.ownedData.size();
+    uriList.data = uriList.ownedData.data();
     std::vector<int32_t> result = sdCommunication->CreateShareFile(uriList, tokenId, flag);
     ASSERT_TRUE(!result.empty());
 
@@ -319,8 +322,10 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteShareFile_00
             DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     ASSERT_TRUE(sdCommunication != nullptr);
 
-    std::vector<string> uriList;
-    uriList.push_back("testcreatefile");
+    StorageFileRawData uriList;
+    uriList.ownedData= "testcreatefile";
+    uriList.size = uriList.ownedData.size();
+    uriList.data = uriList.ownedData.data();
     uint32_t tokenId = 100;
     int32_t ret = sdCommunication->DeleteShareFile(tokenId, uriList);
     EXPECT_EQ(ret, E_OK);
@@ -518,6 +523,30 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_Unmount_0000, test
     }
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_Unmount_0000 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_TryToFix_0000
+ * @tc.name: Daemon_communication_TryToFix_0000
+ * @tc.desc: Test function of TryToFix interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_TryToFix_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_TryToFix_0000 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    int32_t result = -1;
+    std::string volumeId = "vol-2-1";
+    int32_t flag = 1;
+    if (sdCommunication != nullptr) {
+        result = sdCommunication->TryToFix(volumeId, flag);
+    }
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_TryToFix_0000 SUCCESS";
 }
 
 /**
@@ -914,4 +943,46 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetLockScreenStatu
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetLockScreenStatus_0000 SUCCESS";
 }
 #endif
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_MountDisShareFile_0000
+ * @tc.name: Daemon_communication_MountDisShareFile_0000
+ * @tc.desc: Test function of MountDisShareFile interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0FG3
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountDisShareFile_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_MountDisShareFile_0000 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    uint32_t userId = 100;
+    std::map<std::string, std::string> shareFiles = {{"/data/sharefile1", "/data/sharefile2"}};
+    int32_t result = sdCommunication->MountDisShareFile(userId, shareFiles);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_MountDisShareFile_0000 SUCCESS";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Daemon_communication_UMountDisShareFile_0000
+ * @tc.name: Daemon_communication_UMountDisShareFile_0000
+ * @tc.desc: Test function of UMountDisShareFile interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR000H0FG3
+ */
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UMountDisShareFile_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_UMountDisShareFile_0000 SUCCESS";
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
+        DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    uint32_t userId = 100;
+    std::string networkId = "sharefile1";
+    int32_t result = sdCommunication->UMountDisShareFile(userId, networkId);
+    EXPECT_EQ(result, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_UMountDisShareFile_0000 SUCCESS";
+}
 } // namespace

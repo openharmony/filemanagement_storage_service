@@ -20,6 +20,7 @@
 #include "storage_manager.h"
 #include "storage_manager_stub.h"
 #include "system_ability.h"
+#include "storage_file_raw_data.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -59,10 +60,16 @@ public:
                                 const std::string &fsUuid,
                                 const std::string &path,
                                 const std::string &description) override;
+    int32_t NotifyVolumeDamaged(const std::string &volumeId,
+                                const std::string &fsTypeStr,
+                                const std::string &fsUuid,
+                                const std::string &path,
+                                const std::string &description) override;
     int32_t NotifyVolumeStateChanged(const std::string &volumeId, uint32_t state) override;
 
     int32_t Mount(const std::string &volumeId) override;
     int32_t Unmount(const std::string &volumeId) override;
+    int32_t TryToFix(const std::string &volumeId) override;
 
     int32_t GetAllVolumes(std::vector<VolumeExternal> &vecOfVol) override;
 
@@ -119,11 +126,11 @@ public:
     int32_t ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key) override;
 
     // app file share api
-    int32_t CreateShareFile(const std::vector<std::string> &uriList,
+    int32_t CreateShareFile(const StorageFileRawData &rawData,
                             uint32_t tokenId,
                             uint32_t flag,
                             std::vector<int32_t> &funcResult) override;
-    int32_t DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList) override;
+    int32_t DeleteShareFile(uint32_t tokenId, const StorageFileRawData &rawData) override;
 
     int32_t SetBundleQuota(const std::string &bundleName,
                            int32_t uid,
@@ -153,7 +160,8 @@ public:
                            bool &isOccupy) override;
     // reset user event record api
     void ResetUserEventRecord(int32_t userId);
-
+    int32_t MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles) override;
+    int32_t UMountDisShareFile(int32_t userId, const std::string &networkId) override;
 private:
     StorageManagerProvider();
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;

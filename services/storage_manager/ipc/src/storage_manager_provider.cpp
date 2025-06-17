@@ -286,6 +286,18 @@ int32_t StorageManagerProvider::NotifyVolumeMounted(const std::string &volumeId,
     return StorageManager::GetInstance()->NotifyVolumeMounted(volumeId, fsTypeStr, fsUuid, path, description);
 }
 
+int32_t StorageManagerProvider::NotifyVolumeDamaged(const std::string &volumeId,
+                                                    const std::string &fsTypeStr,
+                                                    const std::string &fsUuid,
+                                                    const std::string &path,
+                                                    const std::string &description)
+{
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    return StorageManager::GetInstance()->NotifyVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
+}
+
 int32_t StorageManagerProvider::NotifyVolumeStateChanged(const std::string &volumeId, uint32_t state)
 {
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
@@ -308,6 +320,14 @@ int32_t StorageManagerProvider::Unmount(const std::string &volumeId)
         return E_PERMISSION_DENIED;
     }
     return StorageManager::GetInstance()->Unmount(volumeId);
+}
+
+int32_t StorageManagerProvider::TryToFix(const std::string &volumeId)
+{
+    if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
+        return E_PERMISSION_DENIED;
+    }
+    return StorageManager::GetInstance()->TryToFix(volumeId);
 }
 
 int32_t StorageManagerProvider::GetAllVolumes(std::vector<VolumeExternal> &vecOfVol)
@@ -566,7 +586,7 @@ int32_t StorageManagerProvider::UpdateKeyContext(uint32_t userId, bool needRemov
     return StorageManager::GetInstance()->UpdateKeyContext(userId, needRemoveTmpKey);
 }
 
-int32_t StorageManagerProvider::CreateShareFile(const std::vector<std::string> &uriList,
+int32_t StorageManagerProvider::CreateShareFile(const StorageFileRawData &rawData,
                                                 uint32_t tokenId,
                                                 uint32_t flag,
                                                 std::vector<int32_t> &funcResult)
@@ -574,16 +594,19 @@ int32_t StorageManagerProvider::CreateShareFile(const std::vector<std::string> &
     if (!CheckClientPermissionForShareFile()) {
         return E_PERMISSION_DENIED;
     }
-    funcResult = StorageManager::GetInstance()->CreateShareFile(uriList, tokenId, flag);
+    int32_t rawDataSize = static_cast<int32_t>(rawData.size);
+    LOGI("StorageManagerProvider::CreateShareFile start. file size is %{public}d", rawDataSize);
+    funcResult = StorageManager::GetInstance()->CreateShareFile(rawData, tokenId, flag);
+    LOGI("StorageManagerProvider::CreateShareFile end. result is %{public}zu", funcResult.size());
     return E_OK;
 }
 
-int32_t StorageManagerProvider::DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList)
+int32_t StorageManagerProvider::DeleteShareFile(uint32_t tokenId, const StorageFileRawData &rawData)
 {
     if (!CheckClientPermissionForShareFile()) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->DeleteShareFile(tokenId, uriList);
+    return StorageManager::GetInstance()->DeleteShareFile(tokenId, rawData);
 }
 
 int32_t StorageManagerProvider::SetBundleQuota(const std::string &bundleName,
@@ -757,6 +780,26 @@ int32_t StorageManagerProvider::ResetSecretWithRecoveryKey(uint32_t userId,
         return E_PERMISSION_DENIED;
     }
     return StorageManager::GetInstance()->ResetSecretWithRecoveryKey(userId, rkType, key);
+}
+
+int32_t StorageManagerProvider::MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles)
+{
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    if (uid != DFS_UID) {
+        LOGE("MountDisShareFile permissionCheck error, calling uid is %{public}d", uid);
+        return E_PERMISSION_DENIED;
+    }
+    return StorageManager::GetInstance()->MountDisShareFile(userId, shareFiles);
+}
+
+int32_t StorageManagerProvider::UMountDisShareFile(int32_t userId, const std::string &networkId)
+{
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    if (uid != DFS_UID) {
+        LOGE("UMountDisShareFile permissionCheck error, calling uid is %{public}d", uid);
+        return E_PERMISSION_DENIED;
+    }
+    return StorageManager::GetInstance()->UMountDisShareFile(userId, networkId);
 }
 } // namespace StorageManager
 } // namespace OHOS

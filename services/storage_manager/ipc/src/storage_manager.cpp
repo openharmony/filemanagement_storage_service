@@ -264,6 +264,17 @@ int32_t StorageManager::NotifyVolumeMounted(const std::string &volumeId, const s
     return E_OK;
 }
 
+int32_t StorageManager::NotifyVolumeDamaged(const std::string &volumeId, const std::string &fsTypeStr,
+    const std::string &fsUuid, const std::string &path, const std::string &description)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManger::NotifyVolumeDamaged start, fsType is %{public}s.", fsTypeStr.c_str());
+    DelayedSingleton<VolumeManagerService>::GetInstance()->OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path,
+                                                                           description);
+#endif
+    return E_OK;
+}
+
 OHOS::StorageManager::VolumeState StorageManager::UintToState(uint32_t state)
 {
     switch (state) {
@@ -316,6 +327,20 @@ int32_t StorageManager::Unmount(const std::string &volumeId)
     int result = DelayedSingleton<VolumeManagerService>::GetInstance()->Unmount(volumeId);
     if (result != E_OK) {
         StorageRadar::ReportVolumeOperation("VolumeManagerService::Unmount", result);
+    }
+    return result;
+#else
+    return E_OK;
+#endif
+}
+
+int32_t StorageManager::TryToFix(const std::string &volumeId)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("StorageManger::TryToFix start");
+    int result = DelayedSingleton<VolumeManagerService>::GetInstance()->TryToFix(volumeId);
+    if (result != E_OK) {
+        StorageRadar::ReportVolumeOperation("VolumeManagerService::TryToFix", result);
     }
     return result;
 #else
@@ -691,19 +716,19 @@ int32_t StorageManager::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
 #endif
 }
 
-std::vector<int32_t> StorageManager::CreateShareFile(const std::vector<std::string> &uriList,
+std::vector<int32_t> StorageManager::CreateShareFile(const StorageFileRawData &rawData,
     uint32_t tokenId, uint32_t flag)
 {
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    return sdCommunication->CreateShareFile(uriList, tokenId, flag);
+    return sdCommunication->CreateShareFile(rawData, tokenId, flag);
 }
 
-int32_t StorageManager::DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList)
+int32_t StorageManager::DeleteShareFile(uint32_t tokenId, const StorageFileRawData &rawData)
 {
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    return sdCommunication->DeleteShareFile(tokenId, uriList);
+    return sdCommunication->DeleteShareFile(tokenId, rawData);
 }
 
 int32_t StorageManager::SetBundleQuota(const std::string &bundleName, int32_t uid,
@@ -817,6 +842,38 @@ int32_t StorageManager::IsFileOccupied(const std::string &path, const std::vecto
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     return sdCommunication->IsFileOccupied(path, inputList, outputList, isOccupy);
+}
+
+int32_t StorageManager::MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles)
+{
+    if (userId <= 0) {
+        LOGE("mount share file, userId %{public}d is invalid.", userId);
+        return E_PARAMS_INVALID;
+    }
+    for (const auto &item : shareFiles) {
+        if (item.first.find("..") != std::string::npos || item.second.find("..") != std::string::npos) {
+            LOGE("mount share file, shareFiles is invalid.");
+            return E_PARAMS_INVALID;
+        }
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->MountDisShareFile(userId, shareFiles);
+}
+
+int32_t StorageManager::UMountDisShareFile(int32_t userId, const std::string &networkId)
+{
+    if (userId <= 0) {
+        LOGE("umount share file, userId %{public}d is invalid.", userId);
+        return E_PARAMS_INVALID;
+    }
+    if (networkId.find("..") != std::string::npos) {
+        LOGE("umount share file, networkId is invalid.");
+        return E_PARAMS_INVALID;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    return sdCommunication->UMountDisShareFile(userId, networkId);
 }
 }
 }

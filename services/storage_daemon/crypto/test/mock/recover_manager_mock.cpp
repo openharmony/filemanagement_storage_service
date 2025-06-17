@@ -57,3 +57,11 @@ int32_t RecoveryManager::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rk
     }
     return IRecoveryManager::recoveryMgrMock->ResetSecretWithRecoveryKey();
 }
+
+bool RecoveryManager::IsEncryptionEnabled()
+{
+    if (IRecoveryManager::recoveryMgrMock == nullptr) {
+        return -1;
+    }
+    return IRecoveryManager::recoveryMgrMock->IsEncryptionEnabled();
+}

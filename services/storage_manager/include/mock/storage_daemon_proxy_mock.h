@@ -28,6 +28,7 @@ public:
 
     virtual int32_t Mount(const std::string &volId, uint32_t flags) override;
     virtual int32_t UMount(const std::string &volId) override;
+    virtual int32_t TryToFix(const std::string &volId, uint32_t flags) override;
     virtual int32_t Check(const std::string &volId) override;
     virtual int32_t Format(const std::string &volId, const std::string &fsType) override;
     virtual int32_t Partition(const std::string &diskId, int32_t type) override;
@@ -77,11 +78,11 @@ public:
                                                const std::vector<uint8_t> &key) override;
 
     // app file share api
-    virtual int32_t CreateShareFile(const std::vector<std::string> &uriList,
+    virtual int32_t CreateShareFile(const StorageFileRawData &rawData,
                                     uint32_t tokenId,
                                     uint32_t flag,
                                     std::vector<int32_t> &funcResult) override;
-    virtual int32_t DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList) override;
+    virtual int32_t DeleteShareFile(uint32_t tokenId, const StorageFileRawData &rawData) override;
 
     virtual int32_t SetBundleQuota(const std::string &bundleName, int32_t uid,
         const std::string &bundleDataDirPath, int32_t limitSizeMb) override;
@@ -101,6 +102,8 @@ public:
     // file lock
     virtual int32_t IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
         std::vector<std::string> &outputList, bool &isOccupy) override;
+    virtual int32_t MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles) override;
+    virtual int32_t UMountDisShareFile(int32_t userId, const std::string &networkId) override;
 private:
     static inline BrokerDelegator<StorageDaemonProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

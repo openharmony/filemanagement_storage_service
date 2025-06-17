@@ -19,6 +19,7 @@
 #include <memory>
 
 #include "key_blob.h"
+#include "storage_service_constant.h"
 #include "storage_service_errno.h"
 
 namespace OHOS {
@@ -43,6 +44,7 @@ public:
     virtual bool KeyDescIsEmpty() = 0;
     virtual std::string GetKeyDir() = 0;
     virtual std::string GetCandidateDir() = 0;
+    virtual int32_t RestoreKey4Nato(const std::string &keyDir, KeyType type) = 0;
 public:
     static inline std::shared_ptr<IBaseKeyMoc> baseKeyMoc = nullptr;
 };
@@ -65,6 +67,7 @@ public:
     MOCK_METHOD2(SaveKeyBlob, bool(const KeyBlob &blob, const std::string &path));
     MOCK_METHOD3(LoadKeyBlob, bool(KeyBlob &blob, const std::string &path, const uint32_t size));
     MOCK_METHOD0(GetCandidateDir, std::string());
+    MOCK_METHOD2(RestoreKey4Nato, int32_t(const std::string &keyDir, KeyType type));
 };
 }
 }

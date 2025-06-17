@@ -760,11 +760,15 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateShareFile_00
 {
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateShareFile_001 start";
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::vector<std::string> uriList;
+    StorageFileRawData fileRawData;
+    fileRawData.ownedData = "file1";
+    const char* buffer = "file1";
+    fileRawData.size = fileRawData.ownedData.size();
+    fileRawData.RawDataCpy(static_cast<const void*>(buffer));
     uint32_t tokenId = 0;
     uint32_t flag = 0;
     std::vector<int32_t> funcResult;
-    int32_t ret = storageDaemonProviderTest_->CreateShareFile(uriList, tokenId, flag, funcResult);
+    int32_t ret = storageDaemonProviderTest_->CreateShareFile(fileRawData, tokenId, flag, funcResult);
     ASSERT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateShareFile_001 end";
 }
@@ -778,9 +782,13 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_DeleteShareFile_00
 {
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeleteShareFile_001 start";
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::vector<std::string> uriList;
+    StorageFileRawData fileRawData;
+    fileRawData.ownedData = "file1";
+    const char* buffer = "file1";
+    fileRawData.size = fileRawData.ownedData.size();
+    fileRawData.RawDataCpy(static_cast<const void*>(buffer));
     uint32_t tokenId = 0;
-    int32_t ret = storageDaemonProviderTest_->DeleteShareFile(tokenId, uriList);
+    int32_t ret = storageDaemonProviderTest_->DeleteShareFile(tokenId, fileRawData);
 
     EXPECT_EQ(ret, -EINVAL);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeleteShareFile_001 end";
@@ -999,6 +1007,56 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ResetSecretWithRec
     int32_t result = storageDaemonProviderTest_->ResetSecretWithRecoveryKey(StorageTest::USER_ID1, rkType, key);
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ResetSecretWithRecoveryKey_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_TryToFix_001
+ * @tc.desc: Verify the TryToFix function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_TryToFix_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_TryToFix_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string volId = "vol-1-1";
+    int32_t result = storageDaemonProviderTest_->TryToFix(volId, 0);
+    EXPECT_EQ(result, E_NON_EXIST);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_TryToFix_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_MountDisShareFile_001
+ * @tc.desc: Verify the MountDisShareFile function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountDisShareFile_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountDisShareFile_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    int32_t userId = 100;
+    std::map<std::string, std::string> shareFiles = {{{"/data/sharefile1", "/data/sharefile2"}}};
+    auto ret = storageDaemonProviderTest_->MountDisShareFile(userId, shareFiles);
+    EXPECT_TRUE(ret == E_NON_EXIST);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountDisShareFile_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_UMountDisShareFile_001
+ * @tc.desc: Verify the UMountDisShareFile function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountDisShareFile_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDisShareFile_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    int32_t userId = 100;
+    std::string networkId = "sharefile1";
+    auto ret = storageDaemonProviderTest_->UMountDisShareFile(userId, networkId);
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDisShareFile_001 end";
 }
 } // namespace StorageDaemon
 } // namespace OHOS

@@ -76,6 +76,28 @@ void RecoveryManagerTest::TearDown(void)
 }
 
 /**
+ * @tc.name: RecoveryManager_IsEncryptionEnabled_001
+ * @tc.desc: Verify the IsEncryptionEnabled function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(RecoveryManagerTest, RecoveryManager_IsEncryptionEnabled_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "RecoveryManager_IsEncryptionEnabled_001 start";
+    g_initializeContext = static_cast<TEEC_ReturnCode>(1);
+    EXPECT_TRUE(RecoveryManager::GetInstance().IsEncryptionEnabled());
+
+    RecoveryManager::GetInstance().isSessionOpened = true;
+    g_invokeCommand = static_cast<TEEC_ReturnCode>(1);
+    EXPECT_TRUE(RecoveryManager::GetInstance().IsEncryptionEnabled());
+
+    RecoveryManager::GetInstance().isSessionOpened = true;
+    g_invokeCommand = TEEC_SUCCESS;
+    EXPECT_TRUE(RecoveryManager::GetInstance().IsEncryptionEnabled());
+    GTEST_LOG_(INFO) << "RecoveryManager_IsEncryptionEnabled_001 end";
+}
+
+/**
  * @tc.name: RecoveryManager_ResetSecretWithRecoveryKeyToTee_001
  * @tc.desc: Verify the ResetSecretWithRecoveryKeyToTee function.
  * @tc.type: FUNC

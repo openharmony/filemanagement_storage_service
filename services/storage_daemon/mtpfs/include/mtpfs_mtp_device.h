@@ -79,7 +79,7 @@ public:
     int DirRemove(const std::string &path);
     int DirReName(const std::string &oldPath, const std::string &newPath);
     const MtpFsTypeDir *DirFetchContent(std::string path);
-
+    int FileMove(const std::string &oldPath, const std::string &newPath);
     int ReName(const std::string &oldPath, const std::string &newPath);
     int GetThumbnail(const std::string &path, char *buf);
     int FileRead(const std::string &path, char *buf, size_t size, off_t offset);
@@ -113,7 +113,6 @@ private:
     bool ConvertErrorCode(LIBMTP_error_number_t err);
     const void HandleDir(LIBMTP_file_t *content, MtpFsTypeDir *dir);
     void HandleDevNum(const std::string &devFile, int &devNo, int rawDevicesCnt, LIBMTP_raw_device_t *rawDevices);
-    int ReNameInner(const std::string &oldPath, const std::string &newPath);
     void ReadEvent();
     static void MtpEventCallback(int ret, LIBMTP_event_t event, uint32_t param, void *data);
     static int MtpProgressCallback(uint64_t const sent, uint64_t const total, void const *const data);

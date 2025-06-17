@@ -27,6 +27,7 @@ public:
 
     MOCK_METHOD2(Mount, int32_t(const std::string &, uint32_t));
     MOCK_METHOD1(UMount, int32_t(const std::string &));
+    MOCK_METHOD2(TryToFix, int32_t(const std::string &, uint32_t));
     MOCK_METHOD1(Check, int32_t(const std::string &));
     MOCK_METHOD2(Format, int32_t(const std::string &, const std::string &));
     MOCK_METHOD2(Partition, int32_t(const std::string &, int32_t));
@@ -52,8 +53,8 @@ public:
     MOCK_METHOD2(UpdateKeyContext, int32_t (uint32_t, bool));
     MOCK_METHOD1(MountCryptoPathAgain, int32_t (uint32_t));
     MOCK_METHOD4(CreateShareFile,
-                 int32_t(const std::vector<std::string> &, uint32_t, uint32_t, std::vector<int32_t> &));
-    MOCK_METHOD2(DeleteShareFile, int32_t (uint32_t, const std::vector<std::string> &));
+                 int32_t(const StorageManager::StorageFileRawData &, uint32_t, uint32_t, std::vector<int32_t> &));
+    MOCK_METHOD2(DeleteShareFile, int32_t (uint32_t, const StorageManager::StorageFileRawData &));
     MOCK_METHOD4(SetBundleQuota, int32_t (const std::string&, int32_t, const std::string&, int32_t));
     MOCK_METHOD3(GetOccupiedSpace, int32_t (int32_t, int32_t, int64_t &));
     MOCK_METHOD1(LockUserScreen, int32_t (uint32_t));
@@ -78,6 +79,8 @@ public:
     MOCK_METHOD1(RemoveDeathRecipient, bool(const sptr<DeathRecipient> &));
     MOCK_METHOD4(IsFileOccupied, int32_t (const std::string &, const std::vector<std::string> &,
         std::vector<std::string> &, bool &));
+    MOCK_METHOD2(MountDisShareFile, int32_t (int32_t, const std::map<std::string, std::string> &));
+    MOCK_METHOD2(UMountDisShareFile, int32_t (int32_t, const std::string &));
 };
 }  // namespace StorageDaemon
 }  // namespace OHOS

@@ -35,6 +35,7 @@ public:
 
     int32_t Mount(std::string volumeId, int32_t flag);
     int32_t Unmount(std::string volumeId);
+    int32_t TryToFix(std::string volumeId, int32_t flag);
     int32_t Check(std::string volumeId);
     int32_t Partition(std::string diskId, int32_t type);
     int32_t Format(std::string volumeId, std::string type);
@@ -79,8 +80,8 @@ public:
     void ForceLockUserScreen();
 
     // app file share api
-    std::vector<int32_t> CreateShareFile(const std::vector<std::string> &uriList, uint32_t tokenId, uint32_t flag);
-    int32_t DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList);
+    std::vector<int32_t> CreateShareFile(const StorageFileRawData &rawData, uint32_t tokenId, uint32_t flag);
+    int32_t DeleteShareFile(uint32_t tokenId, const StorageFileRawData &uriList);
 
     int32_t SetBundleQuota(const std::string &bundleName, int32_t uid, const std::string &bundleDataDirPath,
         int32_t limitSizeMb);
@@ -102,6 +103,8 @@ public:
     // file lock
     int32_t IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
         std::vector<std::string> &outputList, bool &isOccupy);
+    int32_t MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles);
+    int32_t UMountDisShareFile(int32_t userId, const std::string &networkId);
 private:
     sptr<OHOS::StorageDaemon::IStorageDaemon> storageDaemon_;
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;

@@ -30,7 +30,8 @@ enum VolumeState {
     MOUNTED,
     EJECTING,
     REMOVED,
-    BAD_REMOVAL
+    BAD_REMOVAL,
+    DAMAGED,
 };
 class VolumeCore : public Parcelable {
 public:

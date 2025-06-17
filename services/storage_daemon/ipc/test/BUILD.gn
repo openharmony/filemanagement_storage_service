@@ -63,6 +63,7 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/ipc/test/storage_daemon_test.cpp",
     "$ROOT_DIR/quota/quota_manager.cpp",
     "$ROOT_DIR/user/src/mount_manager.cpp",
+    "$ROOT_DIR/user/src/mount_manager_ext.cpp",
     "$ROOT_DIR/user/src/user_manager.cpp",
     "$ROOT_DIR/utils/string_utils.cpp",
     "$ROOT_DIR/utils/test/common/help_utils.cpp",
@@ -70,6 +71,7 @@ ohos_unittest("storage_daemon_test") {
     "$ROOT_DIR/volume/src/process.cpp",
     "$ROOT_DIR/volume/src/volume_info.cpp",
     "$ROOT_DIR/volume/src/volume_manager.cpp",
+    "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
   ]
 
   deps = [
@@ -181,7 +183,7 @@ ohos_unittest("storage_daemon_provider_test") {
     debug = false
     blocklist = "${storage_service_path}/cfi_blocklist.txt"
   }
-  module_out_path = "storage_service/storage_daemon"
+  module_out_path = "storage_service/storage_service/storage_daemon"
 
   defines = [
     "STORAGE_LOG_TAG = \"StorageDaemon\"",
@@ -216,11 +218,13 @@ ohos_unittest("storage_daemon_provider_test") {
     "${storage_daemon_path}/observer/appstate_observer.cpp",
     "${storage_daemon_path}/quota/quota_manager.cpp",
     "${storage_daemon_path}/user/src/mount_manager.cpp",
+    "${storage_daemon_path}/user/src/mount_manager_ext.cpp",
     "${storage_daemon_path}/user/src/user_manager.cpp",
     "${storage_daemon_path}/utils/test/common/help_utils.cpp",
     "${storage_daemon_path}/volume/src/external_volume_info.cpp",
     "${storage_daemon_path}/volume/src/volume_info.cpp",
     "${storage_daemon_path}/volume/src/volume_manager.cpp",
+    "${storage_manager_path}/innerkits_impl/src/storage_file_raw_data.cpp",
   ]
 
   deps = [
@@ -228,6 +232,7 @@ ohos_unittest("storage_daemon_provider_test") {
     "${storage_daemon_path}:storage_daemon_ipc",
     "${storage_daemon_path}/crypto:libsdcrypto",
     "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_header",
+    "${storage_daemon_path}/libfscrypt:libfscryptutils",
   ]
 
   external_deps = [
@@ -253,7 +258,7 @@ ohos_unittest("storage_daemon_provider_test") {
     "ipc:ipc_single",
     "ipc:libdbinder",
     "safwk:system_ability_fwk",
-    "samgr:samgr_proxy",
+    "samgr:samgr_proxy"
   ]
   cflags_cc = [ "--coverage" ]
   ldflags = [ "--coverage" ]

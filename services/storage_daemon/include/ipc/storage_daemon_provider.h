@@ -35,6 +35,7 @@ public:
     virtual int32_t Shutdown() override;
     virtual int32_t Mount(const std::string &volId, uint32_t flags) override;
     virtual int32_t UMount(const std::string &volId) override;
+    virtual int32_t TryToFix(const std::string &volId, uint32_t flags) override;
     virtual int32_t Check(const std::string &volId) override;
     virtual int32_t Format(const std::string &volId, const std::string &fsType) override;
     virtual int32_t Partition(const std::string &diskId, int32_t type) override;
@@ -81,11 +82,11 @@ public:
     virtual int32_t SetRecoverKey(const std::vector<uint8_t> &key) override;
 
     // app file share api
-    virtual int32_t CreateShareFile(const std::vector<std::string> &uriList,
+    virtual int32_t CreateShareFile(const StorageFileRawData &rawData,
                                     uint32_t tokenId,
                                     uint32_t flag,
                                     std::vector<int32_t> &funcResult) override;
-    virtual int32_t DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList) override;
+    virtual int32_t DeleteShareFile(uint32_t tokenId, const StorageFileRawData &uriList) override;
 
     virtual int32_t SetBundleQuota(const std::string &bundleName,
                                    int32_t uid,
@@ -115,6 +116,9 @@ public:
                                    bool &isOccupy) override;
     virtual int32_t
         ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key) override;
+    // cross device
+    virtual int32_t MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles) override;
+    virtual int32_t UMountDisShareFile(int32_t userId, const std::string &networkId) override;
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
     public:
         SystemAbilityStatusChangeListener() = default;
@@ -137,6 +141,7 @@ private:
     std::chrono::time_point<std::chrono::system_clock> lastRadarReportTime_;
     std::map<uint32_t, RadarStatisticInfo>::iterator GetUserStatistics(const uint32_t userId);
     void GetTempStatistics(std::map<uint32_t, RadarStatisticInfo> &statistics);
+    int32_t RawDataToStringVec(const StorageFileRawData &rawData, std::vector<std::string> &stringVec);
 };
 } // namespace StorageDaemon
 } // namespace OHOS

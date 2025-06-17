@@ -51,6 +51,7 @@ enum TaCmdId {
     RK_CMD_ID_GEN_RECOVERY_KEY = 0x1000A003,
     RK_CMD_ID_DECRYPT_CLASS_KEY = 0x1000A008,
     RK_CMD_ID_SET_RK_FOR_PLUGGED_IN_SSD  = 0x1000A011,
+    RK_CMD_ID_GET_FULL_DISK_ENCRYPTION_POLICY = 0x1000A017,
 };
 
 const size_t DEVICE_EL1 = 0;
@@ -76,6 +77,8 @@ public:
     int SetRecoverKey(const std::vector<uint8_t> &key);
     int32_t ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType,
         const std::vector<uint8_t> &key, std::vector<KeyBlob> &originIvs);
+    
+    bool IsEncryptionEnabled();
 
 private:
     RecoveryManager();

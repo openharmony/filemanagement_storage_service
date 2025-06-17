@@ -165,7 +165,18 @@ int32_t StorageManagerProxy::NotifyVolumeStateChanged(const std::string& volumeI
     return E_OK;
 }
 
+int32_t StorageManagerProxy::NotifyVolumeDamaged(const std::string& volumeId, const std::string &fsTypeStr,
+    const std::string& fsUuid, const std::string& path, const std::string& description)
+{
+    return E_OK;
+}
+
 int32_t StorageManagerProxy::Mount(const std::string& volumeId)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::TryToFix(const std::string& volumeId)
 {
     return E_OK;
 }
@@ -260,7 +271,7 @@ int32_t StorageManagerProxy::QueryUsbIsInUse(const std::string &diskPath, bool &
     return E_OK;
 }
 
-int32_t StorageManagerProxy::CreateShareFile(const std::vector<std::string> &uriList,
+int32_t StorageManagerProxy::CreateShareFile(const StorageFileRawData &uriList,
                                              uint32_t tokenId,
                                              uint32_t flag,
                                              std::vector<int32_t> &funcResult)
@@ -269,10 +280,11 @@ int32_t StorageManagerProxy::CreateShareFile(const std::vector<std::string> &uri
     return E_OK;
 }
 
-int32_t StorageManagerProxy::DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList)
+int32_t StorageManagerProxy::DeleteShareFile(uint32_t tokenId, const StorageFileRawData &uriList)
 {
     return E_OK;
 }
+
 int32_t StorageManagerProxy::SetBundleQuota(const std::string &bundleName, int32_t uid,
     const std::string &bundleDataDirPath, int32_t limitSizeMb)
 {
@@ -351,6 +363,16 @@ int32_t StorageManagerProxy::UMountFileMgrFuse(int32_t userId, const std::string
 
 int32_t StorageManagerProxy::IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
     std::vector<std::string> &outputList, bool &isOccupy)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles)
+{
+    return E_OK;
+}
+
+int32_t StorageManagerProxy::UMountDisShareFile(int32_t userId, const std::string &networkId)
 {
     return E_OK;
 }

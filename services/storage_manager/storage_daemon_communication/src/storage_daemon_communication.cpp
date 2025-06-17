@@ -196,6 +196,21 @@ int32_t StorageDaemonCommunication::Unmount(std::string volumeId)
     return storageDaemon_->UMount(volumeId);
 }
 
+int32_t StorageDaemonCommunication::TryToFix(std::string volumeId, int32_t flag)
+{
+    LOGI("StorageDaemonCommunication::TryToFix start");
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::TryToFix connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->TryToFix(volumeId, flag);
+}
+
 int32_t StorageDaemonCommunication::Check(std::string volumeId)
 {
     LOGI("StorageDaemonCommunication::check start");
@@ -509,7 +524,7 @@ void SdDeathRecipient::OnRemoteDied(const wptr<IRemoteObject> &remote)
     DelayedSingleton<StorageDaemonCommunication>::GetInstance()->ForceLockUserScreen();
 }
 
-std::vector<int32_t> StorageDaemonCommunication::CreateShareFile(const std::vector<std::string> &uriList,
+std::vector<int32_t> StorageDaemonCommunication::CreateShareFile(const StorageFileRawData &rawData,
                                                                  uint32_t tokenId, uint32_t flag)
 {
     LOGI("enter");
@@ -523,11 +538,14 @@ std::vector<int32_t> StorageDaemonCommunication::CreateShareFile(const std::vect
         return std::vector<int32_t>{err};
     }
     std::vector<int32_t> funcResult;
-    storageDaemon_->CreateShareFile(uriList, tokenId, flag, funcResult);
+    int32_t rawDataSize = static_cast<int32_t>(rawData.size);
+    LOGI("StorageDaemonCommunication::CreateShareFile start. file size is %{public}d", rawDataSize);
+    storageDaemon_->CreateShareFile(rawData, tokenId, flag, funcResult);
+    LOGI("StorageDaemonCommunication::CreateShareFile end. result is %{public}zu", funcResult.size());
     return funcResult;
 }
 
-int32_t StorageDaemonCommunication::DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList)
+int32_t StorageDaemonCommunication::DeleteShareFile(uint32_t tokenId, const StorageFileRawData &rawData)
 {
     LOGI("enter");
     int32_t err = Connect();
@@ -539,7 +557,7 @@ int32_t StorageDaemonCommunication::DeleteShareFile(uint32_t tokenId, const std:
         LOGE("StorageDaemonCommunication::Connect service nullptr");
         return E_SERVICE_IS_NULLPTR;
     }
-    return storageDaemon_->DeleteShareFile(tokenId, uriList);
+    return storageDaemon_->DeleteShareFile(tokenId, rawData);
 }
 
 int32_t StorageDaemonCommunication::SetBundleQuota(const std::string &bundleName, int32_t uid,
@@ -791,6 +809,35 @@ int32_t StorageDaemonCommunication::IsFileOccupied(const std::string &path, cons
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->IsFileOccupied(path, inputList, outputList, isOccupy);
+}
+
+int32_t StorageDaemonCommunication::MountDisShareFile(int32_t userId,
+    const std::map<std::string, std::string> &shareFiles)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->MountDisShareFile(userId, shareFiles);
+}
+
+int32_t StorageDaemonCommunication::UMountDisShareFile(int32_t userId, const std::string &networkId)
+{
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->UMountDisShareFile(userId, networkId);
 }
 } // namespace StorageManager
 } // namespace OHOS

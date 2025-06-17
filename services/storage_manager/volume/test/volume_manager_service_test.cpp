@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,6 +17,7 @@
 #include <gtest/gtest.h>
 
 #include "volume/volume_manager_service.h"
+#include "disk/disk_manager_service.h"
 #include "volume_core.h"
 #include "storage_service_errno.h"
 
@@ -114,6 +115,63 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_Unmount_0000, testing:
 }
 
 /**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_TryToFix_0001
+ * @tc.name: Volume_manager_service_TryToFix_0001
+ * @tc.desc: Test function of TryToFix interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_TryToFix_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_TryToFix_0001";
+    std::shared_ptr<VolumeManagerService> vmService =
+        DelayedSingleton<VolumeManagerService>::GetInstance();
+    std::string volumeId = "vol-1-2";
+    int32_t fsType = 1;
+    std::string diskId = "disk-1-2";
+    VolumeCore vc(volumeId, fsType, diskId);
+    int32_t result;
+    if (vmService != nullptr) {
+        result = vmService->TryToFix(volumeId);
+    }
+    EXPECT_EQ(result, E_NON_EXIST);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_TryToFix_0001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_TryToFix_0002
+ * @tc.name: Volume_manager_service_TryToFix_0002
+ * @tc.desc: Test function of TryToFix interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_TryToFix_0002, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_TryToFix_0002";
+    std::shared_ptr<VolumeManagerService> vmService =
+        DelayedSingleton<VolumeManagerService>::GetInstance();
+    std::string volumeId = "vol-1-6";
+    int32_t fsType = 1;
+    std::string fsTypeStr = "ntfs";
+    std::string fsUuid = "uuid-1";
+    std::string path = "/";
+    std::string description = "description-1";
+    std::string diskId = "disk-1-6";
+    VolumeCore vc(volumeId, fsType, diskId);
+    vmService->volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
+    int32_t result;
+    if (vmService != nullptr) {
+        result = vmService->TryToFix(volumeId);
+    }
+    EXPECT_EQ(result, E_NON_EXIST);
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_TryToFix_0002";
+}
+
+/**
  * @tc.number: SUB_STORAGE_Volume_manager_service_Unmount_0001
  * @tc.name: Volume_manager_service_Unmount_0001
  * @tc.desc: Test function of Unmount interface for SUCCESS.
@@ -196,6 +254,169 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeMounted_0000, 
         EXPECT_EQ(res, E_NON_EXIST);
     }
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_OnVolumeMounted_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_OnVolumeDamaged_0000
+ * @tc.name: Volume_manager_service_OnVolumeDamaged_0000
+ * @tc.desc: Test function of OnVolumeDamaged interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_OnVolumeDamaged_0000";
+    std::shared_ptr<VolumeManagerService> vmService =
+        DelayedSingleton<VolumeManagerService>::GetInstance();
+    std::string volumeId = "vol-1-5";
+    std::string fsTypeStr = "ntfs";
+    std::string fsUuid = "";
+    std::string path = "";
+    std::string description = "";
+    if (vmService != nullptr) {
+        vmService->OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
+        VolumeExternal ve;
+        int32_t res = vmService->GetVolumeById(volumeId, ve);
+        EXPECT_EQ(res, E_NON_EXIST);
+    }
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_OnVolumeDamaged_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_OnVolumeDamaged_0001
+ * @tc.name: Volume_manager_service_OnVolumeDamaged_0001
+ * @tc.desc: Test function of OnVolumeDamaged interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_OnVolumeDamaged_0001";
+    std::shared_ptr<VolumeManagerService> vmService =
+        DelayedSingleton<VolumeManagerService>::GetInstance();
+    std::shared_ptr<DiskManagerService> dmService =
+        DelayedSingleton<DiskManagerService>::GetInstance();
+    std::string volumeId = "vol-1-6";
+    int32_t fsType = 1;
+    std::string fsTypeStr = "ntfs";
+    std::string fsUuid = "uuid-1";
+    std::string path = "/";
+    std::string description = "description-1";
+    std::string diskId = "disk-1-6";
+
+    int64_t sizeBytes = 1024;
+    std::string vendor = "vendor-6";
+    int32_t flag = 1;
+    Disk disk(diskId, sizeBytes, path, vendor, flag);
+    VolumeCore vc(volumeId, fsType, diskId);
+    ASSERT_TRUE(vmService != nullptr);
+    ASSERT_TRUE(dmService != nullptr);
+
+    auto diskPtr = std::make_shared<Disk>(disk);
+    vmService->volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
+    vmService->OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
+
+    dmService->diskMap_.Insert(diskId, diskPtr);
+    vmService->OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
+    VolumeExternal ve;
+    int32_t res = vmService->GetVolumeById(volumeId, ve);
+    EXPECT_EQ(res, E_OK);
+    vmService->volumeMap_.Clear();
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_OnVolumeDamaged_0001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_OnVolumeDamaged_0002
+ * @tc.name: Volume_manager_service_OnVolumeDamaged_0002
+ * @tc.desc: Test function of OnVolumeDamaged interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0002, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_OnVolumeDamaged_0002";
+    std::shared_ptr<VolumeManagerService> vmService =
+        DelayedSingleton<VolumeManagerService>::GetInstance();
+    std::shared_ptr<DiskManagerService> dmService =
+        DelayedSingleton<DiskManagerService>::GetInstance();
+    std::string volumeId = "vol-1-6";
+    int32_t fsType = 1;
+    std::string fsTypeStr = "ntfs";
+    std::string fsUuid = "uuid-1";
+    std::string path = "/";
+    std::string description = "description-1";
+    std::string diskId = "disk-1-6";
+
+    int64_t sizeBytes = 1024;
+    std::string vendor = "vendor-6";
+    int32_t flag = 2;
+    Disk disk(diskId, sizeBytes, path, vendor, flag);
+    VolumeCore vc(volumeId, fsType, diskId);
+    ASSERT_TRUE(vmService != nullptr);
+    ASSERT_TRUE(dmService != nullptr);
+
+    auto diskPtr = std::make_shared<Disk>(disk);
+    vmService->volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
+    vmService->OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
+
+    dmService->diskMap_.Insert(diskId, diskPtr);
+    vmService->OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
+    VolumeExternal ve;
+    int32_t res = vmService->GetVolumeById(volumeId, ve);
+    EXPECT_EQ(res, E_OK);
+    vmService->volumeMap_.Clear();
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_OnVolumeDamaged_0002";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Volume_manager_service_OnVolumeDamaged_0003
+ * @tc.name: Volume_manager_service_OnVolumeDamaged_0003
+ * @tc.desc: Test function of OnVolumeDamaged interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0003, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_OnVolumeDamaged_0003";
+    std::shared_ptr<VolumeManagerService> vmService =
+        DelayedSingleton<VolumeManagerService>::GetInstance();
+    std::shared_ptr<DiskManagerService> dmService =
+        DelayedSingleton<DiskManagerService>::GetInstance();
+    std::string volumeId = "vol-1-6";
+    int32_t fsType = 1;
+    std::string fsTypeStr = "ntfs";
+    std::string fsUuid = "uuid-1";
+    std::string path = "/";
+    std::string description = "description-1";
+    std::string diskId = "disk-1-6";
+
+    int64_t sizeBytes = 1024;
+    std::string vendor = "vendor-6";
+    int32_t flag = 3;
+    Disk disk(diskId, sizeBytes, path, vendor, flag);
+    VolumeCore vc(volumeId, fsType, diskId);
+    ASSERT_TRUE(vmService != nullptr);
+    ASSERT_TRUE(dmService != nullptr);
+
+    auto diskPtr = std::make_shared<Disk>(disk);
+    vmService->volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
+    vmService->OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
+
+    dmService->diskMap_.Insert(diskId, diskPtr);
+    vmService->OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
+    VolumeExternal ve;
+    int32_t res = vmService->GetVolumeById(volumeId, ve);
+    EXPECT_EQ(res, E_OK);
+    vmService->volumeMap_.Clear();
+    GTEST_LOG_(INFO) << "VolumeManagerServiceTest-end Volume_manager_service_OnVolumeDamaged_0003";
 }
 
 /**

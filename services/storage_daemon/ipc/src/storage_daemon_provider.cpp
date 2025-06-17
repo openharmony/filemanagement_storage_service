@@ -56,6 +56,7 @@ constexpr unsigned int RADAR_REPORT_STATISTIC_INTERVAL_MINUTES = 1440;
 constexpr unsigned int USER0ID = 0;
 constexpr unsigned int USER100ID = 100;
 constexpr unsigned int RADAR_STATISTIC_THREAD_WAIT_SECONDS = 60;
+constexpr size_t MAX_IPC_RAW_DATA_SIZE = 128 * 1024 * 1024; // 128M
 
 std::map<uint32_t, RadarStatisticInfo>::iterator StorageDaemonProvider::GetUserStatistics(const uint32_t userId)
 {
@@ -181,6 +182,21 @@ int32_t StorageDaemonProvider::UMount(const std::string &volId)
     } else {
         AuditLog storageAuditLog = {false, "SUCCESS TO UMount", "DEL", "UMount", 1, "SUCCESS"};
         HiAudit::GetInstance().Write(storageAuditLog);
+    }
+    return ret;
+#else
+    return E_OK;
+#endif
+}
+
+int32_t StorageDaemonProvider::TryToFix(const std::string &volId, uint32_t flags)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    LOGI("Handle TryToFix");
+    int32_t ret = VolumeManager::Instance()->TryToFix(volId, flags);
+    if (ret != E_OK) {
+        LOGW("TryToFix failed, please check");
+        StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::TryToFix", ret);
     }
     return ret;
 #else
@@ -560,19 +576,56 @@ int32_t StorageDaemonProvider::SetRecoverKey(const std::vector<uint8_t> &key)
     return StorageDaemon::GetInstance()->SetRecoverKey(key);
 }
 
-int32_t StorageDaemonProvider::CreateShareFile(const std::vector<std::string> &uriList,
+int32_t StorageDaemonProvider::RawDataToStringVec(const StorageFileRawData &rawData,
+    std::vector<std::string> &stringVec)
+{
+    if (rawData.data == nullptr) {
+        LOGE("rawData is null");
+        return ERR_DEAD_OBJECT;
+    }
+    if (rawData.size == 0 || rawData.size > MAX_IPC_RAW_DATA_SIZE) {
+        LOGE("size invalid: %{public}u", rawData.size);
+        return ERR_DEAD_OBJECT;
+    }
+    std::stringstream ss;
+    ss.write(reinterpret_cast<const char *>(rawData.data), rawData.size);
+    uint32_t stringVecSize = 0;
+    ss.read(reinterpret_cast<char *>(&stringVecSize), sizeof(stringVecSize));
+    uint32_t ssLength = static_cast<uint32_t>(ss.str().length());
+    for (uint32_t i = 0; i < stringVecSize; i++) {
+        uint32_t strLen = 0;
+        ss.read(reinterpret_cast<char *>(&strLen), sizeof(strLen));
+        if (strLen > ssLength - static_cast<uint32_t>(ss.tellg())) {
+            LOGE("string length:%{public}u is invalid", strLen);
+            return ERR_DEAD_OBJECT;
+        }
+        std::string str;
+        str.resize(strLen);
+        ss.read(&str[0], strLen);
+        stringVec.emplace_back(str);
+    }
+    return ERR_OK;
+}
+
+int32_t StorageDaemonProvider::CreateShareFile(const StorageFileRawData &rawData,
                                                uint32_t tokenId,
                                                uint32_t flag,
                                                std::vector<int32_t> &funcResult)
 {
-    LOGI("Create Share file list len is %{public}zu", uriList.size());
+    LOGI("Create Share file list len is %{public}u", rawData.size);
     funcResult.clear();
+    std::vector<std::string> uriList;
+    RawDataToStringVec(rawData, uriList);
+    LOGI("StorageDaemonProvider::CreateShareFile start. file size is %{public}zu", uriList.size());
     AppFileService::FileShare::CreateShareFile(uriList, tokenId, flag, funcResult);
+    LOGI("StorageDaemonProvider::CreateShareFile end. result size is %{public}zu", funcResult.size());
     return E_OK;
 }
 
-int32_t StorageDaemonProvider::DeleteShareFile(uint32_t tokenId, const std::vector<std::string> &uriList)
+int32_t StorageDaemonProvider::DeleteShareFile(uint32_t tokenId, const StorageFileRawData &rawData)
 {
+    std::vector<std::string> uriList;
+    RawDataToStringVec(rawData, uriList);
     return AppFileService::FileShare::DeleteShareFile(tokenId, uriList);
 }
 
@@ -702,6 +755,16 @@ void StorageDaemonProvider::SystemAbilityStatusChangeListener::OnRemoveSystemAbi
     if (systemAbilityId == FILEMANAGEMENT_CLOUD_DAEMON_SERVICE_SA_ID) {
         MountManager::GetInstance()->SetCloudState(false);
     }
+}
+
+int32_t StorageDaemonProvider::MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles)
+{
+    return MountManager::GetInstance()->MountDisShareFile(userId, shareFiles);
+}
+
+int32_t StorageDaemonProvider::UMountDisShareFile(int32_t userId, const std::string &networkId)
+{
+    return MountManager::GetInstance()->UMountDisShareFile(userId, networkId);
 }
 } // namespace StorageDaemon
 } // namespace OHOS
