@@ -448,7 +448,7 @@ void MtpFsDevice::CheckDirChildren(MtpFsTypeDir *dir)
         if (dir->objHandles->handler != nullptr) {
             free(dir->objHandles->handler);
             dir->objHandles->handler = nullptr;
-            dir->objHandles->num = childrenNum;
+            dir->objHandles->num = static_cast<uint32_t>(childrenNum);
             LOGI("update objHandles");
             dir->objHandles->handler = (uint32_t *)malloc(childrenNum * sizeof(uint32_t));
             if (dir->objHandles->handler == nullptr) {
@@ -917,6 +917,10 @@ int MtpFsDevice::PerformUpload(const std::string &src, const std::string &dst, c
     MtpFsTypeFile fileToUpload(0, dirParent->Id(), dirParent->StorageId(), dstBaseName,
         static_cast<uint64_t>(fileStat.st_size), 0);
     LIBMTP_file_t *f = fileToUpload.ToLIBMTPFile();
+    if (f == nullptr) {
+        LOGE("fileToUpload ToLIBMTPFile is null");
+        return -EINVAL;
+    }
     LOGI("Started uploading %{public}s, st_size=%{public}s", dst.c_str(), std::to_string(fileStat.st_size).c_str());
     std::unique_lock<std::mutex> lock(deviceMutex_);
     int rval = LIBMTP_Send_File_From_File(device_, src.c_str(), f, MtpProgressCallback, dst.c_str());
@@ -1152,7 +1156,7 @@ std::map<uint32_t, std::string> MtpFsDevice::FindDifferenceFds(
     }
 
     std::unordered_set<uint32_t> newTemp(newFd, newFd + newNum);
-    for (uint32_t i = 0; i < oldNum; ++i) {
+    for (int32_t i = 0; i < oldNum; ++i) {
         LOGD("FindDifferenceFds oldFd=%{public}u", oldFd[i]);
         if (!newTemp.count(oldFd[i])) {
             diffFdMap.insert(std::make_pair(oldFd[i], "remove"));

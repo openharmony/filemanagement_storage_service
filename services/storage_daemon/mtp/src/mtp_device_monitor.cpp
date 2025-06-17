@@ -330,9 +330,9 @@ int32_t MtpDeviceMonitor::HasMTPDevice(bool &hasMtp)
         return ret;
     }
     for (UsbDevice &dev : deviceList) {
-        uint8_t deviceClass = dev.GetClass();
-        uint16_t idVendor = dev.GetVendorId();
-        uint16_t idProduct = dev.GetProductId();
+        uint8_t deviceClass = static_cast<uint8_t>(dev.GetClass());
+        uint16_t idVendor = static_cast<uint16_t>(dev.GetVendorId());
+        uint16_t idProduct = static_cast<uint16_t>(dev.GetProductId());
         LOGI("device class is %{public}d, vendor id is %{public}d, product id is %{public}d.",
              deviceClass, idVendor, idProduct);
         if (LIBMTP_check_is_mtp_device(deviceClass, idVendor, idProduct)) {
