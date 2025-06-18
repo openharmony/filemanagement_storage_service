@@ -276,6 +276,7 @@ void StorageMonitorService::SendSmartNotificationEvent(const std::string &faultD
 
     LOGI("send message is %{public}s", eventDataStr.c_str());
     eventData.SetData(eventDataStr);
+    free(json_string);
     cJSON_Delete(root);
     EventFwk::CommonEventManager::PublishCommonEvent(eventData, publishInfo, nullptr);
 }
