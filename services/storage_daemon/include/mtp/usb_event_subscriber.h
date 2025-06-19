@@ -39,8 +39,8 @@ public:
  
 private:
     void GetValueFromUsbDataInfo(const std::string &jsonStr, uint8_t &devNum, uint32_t &busLoc);
-    bool IsMTPDevice(const std::string &jsonStr);
-    std::string toLowerString(const char* str);
+    bool IsMTPDevice(const std::string &usbInfo);
+    std::string ToLowerString(const char* str);
     bool CheckMtpInterface(const cJSON* iface);
     bool CheckAllInterfaces(const cJSON* configs);
 };
