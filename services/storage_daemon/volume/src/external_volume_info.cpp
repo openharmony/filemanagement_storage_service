@@ -532,28 +532,28 @@ int32_t ExternalVolumeInfo::DoSetVolDesc(std::string description)
             "-d",
             devPath_
         };
-        err = ForkExec(fixCmd, output);
+        err = ForkExec(fixCmd, &output);
         std::vector<std::string> labelCmd = {
             "ntfslabel",
             devPath_,
             description
         };
         output.clear();
-        err = ForkExec(labelCmd, output);
+        err = ForkExec(labelCmd, &output);
     } else if (fsType_ == "exfat") {
         std::vector<std::string> cmd = {
             "exfatlabel",
             devPath_,
             description
         };
-        err = ForkExec(cmd, output);
+        err = ForkExec(cmd, &output);
     } else if (fsType_ == "hmfs") {
         std::vector<std::string> cmd = {
             "hmfslabel",
             devPath_,
             description
         };
-        err = ForkExec(cmd, output);
+        err = ForkExec(cmd, &output);
     } else {
         LOGE("SetVolumeDescription fsType not support.");
         return E_NOT_SUPPORT;
