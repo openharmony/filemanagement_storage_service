@@ -140,13 +140,16 @@ int32_t ExternalVolumeInfo::DoMount4Ntfs(uint32_t mountFlags)
         "-o",
         mountData.c_str()
     };
+    std::vector<std::string> output;
 #ifdef EXTERNAL_STORAGE_QOS_TRANS
     if (ExtStorageMountForkExec(cmd) != E_OK) {
+        LOGE("ext exec mount for ntfs failed, errno is %{public}d.", errno);
         return E_NTFS_MOUNT;
     }
     return E_OK;
 #else
-    if (ForkExec(cmd) != E_OK) {
+    if (ForkExec(cmd, &output) != E_OK) {
+        LOGE("exec mount for ntfs failed, errno is %{public}d.", errno);
         return E_NTFS_MOUNT;
     }
     return E_OK;
@@ -167,13 +170,16 @@ int32_t ExternalVolumeInfo::DoMount4Exfat(uint32_t mountFlags)
         devPath_,
         mountPath_,
     };
+    std::vector<std::string> output;
 #ifdef EXTERNAL_STORAGE_QOS_TRANS
     if (ExtStorageMountForkExec(cmd) != E_OK) {
+        LOGE("ext exec mount for exfat failed, errno is %{public}d.", errno);
         return E_EXFAT_MOUNT;
     }
     return E_OK;
 #else
-    if (ForkExec(cmd) != E_OK) {
+    if (ForkExec(cmd, &output) != E_OK) {
+        LOGE("exec mount for exfat failed, errno is %{public}d.", errno);
         return E_EXFAT_MOUNT;
     }
     return E_OK;
@@ -217,13 +223,16 @@ int32_t ExternalVolumeInfo::DoFix4Ntfs()
         "-d",
         devPath_
     };
+    std::vector<std::string> output;
 #ifdef EXTERNAL_STORAGE_QOS_TRANS
     if (ExtStorageMountForkExec(cmd) != E_OK) {
+        LOGE("ext exec fix for ntfs failed, errno is %{public}d.", errno);
         return E_VOL_FIX_FAILED;
     }
     return E_OK;
 #else
-    if (ForkExec(cmd) != E_OK) {
+    if (ForkExec(cmd, &output) != E_OK) {
+        LOGE("exec fix for ntfs failed, errno is %{public}d.", errno);
         return E_VOL_FIX_FAILED;
     }
     return E_OK;
@@ -238,13 +247,16 @@ int32_t ExternalVolumeInfo::DoFix4Exfat()
         "-p",
         devPath_,
     };
+    std::vector<std::string> output;
 #ifdef EXTERNAL_STORAGE_QOS_TRANS
     if (ExtStorageMountForkExec(cmd) != E_OK) {
+        LOGE("ext exec fix for exfat failed, errno is %{public}d.", errno);
         return E_VOL_FIX_FAILED;
     }
     return E_OK;
 #else
-    if (ForkExec(cmd) != E_OK) {
+    if (ForkExec(cmd, &output) != E_OK) {
+        LOGE("exec fix for exfat failed, errno is %{public}d.", errno);
         return E_VOL_FIX_FAILED;
     }
     return E_OK;
@@ -486,66 +498,68 @@ int32_t ExternalVolumeInfo::DoFormat(std::string type)
         LOGE("External volume format not support.");
         return E_NOT_SUPPORT;
     }
-
+    std::vector<std::string> output;
     if (type == "vfat") {
         std::vector<std::string> cmd = {
             iter->second,
             "-A",
             devPath_
         };
-        err = ForkExec(cmd);
+        err = ForkExec(cmd, &output);
     } else {
         std::vector<std::string> cmd = {
             iter->second,
             devPath_
         };
-        err = ForkExec(cmd);
+        err = ForkExec(cmd, &output);
     }
 
     if (err == E_NO_CHILD) {
         err = E_OK;
     }
-
     ReadMetadata();
+    LOGI("do format end, err is %{public}d.", err);
     return err;
 }
 
 int32_t ExternalVolumeInfo::DoSetVolDesc(std::string description)
 {
     int32_t err = 0;
+    std::vector<std::string> output;
     if (fsType_ == "ntfs") {
         std::vector<std::string> fixCmd = {
             "ntfsfix",
             "-d",
             devPath_
         };
-        err = ForkExec(fixCmd);
+        err = ForkExec(fixCmd, output);
         std::vector<std::string> labelCmd = {
             "ntfslabel",
             devPath_,
             description
         };
-        err = ForkExec(labelCmd);
+        output.clear();
+        err = ForkExec(labelCmd, output);
     } else if (fsType_ == "exfat") {
         std::vector<std::string> cmd = {
             "exfatlabel",
             devPath_,
             description
         };
-        err = ForkExec(cmd);
+        err = ForkExec(cmd, output);
     } else if (fsType_ == "hmfs") {
         std::vector<std::string> cmd = {
             "hmfslabel",
             devPath_,
             description
         };
-        err = ForkExec(cmd);
+        err = ForkExec(cmd, output);
     } else {
         LOGE("SetVolumeDescription fsType not support.");
         return E_NOT_SUPPORT;
     }
-
     ReadMetadata();
+    LOGI("do set vol desc end, err is %{public}d.", err);
     return err;
 }
 } // StorageDaemon

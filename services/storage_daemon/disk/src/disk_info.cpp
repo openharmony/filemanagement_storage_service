@@ -476,17 +476,19 @@ int DiskInfo::Partition()
     cmd.push_back(SGDISK_ZAP_CMD);
     cmd.push_back(devPath_);
     LOGI("Partition executing command.");
-    res = ForkExec(cmd);
+    std::vector<std::string> output;
+    res = ForkExec(cmd, &output);
     if (res != E_OK) {
         LOGE("sgdisk: zap fail");
         return res;
     }
 
     cmd.clear();
+    output.clear();
     cmd.push_back(SGDISK_PATH);
     cmd.push_back(SGDISK_PART_CMD);
     cmd.push_back(devPath_);
-    res = ForkExec(cmd);
+    res = ForkExec(cmd, &output);
     if (res != E_OK) {
         LOGE("sgdisk: partition fail");
         return res;

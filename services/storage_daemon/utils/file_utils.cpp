@@ -42,6 +42,22 @@ constexpr uint8_t KILL_RETRY_TIME = 5;
 constexpr uint32_t KILL_RETRY_INTERVAL_MS = 100 * 1000;
 constexpr const char *MOUNT_POINT_INFO = "/proc/mounts";
 
+static int RedirectStdToPipe(int logpipe[2])
+{
+    int ret = E_OK;
+    (void)close(logpipe[0]);
+    if (dup2(logpipe[1], STDOUT_FILENO) == -1) {
+        LOGE("dup2 stdout failed, errno is %{public}d.", errno);
+        ret = E_ERR;
+    }
+    if (dup2(logpipe[1], STDERR_FILENO) == -1) {
+        LOGE("dup2 stderr failed, errno is %{public}d.", errno);
+        ret = E_ERR;
+    }
+    (void)close(logpipe[1]);
+    return ret;
+}
+
 int32_t ChMod(const std::string &path, mode_t mode)
 {
     return TEMP_FAILURE_RETRY(chmod(path.c_str(), mode));
@@ -442,23 +458,18 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
     pid_t pid;
     int status;
     auto args = FromatCmd(cmd);
-
     if (pipe(pipe_fd) < 0) {
-        LOGE("creat pipe failed");
+        LOGE("creat pipe failed, errno is %{public}d.", errno);
         return E_CREATE_PIPE;
     }
-
     pid = fork();
     if (pid == -1) {
-        LOGE("fork failed");
+        LOGE("fork failed, errno is %{public}d.", errno);
         return E_FORK;
     } else if (pid == 0) {
-        (void)close(pipe_fd[0]);
-        if (dup2(pipe_fd[1], STDOUT_FILENO) == -1) {
-            LOGE("dup2 failed");
+        if (RedirectStdToPipe(pipe_fd)) {
             _exit(1);
         }
-        (void)close(pipe_fd[1]);
         execvp(args[0], const_cast<char **>(args.data()));
         LOGE("execvp failed errno: %{public}d", errno);
         _exit(1);
@@ -473,18 +484,17 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
                 output->push_back(buf);
             }
         }
-
         (void)close(pipe_fd[0]);
         waitpid(pid, &status, 0);
         if (errno == ECHILD) {
             return E_NO_CHILD;
         }
         if (!WIFEXITED(status)) {
-            LOGE("Process exits abnormally");
+            LOGE("Process exits abnormally, errno is %{public}d, status is %{public}d", errno, status);
             return E_WIFEXITED;
         }
         if (WEXITSTATUS(status) != 0) {
-            LOGE("Process exited with an error");
+            LOGE("Process exited with an error, errno is %{public}d, status is %{public}d", errno, status);
             return E_WEXITSTATUS;
         }
     }
@@ -557,7 +567,7 @@ static void WritePidToPipe(int pipe_fd[2])
     (void)close(pipe_fd[0]);
     int send_pid = (int)getpid();
     if (write(pipe_fd[1], &send_pid, sizeof(int)) == -1) {
-        LOGE("write pipe failed");
+        LOGE("write pipe failed, errno is %{public}d.", errno);
         _exit(1);
     }
     (void)close(pipe_fd[1]);
@@ -574,22 +584,6 @@ static void ReadPidFromPipe(std::vector<std::string> &cmd, int pipe_fd[2])
     ReportExecutorPidEvent(cmd, recv_pid);
 }
  
-static int RedirectStdToPipe(int logpipe[2])
-{
-    int ret = E_OK;
-    (void)close(logpipe[0]);
-    if (dup2(logpipe[1], STDOUT_FILENO) == -1) {
-        LOGE("dup2 stdout failed");
-        ret = E_ERR;
-    }
-    if (dup2(logpipe[1], STDERR_FILENO) == -1) {
-        LOGE("dup2 stderr failed");
-        ret = E_ERR;
-    }
-    (void)close(logpipe[1]);
-    return ret;
-}
- 
 static void ReadLogFromPipe(int logpipe[2])
 {
     (void)close(logpipe[1]);
@@ -603,7 +597,7 @@ static void ReadLogFromPipe(int logpipe[2])
         fclose(fp);
         return;
     }
-    LOGE("open pipe file failed");
+    LOGE("open pipe file failed, errno is %{public}d.", errno);
     (void)close(logpipe[0]);
 }
 
@@ -616,19 +610,19 @@ int ExtStorageMountForkExec(std::vector<std::string> &cmd)
     auto args = FromatCmd(cmd);
 
     if (pipe(pipe_fd) < 0) {
-        LOGE("creat pipe failed");
+        LOGE("creat pipe failed, errno is %{public}d.", errno);
         return E_ERR;
     }
 
     if (pipe(pipe_log_fd) < 0) {
-        LOGE("creat pipe for log failed");
+        LOGE("creat pipe for log failed, errno is %{public}d.", errno);
         ClosePipe(pipe_fd);
         return E_ERR;
     }
 
     pid = fork();
     if (pid == -1) {
-        LOGE("fork failed");
+        LOGE("fork failed, errno is %{public}d.", errno);
         ClosePipe(pipe_fd);
         ClosePipe(pipe_log_fd);
         return E_ERR;
