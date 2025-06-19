@@ -847,30 +847,6 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UpdateMemoryPara_0
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UpdateMemoryPara_001 end";
 }
 /**
- * @tc.name: StorageDaemonProviderTest_GetBundleStatsForIncrease_001
- * @tc.desc: Verify the GetBundleStatsForIncrease function.
- * @tc.type: FUNC
- * @tc.require: AR000H09L6
- */
-HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetBundleStatsForIncrease_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetBundleStatsForIncrease_001 start";
-    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
-    std::vector<std::string> bundleNames = {"com.example.app"};
-    std::vector<int64_t> incrementalBackTimes = {123456789};
-    std::vector<int64_t> pkgFileSizes;
-    std::vector<int64_t> incPkgFileSizes;
-
-    int32_t result = storageDaemonProviderTest_->GetBundleStatsForIncrease(
-        StorageTest::USER_ID1, bundleNames, incrementalBackTimes, pkgFileSizes, incPkgFileSizes);
-    EXPECT_NE(result, E_ERR);
-    EXPECT_EQ(pkgFileSizes.size(), 1);
-    EXPECT_EQ(incPkgFileSizes.size(), 1);
-    EXPECT_GE(pkgFileSizes[0], 0);
-    EXPECT_GE(incPkgFileSizes[0], 0);
-    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetBundleStatsForIncrease_001 end";
-}
-/**
  * @tc.name: StorageDaemonProviderTest_MountDfsDocs_001
  * @tc.desc: Verify the MountDfsDocs function.
  * @tc.type: FUNC

@@ -620,20 +620,6 @@ int32_t StorageManagerProvider::SetBundleQuota(const std::string &bundleName,
     return StorageManager::GetInstance()->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
 }
 
-int32_t StorageManagerProvider::GetBundleStatsForIncrease(uint32_t userId,
-                                                          const std::vector<std::string> &bundleNames,
-                                                          const std::vector<int64_t> &incrementalBackTimes,
-                                                          std::vector<int64_t> &pkgFileSizes,
-                                                          std::vector<int64_t> &incPkgFileSizes)
-{
-    if (IPCSkeleton::GetCallingUid() != BACKUP_SA_UID) {
-        LOGE("StorageManager permissionCheck error, calling uid is invalid, need backup_sa uid.");
-        return E_PERMISSION_DENIED;
-    }
-    return StorageManager::GetInstance()->GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes,
-                                                                    pkgFileSizes, incPkgFileSizes);
-}
-
 int32_t StorageManagerProvider::GetUserStorageStatsByType(int32_t userId,
                                                           StorageStats &storageStats,
                                                           const std::string &type)

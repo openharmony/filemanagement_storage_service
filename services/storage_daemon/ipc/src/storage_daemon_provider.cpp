@@ -649,16 +649,6 @@ int32_t StorageDaemonProvider::UpdateMemoryPara(int32_t size, int32_t &oldSize)
     return E_OK;
 }
 
-int32_t StorageDaemonProvider::GetBundleStatsForIncrease(uint32_t userId,
-                                                         const std::vector<std::string> &bundleNames,
-                                                         const std::vector<int64_t> &incrementalBackTimes,
-                                                         std::vector<int64_t> &pkgFileSizes,
-                                                         std::vector<int64_t> &incPkgFileSizes)
-{
-    return QuotaManager::GetInstance()->GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes,
-                                                                  pkgFileSizes, incPkgFileSizes);
-}
-
 int32_t StorageDaemonProvider::MountDfsDocs(int32_t userId,
                                             const std::string &relativePath,
                                             const std::string &networkId,

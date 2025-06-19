@@ -115,7 +115,6 @@ bool StorageManagerProxyGetFuzzTest(const uint8_t *data, size_t size)
     proxy->GetVolumeById(metaData, vc1);
     proxy->GetFreeSizeOfVolume(metaData, metaData4);
     proxy->GetTotalSizeOfVolume(metaData, metaData4);
-    proxy->GetBundleStatsForIncrease(userId, bundleName, incrementalBackTimes, pkgFileSizes, incPkgFileSizes);
     return true;
 }
 } // namespace StorageManager

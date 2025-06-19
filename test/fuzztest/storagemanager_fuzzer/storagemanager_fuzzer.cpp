@@ -677,18 +677,6 @@ bool HandleResetSecretWithRecoveryKeyFuzzTest(const uint8_t *data, size_t size)
     return true;
 }
 
-bool HandleGetBundleStatsForIncreaseFuzzTest(const uint8_t *data, size_t size)
-{
-    MessageParcel datas;
-    datas.WriteInterfaceToken(StorageManagerStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
-    datas.RewindRead(0);
-    MessageParcel reply;
-
-    storageManagerPtr->HandleGetBundleStatsForIncrease(datas, reply);
-    return true;
-}
-
 bool HandleGetUserStorageStatsByTypeFuzzTest(const uint8_t *data, size_t size)
 {
     MessageParcel datas;
@@ -841,7 +829,6 @@ void FuzzerTest2(const uint8_t *data, size_t size)
     OHOS::StorageManager::HandleCreateRecoverKeyFuzzTest(data, size);
     OHOS::StorageManager::HandleSetRecoverKeyFuzzTest(data, size);
     OHOS::StorageManager::HandleResetSecretWithRecoveryKeyFuzzTest(data, size);
-    OHOS::StorageManager::HandleGetBundleStatsForIncreaseFuzzTest(data, size);
     OHOS::StorageManager::HandleGetUserStorageStatsByTypeFuzzTest(data, size);
     OHOS::StorageManager::HandleMountDfsDocsFuzzTest(data, size);
     OHOS::StorageManager::HandleUMountDfsDocsFuzzTest(data, size);

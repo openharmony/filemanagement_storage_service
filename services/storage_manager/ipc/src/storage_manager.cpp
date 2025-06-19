@@ -739,25 +739,6 @@ int32_t StorageManager::SetBundleQuota(const std::string &bundleName, int32_t ui
     return sdCommunication->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
 }
 
-int32_t StorageManager::GetBundleStatsForIncrease(uint32_t userId, const std::vector<std::string> &bundleNames,
-    const std::vector<int64_t> &incrementalBackTimes, std::vector<int64_t> &pkgFileSizes,
-    std::vector<int64_t> &incPkgFileSizes)
-{
-#ifdef STORAGE_STATISTICS_MANAGER
-    LOGI("StorageManger::GetBundleStatsForIncrease start");
-    int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetBundleStatsForIncrease(userId,
-        bundleNames, incrementalBackTimes, pkgFileSizes, incPkgFileSizes);
-    if (err != E_OK) {
-        StorageRadar::ReportGetStorageStatus("StorageStatusService::GetBundleStatsForIncrease", userId, err,
-            "setting");
-    }
-    return err;
-#else
-    return E_OK;
-#endif
-}
-
-
 int32_t StorageManager::GetUserStorageStatsByType(int32_t userId, StorageStats &storageStats, const std::string &type)
 {
 #ifdef STORAGE_STATISTICS_MANAGER

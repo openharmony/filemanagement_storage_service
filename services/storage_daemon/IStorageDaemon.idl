@@ -59,8 +59,6 @@ interface OHOS.StorageDaemon.IStorageDaemon{
                                       [in] int limitSizeMb);
      [ipccode 30] void GetOccupiedSpace([in] int idType, [in] int id, [out] long size);
      [ipccode 31] void UpdateMemoryPara([in] int size, [out] int oldSize);
-     [ipccode 32] void GetBundleStatsForIncrease([in] unsigned int userId, [in] String[] bundleNames,
-          [in] long[] incrementalBackTimes, [out] long[] pkgFileSizes, [out] long[] incPkgFileSizes);
      [ipccode 35] void MountDfsDocs([in] int userId, [in] String relativePath,
           [in] String networkId, [in] String deviceId);
      [ipccode 36] void UMountDfsDocs([in] int userId, [in] String relativePath,

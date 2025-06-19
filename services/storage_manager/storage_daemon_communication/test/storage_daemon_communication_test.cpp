@@ -432,40 +432,6 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_DeleteAppkey_001, 
 }
 
 /**
- * @tc.number: SUB_STORAGE_Daemon_communication_GetBundleStatsForIncrease_001
- * @tc.name: Daemon_communication_GetBundleStatsForIncrease_001
- * @tc.desc: Test function of GetBundleStatsForIncrease interface for SUCCESS.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- * @tc.require: issueI9G5A0
- */
-HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_GetBundleStatsForIncrease, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Daemon_communication_GetBundleStatsForIncrease SUCCESS";
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication =
-            DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    ASSERT_TRUE(sdCommunication != nullptr);
-
-    int32_t userId = 100;
-    std::vector<std::string> bundleNames;
-    std::vector<std::int64_t> incrementalBackTimes;
-    std::vector<std::int64_t> pkgFileSizes;
-    std::vector<std::int64_t> incPkgFileSizes;
-
-    bundleNames.push_back("testbundleNames");
-    incrementalBackTimes.push_back(1);
-    pkgFileSizes.push_back(1);
-    incPkgFileSizes.push_back(1);
-
-    int32_t ret = sdCommunication->GetBundleStatsForIncrease(userId, bundleNames, incrementalBackTimes,
-                                                             pkgFileSizes, incPkgFileSizes);
-    EXPECT_EQ(ret, E_OK);
-
-    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_GetBundleStatsForIncrease SUCCESS";
-}
-
-/**
  * @tc.number: SUB_STORAGE_Daemon_communication_UpdateMemoryPara_001
  * @tc.name: Daemon_communication_UpdateMemoryPara_001
  * @tc.desc: Test function of UpdateMemoryPara interface for SUCCESS.
