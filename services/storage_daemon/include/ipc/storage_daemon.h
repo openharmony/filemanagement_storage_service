@@ -80,6 +80,8 @@ public:
                            bool &isOccupy);
     int32_t ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key);
     void SetPriority();
+
+    int32_t InactiveUserPublicDirKey(uint32_t userId);
 private:
 #ifdef USER_CRYPTO_MIGRATE_KEY
     std::string GetNeedRestoreFilePath(int32_t userId, const std::string &user_dir);

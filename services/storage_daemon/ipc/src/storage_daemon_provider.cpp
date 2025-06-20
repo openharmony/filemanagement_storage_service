@@ -766,5 +766,14 @@ int32_t StorageDaemonProvider::UMountDisShareFile(int32_t userId, const std::str
 {
     return MountManager::GetInstance()->UMountDisShareFile(userId, networkId);
 }
+
+int32_t StorageDaemonProvider::InactiveUserPublicDirKey(uint32_t userId)
+{
+    int timerId = StorageXCollie::SetTimer("storage:InactiveUserPublicDirKey", LOCAL_TIME_OUT_SECONDS);
+    std::lock_guard<std::mutex> lock(mutex_);
+    int32_t ret = StorageDaemon::GetInstance()->InactiveUserPublicDirKey(userId);
+    StorageXCollie::CancelTimer(timerId);
+    return ret;
+}
 } // namespace StorageDaemon
 } // namespace OHOS

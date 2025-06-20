@@ -40,6 +40,7 @@ constexpr const char *PATH_USER_EL1_DIR = "/data/service/el1/public/storage_daem
 constexpr uint8_t USER_DESTROY = 0x1;
 constexpr int32_t RESTORE_VERSION = 3;
 const std::vector<uint8_t> NULL_SECRET = { '!' };
+const std::vector<uint8_t> DEFAULT_KEY = { 'D','o','c','s' };
 
 #ifndef F2FS_IOCTL_MAGIC
 #define F2FS_IOCTL_MAGIC 0xf5
@@ -856,6 +857,7 @@ bool BaseKey::ClearKey(const std::string &mnt)
         LOGE("InactiveKey failed.");
     }
     keyInfo_.key.Clear();
+    keyInfo_.keyHash.Clear();
     bool needClearFlag = true;
 #ifdef USER_CRYPTO_MIGRATE_KEY
     std::error_code errCode;
@@ -996,6 +998,40 @@ void BaseKey::SetOriginKey(KeyBlob &originKey)
     LOGI("enter");
     keyInfo_.key = std::move(originKey);
     return;
+}
+
+bool BaseKey::GetHashKey(KeyBlob &hashKey)
+{
+    LOGI("enter");
+    if (keyInfo_.keyHash.IsEmpty()) {
+        LOGE("hash key is empty.");
+        return false;
+    }
+    KeyBlob key(keyInfo_.keyHash);
+    hashKey = std::move(key);
+    return true;
+}
+
+void BaseKey::GenerateHashKey(const KeyBlob &originKey)
+{
+    LOGI("enter");
+    if (keyInfo_.key.IsEmpty()) {
+        LOGE("origin key is empty, Generate error");
+        return;
+    }
+    
+    if (!keyInfo_.keyHash.IsEmpty()) {
+        LOGW("clear hash key when is not empty");
+        keyInfo_.keyHash.Clear();
+    }
+
+    KeyBlob preKey = originKey;
+    if (preKey.IsEmpty()) {
+        preKey = KeyBlob(DEFAULT_KEY);
+    }
+
+    KeyBlob hashKey = OpensslCrypto::HashWithPrefix(preKey, keyInfo_.key, AES_256_HASH_RANDOM_SIZE);
+    keyInfo_.keyHash = std::move(hashKey);
 }
 
 int32_t BaseKey::EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey,

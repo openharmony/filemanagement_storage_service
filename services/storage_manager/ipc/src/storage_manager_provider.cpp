@@ -801,5 +801,13 @@ int32_t StorageManagerProvider::UMountDisShareFile(int32_t userId, const std::st
     }
     return StorageManager::GetInstance()->UMountDisShareFile(userId, networkId);
 }
+
+int32_t StorageManagerProvider::InactiveUserPublicDirKey(uint32_t userId)
+{
+    if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
+        return E_PERMISSION_DENIED;
+    }
+    return StorageManager::GetInstance()->InactiveUserPublicDirKey(userId);
+}
 } // namespace StorageManager
 } // namespace OHOS
