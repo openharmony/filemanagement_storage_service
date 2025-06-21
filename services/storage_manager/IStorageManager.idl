@@ -104,5 +104,4 @@ interface OHOS.StorageManager.IStorageManager {
     [ipccode 67] void NotifyVolumeDamaged([in] String volumeId, [in] String fsTypeStr, [in] String fsUuid,
                                           [in] String path, [in] String description);
     [ipccode 68] void TryToFix([in] String volumeId);
-    [ipccode 69] void InactiveUserPublicDirKey([in] unsigned int userId);
 }

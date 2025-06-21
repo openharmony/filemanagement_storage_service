@@ -54,7 +54,6 @@ public:
                              const std::vector<uint8_t> &secret);
     int32_t SetRecoverKey(const std::vector<uint8_t> &key);
     int32_t ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key);
-    int32_t InactiveUserPublicDirKey(uint32_t userId);
 private:
     int32_t CheckUserIdRange(int32_t userId);
 };
