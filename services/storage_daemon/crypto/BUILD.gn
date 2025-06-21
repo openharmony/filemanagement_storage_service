@@ -55,7 +55,6 @@ ohos_static_library("libsdcrypto") {
     "src/key_backup.cpp",
     "src/key_crypto_utils.cpp",
     "src/key_manager.cpp",
-    "src/key_manager_ext.cpp",
     "src/openssl_crypto.cpp",
     "src/recover_manager.cpp",
   ]

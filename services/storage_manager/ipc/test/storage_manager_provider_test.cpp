@@ -1125,21 +1125,5 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDisShareFi
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDisShareFile_001 end";
 }
-
-/**
- * @tc.name: StorageManagerProviderTest_InactiveUserPublicDirKey_001
- * @tc.desc: Verify the InactiveUserPublicDirKey function.
- * @tc.type: FUNC
- * @tc.require: AR20250418146433
- */
-HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_InactiveUserPublicDirKey_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_InactiveUserPublicDirKey_001 start";
-    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    uint32_t userId = 100;
-    auto ret = storageManagerProviderTest_->InactiveUserPublicDirKey(userId);
-    EXPECT_EQ(ret, E_PERMISSION_DENIED);
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_InactiveUserPublicDirKey_001 end";
-}
 } // namespace StorageManager
 } // namespace OHOS

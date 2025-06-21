@@ -766,11 +766,5 @@ int32_t StorageDaemonProvider::UMountDisShareFile(int32_t userId, const std::str
 {
     return MountManager::GetInstance()->UMountDisShareFile(userId, networkId);
 }
-
-int32_t StorageDaemonProvider::InactiveUserPublicDirKey(uint32_t userId)
-{
-    std::lock_guard<std::mutex> lock(mutex_);
-    return StorageDaemon::GetInstance()->InactiveUserPublicDirKey(userId);
-}
 } // namespace StorageDaemon
 } // namespace OHOS

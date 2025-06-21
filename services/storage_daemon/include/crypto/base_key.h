@@ -71,8 +71,6 @@ public:
     void SetOriginKey(KeyBlob &originKey);
     bool KeyDescIsEmpty();
     std::string GetKeyDir();
-    bool GetHashKey(KeyBlob &hashKey);
-    bool GenerateHashKey();
 
     KeyInfo keyInfo_;
     std::string GetDir() const

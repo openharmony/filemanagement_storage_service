@@ -175,19 +175,3 @@ int32_t BaseKey::RestoreKey4Nato(const std::string &keyDir, KeyType type)
     }
     return IBaseKeyMoc::baseKeyMoc->RestoreKey4Nato(keyDir, type);
 }
-
-bool BaseKey::GetHashKey(KeyBlob &hashKey)
-{
-    if (IBaseKeyMoc::baseKeyMoc == nullptr) {
-        return false;
-    }
-    return IBaseKeyMoc::baseKeyMoc->GetHashKey(hashKey);
-}
-
-bool BaseKey::GenerateHashKey()
-{
-    if (IBaseKeyMoc::baseKeyMoc == nullptr) {
-        return false;
-    }
-    return IBaseKeyMoc::baseKeyMoc->GenerateHashKey();
-}
