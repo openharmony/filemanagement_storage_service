@@ -116,6 +116,7 @@ public:
     void DeleteElKey(unsigned int user, KeyType type);
     bool HasElkey(uint32_t userId, KeyType type);
 
+    friend class KeyManagerExt;
 private:
     KeyManager()
     {

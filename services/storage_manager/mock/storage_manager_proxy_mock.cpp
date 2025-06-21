@@ -376,5 +376,10 @@ int32_t StorageManagerProxy::UMountDisShareFile(int32_t userId, const std::strin
 {
     return E_OK;
 }
+
+int32_t StorageManagerProxy::InactiveUserPublicDirKey(uint32_t userId)
+{
+    return E_OK;
+}
 } // StorageManager
 } // OHOS

@@ -579,5 +579,24 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_UMountMediaFuse_00
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_UMountMediaFuse_001 end";
 }
 #endif
+
+/**
+ * @tc.name: Storage_Manager_StorageDaemonTest_InactiveUserPublicDirKey_001
+ * @tc.desc: Verify the InactiveUserPublicDirKey function when args are normal.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_InactiveUserPublicDirKey_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_InactiveUserPublicDirKey_001 start";
+
+    ASSERT_TRUE(storageDaemon_ != nullptr);
+
+    uint32_t userId = 105;
+    auto ret = storageDaemon_->InactiveUserPublicDirKey(userId);
+    EXPECT_TRUE(ret == E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_InactiveUserPublicDirKey_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS
