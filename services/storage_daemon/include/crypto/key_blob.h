@@ -151,8 +151,6 @@ struct KeyInfo {
     KeyBlob keyDesc;
     // the v2 interface use the key_spec.u.identifier
     KeyBlob keyId;
-    // SHA3-512 hash code: key and specify a prefix string
-    KeyBlob keyHash;
 };
 
 struct KeyContext {

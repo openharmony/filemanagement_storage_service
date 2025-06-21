@@ -30,7 +30,6 @@
 #include "crypto/iam_client.h"
 #include "crypto/key_crypto_utils.h"
 #include "crypto/key_manager.h"
-#include "crypto/key_manager_ext.h"
 #endif
 #ifdef EXTERNAL_STORAGE_MANAGER
 #include "disk/disk_manager.h"
@@ -239,13 +238,6 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
         StorageRadar::ReportUserManager("PrepareUserDirs::UserManager::PrepareUserDirs", userId, prepareRet, extraData);
     }
     MountManager::GetInstance()->PrepareAppdataDir(userId);
-#ifdef USER_CRYPTO_MANAGER
-    ret = KeyManagerExt::GetInstance()->GenerateUserKeys(userId, flags);
-    if (ret != E_OK) {
-        LOGE("GenerateUserKeys failed, userId %{public}u, flags %{public}u, error %{public}d", userId, flags, ret);
-        return ret;
-    }
-#endif
     return prepareRet;
 }
 
@@ -274,11 +266,6 @@ int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
         StorageRadar::ReportUserManager("DestroyUserDirs::DeleteUserKeys", userId, errCode, extraData);
         AuditLog storageAuditLog = { false, "FAILED TO DeleteUserKeys", "DEL", "DeleteUserKeys", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
-    }
-    destroyUserRet = KeyManagerExt::GetInstance()->DeleteUserKeys(userId);
-    if (destroyUserRet != E_OK) {
-        LOGE("DeleteUserKeys failed, userId %{public}u, flags %{public}u, error %{public}d", userId, flags, destroyUserRet);
-        errCode = destroyUserRet;
     }
     return errCode;
 #else
@@ -423,10 +410,6 @@ int32_t StorageDaemon::DeleteUserKeys(uint32_t userId)
         StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
         AuditLog storageAuditLog = { false, "FAILED TO DeleteUserKeys", "DEL", "DeleteUserKeys", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
-    }
-    ret = KeyManagerExt::GetInstance()->DeleteUserKeys(userId);
-    if (ret != E_OK) {
-        LOGE("DeleteUserKeys failed, userId %{public}u, error %{public}d", userId, ret);
     }
     return ret;
 #else
@@ -830,14 +813,6 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId, const std::vector<uint8_t>
     std::thread([this, userId]() { RestoreconElX(userId); }).detach();
     std::thread([this]() { ActiveAppCloneUserKey(); }).detach();
     std::thread([this, userId]() { UserManager::GetInstance()->CheckDirsFromVec(userId); }).detach();
-
-#ifdef USER_CRYPTO_MANAGER
-    ret = KeyManagerExt::GetInstance()->ActiveUserKey(userId, token, secret);
-    if (ret != E_OK) {
-        LOGE("Active user key for userId=%{public}d failed, ret=%{public}d.", userId, ret);
-        return ret;
-    }
-#endif
     LOGW("Active user key for userId=%{public}d success.", userId);
     return ret;
 }
@@ -1045,10 +1020,6 @@ int32_t StorageDaemon::InactiveUserKey(uint32_t userId)
         AuditLog storageAuditLog = { false, "FAILED TO InActiveUserKey", "DEL", "InActiveUserKey", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
     }
-    ret = KeyManagerExt::GetInstance()->InActiveUserKey(userId);
-    if (ret != E_OK) {
-        LOGE("InActive user key for userId=%{public}d failed, ret=%{public}d.", userId, ret);
-    }
     return ret;
 #else
     return E_OK;
@@ -1073,10 +1044,6 @@ int32_t StorageDaemon::LockUserScreen(uint32_t userId)
         StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
         AuditLog storageAuditLog = { true, "FAILED TO LockUserScreen", "UPDATE", "LockUserScreen", 1, "FAIL" };
         HiAudit::GetInstance().Write(storageAuditLog);
-    }
-    ret = KeyManagerExt::GetInstance()->LockUserScreen(userId);
-    if (ret != E_OK) {
-        LOGE("Lock screen for userId=%{public}d failed, ret=%{public}d.", userId, ret);
     }
     return ret;
 #else
@@ -1105,10 +1072,6 @@ int32_t StorageDaemon::UnlockUserScreen(uint32_t userId,
         StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
         AuditLog storageAuditLog = { true, "FAILED TO UnlockUserScreen", "UPDATE", "UnlockUserScreen", 1, "FAILED" };
         HiAudit::GetInstance().Write(storageAuditLog);
-    }
-    ret = KeyManagerExt::GetInstance()->UnlockUserScreen(userId, token, secret);
-    if (ret != E_OK) {
-        LOGE("UnlockUserScreen failed, userId=%{public}u, ret=%{public}d.", userId, ret);
     }
     return ret;
 #else
@@ -1170,15 +1133,7 @@ int32_t StorageDaemon::SetRecoverKey(const std::vector<uint8_t> &key)
 {
     LOGI("begin to SetRecoverKey");
 #ifdef USER_CRYPTO_MANAGER
-    int32_t ret = KeyManager::GetInstance()->SetRecoverKey(key);
-    if (ret != E_OK) {
-        LOGE("SetRecoverKey failed, please check");
-    }
-    ret = KeyManagerExt::GetInstance()->SetRecoverKey(key);
-    if (ret != E_OK) {
-        LOGE("SetRecoverKey failed, please check");
-    }
-    return ret;
+    return KeyManager::GetInstance()->SetRecoverKey(key);
 #else
     return E_OK;
 #endif
@@ -1297,18 +1252,6 @@ void StorageDaemon::SetPriority()
         LOGE("failed to set priority");
     }
     LOGW("set storage_daemon priority: %{public}d", tid);
-}
-
-int32_t StorageDaemon::InactiveUserPublicDirKey(uint32_t userId)
-{
-    int32_t ret = E_OK;
-#ifdef USER_CRYPTO_MANAGER
-    ret = KeyManagerExt::GetInstance()->InactiveUserPublicDirKey(userId);
-    if (ret != E_OK) {
-        LOGE("InactiveUserPublicDirKey failed, error = %{public}d, userId %{public}u", ret, userId);
-    }
-#endif
-    return ret;
 }
 } // namespace StorageDaemon
 } // namespace OHOS

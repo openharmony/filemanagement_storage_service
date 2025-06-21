@@ -36,11 +36,3 @@ int32_t OpensslCrypto::AESEncrypt(const KeyBlob &preKey, const KeyBlob &plainTex
     }
     return IOpensslCrypto::opensslCryptoMock->AESEncrypt(preKey, plainText, keyContext_);
 }
-
-KeyBlob HashWithPrefix(const KeyBlob &prefix, const KeyBlob &payload, uint32_t length)
-{
-    if (IOpensslCrypto::opensslCryptoMock == nullptr) {
-        return {};
-    }
-    return IOpensslCrypto::opensslCryptoMock->HashWithPrefix(prefix, payload, length);    
-}
