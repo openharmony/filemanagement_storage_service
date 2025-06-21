@@ -569,5 +569,46 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_UpdateUseAuthWithRecoveryK
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_UpdateUseAuthWithRecoveryKey_0000";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_crypto_InactiveUserPublicDirKey_0000
+ * @tc.name: Storage_manager_crypto_InactiveUserPublicDirKey_0000
+ * @tc.desc: Test function of InactiveUserPublicDirKey interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_InactiveUserPublicDirKey_0000, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileSystemCryptoTest-start Storage_manager_crypto_InactiveUserPublicDirKey_0000";
+    std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
+        DelayedSingleton<FileSystemCrypto>::GetInstance();
+    uint32_t userId = 109;
+    uint32_t ret = fileSystemCrypto_->InactiveUserPublicDirKey(userId);
+    EXPECT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_InactiveUserPublicDirKey_0000";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_crypto_InactiveUserPublicDirKey_0001
+ * @tc.name: Storage_manager_crypto_InactiveUserPublicDirKey_0001
+ * @tc.desc: Test function of InactiveUserPublicDirKey interface for Parameters ERROR which userId not in [101, 1099].
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_InactiveUserPublicDirKey_0001, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileSystemCryptoTest-start Storage_manager_crypto_InactiveUserPublicDirKey_0001";
+    std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
+        DelayedSingleton<FileSystemCrypto>::GetInstance();
+    uint32_t userId = 19999;
+    uint32_t ret = fileSystemCrypto_->InactiveUserPublicDirKey(userId);
+    EXPECT_EQ(ret, E_USERID_RANGE);
+    GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_InactiveUserPublicDirKey_0001";
+}
+
 }
 }

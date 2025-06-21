@@ -45,6 +45,8 @@ public:
     virtual std::string GetKeyDir() = 0;
     virtual std::string GetCandidateDir() = 0;
     virtual int32_t RestoreKey4Nato(const std::string &keyDir, KeyType type) = 0;
+    virtual bool GetHashKey(KeyBlob &hashKey) = 0;
+    virtual bool GenerateHashKey() = 0;
 public:
     static inline std::shared_ptr<IBaseKeyMoc> baseKeyMoc = nullptr;
 };
@@ -68,6 +70,8 @@ public:
     MOCK_METHOD3(LoadKeyBlob, bool(KeyBlob &blob, const std::string &path, const uint32_t size));
     MOCK_METHOD0(GetCandidateDir, std::string());
     MOCK_METHOD2(RestoreKey4Nato, int32_t(const std::string &keyDir, KeyType type));
+    MOCK_METHOD1(GetHashKey, bool(KeyBlob &hashKey));
+    MOCK_METHOD0(GenerateHashKey, bool());
 };
 }
 }

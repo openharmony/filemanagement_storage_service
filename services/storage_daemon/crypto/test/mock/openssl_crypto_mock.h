@@ -26,6 +26,7 @@ public:
     virtual ~IOpensslCrypto() = default;
     virtual int32_t AESEncrypt(const KeyBlob &, const KeyBlob &, KeyContext &) = 0;
     virtual int32_t AESDecrypt(const KeyBlob &, KeyContext &, KeyBlob &);
+    virtual KeyBlob HashWithPrefix(const KeyBlob &prefix, const KeyBlob &payload, uint32_t length) = 0;
 public:
     static inline std::shared_ptr<IOpensslCrypto> opensslCryptoMock = nullptr;
 };
@@ -34,6 +35,7 @@ class OpensslCryptoMock : public IOpensslCrypto {
 public:
     MOCK_METHOD3(AESEncrypt, int32_t(const KeyBlob &, const KeyBlob &, KeyContext &));
     MOCK_METHOD3(AESDecrypt, int32_t(const KeyBlob &, KeyContext &, KeyBlob &));
+    MOCK_METHOD3(HashWithPrefix, KeyBlob(const KeyBlob &, const KeyBlob &, uint32_t));
 };
 }
 }
