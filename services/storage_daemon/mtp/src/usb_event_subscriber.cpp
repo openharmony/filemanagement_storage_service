@@ -16,7 +16,6 @@
 #include "mtp/usb_event_subscriber.h"
 #include <libmtp.h>
 #include <unistd.h>
-#include "cJSON.h"
 #include "mtp/mtp_device_monitor.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -28,6 +27,8 @@ constexpr const char *DEV_ADDRESS_KEY = "devAddress";
 constexpr const char *DEV_VENDOR_ID_KEY = "vendorId";
 constexpr const char *DEV_PRODUCT_ID_KEY = "productId";
 constexpr const char *DEV_CLASS_KEY = "clazz";
+constexpr int USB_CLASS_IMAGE = 6;
+constexpr int USB_CLASS_VENDOR_SPEC = 255;
 
 UsbEventSubscriber::UsbEventSubscriber(const EventFwk::CommonEventSubscribeInfo &info)
     : EventFwk::CommonEventSubscriber(info)
@@ -111,37 +112,103 @@ void UsbEventSubscriber::GetValueFromUsbDataInfo(const std::string &jsonStr, uin
     cJSON_Delete(usbJson);
 }
 
-bool UsbEventSubscriber::IsMTPDevice(const std::string &jsonStr)
+std::string UsbEventSubscriber::ToLowerString(const char* str)
 {
-    cJSON *usbJson = cJSON_Parse(jsonStr.c_str());
+    if (str == nullptr) {
+        return "";
+    }
+    std::string lowerStr(str);
+    std::transform(lowerStr.begin(), lowerStr.end(), lowerStr.begin(),
+                  [](unsigned char c) { return std::tolower(c); });
+    return lowerStr;
+}
+
+bool UsbEventSubscriber::CheckMtpInterface(const cJSON* iface)
+{
+    cJSON* clazz = cJSON_GetObjectItemCaseSensitive(iface, "clazz");
+    if (clazz != nullptr && cJSON_IsNumber(clazz) && clazz->valueint) {
+        const int ifaceClazz = clazz->valueint;
+        if (ifaceClazz == USB_CLASS_IMAGE || ifaceClazz == USB_CLASS_VENDOR_SPEC) {
+            return true;
+        }
+    }
+
+    cJSON* name = cJSON_GetObjectItemCaseSensitive(iface, "name");
+    if (name != nullptr && cJSON_IsString(name) && name->valuestring) {
+        const std::string ifaceName = ToLowerString(name->valuestring);
+        if (ifaceName.find("mtp") != std::string::npos || ifaceName.find("ptp") != std::string::npos) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool UsbEventSubscriber::CheckAllInterfaces(const cJSON* configs)
+{
+    if (configs == nullptr || !cJSON_IsArray(configs)) {
+        return false;
+    }
+
+    cJSON* config = nullptr;
+    cJSON_ArrayForEach(config, configs) {
+        cJSON* interfaces = cJSON_GetObjectItemCaseSensitive(config, "interfaces");
+        if (interfaces == nullptr || !cJSON_IsArray(interfaces)) {
+            continue;
+        }
+        cJSON* iface = nullptr;
+        cJSON_ArrayForEach(iface, interfaces) {
+            if (CheckMtpInterface(iface)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool UsbEventSubscriber::IsMTPDevice(const std::string &usbInfo)
+{
+    cJSON *usbJson = cJSON_Parse(usbInfo.c_str());
     if (usbJson == nullptr) {
         LOGE("IsMTPDevice failed, parse json object is nullptr.");
         return false;
     }
-    uint8_t deviceClass = 0;
+
+    cJSON* productName = cJSON_GetObjectItemCaseSensitive(usbJson, "productName");
+    if (productName && cJSON_IsString(productName) && productName->valuestring) {
+        std::string lowerName = ToLowerString(productName->valuestring);
+        if ((lowerName.find("mtp") != std::string::npos || lowerName.find("ptp") != std::string::npos)) {
+            cJSON_Delete(usbJson);
+            return true;
+        }
+    }
+
+    cJSON* configs = cJSON_GetObjectItemCaseSensitive(usbJson, "configs");
+    if (CheckAllInterfaces(configs)) {
+        cJSON_Delete(usbJson);
+        return true;
+    }
+
     cJSON *classObj = cJSON_GetObjectItemCaseSensitive(usbJson, DEV_CLASS_KEY);
-    if (classObj != nullptr && cJSON_IsNumber(classObj)) {
-        deviceClass = static_cast<uint8_t>(classObj->valueint);
-    } else {
+    if (classObj == nullptr || !cJSON_IsNumber(classObj)) {
         LOGE("parse deviceClass failed.");
+        cJSON_Delete(usbJson);
         return false;
     }
-    uint16_t idVendor = 0;
+    uint8_t deviceClass = static_cast<uint8_t>(classObj->valueint);
     cJSON *vendorObj = cJSON_GetObjectItemCaseSensitive(usbJson, DEV_VENDOR_ID_KEY);
-    if (vendorObj != nullptr && cJSON_IsNumber(vendorObj)) {
-        idVendor = static_cast<uint16_t>(vendorObj->valueint);
-    } else {
+    if (vendorObj == nullptr || !cJSON_IsNumber(vendorObj)) {
         LOGE("parse vendorObj failed.");
+        cJSON_Delete(usbJson);
         return false;
     }
-    uint16_t idProduct = 0;
+    uint16_t idVendor = static_cast<uint16_t>(vendorObj->valueint);
     cJSON *productObj = cJSON_GetObjectItemCaseSensitive(usbJson, DEV_PRODUCT_ID_KEY);
-    if (productObj != nullptr && cJSON_IsNumber(productObj)) {
-        idProduct = static_cast<uint16_t>(productObj->valueint);
-    } else {
+    if (productObj == nullptr || !cJSON_IsNumber(productObj)) {
         LOGE("parse productObj failed.");
+        cJSON_Delete(usbJson);
         return false;
     }
+    uint16_t idProduct = static_cast<uint16_t>(productObj->valueint);
     cJSON_Delete(usbJson);
     if (LIBMTP_check_is_mtp_device(deviceClass, idVendor, idProduct)) {
         LOGE("this is mtp device.");
