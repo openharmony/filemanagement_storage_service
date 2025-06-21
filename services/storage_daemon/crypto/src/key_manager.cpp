@@ -236,6 +236,10 @@ int KeyManager::GenerateAndInstallUserKey(uint32_t userId, const std::string &di
         LOGE("user security key store failed");
         return E_ELX_KEY_STORE_ERROR;
     }
+
+    // Generate hashkey for encrypt public directory
+    elKey->GenerateHashKey({});
+
     if (elKey->ActiveKey(auth.token, FIRST_CREATE_KEY) != E_OK) {
         elKey->ClearKey();
         LOGE("user security key active failed");
@@ -1035,6 +1039,9 @@ int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
         return E_ELX_KEY_STORE_ERROR;
     }
 
+    // Generate hashkey for encrypt public directory
+    item->GenerateHashKey({});
+
     userPinProtect[user] = !userTokenSecret.newSecret.empty();
     return 0;
 }
@@ -1379,6 +1386,10 @@ int KeyManager::ActiveElXUserKey(unsigned int user,
             return E_ELX_KEY_STORE_ERROR;
         }
     }
+
+    // Generate hashkey for encrypt public directory
+    elKey->GenerateHashKey({});
+  
     if (elKey->ActiveKey(auth.token, RETRIEVE_KEY) != E_OK) {
         LOGE("Active user %{public}u key failed", user);
         return E_ELX_KEY_ACTIVE_ERROR;
