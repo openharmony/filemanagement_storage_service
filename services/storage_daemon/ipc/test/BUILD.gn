@@ -54,6 +54,7 @@ ohos_unittest("storage_daemon_test") {
   sources = [
     "$ROOT_DIR/crypto/src/app_clone_key_manager.cpp",
     "$ROOT_DIR/crypto/test/key_manager_mock.cpp",
+    "$ROOT_DIR/crypto/test/key_manager_ext_mock.cpp",
     "$ROOT_DIR/disk/src/disk_config.cpp",
     "$ROOT_DIR/disk/src/disk_info.cpp",
     "$ROOT_DIR/disk/src/disk_manager.cpp",
@@ -209,6 +210,7 @@ ohos_unittest("storage_daemon_provider_test") {
 
   sources = [
     "${storage_daemon_path}/crypto/test/key_manager_mock.cpp",
+    "${storage_daemon_path}/crypto/test/key_manager_ext_mock.cpp",
     "${storage_daemon_path}/disk/src/disk_info.cpp",
     "${storage_daemon_path}/disk/src/disk_manager.cpp",
     "${storage_daemon_path}/ipc/src/storage_daemon.cpp",

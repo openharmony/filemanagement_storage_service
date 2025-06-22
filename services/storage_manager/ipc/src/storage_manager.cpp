@@ -875,5 +875,18 @@ int32_t StorageManager::UMountDisShareFile(int32_t userId, const std::string &ne
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     return sdCommunication->UMountDisShareFile(userId, networkId);
 }
+
+int32_t StorageManager::InactiveUserPublicDirKey(uint32_t userId)
+{
+#ifdef USER_CRYPTO_MANAGER
+    LOGI("UserId: %{public}u", userId);
+    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
+    int32_t ret = fsCrypto->InactiveUserPublicDirKey(userId);
+    LOGI("inactive user public dir key, userId: %{public}d, ret: %{public}d", userId, ret);
+    return ret;
+#else
+    return E_OK;
+#endif
+}
 }
 }

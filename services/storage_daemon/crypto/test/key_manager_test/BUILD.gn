@@ -331,6 +331,83 @@ ohos_unittest("KeyManagerAnotherTest") {
   }
 }
 
+ohos_unittest("KeyManagerExtTest") {
+  branch_protector_ret = "pac_ret"
+  sanitize = {
+    integer_overflow = true
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+    blocklist = "${storage_service_path}/cfi_blocklist.txt"
+  }
+  module_out_path = "storage_service/storage_service/storage_daemon"
+
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "LOG_DOMAIN = 0xD004301",
+    "USER_CRYPTO_MIGRATE_KEY",
+    "private = public",
+  ]
+
+  include_dirs = [
+    "${storage_daemon_path}/include",
+    "${storage_daemon_path}/include/crypto",
+    "${storage_daemon_path}/include/crypto/anco_manager",
+    "${storage_daemon_path}/include/libfscrypt",
+    "${storage_daemon_path}/include/mock",
+    "${storage_service_common_path}/include",
+    "${storage_interface_path}/innerkits/storage_manager/native",
+  ]
+
+  sources = [
+    "${storage_daemon_path}/crypto/src/crypto_delay_handler.cpp",
+    "${storage_daemon_path}/crypto/src/fbex.cpp",
+    "${storage_daemon_path}/crypto/src/fscrypt_key_v1.cpp",
+    "${storage_daemon_path}/crypto/src/fscrypt_key_v1_ext.cpp",
+    "${storage_daemon_path}/crypto/src/iam_client.cpp",
+    "${storage_daemon_path}/crypto/src/key_backup.cpp",
+    "${storage_daemon_path}/crypto/src/key_manager.cpp",
+    "${storage_daemon_path}/crypto/src/key_manager_ext.cpp",
+    "${storage_daemon_path}/crypto/src/recover_manager.cpp",
+    "${storage_daemon_path}/mock/base_key_mock.cpp",
+    "${storage_daemon_path}/mock/fscrypt_control_mock.cpp",
+    "${storage_daemon_path}/mock/fscrypt_key_v2_mock.cpp",
+    "${storage_daemon_path}/mock/key_control_mock.cpp",
+    "${storage_daemon_path}/user/src/mount_manager.cpp",
+    "${storage_daemon_path}/user/src/mount_manager_ext.cpp",
+    "${storage_daemon_path}/user/src/user_manager.cpp",
+    "key_manager_ext_test.cpp",
+  ]
+
+  deps = [
+    "${storage_daemon_path}:storage_common_utils",
+    "${storage_daemon_path}:storage_daemon_header",
+  ]
+
+  external_deps = [
+    "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
+    "eventhandler:libeventhandler",
+    "googletest:gmock_main",
+    "googletest:gtest_main",
+    "hilog:libhilog",
+    "huks:libhukssdk",
+    "init:libbegetutil",
+    "ipc:ipc_single",
+    "openssl:libcrypto_shared",
+  ]
+
+  if (enable_user_auth_framework) {
+    defines += [ "USER_AUTH_FRAMEWORK" ]
+    external_deps += [ "user_auth_framework:userauth_client" ]
+  }
+
+  if (enable_huks_hdi) {
+    defines += [ "HUKS_IDL_ENVIRONMENT" ]
+    external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
+  }
+}
+
 group("key_manager_test") {
   testonly = true
   deps = [
@@ -338,5 +415,6 @@ group("key_manager_test") {
     ":KeyManagerOtherTest",
     ":KeyManagerSupTest",
     ":KeyManagerTest",
+    ":KeyManagerExtTest",
   ]
 }
