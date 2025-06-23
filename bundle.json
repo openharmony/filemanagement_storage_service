@@ -139,6 +139,13 @@
                 ],
                 "header_base": "//foundation/filemanagement/storage_service/services/storage_daemon/include/libfscrypt"
               }
+            },
+            {
+              "name": "//foundation/filemanagement/storage_service/interfaces/kits/cj/storage_manager:cj_storage_manager_ffi",
+              "header": {
+                "header_files": [],
+                "header_base": "//foundation/filemanagement/storage_service/interfaces/kits/cj/storage_manager/include"
+              }
             }
       ],
       "test": [
