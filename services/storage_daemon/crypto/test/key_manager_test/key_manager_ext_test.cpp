@@ -122,12 +122,10 @@ HWTEST_F(KeyManagerExtTest, KeyManagerExt_GenerateUserKeys_001, TestSize.Level1)
 
     KeyManager::GetInstance()->SaveUserElKey(userId, EL2_KEY, tmpKey);
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
-    EXPECT_CALL(*baseKeyMock_, KeyDescIsEmpty()).WillOnce(Return(true));
     EXPECT_CALL(*baseKeyMock_, GetHashKey(_)).WillOnce(Return(false));
     EXPECT_EQ(KeyManagerExt::GetInstance()->GenerateUserKeys(userId, flags), E_KEY_EMPTY_ERROR);
 
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
-    EXPECT_CALL(*baseKeyMock_, KeyDescIsEmpty()).WillOnce(Return(true));
     auto setKeyBlob = [](KeyBlob &value) {
         std::vector<uint8_t> vecIn{1, 2, 3, 4, 5};
         value.Alloc(vecIn.size());
@@ -139,13 +137,11 @@ HWTEST_F(KeyManagerExtTest, KeyManagerExt_GenerateUserKeys_001, TestSize.Level1)
     EXPECT_EQ(KeyManagerExt::GetInstance()->GenerateUserKeys(userId, flags), E_OK);
 
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
-    EXPECT_CALL(*baseKeyMock_, KeyDescIsEmpty()).WillOnce(Return(true));
     EXPECT_CALL(*baseKeyMock_, GetHashKey(_)).WillOnce(DoAll(WithArgs<0>(setKeyBlob), Return(true)));
     EXPECT_CALL(*userkeyExtMocMock_, GenerateUserKey(_, _)).WillOnce(Return(E_KEY_EMPTY_ERROR));
     EXPECT_EQ(KeyManagerExt::GetInstance()->GenerateUserKeys(userId, flags), E_KEY_EMPTY_ERROR);
 
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
-    EXPECT_CALL(*baseKeyMock_, KeyDescIsEmpty()).WillOnce(Return(true));
     EXPECT_CALL(*baseKeyMock_, GetHashKey(_)).WillOnce(DoAll(WithArgs<0>(setKeyBlob), Return(true)));
     EXPECT_CALL(*userkeyExtMocMock_, GenerateUserKey(_, _)).WillOnce(Return(E_OK));
     EXPECT_CALL(*userkeyExtMocMock_, SetFilePathPolicy(_)).WillOnce(Return(E_KEY_EMPTY_ERROR));
@@ -169,15 +165,41 @@ HWTEST_F(KeyManagerExtTest, KeyManagerExt_DeleteUserKeys_001, TestSize.Level1)
     KeyManagerExt::GetInstance()->SetMockService(userkeyExtMocMock_.get());
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false));
     EXPECT_EQ(KeyManagerExt::GetInstance()->DeleteUserKeys(userId), E_OK);
+    GTEST_LOG_(INFO) << "KeyManagerExt_DeleteUserKeys_001 end";
+}
 
+/**
+ * @tc.name: KeyManagerExt_DeleteUserKeys_002
+ * @tc.desc: Verify the KeyManagerExt DeleteUserKeys function.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(KeyManagerExtTest, KeyManagerExt_DeleteUserKeys_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManagerExt_DeleteUserKeys_002 start";
+    uint32_t userId = 124;
+    KeyManagerExt::GetInstance()->SetMockService(userkeyExtMocMock_.get());
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
     EXPECT_CALL(*userkeyExtMocMock_, DeleteUserKey(_)).WillOnce(Return(E_PARAMS_INVALID));
     EXPECT_EQ(KeyManagerExt::GetInstance()->DeleteUserKeys(userId), E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "KeyManagerExt_DeleteUserKeys_002 end";
+}
 
+/**
+ * @tc.name: KeyManagerExt_DeleteUserKeys_003
+ * @tc.desc: Verify the KeyManagerExt DeleteUserKeys function.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(KeyManagerExtTest, KeyManagerExt_DeleteUserKeys_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManagerExt_DeleteUserKeys_003 start";
+    uint32_t userId = 124;
+    KeyManagerExt::GetInstance()->SetMockService(userkeyExtMocMock_.get());
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
     EXPECT_CALL(*userkeyExtMocMock_, DeleteUserKey(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(KeyManagerExt::GetInstance()->DeleteUserKeys(userId), E_OK);
-    GTEST_LOG_(INFO) << "KeyManagerExt_DeleteUserKeys_001 end";
+    GTEST_LOG_(INFO) << "KeyManagerExt_DeleteUserKeys_003 end";
 }
 
 /**
@@ -196,25 +218,20 @@ HWTEST_F(KeyManagerExtTest, KeyManagerExt_ActiveUserKey_001, TestSize.Level1)
     EXPECT_EQ(KeyManagerExt::GetInstance()->ActiveUserKey(user, token, secret), E_OK);
 
     KeyManagerExt::GetInstance()->SetMockService(userkeyExtMocMock_.get());
-    EXPECT_EQ(KeyManagerExt::GetInstance()->ActiveUserKey(user, token, secret), E_OK);
-
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false));
-    EXPECT_EQ(KeyManagerExt::GetInstance()->ActiveUserKey(100, token, secret), E_OK);
+    EXPECT_EQ(KeyManagerExt::GetInstance()->ActiveUserKey(user, token, secret), E_OK);
 
     std::shared_ptr<BaseKey> tmpKey = std::dynamic_pointer_cast<BaseKey>(std::make_shared<FscryptKeyV2>("test"));
     KeyManager::GetInstance()->SaveUserElKey(user, EL1_KEY, tmpKey);
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
-    EXPECT_CALL(*baseKeyMock_, KeyDescIsEmpty()).WillOnce(Return(true));
     EXPECT_EQ(KeyManagerExt::GetInstance()->ActiveUserKey(user, token, secret), E_KEY_EMPTY_ERROR);
 
     KeyManager::GetInstance()->SaveUserElKey(user, EL2_KEY, tmpKey);
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
-    EXPECT_CALL(*baseKeyMock_, KeyDescIsEmpty()).WillOnce(Return(true));
     EXPECT_CALL(*baseKeyMock_, GetHashKey(_)).WillOnce(Return(false));
     EXPECT_EQ(KeyManagerExt::GetInstance()->ActiveUserKey(user, token, secret), E_KEY_EMPTY_ERROR);
 
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
-    EXPECT_CALL(*baseKeyMock_, KeyDescIsEmpty()).WillOnce(Return(true));
     EXPECT_CALL(*baseKeyMock_, GetHashKey(_)).WillOnce(DoAll(WithArgs<0>(Invoke([](KeyBlob &value) {
         std::vector<uint8_t> vecIn{1, 2, 3, 4, 5};
         value.Alloc(vecIn.size());
@@ -239,18 +256,42 @@ HWTEST_F(KeyManagerExtTest, KeyManagerExt_InActiveUserKey_001, TestSize.Level1)
     EXPECT_EQ(KeyManagerExt::GetInstance()->InActiveUserKey(user), E_OK);
 
     KeyManagerExt::GetInstance()->SetMockService(userkeyExtMocMock_.get());
-    EXPECT_EQ(KeyManagerExt::GetInstance()->InActiveUserKey(user), E_OK);
-
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false));
     EXPECT_EQ(KeyManagerExt::GetInstance()->InActiveUserKey(user), E_OK);
+    GTEST_LOG_(INFO) << "KeyManagerExt_InactiveUserElKey_001 end";
+}
 
+/**
+ * @tc.name: KeyManagerExt_InActiveUserKey_002
+ * @tc.desc: Verify the InActiveUserKey function.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(KeyManagerExtTest, KeyManagerExt_InActiveUserKey_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManagerExt_InActiveUserKey_002 Start";
+    unsigned int user = 800;
+    KeyManagerExt::GetInstance()->SetMockService(userkeyExtMocMock_.get());
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
     EXPECT_CALL(*userkeyExtMocMock_, InactiveUserKey(_)).WillOnce(Return(E_PARAMS_INVALID));
     EXPECT_EQ(KeyManagerExt::GetInstance()->InActiveUserKey(user), E_PARAMS_INVALID);
+    GTEST_LOG_(INFO) << "KeyManagerExt_InActiveUserKey_002 end";
+}
 
+/**
+ * @tc.name: KeyManagerExt_InActiveUserKey_003
+ * @tc.desc: Verify the InActiveUserKey function.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(KeyManagerExtTest, KeyManagerExt_InActiveUserKey_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManagerExt_InActiveUserKey_003 Start";
+    unsigned int user = 800;
+    KeyManagerExt::GetInstance()->SetMockService(userkeyExtMocMock_.get());
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
     EXPECT_CALL(*userkeyExtMocMock_, InactiveUserKey(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(KeyManagerExt::GetInstance()->InActiveUserKey(user), E_OK);
-    GTEST_LOG_(INFO) << "KeyManagerExt_InactiveUserElKey_001 end";
+    GTEST_LOG_(INFO) << "KeyManagerExt_InActiveUserKey_003 end";
 }
 }

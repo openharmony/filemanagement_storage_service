@@ -201,7 +201,7 @@ int KeyManagerExt::GenerateAndInstallUserKey(uint32_t userId)
     }
     hashKey.Clear();
 
-    service_->SetFilePathPolicy(userId);
+    ret = service_->SetFilePathPolicy(userId);
     if (ret != E_OK) {
         LOGE("Set directory policy error, ret: %{public}d", ret);
     }
