@@ -86,11 +86,13 @@ ohos_unittest("disk_info_test") {
   defines = [
     "STORAGE_LOG_TAG = \"StorageDaemon\"",
     "LOG_DOMAIN = 0xD004301",
+    "private=public",
   ]
 
   include_dirs = [
     "$ROOT_DIR/disk/test",
     "$ROOT_DIR/include",
+    "${storage_daemon_path}/include/mock",
     "${storage_service_path}/utils/include",
     "${storage_manager_path}/include",
     "${storage_interface_path}/innerkits/storage_manager/native",
@@ -101,6 +103,8 @@ ohos_unittest("disk_info_test") {
     "$ROOT_DIR/disk/src/disk_info.cpp",
     "$ROOT_DIR/disk/test/disk_info_test.cpp",
     "$ROOT_DIR/ipc/src/storage_manager_client.cpp",
+    "$ROOT_DIR/mock/disk_utils_mock.cpp",
+    "$ROOT_DIR/mock/file_utils_mock.cpp",
     "$ROOT_DIR/netlink/src/netlink_data.cpp",
     "$ROOT_DIR/volume/src/external_volume_info.cpp",
     "$ROOT_DIR/volume/src/process.cpp",
