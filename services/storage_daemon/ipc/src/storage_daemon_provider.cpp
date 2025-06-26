@@ -615,7 +615,11 @@ int32_t StorageDaemonProvider::CreateShareFile(const StorageFileRawData &rawData
     LOGI("Create Share file list len is %{public}u", rawData.size);
     funcResult.clear();
     std::vector<std::string> uriList;
-    RawDataToStringVec(rawData, uriList);
+    int32_t ret = RawDataToStringVec(rawData, uriList);
+    if (ret != E_OK) {
+        LOGI("RawDataToStringVec failed, ret is %{public}d", ret);
+        return ret;
+    }
     LOGI("StorageDaemonProvider::CreateShareFile start. file size is %{public}zu", uriList.size());
     AppFileService::FileShare::CreateShareFile(uriList, tokenId, flag, funcResult);
     LOGI("StorageDaemonProvider::CreateShareFile end. result size is %{public}zu", funcResult.size());
@@ -625,7 +629,11 @@ int32_t StorageDaemonProvider::CreateShareFile(const StorageFileRawData &rawData
 int32_t StorageDaemonProvider::DeleteShareFile(uint32_t tokenId, const StorageFileRawData &rawData)
 {
     std::vector<std::string> uriList;
-    RawDataToStringVec(rawData, uriList);
+    int32_t ret = RawDataToStringVec(rawData, uriList);
+    if (ret != E_OK) {
+        LOGI("RawDataToStringVec failed, ret is %{public}d", ret);
+        return ret;
+    }
     return AppFileService::FileShare::DeleteShareFile(tokenId, uriList);
 }
 
@@ -724,6 +732,7 @@ int32_t StorageDaemonProvider::IsFileOccupied(const std::string &path,
                                               std::vector<std::string> &outputList,
                                               bool &isOccupy)
 {
+    isOccupy = false;
     return StorageDaemon::GetInstance()->IsFileOccupied(path, inputList, outputList, isOccupy);
 }
 

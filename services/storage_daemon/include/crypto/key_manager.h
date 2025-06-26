@@ -23,7 +23,6 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-
 constexpr const char *USER_EL1_DIR = "/data/service/el1/public/storage_daemon/sd/el1";
 constexpr const char *USER_EL2_DIR = "/data/service/el1/public/storage_daemon/sd/el2";
 constexpr const char *USER_EL3_DIR = "/data/service/el1/public/storage_daemon/sd/el3";

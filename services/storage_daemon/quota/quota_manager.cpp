@@ -270,6 +270,7 @@ int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int32_t prjId, bool
         (void)fclose(f);
         return E_SYS_KERNEL_ERR;
     }
+
     if (inherit) {
         uint32_t flags;
         if (ioctl(fd, FS_IOC_GETFLAGS, &flags) == -1) {

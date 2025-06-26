@@ -140,8 +140,6 @@ bool MkDirRecurse(const std::string& path, mode_t mode)
 bool PrepareDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
 {
     LOGI("prepare for %{public}s", path.c_str());
-
-    // check whether the path exists
     struct stat st;
     if (TEMP_FAILURE_RETRY(lstat(path.c_str(), &st)) == E_ERR) {
         if (errno != ENOENT) {
@@ -153,20 +151,24 @@ bool PrepareDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
             LOGE("%{public}s exists and is not a directory", path.c_str());
             return false;
         }
-
         if (((st.st_mode & ALL_PERMS) != mode) && ChMod(path, mode)) {
-            LOGE("dir exists and failed to chmod, errno %{public}d", errno);
+            LOGE("dir exists and failed to chmod, errno %{public}d, uid %{public}d, gid %{public}d, mode %{public}d",
+                 errno, st.st_uid, st.st_gid, st.st_mode);
+            if (TEMP_FAILURE_RETRY(lstat(path.c_str(), &st)) == E_ERR) {
+                LOGE("failed to lstat for chmod, errno %{public}d", errno);
+            }
             return false;
         }
-
         if (((st.st_uid != uid) || (st.st_gid != gid)) && ChOwn(path, uid, gid)) {
-            LOGE("dir exists and failed to chown, errno %{public}d", errno);
+            LOGE("dir exists and failed to chown, errno %{public}d, uid %{public}d, gid %{public}d, mode %{public}d",
+                 errno, st.st_uid, st.st_gid, st.st_mode);
+            if (TEMP_FAILURE_RETRY(lstat(path.c_str(), &st)) == E_ERR) {
+                LOGE("failed to lstat for chown, errno %{public}d", errno);
+            }
             return false;
         }
-
         return true;
     }
-
     mode_t mask = umask(0);
     if (MkDir(path, mode)) {
         LOGE("failed to mkdir, errno %{public}d", errno);
@@ -174,26 +176,15 @@ bool PrepareDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid)
         return false;
     }
     umask(mask);
-
     if (ChMod(path, mode)) {
         LOGE("failed to chmod, errno %{public}d", errno);
         return false;
     }
-
     if (ChOwn(path, uid, gid)) {
         LOGE("failed to chown, errno %{public}d", errno);
         return false;
     }
-
-#ifdef USE_LIBRESTORECON
-    int err = Restorecon(path.c_str());
-    if (err) {
-        LOGE("failed to restorecon, err:%{public}d", err);
-        return false;
-    }
-#endif
-
-    return true;
+    return RestoreconDir(path);
 }
 
 bool RmDirRecurse(const std::string &path)
@@ -293,6 +284,7 @@ bool StringToUint32(const std::string &str, uint32_t &num)
 bool StringToBool(const std::string &str, bool &result)
 {
     if (str.empty()) {
+        LOGE("String is empty.");
         return false;
     }
 
@@ -561,7 +553,7 @@ static void ClosePipe(int pipedes[2])
     (void)close(pipedes[0]);
     (void)close(pipedes[1]);
 }
- 
+
 static void WritePidToPipe(int pipe_fd[2])
 {
     (void)close(pipe_fd[0]);
@@ -572,7 +564,7 @@ static void WritePidToPipe(int pipe_fd[2])
     }
     (void)close(pipe_fd[1]);
 }
- 
+
 static void ReadPidFromPipe(std::vector<std::string> &cmd, int pipe_fd[2])
 {
     (void)close(pipe_fd[1]);
@@ -583,7 +575,7 @@ static void ReadPidFromPipe(std::vector<std::string> &cmd, int pipe_fd[2])
     (void)close(pipe_fd[0]);
     ReportExecutorPidEvent(cmd, recv_pid);
 }
- 
+
 static void ReadLogFromPipe(int logpipe[2])
 {
     (void)close(logpipe[1]);
@@ -741,6 +733,34 @@ void ChownRecursion(const std::string &dir, uid_t uid, gid_t gid)
     }
 }
 
+bool IsPathMounted(std::string &path)
+{
+    if (path.empty()) {
+        return true;
+    }
+    if (path.back() == '/') {
+        path.pop_back();
+    }
+    std::ifstream inputStream(MOUNT_POINT_INFO, std::ios::in);
+    if (!inputStream.is_open()) {
+        LOGE("unable to open /proc/mounts, errno is %{public}d", errno);
+        return false;
+    }
+    std::string tmpLine;
+    while (std::getline(inputStream, tmpLine)) {
+        std::stringstream ss(tmpLine);
+        std::string dst;
+        ss >> dst;
+        ss >> dst;
+        if (path == dst) {
+            inputStream.close();
+            return true;
+        }
+    }
+    inputStream.close();
+    return false;
+}
+
 std::vector<std::string> Split(std::string str, const std::string &pattern)
 {
     std::vector<std::string> result;
@@ -819,34 +839,6 @@ void DelTemp(const std::string &path)
             closedir(dir);
         }
     }
-}
-
-bool IsPathMounted(std::string &path)
-{
-    if (path.empty()) {
-        return true;
-    }
-    if (path.back() == '/') {
-        path.pop_back();
-    }
-    std::ifstream inputStream(MOUNT_POINT_INFO, std::ios::in);
-    if (!inputStream.is_open()) {
-        LOGE("unable to open /proc/mounts, errno is %{public}d", errno);
-        return false;
-    }
-    std::string tmpLine;
-    while (std::getline(inputStream, tmpLine)) {
-        std::stringstream ss(tmpLine);
-        std::string dst;
-        ss >> dst;
-        ss >> dst;
-        if (path == dst) {
-            inputStream.close();
-            return true;
-        }
-    }
-    inputStream.close();
-    return false;
 }
 
 bool CreateFolder(const std::string &path)
@@ -928,6 +920,18 @@ std::string ProcessToString(std::vector<ProcessInfo> &processList)
         result += std::to_string(iter.pid) + "_" + iter.name + ",";
     }
     return result.empty() ? "" : result.substr(0, result.length() -1);
+}
+
+bool RestoreconDir(const std::string &path)
+{
+#ifdef USE_LIBRESTORECON
+    int err = Restorecon(path.c_str());
+    if (err) {
+        LOGE("failed to restorecon, err:%{public}d", err);
+        return false;
+    }
+#endif
+    return true;
 }
 } // STORAGE_DAEMON
 } // OHOS

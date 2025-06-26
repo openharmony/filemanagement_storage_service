@@ -33,7 +33,7 @@ constexpr const char *TAG_PREFIX = " WARNING: DELAY > ";
 constexpr const char *TAG_UNIT_SUFFIX = " ms.";
 
 void StorageRadar::ReportActiveUserKey(const std::string &funcName, uint32_t userId, int ret,
-    const std::string &keyElxLevel)
+                                       const std::string &keyLevel)
 {
     RadarParameter param = {
         .orgPkg = "os_account",
@@ -41,14 +41,14 @@ void StorageRadar::ReportActiveUserKey(const std::string &funcName, uint32_t use
         .funcName = funcName,
         .bizScene = BizScene::USER_KEY_ENCRYPTION,
         .bizStage = BizStage::BIZ_STAGE_ACTIVE_USER_KEY,
-        .keyElxLevel = keyElxLevel,
+        .keyElxLevel = keyLevel,
         .errorCode = ret
     };
     StorageRadar::GetInstance().RecordFuctionResult(param);
 }
 
 void StorageRadar::ReportGetStorageStatus(const std::string &funcName, uint32_t userId, int ret,
-    const std::string &orgPkg)
+                                          const std::string &orgPkg)
 {
     RadarParameter param = {
         .orgPkg = orgPkg,

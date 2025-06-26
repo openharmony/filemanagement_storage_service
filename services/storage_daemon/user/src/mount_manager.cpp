@@ -21,6 +21,7 @@
 #include "utils/disk_utils.h"
 #include "utils/storage_radar.h"
 #include "parameter.h"
+#include "parameters.h"
 #include "quota/quota_manager.h"
 #include "observer/appstate_observer.h"
 #include "storage_service_errno.h"
@@ -36,6 +37,7 @@
 
 namespace OHOS {
 namespace StorageDaemon {
+using namespace std;
 #define HMDFS_IOC 0xf2
 #define HMDFS_IOC_FORBID_OPEN _IO(HMDFS_IOC, 12)
 #ifdef DFS_SERVICE
@@ -92,7 +94,7 @@ std::vector<DirInfo> MountManager::InitVirtualDir()
             {"/mnt/data/%d/cloud", MODE_0711, OID_ROOT, OID_ROOT},
             {"/mnt/data/%d/cloud_fuse", MODE_0711, OID_DFS, OID_DFS},
             {"/mnt/data/%d/media_fuse", MODE_0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
-            {"/mnt/data/%d/smb", MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
+            {"/mnt/data/%d/userExternal", MODE_02771, OID_FILE_MANAGER, OID_FILE_MANAGER},
             {"/mnt/data/%d/hmdfs", MODE_0711, OID_FILE_MANAGER, OID_FILE_MANAGER},
             {"/mnt/hmdfs/", MODE_0711, OID_ROOT, OID_ROOT},
             {"/mnt/hmdfs/%d/", MODE_0711, OID_ROOT, OID_ROOT},
@@ -107,11 +109,20 @@ std::vector<DirInfo> MountManager::InitSystemServiceDir()
             {"/data/service/el2/%d/cloud_backup_service", MODE_0711, OID_CLOUD_BACK, OID_CLOUD_BACK},
             {"/data/service/el2/%d/deviceauth", MODE_0711, OID_DEVICE_AUTH, OID_DEVICE_AUTH},
             {"/data/service/el3/%d/device_standby", MODE_0711, OID_RSS, OID_RSS},
+            {"/data/service/el2/%d/trustedringsvc", MODE_0711, OID_TRUSTED_RING, OID_TRUSTED_RING},
             {"/data/service/el2/%d/hwid_service", MODE_0711, OID_HWID, OID_HWID},
+            {"/data/service/el2/%d/cloud_develop_proxy",
+                    MODE_0711, OID_CLOUD_DEVELOP_PROXY, OID_CLOUD_DEVELOP_PROXY},
+            {"/data/service/el2/%d/media_cloud_enhance_service",
+                    MODE_0711, OID_MEDIA_ENHANCE_SERVICE, OID_MEDIA_ENHANCE_SERVICE},
+            {"/data/service/el2/%d/push_manager_service", MODE_0711, OID_PUSH, OID_PUSH},
+            {"/data/service/el2/%d/push_manager_service/database", MODE_0711, OID_PUSH, OID_PUSH},
             {"/data/service/el2/%d/healthsport", MODE_0711, OID_HEALTH_SPORT, OID_HEALTH_SPORT},
             {"/data/service/el2/%d/huks_service", MODE_0711, OID_HUKS, OID_HUKS},
             {"/data/service/el2/%d/parentcontrol", MODE_0711, OID_PARENT_CONTROL, OID_PARENT_CONTROL},
             {"/data/service/el4/%d/huks_service", MODE_0711, OID_HUKS, OID_HUKS},
+            {"/data/chipset/el2/%d/multimedia", MODE_0711, OID_MEDIA, OID_MEDIA},
+            {"/data/chipset/el2/%d/multimedia/algorithm_camera", MODE_0711, OID_MEDIA, OID_MEDIA},
             {"/data/service/el2/%d/asset_service", MODE_0711, OID_ASSET, OID_ASSET},
             {"/data/service/el4/%d/asset_clone", MODE_0711, OID_ASSET, OID_ASSET},
             {"/data/service/el2/%d/account", MODE_0711, OID_ACCOUNT, OID_ACCOUNT},
@@ -121,6 +132,14 @@ std::vector<DirInfo> MountManager::InitSystemServiceDir()
             {"/data/service/el2/%d/fusion_awareness", MODE_0711, OID_COLLABORATION_FWK, OID_COLLABORATION_FWK},
             {"/data/service/el2/%d/av_session", MODE_0711, OID_AV_SESSION, OID_AV_SESSION},
             {"/data/service/el2/%d/file_transfer_service", MODE_0711, 7017, 7017},
+            {"/data/service/el2/%d/gameservice_server",
+                    MODE_0711, OID_GAMESERVICE_SERVER, OID_GAMESERVICE_SERVER},
+            {"/data/service/el2/%d/gameservice_server/ucs",
+                    MODE_0711, OID_GAMESERVICE_SERVER, OID_GAMESERVICE_SERVER},
+            {"/data/service/el2/%d/virt_service", MODE_0711, OID_SYSTEM, OID_SYSTEM},
+            {"/data/service/el2/%d/virt_service/hwf_service", MODE_0711, OID_HWF_SERVICE, OID_HWF_SERVICE},
+            {"/data/service/el2/%d/virt_service/vm_manager", MODE_0711, OID_HWF_SERVICE, OID_HWF_SERVICE},
+            {"/data/service/el2/%d/file_monitor_service", MODE_0711, OID_USER_DATA_RW, OID_USER_DATA_RW},
             {"/data/service/el2/%d/print_service", MODE_0711, OID_PRINT, OID_PRINT},
             {"/data/service/el2/%d/database", MODE_0711, OID_DDMS, OID_DDMS},
             {"/data/service/el2/%d/database/pasteboard_service", MODE_02771, OID_PASTEBOARD, OID_DDMS},
@@ -353,7 +372,9 @@ int32_t MountManager::FindProcess(std::list<std::string> &unMountFailList, std::
             proInfos.push_back(info);
         }
     }
-    LOGE("find process end, total find %{public}d", static_cast<int>(proInfos.size()));
+    std::string info = ProcessToString(proInfos);
+    int count = static_cast<int>(proInfos.size());
+    LOGE("find process end, total find %{public}d, process is: %{public}s", count, info.c_str());
     return E_OK;
 }
 
@@ -476,7 +497,6 @@ int32_t MountManager::CloudMount(int32_t userId, const string &path)
         LOGI("Cloud Service has not started");
         return E_CLOUD_NOT_READY;
     }
-
     FILE *f = fopen("/dev/fuse", "r+");
     if (f == nullptr) {
         LOGE("open /dev/fuse fail");
@@ -600,8 +620,8 @@ int32_t MountManager::MountCryptoPathAgain(uint32_t userId)
             continue;
         }
         std::string bundleNameStr = bundleName.path().filename().generic_string();
-        int32_t point = bundleNameStr.find(MOUNT_SUFFIX);
-        if (point == -1) {
+        std::string::size_type point = bundleNameStr.find(MOUNT_SUFFIX);
+        if (point == string::npos) {
             continue;
         }
         bundleNameStr = bundleNameStr.substr(0, point);
@@ -918,7 +938,7 @@ int32_t MountManager::CloudUMount(int32_t userId)
     LOGI("SD_DURATION: UMOUNT2: UMOUNT FULL COULD, delayTime = %{public}s", delay.c_str());
 
     startTime = StorageService::StorageRadar::RecordCurrentTime();
-    const string cloudPath = cloudMntArgs.GetFullMediaCloud();
+    const std::string cloudPath = cloudMntArgs.GetFullMediaCloud();
     err = UMount2(cloudPath, MNT_DETACH);
     if (err != E_OK && errno != ENOENT && errno != EINVAL) {
         LOGE("cloud umount failed, errno %{public}d", errno);
@@ -1170,13 +1190,11 @@ int32_t MountManager::UmountFileSystem(int32_t userId)
     LOGI("try to force umount all path start.");
     std::list<std::string> unMountFailList;
     int32_t unMountRes = UMountAllPath(userId, unMountFailList);
-    std::vector<std::string> paths = {"account", "non_account", "cloud"};
-    for (const auto &item: paths) {
+    for (const auto &item: HMDFS_SUFFIX) {
         Utils::MountArgument mountArg(Utils::MountArgumentDescriptors::Alpha(userId, item));
         unMountFailList.push_back(mountArg.GetFullDst());
     }
-    CheckSysFs(userId);
-    if (unMountRes != E_OK) {
+    if (CheckSysFs(userId) || unMountRes != E_OK) {
         ForbidOpen(userId);
         LOGE("force umount failed, try to kill process, res is %{public}d.", unMountRes);
         FindAndKillProcess(userId, unMountFailList, unMountRes);
@@ -1195,8 +1213,7 @@ int32_t MountManager::UmountFileSystem(int32_t userId)
 
 bool MountManager::CheckSysFs(int32_t userId)
 {
-    std::vector<std::string> paths = {"account", "non_account", "cloud"};
-    for (const auto &item: paths) {
+    for (const auto &item: HMDFS_SUFFIX) {
         Utils::MountArgument mountArg(Utils::MountArgumentDescriptors::Alpha(userId, item));
         std::string path = mountArg.GetFullDst();
         if (IsSysFsInUse(path)) {
@@ -1238,8 +1255,7 @@ bool MountManager::IsSysFsInUse(std::string &path)
 
 void MountManager::ForbidOpen(int32_t userId)
 {
-    std::vector<std::string> paths = {"account", "non_account", "cloud"};
-    for (const auto &item: paths) {
+    for (const auto &item: HMDFS_SUFFIX) {
         Utils::MountArgument mountArg(Utils::MountArgumentDescriptors::Alpha(userId, item));
         std::string path = mountArg.GetFullDst();
         FILE *f = fopen(path.c_str(), "r");
@@ -1403,7 +1419,7 @@ int32_t MountManager::MountDfsDocs(int32_t userId, const std::string &relativePa
     int32_t ret = Mount(srcPath, dstPath, nullptr, MS_BIND, nullptr);
     if (ret != 0 && errno != EEXIST && errno != EBUSY) {
         LOGE("MountDfsDocs mount bind failed, srcPath is %{public}s dstPath is %{public}s errno is %{public}d",
-             GetAnonyString(srcPath).c_str(), dstPath.c_str(), errno);
+            GetAnonyString(srcPath).c_str(), dstPath.c_str(), errno);
         return E_USER_MOUNT_ERR;
     }
     auto delay = StorageService::StorageRadar::ReportDuration(" MOUNT: MOUNT_DFS_DOCS",
@@ -2091,48 +2107,6 @@ void MountManager::FindProcForMulti(const std::string &pidPath, const std::strin
         }
         CheckSymlinkForMulti(fdPath + FILE_SEPARATOR_CHAR + fdDirent->d_name, path, occupyFiles);
     }
-}
-
-void MountManager::CheckSymlinkForMulti(const std::string &fdPath, const std::string &path,
-    std::set<std::string> &occupyFiles)
-{
-    char realPath[PATH_MAX_FOR_LINK];
-    int res = readlink(fdPath.c_str(), realPath, sizeof(realPath) - 1);
-    if (res < 0) {
-        LOGE("readlink failed for multi, errno is %{public}d.", errno);
-        return;
-    }
-    realPath[res] = '\0';
-    std::string realPathStr(realPath);
-    if (realPathStr.find(path) == 0) {
-        LOGE("find a fd from link, %{public}s", realPathStr.c_str());
-        realPathStr = realPathStr.substr(path.size());
-        if (realPathStr.empty()) {
-            return;
-        }
-        if (path == FILE_MGR_ROOT_PATH) {
-            occupyFiles.insert(realPathStr);
-            return;
-        }
-        std::string::size_type point = realPathStr.find(FILE_SEPARATOR_CHAR);
-        if (point != std::string::npos) {
-            realPathStr = realPathStr.substr(0, point);
-        }
-        occupyFiles.insert(realPathStr);
-    }
-}
-
-bool MountManager::IsReadOnlyRemount()
-{
-    const char *syncType = "1";
-    char paramOutBuf[REMOUNT_VALUE_LEN] = {0};
-    int ret = GetParameter(DETERMINE_DEVICE_TYPE_KEY, "", paramOutBuf, REMOUNT_VALUE_LEN);
-    LOGD("paramOutBuf: %{public}s, ret: %{public}d", paramOutBuf, ret);
-    if (ret > 0 && strncmp(paramOutBuf, syncType, strlen(syncType)) == 0) {
-        LOGI("Need readonly remount.");
-        return true;
-    }
-    return false;
 }
 } // namespace StorageDaemon
 } // namespace OHOS

@@ -18,6 +18,7 @@
 #include <fcntl.h>
 #include <sys/mount.h>
 #include <sys/sysmacros.h>
+#include <sys/xattr.h>
 #include <unistd.h>
 
 #include "ipc/storage_manager_client.h"
@@ -28,6 +29,8 @@
 #include "utils/string_utils.h"
 #include "volume/external_volume_info.h"
 
+const int32_t MTP_QUERY_RESULT_LEN = 10;
+const std::string MTP_PATH_PREFIX = "/mnt/data/external/mtp";
 #define STORAGE_MANAGER_IOC_CHK_BUSY _IOR(0xAC, 77, int)
 using namespace std;
 using namespace OHOS::StorageService;
@@ -267,6 +270,10 @@ int32_t VolumeManager::QueryUsbIsInUse(const std::string &diskPath, bool &isInUs
             string_view(realPath).size(), diskPath.size());
         return E_PARAMS_INVALID;
     }
+    if (IsMtpDeviceInUse(diskPath)) {
+        isInUse = true;
+        return E_OK;
+    }
     int fd = open(realPath, O_RDONLY);
     if (fd < 0) {
         LOGE("open file fail realPath %{public}s, errno %{public}d", realPath, errno);
@@ -289,6 +296,27 @@ int32_t VolumeManager::QueryUsbIsInUse(const std::string &diskPath, bool &isInUs
     isInUse = false;
     close(fd);
     return E_OK;
+}
+
+bool VolumeManager::IsMtpDeviceInUse(const std::string &diskPath)
+{
+    if (diskPath.rfind(MTP_PATH_PREFIX, 0) != 0) {
+        return false;
+    }
+
+    std::string key = "user.queryMtpIsInUse";
+    char value[MTP_QUERY_RESULT_LEN] = { 0 };
+    int32_t len = getxattr(diskPath.c_str(), key.c_str(), value, MTP_QUERY_RESULT_LEN);
+    if (len < 0) {
+        LOGE("Failed to getxattr for diskPath = %{public}s", diskPath.c_str());
+        return false;
+    }
+
+    if ("true" == std::string(value)) {
+        LOGI("MTP device is in use for diskPath = %{public}s", diskPath.c_str());
+        return true;
+    }
+    return false;
 }
 } // StorageDaemon
 } // OHOS

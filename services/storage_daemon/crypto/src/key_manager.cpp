@@ -49,10 +49,10 @@ constexpr const char *SHIELD_DIR = "/latest/shield";
 constexpr const char *DESC_DIR = "/key_desc";
 constexpr const char *EL2_ENCRYPT_TMP_FILE = "/el2_tmp";
 constexpr uint32_t KEY_RECOVERY_USER_ID = 300;
-constexpr uint32_t RECOVERY_TOKEN_CHALLENGE_LENG = 32;
 
 constexpr const char *SERVICE_STORAGE_DAEMON_DIR = "/data/service/el1/public/storage_daemon";
 constexpr const char *FSCRYPT_EL_DIR = "/data/service/el1/public/storage_daemon/sd";
+constexpr uint32_t RECOVERY_TOKEN_CHALLENGE_LENG = 32;
 
 constexpr int LOCK_STATUS_START = 0;
 constexpr int LOCK_STATUS_END = 1;
@@ -1917,7 +1917,7 @@ int KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type, const std:
     for (auto item : vec) {
         int ret = LoadAndSetPolicy(keyPath.c_str(), item.path.c_str());
         if (ret != 0) {
-            LOGE("Set directory el policy error, ret: %{public}d", ret);
+            LOGE("Set directory el policy error, ret: %{public}d, path:%{public}s", ret, item.path.c_str());
             return E_LOAD_AND_SET_POLICY_ERR;
         }
     }
@@ -2119,7 +2119,7 @@ int KeyManager::CheckUserPinProtect(unsigned int userId,
                                     const std::vector<uint8_t> &token,
                                     const std::vector<uint8_t> &secret)
 {
-    LOGI("enter CheckUserPinProtect.");
+    LOGI("enter CheckUserPinProtect");
     std::error_code errCode;
     std::string restorePath = std::string(USER_EL2_DIR) + "/" + std::to_string(userId) + RESTORE_DIR;
     if (!std::filesystem::exists(restorePath, errCode)) {

@@ -424,26 +424,14 @@ int FBEX::DeleteClassEPinCode(uint32_t userIdSingle, uint32_t userIdDouble)
 int FBEX::ChangePinCodeClassE(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupport)
 {
     LOGI("enter, userId: %{public}d", userIdDouble);
-    FILE *f = fopen(FBEX_UECE_PATH, "r+");
-    if (f == nullptr) {
-        if (errno == ENOENT) {
-            LOGE("fbex_uece does not exist, fbe not support this command!");
-            isFbeSupport = false;
-            return 0;
-        }
-        LOGE("open fbex_cmd failed, errno: %{public}d", errno);
-        return -errno;
-    }
-    int fd = fileno(f);
+    int fd = open(FBEX_UECE_PATH, O_RDWR);
     if (fd < 0) {
         if (errno == ENOENT) {
             LOGE("fbex_uece does not exist, fbe not support this command!");
             isFbeSupport = false;
-            (void)fclose(f);
             return 0;
         }
         LOGE("open fbex_cmd failed, errno: %{public}d", errno);
-        (void)fclose(f);
         return -errno;
     }
     FbeOptsE ops{ .userIdDouble = userIdDouble, .userIdSingle = userIdSingle };
@@ -455,7 +443,7 @@ int FBEX::ChangePinCodeClassE(uint32_t userIdSingle, uint32_t userIdDouble, bool
         StorageRadar::ReportFbexResult("ChangePinCodeClassE", userIdSingle, ret, "EL5", extraData);
         ret = -errno;
     }
-    (void)fclose(f);
+    close(fd);
     LOGI("change pincode classE finish.");
     return ret;
 }
@@ -574,7 +562,7 @@ int FBEX::LockUece(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupp
         LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
     }
     (void)fclose(f);
-    LOGI("success");
+    LOGD("success");
     return ret;
 }
 
@@ -692,19 +680,20 @@ int FBEX::ReadESecretToKernel(UserIdToFbeStr &userIdToFbe, uint32_t status, KeyB
         LOGE("ops length is 0, skip");
         return 0;
     }
-    UnlockSendSecret(status, bufferSize, eBuffer.size, eBuffer.data.get(), ops.eBuffer);
+    UnlockSendSecret(status, bufferSize, eBuffer.size, eBuffer.data, ops.eBuffer);
     LOGI("ReadESecretToKernel success");
     return 0;
 }
 
-int FBEX::UnlockSendSecret(uint32_t status, uint32_t bufferSize, uint32_t length, uint8_t *eBuffer, uint8_t *opseBuffer)
+int FBEX::UnlockSendSecret(uint32_t status, uint32_t bufferSize, uint32_t length, std::unique_ptr<uint8_t[]> &eBuffer,
+                           uint8_t *opseBuffer)
 {
     if (status == UNLOCK_STATUS) {
         bufferSize = AES_256_HASH_RANDOM_SIZE + GCM_MAC_BYTES + GCM_NONCE_BYTES;
     } else {
         bufferSize = AES_256_HASH_RANDOM_SIZE;
     }
-    auto errBuffer = memcpy_s(eBuffer, length, opseBuffer, bufferSize);
+    auto errBuffer = memcpy_s(eBuffer.get(), length, opseBuffer, bufferSize);
     if (errBuffer != EOK) {
         LOGE("memcpy failed %{public}d", errBuffer);
         return 0;

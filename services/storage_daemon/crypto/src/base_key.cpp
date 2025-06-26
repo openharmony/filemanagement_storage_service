@@ -72,7 +72,7 @@ BaseKey::BaseKey(const std::string &dir, uint8_t keyLen) : dir_(dir), keyLen_(ke
 
 static void DoTempStore(const KeyContext &sourceCtx, KeyContext &targetCtx)
 {
-    LOGI("Store huks result temporary.");
+    LOGI("Store huks result temporary");
     KeyBlob tempAad(sourceCtx.aad);
     KeyBlob tempNonce(sourceCtx.nonce);
     KeyBlob tempRndEnc(sourceCtx.rndEnc);
@@ -1072,12 +1072,14 @@ int32_t BaseKey::DecryptKeyBlob(const UserAuth &auth, const std::string &keyPath
     KeyContext keyCtx;
     auto candidate = GetCandidateDir();
     std::string path = candidate.empty() ? keyPath : candidate;
+    LOGI("Key path is exist : %{public}d", FileExists(path));
+
     if (!LoadKeyBlob(keyCtx.shield, path + PATH_SHIELD)) {
         LOGE("Load KeyBlob shield failed!");
         return E_LOAD_KEY_BLOB_ERROR;
     }
     if (!LoadKeyBlob(keyCtx.secDiscard, path + PATH_SECDISC, CRYPTO_KEY_SECDISC_SIZE)) {
-        LOGE("Load KeyBlob secDiscard failed!");
+        LOGE("Load key secDiscard failed!");
         keyCtx.shield.Clear();
         return E_LOAD_KEY_BLOB_ERROR;
     }

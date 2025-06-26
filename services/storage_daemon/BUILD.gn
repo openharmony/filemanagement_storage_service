@@ -73,7 +73,6 @@ config("storage_daemon_config") {
   include_dirs = [
     "include",
     "include/utils",
-    "include/crypto",
     "${storage_manager_path}/include",
     "${storage_interface_path}/innerkits/storage_manager/native",
     "${storage_service_common_path}/include",
@@ -183,7 +182,6 @@ ohos_executable("storage_daemon") {
     "hitrace:hitrace_meter",
     "init:libbegetutil",
     "ipc:ipc_single",
-    "openssl:libcrypto_shared",
     "os_account:os_account_innerkits",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
@@ -234,7 +232,6 @@ ohos_executable("storage_daemon") {
       "ability_base:want",
       "cJSON:cjson",
       "common_event_service:cesfwk_innerkits",
-      "config_policy:configpolicy_util",
       "init:libbeget_proxy",
       "libmtp:libmtp",
       "usb_manager:usbsrv_client",
@@ -264,10 +261,10 @@ ohos_executable("storage_daemon") {
 config("sdc_config") {
   include_dirs = [
     "include",
-    "${storage_service_common_path}/include",
     "client/include",
     "${storage_interface_path}/innerkits/storage_manager/native",
     "${storage_manager_path}/include",
+    "${storage_service_common_path}/include",
   ]
 }
 
@@ -458,7 +455,6 @@ group("storage_daemon_unit_test") {
     "crypto/test/base_key_test:base_key_test",
     "crypto/test/crypto_test:crypto_test",
     "crypto/test/fscrypt_key_v1_ext_test:fscrypt_key_v1_ext_test",
-    "crypto/test/huks_master_test:huks_master_test",
     "crypto/test/iam_client_test:iam_client_test",
     "crypto/test/iam_client_user_auth_framework_test:iam_client_user_auth_framework_test",
     "crypto/test/crypto_delay_handler_test:crypto_delay_handler_test",
@@ -495,5 +491,8 @@ group("storage_daemon_unit_test") {
       "mtp/test:storage_daemon_mtp_test",
       "mtpfs/test:storage_daemon_mtpfs_test",
     ]
+  }
+  if (enable_huks_hdi) {
+    deps += [ "crypto/test/huks_master_test:huks_master_test", ]
   }
 }

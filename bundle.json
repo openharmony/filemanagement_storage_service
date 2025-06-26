@@ -44,6 +44,7 @@
         "cJSON",
         "c_utils",
         "common_event_service",
+        "crypto_framework",
         "data_share",
         "dfs_service",
         "drivers_interface_huks",
@@ -76,7 +77,6 @@
         "user_auth_framework",
         "zlib",
         "qos_manager",
-        "config_policy",
         "usb_manager"
       ],
       "third_party": [

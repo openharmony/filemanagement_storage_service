@@ -45,6 +45,7 @@ public:
 
     StorageManagerProvider *storageManagerProviderTest_;
 };
+
 void StorageManagerProviderTest::SetUp(void)
 {
     storageManagerProviderTest_ = new StorageManagerProvider(STORAGE_MANAGER_MANAGER_ID);

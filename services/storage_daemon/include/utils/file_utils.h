@@ -69,6 +69,7 @@ bool DelFolder(const std::string &path);
 void KillProcess(const std::vector<ProcessInfo> &processList, std::vector<ProcessInfo> &killFailList);
 bool IsProcessAlive(int pid);
 std::string ProcessToString(std::vector<ProcessInfo> &processList);
+bool RestoreconDir(const std::string &path);
 }
 }
 

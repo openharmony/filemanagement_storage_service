@@ -725,7 +725,6 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_CreateVolume_003, TestSize.L
     int flag = 0;
 
     auto mock = std::make_shared<DiskInfoTestMock>(sysPath, devPath, device, flag);
-
     EXPECT_CALL(*mock, CreateVolume(testing::_)).WillOnce(testing::Return(E_ERR));
     int ret = mock->CreateVolume(device);
 

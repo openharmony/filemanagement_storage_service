@@ -538,8 +538,7 @@ std::vector<int32_t> StorageDaemonCommunication::CreateShareFile(const StorageFi
         return std::vector<int32_t>{err};
     }
     std::vector<int32_t> funcResult;
-    int32_t rawDataSize = static_cast<int32_t>(rawData.size);
-    LOGI("StorageDaemonCommunication::CreateShareFile start. file size is %{public}d", rawDataSize);
+
     storageDaemon_->CreateShareFile(rawData, tokenId, flag, funcResult);
     LOGI("StorageDaemonCommunication::CreateShareFile end. result is %{public}zu", funcResult.size());
     return funcResult;
