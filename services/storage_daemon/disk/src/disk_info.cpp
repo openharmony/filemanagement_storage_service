@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -33,6 +33,9 @@ constexpr int32_t VOL_LENGTH = 3;
 constexpr int32_t MAJORID_BLKEXT = 259;
 constexpr int32_t MAX_PARTITION = 16;
 constexpr int32_t MAX_INTERVAL_PARTITION = 15;
+constexpr int32_t PREFIX_LENGTH = 2;
+constexpr int32_t HEX_SHIFT_BITS = 4;
+constexpr int32_t HEX_LETTER_OFFSET = 10;
 constexpr const char *SGDISK_PATH = "/system/bin/sgdisk";
 constexpr const char *SGDISK_DUMP_CMD = "--ohos-dump";
 constexpr const char *SGDISK_ZAP_CMD = "--zap-all";
@@ -44,6 +47,13 @@ enum DiskStatus:int {
     S_CREATE = 1,
     S_SCAN = 2,
     S_DESTROY = 4,
+};
+
+std::map<uint32_t, std::string> vendorMap_ = {
+    {0x000003, "SanDisk"},
+    {0x00001b, "SamSung"},
+    {0x000028, "Lexar"},
+    {0x000074, "Transcend"}
 };
 
 DiskInfo::DiskInfo(std::string &sysPath, std::string &devPath, dev_t device, int flag)
@@ -155,29 +165,15 @@ void DiskInfo::ReadMetadata()
             LOGE("open file %{public}s failed", path.c_str());
             return;
         }
-        int manfid = std::atoi(str.c_str());
-        switch (manfid) {
-            case 0x000003: {
-                vendor_ = "SanDisk";
-                break;
-            }
-            case 0x00001b: {
-                vendor_ = "SamSung";
-                break;
-            }
-            case 0x000028: {
-                vendor_ = "Lexar";
-                break;
-            }
-            case 0x000074: {
-                vendor_ = "Transcend";
-                break;
-            }
-            default : {
-                vendor_ = "Unknown";
-                LOGI("Unknown vendor information: %{public}d", manfid);
-                break;
-            }
+        LOGI("Raw manfid value from file: %{public}s", str.c_str());
+        uint32_t manfid = 0;
+        bool is_valid = ParseAndValidateManfid(str, manfid);
+        if (is_valid) {
+            auto it = vendorMap_.find(manfid);
+            vendor_ = (it != vendorMap_.end()) ? it->second : "Unknown";
+        } else {
+            LOGI("Invalid manfid: %{public}s", str.c_str());
+            vendor_ = "Invalid";
         }
     } else {
         std::string path(sysPath_ + "/device/vendor");
@@ -189,6 +185,38 @@ void DiskInfo::ReadMetadata()
         vendor_ = str;
         LOGI("Read metadata %{public}s", path.c_str());
     }
+}
+
+bool DiskInfo::ParseAndValidateManfid(const std::string& str, uint32_t& manfid)
+{
+    std::string trimmed = str;
+    size_t start = trimmed.find_first_not_of(" \t\n\r");
+    if (start != std::string::npos) {
+        trimmed.erase(0, start);
+    } else {
+        return false;
+    }
+    size_t end = trimmed.find_last_not_of(" \t\n\r");
+    trimmed.erase(std::min(end + 1, trimmed.size()));
+
+    const char* p = trimmed.c_str();
+    if (trimmed.size() > PREFIX_LENGTH && p[0] == '0' && (p[1] == 'x' || p[1] == 'X')) {
+        p += PREFIX_LENGTH;
+    }
+    manfid = 0;
+    while (*p) {
+        char c = *p++;
+        if (c >= '0' && c <= '9') {
+            manfid = (manfid << HEX_SHIFT_BITS) | (c - '0');
+        } else if (c >= 'A' && c <= 'F') {
+            manfid = (manfid << HEX_SHIFT_BITS) | (c - 'A' + HEX_LETTER_OFFSET);
+        } else if (c >= 'a' && c <= 'f') {
+            manfid = (manfid << HEX_SHIFT_BITS) | (c - 'a' + HEX_LETTER_OFFSET);
+        } else {
+            return false;
+        }
+    }
+    return true;
 }
 
 int DiskInfo::ReadPartition()
