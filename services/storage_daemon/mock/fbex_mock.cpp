@@ -55,6 +55,11 @@ int FBEX::ChangePinCodeClassE(uint32_t userIdSingle, uint32_t userIdDouble, bool
     return IFbexMoc::fbexMoc->ChangePinCodeClassE(userIdSingle, userIdDouble, isFbeSupport);
 }
 
+int FBEX::UpdateClassEBackUp(uint32_t userIdSingle, uint32_t userIdDouble)
+{
+    return IFbexMoc::fbexMoc->UpdateClassEBackUp(userIdSingle, userIdDouble);
+}
+
 // for el3 & el4
 int FBEX::LockScreenToKernel(uint32_t userId)
 {

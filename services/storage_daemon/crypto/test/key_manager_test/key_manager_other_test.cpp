@@ -367,7 +367,7 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_UpdateCeEceSeceUserAuth_001, TestSize.L
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true));
     EXPECT_CALL(*fscryptControlMock_, GetFscryptVersionFromPolicy()).WillOnce(Return(FSCRYPT_V2));
     EXPECT_CALL(*keyControlMock_, KeyCtrlGetFscryptVersion(_)).WillOnce(Return(FSCRYPT_V2));
-    EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(-1)).WillOnce(Return(-1));
+    EXPECT_CALL(*baseKeyMock_, RestoreKey(_)).WillOnce(Return(-1)).WillOnce(Return(-1)).WillOnce(Return(-1));
     #ifdef USER_CRYPTO_MIGRATE_KEY
     EXPECT_EQ(KeyManager::GetInstance()->UpdateCeEceSeceUserAuth(user, userTokenSecret, type, needGenerateShield),
         E_RESTORE_KEY_FAILED);

@@ -179,6 +179,13 @@ int32_t FscryptKeyV2::ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId)
     return E_OK;
 }
 
+int32_t FscryptKeyV2::UpdateClassEBackUp(uint32_t userId)
+{
+    (void)userId;
+    LOGI("Unsupported fscrypt v2");
+    return E_OK;
+}
+
 int32_t FscryptKeyV2::DecryptClassE(const UserAuth &auth, bool &isSupport,
                                     bool &eBufferStatue, uint32_t user, bool needSyncCandidate)
 {

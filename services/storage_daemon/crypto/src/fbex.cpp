@@ -55,6 +55,8 @@ constexpr uint8_t FBEX_DEL_EL5_PINCODE = 24;
 constexpr uint8_t FBEX_GENERATE_APP_KEY = 25;
 constexpr uint8_t FBEX_CHANGE_PINCODE = 26;
 constexpr uint8_t FBEX_LOCK_EL5 = 27;
+constexpr uint8_t FBEX_UECE_BACKUP = 30;
+
 constexpr uint32_t FILE_ENCRY_ERROR_UECE_ALREADY_CREATED = 0xFBE30031;
 constexpr uint32_t FILE_ENCRY_ERROR_NOT_FOUND_UECE = 0xFBE30033;
 
@@ -112,6 +114,7 @@ using FbeOptsEV1 = FbeOptStrEV1;
 #define FBEX_ADD_APPKEY2 _IOWR(FBEX_IOC_MAGIC, FBEX_GENERATE_APP_KEY, FbeOptsE)
 #define FBEX_CHANGE_PINCODE _IOWR(FBEX_IOC_MAGIC, FBEX_CHANGE_PINCODE, FbeOptsE)
 #define FBEX_LOCK_UECE _IOWR(FBEX_IOC_MAGIC, FBEX_LOCK_EL5, FbeOptsE)
+#define FBEX_UPDATE_UECE_KEY_CONTEXT _IOWR(FBEX_IOC_MAGIC, FBEX_UECE_BACKUP, FbeOptsE)
 
 } // namespace
 
@@ -457,6 +460,53 @@ int FBEX::ChangePinCodeClassE(uint32_t userIdSingle, uint32_t userIdDouble, bool
     }
     (void)fclose(f);
     LOGI("change pincode classE finish.");
+    return ret;
+}
+
+int FBEX::UpdateClassEBackUp(uint32_t userIdSingle, uint32_t userIdDouble)
+{
+    LOGI("enter, userId: %{public}d", userIdDouble);
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
+    FILE *f = fopen(FBEX_UECE_PATH, "r+");
+    if (f == nullptr) {
+        if (errno == ENOENT) {
+            LOGE("fbex_uece does not exist, fbe not support this command!");
+            return 0;
+        }
+        std::string extraData = "userIdDouble=" + std::to_string(userIdDouble);
+        StorageRadar::ReportFbexResult("UpdateClassEBackUp::fopen", userIdSingle, errno, "EL5", extraData);
+        LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        return -errno;
+    }
+    int fd = fileno(f);
+    if (fd < 0) {
+        if (errno == ENOENT) {
+            LOGE("fbex_uece does not exist, fbe not support this command!");
+            (void)fclose(f);
+            return 0;
+        }
+        LOGE("open fbex_cmd failed, errno: %{public}d", errno);
+        (void)fclose(f);
+        return -errno;
+    }
+    auto delay = StorageService::StorageRadar::ReportDuration("UPDATE E BACKUP: FILE OPS",
+        startTime, StorageService::DEFAULT_DELAY_TIME_THRESH, userIdSingle);
+    LOGI("SD_DURATION: FBEX: FILE OPS: user=%{public}d, delay time = %{public}s", userIdSingle, delay.c_str());
+    startTime = StorageService::StorageRadar::RecordCurrentTime();
+    FbeOptsE ops{ .userIdDouble = userIdDouble, .userIdSingle = userIdSingle };
+    int ret = ioctl(fd, FBEX_UPDATE_UECE_KEY_CONTEXT, &ops);
+    if (ret != 0) {
+        LOGE("ioctl fbex_cmd failed, ret: 0x%{public}x, errno: %{public}d", ret, errno);
+        ret = -errno;
+        std::string extraData = "ioctl cmd=FBEX_UPDATE_UECE_KEY_CONTEXT, userIdSingle=" + std::to_string(userIdSingle)
+            + ", userIdDouble=" + std::to_string(userIdDouble) + ", errno=" + std::to_string(errno);
+        StorageRadar::ReportFbexResult("FBEX_UPDATE_UECE_KEY_CONTEXT", userIdSingle, ret, "EL5", extraData);
+    }
+    delay = StorageService::StorageRadar::ReportDuration("FBEX:UPDATE_E_BACKUP",
+        startTime, StorageService::DEFAULT_DELAY_TIME_THRESH, userIdSingle);
+    LOGI("SD_DURATION: FBEX: CLASS E BACKUP: user=%{public}d, delay time = %{public}s", userIdSingle, delay.c_str());
+    (void)fclose(f);
+    LOGI("update FBE key backup for classE finish");
     return ret;
 }
 

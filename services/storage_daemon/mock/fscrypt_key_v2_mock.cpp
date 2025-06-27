@@ -100,6 +100,14 @@ int32_t FscryptKeyV2::ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId)
     return IFscryptKeyV2Moc::fscryptKeyV2Moc->ChangePinCodeClassE(isFbeSupport, userId);
 }
 
+int32_t FscryptKeyV2::UpdateClassEBackUp(uint32_t userId)
+{
+    if (IFscryptKeyV2Moc::fscryptKeyV2Moc == nullptr) {
+        return -1;
+    }
+    return IFscryptKeyV2Moc::fscryptKeyV2Moc->UpdateClassEBackUp(userId);
+}
+
 int32_t FscryptKeyV2::DecryptClassE(const UserAuth &auth, bool &isSupport,
                                     bool &eBufferStatue, uint32_t user, bool needSyncCandidate)
 {

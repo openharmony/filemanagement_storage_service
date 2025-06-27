@@ -59,6 +59,7 @@ public:
                                bool needSyncCandidate) = 0;
     virtual int32_t EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status) = 0;
     virtual int32_t ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId) = 0;
+    virtual int32_t UpdateClassEBackUp(uint32_t userId) = 0;
     virtual int32_t LockUece(bool &isFbeSupport) = 0;
     int32_t DoRestoreKey(const UserAuth &auth, const std::string &keypath);
     int32_t EncryptKeyBlob(const UserAuth &auth, const std::string &keyPath, KeyBlob &planKey, KeyBlob &encryptedKey);
@@ -124,6 +125,7 @@ private:
     void DoLatestBackUp() const;
     uint32_t GetTypeFromDir();
     uint32_t GetIdFromDir();
+    int32_t UpdateOrRollBackKey(const std::string &candidate);
 
     KeyContext keyContext_ {};
     uint8_t keyLen_ {};

@@ -194,6 +194,20 @@ HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_AddClassE_ChangePinCodeClassE, TestSiz
 }
 
 /**
+ * @tc.name: fscrypt_key_v2_UpdateClassEBackUp
+ * @tc.desc: Verify the fscrypt V2 UpdateClassEBackUp.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK0BP
+ */
+HWTEST_F(FscryptKeyV2Test, fscrypt_key_v2_UpdateClassEBackUp, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "fscrypt_key_v2_UpdateClassEBackUp start";
+    uint32_t userId = 100;
+    EXPECT_EQ(g_testKeyV2.UpdateClassEBackUp(userId), E_OK);
+    GTEST_LOG_(INFO) << "fscrypt_key_v2_UpdateClassEBackUp end";
+}
+
+/**
  * @tc.name: fscrypt_key_v2_DecryptClassE_EncryptClassE_DeleteClassEPinCode
  * @tc.desc: Verify the fscrypt V2 DecryptClassE/EncryptClassE/DeleteClassEPinCode.
  * @tc.type: FUNC
