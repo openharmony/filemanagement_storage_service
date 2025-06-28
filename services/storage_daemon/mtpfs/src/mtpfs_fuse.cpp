@@ -368,7 +368,8 @@ void WrapDestroy(void *path)
     ErrCode errCode = OHOS::AccountSA::OsAccountManager::UnsubscribeOsAccount(osAccountSubscriber_);
     LOGI("UnsubscribeOsAccount errCode is: %{public}d", errCode);
 
-    ErrCode constraintsErrCode = OHOS::AccountSA::OsAccountManager::UnsubscribeOsAccountConstraints(osAccountSubscriber_);
+    ErrCode constraintsErrCode = OHOS::AccountSA::OsAccountManager
+        ::UnsubscribeOsAccountConstraints(osAccountSubscriber_);
     LOGI("UnsubscribeOsAccountConstraints errCode is: %{public}d", constraintsErrCode);
     return;
 }
@@ -1298,6 +1299,7 @@ void AccountConstrintSubscriber::OnConstraintChanged(
         LOGE("current constraint is not mtpClient write");
         return;
     }
-    DelayedSingleton<MtpFileSystem>::GetInstance()->SetMtpClientWriteMap(constraintData.localId, constraintData.isEnabled);
+    DelayedSingleton<MtpFileSystem>::GetInstance()
+        ->SetMtpClientWriteMap(constraintData.localId, constraintData.isEnabled);
     LOGI("AccountConstrintSubscriber::OnConstraintChanged end");
 }
