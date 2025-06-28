@@ -388,7 +388,7 @@ int32_t BaseKey::UpdateKey(const std::string &keypath, bool needSyncCandidate)
         return E_EMPTY_CANDIDATE_ERROR;
     }
 
-    if (strcmp(candidate.c_str(), (dir_ + PATH_LATEST).c_str() != 0)) {
+    if (strcmp(candidate.c_str(), (dir_ + PATH_LATEST).c_str()) != 0) {
         int32_t ret = UpdateOrRollbackKey(candidate);
         if (ret != E_OK) {
             LOGE("backup or rename failed, errno=%{public}d", errno);

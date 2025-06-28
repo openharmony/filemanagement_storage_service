@@ -125,7 +125,7 @@ private:
     void DoLatestBackUp() const;
     uint32_t GetTypeFromDir();
     uint32_t GetIdFromDir();
-    int32_t UpdateOrRollBackKey(const std::string &candidate);
+    int32_t UpdateOrRollbackKey(const std::string &candidate);
 
     KeyContext keyContext_ {};
     uint8_t keyLen_ {};

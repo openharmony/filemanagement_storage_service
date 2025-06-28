@@ -2044,12 +2044,12 @@ bool KeyManager::IsUeceSupport()
     return true;
 }
 
-int KeyManager::UpdateClassEBackup(uint32_t userId)
+int KeyManager::UpdateClassEBackUp(uint32_t userId)
 {
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     auto el5Key = GetUserElKey(userId, EL5_KEY);
     if (el5Key == nullptr) {
-        LOGE("Have not found user %{public}u el5 key", userId);
+        LOGE("Have not found user %{public}u el5 Key", userId);
         return E_NON_EXIST;
     }
     auto ret = el5Key->UpdateClassEBackUp(userId);
