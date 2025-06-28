@@ -406,5 +406,35 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_AccountSubscriber_OnStateChanged_001, Test
 
     GTEST_LOG_(INFO) << "MtpfsFuseTest_AccountSubscriber_OnStateChanged_001 end";
 }
+
+/**
+ * @tc.name: MtpfsFuseTest_AccountConstraintSubscriber_OnConstraintStateChanged_001
+ * @tc.desc: Test OnConstraintStateChanged function when currentUid was changed
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_AccountConstraintSubscriber_OnConstraintStateChanged_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_AccountConstraintSubscriber_OnConstraintStateChanged_001 start";
+
+    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
+    const std::set<std::string> constraintSet = { "constraint.mtp.client.write" };
+    AccountConstraintSubscriber accountConstraintSubscriber(constraintSet);
+
+    OHOS::AccountSA::OsAccountConstraintStateData osAccountConstranitStateData;
+    osAccountConstranitStateData.isEnabled = true;
+    osAccountConstranitStateData.localId = 100;
+    osAccountConstranitStateData.constraint = "constraint.mtp.client.read";
+    accountConstraintSubscriber.OnConstraintChanged(osAccountConstranitStateData);
+
+    osAccountConstranitStateData.constraint = "constraint.mtp.client.write";
+    accountConstraintSubscriber.OnConstraintChanged(osAccountConstranitStateData);
+    EXPECT_EQ(mtpFileSystem->mtpClientWriteMap_[100], 1);
+
+    osAccountConstranitStateData.isEnabled = false;
+    accountConstraintSubscriber.OnConstraintChanged(osAccountConstranitStateData);
+    EXPECT_EQ(mtpFileSystem->mtpClientWriteMap_[100], 0);
+
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_AccountConstraintSubscriber_OnConstraintStateChanged_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS
