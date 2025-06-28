@@ -23,6 +23,8 @@
 #include <sys/quota.h>
 #include <sys/stat.h>
 #include <sys/statvfs.h>
+#include <thread>
+#include <unistd.h>
 
 #include "file_uri.h"
 #include "sandbox_helper.h"
@@ -30,15 +32,22 @@
 #include "storage_service_log.h"
 #include "storage_service_constant.h"
 #include "utils/file_utils.h"
+#include "utils/storage_radar.h"
 
 namespace OHOS {
 namespace StorageDaemon {
 constexpr const char *QUOTA_DEVICE_DATA_PATH = "/data";
 constexpr const char *PROC_MOUNTS_PATH = "/proc/mounts";
 constexpr const char *DEV_BLOCK_PATH = "/dev/block/";
+constexpr const char *CONFIG_FILE_PATH = "/etc/passwd";
 constexpr uint64_t ONE_KB = 1;
 constexpr uint64_t ONE_MB = 1024 * ONE_KB;
+constexpr int32_t FIVE_HANDRED_M_BIT = 1024 * 1024 * 500;
 constexpr uint64_t PATH_MAX_LEN = 4096;
+constexpr double DIVISOR = 1024.0 * 1024.0;
+constexpr double BASE_NUMBER = 10.0;
+constexpr int32_t ONE_MS = 1000;
+constexpr int32_t ACCURACY_NUM = 2;
 static std::map<std::string, std::string> mQuotaReverseMounts;
 std::recursive_mutex mMountsLock;
 
@@ -114,6 +123,153 @@ static int64_t GetOccupiedSpaceForUid(int32_t uid, int64_t &size)
 
     size = static_cast<int64_t>(dq.dqb_curspace);
     LOGE("GetOccupiedSpaceForUid size:%{public}s", std::to_string(size).c_str());
+    return E_OK;
+}
+
+void QuotaManager::GetUidStorageStats()
+{
+    LOGI("GetUidStorageStats begin!");
+    std::vector<UidSaInfo> vec;
+    auto ret = ParseConfigFile(CONFIG_FILE_PATH, vec);
+    if (ret != E_OK) {
+        LOGE("parsePasswd File failed.");
+        return;
+    }
+ 
+    ret = GetOccupiedSpaceForUidList(vec);
+    if (ret != E_OK) {
+        return;
+    }
+ 
+    std::sort(vec.begin(), vec.end(), [](const UidSaInfo& a, const UidSaInfo& b) {
+    return a.size > b.size;
+    });
+    std::ostringstream extraData;
+    for (const auto& info : vec) {
+        if (info.size < FIVE_HANDRED_M_BIT) {
+            continue;
+        }
+        extraData << "{uid:" << info.uid
+            << ",saName:" << info.saName
+            << ",size:" << ConvertBytesToMB(info.size, ACCURACY_NUM)
+            << "MB}"<<std::endl;
+    }
+    LOGI("extraData is %{public}s", extraData.str().c_str());
+    StorageService::StorageRadar::ReportSaSizeResult("QuotaManager::GetUidStorageStats", E_STORAGE_STATUS,
+        extraData.str());
+    LOGI("GetUidStorageStats end!");
+}
+
+double QuotaManager::ConvertBytesToMB(int64_t bytes, int32_t decimalPlaces)
+{
+    if (bytes < 0) {
+        return 0.0;
+    }
+    double mb = static_cast<double>(bytes) / DIVISOR;
+ 
+    if (decimalPlaces < 0) {
+        decimalPlaces = 0;
+    }
+    double factor = std::pow(BASE_NUMBER, decimalPlaces);
+    if (factor == 0) {
+        return 0.0;
+    }
+    return std::round(mb * factor) / factor;
+}
+ 
+bool QuotaManager::StringToInt32(const std::string &strUid, int32_t &outUid32)
+{
+    if (strUid.empty()) {
+        return false;
+    }
+    for (char ch : strUid) {
+        if (!std::isdigit(static_cast<unsigned char>(ch))) {
+            return false;
+        }
+    }
+ 
+    uint64_t uid = std::stoull(strUid);
+    if (uid > static_cast<uint64_t>(INT32_MAX)) {
+        return false;
+    }
+    outUid32 = static_cast<int32_t>(uid);
+    return true;
+}
+ 
+bool QuotaManager::GetUid32FromEntry(const std::string &entry, int32_t &outUid32, std::string &saName)
+{
+    size_t firstColon = entry.find(':');
+    if (firstColon == std::string::npos) {
+        return false;
+    }
+    saName = entry.substr(0, firstColon);
+    size_t secondColon = entry.find(':', firstColon + 1);
+    if (secondColon == std::string::npos) {
+        return false;
+    }
+    size_t thirdColon = entry.find(':', secondColon + 1);
+    if (thirdColon == std::string::npos) {
+        return false;
+    }
+    std::string uidStr = entry.substr(secondColon + 1, thirdColon - (secondColon + 1));
+    return StringToInt32(uidStr, outUid32);
+}
+ 
+int32_t QuotaManager::ParseConfigFile(const std::string &path, std::vector<struct UidSaInfo> &vec)
+{
+    LOGI("pasePasswdFile begin!");
+    char realPath[PATH_MAX] = {0x00};
+    if (realpath(path.c_str(), realPath) == nullptr) {
+        LOGE("path not valid, path = %{private}s", path.c_str());
+        return E_JSON_PARSE_ERROR;
+    }
+ 
+    std::ifstream infile(std::string(realPath), std::ios::in);
+    if (!infile.is_open()) {
+        LOGE("Open file failed, errno = %{public}d", errno);
+        return E_OPEN_JSON_FILE_ERROR;
+    }
+ 
+    std::string line;
+    while (getline(infile, line)) {
+        if (line == "") {
+            continue;
+        }
+        struct UidSaInfo info;
+        if (GetUid32FromEntry(line, info.uid, info.saName)) {
+            vec.push_back(info);
+        }
+    }
+    infile.close();
+    LOGI("pasePasswdFile end!");
+    return E_OK;
+}
+ 
+int64_t QuotaManager::GetOccupiedSpaceForUidList(std::vector<struct UidSaInfo> &vec)
+{
+    LOGE("GetOccupiedSpaceForUidList begin!");
+ 
+    if (InitialiseQuotaMounts() != true) {
+        LOGE("Failed to initialise quota mounts");
+        return E_SYS_KERNEL_ERR;
+    }
+ 
+    std::string device = "";
+    device = GetQuotaSrcMountPath(QUOTA_DEVICE_DATA_PATH);
+    if (device.empty()) {
+        LOGE("skip when device no quotas present");
+        return E_OK;
+    }
+ 
+    for (struct UidSaInfo &info : vec) {
+        struct dqblk dq;
+        usleep(ONE_MS);
+        if (quotactl(QCMD(Q_GETQUOTA, USRQUOTA), device.c_str(), info.uid, reinterpret_cast<char*>(&dq)) != 0) {
+            LOGE("Failed to get quotactl, errno : %{public}d", errno);
+            continue;
+        }
+        info.size = static_cast<int64_t>(dq.dqb_curspace);
+    }
     return E_OK;
 }
 

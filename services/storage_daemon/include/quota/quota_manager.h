@@ -36,6 +36,13 @@ struct BundleStatsParas {
     int64_t fileSizeSum;
     int64_t incFileSizeSum;
 };
+
+struct UidSaInfo {
+    int32_t uid;
+    std::string saName;
+    int64_t size;
+};
+
 uint32_t CheckOverLongPath(const std::string &path);
 class QuotaManager final {
 public:
@@ -46,9 +53,15 @@ public:
         const std::string &bundleDataDirPath, int32_t limitSizeMb);
     int32_t GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size);
     int32_t SetQuotaPrjId(const std::string &path, int32_t prjId, bool inherit);
+    void GetUidStorageStats();
 private:
     QuotaManager() = default;
     DISALLOW_COPY_AND_MOVE(QuotaManager);
+    int64_t GetOccupiedSpaceForUidList(std::vector<struct UidSaInfo> &vec);
+    bool GetUid32FromEntry(const std::string &entry, int32_t &outUid32, std::string &saName);
+    bool StringToInt32(const std::string &strUid, int32_t &outUid32);
+    int32_t ParseConfigFile(const std::string &path, std::vector<struct UidSaInfo> &vec);
+    double ConvertBytesToMB(int64_t bytes, int32_t decimalPlaces);
 
     static QuotaManager* instance_;
 };

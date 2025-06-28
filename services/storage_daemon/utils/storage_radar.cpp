@@ -108,6 +108,21 @@ void StorageRadar::ReportUserManager(const std::string &funcName, uint32_t userI
     StorageRadar::GetInstance().RecordFuctionResult(param);
 }
 
+void StorageRadar::ReportSaSizeResult(const std::string &funcName, int ret, const std::string &extraData)
+{
+    RadarParameter param = {
+        .orgPkg = DEFAULT_ORGPKGNAME,
+        .userId = DEFAULT_USERID,
+        .funcName = funcName,
+        .bizScene = BizScene::SPACE_STATISTICS,
+        .bizStage = BizStage::BIZ_STAGE_GET_SYSTEM_SIZE,
+        .keyElxLevel = "NA",
+        .errorCode = ret,
+        .extraData = extraData
+    };
+    StorageRadar::GetInstance().RecordFuctionResult(param);
+}
+
 void StorageRadar::ReportUpdateUserAuth(const std::string &funcName, uint32_t userId, int ret,
     const std::string &keyLevel, const std::string &extraData)
 {
