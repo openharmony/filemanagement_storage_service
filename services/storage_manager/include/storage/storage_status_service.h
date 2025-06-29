@@ -43,7 +43,7 @@ private:
     const int DEFAULT_APP_INDEX = 0;
     enum BUNDLE_STATS {APP = 0, LOCAL, DISTRIBUTED, DATABASE, CACHE};
     enum BUNDLE_STATS_RESULT {APPSIZE = 0, CACHESIZE, DATASIZE};
-    int32_t GetStorageSize(int32_t userId, StorageStats &storageStats, int ret);
+    int32_t GetMediaAndFileStorageStats(int32_t userId, StorageStats &storageStats);
 };
 } // StorageManager
 } // OHOS

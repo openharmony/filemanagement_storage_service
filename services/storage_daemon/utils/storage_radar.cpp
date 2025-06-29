@@ -28,6 +28,7 @@ constexpr const char *FILE_STORAGE_MANAGER_STATISTIC = "FILE_STORAGE_MANAGER_STA
 constexpr char STORAGESERVICE_DOAMIN[] = "FILEMANAGEMENT";
 constexpr uint8_t INDEX = 3;
 constexpr uint32_t MS_1000 = 1000;
+constexpr int32_t GLOBAL_USER_ID = 0;
 
 constexpr const char *TAG_PREFIX = " WARNING: DELAY > ";
 constexpr const char *TAG_UNIT_SUFFIX = " ms.";
@@ -112,7 +113,7 @@ void StorageRadar::ReportSaSizeResult(const std::string &funcName, int ret, cons
 {
     RadarParameter param = {
         .orgPkg = DEFAULT_ORGPKGNAME,
-        .userId = DEFAULT_USERID,
+        .userId = GLOBAL_USER_ID,
         .funcName = funcName,
         .bizScene = BizScene::SPACE_STATISTICS,
         .bizStage = BizStage::BIZ_STAGE_GET_SYSTEM_SIZE,

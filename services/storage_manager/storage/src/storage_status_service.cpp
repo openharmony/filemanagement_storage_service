@@ -184,8 +184,7 @@ int32_t StorageStatusService::GetUserStorageStats(StorageStats &storageStats)
 int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &storageStats)
 {
     bool isCeEncrypt = false;
-    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
-    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    auto sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int ret = sdCommunication->GetFileEncryptStatus(userId, isCeEncrypt, true);
     if (ret != E_OK || isCeEncrypt) {
         LOGE("User %{public}d de has not decrypt.", userId);
@@ -197,7 +196,7 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
     int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetTotalSize(totalSize);
     if (err != E_OK) {
         LOGE("StorageStatusService::GetUserStorageStats getTotalSize failed");
-        StorageRadar::ReportGetStorageStatus("GetUserStorageStats::GetTotalSize", userId, ret, GetCallingPkgName());
+        StorageRadar::ReportGetStorageStatus("GetUserStorageStats::GetTotalSize", userId, err, GetCallingPkgName());
         return err;
     }
     // appSize
@@ -206,12 +205,14 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
     err = GetAppSize(userId, appSize);
     if (err != E_OK) {
         LOGE("StorageStatusService::GetUserStorageStats getAppSize failed");
-        StorageRadar::ReportGetStorageStatus("GetUserStorageStats::GetAppSize", userId, ret, GetCallingPkgName());
+        StorageRadar::ReportGetStorageStatus("GetUserStorageStats::GetAppSize", userId, err, GetCallingPkgName());
         return err;
     }
 
     storageStats.total_ = totalSize;
     storageStats.app_ = appSize;
+
+    err = GetMediaAndFileStorageStats(userId, storageStats);
 
     LOGE("StorageStatusService::GetUserStorageStats success for userId=%{public}d, "
         "totalSize=%{public}lld, appSize=%{public}lld, videoSize=%{public}lld, audioSize=%{public}lld, "
@@ -222,13 +223,13 @@ int32_t StorageStatusService::GetUserStorageStats(int32_t userId, StorageStats &
     return err;
 }
 
-int32_t StorageStatusService::GetStorageSize(int32_t userId, StorageStats &storageStats, int ret)
+int32_t StorageStatusService::GetMediaAndFileStorageStats(int32_t userId, StorageStats &storageStats)
 {
     // mediaSize
     auto err = GetMediaStorageStats(storageStats);
     if (err != E_OK) {
         LOGE("StorageStatusService::GetUserStorageStats GetMediaStorageStats failed");
-        StorageRadar::ReportGetStorageStatus("GetUserStorageStats::GetMediaStorageStats", userId, ret,
+        StorageRadar::ReportGetStorageStatus("GetUserStorageStats::GetMediaStorageStats", userId, err,
             GetCallingPkgName());
         return err;
     }
@@ -236,12 +237,13 @@ int32_t StorageStatusService::GetStorageSize(int32_t userId, StorageStats &stora
     err = GetFileStorageStats(userId, storageStats);
     if (err != E_OK) {
         LOGE("StorageStatusService::GetUserStorageStats GetFileStorageStats failed");
-        StorageRadar::ReportGetStorageStatus("GetUserStorageStats::GetFileStorageStats", userId, ret,
+        StorageRadar::ReportGetStorageStatus("GetUserStorageStats::GetFileStorageStats", userId, err,
             GetCallingPkgName());
+        return err;
     }
     auto errNo = QueryOccupiedSpaceForSa();
     if (errNo != E_OK) {
-        LOGE("QueryOccupiedSpaceForSa failed ,err: %{public}d", errNo);
+        LOGE("StorageStatusService::GetUserStorageStats QueryOccupiedSpaceForSa failed, err: %{public}d", errNo);
         StorageRadar::ReportGetStorageStatus("GetUserStorageStats::QueryOccupiedSpaceForSa", userId, errNo,
             GetCallingPkgName());
     }
