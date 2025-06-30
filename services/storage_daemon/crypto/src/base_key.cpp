@@ -429,6 +429,7 @@ int32_t BaseKey::UpdateOrRollbackKey(const std::string &candidate)
         return errno;
     }
     LOGI("rename candidate %{public}s to latest success", candidate.c_str());
+    return E_OK;
 }
 
 void BaseKey::DoLatestBackUp() const
