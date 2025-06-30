@@ -423,9 +423,6 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_AccountConstraintSubscriber_OnConstraintCh
     OHOS::AccountSA::OsAccountConstraintStateData osAccountConstraintStateData;
     osAccountConstraintStateData.isEnabled = true;
     osAccountConstraintStateData.localId = 100;
-    osAccountConstraintStateData.constraint = "constraint.mtp.client.read";
-    accountConstraintSubscriber.OnConstraintChanged(osAccountConstraintStateData);
-
     osAccountConstraintStateData.constraint = "constraint.mtp.client.write";
     accountConstraintSubscriber.OnConstraintChanged(osAccountConstraintStateData);
     EXPECT_EQ(mtpFileSystem->mtpClientWriteMap_[100], 1);

@@ -1292,12 +1292,8 @@ void AccountConstraintSubscriber::OnConstraintChanged(
     const OHOS::AccountSA::OsAccountConstraintStateData &constraintData)
 {
     LOGI("AccountConstraintSubscriber::OnConstraintChanged start");
-    LOGI("localId: %{public}d, constraint: %{public}s, isEnabled: %{public}d",
+    LOGI("localId: %{private}d, constraint: %{public}s, isEnabled: %{public}d",
         constraintData.localId, constraintData.constraint.c_str(), constraintData.isEnabled);
-    if (constraintData.constraint != MTP_CLIENT_WRITE) {
-        LOGE("current constraint is not mtpClient write");
-        return;
-    }
     DelayedSingleton<MtpFileSystem>::GetInstance()
         ->SetMtpClientWriteMap(constraintData.localId, constraintData.isEnabled);
     LOGI("AccountConstraintSubscriber::OnConstraintChanged end");
