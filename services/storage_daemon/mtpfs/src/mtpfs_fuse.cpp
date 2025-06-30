@@ -368,7 +368,7 @@ void WrapDestroy(void *path)
     LOGI("UnsubscribeOsAccount errCode is: %{public}d", errCode);
 
     ErrCode constraintsErrCode = OHOS::AccountSA::OsAccountManager
-        ::UnsubscribeOsAccountConstraints(osAccountSubscriber_);
+        ::UnsubscribeOsAccountConstraints(osAccountConstraintSubscriber_);
     LOGI("UnsubscribeOsAccountConstraints errCode is: %{public}d", constraintsErrCode);
     return;
 }
