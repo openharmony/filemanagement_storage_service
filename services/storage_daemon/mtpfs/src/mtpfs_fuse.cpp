@@ -281,7 +281,6 @@ void *WrapInit(struct fuse_conn_info *conn, struct fuse_config *cfg)
     ErrCode errCode = OHOS::AccountSA::OsAccountManager::SubscribeOsAccount(osAccountSubscriber_);
     LOGI("subscribe os accouunt done errCode = %{public}d", errCode);
 
-    // 注册策略变更订阅函数
     const std::set<std::string> constraintSet = { MTP_CLIENT_WRITE };
     osAccountConstraintSubscriber_ = std::make_shared<AccountConstraintSubscriber>(constraintSet);
     ErrCode constraintsErrCode = OHOS::AccountSA::OsAccountManager
