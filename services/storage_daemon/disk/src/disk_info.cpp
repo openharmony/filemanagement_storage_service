@@ -41,6 +41,7 @@ constexpr const char *SGDISK_DUMP_CMD = "--ohos-dump";
 constexpr const char *SGDISK_ZAP_CMD = "--zap-all";
 constexpr const char *SGDISK_PART_CMD = "--new=0:0:-0 --typeconde=0:0c00 --gpttombr=1";
 constexpr const char *BLOCK_PATH = "/dev/block";
+constexpr const char *DISK_PREFIX = "DISK ";
 
 enum DiskStatus:int {
     S_INITAL = 0,
@@ -231,10 +232,11 @@ int DiskInfo::ReadPartition()
     std::vector<std::string> lines;
     std::vector<std::string> cmd = {SGDISK_PATH, SGDISK_DUMP_CMD, devPath_};
     int res = ForkExec(cmd, &output);
-    if (output.empty() || res != E_OK) {
+    FilterOutput(lines, output);
+    if (res != E_OK || lines.empty()) {
         int destroyRes = Destroy();
         sgdiskLines_.clear();
-        LOGE("get %{private}s partition failed, destroy error :%{private}d", devPath_.c_str(), destroyRes);
+        LOGE("get partition failed, destroy error is %{public}d", destroyRes);
         return res;
     }
     std::string bufToken = "\n";
@@ -265,6 +267,28 @@ int DiskInfo::ReadPartition()
         return E_OK;
     }
     return ReadDiskLines(sgdiskLines_, maxVolumes, isUserdata);
+}
+
+void DiskInfo::FilterOutput(std::vector<std::string> &lines, std::vector<std::string> &output)
+{
+    int32_t index = -1;
+    for (size_t i = 0; i < output.size(); i++) {
+        std::string buf = output[i];
+        if (buf.find(DISK_PREFIX) == 0) {
+            index = i;
+            break;
+        }
+    }
+    if (index == -1) {
+        LOGE("disk info not found");
+        return;
+    }
+    std::string bufToken = "\n";
+    for (size_t i = index; i < output.size(); i++) {
+        std::string buf = output[i];
+        auto split = SplitLine(buf, bufToken);
+        lines.insert(lines.end(), split.begin(), split.end());
+    }
 }
 
 void DiskInfo::ProcessPartitionChanges(const std::vector<std::string>& lines, int maxVolumes, bool isUserdata)
