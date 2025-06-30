@@ -378,6 +378,7 @@ int32_t BaseKey::UpdateKey(const std::string &keypath, bool needSyncCandidate)
         return E_OK;
     }
     auto candidate = keypath.empty() ? GetCandidateDir() : keypath;
+    LOGI("ready to update, candiate = %{public}s", candidate.c_str());
     if (candidate.empty() && GetTypeFromDir() == TYPE_EL5) {
         LOGI("no uece candidate dir, do not need updateKey.");
         return E_OK;
@@ -386,6 +387,32 @@ int32_t BaseKey::UpdateKey(const std::string &keypath, bool needSyncCandidate)
         LOGE("no candidate dir");
         return E_EMPTY_CANDIDATE_ERROR;
     }
+
+    if (strcmp(candidate.c_str(), (dir_ + PATH_LATEST).c_str()) != 0) {
+        int32_t ret = UpdateOrRollbackKey(candidate);
+        if (ret != E_OK) {
+            LOGE("backup or rename failed, errno=%{public}d", errno);
+            return ret;
+        }
+    }
+
+    std::vector<std::string> files;
+    GetSubDirs(dir_, files);
+    for (const auto &it: files) { // cleanup backup and other versions
+        if (it != PATH_LATEST + 1) {
+            OHOS::ForceRemoveDirectory(dir_ + "/" + it);
+        }
+    }
+
+    std::string backupDir;
+    KeyBackup::GetInstance().GetBackupDir(dir_, backupDir);
+    KeyBackup::GetInstance().CreateBackup(dir_, backupDir, true);
+    SyncKeyDir();
+    return E_OK;
+}
+
+int32_t BaseKey::UpdateOrRollbackKey(const std::string &candidate)
+{
     DoLatestBackUp();
     bool hasLatest = IsDir(dir_ + PATH_LATEST);
     OHOS::ForceRemoveDirectory(dir_ + PATH_LATEST);
@@ -402,19 +429,6 @@ int32_t BaseKey::UpdateKey(const std::string &keypath, bool needSyncCandidate)
         return errno;
     }
     LOGI("rename candidate %{public}s to latest success", candidate.c_str());
-
-    std::vector<std::string> files;
-    GetSubDirs(dir_, files);
-    for (const auto &it: files) { // cleanup backup and other versions
-        if (it != PATH_LATEST + 1) {
-            OHOS::ForceRemoveDirectory(dir_ + "/" + it);
-        }
-    }
-
-    std::string backupDir;
-    KeyBackup::GetInstance().GetBackupDir(dir_, backupDir);
-    KeyBackup::GetInstance().CreateBackup(dir_, backupDir, true);
-    SyncKeyDir();
     return E_OK;
 }
 
@@ -537,7 +551,7 @@ int32_t BaseKey::RestoreKey(const UserAuth &auth, bool needSyncCandidate)
         if (it != candidate) {
             ret = DoRestoreKey(auth, dir_ + "/" + it);
             if (ret == E_OK) {
-                UpdateKey(it, needSyncCandidate);
+                UpdateKey((dir_ + "/" + it), needSyncCandidate);
                 return E_OK;
             }
         }

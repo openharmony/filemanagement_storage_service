@@ -34,6 +34,7 @@ public:
     virtual int32_t AddClassE(bool &, bool &, uint32_t) = 0;
     virtual int32_t DeleteClassEPinCode(uint32_t) = 0;
     virtual int32_t ChangePinCodeClassE(uint32_t, bool &) = 0;
+    virtual int32_t UpdateClassEBackUp(uint32_t) = 0;
     virtual int32_t ReadClassE(uint32_t, KeyBlob &, const KeyBlob &) = 0;
     virtual int32_t WriteClassE(uint32_t, uint8_t*, uint32_t) = 0;
     virtual int32_t GenerateAppkey(uint32_t, uint32_t, std::unique_ptr<uint8_t[]>&, uint32_t) = 0;
@@ -52,6 +53,7 @@ public:
     MOCK_METHOD(int32_t, AddClassE, (bool &, bool &, uint32_t));
     MOCK_METHOD(int32_t, DeleteClassEPinCode, (uint32_t));
     MOCK_METHOD(int32_t, ChangePinCodeClassE, (uint32_t, bool &));
+    MOCK_METHOD(int32_t, UpdateClassEBackUp, (uint32_t));
     MOCK_METHOD(int32_t, ReadClassE, (uint32_t, KeyBlob &, const KeyBlob &));
     MOCK_METHOD(int32_t, WriteClassE, (uint32_t, uint8_t*, uint32_t));
     MOCK_METHOD(int32_t, GenerateAppkey, (uint32_t, uint32_t, (std::unique_ptr<uint8_t[]>&), uint32_t));

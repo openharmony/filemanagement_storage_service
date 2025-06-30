@@ -42,6 +42,7 @@ public:
     virtual int InstallEL5KeyToKernel(uint32_t, uint32_t, uint8_t, bool &, bool &) = 0;
     virtual int DeleteClassEPinCode(uint32_t userIdSingle, uint32_t userIdDouble) = 0;
     virtual int ChangePinCodeClassE(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupport) = 0;
+    virtual int UpdateClassEBackUp(uint32_t userIdSingle, uint32_t userIdDouble) = 0;
     virtual int GenerateAppkey(UserIdToFbeStr &, uint32_t, std::unique_ptr<uint8_t[]> &, uint32_t) = 0;
     virtual int LockUece(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupport) = 0;
 public:
@@ -66,6 +67,7 @@ public:
     MOCK_METHOD5(InstallEL5KeyToKernel, int(uint32_t, uint32_t, uint8_t, bool &, bool &));
     MOCK_METHOD2(DeleteClassEPinCode, int(uint32_t userIdSingle, uint32_t userIdDouble));
     MOCK_METHOD3(ChangePinCodeClassE, int(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupport));
+    MOCK_METHOD2(UpdateClassEBackUp, int(uint32_t userIdSingle, uint32_t userIdDouble));
     MOCK_METHOD4(GenerateAppkey, int(UserIdToFbeStr &, uint32_t, std::unique_ptr<uint8_t[]> &, uint32_t));
     MOCK_METHOD3(LockUece, int(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupport));
 };

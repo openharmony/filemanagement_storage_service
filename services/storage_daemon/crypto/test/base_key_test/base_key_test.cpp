@@ -228,6 +228,14 @@ HWTEST_F(BaseKeyTest, BaseKey_UpdateKey_001, TestSize.Level1)
     keyPath = "/test";
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false)).WillOnce(Return(false));
     EXPECT_EQ(elKey->UpdateKey(keyPath, needSyncCandidate), 2);
+
+    EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
+    EXPECT_EQ(elKey->UpdateKey(keyPath, needSyncCandidate), 2);
+
+    keyPath = "/test/latest";
+    elKey->dir_ = "/test";
+    EXPECT_CALL(*fileUtilMoc_, GetSubDirs(_, _)).WillOnce(Return());
+    EXPECT_EQ(elKey->UpdateKey(keyPath, needSyncCandidate), E_OK);
     GTEST_LOG_(INFO) << "BaseKey_UpdateKey_001 end";
 }
 
