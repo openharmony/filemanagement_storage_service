@@ -268,7 +268,7 @@ int32_t StorageManager::NotifyVolumeDamaged(const std::string &volumeId, const s
     const std::string &fsUuid, const std::string &path, const std::string &description)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
-    LOGI("StorageManger::NotifyVolumeDamaged start, fsType is %{public}s.", fsTypeStr.c_str());
+    LOGI("NotifyVolumeDamaged start, fsType is %{public}s, fsU is %{public}s.", fsTypeStr.c_str(), fsUuid.c_str());
     DelayedSingleton<VolumeManagerService>::GetInstance()->OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path,
                                                                            description);
 #endif

@@ -37,21 +37,22 @@ class DiskInfoTest : public testing::Test {
 public:
     static void SetUpTestCase(void)
     {
-    GTEST_LOG_(INFO) << "SetUpTestCase Start";
-    diskUtilMoc_ = std::make_shared<DiskUtilMoc>();
-    DiskUtilMoc::diskUtilMoc = diskUtilMoc_;
+        GTEST_LOG_(INFO) << "SetUpTestCase Start";
+        diskUtilMoc_ = std::make_shared<DiskUtilMoc>();
+        DiskUtilMoc::diskUtilMoc = diskUtilMoc_;
 
-    fileUtilMoc_ = std::make_shared<FileUtilMoc>();
-    FileUtilMoc::fileUtilMoc = fileUtilMoc_;
+        fileUtilMoc_ = std::make_shared<FileUtilMoc>();
+        FileUtilMoc::fileUtilMoc = fileUtilMoc_;
     };
+
     static void TearDownTestCase(void)
     {
-    GTEST_LOG_(INFO) << "TearDownTestCase Start";
-    DiskUtilMoc::diskUtilMoc = nullptr;
-    diskUtilMoc_ = nullptr;
+        GTEST_LOG_(INFO) << "TearDownTestCase Start";
+        DiskUtilMoc::diskUtilMoc = nullptr;
+        diskUtilMoc_ = nullptr;
 
-    FileUtilMoc::fileUtilMoc = nullptr;
-    fileUtilMoc_ = nullptr;
+        FileUtilMoc::fileUtilMoc = nullptr;
+        fileUtilMoc_ = nullptr;
     };
     void SetUp() {};
     void TearDown() {};
