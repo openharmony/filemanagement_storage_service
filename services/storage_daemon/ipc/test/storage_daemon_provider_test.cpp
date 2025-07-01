@@ -48,6 +48,7 @@ std::vector<uint8_t> GenerateTestVector(uint8_t startValue, size_t length)
     }
     return result;
 }
+
 std::vector<uint8_t> GenerateTestData(uint8_t startValue, size_t length)
 {
     std::vector<uint8_t> result(length);
@@ -56,6 +57,7 @@ std::vector<uint8_t> GenerateTestData(uint8_t startValue, size_t length)
     }
     return result;
 }
+
 void StorageDaemonProviderTest::SetUp(void)
 {
     storageDaemonProviderTest_ = new StorageDaemonProvider();
@@ -85,6 +87,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Shutdown_001, Test
     EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Shutdown_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_Mount_001
  * @tc.desc: Verify the Mount function.
@@ -102,6 +105,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Mount_001, TestSiz
 
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Mount_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_UMount_001
  * @tc.desc: Verify the UMount function.
@@ -117,6 +121,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMount_001, TestSi
     EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMount_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_Check_001
  * @tc.desc: Verify the Check function.
@@ -132,6 +137,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Check_001, TestSiz
     EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Check_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_Format_001
  * @tc.desc: Verify the Format function.
@@ -148,6 +154,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Format_001, TestSi
     EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Format_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_Format_002
  * @tc.desc: Verify the Format function.
@@ -164,6 +171,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Format_002, TestSi
     EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Format_002 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_Partition_001
  * @tc.desc: Verify the Partition function.
@@ -180,6 +188,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Partition_001, Tes
     EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Partition_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_Partition_002
  * @tc.desc: Verify the Partition function.
@@ -196,6 +205,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_Partition_002, Tes
     EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_Partition_002 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_SetVolumeDescription_001
  * @tc.desc: Verify the SetVolumeDescription function.
@@ -212,6 +222,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_SetVolumeDescripti
     EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_SetVolumeDescription_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_SetVolumeDescription_002
  * @tc.desc: Verify the SetVolumeDescription function.
@@ -228,6 +239,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_SetVolumeDescripti
     EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_SetVolumeDescription_002 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_SetVolumeDescription_003
  * @tc.desc: Verify the SetVolumeDescription function.
@@ -244,6 +256,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_SetVolumeDescripti
     EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_SetVolumeDescription_003 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_QueryUsbIsInUse_001
  * @tc.desc: Verify the QueryUsbIsInUse function.
@@ -260,6 +273,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_QueryUsbIsInUse_00
     EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_QueryUsbIsInUse_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_StartUser_001
  * @tc.desc: Verify the StartUser function.
@@ -274,6 +288,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_StartUser_001, Tes
     EXPECT_TRUE(ret == E_USERID_RANGE) << "user's dirs are not prepare";
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_StartUser_001 end";
 }
+
 /**
  * @tc.name: Storage_Manager_StorageDaemonProviderTest_StartUser_002
  * @tc.desc: check the StartUser function when args are normal
@@ -296,6 +311,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_StartUser_002, Tes
     storageDaemonProviderTest_->DestroyUserDirs(StorageTest::USER_ID5, flags);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_StartUser_002 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_StopUser_001
  * @tc.desc: Verify the StopUser function.
@@ -310,6 +326,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_StopUser_001, Test
     EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_StopUser_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_StopUser_002
  * @tc.desc: check the StopUser function when dir does not exist.
@@ -335,6 +352,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_StopUser_002, Test
     EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_StopUser_002 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_PrepareUserDirs_001
  * @tc.desc: Verify the PrepareUserDirs function.
@@ -351,6 +369,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_PrepareUserDirs_00
     EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_PrepareUserDirs_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_PrepareUserDirs_002
  * @tc.desc: Verify the PrepareUserDirs function.
@@ -366,6 +385,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_PrepareUserDirs_00
     EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_PrepareUserDirs_002 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_DestroyUserDirs_001
  * @tc.desc: Verify the DestroyUserDirs function.
@@ -382,6 +402,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_DestroyUserDirs_00
     EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DestroyUserDirs_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_DestroyUserDirs_002
  * @tc.desc: Verify the DestroyUserDirs function.
@@ -398,6 +419,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_DestroyUserDirs_00
     EXPECT_NE(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DestroyUserDirs_002 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_CompleteAddUser_001
  * @tc.desc: Verify the CompleteAddUser function.
@@ -412,6 +434,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CompleteAddUser_00
     EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CompleteAddUser_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_InitGlobalKey_001
  * @tc.desc: Verify the InitGlobalKey function.
@@ -426,6 +449,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_InitGlobalKey_001,
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_InitGlobalKey_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_InitGlobalUserKeys_001
  * @tc.desc: Verify the InitGlobalUserKeys function.
@@ -440,6 +464,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_InitGlobalUserKeys
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_InitGlobalUserKeys_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_GenerateUserKeys_001
  * @tc.desc: Verify the GenerateUserKeys function.
@@ -455,6 +480,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GenerateUserKeys_0
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GenerateUserKeys_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_DeleteUserKeys_001
  * @tc.desc: Verify the DeleteUserKeys function.
@@ -469,6 +495,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_DeleteUserKeys_001
     EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeleteUserKeys_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_UpdateUserAuth_001
  * @tc.desc: Verify the UpdateUserAuth function.
@@ -488,6 +515,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UpdateUserAuth_001
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UpdateUserAuth_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_UpdateUseAuthWithRecoveryKey_001
  * @tc.desc: Verify the UpdateUseAuthWithRecoveryKey function.
@@ -507,6 +535,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UpdateUseAuthWithR
     EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UpdateUseAuthWithRecoveryKey_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_ActiveUserKey_001
  * @tc.desc: Verify the ActiveUserKey function.
@@ -523,6 +552,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ActiveUserKey_001,
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ActiveUserKey_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_ActiveUserKey_002
  * @tc.desc: Verify the ActiveUserKey function.
@@ -539,6 +569,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_ActiveUserKey_002,
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_ActiveUserKey_002 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_InactiveUserKey_001
  * @tc.desc: Verify the InactiveUserKey function.
@@ -553,6 +584,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_InactiveUserKey_00
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_InactiveUserKey_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_InactiveUserKey_002
  * @tc.desc: Verify the InactiveUserKey function.
@@ -569,6 +601,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_InactiveUserKey_00
 #endif
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_InactiveUserKey_002 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_UpdateKeyContext_001
  * @tc.desc: Verify the UpdateKeyContext function.
@@ -584,6 +617,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UpdateKeyContext_0
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UpdateKeyContext_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_MountCryptoPathAgain_001
  * @tc.desc: Verify the MountCryptoPathAgain function.
@@ -599,6 +633,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountCryptoPathAga
     EXPECT_EQ(result, -ENOENT);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountCryptoPathAgain_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_LockUserScreen_001
  * @tc.desc: Verify the LockUserScreen function.
@@ -613,6 +648,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_LockUserScreen_001
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_LockUserScreen_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_LockUserScreen_002
  * @tc.desc: Verify the LockUserScreen function.
@@ -629,6 +665,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_LockUserScreen_002
 #endif
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_LockUserScreen_002 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_UnlockUserScreen_001
  * @tc.desc: Verify the UnlockUserScreen function.
@@ -645,6 +682,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UnlockUserScreen_0
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UnlockUserScreen_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_UnlockUserScreen_002
  * @tc.desc: Verify the UnlockUserScreen function.
@@ -663,6 +701,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UnlockUserScreen_0
 #endif
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UnlockUserScreen_002 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_GetLockScreenStatus_001
  * @tc.desc: Verify the GetLockScreenStatus function.
@@ -678,6 +717,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetLockScreenStatu
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetLockScreenStatus_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_GenerateAppkey_001
  * @tc.desc: Verify the GenerateAppkey function.
@@ -696,6 +736,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GenerateAppkey_001
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GenerateAppkey_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_DeleteAppkey_001
  * @tc.desc: Verify the DeleteAppkey function.
@@ -711,6 +752,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_DeleteAppkey_001, 
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeleteAppkey_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_CreateRecoverKey_001
  * @tc.desc: Verify the CreateRecoverKey function.
@@ -733,6 +775,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateRecoverKey_0
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateRecoverKey_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_SetRecoverKey_001
  * @tc.desc: Verify the SetRecoverKey function.
@@ -750,6 +793,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_SetRecoverKey_001,
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_SetRecoverKey_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_CreateShareFile_001
  * @tc.desc: Verify the CreateShareFile function.
@@ -772,6 +816,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateShareFile_00
     ASSERT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateShareFile_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_DeleteShareFile_001
  * @tc.desc: Verify the DeleteShareFile function.
@@ -793,6 +838,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_DeleteShareFile_00
     EXPECT_EQ(ret, -EINVAL);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeleteShareFile_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_SetBundleQuota_001
  * @tc.desc: Verify the SetBundleQuota function.
@@ -812,6 +858,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_SetBundleQuota_001
     EXPECT_NE(result, E_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_SetBundleQuota_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_GetOccupiedSpace_001
  * @tc.desc: Verify the GetOccupiedSpace function.
@@ -830,6 +877,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetOccupiedSpace_0
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetOccupiedSpace_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_UpdateMemoryPara_001
  * @tc.desc: Verify the UpdateMemoryPara function.
@@ -846,6 +894,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UpdateMemoryPara_0
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UpdateMemoryPara_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_MountDfsDocs_001
  * @tc.desc: Verify the MountDfsDocs function.
@@ -863,6 +912,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountDfsDocs_001, 
     EXPECT_NE(result, E_ERR);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountDfsDocs_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_UMountDfsDocs_001
  * @tc.desc: Verify the UMountDfsDocs function.
@@ -881,6 +931,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountDfsDocs_001,
     EXPECT_NE(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDfsDocs_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_GetFileEncryptStatus_001
  * @tc.desc: Verify the GetFileEncryptStatus function.
@@ -898,6 +949,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetFileEncryptStat
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetFileEncryptStatus_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_GetUserNeedActiveStatus_001
  * @tc.desc: Verify the GetUserNeedActiveStatus function.
@@ -913,6 +965,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_GetUserNeedActiveS
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_GetUserNeedActiveStatus_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_MountMediaFuse_001
  * @tc.desc: Verify the MountMediaFuse function.
@@ -928,6 +981,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountMediaFuse_001
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountMediaFuse_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_UMountMediaFuse_001
  * @tc.desc: Verify the UMountMediaFuse function.
@@ -942,6 +996,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountMediaFuse_00
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountMediaFuse_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_MountFileMgrFuse_001
  * @tc.desc: Verify the MountFileMgrFuse function.
@@ -959,6 +1014,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountFileMgrFuse_0
     EXPECT_TRUE(result > 0);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountFileMgrFuse_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_UMountFileMgrFuse_001
  * @tc.desc: Verify the UMountFileMgrFuse function.
@@ -974,6 +1030,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountFileMgrFuse_
     EXPECT_EQ(result, E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountFileMgrFuse_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_IsFileOccupied_001
  * @tc.desc: Verify the IsFileOccupied function.
@@ -992,6 +1049,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_IsFileOccupied_001
     EXPECT_EQ(result, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_IsFileOccupied_001 end";
 }
+
 /**
  * @tc.name: StorageDaemonProviderTest_ResetSecretWithRecoveryKey_001
  * @tc.desc: Verify the ResetSecretWithRecoveryKey function.
