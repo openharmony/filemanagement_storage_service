@@ -45,6 +45,24 @@ public:
 
     StorageManagerProvider *storageManagerProviderTest_;
 };
+
+void StringVecToRawData(const std::vector<std::string> &stringVec, StorageFileRawData &rawData)
+{
+    std::stringstream ss;
+    uint32_t stringCount = stringVec.size();
+    ss.write(reinterpret_cast<const char*>(&stringCount), sizeof(stringCount));
+
+    for (uint32_t i = 0; i < stringCount; ++i) {
+        uint32_t strLen = stringVec[i].length();
+        ss.write(reinterpret_cast<const char*>(&strLen), sizeof(strLen));
+        ss.write(stringVec[i].c_str(), strLen);
+    }
+    std::string result = ss.str();
+    rawData.ownedData = std::move(result);
+    rawData.data = rawData.ownedData.data();
+    rawData.size = rawData.ownedData.size();
+}
+
 void StorageManagerProviderTest::SetUp(void)
 {
     storageManagerProviderTest_ = new StorageManagerProvider(STORAGE_MANAGER_MANAGER_ID);
@@ -801,11 +819,13 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_CreateShareFile_
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_CreateShareFile_001 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
-    std::vector<std::string> uriList = {"file1", "file2"};
+    std::string uriStr = "file1";
+    std::vector<std::string> uriStrVec = {uriStr};
+    StorageFileRawData rawData;
+    StringVecToRawData(uriStrVec, rawData);
     StorageFileRawData fileRawData;
-    fileRawData.ownedData = "file1";
-    fileRawData.size = fileRawData.ownedData.size();
-    fileRawData.data = fileRawData.ownedData.data();
+    fileRawData.size = rawData.size;
+    fileRawData.RawDataCpy(rawData.data);
     uint32_t tokenId = 12345;
     uint32_t flag = 1;
     std::vector<int32_t> funcResult;
@@ -823,10 +843,13 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_DeleteShareFile_
 {
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_DeleteShareFile_001 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    std::string uriStr = "file1";
+    std::vector<std::string> uriStrVec = {uriStr};
+    StorageFileRawData rawData;
+    StringVecToRawData(uriStrVec, rawData);
     StorageFileRawData fileRawData;
-    fileRawData.ownedData = "file1";
-    fileRawData.size = fileRawData.ownedData.size();
-    fileRawData.data = fileRawData.ownedData.data();
+    fileRawData.size = rawData.size;
+    fileRawData.RawDataCpy(rawData.data);
     uint32_t tokenId = 12345;
     auto ret = storageManagerProviderTest_->DeleteShareFile(tokenId, fileRawData);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);

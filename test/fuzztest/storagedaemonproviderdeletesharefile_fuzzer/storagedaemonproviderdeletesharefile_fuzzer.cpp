@@ -17,11 +17,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <sstream>
 
 #include "message_parcel.h"
 #include "storage_daemon_stub.h"
 #include "storage_daemon_provider.h"
 #include "securec.h"
+#include "fuzzer/FuzzedDataProvider.h"
 
 using namespace OHOS::StorageDaemon;
 
@@ -36,12 +38,39 @@ uint32_t GetU32Data(const char* ptr)
     return (ptr[0] << 24) | (ptr[1] << 16) | (ptr[2] << 8) | (ptr[3]);
 }
 
+void StringVecToRawData(const std::vector<std::string> &stringVec, StorageFileRawData &rawData)
+{
+    std::stringstream ss;
+    uint32_t stringCount = stringVec.size();
+    ss.write(reinterpret_cast<const char*>(&stringCount), sizeof(stringCount));
+
+    for (uint32_t i = 0; i < stringCount; ++i) {
+        uint32_t strLen = stringVec[i].length();
+        ss.write(reinterpret_cast<const char*>(&strLen), sizeof(strLen));
+        ss.write(stringVec[i].c_str(), strLen);
+    }
+    std::string result = ss.str();
+    rawData.ownedData = std::move(result);
+    rawData.data = rawData.ownedData.data();
+    rawData.size = rawData.ownedData.size();
+}
+
 bool StorageDaemonProviderDeleteShareFileFuzzTest(const uint8_t *data, size_t size)
 {
     uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_DELETE_SHARE_FILE);
+    FuzzedDataProvider fdp(data, size);
+    std::string str = fdp.ConsumeRandomLengthString(10);
+    std::vector<std::string> strVec = {str};
+    StorageFileRawData rawData;
+    StringVecToRawData(strVec, rawData);
+    StorageFileRawData fileRawData;
+    fileRawData.size = rawData.size;
+    fileRawData.RawDataCpy(rawData.data);
     MessageParcel datas;
     datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
-    datas.WriteBuffer(data, size);
+    uint32_t tokenId = fdp.ConsumeIntegral<uint32_t>();
+    datas.WriteUint32(tokenId);
+    datas.WriteRawData(fileRawData.data, fileRawData.size);
     datas.RewindRead(0);
     MessageParcel reply;
     MessageOption option;
