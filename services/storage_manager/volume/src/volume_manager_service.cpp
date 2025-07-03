@@ -194,26 +194,17 @@ int32_t VolumeManagerService::MountUsbFuse(std::string volumeId, int &fuseFd)
     if (result == E_OK) {
         std::string fsUuid;
         result = sdCommunication->MountUsbFuse(volumeId, fsUuid, fuseFd);
-        if (result != E_OK) {
-            volumePtr->SetState(VolumeState::UNMOUNTED);
-        } else {
+        if (result == E_OK) {
             result = VolumeManagerServiceExt::GetInstance()->NotifyUsbFuseMount(fuseFd, volumeId, fsUuid);
             LOGE("VolumeManagerService::Mount in");
-            //result = E_OK;
             if (result == E_OK) {
                 LOGE("VolumeManagerService::result == E_OK");
                 result = sdCommunication->Mount(volumeId, 0);
-                if (result != E_OK) {
-                    LOGE("VolumeManagerService::Mount not ok");
-                    volumePtr->SetState(VolumeState::UNMOUNTED);
-                } else {
-                    LOGE("VolumeManagerService::Mount ok");
-                }
-            } else {
-                LOGE("VolumeManagerServiceExt NotifyUsbFuseMount failed, error = %{public}d", result);
+                LOGI("VolumeManagerService::Mount ok");
             }
         }
-    } else {
+    }
+    if (result != E_OK) {
         volumePtr->SetState(VolumeState::UNMOUNTED);
         StorageRadar::ReportVolumeOperation("VolumeManagerService::Check", result);
     }

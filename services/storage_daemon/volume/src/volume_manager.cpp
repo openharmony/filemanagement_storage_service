@@ -189,7 +189,8 @@ int32_t VolumeManager::MountUsbFuse(std::string volumeId, std::string &fsUuid, i
         "fscontext=u:object_r:hmdfs:s0",
         fuseFd);
  
-    int ret = StorageDaemon::Mount("/dev/fuse", mountUsbFusePath_.c_str(), "fuse", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_NOATIME, opt.c_str());
+    int ret = StorageDaemon::Mount("/dev/fuse", mountUsbFusePath_.c_str(),
+                                   "fuse", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_NOATIME, opt.c_str());
     if (ret) {
         LOGE("failed to mount fuse for file mgr, ret is %{public}d, errno is %{public}d.", ret, errno);
         close(fuseFd);
@@ -211,7 +212,6 @@ int32_t VolumeManager::CreateMountUsbFusePath(std::string fsUuid)
     LOGE("CreateMountUsbFusePath create path");
     struct stat statbuf;
     mountUsbFusePath_ = StringPrintf("/mnt/data/external/%s", fsUuid.c_str());
- 
     if (!lstat(mountUsbFusePath_.c_str(), &statbuf)) {
         LOGE("volume mount path %{public}s exists, please remove first", mountUsbFusePath_.c_str());
         remove(mountUsbFusePath_.c_str());

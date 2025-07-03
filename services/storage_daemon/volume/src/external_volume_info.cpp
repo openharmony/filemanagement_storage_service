@@ -368,7 +368,7 @@ int32_t ExternalVolumeInfo::DoUMount(bool force)
     }
     if (IsFuse()) {
         mountPath_ = mountBackupPath_;
-    }   
+    }
     int fd = open(mountPath_.c_str(), O_RDONLY);
     if (fd < 0) {
         LOGE("open file fail mountPath %{public}s, errno %{public}d", mountPath_.c_str(), errno);
