@@ -44,7 +44,7 @@ constexpr const char *MOUNT_POINT_INFO = "/proc/mounts";
 
 int32_t RedirectStdToPipe(int logpipe[2], size_t len)
 {
-    if (logpipe == nullptr || len == 0) {
+    if (logpipe == nullptr || len != 2) {
         LOGE("std to pipe param is invalid.");
         return E_ERR;
     }
@@ -562,7 +562,7 @@ static void ReportExecutorPidEvent(std::vector<std::string> &cmd, int32_t pid)
 
 static void ClosePipe(int pipedes[2], size_t len)
 {
-    if (pipedes == nullptr || len == 0) {
+    if (pipedes == nullptr || len != 2) {
         LOGE("close pipe param is invalid.");
         return;
     }
@@ -572,7 +572,7 @@ static void ClosePipe(int pipedes[2], size_t len)
  
 static void WritePidToPipe(int pipe_fd[2], size_t len)
 {
-    if (pipe_fd == nullptr || len == 0) {
+    if (pipe_fd == nullptr || len != 2) {
         LOGE("write pipe param is invalid.");
         return;
     }
@@ -598,7 +598,7 @@ static void ReadPidFromPipe(std::vector<std::string> &cmd, int pipe_fd[2])
  
 static void ReadLogFromPipe(int logpipe[2], size_t len)
 {
-    if (pipe_fd == nullptr || len == 0) {
+    if (pipe_fd == nullptr || len != 2) {
         LOGE("read pipe param is invalid.");
         return;
     }
