@@ -594,8 +594,6 @@ int32_t StorageManagerProvider::CreateShareFile(const StorageFileRawData &rawDat
     if (!CheckClientPermissionForShareFile()) {
         return E_PERMISSION_DENIED;
     }
-    int32_t rawDataSize = static_cast<int32_t>(rawData.size);
-    LOGI("StorageManagerProvider::CreateShareFile start. file size is %{public}d", rawDataSize);
     funcResult = StorageManager::GetInstance()->CreateShareFile(rawData, tokenId, flag);
     LOGI("StorageManagerProvider::CreateShareFile end. result is %{public}zu", funcResult.size());
     return E_OK;
