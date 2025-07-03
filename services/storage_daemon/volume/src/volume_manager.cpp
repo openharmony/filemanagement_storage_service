@@ -18,6 +18,7 @@
 #include <fcntl.h>
 #include <sys/mount.h>
 #include <sys/sysmacros.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "ipc/storage_manager_client.h"
@@ -26,6 +27,8 @@
 #include "storage_service_log.h"
 #include "utils/storage_radar.h"
 #include "utils/string_utils.h"
+#include "utils/disk_utils.h"
+#include "utils/file_utils.h"
 #include "volume/external_volume_info.h"
 
 #define STORAGE_MANAGER_IOC_CHK_BUSY _IOR(0xAC, 77, int)
@@ -96,6 +99,12 @@ int32_t VolumeManager::DestroyVolume(const std::string volId)
     int32_t ret = destroyNode->Destroy();
     if (ret)
         return ret;
+    if (IsFuse()) {
+        ret = destroyNode->DestroyUsbFuse();
+        if (ret)
+            return ret;
+    }
+
     volumes_.Erase(volId);
     destroyNode.reset();
 
@@ -147,6 +156,73 @@ int32_t VolumeManager::Mount(const std::string volId, uint32_t flags)
     if (err) {
         LOGE("Volume Notify Mount Destroyed failed");
     }
+    return E_OK;
+}
+
+int32_t VolumeManager::MountUsbFuse(std::string volumeId, std::string &fsUuid, int &fuseFd)
+{
+    std::shared_ptr<VolumeInfo> info = GetVolume(volumeId);
+    if (info == nullptr) {
+        LOGE("the volume %{public}s does not exist.", volumeId.c_str());
+        return E_NON_EXIST;
+    }
+    int32_t result = ReadVolumUuid(volumeId, fsUuid);
+    if (result != E_OK) {
+        return result;
+    }
+    result = CreateMountUsbFusePath(fsUuid);
+    if (result != E_OK) {
+        return result;
+    }
+    fuseFd = open("/dev/fuse", O_RDWR);
+    if (fuseFd < 0) {
+        LOGE("open /dev/fuse fail for file mgr, errno is %{public}d.", errno);
+        return E_OPEN_FUSE;
+    }
+    LOGI("open fuse end.");
+    string opt = StringPrintf("fd=%i,"
+        "rootmode=40000,"
+        "default_permissions,"
+        "allow_other,"
+        "user_id=0,group_id=0,"
+        "context=\"u:object_r:hmdfs:s0\","
+        "fscontext=u:object_r:hmdfs:s0",
+        fuseFd);
+ 
+    int ret = StorageDaemon::Mount("/dev/fuse", mountUsbFusePath_.c_str(), "fuse", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_NOATIME, opt.c_str());
+    if (ret) {
+        LOGE("failed to mount fuse for file mgr, ret is %{public}d, errno is %{public}d.", ret, errno);
+        close(fuseFd);
+        std::string extraData = "dstPath=" + mountUsbFusePath_ + ",kernelCode=" + to_string(errno);
+        return E_MOUNT_FILE_MGR_FUSE;
+    }
+    return E_OK;
+}
+ 
+int32_t VolumeManager::ReadVolumUuid(std::string volumeId, std::string &fsUuid)
+{
+    std::string devPath = StringPrintf("/dev/block/%s", (volumeId).c_str());
+    int32_t ret = OHOS::StorageDaemon::ReadVolumUuid(devPath, fsUuid);
+    return ret;
+}
+ 
+int32_t VolumeManager::CreateMountUsbFusePath(std::string fsUuid)
+{
+    LOGE("CreateMountUsbFusePath create path");
+    struct stat statbuf;
+    mountUsbFusePath_ = StringPrintf("/mnt/data/external/%s", fsUuid.c_str());
+ 
+    if (!lstat(mountUsbFusePath_.c_str(), &statbuf)) {
+        LOGE("volume mount path %{public}s exists, please remove first", mountUsbFusePath_.c_str());
+        remove(mountUsbFusePath_.c_str());
+        return E_SYS_KERNEL_ERR;
+    }
+    LOGE("CreateMountUsbFusePath  mountUsbFusePath_ path %{public}s ", mountUsbFusePath_.c_str());
+    if (mkdir(mountUsbFusePath_.c_str(), S_IRWXU | S_IRWXG | S_IXOTH)) {
+        LOGE("the volume %{public}s create path %{public}s failed", fsUuid.c_str(), mountUsbFusePath_.c_str());
+        return E_MKDIR_MOUNT;
+    }
+    LOGE("CreateMountUsbFusePath create path out");
     return E_OK;
 }
 

@@ -509,5 +509,87 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_TryToFix_001, Test
 
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_TryToFix_001 end";
 }
+
+/**
+ * @tc.name: Storage_Service_VolumeManagerTest_MountUsbFuse_001
+ * @tc.desc: Verify the MountUsbFuse function with non-existing volume.
+ * @tc.type: FUNC
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_MountUsbFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_MountUsbFuse_001 start";
+
+    VolumeManager *volumeManager = VolumeManager::Instance();
+    ASSERT_TRUE(volumeManager != nullptr);
+
+    std::string volumeId = "vol-non-exist";
+    int fuseFd = -1;
+    std::string fsUuid;
+
+    // Test with non-existing volume - should return E_NON_EXIST
+    int32_t result = volumeManager->MountUsbFuse(volumeId, fsUuid, fuseFd);
+    EXPECT_EQ(result, E_NON_EXIST);
+    EXPECT_EQ(fuseFd, -1);  // fuseFd should remain unchanged
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_MountUsbFuse_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeManagerTest_MountUsbFuse_002
+ * @tc.desc: Verify the MountUsbFuse function with existing volume but ReadVolumUuid fails.
+ * @tc.type: FUNC
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_MountUsbFuse_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_MountUsbFuse_002 start";
+
+    VolumeManager *volumeManager = VolumeManager::Instance();
+    ASSERT_TRUE(volumeManager != nullptr);
+
+    // Create a volume for testing
+    std::string diskId = "diskId-usb-fuse-001";
+    bool isUserdata = false;
+    dev_t device = MKDEV(8, 1); // USB device typically uses major 8
+    std::string volumeId = volumeManager->CreateVolume(diskId, device, isUserdata);
+    ASSERT_FALSE(volumeId.empty());
+
+    int fuseFd = -1;
+    std::string fsUuid;
+    
+    // Test MountUsbFuse - ReadVolumUuid will likely fail for test volume
+    int32_t result = volumeManager->MountUsbFuse(volumeId, fsUuid, fuseFd);
+    // Since ReadVolumUuid will fail for test volumes, expect an error
+    EXPECT_NE(result, E_OK);
+
+    // Cleanup
+    volumeManager->DestroyVolume(volumeId);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_MountUsbFuse_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeManagerTest_MountUsbFuse_003
+ * @tc.desc: Verify the MountUsbFuse function with empty volumeId.
+ * @tc.type: FUNC
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_MountUsbFuse_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_MountUsbFuse_003 start";
+
+    VolumeManager *volumeManager = VolumeManager::Instance();
+    ASSERT_TRUE(volumeManager != nullptr);
+
+    std::string volumeId = "";
+    int fuseFd = -1;
+    std::string fsUuid;
+    
+    int32_t result = volumeManager->MountUsbFuse(volumeId, fsUuid, fuseFd);
+    EXPECT_EQ(result, E_NON_EXIST);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_MountUsbFuse_003 end";
+}
 } // STORAGE_DAEMON
 } // OHOS

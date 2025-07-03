@@ -32,6 +32,7 @@ public:
     int32_t Check(const std::string volId);
     int32_t Mount(const std::string volId, uint32_t flags);
     int32_t UMount(const std::string volId);
+    int32_t MountUsbFuse(std::string volumeId, std::string &fsUuid, int &fuseFd);
     int32_t TryToFix(const std::string volId, uint32_t flags);
     int32_t Format(const std::string volId, const std::string fsType);
     int32_t SetVolumeDescription(const std::string volId, const std::string description);
@@ -45,6 +46,9 @@ private:
     StorageService::StorageRlMap<std::string, std::shared_ptr<VolumeInfo>> volumes_;
 
     std::shared_ptr<VolumeInfo> GetVolume(const std::string volId);
+    int32_t CreateMountUsbFusePath(std::string fsUuid);
+    int32_t ReadVolumUuid(std::string volumeId, std::string &fsUuid);
+    std::string mountUsbFusePath_;
 };
 } // STORAGE_DAEMON
 } // OHOS

@@ -104,6 +104,17 @@ int32_t ReadMetadata(const std::string &devPath, std::string &uuid, std::string 
     return E_OK;
 }
 
+int32_t ReadVolumUuid(const std::string &devPath, std::string &uuid)
+{
+    uuid = GetBlkidData(devPath, "UUID");
+    LOGI("ReadMetadata, fsUuid=%{public}s", GetAnonyString(uuid).c_str());
+    if (uuid.empty()) {
+        LOGE("External volume ReadMetadata error.");
+        return E_READMETADATA;
+    }
+    return E_OK;
+}
+
 std::string GetBlkidData(const std::string &devPath, const std::string &type)
 {
     std::vector<std::string> cmd;

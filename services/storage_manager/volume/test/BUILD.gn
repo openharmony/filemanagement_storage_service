@@ -73,6 +73,7 @@ ohos_unittest("volume_manager_service_test") {
     "${storage_manager_path}/storage_daemon_communication/src/storage_daemon_communication.cpp",
     "${storage_manager_path}/volume/src/notification.cpp",
     "${storage_manager_path}/volume/src/volume_manager_service.cpp",
+    "${storage_manager_path}/volume/src/volume_manager_service_ext.cpp",
     "volume_manager_service_test.cpp",
   ]
 

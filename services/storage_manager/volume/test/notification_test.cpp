@@ -175,4 +175,28 @@ HWTEST_F(NotificationTest, Notification_NotifyVolumeChange_0005, testing::ext::T
         EXPECT_EQ(vc.GetDiskId(), diskId);
     GTEST_LOG_(INFO) << "NotificationTest-end Notification_NotifyVolumeChange_0005";
 }
+
+/**
+ * @tc.number: SUB_STORAGE_Notification_NotifyVolumeChange_0006
+ * @tc.name: Notification_NotifyVolumeChange_0006
+ * @tc.desc: Test function of NotifyVolumeChange interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+
+HWTEST_F(NotificationTest, Notification_NotifyVolumeChange_0006, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "NotificationTest-begin Notification_NotifyVolumeChange_0006";
+        std::string volumeId = "vol-1-1";
+        int32_t fsType = 1;
+        std::string diskId = "disk-1-1";
+        VolumeCore vc(volumeId, fsType, diskId);
+        std::shared_ptr<VolumeExternal> volume = make_shared<VolumeExternal>(vc);
+        std::shared_ptr<Notification> notification = DelayedSingleton<Notification>::GetInstance();
+        notification->NotifyVolumeChange(VolumeState::FUSE_REMOVED, volume);
+        EXPECT_EQ(vc.GetDiskId(), diskId);
+    GTEST_LOG_(INFO) << "NotificationTest-end Notification_NotifyVolumeChange_0006";
+}
 }

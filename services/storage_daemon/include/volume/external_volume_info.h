@@ -39,6 +39,7 @@ protected:
     virtual int32_t DoDestroy() override;
     virtual int32_t DoMount(uint32_t mountFlags) override;
     virtual int32_t DoUMount(bool force) override;
+    virtual int32_t DoUMountUsbFuse() override;
     virtual int32_t DoCheck() override;
     virtual int32_t DoFormat(std::string type) override;
     virtual int32_t DoSetVolDesc(std::string description) override;
@@ -49,11 +50,14 @@ private:
     std::string fsUuid_;
     std::string fsType_;
     std::string mountPath_;
+    std::string mountUsbFusePath_;
+    std::string mountBackupPath_;
 
     dev_t device_;
 
     const std::string devPathDir_ = "/dev/block/%s";
     const std::string mountPathDir_ = "/mnt/data/external/%s";
+    const std::string mountFusePathDir_ = "/mnt/data/external_fuse/%s";
     std::vector<std::string> supportMountType_ = { "ntfs", "exfat", "vfat", "hmfs", "f2fs" };
     std::map<std::string, std::string> supportFormatType_ = {{"exfat", "mkfs.exfat"}, {"vfat", "newfs_msdos"}};
 
@@ -68,6 +72,8 @@ private:
     int32_t DoMount4Vfat(uint32_t mountFlags);
     int32_t DoCheck4Ntfs();
     int32_t DoCheck4Exfat();
+    int32_t CreateMountPath();
+    int32_t CreateFuseMountPath();
 };
 } // STORAGE_DAEMON
 } // OHOS

@@ -1084,6 +1084,25 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_TryToFix_001, Test
 }
 
 /**
+ * @tc.name: StorageDaemonProviderTest_MountUsbFuse_001
+ * @tc.desc: Verify the MountUsbFuse function with normal parameters.
+ * @tc.type: FUNC
+ * @tc.require: issueI9G5A0
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_MountUsbFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountUsbFuse_001 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    
+    std::string volumeId = "vol-usb-001";
+    int fuseFd = -1;
+    std::string fsUuid;
+    int32_t result = storageDaemonProviderTest_->MountUsbFuse(volumeId, fsUuid, fuseFd);
+    EXPECT_NE(result, E_ERR);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_MountUsbFuse_001 end";
+}
+
+/**
  * @tc.name: StorageDaemonProviderTest_MountDisShareFile_001
  * @tc.desc: Verify the MountDisShareFile function.
  * @tc.type: FUNC

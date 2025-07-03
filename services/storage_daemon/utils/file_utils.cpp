@@ -116,6 +116,11 @@ bool IsFile(const std::string &path)
     return S_ISREG(buf.st_mode);
 }
 
+bool IsFuse()
+{
+    return true;
+}
+
 bool MkDirRecurse(const std::string& path, mode_t mode)
 {
     std::string::size_type index = 0;
