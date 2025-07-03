@@ -60,8 +60,9 @@ void VolumeManagerService::OnVolumeStateChanged(string volumeId, VolumeState sta
     }
 }
 
-void VolumeManagerService::OnVolumeMounted(std::string volumeId, const std::string &fsTypeStr, std::string fsUuid,
-    std::string path, std::string description)
+void VolumeManagerService::OnVolumeMounted(const std::string &volumeId, const std::string &fsTypeStr,
+                                           const std::string &fsUuid, const std::string &path,
+                                           const std::string &description)
 {
     if (!volumeMap_.Contains(volumeId)) {
         LOGE("VolumeManagerService::OnVolumeMounted volumeId %{public}s not exists", volumeId.c_str());
@@ -94,8 +95,9 @@ void VolumeManagerService::OnVolumeMounted(std::string volumeId, const std::stri
     VolumeStateNotify(VolumeState::MOUNTED, volumePtr);
 }
 
-void VolumeManagerService::OnVolumeDamaged(std::string volumeId, const std::string &fsTypeStr, std::string fsUuid,
-                                           std::string path, std::string description)
+void VolumeManagerService::OnVolumeDamaged(const std::string &volumeId, const std::string &fsTypeStr,
+                                           const std::string &fsUuid, const std::string &path,
+                                           const std::string &description)
 {
     if (!volumeMap_.Contains(volumeId)) {
         LOGE("VolumeManagerService::OnVolumeDamaged volumeId %{public}s not exists", volumeId.c_str());
