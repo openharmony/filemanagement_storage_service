@@ -38,13 +38,14 @@ constexpr uint32_t ALL_PERMS = (S_ISUID | S_ISGID | S_ISVTX | S_IRWXU | S_IRWXG 
 constexpr int SET_SCHED_LOAD_TRANS_TYPE = 10001;
 #endif
 constexpr int BUF_LEN = 1024;
+constexpr int PIPE_FD_LEN = 2;
 constexpr uint8_t KILL_RETRY_TIME = 5;
 constexpr uint32_t KILL_RETRY_INTERVAL_MS = 100 * 1000;
 constexpr const char *MOUNT_POINT_INFO = "/proc/mounts";
 
 int32_t RedirectStdToPipe(int logpipe[2], size_t len)
 {
-    if (logpipe == nullptr || len != 2) {
+    if (logpipe == nullptr || len != PIPE_FD_LEN) {
         LOGE("std to pipe param is invalid.");
         return E_ERR;
     }
@@ -562,7 +563,7 @@ static void ReportExecutorPidEvent(std::vector<std::string> &cmd, int32_t pid)
 
 static void ClosePipe(int pipedes[2], size_t len)
 {
-    if (pipedes == nullptr || len != 2) {
+    if (pipedes == nullptr || len != PIPE_FD_LEN) {
         LOGE("close pipe param is invalid.");
         return;
     }
@@ -572,7 +573,7 @@ static void ClosePipe(int pipedes[2], size_t len)
  
 static void WritePidToPipe(int pipe_fd[2], size_t len)
 {
-    if (pipe_fd == nullptr || len != 2) {
+    if (pipe_fd == nullptr || len != PIPE_FD_LEN) {
         LOGE("write pipe param is invalid.");
         return;
     }
@@ -598,7 +599,7 @@ static void ReadPidFromPipe(std::vector<std::string> &cmd, int pipe_fd[2])
  
 static void ReadLogFromPipe(int logpipe[2], size_t len)
 {
-    if (pipe_fd == nullptr || len != 2) {
+    if (pipe_fd == nullptr || len != PIPE_FD_LEN) {
         LOGE("read pipe param is invalid.");
         return;
     }
