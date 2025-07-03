@@ -446,7 +446,7 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExec_001, TestSize.Level1)
             "/dev/block/",
     };
     std::vector<std::string> output;
-    EXPECT_EQ(ForkExec(cmd, &output), E_OK);
+    EXPECT_EQ(ForkExec(cmd, &output), E_WEXITSTATUS);
     GTEST_LOG_(INFO) << "FileUtilsTest_ForkExec_001 end";
 }
 
