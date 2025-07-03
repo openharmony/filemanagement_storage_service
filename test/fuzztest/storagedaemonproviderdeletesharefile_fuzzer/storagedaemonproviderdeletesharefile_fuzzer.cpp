@@ -57,7 +57,7 @@ void StringVecToRawData(const std::vector<std::string> &stringVec, StorageFileRa
 
 bool StorageDaemonProviderDeleteShareFileFuzzTest(const uint8_t *data, size_t size)
 {
-    uint32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_DELETE_SHARE_FILE);
+    int32_t code = static_cast<int32_t>(IStorageDaemonIpcCode::COMMAND_DELETE_SHARE_FILE);
     FuzzedDataProvider fdp(data, size);
     std::string str = fdp.ConsumeRandomLengthString(10);
     std::vector<std::string> strVec = {str};
