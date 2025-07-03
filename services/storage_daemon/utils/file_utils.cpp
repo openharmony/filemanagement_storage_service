@@ -42,8 +42,12 @@ constexpr uint8_t KILL_RETRY_TIME = 5;
 constexpr uint32_t KILL_RETRY_INTERVAL_MS = 100 * 1000;
 constexpr const char *MOUNT_POINT_INFO = "/proc/mounts";
 
-static int RedirectStdToPipe(int logpipe[2])
+int32_t RedirectStdToPipe(int logpipe[2], size_t len)
 {
+    if (logpipe == nullptr || len == 0) {
+        LOGE("std to pipe param is invalid.");
+        return E_ERR;
+    }
     int ret = E_OK;
     (void)close(logpipe[0]);
     if (dup2(logpipe[1], STDOUT_FILENO) == -1) {
