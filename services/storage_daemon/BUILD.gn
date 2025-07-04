@@ -382,6 +382,7 @@ ohos_shared_library("storage_common_utils") {
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "zlib:shared_libz",
+    "init:libbegetutil",
   ]
 
   if (build_selinux) {

@@ -54,6 +54,7 @@ ohos_unittest("file_utils_test") {
     "hisysevent:libhisysevent",
     "ipc:ipc_single",
     "ipc:libdbinder",
+    "init:libbegetutil",
   ]
 }
 

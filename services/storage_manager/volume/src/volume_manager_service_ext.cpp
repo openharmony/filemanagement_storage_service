@@ -72,8 +72,15 @@ void VolumeManagerServiceExt::UnInit()
  
 int32_t VolumeManagerServiceExt::NotifyUsbFuseMount(int fuseFd, std::string volumeid, std::string fsUuid)
 {
-    LOGI("fuseFd:%{public}d, volumeId: %{public}s, fsUuid: %{public}s", fuseFd, volumeid.c_str(), fsUuid.c_str());
+    std::string maskedVolumeId = volumeid.substr(0, 4) + std::string(volumeid.length() - 4, '*');
+    std::string maskedFsUuid = fsUuid.substr(0, 4) + std::string(fsUuid.length() - 4, '*');
+    LOGI("fuseFd:%{public}d, volumeId: %{public}s, fsUuid: %{public}s",
+         fuseFd, maskedVolumeId.c_str(), maskedFsUuid.c_str());
     FuncMount funcMount = (FuncMount)dlsym(handler_, "NotifyExternalVolumeFuseMount");
+    if (funcMount == nullptr) {
+        LOGE("Failed to get function pointer for NotifyExternalVolumeFuseMount");
+        return E_MOUNT_CLOUD_FUSE;
+    }
     if (funcMount(fuseFd, volumeid, fsUuid) != E_OK) {
         LOGE("NotifyUsbFuseMount fail");
         return E_MOUNT_CLOUD_FUSE;

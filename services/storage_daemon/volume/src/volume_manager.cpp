@@ -211,6 +211,10 @@ int32_t VolumeManager::CreateMountUsbFusePath(std::string fsUuid)
 {
     LOGE("CreateMountUsbFusePath create path");
     struct stat statbuf;
+    if (fsUuid.find("..") != std::string::npos) {
+        LOGE("Invalid fsUuid: %{public}s, contains path traversal characters", fsUuid.c_str());
+        return E_PARAMS_INVALID;
+    }
     mountUsbFusePath_ = StringPrintf("/mnt/data/external/%s", fsUuid.c_str());
     if (!lstat(mountUsbFusePath_.c_str(), &statbuf)) {
         LOGE("volume mount path %{public}s exists, please remove first", mountUsbFusePath_.c_str());

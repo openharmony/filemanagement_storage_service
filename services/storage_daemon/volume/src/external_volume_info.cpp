@@ -396,7 +396,7 @@ int32_t ExternalVolumeInfo::DoUMount(bool force)
         LOGE("failed to call remove(%{public}s) error, errno = %{public}d", mountPath_.c_str(), errno);
         return E_RMDIR_MOUNT;
     }
-    mountPath_ = mountBackupPath_;
+    mountPath_ = mountUsbFusePath_;
 
     LOGI("External volume unmount success.");
     return E_OK;
@@ -404,16 +404,15 @@ int32_t ExternalVolumeInfo::DoUMount(bool force)
 
 int32_t ExternalVolumeInfo::DoUMountUsbFuse()
 {
-    LOGI("DoUMountUsbFuse  mountPath :%{public}s.", mountPath_.c_str());
     LOGI("DoUMountUsbFuse in.");
     int ret = umount2(mountPath_.c_str(), MNT_DETACH);
     if (ret != E_OK) {
         LOGE("umount2 mountUsbFusePath failed errno %{public}d", errno);
     }
  
-    int err = remove(mountPath_.c_str());
+    int err = rmdir(mountPath_.c_str());
     if (err) {
-        LOGE("External volume DoUMountUsbFuse error.");
+        LOGE("External volume DoUMountUsbFuse error: rmdir failed, errno %{public}d", errno);
         return E_VOL_UMOUNT_ERR;
     }
     LOGI("DoUMountUsbFuse success.");

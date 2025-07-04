@@ -107,7 +107,7 @@ int32_t VolumeInfo::DestroyUsbFuse()
     if (client.NotifyVolumeStateChanged(id_, StorageManager::VolumeState::FUSE_REMOVED) != E_OK) {
         LOGE("Volume Notify Removed failed");
     }
-    LOGE("DestroyUsbFuse in");
+    LOGI("DestroyUsbFuse out");
     return E_OK;
 }
 
