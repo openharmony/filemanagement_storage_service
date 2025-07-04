@@ -196,7 +196,7 @@ int32_t ExternalVolumeInfo::DoCheck4Exfat()
         devPath_,
     };
     int execRet = ForkExecWithExit(cmd);
-    LOGE("execRet: %{public}d", execRet);
+    LOGI("execRet: %{public}d", execRet);
     if (execRet != E_OK) {
         return E_VOL_NEED_FIX;
     }
@@ -210,7 +210,7 @@ int32_t ExternalVolumeInfo::DoCheck4Ntfs()
         devPath_,
     };
     int execRet = ForkExecWithExit(cmd);
-    LOGE("execRet: %{public}d", execRet);
+    LOGI("execRet: %{public}d", execRet);
     if (execRet != E_OK) {
         return E_VOL_NEED_FIX;
     }

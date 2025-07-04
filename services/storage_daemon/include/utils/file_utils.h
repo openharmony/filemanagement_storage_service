@@ -70,6 +70,7 @@ bool DelFolder(const std::string &path);
 void KillProcess(const std::vector<ProcessInfo> &processList, std::vector<ProcessInfo> &killFailList);
 bool IsProcessAlive(int pid);
 std::string ProcessToString(std::vector<ProcessInfo> &processList);
+int32_t RedirectStdToPipe(int logpipe[2], size_t len);
 }
 }
 

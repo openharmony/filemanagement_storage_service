@@ -39,6 +39,7 @@ constexpr int32_t ARG_SIZE = 2;
 constexpr const char *MTP_FILE_FLAG = "?MTP_THM";
 constexpr const char *MTP_CLIENT_WRITE = "constraint.mtp.client.write";
 std::shared_ptr<AccountSubscriber> osAccountSubscriber_ = nullptr;
+std::shared_ptr<AccountConstraintSubscriber> osAccountConstraintSubscriber_ = nullptr;
 
 int WrapGetattr(const char *path, struct stat *buf, struct fuse_file_info *fi)
 {
@@ -279,6 +280,13 @@ void *WrapInit(struct fuse_conn_info *conn, struct fuse_config *cfg)
     osAccountSubscriber_ = std::make_shared<AccountSubscriber>(subscribeInfo);
     ErrCode errCode = OHOS::AccountSA::OsAccountManager::SubscribeOsAccount(osAccountSubscriber_);
     LOGI("subscribe os accouunt done errCode = %{public}d", errCode);
+
+    const std::set<std::string> constraintSet = { MTP_CLIENT_WRITE };
+    osAccountConstraintSubscriber_ = std::make_shared<AccountConstraintSubscriber>(constraintSet);
+    ErrCode constraintsErrCode = OHOS::AccountSA::OsAccountManager
+        ::SubscribeOsAccountConstraints(osAccountConstraintSubscriber_);
+    LOGI("osAccountConstraintSubscriber os accouunt done errCode = %{public}d", constraintsErrCode);
+
     DelayedSingleton<MtpFileSystem>::GetInstance()->InitCurrentUidAndCacheMap();
     return DelayedSingleton<MtpFileSystem>::GetInstance()->Init(conn, cfg);
 }
@@ -358,6 +366,10 @@ void WrapDestroy(void *path)
     LOGI("mtp WrapDestroy");
     ErrCode errCode = OHOS::AccountSA::OsAccountManager::UnsubscribeOsAccount(osAccountSubscriber_);
     LOGI("UnsubscribeOsAccount errCode is: %{public}d", errCode);
+
+    ErrCode constraintsErrCode = OHOS::AccountSA::OsAccountManager
+        ::UnsubscribeOsAccountConstraints(osAccountConstraintSubscriber_);
+    LOGI("UnsubscribeOsAccountConstraints errCode is: %{public}d", constraintsErrCode);
     return;
 }
 
@@ -1274,4 +1286,15 @@ void AccountSubscriber::OnStateChanged(const OHOS::AccountSA::OsAccountStateData
     LOGI("AccountSubscriber::OnStateChanged start");
     DelayedSingleton<MtpFileSystem>::GetInstance()->SetCurrentUid(data.toId);
     LOGI("AccountSubscriber::OnStateChanged end");
+}
+
+void AccountConstraintSubscriber::OnConstraintChanged(
+    const OHOS::AccountSA::OsAccountConstraintStateData &constraintData)
+{
+    LOGI("AccountConstraintSubscriber::OnConstraintChanged start");
+    LOGI("localId: %{private}d, constraint: %{public}s, isEnabled: %{public}d",
+        constraintData.localId, constraintData.constraint.c_str(), constraintData.isEnabled);
+    DelayedSingleton<MtpFileSystem>::GetInstance()
+        ->SetMtpClientWriteMap(constraintData.localId, constraintData.isEnabled);
+    LOGI("AccountConstraintSubscriber::OnConstraintChanged end");
 }

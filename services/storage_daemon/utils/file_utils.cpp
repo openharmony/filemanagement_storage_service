@@ -39,6 +39,7 @@ constexpr uint32_t ALL_PERMS = (S_ISUID | S_ISGID | S_ISVTX | S_IRWXU | S_IRWXG 
 constexpr int SET_SCHED_LOAD_TRANS_TYPE = 10001;
 #endif
 constexpr int BUF_LEN = 1024;
+constexpr int PIPE_FD_LEN = 2;
 constexpr uint8_t KILL_RETRY_TIME = 5;
 constexpr uint32_t KILL_RETRY_INTERVAL_MS = 100 * 1000;
 constexpr const char *MOUNT_POINT_INFO = "/proc/mounts";
@@ -46,8 +47,12 @@ constexpr int32_t FUSE_VAL_LEN = 6;
 constexpr int32_t FUSE_TRUE_LEN = 5;
 constexpr const char *FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.enterprise.external_storage_device.manage.enable";
 
-static int RedirectStdToPipe(int logpipe[2])
+int32_t RedirectStdToPipe(int logpipe[2], size_t len)
 {
+    if (logpipe == nullptr || len != PIPE_FD_LEN) {
+        LOGE("std to pipe param is invalid.");
+        return E_ERR;
+    }
     int ret = E_OK;
     (void)close(logpipe[0]);
     if (dup2(logpipe[1], STDOUT_FILENO) == -1) {
@@ -482,7 +487,7 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
         LOGE("fork failed, errno is %{public}d.", errno);
         return E_FORK;
     } else if (pid == 0) {
-        if (RedirectStdToPipe(pipe_fd)) {
+        if (RedirectStdToPipe(pipe_fd, sizeof(pipe_fd))) {
             _exit(1);
         }
         execvp(args[0], const_cast<char **>(args.data()));
@@ -571,14 +576,22 @@ static void ReportExecutorPidEvent(std::vector<std::string> &cmd, int32_t pid)
     }
 }
 
-static void ClosePipe(int pipedes[2])
+static void ClosePipe(int pipedes[2], size_t len)
 {
+    if (pipedes == nullptr || len != PIPE_FD_LEN) {
+        LOGE("close pipe param is invalid.");
+        return;
+    }
     (void)close(pipedes[0]);
     (void)close(pipedes[1]);
 }
  
-static void WritePidToPipe(int pipe_fd[2])
+static void WritePidToPipe(int pipe_fd[2], size_t len)
 {
+    if (pipe_fd == nullptr || len != PIPE_FD_LEN) {
+        LOGE("write pipe param is invalid.");
+        return;
+    }
     (void)close(pipe_fd[0]);
     int send_pid = (int)getpid();
     if (write(pipe_fd[1], &send_pid, sizeof(int)) == -1) {
@@ -599,10 +612,13 @@ static void ReadPidFromPipe(std::vector<std::string> &cmd, int pipe_fd[2])
     ReportExecutorPidEvent(cmd, recv_pid);
 }
  
-static void ReadLogFromPipe(int logpipe[2])
+static void ReadLogFromPipe(int logpipe[2], size_t len)
 {
+    if (pipe_fd == nullptr || len != PIPE_FD_LEN) {
+        LOGE("read pipe param is invalid.");
+        return;
+    }
     (void)close(logpipe[1]);
- 
     FILE* fp = fdopen(logpipe[0], "r");
     if (fp) {
         char line[BUF_LEN];
@@ -631,19 +647,19 @@ int ExtStorageMountForkExec(std::vector<std::string> &cmd)
 
     if (pipe(pipe_log_fd) < 0) {
         LOGE("creat pipe for log failed, errno is %{public}d.", errno);
-        ClosePipe(pipe_fd);
+        ClosePipe(pipe_fd, sizeof(pipe_fd));
         return E_ERR;
     }
 
     pid = fork();
     if (pid == -1) {
         LOGE("fork failed, errno is %{public}d.", errno);
-        ClosePipe(pipe_fd);
-        ClosePipe(pipe_log_fd);
+        ClosePipe(pipe_fd, sizeof(pipe_fd));
+        ClosePipe(pipe_log_fd, sizeof(pipe_log_fd));
         return E_ERR;
     } else if (pid == 0) {
-        WritePidToPipe(pipe_fd);
-        if (RedirectStdToPipe(pipe_log_fd)) {
+        WritePidToPipe(pipe_fd, sizeof(pipe_fd));
+        if (RedirectStdToPipe(pipe_log_fd, sizeof(pipe_log_fd))) {
             _exit(1);
         }
         execvp(args[0], const_cast<char **>(args.data()));
@@ -651,7 +667,7 @@ int ExtStorageMountForkExec(std::vector<std::string> &cmd)
         _exit(1);
     } else {
         ReadPidFromPipe(cmd, pipe_fd);
-        ReadLogFromPipe(pipe_log_fd);
+        ReadLogFromPipe(pipe_log_fd, sizeof(pipe_log_fd));
 
         waitpid(pid, &status, 0);
         if (errno == ECHILD) {

@@ -176,7 +176,7 @@ static inline int MemcpyFbeOptsV1(FbeOptsV1 &ops, const KeyBlob &authToken, uint
     int err;
     if (!authToken.IsEmpty()) {
         err = memcpy_s(ops.authToken, AUTH_TOKEN_MAX_SIZE, authToken.data.get(), authToken.size);
-        LOGI("memcpy authToken, res=%{public}d, authToken.size=%{public}d", err, authToken.size);
+        LOGI("memcpy end for v1, res is %{public}d", err);
     }
     err = memcpy_s(ops.iv, sizeof(ops.iv), iv, size);
     if (err != EOK) {
@@ -190,7 +190,7 @@ static inline int MemcpyFbeOptsEV1(FbeOptsEV1 &ops, const KeyBlob &authToken, ui
     int err;
     if (!authToken.IsEmpty()) {
         err = memcpy_s(ops.authToken, AUTH_TOKEN_MAX_SIZE, authToken.data.get(), authToken.size);
-        LOGI("memcpy authToken, res=%{public}d, authToken.size=%{public}d", err, authToken.size);
+        LOGI("memcpy end for ev1, res is %{public}d", err);
     }
     err = memcpy_s(ops.eBuffer, sizeof(ops.eBuffer), eBuffer, size);
     if (err != EOK) {
