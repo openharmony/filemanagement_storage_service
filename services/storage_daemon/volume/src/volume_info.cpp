@@ -184,6 +184,10 @@ int32_t VolumeInfo::UMount(bool force)
         return err;
     }
 
+    if (IsFuse()) {
+        DestroyUsbFuse();
+    }
+
     mountState_ = UNMOUNTED;
     if (client.NotifyVolumeStateChanged(id_, StorageManager::VolumeState::UNMOUNTED) != E_OK) {
         LOGE("Volume Notify Unmounted failed");

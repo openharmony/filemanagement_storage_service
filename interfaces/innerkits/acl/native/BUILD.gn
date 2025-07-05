@@ -61,8 +61,8 @@ ohos_shared_library("storage_manager_acl") {
   external_deps = [
     "c_utils:utils",
     "hilog:libhilog",
-    "ipc:ipc_core",
     "init:libbegetutil",
+    "ipc:ipc_core",
   ]
 
   innerapi_tags = [ "chipsetsdk_sp_indirect" ]

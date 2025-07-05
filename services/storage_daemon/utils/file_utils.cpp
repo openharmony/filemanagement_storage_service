@@ -21,7 +21,7 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include "parameter.h"
+#include "parameters.h"
 #include "securec.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -43,8 +43,6 @@ constexpr int PIPE_FD_LEN = 2;
 constexpr uint8_t KILL_RETRY_TIME = 5;
 constexpr uint32_t KILL_RETRY_INTERVAL_MS = 100 * 1000;
 constexpr const char *MOUNT_POINT_INFO = "/proc/mounts";
-constexpr int32_t FUSE_VAL_LEN = 6;
-constexpr int32_t FUSE_TRUE_LEN = 5;
 constexpr const char *FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.enterprise.external_storage_device.manage.enable";
 
 int32_t RedirectStdToPipe(int logpipe[2], size_t len)
@@ -127,13 +125,7 @@ bool IsFile(const std::string &path)
 
 bool IsFuse()
 {
-    char fuseEnterpriseEnable[FUSE_VAL_LEN + 1] = {"false"};
-    int retEn = GetParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, "", fuseEnterpriseEnable, FUSE_VAL_LEN);
-    LOGI("GetParameter fuseEnterpriseEnable %{public}s, retEnterprise %{public}d", fuseEnterpriseEnable, retEn);
-    if (strncmp(fuseEnterpriseEnable, "true", FUSE_TRUE_LEN) == 0) {
-        return true;
-    }
-    return false;
+    return system::GetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, false);
 }
 
 bool MkDirRecurse(const std::string& path, mode_t mode)

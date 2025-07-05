@@ -292,6 +292,8 @@ OHOS::StorageManager::VolumeState StorageManager::UintToState(uint32_t state)
             return OHOS::StorageManager::VolumeState::BAD_REMOVAL;
         default:
             return OHOS::StorageManager::VolumeState::UNMOUNTED;
+        case FUSE_REMOVED:
+            return OHOS::StorageManager::VolumeState::FUSE_REMOVED;
     }
 }
 

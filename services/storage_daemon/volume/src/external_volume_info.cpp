@@ -196,7 +196,6 @@ int32_t ExternalVolumeInfo::DoCheck4Exfat()
         devPath_,
     };
     int execRet = ForkExecWithExit(cmd);
-    LOGI("execRet: %{public}d", execRet);
     if (execRet != E_OK) {
         return E_VOL_NEED_FIX;
     }
@@ -210,7 +209,6 @@ int32_t ExternalVolumeInfo::DoCheck4Ntfs()
         devPath_,
     };
     int execRet = ForkExecWithExit(cmd);
-    LOGI("execRet: %{public}d", execRet);
     if (execRet != E_OK) {
         return E_VOL_NEED_FIX;
     }
@@ -367,7 +365,7 @@ int32_t ExternalVolumeInfo::DoUMount(bool force)
         return E_OK;
     }
     if (IsFuse()) {
-        mountPath_ = mountBackupPath_;
+        mountPath_ = mountUsbFusePath_;
     }
     int fd = open(mountPath_.c_str(), O_RDONLY);
     if (fd < 0) {
@@ -396,7 +394,7 @@ int32_t ExternalVolumeInfo::DoUMount(bool force)
         LOGE("failed to call remove(%{public}s) error, errno = %{public}d", mountPath_.c_str(), errno);
         return E_RMDIR_MOUNT;
     }
-    mountPath_ = mountUsbFusePath_;
+    mountPath_ = mountBackupPath_;
 
     LOGI("External volume unmount success.");
     return E_OK;
