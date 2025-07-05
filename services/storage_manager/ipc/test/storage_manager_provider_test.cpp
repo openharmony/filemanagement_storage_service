@@ -89,6 +89,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_PrepareAddUser_0
     uint32_t flags = 3;
     auto ret = storageManagerProviderTest_->PrepareAddUser(userId, flags);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    storageManagerProviderTest_->RemoveUser(userId, flags);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_PrepareAddUser_001 end";
 }
 /**
