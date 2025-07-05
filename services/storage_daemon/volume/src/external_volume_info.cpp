@@ -356,7 +356,7 @@ int32_t ExternalVolumeInfo::IsUsbInUse(int fd)
 
 int32_t ExternalVolumeInfo::DoUMount(bool force)
 {
-    if (force && IsFuse()) {
+    if (force && !IsFuse()) {
         LOGI("External volume start force to unmount.");
         Process ps(mountPath_);
         ps.UpdatePidByPath();

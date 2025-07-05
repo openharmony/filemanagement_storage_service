@@ -542,6 +542,9 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_IsFuse_003, TestSize.Level1)
     }
 
     GTEST_LOG_(INFO) << "FileUtilsTest_IsFuse_003 end";
+}
+
+/**    
  * @tc.name: FileUtilsTest_ForkExec_001
  * @tc.desc: Verify the ForkExec function.
  * @tc.type: FUNC
