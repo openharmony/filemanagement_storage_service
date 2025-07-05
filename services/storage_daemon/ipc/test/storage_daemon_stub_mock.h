@@ -82,6 +82,7 @@ public:
     MOCK_METHOD2(MountDisShareFile, int32_t (int32_t, const std::map<std::string, std::string> &));
     MOCK_METHOD2(UMountDisShareFile, int32_t (int32_t, const std::string &));
     MOCK_METHOD1(InactiveUserPublicDirKey, int32_t(uint32_t));
+    MOCK_METHOD0(QueryOccupiedSpaceForSa, int32_t(void));
 };
 }  // namespace StorageDaemon
 }  // namespace OHOS

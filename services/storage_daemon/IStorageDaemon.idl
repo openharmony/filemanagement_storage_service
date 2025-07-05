@@ -80,4 +80,5 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 49] void UMountDisShareFile([in] int userId, [in] String networkId);
      [ipccode 51] void TryToFix([in] String volId, [in] unsigned int flags);
      [ipccode 52] void InactiveUserPublicDirKey([in] unsigned int userId);
+     [ipccode 53] void QueryOccupiedSpaceForSa();
 }

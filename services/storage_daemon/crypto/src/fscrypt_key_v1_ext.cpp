@@ -207,7 +207,22 @@ int32_t FscryptKeyV1Ext::ChangePinCodeClassE(uint32_t userId, bool &isFbeSupport
     LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, userIdDouble);
     auto ret = FBEX::ChangePinCodeClassE(userId_, userIdDouble, isFbeSupport);
     if (ret != E_OK) {
-        LOGE("ChangePinCodeClassE failed, userId_ %{public}d", userId);
+        LOGE("ChangePinCodeClassE failed, userId_ %{public}d", userId_);
+        return ret;
+    }
+    return E_OK;
+}
+
+int32_t FscryptKeyV1Ext::UpdateClassEBackUp(uint32_t userId)
+{
+    if (!FBEX::IsFBEXSupported()) {
+        return E_OK;
+    }
+    uint32_t userIdDouble = GetMappedUserId(userId_, type_);
+    LOGI("type_ is %{public}u, map userId %{public}u to %{public}u", type_, userId_, userIdDouble);
+    auto ret = FBEX::UpdateClassEBackUp(userId_, userIdDouble);
+    if (ret != E_OK) {
+        LOGE("UpdateClassEBackUp failed, userId_ %{public}d", userId_);
         return ret;
     }
     return E_OK;

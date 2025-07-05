@@ -43,21 +43,15 @@ public:
     void SetUp();
     void TearDown();
 
-    StorageManagerProvider *storageManagerProviderTest_;
+    std::unique_ptr<StorageManagerProvider> storageManagerProviderTest_;
 };
 
 void StorageManagerProviderTest::SetUp(void)
 {
-    storageManagerProviderTest_ = new StorageManagerProvider(STORAGE_MANAGER_MANAGER_ID);
+    storageManagerProviderTest_ = std::make_unique<StorageManagerProvider>(STORAGE_MANAGER_MANAGER_ID);
 }
 
-void StorageManagerProviderTest::TearDown(void)
-{
-    if (storageManagerProviderTest_ != nullptr) {
-        delete storageManagerProviderTest_;
-        storageManagerProviderTest_ = nullptr;
-    }
-}
+void StorageManagerProviderTest::TearDown(void) {}
 /**
  * @tc.name: StorageManagerProviderTest_PrepareAddUser_001
  * @tc.desc: Verify the PrepareAddUser function.

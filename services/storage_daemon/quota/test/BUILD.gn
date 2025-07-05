@@ -24,8 +24,10 @@ ohos_unittest("quota_manager_test") {
   }
   module_out_path = "storage_service/storage_service/storage_daemon"
 
-  defines = [ "STORAGE_LOG_TAG = \"StorageDaemon\"" ]
-
+  defines = [
+    "STORAGE_LOG_TAG = \"StorageDaemon\"",
+    "private = public",
+  ]
   include_dirs = [
     "${storage_service_common_path}/include",
     "${storage_daemon_path}/include",

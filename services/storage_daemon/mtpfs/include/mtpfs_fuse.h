@@ -35,6 +35,13 @@ public:
     void OnStateChanged(const OHOS::AccountSA::OsAccountStateData &data) override;
 };
 
+class AccountConstraintSubscriber final : public OHOS::AccountSA::OsAccountConstraintSubscriber {
+public:
+    explicit AccountConstraintSubscriber(const std::set<std::string> &constraintSet)
+        : OHOS::AccountSA::OsAccountConstraintSubscriber(constraintSet){};
+    void OnConstraintChanged(const OHOS::AccountSA::OsAccountConstraintStateData &constraintData) override;
+};
+
 class MtpFileSystem {
     DECLARE_DELAYED_SINGLETON(MtpFileSystem);
 private:

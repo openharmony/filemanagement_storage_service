@@ -823,8 +823,18 @@ int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTo
     std::string secretInfo = BuildSecretStatus(userTokenSecret);
     std::string queryTime = BuildTimeInfo(getLockStatusTime_[LOCK_STATUS_START], getLockStatusTime_[LOCK_STATUS_END]);
     int64_t startTime = StorageService::StorageRadar::RecordCurrentTime();
+
+    LOGW("enter, param status: user=%{public}d, token=%{public}d, oldSec=%{public}d, newSec=%{public}d", user,
+        userTokenSecret.token.empty(), userTokenSecret.oldSecret.empty(), userTokenSecret.newSecret.empty());
+    int ret = UpdateESecret(user, userTokenSecret);
+    if (ret != 0) {
+        LOGE("user %{public}u UpdateESecret fail", user);
+        queryTime += " UpdateUserAuth: " + BuildTimeInfo(startTime, StorageService::StorageRadar::RecordCurrentTime());
+        StorageRadar::ReportUpdateUserAuth("UpdateESecret", user, ret, "EL5", secretInfo + queryTime);
+        return ret;
+    }
 #ifdef USER_CRYPTO_MIGRATE_KEY
-    int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL2_KEY, needGenerateShield);
+    ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL2_KEY, needGenerateShield);
     if (ret != 0) {
         LOGE("user %{public}u UpdateUserAuth el2 key fail", user);
         queryTime += " UpdateUserAuth: " + BuildTimeInfo(startTime, StorageService::StorageRadar::RecordCurrentTime());
@@ -846,7 +856,7 @@ int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTo
         return ret;
     }
 #else
-    int ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL2_KEY);
+    ret = UpdateCeEceSeceUserAuth(user, userTokenSecret, EL2_KEY);
     if (ret != 0) {
         LOGE("user %{public}u UpdateUserAuth el2 key fail", user);
         queryTime += " UpdateUserAuth: " + BuildTimeInfo(startTime, StorageService::StorageRadar::RecordCurrentTime());
@@ -868,13 +878,6 @@ int KeyManager::UpdateUserAuth(unsigned int user, struct UserTokenSecret &userTo
         return ret;
     }
 #endif
-    ret = UpdateESecret(user, userTokenSecret);
-    if (ret != 0) {
-        LOGE("user %{public}u UpdateESecret fail", user);
-        queryTime += " UpdateUserAuth: " + BuildTimeInfo(startTime, StorageService::StorageRadar::RecordCurrentTime());
-        StorageRadar::ReportUpdateUserAuth("UpdateESecret", user, ret, "EL5", secretInfo + queryTime);
-        return ret;
-    }
     return ret;
 }
 
@@ -1008,13 +1011,15 @@ int KeyManager::UpdateCeEceSeceUserAuth(unsigned int user,
     }
 
     UserAuth auth = { {}, userTokenSecret.oldSecret, userTokenSecret.secureUid };
+    UserAuth auth_newSec = { {}, userTokenSecret.newSecret, userTokenSecret.secureUid };
     LOGW("param status token:%{public}d, oldSec:%{public}d, newSec:%{public}d", userTokenSecret.token.empty(),
         userTokenSecret.oldSecret.empty(), userTokenSecret.newSecret.empty());
     if (!userTokenSecret.oldSecret.empty()) {
         KeyBlob token(userTokenSecret.token);
         auth.token = std::move(token);
     }
-    if ((item->RestoreKey(auth) != E_OK) && (item->RestoreKey(NULL_KEY_AUTH) != E_OK)) {
+    if ((item->RestoreKey(auth) != E_OK) && (item->RestoreKey(NULL_KEY_AUTH) != E_OK) &&
+        (item->RestoreKey(auth_newSec) != E_OK)) {
         LOGE("Restore key error");
         return E_RESTORE_KEY_FAILED;
     }
@@ -1996,8 +2001,15 @@ int KeyManager::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
         StorageRadar::ReportUpdateUserAuth("UpdateKeyContext::UpdateCeEceSeceKeyContext", userId, ret, "EL4", "");
         return ret;
     }
-    if (IsUeceSupport() && saveESecretStatus[userId]) {
-        ret = UpdateCeEceSeceKeyContext(userId, EL5_KEY);
+    if (IsUeceSupport()) {
+        ret = UpdateClassEBackUp(userId);
+        if (ret != 0) {
+            LOGE("Inform FBE do update class E backup failed, ret=%{public}d", ret);
+            return ret;
+        }
+        if (saveESecretStatus[userId]) {
+            ret = UpdateCeEceSeceKeyContext(userId, EL5_KEY);
+        }
     }
     if (ret != 0 && ((userId < START_APP_CLONE_USER_ID || userId > MAX_APP_CLONE_USER_ID))) {
         LOGE("Basekey update EL5 newest context failed");
@@ -2030,6 +2042,21 @@ bool KeyManager::IsUeceSupport()
     (void)fclose(f);
     LOGI("uece is support.");
     return true;
+}
+
+int KeyManager::UpdateClassEBackUp(uint32_t userId)
+{
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
+    auto el5Key = GetUserElKey(userId, EL5_KEY);
+    if (el5Key == nullptr) {
+        LOGE("Have not found user %{public}u el5 Key", userId);
+        return E_NON_EXIST;
+    }
+    auto ret = el5Key->UpdateClassEBackUp(userId);
+    auto delay = StorageService::StorageRadar::ReportDuration("FBE:UpdateClassEBackUp",
+        startTime, StorageService::DEFAULT_DELAY_TIME_THRESH, userId);
+    LOGI("SD_DURATION: FBEX: UPDATE CLASS E BACKUP: user=%{public}u, delay=%{public}s", userId, delay.c_str());
+    return ret;
 }
 
 int KeyManager::IsUeceSupportWithErrno()

@@ -59,6 +59,11 @@ int32_t FscryptKeyV1Ext::ChangePinCodeClassE(uint32_t userId, bool &isFbeSupport
     return IFscryptKeyV1Ext::fscryptKeyV1ExtMock->ChangePinCodeClassE(userId, isFbeSupport);
 }
 
+int32_t FscryptKeyV1Ext::UpdateClassEBackUp(uint32_t userId)
+{
+    return IFscryptKeyV1Ext::fscryptKeyV1ExtMock->UpdateClassEBackUp(userId);
+}
+
 int32_t FscryptKeyV1Ext::ReadClassE(uint32_t status, KeyBlob &classEBuffer, const KeyBlob &authToken,
                                     bool &isFbeSupport)
 {

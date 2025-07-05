@@ -17,6 +17,7 @@
 #define OHOS_STORAGE_DAEMON_DISK_INFO_H
 
 #include <list>
+#include <map>
 #include <string>
 
 #include <sys/types.h>
@@ -65,6 +66,7 @@ private:
     unsigned int flags_ {};
     std::list<std::string> volumeId_;
     std::vector<std::string> sgdiskLines_;
+    std::map<uint32_t, std::string> vendorMap_;
     int32_t ReadDiskLines(std::vector<std::string> lines, int32_t maxVols, bool isUserdata);
     bool CreateMBRVolume(int32_t type, dev_t dev);
     int32_t CreateUnknownTabVol();
@@ -74,6 +76,8 @@ private:
                            Table table, bool &foundPart, dev_t partitionDev);
     void UmountLines(std::vector<std::string> lines, int32_t maxVols, bool isUserdata);
     void ProcessPartitionChanges(const std::vector<std::string>& lines, int maxVolumes, bool isUserdata);
+    bool ParseAndValidateManfid(const std::string& str, uint32_t& manfid);
+    void FilterOutput(std::vector<std::string> &lines, std::vector<std::string> &output);
 };
 } // STORAGE_DAEMON
 } // OHOS

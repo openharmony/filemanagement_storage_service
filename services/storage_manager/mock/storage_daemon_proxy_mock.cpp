@@ -294,5 +294,10 @@ int32_t StorageDaemonProxy::InactiveUserPublicDirKey(uint32_t userId)
 {
     return E_OK;
 }
+
+int32_t StorageDaemonProxy::QueryOccupiedSpaceForSa()
+{
+    return E_OK;
+}
 } // StorageDaemon
 } // OHOS

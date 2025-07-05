@@ -256,6 +256,18 @@ int32_t FscryptKeyV1::ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId)
     return E_OK;
 }
 
+int32_t FscryptKeyV1::UpdateClassEBackUp(uint32_t userId)
+{
+    LOGI("UpdateClassEBackUp enter, userId: %{public}d", userId);
+    auto ret = fscryptV1Ext.UpdateClassEBackUp(userId);
+    if (ret != E_OK) {
+        LOGE("fscryptV1Ext UpdateClassEBackUp failed, ret=%{public}d", ret);
+        return ret;
+    }
+    LOGW("UpdateClassEBackUp finish");
+    return E_OK;
+}
+
 int32_t FscryptKeyV1::DoDecryptClassE(const UserAuth &auth, KeyBlob &eSecretFBE, KeyBlob &decryptedKey,
                                       bool needSyncCandidate)
 {
@@ -291,7 +303,7 @@ int32_t FscryptKeyV1::DoDecryptClassE(const UserAuth &auth, KeyBlob &eSecretFBE,
         if (it != candidate) {
             auto ret = DecryptKeyBlob(auth, dir_ + "/" + it, eSecretFBE, decryptedKey);
             if (ret == E_OK) {
-                UpdateKey(it, needSyncCandidate);
+                UpdateKey((dir_ + "/" + it), needSyncCandidate);
                 return E_OK;
             }
         }

@@ -34,11 +34,13 @@ ohos_unittest("FbexTest") {
     "${storage_daemon_path}/include",
     "${storage_daemon_path}/include/crypto",
     "${storage_daemon_path}/include/mock",
+    "${storage_interface_path}/innerkits/storage_manager/native",
     "${storage_service_common_path}/include",
   ]
 
   sources = [
     "${storage_daemon_path}/crypto/src/fbex.cpp",
+    "${storage_daemon_path}/utils/storage_radar.cpp",
     "fbex_test.cpp",
   ]
 
@@ -49,6 +51,8 @@ ohos_unittest("FbexTest") {
     "googletest:gmock_main",
     "googletest:gtest_main",
     "hilog:libhilog",
+    "hisysevent:libhisysevent",
+    "huks:libhukssdk",
     "init:libbegetutil",
   ]
 }

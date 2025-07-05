@@ -36,6 +36,7 @@ public:
     virtual int32_t AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status) = 0;
     virtual int32_t DeleteClassEPinCode(uint32_t user) = 0;
     virtual int32_t ChangePinCodeClassE(bool &isFbeSupport, uint32_t userId) = 0;
+    virtual int32_t UpdateClassEBackUp(uint32_t userId) = 0;
     virtual int32_t DecryptClassE(const UserAuth &auth, bool &isSupport,
                                bool &eBufferStatue, uint32_t user, uint32_t status) = 0;
     virtual int32_t EncryptClassE(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status) = 0;
@@ -55,6 +56,7 @@ public:
     MOCK_METHOD3(AddClassE, int32_t(bool &isNeedEncryptClassE, bool &isSupport, uint32_t status));
     MOCK_METHOD1(DeleteClassEPinCode, int32_t(uint32_t user));
     MOCK_METHOD2(ChangePinCodeClassE, int32_t(bool &isFbeSupport, uint32_t userId));
+    MOCK_METHOD1(UpdateClassEBackUp, int32_t(uint32_t userId));
     MOCK_METHOD5(DecryptClassE, int32_t(const UserAuth &auth, bool &isSupport,
                                         bool &eBufferStatue, uint32_t user, uint32_t status));
     MOCK_METHOD4(EncryptClassE, int32_t(const UserAuth &auth, bool &isSupport, uint32_t user, uint32_t status));

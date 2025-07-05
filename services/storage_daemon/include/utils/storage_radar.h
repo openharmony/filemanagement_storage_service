@@ -143,6 +143,7 @@ public:
     static std::string ReportDuration(const std::string &funcName, int64_t startTime,
         int64_t delay_threshold = DEFAULT_DELAY_TIME_THRESH, uint32_t userId = DEFAULT_USERID);
     static int64_t RecordCurrentTime();
+    static void ReportSaSizeResult(const std::string &funcName, int ret, const std::string &extraData);
 
 private:
     StorageRadar() = default;

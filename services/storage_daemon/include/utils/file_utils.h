@@ -70,6 +70,7 @@ void KillProcess(const std::vector<ProcessInfo> &processList, std::vector<Proces
 bool IsProcessAlive(int pid);
 std::string ProcessToString(std::vector<ProcessInfo> &processList);
 bool RestoreconDir(const std::string &path);
+int32_t RedirectStdToPipe(int logpipe[2], size_t len);
 }
 }
 

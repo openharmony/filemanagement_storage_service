@@ -131,6 +131,25 @@ HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_ChangePinCodeClassE, TestSize.Level1)
 }
 
 /**
+ * @tc.name: fscrypt_key_v1_UpdateClassEBackUp
+ * @tc.desc: Verify the fscrypt V1 UpdateClassEBackUp.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK0BP
+ */
+HWTEST_F(FscryptKeyV1Test, fscrypt_key_v1_UpdateClassEBackUp, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "fscrypt_key_v1_UpdateClassEBackUp start";
+    auto g_testKeyV1 = std::make_shared<OHOS::StorageDaemon::FscryptKeyV1>(TEST_KEYPATH);
+    uint32_t userId = 100;
+    EXPECT_CALL(*fscryptKeyExtMock_, UpdateClassEBackUp(_)).WillOnce(Return(E_OK));
+    EXPECT_EQ(g_testKeyV1->UpdateClassEBackUp(userId), E_OK);
+
+    EXPECT_CALL(*fscryptKeyExtMock_, UpdateClassEBackUp(_)).WillOnce(Return(-1));
+    EXPECT_NE(g_testKeyV1->UpdateClassEBackUp(userId), E_OK);
+    GTEST_LOG_(INFO) << "fscrypt_key_v1_UpdateClassEBackUp end";
+}
+
+/**
  * @tc.name: fscrypt_key_v1_DeleteClassEPinCode
  * @tc.desc: Verify the fscrypt V1 DeleteClassEPinCode.
  * @tc.type: FUNC

@@ -323,6 +323,31 @@ HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_ChangePinCodeClassE_001, TestSize.
 }
 
 /**
+ * @tc.name: FscryptKeyV1Ext_UpdateClassEBackUp_001
+ * @tc.desc: Verify the UpdateClassEBackUp function.
+ * @tc.type: FUNC
+ * @tc.require: IAHHWW
+ */
+HWTEST_F(FscryptKeyV1ExtTest, FscryptKeyV1Ext_UpdateClassEBackUp_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_UpdateClassEBackUp_001 end";
+    FscryptKeyV1Ext ext;
+    ext.userId_ = 100;
+    ext.type_ = TYPE_EL2;
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(false));
+    EXPECT_EQ(ext.UpdateClassEBackUp(100), E_OK);
+
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*fbexMock_, UpdateClassEBackUp(_, _)).WillOnce(Return(0));
+    EXPECT_EQ(ext.UpdateClassEBackUp(100), E_OK);
+
+    EXPECT_CALL(*fbexMock_, IsFBEXSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*fbexMock_, UpdateClassEBackUp(_, _)).WillOnce(Return(-1));
+    EXPECT_EQ(ext.UpdateClassEBackUp(100), -1);
+    GTEST_LOG_(INFO) << "FscryptKeyV1Ext_UpdateClassEBackUp_001 end";
+}
+
+/**
  * @tc.name: FscryptKeyV1Ext_ReadClassE_001
  * @tc.desc: Verify the ReadClassE function.
  * @tc.type: FUNC

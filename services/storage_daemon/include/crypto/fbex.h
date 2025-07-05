@@ -63,6 +63,7 @@ public:
                                      bool &isSupport, bool &isNeedEncryptClassE);
     static int DeleteClassEPinCode(uint32_t userIdSingle, uint32_t userIdDouble);
     static int ChangePinCodeClassE(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupport);
+    static int UpdateClassEBackUp(uint32_t userIdSingle, uint32_t userIdDouble);
     static int GenerateAppkey(UserIdToFbeStr &userIdToFbe, uint32_t hashId, std::unique_ptr<uint8_t[]> &keyId,
                               uint32_t size);
     static int LockUece(uint32_t userIdSingle, uint32_t userIdDouble, bool &isFbeSupport);

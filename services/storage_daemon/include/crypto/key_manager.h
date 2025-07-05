@@ -80,6 +80,7 @@ public:
                              const std::vector<FileList> &vec);
     int UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey = false);
     int UpdateCeEceSeceKeyContext(uint32_t userId, KeyType type);
+    int UpdateClassEBackUp(uint32_t userId);
     int getElxKeyPath(unsigned int user, KeyType type, std::string &elxKeyPath);
     int LockUserScreen(uint32_t user);
     int UnlockUserScreen(uint32_t user, const std::vector<uint8_t> &token,

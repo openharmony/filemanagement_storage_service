@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2021-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,6 +18,8 @@
 #include <sys/sysmacros.h>
 
 #include "disk/disk_info.h"
+#include "mock/disk_utils_mock.h"
+#include "mock/file_utils_mock.h"
 #include "disk_info_test_mock.h"
 #include "netlink/netlink_data.h"
 #include "storage_service_errno.h"
@@ -33,10 +35,29 @@ using namespace testing::ext;
 
 class DiskInfoTest : public testing::Test {
 public:
-    static void SetUpTestCase(void) {};
-    static void TearDownTestCase(void) {};
+    static void SetUpTestCase(void)
+    {
+        GTEST_LOG_(INFO) << "SetUpTestCase Start";
+        diskUtilMoc_ = std::make_shared<DiskUtilMoc>();
+        DiskUtilMoc::diskUtilMoc = diskUtilMoc_;
+
+        fileUtilMoc_ = std::make_shared<FileUtilMoc>();
+        FileUtilMoc::fileUtilMoc = fileUtilMoc_;
+    };
+
+    static void TearDownTestCase(void)
+    {
+        GTEST_LOG_(INFO) << "TearDownTestCase Start";
+        DiskUtilMoc::diskUtilMoc = nullptr;
+        diskUtilMoc_ = nullptr;
+
+        FileUtilMoc::fileUtilMoc = nullptr;
+        fileUtilMoc_ = nullptr;
+    };
     void SetUp() {};
     void TearDown() {};
+    static inline std::shared_ptr<DiskUtilMoc> diskUtilMoc_ = nullptr;
+    static inline std::shared_ptr<FileUtilMoc> fileUtilMoc_ = nullptr;
 };
 
 /**
@@ -660,8 +681,8 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Partition_003, TestSize.Leve
     int flag = 0;
 
     auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
-
     ASSERT_TRUE(diskInfo != nullptr);
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(testing::_, testing::_)).WillOnce(testing::Return(E_WEXITSTATUS));
     int ret = diskInfo->Partition();
 
     EXPECT_EQ(ret, E_WEXITSTATUS);
@@ -757,11 +778,299 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_Partition_004, TestSize.Leve
 
     auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
     ASSERT_TRUE(diskInfo != nullptr);
-
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(testing::_, testing::_)).WillOnce(testing::Return(E_WEXITSTATUS));
     int ret = diskInfo->Partition();
+    
     EXPECT_EQ(ret, E_WEXITSTATUS);
 
     GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_Partition_004 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ParseAndValidateManfid_001
+ * @tc.desc: Reading manfid from sysfs path.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_ParseAndValidateManfid_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ParseAndValidateManfid_001 start";
+
+    std::string sysPath;
+    std::string devPath;
+    unsigned int major = 0;
+    unsigned int minor = 0;
+    dev_t device = makedev(major, minor);
+    int flag = 0;
+
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    uint32_t manfid;
+
+    EXPECT_TRUE(diskInfo->ParseAndValidateManfid("0x1A3F", manfid));
+    EXPECT_EQ(0x1A3F, manfid);
+    EXPECT_TRUE(diskInfo->ParseAndValidateManfid("0x1a3f", manfid));
+    EXPECT_EQ(0x1A3F, manfid);
+    EXPECT_TRUE(diskInfo->ParseAndValidateManfid("01a3f", manfid));
+    EXPECT_EQ(0x1A3F, manfid);
+    EXPECT_TRUE(diskInfo->ParseAndValidateManfid("0X1a3f", manfid));
+    EXPECT_EQ(0x1A3F, manfid);
+    EXPECT_TRUE(diskInfo->ParseAndValidateManfid("1", manfid));
+    EXPECT_EQ(0x1, manfid);
+    EXPECT_TRUE(diskInfo->ParseAndValidateManfid("DEAD", manfid));
+    EXPECT_EQ(0xDEAD, manfid);
+    EXPECT_TRUE(diskInfo->ParseAndValidateManfid("  0xBEEF  ", manfid));
+    EXPECT_EQ(0xBEEF, manfid);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ParseAndValidateManfid_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ParseAndValidateManfid_002
+ * @tc.desc: Reading manfid from sysfs path.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_ParseAndValidateManfid_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ParseAndValidateManfid_002 start";
+
+    std::string sysPath;
+    std::string devPath;
+    unsigned int major = 0;
+    unsigned int minor = 0;
+    dev_t device = makedev(major, minor);
+    int flag = 0;
+
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    uint32_t manfid;
+
+    EXPECT_FALSE(diskInfo->ParseAndValidateManfid("0xGHIJ", manfid));
+    EXPECT_FALSE(diskInfo->ParseAndValidateManfid("123Z", manfid));
+    EXPECT_FALSE(diskInfo->ParseAndValidateManfid("", manfid));
+    EXPECT_FALSE(diskInfo->ParseAndValidateManfid("    ", manfid));
+
+    GTEST_LOG_(INFO) << "Storage_Service_ParseAndValidateManfid_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ReadMetadata_001
+ * @tc.desc: Verify the ReadMetadata function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_ReadMetadata_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ReadMetadata_001 start";
+
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+                    \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
+                    \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
+                    \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    std::string sysPath = data->GetSyspath();
+    std::string devPath = data->GetDevpath();
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
+    dev_t device = makedev(major, minor);
+    int flag = 0;
+
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    ASSERT_TRUE(diskInfo != nullptr);
+
+    diskInfo->ReadMetadata();
+    EXPECT_EQ(diskInfo->GetDevDSize(), -1);
+
+    GTEST_LOG_(INFO) << "Storage_Service_ReadMetadata_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ReadMetadata_002
+ * @tc.desc: Verify the ReadMetadata function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_ReadMetadata_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ReadMetadata_002 start";
+
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+                    \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
+                    \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
+                    \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    std::string sysPath = data->GetSyspath();
+    std::string devPath = data->GetDevpath();
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
+    dev_t device = makedev(major, minor);
+    int flag = 0;
+
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+
+    EXPECT_CALL(*diskUtilMoc_, GetDevSize(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(*fileUtilMoc_, ReadFile(testing::_, testing::_)).WillOnce(testing::Return(false));
+    diskInfo->ReadMetadata();
+    EXPECT_EQ(diskInfo->GetDevVendor(), "");
+
+    GTEST_LOG_(INFO) << "Storage_Service_ReadMetadata_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ReadMetadata_003
+ * @tc.desc: Verify the ReadMetadata function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_ReadMetadata_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ReadMetadata_003 start";
+
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+                    \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
+                    \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
+                    \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=13\0MINOR=34\0"};
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    std::string sysPath = data->GetSyspath();
+    std::string devPath = data->GetDevpath();
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
+    dev_t device = makedev(major, minor);
+    int flag = 0;
+
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+
+    EXPECT_CALL(*diskUtilMoc_, GetDevSize(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(*fileUtilMoc_, ReadFile(testing::_, testing::_)).WillOnce(testing::Return(true));
+    diskInfo->ReadMetadata();
+    EXPECT_EQ(diskInfo->GetDevVendor(), "");
+
+    GTEST_LOG_(INFO) << "Storage_Service_ReadMetadata_003 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ReadMetadata_004
+ * @tc.desc: Verify the ReadMetadata function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_ReadMetadata_004, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ReadMetadata_004 start";
+
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+                    \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
+                    \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
+                    \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=179\0MINOR=34\0"};
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    std::string sysPath = data->GetSyspath();
+    std::string devPath = data->GetDevpath();
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
+    dev_t device = makedev(major, minor);
+    int flag = 0;
+
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+
+    EXPECT_CALL(*diskUtilMoc_, GetDevSize(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(*fileUtilMoc_, ReadFile(testing::_, testing::_)).WillOnce(testing::Return(false));
+    diskInfo->ReadMetadata();
+    EXPECT_EQ(diskInfo->GetDevVendor(), "");
+
+    GTEST_LOG_(INFO) << "Storage_Service_ReadMetadata_004 end";
+}
+
+/**
+ * @tc.name: Storage_Service_ReadMetadata_005
+ * @tc.desc: Verify the ReadMetadata function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_ReadMetadata_005, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_ReadMetadata_005 start";
+
+    char msg[1024] = { "add@/class/input/input9/mouse2\0ACTION=add\0DEVTYPE=disk\0\
+                    \0DEVPATH=/devices/platform/fe2b0000.dwmmc/*\0SUBSYSTEM=input\0SEQNUM=1064\0\
+                    \0PHYSDEVPATH=/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0\0\
+                    \0PHYSDEVBUS=usb\0PHYSDEVDRIVER=usbhid\0MAJOR=179\0MINOR=34\0"};
+    auto data = std::make_unique<NetlinkData>();
+    data->Decode(msg);
+    std::string sysPath = data->GetSyspath();
+    std::string devPath = data->GetDevpath();
+    unsigned int major = std::stoi(data->GetParam("MAJOR"));
+    unsigned int minor = std::stoi(data->GetParam("MINOR"));
+    dev_t device = makedev(major, minor);
+    int flag = 0;
+
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+
+    EXPECT_CALL(*diskUtilMoc_, GetDevSize(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    EXPECT_CALL(*fileUtilMoc_, ReadFile(testing::_, testing::_)).WillOnce(testing::Return(true));
+    diskInfo->ReadMetadata();
+    EXPECT_EQ(diskInfo->GetDevVendor(), "Invalid");
+
+    GTEST_LOG_(INFO) << "Storage_Service_ReadMetadata_005 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_ReadPartition_003
+ * @tc.desc: Verify the ReadPartition function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_ReadPartition_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_003 start";
+    std::string sysPath = "/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0";
+    std::string devPath = "/devices/platform/fe2b0000.dwmmc/*";
+    unsigned int major = 13;
+    unsigned int minor = 14;
+    dev_t device = makedev(major, minor);
+    int flag = 0;
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    ASSERT_TRUE(diskInfo != nullptr);
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(testing::_, testing::_)).WillOnce(testing::Return(E_ERR));
+    int ret = diskInfo->ReadPartition();
+    EXPECT_TRUE(ret == E_ERR);
+    EXPECT_CALL(*fileUtilMoc_, ForkExec(testing::_, testing::_)).WillOnce(testing::Return(E_OK));
+    ret = diskInfo->ReadPartition();
+    EXPECT_TRUE(ret == E_OK);
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_ReadPartition_003 end";
+}
+
+/**
+ * @tc.name: Storage_Service_DiskInfoTest_FilterOutput_001
+ * @tc.desc: Verify the FilterOutput function.
+ * @tc.type: FUNC
+ * @tc.require: SR000GGUOT
+ */
+HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_FilterOutput_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_FilterOutput_001 start";
+    std::string sysPath = "/devices/pci0000:00/0000:00:1d.1/usb2/2?2/2?2:1.0";
+    std::string devPath = "/devices/platform/fe2b0000.dwmmc/*";
+    unsigned int major = 13;
+    unsigned int minor = 14;
+    dev_t device = makedev(major, minor);
+    int flag = 0;
+    auto diskInfo = std::make_shared<DiskInfo>(sysPath, devPath, device, flag);
+    ASSERT_TRUE(diskInfo != nullptr);
+    std::vector<std::string> lines;
+    std::vector<std::string> output = {"test"};
+    diskInfo->FilterOutput(lines, output);
+    EXPECT_TRUE(lines.empty());
+    output = {"DISK test1", "test2"};
+    diskInfo->FilterOutput(lines, output);
+    EXPECT_TRUE(!lines.empty());
+    GTEST_LOG_(INFO) << "Storage_Service_DiskInfoTest_FilterOutput_001 end";
 }
 }
 }

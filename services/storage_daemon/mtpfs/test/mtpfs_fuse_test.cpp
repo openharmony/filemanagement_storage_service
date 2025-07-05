@@ -413,7 +413,8 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_AccountSubscriber_OnStateChanged_001, Test
  * @tc.desc: 测试当 path 为空时,GetXAttr 应返回 0
  * @tc.type: FUNC
  */
-HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_001, TestSize.Level1) {
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_001, TestSize.Level1)
+{
     char out[1024];
     auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
     int result = mtpFileSystem->GetXAttr(nullptr, "user.isDirFetched", out, sizeof(out));
@@ -425,7 +426,8 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_001, TestSize.Level1) {
  * @tc.desc: 测试当 in 为空时,GetXAttr 应返回 0
  * @tc.type: FUNC
  */
-HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_002, TestSize.Level1) {
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_002, TestSize.Level1)
+{
     char out[1024];
     auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
     int result = mtpFileSystem->GetXAttr("/path/to/file", nullptr, out, sizeof(out));
@@ -437,7 +439,8 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_002, TestSize.Level1) {
  * @tc.desc: 测试当 out 为空时,GetXAttr 应返回 UPLOAD_RECORD_SUCCESS_LEN
  * @tc.type: FUNC
  */
-HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_003, TestSize.Level1) {
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_003, TestSize.Level1)
+{
     auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
     int result = mtpFileSystem->GetXAttr("/path/to/file", "user.isDirFetched", nullptr, 0);
     EXPECT_EQ(result, UPLOAD_RECORD_SUCCESS_LEN);
@@ -448,11 +451,39 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_003, TestSize.Level1) {
  * @tc.desc: 测试当 attrKey 无效时,GetXAttr 应返回 0
  * @tc.type: FUNC
  */
-HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_004, TestSize.Level1) {
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_004, TestSize.Level1)
+{
     char out[1024];
     auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
     int result = mtpFileSystem->GetXAttr("/path/to/file", "invalid_attr_key", out, sizeof(out));
     EXPECT_EQ(result, 0);
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_AccountConstraintSubscriber_OnConstraintChanged_001
+ * @tc.desc: Test OnConstraintChanged function when currentUid was changed
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_AccountConstraintSubscriber_OnConstraintChanged_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_AccountConstraintSubscriber_OnConstraintChanged_001 start";
+
+    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
+    const std::set<std::string> constraintSet = { "constraint.mtp.client.write" };
+    AccountConstraintSubscriber accountConstraintSubscriber(constraintSet);
+
+    OHOS::AccountSA::OsAccountConstraintStateData osAccountConstraintStateData;
+    osAccountConstraintStateData.isEnabled = true;
+    osAccountConstraintStateData.localId = 100;
+    osAccountConstraintStateData.constraint = "constraint.mtp.client.write";
+    accountConstraintSubscriber.OnConstraintChanged(osAccountConstraintStateData);
+    EXPECT_EQ(mtpFileSystem->mtpClientWriteMap_[100], 1);
+
+    osAccountConstraintStateData.isEnabled = false;
+    accountConstraintSubscriber.OnConstraintChanged(osAccountConstraintStateData);
+    EXPECT_EQ(mtpFileSystem->mtpClientWriteMap_[100], 0);
+
+    GTEST_LOG_(INFO) << "MtpfsFuseTest_AccountConstraintSubscriber_OnConstraintChanged_001 end";
 }
 } // STORAGE_DAEMON
 } // OHOS

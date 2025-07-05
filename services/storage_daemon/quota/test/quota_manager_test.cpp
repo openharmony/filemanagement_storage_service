@@ -253,5 +253,187 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_GetOccupiedSpace_001
 
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetOccupiedSpace_001 end";
 }
+
+/**
+ * @tc.name: Storage_Service_QuotaManagerTest_GetUidStorageStats_001
+ * @tc.desc: Test whether GetUidStorageStats is called normally.
+ * @tc.type: FUNC
+ * @tc.require: AR000HSKSO
+ */
+HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_GetUidStorageStats_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetUidStorageStats_001 start";
+
+    QuotaManager *quotaManager = QuotaManager::GetInstance();
+    ASSERT_TRUE(quotaManager != nullptr);
+    int before = E_OK;
+    quotaManager->GetUidStorageStats();
+    EXPECT_FALSE(before);
+    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetUidStorageStats_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_QuotaManagerTest_ConvertBytesToMB_001
+ * @tc.desc: Test whether ConvertBytesToMB is called normally.
+ * @tc.type: FUNC
+ * @tc.require: AR000HSKSO
+ */
+HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_ConvertBytesToMB_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_ConvertBytesToMB_001 start";
+
+    QuotaManager *quotaManager = QuotaManager::GetInstance();
+    ASSERT_TRUE(quotaManager != nullptr);
+
+    int64_t bytes = -1;
+    int32_t decimalPlaces = 2;
+    auto result = quotaManager->ConvertBytesToMB(bytes, decimalPlaces);
+    EXPECT_EQ(result, 0.0);
+
+    bytes = 0;
+    decimalPlaces = 2;
+    result = quotaManager->ConvertBytesToMB(bytes, decimalPlaces);
+    EXPECT_EQ(result, 0.0);
+
+
+    bytes = 1024 * 1024;
+    decimalPlaces = -1;
+    result = quotaManager->ConvertBytesToMB(bytes, decimalPlaces);
+    EXPECT_EQ(result, 1.0);
+
+    decimalPlaces = 2;
+    result = quotaManager->ConvertBytesToMB(bytes, decimalPlaces);
+    EXPECT_EQ(result, 1.00);
+
+    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_ConvertBytesToMB_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_QuotaManagerTest_StringToInt32_001
+ * @tc.desc: Test whether StringToInt32 is called normally.
+ * @tc.type: FUNC
+ * @tc.require: AR000HSKSO
+ */
+HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_StringToInt32_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_StringToInt32_001 start";
+
+    QuotaManager *quotaManager = QuotaManager::GetInstance();
+    ASSERT_TRUE(quotaManager != nullptr);
+
+    std::string strUid = "";
+    int32_t outUid32 = 0;
+    EXPECT_FALSE(quotaManager->StringToInt32(strUid, outUid32));
+
+    strUid = "123a";
+    EXPECT_FALSE(quotaManager->StringToInt32(strUid, outUid32));
+
+    strUid = "2147483648";
+    EXPECT_FALSE(quotaManager->StringToInt32(strUid, outUid32));
+
+    strUid = "12345";
+    EXPECT_TRUE(quotaManager->StringToInt32(strUid, outUid32));
+    EXPECT_EQ(outUid32, 12345);
+
+    strUid = "0";
+    EXPECT_TRUE(quotaManager->StringToInt32(strUid, outUid32));
+    EXPECT_EQ(outUid32, 0);
+
+    strUid = "2147483647";
+    EXPECT_TRUE(quotaManager->StringToInt32(strUid, outUid32));
+    EXPECT_EQ(outUid32, INT32_MAX);
+
+    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_StringToInt32_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_QuotaManagerTest_GetUid32FromEntry_001
+ * @tc.desc: Test whether GetUid32FromEntry is called normally.
+ * @tc.type: FUNC
+ * @tc.require: AR000HSKSO
+ */
+HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_GetUid32FromEntry_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetUid32FromEntry_001 start";
+
+    QuotaManager *quotaManager = QuotaManager::GetInstance();
+    ASSERT_TRUE(quotaManager != nullptr);
+
+    std::string entry = "invalidEntry";
+    int32_t outUid32 = 0;
+    std::string saName;
+    EXPECT_FALSE(quotaManager->GetUid32FromEntry(entry, outUid32, saName));
+
+    entry = "saName:1234";
+    EXPECT_FALSE(quotaManager->GetUid32FromEntry(entry, outUid32, saName));
+
+    entry = "saName:1234:extra";
+    EXPECT_FALSE(quotaManager->GetUid32FromEntry(entry, outUid32, saName));
+
+    entry = "saName:invalidUid:validEntry";
+    EXPECT_FALSE(quotaManager->GetUid32FromEntry(entry, outUid32, saName));
+
+    entry = "saName:validEntry:1234:";
+    EXPECT_TRUE(quotaManager->GetUid32FromEntry(entry, outUid32, saName));
+    EXPECT_EQ(outUid32, 1234);
+    EXPECT_EQ(saName, "saName");
+
+
+    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetUid32FromEntry_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_QuotaManagerTest_ParseConfigFile_001
+ * @tc.desc: Test whether ParseConfigFile is called normally.
+ * @tc.type: FUNC
+ * @tc.require: AR000HSKSO
+ */
+HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_ParseConfigFile_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_ParseConfigFile_001 start";
+
+    QuotaManager *quotaManager = QuotaManager::GetInstance();
+    ASSERT_TRUE(quotaManager != nullptr);
+
+    std::string path = "invalid_path";
+    std::vector<struct UidSaInfo> vec;
+    auto result = quotaManager->ParseConfigFile(path, vec);
+    EXPECT_EQ(result, E_JSON_PARSE_ERROR);
+
+    path = "valid_entry_file";
+    std::ofstream outfile(path);
+    outfile << "\n\ninvalid_line\nsaName:validEntry:1234:\n";
+    outfile.close();
+
+    vec.clear();
+    EXPECT_EQ(quotaManager->ParseConfigFile(path, vec), E_OK);
+    ASSERT_EQ(vec.size(), 1);
+    EXPECT_EQ(vec[0].saName, "saName");
+    EXPECT_EQ(vec[0].uid, 1234);
+    
+    std::remove(path.c_str());
+    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_ParseConfigFile_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_QuotaManagerTest_GetOccupiedSpaceForUidList_001
+ * @tc.desc: Test whether GetOccupiedSpaceForUidList is called normally.
+ * @tc.type: FUNC
+ * @tc.require: AR000HSKSO
+ */
+HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_GetOccupiedSpaceForUidList_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetOccupiedSpaceForUidList_001 start";
+
+    QuotaManager *quotaManager = QuotaManager::GetInstance();
+    ASSERT_TRUE(quotaManager != nullptr);
+    std::vector<struct UidSaInfo> vec;
+    EXPECT_EQ(quotaManager->GetOccupiedSpaceForUidList(vec), E_OK);
+    struct UidSaInfo info = {0, "root", 0};
+    vec.emplace_back(info);
+    EXPECT_EQ(quotaManager->GetOccupiedSpaceForUidList(vec), E_OK);
+
+    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetOccupiedSpaceForUidList_001 end";
+}
 } // STORAGE_DAEMON
 } // OHOS
