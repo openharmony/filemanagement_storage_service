@@ -1201,7 +1201,6 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_StorageRadarThd_00
     ASSERT_FALSE(checkStats.empty());
 
     StorageDaemonProvider* provider = new StorageDaemonProvider();
-    std::this_thread::sleep_for(std::chrono::seconds(65));
 
     delete provider;
     SUCCEED();

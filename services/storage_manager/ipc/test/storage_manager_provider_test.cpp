@@ -89,7 +89,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_PrepareAddUser_0
     uint32_t flags = 3;
     auto ret = storageManagerProviderTest_->PrepareAddUser(userId, flags);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
-    storageManagerProviderTest_->RemoveUser(userId, flags);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_PrepareAddUser_001 end";
 }
 /**
@@ -918,7 +917,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountDfsDocs_001
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountDfsDocs_001 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     int32_t userId = 1001;
-    std::string relativePath = "/relative/path";
+    std::string relativePath = "/mnt/dfs/network123/device123/relative/path";
     std::string networkId = "network123";
     std::string deviceId = "device123";
     auto ret = storageManagerProviderTest_->MountDfsDocs(userId, relativePath, networkId, deviceId);
@@ -936,7 +935,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountDfsDocs_00
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountDfsDocs_001 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     int32_t userId = 1001;
-    std::string relativePath = "/relative/path";
+    std::string relativePath = "/mnt/dfs/network123/device123/relative/path";
     std::string networkId = "network123";
     std::string deviceId = "device123";
     auto ret = storageManagerProviderTest_->UMountDfsDocs(userId, relativePath, networkId, deviceId);
@@ -954,7 +953,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyMtpMounted
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyMtpMounted_001 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     std::string id = "mtpId";
-    std::string path = "/mnt/mtp";
+    std::string path = "/mnt/mtp/device/storage/usb";
     std::string desc = "MTP Device";
     std::string uuid = "1234-5678";
     auto ret = storageManagerProviderTest_->NotifyMtpMounted(id, path, desc, uuid);
@@ -972,7 +971,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_NotifyMtpUnmount
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_NotifyMtpUnmounted_001 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     std::string id = "mtpId";
-    std::string path = "/mnt/mtp";
+    std::string path = "/mnt/mtp/device/storage/usb";
     bool isBadRemove = false;
     auto ret = storageManagerProviderTest_->NotifyMtpUnmounted(id, path, isBadRemove);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
@@ -1002,7 +1001,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountMediaFuse_0
  */
 HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountMediaFuse_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountMediaFuse_001 start";
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountMediaFuse_001 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     int32_t userId = 1001;
     auto ret = storageManagerProviderTest_->UMountMediaFuse(userId);
@@ -1020,7 +1019,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_MountFileMgrFuse
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_MountFileMgrFuse_001 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     int32_t userId = 1001;
-    std::string path = "/mnt/fuse";
+    std::string path = "/mnt/mtp/device/storage/usb";
     int32_t fuseFd = -1;
     auto ret = storageManagerProviderTest_->MountFileMgrFuse(userId, path, fuseFd);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
@@ -1038,7 +1037,7 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UMountFileMgrFus
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_001 start";
     ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
     int32_t userId = 1001;
-    std::string path = "/mnt/fuse";
+    std::string path = "/mnt/mtp/device/storage/usb";
     auto ret = storageManagerProviderTest_->UMountFileMgrFuse(userId, path);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_UMountFileMgrFuse_001 end";
