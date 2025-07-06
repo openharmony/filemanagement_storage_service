@@ -21,6 +21,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <filesystem>
+
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/disk_utils.h"
@@ -196,6 +197,7 @@ int32_t ExternalVolumeInfo::DoCheck4Exfat()
         devPath_,
     };
     int execRet = ForkExecWithExit(cmd);
+    LOGI("execRet: %{public}d", execRet);
     if (execRet != E_OK) {
         return E_VOL_NEED_FIX;
     }
@@ -209,6 +211,7 @@ int32_t ExternalVolumeInfo::DoCheck4Ntfs()
         devPath_,
     };
     int execRet = ForkExecWithExit(cmd);
+    LOGI("execRet: %{public}d", execRet);
     if (execRet != E_OK) {
         return E_VOL_NEED_FIX;
     }
@@ -369,13 +372,13 @@ int32_t ExternalVolumeInfo::DoUMount(bool force)
     }
     int fd = open(mountPath_.c_str(), O_RDONLY);
     if (fd < 0) {
-        LOGE("open file fail mountPath %{public}s, errno %{public}d", mountPath_.c_str(), errno);
+        LOGE("open file fail mountPath %{public}s, errno %{public}d", GetAnonyString(mountPath_).c_str(), errno);
     }
     if (fd >= 0) {
         IsUsbInUse(fd);
     }
 
-    LOGI("External volume start to unmount mountPath: %{public}s.", mountPath_.c_str());
+    LOGI("External volume start to unmount mountPath: %{public}s.", GetAnonyString(mountPath_).c_str());
     int ret = umount2(mountPath_.c_str(), MNT_DETACH);
     if (ret != E_OK) {
         LOGE("umount2 failed errno %{public}d", errno);
@@ -391,7 +394,7 @@ int32_t ExternalVolumeInfo::DoUMount(bool force)
         return E_VOL_UMOUNT_ERR;
     }
     if (err && errno != FILE_NOT_EXIST) {
-        LOGE("failed to call remove(%{public}s) error, errno = %{public}d", mountPath_.c_str(), errno);
+        LOGE("failed to call remove(%{public}s) error, errno = %{public}d", GetAnonyString(mountPath_).c_str(), errno);
         return E_RMDIR_MOUNT;
     }
     mountPath_ = mountBackupPath_;
@@ -596,13 +599,14 @@ int32_t ExternalVolumeInfo::CreateFuseMountPath()
     }
  
     if (!lstat(mountUsbFusePath_.c_str(), &statbuf)) {
-        LOGE("volume mount path %{public}s exists, please remove first", mountUsbFusePath_.c_str());
+        LOGE("volume mount path %{public}s exists, please remove first", GetAnonyString(mountUsbFusePath_).c_str());
         remove(mountUsbFusePath_.c_str());
         return E_SYS_KERNEL_ERR;
     }
     ret = PrepareDir(mountUsbFusePath_, S_IRWXU | S_IRWXG | S_IXOTH, FILE_MANAGER_UID, FILE_MANAGER_GID);
     if (!ret) {
-        LOGE("the volume %{public}s create path %{public}s failed", GetVolumeId().c_str(), mountUsbFusePath_.c_str());
+        LOGE("the volume %{public}s create path %{public}s failed",
+             GetVolumeId().c_str(), GetAnonyString(mountUsbFusePath_).c_str());
         return E_MKDIR_MOUNT;
     }
     mountPath_ = mountUsbFusePath_;

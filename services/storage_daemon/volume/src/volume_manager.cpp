@@ -97,12 +97,14 @@ int32_t VolumeManager::DestroyVolume(const std::string volId)
     }
 
     int32_t ret = destroyNode->Destroy();
-    if (ret)
+    if (ret) {
         return ret;
+    }
     if (IsFuse()) {
         ret = destroyNode->DestroyUsbFuse();
-        if (ret)
+        if (ret) {
             return ret;
+        }
     }
 
     volumes_.Erase(volId);
@@ -209,24 +211,24 @@ int32_t VolumeManager::ReadVolumUuid(std::string volumeId, std::string &fsUuid)
  
 int32_t VolumeManager::CreateMountUsbFusePath(std::string fsUuid)
 {
-    LOGE("CreateMountUsbFusePath create path");
+    LOGI("CreateMountUsbFusePath create path");
     struct stat statbuf;
     if (fsUuid.find("..") != std::string::npos) {
-        LOGE("Invalid fsUuid: %{public}s, contains path traversal characters", fsUuid.c_str());
+        LOGE("Invalid fsUuid: %{public}s, contains path traversal characters", GetAnonyString(fsUuid).c_str());
         return E_PARAMS_INVALID;
     }
     mountUsbFusePath_ = StringPrintf("/mnt/data/external/%s", fsUuid.c_str());
     if (!lstat(mountUsbFusePath_.c_str(), &statbuf)) {
-        LOGE("volume mount path %{public}s exists, please remove first", mountUsbFusePath_.c_str());
+        LOGE("volume mount path %{public}s exists, please remove first", GetAnonyString(mountUsbFusePath_).c_str());
         remove(mountUsbFusePath_.c_str());
         return E_SYS_KERNEL_ERR;
     }
-    LOGE("CreateMountUsbFusePath  mountUsbFusePath_ path %{public}s ", mountUsbFusePath_.c_str());
     if (mkdir(mountUsbFusePath_.c_str(), S_IRWXU | S_IRWXG | S_IXOTH)) {
-        LOGE("the volume %{public}s create path %{public}s failed", fsUuid.c_str(), mountUsbFusePath_.c_str());
+        LOGE("the volume %{public}s create path %{public}s failed",
+             GetAnonyString(fsUuid).c_str(), GetAnonyString(mountUsbFusePath_).c_str());
         return E_MKDIR_MOUNT;
     }
-    LOGE("CreateMountUsbFusePath create path out");
+    LOGI("CreateMountUsbFusePath create path out");
     return E_OK;
 }
 

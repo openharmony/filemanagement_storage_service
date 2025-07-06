@@ -125,7 +125,9 @@ bool IsFile(const std::string &path)
 
 bool IsFuse()
 {
-    return system::GetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, false);
+    bool ret = system::GetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, false);
+    LOGI("IsFuse result: %{public}s.", ret ? "true" : "false");
+    return ret;
 }
 
 bool MkDirRecurse(const std::string& path, mode_t mode)

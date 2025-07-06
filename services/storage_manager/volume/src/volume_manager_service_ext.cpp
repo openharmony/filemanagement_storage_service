@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,6 +16,8 @@
 #include "volume/volume_manager_service_ext.h"
  
 #include <dlfcn.h>
+#include <sys/xattr.h>
+
 #include "disk.h"
 #include "disk/disk_manager_service.h"
 #include "safe_map.h"
@@ -23,14 +25,12 @@
 #include "storage_daemon_communication/storage_daemon_communication.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
-#include <sys/xattr.h>
 #include "utils/storage_radar.h"
 #include "utils/storage_utils.h"
 #include "utils/file_utils.h"
 #include "utils/string_utils.h"
 #include "volume/notification.h"
  
-using namespace std;
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageManager {
