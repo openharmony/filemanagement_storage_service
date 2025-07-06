@@ -1312,5 +1312,6 @@ int32_t StorageDaemon::InactiveUserPublicDirKey(uint32_t userId)
 #endif
     return ret;
 }
+
 } // namespace StorageDaemon
 } // namespace OHOS
