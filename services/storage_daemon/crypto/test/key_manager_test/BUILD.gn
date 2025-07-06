@@ -71,7 +71,6 @@ ohos_unittest("KeyManagerTest") {
     "googletest:gmock_main",
     "googletest:gtest_main",
     "hilog:libhilog",
-    "hisysevent:libhisysevent",
     "huks:libhukssdk",
     "init:libbegetutil",
     "ipc:ipc_single",
@@ -241,7 +240,6 @@ ohos_unittest("KeyManagerOtherTest") {
     external_deps += [ "user_auth_framework:userauth_client" ]
   }
 
-
   if (enable_huks_hdi) {
     defines += [ "HUKS_IDL_ENVIRONMENT" ]
     external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
@@ -320,6 +318,7 @@ ohos_unittest("KeyManagerAnotherTest") {
     defines += [ "USER_AUTH_FRAMEWORK" ]
     external_deps += [ "user_auth_framework:userauth_client" ]
   }
+
   if (enable_tee_client) {
     defines += [ "RECOVER_KEY_TEE_ENVIRONMENT" ]
     external_deps += [ "tee_client:libteec" ]

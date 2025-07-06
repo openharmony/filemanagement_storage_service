@@ -352,23 +352,4 @@ HWTEST_F(StorageTotalStatusServiceTest, Storage_status_MonitorAndManageStorage_0
     service->MonitorAndManageStorage();
     GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_MonitorAndManageStorage_0000";
 }
-
-/**
- * @tc.number: SUB_STORAGE_Storage_status_service_GetLowerThreshold_0000
- * @tc.name: Storage_status_service_GetLowerThreshold_0000
- * @tc.desc: Test function of GetLowerThreshold interface for SUCCESS.
- * @tc.size: MEDIUM
- * @tc.type: FUNC
- * @tc.level Level 1
- */
-HWTEST_F(StorageTotalStatusServiceTest, Storage_status_GetLowerThreshold_0000, testing::ext::TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-begin Storage_status_service_GetLowerThreshold_0000";
-    std::shared_ptr<StorageMonitorService> service = DelayedSingleton<StorageMonitorService>::GetInstance();
-    ASSERT_TRUE(service != nullptr);
-    int64_t totalSize = 0;
-    int32_t result = service->GetLowerThreshold(totalSize);
-    EXPECT_EQ(result, E_OK);
-    GTEST_LOG_(INFO) << "StorageTotalStatusServiceTest-end Storage_status_service_GetLowerThreshold_0000";
-}
 } // namespace

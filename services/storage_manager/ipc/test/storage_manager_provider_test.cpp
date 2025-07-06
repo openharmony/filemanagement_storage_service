@@ -45,6 +45,7 @@ public:
 
     std::unique_ptr<StorageManagerProvider> storageManagerProviderTest_;
 };
+
 void StorageManagerProviderTest::SetUp(void)
 {
     storageManagerProviderTest_ = std::make_unique<StorageManagerProvider>(STORAGE_MANAGER_MANAGER_ID);

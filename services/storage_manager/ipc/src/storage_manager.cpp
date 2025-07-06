@@ -25,10 +25,10 @@
 #include <storage/storage_status_service.h>
 #include <storage/storage_total_status_service.h>
 #include <storage/volume_storage_status_service.h>
+#include "account_subscriber/account_subscriber.h"
 #endif
 
 #ifdef USER_CRYPTO_MANAGER
-#include "account_subscriber/account_subscriber.h"
 #include "crypto/filesystem_crypto.h"
 #include "appspawn.h"
 #include "utils/storage_radar.h"
@@ -50,9 +50,10 @@ constexpr bool ENCRYPTED = true;
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageManager {
+
 void StorageManager::ResetUserEventRecord(int32_t userId)
 {
-#ifdef USER_CRYPTO_MANAGER
+#ifdef STORAGE_STATISTICS_MANAGER
     AccountSubscriber::ResetUserEventRecord(userId);
 #endif
 }
@@ -260,7 +261,6 @@ int32_t StorageManager::NotifyVolumeMounted(const std::string &volumeId, const s
     DelayedSingleton<VolumeManagerService>::GetInstance()->OnVolumeMounted(volumeId, fsTypeStr, fsUuid, path,
         description);
 #endif
-
     return E_OK;
 }
 

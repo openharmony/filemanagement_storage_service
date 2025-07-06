@@ -640,7 +640,7 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_OpenProcForPath_001, 
 {
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_OpenProcForPath_001 start";
     std::string path = "/data/test/tdd/";
-    bool isOccupy;
+    bool isOccupy = false;
     bool isDir = true;
     int32_t ret = MountManager::GetInstance()->OpenProcForPath(path, isOccupy, isDir);
     EXPECT_EQ(ret, E_OK);
@@ -660,7 +660,7 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_OpenProcForPath_001, 
  */
 HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_OpenProcForMulti_001, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_OpenProcForPath_001 start";
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_OpenProcForMulti_001 start";
     std::string path = "/data/test/tdd/";
     std::set<std::string> occupyFiles;
     int32_t ret = MountManager::GetInstance()->OpenProcForMulti(path, occupyFiles);

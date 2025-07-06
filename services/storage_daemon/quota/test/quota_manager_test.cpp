@@ -188,7 +188,6 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_SetBundleQuota_005, 
     int32_t limitSizeMb = LIMITSIZE;
     int32_t result = quotaManager->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
     EXPECT_EQ(result, E_STAT_VFS_KERNEL_ERR);
-
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_SetBundleQuota_005 end";
 }
 

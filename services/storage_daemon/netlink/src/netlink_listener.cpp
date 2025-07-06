@@ -103,7 +103,7 @@ int32_t NetlinkListener::ReadMsg(int32_t fd_count, struct pollfd ufds[2])
                 return E_ERR;
             }
             if (msg == 0) {
-                LOGE("Stop listener");
+                LOGI("Stop listener");
                 return E_ERR;
             }
         } else if (ufds[i].fd == socketFd_) {

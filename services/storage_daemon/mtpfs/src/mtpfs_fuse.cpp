@@ -641,6 +641,7 @@ int MtpFileSystem::GetAttr(const char *path, struct stat *buf)
 
 int MtpFileSystem::GetThumbAttr(const std::string &path, struct stat *buf)
 {
+    std::lock_guard<std::mutex> lock(fuseMutex_);
     LOGI("MtpFileSystem: GetThumbAttr enter, path: %{public}s", path.c_str());
     std::string realPath = path.substr(0, path.length() - strlen(MTP_FILE_FLAG));
     int ret = GetAttr(realPath.c_str(), buf);
@@ -851,9 +852,9 @@ int MtpFileSystem::OpenFile(const char *path, struct fuse_file_info *fileInfo)
         LOGE("MtpFileSystem: realpath error, errno=%{public}d", errno);
         return -errno;
     }
-    int fd = ::open(tmpPath.c_str(), fileInfo->flags);
+    int fd = ::open(realPath, fileInfo->flags);
     if (fd < 0) {
-        ::unlink(tmpPath.c_str());
+        ::unlink(realPath);
         LOGE("MtpFileSystem: OpenFile error, errno=%{public}d", errno);
         return -errno;
     }
@@ -862,7 +863,7 @@ int MtpFileSystem::OpenFile(const char *path, struct fuse_file_info *fileInfo)
     if (tmpFile != nullptr) {
         tmpFile->AddFileDescriptor(fd);
     } else {
-        tmpFilesPool_.AddFile(MtpFsTypeTmpFile(stdPath, tmpPath, fd));
+        tmpFilesPool_.AddFile(MtpFsTypeTmpFile(stdPath, std::string(realPath), fd));
     }
     LOGI("MtpFileSystem: OpenFile success, path: %{public}s", path);
     return 0;
@@ -912,9 +913,9 @@ int MtpFileSystem::OpenThumb(const char *path, struct fuse_file_info *fileInfo)
         LOGE("MtpFileSystem: realpath error, errno=%{public}d", errno);
         return -errno;
     }
-    fd = ::open(tmpPath.c_str(), fileInfo->flags);
+    fd = ::open(realPath, fileInfo->flags);
     if (fd < 0) {
-        ::unlink(tmpPath.c_str());
+        ::unlink(realPath);
         LOGE("MtpFileSystem: OpenThumb error, errno=%{public}d", errno);
         return -errno;
     }
@@ -962,7 +963,7 @@ int MtpFileSystem::Write(const char *path, const char *buf, size_t size, off_t o
 
 int MtpFileSystem::Release(const char *path, struct fuse_file_info *fileInfo)
 {
-    std::lock_guard<std::mutex>lock(fuseMutex_);
+    std::lock_guard<std::mutex> lock(fuseMutex_);
     LOGI("MtpFileSystem: Release enter, path: %{public}s", path);
     const std::string stdPath(path);
     if (fileInfo == nullptr) {
@@ -1156,6 +1157,61 @@ int MtpFileSystem::SetXAttr(const char *path, const char *in)
     return 0;
 }
 
+static int IsDirFetched(std::string path, MtpFsDevice &device, char *out, size_t size)
+{
+    bool fetch = device.IsDirFetched(std::string(path));
+    int ret;
+    if (fetch) {
+        ret = memcpy_s(out, size, "true", UPLOAD_RECORD_TRUE_LEN);
+    } else {
+        ret = memcpy_s(out, size, "false", UPLOAD_RECORD_FALSE_LEN);
+    }
+    if (ret != 0) {
+        LOGE("copy fail, ret=%{public}d", ret);
+        return 0;
+    }
+    return fetch ? UPLOAD_RECORD_TRUE_LEN : UPLOAD_RECORD_FALSE_LEN;
+}
+
+static int IsUploadCompleted(std::string path, MtpFsDevice &device, char *out, size_t size)
+{
+    auto [firstParam, secondParam] = device.FindUploadRecord(path);
+    if (firstParam.empty()) {
+        LOGE("No record, path=%{public}s", path.c_str());
+        return 0;
+    }
+    int32_t len = strlen(secondParam.c_str());
+    if (secondParam == "success" || secondParam == "fail") {
+        if (memcpy_s(out, size, secondParam.c_str(), len) != 0) {
+            LOGE("memcpy_s fail");
+            return 0;
+        }
+        device.RemoveUploadRecord(path);
+    } else if (secondParam == "sending") {
+        if (memcpy_s(out, size, secondParam.c_str(), len) != 0) {
+            LOGE("memcpy_s fail");
+            return 0;
+        }
+    }
+    return len;
+}
+
+static int QueryMtpIsInUse(MtpFsDevice &device, char *out, size_t size)
+{
+    bool isEmpty = device.IsUploadRecordEmpty();
+    int ret;
+    if (isEmpty) {
+        ret = memcpy_s(out, size, "false", UPLOAD_RECORD_FALSE_LEN);
+    } else {
+        ret = memcpy_s(out, size, "true", UPLOAD_RECORD_TRUE_LEN);
+    }
+    if (ret != 0) {
+        LOGE("copy fail, ret=%{public}d", ret);
+        return 0;
+    }
+    return isEmpty ? UPLOAD_RECORD_FALSE_LEN : UPLOAD_RECORD_TRUE_LEN;
+}
+
 int MtpFileSystem::GetXAttr(const char *path, const char *in, char *out, size_t size)
 {
     if (path == nullptr || in == nullptr) {
@@ -1167,44 +1223,16 @@ int MtpFileSystem::GetXAttr(const char *path, const char *in, char *out, size_t 
         return UPLOAD_RECORD_SUCCESS_LEN;
     }
     if (strcmp(in, "user.isDirFetched") == 0) {
-        bool fetch = device_.IsDirFetched(std::string(path));
-        int ret;
-        if (fetch) {
-            ret = memcpy_s(out, size, "true", UPLOAD_RECORD_TRUE_LEN);
-        } else {
-            ret = memcpy_s(out, size, "false", UPLOAD_RECORD_FALSE_LEN);
-        }
-        if (ret != 0) {
-            LOGE("copy fail, ret=%{public}d", ret);
-            return 0;
-        }
-        return fetch ? UPLOAD_RECORD_TRUE_LEN : UPLOAD_RECORD_FALSE_LEN;
+        return IsDirFetched(std::string(path), device_, out, size);
     } else if (strcmp(in, "user.isUploadCompleted") == 0) {
-        auto [firstParam, secondParam] = device_.FindUploadRecord(std::string(path));
-        if (firstParam.empty()) {
-            LOGE("No record, path=%{public}s", path);
-            return 0;
-        }
-        int32_t len = strlen(secondParam.c_str());
-        if (secondParam == "success" || secondParam == "fail") {
-            if (memcpy_s(out, size, secondParam.c_str(), len) != 0) {
-                LOGE("memcpy_s fail");
-                return 0;
-            }
-            device_.RemoveUploadRecord(path);
-        } else if (secondParam == "sending") {
-            if (memcpy_s(out, size, secondParam.c_str(), len) != 0) {
-                LOGE("memcpy_s fail");
-                return 0;
-            }
-        }
-        return len;
+        return IsUploadCompleted(std::string(path), device_, out, size);
     } else if (strcmp(in, "user.getfriendlyname") == 0) {
         return GetFriendlyName(in, out, size);
-    } else {
-        LOGE("attrKey error, attrKey=%{public}s", in);
-        return 0;
+    } else if (strcmp(in, "user.queryMtpIsInUse") == 0) {
+        return QueryMtpIsInUse(device_, out, size);
     }
+    LOGE("attrKey error, attrKey=%{public}s", in);
+    return 0;
 }
 
 int MtpFileSystem::GetFriendlyName(const char *in, char *out, size_t size)

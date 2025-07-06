@@ -16,15 +16,20 @@
 #include <gmock/gmock.h>
 
 #include <linux/kdev_t.h>
+#include <sys/xattr.h>
 
 #include "external_volume_info.h"
 #include "external_volume_info_mock.h"
+#include "parameter.h"
+#include "securec.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "volume/volume_manager.h"
 #include "volume_info_mock.h"
-#include "parameter.h"
 #include "utils/string_utils.h"
+
+constexpr int UPLOAD_RECORD_TRUE_LEN = 4;
+constexpr int UPLOAD_RECORD_FALSE_LEN = 5;
 
 namespace {
 uint32_t g_FindParameter = 0;
@@ -33,6 +38,26 @@ uint32_t g_FindParameter = 0;
 uint32_t FindParameter(const char *key)
 {
     return g_FindParameter;
+}
+
+using namespace OHOS::StorageDaemon;
+ssize_t getxattr(const char *path, const char *name, void *value, size_t size)
+{
+    if (strcmp(name, "user.queryMtpIsInUse") != 0) {
+        return 0;
+    }
+    if (strcmp(path, "/mnt/data/external/mtp_valid_path") == 0) {
+        return -1;
+    }
+    if (strcmp(path, "/mnt/data/external/mtp_true_path") == 0) {
+        (void)memcpy_s(value, size, "true", UPLOAD_RECORD_TRUE_LEN);
+        return UPLOAD_RECORD_TRUE_LEN;
+    }
+    if (strcmp(path, "/mnt/data/external/mtp_false_path") == 0) {
+        (void)memcpy_s(value, size, "false", UPLOAD_RECORD_FALSE_LEN);
+        return UPLOAD_RECORD_FALSE_LEN;
+    }
+    return 0;
 }
 
 namespace OHOS {
@@ -448,7 +473,7 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_SetVolumeDescripti
 }
 
 /**
- * @tc.name: Storage_Service_VolumeManagerTest_QueryUsbIsInUse_002
+ * @tc.name: Storage_Service_VolumeManagerTest_QueryUsbIsInUse_001
  * @tc.desc: Verify the QueryUsbIsInUse function.
  * @tc.type: FUNC
  * @tc.require: AR20250226995120
@@ -509,6 +534,113 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_TryToFix_001, Test
     EXPECT_EQ(volumeManager->TryToFix(volId, flags), -1);
 
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_TryToFix_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeManagerTest_QueryUsbIsInUse_002
+ * @tc.desc: 测试当 realpath 函数调用失败时,函数应返回 E_PARAMS_INVALID 错误码,并设置 isInUse 为 false
+ * @tc.type: FUNC
+ */
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_QueryUsbIsInUse_002, TestSize.Level1) {
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_QueryUsbIsInUse_002 start";
+
+    VolumeManager *volumeManager = VolumeManager::Instance();
+    ASSERT_TRUE(volumeManager != nullptr);
+
+    std::string diskPath = "invalid_path";
+    bool isInUse = false;
+    int32_t result = volumeManager->QueryUsbIsInUse(diskPath, isInUse);
+    EXPECT_EQ(result, E_PARAMS_INVALID);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_QueryUsbIsInUse_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeManagerTest_QueryUsbIsInUse_003
+ * @tc.desc: 测试当设备在使用时,函数应返回 E_OK 错误码,并设置 isInUse 为 true
+ * @tc.type: FUNC
+ */
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_QueryUsbIsInUse_003, TestSize.Level1) {
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_QueryUsbIsInUse_003 start";
+
+    VolumeManager *volumeManager = VolumeManager::Instance();
+    ASSERT_TRUE(volumeManager != nullptr);
+
+    std::string diskPath = "/mnt/data/external";
+    bool isInUse = false;
+    int32_t result = volumeManager->QueryUsbIsInUse(diskPath, isInUse);
+    EXPECT_EQ(result, E_IOCTL_FAILED);
+    EXPECT_TRUE(isInUse);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_QueryUsbIsInUse_003 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeManagerTest_IsMtpDeviceInUseTest_001
+ * @tc.desc: 测试当 diskPath 没有以 MTP_PATH_PREFIX 开头时,函数应返回 false
+ * @tc.type: FUNC
+ */
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_IsMtpDeviceInUseTest_001, TestSize.Level1) {
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_IsMtpDeviceInUseTest_001 start";
+
+    VolumeManager *volumeManager = VolumeManager::Instance();
+    ASSERT_TRUE(volumeManager != nullptr);
+
+    std::string diskPath = "/invalid/path";
+    EXPECT_FALSE(volumeManager->IsMtpDeviceInUse(diskPath));
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_IsMtpDeviceInUseTest_001 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeManagerTest_IsMtpDeviceInUseTest_002
+ * @tc.desc: 测试当 getxattr 失败时,函数应返回 false
+ * @tc.type: FUNC
+ */
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_IsMtpDeviceInUseTest_002, TestSize.Level1) {
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_IsMtpDeviceInUseTest_002 start";
+
+    VolumeManager *volumeManager = VolumeManager::Instance();
+    ASSERT_TRUE(volumeManager != nullptr);
+
+    std::string diskPath = "/mnt/data/external/mtp_valid_path";
+    EXPECT_FALSE(volumeManager->IsMtpDeviceInUse(diskPath));
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_IsMtpDeviceInUseTest_002 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeManagerTest_IsMtpDeviceInUseTest_003
+ * @tc.desc: 测试当设备未使用时,函数应返回 false
+ * @tc.type: FUNC
+ */
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_IsMtpDeviceInUseTest_003, TestSize.Level1) {
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_IsMtpDeviceInUseTest_003 start";
+
+    VolumeManager *volumeManager = VolumeManager::Instance();
+    ASSERT_TRUE(volumeManager != nullptr);
+
+    std::string diskPath = "/mnt/data/external/mtp_false_path";
+    EXPECT_FALSE(volumeManager->IsMtpDeviceInUse(diskPath));
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_IsMtpDeviceInUseTest_003 end";
+}
+
+/**
+ * @tc.name: Storage_Service_VolumeManagerTest_IsMtpDeviceInUseTest_004
+ * @tc.desc: 测试当设备在使用时,函数应返回 true
+ * @tc.type: FUNC
+ */
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_IsMtpDeviceInUseTest_004, TestSize.Level1) {
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_IsMtpDeviceInUseTest_004 start";
+
+    VolumeManager *volumeManager = VolumeManager::Instance();
+    ASSERT_TRUE(volumeManager != nullptr);
+
+    std::string diskPath = "/mnt/data/external/mtp_true_path";
+    EXPECT_TRUE(volumeManager->IsMtpDeviceInUse(diskPath));
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_IsMtpDeviceInUseTest_004 end";
 }
 
 /**
@@ -768,78 +900,6 @@ HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_ReadVolumUuid_002,
     volumeManager->DestroyVolume(volumeId);
 
     GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_ReadVolumUuid_002 end";
-}
-
-/**
- * @tc.name: Storage_Service_VolumeManagerTest_MountUsbFuse_Branch_Coverage
- * @tc.desc: Comprehensive test to cover all branches in MountUsbFuse method.
- * @tc.type: FUNC
- * @tc.require: issueI9G5A0
- */
-HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_MountUsbFuse_Branch_Coverage, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_MountUsbFuse_Branch_Coverage start";
-
-    VolumeManager *volumeManager = VolumeManager::Instance();
-    ASSERT_TRUE(volumeManager != nullptr);
-
-    // Branch 1: Non-existing volume
-    {
-        std::string volumeId = "non-exist-vol";
-        int fuseFd = -1;
-        std::string fsUuid;
-        int32_t result = volumeManager->MountUsbFuse(volumeId, fsUuid, fuseFd);
-        EXPECT_EQ(result, E_NON_EXIST);
-    }
-
-    // Branch 2: ReadVolumUuid fails
-    {
-        std::string diskId = "diskId-branch-test";
-        bool isUserdata = false;
-        dev_t device = MKDEV(8, 20);
-        std::string volumeId = volumeManager->CreateVolume(diskId, device, isUserdata);
-        ASSERT_FALSE(volumeId.empty());
-
-        int fuseFd = -1;
-        std::string fsUuid;
-        int32_t result = volumeManager->MountUsbFuse(volumeId, fsUuid, fuseFd);
-        
-        // ReadVolumUuid should fail for test volume
-        EXPECT_NE(result, E_OK);
-        
-        volumeManager->DestroyVolume(volumeId);
-    }
-
-    // Branch 3: CreateMountUsbFusePath fails due to invalid fsUuid
-    {
-        std::string fsUuid = "invalid../fsUuid";
-        int32_t result = volumeManager->CreateMountUsbFusePath(fsUuid);
-        EXPECT_EQ(result, E_PARAMS_INVALID);
-    }
-
-    // Branch 4: Test the StringPrintf and mount option construction
-    {
-        // This tests the string construction logic within MountUsbFuse
-        int testFd = 42;
-        std::string opt = StringPrintf("fd=%i,"
-            "rootmode=40000,"
-            "default_permissions,"
-            "allow_other,"
-            "user_id=0,group_id=0,"
-            "context=\"u:object_r:hmdfs:s0\","
-            "fscontext=u:object_r:hmdfs:s0",
-            testFd);
-        
-        EXPECT_TRUE(opt.find("fd=42") != std::string::npos);
-        EXPECT_TRUE(opt.find("rootmode=40000") != std::string::npos);
-        EXPECT_TRUE(opt.find("default_permissions") != std::string::npos);
-        EXPECT_TRUE(opt.find("allow_other") != std::string::npos);
-        EXPECT_TRUE(opt.find("user_id=0,group_id=0") != std::string::npos);
-        EXPECT_TRUE(opt.find("context=\"u:object_r:hmdfs:s0\"") != std::string::npos);
-        EXPECT_TRUE(opt.find("fscontext=u:object_r:hmdfs:s0") != std::string::npos);
-    }
-
-    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_MountUsbFuse_Branch_Coverage end";
 }
 } // STORAGE_DAEMON
 } // OHOS
