@@ -872,7 +872,7 @@ int MtpFsDevice::FilePush(const std::string &src, const std::string &dst)
     const MtpFsTypeDir *dirParent = ReadDirFetchContent(SmtpfsDirName(dst));
     const MtpFsTypeFile *fileToRemove = dirParent ? dirParent->File(dstBaseName) : nullptr;
     if (!dirParent) {
-        LOGE("FilePush failed, Can not fetch %{public}s", dst.c_str());
+        LOGE("FilePush failed, can not fetch %{public}s", dst.c_str());
         return -EINVAL;
     }
     SetTransferValue(true);
@@ -883,7 +883,7 @@ int MtpFsDevice::FilePush(const std::string &src, const std::string &dst)
         usleep(DELETE_OBJECT_DELAY_US);
         if (rval != 0) {
             StorageRadar::ReportMtpfsResult("FilePush::LIBMTP_Delete_Object", rval, "src=" + src + "dst=" + dst);
-            LOGE("FilePush failed, Can not upload %{public}s to %{public}s", src.c_str(), dst.c_str());
+            LOGE("FilePush failed, can not upload %{public}s to %{public}s", src.c_str(), dst.c_str());
             SetTransferValue(false);
             DumpLibMtpErrorStack();
             return -EINVAL;
@@ -1114,6 +1114,13 @@ std::tuple<std::string, std::string> MtpFsDevice::FindUploadRecord(const std::st
         return {"", "fail"};
     }
     return {it->first, it->second};
+}
+
+bool MtpFsDevice::IsUploadRecordEmpty()
+{
+    std::unique_lock<std::mutex> lock(uploadRecordMutex_);
+    LOGI("uploadRecordMap_ size = %{public}d", uploadRecordMap_.size());
+    return uploadRecordMap_.empty();
 }
 
 char *MtpFsDevice::GetDeviceFriendlyName()

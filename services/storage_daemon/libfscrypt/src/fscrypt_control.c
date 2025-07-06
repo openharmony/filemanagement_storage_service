@@ -17,7 +17,6 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 #include <stdbool.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -291,23 +290,18 @@ static int ReadKeyFile(const char *path, char *buf, size_t len)
         return -ENOENT;
     }
 
-    FILE *f = fopen(realPath, "r");
+    int fd = open(realPath, O_RDONLY);
     free(realPath);
-    if (f == NULL) {
-        LOGE("key file read open failed");
-        return -ENOENT;
-    }
-    int fd = fileno(f);
     if (fd < 0) {
         LOGE("key file read open failed");
-        return -EIO;
+        return -EFAULT;
     }
     if (read(fd, buf, len) != (ssize_t)len) {
         LOGE("bad file content");
-        (void)fclose(f);
+        (void)close(fd);
         return -EBADF;
     }
-    (void)fclose(f);
+    (void)close(fd);
 
     return 0;
 }

@@ -41,6 +41,8 @@ private:
     VolumeManager() = default;
     DISALLOW_COPY_AND_MOVE(VolumeManager);
 
+    bool IsMtpDeviceInUse(const std::string &diskPath);
+
     static VolumeManager* instance_;
     StorageService::StorageRlMap<std::string, std::shared_ptr<VolumeInfo>> volumes_;
 

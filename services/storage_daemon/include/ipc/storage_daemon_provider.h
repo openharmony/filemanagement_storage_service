@@ -63,8 +63,9 @@ public:
                                                  uint64_t secureUid,
                                                  uint32_t userId,
                                                  const std::vector<std::vector<uint8_t>> &plainText) override;
-    virtual int32_t
-        ActiveUserKey(uint32_t userId, const std::vector<uint8_t> &token, const std::vector<uint8_t> &secret) override;
+    virtual int32_t ActiveUserKey(uint32_t userId,
+                                  const std::vector<uint8_t> &token,
+                                  const std::vector<uint8_t> &secret) override;
     virtual int32_t InactiveUserKey(uint32_t userId) override;
     virtual int32_t UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey = false) override;
     virtual int32_t MountCryptoPathAgain(uint32_t userId) override;
@@ -114,8 +115,9 @@ public:
                                    const std::vector<std::string> &inputList,
                                    std::vector<std::string> &outputList,
                                    bool &isOccupy) override;
-    virtual int32_t
-        ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key) override;
+    virtual int32_t ResetSecretWithRecoveryKey(uint32_t userId,
+                                               uint32_t rkType,
+                                               const std::vector<uint8_t> &key) override;
     // cross device
     virtual int32_t MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles) override;
     virtual int32_t UMountDisShareFile(int32_t userId, const std::string &networkId) override;

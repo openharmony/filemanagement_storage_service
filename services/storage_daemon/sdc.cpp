@@ -256,7 +256,7 @@ static int32_t UpdateKeyContext(const std::vector<std::string> &args)
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }
-    if (OHOS::StorageDaemon::StringToBool(args[INDEX_4], needRemoveTmpKey) == false) {
+    if (!OHOS::StorageDaemon::StringToBool(args[INDEX_4], needRemoveTmpKey)) {
         LOGE("Parameter input error, please retry");
         return -EINVAL;
     }

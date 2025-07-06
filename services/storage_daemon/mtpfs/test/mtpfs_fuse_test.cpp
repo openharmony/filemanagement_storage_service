@@ -32,6 +32,7 @@ constexpr int UPLOAD_RECORD_TRUE_LEN = 4;
 constexpr int UPLOAD_RECORD_SUCCESS_SENDING_LEN = 7;
 constexpr int32_t FROM_ID = 100;
 constexpr int32_t TO_ID = 101;
+constexpr int32_t UPLOAD_RECORD_SUCCESS_LEN = 7;
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -405,6 +406,57 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_AccountSubscriber_OnStateChanged_001, Test
     mtpFileSystem->currentUid = 0;
 
     GTEST_LOG_(INFO) << "MtpfsFuseTest_AccountSubscriber_OnStateChanged_001 end";
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_GetXAttrTest_001
+ * @tc.desc: 测试当 path 为空时,GetXAttr 应返回 0
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_001, TestSize.Level1)
+{
+    char out[1024];
+    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
+    int result = mtpFileSystem->GetXAttr(nullptr, "user.isDirFetched", out, sizeof(out));
+    EXPECT_EQ(result, 0);
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_GetXAttrTest_002
+ * @tc.desc: 测试当 in 为空时,GetXAttr 应返回 0
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_002, TestSize.Level1)
+{
+    char out[1024];
+    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
+    int result = mtpFileSystem->GetXAttr("/path/to/file", nullptr, out, sizeof(out));
+    EXPECT_EQ(result, 0);
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_GetXAttrTest_003
+ * @tc.desc: 测试当 out 为空时,GetXAttr 应返回 UPLOAD_RECORD_SUCCESS_LEN
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_003, TestSize.Level1)
+{
+    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
+    int result = mtpFileSystem->GetXAttr("/path/to/file", "user.isDirFetched", nullptr, 0);
+    EXPECT_EQ(result, UPLOAD_RECORD_SUCCESS_LEN);
+}
+
+/**
+ * @tc.name: MtpfsFuseTest_GetXAttrTest_004
+ * @tc.desc: 测试当 attrKey 无效时,GetXAttr 应返回 0
+ * @tc.type: FUNC
+ */
+HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttrTest_004, TestSize.Level1)
+{
+    char out[1024];
+    auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
+    int result = mtpFileSystem->GetXAttr("/path/to/file", "invalid_attr_key", out, sizeof(out));
+    EXPECT_EQ(result, 0);
 }
 
 /**

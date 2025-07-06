@@ -241,74 +241,74 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_CheckAndEventNotify_
 }
 
 /**
- * @tc.number: SUB_STORAGE_storage_monitor_service_EventNotifyHighFreqHandler_0000
- * @tc.name: Storage_monitor_service_EventNotifyHighFreqHandler_0000
- * @tc.desc: Test function of EventNotifyHighFreqHandler interface.
+ * @tc.number: SUB_STORAGE_storage_monitor_service_EventNotifyFreqHandlerForLow_0000
+ * @tc.name: Storage_monitor_service_EventNotifyFreqHandlerForLow_0000
+ * @tc.desc: Test function of EventNotifyFreqHandlerForLow interface.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
  * @tc.require: issuesIC35N9
  */
-HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_EventNotifyHighFreqHandler_0000, TestSize.Level1)
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_EventNotifyFreqHandlerForLow_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "storage_monitor_service_EventNotifyHighFreqHandler_0000 start";
+    GTEST_LOG_(INFO) << "storage_monitor_service_EventNotifyFreqHandlerForLow_0000 start";
     ASSERT_TRUE(service != nullptr);
 
     service->lastNotificationTimeHighFreq_ = std::chrono::system_clock::time_point();
-    service->EventNotifyHighFreqHandler();
+    service->EventNotifyFreqHandlerForLow();
     EXPECT_TRUE(true);
 
     service->lastNotificationTimeHighFreq_ = std::chrono::system_clock::now() + std::chrono::hours(24);
-    service->EventNotifyHighFreqHandler();
+    service->EventNotifyFreqHandlerForLow();
     EXPECT_TRUE(true);
-    GTEST_LOG_(INFO) << "storage_monitor_service_EventNotifyHighFreqHandler_0000 end";
+    GTEST_LOG_(INFO) << "storage_monitor_service_EventNotifyFreqHandlerForLow_0000 end";
 }
 
 /**
- * @tc.number: SUB_STORAGE_storage_monitor_service_EventNotifyFreqHandlerFor2G_0000
- * @tc.name: Storage_monitor_service_EventNotifyFreqHandlerFor2G_0000
- * @tc.desc: Test function of EventNotifyFreqHandlerFor2G interface.
+ * @tc.number: SUB_STORAGE_storage_monitor_service_EventNotifyFreqHandlerForMedium_0000
+ * @tc.name: Storage_monitor_service_EventNotifyFreqHandlerForMedium_0000
+ * @tc.desc: Test function of EventNotifyFreqHandlerForMedium interface.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
  * @tc.require: issuesIC35N9
  */
-HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_EventNotifyFreqHandlerFor2G_0000, TestSize.Level1)
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_EventNotifyFreqHandlerForMedium_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "storage_monitor_service_EventNotifyFreqHandlerFor2G_0000 start";
+    GTEST_LOG_(INFO) << "storage_monitor_service_EventNotifyFreqHandlerForMedium_0000 start";
     ASSERT_TRUE(service != nullptr);
 
     service->lastNotificationTimeHighFreq_ = std::chrono::system_clock::time_point();
-    service->EventNotifyFreqHandlerFor2G();
+    service->EventNotifyFreqHandlerForMedium();
     EXPECT_TRUE(true);
 
     service->lastNotificationTimeHighFreq_ = std::chrono::system_clock::now() + std::chrono::hours(24);
-    service->EventNotifyFreqHandlerFor2G();
+    service->EventNotifyFreqHandlerForMedium();
     EXPECT_TRUE(true);
-    GTEST_LOG_(INFO) << "storage_monitor_service_EventNotifyFreqHandlerFor2G_0000 end";
+    GTEST_LOG_(INFO) << "storage_monitor_service_EventNotifyFreqHandlerForMedium_0000 end";
 }
 
 /**
- * @tc.number: SUB_STORAGE_storage_monitor_service_EventNotifyFreqHandlerForTenPercent_0000
- * @tc.name: Storage_monitor_service_EventNotifyFreqHandlerForTenPercent_0000
- * @tc.desc: Test function of EventNotifyFreqHandlerForTenPercent interface.
+ * @tc.number: SUB_STORAGE_storage_monitor_service_EventNotifyFreqHandlerForHigh_0000
+ * @tc.name: Storage_monitor_service_EventNotifyFreqHandlerForHigh_0000
+ * @tc.desc: Test function of EventNotifyFreqHandlerForHigh interface.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
  * @tc.require: issuesIC35N9
  */
-HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_EventNotifyFreqHandlerForTenPercent_0000, TestSize.Level1)
+HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_EventNotifyFreqHandlerForHigh_0000, TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "storage_monitor_service_EventNotifyFreqHandlerForTenPercent_0000 start";
+    GTEST_LOG_(INFO) << "storage_monitor_service_EventNotifyFreqHandlerForHigh_0000 start";
     ASSERT_TRUE(service != nullptr);
 
     service->lastNotificationTimeHighFreq_ = std::chrono::system_clock::time_point();
-    service->EventNotifyFreqHandlerForTenPercent();
+    service->EventNotifyFreqHandlerForHigh();
     EXPECT_TRUE(true);
 
     service->lastNotificationTimeHighFreq_ = std::chrono::system_clock::now() + std::chrono::hours(24);
-    service->EventNotifyFreqHandlerForTenPercent();
+    service->EventNotifyFreqHandlerForHigh();
     EXPECT_TRUE(true);
-    GTEST_LOG_(INFO) << "storage_monitor_service_EventNotifyFreqHandlerForTenPercent_0000 end";
+    GTEST_LOG_(INFO) << "storage_monitor_service_EventNotifyFreqHandlerForHigh_0000 end";
 }
 }

@@ -56,7 +56,7 @@ public:
     std::string GetUuid();
     std::string GetPath();
     std::string GetDescription();
-    int32_t GetFsTypeByStr(const std::string fsTypeStr);
+    int32_t GetFsTypeByStr(const std::string &fsTypeStr);
     void Reset();
 
     bool Marshalling(Parcel &parcel) const override;

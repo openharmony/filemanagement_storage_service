@@ -108,7 +108,6 @@ int32_t FscryptKeyV1::GenerateAppkey(uint32_t userId, uint32_t hashId, std::stri
     }
     appKey.Clear();
     keyDesc = keyInfo_.keyDesc.ToString();
-    keyInfo_.keyDesc.Clear();
     LOGI("success");
     return E_OK;
 }
@@ -223,6 +222,11 @@ int32_t FscryptKeyV1::AddClassE(bool &isNeedEncryptClassE, bool &isSupport, uint
     if (ret != E_OK) {
         LOGE("fscryptV1Ext AddClassE failed");
         return ret;
+    }
+    keyInfo_.keyDesc.Alloc(CRYPTO_KEY_DESC_SIZE);
+    auto err = memset_s(keyInfo_.keyDesc.data.get(), keyInfo_.keyDesc.size, status, CRYPTO_KEY_DESC_SIZE);
+    if (err != 0) {
+        LOGE("memset_s failed ret: %{public}d", err);
     }
     LOGW("AddClassE finish");
     return E_OK;
@@ -420,8 +424,6 @@ int32_t FscryptKeyV1::InstallKeyToKeyring()
     }
     for (auto prefix : CRYPTO_NAME_PREFIXES) {
         std::string keyref = prefix + ":" + keyInfo_.keyDesc.ToString();
-        LOGI("InstallKeyToKeyring: keyref: %{public}s", keyref.c_str());
-        LOGI("InstallKeyToKeyring: keyref length: %{public}zu", keyref.length());
         key_serial_t ks =
             KeyCtrlAddKeyEx("logon", keyref.c_str(), &fskey, krid);
         if (ks == -1) {
@@ -514,17 +516,15 @@ int32_t FscryptKeyV1::InactiveKey(uint32_t flag, const std::string &mnt)
 
 void FscryptKeyV1::DropCachesIfNeed()
 {
-    LOGE("drop cache if need enter.");
+    LOGE("drop cache if need enter");
     DIR *dir = opendir(MNT_DATA);
     if (dir == nullptr) {
-        LOGE("dir is null, sync start.");
         sync();
-        LOGE("sync success with dir is null.");
     }
     int fd = dirfd(dir);
-    LOGE("open /data dir fd success, syncfs start.");
+    LOGE("open /data dir fd success, syncfs start");
     if (fd < 0 || syncfs(fd)) {
-        LOGE("fd < 0 or syncfs failed, sync start.");
+        LOGE("fd < 0 or syncfs failed, sync start");
         sync();
         LOGE("sync success with syncfs failed.");
     }

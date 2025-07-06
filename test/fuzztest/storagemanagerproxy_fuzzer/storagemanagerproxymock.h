@@ -112,8 +112,8 @@ public:
         return E_OK;
     }
 
-    int32_t NotifyVolumeMounted(std::string volumeId, std::string &fsTypeStr, std::string fsUuid,
-                                        std::string path, std::string description) override
+    int32_t NotifyVolumeMounted(std::string volumeId, const std::string &fsTypeStr, std::string fsUuid,
+        std::string path, std::string description) override
     {
         return E_OK;
     }
@@ -309,7 +309,10 @@ public:
     {
         return E_OK;
     }
-
+    int32_t GetUserNeedActiveStatus(uint32_t userId, bool &needActive) override
+    {
+        return E_OK;
+    }
     int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
                              const std::string &uuid) override
     {
@@ -327,11 +330,6 @@ public:
     }
 
     int32_t UMountMediaFuse(int32_t userId) override
-    {
-        return E_OK;
-    }
-
-    int32_t GetUserNeedActiveStatus(uint32_t userId, bool &needActive) override
     {
         return E_OK;
     }

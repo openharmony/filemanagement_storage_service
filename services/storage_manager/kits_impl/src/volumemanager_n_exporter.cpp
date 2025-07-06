@@ -43,8 +43,7 @@ bool CheckVolumes(napi_env env, napi_callback_info info, NFuncArg& funcArg)
 napi_value GetAllVolumes(napi_env env, napi_callback_info info)
 {
     NFuncArg funcArg(env, info);
-    bool checkresult = CheckVolumes(env, info, funcArg);
-    if (!checkresult) {
+    if (!CheckVolumes(env, info, funcArg)) {
         return nullptr;
     }
     auto volumeInfo = std::make_shared<std::vector<VolumeExternal>>();

@@ -325,6 +325,11 @@ int32_t StorageManagerProxy::GetFileEncryptStatus(uint32_t userId, bool &isEncry
     return E_OK;
 }
 
+int32_t StorageManagerProxy::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
+{
+    return E_OK;
+}
+
 int32_t StorageManagerProxy::NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
                                               const std::string &uuid)
 {
@@ -342,11 +347,6 @@ int32_t StorageManagerProxy::MountMediaFuse(int32_t userId, int32_t &devFd)
 }
 
 int32_t StorageManagerProxy::UMountMediaFuse(int32_t userId)
-{
-    return E_OK;
-}
-
-int32_t StorageManagerProxy::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
 {
     return E_OK;
 }

@@ -92,6 +92,7 @@ public:
     void AddUploadRecord(const std::string path, const std::string value);
     void RemoveUploadRecord(const std::string path);
     void SetUploadRecord(const std::string path, const std::string value);
+    bool IsUploadRecordEmpty();
     std::tuple<std::string, std::string> FindUploadRecord(const std::string path);
     int DirRemoveDirectly(const std::string &path);
     const MtpFsTypeDir *OpenDirFetchContent(std::string path);
