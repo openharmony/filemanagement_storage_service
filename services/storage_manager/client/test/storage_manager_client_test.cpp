@@ -20,6 +20,7 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "storage_service_constant.h"
+#include "mock/uece_activation_callback_mock.h"
 namespace OHOS {
 namespace StorageManager {
 using namespace std;
@@ -424,5 +425,45 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_GetFileEncryptStatus_0
     GTEST_LOG_(INFO) << "Client_manager_service_GetFileEncryptStatus_0000 end";
 }
 
+/**
+ * @tc.number: Client_manager_service_RegisterUeceActivationCallback_001
+ * @tc.name: Client_manager_service_RegisterUeceActivationCallback_001
+ * @tc.desc: Test function of RegisterUeceActivationCallback interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(StorageManagerClientTest, Client_manager_service_RegisterUeceActivationCallback_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Client_manager_service_RegisterUeceActivationCallback_001 begin";
+
+    ASSERT_TRUE(storageManagerClient_ != nullptr);
+    sptr<IUeceActivationCallback> ueceCallback(new (std::nothrow) UeceActivationCallbackMock());
+    EXPECT_NE(ueceCallback, nullptr);
+    int32_t ret = storageManagerClient_->RegisterUeceActivationCallback(ueceCallback);
+    EXPECT_TRUE(ret == 0);
+    storageManagerClient_->UnregisterUeceActivationCallback();
+    GTEST_LOG_(INFO) << "Client_manager_service_RegisterUeceActivationCallback_001 end";
+}
+
+/**
+ * @tc.number: Client_manager_service_UnregisterUeceActivationCallback_001
+ * @tc.name: Client_manager_service_UnregisterUeceActivationCallback_001
+ * @tc.desc: Test function of UnregisterUeceActivationCallback interface for SUCCESS.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: SR000GGUPF
+ */
+HWTEST_F(StorageManagerClientTest, Client_manager_service_UnregisterUeceActivationCallback_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Client_manager_service_UnregisterUeceActivationCallback_001 begin";
+
+    ASSERT_TRUE(storageManagerClient_ != nullptr);
+    int32_t ret = storageManagerClient_->UnregisterUeceActivationCallback();
+    EXPECT_TRUE(ret == 0);
+    GTEST_LOG_(INFO) << "Client_manager_service_UnregisterUeceActivationCallback_001 end";
+}
 }
 }
