@@ -17,6 +17,7 @@
 #define STORAGE_MANAGER_CILENT_H
 
 #include "storage_manager_proxy.h"
+#include "iuece_activation_callback.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -51,7 +52,8 @@ public:
         const std::string &networkId, const std::string &deviceId);
     static int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false);
     static int32_t GetUserNeedActiveStatus(uint32_t userId, bool &needActive);
-    
+    static int32_t RegisterUeceActivationCallback(const sptr<StorageManager::IUeceActivationCallback> &ueceCallback);
+    static int32_t UnregisterUeceActivationCallback();
 private:
     static sptr<IStorageManager> GetStorageManagerProxy(void);
 };
