@@ -1157,7 +1157,7 @@ int MtpFileSystem::SetXAttr(const char *path, const char *in)
     return 0;
 }
 
-static int IsDirFetched(std::string path, const MtpFsDevice &device)
+static int IsDirFetched(std::string path, MtpFsDevice &device, char *out, size_t size)
 {
     bool fetch = device.IsDirFetched(std::string(path));
     int ret;
@@ -1173,11 +1173,11 @@ static int IsDirFetched(std::string path, const MtpFsDevice &device)
     return fetch ? UPLOAD_RECORD_TRUE_LEN : UPLOAD_RECORD_FALSE_LEN;
 }
 
-static int IsUploadCompleted(std::string path, MtpFsDevice &device)
+static int IsUploadCompleted(std::string path, MtpFsDevice &device, char *out, size_t size)
 {
     auto [firstParam, secondParam] = device.FindUploadRecord(path);
     if (firstParam.empty()) {
-        LOGE("No record, path=%{public}s", path);
+        LOGE("No record, path=%{public}s", path.c_str());
         return 0;
     }
     int32_t len = strlen(secondParam.c_str());
@@ -1196,7 +1196,7 @@ static int IsUploadCompleted(std::string path, MtpFsDevice &device)
     return len;
 }
 
-static int QueryMtpIsInUse(const MtpFsDevice &device)
+static int QueryMtpIsInUse(MtpFsDevice &device, char *out, size_t size)
 {
     bool isEmpty = device.IsUploadRecordEmpty();
     int ret;
@@ -1223,13 +1223,13 @@ int MtpFileSystem::GetXAttr(const char *path, const char *in, char *out, size_t 
         return UPLOAD_RECORD_SUCCESS_LEN;
     }
     if (strcmp(in, "user.isDirFetched") == 0) {
-        return IsDirFetched(std::string(path), device_);
+        return IsDirFetched(std::string(path), device_, out, size);
     } else if (strcmp(in, "user.isUploadCompleted") == 0) {
-        return IsUploadCompleted(std::string(path), device_);
+        return IsUploadCompleted(std::string(path), device_, out, size);
     } else if (strcmp(in, "user.getfriendlyname") == 0) {
         return GetFriendlyName(in, out, size);
     } else if (strcmp(in, "user.queryMtpIsInUse") == 0) {
-        return QueryMtpIsInUse(device_);
+        return QueryMtpIsInUse(device_, out, size);
     }
     LOGE("attrKey error, attrKey=%{public}s", in);
     return 0;
