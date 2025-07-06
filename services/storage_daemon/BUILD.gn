@@ -17,7 +17,8 @@ import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 ## Install storage_daemon.cfg to /system/etc/init/storage_daemon.cfg
 idl_gen_interface("storage_daemon_interface") {
-  src_idl = rebase_path("IStorageDaemon.idl")
+  sources = [ "${storage_daemon_path}/IStorageDaemon.idl" ]
+  sources_callback = [ "../storage_manager/IUeceActivationCallback.idl" ]
   log_tag = "StorageDaemon"
   log_domainid = "0xD004301"
 }
@@ -246,6 +247,11 @@ ohos_executable("storage_daemon") {
   if (enable_huks_hdi) {
     defines += [ "HUKS_IDL_ENVIRONMENT" ]
     external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
+  }
+
+  if (storage_service_el5_filekey_manager) {
+    defines += [ "EL5_FILEKEY_MANAGER" ]
+    external_deps += [ "access_token:el5_filekey_manager_sdk" ]
   }
 
   ldflags = [

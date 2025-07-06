@@ -146,5 +146,23 @@ int KeyManager::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool ne
 {
     return E_OK;
 }
+
+#ifdef EL5_FILEKEY_MANAGER
+int KeyManager::RegisterUeceActivationCallback(const sptr<StorageManager::IUeceActivationCallback> &ueceCallback)
+{
+    return E_OK;
+}
+
+int KeyManager::UnregisterUeceActivationCallback()
+{
+    return E_OK;
+
+}
+#endif
+
+int KeyManager::NotifyUeceActivation(uint32_t userId, int32_t resultCode, bool needGetAllAppKey)
+{
+    return E_OK;
+}
 } // namespace StorageDaemon
 } // namespace OHOS

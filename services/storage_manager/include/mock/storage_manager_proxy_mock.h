@@ -105,6 +105,8 @@ public:
     int32_t NotifyMtpMounted(const std::string &id, const std::string &path, const std::string &desc,
                              const std::string &uuid) override;
     int32_t NotifyMtpUnmounted(const std::string &id, const std::string &path, bool isBadRemove) override;
+    int32_t RegisterUeceActivationCallback(const sptr<IUeceActivationCallback>& callback) override;
+    int32_t UnregisterUeceActivationCallback() override;
 
     // app file share api
     int32_t CreateShareFile(const StorageFileRawData &rawData,

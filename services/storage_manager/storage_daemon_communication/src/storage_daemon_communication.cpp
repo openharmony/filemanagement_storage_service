@@ -881,5 +881,44 @@ int32_t StorageDaemonCommunication::QueryOccupiedSpaceForSa()
     }
     return storageDaemon_->QueryOccupiedSpaceForSa();
 }
+
+int32_t StorageDaemonCommunication::RegisterUeceActivationCallback(
+    const sptr<StorageManager::IUeceActivationCallback> &ueceCallback)
+{
+#ifdef EL5_FILEKEY_MANAGER
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->RegisterUeceActivationCallback(ueceCallback);
+#else
+    LOGI("EL5_FILEKEY_MANAGER is not supported");
+    return E_OK;
+#endif
+}
+ 
+int32_t StorageDaemonCommunication::UnregisterUeceActivationCallback()
+{ 
+#ifdef EL5_FILEKEY_MANAGER
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->UnregisterUeceActivationCallback();
+#else
+    LOGI("EL5_FILEKEY_MANAGER is not supported");
+    return E_OK;
+#endif
+}
 } // namespace StorageManager
 } // namespace OHOS

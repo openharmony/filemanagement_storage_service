@@ -538,7 +538,7 @@ int32_t StorageDaemonProvider::UnlockUserScreen(uint32_t userId,
                                                 const std::vector<uint8_t> &secret)
 {
     int timerId = StorageXCollie::SetTimer("storage:UnlockUserScreen", LOCAL_TIME_OUT_SECONDS);
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
     auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
     int ret = StorageDaemon::GetInstance()->UnlockUserScreen(userId, token, secret);
@@ -548,6 +548,18 @@ int32_t StorageDaemonProvider::UnlockUserScreen(uint32_t userId,
     } else {
         it->second.keyLoadSuccCount++;
     }
+    lock.unlock();
+
+#ifdef USER_CRYPTO_MANAGER
+    int cbRet = KeyManager::GetInstance()->NotifyUeceActivation(userId, ret, false);
+    if (ret != E_OK) { //unlock EL3-5 failed
+        return ret;
+    }
+    if (cbRet != E_OK) { // unlock userAppkeys failed
+        LOGE("failed to delete appkey2, cbRet=%{public}d", cbRet);
+        return cbRet;
+    }
+#endif
     return ret;
 }
 
@@ -810,6 +822,17 @@ int32_t StorageDaemonProvider::QueryOccupiedSpaceForSa()
         checkDirSizeFlag.store(false);
     }).detach();
     return E_OK;
+}
+
+int32_t StorageDaemonProvider::RegisterUeceActivationCallback(
+    const sptr<StorageManager::IUeceActivationCallback> &ueceCallback)
+{
+    return StorageDaemon::GetInstance()->RegisterUeceActivationCallback(ueceCallback);
+}
+
+int32_t StorageDaemonProvider::UnregisterUeceActivationCallback()
+{
+    return StorageDaemon::GetInstance()->UnregisterUeceActivationCallback();
 }
 } // namespace StorageDaemon
 } // namespace OHOS

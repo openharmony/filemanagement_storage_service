@@ -37,6 +37,7 @@ ohos_unittest("KeyManagerTest") {
     "${storage_daemon_path}/include/libfscrypt",
     "${storage_daemon_path}/include/mock",
     "${storage_service_common_path}/include",
+    "${storage_manager_path}/include",
     "${storage_interface_path}/innerkits/storage_manager/native",
   ]
 
@@ -62,6 +63,8 @@ ohos_unittest("KeyManagerTest") {
   deps = [
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_header",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_header",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
   ]
 
   external_deps = [
@@ -85,6 +88,11 @@ ohos_unittest("KeyManagerTest") {
   if (enable_huks_hdi) {
     defines += [ "HUKS_IDL_ENVIRONMENT" ]
     external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
+  }
+
+  if (storage_service_el5_filekey_manager) {
+    defines += [ "EL5_FILEKEY_MANAGER" ]
+    external_deps += [ "access_token:el5_filekey_manager_sdk" ]
   }
 }
 

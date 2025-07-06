@@ -25,6 +25,7 @@
 #include "storage_manager_provider.h"
 #include "storage_service_errno.h"
 #include "test/common/help_utils.h"
+#include "mock/uece_activation_callback_mock.h"
 #include "user/multi_user_manager_service.h"
 #include "volume_core.h"
 #include <cstdlib>
@@ -165,6 +166,39 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_TryToFix_001, Te
     ret = storageManagerProviderTest_->TryToFix(volId);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_TryToFix_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_RegisterUeceActivationCallback_001
+ * @tc.desc: Verify the RegisterUeceActivationCallback function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_RegisterUeceActivationCallback_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_TryToFix_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+
+    sptr<IUeceActivationCallback> ueceCallback(new (std::nothrow) UeceActivationCallbackMock());
+    EXPECT_NE(ueceCallback, nullptr);
+    EXPECT_EQ(storageManagerProviderTest_->RegisterUeceActivationCallback(ueceCallback), E_OK);
+    storageManagerProviderTest_->UnregisterUeceActivationCallback();
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_RegisterUeceActivationCallback_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UnregisterUeceActivationCallback_001
+ * @tc.desc: Verify the UnregisterUeceActivationCallback function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UnregisterUeceActivationCallback_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_TryToFix_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+
+    EXPECT_EQ(storageManagerProviderTest_->UnregisterUeceActivationCallback(), E_OK);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UnregisterUeceActivationCallback_001 end";
 }
 }
 }

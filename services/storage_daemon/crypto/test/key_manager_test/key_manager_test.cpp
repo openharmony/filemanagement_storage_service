@@ -30,6 +30,7 @@
 #include "key_control_mock.h"
 #include "storage_service_errno.h"
 #include "utils/file_utils.h"
+#include "mock/uece_activation_callback_mock.h"
 
 using namespace std;
 using namespace testing::ext;
@@ -509,27 +510,6 @@ HWTEST_F(KeyManagerTest, KeyManager_UnlockUserScreen, TestSize.Level1)
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(false));
     EXPECT_EQ(KeyManager::GetInstance()->UnlockUserScreen(100, token, secret), 0);
     GTEST_LOG_(INFO) << "KeyManager_UnlockUserScreen end";
-}
-
-/**
- * @tc.name: KeyManager_UnlockUserAppKeys
- * @tc.desc: Verify the UnlockUserAppKeys function.
- * @tc.type: FUNC
- * @tc.require: IAHHWW
- */
-HWTEST_F(KeyManagerTest, KeyManager_UnlockUserAppKeys, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "KeyManager_UnlockUserAppKeys Start";
-    uint32_t userId = 1;
-    bool needGetAllAppKey = true;
-
-    EXPECT_EQ(KeyManager::GetInstance()->UnlockUserAppKeys(userId, needGetAllAppKey), 0);
-
-    std::ofstream file(UECE_PATH);
-    EXPECT_GT(open(UECE_PATH, O_RDWR), 0);
-    EXPECT_EQ(KeyManager::GetInstance()->UnlockUserAppKeys(userId, needGetAllAppKey), 0);
-    OHOS::RemoveFile(UECE_PATH);
-    GTEST_LOG_(INFO) << "KeyManager_UnlockUserAppKeys end";
 }
 
 /**
@@ -1879,4 +1859,86 @@ HWTEST_F(KeyManagerTest, KeyManager_UpdateESecret_001, TestSize.Level1)
     EXPECT_NE(ret, 0);
     GTEST_LOG_(INFO) << "KeyManager_UpdateESecret_0100 end";
 }
+
+#ifdef EL5_FILEKEY_MANAGER
+/**
+ * @tc.name: KeyManager_RegisterUeceActivationCallback_001
+ * @tc.desc: Verify the KeyManager RegisterUeceActivationCallback function.
+ * @tc.type: FUNC
+ * @tc.require: SR000H0CM9
+ */
+HWTEST_F(KeyManagerTest, KeyManager_RegisterUeceActivationCallback_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_RegisterUeceActivationCallback_001 start";
+    auto keyManager = KeyManager::GetInstance();
+    ASSERT_NE(keyManager, nullptr);
+
+    sptr<IUeceActivationCallback> ueceCallback = nullptr;
+    EXPECT_EQ(keyManager->RegisterUeceActivationCallback(ueceCallback), E_PARAMS_INVALID);
+
+    keyManager->ueceCallback_ = nullptr;
+    ueceCallback = sptr<IUeceActivationCallback>(new (std::nothrow) UeceActivationCallbackMock());
+    EXPECT_EQ(keyManager->RegisterUeceActivationCallback(ueceCallback), E_OK);
+    EXPECT_EQ(keyManager->RegisterUeceActivationCallback(ueceCallback), E_OK);
+
+    GTEST_LOG_(INFO) << "KeyManager_RegisterUeceActivationCallback_001 end";
+}
+
+/**
+ * @tc.name: KeyManager_UnregisterUeceActivationCallback_001
+ * @tc.desc: Verify the KeyManager UnregisterUeceActivationCallback function.
+ * @tc.type: FUNC
+ * @tc.require: SR000H0CM9
+ */
+HWTEST_F(KeyManagerTest, KeyManager_UnregisterUeceActivationCallback_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_UnregisterUeceActivationCallback_001 start";
+    auto keyManager = KeyManager::GetInstance();
+    ASSERT_NE(keyManager, nullptr);
+
+    keyManager->ueceCallback_ = sptr<IUeceActivationCallback>(new (std::nothrow) UeceActivationCallbackMock());
+    EXPECT_EQ(keyManager->UnregisterUeceActivationCallback(), E_OK);
+    EXPECT_EQ(keyManager->UnregisterUeceActivationCallback(), E_OK);
+
+    GTEST_LOG_(INFO) << "KeyManager_UnregisterUeceActivationCallback_001 end";
+}
+
+/**
+ * @tc.name: KeyManager_NotifyUeceActivation_001
+ * @tc.desc: Verify the KeyManager NotifyUeceActivation function.
+ * @tc.type: FUNC
+ * @tc.require: SR000H0CM9
+ */
+HWTEST_F(KeyManagerTest, KeyManager_NotifyUeceActivation_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "KeyManager_NotifyUeceActivation_001 start";
+    auto keyManager = KeyManager::GetInstance();
+    ASSERT_NE(keyManager, nullptr);
+
+    uint32_t userId = 100;
+    keyManager->ueceCallback_ = nullptr;
+    EXPECT_EQ(keyManager->NotifyUeceActivation(userId, E_OK, true), E_OK);
+
+    auto ueceCallback = sptr<UeceActivationCallbackMock>(new (std::nothrow) UeceActivationCallbackMock());
+    keyManager->ueceCallback_ = ueceCallback;
+
+    EXPECT_CALL(*ueceCallback, OnEl5Activation(_, _, _, _))
+        .WillOnce(DoAll(Invoke([]() { sleep(1); }), Return(E_OK)));
+    EXPECT_EQ(keyManager->NotifyUeceActivation(userId, E_OK, true), E_OK);
+
+    EXPECT_CALL(*ueceCallback, OnEl5Activation(_, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<3>(E_PARAMS_INVALID), Return(E_OK)));
+    EXPECT_EQ(keyManager->NotifyUeceActivation(userId, E_PARAMS_INVALID, true), E_OK);
+
+    EXPECT_CALL(*ueceCallback, OnEl5Activation(_, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<3>(E_PARAMS_INVALID), Return(E_OK)));
+    EXPECT_EQ(keyManager->NotifyUeceActivation(userId, E_OK, true), E_OK);
+
+    EXPECT_CALL(*ueceCallback, OnEl5Activation(_, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<3>(E_OK), Return(E_OK)));
+    EXPECT_EQ(keyManager->NotifyUeceActivation(userId, E_OK, true), E_OK);
+
+    GTEST_LOG_(INFO) << "KeyManager_NotifyUeceActivation_001 end";
+}
+#endif
 }
