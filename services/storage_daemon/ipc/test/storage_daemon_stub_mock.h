@@ -84,7 +84,8 @@ public:
     MOCK_METHOD1(InactiveUserPublicDirKey, int32_t(uint32_t));
     MOCK_METHOD0(QueryOccupiedSpaceForSa, int32_t(void));
     MOCK_METHOD3(MountUsbFuse, int32_t(const std::string &, std::string &, int &));
-    
+    MOCK_METHOD1(RegisterUeceActivationCallback, int32_t(const sptr<IUeceActivationCallback>&));
+    MOCK_METHOD0(UnregisterUeceActivationCallback, int32_t(void));
 };
 }  // namespace StorageDaemon
 }  // namespace OHOS
