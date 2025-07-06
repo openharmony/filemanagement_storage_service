@@ -18,6 +18,7 @@ sequenceable Disk..OHOS.StorageManager.Disk;
 sequenceable VolumeCore..OHOS.StorageManager.VolumeCore;
 sequenceable VolumeExternal..OHOS.StorageManager.VolumeExternal;
 rawdata OHOS.StorageManager.StorageFileRawData;
+import IUeceActivationCallback;
 interface OHOS.StorageManager.IStorageManager {
     [ipccode 1] void PrepareAddUser([in] int userId, [in] unsigned int flags);
     [ipccode 2] void RemoveUser([in] int userId, [in] unsigned int flags);
@@ -105,6 +106,7 @@ interface OHOS.StorageManager.IStorageManager {
                                           [in] String path, [in] String description);
     [ipccode 68] void TryToFix([in] String volumeId);
     [ipccode 69] void InactiveUserPublicDirKey([in] unsigned int userId);
-    
+    [ipccode 72] void RegisterUeceActivationCallback([in] IUeceActivationCallback ueceCallback);
+    [ipccode 73] void UnregisterUeceActivationCallback();
 }
 
