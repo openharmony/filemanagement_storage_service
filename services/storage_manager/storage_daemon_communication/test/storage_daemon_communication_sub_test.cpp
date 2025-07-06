@@ -1745,4 +1745,5 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountUsbFuse_0000,
     
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_MountUsbFuse_0000";
 }
+
 }

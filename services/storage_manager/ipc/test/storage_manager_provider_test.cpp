@@ -1136,5 +1136,6 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_InactiveUserPubl
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_InactiveUserPublicDirKey_001 end";
 }
+
 } // namespace StorageManager
 } // namespace OHOS

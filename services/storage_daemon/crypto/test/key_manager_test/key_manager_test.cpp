@@ -574,6 +574,7 @@ HWTEST_F(KeyManagerTest, KeyManager_SetDirectoryElPolicy, TestSize.Level1)
 HWTEST_F(KeyManagerTest, KeyManager_IsUeceSupport, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "KeyManager_IsUeceSupport Start";
+    EXPECT_TRUE(OHOS::RemoveFile(UECE_PATH));
     EXPECT_FALSE(KeyManager::GetInstance()->IsUeceSupport());
 
     EXPECT_TRUE(OHOS::ForceCreateDirectory(UECE_PATH));

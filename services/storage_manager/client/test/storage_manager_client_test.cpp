@@ -423,5 +423,6 @@ HWTEST_F(StorageManagerClientTest, Client_manager_service_GetFileEncryptStatus_0
     EXPECT_TRUE(ret == 0);
     GTEST_LOG_(INFO) << "Client_manager_service_GetFileEncryptStatus_0000 end";
 }
+
 }
 }

@@ -87,6 +87,7 @@ public:
     void SetPriority();
 
     int32_t InactiveUserPublicDirKey(uint32_t userId);
+
 private:
 #ifdef USER_CRYPTO_MIGRATE_KEY
     std::string GetNeedRestoreFilePath(int32_t userId, const std::string &user_dir);

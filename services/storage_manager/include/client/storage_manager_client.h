@@ -51,6 +51,7 @@ public:
         const std::string &networkId, const std::string &deviceId);
     static int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false);
     static int32_t GetUserNeedActiveStatus(uint32_t userId, bool &needActive);
+    
 private:
     static sptr<IStorageManager> GetStorageManagerProxy(void);
 };

@@ -824,6 +824,5 @@ int32_t StorageManagerProvider::UnregisterUeceActivationCallback()
     }
     return StorageManager::GetInstance()->UnregisterUeceActivationCallback();
 }
-
 } // namespace StorageManager
 } // namespace OHOS

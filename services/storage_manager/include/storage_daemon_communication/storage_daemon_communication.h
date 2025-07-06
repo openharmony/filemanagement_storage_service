@@ -108,6 +108,7 @@ public:
     int32_t InactiveUserPublicDirKey(uint32_t userId);
     int32_t QueryOccupiedSpaceForSa();
     int32_t MountUsbFuse(const std::string &volumeId, std::string &fsUuid, int &fuseFd);
+    
 private:
     sptr<OHOS::StorageDaemon::IStorageDaemon> storageDaemon_;
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;

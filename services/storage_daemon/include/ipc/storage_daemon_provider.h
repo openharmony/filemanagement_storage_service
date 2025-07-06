@@ -124,6 +124,7 @@ public:
     virtual int32_t InactiveUserPublicDirKey(uint32_t userId) override;
     virtual int32_t QueryOccupiedSpaceForSa() override;
     virtual int32_t MountUsbFuse(const std::string &volumeId, std::string &fsUuid, int &fuseFd) override;
+
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
     public:
         SystemAbilityStatusChangeListener() = default;

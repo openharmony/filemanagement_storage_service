@@ -244,5 +244,6 @@ int32_t StorageManagerClient::UMountDfsDocs(int32_t userId, const std::string &r
 
     return client->UMountDfsDocs(userId, relativePath, networkId, deviceId);
 }
+
 }
 }

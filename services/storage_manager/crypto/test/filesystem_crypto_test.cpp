@@ -609,5 +609,6 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_InactiveUserPublicDirKey_0
     EXPECT_EQ(ret, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_InactiveUserPublicDirKey_0001";
 }
+
 }
 }

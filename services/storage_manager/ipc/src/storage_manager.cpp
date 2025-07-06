@@ -890,5 +890,6 @@ int32_t StorageManager::InactiveUserPublicDirKey(uint32_t userId)
     return E_OK;
 #endif
 }
+
 }
 }
