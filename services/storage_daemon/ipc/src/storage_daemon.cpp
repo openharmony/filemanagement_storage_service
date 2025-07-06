@@ -870,15 +870,16 @@ int32_t StorageDaemon::ActiveUserKey4Single(uint32_t userId, const std::vector<u
     ret = ActiveUserKeyAndPrepareElX(userId, token, secret);
     if (ret != E_OK) {
         LOGE("ActiveUserKeyAndPrepareElX failed, userId %{public}u.", userId);
+        KeyManager::GetInstance()->NotifyUeceActivation(userId, ret, true);
         return ret;
     }
     LOGI("Active user key and prepare el3~el5 for single secen for userId=%{public}d success.", userId);
 
     startTime = StorageService::StorageRadar::RecordCurrentTime();
-    ret = KeyManager::GetInstance()->UnlockUserAppKeys(userId, true);
-    if (ret != E_OK) {
-        LOGE("UnlockUserAppKeys failed, userId %{public}u.", userId);
-        StorageRadar::ReportActiveUserKey("ActiveUserKey4Single::UnlockUserAppKeys", userId, ret, "EL5");
+    auto ueceRet = KeyManager::GetInstance()->NotifyUeceActivation(userId, ret, true);
+    if (ueceRet != E_OK) {
+        LOGE("UnlockUserAppKeys failed, ret=%{public}d, userId=%{public}u.", ueceRet, userId);
+        StorageRadar::ReportActiveUserKey("ActiveUserKey4Single::UnlockUserAppKeys", userId, ueceRet, "EL5");
         return E_UNLOCK_APP_KEY2_FAILED;
     }
     delay = StorageService::StorageRadar::ReportDuration("UNLOCK USER APP KEY",
@@ -956,14 +957,15 @@ int32_t StorageDaemon::ActiveUserKey4Update(uint32_t userId, const std::vector<u
     ret = ActiveUserKeyAndPrepareElX(userId, token, secret);
     if (ret != E_OK) {
         LOGE("Active user key and prepare el3~el5 for update secen failed, userId %{public}u.", userId);
+        KeyManager::GetInstance()->NotifyUeceActivation(userId, ret, true);
         return ret;
     }
     LOGI("Active user key and prepare el3~el5 for update secen for userId=%{public}d success.", userId);
 
-    ret = KeyManager::GetInstance()->UnlockUserAppKeys(userId, true);
-    if (ret != E_OK) {
-        LOGE("UnlockUserAppKeys failed, userId %{public}u.", userId);
-        StorageRadar::ReportActiveUserKey("ActiveUserKey::UnlockUserAppKeys", userId, ret, "EL5");
+    auto ueceRet = KeyManager::GetInstance()->NotifyUeceActivation(userId, ret, true);
+    if (ueceRet != E_OK) {
+        LOGE("UnlockUserAppKeys failed, ret=%{public}d, userId=%{public}u.", ueceRet, userId);
+        StorageRadar::ReportActiveUserKey("ActiveUserKey4Single::UnlockUserAppKeys", userId, ueceRet, "EL5");
         return E_UNLOCK_APP_KEY2_FAILED;
     }
     LOGW("Active user key for update secen for userId=%{public}d success.", userId);
@@ -1313,5 +1315,36 @@ int32_t StorageDaemon::InactiveUserPublicDirKey(uint32_t userId)
     return ret;
 }
 
+int StorageDaemon::RegisterUeceActivationCallback(const sptr<StorageManager::IUeceActivationCallback> &ueceCallback)
+{
+#ifdef EL5_FILEKEY_MANAGER
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
+    int ret = KeyManager::GetInstance() ->RegisterUeceActivationCallback(ueceCallback);
+    auto delay = StorageService::StorageRadar::ReportDuration("RegisterUeceActivationCallback",
+        startTime, StorageService::DEFAULT_DELAY_TIME_THRESH, StorageService::DEFAULT_USERID);
+    LOGE("SD_DURATION: RegisterUeceActivation Callback: ret = %{public}d, delay time =%{public}s",
+        ret, delay.c_str());
+    return ret;
+#else
+    LOGD("EL5_FILEKEY_MANAGER is not supported");
+    return E_OK;
+#endif
+}
+
+int StorageDaemon::UnregisterUeceActivationCallback()
+{
+#ifdef EL5_FILEKEY_MANAGER
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
+    int ret = KeyManager::GetInstance() ->UnregisterUeceActivationCallback();
+    auto delay = StorageService::StorageRadar::ReportDuration("UnregisterUeceActivationCallback",
+        startTime, StorageService::DEFAULT_DELAY_TIME_THRESH, StorageService::DEFAULT_USERID);
+    LOGE("SD_DURATION:UnregisterUeceActivation Callback: ret = %{public}d, delay time =%{public}s",
+        ret, delay.c_str());
+    return ret;
+#else
+    LOGD("EL5_FILEKEY_MANAGER is not supported");
+    return E_OK;
+#endif
+}
 } // namespace StorageDaemon
 } // namespace OHOS
