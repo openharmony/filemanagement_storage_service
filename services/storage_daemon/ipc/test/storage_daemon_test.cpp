@@ -598,6 +598,5 @@ HWTEST_F(StorageDaemonTest, Storage_Manager_StorageDaemonTest_InactiveUserPublic
 
     GTEST_LOG_(INFO) << "Storage_Manager_StorageDaemonTest_InactiveUserPublicDirKey_001 end";
 }
-
 } // STORAGE_DAEMON
 } // OHOS
