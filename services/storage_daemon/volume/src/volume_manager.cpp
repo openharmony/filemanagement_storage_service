@@ -215,6 +215,11 @@ int32_t VolumeManager::ReadVolumUuid(std::string volumeId, std::string &fsUuid)
 int32_t VolumeManager::CreateMountUsbFusePath(std::string fsUuid)
 {
     LOGI("CreateMountUsbFusePath create path");
+    if (fsUuid.find("..") != std::string::npos || fsUuid.find("/") != std::string::npos) {
+        LOGE("Invalid fsUuid: %{public}s, contains path traversal characters or path separators",
+             GetAnonyString(fsUuid).c_str());
+        return E_PARAMS_INVALID;
+    }
     struct stat statbuf;
     if (fsUuid.find("..") != std::string::npos) {
         LOGE("Invalid fsUuid: %{public}s, contains path traversal characters", GetAnonyString(fsUuid).c_str());

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2021 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -72,6 +72,11 @@ void VolumeManagerServiceExt::UnInit()
  
 int32_t VolumeManagerServiceExt::NotifyUsbFuseMount(int fuseFd, std::string volumeid, std::string fsUuid)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (handler_ == nullptr) {
+        LOGE("Handler is nullptr");
+        return E_MOUNT_CLOUD_FUSE;
+    }
     FuncMount funcMount = (FuncMount)dlsym(handler_, "NotifyExternalVolumeFuseMount");
     if (funcMount == nullptr) {
         LOGE("Failed to get function pointer for NotifyExternalVolumeFuseMount");
@@ -86,8 +91,17 @@ int32_t VolumeManagerServiceExt::NotifyUsbFuseMount(int fuseFd, std::string volu
  
 int32_t VolumeManagerServiceExt::NotifyUsbFuseUMount(std::string volumeid)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     LOGI("NotifyUsbFuseUMount in");
+    if (handler_ == nullptr) {
+        LOGE("Handler is nullptr");
+        return E_MOUNT_CLOUD_FUSE;
+    }
     FuncUMount funcUMount = (FuncUMount)dlsym(handler_, "NotifyExternalVolumeFuseUmount");
+    if (funcUMount == nullptr) {
+        LOGE("Failed to get function pointer for NotifyExternalVolumeFuseUmount");
+        return E_MOUNT_CLOUD_FUSE;
+    }
     if (funcUMount(volumeid) != E_OK) {
         LOGE("NotifyUsbFuseUMount fail");
         return E_MOUNT_CLOUD_FUSE;

@@ -16,9 +16,10 @@
 #ifndef OHOS_STORAGE_MANAGER_VOLUME_MANAGER_SERVICE_EXT_H
 #define OHOS_STORAGE_MANAGER_VOLUME_MANAGER_SERVICE_EXT_H
  
+#include <mutex>
 #include <singleton.h>
 #include "volume_external.h"
- 
+
 namespace OHOS {
 namespace StorageManager {
  
@@ -47,6 +48,7 @@ private:
     void Init();
     void UnInit();
     void *handler_ = nullptr;
+    std::mutex mutex_;
 };
 } // StorageManager
 } // OHOS
