@@ -22,6 +22,7 @@
 #include "storage_manager_provider.h"
 #include "storage_service_errno.h"
 #include "test/common/help_utils.h"
+#include "mock/uece_activation_callback_mock.h"
 #include "user/multi_user_manager_service.h"
 #include "volume_core.h"
 #include <cstdlib>
@@ -1137,5 +1138,36 @@ HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_InactiveUserPubl
     GTEST_LOG_(INFO) << "StorageManagerProviderTest_InactiveUserPublicDirKey_001 end";
 }
 
+/**
+ * @tc.name: StorageManagerProviderTest_RegisterUeceActivationCallback_001
+ * @tc.desc: Verify the RegisterUeceActivationCallback function.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_RegisterUeceActivationCallback_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_RegisterUeceActivationCallback_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    sptr<IUeceActivationCallback> ueceCallback(new (std::nothrow) UeceActivationCallbackMock());
+    EXPECT_NE(ueceCallback, nullptr);
+    auto ret = storageManagerProviderTest_->RegisterUeceActivationCallback(ueceCallback);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_RegisterUeceActivationCallback_001 end";
+}
+
+/**
+ * @tc.name: StorageManagerProviderTest_UnregisterUeceActivationCallbackk_001
+ * @tc.desc: Verify the UnregisterUeceActivationCallback function.
+ * @tc.type: FUNC
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(StorageManagerProviderTest, StorageManagerProviderTest_UnregisterUeceActivationCallbackk_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_RegisterUeceActivationCallback_001 start";
+    ASSERT_TRUE(storageManagerProviderTest_ != nullptr);
+    auto ret = storageManagerProviderTest_->UnregisterUeceActivationCallback();
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+    GTEST_LOG_(INFO) << "StorageManagerProviderTest_UnregisterUeceActivationCallbackk_001 end";
+}
 } // namespace StorageManager
 } // namespace OHOS
