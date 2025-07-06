@@ -121,10 +121,12 @@ public:
     // cross device
     virtual int32_t MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles) override;
     virtual int32_t UMountDisShareFile(int32_t userId, const std::string &networkId) override;
+    virtual int32_t RegisterUeceActivationCallback(
+        const sptr<StorageManager::IUeceActivationCallback> &ueceCallback) override;
+    virtual int32_t UnregisterUeceActivationCallback() override;
     virtual int32_t InactiveUserPublicDirKey(uint32_t userId) override;
     virtual int32_t QueryOccupiedSpaceForSa() override;
     virtual int32_t MountUsbFuse(const std::string &volumeId, std::string &fsUuid, int &fuseFd) override;
-
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
     public:
         SystemAbilityStatusChangeListener() = default;
