@@ -21,6 +21,7 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include "parameters.h"
 #include "securec.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
@@ -42,6 +43,7 @@ constexpr int PIPE_FD_LEN = 2;
 constexpr uint8_t KILL_RETRY_TIME = 5;
 constexpr uint32_t KILL_RETRY_INTERVAL_MS = 100 * 1000;
 constexpr const char *MOUNT_POINT_INFO = "/proc/mounts";
+constexpr const char *FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.enterprise.external_storage_device.manage.enable";
 
 int32_t RedirectStdToPipe(int logpipe[2], size_t len)
 {
@@ -119,6 +121,13 @@ bool IsFile(const std::string &path)
         return false;
     }
     return S_ISREG(buf.st_mode);
+}
+
+bool IsFuse()
+{
+    bool ret = system::GetBoolParameter(FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE, false);
+    LOGI("IsFuse result: %{public}s.", ret ? "true" : "false");
+    return ret;
 }
 
 bool MkDirRecurse(const std::string& path, mode_t mode)

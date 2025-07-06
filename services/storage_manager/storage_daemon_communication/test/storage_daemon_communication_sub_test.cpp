@@ -1699,4 +1699,50 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_QueryOccupiedSpace
     EXPECT_EQ(sdCommunication->QueryOccupiedSpaceForSa(), E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_CheckDirSize_001";
 }
+
+/**
+* @tc.number: SUB_STORAGE_Daemon_communication_MountUsbFuse_0000
+* @tc.name: Daemon_communication_MountUsbFuse_0000
+* @tc.desc: Test function of MountUsbFuse interface for SUCCESS.
+* @tc.size: MEDIUM
+* @tc.type: FUNC
+* @tc.level Level 1
+* @tc.require: issueI9G5A0
+*/
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountUsbFuse_0000, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_MountUsbFuse_0000";
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    std::string volumeId = "vol-usb-001";
+    int fuseFd = -1;
+    std::string fsUuid;
+    
+    // Test Connect() failure branch - GetSystemAbilityManager returns nullptr
+    sdCommunication->storageDaemon_ = nullptr;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    EXPECT_EQ(sdCommunication->MountUsbFuse(volumeId, fsUuid, fuseFd), E_SA_IS_NULLPTR);
+
+    // Test Connect() failure branch - GetSystemAbility returns nullptr
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(nullptr));
+    EXPECT_EQ(sdCommunication->MountUsbFuse(volumeId, fsUuid, fuseFd), E_REMOTE_IS_NULLPTR);
+
+    // Test storageDaemon_ == nullptr branch after Connect() success
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
+        sdCommunication->storageDaemon_ = nullptr;
+    }), Return(true)));
+    EXPECT_EQ(sdCommunication->MountUsbFuse(volumeId, fsUuid, fuseFd), E_SERVICE_IS_NULLPTR);
+
+    // Test normal success path
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*sd, MountUsbFuse(volumeId, _, _)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->MountUsbFuse(volumeId, fsUuid, fuseFd), E_OK);
+    
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_MountUsbFuse_0000";
+}
 }

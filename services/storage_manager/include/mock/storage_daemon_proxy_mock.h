@@ -107,6 +107,7 @@ public:
     virtual int32_t UMountDisShareFile(int32_t userId, const std::string &networkId) override;
     virtual int32_t InactiveUserPublicDirKey(uint32_t userId) override;
     virtual int32_t QueryOccupiedSpaceForSa();
+    virtual int32_t MountUsbFuse(const std::string &volumeId, std::string &fsUuid, int &fuseFd) override;
 private:
     static inline BrokerDelegator<StorageDaemonProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

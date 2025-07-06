@@ -81,4 +81,5 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 51] void TryToFix([in] String volId, [in] unsigned int flags);
      [ipccode 52] void InactiveUserPublicDirKey([in] unsigned int userId);
      [ipccode 53] void QueryOccupiedSpaceForSa();
+     [ipccode 54] void MountUsbFuse([in] String volumeId, [out] String fsUuid, [out] FileDescriptor fuseFd);
 }

@@ -378,6 +378,7 @@ ohos_shared_library("storage_common_utils") {
     "hicollie:libhicollie",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
+    "init:libbegetutil",
     "zlib:shared_libz",
   ]
 

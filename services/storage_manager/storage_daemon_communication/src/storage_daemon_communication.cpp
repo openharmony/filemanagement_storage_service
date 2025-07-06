@@ -853,6 +853,21 @@ int32_t StorageDaemonCommunication::InactiveUserPublicDirKey(uint32_t userId)
     return storageDaemon_->InactiveUserPublicDirKey(userId);
 }
 
+int32_t StorageDaemonCommunication::MountUsbFuse(const std::string &volumeId, std::string &fsUuid, int &fuseFd)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::MountUsbFuse connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->MountUsbFuse(volumeId, fsUuid, fuseFd);
+}
+
 int32_t StorageDaemonCommunication::QueryOccupiedSpaceForSa()
 {
     int32_t err = Connect();

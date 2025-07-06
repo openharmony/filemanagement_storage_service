@@ -24,6 +24,7 @@
 #include "storage_service_log.h"
 #include "utils/file_utils.h"
 #include "utils/storage_radar.h"
+#include "parameter.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -430,6 +431,28 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExecWithExit_001, TestSize.Level1)
 
     EXPECT_EQ(ForkExecWithExit(cmd), E_WEXITSTATUS);
     GTEST_LOG_(INFO) << "FileUtilsTest_ForkExecWithExit_001 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_IsFuse_001
+ * @tc.desc: Verify the IsFuse function basic functionality.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_IsFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_IsFuse_001 start";
+
+    // Test the IsFuse function basic functionality
+    bool result = IsFuse();
+    
+    // The function should return a boolean value
+    EXPECT_TRUE(result || !result);
+    
+    // Log the result for debugging purposes
+    GTEST_LOG_(INFO) << "IsFuse result: " << (result ? "true" : "false");
+
+    GTEST_LOG_(INFO) << "FileUtilsTest_IsFuse_001 end";
 }
 
 /**

@@ -14,6 +14,7 @@
  */
 
 #include "volume/volume_manager_service.h"
+#include "volume/volume_manager_service_ext.h"
 
 #include "disk.h"
 #include "disk/disk_manager_service.h"
@@ -25,6 +26,7 @@
 #include <sys/xattr.h>
 #include "utils/storage_radar.h"
 #include "utils/storage_utils.h"
+#include "utils/file_utils.h"
 #include "volume/notification.h"
 
 using namespace std;
@@ -44,11 +46,23 @@ void VolumeManagerService::OnVolumeCreated(VolumeCore vc)
 {
     auto volumePtr = make_shared<VolumeExternal>(vc);
     volumeMap_.Insert(volumePtr->GetId(), volumePtr);
-    Mount(volumePtr->GetId());
+    if (StorageDaemon::IsFuse()) {
+        int32_t fuseFd;
+        MountUsbFuse(volumePtr->GetId(), fuseFd);
+    } else {
+        Mount(volumePtr->GetId());
+    }
 }
 
 void VolumeManagerService::OnVolumeStateChanged(string volumeId, VolumeState state)
 {
+    if (state == VolumeState::FUSE_REMOVED) {
+        int32_t result = VolumeManagerServiceExt::GetInstance()->NotifyUsbFuseUMount(volumeId);
+        if (result != E_OK) {
+            LOGE("VolumeManagerServiceExt NotifyUsbFuseUMount failed, error = %{public}d", result);
+        }
+        return;
+    }
     if (!volumeMap_.Contains(volumeId)) {
         LOGE("VolumeManagerService::OnVolumeDestroyed volumeId %{public}s not exists", volumeId.c_str());
         return;
@@ -156,6 +170,46 @@ int32_t VolumeManagerService::Mount(std::string volumeId)
         volumePtr->SetState(VolumeState::UNMOUNTED);
         StorageRadar::ReportVolumeOperation("VolumeManagerService::Check", result);
     }
+    return result;
+}
+
+int32_t VolumeManagerService::MountUsbFuse(std::string volumeId, int &fuseFd)
+{
+    LOGI("VolumeManagerService::MountUsbFuse in");
+    if (!volumeMap_.Contains(volumeId)) {
+        LOGE("VolumeManagerService::MountUsbFuse volumeId %{public}s not exists", volumeId.c_str());
+        return E_NON_EXIST;
+    }
+    std::shared_ptr<VolumeExternal> volumePtr = volumeMap_.ReadVal(volumeId);
+    if (volumePtr == nullptr) {
+        LOGE("volumePtr is nullptr for volumeId");
+        return E_VOLUMEEX_IS_NULLPTR;
+    }
+    if (volumePtr->GetState() != VolumeState::UNMOUNTED) {
+        LOGE("VolumeManagerService::The type of volume(Id %{public}s) is not unmounted", volumeId.c_str());
+        return E_VOL_MOUNT_ERR;
+    }
+    std::shared_ptr<StorageDaemonCommunication> sdCommunication;
+    sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    
+    int32_t result = Check(volumePtr->GetId());
+    if (result != E_OK) {
+        volumePtr->SetState(VolumeState::UNMOUNTED);
+        StorageRadar::ReportVolumeOperation("VolumeManagerService::Check", result);
+        return result;
+    }
+    std::string fsUuid;
+    result = sdCommunication->MountUsbFuse(volumeId, fsUuid, fuseFd);
+    if (result == E_OK) {
+        result = VolumeManagerServiceExt::GetInstance()->NotifyUsbFuseMount(fuseFd, volumeId, fsUuid);
+        if (result == E_OK) {
+            result = sdCommunication->Mount(volumeId, 0);
+        }
+    }
+    if (result != E_OK) {
+        volumePtr->SetState(VolumeState::UNMOUNTED);
+    }
+    LOGI("VolumeManagerService::MountUsbFuse out");
     return result;
 }
 
@@ -294,6 +348,10 @@ int32_t VolumeManagerService::SetVolumeDescription(std::string fsUuid, std::stri
 
 int32_t VolumeManagerService::Format(std::string volumeId, std::string fsType)
 {
+    if (StorageDaemon::IsFuse()) {
+        LOGE("DiskManagerService::The volume %{public}s is fuse, not support", volumeId.c_str());
+        return E_NOT_SUPPORT;
+    }
     if (volumeMap_.Find(volumeId) == volumeMap_.End()) {
         return E_NON_EXIST;
     }
