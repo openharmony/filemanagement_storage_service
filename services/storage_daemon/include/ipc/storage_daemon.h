@@ -87,6 +87,8 @@ public:
     void SetPriority();
 
     int32_t InactiveUserPublicDirKey(uint32_t userId);
+    int32_t RegisterUeceActivationCallback(const sptr<StorageManager::IUeceActivationCallback> &ueceCallback);
+    int32_t UnregisterUeceActivationCallback();
 
 private:
 #ifdef USER_CRYPTO_MIGRATE_KEY
