@@ -245,5 +245,28 @@ int32_t StorageManagerClient::UMountDfsDocs(int32_t userId, const std::string &r
     return client->UMountDfsDocs(userId, relativePath, networkId, deviceId);
 }
 
+int32_t StorageManagerClient::RegisterUeceActivationCallback(
+    const sptr<StorageManager::IUeceActivationCallback> &ueceCallback)
+{
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
+    sptr<IStorageManager> client = GetStorageManagerProxy();
+    if (client == nullptr) {
+        LOGE("get storage manager service failed");
+        return E_SA_IS_NULLPTR;
+    }
+    
+    return client->RegisterUeceActivationCallback(ueceCallback);
+}
+
+int32_t StorageManagerClient::UnregisterUeceActivationCallback()
+{
+    HITRACE_METER_NAME(HITRACE_TAG_FILEMANAGEMENT, __PRETTY_FUNCTION__);
+    sptr<IStorageManager> client = GetStorageManagerProxy();
+    if (client == nullptr) {
+        LOGE("get storage manager service failed");
+        return E_SA_IS_NULLPTR;
+    }
+    return client->UnregisterUeceActivationCallback();
+}
 }
 }
