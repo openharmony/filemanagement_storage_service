@@ -156,7 +156,6 @@ int KeyManager::RegisterUeceActivationCallback(const sptr<StorageManager::IUeceA
 int KeyManager::UnregisterUeceActivationCallback()
 {
     return E_OK;
-
 }
 #endif
 

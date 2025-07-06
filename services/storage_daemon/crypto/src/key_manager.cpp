@@ -2284,7 +2284,6 @@ int KeyManager::UnregisterUeceActivationCallback()
     ueceCallback_ = nullptr;
     LOGI("Unregister callback");
     return E_OK;
-
 }
 #endif
 

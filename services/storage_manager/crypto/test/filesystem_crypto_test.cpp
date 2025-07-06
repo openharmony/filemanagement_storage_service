@@ -612,17 +612,17 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_InactiveUserPublicDirKey_0
 }
 
 /**
- * @tc.number: SUB_STORAGE_Storage_manager_crypto_RegisterUeceActivationCallback_0001
- * @tc.name: Storage_manager_crypto_RegisterUeceActivationCallback_0001
+ * @tc.number: SUB_STORAGE_Storage_manager_crypto_RegisterUeceActivationCallback
+ * @tc.name: Storage_manager_crypto_RegisterUeceActivationCallback
  * @tc.desc: Test function of RegisterUeceActivationCallback.
  * @tc.size: MEDIUM
  * @tc.type: FUNC
  * @tc.level Level 1
  * @tc.require: AR20250418146433
  */
-HWTEST_F(FileSystemCryptoTest, SUB_STORAGE_Storage_manager_crypto_RegisterUeceActivationCallback_0001, testing::ext::TestSize.Level1)
+HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_RegisterUeceActivationCallback, testing::ext::TestSize.Level1)
 {
-    GTEST_LOG_(INFO) << "SUB_STORAGE_Storage_manager_crypto_RegisterUeceActivationCallback_0001 start";
+    GTEST_LOG_(INFO) << "Storage_manager_crypto_RegisterUeceActivationCallback start";
     std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
         DelayedSingleton<FileSystemCrypto>::GetInstance();
     ASSERT_NE(fileSystemCrypto_, nullptr);
@@ -631,7 +631,7 @@ HWTEST_F(FileSystemCryptoTest, SUB_STORAGE_Storage_manager_crypto_RegisterUeceAc
     EXPECT_EQ(fileSystemCrypto_->RegisterUeceActivationCallback(nullptr), E_PARAMS_NULLPTR_ERR);
     EXPECT_EQ(fileSystemCrypto_->RegisterUeceActivationCallback(ueceCallback), E_OK);
     fileSystemCrypto_->UnregisterUeceActivationCallback();
-    GTEST_LOG_(INFO) << "SUB_STORAGE_Storage_manager_crypto_RegisterUeceActivationCallback_0001 end";
+    GTEST_LOG_(INFO) << "Storage_manager_crypto_RegisterUeceActivationCallback end";
 }
 }
 }
