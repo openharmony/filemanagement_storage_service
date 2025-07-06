@@ -491,84 +491,636 @@ bool IsFileOccupiedFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const ui
     return true;
 }
 
-[[maybe_unused]]bool StorageDaemonFuzzTest(const uint8_t *data, size_t size)
+bool StorageDaemonOnRemoteRequestFuzzTest(sptr<StorageDaemon::StorageDaemonProvider>& daemon, const uint8_t *data,
+    size_t size)
 {
-    auto daemon = sptr(new StorageDaemon::StorageDaemonProvider());
-    if (daemon == nullptr) {
-        printf("daemon is nullptr");
-        return true;
-    }
-    const uint32_t maxCode = 48;
+    const uint32_t maxCode = 64;
     for (uint32_t code = 1; code < maxCode; code++) {
+        if (code == static_cast<uint32_t>(StorageDaemon::IStorageDaemonIpcCode::COMMAND_UMOUNT_DIS_SHARE_FILE)) {
+            continue;
+        }
         MessageParcel datas;
+        MessageParcel reply;
+        MessageOption option;
+
         datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
         datas.WriteBuffer(data, size);
         datas.RewindRead(0);
-        MessageParcel reply;
-        MessageOption option;
+
         daemon->OnRemoteRequest(code, datas, reply, option);
     }
     return true;
 }
 
-[[maybe_unused]]bool StorageManagerFuzzTest(const uint8_t * data, size_t size)
+bool StorageDaemonUpdateUserAuthFuzzTest(sptr<StorageDaemon::StorageDaemonProvider>& daemon, const uint8_t *data,
+    size_t size)
 {
-    auto manager = sptr(new StorageManager::StorageManagerProvider(OHOS::STORAGE_MANAGER_MANAGER_ID, true));
-    if (manager == nullptr) {
-        printf("manager is nullptr");
+    if (data == nullptr ||
+        size < sizeof(uint32_t) + sizeof(uint64_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t)) {
         return true;
     }
-    const uint32_t maxCode = 64;
+
+    MessageParcel datas;
+    MessageParcel reply;
+    MessageOption option;
+
+    int pos = 0;
+    uint32_t userId = TypeCast<uint32_t>(data, &pos);
+    uint64_t secureUid = TypeCast<uint64_t>(data + pos, &pos);
+    int32_t tokenSize = 1;
+    uint8_t value1 = TypeCast<uint8_t>(data + pos, &pos);
+    int32_t oldSecretSize = 1;
+    uint8_t value2 = TypeCast<uint8_t>(data + pos, &pos);
+    int32_t newSecretSize = 1;
+    uint8_t value3 = TypeCast<uint8_t>(data + pos, &pos);
+
+    datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
+    datas.WriteUint32(userId);
+    datas.WriteUint64(secureUid);
+    datas.WriteInt32(tokenSize);
+    datas.WriteUint8(value1);
+    datas.WriteInt32(oldSecretSize);
+    datas.WriteUint8(value2);
+    datas.WriteInt32(newSecretSize);
+    datas.WriteUint8(value3);
+    datas.RewindRead(0);
+
+    uint32_t code = static_cast<uint32_t>(StorageDaemon::IStorageDaemonIpcCode::COMMAND_UPDATE_USER_AUTH);
+    daemon->OnRemoteRequest(code, datas, reply, option);
+    return true;
+}
+
+bool StorageDaemonUpdateUserAuthWithRecoverykeyFuzzTest(sptr<StorageDaemon::StorageDaemonProvider>& daemon,
+    const uint8_t *data, size_t size)
+{
+    if (data == nullptr ||
+        size < sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint64_t) + sizeof(uint32_t) + sizeof(uint8_t)) {
+        return true;
+    }
+
+    MessageParcel datas;
+    MessageParcel reply;
+    MessageOption option;
+
+    int pos = 0;
+    int32_t authTokenSize  = 1;
+    uint8_t value4 = TypeCast<uint8_t>(data, &pos);
+    int32_t newSecretSize = 1;
+    uint8_t value5 = TypeCast<uint8_t>(data + pos, &pos);
+    uint64_t secureUid = TypeCast<uint64_t>(data + pos, &pos);
+    uint32_t userId = TypeCast<uint32_t>(data + pos, &pos);
+    int32_t plainTextSize = 1;
+    int32_t value6Size = 1;
+    uint8_t value7 = TypeCast<uint8_t>(data + pos, &pos);
+
+    datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
+    datas.WriteInt32(authTokenSize);
+    datas.WriteUint8(value4);
+    datas.WriteInt32(newSecretSize);
+    datas.WriteUint8(value5);
+    datas.WriteUint64(secureUid);
+    datas.WriteUint32(userId);
+    datas.WriteInt32(plainTextSize);
+    datas.WriteInt32(value6Size);
+    datas.WriteUint8(value7);
+    datas.RewindRead(0);
+
+    uint32_t code =
+        static_cast<uint32_t>(StorageDaemon::IStorageDaemonIpcCode::COMMAND_UPDATE_USE_AUTH_WITH_RECOVERY_KEY);
+    daemon->OnRemoteRequest(code, datas, reply, option);
+    return true;
+}
+
+bool StorageDaemonActiveUserKeyFuzzTest(sptr<StorageDaemon::StorageDaemonProvider>& daemon, const uint8_t *data,
+    size_t size)
+{
+    if (data == nullptr || size < sizeof(uint32_t) + sizeof(uint8_t) + sizeof(uint8_t)) {
+        return true;
+    }
+
+    MessageParcel datas;
+    MessageParcel reply;
+    MessageOption option;
+
+    int pos = 0;
+    uint32_t userId = TypeCast<uint32_t>(data, &pos);
+    int32_t tokenSize = 1;
+    uint8_t value8 = TypeCast<uint8_t>(data + pos, &pos);
+    int32_t secretSize = 1;
+    uint8_t value9 = TypeCast<uint8_t>(data + pos, &pos);
+
+    datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
+    datas.WriteUint32(userId);
+    datas.WriteInt32(tokenSize);
+    datas.WriteUint8(value8);
+    datas.WriteInt32(secretSize);
+    datas.WriteUint8(value9);
+    datas.RewindRead(0);
+
+    uint32_t code = static_cast<uint32_t>(StorageDaemon::IStorageDaemonIpcCode::COMMAND_ACTIVE_USER_KEY);
+    daemon->OnRemoteRequest(code, datas, reply, option);
+    return true;
+}
+
+bool StorageDaemonUnlockUserKeyScreenFuzzTest(sptr<StorageDaemon::StorageDaemonProvider>& daemon, const uint8_t *data,
+    size_t size)
+{
+    if (data == nullptr || size < sizeof(uint32_t) + sizeof(uint8_t) + sizeof(uint8_t)) {
+        return true;
+    }
+
+    MessageParcel datas;
+    MessageParcel reply;
+    MessageOption option;
+
+    int pos = 0;
+    uint32_t user = TypeCast<uint32_t>(data, &pos);
+    int32_t tokenSize = 1;
+    uint8_t value10 = TypeCast<uint8_t>(data + pos, &pos);
+    int32_t secretSize = 1;
+    uint8_t value11 = TypeCast<uint8_t>(data + pos, &pos);
+
+    datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
+    datas.WriteUint32(user);
+    datas.WriteInt32(tokenSize);
+    datas.WriteUint8(value10);
+    datas.WriteInt32(secretSize);
+    datas.WriteUint8(value11);
+    datas.RewindRead(0);
+
+    uint32_t code = static_cast<uint32_t>(StorageDaemon::IStorageDaemonIpcCode::COMMAND_UNLOCK_USER_SCREEN);
+    daemon->OnRemoteRequest(code, datas, reply, option);
+    return true;
+}
+
+bool StorageDaemonCreateRecoveryKeyFuzzTest(sptr<StorageDaemon::StorageDaemonProvider>& daemon, const uint8_t *data,
+    size_t size)
+{
+    if (data == nullptr || size < sizeof(uint32_t) + sizeof(uint32_t) + sizeof(uint8_t) + sizeof(uint8_t)) {
+        return true;
+    }
+
+    MessageParcel datas;
+    MessageParcel reply;
+    MessageOption option;
+
+    int pos = 0;
+    uint32_t userId = TypeCast<uint32_t>(data, &pos);
+    uint32_t userType = TypeCast<uint32_t>(data + pos, &pos);
+    int32_t tokenSize = 1;
+    uint8_t value12 = TypeCast<uint8_t>(data + pos, &pos);
+    int32_t secretSize = 1;
+    uint8_t value13 = TypeCast<uint8_t>(data + pos, &pos);
+
+    datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
+    datas.WriteUint32(userId);
+    datas.WriteUint32(userType);
+    datas.WriteInt32(tokenSize);
+    datas.WriteUint8(value12);
+    datas.WriteInt32(secretSize);
+    datas.WriteUint8(value13);
+    datas.RewindRead(0);
+
+    uint32_t code = static_cast<uint32_t>(StorageDaemon::IStorageDaemonIpcCode::COMMAND_CREATE_RECOVER_KEY);
+    daemon->OnRemoteRequest(code, datas, reply, option);
+    return true;
+}
+
+bool StorageDaemonSetRecoveryKeyFuzzTest(sptr<StorageDaemon::StorageDaemonProvider>& daemon, const uint8_t *data,
+    size_t size)
+{
+    if (data == nullptr || size < sizeof(uint8_t)) {
+        return true;
+    }
+
+    MessageParcel datas;
+    MessageParcel reply;
+    MessageOption option;
+
+    int pos = 0;
+    int32_t keySize = 1;
+    uint8_t value14 = TypeCast<uint8_t>(data, &pos);
+
+    datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
+    datas.WriteInt32(keySize);
+    datas.WriteUint8(value14);
+    datas.RewindRead(0);
+
+    uint32_t code = static_cast<uint32_t>(StorageDaemon::IStorageDaemonIpcCode::COMMAND_SET_RECOVER_KEY);
+    daemon->OnRemoteRequest(code, datas, reply, option);
+    return true;
+}
+
+bool StorageDaemonResetSecretWithRecoveryKeyFuzzTest(sptr<StorageDaemon::StorageDaemonProvider>& daemon,
+    const uint8_t *data, size_t size)
+{
+    if (data == nullptr || size < sizeof(uint32_t) + sizeof(uint32_t) + sizeof(uint8_t)) {
+        return true;
+    }
+
+    MessageParcel datas;
+    MessageParcel reply;
+    MessageOption option;
+
+    int pos = 0;
+    uint32_t userId = TypeCast<uint32_t>(data, &pos);
+    uint32_t rkType = TypeCast<uint32_t>(data + pos, &pos);
+    int32_t keySize = 1;
+    uint8_t value16 = TypeCast<uint8_t>(data + pos, &pos);
+
+    datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
+    datas.WriteUint32(userId);
+    datas.WriteUint32(rkType);
+    datas.WriteInt32(keySize);
+    datas.WriteUint8(value16);
+    datas.RewindRead(0);
+
+    uint32_t code = static_cast<uint32_t>(StorageDaemon::IStorageDaemonIpcCode::COMMAND_RESET_SECRET_WITH_RECOVERY_KEY);
+    daemon->OnRemoteRequest(code, datas, reply, option);
+    return true;
+}
+
+bool StorageDaemonIsFileCopyedFuzzTest(sptr<StorageDaemon::StorageDaemonProvider>& daemon, const uint8_t *data,
+    size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+    MessageOption option;
+
+    int pos = 0;
+    int32_t inputListSize = 1;
+    int len = size / 4;
+    u16string path(reinterpret_cast<const char16_t *>(data + pos), len);
+    u16string value17(reinterpret_cast<const char16_t *>(data + pos + len + len), len);
+
+    datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
+    datas.WriteString16(path);
+    datas.WriteInt32(inputListSize);
+    datas.WriteString16(value17);
+    datas.RewindRead(0);
+
+    uint32_t code = static_cast<uint32_t>(StorageDaemon::IStorageDaemonIpcCode::COMMAND_IS_FILE_OCCUPIED);
+    daemon->OnRemoteRequest(code, datas, reply, option);
+    return true;
+}
+
+bool StorageManagerOnRemoteRequestFuzzTest(sptr<StorageManager::StorageManagerProvider>& manager, const uint8_t * data,
+    size_t size)
+{
+    const uint32_t maxCode = 88;
     for (uint32_t code = 1; code < maxCode; code++) {
+        if (code == static_cast<uint32_t>(StorageManager::IStorageManagerIpcCode::COMMAND_UMOUNT_DIS_SHARE_FILE)) {
+            continue;
+        }
         MessageParcel datas;
+        MessageParcel reply;
+        MessageOption option;
+
         datas.WriteInterfaceToken(StorageManager::StorageManagerStub::GetDescriptor());
         datas.WriteBuffer(data, size);
         datas.RewindRead(0);
-        MessageParcel reply;
-        MessageOption option;
+
         manager->OnRemoteRequest(code, datas, reply, option);
     }
     return true;
+}
+
+bool StorageManagerUpdateUserAuthFuzzTest(sptr<StorageManager::StorageManagerProvider>& manager, const uint8_t *data,
+    size_t size)
+{
+    if (data == nullptr ||
+        size < sizeof(uint32_t) + sizeof(uint64_t) + sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint8_t)) {
+        return true;
+    }
+
+    MessageParcel datas;
+    MessageParcel reply;
+    MessageOption option;
+
+    int pos = 0;
+    uint32_t userId = TypeCast<uint32_t>(data, &pos);
+    uint64_t secureUid = TypeCast<uint64_t>(data + pos, &pos);
+    int32_t tokenSize = 1;
+    uint8_t value3 = TypeCast<uint8_t>(data + pos, &pos);
+    int32_t oldSecretSize = 1;
+    uint8_t value4 = TypeCast<uint8_t>(data + pos, &pos);
+    int32_t newSecretSize = 1;
+    uint8_t value5 = TypeCast<uint8_t>(data + pos, &pos);
+
+    datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
+    datas.WriteUint32(userId);
+    datas.WriteUint64(secureUid);
+    datas.WriteInt32(tokenSize);
+    datas.WriteUint8(value3);
+    datas.WriteInt32(oldSecretSize);
+    datas.WriteUint8(value4);
+    datas.WriteInt32(newSecretSize);
+    datas.WriteUint8(value5);
+    datas.RewindRead(0);
+
+    uint32_t code = static_cast<uint32_t>(StorageManager::IStorageManagerIpcCode::COMMAND_UPDATE_USER_AUTH);
+    manager->OnRemoteRequest(code, datas, reply, option);
+    return true;
+}
+
+bool StorageManagerActiveUserKeyFuzzTest(sptr<StorageManager::StorageManagerProvider>& manager, const uint8_t *data,
+    size_t size)
+{
+    if (data == nullptr || size < sizeof(uint32_t) + sizeof(uint8_t) + sizeof(uint8_t)) {
+        return true;
+    }
+
+    MessageParcel datas;
+    MessageParcel reply;
+    MessageOption option;
+
+    int pos = 0;
+    uint32_t userId = TypeCast<uint32_t>(data, &pos);
+    int32_t tokenSize = 1;
+    uint8_t value6 = TypeCast<uint8_t>(data + pos, &pos);
+    int32_t secretSize = 1;
+    uint8_t value7 = TypeCast<uint8_t>(data + pos, &pos);
+
+    datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
+    datas.WriteUint32(userId);
+    datas.WriteInt32(tokenSize);
+    datas.WriteUint8(value6);
+    datas.WriteInt32(secretSize);
+    datas.WriteUint8(value7);
+    datas.RewindRead(0);
+
+    uint32_t code = static_cast<uint32_t>(StorageManager::IStorageManagerIpcCode::COMMAND_ACTIVE_USER_KEY);
+    manager->OnRemoteRequest(code, datas, reply, option);
+    return true;
+}
+
+bool StorageManagerUnlockUserKeyScreenFuzzTest(sptr<StorageManager::StorageManagerProvider>& manager,
+    const uint8_t *data, size_t size)
+{
+    if (data == nullptr || size < sizeof(uint32_t) + sizeof(uint8_t) + sizeof(uint8_t)) {
+        return true;
+    }
+
+    MessageParcel datas;
+    MessageParcel reply;
+    MessageOption option;
+
+    int pos = 0;
+    uint32_t userId = TypeCast<uint32_t>(data, &pos);
+    int32_t tokenSize = 1;
+    uint8_t value8 = TypeCast<uint8_t>(data + pos, &pos);
+    int32_t secretSize = 1;
+    uint8_t value9 = TypeCast<uint8_t>(data + pos, &pos);
+
+    datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
+    datas.WriteUint32(userId);
+    datas.WriteInt32(tokenSize);
+    datas.WriteUint8(value8);
+    datas.WriteInt32(secretSize);
+    datas.WriteUint8(value9);
+    datas.RewindRead(0);
+
+    uint32_t code = static_cast<uint32_t>(StorageManager::IStorageManagerIpcCode::COMMAND_UNLOCK_USER_SCREEN);
+    manager->OnRemoteRequest(code, datas, reply, option);
+    return true;
+}
+
+bool StorageManagerCreateRecoveryKeyFuzzTest(sptr<StorageManager::StorageManagerProvider>& manager, const uint8_t *data,
+    size_t size)
+{
+    if (data == nullptr || size < sizeof(uint32_t) + sizeof(uint32_t) + sizeof(uint8_t) + sizeof(uint8_t)) {
+        return true;
+    }
+
+    MessageParcel datas;
+    MessageParcel reply;
+    MessageOption option;
+
+    int pos = 0;
+    uint32_t userId = TypeCast<uint32_t>(data, &pos);
+    uint32_t userType = TypeCast<uint32_t>(data + pos, &pos);
+    int32_t tokenSize = 1;
+    uint8_t value10 = TypeCast<uint8_t>(data + pos, &pos);
+    int32_t secretSize = 1;
+    uint8_t value11 = TypeCast<uint8_t>(data + pos, &pos);
+
+    datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
+    datas.WriteUint32(userId);
+    datas.WriteUint32(userType);
+    datas.WriteInt32(tokenSize);
+    datas.WriteUint8(value10);
+    datas.WriteInt32(secretSize);
+    datas.WriteUint8(value11);
+    datas.RewindRead(0);
+
+    uint32_t code = static_cast<uint32_t>(StorageManager::IStorageManagerIpcCode::COMMAND_CREATE_RECOVER_KEY);
+    manager->OnRemoteRequest(code, datas, reply, option);
+    return true;
+}
+
+bool StorageManagerSetRecoveryKeyFuzzTest(sptr<StorageManager::StorageManagerProvider>& manager, const uint8_t *data,
+    size_t size)
+{
+    if (data == nullptr || size < sizeof(uint8_t)) {
+        return true;
+    }
+
+    MessageParcel datas;
+    MessageParcel reply;
+    MessageOption option;
+
+    int pos = 0;
+    int32_t keySize = 1;
+    uint8_t value12 = TypeCast<uint8_t>(data, &pos);
+
+    datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
+    datas.WriteInt32(keySize);
+    datas.WriteUint8(value12);
+    datas.RewindRead(0);
+
+    uint32_t code = static_cast<uint32_t>(StorageManager::IStorageManagerIpcCode::COMMAND_SET_RECOVER_KEY);
+    manager->OnRemoteRequest(code, datas, reply, option);
+    return true;
+}
+
+bool StorageManagerUpdateUserAuthWithRecoverykeyFuzzTest(sptr<StorageManager::StorageManagerProvider>& manager,
+    const uint8_t *data, size_t size)
+{
+    if (data == nullptr ||
+        size < sizeof(uint8_t) + sizeof(uint8_t) + sizeof(uint64_t) + sizeof(uint32_t) + sizeof(uint8_t)) {
+        return true;
+    }
+
+    MessageParcel datas;
+    MessageParcel reply;
+    MessageOption option;
+
+    int pos = 0;
+    int32_t authTokenSize  = 1;
+    uint8_t value14 = TypeCast<uint8_t>(data, &pos);
+    int32_t newSecretSize = 1;
+    uint8_t value15 = TypeCast<uint8_t>(data + pos, &pos);
+    uint64_t secureUid = TypeCast<uint64_t>(data + pos, &pos);
+    uint32_t userId = TypeCast<uint32_t>(data + pos, &pos);
+    int32_t plainTextSize = 1;
+    int32_t value16Size = 1;
+    uint8_t value17 = TypeCast<uint8_t>(data + pos, &pos);
+
+    datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
+    datas.WriteInt32(authTokenSize);
+    datas.WriteUint8(value14);
+    datas.WriteInt32(newSecretSize);
+    datas.WriteUint8(value15);
+    datas.WriteUint64(secureUid);
+    datas.WriteUint32(userId);
+    datas.WriteInt32(plainTextSize);
+    datas.WriteInt32(value16Size);
+    datas.WriteUint8(value17);
+    datas.RewindRead(0);
+
+    uint32_t code =
+        static_cast<uint32_t>(StorageManager::IStorageManagerIpcCode::COMMAND_UPDATE_USE_AUTH_WITH_RECOVERY_KEY);
+    manager->OnRemoteRequest(code, datas, reply, option);
+    return true;
+}
+
+bool StorageManagerIsFileCopyedFuzzTest(sptr<StorageManager::StorageManagerProvider>& manager, const uint8_t *data,
+    size_t size)
+{
+    MessageParcel datas;
+    MessageParcel reply;
+    MessageOption option;
+
+    int32_t inputListSize = 1;
+    int len = size / 4;
+    u16string path(reinterpret_cast<const char16_t *>(data), len);
+    u16string value18(reinterpret_cast<const char16_t *>(data + len + len), len);
+
+    datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
+    datas.WriteString16(path);
+    datas.WriteInt32(inputListSize);
+    datas.WriteString16(value18);
+    datas.RewindRead(0);
+
+    uint32_t code = static_cast<uint32_t>(StorageManager::IStorageManagerIpcCode::COMMAND_IS_FILE_OCCUPIED);
+    manager->OnRemoteRequest(code, datas, reply, option);
+    return true;
+}
+
+bool StorageManagerResetSecretWithRecoveryKeyFuzzTest(sptr<StorageManager::StorageManagerProvider>& manager,
+    const uint8_t *data, size_t size)
+{
+    if (data == nullptr || size < sizeof(uint32_t) + sizeof(uint32_t) + sizeof(uint8_t)) {
+        return true;
+    }
+
+    MessageParcel datas;
+    MessageParcel reply;
+    MessageOption option;
+
+    int pos = 0;
+    uint32_t userId = TypeCast<uint32_t>(data, &pos);
+    uint32_t rkType = TypeCast<uint32_t>(data + pos, &pos);
+    int32_t keySize = 1;
+    uint8_t value20 = TypeCast<uint8_t>(data + pos, &pos);
+
+    datas.WriteInterfaceToken(StorageDaemon::StorageDaemonStub::GetDescriptor());
+    datas.WriteUint32(userId);
+    datas.WriteUint32(rkType);
+    datas.WriteInt32(keySize);
+    datas.WriteUint8(value20);
+    datas.RewindRead(0);
+
+    uint32_t code =
+        static_cast<uint32_t>(StorageManager::IStorageManagerIpcCode::COMMAND_RESET_SECRET_WITH_RECOVERY_KEY);
+    manager->OnRemoteRequest(code, datas, reply, option);
+    return true;
+}
+
+void StorageDaemonProxyFuzzTest(sptr<StorageDaemon::IStorageDaemon>& proxy, const uint8_t *data, size_t size)
+{
+    ShutdownFuzzTest(proxy, data, size);
+    MountFuzzTest(proxy, data, size);
+    FormatFuzzTest(proxy, data, size);
+    PartitionFuzzTest(proxy, data, size);
+    SetVolumeDescriptionFuzzTest(proxy, data, size);
+    StartUserFuzzTest(proxy, data, size);
+    PrepareUserDirsFuzzTest(proxy, data, size);
+    CompleteAddUserFuzzTest(proxy, data, size);
+    GenerateUserKeysFuzzTest(proxy, data, size);
+    UpdateUserAuthFuzzTest(proxy, data, size);
+    UpdateUseAuthWithRecoveryKeyFuzzTest(proxy, data, size);
+    ActiveUserKeyFuzzTest(proxy, data, size);
+    UpdateKeyContextFuzzTest(proxy, data, size);
+    UnlockUserScreenFuzzTest(proxy, data, size);
+    GenerateAppkeyFuzzTest(proxy, data, size);
+    CreateRecoverKeyFuzzTest(proxy, data, size);
+    SetRecoverKeyFuzzTest(proxy, data, size);
+    CreateShareFileFuzzTest(proxy, data, size);
+    SetBundleQuotaFuzzTest(proxy, data, size);
+    GetOccupiedSpaceFuzzTest(proxy, data, size);
+    UpdateMemoryParaFuzzTest(proxy, data, size);
+    MountDfsDocsFuzzTest(proxy, data, size);
+    GetFileEncryptStatusFuzzTest(proxy, data, size);
+    MountMediaFuseFuzzTest(proxy, data, size);
+    GetUserNeedActiveStatusFuzzTest(proxy, data, size);
+    MountFileMgrFuseFuzzTest(proxy, data, size);
+    QueryUsbIsInUseFuzzTest(proxy, data, size);
+    ResetSecretWithRecoveryKeyFuzzTest(proxy, data, size);
+    IsFileOccupiedFuzzTest(proxy, data, size);
+}
+
+void StorageDaemonStubFuzzTest(sptr<StorageDaemon::StorageDaemonProvider>& daemon, const uint8_t *data, size_t size)
+{
+    StorageDaemonOnRemoteRequestFuzzTest(daemon, data, size);
+    StorageDaemonUpdateUserAuthFuzzTest(daemon, data, size);
+    StorageDaemonUpdateUserAuthWithRecoverykeyFuzzTest(daemon, data, size);
+    StorageDaemonActiveUserKeyFuzzTest(daemon, data, size);
+    StorageDaemonUnlockUserKeyScreenFuzzTest(daemon, data, size);
+    StorageDaemonCreateRecoveryKeyFuzzTest(daemon, data, size);
+    StorageDaemonSetRecoveryKeyFuzzTest(daemon, data, size);
+    StorageDaemonResetSecretWithRecoveryKeyFuzzTest(daemon, data, size);
+    StorageDaemonIsFileCopyedFuzzTest(daemon, data, size);
+}
+
+void StorageManagerStubFuzzTest(sptr<StorageManager::StorageManagerProvider>& manager, const uint8_t *data, size_t size)
+{
+    StorageManagerOnRemoteRequestFuzzTest(manager, data, size);
+    StorageManagerUpdateUserAuthFuzzTest(manager, data, size);
+    StorageManagerActiveUserKeyFuzzTest(manager, data, size);
+    StorageManagerUnlockUserKeyScreenFuzzTest(manager, data, size);
+    StorageManagerCreateRecoveryKeyFuzzTest(manager, data, size);
+    StorageManagerSetRecoveryKeyFuzzTest(manager, data, size);
+    StorageManagerUpdateUserAuthWithRecoverykeyFuzzTest(manager, data, size);
+    StorageManagerIsFileCopyedFuzzTest(manager, data, size);
+    StorageManagerResetSecretWithRecoveryKeyFuzzTest(manager, data, size);
 }
 } // namespace OHOS
 
 /* Fuzzer entry point */
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
-    auto proxy = OHOS::GetStorageDaemonProxy();
-    if (proxy == nullptr) {
-        printf("daemon proxy is nullptr");
-        return 0;
-    }
     /* Run your code on data */
-    OHOS::ShutdownFuzzTest(proxy, data, size);
-    OHOS::MountFuzzTest(proxy, data, size);
-    OHOS::FormatFuzzTest(proxy, data, size);
-    OHOS::PartitionFuzzTest(proxy, data, size);
-    OHOS::SetVolumeDescriptionFuzzTest(proxy, data, size);
-    OHOS::StartUserFuzzTest(proxy, data, size);
-    OHOS::PrepareUserDirsFuzzTest(proxy, data, size);
-    OHOS::CompleteAddUserFuzzTest(proxy, data, size);
-    OHOS::GenerateUserKeysFuzzTest(proxy, data, size);
-    OHOS::UpdateUserAuthFuzzTest(proxy, data, size);
-    OHOS::UpdateUseAuthWithRecoveryKeyFuzzTest(proxy, data, size);
-    OHOS::ActiveUserKeyFuzzTest(proxy, data, size);
-    OHOS::UpdateKeyContextFuzzTest(proxy, data, size);
-    OHOS::UnlockUserScreenFuzzTest(proxy, data, size);
-    OHOS::GenerateAppkeyFuzzTest(proxy, data, size);
-    OHOS::CreateRecoverKeyFuzzTest(proxy, data, size);
-    OHOS::SetRecoverKeyFuzzTest(proxy, data, size);
-    OHOS::CreateShareFileFuzzTest(proxy, data, size);
-    OHOS::SetBundleQuotaFuzzTest(proxy, data, size);
-    OHOS::GetOccupiedSpaceFuzzTest(proxy, data, size);
-    OHOS::UpdateMemoryParaFuzzTest(proxy, data, size);
-    OHOS::MountDfsDocsFuzzTest(proxy, data, size);
-    OHOS::GetFileEncryptStatusFuzzTest(proxy, data, size);
-    OHOS::MountMediaFuseFuzzTest(proxy, data, size);
-    OHOS::GetUserNeedActiveStatusFuzzTest(proxy, data, size);
-    OHOS::MountFileMgrFuseFuzzTest(proxy, data, size);
-    OHOS::QueryUsbIsInUseFuzzTest(proxy, data, size);
-    OHOS::ResetSecretWithRecoveryKeyFuzzTest(proxy, data, size);
-    OHOS::IsFileOccupiedFuzzTest(proxy, data, size);
+    auto proxy = OHOS::GetStorageDaemonProxy();
+    if (proxy != nullptr) {
+        OHOS::StorageDaemonProxyFuzzTest(proxy, data, size);
+    } else {
+        printf("daemon proxy is nullptr");
+    }
+
+    auto daemon = OHOS::sptr(new OHOS::StorageDaemon::StorageDaemonProvider());
+    if (daemon != nullptr) {
+        OHOS::StorageDaemonStubFuzzTest(daemon, data, size);
+    } else {
+        printf("daemon is nullptr");
+    }
+
+    auto manager = OHOS::sptr(new OHOS::StorageManager::StorageManagerProvider(OHOS::STORAGE_MANAGER_MANAGER_ID, true));
+    if (manager != nullptr) {
+        OHOS::StorageManagerStubFuzzTest(manager, data, size);
+    } else {
+        printf("manager is nullptr");
+    }
+
     return 0;
 }
