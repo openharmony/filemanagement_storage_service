@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 rawdata OHOS.StorageManager.StorageFileRawData;
+import ../storage_manager/IUeceActivationCallback;
 interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 1] void Shutdown();
      [ipccode 2] void Mount([in] String volId, [in] unsigned int flags);
@@ -82,5 +83,6 @@ interface OHOS.StorageDaemon.IStorageDaemon{
      [ipccode 52] void InactiveUserPublicDirKey([in] unsigned int userId);
      [ipccode 53] void QueryOccupiedSpaceForSa();
      [ipccode 54] void MountUsbFuse([in] String volumeId, [out] String fsUuid, [out] FileDescriptor fuseFd);
-     
+     [ipccode 55] void RegisterUeceActivationCallback([in] IUeceActivationCallback ueceCallback);
+     [ipccode 56] void UnregisterUeceActivationCallback();
 }
