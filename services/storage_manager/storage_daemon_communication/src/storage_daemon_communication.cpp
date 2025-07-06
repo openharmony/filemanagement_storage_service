@@ -901,7 +901,7 @@ int32_t StorageDaemonCommunication::RegisterUeceActivationCallback(
     return E_OK;
 #endif
 }
- 
+
 int32_t StorageDaemonCommunication::UnregisterUeceActivationCallback()
 { 
 #ifdef EL5_FILEKEY_MANAGER
