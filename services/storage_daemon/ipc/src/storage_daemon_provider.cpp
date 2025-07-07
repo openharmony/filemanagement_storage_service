@@ -205,6 +205,20 @@ int32_t StorageDaemonProvider::TryToFix(const std::string &volId, uint32_t flags
 #endif
 }
 
+int32_t StorageDaemonProvider::MountUsbFuse(const std::string &volumeId, std::string &fsUuid, int &fuseFd)
+{
+#ifdef EXTERNAL_STORAGE_MANAGER
+    int32_t ret = VolumeManager::Instance()->MountUsbFuse(volumeId, fsUuid, fuseFd);
+    if (ret != E_OK) {
+        LOGW("MountUsbFuse failed, please check");
+        StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::MountUsbFuse", ret);
+    }
+    return ret;
+#else
+    return E_OK;
+#endif
+}
+
 int32_t StorageDaemonProvider::Check(const std::string &volId)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
@@ -524,7 +538,7 @@ int32_t StorageDaemonProvider::UnlockUserScreen(uint32_t userId,
                                                 const std::vector<uint8_t> &secret)
 {
     int timerId = StorageXCollie::SetTimer("storage:UnlockUserScreen", LOCAL_TIME_OUT_SECONDS);
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
     auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
     int ret = StorageDaemon::GetInstance()->UnlockUserScreen(userId, token, secret);
@@ -534,6 +548,18 @@ int32_t StorageDaemonProvider::UnlockUserScreen(uint32_t userId,
     } else {
         it->second.keyLoadSuccCount++;
     }
+    lock.unlock();
+
+#ifdef USER_CRYPTO_MANAGER
+    int cbRet = KeyManager::GetInstance()->NotifyUeceActivation(userId, ret, false);
+    if (ret != E_OK) { //unlock EL3-5 failed
+        return ret;
+    }
+    if (cbRet != E_OK) { // unlock userAppkeys failed
+        LOGE("failed to delete appkey2, cbRet=%{public}d", cbRet);
+        return cbRet;
+    }
+#endif
     return ret;
 }
 
@@ -616,7 +642,11 @@ int32_t StorageDaemonProvider::CreateShareFile(const StorageFileRawData &rawData
     LOGI("Create Share file list len is %{public}u", rawData.size);
     funcResult.clear();
     std::vector<std::string> uriList;
-    RawDataToStringVec(rawData, uriList);
+    int32_t ret = RawDataToStringVec(rawData, uriList);
+    if (ret != E_OK) {
+        LOGI("RawDataToStringVec failed, ret is %{public}d", ret);
+        return ret;
+    }
     LOGI("StorageDaemonProvider::CreateShareFile start. file size is %{public}zu", uriList.size());
     AppFileService::FileShare::CreateShareFile(uriList, tokenId, flag, funcResult);
     LOGI("StorageDaemonProvider::CreateShareFile end. result size is %{public}zu", funcResult.size());
@@ -626,7 +656,11 @@ int32_t StorageDaemonProvider::CreateShareFile(const StorageFileRawData &rawData
 int32_t StorageDaemonProvider::DeleteShareFile(uint32_t tokenId, const StorageFileRawData &rawData)
 {
     std::vector<std::string> uriList;
-    RawDataToStringVec(rawData, uriList);
+    int32_t ret = RawDataToStringVec(rawData, uriList);
+    if (ret != E_OK) {
+        LOGI("RawDataToStringVec failed, ret is %{public}d", ret);
+        return ret;
+    }
     return AppFileService::FileShare::DeleteShareFile(tokenId, uriList);
 }
 
@@ -725,6 +759,7 @@ int32_t StorageDaemonProvider::IsFileOccupied(const std::string &path,
                                               std::vector<std::string> &outputList,
                                               bool &isOccupy)
 {
+    isOccupy = false;
     return StorageDaemon::GetInstance()->IsFileOccupied(path, inputList, outputList, isOccupy);
 }
 
@@ -787,6 +822,17 @@ int32_t StorageDaemonProvider::QueryOccupiedSpaceForSa()
         checkDirSizeFlag.store(false);
     }).detach();
     return E_OK;
+}
+
+int32_t StorageDaemonProvider::RegisterUeceActivationCallback(
+    const sptr<StorageManager::IUeceActivationCallback> &ueceCallback)
+{
+    return StorageDaemon::GetInstance()->RegisterUeceActivationCallback(ueceCallback);
+}
+
+int32_t StorageDaemonProvider::UnregisterUeceActivationCallback()
+{
+    return StorageDaemon::GetInstance()->UnregisterUeceActivationCallback();
 }
 } // namespace StorageDaemon
 } // namespace OHOS

@@ -93,9 +93,10 @@ public:
     virtual int32_t UMountDfsDocs(int32_t userId, const std::string &relativePath,
         const std::string &networkId, const std::string &deviceId) override;
     virtual int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false) override;
+    virtual int32_t GetUserNeedActiveStatus(uint32_t userId, bool &needActive) override;
+
     virtual int32_t MountMediaFuse(int32_t userId, int32_t &devFd) override;
     virtual int32_t UMountMediaFuse(int32_t userId) override;
-    virtual int32_t GetUserNeedActiveStatus(uint32_t userId, bool &needActive) override;
     // file mgr fuse
     virtual int32_t MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd) override;
     virtual int32_t UMountFileMgrFuse(int32_t userId, const std::string &path) override;
@@ -106,6 +107,9 @@ public:
     virtual int32_t UMountDisShareFile(int32_t userId, const std::string &networkId) override;
     virtual int32_t InactiveUserPublicDirKey(uint32_t userId) override;
     virtual int32_t QueryOccupiedSpaceForSa();
+    virtual int32_t MountUsbFuse(const std::string &volumeId, std::string &fsUuid, int &fuseFd) override;
+    virtual int32_t RegisterUeceActivationCallback(const sptr<IUeceActivationCallback>& callback);
+    virtual int32_t UnregisterUeceActivationCallback();
 private:
     static inline BrokerDelegator<StorageDaemonProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

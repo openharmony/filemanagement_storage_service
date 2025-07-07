@@ -22,12 +22,16 @@
 #include "storage_service_log.h"
 #include "utils/storage_radar.h"
 #include "parameter.h"
+#include "utils/file_utils.h"
 
 using namespace std;
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
 constexpr int32_t TRUE_LEN = 5;
+constexpr int32_t RD_ENABLE_LENGTH = 255;
+constexpr const char *PERSIST_FILEMANAGEMENT_USB_READONLY = "persist.filemanagement.usb.readonly";
+
 int32_t VolumeInfo::Create(const std::string volId, const std::string diskId, dev_t device, bool isUserdata)
 {
     id_ = volId;
@@ -98,6 +102,18 @@ int32_t VolumeInfo::Destroy()
     return E_OK;
 }
 
+int32_t VolumeInfo::DestroyUsbFuse()
+{
+    LOGI("DestroyUsbFuse in");
+    StorageManagerClient client;
+    UMountUsbFuse();
+    if (client.NotifyVolumeStateChanged(id_, StorageManager::VolumeState::FUSE_REMOVED) != E_OK) {
+        LOGE("Volume Notify Removed failed");
+    }
+    LOGI("DestroyUsbFuse out");
+    return E_OK;
+}
+
 int32_t VolumeInfo::Mount(uint32_t flags)
 {
     int32_t err = 0;
@@ -110,15 +126,17 @@ int32_t VolumeInfo::Mount(uint32_t flags)
         return E_VOL_STATE;
     }
 
-    std::string key = "persist.filemanagement.usb.readonly";
-    int handle = static_cast<int>(FindParameter(key.c_str()));
-    if (handle != -1) {
-        char rdOnlyEnable[255] = {"false"};
-        auto res = GetParameterValue(handle, rdOnlyEnable, 255);
-        if (res >= 0 && strncmp(rdOnlyEnable, "true", TRUE_LEN) == 0) {
-            mountFlags_ |= MS_RDONLY;
-        } else {
-            mountFlags_ &= ~MS_RDONLY;
+    if (!StorageDaemon::IsFuse()) {
+        std::string key = PERSIST_FILEMANAGEMENT_USB_READONLY;
+        int handle = static_cast<int>(FindParameter(key.c_str()));
+        if (handle != -1) {
+            char rdOnlyEnable[RD_ENABLE_LENGTH] = {"false"};
+            auto res = GetParameterValue(handle, rdOnlyEnable, RD_ENABLE_LENGTH);
+            if (res >= 0 && strncmp(rdOnlyEnable, "true", TRUE_LEN) == 0) {
+                mountFlags_ |= MS_RDONLY;
+            } else {
+                mountFlags_ &= ~MS_RDONLY;
+            }
         }
     }
 
@@ -169,11 +187,20 @@ int32_t VolumeInfo::UMount(bool force)
         return err;
     }
 
+    if (IsFuse()) {
+        DestroyUsbFuse();
+    }
+
     mountState_ = UNMOUNTED;
     if (client.NotifyVolumeStateChanged(id_, StorageManager::VolumeState::UNMOUNTED) != E_OK) {
         LOGE("Volume Notify Unmounted failed");
     }
     return E_OK;
+}
+
+int32_t VolumeInfo::UMountUsbFuse()
+{
+    return DoUMountUsbFuse();
 }
 
 int32_t VolumeInfo::Check()

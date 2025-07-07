@@ -15,8 +15,12 @@
 
 #include "user/mount_manager.h"
 
+#include <unistd.h>
+
+#include "parameter.h"
 #include "utils/mount_argument_utils.h"
 #include "utils/storage_radar.h"
+#include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 
@@ -26,6 +30,52 @@ using namespace std;
 using namespace OHOS::StorageService;
 const string PROC_MOUNTS = "/proc/mounts";
 static constexpr int SHARE_FILE_0771 = 0771;
+constexpr int32_t PATH_MAX_FOR_LINK = 4096;
+
+void MountManager::CheckSymlinkForMulti(const std::string &fdPath, const std::string &path,
+    std::set<std::string> &occupyFiles)
+{
+    char realPath[PATH_MAX_FOR_LINK];
+    int res = readlink(fdPath.c_str(), realPath, sizeof(realPath) - 1);
+    if (res < 0) {
+        LOGE("readlink failed for multi, errno is %{public}d.", errno);
+        return;
+    }
+    realPath[res] = '\0';
+    std::string realPathStr(realPath);
+    if (realPathStr.find(UN_REACHABLE) == 0) {
+        realPathStr = realPathStr.substr(UN_REACHABLE.size()) + FILE_SEPARATOR_CHAR;
+    }
+    if (realPathStr.find(path) == 0) {
+        LOGE("find a fd from link, %{public}s", realPathStr.c_str());
+        realPathStr = realPathStr.substr(path.size());
+        if (realPathStr.empty()) {
+            return;
+        }
+        if (path == FILE_MGR_ROOT_PATH) {
+            occupyFiles.insert(realPathStr);
+            return;
+        }
+        std::string::size_type point = realPathStr.find(FILE_SEPARATOR_CHAR);
+        if (point != std::string::npos) {
+            realPathStr = realPathStr.substr(0, point);
+        }
+        occupyFiles.insert(realPathStr);
+    }
+}
+
+bool MountManager::IsReadOnlyRemount()
+{
+    const char *syncType = "1";
+    char paramOutBuf[REMOUNT_VALUE_LEN] = {0};
+    int ret = GetParameter(DETERMINE_DEVICE_TYPE_KEY, "", paramOutBuf, REMOUNT_VALUE_LEN);
+    LOGD("paramOutBuf: %{public}s, ret: %{public}d", paramOutBuf, ret);
+    if (ret > 0 && strncmp(paramOutBuf, syncType, strlen(syncType)) == 0) {
+        LOGI("Need readonly remount.");
+        return true;
+    }
+    return false;
+}
 
 int32_t MountManager::MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles)
 {
@@ -36,16 +86,16 @@ int32_t MountManager::MountDisShareFile(int32_t userId, const std::map<std::stri
         std::string dstPath = item.first;
         std::string srcPath = item.second;
         if (!IsDir(srcPath)) {
-            LOGE("mount share file, src path invalid, errno is %{public}d.", errno);
+            LOGE("mount share file, src path invalid, errno is %{public}d", errno);
             return E_NON_EXIST;
         }
         if (!IsDir(dstPath) && !MkDirRecurse(dstPath, SHARE_FILE_0771)) {
-            LOGE("mount share file, dst path mkdir failed, errno is %{public}d.", errno);
+            LOGE("mount share file, dst path mkdir failed, errno is %{public}d", errno);
             return E_NON_EXIST;
         }
         int32_t ret = Mount(srcPath, dstPath, nullptr, MS_BIND, nullptr);
         if (ret != 0) {
-            LOGE("mount share file failed, errno is %{public}d.", errno);
+            LOGE("mount share file failed, errno is %{public}d", errno);
             std::string extraData = "src=" + srcPath + ",dst=" + dstPath + ",kernelCode=" + to_string(errno);
             StorageRadar::ReportUserManager("MountDisShareFile", userId, E_MOUNT_SHARE_FILE, extraData);
             return E_MOUNT_SHARE_FILE;

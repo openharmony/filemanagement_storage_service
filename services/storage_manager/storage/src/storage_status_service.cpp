@@ -171,7 +171,6 @@ int32_t StorageStatusService::GetBundleStats(const std::string &pkgName,
     BundleStats &bundleStats, int32_t appIndex, uint32_t statFlag)
 {
     int userId = GetCurrentUserId();
-    LOGD("StorageStatusService::userId is:%d, appIndex is: %d", userId, appIndex);
     return GetBundleStats(pkgName, userId, bundleStats, appIndex, statFlag);
 }
 

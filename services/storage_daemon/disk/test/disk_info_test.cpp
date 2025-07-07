@@ -37,21 +37,22 @@ class DiskInfoTest : public testing::Test {
 public:
     static void SetUpTestCase(void)
     {
-    GTEST_LOG_(INFO) << "SetUpTestCase Start";
-    diskUtilMoc_ = std::make_shared<DiskUtilMoc>();
-    DiskUtilMoc::diskUtilMoc = diskUtilMoc_;
+        GTEST_LOG_(INFO) << "SetUpTestCase Start";
+        diskUtilMoc_ = std::make_shared<DiskUtilMoc>();
+        DiskUtilMoc::diskUtilMoc = diskUtilMoc_;
 
-    fileUtilMoc_ = std::make_shared<FileUtilMoc>();
-    FileUtilMoc::fileUtilMoc = fileUtilMoc_;
+        fileUtilMoc_ = std::make_shared<FileUtilMoc>();
+        FileUtilMoc::fileUtilMoc = fileUtilMoc_;
     };
+
     static void TearDownTestCase(void)
     {
-    GTEST_LOG_(INFO) << "TearDownTestCase Start";
-    DiskUtilMoc::diskUtilMoc = nullptr;
-    diskUtilMoc_ = nullptr;
+        GTEST_LOG_(INFO) << "TearDownTestCase Start";
+        DiskUtilMoc::diskUtilMoc = nullptr;
+        diskUtilMoc_ = nullptr;
 
-    FileUtilMoc::fileUtilMoc = nullptr;
-    fileUtilMoc_ = nullptr;
+        FileUtilMoc::fileUtilMoc = nullptr;
+        fileUtilMoc_ = nullptr;
     };
     void SetUp() {};
     void TearDown() {};
@@ -745,7 +746,6 @@ HWTEST_F(DiskInfoTest, Storage_Service_DiskInfoTest_CreateVolume_003, TestSize.L
     int flag = 0;
 
     auto mock = std::make_shared<DiskInfoTestMock>(sysPath, devPath, device, flag);
-
     EXPECT_CALL(*mock, CreateVolume(testing::_)).WillOnce(testing::Return(E_ERR));
     int ret = mock->CreateVolume(device);
 

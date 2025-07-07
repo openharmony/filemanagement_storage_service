@@ -225,7 +225,6 @@ bool DeleteAppkeyFuzzTest(const uint8_t *data, size_t size)
     if (data == nullptr) {
         return false;
     }
-
     const std::string keyId(reinterpret_cast<const char *>(data), size);
     int32_t result = fileSystem->DeleteAppkey(keyId);
     if (result != E_OK) {

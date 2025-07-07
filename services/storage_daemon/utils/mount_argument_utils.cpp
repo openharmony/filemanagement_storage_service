@@ -163,6 +163,7 @@ static uint64_t MocklispHash(const string &str)
     if (err != 0) {
         LOGE("stat failed err: %{public}d", err);
     }
+    LOGI("statBuf dev id: %{public}lu", static_cast<unsigned long>(statBuf.st_dev));
     return statBuf.st_dev;
 }
 
