@@ -57,6 +57,7 @@ ohos_unittest("storage_daemon_communication_test") {
   deps = [
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_header",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
   ]
 
   external_deps = [
@@ -125,6 +126,7 @@ ohos_unittest("storage_daemon_communication_sub_test") {
   deps = [
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_header",
+    "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
     "${storage_service_path}/services/storage_manager:storage_manager",
   ]
 

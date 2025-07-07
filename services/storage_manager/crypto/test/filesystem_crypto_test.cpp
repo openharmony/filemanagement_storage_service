@@ -19,6 +19,7 @@
 #include "storage_service_constant.h"
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
+#include "mock/uece_activation_callback_mock.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -608,6 +609,29 @@ HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_InactiveUserPublicDirKey_0
     uint32_t ret = fileSystemCrypto_->InactiveUserPublicDirKey(userId);
     EXPECT_EQ(ret, E_USERID_RANGE);
     GTEST_LOG_(INFO) << "FileSystemCryptoTest-end Storage_manager_crypto_InactiveUserPublicDirKey_0001";
+}
+
+/**
+ * @tc.number: SUB_STORAGE_Storage_manager_crypto_RegisterUeceActivationCallback
+ * @tc.name: Storage_manager_crypto_RegisterUeceActivationCallback
+ * @tc.desc: Test function of RegisterUeceActivationCallback.
+ * @tc.size: MEDIUM
+ * @tc.type: FUNC
+ * @tc.level Level 1
+ * @tc.require: AR20250418146433
+ */
+HWTEST_F(FileSystemCryptoTest, Storage_manager_crypto_RegisterUeceActivationCallback, testing::ext::TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_manager_crypto_RegisterUeceActivationCallback start";
+    std::shared_ptr<FileSystemCrypto> fileSystemCrypto_ =
+        DelayedSingleton<FileSystemCrypto>::GetInstance();
+    ASSERT_NE(fileSystemCrypto_, nullptr);
+    sptr<IUeceActivationCallback> ueceCallback(new (std::nothrow) UeceActivationCallbackMock());
+    EXPECT_NE(ueceCallback, nullptr);
+    EXPECT_EQ(fileSystemCrypto_->RegisterUeceActivationCallback(nullptr), E_PARAMS_NULLPTR_ERR);
+    EXPECT_EQ(fileSystemCrypto_->RegisterUeceActivationCallback(ueceCallback), E_OK);
+    fileSystemCrypto_->UnregisterUeceActivationCallback();
+    GTEST_LOG_(INFO) << "Storage_manager_crypto_RegisterUeceActivationCallback end";
 }
 }
 }

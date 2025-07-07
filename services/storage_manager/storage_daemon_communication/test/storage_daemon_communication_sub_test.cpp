@@ -22,6 +22,7 @@
 #include "ipc_skeleton.h"
 #include "iservice_registry.h"
 #include "storage_daemon_stub_mock.h"
+#include "mock/uece_activation_callback_mock.h"
 
 namespace OHOS {
 class ISystemAbilityBase {
@@ -1744,5 +1745,72 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_MountUsbFuse_0000,
     EXPECT_EQ(sdCommunication->MountUsbFuse(volumeId, fsUuid, fuseFd), E_OK);
     
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_MountUsbFuse_0000";
+}
+
+/**
+* @tc.number: SUB_STORAGE_Daemon_communication_RegisterUeceActivationCallback_001
+* @tc.name: Daemon_communication_RegisterUeceActivationCallback_001
+* @tc.desc: Test function of RegisterUeceActivationCallback interface for SUCCESS.
+* @tc.size: MEDIUM
+* @tc.type: FUNC
+* @tc.level Level 1
+* @tc.require: AR20250418146433
+*/
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_RegisterUeceActivationCallback_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-begin Daemon_communication_RegisterUeceActivationCallback_001";
+    ASSERT_TRUE(sdCommunication != nullptr);
+ 
+    sptr<IUeceActivationCallback> ueceCallback(new (std::nothrow) UeceActivationCallbackMock());
+    sdCommunication->storageDaemon_ = nullptr;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    EXPECT_EQ(sdCommunication->RegisterUeceActivationCallback(ueceCallback), E_SA_IS_NULLPTR);
+ 
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
+        sdCommunication->storageDaemon_ = nullptr;
+    }), Return(true)));
+    EXPECT_EQ(sdCommunication->RegisterUeceActivationCallback(ueceCallback), E_SERVICE_IS_NULLPTR);
+ 
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*sd, RegisterUeceActivationCallback(_)).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->RegisterUeceActivationCallback(ueceCallback), E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_RegisterUeceActivationCallback_001";
+}
+
+/**
+* @tc.number: SUB_STORAGE_Daemon_communication_UnregisterUeceActivationCallback_001
+* @tc.name: Daemon_communication_UnregisterUeceActivationCallback_001
+* @tc.desc: Test function of UnregisterUeceActivationCallback interface for SUCCESS.
+* @tc.size: MEDIUM
+* @tc.type: FUNC
+* @tc.level Level 1
+* @tc.require: AR20250418146433
+*/
+HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UnregisterUeceActivationCallback_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Daemon_communication_UnregisterUeceActivationCallback_001 begin";
+    ASSERT_TRUE(sdCommunication != nullptr);
+
+    sdCommunication->storageDaemon_ = nullptr;
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
+    EXPECT_EQ(sdCommunication->UnregisterUeceActivationCallback(), E_SA_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(DoAll(Invoke([sdCommunication {sdCommunication}] () {
+        sdCommunication->storageDaemon_ = nullptr;
+    }), Return(true)));
+    EXPECT_EQ(sdCommunication->UnregisterUeceActivationCallback(), E_SERVICE_IS_NULLPTR);
+
+    EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(sam));
+    EXPECT_CALL(*sam, GetSystemAbility(_)).WillOnce(Return(sd));
+    EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*sd, UnregisterUeceActivationCallback()).WillOnce(Return(E_OK));
+    EXPECT_EQ(sdCommunication->UnregisterUeceActivationCallback(), E_OK);
+    GTEST_LOG_(INFO) << "Daemon_communication_UnregisterUeceActivationCallback_001 end";
 }
 }

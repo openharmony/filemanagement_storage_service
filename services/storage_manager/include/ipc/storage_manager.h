@@ -140,6 +140,8 @@ public:
     void ResetUserEventRecord(int32_t userId);
     int32_t MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles);
     int32_t UMountDisShareFile(int32_t userId, const std::string &networkId);
+    int32_t RegisterUeceActivationCallback(const sptr<IUeceActivationCallback> &ueceCallback);
+    int32_t UnregisterUeceActivationCallback();
     std::mutex mutex_;
 };
 } // namespace StorageManager

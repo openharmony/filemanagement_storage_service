@@ -304,5 +304,15 @@ int32_t StorageDaemonProxy::MountUsbFuse(const std::string &volumeId, std::strin
 {
     return E_OK;
 }
+
+int32_t StorageDaemonProxy::RegisterUeceActivationCallback(const sptr<IUeceActivationCallback>& callback)
+{
+    return E_OK;
+}
+
+int32_t StorageDaemonProxy::UnregisterUeceActivationCallback()
+{
+    return E_OK;
+}
 } // StorageDaemon
 } // OHOS

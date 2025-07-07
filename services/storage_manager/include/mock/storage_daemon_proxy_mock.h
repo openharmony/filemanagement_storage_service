@@ -108,6 +108,8 @@ public:
     virtual int32_t InactiveUserPublicDirKey(uint32_t userId) override;
     virtual int32_t QueryOccupiedSpaceForSa();
     virtual int32_t MountUsbFuse(const std::string &volumeId, std::string &fsUuid, int &fuseFd) override;
+    virtual int32_t RegisterUeceActivationCallback(const sptr<IUeceActivationCallback>& callback);
+    virtual int32_t UnregisterUeceActivationCallback();
 private:
     static inline BrokerDelegator<StorageDaemonProxy> delegator_;
     int32_t SendRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);

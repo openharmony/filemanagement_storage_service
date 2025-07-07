@@ -94,6 +94,11 @@ public:
                          const std::vector<uint8_t> &secret);
     int SetRecoverKey(const std::vector<uint8_t> &key);
     int32_t ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key);
+#ifdef EL5_FILEKEY_MANAGER
+    int RegisterUeceActivationCallback(const sptr<StorageManager::IUeceActivationCallback> &ueceCallback);
+    int UnregisterUeceActivationCallback();
+#endif
+    int NotifyUeceActivation(uint32_t userId, int32_t resultCode, bool needGetAllAppKey);
 #ifdef USER_CRYPTO_MIGRATE_KEY
     int RestoreUserKey(uint32_t userId, KeyType type);
     int32_t ClearAppCloneUserNeedRestore(unsigned int userId, std::string elNeedRestorePath);
@@ -115,7 +120,6 @@ public:
     void SaveUserElKey(unsigned int user, KeyType type, std::shared_ptr<BaseKey> elKey);
     void DeleteElKey(unsigned int user, KeyType type);
     bool HasElkey(uint32_t userId, KeyType type);
-
     friend class KeyManagerExt;
 private:
     KeyManager()
@@ -169,12 +173,12 @@ private:
     bool IsAppCloneUser(unsigned int user);
     int CheckNeedRestoreVersion(unsigned int user, KeyType type);
     int GenerateAppkeyWithRecover(uint32_t userId, uint32_t hashId, std::string &keyId);
+
 #ifdef EL5_FILEKEY_MANAGER
     int GenerateAndLoadAppKeyInfo(uint32_t userId, const std::vector<std::pair<int, std::string>> &keyInfo);
 #endif
     using KeyMap = std::map<KeyType, std::shared_ptr<BaseKey>>;
     std::map<unsigned int, KeyMap> userElKeys_;
-
     std::map<unsigned int, std::shared_ptr<DelayHandler>> userLockScreenTask_;
     std::shared_ptr<BaseKey> globalEl1Key_ { nullptr };
     std::map<unsigned int, bool> userPinProtect;
@@ -183,6 +187,11 @@ private:
     std::mutex keyMutex_;
     int64_t getLockStatusTime_[2];
     bool hasGlobalDeviceKey_;
+
+#ifdef EL5_FILEKEY_MANAGER
+    std::mutex ueceMutex_;
+    sptr<StorageManager::IUeceActivationCallback> ueceCallback_ = nullptr;
+#endif
 };
 } // namespace StorageDaemon
 } // namespace OHOS

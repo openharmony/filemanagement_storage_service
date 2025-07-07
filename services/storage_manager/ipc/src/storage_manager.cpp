@@ -890,5 +890,19 @@ int32_t StorageManager::InactiveUserPublicDirKey(uint32_t userId)
     return E_OK;
 #endif
 }
+
+int32_t StorageManager::RegisterUeceActivationCallback(const sptr<IUeceActivationCallback> &ueceCallback)
+{
+    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
+    int32_t err = fsCrypto->RegisterUeceActivationCallback(ueceCallback);
+    return err;
+}
+
+int32_t StorageManager::UnregisterUeceActivationCallback()
+{
+    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
+    int32_t err = fsCrypto->UnregisterUeceActivationCallback();
+    return err;
+}
 }
 }

@@ -16,6 +16,7 @@
 #include "key_manager.h"
 
 #include <fcntl.h>
+#include <future>
 #include "directory_ex.h"
 #include "file_ex.h"
 #include "fscrypt_key_v1.h"
@@ -62,6 +63,10 @@ constexpr uint8_t USER_LOGOUT = 0x0;
 constexpr uint32_t USER_ADD_AUTH = 0x0;
 constexpr uint32_t USER_CHANGE_AUTH = 0x1;
 
+#ifdef EL5_FILEKEY_MANAGER
+constexpr int32_t WAIT_THREAD_TIMEOUT_MS = 500;
+#endif
+
 static bool IsEncryption()
 {
 #ifdef SUPPORT_RECOVERY_KEY_SERVICE
@@ -70,7 +75,6 @@ static bool IsEncryption()
 #endif
     return true;
 }
-
 std::shared_ptr<BaseKey> KeyManager::GetBaseKey(const std::string& dir)
 {
     uint8_t versionFromPolicy = GetFscryptVersionFromPolicy();
@@ -1480,11 +1484,6 @@ int32_t KeyManager::UnlockUece(uint32_t user,
             return ret;
         }
     }
-    int ret = UnlockUserAppKeys(user, false);
-    if (ret != E_OK) {
-        LOGE("failed to delete appkey2");
-        return ret;
-    }
     return E_OK;
 }
 
@@ -2256,5 +2255,78 @@ int KeyManager::RestoreUserKey(uint32_t userId, KeyType type)
     return ret;
 }
 #endif
+
+#ifdef EL5_FILEKEY_MANAGER
+int KeyManager::RegisterUeceActivationCallback(const sptr<StorageManager::IUeceActivationCallback> &ueceCallback)
+{
+    std::lock_guard<std::mutex> lock(ueceMutex_);
+    if (ueceCallback == nullptr) {
+        LOGE("callback is nullptr");
+        return E_PARAMS_INVALID;
+    }
+    if (ueceCallback_ != nullptr) {
+        LOGI("El5FileMgr already registered callback, renew");
+        ueceCallback_ = ueceCallback;
+        return E_OK;
+    }
+    ueceCallback_ = ueceCallback;
+    LOGI("El5FileMgr register callback");
+    return E_OK;
+}
+
+int KeyManager::UnregisterUeceActivationCallback()
+{
+    std::lock_guard<std::mutex> lock(ueceMutex_);
+    if (ueceCallback_ == nullptr) {
+        LOGI("El5FileMgr already unregistered callback");
+        return E_OK;
+    }
+    ueceCallback_ = nullptr;
+    LOGI("Unregister callback");
+    return E_OK;
+}
+#endif
+
+int KeyManager::NotifyUeceActivation(uint32_t userId, int32_t resultCode, bool needGetAllAppKey)
+{
+#ifdef EL5_FILEKEY_MANAGER
+    if (ueceCallback_ == nullptr) {
+        LOGE("el5 activation callback invalid");
+        return E_OK;
+    }
+    std::promise<int32_t> promise;
+    std::future<int32_t> future = promise.get_future();
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
+    std::thread callbackThread ([this, userId, resultCode, needGetAllAppKey, p = std::move(promise)]() mutable {
+        int32_t retValue = E_OK;
+        LOGI("ready for callback, El5 activation result = %{public}d, userId=%{public}u, needGetAllAppKey=%{public}d",
+            resultCode, userId, needGetAllAppKey);
+        ueceCallback_->OnEl5Activation(resultCode, userId, needGetAllAppKey, retValue);
+        p.set_value(retValue);
+    });
+
+    if (future.wait_for(std::chrono::milliseconds(WAIT_THREAD_TIMEOUT_MS)) == std::future_status::timeout) {
+        LOGE("el5 activation callback timed out");
+        callbackThread.detach();
+        return E_OK;
+    }
+
+    auto delay = StorageService::StorageRadar::ReportDuration("UNLOCK USER APP KEYS",
+        startTime, StorageService::DELAY_TIME_THRESH_HIGH, userId);
+    LOGI("SD_DURATION: UNLOCK USER APP KEYS CB: delay time = %{public}s, isAllAppKey=%{public}d",
+        delay.c_str(), needGetAllAppKey);
+
+    int32_t ret = future.get();
+    LOGI("Unlock App Keys ret= %{public}d", ret);
+    callbackThread.join();
+    if (resultCode != E_OK || ret == E_PARAMS_INVALID) {
+        return E_OK;
+    }
+    return ret;
+# else
+    LOGD("EL5_FILEKEY_MANAGER is not supported");
+    return E_OK;
+#endif
+}
 } // namespace StorageDaemon
 } // namespace OHOS

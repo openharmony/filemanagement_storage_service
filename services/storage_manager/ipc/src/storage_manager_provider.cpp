@@ -806,5 +806,23 @@ int32_t StorageManagerProvider::InactiveUserPublicDirKey(uint32_t userId)
     }
     return StorageManager::GetInstance()->InactiveUserPublicDirKey(userId);
 }
+
+int32_t StorageManagerProvider::RegisterUeceActivationCallback(const sptr<IUeceActivationCallback> &ueceCallback)
+{
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER_CRYPT)) {
+        LOGE("Permission check failed, for storage_manager_crypt");
+        return E_PERMISSION_DENIED;
+    }
+    return StorageManager::GetInstance()->RegisterUeceActivationCallback(ueceCallback);
+}
+
+int32_t StorageManagerProvider::UnregisterUeceActivationCallback()
+{
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER_CRYPT)) {
+        LOGE("Permission check failed, for storage_manager_crypt");
+        return E_PERMISSION_DENIED;
+    }
+    return StorageManager::GetInstance()->UnregisterUeceActivationCallback();
+}
 } // namespace StorageManager
 } // namespace OHOS
