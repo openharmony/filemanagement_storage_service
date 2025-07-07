@@ -538,8 +538,7 @@ std::vector<int32_t> StorageDaemonCommunication::CreateShareFile(const StorageFi
         return std::vector<int32_t>{err};
     }
     std::vector<int32_t> funcResult;
-    int32_t rawDataSize = static_cast<int32_t>(rawData.size);
-    LOGI("StorageDaemonCommunication::CreateShareFile start. file size is %{public}d", rawDataSize);
+
     storageDaemon_->CreateShareFile(rawData, tokenId, flag, funcResult);
     LOGI("StorageDaemonCommunication::CreateShareFile end. result is %{public}zu", funcResult.size());
     return funcResult;
@@ -854,6 +853,21 @@ int32_t StorageDaemonCommunication::InactiveUserPublicDirKey(uint32_t userId)
     return storageDaemon_->InactiveUserPublicDirKey(userId);
 }
 
+int32_t StorageDaemonCommunication::MountUsbFuse(const std::string &volumeId, std::string &fsUuid, int &fuseFd)
+{
+    std::lock_guard<std::mutex> lock(mutex_);
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("StorageDaemonCommunication::MountUsbFuse connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->MountUsbFuse(volumeId, fsUuid, fuseFd);
+}
+
 int32_t StorageDaemonCommunication::QueryOccupiedSpaceForSa()
 {
     int32_t err = Connect();
@@ -866,6 +880,45 @@ int32_t StorageDaemonCommunication::QueryOccupiedSpaceForSa()
         return E_SERVICE_IS_NULLPTR;
     }
     return storageDaemon_->QueryOccupiedSpaceForSa();
+}
+
+int32_t StorageDaemonCommunication::RegisterUeceActivationCallback(
+    const sptr<StorageManager::IUeceActivationCallback> &ueceCallback)
+{
+#ifdef EL5_FILEKEY_MANAGER
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->RegisterUeceActivationCallback(ueceCallback);
+#else
+    LOGI("EL5_FILEKEY_MANAGER is not supported");
+    return E_OK;
+#endif
+}
+
+int32_t StorageDaemonCommunication::UnregisterUeceActivationCallback()
+{
+#ifdef EL5_FILEKEY_MANAGER
+    int32_t err = Connect();
+    if (err != E_OK) {
+        LOGE("Connect failed");
+        return err;
+    }
+    if (storageDaemon_ == nullptr) {
+        LOGE("StorageDaemonCommunication::Connect service nullptr");
+        return E_SERVICE_IS_NULLPTR;
+    }
+    return storageDaemon_->UnregisterUeceActivationCallback();
+#else
+    LOGI("EL5_FILEKEY_MANAGER is not supported");
+    return E_OK;
+#endif
 }
 } // namespace StorageManager
 } // namespace OHOS

@@ -17,7 +17,7 @@
 #define OHOS_STORAGE_MANAGER_FILE_SYSTEM_CRYPTO_H
 
 #include <singleton.h>
-
+#include "iuece_activation_callback.h"
 namespace OHOS {
 namespace StorageManager {
 class FileSystemCrypto final : public NoCopyable {
@@ -55,6 +55,8 @@ public:
     int32_t SetRecoverKey(const std::vector<uint8_t> &key);
     int32_t ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key);
     int32_t InactiveUserPublicDirKey(uint32_t userId);
+    int32_t RegisterUeceActivationCallback(const sptr<IUeceActivationCallback> &ueceCallback);
+    int32_t UnregisterUeceActivationCallback();
 private:
     int32_t CheckUserIdRange(int32_t userId);
 };

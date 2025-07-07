@@ -507,7 +507,7 @@ HWTEST_F(KeyManagerSupTest, KeyManager_GenerateAndLoadAppKeyInfo_001, TestSize.L
     EXPECT_CALL(*fscryptKeyMock_, GenerateAppkey(_, _, _)).WillOnce(Return(false)).WillOnce(Return(true))
         .WillOnce(DoAll(SetArgReferee<2>("test3"), Return(true)));
     EXPECT_CALL(*el5FilekeyManagerKitMoc_, ChangeUserAppkeysLoadInfo(_, _)).WillOnce(Return(-1));
-    EXPECT_EQ(KeyManager::GetInstance()->GenerateAndLoadAppKeyInfo(userId, keyInfo), -EFAULT);
+    EXPECT_EQ(KeyManager::GetInstance()->GenerateAndLoadAppKeyInfo(userId, keyInfo), -EPERM);
 
     EXPECT_CALL(*fscryptKeyMock_, GenerateAppkey(_, _, _)).WillOnce(Return(false)).WillOnce(Return(true))
         .WillOnce(DoAll(SetArgReferee<2>("test3"), Return(true)));
@@ -545,7 +545,7 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UnlockUserAppKeys_001, TestSize.Level1)
 
     #ifdef EL5_FILEKEY_MANAGER
     EXPECT_CALL(*el5FilekeyManagerKitMoc_, GetUserAllAppKey(_, _)).WillOnce(Return(-1));
-    EXPECT_EQ(KeyManager::GetInstance()->UnlockUserAppKeys(userId, needGetAllAppKey), -EFAULT);
+    EXPECT_EQ(KeyManager::GetInstance()->UnlockUserAppKeys(userId, needGetAllAppKey), -EPERM);
 
     EXPECT_CALL(*el5FilekeyManagerKitMoc_, GetUserAllAppKey(_, _))
         .WillOnce(DoAll(SetArgReferee<1>(keyInfo), Return(0)));
@@ -558,7 +558,7 @@ HWTEST_F(KeyManagerSupTest, KeyManager_UnlockUserAppKeys_001, TestSize.Level1)
     needGetAllAppKey = false;
     #ifdef EL5_FILEKEY_MANAGER
     EXPECT_CALL(*el5FilekeyManagerKitMoc_, GetUserAppKey(_, _)).WillOnce(Return(-1));
-    EXPECT_EQ(KeyManager::GetInstance()->UnlockUserAppKeys(userId, needGetAllAppKey), -EFAULT);
+    EXPECT_EQ(KeyManager::GetInstance()->UnlockUserAppKeys(userId, needGetAllAppKey), -EPERM);
 
     EXPECT_CALL(*el5FilekeyManagerKitMoc_, GetUserAppKey(_, _))
         .WillOnce(DoAll(SetArgReferee<1>(keyInfo), Return(0)));
@@ -947,4 +947,3 @@ HWTEST_F(KeyManagerSupTest, KeyManager_HashElxActived_003, TestSize.Level1)
     GTEST_LOG_(INFO) << "KeyManager_HashElxActived_003 end";
 }
 }
-

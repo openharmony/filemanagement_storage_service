@@ -357,7 +357,7 @@ HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_IsFileRemovingTest_003, TestSize.Level
  * @tc.type: FUNC
  */
 HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_FilePushAsyncTest_001, TestSize.Level1) {
-    auto mtpfsdevice = std::make_shared();
+    auto mtpfsdevice = std::make_shared<MtpFsDevice>();
     std::string srcPath = "/path/to/local/file/test.txt";
     std::string dstPath = "/path/to/mtp/device/test.txt";
 
@@ -377,7 +377,7 @@ HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_PerformUploadTest_001, TestSize.Level1
     MtpFsTypeFile fileToRemove(1, 1, 1, "file_to_remove.txt", 1024, 0);
     std::string dstBaseName = "new_file_name.txt";
 
-    auto mtpfsdevice = std::make_shared();
+    auto mtpfsdevice = std::make_shared<MtpFsDevice>();
     int result = mtpfsdevice->PerformUpload(src, dst, &dirParent, &fileToRemove, dstBaseName);
     EXPECT_EQ(result, -EINVAL);
 }
@@ -391,7 +391,7 @@ HWTEST_F(MtpfsDeviceTest, MtpfsDeviceTest_GetThumbnailTest_001, TestSize.Level1)
     std::string path = "/invalid/path";
     char buf[1024];
 
-    auto mtpfsdevice = std::make_shared();
+    auto mtpfsdevice = std::make_shared<MtpFsDevice>();
     int result = mtpfsdevice->GetThumbnail(path, buf);
     EXPECT_EQ(result, -ENOENT);
 }

@@ -26,25 +26,27 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-using namespace std;
-const string SANDBOX_ROOT_PATH = "/mnt/sandbox/";
-const string CURRENT_USER_ID_FLAG = "<currentUserId>";
-const string PACKAGE_NAME_FLAG = "<bundleName>";
-const string MOUNT_POINT_INFO = "/proc/mounts";
-const string MOUNT_POINT_TYPE_HMDFS = "hmdfs";
-const string MOUNT_POINT_TYPE_HMFS = "hmfs";
-const string MOUNT_POINT_TYPE_F2FS = "f2fs";
-const string MOUNT_POINT_TYPE_SHAREFS = "sharefs";
-const string EL2_BASE = "/data/storage/el2/base/";
-const string MOUNT_SUFFIX = "_locked";
-const string APP_EL1_PATH = "/data/app/el1";
-const string FILE_MGR_ROOT_PATH = "/storage/Users/currentUser/";
-const set<string> SANDBOX_EXCLUDE_PATH = {
+const std::string SANDBOX_ROOT_PATH = "/mnt/sandbox/";
+const std::string CURRENT_USER_ID_FLAG = "<currentUserId>";
+const std::string PACKAGE_NAME_FLAG = "<bundleName>";
+const std::string MOUNT_POINT_INFO = "/proc/mounts";
+const std::string MOUNT_POINT_TYPE_HMDFS = "hmdfs";
+const std::string MOUNT_POINT_TYPE_HMFS = "hmfs";
+const std::string MOUNT_POINT_TYPE_F2FS = "f2fs";
+const std::string MOUNT_POINT_TYPE_SHAREFS = "sharefs";
+const std::string EL2_BASE = "/data/storage/el2/base/";
+const std::string MOUNT_SUFFIX = "_locked";
+const std::string OABINDER_CTRL_STATE = "storage_oa_binder.ctl.state";
+const std::string RGM_CONFIG_PATH = "/data/service/el1/public/rgm_manager/data/rgm_hmos/config";
+const std::string RGM_STORAGE_FILE_PATH = RGM_CONFIG_PATH + "/storage/direnc.json";
+const std::string APP_EL1_PATH = "/data/app/el1";
+const std::string FILE_MGR_ROOT_PATH = "/storage/Users/currentUser/";
+const std::set<std::string> SANDBOX_EXCLUDE_PATH = {
     "chipset",
     "system",
     "com.ohos.render"
 };
-const vector<string> CRYPTO_SANDBOX_PATH = {
+const std::vector<std::string> CRYPTO_SANDBOX_PATH = {
     "/data/storage/el2/base/",
     "/data/storage/el2/database/",
     "/data/storage/el2/share/",
@@ -58,7 +60,7 @@ const vector<string> CRYPTO_SANDBOX_PATH = {
     "/data/storage/el5/base/",
     "/data/storage/el5/database/"
 };
-const vector<string> CRYPTO_SRC_PATH = {
+const std::vector<std::string> CRYPTO_SRC_PATH = {
     "/data/app/el2/<currentUserId>/base/<bundleName>/",
     "/data/app/el2/<currentUserId>/database/<bundleName>/",
     "/mnt/share/<currentUserId>/<bundleName>/",
@@ -73,7 +75,7 @@ const vector<string> CRYPTO_SRC_PATH = {
     "/data/app/el5/<currentUserId>/database/<bundleName>/"
 };
 
-const vector<string> APPDATA_DST_PATH = {
+const std::vector<std::string> APPDATA_DST_PATH = {
     "/mnt/user/<currentUserId>/nosharefs/appdata/el1/base/",
     "/mnt/user/<currentUserId>/nosharefs/appdata/el2/base/",
     "/mnt/user/<currentUserId>/nosharefs/appdata/el2/cloud/",
@@ -81,7 +83,7 @@ const vector<string> APPDATA_DST_PATH = {
     "/mnt/user/<currentUserId>/nosharefs/appdata/el5/base/"
 };
 
-const vector<string> APPDATA_SRC_PATH = {
+const std::vector<std::string> APPDATA_SRC_PATH = {
     "/data/app/el1/<currentUserId>/base/",
     "/data/app/el2/<currentUserId>/base/",
     "/mnt/hmdfs/<currentUserId>/cloud/data/",
@@ -89,7 +91,7 @@ const vector<string> APPDATA_SRC_PATH = {
     "/data/app/el5/<currentUserId>/base/"
 };
 
-const vector<string> FD_PATH = {
+const std::vector<std::string> FD_PATH = {
     "/data/service/el2/<currentUserId>",
     "/data/service/el3/<currentUserId>",
     "/data/service/el4/<currentUserId>",
@@ -97,16 +99,18 @@ const vector<string> FD_PATH = {
     "/storage/media/<currentUserId>"
 };
 
-const vector<string> SYS_PATH = {
+const std::vector<std::string> SYS_PATH = {
     "/mnt/hmdfs/<currentUserId>/account",
     "/mnt/hmdfs/<currentUserId>/non_account",
     "/mnt/hmdfs/<currentUserId>/cloud"
 };
 
+const std::vector<std::string> HMDFS_SUFFIX = {"account", "non_account", "cloud"};
+
 const std::string HMDFS_SYS_CAP = "const.distributed_file_property.enabled";
 const int32_t HMDFS_VAL_LEN = 6;
 const int32_t HMDFS_TRUE_LEN = 5;
-const string SHARE_PATH = "/data/service/el1/public/storage_daemon/share/public";
+const std::string SHARE_PATH = "/data/service/el1/public/storage_daemon/share/public";
 static constexpr int MODE_0711 = 0711;
 static constexpr int MODE_0771 = 0771;
 static constexpr int MODE_02771 = 02771;
@@ -125,6 +129,7 @@ constexpr uid_t OID_SYSTEM = 1000;
 constexpr uid_t OID_FILE_MANAGER = 1006;
 constexpr uid_t OID_USER_DATA_RW = 1008;
 constexpr uid_t OID_DFS = 1009;
+constexpr uid_t OID_MEDIA = 1013;
 constexpr uid_t OID_BACKUP = 1089;
 constexpr uid_t OID_DFS_SHARE = 3822;
 constexpr uid_t OID_TEE = 6668;
@@ -143,10 +148,17 @@ constexpr uid_t OID_COLLABORATION_FWK = 5520;
 constexpr uid_t OID_CLOUD_BACK = 5206;
 constexpr uid_t OID_AV_SESSION = 6700;
 constexpr uid_t USER_ID_BASE = 200000;
+constexpr uid_t OID_CLOUD_DEVELOP_PROXY = 7996;
+constexpr uid_t OID_MEDIA_ENHANCE_SERVICE = 7998;
+constexpr uid_t OID_PUSH = 7023;
+constexpr uid_t OID_GAMESERVICE_SERVER = 7011;
+constexpr uid_t OID_HWF_SERVICE = 7700;
 constexpr uid_t OID_FOUNDATION = 5523;
 constexpr uid_t OID_PASTEBOARD = 3816;
 constexpr uid_t OID_PRINT = 3823;
 constexpr uid_t OID_FINDNETWORK = 7518;
+// Proprietary service, not for open-source use.
+constexpr uid_t OID_TRUSTED_RING = 65936;
 
 class MountManager final {
 public:

@@ -32,6 +32,7 @@ enum VolumeState {
     REMOVED,
     BAD_REMOVAL,
     DAMAGED,
+    FUSE_REMOVED,
 };
 class VolumeCore : public Parcelable {
 public:

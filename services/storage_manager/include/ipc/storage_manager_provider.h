@@ -163,6 +163,8 @@ public:
     int32_t MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles) override;
     int32_t UMountDisShareFile(int32_t userId, const std::string &networkId) override;
     int32_t InactiveUserPublicDirKey(uint32_t userId) override;
+    int32_t RegisterUeceActivationCallback(const sptr<IUeceActivationCallback> &ueceCallback) override;
+    int32_t UnregisterUeceActivationCallback() override;
 private:
     StorageManagerProvider();
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;

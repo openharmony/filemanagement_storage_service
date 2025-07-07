@@ -18,6 +18,7 @@
 
 #include <singleton.h>
 #include "istorage_daemon.h"
+#include "iuece_activation_callback.h"
 
 namespace OHOS {
 namespace StorageManager {
@@ -65,8 +66,8 @@ public:
                              const std::vector<uint8_t> &token,
                              const std::vector<uint8_t> &secret);
     int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false);
-    int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus);
     int32_t GetUserNeedActiveStatus(uint32_t userId, bool &needActive);
+    int32_t GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus);
     int32_t GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId, bool needReSet = false);
     int32_t DeleteAppkey(uint32_t userId, const std::string keyId);
     int32_t CreateRecoverKey(uint32_t userId,
@@ -107,6 +108,11 @@ public:
     int32_t UMountDisShareFile(int32_t userId, const std::string &networkId);
     int32_t InactiveUserPublicDirKey(uint32_t userId);
     int32_t QueryOccupiedSpaceForSa();
+    int32_t MountUsbFuse(const std::string &volumeId, std::string &fsUuid, int &fuseFd);
+
+    // el5 filekey manager
+    int32_t RegisterUeceActivationCallback(const sptr<IUeceActivationCallback> &ueceCallback);
+    int32_t UnregisterUeceActivationCallback();
 private:
     sptr<OHOS::StorageDaemon::IStorageDaemon> storageDaemon_;
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = nullptr;

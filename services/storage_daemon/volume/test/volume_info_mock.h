@@ -29,6 +29,7 @@ public:
     MOCK_METHOD0(DoDestroy, int32_t());
     MOCK_METHOD1(DoMount, int32_t(uint32_t));
     MOCK_METHOD1(DoUMount, int32_t(bool));
+    MOCK_METHOD0(DoUMountUsbFuse, int32_t());
     MOCK_METHOD0(DoCheck, int32_t());
     MOCK_METHOD1(DoFormat, int32_t(std::string));
     MOCK_METHOD1(DoSetVolDesc, int32_t(std::string));

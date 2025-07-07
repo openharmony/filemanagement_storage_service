@@ -19,6 +19,10 @@
 
 namespace OHOS {
 namespace StorageDaemon {
+
+int32_t flag_num_sec = 2;
+int32_t flag_num_thir = 3;
+int32_t main_user = 100;
 int32_t KeyManager::InitGlobalDeviceKey(void)
 {
     return E_OK;
@@ -105,6 +109,17 @@ int32_t KeyManager::ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType,
 int32_t KeyManager::SetDirectoryElPolicy(unsigned int user, KeyType type,
     const std::vector<FileList> &vec)
 {
+    for (auto temp : vec) {
+        if (type == flag_num_sec && IsDir("/data/c")) {
+            return -flag_num_thir;
+        }
+        if (IsDir("/data/a") && user == 0) {
+            return -1;
+        }
+        if (IsDir("/data/b") && user == main_user) {
+            return -flag_num_sec;
+        }
+    }
     return E_OK;
 }
 
@@ -128,6 +143,23 @@ int KeyManager::ActiveCeSceSeceUserKey(unsigned int user, KeyType type,
 }
 
 int KeyManager::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
+{
+    return E_OK;
+}
+
+#ifdef EL5_FILEKEY_MANAGER
+int KeyManager::RegisterUeceActivationCallback(const sptr<StorageManager::IUeceActivationCallback> &ueceCallback)
+{
+    return E_OK;
+}
+
+int KeyManager::UnregisterUeceActivationCallback()
+{
+    return E_OK;
+}
+#endif
+
+int KeyManager::NotifyUeceActivation(uint32_t userId, int32_t resultCode, bool needGetAllAppKey)
 {
     return E_OK;
 }

@@ -18,6 +18,8 @@
 #include <fcntl.h>
 #include <sys/mount.h>
 #include <sys/sysmacros.h>
+#include <sys/stat.h>
+#include <sys/xattr.h>
 #include <unistd.h>
 
 #include "ipc/storage_manager_client.h"
@@ -26,8 +28,12 @@
 #include "storage_service_log.h"
 #include "utils/storage_radar.h"
 #include "utils/string_utils.h"
+#include "utils/disk_utils.h"
+#include "utils/file_utils.h"
 #include "volume/external_volume_info.h"
 
+const int32_t MTP_QUERY_RESULT_LEN = 10;
+const std::string MTP_PATH_PREFIX = "/mnt/data/external/mtp";
 #define STORAGE_MANAGER_IOC_CHK_BUSY _IOR(0xAC, 77, int)
 using namespace std;
 using namespace OHOS::StorageService;
@@ -94,8 +100,16 @@ int32_t VolumeManager::DestroyVolume(const std::string volId)
     }
 
     int32_t ret = destroyNode->Destroy();
-    if (ret)
+    if (ret) {
         return ret;
+    }
+    if (IsFuse()) {
+        ret = destroyNode->DestroyUsbFuse();
+        if (ret) {
+            return ret;
+        }
+    }
+
     volumes_.Erase(volId);
     destroyNode.reset();
 
@@ -147,6 +161,82 @@ int32_t VolumeManager::Mount(const std::string volId, uint32_t flags)
     if (err) {
         LOGE("Volume Notify Mount Destroyed failed");
     }
+    return E_OK;
+}
+
+int32_t VolumeManager::MountUsbFuse(std::string volumeId, std::string &fsUuid, int &fuseFd)
+{
+    std::shared_ptr<VolumeInfo> info = GetVolume(volumeId);
+    if (info == nullptr) {
+        LOGE("the volume %{public}s does not exist.", volumeId.c_str());
+        return E_NON_EXIST;
+    }
+    int32_t result = ReadVolumUuid(volumeId, fsUuid);
+    if (result != E_OK) {
+        return result;
+    }
+    result = CreateMountUsbFusePath(fsUuid);
+    if (result != E_OK) {
+        return result;
+    }
+    fuseFd = open("/dev/fuse", O_RDWR);
+    if (fuseFd < 0) {
+        LOGE("open /dev/fuse fail for file mgr, errno is %{public}d.", errno);
+        return E_OPEN_FUSE;
+    }
+    LOGI("open fuse end.");
+    string opt = StringPrintf("fd=%i,"
+        "rootmode=40000,"
+        "default_permissions,"
+        "allow_other,"
+        "user_id=0,group_id=0,"
+        "context=\"u:object_r:hmdfs:s0\","
+        "fscontext=u:object_r:hmdfs:s0",
+        fuseFd);
+ 
+    int ret = StorageDaemon::Mount("/dev/fuse", mountUsbFusePath_.c_str(),
+                                   "fuse", MS_NOSUID | MS_NODEV | MS_NOEXEC | MS_NOATIME, opt.c_str());
+    if (ret) {
+        LOGE("failed to mount fuse for file mgr, ret is %{public}d, errno is %{public}d.", ret, errno);
+        close(fuseFd);
+        std::string extraData = "dstPath=" + mountUsbFusePath_ + ",kernelCode=" + to_string(errno);
+        return E_MOUNT_FILE_MGR_FUSE;
+    }
+    return E_OK;
+}
+ 
+int32_t VolumeManager::ReadVolumUuid(std::string volumeId, std::string &fsUuid)
+{
+    std::string devPath = StringPrintf("/dev/block/%s", (volumeId).c_str());
+    int32_t ret = OHOS::StorageDaemon::ReadVolumUuid(devPath, fsUuid);
+    return ret;
+}
+ 
+int32_t VolumeManager::CreateMountUsbFusePath(std::string fsUuid)
+{
+    LOGI("CreateMountUsbFusePath create path");
+    if (fsUuid.find("..") != std::string::npos || fsUuid.find("/") != std::string::npos) {
+        LOGE("Invalid fsUuid: %{public}s, contains path traversal characters or path separators",
+             GetAnonyString(fsUuid).c_str());
+        return E_PARAMS_INVALID;
+    }
+    struct stat statbuf;
+    if (fsUuid.find("..") != std::string::npos) {
+        LOGE("Invalid fsUuid: %{public}s, contains path traversal characters", GetAnonyString(fsUuid).c_str());
+        return E_PARAMS_INVALID;
+    }
+    mountUsbFusePath_ = StringPrintf("/mnt/data/external/%s", fsUuid.c_str());
+    if (!lstat(mountUsbFusePath_.c_str(), &statbuf)) {
+        LOGE("volume mount path %{public}s exists, please remove first", GetAnonyString(mountUsbFusePath_).c_str());
+        remove(mountUsbFusePath_.c_str());
+        return E_SYS_KERNEL_ERR;
+    }
+    if (mkdir(mountUsbFusePath_.c_str(), S_IRWXU | S_IRWXG | S_IXOTH)) {
+        LOGE("the volume %{public}s create path %{public}s failed",
+             GetAnonyString(fsUuid).c_str(), GetAnonyString(mountUsbFusePath_).c_str());
+        return E_MKDIR_MOUNT;
+    }
+    LOGI("CreateMountUsbFusePath create path out");
     return E_OK;
 }
 
@@ -267,6 +357,10 @@ int32_t VolumeManager::QueryUsbIsInUse(const std::string &diskPath, bool &isInUs
             string_view(realPath).size(), diskPath.size());
         return E_PARAMS_INVALID;
     }
+    if (IsMtpDeviceInUse(diskPath)) {
+        isInUse = true;
+        return E_OK;
+    }
     int fd = open(realPath, O_RDONLY);
     if (fd < 0) {
         LOGE("open file fail realPath %{public}s, errno %{public}d", realPath, errno);
@@ -289,6 +383,27 @@ int32_t VolumeManager::QueryUsbIsInUse(const std::string &diskPath, bool &isInUs
     isInUse = false;
     close(fd);
     return E_OK;
+}
+
+bool VolumeManager::IsMtpDeviceInUse(const std::string &diskPath)
+{
+    if (diskPath.rfind(MTP_PATH_PREFIX, 0) != 0) {
+        return false;
+    }
+
+    std::string key = "user.queryMtpIsInUse";
+    char value[MTP_QUERY_RESULT_LEN] = { 0 };
+    int32_t len = getxattr(diskPath.c_str(), key.c_str(), value, MTP_QUERY_RESULT_LEN);
+    if (len < 0) {
+        LOGE("Failed to getxattr for diskPath = %{public}s", diskPath.c_str());
+        return false;
+    }
+
+    if ("true" == std::string(value)) {
+        LOGI("MTP device is in use for diskPath = %{public}s", diskPath.c_str());
+        return true;
+    }
+    return false;
 }
 } // StorageDaemon
 } // OHOS

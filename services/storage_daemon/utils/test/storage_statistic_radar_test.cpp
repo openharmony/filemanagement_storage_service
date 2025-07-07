@@ -74,6 +74,7 @@ HWTEST_F(StorageStatisticRadarTest, StorageStatisticRadarTest_CreateStatisticFil
     statistics.insert(std::make_pair(1, info));
     std::string jsonStr = radar.CreateJsonString(statistics);
     std::string errMsg = "";
+
     SaveStringToFileSync(PATH_STORAGE_RADAR.c_str(), jsonStr, errMsg);
     EXPECT_TRUE(radar.CreateStatisticFile());
 

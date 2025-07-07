@@ -45,8 +45,8 @@ ohos_unittest("HuksMasterTest") {
   ]
 
   deps = [
-    "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}/libfscrypt:libfscryptutils",
+    "${storage_daemon_path}:storage_common_utils",
   ]
 
   external_deps = [

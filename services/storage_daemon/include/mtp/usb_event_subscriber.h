@@ -14,29 +14,29 @@
  */
 #ifndef OHOS_STORAGE_DAEMON_USB_EVENT_SUBSCRIBER_H
 #define OHOS_STORAGE_DAEMON_USB_EVENT_SUBSCRIBER_H
- 
+
 #include <string>
- 
+
 #include "common_event_manager.h"
 #include "common_event_subscriber.h"
 #include "common_event_support.h"
 #include "cJSON.h"
- 
+
 namespace OHOS {
 namespace StorageDaemon {
 using CommonEventSubscriber = OHOS::EventFwk::CommonEventSubscriber;
 using CommonEventData = OHOS::EventFwk::CommonEventData;
 using CommonEventSubscribeInfo = OHOS::EventFwk::CommonEventSubscribeInfo;
- 
+
 class UsbEventSubscriber : public OHOS::EventFwk::CommonEventSubscriber {
 public:
     UsbEventSubscriber() = default;
     explicit UsbEventSubscriber(const EventFwk::CommonEventSubscribeInfo &info);
     virtual ~UsbEventSubscriber() = default;
- 
+
     void OnReceiveEvent(const OHOS::EventFwk::CommonEventData &data) override;
     static void SubscribeCommonEvent(void);
- 
+
 private:
     void GetValueFromUsbDataInfo(const std::string &jsonStr, uint8_t &devNum, uint32_t &busLoc);
     bool IsMTPDevice(const std::string &usbInfo);
@@ -46,5 +46,4 @@ private:
 };
 } // namespace UsbEventSubscriber
 } // namespace OHOS
- 
 #endif
