@@ -62,8 +62,8 @@ public:
     int32_t UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey = false);
     int32_t LockUserScreen(uint32_t userId);
     int32_t UnlockUserScreen(uint32_t userId,
-                                     const std::vector<uint8_t> &token,
-                                     const std::vector<uint8_t> &secret);
+                             const std::vector<uint8_t> &token,
+                             const std::vector<uint8_t> &secret);
     int32_t GetLockScreenStatus(uint32_t user, bool &lockScreenStatus);
     int32_t GenerateAppkey(uint32_t userId, uint32_t hashId, std::string &keyId, bool needReSet = false);
     int32_t DeleteAppkey(uint32_t userId, const std::string &keyId);
@@ -72,16 +72,24 @@ public:
                              const std::vector<uint8_t> &token,
                              const std::vector<uint8_t> &secret);
     int32_t SetRecoverKey(const std::vector<uint8_t> &key);
+    int32_t ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key);
+
+    // app file share api
     int32_t GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount = false);
     int32_t GetUserNeedActiveStatus(uint32_t userId, bool &needActive);
+
+    // file lock
     int32_t IsFileOccupied(const std::string &path,
                            const std::vector<std::string> &inputList,
                            std::vector<std::string> &outputList,
                            bool &isOccupy);
-    int32_t ResetSecretWithRecoveryKey(uint32_t userId, uint32_t rkType, const std::vector<uint8_t> &key);
+
     void SetPriority();
 
     int32_t InactiveUserPublicDirKey(uint32_t userId);
+    int32_t RegisterUeceActivationCallback(const sptr<StorageManager::IUeceActivationCallback> &ueceCallback);
+    int32_t UnregisterUeceActivationCallback();
+
 private:
 #ifdef USER_CRYPTO_MIGRATE_KEY
     std::string GetNeedRestoreFilePath(int32_t userId, const std::string &user_dir);

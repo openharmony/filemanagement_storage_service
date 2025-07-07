@@ -58,7 +58,7 @@ int AppCloneKeyManager::ActiveAppCloneUserKey(unsigned int &failedUserId)
             StorageRadar::ReportActiveUserKey("ActiveUserKey::ActiveAppCloneUserKey", userId, ret, "EL4");
             return ret;
         }
-        LOGI("ActiveAppCloneUserKey::userkey %{public}u activated", userId);
+        LOGI("ActiveAppCloneUserKey::userkey %{public}u activated.", userId);
         return E_OK;
     }
     LOGE("ActiveAppCloneUserKey::Did not find app clone userId in valid range = {219 ~ 239}.");

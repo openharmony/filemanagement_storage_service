@@ -16,7 +16,8 @@ import("//build/ohos_var.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
 idl_gen_interface("storage_manager_interface_native") {
-  src_idl = rebase_path("${storage_manager_path}/IStorageManager.idl")
+  sources = [ "${storage_manager_path}/IStorageManager.idl" ]
+  sources_callback = ["IUeceActivationCallback.idl"]
   log_tag = "StorageManager"
   log_domainid = "0xD004300"
   hitrace = "HITRACE_TAG_FILEMANAGEMENT"

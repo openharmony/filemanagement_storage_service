@@ -14,6 +14,10 @@
  */
 
 #include "mtp/mtp_device_manager.h"
+#include "ipc/storage_manager_client.h"
+#include "storage_service_errno.h"
+#include "storage_service_log.h"
+#include "utils/file_utils.h"
 
 #include <config.h>
 #include <dirent.h>

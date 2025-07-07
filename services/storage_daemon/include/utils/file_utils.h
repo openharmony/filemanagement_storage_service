@@ -35,6 +35,7 @@ int32_t ChMod(const std::string &path, mode_t mode);
 int32_t MkDir(const std::string &path, mode_t mode);
 bool IsDir(const std::string &path);
 bool IsFile(const std::string &path);
+bool IsFuse();
 bool PrepareDir(const std::string &path, mode_t mode, uid_t uid, gid_t gid);
 bool DestroyDir(const std::string &path);
 bool MkDirRecurse(const std::string& path, mode_t mode);
@@ -69,6 +70,8 @@ bool DelFolder(const std::string &path);
 void KillProcess(const std::vector<ProcessInfo> &processList, std::vector<ProcessInfo> &killFailList);
 bool IsProcessAlive(int pid);
 std::string ProcessToString(std::vector<ProcessInfo> &processList);
+bool RestoreconDir(const std::string &path);
+int32_t RedirectStdToPipe(int logpipe[2], size_t len);
 }
 }
 

@@ -83,11 +83,11 @@ enum class BizStage : int32_t {
     BIZ_STAGE_SET_VOLUME_DESCRIPTION,
     BIZ_STAGE_GET_ALL_VOLUMES,
 
-    BIZ_STAGE_THRESHOLD_TEN_PERCENT = 51,
-    BIZ_STAGE_THRESHOLD_FIVE_PERCENT,
-    BIZ_STAGE_THRESHOLD_MINIMAL,
-    BIZ_STAGE_THRESHOLD_500MB,
-    BIZ_STAGE_THRESHOLD_2GB,
+    BIZ_STAGE_THRESHOLD_CLEAN_HIGH = 51,
+    BIZ_STAGE_THRESHOLD_CLEAN_MEDIUM,
+    BIZ_STAGE_THRESHOLD_CLEAN_LOW,
+    BIZ_STAGE_THRESHOLD_NOTIFY_LOW,
+    BIZ_STAGE_THRESHOLD_NOTIFY_MEDIUM,
 
     BIZ_STAGE_USER_MOUNT = 61,
 
@@ -117,7 +117,7 @@ public:
 public:
     bool RecordFuctionResult(const RadarParameter &parameterRes);
     static void ReportActiveUserKey(const std::string &funcName, uint32_t userId, int ret,
-        const std::string &keyElxLevel);
+	                                const std::string &keyElxLevel);
     static void ReportGetStorageStatus(const std::string &funcName, uint32_t userId, int ret,
         const std::string &orgPkg);
     static void ReportVolumeOperation(const std::string &funcName, int ret);

@@ -262,7 +262,7 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_TryToFixUeceKey_000, TestSize.Level1)
     EXPECT_CALL(*fscryptKeyMock_, DeleteClassEPinCode(_)).WillOnce(Return(E_OK));
     EXPECT_CALL(*fscryptControlMock_, KeyCtrlHasFscryptSyspara()).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*baseKeyMock_, UpdateKey(_, _)).WillOnce(Return(-1));
-    EXPECT_EQ(KeyManager::GetInstance()->TryToFixUeceKey(user, token, secret),  E_ELX_KEY_UPDATE_ERROR);
+    EXPECT_EQ(KeyManager::GetInstance()->TryToFixUeceKey(user, token, secret), E_ELX_KEY_UPDATE_ERROR);
     ForceRemoveDirectory(keyDir);
     KeyManager::GetInstance()->DeleteElKey(user, EL5_KEY);
     if (!existUece) {
@@ -394,7 +394,7 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_UpdateCeEceSeceUserAuth_001, TestSize.L
         E_ELX_KEY_STORE_ERROR);
     #else
     EXPECT_CALL(*baseKeyMock_, StoreKey(_)).WillOnce(Return(-1));
-    EXPECT_EQ(KeyManager::GetInstance()->UpdateCeEceSeceUserAuth(user, userTokenSecret, type), -EFAULT);
+    EXPECT_EQ(KeyManager::GetInstance()->UpdateCeEceSeceUserAuth(user, userTokenSecret, type), E_ELX_KEY_STORE_ERROR);
     #endif
 
     KeyManager::GetInstance()->DeleteElKey(user, EL1_KEY);
@@ -507,7 +507,7 @@ HWTEST_F(KeyManagerOtherTest, KeyManager_UpdateUserAuth_001, TestSize.Level1)
     EXPECT_EQ(
         KeyManager::GetInstance()->UpdateUserAuth(user, userTokenSecret, needGenerateShield), E_EL5_DELETE_CLASS_ERROR);
     #else
-    EXPECT_EQ(KeyManager::GetInstance()->UpdateUserAuth(user, userTokenSecret), -EFAULT);
+    EXPECT_EQ(KeyManager::GetInstance()->UpdateUserAuth(user, userTokenSecret), E_EL5_DELETE_CLASS_ERROR);
     #endif
     KeyManager::GetInstance()->DeleteElKey(user, EL5_KEY);
     OHOS::ForceRemoveDirectory(dir);

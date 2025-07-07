@@ -19,7 +19,7 @@
 #include "storage_service_errno.h"
 #include "storage_service_log.h"
 #include "utils/storage_utils.h"
-
+#include "utils/file_utils.h"
 namespace OHOS {
 namespace StorageManager {
 DiskManagerService::DiskManagerService() {}
@@ -55,6 +55,10 @@ void DiskManagerService::OnDiskDestroyed(std::string diskId)
 
 int32_t DiskManagerService::Partition(std::string diskId, int32_t type)
 {
+    if (StorageDaemon::IsFuse()) {
+        LOGE("DiskManagerService::The disk %{public}s is fuse, not support", GetAnonyString(diskId).c_str());
+        return E_NOT_SUPPORT;
+    }
     if (!diskMap_.Contains(diskId)) {
         LOGE("DiskManagerService::Partition the disk %{public}s doesn't exist", GetAnonyString(diskId).c_str());
         return E_NON_EXIST;

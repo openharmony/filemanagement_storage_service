@@ -255,6 +255,21 @@ int32_t MtpDeviceMonitor::Umount(const std::string &id)
     return E_NON_EXIST;
 }
 
+bool MtpDeviceMonitor::IsHwitDevice()
+{
+    char param[SYS_PARARMETER_SIZE] = {0};
+    int errorCode = GetParameter(KEY_CUST, "", param, SYS_PARARMETER_SIZE);
+    if (errorCode <= 0) {
+        LOGE("get vendor country fail, errorCode:%{public}d", errorCode);
+        return false;
+    }
+    LOGI("vendor counry: %{public}s, errorCode: %{public}d", param, errorCode);
+    if (std::string(param).find(CUST_HWIT) != std::string::npos) {
+        return true;
+    }
+    return false;
+}
+
 void MtpDeviceMonitor::RegisterMTPParamListener()
 {
     LOGI("RegisterMTPParamListener");
@@ -303,21 +318,6 @@ void MtpDeviceMonitor::OnEnterpriseParamChange(const char *key, const  char *val
         LOGI("Enterprise device parameter changed, unmount all mtp devices.");
         instance->UmountAllMtpDevice();
     }
-}
-
-bool MtpDeviceMonitor::IsHwitDevice()
-{
-    char param[SYS_PARARMETER_SIZE] = {0};
-    int errorCode = GetParameter(KEY_CUST, "", param, SYS_PARARMETER_SIZE);
-    if (errorCode <= 0) {
-        LOGE("get vendor country fail, errorCode:%{public}d", errorCode);
-        return false;
-    }
-    LOGI("vendor counry: %{public}s, errorCode: %{public}d", param, errorCode);
-    if (std::string(param).find(CUST_HWIT) != std::string::npos) {
-        return true;
-    }
-    return false;
 }
 
 int32_t MtpDeviceMonitor::HasMTPDevice(bool &hasMtp)

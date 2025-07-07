@@ -15,6 +15,7 @@
 
 #include "quota/quota_manager.h"
 
+#include <charconv>
 #include <dirent.h>
 #include <fstream>
 #include <linux/fs.h>
@@ -42,7 +43,7 @@ constexpr const char *DEV_BLOCK_PATH = "/dev/block/";
 constexpr const char *CONFIG_FILE_PATH = "/etc/passwd";
 constexpr uint64_t ONE_KB = 1;
 constexpr uint64_t ONE_MB = 1024 * ONE_KB;
-constexpr int32_t FIVE_HANDRED_M_BIT = 1024 * 1024 * 500;
+constexpr int32_t FIVE_HUNDRED_M_BIT = 1024 * 1024 * 500;
 constexpr uint64_t PATH_MAX_LEN = 4096;
 constexpr double DIVISOR = 1024.0 * 1024.0;
 constexpr double BASE_NUMBER = 10.0;
@@ -146,7 +147,7 @@ void QuotaManager::GetUidStorageStats()
     });
     std::ostringstream extraData;
     for (const auto& info : vec) {
-        if (info.size < FIVE_HANDRED_M_BIT) {
+        if (info.size < FIVE_HUNDRED_M_BIT) {
             continue;
         }
         extraData << "{uid:" << info.uid
@@ -187,8 +188,12 @@ bool QuotaManager::StringToInt32(const std::string &strUid, int32_t &outUid32)
             return false;
         }
     }
- 
-    uint64_t uid = std::stoull(strUid);
+
+    uint64_t uid;
+    auto res = std::from_chars(strUid.data(), strUid.data() + strUid.size(), uid);
+    if (res.ec != std::errc()) {
+        return false;
+    }
     if (uid > static_cast<uint64_t>(INT32_MAX)) {
         return false;
     }
@@ -426,6 +431,7 @@ int32_t QuotaManager::SetQuotaPrjId(const std::string &path, int32_t prjId, bool
         (void)fclose(f);
         return E_SYS_KERNEL_ERR;
     }
+
     if (inherit) {
         uint32_t flags;
         if (ioctl(fd, FS_IOC_GETFLAGS, &flags) == -1) {

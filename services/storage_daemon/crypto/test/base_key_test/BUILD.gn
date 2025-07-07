@@ -74,6 +74,11 @@ ohos_unittest("BaseKeyTest") {
     external_deps += [ "user_auth_framework:userauth_client" ]
   }
 
+  if (enable_huks_hdi) {
+    defines += [ "HUKS_IDL_ENVIRONMENT" ]
+    external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
+  }
+
   if (storage_service_user_crypto_manager) {
     defines += [
       "USER_CRYPTO_MANAGER",
@@ -82,11 +87,6 @@ ohos_unittest("BaseKeyTest") {
     deps += [
       "${storage_daemon_path}/crypto:libsdcrypto",
     ]
-  }
-
-  if (enable_huks_hdi) {
-    defines += [ "HUKS_IDL_ENVIRONMENT" ]
-    external_deps += [ "drivers_interface_huks:libhuks_proxy_1.1", ]
   }
 }
 

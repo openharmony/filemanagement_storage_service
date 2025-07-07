@@ -72,6 +72,7 @@ constexpr const char *DATA_SERVICE_EL0_STORAGE_DAEMON_SD = "/data/service/el0/st
 constexpr const char *NEED_RESTORE_SUFFIX = "/latest/need_restore";
 constexpr const char *NEW_DOUBLE_2_SINGLE = "2";
 #endif
+
 typedef int32_t (*CreateShareFileFunc)(const std::vector<std::string> &, uint32_t, uint32_t, std::vector<int32_t> &);
 typedef int32_t (*DeleteShareFileFunc)(uint32_t, const std::vector<std::string> &);
 
@@ -141,7 +142,6 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
 
     std::error_code errCode;
     if (!std::filesystem::exists(elNeedRestorePath, errCode)) {
-        LOGI("elNeedRestorePath not exist, type = %{public}d", type);
         return E_OK;
     }
     std::string SINGLE_RESTORE_VERSION;
@@ -189,7 +189,7 @@ int32_t StorageDaemon::RestoreUserKey(int32_t userId, uint32_t flags)
     }
 
     std::vector<KeyType> keyTypes = {EL1_KEY, EL2_KEY, EL3_KEY, EL4_KEY, EL5_KEY};
-    for (KeyType type : keyTypes) {
+    for (auto type : keyTypes) {
         auto ret = RestoreOneUserKey(userId, type);
         if (ret == E_MIGRETE_ELX_FAILED) {
             LOGE("Try restore user: %{public}d type: %{public}d migrate key, wait user pin !", userId, type);
@@ -343,7 +343,7 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
     std::error_code errCode;
     std::string el1NeedRestorePath = GetNeedRestoreFilePath(START_USER_ID, USER_EL1_DIR);
     if (std::filesystem::exists(el1NeedRestorePath, errCode)) {
-        LOGE("USER_EL1_DIR is exist, update NEW_DOUBLE_2_SINGLE");
+        LOGE("el1NeedRestorePath is exist, update NEW_DOUBLE_2_SINGLE");
         std::string doubleVersion;
         std::string el0NeedRestorePath = std::string(DATA_SERVICE_EL0_STORAGE_DAEMON_SD) + NEED_RESTORE_SUFFIX;
         bool isRead = OHOS::LoadStringFromFile(el0NeedRestorePath, doubleVersion);
@@ -850,7 +850,7 @@ int32_t StorageDaemon::ActiveUserKey4Single(uint32_t userId, const std::vector<u
 {
     int ret = E_OK;
 #ifdef USER_CRYPTO_MANAGER
-    (void)SetPriority();
+    (void)SetPriority();  // set tid priority to 40
     LOGW("userId %{public}u, tok empty %{public}d sec empty %{public}d", userId, token.empty(), secret.empty());
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
     ret = KeyManager::GetInstance()->ActiveCeSceSeceUserKey(userId, EL2_KEY, token, secret);
@@ -870,15 +870,16 @@ int32_t StorageDaemon::ActiveUserKey4Single(uint32_t userId, const std::vector<u
     ret = ActiveUserKeyAndPrepareElX(userId, token, secret);
     if (ret != E_OK) {
         LOGE("ActiveUserKeyAndPrepareElX failed, userId %{public}u.", userId);
+        KeyManager::GetInstance()->NotifyUeceActivation(userId, ret, true);
         return ret;
     }
     LOGI("Active user key and prepare el3~el5 for single secen for userId=%{public}d success.", userId);
 
     startTime = StorageService::StorageRadar::RecordCurrentTime();
-    ret = KeyManager::GetInstance()->UnlockUserAppKeys(userId, true);
-    if (ret != E_OK) {
-        LOGE("UnlockUserAppKeys failed, userId %{public}u.", userId);
-        StorageRadar::ReportActiveUserKey("ActiveUserKey4Single::UnlockUserAppKeys", userId, ret, "EL5");
+    auto ueceRet = KeyManager::GetInstance()->NotifyUeceActivation(userId, ret, true);
+    if (ueceRet != E_OK) {
+        LOGE("UnlockUserAppKeys failed, ret=%{public}d, userId=%{public}u.", ueceRet, userId);
+        StorageRadar::ReportActiveUserKey("ActiveUserKey4Single::UnlockUserAppKeys", userId, ueceRet, "EL5");
         return E_UNLOCK_APP_KEY2_FAILED;
     }
     delay = StorageService::StorageRadar::ReportDuration("UNLOCK USER APP KEY",
@@ -956,14 +957,15 @@ int32_t StorageDaemon::ActiveUserKey4Update(uint32_t userId, const std::vector<u
     ret = ActiveUserKeyAndPrepareElX(userId, token, secret);
     if (ret != E_OK) {
         LOGE("Active user key and prepare el3~el5 for update secen failed, userId %{public}u.", userId);
+        KeyManager::GetInstance()->NotifyUeceActivation(userId, ret, true);
         return ret;
     }
     LOGI("Active user key and prepare el3~el5 for update secen for userId=%{public}d success.", userId);
 
-    ret = KeyManager::GetInstance()->UnlockUserAppKeys(userId, true);
-    if (ret != E_OK) {
-        LOGE("UnlockUserAppKeys failed, userId %{public}u.", userId);
-        StorageRadar::ReportActiveUserKey("ActiveUserKey::UnlockUserAppKeys", userId, ret, "EL5");
+    auto ueceRet = KeyManager::GetInstance()->NotifyUeceActivation(userId, ret, true);
+    if (ueceRet != E_OK) {
+        LOGE("UnlockUserAppKeys failed, ret=%{public}d, userId=%{public}u.", ueceRet, userId);
+        StorageRadar::ReportActiveUserKey("ActiveUserKey4Single::UnlockUserAppKeys", userId, ueceRet, "EL5");
         return E_UNLOCK_APP_KEY2_FAILED;
     }
     LOGW("Active user key for update secen for userId=%{public}d success.", userId);
@@ -1004,6 +1006,7 @@ int32_t StorageDaemon::RestoreconElX(uint32_t userId)
 {
 #ifdef USE_LIBRESTORECON
     LOGI("Begin to restorecon path, userId = %{public}d", userId);
+
     RestoreconRecurse((std::string(DATA_SERVICE_EL2) + "public").c_str());
     const std::string &path = std::string(DATA_SERVICE_EL2) + std::to_string(userId);
     LOGI("RestoreconRecurse el2 public end, userId = %{public}d", userId);
@@ -1099,14 +1102,14 @@ int32_t StorageDaemon::UnlockUserScreen(uint32_t userId,
     (void)SetPriority();  // set tid priority to 40
     int32_t ret = KeyManager::GetInstance()->UnlockUserScreen(userId, token, secret);
     if (ret != E_OK) {
-        LOGE("UnlockUserScreen failed, userId=%{public}u, ret=%{public}d", userId, ret);
+        LOGE("UnlockUserScreen failed, userId=%{public}u, ret=%{public}d.", userId, ret);
         RadarParameter parameterRes = {
             .orgPkg = DEFAULT_ORGPKGNAME,
             .userId = userId,
             .funcName = "UnlockUserScreen",
             .bizScene = BizScene::USER_KEY_ENCRYPTION,
             .bizStage = BizStage::BIZ_STAGE_UNLOCK_USER_SCREEN,
-            .keyElxLevel = (ret == E_UNLOCK_APP_KEY2_FAILED)? "EL5" : "EL3/EL4",
+            .keyElxLevel = (ret == E_UNLOCK_APP_KEY2_FAILED) ? "EL5" : "EL3/EL4",
             .errorCode = ret
         };
         StorageRadar::GetInstance().RecordFuctionResult(parameterRes);
@@ -1264,7 +1267,7 @@ void StorageDaemon::ActiveAppCloneUserKey()
 #ifdef USER_CRYPTO_MANAGER
     unsigned int failedUserId = 0;
     auto ret = AppCloneKeyManager::GetInstance()->ActiveAppCloneUserKey(failedUserId);
-    if (ret != E_OK && (ret != E_NOT_SUPPORT)) {
+    if ((ret != E_OK) && (ret != E_NOT_SUPPORT)) {
         LOGE("ActiveAppCloneUserKey failed, errNo %{public}d", ret);
 #ifdef USER_CRYPTO_MIGRATE_KEY
         uint32_t flags = IStorageDaemonEnum::CRYPTO_FLAG_EL1 | IStorageDaemonEnum::CRYPTO_FLAG_EL2 |
@@ -1310,6 +1313,38 @@ int32_t StorageDaemon::InactiveUserPublicDirKey(uint32_t userId)
     }
 #endif
     return ret;
+}
+
+int StorageDaemon::RegisterUeceActivationCallback(const sptr<StorageManager::IUeceActivationCallback> &ueceCallback)
+{
+#ifdef EL5_FILEKEY_MANAGER
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
+    int ret = KeyManager::GetInstance() ->RegisterUeceActivationCallback(ueceCallback);
+    auto delay = StorageService::StorageRadar::ReportDuration("RegisterUeceActivationCallback",
+        startTime, StorageService::DEFAULT_DELAY_TIME_THRESH, StorageService::DEFAULT_USERID);
+    LOGE("SD_DURATION: RegisterUeceActivation Callback: ret = %{public}d, delay time =%{public}s",
+        ret, delay.c_str());
+    return ret;
+#else
+    LOGD("EL5_FILEKEY_MANAGER is not supported");
+    return E_OK;
+#endif
+}
+
+int StorageDaemon::UnregisterUeceActivationCallback()
+{
+#ifdef EL5_FILEKEY_MANAGER
+    auto startTime = StorageService::StorageRadar::RecordCurrentTime();
+    int ret = KeyManager::GetInstance() ->UnregisterUeceActivationCallback();
+    auto delay = StorageService::StorageRadar::ReportDuration("UnregisterUeceActivationCallback",
+        startTime, StorageService::DEFAULT_DELAY_TIME_THRESH, StorageService::DEFAULT_USERID);
+    LOGE("SD_DURATION:UnregisterUeceActivation Callback: ret = %{public}d, delay time =%{public}s",
+        ret, delay.c_str());
+    return ret;
+#else
+    LOGD("EL5_FILEKEY_MANAGER is not supported");
+    return E_OK;
+#endif
 }
 } // namespace StorageDaemon
 } // namespace OHOS

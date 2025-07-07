@@ -29,6 +29,7 @@ enum VolumeState {
     REMOVED,
     BADREMOVABLE,
     DAMAGED,
+    FUSE_REMOVED,
 };
 
 enum VolumeType {
@@ -44,8 +45,10 @@ public:
     virtual int32_t DoTryToFix() = 0;
     int32_t Create(const std::string volId, const std::string diskId, dev_t device, bool isUserdata);
     int32_t Destroy();
+    int32_t DestroyUsbFuse();
     int32_t Mount(uint32_t flags);
     int32_t UMount(bool force = false);
+    int32_t UMountUsbFuse();
     int32_t Check();
     int32_t Format(const std::string type);
     int32_t SetVolumeDescription(const std::string description);
@@ -61,6 +64,7 @@ protected:
     virtual int32_t DoDestroy() = 0;
     virtual int32_t DoMount(uint32_t mountFlags) = 0;
     virtual int32_t DoUMount(bool force) = 0;
+    virtual int32_t DoUMountUsbFuse() = 0;
     virtual int32_t DoCheck() = 0;
     virtual int32_t DoFormat(std::string type) = 0;
     virtual int32_t DoSetVolDesc(std::string description) = 0;

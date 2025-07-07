@@ -46,9 +46,7 @@
 
 #include "accesstoken_kit.h"
 #include "ipc_skeleton.h"
-#ifdef STORAGE_SERVICE_MEDIA_FUSE
 #include "storage/bundle_manager_connector.h"
-#endif
 
 using namespace OHOS::StorageService;
 namespace OHOS {
@@ -594,8 +592,7 @@ int32_t StorageManagerProvider::CreateShareFile(const StorageFileRawData &rawDat
     if (!CheckClientPermissionForShareFile()) {
         return E_PERMISSION_DENIED;
     }
-    int32_t rawDataSize = static_cast<int32_t>(rawData.size);
-    LOGI("StorageManagerProvider::CreateShareFile start. file size is %{public}d", rawDataSize);
+
     funcResult = StorageManager::GetInstance()->CreateShareFile(rawData, tokenId, flag);
     LOGI("StorageManagerProvider::CreateShareFile end. result is %{public}zu", funcResult.size());
     return E_OK;
@@ -808,6 +805,24 @@ int32_t StorageManagerProvider::InactiveUserPublicDirKey(uint32_t userId)
         return E_PERMISSION_DENIED;
     }
     return StorageManager::GetInstance()->InactiveUserPublicDirKey(userId);
+}
+
+int32_t StorageManagerProvider::RegisterUeceActivationCallback(const sptr<IUeceActivationCallback> &ueceCallback)
+{
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER_CRYPT)) {
+        LOGE("Permission check failed, for storage_manager_crypt");
+        return E_PERMISSION_DENIED;
+    }
+    return StorageManager::GetInstance()->RegisterUeceActivationCallback(ueceCallback);
+}
+
+int32_t StorageManagerProvider::UnregisterUeceActivationCallback()
+{
+    if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER_CRYPT)) {
+        LOGE("Permission check failed, for storage_manager_crypt");
+        return E_PERMISSION_DENIED;
+    }
+    return StorageManager::GetInstance()->UnregisterUeceActivationCallback();
 }
 } // namespace StorageManager
 } // namespace OHOS

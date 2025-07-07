@@ -25,10 +25,10 @@
 #include <storage/storage_status_service.h>
 #include <storage/storage_total_status_service.h>
 #include <storage/volume_storage_status_service.h>
+#include "account_subscriber/account_subscriber.h"
 #endif
 
 #ifdef USER_CRYPTO_MANAGER
-#include "account_subscriber/account_subscriber.h"
 #include "crypto/filesystem_crypto.h"
 #include "appspawn.h"
 #include "utils/storage_radar.h"
@@ -50,9 +50,10 @@ constexpr bool ENCRYPTED = true;
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageManager {
+
 void StorageManager::ResetUserEventRecord(int32_t userId)
 {
-#ifdef USER_CRYPTO_MANAGER
+#ifdef STORAGE_STATISTICS_MANAGER
     AccountSubscriber::ResetUserEventRecord(userId);
 #endif
 }
@@ -260,7 +261,6 @@ int32_t StorageManager::NotifyVolumeMounted(const std::string &volumeId, const s
     DelayedSingleton<VolumeManagerService>::GetInstance()->OnVolumeMounted(volumeId, fsTypeStr, fsUuid, path,
         description);
 #endif
-
     return E_OK;
 }
 
@@ -268,7 +268,7 @@ int32_t StorageManager::NotifyVolumeDamaged(const std::string &volumeId, const s
     const std::string &fsUuid, const std::string &path, const std::string &description)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
-    LOGI("StorageManger::NotifyVolumeDamaged start, fsType is %{public}s.", fsTypeStr.c_str());
+    LOGI("NotifyVolumeDamaged start, fsType is %{public}s, fsU is %{public}s.", fsTypeStr.c_str(), fsUuid.c_str());
     DelayedSingleton<VolumeManagerService>::GetInstance()->OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path,
                                                                            description);
 #endif
@@ -290,6 +290,8 @@ OHOS::StorageManager::VolumeState StorageManager::UintToState(uint32_t state)
             return OHOS::StorageManager::VolumeState::REMOVED;
         case BAD_REMOVAL:
             return OHOS::StorageManager::VolumeState::BAD_REMOVAL;
+        case FUSE_REMOVED:
+            return OHOS::StorageManager::VolumeState::FUSE_REMOVED;
         default:
             return OHOS::StorageManager::VolumeState::UNMOUNTED;
     }
@@ -887,6 +889,20 @@ int32_t StorageManager::InactiveUserPublicDirKey(uint32_t userId)
 #else
     return E_OK;
 #endif
+}
+
+int32_t StorageManager::RegisterUeceActivationCallback(const sptr<IUeceActivationCallback> &ueceCallback)
+{
+    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
+    int32_t err = fsCrypto->RegisterUeceActivationCallback(ueceCallback);
+    return err;
+}
+
+int32_t StorageManager::UnregisterUeceActivationCallback()
+{
+    std::shared_ptr<FileSystemCrypto> fsCrypto = DelayedSingleton<FileSystemCrypto>::GetInstance();
+    int32_t err = fsCrypto->UnregisterUeceActivationCallback();
+    return err;
 }
 }
 }

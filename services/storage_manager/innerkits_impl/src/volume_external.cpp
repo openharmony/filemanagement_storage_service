@@ -81,7 +81,7 @@ std::string VolumeExternal::GetDescription()
     return description_;
 }
 
-int32_t VolumeExternal::GetFsTypeByStr(const std::string fsTypeStr)
+int32_t VolumeExternal::GetFsTypeByStr(const std::string &fsTypeStr)
 {
     for (uint32_t i = 0; i < FS_TYPE_MAP.size(); i++) {
         if (FS_TYPE_MAP[i].compare(fsTypeStr) == 0) {

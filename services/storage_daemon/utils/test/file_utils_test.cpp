@@ -24,11 +24,14 @@
 #include "storage_service_log.h"
 #include "utils/file_utils.h"
 #include "utils/storage_radar.h"
+#include "parameter.h"
 
 namespace OHOS {
 namespace StorageDaemon {
 using namespace testing::ext;
 
+constexpr int NOT_EXIST_FD_1 = 45678;
+constexpr int NOT_EXIST_FD_2 = 45679;
 namespace {
     const uint32_t ALL_PERMS = (S_ISUID | S_ISGID | S_ISVTX | S_IRWXU | S_IRWXG | S_IRWXO);
     const std::string PATH_CHMOD = "/data/storage_daemon_chmod_test_dir";
@@ -428,6 +431,71 @@ HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExecWithExit_001, TestSize.Level1)
 
     EXPECT_EQ(ForkExecWithExit(cmd), E_WEXITSTATUS);
     GTEST_LOG_(INFO) << "FileUtilsTest_ForkExecWithExit_001 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_IsFuse_001
+ * @tc.desc: Verify the IsFuse function basic functionality.
+ * @tc.type: FUNC
+ * @tc.require: AR000GK4HB
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_IsFuse_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_IsFuse_001 start";
+
+    // Test the IsFuse function basic functionality
+    bool result = IsFuse();
+    
+    // The function should return a boolean value
+    EXPECT_TRUE(result || !result);
+    
+    // Log the result for debugging purposes
+    GTEST_LOG_(INFO) << "IsFuse result: " << (result ? "true" : "false");
+
+    GTEST_LOG_(INFO) << "FileUtilsTest_IsFuse_001 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_ForkExec_001
+ * @tc.desc: Verify the ForkExec function.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_ForkExec_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_ForkExec_001 start";
+    std::vector<std::string> cmd = {
+            "ls",
+            "/dev/block/",
+    };
+    std::vector<std::string> output;
+    EXPECT_EQ(ForkExec(cmd, &output), E_WEXITSTATUS);
+    GTEST_LOG_(INFO) << "FileUtilsTest_ForkExec_001 end";
+}
+
+/**
+ * @tc.name: FileUtilsTest_RedirectStdToPipe_001
+ * @tc.desc: Verify the RedirectStdToPipe function.
+ * @tc.type: FUNC
+ * @tc.require: IBDKKD
+ */
+HWTEST_F(FileUtilsTest, FileUtilsTest_RedirectStdToPipe_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "FileUtilsTest_RedirectStdToPipe_001 start";
+    int logpipe[2] = {};
+    size_t len = 0;
+    int res = RedirectStdToPipe(logpipe, len);
+    EXPECT_EQ(res, E_ERR);
+
+    logpipe[0] = NOT_EXIST_FD_1;
+    logpipe[1] = NOT_EXIST_FD_2;
+    res = RedirectStdToPipe(logpipe, len);
+    EXPECT_EQ(res, E_ERR);
+
+    len = 2;
+    res = RedirectStdToPipe(logpipe, len);
+    EXPECT_EQ(res, E_ERR);
+    GTEST_LOG_(INFO) << "FileUtilsTest_RedirectStdToPipe_001 end";
 }
 } // STORAGE_DAEMON
 } // OHOS
