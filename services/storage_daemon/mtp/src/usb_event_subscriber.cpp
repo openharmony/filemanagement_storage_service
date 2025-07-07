@@ -29,6 +29,7 @@ constexpr const char *DEV_PRODUCT_ID_KEY = "productId";
 constexpr const char *DEV_CLASS_KEY = "clazz";
 constexpr int USB_CLASS_IMAGE = 6;
 constexpr int USB_CLASS_VENDOR_SPEC = 255;
+bool UsbEventSubscriber::isPtp_ = true;
 
 UsbEventSubscriber::UsbEventSubscriber(const EventFwk::CommonEventSubscribeInfo &info)
     : EventFwk::CommonEventSubscriber(info)
@@ -136,7 +137,12 @@ bool UsbEventSubscriber::CheckMtpInterface(const cJSON* iface)
     cJSON* name = cJSON_GetObjectItemCaseSensitive(iface, "name");
     if (name != nullptr && cJSON_IsString(name) && name->valuestring) {
         const std::string ifaceName = ToLowerString(name->valuestring);
-        if (ifaceName.find("mtp") != std::string::npos || ifaceName.find("ptp") != std::string::npos) {
+        if (ifaceName.find("mtp") != std::string::npos) {
+            isPtp_ = false;
+            return true;
+        }
+        if (ifaceName.find("ptp") != std::string::npos) {
+            isPtp_ = true;
             return true;
         }
     }
@@ -151,6 +157,18 @@ bool UsbEventSubscriber::CheckAllInterfaces(const cJSON* configs)
 
     cJSON* config = nullptr;
     cJSON_ArrayForEach(config, configs) {
+        cJSON* name = cJSON_GetObjectItemCaseSensitive(config, "name");
+        if (name != nullptr && cJSON_IsString(name) && name->valuestring) {
+            const std::string configName = ToLowerString(name->valuestring);
+            if (configName.find("mtp") != std::string::npos) {
+                isPtp_ = false;
+                return true;
+            }
+            if (configName.find("ptp") != std::string::npos) {
+                isPtp_ = true;
+                return true;
+            }
+        }
         cJSON* interfaces = cJSON_GetObjectItemCaseSensitive(config, "interfaces");
         if (interfaces == nullptr || !cJSON_IsArray(interfaces)) {
             continue;
@@ -216,6 +234,12 @@ bool UsbEventSubscriber::IsMTPDevice(const std::string &usbInfo)
     }
     LOGE("this is not mtp device.");
     return false;
+}
+
+bool UsbEventSubscriber::IsPtpMode()
+{
+    LOGI("PTP mode status: %{public}d", isPtp_);
+    return isPtp_;
 }
 }  // namespace StorageDaemon
 }  // namespace OHOS
