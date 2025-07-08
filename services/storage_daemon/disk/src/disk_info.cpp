@@ -239,11 +239,6 @@ int DiskInfo::ReadPartition()
         LOGE("get partition failed, destroy error is %{public}d", destroyRes);
         return res;
     }
-    std::string bufToken = "\n";
-    for (auto &buf : output) {
-        auto split = SplitLine(buf, bufToken);
-        lines.insert(lines.end(), split.begin(), split.end());
-    }
     isUserdata = false;
     if (lines.size() > MIN_LINES) {
         auto userdataIt = std::find_if(lines.begin(), lines.end(), [](const std::string &str) {
@@ -272,7 +267,7 @@ int DiskInfo::ReadPartition()
 void DiskInfo::FilterOutput(std::vector<std::string> &lines, std::vector<std::string> &output)
 {
     int32_t index = -1;
-    for (size_t i = 0; i < output.size(); i++) {
+    for (int32_t i = 0; i < output.size(); i++) {
         std::string buf = output[i];
         if (buf.find(DISK_PREFIX) == 0) {
             index = i;
@@ -284,7 +279,7 @@ void DiskInfo::FilterOutput(std::vector<std::string> &lines, std::vector<std::st
         return;
     }
     std::string bufToken = "\n";
-    for (size_t i = index; i < output.size(); i++) {
+    for (int32_t i = index; i < output.size(); i++) {
         std::string buf = output[i];
         auto split = SplitLine(buf, bufToken);
         lines.insert(lines.end(), split.begin(), split.end());
