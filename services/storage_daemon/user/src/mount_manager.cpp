@@ -1948,7 +1948,7 @@ int32_t MountManager::IsFileOccupied(const std::string &path, const std::vector<
         return OpenProcForPath(path, isOccupy, false);
     }
     if (path == FILE_MGR_ROOT_PATH || (!inputList.empty() && path.back() == FILE_SEPARATOR_CHAR)) {
-        LOGI("multi select file, input size is %{public}zu.", path.c_str());
+        LOGI("multi select file, input size is %{public}zu.", inputList.size());
         std::set<std::string> occupyFiles;
         int32_t ret = OpenProcForMulti(path, occupyFiles);
         if (ret != E_OK) {

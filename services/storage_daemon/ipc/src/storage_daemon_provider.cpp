@@ -750,7 +750,7 @@ int32_t StorageDaemonProvider::MountFileMgrFuse(int32_t userId, const std::strin
 
 int32_t StorageDaemonProvider::UMountFileMgrFuse(int32_t userId, const std::string &path)
 {
-    LOGI("StorageDaemonProvider::UMountFileMgrFuse, userId:%{public}d.", userId.);
+    LOGI("StorageDaemonProvider::UMountFileMgrFuse, userId:%{public}d.", userId);
     return MountManager::GetInstance()->UMountFileMgrFuse(userId, path);
 }
 
