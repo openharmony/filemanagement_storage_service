@@ -106,6 +106,7 @@ public:
     static int AddRemovingFile(const std::string &path);
     static int EraseRemovingFile(const std::string &path);
     static bool IsFileRemoving(const std::string &path);
+    void SetPtpMode(const char *mode);
 
 private:
     bool EnumStorages();
@@ -133,6 +134,7 @@ private:
     Capabilities capabilities_;
     std::mutex deviceMutex_;
     MtpFsTypeDir rootDir_;
+    bool isPtp_;
     bool moveEnabled_;
     static uint32_t rootNode_;
     std::mutex uploadRecordMutex_;

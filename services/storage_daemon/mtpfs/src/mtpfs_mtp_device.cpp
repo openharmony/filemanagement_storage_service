@@ -47,6 +47,7 @@ MtpFsDevice::MtpFsDevice() : device_(nullptr), capabilities_(), rootDir_(), move
     MtpFsUtil::Off();
     LIBMTP_Init();
     MtpFsUtil::On();
+    isPtp_ = true;
     g_isEventDone.store(true);
     isTransferring_.store(false);
     eventFlag_.store(true);
@@ -876,7 +877,7 @@ int MtpFsDevice::FilePush(const std::string &src, const std::string &dst)
         return -EINVAL;
     }
     SetTransferValue(true);
-    if (fileToRemove && !IsOpenHarmonyMtpDevice()) {
+    if (fileToRemove && (!IsOpenHarmonyMtpDevice() || isPtp_)) {
         LOGI("Start to delete mtp file, handle id = %{public}d.", fileToRemove->Id());
         std::unique_lock<std::mutex> lock(deviceMutex_);
         int rval = LIBMTP_Delete_Object(device_, fileToRemove->Id());
@@ -1311,4 +1312,13 @@ bool MtpFsDevice::IsOpenHarmonyMtpDevice()
     }
     LOGI("Check device os type success, current mtp device is not openharmony device.");
     return false;
+}
+
+void MtpFsDevice::SetPtpMode(const char *mode)
+{
+    if (strcmp(mode, "false") == 0) {
+        isPtp_ = false;
+    } else {
+        isPtp_ = true;
+    }
 }
