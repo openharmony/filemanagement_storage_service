@@ -44,7 +44,6 @@ using namespace std;
 using namespace OHOS::FileManagement::CloudFile;
 #endif
 using namespace OHOS::StorageService;
-constexpr int32_t ONE_KB = 1024;
 constexpr int32_t PATH_MAX_FOR_LINK = 4096;
 constexpr int32_t DEFAULT_USERID = 100;
 std::shared_ptr<MountManager> MountManager::instance_ = nullptr;
@@ -472,9 +471,10 @@ bool MountManager::CheckSymlink(const std::string &path, std::list<std::string> 
     if (path.empty()) {
         return false;
     }
-    char realPath[ONE_KB];
+    char realPath[PATH_MAX_FOR_LINK];
     int res = readlink(path.c_str(), realPath, sizeof(realPath) - 1);
-    if (res < 0 || res >= ONE_KB) {
+    if (res < 0) {
+        LOGE("readlink failed for path, errno is %{public}d.", errno);
         return false;
     }
     realPath[res] = '\0';
@@ -1940,19 +1940,19 @@ int32_t MountManager::IsFileOccupied(const std::string &path, const std::vector<
         return E_PARAMS_INVALID;
     }
     if (inputList.empty() && path.back() == FILE_SEPARATOR_CHAR && path != FILE_MGR_ROOT_PATH) {
-        LOGI("only modify dir, path is %{public}s.", path.c_str());
+        LOGI("only modify dir.");
         return OpenProcForPath(path, isOccupy, true);
     }
     if (inputList.empty() && path.back() != FILE_SEPARATOR_CHAR) {
-        LOGI("only modify file, file name is %{public}s.", path.c_str());
+        LOGI("only modify file.");
         return OpenProcForPath(path, isOccupy, false);
     }
     if (path == FILE_MGR_ROOT_PATH || (!inputList.empty() && path.back() == FILE_SEPARATOR_CHAR)) {
-        LOGI("multi select file, path is %{public}s, input size is %{public}zu.", path.c_str(), inputList.size());
+        LOGI("multi select file, input size is %{public}zu.", inputList.size());
         std::set<std::string> occupyFiles;
         int32_t ret = OpenProcForMulti(path, occupyFiles);
         if (ret != E_OK) {
-            LOGE("failed to check, ret is %{public}d", ret);
+            LOGE("failed to open proc, ret is %{public}d", ret);
             return ret;
         }
         if (occupyFiles.empty()) {
