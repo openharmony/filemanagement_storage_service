@@ -44,7 +44,6 @@ using namespace std;
 using namespace OHOS::FileManagement::CloudFile;
 #endif
 using namespace OHOS::StorageService;
-constexpr int32_t ONE_KB = 1024;
 constexpr int32_t PATH_MAX_FOR_LINK = 4096;
 constexpr int32_t DEFAULT_USERID = 100;
 std::shared_ptr<MountManager> MountManager::instance_ = nullptr;
