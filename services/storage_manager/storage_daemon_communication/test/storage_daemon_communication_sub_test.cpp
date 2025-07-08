@@ -1762,6 +1762,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_RegisterUeceActiva
     ASSERT_TRUE(sdCommunication != nullptr);
  
     sptr<IUeceActivationCallback> ueceCallback(new (std::nothrow) UeceActivationCallbackMock());
+#ifdef EL5_FILEKEY_MANAGER
     sdCommunication->storageDaemon_ = nullptr;
     EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
     EXPECT_EQ(sdCommunication->RegisterUeceActivationCallback(ueceCallback), E_SA_IS_NULLPTR);
@@ -1778,6 +1779,9 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_RegisterUeceActiva
     EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
     EXPECT_CALL(*sd, RegisterUeceActivationCallback(_)).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->RegisterUeceActivationCallback(ueceCallback), E_OK);
+#else
+    EXPECT_EQ(sdCommunication->RegisterUeceActivationCallback(ueceCallback), E_OK);
+#endif
     GTEST_LOG_(INFO) << "StorageDaemonCommunicationTest-end Daemon_communication_RegisterUeceActivationCallback_001";
 }
 
@@ -1794,7 +1798,7 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UnregisterUeceActi
 {
     GTEST_LOG_(INFO) << "Daemon_communication_UnregisterUeceActivationCallback_001 begin";
     ASSERT_TRUE(sdCommunication != nullptr);
-
+#ifdef EL5_FILEKEY_MANAGER
     sdCommunication->storageDaemon_ = nullptr;
     EXPECT_CALL(*sa, GetSystemAbilityManager()).WillOnce(Return(nullptr));
     EXPECT_EQ(sdCommunication->UnregisterUeceActivationCallback(), E_SA_IS_NULLPTR);
@@ -1811,6 +1815,9 @@ HWTEST_F(StorageDaemonCommunicationTest, Daemon_communication_UnregisterUeceActi
     EXPECT_CALL(*sd, AddDeathRecipient(_)).WillOnce(Return(true));
     EXPECT_CALL(*sd, UnregisterUeceActivationCallback()).WillOnce(Return(E_OK));
     EXPECT_EQ(sdCommunication->UnregisterUeceActivationCallback(), E_OK);
+#else
+    EXPECT_EQ(sdCommunication->UnregisterUeceActivationCallback(), E_OK);
+#endif
     GTEST_LOG_(INFO) << "Daemon_communication_UnregisterUeceActivationCallback_001 end";
 }
 }

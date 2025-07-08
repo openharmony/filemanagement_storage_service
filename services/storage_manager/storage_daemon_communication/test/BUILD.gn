@@ -147,6 +147,11 @@ ohos_unittest("storage_daemon_communication_sub_test") {
     defines += [ "ENABLE_SCREENLOCK_MANAGER" ]
     external_deps += [ "screenlock_mgr:screenlock_client" ]
   }
+
+  if (storage_service_el5_filekey_manager) {
+    defines += [ "EL5_FILEKEY_MANAGER" ]
+    external_deps += [ "access_token:el5_filekey_manager_sdk" ]
+  }
 }
 
 group("storage_manager_communication_test") {
