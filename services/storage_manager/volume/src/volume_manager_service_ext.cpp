@@ -72,7 +72,6 @@ void VolumeManagerServiceExt::UnInit()
  
 int32_t VolumeManagerServiceExt::NotifyUsbFuseMount(int fuseFd, std::string volumeid, std::string fsUuid)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
     if (handler_ == nullptr) {
         LOGE("Handler is nullptr");
         return E_MOUNT_CLOUD_FUSE;
@@ -91,7 +90,6 @@ int32_t VolumeManagerServiceExt::NotifyUsbFuseMount(int fuseFd, std::string volu
  
 int32_t VolumeManagerServiceExt::NotifyUsbFuseUMount(std::string volumeid)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
     LOGI("NotifyUsbFuseUMount in");
     if (handler_ == nullptr) {
         LOGE("Handler is nullptr");
