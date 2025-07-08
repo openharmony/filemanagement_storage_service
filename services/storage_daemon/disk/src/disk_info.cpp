@@ -267,7 +267,8 @@ int DiskInfo::ReadPartition()
 void DiskInfo::FilterOutput(std::vector<std::string> &lines, std::vector<std::string> &output)
 {
     int32_t index = -1;
-    for (int32_t i = 0; i < output.size(); i++) {
+    int32_t count = static_cast<int32_t>(output.size());
+    for (int32_t i = 0; i < count; i++) {
         std::string buf = output[i];
         if (buf.find(DISK_PREFIX) == 0) {
             index = i;
@@ -279,7 +280,7 @@ void DiskInfo::FilterOutput(std::vector<std::string> &lines, std::vector<std::st
         return;
     }
     std::string bufToken = "\n";
-    for (int32_t i = index; i < output.size(); i++) {
+    for (int32_t i = index; i < count; i++) {
         std::string buf = output[i];
         auto split = SplitLine(buf, bufToken);
         lines.insert(lines.end(), split.begin(), split.end());
