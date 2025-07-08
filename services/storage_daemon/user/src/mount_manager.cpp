@@ -472,9 +472,10 @@ bool MountManager::CheckSymlink(const std::string &path, std::list<std::string> 
     if (path.empty()) {
         return false;
     }
-    char realPath[ONE_KB];
+    char realPath[PATH_MAX_FOR_LINK];
     int res = readlink(path.c_str(), realPath, sizeof(realPath) - 1);
-    if (res < 0 || res >= ONE_KB) {
+    if (res < 0) {
+        LOGE("readlink failed for path, errno is %{public}d.", errno);
         return false;
     }
     realPath[res] = '\0';
@@ -1952,7 +1953,7 @@ int32_t MountManager::IsFileOccupied(const std::string &path, const std::vector<
         std::set<std::string> occupyFiles;
         int32_t ret = OpenProcForMulti(path, occupyFiles);
         if (ret != E_OK) {
-            LOGE("failed to check, ret is %{public}d", ret);
+            LOGE("failed to open proc, ret is %{public}d", ret);
             return ret;
         }
         if (occupyFiles.empty()) {
