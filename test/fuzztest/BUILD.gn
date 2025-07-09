@@ -27,6 +27,8 @@ group("storage_service_fuzztest") {
     "${storage_service_path}/test/fuzztest/storagedaemonprovidercreatesharefile_fuzzer:StorageDaemonProviderCreateShareFileFuzzTest",
     "${storage_service_path}/test/fuzztest/storagedaemonproviderdeletesharefile_fuzzer:StorageDaemonProviderDeleteShareFileFuzzTest",
     "${storage_service_path}/test/fuzztest/storagedaemonproxy_fuzzer:StorageDaemonProxyFuzzTest",
+    "${storage_service_path}/test/fuzztest/storagedaemonstub_fuzzer:StorageDaemonStubFuzzTest",
+    "${storage_service_path}/test/fuzztest/storagemanagerstub_fuzzer:StorageManagerStubFuzzTest",
     "${storage_service_path}/test/fuzztest/storagestats_fuzzer:StorageStatsFuzzTest",
     "${storage_service_path}/test/fuzztest/storagestatusservice_fuzzer:StorageStatusServiceFuzzTest",
     "${storage_service_path}/test/fuzztest/stringutils_fuzzer:StringUtilsFuzzTest",
