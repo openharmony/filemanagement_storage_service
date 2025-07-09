@@ -321,6 +321,7 @@ int32_t FileSystemCrypto::InactiveUserPublicDirKey(uint32_t userId)
 
 int32_t FileSystemCrypto::RegisterUeceActivationCallback(const sptr<IUeceActivationCallback> &ueceCallback)
 {
+    LOGI("Enter RegisterUeceActivationCallback");
     if (ueceCallback == nullptr) {
         LOGE("callback is nullptr");
         return E_PARAMS_NULLPTR_ERR;
@@ -332,7 +333,7 @@ int32_t FileSystemCrypto::RegisterUeceActivationCallback(const sptr<IUeceActivat
  
 int32_t FileSystemCrypto::UnregisterUeceActivationCallback()
 {
-    LOGE("Enter UnregisterUeceActivationCallback");
+    LOGI("Enter UnregisterUeceActivationCallback");
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     return sdCommunication->UnregisterUeceActivationCallback();

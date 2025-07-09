@@ -965,7 +965,7 @@ int32_t StorageDaemon::ActiveUserKey4Update(uint32_t userId, const std::vector<u
     auto ueceRet = KeyManager::GetInstance()->NotifyUeceActivation(userId, ret, true);
     if (ueceRet != E_OK) {
         LOGE("UnlockUserAppKeys failed, ret=%{public}d, userId=%{public}u.", ueceRet, userId);
-        StorageRadar::ReportActiveUserKey("ActiveUserKey4Single::UnlockUserAppKeys", userId, ueceRet, "EL5");
+        StorageRadar::ReportActiveUserKey("ActiveUserKey4Update::UnlockUserAppKeys", userId, ueceRet, "EL5");
         return E_UNLOCK_APP_KEY2_FAILED;
     }
     LOGW("Active user key for update secen for userId=%{public}d success.", userId);
