@@ -838,6 +838,62 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateShareFile_00
 }
 
 /**
+ * @tc.name: StorageDaemonProviderTest_CreateShareFile_002
+ * @tc.desc: Verify the CreateShareFile function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateShareFile_002, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateShareFile_002 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::vector<std::string> uriStrVec;
+    for (int i = 0; i < 200000; ++i) {
+        std::string uriStr = "/data/fileshareX/file_" + std::to_string(i) + ".txt";
+        uriStrVec.push_back(uriStr);
+    }
+    StorageFileRawData rawData;
+    StringVecToRawData(uriStrVec, rawData);
+    StorageFileRawData fileRawData;
+    fileRawData.size = rawData.size;
+    fileRawData.RawDataCpy(rawData.data);
+    uint32_t tokenId = 0;
+    uint32_t flag = 0;
+    std::vector<int32_t> funcResult;
+    int32_t ret = storageDaemonProviderTest_->CreateShareFile(fileRawData, tokenId, flag, funcResult);
+    ASSERT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateShareFile_002 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_CreateShareFile_003
+ * @tc.desc: Verify the CreateShareFile function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateShareFile_003, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateShareFile_003 start";
+    ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::vector<std::string> uriStrVec;
+    for (int i = 0; i < 200001; ++i) {
+        std::string uriStr = "/data/fileshareX/file_" + std::to_string(i) + ".txt";
+        uriStrVec.push_back(uriStr);
+    }
+    StorageFileRawData rawData;
+    StringVecToRawData(uriStrVec, rawData);
+    StorageFileRawData fileRawData;
+    fileRawData.size = rawData.size;
+    fileRawData.RawDataCpy(rawData.data);
+    uint32_t tokenId = 0;
+    uint32_t flag = 0;
+    std::vector<int32_t> funcResult;
+    int32_t ret = storageDaemonProviderTest_->CreateShareFile(fileRawData, tokenId, flag, funcResult);
+    ASSERT_EQ(ret, E_OK);
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateShareFile_003 end";
+}
+
+/**
  * @tc.name: StorageDaemonProviderTest_DeleteShareFile_001
  * @tc.desc: Verify the DeleteShareFile function.
  * @tc.type: FUNC
