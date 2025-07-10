@@ -70,6 +70,23 @@ void UserManagerTest::TearDown()
 }
 
 /**
+ * @tc.name: Storage_Manager_UserManagerTest_GetInstance_001
+ * @tc.desc: Verify the GetInstance function.
+ * @tc.type: FUNC
+ * @tc.require: AR000HSKSO
+ */
+HWTEST_F(UserManagerTest, Storage_Manager_UserManagerTest_GetInstance_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_GetInstance_001 start";
+
+    UserManager &userManager1 = UserManager::GetInstance();
+    UserManager &userManager2 = UserManager::GetInstance();
+    ASSERT_TRUE(&userManager1 == &userManager2);
+
+    GTEST_LOG_(INFO) << "Storage_Manager_UserManagerTest_GetInstance_001 end";
+}
+
+/**
  * @tc.name: Storage_Manager_UserManagerTest_PrepareUserDirs_001
  * @tc.desc: func PrepareUserDirs when the el1 path exist but is not dir.
  * @tc.type: FUNC

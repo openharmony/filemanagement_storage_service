@@ -42,6 +42,23 @@ public:
 };
 
 /**
+ * @tc.name: Storage_Service_QuotaManagerTest_GetInstance_001
+ * @tc.desc: Verify the GetInstance function.
+ * @tc.type: FUNC
+ * @tc.require: AR000HSKSO
+ */
+HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_GetInstance_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetInstance_001 start";
+
+    QuotaManager &quotaManager1 = QuotaManager::GetInstance();
+    QuotaManager &quotaManager2 = QuotaManager::GetInstance();
+    ASSERT_TRUE(&quotaManager1 == &quotaManager2);
+
+    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetInstance_001 end";
+}
+
+/**
  * @tc.name: Storage_Service_QuotaManagerTest_SetBundleQuota_001
  * @tc.desc: Test whether SetBundleQuota is called normally.(bundleName is empty)
  * @tc.type: FUNC

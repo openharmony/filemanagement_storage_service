@@ -74,6 +74,23 @@ public:
 };
 
 /**
+ * @tc.name: Storage_Service_VolumeManagerTest_GetInstance_001
+ * @tc.desc: Verify the GetInstance function.
+ * @tc.type: FUNC
+ * @tc.require: AR000HSKSO
+ */
+HWTEST_F(VolumeManagerTest, Storage_Service_VolumeManagerTest_GetInstance_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetInstance_001 start";
+
+    VolumeManager &volumeManager1 = VolumeManager::Instance();
+    VolumeManager &volumeManager2 = VolumeManager::Instance();
+    ASSERT_TRUE(&volumeManager1 == &volumeManager2);
+
+    GTEST_LOG_(INFO) << "Storage_Service_VolumeManagerTest_GetInstance_001 end";
+}
+
+/**
  * @tc.name: Storage_Service_VolumeManagerTest_CreateVolume_001
  * @tc.desc: Verify the CreateVolume function.
  * @tc.type: FUNC

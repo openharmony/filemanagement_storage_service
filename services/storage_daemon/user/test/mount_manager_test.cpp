@@ -70,6 +70,23 @@ void MountManagerTest::TearDownTestCase()
 }
 
 /**
+ * @tc.name: Storage_Daemon_MountManagerTest_GetInstance_001
+ * @tc.desc: Verify the GetInstance function.
+ * @tc.type: FUNC
+ * @tc.require: AR000HSKSO
+ */
+HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_GetInstance_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_GetInstance_001 start";
+
+    MountManager &mountManager1 = MountManager::GetInstance();
+    MountManager &mountManager2 = MountManager::GetInstance();
+    ASSERT_TRUE(&mountManager1 == &mountManager2);
+
+    GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_GetInstance_001 end";
+}
+
+/**
  * @tc.name: Storage_Daemon_MountManagerTest_HmdfsTwiceMount_001
  * @tc.desc: Verify the HmdfsTwiceMount function.
  * @tc.type: FUNC
