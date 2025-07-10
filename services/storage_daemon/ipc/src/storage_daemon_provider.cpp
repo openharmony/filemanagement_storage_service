@@ -749,14 +749,14 @@ int32_t StorageDaemonProvider::UMountMediaFuse(int32_t userId)
 
 int32_t StorageDaemonProvider::MountFileMgrFuse(int32_t userId, const std::string &path, int32_t &fuseFd)
 {
-    LOGI("StorageDaemonProvider::MountFileMgrFuse, userId:%{public}d, path:%{public}s", userId, path.c_str());
+    LOGI("StorageDaemonProvider::MountFileMgrFuse, userId:%{public}d.", userId);
     fuseFd = -1;
     return MountManager::GetInstance()->MountFileMgrFuse(userId, path, fuseFd);
 }
 
 int32_t StorageDaemonProvider::UMountFileMgrFuse(int32_t userId, const std::string &path)
 {
-    LOGI("StorageDaemonProvider::MountFileMgrFuse, userId:%{public}d, path:%{public}s", userId, path.c_str());
+    LOGI("StorageDaemonProvider::UMountFileMgrFuse, userId:%{public}d.", userId);
     return MountManager::GetInstance()->UMountFileMgrFuse(userId, path);
 }
 

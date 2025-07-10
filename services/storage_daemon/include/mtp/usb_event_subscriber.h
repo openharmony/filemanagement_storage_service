@@ -21,6 +21,7 @@
 #include "common_event_subscriber.h"
 #include "common_event_support.h"
 #include "cJSON.h"
+#include "mtp_device_monitor.h"
 
 namespace OHOS {
 namespace StorageDaemon {
@@ -36,6 +37,7 @@ public:
 
     void OnReceiveEvent(const OHOS::EventFwk::CommonEventData &data) override;
     static void SubscribeCommonEvent(void);
+    static bool IsPtpMode();
 
 private:
     void GetValueFromUsbDataInfo(const std::string &jsonStr, uint8_t &devNum, uint32_t &busLoc);
@@ -43,6 +45,9 @@ private:
     std::string ToLowerString(const char* str);
     bool CheckMtpInterface(const cJSON* iface);
     bool CheckAllInterfaces(const cJSON* configs);
+
+private:
+    static bool isPtp_;
 };
 } // namespace UsbEventSubscriber
 } // namespace OHOS

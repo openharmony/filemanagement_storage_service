@@ -45,9 +45,9 @@ constexpr uint32_t KILL_RETRY_INTERVAL_MS = 100 * 1000;
 constexpr const char *MOUNT_POINT_INFO = "/proc/mounts";
 constexpr const char *FUSE_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.enterprise.external_storage_device.manage.enable";
 
-int32_t RedirectStdToPipe(int logpipe[2], size_t len)
+int32_t RedirectStdToPipe(int logpipe[PIPE_FD_LEN], size_t len)
 {
-    if (logpipe == nullptr || len != PIPE_FD_LEN) {
+    if (logpipe == nullptr || len < PIPE_FD_LEN) {
         LOGE("std to pipe param is invalid.");
         return E_ERR;
     }
@@ -460,7 +460,7 @@ static std::vector<char*> FromatCmd(std::vector<std::string> &cmd)
 
 int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
 {
-    int pipe_fd[2];
+    int pipe_fd[PIPE_FD_LEN];
     pid_t pid;
     int status;
     auto args = FromatCmd(cmd);
@@ -473,7 +473,7 @@ int ForkExec(std::vector<std::string> &cmd, std::vector<std::string> *output)
         LOGE("fork failed, errno is %{public}d.", errno);
         return E_FORK;
     } else if (pid == 0) {
-        if (RedirectStdToPipe(pipe_fd, sizeof(pipe_fd))) {
+        if (RedirectStdToPipe(pipe_fd, PIPE_FD_LEN)) {
             _exit(1);
         }
         execvp(args[0], const_cast<char **>(args.data()));
@@ -562,9 +562,9 @@ static void ReportExecutorPidEvent(std::vector<std::string> &cmd, int32_t pid)
     }
 }
 
-static void ClosePipe(int pipedes[2], size_t len)
+static void ClosePipe(int pipedes[PIPE_FD_LEN], size_t len)
 {
-    if (pipedes == nullptr || len != PIPE_FD_LEN) {
+    if (pipedes == nullptr || len < PIPE_FD_LEN) {
         LOGE("close pipe param is invalid.");
         return;
     }
@@ -572,9 +572,9 @@ static void ClosePipe(int pipedes[2], size_t len)
     (void)close(pipedes[1]);
 }
 
-static void WritePidToPipe(int pipe_fd[2], size_t len)
+static void WritePidToPipe(int pipe_fd[PIPE_FD_LEN], size_t len)
 {
-    if (pipe_fd == nullptr || len != PIPE_FD_LEN) {
+    if (pipe_fd == nullptr || len < PIPE_FD_LEN) {
         LOGE("write pipe param is invalid.");
         return;
     }
@@ -598,9 +598,9 @@ static void ReadPidFromPipe(std::vector<std::string> &cmd, int pipe_fd[2])
     ReportExecutorPidEvent(cmd, recv_pid);
 }
 
-static void ReadLogFromPipe(int logpipe[2], size_t len)
+static void ReadLogFromPipe(int logpipe[PIPE_FD_LEN], size_t len)
 {
-    if (pipe_fd == nullptr || len != PIPE_FD_LEN) {
+    if (logpipe == nullptr || len < PIPE_FD_LEN) {
         LOGE("read pipe param is invalid.");
         return;
     }
@@ -620,8 +620,8 @@ static void ReadLogFromPipe(int logpipe[2], size_t len)
 
 int ExtStorageMountForkExec(std::vector<std::string> &cmd)
 {
-    int pipe_fd[2];
-    int pipe_log_fd[2]; /* for mount.exfat log*/
+    int pipe_fd[PIPE_FD_LEN];
+    int pipe_log_fd[PIPE_FD_LEN]; /* for mount.exfat log*/
     pid_t pid;
     int status;
     auto args = FromatCmd(cmd);
@@ -633,19 +633,19 @@ int ExtStorageMountForkExec(std::vector<std::string> &cmd)
 
     if (pipe(pipe_log_fd) < 0) {
         LOGE("creat pipe for log failed, errno is %{public}d.", errno);
-        ClosePipe(pipe_fd, sizeof(pipe_fd));
+        ClosePipe(pipe_fd, PIPE_FD_LEN);
         return E_ERR;
     }
 
     pid = fork();
     if (pid == -1) {
         LOGE("fork failed, errno is %{public}d.", errno);
-        ClosePipe(pipe_fd, sizeof(pipe_fd));
-        ClosePipe(pipe_log_fd, sizeof(pipe_log_fd));
+        ClosePipe(pipe_fd, PIPE_FD_LEN);
+        ClosePipe(pipe_log_fd, PIPE_FD_LEN);
         return E_ERR;
     } else if (pid == 0) {
-        WritePidToPipe(pipe_fd, sizeof(pipe_fd));
-        if (RedirectStdToPipe(pipe_log_fd, sizeof(pipe_log_fd))) {
+        WritePidToPipe(pipe_fd, PIPE_FD_LEN);
+        if (RedirectStdToPipe(pipe_log_fd, PIPE_FD_LEN)) {
             _exit(1);
         }
         execvp(args[0], const_cast<char **>(args.data()));
@@ -653,7 +653,7 @@ int ExtStorageMountForkExec(std::vector<std::string> &cmd)
         _exit(1);
     } else {
         ReadPidFromPipe(cmd, pipe_fd);
-        ReadLogFromPipe(pipe_log_fd, sizeof(pipe_log_fd));
+        ReadLogFromPipe(pipe_log_fd, PIPE_FD_LEN);
 
         waitpid(pid, &status, 0);
         if (errno == ECHILD) {

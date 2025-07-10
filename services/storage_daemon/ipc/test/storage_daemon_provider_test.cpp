@@ -17,6 +17,7 @@
 #include "message_parcel.h"
 #include "quota/quota_manager.h"
 #include "storage_service_errno.h"
+#include "system_ability_definition.h"
 #include "test/common/help_utils.h"
 #include <cstdlib>
 #include <cstring>
@@ -56,6 +57,23 @@ std::vector<uint8_t> GenerateTestData(uint8_t startValue, size_t length)
         result[i] = startValue + static_cast<uint8_t>(i);
     }
     return result;
+}
+
+void StringVecToRawData(const std::vector<std::string> &stringVec, StorageFileRawData &rawData)
+{
+    std::stringstream ss;
+    uint32_t stringCount = stringVec.size();
+    ss.write(reinterpret_cast<const char*>(&stringCount), sizeof(stringCount));
+
+    for (uint32_t i = 0; i < stringCount; ++i) {
+        uint32_t strLen = stringVec[i].length();
+        ss.write(reinterpret_cast<const char*>(&strLen), sizeof(strLen));
+        ss.write(stringVec[i].c_str(), strLen);
+    }
+    std::string result = ss.str();
+    rawData.ownedData = std::move(result);
+    rawData.data = rawData.ownedData.data();
+    rawData.size = rawData.ownedData.size();
 }
 
 void StorageDaemonProviderTest::SetUp(void)
@@ -804,11 +822,13 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateShareFile_00
 {
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateShareFile_001 start";
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string uriStr = "file1";
+    std::vector<std::string> uriStrVec = {uriStr};
+    StorageFileRawData rawData;
+    StringVecToRawData(uriStrVec, rawData);
     StorageFileRawData fileRawData;
-    fileRawData.ownedData = "file1";
-    const char* buffer = "file1";
-    fileRawData.size = fileRawData.ownedData.size();
-    fileRawData.RawDataCpy(static_cast<const void*>(buffer));
+    fileRawData.size = rawData.size;
+    fileRawData.RawDataCpy(rawData.data);
     uint32_t tokenId = 0;
     uint32_t flag = 0;
     std::vector<int32_t> funcResult;
@@ -827,11 +847,13 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_DeleteShareFile_00
 {
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_DeleteShareFile_001 start";
     ASSERT_TRUE(storageDaemonProviderTest_ != nullptr);
+    std::string uriStr = "file1";
+    std::vector<std::string> uriStrVec = {uriStr};
+    StorageFileRawData rawData;
+    StringVecToRawData(uriStrVec, rawData);
     StorageFileRawData fileRawData;
-    fileRawData.ownedData = "file1";
-    const char* buffer = "file1";
-    fileRawData.size = fileRawData.ownedData.size();
-    fileRawData.RawDataCpy(static_cast<const void*>(buffer));
+    fileRawData.size = rawData.size;
+    fileRawData.RawDataCpy(rawData.data);
     uint32_t tokenId = 0;
     int32_t ret = storageDaemonProviderTest_->DeleteShareFile(tokenId, fileRawData);
 
@@ -1134,6 +1156,74 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_UMountDisShareFile
     auto ret = storageDaemonProviderTest_->UMountDisShareFile(userId, networkId);
     EXPECT_TRUE(ret == E_OK);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_UMountDisShareFile_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_OnAddSystemAbility_001
+ * @tc.desc: Verify the OnAddSystemAbility function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_OnAddSystemAbility_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_OnAddSystemAbility_001 start";
+    StorageDaemonProvider::SystemAbilityStatusChangeListener listener;
+
+#ifdef EXTERNAL_STORAGE_MANAGER
+    listener.OnAddSystemAbility(ACCESS_TOKEN_MANAGER_SERVICE_ID, "device1");
+#endif
+    listener.OnAddSystemAbility(FILEMANAGEMENT_CLOUD_DAEMON_SERVICE_SA_ID, "device2");
+
+    listener.OnAddSystemAbility(999999, "device3");
+
+    SUCCEED();
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_OnAddSystemAbility_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_OnRemoveSystemAbility_001
+ * @tc.desc: Verify the OnRemoveSystemAbility function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_OnRemoveSystemAbility_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_OnRemoveSystemAbility_001 start";
+    StorageDaemonProvider::SystemAbilityStatusChangeListener listener;
+
+    listener.OnRemoveSystemAbility(FILEMANAGEMENT_CLOUD_DAEMON_SERVICE_SA_ID, "device1");
+
+    listener.OnRemoveSystemAbility(999999, "device2");
+
+    SUCCEED();
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_OnRemoveSystemAbility_001 end";
+}
+
+/**
+ * @tc.name: StorageDaemonProviderTest_StorageRadarThd_001
+ * @tc.desc: Verify the StorageRadarThd function.
+ * @tc.type: FUNC
+ * @tc.require: AR000H09L6
+ */
+HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_StorageRadarThd_001, TestSize.Level1)
+{
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_StorageRadarThd_001 start";
+    StorageStatisticRadar::GetInstance().CleanStatisticFile();
+
+    std::map<uint32_t, RadarStatisticInfo> testStats;
+    RadarStatisticInfo info = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    testStats[1234] = info;
+    StorageStatisticRadar::GetInstance().UpdateStatisticFile(testStats);
+
+    std::map<uint32_t, RadarStatisticInfo> checkStats;
+    StorageStatisticRadar::GetInstance().ReadStatisticFile(checkStats);
+    ASSERT_FALSE(checkStats.empty());
+
+    StorageDaemonProvider* provider = new StorageDaemonProvider();
+
+    delete provider;
+    SUCCEED();
+    GTEST_LOG_(INFO) << "StorageDaemonProviderTest_StorageRadarThd_001 end";
 }
 } // namespace StorageDaemon
 } // namespace OHOS

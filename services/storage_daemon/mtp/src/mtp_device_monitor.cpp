@@ -24,6 +24,7 @@
 #include "parameters.h"
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/xattr.h>
 #include <unistd.h>
 #include <thread>
 #include "mtp/usb_event_subscriber.h"
@@ -39,12 +40,15 @@ constexpr int32_t SLEEP_TIME = 1;
 constexpr int32_t MTP_VAL_LEN = 6;
 constexpr int32_t MTP_TRUE_LEN = 5;
 constexpr int32_t DETECT_CNT = 4;
+constexpr int UPLOAD_RECORD_FALSE_LEN = 5;
+constexpr int UPLOAD_RECORD_TRUE_LEN = 4;
 
 constexpr const char *MTP_ROOT_PATH = "/mnt/data/external/";
 constexpr const char *SYS_PARAM_SERVICE_PERSIST_ENABLE = "persist.edm.mtp_client_disable";
 constexpr const char *SYS_PARAM_SERVICE_ENTERPRISE_ENABLE = "const.edm.is_enterprise_device";
 constexpr const char *KEY_CUST = "const.cust.custPath";
 constexpr const char *CUST_HWIT = "hwit";
+constexpr const char *IS_PYP_MODE = "user.isptpmode";
 constexpr int32_t SYS_PARARMETER_SIZE = 256;
 bool g_keepMonitoring = true;
 
@@ -80,7 +84,7 @@ bool MtpDeviceMonitor::IsNeedDisableMtp()
     return false;
 }
 
-void MtpDeviceMonitor::MountMtpDeviceByBroadcast()
+int32_t MtpDeviceMonitor::GetMtpDevices(std::vector<MtpDeviceInfo> &devInfos)
 {
     int rawDevSize = 0;
     LIBMTP_raw_device_t *rawDevices = nullptr;
@@ -89,10 +93,9 @@ void MtpDeviceMonitor::MountMtpDeviceByBroadcast()
         if (rawDevices != nullptr) {
             free(static_cast<void *>(rawDevices));
         }
-        return;
+        return E_MTP_MOUNT_FAILED;
     }
 
-    std::vector<MtpDeviceInfo> devInfos;
     for (int index = 0; index < rawDevSize; ++index) {
         LIBMTP_raw_device_t *rawDevice = &rawDevices[index];
         if (rawDevice == nullptr) {
@@ -120,8 +123,32 @@ void MtpDeviceMonitor::MountMtpDeviceByBroadcast()
         LOGI("Detect new mtp device: id=%{public}s, vendor=%{public}s, product=%{public}s, devNum=%{public}d",
             (devInfo.id).c_str(), (devInfo.vendor).c_str(), (devInfo.product).c_str(), devInfo.devNum);
     }
-    MountMtpDevice(devInfos);
     free(static_cast<void *>(rawDevices));
+    return E_OK;
+}
+
+void MtpDeviceMonitor::MountMtpDeviceByBroadcast()
+{
+    std::vector<MtpDeviceInfo> devInfos;
+    int32_t ret = GetMtpDevices(devInfos);
+    if (ret != E_OK) {
+        LOGE("No MTP devices detected");
+        return;
+    }
+    ret = MountMtpDevice(devInfos);
+    if (ret != E_OK) {
+        LOGE("mount mtp device failed");
+        return;
+    }
+    bool isPtp = UsbEventSubscriber::IsPtpMode();
+ 
+    for (const auto& devInfo : devInfos) {
+        const char* value = isPtp ? "true" : "false";
+        size_t len = isPtp ? UPLOAD_RECORD_TRUE_LEN : UPLOAD_RECORD_FALSE_LEN;
+        if (setxattr(devInfo.path.c_str(), IS_PYP_MODE, value, len, 0) == -1) {
+            LOGE("Failed to set xattr");
+        }
+    }
 }
 
 void MtpDeviceMonitor::MonitorDevice()
@@ -151,11 +178,11 @@ void MtpDeviceMonitor::MonitorDevice()
     LOGI("MonitorDevice: mtp device monitor thread end.");
 }
 
-void MtpDeviceMonitor::MountMtpDevice(const std::vector<MtpDeviceInfo> &monitorDevices)
+int32_t MtpDeviceMonitor::MountMtpDevice(const std::vector<MtpDeviceInfo> &monitorDevices)
 {
     if (IsNeedDisableMtp()) {
         LOGE("This device cannot support MTP.");
-        return;
+        return E_MTP_MOUNT_FAILED;
     }
     LOGI("MountMtpDevice: start mount mtp device.");
     for (auto device : monitorDevices) {
@@ -166,15 +193,18 @@ void MtpDeviceMonitor::MountMtpDevice(const std::vector<MtpDeviceInfo> &monitorD
 
         if (lastestMtpDevList_.size() > 0) {
             LOGW("Multiple devices detected. Only one device is supported. Ignoring additional devices.");
-            return;
+            return E_MTP_MOUNT_FAILED;
         }
         int32_t ret = DelayedSingleton<MtpDeviceManager>::GetInstance()->MountDevice(device);
         if (ret == E_OK) {
             lastestMtpDevList_.push_back(device);
-        } else if (ret == E_MTP_PREPARE_DIR_ERR) {
-            LOGE("MountMtpDevice: /mnt/data/external director not ready.");
+        } else if (ret == E_MTP_IS_MOUNTING) {
+            return E_OK;
+        } else {
+            return E_MTP_MOUNT_FAILED;
         }
     }
+    return E_OK;
 }
 
 bool MtpDeviceMonitor::HasMounted(const MtpDeviceInfo &device)

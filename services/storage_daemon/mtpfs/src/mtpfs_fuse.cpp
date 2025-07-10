@@ -336,7 +336,7 @@ int WrapSetXAttr(const char *path, const char *in, const char *out, size_t size,
         LOGI("WrapSetXAttr fail");
         return E_CURRENT_USER_READONLY;
     }
-    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->SetXAttr(path, in);
+    int ret = DelayedSingleton<MtpFileSystem>::GetInstance()->SetXAttr(path, in, out);
     LOGI("WrapSetXAttr ret = %{public}d.", ret);
     return ret;
 }
@@ -1130,7 +1130,7 @@ bool MtpFileSystem::HasSendPartialSupport()
     return false;
 }
 
-int MtpFileSystem::SetXAttr(const char *path, const char *in)
+int MtpFileSystem::SetXAttr(const char *path, const char *in, const char *out)
 {
     if (path == nullptr || in == nullptr) {
         LOGE("Param is null.");
@@ -1147,6 +1147,15 @@ int MtpFileSystem::SetXAttr(const char *path, const char *in)
     }
     if (strcmp(in, "user.cancelcopy") == 0) {
         LOGI("Cancel the mtp transfer task, path=%{public}s", path);
+        return 0;
+    }
+    if (strcmp(in, "user.isptpmode") == 0) {
+        LOGI("Checking device is PTP, attrKey=%{public}s", in);
+        if (out == nullptr) {
+            LOGE("isptpmode value is null");
+            return -ENOENT;
+        }
+        device_.SetPtpMode(out);
         return 0;
     }
     if (strcmp(in, "user.isUploadCompleted") != 0) {

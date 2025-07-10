@@ -429,6 +429,30 @@ group("storage_daemon_usb_param") {
   ]
 }
 
+group("storage_daemon_third_party") {
+  deps = []
+  if (storage_service_external_storage_manager && storage_service_fstools) {
+    external_deps = [
+      "e2fsprogs:blkid",
+      "e2fsprogs:libext2_blkid",
+      "e2fsprogs:libext2_com_err",
+      "e2fsprogs:libext2fs",
+      "exfatprogs:exfatlabel",
+      "exfatprogs:fsck.exfat",
+      "exfatprogs:mkfs.exfat",
+      "gptfdisk:sgdisk",
+      "ntfs-3g:fsck.ntfs",
+      "ntfs-3g:mount.ntfs",
+      "ntfs-3g:ntfslabel",
+    ]
+  }
+  external_deps += [
+    "f2fs-tools:fsck.f2fs",
+    "f2fs-tools:libf2fs",
+    "f2fs-tools:mkfs.f2fs",
+  ]
+}
+
 group("storage_daemon_unit_test") {
   testonly = true
   deps = [

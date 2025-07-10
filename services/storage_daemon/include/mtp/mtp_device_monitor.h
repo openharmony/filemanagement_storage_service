@@ -36,12 +36,13 @@ public:
     static void OnEnterpriseParamChange(const char *key, const  char *value, void *context);
 private:
     void MonitorDevice();
-    void MountMtpDevice(const std::vector<MtpDeviceInfo> &monitorDevices);
     void UmountAllMtpDevice();
     bool HasMounted(const MtpDeviceInfo &device);
     bool IsNeedDisableMtp();
     bool IsHwitDevice();
     int32_t HasMTPDevice(bool &hasMtp);
+    int32_t MountMtpDevice(const std::vector<MtpDeviceInfo> &monitorDevices);
+    int32_t GetMtpDevices(std::vector<MtpDeviceInfo> &devInfos);
 
 private:
     std::mutex listMutex_;
