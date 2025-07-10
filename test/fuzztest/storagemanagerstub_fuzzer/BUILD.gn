@@ -15,32 +15,24 @@ import("//build/config/features.gni")
 import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
-ohos_fuzztest("StorageDaemonProxyFuzzTest") {
+ohos_fuzztest("StorageManagerStubFuzzTest") {
   module_out_path = "storage_service/storage_service"
-  fuzz_config_file = "${storage_service_path}/test/fuzztest/storagedaemonproxy_fuzzer"
+  fuzz_config_file = "${storage_service_path}/test/fuzztest/storagemanagerstub_fuzzer"
 
   defines = [
     "STORAGE_LOG_TAG = \"storage_service\"",
     "STORAGE_DAEMON_FUZZ_TEST",
   ]
   deps = [
-    "${storage_daemon_path}/crypto:libsdcrypto",
     "${storage_daemon_path}:storage_common_utils",
     "${storage_daemon_path}:storage_daemon_ipc",
     "${storage_interface_path}/innerkits/storage_manager/native:storage_manager_sa_proxy",
+    "${storage_service_path}/services/storage_manager:storage_manager",
   ]
 
   sources = [
-    "${storage_daemon_path}/ipc/src/storage_daemon.cpp",
-    "${storage_daemon_path}/ipc/src/storage_daemon_provider.cpp",
-    "${storage_daemon_path}/quota/quota_manager.cpp",
-    "${storage_daemon_path}/user/src/mount_manager.cpp",
-    "${storage_daemon_path}/user/src/mount_manager_ext.cpp",
-    "${storage_daemon_path}/user/src/user_manager.cpp",
-    "${storage_service_path}/test/fuzztest/storagedaemonproxy_fuzzer/storagedaemonproxy_fuzzer.cpp",
+    "${storage_service_path}/test/fuzztest/storagemanagerstub_fuzzer/storagemanagerstub_fuzzer.cpp",
   ]
-
-  configs = [ "${storage_daemon_path}:storage_daemon_config" ]
 
   external_deps = [
     "ability_base:base",
@@ -83,5 +75,5 @@ ohos_fuzztest("StorageDaemonProxyFuzzTest") {
 
 group("fuzztest") {
   testonly = true
-  deps = [ ":StorageDaemonProxyFuzzTest" ]
+  deps = [ ":StorageManagerStubFuzzTest" ]
 }

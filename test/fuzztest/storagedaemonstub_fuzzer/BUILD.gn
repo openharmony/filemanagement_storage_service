@@ -15,9 +15,9 @@ import("//build/config/features.gni")
 import("//build/test.gni")
 import("//foundation/filemanagement/storage_service/storage_service_aafwk.gni")
 
-ohos_fuzztest("StorageDaemonProxyFuzzTest") {
+ohos_fuzztest("StorageDaemonStubFuzzTest") {
   module_out_path = "storage_service/storage_service"
-  fuzz_config_file = "${storage_service_path}/test/fuzztest/storagedaemonproxy_fuzzer"
+  fuzz_config_file = "${storage_service_path}/test/fuzztest/storagedaemonstub_fuzzer"
 
   defines = [
     "STORAGE_LOG_TAG = \"storage_service\"",
@@ -37,7 +37,7 @@ ohos_fuzztest("StorageDaemonProxyFuzzTest") {
     "${storage_daemon_path}/user/src/mount_manager.cpp",
     "${storage_daemon_path}/user/src/mount_manager_ext.cpp",
     "${storage_daemon_path}/user/src/user_manager.cpp",
-    "${storage_service_path}/test/fuzztest/storagedaemonproxy_fuzzer/storagedaemonproxy_fuzzer.cpp",
+    "${storage_service_path}/test/fuzztest/storagedaemonstub_fuzzer/storagedaemonstub_fuzzer.cpp",
   ]
 
   configs = [ "${storage_daemon_path}:storage_daemon_config" ]
@@ -83,5 +83,5 @@ ohos_fuzztest("StorageDaemonProxyFuzzTest") {
 
 group("fuzztest") {
   testonly = true
-  deps = [ ":StorageDaemonProxyFuzzTest" ]
+  deps = [ ":StorageDaemonStubFuzzTest" ]
 }
