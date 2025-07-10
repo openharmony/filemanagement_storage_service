@@ -42,42 +42,6 @@ public:
 };
 
 /**
- * @tc.name: Storage_Service_QuotaManagerTest_GetInstance_001
- * @tc.desc: Verify the GetInstance function.
- * @tc.type: FUNC
- * @tc.require: AR000HSKSO
- */
-HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_GetInstance_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetInstance_001 start";
-
-    QuotaManager *QuotaManager = QuotaManager::GetInstance();
-    ASSERT_TRUE(QuotaManager != nullptr);
-
-    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetInstance_001 end";
-}
-
-/**
- * @tc.name: Storage_Service_QuotaManagerTest_GetInstance_002
- * @tc.desc: Verify the GetInstance function.
- * @tc.type: FUNC
- * @tc.require: AR000HSKSO
- */
-HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_GetInstance_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetInstance_002 start";
-
-    QuotaManager *quotaManager1 = QuotaManager::GetInstance();
-    ASSERT_TRUE(quotaManager1 != nullptr);
-
-    QuotaManager *quotaManager2 = QuotaManager::GetInstance();
-    ASSERT_TRUE(quotaManager2 != nullptr);
-
-    ASSERT_TRUE(quotaManager1 == quotaManager2);
-    GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetInstance_002 end";
-}
-
-/**
  * @tc.name: Storage_Service_QuotaManagerTest_SetBundleQuota_001
  * @tc.desc: Test whether SetBundleQuota is called normally.(bundleName is empty)
  * @tc.type: FUNC
@@ -87,14 +51,11 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_SetBundleQuota_001, 
 {
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_SetBundleQuota_001 start";
 
-    QuotaManager *quotaManager = QuotaManager::GetInstance();
-    ASSERT_TRUE(quotaManager != nullptr);
-
     std::string bundleName = EMPTY_STRING;
     int32_t uid = UID;
     std::string bundleDataDirPath = BUNDLE_PATH;
     int32_t limitSizeMb = LIMITSIZE;
-    int32_t result = quotaManager->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
+    int32_t result = QuotaManager::GetInstance().SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
     EXPECT_EQ(result, E_PARAMS_INVALID);
 
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_SetBundleQuota_001 end";
@@ -110,14 +71,11 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_SetBundleQuota_002, 
 {
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_SetBundleQuota_002 start";
 
-    QuotaManager *quotaManager = QuotaManager::GetInstance();
-    ASSERT_TRUE(quotaManager != nullptr);
-
     std::string bundleName = BUNDLE_NAME;
     int32_t uid = -1;
     std::string bundleDataDirPath = BUNDLE_PATH;
     int32_t limitSizeMb = LIMITSIZE;
-    int32_t result = quotaManager->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
+    int32_t result = QuotaManager::GetInstance().SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
     EXPECT_EQ(result, E_PARAMS_INVALID);
 
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_SetBundleQuota_002 end";
@@ -133,14 +91,11 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_SetBundleQuota_003, 
 {
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_SetBundleQuota_003 start";
 
-    QuotaManager *quotaManager = QuotaManager::GetInstance();
-    ASSERT_TRUE(quotaManager != nullptr);
-
     std::string bundleName = BUNDLE_NAME;
     int32_t uid = UID;
     std::string bundleDataDirPath = EMPTY_STRING;
     int32_t limitSizeMb = LIMITSIZE;
-    int32_t result = quotaManager->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
+    int32_t result = QuotaManager::GetInstance().SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
     EXPECT_EQ(result, E_PARAMS_INVALID);
 
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_SetBundleQuota_003 end";
@@ -156,14 +111,11 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_SetBundleQuota_004, 
 {
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_SetBundleQuota_004 start";
 
-    QuotaManager *quotaManager = QuotaManager::GetInstance();
-    ASSERT_TRUE(quotaManager != nullptr);
-
     std::string bundleName = BUNDLE_NAME;
     int32_t uid = UID;
     std::string bundleDataDirPath = BUNDLE_PATH;
     int32_t limitSizeMb = -1;
-    int32_t result = quotaManager->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
+    int32_t result = QuotaManager::GetInstance().SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
     EXPECT_EQ(result, E_PARAMS_INVALID);
 
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_SetBundleQuota_004 end";
@@ -179,14 +131,11 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_SetBundleQuota_005, 
 {
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_SetBundleQuota_005 start";
 
-    QuotaManager *quotaManager = QuotaManager::GetInstance();
-    ASSERT_TRUE(quotaManager != nullptr);
-
     std::string bundleName = BUNDLE_NAME;
     int32_t uid = UID;
     std::string bundleDataDirPath = BUNDLE_PATH;
     int32_t limitSizeMb = LIMITSIZE;
-    int32_t result = quotaManager->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
+    int32_t result = QuotaManager::GetInstance().SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
     EXPECT_EQ(result, E_STAT_VFS_KERNEL_ERR);
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_SetBundleQuota_005 end";
 }
@@ -219,36 +168,33 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_GetOccupiedSpace_001
 {
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetOccupiedSpace_001 start";
 
-    QuotaManager *quotaManager = QuotaManager::GetInstance();
-    ASSERT_TRUE(quotaManager != nullptr);
-
     int32_t idType = USRID;
     int32_t uid = -1;
     int64_t size = 0;
-    int32_t result = quotaManager->GetOccupiedSpace(idType, uid, size);
+    int32_t result = QuotaManager::GetInstance().GetOccupiedSpace(idType, uid, size);
     EXPECT_EQ(result, E_QUOTA_CTL_KERNEL_ERR);
     uid = UID;
-    result = quotaManager->GetOccupiedSpace(idType, uid, size);
+    result = QuotaManager::GetInstance().GetOccupiedSpace(idType, uid, size);
     EXPECT_EQ(result, E_OK);
 
     idType = GRPID;
     int32_t gid = -1;
-    result = quotaManager->GetOccupiedSpace(idType, gid, size);
+    result = QuotaManager::GetInstance().GetOccupiedSpace(idType, gid, size);
     EXPECT_EQ(result, E_QUOTA_CTL_KERNEL_ERR);
     gid = 1006;
-    result = quotaManager->GetOccupiedSpace(idType, gid, size);
+    result = QuotaManager::GetInstance().GetOccupiedSpace(idType, gid, size);
     EXPECT_EQ(result, E_OK);
 
     idType = PRJID;
     int32_t prjid = -1;
-    result = quotaManager->GetOccupiedSpace(idType, prjid, size);
+    result = QuotaManager::GetInstance().GetOccupiedSpace(idType, prjid, size);
     EXPECT_EQ(result, E_QUOTA_CTL_KERNEL_ERR);
     prjid = 0;
-    result = quotaManager->GetOccupiedSpace(idType, prjid, size);
+    result = QuotaManager::GetInstance().GetOccupiedSpace(idType, prjid, size);
     EXPECT_EQ(result, E_OK);
 
     idType = -1;
-    result = quotaManager->GetOccupiedSpace(idType, uid, size);
+    result = QuotaManager::GetInstance().GetOccupiedSpace(idType, uid, size);
     EXPECT_EQ(result, E_NON_EXIST);
 
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetOccupiedSpace_001 end";
@@ -264,10 +210,8 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_GetUidStorageStats_0
 {
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetUidStorageStats_001 start";
 
-    QuotaManager *quotaManager = QuotaManager::GetInstance();
-    ASSERT_TRUE(quotaManager != nullptr);
     int before = E_OK;
-    quotaManager->GetUidStorageStats();
+    QuotaManager::GetInstance().GetUidStorageStats();
     EXPECT_FALSE(before);
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetUidStorageStats_001 end";
 }
@@ -282,27 +226,24 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_ConvertBytesToMB_001
 {
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_ConvertBytesToMB_001 start";
 
-    QuotaManager *quotaManager = QuotaManager::GetInstance();
-    ASSERT_TRUE(quotaManager != nullptr);
-
     int64_t bytes = -1;
     int32_t decimalPlaces = 2;
-    auto result = quotaManager->ConvertBytesToMB(bytes, decimalPlaces);
+    auto result = QuotaManager::GetInstance().ConvertBytesToMB(bytes, decimalPlaces);
     EXPECT_EQ(result, 0.0);
 
     bytes = 0;
     decimalPlaces = 2;
-    result = quotaManager->ConvertBytesToMB(bytes, decimalPlaces);
+    result = QuotaManager::GetInstance().ConvertBytesToMB(bytes, decimalPlaces);
     EXPECT_EQ(result, 0.0);
 
 
     bytes = 1024 * 1024;
     decimalPlaces = -1;
-    result = quotaManager->ConvertBytesToMB(bytes, decimalPlaces);
+    result = QuotaManager::GetInstance().ConvertBytesToMB(bytes, decimalPlaces);
     EXPECT_EQ(result, 1.0);
 
     decimalPlaces = 2;
-    result = quotaManager->ConvertBytesToMB(bytes, decimalPlaces);
+    result = QuotaManager::GetInstance().ConvertBytesToMB(bytes, decimalPlaces);
     EXPECT_EQ(result, 1.00);
 
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_ConvertBytesToMB_001 end";
@@ -318,29 +259,26 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_StringToInt32_001, T
 {
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_StringToInt32_001 start";
 
-    QuotaManager *quotaManager = QuotaManager::GetInstance();
-    ASSERT_TRUE(quotaManager != nullptr);
-
     std::string strUid = "";
     int32_t outUid32 = 0;
-    EXPECT_FALSE(quotaManager->StringToInt32(strUid, outUid32));
+    EXPECT_FALSE(QuotaManager::GetInstance().StringToInt32(strUid, outUid32));
 
     strUid = "123a";
-    EXPECT_FALSE(quotaManager->StringToInt32(strUid, outUid32));
+    EXPECT_FALSE(QuotaManager::GetInstance().StringToInt32(strUid, outUid32));
 
     strUid = "2147483648";
-    EXPECT_FALSE(quotaManager->StringToInt32(strUid, outUid32));
+    EXPECT_FALSE(QuotaManager::GetInstance().StringToInt32(strUid, outUid32));
 
     strUid = "12345";
-    EXPECT_TRUE(quotaManager->StringToInt32(strUid, outUid32));
+    EXPECT_TRUE(QuotaManager::GetInstance().StringToInt32(strUid, outUid32));
     EXPECT_EQ(outUid32, 12345);
 
     strUid = "0";
-    EXPECT_TRUE(quotaManager->StringToInt32(strUid, outUid32));
+    EXPECT_TRUE(QuotaManager::GetInstance().StringToInt32(strUid, outUid32));
     EXPECT_EQ(outUid32, 0);
 
     strUid = "2147483647";
-    EXPECT_TRUE(quotaManager->StringToInt32(strUid, outUid32));
+    EXPECT_TRUE(QuotaManager::GetInstance().StringToInt32(strUid, outUid32));
     EXPECT_EQ(outUid32, INT32_MAX);
 
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_StringToInt32_001 end";
@@ -356,28 +294,24 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_GetUid32FromEntry_00
 {
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetUid32FromEntry_001 start";
 
-    QuotaManager *quotaManager = QuotaManager::GetInstance();
-    ASSERT_TRUE(quotaManager != nullptr);
-
     std::string entry = "invalidEntry";
     int32_t outUid32 = 0;
     std::string saName;
-    EXPECT_FALSE(quotaManager->GetUid32FromEntry(entry, outUid32, saName));
+    EXPECT_FALSE(QuotaManager::GetInstance().GetUid32FromEntry(entry, outUid32, saName));
 
     entry = "saName:1234";
-    EXPECT_FALSE(quotaManager->GetUid32FromEntry(entry, outUid32, saName));
+    EXPECT_FALSE(QuotaManager::GetInstance().GetUid32FromEntry(entry, outUid32, saName));
 
     entry = "saName:1234:extra";
-    EXPECT_FALSE(quotaManager->GetUid32FromEntry(entry, outUid32, saName));
+    EXPECT_FALSE(QuotaManager::GetInstance().GetUid32FromEntry(entry, outUid32, saName));
 
     entry = "saName:invalidUid:validEntry";
-    EXPECT_FALSE(quotaManager->GetUid32FromEntry(entry, outUid32, saName));
+    EXPECT_FALSE(QuotaManager::GetInstance().GetUid32FromEntry(entry, outUid32, saName));
 
     entry = "saName:validEntry:1234:";
-    EXPECT_TRUE(quotaManager->GetUid32FromEntry(entry, outUid32, saName));
+    EXPECT_TRUE(QuotaManager::GetInstance().GetUid32FromEntry(entry, outUid32, saName));
     EXPECT_EQ(outUid32, 1234);
     EXPECT_EQ(saName, "saName");
-
 
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetUid32FromEntry_001 end";
 }
@@ -392,12 +326,9 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_ParseConfigFile_001,
 {
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_ParseConfigFile_001 start";
 
-    QuotaManager *quotaManager = QuotaManager::GetInstance();
-    ASSERT_TRUE(quotaManager != nullptr);
-
     std::string path = "invalid_path";
     std::vector<struct UidSaInfo> vec;
-    auto result = quotaManager->ParseConfigFile(path, vec);
+    auto result = QuotaManager::GetInstance().ParseConfigFile(path, vec);
     EXPECT_EQ(result, E_JSON_PARSE_ERROR);
 
     path = "valid_entry_file";
@@ -406,7 +337,7 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_ParseConfigFile_001,
     outfile.close();
 
     vec.clear();
-    EXPECT_EQ(quotaManager->ParseConfigFile(path, vec), E_OK);
+    EXPECT_EQ(QuotaManager::GetInstance().ParseConfigFile(path, vec), E_OK);
     ASSERT_EQ(vec.size(), 1);
     EXPECT_EQ(vec[0].saName, "saName");
     EXPECT_EQ(vec[0].uid, 1234);
@@ -425,13 +356,11 @@ HWTEST_F(QuotaManagerTest, Storage_Service_QuotaManagerTest_GetOccupiedSpaceForU
 {
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetOccupiedSpaceForUidList_001 start";
 
-    QuotaManager *quotaManager = QuotaManager::GetInstance();
-    ASSERT_TRUE(quotaManager != nullptr);
     std::vector<struct UidSaInfo> vec;
-    EXPECT_EQ(quotaManager->GetOccupiedSpaceForUidList(vec), E_OK);
+    EXPECT_EQ(QuotaManager::GetInstance().GetOccupiedSpaceForUidList(vec), E_OK);
     struct UidSaInfo info = {0, "root", 0};
     vec.emplace_back(info);
-    EXPECT_EQ(quotaManager->GetOccupiedSpaceForUidList(vec), E_OK);
+    EXPECT_EQ(QuotaManager::GetInstance().GetOccupiedSpaceForUidList(vec), E_OK);
 
     GTEST_LOG_(INFO) << "Storage_Service_QuotaManagerTest_GetOccupiedSpaceForUidList_001 end";
 }

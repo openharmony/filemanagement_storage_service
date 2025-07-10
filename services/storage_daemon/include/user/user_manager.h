@@ -24,7 +24,7 @@ class UserManager final {
 public:
     UserManager();
     virtual ~UserManager() = default;
-    static std::shared_ptr<UserManager> GetInstance();
+    static UserManager &GetInstance();
     int32_t CheckCrypto(int32_t userId, uint32_t flags);
     int32_t PrepareUserDirs(int32_t userId, uint32_t flags);
     int32_t DestroyUserDirs(int32_t userId, uint32_t flags);
@@ -48,7 +48,6 @@ private:
 
     DISALLOW_COPY_AND_MOVE(UserManager);
 
-    static std::shared_ptr<UserManager> instance_;
     const std::vector<DirInfo> rootDirVec_;
     const std::vector<DirInfo> el3DirEl4DirEl5DirVec_;
     const std::vector<DirInfo> subDirVec_;

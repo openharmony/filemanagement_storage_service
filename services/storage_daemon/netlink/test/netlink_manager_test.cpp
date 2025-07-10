@@ -32,40 +32,5 @@ public:
     void TearDown() {};
 };
 
-/**
- * @tc.name: Storage_Service_NetlinkManagerTest_Instance_001
- * @tc.desc: Verify the Instance function.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
-HWTEST_F(NetlinkManagerTest, Storage_Service_NetlinkManagerTest_Instance_001, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_NetlinkManagerTest_Instance_001 start";
-
-    NetlinkManager *netlinkManager = NetlinkManager::Instance();
-    ASSERT_TRUE(netlinkManager != nullptr);
-
-    GTEST_LOG_(INFO) << "Storage_Service_NetlinkManagerTest_Instance_001 end";
-}
-
-/**
- * @tc.name: Storage_Service_NetlinkManagerTest_Instance_002
- * @tc.desc: Verify the Instance function.
- * @tc.type: FUNC
- * @tc.require: SR000GGUOT
- */
-HWTEST_F(NetlinkManagerTest, Storage_Service_NetlinkManagerTest_Instance_002, TestSize.Level1)
-{
-    GTEST_LOG_(INFO) << "Storage_Service_NetlinkManagerTest_Instance_002 start";
-
-    NetlinkManager *netlinkManager1 = NetlinkManager::Instance();
-    ASSERT_TRUE(netlinkManager1 != nullptr);
-
-    NetlinkManager *netlinkManager2 = NetlinkManager::Instance();
-    ASSERT_TRUE(netlinkManager2 != nullptr);
-
-    ASSERT_TRUE(netlinkManager1 == netlinkManager2);
-    GTEST_LOG_(INFO) << "Storage_Service_NetlinkManagerTest_Instance_002 end";
-}
 } // STORAGE_DAEMON
 } // OHOS

@@ -162,9 +162,9 @@ constexpr uid_t OID_TRUSTED_RING = 65936;
 
 class MountManager final {
 public:
+    static MountManager &GetInstance();
     MountManager();
     virtual ~MountManager() = default;
-    static std::shared_ptr<MountManager> GetInstance();
     static std::vector<DirInfo> InitHmdfsDirVec();
     static std::vector<DirInfo> InitVirtualDir();
     static std::vector<DirInfo> InitSystemServiceDir();
@@ -264,7 +264,6 @@ private:
 
     DISALLOW_COPY_AND_MOVE(MountManager);
 
-    static std::shared_ptr<MountManager> instance_;
     const std::vector<DirInfo> hmdfsDirVec_;
     const std::vector<DirInfo> virtualDir_;
     const std::vector<DirInfo> systemServiceDir_;

@@ -83,29 +83,29 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_HmdfsTwiceMount_001, 
 
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(true)).WillOnce(Return(true))
         .WillOnce(Return(true)).WillOnce(Return(true));
-    auto ret = MountManager::GetInstance()->HmdfsTwiceMount(userId, relativePath);
+    auto ret = MountManager::GetInstance().HmdfsTwiceMount(userId, relativePath);
     EXPECT_EQ(ret, E_MOUNT_HMDFS_MEDIA);
 
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(true)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
-    ret = MountManager::GetInstance()->HmdfsTwiceMount(userId, relativePath);
+    ret = MountManager::GetInstance().HmdfsTwiceMount(userId, relativePath);
     EXPECT_EQ(ret, E_MOUNT_HMDFS_MEDIA);
 
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(true)).WillOnce(Return(false)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(1));
-    ret = MountManager::GetInstance()->HmdfsTwiceMount(userId, relativePath);
+    ret = MountManager::GetInstance().HmdfsTwiceMount(userId, relativePath);
     EXPECT_EQ(ret, E_MOUNT_HMDFS_MEDIA);
 
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(true)).WillOnce(Return(false))
         .WillOnce(Return(false)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(0)).WillOnce(Return(1));
-    ret = MountManager::GetInstance()->HmdfsTwiceMount(userId, relativePath);
+    ret = MountManager::GetInstance().HmdfsTwiceMount(userId, relativePath);
     EXPECT_EQ(ret, E_MOUNT_HMDFS_MEDIA);
 
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(true)).WillOnce(Return(false))
         .WillOnce(Return(false)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(0)).WillOnce(Return(0));
-    ret = MountManager::GetInstance()->HmdfsTwiceMount(userId, relativePath);
+    ret = MountManager::GetInstance().HmdfsTwiceMount(userId, relativePath);
     EXPECT_EQ(ret, E_MOUNT_HMDFS_MEDIA);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_HmSharefsMount_001 end";
 }
@@ -121,19 +121,18 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_SharefsMount_001, Tes
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_SharefsMount_001 start";
     int32_t userId = 888;
 
-    std::shared_ptr<MountManager> mountManager = MountManager::GetInstance();
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(true));
-    auto ret = mountManager->SharefsMount(userId);
+    auto ret = MountManager::GetInstance().SharefsMount(userId);
     EXPECT_EQ(ret, E_OK);
 
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
-    ret = MountManager::GetInstance()->SharefsMount(userId);
+    ret = MountManager::GetInstance().SharefsMount(userId);
     EXPECT_EQ(ret, E_MOUNT_SHAREFS);
 
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
-    ret = MountManager::GetInstance()->SharefsMount(userId);
+    ret = MountManager::GetInstance().SharefsMount(userId);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_SharefsMount_001 end";
 }
@@ -151,32 +150,29 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_HmSharefsMount_001, T
     std::string srcPath;
     std::string dstPath;
 
-    std::shared_ptr<MountManager> mountManager = MountManager::GetInstance();
-    ASSERT_TRUE(mountManager != nullptr);
-
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false));
-    auto ret = MountManager::GetInstance()->HmSharefsMount(userId, srcPath, dstPath);
+    auto ret = MountManager::GetInstance().HmSharefsMount(userId, srcPath, dstPath);
     EXPECT_EQ(ret, E_OK);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(false));
-    ret = MountManager::GetInstance()->HmSharefsMount(userId, srcPath, dstPath);
+    ret = MountManager::GetInstance().HmSharefsMount(userId, srcPath, dstPath);
     EXPECT_EQ(ret, E_OK);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(true));
-    ret = MountManager::GetInstance()->HmSharefsMount(userId, srcPath, dstPath);
+    ret = MountManager::GetInstance().HmSharefsMount(userId, srcPath, dstPath);
     EXPECT_EQ(ret, E_OK);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
-    ret = MountManager::GetInstance()->HmSharefsMount(userId, srcPath, dstPath);
+    ret = MountManager::GetInstance().HmSharefsMount(userId, srcPath, dstPath);
     EXPECT_EQ(ret, E_MOUNT_HM_SHAREFS);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
-    ret = MountManager::GetInstance()->HmSharefsMount(userId, srcPath, dstPath);
+    ret = MountManager::GetInstance().HmSharefsMount(userId, srcPath, dstPath);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_HmSharefsMount_001 end";
 }
@@ -192,11 +188,11 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_CheckSymlink_001, Tes
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckSymlink_001 start";
     std::string path;
     std::list<std::string> unMountFailList;
-    auto ret = MountManager::GetInstance()->CheckSymlink(path, unMountFailList);
+    auto ret = MountManager::GetInstance().CheckSymlink(path, unMountFailList);
     EXPECT_EQ(ret, false);
 
     path = "/data/test/tdd/test.txt";
-    ret = MountManager::GetInstance()->CheckSymlink(path, unMountFailList);
+    ret = MountManager::GetInstance().CheckSymlink(path, unMountFailList);
     EXPECT_EQ(ret, false);
 
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckSymlink_001 end";
@@ -213,27 +209,27 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_SharedMount_001, Test
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_SharedMount_001 start";
     std::string path;
     int32_t userId = 100;
-    auto ret = MountManager::GetInstance()->SharedMount(userId, path);
+    auto ret = MountManager::GetInstance().SharedMount(userId, path);
     EXPECT_EQ(ret, E_OK);
 
     path = "test1";
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false));
-    ret = MountManager::GetInstance()->SharedMount(userId, path);
+    ret = MountManager::GetInstance().SharedMount(userId, path);
     EXPECT_EQ(ret, E_OK);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(1));
-    ret = MountManager::GetInstance()->SharedMount(userId, path);
+    ret = MountManager::GetInstance().SharedMount(userId, path);
     EXPECT_EQ(ret, E_MOUNT_SHARED);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(1));
-    ret = MountManager::GetInstance()->SharedMount(userId, path);
+    ret = MountManager::GetInstance().SharedMount(userId, path);
     EXPECT_EQ(ret, E_MOUNT_SHARED);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(0));
-    ret = MountManager::GetInstance()->SharedMount(userId, path);
+    ret = MountManager::GetInstance().SharedMount(userId, path);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckSymlink_001 end";
 }
@@ -251,26 +247,26 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_BindAndRecMount_001, 
     std::string dstPath;
     int32_t userId = 100;
     bool isUseSlave = true;
-    auto ret = MountManager::GetInstance()->BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
+    auto ret = MountManager::GetInstance().BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
     EXPECT_EQ(ret, E_NON_EXIST);
 
     srcPath = "srcPath";
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false));
-    ret = MountManager::GetInstance()->BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
+    ret = MountManager::GetInstance().BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
     EXPECT_EQ(ret, E_NON_EXIST);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
-    ret = MountManager::GetInstance()->BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
+    ret = MountManager::GetInstance().BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
     EXPECT_EQ(ret, E_NON_EXIST);
 
     dstPath = "dstPath";
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(false));
-    ret = MountManager::GetInstance()->BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
+    ret = MountManager::GetInstance().BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
     EXPECT_EQ(ret, E_NON_EXIST);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(true));
-    ret = MountManager::GetInstance()->BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
+    ret = MountManager::GetInstance().BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckSymlink_001 end";
 }
@@ -292,26 +288,26 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_BindAndRecMount_002, 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(1));
-    auto ret = MountManager::GetInstance()->BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
+    auto ret = MountManager::GetInstance().BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
     EXPECT_EQ(ret, E_MOUNT_BIND_AND_REC);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(1));
-    ret = MountManager::GetInstance()->BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
+    ret = MountManager::GetInstance().BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
     EXPECT_EQ(ret, 1);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(0));
-    ret = MountManager::GetInstance()->BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
+    ret = MountManager::GetInstance().BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
     EXPECT_EQ(ret, E_OK);
 
     isUseSlave = false;
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, IsPathMounted(_)).WillOnce(Return(false));
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(0));
-    ret = MountManager::GetInstance()->BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
+    ret = MountManager::GetInstance().BindAndRecMount(userId, srcPath, dstPath, isUseSlave);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_BindAndRecMount_002 end";
 }
@@ -327,13 +323,13 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_PrepareAppdataDirByUs
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_PrepareAppdataDirByUserId_001 start";
     int32_t userId = 888;
     EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(false));
-    auto ret = MountManager::GetInstance()->PrepareAppdataDirByUserId(userId);
+    auto ret = MountManager::GetInstance().PrepareAppdataDirByUserId(userId);
     EXPECT_EQ(ret, E_CREATE_DIR_APPDATA);
 
-    EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).Times(MountManager::GetInstance()->appdataDir_.size())
+    EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).Times(MountManager::GetInstance().appdataDir_.size())
         .WillRepeatedly(::testing::Return(11));
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false)).WillOnce(Return(false)).WillOnce(Return(false));
-    ret = MountManager::GetInstance()->PrepareAppdataDirByUserId(userId);
+    ret = MountManager::GetInstance().PrepareAppdataDirByUserId(userId);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckSymlink_001 end";
 }
@@ -349,16 +345,16 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_PrepareAppdataDir_001
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_PrepareAppdataDir_001 start";
     int32_t userId = 888;
     EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(false));
-    auto ret = MountManager::GetInstance()->PrepareAppdataDir(userId);
+    auto ret = MountManager::GetInstance().PrepareAppdataDir(userId);
     EXPECT_EQ(ret, E_OK);
 
     std::vector<int32_t> userIds;
-    MountManager::GetInstance()->GetAllUserId(userIds);
+    MountManager::GetInstance().GetAllUserId(userIds);
     if (!userIds.empty()) {
         EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillRepeatedly(Return(false));
     }
 
-    ret = MountManager::GetInstance()->PrepareAppdataDir(0);
+    ret = MountManager::GetInstance().PrepareAppdataDir(0);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_PrepareAppdataDir_001 end";
 }
@@ -373,11 +369,11 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_DirExist_001, TestSiz
 {
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_DirExist_001 start";
     string path = "test";
-    auto ret = MountManager::GetInstance()->DirExist(path);
+    auto ret = MountManager::GetInstance().DirExist(path);
     EXPECT_FALSE(ret);
 
     path = "/data/test";
-    ret = MountManager::GetInstance()->DirExist(path);
+    ret = MountManager::GetInstance().DirExist(path);
     EXPECT_TRUE(ret);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_DirExist_001 end";
 }
@@ -394,7 +390,7 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_CheckPathValid_001, T
     std::string bundleNameStr = "test";
     uint32_t userId = 888;
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false));
-    auto ret = MountManager::GetInstance()->CheckPathValid(bundleNameStr, userId);
+    auto ret = MountManager::GetInstance().CheckPathValid(bundleNameStr, userId);
     EXPECT_FALSE(ret);
 
     string basePath =
@@ -402,13 +398,13 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_CheckPathValid_001, T
     string completePath = basePath  + "/" + bundleNameStr + EL2_BASE;
     ForceCreateDirectory(completePath);
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
-    ret = MountManager::GetInstance()->CheckPathValid(bundleNameStr, userId);
+    ret = MountManager::GetInstance().CheckPathValid(bundleNameStr, userId);
     EXPECT_TRUE(ret);
 
     string subDir = completePath + "test";
     ForceCreateDirectory(subDir);
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true));
-    ret = MountManager::GetInstance()->CheckPathValid(bundleNameStr, userId);
+    ret = MountManager::GetInstance().CheckPathValid(bundleNameStr, userId);
     EXPECT_FALSE(ret);
     ForceRemoveDirectory(basePath);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckPathValid_001 end";
@@ -425,13 +421,13 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_CheckMaps_001, TestSi
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckMaps_001 start";
     std::string path;
     std::list<std::string> mountFailList;
-    auto ret = MountManager::GetInstance()->CheckMaps("", mountFailList);
+    auto ret = MountManager::GetInstance().CheckMaps("", mountFailList);
     EXPECT_FALSE(ret);
 
     string baseDir = "/data/test/tdd";
     ForceCreateDirectory(baseDir);
     path = baseDir + "test.txt";
-    ret = MountManager::GetInstance()->CheckMaps(path, mountFailList);
+    ret = MountManager::GetInstance().CheckMaps(path, mountFailList);
     EXPECT_FALSE(ret);
 
     auto fd = open(path.c_str(), O_RDWR | O_CREAT);
@@ -440,11 +436,11 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_CheckMaps_001, TestSi
     std::string content = "this is a test\n/data/test/tdd";
     (void)write(fd, content.c_str(), content.size());
     close(fd);
-    ret = MountManager::GetInstance()->CheckMaps(path, mountFailList);
+    ret = MountManager::GetInstance().CheckMaps(path, mountFailList);
     EXPECT_FALSE(ret);
 
     mountFailList.push_back(baseDir);
-    ret = MountManager::GetInstance()->CheckMaps(path, mountFailList);
+    ret = MountManager::GetInstance().CheckMaps(path, mountFailList);
     EXPECT_TRUE(ret);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_CheckMaps_001 end";
 }
@@ -462,18 +458,18 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_MountSandboxPath_001,
     std::vector<std::string> dstPathEmpty;
     std::string bundleName = "test";
     std::string userId = "100";
-    MountManager::GetInstance()->MountSandboxPath(srcPathEmpty, dstPathEmpty, bundleName, userId);
+    MountManager::GetInstance().MountSandboxPath(srcPathEmpty, dstPathEmpty, bundleName, userId);
 
     std::vector<std::string> srcPaths {
         "/data/test/tdd1",
         "/data/test/tdd2"
     };
-    MountManager::GetInstance()->MountSandboxPath(srcPaths, dstPathEmpty, bundleName, userId);
+    MountManager::GetInstance().MountSandboxPath(srcPaths, dstPathEmpty, bundleName, userId);
     
     std::vector<std::string> dstPaths {
         "/data/test/tdd3"
     };
-    MountManager::GetInstance()->MountSandboxPath(srcPaths, dstPaths, bundleName, userId);
+    MountManager::GetInstance().MountSandboxPath(srcPaths, dstPaths, bundleName, userId);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_MountSandboxPath_001 end";
 }
 
@@ -498,22 +494,22 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_MountSandboxPath_002,
     };
     
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false));
-    MountManager::GetInstance()->MountSandboxPath(srcPaths, dstPaths, bundleName, userId);
+    MountManager::GetInstance().MountSandboxPath(srcPaths, dstPaths, bundleName, userId);
     
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(false));
-    MountManager::GetInstance()->MountSandboxPath(srcPaths, dstPaths, bundleName, userId);
+    MountManager::GetInstance().MountSandboxPath(srcPaths, dstPaths, bundleName, userId);
     
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(1));
-    MountManager::GetInstance()->MountSandboxPath(srcPaths, dstPaths, bundleName, userId);
+    MountManager::GetInstance().MountSandboxPath(srcPaths, dstPaths, bundleName, userId);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(1));
-    MountManager::GetInstance()->MountSandboxPath(srcPaths, dstPaths, bundleName, userId);
+    MountManager::GetInstance().MountSandboxPath(srcPaths, dstPaths, bundleName, userId);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0)).WillOnce(Return(0));
-    MountManager::GetInstance()->MountSandboxPath(srcPaths, dstPaths, bundleName, userId);
+    MountManager::GetInstance().MountSandboxPath(srcPaths, dstPaths, bundleName, userId);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_MountSandboxPath_002 end";
 }
 
@@ -527,11 +523,11 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_UMountByListWithDetac
 {
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_UMountByListWithDetach_001 start";
     std::list<std::string> list;
-    EXPECT_EQ(MountManager::GetInstance()->UMountByListWithDetach(list), E_OK);
+    EXPECT_EQ(MountManager::GetInstance().UMountByListWithDetach(list), E_OK);
     
     list.push_back("test");
     EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(1));
-    auto ret = MountManager::GetInstance()->UMountByListWithDetach(list);
+    auto ret = MountManager::GetInstance().UMountByListWithDetach(list);
     if (errno != ENOENT && errno != EINVAL) {
         EXPECT_EQ(ret, errno);
     } else {
@@ -539,7 +535,7 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_UMountByListWithDetac
     }
     
     EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(0));
-    ret = MountManager::GetInstance()->UMountByListWithDetach(list);
+    ret = MountManager::GetInstance().UMountByListWithDetach(list);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_UMountByListWithDetach_001 end";
 }
@@ -552,19 +548,17 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_UMountByListWithDetac
 HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountFileMgrFuse_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountFileMgrFuse_001 start";
-    std::shared_ptr<MountManager> mountManager = MountManager::GetInstance();
-    ASSERT_TRUE(mountManager != nullptr);
 
     int32_t userId = 100;
     std::string path = "/mnt/data/100/smb/testMountFileMgrFuse";
     ForceCreateDirectory(path);
     int32_t fuseFd = -1;
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
-    int32_t ret = mountManager->MountFileMgrFuse(userId, path, fuseFd);
+    int32_t ret = MountManager::GetInstance().MountFileMgrFuse(userId, path, fuseFd);
     EXPECT_EQ(ret, E_MOUNT_FILE_MGR_FUSE);
 
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
-    ret = mountManager->MountFileMgrFuse(userId, path, fuseFd);
+    ret = MountManager::GetInstance().MountFileMgrFuse(userId, path, fuseFd);
     EXPECT_EQ(ret, E_OK);
     ForceRemoveDirectory(path);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountFileMgrFuse_001 end";
@@ -578,18 +572,16 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountFileMgrFuse_001
 HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_UMountFileMgrFuse_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_UMountFileMgrFuse_001 start";
-    std::shared_ptr<MountManager> mountManager = MountManager::GetInstance();
-    ASSERT_TRUE(mountManager != nullptr);
 
     int32_t userId = 100;
     std::string path = "/mnt/data/100/smb/testUMountFileMgrFuse";
     ForceCreateDirectory(path);
     EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(1));
-    int32_t ret = mountManager->UMountFileMgrFuse(userId, path);
+    int32_t ret = MountManager::GetInstance().UMountFileMgrFuse(userId, path);
     EXPECT_EQ(ret, E_OK);
 
     EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(0));
-    ret = mountManager->UMountFileMgrFuse(userId, path);
+    ret = MountManager::GetInstance().UMountFileMgrFuse(userId, path);
     EXPECT_EQ(ret, E_OK);
     ForceRemoveDirectory(path);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_UMountFileMgrFuse_001 end";
@@ -608,24 +600,24 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_IsFileOccupied_001, T
     std::vector<std::string> input;
     std::vector<std::string> output;
     bool isOccupy;
-    int32_t ret = MountManager::GetInstance()->IsFileOccupied(path, input, output, isOccupy);
+    int32_t ret = MountManager::GetInstance().IsFileOccupied(path, input, output, isOccupy);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
 
     path = "/data/test/tdd/";
-    ret = MountManager::GetInstance()->IsFileOccupied(path, input, output, isOccupy);
+    ret = MountManager::GetInstance().IsFileOccupied(path, input, output, isOccupy);
     EXPECT_EQ(ret, E_OK);
 
     path = "/data/test/tdd/test.txt";
-    ret = MountManager::GetInstance()->IsFileOccupied(path, input, output, isOccupy);
+    ret = MountManager::GetInstance().IsFileOccupied(path, input, output, isOccupy);
     EXPECT_EQ(ret, E_OK);
 
     path = "/data/test/tdd/";
     input = {"aa", "bb", "1.txt"};
-    ret = MountManager::GetInstance()->IsFileOccupied(path, input, output, isOccupy);
+    ret = MountManager::GetInstance().IsFileOccupied(path, input, output, isOccupy);
     EXPECT_EQ(ret, E_OK);
 
     path = "/data/test/tdd/test.txt";
-    ret = MountManager::GetInstance()->IsFileOccupied(path, input, output, isOccupy);
+    ret = MountManager::GetInstance().IsFileOccupied(path, input, output, isOccupy);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_IsFileOccupied_001 end";
 }
@@ -642,12 +634,12 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_OpenProcForPath_001, 
     std::string path = "/data/test/tdd/";
     bool isOccupy = false;
     bool isDir = true;
-    int32_t ret = MountManager::GetInstance()->OpenProcForPath(path, isOccupy, isDir);
+    int32_t ret = MountManager::GetInstance().OpenProcForPath(path, isOccupy, isDir);
     EXPECT_EQ(ret, E_OK);
 
     path = "/data/test/tdd/test.txt";
     isDir = false;
-    ret = MountManager::GetInstance()->OpenProcForPath(path, isOccupy, isDir);
+    ret = MountManager::GetInstance().OpenProcForPath(path, isOccupy, isDir);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_OpenProcForPath_001 end";
 }
@@ -663,7 +655,7 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_OpenProcForMulti_001,
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_OpenProcForMulti_001 start";
     std::string path = "/data/test/tdd/";
     std::set<std::string> occupyFiles;
-    int32_t ret = MountManager::GetInstance()->OpenProcForMulti(path, occupyFiles);
+    int32_t ret = MountManager::GetInstance().OpenProcForMulti(path, occupyFiles);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_OpenProcForMulti_001 end";
 }
@@ -680,7 +672,7 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_FindProcForPath_001, 
     std::string pidPath = "/test/111";
     std::string path = "/data/test/tdd/";
     bool isDir = false;
-    bool ret = MountManager::GetInstance()->FindProcForPath(pidPath, path, isDir);
+    bool ret = MountManager::GetInstance().FindProcForPath(pidPath, path, isDir);
     EXPECT_EQ(ret, false);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_FindProcForPath_001 end";
 }
@@ -697,7 +689,7 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_FindProcForMulti_001,
     std::string pidPath = "/test/111";
     std::string path = "/data/test/tdd/";
     std::set<std::string> occupyFiles;
-    MountManager::GetInstance()->FindProcForMulti(pidPath, path, occupyFiles);
+    MountManager::GetInstance().FindProcForMulti(pidPath, path, occupyFiles);
     ASSERT_TRUE(occupyFiles.empty());
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_FindProcForMulti_001 end";
 }
@@ -712,29 +704,26 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountDfsDocs_001, Te
 {
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountDfsDocs_002 start";
 
-    std::shared_ptr<MountManager> mountManager = MountManager::GetInstance();
-    ASSERT_TRUE(mountManager != nullptr);
-
     int32_t userId = 100;
     std::string relativePath = "";
     std::string deviceId = "f6d4c0864707aefte7a78f09473aa122ff57fc8";
 
     EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(false));
-    int32_t ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    int32_t ret = MountManager::GetInstance().MountDfsDocs(userId, relativePath, deviceId, deviceId);
     EXPECT_EQ(ret, E_PREPARE_DIR);
 
     EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(true));
-    ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    ret = MountManager::GetInstance().MountDfsDocs(userId, relativePath, deviceId, deviceId);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
 
     std::string tempPath(PATH_MAX + 1, 'a');
     EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(true));
-    ret = mountManager->MountDfsDocs(userId, tempPath, deviceId, deviceId);
+    ret = MountManager::GetInstance().MountDfsDocs(userId, tempPath, deviceId, deviceId);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
 
     relativePath = "@";
     EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(true));
-    ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    ret = MountManager::GetInstance().MountDfsDocs(userId, relativePath, deviceId, deviceId);
     EXPECT_EQ(ret, E_PARAMS_INVALID);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountDfsDocs_001 end";
 }
@@ -750,9 +739,6 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountDfsDocs_002, Te
 {
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountDfsDocs_002 start";
 
-    std::shared_ptr<MountManager> mountManager = MountManager::GetInstance();
-    ASSERT_TRUE(mountManager != nullptr);
-
     int32_t userId = 100;
     std::string relativePath = "/data";
     std::string deviceId = "f6d4c0864707aefte7a78f09473aa122ff57fc8";
@@ -760,7 +746,7 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountDfsDocs_002, Te
     EXPECT_CALL(*fileUtilMoc_, PrepareDir(_, _, _, _)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
     errno = EPERM;
-    int32_t ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    int32_t ret = MountManager::GetInstance().MountDfsDocs(userId, relativePath, deviceId, deviceId);
     errno = 0;
     EXPECT_EQ(ret, E_USER_MOUNT_ERR);
 
@@ -769,7 +755,7 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountDfsDocs_002, Te
     errno = EBUSY;
     EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
         .WillOnce(DoAll(SetArgPointee<2>('0'), Return(0)));
-    ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    ret = MountManager::GetInstance().MountDfsDocs(userId, relativePath, deviceId, deviceId);
     errno = 0;
     EXPECT_EQ(ret, E_OK);
 
@@ -778,7 +764,7 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountDfsDocs_002, Te
     errno = EEXIST;
     EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
         .WillOnce(DoAll(SetArgPointee<2>('0'), Return(0)));
-    ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    ret = MountManager::GetInstance().MountDfsDocs(userId, relativePath, deviceId, deviceId);
     errno = 0;
     EXPECT_EQ(ret, E_OK);
 
@@ -786,7 +772,7 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountDfsDocs_002, Te
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
     EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
         .WillOnce(DoAll(SetArgPointee<2>('0'), Return(0)));
-    ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    ret = MountManager::GetInstance().MountDfsDocs(userId, relativePath, deviceId, deviceId);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountDfsDocs_002 end";
 }
@@ -801,9 +787,6 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountDfsDocs_003, Te
 {
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountDfsDocs_003 start";
 
-    std::shared_ptr<MountManager> mountManager = MountManager::GetInstance();
-    ASSERT_TRUE(mountManager != nullptr);
-
     int32_t userId = 100;
     std::string relativePath = "/data";
     std::string deviceId = "f6d4c0864707aefte7a78f09473aa122ff57fc8";
@@ -814,7 +797,7 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountDfsDocs_003, Te
     errno = EBUSY;
     EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
         .WillOnce(DoAll(SetArgPointee<2>('1'), Return(1)));
-    int32_t ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    int32_t ret = MountManager::GetInstance().MountDfsDocs(userId, relativePath, deviceId, deviceId);
     errno = 0;
     EXPECT_EQ(ret, E_OK);
 
@@ -824,7 +807,7 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountDfsDocs_003, Te
     errno = EEXIST;
     EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
         .WillOnce(DoAll(SetArgPointee<2>('1'), Return(1)));
-    ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    ret = MountManager::GetInstance().MountDfsDocs(userId, relativePath, deviceId, deviceId);
     errno = 0;
     EXPECT_EQ(ret, E_OK);
 
@@ -834,7 +817,7 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountDfsDocs_003, Te
     errno = EEXIST;
     EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
         .WillOnce(DoAll(SetArgPointee<2>('1'), Return(1)));
-    ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    ret = MountManager::GetInstance().MountDfsDocs(userId, relativePath, deviceId, deviceId);
     errno = 0;
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountDfsDocs_003 end";
@@ -850,9 +833,6 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountDfsDocs_004, Te
 {
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountDfsDocs_004 start";
 
-    std::shared_ptr<MountManager> mountManager = MountManager::GetInstance();
-    ASSERT_TRUE(mountManager != nullptr);
-
     int32_t userId = 100;
     std::string relativePath = "/data";
     std::string deviceId = "f6d4c0864707aefte7a78f09473aa122ff57fc8";
@@ -863,7 +843,7 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountDfsDocs_004, Te
     errno = EPERM;
     EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
         .WillOnce(DoAll(SetArgPointee<2>('1'), Return(1)));
-    int32_t ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    int32_t ret = MountManager::GetInstance().MountDfsDocs(userId, relativePath, deviceId, deviceId);
     errno = 0;
     EXPECT_EQ(ret, E_USER_MOUNT_ERR);
 
@@ -873,7 +853,7 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountDfsDocs_004, Te
     errno = EBUSY;
     EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
         .WillOnce(DoAll(SetArgPointee<2>('1'), Return(1)));
-    ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    ret = MountManager::GetInstance().MountDfsDocs(userId, relativePath, deviceId, deviceId);
     errno = 0;
     EXPECT_EQ(ret, E_OK);
 
@@ -883,7 +863,7 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountDfsDocs_004, Te
     errno = EEXIST;
     EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
         .WillOnce(DoAll(SetArgPointee<2>('1'), Return(1)));
-    ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    ret = MountManager::GetInstance().MountDfsDocs(userId, relativePath, deviceId, deviceId);
     errno = 0;
     EXPECT_EQ(ret, E_OK);
 
@@ -892,7 +872,7 @@ HWTEST_F(MountManagerTest, Storage_Manager_MountManagerTest_MountDfsDocs_004, Te
     EXPECT_CALL(*libraryFuncMock_, mount(_, _, _, _, _)).WillOnce(Return(0));
     EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
         .WillOnce(DoAll(SetArgPointee<2>('1'), Return(1)));
-    ret = mountManager->MountDfsDocs(userId, relativePath, deviceId, deviceId);
+    ret = MountManager::GetInstance().MountDfsDocs(userId, relativePath, deviceId, deviceId);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Manager_MountManagerTest_MountDfsDocs_004 end";
 }
@@ -908,17 +888,17 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerTest_IsReadOnlyMount_001, 
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_IsReadOnlyMount_001 start";
     EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
         .WillOnce(DoAll(SetArgPointee<2>('1'), Return(1)));
-    bool isReadOnlyMount = MountManager::GetInstance()->IsReadOnlyRemount();
+    bool isReadOnlyMount = MountManager::GetInstance().IsReadOnlyRemount();
     ASSERT_TRUE(isReadOnlyMount);
 
     EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
         .WillOnce(DoAll(SetArgPointee<2>('0'), Return(1)));
-    isReadOnlyMount = MountManager::GetInstance()->IsReadOnlyRemount();
+    isReadOnlyMount = MountManager::GetInstance().IsReadOnlyRemount();
     ASSERT_TRUE(!isReadOnlyMount);
 
     EXPECT_CALL(*paramMoc_, GetParameter(_, _, _, _))
         .WillOnce(DoAll(SetArgPointee<2>('0'), Return(0)));
-    isReadOnlyMount = MountManager::GetInstance()->IsReadOnlyRemount();
+    isReadOnlyMount = MountManager::GetInstance().IsReadOnlyRemount();
     ASSERT_TRUE(!isReadOnlyMount);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerTest_IsReadOnlyMount_001 end";
 }
@@ -936,22 +916,22 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_MountDisShareFile_
     std::map<std::string, std::string> shareFiles = {{"/data/sharefile1", "/data/sharefile2"}};
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(false));
-    auto ret = MountManager::GetInstance()->MountDisShareFile(userId, shareFiles);
+    auto ret = MountManager::GetInstance().MountDisShareFile(userId, shareFiles);
     EXPECT_EQ(ret, E_NON_EXIST);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(false));
     EXPECT_CALL(*fileUtilMoc_, MkDirRecurse(_, _)).WillOnce(Return(false));
-    ret = MountManager::GetInstance()->MountDisShareFile(userId, shareFiles);
+    ret = MountManager::GetInstance().MountDisShareFile(userId, shareFiles);
     EXPECT_EQ(ret, E_NON_EXIST);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(1));
-    ret = MountManager::GetInstance()->MountDisShareFile(userId, shareFiles);
+    ret = MountManager::GetInstance().MountDisShareFile(userId, shareFiles);
     EXPECT_EQ(ret, E_MOUNT_SHARE_FILE);
 
     EXPECT_CALL(*fileUtilMoc_, IsDir(_)).WillOnce(Return(true)).WillOnce(Return(true));
     EXPECT_CALL(*fileUtilMoc_, Mount(_, _, _, _, _)).WillOnce(Return(0));
-    ret = MountManager::GetInstance()->MountDisShareFile(userId, shareFiles);
+    ret = MountManager::GetInstance().MountDisShareFile(userId, shareFiles);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_MountDisShareFile_001 end";
 }
@@ -969,7 +949,7 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_UMountDisShareFile
     std::string networkId = "/storage/cloud/100/files/Docs";
     EXPECT_CALL(*fileUtilMoc_, UMount2(_, _)).WillOnce(Return(1));
     errno = 5;
-    auto ret = MountManager::GetInstance()->UMountDisShareFile(userId, networkId);
+    auto ret = MountManager::GetInstance().UMountDisShareFile(userId, networkId);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_UMountDisShareFile_001 end";
 }
@@ -985,7 +965,7 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_FindMountsByNetwor
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_FindMountsByNetworkId_001 start";
     std::string networkId = "hmdfs";
     std::list<std::string> mounts;
-    auto ret = MountManager::GetInstance()->FindMountsByNetworkId(networkId, mounts);
+    auto ret = MountManager::GetInstance().FindMountsByNetworkId(networkId, mounts);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_FindMountsByNetworkId_001 end";
 }
@@ -1000,7 +980,7 @@ HWTEST_F(MountManagerTest, Storage_Daemon_MountManagerExtTest_FilterNotMountedPa
 {
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_FilterNotMountedPath_001 start";
     std::map<std::string, std::string> notMountPaths = {{"/storage/media/100", "/data/service/el2/100/hmdfs/account"}};
-    auto ret = MountManager::GetInstance()->FilterNotMountedPath(notMountPaths);
+    auto ret = MountManager::GetInstance().FilterNotMountedPath(notMountPaths);
     EXPECT_EQ(ret, E_OK);
     GTEST_LOG_(INFO) << "Storage_Daemon_MountManagerExtTest_FilterNotMountedPath_001 end";
 }
