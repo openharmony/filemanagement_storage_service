@@ -56,6 +56,7 @@ constexpr unsigned int RADAR_REPORT_STATISTIC_INTERVAL_MINUTES = 1440;
 constexpr unsigned int USER0ID = 0;
 constexpr unsigned int USER100ID = 100;
 constexpr unsigned int RADAR_STATISTIC_THREAD_WAIT_SECONDS = 60;
+constexpr unsigned int MAX_URI_COUNT = 200000;
 constexpr size_t MAX_IPC_RAW_DATA_SIZE = 128 * 1024 * 1024; // 128M
 static std::atomic<bool> checkDirSizeFlag = false;
 
@@ -619,6 +620,10 @@ int32_t StorageDaemonProvider::RawDataToStringVec(const StorageFileRawData &rawD
     uint32_t stringVecSize = 0;
     ss.read(reinterpret_cast<char *>(&stringVecSize), sizeof(stringVecSize));
     uint32_t ssLength = static_cast<uint32_t>(ss.str().length());
+    if (stringVecSize > MAX_URI_COUNT) {
+        LOGE("out of range: %{public}u", stringVecSize);
+        return ERR_DEAD_OBJECT;
+    }
     for (uint32_t i = 0; i < stringVecSize; i++) {
         uint32_t strLen = 0;
         ss.read(reinterpret_cast<char *>(&strLen), sizeof(strLen));
