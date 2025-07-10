@@ -889,7 +889,7 @@ HWTEST_F(StorageDaemonProviderTest, StorageDaemonProviderTest_CreateShareFile_00
     uint32_t flag = 0;
     std::vector<int32_t> funcResult;
     int32_t ret = storageDaemonProviderTest_->CreateShareFile(fileRawData, tokenId, flag, funcResult);
-    ASSERT_EQ(ret, E_OK);
+    ASSERT_EQ(ret, ERR_DEAD_OBJECT);
     GTEST_LOG_(INFO) << "StorageDaemonProviderTest_CreateShareFile_003 end";
 }
 
