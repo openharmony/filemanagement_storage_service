@@ -152,7 +152,7 @@ int main()
 #endif
 
 #ifdef SUPPORT_OPEN_SOURCE_MTP_DEVICE
-    DelayedSingleton<OHOS::StorageDaemon::MtpDeviceMonitor>::GetInstance()->StartMonitor();
+    OHOS::StorageDaemon::MtpDeviceMonitor::GetInstance().StartMonitor();
 #endif
     LOGW("storage_daemon main function execute finish.");
     IPCSkeleton::JoinWorkThread();

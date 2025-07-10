@@ -34,8 +34,12 @@
 #include "storage_service_log.h"
 
 constexpr const char *DEV_NULL = "/dev/null";
+static constexpr char PATH_INVALID_FLAG1[] = "../";
+static constexpr char PATH_INVALID_FLAG2[] = "/..";
+static const char FILE_SEPARATOR_CHAR = '/';
 constexpr int32_t MAX_INT = 255;
 constexpr int32_t SCANF_NUM = 2;
+static const uint32_t PATH_INVALID_FLAG_LEN = 3;
 
 bool MtpFsUtil::enabled_ = false;
 int MtpFsUtil::stdOut_ = -1;
@@ -307,4 +311,22 @@ bool SmtpfsCheckDir(const std::string &path)
     }
 
     return false;
+}
+
+bool MtpFileSystem::IsFilePathValid(const std::string &filePath)
+{
+    size_t pos = filePath.find(PATH_INVALID_FLAG1);
+    while (pos != std::string::npos) {
+        if (pos == 0 || filePath[pos - 1] == FILE_SEPARATOR_CHAR) {
+            LOGE("Relative path is not allowed, path contain ../");
+            return false;
+        }
+        pos = filePath.find(PATH_INVALID_FLAG1, pos + PATH_INVALID_FLAG_LEN);
+    }
+    pos = filePath.rfind(PATH_INVALID_FLAG2);
+    if ((pos != std::string::npos) && (filePath.size() - pos == PATH_INVALID_FLAG_LEN)) {
+        LOGE("Relative path is not allowed, path tail is /..");
+        return false;
+    }
+    return true;
 }

@@ -37,14 +37,21 @@ struct MtpDeviceInfo {
 };
 
 class MtpDeviceManager : public NoCopyable  {
-    DECLARE_DELAYED_SINGLETON(MtpDeviceManager);
-
 public:
+    static MtpDeviceManager &GetInstance()
+    {
+        static MtpDeviceManager instance;
+        return instance;
+    }
+
     int32_t MountDevice(const MtpDeviceInfo &device);
     int32_t UmountDevice(const MtpDeviceInfo &device, bool needNotify, bool isBadRemove);
     int32_t PrepareMtpMountPath(const std::string &path);
 
 private:
+    MtpDeviceManager();
+    ~MtpDeviceManager();
+
     bool isMounting = false;
 };
 } // namespace StorageDaemon
