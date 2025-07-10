@@ -623,7 +623,6 @@ int32_t StorageDaemonProvider::RawDataToStringVec(const StorageFileRawData &rawD
     if (stringVecSize > MAX_URI_COUNT) {
         LOGE("out of range: %{public}u", stringVecSize);
         return ERR_DEAD_OBJECT;
-
     }
     for (uint32_t i = 0; i < stringVecSize; i++) {
         uint32_t strLen = 0;
