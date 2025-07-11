@@ -30,7 +30,7 @@ namespace OHOS {
 
 std::shared_ptr<StorageDaemon::StorageDaemonProvider> storageDaemonProvider =
     std::make_shared<StorageDaemon::StorageDaemonProvider>();
-std::shared_ptr<StorageDaemon::UserManager> userManager = StorageDaemon::UserManager::GetInstance();
+StorageDaemon::UserManager &userManager = StorageDaemon::UserManager::GetInstance();
 
 bool StartUserFuzzTest(const uint8_t *data, size_t size)
 {
@@ -432,11 +432,11 @@ bool UserManagerFuzzTest(const uint8_t *data, size_t size)
 
     int32_t userId = *(reinterpret_cast<const int32_t *>(data));
     uint32_t flag = *(reinterpret_cast<const uint32_t *>(data + sizeof(uint32_t)));
-    userManager->PrepareUserDirs(userId, flag);
-    userManager->DestroyUserDirs(userId, flag);
-    userManager->StartUser(userId);
-    userManager->StopUser(userId);
-    userManager->CreateElxBundleDataDir(userId, static_cast<uint8_t>(flag));
+    userManager.PrepareUserDirs(userId, flag);
+    userManager.DestroyUserDirs(userId, flag);
+    userManager.StartUser(userId);
+    userManager.StopUser(userId);
+    userManager.CreateElxBundleDataDir(userId, static_cast<uint8_t>(flag));
 
     return true;
 }

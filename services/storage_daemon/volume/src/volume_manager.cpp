@@ -39,14 +39,10 @@ using namespace std;
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
-VolumeManager* VolumeManager::instance_ = nullptr;
 
-VolumeManager* VolumeManager::Instance()
+VolumeManager &VolumeManager::Instance()
 {
-    if (instance_ == nullptr) {
-        instance_ = new VolumeManager();
-    }
-
+    static VolumeManager instance_;
     return instance_;
 }
 

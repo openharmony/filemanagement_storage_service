@@ -159,7 +159,7 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
         return ret;
     }
 
-    ret = UserManager::GetInstance()->PrepareUserDirs(userId, flags);
+    ret = UserManager::GetInstance().PrepareUserDirs(userId, flags);
     if (ret != E_OK) {
         LOGE("PrepareUserDirs failed, userId %{public}u, flags %{public}u, error %{public}d", userId, flags, ret);
         return ret;
@@ -174,7 +174,7 @@ int32_t StorageDaemon::RestoreOneUserKey(int32_t userId, KeyType type)
     }
 
     // for double2single update el2-4 without secret
-    UserManager::GetInstance()->CreateElxBundleDataDir(userId, type);
+    UserManager::GetInstance().CreateElxBundleDataDir(userId, type);
     LOGW("restore User %{public}u el%{public}u success", userId, type);
 
     return E_OK;
@@ -199,7 +199,7 @@ int32_t StorageDaemon::RestoreUserKey(int32_t userId, uint32_t flags)
             return ret;
         }
     }
-    MountManager::GetInstance()->PrepareAppdataDir(userId);
+    MountManager::GetInstance().PrepareAppdataDir(userId);
     return E_OK;
 }
 #endif
@@ -232,13 +232,13 @@ int32_t StorageDaemon::PrepareUserDirs(int32_t userId, uint32_t flags)
         return ret;
     }
 #endif
-    (void)UserManager::GetInstance()->DestroyUserDirs(userId, flags);
-    int32_t prepareRet = UserManager::GetInstance()->PrepareUserDirs(userId, flags);
+    (void)UserManager::GetInstance().DestroyUserDirs(userId, flags);
+    int32_t prepareRet = UserManager::GetInstance().PrepareUserDirs(userId, flags);
     if (prepareRet != E_OK) {
         std::string extraData = "flags=" + std::to_string(flags);
         StorageRadar::ReportUserManager("PrepareUserDirs::UserManager::PrepareUserDirs", userId, prepareRet, extraData);
     }
-    MountManager::GetInstance()->PrepareAppdataDir(userId);
+    MountManager::GetInstance().PrepareAppdataDir(userId);
 #ifdef USER_CRYPTO_MANAGER
     if (prepareRet == E_OK) {
         int32_t result = KeyManagerExt::GetInstance()->GenerateUserKeys(userId, flags);
@@ -256,7 +256,7 @@ int32_t StorageDaemon::DestroyUserDirs(int32_t userId, uint32_t flags)
     // CRYPTO_FLAG_EL3 destroy el3,  CRYPTO_FLAG_EL4 destroy el4
     flags = flags | IStorageDaemonEnum::CRYPTO_FLAG_EL3 | IStorageDaemonEnum::CRYPTO_FLAG_EL4 |
             IStorageDaemonEnum::CRYPTO_FLAG_EL5;
-    int32_t destroyUserRet = UserManager::GetInstance()->DestroyUserDirs(userId, flags);
+    int32_t destroyUserRet = UserManager::GetInstance().DestroyUserDirs(userId, flags);
     if (destroyUserRet != E_OK) {
         errCode = destroyUserRet;
         LOGW("Destroy user %{public}d dirs failed, please check", userId);
@@ -369,12 +369,12 @@ int32_t StorageDaemon::InitGlobalUserKeys(void)
 #ifdef USE_LIBRESTORECON
     RestoreconRecurse(DATA_SERVICE_EL1_PUBLIC_STORAGE_DAEMON_SD);
 #endif
-    auto result = UserManager::GetInstance()->PrepareUserDirs(GLOBAL_USER_ID, IStorageDaemonEnum::CRYPTO_FLAG_EL1);
+    auto result = UserManager::GetInstance().PrepareUserDirs(GLOBAL_USER_ID, IStorageDaemonEnum::CRYPTO_FLAG_EL1);
     if (result != E_OK) {
         LOGE("PrepareUserDirs failed, please check");
         StorageRadar::ReportUserKeyResult("InitGlobalUserKeys::PrepareUserDirs", GLOBAL_USER_ID, result, "EL1", "");
     }
-    result = MountManager::GetInstance()->PrepareAppdataDir(GLOBAL_USER_ID);
+    result = MountManager::GetInstance().PrepareAppdataDir(GLOBAL_USER_ID);
     if (result != E_OK) {
         LOGE("PrepareAppdataDir failed, please check");
         StorageRadar::ReportUserKeyResult("InitGlobalUserKeys::PrepareAppdataDir", GLOBAL_USER_ID, result, "EL1", "");
@@ -505,7 +505,7 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuth(uint32_t userId, KeyType
         ret = PrepareUserDirsAndUpdateUserAuthVx(userId, type, token, secret, need_restore_version);
     }
     // for double2single update el2-4 with secret
-    UserManager::GetInstance()->CreateElxBundleDataDir(userId, type);
+    UserManager::GetInstance().CreateElxBundleDataDir(userId, type);
     return ret;
 }
 
@@ -551,8 +551,8 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthOld(uint32_t userId, KeyT
     }
 
     LOGW("try to destory dir first, user %{public}u, flags %{public}u", userId, flags);
-    (void)UserManager::GetInstance()->DestroyUserDirs(userId, flags);
-    ret = UserManager::GetInstance()->PrepareUserDirs(userId, flags);
+    (void)UserManager::GetInstance().DestroyUserDirs(userId, flags);
+    ret = UserManager::GetInstance().PrepareUserDirs(userId, flags);
     if (ret != E_OK) {
         return ret;
     }
@@ -599,8 +599,8 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateUserAuthVx(uint32_t userId, KeyTy
     }
 
     LOGW("try to destory dir first, user %{public}u, flags %{public}u", userId, flags);
-    (void)UserManager::GetInstance()->DestroyUserDirs(userId, flags);
-    ret = UserManager::GetInstance()->PrepareUserDirs(userId, flags);
+    (void)UserManager::GetInstance().DestroyUserDirs(userId, flags);
+    ret = UserManager::GetInstance().PrepareUserDirs(userId, flags);
     if (ret != E_OK) {
         return ret;
     }
@@ -633,15 +633,15 @@ int32_t StorageDaemon::PrepareUserDirsAndUpdateAuth4Nato(uint32_t userId,
     if (ret != E_OK) {
         return E_KEY_TYPE_INVALID;
     }
-    (void)UserManager::GetInstance()->DestroyUserDirs(userId, flags);
-    ret = UserManager::GetInstance()->PrepareUserDirs(userId, flags);
+    (void)UserManager::GetInstance().DestroyUserDirs(userId, flags);
+    ret = UserManager::GetInstance().PrepareUserDirs(userId, flags);
     if (ret != E_OK) {
         return E_NATO_PREPARE_USER_DIR_ERROR;
     }
     if (flags == IStorageDaemonEnum::CRYPTO_FLAG_EL2) {
         PrepareUeceDir(userId);
     }
-    UserManager::GetInstance()->CreateElxBundleDataDir(userId, type);
+    UserManager::GetInstance().CreateElxBundleDataDir(userId, type);
     LOGW("Prepare dirs and update auth for nato secen for userId=%{public}u keyType=%{public}u sucess.", userId, type);
     return E_OK;
 }
@@ -664,9 +664,9 @@ bool StorageDaemon::IsNeedRestorePathExist(uint32_t userId, bool needCheckEl1)
 
 int32_t StorageDaemon::PrepareUeceDir(uint32_t userId)
 {
-    int32_t ret = UserManager::GetInstance()->DestroyUserDirs(userId, IStorageDaemonEnum::CRYPTO_FLAG_EL5);
+    int32_t ret = UserManager::GetInstance().DestroyUserDirs(userId, IStorageDaemonEnum::CRYPTO_FLAG_EL5);
     LOGI("delete user %{public}u uece %{public}u, ret %{public}d", userId, IStorageDaemonEnum::CRYPTO_FLAG_EL5, ret);
-    ret = UserManager::GetInstance()->PrepareUserDirs(userId, IStorageDaemonEnum::CRYPTO_FLAG_EL5);
+    ret = UserManager::GetInstance().PrepareUserDirs(userId, IStorageDaemonEnum::CRYPTO_FLAG_EL5);
     LOGI("prepare user %{public}u uece %{public}u, ret %{public}d", userId, IStorageDaemonEnum::CRYPTO_FLAG_EL5, ret);
     return ret;
 }
@@ -699,18 +699,18 @@ int32_t StorageDaemon::GenerateKeyAndPrepareUserDirs(uint32_t userId,
         std::error_code errCode;
         std::string el0NeedRestore = std::string(DATA_SERVICE_EL0_STORAGE_DAEMON_SD) + NEED_RESTORE_SUFFIX;
         if (std::filesystem::exists(el0NeedRestore, errCode)) {
-            UserManager::GetInstance()->CreateElxBundleDataDir(userId, type);  // for double2single update el5
+            UserManager::GetInstance().CreateElxBundleDataDir(userId, type);  // for double2single update el5
         }
 #endif
         return ret;
     }
-    (void)UserManager::GetInstance()->DestroyUserDirs(userId, flags);
-    ret = UserManager::GetInstance()->PrepareUserDirs(userId, flags);
+    (void)UserManager::GetInstance().DestroyUserDirs(userId, flags);
+    ret = UserManager::GetInstance().PrepareUserDirs(userId, flags);
     if (ret != E_OK) {
         LOGE("upgrade scene:prepare user dirs fail, userId %{public}u, flags %{public}u, sec empty %{public}d",
              userId, flags, secret.empty());
     }
-    UserManager::GetInstance()->CreateElxBundleDataDir(userId, type);
+    UserManager::GetInstance().CreateElxBundleDataDir(userId, type);
     return ret;
 #else
     return E_OK;
@@ -833,7 +833,7 @@ int32_t StorageDaemon::ActiveUserKey(uint32_t userId, const std::vector<uint8_t>
     }
     std::thread([this, userId]() { RestoreconElX(userId); }).detach();
     std::thread([this]() { ActiveAppCloneUserKey(); }).detach();
-    std::thread([this, userId]() { UserManager::GetInstance()->CheckDirsFromVec(userId); }).detach();
+    std::thread([this, userId]() { UserManager::GetInstance().CheckDirsFromVec(userId); }).detach();
 
 #ifdef USER_CRYPTO_MANAGER
     int32_t result = KeyManagerExt::GetInstance()->ActiveUserKey(userId, token, secret);
@@ -1010,7 +1010,7 @@ int32_t StorageDaemon::RestoreconElX(uint32_t userId)
     RestoreconRecurse((std::string(DATA_SERVICE_EL2) + "public").c_str());
     const std::string &path = std::string(DATA_SERVICE_EL2) + std::to_string(userId);
     LOGI("RestoreconRecurse el2 public end, userId = %{public}d", userId);
-    MountManager::GetInstance()->RestoreconSystemServiceDirs(userId);
+    MountManager::GetInstance().RestoreconSystemServiceDirs(userId);
     LOGI("RestoreconSystemServiceDirs el2 end, userId = %{public}d", userId);
     RestoreconRecurse((std::string(DATA_SERVICE_EL2) + std::to_string(userId) + "/share").c_str());
     LOGI("RestoreconRecurse el2 share end, userId = %{public}d", userId);
@@ -1278,7 +1278,7 @@ void StorageDaemon::ActiveAppCloneUserKey()
         std::string el4NeedRestorePath = GetNeedRestoreFilePathByType(failedUserId, EL4_KEY);
         if ((failedUserId >= START_APP_CLONE_USER_ID && failedUserId <= MAX_APP_CLONE_USER_ID) &&
             !isOsAccountExists && !std::filesystem::exists(el4NeedRestorePath, errCode)) {
-            ret = UserManager::GetInstance()->DestroyUserDirs(failedUserId, flags);
+            ret = UserManager::GetInstance().DestroyUserDirs(failedUserId, flags);
             LOGW("Destroy user %{public}d dirs, ret is: %{public}d", failedUserId, ret);
             ret = KeyManager::GetInstance()->DeleteUserKeys(failedUserId);
             LOGW("Delete user %{public}d keys, ret is: %{public}d", failedUserId, ret);
@@ -1291,7 +1291,7 @@ void StorageDaemon::ActiveAppCloneUserKey()
 int32_t StorageDaemon::IsFileOccupied(const std::string &path, const std::vector<std::string> &inputList,
     std::vector<std::string> &outputList, bool &isOccupy)
 {
-    return MountManager::GetInstance()->IsFileOccupied(path, inputList, outputList, isOccupy);
+    return MountManager::GetInstance().IsFileOccupied(path, inputList, outputList, isOccupy);
 }
 
 void StorageDaemon::SetPriority()

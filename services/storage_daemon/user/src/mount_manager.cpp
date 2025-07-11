@@ -46,18 +46,15 @@ using namespace OHOS::FileManagement::CloudFile;
 using namespace OHOS::StorageService;
 constexpr int32_t PATH_MAX_FOR_LINK = 4096;
 constexpr int32_t DEFAULT_USERID = 100;
-std::shared_ptr<MountManager> MountManager::instance_ = nullptr;
 
 MountManager::MountManager() : hmdfsDirVec_(InitHmdfsDirVec()), virtualDir_(InitVirtualDir()),
     systemServiceDir_(InitSystemServiceDir()), fileManagerDir_(InitFileManagerDir()), appdataDir_(InitAppdataDir())
 {
 }
 
-std::shared_ptr<MountManager> MountManager::GetInstance()
+MountManager &MountManager::GetInstance()
 {
-    static std::once_flag onceFlag;
-    std::call_once(onceFlag, [&]() { instance_ = std::make_shared<MountManager>(); });
-
+    static MountManager instance_;
     return instance_;
 }
 
@@ -1538,9 +1535,9 @@ int32_t MountManager::SetFafQuotaProId(int32_t userId)
 {
     int32_t prjId = 0;
     for (const DirInfo &dir: fileManagerDir_) {
-        QuotaManager::GetInstance()->SetQuotaPrjId(StringPrintf(dir.path.c_str(), userId), prjId, true);
+        QuotaManager::GetInstance().SetQuotaPrjId(StringPrintf(dir.path.c_str(), userId), prjId, true);
     }
-    QuotaManager::GetInstance()->SetQuotaPrjId(StringPrintf(SHARE_PATH.c_str(), userId), prjId, true);
+    QuotaManager::GetInstance().SetQuotaPrjId(StringPrintf(SHARE_PATH.c_str(), userId), prjId, true);
     return E_OK;
 }
 

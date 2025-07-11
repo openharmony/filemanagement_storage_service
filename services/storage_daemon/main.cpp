@@ -141,8 +141,7 @@ int main()
 
     (void)SetPriority();
 #ifdef EXTERNAL_STORAGE_MANAGER
-    StorageDaemon::NetlinkManager *nm = StorageDaemon::NetlinkManager::Instance();
-    if ((nm == nullptr) || (nm->Start() != E_OK)) {
+    if (StorageDaemon::NetlinkManager::Instance().Start() != E_OK) {
         LOGE("Unable to create or start NetlinkManager");
     };
     StorageDaemon::DiskManager *dm = StorageDaemon::DiskManager::Instance();

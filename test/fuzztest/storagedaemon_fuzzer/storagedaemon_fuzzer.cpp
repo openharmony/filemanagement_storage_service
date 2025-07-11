@@ -32,7 +32,7 @@ namespace OHOS {
 constexpr uint8_t MAX_CALL_TRANSACTION = 32;
 
 std::shared_ptr<StorageDaemon::StorageDaemon> storageDaemon = std::make_shared<StorageDaemon::StorageDaemon>();
-std::shared_ptr<StorageDaemon::UserManager> userManager = StorageDaemon::UserManager::GetInstance();
+StorageDaemon::UserManager &userManager = StorageDaemon::UserManager::GetInstance();
 uint32_t GetU32Data(const uint8_t *ptr)
 {
     // 将第0个数字左移24位，将第1个数字左移16位，将第2个数字左移8位，第3个数字不左移
@@ -418,11 +418,11 @@ bool UserManagerFuzzTest(const uint8_t *data, size_t size)
 
     int32_t userId = *(reinterpret_cast<const int32_t *>(data));
     uint32_t flag = *(reinterpret_cast<const uint32_t *>(data + sizeof(uint32_t)));
-    userManager->PrepareUserDirs(userId, flag);
-    userManager->DestroyUserDirs(userId, flag);
-    userManager->StartUser(userId);
-    userManager->StopUser(userId);
-    userManager->CreateElxBundleDataDir(userId, static_cast<uint8_t>(flag));
+    userManager.PrepareUserDirs(userId, flag);
+    userManager.DestroyUserDirs(userId, flag);
+    userManager.StartUser(userId);
+    userManager.StopUser(userId);
+    userManager.CreateElxBundleDataDir(userId, static_cast<uint8_t>(flag));
 
     return true;
 }

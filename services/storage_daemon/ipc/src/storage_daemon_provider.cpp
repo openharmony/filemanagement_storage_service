@@ -155,7 +155,7 @@ int32_t StorageDaemonProvider::Mount(const std::string &volId, uint32_t flags)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle Mount");
-    int32_t ret = VolumeManager::Instance()->Mount(volId, flags);
+    int32_t ret = VolumeManager::Instance().Mount(volId, flags);
     if (ret != E_OK) {
         LOGW("Mount failed, please check");
         StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::Mount", ret);
@@ -175,7 +175,7 @@ int32_t StorageDaemonProvider::UMount(const std::string &volId)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle UMount");
-    int32_t ret = VolumeManager::Instance()->UMount(volId);
+    int32_t ret = VolumeManager::Instance().UMount(volId);
     if (ret != E_OK) {
         LOGW("UMount failed, please check");
         StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::UMount", ret);
@@ -195,7 +195,7 @@ int32_t StorageDaemonProvider::TryToFix(const std::string &volId, uint32_t flags
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle TryToFix");
-    int32_t ret = VolumeManager::Instance()->TryToFix(volId, flags);
+    int32_t ret = VolumeManager::Instance().TryToFix(volId, flags);
     if (ret != E_OK) {
         LOGW("TryToFix failed, please check");
         StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::TryToFix", ret);
@@ -209,7 +209,7 @@ int32_t StorageDaemonProvider::TryToFix(const std::string &volId, uint32_t flags
 int32_t StorageDaemonProvider::MountUsbFuse(const std::string &volumeId, std::string &fsUuid, int &fuseFd)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
-    int32_t ret = VolumeManager::Instance()->MountUsbFuse(volumeId, fsUuid, fuseFd);
+    int32_t ret = VolumeManager::Instance().MountUsbFuse(volumeId, fsUuid, fuseFd);
     if (ret != E_OK) {
         LOGW("MountUsbFuse failed, please check");
         StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::MountUsbFuse", ret);
@@ -224,7 +224,7 @@ int32_t StorageDaemonProvider::Check(const std::string &volId)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle Check");
-    int32_t ret = VolumeManager::Instance()->Check(volId);
+    int32_t ret = VolumeManager::Instance().Check(volId);
     if (ret != E_OK) {
         LOGW("Check failed, please check");
         StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::Check", ret);
@@ -239,7 +239,7 @@ int32_t StorageDaemonProvider::Format(const std::string &volId, const std::strin
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle Format");
-    int32_t ret = VolumeManager::Instance()->Format(volId, fsType);
+    int32_t ret = VolumeManager::Instance().Format(volId, fsType);
     if (ret != E_OK) {
         LOGW("Format failed, please check");
         StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::Format", ret);
@@ -279,7 +279,7 @@ int32_t StorageDaemonProvider::SetVolumeDescription(const std::string &volId, co
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("Handle SetVolumeDescription");
-    int32_t ret = VolumeManager::Instance()->SetVolumeDescription(volId, description);
+    int32_t ret = VolumeManager::Instance().SetVolumeDescription(volId, description);
     if (ret != E_OK) {
         LOGW("SetVolumeDescription failed, please check");
         StorageService::StorageRadar::ReportVolumeOperation("VolumeManager::SetVolumeDescription", ret);
@@ -302,7 +302,7 @@ int32_t StorageDaemonProvider::QueryUsbIsInUse(const std::string &diskPath, bool
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageDaemon::QueryUsbIsInUse diskPath: %{public}s", diskPath.c_str());
     isInUse = true;
-    return VolumeManager::Instance()->QueryUsbIsInUse(diskPath, isInUse);
+    return VolumeManager::Instance().QueryUsbIsInUse(diskPath, isInUse);
 #else
     return E_NOT_SUPPORT;
 #endif
@@ -314,7 +314,7 @@ int32_t StorageDaemonProvider::StartUser(int32_t userId)
     auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
     (void)StorageDaemon::GetInstance()->SetPriority();  // set tid priority to 40
-    int32_t ret = UserManager::GetInstance()->StartUser(userId);
+    int32_t ret = UserManager::GetInstance().StartUser(userId);
     if (ret != E_OK && ret != E_KEY_NOT_ACTIVED) {
         LOGE("StartUser failed, please check");
         StorageService::StorageRadar::ReportUserManager("StartUser", userId, ret, "");
@@ -339,7 +339,7 @@ int32_t StorageDaemonProvider::StopUser(int32_t userId)
 {
     auto it = GetUserStatistics(userId);
     isNeedUpdateRadarFile_ = true;
-    int32_t ret = UserManager::GetInstance()->StopUser(userId);
+    int32_t ret = UserManager::GetInstance().StopUser(userId);
     LOGE("StopUser end, ret is %{public}d.", ret);
     StorageService::StorageRadar::ReportUserManager("StopUser", userId, ret, "");
     std::string status = ret == E_OK ? "SUCCESS" : "FAIL";
@@ -507,7 +507,7 @@ int32_t StorageDaemonProvider::MountCryptoPathAgain(uint32_t userId)
 {
     LOGI("begin to MountCryptoPathAgain");
 #ifdef USER_CRYPTO_MANAGER
-    auto ret = MountManager::GetInstance()->MountCryptoPathAgain(userId);
+    auto ret = MountManager::GetInstance().MountCryptoPathAgain(userId);
     if (ret != E_OK) {
         StorageService::StorageRadar::ReportUserManager("MountCryptoPathAgain::MountManager::MountCryptoPathAgain",
                                                         userId, ret, "");
@@ -674,13 +674,13 @@ int32_t StorageDaemonProvider::SetBundleQuota(const std::string &bundleName,
                                               const std::string &bundleDataDirPath,
                                               int32_t limitSizeMb)
 {
-    return QuotaManager::GetInstance()->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
+    return QuotaManager::GetInstance().SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
 }
 
 int32_t StorageDaemonProvider::GetOccupiedSpace(int32_t idType, int32_t id, int64_t &size)
 {
     size = 0;
-    return QuotaManager::GetInstance()->GetOccupiedSpace(idType, id, size);
+    return QuotaManager::GetInstance().GetOccupiedSpace(idType, id, size);
 }
 
 int32_t StorageDaemonProvider::UpdateMemoryPara(int32_t size, int32_t &oldSize)
@@ -695,7 +695,7 @@ int32_t StorageDaemonProvider::MountDfsDocs(int32_t userId,
                                             const std::string &deviceId)
 {
     LOGI("StorageDaemon::MountDfsDocs start.");
-    return MountManager::GetInstance()->MountDfsDocs(userId, relativePath, networkId, deviceId);
+    return MountManager::GetInstance().MountDfsDocs(userId, relativePath, networkId, deviceId);
 }
 
 int32_t StorageDaemonProvider::UMountDfsDocs(int32_t userId,
@@ -704,7 +704,7 @@ int32_t StorageDaemonProvider::UMountDfsDocs(int32_t userId,
                                              const std::string &deviceId)
 {
     LOGI("StorageDaemon::UMountDfsDocs start.");
-    return MountManager::GetInstance()->UMountDfsDocs(userId, relativePath, networkId, deviceId);
+    return MountManager::GetInstance().UMountDfsDocs(userId, relativePath, networkId, deviceId);
 }
 
 int32_t StorageDaemonProvider::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
@@ -732,7 +732,7 @@ int32_t StorageDaemonProvider::MountMediaFuse(int32_t userId, int32_t &devFd)
 #ifdef STORAGE_SERVICE_MEDIA_FUSE
     LOGI("StorageDaemonProvider::MountMediaFuse start.");
     devFd = -1;
-    return MountManager::GetInstance()->MountMediaFuse(userId, devFd);
+    return MountManager::GetInstance().MountMediaFuse(userId, devFd);
 #endif
     return E_OK;
 }
@@ -741,7 +741,7 @@ int32_t StorageDaemonProvider::UMountMediaFuse(int32_t userId)
 {
 #ifdef STORAGE_SERVICE_MEDIA_FUSE
     LOGI("StorageDaemonProvider::UMountMediaFuse start.");
-    return MountManager::GetInstance()->UMountMediaFuse(userId);
+    return MountManager::GetInstance().UMountMediaFuse(userId);
 #endif
     return E_OK;
 }
@@ -750,13 +750,13 @@ int32_t StorageDaemonProvider::MountFileMgrFuse(int32_t userId, const std::strin
 {
     LOGI("StorageDaemonProvider::MountFileMgrFuse, userId:%{public}d.", userId);
     fuseFd = -1;
-    return MountManager::GetInstance()->MountFileMgrFuse(userId, path, fuseFd);
+    return MountManager::GetInstance().MountFileMgrFuse(userId, path, fuseFd);
 }
 
 int32_t StorageDaemonProvider::UMountFileMgrFuse(int32_t userId, const std::string &path)
 {
     LOGI("StorageDaemonProvider::UMountFileMgrFuse, userId:%{public}d.", userId);
-    return MountManager::GetInstance()->UMountFileMgrFuse(userId, path);
+    return MountManager::GetInstance().UMountFileMgrFuse(userId, path);
 }
 
 int32_t StorageDaemonProvider::IsFileOccupied(const std::string &path,
@@ -785,7 +785,7 @@ void StorageDaemonProvider::SystemAbilityStatusChangeListener::OnAddSystemAbilit
     }
 #endif
     if (systemAbilityId == FILEMANAGEMENT_CLOUD_DAEMON_SERVICE_SA_ID) {
-        MountManager::GetInstance()->SetCloudState(true);
+        MountManager::GetInstance().SetCloudState(true);
     }
 }
 
@@ -794,18 +794,18 @@ void StorageDaemonProvider::SystemAbilityStatusChangeListener::OnRemoveSystemAbi
 {
     LOGI("SystemAbilityId:%{public}d", systemAbilityId);
     if (systemAbilityId == FILEMANAGEMENT_CLOUD_DAEMON_SERVICE_SA_ID) {
-        MountManager::GetInstance()->SetCloudState(false);
+        MountManager::GetInstance().SetCloudState(false);
     }
 }
 
 int32_t StorageDaemonProvider::MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles)
 {
-    return MountManager::GetInstance()->MountDisShareFile(userId, shareFiles);
+    return MountManager::GetInstance().MountDisShareFile(userId, shareFiles);
 }
 
 int32_t StorageDaemonProvider::UMountDisShareFile(int32_t userId, const std::string &networkId)
 {
-    return MountManager::GetInstance()->UMountDisShareFile(userId, networkId);
+    return MountManager::GetInstance().UMountDisShareFile(userId, networkId);
 }
 
 int32_t StorageDaemonProvider::InactiveUserPublicDirKey(uint32_t userId)
@@ -823,7 +823,7 @@ int32_t StorageDaemonProvider::QueryOccupiedSpaceForSa()
     }
     std::thread([]() {
         checkDirSizeFlag.store(true);
-        QuotaManager::GetInstance()->GetUidStorageStats();
+        QuotaManager::GetInstance().GetUidStorageStats();
         checkDirSizeFlag.store(false);
     }).detach();
     return E_OK;
