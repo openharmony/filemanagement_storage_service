@@ -93,6 +93,7 @@ ohos_unittest("volume_storage_status_service_test") {
     "${storage_manager_path}/storage/src/storage_status_service.cpp",
     "${storage_manager_path}/storage/src/volume_storage_status_service.cpp",
     "${storage_manager_path}/volume/src/volume_manager_service.cpp",
+    "${storage_manager_path}/volume/src/volume_manager_service_ext.cpp",
     "volume_storage_status_service_test.cpp",
   ]
   include_dirs = [
