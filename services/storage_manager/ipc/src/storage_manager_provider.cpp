@@ -162,7 +162,7 @@ int32_t StorageManagerProvider::PrepareAddUser(int32_t userId, uint32_t flags)
         IPCSkeleton::GetCallingUid() != ACCOUNT_UID) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->PrepareAddUser(userId, flags);
+    return StorageManager::GetInstance().PrepareAddUser(userId, flags);
 }
 
 int32_t StorageManagerProvider::RemoveUser(int32_t userId, uint32_t flags)
@@ -171,7 +171,7 @@ int32_t StorageManagerProvider::RemoveUser(int32_t userId, uint32_t flags)
         IPCSkeleton::GetCallingUid() != ACCOUNT_UID) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->RemoveUser(userId, flags);
+    return StorageManager::GetInstance().RemoveUser(userId, flags);
 }
 
 int32_t StorageManagerProvider::PrepareStartUser(int32_t userId)
@@ -179,7 +179,7 @@ int32_t StorageManagerProvider::PrepareStartUser(int32_t userId)
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->PrepareStartUser(userId);
+    return StorageManager::GetInstance().PrepareStartUser(userId);
 }
 
 int32_t StorageManagerProvider::StopUser(int32_t userId)
@@ -187,7 +187,7 @@ int32_t StorageManagerProvider::StopUser(int32_t userId)
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->StopUser(userId);
+    return StorageManager::GetInstance().StopUser(userId);
 }
 
 int32_t StorageManagerProvider::CompleteAddUser(int32_t userId)
@@ -195,7 +195,7 @@ int32_t StorageManagerProvider::CompleteAddUser(int32_t userId)
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->CompleteAddUser(userId);
+    return StorageManager::GetInstance().CompleteAddUser(userId);
 }
 
 int32_t StorageManagerProvider::GetFreeSizeOfVolume(const std::string &volumeUuid, int64_t &freeSize)
@@ -203,7 +203,7 @@ int32_t StorageManagerProvider::GetFreeSizeOfVolume(const std::string &volumeUui
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->GetFreeSizeOfVolume(volumeUuid, freeSize);
+    return StorageManager::GetInstance().GetFreeSizeOfVolume(volumeUuid, freeSize);
 }
 
 int32_t StorageManagerProvider::GetTotalSizeOfVolume(const std::string &volumeUuid, int64_t &totalSize)
@@ -211,7 +211,7 @@ int32_t StorageManagerProvider::GetTotalSizeOfVolume(const std::string &volumeUu
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->GetTotalSizeOfVolume(volumeUuid, totalSize);
+    return StorageManager::GetInstance().GetTotalSizeOfVolume(volumeUuid, totalSize);
 }
 
 int32_t StorageManagerProvider::GetBundleStats(const std::string &pkgName,
@@ -222,7 +222,7 @@ int32_t StorageManagerProvider::GetBundleStats(const std::string &pkgName,
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->GetBundleStats(pkgName, bundleStats, appIndex, statFlag);
+    return StorageManager::GetInstance().GetBundleStats(pkgName, bundleStats, appIndex, statFlag);
 }
 
 int32_t StorageManagerProvider::GetSystemSize(int64_t &systemSize)
@@ -230,17 +230,17 @@ int32_t StorageManagerProvider::GetSystemSize(int64_t &systemSize)
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->GetSystemSize(systemSize);
+    return StorageManager::GetInstance().GetSystemSize(systemSize);
 }
 
 int32_t StorageManagerProvider::GetTotalSize(int64_t &totalSize)
 {
-    return StorageManager::GetInstance()->GetTotalSize(totalSize);
+    return StorageManager::GetInstance().GetTotalSize(totalSize);
 }
 
 int32_t StorageManagerProvider::GetFreeSize(int64_t &freeSize)
 {
-    return StorageManager::GetInstance()->GetFreeSize(freeSize);
+    return StorageManager::GetInstance().GetFreeSize(freeSize);
 }
 
 int32_t StorageManagerProvider::GetUserStorageStats(StorageStats &storageStats)
@@ -248,7 +248,7 @@ int32_t StorageManagerProvider::GetUserStorageStats(StorageStats &storageStats)
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->GetUserStorageStats(storageStats);
+    return StorageManager::GetInstance().GetUserStorageStats(storageStats);
 }
 
 int32_t StorageManagerProvider::GetUserStorageStats(int32_t userId, StorageStats &storageStats)
@@ -256,12 +256,12 @@ int32_t StorageManagerProvider::GetUserStorageStats(int32_t userId, StorageStats
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->GetUserStorageStats(userId, storageStats);
+    return StorageManager::GetInstance().GetUserStorageStats(userId, storageStats);
 }
 
 int32_t StorageManagerProvider::GetCurrentBundleStats(BundleStats &bundleStats, uint32_t statFlag)
 {
-    return StorageManager::GetInstance()->GetCurrentBundleStats(bundleStats, statFlag);
+    return StorageManager::GetInstance().GetCurrentBundleStats(bundleStats, statFlag);
 }
 
 int32_t StorageManagerProvider::NotifyVolumeCreated(const VolumeCore &vc)
@@ -269,7 +269,7 @@ int32_t StorageManagerProvider::NotifyVolumeCreated(const VolumeCore &vc)
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->NotifyVolumeCreated(vc);
+    return StorageManager::GetInstance().NotifyVolumeCreated(vc);
 }
 
 int32_t StorageManagerProvider::NotifyVolumeMounted(const std::string &volumeId,
@@ -281,7 +281,7 @@ int32_t StorageManagerProvider::NotifyVolumeMounted(const std::string &volumeId,
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->NotifyVolumeMounted(volumeId, fsTypeStr, fsUuid, path, description);
+    return StorageManager::GetInstance().NotifyVolumeMounted(volumeId, fsTypeStr, fsUuid, path, description);
 }
 
 int32_t StorageManagerProvider::NotifyVolumeDamaged(const std::string &volumeId,
@@ -293,7 +293,7 @@ int32_t StorageManagerProvider::NotifyVolumeDamaged(const std::string &volumeId,
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->NotifyVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
+    return StorageManager::GetInstance().NotifyVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
 }
 
 int32_t StorageManagerProvider::NotifyVolumeStateChanged(const std::string &volumeId, uint32_t state)
@@ -301,7 +301,7 @@ int32_t StorageManagerProvider::NotifyVolumeStateChanged(const std::string &volu
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->NotifyVolumeStateChanged(volumeId, state);
+    return StorageManager::GetInstance().NotifyVolumeStateChanged(volumeId, state);
 }
 
 int32_t StorageManagerProvider::Mount(const std::string &volumeId)
@@ -309,7 +309,7 @@ int32_t StorageManagerProvider::Mount(const std::string &volumeId)
     if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->Mount(volumeId);
+    return StorageManager::GetInstance().Mount(volumeId);
 }
 
 int32_t StorageManagerProvider::Unmount(const std::string &volumeId)
@@ -317,7 +317,7 @@ int32_t StorageManagerProvider::Unmount(const std::string &volumeId)
     if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->Unmount(volumeId);
+    return StorageManager::GetInstance().Unmount(volumeId);
 }
 
 int32_t StorageManagerProvider::TryToFix(const std::string &volumeId)
@@ -325,7 +325,7 @@ int32_t StorageManagerProvider::TryToFix(const std::string &volumeId)
     if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->TryToFix(volumeId);
+    return StorageManager::GetInstance().TryToFix(volumeId);
 }
 
 int32_t StorageManagerProvider::GetAllVolumes(std::vector<VolumeExternal> &vecOfVol)
@@ -333,7 +333,7 @@ int32_t StorageManagerProvider::GetAllVolumes(std::vector<VolumeExternal> &vecOf
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->GetAllVolumes(vecOfVol);
+    return StorageManager::GetInstance().GetAllVolumes(vecOfVol);
 }
 
 int32_t StorageManagerProvider::NotifyDiskCreated(const Disk &disk)
@@ -341,7 +341,7 @@ int32_t StorageManagerProvider::NotifyDiskCreated(const Disk &disk)
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->NotifyDiskCreated(disk);
+    return StorageManager::GetInstance().NotifyDiskCreated(disk);
 }
 
 int32_t StorageManagerProvider::NotifyDiskDestroyed(const std::string &diskId)
@@ -349,7 +349,7 @@ int32_t StorageManagerProvider::NotifyDiskDestroyed(const std::string &diskId)
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->NotifyDiskDestroyed(diskId);
+    return StorageManager::GetInstance().NotifyDiskDestroyed(diskId);
 }
 
 int32_t StorageManagerProvider::Partition(const std::string &diskId, int32_t type)
@@ -357,7 +357,7 @@ int32_t StorageManagerProvider::Partition(const std::string &diskId, int32_t typ
     if (!CheckClientPermission(PERMISSION_FORMAT_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->Partition(diskId, type);
+    return StorageManager::GetInstance().Partition(diskId, type);
 }
 
 int32_t StorageManagerProvider::GetAllDisks(std::vector<Disk> &vecOfDisk)
@@ -365,7 +365,7 @@ int32_t StorageManagerProvider::GetAllDisks(std::vector<Disk> &vecOfDisk)
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->GetAllDisks(vecOfDisk);
+    return StorageManager::GetInstance().GetAllDisks(vecOfDisk);
 }
 
 int32_t StorageManagerProvider::GetVolumeByUuid(const std::string &fsUuid, VolumeExternal &vc)
@@ -373,7 +373,7 @@ int32_t StorageManagerProvider::GetVolumeByUuid(const std::string &fsUuid, Volum
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->GetVolumeByUuid(fsUuid, vc);
+    return StorageManager::GetInstance().GetVolumeByUuid(fsUuid, vc);
 }
 
 int32_t StorageManagerProvider::GetVolumeById(const std::string &volumeId, VolumeExternal &vc)
@@ -381,7 +381,7 @@ int32_t StorageManagerProvider::GetVolumeById(const std::string &volumeId, Volum
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->GetVolumeById(volumeId, vc);
+    return StorageManager::GetInstance().GetVolumeById(volumeId, vc);
 }
 
 int32_t StorageManagerProvider::SetVolumeDescription(const std::string &fsUuid, const std::string &description)
@@ -389,7 +389,7 @@ int32_t StorageManagerProvider::SetVolumeDescription(const std::string &fsUuid, 
     if (!CheckClientPermission(PERMISSION_MOUNT_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->SetVolumeDescription(fsUuid, description);
+    return StorageManager::GetInstance().SetVolumeDescription(fsUuid, description);
 }
 
 int32_t StorageManagerProvider::Format(const std::string &volumeId, const std::string &fsType)
@@ -397,7 +397,7 @@ int32_t StorageManagerProvider::Format(const std::string &volumeId, const std::s
     if (!CheckClientPermission(PERMISSION_FORMAT_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->Format(volumeId, fsType);
+    return StorageManager::GetInstance().Format(volumeId, fsType);
 }
 
 int32_t StorageManagerProvider::GetDiskById(const std::string &diskId, Disk &disk)
@@ -405,7 +405,7 @@ int32_t StorageManagerProvider::GetDiskById(const std::string &diskId, Disk &dis
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->GetDiskById(diskId, disk);
+    return StorageManager::GetInstance().GetDiskById(diskId, disk);
 }
 
 int32_t StorageManagerProvider::GenerateUserKeys(uint32_t userId, uint32_t flags)
@@ -413,7 +413,7 @@ int32_t StorageManagerProvider::GenerateUserKeys(uint32_t userId, uint32_t flags
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->GenerateUserKeys(userId, flags);
+    return StorageManager::GetInstance().GenerateUserKeys(userId, flags);
 }
 
 int32_t StorageManagerProvider::QueryUsbIsInUse(const std::string &diskPath, bool &isInUse)
@@ -422,7 +422,7 @@ int32_t StorageManagerProvider::QueryUsbIsInUse(const std::string &diskPath, boo
         return E_PERMISSION_DENIED;
     }
     isInUse = true;
-    return StorageManager::GetInstance()->QueryUsbIsInUse(diskPath, isInUse);
+    return StorageManager::GetInstance().QueryUsbIsInUse(diskPath, isInUse);
 }
 
 int32_t StorageManagerProvider::DeleteUserKeys(uint32_t userId)
@@ -430,7 +430,7 @@ int32_t StorageManagerProvider::DeleteUserKeys(uint32_t userId)
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->DeleteUserKeys(userId);
+    return StorageManager::GetInstance().DeleteUserKeys(userId);
 }
 
 int32_t StorageManagerProvider::UpdateUserAuth(uint32_t userId,
@@ -442,7 +442,7 @@ int32_t StorageManagerProvider::UpdateUserAuth(uint32_t userId,
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
+    return StorageManager::GetInstance().UpdateUserAuth(userId, secureUid, token, oldSecret, newSecret);
 }
 
 int32_t StorageManagerProvider::UpdateUseAuthWithRecoveryKey(const std::vector<uint8_t> &authToken,
@@ -454,8 +454,8 @@ int32_t StorageManagerProvider::UpdateUseAuthWithRecoveryKey(const std::vector<u
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid,
-                                                                       userId, plainText);
+    return StorageManager::GetInstance().UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid,
+        userId, plainText);
 }
 
 int32_t StorageManagerProvider::ActiveUserKey(uint32_t userId,
@@ -466,7 +466,7 @@ int32_t StorageManagerProvider::ActiveUserKey(uint32_t userId,
         IPCSkeleton::GetCallingUid() != ACCOUNT_UID) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->ActiveUserKey(userId, token, secret);
+    return StorageManager::GetInstance().ActiveUserKey(userId, token, secret);
 }
 
 int32_t StorageManagerProvider::InactiveUserKey(uint32_t userId)
@@ -474,7 +474,7 @@ int32_t StorageManagerProvider::InactiveUserKey(uint32_t userId)
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->InactiveUserKey(userId);
+    return StorageManager::GetInstance().InactiveUserKey(userId);
 }
 
 int32_t StorageManagerProvider::LockUserScreen(uint32_t userId)
@@ -501,7 +501,7 @@ int32_t StorageManagerProvider::LockUserScreen(uint32_t userId)
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->LockUserScreen(userId);
+    return StorageManager::GetInstance().LockUserScreen(userId);
 }
 
 int32_t StorageManagerProvider::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool needCheckDirMount)
@@ -510,7 +510,7 @@ int32_t StorageManagerProvider::GetFileEncryptStatus(uint32_t userId, bool &isEn
         return E_PERMISSION_DENIED;
     }
     isEncrypted = true;
-    return StorageManager::GetInstance()->GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
+    return StorageManager::GetInstance().GetFileEncryptStatus(userId, isEncrypted, needCheckDirMount);
 }
 
 int32_t StorageManagerProvider::GetUserNeedActiveStatus(uint32_t userId, bool &needActive)
@@ -519,7 +519,7 @@ int32_t StorageManagerProvider::GetUserNeedActiveStatus(uint32_t userId, bool &n
         return E_PERMISSION_DENIED;
     }
     needActive = false;
-    return StorageManager::GetInstance()->GetUserNeedActiveStatus(userId, needActive);
+    return StorageManager::GetInstance().GetUserNeedActiveStatus(userId, needActive);
 }
 
 int32_t StorageManagerProvider::UnlockUserScreen(uint32_t userId,
@@ -529,7 +529,7 @@ int32_t StorageManagerProvider::UnlockUserScreen(uint32_t userId,
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->UnlockUserScreen(userId, token, secret);
+    return StorageManager::GetInstance().UnlockUserScreen(userId, token, secret);
 }
 
 int32_t StorageManagerProvider::GetLockScreenStatus(uint32_t userId, bool &lockScreenStatus)
@@ -538,7 +538,7 @@ int32_t StorageManagerProvider::GetLockScreenStatus(uint32_t userId, bool &lockS
         return E_PERMISSION_DENIED;
     }
     lockScreenStatus = false;
-    return StorageManager::GetInstance()->GetLockScreenStatus(userId, lockScreenStatus);
+    return StorageManager::GetInstance().GetLockScreenStatus(userId, lockScreenStatus);
 }
 
 int32_t StorageManagerProvider::GenerateAppkey(uint32_t hashId, uint32_t userId, std::string &keyId, bool needReSet)
@@ -546,7 +546,7 @@ int32_t StorageManagerProvider::GenerateAppkey(uint32_t hashId, uint32_t userId,
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->GenerateAppkey(hashId, userId, keyId, needReSet);
+    return StorageManager::GetInstance().GenerateAppkey(hashId, userId, keyId, needReSet);
 }
 
 int32_t StorageManagerProvider::DeleteAppkey(const std::string &keyId)
@@ -554,7 +554,7 @@ int32_t StorageManagerProvider::DeleteAppkey(const std::string &keyId)
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->DeleteAppkey(keyId);
+    return StorageManager::GetInstance().DeleteAppkey(keyId);
 }
 
 int32_t StorageManagerProvider::CreateRecoverKey(uint32_t userId,
@@ -565,7 +565,7 @@ int32_t StorageManagerProvider::CreateRecoverKey(uint32_t userId,
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->CreateRecoverKey(userId, userType, token, secret);
+    return StorageManager::GetInstance().CreateRecoverKey(userId, userType, token, secret);
 }
 
 int32_t StorageManagerProvider::SetRecoverKey(const std::vector<uint8_t> &key)
@@ -573,7 +573,7 @@ int32_t StorageManagerProvider::SetRecoverKey(const std::vector<uint8_t> &key)
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->SetRecoverKey(key);
+    return StorageManager::GetInstance().SetRecoverKey(key);
 }
 
 int32_t StorageManagerProvider::UpdateKeyContext(uint32_t userId, bool needRemoveTmpKey)
@@ -581,7 +581,7 @@ int32_t StorageManagerProvider::UpdateKeyContext(uint32_t userId, bool needRemov
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->UpdateKeyContext(userId, needRemoveTmpKey);
+    return StorageManager::GetInstance().UpdateKeyContext(userId, needRemoveTmpKey);
 }
 
 int32_t StorageManagerProvider::CreateShareFile(const StorageFileRawData &rawData,
@@ -593,7 +593,7 @@ int32_t StorageManagerProvider::CreateShareFile(const StorageFileRawData &rawDat
         return E_PERMISSION_DENIED;
     }
 
-    funcResult = StorageManager::GetInstance()->CreateShareFile(rawData, tokenId, flag);
+    funcResult = StorageManager::GetInstance().CreateShareFile(rawData, tokenId, flag);
     LOGI("StorageManagerProvider::CreateShareFile end. result is %{public}zu", funcResult.size());
     return E_OK;
 }
@@ -603,7 +603,7 @@ int32_t StorageManagerProvider::DeleteShareFile(uint32_t tokenId, const StorageF
     if (!CheckClientPermissionForShareFile()) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->DeleteShareFile(tokenId, rawData);
+    return StorageManager::GetInstance().DeleteShareFile(tokenId, rawData);
 }
 
 int32_t StorageManagerProvider::SetBundleQuota(const std::string &bundleName,
@@ -614,7 +614,7 @@ int32_t StorageManagerProvider::SetBundleQuota(const std::string &bundleName,
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
+    return StorageManager::GetInstance().SetBundleQuota(bundleName, uid, bundleDataDirPath, limitSizeMb);
 }
 
 int32_t StorageManagerProvider::GetUserStorageStatsByType(int32_t userId,
@@ -625,7 +625,7 @@ int32_t StorageManagerProvider::GetUserStorageStatsByType(int32_t userId,
         LOGE("StorageManager permissionCheck error, calling uid is invalid, need backup_sa uid.");
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->GetUserStorageStatsByType(userId, storageStats, type);
+    return StorageManager::GetInstance().GetUserStorageStatsByType(userId, storageStats, type);
 }
 
 int32_t StorageManagerProvider::UpdateMemoryPara(int32_t size, int32_t &oldSize)
@@ -635,7 +635,7 @@ int32_t StorageManagerProvider::UpdateMemoryPara(int32_t size, int32_t &oldSize)
         return E_PERMISSION_DENIED;
     }
     oldSize = 0;
-    return StorageManager::GetInstance()->UpdateMemoryPara(size, oldSize);
+    return StorageManager::GetInstance().UpdateMemoryPara(size, oldSize);
 }
 
 int32_t StorageManagerProvider::MountDfsDocs(int32_t userId,
@@ -649,7 +649,7 @@ int32_t StorageManagerProvider::MountDfsDocs(int32_t userId,
              IPCSkeleton::GetCallingUid(), DFS_UID);
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->MountDfsDocs(userId, relativePath, networkId, deviceId);
+    return StorageManager::GetInstance().MountDfsDocs(userId, relativePath, networkId, deviceId);
 }
 
 int32_t StorageManagerProvider::UMountDfsDocs(int32_t userId,
@@ -663,7 +663,7 @@ int32_t StorageManagerProvider::UMountDfsDocs(int32_t userId,
              IPCSkeleton::GetCallingUid(), DFS_UID);
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->UMountDfsDocs(userId, relativePath, networkId, deviceId);
+    return StorageManager::GetInstance().UMountDfsDocs(userId, relativePath, networkId, deviceId);
 }
 
 int32_t StorageManagerProvider::NotifyMtpMounted(const std::string &id,
@@ -674,7 +674,7 @@ int32_t StorageManagerProvider::NotifyMtpMounted(const std::string &id,
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->NotifyMtpMounted(id, path, desc, uuid);
+    return StorageManager::GetInstance().NotifyMtpMounted(id, path, desc, uuid);
 }
 
 int32_t StorageManagerProvider::NotifyMtpUnmounted(const std::string &id, const std::string &path, bool isBadRemove)
@@ -682,7 +682,7 @@ int32_t StorageManagerProvider::NotifyMtpUnmounted(const std::string &id, const 
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->NotifyMtpUnmounted(id, path, isBadRemove);
+    return StorageManager::GetInstance().NotifyMtpUnmounted(id, path, isBadRemove);
 }
 
 int32_t StorageManagerProvider::MountMediaFuse(int32_t userId, int32_t &devFd)
@@ -708,7 +708,7 @@ int32_t StorageManagerProvider::MountMediaFuse(int32_t userId, int32_t &devFd)
         return E_PERMISSION_DENIED;
     }
     devFd = -1;
-    return StorageManager::GetInstance()->MountMediaFuse(userId, devFd);
+    return StorageManager::GetInstance().MountMediaFuse(userId, devFd);
 #endif
     return E_OK;
 }
@@ -735,7 +735,7 @@ int32_t StorageManagerProvider::UMountMediaFuse(int32_t userId)
              MEDIALIBRARY_BUNDLE_NAME.c_str());
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->UMountMediaFuse(userId);
+    return StorageManager::GetInstance().UMountMediaFuse(userId);
 #endif
     return E_OK;
 }
@@ -746,7 +746,7 @@ int32_t StorageManagerProvider::MountFileMgrFuse(int32_t userId, const std::stri
         return E_PERMISSION_DENIED;
     }
     fuseFd = -1;
-    return StorageManager::GetInstance()->MountFileMgrFuse(userId, path, fuseFd);
+    return StorageManager::GetInstance().MountFileMgrFuse(userId, path, fuseFd);
 }
 
 int32_t StorageManagerProvider::UMountFileMgrFuse(int32_t userId, const std::string &path)
@@ -754,7 +754,7 @@ int32_t StorageManagerProvider::UMountFileMgrFuse(int32_t userId, const std::str
     if (!CheckClientPermission(PERMISSION_STORAGE_MANAGER)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->UMountFileMgrFuse(userId, path);
+    return StorageManager::GetInstance().UMountFileMgrFuse(userId, path);
 }
 
 int32_t StorageManagerProvider::IsFileOccupied(const std::string &path,
@@ -766,7 +766,7 @@ int32_t StorageManagerProvider::IsFileOccupied(const std::string &path,
         return E_PERMISSION_DENIED;
     }
     isOccupy = false;
-    return StorageManager::GetInstance()->IsFileOccupied(path, inputList, outputList, isOccupy);
+    return StorageManager::GetInstance().IsFileOccupied(path, inputList, outputList, isOccupy);
 }
 
 int32_t StorageManagerProvider::ResetSecretWithRecoveryKey(uint32_t userId,
@@ -776,7 +776,7 @@ int32_t StorageManagerProvider::ResetSecretWithRecoveryKey(uint32_t userId,
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->ResetSecretWithRecoveryKey(userId, rkType, key);
+    return StorageManager::GetInstance().ResetSecretWithRecoveryKey(userId, rkType, key);
 }
 
 int32_t StorageManagerProvider::MountDisShareFile(int32_t userId, const std::map<std::string, std::string> &shareFiles)
@@ -786,7 +786,7 @@ int32_t StorageManagerProvider::MountDisShareFile(int32_t userId, const std::map
         LOGE("MountDisShareFile permissionCheck error, calling uid is %{public}d", uid);
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->MountDisShareFile(userId, shareFiles);
+    return StorageManager::GetInstance().MountDisShareFile(userId, shareFiles);
 }
 
 int32_t StorageManagerProvider::UMountDisShareFile(int32_t userId, const std::string &networkId)
@@ -796,7 +796,7 @@ int32_t StorageManagerProvider::UMountDisShareFile(int32_t userId, const std::st
         LOGE("UMountDisShareFile permissionCheck error, calling uid is %{public}d", uid);
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->UMountDisShareFile(userId, networkId);
+    return StorageManager::GetInstance().UMountDisShareFile(userId, networkId);
 }
 
 int32_t StorageManagerProvider::InactiveUserPublicDirKey(uint32_t userId)
@@ -804,7 +804,7 @@ int32_t StorageManagerProvider::InactiveUserPublicDirKey(uint32_t userId)
     if (!CheckClientPermissionForCrypt(PERMISSION_STORAGE_MANAGER_CRYPT)) {
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->InactiveUserPublicDirKey(userId);
+    return StorageManager::GetInstance().InactiveUserPublicDirKey(userId);
 }
 
 int32_t StorageManagerProvider::RegisterUeceActivationCallback(const sptr<IUeceActivationCallback> &ueceCallback)
@@ -813,7 +813,7 @@ int32_t StorageManagerProvider::RegisterUeceActivationCallback(const sptr<IUeceA
         LOGE("Permission check failed, for storage_manager_crypt");
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->RegisterUeceActivationCallback(ueceCallback);
+    return StorageManager::GetInstance().RegisterUeceActivationCallback(ueceCallback);
 }
 
 int32_t StorageManagerProvider::UnregisterUeceActivationCallback()
@@ -822,7 +822,7 @@ int32_t StorageManagerProvider::UnregisterUeceActivationCallback()
         LOGE("Permission check failed, for storage_manager_crypt");
         return E_PERMISSION_DENIED;
     }
-    return StorageManager::GetInstance()->UnregisterUeceActivationCallback();
+    return StorageManager::GetInstance().UnregisterUeceActivationCallback();
 }
 } // namespace StorageManager
 } // namespace OHOS

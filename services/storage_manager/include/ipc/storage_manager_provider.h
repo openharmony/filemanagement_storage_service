@@ -28,7 +28,7 @@ class StorageManagerProvider : public SystemAbility, public StorageManagerStub {
     DECLARE_SYSTEM_ABILITY(StorageManagerProvider)
 public:
     StorageManagerProvider(int32_t saID, bool runOnCreate = true)
-        : SystemAbility(saID, runOnCreate), manager_(std::make_shared<StorageManager>()) {};
+        : SystemAbility(saID, runOnCreate), manager_(StorageManager::GetInstance()) {};
     ~StorageManagerProvider() = default;
 
     void OnStart() override;
@@ -170,7 +170,7 @@ private:
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string &deviceId) override;
     void SetPriority();
     static sptr<StorageManagerProvider> instance_;
-    std::shared_ptr<OHOS::StorageManager::StorageManager> manager_;
+    std::reference_wrapper<StorageManager> manager_;
     static std::mutex instanceLock_;
     std::mutex mutex_;
 };

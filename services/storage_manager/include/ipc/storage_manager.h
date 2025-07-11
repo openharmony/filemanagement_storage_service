@@ -23,12 +23,10 @@ namespace OHOS {
 namespace StorageManager {
 class StorageManager {
 public:
-    StorageManager() = default;
-    ~StorageManager() = default;
-    static StorageManager *GetInstance(void)
+    static StorageManager &GetInstance(void)
     {
         static StorageManager instance;
-        return &instance;
+        return instance;
     }
     int32_t PrepareAddUser(int32_t userId, uint32_t flags);
     int32_t RemoveUser(int32_t userId, uint32_t flags);
@@ -143,6 +141,9 @@ public:
     int32_t RegisterUeceActivationCallback(const sptr<IUeceActivationCallback> &ueceCallback);
     int32_t UnregisterUeceActivationCallback();
     std::mutex mutex_;
+private:
+    StorageManager() = default;
+    ~StorageManager() = default;
 };
 } // namespace StorageManager
 } // namespace OHOS
