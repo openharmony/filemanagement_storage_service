@@ -298,8 +298,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0001, 
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_OnVolumeDamaged_0001";
     std::shared_ptr<VolumeManagerService> vmService =
         DelayedSingleton<VolumeManagerService>::GetInstance();
-    std::shared_ptr<DiskManagerService> dmService =
-        DelayedSingleton<DiskManagerService>::GetInstance();
+    DiskManagerService& dmService = DiskManagerService::GetInstance();
     std::string volumeId = "vol-1-6";
     int32_t fsType = 1;
     std::string fsTypeStr = "ntfs";
@@ -314,13 +313,12 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0001, 
     Disk disk(diskId, sizeBytes, path, vendor, flag);
     VolumeCore vc(volumeId, fsType, diskId);
     ASSERT_TRUE(vmService != nullptr);
-    ASSERT_TRUE(dmService != nullptr);
 
     auto diskPtr = std::make_shared<Disk>(disk);
     vmService->volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
     vmService->OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
 
-    dmService->diskMap_.Insert(diskId, diskPtr);
+    dmService.diskMap_.Insert(diskId, diskPtr);
     vmService->OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
     VolumeExternal ve;
     int32_t res = vmService->GetVolumeById(volumeId, ve);
@@ -343,8 +341,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0002, 
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_OnVolumeDamaged_0002";
     std::shared_ptr<VolumeManagerService> vmService =
         DelayedSingleton<VolumeManagerService>::GetInstance();
-    std::shared_ptr<DiskManagerService> dmService =
-        DelayedSingleton<DiskManagerService>::GetInstance();
+    DiskManagerService& dmService = DiskManagerService::GetInstance();
     std::string volumeId = "vol-1-6";
     int32_t fsType = 1;
     std::string fsTypeStr = "ntfs";
@@ -359,13 +356,12 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0002, 
     Disk disk(diskId, sizeBytes, path, vendor, flag);
     VolumeCore vc(volumeId, fsType, diskId);
     ASSERT_TRUE(vmService != nullptr);
-    ASSERT_TRUE(dmService != nullptr);
 
     auto diskPtr = std::make_shared<Disk>(disk);
     vmService->volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
     vmService->OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
 
-    dmService->diskMap_.Insert(diskId, diskPtr);
+    dmService.diskMap_.Insert(diskId, diskPtr);
     vmService->OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
     VolumeExternal ve;
     int32_t res = vmService->GetVolumeById(volumeId, ve);
@@ -388,8 +384,7 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0003, 
     GTEST_LOG_(INFO) << "VolumeManagerServiceTest-begin Volume_manager_service_OnVolumeDamaged_0003";
     std::shared_ptr<VolumeManagerService> vmService =
         DelayedSingleton<VolumeManagerService>::GetInstance();
-    std::shared_ptr<DiskManagerService> dmService =
-        DelayedSingleton<DiskManagerService>::GetInstance();
+    DiskManagerService& dmService = DiskManagerService::GetInstance();
     std::string volumeId = "vol-1-6";
     int32_t fsType = 1;
     std::string fsTypeStr = "ntfs";
@@ -404,13 +399,12 @@ HWTEST_F(VolumeManagerServiceTest, Volume_manager_service_OnVolumeDamaged_0003, 
     Disk disk(diskId, sizeBytes, path, vendor, flag);
     VolumeCore vc(volumeId, fsType, diskId);
     ASSERT_TRUE(vmService != nullptr);
-    ASSERT_TRUE(dmService != nullptr);
 
     auto diskPtr = std::make_shared<Disk>(disk);
     vmService->volumeMap_.Insert(volumeId, make_shared<VolumeExternal>(vc));
     vmService->OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
 
-    dmService->diskMap_.Insert(diskId, diskPtr);
+    dmService.diskMap_.Insert(diskId, diskPtr);
     vmService->OnVolumeDamaged(volumeId, fsTypeStr, fsUuid, path, description);
     VolumeExternal ve;
     int32_t res = vmService->GetVolumeById(volumeId, ve);

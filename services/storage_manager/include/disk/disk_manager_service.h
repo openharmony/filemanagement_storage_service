@@ -23,8 +23,12 @@
 namespace OHOS {
 namespace StorageManager {
 class DiskManagerService final : public NoCopyable {
-    DECLARE_DELAYED_SINGLETON(DiskManagerService);
 public:
+    static DiskManagerService &GetInstance()
+    {
+        static DiskManagerService instance;
+        return instance;
+    }
     std::shared_ptr<Disk> GetDiskById(std::string diskId);
     int32_t Partition(std::string diskId, int32_t type);
     void OnDiskCreated(Disk disk);
@@ -32,6 +36,8 @@ public:
     std::vector<Disk> GetAllDisks();
     int32_t GetDiskById(std::string diskId, Disk &disk);
 private:
+    DiskManagerService();
+    ~DiskManagerService();
     StorageService::StorageRlMap<std::string, std::shared_ptr<Disk>> diskMap_;
 };
 } // StorageManager

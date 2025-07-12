@@ -25,10 +25,7 @@ bool StorageStatusServiceFuzzTest(const uint8_t *data, size_t size)
     if ((data == nullptr) || (size < sizeof(int32_t) + sizeof(int64_t))) {
         return false;
     }
-    std::shared_ptr<StorageStatusService> service = DelayedSingleton<StorageStatusService>::GetInstance();
-    if (service == nullptr) {
-        return 0;
-    }
+    StorageStatusService& service = StorageStatusService::GetInstance();
     int32_t userId = *(reinterpret_cast<const int32_t *>(data));
     int64_t metaData2 = *(reinterpret_cast<const int64_t *>(data + sizeof(int32_t)));
     int32_t pos = sizeof(int32_t) + sizeof(int64_t);
@@ -46,13 +43,13 @@ bool StorageStatusServiceFuzzTest(const uint8_t *data, size_t size)
     incrementalBackTimes.push_back(metaData2);
     pkgFileSizes.push_back(metaData2);
     incPkgFileSizes.push_back(metaData2);
-    service->GetBundleStats(pkgName, bundleStats, 0, 0);
-    service->GetUserStorageStats(storageStats);
-    service->GetUserStorageStats(userId, storageStats);
-    service->GetUserStorageStatsByType(userId, storageStats, type);
-    service->GetCurrentBundleStats(bundleStats, 0);
-    service->GetBundleStats(pkgName, userId, bundleStats, 0, 0);
-    DelayedSingleton<BundleMgrConnector>::GetInstance()->ResetBundleMgrProxy();
+    service.GetBundleStats(pkgName, bundleStats, 0, 0);
+    service.GetUserStorageStats(storageStats);
+    service.GetUserStorageStats(userId, storageStats);
+    service.GetUserStorageStatsByType(userId, storageStats, type);
+    service.GetCurrentBundleStats(bundleStats, 0);
+    service.GetBundleStats(pkgName, userId, bundleStats, 0, 0);
+    BundleMgrConnector::GetInstance().ResetBundleMgrProxy();
     return true;
 }
 } // namespace StorageManager

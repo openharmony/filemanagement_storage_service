@@ -91,7 +91,7 @@ void VolumeManagerService::OnVolumeMounted(const std::string &volumeId, const st
     volumePtr->SetFsUuid(fsUuid);
     volumePtr->SetPath(path);
     std::string des = description;
-    auto disk = DelayedSingleton<DiskManagerService>::GetInstance()->GetDiskById(volumePtr->GetDiskId());
+    auto disk = DiskManagerService::GetInstance().GetDiskById(volumePtr->GetDiskId());
     if (disk != nullptr) {
         if (des == "") {
             if (disk->GetFlag() == SD_FLAG) {
@@ -126,7 +126,7 @@ void VolumeManagerService::OnVolumeDamaged(const std::string &volumeId, const st
     volumePtr->SetFsUuid(fsUuid);
     volumePtr->SetPath(path);
     std::string des = description;
-    auto disk = DelayedSingleton<DiskManagerService>::GetInstance()->GetDiskById(volumePtr->GetDiskId());
+    auto disk = DiskManagerService::GetInstance().GetDiskById(volumePtr->GetDiskId());
     if (disk != nullptr) {
         if (des == "") {
             if (disk->GetFlag() == SD_FLAG) {

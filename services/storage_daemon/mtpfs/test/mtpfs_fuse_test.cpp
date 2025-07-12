@@ -297,13 +297,13 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_SetXAttr_001, TestSize.Level1)
 
     const char *path = "/mnt/data/external";
     auto mtpFileSystem = DelayedSingleton<MtpFileSystem>::GetInstance();
-    int ret = mtpFileSystem->SetXAttr(NULL, NULL);
+    int ret = mtpFileSystem->SetXAttr(NULL, NULL, NULL);
     EXPECT_EQ(ret, -ENOENT);
 
-    ret = mtpFileSystem->SetXAttr(path, "user.uploadCompleted");
+    ret = mtpFileSystem->SetXAttr(path, "user.uploadCompleted", NULL);
     EXPECT_EQ(ret, -ENOENT);
 
-    ret = mtpFileSystem->SetXAttr(path, "user.isUploadCompleted");
+    ret = mtpFileSystem->SetXAttr(path, "user.isUploadCompleted", NULL);
     EXPECT_EQ(ret, 0);
 
     mtpFileSystem->device_.RemoveUploadRecord(path);
@@ -335,7 +335,7 @@ HWTEST_F(MtpfsFuseTest, MtpfsFuseTest_GetXAttr_001, TestSize.Level1)
     ret = mtpFileSystem->GetXAttr(path, "user.isUploadCompleted", out, sizeof(out));
     EXPECT_EQ(ret, 0);
 
-    mtpFileSystem->SetXAttr(path, "user.isUploadCompleted");
+    mtpFileSystem->SetXAttr(path, "user.isUploadCompleted", NULL);
     ret = mtpFileSystem->GetXAttr(path, "user.isUploadCompleted", out, sizeof(out));
     EXPECT_EQ(ret, UPLOAD_RECORD_SUCCESS_SENDING_LEN);
 

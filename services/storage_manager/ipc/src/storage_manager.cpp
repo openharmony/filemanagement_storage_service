@@ -106,9 +106,9 @@ int32_t StorageManager::GetFreeSizeOfVolume(const std::string &volumeUuid, int64
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGI("StorageManger::getFreeSizeOfVolume start, volumeUuid: %{public}s",
         GetAnonyString(volumeUuid).c_str());
-    std::shared_ptr<VolumeStorageStatusService> volumeStatsManager =
-        DelayedSingleton<VolumeStorageStatusService>::GetInstance();
-    int32_t err = volumeStatsManager->GetFreeSizeOfVolume(volumeUuid, freeSize);
+    VolumeStorageStatusService& volumeStatsManager =
+        VolumeStorageStatusService::GetInstance();
+    int32_t err = volumeStatsManager.GetFreeSizeOfVolume(volumeUuid, freeSize);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("VolumeStorageStatusService::GetFreeSizeOfVolume", DEFAULT_USERID, err,
             "setting");
@@ -124,9 +124,9 @@ int32_t StorageManager::GetTotalSizeOfVolume(const std::string &volumeUuid, int6
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGI("StorageManger::getTotalSizeOfVolume start, volumeUuid: %{public}s",
         GetAnonyString(volumeUuid).c_str());
-    std::shared_ptr<VolumeStorageStatusService> volumeStatsManager =
-        DelayedSingleton<VolumeStorageStatusService>::GetInstance();
-    int32_t err = volumeStatsManager->GetTotalSizeOfVolume(volumeUuid, totalSize);
+    VolumeStorageStatusService& volumeStatsManager =
+        VolumeStorageStatusService::GetInstance();
+    int32_t err = volumeStatsManager.GetTotalSizeOfVolume(volumeUuid, totalSize);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("VolumeStorageStatusService::GetTotalSizeOfVolume", DEFAULT_USERID, err,
             "setting");
@@ -141,7 +141,7 @@ int32_t StorageManager::GetBundleStats(const std::string &pkgName, BundleStats &
                                        int32_t appIndex, uint32_t statFlag)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
-    int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetBundleStats(pkgName, bundleStats,
+    int32_t err = StorageStatusService::GetInstance().GetBundleStats(pkgName, bundleStats,
         appIndex, statFlag);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("StorageStatusService::GetBundleStats", DEFAULT_USERID, err,
@@ -157,7 +157,7 @@ int32_t StorageManager::GetSystemSize(int64_t &systemSize)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGD("StorageManger::getSystemSize start");
-    int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetSystemSize(systemSize);
+    int32_t err = StorageTotalStatusService::GetInstance().GetSystemSize(systemSize);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("StorageTotalStatusService::GetSystemSize", DEFAULT_USERID, err,
             "setting");
@@ -172,7 +172,7 @@ int32_t StorageManager::GetTotalSize(int64_t &totalSize)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGD("StorageManger::getTotalSize start");
-    int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetTotalSize(totalSize);
+    int32_t err = StorageTotalStatusService::GetInstance().GetTotalSize(totalSize);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("StorageTotalStatusService::GetTotalSize", DEFAULT_USERID, err,
             "setting");
@@ -187,7 +187,7 @@ int32_t StorageManager::GetFreeSize(int64_t &freeSize)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGD("StorageManger::getFreeSize start");
-    int32_t err = DelayedSingleton<StorageTotalStatusService>::GetInstance()->GetFreeSize(freeSize);
+    int32_t err = StorageTotalStatusService::GetInstance().GetFreeSize(freeSize);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("StorageTotalStatusService::GetFreeSize", DEFAULT_USERID, err,
             "setting");
@@ -202,7 +202,7 @@ int32_t StorageManager::GetUserStorageStats(StorageStats &storageStats)
 {
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGD("StorageManger::GetUserStorageStats start");
-    int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetUserStorageStats(storageStats);
+    int32_t err = StorageStatusService::GetInstance().GetUserStorageStats(storageStats);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("StorageStatusService::GetUserStorageStats", DEFAULT_USERID, err,
             "setting");
@@ -217,7 +217,7 @@ int32_t StorageManager::GetUserStorageStats(int32_t userId, StorageStats &storag
 {
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGD("StorageManger::GetUserStorageStats start");
-    int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetUserStorageStats(userId, storageStats);
+    int32_t err = StorageStatusService::GetInstance().GetUserStorageStats(userId, storageStats);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("StorageStatusService::GetUserStorageStats", DEFAULT_USERID, err,
             "setting");
@@ -232,7 +232,7 @@ int32_t StorageManager::GetCurrentBundleStats(BundleStats &bundleStats, uint32_t
 {
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGD("StorageManger::GetCurrentBundleStats start");
-    int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetCurrentBundleStats(bundleStats, statFlag);
+    int32_t err = StorageStatusService::GetInstance().GetCurrentBundleStats(bundleStats, statFlag);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("StorageStatusService::GetCurrentBundleStats", DEFAULT_USERID, err,
             "setting");
@@ -364,8 +364,8 @@ int32_t StorageManager::NotifyDiskCreated(const Disk& disk)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManager::NotifyDiskCreated start, diskId: %{public}s", disk.GetDiskId().c_str());
-    std::shared_ptr<DiskManagerService> diskManager = DelayedSingleton<DiskManagerService>::GetInstance();
-    diskManager->OnDiskCreated(disk);
+    DiskManagerService& diskManager = DiskManagerService::GetInstance();
+    diskManager.OnDiskCreated(disk);
 #endif
 
     return E_OK;
@@ -375,8 +375,8 @@ int32_t StorageManager::NotifyDiskDestroyed(const std::string &diskId)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManager::NotifyDiskDestroyed start, diskId: %{public}s", diskId.c_str());
-    std::shared_ptr<DiskManagerService> diskManager = DelayedSingleton<DiskManagerService>::GetInstance();
-    diskManager->OnDiskDestroyed(diskId);
+    DiskManagerService& diskManager = DiskManagerService::GetInstance();
+    diskManager.OnDiskDestroyed(diskId);
 #endif
 
     return E_OK;
@@ -386,8 +386,8 @@ int32_t StorageManager::Partition(const std::string &diskId, int32_t type)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManager::Partition start, diskId: %{public}s", diskId.c_str());
-    std::shared_ptr<DiskManagerService> diskManager = DelayedSingleton<DiskManagerService>::GetInstance();
-    int32_t err = diskManager->Partition(diskId, type);
+    DiskManagerService& diskManager = DiskManagerService::GetInstance();
+    int32_t err = diskManager.Partition(diskId, type);
     if (err != E_OK) {
         StorageRadar::ReportVolumeOperation("DiskManagerService::Partition", err);
     }
@@ -401,7 +401,7 @@ int32_t StorageManager::GetAllDisks(std::vector<Disk> &vecOfDisk)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::GetAllDisks start");
-    vecOfDisk = DelayedSingleton<DiskManagerService>::GetInstance()->GetAllDisks();
+    vecOfDisk = DiskManagerService::GetInstance().GetAllDisks();
 #endif
 
     return E_OK;
@@ -469,7 +469,7 @@ int32_t StorageManager::GetDiskById(const std::string &diskId, Disk &disk)
 {
 #ifdef EXTERNAL_STORAGE_MANAGER
     LOGI("StorageManger::GetDiskById start, diskId: %{public}s", diskId.c_str());
-    int32_t err = DelayedSingleton<DiskManagerService>::GetInstance()->GetDiskById(diskId, disk);
+    int32_t err = DiskManagerService::GetInstance().GetDiskById(diskId, disk);
     if (err != E_OK) {
         StorageRadar::ReportVolumeOperation("DiskManagerService::GetDiskById", err);
     }
@@ -745,7 +745,7 @@ int32_t StorageManager::GetUserStorageStatsByType(int32_t userId, StorageStats &
 {
 #ifdef STORAGE_STATISTICS_MANAGER
     LOGI("StorageManger::GetUserStorageStatsByType start");
-    int32_t err = DelayedSingleton<StorageStatusService>::GetInstance()->GetUserStorageStatsByType(userId,
+    int32_t err = StorageStatusService::GetInstance().GetUserStorageStatsByType(userId,
         storageStats, type);
     if (err != E_OK) {
         StorageRadar::ReportGetStorageStatus("StorageStatusService::GetUserStorageStatsByType", DEFAULT_USERID, err,

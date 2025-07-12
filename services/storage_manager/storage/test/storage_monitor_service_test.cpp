@@ -83,14 +83,14 @@ public:
     void SetUp() {};
     void TearDown() {};
 public:
-    static inline shared_ptr<StorageMonitorService> service = nullptr;
+    static inline StorageMonitorService* service = nullptr;
     static inline shared_ptr<StorageTotalStatusServiceMock> stss = nullptr;
     static inline shared_ptr<SystemUtilMock> sum = nullptr;
 };
 
 void StorageMonitorServiceTest::SetUpTestCase(void)
 {
-    service = DelayedSingleton<StorageMonitorService>::GetInstance();
+    service = &StorageMonitorService::GetInstance();
     stss = make_shared<StorageTotalStatusServiceMock>();
     StorageTotalStatusServiceMock::stss = stss;
     sum = make_shared<SystemUtilMock>();
@@ -101,7 +101,6 @@ void StorageMonitorServiceTest::TearDownTestCase()
 {
     StorageTotalStatusServiceMock::stss = nullptr;
     stss = nullptr;
-    service = nullptr;
     SystemUtilMock::su = nullptr;
     sum = nullptr;
 }
