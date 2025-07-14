@@ -1319,7 +1319,7 @@ int StorageDaemon::RegisterUeceActivationCallback(const sptr<StorageManager::IUe
 {
 #ifdef EL5_FILEKEY_MANAGER
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
-    int ret = KeyManager::GetInstance() ->RegisterUeceActivationCallback(ueceCallback);
+    int ret = KeyManager::GetInstance().RegisterUeceActivationCallback(ueceCallback);
     auto delay = StorageService::StorageRadar::ReportDuration("RegisterUeceActivationCallback",
         startTime, StorageService::DEFAULT_DELAY_TIME_THRESH, StorageService::DEFAULT_USERID);
     LOGE("SD_DURATION: RegisterUeceActivation Callback: ret = %{public}d, delay time =%{public}s",
@@ -1335,7 +1335,7 @@ int StorageDaemon::UnregisterUeceActivationCallback()
 {
 #ifdef EL5_FILEKEY_MANAGER
     auto startTime = StorageService::StorageRadar::RecordCurrentTime();
-    int ret = KeyManager::GetInstance() ->UnregisterUeceActivationCallback();
+    int ret = KeyManager::GetInstance().UnregisterUeceActivationCallback();
     auto delay = StorageService::StorageRadar::ReportDuration("UnregisterUeceActivationCallback",
         startTime, StorageService::DEFAULT_DELAY_TIME_THRESH, StorageService::DEFAULT_USERID);
     LOGE("SD_DURATION:UnregisterUeceActivation Callback: ret = %{public}d, delay time =%{public}s",

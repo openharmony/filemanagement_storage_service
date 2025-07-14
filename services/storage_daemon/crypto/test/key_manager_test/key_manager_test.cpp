@@ -1871,16 +1871,15 @@ HWTEST_F(KeyManagerTest, KeyManager_UpdateESecret_001, TestSize.Level1)
 HWTEST_F(KeyManagerTest, KeyManager_RegisterUeceActivationCallback_001, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "KeyManager_RegisterUeceActivationCallback_001 start";
-    auto keyManager = KeyManager::GetInstance();
-    ASSERT_NE(keyManager, nullptr);
+    auto &keyManager = KeyManager::GetInstance();
 
     sptr<IUeceActivationCallback> ueceCallback = nullptr;
-    EXPECT_EQ(keyManager->RegisterUeceActivationCallback(ueceCallback), E_PARAMS_INVALID);
+    EXPECT_EQ(keyManager.RegisterUeceActivationCallback(ueceCallback), E_PARAMS_INVALID);
 
-    keyManager->ueceCallback_ = nullptr;
+    keyManager.ueceCallback_ = nullptr;
     ueceCallback = sptr<IUeceActivationCallback>(new (std::nothrow) UeceActivationCallbackMock());
-    EXPECT_EQ(keyManager->RegisterUeceActivationCallback(ueceCallback), E_OK);
-    EXPECT_EQ(keyManager->RegisterUeceActivationCallback(ueceCallback), E_OK);
+    EXPECT_EQ(keyManager.RegisterUeceActivationCallback(ueceCallback), E_OK);
+    EXPECT_EQ(keyManager.RegisterUeceActivationCallback(ueceCallback), E_OK);
 
     GTEST_LOG_(INFO) << "KeyManager_RegisterUeceActivationCallback_001 end";
 }
