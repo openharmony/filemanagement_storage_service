@@ -30,7 +30,6 @@ using namespace std;
 using namespace OHOS::StorageService;
 namespace OHOS {
 namespace StorageDaemon {
-std::shared_ptr<UserManager> UserManager::instance_ = nullptr;
 UserManager::UserManager()
     : rootDirVec_{{"/data/app/%s/%d", MODE_0711, OID_ROOT, OID_ROOT},
                   {"/data/service/%s/%d", MODE_0711, OID_ROOT, OID_ROOT},
@@ -54,11 +53,9 @@ UserManager::UserManager()
 {
 }
 
-std::shared_ptr<UserManager> UserManager::GetInstance()
+UserManager &UserManager::GetInstance()
 {
-    static std::once_flag onceFlag;
-    std::call_once(onceFlag, [&]() { instance_ = std::make_shared<UserManager>(); });
-
+    static UserManager instance_;
     return instance_;
 }
 
@@ -71,7 +68,7 @@ int32_t UserManager::StartUser(int32_t userId)
         LOGE("UserManager::StartUser userId %{public}d out of range", userId);
         return err;
     }
-    return MountManager::GetInstance()->MountByUser(userId);
+    return MountManager::GetInstance().MountByUser(userId);
 }
 
 int32_t UserManager::StopUser(int32_t userId)
@@ -83,7 +80,7 @@ int32_t UserManager::StopUser(int32_t userId)
         LOGE("UserManager::StopUser userId %{public}d out of range", userId);
         return err;
     }
-    return MountManager::GetInstance()->UmountByUser(userId);
+    return MountManager::GetInstance().UmountByUser(userId);
 }
 
 int32_t UserManager::PrepareUserDirs(int32_t userId, uint32_t flags)
@@ -95,12 +92,12 @@ int32_t UserManager::PrepareUserDirs(int32_t userId, uint32_t flags)
         return err;
     }
     if (flags & IStorageDaemonEnum::CRYPTO_FLAG_EL2) {
-        err = MountManager::GetInstance()->PrepareHmdfsDirs(userId);
+        err = MountManager::GetInstance().PrepareHmdfsDirs(userId);
         if (err != E_OK) {
             LOGE("Prepare hmdfs dir error");
             return err;
         }
-        err = MountManager::GetInstance()->PrepareFileManagerDirs(userId);
+        err = MountManager::GetInstance().PrepareFileManagerDirs(userId);
         if (err != E_OK) {
             LOGE("Prepare fileManager dir error");
             return err;
@@ -131,13 +128,13 @@ int32_t UserManager::DestroyUserDirs(int32_t userId, uint32_t flags)
         err = DestroyDirsFromIdAndLevel(userId, EL2);
         ret = (err != E_OK) ? err : ret;
 
-        err = MountManager::GetInstance()->DestroyFileManagerDirs(userId);
+        err = MountManager::GetInstance().DestroyFileManagerDirs(userId);
         ret = (err != E_OK) ? err : ret;
 
-        err = MountManager::GetInstance()->DestroyHmdfsDirs(userId);
+        err = MountManager::GetInstance().DestroyHmdfsDirs(userId);
         ret = (err != E_OK) ? err : ret;
 
-        err = MountManager::GetInstance()->DestroySystemServiceDirs(userId);
+        err = MountManager::GetInstance().DestroySystemServiceDirs(userId);
         ret = (err != E_OK) ? err : ret;
 
         err = DestroyEl2BackupDir(userId);

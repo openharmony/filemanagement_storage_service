@@ -80,7 +80,7 @@ void AppStateObserver::OnAppStopped(const AppStateData &appStateData)
         LOGI("StorageDaemon OnAppStopped start %{public}d", appStateData.uid);
         int32_t userId = appStateData.uid / BASE_USER_RANGE;
         list<string> killList = { MEDIA_FUSE_EL2 };
-        MountManager::GetInstance()->FindAndKillProcessWithoutRadar(userId, killList);
+        MountManager::GetInstance().FindAndKillProcessWithoutRadar(userId, killList);
     }
 }
 } // namespace StorageDaemon

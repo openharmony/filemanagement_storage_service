@@ -136,10 +136,10 @@ int DiskInfo::Create()
 
 int DiskInfo::Destroy()
 {
-    auto volume = VolumeManager::Instance();
+    auto &volume = VolumeManager::Instance();
 
     for (auto volumeId : volumeId_) {
-        auto ret = volume->DestroyVolume(volumeId);
+        auto ret = volume.DestroyVolume(volumeId);
         if (ret != E_OK) {
             LOGE("Destroy volume %{public}s failed", volumeId.c_str());
             return E_ERR;
@@ -338,8 +338,7 @@ void DiskInfo::UmountLines(std::vector<std::string> lines, int32_t maxVols, bool
                 continue;
             }
             std::string volumeId = StringPrintf("vol-%u-%u", major(partitionDev), minor(partitionDev));
-            auto volume = VolumeManager::Instance();
-            auto ret = volume->DestroyVolume(volumeId);
+            auto ret = VolumeManager::Instance().DestroyVolume(volumeId);
             if (ret != E_OK) {
                 LOGE("Destroy volume %{public}s failed", volumeId.c_str());
             }
@@ -496,11 +495,11 @@ void DiskInfo::CreateTableVolume(std::vector<std::string>::iterator &it, const s
 
 int DiskInfo::CreateVolume(dev_t dev)
 {
-    auto volume = VolumeManager::Instance();
+    auto &volume = VolumeManager::Instance();
 
     LOGI("disk read volume metadata");
-    std::string volumeId = volume->CreateVolume(GetId(), dev, isUserdata);
-    if (volumeId == "") {
+    std::string volumeId = volume.CreateVolume(GetId(), dev, isUserdata);
+    if (volumeId.empty()) {
         LOGE("Create volume failed");
         return E_ERR;
     }

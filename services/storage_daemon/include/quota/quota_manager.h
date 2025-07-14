@@ -47,7 +47,7 @@ uint32_t CheckOverLongPath(const std::string &path);
 class QuotaManager final {
 public:
     virtual ~QuotaManager() = default;
-    static QuotaManager* GetInstance();
+    static QuotaManager &GetInstance();
 
     int32_t SetBundleQuota(const std::string &bundleName, int32_t uid,
         const std::string &bundleDataDirPath, int32_t limitSizeMb);
@@ -62,8 +62,6 @@ private:
     bool StringToInt32(const std::string &strUid, int32_t &outUid32);
     int32_t ParseConfigFile(const std::string &path, std::vector<struct UidSaInfo> &vec);
     double ConvertBytesToMB(int64_t bytes, int32_t decimalPlaces);
-
-    static QuotaManager* instance_;
 };
 } // STORAGE_DAEMON
 } // OHOS

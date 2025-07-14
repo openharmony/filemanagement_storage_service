@@ -27,14 +27,10 @@
 
 namespace OHOS {
 namespace StorageDaemon {
-NetlinkManager* NetlinkManager::instance_ = nullptr;
 
-NetlinkManager* NetlinkManager::Instance()
+NetlinkManager &NetlinkManager::Instance()
 {
-    if (instance_ == nullptr) {
-        instance_ = new NetlinkManager();
-    }
-
+    static NetlinkManager instance_;
     return instance_;
 }
 

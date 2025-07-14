@@ -52,13 +52,9 @@ constexpr int32_t ACCURACY_NUM = 2;
 static std::map<std::string, std::string> mQuotaReverseMounts;
 std::recursive_mutex mMountsLock;
 
-QuotaManager* QuotaManager::instance_ = nullptr;
-QuotaManager* QuotaManager::GetInstance()
+QuotaManager &QuotaManager::GetInstance()
 {
-    if (instance_ == nullptr) {
-        instance_ = new QuotaManager();
-    }
-
+    static QuotaManager instance_;
     return instance_;
 }
 

@@ -27,6 +27,10 @@ bool StorageTotalStatusServiceFuzzTest(const uint8_t *data, size_t size)
     int64_t totalSize;
     int64_t systemSize;
     int64_t freeSize;
+    if (service == nullptr) {
+        LOGE("service is nullptr");
+        return false;
+    }
     int32_t result = service->GetTotalSize(totalSize);
     if (result != E_OK) {
         LOGI("Storage total status service fuzz test of interface StorageTotalStatusService::GetTotalSize failed!");
