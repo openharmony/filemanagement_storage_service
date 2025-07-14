@@ -453,7 +453,7 @@ int32_t StorageDaemonProvider::UpdateUseAuthWithRecoveryKey(const std::vector<ui
                                                             const std::vector<std::vector<uint8_t>> &plainText)
 {
     return StorageDaemon::GetInstance().UpdateUseAuthWithRecoveryKey(authToken, newSecret, secureUid, userId,
-                                                                      plainText);
+                                                                     plainText);
 }
 
 int32_t StorageDaemonProvider::ActiveUserKey(uint32_t userId,
