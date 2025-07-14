@@ -87,7 +87,9 @@ bool StorageManagerFuzzTest(std::unique_ptr<char[]> data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
     MessageOption option;
-    storageManagerPtr->OnRemoteRequest(code % MAX_CALL_TRANSACTION, datas, reply, option);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->OnRemoteRequest(code % MAX_CALL_TRANSACTION, datas, reply, option);
+    }
 
     return true;
 }
@@ -100,7 +102,9 @@ bool HandlePrepareAddUserFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandlePrepareAddUser(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandlePrepareAddUser(datas, reply);
+    }
     return true;
 }
 
@@ -112,7 +116,9 @@ bool HandleRemoveUserFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleRemoveUser(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleRemoveUser(datas, reply);
+    }
     return true;
 }
 
@@ -124,7 +130,9 @@ bool HandlePrepareStartUserFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandlePrepareStartUser(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandlePrepareStartUser(datas, reply);
+    }
     return true;
 }
 bool HandleStopUserFuzzTest(const uint8_t *data, size_t size)
@@ -135,7 +143,9 @@ bool HandleStopUserFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleStopUser(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleStopUser(datas, reply);
+    }
     return true;
 }
 bool HandleGetCurrentBundleStatsFuzzTest(const uint8_t *data, size_t size)
@@ -146,7 +156,9 @@ bool HandleGetCurrentBundleStatsFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleGetCurrentBundleStats(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleGetCurrentBundleStats(datas, reply);
+    }
     return true;
 }
 
@@ -158,7 +170,9 @@ bool HandleMountFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleMount(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleMount(datas, reply);
+    }
     return true;
 }
 
@@ -170,7 +184,9 @@ bool HandleUnmountFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleUnmount(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleUnmount(datas, reply);
+    }
     return true;
 }
 
@@ -182,7 +198,9 @@ bool HandlePartitionFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandlePartition(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandlePartition(datas, reply);
+    }
     return true;
 }
 
@@ -194,7 +212,9 @@ bool HandleFormatFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleFormat(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleFormat(datas, reply);
+    }
     return true;
 }
 
@@ -206,7 +226,9 @@ bool HandleGenerateUserKeysFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleGenerateUserKeys(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleGenerateUserKeys(datas, reply);
+    }
     return true;
 }
 
@@ -218,7 +240,9 @@ bool HandleDeleteUserKeysFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleDeleteUserKeys(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleDeleteUserKeys(datas, reply);
+    }
     return true;
 }
 
@@ -230,7 +254,9 @@ bool HandleUpdateUserAuthFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleUpdateUserAuth(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleUpdateUserAuth(datas, reply);
+    }
     return true;
 }
 
@@ -242,7 +268,9 @@ bool HandleActiveUserKeyFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleActiveUserKey(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleActiveUserKey(datas, reply);
+    }
     return true;
 }
 
@@ -254,7 +282,9 @@ bool HandleInactiveUserKeyFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleInactiveUserKey(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleInactiveUserKey(datas, reply);
+    }
     return true;
 }
 
@@ -266,7 +296,9 @@ bool HandleLockUserScreenFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleLockUserScreen(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleLockUserScreen(datas, reply);
+    }
     return true;
 }
 
@@ -278,7 +310,9 @@ bool HandleUnlockUserScreenFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleUnlockUserScreen(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleUnlockUserScreen(datas, reply);
+    }
     return true;
 }
 
@@ -290,7 +324,9 @@ bool HandleUpdateKeyContextFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleUpdateKeyContext(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleUpdateKeyContext(datas, reply);
+    }
     return true;
 }
 
@@ -302,7 +338,9 @@ bool HandleCreateShareFileFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleCreateShareFile(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleCreateShareFile(datas, reply);
+    }
     return true;
 }
 
@@ -314,7 +352,9 @@ bool HandleDeleteShareFileFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleDeleteShareFile(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleDeleteShareFile(datas, reply);
+    }
     return true;
 }
 
@@ -326,7 +366,9 @@ bool HandleSetBundleQuotaFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleSetBundleQuota(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleSetBundleQuota(datas, reply);
+    }
     return true;
 }
 
@@ -338,7 +380,9 @@ bool HandleUpdateMemoryParaFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleUpdateMemoryPara(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleUpdateMemoryPara(datas, reply);
+    }
     return true;
 }
 
@@ -350,7 +394,9 @@ bool HandleDeleteAppkeyFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleDeleteAppkey(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleDeleteAppkey(datas, reply);
+    }
     return true;
 }
 
@@ -362,7 +408,9 @@ bool HandleCompleteAddUserFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleCompleteAddUser(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleCompleteAddUser(datas, reply);
+    }
     return true;
 }
 
@@ -374,7 +422,9 @@ bool HandleGetTotalFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleGetTotal(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleGetTotal(datas, reply);
+    }
     return true;
 }
 
@@ -386,7 +436,9 @@ bool HandleGetFreeFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleGetFree(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleGetFree(datas, reply);
+    }
     return true;
 }
 
@@ -398,7 +450,9 @@ bool HandleGetBundleStatusFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleGetBundleStatus(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleGetBundleStatus(datas, reply);
+    }
     return true;
 }
 
@@ -410,7 +464,9 @@ bool HandleGetSystemSizeFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleGetSystemSize(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleGetSystemSize(datas, reply);
+    }
     return true;
 }
 
@@ -422,7 +478,9 @@ bool HandleGetTotalSizeFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleGetTotalSize(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleGetTotalSize(datas, reply);
+    }
     return true;
 }
 bool HandleGetFreeSizeFuzzTest(const uint8_t *data, size_t size)
@@ -433,7 +491,9 @@ bool HandleGetFreeSizeFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleGetFreeSize(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleGetFreeSize(datas, reply);
+    }
     return true;
 }
 
@@ -445,7 +505,9 @@ bool HandleGetCurrUserStorageStatsFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleGetCurrUserStorageStats(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleGetCurrUserStorageStats(datas, reply);
+    }
     return true;
 }
 
@@ -457,7 +519,9 @@ bool HandleGetUserStorageStatsFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleGetUserStorageStats(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleGetUserStorageStats(datas, reply);
+    }
     return true;
 }
 
@@ -469,7 +533,9 @@ bool HandleGetAllVolumesFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleGetAllVolumes(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleGetAllVolumes(datas, reply);
+    }
     return true;
 }
 
@@ -481,7 +547,9 @@ bool HandleNotifyVolumeCreatedFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleNotifyVolumeCreated(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleNotifyVolumeCreated(datas, reply);
+    }
     return true;
 }
 
@@ -493,7 +561,9 @@ bool HandleNotifyVolumeMountedFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleNotifyVolumeMounted(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleNotifyVolumeMounted(datas, reply);
+    }
     return true;
 }
 
@@ -505,7 +575,9 @@ bool HandleNotifyVolumeStateChangedFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleNotifyVolumeStateChanged(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleNotifyVolumeStateChanged(datas, reply);
+    }
     return true;
 }
 
@@ -517,7 +589,9 @@ bool HandleNotifyDiskCreatedFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleNotifyDiskCreated(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleNotifyDiskCreated(datas, reply);
+    }
     return true;
 }
 
@@ -529,7 +603,9 @@ bool HandleGetAllDisksFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleGetAllDisks(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleGetAllDisks(datas, reply);
+    }
     return true;
 }
 
@@ -541,7 +617,9 @@ bool HandleGetVolumeByUuidFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleGetVolumeByUuid(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleGetVolumeByUuid(datas, reply);
+    }
     return true;
 }
 
@@ -553,7 +631,9 @@ bool HandleGetVolumeByIdFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleGetVolumeById(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleGetVolumeById(datas, reply);
+    }
     return true;
 }
 
@@ -565,7 +645,9 @@ bool HandleSetVolDescFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleSetVolDesc(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleSetVolDesc(datas, reply);
+    }
     return true;
 }
 
@@ -577,7 +659,9 @@ bool HandleQueryUsbIsInUseFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleQueryUsbIsInUse(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleQueryUsbIsInUse(datas, reply);
+    }
     return true;
 }
 
@@ -589,7 +673,9 @@ bool HandleGetDiskByIdFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleGetDiskById(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleGetDiskById(datas, reply);
+    }
     return true;
 }
 
@@ -601,7 +687,9 @@ bool HandleUpdateUseAuthWithRecoveryKeyFuzzTest(const uint8_t *data, size_t size
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleUpdateUseAuthWithRecoveryKey(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleUpdateUseAuthWithRecoveryKey(datas, reply);
+    }
     return true;
 }
 
@@ -613,7 +701,9 @@ bool HandleGetFileEncryptStatusFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleGetFileEncryptStatus(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleGetFileEncryptStatus(datas, reply);
+    }
     return true;
 }
 
@@ -625,7 +715,9 @@ bool HandleGetLockScreenStatusFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleGetLockScreenStatus(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleGetLockScreenStatus(datas, reply);
+    }
     return true;
 }
 
@@ -637,7 +729,9 @@ bool HandleGenerateAppkeyFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleGenerateAppkey(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleGenerateAppkey(datas, reply);
+    }
     return true;
 }
 
@@ -649,7 +743,9 @@ bool HandleCreateRecoverKeyFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleCreateRecoverKey(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleCreateRecoverKey(datas, reply);
+    }
     return true;
 }
 
@@ -661,7 +757,9 @@ bool HandleSetRecoverKeyFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleSetRecoverKey(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleSetRecoverKey(datas, reply);
+    }
     return true;
 }
 
@@ -673,7 +771,9 @@ bool HandleResetSecretWithRecoveryKeyFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleResetSecretWithRecoveryKey(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleResetSecretWithRecoveryKey(datas, reply);
+    }
     return true;
 }
 
@@ -685,7 +785,9 @@ bool HandleGetUserStorageStatsByTypeFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleGetUserStorageStatsByType(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleGetUserStorageStatsByType(datas, reply);
+    }
     return true;
 }
 
@@ -697,7 +799,9 @@ bool HandleMountDfsDocsFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleMountDfsDocs(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleMountDfsDocs(datas, reply);
+    }
     return true;
 }
 
@@ -709,7 +813,9 @@ bool HandleUMountDfsDocsFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleUMountDfsDocs(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleUMountDfsDocs(datas, reply);
+    }
     return true;
 }
 
@@ -721,7 +827,9 @@ bool HandleNotifyMtpMountFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleNotifyMtpMount(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleNotifyMtpMount(datas, reply);
+    }
     return true;
 }
 
@@ -733,7 +841,9 @@ bool HandleNotifyMtpUnmountFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleNotifyMtpUnmount(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleNotifyMtpUnmount(datas, reply);
+    }
     return true;
 }
 
@@ -745,7 +855,9 @@ bool HandleNotifyDiskDestroyedFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleNotifyDiskDestroyed(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleNotifyDiskDestroyed(datas, reply);
+    }
     return true;
 }
 
@@ -757,7 +869,9 @@ bool HandleMountMediaFuseFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleMountMediaFuse(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleMountMediaFuse(datas, reply);
+    }
     return true;
 }
 
@@ -769,7 +883,9 @@ bool HandleUMountMediaFuseFuzzTest(const uint8_t *data, size_t size)
     datas.RewindRead(0);
     MessageParcel reply;
 
-    storageManagerPtr->HandleUMountMediaFuse(datas, reply);
+    if (storageManagerPtr != nullptr) {
+        storageManagerPtr->HandleUMountMediaFuse(datas, reply);
+    }
     return true;
 }
 } // namespace OHOS::StorageManager

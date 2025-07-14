@@ -24,7 +24,7 @@ namespace StorageDaemon {
 class VolumeManager final {
 public:
     virtual ~VolumeManager() = default;
-    static VolumeManager* Instance();
+    static VolumeManager &Instance();
 
     std::string CreateVolume(const std::string diskId, dev_t device, bool isUserdata);
     int32_t DestroyVolume(const std::string volId);
@@ -43,10 +43,7 @@ private:
     DISALLOW_COPY_AND_MOVE(VolumeManager);
 
     bool IsMtpDeviceInUse(const std::string &diskPath);
-
-    static VolumeManager* instance_;
     StorageService::StorageRlMap<std::string, std::shared_ptr<VolumeInfo>> volumes_;
-
     std::shared_ptr<VolumeInfo> GetVolume(const std::string volId);
     int32_t CreateMountUsbFusePath(std::string fsUuid);
     int32_t ReadVolumUuid(std::string volumeId, std::string &fsUuid);

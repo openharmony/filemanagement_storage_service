@@ -19,16 +19,12 @@ using namespace std;
 
 using namespace OHOS::StorageDaemon;
 
-std::shared_ptr<MountManager> MountManager::instance_ = nullptr;
-
 MountManager::MountManager()
 {}
 
-std::shared_ptr<MountManager> MountManager::GetInstance()
+MountManager &MountManager::GetInstance()
 {
-    static std::once_flag onceFlag;
-    std::call_once(onceFlag, [&]() { instance_ = std::make_shared<MountManager>(); });
-
+    static MountManager instance_;
     return instance_;
 }
 

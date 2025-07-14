@@ -116,7 +116,6 @@ void StorageMonitorServiceTest::TearDownTestCase()
 HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_MonitorAndManageStorage_0000, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "storage_monitor_service_MonitorAndManageStorage_0000 start";
-    ASSERT_TRUE(service != nullptr);
 
     EXPECT_CALL(*stss, GetTotalSize(_)).WillOnce(Return(E_PERMISSION_DENIED));
     service->MonitorAndManageStorage();
@@ -168,7 +167,6 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_MonitorAndManageStor
 HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_CheckAndCleanCache_0000, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "storage_monitor_service_CheckAndCleanCache_0000 start";
-    ASSERT_TRUE(service != nullptr);
 
     service->CheckAndCleanCache(0, 0);
     EXPECT_TRUE(true);
@@ -194,7 +192,6 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_CheckAndCleanCache_0
 HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_CleanBundleCacheByInterval_0000, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "storage_monitor_service_CleanBundleCacheByInterval_0000 start";
-    ASSERT_TRUE(service != nullptr);
 
     std::string timestamp;
     EXPECT_CALL(*sum, GetParameter(_, _)).WillOnce(Return(""));
@@ -226,7 +223,6 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_CleanBundleCacheByIn
 HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_CheckAndEventNotify_0000, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "storage_monitor_service_CheckAndEventNotify_0000 start";
-    ASSERT_TRUE(service != nullptr);
 
     service->CheckAndEventNotify(0, 0);
     EXPECT_TRUE(true);
@@ -251,7 +247,6 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_CheckAndEventNotify_
 HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_EventNotifyFreqHandlerForLow_0000, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "storage_monitor_service_EventNotifyFreqHandlerForLow_0000 start";
-    ASSERT_TRUE(service != nullptr);
 
     service->lastNotificationTimeHighFreq_ = std::chrono::system_clock::time_point();
     service->EventNotifyFreqHandlerForLow();
@@ -275,7 +270,6 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_EventNotifyFreqHandl
 HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_EventNotifyFreqHandlerForMedium_0000, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "storage_monitor_service_EventNotifyFreqHandlerForMedium_0000 start";
-    ASSERT_TRUE(service != nullptr);
 
     service->lastNotificationTimeHighFreq_ = std::chrono::system_clock::time_point();
     service->EventNotifyFreqHandlerForMedium();
@@ -299,7 +293,6 @@ HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_EventNotifyFreqHandl
 HWTEST_F(StorageMonitorServiceTest, storage_monitor_service_EventNotifyFreqHandlerForHigh_0000, TestSize.Level1)
 {
     GTEST_LOG_(INFO) << "storage_monitor_service_EventNotifyFreqHandlerForHigh_0000 start";
-    ASSERT_TRUE(service != nullptr);
 
     service->lastNotificationTimeHighFreq_ = std::chrono::system_clock::time_point();
     service->EventNotifyFreqHandlerForHigh();

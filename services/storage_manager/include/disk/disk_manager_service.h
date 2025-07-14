@@ -38,6 +38,7 @@ public:
 private:
     DiskManagerService();
     ~DiskManagerService();
+    
     StorageService::StorageRlMap<std::string, std::shared_ptr<Disk>> diskMap_;
 };
 } // StorageManager

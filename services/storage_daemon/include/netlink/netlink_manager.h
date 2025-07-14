@@ -22,13 +22,12 @@ namespace OHOS {
 namespace StorageDaemon {
 class NetlinkManager final {
 public:
-    static NetlinkManager* Instance();
+    static NetlinkManager &Instance();
     int32_t Start();
     int32_t Stop();
 
 private:
     static constexpr int32_t ONE_KB = 1024;
-    static NetlinkManager *instance_;
     int32_t socketFd_ { -1 };
     NetlinkHandler *nlHandler_ = nullptr;
     NetlinkManager() = default;

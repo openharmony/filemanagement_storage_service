@@ -644,8 +644,8 @@ int KeyManager::GenerateIntegrityDirs(int32_t userId, KeyType type)
         }
 
         LOGI("try to destory dir first, user %{public}d, Type %{public}d", userId, type);
-        (void)UserManager::GetInstance()->DestroyUserDirs(userId, flag_type);
-        ret = UserManager::GetInstance()->PrepareUserDirs(userId, flag_type);
+        (void)UserManager::GetInstance().DestroyUserDirs(userId, flag_type);
+        ret = UserManager::GetInstance().PrepareUserDirs(userId, flag_type);
         if (ret != E_OK) {
             LOGE("upgrade scene:prepare user dirs fail, userId %{public}d, type %{public}d", userId, type);
             return ret;
@@ -2120,7 +2120,7 @@ int KeyManager::GetFileEncryptStatus(uint32_t userId, bool &isEncrypted, bool ne
     free(path);
     int ret = remove((el2Path + EL2_ENCRYPT_TMP_FILE).c_str());
     LOGE("remove ret = %{public}d", ret);
-    if (needCheckDirMount && !MountManager::GetInstance()->CheckMountFileByUser(userId)) {
+    if (needCheckDirMount && !MountManager::GetInstance().CheckMountFileByUser(userId)) {
         LOGI("The virturalDir is not exists.");
         return E_OK;
     }

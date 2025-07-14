@@ -39,7 +39,9 @@ VolumeManagerService::~VolumeManagerService() {}
 
 void VolumeManagerService::VolumeStateNotify(VolumeState state, std::shared_ptr<VolumeExternal> volume)
 {
-    DelayedSingleton<Notification>::GetInstance()->NotifyVolumeChange(state, volume);
+    if (DelayedSingleton<Notification>::GetInstance() != nullptr) {
+        DelayedSingleton<Notification>::GetInstance()->NotifyVolumeChange(state, volume);
+    }
 }
 
 void VolumeManagerService::OnVolumeCreated(VolumeCore vc)
@@ -161,7 +163,7 @@ int32_t VolumeManagerService::Mount(std::string volumeId)
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t result = Check(volumePtr->GetId());
-    if (result == E_OK) {
+    if (result == E_OK && sdCommunication != nullptr) {
         result = sdCommunication->Mount(volumeId, 0);
         if (result != E_OK) {
             volumePtr->SetState(VolumeState::UNMOUNTED);
@@ -191,7 +193,7 @@ int32_t VolumeManagerService::MountUsbFuse(std::string volumeId, int &fuseFd)
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
-    
+
     int32_t result = Check(volumePtr->GetId());
     if (result != E_OK) {
         volumePtr->SetState(VolumeState::UNMOUNTED);
@@ -231,6 +233,10 @@ int32_t VolumeManagerService::Unmount(std::string volumeId)
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     volumePtr->SetState(VolumeState::EJECTING);
+    if (sdCommunication == nullptr) {
+        LOGE("sdCommunication is nullptr");
+        return E_PARAMS_NULLPTR_ERR;
+    }
     int32_t result = sdCommunication->Unmount(volumeId);
     if (result == E_OK) {
         volumePtr->SetState(VolumeState::UNMOUNTED);
@@ -255,7 +261,7 @@ int32_t VolumeManagerService::TryToFix(std::string volumeId)
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
     int32_t result = Check(volumePtr->GetId());
-    if (result == E_OK) {
+    if (result == E_OK && sdCommunication != nullptr) {
         result = sdCommunication->TryToFix(volumeId, 0);
     } else {
         volumePtr->Reset();
@@ -277,6 +283,10 @@ int32_t VolumeManagerService::Check(std::string volumeId)
     }
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    if (sdCommunication == nullptr) {
+        LOGE("sdCommunication is nullptr");
+        return E_PARAMS_NULLPTR_ERR;
+    }
     int32_t result = sdCommunication->Check(volumeId);
     return result;
 }
@@ -340,6 +350,10 @@ int32_t VolumeManagerService::SetVolumeDescription(std::string fsUuid, std::stri
             }
             std::shared_ptr<StorageDaemonCommunication> sdCommunication;
             sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+            if (sdCommunication == nullptr) {
+                LOGE("sdCommunication is nullptr");
+                return E_PARAMS_NULLPTR_ERR;
+            }
             return sdCommunication->SetVolumeDescription(volume->GetId(), description);
         }
     }
@@ -367,6 +381,10 @@ int32_t VolumeManagerService::Format(std::string volumeId, std::string fsType)
     // check fstype!!!!
     std::shared_ptr<StorageDaemonCommunication> sdCommunication;
     sdCommunication = DelayedSingleton<StorageDaemonCommunication>::GetInstance();
+    if (sdCommunication == nullptr) {
+        LOGE("sdCommunication is nullptr");
+        return E_PARAMS_NULLPTR_ERR;
+    }
     return sdCommunication->Format(volumeId, fsType);
 }
 
@@ -379,7 +397,7 @@ void VolumeManagerService::NotifyMtpMounted(const std::string &id, const std::st
     int32_t len = 0;
     if (value != nullptr) {
         len = getxattr(path.c_str(), key.c_str(), value, MTP_DEVICE_NAME_LEN);
-        if (len >= 0) {
+        if (len >= 0 && len < MTP_DEVICE_NAME_LEN) {
             value[len] = '\0';
             LOGI("MTP get namelen=%{public}d, name=%{public}s", len, value);
         }
@@ -396,6 +414,7 @@ void VolumeManagerService::NotifyMtpMounted(const std::string &id, const std::st
     }
     if (value != nullptr) {
         free(value);
+        value = nullptr;
     }
     volumePtr->SetState(MOUNTED);
     volumePtr->SetFsUuid(uuid);
