@@ -414,7 +414,7 @@ int32_t ExternalVolumeInfo::DoUMountUsbFuse()
     int err = rmdir(mountPath_.c_str());
     if (err) {
         LOGE("External volume DoUMountUsbFuse error: rmdir failed, errno %{public}d", errno);
-        return E_VOL_UMOUNT_ERR;
+        return E_RMDIR_MOUNT;
     }
     LOGI("DoUMountUsbFuse success.");
     return E_OK;
@@ -513,6 +513,13 @@ int32_t ExternalVolumeInfo::DoCheck()
 int32_t ExternalVolumeInfo::DoFormat(std::string type)
 {
     int32_t err = 0;
+    if (IsFuse() && IsPathMounted(mountPath_)) {
+        err = DoUMountUsbFuse();
+    }
+    if (err != E_OK) {
+        return err;
+    }
+    
     std::map<std::string, std::string>::iterator iter = supportFormatType_.find(type);
     if (iter == supportFormatType_.end()) {
         LOGE("External volume format not support.");

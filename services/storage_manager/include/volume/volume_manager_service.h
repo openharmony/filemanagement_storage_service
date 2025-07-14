@@ -27,7 +27,7 @@ class VolumeManagerService : public NoCopyable {
 public:
     int32_t Mount(std::string volumeId);
     int32_t Unmount(std::string volumeId);
-    int32_t MountUsbFuse(std::string volumeId, int &fuseFd);
+    int32_t MountUsbFuse(const std::string &volumeId);
     int32_t TryToFix(std::string volumeId);
     void OnVolumeCreated(VolumeCore vc);
     void OnVolumeMounted(const std::string &volumeId, const std::string &fsTypeStr,
